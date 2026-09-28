@@ -1,0 +1,289 @@
+{
+  "dialogues": [
+    {
+      "id": "chief_intro",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "오, 모험가 양반! 마침 잘 왔네."
+        },
+        {
+          "speaker": "",
+          "text": "요즘 동쪽 숲에서 해골들이 어슬렁거리는 바람에 마을 공방 공사가 멈춰 버렸지 뭔가."
+        },
+        {
+          "speaker": "",
+          "text": "목재 {wood_required}개와 돌 {stone_required}개를 북동쪽 공사장에 가져다주고, 해골 {kills_required}마리만 쫓아내 주겠나?"
+        },
+        {
+          "speaker": "",
+          "text": "나무와 바위는 검으로 내리치면 재료가 떨어진다네. [{attack_key}] 키로 휘두르게."
+        },
+        {
+          "speaker": "",
+          "text": "다치면 밭에서 뽑은 당근을 [{item_key}] 키로 먹게. 부탁하네!"
+        }
+      ]
+    },
+    {
+      "id": "chief_progress",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "공사장은 북동쪽, 해골은 동쪽 울타리 너머에 있네."
+        },
+        {
+          "speaker": "",
+          "text": "아직 목재 {wood_left}개, 돌 {stone_left}개를 더 전달해야 하고, 해골은 {kills_left}마리 남았군."
+        }
+      ]
+    },
+    {
+      "id": "chief_report",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "저 망치 소리! 드디어 공방이 완성됐군!"
+        },
+        {
+          "speaker": "",
+          "text": "해골들도 한결 잠잠해졌어. 전부 자네 덕분일세."
+        },
+        {
+          "speaker": "",
+          "text": "마을에서 준비한 작은 선물이네. 몸이 한결 튼튼해질 걸세."
+        }
+      ]
+    },
+    {
+      "id": "chief_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "마을이 다시 활기를 찾았어. 천천히 둘러보게나."
+        }
+      ]
+    },
+    {
+      "id": "builder_before",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "공방을 지어야 하는데 재료는 없고, 해골 때문에 숲에도 못 가겠어."
+        },
+        {
+          "speaker": "",
+          "text": "촌장님이 도와줄 사람을 찾고 계시던데… 한번 찾아가 봐."
+        }
+      ]
+    },
+    {
+      "id": "builder_progress",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "재료는 저 청사진 앞에서 [{interact_key}] 키를 누르면 전달돼."
+        },
+        {
+          "speaker": "",
+          "text": "목재 {wood_left}개, 돌 {stone_left}개만 더 있으면 바로 지을 수 있어!"
+        }
+      ]
+    },
+    {
+      "id": "builder_done",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "어때, 멋지지? 앞으로 이 공방에서 새 도구를 만들어 줄게. (다음 업데이트를 기대해!)"
+        }
+      ]
+    },
+    {
+      "id": "site_locked",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "(짓다 만 공방의 청사진이다. 마을 사람에게 먼저 사정을 들어 보자.)"
+        }
+      ]
+    },
+    {
+      "id": "site_built",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "(새로 지은 공방이다. 갓 켠 나무 향이 난다.)"
+        }
+      ]
+    },
+    {
+      "id": "farmer",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "당근 밭에 온 걸 환영해!"
+        },
+        {
+          "speaker": "",
+          "text": "다 자란 당근은 [{interact_key}] 키로 뽑을 수 있어. [{item_key}] 키로 먹으면 체력이 회복돼."
+        },
+        {
+          "speaker": "",
+          "text": "뽑은 자리엔 금방 새 당근이 자라니까 걱정 말고 가져가."
+        }
+      ]
+    },
+    {
+      "id": "farmer_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "공방이 생겼으니 새 물뿌리개를 부탁해 볼까 해!"
+        }
+      ]
+    },
+    {
+      "id": "fisher",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "쉿… 물고기가 도망가잖아."
+        },
+        {
+          "speaker": "",
+          "text": "낚시는 아직 연습 중이야. 언젠가 같이 하자고."
+        }
+      ]
+    },
+    {
+      "id": "fisher_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "오늘은 입질이 좋네. 마을이 평화로워서 그런가?"
+        }
+      ]
+    },
+    {
+      "id": "lumberjack",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "나무는 몇 번 내리치면 쓰러지고 목재가 떨어져."
+        },
+        {
+          "speaker": "",
+          "text": "그루터기는 시간이 지나면 다시 자라니까 마음껏 베라고!"
+        }
+      ]
+    },
+    {
+      "id": "lumberjack_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "공방 기둥 봤어? 내가 벤 나무라고!"
+        }
+      ]
+    },
+    {
+      "id": "miner",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "바위를 깨면 돌이 나와. 제법 단단하니 여러 번 쳐야 해."
+        },
+        {
+          "speaker": "",
+          "text": "깨진 바위도 시간이 지나면 다시 생긴다네."
+        }
+      ]
+    },
+    {
+      "id": "miner_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "돌 나르느라 고생 많았어. 어깨는 괜찮나?"
+        }
+      ]
+    },
+    {
+      "id": "carrier",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "당근 상자 배달 중이야! 조심조심~"
+        }
+      ]
+    },
+    {
+      "id": "carrier_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "공방 사람들한테 당근 간식을 돌리는 중이야!"
+        }
+      ]
+    },
+    {
+      "id": "kid",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "동쪽 울타리 너머에 해골이 산대!"
+        },
+        {
+          "speaker": "",
+          "text": "해골이 몸을 부르르 떨면 곧 칼을 휘두른대. 그때 뒤로 피해!"
+        }
+      ]
+    },
+    {
+      "id": "kid_after",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "모험가님 최고! 나도 크면 모험가가 될 거야!"
+        }
+      ]
+    },
+    {
+      "id": "house_door",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "(문이 잠겨 있다. 촌장님 댁인 것 같다.)"
+        }
+      ]
+    },
+    {
+      "id": "sign_0",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "← 서쪽: 당근 밭    ↑ 북쪽: 촌장님 댁\n→ 동쪽: 공사장 · 해골 숲    ↓ 남쪽: 잔잔 호수"
+        }
+      ]
+    },
+    {
+      "id": "sign_1",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "경고! 이 너머는 해골 출몰 지역.\n해골이 몸을 떨면 곧 공격한다. 공격 직후의 빈틈을 노려라!"
+        }
+      ]
+    },
+    {
+      "id": "sign_2",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "잔잔 호수 — 낚시 대회 준비 중 (추후 개장)"
+        }
+      ]
+    }
+  ]
+}

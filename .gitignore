@@ -1,0 +1,42 @@
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+crashlytics-build.properties
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.unityproj
+*.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Offline compile check output
+/Tools/CompileCheck/bin/
+/Tools/CompileCheck/obj/
+/Tools/CompileCheck/refs/
+/Tools/ArtPreview/bin/
+/Tools/ArtPreview/obj/
+__pycache__/
+
+# Offline tool projects are real source (Unity-generated *.csproj above are not)
+!/Tools/**/*.csproj

@@ -1,0 +1,48 @@
+// dotRPG village map (vertical slice). One character = one 16px tile. Top row = north.
+// .=grass  ==dirt path  #=farm soil  ~=water  d=dock
+// T=tree  O=fruit tree  S=stump  R=rock  B=berry bush  F=fence  f=flower  r=pebble  t=grass tuft
+// C=carrot (on soil)  c=carrot crate  n=sign  H=house anchor (3x3)  X=construction site anchor (3x3)
+// P=player start  k=skeleton spawn  1-9=NPCs (see GameConfig > npcs)
+// Signs get dialogue ids sign_0, sign_1... in reading order (top-left first).
+OTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTTOTT
+TTTTTTTTTTTTTTOTTTTTTTTTTTTTTTTTTTTOTTTTTTTTTTTTTTTTTTTTOTTT
+TT........................................TT.T..T.T.TT..TTTT
+TT........................................f....T.TTTT.T...TT
+TT...............O.......rf.O......r.......TTT..T..T..T...TT
+TT............................O............T.T..T.T....T..TT
+TT................O........B.......f..f..f......T....T..T.TT
+TT...................H....................TTT.TT..T.....T.TT
+TTFFFFFFFFFFFF........==r.f.................f.T...fTT.r...TT
+TTF##########F..O.....==..1...................5.......f...TT
+TTF#C#C#C#C##F.....B..==.........f........................TT
+TTF#########2F........==.....B............................TT
+TTF#C#C#C#C##F........==..f........4..X.............f...R.TT
+TTF##########F........==..f....f.f..................R.....TT
+TTF#C#C#C#C##F........==..........................6Rf.R...TT
+TTF##########F.ccr....==.......8............F......f......TT
+TTF##########F.f......==....................F........R....TT
+TTFFFFFF=FFFFF........==.........T..........F......R...R..TT
+TT......=.............==...P.......f........F.............TT
+TT......=......O....n.==.........f.........nF.............TT
+TT========================================================TT
+TT========================7===============================TT
+TT....................==..................................TT
+TT..T..........O......==....................F....T...S....TT
+TT.......R.....f......==....T...............F..k..f.......TT
+TT....rT.........B.f..==..............B..f..Ff...r.....T..TT
+TT.........R..........==.......R............F.T.....k.....TT
+TT..T.....f.....f...n.==..........R.........F...S.........TT
+TT......FFFFFFFFFFFFF.==.FFFFFFFFFF.........F....f.T...f..TT
+TT....................d3.............r......F..........k..TT
+TT....T....r..f~~~~~~~dd~~~~~~~~~~......T...F..R.k........TT
+TT.......T...~~~~~~~~~dd~~~~~~~~~~~~........F........T....TT
+TT..........~~~~~~~~~~dd~~~~~~~~~~~~~...r...F.....S.......TT
+TT.T.....f..~~~~~~~~~~dd~~~~~~~~~~~~~.......F.k.......R...TT
+TT..........~~~~~~~~~~~~~~~~~~~~~~~~~.......F...T.......S.TT
+TT......T...~~~~~~~~~~~~~~~~~~~~~~~~~f.T....F......k......TT
+TT..f.......~~~~~~~~~~~~~~~~~~~~~~~~~.......FT............TT
+TT...T.....f~~~~~~~~~~~~~~~~~~~~~~~~~.......F..S........T.TT
+TT..........~~~~~~~~~~~~~~~~~~~~~~~~~.......F.......f.S...TT
+TT..........~~~~~~~~~~~~~~~~~~~~~~~~~.....................TT
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT

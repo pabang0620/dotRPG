@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07e6a8557e08a80d24c348327080eab7, type: 3}
+  m_Name: SkeletonStats
+  m_EditorClassIdentifier: 
+  enemyId: skeleton
+  displayName: "\uD574\uACE8"
+  maxHealth: 3
+  hurtStunTime: 0.3
+  invulnerableTime: 0.15
+  knockbackSpeed: 6
+  wanderSpeed: 1.1
+  chaseSpeed: 2.3
+  wanderRadius: 2.5
+  wanderPauseRange: {x: 1, y: 2.5}
+  detectRadius: 4.5
+  loseInterestRadius: 7.5
+  leashRadius: 10
+  attackDamage: 1
+  attackRange: 0.95
+  windupTime: 0.5
+  recoverTime: 0.7
+  attackKnockback: 7
+  respawnDelay: 25
+  respawnMinPlayerDistance: 9
