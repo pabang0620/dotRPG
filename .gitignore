@@ -40,3 +40,6 @@ __pycache__/
 
 # Offline tool projects are real source (Unity-generated *.csproj above are not)
 !/Tools/**/*.csproj
+
+# Flow Music raw WAV originals (large; mastered OGGs live in Assets/Resources/Audio)
+/AudioSource/
