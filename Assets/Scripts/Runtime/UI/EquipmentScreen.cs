@@ -57,6 +57,11 @@ namespace DotRPG
         bool keyboardUsed;
 
         Tab tab = Tab.All;
+        /// <summary>Shown grid page per tab (each tab pages on its own).</summary>
+        readonly int[] tabPage = new int[TabNames.Length];
+        int pageCount = 1;
+        Button pagePrev, pageNext;
+        Text pageText;
         bool sortByRarity;
         bool dirty;
         float animTimer;
@@ -168,6 +173,13 @@ namespace DotRPG
                 grid.Add(MakeSlot(root, pos, Cell, "ui_slot", null, true));
             }
 
+            // Paging under the grid (only shown when the tab holds more than one page).
+            float gridMid = -24f - gridW * 0.5f;
+            pagePrev = MakeButton(root, "BagPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid - 70f, 102f), new Vector2(56f, 44f), () => TurnPage(-1, false), 22, true);
+            pageNext = MakeButton(root, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid + 126f, 102f), new Vector2(56f, 44f), () => TurnPage(1, false), 22, true);
+            pageText = UIFactory.Text(root, "BagPage", "", 22, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Place(pageText.rectTransform, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(gridMid, 102f), new Vector2(130f, 44f));
+
             // Bottom bar.
             var gridIcon = UIFactory.Text(root, "GridIcon", "▦", 44, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Place(gridIcon.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 40f, 26f), new Vector2(60f, 60f));
@@ -247,6 +259,7 @@ namespace DotRPG
         {
             base.Show();
             region = 1; cx = 0; cy = 0;
+            Array.Clear(tabPage, 0, tabPage.Length);
             hovered = null;
             mouseActive = false;
             keyboardUsed = false;
@@ -332,10 +345,19 @@ namespace DotRPG
             // Grid.
             var all = BagContents();
             var shown = all.FindAll(InTab);
+            pageCount = Mathf.Max(1, (shown.Count + GridCells - 1) / GridCells);
+            int page = tabPage[(int)tab] = Mathf.Clamp(tabPage[(int)tab], 0, pageCount - 1);
+            pageText.text = $"{page + 1} / {pageCount}";
+            pageText.gameObject.SetActive(pageCount > 1);
+            pagePrev.gameObject.SetActive(pageCount > 1);
+            pageNext.gameObject.SetActive(pageCount > 1);
+            pagePrev.interactable = page > 0;
+            pageNext.interactable = page < pageCount - 1;
             for (int i = 0; i < GridCells; i++)
             {
                 var s = grid[i];
-                s.itemId = i < shown.Count ? shown[i] : null;
+                int at = page * GridCells + i;
+                s.itemId = at < shown.Count ? shown[at] : null;
                 var gear = EquipmentDatabase.Get(s.itemId);
                 FillIcon(s, s.itemId, gear);
                 s.corner.enabled = gear != null && eq.IsUpgrade(s.itemId, cls);
@@ -367,7 +389,8 @@ namespace DotRPG
             statCells[3].text = $"막기 {CharacterStats.Block}%";
             statCells[4].text = $"이동 {(CharacterStats.SpeedBonus >= 0 ? "+" : "")}{CharacterStats.SpeedBonus}%";
             statCells[5].text = $"장비 {WornCount(eq)}/{Equipment.SlotCount}";
-            capacity.text = $"{Math.Min(all.Count, GridCells)}/{GridCells}";
+            // Real count (the grid pages, so nothing is hidden): this tab / whole bag.
+            capacity.text = tab == Tab.All ? $"{all.Count}종" : $"{shown.Count} / {all.Count}종";
             foreach (var pair in currencies) pair.Value.text = bag.Count(pair.Key).ToString("N0");
             sortLabel.text = sortByRarity ? "등급순" : "정렬";
             var input = Game.Input;
@@ -450,6 +473,34 @@ namespace DotRPG
         {
             sortByRarity = !sortByRarity;
             dirty = true;
+        }
+
+        void TurnPage(int d, bool sound = true)
+        {
+            int page = tabPage[(int)tab];
+            int next = Mathf.Clamp(page + d, 0, pageCount - 1);
+            if (next == page) return;
+            tabPage[(int)tab] = next;
+            hovered = null;
+            keyboardSlot = null;
+            if (sound) Game.Audio.PlaySfx("select", 0.5f);
+            Refresh(); // right away, so the cursor and tooltip see the new page's items
+        }
+
+        // ---------- Developer automation (DevCapture) ----------
+
+        public void DevSelectTab(int index) => SelectTab((Tab)Mathf.Clamp(index, 0, TabNames.Length - 1));
+        public void DevPage(int d) => TurnPage(d);
+        public string DevPageLabel { get { Refresh(); return pageCount > 1 ? pageText.text : "1 / 1"; } }
+        public string DevCapacity { get { Refresh(); return capacity.text; } }
+
+        /// <summary>Ids in the grid cells of the shown page.</summary>
+        public List<string> DevShown()
+        {
+            Refresh();
+            var list = new List<string>();
+            foreach (var s in grid) if (s.itemId != null) list.Add(s.itemId);
+            return list;
         }
 
         void SelectTab(Tab next)
@@ -541,6 +592,10 @@ namespace DotRPG
                 }
                 cx += dx;
                 cy += dy;
+                // Past the bottom / top row: the next / previous page of this tab (the tab bar only from page 1).
+                int page = tabPage[(int)tab];
+                if (cy >= Rows && page < pageCount - 1) { TurnPage(1, false); cy = 0; }
+                else if (cy < 0 && page > 0) { TurnPage(-1, false); cy = Rows - 1; }
                 if (cx < 0) { region = 0; cx = 1; cy = Mathf.Clamp(cy, 0, 2); return; }
                 cx = Mathf.Clamp(cx, 0, Columns - 1);
                 cy = Mathf.Clamp(cy, -1, Rows - 1);

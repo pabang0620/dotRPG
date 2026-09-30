@@ -328,17 +328,26 @@ namespace DotRPG
     // =============================== Aggregated character stats ===============================
 
     /// <summary>
-    /// Everything that makes the character stronger, summed from base stats, level, passive tree and
-    /// equipment. Recomputed on demand (cheap), so there is no cached state to go stale.
+    /// Everything that makes one party member stronger, summed from base stats, level, passive tree and
+    /// equipment of its <see cref="CharacterData"/>. Recomputed on demand (cheap), so there is no cached
+    /// state to go stale. Every member has its own instance (<see cref="CharacterData.Stats"/>).
     /// </summary>
-    public static class CharacterStats
+    public sealed class CharacterStatsCalc
     {
         public const int BaseMana = 40, HpPerLevel = 8, MpPerLevel = 4;
 
-        static int Sum(PassiveStat stat, int slot = -2)
+        readonly CharacterData data;
+
+        public CharacterStatsCalc(CharacterData data) => this.data = data;
+
+        Progression Prog => data.Progression;
+        Equipment Eq => data.Equipment;
+        int Level => Prog.Level;
+
+        int Sum(PassiveStat stat, int slot = -2)
         {
             int total = 0;
-            foreach (var id in Game.Session.Progression.Allocated)
+            foreach (var id in Prog.Allocated)
             {
                 var n = PassiveTree.Get(id);
                 if (n == null || (slot != -2 && n.skillSlot != slot)) continue;
@@ -348,11 +357,11 @@ namespace DotRPG
         }
 
         /// <summary>A Skill* stat summed for one skill slot.</summary>
-        public static int SlotStat(PassiveStat stat, int slot) => Sum(stat, slot);
+        public int SlotStat(PassiveStat stat, int slot) => Sum(stat, slot);
 
-        public static bool Has(Keystone k)
+        public bool Has(Keystone k)
         {
-            foreach (var id in Game.Session.Progression.Allocated)
+            foreach (var id in Prog.Allocated)
             {
                 var n = PassiveTree.Get(id);
                 if (n != null && n.keystone == k) return true;
@@ -360,68 +369,50 @@ namespace DotRPG
             return false;
         }
 
-        static Equipment Eq => Game.Session.Equipment;
-        static int Level => Game.Session.Progression.Level;
-
-        // ---------- Temporary buff (전쟁 함성) ----------
-
-        static float buffUntil;
-        static int buffPct;
-
-        public static void ApplyDamageBuff(int pct, float seconds)
-        {
-            buffPct = pct;
-            buffUntil = Time.time + seconds;
-        }
-
-        public static int BuffDamage => Time.time < buffUntil ? buffPct : 0;
-        public static float BuffRemaining => Mathf.Max(0f, buffUntil - Time.time);
-        public static void ClearBuffs() => buffUntil = 0f;
-
-        public static int MaxHp
+        public int MaxHp
         {
             get
             {
-                float flat = Game.Session.PlayerMaxHealth + (Level - 1) * HpPerLevel + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
+                float flat = data.BaseMaxHp + (Level - 1) * HpPerLevel + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
                 float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0);
                 return Mathf.Max(1, Mathf.RoundToInt(flat * (1f + inc / 100f)));
             }
         }
 
-        public static int MaxMp => Has(Keystone.BloodMagic) ? 0 : BaseMana + (Level - 1) * MpPerLevel + Sum(PassiveStat.FlatMp);
+        public int MaxMp => Has(Keystone.BloodMagic) ? 0 : BaseMana + (Level - 1) * MpPerLevel + Sum(PassiveStat.FlatMp);
 
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>
-        public static float ManaRegen => MaxMp * 0.05f * (1f + Sum(PassiveStat.ManaRegen) / 100f);
+        public float ManaRegen => MaxMp * 0.05f * (1f + Sum(PassiveStat.ManaRegen) / 100f);
 
-        public static int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + BuffDamage;
+        public int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + data.BuffDamage;
 
-        /// <summary>Class base damage + weapon/gear attack, before % increases.</summary>
-        static int BaseAttack(CharacterClass cls)
+        /// <summary>Class base damage + weapon/gear attack, before % increases (scaled for companions).</summary>
+        float BaseAttack(CharacterClass cls)
         {
             var info = CharacterClassInfo.Get(cls);
             int baseDmg = info.ranged ? info.damage : Game.Config.playerStats.attackDamage;
-            return baseDmg + Eq.AttackBonus;
+            return (baseDmg + Eq.AttackBonus) * data.DamageScale;
         }
 
         /// <summary>Class base damage + weapon/gear attack, then % increased damage.</summary>
-        public static int AttackDamage(CharacterClass cls) => Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + IncDamage / 100f)));
+        public int AttackDamage(CharacterClass cls) => Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + IncDamage / 100f)));
 
-        public static int Block => Mathf.Clamp(Eq.BlockChance + Sum(PassiveStat.Block) + (Has(Keystone.Unwavering) ? 15 : 0), 0, 75);
-        public static int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0);
-        public static float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
-        public static int AttackSpeed => Sum(PassiveStat.AttackSpeed);
-        public static float CooldownMultiplier => 1f / (1f + AttackSpeed / 100f);
-        public static int Aoe => Sum(PassiveStat.Aoe);
-        public static int ManaCostReduction => Mathf.Min(80, Sum(PassiveStat.ManaCost));
-        public static int LifeOnKill => Sum(PassiveStat.LifeOnKill);
-        public static int ManaOnKill => Sum(PassiveStat.ManaOnKill);
+        public int Block => Mathf.Clamp(Eq.BlockChance + Sum(PassiveStat.Block) + (Has(Keystone.Unwavering) ? 15 : 0), 0, 75);
+        public int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0);
+        public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
+        public int AttackSpeed => Sum(PassiveStat.AttackSpeed);
+        public float CooldownMultiplier => 1f / (1f + AttackSpeed / 100f);
+        public int Aoe => Sum(PassiveStat.Aoe);
+        public int ManaCostReduction => Mathf.Min(80, Sum(PassiveStat.ManaCost));
+        public int LifeOnKill => Sum(PassiveStat.LifeOnKill);
+        public int ManaOnKill => Sum(PassiveStat.ManaOnKill);
 
         /// <summary>전투력 shown on the character card.</summary>
-        public static int Power(CharacterClass cls) =>
+        public int Power(CharacterClass cls) =>
             AttackDamage(cls) * 10 + MaxHp * 5 + MaxMp * 3 + Block * 20 + SpeedBonus * 10 + Level * 50;
 
         /// <summary>A slotted skill's final numbers (supports + global and per-slot passives applied).</summary>
-        public static SkillNumbers Skill(CharacterClass cls, int slot, SkillGem active, IEnumerable<SkillGem> supports)
+        public SkillNumbers Skill(CharacterClass cls, int slot, SkillGem active, IEnumerable<SkillGem> supports)
         {
             float more = 1f, moreAoe = 1f, mana = 1f;
             var n = new SkillNumbers
@@ -451,5 +442,46 @@ namespace DotRPG
             n.manaCost = Mathf.Max(1, Mathf.RoundToInt(active.manaCost * mana * (1f - ManaCostReduction / 100f)));
             return n;
         }
+    }
+
+    /// <summary>
+    /// Static facade over the LOCAL member's stats (<see cref="CharacterData.Session"/>, which wraps
+    /// <see cref="GameSession"/>), so the character, skill and equipment screens keep working unchanged.
+    /// Gameplay code of a party member uses its own <see cref="CharacterData.Stats"/> instead.
+    /// </summary>
+    public static class CharacterStats
+    {
+        public const int BaseMana = CharacterStatsCalc.BaseMana, HpPerLevel = CharacterStatsCalc.HpPerLevel, MpPerLevel = CharacterStatsCalc.MpPerLevel;
+
+        static CharacterStatsCalc L => CharacterData.Session.Stats;
+
+        public static int SlotStat(PassiveStat stat, int slot) => L.SlotStat(stat, slot);
+        public static bool Has(Keystone k) => L.Has(k);
+
+        // ---------- Temporary buff (전쟁 함성) of the local member ----------
+
+        public static void ApplyDamageBuff(int pct, float seconds) => CharacterData.Session.ApplyDamageBuff(pct, seconds);
+        public static int BuffDamage => CharacterData.Session.BuffDamage;
+        public static float BuffRemaining => CharacterData.Session.BuffRemaining;
+        public static void ClearBuffs() => CharacterData.Session.ClearBuffs();
+
+        public static int MaxHp => L.MaxHp;
+        public static int MaxMp => L.MaxMp;
+        public static float ManaRegen => L.ManaRegen;
+        public static int IncDamage => L.IncDamage;
+        public static int AttackDamage(CharacterClass cls) => L.AttackDamage(cls);
+        public static int Block => L.Block;
+        public static int SpeedBonus => L.SpeedBonus;
+        public static float SpeedMultiplier => L.SpeedMultiplier;
+        public static int AttackSpeed => L.AttackSpeed;
+        public static float CooldownMultiplier => L.CooldownMultiplier;
+        public static int Aoe => L.Aoe;
+        public static int ManaCostReduction => L.ManaCostReduction;
+        public static int LifeOnKill => L.LifeOnKill;
+        public static int ManaOnKill => L.ManaOnKill;
+        public static int Power(CharacterClass cls) => L.Power(cls);
+
+        public static SkillNumbers Skill(CharacterClass cls, int slot, SkillGem active, IEnumerable<SkillGem> supports)
+            => L.Skill(cls, slot, active, supports);
     }
 }

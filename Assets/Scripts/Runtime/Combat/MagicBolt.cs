@@ -109,13 +109,20 @@ namespace DotRPG
             {
                 if (col == null) continue;
                 if (col.attachedRigidbody != null && col.attachedRigidbody.gameObject == owner) continue;
-                if (col.transform.IsChildOf(owner.transform)) continue;
+                if (owner != null && col.transform.IsChildOf(owner.transform)) continue;
                 var target = col.GetComponentInParent<IDamageable>();
                 if (target != null && !(target is PlayerController))
                 {
-                    var info = new DamageInfo(damage, (Vector2)transform.position - direction, knockback, Team.Player);
+                    // Companions don't harvest: their bolt bursts on a tree or rock without hurting it.
+                    if (target is ResourceNode && owner != null && Game.Player != null && owner != Game.Player.gameObject)
+                    {
+                        Explode(false);
+                        return true;
+                    }
+                    var info = new DamageInfo(damage, (Vector2)transform.position - direction, knockback, Team.Player, owner);
                     bool landed = target.TakeDamage(info);
-                    if (landed) Game.Camera?.Shake(0.05f, 0.08f);
+                    // Only the local player's hits shake the screen.
+                    if (landed && owner != null && Game.Player != null && owner == Game.Player.gameObject) Game.Camera?.Shake(0.05f, 0.08f);
                     Explode(landed);
                     return true;
                 }

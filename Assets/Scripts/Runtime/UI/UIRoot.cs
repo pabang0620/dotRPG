@@ -35,6 +35,8 @@ namespace DotRPG
         public ContentScreen Raid { get; private set; }
         public ShopScreen Shop { get; private set; }
         public StorageScreen Storage { get; private set; }
+        // [PARTY] 파티 window (mercenary roster).
+        public PartyScreen Party { get; private set; }
         /// <summary>Window to show when the Inventory state starts (null = bag).</summary>
         public MenuScreen PendingWindow { get; set; }
 
@@ -111,6 +113,7 @@ namespace DotRPG
                 "권장 전투력 3,000 · 최대 4인 · 주 1회", "보상: 유니크 · 레전더리 장비, 대량의 강화 재료");
             ui.Shop = ShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
+            ui.Party = PartyScreen.Create(t); // [PARTY]
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);
 
@@ -171,22 +174,56 @@ namespace DotRPG
             var top = Top;
             stack.RemoveAt(stack.Count - 1);
             top.Hide();
+            // [ENH] An overlay never hid the screen under it: no Show() again, just no input this frame.
+            if (top == overlay)
+            {
+                overlay = null;
+                Top?.MarkShown();
+                return;
+            }
             Top?.Show();
+        }
+
+        // [ENH] Overlay push: the screen underneath stays visible (dimmed by the overlay) and ignores input while not on top.
+        MenuScreen overlay;
+
+        void PushOverlay(MenuScreen screen)
+        {
+            if (screen == null) return;
+            if (overlay != null && Top == overlay) { Push(screen); return; }
+            // A button the mouse selected under the dialog must not receive the dialog's Enter.
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+            stack.Add(screen);
+            overlay = screen;
+            screen.transform.SetAsLastSibling();
+            if (Fader != null) Fader.transform.SetAsLastSibling();
+            screen.Show();
         }
 
         void ClearStack()
         {
+            overlay = null; // [ENH]
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
             foreach (var s in new MenuScreen[] { Title, Pause, Settings, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
+            if (Party != null) Party.Hide(); // [PARTY]
         }
 
-        public void Confirm(string message, Action onYes)
+        /// <summary>
+        /// Yes/no question. <paramref name="overlay"/> = drawn over the current screen, which stays visible
+        /// (dimmed) and gets no input until the answer; otherwise the current screen is hidden meanwhile.
+        /// </summary>
+        public void Confirm(string message, Action onYes, bool overlay = false)
         {
-            confirm.Setup(message, onYes);
-            Push(confirm);
+            // [ENH] overlay option (wider dialog for the longer item questions)
+            confirm.Setup(message, onYes, overlay ? ConfirmScreen.WideWidth : ConfirmScreen.DefaultWidth);
+            if (overlay) PushOverlay(confirm);
+            else Push(confirm);
         }
+
+        /// <summary>The yes/no dialog (for automated checks).</summary>
+        public ConfirmScreen ConfirmDialog => confirm;
     }
 }

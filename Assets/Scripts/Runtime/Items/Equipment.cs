@@ -203,14 +203,24 @@ namespace DotRPG
 
         public List<string> ToList() => new List<string>(slots);
 
-        /// <summary>Worn keys from a save; unknown keys and keys that do not fit their slot are dropped.</summary>
+        /// <summary>
+        /// Worn keys from a save (load the bag first). A worn key is never deleted: odd spellings are
+        /// canonicalised ("+0" → base id, past +20 → +20, see <see cref="EquipmentDatabase.Canonicalize"/>),
+        /// and anything still unknown or not fitting its slot goes into the bag instead.
+        /// </summary>
         public void Load(List<string> saved)
         {
             for (int i = 0; i < SlotCount; i++)
             {
-                string key = saved != null && i < saved.Count ? saved[i] : null;
+                string key = EquipmentDatabase.Canonicalize(saved != null && i < saved.Count ? saved[i] : null);
                 var item = EquipmentDatabase.Get(key);
-                slots[i] = item != null && EquipmentDatabase.Fits(item.category, (EquipSlot)i) ? key : null;
+                if (item != null && EquipmentDatabase.Fits(item.category, (EquipSlot)i))
+                {
+                    slots[i] = key;
+                    continue;
+                }
+                slots[i] = null;
+                if (!string.IsNullOrEmpty(key)) bag.Add(key, 1);
             }
             Changed?.Invoke();
         }
@@ -312,7 +322,8 @@ namespace DotRPG
                         result.newKey = item.KeyAt(result.newLevel);
                         break;
                     default:
-                        bool saved = bag.Remove(ConsumableDatabase.ProtectTicket, 1);
+                        // Same rule as cost.usesTicket: starter gear never uses a ticket.
+                        bool saved = cost.usesTicket && bag.Remove(ConsumableDatabase.ProtectTicket, 1);
                         result.kind = saved ? EnhanceOutcome.Protected : EnhanceOutcome.Destroyed;
                         result.newLevel = 0;
                         result.newKey = saved ? item.id : null;
@@ -320,7 +331,8 @@ namespace DotRPG
                 }
             }
             if (result.newKey != key) Replace(target, key, result.newKey);
-            if (result.kind == EnhanceOutcome.Destroyed) FixSlots(cls);
+            // Only a destroyed worn weapon leaves a hole the starter weapon has to fill.
+            if (result.kind == EnhanceOutcome.Destroyed && target.slot == EquipSlot.Weapon) FixSlots(cls);
             Changed?.Invoke();
             return result;
         }

@@ -29,9 +29,11 @@ namespace DotRPG
 
         void TryTravel(Collider2D other)
         {
-            if (!Game.IsPlaying || Game.Flow == null || Game.Flow.IsTransitioning || Game.Player == null) return;
-            if (other.attachedRigidbody == null || other.attachedRigidbody.gameObject != Game.Player.gameObject) return;
-            if (Game.Player.IsDead) return;
+            // Only the party leader (the local player) travels; companions follow it.
+            var leader = Game.Party != null && Game.Party.Leader != null ? Game.Party.Leader : Game.Player;
+            if (!Game.IsPlaying || Game.Flow == null || Game.Flow.IsTransitioning || leader == null) return;
+            if (other.attachedRigidbody == null || other.attachedRigidbody.gameObject != leader.gameObject) return;
+            if (leader.IsDead) return;
             Game.Flow.TravelTo(TargetMap);
         }
     }

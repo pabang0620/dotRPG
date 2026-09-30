@@ -41,6 +41,8 @@ namespace DotRPG
         /// <summary>Where the player appears when the world is built. Null = map spawn point.</summary>
         public Vector2? StartPosition { get; set; }
         public Facing StartFacing { get; set; } = Facing.Down;
+        // [PARTY] Mercenary ids of the AI companions (saved). The party itself is Game.Party.
+        public readonly System.Collections.Generic.List<string> PartyRoster = new System.Collections.Generic.List<string>();
 
         public void ResetForNewGame(GameConfig config, CharacterClass playerClass = CharacterClass.Warrior)
         {
@@ -62,6 +64,7 @@ namespace DotRPG
             PlayerMana = CharacterStats.MaxMp;
             StartPosition = null;
             StartFacing = Facing.Down;
+            PartyRoster.Clear(); // [PARTY]
         }
 
         public SaveData Capture(Vector2 playerPosition, Facing facing)
@@ -86,6 +89,7 @@ namespace DotRPG
                 quest = JsonUtility.FromJson<QuestProgress>(JsonUtility.ToJson(Quest)),
             };
             Progression.Capture(data);
+            data.partyMercs = new System.Collections.Generic.List<string>(PartyRoster); // [PARTY]
             return data;
         }
 
@@ -119,6 +123,11 @@ namespace DotRPG
                 StartPosition = null;
             }
             StartFacing = (Facing)Mathf.Clamp(data.playerFacing, 0, 3);
+            // [PARTY] Known mercenaries only, no duplicates, at most three.
+            PartyRoster.Clear();
+            if (data.partyMercs != null)
+                foreach (var id in data.partyMercs)
+                    if (MercenaryDatabase.Get(id) != null && !PartyRoster.Contains(id) && PartyRoster.Count < PartyManager.MaxCompanions) PartyRoster.Add(id);
         }
     }
 }

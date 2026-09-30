@@ -21,6 +21,9 @@ namespace DotRPG
 
         public virtual void Hide() => gameObject.SetActive(false);
 
+        // [ENH] Back on top after an overlay closed: ignore this frame's input (the key that answered the overlay).
+        public void MarkShown() => shownFrame = Time.frameCount;
+
         protected static RectTransform CreateRoot(Transform canvas, string name, bool dim)
         {
             var root = UIFactory.Stretch(UIFactory.Rect(canvas, name));
@@ -303,11 +306,35 @@ namespace DotRPG
             return screen;
         }
 
-        public void Setup(string text, Action yes)
+        // [ENH] Width per question and a body that grows with its line count.
+        public const float DefaultWidth = 560f, WideWidth = 820f;
+        const int BodySize = 20;
+
+        public void Setup(string text, Action yes, float width = DefaultWidth)
         {
             message.text = text;
             onYes = yes;
+            // Same layout as BuildPanel: title, body under it, then the menu.
+            int lines = Mathf.Max(2, (text ?? "").Split('\n').Length);
+            float h = lines * BodySize * 1.45f + 8f;
+            const float bodyTop = 86f;
+            panel.sizeDelta = new Vector2(width, panel.sizeDelta.y);
+            var title = panel.Find("Title") as RectTransform;
+            if (title != null) title.sizeDelta = new Vector2(width - 40f, title.sizeDelta.y);
+            message.rectTransform.anchoredPosition = new Vector2(0f, -bodyTop);
+            message.rectTransform.sizeDelta = new Vector2(width - 70f, h);
+            float menuTop = bodyTop + h + 10f;
+            menu.RectTransform.anchoredPosition = new Vector2(0f, -menuTop);
+            panel.sizeDelta = new Vector2(width, menuTop + menu.Height + 34f);
         }
+
+        // ---------- Developer automation (DevCapture) ----------
+
+        /// <summary>The question shown (rich text).</summary>
+        public string DevMessage => message.text;
+
+        /// <summary>Answers through the same menu path as a click on "예" / "아니오".</summary>
+        public void DevAnswer(bool yes) => menu.Activate(yes ? 0 : 1, 1);
 
         public override void Show()
         {

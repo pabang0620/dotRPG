@@ -61,8 +61,12 @@ namespace DotRPG
             }
         }
 
+        // [PARTY] > 0 while a companion's skill effect runs: only the local player's actions shake the screen.
+        public static int ShakeMute;
+
         public void Shake(float strength, float duration)
         {
+            if (ShakeMute > 0) return; // [PARTY]
             if (Game.Settings != null && !Game.Settings.Data.screenShake) return;
             shakeStrength = Mathf.Max(shakeStrength * (Time.unscaledTime < shakeUntil ? 1f : 0f), strength);
             shakeUntil = Time.unscaledTime + duration;

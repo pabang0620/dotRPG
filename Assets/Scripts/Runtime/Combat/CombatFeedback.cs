@@ -98,7 +98,12 @@ namespace DotRPG
         Vector2 drift;
         float age;
 
-        public static void Show(Vector2 position, int amount, bool big = false)
+        /// <summary>Companion hits are drawn white so the player can tell their own numbers apart.</summary>
+        static readonly Color32 CompanionColor = new Color32(255, 255, 255, 235);
+
+        public static void Show(Vector2 position, int amount, bool big = false) => Show(position, amount, big, false);
+
+        public static void Show(Vector2 position, int amount, bool big, bool companion)
         {
             if (Game.Art == null || amount <= 0) return;
             var go = new GameObject("DamageNumber");
@@ -111,7 +116,7 @@ namespace DotRPG
             string text = (amount * DisplayScale).ToString();
             number.digits = new SpriteRenderer[text.Length];
             float width = (text.Length - 1) * DigitSpacing;
-            var color = big ? new Color32(255, 120, 80, 255) : new Color32(255, 214, 64, 255);
+            var color = companion ? CompanionColor : big ? new Color32(255, 120, 80, 255) : new Color32(255, 214, 64, 255);
             for (int i = 0; i < text.Length; i++)
             {
                 var sr = new GameObject("d" + text[i]).AddComponent<SpriteRenderer>();
