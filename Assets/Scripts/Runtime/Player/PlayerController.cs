@@ -483,7 +483,7 @@ namespace DotRPG
             // Party members never hurt each other, whatever team the hit claims.
             if (info.AttackerMember != null) return false;
             // Armour / rings: a chance to shrug the hit off completely.
-            if (!health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block)
+            if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block) // [MONSTER] unblockable skips the roll
             {
                 Fx.Sparkle(Center + Vector2.up * 0.3f, 3, 0.35f);
                 Game.Audio.PlaySfx("mine", IsLocal ? 1f : 0.5f);

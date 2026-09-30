@@ -170,6 +170,8 @@ namespace DotRPG
                     case "ui": return DrawUi(parts[1]);
                     case "shadow": return DrawShadow();
                     case "dgn": return DrawDungeon(parts); // [DUNGEON] gates, room-map skull, reward cards (ProceduralArtDungeon.cs)
+                    // [MONSTER] Projectiles, telegraph textures, summon circles (ProceduralArtMonsters).
+                    case "mon": return DrawMonsterKey(parts);
                 }
             }
             catch (Exception e)

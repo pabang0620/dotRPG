@@ -20,6 +20,8 @@ namespace DotRPG
         /// Used for kill credit, threat and the per-member damage meters.
         /// </summary>
         public GameObject attacker;
+        // [MONSTER] Boss telegraphs / charges: the target's block roll is skipped.
+        public bool unblockable;
 
         public DamageInfo(int amount, Vector2 sourcePosition, float knockback, Team team)
             : this(amount, sourcePosition, knockback, team, null) { }
@@ -31,6 +33,7 @@ namespace DotRPG
             this.knockback = knockback;
             this.team = team;
             this.attacker = attacker;
+            unblockable = false; // [MONSTER]
         }
 
         /// <summary>The party member that dealt the hit, or null.</summary>

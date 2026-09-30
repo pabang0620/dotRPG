@@ -270,6 +270,25 @@ namespace DotRPG
             return list;
         }
 
+        // [MONSTER] Line / rectangle query (charges, arrow lines, line telegraphs).
+        /// <summary>
+        /// Alive members whose body centre lies in the rectangle starting at <paramref name="origin"/>, running
+        /// <paramref name="length"/> along <paramref name="direction"/>, <paramref name="halfWidth"/> to each side.
+        /// </summary>
+        public List<PlayerController> MembersInRect(Vector2 origin, Vector2 direction, float length, float halfWidth)
+        {
+            var list = new List<PlayerController>();
+            Vector2 dir = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.down;
+            foreach (var m in AliveMembers)
+            {
+                Vector2 to = m.Center - origin;
+                float along = Vector2.Dot(to, dir);
+                float across = Mathf.Abs(to.x * dir.y - to.y * dir.x);
+                if (along >= 0f && along <= length && across <= halfWidth) list.Add(m);
+            }
+            return list;
+        }
+
         /// <summary>Nearest alive member to <paramref name="point"/> (null when everyone is down).</summary>
         public PlayerController NearestAlive(Vector2 point)
         {
