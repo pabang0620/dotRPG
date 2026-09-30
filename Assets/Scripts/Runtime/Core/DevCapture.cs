@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -24,7 +24,7 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty" || args[i] == "-dotrpgDungeon" || args[i] == "-dotrpgMonster") // [PARTY] [DUNGEON] [MONSTER]
+                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty" || args[i] == "-dotrpgDungeon" || args[i] == "-dotrpgMonster" || args[i] == "-dotrpgBalance") // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     return;
@@ -39,7 +39,7 @@ namespace DotRPG
             {
                 // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
                 // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty" && args[i] != "-dotrpgDungeon" && args[i] != "-dotrpgMonster") continue; // [PARTY] [DUNGEON] [MONSTER]
+                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty" && args[i] != "-dotrpgDungeon" && args[i] != "-dotrpgMonster" && args[i] != "-dotrpgBalance") continue; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
@@ -50,6 +50,7 @@ namespace DotRPG
                 capture.partyOnly = args[i] == "-dotrpgParty"; // [PARTY]
                 capture.dungeonOnly = args[i] == "-dotrpgDungeon"; // [DUNGEON]
                 capture.monsterOnly = args[i] == "-dotrpgMonster"; // [MONSTER]
+                capture.balanceOnly = args[i] == "-dotrpgBalance"; // [CONTENT]
                 return;
             }
         }
@@ -64,6 +65,7 @@ namespace DotRPG
             Log("capture started");
             if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
             if (dungeonOnly) { yield return DungeonRunCapture(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [DUNGEON]
+            if (balanceOnly) { yield return BalanceRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [CONTENT]
             if (monsterOnly) { yield return MonsterRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [MONSTER]
             if (townOnly)
             {

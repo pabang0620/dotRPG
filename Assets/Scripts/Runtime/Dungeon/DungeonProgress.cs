@@ -42,6 +42,13 @@ namespace DotRPG
             return entriesUsed;
         }
 
+        /// <summary>[CONTENT] Automated checks only: today's entry count back to 0 (ranks and raid claim kept).</summary>
+        public void DevClearEntries()
+        {
+            DailyStamp = 0;
+            entriesUsed = 0;
+        }
+
         public int EntriesLeft(DateTime now) => Math.Max(0, DungeonDatabase.DailyEntries - EntriesUsed(now));
 
         /// <summary>Spends one of today's weekday-dungeon entries. False when none are left.</summary>

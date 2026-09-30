@@ -171,11 +171,11 @@ namespace DotRPG
             yield return Wait(1.4f);
 
             // ---------- Boss room ----------
-            DCheck($"boss room: map={Game.World.MapId} index={run.RoomIndex} door={(dir.Door != null)} enemies={DungeonEnemies().Count} boss={DungeonEnemies().Any(e => e.transform.localScale.x > 1.2f)}",
-                Game.World.MapId == MapRegistry.DgnCanyonBoss && run.InBossRoom && dir.Door == null && DungeonEnemies().Any(e => e.transform.localScale.x > 1.2f));
+            DCheck($"boss room: map={Game.World.MapId} index={run.RoomIndex} door={(dir.Door != null)} enemies={DungeonEnemies().Count} boss={DungeonEnemies().Any(e => e.IsBoss)}",
+                Game.World.MapId == MapRegistry.DgnCanyonBoss && run.InBossRoom && dir.Door == null && DungeonEnemies().Any(e => e.IsBoss));
             yield return Wait(0.6f);
             yield return Shot("dgn_06_boss");
-            var boss = DungeonEnemies().OrderByDescending(e => e.transform.localScale.x).First();
+            var boss = DungeonEnemies().OrderByDescending(e => e.IsBoss).First();
             int addsBefore = DungeonEnemies().Count - 1;
             var bh = boss.GetComponent<Health>();
             for (int tries = 0; tries < 30 && !boss.IsDead; tries++) { boss.TakeDamage(new DamageInfo(bh.Current + 999, local.Center, 0f, Team.Player, local.gameObject)); if (!boss.IsDead) yield return null; }
@@ -259,6 +259,9 @@ namespace DotRPG
             clock = new DateTime(2025, 3, 4, 7, 0, 0); // Tuesday 07:00
             DCheck($"daily reset at 06:00: entries {progress.EntriesLeft(clock)}/3", progress.EntriesLeft(clock) == 3);
             yield return SoloRunChecks(clock);
+
+            // [CONTENT] themed monsters, boss bar + HUD layering, field boss, scripted raid clear
+            yield return ContentChecks(v => clock = v);
 
             ResetClock.NowOverride = null;
             DungeonAuthority.Current = new LocalDungeonAuthority();

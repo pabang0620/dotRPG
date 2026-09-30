@@ -139,8 +139,9 @@ namespace DotRPG
         /// <summary>The raid has one difficulty of its own.</summary>
         public static readonly DifficultyDef RaidDifficulty = new DifficultyDef
         {
-            id = DungeonDifficulty.Normal, name = "레이드", recommendedLevel = 25, recommendedPower = 5200, hpMul = 5.0f, damageMul = 3.0f, rewardMul = 3.0f,
-            monsterLevel = 20, revives = RaidRevives, minGearRarity = ItemRarity.Rare, ticketWeight = 8,
+            // Tuned for a Lv27 party of 4 (monster HP x3.0 from party size) to clear in 5-10 minutes.
+            id = DungeonDifficulty.Normal, name = "레이드", recommendedLevel = 25, recommendedPower = 5200, hpMul = 3.0f, damageMul = 1.6f, rewardMul = 3.0f,
+            monsterLevel = 16, revives = RaidRevives, minGearRarity = ItemRarity.Rare, ticketWeight = 8,
         };
 
         public static int DifficultyCount => Difficulties.Length;

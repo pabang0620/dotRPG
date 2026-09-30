@@ -220,7 +220,7 @@ namespace DotRPG
                 var spots = new List<Vector2>();
                 foreach (var (digit, pos) in cells) if (digit == g.digit) spots.Add(pos);
                 if (spots.Count == 0) spots.Add(Game.World.PlayerSpawn + Vector2.up * 5f);
-                float level = 1f + LevelStep * g.levelOffset;
+                int level = DungeonMonsters.LevelFor(run.Numbers, g);
                 for (int i = 0; i < g.count; i++)
                 {
                     Vector2 p = spots[i % spots.Count];
@@ -231,7 +231,7 @@ namespace DotRPG
                         Vector2 q = p + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 0.8f;
                         if (Game.World.IsFree(q)) p = q;
                     }
-                    var e = DungeonMonsters.Spawn(g.monsterId, p, Game.World.ObjectsRoot, run.HpMul * level, run.DamageMul * level, g.isBoss);
+                    var e = DungeonMonsters.Spawn(g.monsterId, p, Game.World.ObjectsRoot, run.HpMul, run.DamageMul, level);
                     if (e == null) continue;
                     run.Monsters++;
                     if (g.isBoss) bosses.Add(e);

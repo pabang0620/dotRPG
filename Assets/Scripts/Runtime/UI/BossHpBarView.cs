@@ -13,7 +13,10 @@ namespace DotRPG
     public sealed class BossHpBarView : MonoBehaviour
     {
         // ---------- Layout (reference 1280x720) ----------
-        const float Top = -150f, Width = 500f, BarHeight = 22f;
+        // [CONTENT] Centre column between the left party frames (x ≤ 356) and the right quest panel / room map
+        // (x ≥ 900) at the 1280x720 reference; top sits right under the dungeon timer band.
+        const float Top = -(DungeonHudView.ReservedBottom + 2f), Width = 440f, BarHeight = 22f;
+        const float BarBlockHeight = 92f, WarningWidth = 540f;
         const float LagHold = 0.35f, LagSpeed = 0.9f;
         const float IntroTime = 2.6f, WarningTime = 2.2f;
 
@@ -90,7 +93,7 @@ namespace DotRPG
             UIFactory.Stretch(bg.rectTransform);
 
             nameText = UIFactory.Text(root, "Name", "", 20, UIColors.Cream, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -6f), new Vector2(460f, 26f));
+            UIFactory.Place(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -6f), new Vector2(Width - 150f, 26f));
             linesText = UIFactory.Text(root, "Lines", "", 22, UIColors.Highlight, TextAnchor.MiddleRight, true);
             UIFactory.Place(linesText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -5f), new Vector2(140f, 28f));
 
@@ -143,8 +146,8 @@ namespace DotRPG
             UIFactory.Place(bannerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(1000f, 70f));
             banner.gameObject.SetActive(false);
 
-            // Between the dungeon timer band and the bar, so it never covers the fight.
-            warning = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossWarning"), new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, Top + 2f), new Vector2(900f, 40f));
+            // [CONTENT] Right under the bar, inside the same centre column (clear of party frames and quest panel).
+            warning = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossWarning"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, Top - BarBlockHeight - 4f), new Vector2(WarningWidth, 40f));
             warningText = UIFactory.Text(warning, "Text", "", 28, Color.white, TextAnchor.MiddleCenter, true);
             var wo = warningText.gameObject.AddComponent<Outline>();
             wo.effectColor = new Color(0.1f, 0.02f, 0.02f, 1f);

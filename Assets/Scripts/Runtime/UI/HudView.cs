@@ -19,6 +19,8 @@ namespace DotRPG
         Text questTitle;
         Text questBody;
         RectTransform questPanel;
+        // [CONTENT] for capture checks
+        public bool DevQuestVisible => questPanel != null && questPanel.gameObject.activeInHierarchy;
         RectTransform prompt;
         Text promptText;
         Text controlsHint;
@@ -214,6 +216,9 @@ namespace DotRPG
         void Update()
         {
             if (!built) return;
+            // [CONTENT] The quest tracker is hidden inside dungeons (room map + boss bar own that space).
+            bool showQuest = Game.Dungeon == null || !Game.Dungeon.InRun;
+            if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
             float now = Time.unscaledTime;
             // Toast layout & fade.
             for (int i = toasts.Count - 1; i >= 0; i--)
