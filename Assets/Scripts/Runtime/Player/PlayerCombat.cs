@@ -46,8 +46,8 @@ namespace DotRPG
         /// <summary>Uses the sprite of the equipped weapon (wooden sword, bone greatsword, crystal staff...).</summary>
         public void RefreshWeapon()
         {
-            if (weapon == null || Game.Session == null) return;
-            weapon.sprite = Game.Art.Get(EquipmentDatabase.WeaponSprite(Game.Session.Equipment[EquipSlot.Weapon], classInfo.id));
+            if (weapon == null || Game.Session == null || owner == null || owner.Data == null) return;
+            weapon.sprite = Game.Art.Get(EquipmentDatabase.WeaponSprite(owner.Data.Equipment[EquipSlot.Weapon], classInfo.id));
         }
 
         /// <summary>
@@ -125,7 +125,8 @@ namespace DotRPG
             // Mage: aim along the 8-way stick/keys direction, then lock onto the nearest monster in range.
             if (Ranged)
             {
-                Vector2 held = Game.Input != null ? Game.Input.Move : Vector2.zero;
+                // The member's command: the held direction for the local player, the target for AI companions.
+                Vector2 held = owner.Command.aim;
                 castAim = held.sqrMagnitude > 0.01f ? PlayerController.SnapTo8(held) : owner.AimDirection;
             }
             castTarget = Ranged ? FindTarget() : null;
@@ -133,7 +134,7 @@ namespace DotRPG
             else if (Ranged) owner.FaceTowards(owner.Position + castAim);
             attackStart = Time.time;
             attackEnd = attackStart + Duration;
-            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown : stats.attackCooldown) * CharacterStats.CooldownMultiplier;
+            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown : stats.attackCooldown) * owner.Data.Stats.CooldownMultiplier;
             attackFacing = owner.Facing;
             hitResolved = false;
             hitThisSwing.Clear();
@@ -144,7 +145,7 @@ namespace DotRPG
             if (ySort == null) ySort = GetComponent<YSort>();
             // Weapon behind the head when swinging upwards.
             ySort?.SetLocalOrder(weapon, attackFacing.IsUp() ? -1 : 1);
-            Game.Audio.PlaySfx(Ranged ? "magic" : "swing");
+            Game.Audio.PlaySfx(Ranged ? "magic" : "swing", owner.IsLocal ? 1f : 0.5f);
         }
 
         void Update()
@@ -199,7 +200,7 @@ namespace DotRPG
                 bool locked = castTarget != null && !castTarget.IsDead && castTarget.isActiveAndEnabled;
                 Vector2 aim = locked ? castTarget.Center - origin : castAim;
                 MagicBolt.Fire(owner.gameObject, origin, aim, classInfo, locked ? castTarget : null,
-                    CharacterStats.AttackDamage(owner.Class));
+                    owner.Data.Stats.AttackDamage(owner.Class));
                 Fx.Sparkle(origin, 2, 0.2f);
                 castTarget = null;
             }
@@ -261,11 +262,13 @@ namespace DotRPG
                 if (col == null || col.attachedRigidbody != null && col.attachedRigidbody.gameObject == owner.gameObject) continue;
                 var target = col.GetComponentInParent<IDamageable>();
                 if (target == null || ReferenceEquals(target, owner) || hitThisSwing.Contains(target)) continue;
+                // Party members are never hurt (PlayerController also refuses), and only the local player harvests trees and rocks.
+                if (target is PlayerController || (!owner.IsLocal && target is ResourceNode)) continue;
                 hitThisSwing.Add(target);
-                var info = new DamageInfo(CharacterStats.AttackDamage(owner.Class), owner.Center, stats.attackKnockback, Team.Player);
+                var info = new DamageInfo(owner.Data.Stats.AttackDamage(owner.Class), owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
                 landed |= target.TakeDamage(info);
             }
-            if (landed) Game.Camera?.Shake(0.06f, 0.1f);
+            if (landed && owner.IsLocal) Game.Camera?.Shake(0.06f, 0.1f);
         }
 
         void OnDrawGizmosSelected()

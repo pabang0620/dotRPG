@@ -126,7 +126,8 @@ namespace DotRPG
             go.AddComponent<YSort>().Configure(false);
             // Added after YSort so the bar is not depth-sorted with the body (it always draws on top).
             go.AddComponent<EnemyHealthBar>().Setup(enemy.health, 1.2f);
-            enemy.health.Damaged += info => DamageNumber.Show(enemy.Position + new Vector2(0f, 1.55f), info.amount);
+            // [PARTY] companion hits show in white
+            enemy.health.Damaged += info => DamageNumber.Show(enemy.Position + new Vector2(0f, 1.55f), info.amount, false, PartyManager.IsCompanionHit(info));
             enemy.EnterState(State.Idle, UnityEngine.Random.Range(0.5f, 2f));
             return enemy;
         }
@@ -142,7 +143,8 @@ namespace DotRPG
         {
             get
             {
-                var p = Game.Player;
+                // [PARTY] Threat-based pick among the alive party members (just the local player without companions).
+                var p = Game.Party != null ? Game.Party.SelectTarget(this) : Game.Player;
                 return p != null && !p.IsDead && Game.IsPlaying ? p : null;
             }
         }
@@ -301,7 +303,13 @@ namespace DotRPG
             Game.Audio.PlaySfx("enemy_attack");
             Vector2 hitCenter = Position + new Vector2(0f, 0.4f) + facing.ToVector() * 0.55f;
             Fx.Spawn("fx_slash", hitCenter, Vector2.zero, 0f, 0.15f, 0f, 10);
-            if (target != null && Vector2.Distance(target.Center, hitCenter) < stats.attackRange * 0.9f + 0.35f)
+            // [PARTY] The swing hits every alive party member inside it; this enemy is the attacker.
+            if (Game.Party != null)
+            {
+                foreach (var member in Game.Party.MembersInCircle(hitCenter, stats.attackRange * 0.9f + 0.35f))
+                    member.TakeDamage(new DamageInfo(stats.attackDamage, Position, stats.attackKnockback, Team.Enemy, gameObject));
+            }
+            else if (target != null && Vector2.Distance(target.Center, hitCenter) < stats.attackRange * 0.9f + 0.35f)
             {
                 target.TakeDamage(new DamageInfo(stats.attackDamage, Position, stats.attackKnockback, Team.Enemy));
             }

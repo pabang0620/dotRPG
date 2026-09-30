@@ -35,6 +35,8 @@ namespace DotRPG
         public ContentScreen Raid { get; private set; }
         public ShopScreen Shop { get; private set; }
         public StorageScreen Storage { get; private set; }
+        // [PARTY] 파티 window (mercenary roster).
+        public PartyScreen Party { get; private set; }
         /// <summary>Window to show when the Inventory state starts (null = bag).</summary>
         public MenuScreen PendingWindow { get; set; }
 
@@ -111,6 +113,7 @@ namespace DotRPG
                 "권장 전투력 3,000 · 최대 4인 · 주 1회", "보상: 유니크 · 레전더리 장비, 대량의 강화 재료");
             ui.Shop = ShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
+            ui.Party = PartyScreen.Create(t); // [PARTY]
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);
 
@@ -205,6 +208,7 @@ namespace DotRPG
             // Make sure no stray screen stays open.
             foreach (var s in new MenuScreen[] { Title, Pause, Settings, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
+            if (Party != null) Party.Hide(); // [PARTY]
         }
 
         /// <summary>

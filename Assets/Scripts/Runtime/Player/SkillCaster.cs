@@ -6,8 +6,9 @@ namespace DotRPG
 {
     /// <summary>
     /// Casts the skills in the five slots (K / L / U / O, V = awakening). Numbers come from
-    /// <see cref="CharacterStats.Skill"/> (skill × supports × passive tree); the look of each
-    /// skill lives in <see cref="SkillVisuals"/>.
+    /// the member's <see cref="CharacterStatsCalc.Skill"/> (skill × supports × passive tree); the look of each
+    /// skill lives in <see cref="SkillVisuals"/>. Companions cast the same skills; only the local player's
+    /// casts shake the screen, show toasts and the awakening banner.
     /// </summary>
     public class SkillCaster : MonoBehaviour
     {
@@ -18,6 +19,22 @@ namespace DotRPG
         public bool IsCasting => Time.time < castEnd;
 
         public void Setup(PlayerController player) => owner = player;
+
+        Progression Prog => owner.Data.Progression;
+
+        /// <summary>True when the slot's skill is open, off cooldown and nothing else is being cast (AI companions).</summary>
+        public bool IsReady(int slot) => Prog.Active(slot) != null && Time.time >= readyAt[slot] && !IsCasting;
+
+        /// <summary>Screen shake for the local player's skills only.</summary>
+        void Shake(float strength, float duration)
+        {
+            if (owner.IsLocal) Game.Camera?.Shake(strength, duration);
+        }
+
+        void Toast(string message)
+        {
+            if (owner.IsLocal) GameEvents.RaiseToast(message);
+        }
 
         /// <summary>Clears every cooldown (new game, class change).</summary>
         public void ResetCooldowns()
@@ -30,7 +47,7 @@ namespace DotRPG
         public float CooldownProgress(int slot, out float remaining)
         {
             remaining = Mathf.Max(0f, readyAt[slot] - Time.time);
-            var gem = Game.Session.Progression.Active(slot);
+            var gem = Prog.Active(slot);
             if (gem == null || remaining <= 0f) return 1f;
             var n = Numbers(slot);
             return 1f - remaining / Mathf.Max(0.01f, n.cooldown);
@@ -39,16 +56,17 @@ namespace DotRPG
         /// <summary>Final numbers of a slot's skill (also for a locked slot, as a preview).</summary>
         public SkillNumbers Numbers(int slot)
         {
-            var prog = Game.Session.Progression;
+            var prog = Prog;
             var gem = prog.Active(slot) ?? SkillGems.ForSlot(owner.Class, slot);
-            return gem != null ? CharacterStats.Skill(owner.Class, slot, gem, prog.Supports(slot)) : default;
+            return gem != null ? owner.Data.Stats.Skill(owner.Class, slot, gem, prog.Supports(slot)) : default;
         }
 
         public void TryCast(int slot)
         {
-            var gem = Game.Session.Progression.Active(slot);
+            var gem = Prog.Active(slot);
             if (gem == null)
             {
+                if (!owner.IsLocal) return;
                 var locked = SkillGems.ForSlot(owner.Class, slot);
                 GameEvents.RaiseToast(slot == SkillGems.UltimateSlot
                     ? $"각성 기술은 Lv.{Progression.SlotLevel(slot)}에 열린다."
@@ -60,6 +78,7 @@ namespace DotRPG
             var n = Numbers(slot);
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
+                if (!owner.IsLocal) return;
                 GameEvents.RaiseToast(n.usesLife ? "HP가 부족하다." : "MP가 부족하다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
@@ -96,7 +115,7 @@ namespace DotRPG
         void Hit(EnemyController enemy, SkillNumbers n, Vector2 from, float knockback)
         {
             if (enemy == null || enemy.IsDead) return;
-            if (enemy.TakeDamage(new DamageInfo(n.damage, from, knockback, Team.Player)) && n.leechPct > 0)
+            if (enemy.TakeDamage(new DamageInfo(n.damage, from, knockback, Team.Player, owner.gameObject)) && n.leechPct > 0)
                 owner.Heal(Mathf.Max(1, n.damage * n.leechPct / 100));
         }
 
@@ -164,6 +183,19 @@ namespace DotRPG
             return best;
         }
 
+        /// <summary>Awakening cut-in: banner, dimming and shake for the local player; a plain flash for companions.</summary>
+        void Awaken(string skillName, Color color)
+        {
+            if (owner.IsLocal)
+            {
+                SkillVisuals.Awakening(owner, skillName, color);
+                Game.Audio.PlaySfx("quest");
+                return;
+            }
+            SkillVisuals.Flash(owner.Center, new Color(color.r, color.g, color.b, 0.6f), 2.4f, 0.35f);
+            Game.Audio.PlaySfx("quest", 0.4f);
+        }
+
         // ================= Warrior =================
 
         /// <summary>회전 베기: spin once, cutting everything around the player.</summary>
@@ -177,7 +209,7 @@ namespace DotRPG
                 Hit(e, n, c, 7f);
                 SkillVisuals.SlashHit(e.Center, SkillVisuals.WhirlGold);
             }
-            Game.Camera?.Shake(0.06f, 0.12f);
+            Shake(0.06f, 0.12f);
         }
 
         /// <summary>대지 강타: a shock wave that runs along the aim direction, cracking the ground as it goes.</summary>
@@ -190,7 +222,7 @@ namespace DotRPG
         IEnumerator SlamWave(SkillNumbers n, Vector2 dir, Vector2 start)
         {
             Game.Audio.PlaySfx("rock_break");
-            Game.Camera?.Shake(0.16f, 0.22f);
+            Shake(0.16f, 0.22f);
             SkillVisuals.SlamImpact(start, n.radius);
             var hit = new HashSet<EnemyController>();
             int steps = Mathf.Max(4, Mathf.RoundToInt(n.range / 0.75f) + 1);
@@ -198,7 +230,9 @@ namespace DotRPG
             for (int i = 0; i < steps; i++)
             {
                 Vector2 p = start + dir * (n.range * i / (steps - 1));
-                SkillVisuals.SlamStep(prev, p, n.radius, i == steps - 1);
+                if (!owner.IsLocal) CameraFollow.ShakeMute++;
+                try { SkillVisuals.SlamStep(prev, p, n.radius, i == steps - 1); }
+                finally { if (!owner.IsLocal) CameraFollow.ShakeMute--; }
                 foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius))
                     if (hit.Add(e))
                     {
@@ -245,16 +279,18 @@ namespace DotRPG
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("rock_break");
             SkillVisuals.WarCry(c, owner.Position, n.radius);
-            Game.Camera?.Shake(0.12f, 0.25f);
+            Shake(0.12f, 0.25f);
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
                 Hit(e, n, c, 8f);
                 e.Stun(n.stun);
                 StunStars.Attach(e);
             }
-            CharacterStats.ApplyDamageBuff(n.buffPct, n.buffTime);
+            // The buff is this member's own; the shout also pulls every monster around onto the caster.
+            owner.Data.ApplyDamageBuff(n.buffPct, n.buffTime);
+            ThreatTable.WarCry(owner, c, n.radius);
             BuffAura.Attach(owner.transform, new Color(1f, 0.45f, 0.2f, 1f), n.buffTime);
-            GameEvents.RaiseToast($"전쟁 함성!  {n.buffTime:0}초 동안 피해 {n.buffPct}% 증가");
+            Toast($"전쟁 함성!  {n.buffTime:0}초 동안 피해 {n.buffPct}% 증가");
         }
 
         /// <summary>천검 강림 (awakening): giant swords rain down on the monsters around the player.</summary>
@@ -262,8 +298,7 @@ namespace DotRPG
         {
             if (cutIn)
             {
-                SkillVisuals.Awakening(owner, "천검 강림", SkillVisuals.UltGold);
-                Game.Audio.PlaySfx("quest");
+                Awaken("천검 강림", SkillVisuals.UltGold);
                 yield return new WaitForSeconds(0.35f);
             }
             const float fall = 0.14f;
@@ -276,7 +311,7 @@ namespace DotRPG
                     SkillVisuals.SwordImpact(p, n.radius);
                     Game.Audio.PlaySfx("rock_break", 0.6f);
                     foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius)) Hit(e, n, p, 5f);
-                    Game.Camera?.Shake(0.07f, 0.1f);
+                    Shake(0.07f, 0.1f);
                 }));
                 yield return new WaitForSeconds(0.1f);
             }
@@ -307,7 +342,7 @@ namespace DotRPG
                 SkillVisuals.ArcBolt(from, to, true);
                 Hit(current, n, from, 3f);
                 hit.Add(current);
-                if (jump == 0) Game.Camera?.Shake(0.04f, 0.08f);
+                if (jump == 0) Shake(0.04f, 0.08f);
                 from = to;
                 if (jump == n.chains) break;
                 // A short beat between jumps so the chain visibly travels.
@@ -322,7 +357,7 @@ namespace DotRPG
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("magic");
             SkillVisuals.Nova(c, owner.Position, n.radius);
-            Game.Camera?.Shake(0.08f, 0.15f);
+            Shake(0.08f, 0.15f);
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
                 Hit(e, n, c, 2f);
@@ -379,7 +414,7 @@ namespace DotRPG
                     for (int k = 0; k < near.Count && k < Mathf.Max(1, n.chains); k++)
                     {
                         SkillVisuals.FrostOrbZap(pos, near[k].Center);
-                        if (near[k].TakeDamage(new DamageInfo(zapDamage, pos, 1.5f, Team.Player)) && n.leechPct > 0)
+                        if (near[k].TakeDamage(new DamageInfo(zapDamage, pos, 1.5f, Team.Player, owner.gameObject)) && n.leechPct > 0)
                             owner.Heal(Mathf.Max(1, zapDamage * n.leechPct / 100));
                     }
                     if (near.Count == 0) SkillVisuals.FrostOrbSpark(pos);
@@ -390,7 +425,7 @@ namespace DotRPG
             orb.Kill();
             SkillVisuals.FrostOrbBurst(pos, pos + Vector2.down * 0.4f, n.radius);
             Game.Audio.PlaySfx("rock_break");
-            Game.Camera?.Shake(0.09f, 0.14f);
+            Shake(0.09f, 0.14f);
             foreach (var e in EnemiesInRadius(pos, n.radius))
             {
                 Hit(e, n, pos, 3f);
@@ -421,7 +456,7 @@ namespace DotRPG
                         StunStars.Attach(t);
                     }
                 done++;
-                Game.Camera?.Shake(0.05f, 0.08f);
+                Shake(0.05f, 0.08f);
                 yield return new WaitForSeconds(0.08f);
             }
             if (done == 0)
@@ -437,8 +472,7 @@ namespace DotRPG
         {
             if (cutIn)
             {
-                SkillVisuals.Awakening(owner, "메테오", SkillVisuals.FireOrange);
-                Game.Audio.PlaySfx("quest");
+                Awaken("메테오", SkillVisuals.FireOrange);
                 yield return new WaitForSeconds(0.35f);
             }
             const float fall = 0.38f;
@@ -451,7 +485,7 @@ namespace DotRPG
                     SkillVisuals.MeteorImpact(p, n.radius);
                     Game.Audio.PlaySfx("rock_break");
                     foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius)) Hit(e, n, p, 9f);
-                    Game.Camera?.Shake(0.14f, 0.18f);
+                    Shake(0.14f, 0.18f);
                 }));
                 yield return new WaitForSeconds(0.2f);
             }

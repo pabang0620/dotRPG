@@ -147,6 +147,7 @@ namespace DotRPG
                     case "chest": return DrawChest(parts.Length > 1 && parts[1] == "open");
                     case "gate": return DrawGate();
                     case "maticon": return DrawMaterialIcon(parts[1]);
+                    case "menuicon" when parts.Length > 1 && parts[1] == "party": return DrawPartyMenuIcon(); // [PARTY]
                     case "menuicon": return DrawMenuIcon(parts[1]);
                     case "anvil": return DrawAnvil();
                     case "gem": return DrawGem(key.Substring(4));

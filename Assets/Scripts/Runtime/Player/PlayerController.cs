@@ -189,7 +189,7 @@ namespace DotRPG
         void OnDisable()
         {
             // The local player leaving the world (title screen) takes the companions with it.
-            if (IsLocal) Game.Party?.OnLocalHidden();
+            if (IsLocal && Game.Party != null) Game.Party.OnLocalHidden();
         }
 
         void OnDestroy()
@@ -249,6 +249,7 @@ namespace DotRPG
 
         public void Spawn(Vector2 position, Facing facing, int currentHealth, int maxHealth)
         {
+            bool wasDead = IsDead;
             Place(position, facing);
             IsDead = false;
             visual.localRotation = Quaternion.identity;
@@ -259,7 +260,8 @@ namespace DotRPG
             animator.Play(CharacterAnim.Idle, facing);
             GetComponent<YSort>().Refresh();
             // Companions follow the local player to wherever it (re)appears.
-            if (IsLocal) Game.Party?.OnLocalSpawned();
+            // A local player coming back from death (village respawn) brings the companions back at full HP.
+            if (IsLocal && Game.Party != null) Game.Party.OnLocalSpawned(wasDead);
         }
 
         /// <summary>Moves the member without touching HP (companions re-placed next to the leader, teleport catch-up).</summary>

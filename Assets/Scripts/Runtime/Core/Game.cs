@@ -24,6 +24,8 @@ namespace DotRPG
         public static CameraFollow Camera;
         public static UIRoot UI;
         public static GameFlow Flow;
+        // [PARTY] Party members (Local = Player, AI companions). Created right after the player.
+        public static PartyManager Party;
 
         /// <summary>True while the player has control of the character.</summary>
         public static bool IsPlaying => State != null && State.Current == GameState.Playing;

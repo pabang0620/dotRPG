@@ -24,7 +24,7 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown")
+                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty") // [PARTY] -dotrpgParty
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     return;
@@ -39,7 +39,7 @@ namespace DotRPG
             {
                 // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
                 // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown") continue;
+                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty") continue; // [PARTY] -dotrpgParty
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
@@ -47,6 +47,7 @@ namespace DotRPG
                 capture.fxOnly = args[i] == "-dotrpgFx";
                 capture.mapOnly = args[i] == "-dotrpgMap";
                 capture.townOnly = args[i] == "-dotrpgTown";
+                capture.partyOnly = args[i] == "-dotrpgParty"; // [PARTY]
                 return;
             }
         }
@@ -59,6 +60,7 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
             if (townOnly)
             {
                 yield return TownShowcase();

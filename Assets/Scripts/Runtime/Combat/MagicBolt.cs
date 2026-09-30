@@ -113,6 +113,12 @@ namespace DotRPG
                 var target = col.GetComponentInParent<IDamageable>();
                 if (target != null && !(target is PlayerController))
                 {
+                    // Companions don't harvest: their bolt bursts on a tree or rock without hurting it.
+                    if (target is ResourceNode && owner != null && Game.Player != null && owner != Game.Player.gameObject)
+                    {
+                        Explode(false);
+                        return true;
+                    }
                     var info = new DamageInfo(damage, (Vector2)transform.position - direction, knockback, Team.Player, owner);
                     bool landed = target.TakeDamage(info);
                     // Only the local player's hits shake the screen.
