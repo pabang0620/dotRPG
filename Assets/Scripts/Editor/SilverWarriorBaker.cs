@@ -463,7 +463,7 @@ namespace DotRPG.EditorTools
             texture.SetPixels32(atlas.ToTexturePixels()); texture.Apply();
             File.WriteAllBytes("Docs/images/silver-warrior/flame-slashes.png", texture.EncodeToPNG());
             UnityEngine.Object.DestroyImmediate(texture);
-            Debug.Log("[WarriorFlame] PASS 30 frames: hard alpha, animated tongues and embers, no clipping");
+            Debug.Log("[WarriorFlame] PASS " + (3 * WarriorFlameSlash.Frames) + " frames: hard alpha, animated tongues and embers, no clipping");
         }
         static void WriteGaitPreview()
         {
