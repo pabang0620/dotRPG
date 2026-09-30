@@ -1,0 +1,126 @@
+[3.13] capture started
+[5.60] PASS walk Down
+[5.60] PASS generated art Down
+[5.60] PASS anatomical arms rendered without whole-body reflection Down
+[5.60] PASS hand attachment Down
+[5.60] PASS weapon depth Down
+[6.05] PASS articulated walk arms and legs Down
+[6.16] PASS stop Down
+[6.41] PASS walk DownLeft
+[6.41] PASS generated art DownLeft
+[6.41] PASS anatomical arms rendered without whole-body reflection DownLeft
+[6.41] PASS hand attachment DownLeft
+[6.41] PASS weapon depth DownLeft
+[6.87] PASS articulated walk arms and legs DownLeft
+[6.96] shot horn_walk_DownLeft
+[7.07] PASS stop DownLeft
+[7.32] PASS walk Left
+[7.32] PASS generated art Left
+[7.32] PASS anatomical arms rendered without whole-body reflection Left
+[7.32] PASS hand attachment Left
+[7.32] PASS weapon depth Left
+[7.78] PASS articulated walk arms and legs Left
+[7.88] PASS stop Left
+[8.14] PASS walk UpLeft
+[8.14] PASS generated art UpLeft
+[8.14] PASS anatomical arms rendered without whole-body reflection UpLeft
+[8.14] PASS hand attachment UpLeft
+[8.14] PASS weapon depth UpLeft
+[8.59] PASS articulated walk arms and legs UpLeft
+[8.69] PASS stop UpLeft
+[8.95] PASS walk Up
+[8.95] PASS generated art Up
+[8.95] PASS anatomical arms rendered without whole-body reflection Up
+[8.95] PASS hand attachment Up
+[8.95] PASS weapon depth Up
+[9.40] PASS articulated walk arms and legs Up
+[9.50] PASS stop Up
+[9.76] PASS walk UpRight
+[9.76] PASS generated art UpRight
+[9.76] PASS anatomical arms rendered without whole-body reflection UpRight
+[9.76] PASS hand attachment UpRight
+[9.76] PASS weapon depth UpRight
+[10.21] PASS articulated walk arms and legs UpRight
+[10.32] PASS stop UpRight
+[10.57] PASS walk Right
+[10.57] PASS generated art Right
+[10.57] PASS anatomical arms rendered without whole-body reflection Right
+[10.57] PASS hand attachment Right
+[10.57] PASS weapon depth Right
+[11.03] PASS articulated walk arms and legs Right
+[11.13] PASS stop Right
+[11.39] PASS walk DownRight
+[11.39] PASS generated art DownRight
+[11.39] PASS anatomical arms rendered without whole-body reflection DownRight
+[11.39] PASS hand attachment DownRight
+[11.39] PASS weapon depth DownRight
+[11.84] PASS articulated walk arms and legs DownRight
+[11.93] shot horn_walk_DownRight
+[12.03] PASS stop DownRight
+[13.08] PASS smooth full-body right-handed swing Down
+[13.08] PASS one press damages multi-collider target once Down
+[13.40] PASS animated flame on strike 1
+[13.49] shot combo_strike_1
+[13.73] PASS animated flame on strike 2
+[13.83] shot combo_strike_2
+[14.15] PASS animated flame on strike 3
+[14.25] shot combo_strike_3
+[14.68] PASS buffered three presses cap at three hits Down
+[15.73] PASS smooth full-body right-handed swing DownLeft
+[15.73] PASS one press damages multi-collider target once DownLeft
+[17.32] PASS buffered three presses cap at three hits DownLeft
+[18.37] PASS smooth full-body right-handed swing Left
+[18.37] PASS one press damages multi-collider target once Left
+[19.97] PASS buffered three presses cap at three hits Left
+[21.02] PASS smooth full-body right-handed swing UpLeft
+[21.02] PASS one press damages multi-collider target once UpLeft
+[22.62] PASS buffered three presses cap at three hits UpLeft
+[23.66] PASS smooth full-body right-handed swing Up
+[23.66] PASS one press damages multi-collider target once Up
+[25.26] PASS buffered three presses cap at three hits Up
+[26.31] PASS smooth full-body right-handed swing UpRight
+[26.31] PASS one press damages multi-collider target once UpRight
+[27.91] PASS buffered three presses cap at three hits UpRight
+[28.96] PASS smooth full-body right-handed swing Right
+[28.96] PASS one press damages multi-collider target once Right
+[30.55] PASS buffered three presses cap at three hits Right
+[31.60] PASS smooth full-body right-handed swing DownRight
+[31.60] PASS one press damages multi-collider target once DownRight
+[33.20] PASS buffered three presses cap at three hits DownRight
+[34.25] PASS two inputs stop at second strike
+[35.01] PASS cancel clears pending strikes
+[35.55] PASS recovery input cannot resurrect combo
+[35.68] PASS live outfit eq_top_cloth/eq_bot_cloth
+[35.82] PASS live outfit eq_top_cloth/eq_bot_leather
+[35.96] PASS live outfit eq_top_leather/eq_bot_cloth
+[36.10] PASS live outfit eq_top_leather/eq_bot_leather
+[36.24] PASS live outfit eq_top_iron/eq_bot_cloth
+[36.38] PASS live outfit eq_top_iron/eq_bot_leather
+[36.89] PASS existing weapon eq_sword_wood
+[36.97] shot silver_weapon_0
+[37.12] PASS swing body eq_sword_wood
+[37.12] PASS swing grip eq_sword_wood
+[37.21] shot silver_attack_0
+[38.23] PASS existing weapon eq_sword_iron
+[38.31] shot silver_weapon_1
+[38.46] PASS swing body eq_sword_iron
+[38.46] PASS swing grip eq_sword_iron
+[38.56] shot silver_attack_1
+[39.57] PASS existing weapon eq_sword_bone
+[39.65] shot silver_weapon_2
+[39.80] PASS swing body eq_sword_bone
+[39.80] PASS swing grip eq_sword_bone
+[39.90] shot silver_attack_2
+[40.91] PASS existing weapon eq_sword_dragon
+[40.99] shot silver_weapon_3
+[41.14] PASS swing body eq_sword_dragon
+[41.14] PASS swing grip eq_sword_dragon
+[41.24] shot silver_attack_3
+[41.89] PASS unequipped invisible weapon
+[41.89] PASS base clothes restored
+[41.99] shot silver_base
+[41.99] PASS save preserves empty weapon slot
+[41.99] PASS legacy save gets starter weapon
+[42.60] PASS mage unchanged
+[42.60] SILVER COMPLETE 109 checks
+[42.60] capture finished

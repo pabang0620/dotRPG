@@ -3,6 +3,12 @@ using UnityEngine;
 
 namespace DotRPG
 {
+    // Only instantiated by the explicit development capture mode; two child colliders verify deduplication.
+    public class ComboDamageProbe : MonoBehaviour, IDamageable
+    {
+        public int Hits;
+        public bool TakeDamage(DamageInfo info) { Hits++; return true; }
+    }
     public partial class DevCapture
     {
         IEnumerator SilverShowcase()
@@ -53,9 +59,18 @@ namespace DotRPG
                 yield return Wait(.1f);
                 Check(player.Facing == direction && animator.Current == CharacterAnim.Idle, "stop " + direction);
             }
+            var probeObject = new GameObject("Combo test target");
+            var probe = probeObject.AddComponent<ComboDamageProbe>();
+            for (int colliderIndex = 0; colliderIndex < 2; colliderIndex++)
+            {
+                var part = new GameObject("Hitbox " + colliderIndex); part.transform.SetParent(probeObject.transform, false);
+                part.AddComponent<CircleCollider2D>().isTrigger = true;
+            }
             foreach (Facing direction in new[] { Facing.Down, Facing.DownLeft, Facing.Left, Facing.UpLeft, Facing.Up, Facing.UpRight, Facing.Right, Facing.DownRight })
             {
                 player.FaceTowards(player.Position + direction.ToVector());
+                probeObject.transform.position = player.Center + direction.ToVector() * player.Stats.attackReach;
+                Physics2D.SyncTransforms(); probe.Hits = 0;
                 yield return Wait(.5f);
                 combat.TryAttack();
                 var seen = new System.Collections.Generic.HashSet<string>();
@@ -73,7 +88,48 @@ namespace DotRPG
                     seen.Add(animator.FrameKey);
                 }
                 Check(seen.Count >= 12, "smooth full-body right-handed swing " + direction);
+                Check(combat.ResolvedStrikeCount == 1 && probe.Hits == 1, "one press damages multi-collider target once " + direction);
+                probe.Hits = 0;
+                yield return Wait(.15f);
+                combat.TryAttack();
+                yield return Wait(.08f); combat.TryAttack();
+                yield return Wait(.08f); combat.TryAttack();
+                combat.TryAttack(); // Excess input must never produce a fourth attack.
+                var stages = new System.Collections.Generic.HashSet<int>();
+                var captured = new System.Collections.Generic.HashSet<int>();
+                while (combat.IsAttacking)
+                {
+                    yield return new WaitForEndOfFrame();
+                    if (combat.IsRecovering) continue;
+                    stages.Add(combat.ComboStage);
+                    if (direction == Facing.Down && combat.AttackProgress >= WarriorAttackMotion.Contact && captured.Add(combat.ComboStage))
+                    {
+                        Check(combat.SlashRenderer.enabled && combat.SlashRenderer.sprite.name.StartsWith("warrior_flame_") && combat.SlashRenderer.color.a > .1f, "animated flame on strike " + combat.ComboStage);
+                        yield return Shot("combo_strike_" + combat.ComboStage);
+                        yield return new WaitForEndOfFrame(); // Shot resumes before LateUpdate; sample only after the hand attachment is refreshed.
+                    }
+                    string view = SilverWarriorArt.ViewKey(direction);
+                    var hand = SilverWarriorArt.Hand(view, animator.FrameKey);
+                    if (Vector2.Distance(combat.WeaponRenderer.transform.localPosition, hand) > .001f)
+                        throw new System.Exception("Combo detached weapon: " + direction);
+                }
+                Check(stages.Count == 3 && combat.ResolvedStrikeCount == 3 && probe.Hits == 3, "buffered three presses cap at three hits " + direction);
             }
+            Destroy(probeObject);
+            // Two inputs stop after the second contact; cancellation discards buffered inputs.
+            yield return Wait(.15f);
+            combat.TryAttack(); yield return Wait(.1f); combat.TryAttack();
+            while (combat.IsAttacking) yield return null;
+            Check(combat.ResolvedStrikeCount == 2, "two inputs stop at second strike");
+            yield return Wait(.15f);
+            combat.TryAttack(); combat.TryAttack(); combat.TryAttack();
+            combat.Cancel(); yield return Wait(.6f);
+            Check(!combat.IsAttacking && combat.ResolvedStrikeCount == 0, "cancel clears pending strikes");
+            combat.TryAttack();
+            while (combat.IsAttacking && !combat.IsRecovering) yield return null;
+            combat.TryAttack(); // Too late: the return to idle is already committed.
+            while (combat.IsAttacking) yield return null;
+            Check(combat.ResolvedStrikeCount == 1, "recovery input cannot resurrect combo");
             player.FaceTowards(player.Position + Vector2.down);
             foreach (string top in new[] { "eq_top_cloth", "eq_top_leather", "eq_top_iron" })
             {

@@ -100,7 +100,7 @@ namespace DotRPG
                 case CharacterAnim.Walk: frame = SilverWarriorArt.Supports(look.id) ? "walk" + FrameIndex() : WalkFrames[FrameIndex()]; break;
                 case CharacterAnim.Attack:
                     if (combat == null) combat = GetComponent<PlayerCombat>();
-                    frame = SilverWarriorArt.Supports(look.id) ? WarriorAttackMotion.Frame(combat != null && combat.IsAttacking ? combat.AttackProgress : Mathf.Clamp01(timer / WarriorAttackMotion.Duration)) : "attack";
+                    frame = SilverWarriorArt.Supports(look.id) ? (combat != null && combat.IsAttacking ? combat.AttackFrame : WarriorAttackMotion.Frame(Mathf.Clamp01(timer / WarriorAttackMotion.Duration))) : "attack";
                     break;
                 case CharacterAnim.Hurt: frame = "hurt"; break;
                 default: frame = IdleFrames[FrameIndex()]; break;

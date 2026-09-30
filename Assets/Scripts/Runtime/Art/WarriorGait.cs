@@ -11,7 +11,6 @@ namespace DotRPG
         public struct Leg { public Vector2 hip, knee, foot; public float lift, stride; }
         public static int Index(string frame) => frame.StartsWith("walk") && int.TryParse(frame.Substring(4), out int i) ? i % Frames : 0;
         public static float Stride(int phase) => phase < 4 ? 7.2f - phase * 3.6f : -7.2f + (phase - 4) * 3.6f;
-        public static int Bob(string frame) => frame.StartsWith("walk") && Index(frame) % 4 == 2 ? -1 : 0;
         static Vector2 Project(Vector2 v) => new Vector2(v.x, -v.y * .45f);
         public static Leg Sample(Facing facing, string frame, int waist, bool rightLeg)
         {
@@ -20,7 +19,7 @@ namespace DotRPG
             int phase = (Index(frame) + (rightLeg ? 0 : 4)) % Frames;
             bool walk = frame.StartsWith("walk");
             float stride = walk ? Stride(phase) : 0;
-            float lift = walk && phase > 4 ? Mathf.Sin((phase - 4) * Mathf.PI / 4) * 3 : 0;
+            float lift = walk && phase > 4 ? Mathf.Sin((phase - 4) * Mathf.PI / 4) * 4.5f : 0;
             bool attack = frame.StartsWith("attack");
             var spread = right * sign * (attack ? 4 : 3);
             // Profile torso/obi is centered at x=34, independently of the head pivot.
@@ -29,13 +28,19 @@ namespace DotRPG
             var hip = new Vector2(centerX, waist + 3) + Project(right * sign * 3);
             var foot = new Vector2(centerX, 56) + Project(spread + f * stride) - new Vector2(0, lift);
             var knee = Vector2.Lerp(hip, foot, .53f) + Project(f * lift * .65f);
+            if (walk)
+            {
+                hip = WarriorLocomotion.BodyPoint(hip, facing, frame, waist);
+                knee = WarriorLocomotion.Knee(hip, foot, f, lift);
+            }
             if (WarriorAttackMotion.IsSwing(frame))
             {
                 float t = WarriorAttackMotion.Progress(frame);
-                hip = WarriorAttackMotion.BodyPoint(hip, facing, t, waist);
+                int stage = WarriorAttackMotion.Stage(frame); bool recovery = WarriorAttackMotion.IsRecovery(frame);
+                hip = WarriorAttackMotion.BodyPoint(hip, facing, t, waist, stage, recovery);
                 // Right foot remains planted as a pivot; left foot steps into the cut.
-                lift = rightLeg ? 0 : WarriorAttackMotion.FootLift(t);
-                if (!rightLeg) foot += Project(f * WarriorAttackMotion.LeadStep(t)) - new Vector2(0, lift);
+                lift = rightLeg ? 0 : WarriorAttackMotion.FootLift(t, stage, recovery);
+                if (!rightLeg) foot += Project(f * WarriorAttackMotion.LeadStep(t, stage, recovery)) - new Vector2(0, lift);
                 knee = Vector2.Lerp(hip, foot, .53f) + Project(f * (Mathf.Sin(t * Mathf.PI) * 1.7f + lift * .6f));
             }
             return new Leg { hip = hip, knee = knee, foot = foot, lift = lift, stride = stride };

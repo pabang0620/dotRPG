@@ -56,11 +56,10 @@ namespace DotRPG
             }
             if (frame.StartsWith("walk"))
             {
-                // A stable torso avoids generated frame-to-frame scale drift; articulated limbs
-                // supply all eight alternating steps, with a one-pixel passing-pose rise.
+                // Use one stable source; locomotion deforms the torso and every limb root together.
                 var rest = Frame(direction, "idle0");
                 return new SilverFrame { direction = direction, clip = frame, column = rest.column,
-                    row = rest.row, waist = rest.waist + WarriorGait.Bob(frame), hand = rest.hand };
+                    row = rest.row, waist = rest.waist, hand = rest.hand };
             }
             foreach (var f in Data.frames) if (f.direction == direction && f.clip == frame) return f;
             throw new ArgumentException("Unknown silver warrior frame: " + direction + "/" + frame);
@@ -104,7 +103,7 @@ namespace DotRPG
             var pixels = new Color32[Size * Size];
             for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
             {
-                int sourceY = y - WarriorGait.Bob(f.clip);
+                int sourceY = y;
                 if (sourceY >= 0 && sourceY < Size) pixels[y * Size + x] = src[(Size - 1 - sourceY) * Size + x];
             }
             return pixels;
@@ -173,7 +172,9 @@ namespace DotRPG
                 if (p.a > 0) torso.Set(x, y, p);
             }
             if (WarriorAttackMotion.IsSwing(frame))
-                WarriorAttackMotion.BlitBody(oriented, torso, FacingOf(direction), WarriorAttackMotion.Progress(frame), waist);
+                WarriorAttackMotion.BlitBody(oriented, torso, FacingOf(direction), WarriorAttackMotion.Progress(frame), waist, WarriorAttackMotion.Stage(frame), WarriorAttackMotion.IsRecovery(frame));
+            else if (WarriorLocomotion.IsWalk(frame))
+                WarriorLocomotion.BlitBody(oriented, torso, FacingOf(direction), frame, waist);
             else oriented.Blit(torso, 0, 0);
             WarriorRightHandRig.Draw(oriented, pose, look, false);
             return oriented;

@@ -38,23 +38,29 @@ namespace DotRPG
             var p = new Pose();
             p.rightShoulder = Snap(center + Project(right * 6));
             p.leftShoulder = Snap(center - Project(right * 6));
+            if (WarriorLocomotion.IsWalk(frame))
+            {
+                p.rightShoulder = Snap(WarriorLocomotion.BodyPoint(p.rightShoulder, facing, frame, waist));
+                p.leftShoulder = Snap(WarriorLocomotion.BodyPoint(p.leftShoulder, facing, frame, waist));
+            }
             float wave = frame.StartsWith("walk") ? -WarriorGait.Stride(WarriorGait.Index(frame)) * .8f : 0;
-            p.rightHand = p.rightShoulder + Project(right * 2 + forward * wave) + new Vector2(0, 7 - Mathf.Abs(wave) * .2f);
+            p.rightHand = p.rightShoulder + Project(right * 2 + forward * wave * .6f) + new Vector2(0, 7 - Mathf.Abs(wave) * .2f);
             p.leftHand = p.leftShoulder + Project(-right * 2 - forward * wave) + new Vector2(0, 7 - Mathf.Abs(wave) * .2f);
             p.rightBack = forward.x * .8f - forward.y * .35f < 0;
             p.leftBack = -forward.x * .8f - forward.y * .35f < 0;
             p.rightHandBack = p.rightBack;
             float rest = Mathf.Atan2(.7f, right.x * .75f + forward.x * .25f) * Mathf.Rad2Deg;
-            p.swordAngle = rest + wave * 2f;
+            p.swordAngle = rest + wave * .65f;
             if (WarriorAttackMotion.IsSwing(frame))
             {
                 float t = WarriorAttackMotion.Progress(frame);
-                p.rightShoulder = Snap(WarriorAttackMotion.BodyPoint(p.rightShoulder, facing, t, waist));
-                p.leftShoulder = Snap(WarriorAttackMotion.BodyPoint(p.leftShoulder, facing, t, waist));
-                p.rightHand = p.rightShoulder + WarriorAttackMotion.RightReach(facing, t);
-                p.leftHand = p.leftShoulder + WarriorAttackMotion.LeftReach(facing, t);
-                if (t >= .32f && t <= .7f && forward.y < .5f) p.rightHandBack = false;
-                p.swordAngle = WarriorAttackMotion.SwordAngle(facing, t, rest);
+                int stage = WarriorAttackMotion.Stage(frame); bool recovery = WarriorAttackMotion.IsRecovery(frame);
+                p.rightShoulder = Snap(WarriorAttackMotion.BodyPoint(p.rightShoulder, facing, t, waist, stage, recovery));
+                p.leftShoulder = Snap(WarriorAttackMotion.BodyPoint(p.leftShoulder, facing, t, waist, stage, recovery));
+                p.rightHand = p.rightShoulder + WarriorAttackMotion.RightReach(facing, t, stage, recovery);
+                p.leftHand = p.leftShoulder + WarriorAttackMotion.LeftReach(facing, t, stage, recovery);
+                if (!recovery && t >= .26f && t <= .82f && forward.y < .5f) p.rightHandBack = false;
+                p.swordAngle = WarriorAttackMotion.SwordAngle(facing, t, rest, stage, recovery);
             }
             else if (frame.StartsWith("attack") && frame.Length > 6)
             {
