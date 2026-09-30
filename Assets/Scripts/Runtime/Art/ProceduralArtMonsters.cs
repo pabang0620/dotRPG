@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// Dungeon monsters and bosses (stage 3). Small monsters reuse the 16x20 skeleton body and add
-    /// helmets, tools, robes and shields; bosses are drawn on a 48x52 canvas (body 2x the normal
+    /// helmets, tools, robes and shields; bosses are drawn on a 48x56 canvas (body 2x the normal
     /// skeleton, room above the head for raised weapons) with the same outline and palette. All
     /// frames use the CharacterAnimator frame set (5 views × idle0/1, walk0-3, attack, hurt), so the
     /// same animator drives them. Also: the necro totem, projectiles, telegraph textures and the
@@ -438,10 +438,10 @@ namespace DotRPG
         }
 
         // =====================================================================================
-        // Bosses (48x52 canvas, body 2x the field skeleton)
+        // Bosses (48x56 canvas, body 2x the field skeleton)
         // =====================================================================================
 
-        const int BossW = 48, BossH = 52, BodyOX = 8, BodyOY = 12;
+        const int BossW = 48, BossH = 56, BodyOX = 8, BodyOY = 16;
 
         struct BigPose
         {
@@ -1164,7 +1164,12 @@ namespace DotRPG
                 case "arrow": return DrawMonArrow();
                 case "bolt": return DrawMonBolt(p.Length > 2 && p[2] == "big");
                 case "summon": return DrawSummonCircle();
-                case "tele": return DrawTelegraph(p);
+                case "tele":
+                {
+                    var t = DrawTelegraph(p);
+                    if (t != null && p[2] != "rect" && p[2] != "rectfill") t.Density = 2;
+                    return t;
+                }
             }
             return null;
         }
@@ -1230,11 +1235,11 @@ namespace DotRPG
         /// Telegraph textures, white so the telegraph can tint them. mon_tele_ring (outline + faint
         /// fill), mon_tele_disc (solid), mon_tele_rect / mon_tele_rectfill (9-slice), mon_tele_cone_{deg}
         /// and mon_tele_conefill_{deg} (apex at the sprite centre, opening towards +x), mon_tele_donut_{innerPct}.
-        /// All 64px = 4 world units across.
+        /// All 128px at density 2 = 4 world units across.
         /// </summary>
         static PixelCanvas DrawTelegraph(string[] p)
         {
-            const int S = 64;
+            const int S = 128; // density 2: still 4 world units across, smooth edges when scaled up
             var edge = new Color32(255, 255, 255, 255);
             var fill = new Color32(255, 255, 255, 90);
             switch (p[2])
@@ -1251,7 +1256,20 @@ namespace DotRPG
                             float d = Mathf.Sqrt(dx * dx + dy * dy);
                             if (d > S / 2f) continue;
                             if (!ring) c.Set(x, y, edge);
-                            else c.Set(x, y, d > S / 2f - 2f ? edge : fill);
+                            else c.Set(x, y, d > S / 2f - 3.5f ? edge : fill);
+                        }
+                    return c;
+                }
+                case "donutfill":
+                {
+                    float inner = (p.Length > 3 ? int.Parse(p[3]) : 40) / 100f * S / 2f;
+                    var c = new PixelCanvas(S, S);
+                    for (int y = 0; y < S; y++)
+                        for (int x = 0; x < S; x++)
+                        {
+                            float dx = x + 0.5f - S / 2f, dy = y + 0.5f - S / 2f;
+                            float d = Mathf.Sqrt(dx * dx + dy * dy);
+                            if (d <= S / 2f && d >= inner) c.Set(x, y, edge);
                         }
                     return c;
                 }
@@ -1265,7 +1283,7 @@ namespace DotRPG
                             float dx = x + 0.5f - S / 2f, dy = y + 0.5f - S / 2f;
                             float d = Mathf.Sqrt(dx * dx + dy * dy);
                             if (d > S / 2f || d < inner) continue;
-                            c.Set(x, y, d > S / 2f - 2f || d < inner + 2f ? edge : fill);
+                            c.Set(x, y, d > S / 2f - 3.5f || d < inner + 3.5f ? edge : fill);
                         }
                     return c;
                 }
@@ -1300,7 +1318,7 @@ namespace DotRPG
                             float a = Mathf.Abs(Mathf.Atan2(dy, dx));
                             if (a > half) continue;
                             if (!frame) { c.Set(x, y, edge); continue; }
-                            bool border = d > S / 2f - 2f || (half - a) * d < 1.6f;
+                            bool border = d > S / 2f - 3.5f || (half - a) * d < 3f;
                             c.Set(x, y, border ? edge : fill);
                         }
                     return c;

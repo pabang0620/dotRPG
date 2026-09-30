@@ -46,7 +46,7 @@ namespace DotRPG
         public Vector2 Position => body.position;
         public bool IsDead => state == State.Dead;
         /// <summary>Centre of the body (the transform sits at the feet) — what spells aim at.</summary>
-        public Vector2 Center => Position + new Vector2(0f, 0.4f);
+        public Vector2 Center => Position + new Vector2(0f, 0.4f * CenterHeight); // [MONSTER] bigger bodies
 
         /// <summary>Every enemy currently in the world (used by the mage's auto-targeting).</summary>
         public static readonly System.Collections.Generic.List<EnemyController> Active = new System.Collections.Generic.List<EnemyController>();

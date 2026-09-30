@@ -206,8 +206,34 @@ namespace DotRPG
             stats.attackKnockback = def.attackKnockback;
             stats.xpReward = Mathf.RoundToInt(def.xp * (1f + XpPerLevel * (level - 1)));
             var enemy = EnemyController.Create(stats, def.look, pos, parent);
-            enemy.ApplyDefinition(def, level, hpMul, dmgMul);
+            enemy.ApplyDefinition(def, level, hpMul, dmgMul, NextSeed(def.id));
             return enemy;
+        }
+
+        // ---------- Deterministic AI seeds ----------
+
+        /// <summary>
+        /// Seed base for monster AI decisions (pattern picks, flee / strafe turns, field placement). A dungeon
+        /// run (or later the host / server) calls <see cref="ResetSeed"/> on entry, so every client that spawns
+        /// the same monsters in the same order rolls the same decisions.
+        /// </summary>
+        public static int RunSeed { get; private set; } = 20240601;
+        static int spawnCounter;
+
+        public static void ResetSeed(int seed)
+        {
+            RunSeed = seed;
+            spawnCounter = 0;
+        }
+
+        static int NextSeed(string id)
+        {
+            unchecked
+            {
+                int h = RunSeed * 31 + ++spawnCounter * 7919;
+                foreach (char c in id) h = h * 31 + c;
+                return h & 0x7fffffff;
+            }
         }
 
         // ---------- Table ----------

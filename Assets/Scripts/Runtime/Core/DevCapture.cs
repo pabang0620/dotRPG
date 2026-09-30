@@ -24,7 +24,7 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty") // [PARTY] -dotrpgParty
+                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty" || args[i] == "-dotrpgMonster") // [PARTY] -dotrpgParty [MONSTER] -dotrpgMonster
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     return;
@@ -39,7 +39,7 @@ namespace DotRPG
             {
                 // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
                 // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty") continue; // [PARTY] -dotrpgParty
+                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty" && args[i] != "-dotrpgMonster") continue; // [PARTY] -dotrpgParty [MONSTER] -dotrpgMonster
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
@@ -48,6 +48,7 @@ namespace DotRPG
                 capture.mapOnly = args[i] == "-dotrpgMap";
                 capture.townOnly = args[i] == "-dotrpgTown";
                 capture.partyOnly = args[i] == "-dotrpgParty"; // [PARTY]
+                capture.monsterOnly = args[i] == "-dotrpgMonster"; // [MONSTER]
                 return;
             }
         }
@@ -61,6 +62,7 @@ namespace DotRPG
             Application.logMessageReceived += OnLog;
             Log("capture started");
             if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
+            if (monsterOnly) { yield return MonsterRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [MONSTER]
             if (townOnly)
             {
                 yield return TownShowcase();
