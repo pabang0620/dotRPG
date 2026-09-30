@@ -29,6 +29,70 @@ namespace DotRPG
 
         public bool IsAttacking => Time.time < attackEnd;
 
+        CharacterClassInfo classInfo = CharacterClassInfo.Get(CharacterClass.Warrior);
+        EnemyController castTarget;
+        Vector2 castAim = Vector2.down;
+        bool Ranged => classInfo != null && classInfo.ranged;
+        float Duration => Ranged ? classInfo.castDuration : stats.attackDuration;
+
+        /// <summary>Switches weapon sprite and attack style (sword swing or magic bolt).</summary>
+        public void SetClass(CharacterClassInfo info)
+        {
+            classInfo = info ?? CharacterClassInfo.Get(CharacterClass.Warrior);
+            Cancel();
+            RefreshWeapon();
+        }
+
+        /// <summary>Uses the sprite of the equipped weapon (wooden sword, bone greatsword, crystal staff...).</summary>
+        public void RefreshWeapon()
+        {
+            if (weapon == null || Game.Session == null) return;
+            weapon.sprite = Game.Art.Get(EquipmentDatabase.WeaponSprite(Game.Session.Equipment[EquipSlot.Weapon], classInfo.id));
+        }
+
+        /// <summary>
+        /// Weapon at rest: the sword hangs in the hand, the staff stands beside the character. Placed for
+        /// all eight facings (left ones mirrored), behind the body when facing away.
+        /// </summary>
+        void HoldPose()
+        {
+            if (weapon == null || owner == null) return;
+            weapon.enabled = !owner.IsDead;
+            if (slash != null && slash.enabled) slash.enabled = false;
+            var f = owner.Facing;
+            float sx = f.IsLeft() ? -1f : 1f;
+            Vector2 pos;
+            float rot;
+            int order;
+            if (Ranged)
+            {
+                switch (f)
+                {
+                    case Facing.Up: pos = new Vector2(-0.34f, 0.06f); rot = 6f; order = -1; break;
+                    case Facing.Down: pos = new Vector2(0.36f, 0.04f); rot = -6f; order = 1; break;
+                    case Facing.UpLeft:
+                    case Facing.UpRight: pos = new Vector2(0.3f * sx, 0.08f); rot = -6f * sx; order = -1; break;
+                    default: pos = new Vector2(0.3f * sx, 0.04f); rot = -6f * sx; order = 1; break;
+                }
+            }
+            else
+            {
+                switch (f)
+                {
+                    case Facing.Up: pos = new Vector2(-0.3f, 0.34f); rot = 160f; order = -1; break;
+                    case Facing.Down: pos = new Vector2(0.3f, 0.34f); rot = -160f; order = 1; break;
+                    case Facing.UpLeft:
+                    case Facing.UpRight: pos = new Vector2(0.28f * sx, 0.36f); rot = -160f * sx; order = -1; break;
+                    default: pos = new Vector2(0.24f * sx, 0.34f); rot = -150f * sx; order = 1; break;
+                }
+            }
+            weapon.transform.localPosition = pos;
+            weapon.transform.localRotation = Quaternion.Euler(0f, 0f, rot);
+            weapon.transform.localScale = Vector3.one * 0.85f;
+            if (ySort == null) ySort = GetComponent<YSort>();
+            ySort?.SetLocalOrder(weapon, order);
+        }
+
         public void Setup(PlayerController player, Transform visualRoot)
         {
             owner = player;
@@ -52,39 +116,53 @@ namespace DotRPG
         public void Cancel()
         {
             attackEnd = -10f;
-            if (weapon != null) weapon.enabled = false;
             if (slash != null) slash.enabled = false;
         }
 
         public void TryAttack()
         {
             if (Time.time < nextAttackTime) return;
+            // Mage: aim along the 8-way stick/keys direction, then lock onto the nearest monster in range.
+            if (Ranged)
+            {
+                Vector2 held = Game.Input != null ? Game.Input.Move : Vector2.zero;
+                castAim = held.sqrMagnitude > 0.01f ? PlayerController.SnapTo8(held) : owner.AimDirection;
+            }
+            castTarget = Ranged ? FindTarget() : null;
+            if (castTarget != null) owner.FaceTowards(castTarget.Position);
+            else if (Ranged) owner.FaceTowards(owner.Position + castAim);
             attackStart = Time.time;
-            attackEnd = attackStart + stats.attackDuration;
-            nextAttackTime = attackStart + stats.attackCooldown;
+            attackEnd = attackStart + Duration;
+            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown : stats.attackCooldown) * CharacterStats.CooldownMultiplier;
             attackFacing = owner.Facing;
             hitResolved = false;
             hitThisSwing.Clear();
 
             weapon.enabled = true;
-            slash.enabled = true;
+            weapon.transform.localScale = Vector3.one;
+            slash.enabled = !Ranged;
             if (ySort == null) ySort = GetComponent<YSort>();
             // Weapon behind the head when swinging upwards.
-            ySort?.SetLocalOrder(weapon, attackFacing == Facing.Up ? -1 : 1);
-            Game.Audio.PlaySfx("swing");
+            ySort?.SetLocalOrder(weapon, attackFacing.IsUp() ? -1 : 1);
+            Game.Audio.PlaySfx(Ranged ? "magic" : "swing");
         }
 
         void Update()
         {
             if (!IsAttacking)
             {
-                if (weapon.enabled) Cancel();
+                HoldPose();
                 return;
             }
 
-            float t = Mathf.Clamp01((Time.time - attackStart) / stats.attackDuration);
+            float t = Mathf.Clamp01((Time.time - attackStart) / Duration);
             Vector2 dir = attackFacing.ToVector();
             float baseAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            if (Ranged)
+            {
+                UpdateCast(t, dir, baseAngle);
+                return;
+            }
             // Sweep from one side of the facing direction to the other (ease-out).
             float eased = 1f - (1f - t) * (1f - t);
             float angle = baseAngle + Mathf.Lerp(SwingArc * 0.5f, -SwingArc * 0.5f, eased);
@@ -105,6 +183,72 @@ namespace DotRPG
             }
         }
 
+        /// <summary>Mage: raise the staff towards the facing direction, then release a bolt.</summary>
+        void UpdateCast(float t, Vector2 dir, float baseAngle)
+        {
+            // Staff tilts forward (from upright to ~45° into the facing direction).
+            float tilt = Mathf.Lerp(0f, 45f, Mathf.Sin(Mathf.Min(t, 0.6f) / 0.6f * Mathf.PI * 0.5f));
+            float side = dir.x != 0f ? -Mathf.Sign(dir.x) : 0f;
+            weapon.transform.localPosition = new Vector3(0f, 0.35f, 0f) + (Vector3)(dir * 0.3f);
+            weapon.transform.localRotation = Quaternion.Euler(0f, 0f, dir.x != 0f ? side * tilt : -tilt * 0.3f);
+
+            if (!hitResolved && t >= 0.35f)
+            {
+                hitResolved = true;
+                Vector2 origin = owner.Center + castAim * 0.55f;
+                bool locked = castTarget != null && !castTarget.IsDead && castTarget.isActiveAndEnabled;
+                Vector2 aim = locked ? castTarget.Center - origin : castAim;
+                MagicBolt.Fire(owner.gameObject, origin, aim, classInfo, locked ? castTarget : null,
+                    CharacterStats.AttackDamage(owner.Class));
+                Fx.Sparkle(origin, 2, 0.2f);
+                castTarget = null;
+            }
+        }
+
+        /// <summary>
+        /// Nearest living monster within the bolt's range that is not hidden behind a wall or cliff.
+        /// Monsters roughly in front of the player win ties, so turning towards one still picks it.
+        /// </summary>
+        EnemyController FindTarget()
+        {
+            Vector2 from = owner.Center;
+            Vector2 facing = castAim;
+            float range = classInfo.boltRange;
+            EnemyController best = null;
+            float bestScore = float.MaxValue;
+            foreach (var enemy in EnemyController.Active)
+            {
+                if (enemy == null || enemy.IsDead || !enemy.isActiveAndEnabled) continue;
+                Vector2 to = enemy.Center - from;
+                float dist = to.magnitude;
+                if (dist > range) continue;
+                // Enemies behind the player count as a bit further away.
+                float score = dist * (Vector2.Dot(to.normalized, facing) > 0.3f ? 1f : 1.35f);
+                if (score >= bestScore || !HasLineOfSight(from, enemy)) continue;
+                best = enemy;
+                bestScore = score;
+            }
+            return best;
+        }
+
+        readonly RaycastHit2D[] losHits = new RaycastHit2D[16];
+
+        bool HasLineOfSight(Vector2 from, EnemyController enemy)
+        {
+            Vector2 to = enemy.Center - from;
+            var losFilter = new ContactFilter2D { useTriggers = false };
+            int count = Physics2D.Raycast(from, to.normalized, losFilter, losHits, to.magnitude);
+            for (int i = 0; i < count; i++)
+            {
+                var col = losHits[i].collider;
+                if (col == null || col.attachedRigidbody != null) continue; // characters don't block
+                if (col.gameObject.name == "Water") continue;               // bolts fly over water
+                if (col.GetComponentInParent<IDamageable>() != null) continue; // trees/rocks: bolt would hit them anyway
+                return false;
+            }
+            return true;
+        }
+
         void ResolveHits(Vector2 dir)
         {
             Vector2 center = owner.Center + dir * stats.attackReach;
@@ -118,7 +262,7 @@ namespace DotRPG
                 var target = col.GetComponentInParent<IDamageable>();
                 if (target == null || ReferenceEquals(target, owner) || hitThisSwing.Contains(target)) continue;
                 hitThisSwing.Add(target);
-                var info = new DamageInfo(stats.attackDamage, owner.Center, stats.attackKnockback, Team.Player);
+                var info = new DamageInfo(CharacterStats.AttackDamage(owner.Class), owner.Center, stats.attackKnockback, Team.Player);
                 landed |= target.TakeDamage(info);
             }
             if (landed) Game.Camera?.Shake(0.06f, 0.1f);

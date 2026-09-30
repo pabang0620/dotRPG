@@ -10,7 +10,7 @@ namespace DotRPG
         public string displayName = "해골";
 
         [Header("Health")]
-        public int maxHealth = 3;
+        public int maxHealth = 30;
         public float hurtStunTime = 0.3f;
         public float invulnerableTime = 0.15f;
         public float knockbackSpeed = 6f;
@@ -28,7 +28,7 @@ namespace DotRPG
         public float leashRadius = 10f;
 
         [Header("Attack")]
-        public int attackDamage = 1;
+        public int attackDamage = 10;
         public float attackRange = 0.95f;
         public float windupTime = 0.5f;
         public float recoverTime = 0.7f;
@@ -36,6 +36,10 @@ namespace DotRPG
 
         [Header("Spawning")]
         public float respawnDelay = 25f;
+
+        [Header("Rewards")]
+        [Tooltip("Experience granted to the player on kill.")]
+        public int xpReward = 20;
         [Tooltip("Enemies never respawn while the player is closer than this.")]
         public float respawnMinPlayerDistance = 9f;
     }

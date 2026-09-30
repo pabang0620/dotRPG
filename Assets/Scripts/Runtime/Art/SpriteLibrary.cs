@@ -51,21 +51,84 @@ namespace DotRPG
 
         Sprite ToSprite(string key, PixelCanvas canvas)
         {
+            // High-resolution art (density 2) is drawn through the sharp-scaling material, which needs
+            // bilinear sampling; everything else stays point-filtered.
+            bool hd = canvas.Density > 1;
+            bool smooth = key == "fx_glow" || (hd && FxMaterials.Sharp != null);
             var texture = new Texture2D(canvas.Width, canvas.Height, TextureFormat.RGBA32, false)
             {
                 name = key,
-                filterMode = FilterMode.Point,
+                // Soft light is blown up to many times its size, so it is the one sprite drawn smooth.
+                filterMode = smooth ? FilterMode.Bilinear : FilterMode.Point,
                 wrapMode = TextureWrapMode.Clamp,
             };
-            texture.SetPixels32(canvas.ToTexturePixels());
+            var pixels = canvas.ToTexturePixels();
+            if (hd && smooth) BleedTransparent(pixels, canvas.Width, canvas.Height);
+            texture.SetPixels32(pixels);
             // Kept readable so hit-flash silhouettes can be derived from it.
             texture.Apply(false, false);
 
             var pivot = new Vector2(canvas.PivotX / canvas.Width, canvas.PivotY / canvas.Height);
             var border = new Vector4(canvas.BorderLeft, canvas.BorderBottom, canvas.BorderRight, canvas.BorderTop);
-            var sprite = Sprite.Create(texture, new Rect(0, 0, canvas.Width, canvas.Height), pivot, pixelsPerUnit, 0,
+            var sprite = Sprite.Create(texture, new Rect(0, 0, canvas.Width, canvas.Height), pivot, pixelsPerUnit * Mathf.Max(1, canvas.Density), 0,
                 SpriteMeshType.FullRect, border);
             sprite.name = key;
+            return sprite;
+        }
+
+        /// <summary>
+        /// Gives fully transparent pixels next to the artwork the colour of their opaque neighbours
+        /// (alpha stays 0). Bilinear sampling at a sprite's silhouette then blends towards the right
+        /// colour instead of towards black, so no dark fringe appears.
+        /// </summary>
+        static void BleedTransparent(Color32[] px, int w, int h)
+        {
+            var known = new bool[px.Length];
+            for (int i = 0; i < px.Length; i++) known[i] = px[i].a > 0;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                var next = (bool[])known.Clone();
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        int i = y * w + x;
+                        if (known[i]) continue;
+                        int r = 0, g = 0, b = 0, n = 0;
+                        for (int dy = -1; dy <= 1; dy++)
+                            for (int dx = -1; dx <= 1; dx++)
+                            {
+                                int xx = x + dx, yy = y + dy;
+                                if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+                                int j = yy * w + xx;
+                                if (!known[j]) continue;
+                                r += px[j].r; g += px[j].g; b += px[j].b; n++;
+                            }
+                        if (n == 0) continue;
+                        px[i] = new Color32((byte)(r / n), (byte)(g / n), (byte)(b / n), 0);
+                        next[i] = true;
+                    }
+                known = next;
+            }
+        }
+
+        /// <summary>
+        /// Wraps an already painted, opaque pixel block (rows bottom-up, Unity order) in a sprite with
+        /// its pivot at the bottom-left corner. Used for the painted ground of the high-resolution maps.
+        /// The caller owns the result (it is not cached by key).
+        /// </summary>
+        public Sprite CreateRaw(string name, Color32[] bottomUpPixels, int width, int height, int density)
+        {
+            bool smooth = density > 1 && FxMaterials.Sharp != null;
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                name = name,
+                filterMode = smooth ? FilterMode.Bilinear : FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+            };
+            texture.SetPixels32(bottomUpPixels);
+            texture.Apply(false, true);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, width, height), Vector2.zero, pixelsPerUnit * Mathf.Max(1, density), 0, SpriteMeshType.FullRect);
+            sprite.name = name;
             return sprite;
         }
 

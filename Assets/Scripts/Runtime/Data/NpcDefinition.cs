@@ -26,6 +26,19 @@ namespace DotRPG
         Crate,
     }
 
+    /// <summary>What talking to a town service NPC opens.</summary>
+    public enum NpcService
+    {
+        /// <summary>Normal conversation.</summary>
+        None,
+        /// <summary>잡화상인: buy potions, scrolls and materials; sell loot.</summary>
+        Shop,
+        /// <summary>대장장이: the equipment enhancement window.</summary>
+        Blacksmith,
+        /// <summary>창고지기: item storage shared across the playthrough.</summary>
+        Storage,
+    }
+
     /// <summary>
     /// One NPC placed on the map. The map file references it by <see cref="mapSymbol"/>.
     /// </summary>
@@ -45,11 +58,16 @@ namespace DotRPG
         public string dialogueId = "";
         [Tooltip("Optional dialogue after the main quest is complete.")]
         public string dialogueIdAfterQuest = "";
+        [Tooltip("Town service opened instead of a conversation.")]
+        public NpcService service = NpcService.None;
+        [Tooltip("Greeting shown at the top of the service window.")]
+        public string greeting = "";
 
         public NpcDefinition() { }
 
         public NpcDefinition(string symbol, string id, string name, CharacterLook look, NpcBehaviour behaviour,
-            NpcTool tool, Facing facing, string dialogue, string afterQuest = "", Vector2 patrol = default)
+            NpcTool tool, Facing facing, string dialogue, string afterQuest = "", Vector2 patrol = default,
+            NpcService service = NpcService.None, string greeting = "")
         {
             mapSymbol = symbol;
             npcId = id;
@@ -61,6 +79,8 @@ namespace DotRPG
             dialogueId = dialogue;
             dialogueIdAfterQuest = afterQuest;
             patrolOffset = patrol;
+            this.service = service;
+            this.greeting = greeting;
         }
     }
 }

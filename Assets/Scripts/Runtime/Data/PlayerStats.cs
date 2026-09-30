@@ -12,14 +12,14 @@ namespace DotRPG
         [Tooltip("How fast the character reaches full speed. Higher = snappier.")]
         public float acceleration = 45f;
 
-        [Header("Health (1 = half a heart)")]
-        public int maxHealth = 6;
+        [Header("Health (HP)")]
+        public int maxHealth = 60;
         public float invulnerableTime = 0.9f;
         public float knockbackSpeed = 7f;
         public float knockbackDuration = 0.15f;
 
         [Header("Attack")]
-        public int attackDamage = 1;
+        public int attackDamage = 10;
         public float attackCooldown = 0.36f;
         public float attackDuration = 0.2f;
         [Tooltip("Distance from the body to the centre of the hit circle.")]
@@ -29,7 +29,7 @@ namespace DotRPG
 
         [Header("Interaction & items")]
         public float interactRange = 1.25f;
-        [Tooltip("Health restored by eating one carrot (1 = half a heart).")]
-        public int carrotHealAmount = 2;
+        [Tooltip("HP restored by eating one carrot.")]
+        public int carrotHealAmount = 20;
     }
 }

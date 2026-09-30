@@ -25,6 +25,46 @@ namespace DotRPG
         public ControlsScreen Controls { get; private set; }
         public GameOverScreen GameOver { get; private set; }
         public EndingScreen Ending { get; private set; }
+        public CharacterSelectScreen CharacterSelect { get; private set; }
+        public EquipmentScreen Equipment { get; private set; }
+        public EnhanceScreen Enhance { get; private set; }
+        public SkillScreen Skills { get; private set; }
+        public WorldMapScreen WorldMap { get; private set; }
+        public QuestScreen QuestLog { get; private set; }
+        public ContentScreen Dungeon { get; private set; }
+        public ContentScreen Raid { get; private set; }
+        public ShopScreen Shop { get; private set; }
+        public StorageScreen Storage { get; private set; }
+        /// <summary>Window to show when the Inventory state starts (null = bag).</summary>
+        public MenuScreen PendingWindow { get; set; }
+
+        /// <summary>Opens the window of a town service NPC (general store, blacksmith, storage).</summary>
+        public void OpenService(NpcDefinition npc)
+        {
+            switch (npc.service)
+            {
+                case NpcService.Shop:
+                    Shop.SetKeeper(npc.displayName, npc.greeting);
+                    Game.Flow.OpenWindow(Shop);
+                    break;
+                case NpcService.Blacksmith:
+                    Enhance.SetKeeper(npc.displayName, npc.greeting);
+                    Game.Audio.PlaySfx("hammer");
+                    Game.Flow.OpenWindow(Enhance);
+                    break;
+                case NpcService.Storage:
+                    Storage.SetKeeper(npc.displayName, npc.greeting);
+                    Game.Flow.OpenWindow(Storage);
+                    break;
+            }
+        }
+
+        /// <summary>Swaps the open window without leaving the window state.</summary>
+        public void ShowWindow(MenuScreen window)
+        {
+            ClearStack();
+            Push(window != null ? window : Equipment);
+        }
         ConfirmScreen confirm;
 
         readonly List<MenuScreen> stack = new List<MenuScreen>();
@@ -57,6 +97,20 @@ namespace DotRPG
             ui.Ending = EndingScreen.Create(t, ui);
             ui.Settings = SettingsScreen.Create(t, ui);
             ui.Controls = ControlsScreen.Create(t, ui);
+            ui.CharacterSelect = CharacterSelectScreen.Create(t, ui);
+            ui.Equipment = EquipmentScreen.Create(t, ui);
+            ui.Enhance = EnhanceScreen.Create(t);
+            ui.Skills = SkillScreen.Create(t);
+            ui.WorldMap = WorldMapScreen.Create(t);
+            ui.QuestLog = QuestScreen.Create(t);
+            ui.Dungeon = ContentScreen.Create(t, "미니던전", "menuicon_dungeon",
+                "협곡 아래 버려진 광산에 해골들이 둥지를 틀었다.\n짧은 던전을 돌파하고 보스 \"광산 해골대장\"을 쓰러뜨리자.",
+                "권장 전투력 1,500 · 1인 · 하루 3회", "보상: 강화석, 마력 정수, 에픽 장비 확률 증가");
+            ui.Raid = ContentScreen.Create(t, "레이드", "menuicon_raid",
+                "북쪽 고개 너머에서 깨어난 \"해골왕\"과 그의 친위대.\n강력한 보스를 여럿이 함께 공략하는 대규모 전투.",
+                "권장 전투력 3,000 · 최대 4인 · 주 1회", "보상: 유니크 · 레전더리 장비, 대량의 강화 재료");
+            ui.Shop = ShopScreen.Create(t);
+            ui.Storage = StorageScreen.Create(t);
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);
 
@@ -87,7 +141,7 @@ namespace DotRPG
         void OnStateChanged(GameState previous, GameState next)
         {
             bool inGame = next == GameState.Playing || next == GameState.Dialogue || next == GameState.Paused
-                          || next == GameState.GameOver || next == GameState.Ending;
+                          || next == GameState.GameOver || next == GameState.Ending || next == GameState.Inventory;
             Hud.gameObject.SetActive(inGame);
             DialogueBox.gameObject.SetActive(next == GameState.Dialogue || next == GameState.Paused);
 
@@ -99,6 +153,7 @@ namespace DotRPG
                 case GameState.Paused: Push(Pause); break;
                 case GameState.GameOver: Push(GameOver); break;
                 case GameState.Ending: Push(Ending); break;
+                case GameState.Inventory: Push(PendingWindow != null ? PendingWindow : Equipment); break;
             }
         }
 
@@ -124,7 +179,7 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { Title, Pause, Settings, Controls, GameOver, Ending, confirm })
+            foreach (var s in new MenuScreen[] { Title, Pause, Settings, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
         }
 

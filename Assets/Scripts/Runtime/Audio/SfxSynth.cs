@@ -41,6 +41,14 @@ namespace DotRPG
                     Tone(b, 0f, 0.1f, 900f, 300f, Wave.Triangle, 0.12f);
                     return b;
                 }
+                case "magic":
+                {
+                    var b = Buffer(0.22f);
+                    Tone(b, 0f, 0.2f, 520f, 1480f, Wave.Triangle, 0.2f, vibrato: 18f);
+                    Tone(b, 0.02f, 0.16f, 1040f, 2200f, Wave.Pulse, 0.06f);
+                    Noise(b, 0f, 0.08f, 0.12f, 0.6f, 37);
+                    return b;
+                }
                 case "hit":
                 {
                     var b = Buffer(0.14f);

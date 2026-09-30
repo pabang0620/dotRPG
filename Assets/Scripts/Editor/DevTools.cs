@@ -44,7 +44,7 @@ namespace DotRPG.EditorTools
                 var canvas = ProceduralArt.Draw(key);
                 if (canvas != null && Write(folder, key, canvas)) count++;
             }
-            foreach (var look in new[] { CharacterLook.Player, CharacterLook.Skeleton })
+            foreach (var look in new[] { CharacterLook.Player, CharacterLook.Mage, CharacterLook.Skeleton })
                 foreach (var dir in new[] { "down", "up", "side" })
                     foreach (var frame in ProceduralArt.CharacterFrames)
                         if (Write(folder, $"char_{look.id}_{dir}_{frame}", ProceduralArt.DrawCharacter(look, dir, frame))) count++;

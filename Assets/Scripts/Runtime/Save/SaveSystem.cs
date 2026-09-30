@@ -13,7 +13,10 @@ namespace DotRPG
     {
         public const int DefaultSlot = 0;
 
-        public static string SaveDirectory => Path.Combine(Application.persistentDataPath, "Saves");
+        /// <summary>Set by automated test runs so they save into their own folder and never touch the player's progress.</summary>
+        public static string DirectoryOverride;
+
+        public static string SaveDirectory => DirectoryOverride ?? Path.Combine(Application.persistentDataPath, "Saves");
 
         public static string SlotPath(int slot) => Path.Combine(SaveDirectory, $"slot_{slot}.json");
 
@@ -83,6 +86,24 @@ namespace DotRPG
                 Debug.LogWarning("[dotRPG] Save was written by a newer version of the game.");
             if (data.inventory == null) data.inventory = new System.Collections.Generic.List<ItemStack>();
             if (data.quest == null) data.quest = new QuestProgress();
+            if (string.IsNullOrEmpty(data.mapId)) data.mapId = MapRegistry.Village;
+            if (string.IsNullOrEmpty(data.playerClass)) data.playerClass = "warrior";
+            if (data.version < 2)
+            {
+                // v2 switched from half-heart units to HP points (×10).
+                data.playerHealth *= 10;
+                data.playerMaxHealth *= 10;
+                if (data.level < 1) data.level = 1;
+            }
+            if (data.storage == null) data.storage = new System.Collections.Generic.List<ItemStack>();
+            if (data.version < 3)
+            {
+                // v3 added gold, potions and the return scroll: hand out the starter pack once.
+                foreach (var (id, count) in ConsumableDatabase.StarterPack)
+                    data.inventory.Add(new ItemStack(id, count));
+                // The village was rebuilt, so an old position there may now be inside a building.
+                if (data.mapId == MapRegistry.Village) data.playerX = data.playerY = -1f;
+            }
             data.version = SaveData.CurrentVersion;
             return data;
         }

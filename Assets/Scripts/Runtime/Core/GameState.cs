@@ -12,6 +12,8 @@ namespace DotRPG
         Paused,
         GameOver,
         Ending,
+        /// <summary>Item / equipment window open (world frozen).</summary>
+        Inventory,
     }
 
     /// <summary>

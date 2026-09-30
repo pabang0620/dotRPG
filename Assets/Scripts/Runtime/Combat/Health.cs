@@ -42,6 +42,14 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>Spends HP as a cost (never kills, no hit reaction).</summary>
+        public void Drain(int amount)
+        {
+            if (IsDead || amount <= 0) return;
+            current = Mathf.Max(1, current - amount);
+            Changed?.Invoke(current, max);
+        }
+
         public int Heal(int amount)
         {
             if (IsDead || amount <= 0) return 0;

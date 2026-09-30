@@ -14,6 +14,7 @@ namespace DotRPG
         SpriteRenderer woodPile;
         SpriteRenderer stonePile;
         bool buildingInProgress;
+        bool hd;
 
         QuestManager Quest => Game.Quest;
 
@@ -28,18 +29,19 @@ namespace DotRPG
 
         public override bool CanInteract => !buildingInProgress;
 
-        public static ConstructionSite Create(Vector2 position, Transform parent)
+        public static ConstructionSite Create(Vector2 position, Transform parent, bool hd = false)
         {
             var go = new GameObject("ConstructionSite");
             go.transform.SetParent(parent, false);
             go.transform.position = position;
 
             var site = go.AddComponent<ConstructionSite>();
+            site.hd = hd;
             site.building = NewRenderer(go.transform, "Building", Vector2.zero, 0);
             site.woodPile = NewRenderer(go.transform, "WoodPile", new Vector2(-1.9f, -0.2f), 1);
-            site.woodPile.sprite = Game.Art.Get("pile_wood");
+            site.woodPile.sprite = Game.Art.Get(hd ? "town_pile_0" : "pile_wood");
             site.stonePile = NewRenderer(go.transform, "StonePile", new Vector2(1.9f, -0.2f), 1);
-            site.stonePile.sprite = Game.Art.Get("pile_stone");
+            site.stonePile.sprite = Game.Art.Get(hd ? "town_pile_1" : "pile_stone");
 
             var col = go.AddComponent<BoxCollider2D>();
             col.size = new Vector2(2.6f, 1.6f);
@@ -75,7 +77,7 @@ namespace DotRPG
         {
             if (building == null || Quest == null) return;
             var p = Quest.Progress;
-            building.sprite = Game.Art.Get(p.workshopBuilt ? "site_built" : "site_blueprint");
+            building.sprite = Game.Art.Get(hd ? (p.workshopBuilt ? "town_site_1" : "town_site_0") : p.workshopBuilt ? "site_built" : "site_blueprint");
             woodPile.enabled = !p.workshopBuilt && p.woodDelivered > 0;
             stonePile.enabled = !p.workshopBuilt && p.stoneDelivered > 0;
         }

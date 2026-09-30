@@ -20,7 +20,7 @@ namespace DotRPG
 
         [Header("Reward")]
         [Tooltip("Extra max health on completion (2 = one heart).")]
-        public int rewardMaxHealth = 2;
+        public int rewardMaxHealth = 20;
 
         [Header("NPCs")]
         public string questGiverNpcId = "chief";

@@ -98,8 +98,8 @@ namespace DotRPG
             screen.menu.AddButton("새 게임", () =>
             {
                 if (Game.Saves.HasSave())
-                    ui.Confirm("새 게임을 시작할까요?\n다음 자동 저장 때 기존 저장 데이터를 덮어씁니다.", () => Game.Flow.NewGame());
-                else Game.Flow.NewGame();
+                    ui.Confirm("새 게임을 시작할까요?\n다음 자동 저장 때 기존 저장 데이터를 덮어씁니다.", () => ui.Push(ui.CharacterSelect));
+                else ui.Push(ui.CharacterSelect);
             });
             screen.menu.AddButton("이어하기", () => Game.Flow.ContinueGame(), () => Game.Saves.HasSave());
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
@@ -125,6 +125,7 @@ namespace DotRPG
             screen.ui = ui;
             screen.BuildPanel(root, "일시정지", 420);
             screen.menu.AddButton("계속하기", () => Game.Flow.Resume());
+            screen.menu.AddButton("가방 · 장비", () => Game.Flow.OpenWindow(null));
             screen.menu.AddButton("저장하기", () => Game.Flow.SaveGame());
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
@@ -213,12 +214,20 @@ namespace DotRPG
             var input = Game.Input;
             string Row(string name, GameAction action) =>
                 $"{name}   키보드 <b>{input.GetBindingLabel(action, false)}</b>   ·   게임패드 <b>{input.GetBindingLabel(action, true)}</b>";
+            string Pair(string name, GameAction a, GameAction b) =>
+                $"{name}   키보드 <b>{input.GetBindingLabel(a, false)} / {input.GetBindingLabel(b, false)}</b>   ·   게임패드 <b>{input.GetBindingLabel(a, true)} / {input.GetBindingLabel(b, true)}</b>";
             return string.Join("\n", new[]
             {
                 Row("이동", GameAction.Move),
                 Row("공격 / 채집", GameAction.Attack),
                 Row("대화 / 상호작용", GameAction.Interact),
-                Row("당근 먹기 (회복)", GameAction.UseItem),
+                Row("체력 물약 (없으면 당근)", GameAction.UseItem),
+                Row("마나 물약", GameAction.UseMana),
+                Row("마을 귀환 주문서", GameAction.TownScroll),
+                Row("가방 · 장비", GameAction.Inventory),
+                Pair("스킬 1 / 2", GameAction.Skill1, GameAction.Skill2),
+                Pair("스킬 3 / 4", GameAction.Skill3, GameAction.Skill4),
+                Row("각성 기술", GameAction.Skill5),
                 Row("메뉴 / 일시정지", GameAction.Pause),
                 "키 변경 기능은 다음 단계에서 추가 예정입니다 (저장 구조는 준비됨).",
             });
@@ -264,7 +273,7 @@ namespace DotRPG
             statsText.text =
                 $"새 공방이 세워지고 마을에 활기가 돌아왔다.\n" +
                 $"플레이 시간 {seconds / 60:00}:{seconds % 60:00}   ·   해골 퇴치 {p.skeletonsDefeated}\n" +
-                $"보상: 최대 체력 +{Game.Quest.Config.rewardMaxHealth / 2f:0.#} 하트\n" +
+                $"보상: 최대 HP +{Game.Quest.Config.rewardMaxHealth}\n" +
                 "세로 슬라이스를 플레이해 주셔서 감사합니다!";
         }
     }

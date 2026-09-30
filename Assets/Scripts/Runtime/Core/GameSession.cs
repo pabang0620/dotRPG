@@ -10,49 +10,112 @@ namespace DotRPG
     public sealed class GameSession
     {
         public readonly Inventory Inventory = new Inventory();
+        /// <summary>Items left with the village storage keeper (창고). Survives death and travel.</summary>
+        public readonly Inventory Storage = new Inventory();
+        /// <summary>Worn gear; spare gear sits in <see cref="Inventory"/>.</summary>
+        public readonly Equipment Equipment;
+
+        public int Gold => Inventory.Count(ConsumableDatabase.Gold);
+
+        public GameSession()
+        {
+            Equipment = new Equipment(Inventory);
+        }
         public QuestProgress Quest { get; private set; } = new QuestProgress();
+        /// <summary>Base max HP (class base + quest rewards). Level, passives and gear are added by <see cref="CharacterStats"/>.</summary>
         public int PlayerMaxHealth { get; set; }
+        /// <summary>Level, experience, passive tree and skill gems.</summary>
+        public readonly Progression Progression = new Progression();
+        /// <summary>Current MP (not saved: refills on load).</summary>
+        public float PlayerMana { get; set; }
         public int PlayerHealth { get; set; }
         public float PlayTimeSeconds { get; set; }
+
+        /// <summary>Map the player is on (see <see cref="MapRegistry"/>).</summary>
+        public string MapId { get; set; } = MapRegistry.Village;
+        /// <summary>Treasure chests already opened this playthrough ("map:x:y").</summary>
+        public readonly System.Collections.Generic.HashSet<string> OpenedChests = new System.Collections.Generic.HashSet<string>();
+        /// <summary>Character picked on the character-select screen.</summary>
+        public CharacterClass PlayerClass { get; set; } = CharacterClass.Warrior;
 
         /// <summary>Where the player appears when the world is built. Null = map spawn point.</summary>
         public Vector2? StartPosition { get; set; }
         public Facing StartFacing { get; set; } = Facing.Down;
 
-        public void ResetForNewGame(GameConfig config)
+        public void ResetForNewGame(GameConfig config, CharacterClass playerClass = CharacterClass.Warrior)
         {
+            // Gear first: equipment events update the player's health, which the lines below then reset.
             Inventory.Clear();
+            Storage.Clear();
+            Equipment.Clear();
+            Equipment.LoadLevels(null);
+            Equipment.Set(EquipSlot.Weapon, EquipmentDatabase.StarterWeapon(playerClass));
+            foreach (var (id, count) in ConsumableDatabase.StarterPack) Inventory.Add(id, count);
             Quest = new QuestProgress();
+            OpenedChests.Clear();
             PlayerMaxHealth = config.playerStats.maxHealth;
-            PlayerHealth = PlayerMaxHealth;
             PlayTimeSeconds = 0f;
+            MapId = MapRegistry.Village;
+            PlayerClass = playerClass;
+            Progression.Reset(playerClass);
+            PlayerHealth = CharacterStats.MaxHp;
+            PlayerMana = CharacterStats.MaxMp;
             StartPosition = null;
             StartFacing = Facing.Down;
         }
 
         public SaveData Capture(Vector2 playerPosition, Facing facing)
         {
-            return new SaveData
+            var data = new SaveData
             {
                 playTimeSeconds = PlayTimeSeconds,
+                mapId = MapId,
+                playerClass = CharacterClassInfo.Get(PlayerClass).saveId,
                 playerX = playerPosition.x,
                 playerY = playerPosition.y,
                 playerFacing = (int)facing,
                 playerHealth = PlayerHealth,
                 playerMaxHealth = PlayerMaxHealth,
                 inventory = Inventory.ToList(),
+                storage = Storage.ToList(),
+                equipped = Equipment.ToList(),
+                enhanceLevels = Equipment.LevelsToList(),
+                openedChests = new System.Collections.Generic.List<string>(OpenedChests),
                 quest = JsonUtility.FromJson<QuestProgress>(JsonUtility.ToJson(Quest)),
             };
+            Progression.Capture(data);
+            return data;
         }
 
         public void Restore(SaveData data, GameConfig config)
         {
+            // Gear first (see ResetForNewGame).
             Inventory.Load(data.inventory);
+            Storage.Load(data.storage);
+            Equipment.LoadLevels(data.enhanceLevels);
+            Equipment.Load(data.equipped);
+            Equipment.EnsureUsable(CharacterClassInfo.Parse(data.playerClass)); // old saves have no gear: hand out the starter weapon
             Quest = data.quest ?? new QuestProgress();
+            OpenedChests.Clear();
+            if (data.openedChests != null) OpenedChests.UnionWith(data.openedChests);
             PlayerMaxHealth = data.playerMaxHealth > 0 ? data.playerMaxHealth : config.playerStats.maxHealth;
-            PlayerHealth = Mathf.Clamp(data.playerHealth, 1, PlayerMaxHealth);
             PlayTimeSeconds = data.playTimeSeconds;
-            StartPosition = new Vector2(data.playerX, data.playerY);
+            PlayerClass = CharacterClassInfo.Parse(data.playerClass);
+            Progression.Restore(data, PlayerClass);
+            PlayerHealth = Mathf.Clamp(data.playerHealth, 1, CharacterStats.MaxHp);
+            PlayerMana = CharacterStats.MaxMp;
+            if (MapRegistry.Exists(data.mapId))
+            {
+                MapId = data.mapId;
+                // Negative coordinates mark "use the map's start point" (see SaveSystem.Migrate).
+                StartPosition = data.playerX >= 0f && data.playerY >= 0f ? new Vector2(data.playerX, data.playerY) : (Vector2?)null;
+            }
+            else
+            {
+                // Unknown map (e.g. removed in a later version): start over at the village spawn.
+                MapId = MapRegistry.Village;
+                StartPosition = null;
+            }
             StartFacing = (Facing)Mathf.Clamp(data.playerFacing, 0, 3);
         }
     }

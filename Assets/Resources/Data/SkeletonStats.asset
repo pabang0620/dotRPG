@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyId: skeleton
   displayName: "\uD574\uACE8"
-  maxHealth: 3
+  maxHealth: 30
   hurtStunTime: 0.3
   invulnerableTime: 0.15
   knockbackSpeed: 6
@@ -25,7 +25,7 @@ MonoBehaviour:
   detectRadius: 4.5
   loseInterestRadius: 7.5
   leashRadius: 10
-  attackDamage: 1
+  attackDamage: 10
   attackRange: 0.95
   windupTime: 0.5
   recoverTime: 0.7

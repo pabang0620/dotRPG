@@ -18,6 +18,6 @@ MonoBehaviour:
   requiredStone: 4
   requiredSkeletonKills: 3
   targetEnemyId: skeleton
-  rewardMaxHealth: 2
+  rewardMaxHealth: 20
   questGiverNpcId: chief
   builderNpcId: builder

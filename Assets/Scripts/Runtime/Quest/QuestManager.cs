@@ -109,6 +109,9 @@ namespace DotRPG
             if (Stage != QuestStage.ReadyToReport) return;
             Progress.stage = (int)QuestStage.Completed;
             if (Game.Player != null && config.rewardMaxHealth > 0) Game.Player.AddMaxHealth(config.rewardMaxHealth);
+            // Equipment reward: goes to the bag (open it with the inventory key to wear it).
+            Game.Session.Inventory.Add("eq_ring_ruby", 1);
+            GameEvents.RaiseToast("보상: 루비 반지를 받았다! (가방에서 장착)");
             Changed?.Invoke();
             Game.Flow.Autosave();
             Game.Flow.ShowEnding();

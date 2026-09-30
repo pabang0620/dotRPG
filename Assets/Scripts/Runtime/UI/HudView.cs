@@ -51,27 +51,37 @@ namespace DotRPG
 
         void Build(RectTransform root)
         {
-            // Hearts (top-left).
-            heartsRoot = UIFactory.Place(UIFactory.Rect(root, "Hearts"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -20), new Vector2(400, 36));
+            // Level + HP / MP / EXP bars (top-left) and the skill bar (bottom-centre).
+            heartsRoot = UIFactory.Place(UIFactory.Rect(root, "Hearts"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -20), new Vector2(10, 10));
+            heartsRoot.gameObject.SetActive(false);
+            StatusBarsView.Create(root);
+            SkillBarView.Create(root);
+            AwakeningBanner.Create(root);
 
-            // Items under the hearts.
-            var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -62), new Vector2(360, 40));
+            // Items under the bars (gold first).
+            var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -100), new Vector2(360, 40));
             var bg = UIFactory.Panel(items, "Bg", true);
             UIFactory.Stretch(bg.rectTransform);
             float x = 14f;
-            foreach (var def in Game.Config.items)
+            var shown = new List<(string id, string icon)> { (ConsumableDatabase.Gold, "icon_gold") };
+            foreach (var def in Game.Config.items) shown.Add((def.id, def.iconKey));
+            foreach (var (id, iconKey) in shown)
             {
-                var icon = UIFactory.Image(items, "Icon_" + def.id, Game.Art.Get(def.iconKey), Color.white);
+                bool gold = id == ConsumableDatabase.Gold;
+                var icon = UIFactory.Image(items, "Icon_" + id, Game.Art.Get(iconKey), Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x, 0), new Vector2(30, 30));
-                var count = UIFactory.Text(items, "Count_" + def.id, "0", 22, UIColors.Cream, TextAnchor.MiddleLeft, true);
-                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 34, 0), new Vector2(70, 34));
-                itemCounts[def.id] = count;
-                x += 112f;
+                var count = UIFactory.Text(items, "Count_" + id, "0", 22, gold ? (Color)new Color32(255, 216, 74, 255) : UIColors.Cream, TextAnchor.MiddleLeft, true);
+                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 34, 0), new Vector2(gold ? 96 : 70, 34));
+                itemCounts[id] = count;
+                x += gold ? 138f : 100f;
             }
             items.sizeDelta = new Vector2(x, 44);
+            QuickItemBar.Create(root);
 
-            // Quest tracker (top-right).
-            questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -20), new Vector2(360, 130));
+            // Round minimap (top-right) with the quest tracker underneath.
+            SideMenuView.Create(root);
+            MinimapView.Create(root);
+            questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -16 - MinimapView.Diameter - 32), new Vector2(360, 130));
             var qbg = UIFactory.Panel(questPanel, "Bg", true);
             UIFactory.Stretch(qbg.rectTransform);
             questTitle = UIFactory.Text(questPanel, "Title", "", 22, UIColors.Highlight, TextAnchor.UpperLeft, true);
@@ -117,7 +127,7 @@ namespace DotRPG
         {
             if (!built || Game.Session == null) return;
             OnHealthChanged(Game.Session.PlayerHealth, Game.Session.PlayerMaxHealth);
-            foreach (var pair in itemCounts) pair.Value.text = Game.Session.Inventory.Count(pair.Key).ToString();
+            foreach (var pair in itemCounts) pair.Value.text = Game.Session.Inventory.Count(pair.Key).ToString("N0");
             RefreshQuest();
             RefreshControls(true);
         }
@@ -130,26 +140,14 @@ namespace DotRPG
 
         void OnHealthChanged(int current, int max)
         {
-            int heartCount = Mathf.CeilToInt(max / 2f);
-            while (hearts.Count < heartCount)
-            {
-                var img = UIFactory.Image(heartsRoot, "Heart", Game.Art.Get("heart_full"), Color.white);
-                UIFactory.Place(img.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(hearts.Count * 38f, 0), new Vector2(33, 30));
-                hearts.Add(img);
-            }
-            for (int i = 0; i < hearts.Count; i++)
-            {
-                hearts[i].gameObject.SetActive(i < heartCount);
-                int value = current - i * 2;
-                hearts[i].sprite = Game.Art.Get(value >= 2 ? "heart_full" : value == 1 ? "heart_half" : "heart_empty");
-            }
+            // HP is drawn by StatusBarsView (it polls every frame); nothing to do here.
         }
 
         void OnInventoryChanged(string id, int count, int delta)
         {
             if (itemCounts.TryGetValue(id, out var text))
             {
-                text.text = count.ToString();
+                text.text = count.ToString("N0");
                 if (delta > 0) itemPulse[id] = Time.unscaledTime;
             }
             RefreshQuest();
@@ -178,8 +176,8 @@ namespace DotRPG
             lastGamepad = input.UsingGamepad;
             controlsHint.text =
                 $"이동 {input.GetBindingLabel(GameAction.Move)}   공격 {input.GetBindingLabel(GameAction.Attack)}   " +
-                $"상호작용 {input.GetBindingLabel(GameAction.Interact)}   당근 먹기 {input.GetBindingLabel(GameAction.UseItem)}   " +
-                $"메뉴 {input.GetBindingLabel(GameAction.Pause)}";
+                $"상호작용 {input.GetBindingLabel(GameAction.Interact)}   물약 {input.GetBindingLabel(GameAction.UseItem)}/{input.GetBindingLabel(GameAction.UseMana)}   " +
+                $"가방 {input.GetBindingLabel(GameAction.Inventory)}   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
         }
 
         void ShowToast(string message)

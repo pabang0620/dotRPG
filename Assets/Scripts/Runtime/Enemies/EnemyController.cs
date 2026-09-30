@@ -45,6 +45,42 @@ namespace DotRPG
         public event Action<EnemyController> Died;
         public Vector2 Position => body.position;
         public bool IsDead => state == State.Dead;
+        /// <summary>Centre of the body (the transform sits at the feet) — what spells aim at.</summary>
+        public Vector2 Center => Position + new Vector2(0f, 0.4f);
+
+        /// <summary>Every enemy currently in the world (used by the mage's auto-targeting).</summary>
+        public static readonly System.Collections.Generic.List<EnemyController> Active = new System.Collections.Generic.List<EnemyController>();
+
+        void OnEnable() => Active.Add(this);
+
+        void OnDisable() => Active.Remove(this);
+
+        /// <summary>(enemy, xp reward) — the player listens to gain experience.</summary>
+        public static event Action<EnemyController, int> Killed;
+
+        float frozenUntil;
+        public bool IsFrozen => Time.time < frozenUntil;
+
+        float stunnedUntil;
+        public bool IsStunned => Time.time < stunnedUntil;
+
+        /// <summary>Stops the enemy for a moment without the ice look (war cry, thunder).</summary>
+        public void Stun(float seconds)
+        {
+            if (state == State.Dead || seconds <= 0f) return;
+            stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
+            if (state == State.Windup) EnterState(State.Recover, seconds);
+            desiredVelocity = Vector2.zero;
+        }
+
+        /// <summary>Stops the enemy completely (Frost Nova). The body turns icy blue.</summary>
+        public void Freeze(float seconds)
+        {
+            if (state == State.Dead || seconds <= 0f) return;
+            frozenUntil = Mathf.Max(frozenUntil, Time.time + seconds);
+            if (state == State.Windup) EnterState(State.Recover, seconds);
+            desiredVelocity = Vector2.zero;
+        }
 
         public static EnemyController Create(EnemyStats stats, CharacterLook look, Vector2 position, Transform parent)
         {
@@ -88,6 +124,9 @@ namespace DotRPG
             enemy.flash = go.AddComponent<HitFlash>();
             enemy.flash.SetTargets(sr);
             go.AddComponent<YSort>().Configure(false);
+            // Added after YSort so the bar is not depth-sorted with the body (it always draws on top).
+            go.AddComponent<EnemyHealthBar>().Setup(enemy.health, 1.2f);
+            enemy.health.Damaged += info => DamageNumber.Show(enemy.Position + new Vector2(0f, 1.55f), info.amount);
             enemy.EnterState(State.Idle, UnityEngine.Random.Range(0.5f, 2f));
             return enemy;
         }
@@ -111,6 +150,19 @@ namespace DotRPG
         void Update()
         {
             if (state == State.Dead) return;
+            if (IsFrozen)
+            {
+                desiredVelocity = Vector2.zero;
+                animator.Renderer.color = new Color(0.6f, 0.85f, 1f, 1f);
+                return;
+            }
+            if (animator.Renderer.color != Color.white && animator.Renderer.color.a >= 1f) animator.Renderer.color = Color.white;
+            if (IsStunned)
+            {
+                desiredVelocity = Vector2.zero;
+                animator.Play(CharacterAnim.Hurt, facing);
+                return;
+            }
             if (!Game.IsPlaying)
             {
                 desiredVelocity = Vector2.zero;
@@ -310,7 +362,33 @@ namespace DotRPG
             Fx.Burst("fx_dust", Position + new Vector2(0f, 0.2f), 4, 1.5f, 0.5f);
             GameEvents.RaiseEnemyKilled(stats.enemyId);
             Died?.Invoke(this);
+            Killed?.Invoke(this, stats.xpReward);
+            DropLoot();
             StartCoroutine(DeathRoutine());
+        }
+
+        /// <summary>Chance of dropping one piece of equipment the player's class can use.</summary>
+        const float EquipmentDropChance = 0.4f;
+
+        void DropLoot()
+        {
+            if (Game.Player == null || transform.parent == null) return;
+            // Drop into the world's object root so it survives this enemy being destroyed.
+            var parent = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
+            // Gold for the village shops.
+            Pickup.Create(ConsumableDatabase.Gold, UnityEngine.Random.Range(8, 17), Position + new Vector2(0f, 0.2f), parent);
+            // Enhancement materials (bag → "기타" tab).
+            foreach (var mat in EquipmentDatabase.AllMaterials)
+            {
+                if (UnityEngine.Random.value > mat.dropChance) continue;
+                int n = UnityEngine.Random.Range(mat.minDrop, mat.maxDrop + 1);
+                for (int i = 0; i < n; i++) Pickup.Create(mat.id, 1, Position + new Vector2(0f, 0.2f), parent);
+            }
+            string id = EquipmentDatabase.RollDrop(Game.Player.Class, EquipmentDropChance);
+            if (id == null) return;
+            Pickup.Create(id, 1, Position + new Vector2(0f, 0.2f), parent);
+            var item = EquipmentDatabase.Get(id);
+            if (item != null && item.rarity >= ItemRarity.Rare) Fx.Sparkle(Position + Vector2.up * 0.5f, 4, 0.5f);
         }
 
         System.Collections.IEnumerator DeathRoutine()

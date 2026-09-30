@@ -37,6 +37,8 @@ namespace DotRPG
         bool dark;
 
         public Action OnCancel;
+        /// <summary>Left-align button labels (lists of items rather than centred menus).</summary>
+        public bool AlignLeft;
 
         public static MenuList Create(Transform parent, string name, float width, float rowHeight, int fontSize, bool darkTheme)
         {
@@ -51,6 +53,26 @@ namespace DotRPG
 
         public RectTransform RectTransform => (RectTransform)transform;
         public float Height => items.Count * rowHeight;
+        public int Selected => selected;
+
+        /// <summary>Removes every row (used by screens whose contents change, e.g. the bag).</summary>
+        public void Clear()
+        {
+            foreach (var item in items)
+                if (item.root != null) Destroy(item.root.gameObject);
+            items.Clear();
+            RectTransform.sizeDelta = new Vector2(width, 0f);
+        }
+
+        /// <summary>Keeps the cursor on row <paramref name="index"/> (clamped), without a sound.</summary>
+        public void SetSelectedSilently(int index)
+        {
+            selected = Mathf.Clamp(index, 0, Mathf.Max(0, items.Count - 1));
+            if (items.Count > 0 && !items[selected].IsEnabled) selected = FirstEnabled();
+            Refresh();
+        }
+
+        public int Count => items.Count;
 
         public Item AddButton(string label, Action submit, Func<bool> enabled = null)
         {
@@ -84,7 +106,7 @@ namespace DotRPG
             var textColor = dark ? UIColors.Cream : UIColors.Ink;
             bool isOption = item.value != null;
             item.labelText = UIFactory.Text(row, "Label", item.label, fontSize, textColor,
-                isOption ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter, dark);
+                isOption || AlignLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter, dark);
             UIFactory.Stretch(item.labelText.rectTransform, 18f, 0f, isOption ? width * 0.45f : 18f, 0f);
             if (isOption)
             {
@@ -195,7 +217,8 @@ namespace DotRPG
                 item.highlight.enabled = isSelected;
                 var baseColor = dark ? UIColors.Cream : UIColors.Ink;
                 var color = !enabled ? UIColors.Disabled : baseColor;
-                string prefix = isSelected ? "▶ " : "";
+                // Unselected rows carry an invisible arrow of the same width, so text never jumps sideways.
+                string prefix = isSelected ? "▶ " : "<color=#00000000>▶</color> ";
                 item.labelText.text = prefix + item.label;
                 item.labelText.color = color;
                 if (item.valueText != null)

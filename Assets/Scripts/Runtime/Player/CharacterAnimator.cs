@@ -11,7 +11,7 @@ namespace DotRPG
     }
 
     /// <summary>
-    /// Frame-based 4-direction sprite animation shared by the player, NPCs and enemies.
+    /// Frame-based 8-direction sprite animation shared by the player, NPCs and enemies.
     /// Frames come from <see cref="SpriteLibrary.GetCharacter"/>, so real sprite sheets can replace the
     /// placeholders by file name, or this component can later be swapped for an Animator controller
     /// behind the same Play() API.
@@ -89,7 +89,14 @@ namespace DotRPG
                 default: frame = IdleFrames[FrameIndex()]; break;
             }
             target.sprite = Game.Art.GetCharacter(look, facing.SpriteKey(), frame);
-            target.flipX = facing == Facing.Left;
+            target.flipX = facing.IsLeft();
+        }
+
+        /// <summary>Swaps the look (e.g. new clothes) keeping the current animation.</summary>
+        public void SetLook(CharacterLook characterLook)
+        {
+            look = characterLook;
+            Refresh();
         }
     }
 }

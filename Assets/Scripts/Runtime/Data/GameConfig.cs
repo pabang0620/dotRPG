@@ -58,10 +58,10 @@ namespace DotRPG
         public Color backgroundColor = new Color(0.16f, 0.30f, 0.18f);
 
         [Header("World resources")]
-        public int treeHealth = 3;
+        public int treeHealth = 30;
         public int treeWoodDrop = 2;
         public float treeRegrowSeconds = 60f;
-        public int rockHealth = 4;
+        public int rockHealth = 40;
         public int rockStoneDrop = 2;
         public float rockRespawnSeconds = 75f;
         public float cropRegrowSeconds = 40f;
@@ -75,6 +75,7 @@ namespace DotRPG
         public float textCharsPerSecond = 45f;
 
         [Header("Items")]
+        [System.NonSerialized]
         public List<ItemDefinition> items = new List<ItemDefinition>
         {
             new ItemDefinition(ItemIds.Wood, "목재", "icon_wood"),
@@ -82,13 +83,23 @@ namespace DotRPG
             new ItemDefinition(ItemIds.Carrot, "당근", "icon_carrot"),
         };
 
-        [Header("NPCs (placed by map symbol)")]
+        /// <summary>
+        /// NPCs placed by map symbol. Defined in code (<see cref="DefaultNpcs"/>) and never serialized, so a
+        /// build always uses the current definitions instead of a copy captured by an earlier editor session.
+        /// </summary>
+        [System.NonSerialized]
         public List<NpcDefinition> npcs = DefaultNpcs();
 
         public ItemDefinition GetItem(string id)
         {
             foreach (var item in items)
                 if (item.id == id) return item;
+            var gear = EquipmentDatabase.Get(id);
+            if (gear != null) return new ItemDefinition(gear.id, gear.name, gear.iconKey);
+            var mat = EquipmentDatabase.GetMaterial(id);
+            if (mat != null) return new ItemDefinition(mat.id, mat.name, mat.iconKey);
+            var use = ConsumableDatabase.Get(id);
+            if (use != null) return new ItemDefinition(use.id, use.name, use.iconKey);
             return new ItemDefinition(id, id, "icon_" + id);
         }
 
@@ -146,6 +157,15 @@ namespace DotRPG
             new NpcDefinition("6", "miner", "광부 돌쇠", CharacterLook.Miner, NpcBehaviour.Work, NpcTool.Pickaxe, Facing.Right, "miner", "miner_after"),
             new NpcDefinition("7", "carrier", "짐꾼 소미", CharacterLook.Carrier, NpcBehaviour.Patrol, NpcTool.Crate, Facing.Right, "carrier", "carrier_after", new Vector2(9f, 0f)),
             new NpcDefinition("8", "kid", "꼬마 루이", new CharacterLook("kid", HairStyle.Spiky, new Color32(250, 205, 160, 255), new Color32(90, 60, 40, 255), new Color32(230, 200, 70, 255), new Color32(80, 110, 160, 255)), NpcBehaviour.Wander, NpcTool.None, Facing.Down, "kid", "kid_after"),
+            new NpcDefinition("9", "trader", "협곡 상인 누리", new CharacterLook("trader", HairStyle.Bun, new Color32(222, 160, 110, 255), new Color32(60, 40, 30, 255), new Color32(40, 150, 140, 255), new Color32(90, 70, 60, 255), HatKind.Bandana, new Color32(230, 180, 60, 255)), NpcBehaviour.Idle, NpcTool.None, Facing.Down, "trader", "trader_after"),
+            // Town services (village): general store, blacksmith, storage.
+            new NpcDefinition("J", "merchant", "잡화상인 미르", new CharacterLook("merchant", HairStyle.Bun, new Color32(250, 205, 160, 255), new Color32(96, 58, 36, 255), new Color32(76, 150, 92, 255), new Color32(110, 78, 56, 255), HatKind.Bandana, new Color32(236, 196, 72, 255)),
+                NpcBehaviour.Idle, NpcTool.None, Facing.Down, "", "", default, NpcService.Shop, "어서 오세요! 물약, 귀환 주문서, 강화 재료 다 있어요."),
+            new NpcDefinition("D", "smith", "대장장이 무쇠", new CharacterLook("smith", HairStyle.Short, new Color32(214, 150, 104, 255), new Color32(40, 32, 28, 255), new Color32(88, 92, 104, 255), new Color32(74, 56, 44, 255))
+                { armor = ArmorStyle.Leather, armorColor = new Color32(128, 84, 52, 255) },
+                NpcBehaviour.Work, NpcTool.Hammer, Facing.Right, "", "", default, NpcService.Blacksmith, "재료만 가져오게. 장비를 단단하게 벼려 주지!"),
+            new NpcDefinition("K", "keeper", "창고지기 보람", new CharacterLook("keeper", HairStyle.Curly, new Color32(250, 205, 160, 255), new Color32(168, 84, 44, 255), new Color32(62, 92, 150, 255), new Color32(84, 84, 96, 255), HatKind.Cap, new Color32(52, 78, 132, 255)),
+                NpcBehaviour.Idle, NpcTool.None, Facing.Down, "", "", default, NpcService.Storage, "맡겨 두신 물건은 제가 안전하게 지켜 드려요."),
         };
     }
 }

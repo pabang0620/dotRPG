@@ -25,6 +25,20 @@ namespace DotRPG
         Straw,
         Cap,
         Bandana,
+        /// <summary>Tall pointed mage hat.</summary>
+        Wizard,
+    }
+
+    /// <summary>Worn top drawn over the torso.</summary>
+    public enum ArmorStyle
+    {
+        None,
+        /// <summary>천 조끼: cloth vest panels, shirt showing in the middle.</summary>
+        Vest,
+        /// <summary>가죽 갑옷: leather with a chest strap and belt.</summary>
+        Leather,
+        /// <summary>철 흉갑: iron breastplate with shoulder plates.</summary>
+        Plate,
     }
 
     /// <summary>
@@ -44,8 +58,41 @@ namespace DotRPG
         public Color32 shirt = new Color32(214, 64, 58, 255);
         public Color32 pants = new Color32(62, 72, 110, 255);
         public Color32 hatColor = new Color32(226, 184, 94, 255);
+        [Tooltip("Long robe over the legs (mage). Uses the shirt colour.")]
+        public bool robe;
+        [Tooltip("Worn top drawn over the torso.")]
+        public ArmorStyle armor;
+        public Color32 armorColor;
+        [Tooltip("Robe skirt colour (alpha 0 = same as the shirt).")]
+        public Color32 robeColor;
 
         public CharacterLook() { }
+
+        public CharacterLook Clone() => (CharacterLook)MemberwiseClone();
+
+        /// <summary>
+        /// The look with the worn top and bottom applied, so changing clothes shows on the character.
+        /// Necklaces and rings are not drawn. Returns the base look when nothing is worn.
+        /// </summary>
+        public static CharacterLook WithGear(CharacterLook baseLook, string topId, string bottomId)
+        {
+            int top = EquipmentDatabase.TierOf(topId), bottom = EquipmentDatabase.TierOf(bottomId);
+            if (top < 0 && bottom < 0) return baseLook;
+            var l = baseLook.Clone();
+            l.id = $"{baseLook.id}_t{top}_b{bottom}";
+            switch (top)
+            {
+                case 0: l.armor = ArmorStyle.Vest; l.armorColor = C(201, 169, 120); break;
+                case 1: l.armor = ArmorStyle.Leather; l.armorColor = C(138, 90, 50); break;
+                case 2: l.armor = ArmorStyle.Plate; l.armorColor = C(184, 194, 206); break;
+            }
+            switch (bottom)
+            {
+                case 0: l.pants = C(168, 138, 90); if (l.robe) l.robeColor = C(150, 118, 78); break;
+                case 1: l.pants = C(96, 60, 36); if (l.robe) l.robeColor = C(110, 70, 42); break;
+            }
+            return l;
+        }
 
         public CharacterLook(string id, HairStyle hairStyle, Color32 skin, Color32 hair, Color32 shirt, Color32 pants,
             HatKind hat = HatKind.None, Color32 hatColor = default)
@@ -67,6 +114,13 @@ namespace DotRPG
         static readonly Color32 SkinDark = C(150, 96, 62);
 
         public static CharacterLook Player => new CharacterLook("player", HairStyle.Spiky, SkinLight, C(214, 108, 48), C(64, 132, 214), C(70, 62, 92));
+
+        /// <summary>Selectable mage: violet robe, pointed indigo hat, long silver hair.</summary>
+        public static CharacterLook Mage => new CharacterLook("mage", HairStyle.Long, SkinLight, C(214, 214, 236), C(116, 70, 190), C(70, 44, 130),
+            HatKind.Wizard, C(58, 72, 170))
+        {
+            robe = true,
+        };
 
         public static CharacterLook Skeleton => new CharacterLook
         {

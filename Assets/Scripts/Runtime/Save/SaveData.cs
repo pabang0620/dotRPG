@@ -36,13 +36,15 @@ namespace DotRPG
     [Serializable]
     public class SaveData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
         public string savedAtUtc;
         public float playTimeSeconds;
 
         public string mapId = "village";
+        /// <summary>Chosen character: "warrior" or "mage" (older saves have none = warrior).</summary>
+        public string playerClass = "warrior";
         public float playerX;
         public float playerY;
         public int playerFacing;
@@ -50,6 +52,20 @@ namespace DotRPG
         public int playerMaxHealth;
 
         public List<ItemStack> inventory = new List<ItemStack>();
+        /// <summary>Items kept with the village storage keeper (version 3+).</summary>
+        public List<ItemStack> storage = new List<ItemStack>();
+        /// <summary>Equipment slot contents in <see cref="EquipSlot"/> order (null/empty = nothing worn).</summary>
+        public List<string> equipped = new List<string>();
+        public List<string> openedChests = new List<string>();
+        /// <summary>Enhancement per equipment kind (count = +level).</summary>
+        public List<ItemStack> enhanceLevels = new List<ItemStack>();
+
+        // Progression (version 2+).
+        public int level = 1;
+        public int xp;
+        public List<string> passives = new List<string>();
+        /// <summary>2 slots × (active + 2 supports), "" = empty socket.</summary>
+        public List<string> gemSlots = new List<string>();
         public QuestProgress quest = new QuestProgress();
     }
 }

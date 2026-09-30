@@ -22,6 +22,12 @@ namespace DotRPG
         /// <summary>Optional 9-slice border (left, bottom, right, top) in pixels for UI sprites.</summary>
         public int BorderLeft, BorderBottom, BorderRight, BorderTop;
 
+        /// <summary>
+        /// Art pixels per 16px game pixel. 1 = the classic 16px-per-tile art; 2 = the high-resolution
+        /// town/forest art (32px per tile), which the sprite library imports at twice the pixels per unit.
+        /// </summary>
+        public int Density = 1;
+
         public static readonly Color32 Clear = new Color32(0, 0, 0, 0);
 
         public PixelCanvas(int width, int height)

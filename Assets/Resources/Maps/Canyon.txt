@@ -1,0 +1,73 @@
+// dotRPG canyon trading town (second map). One character = one 16px tile. Top row = north.
+// Route: south entrance -> central plaza (inn landmark) -> long north stairs -> upper terrace & north gate. A safe town: no monsters.
+// Teal channel winds from the south edge into a pool beside the plaza; one wooden bridge crosses it.
+// East: shop alley (stalls, trader) + cliff-side ledge with a treasure chest and a lookout.
+// West: rest area (well, bench, garden). Main paths are 3-4 tiles wide, side paths at least 2.
+// ,=flagstone  W=cliff (solid; face drawn where lower ground is below)  L=stairs  .=moss grass
+// ~=water  d=wooden bridge / lookout deck  T=tree  R=rock  B=bush  f=flower  x=box  b=barrel  n=sign
+// H=red-roof house (3x3)  G=green-roof house (3x3)  I=inn landmark (5x4)  M=market stall (3x2)
+// o=well (2x2)  e=bench (2x1)  $=treasure chest  A=north gate (4x2)  F=railing  (anchors = bottom-left)
+// 9=trader  <=portal back to the hunting ground (skeleton forest)  P=player start
+// Signs get dialogue ids canyon_sign_0, canyon_sign_1... in reading order (top-left first).
+// &=blacksmith anvil (equipment enhancement), beside the inn
+// >=portal north to the winter forest village (top edge, right of the closed stone gate)
+WWWWWWWWWWWWWWWWWWWWWWWWWWWW>>>>WWWWWWWWWWWWWWWW
+WWWWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWWWW
+WWWWWWWW,,T,,,,,,,,,,,A,,,,,,,,,,,,,T,,,WWWWWWWW
+WWWWWWW,,,,,,,,,,,,,,n,,,,,,,,,,,,,,,,,,,WWWWWWW
+WWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWW
+WWWWWW,,,R,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,R,WWWWWW
+WWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWW
+WWWWWW,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TWWWWWW
+WWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWW
+WWWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWLLLLWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWLLLLWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWLLLLWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWLLLLWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWLLLLWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWLLLLWWWWWWWWWWWWWWWWWWWWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,T,,,,,,,,,,,,,,,,,,,,,,,,,xb,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,x,,,,,,,,Wdddd,,W
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,b,,G,,,,Wdddd,$W
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,W,,,,,,W
+WW,,,,,,,,,I,,,,,,,,,,,,,,,,,,,,,,,,,,,,W,,n,,,W
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,W,,,,,,W
+WW,,,,,,B,,,,,,,,,&,,,,,,,,,,,,,,,,,,,,,WWWLLWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T,WWWLLWWW
+WW,H,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWLLWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWLLWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,W
+WW,,,,,~~~~~~~~~~~~~,,,,n,,,,,,,,,,,,,,,,,,,,,,W
+WW,,,,,~~~~~~~~~~~~~~,,,,,,,,,,,,,,,,,,,,,,,,,,W
+WW,,,,,~~~~~~~~~~~~~~,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,~~~~~~~~~~~~~~,,,,,,,,,,,,,,,,M,,WWWWWWWW
+WW,,,,,~~~~~~~~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,~~~~~~~~~~~~~,,,,,,,,,,,,,,9,,,,,WWWWWWWW
+WW,,,,,,~~~~~~~~~~~,,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,,,M,,WWWWWWWW
+WW,,,,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,e,,,,.,,,,,~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,...,,,,~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,...,,T,~~~~~~,,,,,,,,,,,,,,,,,M,,WWWWWWWW
+WW,,,,o,.,,,,,~~~~~~,H,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,f,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,dddddd,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,dddddd,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,dddddd,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,T,,,,,,,,,~~~~~~~,,H,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,H,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,T,,,WWWWWWWW
+WW,T,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,WWWWWWWW
+WWW,,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,WWWWWWWW
+WWW,,,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,WWWWWWWW
+WWWW,,,,,,,,,,,~~~~~~~,,,,,,,P,,,,,,,,,,WWWWWWWW
+WWWWW,,,,,,,,,,~~~~~~~,,,,,,,,,,,,,,,,,,WWWWWWWW
+WWWWWW,,,,,,,,,~~~~~~~WWWW,,,,,,,,WWWWWWWWWWWWWW
+WWWWWWWWWWWWWWW~~~~~~~WWWWW<<<<WWWWWWWWWWWWWWWWW

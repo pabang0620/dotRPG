@@ -20,5 +20,9 @@ namespace DotRPG
         public static void RaiseToast(string message) => Toast?.Invoke(message);
         public static void RaiseEnemyKilled(string enemyId) => EnemyKilled?.Invoke(enemyId);
         public static void RaisePlayerHealthChanged(int current, int max) => PlayerHealthChanged?.Invoke(current, max);
+
+        /// <summary>An awakening (ultimate) skill was cast: skill name and theme colour for the cut-in banner.</summary>
+        public static event Action<string, UnityEngine.Color> Awakening;
+        public static void RaiseAwakening(string skillName, UnityEngine.Color color) => Awakening?.Invoke(skillName, color);
     }
 }

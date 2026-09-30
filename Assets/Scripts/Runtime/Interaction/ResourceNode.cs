@@ -22,6 +22,8 @@ namespace DotRPG
         int dropAmount;
         float respawnSeconds;
         string fullSpriteKey;
+        string stumpKey = "stump";
+        float fxHeight = 1f;
 
         SpriteRenderer spriteRenderer;
         CircleCollider2D circle;
@@ -29,7 +31,8 @@ namespace DotRPG
         float shakeUntil;
         bool depleted;
 
-        public static ResourceNode Create(ResourceKind kind, Vector2 position, Transform parent, GameConfig config, bool fruit = false)
+        /// <param name="hd">Use the 32px town/forest art ("town_chop", "town_rock_*", "town_stump").</param>
+        public static ResourceNode Create(ResourceKind kind, Vector2 position, Transform parent, GameConfig config, bool fruit = false, bool hd = false)
         {
             var go = new GameObject(kind.ToString());
             go.transform.SetParent(parent, false);
@@ -49,8 +52,10 @@ namespace DotRPG
                 node.dropItem = ItemIds.Wood;
                 node.dropAmount = config.treeWoodDrop;
                 node.respawnSeconds = config.treeRegrowSeconds;
-                node.fullSpriteKey = fruit ? "tree_fruit" : "tree";
-                node.circle.radius = 0.4f;
+                node.fullSpriteKey = hd ? "town_chop" : fruit ? "tree_fruit" : "tree";
+                node.stumpKey = hd ? "town_stump" : "stump";
+                node.fxHeight = hd ? 1.9f : 1f;
+                node.circle.radius = hd ? 0.36f : 0.4f;
                 node.circle.offset = new Vector2(0f, 0.15f);
             }
             else
@@ -59,9 +64,9 @@ namespace DotRPG
                 node.dropItem = ItemIds.Stone;
                 node.dropAmount = config.rockStoneDrop;
                 node.respawnSeconds = config.rockRespawnSeconds;
-                node.fullSpriteKey = "rock";
-                node.circle.radius = 0.42f;
-                node.circle.offset = new Vector2(0f, 0.3f);
+                node.fullSpriteKey = hd ? $"town_rock_{Mathf.Abs(Mathf.RoundToInt(position.x * 3f + position.y)) % 2}" : "rock";
+                node.circle.radius = hd ? 0.5f : 0.42f;
+                node.circle.offset = new Vector2(0f, hd ? 0.3f : 0.3f);
             }
             node.health = node.maxHealth;
             sr.sprite = Game.Art.Get(node.fullSpriteKey);
@@ -72,13 +77,13 @@ namespace DotRPG
         public bool TakeDamage(DamageInfo info)
         {
             if (depleted || info.team != Team.Player) return false;
-            health--;
+            health -= Mathf.Max(1, info.amount);
             shakeUntil = Time.time + 0.18f;
-            Vector2 center = (Vector2)transform.position + new Vector2(0f, kind == ResourceKind.Tree ? 0.8f : 0.35f);
+            Vector2 center = (Vector2)transform.position + new Vector2(0f, kind == ResourceKind.Tree ? 0.8f * fxHeight : 0.35f);
             if (kind == ResourceKind.Tree)
             {
                 Game.Audio.PlaySfx("chop");
-                Fx.Burst("fx_leaf", center + new Vector2(0f, 0.6f), 4, 2.5f, 0.8f);
+                Fx.Burst("fx_leaf", center + new Vector2(0f, 0.6f * fxHeight), 4, 2.5f, 0.8f);
             }
             else
             {
@@ -98,10 +103,10 @@ namespace DotRPG
             if (kind == ResourceKind.Tree)
             {
                 Game.Audio.PlaySfx("tree_fall");
-                spriteRenderer.sprite = Game.Art.Get("stump");
+                spriteRenderer.sprite = Game.Art.Get(stumpKey);
                 circle.radius = 0.35f;
                 circle.offset = new Vector2(0f, 0.15f);
-                Fx.Burst("fx_leaf", (Vector2)transform.position + new Vector2(0f, 1.2f), 10, 3.5f, 1f);
+                Fx.Burst("fx_leaf", (Vector2)transform.position + new Vector2(0f, 1.2f * fxHeight), 10, 3.5f, 1f);
             }
             else
             {
@@ -128,7 +133,7 @@ namespace DotRPG
             circle.enabled = true;
             if (kind == ResourceKind.Tree)
             {
-                circle.radius = 0.4f;
+                circle.radius = fxHeight > 1f ? 0.36f : 0.4f;
                 circle.offset = new Vector2(0f, 0.15f);
             }
             GetComponent<YSort>().Refresh();

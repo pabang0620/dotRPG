@@ -20,6 +20,25 @@ namespace DotRPG
             if (transitioning || Game.State.ChangedThisFrame) return;
             var state = Game.State.Current;
             if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
+            else if (state == GameState.Playing && Game.Input.InventoryPressed) OpenInventory();
+        }
+
+        public void OpenInventory() => OpenWindow(null);
+
+        /// <summary>Opens a full-screen window (bag, skills, map, quest, dungeon, raid, enhance); the world freezes.</summary>
+        public void OpenWindow(MenuScreen window)
+        {
+            var state = Game.State.Current;
+            if (transitioning || (state != GameState.Playing && state != GameState.Paused && state != GameState.Inventory)) return;
+            Game.UI.PendingWindow = window;
+            if (state == GameState.Inventory) Game.UI.ShowWindow(window);
+            else Game.State.Set(GameState.Inventory);
+            Game.Audio.PlaySfx("select");
+        }
+
+        public void CloseInventory()
+        {
+            if (Game.State.Current == GameState.Inventory) Game.State.Set(GameState.Playing);
         }
 
         void OnApplicationFocus(bool hasFocus)
@@ -46,11 +65,11 @@ namespace DotRPG
             else if (state == GameState.Ending) Game.State.Set(GameState.Playing);
         }
 
-        public void NewGame()
+        public void NewGame(CharacterClass playerClass = CharacterClass.Warrior)
         {
             StartCoroutine(Transition(() =>
             {
-                Game.Session.ResetForNewGame(Game.Config);
+                Game.Session.ResetForNewGame(Game.Config, playerClass);
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
                 GameEvents.RaiseToast($"촌장 모리에게 말을 걸어 보자  [{Game.Input.GetBindingLabel(GameAction.Interact)}]");
@@ -78,17 +97,88 @@ namespace DotRPG
         void EnterWorld()
         {
             Game.Dialogue.Abort();
-            Game.World.Rebuild();
             var session = Game.Session;
+            Game.World.Load(session.MapId);
             var player = Game.Player;
             player.gameObject.SetActive(true);
+            player.SetClass(session.PlayerClass);
             Vector2 start = session.StartPosition ?? Game.World.PlayerSpawn;
+            // A saved spot that is now blocked (the map changed in an update) falls back to the start point.
+            if (session.StartPosition.HasValue && !Game.World.IsFree(start)) start = Game.World.PlayerSpawn;
             player.Spawn(start, session.StartFacing, session.PlayerHealth, session.PlayerMaxHealth);
             Game.Camera.SetTarget(player.transform, true);
             Game.Quest.NotifyChanged();
             Game.UI.Hud.ClearToasts();
             Game.UI.Hud.RefreshAll();
-            Game.Audio.PlayMusic("music_village");
+            Game.Audio.PlayMusic(Game.World.Map.music);
+        }
+
+        /// <summary>Walks the player through a map portal to another map (fade out → rebuild → fade in).</summary>
+        public void TravelTo(string mapId) => TravelTo(mapId, false);
+
+        /// <summary>
+        /// Moves the player to another map. <paramref name="arriveAtSpawn"/> = appear at the map's start
+        /// point (the village square for the return scroll) instead of at the portal leading back.
+        /// </summary>
+        public void TravelTo(string mapId, bool arriveAtSpawn)
+        {
+            if (transitioning || !Game.IsPlaying || !MapRegistry.Exists(mapId) || mapId == Game.World.MapId) return;
+            string from = Game.World.MapId;
+            StartCoroutine(Transition(() =>
+            {
+                Game.Dialogue.Abort();
+                var session = Game.Session;
+                session.MapId = mapId;
+                Game.World.Load(mapId);
+                var player = Game.Player;
+                var facing = Facing.Down;
+                Vector2 arrival = arriveAtSpawn ? Game.World.PlayerSpawn : Game.World.ArrivalFrom(from, out facing);
+                player.Spawn(arrival, facing, session.PlayerHealth, session.PlayerMaxHealth);
+                Game.Camera.SetTarget(player.transform, true);
+                Game.Quest.NotifyChanged();
+                Game.UI.Hud.RefreshAll();
+                Game.Audio.PlayMusic(Game.World.Map.music);
+                Game.Audio.PlaySfx("confirm");
+                GameEvents.RaiseToast($"— {Game.World.Map.displayName} —");
+                if (arriveAtSpawn) Fx.Sparkle(player.Center + Vector2.up * 0.3f, 8, 0.8f);
+            }));
+        }
+
+        bool readingScroll;
+
+        /// <summary>
+        /// 마을 귀환 주문서: a short light column around the player, then back to the village square.
+        /// Returns true when a scroll was used up.
+        /// </summary>
+        public bool UseTownScroll()
+        {
+            if (transitioning || readingScroll || Game.Player == null || Game.Player.IsDead) return false;
+            if (Game.World.MapId == MapRegistry.Village)
+            {
+                GameEvents.RaiseToast("이미 마을에 있다.");
+                Game.Audio.PlaySfx("cancel");
+                return false;
+            }
+            if (!Game.Session.Inventory.Remove(ConsumableDatabase.TownScroll, 1)) return false;
+            if (Game.State.Current == GameState.Inventory) CloseInventory();
+            StartCoroutine(TownScrollRoutine());
+            return true;
+        }
+
+        IEnumerator TownScrollRoutine()
+        {
+            readingScroll = true;
+            var player = Game.Player;
+            player.LockMovement(1.15f);
+            SkillVisuals.TownPortal(player.Position);
+            Game.Audio.PlaySfx("magic");
+            GameEvents.RaiseToast("마을 귀환 주문서를 펼쳤다…");
+            yield return new WaitForSeconds(1f);
+            // Wait out a pause menu or a conversation that started meanwhile.
+            while (!Game.IsPlaying || transitioning) yield return null;
+            readingScroll = false;
+            if (player.IsDead) yield break;
+            TravelTo(MapRegistry.Village, true);
         }
 
         public void SaveGame()
@@ -117,7 +207,7 @@ namespace DotRPG
             StartCoroutine(Transition(() =>
             {
                 Game.Dialogue.Abort();
-                Game.World.Rebuild();
+                Game.World.Load(MapRegistry.Village);
                 Game.Player.gameObject.SetActive(false);
                 Game.Camera.SetTarget(null, false);
                 Game.State.Set(GameState.Title);
@@ -148,7 +238,14 @@ namespace DotRPG
             StartCoroutine(Transition(() =>
             {
                 var player = Game.Player;
-                player.Spawn(Game.World.PlayerSpawn, Facing.Down, Game.Session.PlayerMaxHealth, Game.Session.PlayerMaxHealth);
+                if (Game.World.MapId != MapRegistry.Village)
+                {
+                    Game.Session.MapId = MapRegistry.Village;
+                    Game.World.Load(MapRegistry.Village);
+                    Game.Audio.PlayMusic(Game.World.Map.music);
+                }
+                player.Spawn(Game.World.PlayerSpawn, Facing.Down, int.MaxValue, Game.Session.PlayerMaxHealth);
+                Game.Session.PlayerMana = CharacterStats.MaxMp;
                 Game.Camera.SetTarget(player.transform, true);
                 Game.State.Set(GameState.Playing);
             }));

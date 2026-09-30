@@ -21,10 +21,10 @@ MonoBehaviour:
   targetPixelHeight: 216
   cameraSmoothTime: 0.12
   backgroundColor: {r: 0.16, g: 0.3, b: 0.18, a: 1}
-  treeHealth: 3
+  treeHealth: 30
   treeWoodDrop: 2
   treeRegrowSeconds: 60
-  rockHealth: 4
+  rockHealth: 40
   rockStoneDrop: 2
   rockRespawnSeconds: 75
   cropRegrowSeconds: 40

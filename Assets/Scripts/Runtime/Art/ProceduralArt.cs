@@ -10,7 +10,7 @@ namespace DotRPG
     ///
     /// Replace any sprite by placing a PNG at Resources/Art/{key}.png — see <see cref="SpriteLibrary"/>.
     /// </summary>
-    public static class ProceduralArt
+    public static partial class ProceduralArt
     {
         // ---------- Palette ----------
         static readonly Color32 Outline = PixelCanvas.Hex("#2b1d16");
@@ -51,6 +51,28 @@ namespace DotRPG
         static readonly Color32 Gold = PixelCanvas.Hex("#e0b040");
         static readonly Color32 Eye = PixelCanvas.Hex("#2b1d16");
 
+        // Canyon palette (second map): warm flagstone, dark brown cliffs, teal water.
+        static readonly Color32 Flag = PixelCanvas.Hex("#c9a77c");
+        static readonly Color32 FlagLight = PixelCanvas.Hex("#dcbd93");
+        static readonly Color32 FlagGrout = PixelCanvas.Hex("#9c7d58");
+        static readonly Color32 FlagSpot = PixelCanvas.Hex("#b8966c");
+        static readonly Color32 Cliff = PixelCanvas.Hex("#5a463c");
+        static readonly Color32 CliffLight = PixelCanvas.Hex("#77604f");
+        static readonly Color32 CliffDark = PixelCanvas.Hex("#3d2f29");
+        static readonly Color32 CliffDeep = PixelCanvas.Hex("#281e1a");
+        static readonly Color32 CliffRim = PixelCanvas.Hex("#a88b68");
+        static readonly Color32 Teal = PixelCanvas.Hex("#2f9fa6");
+        static readonly Color32 TealDark = PixelCanvas.Hex("#237e87");
+        static readonly Color32 TealLight = PixelCanvas.Hex("#63d1cb");
+        static readonly Color32 TealFoam = PixelCanvas.Hex("#c4f4ec");
+        static readonly Color32 Ledge = PixelCanvas.Hex("#8c7053");
+        static readonly Color32 LedgeLight = PixelCanvas.Hex("#b0906a");
+        static readonly Color32 MossA = PixelCanvas.Hex("#4f9a45");
+        static readonly Color32 MossB = PixelCanvas.Hex("#4a9241");
+        static readonly Color32 Magic = PixelCanvas.Hex("#9b7bff");
+        static readonly Color32 MagicLight = PixelCanvas.Hex("#d9ccff");
+        static readonly Color32 MagicCore = PixelCanvas.Hex("#6fe7ff");
+
         public static readonly string[] CharacterFrames = { "idle0", "idle1", "walk0", "walk1", "walk2", "walk3", "attack", "hurt" };
 
         /// <summary>Every non-character sprite key the game uses (for exporting / documentation).</summary>
@@ -77,6 +99,26 @@ namespace DotRPG
             foreach (var k in new[] { "fx_slash", "fx_sparkle", "fx_dust", "fx_leaf", "fx_chip", "fx_bone", "fx_water", "fx_alert", "shadow" }) yield return k;
             foreach (var k in new[] { "icon_wood", "icon_stone", "icon_carrot", "heart_full", "heart_half", "heart_empty" }) yield return k;
             foreach (var k in new[] { "ui_panel", "ui_dark", "ui_select", "ui_white" }) yield return k;
+            // Canyon map.
+            for (int v = 0; v < 4; v++)
+            {
+                yield return $"tile_flag_{v}";
+                yield return $"tile_flag_shade_{v}";
+                yield return $"tile_cwater_{v}";
+                yield return $"tile_cwater_edge_{v}";
+            }
+            for (int v = 0; v < 2; v++) yield return $"tile_mossgrass_{v}";
+            foreach (int mask in new[] { 0, 1, 4, 5 })
+                for (int v = 0; v < 3; v++) yield return $"tile_cliff_{mask}_{v}";
+            foreach (var k in new[] { "tile_stairs", "deco_moss", "house_red", "house_green", "barrel", "box" }) yield return k;
+            foreach (var k in new[] { "arrow_left", "arrow_right", "arrow_up", "arrow_down" }) yield return k;
+            // Mage.
+            foreach (var k in new[] { "tool_staff", "fx_bolt", "fx_magic" }) yield return k;
+            // Held weapons (one per item tier).
+            for (int t = 0; t < 4; t++) { yield return $"wpn_sword_{t}"; yield return $"wpn_staff_{t}"; }
+            // Skill effects.
+            foreach (var k in new[] { "fx_ring", "fx_glow", "fx_shock", "fx_rune", "fx_swoosh", "fx_blade", "fx_zap", "fx_frost", "fx_crack", "fx_spike", "fx_ice", "fx_shard", "fx_snow", "fx_spark", "fx_streak", "fx_cut" })
+                yield return k;
         }
 
         /// <summary>Draws a sprite by key. Returns null for unknown keys.</summary>
@@ -96,13 +138,33 @@ namespace DotRPG
                     case "fence": return DrawFence(parts.Length > 1 ? int.Parse(parts[1]) : 0);
                     case "sign": return DrawSign();
                     case "crate": return DrawCrate(true);
-                    case "house": return DrawHouse();
+                    case "house": return DrawHouse(parts.Length > 1 ? parts[1] : "blue");
+                    case "barrel": return DrawBarrel();
+                    case "inn": return DrawInn();
+                    case "stall": return DrawStall();
+                    case "well": return DrawWell();
+                    case "bench": return DrawBench();
+                    case "chest": return DrawChest(parts.Length > 1 && parts[1] == "open");
+                    case "gate": return DrawGate();
+                    case "maticon": return DrawMaterialIcon(parts[1]);
+                    case "menuicon": return DrawMenuIcon(parts[1]);
+                    case "anvil": return DrawAnvil();
+                    case "gem": return DrawGem(key.Substring(4));
+                    case "node": return DrawNodeGlyph(parts[1]);
+                    case "wpn": return DrawWeapon(parts[1], parts.Length > 2 ? int.Parse(parts[2]) : 0);
+                    case "snow": return DrawSnow(parts);
+                    case "town": return DrawTown(parts);
+                    case "num": return DrawDigit(int.Parse(parts[1]));
+                    case "eqicon": return DrawEquipIcon(parts[1], parts.Length > 2 ? int.Parse(parts[2]) : 0);
+                    case "hpbar": return DrawHpBar(parts[1]);
+                    case "box": return DrawCrate(false);
+                    case "arrow": return DrawArrow(parts.Length > 1 ? parts[1] : "right");
                     case "site": return parts[1] == "built" ? DrawWorkshop() : DrawBlueprint();
                     case "pile": return DrawPile(parts[1] == "stone");
                     case "crop": return DrawCrop(parts[1]);
                     case "tool": return DrawTool(parts[1]);
                     case "fx": return DrawFx(parts[1]);
-                    case "icon": return DrawIcon(parts[1]);
+                    case "icon": return DrawIcon(key.Substring(5));
                     case "heart": return DrawHeart(parts[1]);
                     case "ui": return DrawUi(parts[1]);
                     case "shadow": return DrawShadow();
@@ -201,6 +263,161 @@ namespace DotRPG
                     c.VLine(15, 0, 15, Wood);
                     break;
                 }
+                case "pave":
+                {
+                    // One 16px window into a seamless 128x128 paving pattern, so stone joints run
+                    // across tile borders instead of framing every tile.
+                    int ix = int.Parse(p[2]), iy = int.Parse(p[3]);
+                    bool shade = p.Length > 4 && p[4] == "s";
+                    var pattern = PavingPattern();
+                    for (int y = 0; y < 16; y++)
+                        for (int x = 0; x < 16; x++)
+                        {
+                            var col = pattern[(iy * 16 + y) * PaveSize + ix * 16 + x];
+                            if (shade) col = PixelCanvas.Shade(col, y < 7 ? 0.66f : y < 11 ? 0.76f : 0.86f);
+                            c.Pixels[y * 16 + x] = col;
+                        }
+                    break;
+                }
+                case "cliff":
+                {
+                    // tile_cliff_{d}_{flags}_{v}: d = rows of wall down to lower ground (1 = bottom
+                    // row of a face, 4 = deep rock mass); flags 1 = plateau above, 2 = open left, 4 = open right.
+                    int d = int.Parse(p[2]), flags = int.Parse(p[3]), v = int.Parse(p[4]);
+                    DrawCliffTile(c, d, flags, v);
+                    break;
+                }
+                case "cw":
+                {
+                    // tile_cw_{mask}_{v}: canyon water. mask 1 = land above (rock face drops into the
+                    // water), 2 = land right, 4 = land left, 8 = cliff above, 16 = land below, 32 = bridge above.
+                    int mask = int.Parse(p[2]), v = int.Parse(p[3]);
+                    DrawCanyonWater(c, mask, v);
+                    break;
+                }
+                case "bridge":
+                {
+                    // Planks run north-south (the bridge is crossed east-west); rails on the outer rows.
+                    int part = int.Parse(p[2]); // 1 = north edge, 2 = south edge, 3 = both, 0 = middle
+                    c.Rect(0, 0, 16, 16, WoodLight);
+                    for (int x = 0; x < 16; x += 4)
+                    {
+                        c.VLine(x + 3, 0, 15, WoodDark);
+                        c.VLine(x, 0, 15, PixelCanvas.Shade(WoodLight, 1.06f));
+                    }
+                    c.Set(1, 5, WoodDark); c.Set(9, 11, WoodDark); c.Set(6, 2, WoodDark); c.Set(13, 8, WoodDark);
+                    if ((part & 1) != 0) { c.Rect(0, 0, 16, 3, Wood); c.HLine(0, 15, 0, WoodLight); c.HLine(0, 15, 3, WoodDark); }
+                    if ((part & 2) != 0) { c.Rect(0, 12, 16, 4, Wood); c.HLine(0, 15, 12, WoodLight); c.HLine(0, 15, 15, BarkDark); }
+                    break;
+                }
+                case "mossgrass":
+                {
+                    int variant = p.Length > 2 ? int.Parse(p[2]) : 0;
+                    c.Rect(0, 0, 16, 16, variant % 2 == 0 ? MossA : MossB);
+                    var rng = new System.Random(variant * 6007 + 9);
+                    for (int i = 0; i < 4; i++) c.Set(rng.Next(1, 15), rng.Next(1, 15), PixelCanvas.WithAlpha(LeafDark, 120));
+                    c.Set(rng.Next(1, 15), rng.Next(1, 15), PixelCanvas.WithAlpha(GrassLight, 140));
+                    break;
+                }
+                case "flag":
+                {
+                    bool shade = p.Length > 2 && p[2] == "shade";
+                    int variant = int.Parse(p[p.Length - 1]);
+                    c.Rect(0, 0, 16, 16, Flag);
+                    // Two rows of staggered paving stones with dark grout.
+                    int split = 7 + variant % 2;
+                    c.HLine(0, 15, split, FlagGrout);
+                    c.HLine(0, 15, 15, FlagGrout);
+                    int a = 3 + variant * 3 % 7, b = 9 + variant * 5 % 5;
+                    c.VLine(a, 0, split - 1, FlagGrout);
+                    c.VLine(b, split + 1, 14, FlagGrout);
+                    // Soft highlight on the top edge of each stone.
+                    c.HLine(0, a - 1, 0, FlagLight); c.HLine(a + 1, 15, 0, FlagLight);
+                    c.HLine(0, b - 1, split + 1, FlagLight); c.HLine(b + 1, 15, split + 1, FlagLight);
+                    var rng = new System.Random(variant * 7717 + 1);
+                    for (int i = 0; i < 3; i++) c.Set(rng.Next(1, 15), rng.Next(1, 15), FlagSpot);
+                    if (shade)
+                    {
+                        // Shadow cast by the cliff above.
+                        for (int y = 0; y < 16; y++)
+                        {
+                            float s = y < 6 ? 0.62f : y < 9 ? 0.75f : 0.88f;
+                            for (int x = 0; x < 16; x++) c.Pixels[y * 16 + x] = PixelCanvas.Shade(c.Pixels[y * 16 + x], s);
+                        }
+                    }
+                    break;
+                }
+                case "cliffold":
+                {
+                    int mask = p.Length > 2 ? int.Parse(p[2]) : 0;
+                    int variant = p.Length > 3 ? int.Parse(p[3]) : 0;
+                    c.Rect(0, 0, 16, 16, Cliff);
+                    // Big rounded boulders like a stacked rock wall.
+                    var rng = new System.Random(variant * 4241 + mask * 13 + 5);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float cx = rng.Next(2, 14), cy = rng.Next(3, 13);
+                        float rx = rng.Next(4, 7), ry = rng.Next(3, 5);
+                        c.Ellipse(cx, cy, rx, ry, CliffDark);
+                        c.Ellipse(cx - 0.5f, cy - 0.5f, rx - 1f, ry - 1f, Cliff);
+                        c.Ellipse(cx - 1.5f, cy - 1.5f, Mathf.Max(1f, rx - 3f), Mathf.Max(1f, ry - 2.5f), CliffLight);
+                    }
+                    c.Set(rng.Next(1, 15), rng.Next(1, 15), CliffDeep);
+                    c.Set(rng.Next(1, 15), rng.Next(1, 15), CliffDeep);
+                    if ((mask & 1) != 0)
+                    {
+                        // Plateau rim on top of the cliff.
+                        c.Rect(0, 0, 16, 3, CliffRim);
+                        c.HLine(0, 15, 0, FlagLight);
+                        c.HLine(0, 15, 3, CliffDark);
+                    }
+                    if ((mask & 4) != 0)
+                    {
+                        // Dark foot where the wall meets the ground.
+                        c.Rect(0, 13, 16, 3, CliffDeep);
+                        for (int x = 0; x < 16; x += 3) c.Set(x, 12, CliffDeep);
+                    }
+                    break;
+                }
+                case "cwater":
+                {
+                    bool edge = p.Length > 2 && p[2] == "edge";
+                    int variant = int.Parse(p[p.Length - 1]);
+                    c.Rect(0, 0, 16, 16, Teal);
+                    var rng = new System.Random(variant * 911 + 3);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        int x = rng.Next(0, 12), y = rng.Next(edge ? 7 : 1, 15);
+                        c.HLine(x, x + 2, y, TealLight);
+                        c.Set(x + 3, y - 1, TealLight);
+                    }
+                    c.Set(rng.Next(0, 16), rng.Next(edge ? 7 : 0, 16), TealDark);
+                    c.HLine(rng.Next(0, 10), rng.Next(10, 16), rng.Next(edge ? 8 : 2, 15), TealDark);
+                    if (edge)
+                    {
+                        // Stone ledge instead of a sandy bank.
+                        c.Rect(0, 0, 16, 5, Ledge);
+                        c.HLine(0, 15, 0, LedgeLight);
+                        c.HLine(0, 15, 4, CliffDark);
+                        for (int x = 3 + variant; x < 16; x += 6) c.VLine(x, 1, 3, CliffDark);
+                        for (int x = 0; x < 16; x++)
+                            if ((x + variant) % 4 != 0) c.Set(x, 5, TealFoam);
+                    }
+                    break;
+                }
+                case "stairs":
+                {
+                    c.Rect(0, 0, 16, 16, FlagGrout);
+                    for (int y = 0; y < 16; y += 4)
+                    {
+                        c.Rect(1, y, 14, 3, Flag);
+                        c.HLine(1, 14, y, FlagLight);
+                        c.HLine(1, 14, y + 3, CliffDark);
+                    }
+                    c.VLine(0, 0, 15, CliffDark);
+                    c.VLine(15, 0, 15, CliffDark);
+                    break;
+                }
                 default:
                     c.Rect(0, 0, 16, 16, new Color32(255, 0, 255, 255));
                     break;
@@ -229,6 +446,14 @@ namespace DotRPG
                     c.Rect(2, 2, 3, 3, Yellow);
                     c.Set(3, 3, PixelCanvas.Hex("#f0a020"));
                     c.Outline(PixelCanvas.WithAlpha(GrassDark, 160));
+                    return c.WithBottomPivot();
+                }
+                case "grassedge": return DrawGrassEdge(int.Parse(p[2]));
+                case "moss":
+                {
+                    var c = new PixelCanvas(8, 5);
+                    c.Ellipse(4, 3, 3.5f, 1.8f, PixelCanvas.WithAlpha(MossA, 220));
+                    c.PaintEllipse(3.5f, 2.5f, 1.8f, 1f, PixelCanvas.WithAlpha(GrassLight, 200));
                     return c.WithBottomPivot();
                 }
                 case "pebble":
@@ -385,12 +610,23 @@ namespace DotRPG
             return c.WithPivot(8, 1.5f);
         }
 
-        static PixelCanvas DrawHouse()
+        static PixelCanvas DrawHouse(string variant)
         {
             var c = new PixelCanvas(52, 52);
             var roof = PixelCanvas.Hex("#3b8fe3");
             var roofLight = PixelCanvas.Hex("#7cc4ff");
             var roofDark = PixelCanvas.Hex("#2a6fbf");
+            var roofPanel = PixelCanvas.Hex("#4aa2f0");
+            if (variant == "red")
+            {
+                roof = PixelCanvas.Hex("#c0392b"); roofLight = PixelCanvas.Hex("#e8674f");
+                roofDark = PixelCanvas.Hex("#8e2a20"); roofPanel = PixelCanvas.Hex("#d24a36");
+            }
+            else if (variant == "green")
+            {
+                roof = PixelCanvas.Hex("#3f8f4f"); roofLight = PixelCanvas.Hex("#6cc070");
+                roofDark = PixelCanvas.Hex("#2a6a38"); roofPanel = PixelCanvas.Hex("#4ea45c");
+            }
             var trim = PixelCanvas.Hex("#f2ede4");
             var trimRed = PixelCanvas.Hex("#c4553d");
             // Walls.
@@ -412,7 +648,7 @@ namespace DotRPG
             c.HLine(3, 48, 3, trimRed);
             for (int x = 8; x < 46; x += 5) c.VLine(x, 8, 24, roofLight);
             c.HLine(3, 48, 25, roofDark);
-            c.Rect(14, 9, 20, 13, PixelCanvas.Hex("#4aa2f0"));
+            c.Rect(14, 9, 20, 13, roofPanel);
             for (int x = 16; x < 33; x += 4) c.VLine(x, 10, 20, roofLight);
             // Roof vent box (like the reference's rooftop crate).
             c.Rect(8, 1, 8, 7, StoneDark);
@@ -420,6 +656,170 @@ namespace DotRPG
             c.HLine(9, 14, 2, StoneLight);
             c.Outline(Outline);
             return c.WithPivot(26, 3.5f);
+        }
+
+        static readonly string[] DigitShapes =
+        {
+            "xxx|x.x|x.x|x.x|xxx", ".x.|xx.|.x.|.x.|xxx", "xxx|..x|xxx|x..|xxx", "xxx|..x|.xx|..x|xxx", "x.x|x.x|xxx|..x|..x",
+            "xxx|x..|xxx|..x|xxx", "xxx|x..|xxx|x.x|xxx", "xxx|..x|.x.|.x.|.x.", "xxx|x.x|xxx|x.x|xxx", "xxx|x.x|xxx|..x|xxx",
+        };
+
+        /// <summary>3x5 pixel digit in white (tinted at runtime) with a dark outline, for damage numbers.</summary>
+        static PixelCanvas DrawDigit(int digit)
+        {
+            var c = new PixelCanvas(5, 7);
+            var rows = DigitShapes[Mathf.Clamp(digit, 0, 9)].Split('|');
+            for (int y = 0; y < rows.Length; y++)
+                for (int x = 0; x < 3; x++)
+                    if (rows[y][x] == 'x') c.Set(x + 1, y + 1, White);
+            c.Outline(Outline);
+            return c;
+        }
+
+        /// <summary>Monster health bar: "bg" = dark frame, "fill" = white strip tinted by the bar (left pivot).</summary>
+        static PixelCanvas DrawHpBar(string part)
+        {
+            if (part == "bg")
+            {
+                var c = new PixelCanvas(16, 4);
+                c.Rect(0, 0, 16, 4, Outline);
+                c.Rect(1, 1, 14, 2, PixelCanvas.Hex("#4a2a2a"));
+                return c;
+            }
+            var fill = new PixelCanvas(14, 2);
+            fill.Rect(0, 0, 14, 2, White);
+            fill.HLine(0, 13, 1, PixelCanvas.Hex("#d8d8d8"));
+            return fill.WithPivot(0, 1);
+        }
+
+        /// <summary>16x16 bag icon. kind: sword, staff, neck, ring, top, bot. tier 0/1/2 = common/rare/epic look.</summary>
+        static PixelCanvas DrawEquipIcon(string kind, int tier)
+        {
+            var c = new PixelCanvas(16, 16);
+            var handle = PixelCanvas.Hex("#6b4226");
+            var bone = PixelCanvas.Hex("#f0e8d4");
+            switch (kind)
+            {
+                case "sword":
+                {
+                    var blade = tier == 0 ? WoodLight : tier == 1 ? Steel : tier == 2 ? bone : PixelCanvas.Hex("#ffe08a");
+                    var edge = tier == 0 ? Wood : tier == 1 ? SteelDark : tier == 2 ? Gold : Red;
+                    c.Line(3, 12, 11, 4, blade); c.Line(4, 12, 12, 4, blade); c.Line(4, 11, 11, 4, blade);
+                    c.Line(5, 12, 12, 5, edge);
+                    c.Set(12, 3, blade); c.Set(13, 3, blade);
+                    c.Line(2, 10, 6, 14, tier == 2 ? Red : Gold);
+                    c.Line(1, 14, 3, 12, handle); c.Set(1, 15, Gold);
+                    break;
+                }
+                case "staff":
+                {
+                    var orb = tier == 0 ? LeafLight : tier == 1 ? MagicCore : tier == 2 ? PixelCanvas.Hex("#fff3b0") : PixelCanvas.Hex("#ffd84a");
+                    c.Line(3, 14, 10, 6, handle); c.Line(4, 14, 11, 6, BarkDark);
+                    c.Circle(11.5f, 4.5f, 3.2f, tier >= 2 ? Gold : Magic);
+                    c.Circle(11.5f, 4.5f, 2f, orb);
+                    c.Set(11, 3, White);
+                    if (tier >= 3) { c.Set(11, 0, Yellow); c.Set(15, 4, Yellow); c.Set(8, 4, Yellow); c.Set(11, 8, Yellow); }
+                    break;
+                }
+                case "neck":
+                {
+                    var chain = tier == 0 ? LeafDark : tier == 1 ? StoneLight : Gold;
+                    for (int i = 0; i <= 10; i++)
+                    {
+                        float a = Mathf.PI * i / 10f;
+                        c.Set(Mathf.RoundToInt(8 + Mathf.Cos(a) * 6), Mathf.RoundToInt(3 + Mathf.Sin(a) * 6), chain);
+                    }
+                    if (tier == 0) { c.Ellipse(8, 11.5f, 2.5f, 3f, Leaf); c.VLine(8, 10, 13, LeafShine); }
+                    else if (tier == 1) { c.Rect(7, 9, 2, 5, bone); c.Rect(6, 9, 4, 1, bone); c.Rect(6, 13, 4, 1, bone); }
+                    else { c.Ellipse(8, 11.5f, 3f, 3f, Gold); c.Ellipse(8, 11.5f, 1.8f, 1.8f, Red); c.Set(7, 10, White); }
+                    break;
+                }
+                case "ring":
+                {
+                    var band = tier == 0 ? PixelCanvas.Hex("#c87a4a") : tier == 1 ? PixelCanvas.Hex("#bfe8f0") : Gold;
+                    for (int y = 0; y < 16; y++)
+                        for (int x = 0; x < 16; x++)
+                        {
+                            float d = Mathf.Sqrt((x - 7.5f) * (x - 7.5f) + (y - 9f) * (y - 9f));
+                            if (d <= 5.5f && d >= 3.5f) c.Set(x, y, band);
+                        }
+                    var gem = tier == 0 ? PixelCanvas.Hex("#e0a06a") : tier == 1 ? PixelCanvas.Hex("#6fe7ff") : Red;
+                    c.Rect(6, 2, 4, 3, gem); c.Set(6, 2, White);
+                    break;
+                }
+                case "top":
+                {
+                    var cloth = tier == 0 ? PixelCanvas.Hex("#d9c7a0") : tier == 1 ? PixelCanvas.Hex("#a0643a") : Steel;
+                    var dark = PixelCanvas.Shade(cloth, 0.75f);
+                    c.Rect(4, 3, 8, 11, cloth);
+                    c.Rect(1, 3, 3, 6, cloth); c.Rect(12, 3, 3, 6, cloth);
+                    c.Rect(6, 2, 4, 2, PixelCanvas.Clear);
+                    c.VLine(8, 4, 13, dark); c.HLine(4, 11, 13, dark);
+                    if (tier == 2) { c.HLine(4, 11, 7, SteelDark); c.Set(8, 6, Gold); }
+                    break;
+                }
+                default: // bottoms
+                {
+                    var cloth = tier == 0 ? PixelCanvas.Hex("#8aa0c8") : PixelCanvas.Hex("#7a4a2a");
+                    var dark = PixelCanvas.Shade(cloth, 0.75f);
+                    c.Rect(3, 2, 10, 4, cloth);
+                    c.Rect(3, 6, 4, 8, cloth); c.Rect(9, 6, 4, 8, cloth);
+                    c.HLine(3, 12, 3, dark);
+                    c.VLine(8, 4, 6, dark);
+                    break;
+                }
+            }
+            c.Outline(Outline);
+            return c;
+        }
+
+        static PixelCanvas DrawBarrel()
+        {
+            var c = new PixelCanvas(12, 15);
+            c.Rect(2, 1, 8, 13, Wood);
+            c.VLine(1, 3, 11, Wood); c.VLine(10, 3, 11, Wood);
+            c.VLine(3, 2, 12, WoodLight);
+            c.VLine(8, 2, 12, WoodDark);
+            c.HLine(1, 10, 3, SteelDark); c.HLine(1, 10, 10, SteelDark);
+            c.Ellipse(6, 1.5f, 4, 1.4f, WoodDark);
+            c.PaintEllipse(6, 1.5f, 2.5f, 0.8f, Bark);
+            c.Outline(Outline);
+            return c.WithPivot(6, 1.5f);
+        }
+
+        /// <summary>Glowing ground arrow that marks a map exit.</summary>
+        static PixelCanvas DrawArrow(string dir)
+        {
+            var c = new PixelCanvas(14, 14);
+            string[] shape =
+            {
+                "......x.......",
+                "......xx......",
+                "......xxx.....",
+                "xxxxxxxxxx....",
+                "xxxxxxxxxxx...",
+                "xxxxxxxxxxxx..",
+                "xxxxxxxxxxx...",
+                "xxxxxxxxxx....",
+                "......xxx.....",
+                "......xx......",
+                "......x.......",
+            };
+            for (int y = 0; y < shape.Length; y++)
+                for (int x = 0; x < shape[y].Length; x++)
+                {
+                    if (shape[y][x] != 'x') continue;
+                    int px = x, py = y + 1;
+                    switch (dir)
+                    {
+                        case "left": px = 13 - x; break;
+                        case "up": px = y + 1; py = 13 - x; break;
+                        case "down": px = y + 1; py = x; break;
+                    }
+                    c.Set(px, py, PixelCanvas.WithAlpha(Yellow, 210));
+                }
+            c.Outline(PixelCanvas.WithAlpha(Outline, 200));
+            return c;
         }
 
         static PixelCanvas DrawBlueprint()
@@ -519,309 +919,6 @@ namespace DotRPG
             return c.WithPivot(8, 2.5f);
         }
 
-        // ---------- Characters ----------
-
-        /// <summary>
-        /// Draws one frame of a chibi character. frame: idle0, idle1, walk0..walk3, attack, hurt.
-        /// Side frames face right; the renderer flips them for left.
-        /// </summary>
-        public static PixelCanvas DrawCharacter(CharacterLook look, string dir, string frame)
-        {
-            var c = new PixelCanvas(16, 20);
-            if (look.body == BodyKind.Skeleton) DrawSkeletonBody(c, look, dir, frame);
-            else DrawHumanBody(c, look, dir, frame);
-            c.Outline(Outline);
-            return c.WithPivot(8, 1.5f);
-        }
-
-        static void FrameInfo(string frame, out int bob, out int step)
-        {
-            bob = 0;
-            step = 0; // -1 left foot forward, +1 right foot forward
-            switch (frame)
-            {
-                case "idle1": bob = 1; break;
-                case "walk0": step = -1; break;
-                case "walk1": bob = 1; break;
-                case "walk2": step = 1; break;
-                case "walk3": bob = 1; break;
-                case "attack": step = 1; break;
-                case "hurt": bob = 1; break;
-            }
-        }
-
-        static void DrawHumanBody(PixelCanvas c, CharacterLook L, string dir, string frame)
-        {
-            FrameInfo(frame, out int bob, out int step);
-            bool side = dir == "side", up = dir == "up";
-            var shoe = PixelCanvas.Hex("#4a3226");
-            var pantsDark = PixelCanvas.Shade(L.pants, 0.8f);
-            var shirtDark = PixelCanvas.Shade(L.shirt, 0.78f);
-            var skinDark = PixelCanvas.Shade(L.skin, 0.85f);
-            var hairDark = PixelCanvas.Shade(L.hair, 0.78f);
-
-            // Legs (rows 16-18). Walking lifts one foot.
-            if (side)
-            {
-                int back = step == 0 ? 6 : (step < 0 ? 5 : 7);
-                int front = step == 0 ? 8 : (step < 0 ? 9 : 7);
-                c.Rect(back, 16, 2, 2, pantsDark); c.Rect(back, 18, 2, 1, shoe);
-                c.Rect(front, 16, 2, 2, L.pants); c.Rect(front, 18, 3, 1, shoe);
-            }
-            else
-            {
-                int lLift = step < 0 ? 1 : 0, rLift = step > 0 ? 1 : 0;
-                c.Rect(5, 16, 2, 2 - lLift, L.pants); c.Rect(5, 18 - lLift, 2, 1, shoe);
-                c.Rect(9, 16, 2, 2 - rLift, L.pants); c.Rect(9, 18 - rLift, 2, 1, shoe);
-                c.Rect(7, 16, 2, 1, pantsDark);
-            }
-
-            int o = bob; // body/head vertical offset
-            // Body (rows 12-15).
-            if (side)
-            {
-                c.Rect(5, 12 + o, 6, 4, L.shirt);
-                c.HLine(5, 10, 15 + o, L.pants);
-                c.VLine(5, 12 + o, 14 + o, shirtDark);
-                // Arm swings with steps.
-                int armX = frame == "attack" ? 10 : 7 + step;
-                if (frame == "attack")
-                {
-                    c.Rect(10, 12 + o, 3, 2, L.shirt);
-                    c.Rect(13, 12 + o, 1, 2, L.skin);
-                }
-                else
-                {
-                    c.Rect(armX, 12 + o, 2, 2, shirtDark);
-                    c.Rect(armX, 14 + o, 2, 1, L.skin);
-                }
-            }
-            else
-            {
-                c.Rect(4, 12 + o, 8, 4, L.shirt);
-                c.HLine(4, 11, 15 + o, L.pants);
-                c.HLine(4, 11, 14 + o, shirtDark);
-                if (!up) { c.Set(7, 12 + o, shirtDark); c.Set(8, 12 + o, shirtDark); }
-                // Arms.
-                bool attack = frame == "attack";
-                c.Rect(3, 12 + o, 1, 2, L.shirt); c.Set(3, 14 + o, L.skin);
-                if (attack && !up) { c.Rect(12, 12 + o, 1, 3, L.shirt); c.Rect(12, 15 + o, 1, 1, L.skin); }
-                else if (attack) { c.Rect(12, 10 + o, 1, 3, L.shirt); c.Set(12, 9 + o, L.skin); }
-                else { c.Rect(12, 12 + o, 1, 2, L.shirt); c.Set(12, 14 + o, L.skin); }
-                // Walk arm swing (one shade darker arm moves).
-                if (step != 0 && !attack) { c.Set(step < 0 ? 3 : 12, 15 + o, L.skin); }
-            }
-
-            // Head (rows 2-11), 10px wide rounded.
-            int hx = 3; // head left edge
-            int hy = 2 + o;
-            c.HLine(hx + 2, hx + 7, hy, L.skin);
-            c.HLine(hx + 1, hx + 8, hy + 1, L.skin);
-            c.Rect(hx, hy + 2, 10, 6, L.skin);
-            c.HLine(hx + 1, hx + 8, hy + 8, L.skin);
-            c.HLine(hx + 2, hx + 7, hy + 9, skinDark);
-
-            // Face.
-            if (!up)
-            {
-                if (side)
-                {
-                    c.Rect(hx + 7, hy + 5, 1, 2, Eye);
-                    c.Set(hx + 9, hy + 6, skinDark);
-                    c.Set(hx + 6, hy + 7, PixelCanvas.Hex("#f29a8a"));
-                }
-                else
-                {
-                    c.Rect(hx + 2, hy + 5, 1, 2, Eye);
-                    c.Rect(hx + 7, hy + 5, 1, 2, Eye);
-                    c.Set(hx + 1, hy + 7, PixelCanvas.Hex("#f29a8a"));
-                    c.Set(hx + 8, hy + 7, PixelCanvas.Hex("#f29a8a"));
-                    if (frame == "hurt") { c.Set(hx + 2, hy + 5, L.skin); c.Set(hx + 7, hy + 5, L.skin); }
-                }
-            }
-
-            DrawHair(c, L, dir, hx, hy, hairDark);
-            DrawHat(c, L, dir, hx, hy);
-        }
-
-        static void DrawHair(PixelCanvas c, CharacterLook L, string dir, int hx, int hy, Color32 hairDark)
-        {
-            var h = L.hair;
-            bool up = dir == "up", side = dir == "side";
-            switch (L.hairStyle)
-            {
-                case HairStyle.Bald:
-                    if (up) { c.Rect(hx, hy + 4, 10, 4, h); }
-                    else if (side) { c.Rect(hx, hy + 3, 3, 4, h); }
-                    else
-                    {
-                        c.Rect(hx, hy + 3, 1, 4, h); c.Rect(hx + 9, hy + 3, 1, 4, h);
-                        // Beard for elders.
-                        c.Rect(hx + 2, hy + 7, 6, 3, h);
-                        c.HLine(hx + 3, hx + 6, hy + 10, h);
-                        c.Set(hx + 4, hy + 7, PixelCanvas.Shade(L.skin, 0.8f));
-                        c.Set(hx + 5, hy + 7, PixelCanvas.Shade(L.skin, 0.8f));
-                    }
-                    return;
-            }
-
-            // Common cap of hair over the top of the head.
-            c.HLine(hx + 2, hx + 7, hy, h);
-            c.HLine(hx + 1, hx + 8, hy + 1, h);
-            c.Rect(hx, hy + 2, 10, 2, h);
-            c.HLine(hx + 1, hx + 8, hy + 1, h);
-            c.HLine(hx + 3, hx + 6, hy, PixelCanvas.Shade(h, 1.15f));
-
-            if (up)
-            {
-                c.Rect(hx, hy + 2, 10, 7, h);
-                c.HLine(hx + 1, hx + 8, hy + 8, hairDark);
-            }
-            else if (side)
-            {
-                c.Rect(hx, hy + 2, 5, 6, h);
-                c.Rect(hx + 5, hy + 2, 5, 2, h);
-                c.Set(hx + 8, hy + 4, h); c.Set(hx + 9, hy + 4, h);
-                c.VLine(hx + 4, hy + 4, hy + 7, hairDark);
-            }
-            else
-            {
-                // Fringe.
-                c.Set(hx, hy + 4, h); c.Set(hx + 1, hy + 4, h); c.Set(hx + 4, hy + 4, h);
-                c.Set(hx + 5, hy + 4, h); c.Set(hx + 8, hy + 4, h); c.Set(hx + 9, hy + 4, h);
-                c.VLine(hx, hy + 5, hy + 6, h);
-                c.VLine(hx + 9, hy + 5, hy + 6, h);
-                c.HLine(hx + 1, hx + 8, hy + 3, hairDark);
-            }
-
-            switch (L.hairStyle)
-            {
-                case HairStyle.Spiky:
-                    c.Set(hx + 1, hy - 1, h); c.Set(hx + 4, hy - 1, h); c.Set(hx + 7, hy - 1, h);
-                    c.Set(hx + 5, hy - 2, h);
-                    if (!up && !side) { c.Set(hx + 2, hy + 5, h); c.Set(hx + 7, hy + 5, h); }
-                    break;
-                case HairStyle.Long:
-                    if (side) c.Rect(hx - 1, hy + 3, 3, 8, h);
-                    else { c.Rect(hx - 1, hy + 4, 2, 7, h); c.Rect(hx + 9, hy + 4, 2, 7, h); }
-                    if (up) c.Rect(hx, hy + 8, 10, 3, h);
-                    break;
-                case HairStyle.Bun:
-                    c.Ellipse(hx + 5, hy - 1, 2.5f, 2f, h);
-                    if (side) c.Ellipse(hx + 1, hy + 1, 2.2f, 2f, h);
-                    break;
-                case HairStyle.Curly:
-                    c.Set(hx - 1, hy + 2, h); c.Set(hx + 10, hy + 2, h);
-                    c.Set(hx + 2, hy - 1, h); c.Set(hx + 5, hy - 1, h); c.Set(hx + 8, hy - 1, h);
-                    if (!side) { c.VLine(hx - 1, hy + 3, hy + 6, h); c.VLine(hx + 10, hy + 3, hy + 6, h); }
-                    else c.VLine(hx - 1, hy + 3, hy + 7, h);
-                    break;
-            }
-        }
-
-        static void DrawHat(PixelCanvas c, CharacterLook L, string dir, int hx, int hy)
-        {
-            var col = L.hatColor;
-            var dark = PixelCanvas.Shade(col, 0.78f);
-            switch (L.hat)
-            {
-                case HatKind.Straw:
-                    c.Rect(hx - 2, hy + 2, 14, 2, col);
-                    c.HLine(hx - 2, hx + 11, hy + 3, dark);
-                    c.Rect(hx + 1, hy - 1, 8, 3, col);
-                    c.HLine(hx + 1, hx + 8, hy + 1, PixelCanvas.Hex("#c4553d"));
-                    break;
-                case HatKind.Cap:
-                    c.Rect(hx, hy - 1, 10, 4, col);
-                    if (dir == "side") c.Rect(hx + 8, hy + 2, 4, 1, dark);
-                    else if (dir == "down") c.HLine(hx + 1, hx + 8, hy + 3, dark);
-                    break;
-                case HatKind.Bandana:
-                    c.Rect(hx, hy + 1, 10, 2, col);
-                    c.HLine(hx, hx + 9, hy + 2, dark);
-                    if (dir != "down") { c.Set(hx - 1, hy + 3, col); c.Set(hx - 1, hy + 4, dark); }
-                    break;
-            }
-        }
-
-        static void DrawSkeletonBody(PixelCanvas c, CharacterLook L, string dir, string frame)
-        {
-            FrameInfo(frame, out int bob, out int step);
-            var bone = L.skin;
-            var boneDark = PixelCanvas.Shade(bone, 0.78f);
-            var socket = PixelCanvas.Hex("#2b1d16");
-            bool side = dir == "side", up = dir == "up";
-            int o = bob;
-
-            // Legs.
-            if (side)
-            {
-                int back = step == 0 ? 7 : (step < 0 ? 6 : 8);
-                int front = step == 0 ? 8 : (step < 0 ? 9 : 7);
-                c.VLine(back, 16, 18, boneDark);
-                c.VLine(front, 16, 18, bone); c.Set(front + 1, 18, bone);
-            }
-            else
-            {
-                c.VLine(6, 16, 18 - (step < 0 ? 1 : 0), bone); c.Set(5, 18 - (step < 0 ? 1 : 0), bone);
-                c.VLine(9, 16, 18 - (step > 0 ? 1 : 0), bone); c.Set(10, 18 - (step > 0 ? 1 : 0), bone);
-            }
-            // Pelvis + spine + ribs.
-            c.HLine(6, 9, 15 + o, bone);
-            c.VLine(7, 11 + o, 15 + o, bone);
-            c.VLine(8, 11 + o, 15 + o, boneDark);
-            if (!side)
-            {
-                c.HLine(5, 10, 12 + o, bone);
-                c.HLine(5, 10, 14 + o, boneDark);
-                c.Set(5, 13 + o, bone); c.Set(10, 13 + o, bone);
-                // Arms.
-                bool attack = frame == "attack";
-                c.VLine(4, 12 + o, 15 + o, bone);
-                if (attack) c.VLine(11, 9 + o, 12 + o, bone); else c.VLine(11, 12 + o, 15 + o, bone);
-            }
-            else
-            {
-                c.HLine(6, 9, 12 + o, bone);
-                c.HLine(6, 9, 14 + o, boneDark);
-                int armX = frame == "attack" ? 10 : 8 + step;
-                if (frame == "attack") c.HLine(9, 12, 12 + o, bone); else c.VLine(armX, 12 + o, 15 + o, bone);
-            }
-
-            // Skull (rows 2-10).
-            int hx = 4, hy = 3 + o;
-            c.HLine(hx + 2, hx + 5, hy, bone);
-            c.Rect(hx + 1, hy + 1, 6, 1, bone);
-            c.Rect(hx, hy + 2, 8, 4, bone);
-            c.Rect(hx + 1, hy + 6, 6, 2, bone);
-            c.HLine(hx + 2, hx + 5, hy + 8, boneDark);
-            if (!up)
-            {
-                if (side)
-                {
-                    c.Rect(hx + 4, hy + 3, 2, 2, socket);
-                    c.Set(hx + 7, hy + 5, socket);
-                    c.Set(hx + 5, hy + 7, socket);
-                }
-                else
-                {
-                    c.Rect(hx + 1, hy + 3, 2, 2, socket);
-                    c.Rect(hx + 5, hy + 3, 2, 2, socket);
-                    c.Set(hx + 3, hy + 5, socket); c.Set(hx + 4, hy + 5, socket);
-                    c.Set(hx + 2, hy + 7, socket); c.Set(hx + 4, hy + 7, socket);
-                    if (frame == "attack" || frame == "hurt")
-                    {
-                        c.Set(hx + 2, hy + 4, Red);
-                        c.Set(hx + 6, hy + 4, Red);
-                    }
-                }
-            }
-            else
-            {
-                c.HLine(hx + 1, hx + 6, hy + 5, boneDark);
-            }
-        }
-
         // ---------- Tools & FX ----------
 
         static PixelCanvas DrawTool(string kind)
@@ -864,6 +961,15 @@ namespace DotRPG
                     c.Rect(7, 5, 2, 10, handle);
                     c.Rect(4, 2, 8, 4, SteelDark);
                     c.HLine(4, 11, 2, Steel);
+                    break;
+                case "staff":
+                    c.Rect(7, 5, 2, 11, handle);
+                    c.VLine(8, 6, 15, BarkDark);
+                    c.Set(6, 5, Gold); c.Set(9, 5, Gold);
+                    c.Set(5, 3, Gold); c.Set(10, 3, Gold);
+                    c.Circle(7.5f, 2.5f, 2.5f, Magic);
+                    c.Circle(7.5f, 2.5f, 1.5f, MagicCore);
+                    c.Set(7, 1, White);
                     break;
                 case "crate":
                     return DrawCrate(true);
@@ -941,6 +1047,36 @@ namespace DotRPG
                     c.Set(0, 0, White);
                     return c;
                 }
+                case "bolt":
+                {
+                    var c = new PixelCanvas(12, 12);
+                    c.Circle(6, 6, 5.5f, PixelCanvas.WithAlpha(Magic, 140));
+                    c.Circle(6, 6, 4f, Magic);
+                    c.Circle(6, 6, 2.8f, MagicLight);
+                    c.Circle(6, 6, 1.5f, White);
+                    c.Set(3, 2, MagicCore); c.Set(9, 3, MagicCore); c.Set(2, 8, MagicCore);
+                    return c;
+                }
+                case "magic":
+                {
+                    var c = new PixelCanvas(5, 5);
+                    c.VLine(2, 0, 4, Magic); c.HLine(0, 4, 2, Magic);
+                    c.Set(2, 2, MagicLight);
+                    return c;
+                }
+                case "ring":
+                {
+                    var c = new PixelCanvas(32, 32);
+                    for (int y = 0; y < 32; y++)
+                        for (int x = 0; x < 32; x++)
+                        {
+                            float d = Mathf.Sqrt((x - 15.5f) * (x - 15.5f) + (y - 15.5f) * (y - 15.5f));
+                            if (d <= 15.5f && d >= 12.5f) c.Set(x, y, White);
+                            else if (d < 12.5f && d >= 11f) c.Set(x, y, PixelCanvas.WithAlpha(White, 110));
+                            else if (d < 11f) c.Set(x, y, PixelCanvas.WithAlpha(White, 30));
+                        }
+                    return c;
+                }
                 case "alert":
                 {
                     var c = new PixelCanvas(5, 9);
@@ -950,7 +1086,7 @@ namespace DotRPG
                     return c.WithBottomPivot();
                 }
             }
-            return null;
+            return DrawSkillFx(kind);
         }
 
         static PixelCanvas DrawShadow()
@@ -964,6 +1100,8 @@ namespace DotRPG
 
         static PixelCanvas DrawIcon(string kind)
         {
+            var item16 = DrawItemIcon16(kind);
+            if (item16 != null) return item16;
             var c = new PixelCanvas(12, 12);
             switch (kind)
             {
@@ -1067,6 +1205,99 @@ namespace DotRPG
                 {
                     var c = new PixelCanvas(4, 4);
                     c.Rect(0, 0, 4, 4, White);
+                    return c;
+                }
+                case "circle":
+                {
+                    // Solid disc used as the minimap's round mask.
+                    var c = new PixelCanvas(64, 64);
+                    c.Circle(31.5f, 31.5f, 32f, White);
+                    return c;
+                }
+                case "ring":
+                {
+                    // Minimap frame: brown wood ring with a cream inner edge; centre transparent.
+                    var c = new PixelCanvas(64, 64);
+                    for (int y = 0; y < 64; y++)
+                        for (int x = 0; x < 64; x++)
+                        {
+                            float d = Mathf.Sqrt((x - 31.5f) * (x - 31.5f) + (y - 31.5f) * (y - 31.5f));
+                            if (d > 32f || d < 28f) continue;
+                            c.Set(x, y, d > 31f ? Outline : d > 29.5f ? PixelCanvas.Hex("#8e5a32") : PixelCanvas.Hex("#f6e7c8"));
+                        }
+                    return c;
+                }
+                case "dot":
+                {
+                    var c = new PixelCanvas(7, 7);
+                    c.Circle(3f, 3f, 3.5f, Outline);
+                    c.Circle(3f, 3f, 2.4f, White);
+                    return c;
+                }
+                case "slot":
+                {
+                    // Bag cell: dark steel square with a lit top edge (9-slice).
+                    var c = new PixelCanvas(16, 16);
+                    c.Rect(0, 0, 16, 16, PixelCanvas.Hex("#15181f"));
+                    c.Rect(1, 1, 14, 14, PixelCanvas.Hex("#3b404b"));
+                    c.Rect(2, 3, 12, 11, PixelCanvas.Hex("#454b58"));
+                    c.HLine(1, 14, 1, PixelCanvas.Hex("#5c6373"));
+                    c.HLine(1, 14, 14, PixelCanvas.Hex("#2a2e37"));
+                    c.BorderLeft = c.BorderRight = c.BorderTop = c.BorderBottom = 3;
+                    return c;
+                }
+                case "slotblue":
+                {
+                    // Equipped slot: blue-tinted cell like the character panel's slots.
+                    var c = new PixelCanvas(16, 16);
+                    c.Rect(0, 0, 16, 16, PixelCanvas.Hex("#0f1826"));
+                    c.Rect(1, 1, 14, 14, PixelCanvas.Hex("#27456b"));
+                    for (int y = 2; y < 14; y++) c.HLine(2, 13, y, PixelCanvas.Shade(PixelCanvas.Hex("#335a88"), 1.1f - y * 0.03f));
+                    c.HLine(1, 14, 1, PixelCanvas.Hex("#5f8ec2"));
+                    c.BorderLeft = c.BorderRight = c.BorderTop = c.BorderBottom = 3;
+                    return c;
+                }
+                case "frame":
+                {
+                    // Hollow frame, tinted per rarity / used as the cursor.
+                    var c = new PixelCanvas(16, 16);
+                    c.Rect(0, 0, 16, 16, White);
+                    c.Rect(2, 2, 12, 12, PixelCanvas.Clear);
+                    c.BorderLeft = c.BorderRight = c.BorderTop = c.BorderBottom = 3;
+                    return c;
+                }
+                case "corner":
+                {
+                    // Green corner triangle = "better than what you wear".
+                    var c = new PixelCanvas(8, 8);
+                    for (int y = 0; y < 8; y++) c.HLine(0, 7 - y, y, PixelCanvas.Hex("#5ee04a"));
+                    return c;
+                }
+                case "btn":
+                {
+                    var c = new PixelCanvas(16, 16);
+                    c.Rect(0, 0, 16, 16, PixelCanvas.Hex("#0d1420"));
+                    for (int y = 1; y < 15; y++) c.HLine(1, 14, y, Color32.Lerp(PixelCanvas.Hex("#3f7fc7"), PixelCanvas.Hex("#1d3f6e"), (y - 1) / 13f));
+                    c.HLine(1, 14, 1, PixelCanvas.Hex("#7fb9ff"));
+                    c.BorderLeft = c.BorderRight = c.BorderTop = c.BorderBottom = 3;
+                    return c;
+                }
+                case "btngray":
+                {
+                    var c = new PixelCanvas(16, 16);
+                    c.Rect(0, 0, 16, 16, PixelCanvas.Hex("#0d1016"));
+                    for (int y = 1; y < 15; y++) c.HLine(1, 14, y, Color32.Lerp(PixelCanvas.Hex("#4b5260"), PixelCanvas.Hex("#2b3039"), (y - 1) / 13f));
+                    c.HLine(1, 14, 1, PixelCanvas.Hex("#7a8394"));
+                    c.BorderLeft = c.BorderRight = c.BorderTop = c.BorderBottom = 3;
+                    return c;
+                }
+                case "tooltip":
+                {
+                    var c = new PixelCanvas(16, 16);
+                    c.Rect(0, 0, 16, 16, PixelCanvas.Hex("#c9b27a"));
+                    c.Rect(1, 1, 14, 14, PixelCanvas.Hex("#10141c", 245));
+                    c.HLine(2, 13, 2, PixelCanvas.Hex("#2a3242", 245));
+                    c.BorderLeft = c.BorderRight = c.BorderTop = c.BorderBottom = 3;
                     return c;
                 }
             }

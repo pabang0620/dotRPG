@@ -28,7 +28,37 @@ namespace DotRPG
         const float WorkSwingDuration = 0.28f;
 
         public NpcDefinition Definition => def;
-        public override string Prompt => "대화하기";
+
+        public override string Prompt
+        {
+            get
+            {
+                switch (def.service)
+                {
+                    case NpcService.Shop: return "상점 열기";
+                    case NpcService.Blacksmith: return "장비 강화";
+                    case NpcService.Storage: return "창고 열기";
+                    default: return "대화하기";
+                }
+            }
+        }
+
+        /// <summary>Town service NPCs on the current map (the minimap marks them with icons).</summary>
+        public static readonly System.Collections.Generic.List<NpcController> Services = new System.Collections.Generic.List<NpcController>();
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            if (def != null && def.service != NpcService.None && !Services.Contains(this)) Services.Add(this);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            Services.Remove(this);
+        }
+
+        void OnDestroy() => Services.Remove(this);
 
         public static NpcController Create(NpcDefinition def, Vector2 position, Transform parent)
         {
@@ -80,6 +110,7 @@ namespace DotRPG
             npc.ySort.Configure(false);
             npc.nextActionTime = Time.time + Random.Range(0.5f, 2f);
             npc.PoseTool(0f);
+            if (def.service != NpcService.None && !Services.Contains(npc)) Services.Add(npc);
             return npc;
         }
 
@@ -99,6 +130,15 @@ namespace DotRPG
 
         public override void Interact(PlayerController player)
         {
+            if (def.service != NpcService.None)
+            {
+                moving = false;
+                facing = FacingExtensions.FromVector(player.Position - (Vector2)transform.position, facing);
+                animator.Play(CharacterAnim.Idle, facing);
+                PoseTool(0f);
+                Game.UI.OpenService(def);
+                return;
+            }
             talking = true;
             moving = false;
             facing = FacingExtensions.FromVector(player.Position - (Vector2)transform.position, facing);
@@ -235,7 +275,7 @@ namespace DotRPG
             if (def.tool == NpcTool.FishingRod)
             {
                 tool.transform.localPosition = new Vector3(dir.x * 0.25f + 0.15f, 0.4f, 0f);
-                tool.transform.localRotation = Quaternion.Euler(0f, 0f, facing == Facing.Left ? 30f : -30f);
+                tool.transform.localRotation = Quaternion.Euler(0f, 0f, facing.IsLeft() ? 30f : -30f);
                 if (bobber != null)
                 {
                     var p = (Vector2)transform.position + dir * 1.6f + new Vector2(0.4f, 0.2f + Mathf.Sin(Time.time * 3f) * 0.05f);
@@ -247,7 +287,7 @@ namespace DotRPG
             float swing = t <= 0f ? 60f : Mathf.Lerp(80f, -40f, Mathf.Clamp01(t));
             tool.transform.localPosition = new Vector3(0f, 0.4f, 0f) + (Vector3)(dir * 0.15f);
             tool.transform.localRotation = Quaternion.Euler(0f, 0f, baseAngle + swing - 90f);
-            ySort?.SetLocalOrder(tool, facing == Facing.Up ? -1 : 1);
+            ySort?.SetLocalOrder(tool, facing.IsUp() ? -1 : 1);
         }
     }
 }

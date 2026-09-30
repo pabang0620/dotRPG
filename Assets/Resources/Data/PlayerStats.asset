@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 4.2
   acceleration: 45
-  maxHealth: 6
+  maxHealth: 60
   invulnerableTime: 0.9
   knockbackSpeed: 7
   knockbackDuration: 0.15
-  attackDamage: 1
+  attackDamage: 10
   attackCooldown: 0.36
   attackDuration: 0.2
   attackReach: 0.7
   attackRadius: 0.62
   attackKnockback: 6
   interactRange: 1.25
-  carrotHealAmount: 2
+  carrotHealAmount: 20
