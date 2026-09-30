@@ -12,7 +12,7 @@ namespace DotRPG
     /// mage → casts a spell → travels to the canyon → takes screenshots and writes a small report,
     /// then quits. Useful for checking a build on a machine without opening the editor.
     /// </summary>
-    public class DevCapture : MonoBehaviour
+    public partial class DevCapture : MonoBehaviour
     {
         string folder;
         bool fxOnly;
@@ -24,7 +24,7 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown")
+                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty") // [PARTY] -dotrpgParty
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     return;
@@ -39,7 +39,7 @@ namespace DotRPG
             {
                 // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
                 // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown") continue;
+                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty") continue; // [PARTY] -dotrpgParty
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
@@ -47,6 +47,7 @@ namespace DotRPG
                 capture.fxOnly = args[i] == "-dotrpgFx";
                 capture.mapOnly = args[i] == "-dotrpgMap";
                 capture.townOnly = args[i] == "-dotrpgTown";
+                capture.partyOnly = args[i] == "-dotrpgParty"; // [PARTY]
                 return;
             }
         }
@@ -59,6 +60,7 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
             if (townOnly)
             {
                 yield return TownShowcase();
@@ -588,303 +590,6 @@ namespace DotRPG
         }
 
         static string Strip(string rich) => System.Text.RegularExpressions.Regex.Replace(rich ?? "", "<.*?>", "");
-
-        // ---------- Enhancement checks ("ENH ... PASS/FAIL" report lines) ----------
-
-        int enhPassed, enhFailed;
-
-        /// <summary>Writes "ENH &lt;what&gt; PASS|FAIL" (no timestamp, so the lines start with ENH for easy filtering).</summary>
-        void Check(string what, bool ok)
-        {
-            if (ok) enhPassed++;
-            else enhFailed++;
-            log?.WriteLine($"ENH {what} {(ok ? "PASS" : "FAIL")}");
-        }
-
-        /// <summary>Success % for +0→+1 … +19→+20 disclosed for Dungeon&amp;Fighter KR on 2021-12-02.</summary>
-        static readonly int[] DnfChances = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 15, 14, 13, 12, 11, 10, 10, 10, 10 };
-
-        /// <summary>
-        /// Enhancement: success-rate Monte Carlo, a deterministic scenario on the live session with injected
-        /// rolls (99 = fail, 0 = success), stat growth, save round trip and the v3 migration, then the blacksmith
-        /// window (screenshot with a +12 weapon selected, the risk confirm, one real attempt, paging).
-        /// The session's bag, storage, worn gear and pity are put back afterwards.
-        /// </summary>
-        IEnumerator EnhanceChecks()
-        {
-            enhPassed = enhFailed = 0;
-            var snapshot = Game.Session.Capture(Game.Player.Position, Game.Player.Facing);
-            try
-            {
-                EnhanceMonteCarlo();
-                EnhanceScenario();
-                EnhanceSaveChecks();
-            }
-            catch (Exception e)
-            {
-                Check($"logic checks threw {e.GetType().Name}: {e.Message}", false);
-            }
-            RestoreGear(snapshot);
-            yield return EnhanceWindowChecks();
-            RestoreGear(snapshot);
-            log?.WriteLine($"ENH summary: {enhPassed} passed, {enhFailed} failed");
-        }
-
-        /// <summary>Bag, storage, worn gear and enhancement pity back to a captured state (nothing else).</summary>
-        static void RestoreGear(SaveData snapshot)
-        {
-            var s = Game.Session;
-            s.Inventory.Load(snapshot.inventory);
-            s.Storage.Load(snapshot.storage);
-            s.Equipment.LoadPity(snapshot.enhancePity);
-            s.Equipment.Load(snapshot.equipped);
-        }
-
-        static string Dump(List<ItemStack> stacks)
-        {
-            var parts = new List<string>();
-            foreach (var s in stacks) parts.Add($"{s.id}:{s.count}");
-            parts.Sort(string.CompareOrdinal);
-            return string.Join(",", parts);
-        }
-
-        static int CountIn(List<ItemStack> stacks, string id)
-        {
-            int n = 0;
-            foreach (var s in stacks) if (s.id == id) n += s.count;
-            return n;
-        }
-
-        void EnhanceMonteCarlo()
-        {
-            bool table = EnhanceRules.SuccessPercent(EquipmentDatabase.MaxEnhance) == 0;
-            for (int l = 0; l < DnfChances.Length; l++) table &= EnhanceRules.SuccessPercent(l) == DnfChances[l];
-            Check($"chance table = DNF KR 2021-12-02 ({string.Join("/", DnfChances)})", table);
-            var rng = new System.Random(12345);
-            const int rolls = 20000;
-            for (int level = 0; level < EquipmentDatabase.MaxEnhance; level++)
-            {
-                int expected = EnhanceRules.SuccessPercent(level), hits = 0;
-                for (int i = 0; i < rolls; i++)
-                    if (EnhanceRules.Succeeds(rng.Next(0, 100), expected)) hits++;
-                float observed = hits * 100f / rolls;
-                Check($"monte carlo +{level}->+{level + 1}: expected {expected}% observed {observed:0.00}% ({rolls} rolls)", Mathf.Abs(observed - expected) <= 1.2f);
-            }
-            Check("roll edge: 24 succeeds and 25 fails at 25%, 99 succeeds at 100%",
-                EnhanceRules.Succeeds(24, 25) && !EnhanceRules.Succeeds(25, 25) && EnhanceRules.Succeeds(99, 100));
-        }
-
-        /// <summary>Scripted attempts with injected rolls on the live session (bag and slots are emptied first; see <see cref="RestoreGear"/>).</summary>
-        void EnhanceScenario()
-        {
-            var eq = Game.Session.Equipment;
-            var bag = Game.Session.Inventory;
-            const CharacterClass warrior = CharacterClass.Warrior;
-            const string iron = "eq_sword_iron", iron10 = "eq_sword_iron+10", iron11 = "eq_sword_iron+11", iron12 = "eq_sword_iron+12";
-            const string top10 = "eq_top_leather+10", ring9 = "eq_ring_copper+9", iron20 = "eq_sword_iron+20";
-            const string gold = ConsumableDatabase.Gold, ticket = ConsumableDatabase.ProtectTicket;
-
-            Check($"keys: KeyFor(iron,10)={EquipmentDatabase.KeyFor(iron, 10)} KeyFor(iron,0)={EquipmentDatabase.KeyFor(iron, 0)} KeyFor(iron,25)={EquipmentDatabase.KeyFor(iron, 25)} " +
-                  $"BaseId={EquipmentDatabase.BaseId(iron12)} LevelOfKey={EquipmentDatabase.LevelOfKey(iron12)} name='{Game.Config.GetItem(iron12).displayName}' sprite={EquipmentDatabase.WeaponSprite(iron12, warrior)}",
-                EquipmentDatabase.KeyFor(iron, 10) == iron10 && EquipmentDatabase.KeyFor(iron, 0) == iron && EquipmentDatabase.KeyFor(iron, 25) == iron20
-                && EquipmentDatabase.BaseId(iron12) == iron && EquipmentDatabase.LevelOfKey(iron12) == 12 && EquipmentDatabase.Get(iron12) == EquipmentDatabase.Get(iron)
-                && EquipmentDatabase.IsEquipment(iron12) && EquipmentDatabase.TierOf(iron12) == 1 && EquipmentDatabase.WeaponSprite(iron12, warrior) == "wpn_sword_1"
-                && Game.Config.GetItem(iron12).displayName == "철검 +12" && Game.Config.GetItem(iron12).iconKey == "eqicon_sword_1"
-                && EquipmentDatabase.Get("eq_sword_iron+0") == null && EquipmentDatabase.Get("eq_sword_iron+21") == null);
-
-            // Scratch setup: empty bag and slots, plenty of gold and materials, no protection ticket.
-            bag.Clear();
-            eq.Clear();
-            eq.LoadPity(null);
-            bag.Add(gold, 100000);
-            bag.Add(EnhanceRules.Bone, 500);
-            bag.Add(EnhanceRules.Ore, 200);
-            bag.Add(EnhanceRules.Essence, 100);
-
-            // +10 fails → +7, pity(+10) = 1, gold and materials paid.
-            bag.Add(iron10, 1);
-            var cost = eq.CostFor(iron10);
-            Check($"cost from +10: gold {cost.gold} bone {cost.bone} ore {cost.ore} essence {cost.essence} chance {cost.successPercent}% on fail {cost.failure}",
-                cost.gold == 120 && cost.bone == 12 && cost.ore == 4 && cost.essence == 1 && cost.successPercent == 25 && cost.failure == EnhanceFailure.Drop3);
-            int g0 = bag.Count(gold), b0 = bag.Count(EnhanceRules.Bone), o0 = bag.Count(EnhanceRules.Ore), e0 = bag.Count(EnhanceRules.Essence);
-            var r = eq.TryEnhance(EnhanceTarget.Bag(iron10), 99, warrior);
-            Check($"+10 fail (roll 99): {r.kind} {r.oldKey} -> {r.newKey}, bag +7={bag.Count("eq_sword_iron+7")} +10={bag.Count(iron10)}",
-                r.kind == EnhanceOutcome.Drop3 && r.newKey == "eq_sword_iron+7" && r.newLevel == 7 && bag.Count("eq_sword_iron+7") == 1 && bag.Count(iron10) == 0);
-            Check($"+10 fail pity(+10)={eq.PityOf(iron10)}%p", eq.PityOf(iron10) == 1);
-            Check($"+10 fail paid: gold -{g0 - bag.Count(gold)} bone -{b0 - bag.Count(EnhanceRules.Bone)} ore -{o0 - bag.Count(EnhanceRules.Ore)} essence -{e0 - bag.Count(EnhanceRules.Essence)}",
-                g0 - bag.Count(gold) == cost.gold && b0 - bag.Count(EnhanceRules.Bone) == cost.bone
-                && o0 - bag.Count(EnhanceRules.Ore) == cost.ore && e0 - bag.Count(EnhanceRules.Essence) == cost.essence);
-
-            // +11 fails → +8, pity(+11) = 1.
-            bag.Add(iron11, 1);
-            r = eq.TryEnhance(EnhanceTarget.Bag(iron11), 99, warrior);
-            Check($"+11 fail (roll 99): {r.kind} -> {r.newKey}, pity(+11)={eq.PityOf(iron11)}",
-                r.kind == EnhanceOutcome.Drop3 && r.newKey == "eq_sword_iron+8" && bag.Count("eq_sword_iron+8") == 1 && bag.Count(iron11) == 0 && eq.PityOf(iron11) == 1);
-
-            // +10 again: 25% + 1%p pity; the success clears the pity of +10 (+11 keeps its own).
-            bag.Add(iron10, 1);
-            cost = eq.CostFor(iron10);
-            Check($"+10 with pity: base {cost.basePercent}% + {cost.pityBonus}%p = {cost.successPercent}%", cost.basePercent == 25 && cost.pityBonus == 1 && cost.successPercent == 26);
-            r = eq.TryEnhance(EnhanceTarget.Bag(iron10), 0, warrior);
-            Check($"+10 success (roll 0): {r.kind} -> {r.newKey}, pity(+10)={eq.PityOf(iron10)} pity(+11)={eq.PityOf(iron11)}",
-                r.kind == EnhanceOutcome.Success && r.newKey == iron11 && bag.Count(iron11) == 1 && bag.Count(iron10) == 0 && eq.PityOf(iron10) == 0 && eq.PityOf(iron11) == 1);
-
-            // Worn +12 weapon without a ticket: destroyed, the warrior's starter weapon goes in.
-            eq.Set(EquipSlot.Weapon, iron12);
-            cost = eq.CostFor(iron12);
-            r = eq.TryEnhance(EnhanceTarget.Worn(EquipSlot.Weapon), 99, warrior);
-            Check($"worn +12 fail, no ticket: risk {cost.failure} ticket={cost.usesTicket} -> {r.kind}, weapon now {eq[EquipSlot.Weapon]}",
-                cost.failure == EnhanceFailure.Destroy && !cost.usesTicket && r.kind == EnhanceOutcome.Destroyed && r.newKey == null
-                && eq[EquipSlot.Weapon] == EquipmentDatabase.StarterWeapon(warrior) && bag.Count(iron12) == 0);
-
-            // The same with one protection ticket: kept at +0, the ticket is used up.
-            eq.Set(EquipSlot.Weapon, iron12);
-            bag.Add(ticket, 1);
-            cost = eq.CostFor(iron12);
-            r = eq.TryEnhance(EnhanceTarget.Worn(EquipSlot.Weapon), 99, warrior);
-            Check($"worn +12 fail, 1 ticket: predicted ticket={cost.usesTicket} -> {r.kind}, weapon {eq[EquipSlot.Weapon]}, tickets left {bag.Count(ticket)}",
-                cost.usesTicket && r.kind == EnhanceOutcome.Protected && r.newLevel == 0 && eq[EquipSlot.Weapon] == iron && bag.Count(ticket) == 0);
-
-            // Armour from +10 is destroyed (no −3, no pity); +0..+9 failures keep the level.
-            bag.Add(top10, 1);
-            cost = eq.CostFor(top10);
-            r = eq.TryEnhance(EnhanceTarget.Bag(top10), 99, warrior);
-            Check($"leather top +10 fail: risk {cost.failure} gold {cost.gold} -> {r.kind}, left {bag.Count(top10)}",
-                cost.failure == EnhanceFailure.Destroy && cost.gold == 96 && r.kind == EnhanceOutcome.Destroyed && bag.Count(top10) == 0 && eq.PityOf(top10) == 0);
-            bag.Add(ring9, 1);
-            r = eq.TryEnhance(EnhanceTarget.Bag(ring9), 99, warrior);
-            Check($"copper ring +9 fail: {r.kind}, still +9={bag.Count(ring9)}", r.kind == EnhanceOutcome.Keep && bag.Count(ring9) == 1 && eq.PityOf(ring9) == 0);
-
-            // +20 cannot go higher; without gold nothing happens.
-            bag.Add(iron20, 1);
-            int goldBefore = bag.Count(gold);
-            r = eq.TryEnhance(EnhanceTarget.Bag(iron20), 0, warrior);
-            Check($"+20: {r.kind}, gold unchanged={bag.Count(gold) == goldBefore}", r.kind == EnhanceOutcome.MaxLevel && bag.Count(gold) == goldBefore && bag.Count(iron20) == 1);
-            bag.Remove(gold, bag.Count(gold));
-            r = eq.TryEnhance(EnhanceTarget.Bag("eq_sword_iron+7"), 0, warrior);
-            Check($"no gold: {r.kind}, +7 kept={bag.Count("eq_sword_iron+7")}", r.kind == EnhanceOutcome.NotEnough && bag.Count("eq_sword_iron+7") == 1);
-            bag.Add(gold, 100000);
-
-            // Bag order: database order, then the higher +level first.
-            string order = string.Join(",", EquipmentDatabase.GearKeys(bag));
-            Check($"bag order: {order}", order == "eq_sword_iron+20,eq_sword_iron+11,eq_sword_iron+8,eq_sword_iron+7,eq_ring_copper+9");
-
-            // Growth: ≈ +50% of base + weapon attack at +12, HP for everything else, never block / speed / accessory attack.
-            int AttackBonus(string key) => EquipmentDatabase.StatsOfKey(key).attack - EquipmentDatabase.StatsOfKey(EquipmentDatabase.BaseId(key)).attack;
-            int HpBonus(string key) => EquipmentDatabase.StatsOfKey(key).maxHealth - EquipmentDatabase.StatsOfKey(EquipmentDatabase.BaseId(key)).maxHealth;
-            Check($"iron sword +12 attack +{AttackBonus(iron12)} (expect 10)", AttackBonus(iron12) == 10);
-            Check($"dragon sword +12 attack +{AttackBonus("eq_sword_dragon+12")} (expect 20)", AttackBonus("eq_sword_dragon+12") == 20);
-            Check($"leather top +10 hp +{HpBonus(top10)} (expect 14)", HpBonus(top10) == 14);
-            var topBase = EquipmentDatabase.StatsOfKey("eq_top_leather");
-            var top = EquipmentDatabase.StatsOfKey("eq_top_leather+20");
-            var ruby = EquipmentDatabase.StatsOfKey("eq_ring_ruby+20");
-            Check($"no block/speed/accessory-attack growth: top block {topBase.block}->{top.block} speed {topBase.speed}->{top.speed}, ruby +20 attack {ruby.attack}",
-                top.block == topBase.block && top.speed == topBase.speed && top.attack == topBase.attack && ruby.attack == EquipmentDatabase.Get("eq_ring_ruby").attack);
-            string flat = null;
-            foreach (var item in EquipmentDatabase.All)
-                for (int l = 1; l <= EquipmentDatabase.MaxEnhance && flat == null; l++)
-                    if (item.StatsAt(l).Score <= item.StatsAt(l - 1).Score) flat = $"{item.id} +{l}";
-            Check($"전투력 rises at every +level for all gear{(flat != null ? " (flat at " + flat + ")" : "")}", flat == null);
-            eq.Set(EquipSlot.Weapon, iron12);
-            Check($"worn iron +12: AttackBonus {eq.AttackBonus} (expect 20)", eq.AttackBonus == 20);
-
-            // Prices: gear sells for more with its level; the ticket is shop-only.
-            Check($"sell iron +0 {ItemPrices.SellPrice(iron)} G / +12 {ItemPrices.SellPrice(iron12)} G (expect 25 / 100)", ItemPrices.SellPrice(iron) == 25 && ItemPrices.SellPrice(iron12) == 100);
-            Check($"ticket: buy {ItemPrices.BuyPrice(ticket)} G, sell {ItemPrices.SellPrice(ticket)} G, last on the shelf, not usable by hand",
-                ItemPrices.BuyPrice(ticket) == 3000 && ItemPrices.SellPrice(ticket) == 0 && Array.IndexOf(ItemPrices.ShopStock, ticket) == ItemPrices.ShopStock.Length - 1
-                && !ConsumableDatabase.IsUsable(ticket) && ConsumableDatabase.IsTicket(ticket));
-        }
-
-        /// <summary>Save round trip on the live session, then a hand-built version-3 save through <see cref="SaveSystem.Migrate"/>.</summary>
-        void EnhanceSaveChecks()
-        {
-            var session = Game.Session;
-            var eq = session.Equipment;
-            var bag = session.Inventory;
-            // The mage keeps an enhanced staff worn through Restore (EnsureUsable), so worn keys are checked too.
-            eq.Set(EquipSlot.Weapon, "eq_staff_crystal+9");
-            string bagBefore = Dump(bag.ToList()), pityBefore = Dump(eq.PityToList()), wornBefore = string.Join(",", eq.ToList());
-            var data = session.Capture(Game.Player.Position, Game.Player.Facing);
-            string json = JsonUtility.ToJson(data);
-            session.Restore(JsonUtility.FromJson<SaveData>(json), Game.Config);
-            string bagAfter = Dump(bag.ToList()), pityAfter = Dump(eq.PityToList()), wornAfter = string.Join(",", eq.ToList());
-            Check($"save round trip v{data.version}: worn [{wornAfter}] pity [{pityAfter}] bag [{bagAfter}]",
-                data.version == SaveData.CurrentVersion && bagAfter == bagBefore && wornAfter == wornBefore && pityAfter == pityBefore
-                && pityAfter == "eq_sword_iron+11:1" && json.Contains("\"eq_sword_iron+8\"") && json.Contains("\"enhancePity\"") && data.enhanceLevels.Count == 0);
-
-            var v3 = new SaveData { version = 3, playerClass = "warrior" };
-            v3.equipped = new List<string> { "eq_sword_iron", "", "", "", "", "" };
-            v3.enhanceLevels.Add(new ItemStack("eq_sword_iron", 5));
-            v3.enhanceLevels.Add(new ItemStack("eq_ring_copper", 3));
-            v3.inventory.Add(new ItemStack("eq_ring_copper", 2));
-            v3.enhanceLevels.Add(new ItemStack("eq_neck_leaf", 4));
-            v3.storage.Add(new ItemStack("eq_neck_leaf", 1));
-            var m = SaveSystem.Migrate(JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(v3)));
-            Check($"v3 -> v{m.version}: worn weapon {m.equipped[0]}, enhanceLevels left {m.enhanceLevels.Count}",
-                m.version == SaveData.CurrentVersion && m.equipped[0] == "eq_sword_iron+5" && m.enhanceLevels.Count == 0);
-            Check($"v3 -> v{m.version} kind only in the bag: copper {CountIn(m.inventory, "eq_ring_copper")} + copper+3 {CountIn(m.inventory, "eq_ring_copper+3")}",
-                CountIn(m.inventory, "eq_ring_copper") == 1 && CountIn(m.inventory, "eq_ring_copper+3") == 1);
-            Check($"v3 -> v{m.version} kind only in storage: leaf {CountIn(m.storage, "eq_neck_leaf")} + leaf+4 {CountIn(m.storage, "eq_neck_leaf+4")}",
-                CountIn(m.storage, "eq_neck_leaf") == 0 && CountIn(m.storage, "eq_neck_leaf+4") == 1);
-        }
-
-        /// <summary>The blacksmith window with a +12 staff (screenshot), the risk confirm, a real attempt and paging.</summary>
-        IEnumerator EnhanceWindowChecks()
-        {
-            var bag = Game.Session.Inventory;
-            const string staff12 = "eq_staff_crystal+12", staff3 = "eq_staff_crystal+3", staff4 = "eq_staff_crystal+4";
-            bag.Remove(ConsumableDatabase.ProtectTicket, bag.Count(ConsumableDatabase.ProtectTicket)); // show the destroy risk
-            bag.Add(staff12, 1);
-            bag.Add(staff3, 1);
-            bag.Add(ConsumableDatabase.Gold, 50000);
-            bag.Add(EnhanceRules.Bone, 200);
-            bag.Add(EnhanceRules.Ore, 100);
-            bag.Add(EnhanceRules.Essence, 50);
-            var anvil = FindAnyObjectByType<Anvil>();
-            Log($"anvil found={anvil != null}");
-            if (anvil != null) anvil.Interact(Game.Player);
-            else Game.Flow.OpenWindow(Game.UI.Enhance);
-            yield return Wait(0.4f);
-            var smithy = Game.UI.Enhance;
-            bool open = Game.UI.Top == smithy;
-            bool picked = smithy.DevSelect(staff12);
-            yield return Wait(0.2f);
-            string failLine = Strip(smithy.DevFailLine);
-            Check($"blacksmith window: open={open} +12 staff selected={picked} '{failLine}'", open && picked && failLine == "실패 시: 장비 파괴!");
-            yield return Shot("03l_enhance");
-
-            // Risky attempt: the confirm comes first; "아니오" leaves everything as it was.
-            smithy.DevPress();
-            yield return Wait(0.3f);
-            bool asked = Game.UI.Top != null && Game.UI.Top.name == "Confirm";
-            yield return Shot("03l2_enhance_confirm");
-            if (asked) Game.UI.Pop();
-            yield return Wait(0.3f);
-            Check($"+12 attempt asks first: confirm={asked}, after 아니오 top={(Game.UI.Top != null ? Game.UI.Top.name : "-")} +12 staff={bag.Count(staff12)}",
-                asked && Game.UI.Top == smithy && bag.Count(staff12) == 1 && !smithy.DevBusy);
-
-            // Safe attempt through the window: button locked during the unscaled-time swing, then the result stays.
-            smithy.DevSelect(staff3);
-            int goldBefore = Game.Session.Gold;
-            smithy.DevPress();
-            yield return null;
-            bool busyDuring = smithy.DevBusy;
-            yield return Wait(1.4f);
-            string result = Strip(smithy.DevResult);
-            int paid = goldBefore - Game.Session.Gold;
-            Check($"+3 attempt in the window: busy during swing={busyDuring} result '{result}' +4 staff={bag.Count(staff4)} gold -{paid}",
-                busyDuring && !smithy.DevBusy && result.StartsWith("강화 성공!") && bag.Count(staff4) == 1 && bag.Count(staff3) == 0
-                && paid == EnhanceRules.GoldFor(EquipmentDatabase.Get(staff3), 3));
-
-            // More than 20 entries: a second page instead of running past the grid.
-            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) bag.Add(EquipmentDatabase.KeyFor("eq_ring_copper", l), 1);
-            bool last = smithy.DevSelect("eq_ring_copper+1");
-            yield return Wait(0.2f);
-            Check($"paging: {smithy.DevEntries} entries, last one selected={last} on page {smithy.DevPage}", last && smithy.DevEntries > 20 && smithy.DevPage.StartsWith("2 /"));
-            yield return Shot("03l3_enhance_page2");
-            Game.Flow.CloseInventory();
-            yield return Wait(0.3f);
-        }
 
         /// <summary>
         /// A version-2 save (before gold, potions and the rebuilt village) standing somewhere in the old

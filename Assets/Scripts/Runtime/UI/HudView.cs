@@ -80,6 +80,7 @@ namespace DotRPG
 
             // Round minimap (top-right) with the quest tracker underneath.
             SideMenuView.Create(root);
+            PartyFramesView.Create(root); // [PARTY]
             MinimapView.Create(root);
             questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -16 - MinimapView.Diameter - 32), new Vector2(360, 130));
             var qbg = UIFactory.Panel(questPanel, "Bg", true);

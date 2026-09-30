@@ -51,6 +51,7 @@ namespace DotRPG
             gameplayRoot.SetParent(transform, false);
             Game.Player = PlayerController.Create(cfg, gameplayRoot);
             Game.Player.gameObject.SetActive(false);
+            Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
 
             Game.UI = UIRoot.Create(transform);
 

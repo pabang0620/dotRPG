@@ -35,6 +35,7 @@ namespace DotRPG
             view.Add("menuicon_quest", "퀘스트", () => Game.Flow.OpenWindow(Game.UI.QuestLog));
             view.Add("menuicon_dungeon", "미니던전", () => Game.Flow.OpenWindow(Game.UI.Dungeon));
             view.Add("menuicon_raid", "레이드", () => Game.Flow.OpenWindow(Game.UI.Raid));
+            view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(Game.UI.Party)); // [PARTY]
             view.column.gameObject.SetActive(false);
             return view;
         }

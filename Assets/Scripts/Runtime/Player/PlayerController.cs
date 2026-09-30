@@ -3,7 +3,10 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// Player character: movement, facing, animation state and reacting to damage.
+    /// A party member's character: movement, facing, animation state and reacting to damage. The same
+    /// body is used by the local player (keyboard, <see cref="LocalInput"/>) and by AI companions
+    /// (<see cref="CompanionBrain"/>): each frame it reads an <see cref="ActorCommand"/> from its
+    /// <see cref="Input"/>. Per-member numbers live in <see cref="Data"/> (<see cref="CharacterData"/>).
     /// Attacking and interacting are delegated to <see cref="PlayerCombat"/> and <see cref="PlayerInteractor"/>.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
@@ -32,10 +35,44 @@ namespace DotRPG
         /// <summary>Centre of the body (the transform sits at the feet).</summary>
         public Vector2 Center => Position + new Vector2(0f, 0.45f);
 
-        /// <summary>Builds the player GameObject. Visual children can be replaced with a prefab later.</summary>
+        /// <summary>Class, level, gear, MP and buffs of this member (the local one wraps the session).</summary>
+        public CharacterData Data { get; private set; }
+        /// <summary>Where this member's commands come from (keyboard, AI, scripted test input).</summary>
+        public IActorInput Input { get; set; }
+        /// <summary>The command read this frame (also used by <see cref="PlayerCombat"/> for the mage's aim).</summary>
+        public ActorCommand Command { get; private set; } = ActorCommand.None;
+        /// <summary>True for the member this PC controls (camera, HUD, toasts, pickups, portals, interaction).</summary>
+        public bool IsLocal => Data != null && Data.IsLocal;
+        public string DisplayName => Data != null ? Data.DisplayName : name;
+        public Collider2D BodyCollider { get; private set; }
+
+        /// <summary>Builds the local player GameObject. Visual children can be replaced with a prefab later.</summary>
         public static PlayerController Create(GameConfig config, Transform parent)
         {
-            var go = new GameObject("Player");
+            var player = Build(config, parent, "Player", CharacterData.Session, new LocalInput(), CharacterLook.Player);
+            Game.Session.Equipment.Changed += player.RefreshStats;
+            Game.Session.Equipment.Changed += player.ApplyGear;
+            Game.Session.Progression.Changed += player.RefreshStats;
+            Game.Session.Progression.LeveledUp += player.OnLevelUp;
+            return player;
+        }
+
+        /// <summary>Builds an AI (or, later, remote) party member with its own data. Call <see cref="Spawn"/> to place it.</summary>
+        public static PlayerController CreateCompanion(GameConfig config, Transform parent, CharacterData data, IActorInput input)
+        {
+            var member = Build(config, parent, "Companion_" + data.Id, data, input, data.Look ?? CharacterClassInfo.Get(data.Class).Look);
+            data.Equipment.Changed += member.RefreshStats;
+            data.Equipment.Changed += member.ApplyGear;
+            data.Progression.Changed += member.RefreshStats;
+            member.interactor.enabled = false;
+            member.SetClass(data.Class);
+            data.Mana = data.Stats.MaxMp;
+            return member;
+        }
+
+        static PlayerController Build(GameConfig config, Transform parent, string name, CharacterData data, IActorInput input, CharacterLook look)
+        {
+            var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var body = PhysicsCompat.AddTopDownBody(go, RigidbodyType2D.Dynamic);
             body.mass = 1f;
@@ -57,12 +94,15 @@ namespace DotRPG
             sr.sortingOrder = 0;
 
             var player = go.AddComponent<PlayerController>();
+            player.Data = data;
+            player.Input = input;
+            player.BodyCollider = col;
             player.stats = config.playerStats;
             player.body = body;
             player.visual = visual;
             player.health = go.AddComponent<Health>();
             player.animator = go.AddComponent<CharacterAnimator>();
-            player.animator.Setup(CharacterLook.Player, sr);
+            player.animator.Setup(look, sr);
             player.flash = go.AddComponent<HitFlash>();
             player.flash.SetTargets(sr);
             player.combat = go.AddComponent<PlayerCombat>();
@@ -72,11 +112,6 @@ namespace DotRPG
             go.AddComponent<YSort>().Configure(false);
 
             player.health.Changed += player.OnHealthChanged;
-            Game.Session.Equipment.Changed += player.RefreshStats;
-            Game.Session.Equipment.Changed += player.ApplyGear;
-            Game.Session.Progression.Changed += player.RefreshStats;
-            Game.Session.Progression.LeveledUp += player.OnLevelUp;
-            EnemyController.Killed += player.OnEnemyKilled;
             player.skills = go.AddComponent<SkillCaster>();
             player.skills.Setup(player);
             player.animator.Footstep += () => { if (Game.IsPlaying) Fx.Dust(player.Position); };
@@ -87,15 +122,15 @@ namespace DotRPG
         public SkillCaster Skills => skills;
         SkillCaster skills;
 
-        public int Mana => Mathf.FloorToInt(Game.Session.PlayerMana);
-        public int MaxMana => CharacterStats.MaxMp;
+        public int Mana => Mathf.FloorToInt(Data.Mana);
+        public int MaxMana => Data.Stats.MaxMp;
 
         /// <summary>Re-applies level, passive tree and gear: new max HP/MP (gains are also filled).</summary>
         public void RefreshStats()
         {
             if (health == null || IsDead || !gameObject.activeInHierarchy)
                 return; // Spawn() reads the stats when the player enters the world
-            int newMax = CharacterStats.MaxHp;
+            int newMax = Data.Stats.MaxHp;
             int delta = newMax - health.Max;
             if (delta == 0) { ClampMana(); return; }
             health.SetMax(newMax, false);
@@ -103,7 +138,7 @@ namespace DotRPG
             ClampMana();
         }
 
-        void ClampMana() => Game.Session.PlayerMana = Mathf.Clamp(Game.Session.PlayerMana, 0f, CharacterStats.MaxMp);
+        void ClampMana() => Data.Mana = Mathf.Clamp(Data.Mana, 0f, Data.Stats.MaxMp);
 
         /// <summary>Spends MP (or HP with the Blood Magic keystone). False if there is not enough.</summary>
         public bool TrySpend(int cost, bool useLife)
@@ -114,28 +149,28 @@ namespace DotRPG
                 health.Drain(cost);
                 return true;
             }
-            if (Game.Session.PlayerMana < cost) return false;
-            Game.Session.PlayerMana -= cost;
-            GameEvents.RaisePlayerHealthChanged(health.Current, health.Max);
+            if (Data.Mana < cost) return false;
+            Data.Mana -= cost;
+            if (IsLocal) GameEvents.RaisePlayerHealthChanged(health.Current, health.Max);
             return true;
         }
 
         public void Heal(int amount) => health.Heal(amount);
 
-        void OnEnemyKilled(EnemyController enemy, int xp)
+        /// <summary>This member landed the killing blow: kill passives (HP / MP on kill) apply to it.</summary>
+        public void OnKillingBlow()
         {
             if (IsDead) return;
-            Game.Session.Progression.AddXp(xp);
-            GameEvents.RaiseToast($"+{xp} EXP");
-            if (CharacterStats.LifeOnKill > 0) health.Heal(CharacterStats.LifeOnKill);
-            if (CharacterStats.ManaOnKill > 0) { Game.Session.PlayerMana += CharacterStats.ManaOnKill; ClampMana(); }
+            var st = Data.Stats;
+            if (st.LifeOnKill > 0) health.Heal(st.LifeOnKill);
+            if (st.ManaOnKill > 0) { Data.Mana += st.ManaOnKill; ClampMana(); }
         }
 
         void OnLevelUp(int level)
         {
             RefreshStats();
             health.Heal(health.Max);
-            Game.Session.PlayerMana = CharacterStats.MaxMp;
+            Data.Mana = Data.Stats.MaxMp;
             Game.Audio.PlaySfx("quest");
             Fx.Sparkle(Center + Vector2.up * 0.3f, 8, 0.9f);
             Game.Camera?.Shake(0.05f, 0.15f);
@@ -151,16 +186,27 @@ namespace DotRPG
                 if (g.kind == GemKind.Support && g.unlockLevel == level) GameEvents.RaiseToast($"새 보조 젬: {g.name}  (메뉴 → 스킬 → 스킬 젬)");
         }
 
+        void OnDisable()
+        {
+            // The local player leaving the world (title screen) takes the companions with it.
+            if (IsLocal && Game.Party != null) Game.Party.OnLocalHidden();
+        }
+
         void OnDestroy()
         {
-            if (Game.Session != null)
+            if (Data != null && !Data.IsLocal)
+            {
+                Data.Equipment.Changed -= RefreshStats;
+                Data.Equipment.Changed -= ApplyGear;
+                Data.Progression.Changed -= RefreshStats;
+            }
+            else if (Game.Session != null)
             {
                 Game.Session.Equipment.Changed -= RefreshStats;
                 Game.Session.Equipment.Changed -= ApplyGear;
                 Game.Session.Progression.Changed -= RefreshStats;
                 Game.Session.Progression.LeveledUp -= OnLevelUp;
             }
-            EnemyController.Killed -= OnEnemyKilled;
         }
 
         /// <summary>
@@ -182,24 +228,44 @@ namespace DotRPG
         {
             Class = cls;
             var info = CharacterClassInfo.Get(cls);
-            animator.Setup(info.Look, animator.Renderer);
+            animator.Setup(BaseLook(info), animator.Renderer);
             combat.SetClass(info);
             flash.SetTargets(animator.Renderer);
             skills?.ResetCooldowns();
-            CharacterStats.ClearBuffs();
+            Data.ClearBuffs();
             ApplyGear();
         }
+
+        CharacterLook BaseLook(CharacterClassInfo info) => !IsLocal && Data.Look != null ? Data.Look : info.Look;
 
         /// <summary>Worn top, bottom and weapon show on the character (necklace and rings don't).</summary>
         void ApplyGear()
         {
-            if (animator == null || combat == null || Game.Session == null) return;
-            var eq = Game.Session.Equipment;
-            animator.SetLook(CharacterLook.WithGear(CharacterClassInfo.Get(Class).Look, eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
+            if (animator == null || combat == null || Game.Session == null || Data == null) return;
+            var eq = Data.Equipment;
+            animator.SetLook(CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
             combat.RefreshWeapon();
         }
 
         public void Spawn(Vector2 position, Facing facing, int currentHealth, int maxHealth)
+        {
+            bool wasDead = IsDead;
+            Place(position, facing);
+            IsDead = false;
+            visual.localRotation = Quaternion.identity;
+            flash.Stop();
+            // Max HP comes from base + level + passives + gear (the maxHealth argument is the base, kept for callers).
+            health.Init(Data.Stats.MaxHp, currentHealth, stats.invulnerableTime);
+            ClampMana();
+            animator.Play(CharacterAnim.Idle, facing);
+            GetComponent<YSort>().Refresh();
+            // Companions follow the local player to wherever it (re)appears.
+            // A local player coming back from death (village respawn) brings the companions back at full HP.
+            if (IsLocal && Game.Party != null) Game.Party.OnLocalSpawned(wasDead);
+        }
+
+        /// <summary>Moves the member without touching HP (companions re-placed next to the leader, teleport catch-up).</summary>
+        public void Place(Vector2 position, Facing facing)
         {
             transform.position = position;
             body.position = position;
@@ -207,17 +273,34 @@ namespace DotRPG
             desiredVelocity = Vector2.zero;
             knockbackUntil = 0f;
             lockedUntil = 0f;
-            IsDead = false;
             Facing = facing;
             AimDirection = facing.ToVector();
+            combat.Cancel();
+            if (!IsDead) animator.Play(CharacterAnim.Idle, facing);
+        }
+
+        /// <summary>
+        /// Gets a downed member back up with <paramref name="hpFraction"/> of max HP (and optional
+        /// invulnerability). Use <see cref="PartyManager.ReviveMember"/> so the party raises its event.
+        /// </summary>
+        public void Revive(float hpFraction, float invulnerableSeconds = 0f)
+        {
+            if (!IsDead) return;
+            IsDead = false;
+            knockbackUntil = 0f;
             visual.localRotation = Quaternion.identity;
             flash.Stop();
-            combat.Cancel();
-            // Max HP comes from base + level + passives + gear (the maxHealth argument is the base, kept for callers).
-            health.Init(CharacterStats.MaxHp, currentHealth, stats.invulnerableTime);
+            int max = Data.Stats.MaxHp;
+            health.Init(max, Mathf.Max(1, Mathf.CeilToInt(max * Mathf.Clamp01(hpFraction))), stats.invulnerableTime);
+            if (invulnerableSeconds > 0f)
+            {
+                health.SetInvulnerable(invulnerableSeconds);
+                flash.Blink(invulnerableSeconds);
+            }
             ClampMana();
-            animator.Play(CharacterAnim.Idle, facing);
-            GetComponent<YSort>().Refresh();
+            animator.Play(CharacterAnim.Idle, Facing);
+            Fx.Sparkle(Center + Vector2.up * 0.3f, 6, 0.7f);
+            Game.Audio.PlaySfx("heal", IsLocal ? 1f : 0.6f);
         }
 
         void Update()
@@ -230,13 +313,14 @@ namespace DotRPG
                 return;
             }
 
-            Game.Session.PlayTimeSeconds += Time.deltaTime;
-            if (Game.Session.PlayerMana < CharacterStats.MaxMp)
-            {
-                Game.Session.PlayerMana = Mathf.Min(CharacterStats.MaxMp, Game.Session.PlayerMana + CharacterStats.ManaRegen * Time.deltaTime);
-            }
+            if (IsLocal) Game.Session.PlayTimeSeconds += Time.deltaTime;
+            var st = Data.Stats;
+            int maxMp = st.MaxMp;
+            if (Data.Mana < maxMp) Data.Mana = Mathf.Min(maxMp, Data.Mana + st.ManaRegen * Time.deltaTime);
 
-            Vector2 move = Game.Input.Move;
+            var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
+            Command = cmd;
+            Vector2 move = cmd.move;
             bool stunned = Time.time < knockbackUntil;
             bool channeling = Time.time < lockedUntil;
             if (channeling) move = Vector2.zero;
@@ -247,19 +331,25 @@ namespace DotRPG
                 AimDirection = SnapTo8(move);
             }
 
-            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * CharacterStats.SpeedMultiplier;
+            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier;
 
             // Ignore action buttons on the frame a menu/dialogue closed, so the same press
             // doesn't immediately trigger an attack or re-open the conversation.
             if (!stunned && !channeling && !Game.State.ChangedThisFrame)
             {
-                if (Game.Input.AttackPressed) combat.TryAttack();
-                else if (Game.Input.InteractPressed) interactor.TryInteract();
-                if (Game.Input.UseItemPressed) UseHealing();
-                if (Game.Input.UseManaPressed) UseConsumable(ConsumableDatabase.MpPotion);
-                if (Game.Input.TownScrollPressed) UseConsumable(ConsumableDatabase.TownScroll);
-                for (int s = 0; s < SkillGems.Slots; s++)
-                    if (Game.Input.SkillPressed(s)) { skills.TryCast(s); break; }
+                bool acting = cmd.attack || cmd.skillSlot >= 0;
+                if (acting && cmd.faceAim && cmd.aim.sqrMagnitude > 0.0001f && !combat.IsAttacking && !skills.IsCasting)
+                    FaceTowards(Position + cmd.aim);
+                if (cmd.attack) combat.TryAttack();
+                else if (cmd.interact && IsLocal) interactor.TryInteract();
+                // Potions and the scroll come from the local bag.
+                if (IsLocal)
+                {
+                    if (cmd.useHealing) UseHealing();
+                    if (cmd.useMana) UseConsumable(ConsumableDatabase.MpPotion);
+                    if (cmd.townScroll) UseConsumable(ConsumableDatabase.TownScroll);
+                }
+                if (cmd.skillSlot >= 0 && cmd.skillSlot < SkillGems.Slots) skills.TryCast(cmd.skillSlot);
             }
 
             if (stunned) animator.Play(CharacterAnim.Hurt, Facing);
@@ -291,6 +381,7 @@ namespace DotRPG
         /// <summary>Eats one carrot to heal (Q key, or clicking a carrot in the bag).</summary>
         public void TryEatCarrot()
         {
+            if (!IsLocal) return;
             var inventory = Game.Session.Inventory;
             if (health.Current >= health.Max)
             {
@@ -316,15 +407,16 @@ namespace DotRPG
         /// <summary>Q: a health potion if there is one, otherwise a carrot.</summary>
         public void UseHealing()
         {
+            if (!IsLocal) return;
             if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
             else TryEatCarrot();
         }
 
-        /// <summary>Uses one potion or scroll from the bag. Returns true when it was used up.</summary>
+        /// <summary>Uses one potion or scroll from the bag (local player only). Returns true when it was used up.</summary>
         public bool UseConsumable(string id)
         {
             var item = ConsumableDatabase.Get(id);
-            if (item == null || IsDead) return false;
+            if (item == null || IsDead || !IsLocal) return false;
             var bag = Game.Session.Inventory;
             if (bag.Count(id) <= 0)
             {
@@ -349,11 +441,12 @@ namespace DotRPG
                 }
                 case ConsumableKind.HealMp:
                 {
-                    if (Game.Session.PlayerMana >= CharacterStats.MaxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있다."); return false; }
+                    int maxMp = Data.Stats.MaxMp;
+                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
-                    int amount = Mathf.Max(1, Mathf.RoundToInt(CharacterStats.MaxMp * item.power / 100f));
-                    Game.Session.PlayerMana += amount;
+                    int amount = Mathf.Max(1, Mathf.RoundToInt(maxMp * item.power / 100f));
+                    Data.Mana += amount;
                     ClampMana();
                     GameEvents.RaisePlayerHealthChanged(health.Current, health.Max);
                     Game.Audio.PlaySfx("heal");
@@ -387,15 +480,18 @@ namespace DotRPG
         public bool TakeDamage(DamageInfo info)
         {
             if (IsDead || info.team == Team.Player) return false;
+            // Party members never hurt each other, whatever team the hit claims.
+            if (info.AttackerMember != null) return false;
             // Armour / rings: a chance to shrug the hit off completely.
-            if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < CharacterStats.Block) // [MONSTER] unblockable skips the roll
+            if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block) // [MONSTER] unblockable skips the roll
             {
                 Fx.Sparkle(Center + Vector2.up * 0.3f, 3, 0.35f);
-                Game.Audio.PlaySfx("mine");
-                GameEvents.RaiseToast("막았다!");
+                Game.Audio.PlaySfx("mine", IsLocal ? 1f : 0.5f);
+                if (IsLocal) GameEvents.RaiseToast("막았다!");
                 return false;
             }
             if (!health.TryDamage(info)) return false;
+            Game.Party?.RecordDamageTaken(this, info);
 
             Vector2 away = Position - info.sourcePosition;
             if (away.sqrMagnitude < 0.0001f) away = -Facing.ToVector();
@@ -405,8 +501,8 @@ namespace DotRPG
 
             flash.Flash(0.1f);
             flash.Blink(stats.invulnerableTime);
-            Game.Audio.PlaySfx("hurt");
-            Game.Camera?.Shake(0.12f, 0.18f);
+            Game.Audio.PlaySfx("hurt", IsLocal ? 1f : 0.5f);
+            if (IsLocal) Game.Camera?.Shake(0.12f, 0.18f);
 
             if (health.IsDead) Die();
             return true;
@@ -418,20 +514,23 @@ namespace DotRPG
             desiredVelocity = Vector2.zero;
             animator.Play(CharacterAnim.Hurt, Facing);
             visual.localRotation = Quaternion.Euler(0f, 0f, 90f);
-            Game.Audio.PlaySfx("player_down");
-            Game.Flow.OnPlayerDied();
+            Game.Audio.PlaySfx("player_down", IsLocal ? 1f : 0.6f);
+            Game.Party?.NotifyDowned(this);
+            // The local player's death is the game's business (game over, or a dungeon's revive rules).
+            if (IsLocal) Game.Flow.OnPlayerDied();
         }
 
         public void HealFull() => health.Heal(health.Max);
 
         public void AddMaxHealth(int amount)
         {
-            Game.Session.PlayerMaxHealth += amount;
+            Data.BaseMaxHp += amount;
             RefreshStats();
         }
 
         void OnHealthChanged(int current, int max)
         {
+            if (!IsLocal) return;
             Game.Session.PlayerHealth = current;
             GameEvents.RaisePlayerHealthChanged(current, max);
         }

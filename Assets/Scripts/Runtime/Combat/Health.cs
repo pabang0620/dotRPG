@@ -31,6 +31,9 @@ namespace DotRPG
             Changed?.Invoke(current, max);
         }
 
+        /// <summary>No damage for a while (revive protection). Never shortens a running invulnerability.</summary>
+        public void SetInvulnerable(float seconds) => invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + seconds);
+
         public bool TryDamage(DamageInfo info)
         {
             if (IsDead || IsInvulnerable || info.amount <= 0) return false;
