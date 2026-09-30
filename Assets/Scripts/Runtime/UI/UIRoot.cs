@@ -171,11 +171,35 @@ namespace DotRPG
             var top = Top;
             stack.RemoveAt(stack.Count - 1);
             top.Hide();
+            // [ENH] An overlay never hid the screen under it: no Show() again, just no input this frame.
+            if (top == overlay)
+            {
+                overlay = null;
+                Top?.MarkShown();
+                return;
+            }
             Top?.Show();
+        }
+
+        // [ENH] Overlay push: the screen underneath stays visible (dimmed by the overlay) and ignores input while not on top.
+        MenuScreen overlay;
+
+        void PushOverlay(MenuScreen screen)
+        {
+            if (screen == null) return;
+            if (overlay != null && Top == overlay) { Push(screen); return; }
+            // A button the mouse selected under the dialog must not receive the dialog's Enter.
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+            stack.Add(screen);
+            overlay = screen;
+            screen.transform.SetAsLastSibling();
+            if (Fader != null) Fader.transform.SetAsLastSibling();
+            screen.Show();
         }
 
         void ClearStack()
         {
+            overlay = null; // [ENH]
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
@@ -183,10 +207,19 @@ namespace DotRPG
                 if (s != null) s.Hide();
         }
 
-        public void Confirm(string message, Action onYes)
+        /// <summary>
+        /// Yes/no question. <paramref name="overlay"/> = drawn over the current screen, which stays visible
+        /// (dimmed) and gets no input until the answer; otherwise the current screen is hidden meanwhile.
+        /// </summary>
+        public void Confirm(string message, Action onYes, bool overlay = false)
         {
-            confirm.Setup(message, onYes);
-            Push(confirm);
+            // [ENH] overlay option (wider dialog for the longer item questions)
+            confirm.Setup(message, onYes, overlay ? ConfirmScreen.WideWidth : ConfirmScreen.DefaultWidth);
+            if (overlay) PushOverlay(confirm);
+            else Push(confirm);
         }
+
+        /// <summary>The yes/no dialog (for automated checks).</summary>
+        public ConfirmScreen ConfirmDialog => confirm;
     }
 }

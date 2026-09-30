@@ -91,9 +91,15 @@ namespace DotRPG
 
         protected abstract void Refresh();
 
+        /// <summary>False while a dialog is drawn over this window (it then takes no input at all).</summary>
+        protected bool IsTop => Game.UI == null || Game.UI.Top == this;
+
+        /// <summary>True when this frame's keys belong to this window (on top, not the frame it was shown or the state changed).</summary>
+        protected bool TakesInput => IsTop && Time.frameCount != shownFrame && !Game.State.ChangedThisFrame;
+
         protected virtual void Update()
         {
-            if (Time.frameCount == shownFrame || Game.State.ChangedThisFrame) return;
+            if (!TakesInput) return;
             var input = Game.Input;
             if (input.InventoryPressed || input.CancelPressed)
             {
@@ -259,6 +265,8 @@ namespace DotRPG
         Text enhanceLabel;
         int selected;
         bool dirty, busy;
+        /// <summary>Set after a piece was destroyed: 강화 / Enter do nothing until the player picks again (click or navigation).</summary>
+        bool pickRequired;
         float busyTime;
 
         CharacterClass Class => Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
@@ -340,6 +348,9 @@ namespace DotRPG
 
         public override void Show()
         {
+            // Always open on the first page, first entry (the bag may have changed since the last visit).
+            selected = 0;
+            pickRequired = false;
             resultText.text = "";
             bigIcon.rectTransform.anchoredPosition = Vector2.zero;
             base.Show();
@@ -352,6 +363,7 @@ namespace DotRPG
                 // Closed mid-swing (e.g. a state change): the attempt is called off. Nothing is paid before the hammer lands.
                 StopAllCoroutines();
                 busy = false;
+                devRoll = null;
                 bigIcon.rectTransform.anchoredPosition = Vector2.zero;
             }
             base.Hide();
@@ -445,8 +457,11 @@ namespace DotRPG
                 return;
             }
             var next = gear.StatsAt(level + 1);
+            // Low tiers can pay for a level whose bonus still rounds to the same stat: say so instead of "A → A".
+            bool flat = next.enhanceAttack == now.enhanceAttack && next.enhanceHealth == now.enhanceHealth;
+            string after = flat ? NoStatChange : $"강화 후  <color=#8fe28f>{gear.StatLine(level + 1)}</color>";
             statsText.text = $"<b>능력치 변화</b>   <color=#b8c4d8>전투력 {now.Score:N0} → </color><color=#8fe28f>{next.Score:N0} (+{next.Score - now.Score:N0})</color>\n" +
-                             $"현재<color=#00000000> 후</color>  {gear.StatLine(level)}\n강화 후  <color=#8fe28f>{gear.StatLine(level + 1)}</color>";
+                             $"현재<color=#00000000> 후</color>  {gear.StatLine(level)}\n{after}";
 
             var cost = eq.CostFor(e.key);
             costTitle.text = "<b>필요 재료</b>";
@@ -461,7 +476,7 @@ namespace DotRPG
             if (cost.pityBonus > 0) chance += $"   <color=#b8c4d8>(기본 {cost.basePercent}% + 보정 {cost.pityBonus}%p)</color>";
             else if (EnhanceRules.HasPity(gear, level)) chance += "   <color=#8c96a8>(실패할 때마다 +1%p 보정)</color>";
             chanceText.text = chance;
-            failText.text = FailureLine(cost, bag.Count(ConsumableDatabase.ProtectTicket));
+            failText.text = FailureLine(cost, bag.Count(ConsumableDatabase.ProtectTicket), gear.starter);
 
             bool can = eq.CanAfford(cost);
             enhanceButton.interactable = can && !busy;
@@ -473,58 +488,81 @@ namespace DotRPG
 
         static string MaterialName(string id) => EquipmentDatabase.GetMaterial(id)?.name ?? id;
 
-        static string FailureLine(EnhanceCost cost, int tickets)
+        const string NoStatChange = "<color=#8c96a8>이번 단계는 능력치 변화가 없다 (높은 단계일수록 크게 오른다)</color>";
+        const string PickAgain = "강화할 장비를 다시 골라 주세요.";
+
+        static string FailureLine(EnhanceCost cost, int tickets, bool starter)
         {
             switch (cost.failure)
             {
                 case EnhanceFailure.Keep: return "실패 시: <color=#8fe28f>강화 수치 유지</color>";
                 case EnhanceFailure.Drop3: return $"실패 시: <color=#ff9f43>강화 수치 3 하락 (+{cost.level} → +{cost.DroppedLevel})</color>";
                 default:
-                    return cost.usesTicket
-                        ? $"실패 시: <color=#ffd84a>장비 보호권 1장 자동 사용 → +0 초기화 (보유 {tickets}장)</color>"
+                    if (cost.usesTicket) return $"실패 시: <color=#ffd84a>장비 보호권 1장 자동 사용 → +0 초기화 (보유 {tickets}장)</color>";
+                    return starter && tickets > 0
+                        ? "실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않는다)</color>"
                         : "실패 시: <color=#ff5050><b>장비 파괴!</b></color>";
             }
         }
 
-        /// <summary>Confirm text for attempts that can lose levels or the item (null = safe, no question).</summary>
+        /// <summary>Risk sentence for attempts that can lose levels or the item (null = safe, no question).</summary>
         static string RiskWarning(EnhanceCost cost)
         {
             switch (cost.failure)
             {
-                case EnhanceFailure.Drop3: return $"실패하면 강화 수치가 3 떨어집니다. (+{cost.level} → +{cost.DroppedLevel})\n강화할까요?";
+                case EnhanceFailure.Drop3: return $"실패하면 강화 수치가 3 내려갑니다 (+{cost.level} → +{cost.DroppedLevel}).";
                 case EnhanceFailure.Destroy:
-                    return cost.usesTicket ? "실패하면 장비 보호권 1장이 사용되고\n장비가 +0으로 초기화됩니다. 강화할까요?" : "실패하면 장비가 파괴됩니다.\n강화할까요?";
+                    return cost.usesTicket ? "실패하면 장비 보호권 1장을 사용해 +0으로 초기화됩니다." : "실패하면 장비가 파괴됩니다.";
                 default: return null;
             }
         }
 
+        /// <summary>The risk confirm: which piece, where it goes, the chance, then the risk.</summary>
+        static string ConfirmText(string key, EnhanceCost cost, string risk) =>
+            $"<b>{EquipmentDatabase.NameOfKey(key)}</b> → +{cost.level + 1}  (성공 {cost.successPercent}%)\n{risk} 강화할까요?";
+
         // ---------- Actions ----------
+
+        /// <summary>The player picked something (click, page, arrows): the old result line and the pick lock go.</summary>
+        void Picked()
+        {
+            pickRequired = false;
+            resultText.text = "";
+            dirty = true;
+        }
 
         void Click(int cellIndex)
         {
-            if (busy) return;
+            if (busy || !IsTop) return;
             int index = selected / PerPage * PerPage + cellIndex;
             if (index >= entries.Count) return;
             selected = index;
-            dirty = true;
+            Picked();
             Game.Audio.PlaySfx("select");
         }
 
         void Page(int d)
         {
-            if (busy) return;
+            if (busy || !IsTop) return;
             int page = selected / PerPage;
             int next = Mathf.Clamp(page + d, 0, PageCount - 1);
             if (next == page) return;
             selected = Mathf.Min(next * PerPage, entries.Count - 1);
+            Picked();
             Game.Audio.PlaySfx("select", 0.5f);
-            dirty = true;
         }
 
         /// <summary>Button / Enter: checks the price, asks first when the attempt is risky, then swings the hammer.</summary>
         void OnEnhancePressed()
         {
-            if (busy || entries.Count == 0) return;
+            if (busy || entries.Count == 0 || !IsTop) return;
+            if (pickRequired)
+            {
+                // After a destroy the cursor sits on a piece the player never chose.
+                Game.Audio.PlaySfx("cancel");
+                resultText.text = PickAgain;
+                return;
+            }
             var e = entries[selected];
             var eq = Game.Session.Equipment;
             if (EquipmentDatabase.LevelOfKey(e.key) >= EquipmentDatabase.MaxEnhance)
@@ -547,9 +585,9 @@ namespace DotRPG
                 StartAttempt(e);
                 return;
             }
-            // The confirm screen hides this window; when it closes, Show() runs again before the "예" action.
+            // The confirm is drawn over this window (it stays visible, dimmed, and takes no input meanwhile).
             Game.Audio.PlaySfx("select");
-            Game.UI.Confirm(warning, () => StartAttempt(e));
+            Game.UI.Confirm(ConfirmText(e.key, cost, warning), () => StartAttempt(e), true);
         }
 
         void StartAttempt(Entry e)
@@ -568,11 +606,22 @@ namespace DotRPG
             yield return new WaitForSecondsRealtime(SuspenseSeconds * 0.5f);
             Game.Audio.PlaySfx("hammer");
             yield return new WaitForSecondsRealtime(SuspenseSeconds * 0.5f);
-            var result = Game.Session.Equipment.TryEnhance(e.Target, UnityEngine.Random.Range(0, 100), Class);
-            busy = false;
-            bigIcon.rectTransform.anchoredPosition = Vector2.zero;
+            EnhanceResult result;
+            try
+            {
+                int roll = devRoll ?? UnityEngine.Random.Range(0, 100);
+                devRoll = null;
+                result = Game.Session.Equipment.TryEnhance(e.Target, roll, Class);
+            }
+            finally
+            {
+                // Even if the attempt (or a Changed handler) throws, the window must not stay locked.
+                busy = false;
+                bigIcon.rectTransform.anchoredPosition = Vector2.zero;
+            }
             ShowResult(result);
             Follow(e, result);
+            if (result.kind == EnhanceOutcome.Destroyed) pickRequired = true;
             if (result.Attempted) Game.Flow.Autosave();
             Refresh();
         }
@@ -640,7 +689,7 @@ namespace DotRPG
             }
             base.Update();
             if (!gameObject.activeSelf) return;
-            if (Time.frameCount != shownFrame && !Game.State.ChangedThisFrame)
+            if (TakesInput)
             {
                 var nav = Game.Input.NavigateStep;
                 if (nav != Vector2Int.zero && entries.Count > 0)
@@ -648,7 +697,7 @@ namespace DotRPG
                     // One continuous list: moving past the edge of a page turns the page.
                     selected = Mathf.Clamp(selected + nav.x - nav.y * Cols, 0, entries.Count - 1);
                     Game.Audio.PlaySfx("select", 0.5f);
-                    dirty = true;
+                    Picked();
                 }
                 if (Game.Input.SubmitPressed) OnEnhancePressed();
             }
@@ -664,13 +713,33 @@ namespace DotRPG
             int i = entries.FindIndex(x => x.key == key);
             if (i < 0) return false;
             selected = i;
+            Picked();
+            Refresh();
+            return true;
+        }
+
+        /// <summary>Selects a worn slot's entry. False when that slot is empty.</summary>
+        public bool DevSelectSlot(EquipSlot slot)
+        {
+            BuildEntries();
+            int i = entries.FindIndex(x => x.slot == slot);
+            if (i < 0) return false;
+            selected = i;
+            Picked();
             Refresh();
             return true;
         }
 
         /// <summary>Presses the enhance button (risky attempts open the confirm dialog first).</summary>
         public void DevPress() => OnEnhancePressed();
+        /// <summary>The next attempt uses this 0..99 roll instead of a random one (cleared when used).</summary>
+        public void DevForceRoll(int roll) => devRoll = roll;
+        int? devRoll;
         public bool DevBusy => busy;
+        public bool DevPickRequired => pickRequired;
+        public string DevSelectedKey => entries.Count > 0 && selected < entries.Count ? entries[selected].key : null;
+        public int DevSelectedIndex => selected;
+        public string DevStats => statsText.text;
         public string DevResult => resultText.text;
         public string DevFailLine => failText.text;
         public string DevPage => $"{selected / PerPage + 1} / {PageCount}";

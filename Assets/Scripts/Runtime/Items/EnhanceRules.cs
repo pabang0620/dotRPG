@@ -67,7 +67,7 @@ namespace DotRPG
         public int successPercent;
         /// <summary>What a failure would do.</summary>
         public EnhanceFailure failure;
-        /// <summary>True when a failure would destroy the item but a protection ticket in the bag will save it (at +0).</summary>
+        /// <summary>True when a failure would destroy the item but a protection ticket in the bag will save it (at +0). Never for starter gear.</summary>
         public bool usesTicket;
 
         /// <summary>Level after a <see cref="EnhanceFailure.Drop3"/> failure.</summary>
@@ -166,7 +166,8 @@ namespace DotRPG
             c.pityBonus = HasPity(item, level) ? Math.Max(0, Math.Min(MaxPity, pity)) : 0;
             c.successPercent = Math.Min(100, c.basePercent + c.pityBonus);
             c.failure = FailureFor(item, level);
-            c.usesTicket = c.failure == EnhanceFailure.Destroy && hasTicket;
+            // Starter gear is handed out again for free, so a ticket is never spent on it.
+            c.usesTicket = c.failure == EnhanceFailure.Destroy && hasTicket && !item.starter;
             return c;
         }
     }

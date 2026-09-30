@@ -118,10 +118,13 @@ namespace DotRPG
         /// <summary>
         /// v4: the +level moved from the item kind (every copy shared it) onto each piece (its key).
         /// Each kind at +L becomes key "{kind}+L" on every worn copy; when none is worn, one copy in the bag
-        /// is converted, else one copy in storage. Other copies stay at +0.
+        /// is converted, else one copy in storage. Other copies stay at +0. The new growth formula is weaker
+        /// than v3's, so every converted enhanced kind grants one protection ticket (at most
+        /// <see cref="MaxEnhanceCompensation"/>), reported in <see cref="SaveData.enhanceCompensation"/>.
         /// </summary>
         public static void MigrateEnhanceLevels(SaveData data)
         {
+            data.enhanceCompensation = 0;
             if (data.equipped == null) data.equipped = new List<string>();
             if (data.enhanceLevels == null)
             {
@@ -141,10 +144,16 @@ namespace DotRPG
                     data.equipped[i] = key;
                     worn = true;
                 }
-                if (!worn && !ConvertOne(data.inventory, kind, key)) ConvertOne(data.storage, kind, key);
+                bool converted = worn || ConvertOne(data.inventory, kind, key) || ConvertOne(data.storage, kind, key);
+                if (converted && key != kind) data.enhanceCompensation++;
             }
             data.enhanceLevels.Clear();
+            data.enhanceCompensation = Math.Min(MaxEnhanceCompensation, data.enhanceCompensation);
+            if (data.enhanceCompensation > 0) data.inventory.Add(new ItemStack(ConsumableDatabase.ProtectTicket, data.enhanceCompensation));
         }
+
+        /// <summary>Most protection tickets the v4 migration hands out.</summary>
+        public const int MaxEnhanceCompensation = 3;
 
         /// <summary>Turns one unit of <paramref name="id"/> in a stack list into <paramref name="key"/>. False when there is none.</summary>
         static bool ConvertOne(List<ItemStack> stacks, string id, string key)

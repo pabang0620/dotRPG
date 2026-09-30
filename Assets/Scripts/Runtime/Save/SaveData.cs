@@ -65,6 +65,8 @@ namespace DotRPG
         public List<ItemStack> enhanceLevels = new List<ItemStack>();
         /// <summary>Enhancement pity (version 4+): id = the key being attempted from, count = bonus %p.</summary>
         public List<ItemStack> enhancePity = new List<ItemStack>();
+        // [ENH] Not saved: protection tickets granted by the v3 → v4 enhancement migration of this read (0 = none), for a one-time toast.
+        [NonSerialized] public int enhanceCompensation;
 
         // Progression (version 2+).
         public int level = 1;
