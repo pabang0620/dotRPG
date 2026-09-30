@@ -255,6 +255,24 @@ namespace DotRPG
             return level > 0 ? $"{root}{KeySeparator}{level}" : root;
         }
 
+        /// <summary>
+        /// Repairs odd spellings of a gear key from old or hand-edited saves: "eq_sword_iron+0" → "eq_sword_iron",
+        /// "+05" → "+5", past <see cref="MaxEnhance"/> → +20. Valid keys and anything else come back unchanged.
+        /// </summary>
+        public static string Canonicalize(string key)
+        {
+            if (string.IsNullOrEmpty(key) || ByKey.ContainsKey(key)) return key;
+            int plus = key.IndexOf(KeySeparator);
+            if (plus <= 0) return key;
+            if (!ByKey.TryGetValue(key.Substring(0, plus), out var info) || info.level != 0) return key;
+            string digits = key.Substring(plus + 1);
+            if (digits.Length == 0) return info.item.id;
+            foreach (char ch in digits) if (ch < '0' || ch > '9') return key;
+            // Long digit runs are simply "past the max".
+            int level = digits.TrimStart('0').Length > 3 ? MaxEnhance : int.Parse(digits, System.Globalization.CultureInfo.InvariantCulture);
+            return info.item.keys[Mathf.Clamp(level, 0, MaxEnhance)];
+        }
+
         /// <summary>"철검 +12" for a key (null when it is not gear).</summary>
         public static string NameOfKey(string key)
         {

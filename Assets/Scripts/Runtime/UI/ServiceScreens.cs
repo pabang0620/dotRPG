@@ -223,6 +223,8 @@ namespace DotRPG
         public bool DevSelect(string id) { BuildEntries(); int i = entries.IndexOf(id); if (i < 0) return false; selected = i; Refresh(); return true; }
         public void DevTrade(int count) { Trade(count); Refresh(); }
         public string DevResult => result.text;
+        /// <summary>The current list (buy stock or sell list) in display order.</summary>
+        public List<string> DevEntries() { BuildEntries(); return new List<string>(entries); }
 
         void SetMode(bool sell)
         {
@@ -255,8 +257,15 @@ namespace DotRPG
         {
             entries.Clear();
             var bag = Game.Session.Inventory;
-            if (!selling) entries.AddRange(ItemPrices.ShopStock);
-            else foreach (var id in ItemText.BagOrder(bag)) if (ItemPrices.SellPrice(id) > 0) entries.Add(id);
+            if (!selling)
+            {
+                entries.AddRange(ItemPrices.ShopStock);
+                return;
+            }
+            // Everything at +0 first; enhanced gear (worth real effort) goes to the end of the list.
+            var order = ItemText.BagOrder(bag);
+            foreach (var id in order) if (ItemPrices.SellPrice(id) > 0 && EquipmentDatabase.LevelOfKey(id) == 0) entries.Add(id);
+            foreach (var id in order) if (ItemPrices.SellPrice(id) > 0 && EquipmentDatabase.LevelOfKey(id) > 0) entries.Add(id);
         }
 
         protected override void Refresh()
@@ -355,10 +364,15 @@ namespace DotRPG
                 int n = Mathf.Min(count, bag.Count(id));
                 int each = ItemPrices.SellPrice(id);
                 if (n <= 0 || each <= 0) { Game.Audio.PlaySfx("cancel"); return; }
-                bag.Remove(id, n);
-                bag.Add(ConsumableDatabase.Gold, each * n);
-                Game.Audio.PlaySfx("pickup");
-                result.text = $"<color=#8fe28f>{name} {n}개를 팔았다.  +{each * n:N0} G</color>";
+                if (EquipmentDatabase.LevelOfKey(id) > 0)
+                {
+                    // Enhanced gear is never sold on one key press: ask first, drawn over the shop.
+                    string what = n > 1 ? $"{name} {n}개를" : $"{name} 을(를)";
+                    Game.Audio.PlaySfx("select");
+                    Game.UI.Confirm($"{what} {each * n:N0} G에 판매할까요?", () => Sell(id, n), true);
+                    return;
+                }
+                Sell(id, n);
             }
             else
             {
@@ -380,11 +394,24 @@ namespace DotRPG
             dirty = true;
         }
 
+        /// <summary>Sells up to <paramref name="count"/> of an id (re-checked: the bag may have changed while a confirm was open).</summary>
+        void Sell(string id, int count)
+        {
+            var bag = Game.Session.Inventory;
+            int n = Mathf.Min(count, bag.Count(id));
+            int each = ItemPrices.SellPrice(id);
+            if (n <= 0 || each <= 0 || !bag.Remove(id, n)) { Game.Audio.PlaySfx("cancel"); return; }
+            bag.Add(ConsumableDatabase.Gold, each * n);
+            Game.Audio.PlaySfx("pickup");
+            result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
+            dirty = true;
+        }
+
         protected override void Update()
         {
             base.Update();
             if (!gameObject.activeSelf) return;
-            if (Time.frameCount != shownFrame && !Game.State.ChangedThisFrame)
+            if (TakesInput)
             {
                 var nav = Game.Input.NavigateStep;
                 if (nav.y != 0 && entries.Count > 0) Select(Mathf.Clamp(selected - nav.y, 0, entries.Count - 1));
@@ -405,7 +432,8 @@ namespace DotRPG
     {
         const int Cols = 6, RowsN = 4, CellsPer = Cols * RowsN;
         const float Cell = 76f, Gap = 8f;
-        public const int Capacity = CellsPer;
+        /// <summary>Distinct ids (each +level of a piece counts on its own) the storage holds: two pages of the grid.</summary>
+        public const int Capacity = 48;
 
         sealed class Cell_
         {
@@ -420,8 +448,17 @@ namespace DotRPG
         Text bagTitle, storeTitle, info, message;
         Image cursor;
         Cell_ hovered;
-        int cursorIndex; // 0..CellsPer-1 bag, CellsPer.. storage
+        int cursorIndex; // 0..CellsPer-1 bag, CellsPer.. storage (cell on the shown page)
         bool dirty;
+        // Paging: each grid shows CellsPer ids of its list.
+        int bagPage, storePage;
+        List<string> bagIds = new List<string>(), storeIds = new List<string>();
+        Button bagPrev, bagNext, storePrev, storeNext;
+        Text bagPageText, storePageText;
+
+        static int PagesFor(int count, int atLeast = 1) => Mathf.Max(atLeast, (count + CellsPer - 1) / CellsPer);
+        int BagPages => PagesFor(bagIds.Count);
+        int StorePages => PagesFor(storeIds.Count, PagesFor(Capacity));
 
         public static StorageScreen Create(Transform canvas)
         {
@@ -438,6 +475,13 @@ namespace DotRPG
             }
             Button(left.transform, "DepositMats", "재료 모두 맡기기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.DepositMaterials, 22);
             Button(right.transform, "WithdrawAll", "모두 꺼내기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.WithdrawAll, 22);
+            // Page buttons in the bottom corners, the page number top right.
+            w.bagPrev = Button(left.transform, "BagPrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 12f), new Vector2(56f, 52f), () => w.Page(false, -1), 22);
+            w.bagNext = Button(left.transform, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(56f, 52f), () => w.Page(false, 1), 22);
+            w.storePrev = Button(right.transform, "StorePrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 12f), new Vector2(56f, 52f), () => w.Page(true, -1), 22);
+            w.storeNext = Button(right.transform, "StoreNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(56f, 52f), () => w.Page(true, 1), 22);
+            w.bagPageText = Label(left.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
+            w.storePageText = Label(right.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
 
             var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), new Color32(18, 28, 44, 235));
             w.info = Label(bottom.transform, "Text", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -10f), new Vector2(1180f, 64f));
@@ -473,6 +517,7 @@ namespace DotRPG
         public override void Show()
         {
             cursorIndex = 0;
+            bagPage = storePage = 0;
             hovered = null;
             message.text = "";
             Game.Session.Inventory.Changed += OnChanged;
@@ -501,9 +546,39 @@ namespace DotRPG
         public bool DevMove(string id, bool fromBag, bool all)
         {
             Refresh();
+            // Turn to the page holding the id first, as a player would.
+            int at = (fromBag ? bagIds : storeIds).IndexOf(id);
+            if (at < 0) return false;
+            if (fromBag) bagPage = at / CellsPer;
+            else storePage = at / CellsPer;
+            Refresh();
             foreach (var c in fromBag ? bagCells : storeCells)
                 if (c.id == id) { Move(c, all); Refresh(); return true; }
             return false;
+        }
+
+        public void DevPage(bool storage, int d) { Page(storage, d); Refresh(); }
+        public string DevPages => $"bag {bagPage + 1}/{BagPages} storage {storePage + 1}/{StorePages}";
+        /// <summary>Ids in the cells of the shown pages (bag, storage).</summary>
+        public List<string> DevShown(bool storage)
+        {
+            Refresh();
+            var list = new List<string>();
+            foreach (var c in storage ? storeCells : bagCells) if (c.id != null) list.Add(c.id);
+            return list;
+        }
+
+        void Page(bool storage, int d)
+        {
+            int pages = storage ? StorePages : BagPages;
+            int page = storage ? storePage : bagPage;
+            int next = Mathf.Clamp(page + d, 0, pages - 1);
+            if (next == page) return;
+            if (storage) storePage = next;
+            else bagPage = next;
+            hovered = null;
+            Game.Audio.PlaySfx("select", 0.5f);
+            dirty = true;
         }
 
         static List<string> StorageOrder(Inventory store)
@@ -518,12 +593,16 @@ namespace DotRPG
         {
             var bag = Game.Session.Inventory;
             var store = Game.Session.Storage;
-            var bagIds = ItemText.BagOrder(bag);
-            var storeIds = StorageOrder(store);
-            Fill(bagCells, bagIds, bag);
-            Fill(storeCells, storeIds, store);
+            bagIds = ItemText.BagOrder(bag);
+            storeIds = StorageOrder(store);
+            bagPage = Mathf.Clamp(bagPage, 0, BagPages - 1);
+            storePage = Mathf.Clamp(storePage, 0, StorePages - 1);
+            Fill(bagCells, bagIds, bag, bagPage);
+            Fill(storeCells, storeIds, store, storePage);
             bagTitle.text = $"<b>가방</b>   <color=#b8c4d8>{bagIds.Count}종</color>      {ItemText.Gold(Game.Session.Gold)}";
             storeTitle.text = $"<b>창고</b>   <color=#b8c4d8>{storeIds.Count} / {Capacity}칸</color>";
+            ShowPaging(bagPrev, bagNext, bagPageText, bagPage, BagPages);
+            ShowPaging(storePrev, storeNext, storePageText, storePage, StorePages);
 
             var target = hovered ?? CursorCell();
             if (target != null && target.id != null)
@@ -543,12 +622,24 @@ namespace DotRPG
             dirty = false;
         }
 
-        void Fill(List<Cell_> cells, List<string> ids, Inventory from)
+        static void ShowPaging(Button prev, Button next, Text label, int page, int pages)
+        {
+            bool paged = pages > 1;
+            prev.gameObject.SetActive(paged);
+            next.gameObject.SetActive(paged);
+            label.gameObject.SetActive(paged);
+            prev.interactable = page > 0;
+            next.interactable = page < pages - 1;
+            label.text = $"{page + 1} / {pages}";
+        }
+
+        void Fill(List<Cell_> cells, List<string> ids, Inventory from, int page)
         {
             for (int i = 0; i < cells.Count; i++)
             {
                 var c = cells[i];
-                c.id = i < ids.Count ? ids[i] : null;
+                int at = page * CellsPer + i;
+                c.id = at < ids.Count ? ids[at] : null;
                 c.icon.enabled = c.id != null;
                 c.frame.color = c.id != null ? ItemText.Frame(c.id) : Color.clear;
                 if (c.id == null) { c.count.text = c.level.text = ""; continue; }
@@ -630,7 +721,7 @@ namespace DotRPG
         {
             base.Update();
             if (!gameObject.activeSelf) return;
-            if (Time.frameCount != shownFrame && !Game.State.ChangedThisFrame)
+            if (TakesInput)
             {
                 var nav = Game.Input.NavigateStep;
                 if (nav != Vector2Int.zero)
@@ -639,7 +730,13 @@ namespace DotRPG
                     int local = store ? cursorIndex - CellsPer : cursorIndex;
                     int col = local % Cols + (store ? Cols : 0), row = local / Cols;
                     col = Mathf.Clamp(col + nav.x, 0, Cols * 2 - 1);
-                    row = Mathf.Clamp(row - nav.y, 0, RowsN - 1);
+                    row -= nav.y;
+                    // Moving off the top / bottom row turns that grid's page (as in the blacksmith).
+                    bool inStore = col >= Cols;
+                    int page = inStore ? storePage : bagPage, pages = inStore ? StorePages : BagPages;
+                    if (row < 0 && page > 0) { Page(inStore, -1); row = RowsN - 1; }
+                    else if (row >= RowsN && page < pages - 1) { Page(inStore, 1); row = 0; }
+                    row = Mathf.Clamp(row, 0, RowsN - 1);
                     cursorIndex = col >= Cols ? CellsPer + row * Cols + (col - Cols) : row * Cols + col;
                     hovered = null;
                     Game.Audio.PlaySfx("select", 0.5f);

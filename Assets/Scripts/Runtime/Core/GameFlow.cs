@@ -92,6 +92,13 @@ namespace DotRPG
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
                 GameEvents.RaiseToast("저장된 지점에서 이어합니다.");
+                // [ENH] One-time note for saves converted to per-piece enhancement (v3 → v4).
+                if (data.enhanceCompensation > 0)
+                {
+                    // Two toasts: one line is wider than the toast column.
+                    GameEvents.RaiseToast("강화 규칙이 던전앤파이터 기준으로 바뀌었습니다.");
+                    GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았다.");
+                }
             }));
         }
 
