@@ -7,7 +7,8 @@ namespace DotRPG
     {
         /// <summary>
         /// 16x16 icons for money and usable items: gold coin (with a square hole like an old Korean
-        /// coin), red / blue potion flasks, the rolled return scroll and a storage chest.
+        /// coin), red / blue potion flasks, the rolled return scroll, the equipment protection ticket
+        /// and a storage chest.
         /// Returns null for other kinds.
         /// </summary>
         static PixelCanvas DrawItemIcon16(string kind)
@@ -68,6 +69,35 @@ namespace DotRPG
                     c.Circle(8f, 7.5f, 2.6f, PixelCanvas.Hex("#9fd0ff"));
                     c.VLine(8, 5, 10, rune); c.HLine(6, 10, 7, rune);
                     c.Rect(7, 11, 2, 2, PixelCanvas.Hex("#c8323a"));
+                    c.Outline(Outline);
+                    return c.WithPivot(8f, 1f);
+                }
+                case "ticket":
+                {
+                    // 장비 보호권: a gold-edged voucher with coupon notches, a blue shield crest and a red wax seal.
+                    var c = new PixelCanvas(16, 16);
+                    var edge = PixelCanvas.Hex("#c8901e");
+                    var edgeLight = PixelCanvas.Hex("#ffd84a");
+                    var paper = PixelCanvas.Hex("#f6e7c8");
+                    var paperDark = PixelCanvas.Hex("#dcc596");
+                    c.Rect(1, 3, 14, 10, edge);
+                    c.HLine(2, 13, 3, edgeLight);
+                    c.Rect(2, 4, 12, 8, paper);
+                    c.HLine(2, 13, 11, paperDark);
+                    // Notches halfway down both short sides.
+                    c.Rect(1, 7, 1, 2, PixelCanvas.Clear); c.Rect(14, 7, 1, 2, PixelCanvas.Clear);
+                    c.VLine(2, 7, 8, edge); c.VLine(13, 7, 8, edge);
+                    // Shield crest with a gold gem.
+                    var shield = PixelCanvas.Hex("#3f7ee8");
+                    var shieldLight = PixelCanvas.Hex("#86b8ff");
+                    c.Rect(5, 4, 6, 4, shield);
+                    c.HLine(6, 9, 8, shield);
+                    c.HLine(7, 8, 9, shield);
+                    c.VLine(5, 4, 7, shieldLight); c.Set(6, 8, shieldLight);
+                    c.Rect(7, 5, 2, 2, edgeLight);
+                    // Wax seal on the corner.
+                    c.Circle(12.5f, 11.5f, 2.3f, PixelCanvas.Hex("#c8323a"));
+                    c.Set(12, 11, PixelCanvas.Hex("#ff7a6a"));
                     c.Outline(Outline);
                     return c.WithPivot(8f, 1f);
                 }

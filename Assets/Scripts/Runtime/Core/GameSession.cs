@@ -48,7 +48,7 @@ namespace DotRPG
             Inventory.Clear();
             Storage.Clear();
             Equipment.Clear();
-            Equipment.LoadLevels(null);
+            Equipment.LoadPity(null);
             Equipment.Set(EquipSlot.Weapon, EquipmentDatabase.StarterWeapon(playerClass));
             foreach (var (id, count) in ConsumableDatabase.StarterPack) Inventory.Add(id, count);
             Quest = new QuestProgress();
@@ -79,7 +79,9 @@ namespace DotRPG
                 inventory = Inventory.ToList(),
                 storage = Storage.ToList(),
                 equipped = Equipment.ToList(),
-                enhanceLevels = Equipment.LevelsToList(),
+                // Gear keys carry their own +level since v4; the per-kind list is only read from old saves.
+                enhanceLevels = new System.Collections.Generic.List<ItemStack>(),
+                enhancePity = Equipment.PityToList(),
                 openedChests = new System.Collections.Generic.List<string>(OpenedChests),
                 quest = JsonUtility.FromJson<QuestProgress>(JsonUtility.ToJson(Quest)),
             };
@@ -92,7 +94,7 @@ namespace DotRPG
             // Gear first (see ResetForNewGame).
             Inventory.Load(data.inventory);
             Storage.Load(data.storage);
-            Equipment.LoadLevels(data.enhanceLevels);
+            Equipment.LoadPity(data.enhancePity);
             Equipment.Load(data.equipped);
             Equipment.EnsureUsable(CharacterClassInfo.Parse(data.playerClass)); // old saves have no gear: hand out the starter weapon
             Quest = data.quest ?? new QuestProgress();

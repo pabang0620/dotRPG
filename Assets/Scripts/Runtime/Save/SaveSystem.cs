@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -79,12 +80,15 @@ namespace DotRPG
             }
         }
 
-        /// <summary>Upgrades older save formats. Add a case per version bump.</summary>
-        static SaveData Migrate(SaveData data)
+        /// <summary>
+        /// Upgrades older save formats (every save read goes through here). Add a case per version bump.
+        /// Public so automated checks can run hand-built old saves through the real migration.
+        /// </summary>
+        public static SaveData Migrate(SaveData data)
         {
             if (data.version > SaveData.CurrentVersion)
                 Debug.LogWarning("[dotRPG] Save was written by a newer version of the game.");
-            if (data.inventory == null) data.inventory = new System.Collections.Generic.List<ItemStack>();
+            if (data.inventory == null) data.inventory = new List<ItemStack>();
             if (data.quest == null) data.quest = new QuestProgress();
             if (string.IsNullOrEmpty(data.mapId)) data.mapId = MapRegistry.Village;
             if (string.IsNullOrEmpty(data.playerClass)) data.playerClass = "warrior";
@@ -95,7 +99,7 @@ namespace DotRPG
                 data.playerMaxHealth *= 10;
                 if (data.level < 1) data.level = 1;
             }
-            if (data.storage == null) data.storage = new System.Collections.Generic.List<ItemStack>();
+            if (data.storage == null) data.storage = new List<ItemStack>();
             if (data.version < 3)
             {
                 // v3 added gold, potions and the return scroll: hand out the starter pack once.
@@ -104,8 +108,61 @@ namespace DotRPG
                 // The village was rebuilt, so an old position there may now be inside a building.
                 if (data.mapId == MapRegistry.Village) data.playerX = data.playerY = -1f;
             }
+            if (data.equipped == null) data.equipped = new List<string>();
+            if (data.enhancePity == null) data.enhancePity = new List<ItemStack>();
+            if (data.version < 4) MigrateEnhanceLevels(data);
             data.version = SaveData.CurrentVersion;
             return data;
+        }
+
+        /// <summary>
+        /// v4: the +level moved from the item kind (every copy shared it) onto each piece (its key).
+        /// Each kind at +L becomes key "{kind}+L" on every worn copy; when none is worn, one copy in the bag
+        /// is converted, else one copy in storage. Other copies stay at +0.
+        /// </summary>
+        public static void MigrateEnhanceLevels(SaveData data)
+        {
+            if (data.equipped == null) data.equipped = new List<string>();
+            if (data.enhanceLevels == null)
+            {
+                data.enhanceLevels = new List<ItemStack>();
+                return;
+            }
+            foreach (var entry in data.enhanceLevels)
+            {
+                if (entry == null || entry.count <= 0 || !EquipmentDatabase.IsEquipment(entry.id)) continue;
+                string kind = entry.id;
+                if (EquipmentDatabase.BaseId(kind) != kind) continue; // v3 only ever stored bare ids
+                string key = EquipmentDatabase.KeyFor(kind, Math.Min(entry.count, EquipmentDatabase.MaxEnhance));
+                bool worn = false;
+                for (int i = 0; i < data.equipped.Count; i++)
+                {
+                    if (data.equipped[i] != kind) continue;
+                    data.equipped[i] = key;
+                    worn = true;
+                }
+                if (!worn && !ConvertOne(data.inventory, kind, key)) ConvertOne(data.storage, kind, key);
+            }
+            data.enhanceLevels.Clear();
+        }
+
+        /// <summary>Turns one unit of <paramref name="id"/> in a stack list into <paramref name="key"/>. False when there is none.</summary>
+        static bool ConvertOne(List<ItemStack> stacks, string id, string key)
+        {
+            if (stacks == null) return false;
+            ItemStack from = null, to = null;
+            foreach (var s in stacks)
+            {
+                if (s == null) continue;
+                if (from == null && s.id == id && s.count > 0) from = s;
+                if (to == null && s.id == key) to = s;
+            }
+            if (from == null) return false;
+            from.count--;
+            if (from.count <= 0) stacks.Remove(from);
+            if (to != null) to.count++;
+            else stacks.Add(new ItemStack(key, 1));
+            return true;
         }
     }
 }

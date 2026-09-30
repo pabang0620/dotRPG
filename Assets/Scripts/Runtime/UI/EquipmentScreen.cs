@@ -273,6 +273,9 @@ namespace DotRPG
 
         // ================= Content =================
 
+        /// <summary>"기타" holds the enhancement materials and the protection ticket.</summary>
+        static bool IsEtc(string id) => EquipmentDatabase.GetMaterial(id) != null || ConsumableDatabase.IsTicket(id);
+
         bool InTab(string id)
         {
             var gear = EquipmentDatabase.Get(id);
@@ -281,23 +284,25 @@ namespace DotRPG
                 case Tab.Weapon: return gear != null && gear.category == EquipCategory.Weapon;
                 case Tab.Armor: return gear != null && (gear.category == EquipCategory.Top || gear.category == EquipCategory.Bottom);
                 case Tab.Accessory: return gear != null && (gear.category == EquipCategory.Necklace || gear.category == EquipCategory.Ring);
-                case Tab.Consumable: return gear == null && EquipmentDatabase.GetMaterial(id) == null;
-                case Tab.Etc: return EquipmentDatabase.GetMaterial(id) != null;
+                case Tab.Consumable: return gear == null && !IsEtc(id);
+                case Tab.Etc: return IsEtc(id);
                 default: return true;
             }
         }
 
+        /// <summary>Gear keys (database order, higher +level first; or grade → power), consumables, resources, materials, tickets.</summary>
         List<string> BagContents()
         {
             var bag = Game.Session.Inventory;
-            var ids = new List<string>();
-            foreach (var item in EquipmentDatabase.All)
-                if (bag.Count(item.id) > 0) ids.Add(item.id);
+            var eq = Game.Session.Equipment;
+            var ids = EquipmentDatabase.GearKeys(bag);
             if (sortByRarity)
                 ids.Sort((a, b) =>
                 {
                     int r = EquipmentDatabase.Get(b).rarity.CompareTo(EquipmentDatabase.Get(a).rarity);
-                    return r != 0 ? r : Game.Session.Equipment.Score(EquipmentDatabase.Get(b)).CompareTo(Game.Session.Equipment.Score(EquipmentDatabase.Get(a)));
+                    if (r != 0) return r;
+                    int s = eq.ScoreOf(b).CompareTo(eq.ScoreOf(a));
+                    return s != 0 ? s : EquipmentDatabase.CompareKeys(a, b);
                 });
             foreach (var use in ConsumableDatabase.Usable)
                 if (bag.Count(use.id) > 0) ids.Add(use.id);
@@ -305,6 +310,8 @@ namespace DotRPG
                 if (bag.Count(def.id) > 0) ids.Add(def.id);
             foreach (var mat in EquipmentDatabase.AllMaterials)
                 if (bag.Count(mat.id) > 0) ids.Add(mat.id);
+            foreach (var ticket in ConsumableDatabase.Tickets)
+                if (bag.Count(ticket.id) > 0) ids.Add(ticket.id);
             return ids;
         }
 
@@ -331,7 +338,7 @@ namespace DotRPG
                 s.itemId = i < shown.Count ? shown[i] : null;
                 var gear = EquipmentDatabase.Get(s.itemId);
                 FillIcon(s, s.itemId, gear);
-                s.corner.enabled = gear != null && eq.IsUpgrade(gear, cls);
+                s.corner.enabled = gear != null && eq.IsUpgrade(s.itemId, cls);
                 int n = s.itemId != null ? bag.Count(s.itemId) : 0;
                 s.count.text = n > 1 ? n.ToString() : "";
                 s.icon.color = gear != null && !gear.UsableBy(cls) ? new Color(0.45f, 0.45f, 0.5f, 1f) : Color.white;
@@ -391,16 +398,11 @@ namespace DotRPG
             }
             s.icon.enabled = true;
             s.icon.sprite = Game.Art.Get(gear != null ? gear.iconKey : Game.Config.GetItem(id).iconKey);
-            var mat = EquipmentDatabase.GetMaterial(id);
-            if (gear != null || mat != null)
-            {
-                var tint = EquipmentDatabase.RarityTint(gear != null ? gear.rarity : mat.rarity);
-                tint.a = (gear != null ? gear.rarity : mat.rarity) == ItemRarity.Common ? 0.25f : 0.9f;
-                s.frame.color = tint;
-            }
-            else s.frame.color = new Color(1f, 1f, 1f, 0.12f);
-            int lv = gear != null ? Game.Session.Equipment.LevelOf(gear.id) : 0;
+            s.frame.color = ItemText.Frame(id);
+            // "+N" in the level colour of the piece's own key.
+            int lv = gear != null ? EquipmentDatabase.LevelOfKey(id) : 0;
             s.level.text = lv > 0 ? $"+{lv}" : "";
+            s.level.color = EquipmentDatabase.LevelTint(lv);
         }
 
         // ================= Actions =================
@@ -417,7 +419,13 @@ namespace DotRPG
             var gear = EquipmentDatabase.Get(s.itemId);
             if (gear == null)
             {
-                if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
+                if (ConsumableDatabase.IsTicket(s.itemId))
+                {
+                    // The protection ticket only works on its own, from the enhancement window.
+                    Game.Audio.PlaySfx("cancel");
+                    GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용된다.");
+                }
+                else if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
                 else if (s.itemId == ItemIds.Carrot && Game.Player != null) Game.Player.TryEatCarrot();
                 else Game.Audio.PlaySfx("cancel");
                 return;
@@ -428,7 +436,8 @@ namespace DotRPG
                 GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비다.");
                 return;
             }
-            if (eq.Equip(gear.id, Class)) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{gear.name} 장착!"); }
+            string key = s.itemId;
+            if (eq.Equip(key, Class)) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
         }
 
         void AutoEquip()
@@ -595,6 +604,13 @@ namespace DotRPG
                     sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
                     sb.Append($"<i>{mat.description}</i>\n\n<color=#b8c4d8>마을 대장장이(또는 모루)에서 장비 강화에 사용</color>");
                 }
+                else if (ConsumableDatabase.IsTicket(s.itemId))
+                {
+                    var ticket = ConsumableDatabase.Get(s.itemId);
+                    sb.Append($"<b>{ItemText.Name(s.itemId)}</b>\n<color=#b8c4d8>{ItemText.Kind(s.itemId)}</color>\n\n");
+                    sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
+                    sb.Append($"<i>{ticket.description}</i>\n\n<color=#b8c4d8>가방에 있으면 장비가 파괴될 때 1장이 자동으로 사용된다.</color>");
+                }
                 else if (ConsumableDatabase.IsUsable(s.itemId))
                 {
                     var use = ConsumableDatabase.Get(s.itemId);
@@ -616,26 +632,27 @@ namespace DotRPG
             {
                 tooltipIcon.sprite = Game.Art.Get(gear.iconKey);
                 var eq = Game.Session.Equipment;
-                int lv = eq.LevelOf(gear.id);
-                sb.Append($"<b><color={EquipmentDatabase.RarityColor(gear.rarity)}>{gear.NameAt(lv)}</color></b>\n");
+                int lv = EquipmentDatabase.LevelOfKey(s.itemId);
+                sb.Append($"<b>{EquipmentDatabase.RichName(s.itemId)}</b>\n");
                 sb.Append($"<color=#b8c4d8>[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.CategoryName}");
                 if (gear.classOnly.HasValue) sb.Append($" · {CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용");
-                sb.Append($"</color>\n<color=#ffe066>강화 +{lv} / +{EquipmentDatabase.MaxEnhance}</color>\n\n");
+                string lvText = lv > 0 ? EquipmentDatabase.LevelTag(lv) : "+0";
+                sb.Append($"</color>\n<color=#ffe066>강화 {lvText} / +{EquipmentDatabase.MaxEnhance}</color>\n\n");
 
-                // Stats (with enhancement) and a comparison against what is worn in that slot.
-                EquipmentItem worn = s.worn.HasValue || !gear.UsableBy(Class) ? null : eq.ItemIn(eq.TargetSlotFor(gear));
-                if (worn == gear) worn = null;
-                var st = eq.StatsOf(gear);
-                GearStats? ws = worn != null ? eq.StatsOf(worn) : (GearStats?)null;
+                // Stats (with this piece's enhancement) and a comparison against what is worn in that slot.
+                string wornKey = s.worn.HasValue || !gear.UsableBy(Class) ? null : eq[eq.TargetSlotFor(gear)];
+                if (wornKey == s.itemId || !EquipmentDatabase.IsEquipment(wornKey)) wornKey = null;
+                var st = eq.StatsOfKey(s.itemId);
+                GearStats? ws = wornKey != null ? eq.StatsOfKey(wornKey) : (GearStats?)null;
                 StatRow(sb, "공격력", st.attack * DamageNumber.DisplayScale, ws.HasValue ? ws.Value.attack * DamageNumber.DisplayScale : (int?)null, "");
                 StatRow(sb, "체력", st.maxHealth, ws?.maxHealth, "hp");
                 StatRow(sb, "막기 확률", st.block, ws?.block, "%");
                 StatRow(sb, "이동 속도", st.speed, ws?.speed, "%");
-                sb.Append($"<color=#ffe066>전투력 +{eq.Score(gear)}</color>\n\n");
+                sb.Append($"<color=#ffe066>전투력 +{eq.ScoreOf(s.itemId)}</color>\n\n");
                 sb.Append($"<i>{gear.description}</i>\n\n");
                 if (s.worn.HasValue) sb.Append("<color=#ffe066>클릭: 장비 해제</color>");
                 else if (!gear.UsableBy(Class)) sb.Append("<color=#ff8080>이 캐릭터는 장착할 수 없다.</color>");
-                else if (worn != null) sb.Append($"<color=#b8c4d8>착용 중: {worn.NameAt(eq.LevelOf(worn.id))}</color>\n<color=#ffe066>클릭: 교체 장착</color>");
+                else if (wornKey != null) sb.Append($"<color=#b8c4d8>착용 중: {EquipmentDatabase.NameOfKey(wornKey)}</color>\n<color=#ffe066>클릭: 교체 장착</color>");
                 else sb.Append("<color=#ffe066>클릭: 장착</color>");
             }
             tooltipText.text = sb.ToString();

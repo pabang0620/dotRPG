@@ -44,7 +44,8 @@ namespace DotRPG
         void OnApplicationFocus(bool hasFocus)
         {
             // Common PC courtesy: alt-tabbing out pauses the game (not in the editor, where it gets in the way).
-            if (!hasFocus && !Application.isEditor && Game.State != null &&
+            // Automated capture runs (they redirect saves) keep playing so several can run side by side.
+            if (!hasFocus && !Application.isEditor && SaveSystem.DirectoryOverride == null && Game.State != null &&
                 (Game.State.Current == GameState.Playing || Game.State.Current == GameState.Dialogue))
                 Pause();
         }

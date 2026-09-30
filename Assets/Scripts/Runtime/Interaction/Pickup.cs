@@ -77,7 +77,10 @@ namespace DotRPG
             if (itemId == ConsumableDatabase.Gold)
                 GameEvents.RaiseToast($"<color=#ffd84a>+{amount} 골드</color>");
             else if (gear != null)
-                GameEvents.RaiseToast($"장비 획득: <color={EquipmentDatabase.RarityColor(gear.rarity)}>[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.name}</color>  ({gear.StatLine()})  [{Game.Input.GetBindingLabel(GameAction.Inventory)}] 가방");
+            {
+                int level = EquipmentDatabase.LevelOfKey(itemId);
+                GameEvents.RaiseToast($"장비 획득: <color={EquipmentDatabase.RarityColor(gear.rarity)}>[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.NameAt(level)}</color>  ({gear.StatLine(level)})  [{Game.Input.GetBindingLabel(GameAction.Inventory)}] 가방");
+            }
             else
                 GameEvents.RaiseToast($"+{amount} {Game.Config.GetItem(itemId).displayName}");
             Destroy(gameObject);

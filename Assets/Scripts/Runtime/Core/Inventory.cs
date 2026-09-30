@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 namespace DotRPG
 {
-    /// <summary>Simple stackable item counts keyed by item id.</summary>
+    /// <summary>
+    /// Simple stackable item counts keyed by item id. Gear is keyed by its instance key
+    /// ("eq_sword_iron+12", see <see cref="EquipmentDatabase.KeyFor"/>), so identical pieces stack.
+    /// </summary>
     public sealed class Inventory
     {
         readonly Dictionary<string, int> counts = new Dictionary<string, int>();
@@ -11,7 +14,20 @@ namespace DotRPG
         /// <summary>(itemId, newCount, delta)</summary>
         public event Action<string, int, int> Changed;
 
-        public int Count(string id) => counts.TryGetValue(id, out int c) ? c : 0;
+        public int Count(string id) => id != null && counts.TryGetValue(id, out int c) ? c : 0;
+
+        /// <summary>
+        /// Every id / key held (count above zero), in no particular order. Read-only view: copy it
+        /// (e.g. <c>new List&lt;string&gt;(bag.Ids)</c>) before adding or removing items in the same loop.
+        /// </summary>
+        public IEnumerable<string> Ids
+        {
+            get
+            {
+                foreach (var pair in counts)
+                    if (pair.Value > 0) yield return pair.Key;
+            }
+        }
 
         public void Add(string id, int amount)
         {

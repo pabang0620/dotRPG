@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace DotRPG
@@ -12,9 +13,14 @@ namespace DotRPG
         HealMp,
         /// <summary>Teleports back to the village.</summary>
         TownScroll,
+        /// <summary>
+        /// Used up on its own when a failed enhancement would destroy gear (the gear survives at +0).
+        /// Sits in the bag's "기타" tab and cannot be used by hand or by a quick key.
+        /// </summary>
+        Protection,
     }
 
-    /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T).</summary>
+    /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
     public sealed class ConsumableItem
     {
         public string id, name, iconKey, description;
@@ -22,6 +28,8 @@ namespace DotRPG
         /// <summary>% of max HP / MP restored.</summary>
         public int power;
         public GameAction? hotkey;
+        /// <summary>Grade colour for the name and the icon frame (null = plain item).</summary>
+        public ItemRarity? grade;
     }
 
     public static class ConsumableDatabase
@@ -30,6 +38,7 @@ namespace DotRPG
         public const string HpPotion = "potion_hp";
         public const string MpPotion = "potion_mp";
         public const string TownScroll = "scroll_town";
+        public const string ProtectTicket = "ticket_protect";
 
         static readonly List<ConsumableItem> Items = new List<ConsumableItem>
         {
@@ -41,13 +50,23 @@ namespace DotRPG
                 description = "푸른 샘물로 만든 물약. 마시면 최대 MP의 50%를 회복한다." },
             new ConsumableItem { id = TownScroll, name = "마을 귀환 주문서", iconKey = "icon_scroll", kind = ConsumableKind.TownScroll, hotkey = GameAction.TownScroll,
                 description = "펼치면 빛에 감싸여 작은 마을 광장으로 돌아간다. 사냥터에서 쓰면 편리하다." },
+            new ConsumableItem { id = ProtectTicket, name = "장비 보호권", iconKey = "icon_ticket", kind = ConsumableKind.Protection, grade = ItemRarity.Unique,
+                description = "강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다." },
         };
 
-        /// <summary>Usable items in bag order (money excluded).</summary>
+        /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>
         public static IEnumerable<ConsumableItem> Usable
         {
-            get { foreach (var i in Items) if (i.kind != ConsumableKind.Currency) yield return i; }
+            get { foreach (var i in Items) if (IsUsableKind(i.kind)) yield return i; }
         }
+
+        /// <summary>Items that work on their own from the bag ("기타" tab): the equipment protection ticket.</summary>
+        public static IEnumerable<ConsumableItem> Tickets
+        {
+            get { foreach (var i in Items) if (i.kind == ConsumableKind.Protection) yield return i; }
+        }
+
+        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection;
 
         public static ConsumableItem Get(string id)
         {
@@ -56,10 +75,18 @@ namespace DotRPG
             return null;
         }
 
+        /// <summary>True for items the player uses by hand (bag click / quick key).</summary>
         public static bool IsUsable(string id)
         {
             var i = Get(id);
-            return i != null && i.kind != ConsumableKind.Currency;
+            return i != null && IsUsableKind(i.kind);
+        }
+
+        /// <summary>True for the protection ticket (auto-used by enhancement, bag "기타" tab).</summary>
+        public static bool IsTicket(string id)
+        {
+            var i = Get(id);
+            return i != null && i.kind == ConsumableKind.Protection;
         }
 
         /// <summary>What a new character starts with (and what old saves receive once).</summary>
@@ -76,7 +103,7 @@ namespace DotRPG
         public static readonly string[] ShopStock =
         {
             ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll,
-            "mat_bone", "mat_ore", "mat_essence",
+            "mat_bone", "mat_ore", "mat_essence", ConsumableDatabase.ProtectTicket,
         };
 
         public static int BuyPrice(string id)
@@ -89,17 +116,25 @@ namespace DotRPG
                 case "mat_bone": return 15;
                 case "mat_ore": return 60;
                 case "mat_essence": return 250;
+                case ConsumableDatabase.ProtectTicket: return 3000;
                 default: return 0;
             }
         }
 
         static readonly int[] GearSell = { 10, 25, 60, 150, 300, 600 };
 
-        /// <summary>Gold the store pays for one item (0 = cannot be sold).</summary>
+        /// <summary>
+        /// Gold the store pays for one item (0 = cannot be sold). Gear keys pay the grade price
+        /// × (1 + 0.25 per +level), rounded.
+        /// </summary>
         public static int SellPrice(string id)
         {
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return gear.starter ? 2 : GearSell[(int)gear.rarity];
+            if (gear != null)
+            {
+                int basePrice = gear.starter ? 2 : GearSell[(int)gear.rarity];
+                return (int)Math.Round(basePrice * (1.0 + 0.25 * EquipmentDatabase.LevelOfKey(id)), MidpointRounding.AwayFromZero);
+            }
             switch (id)
             {
                 case ItemIds.Wood: return 3;
@@ -111,6 +146,7 @@ namespace DotRPG
                 case ConsumableDatabase.HpPotion: return 12;
                 case ConsumableDatabase.MpPotion: return 12;
                 case ConsumableDatabase.TownScroll: return 25;
+                case ConsumableDatabase.ProtectTicket: return 0; // bought with gold, never resold
                 default: return 0;
             }
         }

@@ -94,8 +94,9 @@ namespace DotRPG
         {
             foreach (var item in items)
                 if (item.id == id) return item;
+            // Gear keys ("eq_sword_iron+12"): the base item's icon, its name with the key's +level.
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return new ItemDefinition(gear.id, gear.name, gear.iconKey);
+            if (gear != null) return new ItemDefinition(id, gear.NameAt(EquipmentDatabase.LevelOfKey(id)), gear.iconKey);
             var mat = EquipmentDatabase.GetMaterial(id);
             if (mat != null) return new ItemDefinition(mat.id, mat.name, mat.iconKey);
             var use = ConsumableDatabase.Get(id);

@@ -38,15 +38,27 @@ namespace DotRPG
     /// <summary>Stat block of a piece of gear (base + enhancement).</summary>
     public struct GearStats
     {
-        public int attack, maxHealth, block, speed;
+        /// <summary>전투력 weights of one point of each stat.</summary>
+        public const int AttackWeight = 10, HealthWeight = 5, BlockWeight = 20, SpeedWeight = 10;
 
-        public int Score => attack * 10 + maxHealth * 5 + block * 20 + speed * 10;
+        public int attack, maxHealth, block, speed;
+        /// <summary>The part of <see cref="attack"/> / <see cref="maxHealth"/> added by enhancement (rounded).</summary>
+        public int enhanceAttack, enhanceHealth;
+        /// <summary>
+        /// Exact 전투력 of the enhancement bonus before rounding. <see cref="Score"/> counts it instead of the
+        /// rounded bonus, so every +level raises 전투력 even while the rounded stat has not moved yet.
+        /// </summary>
+        public float enhanceScore;
+
+        public int Score => Mathf.RoundToInt((attack - enhanceAttack) * AttackWeight + (maxHealth - enhanceHealth) * HealthWeight
+                                             + block * BlockWeight + speed * SpeedWeight + enhanceScore);
     }
 
     /// <summary>
     /// One piece of equipment. Numbers use the game's internal units: attack and max health are the
     /// same HP / damage points as PlayerStats,
     /// block is a % chance to shrug off a hit, speed is a % bonus to walking speed.
+    /// The bag and the slots hold instance keys of it: the id at +0, "{id}+{level}" when enhanced.
     /// </summary>
     public sealed class EquipmentItem
     {
@@ -66,6 +78,15 @@ namespace DotRPG
         public bool starter;
         /// <summary>Relative drop weight (0 = never drops).</summary>
         public int dropWeight;
+        /// <summary>Enhancement growth per reinforcement coefficient point (0 = default for the category and tier).</summary>
+        public float enhanceSeed;
+
+        /// <summary>Visual tier: the number at the end of the icon key (0 = weakest look), -1 = no icon.</summary>
+        public int Tier { get; internal set; } = -1;
+        /// <summary>Position in <see cref="EquipmentDatabase.All"/> (bag order).</summary>
+        public int Order { get; internal set; }
+        /// <summary>Instance key per level (index 0 = the bare id), filled by the database.</summary>
+        internal string[] keys;
 
         public bool UsableBy(CharacterClass cls) => classOnly == null || classOnly == cls;
 
@@ -73,6 +94,9 @@ namespace DotRPG
 
         /// <summary>Stats at an enhancement level (+0 = base).</summary>
         public GearStats StatsAt(int level) => EquipmentDatabase.StatsAt(this, level);
+
+        /// <summary>Instance key at a level: "eq_sword_iron" (+0), "eq_sword_iron+12".</summary>
+        public string KeyAt(int level) => EquipmentDatabase.KeyFor(id, level);
 
         /// <summary>"철검 +3" (no suffix at +0).</summary>
         public string NameAt(int level) => level > 0 ? $"{name} +{level}" : name;
@@ -100,10 +124,17 @@ namespace DotRPG
         public int minDrop = 1, maxDrop = 1;
     }
 
-    /// <summary>All equipment and materials, the monster loot tables and the enhancement rules.</summary>
+    /// <summary>
+    /// All equipment and materials, the monster loot tables and the enhancement growth. Gear is stored
+    /// as instance keys: the base id at +0 and "{baseId}+{level}" for +1..+20 ("eq_sword_iron+12"), so
+    /// every piece carries its own +level and identical keys stack. Base ids never contain '+'.
+    /// Attempt rules (chances, costs, failures) live in <see cref="EnhanceRules"/>.
+    /// </summary>
     public static class EquipmentDatabase
     {
-        public const int MaxEnhance = 10;
+        public const int MaxEnhance = 20;
+        /// <summary>Separates the base id from the +level in an instance key.</summary>
+        public const char KeySeparator = '+';
 
         static readonly List<EquipmentItem> Items = new List<EquipmentItem>
         {
@@ -139,52 +170,147 @@ namespace DotRPG
             new MaterialItem { id = "mat_bone", name = "뼈 조각", iconKey = "maticon_bone", rarity = ItemRarity.Common, dropChance = 0.75f, minDrop = 1, maxDrop = 3,
                 description = "해골이 떨어뜨린 단단한 뼈. 모든 강화에 쓰인다." },
             new MaterialItem { id = "mat_ore", name = "강화석", iconKey = "maticon_ore", rarity = ItemRarity.Rare, dropChance = 0.35f,
-                description = "푸르게 빛나는 광석. 장비를 단단하게 벼린다." },
+                description = "푸르게 빛나는 광석. +5 강화 시도부터 필요하다." },
             new MaterialItem { id = "mat_essence", name = "마력 정수", iconKey = "maticon_essence", rarity = ItemRarity.Epic, dropChance = 0.08f,
-                description = "해골 속에 남아 있던 마력의 결정. +5 이상 강화에 필요하다." },
+                description = "해골 속에 남아 있던 마력의 결정. +11 강화 시도부터 필요하다." },
         };
 
-        static readonly Dictionary<string, EquipmentItem> ById = BuildIndex();
-
-        static Dictionary<string, EquipmentItem> BuildIndex()
+        /// <summary>A valid instance key: which item and which +level.</summary>
+        struct KeyInfo
         {
-            var map = new Dictionary<string, EquipmentItem>();
-            foreach (var item in Items) map[item.id] = item;
+            public EquipmentItem item;
+            public int level;
+        }
+
+        /// <summary>Every valid key (21 per item), so lookups never parse or allocate.</summary>
+        static readonly Dictionary<string, KeyInfo> ByKey = BuildIndex();
+
+        static Dictionary<string, KeyInfo> BuildIndex()
+        {
+            var map = new Dictionary<string, KeyInfo>();
+            for (int i = 0; i < Items.Count; i++)
+            {
+                var item = Items[i];
+                item.Order = i;
+                item.keys = new string[MaxEnhance + 1];
+                for (int level = 0; level <= MaxEnhance; level++)
+                {
+                    string key = level == 0 ? item.id : $"{item.id}{KeySeparator}{level}";
+                    item.keys[level] = key;
+                    map[key] = new KeyInfo { item = item, level = level };
+                }
+            }
             return map;
         }
 
         static EquipmentItem W(string id, string name, EquipCategory cat, ItemRarity rarity, CharacterClass? cls,
-            int atk = 0, int hp = 0, int block = 0, int spd = 0, string icon = "", string desc = "", bool starter = false, int drop = 0)
+            int atk = 0, int hp = 0, int block = 0, int spd = 0, string icon = "", string desc = "", bool starter = false, int drop = 0, float seed = 0f)
         {
             return new EquipmentItem
             {
                 id = id, name = name, category = cat, rarity = rarity, classOnly = cls,
                 attack = atk, maxHealth = hp, block = block, speed = spd,
                 iconKey = icon, description = desc, starter = starter, dropWeight = starter ? 0 : drop,
+                enhanceSeed = seed, Tier = TierFromIcon(icon),
             };
+        }
+
+        static int TierFromIcon(string iconKey)
+        {
+            if (string.IsNullOrEmpty(iconKey)) return -1;
+            int u = iconKey.LastIndexOf('_');
+            return u >= 0 && int.TryParse(iconKey.Substring(u + 1), out int tier) ? tier : 0;
         }
 
         public static IReadOnlyList<EquipmentItem> All => Items;
         public static IReadOnlyList<MaterialItem> AllMaterials => Materials;
 
-        public static bool IsEquipment(string id) => !string.IsNullOrEmpty(id) && ById.ContainsKey(id);
+        // ---------- Instance keys ----------
 
-        public static EquipmentItem Get(string id) => id != null && ById.TryGetValue(id, out var item) ? item : null;
+        /// <summary>True for any valid gear key ("eq_sword_iron", "eq_sword_iron+12").</summary>
+        public static bool IsEquipment(string key) => !string.IsNullOrEmpty(key) && ByKey.ContainsKey(key);
 
-        /// <summary>Visual tier of an item (the number at the end of its icon key), or -1 for none.</summary>
-        public static int TierOf(string id)
+        /// <summary>The base item of a key (null for anything that is not a valid gear key).</summary>
+        public static EquipmentItem Get(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.item : null;
+
+        /// <summary>"eq_sword_iron+12" → "eq_sword_iron". Anything else comes back unchanged (up to a '+').</summary>
+        public static string BaseId(string key)
         {
-            var item = Get(id);
-            if (item == null || string.IsNullOrEmpty(item.iconKey)) return -1;
-            int u = item.iconKey.LastIndexOf('_');
-            return u >= 0 && int.TryParse(item.iconKey.Substring(u + 1), out int tier) ? tier : 0;
+            if (string.IsNullOrEmpty(key)) return key;
+            if (ByKey.TryGetValue(key, out var info)) return info.item.id;
+            int plus = key.IndexOf(KeySeparator);
+            return plus >= 0 ? key.Substring(0, plus) : key;
+        }
+
+        /// <summary>+level of a key ("eq_sword_iron+12" → 12); 0 for bare ids and anything that is not gear.</summary>
+        public static int LevelOfKey(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.level : 0;
+
+        /// <summary>Key of an item at a level (clamped to 0..<see cref="MaxEnhance"/>; +0 = the bare id). Also accepts a key.</summary>
+        public static string KeyFor(string baseId, int level)
+        {
+            if (string.IsNullOrEmpty(baseId)) return baseId;
+            level = Mathf.Clamp(level, 0, MaxEnhance);
+            if (ByKey.TryGetValue(baseId, out var info)) return info.item.keys[level];
+            string root = BaseId(baseId);
+            return level > 0 ? $"{root}{KeySeparator}{level}" : root;
+        }
+
+        /// <summary>"철검 +12" for a key (null when it is not gear).</summary>
+        public static string NameOfKey(string key)
+        {
+            var item = Get(key);
+            return item != null ? item.NameAt(LevelOfKey(key)) : null;
+        }
+
+        /// <summary>Name in the grade colour with the +level in its level colour (rich text).</summary>
+        public static string RichName(string key)
+        {
+            var item = Get(key);
+            if (item == null) return key;
+            int level = LevelOfKey(key);
+            string name = $"<color={RarityColor(item.rarity)}>{item.name}</color>";
+            return level > 0 ? $"{name} {LevelTag(level)}" : name;
+        }
+
+        /// <summary>Stats of a key at its own +level (default for null / non-gear).</summary>
+        public static GearStats StatsOfKey(string key)
+        {
+            var item = Get(key);
+            return item != null ? StatsAt(item, LevelOfKey(key)) : default;
+        }
+
+        /// <summary>Bag order of gear keys: <see cref="All"/> order, then the higher +level first. Non-gear sorts last.</summary>
+        public static int CompareKeys(string a, string b)
+        {
+            var ia = Get(a);
+            var ib = Get(b);
+            if (ia == null || ib == null) return (ia == null).CompareTo(ib == null);
+            int byItem = ia.Order.CompareTo(ib.Order);
+            return byItem != 0 ? byItem : LevelOfKey(b).CompareTo(LevelOfKey(a));
+        }
+
+        /// <summary>The gear keys held in an inventory, in bag order (a new list, safe to change the inventory while using it).</summary>
+        public static List<string> GearKeys(Inventory bag)
+        {
+            var keys = new List<string>();
+            foreach (var id in bag.Ids)
+                if (IsEquipment(id)) keys.Add(id);
+            keys.Sort(CompareKeys);
+            return keys;
+        }
+
+        /// <summary>Visual tier of an item key (the number at the end of its icon key), or -1 for none.</summary>
+        public static int TierOf(string key)
+        {
+            var item = Get(key);
+            return item != null ? item.Tier : -1;
         }
 
         /// <summary>Sprite of the weapon held in the hand: "wpn_sword_2" for the bone greatsword, etc.</summary>
-        public static string WeaponSprite(string weaponId, CharacterClass cls)
+        public static string WeaponSprite(string weaponKey, CharacterClass cls)
         {
             string kind = cls == CharacterClass.Mage ? "staff" : "sword";
-            int tier = Mathf.Max(0, TierOf(weaponId));
+            int tier = Mathf.Max(0, TierOf(weaponKey));
             return $"wpn_{kind}_{tier}";
         }
 
@@ -251,48 +377,87 @@ namespace DotRPG
         /// <summary>HP amount as text (kept under its old name for callers).</summary>
         public static string Hearts(int hp) => hp.ToString();
 
-        // ---------- Enhancement ----------
+        // ---------- Enhancement level colours ----------
 
         /// <summary>
-        /// Stats at an enhancement level. Every level raises something; each category grows differently:
-        /// weapon: attack +1 on even levels, block +1% on odd levels ·
-        /// armour: block +1% every level, hearts +½ on even levels ·
-        /// necklace: hearts +½ on even levels, block +1% on odd levels, attack +1 at +5/+10 ·
-        /// ring: block +1% on even levels, speed +1% on odd levels, attack +1 at +4/+8.
+        /// Colour of a "+N" label, in the bands of Dungeon&amp;Fighter's weapon glow:
+        /// +1–6 green, +7–8 yellow, +9–12 blue, +13–14 pink, +15–16 orange, +17 and up gold.
+        /// </summary>
+        public static string LevelColor(int level)
+        {
+            if (level <= 6) return "#6fdc6f";
+            if (level <= 8) return "#ffe066";
+            if (level <= 12) return "#5aa9ff";
+            if (level <= 14) return "#ff7ad9";
+            if (level <= 16) return "#ff8a3d";
+            return "#ffd84a";
+        }
+
+        public static Color LevelTint(int level)
+        {
+            ColorUtility.TryParseHtmlString(LevelColor(level), out var c);
+            return c;
+        }
+
+        /// <summary>"+12" in its level colour (rich text).</summary>
+        public static string LevelTag(int level) => $"<color={LevelColor(level)}>+{level}</color>";
+
+        // ---------- Enhancement growth ----------
+
+        /// <summary>
+        /// Reinforcement coefficient per +level, after Dungeon&amp;Fighter's weapon reinforcement table
+        /// (+8..+20 are the published values, +1..+7 interpolated). Bonus at +L = seed × coefficient[L].
+        /// </summary>
+        static readonly float[] EnhanceCoef =
+        {
+            0f, 1.1f, 2.2f, 3.3f, 4.5f, 5.7f, 7.0f, 8.3f, 11.11f, 14.7f, 18.9f,
+            27.25f, 37.13f, 43.43f, 49.8f, 56.11f, 62.38f, 68.59f, 74.77f, 80.9f, 86.98f,
+        };
+
+        public static float EnhanceCoefficient(int level) => EnhanceCoef[Mathf.Clamp(level, 0, MaxEnhance)];
+
+        /// <summary>
+        /// Growth per coefficient point: the item's own <see cref="EquipmentItem.enhanceSeed"/>, or the default
+        /// for its category and tier t: weapon 0.135 × (t + 1) (≈ +50% of base + weapon attack at +12),
+        /// top / bottom 0.5 + 0.25 t, necklace / ring 0.3 + 0.15 t.
+        /// </summary>
+        public static float EnhanceSeedOf(EquipmentItem item)
+        {
+            if (item.enhanceSeed > 0f) return item.enhanceSeed;
+            int t = Mathf.Max(0, item.Tier);
+            switch (item.category)
+            {
+                case EquipCategory.Weapon: return 0.135f * (t + 1);
+                case EquipCategory.Top:
+                case EquipCategory.Bottom: return 0.5f + 0.25f * t;
+                default: return 0.3f + 0.15f * t;
+            }
+        }
+
+        /// <summary>
+        /// Stats at an enhancement level: weapons gain attack, everything else max HP, both
+        /// round(seed × coefficient[level]). Block, speed and accessory attack never grow.
         /// </summary>
         public static GearStats StatsAt(EquipmentItem item, int level)
         {
-            level = Mathf.Clamp(level, 0, MaxEnhance);
-            int even = level / 2, odd = (level + 1) / 2;
             var s = new GearStats { attack = item.attack, maxHealth = item.maxHealth, block = item.block, speed = item.speed };
-            switch (item.category)
+            level = Mathf.Clamp(level, 0, MaxEnhance);
+            if (level == 0) return s;
+            float exact = EnhanceSeedOf(item) * EnhanceCoef[level];
+            int bonus = Mathf.FloorToInt(exact + 0.5f);
+            if (item.category == EquipCategory.Weapon)
             {
-                case EquipCategory.Weapon: s.attack += even * 10; s.block += odd; break;
-                case EquipCategory.Top:
-                case EquipCategory.Bottom: s.maxHealth += even * 10; s.block += level; break;
-                case EquipCategory.Necklace: s.maxHealth += even * 10; s.block += odd; s.attack += level / 5 * 10; break;
-                case EquipCategory.Ring: s.block += even; s.speed += odd; s.attack += level / 4 * 10; break;
+                s.attack += bonus;
+                s.enhanceAttack = bonus;
+                s.enhanceScore = exact * GearStats.AttackWeight;
+            }
+            else
+            {
+                s.maxHealth += bonus;
+                s.enhanceHealth = bonus;
+                s.enhanceScore = exact * GearStats.HealthWeight;
             }
             return s;
-        }
-
-        public struct EnhanceCost
-        {
-            public int bone, ore, essence;
-            public int successPercent;
-        }
-
-        /// <summary>Materials and success chance to go from +level to +level+1. Failure keeps the level.</summary>
-        public static EnhanceCost CostFor(EquipmentItem item, int level)
-        {
-            int grade = (int)item.rarity; // better gear costs a little more
-            return new EnhanceCost
-            {
-                bone = 2 + level + grade / 2,
-                ore = 1 + level / 2 + (grade >= 3 ? 1 : 0),
-                essence = level >= 4 ? level - 3 : 0,
-                successPercent = level < 3 ? 100 : Mathf.Max(30, 100 - (level - 2) * 10),
-            };
         }
 
         // ---------- Loot ----------

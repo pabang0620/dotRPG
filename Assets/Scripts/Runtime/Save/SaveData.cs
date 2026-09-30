@@ -36,7 +36,7 @@ namespace DotRPG
     [Serializable]
     public class SaveData
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int version = CurrentVersion;
         public string savedAtUtc;
@@ -51,14 +51,20 @@ namespace DotRPG
         public int playerHealth;
         public int playerMaxHealth;
 
+        /// <summary>Bag contents. Gear is stored by instance key ("eq_sword_iron+12", version 4+).</summary>
         public List<ItemStack> inventory = new List<ItemStack>();
         /// <summary>Items kept with the village storage keeper (version 3+).</summary>
         public List<ItemStack> storage = new List<ItemStack>();
-        /// <summary>Equipment slot contents in <see cref="EquipSlot"/> order (null/empty = nothing worn).</summary>
+        /// <summary>Worn gear keys in <see cref="EquipSlot"/> order (null/empty = nothing worn).</summary>
         public List<string> equipped = new List<string>();
         public List<string> openedChests = new List<string>();
-        /// <summary>Enhancement per equipment kind (count = +level).</summary>
+        /// <summary>
+        /// Version 3 and older: enhancement per equipment kind (count = +level). Only read to migrate old
+        /// saves (<see cref="SaveSystem.MigrateEnhanceLevels"/>); always written empty.
+        /// </summary>
         public List<ItemStack> enhanceLevels = new List<ItemStack>();
+        /// <summary>Enhancement pity (version 4+): id = the key being attempted from, count = bonus %p.</summary>
+        public List<ItemStack> enhancePity = new List<ItemStack>();
 
         // Progression (version 2+).
         public int level = 1;

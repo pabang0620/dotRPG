@@ -7,15 +7,20 @@ using UnityEngine.UI;
 
 namespace DotRPG
 {
-    /// <summary>Names, grade colours and descriptions of any item id (gear, material, consumable, resource).</summary>
+    /// <summary>
+    /// Names, grade colours and descriptions of any item id (gear key, material, consumable, resource).
+    /// Gear keys ("eq_sword_iron+12") show their own +level.
+    /// </summary>
     public static class ItemText
     {
         public static string Name(string id)
         {
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}>{gear.NameAt(Game.Session.Equipment.LevelOf(id))}</color>";
+            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}>{gear.NameAt(EquipmentDatabase.LevelOfKey(id))}</color>";
             var mat = EquipmentDatabase.GetMaterial(id);
             if (mat != null) return $"<color={EquipmentDatabase.RarityColor(mat.rarity)}>{mat.name}</color>";
+            var use = ConsumableDatabase.Get(id);
+            if (use != null && use.grade.HasValue) return $"<color={EquipmentDatabase.RarityColor(use.grade.Value)}>{use.name}</color>";
             return Game.Config.GetItem(id).displayName;
         }
 
@@ -26,14 +31,25 @@ namespace DotRPG
                 return $"[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.CategoryName}" + (gear.classOnly.HasValue ? $" · {CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용" : "");
             var mat = EquipmentDatabase.GetMaterial(id);
             if (mat != null) return $"[{EquipmentDatabase.RarityName(mat.rarity)}] 강화 재료";
+            if (ConsumableDatabase.IsTicket(id)) return $"[{EquipmentDatabase.RarityName(Grade(id) ?? ItemRarity.Common)}] 기타 · 강화 보호";
             if (ConsumableDatabase.IsUsable(id)) return "소모품";
             return "재료";
+        }
+
+        /// <summary>Grade of gear, materials and graded items such as the protection ticket (null for plain items).</summary>
+        public static ItemRarity? Grade(string id)
+        {
+            var gear = EquipmentDatabase.Get(id);
+            if (gear != null) return gear.rarity;
+            var mat = EquipmentDatabase.GetMaterial(id);
+            if (mat != null) return mat.rarity;
+            return ConsumableDatabase.Get(id)?.grade;
         }
 
         public static string Description(string id)
         {
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return $"{gear.StatLine(Game.Session.Equipment.LevelOf(id))}\n{gear.description}";
+            if (gear != null) return $"{gear.StatLine(EquipmentDatabase.LevelOfKey(id))}\n{gear.description}";
             var mat = EquipmentDatabase.GetMaterial(id);
             if (mat != null) return mat.description;
             var use = ConsumableDatabase.Get(id);
@@ -56,23 +72,24 @@ namespace DotRPG
         /// <summary>Grade frame colour for an icon cell.</summary>
         public static Color Frame(string id)
         {
-            var gear = EquipmentDatabase.Get(id);
-            var mat = gear == null ? EquipmentDatabase.GetMaterial(id) : null;
-            if (gear == null && mat == null) return new Color(1f, 1f, 1f, 0.12f);
-            var rarity = gear != null ? gear.rarity : mat.rarity;
-            var tint = EquipmentDatabase.RarityTint(rarity);
-            tint.a = rarity == ItemRarity.Common ? 0.25f : 0.9f;
+            var grade = Grade(id);
+            if (!grade.HasValue) return new Color(1f, 1f, 1f, 0.12f);
+            var tint = EquipmentDatabase.RarityTint(grade.Value);
+            tint.a = grade.Value == ItemRarity.Common ? 0.25f : 0.9f;
             return tint;
         }
 
-        /// <summary>Everything in the bag in bag order, money excluded.</summary>
+        /// <summary>
+        /// Everything in the bag in bag order, money excluded: gear keys (database order, higher +level
+        /// first), consumables, resources, materials, then the protection ticket.
+        /// </summary>
         public static List<string> BagOrder(Inventory bag)
         {
-            var ids = new List<string>();
-            foreach (var item in EquipmentDatabase.All) if (bag.Count(item.id) > 0) ids.Add(item.id);
+            var ids = EquipmentDatabase.GearKeys(bag);
             foreach (var use in ConsumableDatabase.Usable) if (bag.Count(use.id) > 0) ids.Add(use.id);
             foreach (var def in Game.Config.items) if (bag.Count(def.id) > 0 && !ids.Contains(def.id)) ids.Add(def.id);
             foreach (var mat in EquipmentDatabase.AllMaterials) if (bag.Count(mat.id) > 0) ids.Add(mat.id);
+            foreach (var ticket in ConsumableDatabase.Tickets) if (bag.Count(ticket.id) > 0) ids.Add(ticket.id);
             return ids;
         }
 
@@ -538,8 +555,9 @@ namespace DotRPG
                 c.icon.sprite = ItemText.Icon(c.id);
                 int n = from.Count(c.id);
                 c.count.text = n > 1 ? n.ToString("N0") : "";
-                int lv = EquipmentDatabase.Get(c.id) != null ? Game.Session.Equipment.LevelOf(c.id) : 0;
+                int lv = EquipmentDatabase.LevelOfKey(c.id);
                 c.level.text = lv > 0 ? $"+{lv}" : "";
+                c.level.color = EquipmentDatabase.LevelTint(lv);
             }
         }
 
