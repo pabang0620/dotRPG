@@ -8,11 +8,16 @@ namespace DotRPG
         SpriteRenderer sr, glow;
         Sprite[] frames;
         float t, nextEmber;
+        bool hd;
+
+        /// <summary>Use the 32px wnt_fire_* flame frames instead of the old 16px snow_fire_* ones.</summary>
+        public void SetHd(bool value) => hd = value;
 
         void Start()
         {
             sr = GetComponent<SpriteRenderer>();
-            frames = new[] { Game.Art.Get("snow_fire_0"), Game.Art.Get("snow_fire_1"), Game.Art.Get("snow_fire_2") };
+            string prefix = hd ? "wnt_fire_" : "snow_fire_";
+            frames = new[] { Game.Art.Get(prefix + "0"), Game.Art.Get(prefix + "1"), Game.Art.Get(prefix + "2") };
             var go = new GameObject("Glow");
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 0.45f, 0f);

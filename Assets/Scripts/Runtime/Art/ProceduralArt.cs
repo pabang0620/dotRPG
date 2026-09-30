@@ -146,28 +146,32 @@ namespace DotRPG
                     case "bench": return DrawBench();
                     case "chest": return DrawChest(parts.Length > 1 && parts[1] == "open");
                     case "gate": return DrawGate();
-                    case "maticon": return DrawMaterialIcon(parts[1]);
-                    case "menuicon": return DrawMenuIcon(parts[1]);
+                    case "maticon":
+                    case "menuicon":
+                    case "gem":
+                    case "node":
+                    case "eqicon":
+                    case "icon":
+                    case "heart":
+                    case "ui":
+                        return DrawUiFamily(key, parts);        // windows, HUD and icons (ProceduralArtUi.cs)
+                    case "wpn":
+                    case "tool":
+                    case "num":
+                    case "hpbar":
+                    case "shadow":
+                        return DrawCharacterFamily(key, parts); // held weapons/tools, damage digits, HP bars, shadow (ProceduralArtCharacters.cs)
+                    case "cyn": return DrawCanyonHd(parts);     // 32px canyon town (ProceduralArtCanyonHd.cs)
+                    case "wnt": return DrawWinterHd(parts);     // 32px winter village (ProceduralArtWinterHd.cs)
                     case "anvil": return DrawAnvil();
-                    case "gem": return DrawGem(key.Substring(4));
-                    case "node": return DrawNodeGlyph(parts[1]);
-                    case "wpn": return DrawWeapon(parts[1], parts.Length > 2 ? int.Parse(parts[2]) : 0);
                     case "snow": return DrawSnow(parts);
                     case "town": return DrawTown(parts);
-                    case "num": return DrawDigit(int.Parse(parts[1]));
-                    case "eqicon": return DrawEquipIcon(parts[1], parts.Length > 2 ? int.Parse(parts[2]) : 0);
-                    case "hpbar": return DrawHpBar(parts[1]);
                     case "box": return DrawCrate(false);
                     case "arrow": return DrawArrow(parts.Length > 1 ? parts[1] : "right");
                     case "site": return parts[1] == "built" ? DrawWorkshop() : DrawBlueprint();
                     case "pile": return DrawPile(parts[1] == "stone");
                     case "crop": return DrawCrop(parts[1]);
-                    case "tool": return DrawTool(parts[1]);
                     case "fx": return DrawFx(parts[1]);
-                    case "icon": return DrawIcon(key.Substring(5));
-                    case "heart": return DrawHeart(parts[1]);
-                    case "ui": return DrawUi(parts[1]);
-                    case "shadow": return DrawShadow();
                 }
             }
             catch (Exception e)

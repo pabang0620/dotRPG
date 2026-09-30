@@ -48,6 +48,7 @@ namespace DotRPG
         {
             if (weapon == null || Game.Session == null) return;
             weapon.sprite = Game.Art.Get(EquipmentDatabase.WeaponSprite(Game.Session.Equipment[EquipSlot.Weapon], classInfo.id));
+            HdMaterial.Apply(weapon);
         }
 
         /// <summary>
@@ -103,6 +104,7 @@ namespace DotRPG
             weapon.sprite = Game.Art.Get("tool_sword");
             weapon.sortingOrder = 1;
             weapon.enabled = false;
+            HdMaterial.Apply(weapon);
 
             slash = new GameObject("Slash").AddComponent<SpriteRenderer>();
             slash.transform.SetParent(visualRoot, false);

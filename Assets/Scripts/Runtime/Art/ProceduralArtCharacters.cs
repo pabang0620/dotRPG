@@ -27,10 +27,28 @@ namespace DotRPG
         // ---------- Characters ----------
 
         /// <summary>
-        /// Draws one frame of a chibi character. Right-facing views face right; the renderer flips
-        /// them for left.
+        /// Sprite keys that belong with the characters: held weapons (wpn_*), held tools (tool_*), damage
+        /// digits (num_*), monster HP bars (hpbar_*) and the ground shadow, so they can be swapped in one place.
+        /// </summary>
+        static PixelCanvas DrawCharacterFamily(string key, string[] parts)
+        {
+            // Routed to the 32px (density 2) art in ProceduralArtCharactersHd.cs. The old density-1
+            // versions (DrawWeapon/DrawTool/DrawDigit/DrawHpBar/DrawShadow) stay below for reference.
+            return DrawCharacterFamilyHd(key, parts);
+        }
+
+        /// <summary>
+        /// Draws one frame of a chibi character at 32px (density 2). Right-facing views face right;
+        /// the renderer flips them for left. Delegates to the HD art; the old 16px body drawing
+        /// (DrawCharacterLegacy) is kept below untouched.
         /// </summary>
         public static PixelCanvas DrawCharacter(CharacterLook look, string dir, string frame)
+        {
+            return DrawCharacterHd(look, dir, frame);
+        }
+
+        /// <summary>Original 16px character frame (kept for reference; no longer routed).</summary>
+        static PixelCanvas DrawCharacterLegacy(CharacterLook look, string dir, string frame)
         {
             var c = new PixelCanvas(16, 20);
             var v = new View(dir);

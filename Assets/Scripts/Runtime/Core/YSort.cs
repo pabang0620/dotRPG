@@ -28,12 +28,28 @@ namespace DotRPG
             Refresh();
         }
 
-        /// <summary>Re-collects child renderers (call after adding children at runtime).</summary>
+        /// <summary>
+        /// Re-collects child renderers (call after adding children at runtime). Renderers seen before
+        /// keep their local order; only new ones take their current sortingOrder as their local order.
+        /// (Reading every renderer's sortingOrder again would fold the already applied depth into the
+        /// offset, so each call used to push the object further back: props sorted at twice their
+        /// depth and the player drifted a little more on every spawn.)
+        /// </summary>
         public void Refresh()
         {
-            renderers = GetComponentsInChildren<SpriteRenderer>(true);
-            localOrders = new int[renderers.Length];
-            for (int i = 0; i < renderers.Length; i++) localOrders[i] = renderers[i].sortingOrder;
+            var all = GetComponentsInChildren<SpriteRenderer>(true);
+            // Ground shadows lie flat under everything and keep their own order.
+            var found = new System.Collections.Generic.List<SpriteRenderer>(all.Length);
+            foreach (var r in all)
+                if (r.GetComponent<CastShadow>() == null) found.Add(r);
+            var orders = new int[found.Count];
+            for (int i = 0; i < found.Count; i++)
+            {
+                int known = renderers != null ? System.Array.IndexOf(renderers, found[i]) : -1;
+                orders[i] = known >= 0 ? localOrders[known] : found[i].sortingOrder;
+            }
+            renderers = found.ToArray();
+            localOrders = orders;
             applied = false;
             Apply();
         }

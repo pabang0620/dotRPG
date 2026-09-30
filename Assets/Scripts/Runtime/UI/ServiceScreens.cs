@@ -134,7 +134,7 @@ namespace DotRPG
                 UIFactory.Place(r.bg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -74f - i * (RowH + RowGap)), new Vector2(ListW, RowH));
                 var slot = Img(r.bg.transform, "Slot", "ui_slot", Color.white);
                 UIFactory.Place(slot.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(58f, 58f));
-                r.icon = UIFactory.Image(slot.transform, "Icon", null, Color.white);
+                r.icon = UIFactory.SharpIcon(slot.transform, "Icon", Color.white);
                 UIFactory.Place(r.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(44f, 44f));
                 r.frame = Img(slot.transform, "Frame", "ui_frame", Color.clear);
                 UIFactory.Stretch(r.frame.rectTransform);
@@ -165,7 +165,7 @@ namespace DotRPG
             UIFactory.Stretch(w.goldText.rectTransform, 50f, 0f, 14f, 0f);
             var iconBg = Img(right.transform, "IconBg", "ui_slotblue", Color.white);
             UIFactory.Place(iconBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -80f), new Vector2(112f, 112f));
-            w.bigIcon = UIFactory.Image(iconBg.transform, "Icon", null, Color.white);
+            w.bigIcon = UIFactory.SharpIcon(iconBg.transform, "Icon", Color.white);
             UIFactory.Place(w.bigIcon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(84f, 84f));
             w.bigFrame = Img(iconBg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(w.bigFrame.rectTransform);
@@ -437,7 +437,7 @@ namespace DotRPG
             c.bg.raycastTarget = true;
             UIFactory.Place(c.bg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                 new Vector2(20f + (i % Cols) * (Cell + Gap), -56f - (i / Cols) * (Cell + Gap)), new Vector2(Cell, Cell));
-            c.icon = UIFactory.Image(c.bg.transform, "Icon", null, Color.white);
+            c.icon = UIFactory.SharpIcon(c.bg.transform, "Icon", Color.white);
             UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(Cell * 0.7f, Cell * 0.7f));
             c.frame = Img(c.bg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(c.frame.rectTransform);

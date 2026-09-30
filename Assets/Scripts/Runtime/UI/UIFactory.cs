@@ -46,6 +46,9 @@ namespace DotRPG
         /// <summary>Canvas reference resolution. Art is 16px; UI panels are drawn at 3x.</summary>
         public static readonly Vector2 ReferenceResolution = new Vector2(1280, 720);
         const float UiPixelScale = 3f;
+        /// <summary>Density-1 art resolution (pixels per tile). HD (density-2) UI frames are sized
+        /// against this so their on-screen 9-slice borders match the old 16px frames.</summary>
+        const float BaseArtPixels = 16f;
 
         public static RectTransform Rect(Transform parent, string name)
         {
@@ -83,13 +86,47 @@ namespace DotRPG
             if (sprite != null && sprite.border != Vector4.zero)
             {
                 img.type = UnityEngine.UI.Image.Type.Sliced;
-                // Show 9-slice borders at the UI pixel scale regardless of the sprite's PPU.
-                img.pixelsPerUnitMultiplier = 100f / sprite.pixelsPerUnit / UiPixelScale;
+                // Keep the on-screen border thickness the same for every UI frame regardless of the
+                // sprite's resolution. The HD (density-2) frames are drawn at twice the pixels AND
+                // twice the border, so sizing them against the density-1 reference PPU (BaseArtPixels)
+                // cancels the extra pixels out: a 32px/10px-border frame renders exactly like the old
+                // 16px/5px-border frame. (The old code divided by the sprite's own PPU, which halved
+                // the multiplier for HD frames and — unless borders were doubled — doubled their size.)
+                img.pixelsPerUnitMultiplier = 100f / BaseArtPixels / UiPixelScale;
             }
             else
             {
                 img.preserveAspect = true;
             }
+            ApplySharp(img, sprite);
+            return img;
+        }
+
+        /// <summary>
+        /// Puts the UI sharp-bilinear material on an Image whose sprite is high-resolution (density-2)
+        /// pixel art, so bilinear-filtered frames and icons stay crisp at non-integer canvas scales
+        /// (1280x720 / 1920x1080). Point-filtered density-1 sprites and solid fills are left on the
+        /// default UI material.
+        /// </summary>
+        public static void ApplySharp(Graphic g, Sprite sprite)
+        {
+            if (g == null || sprite == null || sprite.texture == null) return;
+            if (sprite.texture.filterMode == FilterMode.Point) return; // point art is already crisp
+            var mat = UiMaterials.Sharp;
+            if (mat != null) g.material = mat;
+        }
+
+        /// <summary>
+        /// An icon Image for a slot that starts empty and is filled with high-resolution pixel-art
+        /// icons later (bag cells, gem sockets, shop rows, tooltip icons). The sharp material is set up
+        /// front so the crisp shader is in place before the first sprite is assigned — the plain
+        /// <see cref="Image"/> path only knows to add it when a sprite is present at creation time.
+        /// </summary>
+        public static Image SharpIcon(Transform parent, string name, Color color)
+        {
+            var img = Image(parent, name, null, color);
+            var mat = UiMaterials.Sharp;
+            if (mat != null) img.material = mat;
             return img;
         }
 

@@ -90,6 +90,7 @@ namespace DotRPG
             }
             target.sprite = Game.Art.GetCharacter(look, facing.SpriteKey(), frame);
             target.flipX = facing.IsLeft();
+            HdMaterial.Apply(target);
         }
 
         /// <summary>Swaps the look (e.g. new clothes) keeping the current animation.</summary>

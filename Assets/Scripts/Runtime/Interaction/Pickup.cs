@@ -27,6 +27,10 @@ namespace DotRPG
             pickup.amount = amount;
             pickup.sr = go.AddComponent<SpriteRenderer>();
             pickup.sr.sprite = Game.Art.Get(Game.Config.GetItem(itemId).iconKey);
+            // High-resolution (density-2) icons are bilinear-filtered, so draw them through the sharp
+            // scaling material like the rest of the 32px art — otherwise they shimmer on the ground.
+            if (pickup.sr.sprite != null && pickup.sr.sprite.pixelsPerUnit > 16.5f && FxMaterials.Sharp != null)
+                pickup.sr.sharedMaterial = FxMaterials.Sharp;
             pickup.ground = position;
             pickup.velocity = Random.insideUnitCircle.normalized * Random.Range(0.8f, 1.8f);
             pickup.upSpeed = Random.Range(3.5f, 5f);

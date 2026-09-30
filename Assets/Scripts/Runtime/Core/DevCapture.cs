@@ -12,11 +12,21 @@ namespace DotRPG
     /// mage → casts a spell → travels to the canyon → takes screenshots and writes a small report,
     /// then quits. Useful for checking a build on a machine without opening the editor.
     /// </summary>
-    public class DevCapture : MonoBehaviour
+    public partial class DevCapture : MonoBehaviour
     {
         string folder;
+        string mode;
         bool fxOnly;
         StreamWriter log;
+
+        /// <summary>
+        /// Command-line switches that start an automated run; each is followed by the output folder.
+        /// -dotrpgCapture: full smoke test. -dotrpgFx: skill-effect showcase. -dotrpgMap: winter map renders.
+        /// -dotrpgTown: village town + forest hunting ground renders and service tests.
+        /// -dotrpgCanyon / -dotrpgWinter / -dotrpgChars / -dotrpgUi: 32px canyon, winter village, characters
+        /// and monsters, and window/HUD showcases (DevCapture.*.cs).
+        /// </summary>
+        static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth" };
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -24,9 +34,10 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown")
+                if (Array.IndexOf(Modes, args[i]) >= 0)
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
+                    GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
         }
@@ -37,13 +48,12 @@ namespace DotRPG
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
-                // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
-                // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown") continue;
+                if (Array.IndexOf(Modes, args[i]) < 0) continue;
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
                 capture.folder = args[i + 1];
+                capture.mode = args[i];
                 capture.fxOnly = args[i] == "-dotrpgFx";
                 capture.mapOnly = args[i] == "-dotrpgMap";
                 capture.townOnly = args[i] == "-dotrpgTown";
@@ -53,12 +63,35 @@ namespace DotRPG
 
         bool mapOnly, townOnly;
 
+        /// <summary>The showcase coroutine of the 32px modes, or null for the older modes.</summary>
+        IEnumerator HdShowcase()
+        {
+            switch (mode)
+            {
+                case "-dotrpgCanyon": return CanyonHdShowcase();
+                case "-dotrpgWinter": return WinterHdShowcase();
+                case "-dotrpgChars": return CharsShowcase();
+                case "-dotrpgUi": return UiShowcase();
+                case "-dotrpgDepth": return DepthShowcase();
+            }
+            return null;
+        }
+
         IEnumerator Start()
         {
             Directory.CreateDirectory(folder);
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            var hd = HdShowcase();
+            if (hd != null)
+            {
+                yield return hd;
+                Log("capture finished");
+                log.Close();
+                Application.Quit();
+                yield break;
+            }
             if (townOnly)
             {
                 yield return TownShowcase();

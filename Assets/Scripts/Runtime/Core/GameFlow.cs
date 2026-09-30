@@ -41,10 +41,16 @@ namespace DotRPG
             if (Game.State.Current == GameState.Inventory) Game.State.Set(GameState.Playing);
         }
 
+        /// <summary>
+        /// Alt-tabbing out pauses the game. Automated test runs switch this off: several test windows
+        /// can run side by side and take focus from each other.
+        /// </summary>
+        public static bool PauseOnFocusLoss = true;
+
         void OnApplicationFocus(bool hasFocus)
         {
             // Common PC courtesy: alt-tabbing out pauses the game (not in the editor, where it gets in the way).
-            if (!hasFocus && !Application.isEditor && Game.State != null &&
+            if (!hasFocus && PauseOnFocusLoss && !Application.isEditor && Game.State != null &&
                 (Game.State.Current == GameState.Playing || Game.State.Current == GameState.Dialogue))
                 Pause();
         }

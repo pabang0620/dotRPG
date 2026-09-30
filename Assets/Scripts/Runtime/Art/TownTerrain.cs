@@ -56,9 +56,9 @@ namespace DotRPG
 
         static Color32 H(string hex) => PixelCanvas.Hex(hex);
 
-        // ---------- Noise ----------
+        // ---------- Noise (shared with the other 32px terrain painters) ----------
 
-        static float Hash01(int x, int y, int s)
+        internal static float Hash01(int x, int y, int s)
         {
             unchecked
             {
@@ -70,7 +70,7 @@ namespace DotRPG
         }
 
         /// <summary>Smooth value noise in [-1, 1].</summary>
-        static float Noise(float x, float y, int s)
+        internal static float Noise(float x, float y, int s)
         {
             int x0 = Mathf.FloorToInt(x), y0 = Mathf.FloorToInt(y);
             float fx = x - x0, fy = y - y0;
@@ -80,7 +80,7 @@ namespace DotRPG
             return (a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy) * 2f - 1f;
         }
 
-        static float Fbm(float x, float y, int s) => Noise(x, y, s) * 0.62f + Noise(x * 2.07f, y * 2.07f, s + 7) * 0.28f + Noise(x * 4.3f, y * 4.3f, s + 13) * 0.1f;
+        internal static float Fbm(float x, float y, int s) => Noise(x, y, s) * 0.62f + Noise(x * 2.07f, y * 2.07f, s + 7) * 0.28f + Noise(x * 4.3f, y * 4.3f, s + 13) * 0.1f;
 
         // ---------- State of one paint job ----------
 
