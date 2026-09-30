@@ -24,7 +24,7 @@ namespace DotRPG
     /// farm building N, hay h, campfire j, log seat l, workbench w, lamp p, mailbox m, pot u, woodpile z,
     /// garden bed v (see that file's header).
     /// </summary>
-    public class WorldBuilder : MonoBehaviour
+    public partial class WorldBuilder : MonoBehaviour
     {
         GameConfig config;
         MapInfo map;
@@ -199,6 +199,7 @@ namespace DotRPG
 
             var skeletonSpawns = new List<Vector2>();
             portalCells.Clear();
+            ClearDungeonMarks(); // [DUNGEON]
             PlayerSpawn = new Vector2(width * 0.5f, height * 0.5f);
             var rng = new System.Random(1234);
 
@@ -596,6 +597,7 @@ namespace DotRPG
 
         void SpawnObject(char c, int x, int y, List<Vector2> skeletonSpawns, System.Random rng)
         {
+            if (SpawnDungeonSymbol(c, x, y)) return; // [DUNGEON] '@' doors and 1-9 spawn groups in dungeon rooms
             if (Winter && SpawnWinterObject(c, x, y, rng)) return;
             if (Hd && SpawnTownObject(c, x, y, rng)) return;
             var center = new Vector2(x + 0.5f, y + 0.5f);

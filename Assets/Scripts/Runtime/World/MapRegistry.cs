@@ -30,13 +30,15 @@ namespace DotRPG
         public string hint;
         /// <summary>Town (no monsters) vs. hunting ground; shown in the map window.</summary>
         public bool safe = true;
+        // [DUNGEON] Dungeon room: not listed in the map window / portal chain, never saved as a position.
+        public bool instanced;
 
         /// <summary>Drawn with the 32px-per-tile art set.</summary>
         public bool HighRes => theme == MapTheme.Town || theme == MapTheme.Forest;
     }
 
     /// <summary>All maps of the game. Add an entry + a Resources/Maps/*.txt file to add a map.</summary>
-    public static class MapRegistry
+    public static partial class MapRegistry
     {
         public const string Village = "village";
         public const string Forest = "forest";
@@ -78,7 +80,8 @@ namespace DotRPG
         {
             foreach (var map in Maps)
                 if (map.id == id) return map;
-            return null;
+            // [DUNGEON] Instanced dungeon rooms (MapRegistry.Dungeon.cs).
+            return GetRoom(id);
         }
 
         public static bool Exists(string id) => Get(id) != null;

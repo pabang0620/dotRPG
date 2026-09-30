@@ -168,6 +168,7 @@ namespace DotRPG
                     case "heart": return DrawHeart(parts[1]);
                     case "ui": return DrawUi(parts[1]);
                     case "shadow": return DrawShadow();
+                    case "dgn": return DrawDungeon(parts); // [DUNGEON] gates, room-map skull, reward cards (ProceduralArtDungeon.cs)
                 }
             }
             catch (Exception e)
