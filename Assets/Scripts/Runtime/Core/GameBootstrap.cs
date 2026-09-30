@@ -52,6 +52,7 @@ namespace DotRPG
             Game.Player = PlayerController.Create(cfg, gameplayRoot);
             Game.Player.gameObject.SetActive(false);
             Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
+            Game.Dungeon = DungeonDirector.Create(gameplayRoot); // [DUNGEON]
 
             Game.UI = UIRoot.Create(transform);
 

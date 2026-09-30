@@ -67,6 +67,17 @@ namespace DotRPG
         public List<ItemStack> enhancePity = new List<ItemStack>();
         // [PARTY] Mercenary ids in the party (MercenaryDatabase), max 3. Older saves have none = solo.
         public List<string> partyMercs = new List<string>();
+        // [DUNGEON] Dungeon progress (DungeonProgress). Older saves have none = nothing done yet.
+        /// <summary>Ticks of the daily reset (06:00) the entry count belongs to.</summary>
+        public long dungeonDailyStamp;
+        /// <summary>Weekday-dungeon entries used since <see cref="dungeonDailyStamp"/>.</summary>
+        public int dungeonEntriesUsed;
+        /// <summary>Ticks of the weekly reset (Thursday 06:00) whose raid reward was taken (0 = never).</summary>
+        public long raidClaimedStamp;
+        /// <summary>Best rank per "dungeonId:difficulty" (count = rank + 1, SSS = 1).</summary>
+        public List<ItemStack> dungeonBestRanks = new List<ItemStack>();
+        /// <summary>Cleared "dungeonId:difficulty" keys (unlock the next difficulty).</summary>
+        public List<string> dungeonCleared = new List<string>();
         // [ENH] Not saved: protection tickets granted by the v3 → v4 enhancement migration of this read (0 = none), for a one-time toast.
         [NonSerialized] public int enhanceCompensation;
 

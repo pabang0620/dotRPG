@@ -24,7 +24,7 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty") // [PARTY] -dotrpgParty
+                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty" || args[i] == "-dotrpgDungeon") // [PARTY] -dotrpgParty [DUNGEON] -dotrpgDungeon
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     return;
@@ -39,7 +39,7 @@ namespace DotRPG
             {
                 // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
                 // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty") continue; // [PARTY] -dotrpgParty
+                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty" && args[i] != "-dotrpgDungeon") continue; // [PARTY] -dotrpgParty [DUNGEON] -dotrpgDungeon
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
@@ -48,6 +48,7 @@ namespace DotRPG
                 capture.mapOnly = args[i] == "-dotrpgMap";
                 capture.townOnly = args[i] == "-dotrpgTown";
                 capture.partyOnly = args[i] == "-dotrpgParty"; // [PARTY]
+                capture.dungeonOnly = args[i] == "-dotrpgDungeon"; // [DUNGEON]
                 return;
             }
         }
@@ -61,6 +62,7 @@ namespace DotRPG
             Application.logMessageReceived += OnLog;
             Log("capture started");
             if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
+            if (dungeonOnly) { yield return DungeonRunCapture(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [DUNGEON]
             if (townOnly)
             {
                 yield return TownShowcase();
@@ -156,7 +158,7 @@ namespace DotRPG
             menuBtn?.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();
             yield return Wait(0.5f);
             yield return Shot("03e_side_menu");
-            foreach (var (label, shot) in new[] { ("스킬", "03f_skills"), ("지도", "03g_map"), ("퀘스트", "03h_quest"), ("미니던전", "03i_dungeon"), ("레이드", "03j_raid") })
+            foreach (var (label, shot) in new[] { ("스킬", "03f_skills"), ("지도", "03g_map"), ("퀘스트", "03h_quest"), ("요일던전", "03i_dungeon"), ("레이드", "03j_raid") })
             {
                 if (!GameObject.Find("Column")) menuBtn?.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();
                 var b = GameObject.Find("Btn_" + label);

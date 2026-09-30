@@ -37,6 +37,8 @@ namespace DotRPG
         Blacksmith,
         /// <summary>창고지기: item storage shared across the playthrough.</summary>
         Storage,
+        // [DUNGEON] 던전 안내원: the dungeon select window.
+        Dungeon,
     }
 
     /// <summary>

@@ -1,0 +1,26 @@
+// 친위대 전초 · 사령탑 (raid room 2): the necromancers' snowy court.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// .=snow  ,=cobble  W=cliff  ~=water  i=ice  R=snowy stone  x=crate  b=barrel  Y/y=pine  Q/q=round tree  B=bush  g=grass  p=lamp
+WWWWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWWWW
+WW...............,,,,,,...............WW
+WW...............,,,,,,...............WW
+WW...............,,,,,,...............WW
+WW......p........,,,,,,........p......WW
+WW..........1....,,,,,,....1..........WW
+WW...............,,,,,,...............WW
+WW...R...........,,1,,,...........R...WW
+WW...............,,,,,,...............WW
+WW........2......,,,,,,......2........WW
+WW......p........,,,,,,........p......WW
+WW.............2.,,,,,,.2.............WW
+WW...............,,,,,,...............WW
+WW...R...........,,,,,,...........R...WW
+WW..........p....,,,,,,....p..........WW
+WW...............,,,,,,...............WW
+WW...............,,,,,,...............WW
+WW...............,,,,,,...............WW
+WW....................................WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

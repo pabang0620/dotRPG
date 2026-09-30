@@ -1,0 +1,26 @@
+// 해골왕의 옥좌 (raid boss arena): wide open for the 3-phase fight, no gate. 1 = 해골왕.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// ,=flagstone  .=moss  W=cliff  ~=water  d=bridge  x=box  b=barrel  T=tree  B=bush
+WWWWWWW1WWWWWWWWWWWW1WWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWWW
+WWWWWWWW,,,,,,,..........,,,,,,,WWWWWWWW
+WWWWWWWW,,,,,,,..........,,,,,,,WWWWWWWW
+WW,,,,,,,,,,,,,..........,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,x,,,,,,,,,,,,,,,,,,,,x,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,x,,,,,,,,,,,,,,,,,,,,x,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,P,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

@@ -1,0 +1,26 @@
+// 광산 심층부 (canyon mine boss arena): open floor, no gate. 1 = boss, 2 = its guards.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// ,=flagstone  .=moss  W=cliff  ~=water  d=bridge  x=box  b=barrel  T=tree  B=bush
+WWWWWW1WWWWWWWWWWWWW1WWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWW
+WWWWWW,,,,,,,,,..........,,,,,,,,,WWWWWW
+WWWWWW,,,,,,,,,..........,,,,,,,,,WWWWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,xb,,,,,,,,,,,,,,,,,,,,bx,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,2,,,,,,,,,,,,,,,2,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,xb,,,,,,,,,,,,,,,,,,,,bx,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,P,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

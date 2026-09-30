@@ -55,9 +55,26 @@ namespace DotRPG
             return new RewardCard(e.itemId, n);
         }
 
-        /// <summary>A piece of gear the class can use, at least <paramref name="minRarity"/> (weighted by drop weight).</summary>
+        /// <summary>Tries of the normal monster drop roll before falling back to the dungeon pool.</summary>
+        const int DropTries = 12;
+
+        /// <summary>
+        /// A piece of gear (item key, +0) the class can use, at least <paramref name="minRarity"/>: the normal
+        /// monster drop table (<see cref="EquipmentDatabase.RollDrop"/>) first, then a weighted pool that also
+        /// holds the uniques and legendaries (which never drop from monsters).
+        /// </summary>
         public static string RollGear(CharacterClass cls, ItemRarity minRarity, System.Random rng)
         {
+            // The dungeon pool on every other card keeps the rare gear reachable.
+            if (rng.Next(0, 2) == 0)
+            {
+                for (int i = 0; i < DropTries; i++)
+                {
+                    string id = EquipmentDatabase.RollDrop(cls, 1f);
+                    var item = EquipmentDatabase.Get(id);
+                    if (item != null && item.rarity >= minRarity) return EquipmentDatabase.KeyFor(id, 0);
+                }
+            }
             var pool = new List<(string id, int w)>();
             int total = 0;
             foreach (var item in EquipmentDatabase.All)

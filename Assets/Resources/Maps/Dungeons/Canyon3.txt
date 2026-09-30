@@ -1,0 +1,24 @@
+// 무너진 채굴장 (canyon mine, layout 3): caved-in corners, scattered crates.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// ,=flagstone  .=moss  W=cliff  ~=water  d=bridge  x=box  b=barrel  T=tree  B=bush
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WWWWWWW,,,,,,,,,,,,,,,,,,,,,,WWWWWWW
+WWWWWWW,,,,,,,,,,,,,,,,,,,,,,WWWWWWW
+WWWWWWW,,,,,,b,2,,,,2,b,,,,,,WWWWWWW
+WWWWWWW,,,1,,,,,,,,,,,,,,,,,,WWWWWWW
+WW,,,,,,,,,,,,,,,,2,,,,,,,1,,,,,,,WW
+WW,,,,,,xx,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,...,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,...,,1,,,,,,,,,x,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,x,,,,,,WW
+WW,,,,,,b,,,,,,,,,,,,,....,,,,,,,,WW
+WW,,,,,,,,,,1,,,x,,x,,....,,,,,,,,WW
+WWWWW,,,,,,,,,,,,,,,,,,1,,,,,,,WWWWW
+WWWWW,,,,,,,,,,,,,,,,,,,,,,,b,,WWWWW
+WWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWW
+WWWWW,,,,,,,,,,,,,P,,,,,,,,,,,,WWWWW
+WWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

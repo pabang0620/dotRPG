@@ -134,7 +134,8 @@ namespace DotRPG
                 var img = serviceIcons[s++];
                 img.gameObject.SetActive(true);
                 var service = npc.Definition.service;
-                img.sprite = Game.Art.Get(service == NpcService.Shop ? "icon_potion_hp" : service == NpcService.Blacksmith ? "icon_anvil" : "icon_chest");
+                img.sprite = Game.Art.Get(service == NpcService.Shop ? "icon_potion_hp" : service == NpcService.Blacksmith ? "icon_anvil"
+                    : service == NpcService.Dungeon ? "menuicon_dungeon" : "icon_chest"); // [DUNGEON] guide icon
                 img.rectTransform.anchoredPosition = offset;
             }
             for (int i = s; i < serviceIcons.Count; i++) serviceIcons[i].gameObject.SetActive(false);

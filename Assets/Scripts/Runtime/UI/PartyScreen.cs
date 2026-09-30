@@ -91,6 +91,7 @@ namespace DotRPG
         {
             var party = Game.Party;
             if (party == null || def == null) return false;
+            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast("던전 안에서는 파티를 바꿀 수 없다."); Game.Audio.PlaySfx("cancel"); return false; } // [DUNGEON]
             bool ok;
             if (party.Has(def.id) || Game.Session.PartyRoster.Contains(def.id))
             {

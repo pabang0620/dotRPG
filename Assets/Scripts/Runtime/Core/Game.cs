@@ -26,6 +26,8 @@ namespace DotRPG
         public static GameFlow Flow;
         // [PARTY] Party members (Local = Player, AI companions). Created right after the player.
         public static PartyManager Party;
+        // [DUNGEON] Dungeon runs (rooms, revive, clear, result). Created right after the party.
+        public static DungeonDirector Dungeon;
 
         /// <summary>True while the player has control of the character.</summary>
         public static bool IsPlaying => State != null && State.Current == GameState.Playing;

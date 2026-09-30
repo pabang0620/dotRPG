@@ -166,8 +166,14 @@ namespace DotRPG
                 else m.Place(SpotFor(i - 1), Local.Facing);
             }
             ResetMeters();
+            Regroup(); // [DUNGEON] arrive together (continue / travel): no running off to nearby monsters at once
             Changed?.Invoke();
         }
+
+        // [DUNGEON] Regroup window: companions only follow the leader until this time (Time.time).
+        public const float RegroupSeconds = 2.5f;
+        public float RegroupUntil { get; private set; }
+        public void Regroup(float seconds = RegroupSeconds) => RegroupUntil = Time.time + seconds;
 
         /// <summary>Called when the local player leaves the world (title screen): the companions go with it.</summary>
         internal void OnLocalHidden()

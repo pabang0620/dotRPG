@@ -1,0 +1,24 @@
+// 광산 갱도 (canyon mine, layout 1): a straight gallery with crate cover.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// ,=flagstone  .=moss  W=cliff  ~=water  d=bridge  x=box  b=barrel  T=tree  B=bush
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,b,,,,,,,,,,,,,,,,,,,,,,,,,,b,,WW
+WW,,,,,,,,,,2,,,,,,,,,,2,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,xx,,,,,,2,,,,,,,xx,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,1,,,,,,,,,,,1,,,,,,,,,,,1,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,1,,,,,,,,,1,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,xx,,,,,,,,,,,,,,xx,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,b,,,,b,,,,,,,,,,,,,WW
+WW,,b,,,,,,,,,,,,,,,,,,,,,,,,,,b,,WW
+WW,...,,,,,,,,,,,,P,,,,,,,,,,,...,WW
+WW,...,,,,,,,,,,,,,,,,,,,,,,,,...,WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

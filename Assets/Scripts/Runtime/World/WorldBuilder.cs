@@ -219,6 +219,7 @@ namespace DotRPG
                 DecorateForestEdges();
             }
             CreateBoundaryWalls();
+            SpawnDungeonGuide(); // [DUNGEON] 던전 안내원 by the village plaza
 
             if (skeletonSpawns.Count > 0)
             {

@@ -1,0 +1,24 @@
+// 지하 수로 (canyon mine, layout 2): a water channel with one bridge in the middle.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// ,=flagstone  .=moss  W=cliff  ~=water  d=bridge  x=box  b=barrel  T=tree  B=bush
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,b,,,,,,,,,,,,1,,,,,,,,,,,b,,,WW
+WW,,,,,,1,,,,,,,,,,,,,,,,,,,1,,,,,WW
+WW,,,,,,,,,x,,,,,,,,,,,,x,,,,,,,,,WW
+WW,,,,,,,,,,,1,,,,,,,,,1,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW~~~~~~~~~~~~~~dddd~~~~~~~~~~~~~~WW
+WW~~~~~~~~~~~~~~dddd~~~~~~~~~~~~~~WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,2,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,b2,,,,,,,,,,,,,,,,,,,,,,2b,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,P,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

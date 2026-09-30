@@ -18,6 +18,7 @@ namespace DotRPG
         void Update()
         {
             if (transitioning || Game.State.ChangedThisFrame) return;
+            if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
             var state = Game.State.Current;
             if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
             else if (state == GameState.Playing && Game.Input.InventoryPressed) OpenInventory();
@@ -161,6 +162,13 @@ namespace DotRPG
         public bool UseTownScroll()
         {
             if (transitioning || readingScroll || Game.Player == null || Game.Player.IsDead) return false;
+            // [DUNGEON] Dungeons are left through the result screen.
+            if (Game.Dungeon != null && Game.Dungeon.InRun)
+            {
+                GameEvents.RaiseToast("던전 안에서는 사용할 수 없다.");
+                Game.Audio.PlaySfx("cancel");
+                return false;
+            }
             if (Game.World.MapId == MapRegistry.Village)
             {
                 GameEvents.RaiseToast("이미 마을에 있다.");
@@ -189,8 +197,18 @@ namespace DotRPG
             TravelTo(MapRegistry.Village, true);
         }
 
+        /// <summary>Text shown when saving is refused inside a dungeon.</summary>
+        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없다."; // [DUNGEON]
+
         public void SaveGame()
         {
+            // [DUNGEON] No saving inside a dungeon (the last save continues in the village).
+            if (Game.Dungeon != null && Game.Dungeon.InRun)
+            {
+                GameEvents.RaiseToast(DungeonSaveRefused);
+                Game.Audio.PlaySfx("cancel");
+                return;
+            }
             bool ok = WriteSave();
             GameEvents.RaiseToast(ok ? "저장했습니다." : "저장에 실패했습니다.");
             Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
@@ -206,6 +224,7 @@ namespace DotRPG
         {
             var player = Game.Player;
             if (player == null || player.IsDead || !player.gameObject.activeInHierarchy) return false;
+            if (Game.Dungeon != null && Game.Dungeon.InRun) return false; // [DUNGEON] also blocks autosave
             var data = Game.Session.Capture(player.Position, player.Facing);
             return Game.Saves.Write(data);
         }
@@ -215,6 +234,7 @@ namespace DotRPG
             StartCoroutine(Transition(() =>
             {
                 Game.Dialogue.Abort();
+                Game.Dungeon?.AbortRun(); // [DUNGEON] leaving mid-run drops the run
                 Game.World.Load(MapRegistry.Village);
                 Game.Player.gameObject.SetActive(false);
                 Game.Camera.SetTarget(null, false);
@@ -233,7 +253,12 @@ namespace DotRPG
 #endif
         }
 
-        public void OnPlayerDied() => StartCoroutine(GameOverRoutine());
+        public void OnPlayerDied()
+        {
+            // [DUNGEON] In a dungeon: coin countdown / failed result instead of game over.
+            if (Game.Dungeon != null && Game.Dungeon.HandleLocalDeath()) return;
+            StartCoroutine(GameOverRoutine());
+        }
 
         IEnumerator GameOverRoutine()
         {

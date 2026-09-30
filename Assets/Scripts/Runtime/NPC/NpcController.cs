@@ -38,6 +38,7 @@ namespace DotRPG
                     case NpcService.Shop: return "상점 열기";
                     case NpcService.Blacksmith: return "장비 강화";
                     case NpcService.Storage: return "창고 열기";
+                    case NpcService.Dungeon: return "던전 입장"; // [DUNGEON]
                     default: return "대화하기";
                 }
             }

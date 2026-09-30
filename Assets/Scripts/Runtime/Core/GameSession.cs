@@ -43,6 +43,8 @@ namespace DotRPG
         public Facing StartFacing { get; set; } = Facing.Down;
         // [PARTY] Mercenary ids of the AI companions (saved). The party itself is Game.Party.
         public readonly System.Collections.Generic.List<string> PartyRoster = new System.Collections.Generic.List<string>();
+        // [DUNGEON] Daily entries, weekly raid lock, best ranks, cleared difficulties (saved).
+        public readonly DungeonProgress Dungeons = new DungeonProgress();
 
         public void ResetForNewGame(GameConfig config, CharacterClass playerClass = CharacterClass.Warrior)
         {
@@ -65,6 +67,7 @@ namespace DotRPG
             StartPosition = null;
             StartFacing = Facing.Down;
             PartyRoster.Clear(); // [PARTY]
+            Dungeons.Reset(); // [DUNGEON]
         }
 
         public SaveData Capture(Vector2 playerPosition, Facing facing)
@@ -90,6 +93,7 @@ namespace DotRPG
             };
             Progression.Capture(data);
             data.partyMercs = new System.Collections.Generic.List<string>(PartyRoster); // [PARTY]
+            Dungeons.Capture(data); // [DUNGEON]
             return data;
         }
 
@@ -110,7 +114,9 @@ namespace DotRPG
             Progression.Restore(data, PlayerClass);
             PlayerHealth = Mathf.Clamp(data.playerHealth, 1, CharacterStats.MaxHp);
             PlayerMana = CharacterStats.MaxMp;
-            if (MapRegistry.Exists(data.mapId))
+            Dungeons.Restore(data); // [DUNGEON]
+            // [DUNGEON] A dungeon room is never a place to continue from (saves are blocked there anyway).
+            if (MapRegistry.Exists(data.mapId) && !MapRegistry.Get(data.mapId).instanced)
             {
                 MapId = data.mapId;
                 // Negative coordinates mark "use the map's start point" (see SaveSystem.Migrate).

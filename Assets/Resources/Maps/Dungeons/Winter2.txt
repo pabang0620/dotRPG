@@ -1,0 +1,24 @@
+// 얼어붙은 호수 (winter cave, layout 2): an icy lake in the middle.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// .=snow  ,=cobble  W=cliff  ~=water  i=ice  R=snowy stone  x=crate  b=barrel  Y/y=pine  Q/q=round tree  B=bush  g=grass  p=lamp
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WW..............,,,,..............WW
+WW..............,,,,..............WW
+WW...........2..,,,,..............WW
+WW...x..1.......,,1,.......1..x...WW
+WW..............,,,,..............WW
+WW.........~~~~~~~~~~~~~~.........WW
+WW.........~~i~~~~~~~i~~~.........WW
+WW.....B...~~~~~~~~~~~~~~...B.....WW
+WW.........~~~~~~i~~~~~~~.........WW
+WW.........~~~~i~~~~~~~~~.........WW
+WW.....1....................1.....WW
+WW.........2............2.........WW
+WW...x........................x...WW
+WW................................WW
+WW................P...............WW
+WW................................WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

@@ -83,6 +83,15 @@ namespace DotRPG
                 return cmd;
             }
 
+            // [DUNGEON] Just (re)spawned with the leader: stay in formation for a moment.
+            if (party != null && Time.time < party.RegroupUntil && !leader.IsDead)
+            {
+                Target = null;
+                Follow(self, party, ref cmd);
+                TrackStuck(self, cmd.move, party);
+                return cmd;
+            }
+
             // 3. Fight.
             Target = PickTarget(self, leader);
             if (Target != null) Fight(self, leader, ref cmd);

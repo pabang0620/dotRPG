@@ -1,0 +1,26 @@
+// 수문장의 방 (winter cave boss arena): a cobbled hall lit by lamps, no gate. 1 = boss, 2 = its guards.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// .=snow  ,=cobble  W=cliff  ~=water  i=ice  R=snowy stone  x=crate  b=barrel  Y/y=pine  Q/q=round tree  B=bush  g=grass  p=lamp
+WWWWWW1WWWWWWWWWWWWW1WWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WW....................................WW
+WW..........,,,,,,,,,,,,,,,,..........WW
+WW...R......,,,,,,,,,,,,,,,,......R...WW
+WW........p.,,,,,,,,,,,,,,,,.p........WW
+WW..........,,,,,,,,,,,,,,,,..........WW
+WW..........,,,,,,,,,,,,,,,,..........WW
+WW..........,,,,,,,,,,,,,,,,..........WW
+WW..........,2,,,,,,,,,,,,2,..........WW
+WW..........,,,,,,,,,,,,,,,,..........WW
+WW..........,,,,,,,,2,,,,,,,..........WW
+WW........p.,,,,,,,,,,,,,,,,.p........WW
+WW....................................WW
+WW....................................WW
+WW....................................WW
+WW...R............................R...WW
+WW....................................WW
+WW..................P.................WW
+WW....................................WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

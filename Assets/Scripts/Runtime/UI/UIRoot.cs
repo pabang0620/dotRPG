@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,8 +31,10 @@ namespace DotRPG
         public SkillScreen Skills { get; private set; }
         public WorldMapScreen WorldMap { get; private set; }
         public QuestScreen QuestLog { get; private set; }
-        public ContentScreen Dungeon { get; private set; }
-        public ContentScreen Raid { get; private set; }
+        // [DUNGEON] 던전 선택 (weekday + raid tabs; Raid is the same window) and the result screen.
+        public DungeonSelectScreen Dungeon { get; private set; }
+        public DungeonSelectScreen Raid => Dungeon;
+        public DungeonResultScreen DungeonResult { get; private set; }
         public ShopScreen Shop { get; private set; }
         public StorageScreen Storage { get; private set; }
         // [PARTY] 파티 window (mercenary roster).
@@ -57,6 +59,10 @@ namespace DotRPG
                 case NpcService.Storage:
                     Storage.SetKeeper(npc.displayName, npc.greeting);
                     Game.Flow.OpenWindow(Storage);
+                    break;
+                // [DUNGEON] 던전 안내원: the dungeon select window.
+                case NpcService.Dungeon:
+                    Dungeon.Open(false, npc.displayName, npc.greeting);
                     break;
             }
         }
@@ -105,12 +111,8 @@ namespace DotRPG
             ui.Skills = SkillScreen.Create(t);
             ui.WorldMap = WorldMapScreen.Create(t);
             ui.QuestLog = QuestScreen.Create(t);
-            ui.Dungeon = ContentScreen.Create(t, "미니던전", "menuicon_dungeon",
-                "협곡 아래 버려진 광산에 해골들이 둥지를 틀었다.\n짧은 던전을 돌파하고 보스 \"광산 해골대장\"을 쓰러뜨리자.",
-                "권장 전투력 1,500 · 1인 · 하루 3회", "보상: 강화석, 마력 정수, 에픽 장비 확률 증가");
-            ui.Raid = ContentScreen.Create(t, "레이드", "menuicon_raid",
-                "북쪽 고개 너머에서 깨어난 \"해골왕\"과 그의 친위대.\n강력한 보스를 여럿이 함께 공략하는 대규모 전투.",
-                "권장 전투력 3,000 · 최대 4인 · 주 1회", "보상: 유니크 · 레전더리 장비, 대량의 강화 재료");
+            ui.Dungeon = DungeonSelectScreen.Create(t); // [DUNGEON] replaces the 미니던전 / 레이드 info windows
+            ui.DungeonResult = DungeonResultScreen.Create(t); // [DUNGEON]
             ui.Shop = ShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
@@ -209,6 +211,7 @@ namespace DotRPG
             foreach (var s in new MenuScreen[] { Title, Pause, Settings, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
+            if (DungeonResult != null) DungeonResult.Hide(); // [DUNGEON]
         }
 
         /// <summary>

@@ -1,0 +1,24 @@
+// 무기 보관실 (winter cave, layout 3): rows of crates and barrels, a snow patch in the middle.
+// Dungeon room (plan 6.0). Top row = north. One character = one tile.
+// @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
+// .=snow  ,=cobble  W=cliff  ~=water  i=ice  R=snowy stone  x=crate  b=barrel  Y/y=pine  Q/q=round tree  B=bush  g=grass  p=lamp
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW@@WWWWWWWWWWWWWWWWW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,p,,,,,,,,p,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,x,b,x,,,,,,2,,,,,,,b,b,b,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,1,,,,,,........,,,,,,1,,,,,WW
+WW,,,,,,,,,,,,........,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,.1....1.,,,,,,,,,,,,WW
+WW,,,,x,b,x,,,........,,,b,b,b,,,,WW
+WW,,,,,,,,,,,,........,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,....1...,,,,,,,,,,,,WW
+WW,,,,,,2,,,,,,,,,,,,,,,,,,2,,,,,,WW
+WW,,p,,,,,,,,,,,,,,,,,,,,,,,,,,p,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,P,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
