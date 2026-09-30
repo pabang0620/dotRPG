@@ -9,7 +9,7 @@ namespace DotRPG
     /// so new melee enemy types are data only.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class EnemyController : MonoBehaviour, IDamageable
+    public partial class EnemyController : MonoBehaviour, IDamageable // [MONSTER] partial: monster/boss layer in EnemyController.Monster.cs
     {
         enum State
         {
@@ -68,6 +68,7 @@ namespace DotRPG
         public void Stun(float seconds)
         {
             if (state == State.Dead || seconds <= 0f) return;
+            seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3
             stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
             if (state == State.Windup) EnterState(State.Recover, seconds);
             desiredVelocity = Vector2.zero;
@@ -77,6 +78,7 @@ namespace DotRPG
         public void Freeze(float seconds)
         {
             if (state == State.Dead || seconds <= 0f) return;
+            seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3
             frozenUntil = Mathf.Max(frozenUntil, Time.time + seconds);
             if (state == State.Windup) EnterState(State.Recover, seconds);
             desiredVelocity = Vector2.zero;
@@ -175,6 +177,9 @@ namespace DotRPG
             float distToPlayer = target != null ? Vector2.Distance(Position, target.Position) : float.MaxValue;
             float distFromHome = Vector2.Distance(Position, home);
 
+            // [MONSTER] A pluggable behaviour (ranged, charge, summon, guard, boss patterns) owns the frame once engaged.
+            if (MonsterTick()) return;
+
             switch (state)
             {
                 case State.Idle:
@@ -242,7 +247,7 @@ namespace DotRPG
                 body.SetVelocity(knockbackVelocity);
                 return;
             }
-            body.SetVelocity(Vector2.MoveTowards(body.GetVelocity(), desiredVelocity, 30f * Time.fixedDeltaTime));
+            body.SetVelocity(Vector2.MoveTowards(body.GetVelocity(), desiredVelocity, MonsterAcceleration * Time.fixedDeltaTime)); // [MONSTER] dashes accelerate faster
         }
 
         void StartChase()
@@ -333,11 +338,12 @@ namespace DotRPG
         public bool TakeDamage(DamageInfo info)
         {
             if (state == State.Dead || info.team == Team.Enemy) return false;
+            if (!MonsterBeforeDamage(ref info)) return false; // [MONSTER] shield guard, groggy +30%, totem rules
             if (!health.TryDamage(info)) return false;
 
             Vector2 away = Position - info.sourcePosition;
             if (away.sqrMagnitude < 0.0001f) away = Vector2.up;
-            knockbackVelocity = away.normalized * stats.knockbackSpeed;
+            knockbackVelocity = away.normalized * MonsterKnockback(info); // [MONSTER] follows DamageInfo.knockback
             flash.Flash(0.12f);
             Game.Audio.PlaySfx("hit");
             Fx.Burst("fx_bone", Position + new Vector2(0f, 0.5f), 2, 2.5f, 0.5f);
@@ -347,6 +353,7 @@ namespace DotRPG
                 Die();
                 return true;
             }
+            if (MonsterAfterHit(info)) return true; // [MONSTER] groggy gauge; super armor skips Hurt / knockback
             EnterState(State.Hurt, stats.hurtStunTime);
             return true;
         }
@@ -373,6 +380,7 @@ namespace DotRPG
         void DropLoot()
         {
             if (Game.Player == null || transform.parent == null) return;
+            if (!MonsterLoot()) return; // [MONSTER] summons/totems drop nothing; gold skeletons drop extra gold
             // Drop into the world's object root so it survives this enemy being destroyed.
             var parent = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
             // Gold for the village shops.
@@ -398,7 +406,7 @@ namespace DotRPG
             while (t < 0.5f)
             {
                 t += Time.deltaTime;
-                visual.localScale = new Vector3(1f + t * 0.6f, Mathf.Max(0.1f, 1f - t * 1.8f), 1f);
+                visual.localScale = new Vector3(1f + t * 0.6f, Mathf.Max(0.1f, 1f - t * 1.8f), 1f) * visualScale; // [MONSTER] size scale
                 var c = sr.color;
                 c.a = 1f - t / 0.5f;
                 sr.color = c;

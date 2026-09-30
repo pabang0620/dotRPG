@@ -168,6 +168,8 @@ namespace DotRPG
                     case "heart": return DrawHeart(parts[1]);
                     case "ui": return DrawUi(parts[1]);
                     case "shadow": return DrawShadow();
+                    // [MONSTER] Projectiles, telegraph textures, summon circles (ProceduralArtMonsters).
+                    case "mon": return DrawMonsterKey(parts);
                 }
             }
             catch (Exception e)

@@ -7,6 +7,8 @@ namespace DotRPG
     {
         Human,
         Skeleton,
+        // [MONSTER] Dungeon monsters and bosses: drawn by ProceduralArtMonsters, keyed by CharacterLook.id.
+        Monster,
     }
 
     public enum HairStyle

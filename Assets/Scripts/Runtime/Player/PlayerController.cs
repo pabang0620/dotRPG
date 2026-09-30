@@ -388,7 +388,7 @@ namespace DotRPG
         {
             if (IsDead || info.team == Team.Player) return false;
             // Armour / rings: a chance to shrug the hit off completely.
-            if (!health.IsInvulnerable && Random.Range(0, 100) < CharacterStats.Block)
+            if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < CharacterStats.Block) // [MONSTER] unblockable skips the roll
             {
                 Fx.Sparkle(Center + Vector2.up * 0.3f, 3, 0.35f);
                 Game.Audio.PlaySfx("mine");

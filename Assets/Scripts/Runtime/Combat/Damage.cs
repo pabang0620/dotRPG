@@ -15,6 +15,8 @@ namespace DotRPG
         public Vector2 sourcePosition;
         public float knockback;
         public Team team;
+        // [MONSTER] Boss telegraphs / charges: the target's block roll is skipped.
+        public bool unblockable;
 
         public DamageInfo(int amount, Vector2 sourcePosition, float knockback, Team team)
         {
