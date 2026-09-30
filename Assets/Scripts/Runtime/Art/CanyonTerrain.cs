@@ -43,8 +43,11 @@ namespace DotRPG
         static readonly Color32 RockRim = H("#e2c393"), RockRimHi = H("#f0d7a8");
         static readonly Color32 RockFoot = H("#241811");
 
-        // Stairs: cut stone steps.
-        static readonly Color32[] StepC = { H("#5a4834"), H("#6d5842"), H("#856e52"), H("#9c8464"), H("#b39a78"), H("#cbb590") };
+        // Stairs: cut stone steps (8-tone ramp for StairPainter, deepest shadow → nosing highlight),
+        // a touch greyer than the flagstone so the flight reads as its own cut-stone structure.
+        static readonly Color32[] StairRamp = { H("#382d24"), H("#4b3e32"), H("#605041"), H("#796851"), H("#928069"), H("#a8967c"), H("#bfae92"), H("#d6c8ab") };
+        static readonly Color32[] StairSand = { H("#c3a577"), H("#d6bc8d") };
+        static readonly Color32[] StairMoss = { H("#55733a"), H("#6d8c46"), H("#89a85a") };
 
         // Water: teal canyon pool, deep → shallow, plus foam.
         static readonly Color32[] WaterC = { H("#0f4a4c"), H("#155a5a"), H("#1c7070"), H("#268a86"), H("#33a29a"), H("#4dbcb0"), H("#7fd6c8") };
@@ -530,70 +533,39 @@ namespace DotRPG
 
         // ---------- Stairs: stone steps cut into the cliff ----------
 
+        /// <summary>
+        /// Cut sandstone steps (see StairPainter): large staggered slabs, a lit nosing over a shaded riser,
+        /// coping-stone cheek walls. Wind-blown sand gathers in the back corners and along the walls while
+        /// the worn middle stays clean, and a few shaded corners hold a tuft of moss.
+        /// </summary>
         static Color32 StairsAt(Job j, int px, int py)
         {
-            int cx = px / Px, cy = py / Px;
-            int localX = px - cx * Px;
-
-            // Stone cheek walls on both sides (5-6 px), built like the cliff wall: stacked stones with a
-            // lit top edge; left slightly lighter than right. Drawn where the stair meets rock/other ground.
-            bool leftEdge = j.CellKind(cx - 1, cy) != Stairs;
-            bool rightEdge = j.CellKind(cx + 1, cy) != Stairs;
-            int leftDist = localX, rightDist = Px - 1 - localX;
-            if (leftEdge && leftDist < 6) return CheekWall(j, px, py, leftDist, true);
-            if (rightEdge && rightDist < 6) return CheekWall(j, px, py, rightDist, false);
-
-            // Deep steps referenced to WORLD y so they run continuously up the whole stairwell:
-            // a 16px cycle = an ~11px tread + a ~5px riser. Steps climb north (up).
-            int cyc = ((py % 16) + 16) % 16;   // 0..15 within a step, y up
-            // Within the cycle: 0..4 = riser (bottom of the step, a dark vertical face), 5..15 = tread.
-            bool riser = cyc <= 4;
-            int tone;
-            if (riser)
+            var s = StairPainter.At(StairWell(j, px / Px, py / Px), px, py, j.seed + 90);
+            var c = StairRamp[s.tone];
+            if (s.shade != 1f) c = PixelCanvas.Shade(c, s.shade);
+            if (s.part != StairPainter.Part.Tread || s.joint || s.cyc <= StairPainter.RiserPx + 1) return c;
+            int edge = Mathf.Min(s.fromL, s.fromR);
+            bool back = !s.top && s.cyc >= StairPainter.StepPx - 3;
+            float grit = edge < 6 ? 0.36f - edge * 0.06f : 0f;
+            if (back && edge < 10) grit += 0.12f;
+            if (grit > 0f && s.rnd < grit * 0.5f) c = s.rnd < grit * 0.18f ? StairSand[1] : StairSand[0];
+            if (back && edge < 6 && Hash01(s.step, s.fromL < s.fromR ? 1 : 2, j.seed + 97) < 0.3f)
             {
-                // Darker vertical riser face, with the deepest shadow line at its very bottom (the lip above).
-                tone = cyc == 0 ? 0 : cyc <= 2 ? 1 : 2;
+                float m = Noise(px / 2.2f, py / 2.2f, j.seed + 98) + (6 - edge) * 0.12f;
+                if (m > 0.4f) c = StairMoss[m > 0.8f ? 2 : m > 0.6f ? 1 : 0];
             }
-            else
-            {
-                int intoTread = cyc - 5;            // 0 (front lip) .. 10 (back)
-                if (intoTread <= 1) tone = 5;       // bright front-lip highlight of the tread
-                else if (intoTread >= 9) tone = 2;  // back of the tread, into the next riser's shadow
-                else tone = 3 + ((px / 8) % 2);     // tread surface, faint slab-to-slab variation
-                // Split the tread into 2-3 slabs with vertical joints (world-x, wobbled a touch).
-                float jx = px + 1.5f * Noise(px / 9f, py / 40f, j.seed + 92);
-                int slabJoint = Mathf.RoundToInt(jx) % 12;
-                if (intoTread >= 2 && intoTread <= 8 && (slabJoint == 0 || slabJoint == 1))
-                    tone = Mathf.Max(0, tone - 3);   // dark vertical joint between slabs
-                // Per-slab tone shift + a little wear/cracks.
-                int slab = Mathf.FloorToInt(jx / 12f);
-                if ((slab * 7 + (py / 16) * 3) % 5 == 0 && intoTread >= 2 && intoTread <= 8) tone = Mathf.Max(0, tone - 1);
-                float wear = Noise(px / 3.2f, py / 3.2f, j.seed + 93);
-                if (wear > 0.9f && tone < 5) tone++;
-                else if (wear < -0.9f && tone > 0) tone--;
-            }
-            // Clean edges: bottom step meets flagstone, top step meets the plateau/upper ground.
-            if (j.CellKind(cx, cy - 1) != Stairs && (py - cy * Px) == 0) tone = 0;      // shadow line at the very foot
-            if (j.CellKind(cx, cy + 1) != Stairs && (Px - 1 - (py - cy * Px)) <= 1) tone = 4; // lit top edge at the crest
-            return StepC[Mathf.Clamp(tone, 0, 5)];
+            return c;
         }
 
-        /// <summary>Cut-stone cheek wall bordering the stairs: stacked stones, lit top, left lighter than right.</summary>
-        static Color32 CheekWall(Job j, int px, int py, int dist, bool left)
+        /// <summary>The rectangle of stair cells containing (cx, cy), in pixels.</summary>
+        static StairPainter.Well StairWell(Job j, int cx, int cy)
         {
-            // Stacked stone courses ~6px tall (world y), with joints; a lit cap on the outermost 1px.
-            int course = ((py % 6) + 6) % 6;
-            int baseTone = 2 + ((py / 6 + (left ? 0 : 1)) % 2);   // alternate course lightness
-            int tone = baseTone;
-            if (course == 0) tone -= 2;                            // horizontal joint shadow
-            else if (course == 1) tone += 1;                       // lit shelf under the joint
-            // Vertical joints between stones in the course.
-            if (((px / 5 + (py / 6) % 2)) % 3 == 0 && course != 0) tone -= 1;
-            // The inner face (next to the treads) is shaded; the outer top edge is lit.
-            if (dist == 0) tone += 2;                              // lit top edge of the curb
-            else if (dist >= 4) tone -= 1;                         // inner face into the stairwell
-            var c = StepC[Mathf.Clamp(tone, 0, 5)];
-            return PixelCanvas.Shade(c, left ? 1.06f : 0.9f);
+            int l = cx, r = cx, b = cy, t = cy;
+            while (j.CellKind(l - 1, cy) == Stairs) l--;
+            while (j.CellKind(r + 1, cy) == Stairs) r++;
+            while (j.CellKind(cx, b - 1) == Stairs) b--;
+            while (j.CellKind(cx, t + 1) == Stairs) t++;
+            return new StairPainter.Well { x0 = l * Px, x1 = r * Px + Px - 1, y0 = b * Px, y1 = t * Px + Px - 1 };
         }
 
         // ---------- Deck / bridge planks with rails ----------

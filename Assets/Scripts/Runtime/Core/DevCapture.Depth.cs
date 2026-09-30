@@ -11,8 +11,8 @@ namespace DotRPG
         /// -dotrpgDepth: on every 32px map, walks the player (real movement input) into a free-standing
         /// tree and a building from the south and from the north. Checks that only the trunk / wall base
         /// blocks, that the space behind the crown / roof is walkable, and that the character is drawn
-        /// behind the object when it stands behind it and in front of it otherwise. Also checks each map's
-        /// sun shadows (<see cref="ShadowCheck"/>).
+        /// behind the object when it stands behind it and in front of it otherwise. Trees must also turn
+        /// see-through while the player is behind them and be solid again once the player has left.
         /// </summary>
         IEnumerator DepthShowcase()
         {
@@ -27,7 +27,16 @@ namespace DotRPG
                     yield return Wait(2.5f);
                 }
                 Log($"--- map {Game.World.MapId}");
-                ShadowCheck();
+                int trees = 0, choppable = 0, edge = 0, missing = 0;
+                foreach (Transform child in Game.World.ObjectsRoot)
+                {
+                    if (child.name != "Tree" && child.name != "EdgeTree") continue;
+                    trees++;
+                    if (child.name == "EdgeTree") edge++;
+                    if (child.GetComponent<ResourceNode>() != null) choppable++;
+                    if (child.GetComponent<TreeFade>() == null) missing++;
+                }
+                Report($"every tree on {mapId} can turn see-through: {trees} trees ({choppable} choppable, {edge} along the forest edge), {missing} without it", trees > 0 && missing == 0);
                 var tree = PickObstacle(new[] { "Tree" });
                 if (tree != null) yield return WalkAround(tree, mapId + "_tree");
                 else Log("no free-standing tree with open space on both sides");
@@ -37,40 +46,6 @@ namespace DotRPG
             }
             Game.Input.MoveOverride = null;
             Log($"depth summary: pass={depthPass} fail={depthFail}");
-        }
-
-        /// <summary>
-        /// Sun shadows on the current map: every tree and rock casts one, no character does (they keep
-        /// their own round shadow), each falls to the lower right of its object, and all of them lie under
-        /// every depth-sorted object and character.
-        /// </summary>
-        void ShadowCheck()
-        {
-            var root = Game.World.ObjectsRoot;
-            int casters = 0, wrongWay = 0, onCharacters = 0;
-            foreach (var cast in root.GetComponentsInChildren<CastShadow>(true))
-            {
-                casters++;
-                if (cast.GetComponentInParent<NpcController>() != null || cast.GetComponentInParent<EnemyController>() != null) onCharacters++;
-                var shadow = cast.GetComponent<SpriteRenderer>();
-                var owner = cast.transform.parent.GetComponent<SpriteRenderer>();
-                if (shadow.sprite == null || owner == null || !owner.enabled) continue;
-                Bounds s = shadow.bounds, o = owner.bounds;
-                if (!(s.center.x > o.center.x && s.center.y < o.center.y)) wrongWay++;
-            }
-            int nodes = 0, nodesShadowed = 0;
-            foreach (var node in root.GetComponentsInChildren<ResourceNode>())
-            {
-                nodes++;
-                if (node.GetComponentInChildren<CastShadow>(true) != null) nodesShadowed++;
-            }
-            int lowestObject = int.MaxValue;
-            foreach (var sort in root.GetComponentsInChildren<YSort>())
-                foreach (var r in sort.GetComponentsInChildren<SpriteRenderer>())
-                    if (r.GetComponent<CastShadow>() == null) lowestObject = Mathf.Min(lowestObject, r.sortingOrder);
-            bool under = CastShadow.SortingOrder < lowestObject;
-            Report($"sun shadows: {casters} objects cast one, trees/rocks {nodesShadowed}/{nodes}, on characters {onCharacters}, wrong direction {wrongWay}, under every object={under} (shadow {CastShadow.SortingOrder}, lowest object {lowestObject})",
-                casters > 0 && nodesShadowed == nodes && onCharacters == 0 && wrongWay == 0 && under);
         }
 
         /// <summary>The first solid object with one of the names that the player can walk up to from both the south and the north.</summary>
@@ -100,9 +75,10 @@ namespace DotRPG
             foreach (var e in EnemyController.Active.ToArray())
                 if (e != null && Vector2.Distance(e.Position, b.center) < 8f) e.gameObject.SetActive(false);
             var objectRenderer = box.GetComponent<SpriteRenderer>();
+            var fade = box.GetComponent<TreeFade>();
             var body = Game.Player.GetComponentInChildren<CharacterAnimator>().Renderer;
             float x = b.center.x;
-            Log($"{name}: '{objectRenderer.sprite.name}' base y={box.transform.position.y:0.00} solid y {b.min.y:0.00}..{b.max.y:0.00} width {b.size.x:0.00}");
+            Log($"{name}: '{objectRenderer.sprite.name}' base y={box.transform.position.y:0.00} solid y {b.min.y:0.00}..{b.max.y:0.00} width {b.size.x:0.00} see-through={(fade != null)}");
 
             // From the south: walk north into it. The base should stop the player, drawn in front.
             yield return Teleport(new Vector2(x, b.min.y - 1.5f));
@@ -111,6 +87,7 @@ namespace DotRPG
             bool blockedSouth = southY < b.min.y - 0.2f;
             bool frontDrawn = body.sortingOrder > objectRenderer.sortingOrder;
             Report($"{name} from south: stopped at y={southY:0.00} (base starts {b.min.y:0.00}) blocked={blockedSouth}; drawn in front={frontDrawn} (player {body.sortingOrder} vs object {objectRenderer.sortingOrder})", blockedSouth && frontDrawn);
+            if (fade != null) Report($"{name} stays solid while the player is in front of it: alpha={fade.Alpha:0.00}", fade.Alpha > 0.99f && objectRenderer.color.a > 0.99f);
             yield return Shot("depth_" + name + "_front");
 
             // From the north: walk south until the base stops the player, standing behind the crown / roof.
@@ -121,7 +98,16 @@ namespace DotRPG
             bool behindDrawn = body.sortingOrder < objectRenderer.sortingOrder;
             float overlap = objectRenderer.bounds.max.y - northY;
             Report($"{name} from north: stopped at y={northY:0.00} (base ends {b.max.y:0.00}, art reaches {objectRenderer.bounds.max.y:0.00}, so {overlap:0.00} tiles of it cover the player) behind={reachedBehind}; drawn behind={behindDrawn} (player {body.sortingOrder} vs object {objectRenderer.sortingOrder})", reachedBehind && behindDrawn);
+            if (fade != null) Report($"{name} turns see-through while the player is behind it: alpha={fade.Alpha:0.00} (faded = {TreeFade.FadedAlpha:0.00})", fade.Alpha < 0.6f && objectRenderer.color.a < 0.6f);
             yield return Shot("depth_" + name + "_behind");
+
+            // Stepping out again brings the tree back to solid.
+            if (fade != null)
+            {
+                yield return Teleport(new Vector2(x, b.min.y - 1.5f));
+                yield return Wait(0.5f);
+                Report($"{name} solid again once the player has left: alpha={fade.Alpha:0.00}", fade.Alpha > 0.99f && objectRenderer.color.a > 0.99f);
+            }
         }
 
         IEnumerator Walk(Vector2 direction, float seconds)

@@ -31,9 +31,6 @@ namespace DotRPG
         float shakeUntil;
         bool depleted;
 
-        /// <summary>The tree/rock picture. It sits on a child so the chop shake and the regrow can move it.</summary>
-        public SpriteRenderer Renderer => spriteRenderer;
-
         /// <param name="hd">Use the 32px town/forest art ("town_chop", "town_rock_*", "town_stump").</param>
         public static ResourceNode Create(ResourceKind kind, Vector2 position, Transform parent, GameConfig config, bool fruit = false, bool hd = false)
         {

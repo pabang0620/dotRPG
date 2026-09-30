@@ -37,18 +37,14 @@ namespace DotRPG
         /// </summary>
         public void Refresh()
         {
-            var all = GetComponentsInChildren<SpriteRenderer>(true);
-            // Ground shadows lie flat under everything and keep their own order.
-            var found = new System.Collections.Generic.List<SpriteRenderer>(all.Length);
-            foreach (var r in all)
-                if (r.GetComponent<CastShadow>() == null) found.Add(r);
-            var orders = new int[found.Count];
-            for (int i = 0; i < found.Count; i++)
+            var found = GetComponentsInChildren<SpriteRenderer>(true);
+            var orders = new int[found.Length];
+            for (int i = 0; i < found.Length; i++)
             {
                 int known = renderers != null ? System.Array.IndexOf(renderers, found[i]) : -1;
                 orders[i] = known >= 0 ? localOrders[known] : found[i].sortingOrder;
             }
-            renderers = found.ToArray();
+            renderers = found;
             localOrders = orders;
             applied = false;
             Apply();

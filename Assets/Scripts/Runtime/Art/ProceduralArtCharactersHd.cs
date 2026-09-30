@@ -42,8 +42,16 @@ namespace DotRPG
 
         // ---------- Router entry points (called by ProceduralArt.Draw) ----------
 
+        /// <summary>Canvas for the 64px-per-tile (density 4) characters: same world size, twice the dots of the 32px art.</summary>
+        static PixelCanvas Xd(int w, int h) => new PixelCanvas(w, h) { Density = 4 };
+
         static PixelCanvas DrawCharacterHd(CharacterLook look, string dir, string frame)
         {
+            // The 64px characters (ProceduralArtCharactersXd.cs / ProceduralArtSkeletonXd.cs) take over as
+            // soon as they return a frame; until then the 32px art below is used.
+            var xd = look.body == BodyKind.Skeleton ? DrawSkeletonXd(look, dir, frame) : DrawHumanXd(look, dir, frame);
+            if (xd != null) return xd;
+
             var c = Hd(W, HGT);
             var v = new View(dir);
             if (look.body == BodyKind.Skeleton) DrawSkeletonBodyHd(c, look, v, frame);
@@ -70,8 +78,12 @@ namespace DotRPG
         {
             switch (parts[0])
             {
-                case "wpn": return DrawWeaponHd(parts[1], parts.Length > 2 ? int.Parse(parts[2]) : 0);
-                case "tool": return DrawToolHd(parts[1]);
+                case "wpn":
+                {
+                    int tier = parts.Length > 2 ? int.Parse(parts[2]) : 0;
+                    return DrawWeaponXd(parts[1], tier) ?? DrawWeaponHd(parts[1], tier);
+                }
+                case "tool": return DrawToolXd(parts[1]) ?? DrawToolHd(parts[1]);
                 case "num": return DrawDigitHd(int.Parse(parts[1]));
                 case "hpbar": return DrawHpBarHd(parts[1]);
                 case "shadow": return DrawShadowHd();

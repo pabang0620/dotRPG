@@ -26,7 +26,7 @@ namespace DotRPG
         /// -dotrpgCanyon / -dotrpgWinter / -dotrpgChars / -dotrpgUi: 32px canyon, winter village, characters
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
-        static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth" };
+        static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs" };
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -73,6 +73,7 @@ namespace DotRPG
                 case "-dotrpgChars": return CharsShowcase();
                 case "-dotrpgUi": return UiShowcase();
                 case "-dotrpgDepth": return DepthShowcase();
+                case "-dotrpgStairs": return StairsShowcase();
             }
             return null;
         }
@@ -811,12 +812,26 @@ namespace DotRPG
             };
             Facing[] facings = { Facing.Down, Facing.DownRight, Facing.Right, Facing.UpRight, Facing.Up, Facing.UpLeft, Facing.Left, Facing.DownLeft };
             string[] frames = { "idle0", "walk0" };
-            const int cellW = 18, cellH = 27, scale = 4;
+            // Cells fit the largest frame (16px, 32px or 64px art alike); the scale keeps the sheet readable.
+            int maxW = 0, maxH = 0;
+            foreach (var look in looks)
+                foreach (var f in facings)
+                {
+                    var s = Game.Art.GetCharacter(look, f.SpriteKey(), "idle0");
+                    if (s != null) { maxW = Mathf.Max(maxW, (int)s.rect.width); maxH = Mathf.Max(maxH, (int)s.rect.height); }
+                }
+            for (int t = 0; t < 4; t++)
+                foreach (var key in new[] { $"wpn_sword_{t}", $"wpn_staff_{t}" })
+                {
+                    var s = Game.Art.Get(key);
+                    if (s != null) { maxW = Mathf.Max(maxW, (int)s.rect.width); maxH = Mathf.Max(maxH, (int)s.rect.height); }
+                }
+            int cellW = maxW + 2, cellH = maxH + 7, scale = Mathf.Clamp(108 / Mathf.Max(1, cellH), 1, 4);
             int cols = facings.Length * frames.Length, rows = looks.Count + 1;
             var sheet = new Texture2D(cols * cellW * scale, rows * cellH * scale, TextureFormat.RGBA32, false);
+            int sheetW = sheet.width, sheetH = sheet.height;
             var fill = new Color32[sheet.width * sheet.height];
             for (int i = 0; i < fill.Length; i++) fill[i] = new Color32(58, 74, 92, 255);
-            sheet.SetPixels32(fill);
 
             void Blit(Sprite s, int col, int row, bool flip)
             {
@@ -832,7 +847,10 @@ namespace DotRPG
                         if (c.a == 0) continue;
                         for (int dy = 0; dy < scale; dy++)
                             for (int dx = 0; dx < scale; dx++)
-                                sheet.SetPixel(ox + x * scale + dx, oy + y * scale + dy, c);
+                            {
+                                int sx = ox + x * scale + dx, sy = oy + y * scale + dy;
+                                if (sx >= 0 && sy >= 0 && sx < sheetW && sy < sheetH) fill[sy * sheetW + sx] = c;
+                            }
                     }
             }
 
@@ -845,6 +863,7 @@ namespace DotRPG
                 Blit(Game.Art.Get($"wpn_sword_{t}"), t, looks.Count, false);
                 Blit(Game.Art.Get($"wpn_staff_{t}"), 4 + t, looks.Count, false);
             }
+            sheet.SetPixels32(fill);
             sheet.Apply();
             File.WriteAllBytes(file, sheet.EncodeToPNG());
             Destroy(sheet);

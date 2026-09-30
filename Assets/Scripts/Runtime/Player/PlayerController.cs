@@ -273,6 +273,12 @@ namespace DotRPG
             else animator.Play(CharacterAnim.Idle, Facing);
         }
 
+        /// <summary>Trees the character stands behind turn see-through (TreeFade).</summary>
+        void LateUpdate()
+        {
+            TreeFade.UpdateAll(Position, animator != null ? animator.Renderer : null, Time.unscaledDeltaTime);
+        }
+
         void FixedUpdate()
         {
             if (IsDead)

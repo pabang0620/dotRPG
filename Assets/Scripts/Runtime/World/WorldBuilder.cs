@@ -240,31 +240,9 @@ namespace DotRPG
                 spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
             }
             if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();
-            AddSunShadows();
+            AddTreeFades();
             if (PointsOfInterest.Count == 0) PointsOfInterest.Add(PlayerSpawn);
             BuildMinimap();
-        }
-
-        /// <summary>
-        /// Daylight maps: every standing object (trees, buildings, lamps, fences, signs...) casts a soft
-        /// ground shadow toward the lower right, as if the sun stood in the top-left of the sky.
-        /// Characters keep their own round shadow; flat things and light sources cast none.
-        /// </summary>
-        void AddSunShadows()
-        {
-            var style = SunShadowStyle.For(map);
-            if (style.strength <= 0f) return;
-            for (int i = 0; i < objectsRoot.childCount; i++)
-            {
-                var obj = objectsRoot.GetChild(i);
-                if (obj.GetComponent<YSort>() == null) continue;                       // ground decorations lie flat
-                if (obj.GetComponent<NpcController>() != null || obj.GetComponent<EnemyController>() != null) continue;
-                if (obj.GetComponent<CampfireFx>() != null) continue;                  // a fire is a light, not a shade
-                var sr = obj.GetComponent<SpriteRenderer>();
-                if (sr == null && obj.TryGetComponent(out ResourceNode node)) sr = node.Renderer;   // trees/rocks draw on a shaking child
-                if (sr == null || sr.sharedMaterial == FxMaterials.Additive) continue;
-                CastShadow.Attach(sr, style);
-            }
         }
 
         /// <summary>
@@ -962,6 +940,16 @@ namespace DotRPG
             foreach (var sr in objectsRoot.GetComponentsInChildren<SpriteRenderer>(true))
                 if (sr.sprite != null && sr.sprite.pixelsPerUnit > basePpu && sr.sharedMaterial != FxMaterials.Additive)
                     sr.sharedMaterial = sharp;
+        }
+
+        /// <summary>
+        /// Every tree turns see-through while the player stands behind it: free-standing trees, the trees
+        /// along the forest edges and the choppable ones (all named "Tree" or "EdgeTree").
+        /// </summary>
+        void AddTreeFades()
+        {
+            foreach (Transform child in objectsRoot)
+                if (child.name == "Tree" || child.name == "EdgeTree") TreeFade.Attach(child.gameObject);
         }
 
         /// <summary>Tree with a small trunk collider; its crown overlaps whatever is behind it.</summary>

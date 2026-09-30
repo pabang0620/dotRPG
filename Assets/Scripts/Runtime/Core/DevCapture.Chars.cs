@@ -291,18 +291,20 @@ namespace DotRPG
                         maxW = Mathf.Max(maxW, (int)s.rect.width);
                         maxH = Mathf.Max(maxH, (int)s.rect.height);
                     }
-            const int scale = 3, margin = 3;
+            // 3x for the 32px art; 2x once frames are 64x80 so the sheet stays a sensible size.
+            int scale = Mathf.Clamp(200 / Mathf.Max(1, maxH), 1, 3);
+            const int margin = 3;
             int cellW = maxW + margin * 2, cellH = maxH + margin * 2;
             int cols = dirs.Length * frames.Length;   // 40
             int rows = looks.Count;
             var sheet = new Texture2D(cols * cellW * scale, rows * cellH * scale, TextureFormat.RGBA32, false);
+            int sheetW = sheet.width;
             var fill = new Color32[sheet.width * sheet.height];
             for (int i = 0; i < fill.Length; i++)
             {
                 int cx = (i % sheet.width) / (cellW * scale);
                 fill[i] = (cx / frames.Length) % 2 == 0 ? new Color32(50, 60, 76, 255) : new Color32(44, 54, 68, 255);
             }
-            sheet.SetPixels32(fill);
 
             void Blit(Sprite s, int col, int row, bool flip)
             {
@@ -320,7 +322,7 @@ namespace DotRPG
                         if (cpx.a == 0) continue;
                         for (int dy = 0; dy < scale; dy++)
                             for (int dx = 0; dx < scale; dx++)
-                                sheet.SetPixel(ox + x * scale + dx, oy + y * scale + dy, cpx);
+                                fill[(oy + y * scale + dy) * sheetW + ox + x * scale + dx] = cpx;
                     }
             }
 
@@ -335,6 +337,7 @@ namespace DotRPG
                         Blit(Game.Art.GetCharacter(looks[r], d, f), col++, r, flip);
                 }
             }
+            sheet.SetPixels32(fill);
             sheet.Apply();
             File.WriteAllBytes(file, sheet.EncodeToPNG());
             Destroy(sheet);

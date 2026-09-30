@@ -62,7 +62,10 @@ namespace DotRPG
         static readonly Color32 CliffBe = H("#d6c5aa");  // beige strata
         static readonly Color32 CliffBeD = H("#b6a48b");
 
-        static readonly Color32[] StairsC = { H("#5c5968"), H("#767388"), H("#9a97a8"), H("#c2bfce"), H("#e0dee8") };
+        // Stairs: grey-violet granite, 8 tones for StairPainter (deepest shadow → nosing highlight).
+        static readonly Color32[] StairRamp = { H("#3a3844"), H("#4c4a5a"), H("#605d70"), H("#767388"), H("#8a8799"), H("#9e9bad"), H("#b7b4c4"), H("#d2d0dc") };
+        static readonly Color32 StairIce = H("#cfe9f5");
+        static readonly Color32 StairSnowDeep = H("#b3c6d4");
 
         static readonly Color32[] Plank = { H("#6e4428"), H("#8e5a35"), H("#a86d42"), H("#c28551"), H("#d69c66") };
         static readonly Color32 PlankRail = H("#7a4e34");
@@ -524,82 +527,108 @@ namespace DotRPG
             return c;
         }
 
+        /// <summary>
+        /// Granite steps climbing north (see StairPainter): large staggered slabs, a lit nosing over a shaded
+        /// riser, coping-stone cheek walls capped with snow, snow banks along both walls and a swept stone
+        /// path up the middle (StairSnowAt).
+        /// </summary>
         static Color32 StairsAt(Job j, int px, int py)
         {
-            // Stone steps climbing north: two DEEP steps per tile (16 px cycle = an ~11 px tread + a ~5 px
-            // riser). Each tread is split into 2-3 stone slabs by 1px dark joints (staggered per step) with a
-            // bright front lip and snow that thickens toward the back and the side walls. The riser is a
-            // clearly darker vertical face with a deep shadow line at its foot. Rock cheek walls (same stone
-            // as the cliff) run up both sides with a snow cap. Top/bottom steps meet the cobble cleanly.
-            int cx = px / Px, cy = py / Px;
-            bool openL = j.Cell(cx - 1, cy) != Stairs;
-            bool openR = j.Cell(cx + 1, cy) != Stairs;
-            int localX = Mod(px, Px);
-            // Cheek walls: 6 px of cliff rock with a snow cap, one per open side.
-            int wallDepthL = openL ? 6 : 0;
-            int wallDepthR = openR ? 6 : 0;
-            if (openL && localX < wallDepthL)
+            var w = StairWell(j, px / Px, py / Px);
+            var s = StairPainter.At(w, px, py, j.seed + 70);
+            var c = StairRamp[s.tone];
+            switch (s.part)
             {
-                var rock = CliffAt(j, px, py, py * j.pw + px);
-                if (localX == 0) return SnowSpark;                     // snow cap crest
-                if (localX == 1) return SnowC[3];
-                if (localX == 2) return PixelCanvas.Shade(CliffPL, 1.05f);
-                return PixelCanvas.Shade(rock, 1.0f);
-            }
-            if (openR && localX >= Px - wallDepthR)
-            {
-                var rock = CliffAt(j, px, py, py * j.pw + px);
-                int e = Px - 1 - localX;
-                if (e == 0) return SnowC[2];
-                if (e == 1) return SnowC[3];
-                if (e == 2) return PixelCanvas.Shade(CliffPDD, 1.0f);
-                return PixelCanvas.Shade(rock, 0.9f);
-            }
-            int innerL = wallDepthL;                                    // first tread pixel after the wall
-            int innerR = Px - 1 - wallDepthR;
-            int treadW = innerR - innerL + 1;
-
-            // 16 px step cycle. cyc 0 = bright front lip, 1..10 = tread, 11 = tread back shade,
-            // 12..15 = dark riser (15 = deepest shadow at its foot).
-            int cyc = Mod(py + 5, 16);
-            int stepIndex = (py + 5) / 16;
-            bool riser = cyc >= 12;
-            Color32 c;
-            if (cyc == 0) c = StairsC[4];                              // lit front lip of the tread
-            else if (cyc == 1) c = StairsC[3];                         // bright just behind the lip
-            else if (cyc <= 10) c = StairsC[2];                        // flat tread (mid stone)
-            else if (cyc == 11) c = StairsC[1];                        // tread back, in the step's own shade
-            else if (cyc == 12) c = StairsC[1];
-            else if (cyc <= 14) c = StairsC[0];                        // riser face
-            else c = PixelCanvas.Shade(StairsC[0], 0.72f);            // deep shadow line at the riser foot
-
-            if (!riser)
-            {
-                // Split the tread into 2-3 stone slabs by 1px dark joints, staggered every step.
-                int slabs = 2 + (stepIndex % 2);
-                int slabW = Mathf.Max(4, treadW / slabs);
-                int rel = px - innerL + (stepIndex % 2) * (slabW / 2);  // stagger the joints per step
-                if (Mod(rel, slabW) == 0) c = StairsC[1];              // dark joint between slabs
-                else
-                {
-                    // Slight per-slab tone variation.
-                    int slab = rel / slabW;
-                    float v = Hash01(slab, stepIndex, j.seed + 74);
-                    if (v > 0.66f) c = Lighten(c, 1.05f);
-                    else if (v < 0.33f) c = Darken(c, 0.95f);
-                }
-                // Snow on the tread: only toward the back of the tread and against the side walls, so the
-                // stone slabs and their joints stay visible on the front two-thirds.
-                int fromWall = Mathf.Min(px - innerL, innerR - px);
-                bool backSnow = cyc >= 9 && Mod(px * 3 + stepIndex, 4) < 2;
-                bool sideSnow = fromWall < 2 && cyc >= 4;
-                bool cornerPile = fromWall < 2 && cyc >= 9;            // small pile in the back corners
-                if (cornerPile) c = SnowSpark;
-                else if (backSnow) c = SnowC[3];
-                else if (sideSnow) c = SnowC[2];
-                if (cyc == 0 && Mod(px * 5, 9) < 2) c = SnowC[4];      // a touch of snow on the bright lip
+                case StairPainter.Part.Wall:
+                    // Snow on the coping; the outer edge and the inner drop stay stone.
+                    if (s.wallD >= 1 && s.wallD <= StairPainter.WallPx - 2)
+                    {
+                        int t = s.wallD == StairPainter.WallPx - 2 ? 1 : s.wallD == 1 ? 4 : 3;
+                        if (s.rnd > 0.94f) t = Mathf.Max(1, t - 1);
+                        c = SnowC[t];
+                    }
+                    return c;
+                case StairPainter.Part.WallFace:
+                    // Snow cap on the wall's end, with a shaded lip just below it.
+                    if (s.cyc == StairPainter.FaceRows - 1 && s.wallD > 0) c = SnowC[3];
+                    else if (s.cyc == StairPainter.FaceRows - 2 && s.wallD > 0 && s.rnd < 0.6f) c = SnowC[1];
+                    return c;
+                case StairPainter.Part.Riser:
+                case StairPainter.Part.Tread:
+                    return StairSnowAt(w, s, px, py, c, j.seed + 71);
             }
             return c;
+        }
+
+        /// <summary>
+        /// Snow on the steps: a bank along each wall (12-26px wide, changing from step to step) buries
+        /// the treads and risers there into a soft white slope where each step only shows as a pale teal
+        /// front face; the swept path up the middle keeps the stone steps clear, with a thin edge of
+        /// snow, a few icicles where the bank overhangs a riser, and the odd flake on the stone.
+        /// </summary>
+        static Color32 StairSnowAt(in StairPainter.Well w, in StairPainter.Sample s, int px, int py, Color32 stone, int seed)
+        {
+            if (s.shade != 1f) stone = PixelCanvas.Shade(stone, s.shade);
+            bool riser = s.part == StairPainter.Part.Riser;
+            // Drifts lie deepest at the back of each step, against the riser above, and thin out towards
+            // its front edge, so every step's pile has its own scalloped outline.
+            float into = riser ? 0f : s.landing ? 1f : Mathf.Clamp01((s.cyc - StairPainter.RiserPx) / 10f);
+            float widen = 0.55f + 0.45f * (1f - (1f - into) * (1f - into));
+            int depthL = Mathf.RoundToInt(StairBank(s.step, 0, py, seed) * widen) - s.fromL;   // > 0 inside the left drift
+            int depthR = Mathf.RoundToInt(StairBank(s.step, 1, py, seed) * widen) - s.fromR;
+            int depth = Mathf.Max(depthL, depthR);
+            if (depth <= 0)
+            {
+                // Swept stone. Just beside a drift the riser carries a little lip of snow and an icicle or two.
+                if (depth > -3 && riser)
+                {
+                    if (s.cyc == StairPainter.RiserPx - 1) return SnowC[2];
+                    float ice = Hash01(px, s.step, seed + 4);
+                    if (s.cyc == StairPainter.RiserPx - 2 && ice < 0.35f) return StairIce;
+                    if (s.cyc == StairPainter.RiserPx - 3 && ice < 0.15f) return StairIce;
+                }
+                if (!riser && !s.joint && s.cyc > StairPainter.RiserPx + 1 && s.rnd > 0.99f) return SnowC[2];
+                return stone;
+            }
+            bool nearWallL = depthL >= depthR && s.fromL < 3;
+            bool nearWallR = depthR > depthL && s.fromR < 2;
+            Color32 c;
+            if (riser || (!s.landing && s.cyc == StairPainter.RiserPx && Noise(px / 6f, s.step * 3.3f, seed + 2) < -0.2f))
+            {
+                // Shaded front face of the drift, hanging over the riser (its rounded top edge wanders a row).
+                int f = s.cyc == 0 ? 0 : s.cyc >= StairPainter.RiserPx - 1 ? 2 : 1;
+                c = f == 0 ? StairSnowDeep : f == 1 ? SnowC[0] : SnowC[1];
+            }
+            else
+            {
+                int t = !s.landing && s.cyc <= StairPainter.RiserPx + 1 ? 2 : (s.cyc >= StairPainter.StepPx - 4 || s.landing) && !s.top ? 4 : 3;
+                c = t >= 4 && s.rnd > 0.9f ? SnowSpark : SnowC[t];
+            }
+            if (depth <= 2) c = Blend(c, SnowC[1], 0.5f);                            // thin edge toward the path
+            if (nearWallL) c = Blend(c, StairSnowDeep, 0.55f);                        // in the left wall's shade
+            else if (nearWallR) c = Blend(c, SnowC[0], 0.4f);
+            if (s.rnd < 0.03f) c = Blend(c, SnowC[0], 0.5f);
+            return c;
+        }
+
+        static Color32 Blend(Color32 a, Color32 b, float t) => Color32.Lerp(a, b, t);
+
+        /// <summary>Width in px of the snow drift on one side (0 = left, 1 = right) of a step at its back, gently wobbling.</summary>
+        static int StairBank(int step, int side, int py, int seed)
+        {
+            float wv = 0.5f + 0.5f * Noise(step * 1.37f, side * 7.1f, seed);
+            return 12 + Mathf.RoundToInt(13f * wv + 1.5f * Noise(side * 3.7f, py / 4f, seed + 1));
+        }
+
+        /// <summary>The rectangle of stair cells containing (cx, cy), in pixels.</summary>
+        static StairPainter.Well StairWell(Job j, int cx, int cy)
+        {
+            int l = cx, r = cx, b = cy, t = cy;
+            while (l > 0 && j.cells[cy * j.w + l - 1] == Stairs) l--;
+            while (r < j.w - 1 && j.cells[cy * j.w + r + 1] == Stairs) r++;
+            while (b > 0 && j.cells[(b - 1) * j.w + cx] == Stairs) b--;
+            while (t < j.h - 1 && j.cells[(t + 1) * j.w + cx] == Stairs) t++;
+            return new StairPainter.Well { x0 = l * Px, x1 = r * Px + Px - 1, y0 = b * Px, y1 = t * Px + Px - 1 };
         }
 
         static Color32 DeckAt(Job j, int px, int py)
