@@ -7,9 +7,23 @@ namespace DotRPG
     /// Sword swing: cooldown, arc animation of the weapon sprite, slash effect and hit detection.
     /// The same swing damages enemies and harvests trees/rocks (anything implementing IDamageable).
     /// </summary>
+    [DefaultExecutionOrder(50)]
     public class PlayerCombat : MonoBehaviour
     {
         const float SwingArc = 150f;
+        CharacterAnimator characterAnimator;
+        SpriteRenderer silverGrip;
+        public float AttackProgress => IsAttacking ? Mathf.Clamp01((Time.time - attackStart) / Duration) : 0f;
+        public SpriteRenderer WeaponRenderer => weapon;
+        public SpriteRenderer GripRenderer => silverGrip;
+        void LateUpdate()
+        {
+            if (silverGrip == null || owner == null) return;
+            bool silver = owner.Class == CharacterClass.Warrior;
+            silverGrip.enabled = silver && !owner.IsDead && weapon.sprite != null;
+            if (!silver) return;
+            SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, owner.Facing, !owner.IsDead);
+        }
 
         PlayerController owner;
         PlayerStats stats;
@@ -33,7 +47,7 @@ namespace DotRPG
         EnemyController castTarget;
         Vector2 castAim = Vector2.down;
         bool Ranged => classInfo != null && classInfo.ranged;
-        float Duration => Ranged ? classInfo.castDuration : stats.attackDuration;
+        float Duration => Ranged ? classInfo.castDuration : Mathf.Max(WarriorAttackMotion.Duration, stats.attackDuration);
 
         /// <summary>Switches weapon sprite and attack style (sword swing or magic bolt).</summary>
         public void SetClass(CharacterClassInfo info)
@@ -47,7 +61,9 @@ namespace DotRPG
         public void RefreshWeapon()
         {
             if (weapon == null || Game.Session == null) return;
-            weapon.sprite = Game.Art.Get(EquipmentDatabase.WeaponSprite(Game.Session.Equipment[EquipSlot.Weapon], classInfo.id));
+            weapon.sprite = classInfo.id == CharacterClass.Warrior ? Game.Art.GetWarriorWeapon(Game.Session.Equipment[EquipSlot.Weapon]) : Game.Art.Get(EquipmentDatabase.WeaponSprite(Game.Session.Equipment[EquipSlot.Weapon], classInfo.id));
+            weapon.enabled = !owner.IsDead && weapon.sprite != null;
+            if (silverGrip != null) silverGrip.enabled = !Ranged && weapon.enabled;
             HdMaterial.Apply(weapon);
         }
 
@@ -58,8 +74,9 @@ namespace DotRPG
         void HoldPose()
         {
             if (weapon == null || owner == null) return;
-            weapon.enabled = !owner.IsDead;
+            weapon.enabled = !owner.IsDead && weapon.sprite != null;
             if (slash != null && slash.enabled) slash.enabled = false;
+            if (!Ranged) return; // Silver warrior is attached to the current frame's hand in LateUpdate.
             var f = owner.Facing;
             float sx = f.IsLeft() ? -1f : 1f;
             Vector2 pos;
@@ -98,6 +115,11 @@ namespace DotRPG
         {
             owner = player;
             stats = player.Stats;
+            characterAnimator = player.GetComponent<CharacterAnimator>();
+            silverGrip = new GameObject("SilverGrip").AddComponent<SpriteRenderer>();
+            silverGrip.transform.SetParent(visualRoot, false);
+            silverGrip.sprite = SilverWarriorPresentation.Grip;
+            silverGrip.enabled = false;
 
             weapon = new GameObject("Weapon").AddComponent<SpriteRenderer>();
             weapon.transform.SetParent(visualRoot, false);
@@ -123,7 +145,7 @@ namespace DotRPG
 
         public void TryAttack()
         {
-            if (Time.time < nextAttackTime) return;
+            if ((!Ranged && IsAttacking) || Time.time < nextAttackTime) return;
             // Mage: aim along the 8-way stick/keys direction, then lock onto the nearest monster in range.
             if (Ranged)
             {
@@ -135,14 +157,14 @@ namespace DotRPG
             else if (Ranged) owner.FaceTowards(owner.Position + castAim);
             attackStart = Time.time;
             attackEnd = attackStart + Duration;
-            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown : stats.attackCooldown) * CharacterStats.CooldownMultiplier;
+            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown * CharacterStats.CooldownMultiplier : Mathf.Max(Duration, stats.attackCooldown * CharacterStats.CooldownMultiplier));
             attackFacing = owner.Facing;
             hitResolved = false;
             hitThisSwing.Clear();
 
-            weapon.enabled = true;
+            weapon.enabled = weapon.sprite != null;
             weapon.transform.localScale = Vector3.one;
-            slash.enabled = !Ranged;
+            slash.enabled = !Ranged && weapon.sprite != null;
             if (ySort == null) ySort = GetComponent<YSort>();
             // Weapon behind the head when swinging upwards.
             ySort?.SetLocalOrder(weapon, attackFacing.IsUp() ? -1 : 1);
@@ -174,11 +196,11 @@ namespace DotRPG
             slash.transform.localPosition = new Vector3(0f, 0.42f, 0f) + (Vector3)(dir * 0.35f);
             slash.transform.localRotation = Quaternion.Euler(0f, 0f, baseAngle);
             var c = slash.color;
-            c.a = t < 0.25f ? 0f : Mathf.Lerp(0.95f, 0f, (t - 0.25f) / 0.75f);
+            c.a = t < .32f || t > .7f ? 0f : Mathf.Sin(Mathf.InverseLerp(.32f, .7f, t) * Mathf.PI) * .95f;
             slash.color = c;
 
             // Resolve hits once the blade is roughly in front of the player.
-            if (!hitResolved && t >= 0.3f)
+            if (!hitResolved && t >= WarriorAttackMotion.Contact)
             {
                 hitResolved = true;
                 ResolveHits(dir);

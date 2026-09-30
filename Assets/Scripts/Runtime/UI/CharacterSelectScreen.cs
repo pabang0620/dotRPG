@@ -40,6 +40,9 @@ namespace DotRPG
 
                 var preview = UIFactory.Image(card, "Preview", Game.Art.GetCharacter(info.Look, "down", "idle0"), Color.white);
                 UIFactory.Place(preview.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(96f, 122f));
+                preview.preserveAspect = true;
+                if (info.id == CharacterClass.Warrior)
+                    UIFactory.Place(preview.rectTransform, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0, -2), new Vector2(144, 144));
                 screen.previews[i] = preview;
 
                 var name = UIFactory.Text(card, "Name", info.displayName, 28, UIColors.Cream, TextAnchor.MiddleCenter, true);

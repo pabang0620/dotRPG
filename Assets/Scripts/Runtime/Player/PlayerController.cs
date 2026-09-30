@@ -68,6 +68,7 @@ namespace DotRPG
             player.flash.SetTargets(sr);
             player.combat = go.AddComponent<PlayerCombat>();
             player.combat.Setup(player, visual);
+            player.flash.SetTargets(sr, player.combat.WeaponRenderer, player.combat.GripRenderer);
             player.interactor = go.AddComponent<PlayerInteractor>();
             player.interactor.Setup(player);
             go.AddComponent<YSort>().Configure(false);
@@ -185,7 +186,7 @@ namespace DotRPG
             var info = CharacterClassInfo.Get(cls);
             animator.Setup(info.Look, animator.Renderer);
             combat.SetClass(info);
-            flash.SetTargets(animator.Renderer);
+            flash.SetTargets(animator.Renderer, combat.WeaponRenderer, combat.GripRenderer);
             skills?.ResetCooldowns();
             CharacterStats.ClearBuffs();
             ApplyGear();

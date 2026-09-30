@@ -16,6 +16,7 @@ namespace DotRPG
     /// placeholders by file name, or this component can later be swapped for an Animator controller
     /// behind the same Play() API.
     /// </summary>
+    [DefaultExecutionOrder(30)]
     public class CharacterAnimator : MonoBehaviour
     {
         static readonly string[] IdleFrames = { "idle0", "idle1" };
@@ -28,7 +29,12 @@ namespace DotRPG
         CharacterLook look;
         CharacterAnim current = CharacterAnim.Idle;
         Facing facing = Facing.Down;
-        float timer;
+        float timer, walkDistance;
+        Vector2 previousPosition;
+        PlayerController player;
+        PlayerCombat combat;
+        public string FrameKey { get; private set; } = "idle0";
+        public CharacterLook Look => look;
         /// <summary>Scales walk speed so footsteps match movement speed.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
@@ -44,6 +50,8 @@ namespace DotRPG
             look = characterLook;
             target = renderer;
             timer = Random.value;
+            player = GetComponent<PlayerController>();
+            previousPosition = transform.position;
             Refresh();
         }
 
@@ -53,6 +61,7 @@ namespace DotRPG
             {
                 current = anim;
                 timer = 0f;
+                if (anim == CharacterAnim.Walk) walkDistance = 0f;
             }
             facing = dir;
         }
@@ -61,9 +70,14 @@ namespace DotRPG
         {
             if (look == null || target == null) return;
             int previousFrame = FrameIndex();
+            Vector2 position = player != null ? player.Position : (Vector2)transform.position;
+            float distance = Vector2.Distance(position, previousPosition);
+            previousPosition = position;
+            if (current == CharacterAnim.Walk && distance < .5f) walkDistance += distance;
             timer += Time.deltaTime * (current == CharacterAnim.Walk ? SpeedMultiplier : 1f);
             int frame = FrameIndex();
-            if (current == CharacterAnim.Walk && frame != previousFrame && (frame == 0 || frame == 2)) Footstep?.Invoke();
+            int secondContact = SilverWarriorArt.Supports(look.id) ? 4 : 2;
+            if (current == CharacterAnim.Walk && frame != previousFrame && (frame == 0 || frame == secondContact)) Footstep?.Invoke();
             Refresh();
         }
 
@@ -71,7 +85,7 @@ namespace DotRPG
         {
             switch (current)
             {
-                case CharacterAnim.Walk: return Mathf.FloorToInt(timer * walkFps) % WalkFrames.Length;
+                case CharacterAnim.Walk: return player != null && SilverWarriorArt.Supports(look.id) ? Mathf.FloorToInt(walkDistance / WarriorGait.CycleDistance * WarriorGait.Frames) % WarriorGait.Frames : Mathf.FloorToInt(timer * walkFps) % WalkFrames.Length;
                 case CharacterAnim.Idle: return Mathf.FloorToInt(timer * idleFps) % IdleFrames.Length;
                 default: return 0;
             }
@@ -83,14 +97,19 @@ namespace DotRPG
             string frame;
             switch (current)
             {
-                case CharacterAnim.Walk: frame = WalkFrames[FrameIndex()]; break;
-                case CharacterAnim.Attack: frame = "attack"; break;
+                case CharacterAnim.Walk: frame = SilverWarriorArt.Supports(look.id) ? "walk" + FrameIndex() : WalkFrames[FrameIndex()]; break;
+                case CharacterAnim.Attack:
+                    if (combat == null) combat = GetComponent<PlayerCombat>();
+                    frame = SilverWarriorArt.Supports(look.id) ? WarriorAttackMotion.Frame(combat != null && combat.IsAttacking ? combat.AttackProgress : Mathf.Clamp01(timer / WarriorAttackMotion.Duration)) : "attack";
+                    break;
                 case CharacterAnim.Hurt: frame = "hurt"; break;
                 default: frame = IdleFrames[FrameIndex()]; break;
             }
-            target.sprite = Game.Art.GetCharacter(look, facing.SpriteKey(), frame);
-            target.flipX = facing.IsLeft();
-            HdMaterial.Apply(target);
+            FrameKey = frame;
+            target.sprite = Game.Art.GetCharacter(look, SilverWarriorArt.Supports(look.id) ? SilverWarriorArt.ViewKey(facing) : facing.SpriteKey(), frame);
+            target.flipX = !SilverWarriorArt.Supports(look.id) && facing.IsLeft();
+            if (SilverWarriorArt.Supports(look.id)) SilverWarriorPresentation.ApplyMaterial(target);
+            else HdMaterial.Apply(target);
         }
 
         /// <summary>Swaps the look (e.g. new clothes) keeping the current animation.</summary>

@@ -1,0 +1,780 @@
+{
+    "size": 64,
+    "ppu": 36.0,
+    "pivot": {
+        "x": 32.0,
+        "y": 6.0
+    },
+    "frames": [
+        {
+            "clip": "idle0",
+            "direction": "down",
+            "column": 0,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "idle1",
+            "direction": "down",
+            "column": 1,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "walk0",
+            "direction": "down",
+            "column": 2,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 43.0
+            }
+        },
+        {
+            "clip": "walk1",
+            "direction": "down",
+            "column": 3,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 45.0
+            }
+        },
+        {
+            "clip": "walk2",
+            "direction": "down",
+            "column": 4,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 46.0
+            }
+        },
+        {
+            "clip": "walk3",
+            "direction": "down",
+            "column": 5,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 48.0
+            }
+        },
+        {
+            "clip": "attack",
+            "direction": "down",
+            "column": 6,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "hurt",
+            "direction": "down",
+            "column": 7,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "idle0",
+            "direction": "downside",
+            "column": 0,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 44.0
+            }
+        },
+        {
+            "clip": "idle1",
+            "direction": "downside",
+            "column": 1,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 44.0
+            }
+        },
+        {
+            "clip": "walk0",
+            "direction": "downside",
+            "column": 2,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 31.0,
+                "y": 41.0
+            }
+        },
+        {
+            "clip": "walk1",
+            "direction": "downside",
+            "column": 3,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 29.0,
+                "y": 43.0
+            }
+        },
+        {
+            "clip": "walk2",
+            "direction": "downside",
+            "column": 4,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 43.0
+            }
+        },
+        {
+            "clip": "walk3",
+            "direction": "downside",
+            "column": 5,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 25.0,
+                "y": 45.0
+            }
+        },
+        {
+            "clip": "attack",
+            "direction": "downside",
+            "column": 6,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 44.0
+            }
+        },
+        {
+            "clip": "hurt",
+            "direction": "downside",
+            "column": 7,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 44.0
+            }
+        },
+        {
+            "clip": "idle0",
+            "direction": "side",
+            "column": 0,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 51.0
+            }
+        },
+        {
+            "clip": "idle1",
+            "direction": "side",
+            "column": 1,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 51.0
+            }
+        },
+        {
+            "clip": "walk0",
+            "direction": "side",
+            "column": 2,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 26.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "walk1",
+            "direction": "side",
+            "column": 3,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 29.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "walk2",
+            "direction": "side",
+            "column": 4,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "walk3",
+            "direction": "side",
+            "column": 5,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 35.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "attack",
+            "direction": "side",
+            "column": 6,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 51.0
+            }
+        },
+        {
+            "clip": "hurt",
+            "direction": "side",
+            "column": 7,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 51.0
+            }
+        },
+        {
+            "clip": "idle0",
+            "direction": "upside",
+            "column": 0,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "idle1",
+            "direction": "upside",
+            "column": 1,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "walk0",
+            "direction": "upside",
+            "column": 2,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 33.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "walk1",
+            "direction": "upside",
+            "column": 3,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 35.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "walk2",
+            "direction": "upside",
+            "column": 4,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 49.0
+            }
+        },
+        {
+            "clip": "walk3",
+            "direction": "upside",
+            "column": 5,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 39.0,
+                "y": 48.0
+            }
+        },
+        {
+            "clip": "attack",
+            "direction": "upside",
+            "column": 6,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "hurt",
+            "direction": "upside",
+            "column": 7,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 50.0
+            }
+        },
+        {
+            "clip": "idle0",
+            "direction": "up",
+            "column": 0,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "idle1",
+            "direction": "up",
+            "column": 1,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "walk0",
+            "direction": "up",
+            "column": 2,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 48.0
+            }
+        },
+        {
+            "clip": "walk1",
+            "direction": "up",
+            "column": 3,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 48.0
+            }
+        },
+        {
+            "clip": "walk2",
+            "direction": "up",
+            "column": 4,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 46.0
+            }
+        },
+        {
+            "clip": "walk3",
+            "direction": "up",
+            "column": 5,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 45.0
+            }
+        },
+        {
+            "clip": "attack",
+            "direction": "up",
+            "column": 6,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "hurt",
+            "direction": "up",
+            "column": 7,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 47.0
+            }
+        },
+        {
+            "clip": "attack0",
+            "direction": "down",
+            "column": 0,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 37.0
+            }
+        },
+        {
+            "clip": "attack1",
+            "direction": "down",
+            "column": 1,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 22.0,
+                "y": 35.0
+            }
+        },
+        {
+            "clip": "attack2",
+            "direction": "down",
+            "column": 2,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 29.0,
+                "y": 41.0
+            }
+        },
+        {
+            "clip": "attack3",
+            "direction": "down",
+            "column": 3,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 44.0
+            }
+        },
+        {
+            "clip": "attack4",
+            "direction": "down",
+            "column": 4,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 28.0,
+                "y": 43.0
+            }
+        },
+        {
+            "clip": "attack5",
+            "direction": "down",
+            "column": 5,
+            "row": 0,
+            "waist": 42,
+            "hand": {
+                "x": 24.0,
+                "y": 45.0
+            }
+        },
+        {
+            "clip": "attack0",
+            "direction": "downside",
+            "column": 0,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 34.0
+            }
+        },
+        {
+            "clip": "attack1",
+            "direction": "downside",
+            "column": 1,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 32.0
+            }
+        },
+        {
+            "clip": "attack2",
+            "direction": "downside",
+            "column": 2,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 40.0
+            }
+        },
+        {
+            "clip": "attack3",
+            "direction": "downside",
+            "column": 3,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 29.0,
+                "y": 43.0
+            }
+        },
+        {
+            "clip": "attack4",
+            "direction": "downside",
+            "column": 4,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 29.0,
+                "y": 42.0
+            }
+        },
+        {
+            "clip": "attack5",
+            "direction": "downside",
+            "column": 5,
+            "row": 1,
+            "waist": 42,
+            "hand": {
+                "x": 27.0,
+                "y": 42.0
+            }
+        },
+        {
+            "clip": "attack0",
+            "direction": "side",
+            "column": 0,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 31.0,
+                "y": 41.0
+            }
+        },
+        {
+            "clip": "attack1",
+            "direction": "side",
+            "column": 1,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 29.0,
+                "y": 41.0
+            }
+        },
+        {
+            "clip": "attack2",
+            "direction": "side",
+            "column": 2,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 41.0
+            }
+        },
+        {
+            "clip": "attack3",
+            "direction": "side",
+            "column": 3,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 36.0,
+                "y": 42.0
+            }
+        },
+        {
+            "clip": "attack4",
+            "direction": "side",
+            "column": 4,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 45.0
+            }
+        },
+        {
+            "clip": "attack5",
+            "direction": "side",
+            "column": 5,
+            "row": 2,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 49.0
+            }
+        },
+        {
+            "clip": "attack0",
+            "direction": "upside",
+            "column": 0,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 40.0
+            }
+        },
+        {
+            "clip": "attack1",
+            "direction": "upside",
+            "column": 1,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 40.0
+            }
+        },
+        {
+            "clip": "attack2",
+            "direction": "upside",
+            "column": 2,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 38.0
+            }
+        },
+        {
+            "clip": "attack3",
+            "direction": "upside",
+            "column": 3,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 35.0,
+                "y": 41.0
+            }
+        },
+        {
+            "clip": "attack4",
+            "direction": "upside",
+            "column": 4,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 35.0,
+                "y": 44.0
+            }
+        },
+        {
+            "clip": "attack5",
+            "direction": "upside",
+            "column": 5,
+            "row": 3,
+            "waist": 42,
+            "hand": {
+                "x": 37.0,
+                "y": 48.0
+            }
+        },
+        {
+            "clip": "attack0",
+            "direction": "up",
+            "column": 0,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 37.0
+            }
+        },
+        {
+            "clip": "attack1",
+            "direction": "up",
+            "column": 1,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 42.0,
+                "y": 37.0
+            }
+        },
+        {
+            "clip": "attack2",
+            "direction": "up",
+            "column": 2,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 35.0,
+                "y": 37.0
+            }
+        },
+        {
+            "clip": "attack3",
+            "direction": "up",
+            "column": 3,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 32.0,
+                "y": 40.0
+            }
+        },
+        {
+            "clip": "attack4",
+            "direction": "up",
+            "column": 4,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 36.0,
+                "y": 43.0
+            }
+        },
+        {
+            "clip": "attack5",
+            "direction": "up",
+            "column": 5,
+            "row": 4,
+            "waist": 42,
+            "hand": {
+                "x": 40.0,
+                "y": 45.0
+            }
+        }
+    ]
+}
