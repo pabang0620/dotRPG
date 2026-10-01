@@ -24,8 +24,11 @@ namespace DotRPG
         /// <summary>After every cell: paint the whole ground once (snow, paths, cliffs, river, waterfall, deck, stairs).</summary>
         void BuildWinterHd()
         {
-            BuildPaintedGround(WinterTerrain.Paint);
+            BuildPaintedGround(PaintWinterSurface);
         }
+
+        Color32[] PaintWinterSurface(char[,] ground, int w, int h, out int pw, out int ph)
+            => WinterTerrain.Paint(ground, w, h, out pw, out ph, StoreWaterField);
 
         /// <summary>Winter objects in 32px art. Returns false for symbols the shared code handles (NPCs, portals, P, k).</summary>
         bool SpawnWinterHdObject(char c, int x, int y, System.Random rng)

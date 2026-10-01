@@ -1,0 +1,16 @@
+LIVING WATER AND KOI - 2026-10-02
+
+Reference motion: user GIF, water highlights drifting downstream and repeating shoreline foam.
+Reference fish: user 123.jpg, top-down orange / white koi in a pond.
+Scope: painted water in village, forest, canyon and winter maps, including winter waterfall flow.
+Water motion is implemented in the existing procedural terrain renderer, using an exact painted-pixel mask and a GPU shader. It does not repaint/upload the whole map each frame. Shoreline, bridge, lily-pad and ice pixels are excluded. Absolute world pixel coordinates keep the phase aligned across ground chunks.
+Water and fish use scaled game time and pause with the game. Map-owned materials and mask textures are destroyed on unload. CPU masks follow the existing map art cache.
+Koi choose nearby reachable targets, steer gradually, and deform their tails with staggered phases. A conservative clearance field keeps their whole bodies inside water and away from bridges and waterfalls. These fish are ambient decoration, not collectible fishing targets.
+
+Asset: Assets/Resources/Art/Nature/koi.png
+Provenance: newly generated original transparent PNG using the built-in image_gen tool, transparent_background=true. No placeholder. Reference is visual inspiration only. Original file and alpha retained; imported with point filtering, full rectangular mesh, and 1.4-unit visible length. The swimming shader samples an 80x40 logical grid.
+PROMPT:
+Use case: stylized-concept. Asset: single transparent top-down pixel-art koi fish sprite for a 2D RPG, based on the attached koi reference for style only. ONE fish only, head pointing exactly RIGHT, tail exactly LEFT, body straight along the horizontal centerline, seen from directly above, paired side fins visible. Cream-white koi with distinct vermilion orange patches and a few small charcoal markings, small dark eyes, elegant tapered tail fin. Strong chunky clean square pixel clusters as if drawn at 64x32 logical resolution enlarged nearest-neighbor. Entire fish fills 75% of the width with generous empty transparent margins above/below for tail animation. No water, scenery, ground, cast shadow, text, frame, blur or antialiasing. Genuine transparent alpha background. Warm top-left light, restrained palette compatible with retro RPG maps.
+
+Build: DotRPG.EditorTools.LivingWaterImport.ImportAndBuild
+Validation: dotRPG.exe -dotrpgWater <output folder>. Checks all four maps, fish motion and water clearance, GPU water-only pixel changes, scaled-time pause and cached map reload. Saves are isolated beside the report.

@@ -27,7 +27,7 @@ namespace DotRPG
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
         static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -83,6 +83,7 @@ namespace DotRPG
                 case "-dotrpgSilver": return SilverShowcase();
                 case "-dotrpgMobility": return MobilityShowcase();
                 case "-dotrpgNature": return NatureShowcase();
+                case "-dotrpgWater": return WaterShowcase();
                 case "-dotrpgHouse": return HouseScaleShowcase();
             }
             return null;

@@ -125,7 +125,7 @@ namespace DotRPG
         }
 
         /// <summary>Paints the winter map. <paramref name="ground"/>[x, y] is the ground code of each cell (y = 0 at the bottom).</summary>
-        public static Color32[] Paint(char[,] ground, int w, int h, out int pw, out int ph)
+        public static Color32[] Paint(char[,] ground, int w, int h, out int pw, out int ph, System.Action<WaterField> waterReady = null)
         {
             var j = new Job { w = w, h = h, pw = w * Px, ph = h * Px, seed = 91 };
             pw = j.pw;
@@ -149,6 +149,7 @@ namespace DotRPG
             PaintWater(j);
             PaintCliffFoot(j);
             Stamps(j);
+            waterReady?.Invoke(WaterField.Create(j.kind, j.px, pw, ph, Water, Fall, IceSheet));
             return j.px;
         }
 

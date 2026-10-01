@@ -861,11 +861,13 @@ namespace DotRPG
 
         /// <summary>The painted ground of each high-resolution map, made once and reused on every visit.</summary>
         static readonly Dictionary<string, List<(Vector2 pos, Sprite sprite)>> paintedGround = new Dictionary<string, List<(Vector2, Sprite)>>();
+        static readonly Dictionary<string, WaterField> waterFields = new Dictionary<string, WaterField>();
 
         /// <summary>Forgets the painted ground (developer timing tests). The current map keeps its sprites until rebuilt.</summary>
-        public static void ClearPaintedGroundCache() => paintedGround.Clear();
+        public static void ClearPaintedGroundCache() { paintedGround.Clear(); waterFields.Clear(); }
 
-        Color32[] PaintTownGround(char[,] ground, int w, int h, out int pw, out int ph) => TownTerrain.Paint(ground, w, h, ForestMap, out pw, out ph);
+        Color32[] PaintTownGround(char[,] ground, int w, int h, out int pw, out int ph) => TownTerrain.Paint(ground, w, h, ForestMap, out pw, out ph, StoreWaterField);
+        void StoreWaterField(WaterField field) => waterFields[MapId] = field;
 
         /// <summary>
         /// Paints the map's ground once with <paramref name="paint"/> (32 px per tile, cached per map id) and
@@ -905,6 +907,7 @@ namespace DotRPG
                 sr.sortingOrder = -30000;
                 if (FxMaterials.Sharp != null) sr.sharedMaterial = FxMaterials.Sharp;
             }
+            if (waterFields.TryGetValue(MapId, out var water)) LivingWater.Create(root, water, MapId);
         }
 
         /// <summary>
