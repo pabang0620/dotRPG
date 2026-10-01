@@ -1,35 +1,33 @@
-마을 주택: 생성형 PNG 기반 높은 시점 구조물
+첫 번째 마을: 창작 기와 건물 세트
 
-현재 게임 적용
-- Assets/Resources/Art/Town/courtyard_house.png: 내장 image_gen으로 제작한 실제 게임용 이미지.
-- 시작 마을 일반 주택 town_house_0 / town_house_1 / town_house_2가 공통으로 이 PNG를 사용한다.
-- 세 가지 별도 생성 이미지가 아니라 하나의 완성된 공통 외형이다.
-- 촌장 건물, 상점, 대장간, 창고 및 다른 지역 건물은 이번 교체 범위에 포함하지 않는다.
-- 넓은 옥상 바닥, 양쪽 기와 경사면, 짧은 정면 벽, 계단과 난간으로 높은 시점의 깊이를 표현했다.
+실제 적용 이미지
+- Art/Town/courtyard_house.png: 사용자가 선택했던 약초집 원본, 서쪽 주택.
+- Art/Town/tea_house.png: 찻잎 화분과 베란다가 있는 북동쪽 주택.
+- Art/Town/weaver_house.png: 직조기와 쪽빛 직물이 있는 남쪽 주택.
+- Art/Town/chief_hall.png: 붉은 대문, 해 문양, 석조 기단의 촌장집.
+- Art/Town/general_store.png: 황토색 차양과 생활용품 진열대의 잡화점.
+- Art/Town/smithy.png: 굴뚝, 화덕, 공구 작업대의 대장간.
+- Art/Town/warehouse.png: 철띠 대문, 곡물 문양과 적재 공간의 창고.
+경로 기준: Assets/Resources/. 새 6종은 내장 image_gen으로 창작했으며 기존 약초집 1종과 함께 실제 런타임에 사용한다.
+임시 대체 이미지나 색상만 바꾼 변형은 없다. 옛 절차적 이미지는 리소스 누락 시에만 쓰는 대체 리소스이다.
 
-리소스와 정렬
-- 원본 1536×1024 RGBA, 실제 투명 배경. 사용자가 선택한 첫 번째 생성 원본을 수정 없이 사용한다.
-- Unity Sprite Single, Point 필터, Mipmap 없음, 비압축, NPOT 리사이즈 없음.
-- PPU 120, 피벗 (768,42): 건물 중심 X, 맨 아래 계단 높이 기준.
-- 불투명 건물 폭은 약 9.83 타일, 높이는 약 7.88 타일이다.
-- WorldBuilder의 주택 배치는 10×8 타일이다. 충돌은 처마와 계단을 제외한 벽체 8×5.6 타일, 중심 오프셋 (-8,426)/120으로 맞춘다. 문 상호작용은 이미지의 오른쪽 출입구에 맞춰 X +124/120 타일 이동한다.
-- SpriteLibrary는 개별 키별 리소스를 우선하며, 일반 주택에 공통 PNG를 연결한다.
+크기와 동작
+- 모든 이미지 원본은 1536×1024 RGBA. 투명 배경, Point 필터, 비압축, Mipmap 없음.
+- 이미지마다 측정한 PPU, 계단 기준 피벗, 출입구 X 위치, 벽체 충돌과 앞뒤 표시 순서를 VillageBuildingArt.cs에서 관리한다.
+- 일반 전사의 키 약 1.22타일에 맞춰 문 높이는 그 이상, 건물 폭은 약 10타일로 배치한다.
+- 계단을 밟을 수 있고 전면 벽에서 멈춘다. 계단 위 캐릭터는 건물 앞에 보인다.
+- 상점, 강화, 창고 UI 및 주택/촌장집 대화 기능을 유지한다.
 
-실제 제작 이미지와 이전 대체 이미지 구분
-- 실제 적용 이미지: Assets/Resources/Art/Town/courtyard_house.png.
-- ProceduralArtCourtyardHouse.cs 및 Docs/images/courtyard-houses/*.png는 이전 코드 제작 버전이며 현재 PNG를 대체하는 미리보기가 아니다.
-- 공통 PNG가 없을 때만 기존 절차적 주택을 대체 리소스로 사용한다.
+마을 배치
+- Village.txt를 58×54로 북쪽 확장했다. 기존 광장, 플레이어 시작 지점, 동쪽 숲 출구 좌표는 유지한다.
+- 각 부지의 좌하단: 약초집 (8,24), 차 농가 (43,40), 직조공 집 (35,8), 촌장집 (23,42), 잡화점 (15,33), 대장간 (32,30), 창고 (44,24).
+- 북쪽 길과 동서 연결 길을 추가하고 건물 부지 안의 나무·잡동사니를 정리했다.
+- 서비스 NPC는 해당 건물 근처로, 공사장은 남동쪽으로 옮겼다.
 
-검증 및 재현
-- Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.CourtyardHousePreview.ExportAndBuild
-- 임포트 옵션 설정 후 실제 SpriteLibrary의 세 키 연결, 피벗, 픽셀 크기, 투명 프레임 가장자리를 검사하고 Windows 빌드한다.
-- -dotrpgTown 캡처의 town_houses.png에서 일반 주택 게임 화면을 확인할 수 있다.
-- 생성 도구: 내장 image_gen (CLI 사용 안 함).
-- 생성 지시문: Docs/COURTYARD_HOUSE_IMAGE_PROMPT.txt.
-캐릭터 비율 보정
-- 최초 적용보다 3배 확대했다. 이미지 원본은 그대로 두고 Sprite PPU만 360에서 120으로 변경한다.
-- 전사 기본 프레임의 불투명 몸체 높이는 44/36 ≈ 1.22 타일이다.
-- 출입구는 약 1.3 타일 폭, 1.4~1.5 타일 높이로 캐릭터보다 여유 있게 설정했다.
-- 확대된 일반 주택 세 곳의 부지를 확보하고 주변 우물, 우편함, 나무, 화분과 남쪽 접근로를 재배치했다.
-- -dotrpgHouse <folder>: 전사와 집의 비율 캡처, 세 집의 문 접근, 계단 이동, 벽 충돌, 주변 구조물 겹침 검증.
-- 건물의 앞뒤 표시 기준은 맨 아래 계단이 아니라 전면 벽으로 옮겨 계단 위 캐릭터가 가려지지 않도록 했다.
+검증
+- Unity -executeMethod DotRPG.EditorTools.CourtyardHousePreview.ExportAndBuild
+  7종 PNG의 실제 런타임 키 연결, 피벗, 크기, 필터, 투명 가장자리를 검사하고 Windows 빌드.
+- 게임 -dotrpgHouse <folder>
+  광장에서 7개 문과 숲 출구까지 경로 연결, 건물/소품 겹침, 계단 이동, 벽 충돌, 캐릭터 앞뒤 순서, 3개 서비스 창 확인.
+- Docs/images/courtyard-houses의 옛 이미지는 과거 절차적 버전이며 현재 적용 미리보기가 아니다.
+- 생성 도구: 내장 image_gen. 전체 생성 지시문은 Docs/VILLAGE_BUILDINGS_PROMPTS.txt.

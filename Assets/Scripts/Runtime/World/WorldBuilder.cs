@@ -969,22 +969,24 @@ namespace DotRPG
             var pos = new Vector2(x + w * 0.5f, y + 0.1f);
             float colH = Mathf.Max(1f, h - 0.85f);
             var go = StaticProp(name, sprite, pos, new Vector2(w - 0.15f, colH), new Vector2(0f, colH * 0.5f + 0.05f));
-            // The chosen generated house has an asymmetric facade. Keep its body collider centered,
-            // but attach the interaction to the visible door at source pixel x=892 (center is 768).
             var renderedSprite = go.GetComponent<SpriteRenderer>().sprite;
-            float entranceX = renderedSprite != null && renderedSprite.name == "courtyard_house"
-                ? 124f / renderedSprite.pixelsPerUnit : 0f;
-            if (renderedSprite != null && renderedSprite.name == "courtyard_house")
+            var buildingArt = VillageBuildingArt.FromSprite(renderedSprite);
+            float entranceX = buildingArt != null ? buildingArt.Entrance.x : 0f;
+            if (buildingArt != null)
             {
                 // Match the wall footprint, leaving the projecting eaves and entrance steps walkable.
                 var body = go.GetComponent<BoxCollider2D>();
-                body.size = new Vector2(960f, 672f) / renderedSprite.pixelsPerUnit;
-                body.offset = new Vector2(-8f, 426f) / renderedSprite.pixelsPerUnit;
+                body.size = buildingArt.ColliderSize;
+                body.offset = buildingArt.ColliderOffset;
                 // Sort at the front wall rather than the bottom step, so a visitor on the stairs stays visible.
                 float wallFront = body.offset.y - body.size.y * .5f;
                 go.GetComponent<YSort>().Configure(true, -Mathf.RoundToInt(wallFront * YSort.OrdersPerUnit));
             }
-            if (service != NpcService.None) ServiceDoor.Attach(go, service, prompt);
+            if (service != NpcService.None)
+            {
+                var door = ServiceDoor.Attach(go, service, prompt);
+                door.transform.localPosition = new Vector3(entranceX, 0f, 0f);
+            }
             else if (!string.IsNullOrEmpty(dialogue))
             {
                 var door = new GameObject("Door").AddComponent<DialogueInteractable>();
@@ -1059,14 +1061,14 @@ namespace DotRPG
                 case 'l': StaticProp("Log", "town_log", new Vector2(x + 1f, y + 0.1f), new Vector2(1.8f, 0.45f), new Vector2(0f, 0.25f)); return true;
                 case 'H':
                 {
-                    int style = (x * 7 + y * 3) % 3;
+                    int style = x < 20 ? 0 : y > 30 ? 1 : 2;
                     HdBuilding("House", $"town_house_{style}", x, y, 10, 8, "문 두드리기", "town_house_door");
                     return true;
                 }
-                case 'I': HdBuilding("ChiefHall", "town_hall", x, y, 5, 4, "문 두드리기", "town_hall_door"); return true;
-                case 'M': HdBuilding("GeneralStore", "town_store", x, y, 4, 3, "잡화점 들어가기", null, NpcService.Shop); return true;
-                case 'A': HdBuilding("Smithy", "town_smithy", x, y, 4, 3, "대장간 들어가기", null, NpcService.Blacksmith); return true;
-                case 'Z': HdBuilding("Warehouse", "town_warehouse", x, y, 4, 3, "창고 들어가기", null, NpcService.Storage); return true;
+                case 'I': HdBuilding("ChiefHall", "town_hall", x, y, 10, 8, "문 두드리기", "town_hall_door"); return true;
+                case 'M': HdBuilding("GeneralStore", "town_store", x, y, 10, 8, "잡화점 들어가기", null, NpcService.Shop); return true;
+                case 'A': HdBuilding("Smithy", "town_smithy", x, y, 10, 8, "대장간 들어가기", null, NpcService.Blacksmith); return true;
+                case 'Z': HdBuilding("Warehouse", "town_warehouse", x, y, 10, 8, "창고 들어가기", null, NpcService.Storage); return true;
                 case 'X':
                 {
                     var pos = new Vector2(x + 1.5f, y + 0.1f);
