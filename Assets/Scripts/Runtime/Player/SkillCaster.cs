@@ -5,7 +5,7 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// Casts the skills in the five slots (K / L / U / O, V = awakening). Numbers come from
+    /// Casts the skills in the five slots (Q / W / E / R, T = awakening). Numbers come from
     /// the member's <see cref="CharacterStatsCalc.Skill"/> (skill × supports × passive tree); the look of each
     /// skill lives in <see cref="SkillVisuals"/>. Companions cast the same skills; only the local player's
     /// casts shake the screen, show toasts and the awakening banner.

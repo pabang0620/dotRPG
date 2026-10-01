@@ -56,6 +56,7 @@ namespace DotRPG
         Text tooltipText;
         object hovered;
         bool mouse, keyboardUsed;
+        Text tabKeyHint;
 
         public override void Show()
         {
@@ -87,8 +88,8 @@ namespace DotRPG
                 Label(bg.transform, "Text", names[i], 24, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 48f), TextAnchor.MiddleCenter);
                 tabBg[i] = bg;
             }
-            var keyHint = Label(content, "TabHint", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, 0f), new Vector2(500f, 48f), TextAnchor.MiddleLeft);
-            keyHint.text = "<color=#8c96a8>K / L : 탭 전환</color>";
+            tabKeyHint = Label(content, "TabHint", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, 0f), new Vector2(500f, 48f), TextAnchor.MiddleLeft);
+
             treePage = UIFactory.Stretch(UIFactory.Rect(content, "TreePage"), 0f, 0f, 0f, 56f);
             gemPage = UIFactory.Stretch(UIFactory.Rect(content, "GemPage"), 0f, 0f, 0f, 56f);
         }
@@ -398,6 +399,7 @@ namespace DotRPG
             base.Update();
             if (!gameObject.activeSelf) return;
             var input = Game.Input;
+            tabKeyHint.text = $"<color=#8c96a8>{input.GetBindingLabel(GameAction.Skill1)} / {input.GetBindingLabel(GameAction.Skill2)} : 탭 전환</color>";
             if (Time.frameCount != shownFrame && !Game.State.ChangedThisFrame)
             {
                 if (input.Skill1Pressed || input.Skill2Pressed) { tab = tab == TabId.Tree ? TabId.Gems : TabId.Tree; Game.Audio.PlaySfx("select"); Refresh(); }

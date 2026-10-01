@@ -59,9 +59,9 @@ namespace DotRPG
         public bool Skill3Pressed { get; private set; }
         public bool Skill4Pressed { get; private set; }
         public bool Skill5Pressed { get; private set; }
-        /// <summary>R / gamepad L3: mana potion.</summary>
+        /// <summary>2 / gamepad L3: mana potion.</summary>
         public bool UseManaPressed { get; private set; }
-        /// <summary>T: town return scroll.</summary>
+        /// <summary>3: town return scroll.</summary>
         public bool TownScrollPressed { get; private set; }
 
         /// <summary>Whether the skill key of a slot (0-4) was pressed this frame.</summary>
@@ -195,21 +195,21 @@ namespace DotRPG
         {
             switch (action)
             {
-                case GameAction.Move: return gamepad ? "L스틱" : "WASD";
-                case GameAction.Attack: return gamepad ? "X" : "J";
-                case GameAction.Interact: return gamepad ? "A" : "E";
-                case GameAction.UseItem: return gamepad ? "Y" : "Q";
+                case GameAction.Move: return gamepad ? "L스틱" : "방향키";
+                case GameAction.Attack: return gamepad ? "X" : "X";
+                case GameAction.Interact: return gamepad ? "A" : "F";
+                case GameAction.UseItem: return gamepad ? "Y" : "1";
                 case GameAction.Pause: return gamepad ? "Start" : "Esc";
                 case GameAction.Submit: return gamepad ? "A" : "Enter";
                 case GameAction.Cancel: return gamepad ? "B" : "Esc";
                 case GameAction.Inventory: return gamepad ? "Select" : "I";
-                case GameAction.Skill1: return gamepad ? "LB" : "K";
-                case GameAction.Skill2: return gamepad ? "RB" : "L";
-                case GameAction.Skill3: return gamepad ? "LT" : "U";
-                case GameAction.Skill4: return gamepad ? "RT" : "O";
-                case GameAction.Skill5: return gamepad ? "R3" : "V";
-                case GameAction.UseMana: return gamepad ? "L3" : "R";
-                case GameAction.TownScroll: return gamepad ? "-" : "T";
+                case GameAction.Skill1: return gamepad ? "LB" : "Q";
+                case GameAction.Skill2: return gamepad ? "RB" : "W";
+                case GameAction.Skill3: return gamepad ? "LT" : "E";
+                case GameAction.Skill4: return gamepad ? "RT" : "R";
+                case GameAction.Skill5: return gamepad ? "R3" : "T";
+                case GameAction.UseMana: return gamepad ? "L3" : "2";
+                case GameAction.TownScroll: return gamepad ? "-" : "3";
                 default: return "?";
             }
         }
@@ -243,26 +243,25 @@ namespace DotRPG
             map = new InputActionMap("Game");
 
             moveAction = map.AddAction("Move", InputActionType.Value);
-            AddWasd(moveAction);
+            AddArrows(moveAction);
             moveAction.AddBinding("<Gamepad>/leftStick");
             moveAction.AddBinding("<Gamepad>/dpad");
 
             navigateAction = map.AddAction("Navigate", InputActionType.Value);
-            AddWasd(navigateAction);
+            AddArrows(navigateAction);
             navigateAction.AddBinding("<Gamepad>/leftStick");
             navigateAction.AddBinding("<Gamepad>/dpad");
 
             attackAction = map.AddAction("Attack", InputActionType.Button);
-            attackAction.AddBinding("<Keyboard>/j");
-            attackAction.AddBinding("<Keyboard>/space");
+            attackAction.AddBinding("<Keyboard>/x");
             attackAction.AddBinding("<Gamepad>/buttonWest");
 
             interactAction = map.AddAction("Interact", InputActionType.Button);
-            interactAction.AddBinding("<Keyboard>/e");
+            interactAction.AddBinding("<Keyboard>/f");
             interactAction.AddBinding("<Gamepad>/buttonSouth");
 
             useItemAction = map.AddAction("UseItem", InputActionType.Button);
-            useItemAction.AddBinding("<Keyboard>/q");
+            useItemAction.AddBinding("<Keyboard>/1");
             useItemAction.AddBinding("<Gamepad>/buttonNorth");
 
             pauseAction = map.AddAction("Pause", InputActionType.Button);
@@ -272,8 +271,8 @@ namespace DotRPG
             submitAction = map.AddAction("Submit", InputActionType.Button);
             submitAction.AddBinding("<Keyboard>/enter");
             submitAction.AddBinding("<Keyboard>/space");
-            submitAction.AddBinding("<Keyboard>/e");
-            submitAction.AddBinding("<Keyboard>/j");
+            submitAction.AddBinding("<Keyboard>/f");
+            submitAction.AddBinding("<Keyboard>/x");
             submitAction.AddBinding("<Gamepad>/buttonSouth");
 
             cancelAction = map.AddAction("Cancel", InputActionType.Button);
@@ -287,40 +286,30 @@ namespace DotRPG
             inventoryAction.AddBinding("<Gamepad>/select");
 
             skill1Action = map.AddAction("Skill1", InputActionType.Button);
-            skill1Action.AddBinding("<Keyboard>/k");
-            skill1Action.AddBinding("<Keyboard>/1");
+            skill1Action.AddBinding("<Keyboard>/q");
             skill1Action.AddBinding("<Gamepad>/leftShoulder");
             skill2Action = map.AddAction("Skill2", InputActionType.Button);
-            skill2Action.AddBinding("<Keyboard>/l");
-            skill2Action.AddBinding("<Keyboard>/2");
+            skill2Action.AddBinding("<Keyboard>/w");
             skill2Action.AddBinding("<Gamepad>/rightShoulder");
             skill3Action = map.AddAction("Skill3", InputActionType.Button);
-            skill3Action.AddBinding("<Keyboard>/u");
-            skill3Action.AddBinding("<Keyboard>/3");
+            skill3Action.AddBinding("<Keyboard>/e");
             skill3Action.AddBinding("<Gamepad>/leftTrigger");
             skill4Action = map.AddAction("Skill4", InputActionType.Button);
-            skill4Action.AddBinding("<Keyboard>/o");
-            skill4Action.AddBinding("<Keyboard>/4");
+            skill4Action.AddBinding("<Keyboard>/r");
             skill4Action.AddBinding("<Gamepad>/rightTrigger");
             skill5Action = map.AddAction("Skill5", InputActionType.Button);
-            skill5Action.AddBinding("<Keyboard>/v");
-            skill5Action.AddBinding("<Keyboard>/5");
+            skill5Action.AddBinding("<Keyboard>/t");
             skill5Action.AddBinding("<Gamepad>/rightStickPress");
 
             manaAction = map.AddAction("UseMana", InputActionType.Button);
-            manaAction.AddBinding("<Keyboard>/r");
+            manaAction.AddBinding("<Keyboard>/2");
             manaAction.AddBinding("<Gamepad>/leftStickPress");
             scrollAction = map.AddAction("TownScroll", InputActionType.Button);
-            scrollAction.AddBinding("<Keyboard>/t");
+            scrollAction.AddBinding("<Keyboard>/3");
         }
 
-        static void AddWasd(InputAction action)
+        static void AddArrows(InputAction action)
         {
-            action.AddCompositeBinding("2DVector")
-                .With("Up", "<Keyboard>/w")
-                .With("Down", "<Keyboard>/s")
-                .With("Left", "<Keyboard>/a")
-                .With("Right", "<Keyboard>/d");
             action.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/upArrow")
                 .With("Down", "<Keyboard>/downArrow")
@@ -354,6 +343,14 @@ namespace DotRPG
             TrackDevice(interactAction, InteractPressed);
             TrackDevice(submitAction, SubmitPressed);
             TrackDevice(pauseAction, PausePressed);
+            TrackDevice(skill1Action, Skill1Pressed);
+            TrackDevice(skill2Action, Skill2Pressed);
+            TrackDevice(skill3Action, Skill3Pressed);
+            TrackDevice(skill4Action, Skill4Pressed);
+            TrackDevice(skill5Action, Skill5Pressed);
+            TrackDevice(useItemAction, UseItemPressed);
+            TrackDevice(manaAction, UseManaPressed);
+            TrackDevice(scrollAction, TownScrollPressed);
         }
 
         void TrackDevice(InputAction action, bool active)
@@ -365,28 +362,28 @@ namespace DotRPG
 
         Vector2 ReadNavigateVector() => navigateAction != null ? navigateAction.ReadValue<Vector2>() : Vector2.zero;
 #else
-        static readonly KeyCode[] AttackKeys = { KeyCode.J, KeyCode.Space, KeyCode.JoystickButton2 };
-        static readonly KeyCode[] InteractKeys = { KeyCode.E, KeyCode.JoystickButton0 };
-        static readonly KeyCode[] UseItemKeys = { KeyCode.Q, KeyCode.JoystickButton3 };
+        static readonly KeyCode[] AttackKeys = { KeyCode.X, KeyCode.JoystickButton2 };
+        static readonly KeyCode[] InteractKeys = { KeyCode.F, KeyCode.JoystickButton0 };
+        static readonly KeyCode[] UseItemKeys = { KeyCode.Alpha1, KeyCode.JoystickButton3 };
         static readonly KeyCode[] PauseKeys = { KeyCode.Escape, KeyCode.JoystickButton7 };
-        static readonly KeyCode[] SubmitKeys = { KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Space, KeyCode.E, KeyCode.J, KeyCode.JoystickButton0 };
+        static readonly KeyCode[] SubmitKeys = { KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Space, KeyCode.F, KeyCode.X, KeyCode.JoystickButton0 };
         static readonly KeyCode[] CancelKeys = { KeyCode.Escape, KeyCode.Backspace, KeyCode.JoystickButton1 };
         static readonly KeyCode[] InventoryKeys = { KeyCode.I, KeyCode.Tab, KeyCode.JoystickButton6 };
-        static readonly KeyCode[] Skill1Keys = { KeyCode.K, KeyCode.Alpha1, KeyCode.JoystickButton4 };
-        static readonly KeyCode[] Skill2Keys = { KeyCode.L, KeyCode.Alpha2, KeyCode.JoystickButton5 };
-        static readonly KeyCode[] Skill3Keys = { KeyCode.U, KeyCode.Alpha3 };
-        static readonly KeyCode[] Skill4Keys = { KeyCode.O, KeyCode.Alpha4 };
-        static readonly KeyCode[] Skill5Keys = { KeyCode.V, KeyCode.Alpha5, KeyCode.JoystickButton9 };
-        static readonly KeyCode[] ManaKeys = { KeyCode.R, KeyCode.JoystickButton8 };
-        static readonly KeyCode[] ScrollKeys = { KeyCode.T };
+        static readonly KeyCode[] Skill1Keys = { KeyCode.Q, KeyCode.JoystickButton4 };
+        static readonly KeyCode[] Skill2Keys = { KeyCode.W, KeyCode.JoystickButton5 };
+        static readonly KeyCode[] Skill3Keys = { KeyCode.E };
+        static readonly KeyCode[] Skill4Keys = { KeyCode.R };
+        static readonly KeyCode[] Skill5Keys = { KeyCode.T, KeyCode.JoystickButton9 };
+        static readonly KeyCode[] ManaKeys = { KeyCode.Alpha2, KeyCode.JoystickButton8 };
+        static readonly KeyCode[] ScrollKeys = { KeyCode.Alpha3 };
 
         void ReadLegacy()
         {
             Vector2 keys = Vector2.zero;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) keys.x -= 1;
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) keys.x += 1;
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) keys.y -= 1;
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) keys.y += 1;
+            if (Input.GetKey(KeyCode.LeftArrow)) keys.x -= 1;
+            if (Input.GetKey(KeyCode.RightArrow)) keys.x += 1;
+            if (Input.GetKey(KeyCode.DownArrow)) keys.y -= 1;
+            if (Input.GetKey(KeyCode.UpArrow)) keys.y += 1;
 
             Vector2 stick = Vector2.zero;
             if (legacyAxesAvailable)
