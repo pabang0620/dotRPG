@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace DotRPG
@@ -50,7 +50,7 @@ namespace DotRPG
                 screen.names[i] = name;
             }
 
-            screen.description = UIFactory.Text(screen.panel, "Description", "", 19, UIColors.InkSoft, TextAnchor.UpperCenter);
+            screen.description = UIFactory.Text(screen.panel, "Description", "", 19, UiTheme.TextSecondary, TextAnchor.UpperCenter, true); // [UI] dark panel
             screen.description.lineSpacing = 1.2f;
             UIFactory.Place(screen.description.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -306f), new Vector2(700f, 76f));
 
