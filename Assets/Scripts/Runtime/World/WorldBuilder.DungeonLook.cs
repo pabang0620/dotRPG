@@ -38,6 +38,24 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>
+        /// Picture-only ground of a cell: a spawn digit set into a wall (boss entry marks on the top rows) is
+        /// painted as rock instead of a floor notch. Colliders still use <see cref="GroundAt"/>, so nothing
+        /// becomes solid that was not before.
+        /// </summary>
+        char DungeonPaintGround(int x, int y, char ground)
+        {
+            if (map == null || !map.instanced) return ground;
+            char c = At(x, y);
+            if (c < '1' || c > '9') return ground;
+            int walls = 0;
+            if (At(x - 1, y) == 'W') walls++;
+            if (At(x + 1, y) == 'W') walls++;
+            if (At(x, y + 1) == 'W' || At(x, y + 1) == '\0') walls++;
+            if (At(x, y - 1) == 'W') walls++;
+            return walls >= 3 ? 'W' : ground;
+        }
+
         /// <summary>Tints the painted ground and every map prop of a dark dungeon room (glows stay bright).</summary>
         void ApplyDungeonTint()
         {

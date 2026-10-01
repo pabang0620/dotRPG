@@ -877,7 +877,7 @@ namespace DotRPG
                 var ground = new char[width, height];
                 for (int y = 0; y < height; y++)
                     for (int x = 0; x < width; x++)
-                        ground[x, y] = GroundAt(x, y);
+                        ground[x, y] = DungeonPaintGround(x, y, GroundAt(x, y)); // [DGNTERRAIN] spawn marks inside walls look like rock
                 var px = paint(ground, width, height, out int pw, out int ph);
                 chunks = new List<(Vector2, Sprite)>();
                 const int Chunk = 256;
