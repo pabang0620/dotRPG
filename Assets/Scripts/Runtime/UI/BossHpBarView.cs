@@ -245,6 +245,9 @@ namespace DotRPG
             if (banner.gameObject.activeSelf)
             {
                 float t = (now - introAt) / IntroTime;
+                // [UI] A boss killed during its intro must not leave the banner under the CLEAR banner.
+                var run = Game.Dungeon != null ? Game.Dungeon.Run : null;
+                if (run != null && run.State == DungeonRunState.Cleared) t = 1f;
                 if (t >= 1f) banner.gameObject.SetActive(false);
                 else
                 {
