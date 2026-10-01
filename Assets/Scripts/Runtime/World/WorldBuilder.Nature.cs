@@ -4,7 +4,8 @@ namespace DotRPG
 {
     public partial class WorldBuilder
     {
-        string NatureKey(string key) => MapId == MapRegistry.Village ? VillageNatureArt.Resolve(key) : key;
+        string NatureKey(string key, Vector2 foot, bool forestEdge = false) =>
+            MapId == MapRegistry.Village ? VillageNatureArt.Resolve(key, foot, forestEdge) : key;
 
         void DecorateVillageNature()
         {

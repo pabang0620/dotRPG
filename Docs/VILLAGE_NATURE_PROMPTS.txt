@@ -4,7 +4,7 @@ Reference: user's woodland environment sprite sheet (codex-clipboard-655517e3-08
 Assets: Assets/Resources/Art/Nature/{broadleaf,pine,bush,rock,log,grass,mushrooms}.png.
 These seven PNGs are newly generated game art. Ground textures, pebbles, stumps and dead trees remain the existing procedural art.
 The village's procedural forest-boundary canopy palette is matched to the new teal/olive trees; ground layout and other biome palettes are unchanged.
-Applied to the first village only, including harvestable trees/rocks and forest-edge trees. Orchard O props use the new broadleaf silhouette.
+Applied to the first village only, including harvestable trees/rocks and forest-edge trees. The later tree-variety pass restores distinct orchard fruit trees and adds regional species; see VILLAGE_TREE_VARIETY_PROMPTS.txt.
 Grass, mushrooms and fallen logs are nonblocking decoration. Trunk/resource collision, harvesting and canopy fading are retained.
 Original generated alpha and image dimensions are preserved. Unity imports use point filtering, no mipmaps/compression, and measured root pivots.
 Import/build: DotRPG.EditorTools.VillageNatureImport.ImportAndBuild.

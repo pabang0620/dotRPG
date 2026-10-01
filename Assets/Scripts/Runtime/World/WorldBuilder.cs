@@ -811,7 +811,7 @@ namespace DotRPG
             go.transform.SetParent(objectsRoot, false);
             go.transform.position = position;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = Game.Art.Get(NatureKey(spriteKey));
+            sr.sprite = Game.Art.Get(NatureKey(spriteKey, position, name == "EdgeTree"));
             if (colliderSize != Vector2.zero)
             {
                 var col = go.AddComponent<BoxCollider2D>();
@@ -828,7 +828,7 @@ namespace DotRPG
             go.transform.SetParent(objectsRoot, false);
             go.transform.position = position;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = Game.Art.Get(NatureKey(spriteKey));
+            sr.sprite = Game.Art.Get(NatureKey(spriteKey, position));
             sr.sortingOrder = order; // always under characters
         }
 

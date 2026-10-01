@@ -1,0 +1,34 @@
+VILLAGE TREE VARIETY - 2026-10-02
+Mode: built-in image_gen; transparent_background=true; six separate generation calls.
+Reference 1: user image codex-clipboard-1d3c9be2-bda2-450e-8f9d-3e8ff826000f.png (species silhouettes and visual inspiration).
+Reference 2: Assets/Resources/Art/Nature/broadleaf.png (existing game palette and pixel style).
+These are six newly generated tree images, not placeholders or extracted reference tiles.
+Original source PNG dimensions and transparency are preserved. The importer derives root pivots and world scale from alpha bounds, using point filtering without compression or mipmaps.
+Assets: Assets/Resources/Art/Nature/{oak_round,pine_layered,willow,cherry,fruit,golden}.png
+Placement: stable coordinate selection in VillageNatureArt.Resolve. Green trees form mixed outer groves. Golden trees accent the north. Fruit trees occupy the existing orchard symbols. Willows occupy pond banks, cherries residential gardens.
+Existing tree positions, trunk collisions, depth sorting, canopy fading and harvestable resources remain active.
+No seasonal simulation is implied: this is a stylized mixed garden palette. Other biomes retain their previous tree art.
+Build and alpha validation: DotRPG.EditorTools.VillageNatureImport.ImportAndBuild.
+Runtime validation and screenshots: dotRPG.exe -dotrpgNature <output folder>.
+
+SHARED PROMPT (each subject appended verbatim):
+Use case: stylized-concept. Asset type: single production transparent PNG tree sprite for top-down 2D pixel-art Korean fantasy RPG. Input image 1 is a variety/silhouette reference only; image 2 is the existing game's tree style reference. Create ONE new tree, not a sheet. Match image 2's chunky crisp pixel clusters, deep teal green shadow, muted olive highlights, ochre brown bark and top-left lighting. Elevated three-quarter view with canopy top visible. Draw on a 128x128 logical pixel grid enlarged nearest-neighbor, no antialiasing, blur, gradients or painterly brush strokes. Entire tree and bare roots visible with 8% transparent margin, root base centered at bottom; no ground island, grass mat, cast shadow, frame, text, background or additional objects. Genuine transparent alpha. 
+
+oak_round.png:
+Subject: rounded compact deciduous oak with three broad overlapping dome-shaped leaf masses, a short stout branching trunk and airy openings. Distinct round silhouette rather than the original pointed asymmetric tree. Green leaves, restrained yellow-green top highlights.
+
+pine_layered.png:
+Subject: mature Korean pine with an elegant crooked exposed trunk, four separated horizontal cloud-like tiers of needle foliage, spreading irregular crown. Clearly different from a conical evergreen; muted blue-green needles with olive sunlit tips.
+
+willow.png:
+Subject: graceful weeping willow with long downward curtains of narrow olive-green leaves, broad umbrella crown and visible curved warm brown trunk. Hanging leaf strands stop above root base, openings reveal trunk. Dark teal shadows, subdued spring green tips.
+
+cherry.png:
+Subject: ornamental cherry blossom tree, gently forked dark warm bark, asymmetric cloud crown of dusty pink flowers with warm ivory highlights, mauve shadow clusters and a few muted green leaves. Restrained pink, not neon. Compact garden tree silhouette.
+
+fruit.png:
+Subject: small orchard citrus fruit tree, almost spherical clustered dark-green canopy with 10 clearly readable orange-gold round fruits among leaves, visible branching ochre trunk. Compact cultivated tree with lower fork, not a large forest oak.
+
+golden.png:
+Subject: upright ginkgo tree with broad fan-shaped golden-olive yellow canopy and narrow warm brown trunk. Muted ochre yellow and a few green lower leaves, warm rusty deep shadows. Restrained golden accent tree harmonious with green woodland, no bright saturated orange.
+
