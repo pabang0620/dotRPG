@@ -261,15 +261,23 @@ namespace DotRPG
             var smallLooks = MonsterIds.Select(id => MonsterDatabase.Get(id).look).Append(MonsterDatabase.Get(MonsterDatabase.Totem).look).ToList();
             var bossLooks = BossIds.Select(id => MonsterDatabase.Get(id).look).ToList();
             var fxKeys = new List<string> { "mon_arrow", "mon_bolt", "mon_bolt_big", "mon_summon", "mon_tele_ring", "mon_tele_disc", "mon_tele_rect", "mon_tele_cone_110", "mon_tele_conefill_110", "mon_tele_donut_35", "mon_tele_donutfill_35" };
-            MonSheet(Path.Combine(folder, "mon_sheet_monsters.png"), smallLooks, 18, 30, 5, null);
-            MonSheet(Path.Combine(folder, "mon_sheet_bosses.png"), bossLooks, 50, 58, 3, null);
+            MonSheet(Path.Combine(folder, "mon_sheet_monsters.png"), smallLooks, 34, 58, 3, null); // [MONHD] HD 32x40 bodies, 32x56 totem
+            MonSheet(Path.Combine(folder, "mon_sheet_bosses.png"), bossLooks, 98, 114, 2, null); // [MONHD] HD 96x112 bosses
             MonFxSheet(Path.Combine(folder, "mon_sheet_fx.png"), fxKeys);
             var idle = smallLooks.Concat(bossLooks).Select(l => Game.Art.GetCharacter(l, "down", "idle0")).ToList();
             int distinct = idle.Select(SpriteHash).Distinct().Count();
-            var bossW = bossLooks.Select(l => Game.Art.GetCharacter(l, "down", "idle0").texture.width).ToList();
+            // [MONHD] Normal monsters share the HD field skeleton's canvas + pixels-per-unit (same world size);
+            // bosses are at least twice as wide at the same pixels-per-unit (artScale 2).
+            var fieldSkel = Game.Art.GetCharacter(CharacterLook.Skeleton, "down", "idle0");
+            var smallSprites = MonsterIds.Select(id => Game.Art.GetCharacter(MonsterDatabase.Get(id).look, "down", "idle0")).ToList();
+            var bossSprites = bossLooks.Select(l => Game.Art.GetCharacter(l, "down", "idle0")).ToList();
+            var bossW = bossSprites.Select(s => s.texture.width).ToList();
+            bool smallMatch = smallSprites.All(s => s.texture.width == fieldSkel.texture.width && s.texture.height == fieldSkel.texture.height
+                && Mathf.Approximately(s.pixelsPerUnit, fieldSkel.pixelsPerUnit));
+            bool bossOk = bossSprites.All(s => s.texture.width >= 2 * fieldSkel.texture.width && Mathf.Approximately(s.pixelsPerUnit, fieldSkel.pixelsPerUnit));
             bool fxOk = fxKeys.All(k => Game.Art.Get(k) != null && Game.Art.Get(k).texture.width > 8 && !Game.Art.Get(k).name.StartsWith("Missing"));
-            MCheck($"art: distinct idle frames {distinct}/{idle.Count} boss canvas widths=[{string.Join(",", bossW)}] small={idle[0].texture.width} fx sprites ok={fxOk}",
-                distinct == idle.Count && bossW.All(w => w >= 2 * idle[0].texture.width) && fxOk);
+            MCheck($"art: distinct idle frames {distinct}/{idle.Count} field skeleton={fieldSkel.texture.width}x{fieldSkel.texture.height}@{fieldSkel.pixelsPerUnit:0} small=[{string.Join(",", smallSprites.Select(s => $"{s.texture.width}x{s.texture.height}@{s.pixelsPerUnit:0}").Distinct())}] boss widths=[{string.Join(",", bossW)}]@{bossSprites[0].pixelsPerUnit:0} fx sprites ok={fxOk}",
+                distinct == idle.Count && smallMatch && bossOk && fxOk);
 
             // ---------- Setup: Lv10 warrior + two mercenaries in the forest ----------
             Game.Flow.NewGame(CharacterClass.Warrior);
