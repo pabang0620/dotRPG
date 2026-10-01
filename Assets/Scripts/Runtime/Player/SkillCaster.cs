@@ -63,6 +63,7 @@ namespace DotRPG
 
         public void TryCast(int slot)
         {
+            if (owner.IsDashing) return;
             var gem = Prog.Active(slot);
             if (gem == null)
             {

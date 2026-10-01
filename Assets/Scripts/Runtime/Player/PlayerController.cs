@@ -10,7 +10,7 @@ namespace DotRPG
     /// Attacking and interacting are delegated to <see cref="PlayerCombat"/> and <see cref="PlayerInteractor"/>.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class PlayerController : MonoBehaviour, IDamageable
+    public partial class PlayerController : MonoBehaviour, IDamageable
     {
         [SerializeField] PlayerStats stats;
 
@@ -190,6 +190,7 @@ namespace DotRPG
 
         void OnDisable()
         {
+            CancelMobility();
             // The local player leaving the world (title screen) takes the companions with it.
             if (IsLocal && Game.Party != null) Game.Party.OnLocalHidden();
         }
@@ -228,6 +229,8 @@ namespace DotRPG
         /// <summary>Changes the playable character (look + attack style). Safe to call any time.</summary>
         public void SetClass(CharacterClass cls)
         {
+            CancelMobility();
+            mobilityReadyAt = 0f;
             Class = cls;
             var info = CharacterClassInfo.Get(cls);
             animator.Setup(BaseLook(info), animator.Renderer);
@@ -269,6 +272,7 @@ namespace DotRPG
         /// <summary>Moves the member without touching HP (companions re-placed next to the leader, teleport catch-up).</summary>
         public void Place(Vector2 position, Facing facing)
         {
+            CancelMobility();
             transform.position = position;
             body.position = position;
             body.SetVelocity(Vector2.zero);
@@ -310,6 +314,8 @@ namespace DotRPG
             if (IsDead) return;
             if (!Game.IsPlaying)
             {
+                CancelMobility();
+                body.SetVelocity(Vector2.zero);
                 desiredVelocity = Vector2.zero;
                 if (Game.State.Current != GameState.Dialogue) animator.Play(CharacterAnim.Idle, Facing);
                 return;
@@ -322,6 +328,15 @@ namespace DotRPG
 
             var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
             Command = cmd;
+            // Mobility owns the pose and movement until the dash ends; a successful blink
+            // consumes this frame too, so an X/Q press cannot also begin an attack.
+            if (IsDashing || (cmd.mobility && TryMobility(cmd.move)))
+            {
+                desiredVelocity = Vector2.zero;
+                animator.Play(IsDashing ? CharacterAnim.Walk : CharacterAnim.Idle, Facing);
+                animator.SpeedMultiplier = IsDashing ? 1.8f : 1f;
+                return;
+            }
             Vector2 move = cmd.move;
             bool stunned = Time.time < knockbackUntil;
             bool channeling = Time.time < lockedUntil;
@@ -372,8 +387,10 @@ namespace DotRPG
 
         void FixedUpdate()
         {
-            if (IsDead)
+            if (mobilityBraking) { body.SetVelocity(Vector2.zero); mobilityBraking = false; }
+            if (IsDead || !Game.IsPlaying)
             {
+                CancelMobility();
                 body.SetVelocity(Vector2.zero);
                 return;
             }
@@ -382,6 +399,7 @@ namespace DotRPG
                 body.SetVelocity(knockbackVelocity);
                 return;
             }
+            if (IsDashing) { StepDash(); return; }
             Vector2 v = Vector2.MoveTowards(body.GetVelocity(), desiredVelocity, stats.acceleration * Time.fixedDeltaTime);
             body.SetVelocity(v);
         }
@@ -410,7 +428,11 @@ namespace DotRPG
         readonly System.Collections.Generic.Dictionary<string, float> potionReadyAt = new System.Collections.Generic.Dictionary<string, float>();
 
         /// <summary>Holds the character still (reading the return scroll).</summary>
-        public void LockMovement(float seconds) => lockedUntil = Time.time + seconds;
+        public void LockMovement(float seconds)
+        {
+            CancelMobility();
+            lockedUntil = Time.time + seconds;
+        }
 
         /// <summary>Q: a health potion if there is one, otherwise a carrot.</summary>
         public void UseHealing()
@@ -499,6 +521,7 @@ namespace DotRPG
                 return false;
             }
             if (!health.TryDamage(info)) return false;
+            CancelMobility();
             Game.Party?.RecordDamageTaken(this, info);
 
             Vector2 away = Position - info.sourcePosition;
@@ -518,6 +541,7 @@ namespace DotRPG
 
         void Die()
         {
+            CancelMobility();
             IsDead = true;
             desiredVelocity = Vector2.zero;
             animator.Play(CharacterAnim.Hurt, Facing);

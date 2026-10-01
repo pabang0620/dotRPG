@@ -155,6 +155,7 @@ namespace DotRPG
 
         public void TryAttack()
         {
+            if (owner.IsDashing) return;
             if (!Ranged && meleeActive)
             {
                 // Each key-down buys exactly one additional strike; holding the key does not repeat.

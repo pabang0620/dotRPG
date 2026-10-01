@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -230,6 +230,7 @@ namespace DotRPG
             {
                 Row("이동", GameAction.Move),
                 Row("공격 / 채집", GameAction.Attack),
+                Row("이동기 (대시 / 텔레포트)", GameAction.Mobility),
                 Row("대화 / 상호작용", GameAction.Interact),
                 Row("체력 물약 (없으면 당근)", GameAction.UseItem),
                 Row("마나 물약", GameAction.UseMana),

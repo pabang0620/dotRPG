@@ -15,6 +15,7 @@ namespace DotRPG
         /// <summary>Turn towards <see cref="aim"/> before attacking or casting (AI members; the local player faces where it walks).</summary>
         public bool faceAim;
         public bool attack;
+        public bool mobility;
         public bool interact;
         /// <summary>Skill slot to cast (0-4), -1 = none.</summary>
         public int skillSlot;
@@ -43,6 +44,7 @@ namespace DotRPG
             cmd.move = input.Move;
             cmd.aim = input.Move;
             cmd.attack = input.AttackPressed;
+            cmd.mobility = input.MobilityPressed;
             cmd.interact = input.InteractPressed;
             cmd.useHealing = input.UseItemPressed;
             cmd.useMana = input.UseManaPressed;
@@ -61,9 +63,10 @@ namespace DotRPG
     {
         public Vector2 Move;
         public Vector2 Aim;
-        bool attack;
+        bool attack, mobility;
         int skill = -1;
 
+        public void PressMobility() => mobility = true;
         public void PressAttack() => attack = true;
         public void PressSkill(int slot) => skill = slot;
 
@@ -74,6 +77,8 @@ namespace DotRPG
             cmd.aim = Aim.sqrMagnitude > 0.0001f ? Aim : Move;
             cmd.faceAim = Aim.sqrMagnitude > 0.0001f;
             cmd.attack = attack;
+            cmd.mobility = mobility;
+            mobility = false;
             cmd.skillSlot = skill;
             attack = false;
             skill = -1;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +24,7 @@ namespace DotRPG
         RectTransform prompt;
         Text promptText;
         Text controlsHint;
+        Text mobilityHint;
         Image controlsPlate; // [UI]
         bool lastGamepad;
 
@@ -98,6 +99,11 @@ namespace DotRPG
             questBody = UIFactory.Text(questPanel, "Body", "", 18, UIColors.Cream, TextAnchor.UpperLeft, true);
             questBody.lineSpacing = 1.15f;
             UIFactory.Stretch(questBody.rectTransform, 18, 10, 14, 44);
+
+            var mobilityPlate = UIFactory.Panel(root, "MobilityPlate", true);
+            UIFactory.Place(mobilityPlate.rectTransform, Vector2.zero, Vector2.zero, new Vector2(20, 46), new Vector2(264, 32));
+            mobilityHint = UIFactory.Text(mobilityPlate.transform, "Mobility", "", UiTheme.FontMin, UIColors.Cream, TextAnchor.MiddleLeft, true);
+            UIFactory.Stretch(mobilityHint.rectTransform, 10, 0, 10, 0);
 
             // Control hints (bottom-left).
             // [UI] On a translucent plate so it stays readable over bright ground.
@@ -288,6 +294,14 @@ namespace DotRPG
                 pair.Value.rectTransform.localScale = new Vector3(s, s, 1f);
             }
 
+            var mobilityPlayer = Game.Player;
+            if (mobilityPlayer != null)
+            {
+                float remaining = mobilityPlayer.MobilityCooldownRemaining;
+                string state = mobilityPlayer.IsDashing ? "이동 중" : remaining > 0f ? $"{remaining:0.0}초" : "준비";
+                mobilityHint.text = $"[{Game.Input.GetBindingLabel(GameAction.Mobility)}] {mobilityPlayer.MobilityName}  {state}";
+                mobilityHint.color = remaining > 0f ? new Color(.7f, .74f, .8f) : new Color(.65f, .94f, 1f);
+            }
             UpdatePrompt();
             RefreshControls(false);
         }

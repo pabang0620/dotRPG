@@ -25,6 +25,7 @@ namespace DotRPG
         UseMana,
         /// <summary>Read a town return scroll.</summary>
         TownScroll,
+        Mobility,
     }
 
     /// <summary>
@@ -46,6 +47,7 @@ namespace DotRPG
         public Vector2 Move { get; private set; }
         /// <summary>Automated tests only: when set, replaces the movement read from the devices.</summary>
         public Vector2? MoveOverride { get; set; }
+        public bool MobilityPressed { get; private set; }
         public bool AttackPressed { get; private set; }
         public bool InteractPressed { get; private set; }
         public bool UseItemPressed { get; private set; }
@@ -78,7 +80,7 @@ namespace DotRPG
 
 #if ENABLE_INPUT_SYSTEM
         InputActionMap map;
-        InputAction moveAction, attackAction, interactAction, useItemAction, pauseAction, submitAction, cancelAction, navigateAction, inventoryAction, skill1Action, skill2Action, skill3Action, skill4Action, skill5Action, manaAction, scrollAction;
+        InputAction moveAction, attackAction, interactAction, useItemAction, pauseAction, submitAction, cancelAction, navigateAction, inventoryAction, skill1Action, skill2Action, skill3Action, skill4Action, skill5Action, manaAction, scrollAction, mobilityAction;
 #else
         bool legacyAxesAvailable = true;
 #endif
@@ -196,6 +198,7 @@ namespace DotRPG
             switch (action)
             {
                 case GameAction.Move: return gamepad ? "L스틱" : "방향키";
+                case GameAction.Mobility: return gamepad ? "B" : "Shift";
                 case GameAction.Attack: return gamepad ? "X" : "X";
                 case GameAction.Interact: return gamepad ? "A" : "F";
                 case GameAction.UseItem: return gamepad ? "Y" : "1";
@@ -220,6 +223,7 @@ namespace DotRPG
             switch (action)
             {
                 case GameAction.Move: return moveAction;
+                case GameAction.Mobility: return mobilityAction;
                 case GameAction.Attack: return attackAction;
                 case GameAction.Interact: return interactAction;
                 case GameAction.UseItem: return useItemAction;
@@ -251,6 +255,11 @@ namespace DotRPG
             AddArrows(navigateAction);
             navigateAction.AddBinding("<Gamepad>/leftStick");
             navigateAction.AddBinding("<Gamepad>/dpad");
+
+            mobilityAction = map.AddAction("Mobility", InputActionType.Button);
+            mobilityAction.AddBinding("<Keyboard>/leftShift");
+            mobilityAction.AddBinding("<Keyboard>/rightShift");
+            mobilityAction.AddBinding("<Gamepad>/buttonEast");
 
             attackAction = map.AddAction("Attack", InputActionType.Button);
             attackAction.AddBinding("<Keyboard>/x");
@@ -323,6 +332,8 @@ namespace DotRPG
             if (move.magnitude < stickDeadZone * 0.5f) move = Vector2.zero;
             Move = MoveOverride ?? Vector2.ClampMagnitude(move, 1f);
 
+            MobilityPressed = mobilityAction.WasPressedThisFrame();
+            TrackDevice(mobilityAction, MobilityPressed);
             AttackPressed = attackAction.WasPressedThisFrame();
             InteractPressed = interactAction.WasPressedThisFrame();
             UseItemPressed = useItemAction.WasPressedThisFrame();
@@ -362,6 +373,7 @@ namespace DotRPG
 
         Vector2 ReadNavigateVector() => navigateAction != null ? navigateAction.ReadValue<Vector2>() : Vector2.zero;
 #else
+        static readonly KeyCode[] MobilityKeys = { KeyCode.LeftShift, KeyCode.RightShift, KeyCode.JoystickButton1 };
         static readonly KeyCode[] AttackKeys = { KeyCode.X, KeyCode.JoystickButton2 };
         static readonly KeyCode[] InteractKeys = { KeyCode.F, KeyCode.JoystickButton0 };
         static readonly KeyCode[] UseItemKeys = { KeyCode.Alpha1, KeyCode.JoystickButton3 };
@@ -396,6 +408,7 @@ namespace DotRPG
             Vector2 move = keys != Vector2.zero ? keys : stick;
             Move = MoveOverride ?? Vector2.ClampMagnitude(move, 1f);
 
+            MobilityPressed = AnyDown(MobilityKeys);
             AttackPressed = AnyDown(AttackKeys);
             InteractPressed = AnyDown(InteractKeys);
             UseItemPressed = AnyDown(UseItemKeys);
