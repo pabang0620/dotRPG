@@ -974,6 +974,16 @@ namespace DotRPG
             var renderedSprite = go.GetComponent<SpriteRenderer>().sprite;
             float entranceX = renderedSprite != null && renderedSprite.name == "courtyard_house"
                 ? 124f / renderedSprite.pixelsPerUnit : 0f;
+            if (renderedSprite != null && renderedSprite.name == "courtyard_house")
+            {
+                // Match the wall footprint, leaving the projecting eaves and entrance steps walkable.
+                var body = go.GetComponent<BoxCollider2D>();
+                body.size = new Vector2(960f, 672f) / renderedSprite.pixelsPerUnit;
+                body.offset = new Vector2(-8f, 426f) / renderedSprite.pixelsPerUnit;
+                // Sort at the front wall rather than the bottom step, so a visitor on the stairs stays visible.
+                float wallFront = body.offset.y - body.size.y * .5f;
+                go.GetComponent<YSort>().Configure(true, -Mathf.RoundToInt(wallFront * YSort.OrdersPerUnit));
+            }
             if (service != NpcService.None) ServiceDoor.Attach(go, service, prompt);
             else if (!string.IsNullOrEmpty(dialogue))
             {
@@ -1050,7 +1060,7 @@ namespace DotRPG
                 case 'H':
                 {
                     int style = (x * 7 + y * 3) % 3;
-                    HdBuilding("House", $"town_house_{style}", x, y, 3, 3, "문 두드리기", "town_house_door");
+                    HdBuilding("House", $"town_house_{style}", x, y, 10, 8, "문 두드리기", "town_house_door");
                     return true;
                 }
                 case 'I': HdBuilding("ChiefHall", "town_hall", x, y, 5, 4, "문 두드리기", "town_hall_door"); return true;

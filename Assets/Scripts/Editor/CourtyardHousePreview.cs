@@ -15,7 +15,7 @@ namespace DotRPG.EditorTools
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = 360f;
+            importer.spritePixelsPerUnit = 120f;
             importer.spritePivot = new Vector2(.5f, 42f / 1024f);
             var settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
@@ -35,7 +35,7 @@ namespace DotRPG.EditorTools
             for (int i = 0; i < 3; i++)
             {
                 var sprite = library.Get("town_house_" + i);
-                if (sprite == null || AssetDatabase.GetAssetPath(sprite) != path || sprite.pixelsPerUnit != 360f)
+                if (sprite == null || AssetDatabase.GetAssetPath(sprite) != path || sprite.pixelsPerUnit != 120f)
                     throw new Exception("Generated house is not connected to runtime key " + i);
                 if (Vector2.Distance(sprite.pivot, new Vector2(768, 42)) > .01f)
                     throw new Exception("Generated house entrance pivot changed");
