@@ -90,7 +90,10 @@ namespace DotRPG
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = UIFactory.ReferenceResolution;
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            // [UI] Expand: the 1280x720 reference always fits inside the canvas, so 16:10 (Steam Deck 1280x800)
+            // and 21:9 only add space instead of shrinking the width (MatchWidthOrHeight 0.5 made the centred
+            // boss bar overlap the status bars at 16:10). 16:9 resolutions scale exactly as before.
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
             scaler.matchWidthOrHeight = 0.5f;
             go.AddComponent<GraphicRaycaster>();
             EnsureEventSystem(parent);

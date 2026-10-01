@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace DotRPG
@@ -58,12 +58,12 @@ namespace DotRPG
                 UIFactory.Stretch(v.timers[i].rectTransform);
                 v.keys[i] = UIFactory.Text(bg.transform, "Key", "", 16, new Color32(255, 224, 102, 255), TextAnchor.UpperLeft, true);
                 UIFactory.Stretch(v.keys[i].rectTransform, 6f, 2f, 2f, 3f);
-                v.costs[i] = UIFactory.Text(bg.transform, "Cost", "", 14, new Color32(140, 190, 255, 255), TextAnchor.LowerRight, true);
+                v.costs[i] = UIFactory.Text(bg.transform, "Cost", "", UiTheme.FontMin, new Color32(140, 190, 255, 255), TextAnchor.LowerRight, true);
                 UIFactory.Stretch(v.costs[i].rectTransform, 2f, 3f, 6f, 2f);
                 x += s + Gap;
             }
             // Caption above the awakening slot.
-            var caption = UIFactory.Text(root, "UltCaption", "각성", 15, new Color32(255, 214, 110, 255), TextAnchor.LowerCenter, true);
+            var caption = UIFactory.Text(root, "UltCaption", "각성", UiTheme.FontMin, new Color32(255, 214, 110, 255), TextAnchor.LowerCenter, true);
             UIFactory.Place(caption.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width - UltSize * 0.5f, UltSize + 1f), new Vector2(UltSize + 20f, 20f));
             return v;
         }
@@ -122,7 +122,7 @@ namespace DotRPG
 
         public static AwakeningBanner Create(Transform parent)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "Awakening"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(1400f, 112f));
+            var root = UIFactory.Place(UIFactory.Rect(parent, "Awakening"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(UiTheme.HudBannerWidth, 112f)); // [UI] centre column
             var b = root.gameObject.AddComponent<AwakeningBanner>();
             b.group = root.gameObject.AddComponent<CanvasGroup>();
             b.group.blocksRaycasts = false;
@@ -131,17 +131,17 @@ namespace DotRPG
             UIFactory.Overlay(root, "Band", new Color(0.02f, 0.02f, 0.06f, 0.5f));
             b.lineTop = UIFactory.Image(root, "LineTop", Game.Art.Get("ui_white"), Color.white);
             b.lineTop.preserveAspect = false;
-            UIFactory.Place(b.lineTop.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(1400f, 3f));
+            UIFactory.Place(b.lineTop.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
             b.lineBottom = UIFactory.Image(root, "LineBottom", Game.Art.Get("ui_white"), Color.white);
             b.lineBottom.preserveAspect = false;
-            UIFactory.Place(b.lineBottom.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1400f, 3f));
+            UIFactory.Place(b.lineBottom.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
             b.caption = UIFactory.Text(root, "Caption", "— 각 성 —", 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
-            UIFactory.Place(b.caption.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(600f, 28f));
+            UIFactory.Place(b.caption.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(UiTheme.HudBannerWidth - 20f, 28f));
             b.title = UIFactory.Text(root, "Title", "", 46, Color.white, TextAnchor.MiddleCenter, true);
             var outline = b.title.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.1f, 0.05f, 0.02f, 0.95f);
             outline.effectDistance = new Vector2(3f, -3f);
-            UIFactory.Place(b.title.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(900f, 62f));
+            UIFactory.Place(b.title.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(UiTheme.HudBannerWidth - 20f, 62f));
             return b;
         }
 

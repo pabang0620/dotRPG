@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +24,7 @@ namespace DotRPG
         RectTransform prompt;
         Text promptText;
         Text controlsHint;
+        Image controlsPlate; // [UI]
         bool lastGamepad;
 
         RectTransform toastRoot;
@@ -31,6 +32,8 @@ namespace DotRPG
 
         class Toast
         {
+            public RectTransform root; // [UI] plate + text
+            public Image plate;
             public Text text;
             public string message;
             public int count;
@@ -64,20 +67,21 @@ namespace DotRPG
             var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -100), new Vector2(360, 40));
             var bg = UIFactory.Panel(items, "Bg", true);
             UIFactory.Stretch(bg.rectTransform);
-            float x = 14f;
+            // [UI] Compact steps keep the bar left of the centred boss bar (UiTheme.HudCurrencyMaxRight).
+            float x = 12f;
             var shown = new List<(string id, string icon)> { (ConsumableDatabase.Gold, "icon_gold") };
             foreach (var def in Game.Config.items) shown.Add((def.id, def.iconKey));
             foreach (var (id, iconKey) in shown)
             {
                 bool gold = id == ConsumableDatabase.Gold;
                 var icon = UIFactory.Image(items, "Icon_" + id, Game.Art.Get(iconKey), Color.white);
-                UIFactory.Place(icon.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x, 0), new Vector2(30, 30));
-                var count = UIFactory.Text(items, "Count_" + id, "0", 22, gold ? (Color)new Color32(255, 216, 74, 255) : UIColors.Cream, TextAnchor.MiddleLeft, true);
-                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 34, 0), new Vector2(gold ? 96 : 70, 34));
+                UIFactory.Place(icon.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x, 0), new Vector2(26, 26));
+                var count = UIFactory.Text(items, "Count_" + id, "0", 20, gold ? (Color)new Color32(255, 216, 74, 255) : UIColors.Cream, TextAnchor.MiddleLeft, true);
+                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 30, 0), new Vector2(gold ? 86 : 50, 34));
                 itemCounts[id] = count;
-                x += gold ? 138f : 100f;
+                x += gold ? 120f : 82f;
             }
-            items.sizeDelta = new Vector2(x, 44);
+            items.sizeDelta = new Vector2(Mathf.Min(x, UiTheme.HudCurrencyMaxRight - 20f), 44);
             QuickItemBar.Create(root);
 
             // Round minimap (top-right) with the quest tracker underneath.
@@ -96,8 +100,12 @@ namespace DotRPG
             UIFactory.Stretch(questBody.rectTransform, 18, 10, 14, 44);
 
             // Control hints (bottom-left).
-            controlsHint = UIFactory.Text(root, "Controls", "", 16, new Color(1, 1, 1, 0.85f), TextAnchor.LowerLeft, true);
-            UIFactory.Place(controlsHint.rectTransform, new Vector2(0, 0), new Vector2(0, 0), new Vector2(20, 14), new Vector2(900, 30));
+            // [UI] On a translucent plate so it stays readable over bright ground.
+            controlsHint = UIFactory.Text(root, "Controls", "", UiTheme.FontMin, new Color(1, 1, 1, 0.92f), TextAnchor.MiddleLeft, true);
+            UIFactory.Place(controlsHint.rectTransform, new Vector2(0, 0), new Vector2(0, 0), new Vector2(20, 10), new Vector2(900, 26));
+            controlsPlate = UIFactory.Image(root, "ControlsPlate", Game.Art.Get("ui_white"), UiTheme.HudPlate);
+            controlsPlate.preserveAspect = false;
+            controlsPlate.transform.SetSiblingIndex(controlsHint.transform.GetSiblingIndex());
 
             // Context prompt (follows the target in world space).
             prompt = UIFactory.Place(UIFactory.Rect(root, "Prompt"), new Vector2(0, 0), new Vector2(0.5f, 0), Vector2.zero, new Vector2(220, 40));
@@ -139,7 +147,7 @@ namespace DotRPG
 
         public void ClearToasts()
         {
-            foreach (var t in toasts) if (t.text != null) Destroy(t.text.gameObject);
+            foreach (var t in toasts) if (t.root != null) Destroy(t.root.gameObject);
             toasts.Clear();
         }
 
@@ -183,6 +191,16 @@ namespace DotRPG
                 $"이동 {input.GetBindingLabel(GameAction.Move)}   공격 {input.GetBindingLabel(GameAction.Attack)}   " +
                 $"상호작용 {input.GetBindingLabel(GameAction.Interact)}   물약 {input.GetBindingLabel(GameAction.UseItem)}/{input.GetBindingLabel(GameAction.UseMana)}   " +
                 $"가방 {input.GetBindingLabel(GameAction.Inventory)}   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
+            // [UI] Size the text box (and its plate) to the text.
+            controlsHint.rectTransform.sizeDelta = new Vector2(Mathf.Min(900f, controlsHint.preferredWidth + 4f), 26f);
+            if (controlsPlate != null)
+            {
+                var pr = controlsPlate.rectTransform;
+                pr.anchorMin = pr.anchorMax = Vector2.zero;
+                pr.pivot = Vector2.zero;
+                pr.anchoredPosition = new Vector2(12f, 8f);
+                pr.sizeDelta = controlsHint.rectTransform.sizeDelta + new Vector2(16f, 4f);
+            }
         }
 
         void ShowToast(string message)
@@ -197,20 +215,35 @@ namespace DotRPG
                     last.count++;
                     last.bornAt = now;
                     last.text.text = $"{message}  x{last.count}";
+                    FitToast(last);
                     return;
                 }
             }
-            var text = UIFactory.Text(toastRoot, "Toast", message, 22, Color.white, TextAnchor.MiddleCenter, true);
+            // [UI] Each toast sits on its own translucent plate sized to the text (readable over bright ground).
+            var box = UIFactory.Place(UIFactory.Rect(toastRoot, "Toast"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), Vector2.zero, new Vector2(700, ToastHeight));
+            var plate = UIFactory.Image(box, "Plate", Game.Art.Get("ui_white"), UiTheme.HudPlate);
+            plate.preserveAspect = false;
+            UIFactory.Place(plate.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200, ToastHeight));
+            var text = UIFactory.Text(box, "Text", message, UiTheme.FontSubheading, Color.white, TextAnchor.MiddleCenter, true);
             var outline = text.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.1f, 0.06f, 0.04f, 0.9f);
             outline.effectDistance = new Vector2(2, -2);
-            UIFactory.Place(text.rectTransform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), Vector2.zero, new Vector2(700, 32));
-            toasts.Add(new Toast { text = text, message = message, count = 1, bornAt = now });
+            UIFactory.Stretch(text.rectTransform);
+            var toast = new Toast { root = box, plate = plate, text = text, message = message, count = 1, bornAt = now };
+            FitToast(toast);
+            toasts.Add(toast);
             while (toasts.Count > 4)
             {
-                Destroy(toasts[0].text.gameObject);
+                Destroy(toasts[0].root.gameObject);
                 toasts.RemoveAt(0);
             }
+        }
+
+        const float ToastHeight = 32f, ToastStep = 36f; // [UI]
+
+        static void FitToast(Toast t)
+        {
+            t.plate.rectTransform.sizeDelta = new Vector2(Mathf.Min(700f, t.text.preferredWidth + 32f), ToastHeight);
         }
 
         void Update()
@@ -227,7 +260,7 @@ namespace DotRPG
                 float age = now - t.bornAt;
                 if (age > ToastLife)
                 {
-                    Destroy(t.text.gameObject);
+                    Destroy(t.root.gameObject);
                     toasts.RemoveAt(i);
                 }
             }
@@ -236,11 +269,15 @@ namespace DotRPG
                 var t = toasts[i];
                 float age = now - t.bornAt;
                 int fromBottom = toasts.Count - 1 - i;
-                var rt = t.text.rectTransform;
-                rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, new Vector2(0, fromBottom * 34f), 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
+                var rt = t.root;
+                rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, new Vector2(0, fromBottom * ToastStep), 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
+                float alpha = age < ToastLife - 0.5f ? 1f : Mathf.Clamp01((ToastLife - age) / 0.5f);
                 var c = t.text.color;
-                c.a = age < ToastLife - 0.5f ? 1f : Mathf.Clamp01((ToastLife - age) / 0.5f);
+                c.a = alpha;
                 t.text.color = c;
+                var pc = UiTheme.HudPlate;
+                pc.a *= alpha;
+                t.plate.color = pc;
             }
 
             // Item count pulse.

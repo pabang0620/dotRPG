@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,15 +53,15 @@ namespace DotRPG
             roomMap = UIFactory.Place(UIFactory.Rect(root, "RoomMap"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -16f), new Vector2(MapWidth, 96f));
             var mbg = UIFactory.Panel(roomMap, "Bg", true);
             UIFactory.Stretch(mbg.rectTransform);
-            mapTitle = UIFactory.Text(roomMap, "Title", "", 16, UIColors.Cream, TextAnchor.UpperCenter, true);
+            mapTitle = UIFactory.Text(roomMap, "Title", "", UiTheme.FontCaption, UIColors.Cream, TextAnchor.UpperCenter, true);
             UIFactory.Place(mapTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(MapWidth - 12f, 22f));
 
             // CLEAR banner (screen centre, above the characters).
-            banner = UIFactory.Place(UIFactory.Rect(root, "Banner"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 110f), new Vector2(1280f, 130f));
+            banner = UIFactory.Place(UIFactory.Rect(root, "Banner"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 110f), new Vector2(UiTheme.HudBannerWidth, 130f)); // [UI] centre column
             bannerBg = UIFactory.Image(banner, "Bg", Game.Art.Get("ui_white"), new Color(0f, 0f, 0f, 0.45f));
             bannerBg.preserveAspect = false;
             UIFactory.Stretch(bannerBg.rectTransform);
-            bannerText = UIFactory.Text(banner, "Text", "CLEAR", 84, new Color32(255, 222, 90, 255), TextAnchor.MiddleCenter, true);
+            bannerText = UIFactory.Text(banner, "Text", "클리어!", 84, new Color32(255, 222, 90, 255), TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(bannerText.rectTransform);
             var outline = bannerText.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.35f, 0.15f, 0.02f, 1f);
@@ -93,7 +93,8 @@ namespace DotRPG
             var b = img.gameObject.AddComponent<Button>();
             b.targetGraphic = img;
             b.onClick.AddListener(() => onClick());
-            var t = UIFactory.Text(img.transform, "Text", label, 24, Color.white, TextAnchor.MiddleCenter, true);
+            UiButton.Attach(b); // [UI]
+            var t = UIFactory.Text(img.transform, "Text", label, UiTheme.ButtonFont, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(t.rectTransform);
         }
 

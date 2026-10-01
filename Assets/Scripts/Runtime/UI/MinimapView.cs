@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,6 +21,7 @@ namespace DotRPG
         RectTransform markers;
         Image playerDot;
         Text label;
+        Image labelPlate; // [UI]
         Texture shownTexture;
         readonly List<Image> enemyDots = new List<Image>();
         readonly List<Image> exitDots = new List<Image>();
@@ -57,8 +58,12 @@ namespace DotRPG
 
             view.playerDot = view.Dot(root, PlayerColor, 12f);
 
-            view.label = UIFactory.Text(root, "Name", "", 16, UIColors.Cream, TextAnchor.UpperCenter, true);
-            UIFactory.Place(view.label.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -2f), new Vector2(260f, 24f));
+            // [UI] Region name on a translucent plate (it used to sit straight on the map / terrain).
+            view.labelPlate = UIFactory.Image(root, "NamePlate", Game.Art.Get("ui_white"), UiTheme.HudPlate);
+            view.labelPlate.preserveAspect = false;
+            UIFactory.Place(view.labelPlate.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -1f), new Vector2(120f, 24f));
+            view.label = UIFactory.Text(root, "Name", "", UiTheme.FontCaption, UIColors.Cream, TextAnchor.MiddleCenter, true);
+            UIFactory.Place(view.label.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -1f), new Vector2(260f, 24f));
             return view;
         }
 
@@ -81,6 +86,8 @@ namespace DotRPG
                 map.texture = shownTexture;
                 mapRect.sizeDelta = new Vector2(world.Bounds.width * PixelsPerTile, world.Bounds.height * PixelsPerTile);
                 label.text = world.Map != null ? world.Map.displayName : "";
+                labelPlate.rectTransform.sizeDelta = new Vector2(Mathf.Min(260f, label.preferredWidth + 20f), 24f);
+                labelPlate.enabled = label.text.Length > 0;
             }
 
             Vector2 p = player.Position;

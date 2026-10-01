@@ -117,9 +117,9 @@ namespace DotRPG
             markers = UIFactory.Stretch(UIFactory.Rect(strip, "Markers"));
 
             // Groggy gauge.
-            groggyLabel = UIFactory.Text(root, "GroggyLabel", "무력화", 14, new Color32(214, 196, 255, 255), TextAnchor.MiddleLeft, true);
-            UIFactory.Place(groggyLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -68f), new Vector2(60f, 20f));
-            var gRt = UIFactory.Place(UIFactory.Rect(root, "Groggy"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(30f, -73f), new Vector2(Width - 60f, 9f));
+            groggyLabel = UIFactory.Text(root, "GroggyLabel", "무력화", UiTheme.FontMin, new Color32(214, 196, 255, 255), TextAnchor.MiddleLeft, true);
+            UIFactory.Place(groggyLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -66f), new Vector2(64f, 22f));
+            var gRt = UIFactory.Place(UIFactory.Rect(root, "Groggy"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(36f, -73f), new Vector2(Width - 72f, 9f));
             var gBg = Solid(gRt, "Bg", new Color32(28, 20, 40, 255));
             UIFactory.Stretch(gBg.rectTransform, -1, -1, -1, -1);
             groggyFill = Bar(gRt, "Fill", GroggyColor);
@@ -130,20 +130,20 @@ namespace DotRPG
             UIFactory.Place(groggyText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(Width, 40f));
 
             // Intro banner (screen centre-top) and warnings (under the bar).
-            banner = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossBanner"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(1280f, 120f));
+            banner = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossBanner"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(UiTheme.HudBannerWidth, 120f)); // [UI] centre column only: clear of party frames / quest tracker
             var bb = Solid(banner, "Band", new Color(0.05f, 0.02f, 0.02f, 0.72f));
             UIFactory.Stretch(bb.rectTransform);
             var line1 = Solid(banner, "LineTop", new Color(0.85f, 0.2f, 0.18f, 0.9f));
-            UIFactory.Place(line1.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(1280f, 3f));
+            UIFactory.Place(line1.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
             var line2 = Solid(banner, "LineBottom", new Color(0.85f, 0.2f, 0.18f, 0.9f));
-            UIFactory.Place(line2.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1280f, 3f));
+            UIFactory.Place(line2.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
             bannerSub = UIFactory.Text(banner, "Sub", "", 20, new Color32(255, 150, 130, 255), TextAnchor.MiddleCenter, true);
-            UIFactory.Place(bannerSub.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(900f, 28f));
+            UIFactory.Place(bannerSub.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(UiTheme.HudBannerWidth - 20f, 28f));
             bannerTitle = UIFactory.Text(banner, "Title", "", 52, Color.white, TextAnchor.MiddleCenter, true);
             var bo = bannerTitle.gameObject.AddComponent<Outline>();
             bo.effectColor = new Color(0.45f, 0.05f, 0.05f, 1f);
             bo.effectDistance = new Vector2(3f, -3f);
-            UIFactory.Place(bannerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(1000f, 70f));
+            UIFactory.Place(bannerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(UiTheme.HudBannerWidth - 20f, 70f));
             banner.gameObject.SetActive(false);
 
             // [CONTENT] Right under the bar, inside the same centre column (clear of party frames and quest panel).
