@@ -257,38 +257,8 @@ namespace DotRPG
 
         // ---------- Buildings ----------
 
-        /// <summary>Timber-framed cottage (3x3): 0 red roof, 1 blue, 2 green.</summary>
-        static PixelCanvas TownHouse(int v)
-        {
-            var roof = v == 1 ? RoofBlue : v == 2 ? RoofGreen : TRoofRed;
-            const int footW = 96, wallH = 42, roofH = 52;
-            int W = footW + 14, Hh = roofH + wallH + 16;
-            var c = Hd(W, Hh);
-            int baseY = Hh - 5, wallTop = baseY - wallH, x0 = 7, x1 = 7 + footW - 1, cx = W / 2;
-            GroundShadow(c, x0, x1, wallTop, baseY);
-            PlasterWall(c, x0, x1, wallTop, baseY, 11 + v);
-            Footing(c, x0, x1, baseY, 6);
-            // Timber frame.
-            BeamRect(c, x0, wallTop, footW, 4);
-            BeamRect(c, x0, baseY - 9, footW, 3);
-            foreach (int bx in new[] { x0, x0 + 30, x1 - 32, x1 - 2 }) BeamRect(c, bx, wallTop, 3, wallH - 6);
-            c.Line(x0 + 3, baseY - 10, x0 + 29, wallTop + 4, Beam[1]);
-            c.Line(x1 - 3, baseY - 10, x1 - 31, wallTop + 4, Beam[1]);
-            TWindow(c, x0 + 8, wallTop + 11, 14, 14, Beam[1], true, 3 + v);
-            TWindow(c, x1 - 22, wallTop + 11, 14, 14, Beam[1], true, 5 + v);
-            Door(c, cx, baseY - 5, 16, 28, true, false);
-            int roofBottom = wallTop + 5, roofTop = roofBottom - roofH;
-            Shingles(c, 1, W - 2, roofTop + 8, roofBottom, 10, roof, 200 + v);
-            Chimney(c, x1 - 22, roofTop + 4, roofTop + 26, true);
-            // The eave shades the wall right under it.
-            for (int x = x0; x <= x1; x++) for (int y = roofBottom + 1; y <= roofBottom + 2; y++) c.Set(x, y, new Color32(0, 0, 0, 45));
-            // Little round attic window in the roof.
-            c.Circle(cx + 0.5f, roofTop + 30f, 5f, Beam[1]);
-            c.Circle(cx + 0.5f, roofTop + 30f, 3.6f, Glass);
-            c.Set(cx - 1, roofTop + 28, GlassLight); c.Set(cx, roofTop + 28, GlassLight);
-            c.Outline(TOutline);
-            return c.WithPivot(W / 2f, 5f);
-        }
+        /// <summary>Reference-inspired tiled courtyard houses; preserve the original 3x3 footprint and doorway pivot.</summary>
+        static PixelCanvas TownHouse(int v) => CourtyardHouse(v);
 
         /// <summary>Chief's hall (5x4): stone ground floor, blue slate roof with a front gable and a bell.</summary>
         static PixelCanvas TownHall()
