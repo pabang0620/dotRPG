@@ -242,9 +242,11 @@ namespace DotRPG
                 spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
             }
             if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();
+            ApplyDungeonTint(); // [DGNTERRAIN] darker mine / ice cave rooms (WorldBuilder.DungeonLook.cs)
             AddTreeFades();
             if (PointsOfInterest.Count == 0) PointsOfInterest.Add(PlayerSpawn);
             BuildMinimap();
+            AddDungeonVignette(); // [DGNTERRAIN]
         }
 
         /// <summary>
