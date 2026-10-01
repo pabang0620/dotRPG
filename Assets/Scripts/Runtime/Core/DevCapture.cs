@@ -210,6 +210,7 @@ namespace DotRPG
             Game.Flow.TravelTo(MapRegistry.Canyon);
             yield return Wait(1.5f);
             Log($"after travel: map={Game.World.MapId} player={Game.Player.Position}");
+            yield return BgmChecks(); // [BGM]
             yield return Shot("04_canyon_arrival");
 
             yield return Teleport(new Vector2(24f, 38f));
