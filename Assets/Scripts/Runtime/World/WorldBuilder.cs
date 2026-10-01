@@ -229,6 +229,7 @@ namespace DotRPG
             {
                 BuildPaintedGround(PaintTownGround);
                 DecorateForestEdges();
+                DecorateVillageNature();
             }
             else if (CanyonHd) BuildCanyonHd();
             else if (WinterHd) BuildWinterHd();
@@ -810,7 +811,7 @@ namespace DotRPG
             go.transform.SetParent(objectsRoot, false);
             go.transform.position = position;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = Game.Art.Get(spriteKey);
+            sr.sprite = Game.Art.Get(NatureKey(spriteKey));
             if (colliderSize != Vector2.zero)
             {
                 var col = go.AddComponent<BoxCollider2D>();
@@ -827,7 +828,7 @@ namespace DotRPG
             go.transform.SetParent(objectsRoot, false);
             go.transform.position = position;
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = Game.Art.Get(spriteKey);
+            sr.sprite = Game.Art.Get(NatureKey(spriteKey));
             sr.sortingOrder = order; // always under characters
         }
 
@@ -943,7 +944,7 @@ namespace DotRPG
             if (sharp == null) return;
             float basePpu = config.pixelsPerUnit + 0.5f;
             foreach (var sr in objectsRoot.GetComponentsInChildren<SpriteRenderer>(true))
-                if (sr.sprite != null && sr.sprite.pixelsPerUnit > basePpu && sr.sharedMaterial != FxMaterials.Additive)
+                if (sr.sprite != null && !VillageNatureArt.IsGenerated(sr.sprite) && sr.sprite.pixelsPerUnit > basePpu && sr.sharedMaterial != FxMaterials.Additive)
                     sr.sharedMaterial = sharp;
         }
 
@@ -1011,8 +1012,8 @@ namespace DotRPG
                 case 'O': HdTree($"town_fruit_{rng.Next(0, 2)}", foot + Jitter(0.2f), 0.6f); return true;
                 case 'Y': HdTree($"town_pine_{rng.Next(0, 2)}", foot + Jitter(0.3f), 0.5f); return true;
                 case 'q': HdTree($"town_dead_{rng.Next(0, 2)}", foot, 0.5f); return true;
-                case 't': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config, false, true); return true;
-                case 'R': ResourceNode.Create(ResourceKind.Rock, foot, objectsRoot, config, false, true); return true;
+                case 't': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village); return true;
+                case 'R': ResourceNode.Create(ResourceKind.Rock, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village); return true;
                 case 'S': StaticProp("Stump", "town_stump", foot, new Vector2(0.8f, 0.45f), new Vector2(0f, 0.2f)); return true;
                 case 'B': StaticProp("Bush", $"town_bush_{rng.Next(0, 3)}", foot, new Vector2(0.95f, 0.45f), new Vector2(0f, 0.22f)); return true;
                 case 'r': Decoration($"town_pebbles_{rng.Next(0, 2)}", center + new Vector2(0f, -0.25f)); return true;

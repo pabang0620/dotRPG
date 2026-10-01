@@ -32,7 +32,8 @@ namespace DotRPG
         static readonly Palette TownPal = new Palette
         {
             grass = new[] { H("#4a9a40"), H("#56a947"), H("#61b44e"), H("#6ebf57"), H("#8fd46c") },
-            canopy = new[] { H("#16361f"), H("#1f4a2a"), H("#2a5f33"), H("#37753c"), H("#468a45"), H("#5aa152") },
+            // Match the village's imported teal / olive trees at the continuous forest boundary.
+            canopy = new[] { H("#0b2029"), H("#123a3b"), H("#205044"), H("#35633c"), H("#52743d"), H("#7b9246") },
             dirt = new[] { H("#9a6a43"), H("#b98553"), H("#cc9a64"), H("#ddb27c") },
             blade = H("#a3e07e"), bladeDark = H("#3e8a3a"),
         };

@@ -1,0 +1,35 @@
+VILLAGE NATURE — generated PNG assets, 2026-10-02
+Tool: built-in image_gen, transparent_background=true.
+Reference: user's woodland environment sprite sheet (codex-clipboard-655517e3-088c-4563-b479-cd6765c9f8b9.png), visual style only.
+Assets: Assets/Resources/Art/Nature/{broadleaf,pine,bush,rock,log,grass,mushrooms}.png.
+These seven PNGs are newly generated game art. Ground textures, pebbles, stumps and dead trees remain the existing procedural art.
+The village's procedural forest-boundary canopy palette is matched to the new teal/olive trees; ground layout and other biome palettes are unchanged.
+Applied to the first village only, including harvestable trees/rocks and forest-edge trees. Orchard O props use the new broadleaf silhouette.
+Grass, mushrooms and fallen logs are nonblocking decoration. Trunk/resource collision, harvesting and canopy fading are retained.
+Original generated alpha and image dimensions are preserved. Unity imports use point filtering, no mipmaps/compression, and measured root pivots.
+Import/build: DotRPG.EditorTools.VillageNatureImport.ImportAndBuild.
+Runtime checks: dotRPG.exe -dotrpgNature <output folder>. Saves are isolated under that folder.
+
+TREE PROMPT BASE:
+Use case: stylized-concept. Asset type: single transparent PNG sprite for dotRPG, a top-down 2D pixel-art RPG. The input image is STYLE REFERENCE ONLY, not an edit target: match its chunky dark teal foliage clusters, olive highlights, warm ochre bark, earthy violet rocks, top-left lighting, raised front/top-down view, old-school crisp pixel clusters and restrained palette. Draw one original asset, not the full sheet. Actual transparent alpha background; no colored backdrop, ground tile, text, border, labels, grass island or soft shadow. Hard square pixel edges, no anti-aliasing, no gradients or blur. Pixel density should resemble art drawn on a 128x128 logical grid enlarged with nearest-neighbor. Keep all parts fully inside the canvas with 8 percent empty margins. Center subject; base contact at bottom center.
+
+BROADLEAF (append to tree base):
+One mature broadleaf tree, whole tree visible. Dense asymmetric crown made of overlapping tiered rounded leaf masses, deep blue-green shaded recesses, small olive-green lit clusters; visible tapering warm brown trunk with branching roots. Broad irregular canopy wider than trunk by 7x. Similar to the two large trees at lower left of the reference. Tree occupies 80% height and 65% width.
+
+PINE (append to tree base):
+One tall narrow evergreen tree, whole tree visible. Organic oval-conical irregular crown with tiered dark teal leaf masses and olive highlights, not geometric triangles; visible crooked warm brown trunk with flared roots. Similar to the two slender trees at lower right of reference. Tree occupies 80% height and 45% width.
+
+BUSH:
+Use case: stylized-concept. Asset type: single transparent PNG sprite for dotRPG top-down pixel art. Input is a STYLE REFERENCE only. Create one original isolated object matching its dark teal foliage, olive highlights, ochre wood, mauve-gray stone palette. Raised 3/4 top-down RPG view, lighting top-left, hard chunky square pixel clusters, logical 64x64 enlarged nearest-neighbor. Actual transparent alpha background. No background, ground tile, soft shadows, blur, text or labels. Entire object centered, generous transparent margins, base contact at bottom of object. A squat shrub of layered rounded dark teal foliage masses, olive lit upper leaves, deep dark internal recesses, a few short brown stems. Like upper-left shrubs of reference. 75% canvas width, 48% height.
+
+ROCK:
+Use case: stylized-concept. Asset type: single transparent PNG sprite for dotRPG top-down pixel art. Input is a STYLE REFERENCE only. Create one original isolated object matching its dark teal foliage, olive highlights, ochre wood, mauve-gray stone palette. Raised 3/4 top-down RPG view, lighting top-left, hard chunky square pixel clusters, logical 64x64 enlarged nearest-neighbor. Actual transparent alpha background. No background, ground tile, soft shadows, blur, text or labels. Entire object centered, generous transparent margins, base contact at bottom of object. Low cluster of three angular woodland rocks, central medium boulder and two small side stones. Brown-gray lit top facets, earthy muted mauve shaded sides, deep cracks. Like right-hand medium rocks of reference. 72% width, 55% height.
+
+LOG:
+Use case: stylized-concept. Asset type: single transparent PNG sprite for dotRPG top-down pixel art. Input is a STYLE REFERENCE only. Create one original isolated object matching its dark teal foliage, olive highlights, ochre wood, mauve-gray stone palette. Raised 3/4 top-down RPG view, lighting top-left, hard chunky square pixel clusters, logical 64x64 enlarged nearest-neighbor. Actual transparent alpha background. No background, ground tile, soft shadows, blur, text or labels. Entire object centered, generous transparent margins, base contact at bottom of object. Fallen hollow log angled from lower-left to upper-right; dark broken hollow end visible at lower-left, rough ochre bark with green moss strips on top, splintered ends. Like upper-center log of reference. 78% width, 46% height.
+
+GRASS:
+Use case: stylized-concept. Asset type: single transparent PNG sprite for dotRPG top-down pixel art. Input is a STYLE REFERENCE only. Create one original isolated object matching its dark teal foliage, olive highlights, ochre wood, mauve-gray stone palette. Raised 3/4 top-down RPG view, lighting top-left, hard chunky square pixel clusters, logical 64x64 enlarged nearest-neighbor. Actual transparent alpha background. No background, ground tile, soft shadows, blur, text or labels. Entire object centered, generous transparent margins, base contact at bottom of object. Small clump of four long pointed wild grass blades, irregular outward leaning blades, teal lower sections, olive lit upper leaves. Like middle-left grasses of reference. No soil patch. 48% width, 58% height.
+
+MUSHROOMS:
+Use case: stylized-concept. Asset type: single transparent PNG sprite for dotRPG top-down pixel art. Input is a STYLE REFERENCE only. Create one original isolated object matching its dark teal foliage, olive highlights, ochre wood, mauve-gray stone palette. Raised 3/4 top-down RPG view, lighting top-left, hard chunky square pixel clusters, logical 64x64 enlarged nearest-neighbor. Actual transparent alpha background. No background, ground tile, soft shadows, blur, text or labels. Entire object centered, generous transparent margins, base contact at bottom of object. One cluster of three red mushrooms at different heights: largest central cap and two small companions, ivory stems, sparse ivory square spots on red caps. Like top-right mushrooms of reference. 58% width, 48% height.

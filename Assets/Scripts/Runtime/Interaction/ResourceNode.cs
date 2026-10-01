@@ -32,7 +32,7 @@ namespace DotRPG
         bool depleted;
 
         /// <param name="hd">Use the 32px town/forest art ("town_chop", "town_rock_*", "town_stump").</param>
-        public static ResourceNode Create(ResourceKind kind, Vector2 position, Transform parent, GameConfig config, bool fruit = false, bool hd = false)
+        public static ResourceNode Create(ResourceKind kind, Vector2 position, Transform parent, GameConfig config, bool fruit = false, bool hd = false, bool villageNature = false)
         {
             var go = new GameObject(kind.ToString());
             go.transform.SetParent(parent, false);
@@ -68,6 +68,7 @@ namespace DotRPG
                 node.circle.radius = hd ? 0.5f : 0.42f;
                 node.circle.offset = new Vector2(0f, hd ? 0.3f : 0.3f);
             }
+            if (villageNature) node.fullSpriteKey = VillageNatureArt.Resolve(node.fullSpriteKey);
             node.health = node.maxHealth;
             sr.sprite = Game.Art.Get(node.fullSpriteKey);
             go.AddComponent<YSort>().Configure(true);

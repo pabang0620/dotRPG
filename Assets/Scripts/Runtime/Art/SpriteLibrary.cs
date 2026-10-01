@@ -31,6 +31,8 @@ namespace DotRPG
             sprite = Resources.Load<Sprite>(OverrideFolder + key);
             var building = VillageBuildingArt.Find(key);
             if (sprite == null && building != null) sprite = Resources.Load<Sprite>(building.ResourcePath);
+            var nature = VillageNatureArt.Find(key);
+            if (sprite == null && nature != null) sprite = Resources.Load<Sprite>(nature.ResourcePath);
             if (sprite == null && KatanaArt.Handles(key)) sprite = KatanaArt.Get(key);
             if (sprite == null)
             {
