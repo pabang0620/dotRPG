@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace DotRPG
@@ -19,15 +19,17 @@ namespace DotRPG
 
             var badge = Img(root, "Badge", "ui_btn", Color.white);
             UIFactory.Place(badge.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(70f, 70f));
-            var lvCaption = UIFactory.Text(badge.transform, "Lv", "LV", 14, new Color(1f, 1f, 1f, 0.75f), TextAnchor.UpperCenter, true);
+            var lvCaption = UIFactory.Text(badge.transform, "Lv", "레벨", UiTheme.FontMin, new Color(1f, 1f, 1f, 0.85f), TextAnchor.UpperCenter, true);
             UIFactory.Stretch(lvCaption.rectTransform, 0f, 0f, 0f, 6f);
             v.levelText = UIFactory.Text(badge.transform, "Level", "1", 30, Color.white, TextAnchor.LowerCenter, true);
             UIFactory.Stretch(v.levelText.rectTransform, 0f, 6f, 0f, 0f);
 
             v.hpFill = Bar(root, "HP", new Vector2(80f, -2f), 24f, new Color32(214, 48, 49, 255), out v.hpLag, out v.hpText);
-            v.mpFill = Bar(root, "MP", new Vector2(80f, -32f), 18f, new Color32(52, 120, 230, 255), out _, out v.mpText);
-            v.xpFill = Bar(root, "XP", new Vector2(80f, -56f), 10f, new Color32(255, 206, 64, 255), out _, out v.xpText);
-            v.xpText.fontSize = 12;
+            v.mpFill = Bar(root, "MP", new Vector2(80f, -32f), 20f, new Color32(52, 120, 230, 255), out _, out v.mpText);
+            v.xpFill = Bar(root, "XP", new Vector2(80f, -58f), 12f, new Color32(255, 206, 64, 255), out _, out v.xpText);
+            // [UI] Minimum readable sizes (the thin bars would otherwise get 13-15px labels).
+            v.mpText.fontSize = UiTheme.FontMin;
+            v.xpText.fontSize = 14; // the 12px EXP bar cannot hold more; it overflows the bar slightly
             return v;
         }
 

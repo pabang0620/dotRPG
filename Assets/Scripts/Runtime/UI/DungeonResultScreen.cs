@@ -85,8 +85,8 @@ namespace DotRPG
             {
                 var track = Panel(dmg.transform, "Track" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(150f, -42f - i * 30f), new Vector2(520f, 20f), new Color32(12, 18, 28, 255));
                 var bar = Panel(track.transform, "Bar", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), Vector2.zero, new Vector2(0f, 20f), Color.white);
-                var text = Label(dmg.transform, "Name" + i, "", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -40f - i * 30f), new Vector2(124f, 26f));
-                var value = Label(track.transform, "Value", "", 16, new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(130f, 24f), TextAnchor.MiddleLeft);
+                var text = Label(dmg.transform, "Name" + i, "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -40f - i * 30f), new Vector2(124f, 26f));
+                var value = Label(track.transform, "Value", "", UiTheme.FontCaption, new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(130f, 24f), TextAnchor.MiddleLeft);
                 w.bars.Add((bar, text));
                 track.gameObject.SetActive(false);
                 text.gameObject.SetActive(false);
@@ -316,7 +316,7 @@ namespace DotRPG
         static string CardText(RewardCard r)
         {
             var gear = EquipmentDatabase.Get(r.itemId);
-            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}><b>{gear.name}</b></color>\n<size=14>{EquipmentDatabase.RarityName(gear.rarity)}</size>";
+            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}><b>{gear.name}</b></color>\n<size=16>{EquipmentDatabase.RarityName(gear.rarity)}</size>";
             string name = DungeonDatabase.ItemName(r.itemId);
             return $"<b>{name}</b>\n×{r.count:N0}";
         }

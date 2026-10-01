@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -216,15 +216,21 @@ namespace DotRPG
                 bool isSelected = i == selected;
                 item.highlight.enabled = isSelected;
                 var baseColor = dark ? UIColors.Cream : UIColors.Ink;
-                var color = !enabled ? UIColors.Disabled : baseColor;
+                // [UI] Dark theme: dark ink on the gold selection bar (cream on gold was unreadable).
+                var color = !enabled ? UIColors.Disabled : dark && isSelected ? UIColors.Ink : baseColor;
                 // Unselected rows carry an invisible arrow of the same width, so text never jumps sideways.
                 string prefix = isSelected ? "▶ " : "<color=#00000000>▶</color> ";
                 item.labelText.text = prefix + item.label;
                 item.labelText.color = color;
+                // [UI] No drop shadow under dark ink on the gold bar (it smeared the glyphs).
+                var shadow = item.labelText.GetComponent<Shadow>();
+                if (shadow != null) shadow.enabled = !(dark && isSelected && enabled);
                 if (item.valueText != null)
                 {
                     item.valueText.text = isSelected ? $"◀ {item.value()} ▶" : item.value();
                     item.valueText.color = color;
+                    var vShadow = item.valueText.GetComponent<Shadow>();
+                    if (vShadow != null) vShadow.enabled = !(dark && isSelected && enabled);
                 }
             }
         }

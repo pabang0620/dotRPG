@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -189,7 +189,7 @@ namespace DotRPG
             sortButton = MakeButton(root, "Sort", "정렬", "ui_btngray", new Vector2(1f, 0f), new Vector2(-24f, 26f), new Vector2(150f, 60f), ToggleSort, 26, true);
             sortLabel = sortButton.GetComponentInChildren<Text>();
 
-            hint = UIFactory.Text(root, "Hint", "", 15, new Color(1f, 1f, 1f, 0.65f), TextAnchor.LowerLeft, true);
+            hint = UIFactory.Text(root, "Hint", "", UiTheme.FontCaption, new Color(1f, 1f, 1f, 0.82f), TextAnchor.LowerLeft, true);
             UIFactory.Place(hint.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 6f), new Vector2(900f, 24f));
 
             // Keyboard / gamepad cursor.

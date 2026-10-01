@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -19,18 +19,24 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, name, false);
             var w = root.gameObject.AddComponent<T>();
-            var bg = UIFactory.Overlay(root, "Bg", new Color32(34, 52, 76, 255));
+            // [UI] Colours / sizes from UiTheme; the back button names its key (Esc) so keyboard and pad
+            // players see how to close every window, and a thin accent line separates header and content.
+            var bg = UIFactory.Overlay(root, "Bg", UiTheme.Background);
             bg.raycastTarget = true;
-            var header = Img(root, "Header", "ui_white", new Color32(22, 31, 46, 255));
-            UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, 76f));
-            Button(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(56f, 52f), w.Close, 26);
+            var header = Img(root, "Header", "ui_white", UiTheme.Header);
+            UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, UiTheme.HeaderHeight));
+            var headerLine = Img(root, "HeaderLine", "ui_white", new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f));
+            UIFactory.Place(headerLine.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -UiTheme.HeaderHeight), new Vector2(4000f, 2f));
+            var back = Button(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), w.Close, 24);
+            var backText = back.GetComponentInChildren<Text>();
+            backText.text = "◀ <size=17>Esc</size>";
             if (!string.IsNullOrEmpty(icon))
             {
                 var ic = UIFactory.Image(root, "Icon", Game.Art.Get(icon), Color.white);
-                UIFactory.Place(ic.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(92f, -14f), new Vector2(48f, 48f));
+                UIFactory.Place(ic.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(134f, -14f), new Vector2(48f, 48f));
             }
-            var t = UIFactory.Text(root, "Title", title, 40, Color.white, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(150f, -12f), new Vector2(600f, 52f));
+            var t = UIFactory.Text(root, "Title", title, UiTheme.FontTitle, Color.white, TextAnchor.MiddleLeft, true);
+            UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(192f, -12f), new Vector2(560f, 52f));
             w.keeperLine = UIFactory.Text(root, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
             UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(760f, 52f));
             w.content = UIFactory.Stretch(UIFactory.Rect(root, "Content"), 30f, 30f, 30f, 96f);
@@ -70,7 +76,8 @@ namespace DotRPG
             var button = img.gameObject.AddComponent<Button>();
             button.targetGraphic = img;
             button.onClick.AddListener(() => onClick());
-            var text = UIFactory.Text(img.transform, "Text", label, font, Color.white, TextAnchor.MiddleCenter, true);
+            UiButton.Attach(button); // [UI] hover / press / disabled feedback + hover sound
+            var text = UIFactory.Text(img.transform, "Text", label, UiTheme.Size(font), Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(text.rectTransform);
             return button;
         }
@@ -295,7 +302,7 @@ namespace DotRPG
                 UIFactory.Stretch(c.level.rectTransform, 4f, 2f, 6f, 2f);
                 c.count = UIFactory.Text(c.bg.transform, "Count", "", 18, Color.white, TextAnchor.LowerRight, true);
                 UIFactory.Stretch(c.count.rectTransform, 4f, 2f, 6f, 2f);
-                c.worn = UIFactory.Text(c.bg.transform, "Worn", "", 15, new Color32(120, 220, 255, 255), TextAnchor.LowerLeft, true);
+                c.worn = UIFactory.Text(c.bg.transform, "Worn", "", UiTheme.FontMin, new Color32(120, 220, 255, 255), TextAnchor.LowerLeft, true);
                 UIFactory.Stretch(c.worn.rectTransform, 8f, 6f, 4f, 2f);
                 var relay = c.bg.gameObject.AddComponent<PointerRelay>();
                 relay.onClick = _ => w.Click(index);

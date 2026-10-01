@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,17 +40,21 @@ namespace DotRPG
         protected void BuildPanel(RectTransform root, string title, float width, string body = null, int bodySize = 20)
         {
             panel = UIFactory.Place(UIFactory.Rect(root, "Panel"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(width, 200));
-            var bg = UIFactory.Panel(panel, "Bg", false);
+            // [UI] Dark panel like every other window (the cream panel mixed two themes); see UiTheme.
+            var fill = UIFactory.Image(panel, "Fill", Game.Art.Get("ui_white"), UiTheme.PanelDeep); // opaque: nothing shows through
+            fill.preserveAspect = false;
+            UIFactory.Stretch(fill.rectTransform, 6f, 6f, 6f, 6f);
+            var bg = UIFactory.Panel(panel, "Bg", true);
             UIFactory.Stretch(bg.rectTransform);
 
             float y = -28f;
-            var titleText = UIFactory.Text(panel, "Title", title, 34, UIColors.Ink, TextAnchor.UpperCenter);
+            var titleText = UIFactory.Text(panel, "Title", title, 34, UiTheme.Accent, TextAnchor.UpperCenter, true);
             UIFactory.Place(titleText.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(width - 40, 46));
             y -= 58f;
 
             if (!string.IsNullOrEmpty(body))
             {
-                var bodyText = UIFactory.Text(panel, "Body", body, bodySize, UIColors.InkSoft, TextAnchor.UpperCenter);
+                var bodyText = UIFactory.Text(panel, "Body", body, UiTheme.Size(bodySize), UiTheme.TextSecondary, TextAnchor.UpperCenter, true);
                 bodyText.lineSpacing = 1.2f;
                 // preferredHeight needs a layout pass; estimate from the line count instead.
                 int lines = body.Split('\n').Length;
@@ -59,7 +63,7 @@ namespace DotRPG
                 y -= h + 10f;
             }
 
-            menu = MenuList.Create(panel, "Menu", width - 80, 46, 24, false);
+            menu = MenuList.Create(panel, "Menu", width - 80, 46, 24, true);
             UIFactory.Place(menu.RectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(width - 80, 10));
             menuTop = -y;
         }
@@ -93,9 +97,12 @@ namespace DotRPG
             UIFactory.Place(sub.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -186), new Vector2(900, 44));
 
             screen.panel = UIFactory.Place(UIFactory.Rect(root, "Panel"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 70), new Vector2(380, 300));
-            var bg = UIFactory.Panel(screen.panel, "Bg", false);
+            var fill = UIFactory.Image(screen.panel, "Fill", Game.Art.Get("ui_white"), UiTheme.PanelDeep);
+            fill.preserveAspect = false;
+            UIFactory.Stretch(fill.rectTransform, 6f, 6f, 6f, 6f);
+            var bg = UIFactory.Panel(screen.panel, "Bg", true); // [UI] dark theme
             UIFactory.Stretch(bg.rectTransform);
-            screen.menu = MenuList.Create(screen.panel, "Menu", 320, 46, 24, false);
+            screen.menu = MenuList.Create(screen.panel, "Menu", 320, 46, 24, true);
             UIFactory.Place(screen.menu.RectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -24), new Vector2(320, 10));
 
             screen.menu.AddButton("새 게임", () =>
@@ -110,7 +117,7 @@ namespace DotRPG
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
             screen.panel.sizeDelta = new Vector2(380, screen.menu.Height + 48);
 
-            var footer = UIFactory.Text(root, "Footer", $"v{Application.version}  ·  프로토타입 (임시 그래픽/사운드는 모두 코드로 자체 생성)", 16,
+            var footer = UIFactory.Text(root, "Footer", $"버전 {Application.version}", UiTheme.FontMin, // [UI] no "prototype" disclaimer on the title screen
                 new Color(1, 1, 1, 0.7f), TextAnchor.LowerRight, true);
             UIFactory.Place(footer.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 10), new Vector2(900, 26));
             return screen;

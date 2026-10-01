@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -59,11 +59,12 @@ namespace DotRPG
             if (showLabel)
             {
                 // Label sits just under the button.
-                var t = UIFactory.Text(rt, "Label", label, 15, Color.white, TextAnchor.UpperCenter, true);
+                var t = UIFactory.Text(rt, "Label", label, UiTheme.FontMin, Color.white, TextAnchor.UpperCenter, true);
                 UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(StepX, 22f));
             }
             var button = bg.gameObject.AddComponent<Button>();
             button.targetGraphic = bg;
+            UiButton.Attach(button, false); // [UI] tint + hover sound; the column animates the scale itself
             button.onClick.AddListener(() =>
             {
                 if (!Game.IsPlaying) return;
