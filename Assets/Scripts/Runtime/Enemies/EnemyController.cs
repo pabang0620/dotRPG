@@ -392,16 +392,16 @@ namespace DotRPG
             if (!MonsterLoot()) return; // [MONSTER] summons/totems drop nothing; gold skeletons drop extra gold
             // Drop into the world's object root so it survives this enemy being destroyed.
             var parent = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
-            // Gold for the village shops.
-            Pickup.Create(ConsumableDatabase.Gold, UnityEngine.Random.Range(8, 17), Position + new Vector2(0f, 0.2f), parent);
+            // Gold for the village shops. [ONLINE] all rolls below go through IAuthority (same Random calls offline).
+            Pickup.Create(ConsumableDatabase.Gold, Authority.Current.DropGold(8, 17), Position + new Vector2(0f, 0.2f), parent);
             // Enhancement materials (bag → "기타" tab).
             foreach (var mat in EquipmentDatabase.AllMaterials)
             {
-                if (UnityEngine.Random.value > mat.dropChance) continue;
-                int n = UnityEngine.Random.Range(mat.minDrop, mat.maxDrop + 1);
+                if (!Authority.Current.DropChance(mat.dropChance)) continue; // [ONLINE] drops via IAuthority
+                int n = Authority.Current.DropCount(mat.minDrop, mat.maxDrop); // [ONLINE]
                 for (int i = 0; i < n; i++) Pickup.Create(mat.id, 1, Position + new Vector2(0f, 0.2f), parent);
             }
-            string id = EquipmentDatabase.RollDrop(Game.Player.Class, EquipmentDropChance);
+            string id = Authority.Current.DropEquipment(Game.Player.Class, EquipmentDropChance); // [ONLINE]
             if (id == null) return;
             Pickup.Create(id, 1, Position + new Vector2(0f, 0.2f), parent);
             var item = EquipmentDatabase.Get(id);

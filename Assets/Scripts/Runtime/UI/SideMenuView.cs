@@ -36,6 +36,7 @@ namespace DotRPG
             view.Add("menuicon_dungeon", "요일던전", () => Game.UI.Dungeon.Open(false)); // [DUNGEON] 던전 선택 window
             view.Add("menuicon_raid", "레이드", () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
             view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(Game.UI.Party)); // [PARTY]
+            view.Add("menuicon_party", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("icon_gold", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.column.gameObject.SetActive(false);
             return view;
         }
