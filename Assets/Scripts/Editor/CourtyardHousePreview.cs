@@ -41,11 +41,14 @@ namespace DotRPG.EditorTools
                 var texture = sprite.texture;
                 if (texture.width != 1536 || texture.height != 1024 || texture.filterMode != FilterMode.Point)
                     throw new Exception("Building texture was resized or filtered: " + building.Key);
+                // Generated alpha can contain 1-3/255 residual values in empty pixels.
+                // Reject visible edge contact while tolerating this near-transparent encoding noise.
+                const float edgeAlphaTolerance = 4f / 255f;
                 for (int x = 0; x < texture.width; x++)
-                    if (texture.GetPixel(x, 0).a > .01f || texture.GetPixel(x, texture.height - 1).a > .01f)
+                    if (texture.GetPixel(x, 0).a > edgeAlphaTolerance || texture.GetPixel(x, texture.height - 1).a > edgeAlphaTolerance)
                         throw new Exception("Building touches vertical frame edge: " + building.Key);
                 for (int y = 0; y < texture.height; y++)
-                    if (texture.GetPixel(0, y).a > .01f || texture.GetPixel(texture.width - 1, y).a > .01f)
+                    if (texture.GetPixel(0, y).a > edgeAlphaTolerance || texture.GetPixel(texture.width - 1, y).a > edgeAlphaTolerance)
                         throw new Exception("Building touches horizontal frame edge: " + building.Key);
             }
             Debug.Log("[VillageBuildings] PASS 7 generated PNGs: runtime bindings, point filtering, transparent margins and aligned pivots");
