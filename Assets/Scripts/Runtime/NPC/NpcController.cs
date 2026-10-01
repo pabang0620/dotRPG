@@ -78,6 +78,7 @@ namespace DotRPG
             shadow.transform.localPosition = new Vector3(0f, 0.08f, 0f);
             shadow.sprite = Game.Art.Get("shadow");
             shadow.sortingOrder = -2;
+            HdMaterial.Apply(shadow);
             var sr = new GameObject("Body").AddComponent<SpriteRenderer>();
             sr.transform.SetParent(visual, false);
 
@@ -99,6 +100,7 @@ namespace DotRPG
                 npc.tool.transform.SetParent(visual, false);
                 npc.tool.sprite = Game.Art.Get(toolKey);
                 npc.tool.sortingOrder = 1;
+                HdMaterial.Apply(npc.tool);
             }
             if (def.tool == NpcTool.FishingRod)
             {

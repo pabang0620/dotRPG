@@ -88,6 +88,7 @@ namespace DotRPG
             shadow.transform.localPosition = new Vector3(0f, 0.08f, 0f);
             shadow.sprite = Game.Art.Get("shadow");
             shadow.sortingOrder = -2;
+            HdMaterial.Apply(shadow);
 
             var sr = new GameObject("Body").AddComponent<SpriteRenderer>();
             sr.transform.SetParent(visual, false);
@@ -107,6 +108,7 @@ namespace DotRPG
             player.flash.SetTargets(sr);
             player.combat = go.AddComponent<PlayerCombat>();
             player.combat.Setup(player, visual);
+            player.flash.SetTargets(sr, player.combat.WeaponRenderer, player.combat.GripRenderer);
             player.interactor = go.AddComponent<PlayerInteractor>();
             player.interactor.Setup(player);
             go.AddComponent<YSort>().Configure(false);
@@ -230,7 +232,7 @@ namespace DotRPG
             var info = CharacterClassInfo.Get(cls);
             animator.Setup(BaseLook(info), animator.Renderer);
             combat.SetClass(info);
-            flash.SetTargets(animator.Renderer);
+            flash.SetTargets(animator.Renderer, combat.WeaponRenderer, combat.GripRenderer);
             skills?.ResetCooldowns();
             Data.ClearBuffs();
             ApplyGear();
@@ -360,6 +362,12 @@ namespace DotRPG
                 animator.SpeedMultiplier = Mathf.Clamp(move.magnitude, 0.5f, 1f);
             }
             else animator.Play(CharacterAnim.Idle, Facing);
+        }
+
+        /// <summary>Trees the character stands behind turn see-through (TreeFade).</summary>
+        void LateUpdate()
+        {
+            TreeFade.UpdateAll(Position, animator != null ? animator.Renderer : null, Time.unscaledDeltaTime);
         }
 
         void FixedUpdate()

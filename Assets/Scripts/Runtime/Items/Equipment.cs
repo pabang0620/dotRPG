@@ -193,7 +193,7 @@ namespace DotRPG
                 slots[i] = null;
                 changed = true;
             }
-            if (string.IsNullOrEmpty(slots[(int)EquipSlot.Weapon]))
+            if (cls != CharacterClass.Warrior && string.IsNullOrEmpty(slots[(int)EquipSlot.Weapon]))
             {
                 slots[(int)EquipSlot.Weapon] = EquipmentDatabase.StarterWeapon(cls);
                 changed = true;

@@ -104,7 +104,10 @@ namespace DotRPG
             Storage.Load(data.storage);
             Equipment.LoadPity(data.enhancePity);
             Equipment.Load(data.equipped);
-            Equipment.EnsureUsable(CharacterClassInfo.Parse(data.playerClass)); // old saves have no gear: hand out the starter weapon
+            var savedClass = CharacterClassInfo.Parse(data.playerClass);
+            if (data.equipped == null || data.equipped.Count == 0)
+                Equipment.Set(EquipSlot.Weapon, EquipmentDatabase.StarterWeapon(savedClass));
+            Equipment.EnsureUsable(savedClass); // A deliberately empty warrior weapon slot stays empty.
             Quest = data.quest ?? new QuestProgress();
             OpenedChests.Clear();
             if (data.openedChests != null) OpenedChests.UnionWith(data.openedChests);

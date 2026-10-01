@@ -102,6 +102,7 @@ namespace DotRPG
             shadow.transform.localPosition = new Vector3(0f, 0.08f, 0f);
             shadow.sprite = Game.Art.Get("shadow");
             shadow.sortingOrder = -2;
+            HdMaterial.Apply(shadow);
             var sr = new GameObject("Body").AddComponent<SpriteRenderer>();
             sr.transform.SetParent(visual, false);
             var alert = new GameObject("Alert").AddComponent<SpriteRenderer>();

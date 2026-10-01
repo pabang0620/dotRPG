@@ -126,7 +126,7 @@ namespace DotRPG
                 if (offset.magnitude > Radius - 14f) offset = offset.normalized * (Radius - 14f);
                 if (s >= serviceIcons.Count)
                 {
-                    var icon = UIFactory.Image(markers, "Service", null, Color.white);
+                    var icon = UIFactory.SharpIcon(markers, "Service", Color.white);
                     UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(20f, 20f));
                     icon.gameObject.AddComponent<Outline>().effectColor = new Color(0.1f, 0.07f, 0.05f, 0.9f);
                     serviceIcons.Add(icon);

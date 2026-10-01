@@ -67,6 +67,7 @@ namespace DotRPG
         public Color32 armorColor;
         [Tooltip("Robe skirt colour (alpha 0 = same as the shirt).")]
         public Color32 robeColor;
+        public int bottomTier = -1;
 
         public CharacterLook() { }
 
@@ -82,6 +83,7 @@ namespace DotRPG
             if (top < 0 && bottom < 0) return baseLook;
             var l = baseLook.Clone();
             l.id = $"{baseLook.id}_t{top}_b{bottom}";
+            l.bottomTier = bottom;
             switch (top)
             {
                 case 0: l.armor = ArmorStyle.Vest; l.armorColor = C(201, 169, 120); break;
@@ -115,7 +117,7 @@ namespace DotRPG
         static readonly Color32 SkinTan = C(222, 160, 110);
         static readonly Color32 SkinDark = C(150, 96, 62);
 
-        public static CharacterLook Player => new CharacterLook("player", HairStyle.Spiky, SkinLight, C(214, 108, 48), C(64, 132, 214), C(70, 62, 92));
+        public static CharacterLook Player => new CharacterLook("player", HairStyle.Short, SkinLight, C(16, 17, 22), C(46, 40, 53), C(43, 36, 50));
 
         /// <summary>Selectable mage: violet robe, pointed indigo hat, long silver hair.</summary>
         public static CharacterLook Mage => new CharacterLook("mage", HairStyle.Long, SkinLight, C(214, 214, 236), C(116, 70, 190), C(70, 44, 130),

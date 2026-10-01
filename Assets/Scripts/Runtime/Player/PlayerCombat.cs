@@ -7,9 +7,29 @@ namespace DotRPG
     /// Sword swing: cooldown, arc animation of the weapon sprite, slash effect and hit detection.
     /// The same swing damages enemies and harvests trees/rocks (anything implementing IDamageable).
     /// </summary>
+    [DefaultExecutionOrder(50)]
     public class PlayerCombat : MonoBehaviour
     {
-        const float SwingArc = 150f;
+        bool meleeActive, recovering;
+        int comboStage, queuedStrikes;
+        public int ComboStage => comboStage + 1;
+        public bool IsRecovering => recovering;
+        public int ResolvedStrikeCount { get; private set; }
+        public string AttackFrame => WarriorAttackMotion.Frame(AttackProgress, comboStage, recovering);
+        CharacterAnimator characterAnimator;
+        SpriteRenderer silverGrip;
+        public float AttackProgress => IsAttacking ? Mathf.Clamp01((Time.time - attackStart) / Duration) : 0f;
+        public SpriteRenderer WeaponRenderer => weapon;
+        public SpriteRenderer GripRenderer => silverGrip;
+        public SpriteRenderer SlashRenderer => slash;
+        void LateUpdate()
+        {
+            if (silverGrip == null || owner == null) return;
+            bool silver = owner.Class == CharacterClass.Warrior;
+            silverGrip.enabled = silver && !owner.IsDead && weapon.sprite != null;
+            if (!silver) return;
+            SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, owner.Facing, !owner.IsDead);
+        }
 
         PlayerController owner;
         PlayerStats stats;
@@ -27,13 +47,13 @@ namespace DotRPG
         readonly HashSet<IDamageable> hitThisSwing = new HashSet<IDamageable>();
         ContactFilter2D filter;
 
-        public bool IsAttacking => Time.time < attackEnd;
+        public bool IsAttacking => Ranged ? Time.time < attackEnd : meleeActive;
 
         CharacterClassInfo classInfo = CharacterClassInfo.Get(CharacterClass.Warrior);
         EnemyController castTarget;
         Vector2 castAim = Vector2.down;
         bool Ranged => classInfo != null && classInfo.ranged;
-        float Duration => Ranged ? classInfo.castDuration : stats.attackDuration;
+        float Duration => Ranged ? classInfo.castDuration : recovering ? WarriorAttackMotion.RecoveryDuration : Mathf.Max(WarriorAttackMotion.StageDuration(comboStage), stats.attackDuration);
 
         /// <summary>Switches weapon sprite and attack style (sword swing or magic bolt).</summary>
         public void SetClass(CharacterClassInfo info)
@@ -47,7 +67,12 @@ namespace DotRPG
         public void RefreshWeapon()
         {
             if (weapon == null || Game.Session == null || owner == null || owner.Data == null) return;
-            weapon.sprite = Game.Art.Get(EquipmentDatabase.WeaponSprite(owner.Data.Equipment[EquipSlot.Weapon], classInfo.id));
+            // [MERGE] Each party member shows its own weapon (owner.Data), with the katana grip art for warriors.
+            string weaponKey = owner.Data.Equipment[EquipSlot.Weapon];
+            weapon.sprite = classInfo.id == CharacterClass.Warrior ? Game.Art.GetWarriorWeapon(weaponKey) : Game.Art.Get(EquipmentDatabase.WeaponSprite(weaponKey, classInfo.id));
+            weapon.enabled = !owner.IsDead && weapon.sprite != null;
+            if (silverGrip != null) silverGrip.enabled = !Ranged && weapon.enabled;
+            HdMaterial.Apply(weapon);
         }
 
         /// <summary>
@@ -57,8 +82,9 @@ namespace DotRPG
         void HoldPose()
         {
             if (weapon == null || owner == null) return;
-            weapon.enabled = !owner.IsDead;
+            weapon.enabled = !owner.IsDead && weapon.sprite != null;
             if (slash != null && slash.enabled) slash.enabled = false;
+            if (!Ranged) return; // Silver warrior is attached to the current frame's hand in LateUpdate.
             var f = owner.Facing;
             float sx = f.IsLeft() ? -1f : 1f;
             Vector2 pos;
@@ -97,12 +123,18 @@ namespace DotRPG
         {
             owner = player;
             stats = player.Stats;
+            characterAnimator = player.GetComponent<CharacterAnimator>();
+            silverGrip = new GameObject("SilverGrip").AddComponent<SpriteRenderer>();
+            silverGrip.transform.SetParent(visualRoot, false);
+            silverGrip.sprite = SilverWarriorPresentation.Grip;
+            silverGrip.enabled = false;
 
             weapon = new GameObject("Weapon").AddComponent<SpriteRenderer>();
             weapon.transform.SetParent(visualRoot, false);
             weapon.sprite = Game.Art.Get("tool_sword");
             weapon.sortingOrder = 1;
             weapon.enabled = false;
+            HdMaterial.Apply(weapon);
 
             slash = new GameObject("Slash").AddComponent<SpriteRenderer>();
             slash.transform.SetParent(visualRoot, false);
@@ -116,12 +148,25 @@ namespace DotRPG
         public void Cancel()
         {
             attackEnd = -10f;
+            meleeActive = recovering = false; queuedStrikes = comboStage = 0;
+            nextAttackTime = 0;
             if (slash != null) slash.enabled = false;
         }
 
         public void TryAttack()
         {
+            if (!Ranged && meleeActive)
+            {
+                // Each key-down buys exactly one additional strike; holding the key does not repeat.
+                if (!recovering && comboStage + queuedStrikes < 2) queuedStrikes++;
+                return;
+            }
             if (Time.time < nextAttackTime) return;
+            if (!Ranged)
+            {
+                comboStage = queuedStrikes = 0; recovering = false; meleeActive = true;
+                ResolvedStrikeCount = 0;
+            }
             // Mage: aim along the 8-way stick/keys direction, then lock onto the nearest monster in range.
             if (Ranged)
             {
@@ -134,14 +179,16 @@ namespace DotRPG
             else if (Ranged) owner.FaceTowards(owner.Position + castAim);
             attackStart = Time.time;
             attackEnd = attackStart + Duration;
-            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown : stats.attackCooldown) * owner.Data.Stats.CooldownMultiplier;
+            // [MERGE] Combo timing from the warrior rework, attack speed of this member (not always the local one).
+            float cdMul = owner.Data.Stats.CooldownMultiplier;
+            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown * cdMul : Mathf.Max(Duration, stats.attackCooldown * cdMul));
             attackFacing = owner.Facing;
             hitResolved = false;
             hitThisSwing.Clear();
 
-            weapon.enabled = true;
+            weapon.enabled = weapon.sprite != null;
             weapon.transform.localScale = Vector3.one;
-            slash.enabled = !Ranged;
+            slash.enabled = !Ranged && weapon.sprite != null;
             if (ySort == null) ySort = GetComponent<YSort>();
             // Weapon behind the head when swinging upwards.
             ySort?.SetLocalOrder(weapon, attackFacing.IsUp() ? -1 : 1);
@@ -164,24 +211,56 @@ namespace DotRPG
                 UpdateCast(t, dir, baseAngle);
                 return;
             }
-            // Sweep from one side of the facing direction to the other (ease-out).
-            float eased = 1f - (1f - t) * (1f - t);
-            float angle = baseAngle + Mathf.Lerp(SwingArc * 0.5f, -SwingArc * 0.5f, eased);
-            weapon.transform.localPosition = new Vector3(0f, 0.42f, 0f) + (Vector3)(dir * 0.12f);
-            weapon.transform.localRotation = Quaternion.Euler(0f, 0f, angle - 90f);
+            UpdateMelee();
+        }
 
-            slash.transform.localPosition = new Vector3(0f, 0.42f, 0f) + (Vector3)(dir * 0.35f);
-            slash.transform.localRotation = Quaternion.Euler(0f, 0f, baseAngle);
-            var c = slash.color;
-            c.a = t < 0.25f ? 0f : Mathf.Lerp(0.95f, 0f, (t - 0.25f) / 0.75f);
-            slash.color = c;
-
-            // Resolve hits once the blade is roughly in front of the player.
-            if (!hitResolved && t >= 0.3f)
+        void UpdateMelee()
+        {
+            // Resolve the contact before crossing a stage boundary, including slow frames.
+            for (int transition = 0; transition < 5 && meleeActive; transition++)
             {
-                hitResolved = true;
-                ResolveHits(dir);
+                float t = Mathf.Clamp01((Time.time - attackStart) / Duration);
+                if (!recovering && !hitResolved && t >= WarriorAttackMotion.Contact)
+                {
+                    hitResolved = true; ResolvedStrikeCount++;
+                    ResolveHits(attackFacing.ToVector());
+                    if (weapon.sprite != null) WarriorFlameSlash.Burst(owner.Center + attackFacing.ToVector() * .6f, attackFacing.ToVector(), comboStage);
+                }
+                if (Time.time < attackEnd) break;
+                float boundary = attackEnd;
+                if (recovering)
+                {
+                    meleeActive = false; recovering = false;
+                    nextAttackTime = Mathf.Max(nextAttackTime, boundary);
+                    HoldPose(); return;
+                }
+                if (queuedStrikes > 0 && comboStage < 2)
+                {
+                    queuedStrikes--; comboStage++;
+                    hitResolved = false; hitThisSwing.Clear();
+                    Game.Audio.PlaySfx("swing");
+                }
+                else recovering = true;
+                attackStart = boundary;
+                attackEnd = attackStart + Duration;
             }
+            UpdateMeleeTrail();
+        }
+
+        void UpdateMeleeTrail()
+        {
+            float t = AttackProgress;
+            var pose = SilverWarriorArt.Pose(SilverWarriorArt.ViewKey(attackFacing), AttackFrame);
+            float sign = WarriorAttackMotion.ReverseCut(attackFacing) ? -1 : 1;
+            if (comboStage == 1) sign = -sign;
+            slash.enabled = !recovering && weapon.sprite != null;
+            slash.transform.localPosition = WarriorRightHandRig.WorldHand(pose);
+            slash.sprite = WarriorFlameSlash.Get(comboStage, t);
+            SilverWarriorPresentation.ApplyMaterial(slash);
+            slash.transform.localRotation = Quaternion.Euler(0, 0, pose.swordAngle);
+            slash.transform.localScale = new Vector3(1, sign, 1);
+            ySort?.SetLocalOrder(slash, pose.rightHandBack ? -1 : 3);
+            var c = slash.color; c.a = recovering ? 0 : WarriorAttackMotion.TrailAlpha(t); slash.color = c;
         }
 
         /// <summary>Mage: raise the staff towards the facing direction, then release a bolt.</summary>

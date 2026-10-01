@@ -47,6 +47,7 @@ namespace DotRPG
             sr.sprite = Game.Art.Get(sprite);
             sr.color = color;
             sr.sortingOrder = SortingOrder + order;
+            HdMaterial.Apply(sr);
             return sr;
         }
 
@@ -125,6 +126,7 @@ namespace DotRPG
                 sr.sprite = Game.Art.Get("num_" + text[i]);
                 sr.color = color;
                 sr.sortingOrder = 20010;
+                HdMaterial.Apply(sr);
                 number.digits[i] = sr;
             }
         }

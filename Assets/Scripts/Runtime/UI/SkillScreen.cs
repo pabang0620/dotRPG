@@ -249,7 +249,7 @@ namespace DotRPG
                     var bg = Img(row.transform, $"Socket{s}_{k}", k == 0 ? "ui_slotblue" : "ui_slot", Color.white);
                     UIFactory.Place(bg.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(x, 0f), new Vector2(size, size));
                     bg.raycastTarget = true;
-                    var icon = UIFactory.Image(bg.transform, "Icon", null, Color.white);
+                    var icon = UIFactory.SharpIcon(bg.transform, "Icon", Color.white);
                     UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.7f, size * 0.7f));
                     var label = UIFactory.Text(bg.transform, "Label", k == 0 ? "스킬" : "보조", 14, new Color(1f, 1f, 1f, 0.5f), TextAnchor.MiddleCenter, true);
                     UIFactory.Stretch(label.rectTransform);

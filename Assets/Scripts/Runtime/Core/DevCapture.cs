@@ -15,8 +15,19 @@ namespace DotRPG
     public partial class DevCapture : MonoBehaviour
     {
         string folder;
+        string mode;
         bool fxOnly;
         StreamWriter log;
+
+        /// <summary>
+        /// Command-line switches that start an automated run; each is followed by the output folder.
+        /// -dotrpgCapture: full smoke test. -dotrpgFx: skill-effect showcase. -dotrpgMap: winter map renders.
+        /// -dotrpgTown: village town + forest hunting ground renders and service tests.
+        /// -dotrpgCanyon / -dotrpgWinter / -dotrpgChars / -dotrpgUi: 32px canyon, winter village, characters
+        /// and monsters, and window/HUD showcases (DevCapture.*.cs).
+        /// </summary>
+        static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -24,9 +35,10 @@ namespace DotRPG
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-dotrpgCapture" || args[i] == "-dotrpgFx" || args[i] == "-dotrpgMap" || args[i] == "-dotrpgTown" || args[i] == "-dotrpgParty" || args[i] == "-dotrpgDungeon" || args[i] == "-dotrpgMonster" || args[i] == "-dotrpgBalance") // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+                if (Array.IndexOf(Modes, args[i]) >= 0)
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
+                    GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
         }
@@ -37,13 +49,12 @@ namespace DotRPG
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
-                // -dotrpgCapture <dir>: full smoke test. -dotrpgFx <dir>: skill-effect showcase. -dotrpgMap <dir>: winter map renders.
-                // -dotrpgTown <dir>: village town + forest hunting ground renders and service tests.
-                if (args[i] != "-dotrpgCapture" && args[i] != "-dotrpgFx" && args[i] != "-dotrpgMap" && args[i] != "-dotrpgTown" && args[i] != "-dotrpgParty" && args[i] != "-dotrpgDungeon" && args[i] != "-dotrpgMonster" && args[i] != "-dotrpgBalance") continue; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+                if (Array.IndexOf(Modes, args[i]) < 0) continue;
                 var go = new GameObject("DevCapture");
                 DontDestroyOnLoad(go);
                 var capture = go.AddComponent<DevCapture>();
                 capture.folder = args[i + 1];
+                capture.mode = args[i];
                 capture.fxOnly = args[i] == "-dotrpgFx";
                 capture.mapOnly = args[i] == "-dotrpgMap";
                 capture.townOnly = args[i] == "-dotrpgTown";
@@ -57,6 +68,22 @@ namespace DotRPG
 
         bool mapOnly, townOnly;
 
+        /// <summary>The showcase coroutine of the 32px modes, or null for the older modes.</summary>
+        IEnumerator HdShowcase()
+        {
+            switch (mode)
+            {
+                case "-dotrpgCanyon": return CanyonHdShowcase();
+                case "-dotrpgWinter": return WinterHdShowcase();
+                case "-dotrpgChars": return CharsShowcase();
+                case "-dotrpgUi": return UiShowcase();
+                case "-dotrpgDepth": return DepthShowcase();
+                case "-dotrpgStairs": return StairsShowcase();
+                case "-dotrpgSilver": return SilverShowcase();
+            }
+            return null;
+        }
+
         IEnumerator Start()
         {
             Directory.CreateDirectory(folder);
@@ -67,6 +94,15 @@ namespace DotRPG
             if (dungeonOnly) { yield return DungeonRunCapture(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [DUNGEON]
             if (balanceOnly) { yield return BalanceRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [CONTENT]
             if (monsterOnly) { yield return MonsterRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [MONSTER]
+            var hd = HdShowcase();
+            if (hd != null)
+            {
+                yield return hd;
+                Log("capture finished");
+                log.Close();
+                Application.Quit();
+                yield break;
+            }
             if (townOnly)
             {
                 yield return TownShowcase();
@@ -777,12 +813,26 @@ namespace DotRPG
             };
             Facing[] facings = { Facing.Down, Facing.DownRight, Facing.Right, Facing.UpRight, Facing.Up, Facing.UpLeft, Facing.Left, Facing.DownLeft };
             string[] frames = { "idle0", "walk0" };
-            const int cellW = 18, cellH = 27, scale = 4;
+            // Cells fit the largest frame (16px, 32px or 64px art alike); the scale keeps the sheet readable.
+            int maxW = 0, maxH = 0;
+            foreach (var look in looks)
+                foreach (var f in facings)
+                {
+                    var s = Game.Art.GetCharacter(look, f.SpriteKey(), "idle0");
+                    if (s != null) { maxW = Mathf.Max(maxW, (int)s.rect.width); maxH = Mathf.Max(maxH, (int)s.rect.height); }
+                }
+            for (int t = 0; t < 4; t++)
+                foreach (var key in new[] { $"wpn_sword_{t}", $"wpn_staff_{t}" })
+                {
+                    var s = Game.Art.Get(key);
+                    if (s != null) { maxW = Mathf.Max(maxW, (int)s.rect.width); maxH = Mathf.Max(maxH, (int)s.rect.height); }
+                }
+            int cellW = maxW + 2, cellH = maxH + 7, scale = Mathf.Clamp(108 / Mathf.Max(1, cellH), 1, 4);
             int cols = facings.Length * frames.Length, rows = looks.Count + 1;
             var sheet = new Texture2D(cols * cellW * scale, rows * cellH * scale, TextureFormat.RGBA32, false);
+            int sheetW = sheet.width, sheetH = sheet.height;
             var fill = new Color32[sheet.width * sheet.height];
             for (int i = 0; i < fill.Length; i++) fill[i] = new Color32(58, 74, 92, 255);
-            sheet.SetPixels32(fill);
 
             void Blit(Sprite s, int col, int row, bool flip)
             {
@@ -798,7 +848,10 @@ namespace DotRPG
                         if (c.a == 0) continue;
                         for (int dy = 0; dy < scale; dy++)
                             for (int dx = 0; dx < scale; dx++)
-                                sheet.SetPixel(ox + x * scale + dx, oy + y * scale + dy, c);
+                            {
+                                int sx = ox + x * scale + dx, sy = oy + y * scale + dy;
+                                if (sx >= 0 && sy >= 0 && sx < sheetW && sy < sheetH) fill[sy * sheetW + sx] = c;
+                            }
                     }
             }
 
@@ -811,6 +864,7 @@ namespace DotRPG
                 Blit(Game.Art.Get($"wpn_sword_{t}"), t, looks.Count, false);
                 Blit(Game.Art.Get($"wpn_staff_{t}"), 4 + t, looks.Count, false);
             }
+            sheet.SetPixels32(fill);
             sheet.Apply();
             File.WriteAllBytes(file, sheet.EncodeToPNG());
             Destroy(sheet);

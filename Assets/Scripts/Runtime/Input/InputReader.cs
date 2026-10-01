@@ -44,6 +44,8 @@ namespace DotRPG
         [SerializeField] float stickDeadZone = 0.35f;
 
         public Vector2 Move { get; private set; }
+        /// <summary>Automated tests only: when set, replaces the movement read from the devices.</summary>
+        public Vector2? MoveOverride { get; set; }
         public bool AttackPressed { get; private set; }
         public bool InteractPressed { get; private set; }
         public bool UseItemPressed { get; private set; }
@@ -330,7 +332,7 @@ namespace DotRPG
         {
             Vector2 move = moveAction.ReadValue<Vector2>();
             if (move.magnitude < stickDeadZone * 0.5f) move = Vector2.zero;
-            Move = Vector2.ClampMagnitude(move, 1f);
+            Move = MoveOverride ?? Vector2.ClampMagnitude(move, 1f);
 
             AttackPressed = attackAction.WasPressedThisFrame();
             InteractPressed = interactAction.WasPressedThisFrame();
@@ -395,7 +397,7 @@ namespace DotRPG
             if (stick.magnitude < stickDeadZone) stick = Vector2.zero;
 
             Vector2 move = keys != Vector2.zero ? keys : stick;
-            Move = Vector2.ClampMagnitude(move, 1f);
+            Move = MoveOverride ?? Vector2.ClampMagnitude(move, 1f);
 
             AttackPressed = AnyDown(AttackKeys);
             InteractPressed = AnyDown(InteractKeys);

@@ -26,6 +26,12 @@ namespace DotRPG
     /// </summary>
     public partial class WorldBuilder : MonoBehaviour
     {
+        /// <summary>Returned by a theme's RawGround hook to fall back to the shared ground rules.</summary>
+        const char NoGroundOverride = '\u0001';
+
+        /// <summary>Paints a whole map's ground at 32 pixels per tile (rows bottom-up); ground[x, y] = GroundAt(x, y).</summary>
+        delegate Color32[] GroundPainter(char[,] ground, int w, int h, out int pw, out int ph);
+
         GameConfig config;
         MapInfo map;
         char[,] cells;
@@ -46,6 +52,10 @@ namespace DotRPG
         /// <summary>Village town / forest hunting ground: painted 32px ground and the town_* art set.</summary>
         bool Hd => map != null && map.HighRes;
         bool ForestMap => map != null && map.theme == MapTheme.Forest;
+        /// <summary>Canyon town drawn with the 32px art (see WorldBuilder.Canyon.cs).</summary>
+        bool CanyonHd => Canyon && CanyonHdReady;
+        /// <summary>Winter village drawn with the 32px art (see WorldBuilder.Winter.cs).</summary>
+        bool WinterHd => Winter && WinterHdReady;
         /// <summary>Interesting spots for the title-screen camera to drift between.</summary>
         public readonly List<Vector2> PointsOfInterest = new List<Vector2>();
 
@@ -209,15 +219,19 @@ namespace DotRPG
                     char c = cells[x, y];
                     var cell = new Vector3Int(x, y, 0);
                     if (Hd) PaintHdCollision(cell);
+                    else if (CanyonHd) PaintCanyonHdCell(cell, c);
+                    else if (WinterHd) PaintWinterHdCell(cell, c);
                     else PaintGround(cell, c, rng);
                     SpawnObject(c, x, y, skeletonSpawns, rng);
                 }
 
             if (Hd)
             {
-                BuildPaintedGround();
+                BuildPaintedGround(PaintTownGround);
                 DecorateForestEdges();
             }
+            else if (CanyonHd) BuildCanyonHd();
+            else if (WinterHd) BuildWinterHd();
             CreateBoundaryWalls();
             SpawnDungeonGuide(); // [DUNGEON] 던전 안내원 by the village plaza
 
@@ -227,7 +241,8 @@ namespace DotRPG
                 spawner.transform.SetParent(objectsRoot, false);
                 spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
             }
-            if (Hd) ApplySharpMaterial();
+            if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();
+            AddTreeFades();
             if (PointsOfInterest.Count == 0) PointsOfInterest.Add(PlayerSpawn);
             BuildMinimap();
         }
@@ -470,6 +485,8 @@ namespace DotRPG
 
         char RawGround(char c)
         {
+            if (CanyonHd) { char g = CanyonHdRawGround(c); if (g != NoGroundOverride) return g; }
+            if (WinterHd) { char g = WinterHdRawGround(c); if (g != NoGroundOverride) return g; }
             switch (c)
             {
                 case '~':
@@ -599,7 +616,9 @@ namespace DotRPG
         void SpawnObject(char c, int x, int y, List<Vector2> skeletonSpawns, System.Random rng)
         {
             if (SpawnDungeonSymbol(c, x, y)) return; // [DUNGEON] '@' doors and 1-9 spawn groups in dungeon rooms
-            if (Winter && SpawnWinterObject(c, x, y, rng)) return;
+            if (CanyonHd && SpawnCanyonHdObject(c, x, y, rng)) return;
+            if (WinterHd && SpawnWinterHdObject(c, x, y, rng)) return;
+            if (Winter && !WinterHd && SpawnWinterObject(c, x, y, rng)) return;
             if (Hd && SpawnTownObject(c, x, y, rng)) return;
             var center = new Vector2(x + 0.5f, y + 0.5f);
             var foot = new Vector2(x + 0.5f, y + 0.2f);
@@ -843,7 +862,13 @@ namespace DotRPG
         /// <summary>Forgets the painted ground (developer timing tests). The current map keeps its sprites until rebuilt.</summary>
         public static void ClearPaintedGroundCache() => paintedGround.Clear();
 
-        void BuildPaintedGround()
+        Color32[] PaintTownGround(char[,] ground, int w, int h, out int pw, out int ph) => TownTerrain.Paint(ground, w, h, ForestMap, out pw, out ph);
+
+        /// <summary>
+        /// Paints the map's ground once with <paramref name="paint"/> (32 px per tile, cached per map id) and
+        /// lays it out as 256px chunk sprites under everything else.
+        /// </summary>
+        void BuildPaintedGround(GroundPainter paint)
         {
             if (!paintedGround.TryGetValue(MapId, out var chunks))
             {
@@ -851,7 +876,7 @@ namespace DotRPG
                 for (int y = 0; y < height; y++)
                     for (int x = 0; x < width; x++)
                         ground[x, y] = GroundAt(x, y);
-                var px = TownTerrain.Paint(ground, width, height, ForestMap, out int pw, out int ph);
+                var px = paint(ground, width, height, out int pw, out int ph);
                 chunks = new List<(Vector2, Sprite)>();
                 const int Chunk = 256;
                 for (int cy = 0; cy < ph; cy += Chunk)
@@ -918,6 +943,16 @@ namespace DotRPG
             foreach (var sr in objectsRoot.GetComponentsInChildren<SpriteRenderer>(true))
                 if (sr.sprite != null && sr.sprite.pixelsPerUnit > basePpu && sr.sharedMaterial != FxMaterials.Additive)
                     sr.sharedMaterial = sharp;
+        }
+
+        /// <summary>
+        /// Every tree turns see-through while the player stands behind it: free-standing trees, the trees
+        /// along the forest edges and the choppable ones (all named "Tree" or "EdgeTree").
+        /// </summary>
+        void AddTreeFades()
+        {
+            foreach (Transform child in objectsRoot)
+                if (child.name == "Tree" || child.name == "EdgeTree") TreeFade.Attach(child.gameObject);
         }
 
         /// <summary>Tree with a small trunk collider; its crown overlaps whatever is behind it.</summary>

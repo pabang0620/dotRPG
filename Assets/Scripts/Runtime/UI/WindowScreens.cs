@@ -287,7 +287,7 @@ namespace DotRPG
                 c.bg.raycastTarget = true;
                 UIFactory.Place(c.bg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                     new Vector2(20f + (i % Cols) * (Cell + Gap), -52f - (i / Cols) * (Cell + Gap)), new Vector2(Cell, Cell));
-                c.icon = UIFactory.Image(c.bg.transform, "Icon", null, Color.white);
+                c.icon = UIFactory.SharpIcon(c.bg.transform, "Icon", Color.white);
                 UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(66f, 66f));
                 c.frame = Img(c.bg.transform, "Frame", "ui_frame", Color.clear);
                 UIFactory.Stretch(c.frame.rectTransform);
@@ -312,7 +312,7 @@ namespace DotRPG
             var right = Panel(w.content, "Right", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(660f, 590f), new Color32(24, 36, 54, 235));
             var iconBg = Img(right.transform, "IconBg", "ui_slotblue", Color.white);
             UIFactory.Place(iconBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(128f, 128f));
-            w.bigIcon = UIFactory.Image(iconBg.transform, "Icon", null, Color.white);
+            w.bigIcon = UIFactory.SharpIcon(iconBg.transform, "Icon", Color.white);
             UIFactory.Place(w.bigIcon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(96f, 96f));
             w.bigFrame = Img(iconBg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(w.bigFrame.rectTransform);

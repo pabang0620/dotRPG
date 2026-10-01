@@ -1,0 +1,29 @@
+검정 기모노 전사 — 생성 프롬프트
+도구: 내장 image_gen (CLI 미사용)
+몸체 원본: Assets/ArtSources/SilverWarrior/body.png
+공격 원본: Assets/ArtSources/SilverWarrior/attack.png
+무기 원본: Assets/ArtSources/SilverWarrior/katanas.png
+팔·소매·다리는 게임의 코드 리그로 합성한다. 이미지 생성 원본의 가이드 다리는 렌더링하지 않는다.
+
+BODY
+Use case: style-transfer. Asset type: production transparent pixel-art RPG sprite atlas.
+Input 1 is the current 8-column by 5-row sprite sheet layout/template; input 2 is the NEW character visual concept. Redesign the entire character in input 1 to match input 2, keeping exact 8 columns and 5 rows, separate uniformly spaced figures on genuine transparency. Each character has black straight chin-length bob with blunt straight bangs, red eyes, pale skin, black wrap kimono bodice with white inner V collar, short black pleated skirt, broad WHITE obi belt with a little white bow, black thigh-high stockings and black lace-up boots. NO HORNS, no purple belt. Cute stylized RPG proportions but head only about 45% total height so torso and legs readable. Strict limited palette crisp pixel art. All sprites same body height, foot baseline and proportions.
+IMPORTANT modular rig requirement: OMIT BOTH ARMS AND HANDS ENTIRELY; omit sleeves extending sideways. The game attaches articulated wide kimono sleeves and hands separately. No weapons. Torso sides clean below head. Keep two distinct legs and boots as neutral guide, not fused.
+Rows: 1 SOUTH frontal; 2 SOUTHWEST (face turned clearly to screen LEFT); 3 EAST right-facing profile; 4 NORTHEAST rear right three-quarter (no visible front face); 5 NORTH back of head, no eyes.
+Columns 1 and2 idle breathing; columns3-6 walking alternated steps; column7 braced attack stance; column8 hurt lean.
+Every cell contains exactly one connected isolated head/body/legs figure. Flat orthographic topdown RPG. No shadows, text, labels, grids, scenery, effects, swords or detached decorations. Keep artwork well away from cell boundaries. Redesign ALL forty figures coherently to new concept.
+
+ATTACK
+Use case: style-transfer. Asset type: transparent RPG attack sprite atlas.
+Image1 is the NEW black-kimono character style and identity. Image2 is OLD attack atlas to replace, used ONLY for 6 columns x5 rows layout, stance and timing. Image3 is concept outfit reference.
+Redesign all 30 attack figures in image2 to exactly match image1: black chin bob, blunt bangs, RED eyes, NO HORNS, pale skin, black wrap kimono with white inner V collar, white obi belt and small bow, short black pleated skirt, dark stockings and black lace-up boots. Same cute RPG proportions, head about45% height. Pixel art limited flat palette with sharp boundaries.
+CRITICAL: all thirty characters completely WITHOUT ARMS, HANDS, sideways sleeves or weapons. These are rigged separately in game. Preserve only connected head, torso, skirt and two legs. No detached pieces.
+Six columns: anticipation, windup, torso rotated slash, follow-through, recovery, return. Feet firmly braced with subtle weight shift and body twist; not six identical idle poses.
+Five rows: S frontal; SW front LEFT three-quarter; E right profile; NE back RIGHT three-quarter (no eyes); N full back (no eyes).
+Uniform spacing and same figure size, no cell overlap. True transparent background, no shadows, labels, grid or effects. All30 figures connected and separated.
+
+WEAPONS
+Use case: stylized-concept. Asset type: production transparent pixel-art katana sprite sheet. Attached image is VISUAL REFERENCE for the sword only.
+Create four distinct separated upright Japanese katana weapons arranged in ONE horizontal row of FOUR equal spacious cells, blade points UP, grips at BOTTOM. All same size, transparent background, crisp low-resolution pixel art, no smooth gradients or antialiasing. Narrow gracefully curved SINGLE edge steel blade with angular pointed kissaki, bright sharp cutting edge and darker wavy hamon line. Small oval antique GOLD tsuba, gold collar/habaki, long BLACK wrapped grip with tiny WHITE diamond gaps, gold end cap, small dark cord tassel near pommel held close to hilt. The reference sword is elegant and slender, not a broad fantasy sword.
+Four game tiers LEFT TO RIGHT: 1 practical dull steel blade with identical black/white grip and brass fittings; 2 polished SILVER steel blade with bright edge and gold fittings EXACTLY closest to reference; 3 ivory-silver blade with charcoal hamon and aged gold fittings; 4 dark steel blade with silver sharp edge and rich gold fittings, small deep red cord only. All have SAME reference-inspired silhouette and BLACK grips, no purple handles.
+Constraints: four isolated single connected silhouettes, plain true transparency; no hands, characters, sheaths, floor, shadows, text or divider lines. Tassel must be connected and NOT extend below bottom of grip; all pommels share same baseline. Blade occupies approximately75% of total height, hilt25%.

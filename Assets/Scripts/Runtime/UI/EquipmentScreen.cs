@@ -202,7 +202,7 @@ namespace DotRPG
             tooltip.anchorMin = tooltip.anchorMax = new Vector2(0.5f, 0.5f);
             var tbg = Tinted(tooltip, "Bg", "ui_tooltip", Color.white);
             UIFactory.Stretch(tbg.rectTransform);
-            tooltipIcon = UIFactory.Image(tooltip, "Icon", null, Color.white);
+            tooltipIcon = UIFactory.SharpIcon(tooltip, "Icon", Color.white);
             UIFactory.Place(tooltipIcon.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -16f), new Vector2(64f, 64f));
             tooltipText = UIFactory.Text(tooltip, "Text", "", 18, Color.white, TextAnchor.UpperLeft, true);
             tooltipText.lineSpacing = 1.15f;
@@ -218,7 +218,7 @@ namespace DotRPG
             s.rect = s.bg.rectTransform;
             UIFactory.Place(s.rect, anchor, new Vector2(0f, 1f), topLeft, new Vector2(size, size));
             s.bg.raycastTarget = true;
-            s.icon = UIFactory.Image(s.rect, "Icon", null, Color.white);
+            s.icon = UIFactory.SharpIcon(s.rect, "Icon", Color.white);
             UIFactory.Place(s.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.72f, size * 0.72f));
             s.frame = Tinted(s.rect, "Rarity", "ui_frame", Color.clear);
             UIFactory.Stretch(s.frame.rectTransform);
@@ -531,6 +531,11 @@ namespace DotRPG
         /// <summary>Draws the equipped weapon in the preview character's hand, at the same pixel scale.</summary>
         void PlaceWeaponPreview()
         {
+            if (Class == CharacterClass.Warrior)
+            {
+                SilverWarriorPresentation.Preview(character, weaponPreview, Game.Session.Equipment[EquipSlot.Weapon], Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1");
+                return;
+            }
             var body = character.sprite;
             var wpn = Game.Art.Get(EquipmentDatabase.WeaponSprite(Game.Session.Equipment[EquipSlot.Weapon], Class));
             weaponPreview.enabled = body != null && wpn != null;

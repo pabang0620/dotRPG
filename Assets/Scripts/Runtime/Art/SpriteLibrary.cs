@@ -29,6 +29,7 @@ namespace DotRPG
             if (cache.TryGetValue(key, out var sprite)) return sprite;
 
             sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            if (sprite == null && KatanaArt.Handles(key)) sprite = KatanaArt.Get(key);
             if (sprite == null)
             {
                 var canvas = ProceduralArt.Draw(key);
@@ -44,9 +45,23 @@ namespace DotRPG
             string key = $"char_{look.id}_{dir}_{frame}";
             if (cache.TryGetValue(key, out var sprite)) return sprite;
             sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            if (sprite == null && SilverWarriorArt.Supports(look.id)) sprite = SilverWarriorArt.Get(look, dir, frame);
             if (sprite == null) sprite = ToSprite(key, ProceduralArt.DrawCharacter(look, dir, frame));
             cache[key] = sprite;
             return sprite;
+        }
+
+        /// <summary>Katana for the equipped tier, pivoted at the right-hand grip.</summary>
+        public Sprite GetWarriorWeapon(string itemId)
+        {
+            var item = EquipmentDatabase.Get(itemId);
+            if (item == null || item.category != EquipCategory.Weapon || !item.UsableBy(CharacterClass.Warrior)) return null;
+            string key = "silver_held_" + itemId;
+            if (cache.TryGetValue(key, out var ready)) return ready;
+            var original = Get(EquipmentDatabase.WeaponSprite(itemId, CharacterClass.Warrior));
+            var result = Sprite.Create(original.texture, original.rect, new Vector2(.5f, KatanaArt.GripY / original.rect.height), original.pixelsPerUnit, 0, SpriteMeshType.FullRect);
+            result.name = key; cache[key] = result;
+            return result;
         }
 
         Sprite ToSprite(string key, PixelCanvas canvas)
