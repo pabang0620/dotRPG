@@ -609,7 +609,7 @@ namespace DotRPG
             EnhanceResult result;
             try
             {
-                int roll = devRoll ?? UnityEngine.Random.Range(0, 100);
+                int roll = devRoll ?? Authority.Current.EnhanceRoll(); // [ONLINE] server roll later
                 devRoll = null;
                 result = Game.Session.Equipment.TryEnhance(e.Target, roll, Class);
             }
