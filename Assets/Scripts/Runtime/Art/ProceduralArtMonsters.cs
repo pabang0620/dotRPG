@@ -398,7 +398,10 @@ namespace DotRPG
         // Totem (사령 토템)
         // =====================================================================================
 
-        static PixelCanvas DrawTotem(string frame)
+        static PixelCanvas DrawTotem(string frame) => DrawTotemRaw(frame).OutlinedWithPivot(8, 1.5f);
+
+        /// <summary>Totem frame before the outline (the HD path upscales this).</summary>
+        static PixelCanvas DrawTotemRaw(string frame)
         {
             var c = new PixelCanvas(16, 28);
             bool bright = frame == "idle1" || frame == "attack" || frame == "walk1" || frame == "walk3";
@@ -433,8 +436,7 @@ namespace DotRPG
             if (bright) { c.Set(1, 12, MonSoul); c.Set(14, 16, MonSoul); c.Set(2, 18, MonSoulLight); }
             else { c.Set(1, 14, MonSoul); c.Set(14, 11, MonSoul); }
             if (frame == "hurt") c.Rect(5, 4, 6, 2, White);
-            c.Outline(Outline);
-            return c.WithPivot(8, 1.5f);
+            return c;
         }
 
         // =====================================================================================
@@ -454,7 +456,10 @@ namespace DotRPG
             public int gx, gy;
         }
 
-        static PixelCanvas DrawBoss(CharacterLook L, View v, string frame)
+        static PixelCanvas DrawBoss(CharacterLook L, View v, string frame) => DrawBossRaw(L, v, frame).OutlinedWithPivot(BossW / 2f, 1.5f);
+
+        /// <summary>Boss frame before the outline (the HD path upscales this).</summary>
+        static PixelCanvas DrawBossRaw(CharacterLook L, View v, string frame)
         {
             var big = new PixelCanvas(BossW, BossH);
             var body = new PixelCanvas(32, 40);
@@ -516,8 +521,7 @@ namespace DotRPG
             if (!weaponBehind) BossWeapon(big, id, p);
             if (id == "boss_armory_warden") BigTowerShield(big, p);
 
-            big.Outline(Outline);
-            return big.WithPivot(BossW / 2f, 1.5f);
+            return big;
         }
 
         /// <summary>

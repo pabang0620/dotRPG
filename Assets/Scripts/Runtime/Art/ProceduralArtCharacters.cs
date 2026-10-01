@@ -45,7 +45,8 @@ namespace DotRPG
         public static PixelCanvas DrawCharacter(CharacterLook look, string dir, string frame)
         {
             // [MONSTER] Dungeon monsters / bosses (bigger canvases for bosses).
-            if (look.body == BodyKind.Monster) return DrawMonsterCharacter(look, dir, frame);
+            // [MONHD] HD (density 2) monsters on the HD skeleton body; DrawMonsterCharacter (16px) kept for reference.
+            if (look.body == BodyKind.Monster) return DrawMonsterCharacterHd(look, dir, frame);
             return DrawCharacterHd(look, dir, frame);
         }
 
