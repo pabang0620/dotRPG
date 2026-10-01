@@ -82,7 +82,7 @@ namespace DotRPG
                 DungeonSpawns.Add((c - '0', center));
                 return true;
             }
-            return false;
+            return SpawnDungeonLookProp(c, x, y); // [DGNTERRAIN] mine lamps
         }
     }
 }

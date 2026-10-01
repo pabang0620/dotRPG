@@ -242,9 +242,11 @@ namespace DotRPG
                 spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
             }
             if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();
+            ApplyDungeonTint(); // [DGNTERRAIN] darker mine / ice cave rooms (WorldBuilder.DungeonLook.cs)
             AddTreeFades();
             if (PointsOfInterest.Count == 0) PointsOfInterest.Add(PlayerSpawn);
             BuildMinimap();
+            AddDungeonVignette(); // [DGNTERRAIN]
         }
 
         /// <summary>
@@ -875,7 +877,7 @@ namespace DotRPG
                 var ground = new char[width, height];
                 for (int y = 0; y < height; y++)
                     for (int x = 0; x < width; x++)
-                        ground[x, y] = GroundAt(x, y);
+                        ground[x, y] = DungeonPaintGround(x, y, GroundAt(x, y)); // [DGNTERRAIN] spawn marks inside walls look like rock
                 var px = paint(ground, width, height, out int pw, out int ph);
                 chunks = new List<(Vector2, Sprite)>();
                 const int Chunk = 256;
