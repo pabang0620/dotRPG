@@ -450,6 +450,8 @@ namespace DotRPG
         IEnumerator ShowResultRoutine()
         {
             while (!Game.IsPlaying || busy) yield return null;
+            // [BGM] Result jingle; 다시 도전 (LoadRoom) / leaving (ExitToVillage) switch back to the map's music.
+            Game.Audio.PlayMusic(run.State == DungeonRunState.Cleared ? MapRegistry.MusicClear : MapRegistry.MusicFail);
             Game.UI.DungeonResult.Setup(run);
             Game.Flow.OpenWindow(Game.UI.DungeonResult);
         }
