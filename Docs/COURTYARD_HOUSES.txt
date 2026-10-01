@@ -1,25 +1,28 @@
-마을 주택: 레퍼런스 기반 겹기와 디자인
+마을 주택: 생성형 PNG 기반 높은 시점 구조물
 
-적용 범위
-- 시작 마을의 일반 주택 town_house_0 / town_house_1 / town_house_2.
-- 기존 주택 3종의 외형을 짙은 기와, 이중 처마, 돌 옥상, 목재 격자창, 붉은 등, 입구 발과 석조 계단으로 변경했다.
-- 옥상 채반/접은 천, 간판, 입구 항아리/작은 화분과 기와·천 색으로 변형을 구분한다.
-- 촌장 건물·상점·대장간·창고 및 협곡/설원 지역의 건물은 별도 디자인을 유지한다.
+현재 게임 적용
+- Assets/Resources/Art/Town/courtyard_house.png: 내장 image_gen으로 제작한 실제 게임용 이미지.
+- 시작 마을 일반 주택 town_house_0 / town_house_1 / town_house_2가 공통으로 이 PNG를 사용한다.
+- 세 가지 별도 생성 이미지가 아니라 하나의 완성된 공통 외형이다.
+- 촌장 건물, 상점, 대장간, 창고 및 다른 지역 건물은 이번 교체 범위에 포함하지 않는다.
+- 넓은 옥상 바닥, 양쪽 기와 경사면, 짧은 정면 벽, 계단과 난간으로 높은 시점의 깊이를 표현했다.
 
-정렬과 리소스
-- 원래의 110×110 투명 캔버스, 타일당 32픽셀, 피벗 (55, 5)를 유지한다.
-- WorldBuilder의 3×3 배치, 충돌 영역, 문 상호작용 위치와 대사는 변경하지 않았다.
-- 레퍼런스 사진의 건축 디자인을 기존 PixelCanvas 제작 방식으로 재구성했다.
-- 실제 적용되는 소스: Assets/Scripts/Runtime/Art/ProceduralArtCourtyardHouse.cs.
-- 생성형 이미지나 임시 대체 이미지를 사용하지 않았다. PNG 미리보기는 실제 런타임과 같은 함수에서 내보낸다.
-- Export: Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.CourtyardHousePreview.Export
-- 검증/빌드: -executeMethod DotRPG.EditorTools.CourtyardHousePreview.ExportAndBuild
-- 미리보기: Docs/images/courtyard-houses/house_0.png ~ house_2.png, houses.png.
-- 검증 항목: 세 주택의 크기·밀도·출입구 피벗 유지, 프레임 가장자리에서 불투명 실루엣 잘림 없음.
+리소스와 정렬
+- 원본 1536×1024 RGBA, 실제 투명 배경. 사용자가 선택한 첫 번째 생성 원본을 수정 없이 사용한다.
+- Unity Sprite Single, Point 필터, Mipmap 없음, 비압축, NPOT 리사이즈 없음.
+- PPU 360, 피벗 (768,42): 건물 중심 X, 맨 아래 계단 높이 기준.
+- 불투명 건물 폭은 약 3.25 타일, 높이는 약 2.69 타일이다.
+- WorldBuilder의 3×3 배치와 중심 충돌 영역은 유지한다. 문 상호작용은 첫 생성 이미지의 오른쪽 출입구에 맞춰 X +124/360 타일 이동한다.
+- SpriteLibrary는 개별 키별 리소스를 우선하며, 일반 주택에 공통 PNG를 연결한다.
 
-높은 정면 시점 보정
-- 지붕이 차지하는 세로 깊이를 늘리고 정면 벽과 창 높이를 줄여 위에서 내려다보는 비율로 재구성했다.
-- 옥상 바닥은 앞쪽이 넓은 사다리꼴, 짧은 포장 줄눈과 난간의 윗면/안쪽 면으로 깊이를 표현한다.
-- 옥상의 수직 창 형태를 바닥 계단 개구부로 교체하고 내부 그림자와 디딤판을 그렸다.
-- 양쪽 경사면의 기와 방향과 밝기를 구분하고, 처마 아래 접촉 그림자를 더했다.
-- 정렬 검증 및 Windows 빌드 통과. 크기, 충돌, 문 기준점은 유지한다.
+실제 제작 이미지와 이전 대체 이미지 구분
+- 실제 적용 이미지: Assets/Resources/Art/Town/courtyard_house.png.
+- ProceduralArtCourtyardHouse.cs 및 Docs/images/courtyard-houses/*.png는 이전 코드 제작 버전이며 현재 PNG를 대체하는 미리보기가 아니다.
+- 공통 PNG가 없을 때만 기존 절차적 주택을 대체 리소스로 사용한다.
+
+검증 및 재현
+- Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.CourtyardHousePreview.ExportAndBuild
+- 임포트 옵션 설정 후 실제 SpriteLibrary의 세 키 연결, 피벗, 픽셀 크기, 투명 프레임 가장자리를 검사하고 Windows 빌드한다.
+- -dotrpgTown 캡처의 town_houses.png에서 일반 주택 게임 화면을 확인할 수 있다.
+- 생성 도구: 내장 image_gen (CLI 사용 안 함).
+- 생성 지시문: Docs/COURTYARD_HOUSE_IMAGE_PROMPT.txt.

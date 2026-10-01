@@ -367,6 +367,7 @@ namespace DotRPG
             yield return RenderMap("town", new[]
             {
                 ("plaza", 28.5f, 20.5f), ("north", 28f, 31f), ("east", 44f, 22f), ("farm", 10f, 13f), ("pond", 24f, 7f), ("exit", 51f, 21f),
+                ("houses", 13.5f, 25.5f),
             });
             yield return ServiceTests();
 

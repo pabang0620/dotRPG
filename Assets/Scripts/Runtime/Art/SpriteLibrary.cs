@@ -29,6 +29,9 @@ namespace DotRPG
             if (cache.TryGetValue(key, out var sprite)) return sprite;
 
             sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            // Village houses share the generated elevated-view architecture. Individual key overrides still win.
+            if (sprite == null && (key == "town_house_0" || key == "town_house_1" || key == "town_house_2"))
+                sprite = Resources.Load<Sprite>(OverrideFolder + "Town/courtyard_house");
             if (sprite == null && KatanaArt.Handles(key)) sprite = KatanaArt.Get(key);
             if (sprite == null)
             {

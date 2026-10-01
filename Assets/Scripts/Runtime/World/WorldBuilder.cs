@@ -969,15 +969,21 @@ namespace DotRPG
             var pos = new Vector2(x + w * 0.5f, y + 0.1f);
             float colH = Mathf.Max(1f, h - 0.85f);
             var go = StaticProp(name, sprite, pos, new Vector2(w - 0.15f, colH), new Vector2(0f, colH * 0.5f + 0.05f));
+            // The chosen generated house has an asymmetric facade. Keep its body collider centered,
+            // but attach the interaction to the visible door at source pixel x=892 (center is 768).
+            var renderedSprite = go.GetComponent<SpriteRenderer>().sprite;
+            float entranceX = renderedSprite != null && renderedSprite.name == "courtyard_house"
+                ? 124f / renderedSprite.pixelsPerUnit : 0f;
             if (service != NpcService.None) ServiceDoor.Attach(go, service, prompt);
             else if (!string.IsNullOrEmpty(dialogue))
             {
                 var door = new GameObject("Door").AddComponent<DialogueInteractable>();
                 door.transform.SetParent(go.transform, false);
+                door.transform.localPosition = new Vector3(entranceX, 0f, 0f);
                 door.Setup(prompt, dialogue);
                 door.ConfigureShape(new Vector2(0f, 0f), 0.25f, new Vector2(0f, 1.5f));
             }
-            PointsOfInterest.Add(pos + Vector2.up * 1.2f);
+            PointsOfInterest.Add(pos + new Vector2(entranceX, 1.2f));
             return go;
         }
 

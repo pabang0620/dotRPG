@@ -10,6 +10,51 @@ namespace DotRPG.EditorTools
         [MenuItem("dotRPG/Art/Preview Courtyard Houses")]
         public static void Export()
         {
+            const string path = "Assets/Resources/Art/Town/courtyard_house.png";
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.spritePixelsPerUnit = 360f;
+            importer.spritePivot = new Vector2(.5f, 42f / 1024f);
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            settings.spriteAlignment = (int)SpriteAlignment.Custom;
+            settings.spritePivot = new Vector2(.5f, 42f / 1024f);
+            settings.spriteMeshType = SpriteMeshType.FullRect;
+            importer.SetTextureSettings(settings);
+            importer.filterMode = FilterMode.Point;
+            importer.mipmapEnabled = false;
+            importer.alphaIsTransparency = true;
+            importer.isReadable = true;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.npotScale = TextureImporterNPOTScale.None;
+            importer.maxTextureSize = 2048;
+            importer.SaveAndReimport();
+            var library = new SpriteLibrary(16);
+            for (int i = 0; i < 3; i++)
+            {
+                var sprite = library.Get("town_house_" + i);
+                if (sprite == null || AssetDatabase.GetAssetPath(sprite) != path || sprite.pixelsPerUnit != 360f)
+                    throw new Exception("Generated house is not connected to runtime key " + i);
+                if (Vector2.Distance(sprite.pivot, new Vector2(768, 42)) > .01f)
+                    throw new Exception("Generated house entrance pivot changed");
+                var texture = sprite.texture;
+                if (texture.width != 1536 || texture.height != 1024 || texture.filterMode != FilterMode.Point)
+                    throw new Exception("Generated house texture was resized or filtered");
+                for (int x = 0; x < texture.width; x++)
+                    if (texture.GetPixel(x, 0).a > .01f || texture.GetPixel(x, texture.height - 1).a > .01f)
+                        throw new Exception("Generated house touches vertical frame edge");
+                for (int y = 0; y < texture.height; y++)
+                    if (texture.GetPixel(0, y).a > .01f || texture.GetPixel(texture.width - 1, y).a > .01f)
+                        throw new Exception("Generated house touches horizontal frame edge");
+            }
+            Debug.Log("[CourtyardHouse] PASS generated PNG: runtime keys 0/1/2, point sampling, transparent frame, base pivot (768,42)");
+        }
+
+        // Historical fallback only. The generated PNG is now the actual runtime house.
+        public static void ExportProceduralFallback()
+        {
             const string folder = "Docs/images/courtyard-houses";
             Directory.CreateDirectory(folder);
             var sheet = new PixelCanvas(330, 110);
