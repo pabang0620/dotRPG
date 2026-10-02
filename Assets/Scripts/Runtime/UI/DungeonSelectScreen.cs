@@ -97,7 +97,7 @@ namespace DotRPG
             Refresh();
         }
 
-        IReadOnlyList<DungeonDef> Listed => raidTab ? new[] { DungeonDatabase.SkeletonKing } : (IReadOnlyList<DungeonDef>)DungeonDatabase.Weekday;
+        IReadOnlyList<DungeonDef> Listed => raidTab ? DungeonDatabase.Raids : DungeonDatabase.Weekday;
 
         DungeonDef Selected
         {
@@ -149,7 +149,7 @@ namespace DotRPG
             var day = ResetClock.GameDay(now);
             string weekend = day == DayOfWeek.Saturday || day == DayOfWeek.Sunday ? "  <color=#8fe28f>주말: 모든 요일던전 개방</color>" : "";
             dayText.text = raidTab
-                ? $"레이드 보상 {(progress.RaidRewardAvailable(now) ? "<color=#8fe28f>받을 수 있음</color>" : "<color=#ff9f7a>이번 주 받음</color>")}   <color=#b8c4d8>초기화 목 06:00</color>"
+                ? $"오늘 <color=#ffe066>{DungeonDatabase.DayName(day)}</color>   중간 레이드 수·토·일 (하루 1회 보상)   최종 레이드 일요일 (주 1회)   봉인 열쇠 조각 <color=#ffe066>{Game.Session.Inventory.Count(DungeonDatabase.SealKey)}</color>   <color=#b8c4d8>초기화 06:00 · 주간 목 06:00</color>"
                 : $"오늘 <color=#ffe066>{DungeonDatabase.DayName(day)}</color>{weekend}   남은 입장 <color=#ffe066>{progress.EntriesLeft(now)}/{DungeonDatabase.DailyEntries}</color>   <color=#b8c4d8>초기화 06:00</color>";
 
             for (int i = 0; i < rows.Count; i++)
@@ -204,7 +204,10 @@ namespace DotRPG
             int size = names.Count;
             partyText.text = $"<b>파티</b>  <color=#ffe066>{size}/{def.maxParty}</color>  몬스터 체력 ×{DungeonDatabase.PartyScale(size):0.0}\n{string.Join(" · ", names)}";
 
-            string lockedRaid = def.isRaid && !progress.RaidRewardAvailable(now) ? "  <color=#ff9f7a>(이번 주 보상 받음 — 연습만 가능)</color>" : "";
+            string lockedRaid = !def.isRaid ? ""
+                : !progress.RaidRewardAvailable(def, now) ? (def.raidTier == RaidTier.Mid ? "  <color=#ff9f7a>(오늘 보상 받음, 연습만 가능)</color>" : "  <color=#ff9f7a>(이번 주 보상 받음, 연습만 가능)</color>")
+                : def.raidTier == RaidTier.Mid ? $"  <color=#ffe066>+ 봉인 열쇠 조각 {def.keyMin}~{def.keyMax}</color>  <color=#b8c4d8>이번 주 {progress.RaidClearsThisWeek(def, now)}/3</color>"
+                : $"  <color=#ffe066>입장: 봉인 열쇠 조각 {def.keyCost}개 (클리어 시 소모)</color>";
             rewards.text = $"<color=#ffe066>보상</color> 카드 4장 중 1장: {DungeonRewards.Preview(def, numbers)}{lockedRaid}\n" +
                            $"<color=#b8c4d8>클리어 경험치 {DungeonRewards.ClearXp(def, numbers, DungeonRank.C):N0} + 랭크 보너스 (SSS +50%)</color>";
 

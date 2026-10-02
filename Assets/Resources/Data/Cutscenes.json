@@ -1,3 +1,925 @@
 {
-  "cutscenes": []
+ "cutscenes": [
+  {
+   "id": "c1_intro",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 10,
+     "row": 13,
+     "dir": "down"
+    },
+    {
+     "op": "title",
+     "text": "챕터 1\n잿더미의 마굿간",
+     "t": 2.5
+    },
+    {
+     "op": "camera",
+     "actor": "bram",
+     "t": 0.6
+    },
+    {
+     "op": "dialogue",
+     "id": "c1_bram_morning"
+    },
+    {
+     "op": "cameraReset"
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c1_attack",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "music",
+     "id": "music_title"
+    },
+    {
+     "op": "tint",
+     "color": "#141c3a99",
+     "t": 1.2
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 26,
+     "row": 36,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "ria",
+     "col": 28,
+     "row": 36,
+     "dir": "left"
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "봐, {name}! 등불이 다 켜졌어. 내일 밤엔 우리 등불도 저기 있을 거야."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "...응."
+    },
+    {
+     "op": "wait",
+     "t": 0.8
+    },
+    {
+     "op": "shake",
+     "t": 0.5,
+     "power": 0.15
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "북쪽에서 비명이 터진다."
+    },
+    {
+     "op": "fire",
+     "col": 25,
+     "row": 24,
+     "count": 3
+    },
+    {
+     "op": "fire",
+     "col": 36,
+     "row": 22,
+     "count": 2
+    },
+    {
+     "op": "fire",
+     "col": 45,
+     "row": 28,
+     "count": 2
+    },
+    {
+     "op": "tint",
+     "color": "#3a121eb0",
+     "t": 1.0
+    },
+    {
+     "op": "music",
+     "id": "music_boss"
+    },
+    {
+     "op": "emote",
+     "actor": "player",
+     "text": "!"
+    },
+    {
+     "op": "spawn",
+     "actor": "bram",
+     "col": 27,
+     "row": 29,
+     "dir": "down"
+    },
+    {
+     "op": "move",
+     "actor": "bram",
+     "col": 27,
+     "row": 34,
+     "speed": 4
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "{name}! 해골들이 숲에서 넘어왔다! 리아 데리고 마굿간 쪽으로!"
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "아저씨는요?!"
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "사람들 대피시키고 바로 간다. 가!"
+    },
+    {
+     "op": "move",
+     "actor": "bram",
+     "col": 12,
+     "row": 30,
+     "speed": 5,
+     "noWait": true
+    },
+    {
+     "op": "enemies",
+     "id": "skel_warrior",
+     "col": 27,
+     "row": 27,
+     "count": 3
+    },
+    {
+     "op": "enemies",
+     "id": "skel_warrior",
+     "col": 36,
+     "row": 33,
+     "count": 2
+    },
+    {
+     "op": "move",
+     "actor": "ria",
+     "col": 26,
+     "row": 38,
+     "speed": 3
+    },
+    {
+     "op": "despawn",
+     "actor": "bram"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "길이 막혔다. 해골들이 광장으로 몰려온다. 리아를 지켜야 한다!"
+    },
+    {
+     "op": "flag",
+     "id": "attack_night"
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c1_stable",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "fadeOut",
+     "t": 0.6
+    },
+    {
+     "op": "despawn",
+     "actor": "ria"
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 10,
+     "row": 15,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "ria",
+     "col": 11,
+     "row": 15,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "bram",
+     "col": 10,
+     "row": 13,
+     "dir": "down"
+    },
+    {
+     "op": "spawn",
+     "actor": "hanna",
+     "col": 8,
+     "row": 14,
+     "dir": "right"
+    },
+    {
+     "op": "fire",
+     "col": 8,
+     "row": 7,
+     "count": 3
+    },
+    {
+     "op": "fire",
+     "col": 13,
+     "row": 8,
+     "count": 2
+    },
+    {
+     "op": "camera",
+     "col": 10,
+     "row": 13,
+     "t": 0
+    },
+    {
+     "op": "fadeIn",
+     "t": 0.6
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "들어가! 건초 더미 밑으로. 무슨 소리가 나도 나오지 마라."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "아저씨도 같이—"
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "{name}."
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "...넌 내 새끼다. 그러니까 말 들어."
+    },
+    {
+     "op": "fadeOut",
+     "t": 0.4
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 6,
+     "row": 13,
+     "dir": "right"
+    },
+    {
+     "op": "place",
+     "actor": "ria",
+     "col": 6,
+     "row": 14,
+     "dir": "right"
+    },
+    {
+     "op": "fadeIn",
+     "t": 0.4
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "건초 틈 사이로, 마굿간 문 앞이 보인다."
+    },
+    {
+     "op": "spawn",
+     "actor": "bargas",
+     "col": 24,
+     "row": 13,
+     "dir": "left"
+    },
+    {
+     "op": "move",
+     "actor": "bargas",
+     "col": 13,
+     "row": 13,
+     "speed": 1.2
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "용사의 핏줄 냄새가 난다. 이 마굿간이다."
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "여긴 말 냄새밖에 안 나. 돌아가."
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "비켜라, 늙은이."
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "못 비켜."
+    },
+    {
+     "op": "shake",
+     "t": 0.5,
+     "power": 0.4
+    },
+    {
+     "op": "sfx",
+     "id": "hit"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "둔탁한 소리. 브람이 무릎을 꿇는다. 그래도 문틀을 붙잡은 손을 놓지 않는다."
+    },
+    {
+     "op": "line",
+     "speaker": "브람",
+     "text": "...못... 비켜..."
+    },
+    {
+     "op": "shake",
+     "t": 0.4,
+     "power": 0.5
+    },
+    {
+     "op": "sfx",
+     "id": "hit"
+    },
+    {
+     "op": "despawn",
+     "actor": "bram"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "브람이 쓰러진다."
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "(작게) ...{name}, 숨 쉬어. 소리 내지 마..."
+    },
+    {
+     "op": "move",
+     "actor": "bargas",
+     "col": 10,
+     "row": 13,
+     "speed": 1.0
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "냄새는 이 근처에서 나는데."
+    },
+    {
+     "op": "move",
+     "actor": "hanna",
+     "col": 9,
+     "row": 14,
+     "speed": 3
+    },
+    {
+     "op": "line",
+     "speaker": "한나",
+     "text": "여긴 아무도 없어요! 제발, 제발 가세요!"
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "거짓말이 서툴군."
+    },
+    {
+     "op": "emote",
+     "actor": "bargas",
+     "text": "!"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "바르가스의 시선이 건초 더미에 멈춘다. 리아가 먼저 뛰쳐나간다. 너를 숨긴 채로."
+    },
+    {
+     "op": "move",
+     "actor": "ria",
+     "col": 9,
+     "row": 12,
+     "speed": 4
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "나야! 여기 나밖에 없어!"
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "...계집아이? 용사의 피는 아니군. 그래도 쓸모는 있겠어. 데려간다."
+    },
+    {
+     "op": "line",
+     "speaker": "한나",
+     "text": "안 돼! 그 애는 안 돼!"
+    },
+    {
+     "op": "shake",
+     "t": 0.3,
+     "power": 0.3
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "한나가 바르가스의 팔에 매달린다. 검은 칼날이 한 번 번뜩인다."
+    },
+    {
+     "op": "sfx",
+     "id": "hit"
+    },
+    {
+     "op": "despawn",
+     "actor": "hanna"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "한나가 쓰러진다."
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "아주머니!! 놔! 이거 놔!!"
+    },
+    {
+     "op": "move",
+     "actor": "bargas",
+     "col": 22,
+     "row": 13,
+     "speed": 1.1,
+     "noWait": true
+    },
+    {
+     "op": "move",
+     "actor": "ria",
+     "col": 21,
+     "row": 13,
+     "speed": 1.1
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "{name}!! {name}—!!"
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "리아!!"
+    },
+    {
+     "op": "move",
+     "actor": "player",
+     "col": 17,
+     "row": 13,
+     "speed": 5
+    },
+    {
+     "op": "face",
+     "actor": "bargas",
+     "dir": "left"
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "...숨어 있던 쥐가 하나 더 있었군."
+    },
+    {
+     "op": "shake",
+     "t": 0.6,
+     "power": 0.9
+    },
+    {
+     "op": "sfx",
+     "id": "player_down"
+    },
+    {
+     "op": "fadeOut",
+     "t": 0.15
+    },
+    {
+     "op": "despawn",
+     "actor": "bargas"
+    },
+    {
+     "op": "despawn",
+     "actor": "ria"
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 15,
+     "row": 13,
+     "dir": "down"
+    },
+    {
+     "op": "wait",
+     "t": 1.2
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "......"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "귀가 먹먹하다. 불타는 소리만 멀리서 들린다."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "누군가의 발소리. 회색 망토 자락이 흐릿하게 다가온다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "괜찮다, {name}."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "...이제 괜찮다."
+    },
+    {
+     "op": "wait",
+     "t": 1.5
+    },
+    {
+     "op": "flag",
+     "id": "attack_done"
+    },
+    {
+     "op": "flag",
+     "id": "stable_burned"
+    },
+    {
+     "op": "flag",
+     "id": "family_buried"
+    },
+    {
+     "op": "flag",
+     "id": "kael_mentor"
+    },
+    {
+     "op": "unflag",
+     "id": "attack_night"
+    },
+    {
+     "op": "clearProps"
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0
+    },
+    {
+     "op": "heal"
+    },
+    {
+     "op": "travel",
+     "id": "village",
+     "col": 28,
+     "row": 13,
+     "dir": "down"
+    }
+   ]
+  },
+  {
+   "id": "c1_wake",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "fadeOut",
+     "t": 0
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 28,
+     "row": 13,
+     "dir": "down"
+    },
+    {
+     "op": "spawn",
+     "actor": "chief",
+     "col": 29,
+     "row": 15,
+     "dir": "up"
+    },
+    {
+     "op": "title",
+     "text": "사흘 뒤",
+     "t": 2
+    },
+    {
+     "op": "fadeIn",
+     "t": 1.5
+    },
+    {
+     "op": "line",
+     "speaker": "촌장 모리",
+     "text": "깨어났구나... 사흘을 내리 잠만 잤다."
+    },
+    {
+     "op": "line",
+     "speaker": "촌장 모리",
+     "text": "브람과 한나는... 마굿간 옆에 묻었다. 네가 깨면 직접 보내 주고 싶어 할 것 같아서."
+    },
+    {
+     "op": "line",
+     "speaker": "촌장 모리",
+     "text": "그날 밤 불길 속에서 너를 업고 나온 기사가 있다. 카엘이라더군. 지금도 무덤 옆을 지키고 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......"
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c1_graves",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "브람. 한나."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......"
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "등불을 같이 띄우자던 목소리. 국 식는다던 잔소리. '넌 내 새끼다.'"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "아무것도 하지 못했다. 건초 더미 밑에서, 숨소리조차 참으면서."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "...나 때문에."
+    },
+    {
+     "op": "wait",
+     "t": 1
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "손에 쥔 회색 천 조각. 그날 밤 브람의 손에서 나온 것이다. 마지막까지 붙잡고 있던 누군가의 옷자락."
+    },
+    {
+     "op": "move",
+     "actor": "kael",
+     "col": 20,
+     "row": 14,
+     "speed": 1
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "울어도 된다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "그다음에 일어서면 된다."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "그날 이후 처음으로, 소리 내어 울었다."
+    },
+    {
+     "op": "fadeOut",
+     "t": 1.5
+    },
+    {
+     "op": "wait",
+     "t": 1.2
+    },
+    {
+     "op": "fadeIn",
+     "t": 1.2
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c1_bargas_end",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "fadeOut",
+     "t": 0
+    },
+    {
+     "op": "title",
+     "text": "흑철 진영, 그날 밤",
+     "t": 2
+    },
+    {
+     "op": "tint",
+     "color": "#1a1020c0",
+     "t": 0
+    },
+    {
+     "op": "fadeIn",
+     "t": 1
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "쓰러진 바르가스가 피 섞인 웃음을 흘렸다."
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "...용사의 핏줄이 제 발로 찾아오다니. 우스운 일이군."
+    },
+    {
+     "op": "line",
+     "speaker": "흑철의 바르가스",
+     "text": "그 계집아이는 여기 없다. 처음부터... 우리에게 길을 알려 준 건, 너희 인간—"
+    },
+    {
+     "op": "shake",
+     "t": 0.3,
+     "power": 0.3
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "카엘의 검이 바르가스의 목을 꿰뚫었다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "마족의 헛소리다. 귀 기울이지 마라."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "...리아는요? 리아는 어디 있어요!"
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "포로 하나가 협곡 너머로 옮겼다고 불었다. 거기까지다."
+    },
+    {
+     "op": "fadeOut",
+     "t": 1
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0
+    },
+    {
+     "op": "wait",
+     "t": 0.5
+    },
+    {
+     "op": "fadeIn",
+     "t": 1
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c1_departure",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "fadeOut",
+     "t": 0.6
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 18,
+     "row": 15,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "kael",
+     "col": 21,
+     "row": 15,
+     "dir": "left"
+    },
+    {
+     "op": "fadeIn",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "다녀올게요. 아저씨, 아주머니."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "리아 데리고 올게요. 꼭."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "바위 협곡에 기사단이 있다. 리아를 찾으려면 그들의 힘이 필요하다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "가자. 길은 내가 안다."
+    },
+    {
+     "op": "title",
+     "text": "챕터 1 완료\n잿더미의 마굿간",
+     "t": 3
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  }
+ ]
 }

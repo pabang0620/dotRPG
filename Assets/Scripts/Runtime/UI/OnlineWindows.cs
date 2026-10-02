@@ -82,7 +82,7 @@ namespace DotRPG
         int cDungeon, cDiff, cMembers = 4, cPowerPct = 80, cMsg;
         Text createSummary;
 
-        static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing };
+        static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
 
         public static PartyFinderScreen Create(Transform canvas)
         {

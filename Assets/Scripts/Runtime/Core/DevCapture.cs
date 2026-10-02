@@ -27,7 +27,7 @@ namespace DotRPG
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
         static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -63,6 +63,7 @@ namespace DotRPG
                 capture.monsterOnly = args[i] == "-dotrpgMonster"; // [MONSTER]
                 capture.balanceOnly = args[i] == "-dotrpgBalance"; // [CONTENT]
                 capture.onlineOnly = args[i] == "-dotrpgOnline"; // [ONLINE]
+                QuestManager.StoryEnabled = args[i] == "-dotrpgStory"; // [STORY] older checks play without the prologue scenes
                 return;
             }
         }
@@ -95,6 +96,7 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]
             if (onlineOnly) { yield return OnlineRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [ONLINE]
             if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
             if (dungeonOnly) { yield return DungeonRunCapture(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [DUNGEON]

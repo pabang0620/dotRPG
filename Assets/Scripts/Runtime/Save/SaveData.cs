@@ -18,6 +18,14 @@ namespace DotRPG
         }
     }
 
+    /// <summary>[RAID] Reset stamp whose reward a raid paid out.</summary>
+    [Serializable]
+    public class RaidClaimSave
+    {
+        public string id;
+        public long stamp;
+    }
+
     [Serializable]
     public class QuestProgress
     {
@@ -94,5 +102,7 @@ namespace DotRPG
         public List<string> storyFlags = new List<string>();
         public string trackedQuest = "";
         public string playerName = "";
+        // [RAID] Per-raid reward stamps (mid raids daily, final raids weekly).
+        public List<RaidClaimSave> raidClaims = new List<RaidClaimSave>();
     }
 }

@@ -295,9 +295,9 @@ namespace DotRPG
             DCheck($"week wrap: 2025-12-31 -> {ResetClock.WeeklyResetStart(nye):yyyy-MM-dd} 2026-01-01 07:00 -> {ResetClock.WeeklyResetStart(newYear):yyyy-MM-dd}",
                 ResetClock.WeeklyResetStart(nye) == new DateTime(2025, 12, 25, 6, 0, 0) && ResetClock.WeeklyResetStart(newYear) == new DateTime(2026, 1, 1, 6, 0, 0));
             var claimed = new DungeonProgress();
-            claimed.ClaimRaid(new DateTime(2025, 3, 5, 12, 0, 0));
-            DCheck($"raid lock: claimed Wed -> available Thu05:59={claimed.RaidRewardAvailable(thu0559)} Thu06:00={claimed.RaidRewardAvailable(thu0600)}",
-                !claimed.RaidRewardAvailable(thu0559) && claimed.RaidRewardAvailable(thu0600));
+            claimed.ClaimRaid(DungeonDatabase.SkeletonKing, new DateTime(2025, 3, 5, 12, 0, 0));
+            DCheck($"raid lock: claimed Wed -> available Thu05:59={claimed.RaidRewardAvailable(DungeonDatabase.SkeletonKing, thu0559)} Thu06:00={claimed.RaidRewardAvailable(DungeonDatabase.SkeletonKing, thu0600)}",
+                !claimed.RaidRewardAvailable(DungeonDatabase.SkeletonKing, thu0559) && claimed.RaidRewardAvailable(DungeonDatabase.SkeletonKing, thu0600));
 
             // Rank table.
             var table = new (int score, DungeonRank rank)[] { (100, DungeonRank.SSS), (95, DungeonRank.SSS), (94, DungeonRank.SS), (88, DungeonRank.SS), (87, DungeonRank.S), (80, DungeonRank.S),
@@ -348,7 +348,7 @@ namespace DotRPG
             p.RecordClear("gold_vein", DungeonDifficulty.Normal, DungeonRank.A);
             p.RecordClear("gold_vein", DungeonDifficulty.Normal, DungeonRank.C);
             p.RecordClear("gold_vein", DungeonDifficulty.Normal, DungeonRank.SS);
-            p.ClaimRaid(t0);
+            p.ClaimRaid(DungeonDatabase.SkeletonKing, t0);
             var sd = new SaveData();
             p.Capture(sd);
             var json = JsonUtility.ToJson(sd);
@@ -356,9 +356,9 @@ namespace DotRPG
             back.Restore(JsonUtility.FromJson<SaveData>(json));
             var old = new DungeonProgress();
             old.Restore(JsonUtility.FromJson<SaveData>("{\"version\":3,\"mapId\":\"village\"}"));
-            DCheck($"save fields: entries={back.EntriesUsed(t0)} best={back.BestRank("gold_vein", DungeonDifficulty.Normal)} raidAvail={back.RaidRewardAvailable(t0)} | old save: entries={old.EntriesUsed(t0)} best={old.BestRank("gold_vein", DungeonDifficulty.Normal)?.ToString() ?? "none"} raid={old.RaidRewardAvailable(t0)}",
-                back.EntriesUsed(t0) == 2 && back.BestRank("gold_vein", DungeonDifficulty.Normal) == DungeonRank.SS && !back.RaidRewardAvailable(t0) && back.IsCleared("gold_vein", DungeonDifficulty.Normal)
-                && old.EntriesUsed(t0) == 0 && old.BestRank("gold_vein", DungeonDifficulty.Normal) == null && old.RaidRewardAvailable(t0));
+            DCheck($"save fields: entries={back.EntriesUsed(t0)} best={back.BestRank("gold_vein", DungeonDifficulty.Normal)} raidAvail={back.RaidRewardAvailable(DungeonDatabase.SkeletonKing, t0)} | old save: entries={old.EntriesUsed(t0)} best={old.BestRank("gold_vein", DungeonDifficulty.Normal)?.ToString() ?? "none"} raid={old.RaidRewardAvailable(DungeonDatabase.SkeletonKing, t0)}",
+                back.EntriesUsed(t0) == 2 && back.BestRank("gold_vein", DungeonDifficulty.Normal) == DungeonRank.SS && !back.RaidRewardAvailable(DungeonDatabase.SkeletonKing, t0) && back.IsCleared("gold_vein", DungeonDifficulty.Normal)
+                && old.EntriesUsed(t0) == 0 && old.BestRank("gold_vein", DungeonDifficulty.Normal) == null && old.RaidRewardAvailable(DungeonDatabase.SkeletonKing, t0));
 
             // Authority seam: a seeded authority deals the same cards twice.
             var def = DungeonDatabase.Get("armory");
@@ -505,8 +505,8 @@ namespace DotRPG
             var result = Game.UI.DungeonResult;
             bool rp = result.PlayerPick(0);
             yield return Wait(3.8f);
-            DCheck($"raid clear: pick={rp} state={run.State} cards={run.Cards?.Count} raidAvail={progress.RaidRewardAvailable(now())} done={result.DevDone}",
-                run.State == DungeonRunState.Cleared && run.Cards != null && run.Cards.Count == 4 && !progress.RaidRewardAvailable(now()) && result.DevDone);
+            DCheck($"raid clear: pick={rp} state={run.State} cards={run.Cards?.Count} raidAvail={progress.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now())} done={result.DevDone}",
+                run.State == DungeonRunState.Cleared && run.Cards != null && run.Cards.Count == 4 && !progress.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now()) && result.DevDone);
             yield return Shot("dgn_16_raid_result");
             result.DevLeave(false);
             yield return Wait(1.4f);
@@ -525,8 +525,8 @@ namespace DotRPG
             bool aborted = !dir.InRun && Game.Party.CompanionAutoRevive;
             Game.Flow.ContinueGame();
             yield return Wait(1.6f);
-            DCheck($"raid practice + quit mid-run: locked={locked} aborted={aborted} continue map={Game.World.MapId} inRun={dir.InRun} raidAvail={Game.Session.Dungeons.RaidRewardAvailable(now())}",
-                locked && aborted && Game.World.MapId == MapRegistry.Village && !dir.InRun && !Game.Session.Dungeons.RaidRewardAvailable(now()));
+            DCheck($"raid practice + quit mid-run: locked={locked} aborted={aborted} continue map={Game.World.MapId} inRun={dir.InRun} raidAvail={Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now())}",
+                locked && aborted && Game.World.MapId == MapRegistry.Village && !dir.InRun && !Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now()));
         }
 
         IEnumerator SoloRunChecks(DateTime clock)

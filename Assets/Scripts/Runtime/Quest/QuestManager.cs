@@ -46,6 +46,8 @@ namespace DotRPG
         /// <summary>The workshop quest the construction site belongs to.</summary>
         public const string WorkshopQuest = "c1_rebuild";
         public const string WorkshopBuiltFlag = "workshop_built";
+        /// <summary>Automated checks other than the story run turn quest progress off (no prologue scenes).</summary>
+        public static bool StoryEnabled = true;
 
         readonly QuestConfig config;
         readonly QuestDatabase db;
@@ -276,6 +278,10 @@ namespace DotRPG
                 if (Stage != QuestStage.NotStarted) return config.builderProgressDialogue;
             }
             if (Journal.IsCompleted(WorkshopQuest) && !string.IsNullOrEmpty(afterQuestId)) return afterQuestId;
+            // An npc whose own line is the offer of a quest that is not open (yet / any more) says its idle line.
+            foreach (var q in db.All)
+                if (q.offerDialogue == defaultId && Journal.Status(q.id) != QuestStatus.Available)
+                    return Game.Dialogues.TryGet(npcId + "_idle", out _) ? npcId + "_idle" : defaultId;
             return defaultId;
         }
 
@@ -477,6 +483,12 @@ namespace DotRPG
 
         public static string ItemName(string id)
         {
+            switch (id)
+            {
+                case ItemIds.Wood: return "목재";
+                case ItemIds.Stone: return "돌";
+                case ItemIds.Carrot: return "당근";
+            }
             var eq = EquipmentDatabase.Get(EquipmentDatabase.BaseId(id));
             if (eq != null) return eq.name;
             var c = ConsumableDatabase.Get(id);
@@ -489,7 +501,7 @@ namespace DotRPG
         /// </summary>
         public void Refresh()
         {
-            if (evaluating || Game.Session == null)
+            if (evaluating || Game.Session == null || !StoryEnabled)
             {
                 Changed?.Invoke();
                 return;

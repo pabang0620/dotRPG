@@ -15,6 +15,8 @@ namespace DotRPG
         int entriesUsed;
         /// <summary>Ticks of the weekly reset whose raid reward was taken (0 = never).</summary>
         public long RaidClaimedStamp { get; private set; }
+        /// <summary>[RAID] Raid id -> ticks of the reset (daily for mid raids, weekly for final raids) whose reward was taken.</summary>
+        readonly Dictionary<string, long> raidClaims = new Dictionary<string, long>();
         readonly Dictionary<string, int> bestRanks = new Dictionary<string, int>();
         readonly HashSet<string> cleared = new HashSet<string>();
 
@@ -25,6 +27,7 @@ namespace DotRPG
             DailyStamp = 0;
             entriesUsed = 0;
             RaidClaimedStamp = 0;
+            raidClaims.Clear();
             bestRanks.Clear();
             cleared.Clear();
         }
@@ -59,9 +62,35 @@ namespace DotRPG
             return true;
         }
 
-        public bool RaidRewardAvailable(DateTime now) => ResetClock.WeeklyExpired(RaidClaimedStamp, now);
+        /// <summary>
+        /// [RAID] Mid raids pay out once per open day (수·토·일 = 주 3회), final raids once per week (목 06:00).
+        /// </summary>
+        public bool RaidRewardAvailable(DungeonDef raid, DateTime now)
+        {
+            if (raid == null) return false;
+            raidClaims.TryGetValue(raid.id, out long stamp);
+            return raid.raidTier == RaidTier.Mid ? ResetClock.DailyExpired(stamp, now) : ResetClock.WeeklyExpired(stamp, now);
+        }
 
-        public void ClaimRaid(DateTime now) => RaidClaimedStamp = ResetClock.WeeklyResetStart(now).Ticks;
+        public void ClaimRaid(DungeonDef raid, DateTime now)
+        {
+            if (raid == null) return;
+            raidClaims[raid.id] = raid.raidTier == RaidTier.Mid ? ResetClock.DailyResetStart(now).Ticks : ResetClock.WeeklyResetStart(now).Ticks;
+        }
+
+        /// <summary>Mid raid: rewarded clears this week (shown as "이번 주 n/3").</summary>
+        public int RaidClearsThisWeek(DungeonDef raid, DateTime now)
+        {
+            if (raid == null || !raidClaims.TryGetValue(raid.id, out long stamp)) return 0;
+            if (raid.raidTier != RaidTier.Mid) return ResetClock.WeeklyExpired(stamp, now) ? 0 : 1;
+            // Only the last claimed day is kept; count the open days of this week up to it.
+            if (ResetClock.WeeklyExpired(stamp, now)) return 0;
+            var week = ResetClock.WeeklyResetStart(now);
+            int n = 0;
+            for (var d = week; d.Ticks <= stamp; d = d.AddDays(1))
+                if (Array.IndexOf(raid.openDays, ResetClock.GameDay(d)) >= 0) n++;
+            return n;
+        }
 
         public bool IsCleared(string dungeonId, DungeonDifficulty d) => cleared.Contains(Key(dungeonId, d));
 
@@ -90,6 +119,8 @@ namespace DotRPG
             data.dungeonDailyStamp = DailyStamp;
             data.dungeonEntriesUsed = entriesUsed;
             data.raidClaimedStamp = RaidClaimedStamp;
+            data.raidClaims = new List<RaidClaimSave>();
+            foreach (var pair in raidClaims) data.raidClaims.Add(new RaidClaimSave { id = pair.Key, stamp = pair.Value });
             data.dungeonBestRanks = new List<ItemStack>();
             // Stored as rank + 1 so a zero count never means "SSS".
             foreach (var pair in bestRanks) data.dungeonBestRanks.Add(new ItemStack(pair.Key, pair.Value + 1));
@@ -104,6 +135,9 @@ namespace DotRPG
             DailyStamp = data.dungeonDailyStamp;
             entriesUsed = Math.Max(0, data.dungeonEntriesUsed);
             RaidClaimedStamp = data.raidClaimedStamp;
+            if (data.raidClaims != null)
+                foreach (var c in data.raidClaims)
+                    if (c != null && !string.IsNullOrEmpty(c.id)) raidClaims[c.id] = c.stamp;
             if (data.dungeonBestRanks != null)
                 foreach (var s in data.dungeonBestRanks)
                     if (s != null && !string.IsNullOrEmpty(s.id) && s.count > 0) bestRanks[s.id] = Math.Min(s.count - 1, (int)DungeonRank.F);

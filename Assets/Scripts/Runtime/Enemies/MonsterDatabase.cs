@@ -349,6 +349,22 @@ namespace DotRPG
             king.phases = new[] { 0.7f, 0.35f };
             king.maxMinions = 6;
             Add(king);
+
+            // [RAID] Chapter 1 final raid boss: the black-iron commander who burned the village.
+            var bargas = Boss("boss_bargas", "흑철의 바르가스", C(58, 56, 70), hp: 4200, dmg: 30, lines: 48, speed: 2.4f,
+                new BossPattern(PatternKind.Slash3, 4f, 0.9f, 3, maxRange: 3.6f, weight: 1.6f),
+                new BossPattern(PatternKind.Charge, 5.5f, 1.2f, weight: 1.2f),
+                new BossPattern(PatternKind.Guard, 9f, 1.4f, minPhase: 1),
+                new BossPattern(PatternKind.Slam, 7f, 1.3f, maxRange: 3.8f, minPhase: 1),
+                new BossPattern(PatternKind.Fields, 8f, 1.1f, 6, minPhase: 2),
+                new BossPattern(PatternKind.Donut, 11f, 1.4f, minPhase: 3));
+            bargas.look = Look("boss_armory_warden", C(58, 56, 70)); // black iron on the warden body until its own art
+            bargas.raid = true;
+            bargas.size = 2.3f;
+            bargas.groggyMax = 560f;
+            bargas.phases = new[] { 0.66f, 0.33f };
+            bargas.maxMinions = 4;
+            Add(bargas);
         }
 
         static MonsterDef Boss(string id, string name, Color32 bone, int hp, int dmg, int lines, float speed, params BossPattern[] patterns)

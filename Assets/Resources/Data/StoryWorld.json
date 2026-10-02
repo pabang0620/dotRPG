@@ -1,0 +1,203 @@
+{
+ "placements": [
+  {
+   "npcId": "bram",
+   "map": "village",
+   "col": 12,
+   "row": 13,
+   "facing": "down",
+   "hiddenBy": [
+    "attack_night",
+    "attack_done"
+   ]
+  },
+  {
+   "npcId": "hanna",
+   "map": "village",
+   "col": 7,
+   "row": 13,
+   "facing": "right",
+   "hiddenBy": [
+    "attack_night",
+    "attack_done"
+   ]
+  },
+  {
+   "npcId": "ria",
+   "map": "village",
+   "col": 17,
+   "row": 14,
+   "facing": "left",
+   "hiddenBy": [
+    "attack_night",
+    "attack_done"
+   ]
+  },
+  {
+   "npcId": "herbalist",
+   "map": "village",
+   "col": 14,
+   "row": 31,
+   "facing": "down",
+   "hiddenBy": [
+    "attack_night"
+   ]
+  },
+  {
+   "npcId": "kael",
+   "map": "village",
+   "col": 21,
+   "row": 14,
+   "facing": "left",
+   "requires": [
+    "kael_mentor"
+   ],
+   "hiddenBy": [
+    "chapter1_done"
+   ]
+  }
+ ],
+ "props": [
+  {
+   "sprite": "story_horse",
+   "map": "village",
+   "col": 16,
+   "row": 10,
+   "interactId": "feed_horse",
+   "prompt": "여물 주기",
+   "dialogue": "c1_horse_feed",
+   "hiddenBy": [
+    "attack_night",
+    "attack_done"
+   ],
+   "bob": true,
+   "scale": 1.0
+  },
+  {
+   "sprite": "story_trough",
+   "map": "village",
+   "col": 16,
+   "row": 12,
+   "interactId": "fill_trough",
+   "prompt": "물 채우기",
+   "dialogue": "c1_trough_fill",
+   "hiddenBy": [
+    "attack_done"
+   ]
+  },
+  {
+   "sprite": "story_horse",
+   "map": "village",
+   "col": 16,
+   "row": 10,
+   "requires": [
+    "horse_back"
+   ],
+   "prompt": "쓰다듬기",
+   "dialogue": "c1s_horse_found",
+   "bob": true
+  },
+  {
+   "sprite": "story_grave",
+   "map": "village",
+   "col": 17,
+   "row": 14,
+   "requires": [
+    "family_buried"
+   ],
+   "interactId": "family_graves",
+   "prompt": "무덤 앞에 서기",
+   "dialogue": "story_graves"
+  },
+  {
+   "sprite": "story_grave",
+   "map": "village",
+   "col": 19,
+   "row": 14,
+   "requires": [
+    "family_buried"
+   ],
+   "interactId": "family_graves",
+   "prompt": "무덤 앞에 서기",
+   "dialogue": "story_graves"
+  },
+  {
+   "sprite": "story_lantern",
+   "map": "village",
+   "col": 24,
+   "row": 31,
+   "requires": [
+    "festival_eve"
+   ],
+   "hiddenBy": [
+    "attack_done"
+   ],
+   "glow": true,
+   "solid": false
+  },
+  {
+   "sprite": "story_lantern",
+   "map": "village",
+   "col": 31,
+   "row": 31,
+   "requires": [
+    "festival_eve"
+   ],
+   "hiddenBy": [
+    "attack_done"
+   ],
+   "glow": true,
+   "solid": false
+  },
+  {
+   "sprite": "story_lantern",
+   "map": "village",
+   "col": 24,
+   "row": 35,
+   "requires": [
+    "festival_eve"
+   ],
+   "hiddenBy": [
+    "attack_done"
+   ],
+   "glow": true,
+   "solid": false
+  },
+  {
+   "sprite": "story_lantern",
+   "map": "village",
+   "col": 31,
+   "row": 35,
+   "requires": [
+    "festival_eve"
+   ],
+   "hiddenBy": [
+    "attack_done"
+   ],
+   "glow": true,
+   "solid": false
+  },
+  {
+   "sprite": "story_ribbon",
+   "map": "forest",
+   "col": 33,
+   "row": 7,
+   "activeQuest": "c1_trail",
+   "interactId": "ria_ribbon",
+   "prompt": "살펴보기",
+   "dialogue": "c1_ribbon_found",
+   "solid": false
+  },
+  {
+   "sprite": "story_horse",
+   "map": "forest",
+   "col": 30,
+   "row": 34,
+   "activeQuest": "c1s_horse",
+   "interactId": "lost_horse",
+   "prompt": "다가가기",
+   "dialogue": "c1s_horse_found",
+   "bob": true
+  }
+ ]
+}

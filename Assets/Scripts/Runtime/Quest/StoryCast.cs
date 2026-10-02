@@ -10,18 +10,36 @@ namespace DotRPG
     /// </summary>
     public static class StoryCast
     {
+        [System.Serializable]
         public sealed class Placement
         {
-            public string npcId, map;
+            public string npcId = "", map = "";
             /// <summary>Map-text cell (column, row from the top line).</summary>
             public float col, row;
-            public Facing facing = Facing.Down;
+            /// <summary>down / up / left / right.</summary>
+            public string facing = "down";
             /// <summary>Shown only while every one of these flags is set.</summary>
             public string[] requires = new string[0];
             /// <summary>Hidden as soon as any of these flags is set.</summary>
             public string[] hiddenBy = new string[0];
-            /// <summary>Conversation when talked to outside of quests.</summary>
+            /// <summary>Conversation when talked to outside of quests ("" = the character's idle line).</summary>
             public string dialogue = "";
+            /// <summary>Shown only while this quest is active ("" = any time).</summary>
+            public string activeQuest = "";
+        }
+
+        /// <summary>A story object: a sprite that may be used (raises <see cref="GameEvents.Interacted"/> with <see cref="interactId"/>).</summary>
+        [System.Serializable]
+        public sealed class Prop
+        {
+            public string sprite = "", map = "";
+            public float col, row;
+            public string[] requires = new string[0];
+            public string[] hiddenBy = new string[0];
+            public string activeQuest = "";
+            public string interactId = "", prompt = "살펴보기", dialogue = "";
+            public bool solid = true, glow, bob;
+            public float scale = 1f;
         }
 
         static Color32 C(int r, int g, int b) => new Color32((byte)r, (byte)g, (byte)b, 255);
@@ -31,7 +49,7 @@ namespace DotRPG
         static Dictionary<string, NpcDefinition> cast;
 
         static NpcDefinition Def(string id, string name, CharacterLook look, NpcBehaviour behaviour = NpcBehaviour.Idle, NpcTool tool = NpcTool.None) =>
-            new NpcDefinition("", id, name, look, behaviour, tool, Facing.Down, "");
+            new NpcDefinition("", id, name, look, behaviour, tool, Facing.Down, id + "_idle");
 
         static Dictionary<string, NpcDefinition> Cast
         {
@@ -56,19 +74,51 @@ namespace DotRPG
 
         public static NpcDefinition Find(string npcId) => npcId != null && Cast.TryGetValue(npcId, out var d) ? d : null;
 
-        /// <summary>Where story characters stand outside of cutscenes. Filled with the chapter data.</summary>
-        public static readonly List<Placement> Placements = new List<Placement>();
+        [System.Serializable]
+        sealed class WorldFile
+        {
+            public List<Placement> placements = new List<Placement>();
+            public List<Prop> props = new List<Prop>();
+        }
 
-        public static bool Visible(Placement p)
+        public const string ResourcePath = "Data/StoryWorld";
+        static WorldFile world;
+
+        static WorldFile World
+        {
+            get
+            {
+                if (world != null) return world;
+                var asset = Resources.Load<TextAsset>(ResourcePath);
+                try { world = asset != null ? JsonUtility.FromJson<WorldFile>(asset.text) : null; }
+                catch (System.Exception e) { Debug.LogError("[dotRPG] StoryWorld.json could not be read: " + e.Message); }
+                if (world == null) world = new WorldFile();
+                return world;
+            }
+        }
+
+        /// <summary>Where story characters stand outside of cutscenes (Resources/Data/StoryWorld.json).</summary>
+        public static List<Placement> Placements => World.placements;
+
+        public static List<Prop> Props => World.props;
+
+        static bool Holds(string[] requires, string[] hiddenBy, string activeQuest)
         {
             var j = Game.Session.Journal;
-            foreach (var f in p.requires) if (!j.HasFlag(f)) return false;
-            foreach (var f in p.hiddenBy) if (j.HasFlag(f)) return false;
+            foreach (var f in requires) if (!j.HasFlag(f)) return false;
+            foreach (var f in hiddenBy) if (j.HasFlag(f)) return false;
+            if (!string.IsNullOrEmpty(activeQuest) && j.Status(activeQuest) != QuestStatus.Active) return false;
             return true;
         }
 
+        public static bool Visible(Placement p) => Holds(p.requires, p.hiddenBy, p.activeQuest);
+        public static bool Visible(Prop p) => Holds(p.requires, p.hiddenBy, p.activeQuest);
+
+        /// <summary>The prologue night: villagers have fled or hidden.</summary>
+        public static bool VillagersHidden => Game.Session != null && Game.Session.Journal.HasFlag(StoryIds.FlagAttackNight);
+
         /// <summary>Spawns the story characters that belong on <paramref name="mapId"/> right now (world build).</summary>
-        public static void SpawnFor(string mapId, Transform parent)
+        public static void SpawnFor(string mapId, Transform parent, Rect bounds)
         {
             if (Game.Session == null) return;
             foreach (var p in Placements)
@@ -77,10 +127,62 @@ namespace DotRPG
                 var def = Find(p.npcId);
                 if (def == null) continue;
                 var placed = def.Clone();
-                placed.initialFacing = p.facing;
-                placed.dialogueId = p.dialogue;
-                NpcController.Create(placed, CutscenePlayer.CellToWorld(p.col, p.row), parent);
+                placed.initialFacing = CutscenePlayer.ParseFacing(p.facing, Facing.Down);
+                placed.dialogueId = string.IsNullOrEmpty(p.dialogue) ? p.npcId + "_idle" : p.dialogue;
+                NpcController.Create(placed, CutscenePlayer.CellToWorld(bounds, p.col, p.row), parent);
             }
+            foreach (var p in Props)
+                if (p.map == mapId && Visible(p)) StoryProp.Create(p, CutscenePlayer.CellToWorld(bounds, p.col, p.row), parent);
+        }
+    }
+
+    /// <summary>[STORY] A story object in the world (horse, graves, the hair ribbon, festival lanterns).</summary>
+    public class StoryProp : Interactable
+    {
+        StoryCast.Prop prop;
+        SpriteRenderer sr;
+        Vector3 basePos;
+
+        public override string Prompt => prop.prompt;
+        public override bool CanInteract => !string.IsNullOrEmpty(prop.interactId) || !string.IsNullOrEmpty(prop.dialogue);
+
+        public static StoryProp Create(StoryCast.Prop p, Vector2 pos, Transform parent)
+        {
+            var go = new GameObject("Story_" + p.sprite);
+            go.transform.SetParent(parent, false);
+            go.transform.position = pos;
+            var sp = go.AddComponent<StoryProp>();
+            sp.prop = p;
+            sp.basePos = go.transform.position;
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localScale = Vector3.one * p.scale;
+            sp.sr = visual.AddComponent<SpriteRenderer>();
+            sp.sr.sprite = Game.Art.Get(p.sprite);
+            HdMaterial.Apply(sp.sr);
+            if (p.solid)
+            {
+                var col = go.AddComponent<BoxCollider2D>();
+                col.size = new Vector2(0.8f * p.scale, 0.4f);
+                col.offset = new Vector2(0f, 0.2f);
+            }
+            go.AddComponent<YSort>().Configure(true);
+            if (p.glow) WarmGlow.Attach(go.transform, new Vector2(0f, 1.2f * p.scale), 1.3f, 0.3f);
+            sp.ConfigureShape(new Vector2(0f, 0.2f), 0.6f, new Vector2(0f, 1.6f * p.scale));
+            return sp;
+        }
+
+        void Update()
+        {
+            if (!prop.bob || sr == null) return;
+            sr.transform.localPosition = new Vector3(0f, Mathf.Abs(Mathf.Sin(Time.time * 1.6f)) * 0.03f, 0f);
+        }
+
+        public override void Interact(PlayerController player)
+        {
+            string id = prop.interactId;
+            if (!string.IsNullOrEmpty(prop.dialogue)) Game.Dialogue.Play(prop.dialogue, () => { if (!string.IsNullOrEmpty(id)) GameEvents.RaiseInteracted(id); });
+            else if (!string.IsNullOrEmpty(id)) GameEvents.RaiseInteracted(id);
         }
     }
 

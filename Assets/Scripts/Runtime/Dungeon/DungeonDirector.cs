@@ -83,9 +83,30 @@ namespace DotRPG
             if (Game.Player == null || Game.Player.IsDead) return "쓰러진 상태로는 입장할 수 없다.";
             if (!ResetClock.IsOpen(dungeon, now)) return $"오늘({DungeonDatabase.DayName(ResetClock.GameDay(now))})은 열리지 않는 던전이다.";
             if (!Progress.IsUnlocked(dungeon, difficulty)) return $"{DungeonDatabase.Difficulty(difficulty - 1).name} 난이도를 먼저 클리어해야 한다.";
+            if (dungeon.isRaid)
+            {
+                // [RAID] The story opens each raid; a final raid needs the seal key fragments in the bag.
+                string locked = RaidLockReason(dungeon);
+                if (locked != null) return locked;
+                if (dungeon.keyCost > 0 && Progress.RaidRewardAvailable(dungeon, now))
+                {
+                    int have = Game.Session.Inventory.Count(DungeonDatabase.SealKey);
+                    if (have < dungeon.keyCost) return $"봉인 열쇠 조각이 부족하다. ({have}/{dungeon.keyCost})";
+                }
+            }
             if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0) return "오늘 입장 횟수를 모두 사용했다. (06:00 초기화)";
             if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return $"최대 {dungeon.maxParty}명까지 입장할 수 있다.";
             return null;
+        }
+
+        /// <summary>[RAID] Why the story has not opened this raid yet (null = open).</summary>
+        public static string RaidLockReason(DungeonDef raid)
+        {
+            if (raid == null || string.IsNullOrEmpty(raid.unlockQuest) || Game.Quest == null) return null;
+            var st = Game.Quest.StatusOf(raid.unlockQuest);
+            if (st == QuestStatus.Active || st == QuestStatus.ReadyToTurnIn || st == QuestStatus.Completed) return null;
+            var q = Game.Quest.Database.Get(raid.unlockQuest);
+            return q != null ? $"메인 퀘스트 '{q.DisplayTitle}'를 받으면 열린다." : "아직 열리지 않았다.";
         }
 
         /// <summary>
@@ -146,7 +167,7 @@ namespace DotRPG
         {
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
-            run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(now);
+            run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now);
             if (party != null)
             {
                 party.SetCompanionAutoRevive(false);
@@ -159,7 +180,7 @@ namespace DotRPG
                 Game.Session.MapId = MapRegistry.Village; // where the run returns to
                 LoadRoom(0, true);
                 GameEvents.RaiseToast($"— {dungeon.name} · {run.Numbers.name} —");
-                if (run.RewardsLocked) GameEvents.RaiseToast("이번 주 레이드 보상을 이미 받았다. (연습 입장)");
+                if (run.RewardsLocked) GameEvents.RaiseToast(dungeon.raidTier == RaidTier.Mid ? "오늘 레이드 보상을 이미 받았다. (연습 입장)" : "이번 주 레이드 보상을 이미 받았다. (연습 입장)");
             }));
         }
 
@@ -349,11 +370,32 @@ namespace DotRPG
                 run.XpGained = auth.ClearXp(run, run.Rank);
                 if (run.XpGained > 0) Game.Session.Progression.AddXp(run.XpGained);
                 run.Cards = auth.DealCards(run, Game.Player.Class);
-                if (run.Dungeon.isRaid) Progress.ClaimRaid(now);
+                if (run.Dungeon.isRaid)
+                {
+                    Progress.ClaimRaid(run.Dungeon, now);
+                    PayRaidKeys(run.Dungeon);
+                }
             }
             EndRunState();
             RunEnded?.Invoke(run);
             ShowResult();
+        }
+
+        /// <summary>[RAID] Mid raids drop seal key fragments; final raids take the fragments they cost.</summary>
+        void PayRaidKeys(DungeonDef raid)
+        {
+            var bag = Game.Session.Inventory;
+            if (raid.keyCost > 0)
+            {
+                bag.Remove(DungeonDatabase.SealKey, Mathf.Min(raid.keyCost, bag.Count(DungeonDatabase.SealKey)));
+                GameEvents.RaiseToast($"봉인 열쇠 조각 {raid.keyCost}개가 빛을 잃었다.");
+            }
+            if (raid.keyMax > 0)
+            {
+                int keys = UnityEngine.Random.Range(raid.keyMin, raid.keyMax + 1);
+                bag.Add(DungeonDatabase.SealKey, keys);
+                GameEvents.RaiseToast($"봉인 열쇠 조각 +{keys} (보유 {bag.Count(DungeonDatabase.SealKey)})");
+            }
         }
 
         // =============================== Death / revive / failure ===============================

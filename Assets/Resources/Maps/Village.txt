@@ -7,7 +7,7 @@
 // trees: T=round tree  O=fruit tree  Y=pine  t=tree you can chop (wood)  R=rock you can mine (stone)  S=stump  B=bush
 // props: F=fence  p=lamp post  e=bench(2x1)  n=sign  N=notice board(2x1)  b=barrel  x=crate  s=sacks  c=carrot crate  h=hay
 //        u=flower pot  v=flower box  m=mailbox  w=well(2x2)  z=woodpile(2x1)  &=anvil
-// buildings (anchor = bottom-left cell): H=house(10x8)  I=chief's hall(10x8)  M=general store(10x8)  A=smithy(10x8)  Z=warehouse(10x8)
+// buildings (anchor = bottom-left cell): H=house(10x8)  I=chief's hall(10x8)  M=general store(10x8)  A=smithy(10x8)  Z=warehouse(10x8)  L=stable(10x8, story)
 //        X=construction site(3x3)  Q=fountain(3x3)
 // NPCs: 1-8 villagers (GameConfig)  J=general merchant  D=blacksmith  K=storage keeper   P=player start  >=exit to the hunting ground
 // Signs get dialogue ids sign_0, sign_1... in reading order (top-left first).
@@ -15,14 +15,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%....................................................%%%
-%%%....Y...........Y...................T.............Y.%%%
+%%%................Y...................T.............Y.%%%
 %%%....................................................%%%
 %%%....................................................%%%
-%%%........O...T.......................................%%%
+%%%............T.......................................%%%
 %%%.................................T..................%%%
 %%%....................................................%%%
-%%%....O...............................................%%%
-%%%....................I...............................%%%
+%%%....................................................%%%
+%%%..L.................I...............................%%%
 %%%........................,,,........Y................%%%
 %%%.......................p,,,p............H...........%%%
 %%%........................,,,,,,,,,,,,,,,u,,,,,,,...v.%%%

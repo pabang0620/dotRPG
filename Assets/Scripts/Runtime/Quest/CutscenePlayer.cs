@@ -27,6 +27,14 @@ namespace DotRPG
         readonly List<GameObject> props = new List<GameObject>();
 
         public bool IsPlaying => current != null;
+
+        /// <summary>Automated checks: skip the scene that is playing (same as Esc).</summary>
+        public void DevSkip()
+        {
+            if (current == null) return;
+            skipping = true;
+            if (Game.Dialogue.IsOpen) Game.Dialogue.Close();
+        }
         public string CurrentId => current != null ? current.id : "";
         public CutsceneDef Get(string id) => db != null ? db.Get(id) : null;
         public CutsceneDatabase Database => db;
@@ -317,11 +325,9 @@ namespace DotRPG
         // =============================== Actors ===============================
 
         /// <summary>World position of a map-text cell (column, row from the top line).</summary>
-        public static Vector2 CellToWorld(float col, float row)
-        {
-            var b = Game.World.Bounds;
-            return new Vector2(b.xMin + col + 0.5f, b.yMax - row - 0.5f);
-        }
+        public static Vector2 CellToWorld(float col, float row) => CellToWorld(Game.World.Bounds, col, row);
+
+        public static Vector2 CellToWorld(Rect bounds, float col, float row) => new Vector2(bounds.xMin + col + 0.5f, bounds.yMax - row - 0.5f);
 
         static Vector2 Cell(CutsceneCmd c) => c.col >= 0f && c.row >= 0f ? CellToWorld(c.col, c.row) : (Vector2)Game.Player.transform.position;
 

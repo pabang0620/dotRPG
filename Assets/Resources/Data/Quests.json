@@ -1,19 +1,800 @@
 {
-  "chapters": [
-    { "number": 1, "title": "잿더미의 마굿간", "summary": "" }
-  ],
-  "quests": [
+ "chapters": [
+  {
+   "number": 1,
+   "title": "잿더미의 마굿간",
+   "summary": "해골 숲 옆 작은 마을의 마굿간에서 자란 아이. 축제 전날 밤, 모든 것을 잃는다."
+  }
+ ],
+ "quests": [
+  {
+   "id": "c1_morning",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-1",
+   "title": "마굿간의 아침",
+   "summary": "브람의 마굿간에서 맞는 평범한 아침. 밤톨에게 여물을 주고, 한나의 아침을 먹고, 리아를 만나자.",
+   "requires": [],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
     {
-      "id": "c1_rebuild", "chapter": 1, "kind": "main", "code": "1-6", "title": "마을 복구",
-      "summary": "불탄 공방을 다시 세운다.",
-      "giver": "chief", "offerDialogue": "chief_intro", "turnIn": "chief", "turnInDialogue": "chief_report",
-      "steps": [
-        { "text": "재료를 모아 공사장에 전달하고, 해골을 쫓아낸다.", "objectives": [
-          { "type": "flag", "target": "workshop_built", "text": "공방 재건 (목재·돌을 공사장에 전달)" },
-          { "type": "kill", "target": "skeleton", "count": 3, "text": "해골 퇴치" }
-        ] }
-      ],
-      "reward": { "xp": 120, "maxHealth": 20, "items": [ { "id": "eq_ring_ruby", "count": 1 } ] }
+     "text": "브람 아저씨가 깨운다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c1_intro",
+       "count": 1,
+       "text": "마굿간에서 눈을 뜬다",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "밤톨을 돌본다.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "feed_horse",
+       "count": 1,
+       "text": "밤톨에게 여물 주기",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      },
+      {
+       "type": "interact",
+       "target": "fill_trough",
+       "count": 1,
+       "text": "물통 채우기",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "한나 아주머니가 아침을 차려 두었다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "hanna",
+       "count": 1,
+       "text": "한나와 아침 먹기",
+       "dialogue": "c1_hanna_breakfast",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "리아가 찾고 있었다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "ria",
+       "count": 1,
+       "text": "리아 만나기",
+       "dialogue": "c1_ria_promise",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
     }
-  ]
+   ],
+   "reward": {
+    "xp": 20,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "festival_eve"
+    ]
+   }
+  },
+  {
+   "id": "c1_festival",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-2",
+   "title": "축제 전야",
+   "summary": "내일은 용사의 봉인을 기리는 등불 축제. 한나의 심부름으로 마을을 한 바퀴 돈다.",
+   "requires": [
+    "c1_morning"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "hanna",
+   "offerDialogue": "c1_hanna_errand",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "한나의 심부름: 등불 기름, 당근, 등불.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "merchant",
+       "count": 1,
+       "text": "잡화상인 미르에게 등불 기름 받기",
+       "dialogue": "c1_errand_merchant",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "farmer",
+       "count": 1,
+       "text": "농부 하나에게 당근 받기",
+       "dialogue": "c1_errand_farmer",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "chief",
+       "count": 1,
+       "text": "촌장 모리에게 등불 받기",
+       "dialogue": "c1_errand_chief",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "심부름 끝. 마굿간으로 돌아간다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "hanna",
+       "count": 1,
+       "text": "한나에게 돌아가기",
+       "dialogue": "c1_hanna_errand_done",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "리아가 마굿간 옆에서 기다린다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "ria",
+       "count": 1,
+       "text": "리아 만나기",
+       "dialogue": "c1_ria_ribbon",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 40,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "ribbon_given"
+    ]
+   }
+  },
+  {
+   "id": "c1_burning",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-3",
+   "title": "불타는 밤",
+   "summary": "축제의 밤. 해골 숲에서 언데드가 쏟아졌다.",
+   "requires": [
+    "c1_festival"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "축제의 밤.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c1_attack",
+       "count": 1,
+       "text": "등불 축제",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "광장에 해골이 몰려온다. 리아를 지켜라!",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 5,
+       "text": "광장의 해골 쓰러뜨리기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "c1_stable",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 60,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_ashes",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-4",
+   "title": "잿더미",
+   "summary": "사흘 뒤. 마굿간은 재만 남았다.",
+   "requires": [
+    "c1_burning"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈을 뜬다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c1_wake",
+       "count": 1,
+       "text": "사흘 뒤",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "마굿간 옆 무덤.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "family_graves",
+       "count": 1,
+       "text": "브람과 한나의 무덤 앞에 서기",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "c1_graves",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 30,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_rise",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-5",
+   "title": "다시 일어서기",
+   "summary": "카엘에게 싸우는 법을 배운다. 강해져야 리아를 되찾는다.",
+   "requires": [
+    "c1_ashes"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "kael",
+   "offerDialogue": "c1_kael_training_offer",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골 숲 어귀의 해골 세 마리.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skeleton",
+       "count": 3,
+       "text": "해골 숲의 해골 쓰러뜨리기",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "카엘에게 돌아간다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "kael",
+       "count": 1,
+       "text": "카엘에게 돌아가기",
+       "dialogue": "c1_kael_training_done",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 120,
+    "gold": 300,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_rebuild",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-6",
+   "title": "마을 복구",
+   "summary": "불탄 공방을 다시 세운다. 집을 고칠 연장부터 만들어야 마을이 산다.",
+   "requires": [
+    "c1_rise"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "chief",
+   "offerDialogue": "chief_intro",
+   "turnIn": "chief",
+   "turnInDialogue": "chief_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "재료를 모아 공사장에 전달하고, 해골을 쫓아낸다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "workshop_built",
+       "count": 1,
+       "text": "공방 재건 (목재·돌을 동쪽 공사장에 전달)",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "kill",
+       "target": "skeleton",
+       "count": 3,
+       "text": "해골 퇴치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 200,
+    "gold": 0,
+    "items": [
+     {
+      "id": "eq_ring_ruby",
+      "count": 1
+     }
+    ],
+    "maxHealth": 20,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_trail",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-7",
+   "title": "해골 숲의 흔적",
+   "summary": "놈들은 해골 숲을 지나 북쪽으로 빠졌다. 흔적을 찾아라.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "kael",
+   "offerDialogue": "c1_kael_trail_offer",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골 숲 북쪽 옛 묘지.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "ria_ribbon",
+       "count": 1,
+       "text": "옛 묘지 근처에서 흔적 찾기",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "카엘에게 알린다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "kael",
+       "count": 1,
+       "text": "카엘에게 보여 주기",
+       "dialogue": "c1_kael_trail_report",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 250,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_stronger",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-8",
+   "title": "강해져야 한다",
+   "summary": "지금으로는 북쪽 고개 성채 문턱도 넘지 못한다. 요일 던전에서 실력을 쌓아라.",
+   "requires": [
+    "c1_trail"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "kael",
+   "offerDialogue": "c1_kael_stronger_offer",
+   "turnIn": "kael",
+   "turnInDialogue": "c1_kael_stronger_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "요일 던전에서 싸움을 몸에 새긴다.",
+     "objectives": [
+      {
+       "type": "dungeon",
+       "target": "*",
+       "count": 10,
+       "text": "요일 던전 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "level",
+       "target": "",
+       "count": 16,
+       "text": "레벨 16 달성",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 600,
+    "gold": 3000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_fortress",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-9",
+   "title": "북쪽 고개 성채",
+   "summary": "해골왕의 성채. 성문은 수요일, 토요일, 일요일에만 열린다. (중간 레이드)",
+   "requires": [
+    "c1_stronger"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "kael",
+   "offerDialogue": "c1_kael_fortress_offer",
+   "turnIn": "kael",
+   "turnInDialogue": "c1_kael_fortress_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골왕을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "raid",
+       "target": "raid_skeleton_king",
+       "count": 1,
+       "text": "레이드: 해골왕 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1500,
+    "gold": 8000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_bargas",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-10",
+   "title": "흑철의 바르가스",
+   "summary": "봉인 열쇠 조각을 모아 흑철 진영으로. 마을을 불태운 그 갑옷. (최종 레이드, 일요일)",
+   "requires": [
+    "c1_fortress"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "kael",
+   "offerDialogue": "c1_kael_fortress_report_followup",
+   "turnIn": "chief",
+   "turnInDialogue": "c1_bargas_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "흑철 진영의 바르가스를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "raid",
+       "target": "raid_bargas",
+       "count": 1,
+       "text": "레이드: 흑철의 바르가스 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "진영에서 돌아온다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c1_bargas_end",
+       "count": 1,
+       "text": "마을로 돌아가기",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3000,
+    "gold": 15000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_road",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-끝",
+   "title": "길 위로",
+   "summary": "리아는 협곡 너머로 옮겨졌다. 마을을 떠날 시간이다.",
+   "requires": [
+    "c1_bargas"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "무덤에 인사를 한다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c1_departure",
+       "count": 1,
+       "text": "떠나기 전에",
+       "dialogue": "",
+       "consume": false,
+       "map": "village"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 500,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "chapter1_done"
+    ]
+   }
+  },
+  {
+   "id": "c1s_horse",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "밤톨을 찾아서",
+   "summary": "그날 밤 숲으로 달아난 밤톨. 숲 남쪽 연못가를 찾아본다.",
+   "requires": [
+    "c1_rise"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "herbalist",
+   "offerDialogue": "c1s_horse_offer",
+   "turnIn": "herbalist",
+   "turnInDialogue": "c1s_horse_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "숲 남쪽 연못가.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "lost_horse",
+       "count": 1,
+       "text": "해골 숲 남쪽 연못가에서 밤톨 찾기",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 150,
+    "gold": 500,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "horse_back"
+    ]
+   }
+  },
+  {
+   "id": "c1s_herbs",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "리아의 약초밭",
+   "summary": "리아가 가꾸던 약초밭의 울타리가 타 버렸다.",
+   "requires": [
+    "c1_rise"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "herbalist",
+   "offerDialogue": "c1s_herbs_offer",
+   "turnIn": "herbalist",
+   "turnInDialogue": "c1s_herbs_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "목재를 모은다.",
+     "objectives": [
+      {
+       "type": "collect",
+       "target": "wood",
+       "count": 5,
+       "text": "목재",
+       "dialogue": "",
+       "consume": true,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 120,
+    "gold": 0,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 8
+     },
+     {
+      "id": "potion_mp",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  }
+ ]
 }

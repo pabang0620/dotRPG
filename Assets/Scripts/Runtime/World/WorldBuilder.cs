@@ -236,7 +236,7 @@ namespace DotRPG
             CreateBoundaryWalls();
             SpawnDungeonGuide(); // [DUNGEON] 던전 안내원 by the village plaza
             Game.Cutscenes?.OnWorldRebuilt();
-            StoryCast.SpawnFor(MapId, objectsRoot); // [STORY] story characters present at this point of the story
+            StoryCast.SpawnFor(MapId, objectsRoot, Bounds); // [STORY] story characters present at this point of the story
 
             if (skeletonSpawns.Count > 0)
             {
@@ -739,7 +739,8 @@ namespace DotRPG
                     if ((c >= '1' && c <= '9') || (c >= 'A' && c <= 'Z'))
                     {
                         var def = config.GetNpcBySymbol(c) ?? FindDefaultNpc(c);
-                        if (def != null)
+                        if (def != null && StoryCast.VillagersHidden && MapId == MapRegistry.Village) def = null; // [STORY] attack night
+                        else if (def != null)
                         {
                             NpcController.Create(def, center, objectsRoot);
                             PointsOfInterest.Add(center);
@@ -1075,6 +1076,15 @@ namespace DotRPG
                 case 'M': HdBuilding("GeneralStore", "town_store", x, y, 10, 8, "잡화점 들어가기", null, NpcService.Shop); return true;
                 case 'A': HdBuilding("Smithy", "town_smithy", x, y, 10, 8, "대장간 들어가기", null, NpcService.Blacksmith); return true;
                 case 'Z': HdBuilding("Warehouse", "town_warehouse", x, y, 10, 8, "창고 들어가기", null, NpcService.Storage); return true;
+                case 'L':
+                {
+                    // [STORY] 브람의 마굿간; burned from the attack night on.
+                    bool burned = Game.Session != null && Game.Session.Journal.HasFlag("stable_burned");
+                    string key = burned ? "town_stable_burned" : "town_stable";
+                    if (Resources.Load<Sprite>(VillageBuildingArt.Find(key).ResourcePath) == null) key = "town_warehouse"; // until the art is in
+                    HdBuilding("Stable", key, x, y, 10, 8, "살펴보기", burned ? "stable_burned_look" : "stable_look");
+                    return true;
+                }
                 case 'X':
                 {
                     var pos = new Vector2(x + 1.5f, y + 0.1f);

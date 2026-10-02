@@ -18,6 +18,8 @@ namespace DotRPG
         /// Sits in the bag's "기타" tab and cannot be used by hand or by a quick key.
         /// </summary>
         Protection,
+        /// <summary>[RAID] Seal key fragment: opens final raids. Sits in the "기타" tab, never used by hand.</summary>
+        Key,
     }
 
     /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
@@ -52,6 +54,8 @@ namespace DotRPG
                 description = "펼치면 빛에 감싸여 작은 마을 광장으로 돌아간다. 사냥터에서 쓰면 편리하다." },
             new ConsumableItem { id = ProtectTicket, name = "장비 보호권", iconKey = "icon_ticket", kind = ConsumableKind.Protection, grade = ItemRarity.Unique,
                 description = "강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다." },
+            new ConsumableItem { id = DungeonDatabase.SealKey, name = "봉인 열쇠 조각", iconKey = "icon_ticket", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+                description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
         };
 
         /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>
@@ -63,10 +67,10 @@ namespace DotRPG
         /// <summary>Items that work on their own from the bag ("기타" tab): the equipment protection ticket.</summary>
         public static IEnumerable<ConsumableItem> Tickets
         {
-            get { foreach (var i in Items) if (i.kind == ConsumableKind.Protection) yield return i; }
+            get { foreach (var i in Items) if (i.kind == ConsumableKind.Protection || i.kind == ConsumableKind.Key) yield return i; }
         }
 
-        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection;
+        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection && kind != ConsumableKind.Key;
 
         public static ConsumableItem Get(string id)
         {

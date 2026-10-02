@@ -81,6 +81,14 @@ namespace DotRPG
         }
     }
 
+    /// <summary>[RAID] Chapter raids: a mid raid (주 3회, 수·토·일) and a final raid (일요일, needs seal key fragments).</summary>
+    public enum RaidTier
+    {
+        None,
+        Mid,
+        Final,
+    }
+
     public sealed class DungeonDef
     {
         public string id;
@@ -104,6 +112,15 @@ namespace DotRPG
         public string bossName;
         public bool isRaid;
         public int maxParty = 4;
+        // [RAID] Story raids.
+        public RaidTier raidTier;
+        public int chapter;
+        /// <summary>Quest that opens the raid (accepted or done). "" = always open.</summary>
+        public string unlockQuest = "";
+        /// <summary>Final raids: seal key fragments needed to enter (taken on a rewarded clear).</summary>
+        public int keyCost;
+        /// <summary>Mid raids: seal key fragments dropped on a rewarded clear (min..max).</summary>
+        public int keyMin, keyMax;
 
         public int RoomCount => rooms.Length;
     }
@@ -127,6 +144,9 @@ namespace DotRPG
         public const float BossScale = 1.6f;
 
         public const string Raid = "raid_skeleton_king";
+        public const string RaidBargas = "raid_bargas";
+        /// <summary>[RAID] Item that opens final raids.</summary>
+        public const string SealKey = "key_seal";
 
         static readonly DifficultyDef[] Difficulties =
         {
@@ -283,7 +303,9 @@ namespace DotRPG
         static readonly DungeonDef RaidDef = new DungeonDef
         {
             id = Raid, name = "해골왕", theme = MapTheme.Canyon, themeName = "북쪽 고개 성채", isRaid = true,
-            openDays = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday },
+            // [RAID] Chapter 1 mid raid: three gates a week, a seal key fragment chance on each rewarded clear.
+            raidTier = RaidTier.Mid, chapter = 1, unlockQuest = "c1_fortress", keyMin = 20, keyMax = 50,
+            openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnRaid1, new SpawnGroup(1, "skel_knight", 4, 2), new SpawnGroup(2, "skel_shield", 2, 2)),
                 Room(MapRegistry.DgnRaid2, new SpawnGroup(1, "skel_necro", 3, 2), new SpawnGroup(2, "skel_knight", 3, 2)),
@@ -300,14 +322,41 @@ namespace DotRPG
             specialty = "유니크 · 레전더리 장비", featureMonster = "해골 기사단, 해골 사령술사", bossName = "해골왕",
         };
 
+        /// <summary>[RAID] Chapter 1 final raid: 흑철의 바르가스, Sunday only, costs seal key fragments.</summary>
+        static readonly DungeonDef BargasDef = new DungeonDef
+        {
+            id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
+            raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 100,
+            openDays = new[] { DayOfWeek.Sunday },
+            rooms = Chain(
+                Room(MapRegistry.DgnBargas1, new SpawnGroup(1, "skel_knight", 5, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
+                Room(MapRegistry.DgnBargas2, new SpawnGroup(1, "skel_shield", 3, 2), new SpawnGroup(2, "skel_necro", 3, 2)),
+                Boss(MapRegistry.DgnBargasBoss, "boss_bargas", "skel_knight", 0)),
+            bossRoom = 2, referenceSeconds = new[] { 360f, 360f, 360f, 360f }, clearXp = 700,
+            rewards = new[]
+            {
+                new RewardEntry(GearReward, 1, 1, 50),
+                new RewardEntry(EnhanceRules.Essence, 5, 9, 20),
+                new RewardEntry(ConsumableDatabase.ProtectTicket, 1, 1, 10),
+                new RewardEntry(ConsumableDatabase.Gold, 2000, 3500, 20),
+            },
+            description = "마을을 불태운 마족 강경파 지휘관 바르가스의 진영.\n선봉대와 사령 부대를 뚫고 지휘 천막의 바르가스를 쓰러뜨리자.",
+            specialty = "유니크 · 레전더리 장비, 장비 보호권", featureMonster = "흑철 선봉대, 사령 부대", bossName = "흑철의 바르가스",
+        };
+
+        static readonly DungeonDef[] RaidDefs = { RaidDef, BargasDef };
+
         /// <summary>The five weekday dungeons (Monday first).</summary>
         public static IReadOnlyList<DungeonDef> Weekday => Dungeons;
+
+        /// <summary>[RAID] Story raids in chapter order (mid, final).</summary>
+        public static IReadOnlyList<DungeonDef> Raids => RaidDefs;
 
         public static DungeonDef SkeletonKing => RaidDef;
 
         public static DungeonDef Get(string id)
         {
-            if (id == RaidDef.id) return RaidDef;
+            foreach (var r in RaidDefs) if (r.id == id) return r;
             foreach (var d in Dungeons) if (d.id == id) return d;
             return null;
         }
@@ -326,7 +375,7 @@ namespace DotRPG
             if (d.openDays.Length >= 7) return "매일";
             var parts = new List<string>();
             foreach (var day in d.openDays) parts.Add(DayShort(day));
-            return string.Join("·", parts) + "·토·일";
+            return d.isRaid ? string.Join("·", parts) : string.Join("·", parts) + "·토·일";
         }
 
         /// <summary>Display name of a reward id.</summary>

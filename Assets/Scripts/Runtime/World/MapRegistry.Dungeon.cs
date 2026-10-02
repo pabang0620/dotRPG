@@ -11,6 +11,8 @@ namespace DotRPG
         public const string DgnForest1 = "dgn_forest_1", DgnForest2 = "dgn_forest_2", DgnForest3 = "dgn_forest_3", DgnForestBoss = "dgn_forest_boss";
         public const string DgnWinter1 = "dgn_winter_1", DgnWinter2 = "dgn_winter_2", DgnWinter3 = "dgn_winter_3", DgnWinterBoss = "dgn_winter_boss";
         public const string DgnRaid1 = "dgn_raid_1", DgnRaid2 = "dgn_raid_2", DgnRaidBoss = "dgn_raid_boss";
+        // [RAID] 흑철 진영 reuses the fortress layouts under its own names and music.
+        public const string DgnBargas1 = "dgn_bargas_1", DgnBargas2 = "dgn_bargas_2", DgnBargasBoss = "dgn_bargas_boss";
 
         // [BGM] Room music by dungeon theme (Docs/BGM_PROMPTS.md); boss rooms share one track, the raid boss has its own.
         public const string MusicDgnCanyon = "music_dgn_canyon", MusicDgnForest = "music_dgn_forest", MusicDgnWinter = "music_dgn_winter";
@@ -40,6 +42,9 @@ namespace DotRPG
             Room(DgnRaid1, "친위대 전초 · 기사단", "Raid1", MapTheme.Canyon, MusicDgnForest),
             Room(DgnRaid2, "친위대 전초 · 사령탑", "Raid2", MapTheme.Winter, MusicDgnForest),
             Room(DgnRaidBoss, "해골왕의 옥좌", "RaidBoss", MapTheme.Canyon, MusicRaid),
+            Room(DgnBargas1, "흑철 진영 · 선봉대", "Raid2", MapTheme.Winter, MusicDgnWinter),
+            Room(DgnBargas2, "흑철 진영 · 사령 부대", "Raid1", MapTheme.Winter, MusicDgnWinter),
+            Room(DgnBargasBoss, "흑철 진영 · 지휘 천막", "RaidBoss", MapTheme.Winter, MusicRaid),
         };
 
         /// <summary>Every dungeon room map (tests, preloading).</summary>

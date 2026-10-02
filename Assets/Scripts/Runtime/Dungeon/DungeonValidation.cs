@@ -26,7 +26,7 @@ namespace DotRPG
         public static List<string> Validate()
         {
             errors = new List<string>();
-            var all = new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing };
+            var all = new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
             foreach (var d in all)
                 for (int r = 0; r < d.RoomCount; r++)
                 {

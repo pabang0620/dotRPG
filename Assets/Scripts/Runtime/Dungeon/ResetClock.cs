@@ -50,7 +50,7 @@ namespace DotRPG
         public static bool IsOpen(DungeonDef dungeon, DateTime now)
         {
             if (dungeon == null) return false;
-            if (dungeon.isRaid) return true;
+            if (dungeon.isRaid) return dungeon.openDays == null || dungeon.openDays.Length == 0 || Array.IndexOf(dungeon.openDays, GameDay(now)) >= 0;
             var day = GameDay(now);
             if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday) return true;
             return Array.IndexOf(dungeon.openDays, day) >= 0;

@@ -79,7 +79,7 @@ namespace DotRPG
         public MockPartyFinderService(int seed = 11)
         {
             var rng = new Random(seed);
-            var dungeons = new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing };
+            var dungeons = new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
             for (int i = 0; i < 9; i++)
             {
                 var d = dungeons[rng.Next(dungeons.Count)];

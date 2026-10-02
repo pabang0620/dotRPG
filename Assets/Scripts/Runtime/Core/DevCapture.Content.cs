@@ -353,7 +353,7 @@ namespace DotRPG
             foreach (var m in Game.Party.Members) if (m != null && m.IsDead) Game.Party.ReviveMember(m, 1f);
             foreach (var m in Game.Party.Members) m?.HealFull();
             yield return Wait(0.6f);
-            bool claimedBefore = !Game.Session.Dungeons.RaidRewardAvailable(now);
+            bool claimedBefore = !Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now);
             bool rEntered = dir.Enter(DungeonDatabase.SkeletonKing, DungeonDifficulty.Normal);
             yield return Wait(1.4f);
             var raid = dir.Run;
@@ -364,9 +364,9 @@ namespace DotRPG
             DCheck($"raid scripted clear: entered={rEntered} room1=[{string.Join(",", ids)}] cleared={res.cleared} time={res.seconds:0}s revives={res.revives} kingPhase={res.maxPhase}/3 timeScale={RaidCheckTimeScale}",
                 rEntered && res.cleared && res.maxPhase >= 3 && ids.Contains("skel_knight"));
             yield return Shot("dgn_25_raid_scripted_end");
-            DCheck($"raid weekly lock honoured: claimedBefore={claimedBefore} practiceLocked={locked} cards={raid?.Cards?.Count ?? 0} stillClaimed={!Game.Session.Dungeons.RaidRewardAvailable(now)}",
+            DCheck($"raid weekly lock honoured: claimedBefore={claimedBefore} practiceLocked={locked} cards={raid?.Cards?.Count ?? 0} stillClaimed={!Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now)}",
                 rEntered && raid != null && raid.Dungeon.isRaid && claimedBefore && locked && (raid.Cards == null || raid.Cards.Count == 0) && raid.XpGained == 0
-                && !Game.Session.Dungeons.RaidRewardAvailable(now));
+                && !Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now));
             yield return LeaveResult();
         }
 

@@ -32,6 +32,8 @@ namespace DotRPG
             new Definition("town_store", "general_store", 132, 56, 768, .95f, 8.4f, 5.1f),
             new Definition("town_smithy", "smithy", 136, 44, 768, 1.05f, 8.6f, 4.9f),
             new Definition("town_warehouse", "warehouse", 140, 50, 768, 1.1f, 8.4f, 4.9f),
+            new Definition("town_stable", "stable", 136, 40, 768, 1.05f, 8.4f, 4.9f),
+            new Definition("town_stable_burned", "stable_burned", 136, 40, 768, 1.05f, 8.4f, 4.9f),
         };
 
         public static Definition Find(string key)
