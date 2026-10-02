@@ -14,6 +14,7 @@ namespace DotRPG
         public static InputReader Input;
         public static AudioManager Audio;
         public static SaveSystem Saves;
+        public static CosmeticStore Cosmetics;
         public static GameSession Session;
         public static SpriteLibrary Art;
         public static DialogueDatabase Dialogues;

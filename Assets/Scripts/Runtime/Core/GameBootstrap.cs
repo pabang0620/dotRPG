@@ -37,6 +37,7 @@ namespace DotRPG
             Game.Settings.Apply();
 
             Game.Saves = new SaveSystem();
+            Game.Cosmetics = new CosmeticStore(new UnavailableCommerceProvider());
             Game.Session = new GameSession();
             Game.Session.ResetForNewGame(cfg);
             Game.Art = new SpriteLibrary(cfg.pixelsPerUnit);
@@ -51,6 +52,7 @@ namespace DotRPG
             var gameplayRoot = new GameObject("Gameplay").transform;
             gameplayRoot.SetParent(transform, false);
             Game.Player = PlayerController.Create(cfg, gameplayRoot);
+            CosmeticAura.Attach(Game.Player, Game.Cosmetics);
             Game.Player.gameObject.SetActive(false);
             Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
             Game.Dungeon = DungeonDirector.Create(gameplayRoot); // [DUNGEON]

@@ -39,6 +39,7 @@ namespace DotRPG
         public DungeonSelectScreen Raid => Dungeon;
         public DungeonResultScreen DungeonResult { get; private set; }
         public ShopScreen Shop { get; private set; }
+        public CosmeticShopScreen Cosmetics { get; private set; }
         public StorageScreen Storage { get; private set; }
         // [PARTY] 파티 window (mercenary roster).
         public PartyScreen Party { get; private set; }
@@ -133,6 +134,7 @@ namespace DotRPG
             ui.Dungeon = DungeonSelectScreen.Create(t); // [DUNGEON] replaces the 미니던전 / 레이드 info windows
             ui.DungeonResult = DungeonResultScreen.Create(t); // [DUNGEON]
             ui.Shop = ShopScreen.Create(t);
+            ui.Cosmetics = CosmeticShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
             PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
@@ -232,6 +234,7 @@ namespace DotRPG
             foreach (var s in new MenuScreen[] { Title, Pause, Settings, KeyBind, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
+            if (Cosmetics != null) Cosmetics.Hide();
             if (SocialScreen.Instance != null) SocialScreen.Instance.Hide(); // [F5]
             if (DungeonResult != null) DungeonResult.Hide(); // [DUNGEON]
         }

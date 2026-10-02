@@ -40,6 +40,7 @@ namespace DotRPG
             view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(Game.UI.Party)); // [PARTY]
             view.Add("menuicon_finder", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
+            view.Add("menuicon_bag", "외형 상점", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));
             view.column.gameObject.SetActive(false);
             return view;
         }
