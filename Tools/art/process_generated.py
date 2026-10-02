@@ -109,7 +109,7 @@ SHEETS = {
     "gen_props_landmarks.jpg": ["town_fountain_0", "town_well", "town_board", "town_lamp"],
     "gen_props_small.jpg": ["town_barrel", "town_crate", "town_sacks", "town_hay", "town_woodpile", "town_ccrate"],
     "gen_props_misc.jpg": ["town_pot", "town_planter", "town_mailbox", "town_bench", "town_sign_0", None, "town_anvil"],
-    "codex_props2.png": ["town_site_0", "town_site_1", "town_pile_0", "town_pile_1", "town_stump", "town_grave_0", "town_grave_1", "town_ruin", "town_bones"],
+    "codex_props2.png": ["town_site_1", "town_site_0", "town_pile_0", "town_pile_1", "town_stump", "town_grave_0", "town_grave_1", "town_ruin", "town_bones"],
 }
 
 if __name__ == "__main__":

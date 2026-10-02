@@ -101,6 +101,8 @@ namespace DotRPG
             npc.ConfigureShape(new Vector2(0f, 0.3f), 0.1f, new Vector2(0f, 1.6f));
 
             string toolKey = ToolSprite(def.tool);
+            // [ART] Generated villagers who carry their load in the picture (the porter's crate) need no extra prop.
+            if (def.tool == NpcTool.Crate && Resources.Load<Sprite>($"Art/char_{def.look.id}_down_idle0") != null) toolKey = null;
             if (toolKey != null)
             {
                 npc.tool = new GameObject("Tool").AddComponent<SpriteRenderer>();

@@ -83,6 +83,12 @@ def sheet(src, look_id, mapping, height=104):
     # into 9 equal columns inside that row's band.
     W = rgba.shape[1]
     for k, row in enumerate(rows):
+        if len(row) > 9:
+            # extra fragments (a dropped hat feather, a spark): keep the 9 largest figures
+            row = sorted(row, key=lambda t: -(t[3][..., 3] > 100).sum())[:9]
+            rows[k] = sorted(row, key=lambda t: t[1])
+            print(f"  row {k}: kept the 9 largest pieces")
+            continue
         if len(row) == 9: continue
         y0 = min(t[2][0] for t in row); y1 = max(t[2][1] for t in row)
         fixed = []
