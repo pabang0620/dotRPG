@@ -57,8 +57,13 @@ def load_any(path, soft=1.0):
     im = Image.open(path)
     if im.mode in ("RGBA", "LA") or "transparency" in im.info:
         rgba = np.asarray(im.convert("RGBA")).copy()
-        rgba[rgba[..., 3] < 24] = 0
-        return rgba
+        if (rgba[..., 3] < 250).mean() > 0.05:
+            rgba[rgba[..., 3] < 24] = 0
+            return rgba
+        tmp = path + ".rgb.png"
+        im.convert("RGB").save(tmp)
+        try: return key(tmp, soft)
+        finally: os.remove(tmp)
     return key(path, soft)
 
 def components(rgba, min_area=900, merge=9):
@@ -109,6 +114,10 @@ SHEETS = {
     "gen_props_landmarks.jpg": ["town_fountain_0", "town_well", "town_board", "town_lamp"],
     "gen_props_small.jpg": ["town_barrel", "town_crate", "town_sacks", "town_hay", "town_woodpile", "town_ccrate"],
     "gen_props_misc.jpg": ["town_pot", "town_planter", "town_mailbox", "town_bench", "town_sign_0", None, "town_anvil"],
+    "codex_props_canyon_buildings.png": ["cyn_house_red", "cyn_house_green", "cyn_stall", "cyn_inn", "cyn_gate"],
+    "codex_props_winter_buildings.png": ["wnt_house", "wnt_barn", "wnt_gate", "wnt_well", "wnt_fire_0"],
+    "codex_props_winter_small.png": ["wnt_bench", "wnt_log", "wnt_workbench", "wnt_mailbox", "wnt_pot", "wnt_woodpile", "wnt_barrel", "wnt_crate", "wnt_lamp"],
+    "codex_props_winter_small2.png": ["wnt_sign", "wnt_hay", "wnt_bed_0", "wnt_bed_1", "wnt_rock_0", "wnt_rock_1", "wnt_bush_0", "wnt_bush_1", "wnt_bush_2"],
     "codex_props2.png": ["town_site_1", "town_site_0", "town_pile_0", "town_pile_1", "town_stump", "town_grave_0", "town_grave_1", "town_ruin", "town_bones"],
 }
 
@@ -131,6 +140,9 @@ if __name__ == "__main__":
     # The fountain is one image for all three animation keys.
     fountain = np.asarray(Image.open(os.path.join(ART, "town_fountain_0.png")))
     for i in (1, 2): save(fountain, f"town_fountain_{i}")
+    fire = os.path.join(ART, "wnt_fire_0.png")
+    if os.path.exists(fire):
+        for i in (1, 2): save(np.asarray(Image.open(fire)), f"wnt_fire_{i}")  # CampfireFx cycles 3 keys; the glow animates
     os.makedirs(os.path.join(ART, "Town"), exist_ok=True)
     # Stable: 1320 px wide on the canvas (~9.7 tiles at ppu 136), door centre at x~1101 (VillageBuildingArt).
     stable_scale = 1320 / 1193

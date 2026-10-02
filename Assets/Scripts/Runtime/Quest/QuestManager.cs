@@ -324,6 +324,8 @@ namespace DotRPG
 
         void OnMapEntered(string mapId)
         {
+            var map = MapRegistry.Get(mapId);
+            StoryCompanions.Refresh(map != null && !map.safe);
             Signal(ObjectiveTypes.Reach, mapId, 1);
             TryAutoCutscenes();
         }

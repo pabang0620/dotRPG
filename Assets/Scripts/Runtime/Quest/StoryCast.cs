@@ -190,9 +190,43 @@ namespace DotRPG
         }
     }
 
-    /// <summary>Story characters who fight in the party for a while (카엘 in chapters 1-2).</summary>
+    /// <summary>
+    /// Story characters who fight in the party for a while. 카엘 (flag <see cref="KaelFlag"/>, from quest 1-5 until
+    /// the betrayal) joins outside the towns - hunting grounds, dungeons, raids - and stands in town as an NPC who
+    /// gives quests. A mercenary whose seat he takes comes back when he leaves.
+    /// </summary>
     public static class StoryCompanions
     {
+        public const string KaelFlag = "kael_companion";
+        public const string KaelGoneFlag = "kael_betrayed";
+        static string benched;
+
+        static bool KaelWanted(bool outsideTown) =>
+            outsideTown && Game.Session != null && Game.Session.Journal.HasFlag(KaelFlag) && !Game.Session.Journal.HasFlag(KaelGoneFlag);
+
+        /// <summary>Map entered (towns are safe maps) or a dungeon run starting/ending.</summary>
+        public static void Refresh(bool outsideTown)
+        {
+            if (Game.Party == null || Game.Session == null) return;
+            bool has = Game.Party.Has(MercIdFor("kael"));
+            if (KaelWanted(outsideTown) && !has)
+            {
+                var roster = Game.Session.PartyRoster;
+                if (roster.Count >= PartyManager.MaxCompanions)
+                {
+                    benched = roster[roster.Count - 1];
+                    Game.Party.RemoveCompanion(benched);
+                }
+                Game.Party.AddCompanion(MercIdFor("kael"));
+            }
+            else if (!KaelWanted(outsideTown) && has)
+            {
+                Game.Party.RemoveCompanion(MercIdFor("kael"));
+                if (!string.IsNullOrEmpty(benched) && !Game.Session.PartyRoster.Contains(benched)) Game.Party.AddCompanion(benched);
+                benched = null;
+            }
+        }
+
         public static string MercIdFor(string actor) => "story_" + actor;
 
         public static void Join(string actor)

@@ -51,6 +51,24 @@ namespace DotRPG
                 if (def != null) NpcController.Create(def, CutscenePlayer.CellToWorld(21f + i * 1.3f, 40f), Game.World.ObjectsRoot);
             }
             yield return ShotAt(27f, 41f, "art_11_story_cast");
+            // Canyon and winter villages (L3).
+            Game.Party.ClearCompanions();
+            foreach (var (map, col, row, name) in new[] { (MapRegistry.Canyon, 24f, 24f, "art_12_canyon_plaza"), (MapRegistry.Canyon, 32f, 34f, "art_13_canyon_market"),
+                (MapRegistry.Canyon, 22f, 5f, "art_14_canyon_gate"), (MapRegistry.Winter, -1f, -1f, "art_15_winter_spawn") })
+            {
+                Game.Session.MapId = map;
+                Game.World.Load(map);
+                yield return Wait(0.6f);
+                if (col < 0) { Game.Player.Place(Game.World.PlayerSpawn, Facing.Down); Game.Camera.SetTarget(Game.Player.transform, true); yield return Wait(0.6f); yield return Shot(name); }
+                else yield return ShotAt(col, row, name);
+            }
+            foreach (var p in new[] { new Vector2(-8f, 6f), new Vector2(8f, 6f), new Vector2(0f, 12f) })
+            {
+                Game.Player.Place(Game.World.PlayerSpawn + p, Facing.Down);
+                Game.Camera.SetTarget(Game.Player.transform, true);
+                yield return Wait(0.6f);
+                yield return Shot($"art_16_winter_{p.x:0}_{p.y:0}");
+            }
         }
 
         /// <summary>Puts the player on a map-text cell (column, row) and takes a screenshot there.</summary>

@@ -121,6 +121,16 @@ namespace DotRPG
             StoryCheck($"1-5 complete ({St("c1_rise")}), chief offers 1-6 ({St("c1_rebuild")}) with '{Game.Quest.DialogueFor("chief", "chief_intro", "")}'",
                 St("c1_rise") == QuestStatus.Completed && St("c1_rebuild") == QuestStatus.Available && Game.Quest.DialogueFor("chief", "chief_intro", "") == "chief_intro");
 
+            // [J8] 카엘 hunts with the party outside the towns and stays in the village as an NPC.
+            Game.Flow.TravelTo(MapRegistry.Forest, true);
+            yield return Wait(2.5f);
+            yield return SettleStory();
+            bool kaelInForest = Game.Party.Has(StoryCompanions.MercIdFor("kael"));
+            Game.Flow.TravelTo(MapRegistry.Village, true);
+            yield return Wait(2.5f);
+            yield return SettleStory();
+            StoryCheck($"kael joins outside town ({kaelInForest}) and leaves in the village ({!Game.Party.Has(StoryCompanions.MercIdFor("kael"))}), npc there={HasStoryNpc("kael")}",
+                kaelInForest && !Game.Party.Has(StoryCompanions.MercIdFor("kael")) && HasStoryNpc("kael"));
             Talk("chief");
             Game.Quest.MarkWorkshopBuilt();
             for (int i = 0; i < 3; i++) GameEvents.RaiseEnemyKilled("skeleton");
@@ -137,7 +147,7 @@ namespace DotRPG
             StoryCheck($"1-7 complete ({St("c1_trail")})", St("c1_trail") == QuestStatus.Completed);
             Talk("kael");
             Game.Session.Progression.AddXp(200000);
-            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 10);
+            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 12);
             yield return SettleStory();
             Talk("kael");
             StoryCheck($"1-8 complete ({St("c1_stronger")}) at level {Game.Session.Progression.Level}", St("c1_stronger") == QuestStatus.Completed);
@@ -177,7 +187,7 @@ namespace DotRPG
             Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 5);
             yield return SettleStory(30f);
             Talk("kael");
-            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 8);
+            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 15);
             yield return SettleStory(30f);
             StoryCheck($"2-4 {St("c2_mine")}, 2-5 {St("c2_growth")}", St("c2_mine") == QuestStatus.Completed && St("c2_growth") == QuestStatus.Completed);
             Talk("leona");
@@ -192,6 +202,10 @@ namespace DotRPG
             StoryCheck($"betrayal: flag={Game.Quest.HasFlag("kael_betrayed")} 2-7 {St("c2_grah")} 2-end {St("c2_end")} chapter2_done={Game.Quest.HasFlag("chapter2_done")}",
                 Game.Quest.HasFlag("kael_betrayed") && St("c2_grah") == QuestStatus.Completed && St("c2_end") == QuestStatus.Completed && Game.Quest.HasFlag("chapter2_done"));
 
+            Game.Flow.TravelTo(MapRegistry.Forest, true);
+            yield return Wait(2.5f);
+            yield return SettleStory();
+            StoryCheck($"kael no longer joins after the betrayal ({!Game.Party.Has(StoryCompanions.MercIdFor("kael"))})", !Game.Party.Has(StoryCompanions.MercIdFor("kael")));
             // Raid rules.
             var now = new DateTime(2026, 10, 7, 12, 0, 0); // Wednesday
             var king = DungeonDatabase.SkeletonKing;

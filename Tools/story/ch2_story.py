@@ -36,7 +36,7 @@ QUESTS = [
           chapter=2, requires=["c2_priest"], giver="orban", offer="c2_orban_mission", reward={"xp": 2500, "gold": 9000}),
     quest("c2_growth", "2-5", "석실 앞에서",
           "수호석 외곽 석실의 문지기는 지금의 실력으로는 무리다. 더 강해져라.",
-          [step("힘을 기른다.", [obj("level", "", 22, text="레벨 22 달성"), obj("dungeon", "*", 8, text="요일 던전 클리어")]),
+          [step("힘을 기른다.", [obj("level", "", 28, text="레벨 28 달성 (석실 권장 레벨)"), obj("dungeon", "*", 15, text="요일 던전 클리어")]),
            step("축하연 전날 밤.", [obj("cutscene", "c2_letter", map="canyon", text="협곡 여관 앞에서 쉬기")])],
           chapter=2, requires=["c2_mine"], giver="kael", offer="c2_kael_growth", reward={"xp": 3000}),
     quest("c2_golem", "2-6", "바위 심장",

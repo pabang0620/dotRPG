@@ -165,6 +165,7 @@ namespace DotRPG
 
         void StartRun(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now)
         {
+            StoryCompanions.Refresh(true); // [STORY] 카엘 fights in dungeons and raids too
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
             run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now);
@@ -524,6 +525,7 @@ namespace DotRPG
                 local.Spawn(Game.World.PlayerSpawn, Facing.Down, int.MaxValue, Game.Session.PlayerMaxHealth);
                 local.Data.Mana = local.MaxMana;
                 Game.Camera.SetTarget(local.transform, true);
+                GameEvents.RaiseMapEntered(MapRegistry.Village); // [STORY] back in town (story companion leaves, scenes queued there start)
                 Game.Quest.NotifyChanged();
                 Game.UI.Hud.RefreshAll();
                 Game.Audio.PlayMusic(Game.World.Map.music);

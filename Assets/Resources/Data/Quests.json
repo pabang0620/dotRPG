@@ -386,7 +386,9 @@
      }
     ],
     "maxHealth": 0,
-    "setFlags": []
+    "setFlags": [
+     "kael_companion"
+    ]
    }
   },
   {
@@ -529,7 +531,7 @@
       {
        "type": "dungeon",
        "target": "*",
-       "count": 10,
+       "count": 12,
        "text": "요일 던전 클리어",
        "dialogue": "",
        "consume": false,
@@ -538,8 +540,8 @@
       {
        "type": "level",
        "target": "",
-       "count": 16,
-       "text": "레벨 16 달성",
+       "count": 22,
+       "text": "레벨 22 달성 (성채 권장 레벨)",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1086,8 +1088,8 @@
       {
        "type": "level",
        "target": "",
-       "count": 22,
-       "text": "레벨 22 달성",
+       "count": 28,
+       "text": "레벨 28 달성 (석실 권장 레벨)",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1095,7 +1097,7 @@
       {
        "type": "dungeon",
        "target": "*",
-       "count": 8,
+       "count": 15,
        "text": "요일 던전 클리어",
        "dialogue": "",
        "consume": false,

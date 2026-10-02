@@ -121,6 +121,8 @@ namespace DotRPG
         public int keyCost;
         /// <summary>Mid raids: seal key fragments dropped on a rewarded clear (min..max).</summary>
         public int keyMin, keyMax;
+        /// <summary>[J10] This raid's own numbers (null = the shared <see cref="DungeonDatabase.RaidDifficulty"/>).</summary>
+        public DifficultyDef raidNumbers;
 
         public int RoomCount => rooms.Length;
     }
@@ -170,7 +172,18 @@ namespace DotRPG
         public static DifficultyDef Difficulty(DungeonDifficulty d) => Difficulties[Mathf.Clamp((int)d, 0, Difficulties.Length - 1)];
 
         /// <summary>The difficulty numbers a run of this dungeon uses.</summary>
-        public static DifficultyDef DifficultyFor(DungeonDef dungeon, DungeonDifficulty d) => dungeon != null && dungeon.isRaid ? RaidDifficulty : Difficulty(d);
+        public static DifficultyDef DifficultyFor(DungeonDef dungeon, DungeonDifficulty d) =>
+            dungeon != null && dungeon.isRaid ? dungeon.raidNumbers ?? RaidDifficulty : Difficulty(d);
+
+        /// <summary>
+        /// [J10] Story raid numbers. Chapter 1's mid raid opens around 20 hours of play (Lv 22, quest 1-8), the
+        /// final raid a week of keys later; chapter 2 continues to the Lv 40 cap. Party HP scaling still applies.
+        /// </summary>
+        static DifficultyDef RaidNumbers(int recommendedLevel, int power, float hpMul, float damageMul, int monsterLevel, ItemRarity minGear, int ticketWeight) => new DifficultyDef
+        {
+            id = DungeonDifficulty.Normal, name = "레이드", recommendedLevel = recommendedLevel, recommendedPower = power, hpMul = hpMul, damageMul = damageMul,
+            rewardMul = RaidDifficulty.rewardMul, monsterLevel = monsterLevel, revives = RaidRevives, minGearRarity = minGear, ticketWeight = ticketWeight,
+        };
 
         public static float PartyScale(int partySize) => PartyHpScale[Mathf.Clamp(partySize, 1, PartyHpScale.Length) - 1];
 
@@ -306,6 +319,7 @@ namespace DotRPG
             id = Raid, name = "해골왕", theme = MapTheme.Canyon, themeName = "북쪽 고개 성채", isRaid = true,
             // [RAID] Chapter 1 mid raid: three gates a week, a seal key fragment chance on each rewarded clear.
             raidTier = RaidTier.Mid, chapter = 1, unlockQuest = "c1_fortress", keyMin = 20, keyMax = 50,
+            raidNumbers = RaidNumbers(22, 4400, 2.6f, 1.4f, 14, ItemRarity.Rare, 6),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnRaid1, new SpawnGroup(1, "skel_knight", 4, 2), new SpawnGroup(2, "skel_shield", 2, 2)),
@@ -328,6 +342,7 @@ namespace DotRPG
         {
             id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
             raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 100,
+            raidNumbers = RaidNumbers(24, 4900, 3.0f, 1.6f, 17, ItemRarity.Rare, 8),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnBargas1, new SpawnGroup(1, "skel_knight", 5, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
@@ -350,6 +365,7 @@ namespace DotRPG
         {
             id = RaidGolem, name = "바위 심장", theme = MapTheme.Canyon, themeName = "수호석 외곽 석실", isRaid = true,
             raidTier = RaidTier.Mid, chapter = 2, unlockQuest = "c2_golem", keyMin = 20, keyMax = 50,
+            raidNumbers = RaidNumbers(28, 6200, 3.4f, 1.8f, 22, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGolem1, new SpawnGroup(1, "skel_miner", 5, 2), new SpawnGroup(2, "skel_gold", 3, 2)),
@@ -372,6 +388,7 @@ namespace DotRPG
         {
             id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
             raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 100,
+            raidNumbers = RaidNumbers(31, 7200, 3.8f, 2.0f, 25, ItemRarity.Epic, 10),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),

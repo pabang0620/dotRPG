@@ -26,10 +26,18 @@ namespace DotRPG.EditorTools
             ("town_site_0", 3.0f, false), ("town_site_1", 3.0f, false), ("town_pile_0", 1.2f, false), ("town_pile_1", 1.2f, false),
             ("town_stump", 0.9f, false), ("town_grave_0", 1.0f, true), ("town_grave_1", 1.0f, true), ("town_ruin", 1.3f, true),
             ("town_bones", 0.9f, false),
+            // [L3] canyon and winter villages
+            ("cyn_house_red", 3.2f, false), ("cyn_house_green", 3.2f, false), ("cyn_stall", 3.0f, false), ("cyn_inn", 5.4f, false), ("cyn_gate", 4.4f, false),
+            ("wnt_house", 3.4f, false), ("wnt_barn", 5.2f, false), ("wnt_gate", 4.2f, false), ("wnt_well", 1.9f, false),
+            ("wnt_fire_0", 1.3f, false), ("wnt_fire_1", 1.3f, false), ("wnt_fire_2", 1.3f, false),
+            ("wnt_bench", 2.0f, false), ("wnt_log", 1.3f, false), ("wnt_workbench", 2.1f, false), ("wnt_mailbox", 1.2f, true),
+            ("wnt_pot", 0.9f, true), ("wnt_woodpile", 1.8f, false), ("wnt_barrel", 1.0f, true), ("wnt_crate", 0.95f, true),
+            ("wnt_lamp", 2.4f, true), ("wnt_sign", 1.2f, true), ("wnt_hay", 1.1f, false), ("wnt_bed_0", 1.0f, false), ("wnt_bed_1", 1.0f, false),
+            ("wnt_rock_0", 0.9f, false), ("wnt_rock_1", 0.7f, false), ("wnt_bush_0", 1.0f, false), ("wnt_bush_1", 0.9f, false), ("wnt_bush_2", 0.8f, false),
         };
 
         static readonly System.Collections.Generic.HashSet<string> PoleProps =
-            new System.Collections.Generic.HashSet<string> { "story_lantern", "town_sign_0", "town_mailbox", "town_lamp" };
+            new System.Collections.Generic.HashSet<string> { "story_lantern", "town_sign_0", "town_mailbox", "town_lamp", "wnt_mailbox", "wnt_lamp", "wnt_sign" };
 
         static readonly string[] Buildings = { "town_stable", "town_stable_burned" };
 

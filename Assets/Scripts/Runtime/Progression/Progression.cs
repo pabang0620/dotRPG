@@ -10,7 +10,8 @@ namespace DotRPG
     /// </summary>
     public sealed class Progression
     {
-        public const int MaxLevel = 30;
+        /// <summary>[J10] 40 since chapter 2 (its raids are tuned for Lv 28-31).</summary>
+        public const int MaxLevel = 40;
 
         public int Level { get; private set; } = 1;
         public int Xp { get; private set; }
