@@ -6,8 +6,17 @@ namespace DotRPG
     public sealed class CosmeticAura : MonoBehaviour
     {
         static Sprite sprite;
+        static Sprite starSprite;
         SpriteRenderer aura;
         CosmeticStore store;
+
+        /// <summary>The same artwork is used by the wardrobe preview and the world renderer.</summary>
+        public static Sprite ForProduct(CosmeticProduct product)
+        {
+            if (product == null || product.IsFree) return Sprite;
+            if (starSprite == null) starSprite = Resources.Load<Sprite>("Art/fx_cosmetic_stars");
+            return starSprite != null ? starSprite : Sprite;
+        }
 
         public static Sprite Sprite
         {
@@ -53,7 +62,9 @@ namespace DotRPG
 
         void Refresh()
         {
-            aura.color = store.Equipped.Color;
+            var product = store.Equipped;
+            aura.sprite = ForProduct(product);
+            aura.color = product.Color;
             aura.enabled = aura.color.a > 0;
         }
 

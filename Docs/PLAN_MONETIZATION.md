@@ -64,3 +64,28 @@ CosmeticStoreChecks: 상태 검사 12개와 화면 생성·미연동 판매 차�
 UI 크기 설정이 커져도 두 패널이 겹치지 않도록 내용 영역에 맞춰 축소한다.
 실제 결제, 전체 게임 회귀, 실기기 화면 검증은 실행하지 않았다.
 변경은 기존 가독성 개선 커밋을 포함하는 feature/cosmetic-store 브랜치에 보관한다.
+
+## 에셋 개선 (2026-10-03)
+
+main에 초기 구현을 병합·push한 뒤 상점 전용 아이콘과 별 장식 오라를 추가했다.
+이미지는 내장 image_gen으로 생성했고 원본 RGBA PNG를 그대로 프로젝트에 복사했다.
+Unity 임포트에서 아이콘은 최대 128px, 오라는 최대 256px, 포인트 필터·무압축·밉맵 없음으로 설정한다.
+오라 중심의 투명 영역을 유지하고, 월드 너비는 기존과 같은 약 1유닛이다.
+
+- `Assets/Resources/Art/menuicon_cosmetics.png`: 사이드 메뉴와 상점 제목의 전용 아이콘.
+- `Assets/Resources/Art/fx_cosmetic_stars.png`: 노을빛·별빛 오라에 공통 적용하고 상품 색으로 틴트한다.
+- 무료 하늘빛은 기존 타원 형태를 유지한다. 목록 썸네일·상세 미리보기·월드 렌더러는 같은 상품별 스프라이트 선택 함수를 사용한다.
+- 생성 에셋을 불러올 수 없는 경우 오라는 기존 타원으로 대체한다. 결제·능력치·세이브 로직은 변경하지 않는다.
+
+검증: Unity 컴파일 및 기존 상태 검사 12개·화면 생성 검사를 통과했다. 추가로 Sprite 임포트,
+텍스처 최대 크기, 약 1유닛의 월드 크기, 무료/판매 상품별 에셋 분기, 미리보기 스프라이트 일치를 확인했다.
+Unity는 임포트 축소 시 스프라이트의 월드 크기를 보존하므로, 오라 PPU는 원본 너비인 1774를 사용한다.
+실기기 화면·실제 결제 테스트는 이번 에셋 검증에 포함하지 않았다.
+
+### 최종 생성 프롬프트 (내장 도구)
+
+아이콘:
+> Use case: stylized-concept. Asset type: transparent pixel-art game UI icon for a cosmetic wardrobe shop in a top-down fantasy RPG. Single centered small folded indigo-violet wizard cloak with a bright cyan diamond brooch and a tiny golden four-point sparkle, readable at 40x40 pixels. Match classic handcrafted 16-bit inventory icon aesthetic: chunky deliberate pixel clusters, dark brown-purple outline, warm golden edge highlights, limited palette, front three-quarter view. Square composition, silhouette occupies 85 percent of canvas, ample transparent margin. Actual transparent background. No text, no letters, no frame, no scene, no checkerboard, no blur, no photographic rendering. Produce one isolated icon only.
+
+오라:
+> Use case: stylized-concept. Asset type: one transparent pixel-art foot aura sprite for a top-down 2D fantasy RPG, recolored at runtime. Single flat horizontal elliptical celestial magic ring viewed from above at the game's 3/4 perspective, width about twice height. Pure neutral WHITE and SILVER grayscale only, no colored pixels. Thin double elliptical outline with eight small diamond-shaped star motifs arranged on the perimeter, clear open fully transparent center so ground remains visible. Crisp chunky 16-bit pixel clusters with no fuzzy bloom. Outer ellipse and all star motifs contained inside a centered 2:1 bounding box with generous transparent margin. Quiet elegant effect that does not obscure combat, no vertical flames, no pillars. Actual transparent background everywhere outside the thin ring and stars AND inside the ring. No text, letters, runic writing, character, scenery, solid disk, checkerboard or shadow. One isolated sprite only, landscape canvas.

@@ -16,7 +16,7 @@ namespace DotRPG
 
         public static CosmeticShopScreen Create(Transform canvas)
         {
-            var screen = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "외형 상점 · 옷장", "menuicon_bag");
+            var screen = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "외형 상점 · 옷장", "menuicon_cosmetics");
             screen.store = Game.Cosmetics;
             screen.layout = UIFactory.Place(UIFactory.Rect(screen.content, "Layout"), new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1220f, 600f));
@@ -28,6 +28,11 @@ namespace DotRPG
                 var row = Button(list.transform, "Product_" + CosmeticCatalog.All[i].Id, "", "ui_btngray", TopLeft, TopLeft,
                     new Vector2(20f, -80f - i * 92f), new Vector2(360f, 78f), () => screen.Select(index), 22);
                 screen.rowLabels[i] = row.GetComponentInChildren<Text>();
+                UIFactory.Stretch(screen.rowLabels[i].rectTransform, 86f, 0f, 12f, 0f);
+                var product = CosmeticCatalog.All[i];
+                var thumbnail = UIFactory.Image(row.transform, "Thumbnail", CosmeticAura.ForProduct(product), product.Color);
+                UIFactory.Place(thumbnail.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+                    new Vector2(12f, 0f), new Vector2(68f, 34f));
             }
 
             var detail = Panel(screen.layout, "Preview", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(780f, 520f), UiTheme.PanelDeep);
@@ -75,6 +80,7 @@ namespace DotRPG
                 rowLabels[i].text = $"{(i == selected ? "▶ " : "")}{item.Name}\n<size=17>{state}</size>";
                 rowLabels[i].color = i == selected ? UiTheme.Accent : UiTheme.TextPrimary;
             }
+            previewAura.sprite = CosmeticAura.ForProduct(product);
             previewAura.color = product.Color;
             var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
             previewCharacter.sprite = animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");

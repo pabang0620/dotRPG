@@ -78,12 +78,21 @@ namespace DotRPG.EditorTools
                 Game.Art = new SpriteLibrary(16);
                 Game.Cosmetics = new CosmeticStore(new UnavailableCommerceProvider());
                 Game.Player = null;
+                var icon = Resources.Load<Sprite>("Art/menuicon_cosmetics");
+                var stars = Resources.Load<Sprite>("Art/fx_cosmetic_stars");
+                Require(icon != null && stars != null, "Generated assets are imported as sprites.");
+                Require(icon.texture.width <= 128 && stars.texture.width <= 256, "Runtime textures stay within their size budgets.");
+                Require(stars.bounds.size.x >= 0.8f && stars.bounds.size.x <= 1.2f, "Aura world size matches the original one-unit footprint.");
+                Require(CosmeticAura.ForProduct(CosmeticCatalog.Find("aura_sunset")) == stars, "Paid aura resolves the generated art.");
+                Require(CosmeticAura.ForProduct(CosmeticCatalog.Find("aura_sky")) != stars, "Free aura keeps the original art.");
                 var screen = CosmeticShopScreen.Create(canvas.transform);
                 screen.Show();
                 Require(screen.gameObject.activeSelf, "Screen opens with the unavailable provider.");
                 var button = screen.transform.Find("Content/Layout/Preview/PurchaseOrEquip").GetComponent<UnityEngine.UI.Button>();
                 screen.transform.Find("Content/Layout/Catalog/Product_aura_sunset").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(!button.interactable, "Paid purchases are disabled before integration.");
+                Require(screen.transform.Find("Content/Layout/Preview/Aura").GetComponent<UnityEngine.UI.Image>().sprite == stars,
+                    "Preview uses the same paid artwork as the world renderer.");
                 screen.transform.Find("Content/Layout/Catalog/Product_aura_sky").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(button.interactable, "Free appearance remains available.");
                 screen.Hide();
