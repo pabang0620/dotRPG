@@ -44,11 +44,19 @@ namespace DotRPG
         }
 
         /// <summary>Character frame. dir: down/up/side. frame: idle0, idle1, walk0-3, attack, hurt.</summary>
+        static readonly System.Text.RegularExpressions.Regex GearSuffix = new System.Text.RegularExpressions.Regex(@"_t-?\d+_b-?\d+$");
+
         public Sprite GetCharacter(CharacterLook look, string dir, string frame)
         {
             string key = $"char_{look.id}_{dir}_{frame}";
             if (cache.TryGetValue(key, out var sprite)) return sprite;
             sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            // [ART] Generated character frames are per base look: a geared look ("mage_t1_b0") uses its base's.
+            if (sprite == null)
+            {
+                string baseId = GearSuffix.Replace(look.id, "");
+                if (baseId != look.id) sprite = Resources.Load<Sprite>($"{OverrideFolder}char_{baseId}_{dir}_{frame}");
+            }
             if (sprite == null && SilverWarriorArt.Supports(look.id)) sprite = SilverWarriorArt.Get(look, dir, frame);
             if (sprite == null) sprite = ToSprite(key, ProceduralArt.DrawCharacter(look, dir, frame));
             cache[key] = sprite;

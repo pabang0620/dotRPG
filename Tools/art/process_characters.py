@@ -15,16 +15,45 @@ from process_generated import key, ART
 FRAME, FEET = 128, 12
 FRAMES = ["idle0", "idle1", "walk0", "walk1", "walk2", "walk3", "attack", "hurt"]
 
+def load(src):
+    """Transparent PNG (Codex image generation) as is; magenta-background images (Flow) keyed."""
+    im = Image.open(src)
+    if im.mode in ("RGBA", "LA") or "transparency" in im.info:
+        rgba = np.asarray(im.convert("RGBA")).copy()
+        rgba[rgba[..., 3] < 24] = 0
+        return rgba
+    return key(src, soft=1.4)
+
 def pieces(rgba, min_area=1500):
     solid = rgba[..., 3] > 100
     lab, n = ndimage.label(ndimage.binary_dilation(solid, iterations=3))
-    out = []
+    boxes = []  # [y0, y1, x0, x1, label set]
     for i, sl in enumerate(ndimage.find_objects(lab), 1):
-        area = int((solid[sl] & (lab[sl] == i)).sum())
-        if area < min_area: continue
-        piece = rgba[sl].copy()
-        piece[lab[sl] != i] = 0
-        out.append(((sl[0].start + sl[0].stop) / 2, sl[1].start, sl, piece))
+        if int((solid[sl] & (lab[sl] == i)).sum()) < 150: continue
+        boxes.append([sl[0].start, sl[0].stop, sl[1].start, sl[1].stop, {i}, int((solid[sl] & (lab[sl] == i)).sum())])
+    # A head split from its body by a translucent band: same column, small vertical gap -> one figure.
+    merged = True
+    while merged:
+        merged = False
+        for a in range(len(boxes)):
+            for b in range(a + 1, len(boxes)):
+                A, B = boxes[a], boxes[b]
+                overlap = min(A[3], B[3]) - max(A[2], B[2])
+                gap = max(A[0], B[0]) - min(A[1], B[1])
+                # only a fragment (much smaller than a whole figure) joins its neighbour
+                small = min(A[5], B[5]) < 0.35 * max(A[5], B[5])
+                if small and overlap > 0.5 * min(A[3] - A[2], B[3] - B[2]) and gap < 30:
+                    boxes[a] = [min(A[0], B[0]), max(A[1], B[1]), min(A[2], B[2]), max(A[3], B[3]), A[4] | B[4], A[5] + B[5]]
+                    del boxes[b]
+                    merged = True
+                    break
+            if merged: break
+    out = []
+    for y0, y1, x0, x1, labels, _ in boxes:
+        piece = rgba[y0:y1, x0:x1].copy()
+        piece[~np.isin(lab[y0:y1, x0:x1], list(labels))] = 0
+        if int((piece[..., 3] > 100).sum()) < min_area: continue
+        out.append(((y0 + y1) / 2, x0, (y0, y1), piece))
     # rows: split by the largest vertical gaps between centres
     out.sort(key=lambda t: t[0])
     ys = [t[0] for t in out]
@@ -47,8 +76,30 @@ def place(piece, scale):
 
 def sheet(src, look_id, mapping, height=104):
     """mapping: {dir: (row index, [component index per FRAMES entry])}. height = idle0 front height in px."""
-    rows = pieces(key(src, soft=1.4))
+    rgba = load(src)
+    rows = pieces(rgba)
     print(look_id, "rows:", [len(r) for r in rows])
+    # Rows that did not split into 9 figures (touching or broken figures): cut the evenly spaced sheet
+    # into 9 equal columns inside that row's band.
+    W = rgba.shape[1]
+    for k, row in enumerate(rows):
+        if len(row) == 9: continue
+        y0 = min(t[2][0] for t in row); y1 = max(t[2][1] for t in row)
+        fixed = []
+        for c in range(9):
+            x0, x1 = round(c * W / 9), round((c + 1) * W / 9)
+            cell = rgba[y0:y1, x0:x1].copy()
+            # drop slivers of the neighbours: keep components centred in the middle of the cell
+            clab, cn = ndimage.label(ndimage.binary_dilation(cell[..., 3] > 100, iterations=2))
+            keep = np.zeros(cell.shape[:2], bool)
+            for j, csl in enumerate(ndimage.find_objects(clab), 1):
+                cx = (csl[1].start + csl[1].stop) / 2
+                if 0.2 * cell.shape[1] < cx < 0.8 * cell.shape[1]: keep |= clab == j
+            cell[~keep] = 0
+            if (cell[..., 3] > 100).sum() < 500: continue
+            fixed.append(((y0 + y1) / 2, x0, (y0, y1), cell))
+        print(f"  row {k}: {len(row)} pieces -> {len(fixed)} grid cells")
+        rows[k] = fixed
     idle = rows[mapping["down"][0]][mapping["down"][1][0]][3]
     ys = np.nonzero(idle[..., 3] > 100)[0]
     scale = height / (ys.max() - ys.min() + 1)
@@ -68,6 +119,47 @@ NINE = {
     "side": (2, [0, 1, 3, 4, 5, 6, 7, 0]),
 }
 
+# Codex sheets keep the facing per row (row 2 attack / hurt are back views too).
+CODEX = dict(NINE)
+CODEX["up"] = (1, [0, 1, 3, 4, 5, 6, 7, 8])
+CODEX["upside"] = (1, [3, 5, 3, 4, 5, 6, 7, 8])
+CODEX["side"] = (2, [0, 1, 3, 4, 5, 6, 7, 8])
+
 if __name__ == "__main__":
     src = sys.argv[1]
-    sheet(os.path.join(src, "gen_mage_sheet2.jpg"), "mage", NINE, height=108)
+    only = sys.argv[2:]
+    # (source file, look id(s), height of the front idle figure in px of the 128 frame)
+    jobs = [
+        ("gen_mage_sheet2.jpg", ["mage"], 108),
+        ("codex_merc_bron.png", ["merc_bron"], 104),
+        ("codex_merc_kai.png", ["merc_kai"], 100),
+        ("codex_merc_elin.png", ["merc_elin"], 98),
+        ("codex_merc_sera.png", ["merc_sera"], 104),
+        ("codex_kael.png", ["kael"], 108),
+        ("codex_ria.png", ["ria"], 96),
+        ("codex_bram.png", ["bram"], 100),
+        ("codex_hanna.png", ["hanna"], 98),
+        ("codex_leona.png", ["leona"], 106),
+        ("codex_orban.png", ["orban"], 110),
+        ("codex_grah.png", ["grah"], 116),
+        ("codex_bargas.png", ["bargas"], 116),
+        ("codex_knight.png", ["knight", "knight_dorn", "knight_ivy", "knight_mo"], 104),
+        ("codex_herbalist.png", ["herbalist"], 100),
+        ("codex_rock_golem.png", ["boss_rock_golem"], 86),
+        # villagers
+        ("codex_chief.png", ["chief"], 100), ("codex_farmer.png", ["farmer"], 98), ("codex_fisher.png", ["fisher"], 100),
+        ("codex_builder.png", ["builder"], 102), ("codex_lumberjack.png", ["lumberjack"], 106), ("codex_miner.png", ["miner"], 98),
+        ("codex_carrier.png", ["carrier"], 98), ("codex_kid.png", ["kid"], 82), ("codex_merchant.png", ["merchant"], 98),
+        ("codex_smith.png", ["smith"], 104), ("codex_keeper.png", ["keeper"], 100), ("codex_trader.png", ["trader"], 100),
+        ("codex_dungeon_guide.png", ["dungeon_guide"], 100),
+    ]
+    for f, ids, height in jobs:
+        path = os.path.join(src, f)
+        if not os.path.exists(path) or (only and not set(ids) & set(only)): continue
+        for look_id in ids:
+            try: sheet(path, look_id, CODEX if f.startswith("codex_") else NINE, height=height)
+            except Exception as e: print("FAILED", look_id, e)
+    # Frames that came out cut in their sheet reuse a neighbour (checked on the contact sheet).
+    import shutil
+    for look_id, d, bad, good in [("hanna", "up", "walk3", "walk1"), ("hanna", "upside", "walk3", "walk1")]:
+        shutil.copyfile(os.path.join(ART, f"char_{look_id}_{d}_{good}.png"), os.path.join(ART, f"char_{look_id}_{d}_{bad}.png"))

@@ -23,6 +23,9 @@ namespace DotRPG.EditorTools
             ("town_bench", 2.0f, false), ("town_sign_0", 1.25f, true), ("town_anvil", 1.0f, true),
             ("story_horse", 2.1f, true), ("story_trough", 1.6f, false), ("story_grave", 1.1f, true),
             ("story_grave_1", 0.95f, true), ("story_lantern", 2.0f, true), ("story_ribbon", 1.0f, true),
+            ("town_site_0", 3.0f, false), ("town_site_1", 3.0f, false), ("town_pile_0", 1.2f, false), ("town_pile_1", 1.2f, false),
+            ("town_stump", 0.9f, false), ("town_grave_0", 1.0f, true), ("town_grave_1", 1.0f, true), ("town_ruin", 1.3f, true),
+            ("town_bones", 0.9f, false),
         };
 
         static readonly System.Collections.Generic.HashSet<string> PoleProps =

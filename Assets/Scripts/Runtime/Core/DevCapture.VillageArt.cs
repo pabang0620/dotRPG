@@ -40,6 +40,17 @@ namespace DotRPG
             Game.Flow.NewGame(CharacterClass.Mage);
             yield return Wait(1.5f);
             yield return ShotAt(27f, 36f, "art_09_mage_plaza");
+            // Party of the four regenerated mercenaries, and the story cast lined up.
+            foreach (var m in MercenaryDatabase.All) Game.Party.AddCompanion(m.id);
+            yield return Wait(1.5f);
+            yield return ShotAt(27f, 38f, "art_10_party");
+            string[] cast = { "kael", "ria", "bram", "hanna", "leona", "orban", "grah", "bargas", "knight_dorn", "herbalist" };
+            for (int i = 0; i < cast.Length; i++)
+            {
+                var def = StoryCast.Find(cast[i]);
+                if (def != null) NpcController.Create(def, CutscenePlayer.CellToWorld(21f + i * 1.3f, 40f), Game.World.ObjectsRoot);
+            }
+            yield return ShotAt(27f, 41f, "art_11_story_cast");
         }
 
         /// <summary>Puts the player on a map-text cell (column, row) and takes a screenshot there.</summary>

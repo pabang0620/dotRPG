@@ -52,6 +52,15 @@ def key(path, soft=1.0):
     rgba[a <= 0.02] = 0
     return rgba
 
+def load_any(path, soft=1.0):
+    """Transparent PNG (Codex) as is, magenta JPEG (Flow) keyed."""
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA") or "transparency" in im.info:
+        rgba = np.asarray(im.convert("RGBA")).copy()
+        rgba[rgba[..., 3] < 24] = 0
+        return rgba
+    return key(path, soft)
+
 def components(rgba, min_area=900, merge=9):
     solid = rgba[..., 3] > 100
     grown = ndimage.binary_dilation(solid, iterations=merge)
@@ -100,12 +109,14 @@ SHEETS = {
     "gen_props_landmarks.jpg": ["town_fountain_0", "town_well", "town_board", "town_lamp"],
     "gen_props_small.jpg": ["town_barrel", "town_crate", "town_sacks", "town_hay", "town_woodpile", "town_ccrate"],
     "gen_props_misc.jpg": ["town_pot", "town_planter", "town_mailbox", "town_bench", "town_sign_0", None, "town_anvil"],
+    "codex_props2.png": ["town_site_0", "town_site_1", "town_pile_0", "town_pile_1", "town_stump", "town_grave_0", "town_grave_1", "town_ruin", "town_bones"],
 }
 
 if __name__ == "__main__":
     src = sys.argv[1]
     for f, names in SHEETS.items():
-        crops = components(key(os.path.join(src, f), soft=1.6 if "story" in f or "landmarks" in f else 1.0), merge=4 if "story" in f else 9)
+        if not os.path.exists(os.path.join(src, f)): continue
+        crops = components(load_any(os.path.join(src, f), soft=1.6 if "story" in f or "landmarks" in f else 1.0), merge=4 if "story" in f else 9)
         print(f, "->", len(crops), "pieces")
         for crop, name in zip(crops, names):
             if name: save(crop, name)

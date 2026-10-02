@@ -358,7 +358,8 @@ namespace DotRPG
                 new BossPattern(PatternKind.Slam, 7f, 1.3f, maxRange: 3.8f, minPhase: 1),
                 new BossPattern(PatternKind.Fields, 8f, 1.1f, 6, minPhase: 2),
                 new BossPattern(PatternKind.Donut, 11f, 1.4f, minPhase: 3));
-            bargas.look = Look("boss_armory_warden", C(58, 56, 70)); // black iron on the warden body until its own art
+            bargas.look = Look("bargas", C(58, 56, 70)); // generated frames Art/char_bargas_* (same as the cutscene actor)
+            bargas.artScale = 1.4f;
             bargas.raid = true;
             bargas.size = 2.3f;
             bargas.groggyMax = 560f;
@@ -373,7 +374,8 @@ namespace DotRPG
                 new BossPattern(PatternKind.GoldRain, 9f, 1.2f, 6, minPhase: 1),
                 new BossPattern(PatternKind.Fields, 8f, 1.2f, 6, minPhase: 2),
                 new BossPattern(PatternKind.Donut, 12f, 1.6f, minPhase: 2));
-            golem.look = Look("boss_mine_captain", C(150, 132, 112));
+            golem.look = Look("boss_rock_golem", C(150, 132, 112)); // generated frames Art/char_boss_rock_golem_*
+            golem.artScale = 1.0f;
             golem.raid = true;
             golem.size = 2.6f;
             golem.groggyMax = 700f;
@@ -386,7 +388,8 @@ namespace DotRPG
                 new BossPattern(PatternKind.Fields, 7f, 1.1f, 7, minPhase: 2),
                 new BossPattern(PatternKind.Donut, 10f, 1.4f, minPhase: 2),
                 new BossPattern(PatternKind.Judgment, 35f, 8f, minPhase: 3, weight: 0f));
-            grah.look = Look("boss_lich", C(124, 98, 150));
+            grah.look = Look("grah", C(124, 98, 150)); // generated frames Art/char_grah_* (same as the cutscene actor)
+            grah.artScale = 1.4f;
             grah.raid = true;
             grah.size = 2.4f;
             grah.groggyMax = 720f;
