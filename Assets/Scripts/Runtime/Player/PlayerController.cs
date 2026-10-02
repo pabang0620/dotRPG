@@ -317,7 +317,8 @@ namespace DotRPG
                 CancelMobility();
                 body.SetVelocity(Vector2.zero);
                 desiredVelocity = Vector2.zero;
-                if (Game.State.Current != GameState.Dialogue) animator.Play(CharacterAnim.Idle, Facing);
+                if (Game.State.Current == GameState.Cutscene) UpdateScripted();
+                else if (Game.State.Current != GameState.Dialogue) animator.Play(CharacterAnim.Idle, Facing);
                 return;
             }
 

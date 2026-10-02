@@ -151,7 +151,7 @@ namespace DotRPG
         {
             bool inGame = next == GameState.Playing || next == GameState.Dialogue || next == GameState.Paused
                           || next == GameState.GameOver || next == GameState.Ending || next == GameState.Inventory;
-            Hud.gameObject.SetActive(inGame);
+            Hud.gameObject.SetActive(inGame && (Game.Cutscenes == null || !Game.Cutscenes.IsPlaying));
             DialogueBox.gameObject.SetActive(next == GameState.Dialogue || next == GameState.Paused);
 
             // Returning from pause to dialogue/playing just closes menus.

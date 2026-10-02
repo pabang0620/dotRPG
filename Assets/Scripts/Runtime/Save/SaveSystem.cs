@@ -111,8 +111,41 @@ namespace DotRPG
             if (data.equipped == null) data.equipped = new List<string>();
             if (data.enhancePity == null) data.enhancePity = new List<ItemStack>();
             if (data.version < 4) MigrateEnhanceLevels(data);
+            if (data.version < 5) MigrateStory(data);
+            if (data.quests == null) data.quests = new List<QuestSave>();
+            if (data.storyFlags == null) data.storyFlags = new List<string>();
             data.version = SaveData.CurrentVersion;
             return data;
+        }
+
+        /// <summary>
+        /// v5 ([STORY]): quests became data-driven. Older saves already live after the attack on the village,
+        /// so the prologue counts as played; the workshop quest keeps its stage (1-6 마을 복구).
+        /// </summary>
+        public static void MigrateStory(SaveData data)
+        {
+            data.quests = new List<QuestSave>();
+            foreach (var id in StoryIds.Prologue) data.quests.Add(new QuestSave { id = id, status = (int)QuestStatus.Completed });
+            data.storyFlags = new List<string>(StoryIds.PrologueFlags);
+            var q = data.quest ?? new QuestProgress();
+            var workshop = new QuestSave { id = QuestManager.WorkshopQuest };
+            switch ((QuestStage)q.stage)
+            {
+                case QuestStage.Active:
+                    workshop.status = (int)QuestStatus.Active;
+                    workshop.counts.Add(q.workshopBuilt ? 1 : 0);
+                    workshop.counts.Add(q.skeletonsDefeated);
+                    break;
+                case QuestStage.ReadyToReport:
+                    workshop.status = (int)QuestStatus.ReadyToTurnIn;
+                    workshop.step = 1;
+                    break;
+                case QuestStage.Completed:
+                    workshop.status = (int)QuestStatus.Completed;
+                    break;
+            }
+            if (workshop.status != 0) data.quests.Add(workshop);
+            if (q.workshopBuilt) data.storyFlags.Add(QuestManager.WorkshopBuiltFlag);
         }
 
         /// <summary>

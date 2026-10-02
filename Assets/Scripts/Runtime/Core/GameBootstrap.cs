@@ -40,7 +40,7 @@ namespace DotRPG
             Game.Session.ResetForNewGame(cfg);
             Game.Art = new SpriteLibrary(cfg.pixelsPerUnit);
             Game.Dialogues = new DialogueDatabase(cfg.dialogues);
-            Game.Quest = new QuestManager(cfg.mainQuest);
+            Game.Quest = new QuestManager(cfg.mainQuest, new QuestDatabase(Resources.Load<TextAsset>(QuestDatabase.ResourcePath)));
             Game.Flow = gameObject.AddComponent<GameFlow>();
             Game.Dialogue = gameObject.AddComponent<DialogueManager>();
 
@@ -53,6 +53,8 @@ namespace DotRPG
             Game.Player.gameObject.SetActive(false);
             Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
             Game.Dungeon = DungeonDirector.Create(gameplayRoot); // [DUNGEON]
+            Game.Cutscenes = CutscenePlayer.Create(transform, new CutsceneDatabase(Resources.Load<TextAsset>(CutsceneDatabase.ResourcePath))); // [STORY]
+            Game.Quest.Bind();
 
             Game.UI = UIRoot.Create(transform);
 

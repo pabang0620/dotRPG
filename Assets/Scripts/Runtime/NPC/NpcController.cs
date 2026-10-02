@@ -28,6 +28,13 @@ namespace DotRPG
         const float WorkSwingDuration = 0.28f;
 
         public NpcDefinition Definition => def;
+        public Facing CurrentFacing => facing;
+
+        // [STORY] Cutscene control: while scripted the npc only walks where the scene sends it.
+        bool scripted;
+        float scriptSpeed = 2f;
+        TextMesh markText, markShadow;
+        float nextMarkCheck;
 
         public override string Prompt
         {
@@ -153,12 +160,19 @@ namespace DotRPG
             {
                 talking = false;
                 facing = def.initialFacing;
-                Game.Quest.OnDialogueFinished(dialogueId);
+                Game.Quest.OnDialogueFinished(dialogueId, def.npcId);
             }, def.displayName);
         }
 
         void Update()
         {
+            UpdateQuestMark();
+            if (scripted)
+            {
+                animator.Play(moving ? CharacterAnim.Walk : CharacterAnim.Idle, facing);
+                PoseTool(0f);
+                return;
+            }
             bool worldRunning = Game.State.Current == GameState.Playing || Game.State.Current == GameState.Title;
             if (talking || !worldRunning)
             {
@@ -182,7 +196,7 @@ namespace DotRPG
         {
             if (!moving) return;
             Vector2 pos = body.position;
-            float speed = def.behaviour == NpcBehaviour.Patrol ? 1.6f : 1.1f;
+            float speed = scripted ? scriptSpeed : def.behaviour == NpcBehaviour.Patrol ? 1.6f : 1.1f;
             Vector2 next = Vector2.MoveTowards(pos, moveTarget, speed * Time.fixedDeltaTime);
             body.MovePosition(next);
             if (Vector2.Distance(next, moveTarget) < 0.02f) moving = false;
@@ -252,6 +266,90 @@ namespace DotRPG
                     if (nearPlayer) Game.Audio.PlaySfx("hammer", 0.35f);
                     break;
             }
+        }
+
+        // =============================== [STORY] Cutscene control ===============================
+
+        public void ScriptPlace(Vector2 pos, Facing f)
+        {
+            moving = false;
+            body.position = pos;
+            transform.position = pos;
+            home = pos;
+            moveTarget = pos;
+            facing = f;
+            animator.Play(CharacterAnim.Idle, facing);
+        }
+
+        public void ScriptFace(Facing f)
+        {
+            facing = f;
+            animator.Play(moving ? CharacterAnim.Walk : CharacterAnim.Idle, facing);
+        }
+
+        /// <summary>Walks to <paramref name="target"/> (cutscene); <paramref name="skip"/> jumps there at once.</summary>
+        public System.Collections.IEnumerator ScriptWalk(Vector2 target, float speed, System.Func<bool> skip)
+        {
+            scripted = true;
+            scriptSpeed = speed;
+            StartMove(target);
+            while (moving && (skip == null || !skip())) yield return null;
+            if (moving) ScriptPlace(target, facing);
+            home = target;
+            scripted = false;
+        }
+
+        void UpdateQuestMark()
+        {
+            if (Game.Quest == null || def == null || Time.unscaledTime < nextMarkCheck) return;
+            nextMarkCheck = Time.unscaledTime + 0.25f;
+            var mark = def.service == NpcService.None ? Game.Quest.MarkFor(def.npcId) : QuestMark.None;
+            if (mark == QuestMark.None)
+            {
+                if (markText != null) markText.gameObject.SetActive(false);
+                return;
+            }
+            if (markText == null)
+            {
+                markShadow = MakeMark("QuestMarkShadow", new Vector3(0.04f, 1.96f, 0f), 29998);
+                markText = MakeMark("QuestMark", new Vector3(0f, 2f, 0f), 29999);
+                markShadow.transform.SetParent(markText.transform, true);
+            }
+            markText.gameObject.SetActive(true);
+            string glyph = mark == QuestMark.Available ? "!" : "?";
+            bool main = Game.Quest.MarkIsMain(def.npcId);
+            markText.text = glyph;
+            markShadow.text = glyph;
+            markText.color = main ? new Color32(255, 214, 64, 255) : new Color32(120, 214, 255, 255);
+            markShadow.color = new Color32(20, 16, 24, 220);
+        }
+
+        TextMesh MakeMark(string name, Vector3 local, int order)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = local;
+            var tm = go.AddComponent<TextMesh>();
+            tm.anchor = TextAnchor.LowerCenter;
+            tm.alignment = TextAlignment.Center;
+            tm.characterSize = 0.1f;
+            tm.fontSize = 64;
+            tm.fontStyle = FontStyle.Bold;
+            var font = UIFont.Get();
+            var mr = go.GetComponent<MeshRenderer>();
+            if (font != null)
+            {
+                tm.font = font;
+                mr.sharedMaterial = font.material;
+            }
+            mr.sortingOrder = order;
+            return tm;
+        }
+
+        void LateUpdate()
+        {
+            if (markText != null && markText.gameObject.activeSelf)
+                markText.transform.localPosition = new Vector3(0f, 2f + Mathf.Sin(Time.unscaledTime * 4f) * 0.06f, 0f);
         }
 
         void StartMove(Vector2 target)

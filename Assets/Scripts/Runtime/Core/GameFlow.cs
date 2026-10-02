@@ -19,7 +19,9 @@ namespace DotRPG
         {
             if (transitioning || Game.State.ChangedThisFrame) return;
             if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
+            Game.Quest.Tick();
             var state = Game.State.Current;
+            if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
             if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
             else if (state == GameState.Playing && Game.Input.InventoryPressed) OpenInventory();
         }
@@ -53,7 +55,8 @@ namespace DotRPG
             // Common PC courtesy: alt-tabbing out pauses the game (not in the editor, where it gets in the way).
             // Automated capture runs (they redirect saves) keep playing so several can run side by side.
             if (!hasFocus && PauseOnFocusLoss && !Application.isEditor && SaveSystem.DirectoryOverride == null && Game.State != null &&
-                (Game.State.Current == GameState.Playing || Game.State.Current == GameState.Dialogue))
+                (Game.State.Current == GameState.Playing || Game.State.Current == GameState.Dialogue) &&
+                (Game.Cutscenes == null || !Game.Cutscenes.IsPlaying))
                 Pause();
         }
 
@@ -80,7 +83,6 @@ namespace DotRPG
                 Game.Session.ResetForNewGame(Game.Config, playerClass);
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
-                GameEvents.RaiseToast($"촌장 모리에게 말을 걸어 보자  [{Game.Input.GetBindingLabel(GameAction.Interact)}]");
             }));
         }
 
@@ -122,6 +124,7 @@ namespace DotRPG
             if (session.StartPosition.HasValue && !Game.World.IsFree(start)) start = Game.World.PlayerSpawn;
             player.Spawn(start, session.StartFacing, session.PlayerHealth, session.PlayerMaxHealth);
             Game.Camera.SetTarget(player.transform, true);
+            GameEvents.RaiseMapEntered(session.MapId);
             Game.Quest.NotifyChanged();
             Game.UI.Hud.ClearToasts();
             Game.UI.Hud.RefreshAll();
@@ -150,6 +153,7 @@ namespace DotRPG
                 Vector2 arrival = arriveAtSpawn ? Game.World.PlayerSpawn : Game.World.ArrivalFrom(from, out facing);
                 player.Spawn(arrival, facing, session.PlayerHealth, session.PlayerMaxHealth);
                 Game.Camera.SetTarget(player.transform, true);
+                GameEvents.RaiseMapEntered(mapId);
                 Game.Quest.NotifyChanged();
                 Game.UI.Hud.RefreshAll();
                 Game.Audio.PlayMusic(Game.World.Map.music);
@@ -282,6 +286,7 @@ namespace DotRPG
                     Game.Session.MapId = MapRegistry.Village;
                     Game.World.Load(MapRegistry.Village);
                     Game.Audio.PlayMusic(Game.World.Map.music);
+                    GameEvents.RaiseMapEntered(MapRegistry.Village);
                 }
                 player.Spawn(Game.World.PlayerSpawn, Facing.Down, int.MaxValue, Game.Session.PlayerMaxHealth);
                 Game.Session.PlayerMana = CharacterStats.MaxMp;

@@ -36,7 +36,7 @@ namespace DotRPG
     [Serializable]
     public class SaveData
     {
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public int version = CurrentVersion;
         public string savedAtUtc;
@@ -88,5 +88,11 @@ namespace DotRPG
         /// <summary>2 slots × (active + 2 supports), "" = empty socket.</summary>
         public List<string> gemSlots = new List<string>();
         public QuestProgress quest = new QuestProgress();
+
+        // [STORY] Version 5+: data-driven quests (QuestJournal).
+        public List<QuestSave> quests = new List<QuestSave>();
+        public List<string> storyFlags = new List<string>();
+        public string trackedQuest = "";
+        public string playerName = "";
     }
 }

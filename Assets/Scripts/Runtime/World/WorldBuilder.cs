@@ -235,6 +235,8 @@ namespace DotRPG
             else if (WinterHd) BuildWinterHd();
             CreateBoundaryWalls();
             SpawnDungeonGuide(); // [DUNGEON] 던전 안내원 by the village plaza
+            Game.Cutscenes?.OnWorldRebuilt();
+            StoryCast.SpawnFor(MapId, objectsRoot); // [STORY] story characters present at this point of the story
 
             if (skeletonSpawns.Count > 0)
             {

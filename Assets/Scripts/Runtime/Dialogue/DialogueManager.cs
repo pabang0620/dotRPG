@@ -102,7 +102,7 @@ namespace DotRPG
             if (!IsOpen) return;
             IsOpen = false;
             current = null;
-            if (Game.State.Current == GameState.Dialogue) Game.State.Set(GameState.Playing);
+            if (Game.State.Current == GameState.Dialogue) Game.State.Set(Game.Cutscenes != null && Game.Cutscenes.IsPlaying ? GameState.Cutscene : GameState.Playing);
             Closed?.Invoke();
             var callback = onComplete;
             onComplete = null;

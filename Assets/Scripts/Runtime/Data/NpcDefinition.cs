@@ -67,6 +67,8 @@ namespace DotRPG
 
         public NpcDefinition() { }
 
+        public NpcDefinition Clone() => (NpcDefinition)MemberwiseClone();
+
         public NpcDefinition(string symbol, string id, string name, CharacterLook look, NpcBehaviour behaviour,
             NpcTool tool, Facing facing, string dialogue, string afterQuest = "", Vector2 patrol = default,
             NpcService service = NpcService.None, string greeting = "")

@@ -101,12 +101,30 @@ namespace DotRPG
             },
         };
 
+        /// <summary>[STORY] Story companions: join and leave through the story (StoryCompanions), never hired.</summary>
+        static readonly List<MercenaryDef> StoryDefs = new List<MercenaryDef>
+        {
+            new MercenaryDef
+            {
+                id = "story_kael", name = "카엘", roleName = "성전기사", cls = CharacterClass.Warrior, role = MercRole.MeleeDps,
+                description = "습격의 밤에 나타나 스승이 된 떠돌이 성전기사.",
+                look = new CharacterLook("kael", HairStyle.Short, C(250, 205, 160), C(196, 196, 204), C(110, 112, 122), C(58, 60, 70)) { armor = ArmorStyle.Plate, armorColor = C(150, 154, 166) },
+                color = C(176, 182, 196), hpScale = 1.4f, threat = 1.5f,
+                skillPriority = new[] { 1, 0, 2, 4 },
+                supports = new[] { new[] { "sup_dmg", "sup_aoe" }, new[] { "sup_dmg", "sup_multi" }, new[] { "sup_aoe", "sup_dmg" }, null, new[] { "sup_dmg", "sup_aoe" } },
+            },
+        };
+
+        /// <summary>Hireable mercenaries (the party window). Story companions are not listed.</summary>
         public static IReadOnlyList<MercenaryDef> All => Defs;
+
+        public static bool IsStory(string id) => id != null && id.StartsWith("story_");
 
         public static MercenaryDef Get(string id)
         {
             if (string.IsNullOrEmpty(id)) return null;
             foreach (var d in Defs) if (d.id == id) return d;
+            foreach (var d in StoryDefs) if (d.id == id) return d;
             return null;
         }
 

@@ -178,37 +178,6 @@ namespace DotRPG
 
     // =====================================================================================
 
-    /// <summary>Quest log: current main quest, objectives and rewards.</summary>
-    public class QuestScreen : WindowScreen
-    {
-        Text body;
-
-        public static QuestScreen Create(Transform canvas)
-        {
-            var w = CreateWindow<QuestScreen>(canvas, "QuestLog", "퀘스트", "menuicon_quest");
-            var panel = Panel(w.content, "Panel", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(1000f, 580f), new Color32(24, 36, 54, 235));
-            w.body = Label(panel.transform, "Body", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -24f), new Vector2(940f, 540f));
-            return w;
-        }
-
-        protected override void Refresh()
-        {
-            var q = Game.Quest;
-            string stage = q.Stage == QuestStage.NotStarted ? "<color=#ff9f43>수락 전</color>"
-                : q.Stage == QuestStage.Completed ? "<color=#8fe28f>완료</color>" : "<color=#78dcff>진행 중</color>";
-            var sb = new StringBuilder();
-            sb.Append($"<size=30><b>[메인] {q.Config.title}</b></size>   {stage}\n\n");
-            sb.Append("<color=#b8c4d8>의뢰인: 촌장 모리 (해골 숲 옆 작은 마을)</color>\n\n");
-            sb.Append("<b>목표</b>\n");
-            foreach (var o in q.GetObjectives()) sb.Append(o.done ? $"<color=#8fe28f>● {o.text}</color>\n" : $"○ {o.text}\n");
-            sb.Append($"\n<b>보상</b>\n최대 체력 +{EquipmentDatabase.Hearts(q.Config.rewardMaxHealth)}   ·   <color={EquipmentDatabase.RarityColor(ItemRarity.Unique)}>[유니크] 루비 반지</color>\n\n");
-            sb.Append("<b>도움말</b>\n나무와 바위를 캐서 목재·돌을 모으고, 동쪽 큰길 옆 공사장에 전달하자.\n해골은 마을 동쪽 큰길 끝의 사냥터 '해골 숲'에 있다. 쓰러뜨리면 골드와 장비, 강화 재료를 얻는다.");
-            body.text = sb.ToString();
-        }
-    }
-
-    // =====================================================================================
-
     /// <summary>Mini-dungeon / raid information window (content not open yet).</summary>
     public class ContentScreen : WindowScreen
     {

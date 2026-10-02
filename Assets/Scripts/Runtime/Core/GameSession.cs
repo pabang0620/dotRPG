@@ -21,7 +21,10 @@ namespace DotRPG
         {
             Equipment = new Equipment(Inventory);
         }
+        /// <summary>Workshop delivery counters (construction site of quest 1-6).</summary>
         public QuestProgress Quest { get; private set; } = new QuestProgress();
+        /// <summary>[STORY] Quest states, story flags, tracked quest and the hero's name.</summary>
+        public readonly QuestJournal Journal = new QuestJournal();
         /// <summary>Base max HP (class base + quest rewards). Level, passives and gear are added by <see cref="CharacterStats"/>.</summary>
         public int PlayerMaxHealth { get; set; }
         /// <summary>Level, experience, passive tree and skill gems.</summary>
@@ -56,6 +59,7 @@ namespace DotRPG
             Equipment.Set(EquipSlot.Weapon, EquipmentDatabase.StarterWeapon(playerClass));
             foreach (var (id, count) in ConsumableDatabase.StarterPack) Inventory.Add(id, count);
             Quest = new QuestProgress();
+            Journal.Clear();
             OpenedChests.Clear();
             PlayerMaxHealth = config.playerStats.maxHealth;
             PlayTimeSeconds = 0f;
@@ -92,6 +96,7 @@ namespace DotRPG
                 quest = JsonUtility.FromJson<QuestProgress>(JsonUtility.ToJson(Quest)),
             };
             Progression.Capture(data);
+            Journal.Capture(data); // [STORY]
             data.partyMercs = new System.Collections.Generic.List<string>(PartyRoster); // [PARTY]
             Dungeons.Capture(data); // [DUNGEON]
             return data;
@@ -109,6 +114,7 @@ namespace DotRPG
                 Equipment.Set(EquipSlot.Weapon, EquipmentDatabase.StarterWeapon(savedClass));
             Equipment.EnsureUsable(savedClass); // A deliberately empty warrior weapon slot stays empty.
             Quest = data.quest ?? new QuestProgress();
+            Journal.Restore(data); // [STORY]
             OpenedChests.Clear();
             if (data.openedChests != null) OpenedChests.UnionWith(data.openedChests);
             PlayerMaxHealth = data.playerMaxHealth > 0 ? data.playerMaxHealth : config.playerStats.maxHealth;

@@ -14,6 +14,8 @@ namespace DotRPG
         Ending,
         /// <summary>Item / equipment window open (world frozen).</summary>
         Inventory,
+        /// <summary>A story cutscene runs: world time flows, player input and enemies wait.</summary>
+        Cutscene,
     }
 
     /// <summary>
@@ -41,7 +43,7 @@ namespace DotRPG
             Previous = Current;
             Current = next;
             LastChangeFrame = Time.frameCount;
-            Time.timeScale = next is GameState.Playing or GameState.Title ? 1f : 0f;
+            Time.timeScale = next is GameState.Playing or GameState.Title or GameState.Cutscene ? 1f : 0f;
             Changed?.Invoke(Previous, next);
         }
     }

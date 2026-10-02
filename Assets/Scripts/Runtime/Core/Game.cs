@@ -19,6 +19,7 @@ namespace DotRPG
         public static DialogueDatabase Dialogues;
         public static DialogueManager Dialogue;
         public static QuestManager Quest;
+        public static CutscenePlayer Cutscenes;
         public static WorldBuilder World;
         public static PlayerController Player;
         public static CameraFollow Camera;

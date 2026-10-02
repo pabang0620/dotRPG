@@ -1,0 +1,19 @@
+{
+  "chapters": [
+    { "number": 1, "title": "잿더미의 마굿간", "summary": "" }
+  ],
+  "quests": [
+    {
+      "id": "c1_rebuild", "chapter": 1, "kind": "main", "code": "1-6", "title": "마을 복구",
+      "summary": "불탄 공방을 다시 세운다.",
+      "giver": "chief", "offerDialogue": "chief_intro", "turnIn": "chief", "turnInDialogue": "chief_report",
+      "steps": [
+        { "text": "재료를 모아 공사장에 전달하고, 해골을 쫓아낸다.", "objectives": [
+          { "type": "flag", "target": "workshop_built", "text": "공방 재건 (목재·돌을 공사장에 전달)" },
+          { "type": "kill", "target": "skeleton", "count": 3, "text": "해골 퇴치" }
+        ] }
+      ],
+      "reward": { "xp": 120, "maxHealth": 20, "items": [ { "id": "eq_ring_ruby", "count": 1 } ] }
+    }
+  ]
+}

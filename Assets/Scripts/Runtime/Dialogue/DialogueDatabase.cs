@@ -34,7 +34,17 @@ namespace DotRPG
     {
         readonly Dictionary<string, DialogueData> byId = new Dictionary<string, DialogueData>();
 
+        /// <summary>[STORY] Story conversations live in their own file next to Dialogues.json.</summary>
+        public const string StoryResourcePath = "Data/StoryDialogues";
+
         public DialogueDatabase(TextAsset source)
+        {
+            Merge(source);
+            Merge(Resources.Load<TextAsset>(StoryResourcePath));
+        }
+
+        /// <summary>Adds the conversations of another dialogue file (later files win on equal ids).</summary>
+        public void Merge(TextAsset source)
         {
             if (source == null)
             {

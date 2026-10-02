@@ -175,16 +175,31 @@ namespace DotRPG
         void RefreshQuest()
         {
             if (Game.Quest == null) return;
-            questTitle.text = "의뢰 · " + Game.Quest.Config.title;
+            // [STORY] Main quest on top (gold), the pinned side quest under it (blue), like a quest notifier.
+            var main = Game.Quest.CurrentMain();
             var sb = new StringBuilder();
-            foreach (var o in Game.Quest.GetObjectives())
+            int lines = 0;
+            if (main != null)
             {
-                string color = o.done ? "#8fe28f" : "#f6e7c8";
-                sb.Append($"<color={color}>{(o.done ? "●" : "○")} {o.text}</color>\n");
+                questTitle.text = "메인 · " + main.DisplayTitle;
+                foreach (var o in Game.Quest.ObjectivesOf(main)) { AppendObjective(sb, o); lines++; }
+            }
+            else questTitle.text = "진행할 메인 퀘스트 없음";
+            var sub = Game.Quest.Database.Get(Game.Session.Journal.Tracked);
+            if (sub != null && Game.Quest.StatusOf(sub.id) != QuestStatus.Completed)
+            {
+                sb.Append($"<color=#78d6ff>서브 · {sub.title}</color>\n");
+                lines++;
+                foreach (var o in Game.Quest.ObjectivesOf(sub)) { AppendObjective(sb, o); lines++; }
             }
             questBody.text = sb.ToString().TrimEnd('\n');
-            int lines = Game.Quest.GetObjectives().Count;
-            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, 58 + lines * 26);
+            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, 58 + Mathf.Max(1, lines) * 26);
+        }
+
+        static void AppendObjective(StringBuilder sb, QuestObjective o)
+        {
+            string color = o.done ? "#8fe28f" : "#f6e7c8";
+            sb.Append($"<color={color}>{(o.done ? "●" : "○")} {o.text}</color>\n");
         }
 
         void RefreshControls(bool force)
