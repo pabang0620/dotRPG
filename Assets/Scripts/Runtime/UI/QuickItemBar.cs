@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace DotRPG
@@ -32,9 +32,9 @@ namespace DotRPG
                 bar.icons[i] = UIFactory.Image(bg.transform, "Icon", Game.Art.Get(Game.Config.GetItem(Ids[i]).iconKey), Color.white);
                 UIFactory.Place(bar.icons[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(Size * 0.68f, Size * 0.68f));
                 bar.keys[i] = UIFactory.Text(bg.transform, "Key", "", UiTheme.FontMin, new Color32(255, 224, 102, 255), TextAnchor.UpperLeft, true);
-                UIFactory.Stretch(bar.keys[i].rectTransform, 5f, 2f, 2f, 2f);
+                UIFactory.Stretch(bar.keys[i].rectTransform, 8f, 2f, 2f, 6f);
                 bar.counts[i] = UIFactory.Text(bg.transform, "Count", "", 17, Color.white, TextAnchor.LowerRight, true);
-                UIFactory.Stretch(bar.counts[i].rectTransform, 2f, 2f, 5f, 2f);
+                UIFactory.Stretch(bar.counts[i].rectTransform, 2f, 6f, 8f, 2f);
             }
             var caption = UIFactory.Text(root, "Caption", "물약 · 귀환", UiTheme.FontMin, new Color32(200, 214, 236, 255), TextAnchor.LowerCenter, true);
             UIFactory.Place(caption.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width * 0.5f, Size + 1f), new Vector2(width + 20f, 20f));

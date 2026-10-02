@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -99,11 +99,11 @@ namespace DotRPG
             hit.color = new Color(1f, 1f, 1f, 0f);
             hit.raycastTarget = true;
 
-            item.highlight = UIFactory.Image(row, "Highlight", Game.Art.Get("ui_select"), Color.white);
+            item.highlight = UIFactory.Image(row, "Highlight", Game.Art.Get("ui_btn"), Color.white); // [UI] filled gold bar (ui_select is an outline)
             item.highlight.preserveAspect = false;
             UIFactory.Stretch(item.highlight.rectTransform);
 
-            var textColor = dark ? UIColors.Cream : UIColors.Ink;
+            var textColor = UIColors.Cream; // [UI] every panel is dark now
             bool isOption = item.value != null;
             item.labelText = UIFactory.Text(row, "Label", item.label, fontSize, textColor,
                 isOption || AlignLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter, dark);
@@ -215,22 +215,22 @@ namespace DotRPG
                 bool enabled = item.IsEnabled;
                 bool isSelected = i == selected;
                 item.highlight.enabled = isSelected;
-                var baseColor = dark ? UIColors.Cream : UIColors.Ink;
-                // [UI] Dark theme: dark ink on the gold selection bar (cream on gold was unreadable).
-                var color = !enabled ? UIColors.Disabled : dark && isSelected ? UIColors.Ink : baseColor;
+                var baseColor = UIColors.Cream;
+                // [UI] Dark ink on the gold selection bar, cream on the dark panels.
+                var color = !enabled ? UIColors.Disabled : isSelected ? UIColors.Ink : baseColor;
                 // Unselected rows carry an invisible arrow of the same width, so text never jumps sideways.
                 string prefix = isSelected ? "▶ " : "<color=#00000000>▶</color> ";
                 item.labelText.text = prefix + item.label;
                 item.labelText.color = color;
                 // [UI] No drop shadow under dark ink on the gold bar (it smeared the glyphs).
                 var shadow = item.labelText.GetComponent<Shadow>();
-                if (shadow != null) shadow.enabled = !(dark && isSelected && enabled);
+                if (shadow != null) shadow.enabled = !(isSelected && enabled);
                 if (item.valueText != null)
                 {
                     item.valueText.text = isSelected ? $"◀ {item.value()} ▶" : item.value();
                     item.valueText.color = color;
                     var vShadow = item.valueText.GetComponent<Shadow>();
-                    if (vShadow != null) vShadow.enabled = !(dark && isSelected && enabled);
+                    if (vShadow != null) vShadow.enabled = !(isSelected && enabled);
                 }
             }
         }

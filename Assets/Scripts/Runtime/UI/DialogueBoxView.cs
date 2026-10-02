@@ -26,7 +26,7 @@ namespace DotRPG
             var bg = UIFactory.Panel(box, "Bg", false);
             UIFactory.Stretch(bg.rectTransform);
 
-            bodyText = UIFactory.Text(box, "Text", "", 26, UIColors.Ink, TextAnchor.UpperLeft);
+            bodyText = UIFactory.Text(box, "Text", "", 26, UIColors.Cream, TextAnchor.UpperLeft, true); // [UI] cream on the navy panel
             bodyText.lineSpacing = 1.2f;
             UIFactory.Stretch(bodyText.rectTransform, 36, 30, 36, 34);
 
@@ -36,7 +36,7 @@ namespace DotRPG
             nameText = UIFactory.Text(namePlate, "Text", "", 22, UIColors.Highlight, TextAnchor.MiddleCenter);
             UIFactory.Stretch(nameText.rectTransform, 10, 0, 10, 0);
 
-            nextIndicator = UIFactory.Text(box, "Next", "▼", 22, UIColors.InkSoft, TextAnchor.LowerRight);
+            nextIndicator = UIFactory.Text(box, "Next", "▼", 22, UIColors.Highlight, TextAnchor.LowerRight);
             UIFactory.Stretch(nextIndicator.rectTransform, 0, 14, 28, 0);
         }
 

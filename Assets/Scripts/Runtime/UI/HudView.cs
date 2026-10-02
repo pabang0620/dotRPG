@@ -65,7 +65,7 @@ namespace DotRPG
             AwakeningBanner.Create(root);
 
             // Items under the bars (gold first).
-            var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(20, -100), new Vector2(360, 40));
+            var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(18, -104), new Vector2(380, 40));
             var bg = UIFactory.Panel(items, "Bg", true);
             UIFactory.Stretch(bg.rectTransform);
             // [UI] Compact steps keep the bar left of the centred boss bar (UiTheme.HudCurrencyMaxRight).
@@ -78,11 +78,11 @@ namespace DotRPG
                 var icon = UIFactory.Image(items, "Icon_" + id, Game.Art.Get(iconKey), Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x, 0), new Vector2(26, 26));
                 var count = UIFactory.Text(items, "Count_" + id, "0", 20, gold ? (Color)new Color32(255, 216, 74, 255) : UIColors.Cream, TextAnchor.MiddleLeft, true);
-                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 30, 0), new Vector2(gold ? 86 : 50, 34));
+                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 30, 0), new Vector2(gold ? 108 : 52, 34));
                 itemCounts[id] = count;
-                x += gold ? 120f : 82f;
+                x += gold ? 146f : 88f; // [UI] room for the wider pixel-font digits
             }
-            items.sizeDelta = new Vector2(Mathf.Min(x, UiTheme.HudCurrencyMaxRight - 20f), 44);
+            items.sizeDelta = new Vector2(Mathf.Min(x + 10f, UiTheme.HudCurrencyMaxRight), 44); // [UI] the last count stays inside the rim
             QuickItemBar.Create(root);
 
             // Round minimap (top-right) with the quest tracker underneath.
@@ -193,7 +193,10 @@ namespace DotRPG
                 foreach (var o in Game.Quest.ObjectivesOf(sub)) { AppendObjective(sb, o); lines++; }
             }
             questBody.text = sb.ToString().TrimEnd('\n');
-            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, 58 + Mathf.Max(1, lines) * 26);
+            // [UI] Height from the laid-out text (long titles and objectives wrap) instead of a line count.
+            float titleH = Mathf.Max(24f, questTitle.preferredHeight);
+            questBody.rectTransform.offsetMax = new Vector2(questBody.rectTransform.offsetMax.x, -(16f + titleH));
+            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, 30f + titleH + Mathf.Max(22f, questBody.preferredHeight));
         }
 
         static void AppendObjective(StringBuilder sb, QuestObjective o)

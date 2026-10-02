@@ -1,35 +1,37 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace DotRPG
 {
-    /// <summary>Top-left status: level badge, HP bar, MP bar and a thin experience bar.</summary>
+    /// <summary>
+    /// Top-left status: a round level badge and three framed bars (HP, MP, EXP) on one grid. [UI] Every bar
+    /// is a 9-slice groove (ui_bar) with the fill inset by the same padding, and every label fits inside its bar.
+    /// </summary>
     public class StatusBarsView : MonoBehaviour
     {
-        const float BarW = 300f;
+        const float BarW = 320f, BarX = 76f, Pad = 5f;
 
         Image hpFill, hpLag, mpFill, xpFill;
         Text hpText, mpText, levelText, xpText;
         float hpShown = 1f, hpLagShown = 1f;
+        float fillW;
 
         public static StatusBarsView Create(Transform parent)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "Status"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -14f), new Vector2(390f, 80f));
+            var root = UIFactory.Place(UIFactory.Rect(parent, "Status"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -12f), new Vector2(BarX + BarW, 86f));
             var v = root.gameObject.AddComponent<StatusBarsView>();
+            v.fillW = BarW - Pad * 2f;
 
-            var badge = Img(root, "Badge", "ui_btn", Color.white);
-            UIFactory.Place(badge.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(70f, 70f));
-            var lvCaption = UIFactory.Text(badge.transform, "Lv", "레벨", UiTheme.FontMin, new Color(1f, 1f, 1f, 0.85f), TextAnchor.UpperCenter, true);
-            UIFactory.Stretch(lvCaption.rectTransform, 0f, 0f, 0f, 6f);
-            v.levelText = UIFactory.Text(badge.transform, "Level", "1", 30, Color.white, TextAnchor.LowerCenter, true);
-            UIFactory.Stretch(v.levelText.rectTransform, 0f, 6f, 0f, 0f);
+            var badge = Img(root, "Badge", "ui_badge", Color.white);
+            UIFactory.Place(badge.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -2f), new Vector2(72f, 72f));
+            var lvCaption = UIFactory.Text(badge.transform, "Lv", "LV", 12, new Color32(255, 214, 110, 255), TextAnchor.UpperCenter, true);
+            UIFactory.Stretch(lvCaption.rectTransform, 0f, 0f, 0f, 13f);
+            v.levelText = UIFactory.Text(badge.transform, "Level", "1", 24, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(v.levelText.rectTransform, 0f, 4f, 0f, 14f);
 
-            v.hpFill = Bar(root, "HP", new Vector2(80f, -2f), 24f, new Color32(214, 48, 49, 255), out v.hpLag, out v.hpText);
-            v.mpFill = Bar(root, "MP", new Vector2(80f, -32f), 20f, new Color32(52, 120, 230, 255), out _, out v.mpText);
-            v.xpFill = Bar(root, "XP", new Vector2(80f, -58f), 12f, new Color32(255, 206, 64, 255), out _, out v.xpText);
-            // [UI] Minimum readable sizes (the thin bars would otherwise get 13-15px labels).
-            v.mpText.fontSize = UiTheme.FontMin;
-            v.xpText.fontSize = 14; // the 12px EXP bar cannot hold more; it overflows the bar slightly
+            v.hpFill = Bar(root, "HP", 0f, 30f, 17, new Color32(214, 48, 49, 255), out v.hpLag, out v.hpText, v.fillW);
+            v.mpFill = Bar(root, "MP", -31f, 26f, 15, new Color32(52, 120, 230, 255), out _, out v.mpText, v.fillW);
+            v.xpFill = Bar(root, "XP", -58f, 24f, 14, new Color32(255, 196, 54, 255), out _, out v.xpText, v.fillW);
             return v;
         }
 
@@ -40,24 +42,28 @@ namespace DotRPG
             return img;
         }
 
-        static Image Bar(Transform parent, string name, Vector2 pos, float h, Color color, out Image lag, out Text label)
+        static Image Bar(Transform parent, string name, float y, float h, int fontSize, Color color, out Image lag, out Text label, float fillW)
         {
-            var frame = Img(parent, name, "ui_white", new Color32(12, 14, 20, 230));
-            UIFactory.Place(frame.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), pos, new Vector2(BarW + 4f, h + 4f));
-            lag = Img(frame.transform, "Lag", "ui_white", new Color32(255, 235, 200, 200));
-            UIFactory.Place(lag.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(BarW, h));
+            var frame = Img(parent, name, "ui_bar", Color.white);
+            UIFactory.Place(frame.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(BarX, y), new Vector2(BarW, h));
+            float fillH = h - Pad * 2f + 2f;
+            lag = Img(frame.transform, "Lag", "ui_white", new Color32(255, 235, 200, 170));
+            UIFactory.Place(lag.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Pad, 0f), new Vector2(fillW, fillH));
             var fill = Img(frame.transform, "Fill", "ui_white", color);
-            UIFactory.Place(fill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(BarW, h));
-            var shine = Img(fill.transform, "Shine", "ui_white", new Color(1f, 1f, 1f, 0.18f));
-            UIFactory.Place(shine.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(BarW, h * 0.4f));
+            UIFactory.Place(fill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Pad, 0f), new Vector2(fillW, fillH));
+            var shine = Img(fill.transform, "Shine", "ui_white", new Color(1f, 1f, 1f, 0.22f));
+            shine.rectTransform.anchorMin = new Vector2(0f, 1f);
             shine.rectTransform.anchorMax = new Vector2(1f, 1f);
-            shine.rectTransform.sizeDelta = new Vector2(0f, h * 0.4f);
-            label = UIFactory.Text(frame.transform, "Text", "", Mathf.RoundToInt(h * 0.75f), Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(label.rectTransform);
+            shine.rectTransform.pivot = new Vector2(0.5f, 1f);
+            shine.rectTransform.anchoredPosition = Vector2.zero;
+            shine.rectTransform.sizeDelta = new Vector2(0f, Mathf.Max(2f, fillH * 0.35f));
+            label = UIFactory.Text(frame.transform, "Text", "", fontSize, Color.white, TextAnchor.MiddleCenter, true);
+            label.horizontalOverflow = HorizontalWrapMode.Overflow; // one line, centred on the bar
+            UIFactory.Stretch(label.rectTransform, Pad, 0f, Pad, 1f);
             return fill;
         }
 
-        static void SetFill(Image fill, float ratio) => fill.rectTransform.sizeDelta = new Vector2(BarW * Mathf.Clamp01(ratio), fill.rectTransform.sizeDelta.y);
+        void SetFill(Image fill, float ratio) => fill.rectTransform.sizeDelta = new Vector2(fillW * Mathf.Clamp01(ratio), fill.rectTransform.sizeDelta.y);
 
         void Update()
         {
@@ -78,8 +84,9 @@ namespace DotRPG
             var prog = Game.Session.Progression;
             levelText.text = prog.Level.ToString();
             int need = prog.XpNeeded;
-            SetFill(xpFill, need > 0 ? (float)prog.Xp / need : 1f);
-            xpText.text = need > 0 ? $"EXP {prog.Xp} / {need}" : "MAX";
+            float xpRatio = need > 0 ? (float)prog.Xp / need : 1f;
+            SetFill(xpFill, xpRatio);
+            xpText.text = need > 0 ? $"EXP {xpRatio * 100f:0.0}%" : "EXP MAX";
         }
     }
 }

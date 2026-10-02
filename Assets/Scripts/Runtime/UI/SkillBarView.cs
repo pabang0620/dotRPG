@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace DotRPG
@@ -57,9 +57,9 @@ namespace DotRPG
                 v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 24 : 21, Color.white, TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(v.timers[i].rectTransform);
                 v.keys[i] = UIFactory.Text(bg.transform, "Key", "", 16, new Color32(255, 224, 102, 255), TextAnchor.UpperLeft, true);
-                UIFactory.Stretch(v.keys[i].rectTransform, 6f, 2f, 2f, 3f);
+                UIFactory.Stretch(v.keys[i].rectTransform, 9f, 2f, 2f, 7f); // [UI] inside the slot rim
                 v.costs[i] = UIFactory.Text(bg.transform, "Cost", "", UiTheme.FontMin, new Color32(140, 190, 255, 255), TextAnchor.LowerRight, true);
-                UIFactory.Stretch(v.costs[i].rectTransform, 2f, 3f, 6f, 2f);
+                UIFactory.Stretch(v.costs[i].rectTransform, 2f, 7f, 9f, 2f);
                 x += s + Gap;
             }
             // Caption above the awakening slot.

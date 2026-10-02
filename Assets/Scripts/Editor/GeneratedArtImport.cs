@@ -39,6 +39,15 @@ namespace DotRPG.EditorTools
         static readonly System.Collections.Generic.HashSet<string> PoleProps =
             new System.Collections.Generic.HashSet<string> { "story_lantern", "town_sign_0", "town_mailbox", "town_lamp", "wnt_mailbox", "wnt_lamp", "wnt_sign" };
 
+        /// <summary>[UI] UI kit sprites and their 9-slice borders (left, bottom, right, top).</summary>
+        static readonly (string key, Vector4 border)[] UiKit =
+        {
+            ("ui_panel", new Vector4(10, 10, 10, 10)), ("ui_dark", new Vector4(8, 8, 8, 8)), ("ui_btn", new Vector4(8, 8, 8, 8)),
+            ("ui_btngray", new Vector4(8, 8, 8, 8)), ("ui_slot", new Vector4(8, 8, 8, 8)), ("ui_slotblue", new Vector4(8, 8, 8, 8)),
+            ("ui_frame", new Vector4(8, 8, 8, 8)), ("ui_tooltip", new Vector4(9, 9, 9, 9)), ("ui_select", new Vector4(8, 8, 8, 8)),
+            ("ui_bar", new Vector4(14, 7, 14, 7)), ("ui_badge", Vector4.zero), ("ui_header", new Vector4(14, 6, 14, 6)),
+        };
+
         static readonly string[] Buildings = { "town_stable", "town_stable_burned" };
 
         [MenuItem("dotRPG/Art/Import Generated Village Art")]
@@ -92,6 +101,21 @@ namespace DotRPG.EditorTools
                 importer.SaveAndReimport();
                 Debug.Log($"[GeneratedArt] {key}: building ppu={def.Ppu} pivot={def.Pivot}");
             }
+            // [UI] Generated UI kit (Tools/art/process_ui.py): 9-slice frames at ppu 32 like the procedural HD ui_* pieces.
+            foreach (var (key, border) in UiKit)
+            {
+                string path = "Assets/Resources/Art/" + key + ".png";
+                if (!System.IO.File.Exists(path)) continue;
+                var importer = Prepare(path);
+                importer.spritePixelsPerUnit = 32f;
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteAlignment = (int)SpriteAlignment.Center;
+                settings.spriteBorder = border;
+                settings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(settings);
+                importer.SaveAndReimport();
+            }
             // [ART] Generated character frames (Tools/art/process_characters.py): 128 px, feet 12 px up, ppu 72
             // so they stand as tall as the 64 px / ppu 36 warrior.
             foreach (var file in System.IO.Directory.GetFiles("Assets/Resources/Art", "char_*.png"))
@@ -108,6 +132,13 @@ namespace DotRPG.EditorTools
                 settings.spriteMeshType = SpriteMeshType.FullRect;
                 importer.SetTextureSettings(settings);
                 importer.SaveAndReimport();
+            }
+            // [UI] Galmuri pixel font: hinted raster keeps the glyph pixels sharp instead of smoothed.
+            var font = AssetImporter.GetAtPath("Assets/Resources/Fonts/UIFont.ttf") as TrueTypeFontImporter;
+            if (font != null)
+            {
+                font.fontRenderingMode = FontRenderingMode.HintedRaster;
+                font.SaveAndReimport();
             }
             AssetDatabase.SaveAssets();
         }

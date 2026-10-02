@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -71,7 +71,7 @@ namespace DotRPG
                 b.onClick.AddListener(() => { w.cursor = index; w.PlayerPick(index); });
                 c.icon = UIFactory.Image(c.bg.transform, "Icon", null, Color.white);
                 UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(72f, 72f));
-                c.face = UIFactory.Text(c.bg.transform, "Face", "", 17, UIColors.Ink, TextAnchor.UpperCenter);
+                c.face = UIFactory.Text(c.bg.transform, "Face", "", 17, UIColors.Cream, TextAnchor.UpperCenter, true);
                 UIFactory.Place(c.face.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -114f), new Vector2(CardW - 16f, 80f));
                 c.who = Label(cardsPanel.transform, "Who" + i, "", 18, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                     new Vector2(-total * 0.5f + CardW * 0.5f + i * (CardW + CardGap), -46f - CardH - 14f), new Vector2(CardW + 16f, 28f), TextAnchor.UpperCenter);

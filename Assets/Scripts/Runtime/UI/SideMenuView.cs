@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +11,7 @@ namespace DotRPG
     /// </summary>
     public class SideMenuView : MonoBehaviour
     {
-        const float Size = 50f, StepX = 66f, StepY = 80f;
+        const float Size = 50f, StepX = 72f, StepY = 80f;
         const int Columns = 2;
 
         /// <summary>Grid position of the i-th icon (two columns; each label sits under its icon).</summary>
@@ -24,7 +24,7 @@ namespace DotRPG
 
         public static SideMenuView Create(Transform parent)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "SideMenu"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -152f), new Vector2(Size, Size));
+            var root = UIFactory.Place(UIFactory.Rect(parent, "SideMenu"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -158f), new Vector2(Size, Size));
             var view = root.gameObject.AddComponent<SideMenuView>();
             view.MakeIcon(root, "menuicon_menu", "메뉴", view.Toggle, false);
 
@@ -60,8 +60,10 @@ namespace DotRPG
             if (showLabel)
             {
                 // Label sits just under the button.
-                var t = UIFactory.Text(rt, "Label", label, UiTheme.FontMin, Color.white, TextAnchor.UpperCenter, true);
-                UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(StepX, 22f));
+                // [UI] One line under the icon in the pixel font (two-word labels like "파티 찾기" stay on one line).
+                var t = UIFactory.Text(rt, "Label", label, 13, Color.white, TextAnchor.UpperCenter, true);
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
+                UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(StepX, 18f));
             }
             var button = bg.gameObject.AddComponent<Button>();
             button.targetGraphic = bg;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -161,8 +161,8 @@ namespace DotRPG
 
             var side = Panel(treePage, "Side", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), Vector2.zero, new Vector2(200f, 530f), new Color32(24, 36, 54, 235));
             pointsText = Label(side.transform, "Points", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -12f), new Vector2(176f, 64f));
-            legendText = Label(side.transform, "Legend", "", UiTheme.FontMin, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -92f), new Vector2(180f, 150f));
-            summaryText = Label(side.transform, "Summary", "", UiTheme.FontMin, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -250f), new Vector2(180f, 190f));
+            legendText = Label(side.transform, "Legend", "", 14, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -92f), new Vector2(180f, 150f));
+            summaryText = Label(side.transform, "Summary", "", 14, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -250f), new Vector2(180f, 190f));
             Button(side.transform, "Reset", "트리 초기화", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 14f), new Vector2(170f, 50f),
                 () => { Game.Session.Progression.ResetTree(); Game.Audio.PlaySfx("cancel"); Refresh(); }, 20);
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -23,7 +23,7 @@ namespace DotRPG
             // players see how to close every window, and a thin accent line separates header and content.
             var bg = UIFactory.Overlay(root, "Bg", UiTheme.Background);
             bg.raycastTarget = true;
-            var header = Img(root, "Header", "ui_white", UiTheme.Header);
+            var header = Img(root, "Header", "ui_header", Color.white); // [UI] wooden header strip (9-slice)
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, UiTheme.HeaderHeight));
             var headerLine = Img(root, "HeaderLine", "ui_white", new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f));
             UIFactory.Place(headerLine.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -UiTheme.HeaderHeight), new Vector2(4000f, 2f));
@@ -63,7 +63,10 @@ namespace DotRPG
 
         protected static Image Panel(Transform parent, string name, Vector2 anchor, Vector2 pivot, Vector2 pos, Vector2 size, Color color)
         {
-            var img = Img(parent, name, "ui_white", color);
+            // [UI] Dark content panels get the framed dark panel (9-slice); light or translucent fills stay flat.
+            float lum = color.r * 0.3f + color.g * 0.59f + color.b * 0.11f;
+            bool framed = color.a > 0.8f && lum < 0.3f && size.x >= 80f && size.y >= 60f;
+            var img = framed ? Img(parent, name, "ui_dark", new Color(1f, 1f, 1f, color.a)) : Img(parent, name, "ui_white", color);
             UIFactory.Place(img.rectTransform, anchor, pivot, pos, size);
             return img;
         }
