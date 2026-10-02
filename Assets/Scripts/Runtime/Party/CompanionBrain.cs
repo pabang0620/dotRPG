@@ -158,7 +158,7 @@ namespace DotRPG
             Vector2 to = spot - self.Position;
             float d = to.magnitude;
             if (d < FormationSlack) return;
-            cmd.move = to / d * Mathf.Clamp(d / FormationRun, 0.45f, 1f);
+            cmd.move = GridPath.Steer(self.Position, spot) * Mathf.Clamp(d / FormationRun, 0.45f, 1f); // around water and walls
         }
 
         // ---------- Targeting ----------
@@ -207,7 +207,7 @@ namespace DotRPG
             {
                 // Keep 3–5 units away; strafe a little while shooting.
                 if (dist < MageMinRange) cmd.move = Away(me, tp);
-                else if (dist > MageMaxRange) cmd.move = to / dist;
+                else if (dist > MageMaxRange) cmd.move = GridPath.Steer(me, tp);
                 else
                 {
                     if (Time.time > strafeFlipAt) { strafeSign = -strafeSign; strafeFlipAt = Time.time + Random.Range(1.2f, 2.2f); }
@@ -226,7 +226,7 @@ namespace DotRPG
                     goal = tp + (side.sqrMagnitude > 0.01f ? side.normalized : Vector2.down) * (MeleeRange * 0.8f);
                 }
                 Vector2 toGoal = goal - me;
-                if (dist > MeleeRange || toGoal.magnitude > 0.5f) cmd.move = toGoal.sqrMagnitude > 0.0001f ? toGoal.normalized : Vector2.zero;
+                if (dist > MeleeRange || toGoal.magnitude > 0.5f) cmd.move = toGoal.sqrMagnitude > 0.0001f ? GridPath.Steer(me, goal) : Vector2.zero;
                 if (dist <= MeleeRange + 0.25f) cmd.attack = true;
             }
             // Never walk into a telegraph.

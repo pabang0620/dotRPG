@@ -151,12 +151,14 @@ namespace DotRPG
         /// <summary>[RAID] Item that opens final raids.</summary>
         public const string SealKey = "key_seal";
 
+        // [P5] Multipliers tuned by Tools/balance/theory_balance.py: monster level growth (+12% HP, +8% damage per
+        // level) already scales the higher tiers, so these stay small. Target: 1.2 / 1.4 / 1.6x the Normal clear time.
         static readonly DifficultyDef[] Difficulties =
         {
             new DifficultyDef { id = DungeonDifficulty.Normal, name = "일반", recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0 },
-            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 2.2f, damageMul = 1.6f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0 },
-            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 4.0f, damageMul = 2.4f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0 },
-            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 6.5f, damageMul = 3.4f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6 },
+            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.2f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0 },
+            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 2.0f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0 },
+            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 2.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6 },
         };
 
         /// <summary>The raid has one difficulty of its own.</summary>
@@ -342,7 +344,7 @@ namespace DotRPG
         {
             id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
             raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 100,
-            raidNumbers = RaidNumbers(24, 4900, 3.0f, 1.6f, 17, ItemRarity.Rare, 8),
+            raidNumbers = RaidNumbers(24, 4900, 2.1f, 1.6f, 17, ItemRarity.Rare, 8),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnBargas1, new SpawnGroup(1, "skel_knight", 5, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
@@ -365,7 +367,7 @@ namespace DotRPG
         {
             id = RaidGolem, name = "바위 심장", theme = MapTheme.Canyon, themeName = "수호석 외곽 석실", isRaid = true,
             raidTier = RaidTier.Mid, chapter = 2, unlockQuest = "c2_golem", keyMin = 20, keyMax = 50,
-            raidNumbers = RaidNumbers(28, 6200, 3.4f, 1.8f, 22, ItemRarity.Epic, 8),
+            raidNumbers = RaidNumbers(28, 6200, 2.2f, 1.8f, 22, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGolem1, new SpawnGroup(1, "skel_miner", 5, 2), new SpawnGroup(2, "skel_gold", 3, 2)),
@@ -388,7 +390,7 @@ namespace DotRPG
         {
             id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
             raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 100,
-            raidNumbers = RaidNumbers(31, 7200, 3.8f, 2.0f, 25, ItemRarity.Epic, 10),
+            raidNumbers = RaidNumbers(31, 7200, 1.9f, 1.7f, 25, ItemRarity.Epic, 10),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),

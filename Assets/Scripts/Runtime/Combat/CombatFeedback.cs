@@ -104,32 +104,58 @@ namespace DotRPG
 
         public static void Show(Vector2 position, int amount, bool big = false) => Show(position, amount, big, false);
 
+        // [P5] Reused numbers: every hit used to build a GameObject per digit plus strings.
+        const int MaxDigits = 7;
+        static readonly System.Collections.Generic.Stack<DamageNumber> Pool = new System.Collections.Generic.Stack<DamageNumber>();
+        static readonly string[] DigitKeys = { "num_0", "num_1", "num_2", "num_3", "num_4", "num_5", "num_6", "num_7", "num_8", "num_9" };
+        int shown;
+
         public static void Show(Vector2 position, int amount, bool big, bool companion)
         {
             if (Game.Art == null || amount <= 0) return;
-            var go = new GameObject("DamageNumber");
-            if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
-            var number = go.AddComponent<DamageNumber>();
+            DamageNumber number = null;
+            while (Pool.Count > 0 && number == null) number = Pool.Pop(); // entries die with the old map's root
+            if (number == null)
+            {
+                var go = new GameObject("DamageNumber");
+                number = go.AddComponent<DamageNumber>();
+                number.digits = new SpriteRenderer[MaxDigits];
+                for (int i = 0; i < MaxDigits; i++)
+                {
+                    var sr = new GameObject("d").AddComponent<SpriteRenderer>();
+                    sr.transform.SetParent(go.transform, false);
+                    sr.sortingOrder = 20010;
+                    HdMaterial.Apply(sr);
+                    number.digits[i] = sr;
+                }
+            }
+            if (Fx.Root != null && number.transform.parent != Fx.Root) number.transform.SetParent(Fx.Root, false);
+            number.gameObject.SetActive(true);
+            number.age = 0f;
             number.start = position + new Vector2(Random.Range(-0.12f, 0.12f), 0f);
             number.drift = new Vector2(Random.Range(-0.25f, 0.25f), 1.1f);
-            go.transform.position = number.start;
+            number.transform.position = number.start;
+            number.transform.localScale = Vector3.one;
 
-            string text = (amount * DisplayScale).ToString();
-            number.digits = new SpriteRenderer[text.Length];
-            float width = (text.Length - 1) * DigitSpacing;
+            int value = amount * DisplayScale, count = 0;
+            for (int v = value; v > 0 && count < MaxDigits; v /= 10) count++;
+            number.shown = count;
+            float width = (count - 1) * DigitSpacing;
             var color = companion ? CompanionColor : big ? new Color32(255, 120, 80, 255) : new Color32(255, 214, 64, 255);
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < MaxDigits; i++)
             {
-                var sr = new GameObject("d" + text[i]).AddComponent<SpriteRenderer>();
-                sr.transform.SetParent(go.transform, false);
+                var sr = number.digits[i];
+                bool used = i < count;
+                sr.enabled = used;
+                if (!used) continue;
+                int digit = value / Pow10(count - 1 - i) % 10;
                 sr.transform.localPosition = new Vector3(i * DigitSpacing - width * 0.5f, 0f, 0f);
-                sr.sprite = Game.Art.Get("num_" + text[i]);
+                sr.sprite = Game.Art.Get(DigitKeys[digit]);
                 sr.color = color;
-                sr.sortingOrder = 20010;
-                HdMaterial.Apply(sr);
-                number.digits[i] = sr;
             }
         }
+
+        static int Pow10(int n) { int r = 1; while (n-- > 0) r *= 10; return r; }
 
         void Update()
         {
@@ -137,7 +163,8 @@ namespace DotRPG
             float t = age / Lifetime;
             if (t >= 1f)
             {
-                Destroy(gameObject);
+                gameObject.SetActive(false);
+                if (Pool.Count < 64) Pool.Push(this); else Destroy(gameObject);
                 return;
             }
             // Quick pop, then float upwards while slowing down.
@@ -146,8 +173,9 @@ namespace DotRPG
             float scale = t < 0.12f ? Mathf.Lerp(1.2f, 2.8f, t / 0.12f) : Mathf.Lerp(2.8f, 2.2f, Mathf.Clamp01((t - 0.12f) / 0.2f));
             transform.localScale = Vector3.one * scale;
             float alpha = t < 0.6f ? 1f : 1f - (t - 0.6f) / 0.4f;
-            foreach (var sr in digits)
+            for (int i = 0; i < shown; i++)
             {
+                var sr = digits[i];
                 var c = sr.color;
                 c.a = alpha;
                 sr.color = c;

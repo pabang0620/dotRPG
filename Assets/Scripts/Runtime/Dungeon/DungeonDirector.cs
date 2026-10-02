@@ -176,6 +176,10 @@ namespace DotRPG
             }
             HookLocal(Game.Player);
             if (Game.State.Current == GameState.Inventory) Game.Flow.CloseInventory();
+            // [E4] Loading card on the black screen: the dungeon's banner art, its name and a tip.
+            var banner = Resources.Load<Sprite>("Art/banner_" + dungeon.id);
+            Game.UI.Fader.ShowCard(banner, $"{dungeon.name} · {run.Numbers.name}");
+            holdBlack = LoadingCardSeconds;
             StartCoroutine(Transition(() =>
             {
                 Game.Session.MapId = MapRegistry.Village; // where the run returns to
@@ -540,6 +544,8 @@ namespace DotRPG
         {
             StopAllCoroutines();
             busy = false;
+            holdBlack = 0f;
+            Game.UI?.Fader?.HideCard();
             ReviveOpen = false;
             EndRunState();
             run = null;
@@ -569,6 +575,10 @@ namespace DotRPG
             if (run != null && run.State == DungeonRunState.Playing) run.HitsTaken++;
         }
 
+        /// <summary>[E4] How long the loading card stays on the black screen when a run starts.</summary>
+        const float LoadingCardSeconds = 1.0f;
+        float holdBlack;
+
         IEnumerator Transition(Action action, Action after = null)
         {
             if (busy) yield break;
@@ -578,7 +588,9 @@ namespace DotRPG
             try { action(); }
             catch (Exception e) { Debug.LogException(e); }
             yield return null;
+            if (holdBlack > 0f) { yield return new WaitForSecondsRealtime(holdBlack); holdBlack = 0f; }
             yield return fader.Fade(0f, FadeSeconds);
+            fader.HideCard();
             busy = false;
             try { after?.Invoke(); }
             catch (Exception e) { Debug.LogException(e); }

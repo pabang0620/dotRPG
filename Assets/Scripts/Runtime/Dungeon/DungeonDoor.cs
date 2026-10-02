@@ -55,6 +55,7 @@ namespace DotRPG
         {
             if (IsOpen) return;
             IsOpen = true;
+            GridPath.Invalidate(); // the gate tiles are walkable now
             Game.Audio.PlaySfx("door_open"); // [H3]
             sr.sprite = Game.Art.Get("dgn_gate_open");
             solid.enabled = false;

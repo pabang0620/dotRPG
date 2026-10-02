@@ -10,16 +10,38 @@ namespace DotRPG
     public static class Fx
     {
         public static Transform Root;
+        static readonly System.Collections.Generic.Stack<FxParticle> Pool = new System.Collections.Generic.Stack<FxParticle>();
+
+        /// <summary>A particle that finished goes back to the pool.</summary>
+        public static void Release(FxParticle p)
+        {
+            p.gameObject.SetActive(false);
+            if (Pool.Count < 256) Pool.Push(p);
+            else Object.Destroy(p.gameObject);
+        }
 
         public static FxParticle Spawn(string spriteKey, Vector2 position, Vector2 velocity, float upSpeed, float lifetime,
             float gravity = 18f, int orderBoost = 8)
         {
             if (Game.Art == null) return null;
-            var go = new GameObject("fx_" + spriteKey);
-            if (Root != null) go.transform.SetParent(Root, false);
-            var sr = go.AddComponent<SpriteRenderer>();
+            // [P5] Reuse finished particles: a fight spawns hundreds and each new GameObject was garbage.
+            FxParticle p = null;
+            while (Pool.Count > 0 && p == null) p = Pool.Pop(); // entries die with the old map's root
+            SpriteRenderer sr;
+            if (p != null)
+            {
+                sr = p.GetComponent<SpriteRenderer>();
+                if (Root != null && p.transform.parent != Root) p.transform.SetParent(Root, false);
+                p.gameObject.SetActive(true);
+            }
+            else
+            {
+                var go = new GameObject("fx");
+                if (Root != null) go.transform.SetParent(Root, false);
+                sr = go.AddComponent<SpriteRenderer>();
+                p = go.AddComponent<FxParticle>();
+            }
             sr.sprite = Game.Art.Get(spriteKey);
-            var p = go.AddComponent<FxParticle>();
             p.Init(sr, position, velocity, upSpeed, lifetime, gravity, orderBoost);
             return p;
         }
@@ -71,6 +93,9 @@ namespace DotRPG
             gravity = g;
             orderBoost = boost;
             height = 0.25f;
+            age = 0f;
+            PopScale = false;
+            transform.localScale = Vector3.one;
             Apply();
         }
 
@@ -93,7 +118,7 @@ namespace DotRPG
             }
             if (age >= lifetime)
             {
-                Destroy(gameObject);
+                Fx.Release(this);
                 return;
             }
             Apply();

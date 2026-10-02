@@ -167,7 +167,7 @@ namespace DotRPG
                 foreach (var e in EnemyController.Active)
                     if (e != null && !e.IsDead && e.IsBoss && e.Behaviour is BossBrain bb) { res.maxPhase = Mathf.Max(res.maxPhase, bb.Phase); lastTotemRevives = bb.TotemRevives; }
                 // Raid diagnosis: one line every 20 game seconds (boss HP, phase, totems, adds, party alive).
-                if (run.Dungeon.isRaid && run.Elapsed >= nextDiag)
+                if (run.Elapsed >= nextDiag)
                 {
                     nextDiag = run.Elapsed + 20f;
                     var boss = EnemyController.Active.FirstOrDefault(e => e != null && !e.IsDead && e.IsBoss);
@@ -175,7 +175,9 @@ namespace DotRPG
                     int adds = DungeonEnemies().Count(e => !e.IsBoss && e.Def != null && e.Def.id != MonsterDatabase.Totem);
                     int tot = DungeonEnemies().Count(e => e.Def != null && e.Def.id == MonsterDatabase.Totem);
                     int alive = Game.Party.Members.Count(m => m != null && !m.IsDead);
-                    log?.WriteLine($"RAIDDIAG t={run.Elapsed:0} room={run.RoomIndex} boss={(boss != null ? $"{boss.Health.Current * 100 / Mathf.Max(1, boss.Health.Max)}%" : "-")} phase={bbd?.Phase} totems={tot} adds={adds} alive={alive}/{Game.Party.Members.Count} hp={local.Health.Current}/{local.Health.Max} revivesUsed={run.RevivesUsed} potions={Game.Session.Inventory.Count(ConsumableDatabase.HpPotion)}");
+                    var nearest = DungeonEnemies().OrderBy(e => Vector2.Distance(e.Position, local.Position)).FirstOrDefault();
+                    string nearDiag = nearest != null ? $"{nearest.Def?.id}@{Vector2.Distance(nearest.Position, local.Position):0.0}" : "none";
+                    log?.WriteLine($"DIAG {run.Dungeon.id} t={run.Elapsed:0} room={run.RoomIndex} boss={(boss != null ? $"{boss.Health.Current * 100 / Mathf.Max(1, boss.Health.Max)}%" : "-")} phase={bbd?.Phase} totems={tot} adds={adds} alive={alive}/{Game.Party.Members.Count} hp={local.Health.Current}/{local.Health.Max} revivesUsed={run.RevivesUsed} nearest={nearDiag} me=({local.Position.x:0.0},{local.Position.y:0.0}) door={(dir.Door != null && dir.Door.IsOpen)} potions={Game.Session.Inventory.Count(ConsumableDatabase.HpPotion)}");
                 }
                 // [P1] Raid gimmick: while totems stand, take the totem the companions are NOT on so both fall together.
                 var totems = DungeonEnemies().Where(e => e.Def != null && e.Def.id == MonsterDatabase.Totem).ToList();
@@ -244,7 +246,7 @@ namespace DotRPG
                     yield return null;
                     continue;
                 }
-                script.Move = to.magnitude > reach ? to.normalized : Vector2.zero;
+                script.Move = to.magnitude > reach ? GridPath.Steer(local.Position, target.Position) : Vector2.zero; // a player walks round the water
                 script.Aim = (target.Center - local.Center).normalized;
                 if (to.magnitude <= reach + 0.6f)
                 {
@@ -444,21 +446,42 @@ namespace DotRPG
             {
                 SetupHero(5, false);
                 yield return Wait(0.6f);
-                for (int d = 0; d < 5; d++) yield return BalanceOne(DungeonDatabase.Weekday[d], DungeonDifficulty.Normal, d, v => clock = v);
+                // Same level for every run: clear XP from the previous dungeon must not carry over.
+                for (int d = 0; d < 5; d++) { HoldLevel(5); yield return BalanceOne(DungeonDatabase.Weekday[d], DungeonDifficulty.Normal, d, v => clock = v); }
+            }
+            if (set == "curve")
+            {
+                // Difficulty curve: two dungeons per difficulty at its recommended level.
+                foreach (var diff in new[] { DungeonDifficulty.Normal, DungeonDifficulty.Adventure, DungeonDifficulty.King, DungeonDifficulty.Hero })
+                {
+                    int lv = DungeonDatabase.Difficulty(diff).recommendedLevel;
+                    foreach (int d in new[] { 0, 4 }) { HoldLevel(lv); yield return BalanceOne(DungeonDatabase.Weekday[d], diff, d, v => clock = v); }
+                }
             }
             if (set == "all" || set == "hero" || set == "raid") SetupHero(27, true);
             if (set == "all" || set == "hero")
             {
                 yield return Wait(0.6f);
-                for (int d = 0; d < 5; d++) yield return BalanceOne(DungeonDatabase.Weekday[d], DungeonDifficulty.Hero, d, v => clock = v);
+                for (int d = 0; d < 5; d++) { HoldLevel(27); yield return BalanceOne(DungeonDatabase.Weekday[d], DungeonDifficulty.Hero, d, v => clock = v); }
             }
             if (set == "all" || set == "raid")
             {
+                Game.Session.Journal.State("c1_fortress").status = (int)QuestStatus.Active; // [RAID] story opens the raid
                 yield return Wait(0.6f);
-                yield return BalanceOne(DungeonDatabase.SkeletonKing, DungeonDifficulty.Normal, 1, v => clock = v);
+                HoldLevel(27);
+                yield return BalanceOne(DungeonDatabase.SkeletonKing, DungeonDifficulty.Normal, 2, v => clock = v); // Wednesday: mid raids are 수·토·일
             }
             ResetClock.NowOverride = null;
             log?.WriteLine($"BAL summary: {balPassed} passed, {balFailed} failed");
+        }
+
+        /// <summary>Back to exactly <paramref name="level"/> (passives are not used by the balance runs).</summary>
+        void HoldLevel(int level)
+        {
+            var prog = Game.Session.Progression;
+            if (prog.Level == level && prog.Xp == 0) return;
+            prog.Reset(Game.Player.Class);
+            SetupHero(level, level >= 20);
         }
 
         IEnumerator BalanceOne(DungeonDef def, DungeonDifficulty diff, int day, Action<DateTime> setClock)
