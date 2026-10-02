@@ -920,6 +920,694 @@
      "count": 0
     }
    ]
+  },
+  {
+   "id": "c2_orban",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 24,
+     "row": 25,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "orban",
+     "col": 24,
+     "row": 21,
+     "dir": "down"
+    },
+    {
+     "op": "spawn",
+     "actor": "leona",
+     "col": 21,
+     "row": 22,
+     "dir": "right"
+    },
+    {
+     "op": "spawn",
+     "actor": "kael",
+     "col": 26,
+     "row": 25,
+     "dir": "up"
+    },
+    {
+     "op": "title",
+     "text": "챕터 2\n용사가 되는 길",
+     "t": 2.5
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "바위 협곡의 기사들이여. 그리고 새로 문장을 단 견습 기사여."
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "봉인이 흔들리고 있다. 북쪽 땅의 마왕이 봉인을 깨고 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "각 지역에 박힌 검은 수호석이 놈의 힘을 떠받치고 있다. 수호석을 깨야 놈을 약하게 할 수 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "첫 수호석은 이 협곡 광산 깊은 곳에 있다."
+    },
+    {
+     "op": "move",
+     "actor": "orban",
+     "col": 24,
+     "row": 23,
+     "speed": 1.2
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "...네가 해골 숲 옆 마을의 그 아이로구나. 친구가 끌려갔다지."
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "그 아이가 수호석 근처에서 목격되었다는 보고가 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "...리아가요?!"
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "그래. 수호석을 깨는 길에 그 아이가 있다. 신께서 너를 이 길로 부르신 거다."
+    },
+    {
+     "op": "face",
+     "actor": "orban",
+     "dir": "right"
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "카엘 경, 그대도 함께 가 주겠소?"
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "...예, 대사제님."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "대사제는 처음 보는 기사의 이름을 망설임 없이 불렀다."
+    },
+    {
+     "op": "line",
+     "speaker": "기사단장 레오나",
+     "text": "(작게) ...잿빛 망토라. 처음 보는 문장이군."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c2_prisoner",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 30,
+     "row": 25,
+     "dir": "right"
+    },
+    {
+     "op": "spawn",
+     "actor": "prisoner",
+     "col": 33,
+     "row": 25,
+     "dir": "left"
+    },
+    {
+     "op": "spawn",
+     "actor": "kael",
+     "col": 31,
+     "row": 23,
+     "dir": "down"
+    },
+    {
+     "op": "spawn",
+     "actor": "knight_dorn",
+     "col": 34,
+     "row": 24,
+     "dir": "left"
+    },
+    {
+     "op": "line",
+     "speaker": "기사 돈",
+     "text": "광산 입구에서 잡았습니다. 수호석 쪽에서 내려오던 놈입니다."
+    },
+    {
+     "op": "line",
+     "speaker": "붙잡힌 마족",
+     "text": "...인간 꼬마. 해골 숲 옆 마을 아이냐."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "리아를 알아? 리아 어디 있어!"
+    },
+    {
+     "op": "line",
+     "speaker": "붙잡힌 마족",
+     "text": "그 아이는... 우리가 해치려던 게 아니—"
+    },
+    {
+     "op": "move",
+     "actor": "kael",
+     "col": 32,
+     "row": 25,
+     "speed": 5
+    },
+    {
+     "op": "shake",
+     "t": 0.3,
+     "power": 0.3
+    },
+    {
+     "op": "sfx",
+     "id": "hit"
+    },
+    {
+     "op": "despawn",
+     "actor": "prisoner"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "카엘의 검이 먼저 움직였다."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "...왜요! 뭔가 말하려고 했잖아요!"
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "마족의 거짓말이다. 저런 말에 흔들리는 순간 네 목이 날아간다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "리아를 찾고 싶으면 수호석까지 가라. 답은 거기 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "기사 돈",
+     "text": "(...단장님께 보고해야겠군.)"
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c2_letter",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "fadeOut",
+     "t": 0.8
+    },
+    {
+     "op": "tint",
+     "color": "#101830b0",
+     "t": 0
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 14,
+     "row": 26,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "kael",
+     "col": 17,
+     "row": 24,
+     "dir": "left"
+    },
+    {
+     "op": "fire",
+     "col": 16,
+     "row": 25,
+     "count": 1
+    },
+    {
+     "op": "fadeIn",
+     "t": 1
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "축하연 전날 밤. 여관 앞 모닥불. 반쯤 잠든 눈에 카엘의 등이 보인다."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "카엘이 품에서 편지 한 장을 꺼낸다. 붉은 밀랍 위의 문장. 대사제의 인장이다."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "편지는 한 번 더 읽히고, 모닥불 속으로 들어간다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "(작게) ...거의 다 왔다."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "눈을 감는다. 꿈이었을 것이다. 분명 꿈이었을 것이다."
+    },
+    {
+     "op": "fadeOut",
+     "t": 1
+    },
+    {
+     "op": "clearProps"
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0
+    },
+    {
+     "op": "wait",
+     "t": 0.5
+    },
+    {
+     "op": "fadeIn",
+     "t": 1
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c2_betrayal",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "fadeOut",
+     "t": 0
+    },
+    {
+     "op": "title",
+     "text": "협곡 광산 깊은 곳, 수호석 석실",
+     "t": 2
+    },
+    {
+     "op": "tint",
+     "color": "#20102ac0",
+     "t": 0
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 24,
+     "row": 24,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "grah",
+     "col": 24,
+     "row": 21,
+     "dir": "down"
+    },
+    {
+     "op": "spawn",
+     "actor": "kael",
+     "col": 27,
+     "row": 26,
+     "dir": "up"
+    },
+    {
+     "op": "fadeIn",
+     "t": 1
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "쓰러진 그라흐 뒤로, 검은 수호석이 맥박치듯 빛난다. 손을 뻗자 돌이 울었다."
+    },
+    {
+     "op": "shake",
+     "t": 1.2,
+     "power": 0.6
+    },
+    {
+     "op": "sfx",
+     "id": "rock_break"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "수호석이 깨진다. 석실 천장이 무너지기 시작한다."
+    },
+    {
+     "op": "line",
+     "speaker": "수호자 그라흐",
+     "text": "...가라! 전부 나가! 천장은 내가 받친다!"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "그라흐가 무너지는 돌기둥을 등으로 받친다. 부하 마족들이 그 아래로 빠져나간다."
+    },
+    {
+     "op": "line",
+     "speaker": "수호자 그라흐",
+     "text": "용사의 피... 네가 방금 무엇을 깼는지 아느냐..."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......무슨, 소리야."
+    },
+    {
+     "op": "emote",
+     "actor": "kael",
+     "text": "..."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "등 뒤에서 느린 박수 소리."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "수고했다, {name}. 역시 너였어. 수호석은 용사의 핏줄이 제 뜻으로 손을 대야만 깨지거든."
+    },
+    {
+     "op": "move",
+     "actor": "kael",
+     "col": 26,
+     "row": 24,
+     "speed": 1
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "이제 남은 수호석은 네가 손만 대면 된다."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "카엘...? 무슨 말이에요."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "처음부터 말해 줄까. 해골 숲 옆 마을 마굿간에 용사의 핏줄이 산다고, 바르가스에게 알려 준 게 나다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "그날 밤 나는 마을 밖에 있었다. 처음부터. 그 영감이 문 앞을 막고 쓰러지는 것도 봤지."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "카엘이 망토 안감을 들춘다. 회색 천이 한 뼘, 찢겨 나가 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "끝까지 놓지 않더군, 그 영감."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......"
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "리아가 끌려가는 것도 내버려 뒀다. 네가 멈추지 않고 걷게 하려고."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "네가 무너진 그날 밤에 손을 내민 것도, 칼을 쥐여 준 것도, 다 이걸 위해서였다."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "카엘——!!"
+    },
+    {
+     "op": "move",
+     "actor": "player",
+     "col": 25,
+     "row": 24,
+     "speed": 6
+    },
+    {
+     "op": "shake",
+     "t": 0.4,
+     "power": 0.5
+    },
+    {
+     "op": "sfx",
+     "id": "hit"
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 23,
+     "row": 25,
+     "dir": "right"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "칼이 닿기도 전에 몸이 바닥에 처박혔다. 목 앞에 카엘의 칼끝이 멈춘다."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "죽이진 않는다. 너는 아직 쓸모가 있으니까."
+    },
+    {
+     "op": "line",
+     "speaker": "카엘",
+     "text": "리아? 그 아이는 나도 모른다. 바르가스가 놓쳤거든. 찾고 싶으면 계속 걸어라. 늘 그랬듯이."
+    },
+    {
+     "op": "move",
+     "actor": "kael",
+     "col": 34,
+     "row": 26,
+     "speed": 2
+    },
+    {
+     "op": "despawn",
+     "actor": "kael"
+    },
+    {
+     "op": "despawn",
+     "actor": "grah"
+    },
+    {
+     "op": "fadeOut",
+     "t": 1.2
+    },
+    {
+     "op": "flag",
+     "id": "kael_betrayed"
+    },
+    {
+     "op": "leave",
+     "actor": "kael"
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0
+    },
+    {
+     "op": "wait",
+     "t": 0.8
+    },
+    {
+     "op": "fadeIn",
+     "t": 1
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c2_aftermath",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "place",
+     "actor": "player",
+     "col": 24,
+     "row": 26,
+     "dir": "up"
+    },
+    {
+     "op": "spawn",
+     "actor": "orban",
+     "col": 24,
+     "row": 21,
+     "dir": "down"
+    },
+    {
+     "op": "spawn",
+     "actor": "leona",
+     "col": 29,
+     "row": 27,
+     "dir": "left"
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "협곡의 백성들이여! 새로운 용사가 첫 번째 수호석을 깨뜨렸다!"
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "그리고 이 승리를 위해 성전기사 카엘 경이 석실에서 목숨을 바쳤다. 그의 이름을 기억하라."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "아니에요! 카엘은 죽지 않았어요! 그 사람이—"
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "...용사여. 동료를 잃은 슬픔이 크구나. 쉬어라."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "사람들의 박수 소리가 말을 덮는다. 누구도 돌아보지 않는다."
+    },
+    {
+     "op": "move",
+     "actor": "orban",
+     "col": 24,
+     "row": 17,
+     "speed": 1
+    },
+    {
+     "op": "despawn",
+     "actor": "orban"
+    },
+    {
+     "op": "move",
+     "actor": "leona",
+     "col": 25,
+     "row": 26,
+     "speed": 1.5
+    },
+    {
+     "op": "line",
+     "speaker": "기사단장 레오나",
+     "text": "잿빛 망토는 처음부터 이상했다."
+    },
+    {
+     "op": "line",
+     "speaker": "기사단장 레오나",
+     "text": "대사제가 처음 보는 기사를 이름으로 부를 때부터. 포로를 그렇게 서둘러 벨 때부터."
+    },
+    {
+     "op": "line",
+     "speaker": "기사단장 레오나",
+     "text": "네 말을 믿는다. 나 혼자뿐이라도."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "두 번째로 무너졌다. 그리고 이번에는, 누가 손을 내밀기 전에 스스로 일어섰다."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "리아를 찾을 거예요. 그리고 카엘도."
+    },
+    {
+     "op": "line",
+     "speaker": "기사단장 레오나",
+     "text": "그라흐의 부하들은 서쪽 마족 땅으로 갔다. 리아의 행방을 아는 건 어쩌면 그들이다."
+    },
+    {
+     "op": "shake",
+     "t": 1.5,
+     "power": 0.2
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "멀리서 땅이 갈라지는 소리가 들렸다. 수호석이 있던 협곡이 처음으로 메말라 가기 시작했다."
+    },
+    {
+     "op": "title",
+     "text": "챕터 2 완료\n용사가 되는 길",
+     "t": 3
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
   }
  ]
 }

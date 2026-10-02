@@ -13,6 +13,8 @@ namespace DotRPG
         public const string DgnRaid1 = "dgn_raid_1", DgnRaid2 = "dgn_raid_2", DgnRaidBoss = "dgn_raid_boss";
         // [RAID] 흑철 진영 reuses the fortress layouts under its own names and music.
         public const string DgnBargas1 = "dgn_bargas_1", DgnBargas2 = "dgn_bargas_2", DgnBargasBoss = "dgn_bargas_boss";
+        public const string DgnGolem1 = "dgn_golem_1", DgnGolem2 = "dgn_golem_2", DgnGolemBoss = "dgn_golem_boss";
+        public const string DgnGrah1 = "dgn_grah_1", DgnGrahBoss = "dgn_grah_boss";
 
         // [BGM] Room music by dungeon theme (Docs/BGM_PROMPTS.md); boss rooms share one track, the raid boss has its own.
         public const string MusicDgnCanyon = "music_dgn_canyon", MusicDgnForest = "music_dgn_forest", MusicDgnWinter = "music_dgn_winter";
@@ -45,6 +47,11 @@ namespace DotRPG
             Room(DgnBargas1, "흑철 진영 · 선봉대", "Raid2", MapTheme.Winter, MusicDgnWinter),
             Room(DgnBargas2, "흑철 진영 · 사령 부대", "Raid1", MapTheme.Winter, MusicDgnWinter),
             Room(DgnBargasBoss, "흑철 진영 · 지휘 천막", "RaidBoss", MapTheme.Winter, MusicRaid),
+            Room(DgnGolem1, "외곽 석실 · 갱도", "Canyon2", MapTheme.Canyon, MusicDgnCanyon),
+            Room(DgnGolem2, "외곽 석실 · 수문", "Canyon3", MapTheme.Canyon, MusicDgnCanyon),
+            Room(DgnGolemBoss, "외곽 석실 · 바위 심장", "CanyonBoss", MapTheme.Canyon, MusicRaid),
+            Room(DgnGrah1, "수호석 석실 · 회랑", "Raid1", MapTheme.Canyon, MusicDgnCanyon),
+            Room(DgnGrahBoss, "수호석 석실 · 수호석", "RaidBoss", MapTheme.Canyon, MusicRaidEnrage),
         };
 
         /// <summary>Every dungeon room map (tests, preloading).</summary>

@@ -365,6 +365,34 @@ namespace DotRPG
             bargas.phases = new[] { 0.66f, 0.33f };
             bargas.maxMinions = 4;
             Add(bargas);
+
+            // [RAID] Chapter 2 raid bosses (existing bodies recoloured until their own art).
+            var golem = Boss("boss_rock_golem", "바위 심장 골렘", C(150, 132, 112), hp: 5200, dmg: 32, lines: 52, speed: 1.6f,
+                new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
+                new BossPattern(PatternKind.Charge, 7f, 1.5f),
+                new BossPattern(PatternKind.GoldRain, 9f, 1.2f, 6, minPhase: 1),
+                new BossPattern(PatternKind.Fields, 8f, 1.2f, 6, minPhase: 2),
+                new BossPattern(PatternKind.Donut, 12f, 1.6f, minPhase: 2));
+            golem.look = Look("boss_mine_captain", C(150, 132, 112));
+            golem.raid = true;
+            golem.size = 2.6f;
+            golem.groggyMax = 700f;
+            golem.phases = new[] { 0.6f, 0.3f };
+            Add(golem);
+            var grah = Boss("boss_grah", "수호자 그라흐", C(124, 98, 150), hp: 6400, dmg: 34, lines: 60, speed: 2.3f,
+                new BossPattern(PatternKind.Slash3, 4f, 0.9f, 3, maxRange: 3.6f, weight: 1.5f),
+                new BossPattern(PatternKind.BoltRing, 6f, 1f, 12, minPhase: 1),
+                new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),
+                new BossPattern(PatternKind.Fields, 7f, 1.1f, 7, minPhase: 2),
+                new BossPattern(PatternKind.Donut, 10f, 1.4f, minPhase: 2),
+                new BossPattern(PatternKind.Judgment, 35f, 8f, minPhase: 3, weight: 0f));
+            grah.look = Look("boss_lich", C(124, 98, 150));
+            grah.raid = true;
+            grah.size = 2.4f;
+            grah.groggyMax = 720f;
+            grah.phases = new[] { 0.7f, 0.4f, 0.15f };
+            grah.maxMinions = 4;
+            Add(grah);
         }
 
         static MonsterDef Boss(string id, string name, Color32 bone, int hp, int dmg, int lines, float speed, params BossPattern[] patterns)

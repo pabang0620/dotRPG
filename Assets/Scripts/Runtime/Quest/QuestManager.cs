@@ -350,6 +350,9 @@ namespace DotRPG
         /// <summary>A cutscene finished: cutscene objectives naming it complete.</summary>
         public void OnCutsceneFinished(string cutsceneId) => Signal(ObjectiveTypes.Cutscene, cutsceneId, 1);
 
+        /// <summary>Automated checks: raise a gameplay signal directly (dungeon / raid clears).</summary>
+        public void DevSignal(string type, string target, int amount) => Signal(type, target, amount);
+
         void Signal(string type, string target, int amount)
         {
             bool changed = false;

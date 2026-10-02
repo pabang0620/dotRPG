@@ -4,6 +4,11 @@
    "number": 1,
    "title": "잿더미의 마굿간",
    "summary": "해골 숲 옆 작은 마을의 마굿간에서 자란 아이. 축제 전날 밤, 모든 것을 잃는다."
+  },
+  {
+   "number": 2,
+   "title": "용사가 되는 길",
+   "summary": "바위 협곡의 기사단, 대사제의 임무, 검은 수호석. 그리고 등 뒤의 칼."
   }
  ],
  "quests": [
@@ -792,6 +797,573 @@
       "count": 5
      }
     ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_canyon",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-1",
+   "title": "바위 협곡",
+   "summary": "리아는 협곡 너머로 옮겨졌다. 바위 협곡 마을로 간다. (해골 숲 동쪽 끝)",
+   "requires": [
+    "c1_road"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골 숲을 지나 동쪽의 바위 협곡 마을로.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "canyon",
+       "count": 1,
+       "text": "바위 협곡 마을에 도착하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "기사단 모집 게시판 앞의 기사단장.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "leona",
+       "count": 1,
+       "text": "북쪽 단상의 기사단장 레오나 만나기",
+       "dialogue": "c2_leona_first",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 600,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_trial",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-2",
+   "title": "기사단 시험",
+   "summary": "기사단장 레오나의 세 관문. 힘, 인내, 동료.",
+   "requires": [
+    "c2_canyon"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "leona",
+   "offerDialogue": "c2_leona_trial",
+   "turnIn": "leona",
+   "turnInDialogue": "c2_leona_pass",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "힘의 관문: 협곡 광산에서 실력을 증명하라.",
+     "objectives": [
+      {
+       "type": "dungeon",
+       "target": "*",
+       "count": 3,
+       "text": "요일 던전 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "인내의 관문: 방패 든 해골을 꺾어라.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 12,
+       "text": "해골 방패병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "동료의 관문: 기사단원 셋에게 인정받아라.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "knight_dorn",
+       "count": 1,
+       "text": "기사 돈에게 인정받기",
+       "dialogue": "c2_knight_dorn",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "knight_ivy",
+       "count": 1,
+       "text": "기사 아이비에게 인정받기",
+       "dialogue": "c2_knight_ivy",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "knight_mo",
+       "count": 1,
+       "text": "기사 모에게 인정받기",
+       "dialogue": "c2_knight_mo",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1800,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_priest",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-3",
+   "title": "대사제의 부름",
+   "summary": "견습 기사가 된 날, 왕국의 대사제가 협곡에 왔다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "광장에 사람들이 모였다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c2_orban",
+       "count": 1,
+       "text": "광장으로",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 800,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "orban_met"
+    ]
+   }
+  },
+  {
+   "id": "c2_mine",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-4",
+   "title": "협곡 광산 조사",
+   "summary": "검은 수호석은 협곡 광산 깊은 곳 석실에 있다. 길을 찾아라. 리아의 소식도.",
+   "requires": [
+    "c2_priest"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "orban",
+   "offerDialogue": "c2_orban_mission",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 광산의 던전을 뚫는다.",
+     "objectives": [
+      {
+       "type": "dungeon",
+       "target": "*",
+       "count": 5,
+       "text": "요일 던전 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "광산 입구에서 붙잡힌 마족.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c2_prisoner",
+       "count": 1,
+       "text": "협곡 광장으로 돌아가기",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2500,
+    "gold": 9000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_growth",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-5",
+   "title": "석실 앞에서",
+   "summary": "수호석 외곽 석실의 문지기는 지금의 실력으로는 무리다. 더 강해져라.",
+   "requires": [
+    "c2_mine"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "kael",
+   "offerDialogue": "c2_kael_growth",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "힘을 기른다.",
+     "objectives": [
+      {
+       "type": "level",
+       "target": "",
+       "count": 22,
+       "text": "레벨 22 달성",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "dungeon",
+       "target": "*",
+       "count": 8,
+       "text": "요일 던전 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "축하연 전날 밤.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c2_letter",
+       "count": 1,
+       "text": "협곡 여관 앞에서 쉬기",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3000,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_golem",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-6",
+   "title": "바위 심장",
+   "summary": "수호석을 지키는 석실 문지기, 바위 심장 골렘. (중간 레이드, 수·토·일)",
+   "requires": [
+    "c2_growth"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "leona",
+   "offerDialogue": "c2_leona_golem",
+   "turnIn": "leona",
+   "turnInDialogue": "c2_leona_golem_done",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "바위 심장 골렘을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "raid",
+       "target": "raid_golem",
+       "count": 1,
+       "text": "레이드: 바위 심장 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 5000,
+    "gold": 15000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_grah",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-7",
+   "title": "수호자 그라흐",
+   "summary": "봉인 열쇠 조각으로 수호석 석실을 연다. 수호자 그라흐. (최종 레이드, 일요일)",
+   "requires": [
+    "c2_golem"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "orban",
+   "offerDialogue": "c2_orban_grah",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "석실의 수호자 그라흐를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "raid",
+       "target": "raid_grah",
+       "count": 1,
+       "text": "레이드: 수호자 그라흐 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "수호석이 깨진 뒤.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c2_betrayal",
+       "count": 1,
+       "text": "협곡으로 돌아가기",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 8000,
+    "gold": 25000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2_end",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-끝",
+   "title": "잿빛 손",
+   "summary": "왕국은 새로운 용사를 노래한다. 아무도 진실을 믿지 않는다.",
+   "requires": [
+    "c2_grah"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "축제의 광장.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c2_aftermath",
+       "count": 1,
+       "text": "광장의 축제",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2000,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "chapter2_done"
+    ]
+   }
+  },
+  {
+   "id": "c2s_trader",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "누리의 짐 수레",
+   "summary": "협곡 상인 누리의 수레가 광산 길에서 해골들에게 털렸다.",
+   "requires": [
+    "c2_canyon"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "trader",
+   "offerDialogue": "c2s_trader_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c2s_trader_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골들이 가져간 물건을 되찾는다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 10,
+       "text": "해골 광부 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 900,
+    "gold": 4000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_knight_letter",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "기사 모의 편지",
+   "summary": "기사 모가 고향 마을 어머니에게 보낼 편지를 부탁했다. 해골 숲 옆 작은 마을의 촌장에게 전하면 된다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "knight_mo",
+   "offerDialogue": "c2s_letter_offer",
+   "turnIn": "knight_mo",
+   "turnInDialogue": "c2s_letter_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "편지를 촌장에게 전한다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "chief",
+       "count": 1,
+       "text": "촌장 모리에게 편지 전하기",
+       "dialogue": "c2s_letter_chief",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 700,
+    "gold": 2500,
+    "items": [],
     "maxHealth": 0,
     "setFlags": []
    }

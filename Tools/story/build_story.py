@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Writes Assets/Resources/Data/{Quests,Cutscenes,StoryDialogues,StoryWorld}.json from the chapter modules."""
 import json, os
-import ch1_dialogues, ch1_story
+import ch1_dialogues, ch1_story, ch2_story
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA = os.path.join(ROOT, "Assets", "Resources", "Data")
@@ -11,11 +11,11 @@ def write(name, obj):
         json.dump(obj, f, ensure_ascii=False, indent=1)
         f.write("\n")
 
-chapters = [ch1_story.CHAPTER]
-quests = list(ch1_story.QUESTS)
-cutscenes = list(ch1_story.CUTSCENES)
-dialogues = list(ch1_dialogues.DIALOGUES) + list(ch1_story.EXTRA_DIALOGUES)
-world = {"placements": list(ch1_story.WORLD["placements"]), "props": list(ch1_story.WORLD["props"])}
+chapters = [ch1_story.CHAPTER, ch2_story.CHAPTER]
+quests = list(ch1_story.QUESTS) + list(ch2_story.QUESTS)
+cutscenes = list(ch1_story.CUTSCENES) + list(ch2_story.CUTSCENES)
+dialogues = list(ch1_dialogues.DIALOGUES) + list(ch1_story.EXTRA_DIALOGUES) + list(ch2_story.DIALOGUES)
+world = {"placements": ch1_story.WORLD["placements"] + ch2_story.WORLD["placements"], "props": ch1_story.WORLD["props"] + ch2_story.WORLD["props"]}
 
 # Consistency checks: every referenced dialogue / cutscene exists, ids unique.
 dlg_ids = {d["id"] for d in dialogues}

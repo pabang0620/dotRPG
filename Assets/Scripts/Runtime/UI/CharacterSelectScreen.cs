@@ -16,6 +16,7 @@ namespace DotRPG
         readonly Image[] cards = new Image[2];
         readonly Text[] names = new Text[2];
         Text description;
+        InputField nameField; // [STORY] the hero's name ({name} in every conversation)
         int shownIndex = -1;
         float animTimer;
 
@@ -52,12 +53,13 @@ namespace DotRPG
 
             screen.description = UIFactory.Text(screen.panel, "Description", "", 19, UiTheme.TextSecondary, TextAnchor.UpperCenter, true); // [UI] dark panel
             screen.description.lineSpacing = 1.2f;
-            UIFactory.Place(screen.description.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -306f), new Vector2(700f, 76f));
+            UIFactory.Place(screen.description.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -340f), new Vector2(700f, 60f));
+            screen.nameField = BuildNameField(screen.panel);
 
             foreach (var cls in Classes)
             {
                 var info = CharacterClassInfo.Get(cls);
-                screen.menu.AddButton($"{info.displayName}로 시작", () => Game.Flow.NewGame(info.id));
+                screen.menu.AddButton($"{info.displayName}로 시작", () => Game.Flow.NewGame(info.id, screen.nameField.text));
             }
             screen.menu.AddButton("돌아가기", () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
@@ -73,9 +75,32 @@ namespace DotRPG
             return screen;
         }
 
+        /// <summary>Name box under the cards: click (or Tab) to type, Enter / Esc to leave it.</summary>
+        static InputField BuildNameField(RectTransform panel)
+        {
+            var label = UIFactory.Text(panel, "NameLabel", "이름", 20, UIColors.Cream, TextAnchor.MiddleRight, true);
+            UIFactory.Place(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-170f, -302f), new Vector2(80f, 40f));
+            var bg = UIFactory.Panel(panel, "NameBox", false);
+            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(20f, -302f), new Vector2(280f, 40f));
+            bg.raycastTarget = true;
+            var text = UIFactory.Text(bg.rectTransform, "Text", "", 22, Color.white, TextAnchor.MiddleCenter, false);
+            UIFactory.Stretch(text.rectTransform, 10f, 10f, 2f, 2f);
+            text.supportRichText = false;
+            var placeholder = UIFactory.Text(bg.rectTransform, "Placeholder", QuestJournal.DefaultName, 22, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleCenter, false);
+            UIFactory.Stretch(placeholder.rectTransform, 10f, 10f, 2f, 2f);
+            var field = bg.gameObject.AddComponent<InputField>();
+            field.textComponent = text;
+            field.placeholder = placeholder;
+            field.characterLimit = 8;
+            field.lineType = InputField.LineType.SingleLine;
+            field.targetGraphic = bg;
+            return field;
+        }
+
         public override void Show()
         {
             base.Show();
+            if (nameField != null) nameField.text = "";
             shownIndex = -1;
             animTimer = 0f;
             Refresh(true);
@@ -83,6 +108,9 @@ namespace DotRPG
 
         void Update()
         {
+            // While the name box has the keyboard, letters such as X / F / Space must not press menu buttons.
+            if (menu != null) menu.enabled = nameField == null || !nameField.isFocused;
+            if (nameField != null && !nameField.isFocused && UnityEngine.Input.GetKeyDown(KeyCode.Tab)) nameField.ActivateInputField();
             animTimer += Time.unscaledDeltaTime;
             Refresh(false);
         }

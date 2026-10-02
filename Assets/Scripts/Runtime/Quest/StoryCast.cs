@@ -67,6 +67,10 @@ namespace DotRPG
                 Add(Def("leona", "기사단장 레오나", new CharacterLook("leona", HairStyle.Long, SkinLight, C(236, 214, 150), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(196, 200, 214) }));
                 Add(Def("orban", "대사제 오르반", new CharacterLook("orban", HairStyle.Bald, SkinLight, C(220, 220, 220), C(236, 232, 214), C(214, 196, 120), HatKind.Wizard, C(236, 220, 150)) { robe = true }));
                 Add(Def("grah", "수호자 그라흐", new CharacterLook("grah", HairStyle.Spiky, C(130, 110, 150), C(40, 30, 50), C(80, 60, 100), C(50, 40, 60)) { armor = ArmorStyle.Plate, armorColor = C(70, 64, 86) }));
+                Add(Def("knight_dorn", "기사 돈", new CharacterLook("knight_dorn", HairStyle.Short, SkinTan, C(60, 44, 36), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(170, 176, 190) }));
+                Add(Def("knight_ivy", "기사 아이비", new CharacterLook("knight_ivy", HairStyle.Bun, SkinLight, C(150, 60, 40), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(170, 176, 190) }));
+                Add(Def("knight_mo", "기사 모", new CharacterLook("knight_mo", HairStyle.Curly, SkinLight, C(200, 150, 80), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Leather, armorColor = C(120, 90, 60) }));
+                Add(Def("prisoner", "붙잡힌 마족", new CharacterLook("prisoner", HairStyle.Spiky, C(150, 130, 170), C(50, 40, 60), C(70, 60, 80), C(50, 44, 56))));
                 Add(Def("knight", "기사단원", new CharacterLook("knight", HairStyle.Short, SkinTan, C(70, 50, 40), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(170, 176, 190) }));
                 return cast;
             }

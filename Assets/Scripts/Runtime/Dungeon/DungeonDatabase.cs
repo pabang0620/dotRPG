@@ -145,6 +145,7 @@ namespace DotRPG
 
         public const string Raid = "raid_skeleton_king";
         public const string RaidBargas = "raid_bargas";
+        public const string RaidGolem = "raid_golem", RaidGrah = "raid_grah";
         /// <summary>[RAID] Item that opens final raids.</summary>
         public const string SealKey = "key_seal";
 
@@ -344,7 +345,50 @@ namespace DotRPG
             specialty = "유니크 · 레전더리 장비, 장비 보호권", featureMonster = "흑철 선봉대, 사령 부대", bossName = "흑철의 바르가스",
         };
 
-        static readonly DungeonDef[] RaidDefs = { RaidDef, BargasDef };
+        /// <summary>[RAID] Chapter 2 mid raid: the stone-hearted gate keeper of the guardian stone chamber.</summary>
+        static readonly DungeonDef GolemDef = new DungeonDef
+        {
+            id = RaidGolem, name = "바위 심장", theme = MapTheme.Canyon, themeName = "수호석 외곽 석실", isRaid = true,
+            raidTier = RaidTier.Mid, chapter = 2, unlockQuest = "c2_golem", keyMin = 20, keyMax = 50,
+            openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
+            rooms = Chain(
+                Room(MapRegistry.DgnGolem1, new SpawnGroup(1, "skel_miner", 5, 2), new SpawnGroup(2, "skel_gold", 3, 2)),
+                Room(MapRegistry.DgnGolem2, new SpawnGroup(1, "skel_shield", 4, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
+                Boss(MapRegistry.DgnGolemBoss, "boss_rock_golem", "skel_miner", 0)),
+            bossRoom = 2, referenceSeconds = new[] { 330f, 330f, 330f, 330f }, clearXp = 900,
+            rewards = new[]
+            {
+                new RewardEntry(GearReward, 1, 1, 45),
+                new RewardEntry(EnhanceRules.Essence, 4, 8, 20),
+                new RewardEntry(EnhanceRules.Ore, 8, 12, 15),
+                new RewardEntry(ConsumableDatabase.Gold, 2500, 4000, 20),
+            },
+            description = "검은 수호석 석실 앞을 지키는 바위 거인.\n광부 해골과 방패 부대를 뚫고 골렘의 심장을 부숴라.",
+            specialty = "유니크 · 레전더리 장비, 봉인 열쇠 조각", featureMonster = "해골 광부대, 방패 부대", bossName = "바위 심장 골렘",
+        };
+
+        /// <summary>[RAID] Chapter 2 final raid: 수호자 그라흐 inside the guardian stone chamber (Sunday).</summary>
+        static readonly DungeonDef GrahDef = new DungeonDef
+        {
+            id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
+            raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 100,
+            openDays = new[] { DayOfWeek.Sunday },
+            rooms = Chain(
+                Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),
+                Boss(MapRegistry.DgnGrahBoss, "boss_grah", "skel_knight", 0)),
+            bossRoom = 1, referenceSeconds = new[] { 360f, 360f, 360f, 360f }, clearXp = 1500,
+            rewards = new[]
+            {
+                new RewardEntry(GearReward, 1, 1, 55),
+                new RewardEntry(EnhanceRules.Essence, 6, 10, 15),
+                new RewardEntry(ConsumableDatabase.ProtectTicket, 1, 2, 10),
+                new RewardEntry(ConsumableDatabase.Gold, 4000, 6000, 20),
+            },
+            description = "검은 수호석을 지키는 마족 장수 그라흐.\n석실의 정예를 뚫고 수호자를 쓰러뜨린 뒤, 네 손으로 수호석을 깨라.",
+            specialty = "레전더리 장비, 장비 보호권", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",
+        };
+
+        static readonly DungeonDef[] RaidDefs = { RaidDef, BargasDef, GolemDef, GrahDef };
 
         /// <summary>The five weekday dungeons (Monday first).</summary>
         public static IReadOnlyList<DungeonDef> Weekday => Dungeons;

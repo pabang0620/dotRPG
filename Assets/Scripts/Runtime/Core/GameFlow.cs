@@ -76,11 +76,12 @@ namespace DotRPG
             else if (state == GameState.Ending) Game.State.Set(GameState.Playing);
         }
 
-        public void NewGame(CharacterClass playerClass = CharacterClass.Warrior)
+        public void NewGame(CharacterClass playerClass = CharacterClass.Warrior, string heroName = null)
         {
             StartCoroutine(Transition(() =>
             {
                 Game.Session.ResetForNewGame(Game.Config, playerClass);
+                if (!string.IsNullOrWhiteSpace(heroName)) Game.Session.Journal.PlayerName = heroName.Trim(); // [STORY]
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
             }));

@@ -129,6 +129,69 @@ namespace DotRPG
             Talk("chief");
             StoryCheck($"1-6 complete, ruby ring in the bag ({Game.Session.Inventory.Count("eq_ring_ruby")})", St("c1_rebuild") == QuestStatus.Completed && Game.Session.Inventory.Count("eq_ring_ruby") > 0);
 
+            StoryCheck($"raids locked by the story: '{DungeonDirector.RaidLockReason(DungeonDatabase.SkeletonKing)}'", DungeonDirector.RaidLockReason(DungeonDatabase.SkeletonKing) != null);
+            // Rest of chapter 1 by signals.
+            Talk("kael");
+            GameEvents.RaiseInteracted("ria_ribbon");
+            Talk("kael");
+            StoryCheck($"1-7 complete ({St("c1_trail")})", St("c1_trail") == QuestStatus.Completed);
+            Talk("kael");
+            Game.Session.Progression.AddXp(200000);
+            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 10);
+            yield return SettleStory();
+            Talk("kael");
+            StoryCheck($"1-8 complete ({St("c1_stronger")}) at level {Game.Session.Progression.Level}", St("c1_stronger") == QuestStatus.Completed);
+            Talk("kael");
+            StoryCheck($"mid raid opened by 1-9: lock='{DungeonDirector.RaidLockReason(DungeonDatabase.SkeletonKing)}'", DungeonDirector.RaidLockReason(DungeonDatabase.SkeletonKing) == null);
+            Game.Quest.DevSignal(ObjectiveTypes.Raid, DungeonDatabase.Raid, 1);
+            yield return SettleStory();
+            Talk("kael");
+            Talk("kael");
+            Game.Quest.DevSignal(ObjectiveTypes.Raid, DungeonDatabase.RaidBargas, 1);
+            yield return SettleStory(30f);
+            Talk("chief");
+            yield return SettleStory(30f);
+            StoryCheck($"chapter 1 done: 1-10 {St("c1_bargas")}, 1-end {St("c1_road")}, flag={Game.Quest.HasFlag("chapter1_done")}",
+                St("c1_bargas") == QuestStatus.Completed && St("c1_road") == QuestStatus.Completed && Game.Quest.HasFlag("chapter1_done"));
+
+            // Chapter 2.
+            StoryCheck($"2-1 runs ({St("c2_canyon")})", St("c2_canyon") == QuestStatus.Active);
+            Game.Flow.TravelTo(MapRegistry.Canyon, true);
+            yield return Wait(2.5f);
+            yield return SettleStory();
+            StoryCheck($"canyon: leona={HasStoryNpc("leona")} knights={HasStoryNpc("knight_dorn") && HasStoryNpc("knight_ivy") && HasStoryNpc("knight_mo")} kael={HasStoryNpc("kael")}",
+                HasStoryNpc("leona") && HasStoryNpc("knight_mo") && HasStoryNpc("kael"));
+            Talk("leona");
+            Talk("leona");
+            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 3);
+            yield return SettleStory();
+            for (int i = 0; i < 12; i++) GameEvents.RaiseEnemyKilled("skel_shield");
+            yield return SettleStory();
+            Talk("knight_dorn"); Talk("knight_ivy"); Talk("knight_mo");
+            yield return SettleStory();
+            Talk("leona");
+            yield return SettleStory(30f);
+            StoryCheck($"2-2 complete ({St("c2_trial")}), 2-3 played ({St("c2_priest")}), orban offers 2-4 ({St("c2_mine")})",
+                St("c2_trial") == QuestStatus.Completed && St("c2_priest") == QuestStatus.Completed && St("c2_mine") == QuestStatus.Available);
+            Talk("orban");
+            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 5);
+            yield return SettleStory(30f);
+            Talk("kael");
+            Game.Quest.DevSignal(ObjectiveTypes.Dungeon, "gold_vein", 8);
+            yield return SettleStory(30f);
+            StoryCheck($"2-4 {St("c2_mine")}, 2-5 {St("c2_growth")}", St("c2_mine") == QuestStatus.Completed && St("c2_growth") == QuestStatus.Completed);
+            Talk("leona");
+            Game.Quest.DevSignal(ObjectiveTypes.Raid, DungeonDatabase.RaidGolem, 1);
+            yield return SettleStory();
+            Talk("leona");
+            Talk("orban");
+            Game.Quest.DevSignal(ObjectiveTypes.Raid, DungeonDatabase.RaidGrah, 1);
+            yield return SettleStory(40f);
+            yield return Wait(1f);
+            yield return SettleStory(40f);
+            StoryCheck($"betrayal: flag={Game.Quest.HasFlag("kael_betrayed")} 2-7 {St("c2_grah")} 2-end {St("c2_end")} chapter2_done={Game.Quest.HasFlag("chapter2_done")}",
+                Game.Quest.HasFlag("kael_betrayed") && St("c2_grah") == QuestStatus.Completed && St("c2_end") == QuestStatus.Completed && Game.Quest.HasFlag("chapter2_done"));
+
             // Raid rules.
             var now = new DateTime(2026, 10, 7, 12, 0, 0); // Wednesday
             var king = DungeonDatabase.SkeletonKing;
@@ -137,7 +200,6 @@ namespace DotRPG
                 ResetClock.IsOpen(king, now) && !ResetClock.IsOpen(king, now.AddDays(1)) && ResetClock.IsOpen(king, now.AddDays(3)));
             StoryCheck($"final raid only on Sunday: sun={ResetClock.IsOpen(bargas, now.AddDays(4))} sat={ResetClock.IsOpen(bargas, now.AddDays(3))}",
                 ResetClock.IsOpen(bargas, now.AddDays(4)) && !ResetClock.IsOpen(bargas, now.AddDays(3)));
-            StoryCheck($"raids locked by the story: '{DungeonDirector.RaidLockReason(king)}'", DungeonDirector.RaidLockReason(king) != null);
             var p = new DungeonProgress();
             p.ClaimRaid(king, now);
             StoryCheck($"mid raid pays once a day: same day={p.RaidRewardAvailable(king, now)} saturday={p.RaidRewardAvailable(king, now.AddDays(3))} this week={p.RaidClearsThisWeek(king, now.AddDays(3))}",

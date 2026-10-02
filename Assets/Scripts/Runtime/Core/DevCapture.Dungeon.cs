@@ -91,7 +91,7 @@ namespace DotRPG
             select.DevSelect(DungeonDatabase.Raid, DungeonDifficulty.Normal);
             yield return Wait(0.3f);
             yield return Shot("dgn_02_raid_tab");
-            DCheck($"raid tab: raidTab={select.DevRaidTab} day='{Strip(select.DevDayText)}'", select.DevRaidTab && Strip(select.DevDayText).Contains("받을 수 있음"));
+            DCheck($"raid tab: raidTab={select.DevRaidTab} day='{Strip(select.DevDayText)}'", select.DevRaidTab && Strip(select.DevDayText).Contains("중간 레이드 수·토·일"));
             select.DevSelect("gold_vein", DungeonDifficulty.Normal);
             yield return Wait(0.2f);
 
@@ -327,11 +327,12 @@ namespace DotRPG
                 bool weekend = day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday;
                 if (weekend) rotationOk &= open.Count == 5;
                 else rotationOk &= open.Count == 1 && DungeonDatabase.Weekday[i].id == open[0];
-                rotationOk &= ResetClock.IsOpen(DungeonDatabase.SkeletonKing, day);
+                bool raidDay = day.DayOfWeek == DayOfWeek.Wednesday || day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday;
+                rotationOk &= ResetClock.IsOpen(DungeonDatabase.SkeletonKing, day) == raidDay; // [RAID] mid raid: 수·토·일
             }
             // Before 06:00 on Tuesday it is still Monday.
             rotationOk &= ResetClock.IsOpen(DungeonDatabase.Get("gold_vein"), new DateTime(2025, 3, 4, 5, 0, 0)) && !ResetClock.IsOpen(DungeonDatabase.Get("smelter"), new DateTime(2025, 3, 4, 5, 0, 0));
-            DCheck($"weekday rotation: {string.Join(" ", week)} (raid always, Tue 05:00 = Monday)", rotationOk);
+            DCheck($"weekday rotation: {string.Join(" ", week)} (mid raid Wed/Sat/Sun, Tue 05:00 = Monday)", rotationOk);
 
             // Data skeleton.
             bool data = DungeonDatabase.Weekday.Count == 5 && DungeonDatabase.Weekday.All(d => d.RoomCount == 4 && d.bossRoom == 3 && d.rooms[3].isBoss && d.rooms.All(r => MapRegistry.Get(r.mapId) != null && Resources.Load<TextAsset>(MapRegistry.Get(r.mapId).resource) != null))
@@ -474,6 +475,10 @@ namespace DotRPG
 
         IEnumerator RaidChecks(Func<DateTime> now)
         {
+            // [RAID] The mid raid opens with quest 1-9 and only on 수·토·일: play it on the Wednesday of the test week.
+            Game.Session.Journal.State("c1_fortress").status = (int)QuestStatus.Active;
+            var clockBefore = ResetClock.NowOverride;
+            ResetClock.NowOverride = () => now().AddDays(2);
             var dir = Game.Dungeon;
             var select = Game.UI.Dungeon;
             var progress = Game.Session.Dungeons;
@@ -527,6 +532,7 @@ namespace DotRPG
             yield return Wait(1.6f);
             DCheck($"raid practice + quit mid-run: locked={locked} aborted={aborted} continue map={Game.World.MapId} inRun={dir.InRun} raidAvail={Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now())}",
                 locked && aborted && Game.World.MapId == MapRegistry.Village && !dir.InRun && !Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now()));
+            ResetClock.NowOverride = clockBefore;
         }
 
         IEnumerator SoloRunChecks(DateTime clock)

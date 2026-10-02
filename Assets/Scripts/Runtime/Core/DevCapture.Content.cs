@@ -347,8 +347,10 @@ namespace DotRPG
             }
 
             // ---------- Raid: full clear by scripted play (Lv27, 4 members), phases, weekly lock ----------
-            var now = WeekdayClock(1);
+            // [RAID] The mid raid opens with quest 1-9 on 수·토·일: Wednesday, the day its reward was already taken.
+            var now = WeekdayClock(2);
             setClock(now);
+            Game.Session.Journal.State("c1_fortress").status = (int)QuestStatus.Active;
             SetupHero(27, true);
             foreach (var m in Game.Party.Members) if (m != null && m.IsDead) Game.Party.ReviveMember(m, 1f);
             foreach (var m in Game.Party.Members) m?.HealFull();

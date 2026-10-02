@@ -55,6 +55,72 @@
    "hiddenBy": [
     "chapter1_done"
    ]
+  },
+  {
+   "npcId": "leona",
+   "map": "canyon",
+   "col": 24,
+   "row": 5,
+   "facing": "down",
+   "requires": [
+    "chapter1_done"
+   ]
+  },
+  {
+   "npcId": "knight_dorn",
+   "map": "canyon",
+   "col": 18,
+   "row": 7,
+   "facing": "right",
+   "requires": [
+    "chapter1_done"
+   ]
+  },
+  {
+   "npcId": "knight_ivy",
+   "map": "canyon",
+   "col": 30,
+   "row": 7,
+   "facing": "left",
+   "requires": [
+    "chapter1_done"
+   ]
+  },
+  {
+   "npcId": "knight_mo",
+   "map": "canyon",
+   "col": 26,
+   "row": 8,
+   "facing": "down",
+   "requires": [
+    "chapter1_done"
+   ]
+  },
+  {
+   "npcId": "kael",
+   "map": "canyon",
+   "col": 27,
+   "row": 24,
+   "facing": "left",
+   "requires": [
+    "chapter1_done"
+   ],
+   "hiddenBy": [
+    "kael_betrayed"
+   ]
+  },
+  {
+   "npcId": "orban",
+   "map": "canyon",
+   "col": 22,
+   "row": 20,
+   "facing": "down",
+   "requires": [
+    "orban_met"
+   ],
+   "hiddenBy": [
+    "kael_betrayed"
+   ]
   }
  ],
  "props": [
@@ -198,6 +264,34 @@
    "prompt": "다가가기",
    "dialogue": "c1s_horse_found",
    "bob": true
+  },
+  {
+   "sprite": "story_lantern",
+   "map": "canyon",
+   "col": 20,
+   "row": 20,
+   "requires": [
+    "kael_betrayed"
+   ],
+   "hiddenBy": [
+    "chapter2_done"
+   ],
+   "glow": true,
+   "solid": false
+  },
+  {
+   "sprite": "story_lantern",
+   "map": "canyon",
+   "col": 29,
+   "row": 20,
+   "requires": [
+    "kael_betrayed"
+   ],
+   "hiddenBy": [
+    "chapter2_done"
+   ],
+   "glow": true,
+   "solid": false
   }
  ]
 }
