@@ -111,8 +111,9 @@ namespace DotRPG
             UIFactory.Place(pageText.rectTransform, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(gridMid, 102f), new Vector2(130f, 44f));
 
             // Bottom bar.
-            var gridIcon = UIFactory.Text(root, "GridIcon", "▦", 44, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Place(gridIcon.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 40f, 26f), new Vector2(60f, 60f));
+            var gridIcon = UIFactory.Image(root, "GridIcon", Game.Art.Get("menuicon_capacity"), Color.white); // [ART] storage chest
+            gridIcon.preserveAspect = true;
+            UIFactory.Place(gridIcon.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 40f, 26f), new Vector2(56f, 56f));
             capacity = UIFactory.Text(root, "Capacity", "", 28, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(capacity.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 250f, 26f), new Vector2(190f, 60f));
             MakeButton(root, "Auto", "자동장착", "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
