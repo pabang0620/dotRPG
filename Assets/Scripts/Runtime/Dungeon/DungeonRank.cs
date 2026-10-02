@@ -69,15 +69,15 @@ namespace DotRPG
 
         public static RankScore Score(float seconds, float referenceSeconds, int hitsTaken, int kills, int monsters, int maxCombo, int revives)
         {
-            var s = new RankScore();
-            float over = referenceSeconds > 0f ? seconds / referenceSeconds : 1f;
-            float timeFactor = over <= 1f ? 1f : Mathf.Clamp01((TimeZeroAt - over) / (TimeZeroAt - 1f));
-            s.time = Mathf.RoundToInt(TimeMax * timeFactor);
-            s.hits = Mathf.Max(0, HitsMax - hitsTaken * PointsPerHit);
-            s.kills = monsters > 0 ? Mathf.RoundToInt(KillsMax * Mathf.Clamp01(kills / (float)monsters)) : KillsMax;
-            s.combo = Mathf.RoundToInt(ComboMax * Mathf.Clamp01(maxCombo / (float)ComboTarget));
-            s.revivePenalty = revives * RevivePenalty;
-            return s;
+            var score = new RankScore();
+            float timeRatio = referenceSeconds > 0f ? seconds / referenceSeconds : 1f;
+            float timeFactor = timeRatio <= 1f ? 1f : Mathf.Clamp01((TimeZeroAt - timeRatio) / (TimeZeroAt - 1f));
+            score.time = Mathf.RoundToInt(TimeMax * timeFactor);
+            score.hits = Mathf.Max(0, HitsMax - hitsTaken * PointsPerHit);
+            score.kills = monsters > 0 ? Mathf.RoundToInt(KillsMax * Mathf.Clamp01(kills / (float)monsters)) : KillsMax;
+            score.combo = Mathf.RoundToInt(ComboMax * Mathf.Clamp01(maxCombo / (float)ComboTarget));
+            score.revivePenalty = revives * RevivePenalty;
+            return score;
         }
     }
 }

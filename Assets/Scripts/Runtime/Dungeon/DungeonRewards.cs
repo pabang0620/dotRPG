@@ -29,19 +29,23 @@ namespace DotRPG
         {
             var table = new List<RewardEntry>(dungeon.rewards);
             if (diff.ticketWeight > 0) table.Add(new RewardEntry(ConsumableDatabase.ProtectTicket, 1, 1, diff.ticketWeight));
-            int total = 0;
-            foreach (var e in table) total += Mathf.Max(0, e.weight);
+            int totalWeight = 0;
+            foreach (var entry in table) totalWeight += Mathf.Max(0, entry.weight);
             var cards = new List<RewardCard>();
             for (int i = 0; i < CardCount; i++)
             {
-                int roll = rng.Next(0, Mathf.Max(1, total));
-                RewardEntry pick = table[0];
-                foreach (var e in table)
+                int roll = rng.Next(0, Mathf.Max(1, totalWeight));
+                RewardEntry selectedReward = table[0];
+                foreach (var entry in table)
                 {
-                    if (roll < e.weight) { pick = e; break; }
-                    roll -= e.weight;
+                    if (roll < entry.weight)
+                    {
+                        selectedReward = entry;
+                        break;
+                    }
+                    roll -= entry.weight;
                 }
-                cards.Add(Resolve(pick, diff, cls, rng));
+                cards.Add(Resolve(selectedReward, diff, cls, rng));
             }
             return cards;
         }
@@ -49,10 +53,10 @@ namespace DotRPG
         static RewardCard Resolve(RewardEntry e, DifficultyDef diff, CharacterClass cls, System.Random rng)
         {
             if (e.itemId == DungeonDatabase.GearReward) return new RewardCard(RollGear(cls, diff.minGearRarity, rng), 1);
-            int n = rng.Next(e.min, e.max + 1);
+            int count = rng.Next(e.min, e.max + 1);
             // Tickets never multiply; everything else scales with the difficulty.
-            if (e.itemId != ConsumableDatabase.ProtectTicket) n = Mathf.Max(1, Mathf.RoundToInt(n * diff.rewardMul));
-            return new RewardCard(e.itemId, n);
+            if (e.itemId != ConsumableDatabase.ProtectTicket) count = Mathf.Max(1, Mathf.RoundToInt(count * diff.rewardMul));
+            return new RewardCard(e.itemId, count);
         }
 
         /// <summary>Tries of the normal monster drop roll before falling back to the dungeon pool.</summary>
@@ -75,21 +79,21 @@ namespace DotRPG
                     if (item != null && item.rarity >= minRarity) return EquipmentDatabase.KeyFor(id, 0);
                 }
             }
-            var pool = new List<(string id, int w)>();
-            int total = 0;
+            var pool = new List<(string id, int weight)>();
+            int totalWeight = 0;
             foreach (var item in EquipmentDatabase.All)
             {
                 if (item.starter || !item.UsableBy(cls) || item.rarity < minRarity) continue;
-                int w = item.dropWeight > 0 ? item.dropWeight : RareGearWeight;
-                pool.Add((item.id, w));
-                total += w;
+                int weight = item.dropWeight > 0 ? item.dropWeight : RareGearWeight;
+                pool.Add((item.id, weight));
+                totalWeight += weight;
             }
             if (pool.Count == 0) return EquipmentDatabase.RollDrop(cls, 1f) ?? EquipmentDatabase.StarterWeapon(cls);
-            int roll = rng.Next(0, total);
-            foreach (var (id, w) in pool)
+            int roll = rng.Next(0, totalWeight);
+            foreach (var (id, weight) in pool)
             {
-                if (roll < w) return id;
-                roll -= w;
+                if (roll < weight) return id;
+                roll -= weight;
             }
             return pool[0].id;
         }
@@ -105,10 +109,10 @@ namespace DotRPG
         public static string Preview(DungeonDef dungeon, DifficultyDef diff)
         {
             var names = new List<string>();
-            foreach (var e in dungeon.rewards)
+            foreach (var entry in dungeon.rewards)
             {
-                string n = DungeonDatabase.ItemName(e.itemId);
-                if (!names.Contains(n)) names.Add(n);
+                string name = DungeonDatabase.ItemName(entry.itemId);
+                if (!names.Contains(name)) names.Add(name);
             }
             if (diff.ticketWeight > 0) names.Add("<color=#ffd84a>장비 보호권(낮은 확률)</color>");
             return string.Join(", ", names);
