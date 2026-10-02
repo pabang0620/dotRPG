@@ -581,10 +581,15 @@ namespace DotRPG
             busyTime = 0f;
             resultText.text = "<color=#b8c4d8>망치질 중…</color>";
             Refresh();
-            Game.Audio.PlaySfx("hammer");
-            yield return new WaitForSecondsRealtime(SuspenseSeconds * 0.5f);
-            Game.Audio.PlaySfx("hammer");
-            yield return new WaitForSecondsRealtime(SuspenseSeconds * 0.5f);
+            // [A] DNF-style suspense: three hammer strikes over a rising charge, the glow grows around the item.
+            Game.Audio.PlaySfx("enhance_charge");
+            EnhanceFx.Charge(bigIcon.rectTransform, SuspenseSeconds * 1.5f);
+            for (int i = 0; i < 3; i++)
+            {
+                Game.Audio.PlaySfx("hammer");
+                EnhanceFx.Sparks(bigIcon.rectTransform, 6, new Color32(255, 220, 120, 255));
+                yield return new WaitForSecondsRealtime(SuspenseSeconds * 0.5f);
+            }
             EnhanceResult result;
             try
             {
@@ -610,20 +615,26 @@ namespace DotRPG
             switch (r.kind)
             {
                 case EnhanceOutcome.Success:
-                    Game.Audio.PlaySfx("build_complete");
+                    bool great = EquipmentDatabase.LevelOfKey(r.newKey) >= 10;
+                    Game.Audio.PlaySfx(great ? "enhance_great" : "enhance_success");
+                    EnhanceFx.Burst(bigIcon.rectTransform, great ? 40 : 22, new Color32(255, 230, 120, 255), great);
+                    if (great) GameEvents.RaiseToast($"<color=#ffd84a>[알림]</color> {Game.Session.Journal.PlayerName}님이 {EquipmentDatabase.NameOfKey(r.newKey)} 강화에 성공했습니다!");
                     resultText.text = $"<color=#8fe28f><b>강화 성공!</b></color>  {EquipmentDatabase.RichName(r.newKey)}";
                     GameEvents.RaiseToast($"강화 성공! {EquipmentDatabase.RichName(r.newKey)}");
                     break;
                 case EnhanceOutcome.Keep:
-                    Game.Audio.PlaySfx("cancel");
+                    Game.Audio.PlaySfx("enhance_fail");
+                    EnhanceFx.Fail(bigIcon.rectTransform, false);
                     resultText.text = "<color=#ffb070>강화 실패… 강화 수치는 그대로다.</color>";
                     break;
                 case EnhanceOutcome.Drop3:
-                    Game.Audio.PlaySfx("hurt");
+                    Game.Audio.PlaySfx("enhance_fail");
+                    EnhanceFx.Fail(bigIcon.rectTransform, false);
                     resultText.text = $"<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌다.  (+{r.oldLevel} → +{r.newLevel})</color>";
                     break;
                 case EnhanceOutcome.Destroyed:
-                    Game.Audio.PlaySfx("player_down");
+                    Game.Audio.PlaySfx("enhance_break");
+                    EnhanceFx.Fail(bigIcon.rectTransform, true);
                     resultText.text = $"<color=#ff5050><b>강화 실패… 장비가 파괴되었다!</b></color>\n<color=#ff8080>{EquipmentDatabase.NameOfKey(r.oldKey)}</color>";
                     GameEvents.RaiseToast($"<color=#ff5050>장비 파괴: {EquipmentDatabase.NameOfKey(r.oldKey)}</color>");
                     break;

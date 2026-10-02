@@ -9,7 +9,7 @@ namespace DotRPG
     /// </summary>
     public class StatusBarsView : MonoBehaviour
     {
-        const float BarW = 320f, BarX = 76f, Pad = 5f;
+        const float BarW = 296f, BarX = 76f, Pad = 5f; // [UI] 18 + 76 + 296 < UiTheme.HudCurrencyMaxRight (centred boss bar)
 
         Image hpFill, hpLag, mpFill, xpFill;
         Text hpText, mpText, levelText, xpText;
@@ -74,19 +74,25 @@ namespace DotRPG
             hpShown = hpRatio;
             hpLagShown = hpLagShown > hpShown ? Mathf.MoveTowards(hpLagShown, hpShown, Time.unscaledDeltaTime * 0.6f) : hpShown;
             SetFill(hpFill, hpShown);
+            hpFill.color = UiTheme.ColorBlind ? new Color32(240, 140, 30, 255) : new Color32(214, 48, 49, 255);
             SetFill(hpLag, hpLagShown);
-            hpText.text = $"HP {hp.Current} / {hp.Max}";
+            // [P5] Format only when a number changes (no string garbage every frame).
+            if (hp.Current != shownHp || hp.Max != shownHpMax) { shownHp = hp.Current; shownHpMax = hp.Max; hpText.text = $"HP {hp.Current} / {hp.Max}"; }
 
             int maxMp = player.MaxMana;
             SetFill(mpFill, maxMp > 0 ? Game.Session.PlayerMana / maxMp : 0f);
-            mpText.text = maxMp > 0 ? $"MP {player.Mana} / {maxMp}" : "MP 없음 (피의 마법)";
+            int mpNow = player.Mana;
+            if (mpNow != shownMp || maxMp != shownMpMax) { shownMp = mpNow; shownMpMax = maxMp; mpText.text = maxMp > 0 ? $"MP {mpNow} / {maxMp}" : "MP 없음 (피의 마법)"; }
 
             var prog = Game.Session.Progression;
-            levelText.text = prog.Level.ToString();
+            if (prog.Level != shownLevel) { shownLevel = prog.Level; levelText.text = prog.Level.ToString(); }
             int need = prog.XpNeeded;
             float xpRatio = need > 0 ? (float)prog.Xp / need : 1f;
             SetFill(xpFill, xpRatio);
-            xpText.text = need > 0 ? $"EXP {xpRatio * 100f:0.0}%" : "EXP MAX";
+            int xpKey = need > 0 ? Mathf.FloorToInt(xpRatio * 1000f) : -2;
+            if (xpKey != shownXp) { shownXp = xpKey; xpText.text = need > 0 ? $"EXP {xpRatio * 100f:0.0}%" : "EXP MAX"; }
         }
+
+        int shownHp = -1, shownHpMax = -1, shownMp = -1, shownMpMax = -1, shownLevel = -1, shownXp = -1;
     }
 }

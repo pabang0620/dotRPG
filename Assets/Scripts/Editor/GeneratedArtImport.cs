@@ -116,6 +116,22 @@ namespace DotRPG.EditorTools
                 importer.SetTextureSettings(settings);
                 importer.SaveAndReimport();
             }
+            // [E4] Item icons (64 px = 1 world unit for drops), title logo and dungeon banners.
+            foreach (var file in System.IO.Directory.GetFiles("Assets/Resources/Art", "*.png"))
+            {
+                string name = System.IO.Path.GetFileNameWithoutExtension(file);
+                bool iconFile = name.StartsWith("eqicon_") || name.StartsWith("maticon_") || name.StartsWith("icon_");
+                bool wide = name == "ui_logo" || name.StartsWith("banner_");
+                if (!iconFile && !wide) continue;
+                var importer = Prepare(file.Replace('\\', '/'));
+                importer.spritePixelsPerUnit = iconFile ? 64f : 100f;
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteAlignment = (int)SpriteAlignment.Center;
+                settings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(settings);
+                importer.SaveAndReimport();
+            }
             // [ART] Generated character frames (Tools/art/process_characters.py): 128 px, feet 12 px up, ppu 72
             // so they stand as tall as the 64 px / ppu 36 warrior.
             foreach (var file in System.IO.Directory.GetFiles("Assets/Resources/Art", "char_*.png"))

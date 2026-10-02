@@ -50,8 +50,13 @@ namespace DotRPG
         public static string Frame(float t, int stage = 0, bool recovery = false)
         {
             int count = recovery ? RecoveryFrames : Frames;
-            return (recovery ? "settle" : "swing") + (Mathf.Clamp(stage, 0, 2) * count + Mathf.Clamp(Mathf.FloorToInt(t * count), 0, count - 1));
+            int i = Mathf.Clamp(stage, 0, 2) * count + Mathf.Clamp(Mathf.FloorToInt(t * count), 0, count - 1);
+            // [P5] Cached names: asked every frame while swinging.
+            var keys = recovery ? SettleKeys : SwingKeys;
+            if (i < keys.Length) return keys[i] ?? (keys[i] = (recovery ? "settle" : "swing") + i);
+            return (recovery ? "settle" : "swing") + i;
         }
+        static readonly string[] SwingKeys = new string[64], SettleKeys = new string[64];
         public static bool ReverseCut(Facing facing) => facing == Facing.Right || facing == Facing.UpRight || facing == Facing.DownRight;
         public static Vector2 Project(Vector2 v) => new Vector2(v.x, -v.y * .45f);
         static float Smooth(float t) => Mathf.SmoothStep(0, 1, Mathf.Clamp01(t));

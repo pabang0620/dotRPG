@@ -92,7 +92,7 @@ namespace DotRPG
             var data = Game.Saves.Read();
             if (data == null)
             {
-                GameEvents.RaiseToast("저장 데이터를 불러올 수 없습니다.");
+                GameEvents.RaiseToast(SaveSystem.LastReadNotice ?? "저장 데이터를 불러올 수 없습니다."); // [I] damaged save notice
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -102,6 +102,7 @@ namespace DotRPG
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
                 GameEvents.RaiseToast("저장된 지점에서 이어합니다.");
+                if (SaveSystem.LastReadNotice != null) GameEvents.RaiseToast(SaveSystem.LastReadNotice);
                 // [ENH] One-time note for saves converted to per-piece enhancement (v3 → v4).
                 if (data.enhanceCompensation > 0)
                 {

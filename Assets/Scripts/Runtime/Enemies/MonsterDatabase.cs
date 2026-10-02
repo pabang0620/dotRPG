@@ -253,7 +253,13 @@ namespace DotRPG
 
         static readonly Color32 Bone = C(240, 232, 212);
 
-        static void Add(MonsterDef d) => table[d.id] = d;
+        static void Add(MonsterDef d)
+        {
+            // [P3] Monsters with generated dot frames (Art/char_<lookId>_*) are drawn at the player's frame size:
+            // regular monsters 1:1, bosses scaled up by size / 1.25.
+            if (d.look != null && Resources.Load<Sprite>($"Art/char_{d.look.id}_down_idle0") != null) d.artScale = d.boss ? 1.25f : 1f;
+            table[d.id] = d;
+        }
 
         static void Build()
         {

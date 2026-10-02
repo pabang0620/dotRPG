@@ -39,6 +39,7 @@ namespace DotRPG
             yield return OnlineLoopback();
             yield return OnlinePartyFinder();
             yield return OnlineAuction();
+            yield return OnlineChat();
 
             Game.Config.autosave = autosave;
             log.WriteLine($"ONLINE summary: {onlinePassed} passed, {onlineFailed} failed");
@@ -224,13 +225,95 @@ namespace DotRPG
             yield return Shot("online_02_party_finder");
             OnlineServices.PartyFinder.Tick(20f);
             int humans = OnlineServices.PartyFinder.Queue.humans;
+            // [F4] Departure enters the queued dungeon. Saturday: every weekday dungeon is open.
+            var saturday = new DateTime(2026, 10, 3, 12, 0, 0);
+            ResetClock.NowOverride = () => saturday;
+            string queued = OnlineServices.PartyFinder.Queue.dungeonId;
             w.DevDepart();
-            yield return Wait(0.2f);
-            OCheck($"AI로 채워 출발: humans={humans} status='{w.DevStatus}' active={OnlineServices.PartyFinder.Queue.active}",
-                !OnlineServices.PartyFinder.Queue.active && w.DevStatus.Contains("AI 용병") && humans == 2);
+            yield return Wait(2.5f);
+            OCheck($"AI로 채워 출발 → 입장: humans={humans} status='{w.DevStatus}' active={OnlineServices.PartyFinder.Queue.active} inRun={Game.Dungeon.InRun} map={Game.Session.MapId} queued={queued} state={Game.State.Current}",
+                !OnlineServices.PartyFinder.Queue.active && w.DevStatus.Contains("AI 용병") && humans == 2 && Game.Dungeon.InRun && Game.State.Current == GameState.Playing);
+            yield return Shot("online_02b_matched_dungeon");
+            Game.Dungeon.ExitToVillage(false);
+            yield return Wait(2.5f);
             OnlineServices.PartyFinder.StartQueue(DungeonDatabase.Weekday[0].id, DungeonDifficulty.Normal);
             OnlineServices.PartyFinder.Tick(PartyFinderRules.QueueSeconds + 0.5f);
-            OCheck($"queue times out after {PartyFinderRules.QueueSeconds}s: active={OnlineServices.PartyFinder.Queue.active}", !OnlineServices.PartyFinder.Queue.active);
+            yield return Wait(2.5f);
+            OCheck($"queue times out after {PartyFinderRules.QueueSeconds}s and departs: active={OnlineServices.PartyFinder.Queue.active} inRun={Game.Dungeon.InRun}",
+                !OnlineServices.PartyFinder.Queue.active && Game.Dungeon.InRun);
+            Game.Dungeon.ExitToVillage(false);
+            yield return Wait(2.5f);
+            ResetClock.NowOverride = null;
+            OCheck($"back in the village: map={Game.Session.MapId} inRun={Game.Dungeon.InRun}", Game.Session.MapId == MapRegistry.Village && !Game.Dungeon.InRun);
+        }
+
+        // ---------- [F5] 채팅 · 빠른 신호 · 친구/차단/신고 ----------
+        IEnumerator OnlineChat()
+        {
+            var mock = OnlineServices.Chat as MockChatService;
+            var view = ChatView.Instance;
+            if (view == null || mock == null) { OCheck($"chat missing: view={view != null} mock={mock != null}", false); yield break; }
+            foreach (var n in mock.Blocked.ToList()) mock.Unblock(n);
+            mock.Tick(ChatRules.MuteSeconds + 1f);
+
+            string first = mock.Send(ChatChannel.General, "안녕하세요");
+            string tooFast = mock.Send(ChatChannel.General, "또 안녕");
+            OCheck($"chat rate limit: first={first ?? "sent"} second='{tooFast}'", first == null && tooFast != null && tooFast.Contains("1초"));
+            mock.Tick(1.1f); mock.Send(ChatChannel.General, "도배");
+            mock.Tick(1.1f); mock.Send(ChatChannel.General, "도배");
+            mock.Tick(1.1f); mock.Send(ChatChannel.General, "도배");
+            mock.Tick(1.1f);
+            string muted = mock.Send(ChatChannel.General, "이제 됨?");
+            OCheck($"same line 3x mutes 10s: '{muted}'", muted != null && muted.Contains("막혔습니다"));
+            mock.Tick(ChatRules.MuteSeconds);
+            mock.Send(ChatChannel.Party, "이 시발 보스");
+            var last = mock.Lines[mock.Lines.Count - 1];
+            OCheck($"word filter preview: '{last.text}' channel={last.channel}", last.text.Contains("**") && !last.text.Contains("시발") && last.channel == ChatChannel.Party);
+
+            // Typing must not swing the sword: open the input line, check the input gate.
+            view.Open(null);
+            yield return null;
+            yield return null;
+            bool gate = InputReader.TextInputActive && view.Typing;
+            yield return Shot("online_08_chat_typing");
+            view.Close();
+            yield return null;
+            OCheck($"chat input blocks game keys while open: gate={gate} closed={!view.Typing && !InputReader.TextInputActive}", gate && !view.Typing && !InputReader.TextInputActive);
+
+            mock.Tick(1.1f);
+            bool signal = view.QuickSignal(3);
+            yield return Wait(0.3f);
+            last = mock.Lines[mock.Lines.Count - 1];
+            OCheck($"quick signal 4~8: sent={signal} line='{last.text}' channel={last.channel}", signal && last.text == ChatRules.QuickSignals[3] && last.channel == ChatChannel.Party);
+            yield return Shot("online_09_quick_signal");
+
+            mock.Tick(60f); // generated village voices
+            string speaker = mock.RecentSpeakers().FirstOrDefault(n => n != Game.Session.Journal.PlayerName);
+            OCheck($"village chatter arrives: speaker={speaker} lines={mock.Lines.Count}", !string.IsNullOrEmpty(speaker));
+            mock.Block(speaker);
+            int before = mock.Lines.Count;
+            for (int i = 0; i < 12; i++) mock.Tick(60f);
+            bool leaked = mock.Lines.Skip(before).Any(l => l.from == speaker);
+            OCheck($"blocked player is silenced: blocked={mock.IsBlocked(speaker)} leaked={leaked} whisper='{mock.Send(ChatChannel.Whisper, "hi", speaker)}'", mock.IsBlocked(speaker) && !leaked);
+            string report = mock.Report(speaker, ChatRules.ReportReasons[1]);
+            OCheck($"report attaches the last {ChatRules.ReportLines} lines: n={mock.Reports.Count} lines={mock.Reports[0].log.Count} '{report}'",
+                mock.Reports.Count == 1 && mock.Reports[0].log.Count == Math.Min(ChatRules.ReportLines, mock.Lines.Count));
+
+            GameEvents.RaiseToast("<color=#ffd84a>[알림]</color> 아린님이 철검 강화에 성공했습니다!");
+            last = mock.Lines[mock.Lines.Count - 1];
+            OCheck($"+10 notice reaches the system channel: '{last.text}'", last.channel == ChatChannel.System && last.text.StartsWith("아린님이"));
+
+            // Friends window.
+            var social = SocialScreen.Instance;
+            Game.Flow.OpenWindow(social);
+            yield return Wait(0.5f);
+            yield return Shot("online_10_friends");
+            social.DevOpenPerson("검은뿔");
+            yield return Wait(0.3f);
+            yield return Shot("online_11_friend_actions");
+            OCheck($"friends window: open={social.gameObject.activeInHierarchy} title='{social.DevTitle}' friends={mock.Friends.Count}",
+                social.gameObject.activeInHierarchy && social.DevTitle == "검은뿔");
+            mock.Unblock(speaker); // keep the settings file clean for the next run
             Game.Flow.CloseInventory();
             yield return Wait(0.4f);
         }

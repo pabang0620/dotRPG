@@ -22,6 +22,9 @@ namespace DotRPG
         public TitleScreen Title { get; private set; }
         public PauseScreen Pause { get; private set; }
         public SettingsScreen Settings { get; private set; }
+        public KeyBindScreen KeyBind { get; private set; }
+        public SaveSlotScreen Slots { get; private set; }
+        public HelpScreen Help { get; private set; }
         public ControlsScreen Controls { get; private set; }
         public GameOverScreen GameOver { get; private set; }
         public EndingScreen Ending { get; private set; }
@@ -79,6 +82,15 @@ namespace DotRPG
 
         public MenuScreen Top => stack.Count > 0 ? stack[stack.Count - 1] : null;
 
+        /// <summary>[I] Text / UI size setting: a smaller reference resolution makes everything bigger.</summary>
+        public void ApplyUiScale(int index)
+        {
+            var holder = GetComponent<UIRootScale>();
+            if (holder == null || holder.scaler == null) return;
+            float k = UiTheme.UiScales[Mathf.Clamp(index, 0, UiTheme.UiScales.Length - 1)];
+            holder.scaler.referenceResolution = UIFactory.ReferenceResolution / k;
+        }
+
         public static UIRoot Create(Transform parent)
         {
             var go = new GameObject("UI");
@@ -88,6 +100,7 @@ namespace DotRPG
             canvas.sortingOrder = 100;
             canvas.pixelPerfect = false;
             var scaler = go.AddComponent<CanvasScaler>();
+            go.AddComponent<UIRootScale>().scaler = scaler;
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = UIFactory.ReferenceResolution;
             // [UI] Expand: the 1280x720 reference always fits inside the canvas, so 16:10 (Steam Deck 1280x800)
@@ -107,6 +120,9 @@ namespace DotRPG
             ui.GameOver = GameOverScreen.Create(t, ui);
             ui.Ending = EndingScreen.Create(t, ui);
             ui.Settings = SettingsScreen.Create(t, ui);
+            ui.KeyBind = KeyBindScreen.Create(t, ui); // [I]
+            ui.Slots = SaveSlotScreen.Create(t, ui); // [I]
+            ui.Help = HelpScreen.Create(t, ui); // [E5]
             ui.Controls = ControlsScreen.Create(t, ui);
             ui.CharacterSelect = CharacterSelectScreen.Create(t, ui);
             ui.Equipment = EquipmentScreen.Create(t, ui);
@@ -120,6 +136,7 @@ namespace DotRPG
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
             PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
+            SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);
 
@@ -212,9 +229,10 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { Title, Pause, Settings, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
+            foreach (var s in new MenuScreen[] { Title, Pause, Settings, KeyBind, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
+            if (SocialScreen.Instance != null) SocialScreen.Instance.Hide(); // [F5]
             if (DungeonResult != null) DungeonResult.Hide(); // [DUNGEON]
         }
 
@@ -232,5 +250,11 @@ namespace DotRPG
 
         /// <summary>The yes/no dialog (for automated checks).</summary>
         public ConfirmScreen ConfirmDialog => confirm;
+    }
+
+    /// <summary>Keeps the UI canvas scaler for <see cref="UIRoot.ApplyUiScale"/>.</summary>
+    public class UIRootScale : MonoBehaviour
+    {
+        public CanvasScaler scaler;
     }
 }

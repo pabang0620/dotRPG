@@ -91,6 +91,8 @@ namespace DotRPG
             BossHpBarView.Create(root); // [MONSTER] boss bar, auto-binds to EnemyController.BossSpawned
             MinimapView.Create(root);
             DungeonHudView.Create(root); // [DUNGEON] clock, room map, CLEAR banner, coin countdown
+            TipView.Create(root); // [E5] first-time tips
+            ChatView.Create(root); // [F5] chat box + quick signals
             questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -16 - MinimapView.Diameter - 32), new Vector2(360, 130));
             var qbg = UIFactory.Panel(questPanel, "Bg", true);
             UIFactory.Stretch(qbg.rectTransform);
@@ -316,13 +318,23 @@ namespace DotRPG
             if (mobilityPlayer != null)
             {
                 float remaining = mobilityPlayer.MobilityCooldownRemaining;
-                string state = mobilityPlayer.IsDashing ? "이동 중" : remaining > 0f ? $"{remaining:0.0}초" : "준비";
-                mobilityHint.text = $"[{Game.Input.GetBindingLabel(GameAction.Mobility)}] {mobilityPlayer.MobilityName}  {state}";
+                string key = Game.Input.GetBindingLabel(GameAction.Mobility);
+                int stateKey = mobilityPlayer.IsDashing ? -2 : Mathf.CeilToInt(remaining * 10f);
+                if (stateKey != mobilityStateShown || !ReferenceEquals(key, mobilityKeyShown) || !ReferenceEquals(mobilityPlayer.MobilityName, mobilityNameShown))
+                {
+                    mobilityStateShown = stateKey; mobilityKeyShown = key; mobilityNameShown = mobilityPlayer.MobilityName;
+                    string state = mobilityPlayer.IsDashing ? "이동 중" : remaining > 0f ? $"{remaining:0.0}초" : "준비";
+                    mobilityHint.text = $"[{key}] {mobilityPlayer.MobilityName}  {state}";
+                }
                 mobilityHint.color = remaining > 0f ? new Color(.7f, .74f, .8f) : new Color(.65f, .94f, 1f);
             }
             UpdatePrompt();
             RefreshControls(false);
         }
+
+        // [P5] Last values shown in the mobility hint (format only on change).
+        int mobilityStateShown = int.MinValue;
+        string mobilityKeyShown, mobilityNameShown;
 
         void UpdatePrompt()
         {

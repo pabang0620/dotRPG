@@ -20,7 +20,7 @@ namespace DotRPG
         const float GapMin = 0.6f, GapMax = 1.3f;
         const float FirstPatternDelay = 1.2f;
         /// <summary>Raid totems: both must break within this many seconds of each other.</summary>
-        public const float TotemWindow = 5f;
+        public const float TotemWindow = 8f; // [P1] 5 s left no room once the party split up
         const float TotemOffsetX = 4.5f, TotemOffsetY = 1.2f;
         /// <summary>Phase-2 summons while the totems stand: this many skeletons every <see cref="SummonEvery"/> s.</summary>
         public const float SummonEvery = 8f;
@@ -478,6 +478,8 @@ namespace DotRPG
         void RaiseTotem(TotemSlot slot)
         {
             var t = MonsterDatabase.SpawnMinion(MonsterDatabase.Totem, slot.spot, E.transform.parent, E);
+            // [P1] Half of the party breaks each totem: half the summoner's HP scaling.
+            t.Health.SetMax(Mathf.Max(1, t.Health.Max / 2), true);
             slot.live = t;
             slot.diedAt = -1f;
             MonsterFx.SummonCircle(slot.spot, 0.8f);
@@ -500,6 +502,7 @@ namespace DotRPG
             {
                 TotemsCleared = true;
                 CompanionBrain.PriorityTarget = null;
+                CompanionBrain.PriorityTargetAlt = null;
                 Announce?.Invoke(this, "사령 토템 파괴!", SoulGlow);
                 return;
             }
@@ -512,9 +515,12 @@ namespace DotRPG
                 Announce?.Invoke(this, "사령 토템 부활", SoulGlow);
             }
             // Companions go for a standing totem first.
-            EnemyController focus = null;
-            foreach (var s in totems) if (s.live != null && !s.live.IsDead) { focus = s.live; break; }
+            // [P1] Two standing totems: the party splits so both break inside the window.
+            EnemyController focus = null, second = null;
+            foreach (var s in totems)
+                if (s.live != null && !s.live.IsDead) { if (focus == null) focus = s.live; else if (second == null) second = s.live; }
             CompanionBrain.PriorityTarget = focus;
+            CompanionBrain.PriorityTargetAlt = second;
         }
 
         protected override void OnDied(EnemyController e)

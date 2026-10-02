@@ -16,6 +16,8 @@ namespace DotRPG
         /// <summary>Payload: party slot byte + <see cref="NetCommand"/>.</summary>
         public const byte Input = 1;
         public const byte Chat = 2;
+        /// <summary>[F2] Where a player stands in the shared village (map, position, facing, class, name).</summary>
+        public const byte Presence = 3;
     }
 
     /// <summary>

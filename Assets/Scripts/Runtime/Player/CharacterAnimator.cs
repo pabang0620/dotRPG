@@ -97,7 +97,7 @@ namespace DotRPG
             string frame;
             switch (current)
             {
-                case CharacterAnim.Walk: frame = SilverWarriorArt.Supports(look.id) ? "walk" + FrameIndex() : WalkFrames[FrameIndex()]; break;
+                case CharacterAnim.Walk: frame = SilverWarriorArt.Supports(look.id) ? SilverWalk(FrameIndex()) : WalkFrames[FrameIndex()]; break;
                 case CharacterAnim.Attack:
                     if (combat == null) combat = GetComponent<PlayerCombat>();
                     frame = SilverWarriorArt.Supports(look.id) ? (combat != null && combat.IsAttacking ? combat.AttackFrame : WarriorAttackMotion.Frame(Mathf.Clamp01(timer / WarriorAttackMotion.Duration))) : "attack";
@@ -106,11 +106,20 @@ namespace DotRPG
                 default: frame = IdleFrames[FrameIndex()]; break;
             }
             FrameKey = frame;
+            // [P5] Same look, facing and frame as last time: nothing to do (the sprite lookup builds a key string).
+            if (ReferenceEquals(look, shownLook) && facing == shownFacing && ReferenceEquals(frame, shownFrame) && target.sprite != null) return;
+            shownLook = look; shownFacing = facing; shownFrame = frame;
             target.sprite = Game.Art.GetCharacter(look, SilverWarriorArt.Supports(look.id) ? SilverWarriorArt.ViewKey(facing) : facing.SpriteKey(), frame);
             target.flipX = !SilverWarriorArt.Supports(look.id) && facing.IsLeft();
             if (SilverWarriorArt.Supports(look.id)) SilverWarriorPresentation.ApplyMaterial(target);
             else HdMaterial.Apply(target);
         }
+
+        CharacterLook shownLook;
+        Facing shownFacing;
+        string shownFrame;
+        static readonly string[] SilverWalkKeys = new string[16];
+        static string SilverWalk(int i) => i >= 0 && i < SilverWalkKeys.Length ? (SilverWalkKeys[i] ?? (SilverWalkKeys[i] = "walk" + i)) : "walk" + i;
 
         /// <summary>Swaps the look (e.g. new clothes) keeping the current animation.</summary>
         public void SetLook(CharacterLook characterLook)

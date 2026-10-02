@@ -11,6 +11,10 @@ namespace DotRPG
     /// </summary>
     public static class UiTheme
     {
+        /// <summary>[I] Colour-blind mode (settings): danger zones turn violet/white, HP orange.</summary>
+        public static bool ColorBlind;
+        public static readonly float[] UiScales = { 0.9f, 1f, 1.15f, 1.3f };
+        public static readonly string[] UiScaleNames = { "작게", "보통", "크게", "아주 크게" };
         // ---------- Colours ----------
         /// <summary>Full-screen window background.</summary>
         public static readonly Color Background = new Color32(34, 52, 76, 255);

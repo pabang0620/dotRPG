@@ -121,6 +121,27 @@ namespace DotRPG
         /// Basic scripted play for the local hero until the run ends: walk to the nearest monster, basic attack,
         /// cycle the four skills, take revives, step through open gates. Companions use their own AI.
         /// </summary>
+        /// <summary>Monster ids killed since the last room check (themed-monster check counts them as present).</summary>
+        static readonly List<string> roomKills = new List<string>();
+        static bool roomKillHooked;
+
+        static int lastTotemRevives;
+        static int KingTotemRevives() => lastTotemRevives;
+
+        /// <summary>Shortest way out of a telegraphed area.</summary>
+        static Vector2 EscapeDirection(Telegraph t, Vector2 feet)
+        {
+            Vector2 to = feet - t.Origin;
+            switch (t.Shape)
+            {
+                case TelegraphShape.Donut: return to.sqrMagnitude > 0.0001f ? -to.normalized : Vector2.down; // the safe spot is the middle
+                case TelegraphShape.Rect:
+                    var side = new Vector2(-t.Direction.y, t.Direction.x);
+                    return (Vector2.Dot(to, side) >= 0f ? side : -side).normalized;
+                default: return to.sqrMagnitude > 0.0001f ? to.normalized : Vector2.down;
+            }
+        }
+
         IEnumerator ScriptedRun(SimResult res, float scale, float cap)
         {
             var dir = Game.Dungeon;
@@ -129,6 +150,7 @@ namespace DotRPG
             var script = new ScriptedInput();
             var brain = local.Input;
             local.Input = script;
+            float nextDiag = 0f;
             float nextAttack = 0f, nextSkill = 0f, doorAt = -1f, nextPotion = 0f, nextManaPotion = 0f, retreatUntil = 0f, retreatReadyAt = 0f;
             int slot = 0;
             while (run != null && !run.IsOver && run.Elapsed < cap)
@@ -143,8 +165,23 @@ namespace DotRPG
                 }
                 if (dir.IsBusy || local.IsDead) { script.Move = Vector2.zero; yield return null; continue; }
                 foreach (var e in EnemyController.Active)
-                    if (e != null && !e.IsDead && e.IsBoss && e.Behaviour is BossBrain bb) res.maxPhase = Mathf.Max(res.maxPhase, bb.Phase);
-                var target = DungeonEnemies().OrderBy(e => Vector2.Distance(e.Position, local.Position)).FirstOrDefault();
+                    if (e != null && !e.IsDead && e.IsBoss && e.Behaviour is BossBrain bb) { res.maxPhase = Mathf.Max(res.maxPhase, bb.Phase); lastTotemRevives = bb.TotemRevives; }
+                // Raid diagnosis: one line every 20 game seconds (boss HP, phase, totems, adds, party alive).
+                if (run.Dungeon.isRaid && run.Elapsed >= nextDiag)
+                {
+                    nextDiag = run.Elapsed + 20f;
+                    var boss = EnemyController.Active.FirstOrDefault(e => e != null && !e.IsDead && e.IsBoss);
+                    var bbd = boss != null ? boss.Behaviour as BossBrain : null;
+                    int adds = DungeonEnemies().Count(e => !e.IsBoss && e.Def != null && e.Def.id != MonsterDatabase.Totem);
+                    int tot = DungeonEnemies().Count(e => e.Def != null && e.Def.id == MonsterDatabase.Totem);
+                    int alive = Game.Party.Members.Count(m => m != null && !m.IsDead);
+                    log?.WriteLine($"RAIDDIAG t={run.Elapsed:0} room={run.RoomIndex} boss={(boss != null ? $"{boss.Health.Current * 100 / Mathf.Max(1, boss.Health.Max)}%" : "-")} phase={bbd?.Phase} totems={tot} adds={adds} alive={alive}/{Game.Party.Members.Count} hp={local.Health.Current}/{local.Health.Max} revivesUsed={run.RevivesUsed} potions={Game.Session.Inventory.Count(ConsumableDatabase.HpPotion)}");
+                }
+                // [P1] Raid gimmick: while totems stand, take the totem the companions are NOT on so both fall together.
+                var totems = DungeonEnemies().Where(e => e.Def != null && e.Def.id == MonsterDatabase.Totem).ToList();
+                var target = totems.Count > 0
+                    ? totems.OrderBy(e => e == CompanionBrain.PriorityTarget ? 1 : 0).ThenBy(e => Vector2.Distance(e.Position, local.Position)).First()
+                    : DungeonEnemies().OrderBy(e => Vector2.Distance(e.Position, local.Position)).FirstOrDefault();
                 if (target == null)
                 {
                     script.Move = Vector2.zero;
@@ -168,6 +205,16 @@ namespace DotRPG
                 {
                     nextManaPotion = Time.time + 0.5f;
                     local.UseConsumable(ConsumableDatabase.MpPotion);
+                }
+                // Step out of a boss warning area like a player would (망자의 심판 cannot be dodged: it is broken by hitting).
+                var danger = Telegraph.Active.FirstOrDefault(t => t != null && !t.Resolved && !t.Cancelled && t.Contains(local.Position)
+                    && !(t.Owner != null && t.Owner.Behaviour is BossBrain jb && jb.CastingJudgment && t.Shape == TelegraphShape.Circle && t.Radius > 8f));
+                if (danger != null)
+                {
+                    script.Move = EscapeDirection(danger, local.Position);
+                    script.Aim = (target.Center - local.Center).normalized;
+                    yield return null;
+                    continue;
                 }
                 Vector2 to = target.Position - local.Position;
                 float reach = 0.9f + 0.35f * target.Size;
@@ -299,16 +346,20 @@ namespace DotRPG
                 // Earlier checks spent today's entries: start each themed run with a fresh daily count.
                 Game.Session.Dungeons.DevClearEntries();
                 var def = DungeonDatabase.Weekday[d];
+                if (!roomKillHooked) { roomKillHooked = true; GameEvents.EnemyKilled += id => roomKills.Add(id); }
                 bool entered = dir.Enter(def, DungeonDifficulty.Normal);
                 yield return Wait(1.4f);
                 var run = dir.Run;
                 local = Game.Player;
                 var missing = new List<string>();
                 var seen = new HashSet<string>();
+                roomKills.Clear();
                 bool questHidden = true;
                 for (int room = 0; entered && run != null && room < def.RoomCount; room++)
                 {
                     var alive = DungeonEnemies().Where(e => e.Summoner == null && e.Def != null).Select(e => e.Def.id).ToList();
+                    alive.AddRange(roomKills); // companions may already have killed some before the check
+                    roomKills.Clear();
                     foreach (var id in alive) seen.Add(id);
                     foreach (var g in def.rooms[room].groups)
                         if (alive.Count(id => id == g.monsterId) < g.count) missing.Add($"r{room}:{g.monsterId}");
@@ -363,7 +414,7 @@ namespace DotRPG
             var ids = DungeonEnemies().Where(e => e.Def != null).Select(e => e.Def.id).Distinct().OrderBy(s => s).ToList();
             var res = new SimResult();
             if (rEntered) yield return ScriptedRun(res, RaidCheckTimeScale, SimCapSeconds);
-            DCheck($"raid scripted clear: entered={rEntered} room1=[{string.Join(",", ids)}] cleared={res.cleared} time={res.seconds:0}s revives={res.revives} kingPhase={res.maxPhase}/3 timeScale={RaidCheckTimeScale}",
+            DCheck($"raid scripted clear: entered={rEntered} room1=[{string.Join(",", ids)}] cleared={res.cleared} time={res.seconds:0}s revives={res.revives} kingPhase={res.maxPhase}/3 totemRevives={KingTotemRevives()} timeScale={RaidCheckTimeScale}",
                 rEntered && res.cleared && res.maxPhase >= 3 && ids.Contains("skel_knight"));
             yield return Shot("dgn_25_raid_scripted_end");
             DCheck($"raid weekly lock honoured: claimedBefore={claimedBefore} practiceLocked={locked} cards={raid?.Cards?.Count ?? 0} stillClaimed={!Game.Session.Dungeons.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now)}",

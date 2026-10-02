@@ -32,6 +32,7 @@ namespace DotRPG
 
             Game.Input = gameObject.AddComponent<InputReader>();
             Game.Input.Initialize(Game.Settings.Data.bindingOverridesJson);
+            InputReader.LoadKeyOverrides(Game.Settings.Data.keyOverrides); // [I]
             Game.Audio = AudioManager.Create(transform);
             Game.Settings.Apply();
 

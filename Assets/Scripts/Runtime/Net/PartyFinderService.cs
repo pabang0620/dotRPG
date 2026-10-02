@@ -60,6 +60,8 @@ namespace DotRPG
         int DepartWithAi();
         void Tick(float deltaSeconds);
         event Action Changed;
+        /// <summary>The queue ended and the party leaves: (state at departure, AI count).</summary>
+        event Action<MatchQueueState, int> Departed;
     }
 
     /// <summary>[ONLINE] In-memory 파티 찾기 with generated posts. Nothing leaves this PC.</summary>
@@ -75,6 +77,7 @@ namespace DotRPG
         public bool IsOnline => false;
         public MatchQueueState Queue { get; } = new MatchQueueState();
         public event Action Changed;
+        public event Action<MatchQueueState, int> Departed;
 
         public MockPartyFinderService(int seed = 11)
         {
@@ -173,6 +176,7 @@ namespace DotRPG
             int ai = PartyManager.MaxMembers - Queue.humans;
             Queue.active = false;
             Changed?.Invoke();
+            Departed?.Invoke(Queue, ai);
             return ai;
         }
 
@@ -193,5 +197,19 @@ namespace DotRPG
         static IAuctionService auction;
         public static IPartyFinderService PartyFinder { get => partyFinder ?? (partyFinder = new MockPartyFinderService()); set => partyFinder = value; }
         public static IAuctionService Auction { get => auction ?? (auction = new MockAuctionService()); set => auction = value; }
+        static IChatService chat;
+        /// <summary>[F5] Friends and blocks persist with the settings until an account server exists.</summary>
+        public static IChatService Chat
+        {
+            get => chat ?? (chat = new MockChatService(Game.Settings?.Data?.chatFriends, Game.Settings?.Data?.chatBlocked));
+            set => chat = value;
+        }
+        public static void SaveSocial()
+        {
+            if (!(chat is MockChatService mock) || Game.Settings?.Data == null) return;
+            Game.Settings.Data.chatFriends = mock.SaveFriends();
+            Game.Settings.Data.chatBlocked = mock.SaveBlocked();
+            Game.Settings.Save();
+        }
     }
 }

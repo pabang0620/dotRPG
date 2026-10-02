@@ -88,9 +88,10 @@ namespace DotRPG
     public sealed class Telegraph : MonoBehaviour
     {
         // ---------- Look ----------
-        static readonly Color EdgeColor = new Color(1f, 0.32f, 0.26f, 0.95f);
-        static readonly Color FillColor = new Color(0.95f, 0.08f, 0.05f, 0.34f);
-        static readonly Color FlashColor = new Color(1f, 0.75f, 0.45f, 0.85f);
+        // [I] Colour-blind mode swaps the red for violet with a white edge (readable over green grass).
+        static Color EdgeColor => UiTheme.ColorBlind ? new Color(1f, 1f, 1f, 0.95f) : new Color(1f, 0.32f, 0.26f, 0.95f);
+        static Color FillColor => UiTheme.ColorBlind ? new Color(0.62f, 0.2f, 0.95f, 0.4f) : new Color(0.95f, 0.08f, 0.05f, 0.34f);
+        static Color FlashColor => UiTheme.ColorBlind ? new Color(0.85f, 0.7f, 1f, 0.85f) : new Color(1f, 0.75f, 0.45f, 0.85f);
         /// <summary>Telegraph textures are 64px = 4 world units across (rect: 16px = 1 unit, 9-sliced).</summary>
         const float TextureUnits = 4f;
         const float FlashTime = 0.22f;

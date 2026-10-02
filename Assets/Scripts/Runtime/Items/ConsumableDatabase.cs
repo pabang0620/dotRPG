@@ -54,7 +54,7 @@ namespace DotRPG
                 description = "펼치면 빛에 감싸여 작은 마을 광장으로 돌아간다. 사냥터에서 쓰면 편리하다." },
             new ConsumableItem { id = ProtectTicket, name = "장비 보호권", iconKey = "icon_ticket", kind = ConsumableKind.Protection, grade = ItemRarity.Unique,
                 description = "강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다." },
-            new ConsumableItem { id = DungeonDatabase.SealKey, name = "봉인 열쇠 조각", iconKey = "icon_ticket", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+            new ConsumableItem { id = DungeonDatabase.SealKey, name = "봉인 열쇠 조각", iconKey = "icon_key", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
         };
 

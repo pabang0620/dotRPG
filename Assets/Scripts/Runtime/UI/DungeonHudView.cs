@@ -12,6 +12,8 @@ namespace DotRPG
     /// </summary>
     public class DungeonHudView : MonoBehaviour
     {
+        int shownSecond = -1, shownRoom = -1;
+
         // ---------- Layout ----------
         public const float ClockWidth = 420f, ClockHeight = 50f, ClockTop = 12f;
         /// <summary>Lowest point of the clock panel (the boss HP bar may start below this).</summary>
@@ -133,9 +135,16 @@ namespace DotRPG
             }
             if (!inRun) return;
 
-            clockText.text = $"<size=18><color=#b8c4d8>시간</color></size>  {DungeonRun.Clock(run.Elapsed)}";
-            string revivesTag = run.RevivesLeft > 0 ? $"부활 {run.RevivesLeft}" : "<color=#ff8a7a>부활 0</color>";
-            roomText.text = $"방 <color=#ffe066>{run.RoomIndex + 1}</color>/{run.RoomCount}    {revivesTag}";
+            // [P5] Re-format only when the second, room or revive count changes.
+            int sec = Mathf.FloorToInt(run.Elapsed);
+            if (sec != shownSecond) { shownSecond = sec; clockText.text = $"<size=18><color=#b8c4d8>시간</color></size>  {DungeonRun.Clock(run.Elapsed)}"; }
+            int roomKey = (run.RoomIndex * 100 + run.RoomCount) * 100 + run.RevivesLeft;
+            if (roomKey != shownRoom)
+            {
+                shownRoom = roomKey;
+                string revivesTag = run.RevivesLeft > 0 ? $"부활 {run.RevivesLeft}" : "<color=#ff8a7a>부활 0</color>";
+                roomText.text = $"방 <color=#ffe066>{run.RoomIndex + 1}</color>/{run.RoomCount}    {revivesTag}";
+            }
             RefreshRoomMap(run);
 
             // CLEAR: pops in big, settles, stays until the result opens.

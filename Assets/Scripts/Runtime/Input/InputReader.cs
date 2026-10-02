@@ -130,7 +130,19 @@ namespace DotRPG
 #else
             ReadLegacy();
 #endif
+            if (TextInputActive) ClearForTyping();
             UpdateNavigateRepeat();
+        }
+
+        /// <summary>[F5] True while a chat field has focus: typed letters must not swing the sword or open the bag.</summary>
+        public static bool TextInputActive;
+
+        void ClearForTyping()
+        {
+            Move = Vector2.zero;
+            MobilityPressed = AttackPressed = InteractPressed = UseItemPressed = SubmitPressed = InventoryPressed = false;
+            Skill1Pressed = Skill2Pressed = Skill3Pressed = Skill4Pressed = Skill5Pressed = UseManaPressed = TownScrollPressed = false;
+            PausePressed = CancelPressed = false;
         }
 
         void UpdateNavigateRepeat()
@@ -195,6 +207,7 @@ namespace DotRPG
 
         static string DefaultLabel(GameAction action, bool gamepad)
         {
+            if (!gamepad && System.Array.IndexOf(Rebindable, action) >= 0) return KeyLabel(KeyboardKey(action));
             switch (action)
             {
                 case GameAction.Move: return gamepad ? "L스틱" : "방향키";
@@ -373,21 +386,131 @@ namespace DotRPG
 
         Vector2 ReadNavigateVector() => navigateAction != null ? navigateAction.ReadValue<Vector2>() : Vector2.zero;
 #else
-        static readonly KeyCode[] MobilityKeys = { KeyCode.LeftShift, KeyCode.RightShift, KeyCode.JoystickButton1 };
-        static readonly KeyCode[] AttackKeys = { KeyCode.X, KeyCode.JoystickButton2 };
-        static readonly KeyCode[] InteractKeys = { KeyCode.F, KeyCode.JoystickButton0 };
-        static readonly KeyCode[] UseItemKeys = { KeyCode.Alpha1, KeyCode.JoystickButton3 };
+        // [I] Keyboard keys can be rebound (KeyBindScreen); gamepad buttons stay fixed.
+        static KeyCode[] MobilityKeys = { KeyCode.LeftShift, KeyCode.RightShift, KeyCode.JoystickButton1 };
+        static KeyCode[] AttackKeys = { KeyCode.X, KeyCode.JoystickButton2 };
+        static KeyCode[] InteractKeys = { KeyCode.F, KeyCode.JoystickButton0 };
+        static KeyCode[] UseItemKeys = { KeyCode.Alpha1, KeyCode.JoystickButton3 };
         static readonly KeyCode[] PauseKeys = { KeyCode.Escape, KeyCode.JoystickButton7 };
         static readonly KeyCode[] SubmitKeys = { KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Space, KeyCode.F, KeyCode.X, KeyCode.JoystickButton0 };
         static readonly KeyCode[] CancelKeys = { KeyCode.Escape, KeyCode.Backspace, KeyCode.JoystickButton1 };
-        static readonly KeyCode[] InventoryKeys = { KeyCode.I, KeyCode.Tab, KeyCode.JoystickButton6 };
-        static readonly KeyCode[] Skill1Keys = { KeyCode.Q, KeyCode.JoystickButton4 };
-        static readonly KeyCode[] Skill2Keys = { KeyCode.W, KeyCode.JoystickButton5 };
-        static readonly KeyCode[] Skill3Keys = { KeyCode.E };
-        static readonly KeyCode[] Skill4Keys = { KeyCode.R };
-        static readonly KeyCode[] Skill5Keys = { KeyCode.T, KeyCode.JoystickButton9 };
-        static readonly KeyCode[] ManaKeys = { KeyCode.Alpha2, KeyCode.JoystickButton8 };
-        static readonly KeyCode[] ScrollKeys = { KeyCode.Alpha3 };
+        static KeyCode[] InventoryKeys = { KeyCode.I, KeyCode.Tab, KeyCode.JoystickButton6 };
+        static KeyCode[] Skill1Keys = { KeyCode.Q, KeyCode.JoystickButton4 };
+        static KeyCode[] Skill2Keys = { KeyCode.W, KeyCode.JoystickButton5 };
+        static KeyCode[] Skill3Keys = { KeyCode.E };
+        static KeyCode[] Skill4Keys = { KeyCode.R };
+        static KeyCode[] Skill5Keys = { KeyCode.T, KeyCode.JoystickButton9 };
+        static KeyCode[] ManaKeys = { KeyCode.Alpha2, KeyCode.JoystickButton8 };
+        static KeyCode[] ScrollKeys = { KeyCode.Alpha3 };
+
+        /// <summary>[I] Actions whose keyboard key the player can change, in the order the screen lists them.</summary>
+        public static readonly GameAction[] Rebindable =
+        {
+            GameAction.Attack, GameAction.Mobility, GameAction.Interact, GameAction.Skill1, GameAction.Skill2, GameAction.Skill3,
+            GameAction.Skill4, GameAction.Skill5, GameAction.UseItem, GameAction.UseMana, GameAction.TownScroll, GameAction.Inventory,
+        };
+
+        static readonly System.Collections.Generic.Dictionary<GameAction, KeyCode> keyOverrides = new System.Collections.Generic.Dictionary<GameAction, KeyCode>();
+
+        public static KeyCode DefaultKey(GameAction a)
+        {
+            switch (a)
+            {
+                case GameAction.Attack: return KeyCode.X;
+                case GameAction.Mobility: return KeyCode.LeftShift;
+                case GameAction.Interact: return KeyCode.F;
+                case GameAction.Skill1: return KeyCode.Q;
+                case GameAction.Skill2: return KeyCode.W;
+                case GameAction.Skill3: return KeyCode.E;
+                case GameAction.Skill4: return KeyCode.R;
+                case GameAction.Skill5: return KeyCode.T;
+                case GameAction.UseItem: return KeyCode.Alpha1;
+                case GameAction.UseMana: return KeyCode.Alpha2;
+                case GameAction.TownScroll: return KeyCode.Alpha3;
+                case GameAction.Inventory: return KeyCode.I;
+                default: return KeyCode.None;
+            }
+        }
+
+        public static KeyCode KeyboardKey(GameAction a) => keyOverrides.TryGetValue(a, out var k) ? k : DefaultKey(a);
+
+        /// <summary>Binds <paramref name="key"/> to <paramref name="action"/>; an action already on that key takes the old key (swap).</summary>
+        public static void SetKeyboardKey(GameAction action, KeyCode key)
+        {
+            KeyCode old = KeyboardKey(action);
+            foreach (var other in Rebindable)
+                if (other != action && KeyboardKey(other) == key) keyOverrides[other] = old;
+            keyOverrides[action] = key;
+            RebuildKeys();
+        }
+
+        public static void ResetKeyboardKeys()
+        {
+            keyOverrides.Clear();
+            RebuildKeys();
+        }
+
+        /// <summary>"Attack=X;Skill1=A" for the settings file.</summary>
+        public static string SaveKeyOverrides()
+        {
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var pair in keyOverrides) if (pair.Value != DefaultKey(pair.Key)) parts.Add(pair.Key + "=" + pair.Value);
+            return string.Join(";", parts);
+        }
+
+        public static void LoadKeyOverrides(string text)
+        {
+            keyOverrides.Clear();
+            if (!string.IsNullOrEmpty(text))
+                foreach (var part in text.Split(';'))
+                {
+                    var kv = part.Split('=');
+                    if (kv.Length == 2 && System.Enum.TryParse(kv[0], out GameAction a) && System.Enum.TryParse(kv[1], out KeyCode k)) keyOverrides[a] = k;
+                }
+            RebuildKeys();
+        }
+
+        static void RebuildKeys()
+        {
+            KeyCode K(GameAction a) => KeyboardKey(a);
+            bool shiftDefault = K(GameAction.Mobility) == KeyCode.LeftShift;
+            MobilityKeys = shiftDefault ? new[] { KeyCode.LeftShift, KeyCode.RightShift, KeyCode.JoystickButton1 } : new[] { K(GameAction.Mobility), KeyCode.JoystickButton1 };
+            AttackKeys = new[] { K(GameAction.Attack), KeyCode.JoystickButton2 };
+            InteractKeys = new[] { K(GameAction.Interact), KeyCode.JoystickButton0 };
+            UseItemKeys = new[] { K(GameAction.UseItem), KeyCode.JoystickButton3 };
+            InventoryKeys = K(GameAction.Inventory) == KeyCode.I ? new[] { KeyCode.I, KeyCode.Tab, KeyCode.JoystickButton6 } : new[] { K(GameAction.Inventory), KeyCode.JoystickButton6 };
+            Skill1Keys = new[] { K(GameAction.Skill1), KeyCode.JoystickButton4 };
+            Skill2Keys = new[] { K(GameAction.Skill2), KeyCode.JoystickButton5 };
+            Skill3Keys = new[] { K(GameAction.Skill3) };
+            Skill4Keys = new[] { K(GameAction.Skill4) };
+            Skill5Keys = new[] { K(GameAction.Skill5), KeyCode.JoystickButton9 };
+            ManaKeys = new[] { K(GameAction.UseMana), KeyCode.JoystickButton8 };
+            ScrollKeys = new[] { K(GameAction.TownScroll) };
+        }
+
+        static readonly System.Collections.Generic.Dictionary<KeyCode, string> keyLabels = new System.Collections.Generic.Dictionary<KeyCode, string>();
+
+        /// <summary>Short label of a key ("Q", "Shift", "1"). Cached: the HUD asks every frame.</summary>
+        public static string KeyLabel(KeyCode k)
+        {
+            if (!keyLabels.TryGetValue(k, out var label)) keyLabels[k] = label = MakeKeyLabel(k);
+            return label;
+        }
+
+        static string MakeKeyLabel(KeyCode k)
+        {
+            if (k >= KeyCode.Alpha0 && k <= KeyCode.Alpha9) return ((int)(k - KeyCode.Alpha0)).ToString();
+            if (k >= KeyCode.Keypad0 && k <= KeyCode.Keypad9) return "Num" + (int)(k - KeyCode.Keypad0);
+            switch (k)
+            {
+                case KeyCode.LeftShift: case KeyCode.RightShift: return "Shift";
+                case KeyCode.LeftControl: case KeyCode.RightControl: return "Ctrl";
+                case KeyCode.LeftAlt: case KeyCode.RightAlt: return "Alt";
+                case KeyCode.Space: return "Space";
+                case KeyCode.Return: return "Enter";
+                default: return k.ToString();
+            }
+        }
 
         void ReadLegacy()
         {

@@ -27,7 +27,7 @@ namespace DotRPG
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
         static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgPerf" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -98,6 +98,8 @@ namespace DotRPG
             Application.logMessageReceived += OnLog;
             Log("capture started");
             if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]
+            if (mode == "-dotrpgPerf") { yield return PerfRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [P5]
+            if (mode == "-dotrpgNetPair") { yield return NetPairRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [F2]
             if (onlineOnly) { yield return OnlineRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [ONLINE]
             if (partyOnly) { yield return PartyRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [PARTY]
             if (dungeonOnly) { yield return DungeonRunCapture(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [DUNGEON]

@@ -13,6 +13,13 @@ namespace DotRPG
     public sealed class SaveSystem
     {
         public const int DefaultSlot = 0;
+        /// <summary>[I] Three save slots; the game reads and writes <see cref="ActiveSlot"/>.</summary>
+        public const int SlotCount = 3;
+        public static int ActiveSlot = DefaultSlot;
+        /// <summary>[I] Set by the last <see cref="Read"/>: why it used the backup or failed (null = clean read).</summary>
+        public static string LastReadNotice;
+
+        static int Resolve(int slot) => slot < 0 ? ActiveSlot : slot;
 
         /// <summary>Set by automated test runs so they save into their own folder and never touch the player's progress.</summary>
         public static string DirectoryOverride;
@@ -21,11 +28,17 @@ namespace DotRPG
 
         public static string SlotPath(int slot) => Path.Combine(SaveDirectory, $"slot_{slot}.json");
 
-        public bool HasSave(int slot = DefaultSlot) => File.Exists(SlotPath(slot)) || File.Exists(SlotPath(slot) + ".bak");
+        public bool HasSave(int slot = -1) => File.Exists(SlotPath(Resolve(slot))) || File.Exists(SlotPath(Resolve(slot)) + ".bak");
 
-        public bool Write(SaveData data, int slot = DefaultSlot)
+        public bool HasAnySave()
         {
-            string path = SlotPath(slot);
+            for (int i = 0; i < SlotCount; i++) if (HasSave(i)) return true;
+            return false;
+        }
+
+        public bool Write(SaveData data, int slot = -1)
+        {
+            string path = SlotPath(Resolve(slot));
             string temp = path + ".tmp";
             string backup = path + ".bak";
             try
@@ -49,15 +62,21 @@ namespace DotRPG
             }
         }
 
-        public SaveData Read(int slot = DefaultSlot)
+        public SaveData Read(int slot = -1)
         {
-            string path = SlotPath(slot);
-            return TryRead(path) ?? TryRead(path + ".bak");
+            string path = SlotPath(Resolve(slot));
+            LastReadNotice = null;
+            var data = TryRead(path);
+            if (data != null) return data;
+            data = TryRead(path + ".bak");
+            if (data != null && File.Exists(path)) LastReadNotice = "저장 파일이 손상되어 직전 백업에서 불러왔습니다.";
+            else if (data == null && (File.Exists(path) || File.Exists(path + ".bak"))) LastReadNotice = "저장 파일이 손상되어 불러올 수 없습니다. 다른 슬롯을 사용해 주세요.";
+            return data;
         }
 
-        public void Delete(int slot = DefaultSlot)
+        public void Delete(int slot = -1)
         {
-            string path = SlotPath(slot);
+            string path = SlotPath(Resolve(slot));
             foreach (var p in new[] { path, path + ".bak", path + ".tmp" })
             {
                 try { if (File.Exists(p)) File.Delete(p); }

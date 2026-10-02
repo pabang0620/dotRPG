@@ -164,6 +164,72 @@ namespace DotRPG
                 }
                 case "build_complete":
                     return Arpeggio(new[] { 523f, 659f, 784f, 1047f, 784f, 1047f }, 0.09f, Wave.Square, 0.18f, 0.3f);
+                // [H3] Enhancement, dungeon door / clear / rank / cards.
+                case "enhance_charge":
+                {
+                    var b = Buffer(0.9f);
+                    Tone(b, 0f, 0.85f, 180f, 900f, Wave.Triangle, 0.16f, vibrato: 9f);
+                    Tone(b, 0.1f, 0.75f, 360f, 1800f, Wave.Pulse, 0.05f);
+                    Noise(b, 0.55f, 0.3f, 0.08f, 0.5f, 41);
+                    return b;
+                }
+                case "enhance_success":
+                {
+                    var b = Arpeggio(new[] { 784f, 988f, 1175f, 1568f, 1976f }, 0.07f, Wave.Pulse, 0.2f, 0.45f);
+                    Tone(b, 0.3f, 0.4f, 2349f, 2349f, Wave.Triangle, 0.08f, vibrato: 14f);
+                    return b;
+                }
+                case "enhance_great":
+                {
+                    var b = Arpeggio(new[] { 523f, 659f, 784f, 1047f, 1319f, 1568f, 2093f }, 0.08f, Wave.Square, 0.17f, 0.8f);
+                    Tone(b, 0.5f, 0.6f, 1047f, 1047f, Wave.Triangle, 0.12f, vibrato: 6f);
+                    Noise(b, 0.45f, 0.5f, 0.05f, 0.85f, 43);
+                    return b;
+                }
+                case "enhance_fail":
+                {
+                    var b = Buffer(0.5f);
+                    Tone(b, 0f, 0.22f, 520f, 300f, Wave.Square, 0.16f);
+                    Tone(b, 0.2f, 0.28f, 300f, 140f, Wave.Square, 0.16f);
+                    return b;
+                }
+                case "enhance_break":
+                {
+                    var b = Buffer(0.9f);
+                    Noise(b, 0f, 0.5f, 0.45f, 0.05f, 47);
+                    Tone(b, 0f, 0.35f, 2600f, 900f, Wave.Triangle, 0.1f);
+                    Tone(b, 0.05f, 0.8f, 110f, 45f, Wave.Square, 0.22f);
+                    return b;
+                }
+                case "door_open":
+                {
+                    var b = Buffer(0.55f);
+                    Tone(b, 0f, 0.45f, 140f, 95f, Wave.Square, 0.14f, vibrato: 30f);
+                    Noise(b, 0f, 0.5f, 0.12f, 0.75f, 53);
+                    Tone(b, 0.42f, 0.1f, 90f, 60f, Wave.Square, 0.2f);
+                    return b;
+                }
+                case "dungeon_clear":
+                {
+                    var b = Arpeggio(new[] { 523f, 523f, 659f, 784f, 1047f }, 0.11f, Wave.Square, 0.2f, 0.7f);
+                    Tone(b, 0.44f, 0.65f, 784f, 784f, Wave.Pulse, 0.1f, vibrato: 5f);
+                    return b;
+                }
+                case "rank_reveal":
+                {
+                    var b = Buffer(0.6f);
+                    Noise(b, 0f, 0.12f, 0.3f, 0.3f, 59);
+                    Tone(b, 0.05f, 0.5f, 1568f, 1568f, Wave.Pulse, 0.14f, vibrato: 10f);
+                    Tone(b, 0.05f, 0.5f, 784f, 784f, Wave.Triangle, 0.12f);
+                    return b;
+                }
+                case "card_flip":
+                {
+                    var b = Buffer(0.18f);
+                    Noise(b, 0f, 0.12f, 0.25f, 0.4f, 61);
+                    Tone(b, 0.1f, 0.06f, 1400f, 1800f, Wave.Triangle, 0.12f);
+                    return b;
+                }
                 case "quest":
                     return Arpeggio(new[] { 659f, 784f, 988f, 1319f }, 0.08f, Wave.Pulse, 0.2f, 0.2f);
                 case "ending":

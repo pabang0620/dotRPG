@@ -19,6 +19,8 @@ namespace DotRPG
 
         RectTransform column;
         bool open;
+        /// <summary>[F5] The fold-out grid reaches the chat box: the chat hides while it is open.</summary>
+        public static bool IsOpen { get; private set; }
         readonly List<RectTransform> entries = new List<RectTransform>();
         float anim;
 
@@ -37,6 +39,7 @@ namespace DotRPG
             view.Add("menuicon_raid", "레이드", () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
             view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(Game.UI.Party)); // [PARTY]
             view.Add("menuicon_party", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("icon_gold", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
+            view.Add("menuicon_party", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
             view.column.gameObject.SetActive(false);
             return view;
         }
@@ -80,6 +83,7 @@ namespace DotRPG
         void Toggle()
         {
             open = !open;
+            IsOpen = open;
             column.gameObject.SetActive(open);
             anim = 0f;
         }
@@ -88,7 +92,7 @@ namespace DotRPG
         {
             if (!open) return;
             // Close when the game leaves normal play (a window opened, pause, dialogue).
-            if (!Game.IsPlaying) { open = false; column.gameObject.SetActive(false); return; }
+            if (!Game.IsPlaying) { open = IsOpen = false; column.gameObject.SetActive(false); return; }
             // Small fold-out animation.
             anim = Mathf.Min(1f, anim + Time.unscaledDeltaTime * 6f);
             for (int i = 0; i < entries.Count; i++)

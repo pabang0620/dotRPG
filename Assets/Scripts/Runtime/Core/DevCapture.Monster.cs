@@ -274,9 +274,12 @@ namespace DotRPG
             var bossW = bossSprites.Select(s => s.texture.width).ToList();
             bool smallMatch = smallSprites.All(s => s.texture.width == fieldSkel.texture.width && s.texture.height == fieldSkel.texture.height
                 && Mathf.Approximately(s.pixelsPerUnit, fieldSkel.pixelsPerUnit));
-            bool bossOk = bossSprites.All(s => s.texture.width >= 2 * fieldSkel.texture.width && Mathf.Approximately(s.pixelsPerUnit, fieldSkel.pixelsPerUnit));
+            // [ART] Generated dot frames are 64 px like everyone else; a boss then stands bigger through artScale.
+            float fieldW = fieldSkel.rect.width / fieldSkel.pixelsPerUnit;
+            var bossWorld = BossIds.Select((id, i) => bossSprites[i].rect.width / bossSprites[i].pixelsPerUnit * MonsterDatabase.Get(id).artScale).ToList();
+            bool bossOk = bossWorld.All(w => w >= 1.2f * fieldW);
             bool fxOk = fxKeys.All(k => Game.Art.Get(k) != null && Game.Art.Get(k).texture.width > 8 && !Game.Art.Get(k).name.StartsWith("Missing"));
-            MCheck($"art: distinct idle frames {distinct}/{idle.Count} field skeleton={fieldSkel.texture.width}x{fieldSkel.texture.height}@{fieldSkel.pixelsPerUnit:0} small=[{string.Join(",", smallSprites.Select(s => $"{s.texture.width}x{s.texture.height}@{s.pixelsPerUnit:0}").Distinct())}] boss widths=[{string.Join(",", bossW)}]@{bossSprites[0].pixelsPerUnit:0} fx sprites ok={fxOk}",
+            MCheck($"art: distinct idle frames {distinct}/{idle.Count} field skeleton={fieldSkel.texture.width}x{fieldSkel.texture.height}@{fieldSkel.pixelsPerUnit:0} small=[{string.Join(",", smallSprites.Select(s => $"{s.texture.width}x{s.texture.height}@{s.pixelsPerUnit:0}").Distinct())}] boss widths=[{string.Join(",", bossW)}]@{bossSprites[0].pixelsPerUnit:0} world=[{string.Join(",", bossWorld.Select(w => w.ToString("0.0")))}] vs field {fieldW:0.0} fx sprites ok={fxOk}",
                 distinct == idle.Count && smallMatch && bossOk && fxOk);
 
             // ---------- Setup: Lv10 warrior + two mercenaries in the forest ----------
@@ -680,14 +683,14 @@ namespace DotRPG
             yield return Shot("mon_50_king_phase2_totems");
             int summonedP2 = brain.Summoned;
 
-            // ---------- Totem rule: one broken + 6 s -> it rises again ----------
+            // ---------- Totem rule: one broken + TotemWindow -> it rises again ----------
             var a = totems[0];
             a.TakeDamage(FromLocal(a.Health.Current + 999, a.Position));
             yield return MWait(0.3f);
             int standing = brain.Totems.Count();
-            yield return MWait(5.9f);
+            yield return MWait(BossBrain.TotemWindow + 0.3f); // past the window: the broken one rises again
             var after = brain.Totems.ToList();
-            MCheck($"totem rule (slow): after one broken {standing} standing; 6 s later {after.Count} standing revives={brain.TotemRevives} cleared={brain.TotemsCleared}",
+            MCheck($"totem rule (slow): after one broken {standing} standing; {BossBrain.TotemWindow:0} s later {after.Count} standing revives={brain.TotemRevives} cleared={brain.TotemsCleared}",
                 standing == 1 && after.Count == 2 && brain.TotemRevives == 1 && !brain.TotemsCleared);
 
             // ---------- Both within 5 s -> gone for good, summons stop ----------

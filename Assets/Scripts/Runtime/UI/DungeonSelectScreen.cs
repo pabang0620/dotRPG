@@ -29,6 +29,7 @@ namespace DotRPG
         readonly Button[] diffButtons = new Button[4];
         readonly Text[] diffLabels = new Text[4];
         Button tabWeekday, tabRaid, enterButton;
+        Image banner;
         Text dayText, title, desc, info, recommend, partyText, rewards, status, hint;
         RectTransform listRoot;
         bool raidTab;
@@ -51,8 +52,12 @@ namespace DotRPG
 
             var detail = Panel(w.content, "Detail", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(DetailX, PanelTop), new Vector2(DetailW, PanelH), new Color32(24, 36, 54, 235));
             var d = detail.transform;
-            w.title = Label(d, "Title", "", 30, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(26f, -16f), new Vector2(780f, 42f));
-            w.desc = Label(d, "Desc", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(26f, -64f), new Vector2(780f, 52f));
+            w.title = Label(d, "Title", "", 30, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(26f, -16f), new Vector2(530f, 42f));
+            w.desc = Label(d, "Desc", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(26f, -64f), new Vector2(530f, 52f));
+            // [E4] Dungeon banner art (Art/banner_<id>) in the top-right corner of the details.
+            w.banner = UIFactory.Image(d, "Banner", null, Color.white);
+            w.banner.preserveAspect = true;
+            UIFactory.Place(w.banner.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-18f, -14f), new Vector2(255f, 85f));
             w.info = Label(d, "Info", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(26f, -124f), new Vector2(780f, 52f));
             Label(d, "DiffTitle", "<b>난이도</b>", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(26f, -188f), new Vector2(200f, 28f));
             for (int i = 0; i < 4; i++)
@@ -168,6 +173,8 @@ namespace DotRPG
             if (def == null) return;
             if (def.isRaid) difficulty = DungeonDifficulty.Normal;
             var numbers = DungeonDatabase.DifficultyFor(def, difficulty);
+            banner.sprite = Game.Art.Get("banner_" + def.id);
+            banner.enabled = banner.sprite != null;
             title.text = $"<b>{def.name}</b>  <size=20><color=#b8c4d8>{def.themeName} · 보스 {def.bossName}</color></size>";
             desc.text = def.description;
             info.text = $"<color=#ffe066>특화 보상</color> {def.specialty}    <color=#ffe066>특징 몬스터</color> {def.featureMonster}\n" +

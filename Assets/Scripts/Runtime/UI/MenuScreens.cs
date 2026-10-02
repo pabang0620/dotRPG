@@ -88,11 +88,21 @@ namespace DotRPG
             var shade = UIFactory.Overlay(root, "Shade", new Color(0.05f, 0.08f, 0.05f, 0.35f));
             shade.raycastTarget = true;
 
-            var logo = UIFactory.Text(root, "Logo", "dotRPG", 96, UIColors.Cream, TextAnchor.MiddleCenter, true);
-            var logoOutline = logo.gameObject.AddComponent<Outline>();
-            logoOutline.effectColor = new Color32(62, 39, 26, 255);
-            logoOutline.effectDistance = new Vector2(4, -4);
-            UIFactory.Place(logo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -70), new Vector2(900, 120));
+            // [E4] Generated pixel logo (Art/ui_logo); the text logo stays as a fallback.
+            var logoSprite = Game.Art.Get("ui_logo");
+            if (logoSprite != null && logoSprite.texture != null && logoSprite.texture.width > 100)
+            {
+                var logoImg = UIFactory.Image(root, "Logo", logoSprite, Color.white);
+                UIFactory.Place(logoImg.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -40), new Vector2(560, 141));
+            }
+            else
+            {
+                var logo = UIFactory.Text(root, "Logo", "dotRPG", 96, UIColors.Cream, TextAnchor.MiddleCenter, true);
+                var logoOutline = logo.gameObject.AddComponent<Outline>();
+                logoOutline.effectColor = new Color32(62, 39, 26, 255);
+                logoOutline.effectDistance = new Vector2(4, -4);
+                UIFactory.Place(logo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -70), new Vector2(900, 120));
+            }
             var sub = UIFactory.Text(root, "Subtitle", "해골 숲 옆 작은 마을", 30, UIColors.Highlight, TextAnchor.MiddleCenter, true);
             UIFactory.Place(sub.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -186), new Vector2(900, 44));
 
@@ -105,13 +115,9 @@ namespace DotRPG
             screen.menu = MenuList.Create(screen.panel, "Menu", 320, 46, 24, true);
             UIFactory.Place(screen.menu.RectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -24), new Vector2(320, 10));
 
-            screen.menu.AddButton("새 게임", () =>
-            {
-                if (Game.Saves.HasSave())
-                    ui.Confirm("새 게임을 시작할까요?\n다음 자동 저장 때 기존 저장 데이터를 덮어씁니다.", () => ui.Push(ui.CharacterSelect));
-                else ui.Push(ui.CharacterSelect);
-            });
-            screen.menu.AddButton("이어하기", () => Game.Flow.ContinueGame(), () => Game.Saves.HasSave());
+            // [I] Both go through the save-slot picker (3 slots).
+            screen.menu.AddButton("새 게임", () => ui.Slots.Open(false));
+            screen.menu.AddButton("이어하기", () => ui.Slots.Open(true), () => Game.Saves.HasAnySave());
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
@@ -139,6 +145,7 @@ namespace DotRPG
             screen.menu.AddButton("저장하기", () => Game.Flow.SaveGame());
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
+            screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
             screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n저장하지 않은 진행은 사라집니다.", () => Game.Flow.ReturnToTitle()));
             screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n저장하지 않은 진행은 사라집니다.", () => Game.Flow.QuitGame()));
             screen.menu.OnCancel = () => Game.Flow.Resume();
@@ -189,6 +196,10 @@ namespace DotRPG
             });
             menu.AddOption("수직 동기화", () => s.Data.vSync ? "켜기" : "끄기", d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
             menu.AddOption("화면 흔들림", () => s.Data.screenShake ? "켜기" : "끄기", d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
+            // [I] Accessibility and keys.
+            menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); });
+            menu.AddOption("색약 보정", () => s.Data.colorBlind ? "켜기" : "끄기", d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
+            menu.AddButton("조작 키 변경", () => ui.Push(ui.KeyBind));
             menu.AddButton("돌아가기", () => screen.Close());
             menu.OnCancel = screen.Close;
             screen.FitPanel();

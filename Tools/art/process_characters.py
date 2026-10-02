@@ -197,6 +197,13 @@ if __name__ == "__main__":
         ("codex_knight.png", ["knight", "knight_dorn", "knight_ivy", "knight_mo"], 104),
         ("codex_herbalist.png", ["herbalist"], 100),
         ("codex_rock_golem.png", ["boss_rock_golem"], 86),
+        # dungeon monsters (dot only)
+        ("codex_skeleton.png", ["skeleton"], 92), ("codex_skel_warrior.png", ["skel_warrior"], 96), ("codex_skel_gold.png", ["skel_gold"], 90),
+        ("codex_skel_miner.png", ["skel_miner"], 94), ("codex_skel_necro.png", ["skel_necro"], 98), ("codex_skel_archer.png", ["skel_archer"], 94),
+        ("codex_skel_shield.png", ["skel_shield"], 96), ("codex_skel_knight.png", ["skel_knight"], 104),
+        ("codex_boss_gold_foreman.png", ["boss_gold_foreman"], 108), ("codex_boss_mine_captain.png", ["boss_mine_captain"], 108),
+        ("codex_boss_lich.png", ["boss_lich"], 110), ("codex_boss_archer_chief.png", ["boss_archer_chief"], 108),
+        ("codex_boss_armory_warden.png", ["boss_armory_warden"], 110), ("codex_boss_skeleton_king.png", ["boss_skeleton_king"], 112),
         # villagers
         ("codex_chief.png", ["chief"], 100), ("codex_farmer.png", ["farmer"], 98), ("codex_fisher.png", ["fisher"], 100),
         ("codex_builder.png", ["builder"], 102), ("codex_lumberjack.png", ["lumberjack"], 106), ("codex_miner.png", ["miner"], 98),

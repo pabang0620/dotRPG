@@ -51,6 +51,8 @@ namespace DotRPG
 
         /// <summary>When set (boss gimmick: a totem), companions attack this monster first.</summary>
         public static EnemyController PriorityTarget;
+        /// <summary>[P1] Second gimmick target (the other totem): every other companion takes it.</summary>
+        public static EnemyController PriorityTargetAlt;
 
         public readonly MercenaryDef Def;
         public EnemyController Target { get; private set; }
@@ -167,6 +169,8 @@ namespace DotRPG
         {
             Vector2 me = self.Position;
             Vector2 anchor = leader.IsDead ? me : leader.Position;
+            if (Valid(PriorityTargetAlt) && (Def.role == MercRole.MeleeDps || Def.role == MercRole.CasterDps)
+                && Vector2.Distance(PriorityTargetAlt.Position, anchor) < LeashFromLeader * 1.5f) return PriorityTargetAlt;
             if (Valid(PriorityTarget) && Vector2.Distance(PriorityTarget.Position, anchor) < LeashFromLeader * 1.5f) return PriorityTarget;
 
             EnemyController best = null;

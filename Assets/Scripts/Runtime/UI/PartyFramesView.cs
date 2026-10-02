@@ -20,6 +20,9 @@ namespace DotRPG
             public RectTransform root;
             public Image stripe, hpFill, mpFill, downed;
             public Text name, info, downedText;
+            public PlayerController shownMember;
+            public int shownLevel = -1, shownDowned = -1;
+            public Color shownColor;
         }
 
         readonly List<Frame> frames = new List<Frame>();
@@ -99,8 +102,13 @@ namespace DotRPG
                 var def = MercenaryDatabase.Get(m.Data.MercenaryId);
                 Color cc = ClassColor(m);
                 f.stripe.color = cc;
-                f.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(cc)}>{m.DisplayName}</color>";
-                f.info.text = $"Lv.{m.Data.Level} {(def != null ? def.roleName.Split(' ')[0] : "")}";
+                // [P5] Name / level text only when the member, colour or level changes.
+                if (f.shownMember != m || f.shownLevel != m.Data.Level || f.shownColor != cc)
+                {
+                    f.shownMember = m; f.shownLevel = m.Data.Level; f.shownColor = cc;
+                    f.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(cc)}>{m.DisplayName}</color>";
+                    f.info.text = $"Lv.{m.Data.Level} {(def != null ? def.roleName.Split(' ')[0] : "")}";
+                }
                 var hp = m.Health;
                 SetFill(f.hpFill, hp.Max > 0 ? (float)hp.Current / hp.Max : 0f);
                 int maxMp = m.MaxMana;
@@ -110,7 +118,8 @@ namespace DotRPG
                 if (down)
                 {
                     float left = party.ReviveRemaining(m);
-                    f.downedText.text = left > 0f ? $"쓰러짐  {Mathf.CeilToInt(left)}초" : "쓰러짐";
+                    int dKey = left > 0f ? Mathf.CeilToInt(left) : 0;
+                    if (dKey != f.shownDowned) { f.shownDowned = dKey; f.downedText.text = left > 0f ? $"쓰러짐  {dKey}초" : "쓰러짐"; }
                 }
             }
             DevVisible = shown;

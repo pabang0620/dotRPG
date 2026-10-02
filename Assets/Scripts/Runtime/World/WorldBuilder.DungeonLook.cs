@@ -14,8 +14,8 @@ namespace DotRPG
         // ---- Tuning: multiply colours for dungeon rooms (1 = unchanged) ----
         static readonly Color MineGroundTint = new Color(0.60f, 0.54f, 0.50f, 1f);
         static readonly Color MinePropTint = new Color(0.78f, 0.74f, 0.70f, 1f);
-        static readonly Color CaveGroundTint = new Color(0.56f, 0.63f, 0.80f, 1f);
-        static readonly Color CavePropTint = new Color(0.76f, 0.82f, 0.92f, 1f);
+        static readonly Color CaveGroundTint = new Color(0.40f, 0.47f, 0.64f, 1f); // [P3] darker: the snow floor read as a sunny field
+        static readonly Color CavePropTint = new Color(0.62f, 0.70f, 0.84f, 1f);
         /// <summary>Darkness of the vignette at the room corners (0..1) and where it starts (0 = centre, 1 = edge).</summary>
         const float VignetteStrength = 0.62f, VignetteStart = 0.45f;
         /// <summary>Above every world sprite (y-sorted orders stay within a few thousand), below the UI canvas.</summary>

@@ -198,6 +198,7 @@ namespace DotRPG
             Game.Dialogue.Abort();
             CompanionBrain.DangerZones.Clear();
             CompanionBrain.PriorityTarget = null;
+            CompanionBrain.PriorityTargetAlt = null;
             Game.World.Load(room.mapId);
 
             // Party at the entry: the local player on 'P', companions around it (downed ones rejoin at half HP).
@@ -338,7 +339,7 @@ namespace DotRPG
             if (Game.Party != null)
                 foreach (var m in Game.Party.AliveMembers) m.Health.SetInvulnerable(SlowMotionSeconds + ClearHoldSeconds + 3f);
             ClearBanner?.Invoke();
-            Game.Audio.PlaySfx("quest");
+            Game.Audio.PlaySfx("dungeon_clear"); // [H3]
             Game.Camera?.Shake(0.15f, 0.3f);
             if (Game.IsPlaying) Time.timeScale = SlowMotionScale;
             yield return new WaitForSecondsRealtime(SlowMotionSeconds);

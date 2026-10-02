@@ -39,5 +39,17 @@ namespace DotRPG
 
         // Input System binding overrides (JSON produced by InputActionMap.SaveBindingOverridesAsJson).
         public string bindingOverridesJson = "";
+
+        // [I] Accessibility and keys.
+        /// <summary>UI size: 0 = 작게 (90%), 1 = 보통, 2 = 크게 (115%), 3 = 아주 크게 (130%).</summary>
+        public int uiScale = 1;
+        /// <summary>Colour-blind friendly danger zones and bars.</summary>
+        public bool colorBlind;
+        /// <summary>Rebound keyboard keys ("Attack=Z;Skill1=A"), see InputReader.SaveKeyOverrides.</summary>
+        public string keyOverrides = "";
+
+        /// <summary>[F5] Comma-separated names (sample friends until an account server exists).</summary>
+        public string chatFriends = "검은뿔,달빛마녀";
+        public string chatBlocked = "";
     }
 }

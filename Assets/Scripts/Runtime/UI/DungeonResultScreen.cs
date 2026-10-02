@@ -217,7 +217,7 @@ namespace DotRPG
             var c = stamp.color;
             c.a = Mathf.Clamp01(t * 1.5f);
             stamp.color = c;
-            if (t >= 1f && !stampLanded) { stampLanded = true; Game.Audio.PlaySfx("hammer"); Game.Camera?.Shake(0.08f, 0.15f); }
+            if (t >= 1f && !stampLanded) { stampLanded = true; Game.Audio.PlaySfx("rank_reveal"); Game.Camera?.Shake(0.08f, 0.15f); }
             if (age < StampDelay) stampLanded = false;
             int lines = Mathf.FloorToInt((age - StampDelay - StampTime) / LineStep) + 1;
             string text = BreakdownText(Mathf.Max(0, lines));
@@ -291,7 +291,7 @@ namespace DotRPG
             var c = cards[index];
             c.flipped = true;
             c.frame.color = local ? (Color)UIColors.Highlight : new Color(1f, 1f, 1f, 0f);
-            Game.Audio.PlaySfx("blip");
+            Game.Audio.PlaySfx("card_flip"); // [H3]
             for (float t = 0f; t < FlipHalf; t += Time.unscaledDeltaTime)
             {
                 c.rt.localScale = new Vector3(1f - t / FlipHalf, 1f, 1f);

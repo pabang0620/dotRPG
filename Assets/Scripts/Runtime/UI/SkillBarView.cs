@@ -9,6 +9,11 @@ namespace DotRPG
     /// </summary>
     public class SkillBarView : MonoBehaviour
     {
+        // [P5] Last shown values per slot, so texts are formatted only when they change.
+        readonly int[] timerShown = { int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue };
+        readonly int[] costShown = { int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue };
+        readonly int[] lockShown = { -1, -1, -1, -1, -1, -1, -1, -1 };
+
         const float Size = 70f, UltSize = 84f, Gap = 10f;
         static readonly Color UltGold = new Color(1f, 0.84f, 0.42f, 1f);
 
@@ -85,21 +90,26 @@ namespace DotRPG
                 lockTexts[i].enabled = !open;
                 if (!open)
                 {
-                    lockTexts[i].text = $"Lv.{Progression.SlotLevel(i)}";
+                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = $"Lv.{lockShown[i]}"; }
                     icons[i].color = new Color(0.45f, 0.45f, 0.52f, 1f);
                     cooldowns[i].fillAmount = 0f;
                     costs[i].text = "";
                     timers[i].text = "";
+                    timerShown[i] = costShown[i] = int.MinValue;
                     if (i == SkillGems.UltimateSlot) frames[i].color = Color.Lerp(UltGold, Color.gray, 0.5f);
                     continue;
                 }
                 var n = player.Skills.Numbers(i);
                 float p = player.Skills.CooldownProgress(i, out float left);
                 cooldowns[i].fillAmount = 1f - p;
-                timers[i].text = left > 0.05f ? (left >= 10f ? $"{left:0}" : $"{left:0.0}") : "";
+                // [P5] Format the countdown only when the shown digits change.
+                int tKey = left > 0.05f ? (left >= 10f ? Mathf.RoundToInt(left) * 10 : Mathf.RoundToInt(left * 10f)) : -1;
+                if (left >= 10f) tKey += 100000;
+                if (tKey != timerShown[i]) { timerShown[i] = tKey; timers[i].text = left > 0.05f ? (left >= 10f ? $"{left:0}" : $"{left:0.0}") : ""; }
                 bool affordable = n.usesLife ? player.Health.Current > n.manaCost : player.Mana >= n.manaCost;
                 icons[i].color = affordable ? Color.white : new Color(0.5f, 0.5f, 0.6f, 1f);
-                costs[i].text = n.usesLife ? $"<color=#ff8080>{n.manaCost}</color>" : n.manaCost.ToString();
+                int cKey = n.manaCost * 2 + (n.usesLife ? 1 : 0);
+                if (cKey != costShown[i]) { costShown[i] = cKey; costs[i].text = n.usesLife ? $"<color=#ff8080>{n.manaCost}</color>" : n.manaCost.ToString(); }
                 if (i == SkillGems.UltimateSlot)
                 {
                     // The awakening slot glows when it is ready.

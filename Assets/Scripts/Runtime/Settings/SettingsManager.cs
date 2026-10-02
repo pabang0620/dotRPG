@@ -63,6 +63,8 @@ namespace DotRPG
 #if !UNITY_EDITOR
             ApplyDisplay();
 #endif
+            UiTheme.ColorBlind = Data.colorBlind;
+            Game.UI?.ApplyUiScale(Data.uiScale);
             Applied?.Invoke();
         }
 

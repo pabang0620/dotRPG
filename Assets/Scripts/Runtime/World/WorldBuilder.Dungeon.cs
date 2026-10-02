@@ -24,7 +24,7 @@ namespace DotRPG
         // ---------- Village dungeon guide (던전 안내원) ----------
 
         /// <summary>Preferred cell of the guide: east edge of the plaza (text column, text row from the top of Village.txt).</summary>
-        const int GuideColumn = 34, GuideRowFromTop = 22;
+        const int GuideColumn = 33, GuideRowFromTop = 34; // plaza, east of the fountain (near the start point)
 
         static NpcDefinition guide;
 
