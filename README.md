@@ -116,8 +116,9 @@ Assets/
 Packages/manifest.json
 ProjectSettings/ProjectVersion.txt, EditorBuildSettings.asset
 Tools/
-  CompileCheck/   Unity 없이 스크립트를 컴파일 검증하는 .NET 프로젝트
-  ArtPreview/     Unity 없이 아트/맵을 PNG로 렌더링
+  art/            생성 이미지 절단·임포트 준비(process_*.py)
+  balance/        이론 밸런스 계산(theory_balance.py)
+  story/          퀘스트·컷신·대사 데이터 생성
   generate_meta.py  에디터 없이 만든 에셋의 .meta 생성기
 Docs/             설계 문서, 에셋 가이드, 미리보기 이미지
 ```

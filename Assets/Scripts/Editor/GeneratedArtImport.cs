@@ -45,7 +45,7 @@ namespace DotRPG.EditorTools
             ("ui_panel", new Vector4(10, 10, 10, 10)), ("ui_dark", new Vector4(8, 8, 8, 8)), ("ui_btn", new Vector4(8, 8, 8, 8)),
             ("ui_btngray", new Vector4(8, 8, 8, 8)), ("ui_slot", new Vector4(8, 8, 8, 8)), ("ui_slotblue", new Vector4(8, 8, 8, 8)),
             ("ui_frame", new Vector4(8, 8, 8, 8)), ("ui_tooltip", new Vector4(9, 9, 9, 9)), ("ui_select", new Vector4(8, 8, 8, 8)),
-            ("ui_bar", new Vector4(14, 7, 14, 7)), ("ui_badge", Vector4.zero), ("ui_header", new Vector4(14, 6, 14, 6)),
+            ("ui_bar", new Vector4(14, 7, 14, 7)), ("ui_header", new Vector4(14, 6, 14, 6)),
         };
 
         static readonly string[] Buildings = { "town_stable", "town_stable_burned" };
