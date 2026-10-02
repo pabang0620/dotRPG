@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from process_generated import key, ART
 
 FRAME, FEET = 128, 12
+DOT = False  # --dot: warrior format (64 px frame, feet 7 px up, hard pixels, limited palette, ppu 36)
 FRAMES = ["idle0", "idle1", "walk0", "walk1", "walk2", "walk3", "attack", "hurt"]
 
 def load(src):
@@ -20,8 +21,13 @@ def load(src):
     im = Image.open(src)
     if im.mode in ("RGBA", "LA") or "transparency" in im.info:
         rgba = np.asarray(im.convert("RGBA")).copy()
-        rgba[rgba[..., 3] < 24] = 0
-        return rgba
+        if (rgba[..., 3] < 250).mean() > 0.05:  # real transparency
+            rgba[rgba[..., 3] < 24] = 0
+            return rgba
+        tmp = src + ".rgb.png"  # opaque PNG on magenta: key it like a Flow image
+        im.convert("RGB").save(tmp)
+        try: return key(tmp, soft=1.4)
+        finally: os.remove(tmp)
     return key(src, soft=1.4)
 
 def pieces(rgba, min_area=1500):
@@ -66,6 +72,8 @@ def pieces(rgba, min_area=1500):
 
 def place(piece, scale):
     h, w = piece.shape[:2]
+    if DOT:
+        return place_dot(piece, scale)
     img = Image.fromarray(piece, "RGBA").resize((max(1, round(w * scale)), max(1, round(h * scale))), Image.LANCZOS)
     ys, xs = np.nonzero(np.asarray(img)[..., 3] > 40)
     frame = Image.new("RGBA", (FRAME, FRAME), (0, 0, 0, 0))
@@ -73,6 +81,24 @@ def place(piece, scale):
     cx = (xs.min() + xs.max()) / 2
     frame.alpha_composite(img, (round(FRAME / 2 - cx), FRAME - FEET - 1 - ys.max()))
     return frame
+
+def place_dot(piece, scale):
+    """Down to the warrior's pixel grid: box filter, hard alpha, the sheet palette, feet on the baseline."""
+    h, w = piece.shape[:2]
+    small = Image.fromarray(piece, "RGBA").resize((max(1, round(w * scale)), max(1, round(h * scale))), Image.BOX)
+    a = np.asarray(small).copy()
+    a[..., 3] = np.where(a[..., 3] >= 110, 255, 0)
+    rgb = Image.fromarray(a[..., :3], "RGB")
+    q = np.asarray(rgb.quantize(palette=PALETTE, dither=Image.Dither.NONE).convert("RGB"))
+    out = np.dstack([q, a[..., 3]]).astype(np.uint8)
+    out[out[..., 3] == 0] = 0
+    ys, xs = np.nonzero(out[..., 3])
+    frame = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    cx = (xs.min() + xs.max()) / 2
+    frame.alpha_composite(Image.fromarray(out, "RGBA"), (round(32 - cx), 64 - 7 - 1 - ys.max()))
+    return frame
+
+PALETTE = None
 
 def sheet(src, look_id, mapping, height=104):
     """mapping: {dir: (row index, [component index per FRAMES entry])}. height = idle0 front height in px."""
@@ -89,7 +115,7 @@ def sheet(src, look_id, mapping, height=104):
             rows[k] = sorted(row, key=lambda t: t[1])
             print(f"  row {k}: kept the 9 largest pieces")
             continue
-        if len(row) == 9: continue
+        if len(row) in (8, 9): continue
         y0 = min(t[2][0] for t in row); y1 = max(t[2][1] for t in row)
         fixed = []
         for c in range(9):
@@ -106,8 +132,18 @@ def sheet(src, look_id, mapping, height=104):
             fixed.append(((y0 + y1) / 2, x0, (y0, y1), cell))
         print(f"  row {k}: {len(row)} pieces -> {len(fixed)} grid cells")
         rows[k] = fixed
+    if all(len(r) == 8 for r in rows):
+        # 8 figures per row (the warrior sheet's layout): idle, idle, walk x4, action, hurt.
+        mapping = EIGHT
+        print("  8-column sheet")
     idle = rows[mapping["down"][0]][mapping["down"][1][0]][3]
     ys = np.nonzero(idle[..., 3] > 100)[0]
+    if DOT:
+        height = round(height * 44 / 104)  # same relative heights, warrior = 44 px
+        global PALETTE
+        opaque = rgba[rgba[..., 3] > 200][:, :3]
+        sample = Image.fromarray(opaque[::max(1, len(opaque) // 200000)].reshape(-1, 1, 3), "RGB")
+        PALETTE = sample.quantize(colors=28, method=Image.Quantize.MEDIANCUT)
     scale = height / (ys.max() - ys.min() + 1)
     for d, (row, idx) in mapping.items():
         for name, i in zip(FRAMES, idx):
@@ -125,6 +161,14 @@ NINE = {
     "side": (2, [0, 1, 3, 4, 5, 6, 7, 0]),
 }
 
+EIGHT = {
+    "down": (0, [0, 1, 2, 3, 4, 5, 6, 7]),
+    "downside": (0, [2, 4, 2, 3, 4, 5, 6, 7]),
+    "up": (1, [0, 1, 2, 3, 4, 5, 6, 7]),
+    "upside": (1, [2, 4, 2, 3, 4, 5, 6, 7]),
+    "side": (2, [0, 1, 2, 3, 4, 5, 6, 7]),
+}
+
 # Codex sheets keep the facing per row (row 2 attack / hurt are back views too).
 CODEX = dict(NINE)
 CODEX["up"] = (1, [0, 1, 3, 4, 5, 6, 7, 8])
@@ -133,7 +177,8 @@ CODEX["side"] = (2, [0, 1, 3, 4, 5, 6, 7, 8])
 
 if __name__ == "__main__":
     src = sys.argv[1]
-    only = sys.argv[2:]
+    only = [a for a in sys.argv[2:] if not a.startswith("--")]
+    DOT = "--dot" in sys.argv
     # (source file, look id(s), height of the front idle figure in px of the 128 frame)
     jobs = [
         ("gen_mage_sheet2.jpg", ["mage"], 108),
@@ -161,6 +206,10 @@ if __name__ == "__main__":
     ]
     for f, ids, height in jobs:
         path = os.path.join(src, f)
+        if DOT:
+            dot = os.path.join(src, "dot_" + f.replace("codex_", "").replace("gen_mage_sheet2.jpg", "mage.png"))
+            if not os.path.exists(dot): continue
+            path, f = dot, "codex_" + os.path.basename(dot)
         if not os.path.exists(path) or (only and not set(ids) & set(only)): continue
         for look_id in ids:
             try: sheet(path, look_id, CODEX if f.startswith("codex_") else NINE, height=height)

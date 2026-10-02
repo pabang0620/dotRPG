@@ -90,11 +90,13 @@ namespace DotRPG.EditorTools
             {
                 string path = file.Replace('\\', '/');
                 var importer = Prepare(path);
-                importer.spritePixelsPerUnit = 72f;
+                // 64 px dot frames (warrior format, feet 7 px up) or 128 px frames (feet 12 px up).
+                bool dot = AssetDatabase.LoadAssetAtPath<Texture2D>(path).width <= 64;
+                importer.spritePixelsPerUnit = dot ? 36f : 72f;
                 var settings = new TextureImporterSettings();
                 importer.ReadTextureSettings(settings);
                 settings.spriteAlignment = (int)SpriteAlignment.Custom;
-                settings.spritePivot = new Vector2(0.5f, 12f / 128f);
+                settings.spritePivot = dot ? new Vector2(0.5f, 7f / 64f) : new Vector2(0.5f, 12f / 128f);
                 settings.spriteMeshType = SpriteMeshType.FullRect;
                 importer.SetTextureSettings(settings);
                 importer.SaveAndReimport();
