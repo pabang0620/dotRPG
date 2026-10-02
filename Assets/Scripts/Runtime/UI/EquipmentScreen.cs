@@ -81,7 +81,9 @@ namespace DotRPG
         public override void Show()
         {
             base.Show();
-            region = 1; cx = 0; cy = 0;
+            region = 1;
+            cx = 0;
+            cy = 0;
             Array.Clear(tabPage, 0, tabPage.Length);
             hovered = null;
             mouseActive = false;
@@ -129,26 +131,26 @@ namespace DotRPG
         /// <summary>Gear keys (database order, higher +level first; or grade → power), consumables, resources, materials, tickets.</summary>
         List<string> BagContents()
         {
-            var bag = Game.Session.Inventory;
-            var eq = Game.Session.Equipment;
-            var ids = EquipmentDatabase.GearKeys(bag);
+            var inventory = Game.Session.Inventory;
+            var equipment = Game.Session.Equipment;
+            var itemIds = EquipmentDatabase.GearKeys(inventory);
             if (sortByRarity)
-                ids.Sort((a, b) =>
+                itemIds.Sort((leftKey, rightKey) =>
                 {
-                    int r = EquipmentDatabase.Get(b).rarity.CompareTo(EquipmentDatabase.Get(a).rarity);
-                    if (r != 0) return r;
-                    int s = eq.ScoreOf(b).CompareTo(eq.ScoreOf(a));
-                    return s != 0 ? s : EquipmentDatabase.CompareKeys(a, b);
+                    int rarityComparison = EquipmentDatabase.Get(rightKey).rarity.CompareTo(EquipmentDatabase.Get(leftKey).rarity);
+                    if (rarityComparison != 0) return rarityComparison;
+                    int scoreComparison = equipment.ScoreOf(rightKey).CompareTo(equipment.ScoreOf(leftKey));
+                    return scoreComparison != 0 ? scoreComparison : EquipmentDatabase.CompareKeys(leftKey, rightKey);
                 });
-            foreach (var use in ConsumableDatabase.Usable)
-                if (bag.Count(use.id) > 0) ids.Add(use.id);
-            foreach (var def in Game.Config.items)
-                if (bag.Count(def.id) > 0) ids.Add(def.id);
-            foreach (var mat in EquipmentDatabase.AllMaterials)
-                if (bag.Count(mat.id) > 0) ids.Add(mat.id);
+            foreach (var consumable in ConsumableDatabase.Usable)
+                if (inventory.Count(consumable.id) > 0) itemIds.Add(consumable.id);
+            foreach (var item in Game.Config.items)
+                if (inventory.Count(item.id) > 0) itemIds.Add(item.id);
+            foreach (var material in EquipmentDatabase.AllMaterials)
+                if (inventory.Count(material.id) > 0) itemIds.Add(material.id);
             foreach (var ticket in ConsumableDatabase.Tickets)
-                if (bag.Count(ticket.id) > 0) ids.Add(ticket.id);
-            return ids;
+                if (inventory.Count(ticket.id) > 0) itemIds.Add(ticket.id);
+            return itemIds;
         }
 
         void Refresh()
@@ -422,9 +424,23 @@ namespace DotRPG
                 cy += dy;
                 // Past the bottom / top row: the next / previous page of this tab (the tab bar only from page 1).
                 int page = tabPage[(int)tab];
-                if (cy >= Rows && page < pageCount - 1) { TurnPage(1, false); cy = 0; }
-                else if (cy < 0 && page > 0) { TurnPage(-1, false); cy = Rows - 1; }
-                if (cx < 0) { region = 0; cx = 1; cy = Mathf.Clamp(cy, 0, 2); return; }
+                if (cy >= Rows && page < pageCount - 1)
+                {
+                    TurnPage(1, false);
+                    cy = 0;
+                }
+                else if (cy < 0 && page > 0)
+                {
+                    TurnPage(-1, false);
+                    cy = Rows - 1;
+                }
+                if (cx < 0)
+                {
+                    region = 0;
+                    cx = 1;
+                    cy = Mathf.Clamp(cy, 0, 2);
+                    return;
+                }
                 cx = Mathf.Clamp(cx, 0, Columns - 1);
                 cy = Mathf.Clamp(cy, -1, Rows - 1);
             }
@@ -432,7 +448,13 @@ namespace DotRPG
             {
                 cx += dx;
                 cy = Mathf.Clamp(cy + dy, 0, 2);
-                if (cx > 1) { region = 1; cx = 0; cy = Mathf.Clamp(cy, 0, Rows - 1); return; }
+                if (cx > 1)
+                {
+                    region = 1;
+                    cx = 0;
+                    cy = Mathf.Clamp(cy, 0, Rows - 1);
+                    return;
+                }
                 cx = Mathf.Clamp(cx, 0, 1);
             }
         }
