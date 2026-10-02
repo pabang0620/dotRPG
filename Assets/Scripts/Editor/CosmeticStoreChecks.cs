@@ -52,7 +52,8 @@ namespace DotRPG.EditorTools
                 purchase.GetAwaiter().GetResult();
                 Require(!store.Owns("aura_sunset") && !store.IsBusy && store.OfferFor("aura_sunset") == null, "Cancellation clears busy state and consumes the quote without a grant.");
                 CheckScreen();
-                Debug.Log("[CosmeticStoreChecks] PASS: 12 state checks and screen creation; no network or payments.");
+                CheckRecovery();
+                Debug.Log("[CosmeticStoreChecks] PASS: original state/art checks, timeout recovery, single-owner input and responsive layout; no network or payments.");
             }
             finally
             {
@@ -67,17 +68,56 @@ namespace DotRPG.EditorTools
             if (!condition) throw new InvalidOperationException(message);
         }
 
+        static void CheckRecovery()
+        {
+            var provider = new TestProvider();
+            // Advance the timeout immediately; tests never wait for production timers.
+            var store = new CosmeticStore(provider, (duration, cancellation) => Task.CompletedTask);
+            store.RefreshAsync().GetAwaiter().GetResult();
+            store.PurchaseAsync(store.OfferFor("aura_sunset")).GetAwaiter().GetResult();
+            Require(!store.IsBusy && store.NeedsPurchaseRecovery, "Timeout releases the UI but retains purchase recovery.");
+            Require(store.Equip("aura_sky"), "Free equipment remains usable during recovery.");
+            store.RestoreAsync().GetAwaiter().GetResult();
+            store.PurchaseAsync(store.OfferFor("aura_sunset")).GetAwaiter().GetResult();
+            Require(provider.Purchases == 1 && store.NeedsPurchaseRecovery, "Restoration cannot reopen checkout while the original payment is running.");
+            provider.Owned = true;
+            provider.Pending.SetResult(true);
+            Require(!store.Owns("aura_sunset"), "Late completion alone does not grant ownership.");
+            store.RestoreAsync().GetAwaiter().GetResult();
+            Require(store.Owns("aura_sunset") && !store.NeedsPurchaseRecovery, "Authoritative restoration recovers a late payment.");
+
+            provider = new TestProvider();
+            var oldFetch = new TaskCompletionSource<CommerceSnapshot>();
+            provider.FetchOverride = oldFetch.Task;
+            store = new CosmeticStore(provider, (duration, cancellation) => Task.CompletedTask);
+            store.RefreshAsync().GetAwaiter().GetResult();
+            Require(!store.IsBusy, "A stalled fetch does not lock the UI.");
+            oldFetch.SetResult(new CommerceSnapshot { OwnedProductIds = new[] { "aura_sunset" } });
+            Require(!store.Owns("aura_sunset"), "Late stale fetch results are ignored.");
+            provider.FetchOverride = null;
+            store.RefreshAsync().GetAwaiter().GetResult();
+            Require(store.OfferFor("aura_sunset") != null, "Fetch can be retried after timeout.");
+
+            provider.Pending.SetResult(true);
+            provider.FetchOverride = Task.FromCanceled<CommerceSnapshot>(new System.Threading.CancellationToken(true));
+            store.PurchaseAsync(store.OfferFor("aura_sunset")).GetAwaiter().GetResult();
+            Require(store.NeedsPurchaseRecovery && !store.Status.Contains("결제가 취소"), "A cancelled post-payment fetch must not claim the payment was cancelled.");
+        }
+
         static void CheckScreen()
         {
             var previousArt = Game.Art;
             var previousStore = Game.Cosmetics;
             var previousPlayer = Game.Player;
+            var previousUi = Game.UI;
             var canvas = new GameObject("CosmeticChecksCanvas", typeof(RectTransform));
             try
             {
                 Game.Art = new SpriteLibrary(16);
                 Game.Cosmetics = new CosmeticStore(new UnavailableCommerceProvider());
                 Game.Player = null;
+                Game.UI = null;
+                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1280f, 720f);
                 var icon = Resources.Load<Sprite>("Art/menuicon_cosmetics");
                 var stars = Resources.Load<Sprite>("Art/fx_cosmetic_stars");
                 Require(icon != null && stars != null, "Generated assets are imported as sprites.");
@@ -88,13 +128,39 @@ namespace DotRPG.EditorTools
                 var screen = CosmeticShopScreen.Create(canvas.transform);
                 screen.Show();
                 Require(screen.gameObject.activeSelf, "Screen opens with the unavailable provider.");
-                var button = screen.transform.Find("Content/Layout/Preview/PurchaseOrEquip").GetComponent<UnityEngine.UI.Button>();
-                screen.transform.Find("Content/Layout/Catalog/Product_aura_sunset").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                var layout = screen.transform.Find("Content/Viewport/Layout");
+                var button = layout.Find("Preview/PurchaseOrEquip").GetComponent<UnityEngine.UI.Button>();
+                layout.Find("Catalog/Product_aura_sunset").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(!button.interactable, "Paid purchases are disabled before integration.");
-                Require(screen.transform.Find("Content/Layout/Preview/Aura").GetComponent<UnityEngine.UI.Image>().sprite == stars,
+                Require(layout.Find("Preview/Aura").GetComponent<UnityEngine.UI.Image>().sprite == stars,
                     "Preview uses the same paid artwork as the world renderer.");
-                screen.transform.Find("Content/Layout/Catalog/Product_aura_sky").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                layout.Find("Catalog/Product_aura_sky").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(button.interactable, "Free appearance remains available.");
+                foreach (float scale in UiTheme.UiScales)
+                {
+                    ((RectTransform)canvas.transform).sizeDelta = new Vector2(1280f, 720f) / scale;
+                    screen.Show();
+                    Require(layout.localScale == Vector3.one, "UI size settings are never cancelled by shrinking the content.");
+                    var list = layout.Find("Catalog").GetComponent<RectTransform>();
+                    var detail = layout.Find("Preview").GetComponent<RectTransform>();
+                    Require(detail.anchoredPosition.x >= list.sizeDelta.x || -detail.anchoredPosition.y >= list.sizeDelta.y,
+                        "Catalog and details do not overlap at any supported UI scale.");
+                }
+                screen.Hide();
+                UnityEngine.Object.DestroyImmediate(screen.gameObject);
+                var provider = new TestProvider();
+                Game.Cosmetics = new CosmeticStore(provider);
+                screen = CosmeticShopScreen.Create(canvas.transform);
+                screen.Show();
+                screen.Navigate(Vector2Int.right);
+                screen.SubmitFocused();
+                Require(provider.Restores == 1, "Keyboard/gamepad can activate restore.");
+                layout = screen.transform.Find("Content/Viewport/Layout");
+                var restore = layout.Find("Preview/Restore").GetComponent<CosmeticShopButton>();
+                restore.OnSubmit(null);
+                Require(provider.Restores == 1, "Unity's native Submit does not duplicate the screen command.");
+                screen.Navigate(Vector2Int.left);
+                Require(!layout.Find("Preview/Restore/Text").GetComponent<UnityEngine.UI.Text>().text.StartsWith("▶"), "Left returns focus to products.");
                 screen.Hide();
             }
             finally
@@ -103,6 +169,7 @@ namespace DotRPG.EditorTools
                 Game.Art = previousArt;
                 Game.Cosmetics = previousStore;
                 Game.Player = previousPlayer;
+                Game.UI = previousUi;
             }
         }
 
@@ -111,13 +178,15 @@ namespace DotRPG.EditorTools
             public bool IsAvailable => true;
             public bool Owned;
             public int Purchases;
+            public int Restores;
+            public Task<CommerceSnapshot> FetchOverride;
             public TaskCompletionSource<bool> Pending = new TaskCompletionSource<bool>();
-            public Task<CommerceSnapshot> FetchAsync() => Task.FromResult(new CommerceSnapshot
+            public Task<CommerceSnapshot> FetchAsync() => FetchOverride ?? Task.FromResult(new CommerceSnapshot
             {
                 OwnedProductIds = Owned ? new[] { "aura_sunset" } : Array.Empty<string>(),
                 Offers = new[] { new CosmeticOffer("aura_sunset", "테스트 가격", Guid.NewGuid().ToString()) },
             });
-            public Task<CommerceSnapshot> RestoreAsync() => FetchAsync();
+            public Task<CommerceSnapshot> RestoreAsync() { Restores++; return FetchAsync(); }
             public Task PurchaseAsync(CosmeticOffer offer)
             {
                 Purchases++;

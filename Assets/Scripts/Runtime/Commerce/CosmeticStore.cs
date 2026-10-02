@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 
 namespace DotRPG
@@ -13,16 +14,21 @@ namespace DotRPG
         readonly HashSet<string> owned = new HashSet<string>();
         readonly Dictionary<string, CosmeticOffer> offers = new Dictionary<string, CosmeticOffer>();
         string selectedId;
+        readonly Func<TimeSpan, CancellationToken, Task> delay;
+        Task pendingPurchase;
+        string pendingProductId;
 
         public event Action Changed;
         public bool IsBusy { get; private set; }
         public bool IsAvailable => provider.IsAvailable;
+        public bool NeedsPurchaseRecovery => pendingProductId != null;
         public string Status { get; private set; } = "";
         public CosmeticProduct Equipped => Owns(selectedId) ? CosmeticCatalog.Find(selectedId) : CosmeticCatalog.All[0];
 
-        public CosmeticStore(ICommerceProvider provider)
+        public CosmeticStore(ICommerceProvider provider, Func<TimeSpan, CancellationToken, Task> delay = null)
         {
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            this.delay = delay ?? Task.Delay;
             selectedId = PlayerPrefs.GetString(SelectionKey, CosmeticCatalog.All[0].Id);
         }
 
@@ -54,8 +60,14 @@ namespace DotRPG
             Begin("보유 상품을 확인하고 있습니다.");
             try
             {
-                Apply(await (restore ? provider.RestoreAsync() : provider.FetchAsync()));
-                Status = restore ? "구매 내역을 복원했습니다." : "보유 상품을 확인했습니다.";
+                var request = restore ? provider.RestoreAsync() : provider.FetchAsync();
+                await WaitAsync(request, TimeSpan.FromSeconds(30));
+                Apply(await request);
+                // A timed-out payment may still finish. Do not reopen checkout while it is running.
+                if (NeedsPurchaseRecovery && (Owns(pendingProductId) || pendingPurchase == null || pendingPurchase.IsCompleted))
+                    pendingProductId = null;
+                Status = NeedsPurchaseRecovery ? "이전 결제 확인 중입니다. 잠시 후 구매 내역을 다시 복원해 주세요."
+                    : restore ? "구매 내역을 복원했습니다." : "보유 상품을 확인했습니다.";
             }
             catch (Exception exception)
             {
@@ -69,19 +81,27 @@ namespace DotRPG
 
         public async Task PurchaseAsync(CosmeticOffer confirmedOffer)
         {
-            if (IsBusy || !IsAvailable || confirmedOffer == null) return;
+            if (IsBusy || NeedsPurchaseRecovery || !IsAvailable || confirmedOffer == null) return;
             string id = confirmedOffer.ProductId;
             if (Owns(id) || !ReferenceEquals(OfferFor(id), confirmedOffer)) return;
             Begin("결제를 확인하고 있습니다. 완료될 때까지 기다려 주세요.");
+            pendingProductId = id;
+            bool paymentVerified = false;
             try
             {
-                await provider.PurchaseAsync(confirmedOffer);
-                Apply(await provider.FetchAsync());
+                pendingPurchase = provider.PurchaseAsync(confirmedOffer);
+                await WaitAsync(pendingPurchase, TimeSpan.FromMinutes(2));
+                paymentVerified = true;
+                var request = provider.FetchAsync();
+                await WaitAsync(request, TimeSpan.FromSeconds(30));
+                Apply(await request);
+                if (Owns(id)) pendingProductId = null;
                 Status = Owns(id) ? "구매한 외형을 옷장에서 착용할 수 있습니다." : "구매 확인 중입니다. 구매 내역 복원을 눌러 주세요.";
             }
             catch (OperationCanceledException)
             {
-                Status = "결제가 취소되었습니다.";
+                if (!paymentVerified) pendingProductId = null;
+                Status = paymentVerified ? "결제 후 보유 내역 확인이 중단되었습니다. 구매 내역을 복원해 주세요." : "결제가 취소되었습니다.";
             }
             catch (Exception exception)
             {
@@ -94,6 +114,31 @@ namespace DotRPG
                 offers.Remove(id);
                 End();
             }
+        }
+
+        async Task WaitAsync(Task request, TimeSpan timeout)
+        {
+            using (var cancellation = new CancellationTokenSource())
+            {
+                try
+                {
+                    await Task.WhenAny(request, delay(timeout, cancellation.Token));
+                    if (!request.IsCompleted)
+                    {
+                        // Observe a late failure without applying stale results or cancelling a real charge.
+                        _ = ObserveLateCompletionAsync(request);
+                        throw new TimeoutException();
+                    }
+                    await request;
+                }
+                finally { cancellation.Cancel(); }
+            }
+        }
+
+        static async Task ObserveLateCompletionAsync(Task request)
+        {
+            try { await request; }
+            catch (Exception) { /* The recovery request reports the authoritative outcome. */ }
         }
 
         void Apply(CommerceSnapshot snapshot)

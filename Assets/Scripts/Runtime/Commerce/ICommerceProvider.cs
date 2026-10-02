@@ -28,6 +28,9 @@ namespace DotRPG
     /// PurchaseAsync finishes only after receipt/order verification, or throws on cancel/failure.
     /// Quote IDs bind the displayed price and product; expired or changed quotes must be rejected.
     /// RestoreAsync invokes platform restoration and returns the full current entitlement snapshot.
+    /// Fetch/restore must reconcile outstanding orders before returning new purchase quotes.
+    /// OperationCanceledException from PurchaseAsync means definitively cancelled before a charge;
+    /// an uncertain charge must report an error instead. UI timeouts do not cancel platform charges.
     /// Never implement grants from local preferences or a payment-overlay close callback.
     /// </summary>
     public interface ICommerceProvider
