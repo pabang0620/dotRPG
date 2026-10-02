@@ -734,8 +734,8 @@
     {
      "op": "move",
      "actor": "kael",
-     "col": 20,
-     "row": 14,
+     "col": 22,
+     "row": 9,
      "speed": 1
     },
     {
@@ -875,15 +875,15 @@
     {
      "op": "place",
      "actor": "player",
-     "col": 18,
-     "row": 15,
+     "col": 20,
+     "row": 10,
      "dir": "up"
     },
     {
      "op": "spawn",
      "actor": "kael",
-     "col": 21,
-     "row": 15,
+     "col": 23,
+     "row": 10,
      "dir": "left"
     },
     {

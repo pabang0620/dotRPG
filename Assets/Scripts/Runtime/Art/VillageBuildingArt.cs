@@ -32,8 +32,9 @@ namespace DotRPG
             new Definition("town_store", "general_store", 132, 56, 768, .95f, 8.4f, 5.1f),
             new Definition("town_smithy", "smithy", 136, 44, 768, 1.05f, 8.6f, 4.9f),
             new Definition("town_warehouse", "warehouse", 140, 50, 768, 1.1f, 8.4f, 4.9f),
-            new Definition("town_stable", "stable", 136, 40, 768, 1.05f, 8.4f, 4.9f),
-            new Definition("town_stable_burned", "stable_burned", 136, 40, 768, 1.05f, 8.4f, 4.9f),
+            // [STORY] 브람의 마굿간 (generated, Tools/art/process_generated.py): wide and low, door right of centre.
+            new Definition("town_stable", "stable", 136, 44, 1101, 1.0f, 9.0f, 3.6f, 0.1f),
+            new Definition("town_stable_burned", "stable_burned", 136, 44, 1101, 1.0f, 9.0f, 3.6f, 0.1f),
         };
 
         public static Definition Find(string key)

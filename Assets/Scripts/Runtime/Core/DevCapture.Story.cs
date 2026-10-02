@@ -107,8 +107,8 @@ namespace DotRPG
             yield return SettleStory(40f);
             StoryCheck($"after the stable scene: 1-3 {St("c1_burning")}, flags attack_done={Game.Quest.HasFlag("attack_done")} stable_burned={Game.Quest.HasFlag("stable_burned")}",
                 St("c1_burning") == QuestStatus.Completed && Game.Quest.HasFlag("attack_done") && Game.Quest.HasFlag("stable_burned") && !Game.Quest.HasFlag(StoryIds.FlagAttackNight));
-            StoryCheck($"1-4 runs ({St("c1_ashes")}), graves={StoryProps("story_grave")}, kael={HasStoryNpc("kael")}, bram gone={!HasStoryNpc("bram")}",
-                St("c1_ashes") == QuestStatus.Active && StoryProps("story_grave") == 2 && HasStoryNpc("kael") && !HasStoryNpc("bram"));
+            StoryCheck($"1-4 runs ({St("c1_ashes")}), graves={StoryProps("story_grave") + StoryProps("story_grave_1")}, kael={HasStoryNpc("kael")}, bram gone={!HasStoryNpc("bram")}",
+                St("c1_ashes") == QuestStatus.Active && StoryProps("story_grave") + StoryProps("story_grave_1") == 2 && HasStoryNpc("kael") && !HasStoryNpc("bram"));
             StoryCheck($"villagers back after the night: chief={HasStoryNpc("chief")}", HasStoryNpc("chief"));
             GameEvents.RaiseInteracted("family_graves");
             yield return SettleStory(30f);

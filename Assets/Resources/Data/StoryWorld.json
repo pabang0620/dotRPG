@@ -46,8 +46,8 @@
   {
    "npcId": "kael",
    "map": "village",
-   "col": 21,
-   "row": 14,
+   "col": 23,
+   "row": 9,
    "facing": "left",
    "requires": [
     "kael_mentor"
@@ -166,8 +166,8 @@
   {
    "sprite": "story_grave",
    "map": "village",
-   "col": 17,
-   "row": 14,
+   "col": 21,
+   "row": 8,
    "requires": [
     "family_buried"
    ],
@@ -176,10 +176,10 @@
    "dialogue": "story_graves"
   },
   {
-   "sprite": "story_grave",
+   "sprite": "story_grave_1",
    "map": "village",
    "col": 19,
-   "row": 14,
+   "row": 8,
    "requires": [
     "family_buried"
    ],

@@ -42,8 +42,8 @@ namespace DotRPG
                 var preview = UIFactory.Image(card, "Preview", Game.Art.GetCharacter(info.Look, "down", "idle0"), Color.white);
                 UIFactory.Place(preview.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(96f, 122f));
                 preview.preserveAspect = true;
-                if (info.id == CharacterClass.Warrior)
-                    UIFactory.Place(preview.rectTransform, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0, -2), new Vector2(144, 144));
+                // 64 px warrior frames and 128 px generated frames (mage) both fill the same box.
+                UIFactory.Place(preview.rectTransform, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0, -2), new Vector2(144, 144));
                 screen.previews[i] = preview;
 
                 var name = UIFactory.Text(card, "Name", info.displayName, 28, UIColors.Cream, TextAnchor.MiddleCenter, true);
@@ -80,7 +80,7 @@ namespace DotRPG
         {
             var label = UIFactory.Text(panel, "NameLabel", "이름", 20, UIColors.Cream, TextAnchor.MiddleRight, true);
             UIFactory.Place(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-170f, -302f), new Vector2(80f, 40f));
-            var bg = UIFactory.Panel(panel, "NameBox", false);
+            var bg = UIFactory.Panel(panel, "NameBox", true);
             UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(20f, -302f), new Vector2(280f, 40f));
             bg.raycastTarget = true;
             var text = UIFactory.Text(bg.rectTransform, "Text", "", 22, Color.white, TextAnchor.MiddleCenter, false);
