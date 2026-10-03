@@ -78,6 +78,7 @@ namespace DotRPG
 
         public void NewGame(CharacterClass playerClass = CharacterClass.Warrior, string heroName = null)
         {
+            OnlineSession.Current?.LeaveCharacter(); // [SERVER] offline play saves to files
             StartCoroutine(Transition(() =>
             {
                 Game.Session.ResetForNewGame(Game.Config, playerClass);
@@ -87,8 +88,21 @@ namespace DotRPG
             }));
         }
 
+        /// <summary>[SERVER] Plays an online character: the server detail as SaveData through the normal restore.</summary>
+        public void EnterOnline(SaveData data)
+        {
+            StartCoroutine(Transition(() =>
+            {
+                Game.Session.Restore(data, Game.Config);
+                EnterWorld();
+                Game.State.Set(GameState.Playing);
+                GameEvents.RaiseToast("온라인 캐릭터로 접속했습니다.");
+            }));
+        }
+
         public void ContinueGame()
         {
+            OnlineSession.Current?.LeaveCharacter(); // [SERVER] offline play saves to files
             var data = Game.Saves.Read();
             if (data == null)
             {
@@ -243,6 +257,12 @@ namespace DotRPG
 
         public void ReturnToTitle()
         {
+            // [SERVER] Online: send the last position before leaving (the upload finishes in the background).
+            if (OnlineSession.Playing)
+            {
+                WriteSave();
+                OnlineSession.Current.LeaveCharacter();
+            }
             StartCoroutine(Transition(() =>
             {
                 Game.Dialogue.Abort();

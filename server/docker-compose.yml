@@ -1,0 +1,33 @@
+# 배포용 (api + postgres). 비밀값은 같은 폴더의 .env 에서 읽는다 (.env.example 참고)
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dotrpg
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD 가 필요합니다}
+      POSTGRES_DB: dotrpg
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dotrpg -d dotrpg"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://dotrpg:${POSTGRES_PASSWORD}@postgres:5432/dotrpg
+      GAME_DATA_DIR: /app/data
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

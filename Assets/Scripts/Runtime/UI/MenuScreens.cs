@@ -118,6 +118,7 @@ namespace DotRPG
             // [I] Both go through the save-slot picker (3 slots).
             screen.menu.AddButton("새 게임", () => ui.Slots.Open(false));
             screen.menu.AddButton("이어하기", () => ui.Slots.Open(true), () => Game.Saves.HasAnySave());
+            screen.menu.AddButton("온라인", () => ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin)); // [SERVER]
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());

@@ -50,38 +50,4 @@ namespace DotRPG
     {
         public static IAuthority Current = new LocalAuthority();
     }
-
-    /// <summary>
-    /// [ONLINE] Placeholder for the server-owned online character (PLAN_ONLINE O1). It never touches the
-    /// offline <see cref="GameSession"/> or its JSON save; until a server exists it stays disconnected and empty.
-    /// </summary>
-    public sealed class OnlineSession
-    {
-        public sealed class CharacterSummary
-        {
-            public long characterId;
-            public string name;
-            public CharacterClass cls;
-            public int level;
-            public int power;
-        }
-
-        /// <summary>Null while offline (always, until the server exists).</summary>
-        public static OnlineSession Current { get; private set; }
-
-        public long AccountId { get; private set; }
-        public bool IsConnected { get; private set; }
-        public readonly List<CharacterSummary> Characters = new List<CharacterSummary>();
-        /// <summary>Server snapshot of the selected character's items (read-only for the client).</summary>
-        public readonly Dictionary<string, int> Items = new Dictionary<string, int>();
-        public long Gold { get; private set; }
-
-        /// <summary>Would exchange a Steam ticket for tokens and load the characters. Offline: always fails.</summary>
-        public static bool TryConnect(out string error)
-        {
-            error = "서버 연결 전 (오프라인 미리보기)";
-            Current = null;
-            return false;
-        }
-    }
 }

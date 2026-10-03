@@ -38,6 +38,12 @@ namespace DotRPG
 
         public bool Write(SaveData data, int slot = -1)
         {
+            // [SERVER] An online character is saved on the server, never in a local slot (PLAN_ONLINE O1).
+            if (OnlineSession.Playing)
+            {
+                OnlineSession.Current.UploadState(data);
+                return true;
+            }
             string path = SlotPath(Resolve(slot));
             string temp = path + ".tmp";
             string backup = path + ".bak";

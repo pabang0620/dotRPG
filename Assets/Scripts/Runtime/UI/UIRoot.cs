@@ -23,6 +23,9 @@ namespace DotRPG
         public PauseScreen Pause { get; private set; }
         public SettingsScreen Settings { get; private set; }
         public KeyBindScreen KeyBind { get; private set; }
+        public OnlineLoginScreen OnlineLogin { get; private set; }       // [SERVER]
+        public OnlineCharacterScreen OnlineCharacters { get; private set; }
+        public OnlineCreateScreen OnlineCreate { get; private set; }
         public SaveSlotScreen Slots { get; private set; }
         public HelpScreen Help { get; private set; }
         public ControlsScreen Controls { get; private set; }
@@ -121,6 +124,9 @@ namespace DotRPG
             ui.Ending = EndingScreen.Create(t, ui);
             ui.Settings = SettingsScreen.Create(t, ui);
             ui.KeyBind = KeyBindScreen.Create(t, ui); // [I]
+            ui.OnlineLogin = OnlineLoginScreen.Create(t, ui); // [SERVER]
+            ui.OnlineCharacters = OnlineCharacterScreen.Create(t, ui);
+            ui.OnlineCreate = OnlineCreateScreen.Create(t, ui);
             ui.Slots = SaveSlotScreen.Create(t, ui); // [I]
             ui.Help = HelpScreen.Create(t, ui); // [E5]
             ui.Controls = ControlsScreen.Create(t, ui);
@@ -229,7 +235,7 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { Title, Pause, Settings, KeyBind, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
+            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Title, Pause, Settings, KeyBind, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
             if (SocialScreen.Instance != null) SocialScreen.Instance.Hide(); // [F5]
