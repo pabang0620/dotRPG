@@ -280,7 +280,7 @@ describe('POST /characters/:id/drops/claim', () => {
     expect(await countOf(h, 'mat_bone')).toBe(1);
     expect(await countOf(h, 'eq_sword_iron')).toBe(1);
     expect(res.body.data.delta.stacks).toEqual(
-      expect.arrayContaining([{ item_key: 'mat_bone', location: 'bag', count: 1 }]),
+      expect.arrayContaining([{ item_key: 'mat_bone', location: 'bag', bind: 'none', count: 1 }]),
     );
     await expectLedgerConsistent(h);
   });

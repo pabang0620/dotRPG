@@ -1,15 +1,21 @@
 import { Router } from 'express';
 import { createAuthRouter } from '../domains/auth/authRoutes';
+import { createAuctionRouter } from '../domains/auction/auctionRoutes';
+import { createBlocksRouter } from '../domains/blocks/blocksRoutes';
 import { createCharacterRouter } from '../domains/characters/characterRoutes';
 import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
 import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
+import { createFriendsRouter } from '../domains/friends/friendsRoutes';
 import { createGatheringRouter } from '../domains/gathering/gatheringRoutes';
 import { createInventoryRouter } from '../domains/inventory/inventoryRoutes';
 import { createKillRouter } from '../domains/kills/killRoutes';
+import { createMailRouter } from '../domains/mail/mailRoutes';
 import { createMatchRouter } from '../domains/match/matchRoutes';
+import { createPartyInvitesRouter } from '../domains/partyinvites/partyInvitesRoutes';
 import { createPartyRouter } from '../domains/party/partyRoutes';
 import { createPartyRunRouter } from '../domains/partyruns/partyRunRoutes';
+import { createReportsRouter } from '../domains/reports/reportsRoutes';
 import { createRaidRouter } from '../domains/raids/raidRoutes';
 import { createQuestRouter } from '../domains/quests/questRoutes';
 import { createShopRouter } from '../domains/shop/shopRoutes';
@@ -35,5 +41,13 @@ export function createRouter(): Router {
   r.use(createMatchRouter());
   r.use(createPartyRunRouter());
   r.use(createRaidRouter());
+  // 5단계: 파티 초대(캐릭터 경로), 친구·차단·신고(계정 단위, 클라이언트 버전만 검사)
+  r.use(createPartyInvitesRouter());
+  r.use(createFriendsRouter());
+  r.use(createBlocksRouter());
+  r.use(createReportsRouter());
+  // 6단계: 경매·우편(캐릭터 경로 아래, 데이터 버전까지 검사)
+  r.use(createAuctionRouter());
+  r.use(createMailRouter());
   return r;
 }

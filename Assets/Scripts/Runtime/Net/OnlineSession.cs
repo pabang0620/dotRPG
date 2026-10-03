@@ -149,6 +149,8 @@ namespace DotRPG
         public void LeaveCharacter()
         {
             PartyClient.DetachOnline(); // [PARTY]
+            OnlineServices.DetachChat(); // [SERVER 5]
+            OnlineServices.DetachAuction(); // [SERVER 6]
             ActiveCharacter = null; // a save still waiting keeps its own character id and is sent
         }
 
@@ -180,11 +182,14 @@ namespace DotRPG
             int gold = MiniJson.Int(c, "gold");
             if (gold > 0) data.inventory.Add(new ItemStack(ConsumableDatabase.Gold, gold));
             var worn = new string[Equipment.SlotCount];
+            OnlineEconomy.ClearStackRows();
             foreach (var o in MiniJson.Arr(c, "items") ?? new List<object>())
             {
                 string key = MiniJson.Str(o, "item_key");
                 int count = MiniJson.Int(o, "count");
-                switch (MiniJson.Str(o, "location"))
+                string location = MiniJson.Str(o, "location");
+                if (location == "bag" || location == "storage") OnlineEconomy.SetStackRow(location, key, MiniJson.Str(o, "bind", "none"), count); // [SERVER 6]
+                switch (location)
                 {
                     case "bag": data.inventory.Add(new ItemStack(key, count)); break;
                     case "storage": data.storage.Add(new ItemStack(key, count)); break;

@@ -52,6 +52,21 @@ namespace DotRPG
         }
 
         /// <summary>Overwrites local gold, stacks, worn slots and level / XP with the server's values.</summary>
+        static readonly Dictionary<string, int> stackRows = new Dictionary<string, int>();
+
+        /// <summary>[SERVER 6] Forget the row counts (another character entered).</summary>
+        public static void ClearStackRows() => stackRows.Clear();
+
+        /// <summary>Stores one server row and returns the key's total at that location over every binding.</summary>
+        public static int SetStackRow(string location, string key, string bind, int count)
+        {
+            stackRows[location + "|" + key + "|" + (bind ?? "none")] = Mathf.Max(0, count);
+            string prefix = location + "|" + key + "|";
+            int total = 0;
+            foreach (var kv in stackRows) if (kv.Key.StartsWith(prefix, StringComparison.Ordinal)) total += kv.Value;
+            return total;
+        }
+
         public static void ApplyDelta(Dictionary<string, object> delta)
         {
             if (delta == null || Game.Session == null) return;
@@ -60,11 +75,13 @@ namespace DotRPG
             foreach (var o in MiniJson.Arr(delta, "stacks") ?? new List<object>())
             {
                 string key = MiniJson.Str(o, "item_key");
-                int count = MiniJson.Int(o, "count");
-                switch (MiniJson.Str(o, "location"))
+                string location = MiniJson.Str(o, "location");
+                // [SERVER 6] One key can be several rows (one per binding); the bag shows their sum.
+                int total = SetStackRow(location, key, MiniJson.Str(o, "bind", "none"), MiniJson.Int(o, "count"));
+                switch (location)
                 {
-                    case "bag": s.Inventory.SetCount(key, count); break;
-                    case "storage": s.Storage.SetCount(key, count); break;
+                    case "bag": s.Inventory.SetCount(key, total); break;
+                    case "storage": s.Storage.SetCount(key, total); break;
                 }
             }
             foreach (var o in MiniJson.Arr(delta, "worn") ?? new List<object>())

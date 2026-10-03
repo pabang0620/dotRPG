@@ -61,6 +61,8 @@ namespace DotRPG
             v.BuildBubble();
             GameEvents.Toast += v.OnToast;
             Service.Received += v.OnReceived;
+            v.bound = Service;
+            OnlineServices.ChatChanged += v.Rebind; // [SERVER 5] online / offline swaps the service
             v.Redraw();
             return v;
         }
@@ -100,7 +102,8 @@ namespace DotRPG
         void OnDestroy()
         {
             GameEvents.Toast -= OnToast;
-            if (OnlineServices.Chat != null) OnlineServices.Chat.Received -= OnReceived;
+            OnlineServices.ChatChanged -= Rebind;
+            if (bound != null) bound.Received -= OnReceived;
             InputReader.TextInputActive = false;
             if (Instance == this) Instance = null;
         }
@@ -109,6 +112,16 @@ namespace DotRPG
         void OnToast(string message)
         {
             if (message != null && message.Contains("[알림]")) Service.PostSystem(message.Replace("<color=#ffd84a>[알림]</color> ", "").Replace("[알림] ", ""));
+        }
+
+        IChatService bound;
+
+        void Rebind()
+        {
+            if (bound != null) bound.Received -= OnReceived;
+            bound = Service;
+            bound.Received += OnReceived;
+            Redraw();
         }
 
         void OnReceived(ChatLine line)

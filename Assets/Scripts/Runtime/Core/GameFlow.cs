@@ -99,6 +99,8 @@ namespace DotRPG
                 GameEvents.RaiseToast("온라인 캐릭터로 접속했습니다.");
                 OnlineEconomy.OnEnteredWorld(); // [SERVER]
                 PartyClient.AttachOnline(); // [PARTY] server party board, lobby and matching
+                OnlineServices.AttachChat(OnlineSession.Current.ActiveCharacter); // [SERVER 5] chat socket
+                OnlineServices.AttachAuction(); // [SERVER 6] auction house and mailbox
             }));
         }
 

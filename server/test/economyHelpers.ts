@@ -37,18 +37,23 @@ export async function seedItem(
   key: string,
   count: number,
   location: 'bag' | 'storage' = 'bag',
+  bind: 'none' | 'account' | 'character' = 'none',
 ): Promise<void> {
   const db = getPool();
-  const r = await db.query<{ count: number }>(
-    `INSERT INTO character_items (character_id, item_key, count, location) VALUES ($1, $2, $3, $4)
-     ON CONFLICT (character_id, location, item_key) WHERE location IN ('bag', 'storage')
-     DO UPDATE SET count = character_items.count + EXCLUDED.count RETURNING count`,
-    [h.dbId, key, count, location],
+  await db.query(
+    `INSERT INTO character_items (character_id, item_key, count, location, bind) VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (character_id, location, item_key, bind) WHERE location IN ('bag', 'storage')
+     DO UPDATE SET count = character_items.count + EXCLUDED.count`,
+    [h.dbId, key, count, location, bind],
+  );
+  const total = await db.query<{ n: string }>(
+    'SELECT sum(count) AS n FROM character_items WHERE character_id = $1 AND item_key = $2 AND location = $3',
+    [h.dbId, key, location],
   );
   await db.query(
     `INSERT INTO item_ledger (character_id, item_key, delta, reason, ref, location, balance_after)
      VALUES ($1, $2, $3, 'drop_claim', $4, $5, $6)`,
-    [h.dbId, key, count, randomUUID(), location, (r.rows[0] as { count: number }).count],
+    [h.dbId, key, count, randomUUID(), location, Number((total.rows[0] as { n: string }).n)],
   );
 }
 
@@ -110,7 +115,7 @@ export async function goldOf(h: Hero): Promise<number> {
 
 export async function countOf(h: Hero, key: string, location = 'bag'): Promise<number> {
   const r = await getPool().query<{ count: number }>(
-    'SELECT count FROM character_items WHERE character_id = $1 AND item_key = $2 AND location = $3',
+    'SELECT coalesce(sum(count), 0)::int AS count FROM character_items WHERE character_id = $1 AND item_key = $2 AND location = $3',
     [h.dbId, key, location],
   );
   return r.rows[0]?.count ?? 0;
@@ -136,7 +141,7 @@ export async function expectLedgerConsistent(h: Hero): Promise<void> {
   const db = getPool();
   const items = await db.query<{ item_key: string; location: string; led: string; cnt: string }>(
     `SELECT k.item_key, k.location, coalesce(l.s, 0) AS led, coalesce(c.count, 0) AS cnt
-       FROM (SELECT item_key, location FROM item_ledger WHERE character_id = $1
+       FROM (SELECT item_key, location FROM item_ledger WHERE character_id = $1 AND location IN ('bag', 'storage', 'worn')
              UNION SELECT item_key, location FROM character_items WHERE character_id = $1) k
        LEFT JOIN (SELECT item_key, location, sum(delta) AS s FROM item_ledger WHERE character_id = $1
                   GROUP BY item_key, location) l USING (item_key, location)

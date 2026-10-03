@@ -28,7 +28,7 @@ namespace DotRPG
     /// </summary>
     public sealed class PartyClient : MonoBehaviour
     {
-        const float PollSeconds = 1.5f, IdlePollSeconds = 5f;
+        const float PollSeconds = 1.5f, IdlePollSeconds = 5f, PushedPollSeconds = 15f;
 
         public static PartyClient Instance { get; private set; }
         public static event Action Changed;
@@ -117,6 +117,8 @@ namespace DotRPG
             if (pollTimer > 0f || polling) return;
             bool busy = InParty || Queued || MyApplications.Count > 0 || PartyRunSession.Active;
             pollTimer = busy ? PollSeconds : IdlePollSeconds;
+            // [SERVER 5] With the chat socket up, changes are pushed; polling is only the safety net.
+            if (OnlineServices.Chat is ServerChatService chat && chat.Connected && !PartyRunSession.Active) pollTimer = PushedPollSeconds;
             Poll();
         }
 
@@ -154,6 +156,7 @@ namespace DotRPG
                 string state = MiniJson.Str(a, "state");
                 if (state == "pending") MyApplications[MiniJson.Str(a, "party_id")] = state;
             }
+            foreach (var inv in MiniJson.Arr(d, "invites_incoming") ?? new List<object>()) OnInvite(inv as Dictionary<string, object>);
             var notice = MiniJson.Obj(d, "notice");
             string at = MiniJson.Str(notice, "at");
             if (notice != null && at != lastNoticeAt)
@@ -307,6 +310,33 @@ namespace DotRPG
                 PollNow();
             });
         }
+
+        // ---------------- [SERVER 5] invites ----------------
+
+        readonly HashSet<string> askedInvites = new HashSet<string>();
+
+        /// <summary>Leader: invite someone seen in chat or in the friend list.</summary>
+        public void Invite(string characterId, Action<bool, string> done)
+        {
+            Act("POST", "/party/invites", new Dictionary<string, object> { ["target"] = characterId }, done);
+        }
+
+        /// <summary>An invite arrived (socket push or the poll's invites_incoming): ask once.</summary>
+        public void OnInvite(Dictionary<string, object> invite)
+        {
+            string id = MiniJson.Str(invite, "id");
+            if (string.IsNullOrEmpty(id) || !askedInvites.Add(id) || Game.UI == null) return;
+            var from = MiniJson.Obj(invite, "from");
+            var party = MiniJson.Obj(invite, "party");
+            var def = DungeonDatabase.Get(MiniJson.Str(party, "dungeon_id"));
+            string where = def != null ? def.name : "던전";
+            Game.UI.Confirm($"{MiniJson.Str(from, "name", "누군가")}님이 {where} 파티에 초대했습니다.\n<size=18>30초 안에 답하지 않으면 사라집니다.</size>",
+                () => RespondInvite(id, true), true); // "아니오" lets it expire (the server closes it after 30 s)
+        }
+
+        void RespondInvite(string inviteId, bool accept) =>
+            Act("POST", $"/party/invites/{inviteId}/respond", new Dictionary<string, object> { ["accept"] = accept },
+                (ok, msg) => GameEvents.RaiseToast(!ok ? msg : accept ? "파티에 들어갔다." : "초대를 거절했다."));
 
         public static string Explain(ApiResult r)
         {

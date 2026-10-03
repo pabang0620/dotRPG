@@ -1,6 +1,7 @@
--- dotRPG 서버 전체 스키마 (1~4단계 기준). 정본은 migrations/*.sql 이고, 이 파일은 읽기용으로 UP 본문을 모아 둔 것이다.
+-- dotRPG 서버 전체 스키마 (1~6단계 기준. 6단계 0007은 초안). 정본은 migrations/*.sql 이고, 이 파일은 읽기용으로 UP 본문을 모아 둔 것이다.
 -- 마이그레이션을 추가하면 이 파일도 같은 커밋에서 맞춘다. 구성: 0001_init(1~2단계) + 0002_economy(3단계) + 0003_dungeon_solo(3단계-b, 선택)
--- + 0004_gather_rate(이상 기록 kind, 위 anomaly_log 정의에 이미 포함) + 0005_party(4단계, 이 파일 맨 아래).
+-- + 0004_gather_rate(이상 기록 kind, 위 anomaly_log 정의에 이미 포함) + 0005_party(4단계) + 0006_chat_social(5단계, 이 파일 맨 아래) + 0007_auction(6단계, 0006 구역 바로 앞).
+-- (0006의 accounts.last_character_id는 아래 accounts 정의에 합치지 않고 0006 구역의 ALTER로 둔다: 정본 순서를 그대로 보이기 위해서다.)
 --
 -- 컨벤션
 --   - 내부 키 id BIGSERIAL(API 비노출), 외부 노출은 uuid UUID UNIQUE DEFAULT gen_random_uuid()
@@ -46,9 +47,26 @@
 --   | 방장 보고 (4단계)            | party_runs, party_run_members | party_run_host_reports, party_runs.first_report_at, request_log, anomaly_log |
 --   | 멤버 결과 보고·정산 (4단계)  | characters(행 잠금), dungeon_runs(같은 판 모든 행), party_run_host_reports, party_runs, raid_claims | dungeon_runs, characters(level, xp), xp_ledger, item_ledger(raid_key*), raid_claims, party_run_members, request_log, anomaly_log |
 --   | 레이드 상태 조회 (4단계)     | characters, raid_claims, quest_claims, character_state, character_items | -                                                            |
---   | (5단계 이후 테이블: 채팅, 친구, 경매는 해당 단계 마이그레이션에서 추가)                                  |
+--   | WebSocket 접속·채팅 전송 (5단계) | accounts, characters, party_members(파티 채널 수신자), blocks(접속 때 세션 메모리로), account_sanctions(채팅 금지) | chat_messages, accounts.last_character_id, account_sanctions(자동 제재) |
+--   | 놓친 메시지 따라잡기 (5단계) | chat_messages, party_members(가입 시각), blocks(세션 메모리)                | -                                                           |
+--   | 친구 목록·요청·수락·삭제 (5단계) | friendships, characters, accounts(last_character_id), blocks               | friendships, request_log                                    |
+--   | 차단·해제 (5단계)            | blocks, characters            | blocks, friendships(상태 removed), party_invites(cancelled), request_log |
+--   | 신고 (5단계)                 | characters, chat_messages, party_members, friendships, reports(한도·중복) | reports, report_lines, account_sanctions(자동 신고 제재를 켠 경우), request_log |
+--   | 파티 초대 (5단계)            | characters, parties, party_members, party_invites, blocks, character_items(전투력) | party_invites, party_members(수락 시), parties.version, request_log |
+--   | 제재 처리 (5단계 SQL, 7단계 관리자 도구) | reports, report_lines, account_sanctions | reports.state, account_sanctions, accounts.banned_until(ban) |
+--   | 경매 검색·시세 조회·내 등록 (6단계) | characters(이름·직업), auction_listings, auction_bids, auction_trades, auction_price_daily, character_items(내 가방 거래 가능분) | -  |
+--   | 경매 등록 (6단계)            | characters(행 잠금, level), accounts(created_at), character_items(bag), auction_listings(내 등록 수), auction_trades(시세 중앙값) | auction_listings, character_items(bag 감소), characters.gold(보증금), item_ledger(auction_list), gold_ledger(auction_deposit), request_log, auction_flags |
+--   | 경매 즉시 구매·입찰 (6단계)  | characters(행 잠금), auction_listings(행 잠금), auction_trades(쌍 한도) | characters.gold, auction_listings, auction_bids, mails(구매자·판매자·직전 입찰자), auction_trades, auction_price_daily, auction_sinks, gold_ledger, item_ledger, request_log, auction_flags |
+--   | 경매 취소 (6단계)            | characters(행 잠금), auction_listings(행 잠금) | auction_listings, mails, auction_sinks(보증금), item_ledger |
+--   | 경매 마감 정산 틱·우편 기한 폐기 (6단계) | auction_listings(행 잠금, 캐릭터 행 없음), mails | auction_listings, auction_bids, mails, auction_trades, auction_price_daily, auction_sinks, item_ledger (gold_ledger는 없다) |
+--   | 우편 조회·요약 (6단계)       | mails, auction_listings(요청자 소유분 지연 정산) | (지연 정산 시 위 정산 틱과 같다) |
+--   | 우편 수령 (6단계)            | characters(행 잠금), mails(행 잠금) | mails.claimed_at, characters.gold, character_items(bag), gold_ledger(mail_claim), item_ledger(mail_claim), request_log |
+--   | 캐릭터 삭제 (2단계 변경, 6단계) | auction_listings, mails (미수령·진행 중이면 삭제 거절) | -                                  |
+--
+--   6단계 정리: auction_trades 180일(시세 중앙값은 7일만 읽는다), 종료된 auction_listings·auction_bids·수령/폐기된 mails 180일, auction_flags 90일. auction_price_daily, auction_sinks, 원장은 지우지 않는다.
 --
 --   정리 작업(7단계 전까지는 스크립트): request_log 7일, kill_log 7일, drops(만료·수령) 1일, anomaly_log 30일. drops는 kill_log 삭제 때 함께 지워진다(ON DELETE CASCADE).
+--   5단계 정리: chat_messages 7일(CHAT_RETENTION_DAYS), party_invites 7일, friendships 끝난 행 90일, report_lines 신고가 닫힌 뒤 180일(REPORT_RETENTION_DAYS). account_sanctions는 지우지 않는다.
 --
 
 -- 추가만 하는 원장의 수정·삭제를 DB가 막는다 (사후 추적의 근거)
@@ -810,4 +828,493 @@ COMMENT ON TABLE  raid_claims IS '레이드 보상 수령 기록. PK가 "기간�
 COMMENT ON COLUMN raid_claims.period_kind IS 'daily: raidTier Mid / weekly: raidTier Final (dungeons.json)';
 COMMENT ON COLUMN raid_claims.period_start IS 'resetBoundaries의 dailyStartAt 또는 weeklyStartAt(서버 KST 함수 하나)';
 COMMENT ON COLUMN raid_claims.dungeon_run_id IS '보상을 받은 판(dungeon_runs). 이번 주 n/3 표시는 같은 주간 구간의 행 수';
+
+-- =====================================================================================
+-- 0007_auction (6단계 경매장·우편·시세). 아래는 migrations/0007_auction.sql 의 UP 본문이다.
+-- 파일 안에서는 0006_chat_social 구역(맨 아래)보다 앞에 있다(두 단계를 동시에 설계해서 들어온 순서). 적용 순서는 0006 -> 0007이고 서로 의존하지 않는다.
+-- 설계 문서 Docs/server/phase6_api.md. 락 순서: 요청자 캐릭터 행 -> auction_listings 한 행(정산 틱은 listing 한 행만).
+-- 보관 중인 아이템은 character_items가 아니라 mails / auction_listings 행이 들고 있다(원장 location mail / auction).
+-- =====================================================================================
+
+-- ---------- 6단계: 소지품 재고 키에 귀속 추가 ----------
+
+DROP INDEX character_items_stack_uq;
+CREATE UNIQUE INDEX character_items_stack_uq ON character_items (character_id, location, item_key, bind)
+  WHERE location IN ('bag', 'storage');
+COMMENT ON TABLE character_items IS '캐릭터 소지품. 변경은 item_ledger와 같은 트랜잭션에서만. bag·storage는 (키, 귀속)별 한 행(수량 합), worn은 슬롯별 한 행(count=1). 수량이 0이 되면 행을 지운다. 우편·경매 보관분은 이 표가 아니라 mails / auction_listings가 들고 있다';
+COMMENT ON COLUMN character_items.bind IS 'none 거래 가능 / account 계정 귀속 / character 캐릭터 귀속. 획득 경로가 정한다(경매 구매 장비는 account). 강화·장착·창고 이동은 귀속을 그대로 가져간다';
+
+-- ---------- 6단계: 원장 reason 확장 ----------
+
+ALTER TABLE gold_ledger DROP CONSTRAINT gold_ledger_reason_check;
+ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'quest_reward', 'shop_buy', 'shop_sell', 'enhance_cost', 'dungeon_card',
+                    'auction_deposit', 'auction_bid', 'auction_buyout', 'mail_claim'));
+COMMENT ON COLUMN gold_ledger.reason IS '변동 사유. 경매: auction_deposit 등록 보증금(-) / auction_bid 입찰 예치(-) / auction_buyout 즉시 구매 대금(-) / mail_claim 우편 수령(+). 경매 판매 대금·수수료는 이 원장에 없다(대금은 우편 gold로 보관되다가 수령할 때 mail_claim)';
+COMMENT ON COLUMN gold_ledger.ref IS 'drop_claim: 드롭 uuid / quest_reward: 퀘스트 id / shop_*: 아이템 id / enhance_cost: enhance_log uuid / auction_deposit·auction_buyout: listing uuid / auction_bid: bid uuid / mail_claim: mail uuid';
+
+ALTER TABLE item_ledger DROP CONSTRAINT item_ledger_reason_check;
+ALTER TABLE item_ledger ADD CONSTRAINT item_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'gather', 'chest', 'quest_reward', 'quest_consume', 'delivery',
+                    'shop_buy', 'shop_sell', 'enhance_cost', 'enhance_result',
+                    'equip', 'unequip', 'storage_move', 'use_item', 'dungeon_card',
+                    'raid_key', 'raid_key_cost',
+                    'auction_list', 'auction_return', 'auction_sold', 'auction_buy', 'mail_claim', 'mail_expire'));
+COMMENT ON COLUMN item_ledger.reason IS '변동 사유(경로). 경매: auction_list 등록(가방 -n, auction +n) / auction_return 취소·만료(auction -n, 판매자 mail +n) / auction_sold 판매 체결(판매자 auction -n) / auction_buy 구매(구매자 mail +n) / mail_claim 우편 수령(mail -n, bag +n) / mail_expire 30일 경과 폐기(mail -n)';
+COMMENT ON COLUMN item_ledger.ref IS 'drop_claim: 드롭 uuid / gather: 노드 id / chest: 상자 id / quest_*: 퀘스트 id / delivery: 납품처 id / shop_*: 아이템 id / enhance_*: enhance_log uuid / use_item: 아이템 id / auction_*: listing uuid / mail_claim·mail_expire: mail uuid';
+COMMENT ON COLUMN item_ledger.balance_after IS '변동 직후 그 위치의 수량(0 가능). location mail / auction은 그 보관 행(우편 한 통, 등록 한 건) 하나의 수량. starter 행만 NULL 허용';
+
+CREATE UNIQUE INDEX gold_ledger_auction_uq ON gold_ledger (reason, ref)
+  WHERE reason IN ('auction_deposit', 'auction_bid', 'auction_buyout', 'mail_claim');
+CREATE UNIQUE INDEX item_ledger_auction_uq ON item_ledger (reason, ref, location)
+  WHERE reason IN ('auction_list', 'auction_return', 'auction_sold', 'auction_buy', 'mail_claim', 'mail_expire');
+
+-- ---------- 6단계: 경매 등록 ----------
+
+CREATE TABLE auction_listings (
+  id                          BIGSERIAL PRIMARY KEY,
+  uuid                        UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  seller_character_id         BIGINT NOT NULL REFERENCES characters(id),
+  seller_account_id           BIGINT NOT NULL REFERENCES accounts(id),
+  item_key                    TEXT NOT NULL CHECK (item_key ~ '^[a-z][a-z0-9_]{0,39}(\+[1-9][0-9]?)?$' AND item_key <> 'gold'),
+  item_base                   TEXT NOT NULL,
+  enhance                     SMALLINT NOT NULL DEFAULT 0 CHECK (enhance >= 0),
+  count                       INT NOT NULL CHECK (count BETWEEN 1 AND 9999),
+  category                    TEXT NOT NULL CHECK (category IN ('weapon', 'armor', 'accessory', 'material', 'consumable')),
+  rarity                      SMALLINT CHECK (rarity BETWEEN 0 AND 5),
+  class_only                  TEXT CHECK (class_only IN ('warrior', 'mage')),
+  buyout_price                BIGINT NOT NULL CHECK (buyout_price > 0),
+  start_bid                   BIGINT CHECK (start_bid > 0),
+  current_bid                 BIGINT CHECK (current_bid > 0),
+  current_bidder_character_id BIGINT REFERENCES characters(id),
+  current_bidder_account_id   BIGINT REFERENCES accounts(id),
+  bid_count                   INT NOT NULL DEFAULT 0 CHECK (bid_count >= 0),
+  deposit                     BIGINT NOT NULL CHECK (deposit >= 0),
+  fee_pct                     SMALLINT NOT NULL CHECK (fee_pct BETWEEN 0 AND 50),
+  duration_hours              SMALLINT NOT NULL CHECK (duration_hours > 0),
+  status                      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'sold', 'expired', 'cancelled')),
+  sold_kind                   TEXT CHECK (sold_kind IN ('buyout', 'bid')),
+  created_at                  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ends_at                     TIMESTAMPTZ NOT NULL,
+  extend_count                SMALLINT NOT NULL DEFAULT 0 CHECK (extend_count >= 0),
+  closed_at                   TIMESTAMPTZ,
+  version                     INT NOT NULL DEFAULT 0,
+  CONSTRAINT auction_listings_bid_pair   CHECK ((current_bid IS NULL) = (current_bidder_character_id IS NULL)
+                                                AND (current_bid IS NULL) = (current_bidder_account_id IS NULL)),
+  CONSTRAINT auction_listings_bid_range  CHECK (start_bid IS NULL OR start_bid < buyout_price),
+  CONSTRAINT auction_listings_bid_valid  CHECK (current_bid IS NULL OR (start_bid IS NOT NULL AND current_bid >= start_bid AND current_bid < buyout_price)),
+  CONSTRAINT auction_listings_not_self   CHECK (current_bidder_account_id IS NULL OR current_bidder_account_id <> seller_account_id),
+  CONSTRAINT auction_listings_closed_chk CHECK ((status = 'active') = (closed_at IS NULL)),
+  CONSTRAINT auction_listings_sold_chk   CHECK ((status = 'sold') = (sold_kind IS NOT NULL)),
+  CONSTRAINT auction_listings_time_chk   CHECK (ends_at > created_at)
+);
+COMMENT ON TABLE  auction_listings IS '경매 등록 한 건. 등록한 아이템은 이 행이 직접 들고 있다(character_items에 없다). status가 active인 동안 count개가 경매 보관(원장 location auction)이다';
+COMMENT ON COLUMN auction_listings.uuid IS '외부 노출 id(응답의 listing id). 원장 ref';
+COMMENT ON COLUMN auction_listings.seller_account_id IS '판매자 계정. 같은 계정의 다른 캐릭터가 사거나 입찰하는 것을 막는 기준(캐릭터 삭제·이전과 무관하게 등록 때 고정)';
+COMMENT ON COLUMN auction_listings.item_key IS '"기본id+강화" 키. 거래 가능(bind none) 재고에서만 등록된다';
+COMMENT ON COLUMN auction_listings.item_base IS '기본 id(강화 제외). 이름 검색이 이름 -> item_base 목록으로 바뀐 뒤 이 열로 거른다';
+COMMENT ON COLUMN auction_listings.enhance IS 'item_key의 강화 단계(검색 필터용 복사). 비장비는 0';
+COMMENT ON COLUMN auction_listings.category IS 'weapon / armor / accessory / material / consumable. items.json·shop.json에서 서버가 정한다(요청으로 받지 않는다)';
+COMMENT ON COLUMN auction_listings.rarity IS '장비 등급 0..5(shop.json equipment rarity 순서: Common, Uncommon, Rare, Epic, Unique, Legendary). 비장비는 NULL';
+COMMENT ON COLUMN auction_listings.class_only IS '착용 직업 제한(shop.json equipment classOnly). 제한 없음·비장비는 NULL';
+COMMENT ON COLUMN auction_listings.buyout_price IS '즉시 구매가(묶음 전체 금액). 등록 후 바꾸지 않는다(수정 API 없음)';
+COMMENT ON COLUMN auction_listings.start_bid IS '입찰 시작가. NULL이면 즉시 구매만 가능';
+COMMENT ON COLUMN auction_listings.current_bid IS '현재 최고 입찰가(예치된 금액). 즉시 구매로 팔리면 NULL로 비운다(직전 입찰은 auction_bids에 남는다)';
+COMMENT ON COLUMN auction_listings.bid_count IS '이 등록에 들어온 입찰 수(누적)';
+COMMENT ON COLUMN auction_listings.deposit IS '등록 때 낸 보증금(즉시 구매가 기준 서버 계산). 팔리면 판매자 우편에 돌아가고 만료·취소면 소각';
+COMMENT ON COLUMN auction_listings.fee_pct IS '등록 당시 수수료율 스냅샷(장비/재료·소모품, auction.json). 체결 때 이 값으로 계산한다';
+COMMENT ON COLUMN auction_listings.status IS 'active 진행 / sold 팔림 / expired 입찰 없이 마감 / cancelled 판매자 취소';
+COMMENT ON COLUMN auction_listings.sold_kind IS 'buyout 즉시 구매 / bid 낙찰. sold일 때만';
+COMMENT ON COLUMN auction_listings.ends_at IS '마감 시각(서버 시계). 저격 방지 연장으로 늘 수 있다. 검색 결과에는 구간으로만 보인다';
+COMMENT ON COLUMN auction_listings.extend_count IS '마감 연장 횟수(서버 데이터 상한까지)';
+COMMENT ON COLUMN auction_listings.version IS '변경마다 +1(진단용). 동시성은 행 잠금이 맡는다';
+CREATE INDEX auction_listings_due ON auction_listings (ends_at) WHERE status = 'active';
+CREATE INDEX auction_listings_browse ON auction_listings (category, buyout_price, id) WHERE status = 'active';
+CREATE INDEX auction_listings_item ON auction_listings (item_base, enhance, buyout_price) WHERE status = 'active';
+CREATE INDEX auction_listings_seller ON auction_listings (seller_character_id) WHERE status = 'active';
+CREATE INDEX auction_listings_bidder ON auction_listings (current_bidder_character_id) WHERE status = 'active' AND current_bidder_character_id IS NOT NULL;
+
+-- ---------- 6단계: 입찰 ----------
+
+CREATE TABLE auction_bids (
+  id                   BIGSERIAL PRIMARY KEY,
+  uuid                 UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  listing_id           BIGINT NOT NULL REFERENCES auction_listings(id),
+  bidder_character_id  BIGINT NOT NULL REFERENCES characters(id),
+  bidder_account_id    BIGINT NOT NULL REFERENCES accounts(id),
+  amount               BIGINT NOT NULL CHECK (amount > 0),
+  request_id           UUID NOT NULL,
+  state                TEXT NOT NULL DEFAULT 'top' CHECK (state IN ('top', 'outbid', 'won', 'lost_to_buyout')),
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  closed_at            TIMESTAMPTZ,
+  UNIQUE (listing_id, amount),
+  CONSTRAINT auction_bids_closed_chk CHECK ((state = 'top') = (closed_at IS NULL))
+);
+COMMENT ON TABLE  auction_bids IS '입찰 기록. 입찰한 금액은 입찰 때 캐릭터 골드에서 빠져 예치되고(gold_ledger auction_bid) 이 행과 auction_listings.current_bid가 들고 있다. 상태만 바뀐다';
+COMMENT ON COLUMN auction_bids.amount IS '예치 금액. 같은 등록에서 같은 금액의 입찰은 두 번 있을 수 없다(최소 입찰가가 매번 오른다. 동시성 버그의 마지막 안전장치)';
+COMMENT ON COLUMN auction_bids.state IS 'top 현재 최고 / outbid 더 높은 입찰에 밀림(예치금은 우편으로 반환) / won 낙찰 / lost_to_buyout 즉시 구매에 밀림(예치금은 우편으로 반환)';
+COMMENT ON COLUMN auction_bids.request_id IS '입찰 요청의 request_id(원장 연결)';
+CREATE UNIQUE INDEX auction_bids_one_top ON auction_bids (listing_id) WHERE state = 'top';
+CREATE INDEX auction_bids_listing ON auction_bids (listing_id, id);
+CREATE INDEX auction_bids_bidder ON auction_bids (bidder_character_id, id);
+
+-- ---------- 6단계: 우편 ----------
+
+CREATE TABLE mails (
+  id            BIGSERIAL PRIMARY KEY,
+  uuid          UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  character_id  BIGINT NOT NULL REFERENCES characters(id),
+  kind          TEXT NOT NULL CHECK (kind IN ('sold', 'expired', 'outbid', 'bought', 'cancelled', 'system')),
+  listing_id    BIGINT REFERENCES auction_listings(id),
+  bid_id        BIGINT REFERENCES auction_bids(id),
+  ref_item_key  TEXT,
+  ref_count     INT CHECK (ref_count > 0),
+  item_key      TEXT CHECK (item_key <> 'gold'),
+  count         INT CHECK (count > 0),
+  bind          TEXT CHECK (bind IN ('none', 'account', 'character')),
+  gold          BIGINT NOT NULL DEFAULT 0 CHECK (gold >= 0),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at    TIMESTAMPTZ NOT NULL,
+  claimed_at    TIMESTAMPTZ,
+  expired_at    TIMESTAMPTZ,
+  CONSTRAINT mails_attach_chk  CHECK ((item_key IS NULL) = (count IS NULL) AND (item_key IS NULL) = (bind IS NULL)),
+  CONSTRAINT mails_content_chk CHECK (item_key IS NOT NULL OR gold > 0),
+  CONSTRAINT mails_state_chk   CHECK (claimed_at IS NULL OR expired_at IS NULL),
+  CONSTRAINT mails_time_chk    CHECK (expires_at > created_at)
+);
+COMMENT ON TABLE  mails IS '우편 한 통. 서버만 만든다(플레이어 간 우편 없음). 첨부 아이템과 골드를 이 행이 직접 들고 있다(수령 전까지 원장 location mail). 30일 안에 받지 않으면 폐기';
+COMMENT ON COLUMN mails.character_id IS '받는 캐릭터. 이 캐릭터만 수령할 수 있다';
+COMMENT ON COLUMN mails.kind IS 'sold 판매 대금(골드) / expired 만료 반환(아이템) / outbid 입찰 반환(골드) / bought 구매 아이템 / cancelled 등록 취소 반환(아이템) / system 운영 지급(7단계 도구)';
+COMMENT ON COLUMN mails.bid_id IS 'outbid 우편이 돌려주는 입찰';
+COMMENT ON COLUMN mails.ref_item_key IS '우편이 설명하는 경매 아이템(목록 문구용). 첨부와 같을 수도, 판매 대금처럼 첨부가 없을 수도 있다';
+COMMENT ON COLUMN mails.item_key IS '첨부 아이템 키. 없으면 NULL';
+COMMENT ON COLUMN mails.bind IS '수령해서 가방에 들어갈 때의 귀속. 장비 구매는 account, 그 밖은 등록 때의 귀속(none)';
+COMMENT ON COLUMN mails.gold IS '첨부 골드. 판매 대금(대금 - 수수료 + 보증금) 또는 입찰 반환';
+COMMENT ON COLUMN mails.expires_at IS '보관 기한(생성 + 서버 데이터 mailDays)';
+COMMENT ON COLUMN mails.claimed_at IS '수령 시각. NULL이고 expired_at도 NULL이면 받을 수 있다. UPDATE ... WHERE claimed_at IS NULL AND expired_at IS NULL로 한 번만';
+COMMENT ON COLUMN mails.expired_at IS '기한이 지나 폐기된 시각(첨부 아이템은 mail_expire 원장, 골드는 auction_sinks mail_expire)';
+CREATE INDEX mails_open ON mails (character_id, created_at DESC) WHERE claimed_at IS NULL AND expired_at IS NULL;
+CREATE INDEX mails_expiring ON mails (expires_at) WHERE claimed_at IS NULL AND expired_at IS NULL;
+CREATE UNIQUE INDEX mails_once_per_event ON mails (listing_id, character_id, kind)
+  WHERE listing_id IS NOT NULL AND kind <> 'outbid';
+CREATE UNIQUE INDEX mails_outbid_per_bid ON mails (bid_id) WHERE kind = 'outbid';
+
+-- ---------- 6단계: 체결 기록, 일별 시세 ----------
+
+CREATE TABLE auction_trades (
+  id                  BIGSERIAL PRIMARY KEY,
+  uuid                UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  listing_id          BIGINT NOT NULL UNIQUE REFERENCES auction_listings(id),
+  item_key            TEXT NOT NULL,
+  item_base           TEXT NOT NULL,
+  count               INT NOT NULL CHECK (count > 0),
+  price               BIGINT NOT NULL CHECK (price > 0),
+  fee_pct             SMALLINT NOT NULL CHECK (fee_pct BETWEEN 0 AND 50),
+  fee                 BIGINT NOT NULL CHECK (fee >= 0),
+  deposit_returned    BIGINT NOT NULL CHECK (deposit_returned >= 0),
+  seller_payout       BIGINT NOT NULL CHECK (seller_payout >= 0),
+  unit_price          NUMERIC(16, 4) GENERATED ALWAYS AS (price::numeric / count) STORED,
+  kind                TEXT NOT NULL CHECK (kind IN ('buyout', 'bid')),
+  buyer_character_id  BIGINT NOT NULL REFERENCES characters(id),
+  buyer_account_id    BIGINT NOT NULL REFERENCES accounts(id),
+  seller_character_id BIGINT NOT NULL REFERENCES characters(id),
+  seller_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  traded_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT auction_trades_fee_chk     CHECK (fee = (price * fee_pct + 99) / 100),
+  CONSTRAINT auction_trades_payout_chk  CHECK (seller_payout = price - fee + deposit_returned),
+  CONSTRAINT auction_trades_not_self    CHECK (buyer_account_id <> seller_account_id)
+);
+COMMENT ON TABLE  auction_trades IS '체결 기록(추가만, 트리거가 UPDATE/DELETE 차단). 시세 중앙값, 쌍 한도, 사후 추적(CS·제재)의 근거. 등록 한 건에 한 행';
+COMMENT ON COLUMN auction_trades.price IS '구매자가 낸 금액(즉시 구매가 또는 낙찰가). 묶음 전체';
+COMMENT ON COLUMN auction_trades.fee IS '소각된 수수료 = ceil(price x fee_pct / 100). CHECK가 정수 계산을 강제한다';
+COMMENT ON COLUMN auction_trades.deposit_returned IS '판매자 우편에 돌아간 보증금(= 등록의 deposit)';
+COMMENT ON COLUMN auction_trades.seller_payout IS '판매자 우편의 골드 = price - fee + deposit_returned';
+COMMENT ON COLUMN auction_trades.unit_price IS '개당 가격(시세 비교용, 묶음 크기와 무관). 생성 열';
+COMMENT ON COLUMN auction_trades.buyer_account_id IS 'CHECK로 판매자 계정과 같을 수 없다(같은 계정 캐릭터 간 이전은 DB가 거절한다)';
+CREATE TRIGGER auction_trades_append_only BEFORE UPDATE OR DELETE ON auction_trades
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER auction_trades_no_truncate BEFORE TRUNCATE ON auction_trades
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+CREATE INDEX auction_trades_item_time ON auction_trades (item_key, traded_at DESC);
+CREATE INDEX auction_trades_pair ON auction_trades (seller_account_id, buyer_account_id, traded_at);
+CREATE INDEX auction_trades_time ON auction_trades (traded_at);
+
+CREATE TABLE auction_price_daily (
+  item_key       TEXT NOT NULL,
+  day_start      TIMESTAMPTZ NOT NULL,
+  trade_count    INT NOT NULL CHECK (trade_count > 0),
+  volume         INT NOT NULL CHECK (volume > 0),
+  sum_price      BIGINT NOT NULL CHECK (sum_price > 0),
+  min_unit_price NUMERIC(16, 4) NOT NULL,
+  max_unit_price NUMERIC(16, 4) NOT NULL,
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (item_key, day_start),
+  CONSTRAINT auction_price_daily_minmax CHECK (min_unit_price <= max_unit_price)
+);
+COMMENT ON TABLE  auction_price_daily IS '아이템 키별 일별 시세(게임 일 06:00 KST 구간). 체결 트랜잭션이 같은 문장으로 누적(upsert)해서 오늘 값도 정확하다. 평균 = sum_price / volume';
+COMMENT ON COLUMN auction_price_daily.day_start IS 'resetBoundaries(체결 시각).dailyStartAt (서버 KST 함수 하나)';
+COMMENT ON COLUMN auction_price_daily.volume IS '거래된 개수 합(묶음은 count만큼)';
+COMMENT ON COLUMN auction_price_daily.sum_price IS '체결 금액 합. 평균 단가 = sum_price / volume';
+
+-- ---------- 6단계: 골드 소각 기록, 악용 기록 ----------
+
+CREATE TABLE auction_sinks (
+  id           BIGSERIAL PRIMARY KEY,
+  kind         TEXT NOT NULL CHECK (kind IN ('fee', 'deposit_forfeit', 'mail_expire')),
+  amount       BIGINT NOT NULL CHECK (amount > 0),
+  listing_id   BIGINT REFERENCES auction_listings(id),
+  mail_id      BIGINT REFERENCES mails(id),
+  character_id BIGINT REFERENCES characters(id),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  auction_sinks IS '경매가 소각한 골드의 기록(추가만). 어느 캐릭터 잔액에도 없고 어느 우편에도 없는 골드. 일일 소각량 집계와 골드 보존식의 우변';
+COMMENT ON COLUMN auction_sinks.kind IS 'fee 체결 수수료 / deposit_forfeit 만료·취소로 돌려주지 않은 보증금 / mail_expire 기한이 지나 폐기된 우편의 골드';
+COMMENT ON COLUMN auction_sinks.character_id IS '골드를 잃은 캐릭터(fee: 판매자, deposit_forfeit: 판매자, mail_expire: 받을 사람)';
+CREATE TRIGGER auction_sinks_append_only BEFORE UPDATE OR DELETE ON auction_sinks
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER auction_sinks_no_truncate BEFORE TRUNCATE ON auction_sinks
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+CREATE INDEX auction_sinks_time ON auction_sinks (created_at, kind);
+
+CREATE TABLE auction_flags (
+  id           BIGSERIAL PRIMARY KEY,
+  account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  character_id BIGINT REFERENCES characters(id),
+  kind         TEXT NOT NULL CHECK (kind IN ('self_account', 'price_band', 'pair_limit', 'foreign_id', 'gate')),
+  severity     SMALLINT NOT NULL DEFAULT 1 CHECK (severity BETWEEN 1 AND 3),
+  detail       JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  auction_flags IS '경매 악용 의심 기록(anomaly_log와 같은 역할, 경매 전용). 요청이 거절돼 롤백돼도 남도록 별도 트랜잭션으로 쓴다. 제재는 7단계 관리자 도구가 이 표를 본다';
+COMMENT ON COLUMN auction_flags.kind IS 'self_account 같은 계정 매물 구매·입찰 시도 / price_band 가격 한도 밖 등록 시도 / pair_limit 같은 계정 쌍의 하루 체결 한도 초과 / foreign_id 남의 우편·등록 id / gate 신규 계정 등록 시도';
+COMMENT ON COLUMN auction_flags.severity IS '1 참고(실수 가능) / 2 의심 / 3 불가능한 값. self_account는 UI가 막아 주므로 정직한 클라이언트는 만들지 못한다(2)';
+COMMENT ON COLUMN auction_flags.detail IS '판정 근거(listing uuid, 가격, 한도, 쌍 합계 등). 요청 본문 전체는 넣지 않는다';
+CREATE INDEX auction_flags_account_time ON auction_flags (account_id, created_at);
+CREATE INDEX auction_flags_time ON auction_flags (created_at);
+CREATE TRIGGER auction_flags_append_only BEFORE UPDATE OR DELETE ON auction_flags
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER auction_flags_no_truncate BEFORE TRUNCATE ON auction_flags
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- =====================================================================================
+-- 0006_chat_social (5단계 채팅·친구). 아래는 migrations/0006_chat_social.sql 의 UP 본문이다. 설계: Docs/server/phase5_api.md
+-- 재화가 움직이지 않는 단계라 원장·잔액 CHECK는 없다. 멱등성: REST는 request_log, 채팅 전송은 chat_messages UNIQUE(sender_account_id, client_msg_id).
+-- =====================================================================================
+
+ALTER TABLE accounts ADD COLUMN last_character_id BIGINT REFERENCES characters(id);
+COMMENT ON COLUMN accounts.last_character_id IS '마지막으로 WebSocket에 접속한 캐릭터. 친구 목록의 이름·직업·레벨 표시용(친구는 계정 단위라 접속 중이 아니면 이 캐릭터를 보여 준다). 삭제된 캐릭터면 서버가 가장 오래된 살아 있는 캐릭터로 대신한다';
+
+CREATE TABLE chat_messages (
+  id                     BIGSERIAL PRIMARY KEY,
+  channel                TEXT NOT NULL CHECK (channel IN ('general', 'party', 'whisper')),
+  shard                  INT CHECK (shard >= 1),
+  party_id               BIGINT REFERENCES parties(id),
+  sender_account_id      BIGINT NOT NULL REFERENCES accounts(id),
+  sender_character_id    BIGINT NOT NULL REFERENCES characters(id),
+  sender_name            TEXT NOT NULL,
+  recipient_account_id   BIGINT REFERENCES accounts(id),
+  recipient_character_id BIGINT REFERENCES characters(id),
+  recipient_name         TEXT,
+  text                   TEXT NOT NULL CHECK (char_length(text) BETWEEN 1 AND 200),
+  filtered               BOOLEAN NOT NULL DEFAULT false,
+  client_msg_id          UUID NOT NULL,
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT chat_messages_shape_chk CHECK (
+    (channel = 'general' AND shard IS NOT NULL AND party_id IS NULL
+       AND recipient_account_id IS NULL AND recipient_character_id IS NULL AND recipient_name IS NULL)
+    OR (channel = 'party' AND party_id IS NOT NULL AND shard IS NULL
+       AND recipient_account_id IS NULL AND recipient_character_id IS NULL AND recipient_name IS NULL)
+    OR (channel = 'whisper' AND shard IS NULL AND party_id IS NULL
+       AND recipient_account_id IS NOT NULL AND recipient_character_id IS NOT NULL AND recipient_name IS NOT NULL)
+  ),
+  CONSTRAINT chat_messages_client_uq UNIQUE (sender_account_id, client_msg_id)
+);
+COMMENT ON TABLE  chat_messages IS '채팅 기록. 서버가 저장한 뒤에 전달한다(저장 성공 = 전달 대상). id 순서가 곧 전달 순서이고, 프로세스 안 단일 쓰기 큐가 id 순서와 커밋 순서를 같게 만든다. 시스템 채널은 저장하지 않는다. 차단당한 귓속말은 저장하지 않는다';
+COMMENT ON COLUMN chat_messages.id IS '순번(seq). 클라이언트에는 커서로만 나가고, 이 값으로 메시지를 조회하는 API는 없다(IDOR 대상 아님). 프로젝트 규칙 "내부 id 비노출"의 의도된 예외이며 uuid 열은 두지 않는다';
+COMMENT ON COLUMN chat_messages.shard IS '일반 채널 방 번호(1부터). 시작은 1개뿐이고 정원(CHAT_SHARD_SIZE)을 넘으면 늘어난다. 파티·귓속말은 NULL';
+COMMENT ON COLUMN chat_messages.party_id IS '파티 채널: 보낼 때의 파티. 놓친 메시지 따라잡기는 "내 현재 파티 + 내 가입 시각 이후"만 준다';
+COMMENT ON COLUMN chat_messages.sender_name IS '보낸 캐릭터 이름 스냅샷(캐릭터가 지워져도 기록·신고에서 읽힌다)';
+COMMENT ON COLUMN chat_messages.text IS '금칙어를 가린 뒤의 최종 문장(전달된 그대로). 원문은 저장하지 않는다. 실제 길이 한도는 server/data/chat.json의 maxLength(C# ChatRules.MaxLength)이고 DB는 이상값만 막는다';
+COMMENT ON COLUMN chat_messages.filtered IS '금칙어를 가린 적이 있는가(자동 제재의 반복 횟수 근거)';
+COMMENT ON COLUMN chat_messages.client_msg_id IS '클라이언트가 보낸 메시지 id(uuid). 같은 id 재전송은 새 행을 만들지 않고 처음 결과(ack)를 돌려준다. 채팅의 request_id';
+-- 일반 채널 따라잡기: WHERE channel='general' AND shard=$1 AND id > $since ORDER BY id (최근 N건만)
+CREATE INDEX chat_messages_general ON chat_messages (shard, id) WHERE channel = 'general';
+-- 파티 채널 따라잡기: WHERE channel='party' AND party_id=$1 AND id > $since AND created_at >= 내 가입 시각
+CREATE INDEX chat_messages_party ON chat_messages (party_id, id) WHERE channel = 'party';
+-- 귓속말 따라잡기와 신고 증거(두 사람 사이의 양방향은 받는 사람 기준 조회 2번으로 모은다)
+CREATE INDEX chat_messages_whisper ON chat_messages (recipient_account_id, id) WHERE channel = 'whisper';
+-- 신고 증거: "신고 대상이 최근에 한 말" 조회
+CREATE INDEX chat_messages_sender ON chat_messages (sender_account_id, id DESC);
+-- 보관 기간 정리(created_at < 기준)
+CREATE INDEX chat_messages_created ON chat_messages (created_at);
+
+CREATE TABLE friendships (
+  id                     BIGSERIAL PRIMARY KEY,
+  uuid                   UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  requester_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  target_account_id      BIGINT NOT NULL REFERENCES accounts(id),
+  requester_character_id BIGINT NOT NULL REFERENCES characters(id),
+  target_character_id    BIGINT NOT NULL REFERENCES characters(id),
+  state                  TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'accepted', 'declined', 'cancelled', 'removed')),
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
+  responded_at           TIMESTAMPTZ,
+  ended_at               TIMESTAMPTZ,
+  ended_by_account_id    BIGINT REFERENCES accounts(id),
+  silent                 BOOLEAN NOT NULL DEFAULT false,
+  CONSTRAINT friendships_self_chk  CHECK (requester_account_id <> target_account_id),
+  CONSTRAINT friendships_ended_chk CHECK ((state IN ('pending', 'accepted')) = (ended_at IS NULL)),
+  CONSTRAINT friendships_responded_chk CHECK (state = 'pending' OR state = 'cancelled' OR responded_at IS NOT NULL)
+);
+COMMENT ON TABLE  friendships IS '친구 요청과 관계(계정 단위, 상호 수락). 한 쌍(A,B)은 방향과 무관하게 pending 또는 accepted 행이 최대 하나. 끝난 행(declined, cancelled, removed)은 남겨 재요청 쿨다운·괴롭힘 확인에 쓴다';
+COMMENT ON COLUMN friendships.requester_character_id IS '요청을 보낸 캐릭터(받는 사람 화면의 "누가 보냈나" 이름)';
+COMMENT ON COLUMN friendships.target_character_id IS '요청자가 지목한 캐릭터. 친구 관계 자체는 계정 단위이고, 목록에는 accounts.last_character_id가 나온다';
+COMMENT ON COLUMN friendships.state IS 'pending 요청 중 / accepted 친구 / declined 받은 쪽이 거절 / cancelled 보낸 쪽이 취소 / removed 친구였다가 삭제(차단 포함)';
+COMMENT ON COLUMN friendships.ended_by_account_id IS '끝낸 쪽(삭제·거절·취소·차단). 차단으로 끝난 행은 ended_by = 차단한 계정';
+-- 같은 두 계정 사이의 살아 있는 행은 하나(A->B 요청과 B->A 요청이 동시에 와도 하나만 남는다)
+CREATE UNIQUE INDEX friendships_pair_live ON friendships
+  (LEAST(requester_account_id, target_account_id), GREATEST(requester_account_id, target_account_id))
+  WHERE state IN ('pending', 'accepted');
+-- 내 친구·보낸 요청(요청자 쪽)과 받은 요청·친구(대상 쪽): 두 인덱스를 UNION으로 읽는다
+CREATE INDEX friendships_requester ON friendships (requester_account_id) WHERE state IN ('pending', 'accepted');
+CREATE INDEX friendships_target    ON friendships (target_account_id)    WHERE state IN ('pending', 'accepted');
+-- 거절·취소 뒤 재요청 쿨다운(FRIEND_REREQUEST_HOURS)
+CREATE INDEX friendships_pair_hist ON friendships (requester_account_id, target_account_id, created_at DESC);
+-- 보관 기간 정리
+CREATE INDEX friendships_ended ON friendships (ended_at) WHERE ended_at IS NOT NULL;
+
+CREATE TABLE blocks (
+  id                   BIGSERIAL PRIMARY KEY,
+  uuid                 UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  blocker_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  blocked_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  blocked_character_id BIGINT NOT NULL REFERENCES characters(id),
+  blocked_name         TEXT NOT NULL,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at           TIMESTAMPTZ,
+  CONSTRAINT blocks_self_chk CHECK (blocker_account_id <> blocked_account_id)
+);
+COMMENT ON TABLE  blocks IS '차단(계정 단위: 상대가 다른 캐릭터로 접속해도 막힌다). 차단하면 상대의 일반·파티·귓속말·친구 요청·파티 초대가 나에게 오지 않는다. 해제는 deleted_at(소프트 삭제)';
+COMMENT ON COLUMN blocks.blocked_character_id IS '차단 당시 지목한 캐릭터';
+COMMENT ON COLUMN blocks.blocked_name IS '차단 목록에 보일 이름 스냅샷(캐릭터가 지워져도 목록이 읽힌다)';
+-- 내 차단 목록 로드(접속 때 세션 메모리로), 차단 여부 확인(친구 요청·초대·귓속말), 중복 차단 방지
+CREATE UNIQUE INDEX blocks_pair_live ON blocks (blocker_account_id, blocked_account_id) WHERE deleted_at IS NULL;
+
+CREATE TABLE reports (
+  id                    BIGSERIAL PRIMARY KEY,
+  uuid                  UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  reporter_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  reporter_character_id BIGINT NOT NULL REFERENCES characters(id),
+  target_account_id     BIGINT NOT NULL REFERENCES accounts(id),
+  target_character_id   BIGINT NOT NULL REFERENCES characters(id),
+  target_name           TEXT NOT NULL,
+  reason                TEXT NOT NULL CHECK (reason IN ('abuse', 'spam', 'scam_ad', 'cheat', 'other')),
+  state                 TEXT NOT NULL DEFAULT 'open' CHECK (state IN ('open', 'reviewing', 'actioned', 'dismissed')),
+  line_count            SMALLINT NOT NULL DEFAULT 0 CHECK (line_count >= 0),
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  handled_at            TIMESTAMPTZ,
+  handled_by            TEXT,
+  note                  TEXT CHECK (char_length(note) <= 500),
+  CONSTRAINT reports_self_chk CHECK (reporter_account_id <> target_account_id),
+  CONSTRAINT reports_handled_chk CHECK ((state IN ('actioned', 'dismissed')) = (handled_at IS NOT NULL))
+);
+COMMENT ON TABLE  reports IS '신고 접수. 증거는 클라이언트가 보낸 값이 아니라 서버가 접수 순간 chat_messages에서 찍어 report_lines에 복사한다';
+COMMENT ON COLUMN reports.reason IS 'abuse 욕설·비하 / spam 도배 / scam_ad 광고·사기 / cheat 불법 프로그램 의심 / other 기타 (C# ChatRules.ReportReasons 5개와 1:1)';
+COMMENT ON COLUMN reports.state IS 'open 접수 / reviewing 운영자 검토 중 / actioned 제재함(account_sanctions.report_id로 연결) / dismissed 위반 없음·중복';
+COMMENT ON COLUMN reports.line_count IS '붙은 증거 줄 수(report_lines 행 수)';
+COMMENT ON COLUMN reports.handled_by IS '처리한 운영자 표시(7단계 관리자 도구 전에는 SQL을 실행한 사람 이름)';
+-- 같은 사람이 같은 대상을 같은 사유로 처리 전에 다시 신고하는 것을 막는다(두 번째는 기존 신고를 돌려준다)
+CREATE UNIQUE INDEX reports_open_uq ON reports (reporter_account_id, target_account_id, reason) WHERE state IN ('open', 'reviewing');
+-- 운영자 대기열(오래된 것부터)
+CREATE INDEX reports_queue ON reports (created_at) WHERE state IN ('open', 'reviewing');
+-- 한 사람에 대한 신고 모음(서로 다른 신고자 수 세기, 운영자 조회)
+CREATE INDEX reports_target ON reports (target_account_id, created_at DESC);
+-- 신고자별 시간당·일일 한도 검사
+CREATE INDEX reports_reporter ON reports (reporter_account_id, created_at DESC);
+
+CREATE TABLE report_lines (
+  id                  BIGSERIAL PRIMARY KEY,
+  report_id           BIGINT NOT NULL REFERENCES reports(id),
+  seq                 BIGINT NOT NULL,
+  channel             TEXT NOT NULL CHECK (channel IN ('general', 'party', 'whisper')),
+  sender_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  sender_character_id BIGINT NOT NULL REFERENCES characters(id),
+  sender_name         TEXT NOT NULL,
+  recipient_name      TEXT,
+  text                TEXT NOT NULL,
+  sent_at             TIMESTAMPTZ NOT NULL,
+  is_target           BOOLEAN NOT NULL,
+  UNIQUE (report_id, seq)
+);
+COMMENT ON TABLE  report_lines IS '신고 증거 스냅샷(접수 때 chat_messages에서 복사). 원본이 보관 기간으로 지워져도 남는다. 수정 불가(UPDATE 트리거). 정리는 신고가 닫힌 뒤 REPORT_RETENTION_DAYS';
+COMMENT ON COLUMN report_lines.seq IS '원본 chat_messages.id(원본은 지워졌을 수 있어 FK를 두지 않는다). UNIQUE(report_id, seq)가 증거 줄의 순서와 중복 방지를 맡는다';
+COMMENT ON COLUMN report_lines.is_target IS '신고 대상이 한 말인가(운영자 화면 강조용)';
+CREATE TRIGGER report_lines_no_update BEFORE UPDATE ON report_lines
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+
+CREATE TABLE account_sanctions (
+  id          BIGSERIAL PRIMARY KEY,
+  uuid        UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  account_id  BIGINT NOT NULL REFERENCES accounts(id),
+  kind        TEXT NOT NULL CHECK (kind IN ('warning', 'chat_mute', 'ban')),
+  source      TEXT NOT NULL CHECK (source IN ('auto_filter', 'auto_spam', 'auto_report', 'admin')),
+  reason_code TEXT NOT NULL CHECK (reason_code IN ('abuse', 'spam', 'scam_ad', 'cheat', 'other', 'filter_strikes', 'repeat_spam')),
+  report_id   BIGINT REFERENCES reports(id),
+  starts_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ends_at     TIMESTAMPTZ,
+  created_by  TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  notified_at TIMESTAMPTZ,
+  revoked_at  TIMESTAMPTZ,
+  revoked_by  TEXT,
+  note        TEXT CHECK (char_length(note) <= 500),
+  CONSTRAINT account_sanctions_mute_chk   CHECK (kind <> 'chat_mute' OR ends_at IS NOT NULL),
+  CONSTRAINT account_sanctions_warn_chk   CHECK (kind <> 'warning' OR ends_at IS NULL),
+  CONSTRAINT account_sanctions_range_chk  CHECK (ends_at IS NULL OR ends_at > starts_at),
+  CONSTRAINT account_sanctions_revoke_chk CHECK ((revoked_at IS NULL) = (revoked_by IS NULL))
+);
+COMMENT ON TABLE  account_sanctions IS '제재 기록. 자동(system)과 운영자가 같은 표를 쓴다. chat_mute는 이 표만 본다. ban은 같은 트랜잭션에서 accounts.banned_until도 갱신하고(정지 판정은 기존 인증 미들웨어가 한다), 풀 때도 같이 되돌린다. 기록은 지우지 않는다';
+COMMENT ON COLUMN account_sanctions.kind IS 'warning 경고(접속 때 한 번 알림) / chat_mute 채팅 금지(ends_at까지) / ban 이용 정지(ends_at NULL = 무기한)';
+COMMENT ON COLUMN account_sanctions.source IS 'auto_filter 금칙어 반복 / auto_spam 도배 반복 / auto_report 서로 다른 신고자 다수(기본 꺼짐) / admin 운영자';
+COMMENT ON COLUMN account_sanctions.created_by IS '자동이면 system, 운영자면 표시 이름';
+COMMENT ON COLUMN account_sanctions.notified_at IS '플레이어에게 알린 시각. NULL이면 다음 WebSocket 접속(또는 즉시 푸시)에서 알리고 채운다';
+-- 지금 채팅 금지인가: WHERE account_id=$1 AND kind='chat_mute' AND revoked_at IS NULL AND ends_at > now()
+CREATE INDEX account_sanctions_active ON account_sanctions (account_id, kind, ends_at) WHERE revoked_at IS NULL;
+-- 접속 때 아직 알리지 않은 제재 찾기
+CREATE INDEX account_sanctions_unnotified ON account_sanctions (account_id) WHERE notified_at IS NULL AND revoked_at IS NULL;
+-- 자동 제재 단계 올리기(최근 24시간 자동 금지 횟수), 운영자 이력 조회
+CREATE INDEX account_sanctions_history ON account_sanctions (account_id, created_at DESC);
+-- 제재가 생기거나 바뀌면(자동이든 운영자 SQL이든) 서버 프로세스가 LISTEN으로 즉시 알아 접속 중인 소켓의 금지 상태를 갱신하고 ban이면 끊는다.
+-- 7단계 관리자 도구 전에도 운영자가 SQL만 실행하면 반영된다. 서버가 여러 대가 되어도 같은 방식이 그대로 동작한다.
+CREATE FUNCTION notify_account_sanction() RETURNS trigger AS $$
+BEGIN
+  PERFORM pg_notify('dotrpg_sanction', NEW.account_id::text);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER account_sanctions_notify AFTER INSERT OR UPDATE ON account_sanctions
+  FOR EACH ROW EXECUTE FUNCTION notify_account_sanction();
+
+CREATE TABLE party_invites (
+  id                   BIGSERIAL PRIMARY KEY,
+  uuid                 UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  party_id             BIGINT NOT NULL REFERENCES parties(id),
+  inviter_character_id BIGINT NOT NULL REFERENCES characters(id),
+  invitee_character_id BIGINT NOT NULL REFERENCES characters(id),
+  invitee_account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  state                TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'accepted', 'declined', 'expired', 'cancelled')),
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at           TIMESTAMPTZ NOT NULL,
+  responded_at         TIMESTAMPTZ,
+  silent               BOOLEAN NOT NULL DEFAULT false,
+  CONSTRAINT party_invites_responded_chk CHECK ((state IN ('accepted', 'declined')) = (responded_at IS NOT NULL) OR state IN ('expired', 'cancelled'))
+);
+COMMENT ON TABLE  party_invites IS '파티 초대(만든 뒤 PARTY_INVITE_SECONDS 동안 유효, 지연 만료). 받는 사람은 WebSocket으로 즉시 받고, 접속 중이 아니면 못 보낸다. 수락은 4단계 신청 수락과 같은 검사(자격·전투력·정원)를 지난다';
+COMMENT ON COLUMN party_invites.invitee_account_id IS '받는 사람의 계정(차단 확인, 푸시 대상)';
+-- 같은 파티가 같은 사람에게 동시에 둘 이상 보내지 못한다
+CREATE UNIQUE INDEX party_invites_pending_uq ON party_invites (party_id, invitee_character_id) WHERE state = 'pending';
+-- 받는 사람이 접속할 때 대기 중 초대 조회, 수락·거절 경로
+CREATE INDEX party_invites_invitee ON party_invites (invitee_character_id, created_at DESC) WHERE state = 'pending';
+-- 파티가 가진 대기 초대 수 제한(정원 초과 방지)과 보관 기간 정리
+CREATE INDEX party_invites_party ON party_invites (party_id) WHERE state = 'pending';
+CREATE INDEX party_invites_created ON party_invites (created_at);
 

@@ -138,6 +138,9 @@ namespace DotRPG
             else hostLostFor = 0f;
         }
 
+        /// <summary>[SERVER 5] The chat socket said this run changed: read it now.</summary>
+        public void FetchNow() => Fetch();
+
         void Fetch() => Api.Get($"{Char}/party-runs/{runId}", r => { if (r.ok) Read(MiniJson.Obj(r.data, "run")); else if (r.status == 404) Finish(null); });
 
         void Join()

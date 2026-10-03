@@ -60,17 +60,24 @@ export async function lockCharacters(client: PoolClient, ids: number[]): Promise
   return r.rows.map(toLocked);
 }
 
+/** 귀속 강도(강할수록 큼). 소모는 강한 쪽부터, 귀속 하한은 약한 쪽으로 풀리지 않는다 */
+const BIND_RANK: Record<Bind, number> = { none: 0, account: 1, character: 2 };
+export const strongerBind = (a: Bind, b: Bind): Bind => (BIND_RANK[a] >= BIND_RANK[b] ? a : b);
+
+/** 한 키의 모든 귀속 행 수량 합(6단계: 재고 키가 (키, 귀속)이라 합산해서 쓴다). bind를 주면 그 귀속만 */
 export async function stackCount(
   client: Queryable,
   characterId: number,
   location: StackLocation,
   itemKey: string,
+  bind?: Bind,
 ): Promise<number> {
-  const r = await client.query<{ count: number }>(
-    'SELECT count FROM character_items WHERE character_id = $1 AND location = $2 AND item_key = $3',
-    [characterId, location, itemKey],
+  const r = await client.query<{ n: string }>(
+    `SELECT coalesce(sum(count), 0) AS n FROM character_items
+      WHERE character_id = $1 AND location = $2 AND item_key = $3 AND ($4::text IS NULL OR bind = $4)`,
+    [characterId, location, itemKey, bind ?? null],
   );
-  return r.rows[0]?.count ?? 0;
+  return Number((r.rows[0] as { n: string }).n);
 }
 
 export async function upsertStack(
@@ -84,7 +91,7 @@ export async function upsertStack(
   const r = await client.query<{ count: number }>(
     `INSERT INTO character_items (character_id, item_key, count, location, bind)
      VALUES ($1, $3, $4, $2, $5)
-     ON CONFLICT (character_id, location, item_key) WHERE location IN ('bag', 'storage')
+     ON CONFLICT (character_id, location, item_key, bind) WHERE location IN ('bag', 'storage')
      DO UPDATE SET count = character_items.count + EXCLUDED.count, version = character_items.version + 1
      RETURNING count`,
     [characterId, location, itemKey, add, bind],
@@ -92,29 +99,59 @@ export async function upsertStack(
   return (r.rows[0] as { count: number }).count;
 }
 
-/** 수량 n을 뺀다. 0이 되면 행을 지운다. 모자라면 null(아무것도 바꾸지 않는다) */
+export interface Consumed {
+  bind: Bind;
+  n: number;
+  /** 그 귀속 행에 남은 수량(0이면 행이 지워졌다) */
+  left: number;
+}
+
+/**
+ * 수량 n을 뺀다. 귀속이 강한 행(character -> account -> none)부터 소모하고 0이 된 행은 지운다.
+ * 모자라면 null(아무것도 바꾸지 않는다). 소모한 귀속별 수량을 돌려준다.
+ */
 export async function decStack(
   client: PoolClient,
   characterId: number,
   location: StackLocation,
   itemKey: string,
   n: number,
-): Promise<number | null> {
-  const have = await stackCount(client, characterId, location, itemKey);
-  if (have < n) return null;
-  if (have === n) {
-    await client.query(
-      'DELETE FROM character_items WHERE character_id = $1 AND location = $2 AND item_key = $3',
-      [characterId, location, itemKey],
-    );
-    return 0;
-  }
-  await client.query(
-    `UPDATE character_items SET count = count - $4, version = version + 1
-      WHERE character_id = $1 AND location = $2 AND item_key = $3`,
-    [characterId, location, itemKey, n],
+  onlyBind?: Bind,
+): Promise<Consumed[] | null> {
+  const r = await client.query<{ id: string; bind: Bind; count: number }>(
+    `SELECT id, bind, count FROM character_items
+      WHERE character_id = $1 AND location = $2 AND item_key = $3 AND ($4::text IS NULL OR bind = $4)
+      ORDER BY CASE bind WHEN 'character' THEN 0 WHEN 'account' THEN 1 ELSE 2 END
+      FOR UPDATE`,
+    [characterId, location, itemKey, onlyBind ?? null],
   );
-  return have - n;
+  const have = r.rows.reduce((a, x) => a + x.count, 0);
+  if (have < n) return null;
+  const out: Consumed[] = [];
+  let need = n;
+  for (const row of r.rows) {
+    if (need === 0) break;
+    const take = Math.min(need, row.count);
+    if (take === row.count) {
+      await client.query('DELETE FROM character_items WHERE id = $1', [row.id]);
+    } else {
+      await client.query('UPDATE character_items SET count = count - $2, version = version + 1 WHERE id = $1', [
+        row.id,
+        take,
+      ]);
+    }
+    out.push({ bind: row.bind, n: take, left: row.count - take });
+    need -= take;
+  }
+  return out;
+}
+
+export async function getWornBind(client: Queryable, characterId: number, slot: number): Promise<Bind | null> {
+  const r = await client.query<{ bind: Bind }>(
+    "SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2",
+    [characterId, slot],
+  );
+  return r.rows[0]?.bind ?? null;
 }
 
 export async function getWornKey(client: Queryable, characterId: number, slot: number): Promise<string | null> {
@@ -147,11 +184,13 @@ export async function insertWorn(
   );
 }
 
-export async function deleteWorn(client: PoolClient, characterId: number, slot: number): Promise<void> {
-  await client.query("DELETE FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2", [
-    characterId,
-    slot,
-  ]);
+/** 착용 행을 지우고 그 귀속을 돌려준다(없으면 none) */
+export async function deleteWorn(client: PoolClient, characterId: number, slot: number): Promise<Bind> {
+  const r = await client.query<{ bind: Bind }>(
+    "DELETE FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2 RETURNING bind",
+    [characterId, slot],
+  );
+  return r.rows[0]?.bind ?? 'none';
 }
 
 export async function updateWornKey(
@@ -205,7 +244,7 @@ export async function insertItemLedger(
   location: string,
   reason: string,
   ref: string,
-  requestId: string,
+  requestId: string | null,
 ): Promise<void> {
   await client.query(
     `INSERT INTO item_ledger (character_id, item_key, delta, balance_after, location, reason, ref, request_id)

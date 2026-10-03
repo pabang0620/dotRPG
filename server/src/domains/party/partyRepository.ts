@@ -1,6 +1,7 @@
 // 파티(로비·모집 글·신청) SQL. 쓰기는 Service가 잠금(partyTx) 아래에서만 부른다.
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
+import { notifyPartyChanged } from '../chat/partyNotify';
 
 export interface PartyRow {
   id: number;
@@ -129,6 +130,7 @@ export async function insertMember(
 /** 구성·상태가 바뀔 때마다 version +1 (같은 트랜잭션) */
 export async function bump(client: PoolClient, partyId: number, now: Date): Promise<void> {
   await client.query('UPDATE parties SET version = version + 1, last_active_at = $2 WHERE id = $1', [partyId, now]);
+  notifyPartyChanged(client, partyId, now);
 }
 
 export async function setReady(client: PoolClient, partyId: number, characterId: number, ready: boolean): Promise<void> {
@@ -172,6 +174,7 @@ export async function closeParty(
   now: Date,
 ): Promise<void> {
   const memberReason = reason === 'disbanded' ? 'disbanded' : reason;
+  notifyPartyChanged(client, partyId, now);
   await client.query(
     'UPDATE party_members SET left_at = $2, left_reason = $3 WHERE party_id = $1 AND left_at IS NULL',
     [partyId, now, memberReason],

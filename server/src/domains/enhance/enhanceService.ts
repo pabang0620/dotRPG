@@ -109,7 +109,7 @@ async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
       newKey = keyAt(parsed.base, newLevel);
     } else {
       newLevel = 0;
-      ticketUsed = usesTicket && (await ctx.removeItem('bag', en.ticketItem, 1, 'enhance_cost', logId));
+      ticketUsed = usesTicket && (await ctx.removeItem('bag', en.ticketItem, 1, 'enhance_cost', logId)) !== null;
       outcome = ticketUsed ? 'protected' : 'destroyed';
       newKey = ticketUsed ? parsed.base : null;
     }
@@ -173,6 +173,7 @@ async function replaceTarget(
     else await ctx.wornReplace(wornSlot, oldKey, newKey, 'enhance_result', logId);
     return;
   }
-  await ctx.removeItem('bag', oldKey, 1, 'enhance_result', logId);
-  if (newKey !== null) await ctx.addItem('bag', newKey, 1, 'enhance_result', logId);
+  // 강화해도 귀속은 소모한 행 그대로(파괴·+0 초기화도 같다)
+  const consumed = await ctx.removeItem('bag', oldKey, 1, 'enhance_result', logId);
+  if (newKey !== null && consumed !== null) await ctx.addConsumed('bag', newKey, consumed, 'enhance_result', logId);
 }

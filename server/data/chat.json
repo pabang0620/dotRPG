@@ -1,0 +1,1 @@
+{"schema":1,"maxLength":60,"minIntervalSeconds":1,"repeatLimit":3,"muteSeconds":10,"reportLines":20,"reportReasons":[{"code":"abuse","label":"욕설·비하"},{"code":"spam","label":"도배"},{"code":"scam_ad","label":"광고·사기"},{"code":"cheat","label":"불법 프로그램 의심"},{"code":"other","label":"기타"}]}

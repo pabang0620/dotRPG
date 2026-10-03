@@ -6,6 +6,7 @@ import { getRateLimitStore } from '../../middleware/rateLimiter';
 import { AppError } from '../../utils/AppError';
 import { parseItemKey } from '../../utils/itemKey';
 import type { EconCtx } from '../economy/economyContext';
+import type { Consumed } from '../economy/economyRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './inventoryRepository';
 import type { EquipBody, StorageBody, UnequipBody, UseBody } from './inventoryValidation';
@@ -72,8 +73,12 @@ export function moveStorage(accountId: number, characterUuid: string, body: Stor
             continue;
           }
         }
-        await ctx.removeItem(from, m.item_key, n, 'storage_move', m.item_key);
-        await ctx.addItem(m.to, m.item_key, n, 'storage_move', m.item_key);
+        const consumed = await ctx.removeItem(from, m.item_key, n, 'storage_move', m.item_key);
+        if (consumed === null) {
+          fail('NOT_ENOUGH_ITEMS');
+          continue;
+        }
+        await ctx.addConsumed(m.to, m.item_key, consumed, 'storage_move', m.item_key);
         results.push({ item_key: m.item_key, to: m.to, moved: n, error: null });
       }
       return { status: 200, data: { results, delta: ctx.delta() } };
@@ -119,13 +124,13 @@ async function processEquip(ctx: EconCtx, body: EquipBody) {
   }
   const slot = await targetSlot(ctx, item.category, body.slot);
 
-  await ctx.removeItem('bag', body.item_key, 1, 'equip', body.item_key);
+  const consumed = await ctx.removeItem('bag', body.item_key, 1, 'equip', body.item_key);
   const previous = await ctx.wornKey(slot);
   if (previous !== null) {
-    await ctx.wornRemove(slot, previous, 'equip', previous);
-    await ctx.addItem('bag', previous, 1, 'equip', previous);
+    const prevBind = await ctx.wornRemove(slot, previous, 'equip', previous);
+    await ctx.addItem('bag', previous, 1, 'equip', previous, prevBind);
   }
-  await ctx.wornPut(slot, body.item_key, 'equip', body.item_key);
+  await ctx.wornPut(slot, body.item_key, 'equip', body.item_key, (consumed as Consumed[])[0]?.bind);
   return { status: 200, data: { delta: ctx.delta() } };
 }
 
@@ -144,8 +149,8 @@ export function unequip(accountId: number, characterUuid: string, body: UnequipB
       if (body.slot === 0 && ctx.char.class !== 'warrior') {
         throw new AppError(422, '마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.', 'WEAPON_REQUIRED');
       }
-      await ctx.wornRemove(body.slot, key, 'unequip', key);
-      await ctx.addItem('bag', key, 1, 'unequip', key);
+      const bind = await ctx.wornRemove(body.slot, key, 'unequip', key);
+      await ctx.addItem('bag', key, 1, 'unequip', key, bind);
       return { status: 200, data: { delta: ctx.delta() } };
     },
   });

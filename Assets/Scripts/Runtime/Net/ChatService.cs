@@ -25,6 +25,13 @@ namespace DotRPG
         public string where;
     }
 
+    /// <summary>[SERVER 5] A friend request someone sent me.</summary>
+    public sealed class ChatRequest
+    {
+        public string id;
+        public string name;
+    }
+
     public sealed class ChatReport
     {
         public string target;
@@ -45,6 +52,8 @@ namespace DotRPG
 
         public static readonly string[] QuickSignals = { "모여!", "부활해 줘!", "기믹 위치 여기!", "준비 완료!", "고마워!" };
         public static readonly string[] ReportReasons = { "욕설·비하", "도배", "광고·사기", "불법 프로그램 의심", "기타" };
+        /// <summary>[SERVER] Codes the server stores for <see cref="ReportReasons"/> (same order).</summary>
+        public static readonly string[] ReportReasonCodes = { "abuse", "spam", "scam_ad", "cheat", "other" };
 
         // Client-side preview only; the server makes the final call (PLAN_ONLINE §2.3).
         static readonly string[] Banned = { "시발", "씨발", "병신", "개새", "좆", "꺼져" };
@@ -86,6 +95,12 @@ namespace DotRPG
         /// <summary>Files a report with the last <see cref="ChatRules.ReportLines"/> lines; returns a Korean status line.</summary>
         string Report(string name, string reason);
         void Tick(float deltaSeconds);
+        /// <summary>[SERVER 5] Friend requests waiting for my answer (none offline).</summary>
+        IReadOnlyList<ChatRequest> Requests { get; }
+        void RespondRequest(string requestId, bool accept);
+        /// <summary>[SERVER 5] Character id of a name seen in chat (null offline or unknown).</summary>
+        string IdOf(string name);
+        /// <summary>A line was added, changed or removed (null = removed / redraw).</summary>
         event Action<ChatLine> Received;
         event Action SocialChanged;
     }
@@ -110,6 +125,9 @@ namespace DotRPG
         int repeats;
 
         public bool IsOnline => false;
+        public IReadOnlyList<ChatRequest> Requests => Array.Empty<ChatRequest>();
+        public void RespondRequest(string requestId, bool accept) { }
+        public string IdOf(string name) => null;
         static string MyName => Game.Session?.Journal?.PlayerName ?? QuestJournal.DefaultName;
         public IReadOnlyList<ChatLine> Lines => lines;
         public IReadOnlyList<ChatFriend> Friends => friends;

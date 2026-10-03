@@ -16,6 +16,7 @@ import { pickGroups } from './matchRules';
 import { getQueueStore, type QueueTicket } from './queueStore';
 import type { QueueBody, RequestOnlyBody } from './matchValidation';
 import { logger } from '../../utils/logger';
+import { notifyPartyChanged } from '../chat/partyNotify';
 
 const running = new Set<string>();
 
@@ -180,6 +181,7 @@ async function formParty(group: QueueTicket[], now: Date): Promise<void> {
         }
       }
       if (joined.length === 0) throw new NoMembers();
+      notifyPartyChanged(client, party.id, now);
       // 방장(시드)이 빠졌으면 먼저 들어간 사람이 방장
       const first = joined[0] as (typeof joined)[number];
       if (!joined.includes(seed)) await partyRepo.setLeader(client, party.id, first.c.id);

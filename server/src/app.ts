@@ -34,6 +34,15 @@ const economyLimit = rateLimit({
   key: ipKey,
 });
 
+// 5단계: 친구·차단·신고(계정 단위 경로)는 같은 공유기에서 여러 명이 접속해도 걸리지 않게 IP 한도를 따로 둔다
+const SOCIAL_PATH = /^\/(friends|blocks|reports)(?:\/|$)/;
+const socialLimit = rateLimit({
+  name: 'social-ip',
+  limit: (c) => c.rate.socialIp,
+  windowMs: MINUTE,
+  key: ipKey,
+});
+
 /** 게임 데이터(initGameData)와 설정(initConfig)이 준비된 뒤에 호출한다. */
 export function createApp(): Express {
   const app = express();
@@ -43,6 +52,7 @@ export function createApp(): Express {
   app.use((req, res, next) => {
     if (req.path === '/health') next();
     else if (ECONOMY_PATH.test(req.path)) economyLimit(req, res, next);
+    else if (SOCIAL_PATH.test(req.path)) socialLimit(req, res, next);
     else generalLimit(req, res, next);
   });
   app.use(express.json({ limit: '64kb' }));

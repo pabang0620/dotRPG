@@ -35,8 +35,22 @@ namespace DotRPG
         {
             base.Show();
             view = listView;
+            if (Service is ServerChatService server) server.Refresh(); // [SERVER 5] SocialChanged redraws
             Rebuild();
         }
+
+        void OnEnable() { OnlineServices.ChatChanged += Rebind; Rebind(); }
+        void OnDisable() { OnlineServices.ChatChanged -= Rebind; if (bound != null) bound.SocialChanged -= OnSocial; bound = null; }
+
+        IChatService bound;
+        void Rebind()
+        {
+            if (bound != null) bound.SocialChanged -= OnSocial;
+            bound = Service;
+            bound.SocialChanged += OnSocial;
+        }
+
+        void OnSocial() { if (view != View.Report && view != View.Person && menu != null) Rebuild(); }
 
         void Rebuild()
         {
@@ -59,6 +73,13 @@ namespace DotRPG
             });
             if (view == View.Friends)
             {
+                // [SERVER 5] Friend requests waiting for an answer.
+                foreach (var q in Service.Requests)
+                {
+                    var req = q;
+                    menu.AddButton($"<color=#ffe066>친구 요청</color> {req.name} - 수락", () => Service.RespondRequest(req.id, true));
+                    menu.AddButton($"<color=#8c96a8>친구 요청</color> {req.name} - 거절", () => Service.RespondRequest(req.id, false));
+                }
                 foreach (var f in Service.Friends)
                 {
                     var friend = f;
@@ -105,11 +126,20 @@ namespace DotRPG
             if (!blocked)
             {
                 menu.AddButton("귓속말", () => { Close(); ChatView.Instance?.Open($"/w {person} "); });
-                menu.AddButton("파티 초대", () => GameEvents.RaiseToast($"{person}님에게 파티 초대를 보냈습니다. (오프라인 미리보기: 응답 없음)"));
+                menu.AddButton("파티 초대", () =>
+                {
+                    string id = Service.IdOf(person);
+                    if (!Service.IsOnline || id == null || PartyClient.Instance == null)
+                    {
+                        GameEvents.RaiseToast(Service.IsOnline ? $"{person}님을 찾을 수 없습니다." : $"{person}님에게 파티 초대를 보냈습니다. (오프라인 미리보기: 응답 없음)");
+                        return;
+                    }
+                    PartyClient.Instance.Invite(id, (ok, msg) => GameEvents.RaiseToast(ok ? $"{person}님에게 파티 초대를 보냈습니다." : msg));
+                });
                 menu.AddButton(friend ? "친구 삭제" : "친구 추가", () =>
                 {
                     if (friend) Service.RemoveFriend(person); else Service.AddFriend(person);
-                    GameEvents.RaiseToast(friend ? $"{person}님을 친구에서 삭제했습니다." : $"{person}님을 친구로 추가했습니다.");
+                    if (!Service.IsOnline) GameEvents.RaiseToast(friend ? $"{person}님을 친구에서 삭제했습니다." : $"{person}님을 친구로 추가했습니다."); // online: the server's answer toasts
                     OnlineServices.SaveSocial();
                     Rebuild();
                 });
@@ -121,7 +151,7 @@ namespace DotRPG
                 {
                     Service.Block(person);
                     OnlineServices.SaveSocial();
-                    GameEvents.RaiseToast($"{person}님을 차단했습니다.");
+                    if (!Service.IsOnline) GameEvents.RaiseToast($"{person}님을 차단했습니다.");
                     Rebuild();
                 }, overlay: true);
             });

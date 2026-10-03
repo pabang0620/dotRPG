@@ -159,7 +159,7 @@ namespace DotRPG
         {
             if (regSel < 0 || regSel >= bagKeys.Count) { SetStatus("등록할 아이템을 고르세요.", false); return; }
             string key = bagKeys[regSel];
-            int count = EquipmentDatabase.IsEquipment(key) ? 1 : Game.Session.Inventory.Count(key);
+            int count = Service.MaxCount(key); // [SERVER 6] equipment 1, stacks up to the listing maximum
             var r = Service.Register(key, count, regPrice, 0, AuctionRules.Durations[regHoursIdx]);
             if (r.ok) { regSel = -1; regPrice = 0; }
             Report(r);
@@ -170,11 +170,20 @@ namespace DotRPG
             var bag = Game.Session?.Inventory;
             if (bag == null) return new List<string>();
             return bag.Ids.Where(id => id != ConsumableDatabase.Gold && bag.Count(id) > 0)
-                .OrderBy(id => AuctionRules.BindOf(id) == ItemBind.Tradable ? 0 : 1).ThenBy(id => id).ToList();
+                .OrderBy(id => OnlineServices.Auction.BindOf(id) == ItemBind.Tradable ? 0 : 1).ThenBy(id => id).ToList();
         }
+
+        // [SERVER 6] Online the lists arrive later: redraw when the service says something changed.
+        IAuctionService bound;
+        void OnEnable() { bound = Service; bound.Changed += OnServiceChanged; }
+        void OnDisable() { if (bound != null) bound.Changed -= OnServiceChanged; bound = null; }
+        void OnServiceChanged() { if (gameObject.activeInHierarchy) Refresh(); }
 
         protected override void Refresh()
         {
+            var banner = content.Find("Preview");
+            if (banner != null) banner.gameObject.SetActive(!Service.IsOnline);
+            if (Service is ServerAuctionService server) server.Tick(true);
             foreach (var kv in tabs) kv.Value.image.sprite = Game.Art.Get(kv.Key == tab ? "ui_btn" : "ui_btngray");
             int mailN = Service.UnclaimedMail;
             TextOf(tabs[Tab.Mail]).text = mailN > 0 ? $"우편함 <color=#ff6b6b>●{mailN}</color>" : "우편함";
@@ -275,7 +284,7 @@ namespace DotRPG
                 row.row.gameObject.SetActive(on);
                 if (!on) continue;
                 string key = bagKeys[i];
-                var bind = AuctionRules.BindOf(key);
+                var bind = Service.BindOf(key);
                 row.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(key));
                 int n = bag.Count(key);
                 row.name.text = (i == regSel ? "<color=#ffe066>▶</color> " : "") + RichKey(key) + (n > 1 ? $" x{n}" : "");
@@ -288,13 +297,14 @@ namespace DotRPG
                 return;
             }
             string k = bagKeys[regSel];
-            int count = EquipmentDatabase.IsEquipment(k) ? 1 : bag.Count(k);
+            int count = Service.MaxCount(k);
             var price = Service.Price(k);
             if (regPrice <= 0) regPrice = Math.Max(10, price.avg7d * count / 10 * 10);
             long deposit = AuctionRules.Deposit(regPrice), fee = AuctionRules.Fee(k, regPrice);
             regInfo.text = $"<b>{RichKey(k)}</b> x{count}\n" +
                            $"<color=#b8c4d8>최근 7일 평균 {price.avg7d * count:N0}G  (최저 {price.min * count:N0} · 최고 {price.max * count:N0})</color>\n\n" +
                            $"즉시 구매가  <color=#ffd34a>{regPrice:N0}G</color>\n" +
+                           (price.limitMax > 0 ? $"<color=#8c96a8>등록 가능 {price.limitMin * count:N0}~{price.limitMax * count:N0}G</color>\n" : "") +
                            $"기간  {AuctionRules.Durations[regHoursIdx]}시간\n" +
                            $"보증금  {deposit:N0}G <color=#8c96a8>(판매되면 반환)</color>\n" +
                            $"수수료  {fee:N0}G ({AuctionRules.FeePct(k)}%)\n" +

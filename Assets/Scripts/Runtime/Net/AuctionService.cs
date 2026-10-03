@@ -39,6 +39,10 @@ namespace DotRPG
         public AuctionCategory category;
         public ItemRarity rarity;
         public int enhance;
+        /// <summary>[SERVER 6] Next minimum bid as the server computed it (0 = compute locally).</summary>
+        public long serverMinBid;
+        /// <summary>[SERVER 6] Buying it binds the item to the account.</summary>
+        public bool willBind;
         public string Name => DungeonDatabase.ItemName(itemKey);
         public bool Biddable => startBid > 0;
     }
@@ -57,6 +61,8 @@ namespace DotRPG
     {
         public long avg7d, min, max;
         public int volume;
+        /// <summary>[SERVER 6] Allowed buyout range for one item (0 = unknown / offline).</summary>
+        public long limitMin, limitMax;
     }
 
     public struct AuctionResult
@@ -72,18 +78,42 @@ namespace DotRPG
     {
         public static readonly int[] Durations = { 12, 24, 48 };
         public const int FeePctGear = 5, FeePctStack = 3;
-        public const float DepositPct = 0.01f;
+        // [SERVER 6] Rates in basis points (1/10000) so the client and the server compute the same integers.
+        public const int DepositBps = 100;
         public const long DepositMin = 10, DepositMax = 10000;
         public const int MaxListings = 20;
-        public const float MinBidStep = 1.05f;
-        /// <summary>Price limits as a share of the 7-day average.</summary>
-        public const float PriceFloor = 0.2f, PriceCeil = 5f;
+        public const int MinBidStepBps = 10500;
+        /// <summary>Price limits against the reference price (bps: 2000 = 20%, 50000 = 5x).</summary>
+        public const int PriceFloorBps = 2000, PriceCeilBps = 50000;
+        public const float PriceFloor = PriceFloorBps / 10000f, PriceCeil = PriceCeilBps / 10000f;
+        /// <summary>Largest stack in one listing (PLAN_AUCTION §2: materials 999).</summary>
+        public const int MaxStack = 999;
+        /// <summary>A bid in the last few minutes pushes the end back (at most a few times).</summary>
+        public const int ExtendWindowMinutes = 5, ExtendMinutes = 5, ExtendMax = 6;
+        /// <summary>Days a mail is kept before it is thrown away.</summary>
+        public const int MailDays = 30;
+        /// <summary>Upper hours of each remaining-time band.</summary>
+        public static readonly int[] TimeBands = { 1, 6, 12, 24, 48 };
 
-        public static long Deposit(long buyout) => Math.Min(DepositMax, Math.Max(DepositMin, (long)Math.Round(buyout * DepositPct)));
+        /// <summary>Integer, half-up: clamp(floor((buyout x bps + 5000) / 10000), min, max).</summary>
+        public static long Deposit(long buyout) => Math.Min(DepositMax, Math.Max(DepositMin, (buyout * DepositBps + 5000) / 10000));
         public static int FeePct(string key) => EquipmentDatabase.IsEquipment(key) ? FeePctGear : FeePctStack;
-        public static long Fee(string key, long price) => (long)Math.Ceiling(price * FeePct(key) / 100.0);
+        /// <summary>Integer ceiling: (price x pct + 99) / 100.</summary>
+        public static long Fee(string key, long price) => (price * FeePct(key) + 99) / 100;
         public static long Payout(string key, long price) => price - Fee(key, price);
-        public static long MinBid(AuctionListing l) => !l.hasBid ? l.startBid : Math.Max((long)Math.Ceiling(l.currentBid * MinBidStep), l.currentBid + 1);
+        public static long MinBid(AuctionListing l) => l.serverMinBid > 0 ? l.serverMinBid : !l.hasBid ? l.startBid : Math.Max((l.currentBid * MinBidStepBps + 9999) / 10000, l.currentBid + 1);
+
+        /// <summary>
+        /// [SERVER 6] The least binding an item kind always has (online the row's own binding, set by how it
+        /// was obtained, can only be stronger): gold, starter gear, protection tickets and raid keys.
+        /// </summary>
+        public static ItemBind BindFloor(string key)
+        {
+            if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold || key == ConsumableDatabase.ProtectTicket || key == DungeonDatabase.SealKey)
+                return ItemBind.CharacterBound;
+            var gear = EquipmentDatabase.Get(key);
+            return gear != null && gear.starter ? ItemBind.CharacterBound : ItemBind.Tradable;
+        }
 
         public static ItemBind BindOf(string key)
         {
@@ -160,6 +190,10 @@ namespace DotRPG
         AuctionResult Cancel(string listingId);
         AuctionResult Claim(string mailId);
         AuctionResult ClaimAll();
+        /// <summary>[SERVER 6] Can this bag item be listed (online: the server's per-row binding).</summary>
+        ItemBind BindOf(string key);
+        /// <summary>[SERVER 6] Most of this bag item one listing can hold.</summary>
+        int MaxCount(string key);
         event Action Changed;
     }
 
@@ -177,6 +211,8 @@ namespace DotRPG
 
         public bool IsOnline => false;
         public event Action Changed;
+        public ItemBind BindOf(string key) => AuctionRules.BindOf(key);
+        public int MaxCount(string key) => EquipmentDatabase.IsEquipment(key) ? 1 : Math.Min(AuctionRules.MaxStack, Bag?.Count(key) ?? 0);
 
         Inventory Bag => Game.Session?.Inventory;
 

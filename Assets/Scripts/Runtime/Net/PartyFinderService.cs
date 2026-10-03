@@ -197,12 +197,39 @@ namespace DotRPG
         static IAuctionService auction;
         public static IPartyFinderService PartyFinder { get => partyFinder ?? (partyFinder = new MockPartyFinderService()); set => partyFinder = value; }
         public static IAuctionService Auction { get => auction ?? (auction = new MockAuctionService()); set => auction = value; }
+
+        /// <summary>[SERVER 6] Online character: the real auction house and mailbox.</summary>
+        public static void AttachAuction() => auction = new ServerAuctionService();
+
+        /// <summary>Back offline: the offline preview market comes back.</summary>
+        public static void DetachAuction()
+        {
+            if (auction is ServerAuctionService) auction = null;
+        }
         static IChatService chat;
         /// <summary>[F5] Friends and blocks persist with the settings until an account server exists.</summary>
         public static IChatService Chat
         {
             get => chat ?? (chat = new MockChatService(Game.Settings?.Data?.chatFriends, Game.Settings?.Data?.chatBlocked));
-            set => chat = value;
+            set { chat = value; ChatChanged?.Invoke(); }
+        }
+
+        /// <summary>[SERVER 5] The chat service was swapped (online in, back offline): views re-subscribe.</summary>
+        public static event Action ChatChanged;
+
+        /// <summary>[SERVER 5] An online character entered: chat, friends, blocks and reports go to the server.</summary>
+        public static void AttachChat(string characterId)
+        {
+            DetachChat();
+            Chat = new ServerChatService(characterId);
+        }
+
+        /// <summary>Back offline: close the socket and bring the offline chat back.</summary>
+        public static void DetachChat()
+        {
+            if (!(chat is ServerChatService server)) return;
+            server.Detach();
+            Chat = null;
         }
         public static void SaveSocial()
         {

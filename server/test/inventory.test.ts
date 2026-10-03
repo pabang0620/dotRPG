@@ -12,7 +12,7 @@ describe('POST /characters/:id/items/use', () => {
     const h = await newHero(app); // 물약 3개
     const res = await post(app, h, '/items/use', { item_id: 'potion_hp' });
     expect(res.status).toBe(200);
-    expect(res.body.data.delta.stacks).toEqual([{ item_key: 'potion_hp', location: 'bag', count: 2 }]);
+    expect(res.body.data.delta.stacks).toEqual([{ item_key: 'potion_hp', location: 'bag', bind: 'none', count: 2 }]);
     expect(await countOf(h, 'potion_hp')).toBe(2);
     await expectLedgerConsistent(h);
   });

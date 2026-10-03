@@ -9,7 +9,9 @@ import { getPool, isUniqueViolation, withTransaction, type Queryable } from '../
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { CHARACTER_LIMIT } from '../auth/authService';
-import { readEconomyDetail } from '../economy/economyRepository';
+import { hasActiveAuction } from '../auction/auctionSearchRepository';
+import { lockCharacter, readEconomyDetail } from '../economy/economyRepository';
+import { hasOpenMail } from '../mail/mailRepository';
 import { computePower } from './powerEstimate';
 import { listWornKeys } from '../economy/economyRepository';
 import * as repo from './characterRepository';
@@ -107,7 +109,15 @@ export async function getCharacter(accountId: number, uuid: string) {
 }
 
 export async function deleteCharacter(accountId: number, uuid: string) {
-  const r = await repo.softDelete(accountId, uuid);
+  // 6단계: 진행 중 등록·최고 입찰·미수령 우편이 있으면 삭제할 수 없다(자산 증발 방지).
+  // 캐릭터 행을 잠가 같은 캐릭터의 등록·입찰 요청과 직렬화한다.
+  const r = await withTransaction(async (client) => {
+    const c = await lockCharacter(client, accountId, uuid);
+    if (c && ((await hasActiveAuction(client, c.id)) || (await hasOpenMail(client, c.id)))) {
+      throw new AppError(409, '진행 중인 경매나 받지 않은 우편이 있어 삭제할 수 없습니다.', 'CHARACTER_HAS_AUCTION');
+    }
+    return repo.softDelete(accountId, uuid, client);
+  });
   if (r === 'missing') throw NOT_FOUND();
   return { deleted: true };
 }

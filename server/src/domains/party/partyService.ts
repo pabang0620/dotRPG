@@ -13,6 +13,9 @@ import type { StoredResult } from '../economy/economyService';
 import { getQueueStore } from '../match/queueStore';
 import * as runRepo from '../partyruns/partyRunRepository';
 import { ensureGatherResolved } from '../partyruns/partyRunService';
+import { notifyCharacters, notifyPartyChanged } from '../chat/partyNotify';
+import * as inviteRepo from '../partyinvites/partyInvitesRepository';
+import { inviteBody } from '../partyinvites/partyInvitesView';
 import * as repo from './partyRepository';
 import { buildPartyView } from './partyView';
 import { runParty, withPartyLocks, type PartyCtx } from './partyTx';
@@ -26,7 +29,7 @@ const BUSY = () => new AppError(409, '지금은 바꿀 수 없습니다.', 'PART
 
 type BaseCtx = Omit<PartyCtx, 'requestId'>;
 
-async function ensureFree(ctx: BaseCtx): Promise<void> {
+export async function ensureFree(ctx: BaseCtx): Promise<void> {
   const partyId = await repo.findPartyIdOf(ctx.client, ctx.char.id);
   if (partyId !== null) {
     const p = await repo.getParty(ctx.client, partyId);
@@ -139,6 +142,7 @@ export async function getMyParty(accountId: number, characterUuid: string, q: Po
     let partyId = await repo.findPartyIdOf(ctx.client, ctx.char.id);
     // 지연 만료: 내 신청과 내 파티의 대기 신청
     await repo.expireApplications(ctx.client, ctx.char.id, partyId, ctx.now);
+    await inviteRepo.expireDue(ctx.client, ctx.now, { inviteeCharacterId: ctx.char.id });
     let party: repo.PartyRow | null = null;
     if (partyId !== null) {
       party = await repo.lockParty(ctx.client, partyId);
@@ -153,8 +157,11 @@ export async function getMyParty(accountId: number, characterUuid: string, q: Po
     const humans = ticket ? store.listByKey(ticket.dungeonId, ticket.difficulty).length : 0;
     const notice = await repo.recentNotice(ctx.client, ctx.char.id, new Date(ctx.now.getTime() - 120_000));
     const apps = await repo.recentApplicationsOf(ctx.client, ctx.char.id);
+    // 5단계: WebSocket이 끊겨 있는 동안에도 폴링으로 초대를 받는다(안전망)
+    const invites = (await inviteRepo.incomingFor(ctx.client, ctx.char.id, ctx.now)).map(inviteBody);
     return {
       changed: true as const,
+      invites_incoming: invites,
       party: party && party.state !== 'closed' ? await buildPartyView(ctx.client, party, ctx.char.id, ctx.now) : null,
       queue: ticket
         ? {
@@ -239,6 +246,7 @@ export function applyToParty(accountId: number, characterUuid: string, partyUuid
       const app = await repo.insertApplication(
         ctx.client, party.id, ctx.char.id, ctx.char.accountId, power, ctx.now, new Date(ctx.now.getTime() + pol.partyApplySeconds * 1000),
       );
+      notifyPartyChanged(ctx.client, party.id, ctx.now);
       return appResult(app, 201);
     },
   });
@@ -287,6 +295,7 @@ export async function respondToApplication(
         if (a.expires_at <= ctx.now) throw new AppError(410, '신청이 만료되었습니다.', 'APPLICATION_EXPIRED');
         if (!body.accept) {
           await repo.setApplicationState(ctx.client, a.id, 'rejected', ctx.now);
+          notifyCharacters(ctx.client, [a.character_id]);
           return done(ctx, party);
         }
         if (party.state !== 'forming') throw BUSY();

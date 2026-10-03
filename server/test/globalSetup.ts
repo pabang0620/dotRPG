@@ -17,5 +17,6 @@ export default async function globalSetup(): Promise<void> {
   const url = new URL(admin);
   url.pathname = `/${dbName}`;
   process.env.TEST_DATABASE_URL = url.toString();
+  // migrations/ 의 모든 마이그레이션(0007 포함)을 적용한다
   await migrateUp(url.toString());
 }

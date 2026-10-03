@@ -1,5 +1,5 @@
 import type { PoolClient } from 'pg';
-import { query, type Queryable } from '../../db/pool';
+import { getPool, query, type Queryable } from '../../db/pool';
 
 export interface CharacterRow {
   id: number;
@@ -181,14 +181,15 @@ export async function findOwnedAlive(
 export async function softDelete(
   accountId: number,
   uuid: string,
+  db: Queryable = getPool(),
 ): Promise<'deleted' | 'already' | 'missing'> {
-  const upd = await query(
+  const upd = await db.query(
     `UPDATE characters SET deleted_at = now()
       WHERE uuid = $1 AND account_id = $2 AND deleted_at IS NULL`,
     [uuid, accountId],
   );
   if ((upd.rowCount ?? 0) > 0) return 'deleted';
-  const ex = await query('SELECT 1 FROM characters WHERE uuid = $1 AND account_id = $2', [
+  const ex = await db.query('SELECT 1 FROM characters WHERE uuid = $1 AND account_id = $2', [
     uuid,
     accountId,
   ]);

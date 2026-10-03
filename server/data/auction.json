@@ -1,0 +1,1 @@
+{"schema":1,"durations":[12,24,48],"feePct":{"equipment":5,"stack":3},"depositBps":100,"depositMin":10,"depositMax":10000,"maxListings":20,"minBidStepBps":10500,"priceFloorBps":2000,"priceCeilBps":50000,"maxStack":999,"extendWindowMinutes":5,"extendMinutes":5,"extendMax":6,"mailDays":30,"timeBands":[1,6,12,24,48]}

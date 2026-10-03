@@ -2,6 +2,7 @@
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 import { RUN_COLS, toPartyRun, type PartyRunRow } from '../party/partyTx';
+import { notifyPartyChanged, notifyRunChanged } from '../chat/partyNotify';
 
 export type MemberState = 'invited' | 'joined' | 'playing' | 'disconnected' | 'done' | 'left' | 'no_show' | 'dropped';
 export const ACTIVE_STATES: MemberState[] = ['invited', 'joined', 'playing', 'disconnected'];
@@ -95,6 +96,7 @@ export async function insertRunMember(
      VALUES ($1, $2, $3, $4, $5, $6, $6)`,
     [runId, characterId, accountId, slot, state, state === 'joined' ? now : null],
   );
+  notifyRunChanged(client, runId);
 }
 
 export async function setMemberState(
@@ -115,6 +117,7 @@ export async function setMemberState(
       WHERE party_run_id = $1 AND character_id = $2`,
     [runId, characterId, state, now, extra.leftReason ?? null, extra.dungeonRunId ?? null],
   );
+  notifyRunChanged(client, runId);
 }
 
 export async function touchMember(client: Queryable, runId: number, characterId: number, now: Date): Promise<void> {
@@ -137,6 +140,7 @@ export async function updateRunBegin(
     "UPDATE party_runs SET state = 'playing', humans = $2, ai_count = $3, power_cap = $4, begun_at = $5 WHERE id = $1",
     [runId, humans, aiCount, powerCap, now],
   );
+  notifyRunChanged(client, runId);
 }
 
 export async function cancelRun(
@@ -154,6 +158,7 @@ export async function cancelRun(
       WHERE party_run_id = $1 AND state IN ('invited', 'joined', 'playing', 'disconnected')`,
     [runId, now],
   );
+  notifyRunChanged(client, runId);
 }
 
 export async function setPartyState(client: PoolClient, partyId: number, state: 'forming' | 'starting' | 'in_run'): Promise<void> {
@@ -162,6 +167,7 @@ export async function setPartyState(client: PoolClient, partyId: number, state: 
     state,
     'closed',
   ]);
+  notifyPartyChanged(client, partyId);
 }
 
 /** 모든 멤버 행이 playing을 벗어났으면 판을 닫고 파티를 forming으로 되돌린다(party_runs, parties는 호출 쪽이 이미 잠갔다) */
@@ -178,11 +184,14 @@ export async function endRunIfDone(client: PoolClient, run: PartyRunRow, now: Da
     "UPDATE parties SET state = 'forming', version = version + 1, last_active_at = $2 WHERE id = $1 AND state = 'in_run'",
     [run.party_id, now],
   );
+  notifyRunChanged(client, run.id);
+  notifyPartyChanged(client, run.party_id, now);
   return true;
 }
 
 export async function setHost(client: PoolClient, runId: number, hostId: number): Promise<void> {
   await client.query('UPDATE party_runs SET host_character_id = $2, host_epoch = host_epoch + 1 WHERE id = $1', [runId, hostId]);
+  notifyRunChanged(client, runId);
 }
 
 export async function setFirstReport(client: Queryable, runId: number, at: Date): Promise<void> {

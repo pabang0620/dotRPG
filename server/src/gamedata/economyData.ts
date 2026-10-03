@@ -147,6 +147,7 @@ const itemsSchema = z.looseObject({
       id: z.string().min(1),
       kind: z.string(),
       stackable: z.boolean(),
+      name: z.string().min(1),
       bind: z.enum(['none', 'account', 'character']),
       usable: z.boolean(),
     }),
@@ -316,7 +317,7 @@ export interface EconomyData {
     materials: { bone: string; ore: string; essence: string };
     steps: Map<string, EnhanceLevel[]>;
   };
-  items: Map<string, { kind: string; bind: 'none' | 'account' | 'character'; usable: boolean }>;
+  items: Map<string, { kind: string; name: string; bind: 'none' | 'account' | 'character'; usable: boolean }>;
   quests: Map<string, QuestRule>;
   mapExtra: Map<string, MapExtra>;
   dungeons: {
@@ -379,7 +380,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     throw new Error('게임 데이터 검증 실패: progression.xpToNext 가 maxLevel-1 개보다 적습니다');
   }
   const itemMap = new Map(
-    items.items.map((i) => [i.id, { kind: i.kind, bind: i.bind, usable: i.usable }] as const),
+    items.items.map((i) => [i.id, { kind: i.kind, name: i.name, bind: i.bind, usable: i.usable }] as const),
   );
   const needItem = (id: string, where: string): void => {
     if (!itemMap.has(id)) throw new Error(`게임 데이터 검증 실패: ${where} 의 ${id} 이 items.json에 없습니다`);

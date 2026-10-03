@@ -1,17 +1,19 @@
 // 한 경제 요청의 작업 상자: 캐릭터 행이 잠긴 트랜잭션 안에서 골드·아이템·경험치를 바꾸고
 // 바뀔 때마다 원장 한 줄을 같이 남긴다(원장 없이 잔액만 바꾸지 않는다).
 import type { PoolClient } from 'pg';
+import { getConfig } from '../../config/env';
+import { logger } from '../../utils/logger';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { parseItemKey } from '../../utils/itemKey';
 import * as repo from './economyRepository';
-import type { Bind, LockedChar, StackLocation } from './economyRepository';
+import { strongerBind, type Bind, type Consumed, type LockedChar, type StackLocation } from './economyRepository';
 
 export interface Delta {
   gold?: number;
   level?: number;
   xp?: number;
-  stacks?: { item_key: string; location: string; count: number }[];
+  stacks?: { item_key: string; location: string; bind: Bind; count: number }[];
   worn?: { slot: number; item_key: string | null }[];
 }
 
@@ -22,7 +24,7 @@ export class EconCtx {
   private readonly startLevel: number;
   private readonly startXp: number;
   private goldChanged = false;
-  private readonly stacks = new Map<string, { item_key: string; location: string; count: number }>();
+  private readonly stacks = new Map<string, { item_key: string; location: string; bind: Bind; count: number }>();
   private readonly worn = new Map<number, string | null>();
 
   constructor(
@@ -38,34 +40,75 @@ export class EconCtx {
     this.startXp = char.xp;
   }
 
+  /** 아이템 종류가 정하는 귀속 하한(items.json). 어떤 경로로도 이보다 약해지지 않는다 */
   bindOf(itemKey: string): Bind {
     const base = parseItemKey(itemKey)?.base ?? itemKey;
     return getGameData().economy.items.get(base)?.bind ?? 'none';
   }
 
-  private noteStack(location: string, key: string, count: number): void {
-    this.stacks.set(`${location}|${key}`, { item_key: key, location, count });
+  /** 획득 경로가 정하는 귀속(phase6 5.1): 하한 위에 경로 규칙을 더 강하게만 덮는다 */
+  bindFor(reason: string, itemKey: string): Bind {
+    const floor = this.bindOf(itemKey);
+    const base = parseItemKey(itemKey)?.base;
+    const isEquipment = base !== undefined && getGameData().economy.shop.equipment.has(base);
+    if (!isEquipment) return floor;
+    if (reason === 'quest_reward') return strongerBind(floor, 'character');
+    if (reason === 'shop_buy') return strongerBind(floor, 'account');
+    return floor;
+  }
+
+  private noteStack(location: string, key: string, bind: Bind, count: number): void {
+    this.stacks.set(`${location}|${key}|${bind}`, { item_key: key, location, bind, count });
   }
 
   stackCount(location: StackLocation, key: string): Promise<number> {
     return repo.stackCount(this.client, this.char.id, location, key);
   }
 
-  async addItem(location: StackLocation, key: string, n: number, reason: string, ref: string): Promise<void> {
+  /** bind를 주지 않으면 획득 경로(reason)가 정한다. 준 값도 키의 하한보다 약해지지 않는다 */
+  async addItem(
+    location: StackLocation,
+    key: string,
+    n: number,
+    reason: string,
+    ref: string,
+    bind?: Bind,
+  ): Promise<void> {
     if (n <= 0) throw new Error('addItem 수량은 양수여야 합니다');
-    const count = await repo.upsertStack(this.client, this.char.id, location, key, n, this.bindOf(key));
-    await repo.insertItemLedger(this.client, this.char.id, key, n, count, location, reason, ref, this.requestId);
-    this.noteStack(location, key, count);
+    const b = bind ? strongerBind(bind, this.bindOf(key)) : this.bindFor(reason, key);
+    const rowCount = await repo.upsertStack(this.client, this.char.id, location, key, n, b);
+    const total = await repo.stackCount(this.client, this.char.id, location, key);
+    await repo.insertItemLedger(this.client, this.char.id, key, n, total, location, reason, ref, this.requestId);
+    this.noteStack(location, key, b, rowCount);
   }
 
-  /** 모자라면 false(아무것도 바꾸지 않는다) */
-  async removeItem(location: StackLocation, key: string, n: number, reason: string, ref: string): Promise<boolean> {
+  /** 모자라면 null(아무것도 바꾸지 않는다). 강한 귀속부터 소모하고 소모한 귀속별 수량을 돌려준다 */
+  async removeItem(
+    location: StackLocation,
+    key: string,
+    n: number,
+    reason: string,
+    ref: string,
+    onlyBind?: Bind,
+  ): Promise<Consumed[] | null> {
     if (n <= 0) throw new Error('removeItem 수량은 양수여야 합니다');
-    const count = await repo.decStack(this.client, this.char.id, location, key, n);
-    if (count === null) return false;
-    await repo.insertItemLedger(this.client, this.char.id, key, -n, count, location, reason, ref, this.requestId);
-    this.noteStack(location, key, count);
-    return true;
+    const consumed = await repo.decStack(this.client, this.char.id, location, key, n, onlyBind);
+    if (consumed === null) return null;
+    const total = await repo.stackCount(this.client, this.char.id, location, key);
+    await repo.insertItemLedger(this.client, this.char.id, key, -n, total, location, reason, ref, this.requestId);
+    for (const c of consumed) this.noteStack(location, key, c.bind, c.left);
+    return consumed;
+  }
+
+  /** 소모한 귀속을 그대로 다른 위치·키에 넣는다(창고 이동, 강화 결과) */
+  async addConsumed(
+    location: StackLocation,
+    key: string,
+    consumed: Consumed[],
+    reason: string,
+    ref: string,
+  ): Promise<void> {
+    for (const c of consumed) await this.addItem(location, key, c.n, reason, ref, c.bind);
   }
 
   wornKey(slot: number): Promise<string | null> {
@@ -73,17 +116,18 @@ export class EconCtx {
   }
 
   /** 빈 슬롯에 착용 행을 만든다 */
-  async wornPut(slot: number, key: string, reason: string, ref: string): Promise<void> {
-    await repo.insertWorn(this.client, this.char.id, slot, key, this.bindOf(key));
+  async wornPut(slot: number, key: string, reason: string, ref: string, bind?: Bind): Promise<void> {
+    await repo.insertWorn(this.client, this.char.id, slot, key, bind ? strongerBind(bind, this.bindOf(key)) : this.bindFor(reason, key));
     await repo.insertItemLedger(this.client, this.char.id, key, 1, 1, 'worn', reason, ref, this.requestId);
     this.worn.set(slot, key);
   }
 
-  /** 착용 행을 지운다(키는 호출 쪽이 이미 읽었다) */
-  async wornRemove(slot: number, key: string, reason: string, ref: string): Promise<void> {
-    await repo.deleteWorn(this.client, this.char.id, slot);
+  /** 착용 행을 지운다(키는 호출 쪽이 이미 읽었다). 그 행의 귀속을 돌려준다 */
+  async wornRemove(slot: number, key: string, reason: string, ref: string): Promise<Bind> {
+    const bind = await repo.deleteWorn(this.client, this.char.id, slot);
     await repo.insertItemLedger(this.client, this.char.id, key, -1, 0, 'worn', reason, ref, this.requestId);
     this.worn.set(slot, null);
+    return bind;
   }
 
   /** 착용 슬롯의 키를 바꾼다(강화 결과): 옛 키 -1, 새 키 +1 */
@@ -97,9 +141,18 @@ export class EconCtx {
   /** 골드를 바꾼다. 잔액이 모자라면 NOT_ENOUGH_GOLD (호출 쪽이 먼저 확인해 자세한 정보를 준다) */
   async changeGold(delta: number, reason: string, ref: string): Promise<void> {
     if (delta === 0) return;
-    const next = this.gold + delta;
+    let next = this.gold + delta;
     if (next < 0) {
       throw new AppError(422, '골드가 모자랍니다.', 'NOT_ENOUGH_GOLD', { need: -delta, have: this.gold });
+    }
+    // 클라이언트 Inventory가 int라 모든 골드 획득 경로에서 상한을 건다. 보상 경로는 거절하지 않고 상한까지만 주고 로그를 남긴다
+    // (우편은 수령 전에 상한을 확인해 거절하므로 여기에 닿지 않는다)
+    const cap = getConfig().auction.goldClientMax;
+    if (next > cap) {
+      logger.warn({ character_id: this.char.id, reason, delta, balance: this.gold, cap }, 'gold.cap_reached');
+      next = Math.max(this.gold, cap);
+      delta = next - this.gold;
+      if (delta === 0) return;
     }
     await repo.updateGold(this.client, this.char.id, next);
     await repo.insertGoldLedger(this.client, this.char.id, delta, next, reason, ref, this.requestId);

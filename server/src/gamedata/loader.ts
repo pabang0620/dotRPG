@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+import { loadAuctionData, type AuctionData } from './auctionData';
+import { loadChatData, type ChatData } from './chatData';
 import { loadEconomyData, type EconomyData } from './economyData';
 
 // 알 수 없는 필드는 무시(looseObject)해서 데이터에 필드가 늘어도 기동이 깨지지 않는다.
@@ -134,6 +136,10 @@ export interface GameData {
   questStatusMax: number;
   /** 3단계(경제 판정)가 쓰는 데이터 */
   economy: EconomyData;
+  /** 5단계(채팅) 규칙·신고 사유 */
+  chat: ChatData;
+  /** 6단계(경매) 수수료·보증금·기간·가격 한도 */
+  auction: AuctionData;
 }
 
 function readJson<T extends z.ZodType>(dir: string, file: string, schema: T): z.infer<T> {
@@ -246,6 +252,8 @@ export function loadGameData(dir: string): GameData {
     facingCount: enums.facingCount,
     questStatusMax: enums.questStatusMax,
     economy: loadEconomyData(dir, new Set(mapById.keys())),
+    chat: loadChatData(dir),
+    auction: loadAuctionData(dir),
   };
 }
 

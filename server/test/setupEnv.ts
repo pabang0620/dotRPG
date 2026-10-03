@@ -36,3 +36,29 @@ process.env.RATE_STEAM_IP_MAX = '10000';
 process.env.RATE_STEAM_LINK_MAX = '10000';
 process.env.STEAM_AUTH_MODE = 'mock';
 process.env.PARTY_TRANSPORT = 'dev';
+// 5단계: 소셜 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다), WebSocket 핸드셰이크 한도도 크게
+process.env.RATE_SOCIAL_IP_MAX = '100000';
+process.env.RATE_SOCIAL_LIST_PER_SEC = '10000';
+process.env.RATE_SOCIAL_REQUEST_PER_MIN = '10000';
+process.env.RATE_SOCIAL_ACTION_PER_SEC = '10000';
+process.env.RATE_SOCIAL_BLOCK_PER_MIN = '10000';
+process.env.WS_HANDSHAKE_PER_MIN_IP = '100000';
+process.env.WS_UNAUTH_PER_IP = '1000';
+// 6단계: 경매·우편 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 등록 자격은 시험 편의로 낮춘다(자격 테스트가 직접 올린다)
+for (const k of [
+  'RATE_AUCTION_SEARCH_PER_SEC',
+  'RATE_AUCTION_PRICE_PER_SEC',
+  'RATE_AUCTION_SELLABLE_PER_SEC',
+  'RATE_AUCTION_LIST_PER_SEC',
+  'RATE_AUCTION_LIST_PER_MIN',
+  'RATE_AUCTION_ACTION_PER_SEC',
+  'RATE_AUCTION_MINE_PER_SEC',
+  'RATE_MAIL_CLAIM_PER_SEC',
+  'RATE_MAIL_CLAIM_ALL_PER_SEC',
+  'RATE_MAIL_SUMMARY_PER_5SEC',
+]) {
+  process.env[k] = '10000';
+}
+process.env.AUCTION_MIN_LEVEL = '1';
+process.env.AUCTION_MIN_ACCOUNT_AGE_DAYS = '0';
+process.env.AUCTION_TICK_ENABLED = 'false';

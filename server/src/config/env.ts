@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
 const posInt = (def: number) => z.coerce.number().int().positive().default(def);
+const nonNegInt = (def: number) => z.coerce.number().int().min(0).default(def);
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -85,6 +86,84 @@ const envSchema = z.object({
   STEAM_WEB_API_KEY: z.string().min(1).optional(),
   STEAM_IDENTITY: z.string().min(1).default('dotrpg-server'),
   PARTY_TRANSPORT: z.enum(['dev', 'steam']).default('dev'),
+  // 5단계(채팅·친구) 속도 제한과 정책 상수. 값은 phase5_api.md 11절
+  RATE_SOCIAL_IP_MAX: posInt(600),
+  RATE_SOCIAL_LIST_PER_SEC: posInt(1),
+  RATE_SOCIAL_REQUEST_PER_MIN: posInt(10),
+  RATE_SOCIAL_ACTION_PER_SEC: posInt(2),
+  RATE_SOCIAL_BLOCK_PER_MIN: posInt(20),
+  CHAT_INTERVAL_TOLERANCE: z.coerce.number().gt(0).max(1).default(0.8),
+  CHAT_PER_MINUTE: posInt(30),
+  CHAT_WHISPER_TARGETS_PER_MIN: posInt(10),
+  CHAT_SHARD_SIZE: posInt(150),
+  CHAT_BACKLOG_GENERAL: posInt(20),
+  CHAT_BACKLOG_MINUTES: posInt(10),
+  CHAT_BACKLOG_PARTY: posInt(50),
+  CHAT_BACKLOG_WHISPER: posInt(50),
+  CHAT_BACKLOG_WHISPER_MINUTES: posInt(30),
+  CHAT_RESEND_SECONDS: posInt(30),
+  CHAT_FILTER_WINDOW_MINUTES: posInt(10),
+  CHAT_FILTER_STRIKES: posInt(5),
+  CHAT_REPEAT_MUTE_STRIKES: posInt(5),
+  CHAT_AUTO_MUTE_MINUTES: posInt(10),
+  CHAT_AUTO_ESCALATE_COUNT: posInt(3),
+  CHAT_AUTO_MUTE_ESCALATED_MINUTES: posInt(1440),
+  CHAT_RETENTION_DAYS: posInt(7),
+  WS_HELLO_TIMEOUT_MS: posInt(5000),
+  WS_PING_EVERY_MS: posInt(15000),
+  WS_IDLE_TIMEOUT_MS: posInt(45000),
+  WS_TOKEN_GRACE_SECONDS: posInt(30),
+  WS_REVALIDATE_SECONDS: posInt(60),
+  WS_MAX_PAYLOAD_BYTES: posInt(4096),
+  WS_FRAMES_PER_SEC: posInt(10),
+  WS_SEND_QUEUE_MAX: posInt(200),
+  WS_HANDSHAKE_PER_MIN_IP: posInt(60),
+  WS_UNAUTH_PER_IP: posInt(20),
+  WS_MAX_CONNECTIONS: posInt(500),
+  PARTY_POLL_WS_SECONDS: posInt(15),
+  FRIEND_MAX: posInt(50),
+  FRIEND_PENDING_OUT_MAX: posInt(20),
+  FRIEND_PENDING_IN_MAX: posInt(50),
+  FRIEND_REQUEST_DAYS: posInt(14),
+  FRIEND_REREQUEST_HOURS: posInt(24),
+  BLOCK_MAX: posInt(100),
+  REPORT_PER_HOUR: posInt(5),
+  REPORT_PER_DAY: posInt(20),
+  REPORT_CONTEXT_HOURS: posInt(24),
+  REPORT_LOOKBACK_MINUTES: posInt(30),
+  REPORT_TARGET_LINES: posInt(10),
+  REPORT_RETENTION_DAYS: posInt(180),
+  PARTY_INVITE_SECONDS: posInt(30),
+  INVITE_PER_MIN: posInt(10),
+  INVITE_PER_TARGET_SECONDS: posInt(10),
+  // 6단계(경매·우편) 속도 제한과 정책 상수. 값은 phase6_api.md 3절
+  RATE_AUCTION_SEARCH_PER_SEC: posInt(2),
+  RATE_AUCTION_PRICE_PER_SEC: posInt(5),
+  RATE_AUCTION_SELLABLE_PER_SEC: posInt(1),
+  RATE_AUCTION_LIST_PER_SEC: posInt(1),
+  RATE_AUCTION_LIST_PER_MIN: posInt(10),
+  RATE_AUCTION_ACTION_PER_SEC: posInt(2),
+  RATE_AUCTION_MINE_PER_SEC: posInt(1),
+  RATE_MAIL_CLAIM_PER_SEC: posInt(5),
+  RATE_MAIL_CLAIM_ALL_PER_SEC: posInt(1),
+  RATE_MAIL_SUMMARY_PER_5SEC: posInt(1),
+  AUCTION_TICK_SECONDS: posInt(60),
+  AUCTION_TICK_BATCH: posInt(100),
+  AUCTION_MIN_LEVEL: nonNegInt(10),
+  AUCTION_MIN_ACCOUNT_AGE_DAYS: nonNegInt(7),
+  AUCTION_MAX_PRICE: posInt(1_000_000_000),
+  GOLD_CLIENT_MAX: posInt(2_147_483_647),
+  AUCTION_REF_WINDOW_DAYS: posInt(7),
+  AUCTION_REF_MIN_TRADES: posInt(5),
+  AUCTION_REF_MIN_BUYERS: posInt(3),
+  AUCTION_REF_PAIR_MAX: posInt(2),
+  AUCTION_REF_DAILY_CAP_BPS: posInt(15000),
+  AUCTION_COLD_FLOOR_MULT: posInt(1),
+  AUCTION_COLD_CEIL_MULT: posInt(100),
+  AUCTION_PAIR_DAILY_TRADES: posInt(3),
+  AUCTION_PAIR_DAILY_GOLD: posInt(100_000_000),
+  MAIL_CLAIM_ALL_MAX: posInt(50),
+  AUCTION_TICK_ENABLED: boolStr.default(true),
 });
 
 export interface AppConfig {
@@ -124,6 +203,88 @@ export interface AppConfig {
     heartbeatPer2Sec: number;
     steamIp: number;
     steamLink: number;
+    socialIp: number;
+    socialListPerSec: number;
+    socialRequestPerMin: number;
+    socialActionPerSec: number;
+    socialBlockPerMin: number;
+    auctionSearchPerSec: number;
+    auctionPricePerSec: number;
+    auctionSellablePerSec: number;
+    auctionListPerSec: number;
+    auctionListPerMin: number;
+    auctionActionPerSec: number;
+    auctionMinePerSec: number;
+    mailClaimPerSec: number;
+    mailClaimAllPerSec: number;
+    mailSummaryPer5Sec: number;
+  };
+  /** 6단계: 경매·우편 정책 상수(게임 데이터가 아니라 운영 값) */
+  auction: {
+    tickSeconds: number;
+    tickBatch: number;
+    tickEnabled: boolean;
+    minLevel: number;
+    minAccountAgeDays: number;
+    maxPrice: number;
+    goldClientMax: number;
+    refWindowDays: number;
+    refMinTrades: number;
+    refMinBuyers: number;
+    refPairMax: number;
+    refDailyCapBps: number;
+    coldFloorMult: number;
+    coldCeilMult: number;
+    pairDailyTrades: number;
+    pairDailyGold: number;
+    mailClaimAllMax: number;
+  };
+  /** 5단계: 채팅·WebSocket·친구·차단·신고·초대 정책 상수(게임 데이터가 아니라 운영 값) */
+  social: {
+    chatIntervalTolerance: number;
+    chatPerMinute: number;
+    chatWhisperTargetsPerMin: number;
+    chatShardSize: number;
+    chatBacklogGeneral: number;
+    chatBacklogMinutes: number;
+    chatBacklogParty: number;
+    chatBacklogWhisper: number;
+    chatBacklogWhisperMinutes: number;
+    chatResendSeconds: number;
+    chatFilterWindowMinutes: number;
+    chatFilterStrikes: number;
+    chatRepeatMuteStrikes: number;
+    chatAutoMuteMinutes: number;
+    chatAutoEscalateCount: number;
+    chatAutoMuteEscalatedMinutes: number;
+    chatRetentionDays: number;
+    wsHelloTimeoutMs: number;
+    wsPingEveryMs: number;
+    wsIdleTimeoutMs: number;
+    wsTokenGraceSeconds: number;
+    wsRevalidateSeconds: number;
+    wsMaxPayloadBytes: number;
+    wsFramesPerSec: number;
+    wsSendQueueMax: number;
+    wsHandshakePerMinIp: number;
+    wsUnauthPerIp: number;
+    wsMaxConnections: number;
+    partyPollWsSeconds: number;
+    friendMax: number;
+    friendPendingOutMax: number;
+    friendPendingInMax: number;
+    friendRequestDays: number;
+    friendRerequestHours: number;
+    blockMax: number;
+    reportPerHour: number;
+    reportPerDay: number;
+    reportContextHours: number;
+    reportLookbackMinutes: number;
+    reportTargetLines: number;
+    reportRetentionDays: number;
+    partyInviteSeconds: number;
+    invitePerMin: number;
+    invitePerTargetSeconds: number;
   };
   steam: { mode: 'off' | 'mock' | 'web_api'; appId: number | null; webApiKey: string | null; identity: string };
   partyTransport: 'dev' | 'steam';
@@ -188,6 +349,9 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
   if (e.NODE_ENV === 'production' && e.STEAM_AUTH_MODE === 'mock' && e.PARTY_TRANSPORT === 'dev') {
     throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=mock 과 PARTY_TRANSPORT=dev 를 함께 쓸 수 없습니다');
   }
+  if (e.NODE_ENV === 'production' && (e.AUCTION_MIN_LEVEL === 0 || e.AUCTION_MIN_ACCOUNT_AGE_DAYS === 0)) {
+    throw new Error('환경변수 검증 실패: 운영에서는 AUCTION_MIN_LEVEL 과 AUCTION_MIN_ACCOUNT_AGE_DAYS 를 0으로 둘 수 없습니다');
+  }
   return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
@@ -225,6 +389,86 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       heartbeatPer2Sec: e.RATE_HEARTBEAT_PER_2SEC,
       steamIp: e.RATE_STEAM_IP_MAX,
       steamLink: e.RATE_STEAM_LINK_MAX,
+      socialIp: e.RATE_SOCIAL_IP_MAX,
+      socialListPerSec: e.RATE_SOCIAL_LIST_PER_SEC,
+      socialRequestPerMin: e.RATE_SOCIAL_REQUEST_PER_MIN,
+      socialActionPerSec: e.RATE_SOCIAL_ACTION_PER_SEC,
+      socialBlockPerMin: e.RATE_SOCIAL_BLOCK_PER_MIN,
+      auctionSearchPerSec: e.RATE_AUCTION_SEARCH_PER_SEC,
+      auctionPricePerSec: e.RATE_AUCTION_PRICE_PER_SEC,
+      auctionSellablePerSec: e.RATE_AUCTION_SELLABLE_PER_SEC,
+      auctionListPerSec: e.RATE_AUCTION_LIST_PER_SEC,
+      auctionListPerMin: e.RATE_AUCTION_LIST_PER_MIN,
+      auctionActionPerSec: e.RATE_AUCTION_ACTION_PER_SEC,
+      auctionMinePerSec: e.RATE_AUCTION_MINE_PER_SEC,
+      mailClaimPerSec: e.RATE_MAIL_CLAIM_PER_SEC,
+      mailClaimAllPerSec: e.RATE_MAIL_CLAIM_ALL_PER_SEC,
+      mailSummaryPer5Sec: e.RATE_MAIL_SUMMARY_PER_5SEC,
+    },
+    auction: {
+      tickSeconds: e.AUCTION_TICK_SECONDS,
+      tickBatch: e.AUCTION_TICK_BATCH,
+      tickEnabled: e.AUCTION_TICK_ENABLED,
+      minLevel: e.AUCTION_MIN_LEVEL,
+      minAccountAgeDays: e.AUCTION_MIN_ACCOUNT_AGE_DAYS,
+      maxPrice: e.AUCTION_MAX_PRICE,
+      goldClientMax: e.GOLD_CLIENT_MAX,
+      refWindowDays: e.AUCTION_REF_WINDOW_DAYS,
+      refMinTrades: e.AUCTION_REF_MIN_TRADES,
+      refMinBuyers: e.AUCTION_REF_MIN_BUYERS,
+      refPairMax: e.AUCTION_REF_PAIR_MAX,
+      refDailyCapBps: e.AUCTION_REF_DAILY_CAP_BPS,
+      coldFloorMult: e.AUCTION_COLD_FLOOR_MULT,
+      coldCeilMult: e.AUCTION_COLD_CEIL_MULT,
+      pairDailyTrades: e.AUCTION_PAIR_DAILY_TRADES,
+      pairDailyGold: e.AUCTION_PAIR_DAILY_GOLD,
+      mailClaimAllMax: e.MAIL_CLAIM_ALL_MAX,
+    },
+    social: {
+      chatIntervalTolerance: e.CHAT_INTERVAL_TOLERANCE,
+      chatPerMinute: e.CHAT_PER_MINUTE,
+      chatWhisperTargetsPerMin: e.CHAT_WHISPER_TARGETS_PER_MIN,
+      chatShardSize: e.CHAT_SHARD_SIZE,
+      chatBacklogGeneral: e.CHAT_BACKLOG_GENERAL,
+      chatBacklogMinutes: e.CHAT_BACKLOG_MINUTES,
+      chatBacklogParty: e.CHAT_BACKLOG_PARTY,
+      chatBacklogWhisper: e.CHAT_BACKLOG_WHISPER,
+      chatBacklogWhisperMinutes: e.CHAT_BACKLOG_WHISPER_MINUTES,
+      chatResendSeconds: e.CHAT_RESEND_SECONDS,
+      chatFilterWindowMinutes: e.CHAT_FILTER_WINDOW_MINUTES,
+      chatFilterStrikes: e.CHAT_FILTER_STRIKES,
+      chatRepeatMuteStrikes: e.CHAT_REPEAT_MUTE_STRIKES,
+      chatAutoMuteMinutes: e.CHAT_AUTO_MUTE_MINUTES,
+      chatAutoEscalateCount: e.CHAT_AUTO_ESCALATE_COUNT,
+      chatAutoMuteEscalatedMinutes: e.CHAT_AUTO_MUTE_ESCALATED_MINUTES,
+      chatRetentionDays: e.CHAT_RETENTION_DAYS,
+      wsHelloTimeoutMs: e.WS_HELLO_TIMEOUT_MS,
+      wsPingEveryMs: e.WS_PING_EVERY_MS,
+      wsIdleTimeoutMs: e.WS_IDLE_TIMEOUT_MS,
+      wsTokenGraceSeconds: e.WS_TOKEN_GRACE_SECONDS,
+      wsRevalidateSeconds: e.WS_REVALIDATE_SECONDS,
+      wsMaxPayloadBytes: e.WS_MAX_PAYLOAD_BYTES,
+      wsFramesPerSec: e.WS_FRAMES_PER_SEC,
+      wsSendQueueMax: e.WS_SEND_QUEUE_MAX,
+      wsHandshakePerMinIp: e.WS_HANDSHAKE_PER_MIN_IP,
+      wsUnauthPerIp: e.WS_UNAUTH_PER_IP,
+      wsMaxConnections: e.WS_MAX_CONNECTIONS,
+      partyPollWsSeconds: e.PARTY_POLL_WS_SECONDS,
+      friendMax: e.FRIEND_MAX,
+      friendPendingOutMax: e.FRIEND_PENDING_OUT_MAX,
+      friendPendingInMax: e.FRIEND_PENDING_IN_MAX,
+      friendRequestDays: e.FRIEND_REQUEST_DAYS,
+      friendRerequestHours: e.FRIEND_REREQUEST_HOURS,
+      blockMax: e.BLOCK_MAX,
+      reportPerHour: e.REPORT_PER_HOUR,
+      reportPerDay: e.REPORT_PER_DAY,
+      reportContextHours: e.REPORT_CONTEXT_HOURS,
+      reportLookbackMinutes: e.REPORT_LOOKBACK_MINUTES,
+      reportTargetLines: e.REPORT_TARGET_LINES,
+      reportRetentionDays: e.REPORT_RETENTION_DAYS,
+      partyInviteSeconds: e.PARTY_INVITE_SECONDS,
+      invitePerMin: e.INVITE_PER_MIN,
+      invitePerTargetSeconds: e.INVITE_PER_TARGET_SECONDS,
     },
     steam: {
       mode: e.STEAM_AUTH_MODE,

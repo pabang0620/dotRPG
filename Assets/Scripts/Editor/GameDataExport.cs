@@ -42,6 +42,8 @@ namespace DotRPG.EditorTools
                 ["progression.json"] = Progression(),
                 ["gameconfig.json"] = GameConfigJson(),
                 ["player.json"] = PlayerJson(),
+                ["chat.json"] = ChatJson(), // [SERVER 5] chat limits and report reasons
+                ["auction.json"] = AuctionJson(), // [SERVER 6] auction house rules
             };
 
             using (var sha = SHA256.Create())
@@ -80,7 +82,9 @@ namespace DotRPG.EditorTools
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
             return Doc().Arr("items", rows, (o, r) => o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
-                .Str("bind", AuctionRules.BindOf(r.id) == ItemBind.CharacterBound ? "character" : AuctionRules.BindOf(r.id) == ItemBind.AccountBound ? "account" : "none")
+                .Str("name", DungeonDatabase.ItemName(r.id))
+                // [SERVER 6] the binding floor of the kind; how an item was obtained can bind it further (server)
+                .Str("bind", AuctionRules.BindFloor(r.id) == ItemBind.CharacterBound ? "character" : "none")
                 .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot).End()).End().ToString();
         }
 
@@ -105,7 +109,7 @@ namespace DotRPG.EditorTools
                 .Str("classOnly", e.classOnly.HasValue ? e.classOnly.Value.ToString().ToLowerInvariant() : null)
                 .Num("attack", e.attack).Num("maxHealth", e.maxHealth).Num("block", e.block).Num("speed", e.speed)
                 .Bool("starter", e.starter).Num("dropWeight", e.dropWeight).Num("tier", e.Tier)
-                .Num("sellPrice", ItemPrices.SellPrice(e.id)).Str("bind", AuctionRules.BindOf(e.id).ToString()).End());
+                .Num("sellPrice", ItemPrices.SellPrice(e.id)).End());
             j.Arr("materials", EquipmentDatabase.AllMaterials, (o, m) => o.Obj()
                 .Str("id", m.id).Str("rarity", m.rarity.ToString()).Num("dropChance", m.dropChance).Num("minDrop", m.minDrop).Num("maxDrop", m.maxDrop)
                 .Num("sellPrice", ItemPrices.SellPrice(m.id)).End());
@@ -223,6 +227,30 @@ namespace DotRPG.EditorTools
                     .Num("maxBlock", Equipment.MaxBlock)
                 .End()
                 .End().ToString();
+        }
+
+        static string AuctionJson()
+        {
+            var j = Doc();
+            j.Arr("durations", AuctionRules.Durations, (o, v) => o.Val(v));
+            j.Key("feePct").Obj().Num("equipment", AuctionRules.FeePctGear).Num("stack", AuctionRules.FeePctStack).End();
+            j.Num("depositBps", AuctionRules.DepositBps).Num("depositMin", AuctionRules.DepositMin).Num("depositMax", AuctionRules.DepositMax)
+                .Num("maxListings", AuctionRules.MaxListings).Num("minBidStepBps", AuctionRules.MinBidStepBps)
+                .Num("priceFloorBps", AuctionRules.PriceFloorBps).Num("priceCeilBps", AuctionRules.PriceCeilBps)
+                .Num("maxStack", AuctionRules.MaxStack)
+                .Num("extendWindowMinutes", AuctionRules.ExtendWindowMinutes).Num("extendMinutes", AuctionRules.ExtendMinutes).Num("extendMax", AuctionRules.ExtendMax)
+                .Num("mailDays", AuctionRules.MailDays);
+            j.Arr("timeBands", AuctionRules.TimeBands, (o, v) => o.Val(v));
+            return j.End().ToString();
+        }
+
+        static string ChatJson()
+        {
+            var j = Doc().Num("maxLength", ChatRules.MaxLength).Num("minIntervalSeconds", ChatRules.MinInterval)
+                .Num("repeatLimit", ChatRules.RepeatLimit).Num("muteSeconds", ChatRules.MuteSeconds).Num("reportLines", ChatRules.ReportLines);
+            j.Arr("reportReasons", Enumerable.Range(0, ChatRules.ReportReasons.Length),
+                (o, i) => o.Obj().Str("code", ChatRules.ReportReasonCodes[i]).Str("label", ChatRules.ReportReasons[i]).End());
+            return j.End().ToString();
         }
 
         static string Enums() => Doc()

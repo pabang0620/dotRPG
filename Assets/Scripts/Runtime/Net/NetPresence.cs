@@ -65,6 +65,7 @@ namespace DotRPG
         // Own general / party lines go to the other window.
         void Relay(ChatLine line)
         {
+            if (OnlineServices.Chat.IsOnline) return; // [SERVER 5] the chat server delivers it already
             if (relaying || !line.mine || (line.channel != ChatChannel.General && line.channel != ChatChannel.Party)) return;
             using (var ms = new MemoryStream())
             using (var w = new BinaryWriter(ms, Encoding.UTF8))
@@ -131,6 +132,7 @@ namespace DotRPG
 
         void ReadChat(BinaryReader r)
         {
+            if (OnlineServices.Chat.IsOnline) return;
             var channel = (ChatChannel)r.ReadByte();
             string from = r.ReadString();
             string text = r.ReadString();
