@@ -61,6 +61,16 @@ namespace DotRPG
             return gem != null ? owner.Data.Stats.Skill(owner.Class, slot, gem, prog.Supports(slot)) : default;
         }
 
+        /// <summary>[PARTY NET] Any member started a skill (member, slot).</summary>
+        public static event System.Action<PlayerController, int> Casted;
+
+        /// <summary>[PARTY NET] A puppet replays a cast the host already decided: no cooldown wait.</summary>
+        public void NetResetCooldown(int slot)
+        {
+            if (slot >= 0 && slot < readyAt.Length) readyAt[slot] = 0f;
+            castEnd = 0f;
+        }
+
         public void TryCast(int slot)
         {
             if (owner.IsDashing) return;
@@ -87,6 +97,7 @@ namespace DotRPG
             readyAt[slot] = Time.time + n.cooldown;
             castEnd = Time.time + (gem.IsUltimate ? 0.6f : 0.25f);
             StartCoroutine(Cast(gem, n));
+            Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 
         IEnumerator Cast(SkillGem gem, SkillNumbers n)

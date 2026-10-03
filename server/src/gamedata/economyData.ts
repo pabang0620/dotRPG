@@ -51,6 +51,21 @@ const playerSchema = z.looseObject({
   schema: schemaVer,
   attackDamage: z.number().positive(),
   attackCooldown: z.number().positive(),
+  maxHealth: z.number().int().positive(),
+  mageBoltDamage: z.number().positive(),
+  // 4단계: 전투력(CharacterStats.Power) 중 서버가 알 수 있는 항(패시브 제외)
+  power: z.looseObject({
+    attackWeight: z.number(),
+    hpWeight: z.number(),
+    mpWeight: z.number(),
+    blockWeight: z.number(),
+    speedWeight: z.number(),
+    levelWeight: z.number(),
+    baseMana: z.number(),
+    hpPerLevel: z.number(),
+    mpPerLevel: z.number(),
+    maxBlock: z.number(),
+  }),
 });
 
 const gameconfigSchema = z.looseObject({
@@ -187,6 +202,7 @@ const dungeonsSchema = z.looseObject({
   difficulties: z
     .array(
       z.looseObject({
+        recommendedLevel: nonNegInt,
         hpMul: z.number().positive(),
         rewardMul: z.number().positive(),
         monsterLevel: nonNegInt,
@@ -213,10 +229,30 @@ const dungeonsSchema = z.looseObject({
     xpBonus: z.array(int).min(1),
   }),
   minClearSeconds: z.array(z.number().min(0)).length(4),
+  raidMinClearSeconds: z.record(z.string(), z.number().min(0)).default({}),
+  keyItem: z.string().min(1),
+  mercenary: z.looseObject({ damageScale: z.number().positive(), maxCompanions: z.number().int().min(0) }),
   dungeons: z.array(
     z.looseObject({
       id: z.string().min(1),
       isRaid: z.boolean(),
+      raidTier: z.string().default('None'),
+      unlockQuest: z.string().default(''),
+      keyCost: nonNegInt.default(0),
+      keyMin: nonNegInt.default(0),
+      keyMax: nonNegInt.default(0),
+      maxParty: z.number().int().min(1).max(4).default(4),
+      raidNumbers: z
+        .looseObject({
+          recommendedLevel: nonNegInt,
+          hpMul: z.number().positive(),
+          rewardMul: z.number().positive(),
+          monsterLevel: nonNegInt,
+          revives: nonNegInt,
+          minGearRarity: z.enum(['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary']),
+          ticketWeight: nonNegInt,
+        })
+        .optional(),
       clearXp: nonNegInt,
       xpMul: z.number().positive(),
       bossRoom: nonNegInt,
@@ -254,7 +290,13 @@ export interface EconomyData {
   monsters: Map<string, MonsterDef>; // fieldSkeleton 포함
   monsterRules: Pick<Monsters, 'fieldGoldMin' | 'fieldGoldMaxExclusive' | 'equipmentDropChance' | 'hpPerLevel' | 'xpPerLevel' | 'loot'>;
   progression: { maxLevel: number; xpToNext: number[] };
-  player: { attackDamage: number; attackCooldown: number };
+  player: {
+    attackDamage: number;
+    attackCooldown: number;
+    maxHealth: number;
+    mageBoltDamage: number;
+    power: z.infer<typeof playerSchema>['power'];
+  };
   config: z.infer<typeof gameconfigSchema>;
   shop: {
     stock: Map<string, number>;
@@ -286,6 +328,9 @@ export interface EconomyData {
     cards: { count: number; gearRareWeight: number; gearDropTries: number };
     ranking: z.infer<typeof dungeonsSchema>['ranking'];
     minClearSeconds: number[];
+    raidMinClearSeconds: Record<string, number>;
+    keyItem: string;
+    mercenary: { damageScale: number; maxCompanions: number };
   };
 }
 
@@ -435,7 +480,13 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       loot: mon.loot,
     },
     progression: { maxLevel: prog.maxLevel, xpToNext: prog.xpToNext },
-    player: { attackDamage: player.attackDamage, attackCooldown: player.attackCooldown },
+    player: {
+      attackDamage: player.attackDamage,
+      attackCooldown: player.attackCooldown,
+      maxHealth: player.maxHealth,
+      mageBoltDamage: player.mageBoltDamage,
+      power: player.power,
+    },
     config,
     shop: {
       stock: new Map(shop.stock.map((s) => [s.id, s.buyPrice] as const)),
@@ -467,6 +518,9 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       cards: dng.cards,
       ranking: dng.ranking,
       minClearSeconds: dng.minClearSeconds,
+      raidMinClearSeconds: dng.raidMinClearSeconds,
+      keyItem: dng.keyItem,
+      mercenary: { damageScale: dng.mercenary.damageScale, maxCompanions: dng.mercenary.maxCompanions },
     },
   };
 }

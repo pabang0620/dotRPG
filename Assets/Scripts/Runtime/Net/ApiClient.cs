@@ -99,6 +99,7 @@ namespace DotRPG
         public void Get(string path, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("GET", path, null, auth, done, true));
         public void Post(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("POST", path, body, auth, done, true));
         public void Put(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("PUT", path, body, auth, done, true));
+        public void Patch(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("PATCH", path, body, auth, done, true));
         public void Delete(string path, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("DELETE", path, null, auth, done, true));
 
         IEnumerator Send(string method, string path, object body, bool auth, Action<ApiResult> done, bool mayRefresh)

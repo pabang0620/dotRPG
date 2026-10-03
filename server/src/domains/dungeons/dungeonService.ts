@@ -1,4 +1,4 @@
-// 솔로 요일 던전: 입장(일일 횟수), 목록, 결과 검증, 카드 선택. 레이드와 파티는 4단계.
+// 솔로(AI 동반) 요일 던전·레이드: 입장, 목록, 결과 검증, 카드 선택. 파티 판은 partyruns 도메인이 만든다.
 import { getConfig } from '../../config/env';
 import { getPool, isUniqueViolation } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
@@ -10,7 +10,12 @@ import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as dungeonRepo from './dungeonRepository';
 import { isOpenToday } from './dungeonRules';
+import { checkEntry, lockAtEntry } from './entryRules';
+import { AnomalyError } from '../economy/economyService';
+import { attackCap } from '../kills/killRules';
+import * as econRepo from '../economy/economyRepository';
 import { settleResult } from './dungeonResult';
+import { reportPartyResult } from '../partyruns/partySettle';
 import type { EnterBody, PickBody, ResultBody } from './dungeonValidation';
 
 const ONE_PLAYING = 'dungeon_runs_one_playing';
@@ -36,6 +41,7 @@ export async function listDungeons(accountId: number, characterUuid: string) {
     active_run: active
       ? {
           id: active.uuid,
+          party_run_id: active.party_run_id === null ? null : await dungeonRepo.partyRunUuid(getPool(), active.party_run_id),
           dungeon_id: active.dungeon_id,
           difficulty: active.difficulty,
           started_at: active.started_at.toISOString(),
@@ -72,23 +78,28 @@ export function enter(accountId: number, characterUuid: string, body: EnterBody)
 
 async function processEnter(ctx: EconCtx, body: EnterBody) {
   const eco = getGameData().economy;
-  const stale = getConfig().policy.runStaleSeconds;
-  const d = eco.dungeons.byId.get(body.dungeon_id);
-  if (!d) throw new AppError(422, '알 수 없는 던전입니다.', 'DUNGEON_UNKNOWN');
-  if (d.isRaid) throw new AppError(422, '레이드는 아직 열리지 않았습니다.', 'RAID_NOT_AVAILABLE');
-  if (!isOpenToday(eco, d, ctx.now)) throw new AppError(422, '오늘은 열리지 않는 던전입니다.', 'DUNGEON_CLOSED_TODAY');
-
-  if (body.difficulty > 0) {
-    const clears = await dungeonRepo.clearSummary(ctx.client, ctx.char.id);
-    if (!clears.some((r) => r.dungeon_id === d.id && r.difficulty === body.difficulty - 1)) {
-      throw new AppError(422, '아직 입장할 수 없는 난이도입니다.', 'DIFFICULTY_LOCKED');
-    }
+  const pol = getConfig().policy;
+  const stale = pol.runStaleSeconds;
+  if (await dungeonRepo.inPartyRun(ctx.client, ctx.char.id)) {
+    throw new AppError(409, '파티 판에 참여 중입니다.', 'IN_PARTY_RUN');
   }
-
-  const resetDay = new Date(resetBoundaries(ctx.now).dailyStartAt);
-  const used = await dungeonRepo.countEntries(ctx.client, ctx.char.id, resetDay);
-  const limit = eco.dungeons.dailyEntries;
-  if (used >= limit) throw new AppError(422, '오늘 입장 횟수를 모두 사용했습니다.', 'NO_ENTRIES_LEFT');
+  let info;
+  try {
+    info = await checkEntry(ctx.client, ctx.char, body.dungeon_id, body.difficulty, ctx.now);
+  } catch (err) {
+    // 클라이언트 UI가 막은 레이드 조건을 우회해 들어오려 한 흔적
+    if (err instanceof AppError && (err.code === 'RAID_LOCKED' || err.code === 'KEYS_MISSING')) {
+      throw new AnomalyError(err.status, err.message, err.code, {
+        kind: 'raid_enter',
+        severity: 2,
+        detail: { dungeon_id: body.dungeon_id, code: err.code },
+      }, err.extra);
+    }
+    throw err;
+  }
+  const d = info.dungeon;
+  const maxAi = Math.min(eco.dungeons.mercenary.maxCompanions, d.maxParty - 1);
+  if (body.ai_count > maxAi) throw new AppError(422, '동행 AI 수가 너무 많습니다.', 'PARTY_TOO_BIG');
 
   // 진행 중인 판: 오래 방치된 것만 닫는다(입장 횟수는 이미 썼다)
   const playing = await dungeonRepo.findPlayingRun(ctx.client, ctx.char.id);
@@ -99,9 +110,28 @@ async function processEnter(ctx: EconCtx, body: EnterBody) {
     await dungeonRepo.abandonRun(ctx.client, playing.id, ctx.now);
   }
 
+  const lock = await lockAtEntry(ctx.client, ctx.char.id, d, 1, ctx.now);
+  // AI가 없으면 3단계 방식(본인 화력만), 있으면 본인 상한 x (1 + AI 수 x 용병 딜 배율)
+  let powerCap: number | null = null;
+  if (body.ai_count > 0) {
+    const cap = attackCap(eco, pol, ctx.char.level, await econRepo.listWornKeys(ctx.client, ctx.char.id));
+    powerCap = cap * (1 + body.ai_count * eco.dungeons.mercenary.damageScale);
+  }
   let run;
   try {
-    run = await dungeonRepo.insertRun(ctx.client, ctx.char.id, d.id, body.difficulty, resetDay, ctx.now);
+    run = await dungeonRepo.insertRun(ctx.client, {
+      characterId: ctx.char.id,
+      dungeonId: d.id,
+      difficulty: body.difficulty,
+      resetDay: info.resetDay,
+      startedAt: ctx.now,
+      humans: 1,
+      aiCount: body.ai_count,
+      countsEntry: info.countsEntry,
+      rewardLocked: lock.locked,
+      lockReason: lock.reason,
+      powerCap,
+    });
   } catch (err) {
     if (isUniqueViolation(err, ONE_PLAYING)) throw new AppError(409, '진행 중인 던전이 있습니다.', 'RUN_ACTIVE');
     throw err;
@@ -114,9 +144,13 @@ async function processEnter(ctx: EconCtx, body: EnterBody) {
         dungeon_id: run.dungeon_id,
         difficulty: run.difficulty,
         party_size: run.party_size,
+        humans: run.humans,
+        ai_count: run.ai_count,
+        reward_locked: run.reward_locked,
+        lock_reason: run.lock_reason,
         started_at: run.started_at.toISOString(),
       },
-      entries_left: Math.max(0, limit - used - 1),
+      entries_left: Math.max(0, info.limit - info.used - (info.countsEntry ? 1 : 0)),
     },
   };
 }
@@ -136,7 +170,12 @@ export function reportResult(
     endpoint: 'POST /characters/:uuid/dungeon-runs/:run_id/result',
     requestId,
     payload: { run_id: runUuid, ...payload },
-    handler: (ctx) => settleResult(ctx, runUuid, body),
+    handler: async (ctx) => {
+      // 파티 판은 접수 후 대조(D2), 솔로(AI 동반, 레이드)는 즉시 판정
+      const run = await dungeonRepo.findRunByUuid(ctx.client, ctx.char.id, runUuid);
+      if (run && run.state === 'playing' && run.party_run_id !== null) return reportPartyResult(ctx, run, body);
+      return settleResult(ctx, runUuid, body);
+    },
   });
 }
 
@@ -173,4 +212,38 @@ export function pickCard(
       return { status: 200, data: { card, cards: run.cards, delta: ctx.delta() } };
     },
   });
+}
+
+// ---------- D4 GET /dungeon-runs/{run_id} ----------
+
+export async function getRun(accountId: number, characterUuid: string, runUuid: string) {
+  const c = await charRepo.findOwnedAlive(getPool(), accountId, characterUuid);
+  if (!c) throw new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
+  const run = await dungeonRepo.findRunByUuid(getPool(), c.id, runUuid);
+  if (!run) throw new AppError(404, '던전 기록을 찾을 수 없습니다.', 'RUN_NOT_FOUND');
+  return {
+    run: {
+      id: run.uuid,
+      dungeon_id: run.dungeon_id,
+      difficulty: run.difficulty,
+      state: run.state,
+      party_run_id: run.party_run_id === null ? null : await dungeonRepo.partyRunUuid(getPool(), run.party_run_id),
+      humans: run.humans,
+      ai_count: run.ai_count,
+      party_size: run.party_size,
+      started_at: run.started_at.toISOString(),
+      ended_at: run.ended_at ? run.ended_at.toISOString() : null,
+      reward_locked: run.reward_locked,
+      lock_reason: run.lock_reason,
+      ...(run.state === 'cleared'
+        ? {
+            rank: run.rank,
+            score: run.score,
+            granted_xp: run.xp_granted ?? 0,
+            card_count: run.cards ? run.cards.length : 0,
+            card_picked: run.card_picked,
+          }
+        : {}),
+    },
+  };
 }

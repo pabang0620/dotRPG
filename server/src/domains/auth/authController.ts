@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { getAccount } from '../../middleware/authMiddleware';
 import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
-import type { CredentialsBody, RefreshBody } from './authValidation';
+import type { CredentialsBody, RefreshBody, SteamBody } from './authValidation';
 import * as service from './authService';
 
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,6 +45,25 @@ export async function logout(_req: Request, res: Response, next: NextFunction): 
 export async function me(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     successResponse(res, await service.getMe(getAccount(res.locals).id));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function steamLogin(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body } = getValidated<SteamBody>(res);
+    const data = await service.steamLogin(body.ticket);
+    successResponse(res, data, '', data.created ? 201 : 200);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function steamLink(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body } = getValidated<SteamBody>(res);
+    successResponse(res, await service.steamLink(getAccount(res.locals).id, body.ticket));
   } catch (err) {
     next(err);
   }

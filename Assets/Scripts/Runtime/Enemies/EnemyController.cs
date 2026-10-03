@@ -67,7 +67,7 @@ namespace DotRPG
         /// <summary>Stops the enemy for a moment without the ice look (war cry, thunder).</summary>
         public void Stun(float seconds)
         {
-            if (state == State.Dead || seconds <= 0f) return;
+            if (state == State.Dead || seconds <= 0f || Puppet) return;
             seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3
             stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
             if (state == State.Windup) EnterState(State.Recover, seconds);
@@ -77,7 +77,7 @@ namespace DotRPG
         /// <summary>Stops the enemy completely (Frost Nova). The body turns icy blue.</summary>
         public void Freeze(float seconds)
         {
-            if (state == State.Dead || seconds <= 0f) return;
+            if (state == State.Dead || seconds <= 0f || Puppet) return;
             seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3
             frozenUntil = Mathf.Max(frozenUntil, Time.time + seconds);
             if (state == State.Windup) EnterState(State.Recover, seconds);
@@ -155,6 +155,7 @@ namespace DotRPG
         void Update()
         {
             if (state == State.Dead) return;
+            if (Puppet) { PuppetUpdate(); return; } // [PARTY NET] the host runs this monster
             if (IsFrozen)
             {
                 desiredVelocity = Vector2.zero;
@@ -245,6 +246,7 @@ namespace DotRPG
                 body.SetVelocity(Vector2.zero);
                 return;
             }
+            if (Puppet) { PuppetFixedStep(); return; }
             if (state == State.Hurt && Time.time < stateUntil - stats.hurtStunTime * 0.5f)
             {
                 body.SetVelocity(knockbackVelocity);
@@ -347,6 +349,7 @@ namespace DotRPG
         public bool TakeDamage(DamageInfo info)
         {
             if (state == State.Dead || info.team == Team.Enemy) return false;
+            if (Puppet) return false; // [PARTY NET] damage is the host's
             if (!MonsterBeforeDamage(ref info)) return false; // [MONSTER] shield guard, groggy +30%, totem rules
             if (!health.TryDamage(info)) return false;
 
@@ -394,7 +397,7 @@ namespace DotRPG
                 // [SERVER] The server grants XP and rolls every drop; summons and no-loot monsters are not reported.
                 if (Summoner != null || (Def != null && Def.noLoot)) return;
                 var root = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
-                int hits = Behaviour is GoldRunnerBehaviour runner ? runner.GoldSpilled : 0;
+                int hits = GoldHitsForReport;
                 OnlineEconomy.ReportKill(Def != null ? Def.id : stats.enemyId, hits, Position + new Vector2(0f, 0.2f), root);
                 return;
             }

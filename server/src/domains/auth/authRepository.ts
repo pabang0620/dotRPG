@@ -168,3 +168,24 @@ export async function findMe(accountId: number): Promise<MeRow | null> {
   const row = r.rows[0];
   return row ? { ...row, character_count: Number(row.character_count) } : null;
 }
+
+// ---------- Steam ----------
+
+export async function findAccountBySteam(steamId: string): Promise<AccountRow | null> {
+  const r = await query<RawAccount>(
+    `SELECT a.id, a.uuid, a.created_at, a.last_login_at, a.banned_until, a.deleted_at
+       FROM auth_identities i JOIN accounts a ON a.id = i.account_id
+      WHERE i.provider = 'steam' AND i.subject = $1`,
+    [steamId],
+  );
+  return r.rows[0] ? toAccount(r.rows[0]) : null;
+}
+
+export async function insertSteamIdentity(client: Queryable, accountId: number, steamId: string): Promise<void> {
+  await client.query("INSERT INTO auth_identities (account_id, provider, subject) VALUES ($1, 'steam', $2)", [accountId, steamId]);
+}
+
+export async function hasSteam(accountId: number): Promise<boolean> {
+  const r = await query("SELECT 1 FROM auth_identities WHERE account_id = $1 AND provider = 'steam'", [accountId]);
+  return r.rows.length > 0;
+}

@@ -141,7 +141,7 @@ namespace DotRPG
             ui.Shop = ShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
-            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
+            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);

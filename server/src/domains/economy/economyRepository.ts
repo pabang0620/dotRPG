@@ -37,16 +37,27 @@ export async function lockCharacter(
     [uuid, accountId],
   );
   const row = r.rows[0];
-  if (!row) return null;
-  return {
-    id: Number(row.id),
-    uuid: row.uuid,
-    accountId: Number(row.account_id),
-    class: row.class,
-    level: row.level,
-    xp: row.xp,
-    gold: Number(row.gold),
-  };
+  return row ? toLocked(row) : null;
+}
+
+const toLocked = (row: RawLocked): LockedChar => ({
+  id: Number(row.id),
+  uuid: row.uuid,
+  accountId: Number(row.account_id),
+  class: row.class,
+  level: row.level,
+  xp: row.xp,
+  gold: Number(row.gold),
+});
+
+/** 4단계: 여러 캐릭터를 id 오름차순으로 한 번에 잠근다(교착 방지의 유일한 순서). 삭제된 캐릭터는 빠진다 */
+export async function lockCharacters(client: PoolClient, ids: number[]): Promise<LockedChar[]> {
+  const r = await client.query<RawLocked>(
+    `SELECT id, uuid, account_id, class, level, xp, gold FROM characters
+      WHERE id = ANY($1::bigint[]) AND deleted_at IS NULL ORDER BY id FOR UPDATE`,
+    [ids],
+  );
+  return r.rows.map(toLocked);
 }
 
 export async function stackCount(
@@ -234,7 +245,10 @@ export type AnomalyKind =
   | 'quest_denied'
   | 'chest_unknown'
   | 'dungeon_enter'
-  | 'dungeon_result';
+  | 'dungeon_result'
+  | 'party_result'
+  | 'party_host'
+  | 'raid_enter';
 
 /** 롤백되는 트랜잭션 밖에서도 남기려고 풀에서 직접 쓴다(호출 쪽이 선택) */
 export async function insertAnomaly(

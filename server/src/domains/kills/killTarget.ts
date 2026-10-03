@@ -18,6 +18,14 @@ export interface KillTarget {
   /** 화력 창 길이(초) */
   powerWindowSeconds: number;
   run: { id: number; roomIndex: number } | null;
+  /** 레이드 던전 판인가(레이드 몬스터는 이 맥락에서만 받는다) */
+  isRaid: boolean;
+  /** 연습판(보상 잠금): 처치는 받아들이되 경험치·드롭을 주지 않는다 */
+  rewardLocked: boolean;
+  /** 판의 화력 상한 스냅샷 x 여유. null이면 본인 상한(3단계) */
+  powerCap: number | null;
+  /** 파티 판의 방장이 아닌 멤버: 거절은 기록하되 일시 차단 카운트(severity 2 이상)는 쌓지 않는다 */
+  nonHost: boolean;
   /** 받아들인 뒤(kill_log 기록 직전) 던전 진행을 갱신한다 */
   commit: (client: PoolClient) => Promise<void>;
 }
@@ -57,6 +65,10 @@ export async function resolveFieldTarget(
       burst,
       powerWindowSeconds: FIELD_POWER_WINDOW_SECONDS,
       run: null,
+      isRaid: false,
+      rewardLocked: false,
+      powerCap: null,
+      nonHost: false,
       commit: async () => {},
     };
   }
@@ -75,6 +87,10 @@ export async function resolveFieldTarget(
       burst,
       powerWindowSeconds: FIELD_POWER_WINDOW_SECONDS,
       run: null,
+      isRaid: false,
+      rewardLocked: false,
+      powerCap: null,
+      nonHost: false,
       commit: async () => {},
     };
   }

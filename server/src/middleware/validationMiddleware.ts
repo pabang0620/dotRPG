@@ -11,11 +11,13 @@ export interface FieldError {
 export interface Validated {
   body?: unknown;
   params?: unknown;
+  query?: unknown;
 }
 
 interface Schemas {
   body?: z.ZodType;
   params?: z.ZodType;
+  query?: z.ZodType;
 }
 
 /** zod 이슈를 { path, message, code? } 로 바꾼다. 허용되지 않는 키는 키마다 한 줄. */
@@ -57,6 +59,11 @@ export const validate =
       if (r.success) validated.params = r.data;
       else fields.push(...toFieldErrors(r.error));
     }
+    if (schemas.query) {
+      const r = schemas.query.safeParse(req.query);
+      if (r.success) validated.query = r.data;
+      else fields.push(...toFieldErrors(r.error));
+    }
     if (fields.length > 0) {
       next(validationError(fields));
       return;
@@ -65,7 +72,7 @@ export const validate =
     next();
   };
 
-export function getValidated<B = unknown, P = unknown>(res: Response): { body: B; params: P } {
+export function getValidated<B = unknown, P = unknown, Q = unknown>(res: Response): { body: B; params: P; query: Q } {
   const v = res.locals.validated as Validated | undefined;
-  return { body: v?.body as B, params: v?.params as P };
+  return { body: v?.body as B, params: v?.params as P, query: v?.query as Q };
 }

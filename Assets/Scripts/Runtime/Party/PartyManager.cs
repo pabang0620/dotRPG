@@ -114,6 +114,60 @@ namespace DotRPG
 
         bool LocalInWorld => Local != null && Local.gameObject.activeInHierarchy;
 
+        // =============================== [PARTY NET] Network members ===============================
+
+        readonly HashSet<PlayerController> netMembers = new HashSet<PlayerController>();
+        bool rosterHidden;
+
+        /// <summary>A member that came from the network (remote human on the host, puppet on a member PC).</summary>
+        public bool IsNetMember(PlayerController m) => m != null && netMembers.Contains(m);
+
+        /// <summary>
+        /// Adds a member built from network data. The host drives a remote human with a
+        /// <see cref="NetworkInput"/>; a member PC draws everyone else as puppets (<paramref name="puppet"/>).
+        /// </summary>
+        public PlayerController AddNetMember(CharacterData data, IActorInput input, bool puppet, Vector2 at, Facing facing)
+        {
+            var member = PlayerController.CreateCompanion(Game.Config, root, data, input);
+            foreach (var other in members)
+                if (other != null && other.BodyCollider != null) Physics2D.IgnoreCollision(member.BodyCollider, other.BodyCollider, true);
+            members.Add(member);
+            netMembers.Add(member);
+            member.Spawn(at, facing, int.MaxValue, 0);
+            member.SetNetDriven(true, puppet);
+            Changed?.Invoke();
+            return member;
+        }
+
+        public void RemoveNetMember(PlayerController member)
+        {
+            if (member == null || !netMembers.Remove(member)) return;
+            Despawn(member);
+            Changed?.Invoke();
+        }
+
+        /// <summary>
+        /// While a party run is on, this PC's own hired mercenaries stay out (the host's AI fills the empty
+        /// seats). Off again brings them back from the roster.
+        /// </summary>
+        public void SetRosterHidden(bool hidden)
+        {
+            if (rosterHidden == hidden) return;
+            rosterHidden = hidden;
+            if (hidden)
+            {
+                for (int i = members.Count - 1; i >= 1; i--)
+                    if (!netMembers.Contains(members[i])) Despawn(members[i]);
+            }
+            else
+            {
+                foreach (var m in new List<PlayerController>(netMembers)) Despawn(m);
+                netMembers.Clear();
+                if (LocalInWorld) OnLocalSpawned(false);
+            }
+            Changed?.Invoke();
+        }
+
         PlayerController Spawn(MercenaryDef def, int slot)
         {
             var data = MercenaryDatabase.CreateData(def, Game.Session.Progression.Level);
@@ -147,10 +201,12 @@ namespace DotRPG
             {
                 var m = members[i];
                 if (m == null) { members.RemoveAt(i); continue; }
+                if (netMembers.Contains(m)) continue; // [PARTY NET] placed by the run, not by the roster
                 if (!roster.Contains(m.Data.MercenaryId)) Despawn(m);
             }
-            foreach (var id in roster)
-                if (Find(id) == null && MercenaryDatabase.Get(id) != null) Spawn(MercenaryDatabase.Get(id), members.Count - 1);
+            if (!rosterHidden)
+                foreach (var id in roster)
+                    if (Find(id) == null && MercenaryDatabase.Get(id) != null) Spawn(MercenaryDatabase.Get(id), members.Count - 1);
             SyncCompanionLevels();
             // Everyone follows the local player to where it appeared.
             for (int i = 1; i < members.Count; i++)
@@ -215,6 +271,7 @@ namespace DotRPG
             for (int i = 1; i < members.Count; i++)
             {
                 var m = members[i];
+                if (netMembers.Contains(m)) continue; // [PARTY NET] their level is their own (or the host's)
                 var def = m != null ? MercenaryDatabase.Get(m.Data.MercenaryId) : null;
                 if (def != null && m.Data.Level != level) MercenaryDatabase.ApplyLevel(m.Data, def, level);
             }

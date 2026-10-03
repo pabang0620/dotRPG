@@ -14,7 +14,7 @@ namespace DotRPG
     public sealed class Equipment
     {
         public const int SlotCount = 6;
-        const int MaxBlock = 60;
+        public const int MaxBlock = 60;
 
         readonly string[] slots = new string[SlotCount];
         readonly Inventory bag;

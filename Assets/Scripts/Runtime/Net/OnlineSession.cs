@@ -148,6 +148,7 @@ namespace DotRPG
         /// <summary>Back to the title: the next save goes to a file again.</summary>
         public void LeaveCharacter()
         {
+            PartyClient.DetachOnline(); // [PARTY]
             ActiveCharacter = null; // a save still waiting keeps its own character id and is sent
         }
 

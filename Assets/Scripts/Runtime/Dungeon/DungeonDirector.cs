@@ -52,6 +52,15 @@ namespace DotRPG
         public float ReviveRemaining => ReviveOpen ? Mathf.Max(0f, reviveUntil - reviveClock) : 0f;
         public DungeonDoor Door => door;
 
+        // [PARTY NET] What the sync layer needs to know.
+        public DungeonDef CurrentDungeon => run?.Dungeon;
+        public DungeonDifficulty CurrentDifficulty => run != null ? run.Difficulty : DungeonDifficulty.Normal;
+        public int CurrentRoom => run != null ? run.RoomIndex : 0;
+        public bool RoomIsReady => roomReady && !busy;
+        /// <summary>A member PC in a party run: the host decides rooms, clears and the end.</summary>
+        public bool Follower => run != null && PartyNet.IsMember;
+        static bool NetHost => PartyNet.IsHost;
+
         /// <summary>Raised after every room load (HUD refresh), on clear banner and when the run ends.</summary>
         public event Action RoomChanged;
         public event Action ClearBanner;
@@ -132,39 +141,58 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// [SERVER] Online (phase 3): solo weekday dungeons only. The server spends the entry and opens the run;
-        /// the run starts when it answers (its refusal is shown as a toast). True = request sent.
+        /// [SERVER] Online solo run (phase 3, phase 4 adds raids and hired AI companions). The server spends
+        /// the entry and opens the run; the run starts when it answers (its refusal is shown as a toast).
+        /// True = request sent.
         /// </summary>
         bool EnterOnline(DungeonDef dungeon, DungeonDifficulty difficulty, bool retry)
         {
-            if (dungeon.isRaid)
-            {
-                GameEvents.RaiseToast("온라인 레이드는 파티 기능과 함께 열린다.");
-                Game.Audio.PlaySfx("cancel");
-                return false;
-            }
-            if (Game.Session.PartyRoster.Count > 0)
-            {
-                GameEvents.RaiseToast("온라인 던전은 혼자 입장한다. 용병을 내보낸 뒤 입장하자.");
-                Game.Audio.PlaySfx("cancel");
-                return false;
-            }
             if (enteringOnline) return false;
             enteringOnline = true;
-            OnlineEconomy.EnterDungeon(dungeon.id, (int)difficulty, ok =>
+            int maxAi = Mathf.Max(0, Mathf.Min(PartyManager.MaxCompanions, (dungeon.maxParty > 0 ? dungeon.maxParty : PartyManager.MaxMembers) - 1));
+            int ai = Mathf.Min(Game.Session.PartyRoster.Count, maxAi);
+            OnlineEconomy.EnterDungeon(dungeon.id, (int)difficulty, ai, serverRun =>
             {
                 enteringOnline = false;
-                if (!ok) { Game.Audio.PlaySfx("cancel"); return; }
+                if (serverRun == null) { Game.Audio.PlaySfx("cancel"); return; }
                 var now = ResetClock.Now;
-                Progress.UseEntry(now); // the local counter follows the server's
+                if (!dungeon.isRaid) Progress.UseEntry(now); // the local counter follows the server's
                 if (retry) EndRunState();
                 else SaveBeforeEntering();
                 StartRun(dungeon, difficulty, now);
+                // The server decides whether this raid clear pays (once per period, enough people).
+                run.RewardsLocked = serverRun.TryGetValue("reward_locked", out var v) && v is bool b && b;
+                if (run.RewardsLocked && dungeon.isRaid) GameEvents.RaiseToast(RaidLockText(MiniJson.Str(serverRun, "lock_reason")));
             });
             return true;
         }
 
+        static string RaidLockText(string reason)
+        {
+            switch (reason)
+            {
+                case "TOO_FEW_HUMANS": return "레이드 보상은 2명 이상의 파티만 받는다. (연습 입장)";
+                case "ALREADY_CLAIMED": return "이번 기간 레이드 보상을 이미 받았다. (연습 입장)";
+                case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라다. (연습 입장)";
+                default: return "레이드 보상이 없는 연습 입장이다.";
+            }
+        }
+
         bool enteringOnline;
+
+        /// <summary>
+        /// [PARTY] The party run began on the server (begin created every member's dungeon_runs row and spent
+        /// the entries): the host PC starts the fight, the members follow its RunStart.
+        /// </summary>
+        public void StartPartyRun(DungeonDef dungeon, DungeonDifficulty difficulty)
+        {
+            if (run != null && !run.IsOver) return;
+            if (run != null) EndRunState();
+            var now = ResetClock.Now;
+            if (!dungeon.isRaid) Progress.UseEntry(now);
+            SaveBeforeEntering();
+            StartRun(dungeon, difficulty, now);
+        }
 
         /// <summary>Same dungeon and difficulty again from the result screen (spends an entry).</summary>
         public bool Retry()
@@ -187,7 +215,7 @@ namespace DotRPG
         }
 
         /// <summary>True when the result screen may offer 다시 도전.</summary>
-        public bool CanRetry => run != null && run.IsOver && (run.Dungeon.isRaid || Progress.EntriesLeft(ResetClock.Now) > 0);
+        public bool CanRetry => run != null && run.IsOver && !PartyNet.Active && (run.Dungeon.isRaid || Progress.EntriesLeft(ResetClock.Now) > 0);
 
         void SaveBeforeEntering()
         {
@@ -200,8 +228,9 @@ namespace DotRPG
             if (ok) GameEvents.RaiseToast("자동 저장됨");
         }
 
-        void StartRun(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now)
+        void StartRun(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now, int startRoom = 0)
         {
+            if (NetHost) PartyNet.Current.HostRunStarted(dungeon.id, difficulty); // [PARTY NET] members follow
             StoryCompanions.Refresh(true); // [STORY] 카엘 fights in dungeons and raids too
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
@@ -220,10 +249,56 @@ namespace DotRPG
             StartCoroutine(Transition(() =>
             {
                 Game.Session.MapId = MapRegistry.Village; // where the run returns to
-                LoadRoom(0, true);
+                LoadRoom(Mathf.Clamp(startRoom, 0, run.RoomCount - 1), true);
                 GameEvents.RaiseToast($"— {dungeon.name} · {run.Numbers.name} —");
                 if (run.RewardsLocked) GameEvents.RaiseToast(dungeon.raidTier == RaidTier.Mid ? "오늘 레이드 보상을 이미 받았다. (연습 입장)" : "이번 주 레이드 보상을 이미 받았다. (연습 입장)");
             }));
+        }
+
+        // =============================== [PARTY NET] Member PC follows the host ===============================
+
+        int followLoading = -1;
+
+        /// <summary>The host started (or is already in) a run: same dungeon here, at the host's room.</summary>
+        public void EnterFollower(DungeonDef dungeon, DungeonDifficulty difficulty, int room)
+        {
+            if (run != null && !run.IsOver && run.Dungeon == dungeon) return;
+            if (run != null) EndRunState();
+            if (Game.State.Current == GameState.Inventory) Game.Flow.CloseInventory();
+            followLoading = room;
+            StartRun(dungeon, difficulty, ResetClock.Now, room);
+        }
+
+        /// <summary>The host moved to room <paramref name="index"/>.</summary>
+        public void FollowRoom(int index)
+        {
+            if (run == null || run.IsOver) return;
+            if (index == followLoading || (index == run.RoomIndex && (roomReady || busy))) return;
+            followLoading = index;
+            StartCoroutine(Transition(() => LoadRoom(index, false)));
+        }
+
+        public void FollowRoomCleared()
+        {
+            if (run == null || run.State != DungeonRunState.Playing || roomCleared) return;
+            roomCleared = true;
+            run.ClearedRooms.Add(run.RoomIndex);
+            if (door != null) door.Open();
+            Game.Audio.PlaySfx("build_complete");
+            GameEvents.RaiseToast("방을 정리했다! 방장이 문으로 이동하면 함께 넘어간다.");
+            RoomChanged?.Invoke();
+        }
+
+        /// <summary>The host ended the run; this PC reports its own result with the host's counts.</summary>
+        public void FollowEnd(bool cleared, string reason, float elapsedSeconds, MemberRunStats mine)
+        {
+            if (run == null || run.IsOver || run.State == DungeonRunState.Clearing) return;
+            run.Elapsed = elapsedSeconds;
+            run.HitsTaken = mine.hitsTaken;
+            run.MaxCombo = mine.maxCombo;
+            run.RevivesUsed = mine.revives;
+            if (cleared) StartCoroutine(ClearRoutine());
+            else Fail(string.IsNullOrEmpty(reason) ? "파티가 던전 공략에 실패했다." : reason);
         }
 
         // =============================== Rooms ===============================
@@ -265,7 +340,7 @@ namespace DotRPG
                 }
             party?.Regroup(RoomRegroupSeconds);
 
-            SpawnMonsters(room);
+            if (!Follower) SpawnMonsters(room); // [PARTY NET] member PCs get the host's monsters as puppets
             if (!room.isBoss) door = DungeonDoor.Create(Game.World.DungeonDoorCells, Game.World.ObjectsRoot);
             if (door != null) door.Entered += OnDoorEntered;
 
@@ -274,6 +349,7 @@ namespace DotRPG
             Game.Audio.PlayMusic(Game.World.Map.music);
             if (room.isBoss) GameEvents.RaiseToast($"보스 방 — {run.Dungeon.bossName}");
             roomReady = true;
+            if (NetHost) PartyNet.Current.HostRoomLoaded(index);
             RoomChanged?.Invoke();
         }
 
@@ -311,6 +387,7 @@ namespace DotRPG
             if (run == null || run.State != DungeonRunState.Playing) return;
             var m = info.AttackerMember;
             if (m != null && m.IsLocal) run.RegisterHit(Time.time);
+            if (m != null && NetHost) PartyNet.Current.HostRegisterHit(m, info.amount);
         }
 
         void OnEnemyKilled(EnemyController e, int xp)
@@ -326,6 +403,7 @@ namespace DotRPG
             if (run.State == DungeonRunState.Playing && Game.IsPlaying && !busy) run.Elapsed += Time.deltaTime;
             if (ReviveOpen) UpdateRevive();
             if (!roomReady || busy || run.State != DungeonRunState.Playing) return;
+            if (Follower) return; // [PARTY NET] the host says when a room or the run is cleared
 
             if (run.InBossRoom)
             {
@@ -346,6 +424,7 @@ namespace DotRPG
 
         void OnRoomCleared()
         {
+            if (NetHost) PartyNet.Current.HostRoomCleared();
             roomCleared = true;
             run.ClearedRooms.Add(run.RoomIndex);
             if (door != null) door.Open();
@@ -356,7 +435,7 @@ namespace DotRPG
 
         void OnDoorEntered()
         {
-            if (run == null || busy || run.State != DungeonRunState.Playing) return;
+            if (run == null || busy || run.State != DungeonRunState.Playing || Follower) return;
             int next = run.Room.next != null && run.Room.next.Length > 0 ? run.Room.next[0] : run.RoomIndex + 1;
             if (next >= run.RoomCount) return;
             Game.Audio.PlaySfx("confirm");
@@ -402,6 +481,11 @@ namespace DotRPG
 
         void FinishCleared()
         {
+            if (NetHost)
+            {
+                PartyNet.Current.HostRunEnded(true, null, run.Elapsed);
+                PartyRunSession.Instance?.SendHostReport(true, run.Elapsed);
+            }
             if (OnlineEconomy.On && OnlineEconomy.RunId != null) { StartCoroutine(FinishClearedOnline()); return; }
             var auth = DungeonAuthority.Current;
             run.State = DungeonRunState.Cleared;
@@ -440,8 +524,9 @@ namespace DotRPG
             bool answered = false;
             Dictionary<string, object> data = null;
             OnlineEconomy.FinishDungeon(true, run.Elapsed, run.HitsTaken, run.MaxCombo, run.RevivesUsed, d => { data = d; answered = true; });
-            float waited = 0f;
-            while (!answered && waited < 15f) { waited += Time.unscaledDeltaTime; yield return null; }
+            float waited = 0f, limit = PartyNet.Active ? OnlineEconomy.PartyResultWaitSeconds + 15f : 15f;
+            if (PartyNet.Active) GameEvents.RaiseToast("다른 파티원의 결과를 확인하는 중...");
+            while (!answered && waited < limit) { waited += Time.unscaledDeltaTime; yield return null; }
             busy = false;
             string result = MiniJson.Str(data, "result");
             if (result == "cleared")
@@ -459,6 +544,10 @@ namespace DotRPG
                 int count = MiniJson.Int(data, "card_count");
                 run.Cards = count > 0 ? new List<RewardCard>(new RewardCard[count]) : null;
                 Progress.RecordClear(run.Dungeon.id, run.Difficulty, run.Rank);
+                var raid = MiniJson.Obj(data, "raid");
+                if (raid != null && raid.TryGetValue("reward_locked", out var rl) && rl is bool locked && locked)
+                    GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));
+                else if (run.Dungeon.isRaid) Progress.ClaimRaid(run.Dungeon, ResetClock.Now); // the server paid this period's reward
             }
             else
             {
@@ -511,6 +600,12 @@ namespace DotRPG
         {
             if (run == null) return false;
             if (run.State != DungeonRunState.Playing) return true;
+            if (Follower)
+            {
+                // [PARTY NET] Downed members get up at the next room (the host's rule for every member).
+                GameEvents.RaiseToast("쓰러졌다. 다음 방에서 다시 일어난다.");
+                return true;
+            }
             if (run.RevivesLeft <= 0)
             {
                 StartCoroutine(FailLater("부활 횟수를 모두 사용했다."));
@@ -545,6 +640,7 @@ namespace DotRPG
             if (!ReviveOpen || run == null || local == null || !local.IsDead || run.RevivesLeft <= 0) return false;
             ReviveOpen = false;
             run.RevivesUsed++;
+            if (NetHost) PartyNet.Current.HostRevived(local);
             if (Game.Party != null) Game.Party.ReviveMember(local, 1f, ReviveInvulnerable);
             else local.Revive(1f, ReviveInvulnerable);
             local.Data.Mana = local.MaxMana;
@@ -571,6 +667,11 @@ namespace DotRPG
         void Fail(string reason)
         {
             if (run == null || run.IsOver || run.State == DungeonRunState.Clearing) return;
+            if (NetHost)
+            {
+                PartyNet.Current.HostRunEnded(false, reason, run.Elapsed);
+                PartyRunSession.Instance?.SendHostReport(false, run.Elapsed);
+            }
             run.State = DungeonRunState.Failed;
             run.FailReason = reason;
             SnapshotDamage();
@@ -623,6 +724,7 @@ namespace DotRPG
                 EndRunState();
                 run = null;
                 OnlineEconomy.LeaveDungeon(); // [SERVER]
+                PartyRunSession.OnBackInVillage(); // [PARTY] the fight connection closes
                 Game.Session.MapId = MapRegistry.Village;
                 Game.World.Load(MapRegistry.Village);
                 var local = Game.Player;
@@ -649,6 +751,8 @@ namespace DotRPG
             EndRunState();
             run = null;
             OnlineEconomy.LeaveDungeon(); // [SERVER] an abandoned run is closed by the server later
+            if (PartyRunSession.Active) PartyRunSession.Instance.Leave(); // [PARTY]
+            PartyNet.End();
             if (Game.State.Current == GameState.Playing) Time.timeScale = 1f;
             RoomChanged?.Invoke();
         }

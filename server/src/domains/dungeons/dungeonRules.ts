@@ -53,7 +53,7 @@ export function scoreRun(
 }
 
 /** DungeonRewards.ClearXp: round(clearXp * rewardMul * xpMul * (1 + 랭크보너스/100)) */
-export function clearXp(eco: EconomyData, d: DungeonDef, diff: DifficultyDef, rank: number): number {
+export function clearXp(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, rank: number): number {
   const xp = f32(f32(d.clearXp * diff.rewardMul) * d.xpMul);
   return roundHalfEven(f32(xp * f32(1 + xpBonusPercent(eco, rank) / 100)));
 }
@@ -101,8 +101,7 @@ export function rollGear(eco: EconomyData, cls: string, minRarity: string, rng: 
 }
 
 /** DungeonRewards.RollCards + Resolve */
-export function rollCards(eco: EconomyData, d: DungeonDef, diffIndex: number, cls: string, rng: Rng): Card[] {
-  const diff = eco.dungeons.difficulties[diffIndex] as DifficultyDef;
+export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cls: string, rng: Rng): Card[] {
   const table = [...d.rewards];
   if (diff.ticketWeight > 0) {
     table.push({ itemId: eco.enhance.ticketItem, min: 1, max: 1, weight: diff.ticketWeight });
@@ -147,9 +146,21 @@ export function roomKillCount(roomKills: Record<string, number>, roomIndex: numb
   return n;
 }
 
-/** ResetClock.IsOpen (요일 던전): 토·일은 전부 개방(weekendOpensAll), 아니면 openDays에 오늘 요일 */
+/** 난이도 수치: 요일 던전은 난이도 표, 레이드는 레이드별 raidNumbers(레이드는 난이도가 하나) */
+export type DiffNumbers = Pick<
+  DifficultyDef,
+  'recommendedLevel' | 'hpMul' | 'rewardMul' | 'monsterLevel' | 'revives' | 'minGearRarity' | 'ticketWeight'
+>;
+
+export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumbers | null {
+  if (d.isRaid) return d.raidNumbers ?? null;
+  return eco.dungeons.difficulties[index] ?? null;
+}
+
+/** ResetClock.IsOpen: 레이드는 openDays만 본다. 요일 던전은 토·일 전부 개방(weekendOpensAll), 아니면 openDays에 오늘 요일 */
 export function isOpenToday(eco: EconomyData, d: DungeonDef, now: Date): boolean {
   const day = gameWeekday(now);
+  if (d.isRaid) return d.openDays.includes(day);
   if (eco.dungeons.weekendOpensAll && (day === 'Saturday' || day === 'Sunday')) return true;
   return d.openDays.includes(day);
 }

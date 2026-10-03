@@ -216,6 +216,12 @@ namespace DotRPG.EditorTools
             var ps = cfg.playerStats;
             return Doc().Num("attackDamage", ps.attackDamage).Num("attackCooldown", ps.attackCooldown).Num("maxHealth", ps.maxHealth)
                 .Num("mageBoltDamage", CharacterClassInfo.Get(CharacterClass.Mage).damage).Num("mageBoltCooldown", CharacterClassInfo.Get(CharacterClass.Mage).cooldown)
+                // [SERVER 4] CharacterStatsCalc.Power terms the server can know (level, gear); passives are left out.
+                .Key("power").Obj()
+                    .Num("attackWeight", 10).Num("hpWeight", 5).Num("mpWeight", 3).Num("blockWeight", 20).Num("speedWeight", 10).Num("levelWeight", 50)
+                    .Num("baseMana", CharacterStatsCalc.BaseMana).Num("hpPerLevel", CharacterStatsCalc.HpPerLevel).Num("mpPerLevel", CharacterStatsCalc.MpPerLevel)
+                    .Num("maxBlock", Equipment.MaxBlock)
+                .End()
                 .End().ToString();
         }
 
@@ -288,6 +294,10 @@ namespace DotRPG.EditorTools
             j.End();
             // Measured fastest normal clears 87 s (theory_balance.py); the server takes 60% of these as the floor.
             j.Arr("minClearSeconds", new[] { 87, 0, 0, 0 }, (o, v) => o.Val(v));
+            // [SERVER 4] Raids: no measured floor yet (the server falls back to 0.5 x referenceSeconds), key item, AI mercenaries.
+            j.Key("raidMinClearSeconds").Obj().End();
+            j.Str("keyItem", DungeonDatabase.SealKey);
+            j.Key("mercenary").Obj().Num("damageScale", MercenaryDatabase.DamageScale).Num("maxCompanions", PartyManager.MaxCompanions).End();
             j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Raids), (o, d) =>
             {
                 o.Obj().Str("id", d.id).Str("name", d.name).Bool("isRaid", d.isRaid).Str("raidTier", d.raidTier.ToString())
@@ -302,7 +312,11 @@ namespace DotRPG.EditorTools
                     r.Arr("groups", room.groups, (g, grp) => g.Obj().Str("monsterId", grp.monsterId).Num("count", grp.count).Num("levelOffset", grp.levelOffset).Bool("isBoss", grp.isBoss).End());
                     return r.End();
                 });
-                if (d.isRaid) { o.Key("raidNumbers"); Difficulty(o, DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal)); }
+                if (d.isRaid)
+                {
+                    o.Key("raidNumbers"); Difficulty(o, DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal));
+                    o.Num("keyMin", d.keyMin).Num("keyMax", d.keyMax); // [SERVER 4] mid raids drop seal key fragments
+                }
                 return o.End();
             });
             return j.End().ToString();

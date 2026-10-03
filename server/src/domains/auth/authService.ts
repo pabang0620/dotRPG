@@ -12,6 +12,7 @@ import {
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
 import * as repo from './authRepository';
+import { verifyTicket } from './steamProvider';
 
 const REFRESH_DAYS = 14;
 const ARGON_OPTS = { type: argon2.argon2id } as const;
@@ -182,6 +183,59 @@ export async function getMe(accountId: number) {
     login_id: me.subject,
     character_count: me.character_count,
     character_limit: CHARACTER_LIMIT,
+    steam_linked: await repo.hasSteam(accountId),
   };
 }
 
+
+// ---------- Steam (4단계) ----------
+
+const STEAM_UNIQUE = 'auth_identities_provider_subject_key';
+const ACCOUNT_PROVIDER_UNIQUE = 'auth_identities_account_provider_uq';
+
+/** A1: Steam 티켓으로 로그인(없으면 계정 생성). 클라이언트가 SteamID를 보내도 받지 않는다 */
+export async function steamLogin(ticket: string) {
+  const id = await verifyTicket(ticket);
+  let created = false;
+  let account = await repo.findAccountBySteam(id.steamId);
+  if (!account) {
+    try {
+      account = await withTransaction(async (client) => {
+        const a = await repo.insertAccount(client);
+        await repo.insertSteamIdentity(client, a.id, id.steamId);
+        return a;
+      });
+      created = true;
+    } catch (err) {
+      if (!isUniqueViolation(err, STEAM_UNIQUE)) throw err;
+      account = await repo.findAccountBySteam(id.steamId);
+    }
+  }
+  if (!account || account.deleted_at) throw new AppError(401, 'Steam 티켓이 올바르지 않습니다.', 'STEAM_TICKET_INVALID');
+  if (account.banned_until && account.banned_until.getTime() > Date.now()) {
+    throw new AppError(403, '정지된 계정입니다.', 'ACCOUNT_BANNED', { banned_until: account.banned_until.toISOString() });
+  }
+  const acc = account;
+  return withTransaction(async (client) => {
+    const lastLogin = await repo.touchLastLogin(client, acc.id);
+    const tokens = await issueTokens(client, acc.id, acc.uuid, randomUUID());
+    return {
+      account: { id: acc.uuid, created_at: acc.created_at.toISOString(), last_login_at: lastLogin.toISOString() },
+      ...tokens,
+      created,
+    };
+  });
+}
+
+/** A2: 기존 계정에 Steam 연결 */
+export async function steamLink(accountId: number, ticket: string) {
+  const id = await verifyTicket(ticket);
+  try {
+    await withTransaction((client) => repo.insertSteamIdentity(client, accountId, id.steamId));
+  } catch (err) {
+    if (isUniqueViolation(err, STEAM_UNIQUE)) throw new AppError(409, '이미 다른 계정에 연결된 Steam 계정입니다.', 'STEAM_ALREADY_LINKED');
+    if (isUniqueViolation(err, ACCOUNT_PROVIDER_UNIQUE)) throw new AppError(409, '이미 Steam이 연결된 계정입니다.', 'ACCOUNT_ALREADY_LINKED');
+    throw err;
+  }
+  return { linked: true };
+}

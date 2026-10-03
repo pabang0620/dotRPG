@@ -7,6 +7,10 @@ import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
 import { createGatheringRouter } from '../domains/gathering/gatheringRoutes';
 import { createInventoryRouter } from '../domains/inventory/inventoryRoutes';
 import { createKillRouter } from '../domains/kills/killRoutes';
+import { createMatchRouter } from '../domains/match/matchRoutes';
+import { createPartyRouter } from '../domains/party/partyRoutes';
+import { createPartyRunRouter } from '../domains/partyruns/partyRunRoutes';
+import { createRaidRouter } from '../domains/raids/raidRoutes';
 import { createQuestRouter } from '../domains/quests/questRoutes';
 import { createShopRouter } from '../domains/shop/shopRoutes';
 import { createSystemRouter } from '../domains/system/systemRoutes';
@@ -26,5 +30,10 @@ export function createRouter(): Router {
   r.use(createEnhanceRouter());
   r.use(createInventoryRouter());
   r.use(createDungeonRouter());
+  // 4단계: 파티 협동, 자동 매칭, 파티 판, 레이드 (모두 /characters/{uuid}/... 아래)
+  r.use(createPartyRouter());
+  r.use(createMatchRouter());
+  r.use(createPartyRunRouter());
+  r.use(createRaidRouter());
   return r;
 }

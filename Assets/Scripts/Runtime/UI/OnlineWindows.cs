@@ -221,6 +221,8 @@ namespace DotRPG
 
         protected override void Refresh()
         {
+            var banner = content.Find("Preview");
+            if (banner != null) banner.gameObject.SetActive(!Service.IsOnline); // [PARTY] real board online
             listRoot.gameObject.SetActive(!createTab);
             createRoot.gameObject.SetActive(createTab);
             tabList.image.sprite = Game.Art.Get(createTab ? "ui_btngray" : "ui_btn");

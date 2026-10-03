@@ -3,9 +3,9 @@ import { getConfig } from '../../config/env';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import type { EconCtx } from '../economy/economyContext';
-import { rejected, type KillTarget } from '../kills/killTarget';
+import { rejected as rejectedBase, type KillTarget } from '../kills/killTarget';
 import * as repo from './dungeonRepository';
-import { roomKillCount, roomTotal } from './dungeonRules';
+import { diffOf, roomKillCount, roomTotal } from './dungeonRules';
 
 const notPlaying = () => new AppError(409, '진행 중인 던전이 아닙니다.', 'RUN_NOT_PLAYING');
 
@@ -21,6 +21,22 @@ export async function resolveDungeonTarget(
   const run = await repo.findRunByUuid(ctx.client, ctx.char.id, runUuid);
   const stale = run && ctx.now.getTime() - run.started_at.getTime() > pol.runStaleSeconds * 1000;
   if (!run || run.state !== 'playing' || stale) throw notPlaying();
+
+  // 파티 판: 판이 진행 중이고 내가 활성 멤버여야 한다. 방장이 아닌 멤버의 거절은 차단 카운트에 쌓지 않는다
+  let nonHost = false;
+  if (run.party_run_id !== null) {
+    const pr = await ctx.client.query<{ state: string; host: string; mstate: string }>(
+      `SELECT r.state, r.host_character_id AS host, m.state AS mstate
+         FROM party_runs r JOIN party_run_members m ON m.party_run_id = r.id AND m.character_id = $2
+        WHERE r.id = $1`,
+      [run.party_run_id, ctx.char.id],
+    );
+    const row = pr.rows[0];
+    if (!row || row.state !== 'playing' || !['playing', 'disconnected'].includes(row.mstate)) throw notPlaying();
+    nonHost = Number(row.host) !== ctx.char.id;
+  }
+  const rejected = (kind: Parameters<typeof rejectedBase>[0], severity: 1 | 2 | 3, detail: Record<string, unknown>) =>
+    rejectedBase(kind, nonHost ? 1 : severity, detail);
 
   const dungeon = eco.dungeons.byId.get(run.dungeon_id);
   const room = dungeon?.rooms[roomIndex];
@@ -56,7 +72,7 @@ export async function resolveDungeonTarget(
   }
   if (!group) throw rejected('kill_supply', 2, { ...base, count: soFar, limit: acc });
 
-  const diff = eco.dungeons.difficulties[run.difficulty];
+  const diff = diffOf(eco, dungeon as NonNullable<typeof dungeon>, run.difficulty);
   if (!diff) throw rejected('kill_target', 3, { ...base, why: 'difficulty' });
   const partyScale = eco.dungeons.partyHpScale[run.party_size - 1] ?? 1;
   const elapsedSec = (ctx.now.getTime() - run.started_at.getTime()) / 1000;
@@ -67,6 +83,10 @@ export async function resolveDungeonTarget(
     mapId,
     level: 1 + diff.monsterLevel + group.levelOffset,
     hpMul: diff.hpMul * partyScale,
+    isRaid: (dungeon as NonNullable<typeof dungeon>).isRaid,
+    rewardLocked: run.reward_locked && !pol.raidPracticePaysKills,
+    powerCap: run.power_cap === null ? null : run.power_cap * pol.partyPowerSlack,
+    nonHost,
     burst: pol.killBurstDungeon,
     powerWindowSeconds: Math.max(0, elapsedSec) + 5,
     run: { id: run.id, roomIndex },

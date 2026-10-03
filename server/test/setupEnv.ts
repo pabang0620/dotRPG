@@ -25,3 +25,14 @@ process.env.RATE_USE_PER_SEC = '10000';
 process.env.RATE_SLOW_PER_SEC = '10000';
 // 같은 아이템 연속 사용 간격은 끈다(쿨다운 테스트만 켠다)
 process.env.ITEM_USE_MIN_GAP_MS = '0';
+// 4단계: 파티 경로 속도 제한은 크게, Steam은 mock
+process.env.RATE_PARTY_LIST_PER_SEC = '10000';
+process.env.RATE_PARTY_POLL_PER_SEC = '10000';
+process.env.RATE_PARTY_CREATE_PER_3SEC = '10000';
+process.env.RATE_PARTY_ACTION_PER_SEC = '10000';
+process.env.RATE_PARTY_RUN_PER_SEC = '10000';
+process.env.RATE_HEARTBEAT_PER_2SEC = '10000';
+process.env.RATE_STEAM_IP_MAX = '10000';
+process.env.RATE_STEAM_LINK_MAX = '10000';
+process.env.STEAM_AUTH_MODE = 'mock';
+process.env.PARTY_TRANSPORT = 'dev';

@@ -279,14 +279,26 @@ namespace DotRPG
 
         // ---------------- solo dungeons ----------------
 
-        public static void EnterDungeon(string dungeonId, int difficulty, Action<bool> done)
+        /// <summary>Solo run (optionally with AI companions, phase 4). done(run object or null).</summary>
+        public static void EnterDungeon(string dungeonId, int difficulty, int aiCount, Action<Dictionary<string, object>> done)
         {
-            Post("/dungeon-runs", Body(("dungeon_id", dungeonId), ("difficulty", difficulty)), r =>
+            Post("/dungeon-runs", Body(("dungeon_id", dungeonId), ("difficulty", difficulty), ("ai_count", Mathf.Clamp(aiCount, 0, 3))), r =>
             {
-                if (r.ok) { RunId = MiniJson.Str(MiniJson.Obj(r.data, "run"), "id"); RoomIndex = 0; }
-                done?.Invoke(r.ok);
+                var run = r.ok ? MiniJson.Obj(r.data, "run") : null;
+                if (run != null) { RunId = MiniJson.Str(run, "id"); RoomIndex = 0; }
+                done?.Invoke(run);
             });
         }
+
+        /// <summary>[PARTY] A party run's own dungeon_runs id (from begin / heartbeat).</summary>
+        public static void SetRun(string runId)
+        {
+            RunId = runId;
+            RoomIndex = 0;
+        }
+
+        /// <summary>Longest wait for a party result (other members' reports, phase4_api §7.4).</summary>
+        public const float PartyResultWaitSeconds = 90f;
 
         /// <summary>Reports the run's end. done(result data: result / rank / granted_xp ...), or null.</summary>
         public static void FinishDungeon(bool cleared, float elapsedSeconds, int hitsTaken, int maxCombo, int revivesUsed, Action<Dictionary<string, object>> done)
@@ -295,8 +307,34 @@ namespace DotRPG
             string run = RunId;
             var stats = Body(("elapsed_ms", Mathf.RoundToInt(elapsedSeconds * 1000f)), ("hits_taken", Mathf.Clamp(hitsTaken, 0, 999)),
                 ("max_combo", Mathf.Clamp(maxCombo, 0, 9999)), ("revives_used", Mathf.Clamp(revivesUsed, 0, 9)));
-            Post($"/dungeon-runs/{run}/result", Body(("outcome", cleared ? "cleared" : "failed"), ("stats", stats)), r => done?.Invoke(r.ok ? r.data : null));
+            Post($"/dungeon-runs/{run}/result", Body(("outcome", cleared ? "cleared" : "failed"), ("stats", stats)), r =>
+            {
+                var data = r.ok ? r.data : null;
+                // A party run waits for the other reports: settle again until it is decided.
+                if (MiniJson.Str(data, "result") == "pending") Api.StartCoroutine(Settle(run, data, done));
+                else done?.Invoke(data);
+            });
         }
+
+        static IEnumerator Settle(string run, Dictionary<string, object> first, Action<Dictionary<string, object>> done)
+        {
+            var data = first;
+            float waited = 0f;
+            while (MiniJson.Str(data, "result") == "pending" && waited < PartyResultWaitSeconds)
+            {
+                float after = Mathf.Clamp(MiniJson.Int(data, "settle_after_ms", 2000) / 1000f, 0.5f, 10f);
+                yield return new WaitForSecondsRealtime(after);
+                waited += after;
+                bool answered = false;
+                Post($"/dungeon-runs/{run}/settle", new Dictionary<string, object>(), r => { if (r.ok) data = r.data; answered = true; }, quiet: true);
+                while (!answered) yield return null;
+            }
+            done?.Invoke(data);
+        }
+
+        /// <summary>[RAID] Unlock, reward and key state of every raid (phase4_api §10.5). done(raids list or null).</summary>
+        public static void LoadRaids(Action<List<object>> done) =>
+            Api.Get(Char + "/raids", r => done?.Invoke(r.ok ? MiniJson.Arr(r.data, "raids") : null));
 
         /// <summary>Picks one reward card. done(own card, all four revealed) or (null, null).</summary>
         public static void PickCard(int index, Action<RewardCard?, List<RewardCard>> done)

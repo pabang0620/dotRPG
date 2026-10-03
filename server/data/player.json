@@ -1,1 +1,1 @@
-{"schema":1,"attackDamage":10,"attackCooldown":0.36,"maxHealth":60,"mageBoltDamage":10,"mageBoltCooldown":0.5}
+{"schema":1,"attackDamage":10,"attackCooldown":0.36,"maxHealth":60,"mageBoltDamage":10,"mageBoltCooldown":0.5,"power":{"attackWeight":10,"hpWeight":5,"mpWeight":3,"blockWeight":20,"speedWeight":10,"levelWeight":50,"baseMana":40,"hpPerLevel":8,"mpPerLevel":4,"maxBlock":60}}

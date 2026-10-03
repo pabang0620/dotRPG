@@ -5,6 +5,8 @@ export const enterBody = z.strictObject({
   request_id: requestId,
   dungeon_id: z.string().min(1).max(40).regex(/^[a-z][a-z0-9_]*$/),
   difficulty: z.number().int().min(0).max(3),
+  /** 빈자리 AI 수(4단계). 서버가 판 시작 때 기록하고 던전 안에서 바꾸지 않는다 */
+  ai_count: z.number().int().min(0).max(3).default(0),
 });
 
 /** 사실만 보낸다. 랭크·경험치·카드는 서버가 정한다 */
@@ -19,10 +21,14 @@ export const resultBody = z.strictObject({
   }),
 });
 
+export const settleBody = z.strictObject({ request_id: requestId });
+export const runIdParams = z.object({ uuid: z.uuid(), run_id: z.uuid() });
+
 export const pickBody = z.strictObject({ request_id: requestId, index: z.number().int().min(0).max(3) });
 export const runParams = z.object({ uuid: z.uuid(), run_id: z.uuid() });
 
 export type EnterBody = z.infer<typeof enterBody>;
 export type ResultBody = z.infer<typeof resultBody>;
+export type SettleBody = z.infer<typeof settleBody>;
 export type PickBody = z.infer<typeof pickBody>;
 export type RunParams = z.infer<typeof runParams>;

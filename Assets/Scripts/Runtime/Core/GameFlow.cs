@@ -98,6 +98,7 @@ namespace DotRPG
                 Game.State.Set(GameState.Playing);
                 GameEvents.RaiseToast("온라인 캐릭터로 접속했습니다.");
                 OnlineEconomy.OnEnteredWorld(); // [SERVER]
+                PartyClient.AttachOnline(); // [PARTY] server party board, lobby and matching
             }));
         }
 

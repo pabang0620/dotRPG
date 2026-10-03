@@ -4,6 +4,8 @@ import { createApp } from './app';
 import { initConfig } from './config/env';
 import { purgeExpiredRequestLogs } from './db/idempotency';
 import { closePool, getPool } from './db/pool';
+import { runMatchTick } from './domains/match/matchService';
+import { runSettleTick } from './domains/partyruns/partySettle';
 import { initGameData } from './gamedata/loader';
 import { logger } from './utils/logger';
 
@@ -28,8 +30,16 @@ async function main(): Promise<void> {
   }, 60 * 60 * 1000);
   purge.unref();
 
+  // 자동 매칭 틱(1초). 대기열은 메모리라 한 대 서버 전제
+  const tick = setInterval(() => {
+    runMatchTick().catch((err: unknown) => logger.error({ err }, 'match tick failed'));
+    runSettleTick().catch((err: unknown) => logger.error({ err }, 'settle tick failed'));
+  }, 1000);
+  tick.unref();
+
   const shutdown = (): void => {
     clearInterval(purge);
+    clearInterval(tick);
     server.close(() => {
       closePool().finally(() => process.exit(0));
     });

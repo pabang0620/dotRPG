@@ -18,6 +18,17 @@ namespace DotRPG
         public const byte Chat = 2;
         /// <summary>[F2] Where a player stands in the shared village (map, position, facing, class, name).</summary>
         public const byte Presence = 3;
+        /// <summary>[PARTY] Host -> members, 10 Hz: where every member and monster is (unreliable).</summary>
+        public const byte Snapshot = 4;
+        /// <summary>[PARTY] Spawns, deaths, actions, damage numbers, room clear (reliable).</summary>
+        public const byte Event = 5;
+        /// <summary>[PARTY] Handshake, room change, run end, host change (reliable).</summary>
+        public const byte Control = 6;
+        /// <summary>[PARTY] Member -> host, 20 Hz: own position, facing, MP (unreliable).</summary>
+        public const byte MemberState = 7;
+
+        /// <summary>Channels that must arrive (Steam sends them reliable; the dev UDP pipe is lossless on one PC).</summary>
+        public static bool IsReliable(byte channel) => channel == Event || channel == Control || channel == Chat;
     }
 
     /// <summary>
@@ -27,7 +38,10 @@ namespace DotRPG
     public interface ITransport
     {
         int LocalPeer { get; }
+        /// <summary>Two-peer meaning: connected to the other side (for a member, to the host).</summary>
         bool IsConnected { get; }
+        /// <summary>[PARTY] Remote peers currently connected (the host has up to three, a member only the host).</summary>
+        IReadOnlyList<int> Peers { get; }
         void Send(int toPeer, byte channel, byte[] data);
         bool TryReceive(out NetPacket packet);
         /// <summary>Advances the transport one network tick (delivers delayed packets).</summary>
@@ -49,6 +63,7 @@ namespace DotRPG
 
         public int LocalPeer { get; }
         public bool IsConnected => other != null;
+        public IReadOnlyList<int> Peers => other != null ? new[] { other.LocalPeer } : System.Array.Empty<int>();
         public int Sent { get; private set; }
         public int Received { get; private set; }
 

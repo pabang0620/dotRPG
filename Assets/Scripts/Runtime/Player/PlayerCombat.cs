@@ -153,9 +153,13 @@ namespace DotRPG
             if (slash != null) slash.enabled = false;
         }
 
+        /// <summary>[PARTY NET] Any member pressed attack (the host replays it on member PCs).</summary>
+        public static event System.Action<PlayerController> AttackPressed;
+
         public void TryAttack()
         {
             if (owner.IsDashing) return;
+            AttackPressed?.Invoke(owner);
             if (!Ranged && meleeActive)
             {
                 // Each key-down buys exactly one additional strike; holding the key does not repeat.

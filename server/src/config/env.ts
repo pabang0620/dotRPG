@@ -51,6 +51,40 @@ const envSchema = z.object({
   RUN_STALE_SECONDS: posInt(3600),
   DUNGEON_ROOM_CLEAR_RATIO: z.coerce.number().gt(0).max(1).default(0.8),
   DUNGEON_CARD_TTL_HOURS: posInt(24),
+  // 4단계(파티) 속도 제한
+  RATE_PARTY_LIST_PER_SEC: posInt(1),
+  RATE_PARTY_POLL_PER_SEC: posInt(2),
+  RATE_PARTY_CREATE_PER_3SEC: posInt(1),
+  RATE_PARTY_ACTION_PER_SEC: posInt(2),
+  RATE_PARTY_RUN_PER_SEC: posInt(1),
+  RATE_HEARTBEAT_PER_2SEC: posInt(1),
+  RATE_STEAM_IP_MAX: posInt(20),
+  RATE_STEAM_LINK_MAX: posInt(5),
+  // 4단계 정책 상수
+  PARTY_LISTING_MINUTES: posInt(10),
+  PARTY_APPLY_SECONDS: posInt(30),
+  PARTY_IDLE_MINUTES: posInt(30),
+  MATCH_QUEUE_SECONDS: posInt(60),
+  MATCH_POWER_RATIO: z.coerce.number().gt(0).default(0.3),
+  MATCH_START_SECONDS: posInt(60),
+  MATCH_TICKET_STALE_SECONDS: posInt(15),
+  PARTY_GATHER_SECONDS: posInt(90),
+  PARTY_MIN_LEVEL_SLACK: z.coerce.number().int().min(0).default(5),
+  HOST_STALE_SECONDS: posInt(12),
+  PARTY_REJOIN_SECONDS: posInt(60),
+  PARTY_RESULT_WAIT_SECONDS: posInt(90),
+  PARTY_ELAPSED_TOLERANCE_MS: posInt(5000),
+  PARTY_KILL_SLACK_RATIO: z.coerce.number().min(0).max(1).default(0.2),
+  PARTY_POWER_SLACK: z.coerce.number().min(1).default(1.15),
+  PARTY_DAMAGE_MIN_RATIO: z.coerce.number().min(0).max(1).default(0.8),
+  RAID_REWARD_MIN_HUMANS: posInt(2),
+  RAID_PRACTICE_PAYS_KILLS: boolStr.default(false),
+  // Steam 인증(값이 틀리면 기동하지 않는다)
+  STEAM_AUTH_MODE: z.enum(['off', 'mock', 'web_api']).default('off'),
+  STEAM_APP_ID: z.coerce.number().int().positive().optional(),
+  STEAM_WEB_API_KEY: z.string().min(1).optional(),
+  STEAM_IDENTITY: z.string().min(1).default('dotrpg-server'),
+  PARTY_TRANSPORT: z.enum(['dev', 'steam']).default('dev'),
 });
 
 export interface AppConfig {
@@ -82,7 +116,17 @@ export interface AppConfig {
     enhancePerSec: number;
     usePerSec: number;
     slowPerSec: number;
+    partyListPerSec: number;
+    partyPollPerSec: number;
+    partyCreatePer3Sec: number;
+    partyActionPerSec: number;
+    partyRunPerSec: number;
+    heartbeatPer2Sec: number;
+    steamIp: number;
+    steamLink: number;
   };
+  steam: { mode: 'off' | 'mock' | 'web_api'; appId: number | null; webApiKey: string | null; identity: string };
+  partyTransport: 'dev' | 'steam';
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -101,6 +145,24 @@ export interface AppConfig {
     runStaleSeconds: number;
     dungeonRoomClearRatio: number;
     dungeonCardTtlHours: number;
+    partyListingMinutes: number;
+    partyApplySeconds: number;
+    partyIdleMinutes: number;
+    matchQueueSeconds: number;
+    matchPowerRatio: number;
+    matchStartSeconds: number;
+    matchTicketStaleSeconds: number;
+    partyGatherSeconds: number;
+    partyMinLevelSlack: number;
+    hostStaleSeconds: number;
+    partyRejoinSeconds: number;
+    partyResultWaitSeconds: number;
+    partyElapsedToleranceMs: number;
+    partyKillSlackRatio: number;
+    partyPowerSlack: number;
+    partyDamageMinRatio: number;
+    raidRewardMinHumans: number;
+    raidPracticePaysKills: boolean;
   };
 }
 
@@ -120,6 +182,12 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error(`환경변수 검증 실패: ${detail}`);
   }
   const e = parsed.data;
+  if (e.STEAM_AUTH_MODE === 'web_api' && (!e.STEAM_APP_ID || !e.STEAM_WEB_API_KEY)) {
+    throw new Error('환경변수 검증 실패: STEAM_AUTH_MODE=web_api 에는 STEAM_APP_ID 와 STEAM_WEB_API_KEY 가 필요합니다');
+  }
+  if (e.NODE_ENV === 'production' && e.STEAM_AUTH_MODE === 'mock' && e.PARTY_TRANSPORT === 'dev') {
+    throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=mock 과 PARTY_TRANSPORT=dev 를 함께 쓸 수 없습니다');
+  }
   return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
@@ -149,7 +217,22 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       enhancePerSec: e.RATE_ENHANCE_PER_SEC,
       usePerSec: e.RATE_USE_PER_SEC,
       slowPerSec: e.RATE_SLOW_PER_SEC,
+      partyListPerSec: e.RATE_PARTY_LIST_PER_SEC,
+      partyPollPerSec: e.RATE_PARTY_POLL_PER_SEC,
+      partyCreatePer3Sec: e.RATE_PARTY_CREATE_PER_3SEC,
+      partyActionPerSec: e.RATE_PARTY_ACTION_PER_SEC,
+      partyRunPerSec: e.RATE_PARTY_RUN_PER_SEC,
+      heartbeatPer2Sec: e.RATE_HEARTBEAT_PER_2SEC,
+      steamIp: e.RATE_STEAM_IP_MAX,
+      steamLink: e.RATE_STEAM_LINK_MAX,
     },
+    steam: {
+      mode: e.STEAM_AUTH_MODE,
+      appId: e.STEAM_APP_ID ?? null,
+      webApiKey: e.STEAM_WEB_API_KEY ?? null,
+      identity: e.STEAM_IDENTITY,
+    },
+    partyTransport: e.PARTY_TRANSPORT,
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,
@@ -168,6 +251,24 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       runStaleSeconds: e.RUN_STALE_SECONDS,
       dungeonRoomClearRatio: e.DUNGEON_ROOM_CLEAR_RATIO,
       dungeonCardTtlHours: e.DUNGEON_CARD_TTL_HOURS,
+      partyListingMinutes: e.PARTY_LISTING_MINUTES,
+      partyApplySeconds: e.PARTY_APPLY_SECONDS,
+      partyIdleMinutes: e.PARTY_IDLE_MINUTES,
+      matchQueueSeconds: e.MATCH_QUEUE_SECONDS,
+      matchPowerRatio: e.MATCH_POWER_RATIO,
+      matchStartSeconds: e.MATCH_START_SECONDS,
+      matchTicketStaleSeconds: e.MATCH_TICKET_STALE_SECONDS,
+      partyGatherSeconds: e.PARTY_GATHER_SECONDS,
+      partyMinLevelSlack: e.PARTY_MIN_LEVEL_SLACK,
+      hostStaleSeconds: e.HOST_STALE_SECONDS,
+      partyRejoinSeconds: e.PARTY_REJOIN_SECONDS,
+      partyResultWaitSeconds: e.PARTY_RESULT_WAIT_SECONDS,
+      partyElapsedToleranceMs: e.PARTY_ELAPSED_TOLERANCE_MS,
+      partyKillSlackRatio: e.PARTY_KILL_SLACK_RATIO,
+      partyPowerSlack: e.PARTY_POWER_SLACK,
+      partyDamageMinRatio: e.PARTY_DAMAGE_MIN_RATIO,
+      raidRewardMinHumans: e.RAID_REWARD_MIN_HUMANS,
+      raidPracticePaysKills: e.RAID_PRACTICE_PAYS_KILLS,
     },
   };
 }

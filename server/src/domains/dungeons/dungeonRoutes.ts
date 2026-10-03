@@ -4,7 +4,7 @@ import { validate } from '../../middleware/validationMiddleware';
 import { charKey } from '../economy/economyRouting';
 import { charParams } from '../economy/economyValidation';
 import * as controller from './dungeonController';
-import { enterBody, pickBody, resultBody, runParams } from './dungeonValidation';
+import { enterBody, pickBody, resultBody, runParams, settleBody } from './dungeonValidation';
 
 export function createDungeonRouter(): Router {
   const r = Router();
@@ -19,6 +19,13 @@ export function createDungeonRouter(): Router {
     validate({ params: runParams, body: resultBody }),
     controller.result,
   );
+  r.post(
+    '/characters/:uuid/dungeon-runs/:run_id/settle',
+    rateLimit({ name: 'dungeon-settle', limit: (c) => c.rate.partyRunPerSec, windowMs: 1000, key: charKey }),
+    validate({ params: runParams, body: settleBody }),
+    controller.settle,
+  );
+  r.get('/characters/:uuid/dungeon-runs/:run_id', limit('get'), validate({ params: runParams }), controller.getRun);
   r.post(
     '/characters/:uuid/dungeon-runs/:run_id/cards/pick',
     limit('pick'),

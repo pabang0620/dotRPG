@@ -4,7 +4,8 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './dungeonService';
-import type { EnterBody, PickBody, ResultBody, RunParams } from './dungeonValidation';
+import { settleRun } from '../partyruns/partySettle';
+import type { EnterBody, PickBody, ResultBody, RunParams, SettleBody } from './dungeonValidation';
 
 type P = { uuid: string };
 
@@ -39,6 +40,24 @@ export async function pick(_req: Request, res: Response, next: NextFunction): Pr
   try {
     const { body, params } = getValidated<PickBody, RunParams>(res);
     sendStored(res, await service.pickCard(getAccount(res.locals).id, params.uuid, params.run_id, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function settle(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<SettleBody, RunParams>(res);
+    sendStored(res, await settleRun(getAccount(res.locals).id, params.uuid, params.run_id, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getRun(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { params } = getValidated<unknown, RunParams>(res);
+    successResponse(res, await service.getRun(getAccount(res.locals).id, params.uuid, params.run_id));
   } catch (err) {
     next(err);
   }

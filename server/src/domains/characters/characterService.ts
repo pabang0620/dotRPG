@@ -10,6 +10,8 @@ import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { CHARACTER_LIMIT } from '../auth/authService';
 import { readEconomyDetail } from '../economy/economyRepository';
+import { computePower } from './powerEstimate';
+import { listWornKeys } from '../economy/economyRepository';
 import * as repo from './characterRepository';
 import { validateState } from './stateRules';
 import type { CreateCharacterBody, StateBody } from './characterValidation';
@@ -76,6 +78,8 @@ async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.Char
       })),
     })),
     storage_capacity: eco.config.storageCapacity,
+    // 4단계: 서버가 레벨·착용 장비로 계산한 전투력(패시브 제외라 캐릭터 카드 값과 다를 수 있다)
+    power_estimate: computePower(c.class, c.level, await listWornKeys(db, c.id), econ.bonusMaxHealth),
   };
 }
 

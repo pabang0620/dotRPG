@@ -329,6 +329,7 @@ namespace DotRPG
 
             var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
             Command = cmd;
+            if (NetDriven) { NetUpdate(cmd); return; } // [PARTY NET] position from the network
             // Mobility owns the pose and movement until the dash ends; a successful blink
             // consumes this frame too, so an X/Q press cannot also begin an attack.
             if (IsDashing || (cmd.mobility && TryMobility(cmd.move)))
@@ -389,6 +390,12 @@ namespace DotRPG
         void FixedUpdate()
         {
             if (mobilityBraking) { body.SetVelocity(Vector2.zero); mobilityBraking = false; }
+            if (NetDriven)
+            {
+                if (!IsDead && Game.IsPlaying) NetFixedStep();
+                else body.SetVelocity(Vector2.zero);
+                return;
+            }
             if (IsDead || !Game.IsPlaying)
             {
                 CancelMobility();
@@ -422,6 +429,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.UseItem(ItemIds.Carrot); // [SERVER] consume there too
             health.Heal(stats.carrotHealAmount);
+            if (PartyNet.IsMember) PartyNet.Current.SendHeal(stats.carrotHealAmount); // [PARTY NET]
             Game.Audio.PlaySfx("heal");
             Fx.Sparkle(Center + Vector2.up * 0.4f, 2, 0.3f);
         }
@@ -466,6 +474,7 @@ namespace DotRPG
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
                     int amount = Mathf.Max(1, Mathf.RoundToInt(health.Max * item.power / 100f));
                     health.Heal(amount);
+                    if (PartyNet.IsMember) PartyNet.Current.SendHeal(amount); // [PARTY NET] the host's copy heals too
                     Game.Audio.PlaySfx("heal");
                     SkillVisuals.Flash(Center, new Color(1f, 0.35f, 0.35f, 0.55f), 1.6f, 0.3f);
                     Fx.Sparkle(Center + Vector2.up * 0.4f, 3, 0.4f);
@@ -514,6 +523,7 @@ namespace DotRPG
         public bool TakeDamage(DamageInfo info)
         {
             if (IsDead || info.team == Team.Player) return false;
+            if (NetPuppet || (IsLocal && PartyNet.IsMember)) return false; // [PARTY NET] the host decides HP
             // Party members never hurt each other, whatever team the hit claims.
             if (info.AttackerMember != null) return false;
             // Armour / rings: a chance to shrug the hit off completely.
