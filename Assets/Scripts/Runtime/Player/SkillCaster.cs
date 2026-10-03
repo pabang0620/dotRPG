@@ -96,6 +96,12 @@ namespace DotRPG
                 if (owner.IsDead) yield break;
                 switch (gem.id)
                 {
+                    // [SKILL v2]
+                    case "crush": Crush(n); break;
+                    case "lance": Lance(n); break;
+                    case "guard": Guard(n, "철벽", new Color(1f, 0.82f, 0.35f, 1f)); break;
+                    case "barrier": Guard(n, "마나 보호막", new Color(0.45f, 0.75f, 1f, 1f)); break;
+                    // v1 + v2 (v1-only ones stay for SkillGems.UseLegacy)
                     case "whirl": Whirl(n); break;
                     case "slam": Slam(n); break;
                     case "wave": StartCoroutine(Wave(n, owner.AimDirection)); break;
@@ -116,8 +122,9 @@ namespace DotRPG
         void Hit(EnemyController enemy, SkillNumbers n, Vector2 from, float knockback)
         {
             if (enemy == null || enemy.IsDead) return;
-            if (enemy.TakeDamage(new DamageInfo(n.damage, from, knockback, Team.Player, owner.gameObject)) && n.leechPct > 0)
-                owner.Heal(Mathf.Max(1, n.damage * n.leechPct / 100));
+            int damage = n.bossPct > 0 && enemy.IsBoss ? Mathf.RoundToInt(n.damage * (1f + n.bossPct / 100f)) : n.damage; // [SKILL v2] 보스 사냥
+            if (enemy.TakeDamage(new DamageInfo(damage, from, knockback, Team.Player, owner.gameObject)) && n.leechPct > 0)
+                owner.Heal(Mathf.Max(1, damage * n.leechPct / 100));
         }
 
         static List<EnemyController> EnemiesInRadius(Vector2 center, float radius)
@@ -195,6 +202,62 @@ namespace DotRPG
             }
             SkillVisuals.Flash(owner.Center, new Color(color.r, color.g, color.b, 0.6f), 2.4f, 0.35f);
             Game.Audio.PlaySfx("quest", 0.4f);
+        }
+
+        // ================= v2 single-target and defence skills =================
+
+        /// <summary>[SKILL v2] 파쇄 일격: one heavy blow on the monster in front (the nearest, leaning towards the aim).</summary>
+        void Crush(SkillNumbers n)
+        {
+            Vector2 c = owner.Center, aim = owner.AimDirection;
+            EnemyController target = null;
+            float best = float.MaxValue;
+            foreach (var e in EnemyController.Active)
+            {
+                if (e == null || e.IsDead || !e.isActiveAndEnabled) continue;
+                Vector2 to = e.Center - c;
+                float d = to.magnitude;
+                if (d > n.range + 0.35f * e.Size) continue;
+                float score = d - Vector2.Dot(to.normalized, aim) * 0.6f; // in front first
+                if (score < best) { best = score; target = e; }
+            }
+            Vector2 at = target != null ? target.Center : c + aim * Mathf.Min(1.1f, n.range);
+            Game.Audio.PlaySfx("rock_break");
+            SkillVisuals.SlamImpact(at, n.radius);
+            if (target != null)
+            {
+                Hit(target, n, c, 9f);
+                SkillVisuals.SlashHit(target.Center, SkillVisuals.WhirlGold);
+            }
+            Shake(0.1f, 0.16f);
+        }
+
+        /// <summary>[SKILL v2] 번개 창: one thick bolt from the sky onto the nearest monster in range.</summary>
+        void Lance(SkillNumbers n)
+        {
+            Vector2 from = owner.Center;
+            SkillVisuals.CastCircle(owner.Position, SkillVisuals.MageViolet);
+            SkillVisuals.StaffFlash(from + owner.AimDirection * 0.35f, SkillVisuals.ArcGlow);
+            var target = Nearest(from, n.range, null);
+            Game.Audio.PlaySfx("magic");
+            if (target == null)
+            {
+                SkillVisuals.ArcBolt(from, from + owner.AimDirection * 2.5f, false);
+                return;
+            }
+            SkillVisuals.Thunder(target.Position);
+            Hit(target, n, from, 4f);
+            Shake(0.06f, 0.12f);
+        }
+
+        /// <summary>[SKILL v2] 철벽 / 마나 보호막: less damage taken for a few seconds.</summary>
+        void Guard(SkillNumbers n, string skillName, Color color)
+        {
+            owner.Data.ApplyGuard(n.guardPct, n.guardTime);
+            BuffAura.Attach(owner.transform, color, n.guardTime);
+            SkillVisuals.Flash(owner.Center, new Color(color.r, color.g, color.b, 0.55f), 1.8f, 0.3f);
+            Game.Audio.PlaySfx("select");
+            Toast($"{skillName}!  {n.guardTime:0}초 동안 받는 피해 {n.guardPct}% 감소");
         }
 
         // ================= Warrior =================
@@ -412,7 +475,7 @@ namespace DotRPG
                     // Crackle: small bolts to the closest monsters around the orb.
                     var near = EnemiesInRadius(pos, zapRange);
                     near.Sort((a, b) => Vector2.Distance(a.Center, pos).CompareTo(Vector2.Distance(b.Center, pos)));
-                    for (int k = 0; k < near.Count && k < Mathf.Max(1, n.chains); k++)
+                    for (int k = 0; k < near.Count && k < (SkillGems.UseLegacy ? Mathf.Max(1, n.chains) : n.chains); k++) // v2: no zaps in flight (chains 0)
                     {
                         SkillVisuals.FrostOrbZap(pos, near[k].Center);
                         if (near[k].TakeDamage(new DamageInfo(zapDamage, pos, 1.5f, Team.Player, owner.gameObject)) && n.leechPct > 0)

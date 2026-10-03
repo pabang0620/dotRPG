@@ -202,6 +202,10 @@ namespace DotRPG
                 case PassiveStat.ManaCost: return $"MP 소모 {v}% 감소";
                 case PassiveStat.LifeOnKill: return $"처치 시 HP +{v}";
                 case PassiveStat.ManaOnKill: return $"처치 시 MP +{v}";
+                // [SKILL v2] slot 4 is the defence skill (철벽 / 마나 보호막): see CharacterStatsCalc.Skill.
+                case PassiveStat.SkillDamage when slot == 3 && !SkillGems.UseLegacy: return $"{SlotLabel(slot)} 받는 피해 감소 +{Mathf.RoundToInt(v / 4f)}%";
+                case PassiveStat.SkillArea when slot == 3 && !SkillGems.UseLegacy: return $"{SlotLabel(slot)} 지속시간 {v}% 증가";
+                case PassiveStat.SkillRepeat when slot == 3 && !SkillGems.UseLegacy: return $"{SlotLabel(slot)} (방어 스킬은 추가 발동 없음)";
                 case PassiveStat.SkillDamage: return $"{SlotLabel(slot)} 피해 {v}% 증가";
                 case PassiveStat.SkillArea: return $"{SlotLabel(slot)} 범위 {v}% 증가";
                 case PassiveStat.SkillCooldown: return $"{SlotLabel(slot)} 재사용 대기시간 {v}% 감소";
@@ -234,6 +238,8 @@ namespace DotRPG
         public int hits = 1;          // strikes of an ultimate / volley
         public int buffPct;           // war cry: % increased damage
         public float buffTime;
+        public int guardPct;          // [SKILL v2] 철벽 / 마나 보호막: % less damage taken
+        public float guardTime;
         // Support gems.
         public int moreDamage;        // % more damage (can be negative)
         public int moreAoe;           // % more area
@@ -241,6 +247,7 @@ namespace DotRPG
         public int repeats;           // extra casts
         public int extraChains;
         public int leechPct;          // % of damage dealt returned as HP
+        public int bossDamage;        // [SKILL v2] % more damage against bosses
 
         public bool IsUltimate => slot == SkillGems.UltimateSlot;
         public bool UsableBy(CharacterClass cls) => classOnly == null || classOnly == cls;
@@ -250,42 +257,56 @@ namespace DotRPG
     {
         public const int Slots = 5, SupportsPerSlot = 2, UltimateSlot = 4;
 
-        /// <summary>Level at which each skill slot (and its skill) opens. Slot 5 is the awakening skill.</summary>
-        public static readonly int[] SlotLevels = { 2, 4, 6, 8, 10 };
+        /// <summary>[SKILL v2] false = the reworked skill set; true = the v1 set in <see cref="SkillGemsLegacy"/>.</summary>
+        public const bool UseLegacy = false;
+
+        /// <summary>
+        /// Level at which each skill slot (and its skill) opens. Slot 5 is the awakening skill.
+        /// v2 spreads them over the climb to the first mid raid (Lv22, about 20 hours): about 0 / 0.6 / 4 / 11 / 20 hours.
+        /// </summary>
+        public static readonly int[] SlotLevels = UseLegacy ? SkillGemsLegacy.SlotLevels : new[] { 2, 6, 12, 18, 22 };
 
         static SkillGem Active(string id, string name, CharacterClass cls, int slot, string desc)
             => new SkillGem { id = id, name = name, icon = "gem_" + id, kind = GemKind.Active, classOnly = cls, slot = slot, unlockLevel = SlotLevels[slot], description = desc };
 
-        static readonly List<SkillGem> gems = new List<SkillGem>
+        static readonly List<SkillGem> gems = UseLegacy ? SkillGemsLegacy.Create() : CreateV2();
+
+        /// <summary>
+        /// [SKILL v2] One job per slot (Tools/balance/theory_skills.py): 1 single-target main attack, 2 the one
+        /// area skill, 3 control, 4 defence, 5 awakening. Area skills hit each target for about 60% of the
+        /// single-target skill, so they pay off from three monsters up; bosses are the single skill's job.
+        /// </summary>
+        static List<SkillGem> CreateV2() => new List<SkillGem>
         {
             // Warrior.
-            Active("whirl", "회전 베기", CharacterClass.Warrior, 0, "제자리에서 한 바퀴 돌며 주변의 모든 적을 벤다.").With(g => { g.damageMult = 1.5f; g.cooldown = 0.9f; g.radius = 1.7f; g.manaCost = 12; }),
-            Active("slam", "대지 강타", CharacterClass.Warrior, 1, "땅을 내려쳐 조준 방향으로 갈라지는 충격파를 보낸다.").With(g => { g.damageMult = 2.2f; g.cooldown = 1.4f; g.radius = 0.85f; g.range = 3.4f; g.manaCost = 16; }),
-            Active("wave", "검기", CharacterClass.Warrior, 2, "조준 방향으로 검기를 날려 지나가는 길의 모든 적을 벤다.").With(g => { g.damageMult = 1.8f; g.cooldown = 1.2f; g.radius = 0.7f; g.range = 6.5f; g.manaCost = 14; }),
-            Active("cry", "전쟁 함성", CharacterClass.Warrior, 3, "함성으로 주변 적을 기절시키고, 잠시 동안 모든 피해가 증가한다.").With(g => { g.damageMult = 0.8f; g.cooldown = 9f; g.radius = 2.6f; g.stun = 1.5f; g.buffPct = 25; g.buffTime = 6f; g.manaCost = 22; }),
+            Active("crush", "파쇄 일격", CharacterClass.Warrior, 0, "눈앞의 적 하나를 온 힘으로 내려친다. 보스와 강적을 상대하는 주력기.").With(g => { g.damageMult = 3.2f; g.cooldown = 2.5f; g.range = 1.6f; g.radius = 0.6f; g.manaCost = 6; }),
+            Active("whirl", "회전 베기", CharacterClass.Warrior, 1, "제자리에서 한 바퀴 돌며 주변의 모든 적을 벤다. 적이 셋 이상 몰렸을 때 쓴다.").With(g => { g.damageMult = 2.0f; g.cooldown = 5f; g.radius = 1.6f; g.manaCost = 14; }),
+            Active("cry", "전쟁 함성", CharacterClass.Warrior, 2, "함성으로 주변 적을 잠시 기절시키고 어그로를 끈다. 잠시 동안 모든 피해가 증가한다.").With(g => { g.damageMult = 0.4f; g.cooldown = 14f; g.radius = 2.4f; g.stun = 1.0f; g.buffPct = 20; g.buffTime = 6f; g.manaCost = 18; }),
+            Active("guard", "철벽", CharacterClass.Warrior, 3, "몸을 굳혀 4초 동안 받는 피해를 40% 줄인다.").With(g => { g.damageMult = 0f; g.cooldown = 16f; g.guardPct = 40; g.guardTime = 4f; g.manaCost = 12; }),
             Active("blades", "천검 강림", CharacterClass.Warrior, 4, "하늘에서 거대한 검을 떨어뜨려 주변의 적을 꿰뚫는다.").With(g => { g.damageMult = 2.6f; g.cooldown = 30f; g.radius = 1.1f; g.range = 4.8f; g.hits = 10; g.manaCost = 40; }),
             // Mage.
-            Active("arc", "번개 사슬", CharacterClass.Mage, 0, "가장 가까운 적에게 번개를 쏘고, 주변 적에게 연쇄된다.").With(g => { g.damageMult = 1.2f; g.cooldown = 0.7f; g.range = 6.5f; g.radius = 3.2f; g.chains = 3; g.manaCost = 10; }),
-            Active("nova", "서리 폭발", CharacterClass.Mage, 1, "주변에 냉기를 터뜨려 적을 얼린다 (1.5초 동안 행동 불가).").With(g => { g.damageMult = 1.1f; g.cooldown = 2.5f; g.radius = 2.3f; g.freeze = 1.5f; g.manaCost = 18; }),
-            Active("frostorb", "빙뢰구", CharacterClass.Mage, 2, "번개를 두른 얼음 구체를 날린다. 날아가는 동안 가까운 적에게 번개를 튀기고, 부딪히면 얼음 파편이 터지며 주변 적을 얼린다.").With(g => { g.damageMult = 2.2f; g.cooldown = 1.6f; g.radius = 1.5f; g.range = 7.5f; g.chains = 2; g.freeze = 1.2f; g.manaCost = 17; }),
-            Active("thunder", "낙뢰", CharacterClass.Mage, 3, "하늘에서 번개를 내리쳐 주변의 적 여럿을 동시에 공격하고 잠시 기절시킨다.").With(g => { g.damageMult = 1.9f; g.cooldown = 3.5f; g.radius = 0.9f; g.range = 6.5f; g.chains = 3; g.stun = 0.5f; g.manaCost = 22; }),
+            Active("lance", "번개 창", CharacterClass.Mage, 0, "가장 가까운 적 하나에게 굵은 번개를 내리꽂는다. 보스와 강적을 상대하는 주력기.").With(g => { g.damageMult = 3.0f; g.cooldown = 2.5f; g.range = 7f; g.radius = 0.6f; g.manaCost = 6; }),
+            Active("frostorb", "빙뢰구", CharacterClass.Mage, 1, "얼음 구체를 날려 부딪힌 자리의 적들을 얼음 파편으로 터뜨린다. 적이 셋 이상 몰렸을 때 쓴다.").With(g => { g.damageMult = 1.9f; g.cooldown = 5f; g.radius = 1.6f; g.range = 7.5f; g.manaCost = 14; }),
+            Active("nova", "서리 폭발", CharacterClass.Mage, 2, "주변에 냉기를 터뜨려 다가온 적을 1.2초 동안 얼린다.").With(g => { g.damageMult = 0.4f; g.cooldown = 14f; g.radius = 2.3f; g.freeze = 1.2f; g.manaCost = 18; }),
+            Active("barrier", "마나 보호막", CharacterClass.Mage, 3, "마력의 막을 둘러 4초 동안 받는 피해를 40% 줄인다.").With(g => { g.damageMult = 0f; g.cooldown = 16f; g.guardPct = 40; g.guardTime = 4f; g.manaCost = 12; }),
             Active("meteor", "메테오", CharacterClass.Mage, 4, "거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.").With(g => { g.damageMult = 3f; g.cooldown = 30f; g.radius = 1.5f; g.range = 5.5f; g.hits = 7; g.manaCost = 45; }),
 
             new SkillGem { id = "sup_dmg", name = "추가 피해", icon = "gem_sup_dmg", kind = GemKind.Support, unlockLevel = 3, moreDamage = 35, manaMult = 1.3f,
                 description = "연결된 스킬의 피해 35% 증폭. MP 소모 30% 증가." },
-            new SkillGem { id = "sup_aoe", name = "범위 확대", icon = "gem_sup_aoe", kind = GemKind.Support, unlockLevel = 4, moreAoe = 35, manaMult = 1.15f,
-                description = "연결된 스킬의 범위 35% 증폭. MP 소모 15% 증가." },
-            new SkillGem { id = "sup_multi", name = "연속 시전", icon = "gem_sup_multi", kind = GemKind.Support, unlockLevel = 6, repeats = 1, moreDamage = -30, manaMult = 1.4f,
+            new SkillGem { id = "sup_aoe", name = "범위 확대", icon = "gem_sup_aoe", kind = GemKind.Support, unlockLevel = 7, moreAoe = 35, manaMult = 1.15f,
+                description = "연결된 스킬의 범위(면적) 35% 증폭. MP 소모 15% 증가." },
+            new SkillGem { id = "sup_multi", name = "연속 시전", icon = "gem_sup_multi", kind = GemKind.Support, unlockLevel = 10, repeats = 1, moreDamage = -30, manaMult = 1.4f,
                 description = "연결된 스킬이 한 번 더 발동한다. 피해 30% 감소, MP 소모 40% 증가." },
-            new SkillGem { id = "sup_eff", name = "마력 효율", icon = "gem_sup_eff", kind = GemKind.Support, unlockLevel = 7, manaMult = 0.7f,
+            new SkillGem { id = "sup_eff", name = "마력 효율", icon = "gem_sup_eff", kind = GemKind.Support, unlockLevel = 5, manaMult = 0.7f,
                 description = "연결된 스킬의 MP 소모 30% 감소." },
             new SkillGem { id = "sup_leech", name = "흡혈", icon = "gem_sup_leech", kind = GemKind.Support, unlockLevel = 8, leechPct = 10,
                 description = "연결된 스킬이 입힌 피해의 10%만큼 HP를 회복한다." },
-            new SkillGem { id = "sup_chain", name = "추가 연쇄", icon = "gem_sup_chain", kind = GemKind.Support, unlockLevel = 9, extraChains = 2, moreDamage = 10,
-                description = "번개 사슬 연쇄 +2, 낙뢰 +2회, 빙뢰구 번개 대상 +2. 모든 스킬 피해 10% 증폭." },
+            // Same id as v1's 추가 연쇄 (saves keep their sockets); v2 has no chain skills, so it hunts bosses instead.
+            new SkillGem { id = "sup_chain", name = "보스 사냥", icon = "gem_sup_boss", kind = GemKind.Support, unlockLevel = 14, bossDamage = 30,
+                description = "연결된 스킬이 보스에게 주는 피해 30% 증폭." },
         };
 
-        static SkillGem With(this SkillGem g, System.Action<SkillGem> set) { set(g); return g; }
+        internal static SkillGem With(this SkillGem g, System.Action<SkillGem> set) { set(g); return g; }
 
         public static IReadOnlyList<SkillGem> All => gems;
 
@@ -320,8 +341,8 @@ namespace DotRPG
     /// <summary>Final numbers of one skill after supports and passives.</summary>
     public struct SkillNumbers
     {
-        public int damage, manaCost, chains, repeats, leechPct, hits, buffPct;
-        public float cooldown, radius, range, freeze, stun, buffTime;
+        public int damage, manaCost, chains, repeats, leechPct, hits, buffPct, guardPct, bossPct;
+        public float cooldown, radius, range, freeze, stun, buffTime, guardTime;
         public bool usesLife;
     }
 
@@ -419,6 +440,7 @@ namespace DotRPG
             {
                 chains = active.chains, freeze = active.freeze, stun = active.stun, range = active.range,
                 hits = active.hits, buffPct = active.buffPct, buffTime = active.buffTime,
+                guardPct = active.guardPct, guardTime = active.guardTime,
             };
             foreach (var s in supports)
             {
@@ -429,15 +451,27 @@ namespace DotRPG
                 n.repeats += s.repeats;
                 n.chains += active.chains > 0 ? s.extraChains : 0;
                 n.leechPct += s.leechPct;
+                n.bossPct += s.bossDamage;
             }
             float inc = IncDamage + SlotStat(PassiveStat.SkillDamage, slot);
             float area = (1f + (Aoe + SlotStat(PassiveStat.SkillArea, slot)) / 100f) * moreAoe;
             n.damage = Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + inc / 100f) * active.damageMult * more));
-            n.radius = active.radius * area;
+            // [SKILL v2] Area bonuses grow the AREA (radius by the square root); v1 multiplied the radius,
+            // which squared every bonus (+35% and +25% made a 2.85x area).
+            float grow = SkillGems.UseLegacy ? area : Mathf.Sqrt(area);
+            n.radius = active.radius * grow;
             // An ultimate's target area grows with its area bonuses too.
-            if (active.IsUltimate) n.range = active.range * area;
+            if (active.IsUltimate) n.range = active.range * grow;
             n.cooldown = active.cooldown * CooldownMultiplier * Mathf.Max(0.3f, 1f - SlotStat(PassiveStat.SkillCooldown, slot) / 100f);
             n.repeats += SlotStat(PassiveStat.SkillRepeat, slot);
+            if (active.guardPct > 0)
+            {
+                // [SKILL v2] Defence skills turn the slot's passives into their own terms:
+                // damage nodes -> stronger reduction (a quarter of the %), area nodes -> longer duration.
+                n.guardPct = Mathf.Min(70, active.guardPct + Mathf.RoundToInt(SlotStat(PassiveStat.SkillDamage, slot) / 4f));
+                n.guardTime = active.guardTime * area;
+                n.repeats = 0;
+            }
             n.usesLife = Has(Keystone.BloodMagic);
             n.manaCost = Mathf.Max(1, Mathf.RoundToInt(active.manaCost * mana * (1f - ManaCostReduction / 100f)));
             return n;

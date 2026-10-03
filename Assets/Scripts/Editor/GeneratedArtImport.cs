@@ -121,7 +121,7 @@ namespace DotRPG.EditorTools
             {
                 string name = System.IO.Path.GetFileNameWithoutExtension(file);
                 bool iconFile = name.StartsWith("eqicon_") || name.StartsWith("maticon_") || name.StartsWith("icon_")
-                    || name.StartsWith("gem_") || name.StartsWith("menuicon_") || name == "ui_level_badge"; // [ART] skill / menu icons, level badge
+                    || name.StartsWith("gem_") || name.StartsWith("menuicon_") || name == "ui_level_badge" || name == "ui_lock"; // [ART] skill / menu icons, level badge
                 bool wide = name == "ui_logo" || name.StartsWith("banner_");
                 if (!iconFile && !wide) continue;
                 var importer = Prepare(file.Replace('\\', '/'));

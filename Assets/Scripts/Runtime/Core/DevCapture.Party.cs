@@ -119,7 +119,7 @@ namespace DotRPG
             PCheck($"companion damage scale={scale} elin atk={elinAtk} vs same-gear player {sameGear} ({elinAtk * 100 / Mathf.Max(1, sameGear)}%) local atk={CharacterStats.AttackDamage(local.Class)}",
                 scale >= 0.6f && scale <= 0.7f && Mathf.Abs(elinAtk - sameGear * scale) <= 1f);
             PCheck($"skill slots by level: bron open={string.Join("", Enumerable.Range(0, 5).Select(s => bron.Data.Progression.IsSlotOpen(s) ? "1" : "0"))} supports={string.Join("/", bron.Data.Progression.Supports(0).Select(g => g.id))}",
-                bron.Data.Progression.IsSlotOpen(3) && bron.Data.Progression.Active(3)?.id == "cry");
+                bron.Data.Progression.IsSlotOpen(2) && bron.Data.Progression.Active(2)?.id == "cry"); // [SKILL v2] 전쟁 함성 = slot 3
             PCheck($"static CharacterStats = local member: maxHp {CharacterStats.MaxHp}=={local.Data.Stats.MaxHp} mp {CharacterStats.MaxMp}=={local.MaxMana} session mana mirrors={Mathf.Approximately(Game.Session.PlayerMana, local.Data.Mana)}",
                 CharacterStats.MaxHp == local.Data.Stats.MaxHp && CharacterStats.MaxMp == local.MaxMana && Mathf.Approximately(Game.Session.PlayerMana, local.Data.Mana));
 

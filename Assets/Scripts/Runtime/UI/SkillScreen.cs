@@ -345,13 +345,17 @@ namespace DotRPG
                 if (gem == null) { slotInfo[s].text = ""; continue; }
                 var n = CharacterStats.Skill(cls, s, gem, prog.Supports(s));
                 var sb = new StringBuilder($"<b>{gem.name}</b>{(ult ? "  <color=#ffd66e>[각성 기술]</color>" : "")}   <color=#b8c4d8>{gem.description}</color>\n");
-                sb.Append($"피해 <color=#ffe066>{n.damage}</color>{(n.hits > 1 ? $" × {n.hits}회" : "")}   {(n.usesLife ? "HP" : "MP")} 소모 {n.manaCost}   재사용 {n.cooldown:0.##}초   범위 {n.radius:0.#}");
+                // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
+                bool single = gem.id == "crush" || gem.id == "lance";
+                if (n.guardPct > 0) sb.Append($"받는 피해 <color=#ffe066>-{n.guardPct}%</color> ({n.guardTime:0}초)   {(n.usesLife ? "HP" : "MP")} 소모 {n.manaCost}   재사용 {n.cooldown:0.##}초");
+                else sb.Append($"피해 <color=#ffe066>{n.damage}</color>{(n.hits > 1 ? $" × {n.hits}회" : "")}   {(n.usesLife ? "HP" : "MP")} 소모 {n.manaCost}   재사용 {n.cooldown:0.##}초" + (single ? "   단일 대상" : $"   범위 {n.radius:0.#}"));
                 if (n.chains > 0) sb.Append(gem.id == "thunder" ? $"   낙뢰 {1 + n.chains}회" : $"   연쇄 {n.chains}");
                 if (n.repeats > 0) sb.Append($"   반복 +{n.repeats}");
                 if (n.freeze > 0) sb.Append($"   빙결 {n.freeze:0.#}초");
                 if (n.stun > 0) sb.Append($"   기절 {n.stun:0.#}초");
                 if (n.buffPct > 0) sb.Append($"   피해 +{n.buffPct}% ({n.buffTime:0}초)");
                 if (n.leechPct > 0) sb.Append($"   흡혈 {n.leechPct}%");
+                if (n.bossPct > 0) sb.Append($"   보스 피해 +{n.bossPct}%");
                 var sup = new List<string>();
                 foreach (var g in prog.Supports(s)) sup.Add(g.name);
                 string bonus = TreeBonus(s);

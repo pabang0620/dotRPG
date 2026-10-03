@@ -56,8 +56,12 @@ namespace DotRPG
                 v.locks[i] = UIFactory.Image(bg.transform, "Lock", Game.Art.Get("ui_white"), new Color(0.02f, 0.03f, 0.06f, 0.62f));
                 v.locks[i].preserveAspect = false;
                 UIFactory.Stretch(v.locks[i].rectTransform, 3f, 3f, 3f, 3f);
-                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 17, new Color32(220, 226, 240, 255), TextAnchor.MiddleCenter, true);
-                UIFactory.Stretch(v.lockTexts[i].rectTransform, 0f, 0f, 0f, 0f);
+                // [ART] Padlock above the opening level (it lives on the dark cover, so it hides with it).
+                var padlock = UIFactory.Image(v.locks[i].transform, "Padlock", Game.Art.Get("ui_lock"), Color.white);
+                padlock.preserveAspect = true;
+                UIFactory.Place(padlock.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 9f), new Vector2(24f, 24f));
+                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 15, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
+                UIFactory.Stretch(v.lockTexts[i].rectTransform, 0f, 4f, 0f, 0f);
 
                 v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 24 : 21, Color.white, TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(v.timers[i].rectTransform);
@@ -86,7 +90,7 @@ namespace DotRPG
                 icons[i].enabled = shown != null;
                 if (shown != null) icons[i].sprite = Game.Art.Get(shown.icon);
                 bool open = gem != null;
-                locks[i].enabled = !open;
+                locks[i].gameObject.SetActive(!open); // the padlock child goes with it
                 lockTexts[i].enabled = !open;
                 if (!open)
                 {

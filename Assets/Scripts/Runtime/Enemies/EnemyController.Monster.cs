@@ -137,9 +137,22 @@ namespace DotRPG
             if (Def.kind == MonsterKind.Totem) return 0f;
             AddGroggy(seconds * GroggyPerCcSecond);
             if (Def.boss) return seconds * BossCrowdControlScale;
+            // [SKILL v2] Diminishing returns: each stun / freeze within CcChainWindow of the last one lasts half as
+            // long (1, 1/2, 1/4 ...), so two control skills can no longer keep a monster locked.
+            if (!SkillGems.UseLegacy)
+            {
+                if (Time.time > ccChainUntil) ccChain = 0;
+                seconds *= Mathf.Pow(0.5f, ccChain);
+                ccChain++;
+                ccChainUntil = Time.time + CcChainWindow;
+            }
             if (!SuperArmorActive) behaviour?.Interrupt();
             return seconds;
         }
+
+        const float CcChainWindow = 6f;
+        int ccChain;
+        float ccChainUntil;
 
         bool MonsterBeforeDamage(ref DamageInfo info)
         {

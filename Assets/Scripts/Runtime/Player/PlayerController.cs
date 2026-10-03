@@ -521,6 +521,8 @@ namespace DotRPG
                 if (IsLocal) GameEvents.RaiseToast("막았다!");
                 return false;
             }
+            int guard = Data.GuardReduction; // [SKILL v2] 철벽 / 마나 보호막
+            if (guard > 0) info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * (1f - guard / 100f)));
             if (!health.TryDamage(info)) return false;
             CancelMobility();
             Game.Party?.RecordDamageTaken(this, info);

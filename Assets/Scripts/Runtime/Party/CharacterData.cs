@@ -87,6 +87,19 @@ namespace DotRPG
 
         public int BuffDamage => Time.time < buffUntil ? buffPct : 0;
         public float BuffRemaining => Mathf.Max(0f, buffUntil - Time.time);
-        public void ClearBuffs() => buffUntil = 0f;
+        public void ClearBuffs() { buffUntil = 0f; guardUntil = 0f; }
+
+        // ---------- [SKILL v2] Damage taken reduction (철벽 / 마나 보호막) ----------
+        float guardUntil;
+        int guardPct;
+
+        public void ApplyGuard(int pct, float seconds)
+        {
+            guardPct = pct;
+            guardUntil = Time.time + seconds;
+        }
+
+        /// <summary>% less damage taken right now.</summary>
+        public int GuardReduction => Time.time < guardUntil ? guardPct : 0;
     }
 }

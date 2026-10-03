@@ -270,20 +270,31 @@ namespace DotRPG
             Vector2 c = self.Center;
             switch (gem.id)
             {
+                // [SKILL v2] single-target main attacks: on the current target whenever it is in reach.
+                case "crush":
+                case "lance":
+                    return dist <= n.range * 0.95f;
+                // [SKILL v2] defence: when hurt with monsters close, or (tanks) when holding the aggro.
+                case "guard":
+                case "barrier":
+                    return CountNear(c, 2.5f) >= 1 && (self.Health.Current < self.Health.Max * 0.7f || (Def.role == MercRole.Tank && TargetsMe(self)));
                 case "cry":
                     // Shout when monsters are close, or when one is on somebody else (take its aggro).
                     return CountNear(c, n.radius * 0.9f) >= 1 && (CountNear(c, n.radius) >= 2 || !TargetsMe(self));
                 case "whirl":
-                    return CountNear(c, n.radius * 0.9f) >= (Def.role == MercRole.Tank ? 1 : 2);
+                    // v2: the area skill pays off from three monsters (Tools/balance/theory_skills.py).
+                    return CountNear(c, n.radius * 0.9f) >= (SkillGems.UseLegacy ? (Def.role == MercRole.Tank ? 1 : 2) : 3);
                 case "nova":
                     // Freeze whatever gets close (the control mage's answer to melee monsters).
                     return CountNear(c, n.radius * 0.85f) >= 1;
                 case "slam":
                 case "wave":
                     return dist <= n.range * 0.9f;
+                case "frostorb":
+                    // v2: thrown into a group of three or more around the target.
+                    return dist <= n.range * 0.9f && (SkillGems.UseLegacy || (Target != null && CountNear(Target.Center, n.radius) >= 3));
                 case "arc":
                 case "thunder":
-                case "frostorb":
                     return dist <= n.range * 0.9f;
                 default:
                     // Awakening skills: only into a crowd.
