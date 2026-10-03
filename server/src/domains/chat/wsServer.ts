@@ -7,6 +7,9 @@ import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { verifyAccessToken } from '../../middleware/authMiddleware';
+import { isShuttingDown } from '../../ops/lifecycle';
+import { maintPhase, maintRetryAfterMs } from '../../ops/maintenanceState';
+import { metrics } from '../../ops/metrics';
 import { getRateLimitStore } from '../../middleware/rateLimiter';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
@@ -62,7 +65,11 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
   server.on('upgrade', (req, socket, head) => {
     const path = new URL(req.url ?? '/', 'http://localhost').pathname;
     if (path !== '/ws') return reject(socket, '404 Not Found');
-    if (closing) return reject(socket, '503 Service Unavailable');
+    // 종료 중이거나 점검 중(active)이면 새 연결을 받지 않는다(phase7_ops.md 4.2, 4.5)
+    if (closing || isShuttingDown() || maintPhase() === 'active') {
+      metrics.wsHandshakeRejected++;
+      return reject(socket, '503 Service Unavailable');
+    }
     const ip = clientIp(req);
     const store = getRateLimitStore();
     const key = `ws-handshake:${ip}`;
@@ -325,7 +332,12 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
     async close(): Promise<void> {
       closing = true;
       clearInterval(tick);
-      for (const s of registry.all()) s.close(CLOSE.GOING_AWAY, 'GOING_AWAY', true, randomInt(3000, 8001));
+      // 점검 창이 active면 reason=MAINTENANCE와 긴 retry_after_ms, 아니면 기존 GOING_AWAY(3~8초 무작위)
+      const maint = maintPhase() === 'active';
+      for (const s of registry.all()) {
+        if (maint) s.close(CLOSE.GOING_AWAY, 'MAINTENANCE', true, maintRetryAfterMs());
+        else s.close(CLOSE.GOING_AWAY, 'GOING_AWAY', true, randomInt(3000, 8001));
+      }
       await getChatWriter().drain();
       await stopSanctionListener();
       await new Promise<void>((resolve) => {

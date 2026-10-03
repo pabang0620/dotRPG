@@ -62,3 +62,6 @@ for (const k of [
 process.env.AUCTION_MIN_LEVEL = '1';
 process.env.AUCTION_MIN_ACCOUNT_AGE_DAYS = '0';
 process.env.AUCTION_TICK_ENABLED = 'false';
+// 7단계: 관리자 비밀키(테스트 전용 값), 정리 배치 간 대기 없음
+process.env.ADMIN_SECRET_KEY = Buffer.alloc(32, 7).toString('base64');
+process.env.PURGE_BATCH_SLEEP_MS = '0';

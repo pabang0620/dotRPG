@@ -1,0 +1,82 @@
+# 운영용 compose (phase7_ops.md 3.2). 인터넷에 열리는 것은 caddy의 80/443뿐이다.
+# 사용: cd server/ops && docker compose -f compose.prod.yml --env-file ../.env up -d
+# 관리형 DB를 쓰면 postgres 서비스를 지우고 .env 의 DATABASE_URL 을 관리형 주소(TLS, 세션 연결)로 둔다.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  api:
+    image: ${API_IMAGE:?API_IMAGE (예: dotrpg-api:<git 해시>) 가 필요합니다}
+    init: true                    # 신호 전달, 좀비 정리(F1)
+    restart: unless-stopped
+    stop_grace_period: 40s        # SHUTDOWN_GRACE_SECONDS(30) + 여유
+    mem_limit: 1g
+    env_file: ../.env
+    environment:
+      NODE_ENV: production
+      TRUST_PROXY: "1"            # Caddy 한 단계(F6). 앞에 CDN이 더 있으면 단수를 늘린다
+      GAME_DATA_DIR: /app/data
+      MEMORY_LIMIT_MB: "1024"     # 감시자의 메모리 경고 기준
+      DATABASE_URL: ${DATABASE_URL:-postgres://dotrpg:${POSTGRES_PASSWORD}@postgres:5432/dotrpg}
+    expose:
+      - "3000"                    # 호스트에 publish하지 않는다(F2)
+    healthcheck:                  # slim 이미지에는 curl이 없다
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      start_period: 30s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "10"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:                       # 관리형 DB를 쓰면 이 서비스를 지운다
+    image: postgres:16            # pgBackRest(WAL 아카이브)를 쓰면 build: { dockerfile: postgres.Dockerfile } 로 바꾼다
+    restart: unless-stopped
+    shm_size: 256mb
+    environment:
+      POSTGRES_USER: dotrpg
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD 가 필요합니다}
+      POSTGRES_DB: dotrpg
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres.conf:/etc/postgresql/postgresql.conf:ro
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dotrpg -d dotrpg"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+volumes:
+  pgdata: {}
+  caddy_data: {}
+  caddy_config: {}

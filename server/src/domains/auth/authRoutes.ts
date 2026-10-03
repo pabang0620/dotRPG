@@ -12,8 +12,12 @@ const clientOnly = versionCheck({ data: false });
 /** /auth/* 와 /me. 개발용 로그인은 꺼진 환경에서 라우트 자체를 등록하지 않는다(404). */
 export function createAuthRouter(): Router {
   const r = Router();
-  if (getConfig().authDevEnabled) {
+  const cfg = getConfig();
+  // 가입은 로그인과 별도 스위치다(G4): 운영 기본 꺼짐, 개발용 계정은 관리자 도구(PL7)가 발급한다
+  if (cfg.authDevRegisterEnabled) {
     r.post('/auth/dev/register', clientOnly, validate({ body: credentialsBody }), controller.register);
+  }
+  if (cfg.authDevEnabled) {
     r.post('/auth/dev/login', clientOnly, validate({ body: credentialsBody }), controller.login);
   }
   // Steam 인증: off에서는 라우트를 등록하지 않는다(404). 데이터 버전은 검사하지 않는다(/auth/* 규칙)

@@ -2,11 +2,16 @@
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 import type { Bind } from '../economy/economyRepository';
-import type { MailKind } from './mailNotify';
+import { announceMail, type MailKind } from './mailNotify';
+import { insertItemLedger } from '../economy/economyRepository';
+
+export type SystemCode = 'compensation' | 'event' | 'refund' | 'notice';
 
 export interface NewMail {
   characterId: number;
   kind: MailKind;
+  /** kind=system일 때만(0008 mails_system_chk) */
+  systemCode?: SystemCode | null;
   listingId: number | null;
   bidId: number | null;
   refItemKey: string | null;
@@ -26,17 +31,62 @@ export async function insertMail(
   const r = await client.query<{ id: string; uuid: string; char_uuid: string }>(
     `WITH ins AS (
        INSERT INTO mails (character_id, kind, listing_id, bid_id, ref_item_key, ref_count, item_key, count, bind, gold,
-                          created_at, expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                          created_at, expires_at, system_code)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING id, uuid)
      SELECT ins.id, ins.uuid, (SELECT uuid FROM characters WHERE id = $1) AS char_uuid FROM ins`,
     [
       m.characterId, m.kind, m.listingId, m.bidId, m.refItemKey, m.refCount, m.itemKey, m.count, m.bind, m.gold,
-      m.createdAt, m.expiresAt,
+      m.createdAt, m.expiresAt, m.systemCode ?? null,
     ],
   );
   const row = r.rows[0] as { id: string; uuid: string; char_uuid: string };
   return { id: Number(row.id), uuid: row.uuid, characterUuid: row.char_uuid };
+}
+
+/**
+ * D6 시스템 우편: 운영 지급이 쓰는 유일한 경로. 골드는 우편이 들고 있다가 수령 때 gold_ledger(mail_claim)로 들어가고,
+ * 아이템은 item_ledger('admin_grant', mail +n)로 남긴다. 알림은 커밋 뒤에 나간다(announceMail).
+ */
+export async function createSystemMail(
+  client: PoolClient,
+  m: {
+    characterId: number;
+    systemCode: SystemCode;
+    gold: number;
+    item: { itemKey: string; count: number; bind: Bind } | null;
+    now: Date;
+    expiresAt: Date;
+    requestId: string;
+  },
+): Promise<{ id: number; uuid: string; characterUuid: string }> {
+  const mail = await insertMail(client, {
+    characterId: m.characterId,
+    kind: 'system',
+    systemCode: m.systemCode,
+    listingId: null,
+    bidId: null,
+    refItemKey: m.item?.itemKey ?? null,
+    refCount: m.item?.count ?? null,
+    itemKey: m.item?.itemKey ?? null,
+    count: m.item?.count ?? null,
+    bind: m.item?.bind ?? null,
+    gold: m.gold,
+    createdAt: m.now,
+    expiresAt: m.expiresAt,
+  });
+  if (m.item) {
+    await insertItemLedger(client, m.characterId, m.item.itemKey, m.item.count, m.item.count, 'mail', 'admin_grant', mail.uuid, m.requestId);
+  }
+  announceMail(client, {
+    characterUuid: mail.characterUuid,
+    mailUuid: mail.uuid,
+    kind: 'system',
+    refItemKey: m.item?.itemKey ?? null,
+    gold: m.gold,
+    at: m.now,
+  });
+  return mail;
 }
 
 export interface MailRow {
@@ -44,6 +94,7 @@ export interface MailRow {
   uuid: string;
   characterId: number;
   kind: MailKind;
+  systemCode: SystemCode | null;
   listingId: number | null;
   refItemKey: string | null;
   refCount: number | null;
@@ -62,6 +113,7 @@ interface RawMail {
   uuid: string;
   character_id: string;
   kind: MailKind;
+  system_code: SystemCode | null;
   listing_id: string | null;
   ref_item_key: string | null;
   ref_count: number | null;
@@ -75,7 +127,7 @@ interface RawMail {
   expired_at: Date | null;
 }
 
-const MAIL_COLS = `id, uuid, character_id, kind, listing_id, ref_item_key, ref_count, item_key, count, bind, gold,
+const MAIL_COLS = `id, uuid, character_id, kind, system_code, listing_id, ref_item_key, ref_count, item_key, count, bind, gold,
   created_at, expires_at, claimed_at, expired_at`;
 
 const toMail = (r: RawMail): MailRow => ({
@@ -83,6 +135,7 @@ const toMail = (r: RawMail): MailRow => ({
   uuid: r.uuid,
   characterId: Number(r.character_id),
   kind: r.kind,
+  systemCode: r.system_code,
   listingId: r.listing_id === null ? null : Number(r.listing_id),
   refItemKey: r.ref_item_key,
   refCount: r.ref_count,

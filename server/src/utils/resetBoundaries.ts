@@ -43,3 +43,20 @@ export function gameWeekday(nowUtc: Date): string {
   const start = Date.parse(resetBoundaries(nowUtc).dailyStartAt);
   return WEEKDAY_NAMES[new Date(start + KST_OFFSET_MS).getUTCDay()] as string;
 }
+
+/** KST 시각 "HH:mm". 점검 공지와 안내 문장이 쓴다(KST 변환은 이 모듈 한 곳). */
+export function formatKstHm(at: Date): string {
+  const k = new Date(at.getTime() + KST_OFFSET_MS);
+  const hh = String(k.getUTCHours()).padStart(2, '0');
+  const mm = String(k.getUTCMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+/** KST 기준으로 매일 hh:mm 이후의 다음 시각(UTC Date). JobRunner의 "매일 HH:mm KST" 스케줄이 쓴다. */
+export function nextKstDailyAt(now: Date, hour: number, minute: number): Date {
+  const kstMs = now.getTime() + KST_OFFSET_MS;
+  const midnight = Math.floor(kstMs / DAY_MS) * DAY_MS;
+  let t = midnight + (hour * 60 + minute) * 60_000;
+  if (t <= kstMs) t += DAY_MS;
+  return new Date(t - KST_OFFSET_MS);
+}

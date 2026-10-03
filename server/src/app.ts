@@ -1,19 +1,34 @@
 import express, { type Express, type RequestHandler } from 'express';
 import { getConfig } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { maintenanceGuard } from './middleware/maintenanceGuard';
 import { ipKey, MINUTE, rateLimit } from './middleware/rateLimiter';
+import { lifecycleGuard } from './ops/lifecycle';
 import { createRouter } from './routes';
 import { logger } from './utils/logger';
 
+const HEALTH_PATH = /^\/health(\/live|\/ready)?$/;
+
 const requestLog: RequestHandler = (req, res, next) => {
-  // /health는 로드밸런서가 계속 부르므로 로그에서 뺀다
-  if (req.path === '/health') {
+  // /health*는 로드밸런서가 계속 부르므로 로그에서 뺀다
+  if (HEALTH_PATH.test(req.path)) {
     next();
     return;
   }
   const start = Date.now();
   res.on('finish', () => {
-    logger.info({ method: req.method, path: req.path, status: res.statusCode, ms: Date.now() - start }, 'request');
+    const account = (res.locals.account as { uuid?: string } | undefined)?.uuid;
+    logger.info(
+      {
+        req_id: res.locals.reqId,
+        ...(account ? { account } : {}),
+        method: req.method,
+        path: req.path,
+        status: res.statusCode,
+        ms: Date.now() - start,
+      },
+      'request',
+    );
   });
   next();
 };
@@ -48,14 +63,16 @@ export function createApp(): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', getConfig().trustProxy);
+  app.use(lifecycleGuard);
   app.use(requestLog);
   app.use((req, res, next) => {
-    if (req.path === '/health') next();
+    if (HEALTH_PATH.test(req.path)) next();
     else if (ECONOMY_PATH.test(req.path)) economyLimit(req, res, next);
     else if (SOCIAL_PATH.test(req.path)) socialLimit(req, res, next);
     else generalLimit(req, res, next);
   });
   app.use(express.json({ limit: '64kb' }));
+  app.use(maintenanceGuard);
   app.use(createRouter());
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -16,6 +16,7 @@ export const CLOSE = {
   SLOW_CONSUMER: 4008,
   IDLE: 4009,
   CHARACTER_INVALID: 4010,
+  KICKED: 4011,
   CLIENT_OUTDATED: 4426,
 } as const;
 

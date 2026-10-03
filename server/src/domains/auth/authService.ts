@@ -10,6 +10,7 @@ import {
   getRateLimitStore,
 } from '../../middleware/rateLimiter';
 import { AppError } from '../../utils/AppError';
+import { metrics } from '../../ops/metrics';
 import { logger } from '../../utils/logger';
 import * as repo from './authRepository';
 import { verifyTicket } from './steamProvider';
@@ -90,6 +91,7 @@ export async function login(loginId: string, password: string, ip: string) {
   const ok = await argon2.verify(identity ? identity.secret_hash : await getDummyHash(), password);
   if (!identity || !ok || identity.deleted_at) {
     store.add(failKey, failWindow);
+    metrics.recordLoginFailure();
     throw new AppError(401, '아이디 또는 비밀번호가 올바르지 않습니다.', 'INVALID_CREDENTIALS');
   }
   if (identity.banned_until && identity.banned_until.getTime() > Date.now()) {

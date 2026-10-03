@@ -66,8 +66,20 @@ describe('환경변수 검증', () => {
   });
 
   it('production 에서는 개발용 로그인 기본값이 꺼진다', () => {
-    const base = { DATABASE_URL: 'x', JWT_SECRET: 'a'.repeat(32), MIN_CLIENT_VERSION: '0.1.0' };
-    expect(loadConfig({ ...base, NODE_ENV: 'production' }).authDevEnabled).toBe(false);
+    const base = { DATABASE_URL: 'x', JWT_SECRET: 'Xk3pQ9vL2mWz7RtB5nYhJ8cDfGa1SeUo4iPq6TyHbVw', MIN_CLIENT_VERSION: '0.1.0' };
+    // 운영 값(7단계 가드): Steam web_api, steam 전송, 프록시 1단, 관리자 비밀키
+    const prod = {
+      ...base,
+      NODE_ENV: 'production',
+      STEAM_AUTH_MODE: 'web_api',
+      STEAM_APP_ID: '2800000',
+      STEAM_WEB_API_KEY: 'k',
+      PARTY_TRANSPORT: 'steam',
+      TRUST_PROXY: '1',
+      ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
+    };
+    expect(loadConfig(prod).authDevEnabled).toBe(false);
+    expect(loadConfig(prod).authDevRegisterEnabled).toBe(false);
     expect(loadConfig({ ...base, NODE_ENV: 'development' }).authDevEnabled).toBe(true);
   });
 });

@@ -6,9 +6,23 @@ let pool: Pool | null = null;
 
 export function getPool(): Pool {
   if (!pool) {
-    pool = new Pool({ connectionString: getConfig().databaseUrl, max: 10 });
+    const cfg = getConfig();
+    // 앱 풀에만 건다(마이그레이션·pg_dump가 끊기지 않게 역할 전체에는 걸지 않는다)
+    pool = new Pool({
+      connectionString: cfg.databaseUrl,
+      max: cfg.dbPoolMax,
+      statement_timeout: cfg.dbStatementTimeoutMs,
+      idle_in_transaction_session_timeout: 30_000,
+    });
   }
   return pool;
+}
+
+/** 풀 상태(관리자 ops status, 감시자) */
+export function poolStats(): { total: number; idle: number; waiting: number; max: number } {
+  return pool
+    ? { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount, max: getConfig().dbPoolMax }
+    : { total: 0, idle: 0, waiting: 0, max: getConfig().dbPoolMax };
 }
 
 export async function closePool(): Promise<void> {

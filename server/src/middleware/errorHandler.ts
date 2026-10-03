@@ -4,6 +4,7 @@ import { errorResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 
 export const notFoundHandler: RequestHandler = (_req, res) => {
+  res.locals.errCode = 'NOT_FOUND';
   errorResponse(res, '찾을 수 없는 경로입니다.', 404, { code: 'NOT_FOUND' });
 };
 
@@ -18,8 +19,9 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, next)
     return;
   }
   if (err instanceof AppError) {
+    res.locals.errCode = err.code ?? 'ERROR';
     const retry = err.extra?.retry_after_sec;
-    if (err.status === 429 && typeof retry === 'number') {
+    if ((err.status === 429 || err.status === 503) && typeof retry === 'number') {
       res.setHeader('Retry-After', String(retry));
     }
     errorResponse(res, err.message, err.status, { code: err.code ?? 'ERROR', ...err.extra });

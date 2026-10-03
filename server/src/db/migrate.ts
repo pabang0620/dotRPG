@@ -21,6 +21,21 @@ export function splitMigration(sql: string): { up: string; down: string } {
   };
 }
 
+// `-- no-transaction` 줄이 UP 구간에 있으면 문장마다 따로(트랜잭션 없이) 실행한다: CREATE INDEX CONCURRENTLY용(phase7_ops.md 3.5).
+// 문장은 줄 끝의 `;` 로 나눈다(함수 본문처럼 `;`가 줄 끝에 나오는 구문은 이 모드에서 쓰지 않는다).
+const NO_TX_MARK = /^-- no-transaction\s*$/m;
+
+export function isNoTransaction(up: string): boolean {
+  return NO_TX_MARK.test(up);
+}
+
+export function splitStatements(sql: string): string[] {
+  return sql
+    .split(/;[ \t]*\r?\n/)
+    .map((x) => x.trim())
+    .filter((x) => x.replace(/--.*$/gm, '').trim().length > 0);
+}
+
 function listFiles(dir: string): string[] {
   return fs
     .readdirSync(dir)
@@ -53,14 +68,23 @@ export async function migrateUp(databaseUrl: string, dir = MIGRATIONS_DIR): Prom
     for (const file of listFiles(dir)) {
       if (done.has(file)) continue;
       const { up } = splitMigration(fs.readFileSync(path.join(dir, file), 'utf8'));
-      try {
-        await client.query('BEGIN');
-        await client.query(up);
-        await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file]);
-        await client.query('COMMIT');
-      } catch (err) {
-        await client.query('ROLLBACK');
-        throw new Error(`마이그레이션 ${file} 실패: ${(err as Error).message}`);
+      if (isNoTransaction(up)) {
+        try {
+          for (const stmt of splitStatements(up)) await client.query(stmt);
+          await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file]);
+        } catch (err) {
+          throw new Error(`마이그레이션 ${file} 실패(트랜잭션 없는 파일이라 앞 문장은 적용됐을 수 있습니다): ${(err as Error).message}`);
+        }
+      } else {
+        try {
+          await client.query('BEGIN');
+          await client.query(up);
+          await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file]);
+          await client.query('COMMIT');
+        } catch (err) {
+          await client.query('ROLLBACK');
+          throw new Error(`마이그레이션 ${file} 실패: ${(err as Error).message}`);
+        }
       }
       applied.push(file);
     }

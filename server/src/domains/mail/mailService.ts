@@ -25,6 +25,7 @@ async function mustOwn(accountId: number, characterUuid: string) {
 const mailView = (m: MailRow, now: Date) => ({
   id: m.uuid,
   kind: m.kind,
+  ...(m.kind === 'system' ? { system_code: m.systemCode } : {}),
   ref_item_key: m.refItemKey,
   ref_count: m.refCount,
   item: m.itemKey === null ? null : { item_key: m.itemKey, count: m.count, bind: m.bind },
@@ -54,7 +55,7 @@ export async function mailSummary(accountId: number, characterUuid: string, q: S
     latest_at: s.latestAt ? s.latestAt.toISOString() : null,
     active_listings: await countActiveOfSeller(getPool(), c.id),
     my_top_bids: await activeCountOfBidder(getPool(), c.id),
-    new: s.fresh.map((m) => ({ kind: m.kind, at: m.createdAt.toISOString(), ref_item_key: m.refItemKey, gold: m.gold })),
+    new: s.fresh.map((m) => ({ kind: m.kind, ...(m.kind === 'system' ? { system_code: m.systemCode } : {}), at: m.createdAt.toISOString(), ref_item_key: m.refItemKey, gold: m.gold })),
     server_time: now.toISOString(),
   };
 }

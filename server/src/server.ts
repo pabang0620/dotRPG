@@ -1,66 +1,133 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { startAdminServer } from './admin/adminServer';
 import { createApp } from './app';
 import { initConfig } from './config/env';
-import { purgeExpiredRequestLogs } from './db/idempotency';
 import { closePool, getPool } from './db/pool';
-import { purgeChatData } from './domains/chat/chatRepository';
-import { attachRealtime } from './domains/chat/wsServer';
 import { startAuctionTicker } from './domains/auction/auctionTicker';
+import { attachRealtime } from './domains/chat/wsServer';
 import { runMatchTick } from './domains/match/matchService';
 import { runSettleTick } from './domains/partyruns/partySettle';
 import { initGameData } from './gamedata/loader';
+import { beginShutdown, inFlightCount, isShuttingDown, setWsState, waitForInFlight } from './ops/lifecycle';
+import { closeInterruptedRuns, requestJobStop, runJob, startJobRunner } from './ops/jobRunner';
+import { registerAllJobs } from './ops/jobs';
+import { startAnnouncer } from './ops/maintenanceAnnouncer';
+import { loadMaintenanceFromDb, startMaintenancePolling } from './ops/maintenanceState';
+import { metrics } from './ops/metrics';
+import { startWatchdog } from './ops/watchdog';
 import { logger } from './utils/logger';
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 async function main(): Promise<void> {
   const envFile = path.resolve(process.cwd(), '.env');
   if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
 
-  // 설정·게임 데이터가 틀리면 여기서 던져서 기동이 멈춘다
+  // 설정·게임 데이터가 틀리면 여기서 던져서 기동이 멈춘다(운영 가드 G1~G7 포함)
   const cfg = initConfig();
   const data = initGameData(cfg.gameDataDir);
   await getPool().query('SELECT 1');
 
+  registerAllJobs();
+  const interrupted = await closeInterruptedRuns();
+  if (interrupted > 0) logger.warn({ interrupted }, 'job_runs interrupted rows closed');
+  await loadMaintenanceFromDb();
+
   const app = createApp();
+  setWsState('pending');
   const server = app.listen(cfg.port, () => {
     logger.info({ port: cfg.port, dataVersion: data.dataVersion }, 'server started');
   });
-
   const realtime = await attachRealtime(server);
+  setWsState('attached');
+  const adminServer = cfg.admin.enabled ? await startAdminServer() : null;
 
-  const purge = setInterval(() => {
-    purgeChatData(cfg.social.chatRetentionDays, cfg.social.reportRetentionDays).catch((err: unknown) =>
-      logger.error({ err }, 'chat purge failed'),
-    );
-    purgeExpiredRequestLogs(getPool(), cfg.requestLogTtlDays).catch((err: unknown) =>
-      logger.error({ err }, 'request_log purge failed'),
-    );
-  }, 60 * 60 * 1000);
-  purge.unref();
+  const stops: (() => void)[] = [];
+  stops.push(startMaintenancePolling(), startAnnouncer(), startWatchdog());
+  const stopJobs = cfg.ops.jobsEnabled ? startJobRunner() : async () => undefined;
+  if (cfg.ops.jobsEnabled) runJob('maintenance-close', 'startup').catch((err: unknown) => logger.error({ err }, 'startup job failed'));
 
   // 자동 매칭 틱(1초). 대기열은 메모리라 한 대 서버 전제
   const tick = setInterval(() => {
-    runMatchTick().catch((err: unknown) => logger.error({ err }, 'match tick failed'));
-    runSettleTick().catch((err: unknown) => logger.error({ err }, 'settle tick failed'));
+    if (isShuttingDown()) return;
+    metrics.track('match', runMatchTick).catch((err: unknown) => logger.error({ err }, 'match tick failed'));
+    metrics.track('settle', runSettleTick).catch((err: unknown) => logger.error({ err }, 'settle tick failed'));
   }, 1000);
   tick.unref();
 
   // 경매 마감 정산 틱(기동 직후 즉시 1회 + 주기). AUCTION_TICK_ENABLED=false면 쓰지 않는다
   const stopAuction = cfg.auction.tickEnabled ? startAuctionTicker() : () => undefined;
 
-  const shutdown = (): void => {
-    clearInterval(purge);
-    stopAuction();
-    clearInterval(tick);
-    // 새 업그레이드를 막고 모든 연결에 bye(1001)를 보낸 뒤 HTTP 서버를 닫는다(열린 WebSocket이 close를 막지 않게)
-    realtime.close().finally(() => {
-      server.close(() => {
-        closePool().finally(() => process.exit(0));
+  // 운영에서 개발용 로그인이 켜져 있으면(Steam 연동 전 시험 기간) 경고를 매시간 남긴다
+  if (cfg.nodeEnv === 'production' && cfg.authDevEnabled) {
+    const banner = (): void => logger.warn('DEV AUTH ENABLED IN PRODUCTION: 개발용 로그인이 켜져 있습니다(Steam 연동 전 시험 기간 전용)');
+    banner();
+    const t = setInterval(banner, 3_600_000);
+    t.unref();
+  }
+
+  // 정상 종료(phase7_ops.md 4.5): 전체 제한 SHUTDOWN_GRACE_SECONDS, 넘으면 exit(1)
+  let stopping = false;
+  const shutdown = async (signal: string): Promise<void> => {
+    if (stopping) return;
+    stopping = true;
+    const t0 = Date.now();
+    const timing: Record<string, number> = {};
+    const mark = (k: string, since: number): void => {
+      timing[k] = Date.now() - since;
+    };
+    const force = setTimeout(() => {
+      logger.error({ timing }, 'shutdown.timeout');
+      process.exit(1);
+    }, cfg.shutdownGraceSeconds * 1000);
+    try {
+      // 1. 종료 중 플래그: ready 503, 새 REST 요청 503 SHUTTING_DOWN, 새 WebSocket 거절
+      beginShutdown();
+      // 2. 틱·작업 정지 신호
+      clearInterval(tick);
+      stopAuction();
+      requestJobStop();
+      for (const s of stops) s();
+      // 3. 진행 중인 요청 대기(최대 10초)
+      let t = Date.now();
+      const drained = await waitForInFlight(10_000);
+      mark('in_flight_ms', t);
+      // 4. 모든 WebSocket에 bye, 채팅 쓰기 큐 비우기
+      t = Date.now();
+      await realtime.close();
+      mark('realtime_ms', t);
+      // 5. 진행 중인 틱·작업 대기(최대 10초)
+      t = Date.now();
+      await stopJobs();
+      const end = Date.now() + 10_000;
+      while (metrics.runningTotal() > 0 && Date.now() < end) await sleep(50);
+      mark('ticks_ms', t);
+      // 6. HTTP 서버 닫기, 풀 닫기
+      t = Date.now();
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+        server.closeIdleConnections();
+        setTimeout(() => server.closeAllConnections(), 2000).unref();
       });
-    });
+      if (adminServer) {
+        await new Promise<void>((resolve) => {
+          adminServer.close(() => resolve());
+          adminServer.closeAllConnections();
+        });
+      }
+      await closePool();
+      mark('close_ms', t);
+      logger.info({ signal, total_ms: Date.now() - t0, drained, in_flight_left: inFlightCount(), ...timing }, 'shutdown.done');
+      clearTimeout(force);
+      process.exit(0);
+    } catch (err) {
+      logger.error({ err, timing }, 'shutdown failed');
+      process.exit(1);
+    }
   };
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
 }
 
 main().catch((err: unknown) => {

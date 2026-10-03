@@ -1,0 +1,40 @@
+# Caddy 예시(phase7_ops.md 3.7). 도메인과 이메일은 자리표시다: 도메인이 정해지면 바꾸고 `caddy validate`로 확인한다.
+# 자동 인증서(ACME)에는 도메인의 A 레코드가 이 머신을 가리키고 80/443이 열려 있어야 한다.
+{
+  email 운영자@example.com
+  servers {
+    protocols h1 h2              # HTTP/3(UDP 443)을 끄면 방화벽 규칙이 하나 줄어든다
+  }
+}
+
+api.example.com {
+  encode zstd gzip
+  request_body {
+    max_size 128KB               # 앱 한도는 64KB
+  }
+
+  # 관리자 API는 어차피 이 네트워크에 없다(127.0.0.1:3001). 이중 방어
+  @admin path /admin /admin/*
+  respond @admin 404
+
+  # WebSocket(/ws)은 reverse_proxy가 업그레이드를 그대로 통과시킨다. 앱이 15초마다 ping한다
+  reverse_proxy api:3000 {
+    health_uri /health/ready
+    health_interval 10s
+    health_timeout 3s
+  }
+
+  log {
+    output stdout
+    format json
+  }
+
+  # api가 내려가 있는 동안에도 클라이언트는 앱과 같은 형식(errors.code=MAINTENANCE)의 응답을 받는다
+  handle_errors {
+    @down expression {err.status_code} in [502, 503, 504]
+    handle @down {
+      header Content-Type application/json
+      respond `{"success":false,"message":"서버 점검 중이거나 연결할 수 없습니다.","errors":{"code":"MAINTENANCE"}}` 503
+    }
+  }
+}

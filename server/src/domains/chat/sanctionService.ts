@@ -1,7 +1,7 @@
 // 제재: 채팅 금지 조회, 자동 제재(금칙어·도배), 접속 중 세션 반영(LISTEN dotrpg_sanction), 미통보 제재 알림
 import { Client } from 'pg';
 import { getConfig } from '../../config/env';
-import { query } from '../../db/pool';
+import { getPool, query, type Queryable } from '../../db/pool';
 import { logger } from '../../utils/logger';
 import type { ChatSession } from './chatSession';
 import { registry } from './realtimeNotifier';
@@ -20,6 +20,44 @@ export async function activeMuteUntil(accountId: number): Promise<number> {
   return ends ? ends.getTime() : 0;
 }
 
+/** 영구 정지의 종료 시각. PostgreSQL 'infinity'는 node-pg가 Date가 아닌 값으로 돌려줘 인증이 깨진다(F9) */
+export const PERMANENT_BAN_AT = new Date('9999-12-31T00:00:00Z');
+
+export interface NewSanction {
+  accountId: number;
+  kind: 'warning' | 'chat_mute' | 'ban';
+  source: 'auto_filter' | 'auto_spam' | 'auto_report' | 'admin';
+  reasonCode: string;
+  reportId?: number | null;
+  endsAt: Date | null;
+  createdBy: string;
+  note?: string | null;
+}
+
+/** 정지 중 가장 늦은 종료 시각으로 accounts.banned_until을 다시 계산한다(없으면 NULL). 호출 쪽이 계정 행을 잠갔다 */
+export async function recomputeBannedUntil(db: Queryable, accountId: number): Promise<Date | null> {
+  const r = await db.query<{ until: Date | null }>(
+    `UPDATE accounts SET banned_until = (
+        SELECT max(ends_at) FROM account_sanctions
+         WHERE account_id = $1 AND kind = 'ban' AND revoked_at IS NULL AND ends_at > now())
+      WHERE id = $1 RETURNING banned_until AS until`,
+    [accountId],
+  );
+  return r.rows[0]?.until ?? null;
+}
+
+/** 제재 한 건을 쓴다(자동 제재와 관리자 SA1이 같은 경로). 정지면 banned_until을 함께 갱신한다 */
+export async function insertSanction(db: Queryable, n: NewSanction): Promise<{ id: number; uuid: string }> {
+  const r = await db.query<{ id: string; uuid: string }>(
+    `INSERT INTO account_sanctions (account_id, kind, source, reason_code, report_id, ends_at, created_by, note)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, uuid`,
+    [n.accountId, n.kind, n.source, n.reasonCode, n.reportId ?? null, n.endsAt, n.createdBy, n.note ?? null],
+  );
+  if (n.kind === 'ban') await recomputeBannedUntil(db, n.accountId);
+  const row = r.rows[0] as { id: string; uuid: string };
+  return { id: Number(row.id), uuid: row.uuid };
+}
+
 /** 서버가 직접 본 사실(금칙어·도배)에 대한 자동 채팅 금지. 24시간 안의 3번째부터는 길게. 정지(ban)는 만들지 않는다 */
 export async function createAutoMute(accountId: number, source: AutoSource): Promise<void> {
   const s = getConfig().social;
@@ -31,11 +69,14 @@ export async function createAutoMute(accountId: number, source: AutoSource): Pro
   );
   const count = Number((prior.rows[0] as { n: string }).n) + 1;
   const minutes = count >= s.chatAutoEscalateCount ? s.chatAutoMuteEscalatedMinutes : s.chatAutoMuteMinutes;
-  await query(
-    `INSERT INTO account_sanctions (account_id, kind, source, reason_code, ends_at, created_by)
-     VALUES ($1, 'chat_mute', $2, $3, now() + ($4::int * interval '1 minute'), 'system')`,
-    [accountId, source, reason, minutes],
-  );
+  await insertSanction(getPool(), {
+    accountId,
+    kind: 'chat_mute',
+    source,
+    reasonCode: reason,
+    endsAt: new Date(Date.now() + minutes * 60_000),
+    createdBy: 'system',
+  });
   await refreshAccount(accountId);
 }
 

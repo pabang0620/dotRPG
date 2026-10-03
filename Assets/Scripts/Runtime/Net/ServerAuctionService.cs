@@ -171,7 +171,7 @@ namespace DotRPG
                         itemKey = MiniJson.Str(item, "item_key"),
                         count = MiniJson.Int(item, "count"),
                         gold = (long)MiniJson.Num(o, "gold"),
-                        text = MailText(MiniJson.Str(o, "kind"), MiniJson.Str(o, "ref_item_key"), MiniJson.Int(o, "ref_count", 1), MiniJson.Int(o, "days_left")),
+                        text = MailText(MiniJson.Str(o, "kind"), MiniJson.Str(o, "ref_item_key"), MiniJson.Int(o, "ref_count", 1), MiniJson.Int(o, "days_left"), MiniJson.Str(o, "system_code")),
                     });
                 }
                 unclaimed = mail.Count;
@@ -179,7 +179,7 @@ namespace DotRPG
             });
         }
 
-        static string MailText(string kind, string key, int count, int daysLeft)
+        static string MailText(string kind, string key, int count, int daysLeft, string systemCode = null)
         {
             string name = string.IsNullOrEmpty(key) ? "" : DungeonDatabase.ItemName(key) + (count > 1 ? $" x{count}" : "");
             string head;
@@ -190,7 +190,10 @@ namespace DotRPG
                 case "outbid": head = $"[입찰 반환] {name}"; break;
                 case "expired": head = $"[기간 만료] {name}"; break;
                 case "cancelled": head = $"[등록 취소] {name} (보증금 미반환)"; break;
-                case "system": head = string.IsNullOrEmpty(name) ? "[운영] 알림" : $"[운영] {name}"; break;
+                case "system":
+                    string tag = systemCode == "compensation" ? "[보상]" : systemCode == "event" ? "[이벤트]" : systemCode == "refund" ? "[환불]" : "[안내]";
+                    head = string.IsNullOrEmpty(name) ? $"{tag} 운영팀이 보낸 우편" : $"{tag} {name}";
+                    break;
                 default: head = name; break;
             }
             return daysLeft > 0 ? $"{head}  <color=#8c96a8>{daysLeft}일 남음</color>" : head;

@@ -89,7 +89,19 @@ describe('4단계 환경변수 검증', () => {
     expect(() => loadConfig({ ...base, STEAM_AUTH_MODE: 'web_api' })).toThrow(/STEAM_WEB_API_KEY/);
     expect(loadConfig({ ...base, STEAM_AUTH_MODE: 'web_api', STEAM_APP_ID: '480', STEAM_WEB_API_KEY: 'k' }).steam.appId).toBe(480);
     expect(() => loadConfig({ ...base, NODE_ENV: 'production', STEAM_AUTH_MODE: 'mock', PARTY_TRANSPORT: 'dev' })).toThrow(/mock/);
-    expect(loadConfig({ ...base, NODE_ENV: 'production', STEAM_AUTH_MODE: 'web_api', STEAM_APP_ID: '480', STEAM_WEB_API_KEY: 'k', PARTY_TRANSPORT: 'steam' }).partyTransport).toBe('steam');
+    // 7단계 가드(G5, G6): 운영에서 480(Valve 시험용 앱)은 거부하고, 유효한 운영 값이면 통과한다
+    const prod = {
+      ...base,
+      JWT_SECRET: 'Xk3pQ9vL2mWz7RtB5nYhJ8cDfGa1SeUo4iPq6TyHbVw',
+      NODE_ENV: 'production',
+      STEAM_AUTH_MODE: 'web_api',
+      STEAM_WEB_API_KEY: 'k',
+      PARTY_TRANSPORT: 'steam',
+      TRUST_PROXY: '1',
+      ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
+    };
+    expect(() => loadConfig({ ...prod, STEAM_APP_ID: '480' })).toThrow(/480/);
+    expect(loadConfig({ ...prod, STEAM_APP_ID: '2800000' }).partyTransport).toBe('steam');
     const c = loadConfig(base);
     expect(c.policy).toMatchObject({ raidRewardMinHumans: 2, raidPracticePaysKills: false, partyMinLevelSlack: 5 });
   });

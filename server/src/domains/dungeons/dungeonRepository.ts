@@ -254,3 +254,14 @@ export async function partyRunUuid(db: Queryable, partyRunId: number): Promise<s
   const r = await db.query<{ uuid: string }>('SELECT uuid FROM party_runs WHERE id = $1', [partyRunId]);
   return r.rows[0]?.uuid ?? null;
 }
+
+/** 카드를 아직 고르지 않은 클리어 판(보류 해제로 늦게 확정된 판 포함). since 이후에 끝난 것만 */
+export async function unpickedRuns(db: Queryable, characterId: number, since: Date): Promise<{ uuid: string; ended_at: Date }[]> {
+  const r = await db.query<{ uuid: string; ended_at: Date }>(
+    `SELECT uuid, ended_at FROM dungeon_runs
+      WHERE character_id = $1 AND state = 'cleared' AND cards IS NOT NULL AND card_picked IS NULL AND ended_at > $2
+      ORDER BY ended_at DESC LIMIT 20`,
+    [characterId, since],
+  );
+  return r.rows;
+}

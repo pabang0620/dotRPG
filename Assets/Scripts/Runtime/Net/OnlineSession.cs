@@ -55,6 +55,9 @@ namespace DotRPG
             Api.Get("/meta", meta =>
             {
                 if (!meta.ok) { done(meta); return; }
+                // [SERVER 7] Maintenance: no logins once the block time has come.
+                string blocked = MaintenanceBlock(MiniJson.Obj(meta.data, "maintenance"));
+                if (blocked != null) { done(new ApiResult { code = "MAINTENANCE", status = 503, message = blocked }); return; }
                 string serverData = MiniJson.Str(meta.data, "data_version");
                 if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
                 {
@@ -71,6 +74,26 @@ namespace DotRPG
                 }, auth: false);
             }, auth: false);
         }
+
+        /// <summary>[SERVER 7] Korean notice for a maintenance window (null = nothing to say).</summary>
+        public static string MaintenanceText(Dictionary<string, object> m)
+        {
+            if (m == null) return null;
+            string ends = LocalTime(MiniJson.Str(m, "ends_at")), starts = LocalTime(MiniJson.Str(m, "starts_at"));
+            string notice = MiniJson.Str(m, "notice", "");
+            string head = MiniJson.Str(m, "phase") == "active" ? $"서버 점검 중입니다. ({ends} 종료 예정)" : $"서버 점검 예정: {starts} ~ {ends}";
+            return string.IsNullOrEmpty(notice) ? head : head + "\n" + notice;
+        }
+
+        /// <summary>The login refusal while maintenance blocks logins, else null.</summary>
+        static string MaintenanceBlock(Dictionary<string, object> m)
+        {
+            string phase = MiniJson.Str(m, "phase");
+            return phase == "pre_block" || phase == "active" ? MaintenanceText(m) : null;
+        }
+
+        static string LocalTime(string iso) =>
+            DateTime.TryParse(iso, null, System.Globalization.DateTimeStyles.RoundtripKind, out var t) ? t.ToLocalTime().ToString("M/d HH:mm") : "?";
 
         public static void Logout()
         {

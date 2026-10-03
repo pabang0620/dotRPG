@@ -29,6 +29,14 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'admin_grants',
+      'held_run_reviews',
+      'admin_account_notes',
+      'admin_audit_log',
+      'admin_sessions',
+      'job_runs',
+      'maintenance_windows',
+      'admin_users',
       'auction_flags',
       'auction_sinks',
       'mails',

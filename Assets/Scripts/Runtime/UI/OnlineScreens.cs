@@ -104,6 +104,12 @@ namespace DotRPG
             base.Show();
             pwField.text = "";
             Say($"서버: {ApiClient.Instance.BaseUrl}   (개발용 로그인)");
+            // [SERVER 7] Planned or running maintenance shows before anyone tries to log in.
+            ApiClient.Instance.Get("/meta", r =>
+            {
+                string m = r.ok ? OnlineSession.MaintenanceText(MiniJson.Obj(r.data, "maintenance")) : null;
+                if (m != null && gameObject.activeInHierarchy) Say(m.Replace("\n", "  "), MiniJson.Str(MiniJson.Obj(r.data, "maintenance"), "phase") != "scheduled");
+            }, auth: false);
         }
 
         protected override void Update()

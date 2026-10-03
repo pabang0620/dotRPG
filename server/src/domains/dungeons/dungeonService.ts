@@ -28,16 +28,20 @@ export async function listDungeons(accountId: number, characterUuid: string) {
   const eco = getGameData().economy;
   const now = getNow();
   const b = resetBoundaries(now);
-  const [used, active, clears] = await Promise.all([
+  const cardSince = new Date(now.getTime() - getConfig().policy.dungeonCardTtlHours * 3_600_000);
+  const [used, active, clears, unpicked] = await Promise.all([
     dungeonRepo.countEntries(getPool(), c.id, new Date(b.dailyStartAt)),
     dungeonRepo.findPlayingRun(getPool(), c.id),
     dungeonRepo.clearSummary(getPool(), c.id),
+    dungeonRepo.unpickedRuns(getPool(), c.id, cardSince),
   ]);
   const limit = eco.dungeons.dailyEntries;
   const best = new Map(clears.map((r) => [`${r.dungeon_id}:${r.difficulty}`, r.best_rank] as const));
   return {
     reset: { daily_start_at: b.dailyStartAt, next_daily_at: b.nextDailyAt },
     entries: { limit, used, left: Math.max(0, limit - used) },
+    // 접속 때 카드 창을 띄울 판(보류가 해제돼 나중에 확정된 판도 여기서 알 수 있다: phase7_ops.md 5.8 HR3)
+    unpicked_runs: unpicked.map((u) => ({ run_id: u.uuid, ended_at: u.ended_at.toISOString() })),
     active_run: active
       ? {
           id: active.uuid,

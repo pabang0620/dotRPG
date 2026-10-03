@@ -36,8 +36,8 @@ const systemMails = async (h: Hero, n: number, gold: number): Promise<void> => {
   // 운영 지급 우편(7단계가 만든다). 골드가 캐릭터 밖에서 생기므로 보존식은 system 합을 더해 닫는다
   for (let i = 0; i < n; i++) {
     await getPool().query(
-      `INSERT INTO mails (character_id, kind, gold, created_at, expires_at)
-       VALUES ($1, 'system', $2, now(), now() + interval '30 days')`,
+      `INSERT INTO mails (character_id, kind, system_code, gold, created_at, expires_at)
+       VALUES ($1, 'system', 'compensation', $2, now(), now() + interval '30 days')`,
       [h.dbId, gold],
     );
   }

@@ -51,6 +51,21 @@ export class SessionRegistry {
 
 export const registry = new SessionRegistry();
 
+/** 접속 중인 모든 세션을 bye로 닫는다(점검 시작, 종료). 닫은 세션 수를 돌려준다 */
+export function closeAllSessions(code: number, reason: string, reconnect: boolean, retryAfterMs: () => number): number {
+  const all = registry.all();
+  for (const s of all) s.close(code, reason, reconnect, retryAfterMs());
+  return all.length;
+}
+
+/** 그 계정의 접속을 끊는다(PL6 kick). 접속 중이 아니면 false */
+export function kickAccount(accountId: number, code: number, reason: string): boolean {
+  const s = registry.ofAccount(accountId);
+  if (!s) return false;
+  s.close(code, reason, true);
+  return true;
+}
+
 export type FriendsChangeReason = 'request' | 'accepted' | 'removed';
 export type InviteClosedState = 'declined' | 'expired' | 'cancelled' | 'accepted';
 
@@ -64,6 +79,8 @@ export interface RealtimeNotifier {
   blockChanged(accountId: number, blockedAccountId: number, blocked: boolean): void;
   /** 6단계: 접속 중인 그 캐릭터에게 chat.sys 한 줄(경매 판매·입찰 반환·우편 도착). 저장하지 않고 seq가 없다 */
   systemLine(characterUuid: string, text: string): void;
+  /** 7단계: 접속 중인 모든 세션에 chat.sys 한 줄(점검 공지, 긴급 방송). 보낸 세션 수를 돌려준다 */
+  systemBroadcast(text: string): number;
 }
 
 const COALESCE_MS = 200;
@@ -115,6 +132,13 @@ export class MemoryNotifier implements RealtimeNotifier {
   systemLine(characterUuid: string, text: string): void {
     const s = registry.all().find((x) => x.characterUuid === characterUuid);
     s?.send({ t: 'chat.sys', text, at: new Date().toISOString() });
+  }
+
+  systemBroadcast(text: string): number {
+    const all = registry.all();
+    const at = new Date().toISOString();
+    for (const s of all) s.send({ t: 'chat.sys', text, at });
+    return all.length;
   }
 
   stop(): void {

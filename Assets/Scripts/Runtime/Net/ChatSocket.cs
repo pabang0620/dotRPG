@@ -92,7 +92,7 @@ namespace DotRPG
         /// <summary>Main thread, every frame: connects, pings, and hands received frames to <see cref="Frame"/>.</summary>
         public void Pump(float dt)
         {
-            while (closes.TryDequeue(out int code)) OnClosed(code);
+            // Frames first: a bye (with its wait) is read before the close it announces.
             while (inbox.TryDequeue(out var text))
             {
                 Dictionary<string, object> d;
@@ -103,8 +103,17 @@ namespace DotRPG
                 if (t == "ready") { SetReady(true); connectedSince = Time.realtimeSinceStartup; }
                 else if (t == "token.expiring") RenewToken();
                 else if (t == "bye" && d.TryGetValue("reconnect", out var rc) && rc is bool again && !again) StopReason = MiniJson.Str(d, "reason", "");
+                else if (t == "bye")
+                {
+                    // [SERVER 7] Maintenance or an operator kick: come back after the server's suggested wait.
+                    string reason = MiniJson.Str(d, "reason");
+                    if (reason == "MAINTENANCE") GameEvents.RaiseToast("서버 점검이 시작되었습니다. 점검이 끝나면 다시 연결합니다.");
+                    float wait = MiniJson.Int(d, "retry_after_ms") / 1000f;
+                    if (wait > 0f) retryAt = Time.realtimeSinceStartup + wait;
+                }
                 Frame?.Invoke(t, d);
             }
+            while (closes.TryDequeue(out int code)) OnClosed(code);
             if (stopped || StopReason != null) return;
             if (!open && !connecting && Time.realtimeSinceStartup >= retryAt) Connect();
             if (!Ready) return;
@@ -219,6 +228,7 @@ namespace DotRPG
                     return;
             }
             if (StopReason != null) { GameEvents.RaiseToast(StopReason); return; }
+            if (retryAt > Time.realtimeSinceStartup) return; // the bye frame already set the wait
             ScheduleRetry();
         }
 

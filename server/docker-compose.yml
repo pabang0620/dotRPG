@@ -1,4 +1,5 @@
-# 배포용 (api + postgres). 비밀값은 같은 폴더의 .env 에서 읽는다 (.env.example 참고)
+# 단순 배포용 (api + postgres, 호스트 한 대에서 시험). 인터넷에 공개하려면 ops/compose.prod.yml(Caddy 포함)을 쓴다.
+# 비밀값은 같은 폴더의 .env 에서 읽는다 (.env.example 참고)
 services:
   postgres:
     image: postgres:16
@@ -15,19 +16,39 @@ services:
       timeout: 3s
       retries: 10
 
-  api:
+  # 마이그레이션은 서버 기동과 분리된 한 번짜리 단계다(F1). api는 이 단계가 끝난 뒤에 뜬다
+  migrate:
     build: .
-    restart: unless-stopped
+    command: ["node", "dist/db/migrate.js", "up"]
     depends_on:
       postgres:
         condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://dotrpg:${POSTGRES_PASSWORD}@postgres:5432/dotrpg
+
+  api:
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     env_file: .env
     environment:
       NODE_ENV: production
       DATABASE_URL: postgres://dotrpg:${POSTGRES_PASSWORD}@postgres:5432/dotrpg
       GAME_DATA_DIR: /app/data
+    # 같은 머신에서만 접근한다. 인터넷 공개는 Caddy(ops/compose.prod.yml)가 맡는다(F2)
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "10"
 
 volumes:
   pgdata:

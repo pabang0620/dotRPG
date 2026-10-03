@@ -164,6 +164,52 @@ const envSchema = z.object({
   AUCTION_PAIR_DAILY_GOLD: posInt(100_000_000),
   MAIL_CLAIM_ALL_MAX: posInt(50),
   AUCTION_TICK_ENABLED: boolStr.default(true),
+  // 7단계(운영): 관리자, 가입 스위치, 점검, 종료, 정리, 감시. 값의 뜻은 phase7_ops.md 3.3
+  AUTH_DEV_REGISTER_ENABLED: boolStr.optional(),
+  ALLOW_DEV_AUTH_IN_PRODUCTION: boolStr.default(false),
+  ADMIN_ENABLED: boolStr.optional(),
+  ADMIN_BIND: z.string().min(1).default('127.0.0.1'),
+  ADMIN_PORT: z.coerce.number().int().min(1).max(65535).default(3001),
+  ADMIN_ALLOWED_CIDRS: z.string().default('127.0.0.1/32,::1/128'),
+  ADMIN_SECRET_KEY: z.string().optional(),
+  ADMIN_SESSION_IDLE_MINUTES: posInt(30),
+  ADMIN_SESSION_MAX_HOURS: posInt(8),
+  ADMIN_LOGIN_FAIL_MAX: posInt(5),
+  ADMIN_LOCK_MINUTES: posInt(15),
+  ADMIN_RATE_PER_MIN: posInt(120),
+  ADMIN_GRANT_MAX_GOLD: posInt(1_000_000),
+  ADMIN_GRANT_MAX_ITEM_COUNT: posInt(99),
+  ADMIN_GRANT_DAILY_GOLD: posInt(5_000_000),
+  ADMIN_OPERATOR_BAN_MAX_DAYS: posInt(30),
+  WATCHLIST_MIN_SCORE: posInt(10),
+  WATCHLIST_WINDOW_HOURS: posInt(24),
+  MAINT_PRE_BLOCK_MINUTES: posInt(10),
+  MAINT_ANNOUNCE_MINUTES: z.string().default('30,10,5,1'),
+  MAINT_POLL_SECONDS: posInt(5),
+  MAINT_BYE_DELAY_SECONDS: nonNegInt(3),
+  SHUTDOWN_GRACE_SECONDS: posInt(30),
+  DB_POOL_MAX: posInt(10),
+  DB_STATEMENT_TIMEOUT_MS: posInt(15000),
+  KILL_LOG_RETENTION_DAYS: posInt(7),
+  DROP_RETENTION_DAYS: posInt(1),
+  ANOMALY_RETENTION_DAYS: posInt(30),
+  ANOMALY_SEVERE_RETENTION_DAYS: posInt(180),
+  REFRESH_TOKEN_PURGE_DAYS: posInt(30),
+  MAIL_CLAIMED_RETENTION_DAYS: posInt(180),
+  PARTY_RECORD_RETENTION_DAYS: posInt(30),
+  JOB_RUN_RETENTION_DAYS: posInt(90),
+  ADMIN_SESSION_PURGE_DAYS: posInt(30),
+  PURGE_BATCH: posInt(5000),
+  PURGE_BATCH_SLEEP_MS: nonNegInt(100),
+  JOB_MAX_SECONDS: posInt(300),
+  JOBS_ENABLED: boolStr.optional(),
+  OPS_SNAPSHOT_SECONDS: posInt(60),
+  ALERT_WEBHOOK_URL: z.url().optional(),
+  ALERT_WEBHOOK_FORMAT: z.enum(['discord', 'slack', 'json']).default('discord'),
+  ALERT_MIN_INTERVAL_MINUTES: posInt(30),
+  OPS_HEARTBEAT_URL: z.url().optional(),
+  SERVER_NAME: z.string().min(1).default('dotrpg'),
+  IMAGE_VERSION: z.string().default('dev'),
 });
 
 export interface AppConfig {
@@ -173,6 +219,55 @@ export interface AppConfig {
   jwtSecret: string;
   minClientVersion: string;
   authDevEnabled: boolean;
+  /** /auth/dev/register 라우트 등록 여부(authDevEnabled와 둘 다 참일 때만) */
+  authDevRegisterEnabled: boolean;
+  allowDevAuthInProduction: boolean;
+  shutdownGraceSeconds: number;
+  dbPoolMax: number;
+  dbStatementTimeoutMs: number;
+  admin: {
+    enabled: boolean;
+    bind: string;
+    port: number;
+    allowedCidrs: string[];
+    secretKey: Buffer | null;
+    sessionIdleMinutes: number;
+    sessionMaxHours: number;
+    loginFailMax: number;
+    lockMinutes: number;
+    ratePerMin: number;
+    grantMaxGold: number;
+    grantMaxItemCount: number;
+    grantDailyGold: number;
+    operatorBanMaxDays: number;
+    watchlistMinScore: number;
+    watchlistWindowHours: number;
+  };
+  maint: { preBlockMinutes: number; announceMinutes: number[]; pollSeconds: number; byeDelaySeconds: number };
+  purge: {
+    killLogDays: number;
+    dropDays: number;
+    anomalyDays: number;
+    anomalySevereDays: number;
+    refreshTokenDays: number;
+    mailClaimedDays: number;
+    partyRecordDays: number;
+    jobRunDays: number;
+    adminSessionDays: number;
+    batch: number;
+    batchSleepMs: number;
+    jobMaxSeconds: number;
+  };
+  ops: {
+    jobsEnabled: boolean;
+    snapshotSeconds: number;
+    alertWebhookUrl: string | null;
+    alertWebhookFormat: 'discord' | 'slack' | 'json';
+    alertMinIntervalMinutes: number;
+    heartbeatUrl: string | null;
+    serverName: string;
+    imageVersion: string;
+  };
   requestLogTtlDays: number;
   gameDataDir: string;
   trustProxy: number;
@@ -336,6 +431,12 @@ function clean(raw: NodeJS.ProcessEnv): Record<string, string> {
   return out;
 }
 
+/** 자리표시 값(changeme 등)이나 한 글자 반복이면 약한 비밀로 본다 */
+function isWeakSecret(v: string): boolean {
+  if (/^(.)\1+$/.test(v)) return true;
+  return /(changeme|change-me|replace|example|placeholder|secret-secret|your[-_]?secret|password)/i.test(v);
+}
+
 export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
   const parsed = envSchema.safeParse(clean(raw));
   if (!parsed.success) {
@@ -352,13 +453,107 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
   if (e.NODE_ENV === 'production' && (e.AUCTION_MIN_LEVEL === 0 || e.AUCTION_MIN_ACCOUNT_AGE_DAYS === 0)) {
     throw new Error('환경변수 검증 실패: 운영에서는 AUCTION_MIN_LEVEL 과 AUCTION_MIN_ACCOUNT_AGE_DAYS 를 0으로 둘 수 없습니다');
   }
+  // ---- 7단계 운영 가드(G1~G7): 틀리면 기동하지 않는다 ----
+  const prod = e.NODE_ENV === 'production';
+  const devAuth = e.AUTH_DEV_ENABLED ?? !prod;
+  const adminEnabled = e.ADMIN_ENABLED ?? (prod ? true : e.ADMIN_SECRET_KEY !== undefined);
+  let adminKey: Buffer | null = null;
+  if (e.ADMIN_SECRET_KEY !== undefined) {
+    adminKey = Buffer.from(e.ADMIN_SECRET_KEY, 'base64');
+    if (adminKey.length !== 32) throw new Error('환경변수 검증 실패: ADMIN_SECRET_KEY 는 32바이트(base64)여야 합니다');
+  }
+  if (adminEnabled && !adminKey) throw new Error('환경변수 검증 실패: ADMIN_ENABLED=true 에는 ADMIN_SECRET_KEY 가 필요합니다');
+  const mockFree = e.ALLOW_DEV_AUTH_IN_PRODUCTION;
+  if (prod) {
+    if (e.STEAM_AUTH_MODE === 'mock') {
+      throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=mock 을 쓸 수 없습니다(누구의 Steam ID로든 로그인됩니다)');
+    }
+    if (e.STEAM_AUTH_MODE === 'off' && !mockFree) {
+      throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=web_api 여야 합니다(Steam 연동 전 시험은 ALLOW_DEV_AUTH_IN_PRODUCTION=true)');
+    }
+    if (e.PARTY_TRANSPORT === 'dev' && !mockFree) {
+      throw new Error('환경변수 검증 실패: 운영에서는 PARTY_TRANSPORT=steam 이어야 합니다(Steam 연동 전 시험은 ALLOW_DEV_AUTH_IN_PRODUCTION=true)');
+    }
+    if (devAuth && !mockFree) {
+      throw new Error('환경변수 검증 실패: 운영에서 AUTH_DEV_ENABLED=true 는 ALLOW_DEV_AUTH_IN_PRODUCTION=true 가 함께 있을 때만 허용됩니다');
+    }
+    if (e.STEAM_APP_ID === 480) {
+      throw new Error('환경변수 검증 실패: 운영에서는 STEAM_APP_ID=480(Valve 시험용 앱)을 쓸 수 없습니다');
+    }
+    if (e.TRUST_PROXY < 1) {
+      throw new Error('환경변수 검증 실패: 운영(프록시 뒤)에서는 TRUST_PROXY 가 1 이상이어야 합니다(0이면 모든 접속자가 프록시 IP 하나로 보입니다)');
+    }
+    if (isWeakSecret(e.JWT_SECRET)) {
+      throw new Error('환경변수 검증 실패: JWT_SECRET 이 자리표시 값이거나 반복 문자입니다');
+    }
+    if (adminEnabled && (e.ADMIN_BIND === '0.0.0.0' || e.ADMIN_BIND === '::')) {
+      throw new Error('환경변수 검증 실패: ADMIN_BIND 를 모든 인터페이스(0.0.0.0)로 둘 수 없습니다');
+    }
+  }
+  const announce = e.MAINT_ANNOUNCE_MINUTES.split(',')
+    .map((x) => Number(x.trim()))
+    .filter((n) => Number.isInteger(n) && n > 0)
+    .sort((a, b) => b - a);
   return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
     databaseUrl: e.DATABASE_URL,
     jwtSecret: e.JWT_SECRET,
     minClientVersion: e.MIN_CLIENT_VERSION,
-    authDevEnabled: e.AUTH_DEV_ENABLED ?? e.NODE_ENV !== 'production',
+    authDevEnabled: devAuth,
+    authDevRegisterEnabled: devAuth && (e.AUTH_DEV_REGISTER_ENABLED ?? !prod),
+    allowDevAuthInProduction: mockFree,
+    shutdownGraceSeconds: e.SHUTDOWN_GRACE_SECONDS,
+    dbPoolMax: e.DB_POOL_MAX,
+    dbStatementTimeoutMs: e.DB_STATEMENT_TIMEOUT_MS,
+    admin: {
+      enabled: adminEnabled,
+      bind: e.ADMIN_BIND,
+      port: e.ADMIN_PORT,
+      allowedCidrs: e.ADMIN_ALLOWED_CIDRS.split(',').map((x) => x.trim()).filter(Boolean),
+      secretKey: adminKey,
+      sessionIdleMinutes: e.ADMIN_SESSION_IDLE_MINUTES,
+      sessionMaxHours: e.ADMIN_SESSION_MAX_HOURS,
+      loginFailMax: e.ADMIN_LOGIN_FAIL_MAX,
+      lockMinutes: e.ADMIN_LOCK_MINUTES,
+      ratePerMin: e.ADMIN_RATE_PER_MIN,
+      grantMaxGold: e.ADMIN_GRANT_MAX_GOLD,
+      grantMaxItemCount: e.ADMIN_GRANT_MAX_ITEM_COUNT,
+      grantDailyGold: e.ADMIN_GRANT_DAILY_GOLD,
+      operatorBanMaxDays: e.ADMIN_OPERATOR_BAN_MAX_DAYS,
+      watchlistMinScore: e.WATCHLIST_MIN_SCORE,
+      watchlistWindowHours: e.WATCHLIST_WINDOW_HOURS,
+    },
+    maint: {
+      preBlockMinutes: e.MAINT_PRE_BLOCK_MINUTES,
+      announceMinutes: announce,
+      pollSeconds: e.MAINT_POLL_SECONDS,
+      byeDelaySeconds: e.MAINT_BYE_DELAY_SECONDS,
+    },
+    purge: {
+      killLogDays: e.KILL_LOG_RETENTION_DAYS,
+      dropDays: e.DROP_RETENTION_DAYS,
+      anomalyDays: e.ANOMALY_RETENTION_DAYS,
+      anomalySevereDays: e.ANOMALY_SEVERE_RETENTION_DAYS,
+      refreshTokenDays: e.REFRESH_TOKEN_PURGE_DAYS,
+      mailClaimedDays: e.MAIL_CLAIMED_RETENTION_DAYS,
+      partyRecordDays: e.PARTY_RECORD_RETENTION_DAYS,
+      jobRunDays: e.JOB_RUN_RETENTION_DAYS,
+      adminSessionDays: e.ADMIN_SESSION_PURGE_DAYS,
+      batch: e.PURGE_BATCH,
+      batchSleepMs: e.PURGE_BATCH_SLEEP_MS,
+      jobMaxSeconds: e.JOB_MAX_SECONDS,
+    },
+    ops: {
+      jobsEnabled: e.JOBS_ENABLED ?? true,
+      snapshotSeconds: e.OPS_SNAPSHOT_SECONDS,
+      alertWebhookUrl: e.ALERT_WEBHOOK_URL ?? null,
+      alertWebhookFormat: e.ALERT_WEBHOOK_FORMAT,
+      alertMinIntervalMinutes: e.ALERT_MIN_INTERVAL_MINUTES,
+      heartbeatUrl: e.OPS_HEARTBEAT_URL ?? null,
+      serverName: e.SERVER_NAME,
+      imageVersion: e.IMAGE_VERSION,
+    },
     requestLogTtlDays: e.REQUEST_LOG_TTL_DAYS,
     gameDataDir: e.GAME_DATA_DIR ?? path.resolve(__dirname, '..', '..', 'data'),
     trustProxy: e.TRUST_PROXY,

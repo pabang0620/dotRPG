@@ -3,6 +3,7 @@ import { getConfig } from '../../config/env';
 import { getPool, withTransaction } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { getNow } from '../../utils/clock';
+import { metrics } from '../../ops/metrics';
 import { logger } from '../../utils/logger';
 import { insertItemLedger } from '../economy/economyRepository';
 import * as mailRepo from '../mail/mailRepository';
@@ -101,7 +102,11 @@ export function startAuctionTicker(): () => void {
   const run = (): void => {
     if (running) return;
     running = true;
-    runAuctionTick()
+    metrics
+      .track('auction', runAuctionTick)
+      .then((r) => {
+        metrics.auctionLagSeconds = r.lagSeconds;
+      })
       .catch((err: unknown) => logger.error({ err }, 'auction tick failed'))
       .finally(() => {
         running = false;

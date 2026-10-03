@@ -387,6 +387,30 @@ namespace DotRPG
                 if (!OnlineSession.ClaimedQuests.Contains(q.id))
                     ClaimQuest(q.id, null, quiet: true);
             OnMapEntered(Game.Session.MapId);
+            ClaimUnpickedCards();
+        }
+
+        /// <summary>
+        /// [SERVER 7] A held dungeon result an operator released after this character left: the four cards
+        /// are face down and equal, so one is flipped for the player and the reward is shown.
+        /// </summary>
+        static void ClaimUnpickedCards()
+        {
+            Api.Get(Char + "/dungeons", r =>
+            {
+                if (!r.ok) return;
+                foreach (var o in MiniJson.Arr(r.data, "unpicked_runs") ?? new List<object>())
+                {
+                    string run = MiniJson.Str(o, "run_id");
+                    if (string.IsNullOrEmpty(run)) continue;
+                    Post($"/dungeon-runs/{run}/cards/pick", Body(("index", UnityEngine.Random.Range(0, 4))), res =>
+                    {
+                        var card = MiniJson.Obj(res.data, "card");
+                        if (res.ok && card != null)
+                            GameEvents.RaiseToast($"확정된 던전 보상: {new RewardCard(MiniJson.Str(card, "item_key"), MiniJson.Int(card, "count")).Label}");
+                    }, quiet: true);
+                }
+            });
         }
 
         static void OnMapEntered(string mapId)

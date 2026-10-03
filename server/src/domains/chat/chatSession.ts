@@ -1,5 +1,6 @@
 // 접속 한 건의 서버 쪽 상태(계정 하나에 연결 하나, hello에서 캐릭터 하나를 고른다)
 import type { WebSocket } from 'ws';
+import { metrics } from '../../ops/metrics';
 import { CLOSE, type Frame } from './wsProtocol';
 
 const MAX_BUFFERED_BYTES = 1024 * 1024;
@@ -69,6 +70,7 @@ export class ChatSession {
   close(code: number, reason: string, reconnect: boolean, retryAfterMs?: number): void {
     if (this.closed) return;
     this.closed = true;
+    metrics.recordWsClose(reason);
     try {
       if (this.ws.readyState === this.ws.OPEN) {
         const bye: Frame = { t: 'bye', code, reason, reconnect };

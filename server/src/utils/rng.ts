@@ -28,5 +28,7 @@ export function getRng(): Rng {
 
 /** 테스트 전용. null이면 crypto 난수로 되돌린다. */
 export function setRng(r: Rng | null): void {
+  // 운영에서 난수를 바꾸는 경로를 닫는다(phase7_ops.md 9.1)
+  if (process.env.NODE_ENV === 'production') throw new Error('운영에서는 난수를 바꿀 수 없습니다');
   current = r ?? cryptoRng;
 }
