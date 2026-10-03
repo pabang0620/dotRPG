@@ -189,4 +189,5 @@
 | O5 | 클라이언트 온라인 구조 | **지금 만든다**(§3.4) | 던전 코드가 권한 분리를 지키는지 지금 검증 |
 
 ## 7. 남은 일 (서버 연결 시)
+- 서버 기술 선택·단계·1단계 상세 설계: [PLAN_SERVER.md](PLAN_SERVER.md) (2026-10-03, Node.js + TypeScript + PostgreSQL)
 - `ServerAuthority`(비동기 응답 대기 + 강화 창 "판정 중…" 표시), Steam `ITransport`, 스냅샷 동기화·보간, 방장 인계, `OnlineSession` 실제 데이터 로드, 채팅·친구 UI.
