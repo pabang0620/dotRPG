@@ -153,6 +153,9 @@ namespace DotRPG
 
         // ---------------- server detail <-> SaveData ----------------
 
+        /// <summary>[SERVER] Quests whose reward the server has paid (from the last character detail).</summary>
+        public static HashSet<string> ClaimedQuests = new HashSet<string>();
+
         static SaveData ToSaveData(Dictionary<string, object> c)
         {
             var state = MiniJson.Obj(c, "state");
@@ -201,6 +204,26 @@ namespace DotRPG
                     counts = (MiniJson.Arr(q, "counts") ?? new List<object>()).Select(n => (int)Math.Round((double)n)).ToList(),
                 });
             foreach (var f in MiniJson.Arr(state, "story_flags") ?? new List<object>()) data.storyFlags.Add((string)f);
+            // [SERVER] Phase 3 records the server keeps (phase3_api §1).
+            if (Game.Config != null) data.playerMaxHealth = Game.Config.playerStats.maxHealth + MiniJson.Int(c, "bonus_max_health");
+            foreach (var o in MiniJson.Arr(c, "opened_chests") ?? new List<object>()) data.openedChests.Add((string)o);
+            foreach (var o in MiniJson.Arr(c, "enhance_pity") ?? new List<object>())
+                data.enhancePity.Add(new ItemStack(MiniJson.Str(o, "item_key"), MiniJson.Int(o, "pity")));
+            foreach (var site in MiniJson.Arr(c, "deliveries") ?? new List<object>())
+            {
+                if (MiniJson.Str(site, "site_id") != "workshop") continue;
+                bool done = true;
+                foreach (var it in MiniJson.Arr(site, "items") ?? new List<object>())
+                {
+                    int got = MiniJson.Int(it, "delivered");
+                    if (got < MiniJson.Int(it, "required")) done = false;
+                    if (MiniJson.Str(it, "item_key") == ItemIds.Wood) data.quest.woodDelivered = got;
+                    if (MiniJson.Str(it, "item_key") == ItemIds.Stone) data.quest.stoneDelivered = got;
+                }
+                if (done) data.quest.workshopBuilt = true;
+            }
+            ClaimedQuests = new HashSet<string>();
+            foreach (var o in MiniJson.Arr(c, "claimed_quests") ?? new List<object>()) ClaimedQuests.Add((string)o);
             data.passives = new List<string> { PassiveTree.Start };
             foreach (var p in MiniJson.Arr(state, "passives") ?? new List<object>()) data.passives.Add((string)p);
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 
@@ -30,6 +31,12 @@ namespace DotRPG
         Transform visual;
         float shakeUntil;
         bool depleted;
+        /// <summary>[SERVER] "{map}:{x}:{y}" grid id, the same as maps.json nodes (GameDataExport.Census).</summary>
+        public string NodeId { get; private set; }
+        public static readonly List<ResourceNode> Active = new List<ResourceNode>();
+
+        void OnEnable() { if (!Active.Contains(this)) Active.Add(this); }
+        void OnDisable() => Active.Remove(this);
 
         /// <param name="hd">Use the 32px town/forest art ("town_chop", "town_rock_*", "town_stump").</param>
         public static ResourceNode Create(ResourceKind kind, Vector2 position, Transform parent, GameConfig config, bool fruit = false, bool hd = false, bool villageNature = false)
@@ -42,6 +49,7 @@ namespace DotRPG
             var sr = visual.gameObject.AddComponent<SpriteRenderer>();
 
             var node = go.AddComponent<ResourceNode>();
+            node.NodeId = $"{(Game.World != null ? Game.World.MapId : "")}:{Mathf.FloorToInt(position.x)}:{Mathf.FloorToInt(position.y)}";
             node.kind = kind;
             node.visual = visual;
             node.spriteRenderer = sr;
@@ -99,22 +107,35 @@ namespace DotRPG
         {
             depleted = true;
             Vector2 dropOrigin = (Vector2)transform.position + new Vector2(0f, 0.3f);
-            for (int i = 0; i < dropAmount; i++) Pickup.Create(dropItem, 1, dropOrigin, transform.parent);
+            if (OnlineEconomy.On) OnlineEconomy.Gather(NodeId, dropOrigin, transform.parent); // [SERVER] the server grants the yield
+            else for (int i = 0; i < dropAmount; i++) Pickup.Create(dropItem, 1, dropOrigin, transform.parent);
+            ShowDepleted(false);
+        }
 
+        /// <summary>[SERVER] Starts as a stump: the server says this node is still regrowing for this character.</summary>
+        public void StartRegrowing()
+        {
+            if (depleted) return;
+            depleted = true;
+            ShowDepleted(true);
+        }
+
+        void ShowDepleted(bool quiet)
+        {
             if (kind == ResourceKind.Tree)
             {
-                Game.Audio.PlaySfx("tree_fall");
+                if (!quiet) Game.Audio.PlaySfx("tree_fall");
                 spriteRenderer.sprite = Game.Art.Get(stumpKey);
                 circle.radius = 0.35f;
                 circle.offset = new Vector2(0f, 0.15f);
-                Fx.Burst("fx_leaf", (Vector2)transform.position + new Vector2(0f, 1.2f * fxHeight), 10, 3.5f, 1f);
+                if (!quiet) Fx.Burst("fx_leaf", (Vector2)transform.position + new Vector2(0f, 1.2f * fxHeight), 10, 3.5f, 1f);
             }
             else
             {
-                Game.Audio.PlaySfx("rock_break");
+                if (!quiet) Game.Audio.PlaySfx("rock_break");
                 spriteRenderer.enabled = false;
                 circle.enabled = false;
-                Fx.Burst("fx_chip", (Vector2)transform.position + new Vector2(0f, 0.3f), 8, 3.5f, 0.8f);
+                if (!quiet) Fx.Burst("fx_chip", (Vector2)transform.position + new Vector2(0f, 0.3f), 8, 3.5f, 0.8f);
             }
             GetComponent<YSort>().Refresh();
             StartCoroutine(RespawnRoutine());

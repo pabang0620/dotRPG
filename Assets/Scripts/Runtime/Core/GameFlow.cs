@@ -97,6 +97,7 @@ namespace DotRPG
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
                 GameEvents.RaiseToast("온라인 캐릭터로 접속했습니다.");
+                OnlineEconomy.OnEnteredWorld(); // [SERVER]
             }));
         }
 
@@ -202,6 +203,7 @@ namespace DotRPG
                 return false;
             }
             if (!Game.Session.Inventory.Remove(ConsumableDatabase.TownScroll, 1)) return false;
+            if (OnlineEconomy.On) OnlineEconomy.UseItem(ConsumableDatabase.TownScroll); // [SERVER]
             if (Game.State.Current == GameState.Inventory) CloseInventory();
             StartCoroutine(TownScrollRoutine());
             return true;

@@ -40,6 +40,17 @@ namespace DotRPG
             Changed?.Invoke();
         }
 
+        /// <summary>[SERVER] Level and XP decided by the server; level-ups still raise LeveledUp (toasts, skills).</summary>
+        public void SetFromServer(int level, int xp)
+        {
+            level = Math.Max(1, Math.Min(MaxLevel, level));
+            int before = Level;
+            Level = level;
+            Xp = Math.Max(0, xp);
+            for (int l = before + 1; l <= level; l++) LeveledUp?.Invoke(l);
+            Changed?.Invoke();
+        }
+
         public void AddXp(int amount)
         {
             if (Level >= MaxLevel || amount <= 0) return;

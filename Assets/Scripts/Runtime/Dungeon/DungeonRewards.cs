@@ -23,7 +23,7 @@ namespace DotRPG
     {
         public const int CardCount = 4;
         /// <summary>Weight given to gear without a monster drop weight (uniques, legendaries) in dungeon rolls.</summary>
-        const int RareGearWeight = 3;
+        public const int RareGearWeight = 3;
 
         public static List<RewardCard> RollCards(DungeonDef dungeon, DifficultyDef diff, CharacterClass cls, System.Random rng)
         {
@@ -56,7 +56,7 @@ namespace DotRPG
         }
 
         /// <summary>Tries of the normal monster drop roll before falling back to the dungeon pool.</summary>
-        const int DropTries = 12;
+        public const int DropTries = 12;
 
         /// <summary>
         /// A piece of gear (item key, +0) the class can use, at least <paramref name="minRarity"/>: the normal

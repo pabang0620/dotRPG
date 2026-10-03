@@ -136,9 +136,9 @@ namespace DotRPG
     public static class MonsterDatabase
     {
         // ---------- Level scaling (per level above 1) ----------
-        const float HpPerLevel = 0.12f;
-        const float DamagePerLevel = 0.08f;
-        const float XpPerLevel = 0.1f;
+        public const float HpPerLevel = 0.12f;
+        public const float DamagePerLevel = 0.08f;
+        public const float XpPerLevel = 0.1f;
 
         public const string Warrior = "skel_warrior";
         public const string Totem = "totem";

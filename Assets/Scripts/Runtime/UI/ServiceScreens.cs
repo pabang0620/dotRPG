@@ -384,6 +384,18 @@ namespace DotRPG
                     result.text = "<color=#ff7070>골드가 부족하다. 해골을 쓰러뜨리거나 물건을 팔아 모으자.</color>";
                     return;
                 }
+                if (OnlineEconomy.On)
+                {
+                    // [SERVER] The server charges and delivers; its delta updates gold and the bag.
+                    int bought = n;
+                    OnlineEconomy.ShopBuy(id, bought, ok =>
+                    {
+                        Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
+                        if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀다.  -{each * bought:N0} G</color>";
+                        dirty = true;
+                    });
+                    return;
+                }
                 bag.Remove(ConsumableDatabase.Gold, each * n);
                 bag.Add(id, n);
                 Game.Audio.PlaySfx("confirm");
@@ -400,7 +412,19 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             int n = Mathf.Min(count, bag.Count(id));
             int each = ItemPrices.SellPrice(id);
-            if (n <= 0 || each <= 0 || !bag.Remove(id, n)) { Game.Audio.PlaySfx("cancel"); return; }
+            if (n <= 0 || each <= 0) { Game.Audio.PlaySfx("cancel"); return; }
+            if (OnlineEconomy.On)
+            {
+                // [SERVER] The server prices and pays the sale.
+                OnlineEconomy.ShopSell(id, n, ok =>
+                {
+                    Game.Audio.PlaySfx(ok ? "pickup" : "cancel");
+                    if (ok) result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
+                    dirty = true;
+                });
+                return;
+            }
+            if (!bag.Remove(id, n)) { Game.Audio.PlaySfx("cancel"); return; }
             bag.Add(ConsumableDatabase.Gold, each * n);
             Game.Audio.PlaySfx("pickup");
             result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
@@ -671,6 +695,8 @@ namespace DotRPG
             int n = all ? from.Count(id) : 1;
             if (n <= 0 || !from.Remove(id, n)) return;
             to.Add(id, n);
+            // [SERVER] Same move on the server; its delta (absolute counts) corrects anything it refused.
+            if (OnlineEconomy.On) OnlineEconomy.StorageMove(new[] { (id, !c.inStorage, n) }, _ => dirty = true);
             Game.Audio.PlaySfx("select");
             string name = Game.Config.GetItem(id).displayName;
             message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼다.</color>";
@@ -682,6 +708,7 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             var store = Game.Session.Storage;
             int moved = 0;
+            var serverMoves = new List<(string, bool, int)>();
             var ids = new List<string>();
             foreach (var m in EquipmentDatabase.AllMaterials) ids.Add(m.id);
             ids.Add(ItemIds.Wood);
@@ -694,7 +721,9 @@ namespace DotRPG
                 bag.Remove(id, n);
                 store.Add(id, n);
                 moved += n;
+                serverMoves.Add((id, true, n));
             }
+            if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
             message.text = moved > 0 ? $"<color=#8fe28f>재료 {moved}개를 창고에 맡겼다.</color>" : "<color=#b8c4d8>맡길 재료가 없다.</color>";
             dirty = true;
@@ -705,13 +734,16 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             var store = Game.Session.Storage;
             int moved = 0;
+            var serverMoves = new List<(string, bool, int)>();
             foreach (var s in store.ToList())
             {
                 if (s.count <= 0) continue;
                 store.Remove(s.id, s.count);
                 bag.Add(s.id, s.count);
                 moved += s.count;
+                serverMoves.Add((s.id, false, s.count));
             }
+            if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
             message.text = moved > 0 ? $"<color=#8fe28f>창고의 물건 {moved}개를 모두 꺼냈다.</color>" : "<color=#b8c4d8>창고가 비어 있다.</color>";
             dirty = true;

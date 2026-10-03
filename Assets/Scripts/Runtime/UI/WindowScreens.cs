@@ -581,6 +581,12 @@ namespace DotRPG
             busyTime = 0f;
             resultText.text = "<color=#b8c4d8>망치질 중…</color>";
             Refresh();
+            // [SERVER] Online the server rolls; ask now so the answer arrives during the hammer strikes.
+            bool online = OnlineEconomy.On, answered = false;
+            Dictionary<string, object> server = null;
+            if (online)
+                OnlineEconomy.Enhance(e.slot.HasValue ? (int)e.slot.Value : (int?)null, e.slot.HasValue ? null : e.key,
+                    d => { server = d; answered = true; });
             // [A] DNF-style suspense: three hammer strikes over a rising charge, the glow grows around the item.
             Game.Audio.PlaySfx("enhance_charge");
             EnhanceFx.Charge(bigIcon.rectTransform, SuspenseSeconds * 1.5f);
@@ -590,12 +596,18 @@ namespace DotRPG
                 EnhanceFx.Sparks(bigIcon.rectTransform, 6, new Color32(255, 220, 120, 255));
                 yield return new WaitForSecondsRealtime(SuspenseSeconds * 0.5f);
             }
+            float waited = 0f;
+            while (online && !answered && waited < 15f) { waited += Time.unscaledDeltaTime; yield return null; }
             EnhanceResult result;
             try
             {
-                int roll = devRoll ?? Authority.Current.EnhanceRoll(); // [ONLINE] server roll later
-                devRoll = null;
-                result = Game.Session.Equipment.TryEnhance(e.Target, roll, Class);
+                if (online) result = FromServer(e, server);
+                else
+                {
+                    int roll = devRoll ?? Authority.Current.EnhanceRoll();
+                    devRoll = null;
+                    result = Game.Session.Equipment.TryEnhance(e.Target, roll, Class);
+                }
             }
             finally
             {
@@ -608,6 +620,34 @@ namespace DotRPG
             if (result.kind == EnhanceOutcome.Destroyed) pickRequired = true;
             if (result.Attempted) Game.Flow.Autosave();
             Refresh();
+        }
+
+        /// <summary>[SERVER] The server's answer (its delta is already applied) as the local result shape.</summary>
+        static EnhanceResult FromServer(Entry e, Dictionary<string, object> d)
+        {
+            if (d == null) return new EnhanceResult { kind = EnhanceOutcome.Invalid, oldKey = e.key, slot = e.slot };
+            EnhanceOutcome kind;
+            switch (MiniJson.Str(d, "outcome"))
+            {
+                case "success": kind = EnhanceOutcome.Success; break;
+                case "keep": kind = EnhanceOutcome.Keep; break;
+                case "drop3": kind = EnhanceOutcome.Drop3; break;
+                case "destroyed": kind = EnhanceOutcome.Destroyed; break;
+                case "protected": kind = EnhanceOutcome.Protected; break;
+                default: kind = EnhanceOutcome.Invalid; break;
+            }
+            string oldKey = MiniJson.Str(d, "old_key", e.key);
+            Game.Session.Equipment.SetPityFromServer(oldKey, MiniJson.Int(d, "pity"));
+            return new EnhanceResult
+            {
+                kind = kind,
+                oldKey = oldKey,
+                newKey = MiniJson.Str(d, "new_key"),
+                oldLevel = MiniJson.Int(d, "old_level"),
+                newLevel = MiniJson.Int(d, "new_level"),
+                slot = e.slot,
+                roll = MiniJson.Int(d, "roll"),
+            };
         }
 
         void ShowResult(EnhanceResult r)

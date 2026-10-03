@@ -40,6 +40,8 @@ namespace DotRPG.EditorTools
                 ["monsters.json"] = Monsters(),
                 ["dungeons.json"] = Dungeons(),
                 ["progression.json"] = Progression(),
+                ["gameconfig.json"] = GameConfigJson(),
+                ["player.json"] = PlayerJson(),
             };
 
             using (var sha = SHA256.Create())
@@ -77,7 +79,9 @@ namespace DotRPG.EditorTools
             foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
-            return Doc().Arr("items", rows, (o, r) => o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable).End()).End().ToString();
+            return Doc().Arr("items", rows, (o, r) => o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
+                .Str("bind", AuctionRules.BindOf(r.id) == ItemBind.CharacterBound ? "character" : AuctionRules.BindOf(r.id) == ItemBind.AccountBound ? "account" : "none")
+                .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot).End()).End().ToString();
         }
 
         static string Starter()
@@ -94,7 +98,7 @@ namespace DotRPG.EditorTools
         /// <summary>[Phase 3] Store stock and prices, equipment details and trade binding.</summary>
         static string Shop()
         {
-            var j = Doc();
+            var j = Doc().Num("enhancedSellBonusPerLevel", 0.25).Str("sellRounding", "awayFromZero"); // ItemPrices.SellPrice
             j.Arr("stock", ItemPrices.ShopStock, (o, id) => o.Obj().Str("id", id).Num("buyPrice", ItemPrices.BuyPrice(id)).End());
             j.Arr("equipment", EquipmentDatabase.All, (o, e) => o.Obj()
                 .Str("id", e.id).Str("category", e.category.ToString()).Str("rarity", e.rarity.ToString())
@@ -151,10 +155,68 @@ namespace DotRPG.EditorTools
                     flags.Add(m.Groups[1].Value);
             flags.RemoveWhere(string.IsNullOrEmpty);
             var j = Doc();
-            j.Arr("quests", db.All, (o, q) => o.Obj().Str("id", q.id).Num("stepCount", q.steps.Count)
-                .Num("maxObjectives", q.steps.Count == 0 ? 0 : q.steps.Max(st => st.objectives.Count)).End());
+            j.Arr("quests", db.All, (o, q) =>
+            {
+                o.Obj().Str("id", q.id).Num("stepCount", q.steps.Count)
+                    .Num("maxObjectives", q.steps.Count == 0 ? 0 : q.steps.Max(st => st.objectives.Count))
+                    .Str("kind", q.kind).Num("minLevel", q.minLevel);
+                o.Arr("requires", q.requires ?? new List<string>(), (x, v) => x.Val(v));
+                o.Arr("requiresFlags", q.requiresFlags ?? new List<string>(), (x, v) => x.Val(v));
+                var r = q.reward ?? new QuestRewardDef();
+                o.Key("reward").Obj().Num("xp", r.xp).Num("gold", r.gold).Num("maxHealth", r.maxHealth);
+                o.Arr("items", r.items ?? new List<ItemStack>(), (x, it) => x.Obj().Str("id", it.id).Num("count", it.count).End());
+                o.Arr("setFlags", r.setFlags ?? new List<string>(), (x, v) => x.Val(v));
+                o.End();
+                // Objectives summed by kind over every step: what the server can check and what it cannot.
+                var all = q.steps.SelectMany(st => st.objectives).ToList();
+                o.Key("objectives").Obj().Num("levelNeed", all.Where(ob => ob.type == ObjectiveTypes.Level).Select(ob => ob.count).DefaultIfEmpty(0).Max());
+                o.Key("killNeeds").Obj();
+                foreach (var g in all.Where(ob => ob.type == ObjectiveTypes.Kill).GroupBy(ob => ob.target)) o.Num(g.Key, g.Sum(ob => ob.count));
+                o.End();
+                o.Arr("consumes", all.Where(ob => ob.type == ObjectiveTypes.Collect && ob.consume), (x, ob) => x.Obj().Str("itemKey", ob.target).Num("count", ob.count).End());
+                o.Arr("dungeonNeeds", all.Where(ob => ob.type == ObjectiveTypes.Dungeon), (x, ob) => x.Obj().Str("target", ob.target).Num("count", ob.count).End());
+                o.Arr("raidNeeds", all.Where(ob => ob.type == ObjectiveTypes.Raid), (x, ob) => x.Obj().Str("target", ob.target).Num("count", ob.count).End());
+                o.Arr("flagNeeds", all.Where(ob => ob.type == ObjectiveTypes.Flag).Select(ob => ob.target).Distinct(), (x, v) => x.Val(v));
+                o.Arr("unverifiable", all.Select(ob => ob.type).Where(t => t == ObjectiveTypes.Talk || t == ObjectiveTypes.Cutscene || t == ObjectiveTypes.Interact || t == ObjectiveTypes.Reach).Distinct(), (x, v) => x.Val(v));
+                o.End();
+                return o.End();
+            });
             j.Arr("flags", flags, (o, f) => o.Val(f));
             return j.End().ToString();
+        }
+
+        static string GameConfigJson()
+        {
+            var cfg = Resources.Load<GameConfig>("Data/GameConfig");
+            var j = Doc();
+            j.Key("nodeKinds").Obj()
+                .Key("tree").Obj().Str("item", ItemIds.Wood).Num("amount", cfg.treeWoodDrop).Num("respawnSeconds", cfg.treeRegrowSeconds).End()
+                .Key("rock").Obj().Str("item", ItemIds.Stone).Num("amount", cfg.rockStoneDrop).Num("respawnSeconds", cfg.rockRespawnSeconds).End()
+                .Key("crop").Obj().Str("item", ItemIds.Carrot).Num("amount", 1).Num("respawnSeconds", cfg.cropRegrowSeconds).End() // CropPlot gives 1
+                .End();
+            var usable = ConsumableDatabase.Usable.Select(c => (c.id, c.kind.ToString())).ToList();
+            usable.Add((ItemIds.Carrot, "HealHp")); // PlayerController.TryEatCarrot
+            j.Arr("usableItems", usable, (o, u) => o.Obj().Str("id", u.Item1).Str("kind", u.Item2).End());
+            j.Num("storageCapacity", StorageScreen.Capacity);
+            j.Key("chestReward").Obj().Str("itemKey", TreasureChest.Reward).Num("count", 1).End();
+            var db = new QuestDatabase(Resources.Load<TextAsset>(QuestDatabase.ResourcePath));
+            var workshop = db.All.FirstOrDefault(q => q.id == QuestManager.WorkshopQuest);
+            var qc = cfg.mainQuest;
+            j.Key("deliverySites").Obj().Key("workshop").Obj().Str("questId", QuestManager.WorkshopQuest);
+            j.Arr("requiresQuestClaimed", workshop != null ? workshop.requires : new List<string>(), (o, v) => o.Val(v));
+            j.Arr("items", new[] { (ItemIds.Wood, qc != null ? qc.requiredWood : 6), (ItemIds.Stone, qc != null ? qc.requiredStone : 4) },
+                (o, it) => o.Obj().Str("itemKey", it.Item1).Num("required", it.Item2).End());
+            j.End().End();
+            return j.End().ToString();
+        }
+
+        static string PlayerJson()
+        {
+            var cfg = Resources.Load<GameConfig>("Data/GameConfig");
+            var ps = cfg.playerStats;
+            return Doc().Num("attackDamage", ps.attackDamage).Num("attackCooldown", ps.attackCooldown).Num("maxHealth", ps.maxHealth)
+                .Num("mageBoltDamage", CharacterClassInfo.Get(CharacterClass.Mage).damage).Num("mageBoltCooldown", CharacterClassInfo.Get(CharacterClass.Mage).cooldown)
+                .End().ToString();
         }
 
         static string Enums() => Doc()
@@ -163,9 +225,12 @@ namespace DotRPG.EditorTools
 
         static string Enhance()
         {
-            var j = Doc().Num("maxEnhance", EquipmentDatabase.MaxEnhance);
+            var j = Doc().Num("maxEnhance", EquipmentDatabase.MaxEnhance)
+                .Num("maxPity", EnhanceRules.MaxPity).Num("pityPerFailure", 1).Num("drop3Levels", 3).Num("rollRange", 100) // Equipment.TryEnhance, EnhanceRules
+                .Str("ticketItem", ConsumableDatabase.ProtectTicket);
+            j.Key("materials").Obj().Str("bone", "mat_bone").Str("ore", "mat_ore").Str("essence", "mat_essence").End();
             // One row per equipment and current level: everything Equipment.TryEnhance decides with.
-            j.Arr("steps", EquipmentDatabase.All.Where(e => !e.starter), (o, e) =>
+            j.Arr("steps", EquipmentDatabase.All, (o, e) => // starter gear can be enhanced too
             {
                 o.Obj().Str("id", e.id);
                 o.Arr("levels", Enumerable.Range(0, EquipmentDatabase.MaxEnhance), (l, lv) => l.Obj()
@@ -182,10 +247,24 @@ namespace DotRPG.EditorTools
         {
             var j = Doc();
             j.Num("fieldGoldMin", 8).Num("fieldGoldMaxExclusive", 17).Num("equipmentDropChance", 0.4f); // EnemyController.DropLoot
-            j.Num("hpPerLevel", 0.12f).Num("damagePerLevel", 0.08f);                                      // MonsterDatabase
-            j.Arr("monsters", MonsterDatabase.All.OrderBy(m => m.id), (o, m) => o.Obj()
-                .Str("id", m.id).Str("name", m.name).Str("kind", m.kind.ToString()).Num("hp", m.hp).Num("damage", m.damage).Num("xp", m.xp)
-                .Bool("boss", m.boss).Bool("raid", m.raid).Bool("noLoot", m.noLoot).Num("goldMin", m.goldMin).Num("goldMax", m.goldMax).End());
+            j.Num("hpPerLevel", MonsterDatabase.HpPerLevel).Num("damagePerLevel", MonsterDatabase.DamagePerLevel).Num("xpPerLevel", MonsterDatabase.XpPerLevel);
+            j.Key("loot").Obj().Num("goldPileDivisor", 20).Num("goldPileMin", 2).Num("goldPileMax", 6).End(); // EnemyController.MonsterLoot
+            var cfg = Resources.Load<GameConfig>("Data/GameConfig");
+            var skel = cfg != null ? cfg.skeletonStats : null;
+            j.Arr("monsters", MonsterDatabase.All.OrderBy(m => m.id), (o, m) =>
+            {
+                o.Obj().Str("id", m.id).Str("name", m.name).Str("kind", m.kind.ToString()).Num("hp", m.hp).Num("damage", m.damage).Num("xp", m.xp)
+                    .Bool("boss", m.boss).Bool("raid", m.raid).Bool("noLoot", m.noLoot).Num("goldMin", m.goldMin).Num("goldMax", m.goldMax)
+                    .Num("goldPerHitMin", m.goldPerHitMin).Num("goldPerHitMax", m.goldPerHitMax);
+                // Same float maths as MonsterDatabase.SpawnDef, so the server never re-derives the rounding.
+                o.Arr("xpByLevel", Enumerable.Range(1, 30), (x, lv) => x.Val(Mathf.RoundToInt(m.xp * (1f + MonsterDatabase.XpPerLevel * (lv - 1)))));
+                return o.End();
+            });
+            // The field skeleton is an EnemyStats asset, not a MonsterDatabase entry (quest kill target "skeleton").
+            if (skel != null)
+                j.Key("fieldSkeleton").Obj().Str("id", skel.enemyId).Str("kind", "Melee").Num("hp", skel.maxHealth).Num("damage", skel.attackDamage)
+                    .Num("xp", skel.xpReward).Bool("noLoot", false).Bool("boss", false).Bool("raid", false).Num("goldMin", 0).Num("goldMax", 0)
+                    .Num("respawnSeconds", skel.respawnDelay).Num("respawnMinPlayerDistance", skel.respawnMinPlayerDistance).End();
             return j.End().ToString();
         }
 
@@ -199,6 +278,16 @@ namespace DotRPG.EditorTools
             var j = Doc();
             j.Arr("difficulties", Enumerable.Range(0, DungeonDatabase.DifficultyCount).Select(i => DungeonDatabase.Difficulty((DungeonDifficulty)i)), Difficulty);
             j.Arr("partyHpScale", DungeonDatabase.PartyHpScale, (o, v) => o.Val(v));
+            j.Num("dailyEntries", DungeonDatabase.DailyEntries).Bool("weekendOpensAll", true); // ResetClock.IsOpen
+            j.Key("cards").Obj().Num("count", DungeonRewards.CardCount).Num("gearRareWeight", DungeonRewards.RareGearWeight).Num("gearDropTries", DungeonRewards.DropTries).End();
+            j.Key("ranking").Obj().Num("timeMax", DungeonRanking.TimeMax).Num("hitsMax", DungeonRanking.HitsMax).Num("killsMax", DungeonRanking.KillsMax)
+                .Num("comboMax", DungeonRanking.ComboMax).Num("revivePenalty", DungeonRanking.RevivePenalty).Num("timeZeroAt", DungeonRanking.TimeZeroAt)
+                .Num("pointsPerHit", DungeonRanking.PointsPerHit).Num("comboTarget", DungeonRanking.ComboTarget).Num("comboWindow", DungeonRanking.ComboWindow);
+            j.Arr("thresholds", DungeonRanking.Thresholds, (o, v) => o.Val(v));
+            j.Arr("xpBonus", DungeonRanking.XpBonus, (o, v) => o.Val(v));
+            j.End();
+            // Measured fastest normal clears 87 s (theory_balance.py); the server takes 60% of these as the floor.
+            j.Arr("minClearSeconds", new[] { 87, 0, 0, 0 }, (o, v) => o.Val(v));
             j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Raids), (o, d) =>
             {
                 o.Obj().Str("id", d.id).Str("name", d.name).Bool("isRaid", d.isRaid).Str("raidTier", d.raidTier.ToString())
@@ -206,6 +295,7 @@ namespace DotRPG.EditorTools
                     .Num("bossRoom", d.bossRoom).Num("maxParty", d.maxParty);
                 o.Arr("openDays", d.openDays ?? new DayOfWeek[0], (x, day) => x.Val(day.ToString()));
                 o.Arr("referenceSeconds", d.referenceSeconds ?? new float[0], (x, s) => x.Val(s));
+                o.Arr("rewards", d.rewards ?? new RewardEntry[0], (x, r) => x.Obj().Str("itemId", r.itemId).Num("min", r.min).Num("max", r.max).Num("weight", r.weight).End());
                 o.Arr("rooms", d.rooms, (r, room) =>
                 {
                     r.Obj().Str("mapId", room.mapId).Bool("isBoss", room.isBoss);
@@ -231,20 +321,117 @@ namespace DotRPG.EditorTools
             j.Arr("maps", MapRegistry.All.Concat(MapRegistry.Rooms), (o, m) =>
             {
                 o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe);
-                var size = LayoutSize(m.resource);
-                if (size.x > 0) o.Key("bounds").Obj().Num("minX", 0).Num("minY", 0).Num("maxX", size.x).Num("maxY", size.y).End();
+                var census = Census(m);
+                if (census.width > 0) o.Key("bounds").Obj().Num("minX", 0).Num("minY", 0).Num("maxX", census.width).Num("maxY", census.height).End();
+                o.Arr("fieldSpawns", census.spawnPoints > 0 ? new[] { census.spawnPoints } : new int[0],
+                    (x, n) => x.Obj().Str("monsterId", Resources.Load<GameConfig>("Data/GameConfig").skeletonStats.enemyId).Num("points", n).End());
+                o.Arr("scriptedSpawns", ScriptedSpawns(m.id), (x, sp) => x.Obj().Str("monsterId", sp.Item1).Num("total", sp.Item2).Str("quest", sp.Item3).End());
+                o.Arr("nodes", census.nodes, (x, nd) => x.Obj().Str("id", nd.Item1).Str("kind", nd.Item2).End());
+                o.Arr("chests", census.chests, (x, c) => x.Val(c));
                 return o.End();
             });
             return j.End().ToString();
         }
 
-        /// <summary>World size of a text layout: WorldBuilder makes Bounds = (0, 0, width, height) in tiles.</summary>
-        static Vector2Int LayoutSize(string resource)
+        sealed class MapCensus
         {
-            var text = string.IsNullOrEmpty(resource) ? null : Resources.Load<TextAsset>(resource);
-            if (text == null) return Vector2Int.zero;
-            var rows = text.text.Replace("\r", "").Split('\n').Where(l => l.Length > 0 && !l.StartsWith("//")).ToList();
-            return rows.Count == 0 ? Vector2Int.zero : new Vector2Int(rows.Max(r => r.Length), rows.Count);
+            public int width, height, spawnPoints;
+            public readonly List<(string, string)> nodes = new List<(string, string)>();
+            public readonly List<string> chests = new List<string>();
+        }
+
+        /// <summary>
+        /// Gathering nodes, chests and skeleton spawn points of a map, with the same rules as WorldBuilder.Parse +
+        /// SpawnObject: text rows flipped (first row = top), lone '%' on high-res maps drawn as 'T', then the
+        /// map-type handlers in WorldBuilder's order (canyon HD, winter HD, high-res town/forest, then the base switch).
+        /// Node and chest ids are "{mapId}:{x}:{y}" like TreasureChest. Keep in step with WorldBuilder.
+        /// </summary>
+        static MapCensus Census(MapInfo map)
+        {
+            var c = new MapCensus();
+            var text = string.IsNullOrEmpty(map.resource) ? null : Resources.Load<TextAsset>(map.resource);
+            if (text == null) return c;
+            var rows = text.text.Split('\n').Select(r => r.TrimEnd('\r')).Where(l => !l.StartsWith("//") && l.Trim().Length > 0).ToList();
+            c.height = rows.Count;
+            c.width = rows.Count == 0 ? 0 : rows.Max(r => r.Length);
+            bool canyon = map.theme == MapTheme.Canyon, winter = map.theme == MapTheme.Winter, hd = map.HighRes;
+            char filler = canyon ? ',' : '.';
+            var cells = new char[c.width, c.height];
+            for (int row = 0; row < c.height; row++)
+                for (int x = 0; x < c.width; x++)
+                    cells[x, c.height - 1 - row] = x < rows[row].Length ? rows[row][x] : filler;
+            if (hd)
+            {
+                var lone = new List<Vector2Int>();
+                for (int y = 0; y < c.height; y++)
+                    for (int x = 0; x < c.width; x++)
+                    {
+                        if (cells[x, y] != '%') continue;
+                        int n = 0;
+                        if (x > 0 && cells[x - 1, y] == '%') n++;
+                        if (x < c.width - 1 && cells[x + 1, y] == '%') n++;
+                        if (y > 0 && cells[x, y - 1] == '%') n++;
+                        if (y < c.height - 1 && cells[x, y + 1] == '%') n++;
+                        bool edge = x == 0 || y == 0 || x == c.width - 1 || y == c.height - 1;
+                        if (n <= 1 && !edge) lone.Add(new Vector2Int(x, y));
+                    }
+                foreach (var p in lone) cells[p.x, p.y] = 'T';
+            }
+            if (map.instanced) return c; // dungeon rooms: monsters come from the room definition, nothing to gather
+            for (int y = 0; y < c.height; y++)
+                for (int x = 0; x < c.width; x++)
+                {
+                    char ch = cells[x, y];
+                    string id = $"{map.id}:{x}:{y}";
+                    string kind = null;
+                    bool chest = false, handled = false;
+                    if (canyon) // SpawnCanyonHdObject
+                    {
+                        if (ch == 'R') { kind = "rock"; handled = true; }
+                        else if (ch == '$') { chest = true; handled = true; }
+                        else if (ch == 'T' || ch == 'O' || ch == 't') handled = true;
+                    }
+                    if (!handled && winter && ch == 'R') handled = true; // SpawnWinterHdObject: a stone prop, not a node
+                    if (!handled && hd) // SpawnTownObject
+                    {
+                        if (ch == 't') { kind = "tree"; handled = true; }
+                        else if (ch == 'R') { kind = "rock"; handled = true; }
+                        else if (ch == 'C') { kind = "crop"; handled = true; }
+                        else if (ch == '$') { chest = true; handled = true; }
+                        else if (ch == 'T' || ch == 'O') handled = true;
+                    }
+                    if (!handled) // base switch
+                    {
+                        if (ch == 'T' || ch == 'O') kind = "tree";
+                        else if (ch == 'R') kind = "rock";
+                        else if (ch == 'C') kind = "crop";
+                        else if (ch == '$') chest = true;
+                        else if (ch == 'k') c.spawnPoints++;
+                    }
+                    if (kind != null) c.nodes.Add((id, kind));
+                    if (chest) c.chests.Add(id);
+                }
+            return c;
+        }
+
+        /// <summary>Monsters a cutscene spawns on a map (Cutscenes.json "enemies" steps), counted per quest.</summary>
+        static List<(string, int, string)> ScriptedSpawns(string mapId)
+        {
+            var list = new List<(string, int, string)>();
+            if (mapId != MapRegistry.Village) return list;
+            var cut = Resources.Load<TextAsset>("Data/Cutscenes");
+            if (cut == null) return list;
+            // {"op": "enemies", "id": "skel_warrior", "count": 3, ...} inside the attack-night scene (quest c1_ashes kills).
+            int total = 0;
+            string monster = null;
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(cut.text,
+                         "\"op\"\\s*:\\s*\"enemies\"[^}]*?\"id\"\\s*:\\s*\"([^\"]+)\"[^}]*?\"count\"\\s*:\\s*(\\d+)"))
+            {
+                monster = m.Groups[1].Value;
+                total += int.Parse(m.Groups[2].Value);
+            }
+            if (monster != null) list.Add((monster, total, "c1_ashes"));
+            return list;
         }
 
         // ---------------- tiny JSON writer (no package dependency) ----------------

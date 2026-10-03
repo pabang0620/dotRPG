@@ -9,6 +9,7 @@ import { getPool, isUniqueViolation, withTransaction, type Queryable } from '../
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { CHARACTER_LIMIT } from '../auth/authService';
+import { readEconomyDetail } from '../economy/economyRepository';
 import * as repo from './characterRepository';
 import { validateState } from './stateRules';
 import type { CreateCharacterBody, StateBody } from './characterValidation';
@@ -29,7 +30,11 @@ export interface StoredResult {
 }
 
 async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.CharacterRow) {
-  const [s, items] = await Promise.all([repo.getState(db, c.id), repo.getItems(db, c.id)]);
+  // db가 트랜잭션 클라이언트일 수 있어 하나씩 읽는다(한 클라이언트에 동시 query 금지)
+  const s = await repo.getState(db, c.id);
+  const items = await repo.getItems(db, c.id);
+  const econ = await readEconomyDetail(db, c.id);
+  const eco = getGameData().economy;
   return {
     id: c.uuid,
     name: c.name,
@@ -57,6 +62,20 @@ async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.Char
       location: i.location,
       slot: i.slot,
     })),
+    // 3단계: 서버가 정본인 상태(퀘스트 청구, 상자, 강화 천장, 납품). required는 서버 데이터
+    bonus_max_health: econ.bonusMaxHealth,
+    claimed_quests: econ.claimedQuests,
+    opened_chests: econ.openedChests,
+    enhance_pity: econ.pity,
+    deliveries: Object.entries(eco.config.deliverySites).map(([siteId, site]) => ({
+      site_id: siteId,
+      items: site.items.map((i) => ({
+        item_key: i.itemKey,
+        delivered: econ.deliveries.find((d) => d.site_id === siteId && d.item_key === i.itemKey)?.delivered ?? 0,
+        required: i.required,
+      })),
+    })),
+    storage_capacity: eco.config.storageCapacity,
   };
 }
 
@@ -99,14 +118,15 @@ async function grantStarter(client: PoolClient, c: repo.CharacterRow): Promise<v
     await repo.updateGold(client, c.id, after);
     await repo.insertGoldLedger(client, c.id, starter.gold, after, 'starter', c.uuid);
   }
+  const bindOf = (key: string) => getGameData().economy.items.get(key)?.bind ?? 'none';
   for (const it of starter.items) {
-    await repo.insertItem(client, c.id, it.itemKey, it.count, 'bag', null);
-    await repo.insertItemLedger(client, c.id, it.itemKey, it.count, 'starter', c.uuid);
+    await repo.insertItem(client, c.id, it.itemKey, it.count, 'bag', null, bindOf(it.itemKey));
+    await repo.insertItemLedger(client, c.id, it.itemKey, it.count, 'starter', c.uuid, 'bag', it.count);
   }
   const gear = starter.gear[c.class];
   if (gear) {
-    await repo.insertItem(client, c.id, gear.itemKey, 1, 'worn', gear.slot);
-    await repo.insertItemLedger(client, c.id, gear.itemKey, 1, 'starter', c.uuid);
+    await repo.insertItem(client, c.id, gear.itemKey, 1, 'worn', gear.slot, bindOf(gear.itemKey));
+    await repo.insertItemLedger(client, c.id, gear.itemKey, 1, 'starter', c.uuid, 'worn', 1);
   }
 }
 

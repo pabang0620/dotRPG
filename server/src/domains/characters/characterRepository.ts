@@ -137,11 +137,12 @@ export async function insertItem(
   count: number,
   location: 'bag' | 'worn',
   slot: number | null,
+  bind: 'none' | 'account' | 'character',
 ): Promise<void> {
   await client.query(
-    `INSERT INTO character_items (character_id, item_key, count, location, slot)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [characterId, itemKey, count, location, slot],
+    `INSERT INTO character_items (character_id, item_key, count, location, slot, bind)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [characterId, itemKey, count, location, slot, bind],
   );
 }
 
@@ -152,11 +153,14 @@ export async function insertItemLedger(
   delta: number,
   reason: string,
   ref: string,
+  location: 'bag' | 'worn',
+  balanceAfter: number,
 ): Promise<void> {
+  // 아이템 원장은 (캐릭터, 위치, 키)별 합이 character_items.count와 같다(0002). 시작 장비는 worn.
   await client.query(
-    `INSERT INTO item_ledger (character_id, item_key, delta, reason, ref)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [characterId, itemKey, delta, reason, ref],
+    `INSERT INTO item_ledger (character_id, item_key, delta, reason, ref, location, balance_after)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [characterId, itemKey, delta, reason, ref, location, balanceAfter],
   );
 }
 

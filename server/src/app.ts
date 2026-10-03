@@ -25,13 +25,26 @@ const generalLimit = rateLimit({
   key: ipKey,
 });
 
+// 3단계(경제) 경로(/characters/{uuid}/... 중 state 제외)는 전투 중 보고가 잦아 IP 한도를 따로 둔다
+const ECONOMY_PATH = /^\/characters\/[^/]+\/(?!state(?:\/|$))[^/]+/;
+const economyLimit = rateLimit({
+  name: 'economy-ip',
+  limit: (c) => c.rate.economyIp,
+  windowMs: MINUTE,
+  key: ipKey,
+});
+
 /** 게임 데이터(initGameData)와 설정(initConfig)이 준비된 뒤에 호출한다. */
 export function createApp(): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', getConfig().trustProxy);
   app.use(requestLog);
-  app.use((req, res, next) => (req.path === '/health' ? next() : generalLimit(req, res, next)));
+  app.use((req, res, next) => {
+    if (req.path === '/health') next();
+    else if (ECONOMY_PATH.test(req.path)) economyLimit(req, res, next);
+    else generalLimit(req, res, next);
+  });
   app.use(express.json({ limit: '64kb' }));
   app.use(createRouter());
   app.use(notFoundHandler);

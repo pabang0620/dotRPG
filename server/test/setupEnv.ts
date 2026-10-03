@@ -12,3 +12,16 @@ process.env.RATE_REFRESH_ACCOUNT_MAX = '10000';
 process.env.RATE_CHAR_CREATE_MAX = '10000';
 process.env.RATE_STATE_SAVE_MAX = '10000';
 process.env.RATE_GENERAL_IP_MAX = '100000';
+// 3단계 경제 API 테스트는 속도 제한에 걸리지 않게 크게 둔다. 속도 제한 테스트가 직접 낮춘다
+process.env.RATE_ECONOMY_IP_MAX = '100000';
+process.env.RATE_KILL_PER_SEC = '10000';
+process.env.RATE_KILL_PER_MIN = '100000';
+process.env.RATE_CLAIM_PER_SEC = '10000';
+process.env.RATE_GATHER_PER_SEC = '10000';
+process.env.RATE_NODES_PER_SEC = '10000';
+process.env.RATE_SHOP_PER_SEC = '10000';
+process.env.RATE_ENHANCE_PER_SEC = '10000';
+process.env.RATE_USE_PER_SEC = '10000';
+process.env.RATE_SLOW_PER_SEC = '10000';
+// 같은 아이템 연속 사용 간격은 끈다(쿨다운 테스트만 켠다)
+process.env.ITEM_USE_MIN_GAP_MS = '0';

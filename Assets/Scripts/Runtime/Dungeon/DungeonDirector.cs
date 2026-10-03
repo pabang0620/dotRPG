@@ -123,12 +123,48 @@ namespace DotRPG
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
+            if (OnlineEconomy.On) return EnterOnline(dungeon, difficulty, false);
             if (!dungeon.isRaid) Progress.UseEntry(now);
             // Continue after quitting mid-run starts in the village, with this entry already spent.
             SaveBeforeEntering();
             StartRun(dungeon, difficulty, now);
             return true;
         }
+
+        /// <summary>
+        /// [SERVER] Online (phase 3): solo weekday dungeons only. The server spends the entry and opens the run;
+        /// the run starts when it answers (its refusal is shown as a toast). True = request sent.
+        /// </summary>
+        bool EnterOnline(DungeonDef dungeon, DungeonDifficulty difficulty, bool retry)
+        {
+            if (dungeon.isRaid)
+            {
+                GameEvents.RaiseToast("온라인 레이드는 파티 기능과 함께 열린다.");
+                Game.Audio.PlaySfx("cancel");
+                return false;
+            }
+            if (Game.Session.PartyRoster.Count > 0)
+            {
+                GameEvents.RaiseToast("온라인 던전은 혼자 입장한다. 용병을 내보낸 뒤 입장하자.");
+                Game.Audio.PlaySfx("cancel");
+                return false;
+            }
+            if (enteringOnline) return false;
+            enteringOnline = true;
+            OnlineEconomy.EnterDungeon(dungeon.id, (int)difficulty, ok =>
+            {
+                enteringOnline = false;
+                if (!ok) { Game.Audio.PlaySfx("cancel"); return; }
+                var now = ResetClock.Now;
+                Progress.UseEntry(now); // the local counter follows the server's
+                if (retry) EndRunState();
+                else SaveBeforeEntering();
+                StartRun(dungeon, difficulty, now);
+            });
+            return true;
+        }
+
+        bool enteringOnline;
 
         /// <summary>Same dungeon and difficulty again from the result screen (spends an entry).</summary>
         public bool Retry()
@@ -143,6 +179,7 @@ namespace DotRPG
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
+            if (OnlineEconomy.On) return EnterOnline(dungeon, difficulty, true);
             if (!dungeon.isRaid) Progress.UseEntry(now);
             EndRunState();
             StartRun(dungeon, difficulty, now);
@@ -198,6 +235,7 @@ namespace DotRPG
             bosses.Clear();
             door = null;
             run.RoomIndex = index;
+            OnlineEconomy.RoomIndex = index; // [SERVER] kill reports carry the room
             var room = run.Room;
             Game.Dialogue.Abort();
             CompanionBrain.DangerZones.Clear();
@@ -364,6 +402,7 @@ namespace DotRPG
 
         void FinishCleared()
         {
+            if (OnlineEconomy.On && OnlineEconomy.RunId != null) { StartCoroutine(FinishClearedOnline()); return; }
             var auth = DungeonAuthority.Current;
             run.State = DungeonRunState.Cleared;
             SnapshotDamage();
@@ -385,6 +424,64 @@ namespace DotRPG
             EndRunState();
             RunEnded?.Invoke(run);
             ShowResult();
+        }
+
+        /// <summary>
+        /// [SERVER] The server checks the run, decides rank and clear XP (already in its delta) and keeps the four
+        /// cards hidden until one is picked. The local score is shown only if the server has none.
+        /// </summary>
+        IEnumerator FinishClearedOnline()
+        {
+            run.State = DungeonRunState.Cleared;
+            SnapshotDamage();
+            run.Score = DungeonAuthority.Current.ScoreRun(run);
+            run.Rank = run.Score.Rank;
+            busy = true;
+            bool answered = false;
+            Dictionary<string, object> data = null;
+            OnlineEconomy.FinishDungeon(true, run.Elapsed, run.HitsTaken, run.MaxCombo, run.RevivesUsed, d => { data = d; answered = true; });
+            float waited = 0f;
+            while (!answered && waited < 15f) { waited += Time.unscaledDeltaTime; yield return null; }
+            busy = false;
+            string result = MiniJson.Str(data, "result");
+            if (result == "cleared")
+            {
+                var score = MiniJson.Obj(data, "score");
+                if (score != null)
+                    run.Score = new RankScore
+                    {
+                        time = MiniJson.Int(score, "time"), hits = MiniJson.Int(score, "hits"), kills = MiniJson.Int(score, "kills"),
+                        combo = MiniJson.Int(score, "combo"), revivePenalty = MiniJson.Int(score, "revive_penalty"),
+                    };
+                if (Enum.TryParse(MiniJson.Str(data, "rank", ""), out DungeonRank rank)) run.Rank = rank;
+                run.XpGained = MiniJson.Int(data, "granted_xp");
+                // Face-down placeholders: the server reveals them on the pick.
+                int count = MiniJson.Int(data, "card_count");
+                run.Cards = count > 0 ? new List<RewardCard>(new RewardCard[count]) : null;
+                Progress.RecordClear(run.Dungeon.id, run.Difficulty, run.Rank);
+            }
+            else
+            {
+                // Held for review or not answered: no reward on this screen.
+                run.XpGained = 0;
+                run.Cards = null;
+                GameEvents.RaiseToast(result == "held" ? "결과를 확인하는 중이다. 보상은 확인 후 지급된다." : "서버에 결과를 보내지 못했다.");
+            }
+            EndRunState();
+            RunEnded?.Invoke(run);
+            ShowResult();
+        }
+
+        /// <summary>[SERVER] Flips card <paramref name="index"/> on the server; done(own card or null). All four cards are filled in.</summary>
+        public void TakeCardOnline(int index, Action<RewardCard?> done)
+        {
+            var current = run;
+            OnlineEconomy.PickCard(index, (own, all) =>
+            {
+                if (current != null && all != null && current.Cards != null)
+                    for (int i = 0; i < all.Count && i < current.Cards.Count; i++) current.Cards[i] = all[i];
+                done?.Invoke(own);
+            });
         }
 
         /// <summary>[RAID] Mid raids drop seal key fragments; final raids take the fragments they cost.</summary>
@@ -478,6 +575,7 @@ namespace DotRPG
             run.FailReason = reason;
             SnapshotDamage();
             run.Rank = DungeonRank.F;
+            if (OnlineEconomy.On) OnlineEconomy.FinishDungeon(false, run.Elapsed, run.HitsTaken, run.MaxCombo, run.RevivesUsed, null); // [SERVER]
             EndRunState();
             Game.Audio.PlaySfx("player_down");
             RunEnded?.Invoke(run);
@@ -524,6 +622,7 @@ namespace DotRPG
             {
                 EndRunState();
                 run = null;
+                OnlineEconomy.LeaveDungeon(); // [SERVER]
                 Game.Session.MapId = MapRegistry.Village;
                 Game.World.Load(MapRegistry.Village);
                 var local = Game.Player;
@@ -549,6 +648,7 @@ namespace DotRPG
             ReviveOpen = false;
             EndRunState();
             run = null;
+            OnlineEconomy.LeaveDungeon(); // [SERVER] an abandoned run is closed by the server later
             if (Game.State.Current == GameState.Playing) Time.timeScale = 1f;
             RoomChanged?.Invoke();
         }

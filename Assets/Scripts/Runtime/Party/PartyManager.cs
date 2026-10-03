@@ -343,8 +343,11 @@ namespace DotRPG
         {
             // XP goes into the local progression exactly once per kill (companions follow its level).
             var prog = Game.Session.Progression;
-            prog.AddXp(xp);
-            if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
+            if (!OnlineEconomy.On) // [SERVER] online XP comes with the kill report's answer
+            {
+                prog.AddXp(xp);
+                if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
+            }
             // Kill passives (HP / MP on kill) belong to whoever landed the blow; unknown killer = local player.
             var table = enemy != null ? enemy.GetComponent<ThreatTable>() : null;
             var killer = table != null && Contains(table.LastAttacker) ? table.LastAttacker : Local;

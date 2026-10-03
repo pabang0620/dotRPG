@@ -125,6 +125,14 @@ namespace DotRPG
             if (wood + stone > 0) Changed?.Invoke();
         }
 
+        /// <summary>[SERVER] Delivered totals as the server counts them (site_deliveries).</summary>
+        public void SetDeliveredFromServer(int wood, int stone)
+        {
+            Progress.woodDelivered = Math.Max(0, wood);
+            Progress.stoneDelivered = Math.Max(0, stone);
+            Changed?.Invoke();
+        }
+
         public void MarkWorkshopBuilt()
         {
             if (Progress.workshopBuilt) return;
@@ -450,6 +458,7 @@ namespace DotRPG
             s.status = (int)QuestStatus.Completed;
             if (Journal.Tracked == q.id) Journal.Tracked = "";
             GiveReward(q.reward);
+            if (OnlineEconomy.On) OnlineEconomy.ClaimQuest(q.id, (ok, bonus) => { }); // [SERVER] XP, gold and items come from the claim
             Game.Audio.PlaySfx("quest");
             GameEvents.RaiseToast($"퀘스트 완료: {q.title}");
             GameEvents.RaiseQuestCompleted(q.id);
@@ -460,21 +469,22 @@ namespace DotRPG
         {
             if (r == null) return;
             var parts = new List<string>();
+            bool online = OnlineEconomy.On; // [SERVER] online the claim's delta adds these
             if (r.xp > 0)
             {
-                Game.Session.Progression.AddXp(r.xp);
+                if (!online) Game.Session.Progression.AddXp(r.xp);
                 parts.Add($"경험치 {r.xp:N0}");
             }
             if (r.gold > 0)
             {
-                Game.Session.Inventory.Add(ConsumableDatabase.Gold, r.gold);
+                if (!online) Game.Session.Inventory.Add(ConsumableDatabase.Gold, r.gold);
                 parts.Add($"골드 {r.gold:N0}");
             }
             if (r.items != null)
                 foreach (var it in r.items)
                 {
                     if (string.IsNullOrEmpty(it.id) || it.count <= 0) continue;
-                    Game.Session.Inventory.Add(it.id, it.count);
+                    if (!online) Game.Session.Inventory.Add(it.id, it.count);
                     parts.Add(it.count > 1 ? $"{ItemName(it.id)} x{it.count}" : ItemName(it.id));
                 }
             if (r.maxHealth > 0 && Game.Player != null)

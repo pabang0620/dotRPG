@@ -12,6 +12,9 @@ namespace DotRPG
         SpriteRenderer sr;
         bool hd;
 
+        /// <summary>What every chest gives (also exported for the server, GameDataExport).</summary>
+        public const string Reward = "eq_top_iron";
+
         public override string Prompt => "상자 열기";
 
         public override bool CanInteract => !Game.Session.OpenedChests.Contains(chestId);
@@ -41,9 +44,11 @@ namespace DotRPG
             if (!CanInteract) return;
             Game.Session.OpenedChests.Add(chestId);
             Refresh();
+            var at = (Vector2)transform.position + new Vector2(0f, 0.3f);
+            // [SERVER] Online the server opens it once per character and grants the reward.
+            if (OnlineEconomy.On) OnlineEconomy.OpenChest(chestId, at, transform.parent, _ => { });
             // Fixed reward: the epic chest plate (any class can wear it).
-            const string reward = "eq_top_iron";
-            Pickup.Create(reward, 1, (Vector2)transform.position + new Vector2(0f, 0.3f), transform.parent);
+            else Pickup.Create(Reward, 1, at, transform.parent);
             Game.Audio.PlaySfx("quest");
             Fx.Sparkle((Vector2)transform.position + Vector2.up * 0.5f, 5, 0.6f);
             GameEvents.RaiseToast("보물상자를 열었다!");

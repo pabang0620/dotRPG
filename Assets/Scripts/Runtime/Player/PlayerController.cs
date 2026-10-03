@@ -420,6 +420,7 @@ namespace DotRPG
                 GameEvents.RaiseToast("체력 물약도 당근도 없다. 마을 잡화상인에게서 물약을 사자.");
                 return;
             }
+            if (OnlineEconomy.On) OnlineEconomy.UseItem(ItemIds.Carrot); // [SERVER] consume there too
             health.Heal(stats.carrotHealAmount);
             Game.Audio.PlaySfx("heal");
             Fx.Sparkle(Center + Vector2.up * 0.4f, 2, 0.3f);
@@ -462,6 +463,7 @@ namespace DotRPG
                     if (health.Current >= health.Max) { GameEvents.RaiseToast("체력이 가득 차 있다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
+                    if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
                     int amount = Mathf.Max(1, Mathf.RoundToInt(health.Max * item.power / 100f));
                     health.Heal(amount);
                     Game.Audio.PlaySfx("heal");
@@ -476,6 +478,7 @@ namespace DotRPG
                     if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
+                    if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
                     int amount = Mathf.Max(1, Mathf.RoundToInt(maxMp * item.power / 100f));
                     Data.Mana += amount;
                     ClampMana();

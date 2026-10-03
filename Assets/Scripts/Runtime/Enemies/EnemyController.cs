@@ -389,6 +389,15 @@ namespace DotRPG
         void DropLoot()
         {
             if (Game.Player == null || transform.parent == null) return;
+            if (OnlineEconomy.On)
+            {
+                // [SERVER] The server grants XP and rolls every drop; summons and no-loot monsters are not reported.
+                if (Summoner != null || (Def != null && Def.noLoot)) return;
+                var root = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
+                int hits = Behaviour is GoldRunnerBehaviour runner ? runner.GoldSpilled : 0;
+                OnlineEconomy.ReportKill(Def != null ? Def.id : stats.enemyId, hits, Position + new Vector2(0f, 0.2f), root);
+                return;
+            }
             if (!MonsterLoot()) return; // [MONSTER] summons/totems drop nothing; gold skeletons drop extra gold
             // Drop into the world's object root so it survives this enemy being destroyed.
             var parent = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;

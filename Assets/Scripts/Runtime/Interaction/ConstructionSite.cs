@@ -96,6 +96,19 @@ namespace DotRPG
                 return;
             }
 
+            if (OnlineEconomy.On)
+            {
+                // [SERVER] The server moves what is missing from the bag and keeps the count.
+                OnlineEconomy.Deliver((w, s, complete) =>
+                {
+                    if (w < 0) return;
+                    Quest.SetDeliveredFromServer(w, s);
+                    Game.Audio.PlaySfx("deliver");
+                    GameEvents.RaiseToast($"재료 전달! 목재 {w}/{cfg.requiredWood} · 돌 {s}/{cfg.requiredStone}");
+                    if (complete && !buildingInProgress) StartCoroutine(BuildSequence());
+                });
+                return;
+            }
             Quest.DeliverMaterials(Game.Session.Inventory, out int wood, out int stone);
             if (wood + stone > 0)
             {

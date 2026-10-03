@@ -259,7 +259,18 @@ namespace DotRPG
 
         IEnumerator PickRoutine(int index)
         {
-            var reward = Game.Dungeon.TakeCard(index);
+            RewardCard? reward;
+            if (OnlineEconomy.On)
+            {
+                // [SERVER] The server picks and reveals; the flip waits for its answer.
+                bool answered = false;
+                reward = null;
+                Game.Dungeon.TakeCardOnline(index, r => { reward = r; answered = true; });
+                float waited = 0f;
+                while (!answered && waited < 15f) { waited += Time.unscaledDeltaTime; yield return null; }
+                if (!reward.HasValue) { picking = false; yield break; }
+            }
+            else reward = Game.Dungeon.TakeCard(index);
             yield return Flip(index, "나", true, true);
             picked = true;
             if (reward.HasValue) GameEvents.RaiseToast($"보상 획득: {reward.Value.Label}");

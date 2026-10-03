@@ -43,9 +43,13 @@ namespace DotRPG
         {
             if (Def.goldPerHitMax <= 0 || E.Health.IsDead) return;
             var parent = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
-            int amount = E.Rng.Next(Def.goldPerHitMin, Def.goldPerHitMax + 1);
-            Pickup.Create(ConsumableDatabase.Gold, amount, E.Position + new Vector2(0f, 0.2f), parent);
             GoldSpilled++;
+            // [SERVER] Online the server pays these hits when the kill is reported (OnlineEconomy.ReportKill hits).
+            if (!OnlineEconomy.On)
+            {
+                int amount = E.Rng.Next(Def.goldPerHitMin, Def.goldPerHitMax + 1);
+                Pickup.Create(ConsumableDatabase.Gold, amount, E.Position + new Vector2(0f, 0.2f), parent);
+            }
             Fx.Sparkle(E.Center, 2, 0.4f);
             turnAt = 0f; // panic: pick a new direction
         }

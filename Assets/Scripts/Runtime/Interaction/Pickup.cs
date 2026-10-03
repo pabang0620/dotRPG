@@ -10,6 +10,10 @@ namespace DotRPG
 
         string itemId;
         int amount;
+        /// <summary>[SERVER] Drop rolled by the server: collecting claims it by id instead of adding locally.</summary>
+        public string DropId;
+        /// <summary>[SERVER] Already granted by the server (gather, chest): collecting only shows the toast.</summary>
+        public bool ServerGranted;
         SpriteRenderer sr;
         Vector2 ground;
         Vector2 velocity;
@@ -75,7 +79,9 @@ namespace DotRPG
 
         void Collect()
         {
-            Game.Session.Inventory.Add(itemId, amount);
+            if (DropId != null) OnlineEconomy.ClaimDrop(DropId);
+            // Online, anything else on the ground is a visual only: the server already decided what the bag holds.
+            else if (!ServerGranted && !OnlineEconomy.On) Game.Session.Inventory.Add(itemId, amount);
             Game.Audio.PlaySfx("pickup");
             var gear = EquipmentDatabase.Get(itemId);
             if (itemId == ConsumableDatabase.Gold)

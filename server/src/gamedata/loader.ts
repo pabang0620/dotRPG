@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+import { loadEconomyData, type EconomyData } from './economyData';
 
 // 알 수 없는 필드는 무시(looseObject)해서 데이터에 필드가 늘어도 기동이 깨지지 않는다.
 const schemaVer = z.literal(1);
@@ -131,6 +132,8 @@ export interface GameData {
   quests: { byId: Map<string, QuestInfo>; flags: Set<string> };
   facingCount: number;
   questStatusMax: number;
+  /** 3단계(경제 판정)가 쓰는 데이터 */
+  economy: EconomyData;
 }
 
 function readJson<T extends z.ZodType>(dir: string, file: string, schema: T): z.infer<T> {
@@ -161,7 +164,7 @@ function uniqueMap<T extends { id: string }>(rows: T[], what: string): Map<strin
   return m;
 }
 
-/** 1~2단계가 쓰는 파일만 읽는다. 교차 검증(시작 지급 id 존재, 패시브 링크 대칭 등)까지 하고 실패하면 던진다. */
+/** 1~3단계가 쓰는 파일을 읽는다. 교차 검증(시작 지급 id 존재, 패시브 링크 대칭 등)까지 하고 실패하면 던진다. */
 export function loadGameData(dir: string): GameData {
   const ver = readJson(dir, 'data_version.json', dataVersionSchema);
   const maps = readJson(dir, 'maps.json', mapsSchema);
@@ -242,6 +245,7 @@ export function loadGameData(dir: string): GameData {
     quests: { byId: uniqueMap(quests.quests, '퀘스트'), flags: new Set(quests.flags) },
     facingCount: enums.facingCount,
     questStatusMax: enums.questStatusMax,
+    economy: loadEconomyData(dir, new Set(mapById.keys())),
   };
 }
 

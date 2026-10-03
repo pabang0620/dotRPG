@@ -32,6 +32,14 @@ namespace DotRPG
         /// <summary>Key worn in a slot ("eq_sword_iron+12"), null when empty.</summary>
         public string this[EquipSlot slot] => slots[(int)slot];
 
+        /// <summary>[SERVER] Puts exactly this key (or nothing) in a slot, as the server says. No bag changes.</summary>
+        public void SetSlotFromServer(int slot, string key)
+        {
+            if (slot < 0 || slot >= SlotCount) return;
+            slots[slot] = string.IsNullOrEmpty(key) ? null : key;
+            Changed?.Invoke();
+        }
+
         /// <summary>Base item worn in a slot (its level is <see cref="LevelOf"/> of the slot's key).</summary>
         public EquipmentItem ItemIn(EquipSlot slot) => EquipmentDatabase.Get(slots[(int)slot]);
 
@@ -229,6 +237,14 @@ namespace DotRPG
 
         /// <summary>Pity (%p) collected by failed attempts from this key (weapons at +10 / +11 only).</summary>
         public int PityOf(string key) => key != null && pity.TryGetValue(key, out int p) ? p : 0;
+
+        /// <summary>[SERVER] Pity for one key as the server counted it (0 clears it).</summary>
+        public void SetPityFromServer(string key, int value)
+        {
+            if (string.IsNullOrEmpty(key)) return;
+            if (value > 0) pity[key] = Math.Min(value, EnhanceRules.MaxPity);
+            else pity.Remove(key);
+        }
 
         public List<ItemStack> PityToList()
         {

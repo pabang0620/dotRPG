@@ -47,6 +47,14 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>[SERVER] Sets an exact count (server delta), raising the usual Changed event.</summary>
+        public void SetCount(string id, int count)
+        {
+            int have = Count(id);
+            if (count > have) Add(id, count - have);
+            else if (count < have) Remove(id, have - count);
+        }
+
         public void Clear()
         {
             var ids = new List<string>(counts.Keys);

@@ -259,7 +259,20 @@ namespace DotRPG
             var eq = Game.Session.Equipment;
             if (s.worn.HasValue)
             {
-                if (eq.Unequip(s.worn.Value)) { Game.Audio.PlaySfx("select"); GameEvents.RaiseToast($"{EquipmentDatabase.SlotName(s.worn.Value)} 해제"); }
+                if (OnlineEconomy.On && s.worn.Value == EquipSlot.Weapon && Class != CharacterClass.Warrior)
+                {
+                    // [SERVER] A mage always holds a staff (FixSlots); online the server refuses an empty weapon slot.
+                    Game.Audio.PlaySfx("cancel");
+                    GameEvents.RaiseToast("마법사는 무기를 뺄 수 없다. 다른 무기를 장착하면 바뀐다.");
+                    return;
+                }
+                var wornBefore = OnlineEconomy.WornSnapshot();
+                if (eq.Unequip(s.worn.Value))
+                {
+                    OnlineEconomy.SyncWorn(wornBefore); // [SERVER]
+                    Game.Audio.PlaySfx("select");
+                    GameEvents.RaiseToast($"{EquipmentDatabase.SlotName(s.worn.Value)} 해제");
+                }
                 return;
             }
             var gear = EquipmentDatabase.Get(s.itemId);
@@ -283,12 +296,15 @@ namespace DotRPG
                 return;
             }
             string key = s.itemId;
-            if (eq.Equip(key, Class)) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
+            var before = OnlineEconomy.WornSnapshot();
+            if (eq.Equip(key, Class)) { OnlineEconomy.SyncWorn(before); /* [SERVER] */ Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
         }
 
         void AutoEquip()
         {
+            var before = OnlineEconomy.WornSnapshot();
             int n = Game.Session.Equipment.AutoEquip(Class);
+            if (n > 0) OnlineEconomy.SyncWorn(before); // [SERVER]
             GameEvents.RaiseToast(n > 0 ? $"더 좋은 장비 {n}개를 장착했다." : "이미 가장 좋은 장비를 착용 중이다.");
         }
 
