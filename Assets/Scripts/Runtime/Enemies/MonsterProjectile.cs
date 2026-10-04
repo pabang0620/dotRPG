@@ -68,7 +68,7 @@ namespace DotRPG
 
         void Update()
         {
-            if (!Game.IsPlaying) return;
+            if (!Game.IsWorldRunning) return;
             float step = speed * Time.deltaTime;
             transform.position += (Vector3)(direction * step);
             travelled += step;

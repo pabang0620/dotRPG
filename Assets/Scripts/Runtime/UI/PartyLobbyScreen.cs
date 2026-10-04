@@ -114,7 +114,7 @@ namespace DotRPG
         {
             if (Client == null) return;
             int ai = aiCount < 0 ? FreeSeats : Mathf.Min(aiCount, FreeSeats);
-            Client.Start(ai, (ok, msg) => Done(ok, msg, "출발! 파티원이 방장에게 연결되는 중입니다."));
+            Client.StartRun(ai, (ok, msg) => Done(ok, msg, "출발! 파티원이 방장에게 연결되는 중입니다."));
         }
 
         void LeaveParty()

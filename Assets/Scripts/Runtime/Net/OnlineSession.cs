@@ -163,6 +163,7 @@ namespace DotRPG
                 if (!r.ok) { done(r, null); return; }
                 var detail = MiniJson.Obj(r.data, "character");
                 ActiveCharacter = id;
+                Game.State?.RefreshTimeScale();
                 stateVersion = MiniJson.Int(MiniJson.Obj(detail, "state"), "version");
                 done(r, ToSaveData(detail));
             });
@@ -175,6 +176,7 @@ namespace DotRPG
             OnlineServices.DetachChat(); // [SERVER 5]
             OnlineServices.DetachAuction(); // [SERVER 6]
             ActiveCharacter = null; // a save still waiting keeps its own character id and is sent
+            Game.State?.RefreshTimeScale();
         }
 
         // ---------------- server detail <-> SaveData ----------------

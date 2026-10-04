@@ -65,7 +65,8 @@ namespace DotRPG
                 if (dataVersion == null)
                 {
                     var asset = Resources.Load<TextAsset>("Data/DataVersion");
-                    dataVersion = asset != null ? asset.text.Trim() : "";
+                    var path = System.IO.Path.Combine(Application.streamingAssetsPath, "DataVersion.txt");
+                    dataVersion = System.IO.File.Exists(path) ? System.IO.File.ReadAllText(path).Trim() : asset != null ? asset.text.Trim() : "";
                 }
                 return dataVersion;
             }

@@ -64,6 +64,8 @@ namespace DotRPG.EditorTools
                 if (File.Exists(old)) File.Delete(old); // replaced by data_version.json (first export of this session)
                 // The game reads the same hash at runtime (X-Data-Version header).
                 File.WriteAllText(Path.Combine(Application.dataPath, "Resources", "Data", "DataVersion.txt"), hash, new UTF8Encoding(false));
+                Directory.CreateDirectory(Application.streamingAssetsPath);
+                File.WriteAllText(Path.Combine(Application.streamingAssetsPath, "DataVersion.txt"), hash, new UTF8Encoding(false));
                 AssetDatabase.Refresh();
                 Debug.Log($"[GameDataExport] {files.Count} files -> {OutDir}, dataVersion {hash}");
             }
@@ -333,6 +335,7 @@ namespace DotRPG.EditorTools
                     .Num("bossRoom", d.bossRoom).Num("maxParty", d.maxParty);
                 o.Arr("openDays", d.openDays ?? new DayOfWeek[0], (x, day) => x.Val(day.ToString()));
                 o.Arr("referenceSeconds", d.referenceSeconds ?? new float[0], (x, s) => x.Val(s));
+                o.Arr("clearXpFloor", Enumerable.Range(0, 4), (x, i) => x.Val(HuntingGrounds.DungeonClearFloor(d, DungeonDatabase.DifficultyFor(d, (DungeonDifficulty)i))));
                 o.Arr("rewards", d.rewards ?? new RewardEntry[0], (x, r) => x.Obj().Str("itemId", r.itemId).Num("min", r.min).Num("max", r.max).Num("weight", r.weight).End());
                 o.Arr("rooms", d.rooms, (r, room) =>
                 {
@@ -365,7 +368,14 @@ namespace DotRPG.EditorTools
                 o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe);
                 var census = Census(m);
                 if (census.width > 0) o.Key("bounds").Obj().Num("minX", 0).Num("minY", 0).Num("maxX", census.width).Num("maxY", census.height).End();
-                o.Arr("fieldSpawns", census.spawnPoints > 0 ? new[] { census.spawnPoints } : new int[0],
+                var zone = HuntingGrounds.Get(m.id);
+                if (zone != null)
+                {
+                    var counts = Enumerable.Range(0, census.spawnPoints).GroupBy(i => zone.monsters[i % zone.monsters.Length]);
+                    o.Arr("fieldSpawns", counts, (x, g) => x.Obj().Str("monsterId", g.Key).Num("points", g.Count())
+                        .Num("level", zone.monsterLevel).Num("xp", zone.KillXp).Num("respawnSeconds", HuntingGrounds.RespawnSeconds).End());
+                }
+                else o.Arr("fieldSpawns", census.spawnPoints > 0 ? new[] { census.spawnPoints } : new int[0],
                     (x, n) => x.Obj().Str("monsterId", Resources.Load<GameConfig>("Data/GameConfig").skeletonStats.enemyId).Num("points", n).End());
                 o.Arr("scriptedSpawns", ScriptedSpawns(m.id), (x, sp) => x.Obj().Str("monsterId", sp.Item1).Num("total", sp.Item2).Str("quest", sp.Item3).End());
                 o.Arr("nodes", census.nodes, (x, nd) => x.Obj().Str("id", nd.Item1).Str("kind", nd.Item2).End());
@@ -391,9 +401,14 @@ namespace DotRPG.EditorTools
         static MapCensus Census(MapInfo map)
         {
             var c = new MapCensus();
-            var text = string.IsNullOrEmpty(map.resource) ? null : Resources.Load<TextAsset>(map.resource);
-            if (text == null) return c;
-            var rows = text.text.Split('\n').Select(r => r.TrimEnd('\r')).Where(l => !l.StartsWith("//") && l.Trim().Length > 0).ToList();
+            var source = HuntingGrounds.Layout(map.id);
+            if (source == null)
+            {
+                var text = string.IsNullOrEmpty(map.resource) ? null : Resources.Load<TextAsset>(map.resource);
+                if (text == null) return c;
+                source = HuntingGrounds.AdaptTownLayout(map.id, text.text);
+            }
+            var rows = source.Split('\n').Select(r => r.TrimEnd('\r')).Where(l => !l.StartsWith("//") && l.Trim().Length > 0).ToList();
             c.height = rows.Count;
             c.width = rows.Count == 0 ? 0 : rows.Max(r => r.Length);
             bool canyon = map.theme == MapTheme.Canyon, winter = map.theme == MapTheme.Winter, hd = map.HighRes;

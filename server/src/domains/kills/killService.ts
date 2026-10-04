@@ -89,7 +89,7 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   }
 
   // 보상: 서버 데이터로만 계산한다(요청의 어떤 값도 쓰지 않는다)
-  const xp = monsterXp(eco, def, target.level);
+  const xp = target.xpOverride ?? monsterXp(eco, def, target.level);
   // 연습판(레이드 보상 잠금)은 처치를 받아들이되 경험치·드롭을 주지 않는다(무한 입장 파밍 방지)
   const { granted, leveledUp } = target.rewardLocked
     ? { granted: 0, leveledUp: false }

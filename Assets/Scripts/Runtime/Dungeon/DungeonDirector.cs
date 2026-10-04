@@ -400,7 +400,7 @@ namespace DotRPG
         void Update()
         {
             if (run == null) return;
-            if (run.State == DungeonRunState.Playing && Game.IsPlaying && !busy) run.Elapsed += Time.deltaTime;
+            if (run.State == DungeonRunState.Playing && Game.IsWorldRunning && !busy) run.Elapsed += Time.deltaTime;
             if (ReviveOpen) UpdateRevive();
             if (!roomReady || busy || run.State != DungeonRunState.Playing) return;
             if (Follower) return; // [PARTY NET] the host says when a room or the run is cleared
@@ -462,9 +462,9 @@ namespace DotRPG
             ClearBanner?.Invoke();
             Game.Audio.PlaySfx("dungeon_clear"); // [H3]
             Game.Camera?.Shake(0.15f, 0.3f);
-            if (Game.IsPlaying) Time.timeScale = SlowMotionScale;
+            if (!Game.IsOnlineWorld && Game.IsPlaying) Time.timeScale = SlowMotionScale;
             yield return new WaitForSecondsRealtime(SlowMotionSeconds);
-            if (Game.IsPlaying) Time.timeScale = 1f;
+            Game.State.RefreshTimeScale();
             // The rest of the room falls with its master (retried: a monster hit a moment ago is briefly invulnerable).
             float holdEnd = Time.realtimeSinceStartup + ClearHoldSeconds;
             while (AnyAlive() && Time.realtimeSinceStartup < holdEnd)
@@ -475,7 +475,7 @@ namespace DotRPG
             }
             float rest = holdEnd - Time.realtimeSinceStartup;
             if (rest > 0f) yield return new WaitForSecondsRealtime(rest);
-            while (!Game.IsPlaying || busy) yield return null;
+            while (!Game.IsWorldRunning || busy) yield return null;
             FinishCleared();
         }
 
@@ -622,10 +622,10 @@ namespace DotRPG
         {
             if (run == null || run.State != DungeonRunState.Playing) { ReviveOpen = false; return; }
             if (Game.Player != null && !Game.Player.IsDead) { ReviveOpen = false; return; }
-            if (!Game.IsPlaying) return;
+            if (!Game.IsWorldRunning) return;
             reviveClock += Time.deltaTime;
             var input = Game.Input;
-            if (!Game.State.ChangedThisFrame && input != null)
+            if (Game.IsPlaying && !Game.State.ChangedThisFrame && input != null)
             {
                 if (input.SubmitPressed || input.InteractPressed || input.AttackPressed) { AcceptRevive(); return; }
                 if (input.CancelPressed) { GiveUp(); return; }

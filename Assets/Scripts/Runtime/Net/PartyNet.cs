@@ -51,6 +51,7 @@ namespace DotRPG
             net.runId = run ?? "";
             net.mySlot = slot;
             Current = net;
+            Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
             return net;
@@ -62,6 +63,7 @@ namespace DotRPG
             var net = Current;
             if (net == null) return;
             Current = null;
+            Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
             net.UnhookEnemies();

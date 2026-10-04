@@ -380,7 +380,7 @@ namespace DotRPG
             while (t < JudgmentCast)
             {
                 // The cast only stops for groggy (which interrupts this coroutine) or pause.
-                if (Game.IsPlaying) t += Time.deltaTime;
+                if (Game.IsWorldRunning) t += Time.deltaTime;
                 JudgmentProgress = t / JudgmentCast;
                 E.MonsterHalt();
                 E.MonsterAnim(CharacterAnim.Attack, true);

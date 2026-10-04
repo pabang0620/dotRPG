@@ -12,7 +12,7 @@ namespace DotRPG
         Paused,
         GameOver,
         Ending,
-        /// <summary>Item / equipment window open (world frozen).</summary>
+        /// <summary>Item / equipment window open (offline world frozen).</summary>
         Inventory,
         /// <summary>A story cutscene runs: world time flows, player input and enemies wait.</summary>
         Cutscene,
@@ -20,7 +20,7 @@ namespace DotRPG
 
     /// <summary>
     /// Top-level game state. Owns <see cref="Time.timeScale"/> so that pausing, dialogue and menus
-    /// freeze the world consistently. UI and gameplay subscribe to <see cref="Changed"/>.
+    /// freeze the offline world consistently. Online menus only suspend local input. UI and gameplay subscribe to <see cref="Changed"/>.
     /// </summary>
     public sealed class GameStateMachine
     {
@@ -37,13 +37,21 @@ namespace DotRPG
         /// </summary>
         public bool ChangedThisFrame => LastChangeFrame == Time.frameCount;
 
+        /// <summary>Re-evaluate when an online session starts or ends while a menu is open.</summary>
+        public void RefreshTimeScale()
+        {
+            bool onlineMenu = Game.IsOnlineWorld &&
+                (Current is GameState.Paused or GameState.Inventory or GameState.Dialogue);
+            Time.timeScale = onlineMenu || (Current is GameState.Playing or GameState.Title or GameState.Cutscene) ? 1f : 0f;
+        }
+
         public void Set(GameState next)
         {
             if (next == Current) return;
             Previous = Current;
             Current = next;
             LastChangeFrame = Time.frameCount;
-            Time.timeScale = next is GameState.Playing or GameState.Title or GameState.Cutscene ? 1f : 0f;
+            RefreshTimeScale();
             Changed?.Invoke(Previous, next);
         }
     }

@@ -50,6 +50,7 @@ namespace DotRPG
             var p = go.AddComponent<NetPresence>();
             p.transport = new UdpTransport(host);
             Instance = p;
+            Game.State?.RefreshTimeScale();
             OnlineServices.Chat.Received += p.Relay;
             Debug.Log($"[NET] presence started as {(host ? "host" : "join")} on port {UdpTransport.HostPort + p.transport.LocalPeer}");
             return p;
@@ -59,7 +60,7 @@ namespace DotRPG
         {
             if (OnlineServices.Chat != null) OnlineServices.Chat.Received -= Relay;
             transport?.Dispose();
-            if (Instance == this) Instance = null;
+            if (Instance == this) { Instance = null; Game.State?.RefreshTimeScale(); }
         }
 
         // Own general / party lines go to the other window.

@@ -59,7 +59,7 @@ namespace DotRPG
             var me = Game.Player;
             if (me == null || Game.Dungeon == null || !Game.Dungeon.InRun) return;
             // Buttons go out the frame they are pressed; plain movement at 20 Hz.
-            var cmd = me.Command;
+            var cmd = Game.IsPlaying && !Game.State.ChangedThisFrame && !me.IsDead ? me.Command : ActorCommand.None;
             bool buttons = cmd.attack || cmd.skillSlot >= 0 || cmd.mobility || cmd.useHealing || cmd.useMana;
             stateTimer -= Time.unscaledDeltaTime;
             if (buttons || stateTimer <= 0f) NetCommandRouter.SendCommand(transport, HostPeer, mySlot, cmd, ++commandTick);

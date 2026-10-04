@@ -336,7 +336,7 @@ namespace DotRPG
                 Cancel();
                 return;
             }
-            if (Game.IsPlaying) Age += Time.deltaTime;
+            if (Game.IsWorldRunning) Age += Time.deltaTime;
             Apply();
             if (Age >= Windup) Resolve();
         }

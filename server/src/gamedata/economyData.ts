@@ -182,7 +182,7 @@ const mapExtraSchema = z.looseObject({
   maps: z.array(
     z.looseObject({
       id: z.string().min(1),
-      fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive() })).default([]),
+      fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive(), level: z.number().int().min(1).max(40).default(1), xp: nonNegInt.optional(), respawnSeconds: z.number().positive().default(25) })).default([]),
       scriptedSpawns: z
         .array(z.looseObject({ monsterId: z.string(), total: z.number().int().positive() }))
         .default([]),
@@ -255,6 +255,7 @@ const dungeonsSchema = z.looseObject({
         })
         .optional(),
       clearXp: nonNegInt,
+      clearXpFloor: z.array(nonNegInt).length(4).default([0, 0, 0, 0]),
       xpMul: z.number().positive(),
       bossRoom: nonNegInt,
       openDays: z.array(z.string()),
@@ -281,7 +282,7 @@ export type { MonsterDef };
 export const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary'] as const;
 
 export interface MapExtra {
-  fieldSpawns: { monsterId: string; points: number }[];
+  fieldSpawns: { monsterId: string; points: number; level: number; xp?: number; respawnSeconds: number }[];
   scriptedSpawns: { monsterId: string; total: number }[];
   nodes: Map<string, string>; // 노드 id -> kind
   chests: Set<string>;

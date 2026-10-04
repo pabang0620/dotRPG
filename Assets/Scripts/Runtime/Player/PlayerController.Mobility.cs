@@ -20,7 +20,7 @@ namespace DotRPG
         /// <summary>One key-down, current movement or last facing, without MP cost or invulnerability.</summary>
         public bool TryMobility(Vector2 movement)
         {
-            if (!isActiveAndEnabled || IsDead || !Game.IsPlaying || Game.State.ChangedThisFrame ||
+            if (!isActiveAndEnabled || IsDead || !Game.IsWorldRunning || (IsLocal && (!Game.IsPlaying || Game.State.ChangedThisFrame)) ||
                 IsDashing || MobilityCooldownRemaining > 0f || Time.time < knockbackUntil ||
                 Time.time < lockedUntil || skills.IsCasting) return false;
 

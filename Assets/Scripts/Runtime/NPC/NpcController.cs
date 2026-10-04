@@ -175,7 +175,7 @@ namespace DotRPG
                 PoseTool(0f);
                 return;
             }
-            bool worldRunning = Game.State.Current == GameState.Playing || Game.State.Current == GameState.Title;
+            bool worldRunning = Game.IsWorldRunning || Game.State.Current == GameState.Title;
             if (talking || !worldRunning)
             {
                 moving = false;
@@ -247,7 +247,7 @@ namespace DotRPG
 
         void WorkImpact()
         {
-            if (Game.State.Current != GameState.Playing && Game.State.Current != GameState.Title) return;
+            if (!Game.IsWorldRunning && Game.State.Current != GameState.Title) return;
             Vector2 front = (Vector2)transform.position + new Vector2(0f, 0.3f) + facing.ToVector() * 0.7f;
             bool nearPlayer = Game.Player != null && Vector2.Distance(Game.Player.Position, transform.position) < 7f;
             switch (def.tool)

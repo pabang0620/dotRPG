@@ -10,6 +10,8 @@ export const FIELD_POWER_WINDOW_SECONDS = 10;
 
 export interface KillTarget {
   context: 'field' | 'scripted' | 'dungeon';
+  /** Trusted map data, never supplied by the client. */
+  xpOverride?: number;
   mapId: string;
   level: number;
   hpMul: number;
@@ -52,7 +54,7 @@ export async function resolveFieldTarget(
   if (field) {
     // 리스폰 공급 상한(3.2.2): N개 스폰점, R초 리스폰이면 R초 안에 ceil(N * 여유)마리를 넘을 수 없다
     const def = data.economy.monsters.get(monsterId);
-    const respawn = def?.respawnSeconds ?? 25;
+    const respawn = field.respawnSeconds ?? def?.respawnSeconds ?? 25;
     const limit = Math.ceil(field.points * getConfig().policy.killSupplyMargin);
     const since = new Date(now.getTime() - respawn * 1000);
     const n = await countFieldKillsSince(client, characterId, mapId, monsterId, since);
@@ -60,7 +62,8 @@ export async function resolveFieldTarget(
     return {
       context: 'field',
       mapId,
-      level: 1,
+      level: field.level,
+      xpOverride: field.xp,
       hpMul: 1,
       burst,
       powerWindowSeconds: FIELD_POWER_WINDOW_SECONDS,

@@ -135,6 +135,12 @@ namespace DotRPG
     {
         UIRoot ui;
 
+        public override void Show()
+        {
+            base.Show();
+            panel.Find("Title").GetComponent<Text>().text = Game.IsOnlineWorld ? "메뉴 · 온라인 진행 중" : "일시정지";
+        }
+
         public static PauseScreen Create(Transform canvas, UIRoot ui)
         {
             var root = CreateRoot(canvas, "Pause", true);
