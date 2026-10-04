@@ -46,6 +46,10 @@ namespace DotRPG
             return false;
         }
 
+        /// <summary>The map where this quest's cutscene put <paramref name="monsterId"/> (and respawns it), or null.</summary>
+        public static string ScriptedMap(QuestDef q, string monsterId) =>
+            Game.Cutscenes != null && FindScriptedSpawn(q, monsterId, out string map) != null ? map : null;
+
         /// <summary>The "enemies" command for <paramref name="monsterId"/> in a cutscene of this quest, and the map it plays on.</summary>
         static CutsceneCmd FindScriptedSpawn(QuestDef q, string monsterId, out string map)
         {

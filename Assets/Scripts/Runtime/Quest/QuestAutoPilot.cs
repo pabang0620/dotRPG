@@ -187,15 +187,18 @@ namespace DotRPG
             var step = q.CurrentStep(def);
             if (step == null) return default;
             var objectives = q.ObjectivesOf(def);
+            bool outOfEntries = false;
             for (int i = 0; i < step.objectives.Count; i++)
             {
                 if (i < objectives.Count && objectives[i].done) continue;
                 var o = step.objectives[i];
+                // Weekday dungeons used up for today: grow in the field instead of stopping at the guide.
+                if (o.type == ObjectiveTypes.Dungeon && Game.Session.Dungeons.EntriesLeft(ResetClock.Now) <= 0) { outOfEntries = true; continue; }
                 switch (o.type)
                 {
                     case ObjectiveTypes.Talk: return NpcGoal(o.target, "에게 가는 중");
                     case ObjectiveTypes.Interact: return PropGoal(o);
-                    case ObjectiveTypes.Kill: return KillGoal(o);
+                    case ObjectiveTypes.Kill: return KillGoal(o, def);
                     case ObjectiveTypes.Collect: return CollectGoal(o.target, o.map);
                     case ObjectiveTypes.Reach: return new Goal { kind = GoalKind.Map, map = o.target, label = $"{MapName(o.target)}(으)로 이동 중" };
                     case ObjectiveTypes.Flag:
@@ -212,6 +215,8 @@ namespace DotRPG
                         return Wait("이야기가 이어지기를 기다립니다.");
                 }
             }
+            if (outOfEntries)
+                return new Goal { kind = GoalKind.Hunt, id = "*", map = HuntingMap(), label = "오늘 던전 횟수를 다 써서 레벨에 맞는 사냥터에서 사냥 중" };
             return Wait("");
         }
 
@@ -233,11 +238,12 @@ namespace DotRPG
             return new Goal { kind = GoalKind.Prop, id = o.target, map = map ?? "", label = text };
         }
 
-        Goal KillGoal(ObjectiveDef o)
+        Goal KillGoal(ObjectiveDef o, QuestDef quest)
         {
             string map = !string.IsNullOrEmpty(o.map) ? o.map : null;
             if (map == null && AnyEnemy(o.target)) map = Game.World.MapId;
-            if (map == null && (o.target == "skeleton" || o.target == "*")) map = HuntingMap();
+            if (map == null) map = StoryRespawn.ScriptedMap(quest, o.target); // story monsters (1-3 attack night) come back where the scene put them
+            if (map == null) map = o.target == "*" ? HuntingMap() : ZoneWith(o.target);
             if (map == null) // dungeon monsters
                 return new Goal { kind = GoalKind.DungeonGuide, map = DungeonGuideMap(), label = "던전에서 잡는 몬스터입니다. 던전 안내인에게 가는 중" };
             return new Goal { kind = GoalKind.Hunt, id = o.target, map = map, label = "몬스터 사냥 중" };
@@ -259,12 +265,27 @@ namespace DotRPG
             return new Goal { kind = GoalKind.Site, map = MapRegistry.Village, label = "공방 터에 재료를 전하러 가는 중" };
         }
 
-        /// <summary>The field hunting ground next to the town the hero is in (towns hand over to their forest).</summary>
+        /// <summary>The hunting ground recommended for the hero's level (the highest one already open to it).</summary>
         static string HuntingMap()
         {
-            var here = MapRegistry.Get(Game.World.MapId);
-            if (here != null && !here.safe) return here.id;
-            return MapRegistry.Forest;
+            int level = Game.Session.Progression.Level;
+            HuntingZone best = null;
+            foreach (var z in HuntingGrounds.All)
+                if (z.minLevel <= level && (best == null || z.minLevel > best.minLevel)) best = z;
+            return best != null ? best.id : MapRegistry.Forest;
+        }
+
+        /// <summary>A hunting ground where <paramref name="monsterId"/> lives, the closest to the hero's level; null if none (dungeon monsters).</summary>
+        static string ZoneWith(string monsterId)
+        {
+            int level = Game.Session.Progression.Level;
+            HuntingZone best = null;
+            foreach (var z in HuntingGrounds.All)
+            {
+                if (System.Array.IndexOf(z.monsters, monsterId) < 0) continue;
+                if (best == null || Mathf.Abs(z.monsterLevel - level) < Mathf.Abs(best.monsterLevel - level)) best = z;
+            }
+            return best?.id;
         }
 
         static string DungeonGuideMap()

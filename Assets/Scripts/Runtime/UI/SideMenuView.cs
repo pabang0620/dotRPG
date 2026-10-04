@@ -11,13 +11,17 @@ namespace DotRPG
     /// </summary>
     public class SideMenuView : MonoBehaviour
     {
-        const float Size = 50f, StepX = 72f, StepY = 80f;
+        // Grid cell: icon button centred at the top, its label centred under it inside the same width (labels like
+        // "파티 찾기" / "외형 상점" used to spill into the next cell at 72 px).
+        const float Size = 50f, StepX = 88f, StepY = 86f, Pad = 10f;
         const int Columns = 3;
         /// <summary>Right of the status bars (StatusBarsView: 18 + 76 + 296) with a small gap.</summary>
         const float Left = 404f, Top = -16f;
 
-        /// <summary>Grid position of the i-th icon (two columns; each label sits under its icon).</summary>
-        static Vector2 SlotPos(int i) => new Vector2((i % Columns) * StepX, -(i / Columns) * StepY);
+        /// <summary>Top-left of the i-th icon button: centred in its cell (three columns; each label sits under its icon).</summary>
+        static Vector2 SlotPos(int i) => new Vector2(Pad + (i % Columns) * StepX + (StepX - Size) * 0.5f, -Pad - (i / Columns) * StepY);
+
+        Image gridBg;
 
         RectTransform column;
         bool open;
@@ -32,7 +36,11 @@ namespace DotRPG
             var view = root.gameObject.AddComponent<SideMenuView>();
             view.MakeIcon(root, "menuicon_menu", "메뉴", view.Toggle, false);
 
-            view.column = UIFactory.Place(UIFactory.Rect(root, "Column"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -Size - 22f), new Vector2(Size, 600f));
+            view.column = UIFactory.Place(UIFactory.Rect(root, "Column"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(-(StepX - Size) * 0.5f - Pad, -Size - 12f), new Vector2(Size, 600f));
+            // A plate behind the grid so the cells read as one tidy panel.
+            view.gridBg = UIFactory.Image(view.column, "Plate", Game.Art.Get("ui_white"), UiTheme.HudPlate);
+            view.gridBg.preserveAspect = false;
+            view.gridBg.raycastTarget = true; // clicks between icons don't fall through to the world
             view.Add("menuicon_bag", "가방", () => Game.Flow.OpenWindow(null));
             view.Add("menuicon_skill", "스킬", () => Game.Flow.OpenWindow(Game.UI.Skills));
             view.Add("menuicon_map", "지도", () => Game.Flow.OpenWindow(Game.UI.WorldMap));
@@ -45,6 +53,8 @@ namespace DotRPG
             view.Add("menuicon_finder", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
             view.Add("menuicon_cosmetics", "외형 상점", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));
+            int rows = (view.entries.Count + Columns - 1) / Columns;
+            UIFactory.Place(view.gridBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(Pad * 2f + Columns * StepX, Pad * 2f + rows * StepY - 8f));
             view.column.gameObject.SetActive(false);
             return view;
         }
@@ -69,9 +79,12 @@ namespace DotRPG
             {
                 // Label sits just under the button.
                 // [UI] One line under the icon in the pixel font (two-word labels like "파티 찾기" stay on one line).
-                var t = UIFactory.Text(rt, "Label", label, 13, Color.white, TextAnchor.UpperCenter, true);
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(StepX, 18f));
+                var t = UIFactory.Text(rt, "Label", label, 14, Color.white, TextAnchor.UpperCenter, true);
+                t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                t.resizeTextForBestFit = true; // long labels shrink to fit the cell instead of spilling over
+                t.resizeTextMinSize = 10;
+                t.resizeTextMaxSize = 14;
+                UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(StepX - 6f, 20f));
             }
             var button = bg.gameObject.AddComponent<Button>();
             button.targetGraphic = bg;
@@ -103,7 +116,7 @@ namespace DotRPG
             for (int i = 0; i < entries.Count; i++)
             {
                 float t = Mathf.Clamp01(anim * entries.Count - i * 0.6f);
-                entries[i].anchoredPosition = SlotPos(i) * t;
+                entries[i].anchoredPosition = Vector2.Lerp(SlotPos(0), SlotPos(i), t);
                 entries[i].localScale = Vector3.one * Mathf.Lerp(0.6f, 1f, t);
             }
         }
