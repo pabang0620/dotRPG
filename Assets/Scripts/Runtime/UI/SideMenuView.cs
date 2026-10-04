@@ -74,7 +74,8 @@ namespace DotRPG
             var rt = bg.rectTransform;
             if (parent is RectTransform p && p.GetComponent<SideMenuView>() != null) UIFactory.Stretch(rt);
             var img = UIFactory.Image(rt, "Icon", Game.Art.Get(icon), Color.white);
-            UIFactory.Place(img.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, showLabel ? 6f : 0f), new Vector2(40f, 40f));
+            // Inside the button's rim (ui_btn slices 12 px of frame at this size): centred, not pushed up past the edge.
+            UIFactory.Place(img.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(32f, 32f));
             if (showLabel)
             {
                 // Label sits just under the button.

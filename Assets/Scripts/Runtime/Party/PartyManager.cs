@@ -84,11 +84,17 @@ namespace DotRPG
         /// Hires a mercenary: it joins the saved roster and, while the local player is in the world, appears
         /// next to it. Null if the id is unknown, already in the party, or the party is full.
         /// </summary>
+        /// <summary>People in my online party, me included (1 offline or without a party).</summary>
+        public static int PeopleInParty => PartyClient.Instance != null && PartyClient.Instance.InParty ? Mathf.Max(1, PartyClient.Instance.Members.Count) : 1;
+
+        /// <summary>AI seats left beside the people: four in all (me + a friend = two AI).</summary>
+        public static int CompanionLimit => Mathf.Clamp(MaxMembers - PeopleInParty, 0, MaxCompanions);
+
         public PlayerController AddCompanion(string mercId)
         {
             var def = MercenaryDatabase.Get(mercId);
             var roster = Game.Session.PartyRoster;
-            if (def == null || roster.Contains(mercId) || roster.Count >= MaxCompanions) return null;
+            if (def == null || roster.Contains(mercId) || roster.Count >= CompanionLimit) return null;
             roster.Add(mercId);
             var member = LocalInWorld && companionsOut ? Spawn(def, roster.Count - 1) : null; // hired in town: joins at the next dungeon
             Changed?.Invoke();

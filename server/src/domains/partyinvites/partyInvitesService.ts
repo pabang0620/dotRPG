@@ -92,12 +92,15 @@ export function sendInvite(accountId: number, characterUuid: string, body: Invit
       const silent = await isBlocked(target.account_id, accountId);
       if (!silent) {
         if (!registry.ofCharacter(target.id)) throw new AppError(422, '접속 중이 아닌 모험가입니다.', 'TARGET_OFFLINE');
-        if (
-          (await partyRepo.findPartyIdOf(client, target.id)) !== null ||
-          getQueueStore().get(target.id) ||
-          (await dungeonRepo.inPartyRun(client, target.id))
-        ) {
-          throw new AppError(409, '다른 파티나 대기열에 있는 모험가입니다.', 'TARGET_BUSY');
+        // 같은 코드(TARGET_BUSY)에 이유별 문구: 파티 소속이 가장 흔한 경우라 먼저 본다
+        if ((await partyRepo.findPartyIdOf(client, target.id)) !== null) {
+          throw new AppError(409, '이미 가입된 파티가 있습니다.', 'TARGET_BUSY', { reason: 'IN_PARTY' });
+        }
+        if (getQueueStore().get(target.id)) {
+          throw new AppError(409, '자동 매칭을 기다리는 중인 모험가입니다.', 'TARGET_BUSY', { reason: 'IN_QUEUE' });
+        }
+        if (await dungeonRepo.inPartyRun(client, target.id)) {
+          throw new AppError(409, '파티 던전을 진행 중인 모험가입니다.', 'TARGET_BUSY', { reason: 'IN_PARTY_RUN' });
         }
       }
       const minuteAgo = new Date(ctx.now.getTime() - 60_000);
