@@ -144,7 +144,19 @@ namespace DotRPG
                 case NetChannel.Event:
                     using (var r = PartyWire.Reader(p.data))
                     {
-                        if (r.ReadByte() != PartyMsg.Heal) break;
+                        byte kind = r.ReadByte();
+                        if (kind == PartyMsg.CardUpdate)
+                        {
+                            // [8] A member levelled up or changed gear: update its copy here and tell the others.
+                            var card = MemberCard.Read(r);
+                            if (!OwnsSlot(p.from, card.slot)) break;
+                            if (humanCards.TryGetValue(card.slot, out var old)) card.characterId = old.characterId;
+                            humanCards[card.slot] = card;
+                            card.ApplyTo(MemberAt(card.slot));
+                            Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.CardUpdate); card.Write(w); }), p.from);
+                            break;
+                        }
+                        if (kind != PartyMsg.Heal) break;
                         int slot = r.ReadByte();
                         int amount = r.ReadInt32();
                         var copy = OwnsSlot(p.from, slot) ? MemberAt(slot) : null;

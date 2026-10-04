@@ -215,6 +215,16 @@ namespace DotRPG
                     case PartyMsg.MemberJoined:
                         AddPuppet(MemberCard.Read(r));
                         break;
+                    case PartyMsg.CardUpdate:
+                    {
+                        // [8] Host, its AI seats or another member changed level or gear.
+                        var card = MemberCard.Read(r);
+                        if (card.slot == mySlot) break;
+                        var body = MemberAt(card.slot);
+                        if (body == null) AddPuppet(card);
+                        else card.ApplyTo(body);
+                        break;
+                    }
                     case PartyMsg.MemberLeft:
                     {
                         int slot = r.ReadByte();

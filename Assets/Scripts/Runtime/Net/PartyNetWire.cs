@@ -13,7 +13,8 @@ namespace DotRPG
         public const byte Hello = 1, Welcome = 2;
         // Event (reliable, one ordered stream so a room change always precedes that room's spawns)
         public const byte EnemySpawn = 1, EnemyDie = 2, Damage = 3, Act = 4, RoomCleared = 5, Heal = 6,
-            RoomLoad = 7, RunEnd = 8, MemberJoined = 9, MemberLeft = 10, RunStart = 11;
+            RoomLoad = 7, RunEnd = 8, MemberJoined = 9, MemberLeft = 10, RunStart = 11,
+            CardUpdate = 13; // [8] a member's level / gear / passives changed (member -> host, host -> others)
     }
 
     /// <summary>
@@ -57,6 +58,25 @@ namespace DotRPG
             card.passives = save.passives ?? new List<string>();
             card.gemSlots = save.gemSlots ?? new List<string>();
             return card;
+        }
+
+        /// <summary>
+        /// [8] Brings an existing body up to this card (level, gear, passives, gems) without rebuilding it:
+        /// the progression and equipment change events refresh its stats and look.
+        /// </summary>
+        public void ApplyTo(PlayerController body)
+        {
+            var d = body != null ? body.Data : null;
+            if (d == null || d.IsLocal) return;
+            var def = IsAi ? MercenaryDatabase.Get(mercId) : null;
+            if (def != null) { MercenaryDatabase.ApplyLevel(d, def, level); return; }
+            d.Progression.Restore(new SaveData { level = level, xp = 0, passives = passives, gemSlots = gemSlots }, cls);
+            for (int i = 0; i < Equipment.SlotCount; i++)
+            {
+                string key = string.IsNullOrEmpty(gear[i]) ? null : gear[i];
+                if (d.Equipment[(EquipSlot)i] != key) d.Equipment.Set((EquipSlot)i, key);
+            }
+            body.RefreshStats();
         }
 
         /// <summary>Builds the member's data on this PC (an AI seat comes from the mercenary table).</summary>

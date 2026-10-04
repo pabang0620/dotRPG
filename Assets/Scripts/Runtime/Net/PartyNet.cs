@@ -20,7 +20,7 @@ namespace DotRPG
     {
         public const float SnapshotInterval = 0.1f, StateInterval = 0.05f, HelloInterval = 0.5f;
         /// <summary>[8] Byte layout version of these messages; both sides of a room must match (relay hello, Hello).</summary>
-        public const int WireVersion = 3;
+        public const int WireVersion = 4;
 
         /// <summary>[8] The relay server made this PC the host (the session takes over the fight).</summary>
         public static event Action PromotedToHost;
@@ -83,7 +83,42 @@ namespace DotRPG
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
             if (t is RelayTransport relay) relay.HostChanged += net.OnRelayHostChanged;
+            // [8] Level-ups and gear changes reach the other PCs (their copy / puppet of this character).
+            if (Game.Session != null)
+            {
+                Game.Session.Progression.Changed += net.MarkCardDirty;
+                Game.Session.Equipment.Changed += net.MarkCardDirty;
+            }
             return net;
+        }
+
+        bool cardDirty;
+        float cardTimer;
+        void MarkCardDirty() => cardDirty = true;
+
+        /// <summary>[8] Sends this PC's card (and, as host, its AI seats' cards) once things settle (0.5 s).</summary>
+        void FlushCard()
+        {
+            cardTimer -= Time.unscaledDeltaTime;
+            if (!cardDirty || cardTimer > 0f || Game.Player == null) return;
+            if (!host && !welcomed) return;
+            cardDirty = false;
+            cardTimer = 0.5f;
+            if (host)
+            {
+                foreach (var kv in bySlot)
+                {
+                    var m = kv.Value;
+                    if (m == null || (Game.Party != null && Game.Party.IsNetMember(m))) continue; // remote people send their own
+                    var card = MemberCard.Of(m, kv.Key, m.IsLocal ? OnlineSession.Current?.ActiveCharacter : "");
+                    Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.CardUpdate); card.Write(w); }));
+                }
+            }
+            else
+            {
+                var card = MemberCard.Of(Game.Player, mySlot, characterId);
+                SendTo(HostPeer, NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.CardUpdate); card.Write(w); }));
+            }
         }
 
         /// <summary>
@@ -122,6 +157,11 @@ namespace DotRPG
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
             if (net.transport is RelayTransport relay) relay.HostChanged -= net.OnRelayHostChanged;
+            if (Game.Session != null)
+            {
+                Game.Session.Progression.Changed -= net.MarkCardDirty;
+                Game.Session.Equipment.Changed -= net.MarkCardDirty;
+            }
             net.UnhookEnemies();
             if (!keepTransport)
             {
@@ -149,6 +189,7 @@ namespace DotRPG
             }
             if (host) HostTick();
             else MemberTick();
+            FlushCard();
         }
 
         // ---------------- sending ----------------

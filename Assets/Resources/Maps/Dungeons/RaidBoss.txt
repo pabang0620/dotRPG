@@ -2,9 +2,9 @@
 // Dungeon room (plan 6.0). Top row = north. One character = one tile.
 // @ = gate to the next room (closed until the room is clear)  P = entry  1-9 = monster groups of the room's RoomDef
 // ,=flagstone  .=moss  W=cliff  ~=water  d=bridge  x=box  b=barrel  T=tree  B=bush
-WWWWWWW1WWWWWWWWWWWW1WWWWWWWWWWWWWWWWWWW
 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-WWWWWWWW,,p,,,,,,,,,,,,,,,,,,p,,WWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWW,,p,,,,,,,,,1,,,,,,,,p,,WWWWWWWW
 WWWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWWW
 WWWWWWWW,,,,,,,,,,,,,,,,,,,,,,,,WWWWWWWW
 WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW

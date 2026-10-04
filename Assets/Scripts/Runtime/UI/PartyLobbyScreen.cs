@@ -160,7 +160,11 @@ namespace DotRPG
                 if (a != null) row.who.text = $"{a.name}  {CharacterClassInfo.Get(a.cls).displayName} Lv{a.level}  전투력 {a.power:N0}";
             }
             var session = PartyRunSession.Instance;
-            runText.text = session == null ? "" : session.State == "gathering"
+            // [8] Say where "출발" goes: the dungeon and difficulty picked when the post was made.
+            string where = dungeon == null ? "" : $"{dungeon.name} {(dungeon.isRaid ? "레이드" : PartyFinderRules.DifficultyName(c.Difficulty))}";
+            runText.text = session == null
+                ? (inParty ? $"<color=#b8c4d8>출발하면 파티 전원이 <b>{where}</b> 첫 방으로 함께 들어갑니다. 필드 사냥은 출발 없이 같은 사냥터로 가면 됩니다.</color>" : "")
+                : session.State == "gathering"
                 ? (session.AmHost ? "<color=#ffe066>파티원이 연결되는 중... 모두 들어오면 자동으로 출발합니다.</color>" : "<color=#ffe066>방장에게 연결하는 중...</color>")
                 : "<color=#8fe28f>던전 진행 중</color>";
             int ai = aiCount < 0 ? FreeSeats : Mathf.Min(aiCount, FreeSeats);
