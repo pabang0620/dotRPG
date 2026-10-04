@@ -157,7 +157,7 @@ namespace DotRPG
         {
             if (r == null) return "";
             var parts = new List<string>();
-            if (r.xp > 0) parts.Add($"경험치 {r.xp:N0}");
+            if (r.xp > 0) parts.Add($"경험치 {Progression.QuestXp(r.xp):N0}");
             if (r.gold > 0) parts.Add($"골드 {r.gold:N0}");
             if (r.maxHealth > 0) parts.Add($"최대 체력 +{EquipmentDatabase.Hearts(r.maxHealth)}");
             if (r.items != null)

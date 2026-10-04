@@ -23,8 +23,8 @@ namespace DotRPG
         public float boltSpeed = 9f;
         public float boltRange = 6.5f;
         public float boltRadius = 0.32f;
-        public float cooldown = 0.5f;
-        public float castDuration = 0.26f;
+        public float cooldown = 0.38f;     // 0.5 -> 0.38: faster orbs (each hit is weaker, PlayerCombat.BasicHitScale)
+        public float castDuration = 0.2f; // 0.26 -> 0.2
         public int damage = 10;
         public float knockback = 4f;
 

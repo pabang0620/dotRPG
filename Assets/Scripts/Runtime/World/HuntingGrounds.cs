@@ -51,7 +51,7 @@ namespace DotRPG
             new HuntingZone("winter_peak", "눈보라 봉우리", "winter", MapTheme.Winter, 34, 40, 36, 2, "skel_knight", "skel_knight", "skel_archer"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
-        public static int XpAt(int level) => 20 + (Progression.XpToNext(Math.Max(1, Math.Min(Progression.MaxLevel, level))) - Progression.XpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
+        public static int XpAt(int level) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
         public static string HomeOf(string mapId) => Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
 
         // Equal-level gear / 12 field kills per minute, normal route at its reference time.

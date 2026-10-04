@@ -19,7 +19,7 @@ MonoBehaviour:
   knockbackSpeed: 7
   knockbackDuration: 0.15
   attackDamage: 10
-  attackCooldown: 0.36
+  attackCooldown: 0.27
   attackDuration: 0.2
   attackReach: 0.7
   attackRadius: 0.62

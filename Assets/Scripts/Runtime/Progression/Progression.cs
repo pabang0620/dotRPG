@@ -23,7 +23,16 @@ namespace DotRPG
         public event Action Changed;
         public event Action<int> LeveledUp;
 
-        public static int XpToNext(int level) => 40 + (level - 1) * 30 + (level - 1) * (level - 1) * 5;
+        /// <summary>
+        /// Level-up XP is the base curve times <see cref="CurveScale"/>: the mid raid (Lv22) after about 20 hours of play
+        /// (Tools/balance/theory_growth.py: 15 field kills a minute in packs of three, 75% of the time hunting, dungeons +25%).
+        /// Kill XP and the dungeon floors are priced from the base curve (HuntingGrounds.XpAt), so only the pace changes.
+        /// </summary>
+        public const float CurveScale = 13.4f;
+        public static int BaseXpToNext(int level) => 40 + (level - 1) * 30 + (level - 1) * (level - 1) * 5;
+        public static int XpToNext(int level) => (int)Math.Round(BaseXpToNext(level) * CurveScale);
+        /// <summary>Quest XP rewards keep their share of the growth: data value x the curve scale.</summary>
+        public static int QuestXp(int dataXp) => (int)Math.Round(dataXp * CurveScale);
         public int XpNeeded => Level >= MaxLevel ? 0 : XpToNext(Level);
 
         /// <summary>Passive points earned minus spent (the start node is free).</summary>

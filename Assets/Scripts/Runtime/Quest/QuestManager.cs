@@ -475,8 +475,9 @@ namespace DotRPG
             bool online = OnlineEconomy.On; // [SERVER] online the claim's delta adds these
             if (r.xp > 0)
             {
-                if (!online) Game.Session.Progression.AddXp(r.xp);
-                parts.Add($"경험치 {r.xp:N0}");
+                int xp = Progression.QuestXp(r.xp); // scaled with the level curve (the server pays the same exported value)
+                if (!online) Game.Session.Progression.AddXp(xp);
+                parts.Add($"경험치 {xp:N0}");
             }
             if (r.gold > 0)
             {

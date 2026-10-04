@@ -759,7 +759,7 @@
    "title": "리아의 약초밭",
    "summary": "리아가 가꾸던 약초밭의 울타리가 타 버렸다.",
    "requires": [
-    "c1_rise"
+    "c1_rebuild"
    ],
    "requiresFlags": [],
    "minLevel": 0,

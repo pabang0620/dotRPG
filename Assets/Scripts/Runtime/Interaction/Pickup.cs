@@ -5,7 +5,7 @@ namespace DotRPG
     /// <summary>Item drop that pops out, then gets magnetised to the player and collected.</summary>
     public class Pickup : MonoBehaviour
     {
-        const float MagnetRadius = 2.2f;
+        const float MagnetRadius = 3.2f; // 2.2 -> 3.2: more monsters per field, less walking to every drop
         const float CollectRadius = 0.35f;
 
         static readonly System.Collections.Generic.List<Pickup> Active = new System.Collections.Generic.List<Pickup>();

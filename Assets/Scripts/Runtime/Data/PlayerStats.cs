@@ -20,7 +20,7 @@ namespace DotRPG
 
         [Header("Attack")]
         public int attackDamage = 10;
-        public float attackCooldown = 0.36f;
+        public float attackCooldown = 0.27f; // 0.36 -> 0.27 (faster swings, PlayerCombat.BasicHitScale)
         public float attackDuration = 0.2f;
         [Tooltip("Distance from the body to the centre of the hit circle.")]
         public float attackReach = 0.7f;

@@ -343,7 +343,7 @@ namespace DotRPG
         static readonly DungeonDef BargasDef = new DungeonDef
         {
             id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
-            raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 100,
+            raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 60,
             raidNumbers = RaidNumbers(24, 4900, 2.1f, 1.6f, 17, ItemRarity.Rare, 8),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
@@ -389,7 +389,7 @@ namespace DotRPG
         static readonly DungeonDef GrahDef = new DungeonDef
         {
             id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
-            raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 100,
+            raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 60,
             raidNumbers = RaidNumbers(31, 7200, 1.9f, 1.7f, 25, ItemRarity.Epic, 10),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(

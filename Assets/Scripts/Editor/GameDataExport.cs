@@ -169,7 +169,7 @@ namespace DotRPG.EditorTools
                 o.Arr("requires", q.requires ?? new List<string>(), (x, v) => x.Val(v));
                 o.Arr("requiresFlags", q.requiresFlags ?? new List<string>(), (x, v) => x.Val(v));
                 var r = q.reward ?? new QuestRewardDef();
-                o.Key("reward").Obj().Num("xp", r.xp).Num("gold", r.gold).Num("maxHealth", r.maxHealth);
+                o.Key("reward").Obj().Num("xp", DotRPG.Progression.QuestXp(r.xp)).Num("gold", r.gold).Num("maxHealth", r.maxHealth); // scaled like the level curve
                 o.Arr("items", r.items ?? new List<ItemStack>(), (x, it) => x.Obj().Str("id", it.id).Num("count", it.count).End());
                 o.Arr("setFlags", r.setFlags ?? new List<string>(), (x, v) => x.Val(v));
                 o.End();

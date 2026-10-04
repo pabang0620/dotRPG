@@ -53,6 +53,10 @@ namespace DotRPG
         EnemyController castTarget;
         Vector2 castAim = Vector2.down;
         bool Ranged => classInfo != null && classInfo.ranged;
+
+        /// <summary>Basic attacks hit 30% more often than before and each hit does 80% (slightly more damage per second, snappier).</summary>
+        public const float BasicHitScale = 0.8f;
+        int BasicHitDamage => Mathf.Max(1, Mathf.RoundToInt(owner.Data.Stats.AttackDamage(owner.Class) * BasicHitScale));
         float Duration
         {
             get
@@ -302,7 +306,7 @@ namespace DotRPG
                 bool locked = castTarget != null && !castTarget.IsDead && castTarget.isActiveAndEnabled;
                 Vector2 aim = locked ? castTarget.Center - origin : castAim;
                 MagicBolt.Fire(owner.gameObject, origin, aim, classInfo, locked ? castTarget : null,
-                    owner.Data.Stats.AttackDamage(owner.Class));
+                    BasicHitDamage);
                 Fx.Sparkle(origin, 2, 0.2f);
                 castTarget = null;
             }
@@ -367,7 +371,7 @@ namespace DotRPG
                 // Party members are never hurt (PlayerController also refuses), and only the local player harvests trees and rocks.
                 if (target is PlayerController || (!owner.IsLocal && target is ResourceNode)) continue;
                 hitThisSwing.Add(target);
-                var info = new DamageInfo(owner.Data.Stats.AttackDamage(owner.Class), owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
+                var info = new DamageInfo(BasicHitDamage, owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
                 bool hitIt = target.TakeDamage(info);
                 landed |= hitIt;
                 // Hit feel: sparks where the blow lands.

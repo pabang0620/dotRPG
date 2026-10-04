@@ -6,8 +6,10 @@ namespace DotRPG
     public static class WarriorAttackMotion
     {
         public const int Frames = 24, Stages = 3, RecoveryFrames = 12;
-        public const float Duration = .36f, Contact = .36f, RecoveryDuration = .18f;
-        public static float StageDuration(int stage) => stage == 2 ? .54f : Duration;
+        // Faster swings (playtest: attacks felt sluggish): .36 -> .27 s, finisher .54 -> .41 s, recovery .18 -> .14 s.
+        // Contact is a fraction of the swing (the frame where the blade lands), not seconds.
+        public const float Duration = .27f, Contact = .36f, RecoveryDuration = .14f;
+        public static float StageDuration(int stage) => stage == 2 ? .41f : Duration;
         static readonly float[] Times = { 0, .14f, .26f, Contact, .60f, .82f, 1 };
         static readonly float[][] Load = {
             new[] { 0, -1f, -1.6f, 2.5f, 3, 2f, 1.5f },
