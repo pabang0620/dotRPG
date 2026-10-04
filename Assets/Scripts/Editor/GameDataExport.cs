@@ -307,7 +307,7 @@ namespace DotRPG.EditorTools
         static J Difficulty(J o, DifficultyDef d) => o.Obj()
             .Str("id", d.id.ToString()).Str("name", d.name).Num("recommendedLevel", d.recommendedLevel).Num("recommendedPower", d.recommendedPower)
             .Num("hpMul", d.hpMul).Num("damageMul", d.damageMul).Num("rewardMul", d.rewardMul).Num("monsterLevel", d.monsterLevel)
-            .Num("revives", d.revives).Str("minGearRarity", d.minGearRarity.ToString()).Num("ticketWeight", d.ticketWeight).End();
+            .Num("revives", d.revives).Str("minGearRarity", d.minGearRarity.ToString()).Num("ticketWeight", d.ticketWeight).Num("jackpotPerMille", d.jackpotPerMille).End();
 
         static string Dungeons()
         {

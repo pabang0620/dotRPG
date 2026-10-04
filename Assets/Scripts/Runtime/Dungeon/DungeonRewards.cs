@@ -45,9 +45,49 @@ namespace DotRPG
                     }
                     roll -= entry.weight;
                 }
-                cards.Add(Resolve(selectedReward, diff, cls, rng));
+                var card = Resolve(selectedReward, diff, cls, rng);
+                // Jackpot: a very small chance per card of a piece above Epic (same order on the server).
+                if (diff.jackpotPerMille > 0 && rng.Next(0, 1000) < diff.jackpotPerMille)
+                {
+                    string jackpot = RollJackpot(cls, rng);
+                    if (jackpot != null) card = new RewardCard(jackpot, 1);
+                }
+                cards.Add(card);
             }
             return cards;
+        }
+
+        /// <summary>Weight of a Legendary vs a Unique in the jackpot pool.</summary>
+        public const int JackpotUniqueWeight = 3, JackpotLegendaryWeight = 1;
+
+        /// <summary>A Unique or Legendary piece the class can use (+0 key), or null if there is none.</summary>
+        public static string RollJackpot(CharacterClass cls, System.Random rng)
+        {
+            var pool = new List<(string id, int weight)>();
+            int total = 0;
+            foreach (var item in EquipmentDatabase.All)
+            {
+                if (item.starter || !item.UsableBy(cls) || item.rarity < ItemRarity.Unique) continue;
+                int w = item.rarity >= ItemRarity.Legendary ? JackpotLegendaryWeight : JackpotUniqueWeight;
+                pool.Add((item.id, w));
+                total += w;
+            }
+            if (total == 0) return null;
+            int roll = rng.Next(0, total);
+            foreach (var (id, w) in pool)
+            {
+                if (roll < w) return EquipmentDatabase.KeyFor(id, 0);
+                roll -= w;
+            }
+            return null;
+        }
+
+        /// <summary>True for a Unique or Legendary gear card (the result screen makes it glow before it flips).</summary>
+        public static bool IsJackpot(RewardCard card)
+        {
+            if (string.IsNullOrEmpty(card.itemId)) return false;
+            var item = EquipmentDatabase.Get(card.itemId) ?? EquipmentDatabase.Get(EquipmentDatabase.BaseId(card.itemId));
+            return item != null && item.rarity >= ItemRarity.Unique;
         }
 
         static RewardCard Resolve(RewardEntry e, DifficultyDef diff, CharacterClass cls, System.Random rng)

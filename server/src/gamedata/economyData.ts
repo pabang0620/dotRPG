@@ -211,6 +211,7 @@ const dungeonsSchema = z.looseObject({
         revives: nonNegInt,
         minGearRarity: z.enum(['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary']),
         ticketWeight: nonNegInt,
+        jackpotPerMille: nonNegInt.default(0),
       }),
     )
     .length(4),
@@ -253,6 +254,7 @@ const dungeonsSchema = z.looseObject({
           revives: nonNegInt,
           minGearRarity: z.enum(['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary']),
           ticketWeight: nonNegInt,
+          jackpotPerMille: nonNegInt.default(0),
         })
         .optional(),
       clearXp: nonNegInt,

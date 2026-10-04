@@ -41,6 +41,8 @@ namespace DotRPG
         public string FailReason;
         /// <summary>Raid only: this week's reward was already taken, so the run gives none.</summary>
         public bool RewardsLocked;
+        /// <summary>[SERVER] Why a cleared run shows no cards: "held" (server review) or "noanswer". Null otherwise.</summary>
+        public string NoRewardNote;
 
         // ---------- Result (filled when the run ends) ----------
         public RankScore Score;

@@ -139,11 +139,24 @@ namespace DotRPG
             stampSub.text = $"<b>{run.Dungeon.name}</b> · {run.Numbers.name}\n<color=#b8c4d8>{(cleared ? "던전 클리어" : run.FailReason)}</color>";
 
             bool hasCards = run.Cards != null && run.Cards.Count > 0;
-            noCards.text = hasCards ? "" : !cleared ? "<color=#ff9f7a>던전 실패 — 보상 없음</color>"
-                : "<color=#ff9f7a>이번 주 레이드 보상을 이미 받았다.</color>\n<color=#b8c4d8>목요일 06:00에 초기화된다.</color>";
+            noCards.text = hasCards ? "" : !cleared ? "<color=#ff9f7a>던전 실패 · 보상 없음</color>" : NoCardsText(run);
             RefreshCardTitle();
             RefreshDamage();
             RefreshButtons();
+        }
+
+        /// <summary>A cleared run without cards: say the real reason (review, no answer, raid period, practice).</summary>
+        static string NoCardsText(DungeonRun run)
+        {
+            if (run.NoRewardNote == "held")
+                return "<color=#ffe066>결과를 확인하는 중이다.</color>\n<color=#b8c4d8>확인되면 보상 카드를 고를 수 있다는 알림이 온다.</color>";
+            if (run.NoRewardNote == "noanswer")
+                return "<color=#ff9f7a>서버에 결과를 보내지 못했다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인한다.</color>";
+            if (run.Dungeon.isRaid)
+                return run.Dungeon.raidTier == RaidTier.Mid
+                    ? "<color=#ff9f7a>오늘 이 레이드 보상을 이미 받았다.</color>\n<color=#b8c4d8>매일 06:00에 초기화된다.</color>"
+                    : "<color=#ff9f7a>이번 주 이 레이드 보상을 이미 받았다.</color>\n<color=#b8c4d8>목요일 06:00에 초기화된다.</color>";
+            return "<color=#ff9f7a>이번 판은 보상이 없는 연습 입장이다.</color>";
         }
 
         string BreakdownText(int lines)
@@ -302,6 +315,27 @@ namespace DotRPG
             var c = cards[index];
             c.flipped = true;
             c.frame.color = local ? (Color)UIColors.Highlight : new Color(1f, 1f, 1f, 0f);
+            var reward0 = run.Cards[index];
+            bool jackpot = DungeonRewards.IsJackpot(reward0);
+            Color glow = jackpot ? RarityGlow(reward0) : Color.white;
+            if (jackpot)
+            {
+                // Jackpot (Unique / Legendary): the face-down card glows and trembles, then flips.
+                Game.Audio.PlaySfx("rank_reveal");
+                for (float t = 0f; t < JackpotGlow; t += Time.unscaledDeltaTime)
+                {
+                    float k = t / JackpotGlow;
+                    float pulse = 0.5f + 0.5f * Mathf.Sin(t * 22f);
+                    c.frame.color = new Color(glow.r, glow.g, glow.b, 0.35f + 0.65f * pulse);
+                    c.bg.color = Color.Lerp(Color.white, glow, 0.25f + 0.35f * pulse * k);
+                    float s = 1f + 0.08f * k + 0.03f * Mathf.Sin(t * 40f);
+                    c.rt.localScale = new Vector3(s, s, 1f);
+                    c.rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 50f) * 3f * k);
+                    yield return null;
+                }
+                c.rt.localRotation = Quaternion.identity;
+                Game.Camera?.Shake(0.1f, 0.2f);
+            }
             Game.Audio.PlaySfx("card_flip"); // [H3]
             for (float t = 0f; t < FlipHalf; t += Time.unscaledDeltaTime)
             {
@@ -321,7 +355,21 @@ namespace DotRPG
                 yield return null;
             }
             c.rt.localScale = Vector3.one;
+            if (jackpot)
+            {
+                c.frame.color = glow;
+                if (taken) c.bg.color = Color.Lerp(Color.white, glow, 0.2f);
+                if (local) { Game.Audio.PlaySfx("quest"); GameEvents.RaiseToast($"<color=#ffb347>대박!</color> {CardText(reward).Split('\n')[0]} 획득"); }
+            }
             if (local) Game.Audio.PlaySfx("pickup");
+        }
+
+        const float JackpotGlow = 0.9f;
+
+        static Color RarityGlow(RewardCard r)
+        {
+            var gear = EquipmentDatabase.Get(r.itemId) ?? EquipmentDatabase.Get(EquipmentDatabase.BaseId(r.itemId));
+            return gear != null && gear.rarity >= ItemRarity.Legendary ? new Color32(255, 170, 60, 255) : new Color32(255, 225, 90, 255);
         }
 
         static string CardText(RewardCard r)

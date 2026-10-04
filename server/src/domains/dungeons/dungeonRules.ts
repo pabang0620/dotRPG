@@ -120,16 +120,38 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
       }
       roll -= e.weight;
     }
+    let card: Card;
     if (pick.itemId === 'gear') {
-      cards.push({ item_key: rollGear(eco, cls, diff.minGearRarity, rng), count: 1 });
-      continue;
+      card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng), count: 1 };
+    } else {
+      let n = rng.int(pick.min, pick.max + 1);
+      // 보호권은 곱하지 않고, 나머지는 난이도 보상 배율을 곱한다
+      if (pick.itemId !== eco.enhance.ticketItem) n = Math.max(1, roundHalfEven(f32(n * diff.rewardMul)));
+      card = { item_key: pick.itemId, count: n };
     }
-    let n = rng.int(pick.min, pick.max + 1);
-    // 보호권은 곱하지 않고, 나머지는 난이도 보상 배율을 곱한다
-    if (pick.itemId !== eco.enhance.ticketItem) n = Math.max(1, roundHalfEven(f32(n * diff.rewardMul)));
-    cards.push({ item_key: pick.itemId, count: n });
+    // 대박 카드: 카드마다 아주 낮은 확률(천분율)로 에픽 위 등급(유니크·레전더리) 장비로 바뀐다(C# DungeonRewards와 같은 순서)
+    if ((diff.jackpotPerMille ?? 0) > 0 && rng.int(0, 1000) < (diff.jackpotPerMille ?? 0)) {
+      const jackpot = rollJackpot(eco, cls, rng);
+      if (jackpot) card = { item_key: jackpot, count: 1 };
+    }
+    cards.push(card);
   }
   return cards;
+}
+
+/** 유니크 3 : 레전더리 1 가중치로, 직업이 쓸 수 있는 에픽 위 장비 하나(+0). 없으면 null */
+export function rollJackpot(eco: EconomyData, cls: string, rng: Rng): string | null {
+  const pool = eco.shop.equipmentList
+    .filter((e) => !e.starter && (e.classOnly === null || e.classOnly === cls) && rarityIdx(e.rarity) >= rarityIdx('Unique'))
+    .map((e) => ({ id: e.id, w: rarityIdx(e.rarity) >= rarityIdx('Legendary') ? 1 : 3 }));
+  const total = pool.reduce((a, p) => a + p.w, 0);
+  if (total === 0) return null;
+  let roll = rng.int(0, total);
+  for (const p of pool) {
+    if (roll < p.w) return keyAt(p.id, 0);
+    roll -= p.w;
+  }
+  return null;
 }
 
 export function roomTotal(d: DungeonDef, roomIndex: number): number {
@@ -152,7 +174,7 @@ export function roomKillCount(roomKills: Record<string, number>, roomIndex: numb
 export type DiffNumbers = Pick<
   DifficultyDef,
   'recommendedLevel' | 'hpMul' | 'rewardMul' | 'monsterLevel' | 'revives' | 'minGearRarity' | 'ticketWeight'
->;
+> & { jackpotPerMille?: number };
 
 export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumbers | null {
   if (d.isRaid) return d.raidNumbers ?? null;
