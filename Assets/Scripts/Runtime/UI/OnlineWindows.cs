@@ -9,7 +9,7 @@ namespace DotRPG
     /// <summary>[ONLINE] Shared helpers of the online preview windows (party finder, auction house).</summary>
     public abstract class OnlineWindow : WindowScreen
     {
-        public const string PreviewTag = "오프라인 미리보기 (서버 연결 전)";
+        public const string PreviewTag = "오프라인 모드 (다른 모험가와 연결되지 않음)";
         protected Text status;
         protected InputField focusField;
 

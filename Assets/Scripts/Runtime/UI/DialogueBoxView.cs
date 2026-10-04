@@ -38,13 +38,25 @@ namespace DotRPG
 
             nextIndicator = UIFactory.Text(box, "Next", "▼", 22, UIColors.Highlight, TextAnchor.LowerRight);
             UIFactory.Stretch(nextIndicator.rectTransform, 0, 14, 28, 0);
+
+            // Skip hint (top-right, over the box edge): Esc skips this conversation, or the whole scene in a cutscene.
+            skipHint = UIFactory.Text(box, "Skip", "", 16, new Color32(184, 196, 216, 255), TextAnchor.LowerRight, true);
+            UIFactory.Place(skipHint.rectTransform, new Vector2(1, 1), new Vector2(1, 0), new Vector2(-20, 6), new Vector2(300, 24));
         }
+
+        Text skipHint;
 
         void Update()
         {
             var dialogue = Game.Dialogue;
             bool show = dialogue != null && dialogue.IsOpen;
-            if (box.gameObject.activeSelf != show) box.gameObject.SetActive(show);
+            if (box.gameObject.activeSelf != show)
+            {
+                box.gameObject.SetActive(show);
+                // Story narration plays over a faded-out screen: the box must sit above the fader (created after it),
+                // or the lines are invisible and the scene looks stuck on black.
+                if (show) transform.SetAsLastSibling();
+            }
             if (!show) return;
 
             bool hasName = !string.IsNullOrEmpty(dialogue.Speaker);
@@ -60,6 +72,9 @@ namespace DotRPG
             // Reserve the full text layout (invisible rest) so words don't jump between lines.
             bodyText.text = visible >= full.Length ? full : full.Substring(0, visible) + "<color=#00000000>" + full.Substring(visible) + "</color>";
 
+            var scene = Game.Cutscenes;
+            bool inScene = scene != null && scene.IsPlaying;
+            skipHint.text = inScene ? (scene.CanSkip ? "Esc 장면 건너뛰기" : "") : "Esc 대화 건너뛰기";
             nextIndicator.enabled = dialogue.LineComplete && Mathf.Repeat(Time.unscaledTime * 2f, 1f) < 0.6f;
             nextIndicator.text = dialogue.HasMoreLines ? "▼" : "■";
         }

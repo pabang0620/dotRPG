@@ -253,7 +253,7 @@ namespace DotRPG
             friendsBtn.gameObject.SetActive(canInvite);
             rosterBtn.gameObject.SetActive(!inParty || leader);
             startBtn.gameObject.SetActive(leader && idle);
-            startBtn.interactable = c != null && c.AllReady;
+            startBtn.interactable = c != null; // no ready check: online members are pulled in, missing seats get AI
             beginBtn.gameObject.SetActive(session != null && session.AmHost && session.State == "gathering");
             readyBtn.gameObject.SetActive(inParty && !leader && idle);
             if (inParty && c.Me != null) TextOf(readyBtn).text = c.Me.ready ? "준비 취소" : "준비";

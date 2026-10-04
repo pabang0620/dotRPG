@@ -60,7 +60,7 @@ describe('파티 판 시작: start, join, begin', () => {
     expect(solo.body.errors.code).toBe('IN_PARTY_RUN');
   });
 
-  it('입력 오류와 규칙 오류: 토큰 불일치, 준비 안 함, 방장이 아님, 정원 초과', async () => {
+  it('입력 오류와 규칙 오류: 토큰 불일치, 방장이 아님, 정원 초과(준비 없이도 출발한다)', async () => {
     const host = await newHero(app);
     const member = await newHero(app);
     const partyId = await formParty(app, host, []);
@@ -68,10 +68,8 @@ describe('파티 판 시작: start, join, begin', () => {
     await post(app, host, `/party/applications/${ap.body.data.application.id}/respond`, { accept: true });
     expect((await post(app, host, '/party/start', { ai_count: 4 })).status).toBe(400);
     expect((await post(app, host, '/party/start', { ai_count: 3 })).body.errors.code).toBe('PARTY_TOO_BIG');
-    expect((await post(app, host, '/party/start', { ai_count: 0 })).body.errors.code).toBe('NOT_ALL_READY');
     expect((await post(app, member, '/party/start', { ai_count: 0 })).body.errors.code).toBe('NOT_LEADER');
-    await raw(app, member, '/party/ready', { ready: true });
-    const st = await post(app, host, '/party/start', { ai_count: 1 });
+    const st = await post(app, host, '/party/start', { ai_count: 1 }); // 파티원이 준비를 누르지 않았어도 출발
     expect(st.status).toBe(201);
     const runId = st.body.data.run.id as string;
     const bad = await post(app, member, `/party-runs/${runId}/join`, { entry_token: 'A'.repeat(22) });
@@ -123,7 +121,7 @@ describe('파티 판 시작: start, join, begin', () => {
     expect(rows.rows.length).toBe(3);
   });
 
-  it('입장 횟수 부족: 멤버가 소진했으면 출발이 MEMBER_NOT_ELIGIBLE', async () => {
+  it('입장 횟수 부족: 소진한 파티원은 이번 판만 빠지고 방장은 출발한다', async () => {
     const host = await newHero(app);
     const member = await newHero(app);
     await formParty(app, host, [member]);
@@ -132,10 +130,11 @@ describe('파티 판 시작: start, join, begin', () => {
        SELECT $1, 'gold_vein', 0, 1, $2, $3, 'failed', $3 FROM generate_series(1, 3)`,
       [member.dbId, '2026-10-04T21:00:00Z', MONDAY],
     );
-    const st = await post(app, host, '/party/start', { ai_count: 0 });
-    expect(st.status).toBe(422);
-    expect(st.body.errors.code).toBe('MEMBER_NOT_ELIGIBLE');
-    expect(st.body.errors.members[0].code).toBe('NO_ENTRIES_LEFT');
+    const st = await post(app, host, '/party/start', { ai_count: 1 });
+    expect(st.status).toBe(201);
+    expect(st.body.data.sitting_out).toHaveLength(1);
+    expect(st.body.data.sitting_out[0].code).toBe('NO_ENTRIES_LEFT');
+    expect(st.body.data.run.members).toHaveLength(1);
   });
 });
 

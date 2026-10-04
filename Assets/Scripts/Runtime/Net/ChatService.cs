@@ -230,7 +230,7 @@ namespace DotRPG
             var log = lines.Skip(Math.Max(0, lines.Count - ChatRules.ReportLines))
                 .Select(l => $"[{ChatRules.ChannelName(l.channel)}] {l.from}: {l.text}").ToList();
             Reports.Add(new ChatReport { target = name, reason = reason, log = log });
-            return $"{name}님을 '{reason}'(으)로 신고했습니다. 최근 대화 {log.Count}줄을 첨부했습니다. (오프라인 미리보기)";
+            return $"{name}님을 '{reason}'(으)로 신고했습니다. 최근 대화 {log.Count}줄을 첨부했습니다. (오프라인 모드)";
         }
 
         public void Tick(float dt)

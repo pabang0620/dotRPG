@@ -265,7 +265,7 @@ namespace DotRPG
             var sb = new StringBuilder();
             for (int i = 0; i < Tabs.Length; i++)
                 sb.Append(i == tab ? $"<color=#ffd84a>[{Tabs[i]}]</color> " : $"<color=#8a94a8>{Tabs[i]}</color> ");
-            sb.Append("<size=12><color=#8a94a8> Enter 채팅 · 4~8 신호</color></size>");
+            sb.Append("<size=12><color=#8a94a8> Enter 채팅</color></size>");
             tabText.text = sb.ToString();
 
             var lines = Service.Lines;

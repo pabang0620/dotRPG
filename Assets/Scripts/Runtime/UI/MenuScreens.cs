@@ -116,9 +116,8 @@ namespace DotRPG
             UIFactory.Place(screen.menu.RectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -24), new Vector2(320, 10));
 
             // [I] Both go through the save-slot picker (3 slots).
-            screen.menu.AddButton("새 게임", () => ui.Slots.Open(false));
-            screen.menu.AddButton("이어하기", () => ui.Slots.Open(true), () => Game.Saves.HasAnySave());
-            screen.menu.AddButton("온라인", () => ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin)); // [SERVER]
+            // Online RPG: the only way in is the online login (offline new game / continue are not offered).
+            screen.menu.AddButton("게임 시작", () => ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin));
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());

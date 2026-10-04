@@ -131,7 +131,7 @@ namespace DotRPG
                     string id = Service.IdOf(person);
                     if (!Service.IsOnline || id == null || PartyClient.Instance == null)
                     {
-                        GameEvents.RaiseToast(Service.IsOnline ? $"{person}님을 찾을 수 없습니다." : $"{person}님에게 파티 초대를 보냈습니다. (오프라인 미리보기: 응답 없음)");
+                        GameEvents.RaiseToast(Service.IsOnline ? $"{person}님을 찾을 수 없습니다." : $"{person}님에게 파티 초대를 보냈습니다. (오프라인 모드: 응답 없음)");
                         return;
                     }
                     PartyClient.Instance.Invite(id, (ok, msg) => GameEvents.RaiseToast(ok ? $"{person}님에게 파티 초대를 보냈습니다." : msg));

@@ -31,7 +31,9 @@ namespace DotRPG
             Game.Quest.Tick();
             var state = Game.State.Current;
             if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
-            if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
+            // Esc in a conversation skips the rest of it (the quest still counts it as read); in play it pauses.
+            if (state == GameState.Dialogue && Game.Input.PausePressed && Game.Dialogue.IsOpen) Game.Dialogue.Close();
+            else if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
             else if (state == GameState.Playing && Game.Input.InventoryPressed) OpenInventory();
             else if (state == GameState.Playing && Game.Input.MapPressed) OpenWindow(Game.UI.WorldMap); // M: big map
         }
@@ -55,10 +57,10 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// Alt-tabbing out pauses the game. Automated test runs switch this off: several test windows
-        /// can run side by side and take focus from each other.
+        /// Alt-tabbing out used to pause the game. Off: the game keeps running in the background (auto-progress,
+        /// hunting and online play go on while another window has focus; Esc still pauses).
         /// </summary>
-        public static bool PauseOnFocusLoss = true;
+        public static bool PauseOnFocusLoss = false;
 
         void OnApplicationFocus(bool hasFocus)
         {

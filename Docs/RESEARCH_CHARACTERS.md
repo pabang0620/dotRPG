@@ -12,8 +12,8 @@
 - 로브가 몸선을 가려 사다리꼴(삼각) 실루엣이 되고, 모자+지팡이가 있으면 즉시 마법사로 읽힌다. 팔레트는 3~4색 고정, 지팡이 끝 보석/불꽃만 대비색으로 튀게. 천 접힘은 디더링 또는 2톤 음영. [pixelartgg wizard gallery](https://www.pixelartgg.com/gallery/wizard), [pixnote character](https://pixnote.net/en/learn/character/)
 - 작은 스프라이트는 "읽히는 실루엣 1개"가 우선(마법사 모자 vs 기사 투구). 정지 컷에서 좋은 디테일이 움직이면 노이즈가 되므로 단순화. [Slynyrd Pixelblog 22](https://www.slynyrd.com/blog/2019/10/21/pixelblog-22-top-down-character-sprites), [Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
 - Sea of Stars: 90년대 RPG 비율을 HD로, 확장된 팔레트+캐릭터 컬러 하이라이트 조명, 적은 프레임으로 표정 전달, 타격 시점이 읽히는 동작. [Megavisions 분석](https://www.megavisions.net/the-art-of-sea-of-stars-a-sea-of-pixels/)
-- 확인 한계: Eastward, CrossCode, Children of Morta, Hyper Light Drifter, 던파, 메이플의 마법사 디자인을 직접 다룬 신뢰 가능한 1차 출처는 검색에서 못 찾았다. 아래 "일반 지식" 표시는 출처 없는 관례임.
-  - (일반 지식) Hyper Light Drifter: 망토+단순 실루엣+고채도 한 색 포인트. Eastward: 굵은 외곽, 낮은 채도 바탕에 의상 한 곳만 고채도. 메이플/던파: 큰 머리(2~3등신), 모자와 지팡이로 직업 구분.
+- 확인 한계: Eastward, CrossCode, Children of Morta, Hyper Light Drifter, 참고 게임, 메이플의 마법사 디자인을 직접 다룬 신뢰 가능한 1차 출처는 검색에서 못 찾았다. 아래 "일반 지식" 표시는 출처 없는 관례임.
+  - (일반 지식) Hyper Light Drifter: 망토+단순 실루엣+고채도 한 색 포인트. Eastward: 굵은 외곽, 낮은 채도 바탕에 의상 한 곳만 고채도. 메이플/참고 게임: 큰 머리(2~3등신), 모자와 지팡이로 직업 구분.
 
 ## 2. 마법사 애니메이션
 - 걷기 4프레임(접지-통과-접지-통과), 프레임당 100~150ms, 상하 보브 1~2px. 6프레임이면 작은 스프라이트에 경제성과 부드러움의 균형. 8방향은 대칭 반전으로 5방향만 그리면 되나 비대칭 장비(한 손 지팡이)는 8방향 전부 필요. [sprite-ai animate guide](https://www.sprite-ai.art/guides/how-to-animate-pixel-art), [Slynyrd 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
