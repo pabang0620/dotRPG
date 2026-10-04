@@ -67,16 +67,13 @@ namespace DotRPG
                     RenderRegion(Path.Combine(folder, "house_on_steps.png"),
                         new Rect(house.transform.position.x - 6.5f, house.transform.position.y - 1.5f, 13f, 10f), 96);
                 Log($"PASS {art.Asset}: plaza route, door reachable, steps walkable, wall solid, yard clear; position={house.transform.position}");
-                if (door is ServiceDoor)
+                if (door is ServiceDoor serviceDoor)
                 {
-                    door.Interact(Game.Player);
-                    yield return Wait(.2f);
-                    MenuScreen expected = art.Key == "town_store" ? (MenuScreen)Game.UI.Shop :
-                        art.Key == "town_smithy" ? Game.UI.Enhance : Game.UI.Storage;
-                    if (Game.UI.Top != expected) throw new Exception("HOUSE FAIL: wrong service window " + art.Asset);
-                    Log("PASS service window " + art.Asset);
-                    Game.Flow.CloseInventory();
-                    yield return Wait(.2f);
+                    // End-to-end room/NPC/return travel is covered by AtlasChecks; keep this art pass on the same world.
+                    var room = MapRegistry.Get(MapRegistry.InteriorFor(Game.World.MapId, serviceDoor.Service));
+                    if (room == null || !room.IsInterior || room.exteriorMap != Game.World.MapId)
+                        throw new Exception("HOUSE FAIL: missing service interior " + art.Asset);
+                    Log("PASS service interior registered " + art.Asset);
                 }
                 // Stand beside the opening so the player's height can be compared directly with the lintel.
                 yield return Teleport(entrance + new Vector2(-1.05f, -.15f));

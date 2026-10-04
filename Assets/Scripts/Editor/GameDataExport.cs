@@ -363,7 +363,7 @@ namespace DotRPG.EditorTools
         static string Maps()
         {
             var j = Doc();
-            j.Arr("maps", MapRegistry.All.Concat(MapRegistry.Rooms), (o, m) =>
+            j.Arr("maps", MapRegistry.All.Concat(MapRegistry.Interiors).Concat(MapRegistry.Rooms), (o, m) =>
             {
                 o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe);
                 var census = Census(m);
@@ -403,6 +403,7 @@ namespace DotRPG.EditorTools
         static MapCensus Census(MapInfo map)
         {
             var c = new MapCensus();
+            if (map.IsInterior) { c.width = c.height = 5; return c; }
             var source = HuntingGrounds.Layout(map.id);
             if (source == null)
             {

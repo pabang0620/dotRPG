@@ -52,7 +52,7 @@ namespace DotRPG
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
         public static int XpAt(int level) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
-        public static string HomeOf(string mapId) => Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
+        public static string HomeOf(string mapId) => MapRegistry.Get(mapId)?.exteriorMap ?? Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
 
         // Equal-level gear / 12 field kills per minute, normal route at its reference time.
         // Floor applies to TOTAL dungeon XP (kills + clear); rank/specialty rewards then add value.

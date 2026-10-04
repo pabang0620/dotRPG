@@ -444,6 +444,14 @@ namespace DotRPG
         {
             var bag = Game.Session.Inventory;
             var shop = Game.UI.Shop;
+            string town = MapRegistry.IsTown(Game.World.MapId) ? Game.World.MapId : MapRegistry.Village;
+            void EnterService(NpcService service)
+            {
+                string room = MapRegistry.InteriorFor(town, service);
+                Game.World.Load(room); Game.Session.MapId = room; Game.Player.Place(Game.World.PlayerSpawn, Facing.Up);
+                Game.Camera.SetTarget(Game.Player.transform, true);
+            }
+            EnterService(NpcService.Shop);
             var merchant = FindNpc("merchant");
             Log($"services: merchant={(merchant != null)} smith={(FindNpc("smith") != null)} keeper={(FindNpc("keeper") != null)} serviceIcons={NpcController.Services.Count}");
             if (merchant != null)
@@ -480,6 +488,7 @@ namespace DotRPG
                 yield return Wait(0.3f);
             }
 
+            EnterService(NpcService.Storage);
             var keeper = FindNpc("keeper");
             if (keeper != null)
             {
@@ -503,6 +512,7 @@ namespace DotRPG
                 yield return Wait(0.3f);
             }
 
+            EnterService(NpcService.Blacksmith);
             var smith = FindNpc("smith");
             if (smith != null)
             {
@@ -518,16 +528,9 @@ namespace DotRPG
                 yield return Wait(0.3f);
             }
 
-            // The store's front door opens the same shop.
-            var door = FindAnyObjectByType<ServiceDoor>();
-            if (door != null)
-            {
-                door.Interact(Game.Player);
-                yield return Wait(0.3f);
-                Log($"service door '{door.Prompt}': top={(Game.UI.Top != null ? Game.UI.Top.name : "-")}");
-                Game.Flow.CloseInventory();
-                yield return Wait(0.3f);
-            }
+            // Real entrance/keeper/exit behaviour is checked in AtlasChecks. Restore the town for the bag showcase.
+            Game.World.Load(town); Game.Session.MapId = town; Game.Player.Place(Game.World.PlayerSpawn, Facing.Down);
+            Game.Camera.SetTarget(Game.Player.transform, true);
 
             // Bag: consumables tab.
             Game.Flow.OpenWindow(Game.UI.Equipment);

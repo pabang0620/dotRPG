@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,19 +53,59 @@ namespace DotRPG
 
             view.markers = UIFactory.Place(UIFactory.Rect(maskImage.transform, "Markers"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
 
-            var ring = UIFactory.Image(root, "Frame", Game.Art.Get("ui_ring"), Color.white);
+            var ring = UIFactory.Image(root, "Frame", CompassFrame(), Color.white);
             ring.preserveAspect = false;
-            UIFactory.Stretch(ring.rectTransform);
+            UIFactory.Place(ring.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(192, 192));
+
 
             view.playerDot = view.Dot(root, PlayerColor, 12f);
 
             // [UI] Region name on a translucent plate (it used to sit straight on the map / terrain).
-            view.labelPlate = UIFactory.Image(root, "NamePlate", Game.Art.Get("ui_white"), UiTheme.HudPlate);
+            view.labelPlate = UIFactory.Image(root, "NamePlate", Game.Art.Get("ui_dark"), Color.white);
             view.labelPlate.preserveAspect = false;
-            UIFactory.Place(view.labelPlate.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -1f), new Vector2(120f, 24f));
+            UIFactory.Place(view.labelPlate.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(7f, -8f), new Vector2(190f, 30f));
             view.label = UIFactory.Text(root, "Name", "", UiTheme.FontCaption, UIColors.Cream, TextAnchor.MiddleCenter, true);
-            UIFactory.Place(view.label.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -1f), new Vector2(260f, 24f));
+            UIFactory.Place(view.label.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -11f), new Vector2(176f, 24f));
+            view.label.fontSize = 16;
             return view;
+        }
+
+        static Sprite compassFrame;
+        static Sprite CompassFrame()
+        {
+            if (compassFrame != null) return compassFrame;
+            const int size = 192;
+            var c = new PixelCanvas(size, size);
+            var dark = PixelCanvas.Hex("17222b"); var gold = PixelCanvas.Hex("bd9862"); var light = PixelCanvas.Hex("f4d8a0");
+            for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
+            {
+                float dx = x + .5f - 96, dy = y + .5f - 96, r = Mathf.Sqrt(dx * dx + dy * dy);
+                if (r < 83 || r > 94) continue;
+                bool lit = dx + dy < -5;
+                var color = r > 92 ? dark : r > 90 ? (lit ? light : gold) : r > 86 ? PixelCanvas.Hex("39434b")
+                    : r > 84 ? (lit ? gold : PixelCanvas.Hex("765b40")) : PixelCanvas.Hex("84b3bb");
+                c.Set(x, y, color);
+            }
+            for (int i = 0; i < 32; i++)
+            {
+                float a = i * Mathf.PI / 16;
+                int x = 96 + Mathf.RoundToInt(Mathf.Sin(a) * 88), y = 96 + Mathf.RoundToInt(Mathf.Cos(a) * 88);
+                c.Rect(x - 1, y - 1, 2, 2, i % 4 == 0 ? light : gold);
+            }
+            foreach (var p in new[] { new Vector2Int(96, 8), new Vector2Int(96, 183), new Vector2Int(8, 96), new Vector2Int(183, 96) })
+            {
+                for (int y = -7; y <= 7; y++) for (int x = -7; x <= 7; x++)
+                {
+                    int d = Mathf.Abs(x) + Mathf.Abs(y);
+                    if (d <= 7) c.Set(p.x + x, p.y + y, d == 7 ? dark : d >= 5 ? gold : PixelCanvas.Hex("203642"));
+                }
+                if (p.y != 8) { c.Rect(p.x - 1, p.y - 1, 3, 3, PixelCanvas.Hex("88d5df")); c.Set(p.x - 1, p.y - 1, light); }
+            }
+            c.VLine(94, 5, 11, light); c.VLine(98, 5, 11, light); c.Line(94, 5, 98, 11, light);
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { name = "MinimapCompass", filterMode = FilterMode.Point };
+            tex.SetPixels32(c.ToTexturePixels()); tex.Apply();
+            compassFrame = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(.5f, .5f), 100);
+            return compassFrame;
         }
 
         /// <summary>A small swirling portal (violet rim, bright core) drawn once in code: no art asset exists for it.</summary>
@@ -108,28 +148,31 @@ namespace DotRPG
         {
             var world = Game.World;
             var player = Game.Player;
+            float pixelsPerTile = world != null && world.Map.IsInterior ? 28f : PixelsPerTile;
             if (world == null || world.Minimap == null || player == null) return;
 
             if (world.Minimap != shownTexture)
             {
                 shownTexture = world.Minimap;
                 map.texture = shownTexture;
-                mapRect.sizeDelta = new Vector2(world.Bounds.width * PixelsPerTile, world.Bounds.height * PixelsPerTile);
+                mapRect.sizeDelta = new Vector2(world.Bounds.width * pixelsPerTile, world.Bounds.height * pixelsPerTile);
                 label.text = world.Map != null ? world.Map.displayName : "";
-                labelPlate.rectTransform.sizeDelta = new Vector2(Mathf.Min(260f, label.preferredWidth + 20f), 24f);
+                float plateWidth = Mathf.Clamp(label.preferredWidth + 24f, 150f, 260f);
+                labelPlate.rectTransform.sizeDelta = new Vector2(plateWidth, 30f);
+                label.rectTransform.sizeDelta = new Vector2(plateWidth - 14f, 24f);
                 labelPlate.enabled = label.text.Length > 0;
             }
 
             Vector2 p = player.Position;
             var b = world.Bounds;
-            mapRect.anchoredPosition = new Vector2((b.width * 0.5f - p.x) * PixelsPerTile, (b.height * 0.5f - p.y) * PixelsPerTile);
+            mapRect.anchoredPosition = new Vector2((b.width * 0.5f - p.x) * pixelsPerTile, (b.height * 0.5f - p.y) * pixelsPerTile);
 
             // Monsters inside the circle.
             int n = 0;
             foreach (var enemy in EnemyController.Active)
             {
                 if (enemy == null || enemy.IsDead || !enemy.isActiveAndEnabled) continue;
-                Vector2 offset = (enemy.Position - p) * PixelsPerTile;
+                Vector2 offset = (enemy.Position - p) * pixelsPerTile;
                 if (offset.magnitude > Radius - 10f) continue;
                 if (n >= enemyDots.Count) enemyDots.Add(Dot(markers, EnemyColor, 9f));
                 var dot = enemyDots[n++];
@@ -142,7 +185,7 @@ namespace DotRPG
             int e = 0;
             foreach (var portal in world.PortalCenters)
             {
-                Vector2 offset = (portal - p) * PixelsPerTile;
+                Vector2 offset = (portal - p) * pixelsPerTile;
                 if (offset.magnitude > Radius - 12f) offset = offset.normalized * (Radius - 12f);
                 if (e >= exitDots.Count)
                 {
@@ -159,10 +202,9 @@ namespace DotRPG
 
             // Town services: potion (general store), anvil (blacksmith), chest (storage).
             int s = 0;
-            foreach (var npc in NpcController.Services)
+            void ServiceIcon(NpcService service, Vector2 position)
             {
-                if (npc == null || !npc.isActiveAndEnabled) continue;
-                Vector2 offset = ((Vector2)npc.transform.position - p) * PixelsPerTile;
+                Vector2 offset = (position - p) * pixelsPerTile;
                 if (offset.magnitude > Radius - 14f) offset = offset.normalized * (Radius - 14f);
                 if (s >= serviceIcons.Count)
                 {
@@ -173,19 +215,22 @@ namespace DotRPG
                 }
                 var img = serviceIcons[s++];
                 img.gameObject.SetActive(true);
-                var service = npc.Definition.service;
                 img.sprite = Game.Art.Get(service == NpcService.Shop ? "icon_potion_hp" : service == NpcService.Blacksmith ? "icon_anvil"
                     : service == NpcService.Dungeon ? "menuicon_dungeon" : "icon_chest"); // [DUNGEON] guide icon
                 img.rectTransform.anchoredPosition = offset;
             }
+            foreach (var npc in NpcController.Services)
+                if (npc != null && npc.isActiveAndEnabled) ServiceIcon(npc.Definition.service, npc.transform.position);
+            foreach (var it in Interactable.All)
+                if (it is ServiceDoor door) ServiceIcon(door.Service, door.transform.position);
             for (int i = s; i < serviceIcons.Count; i++) serviceIcons[i].gameObject.SetActive(false);
 
             // Quest marks ("!" give, "?" report / talk): pinned to the rim when off the minimap.
             int q = 0;
-            foreach (var npc in NpcController.All)
+            void QuestIcon(QuestMark kind, bool main, Vector2 position)
             {
-                if (npc == null || !npc.isActiveAndEnabled || npc.ShownMark == QuestMark.None) continue;
-                Vector2 offset = ((Vector2)npc.transform.position - p) * PixelsPerTile;
+                if (kind == QuestMark.None) return;
+                Vector2 offset = (position - p) * pixelsPerTile;
                 if (offset.magnitude > Radius - 14f) offset = offset.normalized * (Radius - 14f);
                 if (q >= questMarks.Count)
                 {
@@ -198,11 +243,20 @@ namespace DotRPG
                 }
                 var mark = questMarks[q++];
                 mark.gameObject.SetActive(true);
-                mark.text = npc.ShownMark == QuestMark.Available ? "!" : "?";
-                mark.color = npc.ShownMarkMain ? new Color32(255, 214, 64, 255) : new Color32(120, 214, 255, 255);
+                mark.text = kind == QuestMark.Available ? "!" : "?";
+                mark.color = main ? new Color32(255, 214, 64, 255) : new Color32(120, 214, 255, 255);
                 mark.rectTransform.anchoredPosition = offset;
                 mark.transform.SetAsLastSibling();
             }
+            foreach (var npc in NpcController.All)
+                if (npc != null && npc.isActiveAndEnabled) QuestIcon(npc.ShownMark, npc.ShownMarkMain, npc.transform.position);
+            if (Game.Quest != null)
+                foreach (var it in Interactable.All)
+                    if (it is ServiceDoor door)
+                    {
+                        string id = WorldBuilder.ServiceNpc(door.Service)?.npcId;
+                        if (id != null) QuestIcon(Game.Quest.MarkFor(id), Game.Quest.MarkIsMain(id), door.transform.position);
+                    }
             for (int i = q; i < questMarks.Count; i++) questMarks[i].gameObject.SetActive(false);
 
             playerDot.transform.SetAsLastSibling();

@@ -27,6 +27,7 @@ namespace DotRPG
         TownScroll,
         Mobility,
         MoveUp, MoveDown, MoveLeft, MoveRight, Map,
+        SkillWindow, QuestWindow, WeekdayDungeon, RaidWindow, PartyWindow, PartyFinder, Auction, Friends, Cosmetics,
     }
 
     /// <summary>
@@ -417,7 +418,18 @@ namespace DotRPG
             GameAction.Attack, GameAction.Mobility, GameAction.Interact, GameAction.Skill1, GameAction.Skill2, GameAction.Skill3,
             GameAction.Skill4, GameAction.Skill5, GameAction.UseItem, GameAction.UseMana, GameAction.TownScroll, GameAction.Inventory,
             GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight, GameAction.Map,
+            GameAction.SkillWindow, GameAction.QuestWindow, GameAction.WeekdayDungeon, GameAction.RaidWindow,
+            GameAction.PartyWindow, GameAction.PartyFinder, GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
         };
+
+        public static readonly GameAction[] WindowActions =
+        {
+            GameAction.Inventory, GameAction.Map, GameAction.SkillWindow, GameAction.QuestWindow,
+            GameAction.WeekdayDungeon, GameAction.RaidWindow, GameAction.PartyWindow, GameAction.PartyFinder,
+            GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
+        };
+        public static bool IsWindowAction(GameAction action) => System.Array.IndexOf(WindowActions, action) >= 0;
+        public bool WindowPressed(GameAction action) => !TextInputActive && (action == GameAction.Inventory ? InventoryPressed : Input.GetKeyDown(KeyboardKey(action)));
 
         static readonly System.Collections.Generic.Dictionary<GameAction, KeyCode> keyOverrides = new System.Collections.Generic.Dictionary<GameAction, KeyCode>();
 
@@ -442,6 +454,15 @@ namespace DotRPG
                 case GameAction.MoveLeft: return KeyCode.LeftArrow;
                 case GameAction.MoveRight: return KeyCode.RightArrow;
                 case GameAction.Map: return KeyCode.M;
+                case GameAction.SkillWindow: return KeyCode.K;
+                case GameAction.QuestWindow: return KeyCode.J;
+                case GameAction.WeekdayDungeon: return KeyCode.G;
+                case GameAction.RaidWindow: return KeyCode.H;
+                case GameAction.PartyWindow: return KeyCode.P;
+                case GameAction.PartyFinder: return KeyCode.O;
+                case GameAction.Auction: return KeyCode.U;
+                case GameAction.Friends: return KeyCode.L;
+                case GameAction.Cosmetics: return KeyCode.C;
                 default: return KeyCode.None;
             }
         }

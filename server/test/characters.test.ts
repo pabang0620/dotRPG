@@ -313,6 +313,17 @@ describe('PUT /characters/:uuid/state', () => {
   const put = (s: Parameters<typeof auth>[0], id: string, body: unknown) =>
     request(app).put(`/characters/${id}/state`).set(auth(s)).send(body as object);
 
+  it.each(['village', 'canyon', 'winter'].flatMap(town => ['shop', 'blacksmith', 'storage'].map(service => `${town}_${service}`)))('%s: 실내 위치 저장·재접속 및 5×5 경계 검증', async mapId => {
+    const { s, id } = await fresh();
+    const pos = { x: 2.5, y: 1.35 };
+    const res = await put(s, id, emptyState(0, { map_id: mapId, pos }));
+    expect(res.status).toBe(200);
+    const get = await request(app).get(`/characters/${id}`).set(auth(s));
+    expect(get.body.data.character.state).toMatchObject({ version: 1, map_id: mapId, pos });
+    const outside = await put(s, id, emptyState(1, { map_id: mapId, pos: { x: 6, y: 2 } }));
+    expect(outside.status).toBe(422);
+  });
+
   it('정상: 저장 후 version +1, GET으로 그대로 읽힌다', async () => {
     const { s, id } = await fresh();
     const body = emptyState(0, {

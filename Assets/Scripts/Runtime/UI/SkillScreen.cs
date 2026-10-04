@@ -96,22 +96,6 @@ namespace DotRPG
 
         // ================= Passive tree =================
 
-        static string GlyphFor(PassiveNode n)
-        {
-            switch (n.kind)
-            {
-                case PassiveKind.Start: return "node_start";
-                case PassiveKind.Mastery: return "node_mastery";
-                case PassiveKind.Keystone:
-                    return n.keystone == Keystone.Unwavering ? "node_shield" : n.keystone == Keystone.GlassCannon ? "node_burst"
-                        : n.keystone == Keystone.BloodMagic ? "node_drop" : "node_sun";
-                case PassiveKind.Notable:
-                    var stat = n.stats.Count > 0 ? n.stats[0].stat : PassiveStat.SkillDamage;
-                    return stat == PassiveStat.SkillArea ? "node_area" : stat == PassiveStat.SkillCooldown ? "node_cd" : "node_dmg";
-                default: return null;
-            }
-        }
-
         static float SizeOf(PassiveNode n) =>
             n.kind == PassiveKind.Keystone ? 54f : n.kind == PassiveKind.Mastery ? 48f : n.kind == PassiveKind.Notable ? 42f : n.kind == PassiveKind.Start ? 50f : 26f;
 
@@ -153,13 +137,9 @@ namespace DotRPG
                 fill.sprite = ArcaneUiArt.Get("gem");
                 var ornament = Ornament(ring.transform, "Engraving", "sigil", Vector2.zero, Vector2.one * size * 1.35f, Color.clear);
                 if (n.kind == PassiveKind.Small) ornament.enabled = false;
-                Image glyph = null;
-                string g = GlyphFor(n);
-                if (g != null)
-                {
-                    glyph = UIFactory.Image(ring.transform, "Glyph", Game.Art.Get(g), Color.white);
-                    UIFactory.Place(glyph.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.5f, size * 0.5f));
-                }
+                var glyph = UIFactory.Image(ring.transform, "Glyph", SkillNodeArt.For(n), Color.white);
+                float glyphSize = n.kind == PassiveKind.Small ? 16 : n.kind == PassiveKind.Keystone ? 32 : n.kind == PassiveKind.Notable ? 24 : 28;
+                UIFactory.Place(glyph.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, Vector2.one * glyphSize);
                 var view = new NodeView { node = n, rect = ring.rectTransform, fill = fill, ring = ring, glyph = glyph, halo = halo, ornament = ornament };
                 var relay = ring.gameObject.AddComponent<PointerRelay>();
                 relay.onEnter = () => { hovered = view; mouse = true; };
@@ -211,10 +191,10 @@ namespace DotRPG
                 Color cluster = ClusterColors[Mathf.Clamp(v.node.cluster, 0, ClusterColors.Length - 1)];
                 v.owned = owned; v.available = can; v.accent = cluster;
                 v.ornament.color = owned ? new Color(1f, .78f, .38f, .85f) : new Color(.38f, .53f, .72f, .45f);
-                v.fill.color = owned ? Color.Lerp(cluster, new Color32(255, 232, 160, 255), 0.45f) : reachable ? Color.Lerp(cluster, Color.black, 0.3f) : Color.Lerp(cluster, Color.black, 0.68f);
+                v.fill.color = Color.Lerp(new Color32(12, 19, 32, 255), cluster, owned ? .27f : reachable ? .19f : .08f);
                 v.ring.color = owned ? new Color32(255, 214, 90, 255) : can ? new Color32(240, 240, 240, 255) : new Color32(70, 76, 90, 255);
                 if (v.node.kind == PassiveKind.Keystone && !owned) v.ring.color = can ? new Color32(255, 170, 90, 255) : new Color32(120, 80, 60, 255);
-                if (v.glyph != null) v.glyph.color = owned ? new Color(0.22f, 0.13f, 0.05f, 0.9f) : new Color(1f, 1f, 1f, reachable ? 0.9f : 0.45f);
+                if (v.glyph != null) v.glyph.color = new Color(1f, 1f, 1f, owned ? 1f : reachable ? .9f : .55f);
             }
             foreach (var l in linkViews)
             {

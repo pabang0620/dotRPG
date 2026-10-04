@@ -263,6 +263,8 @@ namespace DotRPG
         Goal NpcGoal(string npcId, string what)
         {
             string map = FindNpc(npcId) != null ? Game.World.MapId : NpcMap(npcId);
+            foreach (var it in Interactable.All)
+                if (it is ServiceDoor door && WorldBuilder.ServiceNpc(door.Service)?.npcId == npcId) { map = Game.World.MapId; break; }
             return new Goal { kind = GoalKind.Npc, id = npcId, map = map ?? "", label = Game.Quest.NpcName(npcId) + what };
         }
 
@@ -330,8 +332,8 @@ namespace DotRPG
         {
             foreach (var npc in NpcController.Services)
                 if (npc != null && npc.Definition.service == NpcService.Dungeon) return Game.World.MapId;
-            var guide = WorldBuilder.ServiceNpc(NpcService.Dungeon);
-            return guide != null ? NpcMap(guide.npcId) ?? MapRegistry.Village : MapRegistry.Village;
+            // Every town has a guide; an indoor visitor should leave to the same town first.
+            return HuntingGrounds.HomeOf(Game.World.MapId);
         }
 
         // =============================== Doing it ===============================
@@ -339,6 +341,10 @@ namespace DotRPG
         void DoNpc(PlayerController p, Goal g)
         {
             var npc = FindNpc(g.id);
+            if (npc == null)
+                foreach (var it in Interactable.All)
+                    if (it is ServiceDoor door && WorldBuilder.ServiceNpc(door.Service)?.npcId == g.id)
+                    { ApproachAndUse(p, door); return; }
             if (npc == null) { Stop($"{Game.Quest.NpcName(g.id)}을(를) 이 지역에서 찾지 못했습니다."); return; }
             ApproachAndUse(p, npc);
         }
@@ -530,6 +536,7 @@ namespace DotRPG
         {
             var cur = MapRegistry.Get(from);
             if (cur == null) return null;
+            if (cur.IsInterior) return cur.exteriorMap;
             foreach (string dir in new[] { cur.nextMap, cur.previousMap })
             {
                 string step = dir;

@@ -80,7 +80,8 @@ namespace DotRPG
         List<PartyPost> shown = new List<PartyPost>();
         // create tab
         int cDungeon, cDiff, cMembers = 4, cPowerPct = 80, cMsg;
-        Text createSummary, levelGuide;
+        Text levelGuide;
+        readonly Text[] createValues = new Text[5];
 
         static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
 
@@ -123,12 +124,17 @@ namespace DotRPG
             Action[] cycles = { () => w.cDungeon++, () => w.cDiff++, () => w.cMembers = w.cMembers >= 4 ? 2 : w.cMembers + 1, () => w.cPowerPct = w.cPowerPct >= 100 ? 50 : w.cPowerPct + 10, () => w.cMsg++ };
             for (int i = 0; i < labels.Length; i++)
             {
+                // Each label, value and button shares a fixed row; wrapping cannot shift later fields.
+                var stripe = Panel(panel.transform, "CreateRow" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f - i * 62f), new Vector2(720f, 52f), i % 2 == 0 ? RowA : RowB);
+                stripe.raycastTarget = false;
+                w.createValues[i] = Label(panel.transform, "Value" + i, "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(190f, -24f - i * 62f), new Vector2(354f, 44f), TextAnchor.MiddleLeft);
+                w.createValues[i].lineSpacing = 1f;
+                w.createValues[i].horizontalOverflow = HorizontalWrapMode.Wrap;
+                w.createValues[i].verticalOverflow = VerticalWrapMode.Truncate;
                 Label(panel.transform, "L" + i, labels[i], 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -24f - i * 62f), new Vector2(160f, 44f), TextAnchor.MiddleLeft);
                 int k = i;
                 Button(panel.transform, "C" + i, "바꾸기 ▶", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(560f, -24f - i * 62f), new Vector2(160f, 44f), () => { cycles[k](); w.Refresh(); }, 18);
             }
-            w.createSummary = Label(panel.transform, "Summary", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(190f, -24f), new Vector2(360f, 310f));
-            w.createSummary.lineSpacing = 2.25f;
             Button(panel.transform, "Post", "모집 글 등록", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-110f, 24f), new Vector2(200f, 50f), w.Post, 21);
             Button(panel.transform, "CancelPost", "모집 취소", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(110f, 24f), new Vector2(200f, 50f), w.CancelPost, 21);
             var help = Panel(w.createRoot, "Help", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -56f), new Vector2(440f, 460f), new Color32(24, 36, 54, 235));
@@ -289,7 +295,11 @@ namespace DotRPG
             var d = ds[Mod(cDungeon, ds.Count)];
             var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
             levelGuide.text = LevelGuide(d, diff);
-            createSummary.text = $"{d.name}\n<color={PartyFinderRules.DifficultyColor(diff)}>{(d.isRaid ? "레이드" : PartyFinderRules.DifficultyName(diff))}</color>  <color=#b8c4d8>{PartyFinderRules.Recommended(d.id, diff)}</color>\n{cMembers}명\n{power * cPowerPct / 100:N0} (내 전투력의 {cPowerPct}%)\n“{PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]}”";
+            createValues[0].text = d.name;
+            createValues[1].text = $"<color={PartyFinderRules.DifficultyColor(diff)}>{(d.isRaid ? "레이드" : PartyFinderRules.DifficultyName(diff))}</color>   <size=16><color=#b8c4d8>{PartyFinderRules.Recommended(d.id, diff, true)}</color></size>";
+            createValues[2].text = $"{cMembers}명";
+            createValues[3].text = $"{power * cPowerPct / 100:N0} <color=#b8c4d8>(내 전투력의 {cPowerPct}%)</color>";
+            createValues[4].text = $"“{PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]}”";
         }
 
         // ---------- dev hooks ----------

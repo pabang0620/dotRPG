@@ -41,8 +41,9 @@ namespace DotRPG
         void SpawnDungeonGuide()
         {
             DungeonGuidePosition = null;
-            if (MapId != MapRegistry.Village) return;
-            int cx = GuideColumn, cy = height - 1 - GuideRowFromTop;
+            if (!MapRegistry.IsTown(MapId)) return;
+            int cx = MapId == MapRegistry.Village ? GuideColumn : (int)PlayerSpawn.x;
+            int cy = MapId == MapRegistry.Village ? height - 1 - GuideRowFromTop : (int)PlayerSpawn.y + 3;
             for (int r = 0; r <= 6; r++)
                 for (int dy = -r; dy <= r; dy++)
                     for (int dx = -r; dx <= r; dx++)
@@ -51,6 +52,7 @@ namespace DotRPG
                         int x = cx + dx, y = cy + dy;
                         if (!OpenCobble(x, y)) continue;
                         var pos = new Vector2(x + 0.5f, y + 0.5f);
+                        if (!IsFree(pos)) continue;
                         NpcController.Create(DungeonGuide, pos, objectsRoot);
                         PointsOfInterest.Add(pos);
                         DungeonGuidePosition = pos;
