@@ -80,7 +80,7 @@ namespace DotRPG
         List<PartyPost> shown = new List<PartyPost>();
         // create tab
         int cDungeon, cDiff, cMembers = 4, cPowerPct = 80, cMsg;
-        Text createSummary;
+        Text createSummary, levelGuide;
 
         static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
 
@@ -132,12 +132,44 @@ namespace DotRPG
             Button(panel.transform, "Post", "모집 글 등록", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-110f, 24f), new Vector2(200f, 50f), w.Post, 21);
             Button(panel.transform, "CancelPost", "모집 취소", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(110f, 24f), new Vector2(200f, 50f), w.CancelPost, 21);
             var help = Panel(w.createRoot, "Help", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -56f), new Vector2(440f, 460f), new Color32(24, 36, 54, 235));
-            Label(help.transform, "Text", "<b>파티 모집 안내</b>\n\n· 모집 글은 10분 뒤 자동으로 내려갑니다.\n· 최소 전투력은 내 전투력의 50~100%로 정합니다.\n· 인원이 모자라면 입장할 때 AI 용병이 빈자리를 채웁니다.\n· 자동 매칭은 60초 동안 같은 던전·난이도의 모험가를 찾고, 시간이 지나면 AI로 채워 출발합니다.\n\n<color=#ffb066>서버 연결 전에는 다른 모험가가 실제로 참가하지 않습니다.</color>",
-                19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -20f), new Vector2(392f, 420f));
+            // Recommended level / power of the picked dungeon, per difficulty, against my character (refreshed with the picks).
+            w.levelGuide = Label(help.transform, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -20f), new Vector2(392f, 420f));
+            w.levelGuide.lineSpacing = 1.15f;
             return w;
         }
 
         int MyPower => Game.Player != null ? CharacterStats.Power(Game.Player.Class) : 0;
+
+        static readonly string[] DayNames = { "일", "월", "화", "수", "목", "금", "토" };
+
+        /// <summary>
+        /// The picked dungeon's recommended level and power for every difficulty (weekday dungeons share them; raids have
+        /// their own), green when my character meets them, plus the days it opens and whether it is open today.
+        /// </summary>
+        string LevelGuide(DungeonDef d, DungeonDifficulty picked)
+        {
+            int myLevel = Game.Session != null ? Game.Session.Progression.Level : 1, myPower = MyPower;
+            string Row(string name, DifficultyDef n, bool sel)
+            {
+                string lv = myLevel >= n.recommendedLevel ? "#8fe28f" : "#ff9f7a";
+                string pw = myPower >= n.recommendedPower ? "#8fe28f" : "#ff9f7a";
+                string head = sel ? $"<b>▶ {name}</b>" : $"   {name}";
+                return $"{head}   <color={lv}>Lv.{n.recommendedLevel}</color> · <color={pw}>전투력 {n.recommendedPower:N0}</color>\n";
+            }
+            var sb = new System.Text.StringBuilder($"<b>{d.name}</b> 권장 레벨\n<color=#b8c4d8>내 캐릭터 Lv.{myLevel} · 전투력 {myPower:N0}</color>\n\n");
+            if (d.isRaid) sb.Append(Row("레이드", DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal), true));
+            else
+                for (int i = 0; i < DungeonDatabase.DifficultyCount; i++)
+                {
+                    var diff = (DungeonDifficulty)i;
+                    sb.Append(Row(PartyFinderRules.DifficultyName(diff), DungeonDatabase.DifficultyFor(d, diff), diff == picked));
+                }
+            var days = d.openDays != null && d.openDays.Length > 0 ? string.Join("·", System.Array.ConvertAll(d.openDays, x => DayNames[(int)x])) + "요일" : "매일";
+            bool open = ResetClock.IsOpen(d, ResetClock.Now);
+            sb.Append($"\n열리는 날: {days}{(d.isRaid ? "" : " (주말엔 모든 요일던전)")}\n오늘: {(open ? "<color=#8fe28f>열림</color>" : "<color=#ff9f7a>닫힘</color>")}");
+            sb.Append("\n\n<color=#8c96a8>초록 = 내 캐릭터가 권장을 넘음. 빈자리는 방장의 AI 동료가 채운다. 모집 글은 10분 뒤 내려간다.</color>");
+            return sb.ToString();
+        }
 
         void CycleFilter()
         {
@@ -256,6 +288,7 @@ namespace DotRPG
             }
             var d = ds[Mod(cDungeon, ds.Count)];
             var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
+            levelGuide.text = LevelGuide(d, diff);
             createSummary.text = $"{d.name}\n<color={PartyFinderRules.DifficultyColor(diff)}>{(d.isRaid ? "레이드" : PartyFinderRules.DifficultyName(diff))}</color>  <color=#b8c4d8>{PartyFinderRules.Recommended(d.id, diff)}</color>\n{cMembers}명\n{power * cPowerPct / 100:N0} (내 전투력의 {cPowerPct}%)\n“{PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]}”";
         }
 
