@@ -53,11 +53,14 @@ namespace DotRPG
             if (IsBusy) return;
             if (!IsAvailable)
             {
-                Status = "상점 준비 중 · 무료 오라를 먼저 착용해 보세요.";
+                // Paid auras are the online account's; offline only the free ones show.
+                owned.Clear();
+                offers.Clear();
+                Status = "온라인 캐릭터로 접속하면 별조각 외형을 쓸 수 있습니다.";
                 Changed?.Invoke();
                 return;
             }
-            Begin("보유 상품을 확인하고 있습니다.");
+            Begin("보유 외형을 확인하고 있습니다.");
             try
             {
                 var request = restore ? provider.RestoreAsync() : provider.FetchAsync();
@@ -67,13 +70,13 @@ namespace DotRPG
                 if (NeedsPurchaseRecovery && (Owns(pendingProductId) || pendingPurchase == null || pendingPurchase.IsCompleted))
                     pendingProductId = null;
                 Status = NeedsPurchaseRecovery ? "이전 결제 확인 중입니다. 잠시 후 구매 내역을 다시 복원해 주세요."
-                    : restore ? "구매 내역을 복원했습니다." : "보유 상품을 확인했습니다.";
+                    : restore ? "보유 외형을 다시 불러왔습니다." : "보유 외형을 확인했습니다.";
             }
             catch (Exception exception)
             {
                 // Do not retain stale purchase quotes after a failed synchronization.
                 offers.Clear();
-                Status = "상점에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+                Status = "캐시샵에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
                 Debug.LogWarning($"[dotRPG] Cosmetic store synchronization failed: {exception.GetType().Name}");
             }
             finally { End(); }
@@ -84,7 +87,7 @@ namespace DotRPG
             if (IsBusy || NeedsPurchaseRecovery || !IsAvailable || confirmedOffer == null) return;
             string id = confirmedOffer.ProductId;
             if (Owns(id) || !ReferenceEquals(OfferFor(id), confirmedOffer)) return;
-            Begin("결제를 확인하고 있습니다. 완료될 때까지 기다려 주세요.");
+            Begin("교환을 확인하고 있습니다. 완료될 때까지 기다려 주세요.");
             pendingProductId = id;
             bool paymentVerified = false;
             try
@@ -96,7 +99,7 @@ namespace DotRPG
                 await WaitAsync(request, TimeSpan.FromSeconds(30));
                 Apply(await request);
                 if (Owns(id)) pendingProductId = null;
-                Status = Owns(id) ? "구매한 외형을 옷장에서 착용할 수 있습니다." : "구매 확인 중입니다. 구매 내역 복원을 눌러 주세요.";
+                Status = Owns(id) ? "교환한 외형을 바로 착용할 수 있습니다." : "교환 확인 중입니다. 보유 외형 다시 불러오기를 눌러 주세요.";
             }
             catch (OperationCanceledException)
             {
@@ -105,7 +108,7 @@ namespace DotRPG
             }
             catch (Exception exception)
             {
-                Status = "구매 상태를 확인하지 못했습니다. 재구매 전에 구매 내역을 복원해 주세요.";
+                Status = "교환 상태를 확인하지 못했습니다. 보유 외형 다시 불러오기를 눌러 주세요.";
                 Debug.LogWarning($"[dotRPG] Cosmetic purchase failed: {exception.GetType().Name}");
             }
             finally

@@ -394,6 +394,7 @@ namespace DotRPG
                     ClaimQuest(q.id, null, quiet: true);
             OnMapEntered(Game.Session.MapId); // also flips cards left unpicked
             AchievementClient.OnEnteredWorld();
+            _ = Game.Cosmetics?.RefreshAsync(); // 별조각 외형 보유 내역
         }
 
         /// <summary>

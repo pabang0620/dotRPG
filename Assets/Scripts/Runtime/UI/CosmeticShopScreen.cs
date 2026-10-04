@@ -9,6 +9,9 @@ namespace DotRPG
         static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         readonly Text[] rowLabels = new Text[CosmeticCatalog.All.Count];
         readonly RectTransform[] rows = new RectTransform[CosmeticCatalog.All.Count];
+        readonly Image[] thumbs = new Image[CosmeticCatalog.All.Count];
+        const float RowTop = 128f, RowStep = 70f;
+        Button gacha;
         CosmeticStore store;
         RectTransform layout;
         RectTransform listPanel, detailPanel;
@@ -23,7 +26,7 @@ namespace DotRPG
 
         public static CosmeticShopScreen Create(Transform canvas)
         {
-            var screen = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "외형 상점 · 옷장", "menuicon_cosmetics");
+            var screen = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "캐시샵 · 옷장", "menuicon_cosmetics");
             screen.store = Game.Cosmetics;
             var viewport = UIFactory.Stretch(UIFactory.Rect(screen.content, "Viewport"));
             var hit = viewport.gameObject.AddComponent<Image>();
@@ -39,11 +42,12 @@ namespace DotRPG
             var list = Panel(screen.layout, "Catalog", TopLeft, TopLeft, Vector2.zero, new Vector2(400f, 520f), UiTheme.Panel);
             screen.listPanel = list.rectTransform;
             Label(list.transform, "Hint", "마음에 드는 빛을 골라 보세요", 22, TopLeft, TopLeft, new Vector2(20f, -20f), new Vector2(360f, 44f));
+            screen.gacha = StoreButton(list.transform, "Gacha", "별조각 뽑기", TopLeft, TopLeft, new Vector2(20f, -66f), new Vector2(360f, 50f), screen.OpenGacha, 20);
             for (int i = 0; i < CosmeticCatalog.All.Count; i++)
             {
                 int index = i;
                 var row = StoreButton(list.transform, "Product_" + CosmeticCatalog.All[i].Id, "", TopLeft, TopLeft,
-                    new Vector2(20f, -80f - i * 92f), new Vector2(360f, 78f), () => screen.Select(index), 22);
+                    new Vector2(20f, -RowTop - i * RowStep), new Vector2(360f, RowStep - 6f), () => screen.Select(index), 20);
                 screen.rowLabels[i] = row.GetComponentInChildren<Text>();
                 screen.rows[i] = row.GetComponent<RectTransform>();
                 UIFactory.Stretch(screen.rowLabels[i].rectTransform, 86f, 0f, 12f, 0f);
@@ -51,6 +55,7 @@ namespace DotRPG
                 var thumbnail = UIFactory.Image(row.transform, "Thumbnail", CosmeticAura.ForProduct(product), product.Color);
                 UIFactory.Place(thumbnail.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
                     new Vector2(12f, 0f), new Vector2(68f, 34f));
+                screen.thumbs[i] = thumbnail;
             }
 
             var detail = Panel(screen.layout, "Preview", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(780f, 520f), UiTheme.PanelDeep);
@@ -64,13 +69,14 @@ namespace DotRPG
             screen.action = StoreButton(detail.transform, "PurchaseOrEquip", "", TopLeft, TopLeft,
                 new Vector2(290f, -312f), new Vector2(440f, 56f), screen.ActivateSelected, 22);
             screen.actionLabel = screen.action.GetComponentInChildren<Text>();
-            screen.restore = StoreButton(detail.transform, "Restore", "구매 내역 복원", TopLeft, TopLeft,
+            screen.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft,
                 new Vector2(290f, -388f), new Vector2(440f, 50f), screen.Restore, 20);
             screen.restoreLabel = screen.restore.GetComponentInChildren<Text>();
             screen.status = Label(detail.transform, "Status", "", 18, TopLeft, TopLeft, new Vector2(24f, -454f), new Vector2(732f, 56f));
-            screen.footer = Label(screen.layout, "Footer", "외형 전용 · 능력치 변화 없음 · 확정 구성 · 보유 상품 재구매 없음\n↑↓ 상품 선택   → 구매 복원   ← 상품으로   Enter / A 실행   Esc / B 닫기", 18,
+            screen.footer = Label(screen.layout, "Footer", "외형 전용 · 능력치 변화 없음 · 원하는 외형은 별조각으로 바로 교환 · 가진 외형은 다시 교환하지 않음\n↑↓ 상품 선택   → 다시 불러오기   ← 상품으로   Enter / A 실행   Esc / B 닫기", 18,
                 TopLeft, TopLeft, new Vector2(0f, -536f), new Vector2(1180f, 60f));
             screen.store.Changed += screen.Refresh;
+            StarShopClient.Changed += screen.Refresh;
             return screen;
         }
 
@@ -102,19 +108,23 @@ namespace DotRPG
             {
                 var item = CosmeticCatalog.All[i];
                 string state = store.Equipped.Id == item.Id ? "착용 중" : store.Owns(item.Id) ? "보유" : "미보유";
-                rowLabels[i].text = $"{(i == selected ? "▶ " : "")}{item.Name}\n<size=17>{state}</size>";
+                string rarity = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{CosmeticCatalog.RarityName(item.Rarity)}</color>";
+                rowLabels[i].text = $"{(i == selected ? "▶ " : "")}{item.Name}\n<size=16>{rarity} · {state}</size>";
                 rowLabels[i].color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
             }
             previewAura.sprite = CosmeticAura.ForProduct(product);
             previewAura.color = product.Color;
             var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
             previewCharacter.sprite = animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
-            string price = product.IsFree ? "무료" : owned ? "보유 중" : offer?.LocalizedPrice ?? "판매 준비 중";
-            description.text = $"<size=30>{product.Name}</size>\n\n발밑 오라 · 영구 소장\n모든 직업에서 사용 가능\n\n{price}\n선택한 외형을 미리 보는 중입니다.";
-            actionLabel.text = equipped ? "착용 중" : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice} · 구매 확인" : "판매 준비 중";
+            string price = product.IsFree ? "무료" : owned ? "보유 중" : offer != null ? $"교환 {offer.LocalizedPrice}" : store.IsAvailable ? "확인 중" : "온라인 전용";
+            string rarityLine = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{CosmeticCatalog.RarityName(product.Rarity)}</color>";
+            string have = store.IsAvailable ? $"보유 {StarShopClient.Stars(StarShopClient.Balance)}" : "온라인 캐릭터로 접속하면 교환·뽑기를 할 수 있습니다.";
+            description.text = $"<size=30>{product.Name}</size>\n{rarityLine} · 발밑 오라 · 영구 소장\n모든 직업에서 사용 가능 · 능력치 없음\n\n{price}\n{have}\n선택한 외형을 미리 보는 중입니다.";
+            actionLabel.text = equipped ? "착용 중" : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 교환" : "온라인 전용";
+            gacha.interactable = store.IsAvailable;
             action.interactable = !store.IsBusy && !equipped && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;
-            restoreLabel.text = (restoreFocused ? "▶ " : "") + "구매 내역 복원";
+            restoreLabel.text = (restoreFocused ? "▶ " : "") + "보유 외형 다시 불러오기";
             restoreLabel.color = restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
             status.text = store.Status;
         }
@@ -126,8 +136,20 @@ namespace DotRPG
             if (store.Owns(product.Id)) { store.Equip(product.Id); return; }
             var offer = store.OfferFor(product.Id);
             if (offer == null) return;
-            Game.UI.Confirm($"{product.Name}\n{offer.LocalizedPrice} · 1회 결제 · 영구 외형\n이 상품을 구매하시겠습니까?",
+            if (StarShopClient.ExchangePrice.TryGetValue(product.Id, out int cost) && StarShopClient.Balance < cost)
+            {
+                Game.Audio.PlaySfx("cancel");
+                GameEvents.RaiseToast($"별조각이 모자랍니다. (필요 {cost:N0}, 보유 {StarShopClient.Balance:N0})");
+                return;
+            }
+            Game.UI.Confirm($"{product.Name}\n{offer.LocalizedPrice}를 사용해 바로 교환합니다 · 영구 외형\n교환하시겠습니까?",
                 async () => await store.PurchaseAsync(offer), true);
+        }
+
+        void OpenGacha()
+        {
+            if (!IsTop || GachaScreen.Instance == null) return;
+            Game.Flow.OpenWindow(GachaScreen.Instance);
         }
 
         async void Restore()
@@ -138,6 +160,11 @@ namespace DotRPG
         void LateUpdate()
         {
             if (content.rect.size != lastSize) Reflow();
+            float t = Time.unscaledTime;
+            for (int i = 0; i < thumbs.Length; i++)
+                if (CosmeticCatalog.All[i].Effect != CosmeticEffect.None) thumbs[i].color = CosmeticCatalog.All[i].ColorAt(t);
+            var shown = CosmeticCatalog.All[selected];
+            if (shown.Effect != CosmeticEffect.None) previewAura.color = shown.ColorAt(t);
         }
 
         void Reflow()
@@ -148,10 +175,12 @@ namespace DotRPG
             float listWidth = columns ? 380f : width;
             float detailWidth = columns ? width - 400f : width;
             bool compact = detailWidth < 700f;
-            float detailTop = columns ? 0f : 500f;
+            float listHeight = RowTop + rows.Length * RowStep + 10f;
+            float detailTop = columns ? 0f : listHeight + 20f;
             float detailHeight = compact ? 820f : 520f;
-            listPanel.sizeDelta = new Vector2(listWidth, 480f);
-            for (int i = 0; i < rows.Length; i++) rows[i].sizeDelta = new Vector2(listWidth - 40f, 78f);
+            listPanel.sizeDelta = new Vector2(listWidth, listHeight);
+            for (int i = 0; i < rows.Length; i++) rows[i].sizeDelta = new Vector2(listWidth - 40f, RowStep - 6f);
+            gacha.GetComponent<RectTransform>().sizeDelta = new Vector2(listWidth - 40f, 50f);
             UIFactory.Place(detailPanel, TopLeft, TopLeft, new Vector2(columns ? 400f : 0f, -detailTop), new Vector2(detailWidth, detailHeight));
             float textX = compact ? 24f : 290f;
             float textWidth = detailWidth - textX - 24f;
@@ -161,8 +190,9 @@ namespace DotRPG
             Place(action.GetComponent<RectTransform>(), textX, compact ? 594f : 312f, textWidth, 56f);
             Place(restore.GetComponent<RectTransform>(), textX, compact ? 670f : 388f, textWidth, 50f);
             Place(status.rectTransform, 24f, compact ? 738f : 454f, detailWidth - 48f, compact ? 76f : 56f);
-            Place(footer.rectTransform, 0f, detailTop + detailHeight + 16f, width, 110f);
-            layout.sizeDelta = new Vector2(width, detailTop + detailHeight + 130f);
+            float bottom = Mathf.Max(detailTop + detailHeight, columns ? listHeight : 0f);
+            Place(footer.rectTransform, 0f, bottom + 16f, width, 110f);
+            layout.sizeDelta = new Vector2(width, bottom + 130f);
         }
 
         static void Place(RectTransform target, float x, float y, float width, float height) =>
@@ -219,6 +249,7 @@ namespace DotRPG
         void OnDestroy()
         {
             if (store != null) store.Changed -= Refresh;
+            StarShopClient.Changed -= Refresh;
         }
     }
 

@@ -22,6 +22,7 @@ import { createReportsRouter } from '../domains/reports/reportsRoutes';
 import { createRaidRouter } from '../domains/raids/raidRoutes';
 import { createQuestRouter } from '../domains/quests/questRoutes';
 import { createShopRouter } from '../domains/shop/shopRoutes';
+import { createStarshopRouter } from '../domains/starshop/starshopRoutes';
 import { createSystemRouter } from '../domains/system/systemRoutes';
 
 export function createRouter(): Router {
@@ -36,6 +37,7 @@ export function createRouter(): Router {
   r.use(createGatheringRouter());
   r.use(createQuestRouter());
   r.use(createShopRouter());
+  r.use(createStarshopRouter()); // 캐시샵(별조각 뽑기·교환)
   r.use(createEnhanceRouter());
   r.use(createInventoryRouter());
   r.use(createDungeonRouter());

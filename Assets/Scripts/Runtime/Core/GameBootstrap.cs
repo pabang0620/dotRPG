@@ -37,7 +37,7 @@ namespace DotRPG
             Game.Settings.Apply();
 
             Game.Saves = new SaveSystem();
-            Game.Cosmetics = new CosmeticStore(new UnavailableCommerceProvider());
+            Game.Cosmetics = new CosmeticStore(new StarShopProvider()); // 별조각 캐시샵(서버)
             Game.Session = new GameSession();
             Game.Session.ResetForNewGame(cfg);
             Game.Art = new SpriteLibrary(cfg.pixelsPerUnit);
