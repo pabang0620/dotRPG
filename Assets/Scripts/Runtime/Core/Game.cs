@@ -33,5 +33,12 @@ namespace DotRPG
 
         /// <summary>True while the player has control of the character.</summary>
         public static bool IsPlaying => State != null && State.Current == GameState.Playing;
+
+        /// <summary>Online sessions cannot pause a shared world from a local menu.</summary>
+        public static bool IsOnlineWorld => OnlineSession.Playing || PartyNet.Active || NetPresence.Instance != null;
+
+        /// <summary>Simulation continues behind online menus; local input still uses IsPlaying.</summary>
+        public static bool IsWorldRunning => State != null && (IsPlaying || (IsOnlineWorld &&
+            (State.Current is GameState.Paused or GameState.Inventory or GameState.Dialogue)));
     }
 }

@@ -182,7 +182,14 @@ namespace DotRPG
             return e;
         }
 
-        static EnemyController SpawnDef(MonsterDef def, Vector2 pos, Transform parent, float hpMul, float dmgMul, int level)
+        public static EnemyController SpawnField(string id, Vector2 pos, Transform parent, int level, int xp)
+        {
+            var def = (Get(id == "skeleton" ? Warrior : id) ?? Get(Warrior)).Clone();
+            if (id == "skeleton") { def.id = "skeleton"; def.name = "해골"; }
+            return SpawnDef(def, pos, parent, 1f, 1f, level, xp);
+        }
+
+        static EnemyController SpawnDef(MonsterDef def, Vector2 pos, Transform parent, float hpMul, float dmgMul, int level, int xpOverride = -1)
         {
             level = Mathf.Max(1, level);
             var stats = ScriptableObject.CreateInstance<EnemyStats>();
@@ -204,7 +211,7 @@ namespace DotRPG
             stats.windupTime = def.windup;
             stats.recoverTime = def.recover;
             stats.attackKnockback = def.attackKnockback;
-            stats.xpReward = Mathf.RoundToInt(def.xp * (1f + XpPerLevel * (level - 1)));
+            stats.xpReward = xpOverride >= 0 ? xpOverride : Mathf.RoundToInt(def.xp * (1f + XpPerLevel * (level - 1)));
             var enemy = EnemyController.Create(stats, def.look, pos, parent);
             enemy.ApplyDefinition(def, level, hpMul, dmgMul, NextSeed(def.id));
             return enemy;

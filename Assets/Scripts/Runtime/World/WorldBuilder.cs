@@ -85,8 +85,10 @@ namespace DotRPG
         string LoadText(MapInfo info)
         {
             if (info.id == MapRegistry.Village && config.worldMap != null) return config.worldMap.text;
+            var generated = HuntingGrounds.Layout(info.id);
+            if (generated != null) return generated;
             var asset = Resources.Load<TextAsset>(info.resource);
-            if (asset != null) return asset.text;
+            if (asset != null) return HuntingGrounds.AdaptTownLayout(info.id, asset.text);
             Debug.LogWarning($"[dotRPG] Map '{info.resource}' not found; using the fallback layout.");
             return FallbackMap;
         }
@@ -139,6 +141,7 @@ namespace DotRPG
         public Vector2 ArrivalFrom(string fromMap, out Facing facing)
         {
             facing = Facing.Down;
+            if (MapId == MapRegistry.Winter && fromMap == "winter_peak") fromMap = "winter_edge";
             if (string.IsNullOrEmpty(fromMap) || !portalCells.TryGetValue(fromMap, out var list) || list.Count == 0)
                 return PlayerSpawn;
             Vector2 sum = Vector2.zero;
@@ -252,7 +255,9 @@ namespace DotRPG
             {
                 var spawner = new GameObject("SkeletonSpawner").AddComponent<EnemySpawner>();
                 spawner.transform.SetParent(objectsRoot, false);
-                spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
+                var zone = HuntingGrounds.Get(MapId);
+                if (zone != null) spawner.SetupField(zone, skeletonSpawns);
+                else spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
             }
             if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();
             ApplyDungeonTint(); // [DGNTERRAIN] darker mine / ice cave rooms (WorldBuilder.DungeonLook.cs)
@@ -986,7 +991,7 @@ namespace DotRPG
             if (sharp == null) return;
             float basePpu = config.pixelsPerUnit + 0.5f;
             foreach (var sr in objectsRoot.GetComponentsInChildren<SpriteRenderer>(true))
-                if (sr.sprite != null && !VillageNatureArt.IsGenerated(sr.sprite) && sr.sprite.pixelsPerUnit > basePpu && sr.sharedMaterial != FxMaterials.Additive)
+                if (sr.sprite != null && !VillageNatureArt.IsGenerated(sr.sprite) && !sr.sprite.name.StartsWith(WinterVillageArt.Prefix) && sr.sprite.pixelsPerUnit > basePpu && sr.sharedMaterial != FxMaterials.Additive)
                     sr.sharedMaterial = sharp;
         }
 
@@ -1054,8 +1059,8 @@ namespace DotRPG
                 case 'O': HdTree($"town_fruit_{rng.Next(0, 2)}", foot + Jitter(0.2f), 0.6f); return true;
                 case 'Y': HdTree($"town_pine_{rng.Next(0, 2)}", foot + Jitter(0.3f), 0.5f); return true;
                 case 'q': HdTree($"town_dead_{rng.Next(0, 2)}", foot, 0.5f); return true;
-                case 't': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village); return true;
-                case 'R': ResourceNode.Create(ResourceKind.Rock, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village); return true;
+                case 't': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village || HuntingGrounds.Get(MapId) != null); return true;
+                case 'R': ResourceNode.Create(ResourceKind.Rock, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village || HuntingGrounds.Get(MapId) != null); return true;
                 case 'S': StaticProp("Stump", "town_stump", foot, new Vector2(0.8f, 0.45f), new Vector2(0f, 0.2f)); return true;
                 case 'B': StaticProp("Bush", $"town_bush_{rng.Next(0, 3)}", foot, new Vector2(0.95f, 0.45f), new Vector2(0f, 0.22f)); return true;
                 case 'r': Decoration($"town_pebbles_{rng.Next(0, 2)}", center + new Vector2(0f, -0.25f)); return true;

@@ -4,8 +4,34 @@ namespace DotRPG
 {
     public partial class WorldBuilder
     {
-        string NatureKey(string key, Vector2 foot, bool forestEdge = false) =>
-            MapId == MapRegistry.Village ? VillageNatureArt.Resolve(key, foot, forestEdge) : key;
+        string NatureKey(string key, Vector2 foot, bool forestEdge = false)
+        {
+            if (MapId == MapRegistry.Village) return VillageNatureArt.Resolve(key, foot, forestEdge);
+            int hash = unchecked(Mathf.FloorToInt(foot.x) * 73856093 ^ Mathf.FloorToInt(foot.y) * 19349663) & int.MaxValue;
+            if (Winter)
+            {
+                string winter = null;
+                if (key.StartsWith("wnt_tree_") || key.StartsWith("snow_tree_")) winter = hash % 3 == 0 ? "pine" : "broadleaf";
+                else if (key.StartsWith("wnt_pine_") || key.StartsWith("snow_pine_")) winter = hash % 3 == 0 ? "pine" : "fir";
+                else if (key.StartsWith("wnt_rock_")) winter = "rock";
+                else if (key.StartsWith("wnt_fence_"))
+                {
+                    int.TryParse(key.Substring("wnt_fence_".Length), out int mask);
+                    winter = (mask & 3) != 0 || mask == 0 ? "fence_h" : "fence_v";
+                }
+                else if (key == "wnt_house") winter = "house";
+                else if (key == "wnt_barn") winter = "barn";
+                else if (key == "wnt_gate") winter = "gate";
+                if (winter != null && WinterVillageArt.Get(WinterVillageArt.Prefix + winter) != null) return WinterVillageArt.Prefix + winter;
+            }
+            if (HuntingGrounds.Get(MapId) != null || Canyon)
+            {
+                if (key.StartsWith("town_pine_")) return VillageNatureArt.Prefix + (hash % 2 == 0 ? "pine" : "pine_layered");
+                if (key.StartsWith("town_tree_")) return VillageNatureArt.Prefix + (Canyon ? (hash % 3 == 0 ? "golden" : "pine_layered") : new[] { "broadleaf", "oak_round", "pine_layered", "pine" }[hash % 4]);
+                return VillageNatureArt.Resolve(key);
+            }
+            return key;
+        }
 
         void DecorateVillageNature()
         {

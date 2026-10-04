@@ -208,7 +208,7 @@ namespace DotRPG
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
-            if (Game.World.MapId == MapRegistry.Village)
+            if (Game.World.MapId == HuntingGrounds.HomeOf(Game.World.MapId))
             {
                 GameEvents.RaiseToast("이미 마을에 있다.");
                 Game.Audio.PlaySfx("cancel");
@@ -234,7 +234,7 @@ namespace DotRPG
             while (!Game.IsPlaying || transitioning) yield return null;
             readingScroll = false;
             if (player.IsDead) yield break;
-            TravelTo(MapRegistry.Village, true);
+            TravelTo(HuntingGrounds.HomeOf(Game.World.MapId), true);
         }
 
         /// <summary>Text shown when saving is refused inside a dungeon.</summary>

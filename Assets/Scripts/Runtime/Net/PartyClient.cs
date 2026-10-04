@@ -301,7 +301,7 @@ namespace DotRPG
         public void FillAi(Action<bool, string> done) => Act("POST", "/match/fill-ai", null, (ok, msg) => { if (ok) Queued = false; done?.Invoke(ok, msg); });
 
         /// <summary>Leader: everyone is ready, go (the server issues the run and entry tokens).</summary>
-        public void Start(int aiCount, Action<bool, string> done)
+        public void StartRun(int aiCount, Action<bool, string> done)
         {
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["ai_count"] = Mathf.Clamp(aiCount, 0, 3) };
             Api.Post(Char + "/party/start", body, r =>

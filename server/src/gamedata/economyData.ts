@@ -182,15 +182,7 @@ const mapExtraSchema = z.looseObject({
   maps: z.array(
     z.looseObject({
       id: z.string().min(1),
-      fieldSpawns: z
-        .array(
-          z.looseObject({
-            monsterId: z.string(),
-            points: z.number().int().positive(),
-            monsterLevel: z.number().int().min(1).default(1),
-          }),
-        )
-        .default([]),
+      fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive(), level: z.number().int().min(1).max(40).default(1), xp: nonNegInt.optional(), respawnSeconds: z.number().positive().default(25) })).default([]),
       sharedField: z.boolean().optional(),
       scriptedSpawns: z
         .array(z.looseObject({ monsterId: z.string(), total: z.number().int().positive() }))
@@ -264,6 +256,7 @@ const dungeonsSchema = z.looseObject({
         })
         .optional(),
       clearXp: nonNegInt,
+      clearXpFloor: z.array(nonNegInt).length(4).default([0, 0, 0, 0]),
       xpMul: z.number().positive(),
       bossRoom: nonNegInt,
       openDays: z.array(z.string()),
@@ -290,7 +283,7 @@ export type { MonsterDef };
 export const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary'] as const;
 
 export interface MapExtra {
-  fieldSpawns: { monsterId: string; points: number; monsterLevel: number }[];
+  fieldSpawns: { monsterId: string; points: number; level: number; xp?: number; respawnSeconds: number }[];
   /** 파티 필드 세션을 만들 수 있는 맵(8단계). 데이터가 주지 않으면 fieldSpawns 유무로 본다 */
   sharedField: boolean;
   scriptedSpawns: { monsterId: string; total: number }[];

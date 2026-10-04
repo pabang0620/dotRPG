@@ -101,7 +101,7 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   }
 
   // 보상: 서버 데이터로만 계산한다(요청의 어떤 값도 쓰지 않는다)
-  const baseXp = monsterXp(eco, def, target.level);
+  const baseXp = target.xpOverride ?? monsterXp(eco, def, target.level);
   // 파티 세션의 레벨 격차 감쇠(활성 멤버 2명 이상). 0이 되지 않게 최소 1
   const xpf = target.field?.xpFactor ?? null;
   const xp = xpf !== null && baseXp > 0 ? Math.max(1, Math.round(baseXp * xpf)) : baseXp;

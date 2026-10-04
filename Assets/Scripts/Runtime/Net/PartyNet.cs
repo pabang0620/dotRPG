@@ -80,6 +80,7 @@ namespace DotRPG
             net.runId = run ?? "";
             net.mySlot = slot;
             Current = net;
+            Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
             if (t is RelayTransport relay) relay.HostChanged += net.OnRelayHostChanged;
@@ -154,6 +155,7 @@ namespace DotRPG
             var net = Current;
             if (net == null) return;
             Current = null;
+            Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
             if (net.transport is RelayTransport relay) relay.HostChanged -= net.OnRelayHostChanged;

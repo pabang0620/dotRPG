@@ -68,6 +68,13 @@ namespace DotRPG
         /// <summary>Hits never stagger / push it right now (definition flag or the behaviour's current action).</summary>
         public bool SuperArmorActive => Def != null && (Def.superArmor || (behaviour != null && behaviour.SuperArmorNow));
 
+        void OnDestroy()
+        {
+            // MonsterDatabase owns a per-spawn ScriptableObject. Repeated field respawns must release it.
+            // Legacy EnemyController.Create instances use shared assets and have no Def.
+            if (Def != null && stats != null) Destroy(stats);
+        }
+
         internal void ApplyDefinition(MonsterDef def, int level, float hpMul, float dmgMul, int seed)
         {
             Def = def;
@@ -253,7 +260,7 @@ namespace DotRPG
         // =============================== API for behaviours ===============================
 
         internal bool InChase => state == State.Chase;
-        internal bool CanAct => state != State.Dead && !IsFrozen && !IsStunned && !IsGroggy && Game.IsPlaying;
+        internal bool CanAct => state != State.Dead && !IsFrozen && !IsStunned && !IsGroggy && Game.IsWorldRunning;
         internal Vector2 Home => home;
         internal Facing MonsterFacing => facing;
         internal PlayerController MonsterTarget => Target;

@@ -57,7 +57,7 @@ namespace DotRPG
 
         void Update()
         {
-            if (Game.State != null && Game.State.Current != GameState.Playing) return;
+            if (Game.State != null && !Game.IsWorldRunning) return;
             if (target != null)
             {
                 if (target.IsDead || !target.isActiveAndEnabled) target = null;

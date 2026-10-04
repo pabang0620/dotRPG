@@ -444,8 +444,10 @@ describe('레벨 격차 감쇠(6.7)', () => {
   it('통합: 몬스터 레벨 20 필드에서 레벨 1 멤버는 경험치 x0.2, 레벨 12 멤버는 x0.64, 솔로는 감쇠 없음', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gd-'));
     for (const f of fs.readdirSync(DATA_DIR)) fs.copyFileSync(path.join(DATA_DIR, f), path.join(dir, f));
-    const maps = JSON.parse(fs.readFileSync(path.join(dir, 'maps.json'), 'utf8')) as { maps: { id: string; fieldSpawns: { monsterLevel?: number }[] }[] };
-    (maps.maps.find((m) => m.id === 'forest') as { fieldSpawns: { monsterLevel?: number }[] }).fieldSpawns[0]!.monsterLevel = 20;
+    const maps = JSON.parse(fs.readFileSync(path.join(dir, 'maps.json'), 'utf8')) as { maps: { id: string; fieldSpawns: { level?: number }[] }[] };
+    const spawn = (maps.maps.find((m) => m.id === 'forest') as { fieldSpawns: { level?: number; xp?: number }[] }).fieldSpawns[0]!;
+    spawn.level = 20;
+    delete spawn.xp; // 사냥터 고정 경험치 대신 레벨 공식으로 본다
     fs.writeFileSync(path.join(dir, 'maps.json'), JSON.stringify(maps));
     const high = buildApp({ GAME_DATA_DIR: dir });
     const eco = getGameData().economy;

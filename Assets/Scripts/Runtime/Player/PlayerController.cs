@@ -116,7 +116,7 @@ namespace DotRPG
             player.health.Changed += player.OnHealthChanged;
             player.skills = go.AddComponent<SkillCaster>();
             player.skills.Setup(player);
-            player.animator.Footstep += () => { if (Game.IsPlaying) Fx.Dust(player.Position); };
+            player.animator.Footstep += () => { if (Game.IsWorldRunning) Fx.Dust(player.Position); };
             return player;
         }
 
@@ -311,8 +311,9 @@ namespace DotRPG
 
         void Update()
         {
+            Command = ActorCommand.None;
             if (IsDead) return;
-            if (!Game.IsPlaying)
+            if (!Game.IsWorldRunning)
             {
                 CancelMobility();
                 body.SetVelocity(Vector2.zero);
@@ -328,6 +329,8 @@ namespace DotRPG
             if (Data.Mana < maxMp) Data.Mana = Mathf.Min(maxMp, Data.Mana + st.ManaRegen * Time.deltaTime);
 
             var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
+            // Consume/discard menu input so one-shot actions cannot leak out on resume.
+            if (IsLocal && (!Game.IsPlaying || Game.State.ChangedThisFrame)) cmd = ActorCommand.None;
             Command = cmd;
             if (NetDriven) { NetUpdate(cmd); return; } // [PARTY NET] position from the network
             // Mobility owns the pose and movement until the dash ends; a successful blink
@@ -354,7 +357,7 @@ namespace DotRPG
 
             // Ignore action buttons on the frame a menu/dialogue closed, so the same press
             // doesn't immediately trigger an attack or re-open the conversation.
-            if (!stunned && !channeling && !Game.State.ChangedThisFrame)
+            if (!stunned && !channeling && (!IsLocal || !Game.State.ChangedThisFrame))
             {
                 bool acting = cmd.attack || cmd.skillSlot >= 0;
                 if (acting && cmd.faceAim && cmd.aim.sqrMagnitude > 0.0001f && !combat.IsAttacking && !skills.IsCasting)
@@ -392,11 +395,11 @@ namespace DotRPG
             if (mobilityBraking) { body.SetVelocity(Vector2.zero); mobilityBraking = false; }
             if (NetDriven)
             {
-                if (!IsDead && Game.IsPlaying) NetFixedStep();
+                if (!IsDead && Game.IsWorldRunning) NetFixedStep();
                 else body.SetVelocity(Vector2.zero);
                 return;
             }
-            if (IsDead || !Game.IsPlaying)
+            if (IsDead || !Game.IsWorldRunning)
             {
                 CancelMobility();
                 body.SetVelocity(Vector2.zero);

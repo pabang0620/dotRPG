@@ -101,7 +101,7 @@ namespace DotRPG
         {
             desiredVelocity = Vector2.zero;
             bool stunned = Time.time < knockbackUntil;
-            if (!NetPuppet && !stunned && !Game.State.ChangedThisFrame)
+            if (!NetPuppet && !stunned)
             {
                 bool acting = cmd.attack || cmd.skillSlot >= 0;
                 if (acting && cmd.aim.sqrMagnitude > 0.0001f && !combat.IsAttacking && !skills.IsCasting)

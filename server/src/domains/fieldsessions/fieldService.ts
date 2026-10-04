@@ -295,7 +295,7 @@ export function observeCap(mapId: string, windowMs: number): number {
   const margin = getConfig().policy.killSupplyMargin;
   let total = 0;
   for (const s of extra?.fieldSpawns ?? []) {
-    const respawn = data.economy.monsters.get(s.monsterId)?.respawnSeconds ?? 25;
+    const respawn = s.respawnSeconds ?? data.economy.monsters.get(s.monsterId)?.respawnSeconds ?? 25;
     total += Math.ceil(s.points * margin) * (windowMs / 1000 / respawn + 1);
   }
   return Math.ceil(total);

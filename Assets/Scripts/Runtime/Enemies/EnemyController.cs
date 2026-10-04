@@ -148,7 +148,7 @@ namespace DotRPG
             {
                 // [PARTY] Threat-based pick among the alive party members (just the local player without companions).
                 var p = Game.Party != null ? Game.Party.SelectTarget(this) : Game.Player;
-                return p != null && !p.IsDead && Game.IsPlaying ? p : null;
+                return p != null && !p.IsDead && Game.IsWorldRunning ? p : null;
             }
         }
 
@@ -169,7 +169,7 @@ namespace DotRPG
                 animator.Play(CharacterAnim.Hurt, facing);
                 return;
             }
-            if (!Game.IsPlaying)
+            if (!Game.IsWorldRunning)
             {
                 desiredVelocity = Vector2.zero;
                 animator.Play(CharacterAnim.Idle, facing);

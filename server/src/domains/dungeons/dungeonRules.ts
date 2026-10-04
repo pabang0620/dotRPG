@@ -54,7 +54,9 @@ export function scoreRun(
 
 /** DungeonRewards.ClearXp: round(clearXp * rewardMul * xpMul * (1 + 랭크보너스/100)) */
 export function clearXp(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, rank: number): number {
-  const xp = f32(f32(d.clearXp * diff.rewardMul) * d.xpMul);
+  const tier = d.isRaid ? 0 : Math.max(0, eco.dungeons.difficulties.findIndex((x) => x.monsterLevel === diff.monsterLevel));
+  const base = Math.max(f32(d.clearXp * diff.rewardMul), d.clearXpFloor[tier] ?? 0);
+  const xp = f32(base * d.xpMul);
   return roundHalfEven(f32(xp * f32(1 + xpBonusPercent(eco, rank) / 100)));
 }
 

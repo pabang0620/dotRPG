@@ -101,7 +101,7 @@ namespace DotRPG
         /// <summary>Clear XP: base × difficulty × specialty, plus the rank bonus.</summary>
         public static int ClearXp(DungeonDef dungeon, DifficultyDef diff, DungeonRank rank)
         {
-            float xp = dungeon.clearXp * diff.rewardMul * dungeon.xpMul;
+            float xp = Mathf.Max(dungeon.clearXp * diff.rewardMul, HuntingGrounds.DungeonClearFloor(dungeon, diff)) * dungeon.xpMul;
             return Mathf.RoundToInt(xp * (1f + DungeonRanking.XpBonusPercent(rank) / 100f));
         }
 

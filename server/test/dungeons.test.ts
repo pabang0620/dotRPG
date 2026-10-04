@@ -231,7 +231,7 @@ describe('던전 맥락의 처치 보고', () => {
 });
 
 describe('POST /characters/:id/dungeon-runs/:run_id/result', () => {
-  it('클리어: 서버가 랭크·경험치·카드를 정한다(점수 94 -> SS, 경험치 120 x 1.4 = 168 + 처치 경험치)', async () => {
+  it('클리어: 서버가 랭크·경험치·카드를 정한다(점수 94 -> SS, 필드 대비 보정 1102 x 1.4 = 1543 + 처치 경험치)', async () => {
     const h = await newHero(app);
     const id = await playFullRun(h);
     const before = await getPool().query('SELECT level, xp FROM characters WHERE id = $1', [h.dbId]);
@@ -240,7 +240,7 @@ describe('POST /characters/:id/dungeon-runs/:run_id/result', () => {
     expect(res.body.data).toMatchObject({
       result: 'cleared',
       rank: 'SS',
-      granted_xp: 168,
+      granted_xp: 1543,
       card_count: 4,
       score: { time: 40, hits: 24, kills: 10, combo: 20, revive_penalty: 0, total: 94 },
     });
@@ -248,7 +248,7 @@ describe('POST /characters/:id/dungeon-runs/:run_id/result', () => {
     const after = await getPool().query('SELECT level, xp FROM characters WHERE id = $1', [h.dbId]);
     expect(after.rows[0]).not.toEqual(before.rows[0]);
     const xl = await getPool().query("SELECT delta FROM xp_ledger WHERE character_id = $1 AND reason = 'dungeon_clear'", [h.dbId]);
-    expect(xl.rows).toEqual([{ delta: 168 }]);
+    expect(xl.rows).toEqual([{ delta: 1543 }]);
     // 해금: 난이도 1이 열린다
     const list = await get(app, h, '/dungeons');
     const gold = list.body.data.dungeons.find((d: { id: string }) => d.id === 'gold_vein');

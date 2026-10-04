@@ -28,7 +28,7 @@ namespace DotRPG
         {
             if (cache.TryGetValue(key, out var sprite)) return sprite;
 
-            sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            sprite = WinterVillageArt.Get(key) ?? Resources.Load<Sprite>(OverrideFolder + key);
             var building = VillageBuildingArt.Find(key);
             if (sprite == null && building != null) sprite = Resources.Load<Sprite>(building.ResourcePath);
             var nature = VillageNatureArt.Find(key);

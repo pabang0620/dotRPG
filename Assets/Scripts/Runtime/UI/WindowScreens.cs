@@ -164,15 +164,17 @@ namespace DotRPG
                 d.anchoredPosition = Place(p);
                 exits.Add(d);
             }
-            var sb = new StringBuilder("<size=26><b>지역</b></size>\n\n");
+            var sb = new StringBuilder("<size=24><b>지역 · 권장 레벨</b></size>\n");
             foreach (var m in MapRegistry.All)
             {
                 bool here = world.MapId == m.id;
                 // The current map's line keeps only the location marker, so it never wraps; the others show safe / monster.
-                string tag = m.safe ? "  <color=#8fe28f>(안전 지역)</color>" : "  <color=#ff9f7a>(몬스터 출현)</color>";
-                sb.Append(here ? $"<color=#ffe066>▶ {m.displayName}  (현재 위치)</color>\n" : $"<color=#00000000>▶</color> {m.displayName}{tag}\n");
+                var zone = HuntingGrounds.Get(m.id);
+                string tag = zone != null ? $" <color=#ffb58a>Lv.{zone.minLevel}~{zone.maxLevel}</color>" : " <color=#8fe28f>마을</color>";
+                string name = m.id == MapRegistry.Village ? "작은 마을" : m.displayName;
+                sb.Append(here ? $"<color=#ffe066>▶ {name}</color>{tag}\n" : $"  {name}{tag}\n");
             }
-            sb.Append("<color=#00000000>▶</color> <color=#8c96a8>눈 덮인 봉우리  (잠김)</color>\n\n");
+            sb.Append("\n");
             sb.Append((world.Map?.hint ?? "") + "\n\n");
             sb.Append("<color=#78dcff>●</color> 나    <color=#ffd34a>●</color> 출구\n");
             regions.text = sb.ToString();

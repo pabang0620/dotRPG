@@ -60,7 +60,7 @@ namespace DotRPG
             var me = Game.Player;
             if (me == null || !SyncActive) return;
             // Buttons go out the frame they are pressed; plain movement at 20 Hz.
-            var cmd = me.Command;
+            var cmd = Game.IsPlaying && !Game.State.ChangedThisFrame && !me.IsDead ? me.Command : ActorCommand.None;
             bool buttons = cmd.attack || cmd.skillSlot >= 0 || cmd.mobility || cmd.useHealing || cmd.useMana;
             stateTimer -= Time.unscaledDeltaTime;
             if (buttons || stateTimer <= 0f) NetCommandRouter.SendCommand(transport, HostPeer, mySlot, cmd, ++commandTick);
@@ -266,7 +266,10 @@ namespace DotRPG
                     if (puppets.ContainsKey(id)) continue;
                     // [8] Field skeletons have no monster table entry: build them like the field spawner does.
                     var spawner = EnemySpawner.Current;
-                    var e = FieldMode && MonsterDatabase.Get(monster) == null && spawner != null
+                    // [HUNT] Hunting zones mix kinds at the zone's level: draw them exactly as the zone spawns them.
+                    var e = FieldMode && spawner != null && spawner.Zone != null
+                        ? MonsterDatabase.SpawnField(monster, pos, spawner.transform, level, spawner.Zone.KillXp)
+                        : FieldMode && MonsterDatabase.Get(monster) == null && spawner != null && spawner.Stats != null
                         ? EnemyController.Create(spawner.Stats, spawner.Look, pos, spawner.transform)
                         : summon
                             ? MonsterDatabase.SpawnMinion(monster, pos, Game.World.ObjectsRoot, null)
