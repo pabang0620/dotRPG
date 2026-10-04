@@ -27,6 +27,9 @@ namespace DotRPG
 
         /// <param name="key">The run key from the server (null = development, no token check).</param>
         /// <param name="humanCount">People in the run (their seats are 0..n-1; AI seats follow).</param>
+        /// <summary>[AI] Party dungeon: how many of the host's own mercenaries take the free seats (the run's ai_count).</summary>
+        public int AiSeats = -1;
+
         public static PartyNet BeginHost(ITransport t, string run, int slot, byte[] key, int humanCount)
         {
             var net = Create(t, true, run, slot);
@@ -52,15 +55,56 @@ namespace DotRPG
             bySlot.Clear();
             foreach (var kv in keep) bySlot[kv.Key] = kv.Value;
             bySlot[mySlot] = party.Local;
-            int aiSlot = humans;
+            // [AI] Field: people sit in the seats the session gave them, the AI take whatever is left.
+            int aiSlot = FieldMode ? 0 : humans;
             foreach (var m in party.Members)
             {
                 if (m == null || m == party.Local || party.IsNetMember(m)) continue;
-                while (bySlot.ContainsKey(aiSlot)) aiSlot++;
+                while (bySlot.ContainsKey(aiSlot) || (FieldMode && fieldHumanSeats.Contains(aiSlot))) aiSlot++;
                 if (aiSlot >= PartyManager.MaxMembers) break;
                 bySlot[aiSlot++] = m;
             }
             foreach (var kv in bySlot) HookBody(kv.Key, kv.Value);
+        }
+
+        // ---------------- [AI] field seats ----------------
+
+        /// <summary>Seats the field session gave people (this PC's included). The host's AI fill the others.</summary>
+        readonly HashSet<int> fieldHumanSeats = new HashSet<int>();
+
+        /// <summary>Field host: the session's people. Called at start and whenever someone joins or leaves.</summary>
+        public void SetFieldHumanSeats(IEnumerable<int> seats)
+        {
+            fieldHumanSeats.Clear();
+            foreach (int s in seats) fieldHumanSeats.Add(s);
+            fieldHumanSeats.Add(mySlot);
+            ApplyFieldSeats();
+        }
+
+        /// <summary>
+        /// Puts as many of the host's mercenaries out as there are free seats and tells the members which AI
+        /// seats appeared (MemberJoined) or went (SeatFreed), so every screen shows the same party.
+        /// </summary>
+        void ApplyFieldSeats()
+        {
+            var party = Game.Party;
+            if (!host || !FieldMode || party == null) return;
+            var before = new Dictionary<int, PlayerController>();
+            foreach (var kv in bySlot)
+                if (kv.Value != null && kv.Value != party.Local && !party.IsNetMember(kv.Value)) before[kv.Key] = kv.Value;
+            party.SetCompanionCap(Mathf.Max(0, PartyManager.MaxMembers - fieldHumanSeats.Count));
+            RebuildHostSlots();
+            foreach (var kv in before)
+                if (!bySlot.TryGetValue(kv.Key, out var now) || now != kv.Value)
+                    Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.SeatFreed); w.Write((byte)kv.Key); }));
+            foreach (var kv in bySlot)
+            {
+                var m = kv.Value;
+                if (m == null || m == party.Local || party.IsNetMember(m)) continue;
+                if (before.TryGetValue(kv.Key, out var was) && was == m) continue;
+                var card = MemberCard.Of(m, kv.Key, "");
+                Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.MemberJoined); card.Write(w); }));
+            }
         }
 
         // ---------------- [8] field credit ----------------
@@ -86,7 +130,9 @@ namespace DotRPG
         /// <summary>Credited kills per seat since the last observe report (then reset).</summary>
         public Dictionary<int, int> TakeCredits()
         {
-            var copy = new Dictionary<int, int>(creditedKills);
+            var copy = new Dictionary<int, int>();
+            // [AI] Only people earn field credit on the server; kills of the host's AI already count for the host nearby.
+            foreach (var kv in creditedKills) if (!FieldMode || fieldHumanSeats.Contains(kv.Key)) copy[kv.Key] = kv.Value;
             creditedKills.Clear();
             return copy;
         }
@@ -191,6 +237,8 @@ namespace DotRPG
             peerSlot[peer] = slot;
             humanCards[slot] = card;
 
+            // [AI] A person takes a seat an AI was holding: the AI steps out first.
+            if (FieldMode && !fieldHumanSeats.Contains(slot)) { fieldHumanSeats.Add(slot); ApplyFieldSeats(); }
             var copy = MemberAt(slot);
             if (copy == null && Game.Party != null)
             {
@@ -259,6 +307,8 @@ namespace DotRPG
                     Game.Party?.RemoveNetMember(gone);
                     bySlot.Remove(slot);
                     remoteInputs.Remove(slot);
+                    fieldHumanSeats.Remove(slot);
+                    ApplyFieldSeats(); // [AI] an AI takes the seat back
                 }
                 string who = humanCards.TryGetValue(slot, out var c) ? c.name : "파티원";
                 GameEvents.RaiseToast($"{who}님 연결 끊김");
@@ -375,6 +425,8 @@ namespace DotRPG
         public void HostRunStarted(string dungeonId, DungeonDifficulty difficulty)
         {
             Game.Party?.SetRosterHidden(false);
+            // [AI] Exactly the run's AI seats from the host's own roster (the server checks the AI count).
+            if (AiSeats >= 0) Game.Party?.SetCompanionCap(Mathf.Clamp(AiSeats, 0, PartyManager.MaxMembers - humans));
             RebuildHostSlots();
             slotStats.Clear();
             Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.RunStart); w.Write(dungeonId); w.Write((byte)difficulty); }));

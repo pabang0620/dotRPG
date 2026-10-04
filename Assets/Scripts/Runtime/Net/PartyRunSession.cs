@@ -109,7 +109,7 @@ namespace DotRPG
             if (!amHost && string.IsNullOrEmpty(entryToken)) return;
             var t = BuildTransport();
             if (t == null) return;
-            if (amHost) PartyNet.BeginHost(t, runId, mySlot, hostKey, Mathf.Max(1, humans));
+            if (amHost) PartyNet.BeginHost(t, runId, mySlot, hostKey, Mathf.Max(1, humans)).AiSeats = aiCount;
             else PartyNet.BeginMember(t, runId, mySlot, OnlineSession.Current?.ActiveCharacter, entryToken);
         }
 

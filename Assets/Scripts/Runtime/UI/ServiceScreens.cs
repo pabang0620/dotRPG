@@ -125,6 +125,8 @@ namespace DotRPG
         int selected, page;
         bool dirty;
         readonly List<string> entries = new List<string>();
+        BulkSellPanel bulk;
+        Button bulkBtn;
 
         public static ShopScreen Create(Transform canvas)
         {
@@ -196,6 +198,10 @@ namespace DotRPG
             w.buyMany = Button(right.transform, "Many", "10개 구매", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(6f, 18f), new Vector2(214f, 62f), () => w.Trade(w.selling ? int.MaxValue : 10), 26);
             w.buyOneLabel = w.buyOne.GetComponentInChildren<Text>();
             w.buyManyLabel = w.buyMany.GetComponentInChildren<Text>();
+            // 일괄 판매 (sell tab): kinds ticked once are remembered.
+            w.bulkBtn = Button(left.transform, "Bulk", "일괄 판매", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(360f, -12f), new Vector2(170f, 50f), () => w.bulk.Open(), 22);
+            w.bulk = BulkSellPanel.Create(w.content, () => w.dirty = true);
+            w.bulkBtn.gameObject.SetActive(false);
             return w;
         }
 
@@ -230,6 +236,8 @@ namespace DotRPG
         {
             if (selling == sell) return;
             selling = sell;
+            bulkBtn.gameObject.SetActive(sell);
+            if (!sell) bulk.gameObject.SetActive(false);
             selected = 0;
             page = 0;
             result.text = "";

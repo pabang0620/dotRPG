@@ -16,9 +16,9 @@ namespace DotRPG
         // ---------- Tuning ----------
         public const float TeleportDistance = 12f, StuckSeconds = 2f;
         /// <summary>Monsters this close to the companion are engaged even if nobody fights them yet.</summary>
-        public const float EngageRadius = 7f;
+        public const float EngageRadius = 4.9f; // 7 -> 4.9: they ran at monsters far away (playtest)
         /// <summary>Monsters further than this from the leader are left alone (don't run off).</summary>
-        public const float LeashFromLeader = 10f;
+        public const float LeashFromLeader = 7f; // 10 -> 7 with the engage radius
         /// <summary>Mages keep between these distances from their target.</summary>
         public const float MageMinRange = 3f, MageMaxRange = 5f;
         /// <summary>Warriors close in to this distance (sword reach).</summary>

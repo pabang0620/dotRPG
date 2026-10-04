@@ -323,6 +323,16 @@ namespace DotRPG
             Act("POST", "/party/invites", new Dictionary<string, object> { ["target"] = characterId }, done);
         }
 
+        /// <summary>Invite by character name (typed in the party window). With no party yet the server makes a private one.</summary>
+        public void InviteByName(string name, Action<bool, string> done)
+        {
+            Act("POST", "/party/invites", new Dictionary<string, object> { ["target_name"] = name }, done);
+        }
+
+        /// <summary>Leader: change the party's dungeon / difficulty (raids use difficulty 0).</summary>
+        public void SetTarget(string dungeonId, DungeonDifficulty difficulty, Action<bool, string> done) =>
+            Act("PATCH", "/party", new Dictionary<string, object> { ["dungeon_id"] = dungeonId, ["difficulty"] = (int)difficulty }, done, withRequestId: false);
+
         /// <summary>An invite arrived (socket push or the poll's invites_incoming): ask once.</summary>
         public void OnInvite(Dictionary<string, object> invite)
         {

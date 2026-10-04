@@ -3,7 +3,8 @@ import { getConfig } from '../../config/env';
 import { afterCommit, getPool, isUniqueViolation } from '../../db/pool';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
-import { findCharacterByUuid } from '../chat/chatRepository';
+import { getGameData } from '../../gamedata/loader';
+import { findAliveByName, findCharacterByUuid } from '../chat/chatRepository';
 import { getNotifier, registry } from '../chat/realtimeNotifier';
 import * as charRepo from '../characters/characterRepository';
 import * as dungeonRepo from '../dungeons/dungeonRepository';
@@ -25,6 +26,38 @@ const isBlocked = async (blocker: number, blocked: number): Promise<boolean> =>
 
 // ---------- I1 ----------
 
+/** 초대로 시작하는 파티: 오늘 방장이 들어갈 수 있는 첫 던전(일반 난이도)을 목적지로, 게시판에는 올리지 않는다 */
+async function createPrivateParty(ctx: Parameters<Parameters<typeof runParty>[0]['handler']>[0]): Promise<partyRepo.PartyRow> {
+  await ensureFree(ctx);
+  const dungeons = [...getGameData().economy.dungeons.byId.values()].filter((d) => !d.isRaid);
+  let target = dungeons[0];
+  for (const d of dungeons) {
+    try {
+      await checkEntry(ctx.client, ctx.char, d.id, 0, ctx.now);
+      target = d;
+      break;
+    } catch (err) {
+      if (!(err instanceof AppError)) throw err;
+    }
+  }
+  if (!target) throw new AppError(500, '던전 데이터가 없습니다.', 'NO_DUNGEON');
+  const created = await partyRepo.insertParty(ctx.client, {
+    leaderId: ctx.char.id,
+    dungeonId: target.id,
+    difficulty: 0,
+    maxMembers: Math.min(4, target.maxParty),
+    minPower: 0,
+    message: '',
+    source: 'board',
+    listed: false,
+    listedUntil: null,
+    startBy: null,
+    now: ctx.now,
+  });
+  await partyRepo.insertMember(ctx.client, created.id, ctx.char.id, ctx.char.accountId, true, ctx.now);
+  return (await partyRepo.lockParty(ctx.client, created.id)) as partyRepo.PartyRow;
+}
+
 export function sendInvite(accountId: number, characterUuid: string, body: InviteBodyIn): Promise<StoredResult> {
   const cfg = getConfig().social;
   return runParty({
@@ -32,16 +65,17 @@ export function sendInvite(accountId: number, characterUuid: string, body: Invit
     characterUuid,
     endpoint: 'POST /characters/:uuid/party/invites',
     requestId: body.request_id,
-    payload: { target: body.target },
+    payload: { target: body.target ?? null, target_name: body.target_name ?? null },
     handler: async (ctx) => {
       const client = ctx.client;
       const partyId = await partyRepo.findPartyIdOf(client, ctx.char.id);
-      const party = partyId === null ? null : await partyRepo.lockParty(client, partyId);
-      if (!party || party.state === 'closed') throw new AppError(404, '속한 파티가 없습니다.', 'NOT_IN_PARTY');
+      let party = partyId === null ? null : await partyRepo.lockParty(client, partyId);
+      // 파티가 없으면 초대하면서 비공개 파티(모집 글 없음)를 만든다. 목적 던전은 방장이 파티 창에서 바꾼다
+      if (!party || party.state === 'closed') party = await createPrivateParty(ctx);
       if (party.leader_character_id !== ctx.char.id) throw new AppError(403, '방장만 할 수 있습니다.', 'NOT_LEADER');
       if (party.state !== 'forming') throw new AppError(409, '지금은 바꿀 수 없습니다.', 'PARTY_BUSY');
 
-      const target = await findCharacterByUuid(client, body.target);
+      const target = body.target !== undefined ? await findCharacterByUuid(client, body.target) : await findAliveByName(body.target_name as string);
       if (!target || target.deleted) throw new AppError(404, '모험가를 찾을 수 없습니다.', 'PLAYER_NOT_FOUND');
       if (target.id === ctx.char.id || target.account_id === accountId) throw new AppError(422, '자기 자신에게는 할 수 없습니다.', 'CANNOT_TARGET_SELF');
 
@@ -129,7 +163,7 @@ export function respondInvite(accountId: number, characterUuid: string, p: Invit
       await ensureFree(ctx);
       const members = await partyRepo.activeMembers(client, party.id);
       if (members.length >= party.max_members) throw new AppError(409, '정원이 찼습니다.', 'PARTY_FULL');
-      await checkEntry(client, ctx.char, party.dungeon_id, party.difficulty, ctx.now);
+      // 던전 입장 자격(오늘 횟수, 난이도 해금)은 보지 않는다: 초대 파티는 필드 사냥만 같이 할 수도 있고, 출발(start) 때 다시 본다
       const power = await powerOf(client, ctx.char.id, ctx.char.class, ctx.char.level);
       if (power < party.min_power) throw new AppError(422, '전투력이 부족합니다.', 'POWER_TOO_LOW', { need: party.min_power, have: power });
       await client.query('SAVEPOINT invite_join');

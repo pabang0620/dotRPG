@@ -196,15 +196,17 @@ export async function closeParty(
 export async function patchParty(
   client: PoolClient,
   partyId: number,
-  p: { listed?: boolean; listedUntil?: Date | null; message?: string; minPower?: number; maxMembers?: number },
+  p: { listed?: boolean; listedUntil?: Date | null; message?: string; minPower?: number; maxMembers?: number; dungeonId?: string; difficulty?: number },
 ): Promise<void> {
   await client.query(
     `UPDATE parties SET listed = COALESCE($2, listed),
                         listed_until = CASE WHEN $3::boolean THEN $4 ELSE listed_until END,
                         message = COALESCE($5, message), min_power = COALESCE($6, min_power),
-                        max_members = COALESCE($7, max_members)
+                        max_members = COALESCE($7, max_members),
+                        dungeon_id = COALESCE($8, dungeon_id), difficulty = COALESCE($9, difficulty)
       WHERE id = $1`,
-    [partyId, p.listed ?? null, p.listedUntil !== undefined, p.listedUntil ?? null, p.message ?? null, p.minPower ?? null, p.maxMembers ?? null],
+    [partyId, p.listed ?? null, p.listedUntil !== undefined, p.listedUntil ?? null, p.message ?? null, p.minPower ?? null, p.maxMembers ?? null,
+      p.dungeonId ?? null, p.difficulty ?? null],
   );
 }
 

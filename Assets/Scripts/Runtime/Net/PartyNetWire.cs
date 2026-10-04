@@ -14,7 +14,8 @@ namespace DotRPG
         // Event (reliable, one ordered stream so a room change always precedes that room's spawns)
         public const byte EnemySpawn = 1, EnemyDie = 2, Damage = 3, Act = 4, RoomCleared = 5, Heal = 6,
             RoomLoad = 7, RunEnd = 8, MemberJoined = 9, MemberLeft = 10, RunStart = 11,
-            CardUpdate = 13; // [8] a member's level / gear / passives changed (member -> host, host -> others)
+            CardUpdate = 13, // [8] a member's level / gear / passives changed (member -> host, host -> others)
+            SeatFreed = 14; // [AI] host -> members: this seat's AI is gone (a person took the seat). Body: seat byte
     }
 
     /// <summary>

@@ -45,8 +45,8 @@ namespace DotRPG
     public static class MercenaryDatabase
     {
         // ---------- Tuning ----------
-        /// <summary>Companion damage as a fraction of a same-level player's (plan: 60–70%).</summary>
-        public const float DamageScale = 0.65f;
+        /// <summary>Companion damage as a fraction of a same-level player's (0.65 -> 0.585: 10% down, they were too strong in playtest).</summary>
+        public const float DamageScale = 0.585f;
         /// <summary>Tank threat multiplier (other roles use 1).</summary>
         public const float TankThreat = 2.5f;
 

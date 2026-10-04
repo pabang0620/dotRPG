@@ -38,7 +38,8 @@ namespace DotRPG
             view.Add("menuicon_dungeon", "요일던전", () => Game.UI.Dungeon.Open(false)); // [DUNGEON] 던전 선택 window
             view.Add("menuicon_raid", "레이드", () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
             // [PARTY] Online with a server party: the lobby; otherwise the mercenary party window.
-            view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(PartyClient.Instance != null && PartyClient.Instance.InParty ? (WindowScreen)PartyLobbyScreen.Instance : Game.UI.Party));
+            // [AI] Online the party window is one place: people, the AI who fill free seats, invites and the AI roster button.
+            view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (WindowScreen)PartyLobbyScreen.Instance : Game.UI.Party));
             view.Add("menuicon_finder", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
             view.Add("menuicon_cosmetics", "외형 상점", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));

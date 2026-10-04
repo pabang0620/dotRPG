@@ -33,6 +33,7 @@ namespace DotRPG
             if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
             if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
             else if (state == GameState.Playing && Game.Input.InventoryPressed) OpenInventory();
+            else if (state == GameState.Playing && Game.Input.MapPressed) OpenWindow(Game.UI.WorldMap); // M: big map
         }
 
         public void OpenInventory() => OpenWindow(null);

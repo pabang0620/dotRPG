@@ -122,10 +122,11 @@ namespace DotRPG
             var t = CombatTransportFactory.Create(transportInfo);
             if (t == null) { GameEvents.RaiseToast("파티원과 연결할 수 없어 혼자 사냥한다."); Leave(); EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Local); return; }
             OnlineEconomy.FieldSessionId = sessionId;
-            Game.Party?.SetRosterHidden(true); // AI companions sit out while people hunt together
+            // [AI] The host's companions fill the seats people leave free; members show those, not their own.
+            Game.Party?.SetRosterHidden(!amHost);
             if (amHost)
             {
-                PartyNet.BeginFieldHost(t, sessionId, seat, mapId);
+                PartyNet.BeginFieldHost(t, sessionId, seat, mapId).SetFieldHumanSeats(transportInfo.seats);
                 EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Host);
             }
             else
@@ -257,8 +258,8 @@ namespace DotRPG
                 if (e != null && e.Puppet) { e.ReleasePuppet(); released.Add(e); }
             EnemySpawner.Current?.TakeOver(released);
             transportInfo.amHost = true;
-            Game.Party?.SetRosterHidden(true);
-            PartyNet.BeginFieldHost(keep ?? CombatTransportFactory.Create(transportInfo), sessionId, seat, mapId);
+            Game.Party?.SetRosterHidden(false);
+            PartyNet.BeginFieldHost(keep ?? CombatTransportFactory.Create(transportInfo), sessionId, seat, mapId).SetFieldHumanSeats(transportInfo.seats);
             GameEvents.RaiseToast("이 사냥터의 몬스터 계산을 내가 이어받았다.");
         }
 

@@ -118,6 +118,31 @@ namespace DotRPG
 
         readonly HashSet<PlayerController> netMembers = new HashSet<PlayerController>();
         bool rosterHidden;
+        /// <summary>Most of this PC's own mercenaries in the world (-1 = the whole roster). An online party sets it to
+        /// the seats people leave free: AI fill the party, they never push it past four.</summary>
+        int companionCap = -1;
+
+        /// <summary>How many of the roster may be out (shared play: the free seats). -1 lifts the cap.</summary>
+        public void SetCompanionCap(int cap)
+        {
+            if (companionCap == cap) return;
+            companionCap = cap;
+            if (rosterHidden || Local == null) { Changed?.Invoke(); return; }
+            // Trim from the end of the roster, then bring roster members back up to the cap.
+            int ai = 0;
+            foreach (var id in Game.Session.PartyRoster)
+            {
+                var m = Find(id);
+                if (m == null) continue;
+                if (cap >= 0 && ai >= cap) Despawn(m);
+                else ai++;
+            }
+            if (LocalInWorld) OnLocalSpawned(false);
+            else Changed?.Invoke();
+        }
+
+        /// <summary>The roster members allowed out now, in roster order.</summary>
+        public int CompanionCap => companionCap;
 
         /// <summary>A member that came from the network (remote human on the host, puppet on a member PC).</summary>
         public bool IsNetMember(PlayerController m) => m != null && netMembers.Contains(m);
@@ -205,8 +230,15 @@ namespace DotRPG
                 if (!roster.Contains(m.Data.MercenaryId)) Despawn(m);
             }
             if (!rosterHidden)
+            {
+                int out_ = 0;
                 foreach (var id in roster)
+                {
+                    if (companionCap >= 0 && out_ >= companionCap) { if (Find(id) is PlayerController extra) Despawn(extra); continue; }
                     if (Find(id) == null && MercenaryDatabase.Get(id) != null) Spawn(MercenaryDatabase.Get(id), members.Count - 1);
+                    out_++;
+                }
+            }
             SyncCompanionLevels();
             // Everyone follows the local player to where it appeared.
             for (int i = 1; i < members.Count; i++)

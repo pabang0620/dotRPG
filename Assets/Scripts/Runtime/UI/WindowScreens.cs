@@ -111,7 +111,7 @@ namespace DotRPG
         {
             if (!TakesInput) return;
             var input = Game.Input;
-            if (input.InventoryPressed || input.CancelPressed)
+            if (input.InventoryPressed || input.CancelPressed || (input.MapPressed && this is WorldMapScreen))
             {
                 Game.Audio.PlaySfx("cancel");
                 Close();

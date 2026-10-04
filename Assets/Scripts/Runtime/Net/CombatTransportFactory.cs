@@ -19,14 +19,18 @@ namespace DotRPG
         /// <summary>The host's seat, and each seat's SteamID64 (Steam transport maps connections to seats).</summary>
         public int hostSeat;
         public readonly Dictionary<int, ulong> seatSteam = new Dictionary<int, ulong>();
+        /// <summary>Every member's seat (people only): the host's AI fill the other seats.</summary>
+        public readonly HashSet<int> seats = new HashSet<int>();
 
         /// <summary>Reads the server's member list (seat or slot, steam_id).</summary>
         public void ReadMembers(List<object> members, string hostCharacterId)
         {
             seatSteam.Clear();
+            seats.Clear();
             foreach (var m in members ?? new List<object>())
             {
                 int s = MiniJson.Has(m, "seat") ? MiniJson.Int(m, "seat") : MiniJson.Int(m, "slot");
+                seats.Add(s);
                 if (ulong.TryParse(MiniJson.Str(m, "steam_id"), out var id)) seatSteam[s] = id;
                 if (MiniJson.Str(m, "character_id") == hostCharacterId) hostSeat = s;
             }

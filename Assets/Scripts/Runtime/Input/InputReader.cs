@@ -56,6 +56,8 @@ namespace DotRPG
         public bool CancelPressed { get; private set; }
         /// <summary>Opens/closes the item &amp; equipment window (I / Tab, gamepad Back/Select).</summary>
         public bool InventoryPressed { get; private set; }
+        /// <summary>M: opens / closes the big map (fixed key, not rebindable).</summary>
+        public bool MapPressed { get; private set; }
         public bool Skill1Pressed { get; private set; }
         public bool Skill2Pressed { get; private set; }
         public bool Skill3Pressed { get; private set; }
@@ -80,6 +82,7 @@ namespace DotRPG
 
 #if ENABLE_INPUT_SYSTEM
         InputActionMap map;
+        InputAction mapAction;
         InputAction moveAction, attackAction, interactAction, useItemAction, pauseAction, submitAction, cancelAction, navigateAction, inventoryAction, skill1Action, skill2Action, skill3Action, skill4Action, skill5Action, manaAction, scrollAction, mobilityAction;
 #else
         bool legacyAxesAvailable = true;
@@ -140,7 +143,7 @@ namespace DotRPG
         void ClearForTyping()
         {
             Move = Vector2.zero;
-            MobilityPressed = AttackPressed = InteractPressed = UseItemPressed = SubmitPressed = InventoryPressed = false;
+            MobilityPressed = AttackPressed = InteractPressed = UseItemPressed = SubmitPressed = InventoryPressed = MapPressed = false;
             Skill1Pressed = Skill2Pressed = Skill3Pressed = Skill4Pressed = Skill5Pressed = UseManaPressed = TownScrollPressed = false;
             PausePressed = CancelPressed = false;
         }
@@ -302,6 +305,8 @@ namespace DotRPG
             cancelAction.AddBinding("<Keyboard>/backspace");
             cancelAction.AddBinding("<Gamepad>/buttonEast");
 
+            mapAction = map.AddAction("Map", InputActionType.Button);
+            mapAction.AddBinding("<Keyboard>/m");
             inventoryAction = map.AddAction("Inventory", InputActionType.Button);
             inventoryAction.AddBinding("<Keyboard>/i");
             inventoryAction.AddBinding("<Keyboard>/tab");
@@ -354,6 +359,7 @@ namespace DotRPG
             SubmitPressed = submitAction.WasPressedThisFrame();
             CancelPressed = cancelAction.WasPressedThisFrame();
             InventoryPressed = inventoryAction.WasPressedThisFrame();
+            MapPressed = mapAction.WasPressedThisFrame();
             Skill1Pressed = skill1Action.WasPressedThisFrame();
             Skill2Pressed = skill2Action.WasPressedThisFrame();
             Skill3Pressed = skill3Action.WasPressedThisFrame();
@@ -539,6 +545,7 @@ namespace DotRPG
             SubmitPressed = AnyDown(SubmitKeys);
             CancelPressed = AnyDown(CancelKeys);
             InventoryPressed = AnyDown(InventoryKeys);
+            MapPressed = Input.GetKeyDown(KeyCode.M);
             Skill1Pressed = AnyDown(Skill1Keys);
             Skill2Pressed = AnyDown(Skill2Keys);
             Skill3Pressed = AnyDown(Skill3Keys);

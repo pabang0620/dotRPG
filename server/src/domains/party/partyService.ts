@@ -202,14 +202,26 @@ export function patchParty(accountId: number, characterUuid: string, body: Patch
       if (body.min_power > power) throw new AppError(422, '최소 전투력이 내 전투력보다 높습니다.', 'MIN_POWER_TOO_HIGH', { max: power });
     }
     if (body.message && containsBannedWord(body.message)) throw new AppError(422, '사용할 수 없는 말이 들어 있습니다.', 'MESSAGE_BLOCKED');
+    // 목적 던전 변경: 방장이 그 던전·난이도에 들어갈 수 있어야 하고(오늘 열림, 난이도 해금) 지금 인원이 정원 안이어야 한다.
+    // 멤버 각자의 자격은 출발(start) 때 다시 본다
+    let changedTarget = false;
+    if (body.dungeon_id !== undefined && body.difficulty !== undefined) {
+      const info = await checkEntry(ctx.client, ctx.char, body.dungeon_id, body.difficulty, ctx.now);
+      const max = info.dungeon.maxParty;
+      if (members.length > max) throw new AppError(422, '이 던전의 정원보다 인원이 많습니다.', 'PARTY_TOO_BIG');
+      if ((body.max_members ?? party.max_members) > max) body.max_members = max;
+      changedTarget = body.dungeon_id !== party.dungeon_id || body.difficulty !== party.difficulty;
+    }
     await repo.patchParty(ctx.client, party.id, {
       listed: body.listed,
       listedUntil: body.listed === true ? new Date(ctx.now.getTime() + pol.partyListingMinutes * 60_000) : undefined,
       message: body.message,
       minPower: body.min_power,
       maxMembers: body.max_members,
+      dungeonId: body.dungeon_id,
+      difficulty: body.difficulty,
     });
-    if (body.min_power !== undefined || body.max_members !== undefined) await repo.resetReady(ctx.client, party.id, party.leader_character_id);
+    if (body.min_power !== undefined || body.max_members !== undefined || changedTarget) await repo.resetReady(ctx.client, party.id, party.leader_character_id);
     await repo.bump(ctx.client, party.id, ctx.now);
     return (await done(ctx, party)).data;
   });

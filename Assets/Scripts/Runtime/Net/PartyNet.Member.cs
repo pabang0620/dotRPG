@@ -225,6 +225,16 @@ namespace DotRPG
                         else card.ApplyTo(body);
                         break;
                     }
+                    case PartyMsg.SeatFreed:
+                    {
+                        int slot = r.ReadByte();
+                        if (slot != mySlot && MemberAt(slot) is PlayerController ai)
+                        {
+                            Game.Party?.RemoveNetMember(ai);
+                            bySlot.Remove(slot);
+                        }
+                        break;
+                    }
                     case PartyMsg.MemberLeft:
                     {
                         int slot = r.ReadByte();
