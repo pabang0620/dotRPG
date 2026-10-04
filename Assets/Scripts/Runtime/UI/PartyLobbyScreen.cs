@@ -30,8 +30,8 @@ namespace DotRPG
             Instance = w;
             w.header = Label(w.content, "Header", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(Width - 340f, 40f), TextAnchor.MiddleLeft);
             // [PARTY] Leader: change the party's dungeon / difficulty after it was made.
-            w.diffBtn = Button(w.content, "Diff", "난이도 ▶", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(150f, 40f), w.NextDifficulty, 17);
-            w.dungeonBtn = Button(w.content, "Dungeon", "던전 변경 ▶", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-160f, 0f), new Vector2(170f, 40f), w.NextDungeon, 17);
+            w.diffBtn = Button(w.content, "Diff", "난이도 ▼", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(150f, 40f), w.TogglePicker, 17);
+            w.dungeonBtn = Button(w.content, "Dungeon", "던전 변경 ▼", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-160f, 0f), new Vector2(170f, 40f), w.TogglePicker, 17);
             // [PARTY] Invite by name (no recruiting post needed: the server makes a private party), friends list, AI roster.
             w.friendsBtn = Button(w.content, "Friends", "친구 목록", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(150f, 38f), () => Game.Flow.OpenWindow(SocialScreen.Instance), 17);
             w.inviteBtn = Button(w.content, "Invite", "초대", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-160f, -44f), new Vector2(110f, 38f), w.InviteTyped, 17);
@@ -136,23 +136,86 @@ namespace DotRPG
 
         static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
 
-        void NextDungeon()
+        // [PARTY] Leader's destination picker: every dungeon / raid as a button, and the difficulty below (not raids).
+        RectTransform picker;
+        readonly List<(Button btn, string id)> pickDungeons = new List<(Button, string)>();
+        readonly List<(Button btn, DungeonDifficulty d)> pickDiffs = new List<(Button, DungeonDifficulty)>();
+
+        void BuildPicker()
         {
-            if (Client == null || !Client.InParty) return;
+            const float BtnW = 250f, BtnH = 42f, Pad = 12f;
             var list = Targets.FindAll(d => d != null);
-            int i = list.FindIndex(d => d.id == Client.DungeonId);
-            var next = list[(i + 1) % list.Count];
-            Client.SetTarget(next.id, next.isRaid ? DungeonDifficulty.Normal : Client.Difficulty,
-                (ok, msg) => Done(ok, msg, $"목적지를 {next.name}(으)로 바꿨습니다."));
+            int rows = (list.Count + 1) / 2;
+            float height = 44f + rows * (BtnH + 6f) + 40f + BtnH + Pad * 2f;
+            var bg = Panel(content, "Picker", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(BtnW * 2f + Pad * 3f, height), new Color32(16, 24, 38, 250));
+            bg.raycastTarget = true;
+            picker = bg.rectTransform;
+            var tl = new Vector2(0f, 1f);
+            Label(picker, "Title", "<color=#b8c4d8>목적지 선택</color>", 18, tl, tl, new Vector2(Pad, -10f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
+            Button(picker, "Close", "닫기", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-Pad, -6f), new Vector2(90f, 34f), () => picker.gameObject.SetActive(false), 16);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var d = list[i];
+                var b = Button(picker, "D_" + d.id, d.name, "ui_btngray", tl, tl,
+                    new Vector2(Pad + (i % 2) * (BtnW + Pad), -44f - (i / 2) * (BtnH + 6f)), new Vector2(BtnW, BtnH), () => PickDungeon(d), 17);
+                pickDungeons.Add((b, d.id));
+            }
+            float diffTop = -44f - rows * (BtnH + 6f) - 8f;
+            Label(picker, "DiffHead", "<color=#b8c4d8>난이도</color>", 17, tl, tl, new Vector2(Pad, diffTop), new Vector2(200f, 28f), TextAnchor.MiddleLeft);
+            float diffW = (BtnW * 2f + Pad - (DungeonDatabase.DifficultyCount - 1) * 6f) / DungeonDatabase.DifficultyCount;
+            for (int i = 0; i < DungeonDatabase.DifficultyCount; i++)
+            {
+                var diff = (DungeonDifficulty)i;
+                var b = Button(picker, "Diff_" + i, PartyFinderRules.DifficultyName(diff), "ui_btngray", tl, tl,
+                    new Vector2(Pad + i * (diffW + 6f), diffTop - 32f), new Vector2(diffW, BtnH), () => PickDifficulty(diff), 17);
+                pickDiffs.Add((b, diff));
+            }
+            picker.gameObject.SetActive(false);
         }
 
-        void NextDifficulty()
+        void TogglePicker()
+        {
+            if (Client == null || !Client.InParty || !Client.IsLeader) return;
+            if (picker == null) BuildPicker();
+            bool open = !picker.gameObject.activeSelf;
+            picker.gameObject.SetActive(open);
+            if (open) { picker.SetAsLastSibling(); RefreshPicker(); }
+        }
+
+        void RefreshPicker()
+        {
+            if (picker == null || !picker.gameObject.activeSelf || Client == null) return;
+            var cur = DungeonDatabase.Get(Client.DungeonId);
+            foreach (var (btn, id) in pickDungeons)
+            {
+                var d = DungeonDatabase.Get(id);
+                bool on = id == Client.DungeonId;
+                TextOf(btn).text = on ? $"<color=#ffd34a>▶ {d.name}</color>" : d.name + (d.isRaid ? " <color=#ff9f7a>레이드</color>" : "");
+            }
+            bool raid = cur != null && cur.isRaid;
+            foreach (var (btn, diff) in pickDiffs)
+            {
+                btn.interactable = !raid;
+                string name = PartyFinderRules.DifficultyName(diff);
+                TextOf(btn).text = !raid && diff == Client.Difficulty ? $"<color=#ffd34a>▶ {name}</color>" : name;
+            }
+        }
+
+        void PickDungeon(DungeonDef next)
+        {
+            if (Client == null || !Client.InParty) return;
+            if (next.id == Client.DungeonId) { picker.gameObject.SetActive(false); return; }
+            Client.SetTarget(next.id, next.isRaid ? DungeonDifficulty.Normal : Client.Difficulty,
+                (ok, msg) => { Done(ok, msg, $"목적지를 {next.name}(으)로 바꿨습니다."); RefreshPicker(); });
+        }
+
+        void PickDifficulty(DungeonDifficulty next)
         {
             if (Client == null || !Client.InParty) return;
             var d = DungeonDatabase.Get(Client.DungeonId);
             if (d != null && d.isRaid) { SetStatus("레이드는 난이도가 하나입니다.", false); return; }
-            var next = (DungeonDifficulty)(((int)Client.Difficulty + 1) % DungeonDatabase.DifficultyCount);
-            Client.SetTarget(Client.DungeonId, next, (ok, msg) => Done(ok, msg, $"난이도를 {PartyFinderRules.DifficultyName(next)}(으)로 바꿨습니다."));
+            if (next == Client.Difficulty) return;
+            Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, $"난이도를 {PartyFinderRules.DifficultyName(next)}(으)로 바꿨습니다."); RefreshPicker(); });
         }
 
         /// <summary>[AI] The leader's own roster fills the free seats: at most the hired mercenaries that fit.</summary>
@@ -223,7 +286,7 @@ namespace DotRPG
                 if (m == null) continue;
                 string mark = m.leader ? "<color=#ffd34a>[방장]</color> " : m.ready ? "<color=#8fe28f>[준비]</color> " : "<color=#8c96a8>[대기]</color> ";
                 row.who.text = mark + (m.me ? $"<b>{m.name}</b> (나)" : m.name);
-                row.info.text = $"{CharacterClassInfo.Get(m.cls).displayName}  Lv{m.level}  전투력 {m.power:N0}";
+                row.info.text = $"{CharacterClassInfo.Get(m.cls).displayName}  Lv{m.level}  전투력 {m.power:N0}" + (m.me ? "" : "  ·  " + PartyFramesView.WhereText(m));
                 bool canManage = leader && !m.me && !PartyRunSession.Active;
                 row.lead.gameObject.SetActive(canManage);
                 row.kick.gameObject.SetActive(canManage);
@@ -246,6 +309,8 @@ namespace DotRPG
             int ai = AiShown;
             bool idle = inParty && session == null;
             dungeonBtn.gameObject.SetActive(leader && idle);
+            if (picker != null && picker.gameObject.activeSelf && !(leader && idle)) picker.gameObject.SetActive(false);
+            RefreshPicker();
             diffBtn.gameObject.SetActive(leader && idle);
             bool canInvite = !inParty || (leader && idle);
             inviteBtn.gameObject.SetActive(canInvite);

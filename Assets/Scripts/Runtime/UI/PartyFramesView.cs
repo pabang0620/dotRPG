@@ -84,7 +84,7 @@ namespace DotRPG
             return member != null && member.Class == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
         }
 
-        /// <summary>A party member who is not on this map: name, level and class, bars empty, "다른 곳에 있음".</summary>
+        /// <summary>A party member who is not on this map: name, level and class, bars empty, where they are (same map, another map, offline).</summary>
         static void ShowAway(Frame frame, PartyMemberView v)
         {
             Color classColor = v.cls == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
@@ -97,7 +97,17 @@ namespace DotRPG
             SetFill(frame.mpFill, 0f);
             if (!frame.downed.gameObject.activeSelf) frame.downed.gameObject.SetActive(true);
             frame.shownDowned = -2;
-            frame.downedText.text = "<color=#b8c4d8>다른 곳에 있음</color>";
+            frame.downedText.text = WhereText(v);
+        }
+
+        /// <summary>Where a party member without a body here is, from the server's presence (map they last reported).</summary>
+        public static string WhereText(PartyMemberView v)
+        {
+            if (!v.online) return "<color=#8c96a8>접속 안 함</color>";
+            if (string.IsNullOrEmpty(v.mapId)) return "<color=#b8c4d8>위치 확인 중</color>";
+            if (Game.Session != null && v.mapId == Game.Session.MapId) return "<color=#8fe28f>같은 곳에 있음</color>";
+            var map = MapRegistry.Get(v.mapId);
+            return $"<color=#b8c4d8>{(map != null ? map.displayName : "다른 곳")}에 있음</color>";
         }
 
         /// <summary>Number of frames on screen (for automated checks).</summary>

@@ -11,6 +11,9 @@ namespace DotRPG
         public CharacterClass cls;
         public int level, power;
         public bool ready, leader, me;
+        /// <summary>Connected right now, and the map the server last heard (null = unknown).</summary>
+        public bool online;
+        public string mapId;
     }
 
     /// <summary>[PARTY] Someone asking to join my party (the leader sees these).</summary>
@@ -207,6 +210,8 @@ namespace DotRPG
                     ready = Flag(m, "ready"),
                     leader = Flag(m, "is_leader"),
                     me = Flag(m, "is_me"),
+                    online = Flag(m, "online"),
+                    mapId = MiniJson.Str(m, "map_id"),
                 });
             foreach (var a in MiniJson.Arr(p, "applications") ?? new List<object>())
             {

@@ -6,6 +6,7 @@ import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
+import { notifyPartyMatesOfMove } from './partyNotify';
 import { verifyAccessToken } from '../../middleware/authMiddleware';
 import { isShuttingDown } from '../../ops/lifecycle';
 import { maintPhase, maintRetryAfterMs } from '../../ops/maintenanceState';
@@ -256,6 +257,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
           if (s.mapId !== f.map_id) {
             s.mapId = f.map_id;
             await pushMyPresence(s.accountId);
+            await notifyPartyMatesOfMove(s.characterId);
           }
           return;
       }
