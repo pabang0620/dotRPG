@@ -74,32 +74,16 @@ namespace DotRPG
             set { if (IsLocal) Game.Session.PlayerMana = value; else mana = value; }
         }
 
-        // ---------- Temporary buff (전쟁 함성) ----------
+        // ---------- Class passives (were the timed buffs of 전쟁 함성 / 철벽 / 마나 보호막) ----------
 
-        float buffUntil;
-        int buffPct;
+        /// <summary>Warrior: always % increased damage (the war cry buff, now a passive).</summary>
+        public const int WarriorDamagePassive = 5;
+        /// <summary>Both classes: always % less damage taken (철벽 / 마나 보호막, now passives).</summary>
+        public const int GuardPassive = 10;
 
-        public void ApplyDamageBuff(int pct, float seconds)
-        {
-            buffPct = pct;
-            buffUntil = Time.time + seconds;
-        }
+        public int BuffDamage => Class == CharacterClass.Warrior ? WarriorDamagePassive : 0;
 
-        public int BuffDamage => Time.time < buffUntil ? buffPct : 0;
-        public float BuffRemaining => Mathf.Max(0f, buffUntil - Time.time);
-        public void ClearBuffs() { buffUntil = 0f; guardUntil = 0f; }
-
-        // ---------- [SKILL v2] Damage taken reduction (철벽 / 마나 보호막) ----------
-        float guardUntil;
-        int guardPct;
-
-        public void ApplyGuard(int pct, float seconds)
-        {
-            guardPct = pct;
-            guardUntil = Time.time + seconds;
-        }
-
-        /// <summary>% less damage taken right now.</summary>
-        public int GuardReduction => Time.time < guardUntil ? guardPct : 0;
+        /// <summary>% less damage taken.</summary>
+        public int GuardReduction => GuardPassive;
     }
 }

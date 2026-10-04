@@ -11,7 +11,8 @@ namespace DotRPG
         public readonly MapTheme theme;
         public readonly int minLevel, maxLevel, monsterLevel, variant;
         public readonly string[] monsters;
-        public int KillXp => HuntingGrounds.XpAt(monsterLevel);
+        /// <summary>One kill's XP: the per-level rate split over the pack (three times the monsters, a third the XP each).</summary>
+        public int KillXp => Math.Max(1, (HuntingGrounds.XpAt(monsterLevel) + HuntingGrounds.PackSize / 2) / HuntingGrounds.PackSize);
         public HuntingZone(string id, string name, string village, MapTheme theme, int min, int max, int level, int variant, params string[] monsters)
         {
             this.id = id; this.name = name; this.village = village; this.theme = theme;
@@ -23,6 +24,18 @@ namespace DotRPG
     public static class HuntingGrounds
     {
         public const float RespawnSeconds = 25f, RespawnSafeRadius = 4f;
+        /// <summary>Monsters per map spawn point (playtest: meet many more monsters, each worth less).</summary>
+        public const int PackSize = 3;
+        static readonly Vector2[] PackOffsets = { Vector2.zero, new Vector2(0.75f, 0.35f), new Vector2(-0.7f, 0.45f) };
+
+        /// <summary>Each map spawn point becomes a small pack. The same order is used by the data export (server supply limits).</summary>
+        public static List<Vector2> PackPoints(IReadOnlyList<Vector2> spawnPoints)
+        {
+            var list = new List<Vector2>(spawnPoints.Count * PackSize);
+            foreach (var p in spawnPoints)
+                for (int k = 0; k < PackSize; k++) list.Add(p + PackOffsets[k % PackOffsets.Length]);
+            return list;
+        }
         public const int KillsPerMinute = 12, KillsPerLevel = 40;
         public const float DungeonEfficiency = 1.8f;
         public static readonly HuntingZone[] All =

@@ -57,6 +57,29 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>
+        /// [SKILL] 돌진 베기: a skill-driven dash of up to <paramref name="distance"/> along <paramref name="direction"/>
+        /// (stops at walls, no mobility cooldown). Returns the distance it will cover.
+        /// </summary>
+        public float SkillDash(Vector2 direction, float distance)
+        {
+            if (IsDead || direction.sqrMagnitude < .0001f) return 0f;
+            direction = direction.normalized;
+            float clear = MobilityClearance(direction, distance);
+            if (clear < .08f) return 0f;
+            Facing = FacingExtensions.FromVector(direction, Facing);
+            AimDirection = direction;
+            desiredVelocity = Vector2.zero;
+            body.SetVelocity(Vector2.zero);
+            dashDirection = direction;
+            dashRemaining = clear;
+            nextDashDust = 0f;
+            animator.Play(CharacterAnim.Walk, Facing);
+            animator.SpeedMultiplier = 2.2f;
+            Fx.Dust(Position);
+            return clear;
+        }
+
         // Sweep the actual feet collider, including its offset and the physics collision mask.
         // Triggers (pickups / door prompts) are not walls; solids cannot be tunneled through.
         float MobilityClearance(Vector2 direction, float distance)

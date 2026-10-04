@@ -45,6 +45,8 @@ namespace DotRPG
         public int uiScale = 1;
         /// <summary>Colour-blind friendly danger zones and bars.</summary>
         public bool colorBlind;
+        /// <summary>Loot filter: dropped items of these kinds are left on the ground (Pickup.Skipped).</summary>
+        public bool skipCommonGear, skipUncommonGear, skipConsumables, skipMaterials;
         /// <summary>Rebound keyboard keys ("Attack=Z;Skill1=A"), see InputReader.SaveKeyOverrides.</summary>
         public string keyOverrides = "";
 

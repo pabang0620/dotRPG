@@ -256,7 +256,7 @@ namespace DotRPG
                 var spawner = new GameObject("SkeletonSpawner").AddComponent<EnemySpawner>();
                 spawner.transform.SetParent(objectsRoot, false);
                 var zone = HuntingGrounds.Get(MapId);
-                if (zone != null) spawner.SetupField(zone, skeletonSpawns);
+                if (zone != null) spawner.SetupField(zone, HuntingGrounds.PackPoints(skeletonSpawns)); // packs of three
                 else spawner.Setup(config.skeletonStats, CharacterLook.Skeleton, skeletonSpawns);
             }
             if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();

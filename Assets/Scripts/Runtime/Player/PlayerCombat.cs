@@ -368,9 +368,16 @@ namespace DotRPG
                 if (target is PlayerController || (!owner.IsLocal && target is ResourceNode)) continue;
                 hitThisSwing.Add(target);
                 var info = new DamageInfo(owner.Data.Stats.AttackDamage(owner.Class), owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
-                landed |= target.TakeDamage(info);
+                bool hitIt = target.TakeDamage(info);
+                landed |= hitIt;
+                // Hit feel: sparks where the blow lands.
+                if (hitIt && target is EnemyController e) SkillVisuals.Sparks(e.Center, new Color(1f, 0.92f, 0.7f, 0.95f), 4, 3f);
             }
-            if (landed && owner.IsLocal) Game.Camera?.Shake(0.06f, 0.1f);
+            if (landed && owner.IsLocal)
+            {
+                Game.Camera?.Shake(0.08f, 0.1f);
+                SkillCaster.TryHitStop(this, 0.022f);
+            }
         }
 
         void OnDrawGizmosSelected()

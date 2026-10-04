@@ -373,7 +373,7 @@ namespace DotRPG.EditorTools
                 var zone = HuntingGrounds.Get(m.id);
                 if (zone != null)
                 {
-                    var counts = Enumerable.Range(0, census.spawnPoints).GroupBy(i => zone.monsters[i % zone.monsters.Length]);
+                    var counts = Enumerable.Range(0, census.spawnPoints * HuntingGrounds.PackSize).GroupBy(i => zone.monsters[i % zone.monsters.Length]); // packs of three (WorldBuilder)
                     o.Arr("fieldSpawns", counts, (x, g) => x.Obj().Str("monsterId", g.Key).Num("points", g.Count())
                         .Num("level", zone.monsterLevel).Num("xp", zone.KillXp).Num("respawnSeconds", HuntingGrounds.RespawnSeconds).End());
                 }

@@ -274,10 +274,16 @@ namespace DotRPG
                 case "crush":
                 case "lance":
                     return dist <= n.range * 0.95f;
-                // [SKILL v2] defence: when hurt with monsters close, or (tanks) when holding the aggro.
+                // [SKILL v2] legacy defence skills (still in old saves' gem tables).
                 case "guard":
                 case "barrier":
                     return CountNear(c, 2.5f) >= 1 && (self.Health.Current < self.Health.Max * 0.7f || (Def.role == MercRole.Tank && TargetsMe(self)));
+                // Dash strike: into a target a few steps away with others around it (not when already standing on it).
+                case "charge":
+                    return dist >= 1.6f && dist <= n.range * 0.9f && Target != null && CountNear(Target.Center, 2f) >= 2;
+                // Fire field: on a group of two or more around the target.
+                case "firefield":
+                    return dist <= n.range * 0.9f && Target != null && CountNear(Target.Center, n.radius) >= 2;
                 case "cry":
                     // Shout when monsters are close, or when one is on somebody else (take its aggro).
                     return CountNear(c, n.radius * 0.9f) >= 1 && (CountNear(c, n.radius) >= 2 || !TargetsMe(self));

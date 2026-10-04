@@ -110,8 +110,8 @@ namespace DotRPG
                     // [SKILL v2]
                     case "crush": Crush(n); break;
                     case "lance": Lance(n); break;
-                    case "guard": Guard(n, "철벽", new Color(1f, 0.82f, 0.35f, 1f)); break;
-                    case "barrier": Guard(n, "마나 보호막", new Color(0.45f, 0.75f, 1f, 1f)); break;
+                    case "charge": yield return StartCoroutine(Charge(n)); break;
+                    case "firefield": StartCoroutine(FireField(n)); break;
                     // v1 + v2 (v1-only ones stay for SkillGems.UseLegacy)
                     case "whirl": Whirl(n); break;
                     case "slam": Slam(n); break;
@@ -134,8 +134,40 @@ namespace DotRPG
         {
             if (enemy == null || enemy.IsDead) return;
             int damage = n.bossPct > 0 && enemy.IsBoss ? Mathf.RoundToInt(n.damage * (1f + n.bossPct / 100f)) : n.damage; // [SKILL v2] 보스 사냥
-            if (enemy.TakeDamage(new DamageInfo(damage, from, knockback, Team.Player, owner.gameObject)) && n.leechPct > 0)
+            // Hit feel: a harder shove, sparks and a tiny freeze-frame on the local player's hits.
+            bool landed = enemy.TakeDamage(new DamageInfo(damage, from, knockback * 1.2f, Team.Player, owner.gameObject));
+            if (landed) HitFeel(enemy, knockback >= 8f);
+            if (landed && n.leechPct > 0)
                 owner.Heal(Mathf.Max(1, damage * n.leechPct / 100));
+        }
+
+        // ---------- Hit feel ----------
+
+        static float hitStopUntil;
+
+        /// <summary>Sparks and a white pop on the monster; the local player's hits also stop the world for a blink.</summary>
+        void HitFeel(EnemyController e, bool heavy)
+        {
+            var color = owner.Class == CharacterClass.Mage ? SkillVisuals.ArcGlow : SkillVisuals.WhirlGold;
+            SkillVisuals.Sparks(e.Center, color, heavy ? 9 : 5, heavy ? 4.6f : 3.2f);
+            SkillVisuals.Flash(e.Center, new Color(1f, 1f, 1f, 0.6f), heavy ? 1.25f : 0.85f, 0.07f);
+            if (owner.IsLocal) TryHitStop(this, heavy ? 0.055f : 0.03f);
+        }
+
+        /// <summary>A freeze-frame of <paramref name="seconds"/> (real time), at most one per 0.14 s.</summary>
+        public static void TryHitStop(MonoBehaviour host, float seconds)
+        {
+            if (host == null || Time.unscaledTime < hitStopUntil || Time.timeScale < 0.99f) return;
+            hitStopUntil = Time.unscaledTime + 0.14f; // one stop per burst of hits, not one per monster
+            host.StartCoroutine(HitStop(seconds));
+        }
+
+        static IEnumerator HitStop(float seconds)
+        {
+            Time.timeScale = 0.06f;
+            yield return new WaitForSecondsRealtime(seconds);
+            if (Game.State != null) Game.State.RefreshTimeScale();
+            else Time.timeScale = 1f;
         }
 
         static List<EnemyController> EnemiesInRadius(Vector2 center, float radius)
@@ -261,17 +293,33 @@ namespace DotRPG
             Shake(0.06f, 0.12f);
         }
 
-        /// <summary>[SKILL v2] 철벽 / 마나 보호막: less damage taken for a few seconds.</summary>
-        void Guard(SkillNumbers n, string skillName, Color color)
-        {
-            owner.Data.ApplyGuard(n.guardPct, n.guardTime);
-            BuffAura.Attach(owner.transform, color, n.guardTime);
-            SkillVisuals.Flash(owner.Center, new Color(color.r, color.g, color.b, 0.55f), 1.8f, 0.3f);
-            Game.Audio.PlaySfx("select");
-            Toast($"{skillName}!  {n.guardTime:0}초 동안 받는 피해 {n.guardPct}% 감소");
-        }
-
         // ================= Warrior =================
+
+        /// <summary>돌진 베기: dash along the aim, cutting and shoving every monster met on the way.</summary>
+        IEnumerator Charge(SkillNumbers n)
+        {
+            Vector2 dir = owner.AimDirection.sqrMagnitude > 0.0001f ? owner.AimDirection.normalized : owner.Facing.ToVector();
+            // A puppet (another PC's body) only shows the cut; its position comes from that PC.
+            float dist = owner.NetPuppet ? 0f : owner.SkillDash(dir, n.range);
+            Game.Audio.PlaySfx("swing");
+            Shake(0.08f, 0.12f);
+            float speed = PlayerController.DashDistance / PlayerController.DashDuration;
+            float end = Time.time + dist / speed + 0.05f;
+            var hit = new HashSet<EnemyController>();
+            do
+            {
+                SkillVisuals.Flash(owner.Center, new Color(1f, 0.85f, 0.4f, 0.35f), 1.1f, 0.12f);
+                foreach (var e in EnemiesInRadius(owner.Center + dir * 0.3f, n.radius))
+                {
+                    if (!hit.Add(e)) continue;
+                    Hit(e, n, owner.Center - dir, 10f);
+                    SkillVisuals.SlashHit(e.Center, SkillVisuals.WhirlGold);
+                }
+                yield return null;
+            } while (Time.time < end);
+            SkillVisuals.SlamImpact(owner.Center + dir * 0.5f, n.radius);
+            Shake(hit.Count > 0 ? 0.15f : 0.06f, 0.18f);
+        }
 
         /// <summary>회전 베기: spin once, cutting everything around the player.</summary>
         void Whirl(SkillNumbers n)
@@ -361,11 +409,8 @@ namespace DotRPG
                 e.Stun(n.stun);
                 StunStars.Attach(e);
             }
-            // The buff is this member's own; the shout also pulls every monster around onto the caster.
-            owner.Data.ApplyDamageBuff(n.buffPct, n.buffTime);
+            // The shout pulls every monster around onto the caster (its old damage buff is the warrior's passive now).
             ThreatTable.WarCry(owner, c, n.radius);
-            BuffAura.Attach(owner.transform, new Color(1f, 0.45f, 0.2f, 1f), n.buffTime);
-            Toast($"전쟁 함성!  {n.buffTime:0}초 동안 피해 {n.buffPct}% 증가");
         }
 
         /// <summary>천검 강림 (awakening): giant swords rain down on the monsters around the player.</summary>
@@ -543,6 +588,29 @@ namespace DotRPG
         }
 
         /// <summary>메테오 (awakening): burning rocks crash down across the area around the player.</summary>
+        /// <summary>화염 장판: a burning patch on the crowd around the nearest monster, ticking <c>hits</c> times over 3 s.</summary>
+        IEnumerator FireField(SkillNumbers n)
+        {
+            var target = Nearest(owner.Center, n.range, null);
+            Vector2 at = target != null ? target.Position : owner.Position + owner.AimDirection * Mathf.Min(4f, n.range);
+            SkillVisuals.CastCircle(owner.Position, SkillVisuals.FireOrange);
+            SkillVisuals.Explosion(at + Vector2.up * 0.2f, at, n.radius * 0.8f, false);
+            Game.Audio.PlaySfx("magic");
+            Shake(0.06f, 0.12f);
+            int ticks = Mathf.Max(1, n.hits);
+            for (int i = 0; i < ticks; i++)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    Vector2 p = at + Random.insideUnitCircle * n.radius * 0.85f;
+                    SkillVisuals.Flash(p + Vector2.up * 0.15f, new Color(1f, 0.5f, 0.12f, 0.55f), 0.9f, 0.4f);
+                    SkillVisuals.Sparks(p, SkillVisuals.FireOrange, 3, 1.4f, 0.4f);
+                }
+                foreach (var e in EnemiesInRadius(at, n.radius)) Hit(e, n, at, 1.5f);
+                yield return new WaitForSeconds(3f / ticks);
+            }
+        }
+
         IEnumerator Meteor(SkillNumbers n, bool cutIn)
         {
             if (cutIn)

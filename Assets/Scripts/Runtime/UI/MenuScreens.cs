@@ -205,6 +205,11 @@ namespace DotRPG
             // [I] Accessibility and keys.
             menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); });
             menu.AddOption("색약 보정", () => s.Data.colorBlind ? "켜기" : "끄기", d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
+            // Loot filter: what is left on the ground (gold and higher gear are always picked up).
+            menu.AddOption("줍기: 커먼 장비", () => s.Data.skipCommonGear ? "안 줍기" : "줍기", d => { s.Data.skipCommonGear = !s.Data.skipCommonGear; s.Apply(); });
+            menu.AddOption("줍기: 언커먼 장비", () => s.Data.skipUncommonGear ? "안 줍기" : "줍기", d => { s.Data.skipUncommonGear = !s.Data.skipUncommonGear; s.Apply(); });
+            menu.AddOption("줍기: 소비 아이템", () => s.Data.skipConsumables ? "안 줍기" : "줍기", d => { s.Data.skipConsumables = !s.Data.skipConsumables; s.Apply(); });
+            menu.AddOption("줍기: 재료", () => s.Data.skipMaterials ? "안 줍기" : "줍기", d => { s.Data.skipMaterials = !s.Data.skipMaterials; s.Apply(); });
             menu.AddButton("조작 키 변경", () => ui.Push(ui.KeyBind));
             menu.AddButton("돌아가기", () => screen.Close());
             menu.OnCancel = screen.Close;
