@@ -13,6 +13,7 @@ namespace DotRPG
         Town,
         /// <summary>High-resolution hunting ground: dark forest floor, dirt trails, ruins (Forest.txt).</summary>
         Forest,
+        Interior,
     }
 
     /// <summary>One playable map. Portals '&gt;' lead to <see cref="nextMap"/>, '&lt;' to <see cref="previousMap"/>.</summary>
@@ -32,6 +33,9 @@ namespace DotRPG
         public bool safe = true;
         // [DUNGEON] Dungeon room: not listed in the map window / portal chain, never saved as a position.
         public bool instanced;
+        public string exteriorMap;
+        public NpcService interiorService;
+        public bool IsInterior => theme == MapTheme.Interior;
 
         /// <summary>Drawn with the 32px-per-tile art set.</summary>
         public bool HighRes => theme == MapTheme.Town || theme == MapTheme.Forest;
@@ -77,6 +81,8 @@ namespace DotRPG
         {
             foreach (var map in Maps)
                 if (map.id == id) return map;
+            foreach (var map in Interiors)
+                if (map.id == id) return map;
             // [DUNGEON] Instanced dungeon rooms (MapRegistry.Dungeon.cs).
             return GetRoom(id);
         }
@@ -84,5 +90,23 @@ namespace DotRPG
         public static bool Exists(string id) => Get(id) != null;
 
         public static MapInfo Default => Maps[0];
+
+        public static readonly NpcService[] IndoorServices = { NpcService.Shop, NpcService.Blacksmith, NpcService.Storage };
+        public static bool IsTown(string id) => id == Village || id == Canyon || id == Winter;
+        public static bool IsIndoorService(NpcService service) => service == NpcService.Shop || service == NpcService.Blacksmith || service == NpcService.Storage;
+        public static string ServiceName(NpcService service) => service == NpcService.Shop ? "잡화점" : service == NpcService.Blacksmith ? "대장간 · 장비강화" : "창고";
+        public static string InteriorFor(string town, NpcService service) => IsTown(town) && IsIndoorService(service) ? town + "_" + service.ToString().ToLowerInvariant() : null;
+        public static System.Collections.Generic.IEnumerable<MapInfo> Interiors
+        {
+            get
+            {
+                foreach (var town in Maps)
+                    if (IsTown(town.id))
+                        foreach (var service in IndoorServices)
+                            yield return new MapInfo { id = InteriorFor(town.id, service), displayName = ServiceName(service),
+                                theme = MapTheme.Interior, exteriorMap = town.id, interiorService = service, music = town.music,
+                                previousMap = town.id, hint = "5×5 실내 · 안쪽 NPC와 대화하여 이용\n아래쪽 출입구: " + town.displayName };
+            }
+        }
     }
 }

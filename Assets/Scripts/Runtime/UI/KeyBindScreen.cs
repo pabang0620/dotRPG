@@ -18,7 +18,8 @@ namespace DotRPG
         string saved;
         int listenFrame;
         Text status, dirtyLabel;
-        bool dirty;
+        bool dirty, windowsTab;
+        Image combatTab, windowTab;
         public bool IsListening => listening.HasValue;
         public bool HasChanges => dirty;
         public static string ActionName(GameAction a)
@@ -33,13 +34,21 @@ namespace DotRPG
                 case GameAction.UseMana: return "마나 물약"; case GameAction.TownScroll: return "귀환";
                 case GameAction.MoveUp: return "위로 이동"; case GameAction.MoveDown: return "아래 이동";
                 case GameAction.MoveLeft: return "왼쪽 이동"; case GameAction.MoveRight: return "오른쪽 이동";
-                case GameAction.Map: return "지도"; default: return a.ToString();
+                case GameAction.Map: return "지도 (맵)";
+                case GameAction.SkillWindow: return "스킬창"; case GameAction.QuestWindow: return "퀘스트창";
+                case GameAction.WeekdayDungeon: return "요일던전"; case GameAction.RaidWindow: return "레이드";
+                case GameAction.PartyWindow: return "파티창"; case GameAction.PartyFinder: return "파티 찾기";
+                case GameAction.Auction: return "경매장"; case GameAction.Friends: return "친구 목록";
+                case GameAction.Cosmetics: return "외형 상점"; default: return a.ToString();
             }
         }
         static string ShortName(GameAction a)
         {
             switch (a)
             {
+                case GameAction.Map: return "지도"; case GameAction.QuestWindow: return "퀘스트";
+                case GameAction.PartyWindow: return "파티"; case GameAction.PartyFinder: return "파티찾기";
+                case GameAction.Friends: return "친구"; case GameAction.Cosmetics: return "외형";
                 case GameAction.Attack: return "공격"; case GameAction.Interact: return "대화";
                 case GameAction.Skill5: return "각성"; case GameAction.UseItem: return "HP"; case GameAction.UseMana: return "MP";
                 case GameAction.MoveUp: return "이동"; case GameAction.MoveDown: return "이동";
@@ -86,12 +95,14 @@ namespace DotRPG
             TextAt(panel, "Categories", "<color=#5eb4ed>■ 이동</color>     <color=#ba7ef1>■ 공격 · 스킬</color>     <color=#71d29e>■ 아이템</color>     <color=#ebbd5f>■ 편의 기능</color>     <color=#8391a7>■ 고정 키</color>", new Vector2(30, -105), new Vector2(1140, 25), 15, Color.white);
             var keyboard = Plate(panel, "Keyboard", new Vector2(30, -139), new Vector2(1140, 252), new Color32(10, 17, 28, 255)).rectTransform;
             BuildKeyboard(keyboard);
+            combatTab = MakeTab("CombatTab", "이동 · 전투", 30, false);
+            windowTab = MakeTab("WindowTab", "창 열기 · 닫기", 214, true);
             for (int i = 0; i < InputReader.Rebindable.Length; i++)
             {
                 var a = InputReader.Rebindable[i]; int col = i / 6, row = i % 6;
-                var bg = Plate(panel, "Binding_" + a, new Vector2(30 + col * 382, -409 - row * 28), new Vector2(370, 25), new Color32(28, 39, 57, 255));
+                var bg = Plate(panel, "Binding_" + a, new Vector2(30 + col * 382, -433 - row * 24), new Vector2(370, 22), new Color32(28, 39, 57, 255));
                 bg.raycastTarget = true; bg.gameObject.AddComponent<PointerRelay>().onClick = _ => BeginBinding(a);
-                var label = TextAt(bg.transform, "BindingText", "", new Vector2(10, 0), new Vector2(348, 25), 16, Color.white);
+                var label = TextAt(bg.transform, "BindingText", "", new Vector2(10, 0), new Vector2(348, 22), 15, Color.white);
                 actions.Add(new ActionView { action = a, bg = bg, text = label });
             }
             status = TextAt(panel, "Status", "", new Vector2(30, -578), new Vector2(1130, 24), 16, new Color32(170, 211, 240, 255));
@@ -99,6 +110,28 @@ namespace DotRPG
             dirtyLabel = TextAt(panel, "PendingChanges", "", new Vector2(165, -607), new Vector2(615, 38), 15, new Color32(235, 189, 95, 255));
             ButtonAt("ApplyKeys", "적용", 887, 125, ApplyChanges, new Color32(41, 105, 151, 255));
             ButtonAt("CloseKeys", "닫기 / 취소", 1022, 148, () => ui.Pop(), new Color32(55, 69, 89, 255));
+        }
+        Image MakeTab(string name, string label, float x, bool windows)
+        {
+            var tab = Plate(panel, name, new Vector2(x, -398), new Vector2(174, 28), Color.white);
+            tab.raycastTarget = true; tab.gameObject.AddComponent<PointerRelay>().onClick = _ => SelectTab(windows);
+            TextAt(tab.transform, "Label", label, new Vector2(12, 0), new Vector2(150, 28), 16, Color.white);
+            return tab;
+        }
+        public void SelectTab(bool windows)
+        {
+            windowsTab = windows;
+            int index = 0;
+            foreach (var v in actions)
+            {
+                bool visible = InputReader.IsWindowAction(v.action) == windows;
+                v.bg.gameObject.SetActive(visible);
+                if (!visible) continue;
+                v.bg.rectTransform.anchoredPosition = new Vector2(30 + (index / 6) * 382, -433 - (index % 6) * 24);
+                index++;
+            }
+            combatTab.color = !windows ? new Color32(41, 105, 151, 255) : new Color32(28, 39, 57, 255);
+            windowTab.color = windows ? new Color32(41, 105, 151, 255) : new Color32(28, 39, 57, 255);
         }
         void Key(RectTransform parent, KeyCode code, string label, float x, int row, float width = 1)
         {
@@ -147,6 +180,7 @@ namespace DotRPG
         {
             saved = InputReader.SaveKeyOverrides(); listening = null; dirty = false;
             base.Show();
+            SelectTab(windowsTab);
             var available = ((RectTransform)transform).rect.size;
             float fit = Mathf.Min(1f, (available.x - 24) / 1200f, (available.y - 20) / 670f);
             panel.localScale = Vector3.one * Mathf.Max(.5f, fit);
@@ -159,6 +193,7 @@ namespace DotRPG
         }
         public void BeginBinding(GameAction action)
         {
+            SelectTab(InputReader.IsWindowAction(action));
             listening = action; listenFrame = Time.frameCount;
             RefreshKeyboard(ActionName(action) + "에 사용할 키를 누르거나 키보드 그림에서 클릭하세요. Esc: 선택 취소");
         }

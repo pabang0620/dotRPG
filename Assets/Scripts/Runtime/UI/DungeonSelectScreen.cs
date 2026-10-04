@@ -33,6 +33,7 @@ namespace DotRPG
         Text dayText, title, desc, info, recommend, partyText, rewards, status, hint;
         RectTransform listRoot;
         bool raidTab;
+        public bool IsRaidTab => raidTab;
         int selected;
         DungeonDifficulty difficulty;
         float lastMoveX, lastMoveY;

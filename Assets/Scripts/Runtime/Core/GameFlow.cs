@@ -8,6 +8,7 @@ namespace DotRPG
     /// High-level flow: title → new game / continue → play ↔ pause → game over / ending → title / quit.
     /// UI buttons call these methods; nothing else changes the top-level state except dialogue.
     /// </summary>
+    [DefaultExecutionOrder(-800)]
     public class GameFlow : MonoBehaviour
     {
         GameState stateBeforePause = GameState.Playing;
@@ -32,8 +33,47 @@ namespace DotRPG
             var state = Game.State.Current;
             if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
             if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
-            else if (state == GameState.Playing && Game.Input.InventoryPressed) OpenInventory();
-            else if (state == GameState.Playing && Game.Input.MapPressed) OpenWindow(Game.UI.WorldMap); // M: big map
+            else ProcessWindowShortcuts(Game.Input.WindowPressed);
+        }
+
+        // Shared route for all bindable HUD windows. NPC services remain accessed through their NPCs.
+        public bool ProcessWindowShortcuts(Func<GameAction, bool> pressed)
+        {
+            var state = Game.State.Current;
+            if (transitioning || Game.State.ChangedThisFrame || InputReader.TextInputActive ||
+                (state != GameState.Playing && state != GameState.Inventory)) return false;
+            var selected = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
+            if (selected != null && selected.GetComponent<UnityEngine.UI.InputField>() is UnityEngine.UI.InputField field && field.isFocused) return false;
+            if (state == GameState.Inventory && !Array.Exists(InputReader.WindowActions, a => WindowFor(a) == Game.UI.Top)) return false;
+            foreach (var action in InputReader.WindowActions)
+            {
+                if (!pressed(action)) continue;
+                var target = WindowFor(action);
+                if (target == null) return false;
+                bool sameTab = target != Game.UI.Dungeon || Game.UI.Dungeon.IsRaidTab == (action == GameAction.RaidWindow);
+                if (state == GameState.Inventory && Game.UI.Top == target && sameTab) CloseInventory();
+                else if (action == GameAction.WeekdayDungeon || action == GameAction.RaidWindow) Game.UI.Dungeon.Open(action == GameAction.RaidWindow);
+                else OpenWindow(target);
+                return true;
+            }
+            return false;
+        }
+        public MenuScreen WindowFor(GameAction action)
+        {
+            switch (action)
+            {
+                case GameAction.Inventory: return Game.UI.Equipment;
+                case GameAction.Map: return Game.UI.WorldMap;
+                case GameAction.SkillWindow: return Game.UI.Skills;
+                case GameAction.QuestWindow: return Game.UI.QuestLog;
+                case GameAction.WeekdayDungeon: case GameAction.RaidWindow: return Game.UI.Dungeon;
+                case GameAction.PartyWindow: return OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (MenuScreen)PartyLobbyScreen.Instance : Game.UI.Party;
+                case GameAction.PartyFinder: return PartyFinderScreen.Instance;
+                case GameAction.Auction: return AuctionScreen.Instance;
+                case GameAction.Friends: return SocialScreen.Instance;
+                case GameAction.Cosmetics: return Game.UI.Cosmetics;
+                default: return null;
+            }
         }
 
         public void OpenInventory() => OpenWindow(null);

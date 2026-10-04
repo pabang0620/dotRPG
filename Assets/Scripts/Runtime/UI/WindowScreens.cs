@@ -121,66 +121,6 @@ namespace DotRPG
 
     // =====================================================================================
 
-    /// <summary>Big map of the current region with the player, exits and a region list.</summary>
-    public class WorldMapScreen : WindowScreen
-    {
-        RawImage map;
-        RectTransform mapRect, playerDot;
-        readonly List<RectTransform> exits = new List<RectTransform>();
-        Text regions;
-
-        public static WorldMapScreen Create(Transform canvas)
-        {
-            var w = CreateWindow<WorldMapScreen>(canvas, "WorldMap", "지도", "menuicon_map");
-            var frame = Panel(w.content, "Frame", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(760f, 590f), new Color32(18, 26, 40, 255));
-            w.map = new GameObject("Map", typeof(RectTransform)).AddComponent<RawImage>();
-            w.map.transform.SetParent(frame.transform, false);
-            w.mapRect = w.map.rectTransform;
-            w.mapRect.anchorMin = w.mapRect.anchorMax = new Vector2(0.5f, 0.5f);
-            var dot = UIFactory.Image(w.mapRect, "Player", Game.Art.Get("ui_dot"), new Color32(120, 220, 255, 255));
-            w.playerDot = dot.rectTransform;
-            w.playerDot.sizeDelta = new Vector2(18f, 18f);
-            var side = Panel(w.content, "Side", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(420f, 590f), new Color32(24, 36, 54, 235));
-            w.regions = Label(side.transform, "Regions", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -16f), new Vector2(380f, 560f));
-            return w;
-        }
-
-        protected override void Refresh()
-        {
-            var world = Game.World;
-            if (world == null || world.Minimap == null) return;
-            map.texture = world.Minimap;
-            float scale = Mathf.Min(740f / world.Bounds.width, 570f / world.Bounds.height);
-            mapRect.sizeDelta = new Vector2(world.Bounds.width * scale, world.Bounds.height * scale);
-            Vector2 Place(Vector2 p) => new Vector2((p.x - world.Bounds.width * 0.5f) * scale, (p.y - world.Bounds.height * 0.5f) * scale);
-            playerDot.anchoredPosition = Place(Game.Player.Position);
-            playerDot.SetAsLastSibling();
-            foreach (var e in exits) Destroy(e.gameObject);
-            exits.Clear();
-            foreach (var p in world.PortalCenters)
-            {
-                var d = UIFactory.Image(mapRect, "Exit", MinimapView.PortalSprite(), Color.white).rectTransform;
-                d.sizeDelta = new Vector2(18f, 22f);
-                d.anchoredPosition = Place(p);
-                exits.Add(d);
-            }
-            var sb = new StringBuilder("<size=24><b>지역 · 권장 레벨</b></size>\n");
-            foreach (var m in MapRegistry.All)
-            {
-                bool here = world.MapId == m.id;
-                // The current map's line keeps only the location marker, so it never wraps; the others show safe / monster.
-                var zone = HuntingGrounds.Get(m.id);
-                string tag = zone != null ? $" <color=#ffb58a>Lv.{zone.minLevel}~{zone.maxLevel}</color>" : " <color=#8fe28f>마을</color>";
-                string name = m.id == MapRegistry.Village ? "작은 마을" : m.displayName;
-                sb.Append(here ? $"<color=#ffe066>▶ {name}</color>{tag}\n" : $"  {name}{tag}\n");
-            }
-            sb.Append("\n");
-            sb.Append((world.Map?.hint ?? "") + "\n\n");
-            sb.Append("<color=#78dcff>●</color> 나    <color=#ffd34a>●</color> 출구\n");
-            regions.text = sb.ToString();
-        }
-    }
-
     // =====================================================================================
 
     /// <summary>Mini-dungeon / raid information window (content not open yet).</summary>
@@ -305,7 +245,6 @@ namespace DotRPG
                 w.costCells[i] = Label(right.transform, "Cost" + i, "", 19, topLeft, topLeft, new Vector2(24f + (i % 2) * 305f, -282f - (i / 2) * 30f), new Vector2(300f, 30f));
             w.chanceText = Label(right.transform, "Chance", "", 20, topLeft, topLeft, new Vector2(24f, -346f), new Vector2(610f, 32f));
             w.failText = Label(right.transform, "Fail", "", 19, topLeft, topLeft, new Vector2(24f, -379f), new Vector2(610f, 30f));
-            Label(right.transform, "Source", "<color=#8c96a8>확률: 던전앤파이터 공개 강화 확률 기준</color>", 16, topLeft, topLeft, new Vector2(24f, -410f), new Vector2(610f, 26f));
             w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 64f), TextAnchor.MiddleCenter);
             w.enhanceButton = Button(right.transform, "Go", "강화", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();

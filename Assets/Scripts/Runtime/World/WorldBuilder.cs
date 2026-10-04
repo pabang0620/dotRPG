@@ -84,6 +84,7 @@ namespace DotRPG
 
         string LoadText(MapInfo info)
         {
+            if (info.IsInterior) return ".....\n.....\n.....\n..P..\n..<..";
             if (info.id == MapRegistry.Village && config.worldMap != null) return config.worldMap.text;
             var generated = HuntingGrounds.Layout(info.id);
             if (generated != null) return generated;
@@ -141,6 +142,16 @@ namespace DotRPG
         public Vector2 ArrivalFrom(string fromMap, out Facing facing)
         {
             facing = Facing.Down;
+            if (map.IsInterior) { facing = Facing.Up; return PlayerSpawn; }
+            var from = MapRegistry.Get(fromMap);
+            if (from != null && from.IsInterior && from.exteriorMap == MapId)
+                foreach (var door in objectsRoot.GetComponentsInChildren<ServiceDoor>())
+                    if (door.Service == from.interiorService)
+                    {
+                        var point = (Vector2)door.transform.position + Vector2.down * .8f;
+                        for (int step = 0; step < 6; step++)
+                            if (IsFree(point + Vector2.down * step * .3f)) return point + Vector2.down * step * .3f;
+                    }
             if (MapId == MapRegistry.Winter && fromMap == "winter_peak") fromMap = "winter_edge";
             if (string.IsNullOrEmpty(fromMap) || !portalCells.TryGetValue(fromMap, out var list) || list.Count == 0)
                 return PlayerSpawn;
@@ -225,6 +236,7 @@ namespace DotRPG
             ClearDungeonMarks(); // [DUNGEON]
             PlayerSpawn = new Vector2(width * 0.5f, height * 0.5f);
             var rng = new System.Random(1234);
+            if (map.IsInterior) { BuildInterior(); return; }
 
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
@@ -247,6 +259,7 @@ namespace DotRPG
             else if (CanyonHd) BuildCanyonHd();
             else if (WinterHd) BuildWinterHd();
             CreateBoundaryWalls();
+            ConfigureTownServices();
             SpawnDungeonGuide(); // [DUNGEON] 던전 안내원 by the village plaza
             Game.Cutscenes?.OnWorldRebuilt();
             StoryCast.SpawnFor(MapId, objectsRoot, Bounds); // [STORY] story characters present at this point of the story
@@ -315,6 +328,7 @@ namespace DotRPG
             GroupPortals();
             Minimap = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null ? RenderMinimap() : null;
             if (Minimap == null) Minimap = BuildFlatMinimap();
+            WorldAtlas.Record(this);
         }
 
         Texture2D RenderMinimap()
@@ -783,6 +797,7 @@ namespace DotRPG
                         if (def != null && StoryCast.VillagersHidden && MapId == MapRegistry.Village) def = null; // [STORY] attack night
                         else if (def != null)
                         {
+                            if (MapRegistry.IsTown(MapId) && MapRegistry.IsIndoorService(def.service)) break;
                             NpcController.Create(def, center, objectsRoot);
                             PointsOfInterest.Add(center);
                         }
@@ -1099,7 +1114,7 @@ namespace DotRPG
                     PointsOfInterest.Add(center);
                     return true;
                 }
-                case '&': Anvil.Create(foot, objectsRoot, "town_anvil"); return true;
+                case '&': if (MapRegistry.IsTown(MapId)) StaticProp("Anvil", "town_anvil", foot, new Vector2(.7f, .4f), new Vector2(0, .2f)); else Anvil.Create(foot, objectsRoot, "town_anvil"); return true;
                 case 'C': CropPlot.Create(foot, objectsRoot, config, true); return true;
                 case '$': TreasureChest.Create($"{MapId}:{x}:{y}", foot, objectsRoot, true); return true;
                 case 'g': StaticProp("Grave", $"town_grave_{rng.Next(0, 2)}", foot, new Vector2(0.75f, 0.35f), new Vector2(0f, 0.17f)); return true;
@@ -1137,7 +1152,7 @@ namespace DotRPG
                 {
                     var pos = new Vector2(x + 1.5f, y + 0.1f);
                     var fountain = StaticProp("Fountain", "town_fountain_0", pos, new Vector2(2.8f, 1.1f), new Vector2(0f, 0.65f));
-                    fountain.AddComponent<SpriteCycler>().Setup(new[] { "town_fountain_0", "town_fountain_1", "town_fountain_2" }, 6f);
+                    fountain.AddComponent<FountainWater>().Setup();
                     var look = fountain.AddComponent<DialogueInteractable>();
                     look.Setup("살펴보기", "town_fountain");
                     look.ConfigureShape(new Vector2(0f, -0.1f), 0.9f, new Vector2(0f, 2.9f));

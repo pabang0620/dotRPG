@@ -18,6 +18,7 @@ namespace DotRPG
         Vector3 velocity;
         Vector2 focus;
         int lastScreenHeight;
+        bool lastInterior;
         float shakeUntil;
         float shakeStrength;
 
@@ -53,6 +54,7 @@ namespace DotRPG
         public void SetTarget(Transform t, bool snap)
         {
             target = t;
+            UpdateZoom(true);
             if (snap && t != null)
             {
                 focus = t.position + new Vector3(0f, 0.5f, 0f);
@@ -74,8 +76,12 @@ namespace DotRPG
 
         void UpdateZoom(bool force)
         {
-            if (!force && Screen.height == lastScreenHeight) return;
+            bool interior = Game.World != null && Game.World.Map.IsInterior;
+            if (!force && Screen.height == lastScreenHeight && interior == lastInterior) return;
+            lastInterior = interior;
+            cam.backgroundColor = interior ? new Color32(20, 23, 32, 255) : config.backgroundColor;
             lastScreenHeight = Screen.height;
+            if (interior) { cam.orthographicSize = 3.8f; return; }
             int ppu = config.pixelsPerUnit;
             int scale = Mathf.Max(1, Mathf.RoundToInt((float)Screen.height / config.targetPixelHeight));
             cam.orthographicSize = Screen.height / (2f * ppu * scale);
