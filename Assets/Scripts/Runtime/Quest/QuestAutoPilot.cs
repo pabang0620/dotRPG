@@ -111,6 +111,23 @@ namespace DotRPG
 
         void OnDestroy() { Release(); if (Instance == this) Instance = null; }
 
+        // Auto-progress is a helper, not an idle mode: it stops at every quest boundary and the player presses
+        // [자동 진행] again to carry on with the next one.
+        void OnEnable()
+        {
+            GameEvents.QuestCompleted += OnQuestCompleted;
+            GameEvents.QuestAccepted += OnQuestAccepted;
+        }
+
+        void OnDisable()
+        {
+            GameEvents.QuestCompleted -= OnQuestCompleted;
+            GameEvents.QuestAccepted -= OnQuestAccepted;
+        }
+
+        void OnQuestCompleted(string id) { if (on) Stop("퀘스트 완료! 다음 퀘스트도 진행하려면 [자동 진행]을 다시 누르세요."); }
+        void OnQuestAccepted(string id) { if (on) Stop("새 퀘스트를 받았습니다. 이어서 하려면 [자동 진행]을 다시 누르세요."); }
+
         void Update()
         {
             if (!on) return;

@@ -451,6 +451,7 @@ namespace DotRPG
             GameEvents.RaiseToast(q.Kind == QuestKind.Main ? $"메인 퀘스트: {q.DisplayTitle}" : $"새 퀘스트: {q.title}");
             if (q.Kind == QuestKind.Sub && string.IsNullOrEmpty(Journal.Tracked)) Journal.Tracked = q.id;
             if (!string.IsNullOrEmpty(q.startCutscene)) PlayCutscene(q.startCutscene, null);
+            GameEvents.RaiseQuestAccepted(q.id);
             Game.Flow.Autosave();
         }
 
