@@ -242,7 +242,7 @@ namespace DotRPG
             Game.Flow.CloseInventory();
             yield return Wait(0.3f);
 
-            // Enhancement (DNF rules): logic checks, then the blacksmith window. Bag and gear are put back afterwards.
+            // Enhancement rules: logic checks, then the blacksmith window. Bag and gear are put back afterwards.
             yield return EnhanceChecks();
 
             // Loot table: ~40% drop rate, never the other class's weapon.

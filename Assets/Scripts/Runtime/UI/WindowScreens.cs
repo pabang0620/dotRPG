@@ -305,7 +305,6 @@ namespace DotRPG
                 w.costCells[i] = Label(right.transform, "Cost" + i, "", 19, topLeft, topLeft, new Vector2(24f + (i % 2) * 305f, -282f - (i / 2) * 30f), new Vector2(300f, 30f));
             w.chanceText = Label(right.transform, "Chance", "", 20, topLeft, topLeft, new Vector2(24f, -346f), new Vector2(610f, 32f));
             w.failText = Label(right.transform, "Fail", "", 19, topLeft, topLeft, new Vector2(24f, -379f), new Vector2(610f, 30f));
-            Label(right.transform, "Source", "<color=#8c96a8>확률: 던전앤파이터 공개 강화 확률 기준</color>", 16, topLeft, topLeft, new Vector2(24f, -410f), new Vector2(610f, 26f));
             w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 64f), TextAnchor.MiddleCenter);
             w.enhanceButton = Button(right.transform, "Go", "강화", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
@@ -589,7 +588,7 @@ namespace DotRPG
             if (online)
                 OnlineEconomy.Enhance(e.slot.HasValue ? (int)e.slot.Value : (int?)null, e.slot.HasValue ? null : e.key,
                     d => { server = d; answered = true; });
-            // [A] DNF-style suspense: three hammer strikes over a rising charge, the glow grows around the item.
+            // [A] Suspense: three hammer strikes over a rising charge, the glow grows around the item.
             Game.Audio.PlaySfx("enhance_charge");
             EnhanceFx.Charge(bigIcon.rectTransform, SuspenseSeconds * 1.5f);
             for (int i = 0; i < 3; i++)

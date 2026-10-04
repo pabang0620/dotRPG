@@ -9,7 +9,7 @@ namespace DotRPG
     /// Runs a dungeon (Game.Dungeon), plan §6.0: entry from the select window → room by room (monsters never
     /// respawn; a cleared room opens its gate; walking in fades to the next room with the party re-placed at
     /// its entry) → boss → 1 s slow motion + CLEAR → leftover monsters die → result screen (rank, cards) →
-    /// retry / dungeon select / village. Local death in a run shows the DNF-style coin countdown instead of
+    /// retry / dungeon select / village. Local death in a run shows the revive-coin countdown instead of
     /// game over (routed from <see cref="GameFlow.OnPlayerDied"/>); downed companions stay down for the rest of
     /// the room and rejoin at the next entry with half HP. Nothing is saved inside a dungeon.
     /// </summary>

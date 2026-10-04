@@ -25,7 +25,7 @@ namespace DotRPG
         }
 
         /// <summary>Success % for +0→+1 … +19→+20 disclosed for Dungeon&amp;Fighter KR on 2021-12-02.</summary>
-        static readonly int[] DnfChances = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 15, 14, 13, 12, 11, 10, 10, 10, 10 };
+        static readonly int[] ExpectedChances = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 15, 14, 13, 12, 11, 10, 10, 10, 10 };
 
         const string PickAgainText = "강화할 장비를 다시 골라 주세요.";
         const string NoStatText = "이번 단계는 능력치 변화가 없다";
@@ -96,8 +96,8 @@ namespace DotRPG
         void EnhanceRuleChecks()
         {
             bool table = EnhanceRules.SuccessPercent(EquipmentDatabase.MaxEnhance) == 0;
-            for (int l = 0; l < DnfChances.Length; l++) table &= EnhanceRules.SuccessPercent(l) == DnfChances[l];
-            Check($"chance table = DNF KR 2021-12-02 ({string.Join("/", DnfChances)})", table);
+            for (int l = 0; l < ExpectedChances.Length; l++) table &= EnhanceRules.SuccessPercent(l) == ExpectedChances[l];
+            Check($"chance table ({string.Join("/", ExpectedChances)})", table);
         }
 
         /// <summary>Scripted attempts with injected rolls on the live session (bag and slots are emptied first; see <see cref="RestoreGear"/>).</summary>

@@ -139,7 +139,7 @@ namespace DotRPG
         public const int DailyEntries = 3;
         /// <summary>Raid revives (shared by the party).</summary>
         public const int RaidRevives = 3;
-        /// <summary>Monster HP multiplier by party size 1..4 (DNF-style head-count scaling).</summary>
+        /// <summary>Monster HP multiplier by party size 1..4 (head-count scaling).</summary>
         public static readonly float[] PartyHpScale = { 1.0f, 1.7f, 2.4f, 3.0f };
         /// <summary>Boss monsters: HP multiplier on top of the difficulty (see <see cref="DungeonMonsters"/>).</summary>
         public const float BossHpMul = 8f;

@@ -135,7 +135,7 @@ namespace DotRPG
                 if (data.enhanceCompensation > 0)
                 {
                     // Two toasts: one line is wider than the toast column.
-                    GameEvents.RaiseToast("강화 규칙이 던전앤파이터 기준으로 바뀌었습니다.");
+                    GameEvents.RaiseToast("강화 규칙이 새로 바뀌었습니다.");
                     GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았다.");
                 }
             }));
