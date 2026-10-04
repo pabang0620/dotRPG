@@ -64,7 +64,7 @@ const envSchema = z.object({
   RATE_STEAM_LINK_MAX: posInt(5),
   // 4단계 정책 상수
   PARTY_LISTING_MINUTES: posInt(10),
-  PARTY_APPLY_SECONDS: posInt(30),
+  PARTY_APPLY_SECONDS: posInt(120), // a person needs time to notice and accept
   PARTY_IDLE_MINUTES: posInt(30),
   MATCH_QUEUE_SECONDS: posInt(60),
   MATCH_POWER_RATIO: z.coerce.number().gt(0).default(0.3),

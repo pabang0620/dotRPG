@@ -186,13 +186,13 @@ describe('모집 게시판: 만들기, 목록, 신청, 수락', () => {
     expect(Number((n.rows[0] as { n: string }).n)).toBe(1);
   });
 
-  it('신청 만료(30초), 취소, 거절, 정원, 동시 신청 3건 제한', async () => {
+  it('신청 만료(2분), 취소, 거절, 정원, 동시 신청 3건 제한', async () => {
     const host = await newHero(app);
     const guest = await newHero(app);
     const c = await createParty(app, host, { max_members: 2 });
     const id = c.body.data.party.id as string;
     const ap = await post(app, guest, `/parties/${id}/apply`, {});
-    advance(31);
+    advance(121); // PARTY_APPLY_SECONDS 120
     const late = await post(app, host, `/party/applications/${ap.body.data.application.id}/respond`, { accept: true });
     expect(late.status).toBe(410);
     expect(late.body.errors.code).toBe('APPLICATION_EXPIRED');

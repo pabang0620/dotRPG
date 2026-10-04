@@ -246,7 +246,8 @@ export function applyToParty(accountId: number, characterUuid: string, partyUuid
       const app = await repo.insertApplication(
         ctx.client, party.id, ctx.char.id, ctx.char.accountId, power, ctx.now, new Date(ctx.now.getTime() + pol.partyApplySeconds * 1000),
       );
-      notifyPartyChanged(ctx.client, party.id, ctx.now);
+      // The leader polls "after_version": without a version bump a new application never shows up there.
+      await repo.bump(ctx.client, party.id, ctx.now);
       return appResult(app, 201);
     },
   });
@@ -266,6 +267,7 @@ export function cancelApplication(accountId: number, characterUuid: string, p: A
     if (a.state === 'cancelled') return { cancelled: true };
     if (a.state !== 'pending') throw new AppError(404, '신청을 찾을 수 없습니다.', 'APPLICATION_NOT_FOUND');
     await repo.setApplicationState(ctx.client, a.id, 'cancelled', ctx.now);
+    await repo.bump(ctx.client, a.party_id, ctx.now); // the leader's list drops it on the next poll
     return { cancelled: true };
   });
 }
