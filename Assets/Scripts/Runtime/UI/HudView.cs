@@ -89,6 +89,7 @@ namespace DotRPG
             // Round minimap (top-right) with the quest tracker underneath.
             SideMenuView.Create(root);
             PartyFramesView.Create(root); // [PARTY]
+            PartyStatusView.Create(root); // online party state in one line (click: party window)
             BossHpBarView.Create(root); // [MONSTER] boss bar, auto-binds to EnemyController.BossSpawned
             MinimapView.Create(root);
             DungeonHudView.Create(root); // [DUNGEON] clock, room map, CLEAR banner, coin countdown
@@ -230,7 +231,7 @@ namespace DotRPG
             controlsHint.text =
                 $"이동 {input.GetBindingLabel(GameAction.Move)}   공격 {input.GetBindingLabel(GameAction.Attack)}   " +
                 $"상호작용 {input.GetBindingLabel(GameAction.Interact)}   물약 {input.GetBindingLabel(GameAction.UseItem)}/{input.GetBindingLabel(GameAction.UseMana)}   " +
-                $"가방 {input.GetBindingLabel(GameAction.Inventory)}   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
+                $"가방 {input.GetBindingLabel(GameAction.Inventory)}   지도 M   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
             // [UI] Size the text box (and its plate) to the text.
             controlsHint.rectTransform.sizeDelta = new Vector2(Mathf.Min(900f, controlsHint.preferredWidth + 4f), 26f);
             if (controlsPlate != null)

@@ -231,6 +231,7 @@ namespace DotRPG
         void StartRun(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now, int startRoom = 0)
         {
             FieldSession.Instance?.Leave(); // [PARTY 8] the field party session ends at the dungeon gate
+            Game.Party?.SetDungeonCompanions(true); // AI companions are dungeon and raid only: they join here
             if (NetHost) PartyNet.Current.HostRunStarted(dungeon.id, difficulty); // [PARTY NET] members follow
             StoryCompanions.Refresh(true); // [STORY] 카엘 fights in dungeons and raids too
             var party = Game.Party;
@@ -749,6 +750,7 @@ namespace DotRPG
             {
                 EndRunState();
                 run = null;
+                Game.Party?.SetDungeonCompanions(false); // back on the map: the mercenaries stay behind
                 OnlineEconomy.LeaveDungeon(); // [SERVER]
                 PartyRunSession.OnBackInVillage(); // [PARTY] the fight connection closes
                 Game.Session.MapId = MapRegistry.Village;
@@ -776,6 +778,7 @@ namespace DotRPG
             ReviveOpen = false;
             EndRunState();
             run = null;
+            Game.Party?.SetDungeonCompanions(false);
             OnlineEconomy.LeaveDungeon(); // [SERVER] an abandoned run is closed by the server later
             if (PartyRunSession.Active) PartyRunSession.Instance.Leave(); // [PARTY]
             PartyNet.End();

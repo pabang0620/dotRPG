@@ -90,7 +90,7 @@ namespace DotRPG
             var roster = Game.Session.PartyRoster;
             if (def == null || roster.Contains(mercId) || roster.Count >= MaxCompanions) return null;
             roster.Add(mercId);
-            var member = LocalInWorld ? Spawn(def, roster.Count - 1) : null;
+            var member = LocalInWorld && companionsOut ? Spawn(def, roster.Count - 1) : null; // hired in town: joins at the next dungeon
             Changed?.Invoke();
             return member;
         }
@@ -127,7 +127,7 @@ namespace DotRPG
         {
             if (companionCap == cap) return;
             companionCap = cap;
-            if (rosterHidden || Local == null) { Changed?.Invoke(); return; }
+            if (rosterHidden || Local == null || !companionsOut) { Changed?.Invoke(); return; }
             // Trim from the end of the roster, then bring roster members back up to the cap.
             int ai = 0;
             foreach (var id in Game.Session.PartyRoster)
@@ -137,6 +137,20 @@ namespace DotRPG
                 if (cap >= 0 && ai >= cap) Despawn(m);
                 else ai++;
             }
+            if (LocalInWorld) OnLocalSpawned(false);
+            else Changed?.Invoke();
+        }
+
+        bool companionsOut;
+
+        /// <summary>
+        /// The hired mercenaries join only inside weekday dungeons and raids: DungeonDirector turns this on as a run
+        /// starts (before the party size is read) and off when the party is back on the map.
+        /// </summary>
+        public void SetDungeonCompanions(bool on)
+        {
+            if (companionsOut == on) return;
+            companionsOut = on;
             if (LocalInWorld) OnLocalSpawned(false);
             else Changed?.Invoke();
         }
@@ -232,9 +246,12 @@ namespace DotRPG
             if (!rosterHidden)
             {
                 int out_ = 0;
+                // AI companions fight in weekday dungeons and raids only: hunting grounds and towns are walked alone
+                // (or with friends), so the roster stays home until DungeonDirector calls them out.
+                bool inRun = companionsOut;
                 foreach (var id in roster)
                 {
-                    if (companionCap >= 0 && out_ >= companionCap) { if (Find(id) is PlayerController extra) Despawn(extra); continue; }
+                    if (!inRun || (companionCap >= 0 && out_ >= companionCap)) { if (Find(id) is PlayerController extra) Despawn(extra); continue; }
                     if (Find(id) == null && MercenaryDatabase.Get(id) != null) Spawn(MercenaryDatabase.Get(id), members.Count - 1);
                     out_++;
                 }
