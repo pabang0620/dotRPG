@@ -243,7 +243,7 @@ namespace DotRPG
                 if (i >= shown.Count) continue;
                 var p = shown[i];
                 row.dungeon.text = (p.mine ? "<color=#ffe066>★</color> " : "") + p.dungeonName;
-                row.diff.text = $"<color={PartyFinderRules.DifficultyColor(p.difficulty)}>{PartyFinderRules.DifficultyName(p.difficulty)}</color>";
+                row.diff.text = $"<color={PartyFinderRules.DifficultyColor(p.difficulty)}>{PartyFinderRules.ModeName(p.dungeonId, p.difficulty)}</color>\n<size=14><color=#b8c4d8>{PartyFinderRules.Recommended(p.dungeonId, p.difficulty, true)}</color></size>";
                 row.members.text = p.Full ? $"<color=#8c96a8>{p.members}/{p.maxMembers}</color>" : $"{p.members}/{p.maxMembers}";
                 row.power.text = power >= p.minPower ? $"{p.minPower:N0}" : $"<color=#ff9f7a>{p.minPower:N0}</color>";
                 row.leader.text = $"{p.leaderName} Lv{p.leaderLevel} {CharacterClassInfo.Get(p.leaderClass).displayName}";
@@ -256,7 +256,7 @@ namespace DotRPG
             }
             var d = ds[Mod(cDungeon, ds.Count)];
             var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
-            createSummary.text = $"{d.name}\n<color={PartyFinderRules.DifficultyColor(diff)}>{(d.isRaid ? "레이드" : PartyFinderRules.DifficultyName(diff))}</color>\n{cMembers}명\n{power * cPowerPct / 100:N0} (내 전투력의 {cPowerPct}%)\n“{PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]}”";
+            createSummary.text = $"{d.name}\n<color={PartyFinderRules.DifficultyColor(diff)}>{(d.isRaid ? "레이드" : PartyFinderRules.DifficultyName(diff))}</color>  <color=#b8c4d8>{PartyFinderRules.Recommended(d.id, diff)}</color>\n{cMembers}명\n{power * cPowerPct / 100:N0} (내 전투력의 {cPowerPct}%)\n“{PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]}”";
         }
 
         // ---------- dev hooks ----------

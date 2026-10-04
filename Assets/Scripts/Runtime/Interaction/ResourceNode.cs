@@ -34,6 +34,9 @@ namespace DotRPG
         /// <summary>[SERVER] "{map}:{x}:{y}" grid id, the same as maps.json nodes (GameDataExport.Census).</summary>
         public string NodeId { get; private set; }
         public static readonly List<ResourceNode> Active = new List<ResourceNode>();
+        public ResourceKind Kind => kind;
+        /// <summary>Standing (not a stump waiting to regrow).</summary>
+        public bool Available => !depleted;
 
         void OnEnable() { if (!Active.Contains(this)) Active.Add(this); }
         void OnDisable() => Active.Remove(this);

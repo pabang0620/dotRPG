@@ -35,6 +35,22 @@ namespace DotRPG
 
     public static class PartyFinderRules
     {
+        /// <summary>"권장 Lv.20 · 전투력 4,200" for a dungeon and difficulty (raids use their own numbers).</summary>
+        public static string Recommended(string dungeonId, DungeonDifficulty difficulty, bool compact = false)
+        {
+            var d = DungeonDatabase.Get(dungeonId);
+            if (d == null) return "";
+            var n = DungeonDatabase.DifficultyFor(d, d.isRaid ? DungeonDifficulty.Normal : difficulty);
+            return compact ? $"권장 Lv{n.recommendedLevel}" : $"권장 Lv.{n.recommendedLevel} · 전투력 {n.recommendedPower:N0}";
+        }
+
+        /// <summary>Difficulty label, "레이드" for raids.</summary>
+        public static string ModeName(string dungeonId, DungeonDifficulty difficulty)
+        {
+            var d = DungeonDatabase.Get(dungeonId);
+            return d != null && d.isRaid ? "레이드" : DifficultyName(difficulty);
+        }
+
         /// <summary>Queue time before the party departs with AI in the empty slots.</summary>
         public const float QueueSeconds = 60f;
         public const int MaxMessage = 30;

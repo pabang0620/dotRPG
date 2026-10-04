@@ -294,6 +294,7 @@ namespace DotRPG
         public void FollowEnd(bool cleared, string reason, float elapsedSeconds, MemberRunStats mine)
         {
             if (run == null || run.IsOver || run.State == DungeonRunState.Clearing) return;
+            if (cleared) Pickup.CollectAll(); // [DUNGEON] leftover drops go into the bag
             run.Elapsed = elapsedSeconds;
             run.HitsTaken = mine.hitsTaken;
             run.MaxCombo = mine.maxCombo;
@@ -482,6 +483,7 @@ namespace DotRPG
 
         void FinishCleared()
         {
+            Pickup.CollectAll(); // [DUNGEON] leftover drops go into the bag
             if (NetHost)
             {
                 PartyNet.Current.HostRunEnded(true, null, run.Elapsed);
@@ -651,6 +653,25 @@ namespace DotRPG
             return true;
         }
 
+        bool leaving;
+
+        public bool RunOver => run != null && run.IsOver;
+
+        /// <summary>마을로 (dungeon HUD): an ended run goes straight home; a running one fails first, without the result window.</summary>
+        public void LeaveToVillage()
+        {
+            if (run == null || busy) return;
+            if (!run.IsOver)
+            {
+                leaving = true;
+                ReviveOpen = false;
+                Fail("던전에서 나왔다.");
+                if (!run.IsOver) { leaving = false; return; } // could not end it right now (clearing)
+            }
+            leaving = false;
+            ExitToVillage(false);
+        }
+
         /// <summary>포기: the run fails.</summary>
         public void GiveUp()
         {
@@ -693,7 +714,11 @@ namespace DotRPG
                 if (m != null) run.MemberDamage.Add((m.DisplayName, party.DamageOf(m), m.IsLocal));
         }
 
-        void ShowResult() => StartCoroutine(ShowResultRoutine());
+        void ShowResult()
+        {
+            if (leaving) return; // 마을로: going home instead of the result window
+            StartCoroutine(ShowResultRoutine());
+        }
 
         IEnumerator ShowResultRoutine()
         {

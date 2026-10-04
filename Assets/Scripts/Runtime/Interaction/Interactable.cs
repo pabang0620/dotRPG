@@ -30,6 +30,9 @@ namespace DotRPG
 
         public abstract void Interact(PlayerController player);
 
+        /// <summary>Every enabled interactable (quest auto-walk looks up story objects).</summary>
+        public static IReadOnlyList<Interactable> All => Active;
+
         public void ConfigureShape(Vector2 offset, float range, Vector2 prompt)
         {
             interactionOffset = offset;

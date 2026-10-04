@@ -177,12 +177,19 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect(await goldOf(h)).toBe(3100);
   });
 
-  it('레이드 목표 퀘스트는 4단계 전까지 QUEST_OBJECTIVE_UNSUPPORTED', async () => {
+  it('레이드 목표: 해당 레이드를 깬 판이 있어야 하고, 보상 잠긴 연습 클리어도 인정', async () => {
     const h = await newHero(app);
     await seedClaims(h, MAIN_TO_STRONGER);
-    const res = await claim(h, 'c1_fortress');
-    expect(res.status).toBe(422);
-    expect(res.body.errors.code).toBe('QUEST_OBJECTIVE_UNSUPPORTED');
-    expect(res.body.errors.types).toEqual(['raid']);
+    const no = await claim(h, 'c1_fortress');
+    expect(no.status).toBe(422);
+    expect(no.body.errors.code).toBe('QUEST_NOT_DONE');
+    expect(no.body.errors.objective).toMatchObject({ type: 'raid', target: 'raid_skeleton_king', need: 1, have: 0 });
+    await getPool().query(
+      `INSERT INTO dungeon_runs (character_id, dungeon_id, difficulty, state, reset_day, started_at, ended_at, rank, cards, reward_locked, lock_reason)
+       VALUES ($1, 'raid_skeleton_king', 0, 'cleared', now(), now(), now(), 3, '[]'::jsonb, true, 'TOO_FEW_HUMANS')`,
+      [h.dbId],
+    );
+    const ok = await claim(h, 'c1_fortress');
+    expect(ok.status).toBe(200);
   });
 });

@@ -82,8 +82,28 @@ namespace DotRPG
             MakeButton(revive, "포기", "ui_btngray", new Vector2(110f, 22f), () => Game.Dungeon?.GiveUp());
             revive.gameObject.SetActive(false);
 
+            // [DUNGEON] 마을로: leave the dungeon at any time (under the room map, shown with it).
+            var leave = UIFactory.Image(roomMap, "Btn_Village", Game.Art.Get("ui_btngray"), Color.white);
+            leave.preserveAspect = false;
+            leave.raycastTarget = true;
+            UIFactory.Place(leave.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -8f), new Vector2(140f, 44f));
+            var lb = leave.gameObject.AddComponent<Button>();
+            lb.targetGraphic = leave;
+            lb.onClick.AddListener(AskLeave);
+            UiButton.Attach(lb);
+            var lt = UIFactory.Text(leave.transform, "Text", "마을로", 20, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(lt.rectTransform);
+
             clock.gameObject.SetActive(false);
             roomMap.gameObject.SetActive(false);
+        }
+
+        static void AskLeave()
+        {
+            var d = Game.Dungeon;
+            if (d == null || !d.InRun || d.IsBusy) return;
+            if (d.RunOver) { d.LeaveToVillage(); return; }
+            Game.UI.Confirm("마을로 돌아갈까요?\n진행 중인 이번 판은 실패로 끝납니다.", () => d.LeaveToVillage(), true);
         }
 
         static void MakeButton(RectTransform parent, string label, string sprite, Vector2 pos, System.Action onClick)

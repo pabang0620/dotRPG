@@ -235,6 +235,9 @@ namespace DotRPG
             return available ? QuestMark.Available : QuestMark.None;
         }
 
+        /// <summary>A quest conversation is waiting at this NPC (talk objective, report or offer).</summary>
+        public bool HasQuestTalk(string npcId) => MarkFor(npcId) != QuestMark.None;
+
         /// <summary>True when the npc's mark belongs to a main quest (gold) rather than a side quest (blue).</summary>
         public bool MarkIsMain(string npcId)
         {
@@ -625,6 +628,8 @@ namespace DotRPG
         void TryAutoCutscenes()
         {
             if (cutscenePlaying || Game.Cutscenes == null || Game.Cutscenes.IsPlaying || !Game.IsPlaying) return;
+            // Story scenes wait until the party is back on the map (not in the raid boss room before the results).
+            if (Game.Dungeon != null && Game.Dungeon.InRun) return;
             string map = Game.Session.MapId;
             foreach (var q in db.All)
             {
@@ -646,6 +651,7 @@ namespace DotRPG
         public void Tick()
         {
             if (!cutscenePlaying && Game.IsPlaying && Game.Cutscenes != null && !Game.Cutscenes.IsPlaying) TryAutoCutscenes();
+            StoryRespawn.Tick(this);
         }
 
         // =============================== Text ===============================

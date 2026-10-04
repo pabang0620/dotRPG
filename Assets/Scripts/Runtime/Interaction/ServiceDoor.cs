@@ -27,7 +27,15 @@ namespace DotRPG
         public override void Interact(PlayerController player)
         {
             var def = WorldBuilder.ServiceNpc(service);
-            if (def != null) Game.UI.OpenService(def);
+            if (def == null) return;
+            // The keeper has a quest conversation waiting: talk first (the shop opens on the next visit).
+            if (Game.Quest.HasQuestTalk(def.npcId))
+            {
+                string dialogueId = Game.Quest.DialogueFor(def.npcId, def.dialogueId, def.dialogueIdAfterQuest);
+                Game.Dialogue.Play(dialogueId, () => Game.Quest.OnDialogueFinished(dialogueId, def.npcId), def.displayName);
+                return;
+            }
+            Game.UI.OpenService(def);
         }
     }
 

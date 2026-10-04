@@ -18,6 +18,7 @@ namespace DotRPG
         readonly Dictionary<string, float> itemPulse = new Dictionary<string, float>();
         Text questTitle;
         Text questBody;
+        Text autoLabel, autoStatus; // [QUEST] auto-progress toggle under the tracker
         RectTransform questPanel;
         // [CONTENT] for capture checks
         public bool DevQuestVisible => questPanel != null && questPanel.gameObject.activeInHierarchy;
@@ -101,6 +102,19 @@ namespace DotRPG
             questBody = UIFactory.Text(questPanel, "Body", "", 18, UIColors.Cream, TextAnchor.UpperLeft, true);
             questBody.lineSpacing = 1.15f;
             UIFactory.Stretch(questBody.rectTransform, 18, 10, 14, 44);
+            // [QUEST] Auto-progress: walks to the next objective, any key takes control back.
+            var autoImg = UIFactory.Image(questPanel, "Auto", Game.Art.Get("ui_btn"), Color.white);
+            autoImg.raycastTarget = true;
+            UIFactory.Place(autoImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(132f, 36f));
+            var autoBtn = autoImg.gameObject.AddComponent<Button>();
+            autoBtn.targetGraphic = autoImg;
+            autoBtn.onClick.AddListener(QuestAutoPilot.Toggle);
+            UiButton.Attach(autoBtn);
+            autoLabel = UIFactory.Text(autoImg.transform, "Text", "자동 진행", 17, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(autoLabel.rectTransform);
+            autoStatus = UIFactory.Text(questPanel, "AutoStatus", "", 16, new Color32(143, 226, 143, 255), TextAnchor.UpperRight, true);
+            UIFactory.Place(autoStatus.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(360f, 44f));
+            autoStatus.raycastTarget = false;
 
             var mobilityPlate = UIFactory.Panel(root, "MobilityPlate", true);
             UIFactory.Place(mobilityPlate.rectTransform, Vector2.zero, Vector2.zero, new Vector2(20, 46), new Vector2(264, 32));
@@ -278,6 +292,12 @@ namespace DotRPG
             // [CONTENT] The quest tracker is hidden inside dungeons (room map + boss bar own that space).
             bool showQuest = Game.Dungeon == null || !Game.Dungeon.InRun;
             if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
+            if (autoLabel != null)
+            {
+                bool auto = QuestAutoPilot.Active;
+                autoLabel.text = auto ? "자동 중지" : "자동 진행";
+                autoStatus.text = auto ? QuestAutoPilot.Status : "";
+            }
             float now = Time.unscaledTime;
             // Toast layout & fade.
             for (int i = toasts.Count - 1; i >= 0; i--)

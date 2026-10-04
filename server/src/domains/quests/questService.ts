@@ -80,12 +80,6 @@ async function processClaim(ctx: EconCtx, questId: string) {
   }
 
   const obj = rule.objectives;
-  // 레이드 목표는 4단계 전까지 거절한다
-  if (obj.raidNeeds.length > 0) {
-    throw new AppError(422, '아직 보상을 받을 수 없는 퀘스트입니다.', 'QUEST_OBJECTIVE_UNSUPPORTED', {
-      types: ['raid'],
-    });
-  }
   const notDone = (objective: Record<string, unknown>) =>
     denied('QUEST_NOT_DONE', '아직 완료 조건을 채우지 못했습니다.', questId, { objective });
 
@@ -119,6 +113,15 @@ async function processClaim(ctx: EconCtx, questId: string) {
     for (const [target, need] of dungeonNeeds) {
       const have = target === '*' ? clears.total : (clears.byDungeon.get(target) ?? 0);
       if (have < need) throw notDone({ type: 'dungeon', target, need, have });
+    }
+  }
+  // 레이드 목표: 해당 레이드를 깬 판(dungeon_runs.state = 'cleared')이 있어야 한다.
+  // 보상 잠금(인원 부족 연습 입장, 이번 기간 수령 완료)과 무관하게 클리어 자체로 인정한다
+  if (obj.raidNeeds.length > 0) {
+    const clears = await clearCounts(ctx.client, ctx.char.id);
+    for (const r of obj.raidNeeds) {
+      const have = clears.byDungeon.get(r.target) ?? 0;
+      if (have < r.count) throw notDone({ type: 'raid', target: r.target, need: r.count, have });
     }
   }
   // talk, cutscene, interact, reach 등은 서버가 확인할 방법이 없다(수용된 위험, api 5절)

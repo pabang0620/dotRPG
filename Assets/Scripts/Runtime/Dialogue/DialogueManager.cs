@@ -56,6 +56,7 @@ namespace DotRPG
         {
             var line = current.lines[lineIndex];
             Speaker = string.IsNullOrEmpty(line.speaker) ? defaultSpeaker : line.speaker;
+            if (Game.Quest != null) Speaker = Game.Quest.FormatTokens(Speaker); // "{name}" is the hero's name
             currentText = Game.Quest != null ? Game.Quest.FormatTokens(line.text ?? "") : line.text ?? "";
             visibleChars = 0f;
             lastBlipChar = 0;

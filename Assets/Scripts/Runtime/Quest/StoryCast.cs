@@ -148,6 +148,7 @@ namespace DotRPG
         Vector3 basePos;
 
         public override string Prompt => prop.prompt;
+        public string InteractId => prop.interactId;
         public override bool CanInteract => !string.IsNullOrEmpty(prop.interactId) || !string.IsNullOrEmpty(prop.dialogue);
 
         public static StoryProp Create(StoryCast.Prop p, Vector2 pos, Transform parent)

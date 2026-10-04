@@ -137,7 +137,7 @@ namespace DotRPG
             bool inParty = c != null && c.InParty;
             var dungeon = inParty ? DungeonDatabase.Get(c.DungeonId) : null;
             header.text = !inParty ? "<color=#8c96a8>파티가 없습니다. 파티 찾기에서 모집 글을 올리거나 참가 신청을 하세요.</color>"
-                : $"{dungeon?.name ?? c.DungeonId}  <color={PartyFinderRules.DifficultyColor(c.Difficulty)}>{(dungeon != null && dungeon.isRaid ? "레이드" : PartyFinderRules.DifficultyName(c.Difficulty))}</color>   {c.Members.Count}/{c.MaxMembers}명   최소 전투력 {c.MinPower:N0}   <color=#b8c4d8>“{c.Message}”</color>";
+                : $"{dungeon?.name ?? c.DungeonId}  <color={PartyFinderRules.DifficultyColor(c.Difficulty)}>{(dungeon != null && dungeon.isRaid ? "레이드" : PartyFinderRules.DifficultyName(c.Difficulty))}</color>   {c.Members.Count}/{c.MaxMembers}명   <color=#b8c4d8>{PartyFinderRules.Recommended(c.DungeonId, c.Difficulty)}</color>   최소 전투력 {c.MinPower:N0}   <color=#b8c4d8>“{c.Message}”</color>";
             bool leader = inParty && c.IsLeader;
             for (int i = 0; i < memberRows.Count; i++)
             {

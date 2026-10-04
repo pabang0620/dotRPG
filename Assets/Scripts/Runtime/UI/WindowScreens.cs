@@ -157,10 +157,10 @@ namespace DotRPG
             playerDot.SetAsLastSibling();
             foreach (var e in exits) Destroy(e.gameObject);
             exits.Clear();
-            foreach (var p in world.PortalPoints)
+            foreach (var p in world.PortalCenters)
             {
-                var d = UIFactory.Image(mapRect, "Exit", Game.Art.Get("ui_dot"), new Color32(255, 211, 74, 255)).rectTransform;
-                d.sizeDelta = new Vector2(12f, 12f);
+                var d = UIFactory.Image(mapRect, "Exit", MinimapView.PortalSprite(), Color.white).rectTransform;
+                d.sizeDelta = new Vector2(18f, 22f);
                 d.anchoredPosition = Place(p);
                 exits.Add(d);
             }

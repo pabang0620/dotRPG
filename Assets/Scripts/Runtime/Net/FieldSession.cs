@@ -26,7 +26,9 @@ namespace DotRPG
         string sessionId, mapId, hostCharacterId;
         int seat, epoch = 1;
         bool amHost, entering, leaving;
-        float heartbeatTimer, observeTimer, lastObserveAt;
+        float heartbeatTimer, observeTimer, lastObserveAt, lastHeartbeatAt = -10f;
+        /// <summary>The server takes one heartbeat per 2 s per character (RATE_HEARTBEAT_PER_2SEC); pushes that ask for one sooner wait.</summary>
+        const float HeartbeatMinGap = 2.1f;
         readonly RoomTransportInfo transportInfo = new RoomTransportInfo { kind = "field" };
 
         public static void Ensure()
@@ -58,15 +60,18 @@ namespace DotRPG
             var party = PartyClient.Instance;
             if (party == null || !party.InParty || party.Members.Count < 2) return false;
             if (PartyRunSession.Active || (Game.Dungeon != null && Game.Dungeon.InRun)) return false;
-            return Game.Session != null && Game.Session.MapId != MapRegistry.Village;
+            return Game.Session != null && IsHuntingMap(Game.Session.MapId);
         }
+
+        /// <summary>Only hunting grounds are shared; towns (village, canyon, winter) have no monsters to share.</summary>
+        static bool IsHuntingMap(string map) => MapRegistry.Get(map) is MapInfo m && !m.safe && !m.instanced;
 
         // ---------------- entering and leaving ----------------
 
         void OnMapEntered(string map)
         {
             if (sessionId != null && map != mapId) Leave();
-            if (sessionId == null && map != MapRegistry.Village) Enter(map);
+            if (sessionId == null && IsHuntingMap(map)) Enter(map);
         }
 
         /// <summary>Someone joined or left my party: start or stop sharing the field I am in.</summary>
@@ -174,7 +179,7 @@ namespace DotRPG
         {
             if (sessionId == null || !OnlineSession.Playing) return;
             heartbeatTimer -= Time.unscaledDeltaTime;
-            if (heartbeatTimer <= 0f) { heartbeatTimer = HeartbeatSeconds; Heartbeat(); }
+            if (heartbeatTimer <= 0f && Time.unscaledTime - lastHeartbeatAt >= HeartbeatMinGap) { heartbeatTimer = HeartbeatSeconds; Heartbeat(); }
             if (amHost)
             {
                 observeTimer -= Time.unscaledDeltaTime;
@@ -184,6 +189,7 @@ namespace DotRPG
 
         void Heartbeat()
         {
+            lastHeartbeatAt = Time.unscaledTime;
             bool synced = PartyNet.Active && (PartyNet.IsHost || PartyNet.Current.Welcomed);
             var body = new Dictionary<string, object> { ["seen_epoch"] = epoch, ["synced"] = synced };
             string id = sessionId;
@@ -193,6 +199,7 @@ namespace DotRPG
                 if (!r.ok)
                 {
                     if (r.code == "FIELD_SESSION_NOT_FOUND" || r.code == "FIELD_SESSION_ENDED") EndLocally();
+                    else heartbeatTimer = Mathf.Min(heartbeatTimer, HeartbeatMinGap); // rate limit or a network blip: ask again soon
                     return;
                 }
                 if (MiniJson.Str(r.data, "state") == "ended") { EndLocally(); return; }

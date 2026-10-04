@@ -8,6 +8,8 @@ namespace DotRPG
         const float MagnetRadius = 2.2f;
         const float CollectRadius = 0.35f;
 
+        static readonly System.Collections.Generic.List<Pickup> Active = new System.Collections.Generic.List<Pickup>();
+
         string itemId;
         int amount;
         /// <summary>[SERVER] Drop rolled by the server: collecting claims it by id instead of adding locally.</summary>
@@ -41,6 +43,18 @@ namespace DotRPG
             pickup.height = 0.2f;
             pickup.Apply();
             return pickup;
+        }
+
+        void OnEnable() => Active.Add(this);
+        void OnDisable() => Active.Remove(this);
+
+        /// <summary>Dungeon cleared: everything still on the floor goes into the bag (no walking round to pick it up).</summary>
+        public static void CollectAll()
+        {
+            int n = 0;
+            foreach (var p in Active.ToArray())
+                if (p != null) { p.Collect(true); n++; }
+            if (n > 0) GameEvents.RaiseToast($"바닥에 남은 아이템 {n}개를 챙겼습니다.");
         }
 
         void Update()
@@ -77,11 +91,12 @@ namespace DotRPG
             Apply();
         }
 
-        void Collect()
+        void Collect(bool quiet = false)
         {
             if (DropId != null) OnlineEconomy.ClaimDrop(DropId);
             // Online, anything else on the ground is a visual only: the server already decided what the bag holds.
             else if (!ServerGranted && !OnlineEconomy.On) Game.Session.Inventory.Add(itemId, amount);
+            if (quiet) { Destroy(gameObject); return; }
             Game.Audio.PlaySfx("pickup");
             var gear = EquipmentDatabase.Get(itemId);
             if (itemId == ConsumableDatabase.Gold)

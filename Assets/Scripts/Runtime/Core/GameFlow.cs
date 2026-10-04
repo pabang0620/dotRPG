@@ -15,8 +15,17 @@ namespace DotRPG
 
         public bool IsTransitioning => transitioning;
 
+        const float PeriodicSaveSeconds = 120f;
+        float nextPeriodicSave = PeriodicSaveSeconds;
+
         void Update()
         {
+            // Progress is saved on its own every couple of minutes (there is no save button).
+            if (Game.IsPlaying && Time.unscaledTime >= nextPeriodicSave)
+            {
+                nextPeriodicSave = Time.unscaledTime + PeriodicSaveSeconds;
+                if (Game.Config.autosave) WriteSave();
+            }
             if (transitioning || Game.State.ChangedThisFrame) return;
             if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
             Game.Quest.Tick();
@@ -263,11 +272,9 @@ namespace DotRPG
         public void ReturnToTitle()
         {
             // [SERVER] Online: send the last position before leaving (the upload finishes in the background).
-            if (OnlineSession.Playing)
-            {
-                WriteSave();
-                OnlineSession.Current.LeaveCharacter();
-            }
+            // Progress is saved on the way out (offline file / online upload), so nothing is lost.
+            WriteSave();
+            if (OnlineSession.Playing) OnlineSession.Current.LeaveCharacter();
             StartCoroutine(Transition(() =>
             {
                 Game.Dialogue.Abort();
@@ -283,6 +290,25 @@ namespace DotRPG
         public void QuitGame()
         {
             Game.Settings.Save();
+            if (Game.IsPlaying || Game.State.Current == GameState.Paused) WriteSave(); // saved on the way out
+            if (OnlineSession.Playing)
+            {
+                OnlineSession.Current.LeaveCharacter();
+                StartCoroutine(QuitAfterUpload());
+                return;
+            }
+            QuitNow();
+        }
+
+        /// <summary>Online: give the last upload a moment to reach the server before the process ends.</summary>
+        System.Collections.IEnumerator QuitAfterUpload()
+        {
+            yield return new WaitForSecondsRealtime(1.5f);
+            QuitNow();
+        }
+
+        static void QuitNow()
+        {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

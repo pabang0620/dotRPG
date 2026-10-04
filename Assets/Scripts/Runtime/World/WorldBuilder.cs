@@ -126,6 +126,16 @@ namespace DotRPG
         /// Where a player coming from <paramref name="fromMap"/> should appear: a step inside the portal
         /// that leads back there. Falls back to the map's start point.
         /// </summary>
+        /// <summary>Centre of the portal that leads to <paramref name="targetMap"/> (quest auto-walk).</summary>
+        public bool PortalTowards(string targetMap, out Vector2 center)
+        {
+            center = Vector2.zero;
+            if (string.IsNullOrEmpty(targetMap) || !portalCells.TryGetValue(targetMap, out var list) || list.Count == 0) return false;
+            foreach (var p in list) center += p;
+            center /= list.Count;
+            return true;
+        }
+
         public Vector2 ArrivalFrom(string fromMap, out Facing facing)
         {
             facing = Facing.Down;
@@ -264,6 +274,31 @@ namespace DotRPG
 
         /// <summary>Centres of every portal cell (drawn as exits on the minimap).</summary>
         public readonly List<Vector2> PortalPoints = new List<Vector2>();
+        /// <summary>One point per exit: the centre of each connected group of portal cells (map markers).</summary>
+        public readonly List<Vector2> PortalCenters = new List<Vector2>();
+
+        void GroupPortals()
+        {
+            PortalCenters.Clear();
+            var groups = new List<List<Vector2>>();
+            foreach (var p in PortalPoints)
+            {
+                List<Vector2> home = null;
+                foreach (var g in groups)
+                {
+                    foreach (var q in g) if (Vector2.Distance(p, q) < 1.6f) { home = g; break; }
+                    if (home != null) break;
+                }
+                if (home == null) groups.Add(home = new List<Vector2>());
+                home.Add(p);
+            }
+            foreach (var g in groups)
+            {
+                Vector2 sum = Vector2.zero;
+                foreach (var q in g) sum += q;
+                PortalCenters.Add(sum / g.Count);
+            }
+        }
 
         void BuildMinimap()
         {
@@ -272,6 +307,7 @@ namespace DotRPG
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
                     if (cells[x, y] == '>' || cells[x, y] == '<') PortalPoints.Add(new Vector2(x + 0.5f, y + 0.5f));
+            GroupPortals();
             Minimap = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null ? RenderMinimap() : null;
             if (Minimap == null) Minimap = BuildFlatMinimap();
         }

@@ -53,20 +53,28 @@ namespace DotRPG
 
         /// <summary>Town service NPCs on the current map (the minimap marks them with icons).</summary>
         public static readonly System.Collections.Generic.List<NpcController> Services = new System.Collections.Generic.List<NpcController>();
+        /// <summary>Every NPC in the loaded map (minimap quest marks, quest auto-walk targets).</summary>
+        public static readonly System.Collections.Generic.List<NpcController> All = new System.Collections.Generic.List<NpcController>();
+        /// <summary>The quest mark this NPC shows right now (minimap reads it).</summary>
+        public QuestMark ShownMark { get; private set; }
+        public bool ShownMarkMain { get; private set; }
 
         protected override void OnEnable()
         {
             base.OnEnable();
             if (def != null && def.service != NpcService.None && !Services.Contains(this)) Services.Add(this);
+            if (def != null && !All.Contains(this)) All.Add(this);
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
             Services.Remove(this);
+            All.Remove(this);
+            ShownMark = QuestMark.None;
         }
 
-        void OnDestroy() => Services.Remove(this);
+        void OnDestroy() { Services.Remove(this); All.Remove(this); }
 
         public static NpcController Create(NpcDefinition def, Vector2 position, Transform parent)
         {
@@ -123,6 +131,7 @@ namespace DotRPG
             npc.nextActionTime = Time.time + Random.Range(0.5f, 2f);
             npc.PoseTool(0f);
             if (def.service != NpcService.None && !Services.Contains(npc)) Services.Add(npc);
+            if (!All.Contains(npc)) All.Add(npc);
             return npc;
         }
 
@@ -140,9 +149,12 @@ namespace DotRPG
             }
         }
 
+        const float MarkHeight = 1.62f;
+
         public override void Interact(PlayerController player)
         {
-            if (def.service != NpcService.None)
+            // A shop NPC with a quest conversation waiting (errand, report, offer) talks first; the shop opens on the next talk.
+            if (def.service != NpcService.None && !Game.Quest.HasQuestTalk(def.npcId))
             {
                 moving = false;
                 facing = FacingExtensions.FromVector(player.Position - (Vector2)transform.position, facing);
@@ -305,7 +317,9 @@ namespace DotRPG
         {
             if (Game.Quest == null || def == null || Time.unscaledTime < nextMarkCheck) return;
             nextMarkCheck = Time.unscaledTime + 0.25f;
-            var mark = def.service == NpcService.None ? Game.Quest.MarkFor(def.npcId) : QuestMark.None;
+            var mark = Game.Quest.MarkFor(def.npcId); // shop NPCs carry quest marks too (the errand at the general store)
+            ShownMark = mark;
+            ShownMarkMain = mark != QuestMark.None && Game.Quest.MarkIsMain(def.npcId);
             if (mark == QuestMark.None)
             {
                 if (markText != null) markText.gameObject.SetActive(false);
@@ -313,13 +327,14 @@ namespace DotRPG
             }
             if (markText == null)
             {
-                markShadow = MakeMark("QuestMarkShadow", new Vector3(0.04f, 1.96f, 0f), 29998);
-                markText = MakeMark("QuestMark", new Vector3(0f, 2f, 0f), 29999);
+                // Just above the head (64 px body at 36 px per unit is about 1.8 units tall).
+                markShadow = MakeMark("QuestMarkShadow", new Vector3(0.04f, MarkHeight - 0.04f, 0f), 29998);
+                markText = MakeMark("QuestMark", new Vector3(0f, MarkHeight, 0f), 29999);
                 markShadow.transform.SetParent(markText.transform, true);
             }
             markText.gameObject.SetActive(true);
             string glyph = mark == QuestMark.Available ? "!" : "?";
-            bool main = Game.Quest.MarkIsMain(def.npcId);
+            bool main = ShownMarkMain;
             markText.text = glyph;
             markShadow.text = glyph;
             markText.color = main ? new Color32(255, 214, 64, 255) : new Color32(120, 214, 255, 255);
@@ -351,7 +366,7 @@ namespace DotRPG
         void LateUpdate()
         {
             if (markText != null && markText.gameObject.activeSelf)
-                markText.transform.localPosition = new Vector3(0f, 2f + Mathf.Sin(Time.unscaledTime * 4f) * 0.06f, 0f);
+                markText.transform.localPosition = new Vector3(0f, MarkHeight + Mathf.Sin(Time.unscaledTime * 4f) * 0.06f, 0f);
         }
 
         void StartMove(Vector2 target)

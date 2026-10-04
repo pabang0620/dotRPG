@@ -143,12 +143,11 @@ namespace DotRPG
             screen.BuildPanel(root, "일시정지", 420);
             screen.menu.AddButton("계속하기", () => Game.Flow.Resume());
             screen.menu.AddButton("가방 · 장비", () => Game.Flow.OpenWindow(null));
-            screen.menu.AddButton("저장하기", () => Game.Flow.SaveGame());
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
             screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
-            screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n저장하지 않은 진행은 사라집니다.", () => Game.Flow.ReturnToTitle()));
-            screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n저장하지 않은 진행은 사라집니다.", () => Game.Flow.QuitGame()));
+            screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.ReturnToTitle()));
+            screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame()));
             screen.menu.OnCancel = () => Game.Flow.Resume();
             screen.FitPanel();
             return screen;
