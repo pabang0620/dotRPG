@@ -77,8 +77,9 @@ namespace DotRPG
                 if (map.id == MapRegistry.Winter)
                 {
                     var art = Game.World.ObjectsRoot.GetComponentsInChildren<SpriteRenderer>().Where(sr => sr.sprite != null && sr.sprite.name.StartsWith(WinterVillageArt.Prefix)).ToArray();
-                    foreach (var key in new[] { "house", "barn", "gate", "fence_h", "fence_v", "broadleaf", "fir", "pine", "rock" })
+                    foreach (var key in new[] { "house", "barn", "gate", "broadleaf", "fir", "pine", "rock" })
                         DCheck("snow village generated " + key, art.Any(sr => sr.sprite.name == WinterVillageArt.Prefix + key));
+                    DCheck("winter fences match carrot plot", Game.World.ObjectsRoot.GetComponentsInChildren<SpriteRenderer>().Any(sr => sr.sprite != null && sr.sprite.name.StartsWith("town_fence_")));
                     DCheck("snow atlas point sampling", art.All(sr => sr.sprite.texture.filterMode == FilterMode.Point));
                 }
             }

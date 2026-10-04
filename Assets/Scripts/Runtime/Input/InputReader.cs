@@ -26,6 +26,7 @@ namespace DotRPG
         /// <summary>Read a town return scroll.</summary>
         TownScroll,
         Mobility,
+        MoveUp, MoveDown, MoveLeft, MoveRight, Map,
     }
 
     /// <summary>
@@ -56,7 +57,7 @@ namespace DotRPG
         public bool CancelPressed { get; private set; }
         /// <summary>Opens/closes the item &amp; equipment window (I / Tab, gamepad Back/Select).</summary>
         public bool InventoryPressed { get; private set; }
-        /// <summary>M: opens / closes the big map (fixed key, not rebindable).</summary>
+        /// <summary>Opens / closes the big map (M by default).</summary>
         public bool MapPressed { get; private set; }
         public bool Skill1Pressed { get; private set; }
         public bool Skill2Pressed { get; private set; }
@@ -210,6 +211,7 @@ namespace DotRPG
 
         static string DefaultLabel(GameAction action, bool gamepad)
         {
+            if (!gamepad && action == GameAction.Move) return MovementLabel();
             if (!gamepad && System.Array.IndexOf(Rebindable, action) >= 0) return KeyLabel(KeyboardKey(action));
             switch (action)
             {
@@ -414,6 +416,7 @@ namespace DotRPG
         {
             GameAction.Attack, GameAction.Mobility, GameAction.Interact, GameAction.Skill1, GameAction.Skill2, GameAction.Skill3,
             GameAction.Skill4, GameAction.Skill5, GameAction.UseItem, GameAction.UseMana, GameAction.TownScroll, GameAction.Inventory,
+            GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight, GameAction.Map,
         };
 
         static readonly System.Collections.Generic.Dictionary<GameAction, KeyCode> keyOverrides = new System.Collections.Generic.Dictionary<GameAction, KeyCode>();
@@ -434,6 +437,11 @@ namespace DotRPG
                 case GameAction.UseMana: return KeyCode.Alpha2;
                 case GameAction.TownScroll: return KeyCode.Alpha3;
                 case GameAction.Inventory: return KeyCode.I;
+                case GameAction.MoveUp: return KeyCode.UpArrow;
+                case GameAction.MoveDown: return KeyCode.DownArrow;
+                case GameAction.MoveLeft: return KeyCode.LeftArrow;
+                case GameAction.MoveRight: return KeyCode.RightArrow;
+                case GameAction.Map: return KeyCode.M;
                 default: return KeyCode.None;
             }
         }
@@ -443,12 +451,18 @@ namespace DotRPG
         /// <summary>Binds <paramref name="key"/> to <paramref name="action"/>; an action already on that key takes the old key (swap).</summary>
         public static void SetKeyboardKey(GameAction action, KeyCode key)
         {
+            if (System.Array.IndexOf(Rebindable, action) < 0 || !CanBindKeyboardKey(key)) return;
             KeyCode old = KeyboardKey(action);
             foreach (var other in Rebindable)
                 if (other != action && KeyboardKey(other) == key) keyOverrides[other] = old;
             keyOverrides[action] = key;
             RebuildKeys();
         }
+
+        public static bool CanBindKeyboardKey(KeyCode key) => System.Enum.IsDefined(typeof(KeyCode), key) && key > KeyCode.None && key < KeyCode.Mouse0
+            && key != KeyCode.Escape && key != KeyCode.Return && key != KeyCode.KeypadEnter && key != KeyCode.Backspace
+            && key != KeyCode.LeftWindows && key != KeyCode.RightWindows && key != KeyCode.LeftCommand && key != KeyCode.RightCommand
+            && key != KeyCode.CapsLock && key != KeyCode.Numlock && key != KeyCode.ScrollLock && key != KeyCode.Print && key != KeyCode.Pause;
 
         public static void ResetKeyboardKeys()
         {
@@ -460,7 +474,7 @@ namespace DotRPG
         public static string SaveKeyOverrides()
         {
             var parts = new System.Collections.Generic.List<string>();
-            foreach (var pair in keyOverrides) if (pair.Value != DefaultKey(pair.Key)) parts.Add(pair.Key + "=" + pair.Value);
+            foreach (var action in Rebindable) if (KeyboardKey(action) != DefaultKey(action)) parts.Add(action + "=" + KeyboardKey(action));
             return string.Join(";", parts);
         }
 
@@ -471,7 +485,7 @@ namespace DotRPG
                 foreach (var part in text.Split(';'))
                 {
                     var kv = part.Split('=');
-                    if (kv.Length == 2 && System.Enum.TryParse(kv[0], out GameAction a) && System.Enum.TryParse(kv[1], out KeyCode k)) keyOverrides[a] = k;
+                    if (kv.Length == 2 && System.Enum.TryParse(kv[0], out GameAction a) && System.Enum.TryParse(kv[1], out KeyCode k) && System.Array.IndexOf(Rebindable, a) >= 0 && CanBindKeyboardKey(k)) SetKeyboardKey(a, k);
                 }
             RebuildKeys();
         }
@@ -479,12 +493,13 @@ namespace DotRPG
         static void RebuildKeys()
         {
             KeyCode K(GameAction a) => KeyboardKey(a);
-            bool shiftDefault = K(GameAction.Mobility) == KeyCode.LeftShift;
+            bool UsedByOther(KeyCode key, GameAction action) => System.Array.Exists(Rebindable, a => a != action && K(a) == key);
+            bool shiftDefault = K(GameAction.Mobility) == KeyCode.LeftShift && !UsedByOther(KeyCode.RightShift, GameAction.Mobility);
             MobilityKeys = shiftDefault ? new[] { KeyCode.LeftShift, KeyCode.RightShift, KeyCode.JoystickButton1 } : new[] { K(GameAction.Mobility), KeyCode.JoystickButton1 };
             AttackKeys = new[] { K(GameAction.Attack), KeyCode.JoystickButton2 };
             InteractKeys = new[] { K(GameAction.Interact), KeyCode.JoystickButton0 };
             UseItemKeys = new[] { K(GameAction.UseItem), KeyCode.JoystickButton3 };
-            InventoryKeys = K(GameAction.Inventory) == KeyCode.I ? new[] { KeyCode.I, KeyCode.Tab, KeyCode.JoystickButton6 } : new[] { K(GameAction.Inventory), KeyCode.JoystickButton6 };
+            InventoryKeys = K(GameAction.Inventory) == KeyCode.I && !UsedByOther(KeyCode.Tab, GameAction.Inventory) ? new[] { KeyCode.I, KeyCode.Tab, KeyCode.JoystickButton6 } : new[] { K(GameAction.Inventory), KeyCode.JoystickButton6 };
             Skill1Keys = new[] { K(GameAction.Skill1), KeyCode.JoystickButton4 };
             Skill2Keys = new[] { K(GameAction.Skill2), KeyCode.JoystickButton5 };
             Skill3Keys = new[] { K(GameAction.Skill3) };
@@ -493,6 +508,10 @@ namespace DotRPG
             ManaKeys = new[] { K(GameAction.UseMana), KeyCode.JoystickButton8 };
             ScrollKeys = new[] { K(GameAction.TownScroll) };
         }
+
+        public static string MovementLabel() => KeyboardKey(GameAction.MoveUp) == KeyCode.UpArrow && KeyboardKey(GameAction.MoveDown) == KeyCode.DownArrow
+            && KeyboardKey(GameAction.MoveLeft) == KeyCode.LeftArrow && KeyboardKey(GameAction.MoveRight) == KeyCode.RightArrow ? "↑↓←→"
+            : KeyLabel(KeyboardKey(GameAction.MoveUp)) + "/" + KeyLabel(KeyboardKey(GameAction.MoveDown)) + "/" + KeyLabel(KeyboardKey(GameAction.MoveLeft)) + "/" + KeyLabel(KeyboardKey(GameAction.MoveRight));
 
         static readonly System.Collections.Generic.Dictionary<KeyCode, string> keyLabels = new System.Collections.Generic.Dictionary<KeyCode, string>();
 
@@ -514,22 +533,30 @@ namespace DotRPG
                 case KeyCode.LeftAlt: case KeyCode.RightAlt: return "Alt";
                 case KeyCode.Space: return "Space";
                 case KeyCode.Return: return "Enter";
+                case KeyCode.UpArrow: return "↑"; case KeyCode.DownArrow: return "↓";
+                case KeyCode.LeftArrow: return "←"; case KeyCode.RightArrow: return "→";
                 default: return k.ToString();
             }
         }
 
-        void ReadLegacy()
+        public static Vector2 KeyboardMove(System.Func<KeyCode, bool> held)
         {
             Vector2 keys = Vector2.zero;
-            if (Input.GetKey(KeyCode.LeftArrow)) keys.x -= 1;
-            if (Input.GetKey(KeyCode.RightArrow)) keys.x += 1;
-            if (Input.GetKey(KeyCode.DownArrow)) keys.y -= 1;
-            if (Input.GetKey(KeyCode.UpArrow)) keys.y += 1;
+            if (held(KeyboardKey(GameAction.MoveLeft))) keys.x -= 1;
+            if (held(KeyboardKey(GameAction.MoveRight))) keys.x += 1;
+            if (held(KeyboardKey(GameAction.MoveDown))) keys.y -= 1;
+            if (held(KeyboardKey(GameAction.MoveUp))) keys.y += 1;
+            return Vector2.ClampMagnitude(keys, 1f);
+        }
+
+        void ReadLegacy()
+        {
+            Vector2 keys = KeyboardMove(Input.GetKey);
 
             Vector2 stick = Vector2.zero;
             if (legacyAxesAvailable)
             {
-                try { stick = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")); }
+                try { stick = new Vector2(Input.GetAxisRaw("GamepadHorizontal"), Input.GetAxisRaw("GamepadVertical")); }
                 catch (System.ArgumentException) { legacyAxesAvailable = false; }
             }
             if (stick.magnitude < stickDeadZone) stick = Vector2.zero;
@@ -545,7 +572,7 @@ namespace DotRPG
             SubmitPressed = AnyDown(SubmitKeys);
             CancelPressed = AnyDown(CancelKeys);
             InventoryPressed = AnyDown(InventoryKeys);
-            MapPressed = Input.GetKeyDown(KeyCode.M);
+            MapPressed = Input.GetKeyDown(KeyboardKey(GameAction.Map));
             Skill1Pressed = AnyDown(Skill1Keys);
             Skill2Pressed = AnyDown(Skill2Keys);
             Skill3Pressed = AnyDown(Skill3Keys);

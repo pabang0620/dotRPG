@@ -14,7 +14,7 @@ namespace DotRPG
     /// • 스킬 젬 — the five skill slots (the fifth is the awakening skill). Each slot opens at a level
     ///   with its skill; two support gems link into it. Click a support socket to cycle gems.
     /// </summary>
-    public class SkillScreen : WindowScreen
+    public partial class SkillScreen : WindowScreen
     {
         enum TabId { Tree, Gems }
 
@@ -34,8 +34,8 @@ namespace DotRPG
         readonly Image[] tabBg = new Image[2];
 
         // Tree.
-        sealed class NodeView { public PassiveNode node; public RectTransform rect; public Image fill, ring, glyph; }
-        sealed class LinkView { public PassiveNode a, b; public Image line; }
+        sealed class NodeView { public PassiveNode node; public RectTransform rect; public Image fill, ring, glyph, halo, ornament; public bool owned, available; public Color accent; }
+        sealed class LinkView { public PassiveNode a, b; public Image line, glow; }
         readonly List<NodeView> nodeViews = new List<NodeView>();
         readonly List<LinkView> linkViews = new List<LinkView>();
         Text pointsText, legendText, summaryText;
@@ -119,6 +119,7 @@ namespace DotRPG
         {
             var area = Panel(treePage, "TreeArea", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), Vector2.zero, new Vector2(1010f, 530f), new Color32(16, 22, 34, 255));
             var center = UIFactory.Place(UIFactory.Rect(area.transform, "Center"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            BuildConstellation(center);
             var done = new HashSet<string>();
             foreach (var n in PassiveTree.All)
                 foreach (var l in n.links)
@@ -132,18 +133,26 @@ namespace DotRPG
                     rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
                     rt.pivot = new Vector2(0.5f, 0.5f);
                     rt.anchoredPosition = (pa + pb) * 0.5f;
-                    rt.sizeDelta = new Vector2(d.magnitude, 5f);
+                    rt.sizeDelta = new Vector2(d.magnitude, 2f);
                     rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
-                    linkViews.Add(new LinkView { a = n, b = b, line = line });
+                    var glow = Img(center, "LinkLight", "ui_white", Color.clear);
+                    UIFactory.Place(glow.rectTransform, Vector2.one * .5f, Vector2.one * .5f, rt.anchoredPosition, new Vector2(d.magnitude, 8f));
+                    glow.rectTransform.localRotation = rt.localRotation;
+                    glow.transform.SetSiblingIndex(line.transform.GetSiblingIndex());
+                    linkViews.Add(new LinkView { a = n, b = b, line = line, glow = glow });
                 }
             foreach (var n in PassiveTree.All)
             {
                 float size = SizeOf(n);
-                var ring = Img(center, "Node_" + n.id, "ui_circle", Color.white);
+                var halo = Ornament(center, "NodeGlow", "halo", UiPos(n), Vector2.one * size * 2.5f, Color.clear);
+                var ring = Ornament(center, "Node_" + n.id, "ring", UiPos(n), Vector2.one * size, Color.white);
                 UIFactory.Place(ring.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), UiPos(n), new Vector2(size, size));
                 ring.raycastTarget = true;
                 var fill = Img(ring.transform, "Fill", "ui_circle", Color.white);
-                UIFactory.Stretch(fill.rectTransform, 4f, 4f, 4f, 4f);
+                UIFactory.Stretch(fill.rectTransform, size * .18f, size * .18f, size * .18f, size * .18f);
+                fill.sprite = ArcaneUiArt.Get("gem");
+                var ornament = Ornament(ring.transform, "Engraving", "sigil", Vector2.zero, Vector2.one * size * 1.35f, Color.clear);
+                if (n.kind == PassiveKind.Small) ornament.enabled = false;
                 Image glyph = null;
                 string g = GlyphFor(n);
                 if (g != null)
@@ -151,7 +160,7 @@ namespace DotRPG
                     glyph = UIFactory.Image(ring.transform, "Glyph", Game.Art.Get(g), Color.white);
                     UIFactory.Place(glyph.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.5f, size * 0.5f));
                 }
-                var view = new NodeView { node = n, rect = ring.rectTransform, fill = fill, ring = ring, glyph = glyph };
+                var view = new NodeView { node = n, rect = ring.rectTransform, fill = fill, ring = ring, glyph = glyph, halo = halo, ornament = ornament };
                 var relay = ring.gameObject.AddComponent<PointerRelay>();
                 relay.onEnter = () => { hovered = view; mouse = true; };
                 relay.onExit = () => { if (hovered == view) hovered = null; };
@@ -167,7 +176,7 @@ namespace DotRPG
                 () => { Game.Session.Progression.ResetTree(); Game.Audio.PlaySfx("cancel"); Refresh(); }, 20);
         }
 
-        static Vector2 UiPos(PassiveNode n) => n.pos;
+        static Vector2 UiPos(PassiveNode n) => new Vector2(n.pos.x * .98f, n.pos.y * .94f);
 
         void Allocate(PassiveNode n)
         {
@@ -200,6 +209,8 @@ namespace DotRPG
                 bool can = prog.CanAllocate(v.node);
                 bool reachable = !owned && v.node.links.Exists(prog.Allocated.Contains);
                 Color cluster = ClusterColors[Mathf.Clamp(v.node.cluster, 0, ClusterColors.Length - 1)];
+                v.owned = owned; v.available = can; v.accent = cluster;
+                v.ornament.color = owned ? new Color(1f, .78f, .38f, .85f) : new Color(.38f, .53f, .72f, .45f);
                 v.fill.color = owned ? Color.Lerp(cluster, new Color32(255, 232, 160, 255), 0.45f) : reachable ? Color.Lerp(cluster, Color.black, 0.3f) : Color.Lerp(cluster, Color.black, 0.68f);
                 v.ring.color = owned ? new Color32(255, 214, 90, 255) : can ? new Color32(240, 240, 240, 255) : new Color32(70, 76, 90, 255);
                 if (v.node.kind == PassiveKind.Keystone && !owned) v.ring.color = can ? new Color32(255, 170, 90, 255) : new Color32(120, 80, 60, 255);
@@ -208,6 +219,7 @@ namespace DotRPG
             foreach (var l in linkViews)
             {
                 bool a = prog.Allocated.Contains(l.a.id), b = prog.Allocated.Contains(l.b.id);
+                l.glow.color = a && b ? new Color(.22f, .55f, .85f, .2f) : Color.clear;
                 l.line.color = a && b ? new Color32(230, 190, 90, 255) : a || b ? new Color32(150, 156, 170, 255) : new Color32(52, 58, 72, 255);
             }
             pointsText.text = $"<b>Lv.{prog.Level}</b>\n남은 포인트  <color=#ffe066><size=26>{prog.PointsLeft}</size></color>";
@@ -425,6 +437,7 @@ namespace DotRPG
                     else if (tab == TabId.Gems) Cycle(sockets[selectedSocket], 1);
                 }
             }
+            AnimateTree();
             // Tooltip follows the hovered item (mouse) or the keyboard selection.
             object target = mouse ? hovered : !keyboardUsed ? null : tab == TabId.Tree ? (object)selectedNode : sockets[selectedSocket];
             if (target == null) { tooltip.gameObject.SetActive(false); return; }
@@ -445,7 +458,7 @@ namespace DotRPG
 
         void HighlightSelected()
         {
-            foreach (var v in nodeViews) v.rect.localScale = v == selectedNode ? Vector3.one * 1.25f : Vector3.one;
+            AnimateTree();
         }
 
         void MoveNode(Vector2 dir)

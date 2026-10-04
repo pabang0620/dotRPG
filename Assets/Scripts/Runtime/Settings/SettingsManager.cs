@@ -14,7 +14,7 @@ namespace DotRPG
         public SettingsData Data { get; private set; } = new SettingsData();
         public event Action Applied;
 
-        public static string FilePath => Path.Combine(Application.persistentDataPath, "settings.json");
+        public static string FilePath => Path.Combine(SaveSystem.DirectoryOverride ?? Application.persistentDataPath, "settings.json");
 
         public void Load()
         {

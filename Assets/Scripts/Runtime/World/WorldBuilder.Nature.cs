@@ -17,7 +17,7 @@ namespace DotRPG
                 else if (key.StartsWith("wnt_fence_"))
                 {
                     int.TryParse(key.Substring("wnt_fence_".Length), out int mask);
-                    winter = (mask & 3) != 0 || mask == 0 ? "fence_h" : "fence_v";
+                    return "town_fence_" + mask; // Match the first village carrot plot, including connected corners.
                 }
                 else if (key == "wnt_house") winter = "house";
                 else if (key == "wnt_barn") winter = "barn";

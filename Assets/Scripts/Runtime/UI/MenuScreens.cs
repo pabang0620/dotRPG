@@ -120,7 +120,7 @@ namespace DotRPG
             screen.menu.AddButton("이어하기", () => ui.Slots.Open(true), () => Game.Saves.HasAnySave());
             screen.menu.AddButton("온라인", () => ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin)); // [SERVER]
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
-            screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
+            screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
             screen.panel.sizeDelta = new Vector2(380, screen.menu.Height + 48);
 
@@ -150,7 +150,7 @@ namespace DotRPG
             screen.menu.AddButton("계속하기", () => Game.Flow.Resume());
             screen.menu.AddButton("가방 · 장비", () => Game.Flow.OpenWindow(null));
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
-            screen.menu.AddButton("조작 방법", () => ui.Push(ui.Controls));
+            screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
             screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.ReturnToTitle()));
             screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame()));
@@ -210,7 +210,7 @@ namespace DotRPG
             menu.AddOption("줍기: 언커먼 장비", () => s.Data.skipUncommonGear ? "안 줍기" : "줍기", d => { s.Data.skipUncommonGear = !s.Data.skipUncommonGear; s.Apply(); });
             menu.AddOption("줍기: 소비 아이템", () => s.Data.skipConsumables ? "안 줍기" : "줍기", d => { s.Data.skipConsumables = !s.Data.skipConsumables; s.Apply(); });
             menu.AddOption("줍기: 재료", () => s.Data.skipMaterials ? "안 줍기" : "줍기", d => { s.Data.skipMaterials = !s.Data.skipMaterials; s.Apply(); });
-            menu.AddButton("조작 키 변경", () => ui.Push(ui.KeyBind));
+            menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             menu.AddButton("돌아가기", () => screen.Close());
             menu.OnCancel = screen.Close;
             screen.FitPanel();
@@ -234,7 +234,7 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "Controls", true);
             var screen = root.gameObject.AddComponent<ControlsScreen>();
-            screen.BuildPanel(root, "조작 방법", 700, BuildBody(), 20);
+            screen.BuildPanel(root, "조작 안내", 700, BuildBody(), 20);
             screen.menu.AddButton("돌아가기", () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
             screen.FitPanel();
@@ -262,7 +262,7 @@ namespace DotRPG
                 Pair("스킬 3 / 4", GameAction.Skill3, GameAction.Skill4),
                 Row("각성 기술", GameAction.Skill5),
                 Row("메뉴 / 일시정지", GameAction.Pause),
-                "키 변경 기능은 다음 단계에서 추가 예정입니다 (저장 구조는 준비됨).",
+                "단축키는 메뉴의 키보드 설정에서 변경할 수 있습니다.",
             });
         }
     }

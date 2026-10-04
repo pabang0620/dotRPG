@@ -154,6 +154,7 @@ namespace DotRPG
             slash.sortingOrder = 3;
             slash.enabled = false;
 
+            gameObject.AddComponent<WeaponEnhanceVfx>().Setup(owner, weapon);
             filter = new ContactFilter2D { useTriggers = true };
         }
 

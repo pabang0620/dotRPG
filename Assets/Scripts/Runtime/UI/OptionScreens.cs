@@ -4,65 +4,6 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    /// <summary>
-    /// [I] Keyboard key rebinding: each action shows its key; choosing it waits for the next key press
-    /// (Esc cancels). A key already used by another action is swapped. Saved with the settings.
-    /// </summary>
-    public class KeyBindScreen : MenuScreen
-    {
-        UIRoot ui;
-        GameAction? listening;
-        int listenFrame;
-
-        static readonly string[] Names = { "공격", "이동기", "상호작용", "스킬 1", "스킬 2", "스킬 3", "스킬 4", "각성 스킬", "체력 물약", "마나 물약", "귀환 주문서", "가방" };
-
-        public static KeyBindScreen Create(Transform canvas, UIRoot ui)
-        {
-            var root = CreateRoot(canvas, "KeyBind", true);
-            var screen = root.gameObject.AddComponent<KeyBindScreen>();
-            screen.ui = ui;
-            screen.BuildPanel(root, "조작 키 변경", 620, "항목을 고르고 새 키를 누르세요. 이미 쓰는 키면 서로 바뀝니다.\n이동(방향키)·메뉴(Esc)·게임패드 버튼은 바꿀 수 없습니다.", 16);
-            for (int i = 0; i < InputReader.Rebindable.Length; i++)
-            {
-                var action = InputReader.Rebindable[i];
-                string name = Names[i];
-                screen.menu.AddOption(name, () => screen.listening == action ? "<color=#ffd84a>키를 누르세요…</color>" : InputReader.KeyLabel(InputReader.KeyboardKey(action)),
-                    d => { screen.listening = action; screen.listenFrame = Time.frameCount; });
-            }
-            screen.menu.AddButton("기본값으로", () => { InputReader.ResetKeyboardKeys(); Save(); });
-            screen.menu.AddButton("돌아가기", () => { Save(); ui.Pop(); });
-            screen.menu.OnCancel = () => { Save(); ui.Pop(); };
-            screen.FitPanel();
-            return screen;
-        }
-
-        static void Save()
-        {
-            Game.Settings.Data.keyOverrides = InputReader.SaveKeyOverrides();
-            Game.Settings.Save();
-        }
-
-        void Update()
-        {
-            if (listening == null) { if (menu != null) menu.enabled = true; return; }
-            if (menu != null) menu.enabled = false;
-            if (Time.frameCount <= listenFrame + 1) return;
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape)) { listening = null; Game.Audio.PlaySfx("cancel"); menu.Refresh(); return; }
-            foreach (KeyCode k in Enum.GetValues(typeof(KeyCode)))
-            {
-                if (k == KeyCode.None || k == KeyCode.Escape || k >= KeyCode.Mouse0 || k == KeyCode.UpArrow || k == KeyCode.DownArrow
-                    || k == KeyCode.LeftArrow || k == KeyCode.RightArrow || k == KeyCode.Return || k == KeyCode.KeypadEnter) continue;
-                if (!UnityEngine.Input.GetKeyDown(k)) continue;
-                InputReader.SetKeyboardKey(listening.Value, k);
-                listening = null;
-                Game.Audio.PlaySfx("confirm");
-                Save();
-                menu.Refresh();
-                return;
-            }
-        }
-    }
-
     /// <summary>[I] Three save slots: summary of each (name, class, level, story point, play time, date), new game or continue.</summary>
     public class SaveSlotScreen : MenuScreen
     {
