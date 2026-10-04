@@ -84,21 +84,58 @@ namespace DotRPG
             return member != null && member.Class == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
         }
 
+        /// <summary>A party member who is not on this map: name, level and class, bars empty, "다른 곳에 있음".</summary>
+        static void ShowAway(Frame frame, PartyMemberView v)
+        {
+            Color classColor = v.cls == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
+            frame.stripe.color = classColor;
+            frame.shownMember = null;
+            frame.shownLevel = -1;
+            frame.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(classColor)}>{v.name}</color>";
+            frame.info.text = $"Lv.{v.level} {CharacterClassInfo.Get(v.cls).displayName}";
+            SetFill(frame.hpFill, 0f);
+            SetFill(frame.mpFill, 0f);
+            if (!frame.downed.gameObject.activeSelf) frame.downed.gameObject.SetActive(true);
+            frame.shownDowned = -2;
+            frame.downedText.text = "<color=#b8c4d8>다른 곳에 있음</color>";
+        }
+
         /// <summary>Number of frames on screen (for automated checks).</summary>
         public int DevVisible { get; private set; }
+
+        readonly List<PlayerController> bodies = new List<PlayerController>();
+        readonly List<PartyMemberView> away = new List<PartyMemberView>();
 
         void Update()
         {
             var party = Game.Party;
             int visibleCount = 0;
+            // Everyone with a body here (AI in a dungeon, friends hunting or fighting with me), then the people of my
+            // online party who are somewhere else: a party member is always listed, not only the AI.
+            bodies.Clear();
+            away.Clear();
+            if (party != null)
+                for (int k = 1; k < party.Members.Count; k++)
+                    if (party.Members[k] != null && party.Members[k].gameObject.activeInHierarchy) bodies.Add(party.Members[k]);
+            var pc = PartyClient.Instance;
+            if (pc != null && pc.InParty)
+                foreach (var v in pc.Members)
+                {
+                    if (v.me) continue;
+                    bool here = false;
+                    foreach (var b in bodies) if (b.DisplayName == v.name) here = true;
+                    if (!here) away.Add(v);
+                }
             for (int i = 0; i < frames.Count; i++)
             {
                 var frame = frames[i];
-                var member = party != null && i + 1 < party.Members.Count ? party.Members[i + 1] : null;
-                bool isVisible = member != null && member.gameObject.activeInHierarchy;
+                var member = i < bodies.Count ? bodies[i] : null;
+                var elsewhere = member == null && i - bodies.Count < away.Count ? away[i - bodies.Count] : null;
+                bool isVisible = member != null || elsewhere != null;
                 if (frame.root.gameObject.activeSelf != isVisible) frame.root.gameObject.SetActive(isVisible);
                 if (!isVisible) continue;
                 visibleCount++;
+                if (elsewhere != null) { ShowAway(frame, elsewhere); continue; }
                 var mercenary = MercenaryDatabase.Get(member.Data.MercenaryId);
                 Color classColor = ClassColor(member);
                 frame.stripe.color = classColor;

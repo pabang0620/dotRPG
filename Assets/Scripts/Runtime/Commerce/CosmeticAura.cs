@@ -13,7 +13,7 @@ namespace DotRPG
         /// <summary>The same artwork is used by the wardrobe preview and the world renderer.</summary>
         public static Sprite ForProduct(CosmeticProduct product)
         {
-            if (product == null || product.IsFree) return Sprite;
+            if (product == null || product.IsFree || product.Rarity == CosmeticRarity.Common) return Sprite;
             if (starSprite == null) starSprite = Resources.Load<Sprite>("Art/fx_cosmetic_stars");
             return starSprite != null ? starSprite : Sprite;
         }
@@ -66,6 +66,12 @@ namespace DotRPG
             aura.sprite = ForProduct(product);
             aura.color = product.Color;
             aura.enabled = aura.color.a > 0;
+        }
+
+        void Update()
+        {
+            var product = store?.Equipped;
+            if (product != null && product.Effect != CosmeticEffect.None && aura.enabled) aura.color = product.ColorAt(Time.time);
         }
 
         void OnDestroy()

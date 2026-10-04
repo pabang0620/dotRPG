@@ -265,7 +265,7 @@ namespace DotRPG
             var sb = new StringBuilder();
             for (int i = 0; i < Tabs.Length; i++)
                 sb.Append(i == tab ? $"<color=#ffd84a>[{Tabs[i]}]</color> " : $"<color=#8a94a8>{Tabs[i]}</color> ");
-            sb.Append("<size=12><color=#8a94a8> Enter 채팅 · 4~8 신호</color></size>");
+            sb.Append("<size=12><color=#8a94a8> Enter 채팅</color></size>");
             tabText.text = sb.ToString();
 
             var lines = Service.Lines;
@@ -291,7 +291,10 @@ namespace DotRPG
             if (l.channel == ChatChannel.Whisper)
                 return l.mine ? $"<color={col}>▶{Safe(l.to)}: {Safe(l.text)}</color>" : $"<color={col}>{Safe(l.from)}▶: {Safe(l.text)}</color>";
             string who = l.mine ? $"<color=#ffe066>{Safe(l.from)}</color>" : Safe(l.from);
-            return $"<color={col}>[{ChatRules.ChannelName(l.channel)}]</color> {who}: {Safe(l.text)}";
+            // [칭호][이름] : 말 (general chat shows no channel tag; party keeps [파티])
+            string title = string.IsNullOrEmpty(l.title) ? "" : $"<color=#ffd34a>[{Safe(l.title)}]</color>";
+            string tag = l.channel == ChatChannel.General ? "" : $"<color={col}>[{ChatRules.ChannelName(l.channel)}]</color> ";
+            return $"{tag}{title}[{who}] : {Safe(l.text)}";
         }
     }
 }

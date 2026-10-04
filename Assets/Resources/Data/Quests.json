@@ -531,8 +531,8 @@
       {
        "type": "dungeon",
        "target": "*",
-       "count": 12,
-       "text": "요일 던전 클리어",
+       "count": 1,
+       "text": "요일 던전 1회 클리어",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -886,8 +886,8 @@
       {
        "type": "dungeon",
        "target": "*",
-       "count": 3,
-       "text": "요일 던전 클리어",
+       "count": 1,
+       "text": "요일 던전 1회 클리어",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1029,8 +1029,8 @@
       {
        "type": "dungeon",
        "target": "*",
-       "count": 5,
-       "text": "요일 던전 클리어",
+       "count": 1,
+       "text": "요일 던전 1회 클리어",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1097,8 +1097,8 @@
       {
        "type": "dungeon",
        "target": "*",
-       "count": 15,
-       "text": "요일 던전 클리어",
+       "count": 1,
+       "text": "요일 던전 1회 클리어",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1366,6 +1366,683 @@
     "xp": 700,
     "gold": 2500,
     "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_patrol",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "숲길 순찰",
+   "summary": "나무꾼 바우가 해골 숲에서 나무를 하다 해골 떼에 쫓겨 왔다.",
+   "requires": [
+    "c1_rise"
+   ],
+   "requiresFlags": [],
+   "minLevel": 2,
+   "giver": "lumberjack",
+   "offerDialogue": "c1s_patrol_offer",
+   "turnIn": "lumberjack",
+   "turnInDialogue": "c1s_patrol_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골 숲의 해골을 쓸어 길을 연다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skeleton",
+       "count": 40,
+       "text": "해골 숲의 해골 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 250,
+    "gold": 400,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 3
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_firstdungeon",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "요일 던전 첫 도전",
+   "summary": "촌장 모리가 마을 밖 던전 안내원 이야기를 꺼낸다. 요일마다 열리는 던전에서 실력을 쌓으라고 한다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 5,
+   "giver": "chief",
+   "offerDialogue": "c1s_firstdungeon_offer",
+   "turnIn": "chief",
+   "turnInDialogue": "c1s_firstdungeon_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "던전 안내원에게 가서 요일 던전을 한 번 깬다.",
+     "objectives": [
+      {
+       "type": "dungeon",
+       "target": "*",
+       "count": 1,
+       "text": "요일 던전 1회 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 800,
+    "gold": 1000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_ruins",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "이끼 낀 유적의 해골",
+   "summary": "광부 돌쇠가 옛 유적의 석재를 캐러 가고 싶지만 해골 전사들이 지키고 있다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 5,
+   "giver": "miner",
+   "offerDialogue": "c1s_ruins_offer",
+   "turnIn": "miner",
+   "turnInDialogue": "c1s_ruins_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "이끼 낀 유적의 해골을 정리한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 40,
+       "text": "해골 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_ruins"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 20,
+       "text": "해골 궁수 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_ruins"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 600,
+    "gold": 1200,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_bones",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "대장장이의 뼈 조각",
+   "summary": "대장장이 무쇠가 강화석을 녹일 때 쓸 해골 뼈 조각을 모아 달라고 한다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 5,
+   "giver": "smith",
+   "offerDialogue": "c1s_bones_offer",
+   "turnIn": "smith",
+   "turnInDialogue": "c1s_bones_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해골에게서 뼈 조각을 모아 무쇠에게 가져간다.",
+     "objectives": [
+      {
+       "type": "collect",
+       "target": "mat_bone",
+       "count": 30,
+       "text": "뼈 조각 모으기",
+       "dialogue": "",
+       "consume": true,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 500,
+    "gold": 1500,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_depths",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "검은 뿌리 숲 토벌",
+   "summary": "낚시꾼 도윤의 강 상류가 검은 뿌리 숲의 해골 방패병 때문에 막혔다.",
+   "requires": [
+    "c1_trail"
+   ],
+   "requiresFlags": [],
+   "minLevel": 9,
+   "giver": "fisher",
+   "offerDialogue": "c1s_depths_offer",
+   "turnIn": "fisher",
+   "turnInDialogue": "c1s_depths_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "검은 뿌리 숲의 해골을 토벌한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 30,
+       "text": "해골 방패병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_depths"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 30,
+       "text": "해골 궁수 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_depths"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1000,
+    "gold": 2500,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 8
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_errands",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "마을 사람들의 부탁",
+   "summary": "촌장 모리가 마을 사람들의 부탁을 들어 주면 보답하겠다고 한다.",
+   "requires": [
+    "c1_trail"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "chief",
+   "offerDialogue": "c1s_errands_offer",
+   "turnIn": "chief",
+   "turnInDialogue": "c1s_errands_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "마을 사람들의 부탁을 해결한다.",
+     "objectives": [
+      {
+       "type": "quests",
+       "target": "c1s_patrol,c1s_ruins,c1s_bones,c1s_depths,c1s_horse",
+       "count": 4,
+       "text": "마을 부탁 해결",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2000,
+    "gold": 3000,
+    "items": [],
+    "maxHealth": 10,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_pass",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "붉은 돌 고개 정리",
+   "summary": "기사 돈이 협곡 남쪽 고개에 몰린 해골 광부를 치워 보급로를 열자고 한다.",
+   "requires": [
+    "c2_canyon"
+   ],
+   "requiresFlags": [],
+   "minLevel": 13,
+   "giver": "knight_dorn",
+   "offerDialogue": "c2s_pass_offer",
+   "turnIn": "knight_dorn",
+   "turnInDialogue": "c2s_pass_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "붉은 돌 고개의 해골을 정리한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 40,
+       "text": "해골 광부 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_pass"
+      },
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 30,
+       "text": "해골 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_pass"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2200,
+    "gold": 4000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_quarry",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "채석장의 방패병",
+   "summary": "기사 아이비가 버려진 채석장을 점령한 해골 방패병 부대를 무너뜨리자고 한다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 17,
+   "giver": "knight_ivy",
+   "offerDialogue": "c2s_quarry_offer",
+   "turnIn": "knight_ivy",
+   "turnInDialogue": "c2s_quarry_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "채석장의 해골 부대를 무너뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 50,
+       "text": "해골 방패병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      },
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 20,
+       "text": "해골 광부 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3000,
+    "gold": 5000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_ridge",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "바람칼 능선의 기사",
+   "summary": "기사단장 레오나가 능선을 넘어오는 해골 기사단을 막으라고 명령한다.",
+   "requires": [
+    "c2_mine"
+   ],
+   "requiresFlags": [],
+   "minLevel": 21,
+   "giver": "leona",
+   "offerDialogue": "c2s_ridge_offer",
+   "turnIn": "leona",
+   "turnInDialogue": "c2s_ridge_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "바람칼 능선의 해골 기사를 막는다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 40,
+       "text": "해골 기사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_ridge"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 30,
+       "text": "해골 궁수 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_ridge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4000,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_errands",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "협곡의 부탁",
+   "summary": "기사 모가 협곡 사람들의 부탁을 모아 왔다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "knight_mo",
+   "offerDialogue": "c2s_errands_offer",
+   "turnIn": "knight_mo",
+   "turnInDialogue": "c2s_errands_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 사람들의 부탁을 해결한다.",
+     "objectives": [
+      {
+       "type": "quests",
+       "target": "c2s_trader,c2s_knight_letter,c2s_pass,c2s_quarry,c2s_ridge",
+       "count": 3,
+       "text": "협곡 부탁 해결",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 5000,
+    "gold": 6000,
+    "items": [],
+    "maxHealth": 10,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "서리 소나무 숲의 해골",
+   "summary": "설원 사냥꾼 하람이 사냥터를 되찾을 사람을 찾는다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 25,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_edge_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_edge_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "서리 소나무 숲의 해골을 몰아낸다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 50,
+       "text": "해골 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      },
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 30,
+       "text": "해골 방패병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 6000,
+    "gold": 8000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "얼어붙은 호숫가",
+   "summary": "하람이 호숫가의 얼음 낚시터를 지키는 해골 기사를 쓰러뜨려 달라고 한다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 29,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_lake_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_lake_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "얼어붙은 호숫가의 해골을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 50,
+       "text": "해골 방패병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      },
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 30,
+       "text": "해골 기사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 8000,
+    "gold": 10000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "눈보라 봉우리",
+   "summary": "하람이 봉우리 위에서 내려오는 해골 기사단의 본대를 막아 달라고 한다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 34,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_peak_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_peak_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈보라 봉우리의 해골 기사단을 막는다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 80,
+       "text": "해골 기사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_peak"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 12000,
+    "gold": 15000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 2
+     }
+    ],
     "maxHealth": 0,
     "setFlags": []
    }

@@ -166,7 +166,7 @@ namespace DotRPG
             if (myPower < p.minPower) return $"전투력이 부족합니다 (최소 {p.minPower:N0}).";
             p.applied = true;
             Changed?.Invoke();
-            return $"{p.leaderName}님의 파티에 참가 신청했습니다. (오프라인 미리보기: 방장 응답 없음)";
+            return $"{p.leaderName}님의 파티에 참가 신청했습니다. (오프라인 모드: 다른 모험가가 없습니다)";
         }
 
         public void StartQueue(string dungeonId, DungeonDifficulty difficulty)

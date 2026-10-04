@@ -47,35 +47,34 @@ async function processStart(ctx: PartyCtx, body: StartBody) {
   if (party.leader_character_id !== ctx.char.id) throw new AppError(403, '방장만 할 수 있습니다.', 'NOT_LEADER');
   if (party.state !== 'forming') throw new AppError(409, '이미 출발했습니다.', 'PARTY_BUSY');
 
-  const members = await partyRepo.activeMembers(ctx.client, partyId);
+  const all = await partyRepo.activeMembers(ctx.client, partyId);
   const dungeon = eco.dungeons.byId.get(party.dungeon_id);
   if (!dungeon) throw new AppError(422, '알 수 없는 던전입니다.', 'DUNGEON_UNKNOWN');
-  const h = members.length;
-  if (h + body.ai_count > dungeon.maxParty || h + body.ai_count > 4) {
-    throw new AppError(422, '파티 인원이 너무 많습니다.', 'PARTY_TOO_BIG');
-  }
-  if (members.some((m) => m.character_id !== party.leader_character_id && !m.ready)) {
-    throw new AppError(409, '준비하지 않은 멤버가 있습니다.', 'NOT_ALL_READY');
-  }
-  for (const m of members) {
+  // 파티는 하나다: 준비 확인 없이 방장이 출발하면 접속한 파티원은 자동으로 들어오고(입장 마감까지 안 오면 AI가 그 자리),
+  // 들어갈 수 없는 파티원(오늘 횟수 소진 등)은 이번 판만 빠진다. 방장 자신이 못 들어가면 출발하지 않는다.
+  for (const m of all) {
     if (await dungeonRepo.inPartyRun(ctx.client, m.character_id)) {
       throw new AppError(409, '이미 판에 참여 중인 멤버가 있습니다.', 'IN_PARTY_RUN');
     }
   }
   // 멤버별 자격 재판정(생성·신청 시점의 통과는 자리 예약이 아니다)
-  const failed: { character_id: string; name: string; code: string }[] = [];
-  for (const m of members) {
+  const sittingOut: { character_id: string; name: string; code: string }[] = [];
+  const members: typeof all = [];
+  for (const m of all) {
     const c = ctx.chars.get(m.character_id);
     if (!c) throw new AppError(409, '파티 구성이 바뀌었습니다.', 'PARTY_CHANGED');
     try {
       await checkEntry(ctx.client, c, party.dungeon_id, party.difficulty, ctx.now);
+      members.push(m);
     } catch (err) {
       if (!(err instanceof AppError)) throw err;
-      failed.push({ character_id: m.character_uuid, name: m.name, code: err.code ?? 'ERROR' });
+      if (m.character_id === party.leader_character_id) throw err; // 방장이 못 들어가면 그 이유 그대로
+      sittingOut.push({ character_id: m.character_uuid, name: m.name, code: err.code ?? 'ERROR' });
     }
   }
-  if (failed.length > 0) {
-    throw new AppError(422, '입장할 수 없는 멤버가 있습니다.', 'MEMBER_NOT_ELIGIBLE', { members: failed });
+  const h = members.length;
+  if (h + body.ai_count > dungeon.maxParty || h + body.ai_count > 4) {
+    throw new AppError(422, '파티 인원이 너무 많습니다.', 'PARTY_TOO_BIG');
   }
   // 8단계: 전송은 서버가 정한다(자격이 되는 후보가 없으면 422 TRANSPORT_UNAVAILABLE). Steam 없는 멤버도 중계로 들어온다
   const picked = await pickTransport(ctx.client, members.map((m) => m.account_id));
@@ -109,7 +108,7 @@ async function processStart(ctx: PartyCtx, body: StartBody) {
     }
     await repo.setPartyState(ctx.client, partyId, 'starting');
     const view = await buildRunView(ctx.client, run, ctx.char.id);
-    return { status: 201, data: { run: view, host_key: runKey.toString('base64url') } };
+    return { status: 201, data: { run: view, host_key: runKey.toString('base64url'), sitting_out: sittingOut } };
   } catch (err) {
     if (isUniqueViolation(err)) throw new AppError(409, '이미 판에 참여 중입니다.', 'IN_PARTY_RUN');
     throw err;

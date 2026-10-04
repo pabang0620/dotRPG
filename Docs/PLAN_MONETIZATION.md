@@ -120,3 +120,18 @@ Unity는 임포트 축소 시 스프라이트의 월드 크기를 보존하므�
 
 오라:
 > Use case: stylized-concept. Asset type: one transparent pixel-art foot aura sprite for a top-down 2D fantasy RPG, recolored at runtime. Single flat horizontal elliptical celestial magic ring viewed from above at the game's 3/4 perspective, width about twice height. Pure neutral WHITE and SILVER grayscale only, no colored pixels. Thin double elliptical outline with eight small diamond-shaped star motifs arranged on the perimeter, clear open fully transparent center so ground remains visible. Crisp chunky 16-bit pixel clusters with no fuzzy bloom. Outer ellipse and all star motifs contained inside a centered 2:1 bounding box with generous transparent margin. Quiet elegant effect that does not obscure combat, no vertical flames, no pillars. Actual transparent background everywhere outside the thin ring and stars AND inside the ring. No text, letters, runic writing, character, scenery, solid disk, checkerboard or shadow. One isolated sprite only, landscape canvas.
+
+## 캐시샵 외형 뽑기 (2026-10-05)
+
+RESEARCH_MONETIZATION.md의 "외형 한정 확률형 수집" 안으로 구현했다. 확정 교환을 같은 화면 흐름에 두어 대조군 역할을 한다.
+
+- 유료 재화: 별조각(계정 공용). 지갑·천장·보유 외형·뽑기 결과는 서버가 정하고 기록한다(`server/src/domains/starshop/`, 마이그레이션 0013).
+- 내용물: 발밑 오라 13종(일반 5, 희귀 5, 전설 3). 능력치·거래·경매 연결 없음.
+- 확률: 일반 77%, 희귀 20%, 전설 3%. 등급 안에서는 아직 없는 외형만 같은 확률로 나온다(중복 방지).
+  같은 등급을 모두 가지면 중복이 나오고 별조각을 돌려준다(일반 20, 희귀 50, 전설 200).
+- 천장: 전설 없이 49회 뒤 50번째는 전설 확정. 전설이 나오면 0부터. 시즌 초기화 없음.
+  평균 전설 획득 횟수 `(1-0.97^50)/0.03 ≈ 26.1회`, 최대 50회(별조각 5,000).
+- 가격: 1회 100, 10+1회 1,000. 확정 교환 일반 300, 희귀 1,000, 전설 5,000.
+- 표시: 뽑기 창 오른쪽에 등급·외형별 확률, 확률표 버전, 천장 남은 횟수, 중복 규칙을 항상 보여 준다. 표를 바꾸면 `RATES_VERSION`을 올린다.
+- 기록: `gacha_pulls`에 확률표 버전·천장 전후 값·중복·환급, `star_ledger`에 모든 증감. 같은 request_id 재전송은 한 번만 처리한다.
+- 실제 결제(별조각 구매)는 Steam 연동 뒤 `star_ledger.reason = 'purchase'`로 붙인다. 그 전까지 시험 서버는 `scripts/test-stars.ts`로 지급한다.

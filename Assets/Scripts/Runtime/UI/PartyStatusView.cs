@@ -57,8 +57,6 @@ namespace DotRPG
             var c = PartyClient.Instance;
             if (c == null || !c.InParty)
                 return "<color=#8c96a8>파티 없음</color>  ·  눌러서 친구 초대";
-            int ready = 0, waiting = 0;
-            foreach (var m in c.Members) if (!m.leader) { waiting++; if (m.ready) ready++; }
             var d = DungeonDatabase.Get(c.DungeonId);
             string target = d == null ? "" : $"{d.name} {PartyFinderRules.ModeName(c.DungeonId, c.Difficulty)}";
             string role = c.IsLeader ? "<color=#ffd34a>방장</color>" : "파티원";
@@ -70,7 +68,8 @@ namespace DotRPG
             }
             string line = $"{role} · 파티 {c.Members.Count}/{c.MaxMembers}명 · {target}";
             if (FieldSession.Active) line += " · <color=#8fe28f>함께 사냥 중</color>";
-            else if (waiting > 0) line += c.AllReady ? " · <color=#8fe28f>모두 준비</color>" : $" · 준비 {ready}/{waiting}";
+            else if (c.IsLeader) line += " · 요일던전 입장 시 함께 출발";
+            else line += " · 방장이 입장하면 함께 출발";
             if (c.IsLeader && c.Applications.Count > 0) line += $" · <color=#ff9f7a>신청 {c.Applications.Count}건</color>";
             return line;
         }

@@ -27,12 +27,15 @@ namespace DotRPG
                 nextPeriodicSave = Time.unscaledTime + PeriodicSaveSeconds;
                 if (Game.Config.autosave) WriteSave();
             }
+            AchievementClient.Tick(); // kills add up: the server re-judges achievements once a minute
             if (transitioning || Game.State.ChangedThisFrame) return;
             if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
             Game.Quest.Tick();
             var state = Game.State.Current;
             if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
-            if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
+            // Preserve conversation skipping and the complete rebindable window dispatcher.
+            if (state == GameState.Dialogue && Game.Input.PausePressed && Game.Dialogue.IsOpen) Game.Dialogue.Close();
+            else if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
             else ProcessWindowShortcuts(Game.Input.WindowPressed);
         }
 
@@ -95,10 +98,10 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// Alt-tabbing out pauses the game. Automated test runs switch this off: several test windows
-        /// can run side by side and take focus from each other.
+        /// Alt-tabbing out used to pause the game. Off: the game keeps running in the background (auto-progress,
+        /// hunting and online play go on while another window has focus; Esc still pauses).
         /// </summary>
-        public static bool PauseOnFocusLoss = true;
+        public static bool PauseOnFocusLoss = false;
 
         void OnApplicationFocus(bool hasFocus)
         {
@@ -175,7 +178,7 @@ namespace DotRPG
                 if (data.enhanceCompensation > 0)
                 {
                     // Two toasts: one line is wider than the toast column.
-                    GameEvents.RaiseToast("강화 규칙이 던전앤파이터 기준으로 바뀌었습니다.");
+                    GameEvents.RaiseToast("강화 규칙이 새로 바뀌었습니다.");
                     GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았다.");
                 }
             }));

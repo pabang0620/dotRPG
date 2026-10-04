@@ -93,9 +93,8 @@ namespace DotRPG
     }
 
     /// <summary>
-    /// Dungeon&amp;Fighter (KR server) style enhancement rules. Pure functions with no randomness or game
-    /// state: callers pass the 0..99 roll, so every rule can be tested. Success chances are the ones Nexon
-    /// disclosed on 2021-12-02. Execution (paying, applying, pity bookkeeping) is <see cref="Equipment.TryEnhance"/>.
+    /// Enhancement rules. Pure functions with no randomness or game state: callers pass the 0..99 roll, so
+    /// every rule can be tested. Execution (paying, applying, pity bookkeeping) is <see cref="Equipment.TryEnhance"/>.
     /// </summary>
     public static class EnhanceRules
     {

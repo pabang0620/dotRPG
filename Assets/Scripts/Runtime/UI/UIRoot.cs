@@ -23,6 +23,7 @@ namespace DotRPG
         public PauseScreen Pause { get; private set; }
         public SettingsScreen Settings { get; private set; }
         public KeyBindScreen KeyBind { get; private set; }
+        public LootFilterScreen LootFilter { get; private set; }
         public OnlineLoginScreen OnlineLogin { get; private set; }       // [SERVER]
         public OnlineCharacterScreen OnlineCharacters { get; private set; }
         public OnlineCreateScreen OnlineCreate { get; private set; }
@@ -125,6 +126,7 @@ namespace DotRPG
             ui.Ending = EndingScreen.Create(t, ui);
             ui.Settings = SettingsScreen.Create(t, ui);
             ui.KeyBind = KeyBindScreen.Create(t, ui); // [I]
+            ui.LootFilter = LootFilterScreen.Create(t, ui);
             ui.OnlineLogin = OnlineLoginScreen.Create(t, ui); // [SERVER]
             ui.OnlineCharacters = OnlineCharacterScreen.Create(t, ui);
             ui.OnlineCreate = OnlineCreateScreen.Create(t, ui);
@@ -143,7 +145,7 @@ namespace DotRPG
             ui.Cosmetics = CosmeticShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
-            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
+            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); GachaScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);
@@ -237,7 +239,7 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Title, Pause, Settings, KeyBind, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
+            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
             if (Cosmetics != null) Cosmetics.Hide();

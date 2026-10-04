@@ -35,11 +35,15 @@ namespace DotRPG
             // [PARTY] Invite by name (no recruiting post needed: the server makes a private party), friends list, AI roster.
             w.friendsBtn = Button(w.content, "Friends", "친구 목록", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(150f, 38f), () => Game.Flow.OpenWindow(SocialScreen.Instance), 17);
             w.inviteBtn = Button(w.content, "Invite", "초대", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-160f, -44f), new Vector2(110f, 38f), w.InviteTyped, 17);
-            w.inviteField = w.Field(w.content, "InviteName", "초대할 캐릭터 이름", new Vector2(Width - 540f, -44f), new Vector2(260f, 38f));
+            w.inviteField = w.Field(w.content, "InviteName", "초대할 캐릭터 이름", Vector2.zero, new Vector2(260f, 38f));
+            // One right-aligned row (the content stretches with the screen): [AI 편성] [이름] [초대] [친구 목록].
+            var fieldRt = (RectTransform)w.inviteField.transform;
+            fieldRt.anchorMin = fieldRt.anchorMax = fieldRt.pivot = new Vector2(1f, 1f);
+            fieldRt.anchoredPosition = new Vector2(-280f, -44f);
             w.inviteField.characterLimit = 16;
             w.inviteField.onEndEdit.AddListener(_ => { if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) w.InviteTyped(); });
             w.focusField = w.inviteField;
-            w.rosterBtn = Button(w.content, "Roster", "AI 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-560f, -44f), new Vector2(130f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
+            w.rosterBtn = Button(w.content, "Roster", "AI 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(130f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
             Label(w.content, "MembersHead", "<color=#b8c4d8>파티원</color>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -48f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < PartyManager.MaxMembers; i++)
             {
@@ -249,7 +253,7 @@ namespace DotRPG
             friendsBtn.gameObject.SetActive(canInvite);
             rosterBtn.gameObject.SetActive(!inParty || leader);
             startBtn.gameObject.SetActive(leader && idle);
-            startBtn.interactable = c != null && c.AllReady;
+            startBtn.interactable = c != null; // no ready check: online members are pulled in, missing seats get AI
             beginBtn.gameObject.SetActive(session != null && session.AmHost && session.State == "gathering");
             readyBtn.gameObject.SetActive(inParty && !leader && idle);
             if (inParty && c.Me != null) TextOf(readyBtn).text = c.Me.ready ? "준비 취소" : "준비";

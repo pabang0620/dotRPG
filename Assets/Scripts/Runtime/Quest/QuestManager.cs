@@ -206,6 +206,7 @@ namespace DotRPG
                 int n = i < counts.Count ? counts[i] : 0;
                 int need = Need(o);
                 if (o.type == ObjectiveTypes.Collect && !IsObjectiveDone(q, i)) n = Mathf.Min(need, Game.Session.Inventory.Count(o.target));
+                if (o.type == ObjectiveTypes.Quests) n = Mathf.Min(need, QuestsDone(o));
                 string text = string.IsNullOrEmpty(o.text) ? DefaultObjectiveText(o) : o.text;
                 text = text.Replace("{n}", n.ToString()).Replace("{count}", need.ToString());
                 if (need > 1 && o.text.IndexOf("{n}", StringComparison.Ordinal) < 0 && o.type != ObjectiveTypes.Level) text += $" {Mathf.Min(n, need)}/{need}";
@@ -395,6 +396,14 @@ namespace DotRPG
 
         int Need(ObjectiveDef o) => Mathf.Max(1, o.count);
 
+        /// <summary>How many of an errand board's listed quests are completed.</summary>
+        public int QuestsDone(ObjectiveDef o)
+        {
+            int n = 0;
+            foreach (var id in o.target.Split(',')) if (Journal.Status(id.Trim()) == QuestStatus.Completed) n++;
+            return n;
+        }
+
         bool IsObjectiveDone(QuestDef q, int index)
         {
             var step = CurrentStep(q);
@@ -404,6 +413,7 @@ namespace DotRPG
             {
                 case ObjectiveTypes.Collect: return Game.Session.Inventory.Count(o.target) >= Need(o) || Count(q, index) >= Need(o);
                 case ObjectiveTypes.Level: return Game.Session.Progression.Level >= o.count;
+                case ObjectiveTypes.Quests: return QuestsDone(o) >= Need(o);
                 case ObjectiveTypes.Flag: return Journal.HasFlag(o.target) || Count(q, index) >= Need(o);
                 default: return Count(q, index) >= Need(o);
             }
@@ -451,6 +461,7 @@ namespace DotRPG
             GameEvents.RaiseToast(q.Kind == QuestKind.Main ? $"메인 퀘스트: {q.DisplayTitle}" : $"새 퀘스트: {q.title}");
             if (q.Kind == QuestKind.Sub && string.IsNullOrEmpty(Journal.Tracked)) Journal.Tracked = q.id;
             if (!string.IsNullOrEmpty(q.startCutscene)) PlayCutscene(q.startCutscene, null);
+            GameEvents.RaiseQuestAccepted(q.id);
             Game.Flow.Autosave();
         }
 
@@ -668,6 +679,7 @@ namespace DotRPG
                 case ObjectiveTypes.Dungeon: return "던전 클리어";
                 case ObjectiveTypes.Raid: return "레이드 클리어";
                 case ObjectiveTypes.Level: return $"레벨 {o.count} 달성";
+                case ObjectiveTypes.Quests: return "부탁 해결";
                 default: return o.target;
             }
         }

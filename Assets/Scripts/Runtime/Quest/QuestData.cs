@@ -44,6 +44,8 @@ namespace DotRPG
         public const string Flag = "flag";
         public const string Level = "level";
         public const string Cutscene = "cutscene";
+        /// <summary>Finish <c>count</c> of the quests listed in <c>target</c> ("id1,id2,..."): the 0/5 errand boards.</summary>
+        public const string Quests = "quests";
     }
 
     [Serializable]

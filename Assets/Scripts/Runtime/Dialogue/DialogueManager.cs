@@ -62,6 +62,10 @@ namespace DotRPG
             lastBlipChar = 0;
         }
 
+        /// <summary>How long a finished line stays on screen before auto-progress turns the page.</summary>
+        const float AutoLineSeconds = 1.6f;
+        float lineDoneAt = -1f;
+
         void Update()
         {
             if (!IsOpen) return;
@@ -79,6 +83,10 @@ namespace DotRPG
             if (Time.frameCount == openedFrame) return;
             var input = Game.Input;
             bool advance = input.InteractPressed || input.SubmitPressed || input.AttackPressed;
+            // Quest auto-progress reads the conversation for the player: each full line stays up for a moment, then moves on.
+            if (!LineComplete) lineDoneAt = -1f;
+            else if (lineDoneAt < 0f) lineDoneAt = Time.unscaledTime;
+            if (!advance && QuestAutoPilot.Active && lineDoneAt >= 0f && Time.unscaledTime - lineDoneAt >= AutoLineSeconds) advance = true;
             if (!advance) return;
 
             if (!LineComplete)

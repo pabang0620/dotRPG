@@ -27,6 +27,8 @@ namespace DotRPG
         readonly List<GameObject> props = new List<GameObject>();
 
         public bool IsPlaying => current != null;
+        /// <summary>Esc ends this scene (some story beats cannot be skipped).</summary>
+        public bool CanSkip => current != null && current.skippable && !skipping;
 
         /// <summary>Automated checks: skip the scene that is playing (same as Esc).</summary>
         public void DevSkip()

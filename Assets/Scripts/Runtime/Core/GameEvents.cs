@@ -32,6 +32,8 @@ namespace DotRPG
         /// <summary>A quest was completed and rewarded. Argument is the quest id.</summary>
         public static event Action<string> QuestCompleted;
         public static void RaiseQuestCompleted(string questId) => QuestCompleted?.Invoke(questId);
+        public static event Action<string> QuestAccepted;
+        public static void RaiseQuestAccepted(string questId) => QuestAccepted?.Invoke(questId);
 
         /// <summary>An awakening (ultimate) skill was cast: skill name and theme colour for the cut-in banner.</summary>
         public static event Action<string, UnityEngine.Color> Awakening;

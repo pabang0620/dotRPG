@@ -9,7 +9,7 @@ namespace DotRPG
     /// Runs a dungeon (Game.Dungeon), plan §6.0: entry from the select window → room by room (monsters never
     /// respawn; a cleared room opens its gate; walking in fades to the next room with the party re-placed at
     /// its entry) → boss → 1 s slow motion + CLEAR → leftover monsters die → result screen (rank, cards) →
-    /// retry / dungeon select / village. Local death in a run shows the DNF-style coin countdown instead of
+    /// retry / dungeon select / village. Local death in a run shows the revive-coin countdown instead of
     /// game over (routed from <see cref="GameFlow.OnPlayerDied"/>); downed companions stay down for the rest of
     /// the room and rejoin at the next entry with half HP. Nothing is saved inside a dungeon.
     /// </summary>
@@ -124,6 +124,9 @@ namespace DotRPG
         /// </summary>
         public bool Enter(DungeonDef dungeon, DungeonDifficulty difficulty)
         {
+            // One party: with other people in my online party, entering takes all of them (and AI for the free seats).
+            var pc = PartyClient.Instance;
+            if (OnlineEconomy.On && pc != null && pc.InParty && pc.Members.Count >= 2) return EnterAsParty(pc, dungeon, difficulty);
             var now = ResetClock.Now;
             string reason = CannotEnterReason(dungeon, difficulty, now);
             if (reason != null)
@@ -164,6 +167,31 @@ namespace DotRPG
                 run.RewardsLocked = serverRun.TryGetValue("reward_locked", out var v) && v is bool b && b;
                 if (run.RewardsLocked && dungeon.isRaid) GameEvents.RaiseToast(RaidLockText(MiniJson.Str(serverRun, "lock_reason")));
             });
+            return true;
+        }
+
+        /// <summary>
+        /// The leader enters for the whole party: the party's target becomes this dungeon and difficulty, then the run
+        /// departs (members online are pulled in, free seats get the leader's AI companions). A member is told to wait.
+        /// </summary>
+        bool EnterAsParty(PartyClient pc, DungeonDef dungeon, DungeonDifficulty difficulty)
+        {
+            if (!pc.IsLeader)
+            {
+                GameEvents.RaiseToast("파티 중에는 방장이 입장하면 함께 들어갑니다.");
+                Game.Audio.PlaySfx("cancel");
+                return false;
+            }
+            if (PartyRunSession.Active) { GameEvents.RaiseToast("이미 파티가 출발하는 중입니다."); return false; }
+            var diff = dungeon.isRaid ? DungeonDifficulty.Normal : difficulty;
+            int ai = Mathf.Min(Game.Session.PartyRoster.Count, PartyManager.CompanionLimit);
+            void Depart() => pc.StartRun(ai, (ok, msg) =>
+            {
+                Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
+                GameEvents.RaiseToast(ok ? "파티원과 함께 출발합니다. 파티원이 연결되는 중..." : msg);
+            });
+            if (pc.DungeonId == dungeon.id && pc.Difficulty == diff) Depart();
+            else pc.SetTarget(dungeon.id, diff, (ok, msg) => { if (ok) Depart(); else { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); } });
             return true;
         }
 

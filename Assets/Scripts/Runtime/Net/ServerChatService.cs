@@ -75,7 +75,7 @@ namespace DotRPG
                 if (ids.TryGetValue(whisperTo, out var id)) frame["to"] = id;
                 else frame["to_name"] = whisperTo;
             }
-            var line = new ChatLine { channel = channel, from = MyName, to = whisperTo, text = ChatRules.Filter(text), time = clock, mine = true };
+            var line = new ChatLine { channel = channel, from = MyName, to = whisperTo, text = ChatRules.Filter(text), time = clock, mine = true, title = AchievementClient.MyTitle };
             pending[cid] = new Pending { line = line, frame = frame, at = clock };
             socket.Send("chat.send", frame);
             Add(line);
@@ -191,7 +191,7 @@ namespace DotRPG
             string fromName = MiniJson.Str(from, "name", "");
             Remember(fromName, MiniJson.Str(from, "id"));
             Remember(MiniJson.Str(to, "name"), MiniJson.Str(to, "id"));
-            Add(new ChatLine { channel = ChannelOf(MiniJson.Str(m, "channel")), from = fromName, to = MiniJson.Str(to, "name"), text = MiniJson.Str(m, "text", ""), time = clock });
+            Add(new ChatLine { channel = ChannelOf(MiniJson.Str(m, "channel")), from = fromName, to = MiniJson.Str(to, "name"), text = MiniJson.Str(m, "text", ""), time = clock, title = MiniJson.Str(from, "title", "") });
         }
 
         void Remember(string name, string id)

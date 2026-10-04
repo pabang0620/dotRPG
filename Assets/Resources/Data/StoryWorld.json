@@ -121,6 +121,13 @@
    "hiddenBy": [
     "kael_betrayed"
    ]
+  },
+  {
+   "npcId": "winter_hunter",
+   "map": "winter",
+   "col": 28,
+   "row": 40,
+   "facing": "down"
   }
  ],
  "props": [

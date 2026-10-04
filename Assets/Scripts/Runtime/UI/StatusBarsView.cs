@@ -10,6 +10,10 @@ namespace DotRPG
     public class StatusBarsView : MonoBehaviour
     {
         const float BarW = 296f, BarX = 76f, Pad = 5f; // [UI] 18 + 76 + 296 < UiTheme.HudCurrencyMaxRight (centred boss bar)
+        // The ui_bar frame (96x24, inner dark slot x 9..86, y 6..17) is drawn with half the usual slice thickness, so one
+        // source pixel is 0.75 UI px: the slot starts 7 px in from the sides and 5 px from top and bottom. The fill sits
+        // exactly in that slot (it used to start 5 px in and cover the gold rim).
+        const float FrameThin = 2f, InsetX = 7f, InsetY = 5f;
 
         Image hpFill, hpLag, mpFill, xpFill;
         Text hpText, mpText, levelText, xpText;
@@ -20,7 +24,7 @@ namespace DotRPG
         {
             var root = UIFactory.Place(UIFactory.Rect(parent, "Status"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -12f), new Vector2(BarX + BarW, 86f));
             var v = root.gameObject.AddComponent<StatusBarsView>();
-            v.fillW = BarW - Pad * 2f;
+            v.fillW = BarW - InsetX * 2f;
 
             // [ART] Generated gold-rimmed medallion (ui_level_badge); "LV" and the number sit on its dark centre.
             var badge = Img(root, "Badge", "ui_level_badge", Color.white);
@@ -47,12 +51,13 @@ namespace DotRPG
         static Image Bar(Transform parent, string name, float y, float h, int fontSize, Color color, out Image lag, out Text label, float fillW)
         {
             var frame = Img(parent, name, "ui_bar", Color.white);
+            frame.pixelsPerUnitMultiplier *= FrameThin; // thinner rim so short bars keep a usable slot
             UIFactory.Place(frame.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(BarX, y), new Vector2(BarW, h));
-            float fillH = h - Pad * 2f + 2f;
+            float fillH = h - InsetY * 2f;
             lag = Img(frame.transform, "Lag", "ui_white", new Color32(255, 235, 200, 170));
-            UIFactory.Place(lag.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Pad, 0f), new Vector2(fillW, fillH));
+            UIFactory.Place(lag.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(InsetX, 0f), new Vector2(fillW, fillH));
             var fill = Img(frame.transform, "Fill", "ui_white", color);
-            UIFactory.Place(fill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Pad, 0f), new Vector2(fillW, fillH));
+            UIFactory.Place(fill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(InsetX, 0f), new Vector2(fillW, fillH));
             var shine = Img(fill.transform, "Shine", "ui_white", new Color(1f, 1f, 1f, 0.22f));
             shine.rectTransform.anchorMin = new Vector2(0f, 1f);
             shine.rectTransform.anchorMax = new Vector2(1f, 1f);

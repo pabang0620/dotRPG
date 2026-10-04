@@ -12,6 +12,8 @@ import { getLimiterStore, type LimiterState } from './limiterStore';
 import { registry } from './realtimeNotifier';
 import { activeMuteUntil, createAutoMute } from './sanctionService';
 import type { ChatErrCode, ChatSendFrame, Frame } from './wsProtocol';
+import { titleOf } from '../achievements/achievementRepository';
+import { titleName } from '../achievements/achievementService';
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 
@@ -170,9 +172,12 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
     s.send({ t: 'chat.ack', cid: f.cid, seq: 0, at: iso(now), text: masked.text, filtered: masked.hit, replay: false });
     return;
   }
+  // 칭호: 보낼 때 장착한 것의 이름(바꾸면 다음 말부터 바뀐다)
+  const senderTitle = titleName(await titleOf(getPool(), s.characterId));
   try {
     await getChatWriter().run(async () => {
       const saved = await repo.insertMessage({
+        senderTitle,
         channel,
         shard: channel === 'general' ? s.shard : null,
         partyId,
@@ -196,7 +201,7 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
         t: 'chat.msg',
         seq: saved.id,
         channel,
-        from: { id: s.characterUuid, name: s.characterName },
+        from: { id: s.characterUuid, name: s.characterName, ...(senderTitle ? { title: senderTitle } : {}) },
         text: masked.text,
         at: saved.createdAt.toISOString(),
       };

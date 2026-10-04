@@ -64,6 +64,7 @@ namespace DotRPG
             StatusBarsView.Create(root);
             SkillBarView.Create(root);
             AwakeningBanner.Create(root);
+            AwakeningCutIn.Create(root); // class illustration slides in at the bottom-left on an awakening skill
 
             // Items under the bars (gold first).
             var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(18, -104), new Vector2(380, 40));

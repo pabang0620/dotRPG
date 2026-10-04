@@ -528,7 +528,7 @@ namespace DotRPG
             if (online)
                 OnlineEconomy.Enhance(e.slot.HasValue ? (int)e.slot.Value : (int?)null, e.slot.HasValue ? null : e.key,
                     d => { server = d; answered = true; });
-            // [A] DNF-style suspense: three hammer strikes over a rising charge, the glow grows around the item.
+            // [A] Suspense: three hammer strikes over a rising charge, the glow grows around the item.
             Game.Audio.PlaySfx("enhance_charge");
             EnhanceFx.Charge(bigIcon.rectTransform, SuspenseSeconds * 1.5f);
             for (int i = 0; i < 3; i++)

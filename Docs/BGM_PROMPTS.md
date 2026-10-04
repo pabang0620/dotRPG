@@ -78,7 +78,7 @@ no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 ### music_dgn_canyon
 ```
-Dark abandoned mine dungeon theme for a Dungeon Fighter style action RPG, instrumental at 128 BPM in D minor, gritty and propulsive, metallic anvil and pickaxe-like percussion, low brass, driving cellos and basses, distorted-free, dry close-mic percussion with a cavernous hint, wide stereo image, constant energy for dungeon combat loops.
+Dark abandoned mine dungeon theme for a classic fantasy action RPG, instrumental at 128 BPM in D minor, gritty and propulsive, metallic anvil and pickaxe-like percussion, low brass, driving cellos and basses, distorted-free, dry close-mic percussion with a cavernous hint, wide stereo image, constant energy for dungeon combat loops.
 no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 [0:00 - 0:06] Intro: metallic percussion alone
@@ -89,7 +89,7 @@ no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 ### music_dgn_forest
 ```
-Eerie haunted graveyard dungeon theme for a Dungeon Fighter style action RPG, instrumental at 120 BPM in C minor, spooky and tense, pipe organ and harpsichord, tremolo strings, low toms and frame drum, bells tolling, spacious hall reverb, wide stereo image, constant energy for dungeon combat loops.
+Eerie haunted graveyard dungeon theme for a classic fantasy action RPG, instrumental at 120 BPM in C minor, spooky and tense, pipe organ and harpsichord, tremolo strings, low toms and frame drum, bells tolling, spacious hall reverb, wide stereo image, constant energy for dungeon combat loops.
 no vocals, no choir, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 [0:00 - 0:06] Intro: bell toll and organ
@@ -100,7 +100,7 @@ no vocals, no choir, no vocal chops, no long quiet breakdowns, keep the level co
 
 ### music_dgn_winter
 ```
-Frozen ice cave dungeon theme for a Dungeon Fighter style action RPG, instrumental at 136 BPM in F# minor, cold, urgent and crystalline, icy synth-free orchestral textures: string ostinato, glockenspiel and crotales, snare and taiko, french horn melody, a solid bass foundation, spacious hall reverb, wide stereo image, constant energy for dungeon combat loops.
+Frozen ice cave dungeon theme for a classic fantasy action RPG, instrumental at 136 BPM in F# minor, cold, urgent and crystalline, icy synth-free orchestral textures: string ostinato, glockenspiel and crotales, snare and taiko, french horn melody, a solid bass foundation, spacious hall reverb, wide stereo image, constant energy for dungeon combat loops.
 no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 [0:00 - 0:06] Intro: string ostinato and crotales
@@ -111,7 +111,7 @@ no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 ### music_boss
 ```
-Intense boss battle theme for a Dungeon Fighter style action RPG, instrumental at 150 BPM in C minor, aggressive, heroic and urgent, rock drums with orchestral brass and fast strings, electric guitar riffs, a solid bass foundation, subtle room reverb, wide stereo image, relentless energy for a boss fight loop.
+Intense boss battle theme for a classic fantasy action RPG, instrumental at 150 BPM in C minor, aggressive, heroic and urgent, rock drums with orchestral brass and fast strings, electric guitar riffs, a solid bass foundation, subtle room reverb, wide stereo image, relentless energy for a boss fight loop.
 no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 [0:00 - 0:05] Intro: drum fill and brass hit
@@ -122,7 +122,7 @@ no vocals, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 ### music_raid
 ```
-Grand raid boss theme against an undead Skeleton King for a Dungeon Fighter style action RPG, instrumental at 140 BPM in D minor, epic, dark and majestic, full symphonic orchestra, heavy taiko and timpani, low brass choir-like chords played by horns and trombones, pipe organ swells, fast string ostinato, spacious hall reverb, wide stereo image, relentless energy for a long raid fight loop.
+Grand raid boss theme against an undead Skeleton King for a classic fantasy action RPG, instrumental at 140 BPM in D minor, epic, dark and majestic, full symphonic orchestra, heavy taiko and timpani, low brass choir-like chords played by horns and trombones, pipe organ swells, fast string ostinato, spacious hall reverb, wide stereo image, relentless energy for a long raid fight loop.
 no vocals, no choir, no vocal chops, no long quiet breakdowns, keep the level constant.
 
 [0:00 - 0:08] Intro: organ swell and timpani

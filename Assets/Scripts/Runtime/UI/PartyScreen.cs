@@ -98,10 +98,13 @@ namespace DotRPG
                 ok = party.RemoveCompanion(def.id);
                 if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에서 떠났다.");
             }
-            else if (Game.Session.PartyRoster.Count >= PartyManager.MaxCompanions)
+            else if (Game.Session.PartyRoster.Count >= PartyManager.CompanionLimit)
             {
                 ok = false;
-                GameEvents.RaiseToast($"파티가 가득 찼다. (최대 {PartyManager.MaxMembers}명)");
+                int people = PartyManager.PeopleInParty;
+                GameEvents.RaiseToast(people > 1
+                    ? $"파티원 {people}명이 있어 AI 동료는 {PartyManager.CompanionLimit}명까지 넣을 수 있다. (최대 {PartyManager.MaxMembers}명)"
+                    : $"파티가 가득 찼다. (최대 {PartyManager.MaxMembers}명)");
             }
             else
             {
@@ -120,7 +123,9 @@ namespace DotRPG
             if (session == null || party == null) return;
             int level = session.Progression.Level;
             var roster = session.PartyRoster;
-            partyTitle.text = $"<b>현재 파티</b>  <color=#ffe066>{1 + roster.Count} / {PartyManager.MaxMembers}</color>";
+            int people = PartyManager.PeopleInParty, limit = PartyManager.CompanionLimit;
+            partyTitle.text = $"<b>현재 파티</b>  <color=#ffe066>사람 {people}명 · AI {Mathf.Min(roster.Count, limit)}명 / {PartyManager.MaxMembers}</color>"
+                + (roster.Count > limit ? $"   <color=#ff9f7a>자리가 {limit}개라 던전에는 앞의 {limit}명만 들어간다</color>" : "");
 
             // Party slots: me first, then the roster in order.
             for (int i = 0; i < slots.Count; i++)
@@ -165,7 +170,7 @@ namespace DotRPG
                 c.body.text = $"{def.description}\n\n<color=#ffe066>주력</color> {SkillLine(def, preview)}\n<color=#b8c4d8>무기</color> {EquipmentDatabase.Get(preview.Equipment[EquipSlot.Weapon])?.name ?? "-"}";
                 c.bg.color = inParty ? new Color32(36, 58, 82, 245) : new Color32(24, 36, 54, 235);
                 c.frame.color = i == selected ? (Color)UIColors.Highlight : new Color(1f, 1f, 1f, 0f);
-                bool full = !inParty && roster.Count >= PartyManager.MaxCompanions;
+                bool full = !inParty && roster.Count >= PartyManager.CompanionLimit;
                 c.buttonText.text = inParty ? "해제" : full ? "자리 없음" : "편성";
                 c.button.image.sprite = Game.Art.Get(inParty ? "ui_btngray" : "ui_btn");
                 c.button.image.color = full ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
