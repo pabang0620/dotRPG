@@ -90,39 +90,45 @@ namespace DotRPG
         void Update()
         {
             var party = Game.Party;
-            int shown = 0;
+            int visibleCount = 0;
             for (int i = 0; i < frames.Count; i++)
             {
-                var f = frames[i];
-                var m = party != null && i + 1 < party.Members.Count ? party.Members[i + 1] : null;
-                bool on = m != null && m.gameObject.activeInHierarchy;
-                if (f.root.gameObject.activeSelf != on) f.root.gameObject.SetActive(on);
-                if (!on) continue;
-                shown++;
-                var def = MercenaryDatabase.Get(m.Data.MercenaryId);
-                Color cc = ClassColor(m);
-                f.stripe.color = cc;
+                var frame = frames[i];
+                var member = party != null && i + 1 < party.Members.Count ? party.Members[i + 1] : null;
+                bool isVisible = member != null && member.gameObject.activeInHierarchy;
+                if (frame.root.gameObject.activeSelf != isVisible) frame.root.gameObject.SetActive(isVisible);
+                if (!isVisible) continue;
+                visibleCount++;
+                var mercenary = MercenaryDatabase.Get(member.Data.MercenaryId);
+                Color classColor = ClassColor(member);
+                frame.stripe.color = classColor;
                 // [P5] Name / level text only when the member, colour or level changes.
-                if (f.shownMember != m || f.shownLevel != m.Data.Level || f.shownColor != cc)
+                if (frame.shownMember != member || frame.shownLevel != member.Data.Level || frame.shownColor != classColor)
                 {
-                    f.shownMember = m; f.shownLevel = m.Data.Level; f.shownColor = cc;
-                    f.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(cc)}>{m.DisplayName}</color>";
-                    f.info.text = $"Lv.{m.Data.Level} {(def != null ? def.roleName.Split(' ')[0] : "")}";
+                    frame.shownMember = member;
+                    frame.shownLevel = member.Data.Level;
+                    frame.shownColor = classColor;
+                    frame.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(classColor)}>{member.DisplayName}</color>";
+                    frame.info.text = $"Lv.{member.Data.Level} {(mercenary != null ? mercenary.roleName.Split(' ')[0] : "")}";
                 }
-                var hp = m.Health;
-                SetFill(f.hpFill, hp.Max > 0 ? (float)hp.Current / hp.Max : 0f);
-                int maxMp = m.MaxMana;
-                SetFill(f.mpFill, maxMp > 0 ? m.Data.Mana / maxMp : 0f);
-                bool down = m.IsDead;
-                if (f.downed.gameObject.activeSelf != down) f.downed.gameObject.SetActive(down);
-                if (down)
+                var health = member.Health;
+                SetFill(frame.hpFill, health.Max > 0 ? (float)health.Current / health.Max : 0f);
+                int maxMana = member.MaxMana;
+                SetFill(frame.mpFill, maxMana > 0 ? member.Data.Mana / maxMana : 0f);
+                bool isDowned = member.IsDead;
+                if (frame.downed.gameObject.activeSelf != isDowned) frame.downed.gameObject.SetActive(isDowned);
+                if (isDowned)
                 {
-                    float left = party.ReviveRemaining(m);
-                    int dKey = left > 0f ? Mathf.CeilToInt(left) : 0;
-                    if (dKey != f.shownDowned) { f.shownDowned = dKey; f.downedText.text = left > 0f ? $"쓰러짐  {dKey}초" : "쓰러짐"; }
+                    float reviveRemaining = party.ReviveRemaining(member);
+                    int reviveSeconds = reviveRemaining > 0f ? Mathf.CeilToInt(reviveRemaining) : 0;
+                    if (reviveSeconds != frame.shownDowned)
+                    {
+                        frame.shownDowned = reviveSeconds;
+                        frame.downedText.text = reviveRemaining > 0f ? $"쓰러짐  {reviveSeconds}초" : "쓰러짐";
+                    }
                 }
             }
-            DevVisible = shown;
+            DevVisible = visibleCount;
         }
     }
 }

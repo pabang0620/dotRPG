@@ -53,7 +53,15 @@ namespace DotRPG
         EnemyController castTarget;
         Vector2 castAim = Vector2.down;
         bool Ranged => classInfo != null && classInfo.ranged;
-        float Duration => Ranged ? classInfo.castDuration : recovering ? WarriorAttackMotion.RecoveryDuration : Mathf.Max(WarriorAttackMotion.StageDuration(comboStage), stats.attackDuration);
+        float Duration
+        {
+            get
+            {
+                if (Ranged) return classInfo.castDuration;
+                if (recovering) return WarriorAttackMotion.RecoveryDuration;
+                return Mathf.Max(WarriorAttackMotion.StageDuration(comboStage), stats.attackDuration);
+            }
+        }
 
         /// <summary>Switches weapon sprite and attack style (sword swing or magic bolt).</summary>
         public void SetClass(CharacterClassInfo info)
@@ -148,7 +156,8 @@ namespace DotRPG
         public void Cancel()
         {
             attackEnd = -10f;
-            meleeActive = recovering = false; queuedStrikes = comboStage = 0;
+            meleeActive = recovering = false;
+            queuedStrikes = comboStage = 0;
             nextAttackTime = 0;
             if (slash != null) slash.enabled = false;
         }
@@ -169,7 +178,9 @@ namespace DotRPG
             if (Time.time < nextAttackTime) return;
             if (!Ranged)
             {
-                comboStage = queuedStrikes = 0; recovering = false; meleeActive = true;
+                comboStage = queuedStrikes = 0;
+                recovering = false;
+                meleeActive = true;
                 ResolvedStrikeCount = 0;
             }
             // Mage: aim along the 8-way stick/keys direction, then lock onto the nearest monster in range.
@@ -185,8 +196,8 @@ namespace DotRPG
             attackStart = Time.time;
             attackEnd = attackStart + Duration;
             // [MERGE] Combo timing from the warrior rework, attack speed of this member (not always the local one).
-            float cdMul = owner.Data.Stats.CooldownMultiplier;
-            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown * cdMul : Mathf.Max(Duration, stats.attackCooldown * cdMul));
+            float cooldownMultiplier = owner.Data.Stats.CooldownMultiplier;
+            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown * cooldownMultiplier : Mathf.Max(Duration, stats.attackCooldown * cooldownMultiplier));
             attackFacing = owner.Facing;
             hitResolved = false;
             hitThisSwing.Clear();
@@ -227,26 +238,31 @@ namespace DotRPG
                 float t = Mathf.Clamp01((Time.time - attackStart) / Duration);
                 if (!recovering && !hitResolved && t >= WarriorAttackMotion.Contact)
                 {
-                    hitResolved = true; ResolvedStrikeCount++;
+                    hitResolved = true;
+                    ResolvedStrikeCount++;
                     ResolveHits(attackFacing.ToVector());
                     if (weapon.sprite != null) WarriorFlameSlash.Burst(owner.Center + attackFacing.ToVector() * .6f, attackFacing.ToVector(), comboStage);
                 }
                 if (Time.time < attackEnd) break;
-                float boundary = attackEnd;
+                float stageEnd = attackEnd;
                 if (recovering)
                 {
-                    meleeActive = false; recovering = false;
-                    nextAttackTime = Mathf.Max(nextAttackTime, boundary);
-                    HoldPose(); return;
+                    meleeActive = false;
+                    recovering = false;
+                    nextAttackTime = Mathf.Max(nextAttackTime, stageEnd);
+                    HoldPose();
+                    return;
                 }
                 if (queuedStrikes > 0 && comboStage < 2)
                 {
-                    queuedStrikes--; comboStage++;
-                    hitResolved = false; hitThisSwing.Clear();
+                    queuedStrikes--;
+                    comboStage++;
+                    hitResolved = false;
+                    hitThisSwing.Clear();
                     Game.Audio.PlaySfx("swing");
                 }
                 else recovering = true;
-                attackStart = boundary;
+                attackStart = stageEnd;
                 attackEnd = attackStart + Duration;
             }
             UpdateMeleeTrail();
@@ -265,7 +281,9 @@ namespace DotRPG
             slash.transform.localRotation = Quaternion.Euler(0, 0, pose.swordAngle);
             slash.transform.localScale = new Vector3(1, sign, 1);
             ySort?.SetLocalOrder(slash, pose.rightHandBack ? -1 : 3);
-            var c = slash.color; c.a = recovering ? 0 : WarriorAttackMotion.TrailAlpha(t); slash.color = c;
+            var trailColor = slash.color;
+            trailColor.a = recovering ? 0 : WarriorAttackMotion.TrailAlpha(t);
+            slash.color = trailColor;
         }
 
         /// <summary>Mage: raise the staff towards the facing direction, then release a bolt.</summary>
