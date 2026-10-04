@@ -11,6 +11,7 @@ import { attachRelay } from './domains/relay/relayServer';
 import { steamSelfCheck } from './domains/auth/steamProvider';
 import { runMatchTick } from './domains/match/matchService';
 import { runSettleTick } from './domains/partyruns/partySettle';
+import { runCardAutoPickTick } from './domains/dungeons/dungeonService';
 import { initGameData } from './gamedata/loader';
 import { beginShutdown, inFlightCount, isShuttingDown, setWsState, waitForInFlight } from './ops/lifecycle';
 import { closeInterruptedRuns, requestJobStop, runJob, startJobRunner } from './ops/jobRunner';
@@ -56,8 +57,11 @@ async function main(): Promise<void> {
   if (cfg.ops.jobsEnabled) runJob('maintenance-close', 'startup').catch((err: unknown) => logger.error({ err }, 'startup job failed'));
 
   // 자동 매칭 틱(1초). 대기열은 메모리라 한 대 서버 전제
+  let tickCount = 0;
   const tick = setInterval(() => {
     if (isShuttingDown()) return;
+    // 고르지 않은 던전 카드 자동 지급은 30초마다면 충분하다
+    if (++tickCount % 30 === 0) metrics.track('cards', runCardAutoPickTick).catch((err: unknown) => logger.error({ err }, 'card tick failed'));
     metrics.track('match', runMatchTick).catch((err: unknown) => logger.error({ err }, 'match tick failed'));
     metrics.track('settle', runSettleTick).catch((err: unknown) => logger.error({ err }, 'settle tick failed'));
   }, 1000);

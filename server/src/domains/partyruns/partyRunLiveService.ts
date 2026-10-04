@@ -14,11 +14,29 @@ import type { ClaimBody, HeartbeatBody, HostReportBody, RequestOnlyBody } from '
 
 const notFound = () => new AppError(404, '판을 찾을 수 없습니다.', 'RUN_NOT_FOUND');
 
-/** 이탈·끊김 초과로 닫히는 멤버의 진행 중 dungeon_runs를 abandoned로(이미 받은 처치 보상은 유지, 클리어 보상 없음) */
-async function abandonMemberRun(client: PoolClient, dungeonRunId: number | null, at: Date): Promise<void> {
-  if (dungeonRunId === null) return;
-  const dr = await dungeonRepo.findRunById(client, dungeonRunId);
-  if (dr && dr.state === 'playing') await dungeonRepo.abandonRun(client, dr.id, at);
+/**
+ * 이탈·끊김 초과로 닫히는 멤버의 진행 중 dungeon_runs를 닫는다.
+ * - 방장이 이미 클리어를 보고한 판: 클리어 뒤에 나간 것이므로 방장 보고 값으로 결과를 대신 접수한다(reported).
+ *   정산은 대기 마감 뒤 서버 틱(runSettleTick)이 하고, 카드는 접속 때 자동으로 뒤집히거나 시간이 지나면 서버가 지급한다.
+ * - 그 밖: abandoned(이미 받은 처치 보상은 유지, 클리어 보상 없음)
+ */
+async function abandonMemberRun(client: PoolClient, partyRunId: number, member: repo.RunMemberRow, at: Date): Promise<void> {
+  if (member.dungeon_run_id === null) return;
+  const dr = await dungeonRepo.findRunById(client, member.dungeon_run_id);
+  if (!dr || dr.state !== 'playing') return;
+  const h = (await repo.hostReports(client, partyRunId))[0];
+  if (h && h.outcome === 'cleared') {
+    const seen = h.members.find((m) => m.character_id === member.character_uuid);
+    await dungeonRepo.markReported(client, dr.id, 'cleared', {
+      elapsed_ms: h.elapsed_ms,
+      hits_taken: seen?.hits_taken ?? 0,
+      max_combo: seen?.max_combo ?? 0,
+      revives_used: seen?.revives_used ?? 0,
+      reported_for_absent: true,
+    }, at);
+    return;
+  }
+  await dungeonRepo.abandonRun(client, dr.id, at);
 }
 
 // ---------- R5 POST /party-runs/{id}/heartbeat ----------
@@ -40,7 +58,7 @@ export function heartbeat(accountId: number, characterUuid: string, runUuid: str
         if (since <= pol.partyRejoinSeconds * 1000) await repo.setMemberState(ctx.client, run.id, me.character_id, 'playing', now);
         else {
           await repo.setMemberState(ctx.client, run.id, me.character_id, 'left', now, { leftReason: 'rejoin_timeout' });
-          await abandonMemberRun(ctx.client, me.dungeon_run_id, now);
+          await abandonMemberRun(ctx.client, run.id, me, now);
         }
       } else if (me.state === 'playing') {
         await repo.touchMember(ctx.client, run.id, me.character_id, now);
@@ -52,7 +70,7 @@ export function heartbeat(accountId: number, characterUuid: string, runUuid: str
           await repo.setMemberState(ctx.client, run.id, m.character_id, 'disconnected', now);
         } else if (m.state === 'disconnected' && m.disconnected_at && now.getTime() - m.disconnected_at.getTime() > pol.partyRejoinSeconds * 1000) {
           await repo.setMemberState(ctx.client, run.id, m.character_id, 'left', now, { leftReason: 'rejoin_timeout' });
-          await abandonMemberRun(ctx.client, m.dungeon_run_id, now);
+          await abandonMemberRun(ctx.client, run.id, m, now);
         }
       }
       await repo.endRunIfDone(ctx.client, run, now);
@@ -195,9 +213,9 @@ export function leaveRun(accountId: number, characterUuid: string, runUuid: stri
           await repo.setMemberState(ctx.client, run.id, me.character_id, 'left', ctx.now, { leftReason: 'left' });
         }
       } else if (run.state === 'playing') {
-        // 받은 처치 경험치·드롭은 유지, 클리어 보상 없음. 방장이 나가면 12초를 기다리지 않고 바로 인계할 수 있다
+        // 받은 처치 경험치·드롭은 유지. 방장이 클리어를 보고한 뒤라면 클리어 보상도 받는다(abandonMemberRun). 방장이 나가면 12초를 기다리지 않고 바로 인계할 수 있다
         await repo.setMemberState(ctx.client, run.id, me.character_id, 'left', ctx.now, { leftReason: 'left' });
-        await abandonMemberRun(ctx.client, me.dungeon_run_id, ctx.now);
+        await abandonMemberRun(ctx.client, run.id, me, ctx.now);
         await repo.endRunIfDone(ctx.client, run, ctx.now);
       }
       return { status: 200, data: { left: true } };

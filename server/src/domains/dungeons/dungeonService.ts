@@ -5,6 +5,8 @@ import { getPool, isUniqueViolation } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
+import { getRng } from '../../utils/rng';
+import { randomUUID } from 'node:crypto';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import * as charRepo from '../characters/characterRepository';
 import type { EconCtx } from '../economy/economyContext';
@@ -209,16 +211,54 @@ export function pickCard(
       if (ctx.now.getTime() > (run.ended_at as Date).getTime() + ttl) {
         throw new AppError(410, '카드를 고를 수 있는 시간이 지났습니다.', 'CARDS_EXPIRED');
       }
-      const card = run.cards[body.index];
-      if (!card) throw new AppError(422, '고를 카드가 없습니다.', 'NO_CARDS');
-
-      if (card.item_key === 'gold') await ctx.changeGold(card.count, 'dungeon_card', run.uuid);
-      else await ctx.addItem('bag', card.item_key, card.count, 'dungeon_card', run.uuid);
-      await dungeonRepo.setCardPicked(ctx.client, run.id, body.index, ctx.now);
+      const card = await grantCard(ctx, run, body.index);
       // 나머지 카드는 동료 AI가 뒤집는 연출용 공개일 뿐 지급되지 않는다
       return { status: 200, data: { card, cards: run.cards, delta: ctx.delta() } };
     },
   });
+}
+
+async function grantCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
+  const card = run.cards?.[index];
+  if (!card) throw new AppError(422, '고를 카드가 없습니다.', 'NO_CARDS');
+  if (card.item_key === 'gold') await ctx.changeGold(card.count, 'dungeon_card', run.uuid);
+  else await ctx.addItem('bag', card.item_key, card.count, 'dungeon_card', run.uuid);
+  await dungeonRepo.setCardPicked(ctx.client, run.id, index, ctx.now);
+  return card;
+}
+
+// ---------- 서버 틱: 고르지 않은 카드 ----------
+
+/**
+ * 클리어 뒤 DUNGEON_CARD_AUTO_PICK_MINUTES가 지나도록 카드를 고르지 않은 판(결과 화면 전에 끊김, 클리어 뒤 이탈해
+ * 서버가 대신 정산한 판)은 서버가 한 장을 골라 가방에 넣는다. 네 장은 뒤집기 전 모두 같은 가치라 무작위로 고른다.
+ */
+export async function runCardAutoPickTick(): Promise<void> {
+  const cutoff = new Date(getNow().getTime() - getConfig().policy.dungeonCardAutoPickMinutes * 60_000);
+  const r = await getPool().query<{ uuid: string; account_id: string; char_uuid: string }>(
+    `SELECT d.uuid, c.account_id, c.uuid AS char_uuid
+       FROM dungeon_runs d JOIN characters c ON c.id = d.character_id
+      WHERE d.state = 'cleared' AND d.cards IS NOT NULL AND d.card_picked IS NULL AND d.ended_at < $1
+      LIMIT 50`,
+    [cutoff],
+  );
+  for (const row of r.rows) {
+    await runEconomy({
+      accountId: Number(row.account_id),
+      characterUuid: row.char_uuid,
+      endpoint: 'TICK card auto pick',
+      requestId: randomUUID(),
+      payload: { run_id: row.uuid },
+      handler: async (ctx) => {
+        const run = await dungeonRepo.findRunByUuid(ctx.client, ctx.char.id, row.uuid);
+        if (!run || run.state !== 'cleared' || !run.cards || run.cards.length === 0 || run.card_picked !== null) {
+          return { status: 200, data: { result: 'none' } };
+        }
+        const card = await grantCard(ctx, run, getRng().int(0, run.cards.length));
+        return { status: 200, data: { card } };
+      },
+    });
+  }
 }
 
 // ---------- D4 GET /dungeon-runs/{run_id} ----------

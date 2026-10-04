@@ -392,8 +392,7 @@ namespace DotRPG
             foreach (var q in Game.Quest.WithStatus(QuestStatus.Completed))
                 if (!OnlineSession.ClaimedQuests.Contains(q.id))
                     ClaimQuest(q.id, null, quiet: true);
-            OnMapEntered(Game.Session.MapId);
-            ClaimUnpickedCards();
+            OnMapEntered(Game.Session.MapId); // also flips cards left unpicked
         }
 
         /// <summary>
@@ -419,9 +418,18 @@ namespace DotRPG
             });
         }
 
+        static float nextCardCheck;
+
         static void OnMapEntered(string mapId)
         {
             if (!On || (Game.Dungeon != null && Game.Dungeon.InRun)) return;
+            // Back from a party dungeon the server may have settled this character's clear later (left right after the
+            // clear, dropped before the result window): flip the waiting card here instead of only at the next login.
+            if (UnityEngine.Time.unscaledTime >= nextCardCheck)
+            {
+                nextCardCheck = UnityEngine.Time.unscaledTime + 60f;
+                ClaimUnpickedCards();
+            }
             LoadCoolingNodes(mapId, cooling =>
             {
                 if (cooling.Count == 0 || Game.World == null || Game.World.MapId != mapId) return;

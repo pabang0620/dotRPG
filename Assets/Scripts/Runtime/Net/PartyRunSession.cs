@@ -329,6 +329,18 @@ namespace DotRPG
                 }
                 else ai.Add(new Dictionary<string, object> { ["slot"] = slot, ["damage_dealt"] = s.damage });
             }
+            // AI mercenaries fill the free seats on the host but have no network seat: their damage comes from the
+            // party's damage meter. Without it the server sees too little damage for the monsters killed and
+            // rejects the whole host report (DAMAGE_TOO_LOW), which holds every absent member's result.
+            if (ai.Count == 0 && Game.Party != null)
+            {
+                int aiSlot = humans;
+                foreach (var m in Game.Party.Members)
+                {
+                    if (m == null || m.IsLocal || Game.Party.IsNetMember(m) || aiSlot >= PartyManager.MaxMembers) continue;
+                    ai.Add(new Dictionary<string, object> { ["slot"] = aiSlot++, ["damage_dealt"] = Game.Party.DamageOf(m) });
+                }
+            }
             var body = new Dictionary<string, object>
             {
                 ["request_id"] = ApiClient.NewRequestId(), ["host_epoch"] = epoch, ["outcome"] = cleared ? "cleared" : "failed",

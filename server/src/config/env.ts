@@ -53,6 +53,7 @@ const envSchema = z.object({
   RUN_STALE_SECONDS: posInt(3600),
   DUNGEON_ROOM_CLEAR_RATIO: z.coerce.number().gt(0).max(1).default(0.8),
   DUNGEON_CARD_TTL_HOURS: posInt(24),
+  DUNGEON_CARD_AUTO_PICK_MINUTES: posInt(10),
   // 4단계(파티) 속도 제한
   RATE_PARTY_LIST_PER_SEC: posInt(1),
   RATE_PARTY_POLL_PER_SEC: posInt(2),
@@ -420,6 +421,8 @@ export interface AppConfig {
     runStaleSeconds: number;
     dungeonRoomClearRatio: number;
     dungeonCardTtlHours: number;
+    /** 클리어 뒤 이만큼 지나도록 카드를 고르지 않으면 서버가 한 장을 골라 지급한다 */
+    dungeonCardAutoPickMinutes: number;
     partyListingMinutes: number;
     partyApplySeconds: number;
     partyIdleMinutes: number;
@@ -717,6 +720,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       runStaleSeconds: e.RUN_STALE_SECONDS,
       dungeonRoomClearRatio: e.DUNGEON_ROOM_CLEAR_RATIO,
       dungeonCardTtlHours: e.DUNGEON_CARD_TTL_HOURS,
+      dungeonCardAutoPickMinutes: e.DUNGEON_CARD_AUTO_PICK_MINUTES,
       partyListingMinutes: e.PARTY_LISTING_MINUTES,
       partyApplySeconds: e.PARTY_APPLY_SECONDS,
       partyIdleMinutes: e.PARTY_IDLE_MINUTES,

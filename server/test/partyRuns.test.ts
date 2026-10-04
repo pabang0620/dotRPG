@@ -4,6 +4,8 @@ import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { anomalyKinds, expectLedgerConsistent, fakeRng } from './economyHelpers';
+import { runSettleTick } from '../src/domains/partyruns/partySettle';
+import { runCardAutoPickTick } from '../src/domains/dungeons/dungeonService';
 import { clearAll, formParty, get, honestHostReport, newHero, post, raw, stats, startAndBegin, type Hero } from './partyHelpers';
 
 const app = buildApp();
@@ -401,6 +403,54 @@ describe('호스트 인계와 방장 보고, 이탈', () => {
     expect(hb.status).toBe(200);
     const claim = await post(app, m1, `/party-runs/${runId}/host/claim`, { observed_epoch: 1 });
     expect(claim.status).toBe(200);
+  });
+
+  it('클리어 보고 뒤 이탈: 멤버 결과를 방장 보고로 대신 접수해 정산하고, 고르지 않은 카드는 서버가 지급한다', async () => {
+    const { host, member, runId, hostRun, memberRun } = await duo();
+    await clearAll(app, host, hostRun, advance);
+    fixed = new Date(MONDAY);
+    advance(1);
+    await clearAll(app, member, memberRun, advance);
+    advance(40);
+    await post(app, host, `/party-runs/${runId}/host-report`, await honestHostReport(hostRun, [host, member]));
+    // 멤버는 결과 화면 전에 끊기거나 나갔다
+    expect((await post(app, member, `/party-runs/${runId}/leave`, {})).body.data.left).toBe(true);
+    const row = await getPool().query('SELECT state, reported_outcome FROM dungeon_runs WHERE uuid = $1', [memberRun]);
+    expect(row.rows[0]).toMatchObject({ state: 'reported', reported_outcome: 'cleared' });
+    expect((await result(host, hostRun, { outcome: 'cleared', stats: stats() })).body.data.result).toBe('cleared');
+
+    // 대기 마감 뒤 서버 틱이 멤버 행을 정산한다(클리어 경험치는 한 번)
+    advance(91);
+    await runSettleTick();
+    const settled = await getPool().query('SELECT state, xp_granted, cards IS NOT NULL AS has_cards, card_picked FROM dungeon_runs WHERE uuid = $1', [memberRun]);
+    expect(settled.rows[0]).toMatchObject({ state: 'cleared', has_cards: true, card_picked: null });
+    expect(Number((settled.rows[0] as { xp_granted: number }).xp_granted)).toBeGreaterThan(0);
+    await runSettleTick();
+    const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE character_id = $1 AND reason = 'dungeon_clear'", [member.dbId]);
+    expect(Number((xp.rows[0] as { n: string }).n)).toBe(1);
+
+    // 카드 자동 지급: 마감 전에는 그대로, 지난 뒤 한 장만 지급(두 번 돌아도 한 장)
+    await runCardAutoPickTick();
+    expect((await getPool().query('SELECT card_picked FROM dungeon_runs WHERE uuid = $1', [memberRun])).rows[0]).toMatchObject({ card_picked: null });
+    advance(11 * 60);
+    await runCardAutoPickTick();
+    await runCardAutoPickTick();
+    const picked = await getPool().query('SELECT card_picked FROM dungeon_runs WHERE uuid = $1', [memberRun]);
+    expect((picked.rows[0] as { card_picked: number | null }).card_picked).not.toBeNull();
+    const cardGrants = await getPool().query(
+      "SELECT (SELECT count(*) FROM item_ledger WHERE character_id = $1 AND reason = 'dungeon_card') + (SELECT count(*) FROM gold_ledger WHERE character_id = $1 AND reason = 'dungeon_card') AS n",
+      [member.dbId],
+    );
+    expect(Number((cardGrants.rows[0] as { n: string }).n)).toBe(1);
+    await expectLedgerConsistent(member);
+    await expectLedgerConsistent(host);
+  });
+
+  it('클리어 보고 전 이탈은 그대로 abandoned(클리어 보상 없음)', async () => {
+    const { member, runId, memberRun } = await duo();
+    await post(app, member, `/party-runs/${runId}/leave`, {});
+    const row = await getPool().query('SELECT state FROM dungeon_runs WHERE uuid = $1', [memberRun]);
+    expect((row.rows[0] as { state: string }).state).toBe('abandoned');
   });
 
   it('입장 마감: 들어오지 않은 멤버는 불참 처리되고 AI가 그 자리를 채우며 입장 횟수는 쓰지 않는다', async () => {
