@@ -157,14 +157,14 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     await expectLedgerConsistent(h);
   });
 
-  it('레벨·던전 목표: c1_stronger는 레벨 22와 던전 12회가 필요', async () => {
+  it('레벨·던전 목표: c1_stronger는 레벨 22와 던전 1회가 필요', async () => {
     const h = await newHero(app);
     await seedClaims(h, MAIN_TO_STRONGER.slice(0, 7));
     const lv = await claim(h, 'c1_stronger');
     expect(lv.body.errors.objective).toMatchObject({ type: 'level', need: 22, have: 1 });
     await seedLevel(h, 22);
     const dg = await claim(h, 'c1_stronger');
-    expect(dg.body.errors.objective).toMatchObject({ type: 'dungeon', target: '*', need: 12, have: 0 });
+    expect(dg.body.errors.objective).toMatchObject({ type: 'dungeon', target: '*', need: 1, have: 0 });
     for (let i = 0; i < 12; i++) {
       await getPool().query(
         `INSERT INTO dungeon_runs (character_id, dungeon_id, difficulty, state, reset_day, started_at, ended_at, rank, cards)

@@ -175,9 +175,20 @@ namespace DotRPG
 
         // =============================== What to do next ===============================
 
+        /// <summary>The quest the player picked in the quest log ("" = main first, then the pinned side quest).</summary>
+        public static string TargetQuestId = "";
+
         Goal Resolve()
         {
             var q = Game.Quest;
+            var picked = string.IsNullOrEmpty(TargetQuestId) ? null : q.Database.Get(TargetQuestId);
+            if (picked != null)
+            {
+                var st = q.StatusOf(picked.id);
+                if (st == QuestStatus.Completed) TargetQuestId = ""; // done: back to the default order
+                else if (st == QuestStatus.Locked) return Wait($"'{picked.title}'은(는) 아직 받을 수 없는 퀘스트입니다.");
+                else return GoalFor(picked);
+            }
             var main = q.CurrentMain();
             var g = main != null ? GoalFor(main) : default;
             if (g.kind == GoalKind.None || g.kind == GoalKind.Wait)
@@ -214,6 +225,16 @@ namespace DotRPG
                 switch (o.type)
                 {
                     case ObjectiveTypes.Talk: return NpcGoal(o.target, "에게 가는 중");
+                    case ObjectiveTypes.Quests:
+                        // An errand board: carry on with the first listed errand that is not finished yet.
+                        foreach (var id in o.target.Split(','))
+                        {
+                            var sub = q.Database.Get(id.Trim());
+                            if (sub == null || q.StatusOf(sub.id) == QuestStatus.Completed || q.StatusOf(sub.id) == QuestStatus.Locked) continue;
+                            var g = GoalFor(sub);
+                            if (g.kind != GoalKind.None && g.kind != GoalKind.Wait) return g;
+                        }
+                        return Wait("남은 부탁을 직접 골라 진행해 주세요.");
                     case ObjectiveTypes.Interact: return PropGoal(o);
                     case ObjectiveTypes.Kill: return KillGoal(o, def);
                     case ObjectiveTypes.Collect: return CollectGoal(o.target, o.map);

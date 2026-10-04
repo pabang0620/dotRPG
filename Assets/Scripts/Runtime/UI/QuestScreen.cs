@@ -37,6 +37,8 @@ namespace DotRPG
             w.detail = Label(side.transform, "Body", "", 21, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -22f), new Vector2(704f, 500f));
             w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 16f), new Vector2(704f, 30f));
             w.hint.color = new Color32(184, 196, 216, 255);
+            // Pick this quest for auto-progress (unpicked: the main quest first, then the pinned side quest).
+            w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행 대상으로", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(240f, 44f), w.ToggleAutoTarget, 18);
             if (Game.Quest != null) Game.Quest.Changed += w.OnQuestChanged;
             return w;
         }
@@ -92,7 +94,8 @@ namespace DotRPG
             string state = st == QuestStatus.Completed ? "<color=#8fe28f>완료</color>"
                 : st == QuestStatus.ReadyToTurnIn ? "<color=#ffd640>보고</color>"
                 : st == QuestStatus.Available ? "<color=#ff9f43>수락 전</color>" : "";
-            string pin = Game.Session.Journal.Tracked == q.id ? " <color=#78d6ff>[추적]</color>" : "";
+            string pin = (Game.Session.Journal.Tracked == q.id ? " <color=#78d6ff>[추적]</color>" : "")
+                + (QuestAutoPilot.TargetQuestId == q.id ? " <color=#8fe28f>[자동]</color>" : "");
             row.text = UIFactory.Text(row.bg.rectTransform, "Text", $"{tag}  {q.DisplayTitle}{pin}  {state}", 20,
                 st == QuestStatus.Completed ? new Color32(150, 160, 176, 255) : new Color32(246, 231, 200, 255), TextAnchor.MiddleLeft, true);
             UIFactory.Stretch(row.text.rectTransform, 14f, 8f, 0f, 0f);
@@ -148,6 +151,9 @@ namespace DotRPG
             string reward = RewardText(q.reward);
             if (reward.Length > 0) sb.Append($"\n<b>보상</b>\n{reward}");
             detail.text = sb.ToString();
+            bool canAuto = st != QuestStatus.Completed && st != QuestStatus.Locked;
+            autoBtn.gameObject.SetActive(canAuto);
+            if (canAuto) TextOf(autoBtn).text = QuestAutoPilot.TargetQuestId == q.id ? "자동 진행 대상 해제" : "자동 진행 대상으로";
             hint.text = q.Kind == QuestKind.Sub && st != QuestStatus.Completed
                 ? $"[{Game.Input.GetBindingLabel(GameAction.Submit)}] 화면 오른쪽 알리미에 추적 / 해제   ·   ↑↓ 선택"
                 : "↑↓ 선택   ·   메인 퀘스트는 항상 알리미에 표시된다";
@@ -164,6 +170,20 @@ namespace DotRPG
                 foreach (var it in r.items)
                     if (!string.IsNullOrEmpty(it.id)) parts.Add(it.count > 1 ? $"{QuestManager.ItemName(it.id)} x{it.count}" : QuestManager.ItemName(it.id));
             return string.Join("   ·   ", parts);
+        }
+
+        Button autoBtn;
+
+        static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
+
+        void ToggleAutoTarget()
+        {
+            if (rows.Count == 0) return;
+            var q = rows[selected].quest;
+            QuestAutoPilot.TargetQuestId = QuestAutoPilot.TargetQuestId == q.id ? "" : q.id;
+            Game.Audio.PlaySfx("confirm");
+            GameEvents.RaiseToast(QuestAutoPilot.TargetQuestId == q.id ? $"자동 진행: '{q.title}'를 진행합니다." : "자동 진행: 메인 퀘스트부터 진행합니다.");
+            Refresh();
         }
 
         void TogglePin()

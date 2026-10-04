@@ -183,7 +183,7 @@ namespace DotRPG.EditorTools
                 o.Arr("dungeonNeeds", all.Where(ob => ob.type == ObjectiveTypes.Dungeon), (x, ob) => x.Obj().Str("target", ob.target).Num("count", ob.count).End());
                 o.Arr("raidNeeds", all.Where(ob => ob.type == ObjectiveTypes.Raid), (x, ob) => x.Obj().Str("target", ob.target).Num("count", ob.count).End());
                 o.Arr("flagNeeds", all.Where(ob => ob.type == ObjectiveTypes.Flag).Select(ob => ob.target).Distinct(), (x, v) => x.Val(v));
-                o.Arr("unverifiable", all.Select(ob => ob.type).Where(t => t == ObjectiveTypes.Talk || t == ObjectiveTypes.Cutscene || t == ObjectiveTypes.Interact || t == ObjectiveTypes.Reach).Distinct(), (x, v) => x.Val(v));
+                o.Arr("unverifiable", all.Select(ob => ob.type).Where(t => t == ObjectiveTypes.Talk || t == ObjectiveTypes.Cutscene || t == ObjectiveTypes.Interact || t == ObjectiveTypes.Reach || t == ObjectiveTypes.Quests).Distinct(), (x, v) => x.Val(v));
                 o.End();
                 return o.End();
             });
