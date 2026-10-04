@@ -7,7 +7,8 @@
 ![마을 광장](Docs/images/store_02_village.png)
 
 - 설계 문서: [`Docs/DESIGN.md`](Docs/DESIGN.md) · 스토리: [`Docs/STORY.md`](Docs/STORY.md) · 진행 체크리스트: [`Docs/MASTER_CHECKLIST.md`](Docs/MASTER_CHECKLIST.md)
-- 던전·레이드: [`Docs/PLAN_DUNGEON_RAID.md`](Docs/PLAN_DUNGEON_RAID.md) · 온라인 구조(서버는 기획만): [`Docs/PLAN_ONLINE.md`](Docs/PLAN_ONLINE.md) · 경매장: [`Docs/PLAN_AUCTION.md`](Docs/PLAN_AUCTION.md)
+- 던전·레이드: [`Docs/PLAN_DUNGEON_RAID.md`](Docs/PLAN_DUNGEON_RAID.md) · 온라인 구조: [`Docs/PLAN_ONLINE.md`](Docs/PLAN_ONLINE.md) · 경매장: [`Docs/PLAN_AUCTION.md`](Docs/PLAN_AUCTION.md)
+- 게임 서버: [`Docs/PLAN_SERVER.md`](Docs/PLAN_SERVER.md) · 단계별 명세 [`Docs/server/`](Docs/server/) · 서버 운영 런북 [`server/ops/README.md`](server/ops/README.md)
 - 스토어 소개 문구: [`Docs/STORE.md`](Docs/STORE.md) · 에셋 교체 가이드: [`Docs/ASSETS.md`](Docs/ASSETS.md)
 
 ---
@@ -73,7 +74,14 @@ Shift를 누를 때마다 한 번 발동합니다. 화면 왼쪽 아래에서 �
 5. 조각 100개로 **일요일 최종 레이드 흑철의 바르가스**. 이후 챕터 2(바위 협곡) 해금.
 6. 메뉴(왼쪽 위 버튼): 가방·스킬·지도·퀘스트·요일던전·레이드·파티·파티 찾기·경매장·친구. 일시정지 메뉴에 도움말.
 
-파티 찾기·경매장·채팅·친구는 서버 연결 전이라 **오프라인 미리보기**(목업 데이터)로 동작합니다. 자동 매칭은 60초 뒤(또는 "AI로 채워 출발") 빈자리를 AI 용병으로 채워 바로 던전에 들어갑니다.
+**오프라인과 온라인은 따로입니다.** 새 게임·이어하기는 이 PC의 저장 파일로 하고, 타이틀의 **온라인**은 서버 계정의 캐릭터로 합니다(서버가 골드·아이템·경험치를 판정). 오프라인에서는 파티 찾기·경매장·채팅·친구가 미리보기(목업 데이터)로 동작하고, 온라인 캐릭터로 접속하면 실제 서버에 붙습니다.
+
+### 온라인으로 해 보기 (개발 PC)
+
+1. 서버: `cd server` 후 `npm install`(처음 한 번), `.env.example`을 `.env`로 복사하고 `JWT_SECRET`을 채운 뒤 `npm run dev` (내장 PostgreSQL과 마이그레이션까지 자동, 포트 3000)
+2. 게임: 타이틀 ▸ **온라인** ▸ 아이디·비밀번호로 **새 계정 만들기** ▸ 캐릭터 만들기 ▸ 접속. 다른 서버 주소는 실행 인자 `-dotrpgServer http://주소:3000`
+3. 둘이 파티(같은 PC 창 2개): 창마다 다른 계정으로 접속 ▸ 한쪽이 파티 찾기에서 모집 글 ▸ 다른 쪽이 참가 신청 ▸ 방장이 수락 후 파티 창에서 **출발**. 싸움 연결은 개발용 UDP(127.0.0.1)라 지금은 같은 PC의 창 2개만 됩니다(Steam P2P는 시험 앱 ID 확보 후)
+4. 서버 없이 창 2개 협동만 볼 때: 실행 인자 `-dotrpgParty host` / `-dotrpgParty join`
 
 ## 5. 프로젝트 구조
 
@@ -136,7 +144,8 @@ Docs/             설계 문서, 에셋 가이드, 미리보기 이미지
 - **던전·레이드**: 요일 던전 5종 × 난이도 4단계, 방 진행·부활·랭크·보상 카드, 레이드 4종(중간 해골왕·골렘, 최종 바르가스·그라흐), 봉인 열쇠 조각, 주간·요일 초기화
 - **성장·경제**: 레벨·장비·강화(+10부터 파괴 위험, 보호권, 망치 세 번 연출과 결과 효과음), 상점·창고, 재료, 귀속 규칙 표시(거래 가능·계정 귀속·캐릭터 귀속)
 - **파티**: 용병 고용 최대 4인, 역할별 AI(탱커·딜러·힐러), 레이드 토템 분담
-- **온라인 클라이언트(서버 전 단계)**: 파티 찾기 게시판·자동 매칭 → AI로 채워 실제 입장, 경매장(검색·입찰·즉시 구매·등록·우편함), 채팅(일반·파티·귓속말·시스템, 도배 제한, 금칙어 미리보기), 빠른 신호, 친구·차단·신고 창, 같은 PC 창 2개 UDP 연결(`-dotrpgNet host|join`)
+- **온라인(서버 연결)**: 개발용 로그인, 온라인 캐릭터, 서버 판정 경제(처치·드롭·채집·퀘스트 보상·상점·강화·창고·장착·던전 보상), 파티 모집·자동 매칭·로비와 협동 던전(방장 PC 계산 + 스냅샷 동기화, 방장 인계), 레이드 보상 판정, 실시간 채팅·친구·차단·신고·파티 초대, 경매장·우편·시세. 서버가 없거나 오프라인 캐릭터면 같은 창들이 미리보기로 동작
+- **게임 서버(`server/`)**: Node 22 + TypeScript + Express 5 + PostgreSQL, WebSocket 채팅, 마이그레이션 0001~0008, 자동 테스트 442개, 관리자 CLI(2단계 인증·감사 로그), 정리 작업·백업·점검 공지, Docker·Caddy 배포 파일
 - **편의**: 저장 슬롯 3개, 저장 손상 안내, 키 변경, 글자·UI 크기 4단계, 색약 보정, 화면 흔들림 끄기, 첫 방문 안내 팁, 도움말
 - **아트**: 생성 도트 캐릭터(64px, 머리:몸 1:1), 마을·협곡·겨울 소품, 아이콘·로고·던전 배너, 9-slice 창 프레임
 
@@ -158,8 +167,9 @@ dotRPG.exe -dotrpgNetPair <폴더> -dotrpgNet join   #         하나는 join
 
 ## 8. 아직 하지 않은 것
 
-- 게임 서버(계정·로비·매칭·경매·채팅 판정). 클라이언트는 `IPartyFinderService`·`IAuctionService`·`IChatService`·`ITransport` 뒤에 목업으로 붙어 있어 서버 구현체로 교체하면 된다
-- Steamworks 연결(도전과제·클라우드·P2P), 현지화(영어)
+- 서버 실제 배포(업체·도메인 미정). 배포 절차는 `server/ops/README.md`에 준비되어 있음
+- Steamworks 연결(로그인·P2P 전송·도전과제·클라우드). 서버의 Steam 인증은 mock까지, 클라이언트 P2P 전송은 시험 앱 ID 확보 후
+- 창 2개 협동 실제 플레이 확인(코드·서버 흐름만 검증됨), 현지화(영어)
 - 챕터 3~5
 
 ## 9. 저장 데이터 위치
