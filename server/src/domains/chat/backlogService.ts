@@ -10,7 +10,7 @@ function toFrame(l: repo.StoredLine): Frame {
     t: 'chat.msg',
     seq: l.id,
     channel: l.channel,
-    from: { id: l.sender_character_uuid, name: l.sender_name },
+    from: { id: l.sender_character_uuid, name: l.sender_name, ...(l.sender_title ? { title: l.sender_title } : {}) },
     text: l.text,
     at: l.created_at.toISOString(),
   };

@@ -297,7 +297,7 @@ namespace DotRPG
         public static void Enhance(int? wornSlot, string bagKey, Action<Dictionary<string, object>> done)
         {
             var target = wornSlot.HasValue ? Body(("worn_slot", wornSlot.Value)) : Body(("bag_key", bagKey));
-            Post("/enhance", Body(("target", target)), r => done?.Invoke(r.ok ? r.data : null));
+            Post("/enhance", Body(("target", target)), r => { done?.Invoke(r.ok ? r.data : null); AchievementClient.Check(); });
         }
 
         // ---------------- solo dungeons ----------------
@@ -393,6 +393,7 @@ namespace DotRPG
                 if (!OnlineSession.ClaimedQuests.Contains(q.id))
                     ClaimQuest(q.id, null, quiet: true);
             OnMapEntered(Game.Session.MapId); // also flips cards left unpicked
+            AchievementClient.OnEnteredWorld();
         }
 
         /// <summary>

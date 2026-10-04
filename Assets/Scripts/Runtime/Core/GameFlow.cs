@@ -26,6 +26,7 @@ namespace DotRPG
                 nextPeriodicSave = Time.unscaledTime + PeriodicSaveSeconds;
                 if (Game.Config.autosave) WriteSave();
             }
+            AchievementClient.Tick(); // kills add up: the server re-judges achievements once a minute
             if (transitioning || Game.State.ChangedThisFrame) return;
             if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
             Game.Quest.Tick();

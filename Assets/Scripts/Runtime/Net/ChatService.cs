@@ -16,6 +16,8 @@ namespace DotRPG
         public string text;
         public float time;
         public bool mine;
+        /// <summary>Sender's title ("" = none): shown as [칭호][이름].</summary>
+        public string title = "";
     }
 
     public sealed class ChatFriend

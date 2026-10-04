@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { createAuthRouter } from '../domains/auth/authRoutes';
 import { createAuctionRouter } from '../domains/auction/auctionRoutes';
 import { createBlocksRouter } from '../domains/blocks/blocksRoutes';
+import { createAchievementRouter } from '../domains/achievements/achievementRoutes';
 import { createCharacterRouter } from '../domains/characters/characterRoutes';
 import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
@@ -47,6 +48,7 @@ export function createRouter(): Router {
   r.use(createPartyInvitesRouter());
   r.use(createFriendsRouter());
   r.use(createBlocksRouter());
+  r.use(createAchievementRouter()); // 업적·칭호
   r.use(createReportsRouter());
   // 6단계: 경매·우편(캐릭터 경로 아래, 데이터 버전까지 검사)
   r.use(createAuctionRouter());
