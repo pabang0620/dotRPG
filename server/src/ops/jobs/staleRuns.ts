@@ -2,6 +2,8 @@
 // 새 규칙을 만들지 않고 기존 함수(abandonRun, cancelRun, closeParty)를 그대로 쓴다.
 import { getConfig } from '../../config/env';
 import { getPool, withTransaction } from '../../db/pool';
+import { endAll } from '../../domains/fieldsessions/fieldCore';
+import * as fieldRepo from '../../domains/fieldsessions/fieldRepository';
 import * as dungeonRepo from '../../domains/dungeons/dungeonRepository';
 import * as partyRepo from '../../domains/party/partyRepository';
 import * as partyRunRepo from '../../domains/partyruns/partyRunRepository';
@@ -16,6 +18,7 @@ export interface SweepResult {
   abandonedRuns: number;
   cancelledPartyRuns: number;
   closedParties: number;
+  endedFieldSessions: number;
 }
 
 export async function sweepStale(ctx: JobCtx | null = null): Promise<SweepResult> {
@@ -24,7 +27,7 @@ export async function sweepStale(ctx: JobCtx | null = null): Promise<SweepResult
   const now = getNow();
   const db = getPool();
   const stop = (): boolean => (ctx ? ctx.shouldStop() : false);
-  const out: SweepResult = { abandonedRuns: 0, cancelledPartyRuns: 0, closedParties: 0 };
+  const out: SweepResult = { abandonedRuns: 0, cancelledPartyRuns: 0, closedParties: 0, endedFieldSessions: 0 };
 
   // 1. 오래 방치된 진행 중 던전 판 -> abandoned(보상 없음)
   const stale = await db.query<{ id: string }>(
@@ -86,10 +89,26 @@ export async function sweepStale(ctx: JobCtx | null = null): Promise<SweepResult
       out.closedParties++;
     });
   }
+
+  // 4. 방치된 필드 세션(마지막 활동 후 FIELD_STALE_SECONDS) -> ended(stale)
+  const fieldCutoff = new Date(now.getTime() - cfg.field.staleSeconds * 1000);
+  for (const id of await fieldRepo.staleSessionIds(db, fieldCutoff, LIMIT)) {
+    if (stop()) break;
+    await withTransaction(async (client) => {
+      const lock = await client.query(
+        `SELECT id FROM field_sessions WHERE id = $1 AND state = 'active' AND last_active_at < $2 FOR UPDATE SKIP LOCKED`,
+        [id, fieldCutoff],
+      );
+      if (lock.rows.length === 0) return;
+      const session = await fieldRepo.lockById(client, id);
+      if (session) await endAll(client, session, 'stale', now);
+      out.endedFieldSessions++;
+    });
+  }
   return out;
 }
 
 export async function staleRunsJob(ctx: JobCtx): Promise<JobResult> {
   const r = await sweepStale(ctx);
-  return { rows: r.abandonedRuns + r.cancelledPartyRuns + r.closedParties, detail: { ...r } };
+  return { rows: r.abandonedRuns + r.cancelledPartyRuns + r.closedParties + r.endedFieldSessions, detail: { ...r } };
 }

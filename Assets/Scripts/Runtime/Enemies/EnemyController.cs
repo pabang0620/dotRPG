@@ -395,10 +395,11 @@ namespace DotRPG
             if (OnlineEconomy.On)
             {
                 // [SERVER] The server grants XP and rolls every drop; summons and no-loot monsters are not reported.
-                if (Summoner != null || (Def != null && Def.noLoot)) return;
+                if (Summoner != null || (Def != null && Def.noLoot) || !ReportsKill) return;
                 var root = Game.World != null && Game.World.ObjectsRoot != null ? Game.World.ObjectsRoot : transform.parent;
                 int hits = GoldHitsForReport;
-                OnlineEconomy.ReportKill(Def != null ? Def.id : stats.enemyId, hits, Position + new Vector2(0f, 0.2f), root);
+                OnlineEconomy.ReportKill(Def != null ? Def.id : stats.enemyId, hits, Position + new Vector2(0f, 0.2f), root,
+                    FieldSession.Active && Shared ? MonsterRef : -1); // [PARTY 8] field kills carry the monster reference
                 return;
             }
             if (!MonsterLoot()) return; // [MONSTER] summons/totems drop nothing; gold skeletons drop extra gold

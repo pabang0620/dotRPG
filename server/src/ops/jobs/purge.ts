@@ -115,5 +115,23 @@ export function purgeDaily(ctx: JobCtx): Promise<JobResult> {
       del('admin_sessions', `expires_at < ${days(p.adminSessionDays)} OR revoked_at < ${days(p.adminSessionDays)}`),
     ],
     ['job_runs', del('job_runs', `status <> 'running' AND started_at < ${days(p.jobRunDays)}`)],
+    // 8단계: 종료 후 FIELD_RECORD_RETENTION_DAYS(30일)가 지난 필드 세션(멤버가 자식이라 먼저). kill_log가 가리키는 세션은 남긴다
+    [
+      'field_session_members',
+      `DELETE FROM field_session_members WHERE (session_id, character_id) IN (
+         SELECT m.session_id, m.character_id FROM field_session_members m JOIN field_sessions s ON s.id = m.session_id
+          WHERE s.state = 'ended' AND s.ended_at < ${days(cfg.field.retentionDays)}
+            AND NOT EXISTS (SELECT 1 FROM kill_log k WHERE k.field_session_id = s.id)
+          LIMIT $1)`,
+    ],
+    [
+      'field_sessions',
+      del(
+        'field_sessions',
+        `state = 'ended' AND ended_at < ${days(cfg.field.retentionDays)} AND NOT EXISTS (SELECT 1 FROM kill_log k WHERE k.field_session_id = field_sessions.id)
+         AND NOT EXISTS (SELECT 1 FROM field_session_members m WHERE m.session_id = field_sessions.id)`,
+      ),
+    ],
+    ['relay_room_stats', del('relay_room_stats', `ended_at < ${days(cfg.relay.retentionDays)}`)],
   ]);
 }

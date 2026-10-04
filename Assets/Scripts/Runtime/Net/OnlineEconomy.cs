@@ -104,16 +104,22 @@ namespace DotRPG
         public static int RoomIndex;
 
         /// <summary>A monster died: the server grants XP and rolls its drops, which appear as claimable pickups.</summary>
-        public static void ReportKill(string monsterId, int hits, Vector2 at, Transform parent)
+        /// <summary>[PARTY 8] The field session this character hunts in (null = solo field).</summary>
+        public static string FieldSessionId;
+
+        public static void ReportKill(string monsterId, int hits, Vector2 at, Transform parent, long monsterRef = -1)
         {
             // The loaded map (in a dungeon Session.MapId is the village the run returns to).
             var body = Body(("map_id", Game.World != null ? Game.World.MapId : Game.Session.MapId), ("monster_id", monsterId), ("hits", Mathf.Clamp(hits, 0, 60)));
             if (RunId != null) { body["run_id"] = RunId; body["room_index"] = RoomIndex; }
+            else if (FieldSessionId != null && monsterRef >= 0) { body["session_id"] = FieldSessionId; body["monster_ref"] = monsterRef; }
             Post("/kills", body, r =>
             {
                 if (!r.ok) return;
                 int xp = MiniJson.Int(r.data, "granted_xp");
                 if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
+                var field = MiniJson.Obj(r.data, "field");
+                if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast("<color=#8c96a8>레벨 차이로 경험치가 줄었다.</color>");
                 if (parent == null) return;
                 foreach (var d in MiniJson.Arr(r.data, "drops") ?? new List<object>())
                 {

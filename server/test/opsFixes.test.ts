@@ -37,6 +37,7 @@ const PROD = {
   STEAM_WEB_API_KEY: 'k',
   PARTY_TRANSPORT: 'steam',
   TRUST_PROXY: '1',
+  RELAY_TICKET_SECRET: 'Qm8vN2xK5pL7wR3tY6uZ9aB4cD1eF0gHiJkLmNoPq', RELAY_PUBLIC_URL: 'wss://game.example.org/relay',
   ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
 };
 
@@ -437,7 +438,11 @@ describe('배포·백업 스크립트', () => {
       // 오래된 daily 3개(2020-01-01은 수요일이라 어느 보관 규칙에도 안 걸림, 일요일 1개, 1일 1개)와 predeploy 12개를 미리 둔다
       for (const d of ['20200101', '20200105', '20200201', '20200303']) fs.writeFileSync(path.join(dest, `dotrpg-daily-${d}T000000Z.dump`), 'x');
       for (let i = 0; i < 12; i++) fs.writeFileSync(path.join(dest, `dotrpg-predeploy-aaa${String(i).padStart(2, '0')}-2020010${(i % 9) + 1}T0000${String(i).padStart(2, '0')}Z.dump`), 'x');
-      const ok = run({ BACKUP_ALLOW_PLAINTEXT: '1', BACKUP_KEEP_DAILY: '1', BACKUP_KEEP_WEEKLY: '1', BACKUP_KEEP_MONTHLY: '1' });
+      // Today's own backup also counts as a weekly (Sunday) or monthly (1st) keep, so on those days one more slot is needed.
+      const now = new Date();
+      const weekly = now.getUTCDay() === 0 ? '2' : '1';
+      const monthly = now.getUTCDate() === 1 ? '2' : '1';
+      const ok = run({ BACKUP_ALLOW_PLAINTEXT: '1', BACKUP_KEEP_DAILY: '1', BACKUP_KEEP_WEEKLY: weekly, BACKUP_KEEP_MONTHLY: monthly });
       expect(ok.status).toBe(0);
       const files = fs.readdirSync(dest).sort();
       expect(files.filter((f) => f.startsWith('dotrpg-daily-'))).toHaveLength(3); // 오늘 것 + 일요일(0105) + 1일(0201 이 최근 1개)

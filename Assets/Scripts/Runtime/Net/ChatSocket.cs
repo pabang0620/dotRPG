@@ -163,6 +163,8 @@ namespace DotRPG
                 ["t"] = "hello", ["v"] = 1, ["token"] = ApiClient.Instance.AccessToken ?? "",
                 ["client_version"] = ApiClient.ClientVersion, ["character_id"] = characterId,
                 ["since"] = LastSeq > 0 ? (object)LastSeq : null,
+                // [PARTY 8] Steam P2P only when Steam runs here (the server picks the combat transport with this).
+                ["caps"] = new Dictionary<string, object> { ["steam_p2p"] = SteamBridge.Current != null && SteamBridge.Current.Ready },
             };
             _ = Task.Run(() => SendLoop(socket, MiniJson.Write(hello), source.Token));
             _ = Task.Run(() => ReceiveLoop(socket, source.Token));

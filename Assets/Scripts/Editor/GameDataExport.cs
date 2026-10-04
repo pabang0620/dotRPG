@@ -364,9 +364,11 @@ namespace DotRPG.EditorTools
             {
                 o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe);
                 var census = Census(m);
+                // [SERVER 8] A field party can share this map's monsters (open map with a field spawner).
+                o.Bool("sharedField", !m.instanced && !m.safe && census.spawnPoints > 0);
                 if (census.width > 0) o.Key("bounds").Obj().Num("minX", 0).Num("minY", 0).Num("maxX", census.width).Num("maxY", census.height).End();
                 o.Arr("fieldSpawns", census.spawnPoints > 0 ? new[] { census.spawnPoints } : new int[0],
-                    (x, n) => x.Obj().Str("monsterId", Resources.Load<GameConfig>("Data/GameConfig").skeletonStats.enemyId).Num("points", n).End());
+                    (x, n) => x.Obj().Str("monsterId", Resources.Load<GameConfig>("Data/GameConfig").skeletonStats.enemyId).Num("points", n).Num("monsterLevel", 1).End()); // field skeletons are level 1 (EnemyController.Create)
                 o.Arr("scriptedSpawns", ScriptedSpawns(m.id), (x, sp) => x.Obj().Str("monsterId", sp.Item1).Num("total", sp.Item2).Str("quest", sp.Item3).End());
                 o.Arr("nodes", census.nodes, (x, nd) => x.Obj().Str("id", nd.Item1).Str("kind", nd.Item2).End());
                 o.Arr("chests", census.chests, (x, c) => x.Val(c));

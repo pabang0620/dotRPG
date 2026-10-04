@@ -17,7 +17,7 @@ api.example.com {
   @admin path /admin /admin/*
   respond @admin 404
 
-  # WebSocket(/ws)은 reverse_proxy가 업그레이드를 그대로 통과시킨다. 앱이 15초마다 ping한다
+  # WebSocket(/ws 채팅, /relay 전투 중계)은 reverse_proxy가 업그레이드를 그대로 통과시킨다(바이너리 프레임이라 압축·버퍼링 설정을 바꾸지 않는다). 앱이 15초마다 ping한다
   reverse_proxy api:3000 {
     health_uri /health/ready
     health_interval 10s

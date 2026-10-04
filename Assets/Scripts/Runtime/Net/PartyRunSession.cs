@@ -24,6 +24,8 @@ namespace DotRPG
         string runId, state = "", dungeonId, myRunId, entryToken, myState = "";
         int difficulty, mySlot, epoch = 1, humans = 1, aiCount;
         string hostCharacterId, hostSteamId;
+        /// <summary>[8] The combat transport the server chose for this run.</summary>
+        readonly RoomTransportInfo transportInfo = new RoomTransportInfo { kind = "run" };
         byte[] hostKey;
         bool amHost, began, joinSent, claiming, reported;
         float pollTimer, heartbeatTimer, hostLostFor;
@@ -54,6 +56,7 @@ namespace DotRPG
                 Instance = go.AddComponent<PartyRunSession>();
                 Instance.runId = id;
                 EnemyController.Killed += Instance.OnKilled;
+                PartyNet.PromotedToHost += Instance.OnPromoted;
             }
             if (Instance.runId != id) return;
             if (!string.IsNullOrEmpty(key)) Instance.hostKey = PartyNet.FromBase64Url(key);
@@ -74,6 +77,17 @@ namespace DotRPG
                 hostSteamId = MiniJson.Str(host, "steam_id");
                 epoch = MiniJson.Int(host, "epoch", epoch);
             }
+            transportInfo.ReadMembers(MiniJson.Arr(run, "members"), hostCharacterId); // [8] seats and SteamIDs
+            var transport = MiniJson.Obj(run, "transport");
+            if (transport != null)
+            {
+                string current = MiniJson.Str(transport, "current", transportInfo.current);
+                int tEpoch = MiniJson.Int(transport, "epoch", transportInfo.epoch);
+                bool changed = PartyNet.Active && (current != transportInfo.current || tEpoch != transportInfo.epoch);
+                transportInfo.current = current;
+                transportInfo.epoch = tEpoch;
+                if (changed) SwitchTransport();
+            }
             var me = MiniJson.Obj(run, "me");
             if (me != null)
             {
@@ -92,14 +106,51 @@ namespace DotRPG
         void EnsureNet()
         {
             if (PartyNet.Active || state != "gathering" && state != "playing") return;
-            if (amHost)
+            if (!amHost && string.IsNullOrEmpty(entryToken)) return;
+            var t = BuildTransport();
+            if (t == null) return;
+            if (amHost) PartyNet.BeginHost(t, runId, mySlot, hostKey, Mathf.Max(1, humans));
+            else PartyNet.BeginMember(t, runId, mySlot, OnlineSession.Current?.ActiveCharacter, entryToken);
+        }
+
+        /// <summary>[8] The server's transport for this run; if it cannot be built here, ask for the next one.</summary>
+        ITransport BuildTransport()
+        {
+            transportInfo.roomId = runId;
+            transportInfo.seat = mySlot;
+            transportInfo.amHost = amHost;
+            transportInfo.hostSteamId = hostSteamId;
+            transportInfo.entryToken = entryToken;
+            transportInfo.hostKey = hostKey;
+            var t = CombatTransportFactory.Create(transportInfo);
+            if (t == null) RequestNextTransport();
+            return t;
+        }
+
+        bool switching;
+
+        /// <summary>[8] The current transport failed (or cannot exist on this PC): the server picks the next one.</summary>
+        void RequestNextTransport()
+        {
+            if (switching) return;
+            switching = true;
+            CombatTransportFactory.RequestSwitch(transportInfo, transportInfo.current, (current, tEpoch) =>
             {
-                PartyNet.BeginHost(new UdpTransport(true, UdpTransport.PartyPort), runId, mySlot, hostKey, Mathf.Max(1, humans));
-            }
-            else if (!string.IsNullOrEmpty(entryToken))
-            {
-                PartyNet.BeginMember(new UdpTransport(false, UdpTransport.PartyPort), runId, mySlot, OnlineSession.Current?.ActiveCharacter, entryToken);
-            }
+                switching = false;
+                if (string.IsNullOrEmpty(current)) { GameEvents.RaiseToast("파티원과 연결할 수 없습니다."); return; }
+                transportInfo.current = current;
+                transportInfo.epoch = tEpoch;
+                SwitchTransport();
+            });
+        }
+
+        /// <summary>[8] Replace the connection; the fight state stays (members greet the host again).</summary>
+        void SwitchTransport()
+        {
+            var net = PartyNet.Current;
+            if (net == null) { EnsureNet(); return; }
+            var t = BuildTransport();
+            if (t != null) net.ReplaceTransport(t);
         }
 
         /// <summary>begin happened: kills and results now go to my own dungeon_runs row.</summary>
@@ -121,7 +172,9 @@ namespace DotRPG
             if (state == "gathering")
             {
                 // A member confirms once the host PC accepted its connection.
-                if (!amHost && !joinSent && PartyNet.IsMember && PartyNet.Current.Welcomed) Join();
+                // A member confirms once the host PC accepted its connection (the relay joins it by itself).
+            if (!amHost && !joinSent && PartyNet.IsMember && PartyNet.Current.Welcomed && transportInfo.current != "relay") Join();
+            if (PartyNet.Active && PartyNet.Current.Transport is ITransportHealth th && th.Failed && !switching) RequestNextTransport();
                 if (pollTimer <= 0f) { pollTimer = PollSeconds; Fetch(); }
             }
             else if (state == "playing" && heartbeatTimer <= 0f)
@@ -130,7 +183,8 @@ namespace DotRPG
                 Heartbeat();
             }
             // Host gone from the fight connection: ask the server whether I take over (§6.7).
-            if (state == "playing" && PartyNet.IsMember && !PartyNet.Current.Transport.IsConnected && PartyNet.Current.Welcomed)
+            // On the relay the server decides by itself and says host.changed.
+            if (state == "playing" && PartyNet.IsMember && transportInfo.current != "relay" && !PartyNet.Current.Transport.IsConnected && PartyNet.Current.Welcomed)
             {
                 hostLostFor += Time.unscaledDeltaTime;
                 if (hostLostFor >= HostLostSeconds && !claiming) ClaimHost();
@@ -206,6 +260,13 @@ namespace DotRPG
             });
         }
 
+        /// <summary>[8] The relay server handed the host role to this PC.</summary>
+        void OnPromoted()
+        {
+            if (Instance != this || amHost) return;
+            TakeOver();
+        }
+
         /// <summary>
         /// This PC continues the fight from the last snapshot: puppets become real monsters, the old host's
         /// body leaves, and the dungeon judges clears here from now on.
@@ -213,14 +274,17 @@ namespace DotRPG
         void TakeOver()
         {
             var old = PartyNet.Current;
+            var keep = old != null && old.Transport.Kind == "relay" ? old.Transport : null; // [8] the relay connection carries on
             var bodies = new List<PlayerController>();
             if (Game.Party != null)
                 foreach (var m in Game.Party.Members) if (m != null && Game.Party.IsNetMember(m)) bodies.Add(m);
-            PartyNet.End();
+            PartyNet.End(keepTransport: keep != null);
             foreach (var b in bodies) Game.Party?.RemoveNetMember(b);
             foreach (var e in new List<EnemyController>(EnemyController.Active)) if (e != null && e.Puppet) e.ReleasePuppet();
             GameEvents.RaiseToast("방장이 떠나 내가 방장을 이어받았다.");
-            PartyNet.BeginHost(new UdpTransport(true, UdpTransport.PartyPort), runId, mySlot, hostKey, Mathf.Max(1, humans));
+            amHost = true;
+            transportInfo.amHost = true;
+            PartyNet.BeginHost(keep ?? BuildTransport(), runId, mySlot, hostKey, Mathf.Max(1, humans));
         }
 
         // ---------------- host report (§6.8) ----------------
@@ -288,6 +352,7 @@ namespace DotRPG
             if (Instance != this) return;
             Instance = null;
             EnemyController.Killed -= OnKilled;
+            PartyNet.PromotedToHost -= OnPromoted;
             if (!string.IsNullOrEmpty(toast)) GameEvents.RaiseToast(toast);
             Destroy(gameObject);
         }

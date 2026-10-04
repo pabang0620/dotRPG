@@ -4,6 +4,7 @@ import type { AddressInfo } from 'node:net';
 import type { Express } from 'express';
 import WebSocket from 'ws';
 import { attachRealtime, type RealtimeHandle } from '../src/domains/chat/wsServer';
+import { attachRelay } from '../src/domains/relay/relayServer';
 import type { Frame } from '../src/domains/chat/wsProtocol';
 import { CLIENT_VERSION } from './helpers';
 import type { Hero } from './economyHelpers';
@@ -17,13 +18,18 @@ export interface TestServer {
 export async function startServer(app: Express): Promise<TestServer> {
   const server = http.createServer(app);
   const handle: RealtimeHandle = await attachRealtime(server);
+  const relay = await attachRelay(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const port = (server.address() as AddressInfo).port;
   return {
     port,
     async stop() {
+      await relay.close();
       await handle.close();
-      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+        server.closeAllConnections();
+      });
     },
   };
 }

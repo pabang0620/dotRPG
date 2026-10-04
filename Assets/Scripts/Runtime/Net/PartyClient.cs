@@ -72,6 +72,7 @@ namespace DotRPG
         public static void AttachOnline()
         {
             Ensure();
+            FieldSession.Ensure(); // [PARTY 8] field party hunting
             if (!(OnlineServices.PartyFinder is ServerPartyFinderService)) OnlineServices.PartyFinder = new ServerPartyFinderService();
         }
 
@@ -83,6 +84,7 @@ namespace DotRPG
                 s.Detach();
                 OnlineServices.PartyFinder = null; // the offline preview comes back
             }
+            FieldSession.Shutdown(); // [PARTY 8]
             if (PartyRunSession.Active) PartyRunSession.Instance.Leave();
             PartyNet.End();
             Instance?.Clear();

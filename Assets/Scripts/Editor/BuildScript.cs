@@ -16,13 +16,20 @@ namespace DotRPG.EditorTools
         [MenuItem("dotRPG/Build/Windows (x64)", priority = 20)]
         public static void BuildWindows() => Build(BuildTarget.StandaloneWindows64, "Windows", ProjectSetup.ProductName + ".exe");
 
+        /// <summary>
+        /// [PARTY 8] Steam test build: Valve's test app 480 (steam_appid.txt next to the exe) so two PCs with
+        /// Steam can play over Steam P2P before the game has its own app id. Never ship this one.
+        /// </summary>
+        [MenuItem("dotRPG/Build/Windows Steam test (app 480)", priority = 23)]
+        public static void BuildWindowsSteamTest() => Build(BuildTarget.StandaloneWindows64, "WindowsSteamTest", ProjectSetup.ProductName + ".exe", steamTest: true);
+
         [MenuItem("dotRPG/Build/macOS", priority = 21)]
         public static void BuildMac() => Build(BuildTarget.StandaloneOSX, "macOS", ProjectSetup.ProductName + ".app");
 
         [MenuItem("dotRPG/Build/Linux (x64)", priority = 22)]
         public static void BuildLinux() => Build(BuildTarget.StandaloneLinux64, "Linux", ProjectSetup.ProductName + ".x86_64");
 
-        static void Build(BuildTarget target, string folder, string executable)
+        static void Build(BuildTarget target, string folder, string executable, bool steamTest = false)
         {
             ProjectSetup.Apply();
             string output = Path.Combine("Builds", folder, executable);
@@ -38,6 +45,14 @@ namespace DotRPG.EditorTools
             if (summary.result == BuildResult.Succeeded)
             {
                 Debug.Log($"[dotRPG] Build succeeded: {output} ({summary.totalSize / (1024 * 1024)} MB)");
+                // [PARTY 8] Test app id only in the test build; a release build must not carry it (Steam decides the id).
+                string appIdFile = Path.Combine("Builds", folder, "steam_appid.txt");
+                if (steamTest) File.WriteAllText(appIdFile, "480");
+                else if (File.Exists(appIdFile))
+                {
+                    Debug.LogError("[dotRPG] steam_appid.txt must not ship in a release build: " + appIdFile);
+                    if (Application.isBatchMode) EditorApplication.Exit(1);
+                }
             }
             else
             {

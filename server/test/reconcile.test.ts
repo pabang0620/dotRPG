@@ -98,6 +98,7 @@ describe('4단계 환경변수 검증', () => {
       STEAM_WEB_API_KEY: 'k',
       PARTY_TRANSPORT: 'steam',
       TRUST_PROXY: '1',
+      RELAY_TICKET_SECRET: 'Qm8vN2xK5pL7wR3tY6uZ9aB4cD1eF0gHiJkLmNoPq', RELAY_PUBLIC_URL: 'wss://game.example.org/relay',
       ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
     };
     expect(() => loadConfig({ ...prod, STEAM_APP_ID: '480' })).toThrow(/480/);

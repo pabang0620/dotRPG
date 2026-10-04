@@ -1,4 +1,5 @@
 // 솔로(AI 동반) 요일 던전·레이드: 입장, 목록, 결과 검증, 카드 선택. 파티 판은 partyruns 도메인이 만든다.
+import { closeMembershipOf } from '../fieldsessions/fieldCore';
 import { getConfig } from '../../config/env';
 import { getPool, isUniqueViolation } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
@@ -114,6 +115,8 @@ async function processEnter(ctx: EconCtx, body: EnterBody) {
     await dungeonRepo.abandonRun(ctx.client, playing.id, ctx.now);
   }
 
+  // 8단계: 던전 출발은 내 필드 세션을 닫는다(D1)
+  await closeMembershipOf(ctx.client, ctx.char.id, 'dungeon_start', ctx.now);
   const lock = await lockAtEntry(ctx.client, ctx.char.id, d, 1, ctx.now);
   // AI가 없으면 3단계 방식(본인 화력만), 있으면 본인 상한 x (1 + AI 수 x 용병 딜 배율)
   let powerCap: number | null = null;

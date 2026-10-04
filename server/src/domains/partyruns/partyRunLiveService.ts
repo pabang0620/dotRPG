@@ -6,7 +6,9 @@ import * as dungeonRepo from '../dungeons/dungeonRepository';
 import type { StoredResult } from '../economy/economyService';
 import { lockPartyAndRun, runParty, withPartyLocks, type PartyRunRow } from '../party/partyTx';
 import * as repo from './partyRunRepository';
-import { hostInfo } from './runView';
+import { relayHub } from '../relay/relayHub';
+import { gearHashes } from '../fieldsessions/gearHash';
+import { hostInfo, transportView } from './runView';
 import { setPartyState } from './partyRunRepository';
 import type { ClaimBody, HeartbeatBody, HostReportBody, RequestOnlyBody } from './partyRunValidation';
 
@@ -58,12 +60,15 @@ export function heartbeat(accountId: number, characterUuid: string, runUuid: str
     run = (await repo.getRunById(ctx.client, run.id)) as PartyRunRow;
     members = await repo.runMembers(ctx.client, run.id);
     const mine = members.find((m) => m.character_id === ctx.char.id);
+    // 호스트가 멤버 카드를 믿어도 되는지 대조하는 서버 기준값(level, gear_hash)
+    const hashes = await gearHashes(ctx.client, members.map((m) => m.character_id));
     return {
       state: run.state,
       host: await hostInfo(ctx.client, run, members),
       host_changed: body.seen_epoch !== run.host_epoch,
+      transport: transportView(run),
       me: { state: mine?.state ?? 'left' },
-      members: members.map((m) => ({ character_id: m.character_uuid, slot: m.slot, state: m.state })),
+      members: members.map((m) => ({ character_id: m.character_uuid, slot: m.slot, state: m.state, level: m.level, gear_hash: hashes.get(m.character_id) ?? '' })),
       server_time: now.toISOString(),
     };
   });
@@ -93,7 +98,10 @@ export function claimHost(accountId: number, characterUuid: string, runUuid: str
       const host = members.find((m) => m.character_id === run.host_character_id);
       const stale = (m: repo.RunMemberRow | undefined): boolean =>
         !m || m.state === 'left' || m.state === 'disconnected' || !m.last_seen_at || ctx.now.getTime() - m.last_seen_at.getTime() > pol.hostStaleSeconds * 1000;
-      if (me.character_id === run.host_character_id || !stale(host)) {
+      // 중계 방: 호스트 연결이 있으면 하트비트가 늦어도 살아 있다, 연결이 grace 이상 없으면 하트비트가 신선해도 죽은 것으로 본다
+      const presence = run.transport === 'relay' ? relayHub().hostPresence('run', run.uuid) : null;
+      const hostAlive = presence ? (presence.connected ? !!host && host.state !== 'left' : presence.absentMs < getConfig().relay.hostGraceMs ? !stale(host) : false) : !stale(host);
+      if (me.character_id === run.host_character_id || hostAlive) {
         throw new AppError(409, '호스트가 아직 살아 있습니다.', 'HOST_ALIVE');
       }
       // 살아 있는(하트비트가 신선한) 활성 멤버 중 가장 작은 자리만 이어받을 수 있다. 요청자는 방금 신호를 보낸 것으로 본다

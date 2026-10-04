@@ -150,7 +150,7 @@ describe('게임 데이터 로더(3단계 필드)', () => {
   it('실제 데이터에서 필드 해골(fieldSkeleton)과 던전을 읽는다', () => {
     const eco = loadGameData(DATA_DIR).economy;
     expect(eco.monsters.get('skeleton')?.respawnSeconds).toBe(25);
-    expect(eco.mapExtra.get('forest')?.fieldSpawns).toEqual([{ monsterId: 'skeleton', points: 15 }]);
+    expect(eco.mapExtra.get('forest')?.fieldSpawns).toEqual([{ monsterId: 'skeleton', points: 15, monsterLevel: 1 }]);
     expect(eco.dungeons.byId.get('gold_vein')?.rooms).toHaveLength(4);
     expect(eco.enhance.steps.get('eq_sword_wood')).toHaveLength(20);
   });

@@ -2,6 +2,7 @@
 import { getConfig } from '../../config/env';
 import { afterCommit, getPool, isUniqueViolation } from '../../db/pool';
 import { CLOSE } from '../../domains/chat/wsProtocol';
+import { relayHub } from '../../domains/relay/relayHub';
 import { kickAccount, registry } from '../../domains/chat/realtimeNotifier';
 import { insertAccount, insertDevIdentity } from '../../domains/auth/authRepository';
 import { AppError } from '../../utils/AppError';
@@ -190,6 +191,8 @@ export function kick(admin: AdminCtx, ip: string, uuid: string, requestId: strin
       if (!a) throw new AppError(404, '계정을 찾을 수 없습니다.', 'ACCOUNT_NOT_FOUND');
       const online = registry.ofAccount(a.id) !== undefined;
       if (online) afterCommit(client, () => void kickAccount(a.id, CLOSE.KICKED, 'KICKED'));
+      // 전투 중계 연결도 끊는다(/ws 접속이 없어도)
+      afterCommit(client, () => void relayHub().kickAccount(a.id, CLOSE.KICKED, 'KICKED'));
       return { status: 200, data: { kicked: online } };
     },
   });

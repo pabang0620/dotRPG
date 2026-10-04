@@ -28,13 +28,19 @@ namespace DotRPG
         public const byte MemberState = 7;
 
         /// <summary>Channels that must arrive (Steam sends them reliable; the dev UDP pipe is lossless on one PC).</summary>
-        public static bool IsReliable(byte channel) => channel == Event || channel == Control || channel == Chat;
+        public static bool IsReliable(byte channel) => channel == Event || channel == Control || channel == Chat || channel == Input; // [8] a lost attack press must not happen
     }
 
     /// <summary>
     /// [ONLINE] Unreliable-or-reliable message pipe between peers. The real build plugs Steam P2P in here
     /// (PLAN_ONLINE O3); development uses <see cref="LoopbackTransport"/>.
     /// </summary>
+    /// <summary>[PARTY 8] A transport that can give up (the session then asks the server for the next one).</summary>
+    public interface ITransportHealth
+    {
+        bool Failed { get; }
+    }
+
     public interface ITransport
     {
         int LocalPeer { get; }
@@ -42,6 +48,10 @@ namespace DotRPG
         bool IsConnected { get; }
         /// <summary>[PARTY] Remote peers currently connected (the host has up to three, a member only the host).</summary>
         IReadOnlyList<int> Peers { get; }
+        /// <summary>[PARTY 8] "relay", "steam" or "dev".</summary>
+        string Kind { get; }
+        /// <summary>[PARTY 8] The host's peer number as the transport knows it (-1 = not known).</summary>
+        int HostPeer { get; }
         void Send(int toPeer, byte channel, byte[] data);
         bool TryReceive(out NetPacket packet);
         /// <summary>Advances the transport one network tick (delivers delayed packets).</summary>
@@ -64,6 +74,8 @@ namespace DotRPG
         public int LocalPeer { get; }
         public bool IsConnected => other != null;
         public IReadOnlyList<int> Peers => other != null ? new[] { other.LocalPeer } : System.Array.Empty<int>();
+        public string Kind => "dev";
+        public int HostPeer => 0;
         public int Sent { get; private set; }
         public int Received { get; private set; }
 

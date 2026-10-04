@@ -91,6 +91,8 @@ namespace DotRPG
             screen.idField = screen.Field("아이디", -100f, "영문 소문자·숫자 4~20자", 20, false);
             screen.pwField = screen.Field("비밀번호", -150f, "8자 이상", 64, true);
             screen.Status(-200f);
+            // [PARTY 8] Steam players log in with their Steam account (shown only while Steam is running).
+            screen.menu.AddButton("Steam으로 접속", () => screen.SubmitSteam(), () => SteamBridge.Current != null && SteamBridge.Current.Ready);
             screen.menu.AddButton("로그인", () => screen.Submit(false));
             screen.menu.AddButton("새 계정 만들기", () => screen.Submit(true));
             screen.menu.AddButton("돌아가기", () => ui.Pop());
@@ -118,6 +120,21 @@ namespace DotRPG
             if (!AnyFieldFocused) return;
             if (Input.GetKeyDown(KeyCode.Tab)) (idField.isFocused ? pwField : idField).ActivateInputField();
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) Submit(false);
+        }
+
+        void SubmitSteam()
+        {
+            if (busy) return;
+            busy = true;
+            Say("Steam 계정으로 접속하는 중...");
+            OnlineSession.LoginSteam(r =>
+            {
+                busy = false;
+                if (!r.ok) { Say(Explain(r), true); Game.Audio.PlaySfx("cancel"); return; }
+                Game.Audio.PlaySfx("confirm");
+                ui.Pop();
+                ui.Push(ui.OnlineCharacters);
+            });
         }
 
         void Submit(bool register)

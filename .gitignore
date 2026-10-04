@@ -43,3 +43,6 @@ __pycache__/
 
 # Flow Music raw WAV originals (large; mastered OGGs live in Assets/Resources/Audio)
 /AudioSource/
+
+# Steam test app id for running in the editor (480); release builds never ship it
+steam_appid.txt

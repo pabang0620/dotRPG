@@ -73,6 +73,8 @@ export interface RealtimeNotifier {
   /** 접속 중인 세션이 하나라도 있는가(없으면 호출 쪽이 알림용 조회를 건너뛴다) */
   readonly active: boolean;
   partyChanged(characterIds: number[], scope: 'party' | 'run', runId?: string): void;
+  /** 8단계: 필드 세션 상태가 바뀌었다(받으면 클라이언트가 F2/F7을 곧바로 다시 부른다) */
+  fieldChanged(characterIds: number[], sessionId: string): void;
   friendsChanged(accountId: number, reason: FriendsChangeReason): void;
   partyInvite(characterId: number, frame: Frame): void;
   partyInviteClosed(characterId: number, id: string, state: InviteClosedState): void;
@@ -104,6 +106,21 @@ export class MemoryNotifier implements RealtimeNotifier {
         const frame: Frame = { t: 'party.changed', scope };
         if (runId) frame.run_id = runId;
         s.send(frame);
+      }, COALESCE_MS);
+      timer.unref();
+      this.timers.set(key, timer);
+    }
+  }
+
+  fieldChanged(characterIds: number[], sessionId: string): void {
+    for (const cid of characterIds) {
+      const s = registry.ofCharacter(cid);
+      if (!s) continue;
+      const key = `${s.accountId}|field|${sessionId}`;
+      if (this.timers.has(key)) continue;
+      const timer = setTimeout(() => {
+        this.timers.delete(key);
+        s.send({ t: 'field.changed', session_id: sessionId });
       }, COALESCE_MS);
       timer.unref();
       this.timers.set(key, timer);

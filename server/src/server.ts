@@ -6,6 +6,9 @@ import { initConfig } from './config/env';
 import { closePool, getPool } from './db/pool';
 import { startAuctionTicker } from './domains/auction/auctionTicker';
 import { attachRealtime } from './domains/chat/wsServer';
+import { setRelayState } from './domains/relay/relayHub';
+import { attachRelay } from './domains/relay/relayServer';
+import { steamSelfCheck } from './domains/auth/steamProvider';
 import { runMatchTick } from './domains/match/matchService';
 import { runSettleTick } from './domains/partyruns/partySettle';
 import { initGameData } from './gamedata/loader';
@@ -36,11 +39,15 @@ async function main(): Promise<void> {
 
   const app = createApp();
   setWsState('pending');
+  if (cfg.relay.enabled) setRelayState('pending');
   const server = app.listen(cfg.port, () => {
     logger.info({ port: cfg.port, dataVersion: data.dataVersion }, 'server started');
   });
   const realtime = await attachRealtime(server);
   setWsState('attached');
+  const relay = await attachRelay(server);
+  // Steam 로그인 자가 점검(키·앱 ID가 AuthenticateUserTicket 에 통하는지). 실패해도 서버는 뜬다
+  if (cfg.steam.mode === 'web_api') steamSelfCheck().catch((err: unknown) => logger.error({ err }, 'steam.selfcheck failed'));
   const adminServer = cfg.admin.enabled ? await startAdminServer() : null;
 
   const stops: (() => void)[] = [];
@@ -95,6 +102,7 @@ async function main(): Promise<void> {
       mark('in_flight_ms', t);
       // 4. 모든 WebSocket에 bye, 채팅 쓰기 큐 비우기
       t = Date.now();
+      await relay.close();
       await realtime.close();
       mark('realtime_ms', t);
       // 5. 진행 중인 틱·작업 대기(최대 10초)

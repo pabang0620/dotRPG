@@ -182,7 +182,16 @@ const mapExtraSchema = z.looseObject({
   maps: z.array(
     z.looseObject({
       id: z.string().min(1),
-      fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive() })).default([]),
+      fieldSpawns: z
+        .array(
+          z.looseObject({
+            monsterId: z.string(),
+            points: z.number().int().positive(),
+            monsterLevel: z.number().int().min(1).default(1),
+          }),
+        )
+        .default([]),
+      sharedField: z.boolean().optional(),
       scriptedSpawns: z
         .array(z.looseObject({ monsterId: z.string(), total: z.number().int().positive() }))
         .default([]),
@@ -281,7 +290,9 @@ export type { MonsterDef };
 export const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary'] as const;
 
 export interface MapExtra {
-  fieldSpawns: { monsterId: string; points: number }[];
+  fieldSpawns: { monsterId: string; points: number; monsterLevel: number }[];
+  /** 파티 필드 세션을 만들 수 있는 맵(8단계). 데이터가 주지 않으면 fieldSpawns 유무로 본다 */
+  sharedField: boolean;
   scriptedSpawns: { monsterId: string; total: number }[];
   nodes: Map<string, string>; // 노드 id -> kind
   chests: Set<string>;
@@ -438,6 +449,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     }
     mapExtra.set(m.id, {
       fieldSpawns: m.fieldSpawns,
+      sharedField: m.sharedField ?? m.fieldSpawns.length > 0,
       scriptedSpawns: m.scriptedSpawns,
       nodes: new Map(m.nodes.map((n) => [n.id, n.kind] as const)),
       chests: new Set(m.chests),

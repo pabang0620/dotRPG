@@ -9,6 +9,8 @@ export class ChatSession {
   ready = false;
   closed = false;
   mapId: string | null = null;
+  /** hello.caps(8단계). steam_p2p는 그 계정에 Steam 연결이 있을 때만 true로 인정한다 */
+  caps = { steamP2p: false };
   shard = 1;
   blocks = new Set<number>();
   /** 제재로 인한 채팅 금지 끝 시각(ms). 0이면 없음 */

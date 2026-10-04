@@ -2,6 +2,7 @@
 import { getConfig } from '../config/env';
 import { CLOSE } from '../domains/chat/wsProtocol';
 import { closeAllSessions, getNotifier } from '../domains/chat/realtimeNotifier';
+import { relayHub } from '../domains/relay/relayHub';
 import { getNow } from '../utils/clock';
 import { logger } from '../utils/logger';
 import { formatKstHm } from '../utils/resetBoundaries';
@@ -76,6 +77,8 @@ export function announceTick(now: Date = getNow()): AnnounceResult {
   if (!sent.has(byeKey) && maintPhase(now) === 'active' && t >= w.startsAt.getTime() + cfg.byeDelaySeconds * 1000) {
     sent.add(byeKey);
     closeAllSessions(CLOSE.GOING_AWAY, 'MAINTENANCE', true, () => maintRetryAfterMs(now));
+    // 점검이 시작되면 전투 중계 연결도 닫는다(재접속은 점검 뒤 티켓부터)
+    relayHub().closeAll(CLOSE.GOING_AWAY, 'MAINTENANCE', true, maintRetryAfterMs(now));
     res.byeSent = true;
   }
   return res;

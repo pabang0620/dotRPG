@@ -7,6 +7,8 @@ import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
 import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
 import { createFriendsRouter } from '../domains/friends/friendsRoutes';
+import { createFieldRouter } from '../domains/fieldsessions/fieldRoutes';
+import { createRelayRouter } from '../domains/relay/relayRoutes';
 import { createGatheringRouter } from '../domains/gathering/gatheringRoutes';
 import { createInventoryRouter } from '../domains/inventory/inventoryRoutes';
 import { createKillRouter } from '../domains/kills/killRoutes';
@@ -49,5 +51,8 @@ export function createRouter(): Router {
   // 6단계: 경매·우편(캐릭터 경로 아래, 데이터 버전까지 검사)
   r.use(createAuctionRouter());
   r.use(createMailRouter());
+  // 8단계: 전투 중계 입장 티켓·전송 전환, 필드 파티 세션(캐릭터 경로 아래, 데이터 버전까지 검사)
+  r.use(createRelayRouter());
+  r.use(createFieldRouter());
   return r;
 }

@@ -19,7 +19,7 @@ export const steamBody = z.strictObject({
   ticket: z
     .string()
     .min(16)
-    .max(4096)
+    .max(2048)
     .regex(/^(?:[0-9a-fA-F]+|mock:\d{17}:[A-Za-z0-9]{8,32})$/),
 });
 export type SteamBody = z.infer<typeof steamBody>;

@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { z } from 'zod';
+import { buildPhase8, phase8Shape, type FieldConfig, type Phase8Config, type RelayConfig, type TransportConfig } from './phase8Env';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
 const posInt = (def: number) => z.coerce.number().int().positive().default(def);
@@ -85,7 +86,8 @@ const envSchema = z.object({
   STEAM_APP_ID: z.coerce.number().int().positive().optional(),
   STEAM_WEB_API_KEY: z.string().min(1).optional(),
   STEAM_IDENTITY: z.string().min(1).default('dotrpg-server'),
-  PARTY_TRANSPORT: z.enum(['dev', 'steam']).default('dev'),
+  // 폐기(8단계): COMBAT_TRANSPORT_ORDER 가 대체한다. 값이 있으면 옛 설정으로 보고 순서를 파생한다
+  PARTY_TRANSPORT: z.enum(['dev', 'steam']).optional(),
   // 5단계(채팅·친구) 속도 제한과 정책 상수. 값은 phase5_api.md 11절
   RATE_SOCIAL_IP_MAX: posInt(600),
   RATE_SOCIAL_LIST_PER_SEC: posInt(1),
@@ -210,6 +212,7 @@ const envSchema = z.object({
   OPS_HEARTBEAT_URL: z.url().optional(),
   SERVER_NAME: z.string().min(1).default('dotrpg'),
   IMAGE_VERSION: z.string().default('dev'),
+  ...phase8Shape,
 });
 
 export interface AppConfig {
@@ -303,6 +306,7 @@ export interface AppConfig {
     socialRequestPerMin: number;
     socialActionPerSec: number;
     socialBlockPerMin: number;
+    p8: Phase8Config['rate'];
     auctionSearchPerSec: number;
     auctionPricePerSec: number;
     auctionSellablePerSec: number;
@@ -381,8 +385,23 @@ export interface AppConfig {
     invitePerMin: number;
     invitePerTargetSeconds: number;
   };
-  steam: { mode: 'off' | 'mock' | 'web_api'; appId: number | null; webApiKey: string | null; identity: string };
+  steam: {
+    mode: 'off' | 'mock' | 'web_api';
+    appId: number | null;
+    webApiKey: string | null;
+    identity: string;
+    webApiBase: string;
+    retries: number;
+    breakerFailures: number;
+    breakerOpenSeconds: number;
+  };
+  /** 폐기된 PARTY_TRANSPORT(옛 설정 호환용, 없으면 'dev') */
   partyTransport: 'dev' | 'steam';
+  /** 8단계 */
+  deployStage: 'test' | 'live';
+  relay: RelayConfig;
+  field: FieldConfig;
+  transport: TransportConfig;
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -447,7 +466,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
   if (e.STEAM_AUTH_MODE === 'web_api' && (!e.STEAM_APP_ID || !e.STEAM_WEB_API_KEY)) {
     throw new Error('환경변수 검증 실패: STEAM_AUTH_MODE=web_api 에는 STEAM_APP_ID 와 STEAM_WEB_API_KEY 가 필요합니다');
   }
-  if (e.NODE_ENV === 'production' && e.STEAM_AUTH_MODE === 'mock' && e.PARTY_TRANSPORT === 'dev') {
+  if (e.NODE_ENV === 'production' && e.STEAM_AUTH_MODE === 'mock') {
     throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=mock 과 PARTY_TRANSPORT=dev 를 함께 쓸 수 없습니다');
   }
   if (e.NODE_ENV === 'production' && (e.AUCTION_MIN_LEVEL === 0 || e.AUCTION_MIN_ACCOUNT_AGE_DAYS === 0)) {
@@ -463,7 +482,8 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     if (adminKey.length !== 32) throw new Error('환경변수 검증 실패: ADMIN_SECRET_KEY 는 32바이트(base64)여야 합니다');
   }
   if (adminEnabled && !adminKey) throw new Error('환경변수 검증 실패: ADMIN_ENABLED=true 에는 ADMIN_SECRET_KEY 가 필요합니다');
-  const mockFree = e.ALLOW_DEV_AUTH_IN_PRODUCTION;
+  // 시험 서버(DEPLOY_STAGE=test)는 NODE_ENV=production 이어도 시험 구성(개발 로그인, Steam 연동 전)을 허용한다(G9)
+  const mockFree = e.ALLOW_DEV_AUTH_IN_PRODUCTION || e.DEPLOY_STAGE === 'test';
   if (prod) {
     if (e.STEAM_AUTH_MODE === 'mock') {
       throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=mock 을 쓸 수 없습니다(누구의 Steam ID로든 로그인됩니다)');
@@ -471,14 +491,14 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     if (e.STEAM_AUTH_MODE === 'off' && !mockFree) {
       throw new Error('환경변수 검증 실패: 운영에서는 STEAM_AUTH_MODE=web_api 여야 합니다(Steam 연동 전 시험은 ALLOW_DEV_AUTH_IN_PRODUCTION=true)');
     }
-    if (e.PARTY_TRANSPORT === 'dev' && !mockFree) {
+    if (e.PARTY_TRANSPORT === 'dev' && e.COMBAT_TRANSPORT_ORDER === undefined && !mockFree) {
       throw new Error('환경변수 검증 실패: 운영에서는 PARTY_TRANSPORT=steam 이어야 합니다(Steam 연동 전 시험은 ALLOW_DEV_AUTH_IN_PRODUCTION=true)');
     }
     if (devAuth && !mockFree) {
       throw new Error('환경변수 검증 실패: 운영에서 AUTH_DEV_ENABLED=true 는 ALLOW_DEV_AUTH_IN_PRODUCTION=true 가 함께 있을 때만 허용됩니다');
     }
-    if (e.STEAM_APP_ID === 480) {
-      throw new Error('환경변수 검증 실패: 운영에서는 STEAM_APP_ID=480(Valve 시험용 앱)을 쓸 수 없습니다');
+    if (e.STEAM_APP_ID === 480 && e.DEPLOY_STAGE === 'live') {
+      throw new Error('환경변수 검증 실패: 운영(DEPLOY_STAGE=live)에서는 STEAM_APP_ID=480(Valve 시험용 앱)을 쓸 수 없습니다');
     }
     if (e.TRUST_PROXY < 1) {
       throw new Error('환경변수 검증 실패: 운영(프록시 뒤)에서는 TRUST_PROXY 가 1 이상이어야 합니다(0이면 모든 접속자가 프록시 IP 하나로 보입니다)');
@@ -490,6 +510,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       throw new Error('환경변수 검증 실패: ADMIN_BIND 를 모든 인터페이스(0.0.0.0)로 둘 수 없습니다');
     }
   }
+  const p8 = buildPhase8(e, { prod, jwtSecret: e.JWT_SECRET, port: e.PORT, legacyTransport: e.PARTY_TRANSPORT, wsMaxConnections: e.WS_MAX_CONNECTIONS });
   const announce = e.MAINT_ANNOUNCE_MINUTES.split(',')
     .map((x) => Number(x.trim()))
     .filter((n) => Number.isInteger(n) && n > 0)
@@ -599,6 +620,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       mailClaimPerSec: e.RATE_MAIL_CLAIM_PER_SEC,
       mailClaimAllPerSec: e.RATE_MAIL_CLAIM_ALL_PER_SEC,
       mailSummaryPer5Sec: e.RATE_MAIL_SUMMARY_PER_5SEC,
+      p8: p8.rate,
     },
     auction: {
       tickSeconds: e.AUCTION_TICK_SECONDS,
@@ -670,8 +692,13 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       appId: e.STEAM_APP_ID ?? null,
       webApiKey: e.STEAM_WEB_API_KEY ?? null,
       identity: e.STEAM_IDENTITY,
+      ...p8.steamExtra,
     },
-    partyTransport: e.PARTY_TRANSPORT,
+    partyTransport: e.PARTY_TRANSPORT ?? 'dev',
+    deployStage: p8.deployStage,
+    relay: p8.relay,
+    field: p8.field,
+    transport: p8.transport,
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,

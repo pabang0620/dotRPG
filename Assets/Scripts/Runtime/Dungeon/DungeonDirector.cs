@@ -230,6 +230,7 @@ namespace DotRPG
 
         void StartRun(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now, int startRoom = 0)
         {
+            FieldSession.Instance?.Leave(); // [PARTY 8] the field party session ends at the dungeon gate
             if (NetHost) PartyNet.Current.HostRunStarted(dungeon.id, difficulty); // [PARTY NET] members follow
             StoryCompanions.Refresh(true); // [STORY] 카엘 fights in dungeons and raids too
             var party = Game.Party;

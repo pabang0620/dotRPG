@@ -2,6 +2,7 @@
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 import { notifyPartyChanged } from '../chat/partyNotify';
+import { closeMembershipOf, closeSessionsOfParty } from '../fieldsessions/fieldCore';
 
 export interface PartyRow {
   id: number;
@@ -160,6 +161,8 @@ export async function leaveMember(
     'UPDATE party_members SET left_at = $3, left_reason = $4 WHERE party_id = $1 AND character_id = $2 AND left_at IS NULL',
     [partyId, characterId, now, reason],
   );
+  // 8단계: 파티를 나가거나 강퇴되면 같은 트랜잭션에서 필드 세션 멤버십도 닫는다(호스트면 인계)
+  await closeMembershipOf(client, characterId, reason === 'kicked' ? 'kicked' : 'party_left', now);
 }
 
 export async function setLeader(client: PoolClient, partyId: number, leaderId: number): Promise<void> {
@@ -175,6 +178,7 @@ export async function closeParty(
 ): Promise<void> {
   const memberReason = reason === 'disbanded' ? 'disbanded' : reason;
   notifyPartyChanged(client, partyId, now);
+  await closeSessionsOfParty(client, partyId, now);
   await client.query(
     'UPDATE party_members SET left_at = $2, left_reason = $3 WHERE party_id = $1 AND left_at IS NULL',
     [partyId, now, memberReason],

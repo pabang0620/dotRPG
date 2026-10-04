@@ -162,6 +162,9 @@ namespace DotRPG
                     if (MiniJson.Str(d, "scope") == "run") PartyRunSession.Instance?.FetchNow();
                     else PartyClient.Instance?.PollNow();
                     break;
+                case "field.changed":
+                    FieldSession.Instance?.FetchNow(); // [PARTY 8]
+                    break;
                 case "party.invite":
                     PartyClient.Instance?.OnInvite(d);
                     break;

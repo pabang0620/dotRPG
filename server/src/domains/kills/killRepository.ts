@@ -64,13 +64,17 @@ export interface NewKill {
   createdAt: Date;
   runId: number | null;
   roomIndex: number | null;
+  /** 8단계: 필드 세션 처치 */
+  fieldSessionId?: number | null;
+  monsterRef?: number | null;
+  xpFactor?: number | null;
 }
 
 export async function insertKill(client: PoolClient, k: NewKill): Promise<number> {
   const r = await client.query<{ id: string }>(
     `INSERT INTO kill_log (character_id, map_id, monster_id, monster_level, context, hits, xp_granted,
-                           request_id, created_at, run_id, room_index)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
+                           request_id, created_at, run_id, room_index, field_session_id, monster_ref, xp_factor)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
     [
       k.characterId,
       k.mapId,
@@ -83,6 +87,9 @@ export async function insertKill(client: PoolClient, k: NewKill): Promise<number
       k.createdAt,
       k.runId,
       k.roomIndex,
+      k.fieldSessionId ?? null,
+      k.monsterRef ?? null,
+      k.xpFactor ?? null,
     ],
   );
   return Number((r.rows[0] as { id: string }).id);
@@ -131,4 +138,10 @@ export async function insertDrop(
     [characterId, killId, itemKey, count, expiresAt, createdAt],
   );
   return r.rows[0] as DropRow;
+}
+
+/** 같은 세션에서 같은 멤버가 같은 몬스터를 이미 보고했는가(kill_log_field_ref_uq) */
+export async function fieldRefExists(db: Queryable, sessionId: number, characterId: number, monsterRef: number): Promise<boolean> {
+  const r = await db.query('SELECT 1 FROM kill_log WHERE field_session_id = $1 AND character_id = $2 AND monster_ref = $3', [sessionId, characterId, monsterRef]);
+  return r.rows.length > 0;
 }

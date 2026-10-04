@@ -4,6 +4,7 @@ import { getConfig } from '../../config/env';
 import { getPool, query, type Queryable } from '../../db/pool';
 import { logger } from '../../utils/logger';
 import type { ChatSession } from './chatSession';
+import { relayHub } from '../relay/relayHub';
 import { registry } from './realtimeNotifier';
 import { CLOSE, type Frame } from './wsProtocol';
 
@@ -115,6 +116,13 @@ export const sanctionFrame = (r: SanctionRow): Frame => {
 
 /** 접속 중인 그 계정의 금지 상태를 DB에서 다시 읽고, 새 제재를 알리고, 정지면 끊는다 */
 export async function refreshAccount(accountId: number): Promise<void> {
+  // 8단계: 정지된 계정은 전투 중계 연결도 즉시 끊는다(/ws 접속이 없어도)
+  const hub = relayHub();
+  if (hub.hasRooms('run') || hub.hasRooms('field')) {
+    const r = await query<{ banned_until: Date | null }>('SELECT banned_until FROM accounts WHERE id = $1', [accountId]);
+    const until = r.rows[0]?.banned_until;
+    if (until && until.getTime() > Date.now()) hub.kickAccount(accountId, CLOSE.BANNED, 'BANNED');
+  }
   const s = registry.ofAccount(accountId);
   if (!s) return;
   s.sanctionMuteUntil = await activeMuteUntil(accountId);

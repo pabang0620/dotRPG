@@ -141,6 +141,13 @@ async function i4(): Promise<CheckResult> {
       `SELECT count(*) AS v FROM party_runs WHERE state IN ('gathering', 'playing') AND created_at < now() - interval '2 hours'`,
     ),
   );
+  // 8단계: 하트비트가 2시간 넘게 없는 활성 필드 세션, 활성 멤버가 없는 활성 세션
+  add('field_session_stuck', await num(`SELECT count(*) AS v FROM field_sessions WHERE state = 'active' AND last_active_at < now() - interval '2 hours'`));
+  add(
+    'field_session_empty',
+    await num(`SELECT count(*) AS v FROM field_sessions s WHERE s.state = 'active'
+                  AND NOT EXISTS (SELECT 1 FROM field_session_members m WHERE m.session_id = s.id AND m.state <> 'left')`),
+  );
   return { count, samples };
 }
 

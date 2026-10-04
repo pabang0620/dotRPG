@@ -19,6 +19,11 @@ namespace DotRPG
     public sealed partial class PartyNet : MonoBehaviour
     {
         public const float SnapshotInterval = 0.1f, StateInterval = 0.05f, HelloInterval = 0.5f;
+        /// <summary>[8] Byte layout version of these messages; both sides of a room must match (relay hello, Hello).</summary>
+        public const int WireVersion = 3;
+
+        /// <summary>[8] The relay server made this PC the host (the session takes over the fight).</summary>
+        public static event Action PromotedToHost;
 
         public static PartyNet Current { get; private set; }
         public static bool Active => Current != null;
@@ -35,6 +40,30 @@ namespace DotRPG
         readonly Dictionary<int, PlayerController> bySlot = new Dictionary<int, PlayerController>();
 
         public int MySlot => mySlot;
+        /// <summary>[PARTY 8] Field party session (shared field monsters) instead of a dungeon run.</summary>
+        public bool FieldMode { get; private set; }
+        /// <summary>The map of the field session.</summary>
+        public string FieldMap { get; private set; }
+        /// <summary>Sync runs: a dungeon run is on, or this is a field session.</summary>
+        bool SyncActive => FieldMode || (Game.Dungeon != null && Game.Dungeon.InRun);
+
+        /// <summary>[PARTY 8] Field session on this map; the host runs the field spawner for the party.</summary>
+        public static PartyNet BeginFieldHost(ITransport t, string session, int slot, string map)
+        {
+            var net = BeginHost(t, session, slot, null, PartyManager.MaxMembers);
+            net.FieldMode = true;
+            net.FieldMap = map;
+            return net;
+        }
+
+        public static PartyNet BeginFieldMember(ITransport t, string session, int slot, string character, string map)
+        {
+            var net = BeginMember(t, session, slot, character, "");
+            net.FieldMode = true;
+            net.FieldMap = map;
+            net.expectedRoom = 0;
+            return net;
+        }
         public string RunId => runId;
         public ITransport Transport => transport;
         /// <summary>A member joined (slot) or dropped.</summary>
@@ -53,20 +82,53 @@ namespace DotRPG
             Current = net;
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
+            if (t is RelayTransport relay) relay.HostChanged += net.OnRelayHostChanged;
             return net;
         }
 
+        /// <summary>
+        /// [8] Swap the connection (the server moved the room to another transport). The fight stays; a
+        /// member greets the host again on the new connection, the host waits for those greetings.
+        /// </summary>
+        public void ReplaceTransport(ITransport next)
+        {
+            if (next == null) return;
+            if (transport is RelayTransport oldRelay) oldRelay.HostChanged -= OnRelayHostChanged;
+            if (transport is IDisposable d) d.Dispose();
+            transport = next;
+            if (next is RelayTransport relay) relay.HostChanged += OnRelayHostChanged;
+            if (host) peerSlot.Clear();
+            else { welcomed = false; helloTimer = 0f; }
+        }
+
+        /// <summary>[8] Server-led host handover on the relay: a member re-greets the new host, or becomes it.</summary>
+        void OnRelayHostChanged(int seat, int epoch)
+        {
+            if (seat == mySlot)
+            {
+                if (!host) PromotedToHost?.Invoke();
+                return;
+            }
+            if (!host) { welcomed = false; helloTimer = 0f; } // say hello to the new host
+        }
+
         /// <summary>Stops the sync (run over, title screen). Network members leave the party.</summary>
-        public static void End()
+        /// <param name="keepTransport">[8] Host handover: the same connection carries on under a new PartyNet.</param>
+        public static void End(bool keepTransport = false)
         {
             var net = Current;
             if (net == null) return;
             Current = null;
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
+            if (net.transport is RelayTransport relay) relay.HostChanged -= net.OnRelayHostChanged;
             net.UnhookEnemies();
-            Game.Party?.SetRosterHidden(false);
-            if (net.transport is IDisposable d) d.Dispose();
+            if (!keepTransport)
+            {
+                Game.Party?.SetRosterHidden(false);
+                if (net.transport is RelayTransport r) r.Leave();
+                if (net.transport is IDisposable d) d.Dispose();
+            }
             Destroy(net.gameObject);
         }
 

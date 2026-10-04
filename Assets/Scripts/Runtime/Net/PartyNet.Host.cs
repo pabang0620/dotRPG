@@ -32,6 +32,9 @@ namespace DotRPG
             var net = Create(t, true, run, slot);
             net.hostKey = key;
             net.humans = Mathf.Clamp(humanCount, 1, PartyManager.MaxMembers);
+            // [8] After a handover the inherited monsters keep their numbers: new ones continue above them.
+            foreach (var e in EnemyController.Active)
+                if (e != null && e.NetId >= net.nextEnemyId) net.nextEnemyId = e.NetId + 1;
             net.RebuildHostSlots();
             return net;
         }
@@ -58,6 +61,34 @@ namespace DotRPG
                 bySlot[aiSlot++] = m;
             }
             foreach (var kv in bySlot) HookBody(kv.Key, kv.Value);
+        }
+
+        // ---------------- [8] field credit ----------------
+
+        /// <summary>A monster's kill credit: seats that hit it plus living seats within range at its death.</summary>
+        public const float FieldCreditRange = 14f;
+        readonly Dictionary<int, int> creditedKills = new Dictionary<int, int>();
+
+        int FinalCredit(EnemyController e)
+        {
+            int mask = e.CreditBits;
+            foreach (var kv in bySlot)
+            {
+                var m = kv.Value;
+                if (m != null && !m.IsDead && Vector2.Distance(m.Position, e.Position) <= FieldCreditRange) mask |= 1 << kv.Key;
+            }
+            e.CreditBits = mask;
+            for (int seat = 0; seat < PartyManager.MaxMembers; seat++)
+                if ((mask & (1 << seat)) != 0) creditedKills[seat] = (creditedKills.TryGetValue(seat, out int n) ? n : 0) + 1;
+            return mask;
+        }
+
+        /// <summary>Credited kills per seat since the last observe report (then reset).</summary>
+        public Dictionary<int, int> TakeCredits()
+        {
+            var copy = new Dictionary<int, int>(creditedKills);
+            creditedKills.Clear();
+            return copy;
         }
 
         /// <summary>Counts hits taken by each seat (rank inputs for the member reports, §8).</summary>
@@ -131,10 +162,15 @@ namespace DotRPG
             string characterId = r.ReadString();
             int slot = r.ReadByte();
             string token = r.ReadString();
+            int wire = r.ReadInt32();
             var card = MemberCard.Read(r);
+            if (wire != WireVersion) { GameEvents.RaiseToast("파티원과 게임 버전이 다릅니다."); return; }
             if (run != runId || slot == mySlot || slot >= humans) return;
             // Entry token: only someone the server put in this seat can take it (no server call needed).
-            if (hostKey != null && token != EntryToken(hostKey, run, characterId, slot)) return;
+            // On the relay the server already stamped the sender's seat, so the token is not needed.
+            bool relay = transport.Kind == "relay";
+            if (relay && peer != slot) return;
+            if (!relay && hostKey != null && token != EntryToken(hostKey, run, characterId, slot)) return;
             foreach (var kv in peerSlot)
                 if (kv.Value == slot && kv.Key != peer) return; // seat already taken by another connection
             card.slot = slot;
@@ -182,6 +218,8 @@ namespace DotRPG
             }
             w.Write((byte)cards.Count);
             foreach (var c in cards) c.Write(w);
+            w.Write(FieldMode); // [8] field session: no dungeon to follow
+            w.Write(FieldMap ?? "");
         });
 
         // ---------------- tick ----------------
@@ -203,12 +241,19 @@ namespace DotRPG
                 int slot = peerSlot[peer];
                 peerSlot.Remove(peer);
                 MemberLost?.Invoke(slot);
+                // [8] In the field a member who left (other map, village) takes its body along; a dungeon keeps it.
+                if (FieldMode && MemberAt(slot) is PlayerController gone)
+                {
+                    Game.Party?.RemoveNetMember(gone);
+                    bySlot.Remove(slot);
+                    remoteInputs.Remove(slot);
+                }
                 string who = humanCards.TryGetValue(slot, out var c) ? c.name : "파티원";
                 GameEvents.RaiseToast($"{who}님 연결 끊김");
                 Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.MemberLeft); w.Write((byte)slot); }));
             }
 
-            if (Game.Dungeon == null || !Game.Dungeon.InRun) return;
+            if (!SyncActive) return;
             AssignEnemyIds();
             snapshotTimer -= Time.unscaledDeltaTime;
             if (snapshotTimer > 0f) return;
@@ -221,19 +266,24 @@ namespace DotRPG
             foreach (var e in EnemyController.Active)
             {
                 if (e == null || e.NetId != 0 || e.IsDead) continue;
+                if (FieldMode && !e.Shared) continue; // [8] quest and story spawns stay on this PC
                 int id = nextEnemyId++;
                 e.NetId = id;
+                if (e.RefEpoch <= 0) e.RefEpoch = Mathf.Max(1, FieldSession.HostEpoch); // [8] fixed for the monster's life
                 enemies[id] = e;
                 var enemy = e;
                 Action<EnemyController> onDied = x =>
                 {
                     enemies.Remove(id);
                     int gold = x.Behaviour is GoldRunnerBehaviour g ? g.GoldSpilled : 0;
-                    Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.EnemyDie); w.Write(id); w.Write((short)gold); }));
+                    int mask = FieldMode ? FinalCredit(x) : 0xFF; // [8] dungeon: everyone in the run reports it
+                    Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.EnemyDie); w.Write(id); w.Write((short)gold); w.Write((byte)mask); }));
                 };
                 Action<DamageInfo> onDamaged = info =>
                 {
                     if (enemy == null) return;
+                    int hitter = info.AttackerMember != null ? SlotOf(info.AttackerMember) : -1;
+                    if (hitter >= 0) enemy.CreditBits |= 1 << hitter; // [8] who helped kill it
                     var at = enemy.Position + new Vector2(0f, 1.55f);
                     bool companion = PartyManager.IsCompanionHit(info);
                     Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.Damage); PartyWire.WriteVec(w, at); w.Write(info.amount); w.Write(companion); }));
@@ -255,12 +305,13 @@ namespace DotRPG
             w.Write(e.HpMultiplier);
             w.Write(e.DamageMultiplier);
             w.Write(e.Summoner != null);
+            w.Write(e.RefEpoch); // [8] members report this monster with the same reference
         });
 
         byte[] BuildSnapshot() => PartyWire.Build(w =>
         {
             w.Write(++snapTick);
-            w.Write((byte)Game.Dungeon.CurrentRoom);
+            w.Write((byte)(FieldMode ? 0 : Game.Dungeon.CurrentRoom));
             int n = 0;
             foreach (var kv in bySlot) if (kv.Value != null) n++;
             w.Write((byte)n);

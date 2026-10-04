@@ -29,6 +29,8 @@ namespace DotRPG
         public int LocalPeer { get; }
         public bool IsConnected => clock.Elapsed.TotalSeconds - lastHeard < TimeoutSeconds;
         public IReadOnlyList<int> Peers => IsConnected ? new[] { 1 - LocalPeer } : Array.Empty<int>();
+        public string Kind => "dev";
+        public int HostPeer => 0;
         public int Sent { get; private set; }
         public int Received { get; private set; }
 

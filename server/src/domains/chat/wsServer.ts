@@ -30,7 +30,7 @@ export interface RealtimeHandle {
 }
 
 /** Express의 trust proxy 규칙과 같게 클라이언트 IP를 구한다(프록시 뒤에서 모두 같은 IP로 보이는 사고 방지) */
-function clientIp(req: IncomingMessage): string {
+export function clientIp(req: IncomingMessage): string {
   const hops = getConfig().trustProxy;
   const remote = req.socket.remoteAddress ?? 'unknown';
   if (hops <= 0) return remote;
@@ -64,6 +64,8 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
 
   server.on('upgrade', (req, socket, head) => {
     const path = new URL(req.url ?? '/', 'http://localhost').pathname;
+    // /relay 는 같은 서버의 다른 리스너(domains/relay)가 처리한다
+    if (path === '/relay') return;
     if (path !== '/ws') return reject(socket, '404 Not Found');
     // 종료 중이거나 점검 중(active)이면 새 연결을 받지 않는다(phase7_ops.md 4.2, 4.5)
     if (closing || isShuttingDown() || maintPhase() === 'active') {
@@ -158,6 +160,10 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
       );
       s.blocks = new Set(blocks.rows.map((x) => Number(x.a)));
       await loadMute(s);
+      if (f.caps?.steam_p2p === true) {
+        const st = await getPool().query("SELECT 1 FROM auth_identities WHERE provider = 'steam' AND account_id = $1", [account.id]);
+        s.caps.steamP2p = st.rows.length > 0;
+      }
       await getPool().query('UPDATE accounts SET last_character_id = $2 WHERE id = $1', [account.id, s.characterId]);
       if (ws.readyState !== ws.OPEN) return;
       // 먼저 수신자 목록에 등록(이후 전달분은 세션 큐에 쌓인다), 그다음 backlog를 읽는다

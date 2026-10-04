@@ -65,3 +65,24 @@ process.env.AUCTION_TICK_ENABLED = 'false';
 // 7단계: 관리자 비밀키(테스트 전용 값), 정리 배치 간 대기 없음
 process.env.ADMIN_SECRET_KEY = Buffer.alloc(32, 7).toString('base64');
 process.env.PURGE_BATCH_SLEEP_MS = '0';
+// 8단계: 전송 우선순위, 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다), 호스트 인계 유예는 짧게
+process.env.COMBAT_TRANSPORT_ORDER = 'relay,steam';
+for (const k of [
+  'RATE_RELAY_TICKET_PER_10S',
+  'RATE_RELAY_TICKET_PER_MIN',
+  'RATE_TRANSPORT_SWITCH_PER_10S',
+  'RATE_FIELD_ENTER_PER_SEC',
+  'RATE_FIELD_ENTER_PER_MIN',
+  'RATE_FIELD_GET_PER_SEC',
+  'RATE_FIELD_LEAVE_PER_SEC',
+  'RATE_FIELD_CLAIM_PER_SEC',
+  'RATE_FIELD_OBSERVE_PER_5SEC',
+  'RATE_FIELD_ME_PER_SEC',
+]) {
+  process.env[k] = '10000';
+}
+process.env.RELAY_HOST_GRACE_MS = '300';
+process.env.TRANSPORT_SWITCH_COOLDOWN_SECONDS = '0';
+process.env.RELAY_HANDSHAKE_PER_MIN_IP = '100000';
+process.env.RELAY_UNAUTH_PER_IP = '1000';
+process.env.RELAY_CONN_PER_IP = '1000';

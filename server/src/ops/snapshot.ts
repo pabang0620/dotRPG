@@ -4,6 +4,9 @@ import { getConfig } from '../config/env';
 import { getPool, poolStats } from '../db/pool';
 import { registry } from '../domains/chat/realtimeNotifier';
 import { getQueueStore } from '../domains/match/queueStore';
+import { steamStats } from '../domains/auth/steamProvider';
+import { relayHub } from '../domains/relay/relayHub';
+import { relayMetrics } from '../domains/relay/relayMetrics';
 import { getGameData } from '../gamedata/loader';
 import { getNow } from '../utils/clock';
 import { inFlightCount, isShuttingDown } from './lifecycle';
@@ -30,6 +33,34 @@ export interface Snapshot {
   };
   security: { login_failures_5m: number };
   maintenance: { phase: string; remaining_s: number | null };
+  /** 8단계: 전투 중계(phase8_api.md 4.12) */
+  relay?: {
+    rooms: number;
+    max_rooms: number;
+    conns: number;
+    max_conns: number;
+    bytes_in_1m: number;
+    bytes_out_1m: number;
+    frames_in_1m: number;
+    frames_out_1m: number;
+    dropped_unreliable_1m: number;
+    close_codes_1m: Record<string, number>;
+    reconnects_1m: number;
+    ticket_rejects_1m: Record<string, number>;
+    rtt_p50_ms: number;
+    rtt_p95_ms: number;
+    rtt_high_for_s: number;
+    flush_lag_p99_ms: number;
+    egress_24h_gb: number;
+    egress_budget_gb: number | null;
+    unavailable_for_s: number;
+    abuse_10m: number;
+    fallbacks_10m: number;
+    steam_to_relay_10m: number;
+    host_changes_1m: number;
+  };
+  field?: { sessions_active: number; avg_members: number };
+  steam?: ReturnType<typeof steamStats>;
   shutting_down: boolean;
   disk_used_pct: number | null;
 }
@@ -107,6 +138,19 @@ export async function collectSnapshot(): Promise<Snapshot> {
   } catch {
     // DB가 내려가 있으면 DB 항목은 비워 둔다(헬스 체크가 알린다)
   }
+  const hub = relayHub().counts();
+  const rtt = relayMetrics.rttPercentiles();
+  let fieldInfo: NonNullable<Snapshot['field']> = { sessions_active: 0, avg_members: 0 };
+  try {
+    const f = await db.query<{ n: string; m: string | null }>(
+      `SELECT count(*) AS n, avg((SELECT count(*) FROM field_session_members x WHERE x.session_id = s.id AND x.state <> 'left')) AS m
+         FROM field_sessions s WHERE s.state = 'active'`,
+    );
+    fieldInfo = { sessions_active: n(f.rows[0]?.n), avg_members: Math.round(n(f.rows[0]?.m) * 10) / 10 };
+  } catch {
+    // DB가 내려가 있으면 비워 둔다
+  }
+  const m1 = 60_000;
   const h1 = metrics.http(60_000);
   const h5 = metrics.http(5 * 60_000);
   const w = getMaintenance();
@@ -146,6 +190,33 @@ export async function collectSnapshot(): Promise<Snapshot> {
       phase,
       remaining_s: phase !== 'none' && w ? Math.max(0, Math.round((w.endsAt.getTime() - now.getTime()) / 1000)) : null,
     },
+    relay: {
+      rooms: hub.rooms,
+      max_rooms: cfg.relay.maxRooms,
+      conns: hub.conns,
+      max_conns: cfg.relay.maxConnections,
+      bytes_in_1m: relayMetrics.bytesIn.sum(m1),
+      bytes_out_1m: relayMetrics.bytesOut.sum(m1),
+      frames_in_1m: relayMetrics.framesIn.sum(m1),
+      frames_out_1m: relayMetrics.framesOut.sum(m1),
+      dropped_unreliable_1m: relayMetrics.droppedUnreliable.sum(m1),
+      close_codes_1m: relayMetrics.closesSince(m1),
+      reconnects_1m: relayMetrics.reconnects.sum(m1),
+      ticket_rejects_1m: relayMetrics.rejectsSince(m1),
+      rtt_p50_ms: rtt.p50,
+      rtt_p95_ms: rtt.p95,
+      rtt_high_for_s: Math.round(relayMetrics.rttHighForMs() / 1000),
+      flush_lag_p99_ms: relayMetrics.flushLagP99(),
+      egress_24h_gb: Math.round((relayMetrics.bytesOut.sum(24 * 3_600_000) / 1e9) * 1000) / 1000,
+      egress_budget_gb: cfg.relay.egressDailyBudgetGb,
+      unavailable_for_s: relayMetrics.unavailableSince === 0 ? 0 : Math.round((Date.now() - relayMetrics.unavailableSince) / 1000),
+      abuse_10m: relayMetrics.abuse.sum(10 * m1),
+      fallbacks_10m: relayMetrics.fallbacks.sum(10 * m1),
+      steam_to_relay_10m: relayMetrics.steamToRelay.sum(10 * m1),
+      host_changes_1m: relayMetrics.hostChanges.sum(m1),
+    },
+    field: fieldInfo,
+    steam: steamStats(),
     shutting_down: isShuttingDown(),
     disk_used_pct: diskUsedPct(),
   };

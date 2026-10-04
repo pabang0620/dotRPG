@@ -64,7 +64,7 @@ if [ -n "${DRILL_IMAGE:-}" ]; then
     -e NODE_ENV=production -e AUCTION_TICK_ENABLED=false -e ADMIN_ENABLED=false -e JOBS_ENABLED=false \
     -e DATABASE_URL="postgres://postgres:drill@postgres:5432/dotrpg" \
     -e JWT_SECRET="drill-$(head -c 32 /dev/urandom | base64 | tr -d '=+/')" \
-    -e MIN_CLIENT_VERSION=0.0.1 -e TRUST_PROXY=1 -e STEAM_AUTH_MODE=off -e PARTY_TRANSPORT=dev \
+    -e MIN_CLIENT_VERSION=0.0.1 -e TRUST_PROXY=1 -e STEAM_AUTH_MODE=off -e RELAY_ENABLED=false -e COMBAT_TRANSPORT_ORDER=steam \
     -e AUTH_DEV_ENABLED=true -e ALLOW_DEV_AUTH_IN_PRODUCTION=true -e AUTH_DEV_REGISTER_ENABLED=false \
     "$DRILL_IMAGE" >/dev/null
   READY="실패"

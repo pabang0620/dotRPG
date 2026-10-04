@@ -9,7 +9,7 @@ export const requestOnlyBody = z.strictObject({ request_id: requestId });
 export const startBody = z.strictObject({ request_id: requestId, ai_count: z.number().int().min(0).max(3) });
 export const joinBody = z.strictObject({
   request_id: requestId,
-  entry_token: z.string().length(22).regex(/^[A-Za-z0-9_-]+$/),
+  entry_token: z.string().length(22).regex(/^[A-Za-z0-9_-]+$/).optional(),
   host_steam_id: z.string().regex(/^\d{17}$/).optional(),
 });
 export const heartbeatBody = z.strictObject({ seen_epoch: z.number().int().min(1) });

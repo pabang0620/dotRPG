@@ -14,6 +14,16 @@ namespace DotRPG
         public int NetId { get; set; }
         /// <summary>Member PC: driven by host snapshots.</summary>
         public bool Puppet { get; private set; }
+        /// <summary>[PARTY 8] Made by a field spawner: shared with the field party (quest and story spawns stay local).</summary>
+        public bool Shared { get; set; }
+        /// <summary>[PARTY 8] Host: party seats that hit this monster (one bit per seat).</summary>
+        public int CreditBits { get; set; }
+        /// <summary>[PARTY 8] Member: the host said this PC helped with the kill (reports it to the server).</summary>
+        bool creditedHere = true;
+        /// <summary>[PARTY 8] Host generation when this monster got its number (fixed for its whole life).</summary>
+        public int RefEpoch { get; set; }
+        /// <summary>[PARTY 8] Field kills carry the host generation and number (server duplicate check).</summary>
+        public long MonsterRef => ((long)Mathf.Max(1, RefEpoch > 0 ? RefEpoch : FieldSession.HostEpoch) << 20) | (uint)NetId;
 
         Vector2 puppetTarget;
         CharacterAnim puppetAnim;
@@ -60,13 +70,17 @@ namespace DotRPG
         }
 
         /// <summary>The host's monster died: same death as offline (loot report included).</summary>
-        public void PuppetDie(int goldHits)
+        public void PuppetDie(int goldHits, int creditMask = 0xFF)
         {
             if (state == State.Dead) return;
             puppetGoldHits = goldHits;
+            creditedHere = PartyNet.Current == null || (creditMask & (1 << PartyNet.Current.MySlot)) != 0;
             health.Init(health.Max, 0, 0f);
             Die();
         }
+
+        /// <summary>[PARTY 8] Whether this PC reports the kill (field: only seats the host credited).</summary>
+        bool ReportsKill => creditedHere && (!FieldSession.Active || !Shared || PartyNet.Current == null || !PartyNet.IsHost || (CreditBits & (1 << PartyNet.Current.MySlot)) != 0);
 
         /// <summary>Gold-runner hits for the kill report (the host counted them).</summary>
         int GoldHitsForReport => puppetGoldHits >= 0 ? puppetGoldHits : Behaviour is GoldRunnerBehaviour runner ? runner.GoldSpilled : 0;

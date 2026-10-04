@@ -287,7 +287,10 @@ export type AnomalyKind =
   | 'dungeon_result'
   | 'party_result'
   | 'party_host'
-  | 'raid_enter';
+  | 'raid_enter'
+  | 'field_uncredited'
+  | 'field_host'
+  | 'relay_abuse';
 
 /** 롤백되는 트랜잭션 밖에서도 남기려고 풀에서 직접 쓴다(호출 쪽이 선택) */
 export async function insertAnomaly(

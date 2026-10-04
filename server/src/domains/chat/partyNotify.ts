@@ -1,6 +1,7 @@
 // 4단계 파티·판 변화를 커밋 뒤에 WebSocket 힌트(party.changed)로 알린다. 접속 세션이 없으면 아무 조회도 하지 않는다.
 import type { PoolClient } from 'pg';
 import { afterCommit, getPool, type Queryable } from '../../db/pool';
+import { relayHub } from '../relay/relayHub';
 import { getNotifier } from './realtimeNotifier';
 
 /** 파티 구성이 바뀌었다: 지금 멤버와 방금 나간 멤버(강퇴·해산 알림)에게 */
@@ -25,13 +26,21 @@ export function notifyPartyChanged(client: PoolClient, partyId: number, now: Dat
 export function notifyRunChanged(db: Queryable, runId: number): void {
   const run = async (): Promise<void> => {
       const n = getNotifier();
-      if (!n.active) return;
+      const hub = relayHub();
+      if (!n.active && !hub.hasRooms('run')) return;
       const r = await getPool().query<{ uuid: string; character_id: string }>(
         `SELECT r.uuid, m.character_id FROM party_run_members m JOIN party_runs r ON r.id = m.party_run_id WHERE r.id = $1`,
         [runId],
       );
-      const uuid = r.rows[0]?.uuid;
-      if (uuid) n.partyChanged(r.rows.map((x) => Number(x.character_id)), 'run', uuid);
+      let uuid = r.rows[0]?.uuid;
+      if (!uuid) {
+        const u = await getPool().query<{ uuid: string }>('SELECT uuid FROM party_runs WHERE id = $1', [runId]);
+        uuid = u.rows[0]?.uuid;
+      }
+      if (!uuid) return;
+      if (n.active) n.partyChanged(r.rows.map((x) => Number(x.character_id)), 'run', uuid);
+      // 중계 방은 DB를 다시 읽어 맞춘다(멤버 이탈, 판 종료, 호스트 인계, 전송 전환)
+      hub.resync('run', uuid);
   };
   // 트랜잭션 클라이언트면 커밋 뒤에, 풀(자동 커밋)이면 바로
   if (typeof (db as PoolClient).release === 'function') afterCommit(db as PoolClient, run, `run:${runId}`);

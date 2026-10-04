@@ -51,6 +51,8 @@ export const helloFrame = z.strictObject({
   client_version: z.string().regex(/^\d+\.\d+\.\d+$/),
   character_id: uuid,
   since: z.number().int().min(0).nullable().optional(),
+  /** 8단계: 클라이언트 능력(모르는 서버는 무시한다) */
+  caps: z.strictObject({ steam_p2p: z.boolean().optional() }).optional(),
 });
 
 export const chatSendFrame = z.strictObject({

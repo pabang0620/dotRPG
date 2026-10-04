@@ -4,6 +4,7 @@ import { MIGRATIONS_DIR } from '../../db/migrate';
 import { getGameData } from '../../gamedata/loader';
 import { isShuttingDown, isWsReady } from '../../ops/lifecycle';
 import { maintView } from '../../ops/maintenanceState';
+import { isRelayReady } from '../relay/relayHub';
 import { getNow } from '../../utils/clock';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import { CHARACTER_LIMIT } from '../auth/authService';
@@ -49,14 +50,15 @@ export async function getReady(): Promise<{ ok: boolean; data: Record<string, un
     gamedata = false;
   }
   const shuttingDown = isShuttingDown();
-  const ok = db && schema && gamedata && isWsReady() && !shuttingDown;
+  const relay = isRelayReady();
+  const ok = db && schema && gamedata && isWsReady() && relay && !shuttingDown;
   if (ok) return { ok, data: { status: 'ok', db: 'ok' } };
   return {
     ok,
     data: {
       status: 'degraded',
       db: db ? 'ok' : 'down',
-      checks: { db, schema, gamedata, websocket: isWsReady(), shutting_down: shuttingDown },
+      checks: { db, schema, gamedata, websocket: isWsReady(), relay, shutting_down: shuttingDown },
     },
   };
 }
@@ -72,5 +74,9 @@ export function getMeta(now = getNow()) {
     auth: { dev_login_enabled: cfg.authDevEnabled, dev_register_enabled: cfg.authDevRegisterEnabled },
     maintenance: maintView(now),
     character: { max_per_account: CHARACTER_LIMIT, name_min: NAME_MIN, name_max: NAME_MAX },
+    // 8단계: 중계 사용 여부, Steam 인증 identity·앱 ID(공개 값), 전송 우선순위(진단용)
+    relay: { enabled: cfg.relay.enabled },
+    steam: { identity: cfg.steam.identity, app_id: cfg.steam.appId },
+    combat_transport_order: cfg.transport.order.join(','),
   };
 }

@@ -8,7 +8,7 @@ namespace DotRPG
     public sealed partial class PartyNet
     {
         string characterId, entryToken;
-        bool welcomed, wasConnected;
+        bool welcomed, wasConnected, everWelcomed;
         float helloTimer;
         uint commandTick;
         int expectedRoom = -1;
@@ -50,6 +50,7 @@ namespace DotRPG
                         w.Write(characterId);
                         w.Write((byte)mySlot);
                         w.Write(entryToken);
+                        w.Write(WireVersion);
                         MemberCard.Of(Game.Player, mySlot, characterId).Write(w);
                     }));
                 }
@@ -57,7 +58,7 @@ namespace DotRPG
             }
 
             var me = Game.Player;
-            if (me == null || Game.Dungeon == null || !Game.Dungeon.InRun) return;
+            if (me == null || !SyncActive) return;
             // Buttons go out the frame they are pressed; plain movement at 20 Hz.
             var cmd = me.Command;
             bool buttons = cmd.attack || cmd.skillSlot >= 0 || cmd.mobility || cmd.useHealing || cmd.useMana;
@@ -112,11 +113,17 @@ namespace DotRPG
             int n = r.ReadByte();
             var cards = new List<MemberCard>();
             for (int i = 0; i < n; i++) cards.Add(MemberCard.Read(r));
+            bool field = r.BaseStream.Position < r.BaseStream.Length && r.ReadBoolean(); // [8]
+            string fieldMap = field ? r.ReadString() : null;
             if (welcomed) return; // a repeated Hello got a second answer
+            bool again = everWelcomed; // [8] reconnect or new host: bodies and the run are already here
             welcomed = true;
+            everWelcomed = true;
             Game.Party?.SetRosterHidden(true);
+            if (again) { foreach (var c in cards) AddPuppet(c); return; }
             foreach (var c in cards) AddPuppet(c);
             GameEvents.RaiseToast("방장에게 연결되었다.");
+            if (field) { FieldMode = true; FieldMap = fieldMap; expectedRoom = 0; return; }
             if (inRun) StartFollowing(dungeonId, difficulty, room);
         }
 
@@ -164,8 +171,9 @@ namespace DotRPG
                     {
                         int id = r.ReadInt32();
                         int gold = r.ReadInt16();
+                        int mask = r.ReadByte(); // [8] seats the host credited
                         FlushSpawns();
-                        if (puppets.TryGetValue(id, out var e) && e != null) e.PuppetDie(gold);
+                        if (puppets.TryGetValue(id, out var e) && e != null) e.PuppetDie(gold, mask);
                         puppets.Remove(id);
                         break;
                     }
@@ -222,8 +230,16 @@ namespace DotRPG
         void FlushSpawns()
         {
             if (pendingSpawns.Count == 0) return;
-            var d = Game.Dungeon;
-            if (d == null || !d.InRun || !d.RoomIsReady || d.CurrentRoom != expectedRoom || Game.World == null) return;
+            if (Game.World == null) return;
+            if (FieldMode)
+            {
+                if (Game.World.MapId != FieldMap) return; // [8] still loading the field
+            }
+            else
+            {
+                var d = Game.Dungeon;
+                if (d == null || !d.InRun || !d.RoomIsReady || d.CurrentRoom != expectedRoom) return;
+            }
             foreach (var data in pendingSpawns)
             {
                 using (var r = PartyWire.Reader(data))
@@ -236,15 +252,22 @@ namespace DotRPG
                     float hpMul = r.ReadSingle();
                     float dmgMul = r.ReadSingle();
                     bool summon = r.ReadBoolean();
+                    int refEpoch = r.ReadInt32();
                     if (puppets.ContainsKey(id)) continue;
-                    var e = summon
-                        ? MonsterDatabase.SpawnMinion(monster, pos, Game.World.ObjectsRoot, null)
-                        : MonsterDatabase.Spawn(monster, pos, Game.World.ObjectsRoot, hpMul, dmgMul, level);
+                    // [8] Field skeletons have no monster table entry: build them like the field spawner does.
+                    var spawner = EnemySpawner.Current;
+                    var e = FieldMode && MonsterDatabase.Get(monster) == null && spawner != null
+                        ? EnemyController.Create(spawner.Stats, spawner.Look, pos, spawner.transform)
+                        : summon
+                            ? MonsterDatabase.SpawnMinion(monster, pos, Game.World.ObjectsRoot, null)
+                            : MonsterDatabase.Spawn(monster, pos, Game.World.ObjectsRoot, hpMul, dmgMul, level);
+                    if (e != null && FieldMode) e.Shared = true;
                     if (e == null) continue;
                     e.NetId = id;
+                    e.RefEpoch = refEpoch;
                     e.MakePuppet();
                     puppets[id] = e;
-                    if (!summon && Game.Dungeon.Run != null) Game.Dungeon.Run.Monsters++; // kill score base, as on the host
+                    if (!summon && !FieldMode && Game.Dungeon.Run != null) Game.Dungeon.Run.Monsters++; // kill score base, as on the host
                 }
             }
             pendingSpawns.Clear();

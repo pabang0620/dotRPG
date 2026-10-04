@@ -95,6 +95,44 @@ namespace DotRPG
         static string LocalTime(string iso) =>
             DateTime.TryParse(iso, null, System.Globalization.DateTimeStyles.RoundtripKind, out var t) ? t.ToLocalTime().ToString("M/d HH:mm") : "?";
 
+        /// <summary>
+        /// [PARTY 8] Log in with the Steam account running this game (no password). The ticket's identity and
+        /// the expected app id come from /meta; a test client (app 480) never logs into a live server.
+        /// </summary>
+        public static void LoginSteam(Action<ApiResult> done)
+        {
+            var steam = SteamBridge.Current;
+            if (steam == null || !steam.Ready) { done(new ApiResult { code = "STEAM_OFF", message = "Steam이 실행 중이 아닙니다." }); return; }
+            Api.Get("/meta", meta =>
+            {
+                if (!meta.ok) { done(meta); return; }
+                string blocked = MaintenanceBlock(MiniJson.Obj(meta.data, "maintenance"));
+                if (blocked != null) { done(new ApiResult { code = "MAINTENANCE", status = 503, message = blocked }); return; }
+                var info = MiniJson.Obj(meta.data, "steam");
+                string identity = MiniJson.Str(info, "identity");
+                uint appId = (uint)MiniJson.Num(info, "app_id");
+                if (info == null || string.IsNullOrEmpty(identity)) { done(new ApiResult { code = "STEAM_OFF", message = "이 서버는 Steam 로그인을 받지 않습니다." }); return; }
+                if (appId != 0 && appId != steam.AppId) { done(new ApiResult { code = "STEAM_APP_MISMATCH", message = "이 게임 빌드는 이 서버에 접속할 수 없습니다. (Steam 앱 ID 불일치)" }); return; }
+                string serverData = MiniJson.Str(meta.data, "data_version");
+                if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
+                {
+                    done(new ApiResult { code = "DATA_OUTDATED", status = 426, message = "게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요." });
+                    return;
+                }
+                steam.GetAuthTicket(identity, ticket =>
+                {
+                    if (string.IsNullOrEmpty(ticket)) { done(new ApiResult { code = "STEAM_TICKET", message = "Steam 인증 티켓을 받지 못했습니다." }); return; }
+                    Api.Post("/auth/steam", new Dictionary<string, object> { ["ticket"] = ticket }, r =>
+                    {
+                        if (!r.ok) { done(r); return; }
+                        Api.SetTokens(MiniJson.Str(r.data, "access_token"), MiniJson.Str(r.data, "refresh_token"));
+                        Current = new OnlineSession { AccountId = MiniJson.Str(MiniJson.Obj(r.data, "account"), "id"), LoginId = "Steam" };
+                        Current.LoadCharacters(done);
+                    }, auth: false);
+                });
+            }, auth: false);
+        }
+
         public static void Logout()
         {
             string refresh = Api.RefreshToken;

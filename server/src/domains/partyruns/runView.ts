@@ -6,6 +6,21 @@ import type { PartyRunRow } from '../party/partyTx';
 import * as repo from './partyRunRepository';
 import { entryToken } from './runTokens';
 
+export interface TransportView {
+  current: 'relay' | 'steam' | 'dev';
+  epoch: number;
+  order: ('relay' | 'steam' | 'dev')[];
+  relay: { url: string };
+}
+
+/** 방(판·세션)의 전송 정보. 클라이언트는 current/epoch로 연결 방식을 정한다 */
+export const transportView = (t: { transport: TransportView['current']; transport_epoch: number; transport_order: TransportView['order'] }): TransportView => ({
+  current: t.transport,
+  epoch: t.transport_epoch,
+  order: t.transport_order,
+  relay: { url: getConfig().relay.publicUrl },
+});
+
 export interface RunView {
   id: string;
   state: string;
@@ -14,6 +29,7 @@ export interface RunView {
   humans: number;
   ai_count: number;
   host: { character_id: string; steam_id: string | null; epoch: number };
+  transport: TransportView;
   gather_deadline_at: string;
   begun_at: string | null;
   me: {
@@ -33,14 +49,14 @@ export async function hostInfo(
   members: repo.RunMemberRow[],
 ): Promise<{ character_id: string; steam_id: string | null; epoch: number }> {
   const host = members.find((m) => m.character_id === run.host_character_id);
-  const steam = getConfig().partyTransport === 'steam' && host ? (await repo.steamIdsOf(db, [host.account_id])).get(host.account_id) ?? null : null;
+  // Steam 계정이면 전송과 무관하게 항상 싣는다(클라이언트는 transport.current == steam 일 때만 쓴다)
+  const steam = host ? (await repo.steamIdsOf(db, [host.account_id])).get(host.account_id) ?? null : null;
   return { character_id: host?.character_uuid ?? '', steam_id: steam, epoch: run.host_epoch };
 }
 
 export async function buildRunView(db: Queryable, run: PartyRunRow, meCharacterId: number): Promise<RunView> {
   const members = await repo.runMembers(db, run.id);
-  const steamOn = getConfig().partyTransport === 'steam';
-  const steam = steamOn ? await repo.steamIdsOf(db, members.map((m) => m.account_id)) : new Map<number, string>();
+  const steam = await repo.steamIdsOf(db, members.map((m) => m.account_id));
   const me = members.find((m) => m.character_id === meCharacterId);
   let meView: RunView['me'] = null;
   if (me) {
@@ -63,6 +79,7 @@ export async function buildRunView(db: Queryable, run: PartyRunRow, meCharacterI
     humans: run.humans,
     ai_count: run.ai_count,
     host: await hostInfo(db, run, members),
+    transport: transportView(run),
     gather_deadline_at: run.gather_deadline_at.toISOString(),
     begun_at: run.begun_at ? run.begun_at.toISOString() : null,
     me: meView,
@@ -73,7 +90,7 @@ export async function buildRunView(db: Queryable, run: PartyRunRow, meCharacterI
       level: m.level,
       slot: m.slot,
       state: m.state,
-      steam_id: steamOn ? (steam.get(m.account_id) ?? null) : null,
+      steam_id: steam.get(m.account_id) ?? null,
     })),
   };
 }

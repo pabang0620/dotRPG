@@ -86,7 +86,8 @@ export function rollEquipmentDrop(eco: EconomyData, cls: string, chance: number,
 }
 
 /** 처치 한 번의 드롭 전체(3.1.2). hits는 이미 서버가 자른 값 */
-export function rollKillDrops(eco: EconomyData, def: MonsterDef, cls: string, hits: number, rng: Rng): DropSpec[] {
+/** chanceMul: 파티 세션의 레벨 격차 감쇠·경제 손잡이(재료·장비 확률에 곱한다, 골드 금액은 아니다). 기본 1 */
+export function rollKillDrops(eco: EconomyData, def: MonsterDef, cls: string, hits: number, rng: Rng, chanceMul = 1): DropSpec[] {
   const out: DropSpec[] = [];
   // 타격당 골드(황금 해골): 타격마다 더미 1개
   if (def.goldPerHitMax > 0) {
@@ -104,11 +105,11 @@ export function rollKillDrops(eco: EconomyData, def: MonsterDef, cls: string, hi
   out.push({ itemKey: 'gold', count: rng.int(r.fieldGoldMin, r.fieldGoldMaxExclusive) });
   // 재료: u <= dropChance 이면 [minDrop, maxDrop] 폐구간 개, 한 개가 한 행
   for (const m of eco.shop.materials) {
-    if (rng.unit() > m.dropChance) continue;
+    if (rng.unit() > m.dropChance * chanceMul) continue;
     const n = rng.int(m.minDrop, m.maxDrop + 1);
     for (let i = 0; i < n; i++) out.push({ itemKey: m.id, count: 1 });
   }
-  const gear = rollEquipmentDrop(eco, cls, r.equipmentDropChance, rng);
+  const gear = rollEquipmentDrop(eco, cls, r.equipmentDropChance * chanceMul, rng);
   if (gear) out.push({ itemKey: gear, count: 1 });
   return out;
 }

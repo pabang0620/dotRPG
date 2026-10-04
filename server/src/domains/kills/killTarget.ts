@@ -8,6 +8,15 @@ import { countFieldKillsSince, killCount } from './killRepository';
 /** 필드 화력 창(초). 3.2.3 */
 export const FIELD_POWER_WINDOW_SECONDS = 10;
 
+export interface FieldKillInfo {
+  sessionId: number;
+  monsterRef: number | null;
+  /** 파티 세션(활성 멤버 2명 이상)의 경험치 배율. null이면 감쇠 없음 */
+  xpFactor: number | null;
+  /** 재료·장비 드롭 확률에 곱하는 값 */
+  dropMul: number;
+}
+
 export interface KillTarget {
   context: 'field' | 'scripted' | 'dungeon';
   mapId: string;
@@ -26,6 +35,8 @@ export interface KillTarget {
   powerCap: number | null;
   /** 파티 판의 방장이 아닌 멤버: 거절은 기록하되 일시 차단 카운트(severity 2 이상)는 쌓지 않는다 */
   nonHost: boolean;
+  /** 8단계: 필드 파티 세션 처치(session_id가 있을 때) */
+  field: FieldKillInfo | null;
   /** 받아들인 뒤(kill_log 기록 직전) 던전 진행을 갱신한다 */
   commit: (client: PoolClient) => Promise<void>;
 }
@@ -40,6 +51,7 @@ export async function resolveFieldTarget(
   mapId: string,
   monsterId: string,
   now: Date,
+  opts: { sessionOnly?: boolean; nonHost?: boolean } = {},
 ): Promise<KillTarget> {
   const data = getGameData();
   const map = data.maps.get(mapId);
@@ -56,11 +68,11 @@ export async function resolveFieldTarget(
     const limit = Math.ceil(field.points * getConfig().policy.killSupplyMargin);
     const since = new Date(now.getTime() - respawn * 1000);
     const n = await countFieldKillsSince(client, characterId, mapId, monsterId, since);
-    if (n >= limit) throw rejected('kill_supply', 2, { ...detailBase, count: n, limit, window_seconds: respawn });
+    if (n >= limit) throw rejected('kill_supply', opts.nonHost ? 1 : 2, { ...detailBase, count: n, limit, window_seconds: respawn });
     return {
       context: 'field',
       mapId,
-      level: 1,
+      level: field.monsterLevel,
       hpMul: 1,
       burst,
       powerWindowSeconds: FIELD_POWER_WINDOW_SECONDS,
@@ -68,11 +80,14 @@ export async function resolveFieldTarget(
       isRaid: false,
       rewardLocked: false,
       powerCap: null,
-      nonHost: false,
+      nonHost: opts.nonHost ?? false,
+      field: null,
       commit: async () => {},
     };
   }
 
+  // 연출 스폰은 세션 처치 대상이 아니다(맥락 불일치)
+  if (opts.sessionOnly) throw rejected('kill_target', opts.nonHost ? 1 : 2, { ...detailBase, why: 'scripted_in_session' });
   const scripted = extra.scriptedSpawns.find((s) => s.monsterId === monsterId);
   if (scripted) {
     const kills = await killCount(client, characterId, monsterId);
@@ -91,6 +106,7 @@ export async function resolveFieldTarget(
       rewardLocked: false,
       powerCap: null,
       nonHost: false,
+      field: null,
       commit: async () => {},
     };
   }

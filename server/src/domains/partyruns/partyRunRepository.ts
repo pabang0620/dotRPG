@@ -72,12 +72,15 @@ export async function insertRun(
     runKey: Buffer;
     deadline: Date;
     now: Date;
+    transport: 'relay' | 'steam' | 'dev';
+    transportOrder: ('relay' | 'steam' | 'dev')[];
   },
 ): Promise<PartyRunRow> {
   const r = await client.query<Parameters<typeof toPartyRun>[0]>(
-    `INSERT INTO party_runs (party_id, dungeon_id, difficulty, host_character_id, humans, ai_count, run_key, gather_deadline_at, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ${RUN_COLS}`,
-    [p.partyId, p.dungeonId, p.difficulty, p.hostId, p.humans, p.aiCount, p.runKey, p.deadline, p.now],
+    `INSERT INTO party_runs (party_id, dungeon_id, difficulty, host_character_id, humans, ai_count, run_key, gather_deadline_at, created_at,
+                             transport, transport_order)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::text[]) RETURNING ${RUN_COLS}`,
+    [p.partyId, p.dungeonId, p.difficulty, p.hostId, p.humans, p.aiCount, p.runKey, p.deadline, p.now, p.transport, p.transportOrder],
   );
   return toPartyRun(r.rows[0] as Parameters<typeof toPartyRun>[0]);
 }

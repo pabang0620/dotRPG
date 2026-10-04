@@ -90,6 +90,7 @@ export async function resolveDungeonTarget(
     burst: pol.killBurstDungeon,
     powerWindowSeconds: Math.max(0, elapsedSec) + 5,
     run: { id: run.id, roomIndex },
+    field: null,
     commit: (client) => repo.updateRunProgress(client, run.id, Math.max(run.room_index, roomIndex), newKills),
   };
 }

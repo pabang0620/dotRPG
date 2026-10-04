@@ -153,6 +153,11 @@ export interface PartyRunRow {
   gather_deadline_at: Date;
   begun_at: Date | null;
   first_report_at: Date | null;
+  /** 8단계: 전투 연결 방식 */
+  transport: 'relay' | 'steam' | 'dev';
+  transport_epoch: number;
+  transport_switches: number;
+  transport_order: ('relay' | 'steam' | 'dev')[];
 }
 interface RawPartyRun extends Omit<PartyRunRow, 'id' | 'party_id' | 'host_character_id' | 'power_cap'> {
   id: string;
@@ -161,7 +166,7 @@ interface RawPartyRun extends Omit<PartyRunRow, 'id' | 'party_id' | 'host_charac
   power_cap: string | null;
 }
 export const RUN_COLS = `id, uuid, party_id, dungeon_id, difficulty, state, host_character_id, host_epoch, humans, ai_count,
-  run_key, power_cap, gather_deadline_at, begun_at, first_report_at`;
+  run_key, power_cap, gather_deadline_at, begun_at, first_report_at, transport, transport_epoch, transport_switches, transport_order`;
 export const toPartyRun = (r: RawPartyRun): PartyRunRow => ({
   ...r,
   id: Number(r.id),

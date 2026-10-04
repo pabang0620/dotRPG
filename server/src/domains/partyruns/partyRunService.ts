@@ -13,6 +13,8 @@ import { attackCap } from '../kills/killRules';
 import * as partyRepo from '../party/partyRepository';
 import { lockPartyAndRun, runParty, withPartyLocks, type PartyCtx, type PartyRunRow } from '../party/partyTx';
 import { resetBoundaries } from '../../utils/resetBoundaries';
+import { closeMembershipOf } from '../fieldsessions/fieldCore';
+import { pickTransport } from '../transport/pickTransport';
 import * as repo from './partyRunRepository';
 import { buildRunView } from './runView';
 import { entryToken, tokenMatches } from './runTokens';
@@ -75,12 +77,10 @@ async function processStart(ctx: PartyCtx, body: StartBody) {
   if (failed.length > 0) {
     throw new AppError(422, '입장할 수 없는 멤버가 있습니다.', 'MEMBER_NOT_ELIGIBLE', { members: failed });
   }
-  if (cfg.partyTransport === 'steam') {
-    const ids = await repo.steamIdsOf(ctx.client, members.map((m) => m.account_id));
-    if (members.some((m) => !ids.has(m.account_id))) {
-      throw new AppError(422, 'Steam 연결이 없는 멤버가 있습니다.', 'STEAM_REQUIRED');
-    }
-  }
+  // 8단계: 전송은 서버가 정한다(자격이 되는 후보가 없으면 422 TRANSPORT_UNAVAILABLE). Steam 없는 멤버도 중계로 들어온다
+  const picked = await pickTransport(ctx.client, members.map((m) => m.account_id));
+  // 출발하는 멤버 전원의 필드 세션을 닫는다(출발이 막히지 않는다, 같은 트랜잭션)
+  for (const m of members) await closeMembershipOf(ctx.client, m.character_id, 'dungeon_start', ctx.now);
 
   const runKey = randomBytes(32);
   try {
@@ -94,6 +94,8 @@ async function processStart(ctx: PartyCtx, body: StartBody) {
       runKey,
       deadline: new Date(ctx.now.getTime() + cfg.policy.partyGatherSeconds * 1000),
       now: ctx.now,
+      transport: picked.transport,
+      transportOrder: picked.order,
     });
     // 자리: 방장 0, 나머지는 파티 입장 순
     const ordered = [...members].sort((a, b) => {
@@ -220,7 +222,10 @@ export async function getRun(accountId: number, characterUuid: string, runUuid: 
   if (await ensureGatherResolved(accountId, characterUuid, run)) {
     run = (await repo.getRunByUuid(db, runUuid)) as PartyRunRow;
   }
-  return { run: await buildRunView(db, run, meId) };
+  const view = await buildRunView(db, run, meId);
+  // 서버 주도 인계·앱 재시작 뒤 복구에 필요하다: 호스트 본인에게만(이미 R1·R6 응답으로 같은 사람에게 주던 값)
+  const hostKey = run.host_character_id === meId && run.run_key && ['gathering', 'playing'].includes(run.state) ? run.run_key.toString('base64url') : null;
+  return { run: view, host_key: hostKey };
 }
 
 /** 입장 마감이 지난 모으는 중 판이면 지연 처리(시작 또는 취소)하고 true */
@@ -231,6 +236,38 @@ export async function ensureGatherResolved(accountId: number, characterUuid: str
     if (locked) await resolveDeadline({ ...ctx, requestId: '' }, locked.run);
   });
   return true;
+}
+
+/** 입장을 확인한다. 마지막 사람이 들어오면 같은 트랜잭션에서 시작한다. 시작했으면 true */
+async function markJoined(ctx: PartyCtx, run: PartyRunRow, members: repo.RunMemberRow[]): Promise<boolean> {
+  await repo.setMemberState(ctx.client, run.id, ctx.char.id, 'joined', ctx.now);
+  const stillInvited = members.some((m) => m.character_id !== ctx.char.id && m.state === 'invited');
+  return !stillInvited && (await beginRun(ctx, run)) === 'begun';
+}
+
+/**
+ * 중계 hello 성공이 입장 확인이다(R3 자동 입장, 멱등). 모으는 중이면 입장 확인(마지막이면 시작),
+ * 끊겨 있던 멤버가 60초 안에 돌아오면 playing으로 되돌린다.
+ */
+export async function relayJoin(accountId: number, characterUuid: string, runUuid: string): Promise<void> {
+  const pol = getConfig().policy;
+  await withPartyLocks(accountId, characterUuid, { kind: 'run', runUuid }, async (base) => {
+    const ctx = { ...base, requestId: '' };
+    const locked = await lockPartyAndRun(ctx.client, runUuid);
+    if (!locked) return;
+    const run = await resolveDeadline(ctx, locked.run);
+    const members = await repo.runMembers(ctx.client, run.id);
+    const me = members.find((m) => m.character_id === ctx.char.id);
+    if (!me) return;
+    if (run.state === 'gathering' && me.state === 'invited' && run.run_key) {
+      await markJoined(ctx, run, members);
+    } else if (run.state === 'playing' && me.state === 'disconnected') {
+      const since = me.disconnected_at ? ctx.now.getTime() - me.disconnected_at.getTime() : 0;
+      if (since <= pol.partyRejoinSeconds * 1000) await repo.setMemberState(ctx.client, run.id, me.character_id, 'playing', ctx.now);
+    } else if (me.state === 'joined' || me.state === 'playing') {
+      await repo.touchMember(ctx.client, run.id, me.character_id, ctx.now);
+    }
+  });
 }
 
 // ---------- R3 POST /party-runs/{id}/join ----------
@@ -259,20 +296,20 @@ export function joinRun(accountId: number, characterUuid: string, runUuid: strin
       if (run.state !== 'gathering' || me.state !== 'invited' || !run.run_key) {
         throw new AppError(409, '입장을 받는 중이 아닙니다.', 'RUN_NOT_GATHERING');
       }
-      if (!tokenMatches(entryToken(run.run_key, run.uuid, me.character_uuid, me.slot), body.entry_token)) {
+      // 중계 전송은 서버가 연결을 인증하므로 입장 토큰이 필요 없다. 주어졌으면 검사한다(Steam·dev는 필수)
+      if (run.transport !== 'relay' && body.entry_token === undefined) {
+        throw new AppError(400, 'entry_token 이 필요합니다.', 'VALIDATION', { fields: [{ path: 'entry_token', message: '필수 값입니다' }] });
+      }
+      if (body.entry_token !== undefined && !tokenMatches(entryToken(run.run_key, run.uuid, me.character_uuid, me.slot), body.entry_token)) {
         throw new AppError(403, '입장 토큰이 올바르지 않습니다.', 'ENTRY_TOKEN_INVALID');
       }
-      if (getConfig().partyTransport === 'steam') {
+      if (run.transport === 'steam') {
         const host = members.find((m) => m.character_id === run.host_character_id);
         const steam = host ? (await repo.steamIdsOf(ctx.client, [host.account_id])).get(host.account_id) : undefined;
         if (!body.host_steam_id) throw new AppError(400, 'host_steam_id 가 필요합니다.', 'VALIDATION');
         if (!steam || steam !== body.host_steam_id) throw new AppError(422, '방장 Steam ID가 다릅니다.', 'HOST_MISMATCH');
       }
-      await repo.setMemberState(ctx.client, run.id, ctx.char.id, 'joined', ctx.now);
-      // 마지막 사람이 들어오면 같은 트랜잭션에서 시작한다
-      const stillInvited = members.some((m) => m.character_id !== ctx.char.id && m.state === 'invited');
-      let begun = false;
-      if (!stillInvited) begun = (await beginRun(ctx, run)) === 'begun';
+      const begun = await markJoined(ctx, run, members);
       const fresh = (await repo.getRunById(ctx.client, run.id)) as PartyRunRow;
       return { status: 200, data: { state: begun ? 'playing' : 'joined', begun, run: await buildRunView(ctx.client, fresh, ctx.char.id) } };
     },
