@@ -6,13 +6,15 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// Menu button on the left edge of the HUD. Clicking it folds out a two-column grid of icons that
-    /// open the bag, skills, map, quest log, mini-dungeon and raid windows.
+    /// Menu button just right of the HP / MP bars (top-left HUD). Clicking it folds out a three-column grid of
+    /// icons under it that open the bag, skills, map, quest log, dungeon, party and the other windows.
     /// </summary>
     public class SideMenuView : MonoBehaviour
     {
         const float Size = 50f, StepX = 72f, StepY = 80f;
-        const int Columns = 2;
+        const int Columns = 3;
+        /// <summary>Right of the status bars (StatusBarsView: 18 + 76 + 296) with a small gap.</summary>
+        const float Left = 404f, Top = -16f;
 
         /// <summary>Grid position of the i-th icon (two columns; each label sits under its icon).</summary>
         static Vector2 SlotPos(int i) => new Vector2((i % Columns) * StepX, -(i / Columns) * StepY);
@@ -26,11 +28,11 @@ namespace DotRPG
 
         public static SideMenuView Create(Transform parent)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "SideMenu"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -158f), new Vector2(Size, Size));
+            var root = UIFactory.Place(UIFactory.Rect(parent, "SideMenu"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(Left, Top), new Vector2(Size, Size));
             var view = root.gameObject.AddComponent<SideMenuView>();
             view.MakeIcon(root, "menuicon_menu", "메뉴", view.Toggle, false);
 
-            view.column = UIFactory.Place(UIFactory.Rect(root, "Column"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -Size - 14f), new Vector2(Size, 600f));
+            view.column = UIFactory.Place(UIFactory.Rect(root, "Column"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -Size - 22f), new Vector2(Size, 600f));
             view.Add("menuicon_bag", "가방", () => Game.Flow.OpenWindow(null));
             view.Add("menuicon_skill", "스킬", () => Game.Flow.OpenWindow(Game.UI.Skills));
             view.Add("menuicon_map", "지도", () => Game.Flow.OpenWindow(Game.UI.WorldMap));

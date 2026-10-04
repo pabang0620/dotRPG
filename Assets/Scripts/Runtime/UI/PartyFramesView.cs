@@ -12,7 +12,7 @@ namespace DotRPG
     public class PartyFramesView : MonoBehaviour
     {
         // Layout (reference pixels, 1280x720 canvas). The side menu (button + 2-column grid) ends at x≈136.
-        public const float Left = 150f, Top = -152f, Width = 206f, Height = 50f, Gap = 6f;
+        public const float Left = 18f, Top = -152f, Width = 206f, Height = 50f, Gap = 6f; // left-aligned with the status bars (the menu moved next to them)
         const float BarW = 150f;
 
         sealed class Frame

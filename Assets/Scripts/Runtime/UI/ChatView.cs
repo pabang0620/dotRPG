@@ -152,10 +152,9 @@ namespace DotRPG
             }
             Fade();
             UpdateBubble();
-            // The side menu grid folds out over this corner.
-            bool hide = SideMenuView.IsOpen && !Typing;
-            group.alpha = hide ? 0f : 1f;
-            group.blocksRaycasts = !hide;
+            // The menu grid now folds out at the top next to the status bars: the chat stays visible.
+            group.alpha = 1f;
+            group.blocksRaycasts = true;
         }
 
         static bool KeyTakenByAction(KeyCode k)
