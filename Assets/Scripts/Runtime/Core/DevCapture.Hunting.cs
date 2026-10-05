@@ -25,16 +25,16 @@ namespace DotRPG
             Game.Flow.NewGame(CharacterClass.Warrior); yield return Wait(1.5f);
             Game.Player.Health.SetInvulnerable(600f); Game.Player.Input = new ScriptedInput();
             var export = new List<object>(); var dungeonExport = new List<object>();
-            DCheck("three towns and nine fields", MapRegistry.All.Count(m => m.safe) == 3 && MapRegistry.All.Count(m => !m.safe) == 9);
+            DCheck("three towns and twelve fields", MapRegistry.All.Count(m => MapRegistry.IsTown(m.id)) == 3 && HuntingGrounds.All.Length == 12);
             foreach (var village in new[] { MapRegistry.Village, MapRegistry.Canyon, MapRegistry.Winter })
-                DCheck(village + " has three hunting grounds", HuntingGrounds.All.Count(z => z.village == village) == 3);
+                DCheck(village + " has four hunting grounds", HuntingGrounds.All.Count(z => z.village == village) == 4);
             foreach (var map in MapRegistry.All)
             {
                 Game.World.Load(map.id); Game.Player.Place(Game.World.PlayerSpawn, Facing.Right);
                 yield return Wait(.2f);
                 var zone = HuntingGrounds.Get(map.id);
                 var rows = new List<string>();
-                var source = HuntingGrounds.Layout(map.id) ?? HuntingGrounds.AdaptTownLayout(map.id, Resources.Load<TextAsset>(map.resource).text);
+                var source = map.id == MapRegistry.Sanctum ? SunkenSanctumArt.Layout() : HuntingGrounds.Layout(map.id) ?? HuntingGrounds.AdaptTownLayout(map.id, Resources.Load<TextAsset>(map.resource).text);
                 foreach (var line in source.Split('\n')) if (line.Length > 0 && !line.StartsWith("//")) rows.Add(line.TrimEnd('\r'));
                 File.WriteAllText(Path.Combine(folder, map.id + ".txt"), string.Join("\n", rows));
                 var reached = new HashSet<Vector2Int>(); var visited = new HashSet<Vector2Int>(); var queue = new Queue<Vector2Int>();
@@ -51,7 +51,7 @@ namespace DotRPG
                     }
                 }
                 DCheck(map.id + " player spawn is free", Game.World.IsFree(Game.World.PlayerSpawn));
-                foreach (var target in new[] { map.previousMap, map.nextMap })
+                foreach (var target in WorldRoutes.Neighbors(map.id))
                 {
                     if (target == null) continue;
                     var entry = Game.World.ArrivalFrom(target, out _);
@@ -60,7 +60,7 @@ namespace DotRPG
                 var enemies = EnemyController.Active.Where(e => e != null && e.isActiveAndEnabled && !e.IsDead).ToArray();
                 if (zone != null)
                 {
-                    DCheck(map.id + " spawn count", enemies.Length == (map.id == MapRegistry.Forest ? 15 : 24));
+                    DCheck(map.id + " spawn count", enemies.Length == rows.Sum(r => r.Count(c => c == 'k')) * HuntingGrounds.PackSize);
                     DCheck(map.id + " levels and XP", enemies.All(e => e.Level == zone.monsterLevel && e.Stats.xpReward == zone.KillXp));
                     DCheck(map.id + " all spawn camps reachable", enemies.All(e => reached.Contains(Vector2Int.FloorToInt(e.Position))));
                     int xp = TotalXp();
@@ -106,11 +106,13 @@ namespace DotRPG
             }
             File.WriteAllText(Path.Combine(folder, "balance.json"), MiniJson.Write(HRow(("fields", export), ("dungeons", dungeonExport))));
             // A full respawn cycle, with the hero away from the defeated spawn.
-            Game.World.Load("canyon_pass"); Game.Player.Place(Game.World.PlayerSpawn, Facing.Right); yield return Wait(.1f);
-            var victim = EnemyController.Active.First(e => e != null && !e.IsDead && e.isActiveAndEnabled);
+            Game.World.Load("canyon_pass"); Game.Player.Place(Game.World.Bounds.center + Vector2.one*.5f, Facing.Right); yield return Wait(.1f);
+            var victim = EnemyController.Active.First(e => e != null && !e.IsDead && e.isActiveAndEnabled && Vector2.Distance(e.Position,Game.Player.Position)>6);
             var point = victim.Position; victim.TakeDamage(new DamageInfo(999999, point, 0, Team.Player, Game.Player.gameObject));
-            yield return Wait(HuntingGrounds.RespawnSeconds + .8f);
-            DCheck("field respawn supports continuous hunting", EnemyController.Active.Count(e => e != null && !e.IsDead && e.isActiveAndEnabled) == 24);
+            // Respawn uses simulation time, not wall-clock time (captures may render expensive frames).
+            yield return new WaitForSeconds(HuntingGrounds.RespawnSeconds + 1f);
+            Log("RESPAWN PROBE: map="+Game.World.MapId+" alive="+EnemyController.Active.Count(e=>e!=null&&!e.IsDead&&e.isActiveAndEnabled)+" player="+Game.Player.Position+" defeated="+point+" state="+Game.State.Current);
+            DCheck("field respawn supports continuous hunting", EnemyController.Active.Count(e => e != null && !e.IsDead && e.isActiveAndEnabled) == HuntingGrounds.Layout("canyon_pass").Count(c => c == 'k') * HuntingGrounds.PackSize);
             Log($"HUNTING summary: {dgnPassed} passed, {dgnFailed} failed");
         }
     }

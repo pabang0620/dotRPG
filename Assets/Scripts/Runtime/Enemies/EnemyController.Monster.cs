@@ -106,6 +106,11 @@ namespace DotRPG
                 if (bar != null) Destroy(bar.gameObject);
             }
             else if (bar != null) bar.localPosition = new Vector3(0f, def.kind == MonsterKind.Totem ? 1.95f : 1.2f * def.size, 0f);
+            if (RegionalMonsterArt.Supports(def.look.id))
+            {
+                if (bar != null) bar.localPosition = new Vector3(0f, 1.85f * visualScale, 0f);
+                alertIcon.transform.localPosition = new Vector3(0f, 2.15f, 0f);
+            }
 
             GroggyMax = def.groggyMax;
             Groggy = GroggyMax;

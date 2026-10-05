@@ -14,6 +14,7 @@ namespace DotRPG
         /// <summary>High-resolution hunting ground: dark forest floor, dirt trails, ruins (Forest.txt).</summary>
         Forest,
         Interior,
+        SunkenSanctum,
     }
 
     /// <summary>One playable map. Portals '&gt;' lead to <see cref="nextMap"/>, '&lt;' to <see cref="previousMap"/>.</summary>
@@ -27,6 +28,7 @@ namespace DotRPG
         public MapTheme theme;
         public string nextMap;
         public string previousMap;
+        public string northMap, southMap;
         /// <summary>One-line tip shown in the map window.</summary>
         public string hint;
         /// <summary>Town (no monsters) vs. hunting ground; shown in the map window.</summary>
@@ -48,6 +50,7 @@ namespace DotRPG
         public const string Forest = "forest";
         public const string Canyon = "canyon";
         public const string Winter = "winter";
+        public const string Sanctum = "sunken_sanctum";
 
         static readonly MapInfo[] Maps = BuildMaps();
 
@@ -57,7 +60,7 @@ namespace DotRPG
             void Town(string id, string name, string resource, MapTheme theme, string music)
             {
                 maps.Add(new MapInfo { id = id, displayName = name, resource = resource, theme = theme, music = music,
-                    hint = "안전한 마을. 이어지는 사냥터 3곳에서 입장 제한 없이 성장할 수 있다.\n지도에서 권장 레벨과 귀환 마을을 확인하자." });
+                    hint = "안전한 마을. 사냥터 1 → 북쪽 2 / 남쪽 3 → 합류 4 → 다음 지역\n지도에서 연결 지역과 권장 레벨을 확인하자." });
                 foreach (var z in HuntingGrounds.All)
                     if (z.village == id) maps.Add(new MapInfo { id = z.id, displayName = z.name, theme = z.theme, safe = false,
                         resource = z.id == Forest ? "Maps/Forest" : null, music = theme == MapTheme.Town ? "music_forest" : music,
@@ -71,6 +74,10 @@ namespace DotRPG
                 maps[i].previousMap = i > 0 ? maps[i-1].id : null;
                 maps[i].nextMap = i + 1 < maps.Count ? maps[i+1].id : Winter;
             }
+            maps.Add(new MapInfo { id = Sanctum, displayName = "침수된 고대 성소", resource = "Maps/SunkenSanctum",
+                theme = MapTheme.SunkenSanctum, music = "music_canyon",
+                hint = "제단 북쪽 → 좁은 연결부 → 왼쪽 돌길 → 중앙 계단 → 상단 단상\n물·절벽은 통행 불가 · 하단 귀환 표식: 해빙된 성소 입구" });
+            WorldRoutes.Configure(maps);
             return maps.ToArray();
         }
 

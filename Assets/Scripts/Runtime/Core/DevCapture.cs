@@ -27,7 +27,7 @@ namespace DotRPG
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
         static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo", "-dotrpgSanctum", "-dotrpgRoutes" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -104,6 +104,8 @@ namespace DotRPG
             Log("capture started");
             bool automatedDemo = mode == "-dotrpgCareerDemo" && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
             if (mode != "-dotrpgCareerDemo" || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
+            if (mode == "-dotrpgRoutes") { yield return RoutesRun(); log.Close(); Application.Quit(); yield break; }
+            if (mode == "-dotrpgSanctum") { yield return SanctumRun(); log.Close(); log=null; if(Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(), "-sanctumVerify")>=0)Application.Quit();else Destroy(this); yield break; }
             if (mode == "-dotrpgCareerDemo") { yield return CareerDemoRun(); Log("career demo ready: four level-40 characters"); log.Close(); log=null; if(automatedDemo)Application.Quit();else Destroy(this); yield break; }
             if (mode == "-dotrpgCareer") { yield return CareerRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]

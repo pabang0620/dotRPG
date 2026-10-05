@@ -43,8 +43,8 @@ namespace DotRPG
             w.tooltip = tip.rectTransform;
             w.tooltipText = Label(tip.transform, "Text", "", 17, C, C, Vector2.zero, new Vector2(326, 31), TextAnchor.MiddleCenter);
             w.tooltip.gameObject.SetActive(false);
-            w.legend = Label(frame.transform, "Legend", "", 16, TL, TL, new Vector2(18, -510), new Vector2(718, 28), TextAnchor.MiddleLeft);
-            w.detail = Label(frame.transform, "Selection", "NPC 번호나 이름을 선택하세요.", 17, TL, TL, new Vector2(18, -544), new Vector2(530, 34), TextAnchor.MiddleLeft);
+            w.legend = Label(frame.transform, "Legend", "", 16, TL, TL, new Vector2(18, -498), new Vector2(718, 28), TextAnchor.MiddleLeft);
+            w.detail = Label(frame.transform, "Selection", "NPC 번호나 이름을 선택하세요.", 17, TL, TL, new Vector2(18, -529), new Vector2(530, 34), TextAnchor.MiddleLeft);
             w.roomButton = Button(frame.transform, "ViewInterior", "실내 보기", "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 12), new Vector2(160, 34), () =>
             { if (w.selectedNpc >= 0 && w.npcs[w.selectedNpc].interior != null) w.SelectMap(w.npcs[w.selectedNpc].interior); }, 17);
             w.roomButton.gameObject.SetActive(false);
@@ -55,8 +55,8 @@ namespace DotRPG
             {
                 string id = info.id; var zone = HuntingGrounds.Get(id);
                 string name = id == MapRegistry.Village ? "해골 숲 옆 작은 마을" : info.displayName;
-                string tag = zone == null ? "<color=#91c9b0>마을</color>" : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
-                var button = Button(w.side, "Region_" + id, name + "   " + tag, "ui_btngray", TL, TL, new Vector2(16, -44 - row * 25), new Vector2(388, 24), () => w.SelectMap(id), 17);
+                string tag = zone == null ? (MapRegistry.IsTown(id) ? "<color=#91c9b0>마을</color>" : "<color=#91c9b0>탐험</color>") : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
+                var button = Button(w.side, "Region_" + id, name + "   " + tag, "ui_btngray", TL, TL, new Vector2(16, -44 - row * 19), new Vector2(388, 18), () => w.SelectMap(id), 14);
                 var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 14, 0, 8, 0);
                 w.regionButtons.Add((id, button)); row++;
             }
@@ -102,15 +102,16 @@ namespace DotRPG
             legend.text = "<color=#78dcff>●</color> 내 위치   <color=#dab785>①</color> NPC   <color=#bca5ff>◆</color> 출구   · " + (current || preview.rendered ? "실제 지형" : "미방문 지역 약도");
             var zone = HuntingGrounds.Get(selectedMap);
             detail.rectTransform.sizeDelta = new Vector2(718, 38);
-            detail.fontSize = 16;
+            detail.fontSize = 14;
             detail.text = current ? "NPC 번호나 이름을 선택하세요." : "NPC 기본 위치 · 지역 선택은 캐릭터를 이동시키지 않습니다.";
             if (zone != null)
             {
                 int lv = Game.Session.Progression.Level;
-                detail.rectTransform.sizeDelta = new Vector2(718, 44);
+                detail.rectTransform.sizeDelta = new Vector2(718, 60);
                 detail.text = $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
                               $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치, 실측 아님)</color>";
             }
+            if(zone!=null)detail.text += "\n" + WorldRoutes.Directions(info);
             tooltip.gameObject.SetActive(false); roomButton.gameObject.SetActive(false);
             foreach (var pin in pins) { pin.SetActive(false); Destroy(pin); } pins.Clear(); npcPins.Clear();
             foreach (var pos in preview.exits)

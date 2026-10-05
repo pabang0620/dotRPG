@@ -46,7 +46,7 @@ namespace DotRPG
             p.unblockable = unblockable;
             p.trail = glowColor;
             p.sr = go.AddComponent<SpriteRenderer>();
-            p.sr.sprite = Game.Art.Get(sprite);
+            p.sr.sprite = RegionalMonsterArt.Projectile(owner != null ? owner.Def : null) ?? Game.Art.Get(sprite);
             if (sprite == "mon_arrow") go.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(p.direction.y, p.direction.x) * Mathf.Rad2Deg);
             if (glowColor.a > 0f)
             {

@@ -186,6 +186,7 @@ namespace DotRPG
         {
             var def = (Get(id == "skeleton" ? Warrior : id) ?? Get(Warrior)).Clone();
             if (id == "skeleton") { def.id = "skeleton"; def.name = "해골"; }
+            RegionalMonsterArt.ApplyFieldLook(def, Game.World != null ? Game.World.MapId : null);
             return SpawnDef(def, pos, parent, 1f, 1f, level, xp);
         }
 
