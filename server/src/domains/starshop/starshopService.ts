@@ -13,7 +13,9 @@ import {
   GEAR_RARITY_NAME,
   GEAR_RARITY_PERMILLE,
   GEAR_RATE_SCALE,
+  AURA_GAUGE_MAX,
   PITY_MAX,
+  SKIN_GAUGE_MAX,
   PULL_PRICE,
   RARITY_NAME,
   RARITY_WEIGHT,
@@ -28,7 +30,7 @@ import {
   type Rarity,
 } from './starshopDefs';
 import * as repo from './starshopRepository';
-import type { ExchangeBody, PullBody } from './starshopValidation';
+import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 
 const RARITIES: Rarity[] = ['unique', 'rare', 'common'];
 type GearBanner = Exclude<Banner, 'aura' | 'skin'>;
@@ -93,6 +95,8 @@ export async function summary(accountId: number, characterUuid: string) {
     pity: wallet.pity,
     skin_pity: wallet.skinPity,
     pity_max: PITY_MAX,
+    aura_gauge_max: AURA_GAUGE_MAX,
+    skin_gauge_max: SKIN_GAUGE_MAX,
     rates_version: RATES_VERSION,
     price_one: PULL_PRICE,
     price_ten: TEN_PRICE,
@@ -166,7 +170,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
           delta: ctx.delta(),
           balance,
           pity,
-          pity_max: PITY_MAX,
+          pity_max: banner === 'skin' ? SKIN_GAUGE_MAX : AURA_GAUGE_MAX,
           rates_version: RATES_VERSION,
         },
       };
@@ -180,9 +184,9 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
   let refund = 0;
   for (let i = 0; i < times; i++) {
     const pityBefore = pity;
-    const byPity = pity + 1 >= PITY_MAX;
+    const byPity = false; // no automatic pity: the gauge fills and the player chooses (claim)
     const bonus = times > 1 && i === times - 1;
-    const rarity: Rarity = byPity ? 'unique' : rollRarity(bonus);
+    const rarity: Rarity = rollRarity(bonus);
     const all = poolOf(banner, rarity, ctx.char.class);
     const fresh = all.filter((c) => !owned.has(c.id));
     const duplicate = fresh.length === 0;
@@ -194,7 +198,7 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
       owned.add(item.id);
       await repo.addCosmetic(ctx.client, accountId, item.id, 'gacha');
     }
-    pity = rarity === 'unique' ? 0 : pity + 1;
+    pity = pity + 1;
     rows.push({ seq: i, rarity, itemId: item.id, pityBefore, pityAfter: pity, byPity, duplicate, refund: back, kind: 'cosmetic' });
   }
   return { pity, refund };
@@ -243,6 +247,37 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
       const balance = await repo.changeBalance(db, accountId, -price, 'exchange', def.id, requestId);
       await repo.addCosmetic(db, accountId, def.id, 'exchange');
       return { status: 200, data: { item_id: def.id, price, balance } };
+    },
+  });
+}
+
+/** 선택 게이지가 가득 찼을 때 최상위 하나를 고른다(오라: 유니크 오라, 스킨: 내 직업 스킨). 가진 것은 고를 수 없다 */
+export function claim(accountId: number, characterUuid: string, body: ClaimBody): Promise<StoredResult> {
+  const { request_id: requestId, ...payload } = body;
+  return runEconomy({
+    accountId,
+    characterUuid,
+    endpoint: 'POST /characters/:uuid/starshop/claim',
+    requestId,
+    payload,
+    handler: async (ctx) => {
+      const db = ctx.client;
+      const max = body.banner === 'skin' ? SKIN_GAUGE_MAX : AURA_GAUGE_MAX;
+      const wallet = await repo.lockWallet(db, accountId);
+      const gauge = body.banner === 'skin' ? wallet.skinPity : wallet.pity;
+      if (gauge < max) throw new AppError(422, '선택 게이지가 아직 다 차지 않았습니다.', 'GAUGE_NOT_FULL', { need: max, have: gauge });
+      const choices = poolOf(body.banner, 'unique', ctx.char.class);
+      const def = choices.find((c) => c.id === body.item_id);
+      if (!def) throw new AppError(422, '고를 수 없는 항목입니다.', 'CLAIM_NOT_ALLOWED');
+      const owned = await repo.ownedOf(db, accountId);
+      if (owned.has(def.id)) throw new AppError(409, '이미 가진 외형입니다.', 'COSMETIC_OWNED');
+      await repo.addCosmetic(db, accountId, def.id, 'gacha');
+      const left = gauge - max;
+      await repo.setPity(db, accountId, left, body.banner === 'skin');
+      await repo.insertPulls(db, accountId, requestId, RATES_VERSION, body.banner, [
+        { seq: 0, rarity: 'unique', itemId: def.id, pityBefore: gauge, pityAfter: left, byPity: true, duplicate: false, refund: 0, kind: 'cosmetic' },
+      ]);
+      return { status: 200, data: { item_id: def.id, banner: body.banner, pity: left, pity_max: max } };
     },
   });
 }

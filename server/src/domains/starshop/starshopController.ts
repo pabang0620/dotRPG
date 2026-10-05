@@ -4,7 +4,7 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './starshopService';
-import type { ExchangeBody, PullBody } from './starshopValidation';
+import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 
 type P = { uuid: string };
 const acc = (res: Response) => getAccount(res.locals).id;
@@ -22,6 +22,15 @@ export async function pull(_req: Request, res: Response, next: NextFunction): Pr
   try {
     const { body, params } = getValidated<PullBody, P>(res);
     sendStored(res, await service.pull(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function claim(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<ClaimBody, P>(res);
+    sendStored(res, await service.claim(acc(res), params.uuid, body));
   } catch (err) {
     next(err);
   }

@@ -34,8 +34,12 @@ namespace DotRPG
         readonly List<Cell> cells = new List<Cell>();
         readonly List<Spark> sparks = new List<Spark>();
         Image big, flash;
-        Text bigTitle, bigSub, wallet, bonusLabel, badge;
-        Image badgeBg;
+        Text bigTitle, bigSub, wallet, bonusLabel, badge, gaugeText;
+        Image badgeBg, gaugeFill, gaugeBg;
+        Button chooseBtn;
+        RectTransform choiceModal;
+        readonly List<(Button btn, Image icon, Text label)> choiceRows = new List<(Button, Image, Text)>();
+        const float GaugeW = 420f;
         Button one, ten, rateBtn, wardrobeBtn;
         RectTransform rateModal, cellRoot, resultPage;
         Text resultTitle;
@@ -94,6 +98,15 @@ namespace DotRPG
             w.badgeBg.preserveAspect = false; w.badgeBg.raycastTarget = false;
             UIFactory.Place(w.badgeBg.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-18f, -18f), new Vector2(210f, 44f));
             w.badge = Label(w.badgeBg.transform, "Text", "", 20, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 40f), TextAnchor.MiddleCenter);
+            // Selection gauge: fills one notch per draw; full = choose the top item yourself.
+            w.gaugeBg = UIFactory.Image(bigBox.transform, "Gauge", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 220));
+            w.gaugeBg.preserveAspect = false; w.gaugeBg.raycastTarget = false;
+            UIFactory.Place(w.gaugeBg.rectTransform, tl, tl, new Vector2(30f, -238f), new Vector2(GaugeW, 22f));
+            w.gaugeFill = UIFactory.Image(w.gaugeBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(255, 200, 70, 255));
+            w.gaugeFill.preserveAspect = false; w.gaugeFill.raycastTarget = false;
+            UIFactory.Place(w.gaugeFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 16f));
+            w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
+            w.chooseBtn = Button(bigBox.transform, "Choose", "선택하기", "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), w.OpenChoices, 18);
             var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
             shard.preserveAspect = true; shard.raycastTarget = false;
             UIFactory.Place(shard.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 14f), new Vector2(38f, 38f));
@@ -152,6 +165,26 @@ namespace DotRPG
             w.flash.raycastTarget = false;
             UIFactory.Stretch(w.flash.rectTransform);
 
+            // Choice window: the gauge is full, pick one top item you don't own yet.
+            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), new Color32(16, 22, 36, 252));
+            cm.raycastTarget = true;
+            w.choiceModal = cm.rectTransform;
+            Label(cm.transform, "Title", "<b>원하는 것을 하나 고르세요</b>", 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
+            for (int i = 0; i < 4; i++)
+            {
+                int idx = i;
+                var b = Button(cm.transform, "Choice" + i, "", "ui_btngray", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -76f - i * 70f), new Vector2(520f, 62f), () => w.Choose(idx), 20);
+                var ic = UIFactory.Image(b.transform, "Icon", null, Color.white);
+                ic.preserveAspect = true; ic.raycastTarget = false;
+                UIFactory.Place(ic.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(56f, 56f));
+                var lb = TextOf(b);
+                UIFactory.Stretch(lb.rectTransform, 80f, 0f, 12f, 0f);
+                lb.alignment = TextAnchor.MiddleLeft;
+                w.choiceRows.Add((b, ic, lb));
+            }
+            Button(cm.transform, "Cancel", "닫기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 16f), new Vector2(180f, 48f), () => w.choiceModal.gameObject.SetActive(false), 18);
+            cm.gameObject.SetActive(false);
+
             // 확률 보기 window (over everything in the shop).
             var modal = Panel(w.content, "RateModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 560f), new Color32(16, 22, 36, 252));
             modal.raycastTarget = true;
@@ -201,6 +234,57 @@ namespace DotRPG
         {
             foreach (var b in Banners) if (b.id == banner) return b;
             return Banners[0];
+        }
+
+        List<CosmeticProduct> choices = new List<CosmeticProduct>();
+
+        void OpenChoices()
+        {
+            if (busy || Revealing) return;
+            var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
+            choices = new List<CosmeticProduct>();
+            foreach (var p in CosmeticCatalog.All)
+            {
+                if (banner == "skin" ? (p.IsSkin && p.Skin.cls == cls) : (!p.IsSkin && p.Rarity == CosmeticRarity.Unique)) choices.Add(p);
+            }
+            for (int i = 0; i < choiceRows.Count; i++)
+            {
+                var row = choiceRows[i];
+                bool on = i < choices.Count;
+                row.btn.gameObject.SetActive(on);
+                if (!on) continue;
+                var p = choices[i];
+                bool owned = StarShopClient.Owned.Contains(p.Id);
+                var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
+                row.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
+                row.icon.color = look != null ? Color.white : p.Color;
+                row.label.text = owned ? $"<color=#8c96a8>{p.Name} · 보유 중</color>" : $"<color=#ffb347>{p.Name}</color>  <size=15>공격력 +{p.DamagePercent}%</size>";
+                row.btn.interactable = !owned;
+            }
+            choiceModal.gameObject.SetActive(true);
+            choiceModal.SetAsLastSibling();
+            Game.Audio.PlaySfx("select");
+        }
+
+        void Choose(int i)
+        {
+            if (i >= choices.Count) return;
+            var p = choices[i];
+            Game.UI.Confirm($"{p.Name}\n선택 게이지를 사용해 이것을 받습니다.", () =>
+            {
+                busy = true;
+                StarShopClient.Claim(banner, p.Id, (ok, msg) =>
+                {
+                    busy = false;
+                    choiceModal.gameObject.SetActive(false);
+                    if (!ok) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); Refresh(); return; }
+                    shown = new List<StarPullResult> { new StarPullResult { itemId = p.Id, rarity = "unique", byPity = true } };
+                    revealed = 0; waiting = -1; lastCount = 1;
+                    revealAt = Time.unscaledTime + 0.3f;
+                    OpenResults();
+                    Refresh();
+                });
+            }, true);
         }
 
         void OpenWardrobe()
@@ -320,6 +404,7 @@ namespace DotRPG
         protected override void Update()
         {
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
+            if (choiceModal != null && choiceModal.gameObject.activeSelf && Game.Input.CancelPressed) { choiceModal.gameObject.SetActive(false); return; }
             if (resultPage != null && resultPage.gameObject.activeSelf && (Game.Input.CancelPressed || Game.Input.SubmitPressed))
             { if (Revealing) RevealAll(); else CloseResults(); Animate(); return; }
             base.Update();
@@ -371,6 +456,13 @@ namespace DotRPG
         void Animate()
         {
             float t = Time.unscaledTime, dt = Time.unscaledDeltaTime;
+            if (chooseBtn != null && chooseBtn.gameObject.activeSelf)
+            {
+                float k = 0.5f + 0.5f * Mathf.Sin(t * 5f);
+                gaugeFill.color = Color.Lerp(new Color32(255, 200, 70, 255), Color.white, k * 0.6f);
+                chooseBtn.transform.localScale = Vector3.one * (1f + 0.05f * k);
+            }
+            else if (gaugeFill != null) gaugeFill.color = new Color32(255, 200, 70, 255);
             float f = Mathf.Clamp01(1f - (t - flashAt) / 0.8f);
             flash.color = new Color(1f, .85f, .45f, f * f * .8f);
             for (int i = sparks.Count - 1; i >= 0; i--)
@@ -465,7 +557,7 @@ namespace DotRPG
                     c.icon.color = look != null ? Color.white : p != null ? p.Color : Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
                     c.note.text = r.duplicate ? $"<color=#b8c4d8>중복 +{r.refund}</color>"
-                        : r.byPity ? "<color=#ffd34a>천장 · NEW</color>" : "<color=#8fe28f>NEW</color>";
+                        : r.byPity ? "<color=#ffd34a>선택 · NEW</color>" : "<color=#8fe28f>NEW</color>";
                 }
             }
         }
@@ -494,9 +586,19 @@ namespace DotRPG
             badge.text = $"<b>출시 스킨 {mine.Count}종</b>";
             int pity = banner == "skin" ? StarShopClient.SkinPity : StarShopClient.Pity;
             bool hasPity = banner == "skin" || banner == "aura";
-            string top = banner == "skin" ? "스킨" : "유니크 오라";
+            int gaugeMax = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
+            bool full = hasPity && pity >= gaugeMax;
+            gaugeBg.gameObject.SetActive(hasPity);
+            gaugeText.gameObject.SetActive(hasPity);
+            chooseBtn.gameObject.SetActive(full);
+            if (hasPity)
+            {
+                gaugeFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * Mathf.Clamp01(pity / (float)gaugeMax), 16f);
+                gaugeText.text = full ? $"<color=#ffd34a><b>선택 게이지 가득!</b></color> {(banner == "skin" ? "스킨" : "유니크 오라")}를 직접 고를 수 있습니다"
+                    : $"선택 게이지 {Mathf.Min(pity, gaugeMax)}/{gaugeMax} · 가득 차면 {(banner == "skin" ? "스킨" : "유니크 오라")}를 직접 선택";
+            }
             bigSub.text = $"{cur.sub}\n" +
-                          (hasPity ? $"<color=#ffd34a>{top} 확정까지 {Mathf.Max(1, StarShopClient.PityMax - pity)}회</color> (천장 {StarShopClient.PityMax}회)\n" : "뽑은 장비는 바로 가방으로\n") +
+                          (hasPity ? "" : "뽑은 장비는 바로 가방으로\n") +
                           (banner == "skin" ? $"<color=#ffb347>스킨 공격력 +5%</color>\n<color=#b8c4d8>{CharacterClassInfo.Get(cls).displayName} 스킨: {string.Join(" · ", mine)}</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
             wallet.text = online
                 ? (StarShopClient.Loaded ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>불러오는 중...</color>")
@@ -552,15 +654,16 @@ namespace DotRPG
             sb.Append("<color=#b8c4d8>");
             if (banner == "aura" || banner == "skin")
             {
-                string top = banner == "skin" ? "스킨" : "유니크";
-                sb.Append($"· 천장: {top} 없이 {StarShopClient.PityMax - 1}회를 뽑으면 {StarShopClient.PityMax}번째는 {top} 확정. 나오면 0부터 다시 셉니다(기한 없음).\n");
+                string top = banner == "skin" ? "내 직업 스킨" : "유니크 오라";
+                int gm = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
+                sb.Append($"· 선택 게이지: 1회 뽑을 때마다 1칸 찹니다. {gm}칸이 다 차면 {top} 중 원하는 것 하나를 고릅니다(고르면 {gm}칸 줄어듦, 기한 없음). 뽑기에서 자연히 나와도 게이지는 줄지 않습니다.\n");
                 sb.Append("· 중복 방지: 같은 등급에서 아직 없는 것만 같은 확률로 나옵니다. 개별 확률은 아무것도 없을 때 기준입니다.\n");
                 sb.Append($"· 같은 등급을 모두 가지면 중복이 나오고 별조각을 돌려줍니다(일반 {rc}, 희귀 {rr}, 유니크 {ru}{(banner == "skin" ? ", 스킨 600" : "")}).\n");
             }
             else
             {
                 sb.Append("· 등급을 먼저 정하고, 그 등급의 장비 중 하나가 같은 확률로 나옵니다. 그 뽑기에 없는 등급의 몫은 가장 낮은 등급이 가집니다.\n");
-                sb.Append("· 뽑은 장비는 +0으로 바로 가방에 들어갑니다. 천장은 없습니다.\n");
+                sb.Append("· 뽑은 장비는 +0으로 바로 가방에 들어갑니다. 선택 게이지는 없습니다.\n");
             }
             sb.Append($"· 10+1회는 별조각 {StarShopClient.PriceTen:N0}로 {StarShopClient.TenCount}회를 뽑습니다(마지막 1회가 보너스).</color>");
             return sb.ToString();
