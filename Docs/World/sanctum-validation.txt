@@ -1,0 +1,44 @@
+[1.43] capture started
+[1.43] verification audio volume: 0
+[2.87] Warning: Releasing render texture that is set to be RenderTexture.active!
+[5.22] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN 48x72 bounds PASS
+DGN altar spawn free PASS
+DGN spawn away from return portal PASS
+DGN water/cliff blocked (24.00, 51.00) PASS
+DGN water/cliff blocked (31.00, 33.00) PASS
+DGN water/cliff blocked (13.00, 11.00) PASS
+DGN water/cliff blocked (10.00, 44.00) PASS
+DGN water/cliff blocked (24.00, 65.00) PASS
+DGN dedicated asset arch PASS
+DGN dedicated asset tower_left PASS
+DGN dedicated asset tower_right PASS
+DGN dedicated asset altar PASS
+DGN dedicated asset floor PASS
+DGN dedicated asset terrace_wall PASS
+DGN dedicated asset stairs PASS
+DGN dedicated asset pillar PASS
+DGN connected route (23, 21) PASS
+DGN connected route (19, 33) PASS
+DGN connected route (23, 44) PASS
+DGN connected route (14, 49) PASS
+DGN connected route (32, 49) PASS
+DGN physically walked to (23.00, 18.00) PASS
+DGN physically walked to (22.50, 22.00) PASS
+DGN physically walked to (22.00, 25.00) PASS
+DGN physically walked to (20.00, 29.00) PASS
+DGN physically walked to (19.00, 34.00) PASS
+DGN physically walked to (20.00, 38.00) PASS
+DGN physically walked to (23.50, 41.00) PASS
+DGN physically walked to (23.50, 47.20) PASS
+DGN physically walked to (18.00, 47.20) PASS
+DGN physically walked to (18.00, 49.00) PASS
+DGN companion follows to upper terrace PASS
+DGN companion feet stay free PASS
+[22.10] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN water removed on exit PASS
+[22.28] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN one water system after reentry PASS
+DGN bounded animated objects PASS
+DGN muted verification PASS
+[22.42] SANCTUM RESULTS: 37 passed, 0 failed

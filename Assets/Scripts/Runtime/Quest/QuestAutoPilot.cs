@@ -550,23 +550,19 @@ namespace DotRPG
             }
         }
 
-        /// <summary>The neighbouring map on the way from <paramref name="from"/> to <paramref name="to"/> (maps form a line).</summary>
+        /// <summary>The neighbouring map on the way from <paramref name="from"/> to <paramref name="to"/> (branch-aware breadth-first routing).</summary>
         static string NextMapTowards(string from, string to)
         {
             var cur = MapRegistry.Get(from);
             if (cur == null) return null;
             if (cur.IsInterior) return cur.exteriorMap;
-            foreach (string dir in new[] { cur.nextMap, cur.previousMap })
-            {
-                string step = dir;
-                var seen = new HashSet<string> { from };
-                while (!string.IsNullOrEmpty(step) && seen.Add(step))
-                {
-                    if (step == to) return dir;
-                    var m = MapRegistry.Get(step);
-                    if (m == null) break;
-                    step = seen.Contains(m.nextMap ?? "") ? m.previousMap : m.nextMap;
-                }
+            var queue = new Queue<(string map, string first)>();
+            var seen = new HashSet<string> { from };
+            foreach(var next in WorldRoutes.Neighbors(from))queue.Enqueue((next,next));
+            while(queue.Count>0){
+                var node=queue.Dequeue();if(!seen.Add(node.map))continue;
+                if(node.map==to)return node.first;
+                foreach(var next in WorldRoutes.Neighbors(node.map))queue.Enqueue((next,node.first));
             }
             return null;
         }

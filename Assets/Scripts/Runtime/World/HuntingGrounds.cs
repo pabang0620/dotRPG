@@ -45,16 +45,19 @@ namespace DotRPG
             new HuntingZone("forest", "해골 숲", "village", MapTheme.Forest, 1, 4, 1, 0, "skeleton"),
             new HuntingZone("forest_ruins", "이끼 낀 유적", "village", MapTheme.Forest, 5, 8, 6, 1, "skel_warrior", "skel_warrior", "skel_archer"),
             new HuntingZone("forest_depths", "검은 뿌리 숲", "village", MapTheme.Forest, 9, 12, 10, 2, "skel_warrior", "skel_archer", "skel_shield"),
+            new HuntingZone("forest_crossing", "옛 수로 합류지", "village", MapTheme.Forest, 10, 13, 12, 3, "skel_warrior", "skel_archer", "skel_shield"),
             new HuntingZone("canyon_pass", "붉은 돌 고개", "canyon", MapTheme.Canyon, 13, 16, 14, 0, "skel_warrior", "skel_miner", "skel_archer"),
             new HuntingZone("canyon_mine", "버려진 채석장", "canyon", MapTheme.Canyon, 17, 20, 18, 1, "skel_miner", "skel_miner", "skel_shield"),
             new HuntingZone("canyon_ridge", "바람칼 능선", "canyon", MapTheme.Canyon, 21, 24, 22, 2, "skel_knight", "skel_archer", "skel_miner"),
+            new HuntingZone("canyon_gate", "쌍벽 관문", "canyon", MapTheme.Canyon, 22, 25, 24, 3, "skel_warrior", "skel_shield", "skel_archer"),
             new HuntingZone("winter_edge", "서리 소나무 숲", "winter", MapTheme.Winter, 25, 28, 26, 0, "skel_warrior", "skel_archer", "skel_shield"),
             new HuntingZone("winter_lake", "얼어붙은 호숫가", "winter", MapTheme.Winter, 29, 33, 31, 1, "skel_shield", "skel_archer", "skel_knight"),
             new HuntingZone("winter_peak", "눈보라 봉우리", "winter", MapTheme.Winter, 34, 40, 36, 2, "skel_knight", "skel_knight", "skel_archer"),
+            new HuntingZone("winter_reach", "해빙된 성소 입구", "winter", MapTheme.Winter, 36, 40, 39, 3, "skel_warrior", "skel_shield", "skel_archer"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
         public static int XpAt(int level) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
-        public static string HomeOf(string mapId) => MapRegistry.Get(mapId)?.exteriorMap ?? Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
+        public static string HomeOf(string mapId) => mapId == MapRegistry.Sanctum ? MapRegistry.Winter : MapRegistry.Get(mapId)?.exteriorMap ?? Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
 
         // Equal-level gear / 12 field kills per minute, normal route at its reference time.
         // Floor applies to TOTAL dungeon XP (kills + clear); rank/specialty rewards then add value.
@@ -106,57 +109,7 @@ namespace DotRPG
         public static string Layout(string id)
         {
             var z = Get(id);
-            if (z == null || id == MapRegistry.Forest) return null; // preserve the original hand-painted forest
-            const int w = 56, h = 40;
-            char floor = z.theme == MapTheme.Canyon ? ',' : '.';
-            char border = z.theme == MapTheme.Forest ? '%' : 'W';
-            var cells = new char[w, h];
-            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
-                cells[x, y] = x < 2 || x >= w - 2 || y < 2 || y >= h - 2 ? border : floor;
-            // Rivers, quarry islands and frozen pools give each route a different silhouette.
-            for (int y = 3; y < h - 3; y++) for (int x = 4; x < w - 4; x++)
-            {
-                bool feature = z.variant == 0 ? (x >= 26 && x <= 28) : z.variant == 1
-                    ? ((x-28)*(x-28)/2 + (y-20)*(y-20) < 54)
-                    : ((x > 15 && x < 21 && y > 11 && y < 28) || (x > 36 && x < 41 && y > 5 && y < 22));
-                if (feature) cells[x,y] = z.theme == MapTheme.Canyon && z.variant != 0 ? 'W' : '~';
-            }
-            // Wide connecting lanes and a complete patrol loop; bridges replace water in lanes.
-            void Lane(int x, int y)
-            {
-                if (cells[x,y] == '~') cells[x,y] = 'd';
-                else cells[x,y] = z.theme == MapTheme.Forest ? '=' : ',';
-            }
-            foreach (int y in new[] { 8, 20, 32 })
-                for (int x = 0; x < w; x++) for (int dy = -1; dy <= 1; dy++) Lane(x, y + dy);
-            foreach (int x in new[] { 8, 18, 38, 47 })
-                for (int y = 5; y < h - 4; y++) for (int dx = -1; dx <= 1; dx++) Lane(x + dx, y);
-            // Keep the map border closed except for the two intentional exits.
-            for (int y = 0; y < h; y++) { cells[0,y] = border; cells[w-1,y] = border; }
-            for (int y = 19; y <= 21; y++) { cells[0,y] = '<'; cells[w-1,y] = '>'; }
-            cells[3,20] = 'P';
-            var rng = new System.Random(4701 + Array.IndexOf(All, z) * 113);
-            for (int y = 4; y < h - 4; y += 3) for (int x = 4; x < w - 4; x += 3)
-            {
-                if (cells[x,y] != floor || x < 7 || x > 49) continue;
-                char prop = z.theme == MapTheme.Forest ? (rng.Next(3) == 0 ? 'q' : 'Y')
-                    : z.theme == MapTheme.Winter ? (rng.Next(3) == 0 ? 'R' : 'y')
-                    : (rng.Next(3) == 0 ? 'T' : 'R');
-                if (rng.NextDouble() < .48) cells[x,y] = prop;
-            }
-            if (z.theme == MapTheme.Forest && z.variant == 1)
-                foreach (var p in new[] { new Vector2Int(11,26), new Vector2Int(14,26), new Vector2Int(43,14), new Vector2Int(46,14) })
-                    cells[p.x,p.y] = p.x % 2 == 0 ? 'g' : 'i';
-            // Twenty-four spawns, spread into six camps; no spawns in the portal safety areas.
-            foreach (int y in new[] { 8, 20, 32 })
-                foreach (int x in new[] { 10, 14, 19, 23, 33, 37, 42, 46 })
-                {
-                    for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) Lane(x+dx,y+dy);
-                    cells[x,y] = 'k';
-                }
-            var text = new StringBuilder();
-            for (int y = h - 1; y >= 0; y--) { for (int x = 0; x < w; x++) text.Append(cells[x,y]); text.Append('\n'); }
-            return text.ToString();
+            return z == null ? null : HuntingLayouts.Build(z);
         }
     }
 }

@@ -45,6 +45,7 @@ namespace DotRPG
 
         static string[] Rows(MapInfo info)
         {
+            if(info.id==MapRegistry.Sanctum)return SunkenSanctumArt.Layout().Split('\n').Select(r=>r.TrimEnd('\r')).Where(r=>!r.StartsWith("//")&&!string.IsNullOrWhiteSpace(r)).ToArray();
             if (info.IsInterior) return new[] { ".....", ".....", ".....", "..P..", "..<.." };
             string source = info.id == MapRegistry.Village && Game.Config.worldMap != null ? Game.Config.worldMap.text : HuntingGrounds.Layout(info.id);
             if (source == null) source = Resources.Load<TextAsset>(info.resource)?.text ?? "P";
@@ -71,7 +72,7 @@ namespace DotRPG
                 c.Rect(x * tile, y * tile, tile, tile, PixelCanvas.Hex(color));
                 bool tree = ch == 'T' || ch == '%' || ch == 'Y' || ch == 'q' || (snow && (ch == 'Q' || ch == 'y'));
                 if (tree) { c.Circle(x * tile + 3, y * tile + 3, 3, PixelCanvas.Hex(snow ? "557c76" : "2b5141")); c.Rect(x * tile + 2, y * tile + 1, 2, 2, PixelCanvas.Hex("7c9c67")); }
-                if (ch == '<' || ch == '>')
+                if (WorldRoutes.Portal(ch))
                 {
                     var pos = new Vector2(x + .5f, h - y - .5f);
                     p.exits.Add(pos);

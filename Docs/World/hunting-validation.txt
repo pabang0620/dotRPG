@@ -1,0 +1,181 @@
+[1.40] capture started
+[1.40] verification audio volume: 0
+[2.84] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN three towns and twelve fields PASS
+DGN village has four hunting grounds PASS
+DGN canyon has four hunting grounds PASS
+DGN winter has four hunting grounds PASS
+[3.96] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN village player spawn is free PASS
+DGN village connected exit / arrival: forest PASS
+DGN village remains safe PASS
+[4.53] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest player spawn is free PASS
+DGN forest connected exit / arrival: village PASS
+DGN forest connected exit / arrival: forest_ruins PASS
+DGN forest connected exit / arrival: forest_depths PASS
+DGN forest spawn count PASS
+DGN forest levels and XP PASS
+DGN forest all spawn camps reachable PASS
+DGN forest grants XP without dungeon clear PASS
+[4.73] BALANCE forest: Lv.1-4, monster=1, xp=7, xp/min=84
+[5.06] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest_ruins player spawn is free PASS
+DGN forest_ruins connected exit / arrival: forest PASS
+DGN forest_ruins connected exit / arrival: forest_crossing PASS
+DGN forest_ruins spawn count PASS
+DGN forest_ruins levels and XP PASS
+DGN forest_ruins all spawn camps reachable PASS
+DGN forest_ruins grants XP without dungeon clear PASS
+[5.24] BALANCE forest_ruins: Lv.5-8, monster=6, xp=9, xp/min=108
+[5.70] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest_depths player spawn is free PASS
+DGN forest_depths connected exit / arrival: forest PASS
+DGN forest_depths connected exit / arrival: forest_crossing PASS
+DGN forest_depths spawn count PASS
+DGN forest_depths levels and XP PASS
+DGN forest_depths all spawn camps reachable PASS
+DGN forest_depths grants XP without dungeon clear PASS
+[5.89] BALANCE forest_depths: Lv.9-12, monster=10, xp=12, xp/min=144
+[6.21] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest_crossing player spawn is free PASS
+DGN forest_crossing connected exit / arrival: canyon PASS
+DGN forest_crossing connected exit / arrival: forest_ruins PASS
+DGN forest_crossing connected exit / arrival: forest_depths PASS
+DGN forest_crossing spawn count PASS
+DGN forest_crossing levels and XP PASS
+DGN forest_crossing all spawn camps reachable PASS
+DGN forest_crossing grants XP without dungeon clear PASS
+[6.40] BALANCE forest_crossing: Lv.10-13, monster=12, xp=15, xp/min=180
+[7.06] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon player spawn is free PASS
+DGN canyon connected exit / arrival: forest_crossing PASS
+DGN canyon connected exit / arrival: canyon_pass PASS
+DGN canyon remains safe PASS
+[7.86] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_pass player spawn is free PASS
+DGN canyon_pass connected exit / arrival: canyon PASS
+DGN canyon_pass connected exit / arrival: canyon_mine PASS
+DGN canyon_pass connected exit / arrival: canyon_ridge PASS
+DGN canyon_pass spawn count PASS
+DGN canyon_pass levels and XP PASS
+DGN canyon_pass all spawn camps reachable PASS
+DGN canyon_pass grants XP without dungeon clear PASS
+[8.05] BALANCE canyon_pass: Lv.13-16, monster=14, xp=17, xp/min=204
+[8.73] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_mine player spawn is free PASS
+DGN canyon_mine connected exit / arrival: canyon_pass PASS
+DGN canyon_mine connected exit / arrival: canyon_gate PASS
+DGN canyon_mine spawn count PASS
+DGN canyon_mine levels and XP PASS
+DGN canyon_mine all spawn camps reachable PASS
+DGN canyon_mine grants XP without dungeon clear PASS
+[8.92] BALANCE canyon_mine: Lv.17-20, monster=18, xp=23, xp/min=276
+[9.47] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_ridge player spawn is free PASS
+DGN canyon_ridge connected exit / arrival: canyon_pass PASS
+DGN canyon_ridge connected exit / arrival: canyon_gate PASS
+DGN canyon_ridge spawn count PASS
+DGN canyon_ridge levels and XP PASS
+DGN canyon_ridge all spawn camps reachable PASS
+DGN canyon_ridge grants XP without dungeon clear PASS
+[9.66] BALANCE canyon_ridge: Lv.21-24, monster=22, xp=30, xp/min=360
+[10.20] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_gate player spawn is free PASS
+DGN canyon_gate connected exit / arrival: winter PASS
+DGN canyon_gate connected exit / arrival: canyon_mine PASS
+DGN canyon_gate connected exit / arrival: canyon_ridge PASS
+DGN canyon_gate spawn count PASS
+DGN canyon_gate levels and XP PASS
+DGN canyon_gate all spawn camps reachable PASS
+DGN canyon_gate grants XP without dungeon clear PASS
+[10.39] BALANCE canyon_gate: Lv.22-25, monster=24, xp=35, xp/min=420
+[10.78] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter player spawn is free PASS
+DGN winter connected exit / arrival: canyon_gate PASS
+DGN winter connected exit / arrival: winter_edge PASS
+DGN winter remains safe PASS
+DGN snow village generated house PASS
+DGN snow village generated barn PASS
+DGN snow village generated gate PASS
+DGN snow village generated broadleaf PASS
+DGN snow village generated fir PASS
+DGN snow village generated pine PASS
+DGN snow village generated rock PASS
+DGN winter fences match carrot plot PASS
+DGN snow atlas point sampling PASS
+[11.55] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_edge player spawn is free PASS
+DGN winter_edge connected exit / arrival: winter PASS
+DGN winter_edge connected exit / arrival: winter_lake PASS
+DGN winter_edge connected exit / arrival: winter_peak PASS
+DGN winter_edge spawn count PASS
+DGN winter_edge levels and XP PASS
+DGN winter_edge all spawn camps reachable PASS
+DGN winter_edge grants XP without dungeon clear PASS
+[11.74] BALANCE winter_edge: Lv.25-28, monster=26, xp=39, xp/min=468
+[12.22] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_lake player spawn is free PASS
+DGN winter_lake connected exit / arrival: winter_edge PASS
+DGN winter_lake connected exit / arrival: winter_reach PASS
+DGN winter_lake spawn count PASS
+DGN winter_lake levels and XP PASS
+DGN winter_lake all spawn camps reachable PASS
+DGN winter_lake grants XP without dungeon clear PASS
+[12.41] BALANCE winter_lake: Lv.29-33, monster=31, xp=52, xp/min=624
+[12.76] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_peak player spawn is free PASS
+DGN winter_peak connected exit / arrival: winter_edge PASS
+DGN winter_peak connected exit / arrival: winter_reach PASS
+DGN winter_peak spawn count PASS
+DGN winter_peak levels and XP PASS
+DGN winter_peak all spawn camps reachable PASS
+DGN winter_peak grants XP without dungeon clear PASS
+[12.95] BALANCE winter_peak: Lv.34-40, monster=36, xp=67, xp/min=804
+[13.32] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_reach player spawn is free PASS
+DGN winter_reach connected exit / arrival: sunken_sanctum PASS
+DGN winter_reach connected exit / arrival: winter_lake PASS
+DGN winter_reach connected exit / arrival: winter_peak PASS
+DGN winter_reach spawn count PASS
+DGN winter_reach levels and XP PASS
+DGN winter_reach all spawn camps reachable PASS
+DGN winter_reach grants XP without dungeon clear PASS
+[13.51] BALANCE winter_reach: Lv.36-40, monster=39, xp=76, xp/min=912
+[14.39] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN sunken_sanctum player spawn is free PASS
+DGN sunken_sanctum connected exit / arrival: winter_reach PASS
+DGN sunken_sanctum remains safe PASS
+DGN gold_vein difficulty 0: dungeon/field XP ratio 1.80 PASS
+DGN gold_vein difficulty 1: dungeon/field XP ratio 1.80 PASS
+DGN gold_vein difficulty 2: dungeon/field XP ratio 1.80 PASS
+DGN gold_vein difficulty 3: dungeon/field XP ratio 1.80 PASS
+DGN smelter difficulty 0: dungeon/field XP ratio 1.80 PASS
+DGN smelter difficulty 1: dungeon/field XP ratio 1.80 PASS
+DGN smelter difficulty 2: dungeon/field XP ratio 1.80 PASS
+DGN smelter difficulty 3: dungeon/field XP ratio 1.80 PASS
+DGN mana_graveyard difficulty 0: dungeon/field XP ratio 1.80 PASS
+DGN mana_graveyard difficulty 1: dungeon/field XP ratio 1.80 PASS
+DGN mana_graveyard difficulty 2: dungeon/field XP ratio 1.80 PASS
+DGN mana_graveyard difficulty 3: dungeon/field XP ratio 1.80 PASS
+DGN training_forest difficulty 0: dungeon/field XP ratio 3.41 PASS
+DGN training_forest difficulty 1: dungeon/field XP ratio 3.67 PASS
+DGN training_forest difficulty 2: dungeon/field XP ratio 3.86 PASS
+DGN training_forest difficulty 3: dungeon/field XP ratio 4.07 PASS
+DGN armory difficulty 0: dungeon/field XP ratio 1.80 PASS
+DGN armory difficulty 1: dungeon/field XP ratio 1.80 PASS
+DGN armory difficulty 2: dungeon/field XP ratio 1.80 PASS
+DGN armory difficulty 3: dungeon/field XP ratio 1.80 PASS
+DGN raid_skeleton_king difficulty 0: dungeon/field XP ratio 1.80 PASS
+DGN raid_skeleton_king difficulty 1: dungeon/field XP ratio 1.80 PASS
+DGN raid_skeleton_king difficulty 2: dungeon/field XP ratio 1.80 PASS
+DGN raid_skeleton_king difficulty 3: dungeon/field XP ratio 1.80 PASS
+DGN raid_grah difficulty 0: dungeon/field XP ratio 1.80 PASS
+DGN raid_grah difficulty 1: dungeon/field XP ratio 1.80 PASS
+DGN raid_grah difficulty 2: dungeon/field XP ratio 1.80 PASS
+DGN raid_grah difficulty 3: dungeon/field XP ratio 1.80 PASS
+[14.63] Warning: Releasing render texture that is set to be RenderTexture.active!
+[40.72] RESPAWN PROBE: map=canyon_pass alive=72 player=(20.28, 25.42) defeated=(31.50, 7.50) state=Playing
+DGN field respawn supports continuous hunting PASS
+[40.72] HUNTING summary: 146 passed, 0 failed
+[40.72] capture finished

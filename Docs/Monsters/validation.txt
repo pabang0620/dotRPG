@@ -1,0 +1,317 @@
+[1.72] capture started
+[1.72] verification audio volume: 0
+[3.16] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cliff_rock/down/idle0 PASS
+DGN cliff_rock/down/idle1 PASS
+DGN cliff_rock/down/walk0 PASS
+DGN cliff_rock/down/walk1 PASS
+DGN cliff_rock/down/walk2 PASS
+DGN cliff_rock/down/walk3 PASS
+DGN cliff_rock/down/attack PASS
+DGN cliff_rock/down/hurt PASS
+DGN cliff_rock/downside/idle0 PASS
+DGN cliff_rock/downside/idle1 PASS
+DGN cliff_rock/downside/walk0 PASS
+DGN cliff_rock/downside/walk1 PASS
+DGN cliff_rock/downside/walk2 PASS
+DGN cliff_rock/downside/walk3 PASS
+DGN cliff_rock/downside/attack PASS
+DGN cliff_rock/downside/hurt PASS
+DGN cliff_rock/side/idle0 PASS
+DGN cliff_rock/side/idle1 PASS
+DGN cliff_rock/side/walk0 PASS
+DGN cliff_rock/side/walk1 PASS
+DGN cliff_rock/side/walk2 PASS
+DGN cliff_rock/side/walk3 PASS
+DGN cliff_rock/side/attack PASS
+DGN cliff_rock/side/hurt PASS
+DGN cliff_rock/upside/idle0 PASS
+DGN cliff_rock/upside/idle1 PASS
+DGN cliff_rock/upside/walk0 PASS
+DGN cliff_rock/upside/walk1 PASS
+DGN cliff_rock/upside/walk2 PASS
+DGN cliff_rock/upside/walk3 PASS
+DGN cliff_rock/upside/attack PASS
+DGN cliff_rock/upside/hurt PASS
+DGN cliff_rock/up/idle0 PASS
+DGN cliff_rock/up/idle1 PASS
+DGN cliff_rock/up/walk0 PASS
+DGN cliff_rock/up/walk1 PASS
+DGN cliff_rock/up/walk2 PASS
+DGN cliff_rock/up/walk3 PASS
+DGN cliff_rock/up/attack PASS
+DGN cliff_rock/up/hurt PASS
+DGN cliff_rock_guard/down/idle0 PASS
+DGN cliff_rock_guard/down/idle1 PASS
+DGN cliff_rock_guard/down/walk0 PASS
+DGN cliff_rock_guard/down/walk1 PASS
+DGN cliff_rock_guard/down/walk2 PASS
+DGN cliff_rock_guard/down/walk3 PASS
+DGN cliff_rock_guard/down/attack PASS
+DGN cliff_rock_guard/down/hurt PASS
+DGN cliff_rock_guard/downside/idle0 PASS
+DGN cliff_rock_guard/downside/idle1 PASS
+DGN cliff_rock_guard/downside/walk0 PASS
+DGN cliff_rock_guard/downside/walk1 PASS
+DGN cliff_rock_guard/downside/walk2 PASS
+DGN cliff_rock_guard/downside/walk3 PASS
+DGN cliff_rock_guard/downside/attack PASS
+DGN cliff_rock_guard/downside/hurt PASS
+DGN cliff_rock_guard/side/idle0 PASS
+DGN cliff_rock_guard/side/idle1 PASS
+DGN cliff_rock_guard/side/walk0 PASS
+DGN cliff_rock_guard/side/walk1 PASS
+DGN cliff_rock_guard/side/walk2 PASS
+DGN cliff_rock_guard/side/walk3 PASS
+DGN cliff_rock_guard/side/attack PASS
+DGN cliff_rock_guard/side/hurt PASS
+DGN cliff_rock_guard/upside/idle0 PASS
+DGN cliff_rock_guard/upside/idle1 PASS
+DGN cliff_rock_guard/upside/walk0 PASS
+DGN cliff_rock_guard/upside/walk1 PASS
+DGN cliff_rock_guard/upside/walk2 PASS
+DGN cliff_rock_guard/upside/walk3 PASS
+DGN cliff_rock_guard/upside/attack PASS
+DGN cliff_rock_guard/upside/hurt PASS
+DGN cliff_rock_guard/up/idle0 PASS
+DGN cliff_rock_guard/up/idle1 PASS
+DGN cliff_rock_guard/up/walk0 PASS
+DGN cliff_rock_guard/up/walk1 PASS
+DGN cliff_rock_guard/up/walk2 PASS
+DGN cliff_rock_guard/up/walk3 PASS
+DGN cliff_rock_guard/up/attack PASS
+DGN cliff_rock_guard/up/hurt PASS
+DGN cliff_rock_thrower/down/idle0 PASS
+DGN cliff_rock_thrower/down/idle1 PASS
+DGN cliff_rock_thrower/down/walk0 PASS
+DGN cliff_rock_thrower/down/walk1 PASS
+DGN cliff_rock_thrower/down/walk2 PASS
+DGN cliff_rock_thrower/down/walk3 PASS
+DGN cliff_rock_thrower/down/attack PASS
+DGN cliff_rock_thrower/down/hurt PASS
+DGN cliff_rock_thrower/downside/idle0 PASS
+DGN cliff_rock_thrower/downside/idle1 PASS
+DGN cliff_rock_thrower/downside/walk0 PASS
+DGN cliff_rock_thrower/downside/walk1 PASS
+DGN cliff_rock_thrower/downside/walk2 PASS
+DGN cliff_rock_thrower/downside/walk3 PASS
+DGN cliff_rock_thrower/downside/attack PASS
+DGN cliff_rock_thrower/downside/hurt PASS
+DGN cliff_rock_thrower/side/idle0 PASS
+DGN cliff_rock_thrower/side/idle1 PASS
+DGN cliff_rock_thrower/side/walk0 PASS
+DGN cliff_rock_thrower/side/walk1 PASS
+DGN cliff_rock_thrower/side/walk2 PASS
+DGN cliff_rock_thrower/side/walk3 PASS
+DGN cliff_rock_thrower/side/attack PASS
+DGN cliff_rock_thrower/side/hurt PASS
+DGN cliff_rock_thrower/upside/idle0 PASS
+DGN cliff_rock_thrower/upside/idle1 PASS
+DGN cliff_rock_thrower/upside/walk0 PASS
+DGN cliff_rock_thrower/upside/walk1 PASS
+DGN cliff_rock_thrower/upside/walk2 PASS
+DGN cliff_rock_thrower/upside/walk3 PASS
+DGN cliff_rock_thrower/upside/attack PASS
+DGN cliff_rock_thrower/upside/hurt PASS
+DGN cliff_rock_thrower/up/idle0 PASS
+DGN cliff_rock_thrower/up/idle1 PASS
+DGN cliff_rock_thrower/up/walk0 PASS
+DGN cliff_rock_thrower/up/walk1 PASS
+DGN cliff_rock_thrower/up/walk2 PASS
+DGN cliff_rock_thrower/up/walk3 PASS
+DGN cliff_rock_thrower/up/attack PASS
+DGN cliff_rock_thrower/up/hurt PASS
+DGN snow_yeti/down/idle0 PASS
+DGN snow_yeti/down/idle1 PASS
+DGN snow_yeti/down/walk0 PASS
+DGN snow_yeti/down/walk1 PASS
+DGN snow_yeti/down/walk2 PASS
+DGN snow_yeti/down/walk3 PASS
+DGN snow_yeti/down/attack PASS
+DGN snow_yeti/down/hurt PASS
+DGN snow_yeti/downside/idle0 PASS
+DGN snow_yeti/downside/idle1 PASS
+DGN snow_yeti/downside/walk0 PASS
+DGN snow_yeti/downside/walk1 PASS
+DGN snow_yeti/downside/walk2 PASS
+DGN snow_yeti/downside/walk3 PASS
+DGN snow_yeti/downside/attack PASS
+DGN snow_yeti/downside/hurt PASS
+DGN snow_yeti/side/idle0 PASS
+DGN snow_yeti/side/idle1 PASS
+DGN snow_yeti/side/walk0 PASS
+DGN snow_yeti/side/walk1 PASS
+DGN snow_yeti/side/walk2 PASS
+DGN snow_yeti/side/walk3 PASS
+DGN snow_yeti/side/attack PASS
+DGN snow_yeti/side/hurt PASS
+DGN snow_yeti/upside/idle0 PASS
+DGN snow_yeti/upside/idle1 PASS
+DGN snow_yeti/upside/walk0 PASS
+DGN snow_yeti/upside/walk1 PASS
+DGN snow_yeti/upside/walk2 PASS
+DGN snow_yeti/upside/walk3 PASS
+DGN snow_yeti/upside/attack PASS
+DGN snow_yeti/upside/hurt PASS
+DGN snow_yeti/up/idle0 PASS
+DGN snow_yeti/up/idle1 PASS
+DGN snow_yeti/up/walk0 PASS
+DGN snow_yeti/up/walk1 PASS
+DGN snow_yeti/up/walk2 PASS
+DGN snow_yeti/up/walk3 PASS
+DGN snow_yeti/up/attack PASS
+DGN snow_yeti/up/hurt PASS
+DGN snow_yeti_guard/down/idle0 PASS
+DGN snow_yeti_guard/down/idle1 PASS
+DGN snow_yeti_guard/down/walk0 PASS
+DGN snow_yeti_guard/down/walk1 PASS
+DGN snow_yeti_guard/down/walk2 PASS
+DGN snow_yeti_guard/down/walk3 PASS
+DGN snow_yeti_guard/down/attack PASS
+DGN snow_yeti_guard/down/hurt PASS
+DGN snow_yeti_guard/downside/idle0 PASS
+DGN snow_yeti_guard/downside/idle1 PASS
+DGN snow_yeti_guard/downside/walk0 PASS
+DGN snow_yeti_guard/downside/walk1 PASS
+DGN snow_yeti_guard/downside/walk2 PASS
+DGN snow_yeti_guard/downside/walk3 PASS
+DGN snow_yeti_guard/downside/attack PASS
+DGN snow_yeti_guard/downside/hurt PASS
+DGN snow_yeti_guard/side/idle0 PASS
+DGN snow_yeti_guard/side/idle1 PASS
+DGN snow_yeti_guard/side/walk0 PASS
+DGN snow_yeti_guard/side/walk1 PASS
+DGN snow_yeti_guard/side/walk2 PASS
+DGN snow_yeti_guard/side/walk3 PASS
+DGN snow_yeti_guard/side/attack PASS
+DGN snow_yeti_guard/side/hurt PASS
+DGN snow_yeti_guard/upside/idle0 PASS
+DGN snow_yeti_guard/upside/idle1 PASS
+DGN snow_yeti_guard/upside/walk0 PASS
+DGN snow_yeti_guard/upside/walk1 PASS
+DGN snow_yeti_guard/upside/walk2 PASS
+DGN snow_yeti_guard/upside/walk3 PASS
+DGN snow_yeti_guard/upside/attack PASS
+DGN snow_yeti_guard/upside/hurt PASS
+DGN snow_yeti_guard/up/idle0 PASS
+DGN snow_yeti_guard/up/idle1 PASS
+DGN snow_yeti_guard/up/walk0 PASS
+DGN snow_yeti_guard/up/walk1 PASS
+DGN snow_yeti_guard/up/walk2 PASS
+DGN snow_yeti_guard/up/walk3 PASS
+DGN snow_yeti_guard/up/attack PASS
+DGN snow_yeti_guard/up/hurt PASS
+DGN snow_yeti_thrower/down/idle0 PASS
+DGN snow_yeti_thrower/down/idle1 PASS
+DGN snow_yeti_thrower/down/walk0 PASS
+DGN snow_yeti_thrower/down/walk1 PASS
+DGN snow_yeti_thrower/down/walk2 PASS
+DGN snow_yeti_thrower/down/walk3 PASS
+DGN snow_yeti_thrower/down/attack PASS
+DGN snow_yeti_thrower/down/hurt PASS
+DGN snow_yeti_thrower/downside/idle0 PASS
+DGN snow_yeti_thrower/downside/idle1 PASS
+DGN snow_yeti_thrower/downside/walk0 PASS
+DGN snow_yeti_thrower/downside/walk1 PASS
+DGN snow_yeti_thrower/downside/walk2 PASS
+DGN snow_yeti_thrower/downside/walk3 PASS
+DGN snow_yeti_thrower/downside/attack PASS
+DGN snow_yeti_thrower/downside/hurt PASS
+DGN snow_yeti_thrower/side/idle0 PASS
+DGN snow_yeti_thrower/side/idle1 PASS
+DGN snow_yeti_thrower/side/walk0 PASS
+DGN snow_yeti_thrower/side/walk1 PASS
+DGN snow_yeti_thrower/side/walk2 PASS
+DGN snow_yeti_thrower/side/walk3 PASS
+DGN snow_yeti_thrower/side/attack PASS
+DGN snow_yeti_thrower/side/hurt PASS
+DGN snow_yeti_thrower/upside/idle0 PASS
+DGN snow_yeti_thrower/upside/idle1 PASS
+DGN snow_yeti_thrower/upside/walk0 PASS
+DGN snow_yeti_thrower/upside/walk1 PASS
+DGN snow_yeti_thrower/upside/walk2 PASS
+DGN snow_yeti_thrower/upside/walk3 PASS
+DGN snow_yeti_thrower/upside/attack PASS
+DGN snow_yeti_thrower/upside/hurt PASS
+DGN snow_yeti_thrower/up/idle0 PASS
+DGN snow_yeti_thrower/up/idle1 PASS
+DGN snow_yeti_thrower/up/walk0 PASS
+DGN snow_yeti_thrower/up/walk1 PASS
+DGN snow_yeti_thrower/up/walk2 PASS
+DGN snow_yeti_thrower/up/walk3 PASS
+DGN snow_yeti_thrower/up/attack PASS
+DGN snow_yeti_thrower/up/hurt PASS
+[4.82] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest populated PASS
+DGN forest regional appearances PASS
+DGN forest balance unchanged PASS
+[5.32] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest_ruins populated PASS
+DGN forest_ruins regional appearances PASS
+DGN forest_ruins balance unchanged PASS
+[5.82] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest_depths populated PASS
+DGN forest_depths regional appearances PASS
+DGN forest_depths balance unchanged PASS
+[6.36] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN forest_crossing populated PASS
+DGN forest_crossing regional appearances PASS
+DGN forest_crossing balance unchanged PASS
+[7.08] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_pass populated PASS
+DGN canyon_pass regional appearances PASS
+DGN canyon_pass balance unchanged PASS
+DGN canyon_pass renderer uses new sheet PASS
+DGN canyon_pass global catalog unaffected PASS
+DGN canyon_pass themed projectile PASS
+[9.21] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_mine populated PASS
+DGN canyon_mine regional appearances PASS
+DGN canyon_mine balance unchanged PASS
+DGN canyon_mine renderer uses new sheet PASS
+DGN canyon_mine global catalog unaffected PASS
+[10.06] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_ridge populated PASS
+DGN canyon_ridge regional appearances PASS
+DGN canyon_ridge balance unchanged PASS
+DGN canyon_ridge renderer uses new sheet PASS
+DGN canyon_ridge global catalog unaffected PASS
+DGN canyon_ridge themed projectile PASS
+[10.90] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN canyon_gate populated PASS
+DGN canyon_gate regional appearances PASS
+DGN canyon_gate balance unchanged PASS
+DGN canyon_gate renderer uses new sheet PASS
+DGN canyon_gate global catalog unaffected PASS
+DGN canyon_gate themed projectile PASS
+[11.68] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_edge populated PASS
+DGN winter_edge regional appearances PASS
+DGN winter_edge balance unchanged PASS
+DGN winter_edge renderer uses new sheet PASS
+DGN winter_edge global catalog unaffected PASS
+DGN winter_edge themed projectile PASS
+[13.70] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_lake populated PASS
+DGN winter_lake regional appearances PASS
+DGN winter_lake balance unchanged PASS
+DGN winter_lake renderer uses new sheet PASS
+DGN winter_lake global catalog unaffected PASS
+DGN winter_lake themed projectile PASS
+[14.40] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_peak populated PASS
+DGN winter_peak regional appearances PASS
+DGN winter_peak balance unchanged PASS
+DGN winter_peak renderer uses new sheet PASS
+DGN winter_peak global catalog unaffected PASS
+DGN winter_peak themed projectile PASS
+[15.15] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN winter_reach populated PASS
+DGN winter_reach regional appearances PASS
+DGN winter_reach balance unchanged PASS
+DGN winter_reach renderer uses new sheet PASS
+DGN winter_reach global catalog unaffected PASS
+DGN winter_reach themed projectile PASS
+DGN validation is muted PASS
+[15.48] REGIONAL MONSTERS RESULTS: 300 passed, 0 failed
+[15.48] capture finished

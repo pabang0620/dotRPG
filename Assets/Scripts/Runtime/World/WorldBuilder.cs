@@ -84,6 +84,7 @@ namespace DotRPG
 
         string LoadText(MapInfo info)
         {
+            if (info.id == MapRegistry.Sanctum) return SunkenSanctumArt.Layout();
             if (info.IsInterior) return ".....\n.....\n.....\n..P..\n..<..";
             if (info.id == MapRegistry.Village && config.worldMap != null) return config.worldMap.text;
             var generated = HuntingGrounds.Layout(info.id);
@@ -114,6 +115,12 @@ namespace DotRPG
         public bool IsFree(Vector2 feet)
         {
             if (!Bounds.Contains(feet)) return false;
+            // Saved positions are checked during the load frame, before TilemapCollider2D.LateUpdate.
+            // Apply pending terrain changes so rewritten hunting maps cannot restore a player inside water.
+            var waterCollider = waterMap != null ? waterMap.GetComponent<TilemapCollider2D>() : null;
+            var cliffCollider = cliffMap != null ? cliffMap.GetComponent<TilemapCollider2D>() : null;
+            if (waterCollider != null && waterCollider.hasTilemapChanges) waterCollider.ProcessTilemapChanges();
+            if (cliffCollider != null && cliffCollider.hasTilemapChanges) cliffCollider.ProcessTilemapChanges();
             Physics2D.SyncTransforms();
             foreach (var hit in Physics2D.OverlapCircleAll(feet + new Vector2(0f, 0.22f), 0.26f))
             {
@@ -142,6 +149,7 @@ namespace DotRPG
         public Vector2 ArrivalFrom(string fromMap, out Facing facing)
         {
             facing = Facing.Down;
+            if (MapId == MapRegistry.Sanctum) { facing = Facing.Up; return PlayerSpawn; }
             if (map.IsInterior) { facing = Facing.Up; return PlayerSpawn; }
             var from = MapRegistry.Get(fromMap);
             if (from != null && from.IsInterior && from.exteriorMap == MapId)
@@ -152,7 +160,6 @@ namespace DotRPG
                         for (int step = 0; step < 6; step++)
                             if (IsFree(point + Vector2.down * step * .3f)) return point + Vector2.down * step * .3f;
                     }
-            if (MapId == MapRegistry.Winter && fromMap == "winter_peak") fromMap = "winter_edge";
             if (string.IsNullOrEmpty(fromMap) || !portalCells.TryGetValue(fromMap, out var list) || list.Count == 0)
                 return PlayerSpawn;
             Vector2 sum = Vector2.zero;
@@ -237,6 +244,7 @@ namespace DotRPG
             PlayerSpawn = new Vector2(width * 0.5f, height * 0.5f);
             var rng = new System.Random(1234);
             if (map.IsInterior) { BuildInterior(); return; }
+            if (MapId == MapRegistry.Sanctum) { BuildSunkenSanctum(); return; }
 
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
@@ -324,7 +332,7 @@ namespace DotRPG
             PortalPoints.Clear();
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
-                    if (cells[x, y] == '>' || cells[x, y] == '<') PortalPoints.Add(new Vector2(x + 0.5f, y + 0.5f));
+                    if (WorldRoutes.Portal(cells[x,y])) PortalPoints.Add(new Vector2(x + 0.5f, y + 0.5f));
             GroupPortals();
             Minimap = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null ? RenderMinimap() : null;
             if (Minimap == null) Minimap = BuildFlatMinimap();
@@ -569,6 +577,8 @@ namespace DotRPG
                     return Hd ? c : '.';
                 case '>':
                 case '<':
+                case '[':
+                case ']':
                     if (Hd) return ForestMap ? '=' : ',';
                     return Canyon || Winter ? ',' : '=';
                 case '\0':
@@ -770,8 +780,10 @@ namespace DotRPG
                 }
                 case '>':
                 case '<':
+                case '[':
+                case ']':
                 {
-                    string target = c == '>' ? map?.nextMap : map?.previousMap;
+                    string target = WorldRoutes.Target(map,c);
                     if (string.IsNullOrEmpty(target) || !MapRegistry.Exists(target))
                     {
                         Debug.LogWarning($"[dotRPG] Portal '{c}' on map '{MapId}' has no target map.");

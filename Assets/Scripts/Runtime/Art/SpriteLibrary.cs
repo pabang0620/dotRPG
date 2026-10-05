@@ -62,7 +62,7 @@ namespace DotRPG
         {
             string key = $"char_{look.id}_{dir}_{frame}";
             if (cache.TryGetValue(key, out var sprite)) return sprite;
-            sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            sprite = RegionalMonsterArt.Get(look.id, dir, frame) ?? Resources.Load<Sprite>(OverrideFolder + key);
             // [ART] Generated character frames are per base look: a geared look ("mage_t1_b0") uses its base's.
             if (sprite == null)
             {

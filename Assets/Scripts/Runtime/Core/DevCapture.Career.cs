@@ -62,6 +62,13 @@ namespace DotRPG
         /// </summary>
         IEnumerator CareerRun()
         {
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-regionalMonsterOnly")>=0)
+            {
+                dgnPassed=dgnFailed=0;ApplyRequestedResolution();yield return Wait(1);
+                Game.Config.autosave=false;Game.Flow.NewGame(CharacterClass.Warrior);yield return Wait(1.5f);Game.Player.Input=new ScriptedInput();
+                yield return RegionalMonsterChecks();yield break;
+            }
+            dgnPassed=dgnFailed=0;
             foreach(Career c in new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop})
             {
                 Game.Flow.NewGame(CareerCatalog.Base(c));yield return Wait(.4f);
