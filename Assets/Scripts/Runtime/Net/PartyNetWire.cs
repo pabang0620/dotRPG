@@ -36,6 +36,7 @@ namespace DotRPG
         public string[] gear = new string[Equipment.SlotCount];
         public List<string> passives = new List<string>();
         public List<string> gemSlots = new List<string>();
+        public CareerSave career;
 
         public bool IsAi => !string.IsNullOrEmpty(mercId);
 
@@ -58,6 +59,7 @@ namespace DotRPG
             d.Progression.Capture(save);
             card.passives = save.passives ?? new List<string>();
             card.gemSlots = save.gemSlots ?? new List<string>();
+            card.career=save.career;
             return card;
         }
 
@@ -71,7 +73,7 @@ namespace DotRPG
             if (d == null || d.IsLocal) return;
             var def = IsAi ? MercenaryDatabase.Get(mercId) : null;
             if (def != null) { MercenaryDatabase.ApplyLevel(d, def, level); return; }
-            d.Progression.Restore(new SaveData { level = level, xp = 0, passives = passives, gemSlots = gemSlots }, cls);
+            d.Progression.Restore(new SaveData { level = level, xp = 0, passives = passives, gemSlots = gemSlots, career=career }, cls);
             for (int i = 0; i < Equipment.SlotCount; i++)
             {
                 string key = string.IsNullOrEmpty(gear[i]) ? null : gear[i];
@@ -86,7 +88,7 @@ namespace DotRPG
             var def = IsAi ? MercenaryDatabase.Get(mercId) : null;
             if (def != null) return MercenaryDatabase.CreateData(def, level);
             var data = CharacterData.CreateCompanion("net_" + slot, name, cls, Mathf.Max(1, baseMaxHp));
-            data.Progression.Restore(new SaveData { level = level, xp = 0, passives = passives, gemSlots = gemSlots }, cls);
+            data.Progression.Restore(new SaveData { level = level, xp = 0, passives = passives, gemSlots = gemSlots, career=career }, cls);
             for (int i = 0; i < Equipment.SlotCount; i++)
                 if (!string.IsNullOrEmpty(gear[i])) data.Equipment.Set((EquipSlot)i, gear[i]);
             data.DisplayName = name;
@@ -105,6 +107,7 @@ namespace DotRPG
             for (int i = 0; i < Equipment.SlotCount; i++) w.Write(gear[i] ?? "");
             WriteList(w, passives);
             WriteList(w, gemSlots);
+            w.Write(JsonUtility.ToJson(career??new CareerSave()));
         }
 
         public static MemberCard Read(BinaryReader r)
@@ -122,6 +125,7 @@ namespace DotRPG
             for (int i = 0; i < Equipment.SlotCount; i++) c.gear[i] = r.ReadString();
             c.passives = ReadList(r);
             c.gemSlots = ReadList(r);
+            c.career=JsonUtility.FromJson<CareerSave>(r.ReadString());
             return c;
         }
 

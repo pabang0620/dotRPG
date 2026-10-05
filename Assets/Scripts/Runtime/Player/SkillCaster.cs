@@ -10,20 +10,22 @@ namespace DotRPG
     /// skill lives in <see cref="SkillVisuals"/>. Companions cast the same skills; only the local player's
     /// casts shake the screen, show toasts and the awakening banner.
     /// </summary>
-    public class SkillCaster : MonoBehaviour
+    public partial class SkillCaster : MonoBehaviour
     {
         PlayerController owner;
         readonly float[] readyAt = new float[SkillGems.Slots];
         float castEnd;
+        readonly Dictionary<string,float> skillReady = new Dictionary<string,float>();
+        float ReadyAt(int slot) {var g=Prog.Active(slot);return g!=null&&skillReady.TryGetValue(g.id,out var t)?t:0;}
 
         public bool IsCasting => Time.time < castEnd;
 
-        public void Setup(PlayerController player) => owner = player;
+        public void Setup(PlayerController player) { owner = player; CareerCombat.For(player); }
 
         Progression Prog => owner.Data.Progression;
 
         /// <summary>True when the slot's skill is open, off cooldown and nothing else is being cast (AI companions).</summary>
-        public bool IsReady(int slot) => Prog.Active(slot) != null && Time.time >= readyAt[slot] && !IsCasting;
+        public bool IsReady(int slot) => Prog.Active(slot) != null && Time.time >= ReadyAt(slot) && !IsCasting;
 
         /// <summary>Screen shake for the local player's skills only.</summary>
         void Shake(float strength, float duration)
@@ -39,6 +41,7 @@ namespace DotRPG
         /// <summary>Clears every cooldown (new game, class change).</summary>
         public void ResetCooldowns()
         {
+            skillReady.Clear();
             for (int i = 0; i < readyAt.Length; i++) readyAt[i] = 0f;
             castEnd = 0f;
         }
@@ -46,7 +49,7 @@ namespace DotRPG
         /// <summary>0..1 cooldown progress for the HUD (1 = ready).</summary>
         public float CooldownProgress(int slot, out float remaining)
         {
-            remaining = Mathf.Max(0f, readyAt[slot] - Time.time);
+            remaining = Mathf.Max(0f, ReadyAt(slot) - Time.time);
             var gem = Prog.Active(slot);
             if (gem == null || remaining <= 0f) return 1f;
             var n = Numbers(slot);
@@ -67,25 +70,25 @@ namespace DotRPG
         /// <summary>[PARTY NET] A puppet replays a cast the host already decided: no cooldown wait.</summary>
         public void NetResetCooldown(int slot)
         {
-            if (slot >= 0 && slot < readyAt.Length) readyAt[slot] = 0f;
+            if (slot >= 0 && slot < readyAt.Length) { readyAt[slot] = 0f; var g=Prog.Active(slot); if(g!=null)skillReady.Remove(g.id); }
             castEnd = 0f;
         }
 
         public void TryCast(int slot)
         {
-            if (owner.IsDashing) return;
+            if (slot<0 || slot>=SkillGems.Slots || owner.IsDead || owner.IsDashing) return;
             var gem = Prog.Active(slot);
             if (gem == null)
             {
                 if (!owner.IsLocal) return;
                 var locked = SkillGems.ForSlot(owner.Class, slot);
                 GameEvents.RaiseToast(slot == SkillGems.UltimateSlot
-                    ? $"각성 기술은 Lv.{Progression.SlotLevel(slot)}에 열린다."
+                    ? "전직 후 자신의 각성 퀘스트를 완료해야 사용할 수 있습니다."
                     : $"아직 잠긴 스킬이다 — {locked?.name} (Lv.{Progression.SlotLevel(slot)}에 해금)");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
-            if (Time.time < readyAt[slot] || IsCasting) return;
+            if (Time.time < ReadyAt(slot) || IsCasting) return;
             var n = Numbers(slot);
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
@@ -95,8 +98,16 @@ namespace DotRPG
                 return;
             }
             readyAt[slot] = Time.time + n.cooldown;
+            skillReady[gem.id]=readyAt[slot];
             castEnd = Time.time + (gem.IsUltimate ? 0.6f : 0.25f);
-            StartCoroutine(Cast(gem, n));
+            var career=CareerCatalog.Get(gem.id);
+            if(career!=null) {
+                bool channel=career.effect!="hot"&&career.effect!="rift"&&career.effect!="storm";
+                float follow=channel?Mathf.Max(0,career.hits-1)*(career.kind==CareerSkillKind.Awakening?.24f:.16f):0;
+                castEnd=Time.time+career.cast+follow+.15f;
+                StartCoroutine(CareerCombat.For(owner).Cast(career,n));
+            }
+            else StartCoroutine(Cast(gem, n));
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 

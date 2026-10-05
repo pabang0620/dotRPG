@@ -54,6 +54,8 @@ namespace DotRPG
                         var pos = new Vector2(x + 0.5f, y + 0.5f);
                         if (!IsFree(pos)) continue;
                         NpcController.Create(DungeonGuide, pos, objectsRoot);
+                        var trainer=new NpcDefinition("","career_trainer","전직 안내원",StoryCast.Find("knight_ivy").look,NpcBehaviour.Idle,NpcTool.None,Facing.Down,"");
+                        if(IsFree(pos+Vector2.left*1.5f)) NpcController.Create(trainer,pos+Vector2.left*1.5f,objectsRoot);
                         PointsOfInterest.Add(pos);
                         DungeonGuidePosition = pos;
                         return;

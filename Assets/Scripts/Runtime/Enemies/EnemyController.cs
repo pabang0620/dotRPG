@@ -351,7 +351,11 @@ namespace DotRPG
             if (state == State.Dead || info.team == Team.Enemy) return false;
             if (Puppet) return false; // [PARTY NET] damage is the host's
             if (!MonsterBeforeDamage(ref info)) return false; // [MONSTER] shield guard, groggy +30%, totem rules
+            if(health.IsInvulnerable) return false;
+            var careerActor=info.AttackerMember!=null?CareerCombat.For(info.AttackerMember):null;
+            if(careerActor!=null) info.amount=careerActor.ModifyDamage(this,info.amount);
             if (!health.TryDamage(info)) return false;
+            careerActor?.OnLanded(this);
 
             Vector2 away = Position - info.sourcePosition;
             if (away.sqrMagnitude < 0.0001f) away = Vector2.up;

@@ -297,6 +297,9 @@ namespace DotRPG
             foreach (var p in MiniJson.Arr(state, "passives") ?? new List<object>()) data.passives.Add((string)p);
 
             // gemSlots: per slot [active, support1, support2]; the active one comes from the class, supports from the server.
+            data.career=MiniJson.Obj(state,"career") is Dictionary<string,object> careerJson ? JsonUtility.FromJson<CareerSave>(MiniJson.Write(careerJson)) : null;
+            var activeSkills=new Dictionary<int,string>();
+            foreach(var item in MiniJson.Arr(state,"skill_gems")??new List<object>()) activeSkills[MiniJson.Int(item,"slot")]=MiniJson.Str(item,"active");
             var supports = new Dictionary<int, List<object>>();
             foreach (var g in MiniJson.Arr(state, "skill_gems") ?? new List<object>())
                 supports[MiniJson.Int(g, "slot")] = MiniJson.Arr(g, "supports") ?? new List<object>();
@@ -304,7 +307,7 @@ namespace DotRPG
             for (int s = 0; s < SkillGems.Slots; s++)
                 for (int k = 0; k <= SkillGems.SupportsPerSlot; k++)
                 {
-                    if (k == 0) { data.gemSlots.Add(""); continue; }
+                    if (k == 0) { data.gemSlots.Add(activeSkills.TryGetValue(s,out var chosen)?chosen:""); continue; }
                     var list = supports.TryGetValue(s, out var l) ? l : null;
                     data.gemSlots.Add(list != null && k - 1 < list.Count ? (list[k - 1] as string ?? "") : "");
                 }
@@ -326,7 +329,7 @@ namespace DotRPG
                         any |= id != null;
                         sup.Add(id);
                     }
-                    if (any) gems.Add(new Dictionary<string, object> { ["slot"] = s, ["supports"] = sup });
+                    gems.Add(new Dictionary<string, object> { ["slot"] = s, ["supports"] = sup, ["active"]=d.gemSlots[s*3] });
                 }
             return new Dictionary<string, object>
             {
@@ -342,6 +345,7 @@ namespace DotRPG
                 ["tracked_quest"] = d.trackedQuest ?? "",
                 ["passives"] = (d.passives ?? new List<string>()).Where(p => p != PassiveTree.Start).ToList(),
                 ["skill_gems"] = gems,
+                ["career"]=MiniJson.Parse(JsonUtility.ToJson(d.career??new CareerSave())),
             };
         }
 

@@ -33,6 +33,7 @@ namespace DotRPG.EditorTools
                 ["items.json"] = Items(),
                 ["passive_tree.json"] = PassiveTreeJson(),
                 ["skill_gems.json"] = SkillGemsJson(),
+                ["careers.json"] = CareerAssetExport.CatalogJson(),
                 ["quest_index.json"] = QuestIndex(),
                 ["enums.json"] = Enums(),
                 ["shop.json"] = Shop(),

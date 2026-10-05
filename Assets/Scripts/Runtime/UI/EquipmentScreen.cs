@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -206,7 +206,7 @@ namespace DotRPG
             var info = CharacterClassInfo.Get(cls);
             int atk = CharacterStats.AttackDamage(cls);
             int hp = CharacterStats.MaxHp;
-            className.text = $"Lv.{Game.Session.Progression.Level}  {info.displayName}";
+            className.text = $"Lv.{Game.Session.Progression.Level}  {Game.Session.Progression.ClassLabel}";
             power.text = $"전투력 <color=#ffe066>{CharacterStats.Power(cls):N0}</color>";
             statCells[0].text = $"공격력 {atk}{Bonus(eq.AttackBonus)}";
             statCells[1].text = $"HP {hp}";

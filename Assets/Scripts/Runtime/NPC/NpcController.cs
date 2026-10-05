@@ -153,6 +153,7 @@ namespace DotRPG
 
         public override void Interact(PlayerController player)
         {
+            if(def.npcId=="career_trainer") {Game.Flow.OpenWindow(Game.UI.Skills);return;}
             // A shop NPC with a quest conversation waiting (errand, report, offer) talks first; the shop opens on the next talk.
             if (def.service != NpcService.None && !Game.Quest.HasQuestTalk(def.npcId))
             {

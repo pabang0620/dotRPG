@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { careerSchema } from './careerRules';
 
 export const NAME_MIN = 2;
 export const NAME_MAX = 8;
@@ -41,6 +42,7 @@ const unique = <T extends z.ZodType>(arr: T) =>
   });
 
 export const stateBody = z.strictObject({
+  career: careerSchema.nullable().optional(),
   version: z.number().int().min(0),
   map_id: z.string().min(1).max(64),
   pos: z.strictObject({ x: z.number(), y: z.number() }).nullable(),
@@ -62,6 +64,7 @@ export const stateBody = z.strictObject({
     .array(
       z.strictObject({
         slot: z.number().int(),
+        active: str64.nullable().optional(),
         supports: z.array(str64.nullable()).max(8),
       }),
     )

@@ -1,3 +1,5 @@
+import { validateCareer, validCareerActive } from './careerRules';
+import type { CareerState } from './careerRules';
 import type { GameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
@@ -18,7 +20,8 @@ export function validateState(
   checkFacing(data, input);
   checkMap(data, input);
   const passives = checkPassives(data, input.passives, character.level);
-  checkGems(data, input.skill_gems, character);
+  validateCareer(input.career, stored.career, character, stored.passives, id=>data.passive.nodes.has(id));
+  checkGems(data, input.skill_gems, character, input.career ?? stored.career);
   checkQuests(data, input, stored);
   return { passives };
 }
@@ -76,15 +79,25 @@ function checkGems(
   data: GameData,
   gems: StateBody['skill_gems'],
   character: { level: number; class: string },
+  career?: CareerState | null,
 ): void {
   const g = data.gems;
   const reason = (r: string): never => fail('INVALID_GEMS', '젬 구성이 올바르지 않습니다.', { reason: r });
   const slots = new Set<number>();
+  const activeIds = new Set<string>();
   for (const entry of gems) {
     if (entry.slot < 0 || entry.slot >= g.slots || slots.has(entry.slot)) reason('BAD_SLOT');
     slots.add(entry.slot);
     if (entry.supports.length !== g.supportsPerSlot) reason('BAD_SLOT');
     const open = character.level >= (g.slotLevels[entry.slot] ?? Number.MAX_SAFE_INTEGER);
+    if(entry.active) {
+      const active=data.gems.byId.get(entry.active);
+      const careerOk=validCareerActive(entry.active,career,entry.slot);
+      if(!open || entry.active==='blades' || entry.active==='meteor') reason('AWAKENING_OR_LEVEL_LOCK');
+      if(!careerOk && (!active || active.kind!=='active' || active.unlockLevel>character.level || (active.classOnly && active.classOnly!==character.class) || entry.slot===4)) reason('ACTIVE_LOCKED');
+      if(activeIds.has(entry.active)) reason('DUPLICATE_ACTIVE');
+      activeIds.add(entry.active);
+    }
     const inSlot = new Set<string>();
     for (const id of entry.supports) {
       if (id === null) continue;

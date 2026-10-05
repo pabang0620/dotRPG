@@ -264,7 +264,7 @@ namespace DotRPG
         /// Level at which each skill slot (and its skill) opens. Slot 5 is the awakening skill.
         /// v2 spreads them over the climb to the first mid raid (Lv22, about 20 hours): about 0 / 0.6 / 4 / 11 / 20 hours.
         /// </summary>
-        public static readonly int[] SlotLevels = UseLegacy ? SkillGemsLegacy.SlotLevels : new[] { 2, 6, 12, 18, 22 };
+        public static readonly int[] SlotLevels = UseLegacy ? SkillGemsLegacy.SlotLevels : new[] { 2, 6, 12, 18, 15 };
 
         static SkillGem Active(string id, string name, CharacterClass cls, int slot, string desc)
             => new SkillGem { id = id, name = name, icon = "gem_" + id, kind = GemKind.Active, classOnly = cls, slot = slot, unlockLevel = SlotLevels[slot], description = desc };
@@ -313,6 +313,7 @@ namespace DotRPG
 
         public static SkillGem Get(string id)
         {
+            var career = CareerCatalog.Get(id); if(career != null) return career.Gem;
             if (string.IsNullOrEmpty(id)) return null;
             foreach (var g in gems) if (g.id == id) return g;
             return null;
@@ -342,6 +343,7 @@ namespace DotRPG
     /// <summary>Final numbers of one skill after supports and passives.</summary>
     public struct SkillNumbers
     {
+        public float careerPotency;
         public int damage, manaCost, chains, repeats, leechPct, hits, buffPct, guardPct, bossPct;
         public float cooldown, radius, range, freeze, stun, buffTime, guardTime;
         public bool usesLife;
@@ -369,7 +371,7 @@ namespace DotRPG
         int Sum(PassiveStat stat, int slot = -2)
         {
             int total = 0;
-            foreach (var id in Prog.Allocated)
+            foreach (var id in Prog.LegacyTraining)
             {
                 var n = PassiveTree.Get(id);
                 if (n == null || (slot != -2 && n.skillSlot != slot)) continue;
@@ -383,7 +385,7 @@ namespace DotRPG
 
         public bool Has(Keystone k)
         {
-            foreach (var id in Prog.Allocated)
+            foreach (var id in Prog.LegacyTraining)
             {
                 var n = PassiveTree.Get(id);
                 if (n != null && n.keystone == k) return true;
@@ -422,7 +424,7 @@ namespace DotRPG
         public int Block => Mathf.Clamp(Eq.BlockChance + Sum(PassiveStat.Block) + (Has(Keystone.Unwavering) ? 15 : 0), 0, 75);
         public int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0);
         public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
-        public int AttackSpeed => Sum(PassiveStat.AttackSpeed);
+        public int AttackSpeed => Sum(PassiveStat.AttackSpeed) + CareerCombat.SpeedFor(data);
         public float CooldownMultiplier => 1f / (1f + AttackSpeed / 100f);
         public int Aoe => Sum(PassiveStat.Aoe);
         public int ManaCostReduction => Mathf.Min(80, Sum(PassiveStat.ManaCost));
@@ -454,9 +456,11 @@ namespace DotRPG
                 n.leechPct += s.leechPct;
                 n.bossPct += s.bossDamage;
             }
-            float inc = IncDamage + SlotStat(PassiveStat.SkillDamage, slot);
+            var career=CareerCatalog.Get(active.id);
+            float rankScale=career==null?1:1+.12f*Mathf.Max(0,Prog.Rank(active.id)-1);
+            float inc = IncDamage + (career==null?SlotStat(PassiveStat.SkillDamage, slot):0);
             float area = (1f + (Aoe + SlotStat(PassiveStat.SkillArea, slot)) / 100f) * moreAoe;
-            n.damage = Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + inc / 100f) * active.damageMult * more));
+            n.damage = Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + inc / 100f) * active.damageMult * more * rankScale));
             // [SKILL v2] Area bonuses grow the AREA (radius by the square root); v1 multiplied the radius,
             // which squared every bonus (+35% and +25% made a 2.85x area).
             float grow = SkillGems.UseLegacy ? area : Mathf.Sqrt(area);
@@ -475,6 +479,11 @@ namespace DotRPG
             }
             n.usesLife = Has(Keystone.BloodMagic);
             n.manaCost = Mathf.Max(1, Mathf.RoundToInt(active.manaCost * mana * (1f - ManaCostReduction / 100f)));
+            if(career!=null) {
+                n.careerPotency=rankScale*more;
+                n.repeats=0; n.leechPct=0; n.bossPct=0;
+                if(Prog.Rank("m_flow")>0) n.manaCost=Mathf.Max(1,Mathf.RoundToInt(n.manaCost*(1-(10+3*(Prog.Rank("m_flow")-1))/100f)));
+            }
             return n;
         }
     }

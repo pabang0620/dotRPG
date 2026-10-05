@@ -1,4 +1,5 @@
 import type { PoolClient } from 'pg';
+import type { CareerState } from './careerRules';
 import { getPool, query, type Queryable } from '../../db/pool';
 
 export interface CharacterRow {
@@ -21,11 +22,13 @@ export interface QuestSave {
   counts: number[];
 }
 export interface GemSave {
+  active?: string | null;
   slot: number;
   supports: (string | null)[];
 }
 
 export interface StateRow {
+  career?: CareerState | null;
   map_id: string;
   pos_x: number | null;
   pos_y: number | null;
@@ -215,7 +218,7 @@ export async function listAlive(
 export async function getState(db: Queryable, characterId: number): Promise<StateRow> {
   const r = await db.query<StateRow>(
     `SELECT map_id, pos_x, pos_y, facing, quests, story_flags, tracked_quest, passives,
-            skill_gems, version, updated_at
+            skill_gems, career, version, updated_at
        FROM character_state WHERE character_id = $1`,
     [characterId],
   );
@@ -225,7 +228,7 @@ export async function getState(db: Queryable, characterId: number): Promise<Stat
 export async function getStateForUpdate(client: PoolClient, characterId: number): Promise<StateRow> {
   const r = await client.query<StateRow>(
     `SELECT map_id, pos_x, pos_y, facing, quests, story_flags, tracked_quest, passives,
-            skill_gems, version, updated_at
+            skill_gems, career, version, updated_at
        FROM character_state WHERE character_id = $1 FOR UPDATE`,
     [characterId],
   );
@@ -251,6 +254,7 @@ export interface NewState {
   trackedQuest: string;
   passives: string[];
   skillGems: GemSave[];
+  career?: CareerState | null;
 }
 
 /** 낙관적 잠금: version이 맞을 때만 갱신. 0행이면 null */
@@ -263,7 +267,7 @@ export async function updateStateIfVersion(
   const r = await client.query<{ version: number; updated_at: Date }>(
     `UPDATE character_state
         SET map_id = $3, pos_x = $4, pos_y = $5, facing = $6, quests = $7::jsonb,
-            story_flags = $8, tracked_quest = $9, passives = $10, skill_gems = $11::jsonb,
+            story_flags = $8, tracked_quest = $9, passives = $10, skill_gems = $11::jsonb, career = $12::jsonb,
             version = version + 1, updated_at = now()
       WHERE character_id = $1 AND version = $2
       RETURNING version, updated_at`,
@@ -279,6 +283,7 @@ export async function updateStateIfVersion(
       s.trackedQuest,
       s.passives,
       JSON.stringify(s.skillGems),
+      JSON.stringify(s.career ?? null),
     ],
   );
   return r.rows[0] ?? null;

@@ -85,7 +85,7 @@ namespace DotRPG
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 var gem = prog.Active(i);
-                var shown = gem ?? SkillGems.ForSlot(player.Class, i);
+                var shown = gem ?? (i==4 ? prog.IsPromoted ? CareerCatalog.For(prog.Career)[8].Gem : null : SkillGems.ForSlot(player.Class, i));
                 keys[i].text = Game.Input.GetBindingLabel(SkillGems.ActionFor(i));
                 icons[i].enabled = shown != null;
                 if (shown != null) icons[i].sprite = Game.Art.Get(shown.icon);
@@ -94,7 +94,7 @@ namespace DotRPG
                 lockTexts[i].enabled = !open;
                 if (!open)
                 {
-                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = $"Lv.{lockShown[i]}"; }
+                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = i==4 ? "각성 시련" : $"Lv.{lockShown[i]}"; }
                     icons[i].color = new Color(0.45f, 0.45f, 0.52f, 1f);
                     cooldowns[i].fillAmount = 0f;
                     costs[i].text = "";

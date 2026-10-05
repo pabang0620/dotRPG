@@ -27,7 +27,7 @@ namespace DotRPG
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
         static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -38,6 +38,7 @@ namespace DotRPG
                 if (Array.IndexOf(Modes, args[i]) >= 0)
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
+                    if (args[i] == "-dotrpgCareerDemo") SaveSystem.SlotCount = 4;
                     GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
@@ -97,6 +98,8 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            if (mode == "-dotrpgCareerDemo") { yield return CareerDemoRun(); Log("career demo ready: four level-40 characters"); log.Close(); log=null; Destroy(this); yield break; }
+            if (mode == "-dotrpgCareer") { yield return CareerRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]
             if (mode == "-dotrpgPerf") { yield return PerfRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [P5]
             if (mode == "-dotrpgNetPair") { yield return NetPairRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [F2]

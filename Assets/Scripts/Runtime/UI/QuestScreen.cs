@@ -39,6 +39,7 @@ namespace DotRPG
             w.hint.color = new Color32(184, 196, 216, 255);
             // Pick this quest for auto-progress (unpicked: the main quest first, then the pinned side quest).
             w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행 대상으로", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(240f, 44f), w.ToggleAutoTarget, 18);
+            Button(list.transform,"CareerQuest","전직 · 각성 이야기 보기", "ui_btngray",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(390,48),()=>Game.UI.Skills.ShowAwakening(),20);
             if (Game.Quest != null) Game.Quest.Changed += w.OnQuestChanged;
             return w;
         }
@@ -76,7 +77,7 @@ namespace DotRPG
             rows.Clear();
             var quests = Ordered();
             empty.gameObject.SetActive(quests.Count == 0);
-            int maxRows = Mathf.FloorToInt((590f - 16f) / RowHeight);
+            int maxRows = Mathf.FloorToInt((520f - 16f) / RowHeight);
             for (int i = 0; i < quests.Count && i < maxRows; i++) rows.Add(BuildRow(quests[i], i));
             selected = 0;
             for (int i = 0; i < rows.Count; i++) if (rows[i].quest.id == selectedId) selected = i;

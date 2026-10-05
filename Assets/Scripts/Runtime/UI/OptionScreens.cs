@@ -25,6 +25,8 @@ namespace DotRPG
         {
             loading = load;
             titleText.text = load ? "이어하기 · 슬롯 선택" : "새 게임 · 슬롯 선택";
+            if (load && SaveSystem.SlotCount == 4 && SaveSystem.DirectoryOverride != null)
+                titleText.text = "전직 체험 · 캐릭터 선택";
             menu.Clear();
             for (int i = 0; i < SaveSystem.SlotCount; i++)
             {
@@ -60,6 +62,10 @@ namespace DotRPG
             var d = Game.Saves.Read(slot);
             if (d == null) return $"슬롯 {slot + 1}   <color=#ff8080>손상된 저장</color>";
             string cls = d.playerClass == "mage" ? "마법사" : "전사";
+            if (d.career != null && d.career.career != Career.None && d.level >= 15)
+                cls = CareerCatalog.Name(d.career.career);
+            if (SaveSystem.SlotCount == 4 && SaveSystem.DirectoryOverride != null)
+                return $"{slot + 1}. {cls} Lv.{d.level} · {(d.career != null && d.career.awakened ? "각성 완료" : "각성 미완료")}";
             string name = string.IsNullOrEmpty(d.playerName) ? QuestJournal.DefaultName : d.playerName;
             string story = "";
             if (Game.Quest != null && d.quests != null)

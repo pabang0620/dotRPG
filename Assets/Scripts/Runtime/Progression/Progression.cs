@@ -8,7 +8,7 @@ namespace DotRPG
     /// level) and the five skill slots. Each slot opens at a level and holds the class's skill for it
     /// (slot 5 = awakening ultimate); the player links two support gems into each slot. Saved with the game.
     /// </summary>
-    public sealed class Progression
+    public sealed partial class Progression
     {
         /// <summary>[J10] 40 since chapter 2 (its raids are tuned for Lv 28-31).</summary>
         public const int MaxLevel = 40;
@@ -41,6 +41,7 @@ namespace DotRPG
         public void Reset(CharacterClass playerClass)
         {
             cls = playerClass;
+            careerState = new CareerSave();
             Level = 1;
             Xp = 0;
             Allocated.Clear();
@@ -76,12 +77,7 @@ namespace DotRPG
 
         // ---------- Passive tree ----------
 
-        public bool CanAllocate(PassiveNode node)
-        {
-            if (node == null || Allocated.Contains(node.id) || PointsLeft <= 0 || node.kind == PassiveKind.Start) return false;
-            foreach (var link in node.links) if (Allocated.Contains(link)) return true;
-            return false;
-        }
+        public bool CanAllocate(PassiveNode node) => false; // Legacy training retained; only career nodes are spendable.
 
         public bool Allocate(PassiveNode node)
         {
@@ -129,10 +125,17 @@ namespace DotRPG
 
         public bool IsSlotOpen(int slot) => slot >= 0 && slot < SkillGems.Slots && Level >= SlotLevel(slot);
 
-        public bool IsUnlocked(SkillGem gem) => gem != null && gem.UsableBy(cls) && Level >= gem.unlockLevel;
+        public bool IsUnlocked(SkillGem gem) => gem != null && gem.id != "blades" && gem.id != "meteor" && gem.UsableBy(cls) && Level >= gem.unlockLevel && (CareerCatalog.Get(gem.id) == null || CareerUnlocked(CareerCatalog.Get(gem.id)));
 
         /// <summary>The slot's skill, or null while the slot is still locked.</summary>
-        public SkillGem Active(int slot) => IsSlotOpen(slot) ? SkillGems.ForSlot(cls, slot) : null;
+        public SkillGem Active(int slot)
+        {
+            if(!IsSlotOpen(slot)) return null;
+            var chosen=SkillGems.Get(slots[slot,0]);
+            if(chosen!=null && IsUnlocked(chosen) && (slot==4)==chosen.IsUltimate) return chosen;
+            if(slot==4) return Awakened ? CareerCatalog.For(Career)[8].Gem : null;
+            var basic=SkillGems.ForSlot(cls,slot); return IsUnlocked(basic)?basic:null;
+        }
 
         /// <summary>Gem id in a socket (socket 0 = the slot's skill).</summary>
         public string SlotGem(int slot, int socket) => socket == 0 ? Active(slot)?.id : slots[slot, socket];
@@ -142,14 +145,15 @@ namespace DotRPG
             for (int s = 1; s <= SkillGems.SupportsPerSlot; s++)
             {
                 var g = SkillGems.Get(slots[slot, s]);
-                if (g != null) yield return g;
+                if (g != null && (CareerCatalog.Get(Active(slot)?.id)==null || g.id=="sup_dmg" || g.id=="sup_aoe" || g.id=="sup_eff")) yield return g;
             }
         }
 
         /// <summary>Sets a support socket (socket 1..2). The skill socket is fixed and ignores this.</summary>
         public void SetGem(int slot, int socket, string gemId)
         {
-            if (socket <= 0 || !IsSlotOpen(slot)) return;
+            if(socket==0) { EquipSkill(slot,gemId); return; }
+            if (socket < 1 || socket > SkillGems.SupportsPerSlot || !IsSlotOpen(slot) || (gemId!=null && !OptionsFor(slot,socket).Contains(gemId))) return;
             slots[slot, socket] = gemId;
             Changed?.Invoke();
         }
@@ -158,7 +162,13 @@ namespace DotRPG
         public List<string> OptionsFor(int slot, int socket)
         {
             var list = new List<string> { null };
-            if (socket <= 0 || !IsSlotOpen(slot)) return list;
+            if (!IsSlotOpen(slot)) return list;
+            if(socket==0) {
+                list.Clear();
+                foreach(var g in SkillGems.All) if(g.kind==GemKind.Active && IsUnlocked(g) && (slot==4)==g.IsUltimate) list.Add(g.id);
+                foreach(var s in CareerCatalog.All) if(s.kind!=CareerSkillKind.Passive && CareerUnlocked(s) && (slot==4)==(s.kind==CareerSkillKind.Awakening)) list.Add(s.id);
+                return list;
+            }
             foreach (var g in SkillGems.All)
             {
                 if (g.kind != GemKind.Support || !IsUnlocked(g)) continue;
@@ -173,6 +183,7 @@ namespace DotRPG
 
         public void Capture(SaveData data)
         {
+            data.career = CaptureCareer();
             data.level = Level;
             data.xp = Xp;
             data.passives = new List<string>(Allocated);
@@ -192,11 +203,12 @@ namespace DotRPG
                     if (PassiveTree.Get(id) != null) Allocated.Add(id);
             // Never keep more nodes than points, or nodes cut off from the start (e.g. a hand-edited save).
             if (PointsLeft < 0 || !AllConnected()) ResetTree();
+            RestoreCareer(data);
             if (data.gemSlots != null)
                 for (int i = 0; i < data.gemSlots.Count && i < slots.Length; i++)
                 {
                     int s = i / (1 + SkillGems.SupportsPerSlot), k = i % (1 + SkillGems.SupportsPerSlot);
-                    if (k == 0) continue;
+                    if (k == 0) { EquipSkill(s,data.gemSlots[i]); continue; }
                     var g = SkillGems.Get(data.gemSlots[i]);
                     slots[s, k] = g != null && g.kind == GemKind.Support && IsUnlocked(g) ? g.id : null;
                 }

@@ -14,7 +14,7 @@ namespace DotRPG
     {
         public const int DefaultSlot = 0;
         /// <summary>[I] Three save slots; the game reads and writes <see cref="ActiveSlot"/>.</summary>
-        public const int SlotCount = 3;
+        public static int SlotCount { get; internal set; } = 3;
         public static int ActiveSlot = DefaultSlot;
         /// <summary>[I] Set by the last <see cref="Read"/>: why it used the backup or failed (null = clean read).</summary>
         public static string LastReadNotice;

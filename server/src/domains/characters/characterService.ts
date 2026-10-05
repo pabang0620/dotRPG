@@ -57,6 +57,7 @@ async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.Char
       tracked_quest: s.tracked_quest,
       passives: s.passives,
       skill_gems: s.skill_gems,
+      career: s.career ?? null,
       updated_at: s.updated_at.toISOString(),
     },
     items: items.map((i) => ({
@@ -232,6 +233,7 @@ export async function saveState(accountId: number, uuid: string, input: StateBod
       trackedQuest: input.tracked_quest,
       passives,
       skillGems: input.skill_gems,
+      career: input.career ?? stored.career,
     });
     if (!saved) {
       throw new AppError(409, '다른 곳에서 저장된 상태가 있습니다. 다시 불러와 주세요.', 'VERSION_CONFLICT', {

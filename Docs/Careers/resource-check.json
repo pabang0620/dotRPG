@@ -1,0 +1,585 @@
+{
+  "counts": {
+    "Icons": 36,
+    "Effects": 28,
+    "Details": 8
+  },
+  "files": [
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_awake.png",
+      "sha256": "681b6085b001a70e3b093dd75eaaf70df829c15eed5a3d0f505ceff3466979ed",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_bless.png",
+      "sha256": "5b2dd2e3be0f942dc171e701aa5bc91147a1479a9aded6b84fbe446c71788b12",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_bloom.png",
+      "sha256": "12547a1c49e280e9e38ab9eeb9f82552275fff8d173c274c10eb1aa07656fa56",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_cleanse.png",
+      "sha256": "9decd6f658089fac67f76b6d0c446521b95a37f987d92353d5ea4573e96844fe",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_grace.png",
+      "sha256": "d5abdd54e9de10de76c7fed6cc8c03d9eb79d259017471880eb3a7915f75bc1d",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_heal.png",
+      "sha256": "8051c8575a36c3cea0b1cdbb85481643ed010832430e315059b3ce51e94ead77",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_light.png",
+      "sha256": "7991d176eb2161db62bbb49ca5b989c697f6a5008d0c3c9df0e6ee9a9b9d809a",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_mercy.png",
+      "sha256": "78c6b6954133122534b2e852619d6262d4635029848bfa2245edc36beedadfcc",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_b_wing.png",
+      "sha256": "1dc02f4fb6a7111d6ef7a503e0da8974c78ba943a26cf776116ad3c03fbb5a61",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_awake.png",
+      "sha256": "8eb41fa8ee843f094c2e2b7c45b1e428a5944759ddbf0fdeff9cbcce7511f7ba",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_break.png",
+      "sha256": "a2f9c8fede6af6104cb9c0fbc27b320987c2915ba5b72927071de691bd4f5efd",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_cross.png",
+      "sha256": "5b66c7711d38f708b12de70fda004b3323839a7315731a2e57c4fae4d776b3de",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_edge.png",
+      "sha256": "44b7e18590da904588ce0199192c68d2659a8a5842f9a93de181ff7b302c2bfe",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_execute.png",
+      "sha256": "fc7f8022c02f7a7ed8af294b9335b16e6a794ff223a075020b3a683acef1dd9d",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_flurry.png",
+      "sha256": "b14a7823b208b26dd671b10f58cd0d6fd4777cfdaa865916c7d91d056c00591f",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_focus.png",
+      "sha256": "35099ed86e658eb3615f2c50747abdd87240376079d945aa1c9d5d106bf5f8df",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_rhythm.png",
+      "sha256": "db72b254218169e8eb70c9bc4f5882c93773069e5bd217836972d5170d097677",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_f_rush.png",
+      "sha256": "b60c1c8f9f9237b6c9edc5e8349c17d5f58ad7c3582f3de389d7d7e038165633",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_awake.png",
+      "sha256": "ec795dd55eafd1545ca1f290a575d7b5cbb4fe2dc3a22df8c0abd6ddfb17504c",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_bash.png",
+      "sha256": "4fdf41eec1b947a72e9e4c3420900220d3d5707f127ca23e2cf5912a6bf9f6e3",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_counter.png",
+      "sha256": "3e157989e5a5a62d42767d33d124771cd03dde109f3e360046810d165324ecb6",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_guard.png",
+      "sha256": "e919726388750835cbbc7b10028c99c7ba80d76b203ee362ea1f2fd8b7a8ff53",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_oath.png",
+      "sha256": "6c80d3f133a6912c99cc697e7ff19c599f098bf261dcc0fc364fbb730c50f8bf",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_retal.png",
+      "sha256": "b37c869ce4827e44e78dc54cb8ffba530bb9118d2ee8e45a8df02a67d7d634cc",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_steel.png",
+      "sha256": "2df0939431c4ea8e68c2b8b73bbba8458e84889f04c26fccca52675d51ecf1b7",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_taunt.png",
+      "sha256": "d6263c55962c1dc86a1804e5f2ea08e2f30bd64e1086fdbd4c8b5ab4dbea4c78",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_g_wall.png",
+      "sha256": "ae1aaa3d38ef50643a8a78fb10b042a0db67ea25bedeb68e9d3d5d2cb207cf45",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_awake.png",
+      "sha256": "1ce591b68de9f33bb0fcc3e83736f23684367cea66b63154af898db803aad270",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_elements.png",
+      "sha256": "4618d80cb820f90a9e00a3231b04ead1aae4ddd25f83ad752050a3144971a1ed",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_fire.png",
+      "sha256": "4fbd56be96e571ea2b5957903de9de5a8ed6ddb57e6b59e72a0ffc7479f16d48",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_flow.png",
+      "sha256": "acc97d499e4ee8c6b373786ac5bc9d1aa574bd4e81b0c039c887c9f67a74aec9",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_ice.png",
+      "sha256": "8355fedf4753e255f6e4731b50e1c7e83bd1243ac669d94c1e9d8c048a967d65",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_orbit.png",
+      "sha256": "d0f486a6dc2cb7cb0889e72930b6dccaf010f5ee2a5bf7e3b82556523bef1c62",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_rift.png",
+      "sha256": "0fc21f8eaa6a18076af55e5e07de918b9bcf5b30a5be4d503381857770f034f3",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_storm.png",
+      "sha256": "bff256c33acaaaeeb3c4e7ce01147d6df9a9922451ed10c9af4593ba9bbe9ad0",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Icons/career_m_veil.png",
+      "sha256": "234f19fe832a5a9e15871324966ecea74f47992209117166a2a635b804daa460",
+      "size": [
+        32,
+        32
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_awake.png",
+      "sha256": "3d95af40ab367aa3c30fb6534e48677225be8678ff860f252871f93650d84915",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_bless.png",
+      "sha256": "ad99c3edfe0fa9e9e7fbfb42b72ca1b792b3f857a83ed812d73c183dda880c9c",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_bloom.png",
+      "sha256": "cd7951c567f121988b324704516b353f6f1c2762c95002fb3e918a908875bbd4",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_cleanse.png",
+      "sha256": "8cd11a8b46a5b66b226c846e14ca6bfdf378872009500a13e629b985c9de9fc1",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_heal.png",
+      "sha256": "93686f470abff1b273c9d5dab6b63ac8be4dbb1a070152ba4778a39a90eb4980",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_light.png",
+      "sha256": "0482f4743a40328325675fc25859dbbd85d1f15ab91c9e0f5329fe89bd29e321",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/b_wing.png",
+      "sha256": "b5d685341b98df2774274b0ea8012b2a6fc2bdd10fd9856ae018a72e24527e27",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_awake.png",
+      "sha256": "d228404de2b4a24edf1d4492db273af5b4c39f36f865bbe7cc0550c52ac0200d",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_break.png",
+      "sha256": "81474ac10507e9b0cbe11bfded414c3029614571f8d65b0ee23df467ab23997c",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_cross.png",
+      "sha256": "09d8a6e4abb18247e5e8b832cae43b5c3eb50040e8dbce64e01f7f07e7b603a8",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_execute.png",
+      "sha256": "1fbe43ba8f725f5c7359006664964db49ef738dbb5e91597f1d011c8fa1fbac1",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_flurry.png",
+      "sha256": "08a311515cb651fb25c137d3c63b076c896631c4ed8756bda8b7b3de19feafe5",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_focus.png",
+      "sha256": "5a9cfd38b76c01c2ab16d9cf1ad4bf35b38fc60b4fa91d9feb43439532704b3d",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/f_rush.png",
+      "sha256": "a193be091eb4a685ccf05f0e1970685786b8ffe50c4c9c2d84b6c0097383f5df",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_awake.png",
+      "sha256": "8eb45ab140a9a1eea0bb463deeee5600e275700f1d282fb8d1ff41264bc9ae21",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_bash.png",
+      "sha256": "42b8e0a1e3a5abf9f1140dbc157381fd2a4046b439c969341cbac91e181df58f",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_counter.png",
+      "sha256": "e8f6506dae38e474c6faff4678f41769b14adb53323177da7ad1d0783ac989bd",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_guard.png",
+      "sha256": "3642f0c9ba9588a524d76c20a0ff148440d72cce2599c74a2bd381469cede097",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_oath.png",
+      "sha256": "42569edc8182a407f7c48e3f248b6d555b96e0e3df7e00f7acadf32a0c0c4b62",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_taunt.png",
+      "sha256": "1118c35be0090b54e3f07d6b90a565a32ef251e1b7296a10ae3efeb24d87715c",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/g_wall.png",
+      "sha256": "49ae8ba9bc3769af63145ddc95fd1fa3bfd5054d23763d86caa0e1783a5ee994",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_awake.png",
+      "sha256": "31a834f2479105e1420f2bbcf68b3a89023316f5ade3772d27e07c07de457795",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_fire.png",
+      "sha256": "e0278a1762a36477514048ca5e157226e84f32afefa41952e543adc601716e64",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_ice.png",
+      "sha256": "4be5b816cf1aa864ebd2be3b88664d97a60f293c3d52fb2e3d9753f8668c4712",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_orbit.png",
+      "sha256": "214cd35cf90e575ab34e98e594fbda497d8b0295a7787a60bdec2fcb40032df8",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_rift.png",
+      "sha256": "94b442fd3e916efa9903fe634464e067333d6c2cdf7eb927fb5cbbf06df30f58",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_storm.png",
+      "sha256": "c44504b43d03c5a04ca852aef705d97979b2857c99930b722bf6fe89bed17ac7",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Effects/m_veil.png",
+      "sha256": "4d5c33490fa67ac51ff9b5f8ceb55a5e36badb0d062012fb8c05f898a7fdc85b",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Arcanist_charge.png",
+      "sha256": "205018872f8647f3303f5e85ad34030ec5abcf6b6ad06a7fbbc7a667efd3571f",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Arcanist_hit.png",
+      "sha256": "8336f0d69936357e29b6bb8a891bd703306ac312ef676987e2619b8a7e36595d",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Bishop_charge.png",
+      "sha256": "cb590c7ff5f6a30f0b42041d86e14c84b13c5902e44c26bca6084da196eb173f",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Bishop_hit.png",
+      "sha256": "eb0f010b0b20fa4d98a762abe6f9a8a29d085567e3da233b860122f0f6449102",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Fighter_charge.png",
+      "sha256": "d41034a5e63029758d55f9838b54594e24c8437cc070d0b8f7bda49f2720c606",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Fighter_hit.png",
+      "sha256": "c3441c81d805c844d26d677c5134f73ee5bcdeca1a24d1b83494c559484d84d2",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Guardian_charge.png",
+      "sha256": "90a9b745403a5e230ab73cdc96fe7a62a6715d2784e178c826bef857c52f7e07",
+      "size": [
+        1152,
+        96
+      ]
+    },
+    {
+      "path": "Assets/Resources/Art/Careers/Details/Guardian_hit.png",
+      "sha256": "fedbfb1849fd2ef655bfdaa8d118e06c0f8af5ce62ea6f9aea9224ddb3d1a3f4",
+      "size": [
+        1152,
+        96
+      ]
+    }
+  ]
+}

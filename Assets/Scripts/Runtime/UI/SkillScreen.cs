@@ -70,7 +70,7 @@ namespace DotRPG
         {
             var w = CreateWindow<SkillScreen>(canvas, "Skills", "스킬", "menuicon_skill");
             w.BuildTabs();
-            w.BuildTree();
+            w.BuildCareer();
             w.BuildGems();
             w.BuildTooltip();
             return w;
@@ -78,7 +78,7 @@ namespace DotRPG
 
         void BuildTabs()
         {
-            string[] names = { "패시브 트리", "스킬 젬" };
+            string[] names = { "전직 · 스킬 노드", "기본 · 장착 스킬" };
             for (int i = 0; i < 2; i++)
             {
                 int index = i;
@@ -274,13 +274,7 @@ namespace DotRPG
                 GameEvents.RaiseToast($"이 슬롯은 Lv.{Progression.SlotLevel(v.slot)}에 열린다.");
                 return;
             }
-            if (v.socket == 0)
-            {
-                // The skill socket is fixed to the slot; just show what it does.
-                Game.Audio.PlaySfx("select");
-                FillTooltip(v);
-                return;
-            }
+
             var options = prog.OptionsFor(v.slot, v.socket);
             int i = options.IndexOf(prog.SlotGem(v.slot, v.socket));
             if (i < 0) i = 0;
@@ -291,6 +285,7 @@ namespace DotRPG
                 return;
             }
             prog.SetGem(v.slot, v.socket, options[(i + dir + options.Count) % options.Count]);
+            Game.Flow.Autosave();
             Game.Audio.PlaySfx("select");
             Refresh();
             FillTooltip(v);
@@ -317,7 +312,7 @@ namespace DotRPG
             var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
             foreach (var v in sockets)
             {
-                var gem = v.socket == 0 ? SkillGems.ForSlot(cls, v.slot) : SkillGems.Get(prog.SlotGem(v.slot, v.socket));
+                var gem = v.socket == 0 ? prog.Active(v.slot) : SkillGems.Get(prog.SlotGem(v.slot, v.socket));
                 v.icon.enabled = gem != null;
                 if (gem != null) v.icon.sprite = Game.Art.Get(gem.icon);
                 v.label.enabled = gem == null;
@@ -327,15 +322,17 @@ namespace DotRPG
             for (int s = 0; s < SkillGems.Slots; s++)
             {
                 bool ult = s == SkillGems.UltimateSlot;
-                bool open = prog.IsSlotOpen(s);
-                var gem = SkillGems.ForSlot(cls, s);
+                bool open = prog.IsSlotOpen(s) && (s!=4 || prog.Awakened);
+                var gem = prog.Active(s);
                 string key = Game.Input.GetBindingLabel(SkillGems.ActionFor(s));
                 slotTitle[s].text = (ult ? "<color=#ffd66e><b>각성</b></color>" : $"<b>스킬 {s + 1}</b>") + $"\n<color=#ffe066><size=26>{key}</size></color>";
                 slotLock[s].enabled = !open;
                 slotLockText[s].enabled = !open;
-                slotLockText[s].text = $"<color=#ffb870>잠김 · Lv.{Progression.SlotLevel(s)} 달성 시 열림</color>";
+                slotLockText[s].text = s==4 ? "전직 후 각성 시련을 완료하세요" : $"Lv.{Progression.SlotLevel(s)}에 슬롯 개방";
                 if (gem == null) { slotInfo[s].text = ""; continue; }
                 var n = CharacterStats.Skill(cls, s, gem, prog.Supports(s));
+                var career=CareerCatalog.Get(gem.id);
+                if(career!=null){slotInfo[s].text=$"<b>{gem.name}</b> · {gem.description}\n{CareerNumbers.Summary(career,CharacterData.Session,n)}";continue;}
                 var sb = new StringBuilder($"<b>{gem.name}</b>{(ult ? "  <color=#ffd66e>[각성 기술]</color>" : "")}   <color=#b8c4d8>{gem.description}</color>\n");
                 // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
                 bool single = gem.id == "crush" || gem.id == "lance";
@@ -386,7 +383,7 @@ namespace DotRPG
             treePage.gameObject.SetActive(tab == TabId.Tree);
             gemPage.gameObject.SetActive(tab == TabId.Gems);
             if (selectedNode == null) selectedNode = nodeViews.Find(v => v.node.id == PassiveTree.Start);
-            RefreshTree();
+            RefreshCareer();
             RefreshGems();
         }
 
@@ -480,7 +477,7 @@ namespace DotRPG
             var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
             if (v.socket == 0)
             {
-                var skill = SkillGems.ForSlot(cls, v.slot);
+                var skill = prog.Active(v.slot);
                 if (skill == null) { SetTooltip("빈 슬롯"); return; }
                 string state = prog.IsSlotOpen(v.slot) ? "<color=#8fe28f>사용 가능</color>" : $"<color=#ff9f43>Lv.{Progression.SlotLevel(v.slot)}에 열림</color>";
                 SetTooltip($"<b>{skill.name}</b>  {(skill.IsUltimate ? "<color=#ffd66e>각성 기술</color>" : "<color=#ff9f43>액티브 스킬</color>")}\n\n{skill.description}\n\n" +

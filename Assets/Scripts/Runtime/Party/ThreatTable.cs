@@ -29,6 +29,9 @@ namespace DotRPG
 
         /// <summary>The member this monster is after (null = nobody alive).</summary>
         public PlayerController Current { get; private set; }
+        PlayerController forced; float forcedUntil;
+        public PlayerController Forced => Time.time<forcedUntil && Alive(forced) ? forced : null;
+        public void Force(PlayerController target,float duration) { forced=target;forcedUntil=Time.time+duration;AddWarCry(target);Current=target; }
         /// <summary>The party member that hit this monster last (kill credit).</summary>
         public PlayerController LastAttacker { get; private set; }
 
@@ -106,6 +109,7 @@ namespace DotRPG
         public PlayerController Select(PartyManager party)
         {
             if (party == null) return Current = null;
+            if(Forced != null && party.Contains(Forced)) return Current=Forced;
             drop.Clear();
             foreach (var m in threat.Keys) if (!Alive(m) || !party.Contains(m)) drop.Add(m);
             foreach (var m in drop) threat.Remove(m);

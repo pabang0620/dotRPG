@@ -171,6 +171,7 @@ namespace DotRPG
         void OnLevelUp(int level)
         {
             RefreshStats();
+            if(level==15) GameEvents.RaiseToast("전직 가능! 스킬창에서 파이터·수호자 또는 메이지·비숍을 선택하세요.");
             health.Heal(health.Max);
             Data.Mana = Data.Stats.MaxMp;
             Game.Audio.PlaySfx("quest");
@@ -253,6 +254,7 @@ namespace DotRPG
 
         public void Spawn(Vector2 position, Facing facing, int currentHealth, int maxHealth)
         {
+            CareerCombat.For(this).ResetState();
             bool wasDead = IsDead;
             Place(position, facing);
             IsDead = false;
@@ -352,7 +354,7 @@ namespace DotRPG
                 AimDirection = SnapTo8(move);
             }
 
-            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier;
+            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier * CareerCombat.For(this).MoveScale;
 
             // Ignore action buttons on the frame a menu/dialogue closed, so the same press
             // doesn't immediately trigger an attack or re-open the conversation.
@@ -538,6 +540,9 @@ namespace DotRPG
             }
             int guard = Data.GuardReduction; // class passive (was 철벽 / 마나 보호막)
             if (guard > 0) info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * (1f - guard / 100f)));
+            if(health.IsInvulnerable) return false;
+            info.amount = CareerCombat.For(this).Absorb(info.amount);
+            if(info.amount<=0) return true;
             if (!health.TryDamage(info)) return false;
             CancelMobility();
             Game.Party?.RecordDamageTaken(this, info);

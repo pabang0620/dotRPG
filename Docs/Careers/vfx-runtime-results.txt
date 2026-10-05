@@ -1,0 +1,237 @@
+[1.11] capture started
+[2.56] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN catalog exactly 36 PASS
+DGN Fighter 2 passives / 6 actives / 1 awakening PASS
+DGN Fighter reject level14 PASS
+DGN Fighter base cannot allocate PASS
+DGN Fighter base awakening locked PASS
+DGN Fighter wrong base rejected PASS
+DGN Fighter promotion accepted PASS
+DGN Fighter duplicate rejected PASS
+DGN Fighter basic retained PASS
+DGN Fighter own root PASS
+DGN Fighter own active PASS
+DGN Fighter rank costs PASS
+DGN Fighter prerequisite reject PASS
+DGN Fighter quest required PASS
+DGN Fighter equip PASS
+DGN Fighter quest stage 0 PASS
+DGN Fighter quest stage 1 PASS
+DGN Fighter quest stage 2 PASS
+DGN Fighter quest stage 3 PASS
+DGN Fighter quest stage 4 PASS
+DGN Fighter reward once PASS
+DGN Fighter awakening equip PASS
+DGN Fighter wrong career node rejected PASS
+DGN Fighter wrong awakening rejected PASS
+DGN Fighter save restore PASS
+DGN Fighter repeated restore no reward PASS
+DGN Fighter network card roundtrip PASS
+DGN Guardian 2 passives / 6 actives / 1 awakening PASS
+DGN Guardian reject level14 PASS
+DGN Guardian base cannot allocate PASS
+DGN Guardian base awakening locked PASS
+DGN Guardian wrong base rejected PASS
+DGN Guardian promotion accepted PASS
+DGN Guardian duplicate rejected PASS
+DGN Guardian basic retained PASS
+DGN Guardian own root PASS
+DGN Guardian own active PASS
+DGN Guardian rank costs PASS
+DGN Guardian prerequisite reject PASS
+DGN Guardian quest required PASS
+DGN Guardian equip PASS
+DGN Guardian quest stage 0 PASS
+DGN Guardian quest stage 1 PASS
+DGN Guardian quest stage 2 PASS
+DGN Guardian quest stage 3 PASS
+DGN Guardian quest stage 4 PASS
+DGN Guardian reward once PASS
+DGN Guardian awakening equip PASS
+DGN Guardian wrong career node rejected PASS
+DGN Guardian wrong awakening rejected PASS
+DGN Guardian save restore PASS
+DGN Guardian repeated restore no reward PASS
+DGN Guardian network card roundtrip PASS
+DGN Arcanist 2 passives / 6 actives / 1 awakening PASS
+DGN Arcanist reject level14 PASS
+DGN Arcanist base cannot allocate PASS
+DGN Arcanist base awakening locked PASS
+DGN Arcanist wrong base rejected PASS
+DGN Arcanist promotion accepted PASS
+DGN Arcanist duplicate rejected PASS
+DGN Arcanist basic retained PASS
+DGN Arcanist own root PASS
+DGN Arcanist own active PASS
+DGN Arcanist rank costs PASS
+DGN Arcanist prerequisite reject PASS
+DGN Arcanist quest required PASS
+DGN Arcanist equip PASS
+DGN Arcanist quest stage 0 PASS
+DGN Arcanist quest stage 1 PASS
+DGN Arcanist quest stage 2 PASS
+DGN Arcanist quest stage 3 PASS
+DGN Arcanist quest stage 4 PASS
+DGN Arcanist reward once PASS
+DGN Arcanist awakening equip PASS
+DGN Arcanist wrong career node rejected PASS
+DGN Arcanist wrong awakening rejected PASS
+DGN Arcanist save restore PASS
+DGN Arcanist repeated restore no reward PASS
+DGN Arcanist network card roundtrip PASS
+DGN Bishop 2 passives / 6 actives / 1 awakening PASS
+DGN Bishop reject level14 PASS
+DGN Bishop base cannot allocate PASS
+DGN Bishop base awakening locked PASS
+DGN Bishop wrong base rejected PASS
+DGN Bishop promotion accepted PASS
+DGN Bishop duplicate rejected PASS
+DGN Bishop basic retained PASS
+DGN Bishop own root PASS
+DGN Bishop own active PASS
+DGN Bishop rank costs PASS
+DGN Bishop prerequisite reject PASS
+DGN Bishop quest required PASS
+DGN Bishop equip PASS
+DGN Bishop quest stage 0 PASS
+DGN Bishop quest stage 1 PASS
+DGN Bishop quest stage 2 PASS
+DGN Bishop quest stage 3 PASS
+DGN Bishop quest stage 4 PASS
+DGN Bishop reward once PASS
+DGN Bishop awakening equip PASS
+DGN Bishop wrong career node rejected PASS
+DGN Bishop wrong awakening rejected PASS
+DGN Bishop save restore PASS
+DGN Bishop repeated restore no reward PASS
+DGN Bishop network card roundtrip PASS
+DGN legacy awakening removed PASS
+DGN support retained PASS
+DGN refund idempotent PASS
+DGN shield absorb PASS
+DGN shield overflow PASS
+DGN cleanse status PASS
+DGN cleanse idempotent PASS
+DGN resource gate PASS
+DGN cast starts PASS
+DGN cooldown gate PASS
+DGN move slot keeps cooldown PASS
+DGN f_rhythm icon resource PASS
+DGN f_cross icon resource PASS
+DGN f_cross effect12 PASS
+DGN f_rush icon resource PASS
+DGN f_rush effect12 PASS
+DGN f_flurry icon resource PASS
+DGN f_flurry effect12 PASS
+DGN f_edge icon resource PASS
+DGN f_break icon resource PASS
+DGN f_break effect12 PASS
+DGN f_focus icon resource PASS
+DGN f_focus effect12 PASS
+DGN f_execute icon resource PASS
+DGN f_execute effect12 PASS
+DGN f_awake icon resource PASS
+DGN f_awake effect12 PASS
+DGN g_steel icon resource PASS
+DGN g_guard icon resource PASS
+DGN g_guard effect12 PASS
+DGN g_wall icon resource PASS
+DGN g_wall effect12 PASS
+DGN g_oath icon resource PASS
+DGN g_oath effect12 PASS
+DGN g_retal icon resource PASS
+DGN g_taunt icon resource PASS
+DGN g_taunt effect12 PASS
+DGN g_bash icon resource PASS
+DGN g_bash effect12 PASS
+DGN g_counter icon resource PASS
+DGN g_counter effect12 PASS
+DGN g_awake icon resource PASS
+DGN g_awake effect12 PASS
+DGN m_elements icon resource PASS
+DGN m_fire icon resource PASS
+DGN m_fire effect12 PASS
+DGN m_ice icon resource PASS
+DGN m_ice effect12 PASS
+DGN m_storm icon resource PASS
+DGN m_storm effect12 PASS
+DGN m_flow icon resource PASS
+DGN m_orbit icon resource PASS
+DGN m_orbit effect12 PASS
+DGN m_veil icon resource PASS
+DGN m_veil effect12 PASS
+DGN m_rift icon resource PASS
+DGN m_rift effect12 PASS
+DGN m_awake icon resource PASS
+DGN m_awake effect12 PASS
+DGN b_mercy icon resource PASS
+DGN b_heal icon resource PASS
+DGN b_heal effect12 PASS
+DGN b_bloom icon resource PASS
+DGN b_bloom effect12 PASS
+DGN b_cleanse icon resource PASS
+DGN b_cleanse effect12 PASS
+DGN b_grace icon resource PASS
+DGN b_light icon resource PASS
+DGN b_light effect12 PASS
+DGN b_wing icon resource PASS
+DGN b_wing effect12 PASS
+DGN b_bless icon resource PASS
+DGN b_bless effect12 PASS
+DGN b_awake icon resource PASS
+DGN b_awake effect12 PASS
+DGN Fighter charge detail resource PASS
+DGN Fighter hit detail resource PASS
+DGN Guardian charge detail resource PASS
+DGN Guardian hit detail resource PASS
+DGN Arcanist charge detail resource PASS
+DGN Arcanist hit detail resource PASS
+DGN Bishop charge detail resource PASS
+DGN Bishop hit detail resource PASS
+[6.26] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN f_cross actual damage PASS
+DGN f_rush actual damage PASS
+DGN f_flurry actual damage PASS
+DGN f_break actual damage PASS
+DGN f_execute actual damage PASS
+DGN f_awake actual damage PASS
+DGN Fighter trial start PASS
+DGN trial failure retains progress PASS
+DGN trial retry PASS
+DGN Fighter role trial completion PASS
+DGN Fighter quest finishing dialogue PASS
+[19.33] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN g_wall actual shield PASS
+DGN g_oath actual shield PASS
+DGN g_taunt actual damage PASS
+DGN AI forced target PASS
+DGN g_bash actual damage PASS
+DGN g_counter actual damage PASS
+DGN g_awake actual shield PASS
+DGN Guardian trial start PASS
+DGN Guardian role trial completion PASS
+DGN Guardian quest finishing dialogue PASS
+[52.91] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN m_fire actual damage PASS
+DGN m_ice actual damage PASS
+DGN ice has freeze PASS
+DGN m_storm actual damage PASS
+DGN m_orbit actual damage PASS
+DGN m_rift actual damage PASS
+DGN m_awake actual damage PASS
+DGN Arcanist trial start PASS
+DGN Arcanist role trial completion PASS
+DGN Arcanist quest finishing dialogue PASS
+[70.27] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN b_heal actual heal PASS
+DGN b_bloom actual heal PASS
+DGN b_cleanse actual heal PASS
+DGN cleanse actual curse PASS
+DGN b_light actual damage PASS
+DGN b_wing actual shield PASS
+DGN b_awake actual heal PASS
+DGN Bishop trial start PASS
+DGN Bishop role trial completion PASS
+DGN Bishop quest finishing dialogue PASS
+[105.84] CAREER RESULTS: 229 passed, 0 failed
+[105.84] capture finished

@@ -683,6 +683,7 @@ namespace DotRPG
 
         public static void Whirl(Vector2 center, Vector2 feet, float radius)
         {
+            CareerEffect.Play(CareerCatalog.Get("f_flurry"),center,radius,Vector2.right,.45f);
             float s = radius / 1.7f; // fx_swoosh's outer edge is 1.7 units at scale 1
             int order = SkillFx.At(feet.y, 60);
             // A gold blade, its glow, and a faster pale inner blade.
@@ -729,6 +730,7 @@ namespace DotRPG
         /// <summary>The hammer blow itself, where the shock wave starts.</summary>
         public static void SlamImpact(Vector2 pos, float radius)
         {
+            CareerEffect.Play(CareerCatalog.Get("f_break"),pos,radius,Vector2.right,.55f);
             Flash(pos + Vector2.up * 0.2f, new Color(1f, 0.7f, 0.3f, 0.45f), radius * 2.2f, 0.25f, SkillFx.At(pos.y, 44));
             SkillFx.Spawn("fx_shock", pos + Vector2.up * 0.1f, new Color(0.95f, 0.62f, 0.25f, 0.95f), 0.35f, SkillFx.At(pos.y, 45))
                 .Scale(radius * 0.3f, radius * 1.8f).Fade(FxFade.Quick);
@@ -786,6 +788,7 @@ namespace DotRPG
         /// <summary>One jump of the chain: the bolt plus the impact where it lands.</summary>
         public static void ArcBolt(Vector2 from, Vector2 to, bool landed)
         {
+            if(landed)CareerEffect.Hit(CareerCatalog.Get("m_storm"),to,(to-from).normalized);
             LightningFx.Strike(from, to, ArcGlow, ArcAura, 0.34f);
             Flash(to, new Color(0.6f, 0.85f, 1f, 0.5f), landed ? 1.3f : 0.9f, 0.2f);
             SkillFx.Spawn("fx_zap", to, Color.white, 0.2f, SkillFx.TopOrder + 3).Rotate(Random.Range(0f, 45f))
@@ -805,6 +808,7 @@ namespace DotRPG
 
         public static void Nova(Vector2 center, Vector2 feet, float radius)
         {
+            CareerEffect.Play(CareerCatalog.Get("m_ice"),center,radius,Vector2.up,.65f);
             // Frosted ground and a frost sigil under the caster.
             SkillFx.Spawn("fx_frost", feet, new Color(1f, 1f, 1f, 0.9f), 1.5f, SkillFx.GroundOrder + 3)
                 .Scale(radius / 1.5f * 0.35f, radius / 1.5f).Fade(FxFade.Late);
@@ -895,6 +899,7 @@ namespace DotRPG
 
         public static void WaveEnd(MovingFx blade, Vector2 pos, Vector2 dir, float radius)
         {
+            CareerEffect.Play(CareerCatalog.Get("f_cross"),pos,radius,dir,.45f);
             blade.Kill();
             float s = radius / 0.7f;
             SkillFx.Spawn("fx_crescent", pos, Color.white, 0.2f, SkillFx.TopOrder + 2).Rotate(Angle(dir)).Scale(new Vector2(s * 0.6f, s), new Vector2(s * 0.2f, s * 1.4f)).Fade(FxFade.Quick);
@@ -906,6 +911,7 @@ namespace DotRPG
 
         public static void WarCry(Vector2 center, Vector2 feet, float radius)
         {
+            CareerEffect.Play(CareerCatalog.Get("f_focus"),center,Mathf.Min(radius,2),Vector2.up,.7f);
             int order = SkillFx.At(feet.y, 50);
             // Sound waves rolling out, a red-gold flash and dust blown along the ground.
             for (int i = 0; i < 3; i++)
@@ -997,6 +1003,7 @@ namespace DotRPG
         /// <summary>The orb shattering: an icy blast with lightning arcs, flying shards and crystals.</summary>
         public static void FrostOrbBurst(Vector2 pos, Vector2 ground, float radius)
         {
+            CareerEffect.Play(CareerCatalog.Get("m_ice"),pos,radius,Vector2.up,.6f);
             SkillFx.Spawn("fx_frost", ground, new Color(1f, 1f, 1f, 0.9f), 1.3f, SkillFx.GroundOrder + 3)
                 .Scale(radius / 1.5f * 0.3f, radius / 1.5f * 0.9f).Fade(FxFade.Late);
             Flash(pos, new Color(0.8f, 0.95f, 1f, 0.75f), radius * 1.6f, 0.24f);
@@ -1061,6 +1068,7 @@ namespace DotRPG
         /// <summary>Fire explosion (fireball, meteor). <paramref name="pos"/> is the blast centre; the scorch mark goes on the ground under it.</summary>
         public static void Explosion(Vector2 pos, Vector2 ground, float radius, bool big)
         {
+            CareerEffect.Play(CareerCatalog.Get("m_fire"),pos,radius,Vector2.up,big?.85f:.55f);
             float k = big ? 1.3f : 1f;
             Flash(pos, new Color(1f, 0.75f, 0.3f, 0.75f), radius * 2f * k, 0.25f);
             SkillFx.Spawn("fx_shock", pos, new Color(1f, 0.55f, 0.15f, 0.95f), 0.32f, SkillFx.TopOrder + 1).Scale(radius * 0.3f, radius * 1.1f * k).Fade(FxFade.Quick);
@@ -1083,6 +1091,7 @@ namespace DotRPG
 
         public static void Thunder(Vector2 ground)
         {
+            CareerEffect.Play(CareerCatalog.Get("m_storm"),ground,1.1f,Vector2.up,.5f);
             Vector2 top = ground + new Vector2(Random.Range(-0.5f, 0.5f), 7f);
             LightningFx.Strike(top, ground + Vector2.up * 0.15f, ArcGlow, ArcAura, 0.32f, 1.5f);
             Flash(ground + Vector2.up * 0.4f, new Color(0.6f, 0.85f, 1f, 0.6f), 2.2f, 0.22f);
