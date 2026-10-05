@@ -171,7 +171,7 @@ namespace DotRPG
         void OnLevelUp(int level)
         {
             RefreshStats();
-            if(level==15) GameEvents.RaiseToast("전직 가능! 스킬창에서 파이터·수호자 또는 메이지·비숍을 선택하세요.");
+            if (level == 15 && IsLocal) GameEvents.RaiseToast("<color=#ffd34a>전직 가능!</color> 마을 광장의 전직 안내원에게 가면 '전직의 길' 퀘스트를 받을 수 있습니다.");
             health.Heal(health.Max);
             Data.Mana = Data.Stats.MaxMp;
             Game.Audio.PlaySfx("quest");

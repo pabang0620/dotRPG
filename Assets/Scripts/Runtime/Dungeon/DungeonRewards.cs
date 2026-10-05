@@ -146,6 +146,38 @@ namespace DotRPG
         }
 
         /// <summary>Short text of what the table can give ("골드, 뼈 조각, 장비").</summary>
+        /// <summary>What a reward card can be, as slots for the select window: icon key, short name, highlighted.</summary>
+        public static List<(string icon, string name, bool special)> Slots(DungeonDef dungeon, DifficultyDef diff, CharacterClass cls)
+        {
+            var slots = new List<(string, string, bool)>();
+            var seen = new HashSet<string>();
+            foreach (var entry in dungeon.rewards)
+            {
+                if (!seen.Add(entry.itemId)) continue;
+                if (entry.itemId == DungeonDatabase.GearReward)
+                {
+                    slots.Add((GearIcon(cls, diff.minGearRarity), $"{EquipmentDatabase.RarityName(diff.minGearRarity)}+ 장비", false));
+                    continue;
+                }
+                slots.Add((DungeonDatabase.ItemIcon(entry.itemId), DungeonDatabase.ItemName(entry.itemId), false));
+            }
+            if (diff.ticketWeight > 0) slots.Add((DungeonDatabase.ItemIcon(ConsumableDatabase.ProtectTicket), DungeonDatabase.ItemName(ConsumableDatabase.ProtectTicket), true));
+            if (diff.jackpotPerMille > 0) slots.Add((GearIcon(cls, ItemRarity.Legendary), "유니크·레전더리", true));
+            return slots;
+        }
+
+        /// <summary>Icon of the class's weapon at (or nearest above) a grade, standing for "a piece of gear".</summary>
+        static string GearIcon(CharacterClass cls, ItemRarity min)
+        {
+            EquipmentItem best = null;
+            foreach (var item in EquipmentDatabase.All)
+            {
+                if (item.starter || !item.UsableBy(cls) || item.rarity < min) continue;
+                if (best == null || item.rarity < best.rarity || (item.category == EquipCategory.Weapon && best.category != EquipCategory.Weapon && item.rarity == best.rarity)) best = item;
+            }
+            return best != null ? best.iconKey : "icon_chest";
+        }
+
         public static string Preview(DungeonDef dungeon, DifficultyDef diff)
         {
             var names = new List<string>();
@@ -154,7 +186,7 @@ namespace DotRPG
                 string name = DungeonDatabase.ItemName(entry.itemId);
                 if (!names.Contains(name)) names.Add(name);
             }
-            if (diff.ticketWeight > 0) names.Add("<color=#ffd84a>장비 보호권(낮은 확률)</color>");
+            if (diff.ticketWeight > 0) names.Add("장비 보호권");
             return string.Join(", ", names);
         }
     }

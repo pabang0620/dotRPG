@@ -2046,6 +2046,52 @@
     "maxHealth": 0,
     "setFlags": []
    }
+  },
+  {
+   "id": "career_path",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "전직",
+   "title": "전직의 길",
+   "summary": "15레벨이 되었다. 마을 광장의 전직 안내원이 다음 길을 고르라고 한다.",
+   "requires": [],
+   "requiresFlags": [],
+   "minLevel": 15,
+   "giver": "career_trainer",
+   "offerDialogue": "career_path_offer",
+   "turnIn": "career_trainer",
+   "turnInDialogue": "career_path_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "스킬창 전직 탭에서 직업을 고른다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "career_promoted",
+       "count": 1,
+       "text": "전직하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3000,
+    "gold": 3000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
   }
  ]
 }

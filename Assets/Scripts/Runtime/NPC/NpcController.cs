@@ -150,10 +150,18 @@ namespace DotRPG
         }
 
         const float MarkHeight = 1.62f;
+        /// <summary>Set when the player picks a career (the 전직의 길 quest's objective).</summary>
+        public const string CareerFlag = "career_promoted";
 
         public override void Interact(PlayerController player)
         {
-            if(def.npcId=="career_trainer") {Game.Flow.OpenWindow(Game.UI.Skills);return;}
+            if (def.npcId == "career_trainer")
+            {
+                // 전직의 길: a character promoted before the quest existed counts as done.
+                if (Game.Session.Progression.IsPromoted && !Game.Quest.HasFlag(CareerFlag)) Game.Quest.SetFlag(CareerFlag);
+                // No quest talk waiting: straight to the 전직 tab of the skill window.
+                if (!Game.Quest.HasQuestTalk(def.npcId)) { Game.UI.Skills.ShowAwakening(); return; }
+            }
             // A shop NPC with a quest conversation waiting (errand, report, offer) talks first; the shop opens on the next talk.
             if (def.service != NpcService.None && !Game.Quest.HasQuestTalk(def.npcId))
             {
@@ -176,6 +184,8 @@ namespace DotRPG
                 talking = false;
                 facing = def.initialFacing;
                 Game.Quest.OnDialogueFinished(dialogueId, def.npcId);
+                // After the 전직 안내원's offer, the choice opens right away.
+                if (def.npcId == "career_trainer" && !Game.Session.Progression.IsPromoted && Game.Session.Progression.Level >= 15) Game.UI.Skills.ShowAwakening();
             }, def.displayName);
         }
 
