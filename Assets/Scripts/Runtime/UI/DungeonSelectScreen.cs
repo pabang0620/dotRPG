@@ -275,7 +275,7 @@ namespace DotRPG
             hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   ESC 닫기</color>";
         }
 
-        /// <summary>The mid raids that drop seal key fragments, by name ("해골왕·바위 심장").</summary>
+        /// <summary>The mid raids that drop seal key fragments, by name ("해골왕").</summary>
         static string KeySources()
         {
             var names = new List<string>();

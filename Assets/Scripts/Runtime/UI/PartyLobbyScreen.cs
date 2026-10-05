@@ -134,7 +134,7 @@ namespace DotRPG
             Client.InviteByName(name, (ok, msg) => { if (ok) inviteField.text = ""; Done(ok, msg, $"{name}님에게 파티 초대를 보냈습니다."); });
         }
 
-        static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
+        static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
 
         // [PARTY] Leader's destination picker: every dungeon / raid as a button, and the difficulty below (not raids).
         RectTransform picker;

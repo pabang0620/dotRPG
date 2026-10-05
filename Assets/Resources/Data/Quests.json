@@ -608,7 +608,7 @@
    "kind": "main",
    "code": "1-10",
    "title": "흑철의 바르가스",
-   "summary": "봉인 열쇠 조각을 모아 흑철 진영으로. 마을을 불태운 그 갑옷. (최종 레이드, 일요일)",
+   "summary": "흑철 진영이 검은 뿌리 숲 깊은 곳에 진을 쳤다. 마을을 불태운 그 갑옷, 바르가스를 찾아간다.",
    "requires": [
     "c1_fortress"
    ],
@@ -621,16 +621,25 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "흑철 진영의 바르가스를 쓰러뜨린다.",
+     "text": "검은 뿌리 숲의 흑철 진영을 무너뜨리고 바르가스를 쓰러뜨린다.",
      "objectives": [
       {
-       "type": "raid",
-       "target": "raid_bargas",
-       "count": 1,
-       "text": "레이드: 흑철의 바르가스 클리어",
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 40,
+       "text": "흑철 방패병 처치",
        "dialogue": "",
        "consume": false,
-       "map": ""
+       "map": "forest_depths"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 30,
+       "text": "진영 궁수 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_depths"
       }
      ],
      "cutscene": "",
@@ -1137,8 +1146,8 @@
    "chapter": 2,
    "kind": "main",
    "code": "2-6",
-   "title": "바위 심장",
-   "summary": "수호석을 지키는 석실 문지기, 바위 심장 골렘. (중간 레이드, 수·토·일)",
+   "title": "석실 문지기",
+   "summary": "수호석 외곽 석실 앞을 해골 기사단이 지키고 있다. 문지기들을 무너뜨려 석실 문을 연다.",
    "requires": [
     "c2_growth"
    ],
@@ -1151,16 +1160,16 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "바위 심장 골렘을 쓰러뜨린다.",
+     "text": "바람칼 능선의 해골 기사단을 무너뜨린다.",
      "objectives": [
       {
-       "type": "raid",
-       "target": "raid_golem",
-       "count": 1,
-       "text": "레이드: 바위 심장 클리어",
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 80,
+       "text": "석실 문지기 해골 기사 처치",
        "dialogue": "",
        "consume": false,
-       "map": ""
+       "map": "canyon_ridge"
       }
      ],
      "cutscene": "",

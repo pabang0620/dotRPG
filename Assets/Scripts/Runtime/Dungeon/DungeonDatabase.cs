@@ -411,7 +411,14 @@ namespace DotRPG
             specialty = "레전더리 장비, 장비 보호권", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",
         };
 
-        static readonly DungeonDef[] RaidDefs = { RaidDef, BargasDef, GolemDef, GrahDef };
+        /// <summary>
+        /// Raids that are open now: the level-20 mid raid (해골왕) and the level-40 final raid (그라흐). 흑철의 바르가스 and
+        /// 바위 심장 are kept for a later release (<see cref="Upcoming"/>); their story beats are fought in the field.
+        /// </summary>
+        static readonly DungeonDef[] RaidDefs = { RaidDef, GrahDef };
+
+        /// <summary>[RAID] Designed but not open yet (not listed, not exported to the server).</summary>
+        public static readonly IReadOnlyList<DungeonDef> Upcoming = new[] { BargasDef, GolemDef };
 
         /// <summary>The five weekday dungeons (Monday first).</summary>
         public static IReadOnlyList<DungeonDef> Weekday => Dungeons;
