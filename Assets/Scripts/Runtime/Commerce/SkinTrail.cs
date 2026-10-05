@@ -5,7 +5,7 @@ namespace DotRPG
 {
     /// <summary>
     /// The motes of a costume skin: a few pixel particles around the wearer, more while walking (gold sparks,
-    /// moon motes, twinkling stars, rising embers), and while moving a fading afterimage of the body in the
+    /// moon motes, twinkling stars, rising embers), and (unique skins only) while moving a fading afterimage of the body in the
     /// skin's colour left along the path. Purely visual: no colliders, no combat random numbers.
     /// </summary>
     public sealed class SkinTrail : MonoBehaviour
@@ -73,8 +73,8 @@ namespace DotRPG
             spawnAcc += dt * (visible ? (moved > .0005f ? 22f : 5f) : 0f);
             while (spawnAcc >= 1f && motes.Count < Max) { spawnAcc -= 1f; Spawn(moved > .0005f); }
             if (spawnAcc >= 1f) spawnAcc = 0f;
-            // Afterimages along the path while moving.
-            if (visible && moved > .002f)
+            // Afterimages along the path while moving (unique skins only).
+            if (visible && skin.afterimage && moved > .002f)
             {
                 ghostAcc += dt;
                 if (ghostAcc >= GhostEvery) { ghostAcc = 0f; SpawnGhost(); }

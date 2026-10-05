@@ -9,7 +9,8 @@ namespace DotRPG
     /// 캐시샵: the draws (오라 / 스킨 / 무기 / 방어구 / 장신구) as banner cards on the left, the chosen banner large on
     /// the right with its buttons, and the results: ten cards plus a separate "+1 보너스" card. The rate table opens in
     /// its own window (확률 보기). A 유니크 / 레전더리 result glows and trembles before it opens, then a golden flash,
-    /// a burst of sparks, a punch and a lasting halo; 희귀 / 에픽 get a blue burst. The wardrobe (옷장) is separate.
+    /// a burst of sparks, a punch and a lasting halo; an 에픽 aura or skin does the same in purple, a little smaller;
+    /// 희귀 (and 에픽 equipment) get a blue burst. The wardrobe (옷장) is separate.
     /// </summary>
     public class GachaScreen : OnlineWindow
     {
@@ -23,9 +24,9 @@ namespace DotRPG
 
         static readonly (string id, string name, string sub)[] Banners =
         {
-            ("skin", "스킨 뽑기", "유니크: 내 직업 코스튬 스킨"),
-            ("aura", "오라 뽑기", "발밑 오라 · 공격력 보너스"),
-            ("weapon", "무기 뽑기", "레전더리 무기 0.1%"),
+            ("skin", "스킨 뽑기", "에픽 스킨 1% · 게이지로 유니크 스킨"),
+            ("aura", "오라 뽑기", "에픽 오라 1% · 공격력 보너스"),
+            ("weapon", "무기 뽑기", "레전더리 무기 0.05%"),
             ("armor", "방어구 뽑기", "상의 · 하의"),
             ("accessory", "장신구 뽑기", "목걸이 · 반지"),
         };
@@ -49,6 +50,7 @@ namespace DotRPG
         List<StarPullResult> shown = new List<StarPullResult>();
         string banner = "skin";
         float revealAt, flashAt = -10f, punchAt = -10f;
+        Color flashColor = new Color(1f, .85f, .45f);
         int revealed, waiting = -1;
         bool busy;
 
@@ -245,7 +247,7 @@ namespace DotRPG
             choices = new List<CosmeticProduct>();
             foreach (var p in CosmeticCatalog.All)
             {
-                if (banner == "skin" ? (p.IsSkin && p.Skin.cls == cls) : (!p.IsSkin && p.Rarity == CosmeticRarity.Unique)) choices.Add(p);
+                if (banner == "skin" ? (p.IsSkin && p.Skin.cls == cls && p.Rarity == CosmeticRarity.Unique) : (!p.IsSkin && p.Rarity == CosmeticRarity.Epic)) choices.Add(p);
             }
             for (int i = 0; i < choiceRows.Count; i++)
             {
@@ -258,7 +260,7 @@ namespace DotRPG
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
                 row.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
                 row.icon.color = look != null ? Color.white : p.Color;
-                row.label.text = owned ? $"<color=#8c96a8>{p.Name} · 보유 중</color>" : $"<color=#ffb347>{p.Name}</color>  <size=15>공격력 +{p.DamagePercent}%</size>";
+                row.label.text = owned ? $"<color=#8c96a8>{p.Name} · 보유 중</color>" : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{p.Name}</color>  <size=15>공격력 +{p.DamagePercent}%</size>";
                 row.btn.interactable = !owned;
             }
             choiceModal.gameObject.SetActive(true);
@@ -278,7 +280,7 @@ namespace DotRPG
                     busy = false;
                     choiceModal.gameObject.SetActive(false);
                     if (!ok) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); Refresh(); return; }
-                    shown = new List<StarPullResult> { new StarPullResult { itemId = p.Id, rarity = "unique", byPity = true } };
+                    shown = new List<StarPullResult> { new StarPullResult { itemId = p.Id, rarity = banner == "skin" ? "unique" : "epic", byPity = true } };
                     revealed = 0; waiting = -1; lastCount = 1;
                     revealAt = Time.unscaledTime + 0.3f;
                     OpenResults();
@@ -362,15 +364,24 @@ namespace DotRPG
         void RevealAll()
         {
             if (!Revealing) return;
-            bool top = false;
-            for (int i = revealed; i < shown.Count; i++) if (IsTop(shown[i])) { top = true; if (waiting < revealed) waiting = i; }
+            bool top = false, epic = false;
+            for (int i = revealed; i < shown.Count; i++)
+            {
+                if (IsTop(shown[i])) top = true;
+                else if (IsEpic(shown[i])) epic = true;
+                else continue;
+                if (waiting < revealed) waiting = i;
+            }
             revealed = shown.Count;
-            if (top)
+            if (top || epic)
             {
                 flashAt = punchAt = Time.unscaledTime;
-                Game.Audio.PlaySfx("quest");
-                Game.Camera?.Shake(0.14f, 0.3f);
-                for (int i = 0; i < shown.Count; i++) if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
+                flashColor = top ? new Color(1f, .85f, .45f) : new Color(.78f, .55f, 1f);
+                Game.Audio.PlaySfx(top ? "quest" : "confirm");
+                Game.Camera?.Shake(top ? 0.14f : 0.08f, 0.3f);
+                for (int i = 0; i < shown.Count; i++)
+                    if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
+                    else if (IsEpic(shown[i])) Burst(i, new Color(.78f, .55f, 1f), 16);
             }
             DrawCells();
         }
@@ -396,7 +407,10 @@ namespace DotRPG
 
         /// <summary>The announced results: 유니크 (aura / skin) or Unique / Legendary equipment.</summary>
         static bool IsTop(StarPullResult r) => r.rarity == "unique" || r.rarity == "legendary";
+        /// <summary>An 에픽 aura or skin: its own purple reveal (에픽 equipment is common enough to stay blue).</summary>
+        static bool IsEpic(StarPullResult r) => !r.gear && r.rarity == "epic";
         static bool IsGood(StarPullResult r) => r.rarity == "rare" || r.rarity == "epic";
+        static bool Special(StarPullResult r) => IsTop(r) || IsEpic(r);
 
         /// <summary>Result i sits in cell i; a single draw lands in the first cell, a 10+1 fills ten plus the bonus.</summary>
         int CellOf(int i) => i;
@@ -412,7 +426,7 @@ namespace DotRPG
             Animate();
             if (!Revealing || Time.unscaledTime < revealAt) return;
             var r = shown[revealed];
-            if (IsTop(r) && waiting != revealed)
+            if (Special(r) && waiting != revealed)
             {
                 waiting = revealed; // the card glows and trembles first
                 revealAt = Time.unscaledTime + Anticipation;
@@ -421,15 +435,25 @@ namespace DotRPG
             }
             int cell = CellOf(revealed);
             revealed++;
-            revealAt = Time.unscaledTime + (IsTop(r) ? 0.55f : Step);
+            revealAt = Time.unscaledTime + (Special(r) ? 0.55f : Step);
             if (IsTop(r))
             {
                 flashAt = punchAt = Time.unscaledTime;
+                flashColor = new Color(1f, .85f, .45f);
                 Burst(cell, new Color(1f, .82f, .35f), 26);
                 Game.Audio.PlaySfx("quest");
                 Game.Camera?.Shake(0.14f, 0.3f);
                 string grade = r.rarity == "legendary" ? "레전더리" : "유니크";
                 GameEvents.RaiseToast($"<color=#ffb347>{grade}!</color> {NameOf(r)}" + (r.duplicate ? "" : " 획득"));
+            }
+            else if (IsEpic(r))
+            {
+                flashAt = punchAt = Time.unscaledTime;
+                flashColor = new Color(.78f, .55f, 1f);
+                Burst(cell, new Color(.78f, .55f, 1f), 20);
+                Game.Audio.PlaySfx("quest");
+                Game.Camera?.Shake(0.08f, 0.25f);
+                GameEvents.RaiseToast($"<color=#c58cff>에픽!</color> {NameOf(r)}" + (r.duplicate ? "" : " 획득"));
             }
             else if (IsGood(r)) { Burst(cell, new Color(.5f, .7f, 1f), 12); Game.Audio.PlaySfx("confirm"); }
             else Game.Audio.PlaySfx("select");
@@ -464,7 +488,7 @@ namespace DotRPG
             }
             else if (gaugeFill != null) gaugeFill.color = new Color32(255, 200, 70, 255);
             float f = Mathf.Clamp01(1f - (t - flashAt) / 0.8f);
-            flash.color = new Color(1f, .85f, .45f, f * f * .8f);
+            flash.color = new Color(flashColor.r, flashColor.g, flashColor.b, f * f * .8f);
             for (int i = sparks.Count - 1; i >= 0; i--)
             {
                 var s = sparks[i];
@@ -482,8 +506,9 @@ namespace DotRPG
                 if (i == waiting && i >= revealed && i < shown.Count)
                 {
                     float k = 0.5f + 0.5f * Mathf.Sin(t * 26f);
-                    c.halo.color = new Color(1f, .8f, .3f, .55f + .45f * k);
-                    c.bg.color = Color.Lerp(HeadRow, new Color32(150, 108, 30, 255), k);
+                    bool gold = IsTop(shown[i]);
+                    c.halo.color = gold ? new Color(1f, .8f, .3f, .55f + .45f * k) : new Color(.75f, .5f, 1f, .5f + .4f * k);
+                    c.bg.color = Color.Lerp(HeadRow, gold ? new Color32(150, 108, 30, 255) : new Color32(96, 54, 150, 255), k);
                     scale = 1.08f + .05f * k;
                     c.rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 60f) * 3f);
                 }
@@ -491,8 +516,9 @@ namespace DotRPG
                 {
                     var r = shown[i];
                     float k = 0.5f + 0.5f * Mathf.Sin(t * 3f + i);
-                    c.halo.color = IsTop(r) ? new Color(1f, .78f, .3f, .5f + .35f * k) : IsGood(r) ? new Color(.45f, .65f, 1f, .2f + .15f * k) : Color.clear;
-                    if (IsTop(r) && i == waiting) scale = 1f + 0.4f * Mathf.Clamp01(1f - (t - punchAt) / 0.35f);
+                    c.halo.color = IsTop(r) ? new Color(1f, .78f, .3f, .5f + .35f * k) : IsEpic(r) ? new Color(.75f, .5f, 1f, .4f + .3f * k)
+                        : IsGood(r) ? new Color(.45f, .65f, 1f, .2f + .15f * k) : Color.clear;
+                    if (Special(r) && i == waiting) scale = 1f + 0.4f * Mathf.Clamp01(1f - (t - punchAt) / 0.35f);
                     if (!r.gear)
                     {
                         var p = CosmeticCatalog.Find(r.itemId);
@@ -539,7 +565,7 @@ namespace DotRPG
                 }
                 var r = shown[i];
                 string hex = GradeHex(r.rarity);
-                c.bg.color = IsTop(r) ? new Color32(110, 76, 22, 245) : IsGood(r) ? new Color32(36, 56, 104, 245) : RowB;
+                c.bg.color = IsTop(r) ? new Color32(110, 76, 22, 245) : IsEpic(r) ? new Color32(72, 40, 112, 245) : IsGood(r) ? new Color32(36, 56, 104, 245) : RowB;
                 c.frame.color = PixelHex(hex);
                 if (r.gear)
                 {
@@ -578,12 +604,17 @@ namespace DotRPG
             big.sprite = Game.Art.Get("Banners/banner_gacha_" + banner);
             bigTitle.text = $"<b>{cur.name}</b>";
             // Skins released so far, and the ones this class can draw.
-            var mine = new List<string>();
-            int released = 0;
+            var uniques = new List<string>();
+            var epics = new List<string>();
             var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
-            foreach (var sk in SkinCatalog.All) { released++; if (sk.cls == cls) mine.Add(sk.name); }
+            foreach (var sk in SkinCatalog.All)
+            {
+                if (sk.cls != cls) continue;
+                var sp = CosmeticCatalog.Find(sk.id);
+                (sp != null && sp.Rarity == CosmeticRarity.Epic ? epics : uniques).Add(sk.name);
+            }
             badgeBg.gameObject.SetActive(banner == "skin");
-            badge.text = $"<b>출시 스킨 {mine.Count}종</b>";
+            badge.text = $"<b>유니크 {uniques.Count} · 에픽 {epics.Count}</b>";
             int pity = banner == "skin" ? StarShopClient.SkinPity : StarShopClient.Pity;
             bool hasPity = banner == "skin" || banner == "aura";
             int gaugeMax = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
@@ -594,12 +625,13 @@ namespace DotRPG
             if (hasPity)
             {
                 gaugeFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * Mathf.Clamp01(pity / (float)gaugeMax), 16f);
-                gaugeText.text = full ? $"<color=#ffd34a><b>선택 게이지 가득!</b></color> {(banner == "skin" ? "스킨" : "유니크 오라")}를 직접 고를 수 있습니다"
-                    : $"선택 게이지 {Mathf.Min(pity, gaugeMax)}/{gaugeMax} · 가득 차면 {(banner == "skin" ? "스킨" : "유니크 오라")}를 직접 선택";
+                string goal = banner == "skin" ? "유니크 스킨" : "에픽 오라";
+                gaugeText.text = full ? $"<color=#ffd34a><b>선택 게이지 가득!</b></color> {goal}{(banner == "skin" ? "을" : "를")} 직접 고를 수 있습니다"
+                    : $"선택 게이지 {Mathf.Min(pity, gaugeMax)}/{gaugeMax} · 가득 차면 {goal} 직접 선택";
             }
             bigSub.text = $"{cur.sub}\n" +
                           (hasPity ? "" : "뽑은 장비는 바로 가방으로\n") +
-                          (banner == "skin" ? $"<color=#ffb347>스킨 공격력 +5%</color>\n<color=#b8c4d8>{CharacterClassInfo.Get(cls).displayName} 스킨: {string.Join(" · ", mine)}</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
+                          (banner == "skin" ? $"<color=#ffb347>유니크 {string.Join(" · ", uniques)} (+5%)</color>\n<color=#c58cff>에픽 {string.Join(" · ", epics)} (+4%)</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
             wallet.text = online
                 ? (StarShopClient.Loaded ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>불러오는 중...</color>")
                 : "<color=#8c96a8>온라인 캐릭터로 접속하면 이용할 수 있습니다.</color>";
@@ -650,15 +682,16 @@ namespace DotRPG
             }
             StarShopClient.Refund.TryGetValue("common", out int rc);
             StarShopClient.Refund.TryGetValue("rare", out int rr);
+            StarShopClient.Refund.TryGetValue("epic", out int re);
             StarShopClient.Refund.TryGetValue("unique", out int ru);
             sb.Append("<color=#b8c4d8>");
             if (banner == "aura" || banner == "skin")
             {
-                string top = banner == "skin" ? "내 직업 스킨" : "유니크 오라";
+                string top = banner == "skin" ? "내 직업 유니크 스킨" : "에픽 오라";
                 int gm = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
                 sb.Append($"· 선택 게이지: 1회 뽑을 때마다 1칸 찹니다. {gm}칸이 다 차면 {top} 중 원하는 것 하나를 고릅니다(고르면 {gm}칸 줄어듦, 기한 없음). 뽑기에서 자연히 나와도 게이지는 줄지 않습니다.\n");
                 sb.Append("· 중복 방지: 같은 등급에서 아직 없는 것만 같은 확률로 나옵니다. 개별 확률은 아무것도 없을 때 기준입니다.\n");
-                sb.Append($"· 같은 등급을 모두 가지면 중복이 나오고 별조각을 돌려줍니다(일반 {rc}, 희귀 {rr}, 유니크 {ru}{(banner == "skin" ? ", 스킨 600" : "")}).\n");
+                sb.Append($"· 같은 등급을 모두 가지면 중복이 나오고 별조각을 돌려줍니다(일반 {rc}, 희귀 {rr}, 에픽 {re}{(banner == "skin" ? $", 유니크 {ru}" : "")}).\n");
             }
             else
             {
