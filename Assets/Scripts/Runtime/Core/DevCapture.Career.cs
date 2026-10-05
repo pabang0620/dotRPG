@@ -61,6 +61,8 @@ namespace DotRPG
         {
             dgnPassed=dgnFailed=0;ApplyRequestedResolution();yield return Wait(1);
             Game.Config.autosave=false;Game.Flow.NewGame(CharacterClass.Warrior);yield return Wait(1.5f);Game.Player.Input=new ScriptedInput();
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerLivingOnly")>=0){yield return CareerLivingChecks();yield break;}
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerMotionOnly")>=0){yield return CareerMotionChecks();yield break;}
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgePreview")>=0){yield return FighterReforgeLifecycleChecks();yield return CareerVisualCaptures();Log($"REFORGE LIFECYCLE RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;}
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgeOnly")>=0){
                 yield return FighterReforgeChecks();yield return CareerRenewalChecks();

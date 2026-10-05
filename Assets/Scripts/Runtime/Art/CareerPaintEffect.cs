@@ -143,6 +143,7 @@ namespace DotRPG
                     fx.Add(c,2,new Vector2(r*1.6f,r*.8f),Vector2.down*.15f,0,true,.4f);
                 }
             }
+            if(fx.parts.Count>0)CareerLivingFx.Attach(fx.parts[0].image,s,phase==1?2:0);
             fx.Draw(0);return true;
         }
         public static CareerPaintEffect Wave(CareerSkill s,Vector2 at,float radius,Vector2 dir,float duration,PlayerController source)

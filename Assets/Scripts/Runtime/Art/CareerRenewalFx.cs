@@ -13,16 +13,17 @@ namespace DotRPG
         static readonly Dictionary<string,int> starts=new Dictionary<string,int>();
         public static int Starts(string skill)=>starts.TryGetValue(skill,out int n)?n:0;
         PlayerController owner;string map;Career career;string id;SpriteRenderer art,echo;
-        float age,life,angle;int row,mode;Vector2 dimensions;bool follow,forwardArc;
+        float age,life,angle,totalLife;int row,mode;Vector2 dimensions;bool follow,forwardArc;
         public string SkillId=>id;
         public static CareerRenewalFx Make(CareerSkill skill,Vector2 at,int motif,Vector2 size,float seconds,PlayerController source,int type=0,float rotation=0,bool tracks=false)
         {
             if(active.Count+CareerPaintEffect.ActiveCount>=80||CareerPulseArt.Frame(skill.career,motif,0)==null)return null;
             var go=new GameObject("Renewal "+skill.id);if(Fx.Root!=null)go.transform.SetParent(Fx.Root,false);go.transform.position=at;
-            var v=go.AddComponent<CareerRenewalFx>();v.owner=source;v.map=Game.Session.MapId;v.career=skill.career;v.id=skill.id;v.row=motif;v.dimensions=size;v.life=Mathf.Max(.06f,seconds);v.mode=type;v.angle=rotation;v.follow=tracks;
+            var v=go.AddComponent<CareerRenewalFx>();v.owner=source;v.map=Game.Session.MapId;v.career=skill.career;v.id=skill.id;v.row=motif;v.dimensions=size;v.life=Mathf.Max(.06f,seconds);v.totalLife=v.life;v.mode=type;v.angle=rotation;v.follow=tracks;
             var artwork=new GameObject("Artwork");artwork.transform.SetParent(go.transform,false);
             v.art=artwork.AddComponent<SpriteRenderer>();v.art.sprite=CareerPulseArt.Frame(skill.career,motif,type==2?0:type==1?1:2);
             var child=new GameObject("Directional echo");child.transform.SetParent(go.transform,false);v.echo=child.AddComponent<SpriteRenderer>();
+            CareerLivingFx.Attach(v.art,skill,type);
             active.Add(v);Peak=Mathf.Max(Peak,Count);Started++;starts.TryGetValue(skill.id,out int previous);starts[skill.id]=previous+1;v.Draw(0);return v;
         }
         public static void Clear(PlayerController p){foreach(var v in active.ToArray())if(v!=null&&v.owner==p)Destroy(v.gameObject);}
@@ -58,14 +59,27 @@ namespace DotRPG
         void Draw(float time)
         {
             int frame=mode==4?(time<.07f?1:2):mode==1?(career==Career.Fighter?(time<.07f?1:2):1+Mathf.FloorToInt(time*14)%2):mode==2?0:mode==3?2:time<.12f?2:3;
+            // Every burst reads all four cels: gather, acceleration, contact, broken residual.
+            float progress=Mathf.Clamp01(time/Mathf.Max(.01f,totalLife));
+            if(mode==0)frame=progress<.10f?0:progress<.26f?1:progress<.61f?2:3;
+            if(mode==2)frame=progress<.72f?0:1;
+            if(mode==3)frame=(Mathf.FloorToInt(time*5)+row)%3==0?1:2;
+            if(mode==1)frame=1+Mathf.FloorToInt(time*(12+row*2))%2;
             art.sprite=CareerPulseArt.Frame(career,row,frame);
+            float expansion=mode==2?Mathf.Lerp(.65f,1,progress):mode==0?Mathf.Lerp(.82f,1,Mathf.Min(1,progress*4)):1;
+            art.transform.localScale=Vector3.one*expansion;
+            // Interior circulation never changes the separate, exact gameplay boundary.
+            float circulation=mode==3?Mathf.Sin(time*2.5f+row)*3:mode==2?Mathf.Sin(progress*Mathf.PI)*5:0;
+            art.transform.localRotation=Quaternion.Euler(0,0,id=="g_wall"&&mode==1?time*620:circulation);
+
             transform.localScale=CareerPulseArt.Scale(career,row,dimensions);
-            transform.localRotation=Quaternion.Euler(0,0,angle);
+            transform.localRotation=Quaternion.Euler(0,0,id=="f_flurry"?0:angle);
             float alpha=mode==3?.21f+(age<.16f?.14f:0):mode==2?.45f:mode==1?.92f:Mathf.Clamp01(life*7);
             art.color=new Color(1,1,1,alpha);art.sortingOrder=mode==3?SkillFx.GroundOrder+23:SkillFx.At(transform.position.y,86);
             if(career==Career.Fighter&&mode==2)art.color=new Color(1,1,1,Mathf.Lerp(.22f,.7f,Mathf.Clamp01(time/Mathf.Max(.01f,time+life))));
             echo.enabled=mode==1||mode==4;echo.sprite=CareerPulseArt.Frame(career,row,3);echo.color=career==Career.Fighter?new Color(.45f,.62f,1,.22f):new Color(1,1,1,.22f);
-            echo.transform.localPosition=new Vector3(forwardArc?0:-.16f,0,0);echo.sortingOrder=art.sortingOrder-1;
+            echo.transform.localPosition=new Vector3(forwardArc?0:-.12f-.08f*Mathf.Sin(time*18),0,0);
+            echo.transform.localScale=Vector3.one*(.88f+.06f*Mathf.Sin(time*14));echo.sortingOrder=art.sortingOrder-1;
         }
         void OnDestroy(){active.Remove(this);}
     }

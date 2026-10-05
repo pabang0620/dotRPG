@@ -35,7 +35,7 @@ namespace DotRPG
         public void AddCurse(float slow=0){Cursed=true;SlowUntil=Time.time+slow;}
         public bool Cleanse(){bool had=Cursed||Time.time<SlowUntil;Cursed=false;SlowUntil=0;return had;}
         int castResetVersion;
-        public void ResetState(){castResetVersion++;StopAllCoroutines();owner.GetComponent<CharacterAnimator>()?.EndCareerPose();GuardianAwakeningFx.Clear(owner);CareerPaintEffect.Clear(owner);CareerRenewalFx.Clear(owner);CareerAreaView.Clear(owner);renewalVersions.Clear();shield=guard=bless=stacks=0;shieldEnd=guardEnd=blessEnd=rhythmEnd=focusEnd=retalEnd=counterEnd=0;hotVersion++;hotSource=null;Cleanse();broken.Clear();lastElement="";view?.Clear();}
+        public void ResetState(){owner.GetComponent<CareerSkillMotion>()?.Cancel();castResetVersion++;StopAllCoroutines();owner.GetComponent<CharacterAnimator>()?.EndCareerPose();GuardianAwakeningFx.Clear(owner);CareerPaintEffect.Clear(owner);CareerRenewalFx.Clear(owner);CareerAreaView.Clear(owner);renewalVersions.Clear();shield=guard=bless=stacks=0;shieldEnd=guardEnd=blessEnd=rhythmEnd=focusEnd=retalEnd=counterEnd=0;hotVersion++;hotSource=null;Cleanse();broken.Clear();lastElement="";view?.Clear();}
         public float MoveScale=>Time.time<SlowUntil?.6f:Time.time<guardEnd&&guard>=30?.7f:1;
         public int Absorb(int damage)
         {
@@ -86,10 +86,12 @@ namespace DotRPG
             string castMap=Game.Session.MapId;
             int castVersion=castResetVersion;
             Vector2 dir=owner.Facing.ToVector(), target=Aim(n.range,dir);
+            CareerSkillMotion.Begin(owner,s,dir);
             CareerRenewalFx.Prepare(s,owner,dir);
             if(s.career==Career.Fighter)owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(s.cast,s.effect=="f_drop"||s.effect=="f_eruption"||s.effect=="f_convergence"?2:0,0,WarriorAttackMotion.Contact);
             yield return new WaitForSeconds(s.cast);
             if(castVersion!=castResetVersion||!Valid(castMap)||!Prog.CareerUnlocked(s))yield break;
+            owner.GetComponent<CareerSkillMotion>()?.Release();
             if(s.kind==CareerSkillKind.Awakening&&owner.IsLocal)GameEvents.RaiseAwakening(s.name,CareerCatalog.Color(s.career));
             // Client predictions display the same travelling attack; only the host writes HP and statuses.
             bool authority=!PartyNet.IsMember;
