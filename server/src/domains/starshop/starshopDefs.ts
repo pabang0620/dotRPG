@@ -3,7 +3,7 @@
 
 export type Rarity = 'common' | 'rare' | 'unique';
 
-export const RATES_VERSION = '2026-10-05.3';
+export const RATES_VERSION = '2026-10-05.4';
 
 /** 등급 확률(만분율, 합 10000). 최상위는 유니크(전설 등급은 아직 열지 않는다) */
 export const RARITY_WEIGHT: Record<Rarity, number> = { common: 7700, rare: 2000, unique: 300 };
@@ -38,8 +38,14 @@ export const PULL_PRICE = 100;
 /** 10회 묶음: 1,000개에 11회 */
 export const TEN_PRICE = 1000;
 export const TEN_COUNT = 11;
-/** 유니크 없이 PITY_MAX - 1회를 뽑으면 PITY_MAX번째는 유니크 확정 */
-export const PITY_MAX = 50;
+/**
+ * 선택 게이지: 오라·스킨 뽑기 1회마다 1칸씩 찬다. 가득 차면 그 뽑기의 최상위(유니크 오라 / 내 직업 스킨) 중
+ * 원하는 것 하나를 고른다(고르면 그만큼 줄어든다). 뽑기에서 자연히 나와도 게이지는 그대로다.
+ */
+export const AURA_GAUGE_MAX = 50;
+export const SKIN_GAUGE_MAX = 100;
+/** 예전 이름(오라 게이지) */
+export const PITY_MAX = AURA_GAUGE_MAX;
 /** 같은 등급 외형을 모두 가졌을 때 나온 중복은 별조각으로 돌려준다 */
 export const DUPLICATE_REFUND: Record<Rarity, number> = { common: 20, rare: 50, unique: 200 };
 /** 원하는 외형을 바로 얻는 확정 교환 가격 */

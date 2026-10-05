@@ -12,5 +12,12 @@ export const exchangeBody = z.strictObject({
   item_id: itemIdSchema,
 });
 
+export const claimBody = z.strictObject({
+  request_id: requestId,
+  banner: z.enum(['aura', 'skin']),
+  item_id: itemIdSchema,
+});
+export type ClaimBody = z.infer<typeof claimBody>;
+
 export type PullBody = z.infer<typeof pullBody>;
 export type ExchangeBody = z.infer<typeof exchangeBody>;

@@ -32,6 +32,9 @@ namespace DotRPG
         /// <summary>Skin banner rate table (its 유니크 tier = my class's skins).</summary>
         public static readonly List<StarRate> SkinRates = new List<StarRate>();
         public static int PityMax { get; private set; } = 50;
+        /// <summary>Selection gauge sizes: fill it with draws, then choose (aura: a 유니크 aura, skin: a skin).</summary>
+        public static int AuraGaugeMax { get; private set; } = 50;
+        public static int SkinGaugeMax { get; private set; } = 100;
         public static int PriceOne { get; private set; } = 100;
         public static int PriceTen { get; private set; } = 1000;
         public static int TenCount { get; private set; } = 11;
@@ -83,6 +86,22 @@ namespace DotRPG
                 Changed?.Invoke();
                 _ = Game.Cosmetics?.RefreshAsync();
                 done?.Invoke(true, "", results);
+            });
+        }
+
+        /// <summary>The gauge is full: take the chosen top item of that banner.</summary>
+        public static void Claim(string banner, string itemId, Action<bool, string> done)
+        {
+            if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
+            var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["banner"] = banner, ["item_id"] = itemId };
+            Api.Post(Base + "/claim", body, r =>
+            {
+                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "선택하지 못했습니다." : r.message); return; }
+                if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity); else Pity = MiniJson.Int(r.data, "pity", Pity);
+                Owned.Add(itemId);
+                Changed?.Invoke();
+                _ = Game.Cosmetics?.RefreshAsync();
+                done?.Invoke(true, "");
             });
         }
 
@@ -143,6 +162,8 @@ namespace DotRPG
             Pity = MiniJson.Int(d, "pity");
             SkinPity = MiniJson.Int(d, "skin_pity");
             PityMax = MiniJson.Int(d, "pity_max", 50);
+            AuraGaugeMax = MiniJson.Int(d, "aura_gauge_max", 50);
+            SkinGaugeMax = MiniJson.Int(d, "skin_gauge_max", 100);
             PriceOne = MiniJson.Int(d, "price_one", 100);
             PriceTen = MiniJson.Int(d, "price_ten", 1000);
             TenCount = MiniJson.Int(d, "ten_count", 11);
