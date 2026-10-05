@@ -95,6 +95,7 @@ namespace DotRPG
             public int[] deckTop, deckBot; // per pixel-column: outer top / bottom y of the contiguous deck run (-1 = none)
             public Color32[] px;
             public int seed;
+            public bool fantasyField;
 
             public byte Cell(int x, int y)
             {
@@ -125,9 +126,9 @@ namespace DotRPG
         }
 
         /// <summary>Paints the winter map. <paramref name="ground"/>[x, y] is the ground code of each cell (y = 0 at the bottom).</summary>
-        public static Color32[] Paint(char[,] ground, int w, int h, out int pw, out int ph, System.Action<WaterField> waterReady = null)
+        public static Color32[] Paint(char[,] ground, int w, int h, out int pw, out int ph, System.Action<WaterField> waterReady = null, bool fantasyField=false)
         {
-            var j = new Job { w = w, h = h, pw = w * Px, ph = h * Px, seed = 91 };
+            var j = new Job { w = w, h = h, pw = w * Px, ph = h * Px, seed = 91,fantasyField=fantasyField };
             pw = j.pw;
             ph = j.ph;
             j.cells = new byte[w * h];
@@ -404,7 +405,7 @@ namespace DotRPG
                     switch (k)
                     {
                         case Cobble: c = CobbleAt(j, px, py, i); break;
-                        case Cliff: c = CliffAt(j, px, py, i); break;
+                        case Cliff: c = j.fantasyField ? IceCliffAt(j,px,py,i) : CliffAt(j, px, py, i); break;
                         case Stairs: c = StairsAt(j, px, py); break;
                         case Deck: c = DeckAt(j, px, py); break;
                         case Water: c = WaterC[2]; break;
@@ -479,6 +480,15 @@ namespace DotRPG
             // A little snow cap on the up-light side of some stones.
             if (Hash01(sx, sy, j.seed + 56) < 0.3f && oy < -0.35f) return SnowC[4];
             return CobbleC[tone];
+        }
+
+        static Color32 IceCliffAt(Job j,int x,int y,int i){
+            // Larger fractured masses preserve the original ledge lighting, with a glacial colour ramp.
+            var rock=CliffAt(j,x/3,y/3,i);
+            int r=Mathf.RoundToInt(rock.r*.67f),g=Mathf.RoundToInt(rock.g*.91f+8),b=Mathf.RoundToInt(rock.b*.98f+16);
+            float vein=Noise(x/75f,y/170f,557);
+            if(vein>.72f){r+=22;g+=29;b+=25;}
+            return new Color32((byte)Mathf.Clamp(r,0,255),(byte)Mathf.Clamp(g,0,255),(byte)Mathf.Clamp(b,0,255),255);
         }
 
         static Color32 CliffAt(Job j, int px, int py, int i)

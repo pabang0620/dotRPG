@@ -31,7 +31,7 @@ namespace DotRPG
         }
 
         Color32[] PaintCanyonGround(char[,] ground, int w, int h, out int pw, out int ph)
-            => CanyonTerrain.Paint(ground, w, h, out pw, out ph, StoreWaterField);
+            => CanyonTerrain.Paint(ground, w, h, out pw, out ph, StoreWaterField, HuntingGrounds.Get(MapId)?.variant ?? -1);
 
         /// <summary>
         /// Canyon objects in 32px art. Reuses the shared "town_*" set for the pieces that fit (trees,

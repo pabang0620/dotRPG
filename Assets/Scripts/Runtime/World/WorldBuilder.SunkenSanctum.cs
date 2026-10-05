@@ -12,11 +12,12 @@ namespace DotRPG
                 if(c=='~')waterMap.SetTile(at,ColliderTile());
                 if(c=='W')cliffMap.SetTile(at,ColliderTile());
                 if(c=='P')PlayerSpawn=new Vector2(x+.5f,y+.5f);
-                if(c=='<'){
+                if(c=='<'||c=='>'){
                     var pos=new Vector2(x+.5f,y+.5f);
-                    MapPortal.Create(pos,"winter_reach",objectsRoot);
-                    if(!portalCells.ContainsKey("winter_reach"))portalCells["winter_reach"]=new System.Collections.Generic.List<Vector2>();
-                    portalCells["winter_reach"].Add(pos);
+                    string target=WorldRoutes.Target(map,c);
+                    MapPortal.Create(pos,target,objectsRoot);
+                    if(!portalCells.ContainsKey(target))portalCells[target]=new System.Collections.Generic.List<Vector2>();
+                    portalCells[target].Add(pos);
                 }
             }
             // Resolve collision in the load frame, before an arrival or path probe can run.

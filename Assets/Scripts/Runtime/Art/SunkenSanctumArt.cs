@@ -17,7 +17,7 @@ namespace DotRPG
         }
         static Color32 C(int r,int g,int b)=>new Color32((byte)Mathf.Clamp(r,0,255),(byte)Mathf.Clamp(g,0,255),(byte)Mathf.Clamp(b,0,255),255);
         static int Hash(int x,int y)=>unchecked((x*73856093 ^ y*19349663)&0x7fffffff);
-        public static bool Land(char c)=>c=='.'||c=='L'||c=='P'||c=='<';
+        public static bool Land(char c)=>c=='.'||c=='L'||c=='P'||c=='<'||c=='>';
         static Sprite Raster(PixelCanvas p,string key,Vector2 pivot,float ppu=32)
         {
             var t=new Texture2D(p.Width,p.Height,TextureFormat.RGBA32,false){name=key,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
@@ -73,6 +73,8 @@ namespace DotRPG
             // The altar image is a floor layer, never an occluding building or a walkable image over water.
             var altar=Asset("altar");
             if(altar!=null)Put(root,"Ancient broken altar",altar,new Vector2(24,7.2f),new Vector2(16,13),-28000);
+            var gate=Put(root,"Hunting passage marker",Game.Art.Get("arrow_right"),new Vector2(14.5f,49.5f),new Vector2(1,.7f),-27000);
+            gate.color=new Color(.6f,.9f,.78f);
             Pillar(root,new Vector2(19,11),2.1f);Pillar(root,new Vector2(29,11.5f),1.8f);
             Pillar(root,new Vector2(16,50),1.15f);
             Debris(root,new Vector2(33,50),true);

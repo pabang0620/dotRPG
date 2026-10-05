@@ -8,12 +8,12 @@ namespace DotRPG
     /// <summary>Region-only presentation; network IDs, loot and combat definitions remain unchanged.</summary>
     public static class RegionalMonsterArt
     {
-        public const string Rock = "cliff_rock", Yeti = "snow_yeti";
+        public const string Rock = "cliff_rock", Yeti = "snow_yeti", Sanctum = "sanctum_sentinel";
         static readonly Dictionary<string, Sprite[]> sheets = new Dictionary<string, Sprite[]>();
         static readonly string[] directions = { "down", "downside", "side", "upside", "up" };
         static readonly string[] frames = { "idle0", "idle1", "walk0", "walk1", "walk2", "walk3", "attack", "hurt" };
-        public static bool Supports(string id) => id != null && (id == Rock || id == Yeti || id == Rock+"_guard" || id == Rock+"_thrower" || id == Yeti+"_guard" || id == Yeti+"_thrower");
-        public static string Species(string id) => id != null && id.StartsWith(Rock) ? Rock : id != null && id.StartsWith(Yeti) ? Yeti : null;
+        public static bool Supports(string id) => id != null && (id == Rock || id == Yeti || id == Rock+"_guard" || id == Rock+"_thrower" || id == Yeti+"_guard" || id == Yeti+"_thrower" || id == Sanctum || id == Sanctum+"_guard" || id == Sanctum+"_thrower");
+        public static string Species(string id) => id != null && id.StartsWith(Rock) ? Rock : id != null && id.StartsWith(Yeti) ? Yeti : id != null && id.StartsWith(Sanctum) ? Sanctum : null;
         public static string LookFor(string species, MonsterKind kind) => species + (kind == MonsterKind.ShieldGuard ? "_guard" : kind == MonsterKind.Archer ? "_thrower" : "");
         [Serializable] sealed class Atlas { public float pixelsPerUnit; public Cell[] cells; }
         [Serializable] sealed class Cell { public int x, y, width, height; public float pivotX, pivotY; }
@@ -22,12 +22,12 @@ namespace DotRPG
         {
             var zone = HuntingGrounds.Get(map);
             if (zone == null || def.boss || def.raid || !Array.Exists(zone.monsters, id => id == def.id)) return;
-            string species = zone.theme == MapTheme.Canyon ? Rock : zone.theme == MapTheme.Winter ? Yeti : null;
+            string species = zone.theme == MapTheme.Canyon ? Rock : zone.theme == MapTheme.Winter ? Yeti : zone.theme == MapTheme.SanctumField ? Sanctum : null;
             if (species == null) return;
             def.look = new CharacterLook { id = LookFor(species,def.kind), body = BodyKind.Monster, hairStyle = HairStyle.Bald };
             string role = def.kind == MonsterKind.Archer ? " 투척병" : def.kind == MonsterKind.Charger ? " 돌격병" :
                 def.kind == MonsterKind.ShieldGuard ? " 수호병" : def.kind == MonsterKind.Knight ? " 전사" : "";
-            def.name = (species == Rock ? "암석 골렘" : "설산 예티") + role;
+            def.name = (species == Rock ? "암석 골렘" : species == Yeti ? "설산 예티" : "성소 석상") + role;
         }
 
         public static Sprite Get(string id, string direction, string frame)
@@ -73,6 +73,7 @@ namespace DotRPG
                 int dx=x-8,dy=y-8;if(dx*dx+dy*dy>25)continue;
                 p.Set(x,y,dx*dx+dy*dy>15?dark:(x+y<15?light:mid));
             }
+            if(id==Sanctum){dark=new Color32(20,61,58,255);mid=new Color32(66,171,149,255);light=new Color32(203,242,205,255);p.Rect(5,5,6,6,mid);p.Line(5,5,10,10,light);p.Line(10,5,5,10,light);}
             if(id==Rock){p.Line(6,5,9,8,dark);p.Line(9,8,8,11,dark);}
             sprite = CareerArt.SpriteOf(p, id + "_projectile", 24);
             sprite.name = id + "_projectile";

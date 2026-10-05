@@ -38,6 +38,12 @@ namespace DotRPG
                 for(int n=1;n<=4;n++)Get(r[n]).hint="사냥터 "+n+" · "+(n==1?"북쪽: 사냥터 2 / 남쪽: 사냥터 3":n==4?"북쪽·남쪽 두 길이 합류 / 동쪽: 다음 지역":"서쪽: 사냥터 1 / 동쪽: 사냥터 4");
             }
             Get("village").previousMap=null;
+            var sanctuary=Get(MapRegistry.Sanctum);sanctuary.nextMap="sanctum_hall";
+            var hall=Get("sanctum_hall");hall.previousMap=MapRegistry.Sanctum;hall.northMap="sanctum_archive";hall.southMap="sanctum_roots";
+            foreach(var id in new[]{"sanctum_archive","sanctum_roots"}){Get(id).previousMap=hall.id;Get(id).nextMap="sanctum_court";}
+            var court=Get("sanctum_court");court.northMap="sanctum_archive";court.southMap="sanctum_roots";
+            hall.hint="북쪽: 잠긴 서고 / 남쪽: 뿌리 잠식 지하묘 / 서쪽: 성소";
+            court.hint="두 갈래가 합류한 성소 최심부 · 북쪽/남쪽으로 돌아갈 수 있다.";
         }
     }
 }

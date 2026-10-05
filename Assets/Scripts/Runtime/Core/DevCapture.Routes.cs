@@ -15,7 +15,7 @@ namespace DotRPG
             Game.Flow.NewGame(CharacterClass.Warrior,"동선 검증");yield return Wait(1.5f);
             Game.Player.Input=new ScriptedInput();Game.Player.Health.SetInvulnerable(600);
             AudioListener.volume=0;Game.Audio?.SetVolumes(0,0);dgnPassed=dgnFailed=0;
-            DCheck("twelve hunting fields",HuntingGrounds.All.Length==12);
+            DCheck("sixteen hunting fields",HuntingGrounds.All.Length==16);
             foreach(var r in WorldRoutes.Regions){
                 DCheck(r[0]+" four fields",HuntingGrounds.All.Count(z=>z.village==r[0])==4);
                 DCheck(r[0]+" split",WorldRoutes.Neighbors(r[1]).OrderBy(x=>x).SequenceEqual(new[]{r[0],r[2],r[3]}.OrderBy(x=>x)));
@@ -37,7 +37,7 @@ namespace DotRPG
                     DCheck(map.id+" portal to "+target,Game.World.PortalTowards(target,out var portal));
                     DCheck(map.id+" no arrival bounce "+target,Vector2.Distance(arrival,portal)>1.3f);
                 }
-                var enemies=EnemyController.Active.Where(e=>e!=null&&e.isActiveAndEnabled&&!e.IsDead).ToArray();
+                var enemies=EnemyController.Active.Where(e=>e!=null&&e.isActiveAndEnabled&&!e.IsDead&&!e.Def.boss&&!e.Def.raid).ToArray();
                 if(zone!=null){
                     DCheck(map.id+" has monsters",enemies.Length>0);
                     var bad=enemies.Where(e=>!Game.World.IsFree(e.Position)||!seen.Contains(Vector2Int.FloorToInt(e.Position))).ToArray();

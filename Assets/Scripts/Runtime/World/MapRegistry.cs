@@ -15,6 +15,7 @@ namespace DotRPG
         Forest,
         Interior,
         SunkenSanctum,
+        SanctumField,
     }
 
     /// <summary>One playable map. Portals '&gt;' lead to <see cref="nextMap"/>, '&lt;' to <see cref="previousMap"/>.</summary>
@@ -77,6 +78,8 @@ namespace DotRPG
             maps.Add(new MapInfo { id = Sanctum, displayName = "침수된 고대 성소", resource = "Maps/SunkenSanctum",
                 theme = MapTheme.SunkenSanctum, music = "music_canyon",
                 hint = "제단 북쪽 → 좁은 연결부 → 왼쪽 돌길 → 중앙 계단 → 상단 단상\n물·절벽은 통행 불가 · 하단 귀환 표식: 해빙된 성소 입구" });
+            foreach(var z in HuntingGrounds.All) if(z.theme==MapTheme.SanctumField)
+                maps.Add(new MapInfo { id=z.id,displayName=z.name,theme=z.theme,safe=false,music="music_canyon",hint="성소 심층 · Lv.40 반복 사냥" });
             WorldRoutes.Configure(maps);
             return maps.ToArray();
         }

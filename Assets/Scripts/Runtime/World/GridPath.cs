@@ -81,7 +81,7 @@ namespace DotRPG
 
         static bool Blocked(Vector2 p)
         {
-            int n = Physics2D.OverlapCircleNonAlloc(p, ProbeRadius, hits);
+            int n = Physics2D.OverlapCircleNonAlloc(p + new Vector2(0f, .22f), ProbeRadius, hits);
             for (int i = 0; i < n; i++)
             {
                 var c = hits[i];
@@ -104,11 +104,12 @@ namespace DotRPG
         static bool LineClear(Vector2 a, Vector2 b)
         {
             float len = Vector2.Distance(a, b);
-            int steps = Mathf.CeilToInt(len / 0.4f);
+            int steps = Mathf.CeilToInt(len / 0.2f);
             for (int i = 1; i < steps; i++)
             {
-                int c = Cell(Vector2.Lerp(a, b, i / (float)steps));
-                if (c >= 0 && !free[c]) return false;
+                // A centreline can cross a free tile while the character's shoulder clips adjacent water.
+                Vector2 p=Vector2.Lerp(a,b,i/(float)steps)+new Vector2(0,.22f);
+                for(int sy=-1;sy<=1;sy+=2)for(int sx=-1;sx<=1;sx+=2){int c=Cell(p+new Vector2(sx*ProbeRadius,sy*ProbeRadius));if(c<0||!free[c])return false;}
             }
             return true;
         }
