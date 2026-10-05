@@ -3,7 +3,7 @@
 
 export type Rarity = 'common' | 'rare' | 'unique';
 
-export const RATES_VERSION = '2026-10-05.2';
+export const RATES_VERSION = '2026-10-05.3';
 
 /** 등급 확률(만분율, 합 10000). 최상위는 유니크(전설 등급은 아직 열지 않는다) */
 export const RARITY_WEIGHT: Record<Rarity, number> = { common: 7700, rare: 2000, unique: 300 };
@@ -17,10 +17,14 @@ export const GEAR_BANNERS: Record<Exclude<Banner, 'aura' | 'skin'>, { name: stri
   armor: { name: '방어구 뽑기', categories: ['Top', 'Bottom'] },
   accessory: { name: '장신구 뽑기', categories: ['Necklace', 'Ring'] },
 };
-/** 장비 등급 확률(천분율, 합 1000). 그 뽑기에 없는 등급의 몫은 있는 등급 중 가장 낮은 등급으로 간다 */
+/**
+ * 장비 등급 확률(만분율, 합 10000). 커먼은 넣지 않는다(돈을 쓰는 뽑기라 최하 등급은 언커먼).
+ * 그 뽑기에 없는 등급의 몫은 있는 등급 중 가장 낮은 등급으로 간다
+ */
 export const GEAR_RARITY_PERMILLE: [string, number][] = [
-  ['Common', 550], ['Uncommon', 300], ['Rare', 100], ['Epic', 40], ['Unique', 9], ['Legendary', 1],
+  ['Uncommon', 5500], ['Rare', 3000], ['Epic', 1120], ['Unique', 350], ['Legendary', 30],
 ];
+export const GEAR_RATE_SCALE = 10000;
 export const GEAR_RARITY_NAME: Record<string, string> = {
   Common: '커먼', Uncommon: '언커먼', Rare: '레어', Epic: '에픽', Unique: '유니크', Legendary: '레전더리',
 };

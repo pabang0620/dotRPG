@@ -14,7 +14,7 @@ namespace DotRPG
     public class GachaScreen : OnlineWindow
     {
         public static GachaScreen Instance { get; private set; }
-        const float ListW = 260f, CardH = 98f, BigH = 300f, CellW = 80f, CellH = 116f;
+        const float ListW = 260f, CardH = 98f, BigH = 440f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
         const float Step = 0.13f, Anticipation = 0.8f;
 
         sealed class Card { public string id; public Image bg, frame; public Text name; }
@@ -34,9 +34,13 @@ namespace DotRPG
         readonly List<Cell> cells = new List<Cell>();
         readonly List<Spark> sparks = new List<Spark>();
         Image big, flash;
-        Text bigTitle, bigSub, wallet, bonusLabel;
+        Text bigTitle, bigSub, wallet, bonusLabel, badge;
+        Image badgeBg;
         Button one, ten, rateBtn, wardrobeBtn;
-        RectTransform rateModal, cellRoot;
+        RectTransform rateModal, cellRoot, resultPage;
+        Text resultTitle;
+        Button skipBtn, againBtn, okBtn;
+        int lastCount = 1;
         Text rateText;
         List<StarPullResult> shown = new List<StarPullResult>();
         string banner = "skin";
@@ -46,7 +50,7 @@ namespace DotRPG
 
         public static GachaScreen Create(Transform canvas)
         {
-            var w = CreateWindow<GachaScreen>(canvas, "Gacha", "캐시샵", "menuicon_cosmetics");
+            var w = CreateWindow<GachaScreen>(canvas, "Gacha", "캐시샵", "menuicon_cashshop");
             Instance = w;
             var tl = new Vector2(0f, 1f);
 
@@ -85,22 +89,40 @@ namespace DotRPG
             UIFactory.Place(w.big.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(940f, 940f * 9f / 16f));
             w.bigTitle = Label(bigBox.transform, "Title", "", 40, tl, tl, new Vector2(28f, -28f), new Vector2(520f, 56f), TextAnchor.MiddleLeft);
             w.bigSub = Label(bigBox.transform, "Sub", "", 19, tl, tl, new Vector2(30f, -90f), new Vector2(460f, 150f), TextAnchor.UpperLeft);
-            w.wallet = Label(bigBox.transform, "Wallet", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 18f), new Vector2(460f, 30f), TextAnchor.MiddleLeft);
+            // "출시 스킨 N종" ribbon on the skin banner (top right).
+            w.badgeBg = UIFactory.Image(bigBox.transform, "Badge", Game.Art.Get("ui_white"), new Color32(150, 30, 40, 235));
+            w.badgeBg.preserveAspect = false; w.badgeBg.raycastTarget = false;
+            UIFactory.Place(w.badgeBg.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-18f, -18f), new Vector2(210f, 44f));
+            w.badge = Label(w.badgeBg.transform, "Text", "", 20, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 40f), TextAnchor.MiddleCenter);
+            var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
+            shard.preserveAspect = true; shard.raycastTarget = false;
+            UIFactory.Place(shard.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 14f), new Vector2(38f, 38f));
+            w.wallet = Label(bigBox.transform, "Wallet", "", 22, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(68f, 18f), new Vector2(440f, 30f), TextAnchor.MiddleLeft);
 
-            float by = -(BigH + 12f);
-            w.one = Button(w.content, "One", "", "ui_btn", tl, tl, new Vector2(ListW + 16f, by), new Vector2(250f, 54f), () => w.Ask(1), 18);
-            w.ten = Button(w.content, "Ten", "", "ui_btn", tl, tl, new Vector2(ListW + 276f, by), new Vector2(290f, 54f), () => w.Ask(10), 18);
-            w.rateBtn = Button(w.content, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(ListW + 576f, by), new Vector2(170f, 54f), w.OpenRates, 18);
-            w.wardrobeBtn = Button(w.content, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(ListW + 756f, by), new Vector2(184f, 54f), w.OpenWardrobe, 18);
+            float by = -(BigH + 14f), bx = ListW + 16f;
+            w.one = Button(w.content, "One", "", "ui_btn", tl, tl, new Vector2(bx, by), new Vector2(250f, 58f), () => w.Ask(1), 18);
+            w.ten = Button(w.content, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 262f, by), new Vector2(320f, 58f), () => w.Ask(10), 18);
+            w.rateBtn = Button(w.content, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 594f, by), new Vector2(170f, 58f), w.OpenRates, 18);
+            w.wardrobeBtn = Button(w.content, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 776f, by), new Vector2(164f, 58f), w.OpenWardrobe, 18);
+            // keep the price text off the button edges
+            foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 16f, 0f, 16f, 0f);
+
+            // Result page: opens over the shop after a purchase and reveals the cards there.
+            var page = Panel(w.content, "ResultPage", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1220f, 640f), new Color32(8, 10, 18, 248));
+            page.raycastTarget = true;
+            w.resultPage = page.rectTransform;
+            UIFactory.Stretch(w.resultPage, -20f, -20f, -20f, -20f);
+            w.resultTitle = Label(page.transform, "Title", "", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(900f, 44f), TextAnchor.MiddleCenter);
+            w.skipBtn = Button(page.transform, "Skip", "모두 열기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-260f, 24f), new Vector2(220f, 56f), w.RevealAll, 19);
+            w.againBtn = Button(page.transform, "Again", "한 번 더", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 56f), () => w.Ask(w.lastCount), 19);
+            w.okBtn = Button(page.transform, "Ok", "확인", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(260f, 24f), new Vector2(220f, 56f), w.CloseResults, 19);
 
             // Results: ten cards, a gap, then the bonus card.
-            w.cellRoot = UIFactory.Place(UIFactory.Rect(w.content, "Results"), tl, tl, new Vector2(ListW + 16f, by - 66f), new Vector2(940f, CellH + 26f));
+            w.cellRoot = UIFactory.Place(UIFactory.Rect(page.transform, "Results"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(1000f, 420f));
             for (int i = 0; i < 11; i++)
             {
-                bool bonus = i == 10;
-                float x = i * (CellW + 4f) + (bonus ? 22f : 0f);
                 var c = new Cell();
-                var pos = new Vector2(x, -22f);
+                var pos = Vector2.zero; // placed per draw size in DrawCells
                 c.halo = UIFactory.Image(w.cellRoot, "Halo" + i, Game.Art.Get("fx_glow"), Color.clear);
                 c.halo.raycastTarget = false;
                 UIFactory.Place(c.halo.rectTransform, tl, new Vector2(0.5f, 0.5f), pos + new Vector2(CellW / 2f, -CellH / 2f), new Vector2(CellW * 2.2f, CellH * 1.9f));
@@ -108,15 +130,22 @@ namespace DotRPG
                 c.rt = c.bg.rectTransform;
                 c.frame = UIFactory.Image(c.bg.transform, "Frame", Game.Art.Get("ui_white"), Color.clear);
                 c.frame.preserveAspect = false; c.frame.raycastTarget = false;
-                UIFactory.Place(c.frame.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(CellW, 4f));
+                c.frame.rectTransform.anchorMin = new Vector2(0f, 1f); c.frame.rectTransform.anchorMax = new Vector2(1f, 1f);
+                c.frame.rectTransform.pivot = new Vector2(0.5f, 1f); c.frame.rectTransform.anchoredPosition = Vector2.zero; c.frame.rectTransform.sizeDelta = new Vector2(0f, 5f);
                 c.icon = UIFactory.Image(c.bg.transform, "Icon", CosmeticAura.Sprite, Color.white);
                 c.icon.preserveAspect = true;
-                UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(60f, 50f));
-                c.name = Label(c.bg.transform, "Name", "", 13, tl, tl, new Vector2(2f, -60f), new Vector2(CellW - 4f, 32f), TextAnchor.UpperCenter);
-                c.note = Label(c.bg.transform, "Note", "", 12, tl, tl, new Vector2(2f, -92f), new Vector2(CellW - 4f, 22f), TextAnchor.UpperCenter);
+                c.icon.rectTransform.anchorMin = new Vector2(0.1f, 0.42f); c.icon.rectTransform.anchorMax = new Vector2(0.9f, 0.94f);
+                c.icon.rectTransform.offsetMin = c.icon.rectTransform.offsetMax = Vector2.zero;
+                c.name = Label(c.bg.transform, "Name", "", 15, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+                c.name.rectTransform.anchorMin = new Vector2(0f, 0.16f); c.name.rectTransform.anchorMax = new Vector2(1f, 0.42f);
+                c.name.rectTransform.offsetMin = new Vector2(3f, 0f); c.name.rectTransform.offsetMax = new Vector2(-3f, 0f);
+                c.note = Label(c.bg.transform, "Note", "", 13, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+                c.note.rectTransform.anchorMin = new Vector2(0f, 0.02f); c.note.rectTransform.anchorMax = new Vector2(1f, 0.17f);
+                c.note.rectTransform.offsetMin = c.note.rectTransform.offsetMax = Vector2.zero;
                 w.cells.Add(c);
             }
-            w.bonusLabel = Label(w.cellRoot, "BonusLabel", "<color=#ffd34a>+1 보너스</color>", 14, tl, tl, new Vector2(10 * (CellW + 4f) + 22f, 0f), new Vector2(CellW, 20f), TextAnchor.MiddleCenter);
+            w.bonusLabel = Label(w.cellRoot, "BonusLabel", "<color=#ffd34a><b>+1 보너스</b></color>", 18, tl, tl, Vector2.zero, new Vector2(BonusW, 26f), TextAnchor.MiddleCenter);
+            page.gameObject.SetActive(false);
 
             w.flash = UIFactory.Image(w.content, "Flash", Game.Art.Get("ui_white"), Color.clear);
             w.flash.preserveAspect = false;
@@ -221,9 +250,64 @@ namespace DotRPG
                 shown = results;
                 revealed = 0;
                 waiting = -1;
-                revealAt = Time.unscaledTime + 0.25f;
+                lastCount = count;
+                revealAt = Time.unscaledTime + 0.45f;
+                OpenResults();
                 Refresh();
             });
+        }
+
+        void OpenResults()
+        {
+            resultTitle.text = $"<b>{Current().name} 결과</b>";
+            LayoutCells(shown.Count);
+            resultPage.gameObject.SetActive(true);
+            resultPage.SetAsLastSibling();
+            flash.transform.SetAsLastSibling();
+        }
+
+        void CloseResults()
+        {
+            if (Revealing) { RevealAll(); return; }
+            resultPage.gameObject.SetActive(false);
+            shown = new List<StarPullResult>();
+            Refresh();
+        }
+
+        /// <summary>Opens every card left (one burst for the best of them).</summary>
+        void RevealAll()
+        {
+            if (!Revealing) return;
+            bool top = false;
+            for (int i = revealed; i < shown.Count; i++) if (IsTop(shown[i])) { top = true; if (waiting < revealed) waiting = i; }
+            revealed = shown.Count;
+            if (top)
+            {
+                flashAt = punchAt = Time.unscaledTime;
+                Game.Audio.PlaySfx("quest");
+                Game.Camera?.Shake(0.14f, 0.3f);
+                for (int i = 0; i < shown.Count; i++) if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
+            }
+            DrawCells();
+        }
+
+        /// <summary>One big card for a single draw; two rows of five plus the separate bonus card for 10+1.</summary>
+        void LayoutCells(int count)
+        {
+            bool single = count <= 1;
+            float rowsW = 5 * CellW + 4 * 14f, gap = 60f;
+            float startX = single ? (1000f - 190f) / 2f : (1000f - (rowsW + gap + BonusW)) / 2f;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                var c = cells[i];
+                Vector2 pos, size;
+                if (single) { pos = new Vector2(startX, -60f); size = new Vector2(190f, 250f); }
+                else if (i < 10) { pos = new Vector2(startX + (i % 5) * (CellW + 14f), -40f - (i / 5) * (CellH + 18f)); size = new Vector2(CellW, CellH); }
+                else { pos = new Vector2(startX + rowsW + gap, -40f - (2 * CellH + 18f - BonusH) / 2f); size = new Vector2(BonusW, BonusH); }
+                UIFactory.Place(c.rt, new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), pos + new Vector2(size.x / 2f, -size.y / 2f), size);
+                UIFactory.Place(c.halo.rectTransform, new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), pos + new Vector2(size.x / 2f, -size.y / 2f), size * 2f);
+                if (i == 10) UIFactory.Place(bonusLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 0f), pos + new Vector2(0f, 6f), new Vector2(BonusW, 28f));
+            }
         }
 
         /// <summary>The announced results: 유니크 (aura / skin) or Unique / Legendary equipment.</summary>
@@ -236,6 +320,8 @@ namespace DotRPG
         protected override void Update()
         {
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
+            if (resultPage != null && resultPage.gameObject.activeSelf && (Game.Input.CancelPressed || Game.Input.SubmitPressed))
+            { if (Revealing) RevealAll(); else CloseResults(); Animate(); return; }
             base.Update();
             if (!gameObject.activeSelf) return;
             Animate();
@@ -269,7 +355,7 @@ namespace DotRPG
         void Burst(int cell, Color color, int count)
         {
             var c = cells[cell];
-            var center = (Vector2)c.rt.anchoredPosition + new Vector2(CellW / 2f, -CellH / 2f);
+            var center = (Vector2)c.rt.anchoredPosition;
             for (int i = 0; i < count; i++)
             {
                 var img = UIFactory.Image(cellRoot, "Spark", Game.Art.Get("ui_white"), color);
@@ -347,7 +433,7 @@ namespace DotRPG
             {
                 var c = cells[i];
                 bool used = i < count;
-                c.bg.gameObject.SetActive(used || count == 0 && i < 10);
+                c.bg.gameObject.SetActive(used);
                 c.halo.gameObject.SetActive(c.bg.gameObject.activeSelf);
                 bool on = used && i < revealed;
                 c.icon.enabled = on;
@@ -399,12 +485,19 @@ namespace DotRPG
             }
             big.sprite = Game.Art.Get("Banners/banner_gacha_" + banner);
             bigTitle.text = $"<b>{cur.name}</b>";
+            // Skins released so far, and the ones this class can draw.
+            var mine = new List<string>();
+            int released = 0;
+            var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
+            foreach (var sk in SkinCatalog.All) { released++; if (sk.cls == cls) mine.Add(sk.name); }
+            badgeBg.gameObject.SetActive(banner == "skin");
+            badge.text = $"<b>출시 스킨 {mine.Count}종</b>";
             int pity = banner == "skin" ? StarShopClient.SkinPity : StarShopClient.Pity;
             bool hasPity = banner == "skin" || banner == "aura";
             string top = banner == "skin" ? "스킨" : "유니크 오라";
             bigSub.text = $"{cur.sub}\n" +
                           (hasPity ? $"<color=#ffd34a>{top} 확정까지 {Mathf.Max(1, StarShopClient.PityMax - pity)}회</color> (천장 {StarShopClient.PityMax}회)\n" : "뽑은 장비는 바로 가방으로\n") +
-                          (banner == "skin" ? "<color=#ffb347>스킨 공격력 +5%</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
+                          (banner == "skin" ? $"<color=#ffb347>스킨 공격력 +5%</color>\n<color=#b8c4d8>{CharacterClassInfo.Get(cls).displayName} 스킨: {string.Join(" · ", mine)}</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
             wallet.text = online
                 ? (StarShopClient.Loaded ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>불러오는 중...</color>")
                 : "<color=#8c96a8>온라인 캐릭터로 접속하면 이용할 수 있습니다.</color>";

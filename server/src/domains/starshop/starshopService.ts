@@ -12,6 +12,7 @@ import {
   GEAR_BANNERS,
   GEAR_RARITY_NAME,
   GEAR_RARITY_PERMILLE,
+  GEAR_RATE_SCALE,
   PITY_MAX,
   PULL_PRICE,
   RARITY_NAME,
@@ -54,7 +55,7 @@ function auraTable(banner: 'aura' | 'skin' = 'aura', cls = 'warrior') {
 export function gearTable(banner: GearBanner, cls: string) {
   const cats = GEAR_BANNERS[banner].categories;
   const items = getGameData().economy.shop.equipmentList.filter(
-    (e) => !e.starter && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.starter && e.rarity !== 'Common' && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
   );
   const present = GEAR_RARITY_PERMILLE.filter(([r]) => items.some((e) => e.rarity === r));
   if (present.length === 0) return [];
@@ -68,8 +69,8 @@ export function gearTable(banner: GearBanner, cls: string) {
         rarity: r.toLowerCase(),
         name: GEAR_RARITY_NAME[r] ?? r,
         permille,
-        rate: permille / 10,
-        items: of.map((e) => ({ id: keyAt(e.id, 0), rate: permille / 10 / of.length })),
+        rate: (permille * 100) / GEAR_RATE_SCALE,
+        items: of.map((e) => ({ id: keyAt(e.id, 0), rate: (permille * 100) / GEAR_RATE_SCALE / of.length })),
       };
     })
     .reverse();
@@ -115,8 +116,9 @@ export async function summary(accountId: number, characterUuid: string) {
   };
 }
 
-function rollRarity(): Rarity {
-  const roll = getRng().int(0, 10000);
+/** rareOrBetter: the 10+1 bonus draw (일반 removed, 희귀·유니크 keep their ratio) */
+function rollRarity(rareOrBetter = false): Rarity {
+  const roll = rareOrBetter ? getRng().int(0, RARITY_WEIGHT.unique + RARITY_WEIGHT.rare) : getRng().int(0, 10000);
   if (roll < RARITY_WEIGHT.unique) return 'unique';
   if (roll < RARITY_WEIGHT.unique + RARITY_WEIGHT.rare) return 'rare';
   return 'common';
@@ -179,7 +181,8 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
   for (let i = 0; i < times; i++) {
     const pityBefore = pity;
     const byPity = pity + 1 >= PITY_MAX;
-    const rarity: Rarity = byPity ? 'unique' : rollRarity();
+    const bonus = times > 1 && i === times - 1;
+    const rarity: Rarity = byPity ? 'unique' : rollRarity(bonus);
     const all = poolOf(banner, rarity, ctx.char.class);
     const fresh = all.filter((c) => !owned.has(c.id));
     const duplicate = fresh.length === 0;
@@ -201,9 +204,13 @@ async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: r
   const table = gearTable(banner, ctx.char.class);
   if (table.length === 0) throw new AppError(422, '뽑을 수 있는 장비가 없습니다.', 'NO_GEAR');
   for (let i = 0; i < times; i++) {
-    let roll = getRng().int(0, 1000);
-    let tier = table[table.length - 1]!;
-    for (const t of table) {
+    // 10+1의 보너스(마지막) 1회는 최하 등급을 빼고 굴린다: 남은 등급끼리 같은 비율
+    const bonus = times > 1 && i === times - 1 && table.length > 1;
+    const pool = bonus ? table.slice(0, -1) : table;
+    const total = pool.reduce((a, t) => a + t.permille, 0);
+    let roll = getRng().int(0, total);
+    let tier = pool[pool.length - 1]!;
+    for (const t of pool) {
       if (roll < t.permille) { tier = t; break; }
       roll -= t.permille;
     }
