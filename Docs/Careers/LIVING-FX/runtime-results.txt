@@ -1,0 +1,421 @@
+[1.56] capture started
+[1.56] verification audio volume: 0
+[3.05] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN f_cross deforms its internal silhouette PASS
+DGN f_rush deforms its internal silhouette PASS
+DGN f_flurry deforms its internal silhouette PASS
+DGN f_break deforms its internal silhouette PASS
+DGN f_focus deforms its internal silhouette PASS
+DGN f_execute deforms its internal silhouette PASS
+DGN f_awake deforms its internal silhouette PASS
+DGN g_guard deforms its internal silhouette PASS
+DGN g_wall deforms its internal silhouette PASS
+DGN g_oath deforms its internal silhouette PASS
+DGN g_taunt deforms its internal silhouette PASS
+DGN g_bash deforms its internal silhouette PASS
+DGN g_counter deforms its internal silhouette PASS
+DGN g_awake deforms its internal silhouette PASS
+DGN m_fire deforms its internal silhouette PASS
+DGN m_ice deforms its internal silhouette PASS
+DGN m_storm deforms its internal silhouette PASS
+DGN m_orbit deforms its internal silhouette PASS
+DGN m_veil deforms its internal silhouette PASS
+DGN m_rift deforms its internal silhouette PASS
+DGN m_awake deforms its internal silhouette PASS
+DGN b_heal deforms its internal silhouette PASS
+DGN b_bloom deforms its internal silhouette PASS
+DGN b_cleanse deforms its internal silhouette PASS
+DGN b_light deforms its internal silhouette PASS
+DGN b_wing deforms its internal silhouette PASS
+DGN b_bless deforms its internal silhouette PASS
+DGN b_awake deforms its internal silhouette PASS
+DGN motion verification is silent PASS
+DGN 28 individual motion scores PASS
+DGN f_cross bounded visual motion direction 0 PASS
+DGN f_cross bounded visual motion direction 1 PASS
+DGN f_cross bounded visual motion direction 2 PASS
+DGN f_cross bounded visual motion direction 3 PASS
+DGN f_cross bounded visual motion direction 4 PASS
+DGN f_cross bounded visual motion direction 5 PASS
+DGN f_cross bounded visual motion direction 6 PASS
+DGN f_cross bounded visual motion direction 7 PASS
+DGN f_rush bounded visual motion direction 0 PASS
+DGN f_rush bounded visual motion direction 1 PASS
+DGN f_rush bounded visual motion direction 2 PASS
+DGN f_rush bounded visual motion direction 3 PASS
+DGN f_rush bounded visual motion direction 4 PASS
+DGN f_rush bounded visual motion direction 5 PASS
+DGN f_rush bounded visual motion direction 6 PASS
+DGN f_rush bounded visual motion direction 7 PASS
+DGN f_flurry bounded visual motion direction 0 PASS
+DGN f_flurry bounded visual motion direction 1 PASS
+DGN f_flurry bounded visual motion direction 2 PASS
+DGN f_flurry bounded visual motion direction 3 PASS
+DGN f_flurry bounded visual motion direction 4 PASS
+DGN f_flurry bounded visual motion direction 5 PASS
+DGN f_flurry bounded visual motion direction 6 PASS
+DGN f_flurry bounded visual motion direction 7 PASS
+DGN f_break bounded visual motion direction 0 PASS
+DGN f_break bounded visual motion direction 1 PASS
+DGN f_break bounded visual motion direction 2 PASS
+DGN f_break bounded visual motion direction 3 PASS
+DGN f_break bounded visual motion direction 4 PASS
+DGN f_break bounded visual motion direction 5 PASS
+DGN f_break bounded visual motion direction 6 PASS
+DGN f_break bounded visual motion direction 7 PASS
+DGN f_focus bounded visual motion direction 0 PASS
+DGN f_focus bounded visual motion direction 1 PASS
+DGN f_focus bounded visual motion direction 2 PASS
+DGN f_focus bounded visual motion direction 3 PASS
+DGN f_focus bounded visual motion direction 4 PASS
+DGN f_focus bounded visual motion direction 5 PASS
+DGN f_focus bounded visual motion direction 6 PASS
+DGN f_focus bounded visual motion direction 7 PASS
+DGN f_execute bounded visual motion direction 0 PASS
+DGN f_execute bounded visual motion direction 1 PASS
+DGN f_execute bounded visual motion direction 2 PASS
+DGN f_execute bounded visual motion direction 3 PASS
+DGN f_execute bounded visual motion direction 4 PASS
+DGN f_execute bounded visual motion direction 5 PASS
+DGN f_execute bounded visual motion direction 6 PASS
+DGN f_execute bounded visual motion direction 7 PASS
+DGN f_awake bounded visual motion direction 0 PASS
+DGN f_awake bounded visual motion direction 1 PASS
+DGN f_awake bounded visual motion direction 2 PASS
+DGN f_awake bounded visual motion direction 3 PASS
+DGN f_awake bounded visual motion direction 4 PASS
+DGN f_awake bounded visual motion direction 5 PASS
+DGN f_awake bounded visual motion direction 6 PASS
+DGN f_awake bounded visual motion direction 7 PASS
+DGN g_guard bounded visual motion direction 0 PASS
+DGN g_guard bounded visual motion direction 1 PASS
+DGN g_guard bounded visual motion direction 2 PASS
+DGN g_guard bounded visual motion direction 3 PASS
+DGN g_guard bounded visual motion direction 4 PASS
+DGN g_guard bounded visual motion direction 5 PASS
+DGN g_guard bounded visual motion direction 6 PASS
+DGN g_guard bounded visual motion direction 7 PASS
+DGN g_wall bounded visual motion direction 0 PASS
+DGN g_wall bounded visual motion direction 1 PASS
+DGN g_wall bounded visual motion direction 2 PASS
+DGN g_wall bounded visual motion direction 3 PASS
+DGN g_wall bounded visual motion direction 4 PASS
+DGN g_wall bounded visual motion direction 5 PASS
+DGN g_wall bounded visual motion direction 6 PASS
+DGN g_wall bounded visual motion direction 7 PASS
+DGN g_oath bounded visual motion direction 0 PASS
+DGN g_oath bounded visual motion direction 1 PASS
+DGN g_oath bounded visual motion direction 2 PASS
+DGN g_oath bounded visual motion direction 3 PASS
+DGN g_oath bounded visual motion direction 4 PASS
+DGN g_oath bounded visual motion direction 5 PASS
+DGN g_oath bounded visual motion direction 6 PASS
+DGN g_oath bounded visual motion direction 7 PASS
+DGN g_taunt bounded visual motion direction 0 PASS
+DGN g_taunt bounded visual motion direction 1 PASS
+DGN g_taunt bounded visual motion direction 2 PASS
+DGN g_taunt bounded visual motion direction 3 PASS
+DGN g_taunt bounded visual motion direction 4 PASS
+DGN g_taunt bounded visual motion direction 5 PASS
+DGN g_taunt bounded visual motion direction 6 PASS
+DGN g_taunt bounded visual motion direction 7 PASS
+DGN g_bash bounded visual motion direction 0 PASS
+DGN g_bash bounded visual motion direction 1 PASS
+DGN g_bash bounded visual motion direction 2 PASS
+DGN g_bash bounded visual motion direction 3 PASS
+DGN g_bash bounded visual motion direction 4 PASS
+DGN g_bash bounded visual motion direction 5 PASS
+DGN g_bash bounded visual motion direction 6 PASS
+DGN g_bash bounded visual motion direction 7 PASS
+DGN g_counter bounded visual motion direction 0 PASS
+DGN g_counter bounded visual motion direction 1 PASS
+DGN g_counter bounded visual motion direction 2 PASS
+DGN g_counter bounded visual motion direction 3 PASS
+DGN g_counter bounded visual motion direction 4 PASS
+DGN g_counter bounded visual motion direction 5 PASS
+DGN g_counter bounded visual motion direction 6 PASS
+DGN g_counter bounded visual motion direction 7 PASS
+DGN g_awake bounded visual motion direction 0 PASS
+DGN g_awake bounded visual motion direction 1 PASS
+DGN g_awake bounded visual motion direction 2 PASS
+DGN g_awake bounded visual motion direction 3 PASS
+DGN g_awake bounded visual motion direction 4 PASS
+DGN g_awake bounded visual motion direction 5 PASS
+DGN g_awake bounded visual motion direction 6 PASS
+DGN g_awake bounded visual motion direction 7 PASS
+DGN m_fire bounded visual motion direction 0 PASS
+DGN m_fire bounded visual motion direction 1 PASS
+DGN m_fire bounded visual motion direction 2 PASS
+DGN m_fire bounded visual motion direction 3 PASS
+DGN m_fire bounded visual motion direction 4 PASS
+DGN m_fire bounded visual motion direction 5 PASS
+DGN m_fire bounded visual motion direction 6 PASS
+DGN m_fire bounded visual motion direction 7 PASS
+DGN m_ice bounded visual motion direction 0 PASS
+DGN m_ice bounded visual motion direction 1 PASS
+DGN m_ice bounded visual motion direction 2 PASS
+DGN m_ice bounded visual motion direction 3 PASS
+DGN m_ice bounded visual motion direction 4 PASS
+DGN m_ice bounded visual motion direction 5 PASS
+DGN m_ice bounded visual motion direction 6 PASS
+DGN m_ice bounded visual motion direction 7 PASS
+DGN m_storm bounded visual motion direction 0 PASS
+DGN m_storm bounded visual motion direction 1 PASS
+DGN m_storm bounded visual motion direction 2 PASS
+DGN m_storm bounded visual motion direction 3 PASS
+DGN m_storm bounded visual motion direction 4 PASS
+DGN m_storm bounded visual motion direction 5 PASS
+DGN m_storm bounded visual motion direction 6 PASS
+DGN m_storm bounded visual motion direction 7 PASS
+DGN m_orbit bounded visual motion direction 0 PASS
+DGN m_orbit bounded visual motion direction 1 PASS
+DGN m_orbit bounded visual motion direction 2 PASS
+DGN m_orbit bounded visual motion direction 3 PASS
+DGN m_orbit bounded visual motion direction 4 PASS
+DGN m_orbit bounded visual motion direction 5 PASS
+DGN m_orbit bounded visual motion direction 6 PASS
+DGN m_orbit bounded visual motion direction 7 PASS
+DGN m_veil bounded visual motion direction 0 PASS
+DGN m_veil bounded visual motion direction 1 PASS
+DGN m_veil bounded visual motion direction 2 PASS
+DGN m_veil bounded visual motion direction 3 PASS
+DGN m_veil bounded visual motion direction 4 PASS
+DGN m_veil bounded visual motion direction 5 PASS
+DGN m_veil bounded visual motion direction 6 PASS
+DGN m_veil bounded visual motion direction 7 PASS
+DGN m_rift bounded visual motion direction 0 PASS
+DGN m_rift bounded visual motion direction 1 PASS
+DGN m_rift bounded visual motion direction 2 PASS
+DGN m_rift bounded visual motion direction 3 PASS
+DGN m_rift bounded visual motion direction 4 PASS
+DGN m_rift bounded visual motion direction 5 PASS
+DGN m_rift bounded visual motion direction 6 PASS
+DGN m_rift bounded visual motion direction 7 PASS
+DGN m_awake bounded visual motion direction 0 PASS
+DGN m_awake bounded visual motion direction 1 PASS
+DGN m_awake bounded visual motion direction 2 PASS
+DGN m_awake bounded visual motion direction 3 PASS
+DGN m_awake bounded visual motion direction 4 PASS
+DGN m_awake bounded visual motion direction 5 PASS
+DGN m_awake bounded visual motion direction 6 PASS
+DGN m_awake bounded visual motion direction 7 PASS
+DGN b_heal bounded visual motion direction 0 PASS
+DGN b_heal bounded visual motion direction 1 PASS
+DGN b_heal bounded visual motion direction 2 PASS
+DGN b_heal bounded visual motion direction 3 PASS
+DGN b_heal bounded visual motion direction 4 PASS
+DGN b_heal bounded visual motion direction 5 PASS
+DGN b_heal bounded visual motion direction 6 PASS
+DGN b_heal bounded visual motion direction 7 PASS
+DGN b_bloom bounded visual motion direction 0 PASS
+DGN b_bloom bounded visual motion direction 1 PASS
+DGN b_bloom bounded visual motion direction 2 PASS
+DGN b_bloom bounded visual motion direction 3 PASS
+DGN b_bloom bounded visual motion direction 4 PASS
+DGN b_bloom bounded visual motion direction 5 PASS
+DGN b_bloom bounded visual motion direction 6 PASS
+DGN b_bloom bounded visual motion direction 7 PASS
+DGN b_cleanse bounded visual motion direction 0 PASS
+DGN b_cleanse bounded visual motion direction 1 PASS
+DGN b_cleanse bounded visual motion direction 2 PASS
+DGN b_cleanse bounded visual motion direction 3 PASS
+DGN b_cleanse bounded visual motion direction 4 PASS
+DGN b_cleanse bounded visual motion direction 5 PASS
+DGN b_cleanse bounded visual motion direction 6 PASS
+DGN b_cleanse bounded visual motion direction 7 PASS
+DGN b_light bounded visual motion direction 0 PASS
+DGN b_light bounded visual motion direction 1 PASS
+DGN b_light bounded visual motion direction 2 PASS
+DGN b_light bounded visual motion direction 3 PASS
+DGN b_light bounded visual motion direction 4 PASS
+DGN b_light bounded visual motion direction 5 PASS
+DGN b_light bounded visual motion direction 6 PASS
+DGN b_light bounded visual motion direction 7 PASS
+DGN b_wing bounded visual motion direction 0 PASS
+DGN b_wing bounded visual motion direction 1 PASS
+DGN b_wing bounded visual motion direction 2 PASS
+DGN b_wing bounded visual motion direction 3 PASS
+DGN b_wing bounded visual motion direction 4 PASS
+DGN b_wing bounded visual motion direction 5 PASS
+DGN b_wing bounded visual motion direction 6 PASS
+DGN b_wing bounded visual motion direction 7 PASS
+DGN b_bless bounded visual motion direction 0 PASS
+DGN b_bless bounded visual motion direction 1 PASS
+DGN b_bless bounded visual motion direction 2 PASS
+DGN b_bless bounded visual motion direction 3 PASS
+DGN b_bless bounded visual motion direction 4 PASS
+DGN b_bless bounded visual motion direction 5 PASS
+DGN b_bless bounded visual motion direction 6 PASS
+DGN b_bless bounded visual motion direction 7 PASS
+DGN b_awake bounded visual motion direction 0 PASS
+DGN b_awake bounded visual motion direction 1 PASS
+DGN b_awake bounded visual motion direction 2 PASS
+DGN b_awake bounded visual motion direction 3 PASS
+DGN b_awake bounded visual motion direction 4 PASS
+DGN b_awake bounded visual motion direction 5 PASS
+DGN b_awake bounded visual motion direction 6 PASS
+DGN b_awake bounded visual motion direction 7 PASS
+[4.51] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN f_cross animated mesh executes in actual cast PASS
+DGN f_cross live body motion connected PASS
+DGN f_cross pose returns to neutral PASS
+DGN f_cross collider motion unchanged PASS
+[10.91] f_cross frames=8 max visual offset=0.04166667
+DGN f_rush animated mesh executes in actual cast PASS
+DGN f_rush live body motion connected PASS
+DGN f_rush pose returns to neutral PASS
+DGN f_rush collider motion unchanged PASS
+[14.14] f_rush frames=8 max visual offset=0.03294039
+DGN f_flurry animated mesh executes in actual cast PASS
+DGN f_flurry live body motion connected PASS
+DGN f_flurry pose returns to neutral PASS
+DGN f_flurry collider motion unchanged PASS
+[17.41] f_flurry frames=13 max visual offset=0.03294039
+DGN f_break animated mesh executes in actual cast PASS
+DGN f_break live body motion connected PASS
+DGN f_break pose returns to neutral PASS
+DGN f_break collider motion unchanged PASS
+[20.62] f_break frames=12 max visual offset=0.07365695
+DGN f_focus animated mesh executes in actual cast PASS
+DGN f_focus live body motion connected PASS
+DGN f_focus pose returns to neutral PASS
+DGN f_focus collider motion unchanged PASS
+[23.85] f_focus frames=13 max visual offset=0.05208333
+DGN f_execute animated mesh executes in actual cast PASS
+DGN f_execute live body motion connected PASS
+DGN f_execute pose returns to neutral PASS
+DGN f_execute collider motion unchanged PASS
+[27.11] f_execute frames=11 max visual offset=0.04166667
+DGN f_awake animated mesh executes in actual cast PASS
+DGN f_awake live body motion connected PASS
+DGN f_awake pose returns to neutral PASS
+DGN f_awake collider motion unchanged PASS
+[30.40] f_awake frames=25 max visual offset=0.09432693
+DGN Fighter reset clears motion PASS
+DGN Fighter base skill interrupts promoted pose PASS
+DGN Fighter map change clears motion PASS
+[30.95] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN g_guard animated mesh executes in actual cast PASS
+DGN g_guard live body motion connected PASS
+DGN g_guard pose returns to neutral PASS
+DGN g_guard collider motion unchanged PASS
+[37.24] g_guard frames=7 max visual offset=0.02083333
+DGN g_wall animated mesh executes in actual cast PASS
+DGN g_wall live body motion connected PASS
+DGN g_wall pose returns to neutral PASS
+DGN g_wall collider motion unchanged PASS
+[40.50] g_wall frames=13 max visual offset=0.06336211
+DGN g_oath animated mesh executes in actual cast PASS
+DGN g_oath live body motion connected PASS
+DGN g_oath pose returns to neutral PASS
+DGN g_oath collider motion unchanged PASS
+[43.83] g_oath frames=8 max visual offset=0.03125
+DGN g_taunt animated mesh executes in actual cast PASS
+DGN g_taunt live body motion connected PASS
+DGN g_taunt pose returns to neutral PASS
+DGN g_taunt collider motion unchanged PASS
+[47.03] g_taunt frames=11 max visual offset=0.02946278
+DGN g_bash animated mesh executes in actual cast PASS
+DGN g_bash live body motion connected PASS
+DGN g_bash pose returns to neutral PASS
+DGN g_bash collider motion unchanged PASS
+[50.21] g_bash frames=10 max visual offset=0.07365695
+DGN g_counter animated mesh executes in actual cast PASS
+DGN g_counter live body motion connected PASS
+DGN g_counter pose returns to neutral PASS
+DGN g_counter collider motion unchanged PASS
+[53.55] g_counter frames=7 max visual offset=0.01041667
+DGN g_awake animated mesh executes in actual cast PASS
+DGN g_awake live body motion connected PASS
+DGN g_awake pose returns to neutral PASS
+DGN g_awake collider motion unchanged PASS
+[56.97] g_awake frames=19 max visual offset=0.1062296
+DGN Guardian reset clears motion PASS
+DGN Guardian base skill interrupts promoted pose PASS
+DGN Guardian map change clears motion PASS
+[57.52] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN m_fire animated mesh executes in actual cast PASS
+DGN m_fire live body motion connected PASS
+DGN m_fire pose returns to neutral PASS
+DGN m_fire collider motion unchanged PASS
+[63.95] m_fire frames=5 max visual offset=0.05311479
+DGN m_ice animated mesh executes in actual cast PASS
+DGN m_ice live body motion connected PASS
+DGN m_ice pose returns to neutral PASS
+DGN m_ice collider motion unchanged PASS
+[67.12] m_ice frames=5 max visual offset=0.02329238
+DGN m_storm animated mesh executes in actual cast PASS
+DGN m_storm live body motion connected PASS
+DGN m_storm pose returns to neutral PASS
+DGN m_storm collider motion unchanged PASS
+[70.27] m_storm frames=5 max visual offset=0.03294039
+DGN m_orbit animated mesh executes in actual cast PASS
+DGN m_orbit live body motion connected PASS
+DGN m_orbit pose returns to neutral PASS
+DGN m_orbit collider motion unchanged PASS
+[73.43] m_orbit frames=5 max visual offset=0.04294902
+DGN m_veil animated mesh executes in actual cast PASS
+DGN m_veil live body motion connected PASS
+DGN m_veil pose returns to neutral PASS
+DGN m_veil collider motion unchanged PASS
+[76.62] m_veil frames=5 max visual offset=0.04658475
+DGN m_rift animated mesh executes in actual cast PASS
+DGN m_rift live body motion connected PASS
+DGN m_rift pose returns to neutral PASS
+DGN m_rift collider motion unchanged PASS
+[79.85] m_rift frames=5 max visual offset=0.05208333
+DGN m_awake animated mesh executes in actual cast PASS
+DGN m_awake live body motion connected PASS
+DGN m_awake pose returns to neutral PASS
+DGN m_awake collider motion unchanged PASS
+[83.03] m_awake frames=5 max visual offset=0.1150558
+DGN Arcanist reset clears motion PASS
+DGN Arcanist base skill interrupts promoted pose PASS
+DGN Arcanist map change clears motion PASS
+[83.55] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN b_heal animated mesh executes in actual cast PASS
+DGN b_heal live body motion connected PASS
+DGN b_heal pose returns to neutral PASS
+DGN b_heal collider motion unchanged PASS
+[89.79] b_heal frames=5 max visual offset=0.02329238
+DGN b_bloom animated mesh executes in actual cast PASS
+DGN b_bloom live body motion connected PASS
+DGN b_bloom pose returns to neutral PASS
+DGN b_bloom collider motion unchanged PASS
+[93.00] b_bloom frames=5 max visual offset=0.03294039
+DGN b_cleanse animated mesh executes in actual cast PASS
+DGN b_cleanse live body motion connected PASS
+DGN b_cleanse pose returns to neutral PASS
+DGN b_cleanse collider motion unchanged PASS
+[96.12] b_cleanse frames=5 max visual offset=0.03294039
+DGN b_light animated mesh executes in actual cast PASS
+DGN b_light live body motion connected PASS
+DGN b_light pose returns to neutral PASS
+DGN b_light collider motion unchanged PASS
+[99.25] b_light frames=5 max visual offset=0.05311479
+DGN b_wing animated mesh executes in actual cast PASS
+DGN b_wing live body motion connected PASS
+DGN b_wing pose returns to neutral PASS
+DGN b_wing collider motion unchanged PASS
+[102.39] b_wing frames=5 max visual offset=0.04294902
+DGN b_bless animated mesh executes in actual cast PASS
+DGN b_bless live body motion connected PASS
+DGN b_bless pose returns to neutral PASS
+DGN b_bless collider motion unchanged PASS
+[105.51] b_bless frames=5 max visual offset=0.03294039
+DGN b_awake animated mesh executes in actual cast PASS
+DGN b_awake live body motion connected PASS
+DGN b_awake pose returns to neutral PASS
+DGN b_awake collider motion unchanged PASS
+[108.69] b_awake frames=5 max visual offset=0.1145833
+DGN Bishop reset clears motion PASS
+DGN Bishop base skill interrupts promoted pose PASS
+DGN Bishop map change clears motion PASS
+[108.79] CAREER MOTION RESULTS: 378 passed, 0 failed
+DGN all previous mesh resources released PASS
+DGN effect mesh limit is 80 PASS
+DGN stress reset releases every mesh PASS
+DGN map exit releases animated meshes PASS
+DGN death releases animated meshes PASS
+[109.45] LIVING FX RESULTS: 383 passed, 0 failed; peak=80; mesh updates=85110
+[109.46] capture finished

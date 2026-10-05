@@ -28,6 +28,7 @@ namespace DotRPG
             fx.owner = source; fx.map = Game.Session.MapId; fx.ground = at;
             fx.radius = range; fx.duration = Mathf.Max(.05f, seconds); fx.charging = charge;
             fx.art = go.AddComponent<SpriteRenderer>();
+            CareerLivingFx.Attach(fx.art,CareerCatalog.Get("g_awake"),charge?2:0);
             active.Add(fx); fx.Draw();
         }
         public static void Clear(PlayerController source)

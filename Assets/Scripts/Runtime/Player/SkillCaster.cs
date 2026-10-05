@@ -105,7 +105,7 @@ namespace DotRPG
                 castEnd=Time.time+career.cast+CareerMoves.Recovery(career)+.08f;
                 StartCoroutine(CareerCombat.For(owner).Cast(career,n));
             }
-            else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}
+            else {owner.GetComponent<CareerSkillMotion>()?.Cancel();owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 

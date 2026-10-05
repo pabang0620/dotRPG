@@ -31,7 +31,7 @@ namespace DotRPG
         Facing facing = Facing.Down;
         float timer, walkDistance;
         float careerPoseStart,careerPoseEnd,careerPoseFrom,careerPoseTo=1,careerFacingEnd;int careerPoseStage;Facing careerFacing;
-        public Facing PresentationFacing(Facing fallback)=>player!=null&&!player.IsDead&&player.Data.Progression.Career!=Career.None&&Time.time<careerFacingEnd&&(combat==null||!combat.IsAttacking)?careerFacing:fallback;
+        public Facing PresentationFacing(Facing fallback)=>GetComponent<CareerSkillMotion>() is CareerSkillMotion motion&&motion.Active?motion.ViewFacing(fallback):player!=null&&!player.IsDead&&player.Data.Progression.Career!=Career.None&&Time.time<careerFacingEnd&&(combat==null||!combat.IsAttacking)?careerFacing:fallback;
         public void SetCareerFacing(Facing direction){careerFacing=direction;careerFacingEnd=Time.time+.12f;}
         public void BeginCareerPose(float seconds,int stage=0,float from=0,float to=1)
         {careerPoseStart=Time.time;careerPoseEnd=Time.time+seconds;careerPoseStage=stage;careerPoseFrom=from;careerPoseTo=to;}
@@ -116,6 +116,8 @@ namespace DotRPG
                 if(combat==null)combat=GetComponent<PlayerCombat>();
                 if(combat==null||!combat.IsAttacking)frame=WarriorAttackMotion.Frame(Mathf.Lerp(careerPoseFrom,careerPoseTo,Mathf.Clamp01((Time.time-careerPoseStart)/Mathf.Max(.01f,careerPoseEnd-careerPoseStart))),careerPoseStage);
             }
+            var motion=player!=null?GetComponent<CareerSkillMotion>():null;
+            if(motion!=null&&motion.Active&&(combat==null||!combat.IsAttacking))frame=motion.Frame(SilverWarriorArt.Supports(look.id))??frame;
             FrameKey = frame;
             var visibleFacing=PresentationFacing(facing);
             // [P5] Same look, facing and frame as last time: nothing to do (the sprite lookup builds a key string).

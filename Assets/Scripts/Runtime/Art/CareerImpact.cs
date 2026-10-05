@@ -5,7 +5,7 @@ namespace DotRPG
     /// <summary>Confirmed-hit observer. A short displaced silhouette gives recoil without changing physics or AI.</summary>
     public sealed class CareerImpact : MonoBehaviour
     {
-        static int count;static float cameraReady;
+        static int count;static float cameraReady,sparkReady;
         public static int Count=>count;
         public static int ConfirmedHits {get;private set;}
         PlayerController source;string map;SpriteRenderer image;Vector2 start,dir;float age;Color tint;
@@ -13,6 +13,12 @@ namespace DotRPG
         {
             if(s==null||enemy==null)return;
             ConfirmedHits++;
+            owner?.GetComponent<CareerSkillMotion>()?.Contact(s.id);
+            // Basic-skill hit language, capped per burst; the simulation never stops.
+            if(Time.time>=sparkReady){sparkReady=Time.time+.045f;
+                SkillVisuals.Sparks(enemy.Center,CareerCatalog.Color(s.career),4,3.2f,.16f,SkillFx.At(enemy.Center.y,90));
+                SkillVisuals.Flash(enemy.Center,new Color(1,1,1,.5f),.65f,.055f,SkillFx.At(enemy.Center.y,91));
+            }
             var art=s.effect=="eclipse"?CareerCatalog.Get(stage==0?"m_fire":stage==1?"m_ice":"m_storm"):s;
             CareerEffect.Hit(art,enemy.Center,direction,owner);
             // Camera response is deterministic and respects the existing accessibility preference.
