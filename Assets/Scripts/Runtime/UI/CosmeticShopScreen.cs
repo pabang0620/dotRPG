@@ -52,7 +52,9 @@ namespace DotRPG
                 screen.rows[i] = row.GetComponent<RectTransform>();
                 UIFactory.Stretch(screen.rowLabels[i].rectTransform, 86f, 0f, 12f, 0f);
                 var product = CosmeticCatalog.All[i];
-                var thumbnail = UIFactory.Image(row.transform, "Thumbnail", CosmeticAura.ForProduct(product), product.Color);
+                var skinLook = product.IsSkin ? SkinCatalog.LookFor(product.Skin.cls, product.Id) : null;
+                var thumbnail = UIFactory.Image(row.transform, "Thumbnail", skinLook != null ? Game.Art.GetCharacter(skinLook, "down", "idle0") : CosmeticAura.ForProduct(product), skinLook != null ? Color.white : product.Color);
+                thumbnail.preserveAspect = skinLook != null;
                 UIFactory.Place(thumbnail.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
                     new Vector2(12f, 0f), new Vector2(68f, 34f));
                 screen.thumbs[i] = thumbnail;
@@ -103,26 +105,31 @@ namespace DotRPG
             var product = CosmeticCatalog.All[selected];
             var offer = store.OfferFor(product.Id);
             bool owned = store.Owns(product.Id);
-            bool equipped = store.Equipped.Id == product.Id;
+            var skin = product.Skin;
+            bool equipped = skin != null ? store.SkinFor(skin.cls) == product.Id : store.Equipped.Id == product.Id;
             for (int i = 0; i < CosmeticCatalog.All.Count; i++)
             {
                 var item = CosmeticCatalog.All[i];
-                string state = store.Equipped.Id == item.Id ? "착용 중" : store.Owns(item.Id) ? "보유" : "미보유";
+                bool wearing = item.IsSkin ? store.SkinFor(item.Skin.cls) == item.Id : store.Equipped.Id == item.Id;
+                string state = wearing ? "착용 중" : store.Owns(item.Id) ? "보유" : "미보유";
                 string rarity = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{CosmeticCatalog.RarityName(item.Rarity)}</color>";
                 rowLabels[i].text = $"{(i == selected ? "▶ " : "")}{item.Name}\n<size=16>{rarity} · {state}</size>";
                 rowLabels[i].color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
             }
-            previewAura.sprite = CosmeticAura.ForProduct(product);
-            previewAura.color = product.Color;
+            previewAura.sprite = CosmeticAura.ForProduct(skin != null ? store.Equipped : product);
+            previewAura.color = skin != null ? store.Equipped.Color : product.Color;
             var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
-            previewCharacter.sprite = animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
+            previewCharacter.sprite = skin != null ? Game.Art.GetCharacter(SkinCatalog.LookFor(skin.cls, product.Id), PreviewFacing(), "idle0")
+                : animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
             string price = product.IsFree ? "무료" : owned ? "보유 중" : offer != null ? $"교환 {offer.LocalizedPrice}" : store.IsAvailable ? "확인 중" : "온라인 전용";
             string rarityLine = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{CosmeticCatalog.RarityName(product.Rarity)}</color>";
             string have = store.IsAvailable ? $"보유 {StarShopClient.Stars(StarShopClient.Balance)}" : "온라인 캐릭터로 접속하면 교환·뽑기를 할 수 있습니다.";
-            description.text = $"<size=30>{product.Name}</size>\n{rarityLine} · 발밑 오라 · 영구 소장\n모든 직업에서 사용 가능 · 능력치 없음\n\n{price}\n{have}\n선택한 외형을 미리 보는 중입니다.";
-            actionLabel.text = equipped ? "착용 중" : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 교환" : "온라인 전용";
+            description.text = skin != null
+                ? $"<size=30>{product.Name}</size>\n<color=#ffb347>코스튬 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n능력치 없음 · 8방향 전 동작 전용 그림\n{price}\n{have}"
+                : $"<size=30>{product.Name}</size>\n{rarityLine} · 발밑 오라 · 영구 소장\n모든 직업에서 사용 가능 · 능력치 없음\n\n{price}\n{have}\n선택한 외형을 미리 보는 중입니다.";
+            actionLabel.text = equipped ? (skin != null ? "벗기" : "착용 중") : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 구매" : "온라인 전용";
             gacha.interactable = store.IsAvailable;
-            action.interactable = !store.IsBusy && !equipped && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
+            action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;
             restoreLabel.text = (restoreFocused ? "▶ " : "") + "보유 외형 다시 불러오기";
             restoreLabel.color = restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
@@ -133,6 +140,7 @@ namespace DotRPG
         {
             if (!IsTop || !action.interactable) return;
             var product = CosmeticCatalog.All[selected];
+            if (product.IsSkin && store.SkinFor(product.Skin.cls) == product.Id) { store.RemoveSkin(product.Skin.cls); return; }
             if (store.Owns(product.Id)) { store.Equip(product.Id); return; }
             var offer = store.OfferFor(product.Id);
             if (offer == null) return;
@@ -157,9 +165,20 @@ namespace DotRPG
             if (IsTop && restore.interactable) await store.RestoreAsync();
         }
 
+        static readonly string[] PreviewTurn = { "down", "downside", "side", "upside", "up", "upside", "side", "downside" };
+        // A skin preview turns slowly through the directions so every side of the costume shows.
+        static string PreviewFacing() => PreviewTurn[(int)(Time.unscaledTime / 0.9f) % PreviewTurn.Length];
+        string shownFacing;
+
         void LateUpdate()
         {
             if (content.rect.size != lastSize) Reflow();
+            var current = CosmeticCatalog.All[selected];
+            if (current.IsSkin && PreviewFacing() != shownFacing)
+            {
+                shownFacing = PreviewFacing();
+                previewCharacter.sprite = Game.Art.GetCharacter(SkinCatalog.LookFor(current.Skin.cls, current.Id), shownFacing, "idle0");
+            }
             float t = Time.unscaledTime;
             for (int i = 0; i < thumbs.Length; i++)
                 if (CosmeticCatalog.All[i].Effect != CosmeticEffect.None) thumbs[i].color = CosmeticCatalog.All[i].ColorAt(t);

@@ -23,7 +23,25 @@ namespace DotRPG
         public bool IsAvailable => provider.IsAvailable;
         public bool NeedsPurchaseRecovery => pendingProductId != null;
         public string Status { get; private set; } = "";
-        public CosmeticProduct Equipped => Owns(selectedId) ? CosmeticCatalog.Find(selectedId) : CosmeticCatalog.All[0];
+        public CosmeticProduct Equipped => Owns(selectedId) && !CosmeticCatalog.Find(selectedId).IsSkin ? CosmeticCatalog.Find(selectedId) : CosmeticCatalog.All[0];
+
+        static string SkinKey(CharacterClass cls) => "dotRPG.cosmetic.skin." + cls;
+
+        /// <summary>The costume skin worn by this class (null = the class's own look). Only owned skins count.</summary>
+        public string SkinFor(CharacterClass cls)
+        {
+            string id = PlayerPrefs.GetString(SkinKey(cls), "");
+            var p = CosmeticCatalog.Find(id);
+            return p != null && p.IsSkin && p.Skin.cls == cls && Owns(id) ? id : null;
+        }
+
+        /// <summary>Takes the skin of a class off (back to its own look).</summary>
+        public void RemoveSkin(CharacterClass cls)
+        {
+            PlayerPrefs.SetString(SkinKey(cls), "");
+            PlayerPrefs.Save();
+            Changed?.Invoke();
+        }
 
         public CosmeticStore(ICommerceProvider provider, Func<TimeSpan, CancellationToken, Task> delay = null)
         {
@@ -38,6 +56,14 @@ namespace DotRPG
         public bool Equip(string id)
         {
             if (!Owns(id)) return false;
+            var skin = CosmeticCatalog.Find(id).Skin;
+            if (skin != null)
+            {
+                PlayerPrefs.SetString(SkinKey(skin.cls), id);
+                PlayerPrefs.Save();
+                Changed?.Invoke();
+                return true;
+            }
             selectedId = id;
             PlayerPrefs.SetString(SelectionKey, id);
             PlayerPrefs.Save();

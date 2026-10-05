@@ -28,6 +28,10 @@ namespace DotRPG
             Effect = effect;
         }
 
+        /// <summary>A costume skin (whole-body repaint for one class) rather than a foot aura.</summary>
+        public SkinDef Skin => SkinCatalog.Find(Id);
+        public bool IsSkin => Skin != null;
+
         /// <summary>The colour at a moment (legend auras animate; the rest stay still).</summary>
         public Color ColorAt(float time)
         {
@@ -69,6 +73,11 @@ namespace DotRPG
             new CosmeticProduct("aura_rainbow", "무지개 오라", new Color32(255, 255, 255, 220), false, CosmeticRarity.Legend, CosmeticEffect.Rainbow),
             new CosmeticProduct("aura_gold", "황금 오라", new Color32(255, 210, 80, 230), false, CosmeticRarity.Legend, CosmeticEffect.Pulse),
             new CosmeticProduct("aura_abyss", "심연 오라", new Color32(120, 80, 255, 230), false, CosmeticRarity.Legend, CosmeticEffect.Pulse),
+            // Costume skins (SkinCatalog): direct purchase with 별조각, never in the gacha pool.
+            new CosmeticProduct("skin_lion", "황금 사자 기사", Color.white, false, CosmeticRarity.Legend),
+            new CosmeticProduct("skin_moon", "월광 검귀", Color.white, false, CosmeticRarity.Legend),
+            new CosmeticProduct("skin_starnight", "성야의 마녀", Color.white, false, CosmeticRarity.Legend),
+            new CosmeticProduct("skin_crimson", "홍염의 마녀", Color.white, false, CosmeticRarity.Legend),
         });
 
         public static CosmeticProduct Find(string id)

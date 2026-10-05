@@ -24,7 +24,12 @@ export interface CosmeticDef {
   id: string;
   name: string;
   rarity: Rarity;
+  /** 코스튬 스킨(직업별 전신 외형): 뽑기에 들어가지 않고 확정 구매만 한다 */
+  skin?: 'warrior' | 'mage';
 }
+
+/** 코스튬 스킨 확정 구매 가격 */
+export const SKIN_PRICE = 3000;
 
 export const STAR_COSMETICS: readonly CosmeticDef[] = [
   { id: 'aura_dew', name: '이슬빛 오라', rarity: 'common' },
@@ -40,10 +45,19 @@ export const STAR_COSMETICS: readonly CosmeticDef[] = [
   { id: 'aura_rainbow', name: '무지개 오라', rarity: 'legend' },
   { id: 'aura_gold', name: '황금 오라', rarity: 'legend' },
   { id: 'aura_abyss', name: '심연 오라', rarity: 'legend' },
+  { id: 'skin_lion', name: '황금 사자 기사', rarity: 'legend', skin: 'warrior' },
+  { id: 'skin_moon', name: '월광 검귀', rarity: 'legend', skin: 'warrior' },
+  { id: 'skin_starnight', name: '성야의 마녀', rarity: 'legend', skin: 'mage' },
+  { id: 'skin_crimson', name: '홍염의 마녀', rarity: 'legend', skin: 'mage' },
 ];
 
 export const STAR_COSMETIC_BY_ID = new Map(STAR_COSMETICS.map((c) => [c.id, c] as const));
 
+/** 뽑기 풀(스킨 제외) */
 export function cosmeticsOf(rarity: Rarity): CosmeticDef[] {
-  return STAR_COSMETICS.filter((c) => c.rarity === rarity);
+  return STAR_COSMETICS.filter((c) => c.rarity === rarity && !c.skin);
+}
+
+export function exchangePriceOf(c: CosmeticDef): number {
+  return c.skin ? SKIN_PRICE : EXCHANGE_PRICE[c.rarity];
 }

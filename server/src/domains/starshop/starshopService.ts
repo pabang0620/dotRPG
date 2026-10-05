@@ -5,7 +5,6 @@ import * as charRepo from '../characters/characterRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import {
   DUPLICATE_REFUND,
-  EXCHANGE_PRICE,
   PITY_MAX,
   PULL_PRICE,
   RARITY_NAME,
@@ -16,6 +15,7 @@ import {
   TEN_COUNT,
   TEN_PRICE,
   cosmeticsOf,
+  exchangePriceOf,
   type Rarity,
 } from './starshopDefs';
 import * as repo from './starshopRepository';
@@ -64,7 +64,8 @@ export async function summary(accountId: number, characterUuid: string) {
       name: c.name,
       rarity: c.rarity,
       owned: owned.has(c.id),
-      exchange_price: EXCHANGE_PRICE[c.rarity],
+      exchange_price: exchangePriceOf(c),
+      skin: c.skin ?? null,
     })),
     recent: recent.map((p) => ({ item_id: p.item_id, rarity: p.rarity, by_pity: p.by_pity, duplicate: p.duplicate, refund: p.refund })),
   };
@@ -153,7 +154,7 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
       const wallet = await repo.lockWallet(db, accountId);
       const owned = await repo.ownedOf(db, accountId);
       if (owned.has(def.id)) throw new AppError(409, '이미 가진 외형입니다.', 'COSMETIC_OWNED');
-      const price = EXCHANGE_PRICE[def.rarity];
+      const price = exchangePriceOf(def);
       if (wallet.balance < price) {
         throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
       }

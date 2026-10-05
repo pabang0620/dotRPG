@@ -44,7 +44,21 @@ namespace DotRPG
                 return data;
             }
         }
-        public static void ResetCache() { data = null; bodySheet = attackSheet = null; }
+        public static void ResetCache() { data = null; bodySheet = attackSheet = null; skinSheets.Clear(); }
+        static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> skinSheets =
+            new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
+        /// <summary>A costume skin's sheets (same layout as the shipped ones); null when the skin has none.</summary>
+        static (Texture2D body, Texture2D attack)? SkinSheets(string skin)
+        {
+            if (string.IsNullOrEmpty(skin)) return null;
+            if (!skinSheets.TryGetValue(skin, out var s))
+            {
+                s = (Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/body"), Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/attack"));
+                skinSheets[skin] = s;
+            }
+            if (s.body == null || s.attack == null) return null;
+            return s;
+        }
         public static SilverFrame Frame(string direction, string frame)
         {
             direction = Canonical(direction);
@@ -94,11 +108,12 @@ namespace DotRPG
         {
             return Pose(direction, frame).swordAngle;
         }
-        public static Color32[] Pixels(SilverFrame f)
+        public static Color32[] Pixels(SilverFrame f, string skin = null)
         {
             var unused = Data;
             bool attack = f.clip.StartsWith("attack") && f.clip.Length > 6;
-            var sheet = attack ? attackSheet : bodySheet;
+            var skinned = SkinSheets(skin);
+            var sheet = skinned.HasValue ? (attack ? skinned.Value.attack : skinned.Value.body) : attack ? attackSheet : bodySheet;
             var src = sheet.GetPixels(f.column * Size, (4 - f.row) * Size, Size, Size);
             var pixels = new Color32[Size * Size];
             for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
@@ -108,6 +123,14 @@ namespace DotRPG
             }
             return pixels;
         }
+        /// <summary>Same colour family as the cape (its shades and its dark outline next to it).</summary>
+        static bool Near(Color32 c, Color32 cape)
+        {
+            Color.RGBToHSV(c, out float h, out float s, out float v);
+            Color.RGBToHSV(cape, out float ch, out float cs, out float cv);
+            float dh = Mathf.Abs(h - ch); dh = Mathf.Min(dh, 1f - dh);
+            return (dh < .09f && s > .35f && v > .16f) || (v < .16f && s > .2f && dh < .1f);
+        }
         static bool Skin(Color32 c) => c.a > 0 && c.r > 145 && c.r > c.g + 6 && c.g > c.b + 5;
         static bool Dark(Color32 c) => c.a > 0 && c.r < 135 && c.g < 115 && c.b < 155;
         static Color32 C(string hex) => PixelCanvas.Hex(hex);
@@ -115,7 +138,7 @@ namespace DotRPG
         public static PixelCanvas Compose(CharacterLook look, string direction, string frame)
         {
             var f = Frame(direction, frame);
-            var src = Pixels(f);
+            var src = Pixels(f, look.skinSheet);
             var canvas = new PixelCanvas(Size, Size).WithPivot(32, 6);
             Array.Copy(src, canvas.Pixels, src.Length);
             int waist = f.waist;
@@ -163,6 +186,13 @@ namespace DotRPG
             var oriented = new PixelCanvas(Size, Size).WithPivot(32, 6);
             bool flip = Mirror(FacingOf(direction));
             var pose = Pose(direction, frame);
+            // A costume skin's cape hangs below the waist: its pixels from the sheet go behind the code-drawn legs.
+            if (look.skinCape.a > 0)
+                for (int y = waist + 6; y < Size; y++) for (int x = 0; x < Size; x++)
+                {
+                    var p = canvas.Get(flip ? Size - 1 - x : x, y);
+                    if (p.a > 0 && Near(p, look.skinCape)) oriented.Set(x, y, p);
+                }
             WarriorGait.Draw(oriented, FacingOf(direction), frame, waist, look);
             WarriorRightHandRig.Draw(oriented, pose, look, true);
             var torso = new PixelCanvas(Size, Size);

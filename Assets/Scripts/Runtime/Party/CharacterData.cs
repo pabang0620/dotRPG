@@ -22,6 +22,8 @@ namespace DotRPG
         public float ThreatMultiplier = 1f;
         /// <summary>Base look (class look for the local player, the mercenary's colours for companions).</summary>
         public CharacterLook Look;
+        /// <summary>Worn costume skin (SkinCatalog id) of a person; empty = the class's own look.</summary>
+        public string SkinId = "";
 
         readonly CharacterClass cls;
         readonly Progression progression;
