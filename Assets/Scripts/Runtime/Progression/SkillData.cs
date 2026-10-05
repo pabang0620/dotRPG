@@ -426,7 +426,7 @@ namespace DotRPG
         public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
         public int AttackSpeed => Sum(PassiveStat.AttackSpeed) + CareerCombat.SpeedFor(data);
         public float CooldownMultiplier => 1f / (1f + AttackSpeed / 100f);
-        public int Aoe => Sum(PassiveStat.Aoe);
+        public int Aoe => Sum(PassiveStat.Aoe) + Eq.AoeBonus;
         public int ManaCostReduction => Mathf.Min(80, Sum(PassiveStat.ManaCost));
         public int LifeOnKill => Sum(PassiveStat.LifeOnKill);
         public int ManaOnKill => Sum(PassiveStat.ManaOnKill);

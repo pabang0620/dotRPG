@@ -47,9 +47,9 @@ describe('S14 멱등성', () => {
   it('같은 request_id 재전송은 처음 응답 그대로, 다른 본문 재사용은 IDEMPOTENCY_MISMATCH', async () => {
     const seller = await mk(app);
     const buyer = await mk(app);
-    const body = { item_key: 'eq_sword_iron', count: 1, buyout: 1000, start_bid: 100, hours: 12 };
+    const body = { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, start_bid: 100, hours: 12 };
     const { seedItem } = await import('./economyHelpers');
-    await seedItem(seller, 'eq_sword_iron', 2);
+    await seedItem(seller, 'eq_sword_10_u', 2);
     const r = randomUUID();
     const a = await listReq(app, seller, body, r);
     const b = await listReq(app, seller, body, r);
@@ -92,7 +92,7 @@ describe('S15 우편 수령', () => {
     const [p, q] = await Promise.all([claimReq(app, buyer, buyMail, rid), claimReq(app, buyer, buyMail, rid)]);
     expect(p.status).toBe(200);
     expect(q.status).toBe(200);
-    expect(await countOf(buyer, 'eq_sword_iron')).toBe(1);
+    expect(await countOf(buyer, 'eq_sword_10_u')).toBe(1);
     await expectConserved();
     await expectLedgerConsistent(seller);
     await expectLedgerConsistent(buyer);
@@ -179,7 +179,7 @@ describe('S17 우편 30일 경과 폐기', () => {
     expect(led.rows).toEqual([{ location: 'mail', delta: -1 }, { location: 'mail', delta: -1 }]);
     const sink = await getPool().query("SELECT sum(amount) AS s FROM auction_sinks WHERE kind = 'mail_expire'");
     expect(Number((sink.rows[0] as { s: string }).s)).toBe(100 + (105 - 6 + 10)); // 입찰 반환 100 + 판매 대금(105 - 수수료 6 + 보증금 10)
-    expect(await countOf(seller, 'eq_sword_iron')).toBe(0);
+    expect(await countOf(seller, 'eq_sword_10_u')).toBe(0);
     await expectConserved();
     // 다시 돌려도 이중 폐기가 없다
     expect((await runAuctionTick()).mailsExpired).toBe(0);
@@ -199,7 +199,7 @@ describe('S17 보강: 폐기된 첨부 아이템은 원장에 남는다', () => 
       [buyer.dbId],
     );
     expect(led.rows).toEqual([{ reason: 'auction_buy', delta: 1 }, { reason: 'mail_expire', delta: -1 }]);
-    expect(await countOf(buyer, 'eq_sword_iron')).toBe(0);
+    expect(await countOf(buyer, 'eq_sword_10_u')).toBe(0);
     await expectConserved();
   });
 });

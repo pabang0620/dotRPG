@@ -122,6 +122,10 @@ async function processEquip(ctx: EconCtx, body: EquipBody) {
   if (item.classOnly !== null && item.classOnly !== ctx.char.class) {
     throw new AppError(422, '이 직업은 쓸 수 없는 장비입니다.', 'CLASS_MISMATCH');
   }
+  // 착용 레벨(장비 단계 레벨). 가지고 있거나 거래하는 데는 레벨이 필요 없다
+  if (ctx.level < item.reqLevel) {
+    throw new AppError(422, `레벨 ${item.reqLevel}부터 착용할 수 있습니다.`, 'LEVEL_TOO_LOW', { need: item.reqLevel, have: ctx.level });
+  }
   const slot = await targetSlot(ctx, item.category, body.slot);
 
   const consumed = await ctx.removeItem('bag', body.item_key, 1, 'equip', body.item_key);

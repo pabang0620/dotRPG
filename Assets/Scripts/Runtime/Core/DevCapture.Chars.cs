@@ -110,8 +110,8 @@ namespace DotRPG
         {
             var cam = Game.Camera.Camera;
             float baseSize = cam.orthographicSize;
-            var warriorWeapons = new[] { "eq_sword_wood", "eq_sword_iron", "eq_sword_bone", "eq_sword_dragon" };
-            var mageWeapons = new[] { "eq_staff_oak", "eq_staff_crystal", "eq_staff_moon", "eq_staff_star" };
+            var warriorWeapons = new[] { "eq_sword_wood", "eq_sword_10_u", "eq_sword_15_e", "eq_sword_20_l" };
+            var mageWeapons = new[] { "eq_staff_oak", "eq_staff_10_u", "eq_staff_15_e", "eq_staff_20_l" };
 
             foreach (var cls in new[] { CharacterClass.Warrior, CharacterClass.Mage })
             {
@@ -262,11 +262,11 @@ namespace DotRPG
             var looks = new List<CharacterLook>
             {
                 CharacterLook.Player,
-                CharacterLook.WithGear(CharacterLook.Player, "eq_top_cloth", "eq_bot_cloth"),
-                CharacterLook.WithGear(CharacterLook.Player, "eq_top_leather", "eq_bot_leather"),
-                CharacterLook.WithGear(CharacterLook.Player, "eq_top_iron", "eq_bot_leather"),
+                CharacterLook.WithGear(CharacterLook.Player, "eq_plate_1_c", "eq_greaves_1_c"),
+                CharacterLook.WithGear(CharacterLook.Player, "eq_plate_1_u", "eq_greaves_1_u"),
+                CharacterLook.WithGear(CharacterLook.Player, "eq_plate_10_e", "eq_greaves_1_u"),
                 CharacterLook.Mage,
-                CharacterLook.WithGear(CharacterLook.Mage, "eq_top_iron", "eq_bot_cloth"),
+                CharacterLook.WithGear(CharacterLook.Mage, "eq_robe_10_e", "eq_skirt_1_c"),
                 CharacterLook.Skeleton,
                 CharacterLook.Chief, CharacterLook.Farmer, CharacterLook.Fisher, CharacterLook.Builder,
                 CharacterLook.Lumberjack, CharacterLook.Miner, CharacterLook.Carrier,

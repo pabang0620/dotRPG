@@ -124,6 +124,9 @@ namespace DotRPG
         public bool noLoot;
         public int goldMin, goldMax;
         public int goldPerHitMin, goldPerHitMax;
+        /// <summary>[FIELD BOSS] Its accessory (rolled by the server at <see cref="bossGearPermille"/>‰ per kill).</summary>
+        public string bossGear;
+        public int bossGearPermille;
 
         public MonsterDef Clone() => (MonsterDef)MemberwiseClone();
     }
@@ -410,6 +413,46 @@ namespace DotRPG
             grah.phases = new[] { 0.7f, 0.4f, 0.15f };
             grah.maxMinions = 4;
             Add(grah);
+
+            // [FIELD BOSS] One per region, every 15 minutes on its map (FieldBosses). Existing boss bodies; HP for a solo
+            // player of the zone's level (about 25 pack kills of work), its accessory at 3% per kill.
+            var fbForest = Boss("fboss_forest", "검은 뿌리 수호자", C(150, 172, 120), hp: 1100, dmg: 15, lines: 14, speed: 2.3f,
+                new BossPattern(PatternKind.ArrowVolley, 4.5f, 1f, 5, weight: 1.5f),
+                new BossPattern(PatternKind.Charge, 8f, 1.2f),
+                new BossPattern(PatternKind.Fields, 9f, 1.1f, 4));
+            fbForest.look = Look("boss_archer_chief", C(150, 172, 120));
+            fbForest.minionId = "skel_archer";
+            Field(fbForest, "eq_ring_root");
+            var fbCanyon = Boss("fboss_canyon", "능선의 바위 심장", C(150, 132, 112), hp: 1900, dmg: 20, lines: 22, speed: 1.6f,
+                new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
+                new BossPattern(PatternKind.Charge, 7f, 1.5f),
+                new BossPattern(PatternKind.Fields, 8f, 1.2f, 5, minPhase: 1));
+            fbCanyon.look = Look("boss_rock_golem", C(150, 132, 112)); // the golem's generated frames
+            fbCanyon.size = 2.4f;
+            fbCanyon.artScale = 1.0f;
+            fbCanyon.phases = new[] { 0.5f };
+            Field(fbCanyon, "eq_neck_rockheart");
+            var fbWinter = Boss("fboss_winter", "눈보라 리치", C(196, 226, 255), hp: 2500, dmg: 24, lines: 26, speed: 2.1f,
+                new BossPattern(PatternKind.BoltRing, 6f, 1f, 10, weight: 1.4f),
+                new BossPattern(PatternKind.Fields, 7f, 1.1f, 6),
+                new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),
+                new BossPattern(PatternKind.Donut, 11f, 1.4f, minPhase: 1));
+            fbWinter.look = Look("boss_lich", C(196, 226, 255));
+            fbWinter.phases = new[] { 0.5f };
+            fbWinter.minionId = "skel_knight";
+            Field(fbWinter, "eq_ring_frostlich");
+        }
+
+        /// <summary>[FIELD BOSS] A field boss: not a raid, more gold, its accessory at 3%.</summary>
+        static void Field(MonsterDef def, string gear)
+        {
+            def.raid = false;
+            def.goldMin = 400;
+            def.goldMax = 700;
+            def.maxMinions = 3;
+            def.bossGear = gear;
+            def.bossGearPermille = 30;
+            Add(def);
         }
 
         static MonsterDef Boss(string id, string name, Color32 bone, int hp, int dmg, int lines, float speed, params BossPattern[] patterns)

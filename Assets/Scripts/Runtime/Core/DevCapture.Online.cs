@@ -299,7 +299,7 @@ namespace DotRPG
             OCheck($"report attaches the last {ChatRules.ReportLines} lines: n={mock.Reports.Count} lines={mock.Reports[0].log.Count} '{report}'",
                 mock.Reports.Count == 1 && mock.Reports[0].log.Count == Math.Min(ChatRules.ReportLines, mock.Lines.Count));
 
-            GameEvents.RaiseToast("<color=#ffd84a>[알림]</color> 아린님이 철검 강화에 성공했습니다!");
+            GameEvents.RaiseToast("<color=#ffd84a>[알림]</color> 아린님이 뼈손잡이 장검 강화에 성공했습니다!");
             last = mock.Lines[mock.Lines.Count - 1];
             OCheck($"+10 notice reaches the system channel: '{last.text}'", last.channel == ChatChannel.System && last.text.StartsWith("아린님이"));
 
@@ -323,7 +323,7 @@ namespace DotRPG
         {
             var bag = Game.Session.Inventory;
             bag.Add(ConsumableDatabase.Gold, 60000);
-            bag.Add("eq_sword_iron+7", 1);
+            bag.Add("eq_sword_10_u+7", 1);
             bag.Add(ConsumableDatabase.ProtectTicket, 1);
             var w = AuctionScreen.Instance;
             Game.Flow.OpenWindow(w);
@@ -352,8 +352,8 @@ namespace DotRPG
             OCheck($"mail claim: {claim.message} item {key} {itemBefore}->{bag.Count(key)} mail={svc.UnclaimedMail}", claim.ok && bag.Count(key) == itemBefore + listing.count && svc.UnclaimedMail == 0);
 
             // Register from the bag.
-            long price = AuctionRules.BasePrice("eq_sword_iron+7") * 2 / 10 * 10;
-            w.DevSelectRegister("eq_sword_iron+7", price, 2);
+            long price = AuctionRules.BasePrice("eq_sword_10_u+7") * 2 / 10 * 10;
+            w.DevSelectRegister("eq_sword_10_u+7", price, 2);
             yield return Wait(0.4f);
             yield return Shot("online_05_auction_register");
             int g0 = Game.Session.Gold;
@@ -361,13 +361,13 @@ namespace DotRPG
             yield return Wait(0.3f);
             var mine = svc.MyListings();
             long deposit = AuctionRules.Deposit(price);
-            OCheck($"register: status='{w.DevStatus}' mine={mine.Count} key={mine.FirstOrDefault()?.itemKey} deposit={g0 - Game.Session.Gold}/{deposit} bag={bag.Count("eq_sword_iron+7")}",
-                mine.Count == 1 && mine[0].itemKey == "eq_sword_iron+7" && g0 - Game.Session.Gold == deposit && bag.Count("eq_sword_iron+7") == 0);
+            OCheck($"register: status='{w.DevStatus}' mine={mine.Count} key={mine.FirstOrDefault()?.itemKey} deposit={g0 - Game.Session.Gold}/{deposit} bag={bag.Count("eq_sword_10_u+7")}",
+                mine.Count == 1 && mine[0].itemKey == "eq_sword_10_u+7" && g0 - Game.Session.Gold == deposit && bag.Count("eq_sword_10_u+7") == 0);
             var bound = svc.Register(ConsumableDatabase.ProtectTicket, 1, 500, 0, 24);
-            OCheck($"protection ticket bound: ok={bound.ok} '{bound.message}' bind={AuctionRules.BindOf(ConsumableDatabase.ProtectTicket)} enhancedSword={AuctionRules.BindOf("eq_sword_iron+7")}",
+            OCheck($"protection ticket bound: ok={bound.ok} '{bound.message}' bind={AuctionRules.BindOf(ConsumableDatabase.ProtectTicket)} enhancedSword={AuctionRules.BindOf("eq_sword_10_u+7")}",
                 !bound.ok && AuctionRules.BindOf(ConsumableDatabase.ProtectTicket) == ItemBind.CharacterBound);
-            var cheap = svc.Register("eq_sword_iron", 1, 1, 0, 24);
-            OCheck($"price floor enforced: ok={cheap.ok} '{cheap.message}'", !cheap.ok || bag.Count("eq_sword_iron") == 0);
+            var cheap = svc.Register("eq_sword_10_u", 1, 1, 0, 24);
+            OCheck($"price floor enforced: ok={cheap.ok} '{cheap.message}'", !cheap.ok || bag.Count("eq_sword_10_u") == 0);
             w.DevTab(1);
             yield return Wait(0.4f);
             OCheck($"내 등록 tab: rows={w.DevVisibleRows} row0='{w.DevRowName(0)}'", w.DevVisibleRows == 1 && w.DevRowName(0).Contains("+7"));
@@ -375,13 +375,13 @@ namespace DotRPG
             // Seller settlement: price − fee + deposit arrives by mail.
             var mock = svc as MockAuctionService;
             bool sold = mock != null && mock.DevSellMine(mine[0].id);
-            long expected = AuctionRules.Payout("eq_sword_iron+7", price) + deposit;
+            long expected = AuctionRules.Payout("eq_sword_10_u+7", price) + deposit;
             int g1 = Game.Session.Gold;
             w.DevTab(3);
             yield return Wait(0.4f);
             yield return Shot("online_07_auction_mail");
             svc.ClaimAll();
-            OCheck($"sale settlement: sold={sold} fee={AuctionRules.Fee("eq_sword_iron+7", price)} received={Game.Session.Gold - g1} expected={expected}", sold && Game.Session.Gold - g1 == expected);
+            OCheck($"sale settlement: sold={sold} fee={AuctionRules.Fee("eq_sword_10_u+7", price)} received={Game.Session.Gold - g1} expected={expected}", sold && Game.Session.Gold - g1 == expected);
             w.DevTab(0);
             w.DevSearch("철");
             yield return Wait(0.3f);

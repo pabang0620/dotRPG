@@ -10,6 +10,7 @@ import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './killRepository';
+import { parseItemKey } from '../../utils/itemKey';
 import { attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops } from './killRules';
 import { rejected, resolveFieldTarget, type KillTarget } from './killTarget';
 import type { KillBody } from './killValidation';
@@ -104,7 +105,10 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const baseXp = target.xpOverride ?? monsterXp(eco, def, target.level);
   // 파티 세션의 레벨 격차 감쇠(활성 멤버 2명 이상). 0이 되지 않게 최소 1
   const xpf = target.field?.xpFactor ?? null;
-  const xp = xpf !== null && baseXp > 0 ? Math.max(1, Math.round(baseXp * xpf)) : baseXp;
+  const shared = xpf !== null && baseXp > 0 ? Math.max(1, Math.round(baseXp * xpf)) : baseXp;
+  // 착용한 필드 보스 장신구의 경험치 옵션(%). 장비 키에서 기본 id를 찾아 데이터 값만 쓴다
+  const xpBonus = worn.reduce((a, k) => a + (eco.shop.equipment.get(parseItemKey(k)?.base ?? '')?.xpBonus ?? 0), 0);
+  const xp = xpBonus > 0 && shared > 0 ? Math.round(shared * (1 + xpBonus / 100)) : shared;
   // 연습판(레이드 보상 잠금)은 처치를 받아들이되 경험치·드롭을 주지 않는다(무한 입장 파밍 방지)
   const { granted, leveledUp } = target.rewardLocked
     ? { granted: 0, leveledUp: false }
@@ -138,7 +142,7 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const open = await repo.countOpenDrops(ctx.client, ctx.char.id, ctx.now);
   if (!target.rewardLocked && open < pol.dropOpenPerCharacter) {
     const expiresAt = new Date(ctx.now.getTime() + pol.dropTtlSeconds * 1000);
-    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1)) {
+    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1, target.level)) {
       const row = await repo.insertDrop(ctx.client, ctx.char.id, killId, spec.itemKey, spec.count, expiresAt, ctx.now);
       drops.push({ id: row.uuid, item_key: row.item_key, count: row.count, expires_at: row.expires_at.toISOString() });
     }

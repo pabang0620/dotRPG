@@ -20,6 +20,7 @@ namespace DotRPG
         public GameSession()
         {
             Equipment = new Equipment(Inventory);
+            Equipment.LevelSource = () => Progression != null ? Progression.Level : 1; // equip level (GearCatalog tiers)
         }
         /// <summary>Workshop delivery counters (construction site of quest 1-6).</summary>
         public QuestProgress Quest { get; private set; } = new QuestProgress();

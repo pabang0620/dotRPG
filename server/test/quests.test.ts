@@ -137,7 +137,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     const res = await claim(h, 'c1_rebuild');
     expect(res.status).toBe(200);
     expect(res.body.data.bonus_max_health).toBe(20);
-    expect(res.body.data.reward.items).toEqual([{ item_key: 'eq_ring_ruby', count: 1 }]);
+    expect(res.body.data.reward.items).toEqual([{ item_key: 'eq_ring_1_r', count: 1 }]);
     const detail = await get(app, h, '');
     expect(detail.body.data.character.bonus_max_health).toBe(20);
   });

@@ -131,10 +131,11 @@ namespace DotRPG
             while (combat.IsAttacking) yield return null;
             Check(combat.ResolvedStrikeCount == 1, "recovery input cannot resurrect combo");
             player.FaceTowards(player.Position + Vector2.down);
-            foreach (string top in new[] { "eq_top_cloth", "eq_top_leather", "eq_top_iron" })
+            Game.Session.Progression.SetFromServer(20, 0); // gear below needs Lv.10-20 to wear
+            foreach (string top in new[] { "eq_plate_1_c", "eq_plate_1_u", "eq_plate_10_e" })
             {
                 Game.Session.Inventory.Add(top, 1); gear.Equip(top, CharacterClass.Warrior);
-                foreach (string bottom in new[] { "eq_bot_cloth", "eq_bot_leather" })
+                foreach (string bottom in new[] { "eq_greaves_1_c", "eq_greaves_1_u" })
                 {
                     Game.Session.Inventory.Add(bottom, 1); gear.Equip(bottom, CharacterClass.Warrior);
                     Game.Input.MoveOverride = Vector2.right;
@@ -145,7 +146,7 @@ namespace DotRPG
             Game.Input.MoveOverride = Vector2.zero;
             gear.Unequip(EquipSlot.Top); gear.Unequip(EquipSlot.Bottom);
             int tier = 0;
-            foreach (string item in new[] { "eq_sword_wood", "eq_sword_iron", "eq_sword_bone", "eq_sword_dragon" })
+            foreach (string item in new[] { "eq_sword_wood", "eq_sword_10_u", "eq_sword_15_e", "eq_sword_20_l" })
             {
                 Game.Session.Inventory.Add(item, 1); gear.Equip(item, CharacterClass.Warrior);
                 player.FaceTowards(player.Position + Vector2.down);

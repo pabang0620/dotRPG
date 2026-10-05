@@ -50,14 +50,11 @@ namespace DotRPG
         /// <summary>Tank threat multiplier (other roles use 1).</summary>
         public const float TankThreat = 2.5f;
 
-        /// <summary>Gear per level band: from this level on, (warrior weapon, mage weapon, top, bottom, necklace, ring).</summary>
-        static readonly (int fromLevel, string sword, string staff, string top, string bottom, string neck, string ring)[] GearBands =
-        {
-            (1, "eq_sword_wood", "eq_staff_oak", "eq_top_cloth", null, null, null),
-            (6, "eq_sword_iron", "eq_staff_crystal", "eq_top_cloth", "eq_bot_cloth", null, "eq_ring_copper"),
-            (12, "eq_sword_bone", "eq_staff_moon", "eq_top_leather", "eq_bot_cloth", "eq_neck_leaf", "eq_ring_copper"),
-            (20, "eq_sword_dragon", "eq_staff_star", "eq_top_leather", "eq_bot_leather", "eq_neck_bone", "eq_ring_copper"),
-        };
+        /// <summary>
+        /// Companion gear follows the equipment tiers (GearCatalog): the tier of its level, epic from Lv.10 on (rare at Lv.1),
+        /// class armour (warrior plate / greaves, mage robe / skirt), a rare necklace and ring of the same tier.
+        /// </summary>
+        static ItemRarity MercGrade(int tier) => tier == 0 ? ItemRarity.Rare : ItemRarity.Epic;
 
         static Color32 C(int r, int g, int b) => new Color32((byte)r, (byte)g, (byte)b, 255);
 
@@ -141,15 +138,23 @@ namespace DotRPG
             return data;
         }
 
-        /// <summary>Weapon, top, bottom, necklace and ring of a level band.</summary>
+        /// <summary>Weapon, top, bottom, necklace and ring of the companion's level tier.</summary>
         public static string[] GearFor(MercenaryDef def, int level)
         {
-            var band = GearBands[0];
-            foreach (var b in GearBands) if (level >= b.fromLevel) band = b;
-            string top = band.top;
-            // The tank wears the iron breastplate from the third band on.
-            if (def.role == MercRole.Tank && level >= GearBands[2].fromLevel) top = "eq_top_iron";
-            return new[] { def.IsMage ? band.staff : band.sword, top, band.bottom, band.neck, band.ring };
+            int tier = GearCatalog.TierOfLevel(level);
+            int lv = GearCatalog.TierLevels[tier];
+            var grade = MercGrade(tier);
+            bool mage = def.IsMage;
+            // The tank's armour is one grade better.
+            var armour = def.role == MercRole.Tank && grade < ItemRarity.Unique ? grade + 1 : grade;
+            return new[]
+            {
+                GearCatalog.Id(mage ? "staff" : "sword", lv, grade),
+                GearCatalog.Id(mage ? "robe" : "plate", lv, tier == 0 && armour > ItemRarity.Rare ? ItemRarity.Rare : armour),
+                GearCatalog.Id(mage ? "skirt" : "greaves", lv, grade),
+                GearCatalog.Id("neck", lv, ItemRarity.Rare),
+                GearCatalog.Id("ring", lv, ItemRarity.Rare),
+            };
         }
 
         /// <summary>Syncs a companion to the local player's level: level, supports and the gear of that band.</summary>

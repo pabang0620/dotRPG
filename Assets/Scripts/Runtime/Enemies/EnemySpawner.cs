@@ -10,7 +10,7 @@ namespace DotRPG
     /// draw the host's monsters (<see cref="SpawnerMode.Follower"/>). While the session is being looked up
     /// nothing spawns (<see cref="SpawnerMode.Pending"/>) so no monster exists twice.
     /// </summary>
-    public class EnemySpawner : MonoBehaviour
+    public partial class EnemySpawner : MonoBehaviour
     {
         public enum SpawnerMode { Local, Pending, Host, Follower }
 
@@ -152,6 +152,7 @@ namespace DotRPG
                 return;
             }
             if (Mode == SpawnerMode.Follower || !Game.IsWorldRunning) return;
+            TickFieldBoss();
             for (int i = 0; i < alive.Length; i++)
             {
                 if (alive[i] != null || respawnAt[i] <= 0f || Time.time < respawnAt[i]) continue;

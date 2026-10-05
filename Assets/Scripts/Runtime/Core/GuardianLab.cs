@@ -63,7 +63,7 @@ namespace DotRPG
             for (int stage = 0; stage < 5; stage++) prog.AdvanceAwakening(stage);
             string[] loadout = { "g_wall", "g_taunt", "g_bash", "g_counter", "g_awake" };
             for (int i = 0; i < loadout.Length; i++) prog.EquipSkill(i, loadout[i]);
-            foreach (var gear in new[] { "eq_sword_iron+7", "eq_top_iron", "eq_bot_leather" })
+            foreach (var gear in new[] { "eq_sword_10_u+7", "eq_plate_10_e", "eq_greaves_1_u" })
             { Game.Session.Inventory.Add(gear, 1); Game.Session.Equipment.Equip(gear, player.Class); }
             player.HealFull(); player.Data.Mana = player.MaxMana; player.Skills.ResetCooldowns();
             home = player.Position; player.Place(home, Facing.Right);

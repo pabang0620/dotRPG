@@ -80,6 +80,16 @@ namespace DotRPG
         public int dropWeight;
         /// <summary>Enhancement growth per reinforcement coefficient point (0 = default for the category and tier).</summary>
         public float enhanceSeed;
+        /// <summary>[FIELD BOSS] Growth options (not raised by enhancing): % more XP from monsters, % larger skill area.</summary>
+        public int xpBonus, aoeBonus;
+        /// <summary>[FIELD BOSS] Dropped only by a field boss: never in drops, cards, the cash shop or promotion.</summary>
+        public bool bossOnly;
+        /// <summary>Character level needed to put it on (the tier level: 1, 10, 15 ... 40). Owning and trading need none.</summary>
+        public int reqLevel = 1;
+        /// <summary>Icon used until the item's own icon is drawn (icon keys "gear:&lt;id&gt;", see SpriteLibrary).</summary>
+        public string fallbackIcon;
+        /// <summary>Index of the level tier in GearCatalog.TierLevels (0 = Lv.1 ... 7 = Lv.40).</summary>
+        public int levelTier;
 
         /// <summary>Visual tier: the number at the end of the icon key (0 = weakest look), -1 = no icon.</summary>
         public int Tier { get; internal set; } = -1;
@@ -110,6 +120,8 @@ namespace DotRPG
             if (s.maxHealth != 0) parts.Add($"체력 +{EquipmentDatabase.Hearts(s.maxHealth)}");
             if (s.block != 0) parts.Add($"막기 {s.block}%");
             if (s.speed != 0) parts.Add($"이동 {(s.speed > 0 ? "+" : "")}{s.speed}%");
+            if (xpBonus != 0) parts.Add($"<color=#8fe28f>경험치 +{xpBonus}%</color>");
+            if (aoeBonus != 0) parts.Add($"<color=#8fe28f>스킬 범위 +{aoeBonus}%</color>");
             return parts.Count > 0 ? string.Join("  ", parts) : "능력치 없음";
         }
     }
@@ -136,34 +148,25 @@ namespace DotRPG
         /// <summary>Separates the base id from the +level in an instance key.</summary>
         public const char KeySeparator = '+';
 
-        static readonly List<EquipmentItem> Items = new List<EquipmentItem>
+        /// <summary>
+        /// Starter weapons, the level-tier table (GearCatalog, Docs/PLAN_GEAR_RENEWAL.md) and the field boss accessories.
+        /// </summary>
+        static readonly List<EquipmentItem> Items = BuildItems();
+
+        static List<EquipmentItem> BuildItems()
         {
-            // Weapons — warrior.
-            W("eq_sword_wood", "나무 검", EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Warrior, atk: 0, icon: "eqicon_sword_0", desc: "연습용 나무 검. 처음 받은 장비.", starter: true),
-            W("eq_sword_iron", "철검", EquipCategory.Weapon, ItemRarity.Uncommon, CharacterClass.Warrior, atk: 10, icon: "eqicon_sword_1", desc: "잘 벼린 철검. 해골을 두 번 만에 쓰러뜨린다.", drop: 30),
-            W("eq_sword_bone", "해골 대검", EquipCategory.Weapon, ItemRarity.Epic, CharacterClass.Warrior, atk: 20, hp: 10, icon: "eqicon_sword_2", desc: "해골 왕의 뼈로 만든 대검. 한 방에 해골을 부순다.", drop: 6),
-            W("eq_sword_dragon", "용골 대검", EquipCategory.Weapon, ItemRarity.Legendary, CharacterClass.Warrior, atk: 30, hp: 20, icon: "eqicon_sword_3", desc: "고대 용의 뼈를 벼린 전설의 검. 휘두를 때마다 불꽃이 인다.", drop: 1),
-            // Weapons — mage.
-            W("eq_staff_oak", "참나무 지팡이", EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Mage, atk: 0, icon: "eqicon_staff_0", desc: "견습 마법사의 지팡이. 처음 받은 장비.", starter: true),
-            W("eq_staff_crystal", "수정 지팡이", EquipCategory.Weapon, ItemRarity.Uncommon, CharacterClass.Mage, atk: 10, icon: "eqicon_staff_1", desc: "푸른 수정이 마력을 모아 준다.", drop: 30),
-            W("eq_staff_moon", "달빛 지팡이", EquipCategory.Weapon, ItemRarity.Epic, CharacterClass.Mage, atk: 20, spd: 5, icon: "eqicon_staff_2", desc: "달빛을 머금은 지팡이. 가볍고 강력하다.", drop: 6),
-            W("eq_staff_star", "별의 지팡이", EquipCategory.Weapon, ItemRarity.Legendary, CharacterClass.Mage, atk: 30, spd: 10, icon: "eqicon_staff_3", desc: "떨어진 별 조각을 박아 넣은 전설의 지팡이.", drop: 1),
-            // Necklaces.
-            W("eq_neck_leaf", "잎사귀 목걸이", EquipCategory.Necklace, ItemRarity.Common, null, hp: 20, icon: "eqicon_neck_0", desc: "숲의 기운이 몸을 지켜 준다.", drop: 25),
-            W("eq_neck_bone", "뼈 목걸이", EquipCategory.Necklace, ItemRarity.Rare, null, atk: 10, icon: "eqicon_neck_1", desc: "해골의 투지가 깃든 목걸이.", drop: 12),
-            W("eq_neck_king", "해골왕의 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, atk: 10, hp: 20, block: 5, icon: "eqicon_neck_2", desc: "해골 무리를 다스리던 왕의 증표.", drop: 2),
-            // Rings (two can be worn).
-            W("eq_ring_copper", "구리 반지", EquipCategory.Ring, ItemRarity.Common, null, hp: 10, block: 5, icon: "eqicon_ring_0", desc: "흔한 구리 반지. 조금 든든하다.", drop: 30),
-            W("eq_ring_wind", "바람 반지", EquipCategory.Ring, ItemRarity.Rare, null, spd: 12, icon: "eqicon_ring_1", desc: "발걸음이 바람처럼 가벼워진다.", drop: 14),
-            W("eq_ring_ruby", "루비 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 10, hp: 10, icon: "eqicon_ring_2", desc: "붉게 타오르는 보석. 촌장이 준 보물.", drop: 2),
-            // Armour — tops.
-            W("eq_top_cloth", "천 조끼", EquipCategory.Top, ItemRarity.Common, null, hp: 20, block: 5, icon: "eqicon_top_0", desc: "튼튼한 천으로 만든 조끼.", drop: 25),
-            W("eq_top_leather", "가죽 갑옷", EquipCategory.Top, ItemRarity.Uncommon, null, hp: 20, block: 15, icon: "eqicon_top_1", desc: "질긴 가죽 갑옷. 공격을 잘 막아 낸다.", drop: 12),
-            W("eq_top_iron", "철 흉갑", EquipCategory.Top, ItemRarity.Epic, null, hp: 40, block: 15, spd: -5, icon: "eqicon_top_2", desc: "무겁지만 무척 단단한 흉갑.", drop: 4),
-            // Armour — bottoms.
-            W("eq_bot_cloth", "천 바지", EquipCategory.Bottom, ItemRarity.Common, null, hp: 10, block: 5, icon: "eqicon_bot_0", desc: "움직이기 편한 천 바지.", drop: 25),
-            W("eq_bot_leather", "가죽 바지", EquipCategory.Bottom, ItemRarity.Uncommon, null, hp: 20, block: 10, spd: 5, icon: "eqicon_bot_1", desc: "가볍고 질긴 가죽 바지.", drop: 12),
-        };
+            var list = new List<EquipmentItem>
+            {
+                W("eq_sword_wood", "나무 검", EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Warrior, atk: 0, icon: "eqicon_sword_0", desc: "연습용 나무 검. 처음 받은 장비.", starter: true),
+                W("eq_staff_oak", "참나무 지팡이", EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Mage, atk: 0, icon: "eqicon_staff_0", desc: "견습 마법사의 지팡이. 처음 받은 장비.", starter: true),
+            };
+            list.AddRange(GearCatalog.Build());
+            // [FIELD BOSS] Growth accessories: moderate stats plus a growth option, only from field bosses (FieldBosses).
+            list.Add(Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 6, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), 10, xp: 5));
+            list.Add(Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, hp: 30, block: 3, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), 20, aoe: 10));
+            list.Add(Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 8, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), 35, xp: 6, aoe: 5));
+            return list;
+        }
 
         static readonly List<MaterialItem> Materials = new List<MaterialItem>
         {
@@ -213,6 +216,18 @@ namespace DotRPG
                 iconKey = icon, description = desc, starter = starter, dropWeight = starter ? 0 : drop,
                 enhanceSeed = seed, Tier = TierFromIcon(icon),
             };
+        }
+
+        /// <summary>[FIELD BOSS] Marks a field boss accessory and gives it its growth options.</summary>
+        static EquipmentItem Boss(EquipmentItem item, int reqLevel, int xp = 0, int aoe = 0)
+        {
+            item.reqLevel = reqLevel;
+            item.levelTier = System.Array.IndexOf(GearCatalog.TierLevels, reqLevel);
+            item.bossOnly = true;
+            item.dropWeight = 0;
+            item.xpBonus = xp;
+            item.aoeBonus = aoe;
+            return item;
         }
 
         static int TierFromIcon(string iconKey)
@@ -442,13 +457,13 @@ namespace DotRPG
         public static float EnhanceSeedOf(EquipmentItem item)
         {
             if (item.enhanceSeed > 0f) return item.enhanceSeed;
-            int t = Mathf.Max(0, item.Tier);
+            int t = Mathf.Max(0, item.levelTier); // 0 = Lv.1 ... 7 = Lv.40
             switch (item.category)
             {
-                case EquipCategory.Weapon: return 0.135f * (t + 1);
+                case EquipCategory.Weapon: return 0.135f * (1f + 0.5f * t);
                 case EquipCategory.Top:
-                case EquipCategory.Bottom: return 0.5f + 0.25f * t;
-                default: return 0.3f + 0.15f * t;
+                case EquipCategory.Bottom: return 0.5f + 0.15f * t;
+                default: return 0.3f + 0.08f * t;
             }
         }
 
@@ -484,17 +499,18 @@ namespace DotRPG
         /// Rolls an equipment drop for the given class (weapons of the other class never drop).
         /// Returns null when nothing drops.
         /// </summary>
-        public static string RollDrop(CharacterClass cls, float chance)
+        public static string RollDrop(CharacterClass cls, float chance, int level = 1)
         {
             if (Random.value > chance) return null;
+            int tier = GearCatalog.TierOfLevel(level); // only the tier at or below the monster's level
             int total = 0;
             foreach (var item in Items)
-                if (item.dropWeight > 0 && item.UsableBy(cls)) total += item.dropWeight;
+                if (item.dropWeight > 0 && item.levelTier == tier && item.UsableBy(cls)) total += item.dropWeight;
             if (total <= 0) return null;
             int roll = Random.Range(0, total);
             foreach (var item in Items)
             {
-                if (item.dropWeight <= 0 || !item.UsableBy(cls)) continue;
+                if (item.dropWeight <= 0 || item.levelTier != tier || !item.UsableBy(cls)) continue;
                 if (roll < item.dropWeight) return item.id;
                 roll -= item.dropWeight;
             }

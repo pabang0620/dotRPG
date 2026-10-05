@@ -246,8 +246,8 @@ namespace DotRPG.EditorTools
                 }
                 var currentHand = SilverWarriorArt.Pose(f.direction, f.clip).rightHand;
                 if (!plain.IsOpaque((int)currentHand.x, (int)currentHand.y)) throw new Exception("Hand anchor outside sprite " + f.direction + f.clip);
-                foreach (string top in new[] { null, "eq_top_cloth", "eq_top_leather", "eq_top_iron" })
-                foreach (string bottom in new[] { null, "eq_bot_cloth", "eq_bot_leather" })
+                foreach (string top in new[] { null, "eq_plate_1_c", "eq_plate_10_c", "eq_plate_30_c" })
+                foreach (string bottom in new[] { null, "eq_greaves_1_c", "eq_greaves_10_c" })
                 {
                     var look = CharacterLook.WithGear(CharacterLook.Player, top, bottom);
                     var sprite = library.GetCharacter(look, f.direction, f.clip);
@@ -259,8 +259,8 @@ namespace DotRPG.EditorTools
                     checkedFrames++;
                 }
             }
-            foreach (string top in new[] { null, "eq_top_cloth", "eq_top_leather", "eq_top_iron" })
-            foreach (string bottom in new[] { null, "eq_bot_cloth", "eq_bot_leather" })
+            foreach (string top in new[] { null, "eq_plate_1_c", "eq_plate_10_c", "eq_plate_30_c" })
+            foreach (string bottom in new[] { null, "eq_greaves_1_c", "eq_greaves_10_c" })
             {
                 int hash = 17;
                 foreach (var p in SilverWarriorArt.Compose(CharacterLook.WithGear(CharacterLook.Player, top, bottom), "down", "idle0").Pixels)
@@ -415,7 +415,7 @@ namespace DotRPG.EditorTools
                             if (!body.Pixels[p].Equals(rest.Pixels[p])) throw new Exception("Attack does not settle into idle: " + key + frame);
                     foreach (var p in body.Pixels) if (p.a != 0 && p.a != 255) throw new Exception("Soft attack pixels");
                     atlas.Blit(body, i * 128 + 32, row * 128 + 32);
-                    var blade = library.GetWarriorWeapon("eq_sword_iron");
+                    var blade = library.GetWarriorWeapon("eq_sword_10_u");
                     var pixels = blade.texture.GetPixels32();
                     float angle = (pose.swordAngle - 90) * Mathf.Deg2Rad;
                     float co = Mathf.Cos(angle), si = Mathf.Sin(angle);
@@ -484,8 +484,8 @@ namespace DotRPG.EditorTools
                 output[y * texture.width + x] = ((x / 16 + y / 16) % 2 == 0) ? PixelCanvas.Hex("#202833") : PixelCanvas.Hex("#26313e");
             for (int row = 0; row < 5; row++) for (int col = 0; col < 8; col++)
             {
-                string top = col < 4 ? null : col == 4 ? "eq_top_cloth" : col == 5 ? "eq_top_leather" : "eq_top_iron";
-                string bot = col < 5 ? null : col == 5 ? "eq_bot_cloth" : "eq_bot_leather";
+                string top = col < 4 ? null : col == 4 ? "eq_plate_1_c" : col == 5 ? "eq_plate_10_c" : "eq_plate_30_c";
+                string bot = col < 5 ? null : col == 5 ? "eq_greaves_1_c" : "eq_greaves_10_c";
                 string frame = col < 4 ? "walk" + col : "idle0";
                 var pixels = SilverWarriorArt.Compose(CharacterLook.WithGear(CharacterLook.Player, top, bot), SilverWarriorArt.Directions[row], frame).ToTexturePixels();
                 for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)

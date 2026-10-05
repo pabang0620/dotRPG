@@ -1,4 +1,5 @@
 import { getPool } from '../../db/pool';
+import { TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
 import { getGameData } from '../../gamedata/loader';
 import { keyAt } from '../../utils/itemKey';
 import { AppError } from '../../utils/AppError';
@@ -63,18 +64,23 @@ function auraTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
  * 장비 뽑기 등급표(이 직업이 쓸 수 있는 장비, +0, 시작 장비 제외). 그 뽑기에 없는 등급의 몫은 있는 등급 중
  * 가장 낮은 등급이 가진다. 장비 하나 = 등급 확률 / 그 등급 장비 수
  */
-export function gearTable(banner: GearBanner, cls: string) {
+export function gearTable(banner: GearBanner, cls: string, tier = 0) {
   const cats = GEAR_BANNERS[banner].categories;
   const items = getGameData().economy.shop.equipmentList.filter(
-    (e) => !e.starter && e.rarity !== 'Common' && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
+    (e) =>
+      !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity !== 'Common' && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
   );
   const present = GEAR_RARITY_PERMILLE.filter(([r]) => items.some((e) => e.rarity === r));
   if (present.length === 0) return [];
   const lowest = present[0]![0];
-  const missing = GEAR_RARITY_PERMILLE.filter(([r]) => !present.some(([p]) => p === r)).reduce((a, [, w]) => a + w, 0);
+  const has = (r: string) => present.some(([p]) => p === r);
+  // 레전더리가 없는 단계는 그 몫을 유니크가, 나머지 빈 등급의 몫은 가장 낮은 등급이 가진다
+  const legendToUnique = !has('Legendary') && has('Unique');
+  const missing = GEAR_RARITY_PERMILLE.filter(([r]) => !has(r) && !(legendToUnique && r === 'Legendary')).reduce((a, [, w]) => a + w, 0);
+  const legendShare = legendToUnique ? (GEAR_RARITY_PERMILLE.find(([r]) => r === 'Legendary')?.[1] ?? 0) : 0;
   return present
     .map(([r, w]) => {
-      const permille = w + (r === lowest ? missing : 0);
+      const permille = w + (r === lowest ? missing : 0) + (r === 'Unique' ? legendShare : 0);
       const of = items.filter((e) => e.rarity === r);
       return {
         rarity: r.toLowerCase(),
@@ -133,10 +139,18 @@ export async function summary(accountId: number, characterUuid: string) {
     })),
     rates: auraTable('aura', ch.class),
     skin_rates: auraTable('skin', ch.class),
+    // 장비 뽑기는 레벨 단계를 골라 뽑는다: 내 레벨까지 열린 단계마다 확률표(기본 선택은 my_tier)
+    my_tier: tierOfLevel(ch.level),
+    tier_levels: TIER_LEVELS,
     banners: (Object.keys(GEAR_BANNERS) as GearBanner[]).map((b) => ({
       id: b,
       name: GEAR_BANNERS[b].name,
-      rates: gearTable(b, ch.class).map(({ permille: _p, ...t }) => t),
+      rates: gearTable(b, ch.class, tierOfLevel(ch.level)).map(({ permille: _p, ...t }) => t),
+      tiers: Array.from({ length: tierOfLevel(ch.level) + 1 }, (_, t) => ({
+        tier: t,
+        level: TIER_LEVELS[t],
+        rates: gearTable(b, ch.class, t).map(({ permille: _p, ...x }) => x),
+      })),
     })),
     items: STAR_COSMETICS.map((c) => ({
       id: c.id,
@@ -194,7 +208,11 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
         await repo.setPity(db, accountId, pity, banner === 'skin');
         if (r.refund > 0) balance = await repo.changeBalance(db, accountId, r.refund, 'gacha_refund', `${banner}_${body.count}`, requestId);
       } else {
-        await rollGear(ctx, banner, times, rows, body.count);
+        const tier = body.tier ?? tierOfLevel(ctx.char.level);
+        if (tier > tierOfLevel(ctx.char.level)) {
+          throw new AppError(422, '아직 열리지 않은 레벨 단계입니다.', 'GACHA_TIER_LOCKED', { need: TIER_LEVELS[tier], have: ctx.char.level });
+        }
+        await rollGear(ctx, banner, times, rows, body.count, tier);
       }
       await repo.insertPulls(db, accountId, requestId, RATES_VERSION, banner, rows);
       return {
@@ -240,8 +258,8 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
   return { pity, refund };
 }
 
-async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: repo.PullRow[], count: number) {
-  const table = gearTable(banner, ctx.char.class);
+async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: repo.PullRow[], count: number, tier: number) {
+  const table = gearTable(banner, ctx.char.class, tier);
   if (table.length === 0) throw new AppError(422, '뽑을 수 있는 장비가 없습니다.', 'NO_GEAR');
   for (let i = 0; i < times; i++) {
     // 장비 뽑기는 10+1의 보너스 1회도 같은 확률로 굴린다. 뽑기마다 등급이 2~3개뿐이라 "최하 등급 제외"를 하면

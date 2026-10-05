@@ -43,7 +43,7 @@ describe('우편 도착 알림은 5단계 chat.sys 한 줄로 간다', () => {
     await bidReq(app, b1, id, 100);
     expect((await bidReq(app, b2, id, 105)).status).toBe(200); // b2는 접속하지 않았다
     const f = await c1.waitT('chat.sys');
-    expect(f.text).toBe('[경매] 철검 입찰이 밀려 100G가 우편으로 반환되었습니다.');
+    expect(f.text).toBe('[경매] 뼈손잡이 장검 입찰이 밀려 100G가 우편으로 반환되었습니다.');
     expect(typeof f.at).toBe('string');
     expect(f.seq).toBeUndefined();
     await c1.expectNone((x) => x.t === 'chat.sys');

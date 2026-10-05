@@ -66,7 +66,7 @@ QUESTS = [
               obj("flag", "workshop_built", text="공방 재건 (목재·돌을 동쪽 공사장에 전달)"),
               obj("kill", "skeleton", 3, text="해골 퇴치", map="forest")])],
           requires=["c1_rise"], giver="chief", offer="chief_intro", turnIn="chief", turnInDialogue="chief_report",
-          reward={"xp": 200, "maxHealth": 20, "items": items(("eq_ring_ruby", 1))}),
+          reward={"xp": 200, "maxHealth": 20, "items": items(("eq_ring_1_r", 1))}),
     quest("c1_trail", "1-7", "해골 숲의 흔적",
           "놈들은 해골 숲을 지나 북쪽으로 빠졌다. 흔적을 찾아라.",
           [step("해골 숲 북쪽 옛 묘지.", [obj("interact", "ria_ribbon", text="옛 묘지 근처에서 흔적 찾기", map="forest")]),

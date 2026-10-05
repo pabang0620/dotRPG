@@ -110,6 +110,8 @@ namespace DotRPG
                 detail.rectTransform.sizeDelta = new Vector2(718, 60);
                 detail.text = $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
                               $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치, 실측 아님)</color>";
+                string boss = FieldBosses.InfoLine(zone.id); // [FIELD BOSS]
+                if (boss != null) { detail.rectTransform.sizeDelta = new Vector2(718, 66); detail.text += "\n" + boss; }
             }
             if(zone!=null)detail.text += "\n" + WorldRoutes.Directions(info);
             tooltip.gameObject.SetActive(false); roomButton.gameObject.SetActive(false);

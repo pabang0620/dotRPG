@@ -68,22 +68,22 @@ describe('S18 쌍 한도와 시세 중앙값', () => {
     await trade(s1, b3, 1400);
     await trade(s2, b1, 1600);
     // 4건: 아직 콜드 스타트(상점가 1~100배)
-    const cold = await get(app, s1, '/auction/prices/eq_sword_iron');
-    expect(cold.body.data).toMatchObject({ source: 'vendor', limits: { min: 25, max: 2500 } });
+    const cold = await get(app, s1, '/auction/prices/eq_sword_10_u');
+    expect(cold.body.data).toMatchObject({ source: 'vendor', limits: { min: 31, max: 3100 } });
     await trade(s2, b2, 1800);
     // 5건, 구매 계정 3: 중앙값 1400 -> 하한 20%, 상한 500%
-    const hist = await get(app, s1, '/auction/prices/eq_sword_iron');
+    const hist = await get(app, s1, '/auction/prices/eq_sword_10_u');
     expect(hist.body.data).toMatchObject({ source: 'history', limits: { min: 280, max: 7000 }, volume: 5 });
     // 같은 쌍이 극단 가격으로 거듭 거래해도 최근 2건만 반영된다
     await trade(s1, b1, 2500);
     await trade(s1, b1, 2500);
     await trade(s1, b1, 2500);
-    const after = await get(app, s1, '/auction/prices/eq_sword_iron');
+    const after = await get(app, s1, '/auction/prices/eq_sword_10_u');
     // 반영: (s1,b1) 2500 2500 / (s1,b2) 1200 / (s1,b3) 1400 / (s2,b1) 1600 / (s2,b2) 1800 -> 중앙값 1700
     expect(after.body.data.limits).toEqual({ min: 340, max: 8500 });
     // 한도 밖 등록은 새 기준으로 거절된다
-    await seedItem(s1, 'eq_sword_iron', 1);
-    const low = await listReq(app, s1, { item_key: 'eq_sword_iron', count: 1, buyout: 300, hours: 12 });
+    await seedItem(s1, 'eq_sword_10_u', 1);
+    const low = await listReq(app, s1, { item_key: 'eq_sword_10_u', count: 1, buyout: 300, hours: 12 });
     expect(low.body.errors).toMatchObject({ code: 'PRICE_OUT_OF_RANGE', min: 340, source: 'history' });
     await expectConserved();
   });
@@ -96,7 +96,7 @@ describe('S18 쌍 한도와 시세 중앙값', () => {
     await trade(s1, b2, 1000);
     await trade(s2, b2, 1000);
     await trade(s3, b2, 1000);
-    const p = await get(app, s1, '/auction/prices/eq_sword_iron');
+    const p = await get(app, s1, '/auction/prices/eq_sword_10_u');
     expect(p.body.data.source).toBe('vendor');
   });
 });
@@ -130,12 +130,12 @@ describe('감사 보강: 쌍 한도(입찰 포함), 시세 일일 상승 상한,
     for (const [i, [s, b]] of pairs.entries()) await trade(s, b, 1000 + i * 200); // 중앙값 1400
     advance(25 * HOUR);
     for (const [s, b] of pairs) await trade(s, b, 2500); // 오늘 중앙값 2150 > 1400 x 1.5 = 2100
-    const p = await get(app, s1, '/auction/prices/eq_sword_iron');
+    const p = await get(app, s1, '/auction/prices/eq_sword_10_u');
     expect(p.body.data.source).toBe('history');
     expect(p.body.data.limits).toEqual({ min: 420, max: 10500 });
     // 상한을 올리면(환경변수) 실제 중앙값이 쓰인다
     app = buildApp({ AUCTION_PAIR_DAILY_TRADES: '10000', AUCTION_REF_DAILY_CAP_BPS: '30000' });
-    const q = await get(app, s1, '/auction/prices/eq_sword_iron');
+    const q = await get(app, s1, '/auction/prices/eq_sword_10_u');
     expect(q.body.data.limits).toEqual({ min: 430, max: 10750 });
   });
 
@@ -183,7 +183,7 @@ describe('S19 속성 테스트: 임의 연산열 뒤에도 골드·아이템 보
     };
     const heroes = await Promise.all(Array.from({ length: 5 }, () => mk(app, 50_000)));
     for (const h of heroes) {
-      await seedItem(h, 'eq_sword_iron', 6);
+      await seedItem(h, 'eq_sword_10_u', 6);
       await seedItem(h, 'mat_bone', 60);
       await seedItem(h, 'potion_hp', 40);
     }
@@ -196,7 +196,7 @@ describe('S19 속성 테스트: 임의 연산열 뒤에도 골드·아이템 보
         const kind = rnd(3);
         const body =
           kind === 0
-            ? { item_key: 'eq_sword_iron', count: 1, buyout: 100 + rnd(2000), hours: pick([12, 24, 48]) }
+            ? { item_key: 'eq_sword_10_u', count: 1, buyout: 100 + rnd(2000), hours: pick([12, 24, 48]) }
             : kind === 1
               ? { item_key: 'mat_bone', count: 1 + rnd(5), buyout: 0, hours: 12 }
               : { item_key: 'potion_hp', count: 1 + rnd(3), buyout: 0, hours: 24 };
@@ -262,9 +262,9 @@ describe('S20 캐릭터 삭제 거절과 클라이언트 값 조작', () => {
 
   it('요청 본문 조작: 알 수 없는 필드, 음수·소수·상한 초과, 잘못된 기간·수량', async () => {
     const h = await mk(app);
-    await seedItem(h, 'eq_sword_iron', 2);
+    await seedItem(h, 'eq_sword_10_u', 2);
     await seedItem(h, 'mat_bone', 2000);
-    const ok = { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 };
+    const ok = { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 };
     for (const extra of [{ fee: 0 }, { deposit: 0 }, { ends_at: 'x' }, { category: 'weapon' }, { bind: 'none' }, { seller: 'x' }]) {
       expect((await listReq(app, h, { ...ok, ...extra })).status).toBe(400);
     }
@@ -282,7 +282,7 @@ describe('S20 캐릭터 삭제 거절과 클라이언트 값 조작', () => {
     expect((await post(app, h, `/auction/listings/${id}/bids`, { amount: 100, current_bid: 1 })).status).toBe(400);
     expect((await post(app, h, '/auction/listings/not-a-uuid/buyout', {})).status).toBe(400);
     expect((await post(app, h, `/auction/listings/${randomUUID()}/buyout`, {})).body.errors.code).toBe('LISTING_NOT_FOUND');
-    expect(await countOf(h, 'eq_sword_iron')).toBe(2);
+    expect(await countOf(h, 'eq_sword_10_u')).toBe(2);
     await expectConserved();
   });
 
@@ -294,7 +294,7 @@ describe('S20 캐릭터 삭제 거절과 클라이언트 값 조작', () => {
     expect((await request(app).get(`/characters/${a.id}/auction/mine`).set(auth(b.s))).status).toBe(404);
     // 등록은 분당 한도(RATE_AUCTION_LIST_PER_MIN)를 넘으면 429
     app = buildApp({ AUCTION_PAIR_DAILY_TRADES: '10000', RATE_AUCTION_LIST_PER_MIN: '2' });
-    const body = { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 };
+    const body = { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 };
     expect((await listReq(app, b, body)).status).toBe(422);
     expect((await listReq(app, b, body)).status).toBe(422);
     const limited = await listReq(app, b, body);
@@ -317,36 +317,36 @@ describe('3단계 변경: 귀속이 재고 키에 들어간다', () => {
     );
     const q = await post(app, h, '/quests/c1_rebuild/claim', {});
     expect(q.status).toBe(200);
-    expect(q.body.data.delta.stacks).toEqual([{ item_key: 'eq_ring_ruby', location: 'bag', bind: 'character', count: 1 }]);
+    expect(q.body.data.delta.stacks).toEqual([{ item_key: 'eq_ring_1_r', location: 'bag', bind: 'character', count: 1 }]);
     // 같은 키의 거래 가능 재고는 따로 쌓인다
-    await seedItem(h, 'eq_ring_ruby', 1);
-    const rows = await getPool().query("SELECT bind, count FROM character_items WHERE character_id = $1 AND item_key = 'eq_ring_ruby' ORDER BY bind", [h.dbId]);
+    await seedItem(h, 'eq_ring_1_r', 1);
+    const rows = await getPool().query("SELECT bind, count FROM character_items WHERE character_id = $1 AND item_key = 'eq_ring_1_r' ORDER BY bind", [h.dbId]);
     expect(rows.rows).toEqual([{ bind: 'character', count: 1 }, { bind: 'none', count: 1 }]);
     // 소모는 강한 귀속부터: 창고로 1개 보내면 캐릭터 귀속 행이 간다
-    const mv = await post(app, h, '/storage/move', { moves: [{ item_key: 'eq_ring_ruby', to: 'storage', count: 1 }] });
-    expect(mv.body.data.delta.stacks).toEqual(expect.arrayContaining([{ item_key: 'eq_ring_ruby', location: 'storage', bind: 'character', count: 1 }]));
+    const mv = await post(app, h, '/storage/move', { moves: [{ item_key: 'eq_ring_1_r', to: 'storage', count: 1 }] });
+    expect(mv.body.data.delta.stacks).toEqual(expect.arrayContaining([{ item_key: 'eq_ring_1_r', location: 'storage', bind: 'character', count: 1 }]));
     const st = await getPool().query("SELECT bind FROM character_items WHERE character_id = $1 AND location = 'storage'", [h.dbId]);
     expect(st.rows).toEqual([{ bind: 'character' }]);
     // 장착은 가방에 남은 거래 가능 행을 쓰고, 착용 행이 귀속을 가진다. 해제하면 같은 귀속으로 돌아온다
-    const eq = await post(app, h, '/equipment/equip', { item_key: 'eq_ring_ruby' });
+    const eq = await post(app, h, '/equipment/equip', { item_key: 'eq_ring_1_r' });
     expect(eq.status).toBe(200);
-    const worn = await getPool().query("SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn' AND item_key = 'eq_ring_ruby'", [h.dbId]);
+    const worn = await getPool().query("SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn' AND item_key = 'eq_ring_1_r'", [h.dbId]);
     expect(worn.rows).toEqual([{ bind: 'none' }]);
     const un = await post(app, h, '/equipment/unequip', { slot: 2 });
     expect(un.status).toBe(200);
-    expect(un.body.data.delta.stacks).toEqual([{ item_key: 'eq_ring_ruby', location: 'bag', bind: 'none', count: 1 }]);
+    expect(un.body.data.delta.stacks).toEqual([{ item_key: 'eq_ring_1_r', location: 'bag', bind: 'none', count: 1 }]);
     await expectLedgerConsistent(h);
   });
 
   it('강화 결과는 소모한 행의 귀속을 그대로 가진다', async () => {
     const h = await mk(app, 1_000_000);
-    await seedItem(h, 'eq_sword_iron', 1, 'bag', 'account');
+    await seedItem(h, 'eq_sword_10_u', 1, 'bag', 'account');
     await seedItem(h, 'mat_bone', 50);
     await seedItem(h, 'mat_ore', 50);
     await seedItem(h, 'mat_essence', 50);
-    const res = await post(app, h, '/enhance', { target: { bag_key: 'eq_sword_iron' } });
+    const res = await post(app, h, '/enhance', { target: { bag_key: 'eq_sword_10_u' } });
     expect(res.status).toBe(200);
-    const rows = await getPool().query("SELECT item_key, bind FROM character_items WHERE character_id = $1 AND item_key LIKE 'eq_sword_iron%' AND location = 'bag'", [h.dbId]);
+    const rows = await getPool().query("SELECT item_key, bind FROM character_items WHERE character_id = $1 AND item_key LIKE 'eq_sword_10_u%' AND location = 'bag'", [h.dbId]);
     for (const r of rows.rows) expect(r.bind).toBe('account');
     expect(res.body.data.delta.stacks.every((s: { bind: string }) => s.bind !== undefined)).toBe(true);
     await expectLedgerConsistent(h);

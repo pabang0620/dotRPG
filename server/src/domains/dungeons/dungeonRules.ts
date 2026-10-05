@@ -1,4 +1,5 @@
 // 솔로 던전의 순수 규칙. C# 원본: DungeonRanking, DungeonRewards, ResetClock.IsOpen
+import { tierOfLevel } from '../../utils/gearTier';
 import type { DifficultyDef, DungeonDef, EconomyData } from '../../gamedata/economyData';
 import { RARITY_ORDER } from '../../gamedata/economyData';
 import { f32, keyAt, roundHalfEven } from '../../utils/itemKey';
@@ -65,11 +66,19 @@ export interface Card {
   count: number;
 }
 
+/** 레이드 장비 카드가 레전더리로 바뀌는 천분율 */
+export const RAID_LEGENDARY_PERMILLE = 5;
+const CATEGORIES = ['Weapon', 'Top', 'Bottom', 'Necklace', 'Ring'] as const;
+const pickCategory = (rng: Rng): string => CATEGORIES[rng.int(0, CATEGORIES.length)] as string;
+
 const rarityIdx = (r: string): number => RARITY_ORDER.indexOf(r as (typeof RARITY_ORDER)[number]);
 
 /** DungeonRewards.RollGear: 몬스터 드롭표 시도(절반) 후 희귀 장비까지 든 가중 풀. +0 기본 id를 돌려준다 */
-export function rollGear(eco: EconomyData, cls: string, minRarity: string, rng: Rng): string {
-  const usable = eco.shop.equipmentList.filter((e) => e.classOnly === null || e.classOnly === cls);
+export function rollGear(eco: EconomyData, cls: string, minRarity: string, rng: Rng, tier = 0): string {
+  // 던전 카드 장비는 그 난이도 권장 레벨의 단계 장비만(레전더리는 레이드 별도 굴림)
+  const usable = eco.shop.equipmentList.filter(
+    (e) => !e.bossOnly && e.levelTier === tier && e.rarity !== 'Legendary' && (e.classOnly === null || e.classOnly === cls),
+  );
   const min = rarityIdx(minRarity);
   if (rng.int(0, 2) === 0) {
     const dropPool = usable.filter((e) => e.dropWeight > 0);
@@ -109,6 +118,7 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
     table.push({ itemId: eco.enhance.ticketItem, min: 1, max: 1, weight: diff.ticketWeight });
   }
   const total = table.reduce((a, e) => a + Math.max(0, e.weight), 0);
+  const tier = tierOfLevel(diff.recommendedLevel);
   const cards: Card[] = [];
   for (let i = 0; i < eco.dungeons.cards.count; i++) {
     let roll = rng.int(0, Math.max(1, total));
@@ -122,7 +132,14 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
     }
     let card: Card;
     if (pick.itemId === 'gear') {
-      card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng), count: 1 };
+      card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng, tier), count: 1 };
+      // 레이드 장비 카드: 아주 낮은 확률로 그 단계의 레전더리(Lv.20 해골왕, Lv.40 그라흐)
+      if (d.isRaid && rng.int(0, 1000) < RAID_LEGENDARY_PERMILLE) {
+        const legend = eco.shop.equipmentList.find(
+          (e) => e.rarity === 'Legendary' && e.levelTier === tier && (e.classOnly === null || e.classOnly === cls) && e.category === pickCategory(rng),
+        );
+        if (legend) card = { item_key: keyAt(legend.id, 0), count: 1 };
+      }
     } else {
       let n = rng.int(pick.min, pick.max + 1);
       // 보호권은 곱하지 않고, 나머지는 난이도 보상 배율을 곱한다
@@ -131,7 +148,7 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
     }
     // 대박 카드: 카드마다 아주 낮은 확률(천분율)로 에픽 위 등급(유니크·레전더리) 장비로 바뀐다(C# DungeonRewards와 같은 순서)
     if ((diff.jackpotPerMille ?? 0) > 0 && rng.int(0, 1000) < (diff.jackpotPerMille ?? 0)) {
-      const jackpot = rollJackpot(eco, cls, rng);
+      const jackpot = rollJackpot(eco, cls, rng, tier);
       if (jackpot) card = { item_key: jackpot, count: 1 };
     }
     cards.push(card);
@@ -140,9 +157,10 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
 }
 
 /** 유니크 3 : 레전더리 1 가중치로, 직업이 쓸 수 있는 에픽 위 장비 하나(+0). 없으면 null */
-export function rollJackpot(eco: EconomyData, cls: string, rng: Rng): string | null {
+export function rollJackpot(eco: EconomyData, cls: string, rng: Rng, tier = 0): string | null {
+  // 대박 카드: 같은 단계의 유니크(레전더리는 레이드에서만)
   const pool = eco.shop.equipmentList
-    .filter((e) => !e.starter && (e.classOnly === null || e.classOnly === cls) && rarityIdx(e.rarity) >= rarityIdx('Unique'))
+    .filter((e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && (e.classOnly === null || e.classOnly === cls))
     .map((e) => ({ id: e.id, w: rarityIdx(e.rarity) >= rarityIdx('Legendary') ? 1 : 3 }));
   const total = pool.reduce((a, p) => a + p.w, 0);
   if (total === 0) return null;

@@ -106,8 +106,8 @@ namespace DotRPG
         static readonly int[] Chance = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 15, 14, 13, 12, 11, 10, 10, 10, 10 };
         /// <summary>Gold multiplier per level attempted from.</summary>
         static readonly double[] GoldMul = { 1, 1, 1, 1, 2, 2.2, 2.4, 2.6, 2.8, 3, 3, 5, 16, 24, 34, 46, 60, 64, 68, 72 };
-        /// <summary>Base gold per attempt by item tier 0..3 (weapons; other gear pays 80%).</summary>
-        static readonly int[] GoldByTier = { 20, 40, 70, 100 };
+        /// <summary>Base gold per attempt by level tier (Lv.1, 10, 15 ... 40; weapons, other gear pays 80%).</summary>
+        static readonly int[] GoldByTier = { 20, 30, 40, 55, 70, 85, 100, 120 };
 
         static int Clamp(int level) => Math.Max(0, Math.Min(EquipmentDatabase.MaxEnhance - 1, level));
 
@@ -129,10 +129,10 @@ namespace DotRPG
             return EnhanceFailure.Destroy;
         }
 
-        /// <summary>Gold per attempt: round(x × multiplier[level]), x = 20 / 40 / 70 / 100 by tier (×0.8 for non-weapons).</summary>
+        /// <summary>Gold per attempt: round(x × multiplier[level]), x by the item's level tier (×0.8 for non-weapons).</summary>
         public static int GoldFor(EquipmentItem item, int level)
         {
-            int tier = Math.Max(0, Math.Min(GoldByTier.Length - 1, item.Tier));
+            int tier = Math.Max(0, Math.Min(GoldByTier.Length - 1, item.levelTier));
             double x = GoldByTier[tier] * (item.category == EquipCategory.Weapon ? 1.0 : 0.8);
             return (int)Math.Round(x * GoldMul[Clamp(level)], MidpointRounding.AwayFromZero);
         }

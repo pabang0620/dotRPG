@@ -22,6 +22,9 @@ const monsterDefSchema = z.looseObject({
   goldPerHitMax: nonNegInt.default(0),
   xpByLevel: z.array(nonNegInt).optional(),
   respawnSeconds: z.number().positive().optional(),
+  /** 필드 보스의 장비(천분율로 처치마다 굴린다) */
+  bossGear: z.string().nullable().optional(),
+  bossGearPermille: nonNegInt.default(0),
 });
 
 const monstersSchema = z.looseObject({
@@ -97,6 +100,14 @@ const equipmentSchema = z.looseObject({
   dropWeight: nonNegInt,
   tier: nonNegInt,
   sellPrice: nonNegInt,
+  /** 필드 보스 전용 장비: 일반 드롭·던전 카드·캐시샵에 넣지 않는다 */
+  bossOnly: z.boolean().default(false),
+  /** 착용 레벨과 레벨 단계 번호(0 = Lv.1 ... 7 = Lv.40) */
+  reqLevel: z.number().int().min(1).max(99).default(1),
+  levelTier: z.number().int().min(0).max(7).default(0),
+  /** 성장 옵션(%): 몬스터 경험치, 스킬 범위(클라이언트 전투) */
+  xpBonus: nonNegInt.default(0),
+  aoeBonus: nonNegInt.default(0),
 });
 
 const shopSchema = z.looseObject({
@@ -193,6 +204,9 @@ const mapExtraSchema = z.looseObject({
       id: z.string().min(1),
       fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive(), level: z.number().int().min(1).max(40).default(1), xp: nonNegInt.optional(), respawnSeconds: z.number().positive().default(25) })).default([]),
       sharedField: z.boolean().optional(),
+      fieldBoss: z
+        .looseObject({ monsterId: z.string().min(1), level: z.number().int().min(1).max(60), xp: nonNegInt, intervalSeconds: z.number().int().positive() })
+        .optional(),
       scriptedSpawns: z
         .array(z.looseObject({ monsterId: z.string(), total: z.number().int().positive() }))
         .default([]),
@@ -297,6 +311,8 @@ export interface MapExtra {
   fieldSpawns: { monsterId: string; points: number; level: number; xp?: number; respawnSeconds: number }[];
   /** 파티 필드 세션을 만들 수 있는 맵(8단계). 데이터가 주지 않으면 fieldSpawns 유무로 본다 */
   sharedField: boolean;
+  /** 필드 보스(15분 창마다 캐릭터당 1회 인정) */
+  fieldBoss: { monsterId: string; level: number; xp: number; intervalSeconds: number } | null;
   scriptedSpawns: { monsterId: string; total: number }[];
   nodes: Map<string, string>; // 노드 id -> kind
   chests: Set<string>;
@@ -471,6 +487,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     mapExtra.set(m.id, {
       fieldSpawns: m.fieldSpawns,
       sharedField: m.sharedField ?? m.fieldSpawns.length > 0,
+      fieldBoss: m.fieldBoss ?? null,
       scriptedSpawns: m.scriptedSpawns,
       nodes: new Map(m.nodes.map((n) => [n.id, n.kind] as const)),
       chests: new Set(m.chests),

@@ -112,6 +112,8 @@ namespace DotRPG.EditorTools
                 .Str("classOnly", e.classOnly.HasValue ? e.classOnly.Value.ToString().ToLowerInvariant() : null)
                 .Num("attack", e.attack).Num("maxHealth", e.maxHealth).Num("block", e.block).Num("speed", e.speed)
                 .Bool("starter", e.starter).Num("dropWeight", e.dropWeight).Num("tier", e.Tier)
+                .Bool("bossOnly", e.bossOnly).Num("xpBonus", e.xpBonus).Num("aoeBonus", e.aoeBonus)
+                .Num("reqLevel", e.reqLevel).Num("levelTier", e.levelTier)
                 .Num("sellPrice", ItemPrices.SellPrice(e.id)).End());
             j.Arr("materials", EquipmentDatabase.AllMaterials, (o, m) => o.Obj()
                 .Str("id", m.id).Str("rarity", m.rarity.ToString()).Num("dropChance", m.dropChance).Num("minDrop", m.minDrop).Num("maxDrop", m.maxDrop)
@@ -298,7 +300,8 @@ namespace DotRPG.EditorTools
             {
                 o.Obj().Str("id", m.id).Str("name", m.name).Str("kind", m.kind.ToString()).Num("hp", m.hp).Num("damage", m.damage).Num("xp", m.xp)
                     .Bool("boss", m.boss).Bool("raid", m.raid).Bool("noLoot", m.noLoot).Num("goldMin", m.goldMin).Num("goldMax", m.goldMax)
-                    .Num("goldPerHitMin", m.goldPerHitMin).Num("goldPerHitMax", m.goldPerHitMax);
+                    .Num("goldPerHitMin", m.goldPerHitMin).Num("goldPerHitMax", m.goldPerHitMax)
+                    .Str("bossGear", m.bossGear).Num("bossGearPermille", m.bossGearPermille);
                 // Same float maths as MonsterDatabase.SpawnDef, so the server never re-derives the rounding.
                 o.Arr("xpByLevel", Enumerable.Range(1, 30), (x, lv) => x.Val(Mathf.RoundToInt(m.xp * (1f + MonsterDatabase.XpPerLevel * (lv - 1)))));
                 return o.End();
@@ -386,6 +389,11 @@ namespace DotRPG.EditorTools
                 }
                 else o.Arr("fieldSpawns", census.spawnPoints > 0 ? new[] { census.spawnPoints } : new int[0],
                     (x, n) => x.Obj().Str("monsterId", Resources.Load<GameConfig>("Data/GameConfig").skeletonStats.enemyId).Num("points", n).Num("level", 1).End()); // field skeletons are level 1 (EnemyController.Create)
+                // [FIELD BOSS] One boss per quarter hour on this map (FieldBosses): the server credits one kill per window.
+                var fb = FieldBosses.For(m.id);
+                if (fb != null)
+                    o.Key("fieldBoss").Obj().Str("monsterId", fb.monsterId).Num("level", FieldBosses.LevelOf(fb)).Num("xp", FieldBosses.XpOf(fb))
+                        .Num("intervalSeconds", FieldBosses.IntervalSeconds).End();
                 o.Arr("scriptedSpawns", ScriptedSpawns(m.id), (x, sp) => x.Obj().Str("monsterId", sp.Item1).Num("total", sp.Item2).Str("quest", sp.Item3).End());
                 o.Arr("nodes", census.nodes, (x, nd) => x.Obj().Str("id", nd.Item1).Str("kind", nd.Item2).End());
                 o.Arr("chests", census.chests, (x, c) => x.Val(c));

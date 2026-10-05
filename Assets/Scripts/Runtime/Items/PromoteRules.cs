@@ -41,11 +41,11 @@ namespace DotRPG
         /// <summary>The item this one promotes to (null = already the top of its line, or starter gear).</summary>
         public static EquipmentItem NextOf(EquipmentItem item)
         {
-            if (item == null || item.starter) return null;
+            if (item == null || item.starter || item.bossOnly) return null;
             EquipmentItem best = null;
             foreach (var other in EquipmentDatabase.All)
             {
-                if (other.starter || other.category != item.category || other.classOnly != item.classOnly || other.rarity <= item.rarity) continue;
+                if (other.starter || other.bossOnly || other.levelTier != item.levelTier || other.category != item.category || other.classOnly != item.classOnly || other.rarity <= item.rarity) continue;
                 if (best == null || other.rarity < best.rarity) best = other;
             }
             return best;

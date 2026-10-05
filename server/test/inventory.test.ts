@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
 import { buildApp, resetDb, shutdown } from './helpers';
-import { countOf, expectLedgerConsistent, newHero, post, seedItem, wornOf, type Hero } from './economyHelpers';
+import { countOf, expectLedgerConsistent, newHero, post, seedItem, seedLevel, wornOf, type Hero } from './economyHelpers';
 
 let app = buildApp();
 beforeAll(resetDb);
@@ -147,18 +147,19 @@ describe('POST /characters/:id/equipment/equip, unequip', () => {
 
   it('정상: 장착하면 이전 장비는 가방으로 돌아간다', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'eq_sword_iron+3', 1);
-    const res = await equip(h, { item_key: 'eq_sword_iron+3' });
+    await seedLevel(h, 10);
+    await seedItem(h, 'eq_sword_10_u+3', 1);
+    const res = await equip(h, { item_key: 'eq_sword_10_u+3' });
     expect(res.status).toBe(200);
-    expect(await wornOf(h, 0)).toBe('eq_sword_iron+3');
+    expect(await wornOf(h, 0)).toBe('eq_sword_10_u+3');
     expect(await countOf(h, 'eq_sword_wood')).toBe(1);
-    expect(await countOf(h, 'eq_sword_iron+3')).toBe(0);
-    expect(res.body.data.delta.worn).toEqual([{ slot: 0, item_key: 'eq_sword_iron+3' }]);
+    expect(await countOf(h, 'eq_sword_10_u+3')).toBe(0);
+    expect(res.body.data.delta.worn).toEqual([{ slot: 0, item_key: 'eq_sword_10_u+3' }]);
     await expectLedgerConsistent(h);
     const off = await unequip(h, { slot: 0 });
     expect(off.status).toBe(200);
     expect(await wornOf(h, 0)).toBeNull();
-    expect(await countOf(h, 'eq_sword_iron+3')).toBe(1);
+    expect(await countOf(h, 'eq_sword_10_u+3')).toBe(1);
     await expectLedgerConsistent(h);
   });
 
@@ -173,33 +174,35 @@ describe('POST /characters/:id/equipment/equip, unequip', () => {
 
   it('반지: 슬롯 지정 없으면 반지1 -> 반지2 -> 둘 다 차면 반지1 교체', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'eq_ring_copper', 1);
-    await seedItem(h, 'eq_ring_wind', 1);
-    await seedItem(h, 'eq_ring_ruby', 1);
-    await equip(h, { item_key: 'eq_ring_copper' });
-    await equip(h, { item_key: 'eq_ring_wind' });
-    expect([await wornOf(h, 2), await wornOf(h, 3)]).toEqual(['eq_ring_copper', 'eq_ring_wind']);
-    await equip(h, { item_key: 'eq_ring_ruby' });
-    expect([await wornOf(h, 2), await wornOf(h, 3)]).toEqual(['eq_ring_ruby', 'eq_ring_wind']);
-    expect(await countOf(h, 'eq_ring_copper')).toBe(1);
+    await seedLevel(h, 10);
+    await seedItem(h, 'eq_ring_1_c', 1);
+    await seedItem(h, 'eq_ring_10_r', 1);
+    await seedItem(h, 'eq_ring_10_un', 1);
+    await equip(h, { item_key: 'eq_ring_1_c' });
+    await equip(h, { item_key: 'eq_ring_10_r' });
+    expect([await wornOf(h, 2), await wornOf(h, 3)]).toEqual(['eq_ring_1_c', 'eq_ring_10_r']);
+    await equip(h, { item_key: 'eq_ring_10_un' });
+    expect([await wornOf(h, 2), await wornOf(h, 3)]).toEqual(['eq_ring_10_un', 'eq_ring_10_r']);
+    expect(await countOf(h, 'eq_ring_1_c')).toBe(1);
     // 슬롯 지정
-    await seedItem(h, 'eq_ring_copper', 1);
-    await equip(h, { item_key: 'eq_ring_copper', slot: 3 });
-    expect(await wornOf(h, 3)).toBe('eq_ring_copper');
+    await seedItem(h, 'eq_ring_1_c', 1);
+    await equip(h, { item_key: 'eq_ring_1_c', slot: 3 });
+    expect(await wornOf(h, 3)).toBe('eq_ring_1_c');
     await expectLedgerConsistent(h);
   });
 
   it('오류: 가방에 없음, 장비 아님, 직업 불일치, 슬롯 불일치, 입력 형식', async () => {
     const h = await newHero(app); // 전사
-    expect((await equip(h, { item_key: 'eq_sword_iron' })).body.errors.code).toBe('NOT_ENOUGH_ITEMS');
+    await seedLevel(h, 10);
+    expect((await equip(h, { item_key: 'eq_sword_10_u' })).body.errors.code).toBe('NOT_ENOUGH_ITEMS');
     expect((await equip(h, { item_key: 'potion_hp' })).body.errors.code).toBe('NOT_EQUIPMENT');
-    await seedItem(h, 'eq_staff_crystal', 1);
-    expect((await equip(h, { item_key: 'eq_staff_crystal' })).body.errors.code).toBe('CLASS_MISMATCH');
-    await seedItem(h, 'eq_neck_leaf', 1);
-    expect((await equip(h, { item_key: 'eq_neck_leaf', slot: 2 })).body.errors.code).toBe('SLOT_MISMATCH');
-    expect((await equip(h, { item_key: 'eq_neck_leaf', slot: 5 })).status).toBe(400);
-    expect((await equip(h, { item_key: 'eq_neck_leaf', extra: 1 })).status).toBe(400);
-    expect(await countOf(h, 'eq_neck_leaf')).toBe(1);
+    await seedItem(h, 'eq_staff_10_u', 1);
+    expect((await equip(h, { item_key: 'eq_staff_10_u' })).body.errors.code).toBe('CLASS_MISMATCH');
+    await seedItem(h, 'eq_neck_1_c', 1);
+    expect((await equip(h, { item_key: 'eq_neck_1_c', slot: 2 })).body.errors.code).toBe('SLOT_MISMATCH');
+    expect((await equip(h, { item_key: 'eq_neck_1_c', slot: 5 })).status).toBe(400);
+    expect((await equip(h, { item_key: 'eq_neck_1_c', extra: 1 })).status).toBe(400);
+    expect(await countOf(h, 'eq_neck_1_c')).toBe(1);
   });
 
   it('해제 오류: 빈 슬롯은 422 SLOT_EMPTY, 범위 밖은 400', async () => {
@@ -210,19 +213,21 @@ describe('POST /characters/:id/equipment/equip, unequip', () => {
 
   it('재전송과 동시 요청: 같은 장비를 두 번 장착할 수 없다', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'eq_sword_iron', 1);
+    await seedLevel(h, 10);
+    await seedItem(h, 'eq_sword_10_u', 1);
     const rid = randomUUID();
-    const a = await equip(h, { item_key: 'eq_sword_iron' }, rid);
-    const b = await equip(h, { item_key: 'eq_sword_iron' }, rid);
+    const a = await equip(h, { item_key: 'eq_sword_10_u' }, rid);
+    const b = await equip(h, { item_key: 'eq_sword_10_u' }, rid);
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(b.body).toEqual(a.body);
 
     const h2 = await newHero(app);
-    await seedItem(h2, 'eq_sword_iron', 1);
-    const [c, d] = await Promise.all([equip(h2, { item_key: 'eq_sword_iron' }), equip(h2, { item_key: 'eq_sword_iron' })]);
+    await seedLevel(h2, 10);
+    await seedItem(h2, 'eq_sword_10_u', 1);
+    const [c, d] = await Promise.all([equip(h2, { item_key: 'eq_sword_10_u' }), equip(h2, { item_key: 'eq_sword_10_u' })]);
     expect([c.status, d.status].sort()).toEqual([200, 422]);
     const rows = await getPool().query(
-      "SELECT count(*)::int AS n FROM character_items WHERE character_id = $1 AND item_key = 'eq_sword_iron'",
+      "SELECT count(*)::int AS n FROM character_items WHERE character_id = $1 AND item_key = 'eq_sword_10_u'",
       [h2.dbId],
     );
     expect(rows.rows[0].n).toBe(1);

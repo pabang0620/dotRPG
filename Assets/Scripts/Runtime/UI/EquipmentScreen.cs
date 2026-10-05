@@ -188,7 +188,7 @@ namespace DotRPG
                 s.corner.enabled = gear != null && eq.IsUpgrade(s.itemId, cls);
                 int n = s.itemId != null ? bag.Count(s.itemId) : 0;
                 s.count.text = n > 1 ? n.ToString() : "";
-                s.icon.color = gear != null && !gear.UsableBy(cls) ? new Color(0.45f, 0.45f, 0.5f, 1f) : Color.white;
+                s.icon.color = gear != null && !eq.CanWear(gear, cls) ? new Color(0.45f, 0.45f, 0.5f, 1f) : Color.white;
             }
 
             // Worn slots.
@@ -295,6 +295,12 @@ namespace DotRPG
             {
                 Game.Audio.PlaySfx("cancel");
                 GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비다.");
+                return;
+            }
+            if (gear.reqLevel > Game.Session.Progression.Level)
+            {
+                Game.Audio.PlaySfx("cancel");
+                GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있다. (지금 Lv.{Game.Session.Progression.Level})");
                 return;
             }
             string key = s.itemId;

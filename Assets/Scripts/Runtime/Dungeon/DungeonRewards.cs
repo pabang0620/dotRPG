@@ -49,7 +49,7 @@ namespace DotRPG
                 // Jackpot: a very small chance per card of a piece above Epic (same order on the server).
                 if (diff.jackpotPerMille > 0 && rng.Next(0, 1000) < diff.jackpotPerMille)
                 {
-                    string jackpot = RollJackpot(cls, rng);
+                    string jackpot = RollJackpot(cls, rng, GearCatalog.TierOfLevel(diff.recommendedLevel));
                     if (jackpot != null) card = new RewardCard(jackpot, 1);
                 }
                 cards.Add(card);
@@ -61,13 +61,13 @@ namespace DotRPG
         public const int JackpotUniqueWeight = 3, JackpotLegendaryWeight = 1;
 
         /// <summary>A Unique or Legendary piece the class can use (+0 key), or null if there is none.</summary>
-        public static string RollJackpot(CharacterClass cls, System.Random rng)
+        public static string RollJackpot(CharacterClass cls, System.Random rng, int tier = 0)
         {
             var pool = new List<(string id, int weight)>();
             int total = 0;
             foreach (var item in EquipmentDatabase.All)
             {
-                if (item.starter || !item.UsableBy(cls) || item.rarity < ItemRarity.Unique) continue;
+                if (item.starter || item.bossOnly || item.levelTier != tier || item.rarity != ItemRarity.Unique || !item.UsableBy(cls)) continue;
                 int w = item.rarity >= ItemRarity.Legendary ? JackpotLegendaryWeight : JackpotUniqueWeight;
                 pool.Add((item.id, w));
                 total += w;
@@ -92,7 +92,7 @@ namespace DotRPG
 
         static RewardCard Resolve(RewardEntry e, DifficultyDef diff, CharacterClass cls, System.Random rng)
         {
-            if (e.itemId == DungeonDatabase.GearReward) return new RewardCard(RollGear(cls, diff.minGearRarity, rng), 1);
+            if (e.itemId == DungeonDatabase.GearReward) return new RewardCard(RollGear(cls, diff.minGearRarity, rng, GearCatalog.TierOfLevel(diff.recommendedLevel)), 1);
             int count = rng.Next(e.min, e.max + 1);
             // Tickets never multiply; everything else scales with the difficulty.
             if (e.itemId != ConsumableDatabase.ProtectTicket) count = Mathf.Max(1, Mathf.RoundToInt(count * diff.rewardMul));
@@ -107,14 +107,14 @@ namespace DotRPG
         /// monster drop table (<see cref="EquipmentDatabase.RollDrop"/>) first, then a weighted pool that also
         /// holds the uniques and legendaries (which never drop from monsters).
         /// </summary>
-        public static string RollGear(CharacterClass cls, ItemRarity minRarity, System.Random rng)
+        public static string RollGear(CharacterClass cls, ItemRarity minRarity, System.Random rng, int tier = 0)
         {
             // The dungeon pool on every other card keeps the rare gear reachable.
             if (rng.Next(0, 2) == 0)
             {
                 for (int i = 0; i < DropTries; i++)
                 {
-                    string id = EquipmentDatabase.RollDrop(cls, 1f);
+                    string id = EquipmentDatabase.RollDrop(cls, 1f, GearCatalog.TierLevels[tier]);
                     var item = EquipmentDatabase.Get(id);
                     if (item != null && item.rarity >= minRarity) return EquipmentDatabase.KeyFor(id, 0);
                 }
@@ -123,7 +123,7 @@ namespace DotRPG
             int totalWeight = 0;
             foreach (var item in EquipmentDatabase.All)
             {
-                if (item.starter || !item.UsableBy(cls) || item.rarity < minRarity) continue;
+                if (item.starter || item.bossOnly || item.levelTier != tier || item.rarity >= ItemRarity.Legendary || !item.UsableBy(cls) || item.rarity < minRarity) continue;
                 int weight = item.dropWeight > 0 ? item.dropWeight : RareGearWeight;
                 pool.Add((item.id, weight));
                 totalWeight += weight;
@@ -174,7 +174,7 @@ namespace DotRPG
             EquipmentItem best = null;
             foreach (var item in EquipmentDatabase.All)
             {
-                if (item.starter || !item.UsableBy(cls) || item.rarity < min) continue;
+                if (item.starter || item.bossOnly || !item.UsableBy(cls) || item.rarity < min) continue;
                 if (best == null || item.rarity < best.rarity || (item.category == EquipCategory.Weapon && best.category != EquipCategory.Weapon && item.rarity == best.rarity)) best = item;
             }
             return best != null ? best.iconKey : "icon_chest";

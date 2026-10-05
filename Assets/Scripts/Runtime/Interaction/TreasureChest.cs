@@ -13,7 +13,7 @@ namespace DotRPG
         bool hd;
 
         /// <summary>What every chest gives (also exported for the server, GameDataExport).</summary>
-        public const string Reward = "eq_top_iron";
+        public const string Reward = "eq_neck_10_r"; // shared by both classes (GearCatalog)
 
         public override string Prompt => "상자 열기";
 

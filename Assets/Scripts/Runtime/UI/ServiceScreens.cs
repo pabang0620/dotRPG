@@ -267,7 +267,14 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             if (!selling)
             {
-                entries.AddRange(ItemPrices.ShopStock);
+                // Goods, then common gear of my class up to my level (the server checks the level too).
+                var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
+                int lv = Game.Session.Progression.Level;
+                foreach (var id in ItemPrices.ShopStock)
+                {
+                    var g = EquipmentDatabase.Get(id);
+                    if (g == null || (g.UsableBy(cls) && g.reqLevel <= lv)) entries.Add(id);
+                }
                 return;
             }
             // Everything at +0 first; enhanced gear (worth real effort) goes to the end of the list.

@@ -103,8 +103,66 @@ def raids(data, title):
         print(f"| {name} | {lv} | x{mhp:.2f} | x{mdmg:.2f} | {t:.0f}초 | {surv:.2f} | {'통과' if ok else '조정 필요'} |")
 
 
+# ---------- 장비 개편(2026-10-05, Docs/PLAN_GEAR_RENEWAL.md): GearCatalog 공식 ----------
+TIER_LEVELS = [1, 10, 15, 20, 25, 30, 35, 40]
+W_BASE = [6, 10, 14, 18, 23, 28, 34, 40]
+H_BASE = [20, 40, 55, 70, 90, 110, 135, 160]
+GRADE = {"c": 0.6, "u": 0.8, "r": 1.0, "e": 1.25, "un": 1.5, "l": 1.85}
+
+
+def tier_of(level):
+    t = 0
+    for i, lv in enumerate(TIER_LEVELS):
+        if lv <= level:
+            t = i
+    return t
+
+
+def gear_build(level, grade="r", plus=10):
+    """그 레벨 단계의 한 등급 장비 한 벌(검, 갑옷, 각반, 목걸이, 반지 2) + 무기 강화"""
+    t, m = tier_of(level), GRADE[grade]
+    seed = 0.135 * (1 + 0.5 * t)
+    wpn = round(W_BASE[t] * m) + round(seed * ENHANCE[min(plus, 12)])
+    acc = round(W_BASE[t] * 0.3 * m) + 2 * round(W_BASE[t] * 0.35 * m)
+    hp = round(H_BASE[t] * m) + round(H_BASE[t] * 0.6 * m) + round(H_BASE[t] * 0.3 * m)
+    return (level, wpn, acc, hp)
+
+
+NEW_BUILDS = {
+    "일반": gear_build(5, "r", 0),
+    "모험": gear_build(12, "r", 7),
+    "왕": gear_build(20, "r", 10),
+    "영웅": gear_build(27, "e", 12),
+}
+NEW_RAIDS = {  # 2026-10-05 현재 수치: 해골왕 Lv.20, 그라흐 Lv.40
+    "해골왕(Lv.20)": (20, 3200, 2.6, 1.4, 12, gear_build(20, "e", 10)),
+    "그라흐(Lv.40)": (40, 6400, 1.9, 1.7, 35, gear_build(40, "e", 12)),
+}
+
+
+def new_tables():
+    global BUILDS
+    old = BUILDS
+    BUILDS = NEW_BUILDS
+    print("\n## 장비 개편 후 빌드:", {k: v for k, v in NEW_BUILDS.items()})
+    table(PROPOSED, "요일 던전 - 장비 개편 후(현재 난이도 배율)")
+    base_dps, base_hp = player(*NEW_BUILDS["일반"])
+    print("\n## 레이드 - 장비 개편 후")
+    print("| 레이드 | 권장Lv | 실효 체력 | 실효 피해 | 예상 클리어 | 생존 | 판정 |")
+    print("|---|---|---|---|---|---|---|")
+    for name, (lv, boss_hp, hm, dm, ml, build) in NEW_RAIDS.items():
+        dps, hp = player(*build)
+        mhp, mdmg = monster(hm, dm, ml)
+        tt = NORMAL_SECONDS * 0.6 * mhp / (dps / base_dps) + NORMAL_SECONDS * 0.4 * mhp * (boss_hp / 950) / (dps / base_dps)
+        surv = (hp / mdmg) / (base_hp / 1.0)
+        ok = RAID_TARGET[0] <= tt <= RAID_TARGET[1] and surv >= 0.45
+        print(f"| {name} | {lv} | x{mhp:.2f} | x{mdmg:.2f} | {tt:.0f}초 | {surv:.2f} | {'통과' if ok else '조정 필요'} |")
+    BUILDS = old
+
+
 if __name__ == "__main__":
     table(CURRENT, "요일 던전 - 현재 수치")
     table(PROPOSED, "요일 던전 - 조정안")
     raids(RAIDS, "레이드 - 현재 수치")
     raids(RAIDS_PROPOSED, "레이드 - 조정안")
+    new_tables()

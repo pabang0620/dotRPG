@@ -144,8 +144,8 @@ describe('POST /characters/:id/chests/open', () => {
     const h = await newHero(app);
     const res = await post(app, h, '/chests/open', chest);
     expect(res.status).toBe(200);
-    expect(res.body.data.granted).toEqual({ item_key: 'eq_top_iron', count: 1 });
-    expect(await countOf(h, 'eq_top_iron')).toBe(1);
+    expect(res.body.data.granted).toEqual({ item_key: 'eq_neck_10_r', count: 1 });
+    expect(await countOf(h, 'eq_neck_10_r')).toBe(1);
     const detail = await get(app, h, '');
     expect(detail.body.data.character.opened_chests).toEqual(['forest:33:39']);
   });
@@ -156,7 +156,7 @@ describe('POST /characters/:id/chests/open', () => {
     const again = await post(app, h, '/chests/open', chest);
     expect(again.status).toBe(409);
     expect(again.body.errors.code).toBe('CHEST_ALREADY_OPENED');
-    expect(await countOf(h, 'eq_top_iron')).toBe(1);
+    expect(await countOf(h, 'eq_neck_10_r')).toBe(1);
   });
 
   it('입력 오류와 없는 상자(이상 기록)', async () => {
@@ -178,7 +178,7 @@ describe('POST /characters/:id/chests/open', () => {
     const h2 = await newHero(app);
     const [c, d] = await Promise.all([post(app, h2, '/chests/open', chest), post(app, h2, '/chests/open', chest)]);
     expect([c.status, d.status].sort()).toEqual([200, 409]);
-    expect(await countOf(h2, 'eq_top_iron')).toBe(1);
+    expect(await countOf(h2, 'eq_neck_10_r')).toBe(1);
     await expectLedgerConsistent(h2);
   });
 });

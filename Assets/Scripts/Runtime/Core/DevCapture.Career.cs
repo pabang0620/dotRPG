@@ -34,7 +34,7 @@ namespace DotRPG
                 for(int stage=0;stage<5;stage++)p.AdvanceAwakening(stage);
                 for(int key=0;key<4;key++)p.EquipSkill(key,skills[loadouts[slot][key]].id);
                 var bag=Game.Session.Inventory;
-                foreach(var gear in new[]{cls==CharacterClass.Warrior?"eq_sword_iron+7":"eq_staff_crystal+7",career==Career.Guardian?"eq_top_iron":"eq_top_leather","eq_bot_leather","eq_neck_leaf","eq_ring_wind"})
+                foreach(var gear in new[]{cls==CharacterClass.Warrior?"eq_sword_10_u+7":"eq_staff_10_u+7",cls==CharacterClass.Warrior?(career==Career.Guardian?"eq_plate_10_e":"eq_plate_1_u"):(career==Career.Guardian?"eq_robe_10_e":"eq_robe_1_u"),cls==CharacterClass.Warrior?"eq_greaves_1_u":"eq_skirt_1_u","eq_neck_1_c","eq_ring_10_r"})
                 {bag.Add(gear,1);if(!Game.Session.Equipment.Equip(gear,cls))throw new InvalidOperationException("Demo equipment rejected: "+gear);}
                 bag.Add(ConsumableDatabase.Gold,100000);
                 bag.Add(ConsumableDatabase.HpPotion,100);

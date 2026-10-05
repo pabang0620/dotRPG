@@ -129,7 +129,7 @@ namespace DotRPG
                 Game.Player.SetClass(cls);
                 foreach (int level in new[] { 0, 1, 6, 7, 10, 11, 12, 13 })
                 {
-                    string key = EquipmentDatabase.KeyFor(cls == CharacterClass.Warrior ? "eq_sword_iron" : "eq_staff_crystal", level);
+                    string key = EquipmentDatabase.KeyFor(cls == CharacterClass.Warrior ? "eq_sword_10_u" : "eq_staff_10_u", level);
                     bag.Add(key, 1); gear.Equip(key, cls); yield return Wait(.08f);
                     var fx = Game.Player.GetComponent<WeaponEnhanceVfx>();
                     DCheck(cls + " enhancement +" + level, fx.Tier == WeaponEnhanceVfx.TierFor(level) && fx.LightVisible == (level >= 7) && fx.AuraVisible == (level >= 11));
@@ -154,7 +154,7 @@ namespace DotRPG
                 DCheck(cls + " unequip clears effect", !Game.Player.GetComponent<WeaponEnhanceVfx>().LightVisible && !Game.Player.GetComponent<WeaponEnhanceVfx>().AuraVisible);
             }
             Game.Player.SetClass(CharacterClass.Warrior);
-            string targetKey = EquipmentDatabase.KeyFor("eq_sword_iron", 10); bag.Add(targetKey, 1); gear.Equip(targetKey, CharacterClass.Warrior);
+            string targetKey = EquipmentDatabase.KeyFor("eq_sword_10_u", 10); bag.Add(targetKey, 1); gear.Equip(targetKey, CharacterClass.Warrior);
             bag.Add(ConsumableDatabase.Gold, 999999); bag.Add("mat_bone", 9999); bag.Add("mat_ore", 9999); bag.Add("mat_essence", 9999);
             Game.Flow.OpenWindow(Game.UI.Enhance); yield return Wait(.25f);
             Game.UI.Enhance.DevSelectSlot(EquipSlot.Weapon); Game.UI.Enhance.DevForceRoll(0); Game.UI.Enhance.DevPress();

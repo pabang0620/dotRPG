@@ -418,7 +418,7 @@ namespace DotRPG
                 int n = Authority.Current.DropCount(mat.minDrop, mat.maxDrop); // [ONLINE]
                 for (int i = 0; i < n; i++) Pickup.Create(mat.id, 1, Position + new Vector2(0f, 0.2f), parent);
             }
-            string id = Authority.Current.DropEquipment(Game.Player.Class, EquipmentDropChance); // [ONLINE]
+            string id = Authority.Current.DropEquipment(Game.Player.Class, EquipmentDropChance, Level); // [ONLINE]
             if (id == null) return;
             Pickup.Create(id, 1, Position + new Vector2(0f, 0.2f), parent);
             var item = EquipmentDatabase.Get(id);
