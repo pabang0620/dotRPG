@@ -5,7 +5,8 @@ namespace DotRPG
 {
     /// <summary>
     /// The motes of a costume skin: a few pixel particles around the wearer, more while walking (gold sparks,
-    /// moon motes, twinkling stars, rising embers). Purely visual: no colliders, no combat random numbers.
+    /// moon motes, twinkling stars, rising embers), and while moving a fading afterimage of the body in the
+    /// skin's colour left along the path. Purely visual: no colliders, no combat random numbers.
     /// </summary>
     public sealed class SkinTrail : MonoBehaviour
     {
@@ -15,6 +16,10 @@ namespace DotRPG
         sealed class Mote { public SpriteRenderer r; public Vector2 vel; public float age, life, size, twinkle; }
 
         readonly List<Mote> motes = new List<Mote>();
+        sealed class Ghost { public SpriteRenderer r; public float age; }
+        readonly List<Ghost> ghosts = new List<Ghost>();
+        const float GhostEvery = 0.07f, GhostLife = 0.38f;
+        float ghostAcc;
         SkinDef skin;
         SpriteRenderer body;
         Vector3 lastPos;
@@ -50,6 +55,8 @@ namespace DotRPG
             skin = null;
             foreach (var m in motes) if (m.r != null) Destroy(m.r.gameObject);
             motes.Clear();
+            foreach (var g in ghosts) if (g.r != null) Destroy(g.r.gameObject);
+            ghosts.Clear();
         }
 
         float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
@@ -66,6 +73,27 @@ namespace DotRPG
             spawnAcc += dt * (visible ? (moved > .0005f ? 22f : 5f) : 0f);
             while (spawnAcc >= 1f && motes.Count < Max) { spawnAcc -= 1f; Spawn(moved > .0005f); }
             if (spawnAcc >= 1f) spawnAcc = 0f;
+            // Afterimages along the path while moving.
+            if (visible && moved > .002f)
+            {
+                ghostAcc += dt;
+                if (ghostAcc >= GhostEvery) { ghostAcc = 0f; SpawnGhost(); }
+            }
+            for (int i = ghosts.Count - 1; i >= 0; i--)
+            {
+                var g = ghosts[i];
+                g.age += dt;
+                if (g.age >= GhostLife || g.r == null)
+                {
+                    if (g.r != null) Destroy(g.r.gameObject);
+                    ghosts.RemoveAt(i);
+                    continue;
+                }
+                float k = g.age / GhostLife;
+                var c = Color.Lerp(skin.trailA, skin.trailB, k);
+                c.a = .55f * (1f - k) * (1f - k);
+                g.r.color = c;
+            }
             for (int i = motes.Count - 1; i >= 0; i--)
             {
                 var m = motes[i];
@@ -88,6 +116,21 @@ namespace DotRPG
                 m.r.transform.localScale = new Vector3(s, s, 1f);
                 if (body != null) m.r.sortingOrder = body.sortingOrder + 1;
             }
+        }
+
+        void SpawnGhost()
+        {
+            if (body == null || body.sprite == null || ghosts.Count >= 8) return;
+            var go = new GameObject("SkinAfterimage");
+            go.transform.position = body.transform.position;
+            go.transform.localScale = body.transform.lossyScale;
+            var r = go.AddComponent<SpriteRenderer>();
+            r.sprite = body.sprite;
+            r.flipX = body.flipX;
+            r.sharedMaterial = FxMaterials.Additive != null ? FxMaterials.Additive : r.sharedMaterial;
+            r.sortingLayerID = body.sortingLayerID;
+            r.sortingOrder = body.sortingOrder - 1;
+            ghosts.Add(new Ghost { r = r });
         }
 
         void Spawn(bool walking)

@@ -1,85 +1,110 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 namespace DotRPG
 {
+    /// <summary>
+    /// 캐시샵 · 옷장. Three tabs (오라 / 전사 스킨 / 마법사 스킨); the list on the left scrolls on its own and the preview
+    /// on the right always stays in view: the character wearing the selected look (a skin turns through every
+    /// direction), its grade, attack bonus, price and the buy / wear button.
+    /// </summary>
     public sealed class CosmeticShopScreen : WindowScreen
     {
         static readonly Vector2 TopLeft = new Vector2(0f, 1f);
-        readonly Text[] rowLabels = new Text[CosmeticCatalog.All.Count];
-        readonly RectTransform[] rows = new RectTransform[CosmeticCatalog.All.Count];
-        readonly Image[] thumbs = new Image[CosmeticCatalog.All.Count];
-        const float RowTop = 128f, RowStep = 70f;
-        Button gacha;
+        const float ListW = 430f, RowH = 72f, TabH = 46f;
+        enum Tab { Aura, WarriorSkin, MageSkin }
+        static readonly string[] TabNames = { "오라", "전사 스킨", "마법사 스킨" };
+
+        sealed class Row { public CosmeticProduct product; public RectTransform rt; public Text label; public Image thumb; }
+
+        readonly List<Row> rows = new List<Row>();
+        readonly List<Button> tabs = new List<Button>();
         CosmeticStore store;
-        RectTransform layout;
-        RectTransform listPanel, detailPanel;
-        ScrollRect scroll;
-        Text footer, restoreLabel;
-        Vector2 lastSize;
-        bool restoreFocused;
-        Text description, status, actionLabel;
-        Image previewAura, previewCharacter;
-        Button action, restore;
+        RectTransform layout, listPanel, detailPanel, listContent;
+        ScrollRect listScroll;
+        Text footer, restoreLabel, wallet, title, description, status, actionLabel, bonus;
+        Image previewAura, previewCharacter, previewGlow;
+        Button action, restore, gacha;
+        Tab tab;
         int selected;
+        bool restoreFocused;
+        string shownFacing;
+        Vector2 lastSize;
 
         public static CosmeticShopScreen Create(Transform canvas)
         {
-            var screen = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "캐시샵 · 옷장", "menuicon_cosmetics");
-            screen.store = Game.Cosmetics;
-            var viewport = UIFactory.Stretch(UIFactory.Rect(screen.content, "Viewport"));
-            var hit = viewport.gameObject.AddComponent<Image>();
-            hit.color = Color.clear;
-            viewport.gameObject.AddComponent<RectMask2D>();
-            screen.layout = UIFactory.Place(UIFactory.Rect(viewport, "Layout"), TopLeft, TopLeft, Vector2.zero, new Vector2(1220f, 600f));
-            screen.scroll = viewport.gameObject.AddComponent<ScrollRect>();
-            screen.scroll.viewport = viewport;
-            screen.scroll.content = screen.layout;
-            screen.scroll.horizontal = false;
-            screen.scroll.movementType = ScrollRect.MovementType.Clamped;
-            screen.scroll.scrollSensitivity = 36f;
-            var list = Panel(screen.layout, "Catalog", TopLeft, TopLeft, Vector2.zero, new Vector2(400f, 520f), UiTheme.Panel);
-            screen.listPanel = list.rectTransform;
-            Label(list.transform, "Hint", "마음에 드는 빛을 골라 보세요", 22, TopLeft, TopLeft, new Vector2(20f, -20f), new Vector2(360f, 44f));
-            screen.gacha = StoreButton(list.transform, "Gacha", "별조각 뽑기", TopLeft, TopLeft, new Vector2(20f, -66f), new Vector2(360f, 50f), screen.OpenGacha, 20);
-            for (int i = 0; i < CosmeticCatalog.All.Count; i++)
+            var s = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "캐시샵 · 옷장", "menuicon_cosmetics");
+            s.store = Game.Cosmetics;
+            var viewport = UIFactory.Stretch(UIFactory.Rect(s.content, "Viewport"));
+            s.layout = UIFactory.Stretch(UIFactory.Rect(viewport, "Layout"));
+
+            for (int i = 0; i < TabNames.Length; i++)
             {
-                int index = i;
-                var row = StoreButton(list.transform, "Product_" + CosmeticCatalog.All[i].Id, "", TopLeft, TopLeft,
-                    new Vector2(20f, -RowTop - i * RowStep), new Vector2(360f, RowStep - 6f), () => screen.Select(index), 20);
-                screen.rowLabels[i] = row.GetComponentInChildren<Text>();
-                screen.rows[i] = row.GetComponent<RectTransform>();
-                UIFactory.Stretch(screen.rowLabels[i].rectTransform, 86f, 0f, 12f, 0f);
-                var product = CosmeticCatalog.All[i];
-                var skinLook = product.IsSkin ? SkinCatalog.LookFor(product.Skin.cls, product.Id) : null;
-                var thumbnail = UIFactory.Image(row.transform, "Thumbnail", skinLook != null ? Game.Art.GetCharacter(skinLook, "down", "idle0") : CosmeticAura.ForProduct(product), skinLook != null ? Color.white : product.Color);
-                thumbnail.preserveAspect = skinLook != null;
-                UIFactory.Place(thumbnail.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                    new Vector2(12f, 0f), new Vector2(68f, 34f));
-                screen.thumbs[i] = thumbnail;
+                var t = (Tab)i;
+                s.tabs.Add(StoreButton(s.layout, "Tab_" + t, TabNames[i], TopLeft, TopLeft, new Vector2(i * 146f, 0f), new Vector2(138f, TabH), () => s.SelectTab(t), 19));
+            }
+            s.gacha = StoreButton(s.layout, "Gacha", "별조각 뽑기", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
+            s.wallet = Label(s.layout, "Wallet", "", 19, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-212f, 0f), new Vector2(300f, TabH), TextAnchor.MiddleRight);
+
+            // Left: the list of the current tab, scrolling inside its panel.
+            var list = Panel(s.layout, "Catalog", TopLeft, TopLeft, new Vector2(0f, -(TabH + 10f)), new Vector2(ListW, 480f), UiTheme.Panel);
+            s.listPanel = list.rectTransform;
+            var lv = UIFactory.Rect(list.transform, "List");
+            UIFactory.Stretch(lv, 10f, 10f, 10f, 10f);
+            lv.gameObject.AddComponent<Image>().color = Color.clear;
+            lv.gameObject.AddComponent<RectMask2D>();
+            s.listContent = UIFactory.Place(UIFactory.Rect(lv, "Items"), TopLeft, TopLeft, Vector2.zero, new Vector2(ListW - 20f, 100f));
+            s.listScroll = lv.gameObject.AddComponent<ScrollRect>();
+            s.listScroll.viewport = lv;
+            s.listScroll.content = s.listContent;
+            s.listScroll.horizontal = false;
+            s.listScroll.movementType = ScrollRect.MovementType.Clamped;
+            s.listScroll.scrollSensitivity = 36f;
+            foreach (var product in CosmeticCatalog.All)
+            {
+                var p = product;
+                var row = new Row { product = p };
+                var b = StoreButton(s.listContent, "Product_" + p.Id, "", TopLeft, TopLeft, Vector2.zero, new Vector2(ListW - 20f, RowH - 6f), () => s.SelectProduct(p), 20);
+                row.rt = b.GetComponent<RectTransform>();
+                row.label = b.GetComponentInChildren<Text>();
+                row.label.alignment = TextAnchor.MiddleLeft;
+                UIFactory.Stretch(row.label.rectTransform, 92f, 0f, 10f, 0f);
+                var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
+                row.thumb = UIFactory.Image(b.transform, "Thumbnail", look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p), look != null ? Color.white : p.Color);
+                row.thumb.preserveAspect = true;
+                UIFactory.Place(row.thumb.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(72f, look != null ? 60f : 36f));
+                s.rows.Add(row);
             }
 
-            var detail = Panel(screen.layout, "Preview", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(780f, 520f), UiTheme.PanelDeep);
-            screen.detailPanel = detail.rectTransform;
-            screen.previewAura = UIFactory.Image(detail.transform, "Aura", CosmeticAura.Sprite, Color.white);
-            UIFactory.Place(screen.previewAura.rectTransform, TopLeft, TopLeft, new Vector2(36f, -204f), new Vector2(220f, 110f));
-            screen.previewCharacter = UIFactory.Image(detail.transform, "Character", null, Color.white);
-            screen.previewCharacter.preserveAspect = true;
-            UIFactory.Place(screen.previewCharacter.rectTransform, TopLeft, TopLeft, new Vector2(66f, -100f), new Vector2(160f, 160f));
-            screen.description = Label(detail.transform, "Description", "", 22, TopLeft, TopLeft, new Vector2(290f, -40f), new Vector2(450f, 260f));
-            screen.action = StoreButton(detail.transform, "PurchaseOrEquip", "", TopLeft, TopLeft,
-                new Vector2(290f, -312f), new Vector2(440f, 56f), screen.ActivateSelected, 22);
-            screen.actionLabel = screen.action.GetComponentInChildren<Text>();
-            screen.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft,
-                new Vector2(290f, -388f), new Vector2(440f, 50f), screen.Restore, 20);
-            screen.restoreLabel = screen.restore.GetComponentInChildren<Text>();
-            screen.status = Label(detail.transform, "Status", "", 18, TopLeft, TopLeft, new Vector2(24f, -454f), new Vector2(732f, 56f));
-            screen.footer = Label(screen.layout, "Footer", "외형 전용 · 능력치 변화 없음 · 원하는 외형은 별조각으로 바로 교환 · 가진 외형은 다시 교환하지 않음\n↑↓ 상품 선택   → 다시 불러오기   ← 상품으로   Enter / A 실행   Esc / B 닫기", 18,
-                TopLeft, TopLeft, new Vector2(0f, -536f), new Vector2(1180f, 60f));
-            screen.store.Changed += screen.Refresh;
-            StarShopClient.Changed += screen.Refresh;
-            return screen;
+            // Right: the preview, fixed in place.
+            var detail = Panel(s.layout, "Preview", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -(TabH + 10f)), new Vector2(760f, 480f), UiTheme.PanelDeep);
+            s.detailPanel = detail.rectTransform;
+            var stage = Panel(detail.transform, "Stage", TopLeft, TopLeft, new Vector2(20f, -20f), new Vector2(260f, 300f), new Color32(18, 26, 40, 255));
+            s.previewGlow = UIFactory.Image(stage.transform, "Glow", Game.Art.Get("fx_glow"), Color.clear);
+            s.previewGlow.raycastTarget = false;
+            UIFactory.Place(s.previewGlow.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -10f), new Vector2(300f, 300f));
+            s.previewAura = UIFactory.Image(stage.transform, "Aura", CosmeticAura.Sprite, Color.white);
+            UIFactory.Place(s.previewAura.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0f, 46f), new Vector2(220f, 110f));
+            s.previewCharacter = UIFactory.Image(stage.transform, "Character", null, Color.white);
+            s.previewCharacter.preserveAspect = true;
+            UIFactory.Place(s.previewCharacter.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 240f));
+
+            s.title = Label(detail.transform, "Title", "", 30, TopLeft, TopLeft, new Vector2(300f, -20f), new Vector2(440f, 44f), TextAnchor.MiddleLeft);
+            s.bonus = Label(detail.transform, "Bonus", "", 22, TopLeft, TopLeft, new Vector2(300f, -68f), new Vector2(440f, 34f), TextAnchor.MiddleLeft);
+            s.description = Label(detail.transform, "Description", "", 19, TopLeft, TopLeft, new Vector2(300f, -108f), new Vector2(440f, 190f), TextAnchor.UpperLeft);
+            s.action = StoreButton(detail.transform, "PurchaseOrEquip", "", TopLeft, TopLeft, new Vector2(300f, -306f), new Vector2(440f, 58f), s.ActivateSelected, 22);
+            s.actionLabel = s.action.GetComponentInChildren<Text>();
+            s.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft, new Vector2(300f, -372f), new Vector2(440f, 44f), s.Restore, 18);
+            s.restoreLabel = s.restore.GetComponentInChildren<Text>();
+            s.status = Label(detail.transform, "Status", "", 17, TopLeft, TopLeft, new Vector2(20f, -330f), new Vector2(260f, 120f), TextAnchor.UpperLeft);
+            s.footer = Label(s.layout, "Footer", "↑↓ 고르기   → 다시 불러오기   Enter / A 실행   Esc / B 닫기", 16,
+                new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(900f, 26f), TextAnchor.MiddleLeft);
+            s.store.Changed += s.Refresh;
+            StarShopClient.Changed += s.Refresh;
+            s.SelectTab(Tab.Aura);
+            return s;
         }
 
         public override async void Show()
@@ -88,47 +113,98 @@ namespace DotRPG
             if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
             base.Show();
             Reflow();
-            scroll.verticalNormalizedPosition = 1f;
+            // Open on the skins of my class when I'm wearing one, else on the auras.
+            if (Game.Player != null && store.SkinFor(Game.Player.Class) != null) SelectTab(Game.Player.Class == CharacterClass.Mage ? Tab.MageSkin : Tab.WarriorSkin);
             await store.RefreshAsync();
         }
 
-        void Select(int index)
+        static Tab TabOf(CosmeticProduct p) => !p.IsSkin ? Tab.Aura : p.Skin.cls == CharacterClass.Mage ? Tab.MageSkin : Tab.WarriorSkin;
+
+        List<Row> Visible()
         {
+            var v = new List<Row>();
+            foreach (var r in rows) if (TabOf(r.product) == tab) v.Add(r);
+            return v;
+        }
+
+        void SelectTab(Tab t)
+        {
+            tab = t;
+            selected = 0;
             restoreFocused = false;
-            selected = Mathf.Clamp(index, 0, CosmeticCatalog.All.Count - 1);
+            float y = 0f;
+            foreach (var r in rows)
+            {
+                bool on = TabOf(r.product) == tab;
+                r.rt.gameObject.SetActive(on);
+                if (!on) continue;
+                UIFactory.Place(r.rt, TopLeft, TopLeft, new Vector2(0f, -y), new Vector2(listContent.sizeDelta.x, RowH - 6f));
+                y += RowH;
+            }
+            listContent.sizeDelta = new Vector2(listContent.sizeDelta.x, y);
+            listScroll.verticalNormalizedPosition = 1f;
+            if (gameObject.activeInHierarchy) Game.Audio.PlaySfx("select");
             Refresh();
         }
+
+        void SelectProduct(CosmeticProduct p)
+        {
+            var v = Visible();
+            int i = v.FindIndex(r => r.product == p);
+            if (i < 0) return;
+            restoreFocused = false;
+            selected = i;
+            shownFacing = null;
+            Refresh();
+        }
+
+        CosmeticProduct Current()
+        {
+            var v = Visible();
+            return v.Count == 0 ? CosmeticCatalog.All[0] : v[Mathf.Clamp(selected, 0, v.Count - 1)].product;
+        }
+
+        bool Wearing(CosmeticProduct p) => p.IsSkin ? store.SkinFor(p.Skin.cls) == p.Id : store.Equipped.Id == p.Id;
 
         protected override void Refresh()
         {
             if (store == null) return;
-            var product = CosmeticCatalog.All[selected];
+            for (int i = 0; i < tabs.Count; i++)
+                TextOf(tabs[i]).text = (Tab)i == tab ? $"<color=#ffd34a>{TabNames[i]}</color>" : TabNames[i];
+            wallet.text = store.IsAvailable ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>온라인 전용</color>";
+            gacha.interactable = store.IsAvailable;
+            var v = Visible();
+            for (int i = 0; i < v.Count; i++)
+            {
+                var item = v[i].product;
+                string state = Wearing(item) ? "<color=#8fe28f>착용 중</color>" : store.Owns(item.Id) ? "보유" : "<color=#8c96a8>미보유</color>";
+                string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{(item.IsSkin ? "코스튬" : CosmeticCatalog.RarityName(item.Rarity))}</color>";
+                string dmg = item.DamagePercent > 0 ? $" · <color=#ffb347>공격력 +{item.DamagePercent}%</color>" : "";
+                v[i].label.text = $"<b>{item.Name}</b>\n<size=16>{grade}{dmg} · {state}</size>";
+                v[i].label.color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
+            }
+
+            var product = Current();
+            var skin = product.Skin;
             var offer = store.OfferFor(product.Id);
             bool owned = store.Owns(product.Id);
-            var skin = product.Skin;
-            bool equipped = skin != null ? store.SkinFor(skin.cls) == product.Id : store.Equipped.Id == product.Id;
-            for (int i = 0; i < CosmeticCatalog.All.Count; i++)
+            bool equipped = Wearing(product);
+            var aura = skin != null ? store.Equipped : product;
+            previewAura.sprite = CosmeticAura.ForProduct(aura);
+            previewAura.color = aura.Color;
+            previewGlow.color = product.Rarity == CosmeticRarity.Unique ? new Color(1f, .78f, .3f, .35f) : product.Rarity == CosmeticRarity.Rare ? new Color(.45f, .65f, 1f, .25f) : new Color(1f, 1f, 1f, .08f);
+            if (skin == null)
             {
-                var item = CosmeticCatalog.All[i];
-                bool wearing = item.IsSkin ? store.SkinFor(item.Skin.cls) == item.Id : store.Equipped.Id == item.Id;
-                string state = wearing ? "착용 중" : store.Owns(item.Id) ? "보유" : "미보유";
-                string rarity = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{CosmeticCatalog.RarityName(item.Rarity)}</color>";
-                rowLabels[i].text = $"{(i == selected ? "▶ " : "")}{item.Name}\n<size=16>{rarity} · {state}</size>";
-                rowLabels[i].color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
+                var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
+                previewCharacter.sprite = animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
             }
-            previewAura.sprite = CosmeticAura.ForProduct(skin != null ? store.Equipped : product);
-            previewAura.color = skin != null ? store.Equipped.Color : product.Color;
-            var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
-            previewCharacter.sprite = skin != null ? Game.Art.GetCharacter(SkinCatalog.LookFor(skin.cls, product.Id), PreviewFacing(), "idle0")
-                : animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
-            string price = product.IsFree ? "무료" : owned ? "보유 중" : offer != null ? $"교환 {offer.LocalizedPrice}" : store.IsAvailable ? "확인 중" : "온라인 전용";
-            string rarityLine = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{CosmeticCatalog.RarityName(product.Rarity)}</color>";
-            string have = store.IsAvailable ? $"보유 {StarShopClient.Stars(StarShopClient.Balance)}" : "온라인 캐릭터로 접속하면 교환·뽑기를 할 수 있습니다.";
+            title.text = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{product.Name}</color>";
+            bonus.text = product.DamagePercent > 0 ? $"착용 시 <color=#ffb347>공격력 +{product.DamagePercent}%</color>" : "<color=#8c96a8>능력치 없음</color>";
+            string price = product.IsFree ? "무료" : owned ? "보유 중" : offer != null ? $"가격 {offer.LocalizedPrice}" : store.IsAvailable ? "확인 중" : "온라인 전용";
             description.text = skin != null
-                ? $"<size=30>{product.Name}</size>\n<color=#ffb347>코스튬 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n능력치 없음 · 8방향 전 동작 전용 그림\n{price}\n{have}"
-                : $"<size=30>{product.Name}</size>\n{rarityLine} · 발밑 오라 · 영구 소장\n모든 직업에서 사용 가능 · 능력치 없음\n\n{price}\n{have}\n선택한 외형을 미리 보는 중입니다.";
+                ? $"<color=#ffb347>코스튬 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n\n{skin.blurb}\n\n8방향 모든 동작 전용 그림 · 걸으면 잔상과 입자\n\n{price}"
+                : $"{(product.IsFree ? "기본" : CosmeticCatalog.RarityName(product.Rarity))} 등급 발밑 오라 · 영구 소장\n모든 직업 공용\n\n{price}";
             actionLabel.text = equipped ? (skin != null ? "벗기" : "착용 중") : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 구매" : "온라인 전용";
-            gacha.interactable = store.IsAvailable;
             action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;
             restoreLabel.text = (restoreFocused ? "▶ " : "") + "보유 외형 다시 불러오기";
@@ -139,7 +215,7 @@ namespace DotRPG
         void ActivateSelected()
         {
             if (!IsTop || !action.interactable) return;
-            var product = CosmeticCatalog.All[selected];
+            var product = Current();
             if (product.IsSkin && store.SkinFor(product.Skin.cls) == product.Id) { store.RemoveSkin(product.Skin.cls); return; }
             if (store.Owns(product.Id)) { store.Equip(product.Id); return; }
             var offer = store.OfferFor(product.Id);
@@ -150,8 +226,7 @@ namespace DotRPG
                 GameEvents.RaiseToast($"별조각이 모자랍니다. (필요 {cost:N0}, 보유 {StarShopClient.Balance:N0})");
                 return;
             }
-            Game.UI.Confirm($"{product.Name}\n{offer.LocalizedPrice}를 사용해 바로 교환합니다 · 영구 외형\n교환하시겠습니까?",
-                async () => await store.PurchaseAsync(offer), true);
+            Game.UI.Confirm($"{product.Name}\n{offer.LocalizedPrice} · 영구 소장\n구매하시겠습니까?", async () => await store.PurchaseAsync(offer), true);
         }
 
         void OpenGacha()
@@ -166,56 +241,34 @@ namespace DotRPG
         }
 
         static readonly string[] PreviewTurn = { "down", "downside", "side", "upside", "up", "upside", "side", "downside" };
-        // A skin preview turns slowly through the directions so every side of the costume shows.
         static string PreviewFacing() => PreviewTurn[(int)(Time.unscaledTime / 0.9f) % PreviewTurn.Length];
-        string shownFacing;
 
         void LateUpdate()
         {
             if (content.rect.size != lastSize) Reflow();
-            var current = CosmeticCatalog.All[selected];
+            float t = Time.unscaledTime;
+            foreach (var r in rows)
+                if (r.rt.gameObject.activeSelf && r.product.Effect != CosmeticEffect.None) r.thumb.color = r.product.ColorAt(t);
+            var current = Current();
+            var aura = current.IsSkin ? store.Equipped : current;
+            if (aura.Effect != CosmeticEffect.None) previewAura.color = aura.ColorAt(t);
             if (current.IsSkin && PreviewFacing() != shownFacing)
             {
                 shownFacing = PreviewFacing();
                 previewCharacter.sprite = Game.Art.GetCharacter(SkinCatalog.LookFor(current.Skin.cls, current.Id), shownFacing, "idle0");
             }
-            float t = Time.unscaledTime;
-            for (int i = 0; i < thumbs.Length; i++)
-                if (CosmeticCatalog.All[i].Effect != CosmeticEffect.None) thumbs[i].color = CosmeticCatalog.All[i].ColorAt(t);
-            var shown = CosmeticCatalog.All[selected];
-            if (shown.Effect != CosmeticEffect.None) previewAura.color = shown.ColorAt(t);
+            var g = previewGlow.color;
+            if (g.a > 0.1f) { g.a = (current.Rarity == CosmeticRarity.Unique ? .3f : .2f) + .1f * Mathf.Sin(t * 3f); previewGlow.color = g; }
         }
 
         void Reflow()
         {
             lastSize = content.rect.size;
-            float width = Mathf.Max(320f, lastSize.x);
-            bool columns = width >= 1180f;
-            float listWidth = columns ? 380f : width;
-            float detailWidth = columns ? width - 400f : width;
-            bool compact = detailWidth < 700f;
-            float listHeight = RowTop + rows.Length * RowStep + 10f;
-            float detailTop = columns ? 0f : listHeight + 20f;
-            float detailHeight = compact ? 820f : 520f;
-            listPanel.sizeDelta = new Vector2(listWidth, listHeight);
-            for (int i = 0; i < rows.Length; i++) rows[i].sizeDelta = new Vector2(listWidth - 40f, RowStep - 6f);
-            gacha.GetComponent<RectTransform>().sizeDelta = new Vector2(listWidth - 40f, 50f);
-            UIFactory.Place(detailPanel, TopLeft, TopLeft, new Vector2(columns ? 400f : 0f, -detailTop), new Vector2(detailWidth, detailHeight));
-            float textX = compact ? 24f : 290f;
-            float textWidth = detailWidth - textX - 24f;
-            Place(previewAura.rectTransform, compact ? (detailWidth - 220f) / 2f : 36f, 204f, 220f, 110f);
-            Place(previewCharacter.rectTransform, compact ? (detailWidth - 160f) / 2f : 66f, 100f, 160f, 160f);
-            Place(description.rectTransform, textX, compact ? 320f : 40f, textWidth, 260f);
-            Place(action.GetComponent<RectTransform>(), textX, compact ? 594f : 312f, textWidth, 56f);
-            Place(restore.GetComponent<RectTransform>(), textX, compact ? 670f : 388f, textWidth, 50f);
-            Place(status.rectTransform, 24f, compact ? 738f : 454f, detailWidth - 48f, compact ? 76f : 56f);
-            float bottom = Mathf.Max(detailTop + detailHeight, columns ? listHeight : 0f);
-            Place(footer.rectTransform, 0f, bottom + 16f, width, 110f);
-            layout.sizeDelta = new Vector2(width, bottom + 130f);
+            float width = Mathf.Max(800f, lastSize.x);
+            float height = Mathf.Max(420f, lastSize.y - (TabH + 10f) - 30f);
+            listPanel.sizeDelta = new Vector2(ListW, height);
+            detailPanel.sizeDelta = new Vector2(width - ListW - 16f, height);
         }
-
-        static void Place(RectTransform target, float x, float y, float width, float height) =>
-            UIFactory.Place(target, TopLeft, TopLeft, new Vector2(x, -y), new Vector2(width, height));
 
         static Button StoreButton(Transform parent, string name, string label, Vector2 anchor, Vector2 pivot,
             Vector2 position, Vector2 size, System.Action onClick, int font)
@@ -233,22 +286,30 @@ namespace DotRPG
             return button;
         }
 
+        static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
+
         public void Navigate(Vector2Int direction)
         {
             if (direction.x != 0) restoreFocused = direction.x > 0;
-            if (direction.y != 0) Select(selected - direction.y);
+            if (direction.y != 0)
+            {
+                var v = Visible();
+                restoreFocused = false;
+                selected = Mathf.Clamp(selected - direction.y, 0, Mathf.Max(0, v.Count - 1));
+                shownFacing = null;
+                if (v.Count > 0)
+                {
+                    // keep the chosen row inside the scrolling list
+                    float top = selected * RowH, bottom = top + RowH;
+                    float view = listScroll.viewport.rect.height;
+                    float offset = listContent.anchoredPosition.y;
+                    if (top < offset) offset = top;
+                    else if (bottom > offset + view) offset = bottom - view;
+                    listScroll.StopMovement();
+                    listContent.anchoredPosition = new Vector2(0f, Mathf.Clamp(offset, 0f, Mathf.Max(0f, listContent.rect.height - view)));
+                }
+            }
             Refresh();
-            var target = restoreFocused ? restore.GetComponent<RectTransform>() : rows[selected];
-            Canvas.ForceUpdateCanvases();
-            var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(layout, target);
-            float top = -bounds.max.y;
-            float bottom = -bounds.min.y;
-            float offset = layout.anchoredPosition.y;
-            float height = scroll.viewport.rect.height;
-            if (top < offset) offset = top;
-            else if (bottom > offset + height) offset = bottom - height;
-            scroll.StopMovement();
-            layout.anchoredPosition = new Vector2(0f, Mathf.Clamp(offset, 0f, Mathf.Max(0f, layout.rect.height - height)));
         }
 
         public void SubmitFocused()

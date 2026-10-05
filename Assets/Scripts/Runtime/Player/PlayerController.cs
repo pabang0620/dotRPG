@@ -249,7 +249,11 @@ namespace DotRPG
             if (animator == null || combat == null || Game.Session == null || Data == null) return;
             var eq = Data.Equipment;
             // A costume skin replaces the whole body (worn clothes don't show over it); the weapon still does.
-            if (IsLocal) Data.SkinId = Game.Cosmetics?.SkinFor(Class) ?? "";
+            if (IsLocal)
+            {
+                Data.SkinId = Game.Cosmetics?.SkinFor(Class) ?? "";
+                Data.CosmeticDamage = Game.Cosmetics?.DamageBonus(Class) ?? 0;
+            }
             var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);
             animator.SetLook(skinLook ?? CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
             SkinTrail.Set(this, animator.Renderer, skinLook != null ? SkinCatalog.Find(Data.SkinId) : null);

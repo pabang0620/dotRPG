@@ -2,6 +2,7 @@
 // C# 원본: MonsterDatabase.SpawnDef, EnemyController.DropLoot/MonsterLoot, GoldRunnerBehaviour.OnHit, EquipmentDatabase.RollDrop
 import type { EconomyData, MonsterDef } from '../../gamedata/economyData';
 import { keyAt, parseItemKey, roundHalfEven } from '../../utils/itemKey';
+import { COSMETIC_DAMAGE_MAX } from '../starshop/starshopDefs';
 import type { Rng } from '../../utils/rng';
 
 /** 몬스터 경험치: xpByLevel 표가 있으면 표, 없으면 round(xp * (1 + xpPerLevel * (레벨 - 1))) (.5는 짝수 쪽) */
@@ -37,7 +38,8 @@ export interface PowerPolicy {
 /** 3.2.3 attackCap(level, worn) */
 export function attackCap(eco: EconomyData, pol: PowerPolicy, level: number, wornKeys: string[]): number {
   const gear = wornKeys.reduce((a, k) => a + gearAttack(eco, k), 0);
-  return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1));
+  // 착용 외형(오라·코스튬 스킨)의 공격력 보너스는 클라이언트 설정이라, 가능한 최대치만큼 넓힌다
+  return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1)) * (1 + COSMETIC_DAMAGE_MAX / 100);
 }
 
 /** 창 안 실효 HP 합이 화력 상한 x 창 길이 x AOE_CAP + 가장 큰 몬스터 HP 이하이면 true */

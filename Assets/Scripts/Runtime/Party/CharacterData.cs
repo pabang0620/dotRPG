@@ -24,6 +24,8 @@ namespace DotRPG
         public CharacterLook Look;
         /// <summary>Worn costume skin (SkinCatalog id) of a person; empty = the class's own look.</summary>
         public string SkinId = "";
+        /// <summary>Attack bonus (%) from the worn aura and costume skin (local player).</summary>
+        public int CosmeticDamage;
 
         readonly CharacterClass cls;
         readonly Progression progression;

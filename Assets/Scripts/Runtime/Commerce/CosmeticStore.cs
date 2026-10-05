@@ -35,6 +35,14 @@ namespace DotRPG
             return p != null && p.IsSkin && p.Skin.cls == cls && Owns(id) ? id : null;
         }
 
+        /// <summary>Attack bonus (%) of what this class wears: the aura plus its costume skin.</summary>
+        public int DamageBonus(CharacterClass cls)
+        {
+            int bonus = Equipped.DamagePercent;
+            var skin = CosmeticCatalog.Find(SkinFor(cls));
+            return bonus + (skin != null ? skin.DamagePercent : 0);
+        }
+
         /// <summary>Takes the skin of a class off (back to its own look).</summary>
         public void RemoveSkin(CharacterClass cls)
         {

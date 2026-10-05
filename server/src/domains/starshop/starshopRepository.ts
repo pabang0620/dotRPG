@@ -69,24 +69,15 @@ export interface PullRow {
   byPity: boolean;
   duplicate: boolean;
   refund: number;
+  kind: 'cosmetic' | 'gear';
 }
 
-export async function insertPulls(db: Queryable, accountId: number, requestId: string, version: string, rows: PullRow[]): Promise<void> {
+export async function insertPulls(db: Queryable, accountId: number, requestId: string, version: string, banner: string, rows: PullRow[]): Promise<void> {
   for (const p of rows) {
     await db.query(
-      `INSERT INTO gacha_pulls (account_id, request_id, seq, rates_version, rarity, item_id, pity_before, pity_after, by_pity, duplicate, refund)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [accountId, requestId, p.seq, version, p.rarity, p.itemId, p.pityBefore, p.pityAfter, p.byPity, p.duplicate, p.refund],
+      `INSERT INTO gacha_pulls (account_id, request_id, seq, rates_version, rarity, item_id, pity_before, pity_after, by_pity, duplicate, refund, kind, banner)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [accountId, requestId, p.seq, version, p.rarity, p.itemId, p.pityBefore, p.pityAfter, p.byPity, p.duplicate, p.refund, p.kind, banner],
     );
   }
-}
-
-/** 최근 뽑기 기록(화면의 "최근 결과") */
-export async function recentPulls(db: Queryable, accountId: number, limit: number) {
-  const r = await db.query<{ item_id: string; rarity: string; by_pity: boolean; duplicate: boolean; refund: number; created_at: Date }>(
-    `SELECT item_id, rarity, by_pity, duplicate, refund, created_at FROM gacha_pulls
-     WHERE account_id = $1 ORDER BY id DESC LIMIT $2`,
-    [accountId, limit],
-  );
-  return r.rows;
 }

@@ -9,13 +9,13 @@ namespace DotRPG
     {
         public string rarity, name;
         public double rate;
-        public readonly List<(string id, string name, double rate)> items = new List<(string, string, double)>();
+        public readonly List<(string id, string name, double rate, bool gear)> items = new List<(string, string, double, bool)>();
     }
 
     public sealed class StarPullResult
     {
         public string itemId, rarity;
-        public bool byPity, duplicate;
+        public bool byPity, duplicate, gear;
         public int refund;
     }
 
@@ -34,8 +34,9 @@ namespace DotRPG
         public static string RatesVersion { get; private set; } = "";
         public static bool Loaded { get; private set; }
         public static readonly List<StarRate> Rates = new List<StarRate>();
+        /// <summary>Equipment banners (weapon / armor / accessory): id, name and their rate tables for my class.</summary>
+        public static readonly List<(string id, string name, List<StarRate> rates)> Banners = new List<(string, string, List<StarRate>)>();
         public static readonly Dictionary<string, int> Refund = new Dictionary<string, int>();
-        public static readonly List<StarPullResult> Recent = new List<StarPullResult>();
         public static readonly HashSet<string> Owned = new HashSet<string>();
         public static readonly Dictionary<string, int> ExchangePrice = new Dictionary<string, int>();
         public static event Action Changed;
@@ -59,10 +60,10 @@ namespace DotRPG
         }
 
         /// <summary>1회(count 1) or the 10+1 bundle (count 10). The server takes the 별조각 and rolls.</summary>
-        public static void Pull(int count, Action<bool, string, List<StarPullResult>> done)
+        public static void Pull(string banner, int count, Action<bool, string, List<StarPullResult>> done)
         {
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다.", null); return; }
-            var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["count"] = count };
+            var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["count"] = count, ["banner"] = banner };
             Api.Post(Base + "/pull", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "뽑기에 실패했습니다." : r.message, null); return; }
@@ -71,12 +72,9 @@ namespace DotRPG
                     results.Add(ReadPull(o as Dictionary<string, object>));
                 Balance = (long)MiniJson.Num(r.data, "balance", Balance);
                 Pity = MiniJson.Int(r.data, "pity", Pity);
-                foreach (var p in results)
-                {
-                    Owned.Add(p.itemId);
-                    Recent.Insert(0, p);
-                }
-                while (Recent.Count > 22) Recent.RemoveAt(Recent.Count - 1);
+                foreach (var p in results) if (!p.gear) Owned.Add(p.itemId);
+                // Gear goes straight into the bag (same delta as every other server grant).
+                OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 Changed?.Invoke();
                 _ = Game.Cosmetics?.RefreshAsync();
                 done?.Invoke(true, "", results);
@@ -106,7 +104,6 @@ namespace DotRPG
             Balance = 0;
             Pity = 0;
             Owned.Clear();
-            Recent.Clear();
             Changed?.Invoke();
         }
 
@@ -116,8 +113,22 @@ namespace DotRPG
             rarity = MiniJson.Str(o, "rarity", "common"),
             byPity = Flag(o, "by_pity"),
             duplicate = Flag(o, "duplicate"),
+            gear = Flag(o, "gear"),
             refund = MiniJson.Int(o, "refund"),
         };
+
+        static List<StarRate> ReadRates(List<object> list, bool gear)
+        {
+            var rates = new List<StarRate>();
+            foreach (var o in list ?? new List<object>())
+            {
+                var r = new StarRate { rarity = MiniJson.Str(o, "rarity", ""), name = MiniJson.Str(o, "name", ""), rate = MiniJson.Num(o, "rate") };
+                foreach (var i in MiniJson.Arr(o, "items") ?? new List<object>())
+                    r.items.Add((MiniJson.Str(i, "id", ""), MiniJson.Str(i, "name", ""), MiniJson.Num(i, "rate"), gear));
+                rates.Add(r);
+            }
+            return rates;
+        }
 
         static bool Flag(Dictionary<string, object> o, string key) => o != null && o.TryGetValue(key, out var v) && v is bool b && b;
 
@@ -131,13 +142,10 @@ namespace DotRPG
             TenCount = MiniJson.Int(d, "ten_count", 11);
             RatesVersion = MiniJson.Str(d, "rates_version", "");
             Rates.Clear();
-            foreach (var o in MiniJson.Arr(d, "rates") ?? new List<object>())
-            {
-                var r = new StarRate { rarity = MiniJson.Str(o, "rarity", ""), name = MiniJson.Str(o, "name", ""), rate = MiniJson.Num(o, "rate") };
-                foreach (var i in MiniJson.Arr(o, "items") ?? new List<object>())
-                    r.items.Add((MiniJson.Str(i, "id", ""), MiniJson.Str(i, "name", ""), MiniJson.Num(i, "rate")));
-                Rates.Add(r);
-            }
+            Rates.AddRange(ReadRates(MiniJson.Arr(d, "rates"), false));
+            Banners.Clear();
+            foreach (var b in MiniJson.Arr(d, "banners") ?? new List<object>())
+                Banners.Add((MiniJson.Str(b, "id", ""), MiniJson.Str(b, "name", ""), ReadRates(MiniJson.Arr(b, "rates"), true)));
             Refund.Clear();
             var refund = MiniJson.Obj(d, "refund");
             if (refund != null) foreach (var kv in refund) Refund[kv.Key] = MiniJson.Int(refund, kv.Key);
@@ -149,8 +157,6 @@ namespace DotRPG
                 if (Flag(o as Dictionary<string, object>, "owned")) Owned.Add(id);
                 ExchangePrice[id] = MiniJson.Int(o, "exchange_price");
             }
-            Recent.Clear();
-            foreach (var o in MiniJson.Arr(d, "recent") ?? new List<object>()) Recent.Add(ReadPull(o as Dictionary<string, object>));
             Loaded = true;
             Changed?.Invoke();
         }

@@ -408,7 +408,7 @@ namespace DotRPG
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>
         public float ManaRegen => MaxMp * 0.05f * (1f + Sum(PassiveStat.ManaRegen) / 100f);
 
-        public int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + data.BuffDamage;
+        public int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + data.BuffDamage + data.CosmeticDamage;
 
         /// <summary>Class base damage + weapon/gear attack, before % increases (scaled for companions).</summary>
         float BaseAttack(CharacterClass cls)

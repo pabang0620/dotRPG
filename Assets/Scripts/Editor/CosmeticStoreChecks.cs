@@ -130,11 +130,11 @@ namespace DotRPG.EditorTools
                 Require(screen.gameObject.activeSelf, "Screen opens with the unavailable provider.");
                 var layout = screen.transform.Find("Content/Viewport/Layout");
                 var button = layout.Find("Preview/PurchaseOrEquip").GetComponent<UnityEngine.UI.Button>();
-                layout.Find("Catalog/Product_aura_sunset").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                layout.Find("Catalog/List/Items/Product_aura_sunset").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(!button.interactable, "Paid purchases are disabled before integration.");
-                Require(layout.Find("Preview/Aura").GetComponent<UnityEngine.UI.Image>().sprite == stars,
+                Require(layout.Find("Preview/Stage/Aura").GetComponent<UnityEngine.UI.Image>().sprite == stars,
                     "Preview uses the same paid artwork as the world renderer.");
-                layout.Find("Catalog/Product_aura_sky").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                layout.Find("Catalog/List/Items/Product_aura_sky").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(button.interactable, "Free appearance remains available.");
                 foreach (float scale in UiTheme.UiScales)
                 {
@@ -143,8 +143,8 @@ namespace DotRPG.EditorTools
                     Require(layout.localScale == Vector3.one, "UI size settings are never cancelled by shrinking the content.");
                     var list = layout.Find("Catalog").GetComponent<RectTransform>();
                     var detail = layout.Find("Preview").GetComponent<RectTransform>();
-                    Require(detail.anchoredPosition.x >= list.sizeDelta.x || -detail.anchoredPosition.y >= list.sizeDelta.y,
-                        "Catalog and details do not overlap at any supported UI scale.");
+                    Require(((RectTransform)layout).rect.width - detail.sizeDelta.x >= list.sizeDelta.x,
+                        "Catalog and the fixed preview sit side by side at every supported UI scale.");
                 }
                 screen.Hide();
                 UnityEngine.Object.DestroyImmediate(screen.gameObject);
