@@ -91,6 +91,8 @@ const enumsSchema = z.looseObject({
 export interface MapInfo {
   id: string;
   instanced: boolean;
+  /** 마을(전투 없는 맵). 마을에서는 같은 채널 사람들이 서로 보인다 */
+  safe?: boolean;
   bounds?: { minX: number; minY: number; maxX: number; maxY: number };
 }
 export interface PassiveNode {

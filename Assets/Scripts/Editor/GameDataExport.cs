@@ -81,7 +81,7 @@ namespace DotRPG.EditorTools
             var rows = new List<(string id, string kind, bool stackable)>();
             foreach (var e in EquipmentDatabase.All) rows.Add((e.id, "equipment", false));
             foreach (var m in EquipmentDatabase.AllMaterials) rows.Add((m.id, "material", true));
-            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey })
+            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
             return Doc().Arr("items", rows, (o, r) => o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
@@ -277,6 +277,12 @@ namespace DotRPG.EditorTools
                     .Num("statsAttack", EquipmentDatabase.StatsAt(e, lv + 1).attack).Num("statsHealth", EquipmentDatabase.StatsAt(e, lv + 1).maxHealth).End());
                 return o.End();
             });
+            // Gear promotion (PromoteRules): the next grade of the same slot, paid with raid-only cores.
+            j.Key("promote").Obj().Str("coreItem", PromoteRules.CoreItem);
+            j.Arr("rows", PromoteRules.Rows(), (o, r) => o.Obj().Str("from", r.from.id).Str("to", r.to.id).Num("cores", r.cores).Num("gold", r.gold).End());
+            j.Arr("raidCoreMid", PromoteRules.RaidCoreMid, (o, n) => o.Val(n));
+            j.Arr("raidCoreFinal", PromoteRules.RaidCoreFinal, (o, n) => o.Val(n));
+            j.End();
             return j.End().ToString();
         }
 

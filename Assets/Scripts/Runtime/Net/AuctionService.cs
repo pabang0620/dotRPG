@@ -109,7 +109,7 @@ namespace DotRPG
         /// </summary>
         public static ItemBind BindFloor(string key)
         {
-            if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold || key == ConsumableDatabase.ProtectTicket || key == DungeonDatabase.SealKey)
+            if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold || key == ConsumableDatabase.ProtectTicket || key == DungeonDatabase.SealKey || key == DungeonDatabase.RaidCore)
                 return ItemBind.CharacterBound;
             var gear = EquipmentDatabase.Get(key);
             return gear != null && gear.starter ? ItemBind.CharacterBound : ItemBind.Tradable;

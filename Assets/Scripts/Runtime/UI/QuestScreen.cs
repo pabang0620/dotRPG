@@ -8,7 +8,8 @@ namespace DotRPG
     /// <summary>
     /// [STORY] Quest log: left, the quests in play (main first, then side quests, then what is done);
     /// right, the chosen quest's chapter, story, objectives and reward. Up/down picks, Enter pins a side
-    /// quest to the HUD tracker (the main quest is always shown there).
+    /// quest to the HUD tracker (the main quest is always shown there). The box at the left of each open quest
+    /// checks it for auto-progress (several at once, done in the order they were checked).
     /// </summary>
     public class QuestScreen : WindowScreen
     {
@@ -17,8 +18,8 @@ namespace DotRPG
         sealed class Row
         {
             public QuestDef quest;
-            public Image bg;
-            public Text text;
+            public Image bg, box;
+            public Text text, check;
         }
 
         RectTransform listRoot;
@@ -37,8 +38,8 @@ namespace DotRPG
             w.detail = Label(side.transform, "Body", "", 21, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -22f), new Vector2(704f, 500f));
             w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 16f), new Vector2(704f, 30f));
             w.hint.color = new Color32(184, 196, 216, 255);
-            // Pick this quest for auto-progress (unpicked: the main quest first, then the pinned side quest).
-            w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행 대상으로", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(240f, 44f), w.ToggleAutoTarget, 18);
+            // Check this quest for auto-progress (nothing checked: the main quest first, then the pinned side quest).
+            w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행에 체크", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(240f, 44f), w.ToggleAutoTarget, 18);
             Button(list.transform,"CareerQuest","전직 · 각성 이야기 보기", "ui_btngray",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(390,48),()=>Game.UI.Skills.ShowAwakening(),20);
             if (Game.Quest != null) Game.Quest.Changed += w.OnQuestChanged;
             return w;
@@ -95,11 +96,27 @@ namespace DotRPG
             string state = st == QuestStatus.Completed ? "<color=#8fe28f>완료</color>"
                 : st == QuestStatus.ReadyToTurnIn ? "<color=#ffd640>보고</color>"
                 : st == QuestStatus.Available ? "<color=#ff9f43>수락 전</color>" : "";
-            string pin = (Game.Session.Journal.Tracked == q.id ? " <color=#78d6ff>[추적]</color>" : "")
-                + (QuestAutoPilot.TargetQuestId == q.id ? " <color=#8fe28f>[자동]</color>" : "");
+            string pin = Game.Session.Journal.Tracked == q.id ? " <color=#78d6ff>[추적]</color>" : "";
             row.text = UIFactory.Text(row.bg.rectTransform, "Text", $"{tag}  {q.DisplayTitle}{pin}  {state}", 20,
                 st == QuestStatus.Completed ? new Color32(150, 160, 176, 255) : new Color32(246, 231, 200, 255), TextAnchor.MiddleLeft, true);
-            UIFactory.Stretch(row.text.rectTransform, 14f, 8f, 0f, 0f);
+            UIFactory.Stretch(row.text.rectTransform, 50f, 8f, 0f, 0f);
+            // Auto-progress check box (open quests only).
+            if (st != QuestStatus.Completed && st != QuestStatus.Locked)
+            {
+                bool on = QuestAutoPilot.IsTarget(q.id);
+                row.box = Img(row.bg.rectTransform, "AutoBox", "ui_white", on ? new Color32(70, 160, 90, 255) : new Color32(10, 14, 22, 230));
+                row.box.raycastTarget = true;
+                UIFactory.Place(row.box.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, -13f), new Vector2(26f, 26f));
+                var outline = row.box.gameObject.AddComponent<Outline>();
+                outline.effectColor = new Color32(184, 196, 216, 255);
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+                row.check = UIFactory.Text(row.box.rectTransform, "Check", on ? "V" : "", 18, Color.white, TextAnchor.MiddleCenter, true);
+                UIFactory.Stretch(row.check.rectTransform, 0f, 0f, 0f, 0f);
+                var boxButton = row.box.gameObject.AddComponent<Button>();
+                boxButton.targetGraphic = row.box;
+                string qid = q.id;
+                boxButton.onClick.AddListener(() => ToggleAuto(qid));
+            }
             var button = row.bg.gameObject.AddComponent<Button>();
             button.targetGraphic = row.bg;
             int captured = index;
@@ -154,10 +171,11 @@ namespace DotRPG
             detail.text = sb.ToString();
             bool canAuto = st != QuestStatus.Completed && st != QuestStatus.Locked;
             autoBtn.gameObject.SetActive(canAuto);
-            if (canAuto) TextOf(autoBtn).text = QuestAutoPilot.TargetQuestId == q.id ? "자동 진행 대상 해제" : "자동 진행 대상으로";
+            if (canAuto) TextOf(autoBtn).text = QuestAutoPilot.IsTarget(q.id) ? "자동 진행 체크 해제" : "자동 진행에 체크";
+            string autoHint = QuestAutoPilot.Targets.Count > 0 ? $"자동 진행: 체크한 {QuestAutoPilot.Targets.Count}개를 체크한 순서대로" : "왼쪽 칸을 체크하면 그 퀘스트만 자동 진행";
             hint.text = q.Kind == QuestKind.Sub && st != QuestStatus.Completed
-                ? $"[{Game.Input.GetBindingLabel(GameAction.Submit)}] 화면 오른쪽 알리미에 추적 / 해제   ·   ↑↓ 선택"
-                : "↑↓ 선택   ·   메인 퀘스트는 항상 알리미에 표시된다";
+                ? $"[{Game.Input.GetBindingLabel(GameAction.Submit)}] 알리미 추적 / 해제   ·   {autoHint}"
+                : $"↑↓ 선택   ·   {autoHint}";
         }
 
         static string RewardText(QuestRewardDef r)
@@ -180,10 +198,18 @@ namespace DotRPG
         void ToggleAutoTarget()
         {
             if (rows.Count == 0) return;
-            var q = rows[selected].quest;
-            QuestAutoPilot.TargetQuestId = QuestAutoPilot.TargetQuestId == q.id ? "" : q.id;
+            ToggleAuto(rows[selected].quest.id);
+        }
+
+        void ToggleAuto(string questId)
+        {
+            var q = Game.Quest.Database.Get(questId);
+            if (q == null) return;
+            QuestAutoPilot.ToggleTarget(questId);
+            selectedId = questId;
             Game.Audio.PlaySfx("confirm");
-            GameEvents.RaiseToast(QuestAutoPilot.TargetQuestId == q.id ? $"자동 진행: '{q.title}'를 진행합니다." : "자동 진행: 메인 퀘스트부터 진행합니다.");
+            GameEvents.RaiseToast(QuestAutoPilot.IsTarget(questId) ? $"자동 진행에 '{q.title}'을(를) 체크했습니다."
+                : QuestAutoPilot.Targets.Count > 0 ? $"'{q.title}' 체크를 풀었습니다." : "체크한 퀘스트가 없어 메인 퀘스트부터 자동 진행합니다.");
             Refresh();
         }
 

@@ -181,6 +181,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   let reason = run.lock_reason;
   let keyGain = 0;
   let keyCost = 0;
+  let coreGain = 0;
   if (dungeon.isRaid && !locked) {
     if ((await humansStanding(ctx, run)) < pol.raidRewardMinHumans) {
       locked = true;
@@ -218,6 +219,13 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
         keyGain = getRng().int(dungeon.keyMin, dungeon.keyMax + 1);
         if (keyGain > 0) await ctx.addItem('bag', eco.dungeons.keyItem, keyGain, 'raid_key', run.uuid);
       }
+      // 승급 재료(고대의 핵): 레이드 보상으로만 나온다. 난이도가 높을수록 많다
+      const promote = eco.enhance.promote;
+      if (promote) {
+        const table = dungeon.raidTier === 'Final' ? promote.raidCoreFinal : promote.raidCoreMid;
+        coreGain = table[run.difficulty] ?? 0;
+        if (coreGain > 0) await ctx.addItem('bag', promote.coreItem, coreGain, 'raid_core', run.uuid);
+      }
     }
   }
   await repo.closeRun(ctx.client, run.id, {
@@ -247,6 +255,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
       ...(reason ? { lock_reason: reason } : {}),
       ...(keyGain > 0 ? { key_gain: keyGain } : {}),
       ...(keyCost > 0 ? { key_cost: keyCost } : {}),
+      ...(coreGain > 0 ? { core_gain: coreGain } : {}),
     };
   }
   return { status: 200, data };

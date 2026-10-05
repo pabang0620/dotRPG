@@ -89,7 +89,8 @@ namespace DotRPG
             Acquire(p);
             lastPos = p.Position;
             lastProgressAt = Time.time;
-            GameEvents.RaiseToast("퀘스트 자동 진행을 시작합니다. 아무 키나 누르면 멈춥니다.");
+            GameEvents.RaiseToast(Targets.Count > 0 ? $"체크한 퀘스트 {Targets.Count}개를 자동 진행합니다. 아무 키나 누르면 멈춥니다."
+                : "퀘스트 자동 진행을 시작합니다. 퀘스트 창에서 진행할 퀘스트를 체크할 수 있습니다.");
         }
 
         void Acquire(PlayerController p)
@@ -175,20 +176,38 @@ namespace DotRPG
 
         // =============================== What to do next ===============================
 
-        /// <summary>The quest the player picked in the quest log ("" = main first, then the pinned side quest).</summary>
-        public static string TargetQuestId = "";
+        /// <summary>
+        /// The quests checked in the quest log, in the order they were checked. Auto-progress works on the first one
+        /// that has something to do; with nothing checked it follows the main quest, then the pinned side quest.
+        /// </summary>
+        public static readonly List<string> Targets = new List<string>();
+
+        public static bool IsTarget(string questId) => Targets.Contains(questId);
+
+        public static void ToggleTarget(string questId)
+        {
+            if (!Targets.Remove(questId)) Targets.Add(questId);
+        }
 
         Goal Resolve()
         {
             var q = Game.Quest;
-            var picked = string.IsNullOrEmpty(TargetQuestId) ? null : q.Database.Get(TargetQuestId);
-            if (picked != null)
+            Targets.RemoveAll(id => q.Database.Get(id) == null || q.StatusOf(id) == QuestStatus.Completed); // done: off the list
+            Goal waiting = default;
+            foreach (var id in Targets)
             {
-                var st = q.StatusOf(picked.id);
-                if (st == QuestStatus.Completed) TargetQuestId = ""; // done: back to the default order
-                else if (st == QuestStatus.Locked) return Wait($"'{picked.title}'은(는) 아직 받을 수 없는 퀘스트입니다.");
-                else return GoalFor(picked);
+                var picked = q.Database.Get(id);
+                var st = q.StatusOf(id);
+                if (st == QuestStatus.Locked)
+                {
+                    if (waiting.kind == GoalKind.None) waiting = Wait($"'{picked.title}'은(는) 아직 받을 수 없는 퀘스트입니다.");
+                    continue;
+                }
+                var pg = GoalFor(picked);
+                if (pg.kind != GoalKind.None && pg.kind != GoalKind.Wait) return pg;
+                if (waiting.kind == GoalKind.None) waiting = pg;
             }
+            if (Targets.Count > 0) return waiting.kind != GoalKind.None ? waiting : Wait("체크한 퀘스트에 지금 할 일이 없습니다.");
             var main = q.CurrentMain();
             var g = main != null ? GoalFor(main) : default;
             if (g.kind == GoalKind.None || g.kind == GoalKind.Wait)

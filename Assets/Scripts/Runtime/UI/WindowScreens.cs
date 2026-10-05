@@ -155,7 +155,7 @@ namespace DotRPG
     /// destroys the piece unless a protection ticket in the bag saves it at +0. Risky attempts ask first,
     /// then the hammer falls twice (unscaled time: windows pause the game). Rules: <see cref="EnhanceRules"/>.
     /// </summary>
-    public class EnhanceScreen : WindowScreen
+    public partial class EnhanceScreen : WindowScreen
     {
         const int Cols = 5, RowsN = 4, PerPage = Cols * RowsN;
         const float Cell = 92f, Gap = 8f;
@@ -196,7 +196,7 @@ namespace DotRPG
 
         public static EnhanceScreen Create(Transform canvas)
         {
-            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 장비 강화", "anvil");
+            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 강화 · 승급", "anvil");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Left", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 590f), new Color32(24, 36, 54, 235));
             Label(left.transform, "Hint", "강화할 장비를 고르세요 (착용 중 + 가방)", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(500f, 30f));
@@ -248,6 +248,7 @@ namespace DotRPG
             w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 64f), TextAnchor.MiddleCenter);
             w.enhanceButton = Button(right.transform, "Go", "강화", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
+            w.BuildPromote(right.transform);
             return w;
         }
 
@@ -339,6 +340,7 @@ namespace DotRPG
 
             if (entries.Count == 0) ShowNothing();
             else ShowDetails(entries[selected]);
+            RefreshPromote(entries.Count == 0 ? null : entries[selected].key);
             dirty = false;
         }
 

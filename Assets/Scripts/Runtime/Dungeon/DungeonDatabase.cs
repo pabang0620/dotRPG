@@ -152,6 +152,8 @@ namespace DotRPG
         public const string RaidGolem = "raid_golem", RaidGrah = "raid_grah";
         /// <summary>[RAID] Item that opens final raids.</summary>
         public const string SealKey = "key_seal";
+        /// <summary>[RAID] Gear promotion material (승급): only raid rewards give it (PromoteRules).</summary>
+        public const string RaidCore = "mat_core";
 
         // [P5] Multipliers tuned by Tools/balance/theory_balance.py: monster level growth (+12% HP, +8% damage per
         // level) already scales the higher tiers, so these stay small. Target: 1.2 / 1.4 / 1.6x the Normal clear time.

@@ -300,6 +300,13 @@ namespace DotRPG
             Post("/enhance", Body(("target", target)), r => { done?.Invoke(r.ok ? r.data : null); AchievementClient.Check(); });
         }
 
+        /// <summary>Gear promotion (next grade of the same slot, +level kept), paid with raid cores. done(data or null).</summary>
+        public static void Promote(int? wornSlot, string bagKey, Action<Dictionary<string, object>> done)
+        {
+            var target = wornSlot.HasValue ? Body(("worn_slot", wornSlot.Value)) : Body(("bag_key", bagKey));
+            Post("/promote", Body(("target", target)), r => done?.Invoke(r.ok ? r.data : null));
+        }
+
         // ---------------- solo dungeons ----------------
 
         /// <summary>Solo run (optionally with AI companions, phase 4). done(run object or null).</summary>
