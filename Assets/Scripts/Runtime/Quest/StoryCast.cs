@@ -72,6 +72,8 @@ namespace DotRPG
                 Add(Def("knight_mo", "기사 모", new CharacterLook("knight_mo", HairStyle.Curly, SkinLight, C(200, 150, 80), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Leather, armorColor = C(120, 90, 60) }));
                 Add(Def("prisoner", "붙잡힌 마족", new CharacterLook("prisoner", HairStyle.Spiky, C(150, 130, 170), C(50, 40, 60), C(70, 60, 80), C(50, 44, 56))));
                 Add(Def("winter_hunter", "설원 사냥꾼 하람", new CharacterLook("winter_hunter", HairStyle.Long, SkinTan, C(70, 52, 40), C(150, 160, 176), C(84, 70, 60), HatKind.Straw, C(210, 214, 224)))); // 눈꽃 마을 사냥터 의뢰
+                Add(Def("winter_elder", "눈꽃 마을 촌장 세라", new CharacterLook("winter_elder", HairStyle.Bun, SkinLight, C(214, 214, 222), C(96, 120, 168), C(70, 76, 96), HatKind.None, C(210, 214, 224)))); // 눈꽃 마을 의뢰
+                Add(Def("winter_innkeeper", "여관 주인 보라", new CharacterLook("winter_innkeeper", HairStyle.Curly, SkinLight, C(140, 70, 50), C(196, 92, 84), C(110, 84, 70)))); // 눈꽃 마을 여관
                 Add(Def("knight", "기사단원", new CharacterLook("knight", HairStyle.Short, SkinTan, C(70, 50, 40), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(170, 176, 190) }));
                 return cast;
             }

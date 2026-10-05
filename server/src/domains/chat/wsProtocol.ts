@@ -55,6 +55,21 @@ export const helloFrame = z.strictObject({
   caps: z.strictObject({ steam_p2p: z.boolean().optional() }).optional(),
 });
 
+/** 마을에서 내 모습과 위치(같은 마을·같은 채널 사람에게 중계). 전투·보상과 무관한 표시용 */
+export const townPosFrame = z.strictObject({
+  t: z.literal('town.pos'),
+  map_id: z.string().min(1).max(40),
+  x: z.number().finite().min(-50).max(500),
+  y: z.number().finite().min(-50).max(500),
+  f: z.number().int().min(0).max(7),
+  m: z.boolean(),
+  cls: z.number().int().min(0).max(15),
+  career: z.number().int().min(0).max(31).optional(),
+  skin: z.string().max(40).optional(),
+  weapon: z.string().max(60).optional(),
+  level: z.number().int().min(1).max(999).optional(),
+});
+
 export const chatSendFrame = z.strictObject({
   t: z.literal('chat.send'),
   cid: uuid,
@@ -70,7 +85,9 @@ export const clientFrame = z.discriminatedUnion('t', [
   z.strictObject({ t: z.literal('ping'), n: z.number().int().optional() }),
   chatSendFrame,
   z.strictObject({ t: z.literal('presence.set'), map_id: z.string().min(1).max(40) }),
+  townPosFrame,
 ]);
 
 export type ClientFrame = z.infer<typeof clientFrame>;
 export type ChatSendFrame = z.infer<typeof chatSendFrame>;
+export type TownPosFrame = z.infer<typeof townPosFrame>;

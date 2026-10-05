@@ -18,6 +18,8 @@ namespace DotRPG
         public Color32 sleeve, leg, boot, trim, cape;
         public SkinTrailKind trail;
         public Color trailA, trailB;
+        /// <summary>Unique skins also leave a fading afterimage while moving; epic skins only have motes.</summary>
+        public bool afterimage;
     }
 
     public static class SkinCatalog
@@ -31,26 +33,52 @@ namespace DotRPG
                 id = "skin_lion", name = "황금 사자 기사", cls = CharacterClass.Warrior, sheet = "lion",
                 blurb = "백금 갑옷에 진홍 망토, 황금 월계관. 걸음마다 금빛 불티가 흩날린다.",
                 sleeve = C("#cdbb93"), leg = C("#d8caa6"), boot = C("#b8892e"), trim = C("#ffd86b"), cape = C("#9c1d22"),
-                trail = SkinTrailKind.GoldSparks, trailA = new Color(1f, .85f, .35f), trailB = new Color(1f, .97f, .8f),
+                trail = SkinTrailKind.GoldSparks, trailA = new Color(1f, .85f, .35f), trailB = new Color(1f, .97f, .8f), afterimage = true,
             },
             new SkinDef
             {
                 id = "skin_moon", name = "월광 검귀", cls = CharacterClass.Warrior, sheet = "moon",
                 blurb = "청록 룬이 빛나는 남색 갑주와 별빛 망토. 달빛 조각이 곁을 맴돈다.",
                 sleeve = C("#1d2547"), leg = C("#202a4e"), boot = C("#151b33"), trim = C("#6ff0ff"), cape = C("#1b2241"),
-                trail = SkinTrailKind.MoonMotes, trailA = new Color(.45f, .95f, 1f), trailB = new Color(.9f, .97f, 1f),
+                trail = SkinTrailKind.MoonMotes, trailA = new Color(.45f, .95f, 1f), trailB = new Color(.9f, .97f, 1f), afterimage = true,
             },
             new SkinDef
             {
                 id = "skin_starnight", name = "성야의 마녀", cls = CharacterClass.Mage,
                 blurb = "별자리가 수놓인 남빛 로브와 초승달 모자. 주위에 작은 별이 반짝인다.",
-                trail = SkinTrailKind.Stars, trailA = new Color(1f, .9f, .55f), trailB = new Color(.75f, .9f, 1f),
+                trail = SkinTrailKind.Stars, trailA = new Color(1f, .9f, .55f), trailB = new Color(.75f, .9f, 1f), afterimage = true,
             },
             new SkinDef
             {
                 id = "skin_crimson", name = "홍염의 마녀", cls = CharacterClass.Mage,
                 blurb = "금빛 불꽃 자수의 진홍 로브와 불사조 깃털. 발밑에서 불씨가 피어오른다.",
-                trail = SkinTrailKind.Embers, trailA = new Color(1f, .45f, .12f), trailB = new Color(1f, .82f, .3f),
+                trail = SkinTrailKind.Embers, trailA = new Color(1f, .45f, .12f), trailB = new Color(1f, .82f, .3f), afterimage = true,
+            },
+            new SkinDef
+            {
+                id = "skin_maple", name = "단풍 무사", cls = CharacterClass.Warrior, sheet = "maple",
+                blurb = "금빛 단풍 무늬 하오리와 옻칠 어깨받이. 걸을 때 단풍빛 불티가 인다.",
+                sleeve = C("#bf512a"), leg = C("#522b22"), boot = C("#1c1a1a"), trim = C("#e8b84a"), cape = C("#bf512a"),
+                trail = SkinTrailKind.Embers, trailA = new Color(1f, .5f, .18f), trailB = new Color(1f, .8f, .35f),
+            },
+            new SkinDef
+            {
+                id = "skin_obsidian", name = "흑요 기사", cls = CharacterClass.Warrior, sheet = "obsidian",
+                blurb = "은테 두른 흑요석 갑옷과 청록 보석. 곁에 푸른 빛 조각이 떠오른다.",
+                sleeve = C("#343438"), leg = C("#3a3a40"), boot = C("#18181c"), trim = C("#c8d0d8"),
+                trail = SkinTrailKind.MoonMotes, trailA = new Color(.35f, .9f, .85f), trailB = new Color(.85f, .95f, .95f),
+            },
+            new SkinDef
+            {
+                id = "skin_forest", name = "숲의 정령", cls = CharacterClass.Mage,
+                blurb = "덩굴 자수의 이끼빛 로브와 꽃 핀 모자. 주위에 연둣빛 빛망울이 맴돈다.",
+                trail = SkinTrailKind.MoonMotes, trailA = new Color(.6f, 1f, .5f), trailB = new Color(1f, 1f, .85f),
+            },
+            new SkinDef
+            {
+                id = "skin_ice", name = "얼음 여왕", cls = CharacterClass.Mage,
+                blurb = "은빛 눈꽃 자수의 빙하빛 드레스와 얼음 티아라. 작은 눈송이가 반짝인다.",
+                trail = SkinTrailKind.Stars, trailA = new Color(.75f, .92f, 1f), trailB = new Color(1f, 1f, 1f),
             },
         };
 

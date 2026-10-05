@@ -178,7 +178,7 @@ namespace DotRPG
             {
                 var item = v[i].product;
                 string state = Wearing(item) ? "<color=#8fe28f>착용 중</color>" : store.Owns(item.Id) ? "보유" : "<color=#8c96a8>미보유</color>";
-                string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{(item.IsSkin ? "코스튬" : CosmeticCatalog.RarityName(item.Rarity))}</color>";
+                string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{CosmeticCatalog.RarityName(item.Rarity)}{(item.IsSkin ? " 스킨" : "")}</color>";
                 string dmg = item.DamagePercent > 0 ? $" · <color=#ffb347>공격력 +{item.DamagePercent}%</color>" : "";
                 v[i].label.text = $"<b>{item.Name}</b>\n<size=16>{grade}{dmg} · {state}</size>";
                 v[i].label.color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
@@ -192,7 +192,7 @@ namespace DotRPG
             var aura = skin != null ? store.Equipped : product;
             previewAura.sprite = CosmeticAura.ForProduct(aura);
             previewAura.color = aura.Color;
-            previewGlow.color = product.Rarity == CosmeticRarity.Unique ? new Color(1f, .78f, .3f, .35f) : product.Rarity == CosmeticRarity.Rare ? new Color(.45f, .65f, 1f, .25f) : new Color(1f, 1f, 1f, .08f);
+            previewGlow.color = product.Rarity == CosmeticRarity.Unique ? new Color(1f, .78f, .3f, .35f) : product.Rarity == CosmeticRarity.Epic ? new Color(.75f, .5f, 1f, .3f) : product.Rarity == CosmeticRarity.Rare ? new Color(.45f, .65f, 1f, .25f) : new Color(1f, 1f, 1f, .08f);
             if (skin == null)
             {
                 var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
@@ -203,9 +203,10 @@ namespace DotRPG
             // The price is on the buy button; here only what it is (kept short so it never runs under the button).
             string have = product.IsFree ? "무료" : owned ? "<color=#8fe28f>보유 중</color>" : store.IsAvailable ? "" : "<color=#8c96a8>온라인 전용</color>";
             description.text = skin != null
-                ? $"<color=#ffb347>코스튬 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n<color=#b8c4d8>8방향 모든 동작 전용 그림 · 걸으면 잔상과 입자</color>\n{have}"
+                ? $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{CosmeticCatalog.RarityName(product.Rarity)} 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n<color=#b8c4d8>8방향 모든 동작 전용 그림 · {(skin.afterimage ? "걸으면 잔상과 입자" : "주위에 빛 입자")}</color>\n{have}"
                 : $"{(product.IsFree ? "기본" : CosmeticCatalog.RarityName(product.Rarity))} 등급 발밑 오라 · 영구 소장\n모든 직업 공용\n{have}";
-            actionLabel.text = equipped ? (skin != null ? "벗기" : "착용 중") : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 구매" : "온라인 전용";
+            actionLabel.text = equipped ? (skin != null ? "벗기" : "착용 중") : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 구매"
+                : product.GaugeOnly && store.IsAvailable ? "선택 게이지로만 획득" : "온라인 전용";
             action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;
             restoreLabel.text = (restoreFocused ? "▶ " : "") + "보유 외형 다시 불러오기";
@@ -259,7 +260,7 @@ namespace DotRPG
                 previewCharacter.sprite = Game.Art.GetCharacter(SkinCatalog.LookFor(current.Skin.cls, current.Id), shownFacing, "idle0");
             }
             var g = previewGlow.color;
-            if (g.a > 0.1f) { g.a = (current.Rarity == CosmeticRarity.Unique ? .3f : .2f) + .1f * Mathf.Sin(t * 3f); previewGlow.color = g; }
+            if (g.a > 0.1f) { g.a = (current.Rarity >= CosmeticRarity.Epic ? .3f : .2f) + .1f * Mathf.Sin(t * 3f); previewGlow.color = g; }
         }
 
         void Reflow()

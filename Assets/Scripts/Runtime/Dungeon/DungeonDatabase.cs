@@ -152,6 +152,8 @@ namespace DotRPG
         public const string RaidGolem = "raid_golem", RaidGrah = "raid_grah";
         /// <summary>[RAID] Item that opens final raids.</summary>
         public const string SealKey = "key_seal";
+        /// <summary>[RAID] Gear promotion material (승급): only raid rewards give it (PromoteRules).</summary>
+        public const string RaidCore = "mat_core";
 
         // [P5] Multipliers tuned by Tools/balance/theory_balance.py: monster level growth (+12% HP, +8% damage per
         // level) already scales the higher tiers, so these stay small. Target: 1.2 / 1.4 / 1.6x the Normal clear time.
@@ -409,7 +411,14 @@ namespace DotRPG
             specialty = "레전더리 장비, 장비 보호권", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",
         };
 
-        static readonly DungeonDef[] RaidDefs = { RaidDef, BargasDef, GolemDef, GrahDef };
+        /// <summary>
+        /// Raids that are open now: the level-20 mid raid (해골왕) and the level-40 final raid (그라흐). 흑철의 바르가스 and
+        /// 바위 심장 are kept for a later release (<see cref="Upcoming"/>); their story beats are fought in the field.
+        /// </summary>
+        static readonly DungeonDef[] RaidDefs = { RaidDef, GrahDef };
+
+        /// <summary>[RAID] Designed but not open yet (not listed, not exported to the server).</summary>
+        public static readonly IReadOnlyList<DungeonDef> Upcoming = new[] { BargasDef, GolemDef };
 
         /// <summary>The five weekday dungeons (Monday first).</summary>
         public static IReadOnlyList<DungeonDef> Weekday => Dungeons;

@@ -47,10 +47,10 @@ describe('GET /raids', () => {
     const res = await get(app, h, '/raids');
     expect(res.status).toBe(200);
     const raids = res.body.data.raids as { id: string; unlocked: boolean; open_today: boolean; tier: string; reward_available: boolean }[];
-    expect(raids.map((r) => r.id).sort()).toEqual(['raid_bargas', 'raid_golem', 'raid_grah', 'raid_skeleton_king']);
+    expect(raids.map((r) => r.id).sort()).toEqual(['raid_grah', 'raid_skeleton_king']);
     expect(raids.every((r) => !r.unlocked)).toBe(true);
     expect(raids.find((r) => r.id === 'raid_skeleton_king')).toMatchObject({ open_today: true, tier: 'mid' });
-    expect(raids.find((r) => r.id === 'raid_bargas')).toMatchObject({ open_today: false, tier: 'final', reward_available: false });
+    expect(raids.find((r) => r.id === 'raid_grah')).toMatchObject({ open_today: false, tier: 'final', reward_available: false });
     expect(res.body.data.reset.weekly_start_at).toBeTruthy();
 
     await seedClaims(h, ['c1_fortress']);
@@ -81,7 +81,7 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     post(app, h, '/dungeon-runs', { dungeon_id: 'raid_skeleton_king', difficulty: 0, ...over }, rid);
 
   it('정상: 입장 횟수를 쓰지 않고, 사람이 1명이면 연습 입장(보상 잠금)이다', async () => {
-    const h = await raidHero(17, ['c1_fortress']);
+    const h = await raidHero(20, ['c1_fortress']);
     const res = await enter(h, { ai_count: 3 });
     expect(res.status).toBe(201);
     expect(res.body.data.run).toMatchObject({ party_size: 4, humans: 1, ai_count: 3, reward_locked: true, lock_reason: 'TOO_FEW_HUMANS' });
@@ -92,7 +92,7 @@ describe('레이드 입장(솔로, AI 동반)', () => {
   });
 
   it('입력 오류와 규칙 오류: ai_count, 해금, 레벨, 요일, 난이도', async () => {
-    const h = await raidHero(17, []);
+    const h = await raidHero(20, []);
     expect((await enter(h, { ai_count: 4 })).status).toBe(400);
     const locked = await enter(h);
     expect(locked.status).toBe(422);
@@ -101,25 +101,25 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     const low = await raidHero(1, ['c1_fortress']);
     expect((await enter(low)).body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 17 });
     expect((await enter(h, { difficulty: 1 })).body.errors.code).toBe('RAID_LOCKED');
-    const ok = await raidHero(17, ['c1_fortress']);
+    const ok = await raidHero(20, ['c1_fortress']);
     expect((await enter(ok, { difficulty: 1 })).body.errors.code).toBe('DIFFICULTY_LOCKED');
     // 월요일에는 해골왕이 닫힌다(레이드는 openDays만 본다)
     at('2026-10-05T03:00:00Z');
     expect((await enter(ok)).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
     // 토요일: 요일 던전은 weekendOpensAll로 전부 열리지만 최종 레이드(일요일만)는 닫혀 있다
     at(SAT);
-    const fin = await raidHero(19, ['c1_bargas']);
-    expect((await enter(fin, { dungeon_id: 'raid_bargas' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
+    const fin = await raidHero(40, ['c2_grah']);
+    expect((await enter(fin, { dungeon_id: 'raid_grah' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
     expect((await post(app, fin, '/dungeon-runs', { dungeon_id: 'smelter', difficulty: 0 })).status).toBe(201);
   });
 
   it('재전송: 같은 request_id의 레이드 입장은 같은 응답, 동시 입장은 한 판만', async () => {
-    const h = await raidHero(17, ['c1_fortress']);
+    const h = await raidHero(20, ['c1_fortress']);
     const rid = randomUUID();
     const a = await enter(h, { ai_count: 1 }, rid);
     const b = await enter(h, { ai_count: 1 }, rid);
     expect(b.body).toEqual(a.body);
-    const h2 = await raidHero(17, ['c1_fortress']);
+    const h2 = await raidHero(20, ['c1_fortress']);
     const [x, y] = await Promise.all([enter(h2), enter(h2)]);
     expect([x.status, y.status].sort()).toEqual([201, 409]);
     expect([x, y].find((r) => r.status === 409)?.body.errors.code).toBe('RUN_ACTIVE');
@@ -127,17 +127,17 @@ describe('레이드 입장(솔로, AI 동반)', () => {
 
   it('최종 레이드 열쇠 부족: KEYS_MISSING, 열쇠가 있으면 입장(횟수 소모 없음)', async () => {
     at(SUN);
-    const h = await raidHero(19, ['c1_bargas']);
-    const no = await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_bargas', difficulty: 0 });
+    const h = await raidHero(40, ['c2_grah']);
+    const no = await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 });
     expect(no.status).toBe(422);
     expect(no.body.errors).toMatchObject({ code: 'KEYS_MISSING', need: 100, have: 0 });
     expect(await anomalyKinds(h)).toContain('raid_enter');
     await seedItem(h, 'key_seal', 100);
-    expect((await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_bargas', difficulty: 0 })).status).toBe(201);
+    expect((await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 })).status).toBe(201);
   });
 
   it('연습판(사람 1명): 처치 경험치·드롭이 없고, 클리어해도 카드·청구·열쇠가 없다. 레이드 몬스터는 필드에서 받지 않는다', async () => {
-    const h = await raidHero(17, ['c1_fortress']);
+    const h = await raidHero(20, ['c1_fortress']);
     const run = await enter(h, { ai_count: 3 });
     const runId = run.body.data.run.id as string;
     const t0 = fixed.getTime();
@@ -199,8 +199,8 @@ async function raidParty(dungeonId: string, heroes: Hero[], step: number, totalS
 
 describe('레이드 파티 정산', () => {
   it('중간 레이드: 사람 2명이면 보상(경험치·카드·열쇠 조각)과 일일 청구가 한 번 생기고, 같은 날 두 번째는 연습이다', async () => {
-    const host = await raidHero(17, ['c1_fortress']);
-    const member = await raidHero(17, ['c1_fortress']);
+    const host = await raidHero(20, ['c1_fortress']);
+    const member = await raidHero(20, ['c1_fortress']);
     const { runId, runs, elapsed } = await raidParty('raid_skeleton_king', [host, member], 20, 300);
     // 방장이 자기 결과를 먼저 보고해야 멤버의 정산이 확정된다
     const hostBody = { outcome: 'cleared', stats: stats({ elapsed_ms: elapsed, max_combo: 300 }) };
@@ -243,11 +243,11 @@ describe('레이드 파티 정산', () => {
 
   it('최종 레이드: 열쇠 조각을 소모하고 주간 청구가 생긴다. 판 도중 열쇠를 잃으면 그 멤버만 KEYS_MISSING으로 잠긴다', async () => {
     at(SUN);
-    const a = await raidHero(19, ['c1_bargas']);
-    const b = await raidHero(19, ['c1_bargas']);
+    const a = await raidHero(40, ['c2_grah']);
+    const b = await raidHero(40, ['c2_grah']);
     await seedItem(a, 'key_seal', 100);
     await seedItem(b, 'key_seal', 100);
-    const { runs, elapsed } = await raidParty('raid_bargas', [a, b], 20, 330);
+    const { runs, elapsed } = await raidParty('raid_grah', [a, b], 20, 330);
     // b는 판 도중 열쇠를 팔아 버렸다
     await getPool().query("DELETE FROM character_items WHERE character_id = $1 AND item_key = 'key_seal'", [b.dbId]);
     await getPool().query(
@@ -269,14 +269,14 @@ describe('레이드 파티 정산', () => {
     expect((await getPool().query('SELECT count(*) AS n FROM raid_claims WHERE character_id = $1', [b.dbId])).rows[0]).toEqual({ n: '0' });
     await expectLedgerConsistent(a);
     // 보상을 받은 주에는 열쇠 없이도 연습 입장이 된다
-    const practice = await post(app, a, '/dungeon-runs', { dungeon_id: 'raid_bargas', difficulty: 0 });
+    const practice = await post(app, a, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 });
     expect(practice.status).toBe(201);
     expect(practice.body.data.run.reward_locked).toBe(true);
   });
 
   it('레이드 보상 최소 인원: 정산 때 이탈하지 않은 사람이 2명 미만이면 잠긴다', async () => {
-    const host = await raidHero(17, ['c1_fortress']);
-    const member = await raidHero(17, ['c1_fortress']);
+    const host = await raidHero(20, ['c1_fortress']);
+    const member = await raidHero(20, ['c1_fortress']);
     await formParty(app, host, [member], { dungeon_id: 'raid_skeleton_king', difficulty: 0 });
     const { runId, runs } = await startAndBegin(app, host, [member]);
     // 멤버가 대조를 피하려고 시작 직후 나갔다

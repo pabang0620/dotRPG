@@ -138,6 +138,15 @@ const enhanceSchema = z.looseObject({
   ticketItem: z.string().min(1),
   materials: z.looseObject({ bone: z.string(), ore: z.string(), essence: z.string() }),
   steps: z.array(z.looseObject({ id: z.string().min(1), levels: z.array(enhanceLevelSchema) })),
+  /** 장비 승급(같은 부위 다음 등급, 강화 수치 유지). 재료는 레이드에서만 나오는 핵 */
+  promote: z
+    .looseObject({
+      coreItem: z.string().min(1),
+      rows: z.array(z.looseObject({ from: z.string().min(1), to: z.string().min(1), cores: z.number().int().positive(), gold: nonNegInt })),
+      raidCoreMid: z.array(nonNegInt).length(4),
+      raidCoreFinal: z.array(nonNegInt).length(4),
+    })
+    .optional(),
 });
 
 const itemsSchema = z.looseObject({
@@ -322,6 +331,12 @@ export interface EconomyData {
     ticketItem: string;
     materials: { bone: string; ore: string; essence: string };
     steps: Map<string, EnhanceLevel[]>;
+    promote: {
+      coreItem: string;
+      rows: Map<string, { to: string; cores: number; gold: number }>;
+      raidCoreMid: number[];
+      raidCoreFinal: number[];
+    } | null;
   };
   items: Map<string, { kind: string; name: string; bind: 'none' | 'account' | 'character'; usable: boolean }>;
   quests: Map<string, QuestRule>;
@@ -416,6 +431,17 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     if (!stepLevels.has(id)) throw new Error(`게임 데이터 검증 실패: ${id} 의 강화 단계표가 없습니다`);
   }
   needItem(enh.ticketItem, 'enhance.ticketItem');
+  let promote: EconomyData['enhance']['promote'] = null;
+  if (enh.promote) {
+    needItem(enh.promote.coreItem, 'enhance.promote.coreItem');
+    const rows = new Map<string, { to: string; cores: number; gold: number }>();
+    for (const r of enh.promote.rows) {
+      if (!equipment.has(r.from) || !equipment.has(r.to)) throw new Error(`게임 데이터 검증 실패: enhance.promote ${r.from} -> ${r.to} 이 shop.equipment에 없습니다`);
+      if (rows.has(r.from)) throw new Error(`게임 데이터 검증 실패: enhance.promote ${r.from} 중복`);
+      rows.set(r.from, { to: r.to, cores: r.cores, gold: r.gold });
+    }
+    promote = { coreItem: enh.promote.coreItem, rows, raidCoreMid: enh.promote.raidCoreMid, raidCoreFinal: enh.promote.raidCoreFinal };
+  }
   for (const id of [enh.materials.bone, enh.materials.ore, enh.materials.essence]) needItem(id, 'enhance.materials');
 
   for (const [kind, n] of Object.entries(config.nodeKinds)) needItem(n.item, `gameconfig.nodeKinds.${kind}`);
@@ -513,6 +539,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       ticketItem: enh.ticketItem,
       materials: { bone: enh.materials.bone, ore: enh.materials.ore, essence: enh.materials.essence },
       steps: stepLevels,
+      promote,
     },
     items: itemMap,
     quests: questMap,

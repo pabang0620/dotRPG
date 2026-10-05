@@ -3,12 +3,28 @@ import type { WebSocket } from 'ws';
 import { metrics } from '../../ops/metrics';
 import { CLOSE, type Frame } from './wsProtocol';
 
+export interface TownLook {
+  map: string;
+  x: number;
+  y: number;
+  f: number;
+  m: boolean;
+  cls: number;
+  career: number;
+  skin: string;
+  weapon: string;
+  level: number;
+}
+
 const MAX_BUFFERED_BYTES = 1024 * 1024;
 
 export class ChatSession {
   ready = false;
   closed = false;
   mapId: string | null = null;
+  /** 마을에 서 있을 때의 모습·위치(townPresence). 마을 밖이면 null */
+  town: TownLook | null = null;
+  townAt = 0;
   /** hello.caps(8단계). steam_p2p는 그 계정에 Steam 연결이 있을 때만 true로 인정한다 */
   caps = { steamP2p: false };
   shard = 1;

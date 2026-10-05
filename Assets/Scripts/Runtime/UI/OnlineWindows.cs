@@ -83,7 +83,7 @@ namespace DotRPG
         Text levelGuide;
         readonly Text[] createValues = new Text[5];
 
-        static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidBargas) };
+        static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
 
         public static PartyFinderScreen Create(Transform canvas)
         {

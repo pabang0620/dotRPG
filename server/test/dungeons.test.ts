@@ -104,7 +104,7 @@ describe('POST /characters/:id/dungeon-runs', () => {
     expect((await enter(h, { party_size: 4 })).status).toBe(400);
     expect((await enter(h, { dungeon_id: 'nope' })).body.errors.code).toBe('DUNGEON_UNKNOWN');
     // 4단계: 레이드 입장이 열렸다. 월요일에는 최종 레이드(일요일만)가 닫혀 있다
-    expect((await enter(h, { dungeon_id: 'raid_bargas' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
+    expect((await enter(h, { dungeon_id: 'raid_grah' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
     expect((await enter(h, { dungeon_id: 'smelter' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
     expect((await enter(h, { difficulty: 1 })).body.errors.code).toBe('DIFFICULTY_LOCKED');
   });

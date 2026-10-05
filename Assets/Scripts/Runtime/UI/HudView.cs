@@ -297,7 +297,7 @@ namespace DotRPG
             if (autoLabel != null)
             {
                 bool auto = QuestAutoPilot.Active;
-                autoLabel.text = auto ? "자동 중지" : "자동 진행";
+                autoLabel.text = auto ? "자동 중지" : QuestAutoPilot.Targets.Count > 0 ? $"자동 진행 ({QuestAutoPilot.Targets.Count})" : "자동 진행";
                 autoStatus.text = auto ? QuestAutoPilot.Status : "";
             }
             float now = Time.unscaledTime;

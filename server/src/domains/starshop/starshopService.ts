@@ -7,19 +7,20 @@ import * as charRepo from '../characters/characterRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import {
+  AURA_GAUGE_MAX,
+  BANNER_WEIGHT,
   DUPLICATE_REFUND,
-  SKIN_DUPLICATE_REFUND,
+  GAUGE,
   GEAR_BANNERS,
   GEAR_RARITY_NAME,
   GEAR_RARITY_PERMILLE,
   GEAR_RATE_SCALE,
-  AURA_GAUGE_MAX,
   PITY_MAX,
-  SKIN_GAUGE_MAX,
   PULL_PRICE,
   RARITY_NAME,
-  RARITY_WEIGHT,
+  RATE_SCALE,
   RATES_VERSION,
+  SKIN_GAUGE_MAX,
   STAR_COSMETICS,
   STAR_COSMETIC_BY_ID,
   TEN_COUNT,
@@ -27,26 +28,27 @@ import {
   cosmeticsOf,
   exchangePriceOf,
   type Banner,
+  type CosmeticBanner,
   type Rarity,
 } from './starshopDefs';
 import * as repo from './starshopRepository';
 import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 
-const RARITIES: Rarity[] = ['unique', 'rare', 'common'];
-type GearBanner = Exclude<Banner, 'aura' | 'skin'>;
+const RARITIES: Rarity[] = ['unique', 'epic', 'rare', 'common'];
+type GearBanner = Exclude<Banner, CosmeticBanner>;
 
-/** 등급별 뽑기 풀: 오라 뽑기는 오라, 스킨 뽑기는 유니크 자리에 내 직업 스킨 */
-function poolOf(banner: 'aura' | 'skin', rarity: Rarity, cls: string) {
-  if (banner === 'skin' && rarity === 'unique') return STAR_COSMETICS.filter((c) => c.skin === cls);
+/** 등급별 뽑기 풀: 오라 뽑기는 오라만, 스킨 뽑기는 에픽·유니크 자리에 내 직업 스킨 */
+function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string) {
+  if (banner === 'skin' && (rarity === 'epic' || rarity === 'unique')) return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity);
   return cosmeticsOf(rarity);
 }
 
-/** 오라·스킨 뽑기 확률표. 하나 = 등급 확률 / 그 등급 수(중복 방지 전 기준) */
-function auraTable(banner: 'aura' | 'skin' = 'aura', cls = 'warrior') {
-  return RARITIES.map((rarity) => {
+/** 오라·스킨 뽑기 확률표(%). 하나 = 등급 확률 / 그 등급 수(중복 방지 전 기준). 확률 0인 등급은 싣지 않는다 */
+function auraTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
+  return RARITIES.filter((r) => BANNER_WEIGHT[banner][r] > 0).map((rarity) => {
     const items = poolOf(banner, rarity, cls);
-    const tier = RARITY_WEIGHT[rarity] / 100;
-    return { rarity, name: RARITY_NAME[rarity], rate: tier, items: items.map((c) => ({ id: c.id, rate: tier / items.length })) };
+    const tier = (BANNER_WEIGHT[banner][rarity] * 100) / RATE_SCALE;
+    return { rarity, name: RARITY_NAME[rarity], rate: tier, items: items.map((c) => ({ id: c.id, rate: tier / Math.max(1, items.length) })) };
   });
 }
 
@@ -102,7 +104,7 @@ export async function summary(accountId: number, characterUuid: string) {
     price_ten: TEN_PRICE,
     ten_count: TEN_COUNT,
     refund: DUPLICATE_REFUND,
-    rates: auraTable(),
+    rates: auraTable('aura', ch.class),
     skin_rates: auraTable('skin', ch.class),
     banners: (Object.keys(GEAR_BANNERS) as GearBanner[]).map((b) => ({
       id: b,
@@ -120,12 +122,17 @@ export async function summary(accountId: number, characterUuid: string) {
   };
 }
 
-/** rareOrBetter: the 10+1 bonus draw (일반 removed, 희귀·유니크 keep their ratio) */
-function rollRarity(rareOrBetter = false): Rarity {
-  const roll = rareOrBetter ? getRng().int(0, RARITY_WEIGHT.unique + RARITY_WEIGHT.rare) : getRng().int(0, 10000);
-  if (roll < RARITY_WEIGHT.unique) return 'unique';
-  if (roll < RARITY_WEIGHT.unique + RARITY_WEIGHT.rare) return 'rare';
-  return 'common';
+/** 등급 굴림. rareOrBetter: 10+1의 보너스 1회(일반 제외, 나머지는 같은 비율) */
+function rollRarity(banner: CosmeticBanner, rareOrBetter = false): Rarity {
+  const w = BANNER_WEIGHT[banner];
+  const order = RARITIES.filter((r) => w[r] > 0 && !(rareOrBetter && r === 'common'));
+  const total = order.reduce((a, r) => a + w[r], 0);
+  let roll = getRng().int(0, total);
+  for (const r of order) {
+    if (roll < w[r]) return r;
+    roll -= w[r];
+  }
+  return order[order.length - 1]!;
 }
 
 /**
@@ -186,13 +193,13 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
     const pityBefore = pity;
     const byPity = false; // no automatic pity: the gauge fills and the player chooses (claim)
     const bonus = times > 1 && i === times - 1;
-    const rarity: Rarity = rollRarity(bonus);
+    const rarity: Rarity = rollRarity(banner, bonus);
     const all = poolOf(banner, rarity, ctx.char.class);
     const fresh = all.filter((c) => !owned.has(c.id));
     const duplicate = fresh.length === 0;
     const from = duplicate ? all : fresh;
     const item = from[getRng().int(0, from.length)]!;
-    const back = duplicate ? (item.skin ? SKIN_DUPLICATE_REFUND : DUPLICATE_REFUND[rarity]) : 0;
+    const back = duplicate ? DUPLICATE_REFUND[rarity] : 0;
     if (duplicate) refund += back;
     else {
       owned.add(item.id);
@@ -241,6 +248,7 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
       const owned = await repo.ownedOf(db, accountId);
       if (owned.has(def.id)) throw new AppError(409, '이미 가진 외형입니다.', 'COSMETIC_OWNED');
       const price = exchangePriceOf(def);
+      if (price <= 0) throw new AppError(422, '선택 게이지로만 얻을 수 있는 외형입니다.', 'GAUGE_ONLY');
       if (wallet.balance < price) {
         throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
       }
@@ -262,11 +270,11 @@ export function claim(accountId: number, characterUuid: string, body: ClaimBody)
     payload,
     handler: async (ctx) => {
       const db = ctx.client;
-      const max = body.banner === 'skin' ? SKIN_GAUGE_MAX : AURA_GAUGE_MAX;
+      const max = GAUGE[body.banner].max;
       const wallet = await repo.lockWallet(db, accountId);
       const gauge = body.banner === 'skin' ? wallet.skinPity : wallet.pity;
       if (gauge < max) throw new AppError(422, '선택 게이지가 아직 다 차지 않았습니다.', 'GAUGE_NOT_FULL', { need: max, have: gauge });
-      const choices = poolOf(body.banner, 'unique', ctx.char.class);
+      const choices = poolOf(body.banner, GAUGE[body.banner].rarity, ctx.char.class);
       const def = choices.find((c) => c.id === body.item_id);
       if (!def) throw new AppError(422, '고를 수 없는 항목입니다.', 'CLAIM_NOT_ALLOWED');
       const owned = await repo.ownedOf(db, accountId);
@@ -275,7 +283,7 @@ export function claim(accountId: number, characterUuid: string, body: ClaimBody)
       const left = gauge - max;
       await repo.setPity(db, accountId, left, body.banner === 'skin');
       await repo.insertPulls(db, accountId, requestId, RATES_VERSION, body.banner, [
-        { seq: 0, rarity: 'unique', itemId: def.id, pityBefore: gauge, pityAfter: left, byPity: true, duplicate: false, refund: 0, kind: 'cosmetic' },
+        { seq: 0, rarity: GAUGE[body.banner].rarity, itemId: def.id, pityBefore: gauge, pityAfter: left, byPity: true, duplicate: false, refund: 0, kind: 'cosmetic' },
       ]);
       return { status: 200, data: { item_id: def.id, banner: body.banner, pity: left, pity_max: max } };
     },

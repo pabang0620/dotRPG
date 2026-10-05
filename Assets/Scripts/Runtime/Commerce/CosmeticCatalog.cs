@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    public enum CosmeticRarity { Free, Common, Rare, Unique }
+    /// <summary>Grades low to high. Legend is reserved for a later release (nothing uses it yet).</summary>
+    public enum CosmeticRarity { Free, Common, Rare, Epic, Unique, Legend }
 
     /// <summary>Legend auras move: a rainbow hue cycle or a slow glow pulse. Purely visual.</summary>
     public enum CosmeticEffect { None, Rainbow, Pulse }
@@ -32,8 +33,13 @@ namespace DotRPG
         public SkinDef Skin => SkinCatalog.Find(Id);
         public bool IsSkin => Skin != null;
 
-        /// <summary>Attack bonus (%) while worn: auras by grade, costume skins a flat 5 (server: starshopDefs).</summary>
-        public int DamagePercent => IsSkin ? 5 : Rarity == CosmeticRarity.Unique ? 3 : Rarity == CosmeticRarity.Rare ? 2 : Rarity == CosmeticRarity.Common ? 1 : 0;
+        /// <summary>Attack bonus (%) while worn: auras common 1, rare 2, epic 3; skins epic 4, unique 5 (server: starshopDefs).</summary>
+        public int DamagePercent => IsSkin
+            ? (Rarity == CosmeticRarity.Epic ? 4 : 5)
+            : Rarity >= CosmeticRarity.Epic ? 3 : Rarity == CosmeticRarity.Rare ? 2 : Rarity == CosmeticRarity.Common ? 1 : 0;
+
+        /// <summary>Unique skins come only from the selection gauge; everything else can also be exchanged.</summary>
+        public bool GaugeOnly => IsSkin && Rarity == CosmeticRarity.Unique;
 
         /// <summary>The colour at a moment (legend auras animate; the rest stay still).</summary>
         public Color ColorAt(float time)
@@ -73,10 +79,14 @@ namespace DotRPG
             new CosmeticProduct("aura_frost", "서리별 오라", new Color32(170, 230, 255, 200)),
             new CosmeticProduct("aura_rose", "장미별 오라", new Color32(255, 110, 140, 200)),
             new CosmeticProduct("aura_jade", "비취별 오라", new Color32(90, 220, 170, 200)),
-            new CosmeticProduct("aura_rainbow", "무지개 오라", new Color32(255, 255, 255, 220), false, CosmeticRarity.Unique, CosmeticEffect.Rainbow),
-            new CosmeticProduct("aura_gold", "황금 오라", new Color32(255, 210, 80, 230), false, CosmeticRarity.Unique, CosmeticEffect.Pulse),
-            new CosmeticProduct("aura_abyss", "심연 오라", new Color32(120, 80, 255, 230), false, CosmeticRarity.Unique, CosmeticEffect.Pulse),
-            // Costume skins (SkinCatalog): direct purchase with 별조각, never in the gacha pool.
+            new CosmeticProduct("aura_rainbow", "무지개 오라", new Color32(255, 255, 255, 220), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
+            new CosmeticProduct("aura_gold", "황금 오라", new Color32(255, 210, 80, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_abyss", "심연 오라", new Color32(120, 80, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            // Costume skins (SkinCatalog): epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
+            new CosmeticProduct("skin_maple", "단풍 무사", Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_obsidian", "흑요 기사", Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_forest", "숲의 정령", Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_ice", "얼음 여왕", Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_lion", "황금 사자 기사", Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_moon", "월광 검귀", Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_starnight", "성야의 마녀", Color.white, false, CosmeticRarity.Unique),
@@ -91,9 +101,9 @@ namespace DotRPG
         }
 
         public static string RarityName(CosmeticRarity r) =>
-            r == CosmeticRarity.Unique ? "유니크" : r == CosmeticRarity.Rare ? "희귀" : r == CosmeticRarity.Common ? "일반" : "무료";
+            r == CosmeticRarity.Legend ? "전설" : r == CosmeticRarity.Unique ? "유니크" : r == CosmeticRarity.Epic ? "에픽" : r == CosmeticRarity.Rare ? "희귀" : r == CosmeticRarity.Common ? "일반" : "무료";
 
         public static string RarityHex(CosmeticRarity r) =>
-            r == CosmeticRarity.Unique ? "#ffb347" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";
+            r == CosmeticRarity.Legend ? "#7dffb0" : r == CosmeticRarity.Unique ? "#ffb347" : r == CosmeticRarity.Epic ? "#c58cff" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";
     }
 }

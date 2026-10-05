@@ -56,6 +56,8 @@ namespace DotRPG
                 description = "강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다." },
             new ConsumableItem { id = DungeonDatabase.SealKey, name = "봉인 열쇠 조각", iconKey = "icon_key", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
+            new ConsumableItem { id = DungeonDatabase.RaidCore, name = "고대의 핵", iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+                description = "레이드 보스에게서만 얻는 고대 마력의 핵. 대장간에서 장비를 한 등급 위 장비로 승급할 때 쓴다. (강화 수치 유지)" },
         };
 
         /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>

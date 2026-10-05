@@ -128,6 +128,20 @@
    "col": 28,
    "row": 40,
    "facing": "down"
+  },
+  {
+   "npcId": "winter_elder",
+   "map": "winter",
+   "col": 30,
+   "row": 22,
+   "facing": "down"
+  },
+  {
+   "npcId": "winter_innkeeper",
+   "map": "winter",
+   "col": 37,
+   "row": 22,
+   "facing": "left"
   }
  ],
  "props": [

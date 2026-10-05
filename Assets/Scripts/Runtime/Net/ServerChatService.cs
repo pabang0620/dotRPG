@@ -163,6 +163,12 @@ namespace DotRPG
                     if (MiniJson.Str(d, "scope") == "run") PartyRunSession.Instance?.FetchNow();
                     else PartyClient.Instance?.PollNow();
                     break;
+                case "town.pos":
+                    TownPeers.Apply(d);
+                    break;
+                case "town.gone":
+                    TownPeers.Gone(MiniJson.Str(d, "id"));
+                    break;
                 case "field.changed":
                     FieldSession.Instance?.FetchNow(); // [PARTY 8]
                     break;
@@ -366,11 +372,19 @@ namespace DotRPG
             clock += dt;
             socket.Pump(dt);
             string map = Game.Session?.MapId;
-            if (!socket.Ready) sentMap = null;
-            else if (!string.IsNullOrEmpty(map) && map != sentMap)
+            if (!socket.Ready)
             {
-                sentMap = map;
-                socket.Send("presence.set", new Dictionary<string, object> { ["map_id"] = map });
+                if (sentMap != null) TownPeers.Reset();
+                sentMap = null;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(map) && map != sentMap)
+                {
+                    sentMap = map;
+                    socket.Send("presence.set", new Dictionary<string, object> { ["map_id"] = map });
+                }
+                TownPeers.Send(socket, clock); // [TOWN] people in the same town see each other
             }
             // Unanswered sends older than the resend window are dropped (shown as failed).
             foreach (var kv in pending.Where(p => clock - p.Value.at > 35f).ToList())

@@ -581,7 +581,12 @@ namespace DotRPG
                 var raid = MiniJson.Obj(data, "raid");
                 if (raid != null && raid.TryGetValue("reward_locked", out var rl) && rl is bool locked && locked)
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));
-                else if (run.Dungeon.isRaid) Progress.ClaimRaid(run.Dungeon, ResetClock.Now); // the server paid this period's reward
+                else if (run.Dungeon.isRaid)
+                {
+                    Progress.ClaimRaid(run.Dungeon, ResetClock.Now); // the server paid this period's reward
+                    int cores = MiniJson.Int(raid, "core_gain");
+                    if (cores > 0) GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 쓴다)");
+                }
             }
             else
             {
@@ -622,6 +627,12 @@ namespace DotRPG
                 int keys = UnityEngine.Random.Range(raid.keyMin, raid.keyMax + 1);
                 bag.Add(DungeonDatabase.SealKey, keys);
                 GameEvents.RaiseToast($"봉인 열쇠 조각 +{keys} (보유 {bag.Count(DungeonDatabase.SealKey)})");
+            }
+            int cores = PromoteRules.CoreGain(raid, run != null ? run.Difficulty : DungeonDifficulty.Normal);
+            if (cores > 0)
+            {
+                bag.Add(DungeonDatabase.RaidCore, cores);
+                GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 쓴다)");
             }
         }
 

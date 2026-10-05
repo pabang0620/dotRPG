@@ -22,6 +22,7 @@ import { getChatWriter } from './chatWriter';
 import { getLimiterStore } from './limiterStore';
 import { pushMyPresence, sendAllPresence } from './presenceService';
 import { registry } from './realtimeNotifier';
+import { handleTownPos, leaveTown } from './townPresence';
 import { checkBan, refreshAccount, startSanctionListener, stopSanctionListener } from './sanctionService';
 import { CLOSE, PROTOCOL_VERSION, clientFrame, type ClientFrame, type Frame } from './wsProtocol';
 import { incomingInvites } from '../partyinvites/partyInvitesService';
@@ -256,9 +257,13 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
           }
           if (s.mapId !== f.map_id) {
             s.mapId = f.map_id;
+            if (s.town && s.town.map !== f.map_id) leaveTown(s);
             await pushMyPresence(s.accountId);
             await notifyPartyMatesOfMove(s.characterId);
           }
+          return;
+        case 'town.pos':
+          handleTownPos(s, f);
           return;
       }
     }
@@ -303,6 +308,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
       uncount();
       const s = session;
       if (s) {
+        leaveTown(s);
         s.closed = true;
         if (registry.remove(s)) pushMyPresence(s.accountId).catch(() => undefined);
       }

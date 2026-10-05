@@ -163,6 +163,8 @@ namespace DotRPG
             }
             if (diff.ticketWeight > 0 && seen.Add(ConsumableDatabase.ProtectTicket)) slots.Add((DungeonDatabase.ItemIcon(ConsumableDatabase.ProtectTicket), DungeonDatabase.ItemName(ConsumableDatabase.ProtectTicket), true));
             if (diff.jackpotPerMille > 0) slots.Add((GearIcon(cls, ItemRarity.Legendary), "유니크·레전더리", true));
+            int cores = PromoteRules.CoreGain(dungeon, diff.id);
+            if (cores > 0) slots.Add((DungeonDatabase.ItemIcon(DungeonDatabase.RaidCore), $"고대의 핵 x{cores}", true));
             return slots;
         }
 
