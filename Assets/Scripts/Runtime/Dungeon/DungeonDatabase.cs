@@ -30,6 +30,8 @@ namespace DotRPG
         public ItemRarity minGearRarity;
         /// <summary>Weight of the protection-ticket card (0 = never).</summary>
         public int ticketWeight;
+        /// <summary>Chance per reward card (‰) that it turns into a Unique / Legendary piece (the jackpot card).</summary>
+        public int jackpotPerMille;
     }
 
     /// <summary>
@@ -155,10 +157,10 @@ namespace DotRPG
         // level) already scales the higher tiers, so these stay small. Target: 1.2 / 1.4 / 1.6x the Normal clear time.
         static readonly DifficultyDef[] Difficulties =
         {
-            new DifficultyDef { id = DungeonDifficulty.Normal, name = "일반", recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0 },
-            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.2f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0 },
-            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 2.0f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0 },
-            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 2.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6 },
+            new DifficultyDef { id = DungeonDifficulty.Normal, name = "일반", recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0, jackpotPerMille = 3 },
+            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.2f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
+            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 2.0f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
+            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 2.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
         };
 
         /// <summary>The raid has one difficulty of its own.</summary>
@@ -226,7 +228,7 @@ namespace DotRPG
                     new RewardEntry(ConsumableDatabase.Gold, 800, 1200, 12),
                     new RewardEntry(EnhanceRules.Bone, 4, 8, 22),
                     new RewardEntry(EnhanceRules.Ore, 1, 2, 10),
-                    new RewardEntry(GearReward, 1, 1, 6),
+                    new RewardEntry(GearReward, 1, 1, 10),
                 },
                 description = "협곡 아래 황금 광맥에 해골 광부들이 몰려들었다.\n황금 해골은 도망치며 금화를 흩뿌린다.",
                 specialty = "골드", featureMonster = "황금 해골 (도망치며 골드를 뿌림)", bossName = "황금 광부장",
@@ -247,7 +249,7 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Ore, 8, 12, 10),
                     new RewardEntry(EnhanceRules.Bone, 4, 8, 20),
                     new RewardEntry(ConsumableDatabase.Gold, 150, 300, 19),
-                    new RewardEntry(GearReward, 1, 1, 6),
+                    new RewardEntry(GearReward, 1, 1, 10),
                 },
                 description = "불이 꺼진 제련소에 해골 광부들이 곡괭이를 들고 모여 있다.\n해골 광부는 멀리서 돌진해 온다.",
                 specialty = "강화석", featureMonster = "해골 광부 (돌진)", bossName = "광산 해골대장",
@@ -268,7 +270,7 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Essence, 4, 6, 8),
                     new RewardEntry(EnhanceRules.Bone, 4, 8, 22),
                     new RewardEntry(ConsumableDatabase.Gold, 150, 300, 22),
-                    new RewardEntry(GearReward, 1, 1, 6),
+                    new RewardEntry(GearReward, 1, 1, 10),
                 },
                 description = "마력이 고인 숲속 묘지. 해골 사령술사가 멀리서 주문을 쏘고\n쓰러진 해골을 다시 일으킨다.",
                 specialty = "마력 정수", featureMonster = "해골 사령술사 (원거리, 해골 소환)", bossName = "묘지기 리치",
@@ -289,7 +291,7 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Bone, 5, 10, 30),
                     new RewardEntry(ConsumableDatabase.HpPotion, 2, 4, 20),
                     new RewardEntry(EnhanceRules.Ore, 1, 3, 9),
-                    new RewardEntry(GearReward, 1, 1, 6),
+                    new RewardEntry(GearReward, 1, 1, 10),
                 },
                 description = "숲의 수련장에 해골 궁수들이 진을 쳤다.\n클리어 경험치가 크게 늘어나는 수련 던전.",
                 specialty = "경험치", featureMonster = "해골 궁수 (원거리)", bossName = "해골 사수장",

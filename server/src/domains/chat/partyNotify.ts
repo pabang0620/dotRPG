@@ -51,3 +51,16 @@ export function notifyRunChanged(db: Queryable, runId: number): void {
 export function notifyCharacters(client: PoolClient, characterIds: number[]): void {
   afterCommit(client, () => getNotifier().partyChanged(characterIds, 'party'));
 }
+
+/** 파티원이 맵을 옮겼다(presence.set): 같은 파티의 다른 멤버에게 다시 불러오라고 알린다(위치 표시) */
+export async function notifyPartyMatesOfMove(characterId: number): Promise<void> {
+  const n = getNotifier();
+  if (!n.active) return;
+  const r = await getPool().query<{ character_id: string }>(
+    `SELECT m2.character_id FROM party_members m1
+       JOIN party_members m2 ON m2.party_id = m1.party_id AND m2.left_at IS NULL AND m2.character_id <> m1.character_id
+      WHERE m1.character_id = $1 AND m1.left_at IS NULL`,
+    [characterId],
+  );
+  if (r.rows.length > 0) n.partyChanged(r.rows.map((x) => Number(x.character_id)), 'party');
+}

@@ -26,6 +26,7 @@ namespace DotRPG
         readonly List<ChatRequest> requests = new List<ChatRequest>();
         readonly Dictionary<string, Pending> pending = new Dictionary<string, Pending>(); // cid -> own line
         float clock, lastSent = -99f;
+        string sentMap; // the map last told to the server (presence.set): friends and party see where I am
 
         public bool IsOnline => true;
         public IReadOnlyList<ChatLine> Lines => lines;
@@ -364,6 +365,13 @@ namespace DotRPG
         {
             clock += dt;
             socket.Pump(dt);
+            string map = Game.Session?.MapId;
+            if (!socket.Ready) sentMap = null;
+            else if (!string.IsNullOrEmpty(map) && map != sentMap)
+            {
+                sentMap = map;
+                socket.Send("presence.set", new Dictionary<string, object> { ["map_id"] = map });
+            }
             // Unanswered sends older than the resend window are dropped (shown as failed).
             foreach (var kv in pending.Where(p => clock - p.Value.at > 35f).ToList())
             {

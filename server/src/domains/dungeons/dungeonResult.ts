@@ -45,9 +45,12 @@ export function runContext(run: repo.RunRow) {
 /** 던전의 최소 클리어 시간(초) */
 export function minClearSeconds(run: repo.RunRow): number {
   const { eco, dungeon } = runContext(run);
+  // 요일던전은 난이도가 올라도 몬스터가 단단해질 뿐이라, 더 쉬운 난이도의 실측 최단 기록이 안전한 하한이다
+  // (실측이 없는 난이도에 기준 시간 절반을 쓰면 고레벨이 정상적으로 빨리 깬 판이 보류된다)
+  const easier = eco.dungeons.minClearSeconds.slice(0, run.difficulty + 1).filter((v) => v > 0);
   const measured = dungeon.isRaid
     ? (eco.dungeons.raidMinClearSeconds[dungeon.id] ?? 0)
-    : (eco.dungeons.minClearSeconds[run.difficulty] ?? 0);
+    : (easier.length > 0 ? Math.max(...easier) : 0);
   return measured > 0
     ? MIN_CLEAR_RATIO * measured
     : FALLBACK_REFERENCE_RATIO * (dungeon.referenceSeconds[run.difficulty] ?? dungeon.referenceSeconds[0] ?? 0);

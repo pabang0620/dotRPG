@@ -280,7 +280,7 @@ namespace DotRPG
             {
                 Game.Session.MapId = MapRegistry.Village; // where the run returns to
                 LoadRoom(Mathf.Clamp(startRoom, 0, run.RoomCount - 1), true);
-                GameEvents.RaiseToast($"— {dungeon.name} · {run.Numbers.name} —");
+                GameEvents.RaiseToast($"{dungeon.name} · {run.Numbers.name}");
                 if (run.RewardsLocked) GameEvents.RaiseToast(dungeon.raidTier == RaidTier.Mid ? "오늘 레이드 보상을 이미 받았다. (연습 입장)" : "이번 주 레이드 보상을 이미 받았다. (연습 입장)");
             }));
         }
@@ -378,7 +378,7 @@ namespace DotRPG
             Game.Camera.SetTarget(local.transform, true);
             Game.UI.Hud.RefreshAll();
             Game.Audio.PlayMusic(Game.World.Map.music);
-            if (room.isBoss) GameEvents.RaiseToast($"보스 방 — {run.Dungeon.bossName}");
+            if (room.isBoss) GameEvents.RaiseToast($"보스 방 · {run.Dungeon.bossName}");
             roomReady = true;
             if (NetHost) PartyNet.Current.HostRoomLoaded(index);
             RoomChanged?.Invoke();
@@ -586,6 +586,7 @@ namespace DotRPG
                 // Held for review or not answered: no reward on this screen.
                 run.XpGained = 0;
                 run.Cards = null;
+                run.NoRewardNote = result == "held" ? "held" : "noanswer";
                 GameEvents.RaiseToast(result == "held" ? "결과를 확인하는 중이다. 보상은 확인 후 지급된다." : "서버에 결과를 보내지 못했다.");
             }
             EndRunState();
@@ -791,7 +792,7 @@ namespace DotRPG
                 Game.Quest.NotifyChanged();
                 Game.UI.Hud.RefreshAll();
                 Game.Audio.PlayMusic(Game.World.Map.music);
-                GameEvents.RaiseToast($"— {Game.World.Map.displayName} —");
+                GameEvents.RaiseToast($"{Game.World.Map.displayName}");
                 RoomChanged?.Invoke();
             }, openSelect ? (Action)(() => Game.UI.Dungeon.Open(false)) : null));
         }
