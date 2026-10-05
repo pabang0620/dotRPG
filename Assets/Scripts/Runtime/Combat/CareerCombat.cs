@@ -4,109 +4,419 @@ using UnityEngine;
 
 namespace DotRPG
 {
+    /// <summary>
+    /// Career (전직) combat: the states the skills leave behind (shields, guard, blessing, combo charges), the passives
+    /// that change damage, and the cast entry point. Each career's skills live in their own partial file.
+    /// Only the authority (solo play or the party host) writes HP and states; a party member's PC plays the same
+    /// presentation as a prediction. Designs and numbers: Docs/PLAN_CAREER_SKILLS.md.
+    /// </summary>
     public sealed partial class CareerCombat : MonoBehaviour
     {
         PlayerController owner;
-        static readonly Dictionary<CharacterData,CareerCombat> actors=new Dictionary<CharacterData,CareerCombat>();
-        readonly Dictionary<EnemyController,float> broken=new Dictionary<EnemyController,float>();
-        float shieldEnd,guardEnd,focusEnd,blessEnd,rhythmEnd,retalEnd,retalReady,hotEnd;
-        int shield,guard,bless,stacks,hotVersion,focusCrit;
-        CareerStatusView view;PlayerController hotSource;
-        public Career ShieldCareer {get;private set;}=Career.Guardian;
-        public bool GuardVisible=>Time.time<guardEnd;
-        public bool FocusVisible=>Time.time<focusEnd;
-        public bool BlessVisible=>Time.time<blessEnd;
-        public bool HotVisible=>Time.time<hotEnd&&hotSource!=null&&!hotSource.IsDead;
-        public bool CounterVisible=>Time.time<counterEnd;
-        float counterEnd; int counterDamage; string lastElement="";float elementEnd;
-        public bool Cursed {get;private set;} public float SlowUntil {get;private set;}
-        public int Shield => Time.time<shieldEnd?shield:0;
-        public int ComboStacks => Time.time<rhythmEnd?stacks:0;
-        public static bool SecondaryDamage;
-        public static string CurrentSkill;
-        Progression Prog=>owner.Data.Progression;
+        CareerAura aura;
+        readonly Dictionary<EnemyController, float> broken = new Dictionary<EnemyController, float>();
+        float shieldEnd, guardEnd, blessEnd, rhythmEnd, retalEnd, retalReady, hotEnd, counterEnd, elementEnd, oathEnd;
+        int shield, guard, bless, stacks, counterDamage, castVersion;
+        string lastElement = "";
+        PlayerController hotSource;
+
+        public Career ShieldCareer { get; private set; } = Career.Guardian;
+        public bool GuardVisible => Time.time < guardEnd && counterEnd <= 0f;
+        public bool BlessVisible => Time.time < blessEnd;
+        public bool HotVisible => Time.time < hotEnd && hotSource != null && !hotSource.IsDead;
+        public bool CounterVisible => counterEnd > Time.time;
+        public float OathRadius { get; private set; }
+        public bool Cursed { get; private set; }
+        public float SlowUntil { get; private set; }
+        public int Shield => Time.time < shieldEnd ? shield : 0;
+        public int ComboStacks => Time.time < rhythmEnd ? stacks : 0;
+
+        /// <summary>Set while a secondary hit (burn tick, counter blast) lands: passives and combo do not react to it.</summary>
+        static bool secondaryDamage;
+        /// <summary>The career skill whose hit is landing right now (empty for a basic attack).</summary>
+        static string currentSkill;
+
+        Progression Prog => owner.Data.Progression;
+        Career Mine => Prog.Career;
+
         public static CareerCombat For(PlayerController p)
-        {var c=p.GetComponent<CareerCombat>();if(c==null)c=p.gameObject.AddComponent<CareerCombat>();c.owner=p;c.view=CareerStatusView.For(p,c);if(p.Data!=null)actors[p.Data]=c;return c;}
-        public static int SpeedFor(CharacterData d)=>0; // Retired attack-speed passive; current Fighter stores sword-force charges.
-        void OnDestroy(){if(owner?.Data!=null)actors.Remove(owner.Data);}
-        public void AddShield(int amount,float duration,CareerSkill visualSource=null)
-        {if(visualSource!=null)ShieldCareer=visualSource.career;shield=Mathf.Max(Shield,amount);shieldEnd=Time.time+duration;CareerTrials.Record(owner,"shield",amount);}
-        public void AddGuard(int percent,float duration){guard=Mathf.Max(Time.time<guardEnd?guard:0,percent);guardEnd=Time.time+duration;}
-        public void AddCurse(float slow=0){Cursed=true;SlowUntil=Time.time+slow;}
-        public bool Cleanse(){bool had=Cursed||Time.time<SlowUntil;Cursed=false;SlowUntil=0;return had;}
-        int castResetVersion;
-        public void ResetState(){owner.GetComponent<CareerSkillMotion>()?.Cancel();castResetVersion++;StopAllCoroutines();owner.GetComponent<CharacterAnimator>()?.EndCareerPose();GuardianAwakeningFx.Clear(owner);CareerPaintEffect.Clear(owner);CareerRenewalFx.Clear(owner);CareerAreaView.Clear(owner);renewalVersions.Clear();shield=guard=bless=stacks=0;shieldEnd=guardEnd=blessEnd=rhythmEnd=focusEnd=retalEnd=counterEnd=0;hotVersion++;hotSource=null;Cleanse();broken.Clear();lastElement="";view?.Clear();}
-        public float MoveScale=>Time.time<SlowUntil?.6f:Time.time<guardEnd&&guard>=30?.7f:1;
+        {
+            var c = p.GetComponent<CareerCombat>();
+            if (c == null) c = p.gameObject.AddComponent<CareerCombat>();
+            c.owner = p;
+            c.aura = CareerAura.For(p, c);
+            return c;
+        }
+
+        /// <summary>Retired attack-speed passive; kept for the stat sheet.</summary>
+        public static int SpeedFor(CharacterData d) => 0;
+
+        // ---------- States ----------
+
+        public void AddShield(int amount, float duration, Career source)
+        {
+            ShieldCareer = source;
+            shield = Mathf.Max(Shield, amount);
+            shieldEnd = Time.time + duration;
+            CareerTrials.Record(owner, "shield", amount);
+        }
+
+        public void AddGuard(int percent, float duration)
+        {
+            guard = Mathf.Max(Time.time < guardEnd ? guard : 0, percent);
+            guardEnd = Mathf.Max(guardEnd, Time.time + duration);
+        }
+
+        public void AddCurse(float slow = 0) { Cursed = true; SlowUntil = Time.time + slow; }
+
+        public bool Cleanse()
+        {
+            bool had = Cursed || Time.time < SlowUntil;
+            Cursed = false;
+            SlowUntil = 0;
+            return had;
+        }
+
+        public void ResetState()
+        {
+            castVersion++;
+            StopAllCoroutines();
+            owner.GetComponent<CharacterAnimator>()?.EndCareerPose();
+            shield = guard = bless = stacks = 0;
+            shieldEnd = guardEnd = blessEnd = rhythmEnd = retalEnd = counterEnd = hotEnd = oathEnd = 0;
+            OathRadius = 0;
+            hotSource = null;
+            Cleanse();
+            broken.Clear();
+            lastElement = "";
+            aura?.Clear();
+        }
+
+        public float MoveScale => Time.time < SlowUntil ? .6f : Time.time < guardEnd && guard >= 30 && counterEnd <= 0f ? .7f : 1f;
+
+        /// <summary>Damage the owner takes, after guard, 강철의 심장 and shields. Also arms 수호의 반향 and 응보의 방진.</summary>
         public int Absorb(int damage)
         {
-            if(owner.Health.IsInvulnerable)return damage;
-            int reduction=(Time.time<guardEnd?guard:0)+Prog.Rank("g_steel")*(Prog.Rank("g_steel")>0?2:0)+(Prog.Rank("g_steel")>0?4:0);
-            damage=Mathf.RoundToInt(damage*(1-Mathf.Min(65,reduction)/100f));
-            int used=Mathf.Min(Shield,damage);shield-=used;damage-=used;
-            if(used>0){CareerTrials.Record(owner,"absorbed",used);view?.ShieldHit();}
-            if(Prog.Rank("g_retal")>0 && Time.time>=retalReady){retalEnd=Time.time+4;retalReady=Time.time+2;}
-            if(counterEnd>Time.time){counterEnd=0;Counter();}
-            return Mathf.Max(0,damage);
+            if (owner.Health.IsInvulnerable) return damage;
+            int steel = Prog.Rank("g_steel");
+            int reduction = (Time.time < guardEnd ? guard : 0) + (steel > 0 ? 4 + steel * 2 : 0);
+            damage = Mathf.RoundToInt(damage * (1 - Mathf.Min(65, reduction) / 100f));
+            int used = Mathf.Min(Shield, damage);
+            shield -= used;
+            damage -= used;
+            if (used > 0) { CareerTrials.Record(owner, "absorbed", used); aura?.ShieldHit(); }
+            if (Prog.Rank("g_retal") > 0 && Time.time >= retalReady) { retalEnd = Time.time + 4; retalReady = Time.time + 2; }
+            if (counterEnd > Time.time) { counterEnd = 0; StartCoroutine(CounterBlast(1f)); }
+            return Mathf.Max(0, damage);
         }
-        void Update(){
-            if(counterEnd>0&&Time.time>=counterEnd){counterEnd=0;Counter();}
-        }
-        void Counter(){var s=CareerCatalog.Get("g_counter");CareerAreaView.Show(s,owner.Center,s.radius,.4f,owner);StartCoroutine(RadialWave(s,owner.Center,s.radius,counterDamage,Game.Session.MapId,!PartyNet.IsMember,false,true));CareerTrials.Record(owner,"counter",1);}
 
-        public int ModifyDamage(EnemyController enemy,int amount)
+        void Update()
         {
-            if(SecondaryDamage)return amount;
-            float mult=Time.time<blessEnd?1+bless/100f:1;
-            if(broken.TryGetValue(enemy,out var until)&&Time.time<until)mult*=1.15f;
-            if(Time.time<retalEnd){mult*=1+(20+5*(Prog.Rank("g_retal")-1))/100f;retalEnd=0;view?.Passive("g_retal");}
-            int openingRank=Prog.Rank("f_edge");
-            if(openingRank>0&&enemy.Health.Current>=enemy.Health.Max*.8f){mult*=1+(15+5*(openingRank-1))/100f;view?.Passive("f_edge");}
-            return Mathf.Max(1,Mathf.RoundToInt(amount*mult));
+            if (counterEnd > 0 && Time.time >= counterEnd) { counterEnd = 0; StartCoroutine(CounterBlast(.7f)); }
+            if (OathRadius > 0 && Time.time >= oathEnd) OathRadius = 0;
         }
+
+        /// <summary>Outgoing damage of the owner on <paramref name="enemy"/> (all hits, basic attacks included).</summary>
+        public int ModifyDamage(EnemyController enemy, int amount)
+        {
+            if (secondaryDamage) return amount;
+            float mult = Time.time < blessEnd ? 1 + bless / 100f : 1;
+            if (broken.TryGetValue(enemy, out var until) && Time.time < until) mult *= 1.15f;
+            if (Time.time < retalEnd) { mult *= 1 + (20 + 5 * (Prog.Rank("g_retal") - 1)) / 100f; retalEnd = 0; }
+            int edge = Prog.Rank("f_edge");
+            if (edge > 0 && enemy.Health.Current >= enemy.Health.Max * .8f) mult *= 1 + (15 + 5 * (edge - 1)) / 100f;
+            return Mathf.Max(1, Mathf.RoundToInt(amount * mult));
+        }
+
         public void OnLanded(EnemyController enemy)
         {
-            if(SecondaryDamage)return;
-            if(Prog.Rank("f_rhythm")>0&&string.IsNullOrEmpty(CurrentSkill)){int previous=ComboStacks;stacks=Mathf.Min(3,ComboStacks+1);rhythmEnd=Time.time+6;if(previous<3&&stacks==3)view?.Passive("f_rhythm");}
-            CareerTrials.Record(owner,"hit",1);
+            if (secondaryDamage) return;
+            if (Prog.Rank("f_rhythm") > 0 && string.IsNullOrEmpty(currentSkill))
+            {
+                int before = ComboStacks;
+                stacks = Mathf.Min(3, ComboStacks + 1);
+                rhythmEnd = Time.time + 6;
+                if (before < 3 && stacks == 3 && owner.IsLocal)
+                {
+                    SkillVisuals.Flash(owner.Center, CareerFx.Steel, 1.4f, 0.2f);
+                    SkillVisuals.Sparks(owner.Center, CareerFx.Steel, 8, 4f, 0.25f);
+                }
+            }
+            CareerTrials.Record(owner, "hit", 1);
         }
-        List<EnemyController> Enemies(Vector2 center,float radius)
-        {var list=new List<EnemyController>();foreach(var e in EnemyController.Active)if(e!=null&&!e.IsDead&&Vector2.Distance(e.Center,center)<=radius)list.Add(e);list.Sort((a,b)=>(a.Center-center).sqrMagnitude.CompareTo((b.Center-center).sqrMagnitude));return list;}
-        List<PlayerController> Allies(float radius)
-        {var list=new List<PlayerController>{owner};if(Game.Party!=null)foreach(var p in Game.Party.Members)if(p!=owner&&!p.IsDead&&Vector2.Distance(p.Center,owner.Center)<=radius)list.Add(p);var trial=CareerTrials.Companion;if(trial!=null&&!trial.IsDead&&!list.Contains(trial)&&Vector2.Distance(trial.Center,owner.Center)<=radius)list.Add(trial);return list;}
-        void Heal(PlayerController p,int value,CareerSkill s)
-        {int rank=Prog.Rank("b_mercy");if(rank>0)value=Mathf.RoundToInt(value*(1+(10+5*(rank-1))/100f));if(For(p).Cursed)value=Mathf.RoundToInt(value*.35f);int actual=p.Health.Heal(value);CareerEffect.Hit(s,p.Center,Vector2.up,owner);if(actual>0)CareerTrials.Record(owner,"heal",actual);}
-        void Damage(EnemyController e,int value,bool secondary=false)
-        {bool old=SecondaryDamage;SecondaryDamage=secondary;try{e.TakeDamage(new DamageInfo(value,owner.Position,1.2f,Team.Player,owner.gameObject));}finally{SecondaryDamage=old;}}
-        IEnumerator Burn(EnemyController e,int value){string map=Game.Session.MapId;for(int i=0;i<3;i++){yield return new WaitForSeconds(1);if(e==null||e.IsDead||!Valid(map))yield break;Damage(e,value,true);CareerEffect.Hit(CareerCatalog.Get("m_fire"),e.Center,Vector2.up,owner);}}
-        Vector2 Travel(float distance)
-        {var dir=owner.Facing.ToVector();Vector2 start=owner.Position,end=start;for(float d=.15f;d<=distance;d+=.15f){var next=start+dir*d;bool wall=false;foreach(var c in Physics2D.OverlapCircleAll(next+Vector2.up*.22f,.29f))if(!c.isTrigger&&c.GetComponentInParent<PlayerController>()==null&&c.GetComponentInParent<EnemyController>()==null)wall=true;if(wall)break;end=next;}return end;}
-        public IEnumerator Cast(CareerSkill s,SkillNumbers n)
+
+        /// <summary>검기 연성: three charges make the next Fighter skill stronger, and are spent by it.</summary>
+        float SpendRhythm()
         {
-            if(!Prog.CareerUnlocked(s))yield break;
-            string castMap=Game.Session.MapId;
-            int castVersion=castResetVersion;
-            Vector2 dir=owner.Facing.ToVector(), target=Aim(n.range,dir);
-            CareerSkillMotion.Begin(owner,s,dir);
-            CareerRenewalFx.Prepare(s,owner,dir);
-            if(s.career==Career.Fighter)owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(s.cast,s.effect=="f_drop"||s.effect=="f_eruption"||s.effect=="f_convergence"?2:0,0,WarriorAttackMotion.Contact);
-            yield return new WaitForSeconds(s.cast);
-            if(castVersion!=castResetVersion||!Valid(castMap)||!Prog.CareerUnlocked(s))yield break;
-            owner.GetComponent<CareerSkillMotion>()?.Release();
-            if(s.kind==CareerSkillKind.Awakening&&owner.IsLocal)GameEvents.RaiseAwakening(s.name,CareerCatalog.Color(s.career));
-            // Client predictions display the same travelling attack; only the host writes HP and statuses.
-            bool authority=!PartyNet.IsMember;
-            if(authority&&s.effect!="fire"&&s.effect!="ice"&&s.effect!="storm")CareerTrials.Record(owner,s.effect,1);
-            if(s.career==Career.Fighter)yield return FighterCast(s,n,dir,castMap,authority,target);
-            else yield return RenewalCast(s,n,dir,castMap,authority,target);
+            int rank = Prog.Rank("f_rhythm");
+            if (rank <= 0 || ComboStacks < 3) return 1f;
+            stacks = 0;
+            rhythmEnd = 0;
+            return 1.2f + .05f * (rank - 1);
         }
-        // Member-side support presentation only; the host owns HP, status and threat changes.
-        IEnumerator PredictPresentation(CareerSkill s,SkillNumbers n,Vector2 origin,Vector2 center,Vector2 dir,string map)
+
+        // ---------- Cast ----------
+
+        public IEnumerator Cast(CareerSkill s, SkillNumbers n)
         {
-            if(s.effect=="dawn")StartCoroutine(Sanctuary(s,n.damage/6,origin,n.radius,map,false));
-            if(s.effect=="taunt"||s.effect=="citadel")foreach(var enemy in Enemies(origin,n.radius))CareerPresentation.Taunted(enemy,enemy.IsBoss?1.2f:4,owner);
-            if(s.effect=="shield"||s.effect=="ward"||s.effect=="citadel"||s.effect=="wings"||s.effect=="bless"||s.effect=="cleanse"||s.effect=="dawn")
-                foreach(var p in Allies(n.radius)){CareerEffect.Hit(s,p.Center,dir,owner);CareerPresentation.Link(s,origin,p.Center,owner,.3f);}
-            yield break;
+            if (!Prog.CareerUnlocked(s)) yield break;
+            string map = Game.Session.MapId;
+            int version = castVersion;
+            Vector2 dir = Aim();
+            bool authority = !PartyNet.IsMember;
+            Windup(s, dir);
+            if (s.cast > 0) yield return new WaitForSeconds(s.cast);
+            if (version != castVersion || !Valid(map) || !Prog.CareerUnlocked(s)) yield break;
+            if (s.kind == CareerSkillKind.Awakening) Awaken(s);
+            if (s.career == Career.Fighter) n.damage = Mathf.RoundToInt(n.damage * SpendRhythm());
+            var run = new Run { s = s, n = n, dir = dir, map = map, version = version, authority = authority };
+            if (authority && s.effect != "fire" && s.effect != "ice" && s.effect != "storm") CareerTrials.Record(owner, s.effect, 1);
+            switch (s.career)
+            {
+                case Career.Fighter: yield return Fighter(run); break;
+                case Career.Guardian: yield return Guardian(run); break;
+                case Career.Arcanist: yield return Arcanist(run); break;
+                case Career.Bishop: yield return Bishop(run); break;
+            }
         }
+
+        /// <summary>Everything one cast needs; <see cref="Live"/> stops it when the caster dies, leaves or resets.</summary>
+        sealed class Run
+        {
+            public CareerSkill s;
+            public SkillNumbers n;
+            public Vector2 dir;
+            public string map;
+            public int version;
+            public bool authority;
+            public float Scale => n.careerPotency > 0 ? n.careerPotency : 1f;
+        }
+
+        bool Live(Run c) => c.version == castVersion && Valid(c.map);
+        bool Valid(string map) => owner != null && !owner.IsDead && owner.gameObject.activeInHierarchy && Game.Session.MapId == map;
+
+        Vector2 Aim()
+        {
+            var d = owner.AimDirection;
+            return d.sqrMagnitude > .0001f ? d.normalized : owner.Facing.ToVector();
+        }
+
+        /// <summary>The cast moment: a stance for the warriors, a magic circle and a staff flash for the mages.</summary>
+        void Windup(CareerSkill s, Vector2 dir)
+        {
+            var color = CareerFx.Main(s.career);
+            owner.GetComponent<CharacterAnimator>()?.SetCareerFacing(FacingExtensions.FromVector(dir, owner.Facing));
+            if (CareerCatalog.Base(s.career) == CharacterClass.Warrior)
+            {
+                owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(s.cast + .12f, s.effect == "execute" || s.effect == "swordrain" || s.effect == "aegis" ? 2 : 0, 0, WarriorAttackMotion.Contact);
+                if (s.cast >= .15f) SkillVisuals.Flash(owner.Center + dir * .3f, color, 1f, s.cast);
+            }
+            else
+            {
+                SkillVisuals.CastCircle(owner.Position, color);
+                SkillVisuals.StaffFlash(owner.Center + dir * .35f, color);
+            }
+            Sound(s.career == Career.Fighter ? "c_dash" : s.career == Career.Guardian ? "swing" : s.career == Career.Arcanist ? "c_arcane" : "magic", .55f);
+        }
+
+        void Awaken(CareerSkill s)
+        {
+            var color = CareerFx.Main(s.career);
+            if (owner.IsLocal)
+            {
+                SkillVisuals.Awakening(owner, s.name, color);
+                Game.Audio.PlaySfx("quest");
+            }
+            else SkillVisuals.Flash(owner.Center, color, 2.4f, .35f);
+        }
+
+        // ---------- Hit feel ----------
+
+        float soundReady;
+
+        /// <summary>A sound heard by everyone near the caster; impact sounds of one swing play once.</summary>
+        void Sound(string key, float volume = 1f)
+        {
+            if (Game.Audio == null) return;
+            Game.Audio.PlaySfx(key, owner.IsLocal ? volume : volume * .5f);
+        }
+
+        void ImpactSound(string key, float volume = 1f)
+        {
+            if (Time.unscaledTime < soundReady) return;
+            soundReady = Time.unscaledTime + .06f;
+            Sound(key, volume);
+        }
+
+        /// <summary>Camera feedback of the owner's own blows (light 0, medium 1, heavy 2).</summary>
+        void Feel(int weight, Vector2 dir)
+        {
+            if (!owner.IsLocal) return;
+            SkillCaster.TryHitStop(owner.Skills, weight == 2 ? .08f : weight == 1 ? .05f : .03f);
+            if (weight >= 1) Game.Camera?.Shake(weight == 2 ? .14f : .07f, weight == 2 ? .18f : .1f);
+            if (weight == 2) Game.Camera?.CareerImpulse(dir, .12f, .15f);
+        }
+
+        /// <summary>
+        /// One career hit on a monster: damage with a real knockback, sparks, the impact sound and hit stop. Returns true
+        /// when it landed (or, on a party member's PC, when the monster was there to be hit).
+        /// </summary>
+        bool Strike(Run c, EnemyController e, int damage, Vector2 from, float knockback, int weight, string sound = "hit")
+        {
+            if (e == null || e.IsDead) return false;
+            Vector2 dir = e.Center - from;
+            dir = dir.sqrMagnitude > .0001f ? dir.normalized : c.dir;
+            bool landed = !c.authority;
+            if (c.authority)
+            {
+                string previous = currentSkill;
+                currentSkill = c.s.id;
+                try { landed = e.TakeDamage(new DamageInfo(damage, from, knockback, Team.Player, owner.gameObject)); }
+                finally { currentSkill = previous; }
+            }
+            if (!landed) return false;
+            CareerFx.Hit(e.Center, dir, CareerFx.Main(c.s.career), weight);
+            ImpactSound(sound, weight == 2 ? 1f : .8f);
+            Feel(weight, dir);
+            return true;
+        }
+
+        /// <summary>A hit that does not count as a skill or basic attack (burn ticks).</summary>
+        void SecondaryHit(EnemyController e, int damage)
+        {
+            if (e == null || e.IsDead) return;
+            bool old = secondaryDamage;
+            secondaryDamage = true;
+            try { e.TakeDamage(new DamageInfo(damage, e.Position, 0f, Team.Player, owner.gameObject)); }
+            finally { secondaryDamage = old; }
+        }
+
+        void Stun(Run c, EnemyController e, float seconds)
+        {
+            if (!c.authority || e == null || e.IsDead) return;
+            e.Stun(seconds);
+            StunStars.Attach(e);
+        }
+
+        void Freeze(Run c, EnemyController e, float seconds)
+        {
+            if (!c.authority || e == null || e.IsDead) return;
+            e.Freeze(seconds);
+            IceEncase.Attach(e);
+        }
+
+        void Taunt(Run c, EnemyController e, float seconds)
+        {
+            if (!c.authority || e == null || e.IsDead) return;
+            ThreatTable.For(e).Force(owner, e.IsBoss ? Mathf.Min(1.2f, seconds) : seconds);
+            CareerTrials.Record(owner, "taunted", 1);
+            SkillFx.Spawn("fx_alert", e.Center + Vector2.up * .9f, Color.white, .6f, SkillFx.TopOrder + 5).Pop().Fade(FxFade.Late);
+        }
+
+        // ---------- Allies ----------
+
+        void Heal(Run c, PlayerController p, int value)
+        {
+            if (p == null || p.IsDead) return;
+            if (c.authority)
+            {
+                int rank = Prog.Rank("b_mercy");
+                if (rank > 0) value = Mathf.RoundToInt(value * (1 + (10 + 5 * (rank - 1)) / 100f));
+                if (For(p).Cursed) value = Mathf.RoundToInt(value * .35f);
+                int actual = p.Health.Heal(value);
+                if (actual > 0) CareerTrials.Record(owner, "heal", actual);
+            }
+            CareerFx.Bless(p.Center, CareerFx.Life, false);
+        }
+
+        /// <summary>A shield of <paramref name="fraction"/> of the target's max HP (축복의 그릇 adds to it).</summary>
+        void GiveShield(Run c, PlayerController p, float fraction, float duration)
+        {
+            if (p == null || p.IsDead) return;
+            if (c.authority)
+            {
+                int rank = Prog.Rank("b_grace");
+                float bonus = rank > 0 ? 1 + (12 + 4 * (rank - 1)) / 100f : 1;
+                For(p).AddShield(Mathf.RoundToInt(p.Health.Max * fraction * c.Scale * bonus), duration, c.s.career);
+            }
+            CareerFx.Bless(p.Center, CareerFx.Main(c.s.career), true);
+        }
+
+        // ---------- Queries ----------
+
+        List<EnemyController> Enemies(Vector2 center, float radius)
+        {
+            var list = new List<EnemyController>();
+            foreach (var e in EnemyController.Active)
+                if (e != null && !e.IsDead && e.isActiveAndEnabled && Vector2.Distance(e.Center, center) <= radius + .3f * e.Size) list.Add(e);
+            list.Sort((a, b) => (a.Center - center).sqrMagnitude.CompareTo((b.Center - center).sqrMagnitude));
+            return list;
+        }
+
+        /// <summary>Monsters inside a fan of <paramref name="degrees"/> in front of <paramref name="from"/>.</summary>
+        List<EnemyController> Fan(Vector2 from, Vector2 dir, float range, float degrees)
+        {
+            var list = Enemies(from, range);
+            float cos = Mathf.Cos(degrees * .5f * Mathf.Deg2Rad);
+            list.RemoveAll(e => { var d = e.Center - from; return d.sqrMagnitude > .04f && Vector2.Dot(d.normalized, dir) < cos; });
+            return list;
+        }
+
+        /// <summary>Monsters within <paramref name="halfWidth"/> of the segment a-b.</summary>
+        List<EnemyController> Corridor(Vector2 a, Vector2 b, float halfWidth)
+        {
+            var list = new List<EnemyController>();
+            foreach (var e in EnemyController.Active)
+                if (e != null && !e.IsDead && e.isActiveAndEnabled && DistanceToSegment(e.Center, a, b) <= halfWidth + .25f * e.Size) list.Add(e);
+            list.Sort((x, y) => (x.Center - a).sqrMagnitude.CompareTo((y.Center - a).sqrMagnitude));
+            return list;
+        }
+
+        /// <summary>The monster the cast is aimed at: nearest in front within range, else the point at full range.</summary>
+        EnemyController Target(Vector2 dir, float range, out Vector2 point)
+        {
+            EnemyController best = null;
+            float score = float.MaxValue;
+            foreach (var e in Enemies(owner.Center, range))
+            {
+                var d = e.Center - owner.Center;
+                float facing = d.sqrMagnitude > .01f ? Vector2.Dot(d.normalized, dir) : 1f;
+                if (facing < .3f) continue;
+                float sc = d.magnitude - facing * 1.5f;
+                if (sc < score) { score = sc; best = e; }
+            }
+            point = best != null ? best.Center : owner.Center + dir * range;
+            return best;
+        }
+
+        List<PlayerController> Allies(Vector2 at, float radius)
+        {
+            var list = new List<PlayerController>();
+            void Add(PlayerController p) { if (p != null && !p.IsDead && !list.Contains(p) && Vector2.Distance(p.Center, at) <= radius) list.Add(p); }
+            Add(owner);
+            if (Game.Party != null) foreach (var p in Game.Party.Members) Add(p);
+            Add(CareerTrials.Companion);
+            return list;
+        }
+
+        static float DistanceToSegment(Vector2 p, Vector2 a, Vector2 b)
+        {
+            var d = b - a;
+            float t = d.sqrMagnitude > .00001f ? Mathf.Clamp01(Vector2.Dot(p - a, d) / d.sqrMagnitude) : 0;
+            return Vector2.Distance(p, a + d * t);
+        }
+
+        static Vector2 Rotate(Vector2 d, float degrees)
+        {
+            float a = degrees * Mathf.Deg2Rad;
+            return new Vector2(d.x * Mathf.Cos(a) - d.y * Mathf.Sin(a), d.x * Mathf.Sin(a) + d.y * Mathf.Cos(a));
+        }
+
+        /// <summary>Moves the owner like a dash (stops at walls). Only the PC that owns the body moves it.</summary>
+        float Dash(Vector2 dir, float distance) => owner.NetPuppet ? distance : owner.SkillDash(dir, distance);
+
+        float DashSeconds(float distance) => distance / (PlayerController.DashDistance / PlayerController.DashDuration);
+
+        void Pose(float seconds, int stage) => owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(seconds, stage, 0, WarriorAttackMotion.Contact);
     }
 }

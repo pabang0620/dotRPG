@@ -49,6 +49,87 @@ namespace DotRPG
                     Noise(b, 0f, 0.08f, 0.12f, 0.6f, 37);
                     return b;
                 }
+                // ---- Career skills: one cast sound and one impact sound per skill family ----
+                case "c_slash":
+                {
+                    // Sharp blade: a bright hiss falling fast, a thin metallic ring on top.
+                    var b = Buffer(0.16f);
+                    Noise(b, 0f, 0.12f, 0.42f, 0.8f, 41);
+                    Tone(b, 0f, 0.09f, 2400f, 700f, Wave.Triangle, 0.14f);
+                    Tone(b, 0.01f, 0.12f, 3100f, 2900f, Wave.Sine, 0.05f);
+                    return b;
+                }
+                case "c_heavy":
+                {
+                    // Heavy cut / slam: low thump under a crunch.
+                    var b = Buffer(0.32f);
+                    Tone(b, 0f, 0.22f, 160f, 45f, Wave.Sine, 0.55f);
+                    Tone(b, 0f, 0.08f, 420f, 120f, Wave.Square, 0.18f);
+                    Noise(b, 0f, 0.28f, 0.42f, 0.55f, 43);
+                    return b;
+                }
+                case "c_dash":
+                {
+                    var b = Buffer(0.2f);
+                    Noise(b, 0f, 0.2f, 0.32f, 0.3f, 47);
+                    Tone(b, 0f, 0.18f, 300f, 1300f, Wave.Triangle, 0.1f);
+                    return b;
+                }
+                case "c_shield":
+                {
+                    // Shield bash: a dull metal clang with a ringing tail.
+                    var b = Buffer(0.38f);
+                    Tone(b, 0f, 0.05f, 220f, 140f, Wave.Square, 0.3f);
+                    Tone(b, 0f, 0.36f, 660f, 640f, Wave.Triangle, 0.16f, vibrato: 7f);
+                    Tone(b, 0f, 0.3f, 990f, 960f, Wave.Sine, 0.08f);
+                    Noise(b, 0f, 0.07f, 0.4f, 0.4f, 53);
+                    return b;
+                }
+                case "c_arcane":
+                {
+                    var b = Buffer(0.26f);
+                    Tone(b, 0f, 0.24f, 330f, 990f, Wave.Triangle, 0.18f, vibrato: 24f);
+                    Tone(b, 0.03f, 0.2f, 660f, 1980f, Wave.Sine, 0.08f);
+                    Noise(b, 0f, 0.1f, 0.1f, 0.8f, 59);
+                    return b;
+                }
+                case "c_fire":
+                {
+                    // Fire burst: a roaring noise swell with a low boom.
+                    var b = Buffer(0.42f);
+                    Tone(b, 0f, 0.3f, 120f, 40f, Wave.Sine, 0.5f);
+                    Noise(b, 0f, 0.4f, 0.6f, 0.16f, 61);
+                    Noise(b, 0f, 0.08f, 0.3f, 0.7f, 67);
+                    return b;
+                }
+                case "c_ice":
+                {
+                    // Ice shatter: glassy high pings over a crack.
+                    var b = Buffer(0.3f);
+                    Noise(b, 0f, 0.06f, 0.4f, 0.85f, 71);
+                    Tone(b, 0f, 0.12f, 2600f, 2500f, Wave.Sine, 0.12f);
+                    Tone(b, 0.04f, 0.14f, 3500f, 3300f, Wave.Sine, 0.1f);
+                    Tone(b, 0.09f, 0.2f, 2900f, 2700f, Wave.Sine, 0.08f);
+                    return b;
+                }
+                case "c_thunder":
+                {
+                    var b = Buffer(0.45f);
+                    Noise(b, 0f, 0.05f, 0.6f, 0.9f, 73);
+                    Tone(b, 0f, 0.4f, 90f, 35f, Wave.Square, 0.2f);
+                    Noise(b, 0.04f, 0.4f, 0.55f, 0.08f, 79);
+                    return b;
+                }
+                case "c_holy":
+                {
+                    // Holy: a bell-like chord.
+                    var b = Buffer(0.6f);
+                    Tone(b, 0f, 0.58f, 784f, 784f, Wave.Sine, 0.18f);
+                    Tone(b, 0f, 0.5f, 1175f, 1175f, Wave.Sine, 0.12f);
+                    Tone(b, 0.02f, 0.4f, 1568f, 1568f, Wave.Triangle, 0.06f);
+                    Tone(b, 0f, 0.05f, 2350f, 2350f, Wave.Sine, 0.08f);
+                    return b;
+                }
                 case "hit":
                 {
                     var b = Buffer(0.14f);

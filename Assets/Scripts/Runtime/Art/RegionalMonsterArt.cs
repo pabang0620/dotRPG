@@ -75,9 +75,17 @@ namespace DotRPG
             }
             if(id==Sanctum){dark=new Color32(20,61,58,255);mid=new Color32(66,171,149,255);light=new Color32(203,242,205,255);p.Rect(5,5,6,6,mid);p.Line(5,5,10,10,light);p.Line(10,5,5,10,light);}
             if(id==Rock){p.Line(6,5,9,8,dark);p.Line(9,8,8,11,dark);}
-            sprite = CareerArt.SpriteOf(p, id + "_projectile", 24);
+            sprite = SpriteOf(p, id + "_projectile", 24);
             sprite.name = id + "_projectile";
             return projectiles[id] = sprite;
+        }
+
+        static Sprite SpriteOf(PixelCanvas p, string name, float ppu)
+        {
+            var t = new Texture2D(p.Width, p.Height, TextureFormat.RGBA32, false) { name = name, filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            t.SetPixels32(p.ToTexturePixels());
+            t.Apply();
+            return Sprite.Create(t, new Rect(0, 0, p.Width, p.Height), Vector2.one * .5f, ppu);
         }
     }
 }
