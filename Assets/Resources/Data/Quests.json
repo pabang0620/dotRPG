@@ -513,7 +513,7 @@
    "kind": "main",
    "code": "1-8",
    "title": "강해져야 한다",
-   "summary": "지금으로는 북쪽 고개 성채 문턱도 넘지 못한다. 요일 던전에서 실력을 쌓아라.",
+   "summary": "지금으로는 북쪽 고개 성채 문턱도 넘지 못한다. 요일 던전과 협곡 쪽 사냥터에서 레벨 20까지 실력을 쌓아라.",
    "requires": [
     "c1_trail"
    ],
@@ -540,8 +540,8 @@
       {
        "type": "level",
        "target": "",
-       "count": 22,
-       "text": "레벨 22 달성 (성채 권장 레벨)",
+       "count": 20,
+       "text": "레벨 20 달성 (성채 입장 레벨)",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -608,7 +608,7 @@
    "kind": "main",
    "code": "1-10",
    "title": "흑철의 바르가스",
-   "summary": "흑철 진영이 검은 뿌리 숲 깊은 곳에 진을 쳤다. 마을을 불태운 그 갑옷, 바르가스를 찾아간다.",
+   "summary": "흑철 진영이 해골 숲 동쪽 끝 버려진 채석장에 진을 쳤다. 마을을 불태운 그 갑옷, 바르가스를 찾아간다.",
    "requires": [
     "c1_fortress"
    ],
@@ -621,7 +621,7 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "검은 뿌리 숲의 흑철 진영을 무너뜨리고 바르가스를 쓰러뜨린다.",
+     "text": "버려진 채석장의 흑철 진영을 무너뜨리고 바르가스를 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
@@ -630,16 +630,16 @@
        "text": "흑철 방패병 처치",
        "dialogue": "",
        "consume": false,
-       "map": "forest_depths"
+       "map": "canyon_mine"
       },
       {
        "type": "kill",
-       "target": "skel_archer",
+       "target": "skel_miner",
        "count": 30,
-       "text": "진영 궁수 처치",
+       "text": "진영 광부 처치",
        "dialogue": "",
        "consume": false,
-       "map": "forest_depths"
+       "map": "canyon_mine"
       }
      ],
      "cutscene": "",
@@ -1079,7 +1079,7 @@
    "kind": "main",
    "code": "2-5",
    "title": "석실 앞에서",
-   "summary": "수호석 외곽 석실의 문지기는 지금의 실력으로는 무리다. 더 강해져라.",
+   "summary": "수호석 외곽 석실 앞은 해골 기사단이 지킨다. 바람칼 능선에서 싸울 수 있을 만큼 강해져라.",
    "requires": [
     "c2_mine"
    ],
@@ -1097,8 +1097,8 @@
       {
        "type": "level",
        "target": "",
-       "count": 28,
-       "text": "레벨 28 달성 (석실 권장 레벨)",
+       "count": 24,
+       "text": "레벨 24 달성 (바람칼 능선)",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1185,14 +1185,87 @@
    }
   },
   {
+   "id": "c2_north",
+   "chapter": 2,
+   "kind": "main",
+   "code": "",
+   "title": "북쪽 눈꽃 마을",
+   "summary": "수호자 그라흐는 지금 힘으로는 무리다. 북쪽 눈꽃 마을의 사냥꾼들과 함께 수호석 석실에 들어갈 힘(레벨 40)을 기른다.",
+   "requires": [
+    "c2_golem"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "leona",
+   "offerDialogue": "c2_north_offer",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "북쪽 눈꽃 마을로 가 촌장 세라를 만난다.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "winter",
+       "count": 1,
+       "text": "눈꽃 숲 마을 도착",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "winter_elder",
+       "count": 1,
+       "text": "촌장 세라와 이야기",
+       "dialogue": "c2_north_elder",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "수호석 석실에 들어갈 힘을 기른다.",
+     "objectives": [
+      {
+       "type": "level",
+       "target": "",
+       "count": 40,
+       "text": "레벨 40 달성 (석실 입장 레벨)",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 10000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
    "id": "c2_grah",
    "chapter": 2,
    "kind": "main",
    "code": "2-7",
    "title": "수호자 그라흐",
-   "summary": "봉인 열쇠 조각으로 수호석 석실을 연다. 수호자 그라흐. (최종 레이드, 일요일)",
+   "summary": "해골왕 레이드에서 모은 봉인 열쇠 조각 60개로 수호석 석실을 연다. 수호자 그라흐. (최종 레이드, 레벨 40, 일요일)",
    "requires": [
-    "c2_golem"
+    "c2_north"
    ],
    "requiresFlags": [],
    "minLevel": 0,
@@ -1296,10 +1369,10 @@
    "title": "누리의 짐 수레",
    "summary": "협곡 상인 누리의 수레가 광산 길에서 해골들에게 털렸다.",
    "requires": [
-    "c2_canyon"
+    "c1_stronger"
    ],
    "requiresFlags": [],
-   "minLevel": 0,
+   "minLevel": 13,
    "giver": "trader",
    "offerDialogue": "c2s_trader_offer",
    "turnIn": "trader",
@@ -2459,7 +2532,7 @@
    "title": "누리의 호위",
    "summary": "협곡 상인 누리의 짐 수레가 붉은 돌 고개에서 해골에게 습격당했다.",
    "requires": [
-    "c2_canyon"
+    "c1_stronger"
    ],
    "requiresFlags": [],
    "minLevel": 13,
