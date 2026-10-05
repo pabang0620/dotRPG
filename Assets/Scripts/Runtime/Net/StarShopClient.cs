@@ -23,7 +23,7 @@ namespace DotRPG
     /// 캐시샵(별조각). The server keeps the wallet, the pity count, the owned auras and rolls every pull; this only
     /// shows what it says. 별조각 are account-wide. Rates and prices always come from the server's current table.
     /// </summary>
-    public static class StarShopClient
+    public static partial class StarShopClient
     {
         public static long Balance { get; private set; }
         public static int Pity { get; private set; }
@@ -128,6 +128,9 @@ namespace DotRPG
             Balance = 0;
             Pity = 0;
             Owned.Clear();
+            Copies.Clear();
+            Collections.Clear();
+            CollectionAttack = CollectionHealth = 0;
             Changed?.Invoke();
         }
 
@@ -186,6 +189,7 @@ namespace DotRPG
                 if (Flag(o as Dictionary<string, object>, "owned")) Owned.Add(id);
                 ExchangePrice[id] = MiniJson.Int(o, "exchange_price");
             }
+            ReadSynth(d);
             Loaded = true;
             Changed?.Invoke();
         }

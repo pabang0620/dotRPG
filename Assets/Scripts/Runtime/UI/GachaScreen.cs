@@ -119,6 +119,9 @@ namespace DotRPG
             w.ten = Button(w.content, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 262f, by), new Vector2(320f, 58f), () => w.Ask(10), 18);
             w.rateBtn = Button(w.content, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 594f, by), new Vector2(170f, 58f), w.OpenRates, 18);
             w.wardrobeBtn = Button(w.content, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 776f, by), new Vector2(164f, 58f), w.OpenWardrobe, 18);
+            // Spares (a cosmetic drawn again): synthesis, dismantling and collections.
+            Button(w.content, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 952f, by), new Vector2(210f, 58f),
+                () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 18);
             // keep the price text off the button edges
             foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 16f, 0f, 16f, 0f);
 
@@ -582,7 +585,7 @@ namespace DotRPG
                     c.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
                     c.icon.color = look != null ? Color.white : p != null ? p.Color : Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
-                    c.note.text = r.duplicate ? $"<color=#b8c4d8>중복 +{r.refund}</color>"
+                    c.note.text = r.duplicate ? "<color=#b8c4d8>여분 +1</color>"
                         : r.byPity ? "<color=#ffd34a>선택 · NEW</color>" : "<color=#8fe28f>NEW</color>";
                 }
             }
@@ -691,14 +694,15 @@ namespace DotRPG
                 int gm = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
                 sb.Append($"· 선택 게이지: 1회 뽑을 때마다 1칸 찹니다. {gm}칸이 다 차면 {top} 중 원하는 것 하나를 고릅니다(고르면 {gm}칸 줄어듦, 기한 없음). 뽑기에서 자연히 나와도 게이지는 줄지 않습니다.\n");
                 sb.Append("· 중복 방지: 같은 등급에서 아직 없는 것만 같은 확률로 나옵니다. 개별 확률은 아무것도 없을 때 기준입니다.\n");
-                sb.Append($"· 같은 등급을 모두 가지면 중복이 나오고 별조각을 돌려줍니다(일반 {rc}, 희귀 {rr}, 에픽 {re}{(banner == "skin" ? $", 유니크 {ru}" : "")}).\n");
+                sb.Append($"· 같은 등급을 모두 가지면 이미 가진 외형이 나오고 <color=#ffd34a>여분</color>으로 쌓입니다. 여분 4개로 한 등급 위에 도전(합성)하거나 별조각으로 분해할 수 있습니다(분해: 일반 {rc}, 희귀 {rr}, 에픽 {re}, 유니크 {ru}). 캐시샵 > 합성 · 컬렉션\n");
             }
             else
             {
                 sb.Append("· 등급을 먼저 정하고, 그 등급의 장비 중 하나가 같은 확률로 나옵니다. 그 뽑기에 없는 등급의 몫은 가장 낮은 등급이 가집니다.\n");
                 sb.Append("· 뽑은 장비는 +0으로 바로 가방에 들어갑니다. 선택 게이지는 없습니다.\n");
             }
-            sb.Append($"· 10+1회는 별조각 {StarShopClient.PriceTen:N0}로 {StarShopClient.TenCount}회를 뽑습니다(마지막 1회가 보너스).</color>");
+            sb.Append($"· 10+1회는 별조각 {StarShopClient.PriceTen:N0}로 {StarShopClient.TenCount}회를 뽑습니다(마지막 1회가 보너스). "
+                + (banner == "aura" || banner == "skin" ? "보너스 1회는 희귀 이상만 나옵니다." : "보너스 1회도 위 확률 그대로입니다.") + "</color>");
             return sb.ToString();
         }
     }

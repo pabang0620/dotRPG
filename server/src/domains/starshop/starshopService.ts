@@ -25,8 +25,13 @@ import {
   STAR_COSMETIC_BY_ID,
   TEN_COUNT,
   TEN_PRICE,
+  COLLECTIONS,
+  DISMANTLE_STARS,
+  SYNTH,
+  SYNTH_COUNT,
   cosmeticsOf,
   exchangePriceOf,
+  type SynthFrom,
   type Banner,
   type CosmeticBanner,
   type Rarity,
@@ -42,6 +47,8 @@ function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string) {
   if (banner === 'skin' && (rarity === 'epic' || rarity === 'unique')) return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity);
   return cosmeticsOf(rarity);
 }
+
+export { poolOf };
 
 /** 오라·스킨 뽑기 확률표(%). 하나 = 등급 확률 / 그 등급 수(중복 방지 전 기준). 확률 0인 등급은 싣지 않는다 */
 function auraTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
@@ -92,6 +99,8 @@ export async function summary(accountId: number, characterUuid: string) {
   const db = getPool();
   const wallet = await repo.readWallet(db, accountId);
   const owned = await repo.ownedOf(db, accountId);
+  const copies = await repo.copiesOf(db, accountId);
+  const registered = await repo.collectionsOf(db, accountId);
   return {
     balance: wallet.balance,
     pity: wallet.pity,
@@ -104,6 +113,24 @@ export async function summary(accountId: number, characterUuid: string) {
     price_ten: TEN_PRICE,
     ten_count: TEN_COUNT,
     refund: DUPLICATE_REFUND,
+    dismantle: DISMANTLE_STARS,
+    synth: (Object.keys(SYNTH) as SynthFrom[]).map((from) => ({
+      from,
+      to: SYNTH[from].to,
+      count: SYNTH_COUNT,
+      rate: SYNTH[from].permille / 10,
+      pity: SYNTH[from].pity,
+      fails: wallet.synthFail[SYNTH[from].to as 'rare' | 'epic' | 'unique'],
+    })),
+    collections: COLLECTIONS.map((c) => ({
+      id: c.id,
+      name: c.name,
+      members: c.members,
+      requires: c.requires ?? [],
+      attack: c.attack,
+      health: c.health,
+      registered: registered.has(c.id),
+    })),
     rates: auraTable('aura', ch.class),
     skin_rates: auraTable('skin', ch.class),
     banners: (Object.keys(GEAR_BANNERS) as GearBanner[]).map((b) => ({
@@ -116,6 +143,7 @@ export async function summary(accountId: number, characterUuid: string) {
       name: c.name,
       rarity: c.rarity,
       owned: owned.has(c.id),
+      copies: copies.get(c.id) ?? 0,
       exchange_price: exchangePriceOf(c),
       skin: c.skin ?? null,
     })),
@@ -199,8 +227,9 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
     const duplicate = fresh.length === 0;
     const from = duplicate ? all : fresh;
     const item = from[getRng().int(0, from.length)]!;
-    const back = duplicate ? DUPLICATE_REFUND[rarity] : 0;
-    if (duplicate) refund += back;
+    // 이미 가진 외형은 여분으로 쌓는다(합성 재료, 원하면 같은 값으로 분해). 별조각 환급은 하지 않는다
+    const back = 0;
+    if (duplicate) await repo.addCopies(ctx.client, accountId, item.id, 1);
     else {
       owned.add(item.id);
       await repo.addCosmetic(ctx.client, accountId, item.id, 'gacha');
@@ -215,9 +244,9 @@ async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: r
   const table = gearTable(banner, ctx.char.class);
   if (table.length === 0) throw new AppError(422, '뽑을 수 있는 장비가 없습니다.', 'NO_GEAR');
   for (let i = 0; i < times; i++) {
-    // 10+1의 보너스(마지막) 1회는 최하 등급을 빼고 굴린다: 남은 등급끼리 같은 비율
-    const bonus = times > 1 && i === times - 1 && table.length > 1;
-    const pool = bonus ? table.slice(0, -1) : table;
+    // 장비 뽑기는 10+1의 보너스 1회도 같은 확률로 굴린다. 뽑기마다 등급이 2~3개뿐이라 "최하 등급 제외"를 하면
+    // 장신구는 유니크, 방어구는 에픽이 확정되어 버린다(외형 뽑기의 보너스만 희귀 이상)
+    const pool = table;
     const total = pool.reduce((a, t) => a + t.permille, 0);
     let roll = getRng().int(0, total);
     let tier = pool[pool.length - 1]!;

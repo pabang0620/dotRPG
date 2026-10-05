@@ -26,6 +26,8 @@ namespace DotRPG
         public string SkinId = "";
         /// <summary>Attack bonus (%) from the worn aura and costume skin (local player).</summary>
         public int CosmeticDamage;
+        /// <summary>Max HP % from registered cosmetic collections (local player only, account-wide).</summary>
+        public int CollectionHealth;
 
         readonly CharacterClass cls;
         readonly Progression progression;
