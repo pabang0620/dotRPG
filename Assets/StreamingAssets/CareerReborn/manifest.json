@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "source": "Original built-in image_gen artwork; prompt set: Docs/Careers/REBORN-PROMPTS.json",
+  "layout": "2 x 2 RGBA component atlas; top-left, top-right, bottom-left, bottom-right. Not a frame sheet. Runtime layered choreography in CareerPaintEffect.cs.",
+  "sampler": "Point / Clamp, no mipmaps",
+  "fallback": "Previous procedural career art remains only as a missing-file fallback. Base warrior/mage art is not redirected.",
+  "assets": [
+    {
+      "file": "Arcanist.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "9156d4479a58114759d8a73b63aa8e9ed956f414644152c6f50deef40cb42f16"
+    },
+    {
+      "file": "Bishop.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "9831f1f6664f603a19403f527b52ef7ae7018c759f65f3f19f2234b99e5f09f9"
+    },
+    {
+      "file": "Fighter.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "15ae11fc24b848291cc02c16f0799a83b77a4921de5523be02a86aa33cef559e"
+    },
+    {
+      "file": "Guardian.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "37bb71e3f4a72353f8be1d127e19e750f8ddd1e25182f41246a19ce5e357dc6d"
+    }
+  ],
+  "components": {
+    "Fighter": [
+      "crescent",
+      "sword beam",
+      "qi seal",
+      "cut impact"
+    ],
+    "Guardian": [
+      "shield",
+      "dome",
+      "fortress",
+      "shield impact"
+    ],
+    "Bishop": [
+      "wings",
+      "healing column",
+      "sanctuary",
+      "blessing crest"
+    ],
+    "Arcanist": [
+      "meteor",
+      "ice crown",
+      "lightning",
+      "astral circle"
+    ]
+  }
+}

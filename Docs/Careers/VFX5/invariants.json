@@ -1,0 +1,10 @@
+{
+  "Assets/Scripts/Runtime/Combat/CareerCombat.cs": true,
+  "Assets/Scripts/Runtime/Combat/SkillEffects.cs": true,
+  "Assets/Scripts/Runtime/Progression/CareerData.cs": true,
+  "Assets/Scripts/Runtime/Progression/CareerNumbers.cs": true,
+  "Assets/Scripts/Runtime/Progression/Progression.Career.cs": true,
+  "Assets/Scripts/Runtime/Player/SkillCaster.cs": true,
+  "server/data/careers.json": true,
+  "server/data/skill_gems.json": true
+}

@@ -37,6 +37,19 @@ describe('career invariants',()=>{
   for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual(careerIds[c]);
   for(const s of catalog.skills)expect(s.level).toBe(s.index===8?15:s.index%4<2?15:s.index%4===2?18:22);
  });
+ test('reborn catalog exposes role mechanics while retaining saved node identities',()=>{
+  const {skills}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8'));
+  const skill=(id:string)=>skills.find((s:{id:string})=>s.id===id);
+  expect(skill('f_awake')).toMatchObject({name:'천지일선',range:18,hits:1});
+  expect(skill('f_break').range).toBeGreaterThan(6);
+  expect(skill('g_taunt').radius).toBe(5);
+  expect(skill('g_bash').range).toBe(3);
+  expect(skill('m_storm')).toMatchObject({hits:5,radius:3});
+  expect(skill('b_heal').radius).toBe(4);
+  expect(skill('b_bloom')).toMatchObject({duration:6,hits:6});
+  expect(skill('b_awake')).toMatchObject({duration:8,hits:8});
+  for(const s of skills){expect(Number.isFinite(s.power)).toBe(true);expect(s.cooldown).toBeGreaterThanOrEqual(0);}
+ });
 });
 const app=buildApp();
 beforeAll(resetDb);afterAll(shutdown);

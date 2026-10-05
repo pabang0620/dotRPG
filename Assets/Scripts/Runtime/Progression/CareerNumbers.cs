@@ -15,12 +15,12 @@ namespace DotRPG
             {
                 case "guard":effect=$"받는 피해 -{Mathf.RoundToInt(30*scale)}%";break;
                 case "focus":effect=$"치명 확률 +{Mathf.RoundToInt(25*scale)}%";break;
-                case "bless":effect=$"아군 공격 피해 +{Mathf.RoundToInt(15*scale)}%";break;
+                case "bless":effect=$"아군 공격 피해 +{Mathf.RoundToInt(s.power*scale)}%";break;
                 case "shield":case "ward":case "citadel":case "wings":case "blink":effect=$"대상 최대 HP의 {s.power*scale*shielding*100:0.#}% 보호막";break;
                 case "heal":case "hot":case "cleanse":effect=$"최대 회복 {Mathf.RoundToInt(n.damage*healing)}{(s.hits>1?$" × {s.hits}회":"")}";break;
-                case "dawn":effect=$"최대 회복 {Mathf.RoundToInt(n.damage*healing)} · HP {25*shielding:0.#}% 보호막 · 정화";break;
-                case "five":effect=$"피해 {n.damage} × 4 + 결정타 {n.damage*3}";break;
-                case "storm":effect=$"피해 {n.damage} · 최대 4대상";break;
+                case "dawn":effect=$"즉시 회복 {Mathf.RoundToInt(n.damage*healing)} · 매초 {Mathf.RoundToInt((n.damage/6)*healing)} × {s.hits}회 · HP {25*shielding:0.#}% 보호막 · 정화";break;
+                case "five":case "execute":case "light":effect=$"관통 피해 {n.damage} · 길이 {n.range:0.#}m / 폭 {n.radius*2:0.#}m";break;
+                case "storm":effect=$"피해 {n.damage} · 최대 {s.hits}대상 · 연결 거리 {n.radius:0.#}m";break;
                 default:effect=$"피해 {n.damage}{(s.hits>1?$" × {s.hits}회":"")}";break;
             }
             return effect+$"\n{(n.usesLife?"HP":"MP")} {n.manaCost} · 재사용 {n.cooldown:0.##}초 · 시전 {s.cast:0.##}초";

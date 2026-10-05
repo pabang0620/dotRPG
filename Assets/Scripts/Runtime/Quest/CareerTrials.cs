@@ -13,14 +13,14 @@ namespace DotRPG
         string map,status;float started,nextHazard,opening,lastHit;int hits,chain,taunts,absorbed,healed,cleansed,sequence;
         readonly HashSet<string> elements=new HashSet<string>();
         int hp; float mana;
-        public static string Title(Career c)=>c==Career.Fighter?"다섯 번째 검흔":c==Career.Guardian?"방패 뒤의 이름":c==Career.Arcanist?"세 원소의 침묵":"꺼지지 않은 새벽";
+        public static string Title(Career c)=>c==Career.Fighter?"다섯 검의 끝, 하나의 선":c==Career.Guardian?"방패 뒤의 이름":c==Career.Arcanist?"세 원소의 침묵":"꺼지지 않은 새벽";
         public static string Mentor(Career c)=>c==Career.Fighter?"카엘":c==Career.Guardian?"기사단장 레오나":c==Career.Arcanist?"약초꾼 오르":"기사 아이비";
         public static string Story(Career c,int stage)
         {
-            string[] f={"카엘: 마족의 칼도 누군가를 지키려 들린 것일 수 있다. 네 힘은 무엇을 향하나?\n나: 힘만으로 답하지 않겠습니다.","카엘: 균열은 힘이 아니라 박자 사이에 있다. 열린 틈에 연격을 이어라.\n나: 다섯 검흔을 하나의 의지로 잇겠습니다.","시련: 4초마다 열리는 2초의 틈에 연속 5회 적중. 45초 안에 완성하라.","나: 쓰러뜨릴 적보다 지켜야 할 이유를 먼저 보았습니다.\n카엘: 그것이 불굴의 오검이다.","카엘: 힘을 휘두르는 주인은 네 의지다. 그 문양을 잊지 마라.","다섯 검흔이 붉은 문양으로 완성되었다. T 슬롯에서 불굴의 오검 사용 가능."};
-            string[] g={"레오나: 살아 돌아온 방패 뒤에 돌아오지 못한 이름들이 있다.\n나: 이번에는 동료와 함께 돌아오겠습니다.","레오나: 아이비에게 향하는 환영을 돌려라. 혼자 버티는 것으로는 부족하다.\n나: 방패의 자리는 동료 앞입니다.","시련: 아이비 생존, 실제 적 2회 도발, 보호막으로 피해 40 흡수. 20초 버티기.","아이비: 네가 불러준 덕분에 숨을 돌렸어.\n나: 누구도 방패 뒤에 남겨두지 않겠습니다.","레오나: 무너지지 않는 것은 철이 아니라 함께 돌아오겠다는 맹세다.","육각 방벽에 동료의 이름이 새겨졌다. T 슬롯에서 무너지지 않는 맹세 사용 가능."};
-            string[] m={"오르: 봉인을 살리는 마력과 태우는 마력은 같은 근원이다.\n나: 마왕의 힘도 그 원리를 따른다는 건가요?", "오르: 세 원소를 순서대로 다뤄라. 넘치는 힘에는 대가가 따른다.\n나: 태우고, 식히고, 다시 흐르게 하겠습니다.","시련: 화염 룬창 → 서리 결정진 → 뇌광 공명 순서로 실제 적중. 45초. Lv.22 기술 필요.","나: 세 원소가 서로를 삼키지 않고 궤도를 이루었습니다.\n오르: 힘을 지배하는 대신 이해했구나.","오르: 삼원 일식의 룬은 봉인을 부수는 열쇠이자 지키는 고리다.","세 원소의 궤도가 완성되었다. T 슬롯에서 삼원 일식 사용 가능."};
-            string[] b={"아이비: 사람과 마족 모두 상처 앞에서는 같은 숨을 쉬더라.\n나: 누구의 상처인지 묻기 전에 살펴보겠습니다.","아이비: 저주가 회복을 막고 있어. 치료의 순서를 판단해 줘.\n나: 해로운 것을 걷어내고, 숨을 이어 지키겠습니다.","시련: 아이비 저주 정화, 실제 HP 90 회복, 보호막으로 25 피해 흡수, 20초 생존. Lv.22 정화 필요.","아이비: 다시 아침을 볼 수 있겠어.\n나: 돌아온 새벽이 모두의 것이 되기를.","아이비: 날개는 위에서 내려온 게 아니야. 끝까지 곁에 있던 손에서 피어난 거야.","새잎과 빛의 날개가 성역에 피었다. T 슬롯에서 돌아온 새벽 사용 가능."};
+            string[] f={"카엘: 마족의 칼도 누군가를 지키려 들린 것일 수 있다. 네 힘은 무엇을 향하나?\n나: 힘만으로 답하지 않겠습니다.","카엘: 균열은 힘이 아니라 박자 사이에 있다. 열린 틈에 연격을 이어라.\n나: 다섯 검흔을 하나의 의지로 잇겠습니다.","시련: 4초마다 열리는 2초의 틈에 연속 5회 적중. 45초 안에 완성하라.","나: 쓰러뜨릴 적보다 지켜야 할 이유를 먼저 보았습니다.\n카엘: 그것이 천지일선이다.","카엘: 힘을 휘두르는 주인은 네 의지다. 그 문양을 잊지 마라.","다섯 검흔이 하나의 선으로 모여 전장을 가른다. T 슬롯에서 천지일선 사용 가능."};
+            string[] g={"레오나: 살아 돌아온 방패 뒤에 돌아오지 못한 이름들이 있다.\n나: 이번에는 동료와 함께 돌아오겠습니다.","레오나: 아이비에게 향하는 환영을 돌려라. 혼자 버티는 것으로는 부족하다.\n나: 방패의 자리는 동료 앞입니다.","시련: 아이비 생존, 실제 적 2회 도발, 보호막으로 피해 40 흡수. 20초 버티기.","아이비: 네가 불러준 덕분에 숨을 돌렸어.\n나: 누구도 방패 뒤에 남겨두지 않겠습니다.","레오나: 무너지지 않는 것은 철이 아니라 함께 돌아오겠다는 맹세다.","육각 방벽에 동료의 이름이 새겨졌다. T 슬롯에서 불멸의 성채 사용 가능."};
+            string[] m={"오르: 봉인을 살리는 마력과 태우는 마력은 같은 근원이다.\n나: 마왕의 힘도 그 원리를 따른다는 건가요?", "오르: 세 원소를 순서대로 다뤄라. 넘치는 힘에는 대가가 따른다.\n나: 태우고, 식히고, 다시 흐르게 하겠습니다.","시련: 홍련 운석 → 빙하의 왕관 → 연쇄 낙뢰 순서로 실제 적중. 45초. Lv.22 기술 필요.","나: 세 원소가 서로를 삼키지 않고 궤도를 이루었습니다.\n오르: 힘을 지배하는 대신 이해했구나.","오르: 천체 붕괴의 룬은 봉인을 부수는 열쇠이자 지키는 고리다.","세 원소의 궤도가 완성되었다. T 슬롯에서 천체 붕괴 사용 가능."};
+            string[] b={"아이비: 사람과 마족 모두 상처 앞에서는 같은 숨을 쉬더라.\n나: 누구의 상처인지 묻기 전에 살펴보겠습니다.","아이비: 저주가 회복을 막고 있어. 치료의 순서를 판단해 줘.\n나: 해로운 것을 걷어내고, 숨을 이어 지키겠습니다.","시련: 아이비 저주 정화, 실제 HP 90 회복, 보호막으로 25 피해 흡수, 20초 생존. Lv.22 정화 필요.","아이비: 다시 아침을 볼 수 있겠어.\n나: 모두가 그 문 너머의 아침을 볼 수 있기를.","아이비: 날개는 위에서 내려온 게 아니야. 끝까지 곁에 있던 손에서 피어난 거야.","새잎과 천사의 품가 성역에 피었다. T 슬롯에서 천상의 문 사용 가능."};
             return (c==Career.Fighter?f:c==Career.Guardian?g:c==Career.Arcanist?m:b)[Mathf.Clamp(stage,0,5)];
         }
         public static string Begin()
@@ -31,9 +31,9 @@ namespace DotRPG
             if(PartyNet.IsMember||PartyNet.IsHost)return "각성 시련은 온라인 파티에서 나간 후 혼자 진행하세요. 시련 동료가 제공됩니다.";
             if(Running!=null)return "이미 시련 진행 중";
             if(prog.AwakeningStage!=2)return "대화를 먼저 진행하세요.";
-            if(prog.Career==Career.Arcanist && (prog.Rank("m_fire")==0||prog.Rank("m_ice")==0||prog.Rank("m_storm")==0))return "화염 룬창·서리 결정진·뇌광 공명을 해금하세요. (Lv.22, 노드 4개)";
-            if(prog.Career==Career.Bishop && (prog.Rank("b_cleanse")==0||prog.Rank("b_wing")==0))return "정화의 종·빛의 날개를 해금하세요. (Lv.22, 노드 7개)";
-            if(prog.Career==Career.Guardian && (prog.Rank("g_taunt")==0||prog.Rank("g_wall")==0))return "수호자의 호령·동료의 방벽을 해금하세요. (Lv.18, 노드 5개)";
+            if(prog.Career==Career.Arcanist && (prog.Rank("m_fire")==0||prog.Rank("m_ice")==0||prog.Rank("m_storm")==0))return "홍련 운석·빙하의 왕관·연쇄 낙뢰를 해금하세요. (Lv.22, 노드 4개)";
+            if(prog.Career==Career.Bishop && (prog.Rank("b_cleanse")==0||prog.Rank("b_wing")==0))return "정화의 종소리·천사의 품을 해금하세요. (Lv.22, 노드 7개)";
+            if(prog.Career==Career.Guardian && (prog.Rank("g_taunt")==0||prog.Rank("g_wall")==0))return "불퇴의 호령·수호의 방패를 해금하세요. (Lv.18, 노드 5개)";
             Game.Flow.CloseInventory();
             var go=new GameObject("AwakeningTrial");Running=go.AddComponent<CareerTrials>();Running.Setup(p);return "";
         }

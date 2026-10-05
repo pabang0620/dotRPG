@@ -39,6 +39,8 @@ namespace DotRPG
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     if (args[i] == "-dotrpgCareerDemo") SaveSystem.SlotCount = 4;
+                    // Automated verification is silent; the interactive demo retains player settings.
+                    if (args[i] != "-dotrpgCareerDemo") AudioListener.volume = 0f;
                     GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
@@ -98,6 +100,7 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            if (mode != "-dotrpgCareerDemo") { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
             if (mode == "-dotrpgCareerDemo") { yield return CareerDemoRun(); Log("career demo ready: four level-40 characters"); log.Close(); log=null; Destroy(this); yield break; }
             if (mode == "-dotrpgCareer") { yield return CareerRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]

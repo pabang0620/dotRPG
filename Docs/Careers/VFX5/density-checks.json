@@ -1,0 +1,170 @@
+[
+  {
+    "skill": "b_awake",
+    "nativeDetailBlocks": 13084,
+    "maxRadiusPx": 81.216,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "b_bless",
+    "nativeDetailBlocks": 4501,
+    "maxRadiusPx": 64.661,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "b_bloom",
+    "nativeDetailBlocks": 5906,
+    "maxRadiusPx": 65.307,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "b_cleanse",
+    "nativeDetailBlocks": 3907,
+    "maxRadiusPx": 77.833,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "b_heal",
+    "nativeDetailBlocks": 6714,
+    "maxRadiusPx": 68.622,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "b_light",
+    "nativeDetailBlocks": 4475,
+    "maxRadiusPx": 72.007,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "b_wing",
+    "nativeDetailBlocks": 10174,
+    "maxRadiusPx": 81.216,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_awake",
+    "nativeDetailBlocks": 7481,
+    "maxRadiusPx": 80.156,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_break",
+    "nativeDetailBlocks": 8002,
+    "maxRadiusPx": 80.156,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_cross",
+    "nativeDetailBlocks": 4814,
+    "maxRadiusPx": 80.156,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_execute",
+    "nativeDetailBlocks": 6354,
+    "maxRadiusPx": 76.007,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_flurry",
+    "nativeDetailBlocks": 4814,
+    "maxRadiusPx": 80.156,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_focus",
+    "nativeDetailBlocks": 3013,
+    "maxRadiusPx": 70.605,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "f_rush",
+    "nativeDetailBlocks": 6042,
+    "maxRadiusPx": 76.007,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_awake",
+    "nativeDetailBlocks": 13820,
+    "maxRadiusPx": 77.524,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_bash",
+    "nativeDetailBlocks": 8099,
+    "maxRadiusPx": 71.113,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_counter",
+    "nativeDetailBlocks": 7664,
+    "maxRadiusPx": 78.262,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_guard",
+    "nativeDetailBlocks": 6289,
+    "maxRadiusPx": 71.281,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_oath",
+    "nativeDetailBlocks": 8260,
+    "maxRadiusPx": 77.524,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_taunt",
+    "nativeDetailBlocks": 4688,
+    "maxRadiusPx": 81.216,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "g_wall",
+    "nativeDetailBlocks": 10123,
+    "maxRadiusPx": 77.524,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_awake",
+    "nativeDetailBlocks": 10994,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_fire",
+    "nativeDetailBlocks": 7931,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_ice",
+    "nativeDetailBlocks": 11328,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_orbit",
+    "nativeDetailBlocks": 7201,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_rift",
+    "nativeDetailBlocks": 7009,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_storm",
+    "nativeDetailBlocks": 10285,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  },
+  {
+    "skill": "m_veil",
+    "nativeDetailBlocks": 13897,
+    "maxRadiusPx": 75.802,
+    "worldRadiusConversionUnchanged": true
+  }
+]

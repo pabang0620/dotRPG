@@ -1,0 +1,9 @@
+
+> dotrpg-server@0.1.0 test
+> node scripts/test.mjs --runTestsByPath test/careers.test.ts test/characters.test.ts --silent
+
+
+Test Suites: 2 passed, 2 total
+Tests:       57 passed, 57 total
+Snapshots:   0 total
+Time:        5.179 s

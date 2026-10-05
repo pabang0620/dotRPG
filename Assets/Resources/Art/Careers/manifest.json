@@ -5,8 +5,8 @@
     32
   ],
   "effectFrameSize": [
-    96,
-    96
+    192,
+    192
   ],
   "frames": 12,
   "fps": 21.818181818181817,
@@ -16,7 +16,7 @@
     0.5
   ],
   "filter": "Point",
-  "provenance": "Authored pixel raster CareerVfxArt.cs; layered sprites, additive edges, deterministic mesh particles. Production PNGs.",
+  "provenance": "Native 192px integer raster art, CareerRaster + CareerVfxArt.Reforged; new fine engraving, barbs and facets. No raster enlargement or borrowed GIF pixels.",
   "skills": [
     {
       "id": "f_rhythm",
@@ -45,7 +45,7 @@
       "id": "f_cross",
       "name": "쌍흔 연격",
       "description": "짧은 간격으로 두 번 가르는 검격.",
-      "effect": "Art/Careers/Effects/f_cross",
+      "effect": "Art/Careers/Reforged/Effects/f_cross",
       "synergy": "연격의 호흡 중첩",
       "career": 1,
       "kind": 1,
@@ -68,7 +68,7 @@
       "id": "f_rush",
       "name": "돌파 찌르기",
       "description": "전방으로 접근하고 좁은 범위를 찌른다.",
-      "effect": "Art/Careers/Effects/f_rush",
+      "effect": "Art/Careers/Reforged/Effects/f_rush",
       "synergy": "해당 없음",
       "career": 1,
       "kind": 1,
@@ -91,7 +91,7 @@
       "id": "f_flurry",
       "name": "질풍 삼연",
       "description": "전방에 세 번의 빠른 검격.",
-      "effect": "Art/Careers/Effects/f_flurry",
+      "effect": "Art/Careers/Reforged/Effects/f_flurry",
       "synergy": "중첩마다 피해 +3%",
       "career": 1,
       "kind": 1,
@@ -137,7 +137,7 @@
       "id": "f_break",
       "name": "갑주 가르기",
       "description": "적을 베어 6초간 자신의 후속 공격 피해 +15%.",
-      "effect": "Art/Careers/Effects/f_break",
+      "effect": "Art/Careers/Reforged/Effects/f_break",
       "synergy": "해당 없음",
       "career": 1,
       "kind": 1,
@@ -160,7 +160,7 @@
       "id": "f_focus",
       "name": "응축된 투지",
       "description": "5초간 치명타 확률 +25%; 방어 효과는 없다.",
-      "effect": "Art/Careers/Effects/f_focus",
+      "effect": "Art/Careers/Reforged/Effects/f_focus",
       "synergy": "해당 없음",
       "career": 1,
       "kind": 1,
@@ -183,7 +183,7 @@
       "id": "f_execute",
       "name": "일점 격파",
       "description": "단일 적에게 강타. 체력 35% 이하 대상 피해 +50%.",
-      "effect": "Art/Careers/Effects/f_execute",
+      "effect": "Art/Careers/Reforged/Effects/f_execute",
       "synergy": "해당 없음",
       "career": 1,
       "kind": 1,
@@ -206,7 +206,7 @@
       "id": "f_awake",
       "name": "불굴의 오검",
       "description": "다섯 검흔을 완성한다. 4연격 후 3배 위력의 결정타.",
-      "effect": "Art/Careers/Effects/f_awake",
+      "effect": "Art/Careers/Reforged/Effects/f_awake",
       "synergy": "파괴 표식·치명 적용",
       "career": 1,
       "kind": 2,
@@ -252,7 +252,7 @@
       "id": "g_guard",
       "name": "철벽 자세",
       "description": "4초간 받는 피해 30% 감소, 이동 속도 30% 감소.",
-      "effect": "Art/Careers/Effects/g_guard",
+      "effect": "Art/Careers/Reforged/Effects/g_guard",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 1,
@@ -275,7 +275,7 @@
       "id": "g_wall",
       "name": "동료의 방벽",
       "description": "주변 동료에게 최대 HP의 18% 보호막, 6초.",
-      "effect": "Art/Careers/Effects/g_wall",
+      "effect": "Art/Careers/Reforged/Effects/g_wall",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 1,
@@ -298,7 +298,7 @@
       "id": "g_oath",
       "name": "불굴의 결계",
       "description": "5초간 주변 아군 피해 20% 감소, 보호막 10%.",
-      "effect": "Art/Careers/Effects/g_oath",
+      "effect": "Art/Careers/Reforged/Effects/g_oath",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 1,
@@ -344,7 +344,7 @@
       "id": "g_taunt",
       "name": "수호자의 호령",
       "description": "4초 강제 도발; 보스는 1.2초, 최대 위협의 150% 확보.",
-      "effect": "Art/Careers/Effects/g_taunt",
+      "effect": "Art/Careers/Reforged/Effects/g_taunt",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 1,
@@ -367,7 +367,7 @@
       "id": "g_bash",
       "name": "강철 진군",
       "description": "전방 방패 강타. 기절 1초(보스 0.3초).",
-      "effect": "Art/Careers/Effects/g_bash",
+      "effect": "Art/Careers/Reforged/Effects/g_bash",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 1,
@@ -390,7 +390,7 @@
       "id": "g_counter",
       "name": "맹세의 반격",
       "description": "3초 피해 25% 감소. 피격 시 1회 반격, 없으면 종료 시 방출.",
-      "effect": "Art/Careers/Effects/g_counter",
+      "effect": "Art/Careers/Reforged/Effects/g_counter",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 1,
@@ -413,7 +413,7 @@
       "id": "g_awake",
       "name": "무너지지 않는 맹세",
       "description": "8초간 아군에게 40% 보호막과 35% 피해 감소. 주변 적 도발.",
-      "effect": "Art/Careers/Effects/g_awake",
+      "effect": "Art/Careers/Reforged/Effects/g_awake",
       "synergy": "해당 없음",
       "career": 2,
       "kind": 2,
@@ -459,7 +459,7 @@
       "id": "m_fire",
       "name": "화염 룬창",
       "description": "전방 원소창 폭발. 3초간 3회 화상(회당 공격력 20%).",
-      "effect": "Art/Careers/Effects/m_fire",
+      "effect": "Art/Careers/Reforged/Effects/m_fire",
       "synergy": "해당 없음",
       "career": 3,
       "kind": 1,
@@ -482,7 +482,7 @@
       "id": "m_ice",
       "name": "서리 결정진",
       "description": "지정 방향에 냉기 결정을 펼쳐 1.5초 빙결.",
-      "effect": "Art/Careers/Effects/m_ice",
+      "effect": "Art/Careers/Reforged/Effects/m_ice",
       "synergy": "해당 없음",
       "career": 3,
       "kind": 1,
@@ -505,7 +505,7 @@
       "id": "m_storm",
       "name": "뇌광 공명",
       "description": "가까운 적 4마리까지 전류 연결. 원소 전환 시 추가 피해.",
-      "effect": "Art/Careers/Effects/m_storm",
+      "effect": "Art/Careers/Reforged/Effects/m_storm",
       "synergy": "해당 없음",
       "career": 3,
       "kind": 1,
@@ -551,7 +551,7 @@
       "id": "m_orbit",
       "name": "비전 궤도",
       "description": "앞쪽에 3회 수렴하는 마력구.",
-      "effect": "Art/Careers/Effects/m_orbit",
+      "effect": "Art/Careers/Reforged/Effects/m_orbit",
       "synergy": "해당 없음",
       "career": 3,
       "kind": 1,
@@ -574,7 +574,7 @@
       "id": "m_veil",
       "name": "잔광 도약",
       "description": "장애물 앞까지 짧게 이동, 최대 HP 8% 보호막 2초.",
-      "effect": "Art/Careers/Effects/m_veil",
+      "effect": "Art/Careers/Reforged/Effects/m_veil",
       "synergy": "해당 없음",
       "career": 3,
       "kind": 1,
@@ -597,7 +597,7 @@
       "id": "m_rift",
       "name": "마력 균열",
       "description": "4초간 고정 범위에 4회 폭발. 이동한 적에게는 적중하지 않음.",
-      "effect": "Art/Careers/Effects/m_rift",
+      "effect": "Art/Careers/Reforged/Effects/m_rift",
       "synergy": "해당 없음",
       "career": 3,
       "kind": 1,
@@ -620,7 +620,7 @@
       "id": "m_awake",
       "name": "삼원 일식",
       "description": "화염·냉기·번개 룬을 정렬하여 세 원소 폭발을 일으킨다.",
-      "effect": "Art/Careers/Effects/m_awake",
+      "effect": "Art/Careers/Reforged/Effects/m_awake",
       "synergy": "서로 다른 원소 공명",
       "career": 3,
       "kind": 2,
@@ -666,7 +666,7 @@
       "id": "b_heal",
       "name": "치유의 기도",
       "description": "범위 안 체력 비율이 가장 낮은 아군 1명을 즉시 회복.",
-      "effect": "Art/Careers/Effects/b_heal",
+      "effect": "Art/Careers/Reforged/Effects/b_heal",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 1,
@@ -689,7 +689,7 @@
       "id": "b_bloom",
       "name": "새잎의 숨결",
       "description": "가장 다친 아군에게 5초 동안 매초 회복. 동일 효과 갱신.",
-      "effect": "Art/Careers/Effects/b_bloom",
+      "effect": "Art/Careers/Reforged/Effects/b_bloom",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 1,
@@ -712,7 +712,7 @@
       "id": "b_cleanse",
       "name": "정화의 종",
       "description": "아군의 전직 시련 저주·둔화를 해제하고 소량 회복.",
-      "effect": "Art/Careers/Effects/b_cleanse",
+      "effect": "Art/Careers/Reforged/Effects/b_cleanse",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 1,
@@ -758,7 +758,7 @@
       "id": "b_light",
       "name": "여명의 화살",
       "description": "응축한 빛으로 단일 적 공격. 솔로 성장용 기술.",
-      "effect": "Art/Careers/Effects/b_light",
+      "effect": "Art/Careers/Reforged/Effects/b_light",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 1,
@@ -781,7 +781,7 @@
       "id": "b_wing",
       "name": "빛의 날개",
       "description": "주변 아군 최대 HP의 16% 보호막, 5초.",
-      "effect": "Art/Careers/Effects/b_wing",
+      "effect": "Art/Careers/Reforged/Effects/b_wing",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 1,
@@ -804,7 +804,7 @@
       "id": "b_bless",
       "name": "새벽의 축복",
       "description": "주변 아군 공격 피해 +15%, 7초. 같은 축복은 갱신.",
-      "effect": "Art/Careers/Effects/b_bless",
+      "effect": "Art/Careers/Reforged/Effects/b_bless",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 1,
@@ -827,7 +827,7 @@
       "id": "b_awake",
       "name": "돌아온 새벽",
       "description": "성역 안 아군 즉시 회복(공격력 500%), 25% 보호막과 정화.",
-      "effect": "Art/Careers/Effects/b_awake",
+      "effect": "Art/Careers/Reforged/Effects/b_awake",
       "synergy": "해당 없음",
       "career": 4,
       "kind": 2,
@@ -849,7 +849,7 @@
   ],
   "awakeningFps": 10.434782608695652,
   "castPlayback": "12 frames across max(0.15, skill.cast) seconds",
-  "visualRevision": 2,
+  "visualRevision": 5,
   "detailSheets": [
     {
       "career": "Fighter",
@@ -871,5 +871,1992 @@
       "charge": "Art/Careers/Details/Bishop_charge",
       "hit": "Art/Careers/Details/Bishop_hit"
     }
-  ]
+  ],
+  "presentation": [
+    {
+      "path": "Art/Careers/Reforged/Presentation/Arcanist_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "b2a2a122b775b8db226bf359269601d20a552aaef69b302927582192c49cba72"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_bless_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_bloom_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_cleanse_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "4f3203cccd373d863906ddce0318b9a92d45b55478ef1a4a72cdb56993a10f9b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_heal_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_light_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "4c3458e96359781708a83750338103ba36f6ddfc2ecb0eed94586e9e3d83064e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_wing_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "45f5cd839e68f867e92ae90c9d9e6a062ffe21c7935898e12d40f7b486483753"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Bishop_bless",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "c99eb807b94beefb047c6a2364d5ddde181d524424af5a59ddef3f5c46c64d29"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Bishop_hot",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "cb40be6500b55e3b117172c230ff56599323c96598f90a5a0ebb8cbc3dc8e017"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Bishop_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "222bf79c9abac2e7e9f025e287ff53ae3d3470937e452088e6d62fe26d93b615"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/boundary",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "8966950fdb4788547ea637299ecdca7439becc3b7481f16f2eb59a5b1b8a5219"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_awake_cut",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e4e3dc06685b5641bfbf4612722cece34f5f63cc351aa5fbdecd707fd53f77ce"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_break_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "5627f49b552c4c8ea72214e2d49646f56bc17af081312aeab9cece0bf88080af"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_cross_cut",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bbb26bc3c5255c583a456c17ea869250a10aeee86cd606d0c0253ecf3634fe97"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_cross_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_execute_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_flurry_cut",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "8ff228533fbddab9c6224b03f24da054fd93eac1b253e9bd5ca55cb0f3c4ac47"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_flurry_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_focus_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_rush_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Fighter_focus",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "2dbeea9dfb5b35d8f1241ecd001d3347aca1fd22cf8a37524ac7f152c07b811e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Fighter_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "814d96819d69a01fbb92487052c436502da7d724fc2f141ce37054c9c1c9abe0"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/finisher",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3ec194aebaa9756555ed544dd747310252ccf86995168bdc336d60e2bfc43621"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a35374c4a6c7987edc9512a5c869a07e16f1516a1094fb21cf3a981b8d27dcc5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_bash_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_counter_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_guard_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_oath_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a35374c4a6c7987edc9512a5c869a07e16f1516a1094fb21cf3a981b8d27dcc5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_taunt_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_wall_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a35374c4a6c7987edc9512a5c869a07e16f1516a1094fb21cf3a981b8d27dcc5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_counter",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "f78817aaadbab12c64ae50bb5264f105715845487469609c06bfa1f1b1faca1a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_guard",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "54fa3e7c4b42d0935963e23b6dfb71abfe6e9fb82e796f8a9f9bae3bf69ed915"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "123f8e01f7913fd225407ba5efe4696aadb34af1025848379b94922ceb70c438"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_taunt",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "221fcdff16c51d2360f8be42ab9ce104621f0d33f5d613d7173d3e5d1f4c75c7"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_fire_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "602990ebc4bb375dd1d48cd56836fbcd07d2e8b1eefed4ba7058c2aef8fa5aa1"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_ice_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "fbcb5761ca60cdc4cabc061994c4a0f359b012576d27eb539b877271fa978e57"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_orbit_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_rift_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_storm_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3278d3797939b1b8e6ae5ddf309c8efb0e9330abe661474f963d1ccf0554dd15"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_veil_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/strike",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bbb26bc3c5255c583a456c17ea869250a10aeee86cd606d0c0253ecf3634fe97"
+    }
+  ],
+  "timing": "Per-skill cast / hit coroutine / existing status timer. Legacy fps is for main-sheet reference only.",
+  "reforged": [
+    {
+      "path": "Art/Careers/Reforged/Effects/b_awake",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "061af280bd137ff54ce915cedab272908a3ec4ba7aeb07cf5336ae7be8289d37"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/b_bless",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "81064ce7d4756db8197ce877d215d8643d2074013f98426a4b30df71c82ae52d"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/b_bloom",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "c7341a9f07a259a35d1446d259b91b95da03751f1b2108dc73b25c848caaed24"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/b_cleanse",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bfea5d1e110d6cb5bff667287ef65140bd327fbd6d5e857991724c378e9c73ca"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/b_heal",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "189163c5cfec31ad24c0fa4dfd0d6fe83b8d34c30a4880f4f0cc7c5f646cd12d"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/b_light",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "500172b5e7f1a7b5c94822def99e38be84dd360a2d25f72b2a7c20d6593735e2"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/b_wing",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7e1f12a999e807d6a73ed8be9c12202ed50e7bd67957b9b752c2e138c44d787c"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_awake",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3ec194aebaa9756555ed544dd747310252ccf86995168bdc336d60e2bfc43621"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_break",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7e57426d1ab048fd317a870a539ecc9179239c27c086153da2522cdbf15f035a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_cross",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bbb26bc3c5255c583a456c17ea869250a10aeee86cd606d0c0253ecf3634fe97"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_execute",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7659897aa258ad8952e9a864b882f40675e98a8123d85c164a6d95312e9f5d6a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_flurry",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bbb26bc3c5255c583a456c17ea869250a10aeee86cd606d0c0253ecf3634fe97"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_focus",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "ee696a50a385b2d848ff8c6ad992ba0cd57f44335c76ac24b7dc782cdaafc98c"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/f_rush",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "6a673ddcabc9cc81c9c8da032ca1d57338a596c4ce6c56f6c65b2e81826bf7a3"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_awake",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "398076dcec07e494fee4866c5cbd3fd9264aaeb8b0d64d8865793fab634150c5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_bash",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "93b0b2c79ba85dafcb8714bb8d44eb065bf0e37d769675a36bafc7c917af8dba"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_counter",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "33ee1d6a3e76de338f22b46a41f926e53905611cab9d49932dc9716f6d6ef8d7"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_guard",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "1bd97ba9212b7296375f115cae497ba08d2b5f552629f4e7dc8cbb4848180047"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_oath",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "1c0b4c2b81f677e524edbf6c8641967e8a34d0251c8eeb610d831e6d39110a3b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_taunt",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "584c35445946591d35a565784b6b41eca720f143e6ebd6769c6b59b8459c9787"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/g_wall",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "03db83f2e0cb53a13b9e79168324d7d35c826508b003cdd8f68ffebf309573df"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_awake",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "6c7a92e8df34139a3a12e3ed8bb59b5feba67f09f431deac52b0fba517c6df1a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_fire",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "653745fcb37569768d8c4f5fed54d354decb6d7cc7a8c73d3be4d0050b60de4f"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_ice",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "fbaa1223f776bf999efd57c8389b1f7149eb9a4e5808c0479e3c93c5bad7fe5e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_orbit",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "d0bae44e52e02f0afdaf21ab36c724f9b755f77b3a9a5c4295497d0cdb245ca6"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_rift",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "d60cb200f867c30fa39df872bcb32f4e936e79ea6b71011016ebea5da81f33fc"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_storm",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "95caf8202f743ca2af93ed4ed3258d8fad0a7d042e49ae93e67eb82c3a979e7e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Effects/m_veil",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3d17b6e422f9ea40800c8e44d6fee9c587e5ebbdc9dc518763fd6ce458666f4f"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Arcanist_charge",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "65305a77148dbf0e4cacb4e91ff84afd94e677bc3e5e709d96e32d2e5959fe95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Arcanist_hit",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e309c727a4c8e9c0541363e1edfdb5f03c16439d10dec9c08bdc464db024be38"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Bishop_charge",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bc4d9de2d45334e1083aac7ee230c053297ed1aa01825415df11f0846dc29ce5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Bishop_hit",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e309c727a4c8e9c0541363e1edfdb5f03c16439d10dec9c08bdc464db024be38"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Fighter_charge",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "78037f994e40e8e0a04dc6c51584e8578c31b38bb0bdd465da229f4e6b48e697"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Fighter_hit",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "83b120d2443965fc091be620c2b0c2730676fe993d74ea8146d2669fca15b2b5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Guardian_charge",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "5461aac0b823475f9dacbf3cc90f4609af33b62374310dbb614ff7b8bdc397df"
+    },
+    {
+      "path": "Art/Careers/Reforged/Details/Guardian_hit",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e309c727a4c8e9c0541363e1edfdb5f03c16439d10dec9c08bdc464db024be38"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Arcanist_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "b2a2a122b775b8db226bf359269601d20a552aaef69b302927582192c49cba72"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_bless_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_bloom_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_cleanse_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "4f3203cccd373d863906ddce0318b9a92d45b55478ef1a4a72cdb56993a10f9b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_heal_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "551b95938c1fe0079c938321bc59b4cba4c48c059c7cba26cb42cffa1cd960d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_light_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "4c3458e96359781708a83750338103ba36f6ddfc2ecb0eed94586e9e3d83064e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/b_wing_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "45f5cd839e68f867e92ae90c9d9e6a062ffe21c7935898e12d40f7b486483753"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Bishop_bless",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "c99eb807b94beefb047c6a2364d5ddde181d524424af5a59ddef3f5c46c64d29"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Bishop_hot",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "cb40be6500b55e3b117172c230ff56599323c96598f90a5a0ebb8cbc3dc8e017"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Bishop_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "222bf79c9abac2e7e9f025e287ff53ae3d3470937e452088e6d62fe26d93b615"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/boundary",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "8966950fdb4788547ea637299ecdca7439becc3b7481f16f2eb59a5b1b8a5219"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_awake_cut",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e4e3dc06685b5641bfbf4612722cece34f5f63cc351aa5fbdecd707fd53f77ce"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_break_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "5627f49b552c4c8ea72214e2d49646f56bc17af081312aeab9cece0bf88080af"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_cross_cut",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bbb26bc3c5255c583a456c17ea869250a10aeee86cd606d0c0253ecf3634fe97"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_cross_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_execute_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_flurry_cut",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "8ff228533fbddab9c6224b03f24da054fd93eac1b253e9bd5ca55cb0f3c4ac47"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_flurry_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_focus_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/f_rush_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "886c5a589e15c9ac7a56775bbc803ce2568ac6c1eb265b5ee9aae8277de8a8b9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Fighter_focus",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "2dbeea9dfb5b35d8f1241ecd001d3347aca1fd22cf8a37524ac7f152c07b811e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Fighter_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "814d96819d69a01fbb92487052c436502da7d724fc2f141ce37054c9c1c9abe0"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/finisher",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3ec194aebaa9756555ed544dd747310252ccf86995168bdc336d60e2bfc43621"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a35374c4a6c7987edc9512a5c869a07e16f1516a1094fb21cf3a981b8d27dcc5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_bash_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_counter_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_guard_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_oath_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a35374c4a6c7987edc9512a5c869a07e16f1516a1094fb21cf3a981b8d27dcc5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_taunt_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "85ebe400230141f7b5c8c22dc98f3552267afab8519ecf09b3b22c98b95b0e95"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/g_wall_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a35374c4a6c7987edc9512a5c869a07e16f1516a1094fb21cf3a981b8d27dcc5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_counter",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "f78817aaadbab12c64ae50bb5264f105715845487469609c06bfa1f1b1faca1a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_guard",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "54fa3e7c4b42d0935963e23b6dfb71abfe6e9fb82e796f8a9f9bae3bf69ed915"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_shield",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "123f8e01f7913fd225407ba5efe4696aadb34af1025848379b94922ceb70c438"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/Guardian_taunt",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "221fcdff16c51d2360f8be42ab9ce104621f0d33f5d613d7173d3e5d1f4c75c7"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_awake_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_fire_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "602990ebc4bb375dd1d48cd56836fbcd07d2e8b1eefed4ba7058c2aef8fa5aa1"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_ice_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "fbcb5761ca60cdc4cabc061994c4a0f359b012576d27eb539b877271fa978e57"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_orbit_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_rift_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_storm_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3278d3797939b1b8e6ae5ddf309c8efb0e9330abe661474f963d1ccf0554dd15"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/m_veil_impact",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "7f6a8deb8d07f7bec33a282a67c66a3764c5f09b3d865e7414a0eaf4ceef4a4a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Presentation/strike",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bbb26bc3c5255c583a456c17ea869250a10aeee86cd606d0c0253ecf3634fe97"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_awake_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "b5df70c45829b195c11003914785de90aec3c18d897bbe0c565428c2a1358c55"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_awake_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "a81e83db7b589dfe49392da294f3d6c1828059b725ceb4f39593eedcb426127b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_bless_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "89efd91b0b3f65ed8e1e2431bc5d5fa4eaa3b1d867758a45b654591900c84e76"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_bless_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "27bbb3ddca2e5e91f41fdbe80997e6e669342331d707fb257d8b8f93443b8387"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_bloom_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "690968614120650333569098b8a48eab4dd0bd404c88c2f335e02e00c72971f6"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_bloom_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "42f8b61c3a796a10942a6fc735061f646027004a578202b014cef36fe122a679"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_cleanse_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e1f9cc3628667b2a114fbe1803579af7f512e3aacd35f0e70870e863d8c5e926"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_cleanse_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "8f44126fa07bb72ead304129d03a60ba2046003a13725a2ef041bdb187741b8c"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_heal_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "94ab22b32e64a952a19b55a5fc6cd96449b84e0d02ecd158501504e64f4f11ed"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_heal_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "26c852f7ddf32c96134c5c5941777dab70c0c1f473bd7f79a0a5bd817cd84331"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_light_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "591a0cf88bad94b9577dec5f8acbce7fbce948432611739eebef44eebf14b311"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_light_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "f5ea506c30222dc2a8027761de0a29f2dd004bc6db84755d26d778b7817fa2f3"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_wing_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "adc3cbbea357f90613388502828cd478d2f61c5acf0795189f489f1910c8a5fc"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/b_wing_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "d71c87b68f21c8523f307cb8b44a54027958205d7d8ae3b02633865fd9facb8a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_awake_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "9960d67802ddd6b93306dff527b6c7c01422a3395726b834dbd426fa7a201512"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_awake_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "abebca830fb8da525ddcfb5171a958239fc281f3bc3c52c62701558d87882a9f"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_break_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "937b218c872cf66256fd9bdcc70a5e0e96e20988aab8739f0b294f884e4a14b7"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_break_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "fb4283689bf4eb5002fa47233135dfe7357d8a67e2a07a441c3bf47e6d95e302"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_cross_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "fc3a8734c6531d72f38d469f5067e9f74157084e4db93c6d2f0e0e97f2408e1a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_cross_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "ea0bef5f05ee409e35984d58a2d9d6c89ad63372c9572249f813f5a86240f21c"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_execute_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "450b66ff1b1244b69e0d798680d659b14fccfacc933a89a10b5d92d47efad54e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_execute_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "132ce079d3a3a6e9429980d74adbcac48b1700e7c0366a6cf679c43b9fe1e09c"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_flurry_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "fc3a8734c6531d72f38d469f5067e9f74157084e4db93c6d2f0e0e97f2408e1a"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_flurry_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "ea0bef5f05ee409e35984d58a2d9d6c89ad63372c9572249f813f5a86240f21c"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_focus_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "b0fa1d0d86d646889c296abcfff0e3e2dfb9769f5619655dd101fdbee924c795"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_focus_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "4e712c38c9db147be0aa4638eb279acaee1110331d6344a6608c4e1841923326"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_rush_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "08e4e1197ccf2b8adf8d588369907dc6dd955ad4bff0baa4f17ca53e9c6e4305"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/f_rush_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "651c92002ac77680efd8b18fb222c4ef8965b41bc51756c6e0dc4a106f4d645e"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_awake_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "2498271df88aa33ceee267a7e7eb7619259c3fcab8eef7159a457f2729e5278f"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_awake_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3912981c72b62440c8db99530abfc36f42c1e26464cb2c7af0b043f7ed3fdf2f"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_bash_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "8ba5693be61823fbed5a822b58a9fd0fe1da5f6b239bc0cbfb3aae5dac4e9cb9"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_bash_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "854ac50a0403158eebc8d2ad9c4f6f7b755783e0e8ff9ca218a0449388d56e28"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_counter_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "bb2475918dc387952986ae3239a84d538db53d966002ec740ed8f0899ecfe9c1"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_counter_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "80f5d6b1faacd2aea713ce7d8413deb12b826510ef0f9e00d7066996a1319851"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_guard_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "0e5d759d37c9b98f65a80964c91c2c9a2e5454be9983edef4b1482f971868b0d"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_guard_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "0eaf1f514c9367eba4be269961cb35eab743f06cccc8b76c658175dda4b592bb"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_oath_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "217bd34a8c00ab85392fd6fdec5dc0889559ec5021167343cdb7978fd5091bf4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_oath_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "5b64901ed90af5236c12e4787e92e2ad8151dfb147b9a19d804444530114e91b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_taunt_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "d953898a31c60af13be9b141fabc423725b4f043717c38e09aa14a8ea4f0beaf"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_taunt_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "333e78a46c2d7f3ddee8a4207dc1b89387013fc65ad65ca0a624a0c15593de74"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_wall_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "1ee656f28d93a96ec06b724f00dbcdbc34dc31c7f88d5d96b2375e03a0e6c1c7"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/g_wall_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "aec526898daf49f30c315549bfb7cc571fefb187bb1df2b5fc9a1e83e2b8a903"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_awake_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "0b1540f9038188236c591c44fa15874c46a504b033ae85ace698502441800a1d"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_awake_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "18173ad5cb10dcb748533d460665487fcad4a7b750a5fae3a5c4a4e2c49071d4"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_fire_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "9bc4092e16157e2cf5837d175f6f5c52ec96caed9d6024baea0fbbc1d252cc4b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_fire_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "5b8e7963a65559d8f556f894a5799e8a36c6dcd3140d432c08c14dcf17fcda3b"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_ice_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "521c77b97c668863d25bac660b15b9ef9ff07a9bd28a778b67b3cb016e848202"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_ice_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "0f83c283bbe5c6513e46a69f3ee131f42162c8e968ea04b40f2a2e4620a3b116"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_orbit_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "3f961405ad65977c4299c46186f1dbced8eeaa13312c33ffb23bb3a6fb29e399"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_orbit_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "e9f15f9832a93c260e83c3d8f6af32da5b728587bd72f6fa8cb248ab5f6115d5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_rift_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "1a8c16ab6d1c8fe0bf8057f9d3a742270d34a160d4c5dcf1f4f60b872982546f"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_rift_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "be7a1e14e4b77931eb2677b7807b28a727217ebd56f061a017b048cb4c692dc6"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_storm_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "2429b3f57dcf737012d8327f03f14b3e689b16537753cab6d5bd8ad5e3e3019d"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_storm_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "d38d751b5eff1b56e104d0c348ef97ae147179fc1838c1962c87fc1a552df07d"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_veil_back",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "1e253618352c2f6259cf555b2a3bceafd0c7b6217c0f8e1f2c0fc75cf3ba1cb5"
+    },
+    {
+      "path": "Art/Careers/Reforged/Layered/m_veil_front",
+      "frames": 12,
+      "frameSize": [
+        192,
+        192
+      ],
+      "ppu": 96,
+      "filter": "Point",
+      "sha256": "746e85cb72a72a06ae610699e55ac931cf494beaf0df703868bcf561568510a2"
+    }
+  ],
+  "effectPPU": 96,
+  "maxTextureSize": 4096
 }

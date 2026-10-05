@@ -61,6 +61,7 @@ namespace DotRPG
         {
             dgnPassed=dgnFailed=0;ApplyRequestedResolution();yield return Wait(1);
             Game.Config.autosave=false;Game.Flow.NewGame(CharacterClass.Warrior);yield return Wait(1.5f);Game.Player.Input=new ScriptedInput();
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerPreviewOnly")>=0){yield return CareerVisualCaptures();yield break;}
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerUiOnly")>=0){yield return CareerUiChecks();yield break;}
             DCheck("catalog exactly 36",CareerCatalog.All.Length==36);
             foreach(Career c in new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop})
@@ -94,28 +95,99 @@ namespace DotRPG
             var status=CareerCombat.For(Game.Player);status.AddShield(50,5);DCheck("shield absorb",status.Absorb(30)==0&&status.Shield==20);DCheck("shield overflow",status.Absorb(30)==10&&status.Shield==0);status.AddCurse(5);DCheck("cleanse status",status.Cleanse()&&!status.Cursed);DCheck("cleanse idempotent",!status.Cleanse());
             prog.EquipSkill(0,"f_cross");Game.Player.Data.Mana=0;Game.Player.Skills.TryCast(0);DCheck("resource gate",!Game.Player.Skills.IsCasting);Game.Player.Data.Mana=Game.Player.MaxMana;Game.Player.Skills.TryCast(0);DCheck("cast starts",Game.Player.Skills.IsCasting);yield return Wait(.6f);DCheck("cooldown gate",!Game.Player.Skills.IsReady(0));prog.EquipSkill(0,"crush");prog.EquipSkill(1,"f_cross");DCheck("move slot keeps cooldown",!Game.Player.Skills.IsReady(1));
             string artFolder=Path.Combine(folder,"icons");string fxFolder=Path.Combine(folder,"effects");Directory.CreateDirectory(artFolder);Directory.CreateDirectory(fxFolder);
-            var contact=new PixelCanvas(9*40,4*40);int row=0;
+            var contact=new PixelCanvas(9*72,4*72);int row=0;
             foreach(Career c in new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop})
             {
                 foreach(var s in CareerCatalog.For(c))
                 {
-                    var icon=CareerArt.Icon(s);contact.Blit(icon,s.index*40+4,row*40+4);WritePixel(icon,Path.Combine(artFolder,s.Icon+".png"));
+                    var icon=CareerPaintArt.Icon(s);contact.Blit(icon,s.index*72+4,row*72+4);WritePixel(icon,Path.Combine(artFolder,s.Icon+".png"));
                     DCheck(s.id+" icon resource",CareerArt.Get(s.Icon)!=null);
                     if(s.kind==CareerSkillKind.Passive)continue;
-                    var sheet=new PixelCanvas(96*12,96);for(int i=0;i<12;i++)sheet.Blit(CareerArt.Effect(s,i),i*96,0);WritePixel(sheet,Path.Combine(fxFolder,s.id+".png"));
+                    var sheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)sheet.Blit(CareerArt.Effect(s,i),i*CareerRaster.Size,0);WritePixel(sheet,Path.Combine(fxFolder,s.id+".png"));
                     DCheck(s.id+" effect12",CareerArt.Frame(s,11)!=null);
+                    bool inside=true,split=true;int visible=0;
+                    string layers=Path.Combine(folder,"layered");Directory.CreateDirectory(layers);
+                    var backSheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);var frontSheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);
+                    for(int f=0;f<12;f++){
+                        var art=CareerArt.Effect(s,f);var back=CareerVfxArt.Plane(art,true);var front=CareerVfxArt.Plane(art,false);
+                        backSheet.Blit(back,CareerRaster.Size*f,0);frontSheet.Blit(front,CareerRaster.Size*f,0);
+                        for(int y=0;y<CareerRaster.Size;y++)for(int x=0;x<CareerRaster.Size;x++){
+                            int at=y*CareerRaster.Size+x;var pixel=art.Pixels[at];if(pixel.a>0){if(f==0)visible++;if((x-CareerRaster.Size/2)*(x-CareerRaster.Size/2)+(y-CareerRaster.Size/2)*(y-CareerRaster.Size/2)>87.5f*87.5f)inside=false;}
+                            var reconstructed=y<CareerRaster.Size/2?back.Pixels[at]:front.Pixels[at];if(!pixel.Equals(reconstructed)||(y<CareerRaster.Size/2?front.Pixels[at].a:back.Pixels[at].a)!=0)split=false;
+                        }
+                    }
+                    WritePixel(backSheet,Path.Combine(layers,s.id+"_back.png"));WritePixel(frontSheet,Path.Combine(layers,s.id+"_front.png"));
+                    DCheck(s.id+" artwork inside combat radius",inside);
+                    DCheck(s.id+" split artwork lossless",split);
+                    DCheck(s.id+" visible on release frame",visible>0);
                 }row++;
             }
             string details=Path.Combine(folder,"details");Directory.CreateDirectory(details);
             foreach(Career c in new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop})foreach(bool charge in new[]{true,false}){
-                var sheet=new PixelCanvas(1152,96);for(int i=0;i<12;i++)sheet.Blit(CareerVfxArt.Detail(c,charge,i),96*i,0);
+                var sheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)sheet.Blit(CareerVfxArt.Detail(c,charge,i),CareerRaster.Size*i,0);
                 WritePixel(sheet,Path.Combine(details,c+(charge?"_charge":"_hit")+".png"));
                 DCheck(c+(charge?" charge":" hit")+" detail resource",CareerArt.DetailFrame(c,charge,11)!=null);
             }
+            string presentation=Path.Combine(folder,"presentation");Directory.CreateDirectory(presentation);
+            foreach(var key in CareerVfxArt.VisualKeys){var sheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)sheet.Blit(CareerVfxArt.Visual(key,i),CareerRaster.Size*i,0);WritePixel(sheet,Path.Combine(presentation,key+".png"));DCheck(key+" presentation resource",CareerArt.VisualFrame(key,11)!=null);}
             WritePixel(contact,Path.Combine(folder,"career_icons_36.png"));
             File.WriteAllText(Path.Combine(folder,"skills.json"),JsonUtility.ToJson(new CareerExport{skills=CareerCatalog.All},true));
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerArtPreview")>=0){yield return CareerVisualCaptures();yield break;}
             yield return CareerCombatChecks();
+            yield return CareerRebornChecks();
+            yield return CareerPresentationChecks();
+            yield return CareerVisualCaptures();
             Log($"CAREER RESULTS: {dgnPassed} passed, {dgnFailed} failed");
+        }
+        IEnumerator CareerPresentationChecks()
+        {
+            Game.Flow.NewGame(CharacterClass.Warrior);yield return Wait(.5f);var player=Game.Player;player.Input=new ScriptedInput();
+            var state=CareerCombat.For(player);state.ResetState();yield return Wait(1);
+            var skill=CareerCatalog.Get("g_wall");int hp=player.Health.Current;float mp=player.Data.Mana,scale=Time.timeScale;
+            var random=UnityEngine.Random.state;float expected=UnityEngine.Random.value;UnityEngine.Random.state=random;
+            CareerEffect.Play(skill,player.Center,1,Vector2.up,.15f,player);
+            CareerAreaView.Show(skill,player.Center,2.4f,.2f,player);CareerPresentation.Link(skill,player.Center,player.Center+Vector2.right,player,.2f);
+            DCheck("presentation preserves combat RNG",UnityEngine.Random.value==expected);UnityEngine.Random.state=random;
+            var area=UnityEngine.Object.FindAnyObjectByType<CareerAreaView>();DCheck("boundary matches exact radius",area!=null&&Mathf.Abs(area.Radius-2.4f)<.0001f&&Mathf.Abs(area.transform.localScale.x-2.4f*48/43)<.0001f);
+            yield return Wait(.4f);
+            DCheck("presentation no HP MP time-scale mutation",hp==player.Health.Current&&mp==player.Data.Mana&&scale==Time.timeScale);
+            DCheck("expired transient objects removed",CareerEffect.ActiveCount==0&&CareerAreaView.Count==0&&CareerLinkView.Count==0);
+            state.AddShield(50,.5f,CareerCatalog.Get("b_wing"));yield return Wait(.03f);var view=player.GetComponent<CareerStatusView>();
+            DCheck("shield uses source career and maintains boundary",state.ShieldCareer==Career.Bishop&&view.VisibleCount==1);
+            state.Absorb(50);yield return Wait(.28f);DCheck("consumed shield fades out",state.Shield==0&&view.VisibleCount==0);
+            state.AddShield(50,.12f,skill);yield return Wait(.04f);DCheck("renewed shield visible",view.VisibleCount==1);yield return Wait(.4f);DCheck("shield expiry hides boundary",view.VisibleCount==0);
+            for(int i=0;i<160;i++){CareerEffect.Play(skill,player.Center,1,Vector2.up,.15f,player);CareerAreaView.Show(skill,player.Center,2,.15f,player);CareerPresentation.Link(skill,player.Center,player.Center+Vector2.up,player,.15f);}
+            DCheck("simultaneous FX hard caps",CareerEffect.ActiveCount<=96&&CareerAreaView.Count<=24&&CareerLinkView.Count<=40);
+            yield return Wait(.35f);DCheck("stress cleanup",CareerEffect.ActiveCount==0&&CareerAreaView.Count==0&&CareerLinkView.Count==0);
+            CareerEffect.Play(skill,player.Center,1,Vector2.up,9,player);CareerAreaView.Show(skill,player.Center,2,9,player);CareerPresentation.Link(skill,player.Center,player.Center+Vector2.up,player,9);
+            string map=Game.Session.MapId;Game.Session.MapId="vfx_cleanup_test";yield return null;yield return null;
+            DCheck("map change cleans all transients",CareerEffect.ActiveCount==0&&CareerAreaView.Count==0&&CareerLinkView.Count==0);Game.Session.MapId=map;
+            CareerEffect.Play(skill,player.Center,1,Vector2.up,9,player);CareerAreaView.Show(skill,player.Center,2,9,player);CareerPresentation.Link(skill,player.Center,player.Center+Vector2.up,player,9);
+            player.Health.Init(player.Health.Max,player.Health.Max,0);player.TakeDamage(new DamageInfo(999999,player.Position+Vector2.up,0,Team.Enemy,null){unblockable=true});
+            yield return null;yield return null;
+            DCheck("death cleans all transients",player.IsDead&&CareerEffect.ActiveCount==0&&CareerAreaView.Count==0&&CareerLinkView.Count==0);
+            Game.Flow.NewGame(CharacterClass.Warrior);yield return Wait(.5f);
+        }
+        IEnumerator CareerVisualCaptures()
+        {
+            string dest=Path.Combine(folder,"comparison");Directory.CreateDirectory(dest);
+            foreach(string id in new[]{"f_cross","f_awake","g_wall","g_awake","m_fire","m_awake","b_heal","b_awake"}){
+                var s=CareerCatalog.Get(id);Game.Flow.NewGame(CareerCatalog.Base(s.career));yield return Wait(.4f);
+                var player=Game.Player;player.Input=new ScriptedInput();var p=player.Data.Progression;p.SetFromServer(40,0);p.Promote(s.career);
+                foreach(var node in CareerCatalog.For(s.career))if(node.kind!=CareerSkillKind.Awakening)p.Learn(node.id);for(int stage=0;stage<5;stage++)p.AdvanceAwakening(stage);
+                // Let level-up/reward particles finish so the comparison contains only the requested skill.
+                yield return Wait(3);
+                var at=player.Position;player.Place(at,Facing.Right);player.Health.Drain(150);
+                var stats=Instantiate(Game.Config.skeletonStats);stats.maxHealth=100000;stats.attackDamage=stats.xpReward=0;stats.wanderSpeed=stats.chaseSpeed=stats.knockbackSpeed=0;stats.invulnerableTime=.01f;
+                var enemy=EnemyController.Create(stats,CharacterLook.Skeleton,at+Vector2.right*1.8f,Game.World.ObjectsRoot);
+                var rect=new Rect(at.x-4,at.y-3,8,6);
+                // Remove only setup particles before casting; keep all particles produced by the actual skill.
+                foreach(var setup in UnityEngine.Object.FindObjectsByType<FxParticle>(FindObjectsSortMode.None))Destroy(setup.gameObject);
+                yield return null;
+                StartCoroutine(CareerCombat.For(player).Cast(s,player.Data.Stats.Skill(player.Class,0,s.Gem,new SkillGem[0])));
+                for(int frame=0;frame<18;frame++){RenderRegion(Path.Combine(dest,id+"_"+frame.ToString("00")+".png"),rect,48);yield return Wait(.1f);}
+                Destroy(enemy.gameObject);Destroy(stats);
+            }
         }
         IEnumerator CareerCombatChecks()
         {
@@ -137,7 +209,7 @@ namespace DotRPG
                     if(s.effect=="cleanse")CareerCombat.For(player).AddCurse(10);
                     StartCoroutine(CareerCombat.For(player).Cast(s,numbers));yield return Wait(s.cast+.13f);
                     if(s.kind==CareerSkillKind.Awakening)RenderRegion(Path.Combine(folder,"combat_"+s.id+".png"),new Rect(at.x-5,at.y-4,10,8),64);
-                    yield return Wait(s.effect=="hot"?5.2f:s.effect=="rift"?3.3f:s.effect=="counter"?3.2f:1.1f);
+                    yield return Wait(s.effect=="hot"||s.effect=="rift"?s.duration+.2f:s.effect=="counter"?3.2f:1.1f);
                     bool heal=s.effect=="heal"||s.effect=="hot"||s.effect=="cleanse"||s.effect=="dawn";
                     bool attack=s.power>0&&s.effect!="focus"&&s.effect!="guard"&&s.effect!="blink"&&s.effect!="shield"&&s.effect!="ward"&&s.effect!="citadel"&&s.effect!="wings"&&s.effect!="bless"&&!heal;
                     if(attack)DCheck(s.id+" actual damage",foe.Health.Current<enemyHp);

@@ -13,7 +13,7 @@ namespace DotRPG
             if(key==null || !key.StartsWith("career_")) return null;
             if(cache.TryGetValue(key,out var found)) return found;
             var s=CareerCatalog.Get(key.Substring(7)); if(s==null) return null;
-            return cache[key]=Resources.Load<Sprite>("Art/Careers/Icons/"+key) ?? SpriteOf(Icon(s),key,32);
+            return cache[key]=CareerPaintArt.Cell(s.career,0)!=null?SpriteOf(CareerPaintArt.Icon(s),key,64):Resources.Load<Sprite>("Art/Careers/Icons/"+key) ?? SpriteOf(Icon(s),key,32);
         }
         public static Sprite SpriteOf(PixelCanvas p,string name,float ppu)
         {
@@ -95,42 +95,71 @@ namespace DotRPG
         public static PixelCanvas Effect(CareerSkill s,int frame) => CareerVfxArt.Effect(s,frame);
         public static Sprite DetailFrame(Career career,bool charge,int frame)
         {
-            string path="Art/Careers/Details/"+career+(charge?"_charge":"_hit");
+            string path="Art/Careers/Reforged/Details/"+career+(charge?"_charge":"_hit");
             string key=path+"/"+frame;
             if(cache.TryGetValue(key,out var cached))return cached;
             var sheet=Resources.Load<Texture2D>(path);
-            if(sheet!=null&&sheet.width==1152&&sheet.height==96){sheet.filterMode=FilterMode.Point;return cache[key]=Sprite.Create(sheet,new Rect(frame*96,0,96,96),Vector2.one*.5f,48);}
-            return cache[key]=SpriteOf(CareerVfxArt.Detail(career,charge,frame),key,48);
+            if(sheet!=null&&sheet.width==CareerRaster.Size*12&&sheet.height==CareerRaster.Size){sheet.filterMode=FilterMode.Point;return cache[key]=Sprite.Create(sheet,new Rect(frame*CareerRaster.Size,0,CareerRaster.Size,CareerRaster.Size),Vector2.one*.5f,CareerRaster.Ppu);}
+            return cache[key]=SpriteOf(CareerVfxArt.Detail(career,charge,frame),key,CareerRaster.Ppu);
+        }
+        public static Sprite VisualFrame(string id,int frame)
+        {
+            string key="visual/"+id+"/"+frame;if(cache.TryGetValue(key,out var found))return found;
+            var sheet=Resources.Load<Texture2D>("Art/Careers/Reforged/Presentation/"+id);
+            if(sheet!=null&&sheet.width==CareerRaster.Size*12&&sheet.height==CareerRaster.Size){sheet.filterMode=FilterMode.Point;return cache[key]=Sprite.Create(sheet,new Rect(frame*CareerRaster.Size,0,CareerRaster.Size,CareerRaster.Size),Vector2.one*.5f,CareerRaster.Ppu);}
+            return cache[key]=SpriteOf(CareerVfxArt.Visual(id,frame),key,CareerRaster.Ppu);
         }
         public static Sprite Frame(CareerSkill s,int i)
         {
             string key=s.id+"/"+i;if(cache.TryGetValue(key,out var sprite))return sprite;
-            var sheet=Resources.Load<Texture2D>("Art/Careers/Effects/"+s.id);
-            if(sheet!=null&&sheet.width==1152&&sheet.height==96){sheet.filterMode=FilterMode.Point;sprite=Sprite.Create(sheet,new Rect(i*96,0,96,96),Vector2.one*.5f,48);}
-            else sprite=SpriteOf(Effect(s,i),key,48);
+            var sheet=Resources.Load<Texture2D>("Art/Careers/Reforged/Effects/"+s.id);
+            if(sheet!=null&&sheet.width==CareerRaster.Size*12&&sheet.height==CareerRaster.Size){sheet.filterMode=FilterMode.Point;sprite=Sprite.Create(sheet,new Rect(i*CareerRaster.Size,0,CareerRaster.Size,CareerRaster.Size),Vector2.one*.5f,CareerRaster.Ppu);}
+            else sprite=SpriteOf(Effect(s,i),key,CareerRaster.Ppu);
+            return cache[key]=sprite;
+        }
+        public static Sprite PlaneFrame(CareerSkill s,int frame,bool back)
+        {
+            string id=s.id+(back?"_back":"_front"),key="plane/"+id+"/"+frame;
+            if(cache.TryGetValue(key,out var sprite))return sprite;
+            var sheet=Resources.Load<Texture2D>("Art/Careers/Reforged/Layered/"+id);
+            if(sheet!=null&&sheet.width==CareerRaster.Size*12&&sheet.height==CareerRaster.Size){sheet.filterMode=FilterMode.Point;sprite=Sprite.Create(sheet,new Rect(frame*CareerRaster.Size,0,CareerRaster.Size,CareerRaster.Size),Vector2.one*.5f,CareerRaster.Ppu);}
+            else sprite=SpriteOf(CareerVfxArt.Plane(Effect(s,frame),back),key,CareerRaster.Ppu);
             return cache[key]=sprite;
         }
     }
     /// <summary>Layered pixel sprite + additive edge + one bounded particle mesh; VFX never consume combat RNG.</summary>
     public sealed class CareerEffect : MonoBehaviour
     {
-        CareerSkill skill; SpriteRenderer core,edge; float age,life,radius; int phase,particles;
+        CareerSkill skill; SpriteRenderer core,edge,rear; float age,life,radius; int phase,particles;
         Mesh mesh; Vector3[] vertices; Color[] colors; static int live;
         static Material particleMaterial;
-        public static void Play(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life=.55f)=>Spawn(s,at,radius,direction,life,0);
-        public static void Charge(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life)=>Spawn(s,at,radius,direction,Mathf.Max(.15f,life),1);
-        public static void Hit(CareerSkill s,Vector2 at,Vector2 direction)=>Spawn(s,at,.46f,direction,.34f,2);
-        static void Spawn(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life,int phase)
+        PlayerController source; string map; bool bound;
+        public static int ActiveCount=>live+CareerPaintEffect.ActiveCount;
+        public static void Play(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life=.55f,PlayerController source=null)=>Spawn(s,at,radius,direction,life,0,source);
+        public static void Charge(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life,PlayerController source=null)=>Spawn(s,at,radius,direction,Mathf.Max(.15f,life),1,source);
+        public static void Hit(CareerSkill s,Vector2 at,Vector2 direction,PlayerController source=null)=>Spawn(s,at,.46f,direction,.34f,2,source);
+        public static void Cut(CareerSkill s,Vector2 at,float radius,Vector2 direction,int index,bool final,PlayerController source)
         {
+            float angle=(index%2==0?-25:25)*Mathf.Deg2Rad;
+            var d=new Vector2(direction.x*Mathf.Cos(angle)-direction.y*Mathf.Sin(angle),direction.x*Mathf.Sin(angle)+direction.y*Mathf.Cos(angle));
+            Spawn(s,at,Mathf.Min(radius,1.85f),d,final?.32f:.15f,final?4:3,source);
+        }
+        static void Spawn(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life,int phase,PlayerController source)
+        {
+            if(s!=null&&CareerPaintEffect.Spawn(s,at,radius,direction,life,phase,source))return;
             if(s==null||live>=96||(phase==2&&live>=64))return;
             var go=new GameObject("FX_"+s.id+(phase==1?"_charge":phase==2?"_hit":""));
             if(Fx.Root!=null)go.transform.SetParent(Fx.Root,false);
-            var fx=go.AddComponent<CareerEffect>();live++;fx.skill=s;fx.life=life;fx.radius=Mathf.Max(.3f,radius);fx.phase=phase;
+            var fx=go.AddComponent<CareerEffect>();live++;fx.skill=s;fx.life=life;fx.radius=Mathf.Max(.3f,radius);fx.phase=phase;fx.source=source;fx.bound=source!=null;fx.map=Game.Session.MapId;
             go.transform.position=at;go.transform.localScale=Vector3.one*fx.radius*(48f/43f);
-            if(phase!=1&&(s.career==Career.Fighter||s.effect=="bash"||s.effect=="light"))go.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg-(s.effect=="light"?45:0));
+            if(phase!=1&&(s.career==Career.Fighter||s.effect=="bash"||s.effect=="light"))go.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg);
             fx.core=go.AddComponent<SpriteRenderer>();fx.core.sortingOrder=SkillFx.At(at.y,90);
-            fx.edge=new GameObject("Pixel radiance").AddComponent<SpriteRenderer>();fx.edge.transform.SetParent(go.transform,false);fx.edge.transform.localScale=Vector3.one*1.025f;fx.edge.sortingOrder=fx.core.sortingOrder-1;fx.edge.sharedMaterial=FxMaterials.Additive;
-            fx.particles=phase==1?12:phase==2?8:s.kind==CareerSkillKind.Awakening?36:20;
+            if(phase==0&&s.career!=Career.Fighter&&s.effect!="bash"&&s.effect!="light"){
+                fx.rear=new GameObject("Far side artwork").AddComponent<SpriteRenderer>();fx.rear.transform.SetParent(go.transform,false);fx.rear.sortingOrder=SkillFx.At(at.y,-10);
+            }
+            if(phase==1)fx.core.sortingOrder=SkillFx.At(at.y,-8);
+            fx.edge=new GameObject("Pixel radiance").AddComponent<SpriteRenderer>();fx.edge.transform.SetParent(go.transform,false);fx.edge.transform.localScale=Vector3.one;fx.edge.sortingOrder=fx.core.sortingOrder-1;fx.edge.sharedMaterial=FxMaterials.Additive;
+            fx.particles=phase==1?4:phase==2?4:s.kind==CareerSkillKind.Awakening?10:6;
             fx.BuildParticles();fx.Animate(0);
         }
         void BuildParticles()
@@ -144,14 +173,20 @@ namespace DotRPG
             for(int i=0;i<particles;i++){int v=i*4,j=i*6;indices[j]=v;indices[j+1]=v+1;indices[j+2]=v+2;indices[j+3]=v;indices[j+4]=v+2;indices[j+5]=v+3;for(int k=0;k<4;k++)uv[v+k]=Vector2.one*.5f;}
             mesh.vertices=vertices;mesh.triangles=indices;mesh.uv=uv;mesh.bounds=new Bounds(Vector3.zero,Vector3.one*5);
         }
-        void Update(){age+=Time.deltaTime;if(age>=life){Destroy(gameObject);return;}Animate(age/life);}
+        void Update(){
+            if(Game.Session.MapId!=map||(bound&&(source==null||source.IsDead||!source.gameObject.activeInHierarchy))){Destroy(gameObject);return;}
+            age+=Time.deltaTime;if(age>=life){Destroy(gameObject);return;}
+            if(phase==1&&source!=null)transform.position=source.Center;
+            Animate(age/life);
+        }
         void Animate(float t)
         {
-            int f=Mathf.Clamp((int)(t*12),0,11);var sprite=phase==0?CareerArt.Frame(skill,f):CareerArt.DetailFrame(skill.career,phase==1,f);
+            int f=Mathf.Clamp((int)(t*12),0,11);var sprite=phase==0?(rear!=null?CareerArt.PlaneFrame(skill,f,false):CareerArt.Frame(skill,f)):phase==1?CareerArt.DetailFrame(skill.career,true,f):CareerArt.VisualFrame(phase==2?skill.id+"_impact":phase==3?skill.id+"_cut":"finisher",f);
             core.sprite=edge.sprite=sprite;
             float fade=Mathf.Clamp01((1-t)*3.5f),appear=Mathf.Clamp01(t*12+.4f);
-            core.color=new Color(1,1,1,fade*appear*(phase==1?.72f:.93f));edge.color=new Color(1,1,1,fade*appear*.23f);
-            Color tint=CareerCatalog.Color(skill.career);
+            core.color=new Color(1,1,1,fade*(phase==1?appear*.62f:phase==0?.9f:1f));edge.color=new Color(1,1,1,fade*.025f);
+            if(rear!=null){rear.sprite=CareerArt.PlaneFrame(skill,f,true);rear.color=core.color;}
+            Color tint=skill.effect=="fire"?new Color(1,.55f,.2f):skill.effect=="ice"?new Color(.6f,.9f,1):skill.effect=="storm"?new Color(1,.85f,.4f):CareerCatalog.Color(skill.career);
             for(int i=0;i<particles;i++){
                 float seed=Mathf.Repeat(i*.6180339f+skill.index*.137f,1),a=i*2.39996f+skill.index*.47f;
                 float q=phase==1?1-t:t;float dist=phase==1?.2f+q*.6f:.12f+q*(.42f+seed*.53f);

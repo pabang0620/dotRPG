@@ -13,19 +13,26 @@ namespace DotRPG.EditorTools
         public static void Export()
         {
             const string root="Assets/Resources/Art/Careers/";
-            Directory.CreateDirectory(root+"Icons");Directory.CreateDirectory(root+"Effects");
+            Directory.CreateDirectory(root+"Icons");Directory.CreateDirectory(root+"Reforged/Effects");
             foreach(var s in CareerCatalog.All)
             {
-                Write(CareerArt.Icon(s),root+"Icons/"+s.Icon+".png",true,32);
+                Write(CareerPaintArt.Icon(s),root+"Icons/"+s.Icon+".png",true,64);
                 if(s.kind==CareerSkillKind.Passive)continue;
-                var sheet=new PixelCanvas(1152,96);for(int i=0;i<12;i++)sheet.Blit(CareerArt.Effect(s,i),i*96,0);
-                Write(sheet,root+"Effects/"+s.id+".png",false,48);
+                var sheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)sheet.Blit(CareerArt.Effect(s,i),i*CareerRaster.Size,0);
+                Write(sheet,root+"Reforged/Effects/"+s.id+".png",false,CareerRaster.Ppu);
+                Directory.CreateDirectory(root+"Reforged/Layered");
+                foreach(bool back in new[]{true,false}){
+                    var layer=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)layer.Blit(CareerVfxArt.Plane(CareerArt.Effect(s,i),back),i*CareerRaster.Size,0);
+                    Write(layer,root+"Reforged/Layered/"+s.id+(back?"_back":"_front")+".png",false,CareerRaster.Ppu);
+                }
             }
-            Directory.CreateDirectory(root+"Details");
+            Directory.CreateDirectory(root+"Reforged/Details");
             foreach(Career c in new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop})foreach(bool charge in new[]{true,false}){
-                var sheet=new PixelCanvas(1152,96);for(int i=0;i<12;i++)sheet.Blit(CareerVfxArt.Detail(c,charge,i),96*i,0);
-                Write(sheet,root+"Details/"+c+(charge?"_charge":"_hit")+".png",false,48);
+                var sheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)sheet.Blit(CareerVfxArt.Detail(c,charge,i),CareerRaster.Size*i,0);
+                Write(sheet,root+"Reforged/Details/"+c+(charge?"_charge":"_hit")+".png",false,CareerRaster.Ppu);
             }
+            Directory.CreateDirectory(root+"Reforged/Presentation");
+            foreach(var key in CareerVfxArt.VisualKeys){var sheet=new PixelCanvas(CareerRaster.Size*12,CareerRaster.Size);for(int i=0;i<12;i++)sheet.Blit(CareerVfxArt.Visual(key,i),CareerRaster.Size*i,0);Write(sheet,root+"Reforged/Presentation/"+key+".png",false,CareerRaster.Ppu);}
             AssetDatabase.Refresh();Debug.Log("Career art: 36 icons + 28 effect sheets exported.");
         }
         static void Write(PixelCanvas p,string path,bool sprite,int ppu)
@@ -35,7 +42,7 @@ namespace DotRPG.EditorTools
             importer.textureType=sprite?TextureImporterType.Sprite:TextureImporterType.Default;
             importer.spriteImportMode=SpriteImportMode.Single;importer.spritePixelsPerUnit=ppu;importer.mipmapEnabled=false;
             importer.filterMode=FilterMode.Point;importer.textureCompression=TextureImporterCompression.Uncompressed;
-            importer.npotScale=TextureImporterNPOTScale.None;importer.alphaIsTransparency=true;importer.wrapMode=TextureWrapMode.Clamp;importer.SaveAndReimport();
+            importer.maxTextureSize=4096;importer.npotScale=TextureImporterNPOTScale.None;importer.alphaIsTransparency=true;importer.wrapMode=TextureWrapMode.Clamp;importer.SaveAndReimport();
         }
     }
 }
