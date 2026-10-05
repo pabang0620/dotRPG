@@ -150,7 +150,7 @@ namespace DotRPG
         }
         void BuildKeyboard(RectTransform board)
         {
-            Key(board, KeyCode.Escape, "Esc", 0, 0);
+            Key(board, KeyCode.Escape, "ESC", 0, 0);
             for (int i = 0; i < 12; i++) Key(board, KeyCode.F1 + i, "F" + (i + 1), 1.5f + i + (i / 4) * .35f, 0);
             Key(board, KeyCode.BackQuote, "`", 0, 1);
             for (int i = 1; i <= 10; i++) Key(board, KeyCode.Alpha0 + i % 10, (i % 10).ToString(), i, 1);
@@ -184,7 +184,7 @@ namespace DotRPG
             var available = ((RectTransform)transform).rect.size;
             float fit = Mathf.Min(1f, (available.x - 24) / 1200f, (available.y - 20) / 670f);
             panel.localScale = Vector3.one * Mathf.Max(.5f, fit);
-            RefreshKeyboard("변경할 기능이나 색이 있는 키를 선택하세요. Esc·Enter·Backspace는 메뉴 조작용 고정 키입니다.");
+            RefreshKeyboard("변경할 기능이나 색이 있는 키를 선택하세요. ESC·Enter·Backspace는 메뉴 조작용 고정 키입니다.");
         }
         public override void Hide()
         {
@@ -195,7 +195,7 @@ namespace DotRPG
         {
             SelectTab(InputReader.IsWindowAction(action));
             listening = action; listenFrame = Time.frameCount;
-            RefreshKeyboard(ActionName(action) + "에 사용할 키를 누르거나 키보드 그림에서 클릭하세요. Esc: 선택 취소");
+            RefreshKeyboard(ActionName(action) + "에 사용할 키를 누르거나 키보드 그림에서 클릭하세요. ESC: 선택 취소");
         }
         public void ClickKey(KeyCode key)
         {

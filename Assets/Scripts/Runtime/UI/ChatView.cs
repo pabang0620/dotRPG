@@ -77,7 +77,7 @@ namespace DotRPG
             var text = UIFactory.Text(box.transform, "Text", "", 16, Color.white, TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(text.rectTransform, 98f, 2f, 8f, 2f);
             text.supportRichText = false;
-            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · Esc 닫기 · /p /g /w 이름", 14, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
+            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · ESC 닫기 · /p /g /w 이름", 14, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(placeholder.rectTransform, 98f, 2f, 8f, 2f);
             field = box.gameObject.AddComponent<InputField>();
             field.textComponent = text;

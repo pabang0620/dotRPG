@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -118,7 +119,17 @@ namespace DotRPG
             Refresh();
         }
 
-        IReadOnlyList<DungeonDef> Listed => raidTab ? DungeonDatabase.Raids : DungeonDatabase.Weekday;
+        /// <summary>Raids by entry level (low to high); weekday dungeons open today first, then the rest.</summary>
+        IReadOnlyList<DungeonDef> Listed
+        {
+            get
+            {
+                var list = new List<DungeonDef>(raidTab ? DungeonDatabase.Raids : DungeonDatabase.Weekday);
+                var now = ResetClock.Now;
+                if (raidTab) return list.OrderBy(d => DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal).recommendedLevel).ThenBy(d => list.IndexOf(d)).ToList();
+                return list.OrderBy(d => ResetClock.IsOpen(d, now) ? 0 : 1).ThenBy(d => list.IndexOf(d)).ToList();
+            }
+        }
 
         DungeonDef Selected
         {
@@ -145,8 +156,9 @@ namespace DotRPG
                 b.transition = Selectable.Transition.None;
                 b.onClick.AddListener(() => { selected = index; Game.Audio.PlaySfx("select"); Refresh(); });
                 r.stripe = Panel(r.bg.transform, "Stripe", new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(6f, RowH), Color.white);
-                r.text = Label(r.bg.transform, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -10f), new Vector2(270f, 80f));
-                r.tag = Label(r.bg.transform, "Tag", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -10f), new Vector2(90f, 28f), TextAnchor.UpperRight);
+                r.text = Label(r.bg.transform, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -8f), new Vector2(ListW - 30f, 84f));
+                r.text.horizontalOverflow = HorizontalWrapMode.Overflow; // one line each: never wrap into the next row
+                r.tag = Label(r.bg.transform, "Tag", "", 17, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-12f, -10f), new Vector2(110f, 28f), TextAnchor.UpperRight);
                 rows.Add(r);
             }
         }
@@ -170,7 +182,7 @@ namespace DotRPG
             var day = ResetClock.GameDay(now);
             string weekend = day == DayOfWeek.Saturday || day == DayOfWeek.Sunday ? "  <color=#8fe28f>주말: 모든 요일던전 개방</color>" : "";
             dayText.text = raidTab
-                ? $"오늘 <color=#ffe066>{DungeonDatabase.DayName(day)}</color>   봉인 열쇠 조각 <color=#ffe066>{Game.Session.Inventory.Count(DungeonDatabase.SealKey)}</color>   <color=#b8c4d8>초기화 매일 06:00 · 주간 목 06:00</color>"
+                ? $"오늘 <color=#ffe066>{DungeonDatabase.DayName(day)}</color>   봉인 열쇠 조각 <color=#ffe066>{Game.Session.Inventory.Count(DungeonDatabase.SealKey)}</color> <color=#b8c4d8>(중간 레이드 보상)</color>   <color=#b8c4d8>초기화 매일 06:00 · 주간 목 06:00</color>"
                 : $"오늘 <color=#ffe066>{DungeonDatabase.DayName(day)}</color>{weekend}   남은 입장 <color=#ffe066>{progress.EntriesLeft(now)}/{DungeonDatabase.DailyEntries}</color>   <color=#b8c4d8>초기화 06:00</color>";
 
             for (int i = 0; i < rows.Count; i++)
@@ -181,8 +193,11 @@ namespace DotRPG
                 r.bg.color = sel ? RowSelected : open ? RowColor : RowClosed;
                 r.stripe.color = sel ? (Color)UIColors.Highlight : open ? new Color32(110, 200, 130, 255) : new Color32(70, 76, 90, 255);
                 string nameColor = open ? "#ffffff" : "#8c96a8";
-                r.text.text = $"<size=24><b><color={nameColor}>{r.def.name}</color></b></size>\n<color=#b8c4d8>{r.def.themeName} · {DungeonDatabase.OpenDaysLabel(r.def)}</color>\n<color=#ffe066>{r.def.specialty}</color>";
-                r.tag.text = open ? "<color=#8fe28f>개방</color>" : "<color=#8c96a8>닫힘</color>";
+                string lv = r.def.isRaid ? $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel} · " : "";
+                r.text.text = $"<size=24><b><color={nameColor}>{r.def.name}</color></b></size>\n<color=#b8c4d8>{lv}{r.def.themeName} · {DungeonDatabase.OpenDaysLabel(r.def)}</color>\n<size=15><color=#ffe066>{r.def.specialty}</color></size>";
+                r.tag.text = open ? "<color=#8fe28f><b>오늘 개방</b></color>" : "<color=#8c96a8>닫힘</color>";
+                // Open today: a warm glow on the row so it reads as the one to play.
+                if (open && !sel) r.bg.color = new Color32(34, 58, 52, 245);
             }
 
             var def = Selected;
@@ -191,9 +206,9 @@ namespace DotRPG
             var numbers = DungeonDatabase.DifficultyFor(def, difficulty);
             banner.sprite = Game.Art.Get("banner_" + def.id);
             banner.enabled = banner.sprite != null;
-            title.text = $"<b>{def.name}</b>  <size=20><color=#b8c4d8>{def.themeName} · 보스 {def.bossName}</color></size>";
+            title.text = $"<b>{def.name}</b>  <size=20><color=#b8c4d8>{def.themeName}</color></size>";
             desc.text = def.description;
-            info.text = $"<color=#ffe066>특화 보상</color> {def.specialty}    <color=#ffe066>특징 몬스터</color> {def.featureMonster}\n" +
+            info.text = $"<color=#ffe066>보스</color> {def.bossName}    <color=#ffe066>특징 몬스터</color> {def.featureMonster}\n" +
                         $"<color=#b8c4d8>방 {def.RoomCount}개 (보스 포함) · 최대 {def.maxParty}인 · 부활 {numbers.revives}회</color>";
 
             for (int i = 0; i < diffButtons.Length; i++)
@@ -236,7 +251,7 @@ namespace DotRPG
                 string state = !progress.RaidRewardAvailable(def, now)
                     ? (def.raidTier == RaidTier.Mid ? "<color=#ff9f7a>오늘 보상 받음 · 연습만 가능</color>" : "<color=#ff9f7a>이번 주 보상 받음 · 연습만 가능</color>")
                     : def.raidTier == RaidTier.Mid ? $"봉인 열쇠 조각 <color=#ffe066>{def.keyMin}~{def.keyMax}</color> · 이번 주 {progress.RaidClearsThisWeek(def, now)}/3"
-                    : $"입장 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (클리어 시 소모)";
+                    : $"입장 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (보유 {Game.Session.Inventory.Count(DungeonDatabase.SealKey)}) · <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻음";
                 raidLine.text = $"<color=#b8c4d8>{schedule}</color>\n{state}";
             }
             rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";
@@ -257,7 +272,15 @@ namespace DotRPG
             string reason = Game.Dungeon != null ? Game.Dungeon.CannotEnterReason(def, difficulty, now) : "준비 중";
             status.text = reason == null ? "<color=#8fe28f>입장할 수 있다.</color>" : $"<color=#ff9f7a>{reason}</color>";
             enterButton.image.color = reason == null ? Color.white : new Color(1f, 1f, 1f, 0.45f);
-            hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   Esc 닫기</color>";
+            hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   ESC 닫기</color>";
+        }
+
+        /// <summary>The mid raids that drop seal key fragments, by name ("해골왕·바위 심장").</summary>
+        static string KeySources()
+        {
+            var names = new List<string>();
+            foreach (var r in DungeonDatabase.Raids) if (r.keyMax > 0) names.Add(r.name);
+            return string.Join("·", names);
         }
 
         void PickDifficulty(DungeonDifficulty d)

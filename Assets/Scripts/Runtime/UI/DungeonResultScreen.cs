@@ -216,7 +216,7 @@ namespace DotRPG
             bool canRetry = Game.Dungeon != null && Game.Dungeon.CanRetry;
             foreach (var b in new[] { retryButton, selectButton, villageButton }) b.gameObject.SetActive(done);
             retryButton.image.color = canRetry ? Color.white : new Color(1f, 1f, 1f, 0.4f);
-            hint.text = done ? "<color=#b8c4d8>Enter / Esc 마을로</color>" : "<color=#b8c4d8>←/→ 카드   Enter 뒤집기</color>";
+            hint.text = done ? "<color=#b8c4d8>Enter / ESC 마을로</color>" : "<color=#b8c4d8>←/→ 카드   Enter 뒤집기</color>";
         }
 
         protected override void Update()

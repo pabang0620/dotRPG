@@ -161,7 +161,7 @@ namespace DotRPG
                 }
                 slots.Add((DungeonDatabase.ItemIcon(entry.itemId), DungeonDatabase.ItemName(entry.itemId), false));
             }
-            if (diff.ticketWeight > 0) slots.Add((DungeonDatabase.ItemIcon(ConsumableDatabase.ProtectTicket), DungeonDatabase.ItemName(ConsumableDatabase.ProtectTicket), true));
+            if (diff.ticketWeight > 0 && seen.Add(ConsumableDatabase.ProtectTicket)) slots.Add((DungeonDatabase.ItemIcon(ConsumableDatabase.ProtectTicket), DungeonDatabase.ItemName(ConsumableDatabase.ProtectTicket), true));
             if (diff.jackpotPerMille > 0) slots.Add((GearIcon(cls, ItemRarity.Legendary), "유니크·레전더리", true));
             return slots;
         }

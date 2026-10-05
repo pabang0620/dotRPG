@@ -99,7 +99,7 @@ namespace DotRPG
             s.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft, new Vector2(300f, -372f), new Vector2(440f, 44f), s.Restore, 18);
             s.restoreLabel = s.restore.GetComponentInChildren<Text>();
             s.status = Label(detail.transform, "Status", "", 17, TopLeft, TopLeft, new Vector2(20f, -330f), new Vector2(260f, 120f), TextAnchor.UpperLeft);
-            s.footer = Label(s.layout, "Footer", "↑↓ 고르기   → 다시 불러오기   Enter / A 실행   Esc / B 닫기", 16,
+            s.footer = Label(s.layout, "Footer", "↑↓ 고르기   → 다시 불러오기   Enter / A 실행   ESC / B 닫기", 16,
                 new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(900f, 26f), TextAnchor.MiddleLeft);
             s.store.Changed += s.Refresh;
             StarShopClient.Changed += s.Refresh;

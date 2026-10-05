@@ -29,7 +29,7 @@ namespace DotRPG
             UIFactory.Place(headerLine.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -UiTheme.HeaderHeight), new Vector2(4000f, 2f));
             var back = Button(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), w.Close, 24);
             var backText = back.GetComponentInChildren<Text>();
-            backText.text = "◀ <size=17>Esc</size>";
+            backText.text = "◀ <size=17>ESC</size>";
             if (!string.IsNullOrEmpty(icon))
             {
                 var ic = UIFactory.Image(root, "Icon", Game.Art.Get(icon), Color.white);
