@@ -1,9 +1,0 @@
-
-> dotrpg-server@0.1.0 test
-> node scripts/test.mjs careers.test.ts
-
-Test Suites: 1 passed, 1 total
-Tests:       14 passed, 14 total
-Snapshots:   0 total
-Time:        1.392 s, estimated 2 s
-Ran all test suites matching careers.test.ts.

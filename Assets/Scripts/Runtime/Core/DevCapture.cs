@@ -33,7 +33,6 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void RedirectSaves()
         {
-            if (GuardianLab.Enabled) { GuardianLab.Configure(); return; }
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
                 if (Array.IndexOf(Modes, args[i]) >= 0)
@@ -50,7 +49,6 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
-            if (GuardianLab.TryStart()) return;
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {

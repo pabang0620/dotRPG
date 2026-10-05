@@ -454,6 +454,72 @@ namespace DotRPG
                         c.Set(8 + rng.Next(0, 16), 5 + rng.Next(0, 10), PixelCanvas.Hex("#ff8a24", 220));
                     return c;
                 }
+                case "arc":
+                {
+                    // Career sword arc: the crescent shape in white so each career can tint it.
+                    var c = new PixelCanvas(20, 32);
+                    for (int y = 0; y < 32; y++)
+                        for (int x = 0; x < 20; x++)
+                        {
+                            float ox = (x + 0.5f - 4f) / 15f, oy = (y + 0.5f - 16f) / 15.5f;
+                            float ix = (x + 0.5f + 1f) / 13f, iy = (y + 0.5f - 16f) / 13.5f;
+                            float outer = ox * ox + oy * oy;
+                            if (outer > 1f || ix * ix + iy * iy <= 1f) continue;
+                            float depth = 1f - Mathf.Sqrt(outer);
+                            float tip = Mathf.Abs(y + 0.5f - 16f) > 12f ? 0.6f : 1f;
+                            Put(c, x, y, Whiteish((depth < 0.07f ? 1f : depth < 0.16f ? 0.8f : 0.5f) * tip));
+                        }
+                    return c;
+                }
+                case "aegis":
+                {
+                    // Guardian shield crest: a heater shield outline with a cross, white for tinting.
+                    var c = new PixelCanvas(17, 19);
+                    for (int y = 0; y < 19; y++)
+                    {
+                        float half = y < 9 ? 7.5f : 7.5f * (1f - (y - 8f) / 10.5f);
+                        for (int x = 0; x < 17; x++)
+                        {
+                            float d = Mathf.Abs(x + 0.5f - 8.5f);
+                            if (d > half || y == 0 && (x == 0 || x == 16)) continue;
+                            bool rim = d > half - 1.3f || y < 1;
+                            bool cross = Mathf.Abs(x + 0.5f - 8.5f) < 1f || y == 6 || y == 7;
+                            Put(c, x, y, Whiteish(rim ? 1f : cross ? 0.85f : 0.35f));
+                        }
+                    }
+                    return c;
+                }
+                case "feather":
+                {
+                    // Bishop feather, quill to the bottom, white for tinting.
+                    var c = new PixelCanvas(7, 15);
+                    for (int y = 0; y < 13; y++)
+                    {
+                        float u = y / 12f;
+                        int half = Mathf.RoundToInt(Mathf.Sin(Mathf.Clamp01(u * 1.15f) * Mathf.PI) * 3f);
+                        for (int x = 3 - half; x <= 3 + half; x++)
+                            Put(c, x, y, Whiteish(x == 3 ? 1f : (x + y) % 3 == 0 ? 0.55f : 0.8f));
+                    }
+                    c.VLine(3, 12, 14, Whiteish(1f));
+                    return c;
+                }
+                case "holy":
+                {
+                    // A four-pointed light cross with a long lower arm.
+                    var c = new PixelCanvas(11, 17);
+                    for (int y = 0; y < 17; y++)
+                        for (int x = 0; x < 11; x++)
+                        {
+                            float dx = Mathf.Abs(x + 0.5f - 5.5f), dy = y + 0.5f - 5.5f;
+                            float vertical = dy < 0 ? 1.6f * (1f + dy / 5.5f) : 1.6f * (1f - dy / 11.5f);
+                            float horizontal = 1.6f * (1f - dx / 5.5f);
+                            bool on = dx < vertical || Mathf.Abs(dy) < horizontal;
+                            if (!on) continue;
+                            bool core = dx < 0.6f || Mathf.Abs(dy) < 0.6f;
+                            Put(c, x, y, Whiteish(core ? 1f : 0.6f));
+                        }
+                    return c;
+                }
                 case "star":
                 {
                     // Stun star.

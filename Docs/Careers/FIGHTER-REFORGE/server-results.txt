@@ -1,4 +1,0 @@
-Command: npm.cmd test -- careers.test.ts
-Test Suites: 1 passed, 1 total
-Tests: 14 passed, 14 total
-Time: 1.589 s

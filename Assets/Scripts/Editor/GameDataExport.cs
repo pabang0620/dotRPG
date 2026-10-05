@@ -19,6 +19,8 @@ namespace DotRPG.EditorTools
     /// </summary>
     public static class GameDataExport
     {
+        [Serializable] sealed class CareerCatalogJson { public int schema = 1; public CareerSkill[] skills = CareerCatalog.All; }
+
         static string OutDir => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "server", "data"));
 
         [MenuItem("dotRPG/Export Server Data")]
@@ -33,7 +35,7 @@ namespace DotRPG.EditorTools
                 ["items.json"] = Items(),
                 ["passive_tree.json"] = PassiveTreeJson(),
                 ["skill_gems.json"] = SkillGemsJson(),
-                ["careers.json"] = CareerAssetExport.CatalogJson(),
+                ["careers.json"] = JsonUtility.ToJson(new CareerCatalogJson()),
                 ["quest_index.json"] = QuestIndex(),
                 ["enums.json"] = Enums(),
                 ["shop.json"] = Shop(),

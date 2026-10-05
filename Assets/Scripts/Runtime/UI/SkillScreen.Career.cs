@@ -36,7 +36,7 @@ namespace DotRPG
                     var s=skills[b*4+tier];float x=14+tier*195,y=162+b*150;
                     var bg=Panel(careerRoot,"Node_"+s.id,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(183,116),new Color32(26,35,54,255));
                     bg.raycastTarget=true;bg.gameObject.AddComponent<PointerRelay>().onClick=_=>{selectedSkill=s.id;Refresh();};
-                    var icon=UIFactory.Image(bg.transform,"Icon",CareerArt.Get(s.Icon),Color.white);
+                    var icon=UIFactory.Image(bg.transform,"Icon",CareerMoves.Icon(s.Icon),Color.white);
                     UIFactory.Place(icon.rectTransform,new Vector2(0,1),new Vector2(0,1),new Vector2(10,-10),Vector2.one*48);
                     CareerText(bg.transform,"Name",$"<b>{s.name}</b>\nLv.{s.level} · {p.Rank(s.id)}/3",16,65,10,115,52);
                     CareerText(bg.transform,"State",p.Career==browsing&&p.Rank(s.id)>0?"습득 · 클릭하여 강화/장착":tier==0?"패시브 · 진입 노드":"← 선행 노드 1단계 필요",13,9,76,168,32);

@@ -80,6 +80,29 @@ namespace DotRPG
             return clear;
         }
 
+        /// <summary>
+        /// [CAREER] 차원도약: a skill-driven teleport of up to <paramref name="distance"/> (stops before walls, no mobility
+        /// cooldown). Returns the distance covered.
+        /// </summary>
+        public float SkillBlink(Vector2 direction, float distance)
+        {
+            if (IsDead || direction.sqrMagnitude < .0001f) return 0f;
+            direction = direction.normalized;
+            float clear = MobilityClearance(direction, distance);
+            if (clear < .08f) return 0f;
+            Facing = FacingExtensions.FromVector(direction, Facing);
+            AimDirection = direction;
+            desiredVelocity = Vector2.zero;
+            body.SetVelocity(Vector2.zero);
+            BlinkEffect(Position);
+            Vector2 destination = Position + direction * clear;
+            body.position = destination;
+            transform.position = destination;
+            Physics2D.SyncTransforms();
+            BlinkEffect(destination);
+            return clear;
+        }
+
         // Sweep the actual feet collider, including its offset and the physics collision mask.
         // Triggers (pickups / door prompts) are not walls; solids cannot be tunneled through.
         float MobilityClearance(Vector2 direction, float distance)
