@@ -131,16 +131,17 @@ function checkQuests(data: GameData, input: StateBody, stored: StateRow): void {
   }
   if (input.tracked_quest !== '' && !data.quests.byId.has(input.tracked_quest)) reason('UNKNOWN_QUEST');
 
-  // 퇴보 금지: 완료한 퀘스트는 완료로 남고, 플래그는 추가만
+  // 퇴보 금지: 완료한 퀘스트는 완료로 남는다.
+  // 스토리 플래그는 거절하지 않는다: 컷신이 임시 플래그를 지운다("unflag", 예: 습격의 밤이 끝나면 attack_night).
+  // 플래그는 보상과 무관한 진행 표시이고, 보상은 퀘스트 청구(quest_claims)가 따로 막는다.
   const completed = data.questStatusMax;
   const next = new Map(input.quests.map((q) => [q.id, q]));
   for (const q of stored.quests) {
     if (q.status === completed && next.get(q.id)?.status !== completed) reason('REGRESSION');
   }
   const nextFlags = new Set(input.story_flags);
-  for (const f of stored.story_flags) {
-    if (!nextFlags.has(f)) reason('REGRESSION');
-  }
+  const cleared = stored.story_flags.filter((f) => !nextFlags.has(f));
+  if (cleared.length > 0) logger.info({ flags: cleared.slice(0, 20) }, 'story_flags cleared by the client');
   const unknownFlags = input.story_flags.filter((f) => !data.quests.flags.has(f));
   if (unknownFlags.length > 0) {
     logger.warn({ flags: unknownFlags.slice(0, 20) }, 'story_flags not in quest_index (accepted)');
