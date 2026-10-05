@@ -24,6 +24,13 @@ namespace DotRPG
         /// <summary>Raised after any equip/unequip/load/enhancement.</summary>
         public event Action Changed;
 
+        /// <summary>The wearer's level for equip requirements (the player's session sets it; companions have none).</summary>
+        public Func<int> LevelSource;
+        int WearerLevel => LevelSource != null ? LevelSource() : int.MaxValue;
+
+        /// <summary>Can this wearer put the item on now (class and level)?</summary>
+        public bool CanWear(EquipmentItem item, CharacterClass cls) => item != null && item.UsableBy(cls) && item.reqLevel <= WearerLevel;
+
         public Equipment(Inventory bag)
         {
             this.bag = bag;
@@ -121,7 +128,7 @@ namespace DotRPG
             foreach (var key in EquipmentDatabase.GearKeys(bag))
             {
                 var item = EquipmentDatabase.Get(key);
-                if (!item.UsableBy(cls) || !EquipmentDatabase.Fits(item.category, slot)) continue;
+                if (!CanWear(item, cls) || !EquipmentDatabase.Fits(item.category, slot)) continue;
                 int score = ScoreOf(key);
                 if (best == null || score > bestScore)
                 {
@@ -136,7 +143,7 @@ namespace DotRPG
         public bool IsUpgrade(string key, CharacterClass cls)
         {
             var item = EquipmentDatabase.Get(key);
-            if (item == null || !item.UsableBy(cls)) return false;
+            if (!CanWear(item, cls)) return false;
             if (item.category == EquipCategory.Ring)
             {
                 if (ItemIn(EquipSlot.Ring1) == null || ItemIn(EquipSlot.Ring2) == null) return true;
@@ -164,7 +171,7 @@ namespace DotRPG
         public bool Equip(string key, CharacterClass cls)
         {
             var item = EquipmentDatabase.Get(key);
-            if (item == null || !item.UsableBy(cls) || bag.Count(key) <= 0) return false;
+            if (!CanWear(item, cls) || bag.Count(key) <= 0) return false;
             var slot = TargetSlotFor(item);
             bag.Remove(key, 1);
             string previous = slots[(int)slot];

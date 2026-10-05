@@ -12,7 +12,7 @@ namespace DotRPG
     /// a burst of sparks, a punch and a lasting halo; an 에픽 aura or skin does the same in purple, a little smaller;
     /// 희귀 (and 에픽 equipment) get a blue burst. The wardrobe (옷장) is separate.
     /// </summary>
-    public class GachaScreen : OnlineWindow
+    public partial class GachaScreen : OnlineWindow
     {
         public static GachaScreen Instance { get; private set; }
         const float ListW = 260f, CardH = 98f, BigH = 440f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
@@ -108,6 +108,7 @@ namespace DotRPG
             w.gaugeFill.preserveAspect = false; w.gaugeFill.raycastTarget = false;
             UIFactory.Place(w.gaugeFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 16f));
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
+            w.BuildTierPicker(bigBox.transform);
             w.chooseBtn = Button(bigBox.transform, "Choose", "선택하기", "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), w.OpenChoices, 18);
             var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
             shard.preserveAspect = true; shard.raycastTarget = false;
@@ -319,7 +320,8 @@ namespace DotRPG
                 return;
             }
             string what = count == 10 ? $"{times - 1}회 + 보너스 1회" : "1회";
-            Game.UI.Confirm($"{Current().name}\n{StarShopClient.Stars(price)}로 {what} 뽑습니다.\n뽑으시겠습니까?", () => Pull(count), true);
+            string tierNote = banner == "aura" || banner == "skin" ? "" : $" (Lv.{SelectedTierLevel()} 장비)";
+            Game.UI.Confirm($"{Current().name}{tierNote}\n{StarShopClient.Stars(price)}로 {what} 뽑습니다.\n뽑으시겠습니까?", () => Pull(count), true);
         }
 
         void Pull(int count)
@@ -343,7 +345,7 @@ namespace DotRPG
                 revealAt = Time.unscaledTime + 0.45f;
                 OpenResults();
                 Refresh();
-            });
+            }, SelectedTier());
         }
 
         void OpenResults()
@@ -641,6 +643,7 @@ namespace DotRPG
             TextOf(one).text = $"1회 · 별조각 {StarShopClient.PriceOne:N0}";
             TextOf(ten).text = $"{StarShopClient.TenCount - 1}+1회 · 별조각 {StarShopClient.PriceTen:N0}";
             one.interactable = ten.interactable = online && StarShopClient.Loaded && !busy;
+            RefreshTierPicker(!hasPity && online && StarShopClient.Loaded);
             if (rateModal.gameObject.activeSelf) rateText.text = RateText();
             DrawCells();
         }
@@ -655,6 +658,8 @@ namespace DotRPG
         {
             if (banner == "aura") return StarShopClient.Rates;
             if (banner == "skin") return StarShopClient.SkinRates;
+            var byTier = TierRates();
+            if (byTier != null) return byTier;
             foreach (var b in StarShopClient.Banners) if (b.id == banner) return b.rates;
             return new List<StarRate>();
         }

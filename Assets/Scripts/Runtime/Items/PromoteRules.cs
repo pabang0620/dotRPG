@@ -45,7 +45,7 @@ namespace DotRPG
             EquipmentItem best = null;
             foreach (var other in EquipmentDatabase.All)
             {
-                if (other.starter || other.bossOnly || other.category != item.category || other.classOnly != item.classOnly || other.rarity <= item.rarity) continue;
+                if (other.starter || other.bossOnly || other.levelTier != item.levelTier || other.category != item.category || other.classOnly != item.classOnly || other.rarity <= item.rarity) continue;
                 if (best == null || other.rarity < best.rarity) best = other;
             }
             return best;

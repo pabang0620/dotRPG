@@ -113,6 +113,7 @@ namespace DotRPG.EditorTools
                 .Num("attack", e.attack).Num("maxHealth", e.maxHealth).Num("block", e.block).Num("speed", e.speed)
                 .Bool("starter", e.starter).Num("dropWeight", e.dropWeight).Num("tier", e.Tier)
                 .Bool("bossOnly", e.bossOnly).Num("xpBonus", e.xpBonus).Num("aoeBonus", e.aoeBonus)
+                .Num("reqLevel", e.reqLevel).Num("levelTier", e.levelTier)
                 .Num("sellPrice", ItemPrices.SellPrice(e.id)).End());
             j.Arr("materials", EquipmentDatabase.AllMaterials, (o, m) => o.Obj()
                 .Str("id", m.id).Str("rarity", m.rarity.ToString()).Num("dropChance", m.dropChance).Num("minDrop", m.minDrop).Num("maxDrop", m.maxDrop)

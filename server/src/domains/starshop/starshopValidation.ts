@@ -6,6 +6,8 @@ export const pullBody = z.strictObject({
   request_id: requestId,
   count: z.union([z.literal(1), z.literal(10)]),
   banner: z.enum(['aura', 'skin', 'weapon', 'armor', 'accessory']).optional(),
+  /** 장비 뽑기의 레벨 단계(0 = Lv.1 ... 7 = Lv.40). 없으면 내 레벨의 단계 */
+  tier: z.number().int().min(0).max(7).optional(),
 });
 export const exchangeBody = z.strictObject({
   request_id: requestId,

@@ -102,6 +102,9 @@ const equipmentSchema = z.looseObject({
   sellPrice: nonNegInt,
   /** 필드 보스 전용 장비: 일반 드롭·던전 카드·캐시샵에 넣지 않는다 */
   bossOnly: z.boolean().default(false),
+  /** 착용 레벨과 레벨 단계 번호(0 = Lv.1 ... 7 = Lv.40) */
+  reqLevel: z.number().int().min(1).max(99).default(1),
+  levelTier: z.number().int().min(0).max(7).default(0),
   /** 성장 옵션(%): 몬스터 경험치, 스킬 범위(클라이언트 전투) */
   xpBonus: nonNegInt.default(0),
   aoeBonus: nonNegInt.default(0),

@@ -19,7 +19,7 @@ namespace DotRPG
         /// <summary>How many of a material drop, min..max inclusive.</summary>
         int DropCount(int min, int max);
         /// <summary>The equipment id a monster drops for this class, or null.</summary>
-        string DropEquipment(CharacterClass cls, float chance);
+        string DropEquipment(CharacterClass cls, float chance, int level = 1);
         /// <summary>Dungeon rank, clear XP and reward cards.</summary>
         IDungeonAuthority Dungeon { get; }
         /// <summary>XP actually granted for <paramref name="reason"/> (offline: unchanged).</summary>
@@ -38,7 +38,7 @@ namespace DotRPG
         // The old code skipped a material when Random.value > chance.
         public bool DropChance(float chance) => !(UnityEngine.Random.value > chance);
         public int DropCount(int min, int max) => UnityEngine.Random.Range(min, max + 1);
-        public string DropEquipment(CharacterClass cls, float chance) => EquipmentDatabase.RollDrop(cls, chance);
+        public string DropEquipment(CharacterClass cls, float chance, int level = 1) => EquipmentDatabase.RollDrop(cls, chance, level);
         public IDungeonAuthority Dungeon => DungeonAuthority.Current;
         public int GrantXp(string reason, int amount) => amount;
         public int ApplyGold(string reason, int delta) => delta;

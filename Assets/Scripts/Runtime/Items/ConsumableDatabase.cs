@@ -138,7 +138,8 @@ namespace DotRPG
             var gear = EquipmentDatabase.Get(id);
             if (gear != null)
             {
-                int basePrice = gear.starter ? 2 : GearSell[(int)gear.rarity];
+                // Grade price x (1 + 0.25 per level tier): Lv.40 gear sells for close to triple the Lv.1 price.
+                int basePrice = gear.starter ? 2 : (int)System.Math.Round(GearSell[(int)gear.rarity] * (1.0 + 0.25 * gear.levelTier), System.MidpointRounding.AwayFromZero);
                 return (int)Math.Round(basePrice * (1.0 + 0.25 * EquipmentDatabase.LevelOfKey(id)), MidpointRounding.AwayFromZero);
             }
             switch (id)

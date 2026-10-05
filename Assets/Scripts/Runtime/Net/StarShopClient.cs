@@ -43,6 +43,10 @@ namespace DotRPG
         public static readonly List<StarRate> Rates = new List<StarRate>();
         /// <summary>Equipment banners (weapon / armor / accessory): id, name and their rate tables for my class.</summary>
         public static readonly List<(string id, string name, List<StarRate> rates)> Banners = new List<(string, string, List<StarRate>)>();
+        /// <summary>Gear banners by level tier: banner id -> (tier index, tier level, rate table), unlocked tiers only.</summary>
+        public static readonly Dictionary<string, List<(int tier, int level, List<StarRate> rates)>> GearTiers = new Dictionary<string, List<(int, int, List<StarRate>)>>();
+        /// <summary>The tier of my level (the gear banners' default).</summary>
+        public static int MyTier { get; private set; }
         public static readonly Dictionary<string, int> Refund = new Dictionary<string, int>();
         public static readonly HashSet<string> Owned = new HashSet<string>();
         public static readonly Dictionary<string, int> ExchangePrice = new Dictionary<string, int>();
@@ -67,10 +71,11 @@ namespace DotRPG
         }
 
         /// <summary>1회(count 1) or the 10+1 bundle (count 10). The server takes the 별조각 and rolls.</summary>
-        public static void Pull(string banner, int count, Action<bool, string, List<StarPullResult>> done)
+        public static void Pull(string banner, int count, Action<bool, string, List<StarPullResult>> done, int tier = -1)
         {
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다.", null); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["count"] = count, ["banner"] = banner };
+            if (tier >= 0 && banner != "aura" && banner != "skin") body["tier"] = tier; // gear: the chosen level tier
             Api.Post(Base + "/pull", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "뽑기에 실패했습니다." : r.message, null); return; }
@@ -176,8 +181,17 @@ namespace DotRPG
             SkinRates.Clear();
             SkinRates.AddRange(ReadRates(MiniJson.Arr(d, "skin_rates"), false));
             Banners.Clear();
+            GearTiers.Clear();
+            MyTier = MiniJson.Int(d, "my_tier");
             foreach (var b in MiniJson.Arr(d, "banners") ?? new List<object>())
-                Banners.Add((MiniJson.Str(b, "id", ""), MiniJson.Str(b, "name", ""), ReadRates(MiniJson.Arr(b, "rates"), true)));
+            {
+                string bid = MiniJson.Str(b, "id", "");
+                Banners.Add((bid, MiniJson.Str(b, "name", ""), ReadRates(MiniJson.Arr(b, "rates"), true)));
+                var tiers = new List<(int, int, List<StarRate>)>();
+                foreach (var t in MiniJson.Arr(b, "tiers") ?? new List<object>())
+                    tiers.Add((MiniJson.Int(t, "tier"), MiniJson.Int(t, "level"), ReadRates(MiniJson.Arr(t, "rates"), true)));
+                GearTiers[bid] = tiers;
+            }
             Refund.Clear();
             var refund = MiniJson.Obj(d, "refund");
             if (refund != null) foreach (var kv in refund) Refund[kv.Key] = MiniJson.Int(refund, kv.Key);

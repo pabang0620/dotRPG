@@ -142,7 +142,7 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const open = await repo.countOpenDrops(ctx.client, ctx.char.id, ctx.now);
   if (!target.rewardLocked && open < pol.dropOpenPerCharacter) {
     const expiresAt = new Date(ctx.now.getTime() + pol.dropTtlSeconds * 1000);
-    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1)) {
+    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1, target.level)) {
       const row = await repo.insertDrop(ctx.client, ctx.char.id, killId, spec.itemKey, spec.count, expiresAt, ctx.now);
       drops.push({ id: row.uuid, item_key: row.item_key, count: row.count, expires_at: row.expires_at.toISOString() });
     }
