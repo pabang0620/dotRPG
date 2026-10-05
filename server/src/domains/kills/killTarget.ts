@@ -62,6 +62,30 @@ export async function resolveFieldTarget(
   if (!map || !extra || map.instanced) throw rejected('kill_target', 3, { ...detailBase, why: 'map' });
 
   const burst = getConfig().policy.killBurstField;
+  // 필드 보스: 15분 창(시계 기준 :00 :15 :30 :45)마다 캐릭터당 1회만 인정한다
+  const boss = extra.fieldBoss;
+  if (boss && boss.monsterId === monsterId) {
+    const windowMs = boss.intervalSeconds * 1000;
+    const since = new Date(Math.floor(now.getTime() / windowMs) * windowMs);
+    const n = await countFieldKillsSince(client, characterId, mapId, monsterId, since);
+    if (n >= 1) throw rejected('kill_supply', opts.nonHost ? 1 : 2, { ...detailBase, count: n, limit: 1, field_boss: true });
+    return {
+      context: 'field',
+      mapId,
+      level: boss.level,
+      xpOverride: boss.xp,
+      hpMul: 1,
+      burst,
+      powerWindowSeconds: FIELD_POWER_WINDOW_SECONDS,
+      run: null,
+      isRaid: false,
+      rewardLocked: false,
+      powerCap: null,
+      nonHost: opts.nonHost ?? false,
+      field: null,
+      commit: async () => {},
+    };
+  }
   const field = extra.fieldSpawns.find((s) => s.monsterId === monsterId);
   if (field) {
     // 리스폰 공급 상한(3.2.2): N개 스폰점, R초 리스폰이면 R초 안에 ceil(N * 여유)마리를 넘을 수 없다

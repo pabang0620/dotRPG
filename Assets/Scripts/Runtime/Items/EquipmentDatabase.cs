@@ -80,6 +80,10 @@ namespace DotRPG
         public int dropWeight;
         /// <summary>Enhancement growth per reinforcement coefficient point (0 = default for the category and tier).</summary>
         public float enhanceSeed;
+        /// <summary>[FIELD BOSS] Growth options (not raised by enhancing): % more XP from monsters, % larger skill area.</summary>
+        public int xpBonus, aoeBonus;
+        /// <summary>[FIELD BOSS] Dropped only by a field boss: never in drops, cards, the cash shop or promotion.</summary>
+        public bool bossOnly;
 
         /// <summary>Visual tier: the number at the end of the icon key (0 = weakest look), -1 = no icon.</summary>
         public int Tier { get; internal set; } = -1;
@@ -110,6 +114,8 @@ namespace DotRPG
             if (s.maxHealth != 0) parts.Add($"체력 +{EquipmentDatabase.Hearts(s.maxHealth)}");
             if (s.block != 0) parts.Add($"막기 {s.block}%");
             if (s.speed != 0) parts.Add($"이동 {(s.speed > 0 ? "+" : "")}{s.speed}%");
+            if (xpBonus != 0) parts.Add($"<color=#8fe28f>경험치 +{xpBonus}%</color>");
+            if (aoeBonus != 0) parts.Add($"<color=#8fe28f>스킬 범위 +{aoeBonus}%</color>");
             return parts.Count > 0 ? string.Join("  ", parts) : "능력치 없음";
         }
     }
@@ -156,6 +162,10 @@ namespace DotRPG
             W("eq_ring_copper", "구리 반지", EquipCategory.Ring, ItemRarity.Common, null, hp: 10, block: 5, icon: "eqicon_ring_0", desc: "흔한 구리 반지. 조금 든든하다.", drop: 30),
             W("eq_ring_wind", "바람 반지", EquipCategory.Ring, ItemRarity.Rare, null, spd: 12, icon: "eqicon_ring_1", desc: "발걸음이 바람처럼 가벼워진다.", drop: 14),
             W("eq_ring_ruby", "루비 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 10, hp: 10, icon: "eqicon_ring_2", desc: "붉게 타오르는 보석. 촌장이 준 보물.", drop: 2),
+            // [FIELD BOSS] Growth accessories: moderate stats plus a growth option, only from field bosses (FieldBosses).
+            Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 6, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), xp: 5),
+            Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, hp: 30, block: 3, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), aoe: 10),
+            Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 8, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), xp: 6, aoe: 5),
             // Armour — tops.
             W("eq_top_cloth", "천 조끼", EquipCategory.Top, ItemRarity.Common, null, hp: 20, block: 5, icon: "eqicon_top_0", desc: "튼튼한 천으로 만든 조끼.", drop: 25),
             W("eq_top_leather", "가죽 갑옷", EquipCategory.Top, ItemRarity.Uncommon, null, hp: 20, block: 15, icon: "eqicon_top_1", desc: "질긴 가죽 갑옷. 공격을 잘 막아 낸다.", drop: 12),
@@ -213,6 +223,16 @@ namespace DotRPG
                 iconKey = icon, description = desc, starter = starter, dropWeight = starter ? 0 : drop,
                 enhanceSeed = seed, Tier = TierFromIcon(icon),
             };
+        }
+
+        /// <summary>[FIELD BOSS] Marks a field boss accessory and gives it its growth options.</summary>
+        static EquipmentItem Boss(EquipmentItem item, int xp = 0, int aoe = 0)
+        {
+            item.bossOnly = true;
+            item.dropWeight = 0;
+            item.xpBonus = xp;
+            item.aoeBonus = aoe;
+            return item;
         }
 
         static int TierFromIcon(string iconKey)

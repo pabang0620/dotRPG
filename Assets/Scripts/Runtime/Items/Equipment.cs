@@ -61,6 +61,20 @@ namespace DotRPG
         public int BlockChance => Mathf.Clamp(Sum(s => s.block), 0, MaxBlock);
         public int SpeedBonus => Sum(s => s.speed);
         public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
+        /// <summary>[FIELD BOSS] Growth options of the worn accessories (%).</summary>
+        public int XpBonus => SumItem(e => e.xpBonus);
+        public int AoeBonus => SumItem(e => e.aoeBonus);
+
+        int SumItem(Func<EquipmentItem, int> pick)
+        {
+            int total = 0;
+            foreach (var key in slots)
+            {
+                var e = EquipmentDatabase.Get(key);
+                if (e != null) total += pick(e);
+            }
+            return total;
+        }
 
         int Sum(Func<GearStats, int> pick)
         {

@@ -75,7 +75,7 @@ export function splitGoldPiles(eco: EconomyData, total: number): number[] {
 export function rollEquipmentDrop(eco: EconomyData, cls: string, chance: number, rng: Rng): string | null {
   if (rng.unit() > chance) return null;
   const pool = eco.shop.equipmentList.filter(
-    (e) => e.dropWeight > 0 && (e.classOnly === null || e.classOnly === cls),
+    (e) => e.dropWeight > 0 && !e.bossOnly && (e.classOnly === null || e.classOnly === cls),
   );
   const total = pool.reduce((a, e) => a + e.dropWeight, 0);
   if (total <= 0) return null;
@@ -113,5 +113,11 @@ export function rollKillDrops(eco: EconomyData, def: MonsterDef, cls: string, hi
   }
   const gear = rollEquipmentDrop(eco, cls, r.equipmentDropChance * chanceMul, rng);
   if (gear) out.push({ itemKey: gear, count: 1 });
+  // 필드 보스: 강화석 3~5, 마력 정수 1은 항상, 보스 장비는 천분율로
+  if (def.bossGear) {
+    out.push({ itemKey: 'mat_ore', count: rng.int(3, 6) });
+    out.push({ itemKey: 'mat_essence', count: 1 });
+    if (rng.int(0, 1000) < def.bossGearPermille) out.push({ itemKey: keyAt(def.bossGear, 0), count: 1 });
+  }
   return out;
 }

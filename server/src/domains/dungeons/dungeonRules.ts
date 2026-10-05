@@ -69,7 +69,7 @@ const rarityIdx = (r: string): number => RARITY_ORDER.indexOf(r as (typeof RARIT
 
 /** DungeonRewards.RollGear: 몬스터 드롭표 시도(절반) 후 희귀 장비까지 든 가중 풀. +0 기본 id를 돌려준다 */
 export function rollGear(eco: EconomyData, cls: string, minRarity: string, rng: Rng): string {
-  const usable = eco.shop.equipmentList.filter((e) => e.classOnly === null || e.classOnly === cls);
+  const usable = eco.shop.equipmentList.filter((e) => !e.bossOnly && (e.classOnly === null || e.classOnly === cls));
   const min = rarityIdx(minRarity);
   if (rng.int(0, 2) === 0) {
     const dropPool = usable.filter((e) => e.dropWeight > 0);
@@ -142,7 +142,7 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
 /** 유니크 3 : 레전더리 1 가중치로, 직업이 쓸 수 있는 에픽 위 장비 하나(+0). 없으면 null */
 export function rollJackpot(eco: EconomyData, cls: string, rng: Rng): string | null {
   const pool = eco.shop.equipmentList
-    .filter((e) => !e.starter && (e.classOnly === null || e.classOnly === cls) && rarityIdx(e.rarity) >= rarityIdx('Unique'))
+    .filter((e) => !e.starter && !e.bossOnly && (e.classOnly === null || e.classOnly === cls) && rarityIdx(e.rarity) >= rarityIdx('Unique'))
     .map((e) => ({ id: e.id, w: rarityIdx(e.rarity) >= rarityIdx('Legendary') ? 1 : 3 }));
   const total = pool.reduce((a, p) => a + p.w, 0);
   if (total === 0) return null;

@@ -67,7 +67,7 @@ namespace DotRPG
             int total = 0;
             foreach (var item in EquipmentDatabase.All)
             {
-                if (item.starter || !item.UsableBy(cls) || item.rarity < ItemRarity.Unique) continue;
+                if (item.starter || item.bossOnly || !item.UsableBy(cls) || item.rarity < ItemRarity.Unique) continue;
                 int w = item.rarity >= ItemRarity.Legendary ? JackpotLegendaryWeight : JackpotUniqueWeight;
                 pool.Add((item.id, w));
                 total += w;
@@ -123,7 +123,7 @@ namespace DotRPG
             int totalWeight = 0;
             foreach (var item in EquipmentDatabase.All)
             {
-                if (item.starter || !item.UsableBy(cls) || item.rarity < minRarity) continue;
+                if (item.starter || item.bossOnly || !item.UsableBy(cls) || item.rarity < minRarity) continue;
                 int weight = item.dropWeight > 0 ? item.dropWeight : RareGearWeight;
                 pool.Add((item.id, weight));
                 totalWeight += weight;
@@ -174,7 +174,7 @@ namespace DotRPG
             EquipmentItem best = null;
             foreach (var item in EquipmentDatabase.All)
             {
-                if (item.starter || !item.UsableBy(cls) || item.rarity < min) continue;
+                if (item.starter || item.bossOnly || !item.UsableBy(cls) || item.rarity < min) continue;
                 if (best == null || item.rarity < best.rarity || (item.category == EquipCategory.Weapon && best.category != EquipCategory.Weapon && item.rarity == best.rarity)) best = item;
             }
             return best != null ? best.iconKey : "icon_chest";

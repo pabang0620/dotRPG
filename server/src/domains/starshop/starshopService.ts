@@ -66,7 +66,7 @@ function auraTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
 export function gearTable(banner: GearBanner, cls: string) {
   const cats = GEAR_BANNERS[banner].categories;
   const items = getGameData().economy.shop.equipmentList.filter(
-    (e) => !e.starter && e.rarity !== 'Common' && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.starter && !e.bossOnly && e.rarity !== 'Common' && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
   );
   const present = GEAR_RARITY_PERMILLE.filter(([r]) => items.some((e) => e.rarity === r));
   if (present.length === 0) return [];
