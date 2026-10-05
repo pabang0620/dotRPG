@@ -9,8 +9,10 @@ export const RATES_VERSION = '2026-10-05.2';
 export const RARITY_WEIGHT: Record<Rarity, number> = { common: 7700, rare: 2000, unique: 300 };
 export const RARITY_NAME: Record<Rarity, string> = { common: '일반', rare: '희귀', unique: '유니크' };
 /** 장비 뽑기: 종류별 장비 분류(shop.json category) */
-export type Banner = 'aura' | 'weapon' | 'armor' | 'accessory';
-export const GEAR_BANNERS: Record<Exclude<Banner, 'aura'>, { name: string; categories: string[] }> = {
+export type Banner = 'aura' | 'skin' | 'weapon' | 'armor' | 'accessory';
+/** 스킨 뽑기: 유니크 등급 자리에 내 직업 스킨이 나오고(중복 방지), 나머지 등급은 오라 뽑기와 같다 */
+export const SKIN_DUPLICATE_REFUND = 600;
+export const GEAR_BANNERS: Record<Exclude<Banner, 'aura' | 'skin'>, { name: string; categories: string[] }> = {
   weapon: { name: '무기 뽑기', categories: ['Weapon'] },
   armor: { name: '방어구 뽑기', categories: ['Top', 'Bottom'] },
   accessory: { name: '장신구 뽑기', categories: ['Necklace', 'Ring'] },

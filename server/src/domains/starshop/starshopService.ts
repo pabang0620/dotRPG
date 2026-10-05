@@ -8,6 +8,7 @@ import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import {
   DUPLICATE_REFUND,
+  SKIN_DUPLICATE_REFUND,
   GEAR_BANNERS,
   GEAR_RARITY_NAME,
   GEAR_RARITY_PERMILLE,
@@ -29,12 +30,18 @@ import * as repo from './starshopRepository';
 import type { ExchangeBody, PullBody } from './starshopValidation';
 
 const RARITIES: Rarity[] = ['unique', 'rare', 'common'];
-type GearBanner = Exclude<Banner, 'aura'>;
+type GearBanner = Exclude<Banner, 'aura' | 'skin'>;
 
-/** 오라 뽑기 확률표. 오라 하나 = 등급 확률 / 그 등급 오라 수(중복 방지 전 기준) */
-function auraTable() {
+/** 등급별 뽑기 풀: 오라 뽑기는 오라, 스킨 뽑기는 유니크 자리에 내 직업 스킨 */
+function poolOf(banner: 'aura' | 'skin', rarity: Rarity, cls: string) {
+  if (banner === 'skin' && rarity === 'unique') return STAR_COSMETICS.filter((c) => c.skin === cls);
+  return cosmeticsOf(rarity);
+}
+
+/** 오라·스킨 뽑기 확률표. 하나 = 등급 확률 / 그 등급 수(중복 방지 전 기준) */
+function auraTable(banner: 'aura' | 'skin' = 'aura', cls = 'warrior') {
   return RARITIES.map((rarity) => {
-    const items = cosmeticsOf(rarity);
+    const items = poolOf(banner, rarity, cls);
     const tier = RARITY_WEIGHT[rarity] / 100;
     return { rarity, name: RARITY_NAME[rarity], rate: tier, items: items.map((c) => ({ id: c.id, rate: tier / items.length })) };
   });
@@ -83,6 +90,7 @@ export async function summary(accountId: number, characterUuid: string) {
   return {
     balance: wallet.balance,
     pity: wallet.pity,
+    skin_pity: wallet.skinPity,
     pity_max: PITY_MAX,
     rates_version: RATES_VERSION,
     price_one: PULL_PRICE,
@@ -90,6 +98,7 @@ export async function summary(accountId: number, characterUuid: string) {
     ten_count: TEN_COUNT,
     refund: DUPLICATE_REFUND,
     rates: auraTable(),
+    skin_rates: auraTable('skin', ch.class),
     banners: (Object.keys(GEAR_BANNERS) as GearBanner[]).map((b) => ({
       id: b,
       name: GEAR_BANNERS[b].name,
@@ -137,12 +146,12 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       }
       let balance = await repo.changeBalance(db, accountId, -price, 'gacha', `${banner}_${body.count}`, requestId);
       const rows: repo.PullRow[] = [];
-      let pity = wallet.pity;
-      if (banner === 'aura') {
-        const r = await rollAuras(ctx, accountId, times, pity, rows);
+      let pity = banner === 'skin' ? wallet.skinPity : wallet.pity;
+      if (banner === 'aura' || banner === 'skin') {
+        const r = await rollAuras(ctx, accountId, banner, times, pity, rows);
         pity = r.pity;
-        await repo.setPity(db, accountId, pity);
-        if (r.refund > 0) balance = await repo.changeBalance(db, accountId, r.refund, 'gacha_refund', `aura_${body.count}`, requestId);
+        await repo.setPity(db, accountId, pity, banner === 'skin');
+        if (r.refund > 0) balance = await repo.changeBalance(db, accountId, r.refund, 'gacha_refund', `${banner}_${body.count}`, requestId);
       } else {
         await rollGear(ctx, banner, times, rows, body.count);
       }
@@ -163,7 +172,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
   });
 }
 
-async function rollAuras(ctx: EconCtx, accountId: number, times: number, pityStart: number, rows: repo.PullRow[]) {
+async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin', times: number, pityStart: number, rows: repo.PullRow[]) {
   const owned = await repo.ownedOf(ctx.client, accountId);
   let pity = pityStart;
   let refund = 0;
@@ -171,12 +180,12 @@ async function rollAuras(ctx: EconCtx, accountId: number, times: number, pitySta
     const pityBefore = pity;
     const byPity = pity + 1 >= PITY_MAX;
     const rarity: Rarity = byPity ? 'unique' : rollRarity();
-    const all = cosmeticsOf(rarity);
+    const all = poolOf(banner, rarity, ctx.char.class);
     const fresh = all.filter((c) => !owned.has(c.id));
     const duplicate = fresh.length === 0;
     const from = duplicate ? all : fresh;
     const item = from[getRng().int(0, from.length)]!;
-    const back = duplicate ? DUPLICATE_REFUND[rarity] : 0;
+    const back = duplicate ? (item.skin ? SKIN_DUPLICATE_REFUND : DUPLICATE_REFUND[rarity]) : 0;
     if (duplicate) refund += back;
     else {
       owned.add(item.id);

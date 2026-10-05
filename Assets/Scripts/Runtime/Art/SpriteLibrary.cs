@@ -28,7 +28,9 @@ namespace DotRPG
         {
             if (cache.TryGetValue(key, out var sprite)) return sprite;
 
-            sprite = CareerArt.Get(key) ?? WinterVillageArt.Get(key) ?? Resources.Load<Sprite>(OverrideFolder + key);
+            // Redrawn weapons (held staffs and weapon icons) live in Art/Weapons and win over the old art.
+            if (key.StartsWith("wpn_") || key.StartsWith("eqicon_")) sprite = Resources.Load<Sprite>(OverrideFolder + "Weapons/" + key);
+            sprite = sprite ?? CareerArt.Get(key) ?? WinterVillageArt.Get(key) ?? Resources.Load<Sprite>(OverrideFolder + key);
             var building = VillageBuildingArt.Find(key);
             if (sprite == null && building != null) sprite = Resources.Load<Sprite>(building.ResourcePath);
             var nature = VillageNatureArt.Find(key);

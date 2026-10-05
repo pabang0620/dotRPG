@@ -5,7 +5,7 @@ import { itemIdSchema, requestId } from '../economy/economyValidation';
 export const pullBody = z.strictObject({
   request_id: requestId,
   count: z.union([z.literal(1), z.literal(10)]),
-  banner: z.enum(['aura', 'weapon', 'armor', 'accessory']).optional(),
+  banner: z.enum(['aura', 'skin', 'weapon', 'armor', 'accessory']).optional(),
 });
 export const exchangeBody = z.strictObject({
   request_id: requestId,

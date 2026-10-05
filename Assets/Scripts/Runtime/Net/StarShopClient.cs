@@ -27,6 +27,10 @@ namespace DotRPG
     {
         public static long Balance { get; private set; }
         public static int Pity { get; private set; }
+        /// <summary>The skin banner's own pity count.</summary>
+        public static int SkinPity { get; private set; }
+        /// <summary>Skin banner rate table (its 유니크 tier = my class's skins).</summary>
+        public static readonly List<StarRate> SkinRates = new List<StarRate>();
         public static int PityMax { get; private set; } = 50;
         public static int PriceOne { get; private set; } = 100;
         public static int PriceTen { get; private set; } = 1000;
@@ -71,7 +75,8 @@ namespace DotRPG
                 foreach (var o in MiniJson.Arr(r.data, "results") ?? new List<object>())
                     results.Add(ReadPull(o as Dictionary<string, object>));
                 Balance = (long)MiniJson.Num(r.data, "balance", Balance);
-                Pity = MiniJson.Int(r.data, "pity", Pity);
+                if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity);
+                else if (banner == "aura") Pity = MiniJson.Int(r.data, "pity", Pity);
                 foreach (var p in results) if (!p.gear) Owned.Add(p.itemId);
                 // Gear goes straight into the bag (same delta as every other server grant).
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
@@ -136,6 +141,7 @@ namespace DotRPG
         {
             Balance = (long)MiniJson.Num(d, "balance");
             Pity = MiniJson.Int(d, "pity");
+            SkinPity = MiniJson.Int(d, "skin_pity");
             PityMax = MiniJson.Int(d, "pity_max", 50);
             PriceOne = MiniJson.Int(d, "price_one", 100);
             PriceTen = MiniJson.Int(d, "price_ten", 1000);
@@ -143,6 +149,8 @@ namespace DotRPG
             RatesVersion = MiniJson.Str(d, "rates_version", "");
             Rates.Clear();
             Rates.AddRange(ReadRates(MiniJson.Arr(d, "rates"), false));
+            SkinRates.Clear();
+            SkinRates.AddRange(ReadRates(MiniJson.Arr(d, "skin_rates"), false));
             Banners.Clear();
             foreach (var b in MiniJson.Arr(d, "banners") ?? new List<object>())
                 Banners.Add((MiniJson.Str(b, "id", ""), MiniJson.Str(b, "name", ""), ReadRates(MiniJson.Arr(b, "rates"), true)));

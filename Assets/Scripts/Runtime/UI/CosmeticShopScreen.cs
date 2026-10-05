@@ -35,7 +35,7 @@ namespace DotRPG
 
         public static CosmeticShopScreen Create(Transform canvas)
         {
-            var s = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "캐시샵 · 옷장", "menuicon_cosmetics");
+            var s = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "옷장", "menuicon_cosmetics");
             s.store = Game.Cosmetics;
             var viewport = UIFactory.Stretch(UIFactory.Rect(s.content, "Viewport"));
             s.layout = UIFactory.Stretch(UIFactory.Rect(viewport, "Layout"));
@@ -45,7 +45,7 @@ namespace DotRPG
                 var t = (Tab)i;
                 s.tabs.Add(StoreButton(s.layout, "Tab_" + t, TabNames[i], TopLeft, TopLeft, new Vector2(i * 146f, 0f), new Vector2(138f, TabH), () => s.SelectTab(t), 19));
             }
-            s.gacha = StoreButton(s.layout, "Gacha", "별조각 뽑기", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
+            s.gacha = StoreButton(s.layout, "Gacha", "캐시샵 (뽑기)", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
             s.wallet = Label(s.layout, "Wallet", "", 19, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-212f, 0f), new Vector2(300f, TabH), TextAnchor.MiddleRight);
 
             // Left: the list of the current tab, scrolling inside its panel.
@@ -93,10 +93,10 @@ namespace DotRPG
 
             s.title = Label(detail.transform, "Title", "", 30, TopLeft, TopLeft, new Vector2(300f, -20f), new Vector2(440f, 44f), TextAnchor.MiddleLeft);
             s.bonus = Label(detail.transform, "Bonus", "", 22, TopLeft, TopLeft, new Vector2(300f, -68f), new Vector2(440f, 34f), TextAnchor.MiddleLeft);
-            s.description = Label(detail.transform, "Description", "", 19, TopLeft, TopLeft, new Vector2(300f, -108f), new Vector2(440f, 190f), TextAnchor.UpperLeft);
-            s.action = StoreButton(detail.transform, "PurchaseOrEquip", "", TopLeft, TopLeft, new Vector2(300f, -306f), new Vector2(440f, 58f), s.ActivateSelected, 22);
+            s.description = Label(detail.transform, "Description", "", 18, TopLeft, TopLeft, new Vector2(300f, -108f), new Vector2(440f, 200f), TextAnchor.UpperLeft);
+            s.action = StoreButton(detail.transform, "PurchaseOrEquip", "", TopLeft, TopLeft, new Vector2(300f, -320f), new Vector2(440f, 58f), s.ActivateSelected, 22);
             s.actionLabel = s.action.GetComponentInChildren<Text>();
-            s.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft, new Vector2(300f, -372f), new Vector2(440f, 44f), s.Restore, 18);
+            s.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft, new Vector2(300f, -386f), new Vector2(440f, 44f), s.Restore, 18);
             s.restoreLabel = s.restore.GetComponentInChildren<Text>();
             s.status = Label(detail.transform, "Status", "", 17, TopLeft, TopLeft, new Vector2(20f, -330f), new Vector2(260f, 120f), TextAnchor.UpperLeft);
             s.footer = Label(s.layout, "Footer", "↑↓ 고르기   → 다시 불러오기   Enter / A 실행   ESC / B 닫기", 16,
@@ -200,10 +200,11 @@ namespace DotRPG
             }
             title.text = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{product.Name}</color>";
             bonus.text = product.DamagePercent > 0 ? $"착용 시 <color=#ffb347>공격력 +{product.DamagePercent}%</color>" : "<color=#8c96a8>능력치 없음</color>";
-            string price = product.IsFree ? "무료" : owned ? "보유 중" : offer != null ? $"가격 {offer.LocalizedPrice}" : store.IsAvailable ? "확인 중" : "온라인 전용";
+            // The price is on the buy button; here only what it is (kept short so it never runs under the button).
+            string have = product.IsFree ? "무료" : owned ? "<color=#8fe28f>보유 중</color>" : store.IsAvailable ? "" : "<color=#8c96a8>온라인 전용</color>";
             description.text = skin != null
-                ? $"<color=#ffb347>코스튬 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n\n{skin.blurb}\n\n8방향 모든 동작 전용 그림 · 걸으면 잔상과 입자\n\n{price}"
-                : $"{(product.IsFree ? "기본" : CosmeticCatalog.RarityName(product.Rarity))} 등급 발밑 오라 · 영구 소장\n모든 직업 공용\n\n{price}";
+                ? $"<color=#ffb347>코스튬 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n<color=#b8c4d8>8방향 모든 동작 전용 그림 · 걸으면 잔상과 입자</color>\n{have}"
+                : $"{(product.IsFree ? "기본" : CosmeticCatalog.RarityName(product.Rarity))} 등급 발밑 오라 · 영구 소장\n모든 직업 공용\n{have}";
             actionLabel.text = equipped ? (skin != null ? "벗기" : "착용 중") : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 구매" : "온라인 전용";
             action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;

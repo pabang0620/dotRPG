@@ -3,23 +3,24 @@ import type { Queryable } from '../../db/pool';
 export interface Wallet {
   balance: number;
   pity: number;
+  skinPity: number;
 }
 
 /** 지갑 행을 만들고(없으면) 잠근다. 같은 계정의 다른 캐릭터 요청도 여기서 줄을 선다 */
 export async function lockWallet(db: Queryable, accountId: number): Promise<Wallet> {
   await db.query('INSERT INTO star_wallets (account_id) VALUES ($1) ON CONFLICT DO NOTHING', [accountId]);
-  const r = await db.query<{ balance: string; pity: number }>(
-    'SELECT balance, pity FROM star_wallets WHERE account_id = $1 FOR UPDATE',
+  const r = await db.query<{ balance: string; pity: number; skin_pity: number }>(
+    'SELECT balance, pity, skin_pity FROM star_wallets WHERE account_id = $1 FOR UPDATE',
     [accountId],
   );
   const row = r.rows[0];
-  return { balance: Number(row?.balance ?? 0), pity: row?.pity ?? 0 };
+  return { balance: Number(row?.balance ?? 0), pity: row?.pity ?? 0, skinPity: row?.skin_pity ?? 0 };
 }
 
 export async function readWallet(db: Queryable, accountId: number): Promise<Wallet> {
-  const r = await db.query<{ balance: string; pity: number }>('SELECT balance, pity FROM star_wallets WHERE account_id = $1', [accountId]);
+  const r = await db.query<{ balance: string; pity: number; skin_pity: number }>('SELECT balance, pity, skin_pity FROM star_wallets WHERE account_id = $1', [accountId]);
   const row = r.rows[0];
-  return { balance: Number(row?.balance ?? 0), pity: row?.pity ?? 0 };
+  return { balance: Number(row?.balance ?? 0), pity: row?.pity ?? 0, skinPity: row?.skin_pity ?? 0 };
 }
 
 /** 잔액을 바꾸고 원장에 남긴다. 잔액 CHECK(>= 0)가 마지막 안전장치다 */
@@ -44,8 +45,8 @@ export async function changeBalance(
   return after;
 }
 
-export async function setPity(db: Queryable, accountId: number, pity: number): Promise<void> {
-  await db.query('UPDATE star_wallets SET pity = $2, updated_at = now() WHERE account_id = $1', [accountId, pity]);
+export async function setPity(db: Queryable, accountId: number, pity: number, skin = false): Promise<void> {
+  await db.query(`UPDATE star_wallets SET ${skin ? 'skin_pity' : 'pity'} = $2, updated_at = now() WHERE account_id = $1`, [accountId, pity]);
 }
 
 export async function ownedOf(db: Queryable, accountId: number): Promise<Set<string>> {
