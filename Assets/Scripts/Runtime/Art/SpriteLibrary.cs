@@ -28,6 +28,16 @@ namespace DotRPG
         {
             if (cache.TryGetValue(key, out var sprite)) return sprite;
 
+            // [GEAR] "gear:<id>": the item's own icon (Art/Gear/eqicon_<id>) once drawn, else the old icon of its tier band.
+            if (key.StartsWith("gear:"))
+            {
+                string id = key.Substring(5);
+                sprite = Resources.Load<Sprite>(OverrideFolder + "Gear/eqicon_" + id);
+                if (sprite == null) sprite = Get(EquipmentDatabase.Get(id)?.fallbackIcon ?? "icon_chest");
+                cache[key] = sprite;
+                return sprite;
+            }
+
             // Redrawn weapons (held staffs and weapon icons) live in Art/Weapons and win over the old art.
             if (key.StartsWith("wpn_") || key.StartsWith("eqicon_")) sprite = Resources.Load<Sprite>(OverrideFolder + "Weapons/" + key);
             sprite = sprite ?? CareerArt.Get(key) ?? WinterVillageArt.Get(key) ?? Resources.Load<Sprite>(OverrideFolder + key);

@@ -107,21 +107,21 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             // The real window passes the player's class: use it, with a weapon of that class for the worn-weapon cases.
             var cls = Game.Player.Class;
-            string weapon = cls == CharacterClass.Mage ? "eq_staff_crystal" : "eq_sword_iron";
+            string weapon = cls == CharacterClass.Mage ? "eq_staff_10_u" : "eq_sword_10_u";
             string weapon12 = EquipmentDatabase.KeyFor(weapon, 12);
             string starter = EquipmentDatabase.StarterWeapon(cls), starter12 = EquipmentDatabase.KeyFor(starter, 12);
             const CharacterClass warrior = CharacterClass.Warrior;
-            const string iron = "eq_sword_iron", iron10 = "eq_sword_iron+10", iron11 = "eq_sword_iron+11", iron12 = "eq_sword_iron+12";
-            const string top10 = "eq_top_leather+10", ring9 = "eq_ring_copper+9", iron20 = "eq_sword_iron+20";
+            const string iron = "eq_sword_10_u", iron10 = "eq_sword_10_u+10", iron11 = "eq_sword_10_u+11", iron12 = "eq_sword_10_u+12";
+            const string top10 = "eq_plate_1_u+10", ring9 = "eq_ring_1_c+9", iron20 = "eq_sword_10_u+20";
             const string gold = ConsumableDatabase.Gold, ticket = ConsumableDatabase.ProtectTicket;
 
             Check($"keys: KeyFor(iron,10)={EquipmentDatabase.KeyFor(iron, 10)} KeyFor(iron,0)={EquipmentDatabase.KeyFor(iron, 0)} KeyFor(iron,25)={EquipmentDatabase.KeyFor(iron, 25)} " +
                   $"BaseId={EquipmentDatabase.BaseId(iron12)} LevelOfKey={EquipmentDatabase.LevelOfKey(iron12)} name='{Game.Config.GetItem(iron12).displayName}' sprite={EquipmentDatabase.WeaponSprite(iron12, warrior)}",
                 EquipmentDatabase.KeyFor(iron, 10) == iron10 && EquipmentDatabase.KeyFor(iron, 0) == iron && EquipmentDatabase.KeyFor(iron, 25) == iron20
                 && EquipmentDatabase.BaseId(iron12) == iron && EquipmentDatabase.LevelOfKey(iron12) == 12 && EquipmentDatabase.Get(iron12) == EquipmentDatabase.Get(iron)
-                && EquipmentDatabase.IsEquipment(iron12) && EquipmentDatabase.TierOf(iron12) == 1 && EquipmentDatabase.WeaponSprite(iron12, warrior) == "wpn_sword_1"
-                && Game.Config.GetItem(iron12).displayName == "철검 +12" && Game.Config.GetItem(iron12).iconKey == "eqicon_sword_1"
-                && EquipmentDatabase.Get("eq_sword_iron+0") == null && EquipmentDatabase.Get("eq_sword_iron+21") == null);
+                && EquipmentDatabase.IsEquipment(iron12) && EquipmentDatabase.TierOf(iron12) == 1
+                && Game.Config.GetItem(iron12).displayName == "뼈손잡이 장검 +12"
+                && EquipmentDatabase.Get("eq_sword_10_u+0") == null && EquipmentDatabase.Get("eq_sword_10_u+21") == null);
 
             // Scratch setup: empty bag and slots, plenty of gold and materials, no protection ticket.
             bag.Clear();
@@ -136,11 +136,11 @@ namespace DotRPG
             bag.Add(iron10, 1);
             var cost = eq.CostFor(iron10);
             Check($"cost from +10: gold {cost.gold} bone {cost.bone} ore {cost.ore} essence {cost.essence} chance {cost.successPercent}% on fail {cost.failure}",
-                cost.gold == 120 && cost.bone == 12 && cost.ore == 4 && cost.essence == 1 && cost.successPercent == 25 && cost.failure == EnhanceFailure.Drop3);
+                cost.gold == 90 && cost.bone == 12 && cost.ore == 4 && cost.essence == 1 && cost.successPercent == 25 && cost.failure == EnhanceFailure.Drop3);
             int g0 = bag.Count(gold), b0 = bag.Count(EnhanceRules.Bone), o0 = bag.Count(EnhanceRules.Ore), e0 = bag.Count(EnhanceRules.Essence);
             var r = eq.TryEnhance(EnhanceTarget.Bag(iron10), 25, warrior);
-            Check($"+10 roll 25 without pity fails: {r.kind} {r.oldKey} -> {r.newKey}, bag +7={bag.Count("eq_sword_iron+7")} +10={bag.Count(iron10)} pity(+10)={eq.PityOf(iron10)}",
-                r.kind == EnhanceOutcome.Drop3 && r.newKey == "eq_sword_iron+7" && r.newLevel == 7 && bag.Count("eq_sword_iron+7") == 1 && bag.Count(iron10) == 0 && eq.PityOf(iron10) == 1);
+            Check($"+10 roll 25 without pity fails: {r.kind} {r.oldKey} -> {r.newKey}, bag +7={bag.Count("eq_sword_10_u+7")} +10={bag.Count(iron10)} pity(+10)={eq.PityOf(iron10)}",
+                r.kind == EnhanceOutcome.Drop3 && r.newKey == "eq_sword_10_u+7" && r.newLevel == 7 && bag.Count("eq_sword_10_u+7") == 1 && bag.Count(iron10) == 0 && eq.PityOf(iron10) == 1);
             Check($"+10 fail paid: gold -{g0 - bag.Count(gold)} bone -{b0 - bag.Count(EnhanceRules.Bone)} ore -{o0 - bag.Count(EnhanceRules.Ore)} essence -{e0 - bag.Count(EnhanceRules.Essence)}",
                 g0 - bag.Count(gold) == cost.gold && b0 - bag.Count(EnhanceRules.Bone) == cost.bone
                 && o0 - bag.Count(EnhanceRules.Ore) == cost.ore && e0 - bag.Count(EnhanceRules.Essence) == cost.essence);
@@ -149,7 +149,7 @@ namespace DotRPG
             bag.Add(iron11, 1);
             r = eq.TryEnhance(EnhanceTarget.Bag(iron11), 15, warrior);
             Check($"+11 roll 15 without pity fails: {r.kind} -> {r.newKey}, pity(+11)={eq.PityOf(iron11)}",
-                r.kind == EnhanceOutcome.Drop3 && r.newKey == "eq_sword_iron+8" && bag.Count("eq_sword_iron+8") == 1 && bag.Count(iron11) == 0 && eq.PityOf(iron11) == 1);
+                r.kind == EnhanceOutcome.Drop3 && r.newKey == "eq_sword_10_u+8" && bag.Count("eq_sword_10_u+8") == 1 && bag.Count(iron11) == 0 && eq.PityOf(iron11) == 1);
 
             // The same rolls with 1%p pity succeed: +10 roll 25 → +11 (pity(+10) cleared, +11 keeps its own) ...
             bag.Add(iron10, 1);
@@ -198,7 +198,7 @@ namespace DotRPG
             cost = eq.CostFor(top10);
             r = eq.TryEnhance(EnhanceTarget.Bag(top10), 99, cls);
             Check($"bag leather top +10 fail, weapon slot empty: risk {cost.failure} gold {cost.gold} -> {r.kind}, left {bag.Count(top10)}, weapon slot '{eq[EquipSlot.Weapon]}'",
-                cost.failure == EnhanceFailure.Destroy && cost.gold == 96 && r.kind == EnhanceOutcome.Destroyed && bag.Count(top10) == 0 && eq.PityOf(top10) == 0
+                cost.failure == EnhanceFailure.Destroy && cost.gold == 48 && r.kind == EnhanceOutcome.Destroyed && bag.Count(top10) == 0 && eq.PityOf(top10) == 0
                 && string.IsNullOrEmpty(eq[EquipSlot.Weapon]));
             bag.Add(ring9, 1);
             r = eq.TryEnhance(EnhanceTarget.Bag(ring9), 99, warrior);
@@ -210,35 +210,35 @@ namespace DotRPG
             r = eq.TryEnhance(EnhanceTarget.Bag(iron20), 0, warrior);
             Check($"+20: {r.kind}, gold unchanged={bag.Count(gold) == goldBefore}", r.kind == EnhanceOutcome.MaxLevel && bag.Count(gold) == goldBefore && bag.Count(iron20) == 1);
             bag.Remove(gold, bag.Count(gold));
-            r = eq.TryEnhance(EnhanceTarget.Bag("eq_sword_iron+7"), 0, warrior);
-            Check($"no gold: {r.kind}, +7 kept={bag.Count("eq_sword_iron+7")}", r.kind == EnhanceOutcome.NotEnough && bag.Count("eq_sword_iron+7") == 1);
+            r = eq.TryEnhance(EnhanceTarget.Bag("eq_sword_10_u+7"), 0, warrior);
+            Check($"no gold: {r.kind}, +7 kept={bag.Count("eq_sword_10_u+7")}", r.kind == EnhanceOutcome.NotEnough && bag.Count("eq_sword_10_u+7") == 1);
             bag.Add(gold, 100000);
 
             // Bag order: database order, then the higher +level first.
             string order = string.Join(",", EquipmentDatabase.GearKeys(bag));
-            Check($"bag order: {order}", order == "eq_sword_iron+20,eq_sword_iron+12,eq_sword_iron+8,eq_sword_iron+7,eq_ring_copper+9");
+            Check($"bag order: {order}", order == "eq_sword_10_u+20,eq_sword_10_u+12,eq_sword_10_u+8,eq_sword_10_u+7,eq_ring_1_c+9");
 
             // Growth: ≈ +50% of base + weapon attack at +12, HP for everything else, never block / speed / accessory attack.
             int AttackBonus(string key) => EquipmentDatabase.StatsOfKey(key).attack - EquipmentDatabase.StatsOfKey(EquipmentDatabase.BaseId(key)).attack;
             int HpBonus(string key) => EquipmentDatabase.StatsOfKey(key).maxHealth - EquipmentDatabase.StatsOfKey(EquipmentDatabase.BaseId(key)).maxHealth;
-            Check($"iron sword +12 attack +{AttackBonus(iron12)} (expect 10)", AttackBonus(iron12) == 10);
-            Check($"dragon sword +12 attack +{AttackBonus("eq_sword_dragon+12")} (expect 20)", AttackBonus("eq_sword_dragon+12") == 20);
-            Check($"leather top +10 hp +{HpBonus(top10)} (expect 14)", HpBonus(top10) == 14);
-            var topBase = EquipmentDatabase.StatsOfKey("eq_top_leather");
-            var top = EquipmentDatabase.StatsOfKey("eq_top_leather+20");
-            var ruby = EquipmentDatabase.StatsOfKey("eq_ring_ruby+20");
+            Check($"iron sword +12 attack +{AttackBonus(iron12)} (expect 8)", AttackBonus(iron12) == 8);
+            Check($"dragon sword +12 attack +{AttackBonus("eq_sword_20_l+12")} (expect 13)", AttackBonus("eq_sword_20_l+12") == 13);
+            Check($"plate top +10 hp +{HpBonus(top10)} (expect 9)", HpBonus(top10) == 9);
+            var topBase = EquipmentDatabase.StatsOfKey("eq_plate_1_u");
+            var top = EquipmentDatabase.StatsOfKey("eq_plate_1_u+20");
+            var ruby = EquipmentDatabase.StatsOfKey("eq_ring_10_un+20");
             Check($"no block/speed/accessory-attack growth: top block {topBase.block}->{top.block} speed {topBase.speed}->{top.speed}, ruby +20 attack {ruby.attack}",
-                top.block == topBase.block && top.speed == topBase.speed && top.attack == topBase.attack && ruby.attack == EquipmentDatabase.Get("eq_ring_ruby").attack);
+                top.block == topBase.block && top.speed == topBase.speed && top.attack == topBase.attack && ruby.attack == EquipmentDatabase.Get("eq_ring_10_un").attack);
             string flat = null;
             foreach (var item in EquipmentDatabase.All)
                 for (int l = 1; l <= EquipmentDatabase.MaxEnhance && flat == null; l++)
                     if (item.StatsAt(l).Score <= item.StatsAt(l - 1).Score) flat = $"{item.id} +{l}";
             Check($"전투력 rises at every +level for all gear{(flat != null ? " (flat at " + flat + ")" : "")}", flat == null);
             eq.Set(EquipSlot.Weapon, iron12);
-            Check($"worn iron +12: AttackBonus {eq.AttackBonus} (expect 20)", eq.AttackBonus == 20);
+            Check($"worn iron +12: AttackBonus {eq.AttackBonus} (expect 16)", eq.AttackBonus == 16);
 
             // Prices: gear sells for more with its level; the ticket is shop-only.
-            Check($"sell iron +0 {ItemPrices.SellPrice(iron)} G / +12 {ItemPrices.SellPrice(iron12)} G (expect 25 / 100)", ItemPrices.SellPrice(iron) == 25 && ItemPrices.SellPrice(iron12) == 100);
+            Check($"sell iron +0 {ItemPrices.SellPrice(iron)} G / +12 {ItemPrices.SellPrice(iron12)} G (expect 31 / 124)", ItemPrices.SellPrice(iron) == 31 && ItemPrices.SellPrice(iron12) == 124);
             Check($"ticket: buy {ItemPrices.BuyPrice(ticket)} G, sell {ItemPrices.SellPrice(ticket)} G, last on the shelf, not usable by hand",
                 ItemPrices.BuyPrice(ticket) == 3000 && ItemPrices.SellPrice(ticket) == 0 && Array.IndexOf(ItemPrices.ShopStock, ticket) == ItemPrices.ShopStock.Length - 1
                 && !ConsumableDatabase.IsUsable(ticket) && ConsumableDatabase.IsTicket(ticket));
@@ -250,18 +250,18 @@ namespace DotRPG
             var eq = Game.Session.Equipment;
             var bag = Game.Session.Inventory;
             var saved = new List<string>(new string[Equipment.SlotCount]);
-            saved[(int)EquipSlot.Weapon] = "eq_staff_crystal+0";
-            saved[(int)EquipSlot.Top] = "eq_top_leather+25";
-            saved[(int)EquipSlot.Bottom] = "eq_bot_cloth+05";
-            saved[(int)EquipSlot.Necklace] = "eq_ring_copper+3"; // valid key, wrong slot
+            saved[(int)EquipSlot.Weapon] = "eq_staff_10_u+0";
+            saved[(int)EquipSlot.Top] = "eq_robe_1_u+25";
+            saved[(int)EquipSlot.Bottom] = "eq_skirt_1_c+05";
+            saved[(int)EquipSlot.Necklace] = "eq_ring_1_c+3"; // valid key, wrong slot
             saved[(int)EquipSlot.Ring1] = "eq_unknown_thing+2";
-            int ring3 = bag.Count("eq_ring_copper+3"), unknown = bag.Count("eq_unknown_thing+2");
+            int ring3 = bag.Count("eq_ring_1_c+3"), unknown = bag.Count("eq_unknown_thing+2");
             eq.Load(saved);
             Check($"load odd worn keys: weapon {eq[EquipSlot.Weapon]} top {eq[EquipSlot.Top]} bottom {eq[EquipSlot.Bottom]} necklace '{eq[EquipSlot.Necklace]}' ring1 '{eq[EquipSlot.Ring1]}', " +
-                  $"to bag: ring+3 {bag.Count("eq_ring_copper+3") - ring3} unknown {bag.Count("eq_unknown_thing+2") - unknown}",
-                eq[EquipSlot.Weapon] == "eq_staff_crystal" && eq[EquipSlot.Top] == "eq_top_leather+20" && eq[EquipSlot.Bottom] == "eq_bot_cloth+5"
+                  $"to bag: ring+3 {bag.Count("eq_ring_1_c+3") - ring3} unknown {bag.Count("eq_unknown_thing+2") - unknown}",
+                eq[EquipSlot.Weapon] == "eq_staff_10_u" && eq[EquipSlot.Top] == "eq_robe_1_u+20" && eq[EquipSlot.Bottom] == "eq_skirt_1_c+5"
                 && eq[EquipSlot.Necklace] == null && eq[EquipSlot.Ring1] == null
-                && bag.Count("eq_ring_copper+3") == ring3 + 1 && bag.Count("eq_unknown_thing+2") == unknown + 1);
+                && bag.Count("eq_ring_1_c+3") == ring3 + 1 && bag.Count("eq_unknown_thing+2") == unknown + 1);
             bag.Remove("eq_unknown_thing+2", bag.Count("eq_unknown_thing+2"));
         }
 
@@ -272,7 +272,7 @@ namespace DotRPG
             var eq = session.Equipment;
             var bag = session.Inventory;
             // The mage keeps an enhanced staff worn through Restore (EnsureUsable), so worn keys are checked too.
-            eq.Set(EquipSlot.Weapon, "eq_staff_crystal+9");
+            eq.Set(EquipSlot.Weapon, "eq_staff_10_u+9");
             string bagBefore = Dump(bag.ToList()), pityBefore = Dump(eq.PityToList()), wornBefore = string.Join(",", eq.ToList());
             var data = session.Capture(Game.Player.Position, Game.Player.Facing);
             string json = JsonUtility.ToJson(data);
@@ -282,7 +282,7 @@ namespace DotRPG
             string bagAfter = Dump(copy.Inventory.ToList()), pityAfter = Dump(copy.Equipment.PityToList()), wornAfter = string.Join(",", copy.Equipment.ToList());
             Check($"save round trip v{data.version}: worn [{wornAfter}] pity [{pityAfter}] bag [{bagAfter}]",
                 data.version == SaveData.CurrentVersion && bagAfter == bagBefore && wornAfter == wornBefore && pityAfter == pityBefore
-                && pityAfter == "eq_sword_iron+11:1" && json.Contains("\"eq_sword_iron+8\"") && json.Contains("\"enhancePity\"") && data.enhanceLevels.Count == 0
+                && pityAfter == "eq_sword_10_u+11:1" && json.Contains("\"eq_sword_10_u+8\"") && json.Contains("\"enhancePity\"") && data.enhanceLevels.Count == 0
                 && !json.Contains("enhanceCompensation"));
 
             const int slot = 6;
@@ -296,27 +296,27 @@ namespace DotRPG
                 && string.Join(",", copy2.Equipment.ToList()) == wornBefore && Dump(copy2.Equipment.PityToList()) == pityBefore);
 
             var v3 = new SaveData { version = 3, playerClass = "warrior" };
-            v3.equipped = new List<string> { "eq_sword_iron", "", "", "", "", "" };
-            v3.enhanceLevels.Add(new ItemStack("eq_sword_iron", 5));
-            v3.enhanceLevels.Add(new ItemStack("eq_ring_copper", 3));
-            v3.inventory.Add(new ItemStack("eq_ring_copper", 2));
-            v3.enhanceLevels.Add(new ItemStack("eq_neck_leaf", 4));
-            v3.storage.Add(new ItemStack("eq_neck_leaf", 1));
-            v3.enhanceLevels.Add(new ItemStack("eq_top_cloth", 2));
-            v3.inventory.Add(new ItemStack("eq_top_cloth", 1));
-            v3.enhanceLevels.Add(new ItemStack("eq_bot_cloth", 6)); // held nowhere: nothing converted, no ticket
+            v3.equipped = new List<string> { "eq_sword_10_u", "", "", "", "", "" };
+            v3.enhanceLevels.Add(new ItemStack("eq_sword_10_u", 5));
+            v3.enhanceLevels.Add(new ItemStack("eq_ring_1_c", 3));
+            v3.inventory.Add(new ItemStack("eq_ring_1_c", 2));
+            v3.enhanceLevels.Add(new ItemStack("eq_neck_1_c", 4));
+            v3.storage.Add(new ItemStack("eq_neck_1_c", 1));
+            v3.enhanceLevels.Add(new ItemStack("eq_plate_1_c", 2));
+            v3.inventory.Add(new ItemStack("eq_plate_1_c", 1));
+            v3.enhanceLevels.Add(new ItemStack("eq_greaves_1_c", 6)); // held nowhere: nothing converted, no ticket
             var m = SaveSystem.Migrate(JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(v3)));
             Check($"v3 -> v{m.version}: worn weapon {m.equipped[0]}, enhanceLevels left {m.enhanceLevels.Count}",
-                m.version == SaveData.CurrentVersion && m.equipped[0] == "eq_sword_iron+5" && m.enhanceLevels.Count == 0);
-            Check($"v3 -> v{m.version} kind only in the bag: copper {CountIn(m.inventory, "eq_ring_copper")} + copper+3 {CountIn(m.inventory, "eq_ring_copper+3")}",
-                CountIn(m.inventory, "eq_ring_copper") == 1 && CountIn(m.inventory, "eq_ring_copper+3") == 1);
-            Check($"v3 -> v{m.version} kind only in storage: leaf {CountIn(m.storage, "eq_neck_leaf")} + leaf+4 {CountIn(m.storage, "eq_neck_leaf+4")}",
-                CountIn(m.storage, "eq_neck_leaf") == 0 && CountIn(m.storage, "eq_neck_leaf+4") == 1);
+                m.version == SaveData.CurrentVersion && m.equipped[0] == "eq_sword_10_u+5" && m.enhanceLevels.Count == 0);
+            Check($"v3 -> v{m.version} kind only in the bag: copper {CountIn(m.inventory, "eq_ring_1_c")} + copper+3 {CountIn(m.inventory, "eq_ring_1_c+3")}",
+                CountIn(m.inventory, "eq_ring_1_c") == 1 && CountIn(m.inventory, "eq_ring_1_c+3") == 1);
+            Check($"v3 -> v{m.version} kind only in storage: leaf {CountIn(m.storage, "eq_neck_1_c")} + leaf+4 {CountIn(m.storage, "eq_neck_1_c+4")}",
+                CountIn(m.storage, "eq_neck_1_c") == 0 && CountIn(m.storage, "eq_neck_1_c+4") == 1);
             Check($"v3 -> v{m.version} compensation: 4 kinds converted -> {m.enhanceCompensation} tickets, bag tickets {CountIn(m.inventory, ConsumableDatabase.ProtectTicket)} (max {SaveSystem.MaxEnhanceCompensation})",
                 m.enhanceCompensation == SaveSystem.MaxEnhanceCompensation && CountIn(m.inventory, ConsumableDatabase.ProtectTicket) == SaveSystem.MaxEnhanceCompensation);
             var one = new SaveData { version = 3, playerClass = "mage" };
-            one.equipped = new List<string> { "eq_staff_crystal", "", "", "", "", "" };
-            one.enhanceLevels.Add(new ItemStack("eq_staff_crystal", 7));
+            one.equipped = new List<string> { "eq_staff_10_u", "", "", "", "", "" };
+            one.enhanceLevels.Add(new ItemStack("eq_staff_10_u", 7));
             var m1 = SaveSystem.Migrate(JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(one)));
             var m1again = SaveSystem.Migrate(JsonUtility.FromJson<SaveData>(JsonUtility.ToJson(m1))); // as written, then read again
             Check($"v3 -> v{m1.version} one kind: {m1.enhanceCompensation} ticket(s), re-run grants {m1again.enhanceCompensation}",
@@ -339,7 +339,7 @@ namespace DotRPG
         IEnumerator EnhanceWindowChecks()
         {
             var bag = Game.Session.Inventory;
-            const string staff12 = "eq_staff_crystal+12", staff13 = "eq_staff_crystal+13", staff3 = "eq_staff_crystal+3", staff4 = "eq_staff_crystal+4";
+            const string staff12 = "eq_staff_10_u+12", staff13 = "eq_staff_10_u+13", staff3 = "eq_staff_10_u+3", staff4 = "eq_staff_10_u+4";
             bag.Remove(ConsumableDatabase.ProtectTicket, bag.Count(ConsumableDatabase.ProtectTicket)); // show the destroy risk
             bag.Add(staff12, 1);
             bag.Add(staff3, 1);
@@ -366,7 +366,7 @@ namespace DotRPG
             bool asked = Game.UI.Top == dialog;
             string question = dialog.DevMessage;
             Check($"+12 attempt asks over the window: top={TopName} blacksmith visible={smithy.gameObject.activeSelf} '{Strip(question).Replace('\n', '|')}'",
-                asked && smithy.gameObject.activeSelf && question == "<b>수정 지팡이 +12</b> → +13  (성공 14%)\n실패하면 장비가 파괴됩니다. 강화할까요?");
+                asked && smithy.gameObject.activeSelf && question == "<b>뼈 장식 지팡이 +12</b> → +13  (성공 14%)\n실패하면 장비가 파괴됩니다. 강화할까요?");
             yield return Shot("03l2_enhance_confirm");
             smithy.DevPress(); // the window under the dialog takes no input
             yield return null;
@@ -436,8 +436,8 @@ namespace DotRPG
             bool refused = Game.UI.Top == smithy && smithy.DevBusy;
             Game.Flow.CloseInventory();
             yield return Wait(1.4f);
-            Check($"mid-swing: busy={busyNow} Close() refused={refused}, hidden -> busy={smithy.DevBusy} gold -{gold3 - Game.Session.Gold} +4={bag.Count(staff4)} +5={bag.Count("eq_staff_crystal+5")}",
-                busyNow && refused && !smithy.DevBusy && !smithy.gameObject.activeSelf && Game.Session.Gold == gold3 && bag.Count(staff4) == 1 && bag.Count("eq_staff_crystal+5") == 0);
+            Check($"mid-swing: busy={busyNow} Close() refused={refused}, hidden -> busy={smithy.DevBusy} gold -{gold3 - Game.Session.Gold} +4={bag.Count(staff4)} +5={bag.Count("eq_staff_10_u+5")}",
+                busyNow && refused && !smithy.DevBusy && !smithy.gameObject.activeSelf && Game.Session.Gold == gold3 && bag.Count(staff4) == 1 && bag.Count("eq_staff_10_u+5") == 0);
 
             // Reopen: first entry again; a +0 → +1 step whose rounded bonus is still 0 says so.
             yield return OpenBlacksmith();
@@ -448,8 +448,8 @@ namespace DotRPG
             Check($"oak staff +0 -> +1 no-stat hint: '{Strip(smithy.DevStats).Replace('\n', '|')}'", oak && smithy.DevStats.Contains(NoStatText));
 
             // More than 20 entries: a second page instead of running past the grid.
-            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) bag.Add(EquipmentDatabase.KeyFor("eq_ring_copper", l), 1);
-            bool last = smithy.DevSelect("eq_ring_copper+1");
+            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) bag.Add(EquipmentDatabase.KeyFor("eq_ring_1_c", l), 1);
+            bool last = smithy.DevSelect("eq_ring_1_c+1");
             yield return Wait(0.2f);
             Check($"paging: {smithy.DevEntries} entries, last one selected={last} on page {smithy.DevPage}, result line '{Strip(smithy.DevResult)}'",
                 last && smithy.DevEntries > 20 && smithy.DevPage.StartsWith("2 /") && smithy.DevResult == "");
@@ -462,8 +462,8 @@ namespace DotRPG
         IEnumerator BagPagingChecks()
         {
             var bag = Game.Session.Inventory;
-            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) bag.Add(EquipmentDatabase.KeyFor("eq_ring_copper", l), 1);
-            for (int l = 1; l <= 10; l++) bag.Add(EquipmentDatabase.KeyFor("eq_sword_iron", l), 1);
+            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) bag.Add(EquipmentDatabase.KeyFor("eq_ring_1_c", l), 1);
+            for (int l = 1; l <= 10; l++) bag.Add(EquipmentDatabase.KeyFor("eq_sword_10_u", l), 1);
             Game.Flow.OpenWindow(Game.UI.Equipment);
             yield return Wait(0.3f);
             var screen = Game.UI.Equipment;
@@ -495,10 +495,10 @@ namespace DotRPG
         IEnumerator ShopSellChecks()
         {
             var bag = Game.Session.Inventory;
-            const string iron12 = "eq_sword_iron+12";
+            const string iron12 = "eq_sword_10_u+12";
             bag.Add(iron12, 1);
-            bag.Add("eq_sword_iron", 1);
-            bag.Add("eq_ring_copper+3", 1);
+            bag.Add("eq_sword_10_u", 1);
+            bag.Add("eq_ring_1_c+3", 1);
             bag.Add(EnhanceRules.Bone, 5);
             var shop = Game.UI.Shop;
             shop.SetKeeper("상인", "어서 오세요.");
@@ -516,7 +516,7 @@ namespace DotRPG
             shop.DevTrade(1);
             yield return Wait(0.3f);
             Check($"selling {iron12} asks over the shop: top={TopName} shop visible={shop.gameObject.activeSelf} '{Strip(dialog.DevMessage)}'",
-                Game.UI.Top == dialog && shop.gameObject.activeSelf && dialog.DevMessage == "철검 +12 을(를) 100 G에 판매할까요?" && bag.Count(iron12) == 1);
+                Game.UI.Top == dialog && shop.gameObject.activeSelf && dialog.DevMessage == "뼈손잡이 장검 +12 을(를) 124 G에 판매할까요?" && bag.Count(iron12) == 1);
             yield return Shot("03m_shop_sell_confirm");
             dialog.DevAnswer(false);
             yield return Wait(0.2f);
@@ -532,15 +532,15 @@ namespace DotRPG
             dialog.DevAnswer(true);
             yield return null;
             Check($"모두 판매 +12 x2: asked '{Strip(all)}' -> +12={bag.Count(iron12)} gold +{Game.Session.Gold - gold0}",
-                all == "철검 +12 2개를 200 G에 판매할까요?" && bag.Count(iron12) == 0 && Game.Session.Gold - gold0 == 200 && Game.UI.Top == shop);
+                all == "뼈손잡이 장검 +12 2개를 248 G에 판매할까요?" && bag.Count(iron12) == 0 && Game.Session.Gold - gold0 == 248 && Game.UI.Top == shop);
 
             // +0 gear still sells on one press.
-            int gold1 = Game.Session.Gold, swords = bag.Count("eq_sword_iron");
-            shop.DevSelect("eq_sword_iron");
+            int gold1 = Game.Session.Gold, swords = bag.Count("eq_sword_10_u");
+            shop.DevSelect("eq_sword_10_u");
             shop.DevTrade(1);
             yield return null;
-            Check($"+0 sword sells without a question: top={TopName} sword {swords}->{bag.Count("eq_sword_iron")} gold +{Game.Session.Gold - gold1}",
-                Game.UI.Top == shop && bag.Count("eq_sword_iron") == swords - 1 && Game.Session.Gold - gold1 == ItemPrices.SellPrice("eq_sword_iron"));
+            Check($"+0 sword sells without a question: top={TopName} sword {swords}->{bag.Count("eq_sword_10_u")} gold +{Game.Session.Gold - gold1}",
+                Game.UI.Top == shop && bag.Count("eq_sword_10_u") == swords - 1 && Game.Session.Gold - gold1 == ItemPrices.SellPrice("eq_sword_10_u"));
             Game.Flow.CloseInventory();
             yield return Wait(0.3f);
         }
@@ -551,8 +551,8 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             var storage = Game.Session.Storage;
             var keys = new List<string>();
-            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) keys.Add(EquipmentDatabase.KeyFor("eq_ring_copper", l));
-            for (int l = 1; l <= 10; l++) keys.Add(EquipmentDatabase.KeyFor("eq_sword_iron", l));
+            for (int l = 1; l <= EquipmentDatabase.MaxEnhance; l++) keys.Add(EquipmentDatabase.KeyFor("eq_ring_1_c", l));
+            for (int l = 1; l <= 10; l++) keys.Add(EquipmentDatabase.KeyFor("eq_sword_10_u", l));
             foreach (var k in keys) bag.Add(k, 1);
             var screen = Game.UI.Storage;
             screen.SetKeeper(null, null);

@@ -76,7 +76,7 @@ export async function listIron(
   seller: Hero,
   o: { buyout?: number; start_bid?: number; hours?: number; key?: string } = {},
 ): Promise<string> {
-  const key = o.key ?? 'eq_sword_iron';
+  const key = o.key ?? 'eq_sword_10_u';
   await seedItem(seller, key, 1);
   const body: Record<string, unknown> = { item_key: key, count: 1, buyout: o.buyout ?? 1000, hours: o.hours ?? 12 };
   if (o.start_bid !== undefined) body.start_bid = o.start_bid;

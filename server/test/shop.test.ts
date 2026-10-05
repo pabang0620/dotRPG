@@ -24,7 +24,7 @@ describe('POST /characters/:id/shop/buy', () => {
     expect((await post(app, h, '/shop/buy', { item_id: 'potion_hp', count: 0 })).status).toBe(400);
     expect((await post(app, h, '/shop/buy', { item_id: 'potion_hp', count: 1000 })).status).toBe(400);
     expect((await post(app, h, '/shop/buy', { item_id: 'potion_hp', count: 1.5 })).status).toBe(400);
-    expect((await post(app, h, '/shop/buy', { item_id: 'eq_sword_iron', count: 1 })).body.errors.code).toBe('NOT_FOR_SALE');
+    expect((await post(app, h, '/shop/buy', { item_id: 'eq_sword_10_u', count: 1 })).body.errors.code).toBe('NOT_FOR_SALE');
   });
 
   it('골드 부족: 422 NOT_ENOUGH_GOLD(need/have)이고 아무것도 바뀌지 않는다', async () => {
@@ -71,10 +71,10 @@ describe('POST /characters/:id/shop/sell', () => {
     expect(await goldOf(h)).toBe(120);
     expect(await countOf(h, 'mat_bone')).toBe(6);
 
-    // 철검 기본가 25, +2 이면 25 * 1.5 = 37.5 -> 38
-    await seedItem(h, 'eq_sword_iron+2', 1);
-    const b = await post(app, h, '/shop/sell', { item_key: 'eq_sword_iron+2', count: 1 });
-    expect(b.body.data).toMatchObject({ unit_price: 38, total: 38 });
+    // 고급검 기본가 31, +2 이면 31 * 1.5 = 46.5 -> 47
+    await seedItem(h, 'eq_sword_10_u+2', 1);
+    const b = await post(app, h, '/shop/sell', { item_key: 'eq_sword_10_u+2', count: 1 });
+    expect(b.body.data).toMatchObject({ unit_price: 47, total: 47 });
     await expectLedgerConsistent(h);
   });
 

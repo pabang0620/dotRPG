@@ -286,8 +286,8 @@ namespace DotRPG
             Game.Flow.NewGame(CharacterClass.Warrior);
             yield return Wait(1.6f);
             Game.Session.Progression.AddXp(2600);
-            Game.Session.Inventory.Add("eq_top_leather", 1);
-            Game.Session.Equipment.Equip("eq_top_leather", Game.Player.Class);
+            Game.Session.Inventory.Add("eq_plate_1_u", 1);
+            Game.Session.Equipment.Equip("eq_plate_1_u", Game.Player.Class);
             var party = Game.Party;
             party.AddCompanion("merc_bron");
             party.AddCompanion("merc_elin");

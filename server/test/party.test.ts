@@ -115,7 +115,7 @@ describe('모집 게시판: 만들기, 목록, 신청, 수락', () => {
   it('전투력 부족: 최소 전투력보다 약한 캐릭터의 신청은 POWER_TOO_LOW(need, have)', async () => {
     const host = await newHero(app);
     const guest = await newHero(app);
-    await seedWorn(host, 0, 'eq_sword_dragon');
+    await seedWorn(host, 0, 'eq_sword_20_l');
     const me = await get(app, host, '');
     const power = me.body.data.character.power_estimate as number;
     expect(power).toBeGreaterThan((await get(app, guest, '')).body.data.character.power_estimate);
@@ -321,7 +321,7 @@ describe('자동 매칭', () => {
 
     const x = await newHero(app);
     const y = await newHero(app);
-    await seedWorn(y, 0, 'eq_sword_dragon');
+    await seedWorn(y, 0, 'eq_sword_20_l');
     await queue(x);
     await queue(y);
     advance(61);

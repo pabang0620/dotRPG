@@ -86,6 +86,8 @@ namespace DotRPG
         public bool bossOnly;
         /// <summary>Character level needed to put it on (the tier level: 1, 10, 15 ... 40). Owning and trading need none.</summary>
         public int reqLevel = 1;
+        /// <summary>Icon used until the item's own icon is drawn (icon keys "gear:&lt;id&gt;", see SpriteLibrary).</summary>
+        public string fallbackIcon;
         /// <summary>Index of the level tier in GearCatalog.TierLevels (0 = Lv.1 ... 7 = Lv.40).</summary>
         public int levelTier;
 

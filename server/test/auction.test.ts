@@ -54,7 +54,7 @@ describe('S1 등록 -> 즉시 구매 -> 우편 수령', () => {
 
     const bm = await mailList(app, buyer);
     expect(bm).toHaveLength(1);
-    expect(bm[0]).toMatchObject({ kind: 'bought', item: { item_key: 'eq_sword_iron', count: 1, bind: 'account' }, gold: 0 });
+    expect(bm[0]).toMatchObject({ kind: 'bought', item: { item_key: 'eq_sword_10_u', count: 1, bind: 'account' }, gold: 0 });
     const sm = await mailList(app, seller);
     expect(sm).toHaveLength(1);
     expect(sm[0]).toMatchObject({ kind: 'sold', gold: 1000 - 50 + 10, item: null });
@@ -64,8 +64,8 @@ describe('S1 등록 -> 즉시 구매 -> 우편 수령', () => {
 
     const c1 = await claimReq(app, buyer, (bm[0] as { id: string }).id);
     expect(c1.status).toBe(200);
-    expect(c1.body.data.delta.stacks).toEqual([{ item_key: 'eq_sword_iron', location: 'bag', bind: 'account', count: 1 }]);
-    expect(await bagRows(buyer.dbId, 'eq_sword_iron')).toEqual([{ bind: 'account', count: 1 }]);
+    expect(c1.body.data.delta.stacks).toEqual([{ item_key: 'eq_sword_10_u', location: 'bag', bind: 'account', count: 1 }]);
+    expect(await bagRows(buyer.dbId, 'eq_sword_10_u')).toEqual([{ bind: 'account', count: 1 }]);
     const c2 = await claimReq(app, seller, (sm[0] as { id: string }).id);
     expect(c2.body.data.delta.gold).toBe(100_000 - 10 + 960);
     await expectConserved();
@@ -79,7 +79,7 @@ describe('S1 등록 -> 즉시 구매 -> 우편 수령', () => {
     const id = await listIron(app, seller);
     await buyoutReq(app, buyer, id);
     await claimReq(app, buyer, ((await mailList(app, buyer))[0] as { id: string }).id);
-    const res = await listReq(app, buyer, { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 });
+    const res = await listReq(app, buyer, { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 });
     expect(res.status).toBe(422);
     expect(res.body.errors.code).toBe('ITEM_BOUND');
   });
@@ -95,8 +95,8 @@ describe('S1 등록 -> 즉시 구매 -> 우편 수령', () => {
     expect((await listingRow(id)).status).toBe('active');
     // 보증금 부족
     const broke = await mk(app, 5);
-    await seedItem(broke, 'eq_sword_iron', 1);
-    const dep = await listReq(app, broke, { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 });
+    await seedItem(broke, 'eq_sword_10_u', 1);
+    const dep = await listReq(app, broke, { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 });
     expect(dep.status).toBe(422);
     expect(dep.body.errors).toMatchObject({ code: 'NOT_ENOUGH_GOLD', for: 'deposit' });
     await expectConserved();
@@ -129,7 +129,7 @@ describe('S2 입찰 -> 더 높은 입찰 -> 마감 정산', () => {
     const sm = await mailList(app, seller);
     expect(sm).toEqual([expect.objectContaining({ kind: 'sold', gold: 105 - 6 + 10 })]);
     const wm = await mailList(app, b2);
-    expect(wm).toEqual([expect.objectContaining({ kind: 'bought', item: expect.objectContaining({ item_key: 'eq_sword_iron', bind: 'account' }) })]);
+    expect(wm).toEqual([expect.objectContaining({ kind: 'bought', item: expect.objectContaining({ item_key: 'eq_sword_10_u', bind: 'account' }) })]);
     expect((await listingRow(id)).status).toBe('sold');
     const bids = await getPool().query('SELECT state FROM auction_bids ORDER BY amount');
     expect(bids.rows.map((r: { state: string }) => r.state)).toEqual(['outbid', 'won']);
@@ -146,11 +146,11 @@ describe('S3 입찰 없이 마감', () => {
     expect(t.settled).toBe(1);
     expect((await listingRow(id)).status).toBe('expired');
     const m = await mailList(app, seller);
-    expect(m).toEqual([expect.objectContaining({ kind: 'expired', item: { item_key: 'eq_sword_iron', count: 1, bind: 'none' }, gold: 0 })]);
+    expect(m).toEqual([expect.objectContaining({ kind: 'expired', item: { item_key: 'eq_sword_10_u', count: 1, bind: 'none' }, gold: 0 })]);
     const sink = await getPool().query("SELECT amount FROM auction_sinks WHERE kind = 'deposit_forfeit'");
     expect(sink.rows).toEqual([{ amount: '10' }]);
     await claimReq(app, seller, (m[0] as { id: string }).id);
-    expect(await bagRows(seller.dbId, 'eq_sword_iron')).toEqual([{ bind: 'none', count: 1 }]);
+    expect(await bagRows(seller.dbId, 'eq_sword_10_u')).toEqual([{ bind: 'none', count: 1 }]);
     await expectConserved();
   });
 });
@@ -163,7 +163,7 @@ describe('S4 취소', () => {
     const ok = await cancelReq(app, seller, id);
     expect(ok.status).toBe(200);
     expect(ok.body.data).toMatchObject({ already: false, forfeited_deposit: 10 });
-    expect((await mailList(app, seller))[0]).toMatchObject({ kind: 'cancelled', item: { item_key: 'eq_sword_iron' } });
+    expect((await mailList(app, seller))[0]).toMatchObject({ kind: 'cancelled', item: { item_key: 'eq_sword_10_u' } });
     const again = await cancelReq(app, seller, id);
     expect(again.status).toBe(200);
     expect(again.body.data.already).toBe(true);
@@ -190,7 +190,7 @@ describe('S5 마감 연장', () => {
     const seller = await mk(app);
     const a = await mk(app, 10_000_000);
     const b = await mk(app, 10_000_000);
-    const id = await listIron(app, seller, { buyout: 2500, start_bid: 25 });
+    const id = await listIron(app, seller, { buyout: 3100, start_bid: 31 });
     // 마감 4분 전으로 시계를 옮긴다
     const first = (await listingRow(id)).ends_at as Date;
     setNowAt(new Date(first.getTime() - 4 * MIN));
@@ -255,27 +255,27 @@ describe('S7 같은 계정 구매·입찰 금지', () => {
 describe('S8 가격 한도', () => {
   it('콜드 스타트는 상점가 1~100배, 시작가에도 하한', async () => {
     const seller = await mk(app);
-    await seedItem(seller, 'eq_sword_iron', 4);
-    const base = { item_key: 'eq_sword_iron', count: 1, hours: 12 };
-    const hi = await listReq(app, seller, { ...base, buyout: 2501 });
+    await seedItem(seller, 'eq_sword_10_u', 4);
+    const base = { item_key: 'eq_sword_10_u', count: 1, hours: 12 };
+    const hi = await listReq(app, seller, { ...base, buyout: 3101 });
     expect(hi.status).toBe(422);
-    expect(hi.body.errors).toMatchObject({ code: 'PRICE_OUT_OF_RANGE', min: 25, max: 2500, source: 'vendor' });
-    const lo = await listReq(app, seller, { ...base, buyout: 24 });
+    expect(hi.body.errors).toMatchObject({ code: 'PRICE_OUT_OF_RANGE', min: 31, max: 3100, source: 'vendor' });
+    const lo = await listReq(app, seller, { ...base, buyout: 30 });
     expect(lo.body.errors.code).toBe('PRICE_OUT_OF_RANGE');
     expect(await flagKinds(seller)).toEqual(['price_band', 'price_band']);
     const sb1 = await listReq(app, seller, { ...base, buyout: 1000, start_bid: 1000 });
     expect(sb1.body.errors.code).toBe('START_BID_INVALID');
-    const sb2 = await listReq(app, seller, { ...base, buyout: 1000, start_bid: 24 });
+    const sb2 = await listReq(app, seller, { ...base, buyout: 1000, start_bid: 30 });
     expect(sb2.body.errors.code).toBe('START_BID_INVALID');
-    const ok = await listReq(app, seller, { ...base, buyout: 2500, start_bid: 25 });
+    const ok = await listReq(app, seller, { ...base, buyout: 3100, start_bid: 31 });
     expect(ok.status).toBe(201);
     // 시세 응답이 같은 한도를 준다
-    const p = await get(app, seller, '/auction/prices/eq_sword_iron');
-    expect(p.body.data).toMatchObject({ source: 'vendor', limits: { min: 25, max: 2500 }, avg7d: null, volume: 0 });
-    // 강화 장비는 상점 판매가 공식(25 x (1 + 보너스 x 7))
-    const p7 = await get(app, seller, '/auction/prices/eq_sword_iron+7?count=1');
+    const p = await get(app, seller, '/auction/prices/eq_sword_10_u');
+    expect(p.body.data).toMatchObject({ source: 'vendor', limits: { min: 31, max: 3100 }, avg7d: null, volume: 0 });
+    // 강화 장비는 상점 판매가 공식(31 x (1 + 보너스 x 7))
+    const p7 = await get(app, seller, '/auction/prices/eq_sword_10_u+7?count=1');
     expect(p7.body.data.source).toBe('vendor');
-    expect(p7.body.data.limits.min).toBeGreaterThan(25);
+    expect(p7.body.data.limits.min).toBeGreaterThan(31);
   });
 });
 
@@ -290,21 +290,21 @@ describe('S9 귀속과 거래 불가', () => {
     await seedItem(h, 'key_seal', 3, 'bag', 'character');
     expect((await listReq(app, h, body('key_seal', 1))).body.errors.code).toBe('NOT_TRADABLE');
     // 퀘스트 보상으로 받은 장비(캐릭터 귀속 행)
-    await seedItem(h, 'eq_ring_ruby', 1, 'bag', 'character');
-    expect((await listReq(app, h, body('eq_ring_ruby'))).body.errors.code).toBe('ITEM_BOUND');
+    await seedItem(h, 'eq_ring_10_un', 1, 'bag', 'character');
+    expect((await listReq(app, h, body('eq_ring_10_un'))).body.errors.code).toBe('ITEM_BOUND');
     // 착용 중인 장비는 가방에 없다
-    await seedWorn(h, 3, 'eq_ring_copper');
-    expect((await listReq(app, h, body('eq_ring_copper'))).body.errors.code).toBe('NOT_ENOUGH_ITEMS');
+    await seedWorn(h, 3, 'eq_ring_1_c');
+    expect((await listReq(app, h, body('eq_ring_1_c'))).body.errors.code).toBe('NOT_ENOUGH_ITEMS');
     expect((await listReq(app, h, body('no_such_item'))).body.errors.code).toBe('ITEM_UNKNOWN');
     expect((await listReq(app, h, body('mat_bone+3'))).body.errors.code).toBe('ITEM_UNKNOWN');
     // 같은 키의 귀속 재고와 거래 가능 재고가 섞여도 거래 가능한 것만 쓴다
-    await seedItem(h, 'eq_ring_ruby', 1, 'bag', 'none');
-    expect((await listReq(app, h, body('eq_ring_ruby'))).status).toBe(201);
-    expect(await bagRows(h.dbId, 'eq_ring_ruby')).toEqual([{ bind: 'character', count: 1 }]);
+    await seedItem(h, 'eq_ring_10_un', 1, 'bag', 'none');
+    expect((await listReq(app, h, body('eq_ring_10_un'))).status).toBe(201);
+    expect(await bagRows(h.dbId, 'eq_ring_10_un')).toEqual([{ bind: 'character', count: 1 }]);
     // 후보 목록은 귀속별로 줄을 나눠 이유를 준다
     const s = await get(app, h, '/auction/sellable');
     const row = (k: string, bind: string) => s.body.data.items.find((i: { item_key: string; bind: string }) => i.item_key === k && i.bind === bind);
-    expect(row('eq_ring_ruby', 'character')).toMatchObject({ listable: false, reason: 'BOUND' });
+    expect(row('eq_ring_10_un', 'character')).toMatchObject({ listable: false, reason: 'BOUND' });
     expect(row('key_seal', 'character')).toMatchObject({ listable: false, reason: 'NOT_TRADABLE' });
     expect(row('eq_sword_wood', 'character').reason).toBe('NOT_TRADABLE');
   });
@@ -313,17 +313,17 @@ describe('S9 귀속과 거래 불가', () => {
 describe('S10 등록 자격과 동시 등록 한도', () => {
   it('낮은 레벨·새 계정은 LISTING_GATE이고 구매는 가능, 21번째 등록은 LISTING_LIMIT', async () => {
     const seller = await mk(app);
-    await seedItem(seller, 'eq_sword_iron', 21);
+    await seedItem(seller, 'eq_sword_10_u', 21);
     const buyer = await mk(app);
     const id = await listIron(app, seller);
     buildApp({ AUCTION_MIN_LEVEL: '10', AUCTION_MIN_ACCOUNT_AGE_DAYS: '7' });
     try {
-      const gate = await listReq(app, seller, { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 });
+      const gate = await listReq(app, seller, { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 });
       expect(gate.status).toBe(422);
       expect(gate.body.errors).toMatchObject({ code: 'LISTING_GATE', need_level: 10, need_days: 7 });
       expect(await flagKinds(seller)).toContain('gate');
       await seedLevel(seller, 10); // 레벨만 올려도 계정 나이가 모자라 불가
-      expect((await listReq(app, seller, { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 })).status).toBe(422);
+      expect((await listReq(app, seller, { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 })).status).toBe(422);
       expect((await buyoutReq(app, buyer, id)).status).toBe(200); // 구매는 자격과 무관
     } finally {
       buildApp();
@@ -331,15 +331,15 @@ describe('S10 등록 자격과 동시 등록 한도', () => {
     // 한도: 지금까지 1건 등록, 19건을 더 등록해 20건
     // (위 구매 시도는 판매자 본인이 아니므로 성공했을 수 있다: 새 판매자로 한도를 센다)
     const lim = await mk(app);
-    await seedItem(lim, 'eq_sword_iron', 21);
+    await seedItem(lim, 'eq_sword_10_u', 21);
     for (let i = 0; i < 20; i++) {
-      const r = await listReq(app, lim, { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 });
+      const r = await listReq(app, lim, { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 });
       expect(r.status).toBe(201);
     }
-    const over = await listReq(app, lim, { item_key: 'eq_sword_iron', count: 1, buyout: 1000, hours: 12 });
+    const over = await listReq(app, lim, { item_key: 'eq_sword_10_u', count: 1, buyout: 1000, hours: 12 });
     expect(over.status).toBe(409);
     expect(over.body.errors).toMatchObject({ code: 'LISTING_LIMIT', limit: 20 });
-    expect(await countOf(lim, 'eq_sword_iron')).toBe(1);
+    expect(await countOf(lim, 'eq_sword_10_u')).toBe(1);
     await expectConserved();
   });
 });
@@ -358,12 +358,12 @@ describe('조회 API', () => {
     expect(all.body.meta).toEqual({ total: 3, page: 1, limit: 2 });
     expect(all.body.data.listings.map((l: { buyout: number }) => l.buyout)).toEqual([450, 500]);
     const one = all.body.data.listings[1];
-    expect(one).toMatchObject({ item_key: 'eq_sword_iron', category: 'weapon', rarity: 1, will_bind: 'account', min_bid: null, start_bid: null });
+    expect(one).toMatchObject({ item_key: 'eq_sword_10_u', category: 'weapon', rarity: 1, will_bind: 'account', min_bid: null, start_bid: null });
     expect(Object.keys(one)).not.toContain('seller_account_id');
     expect(typeof one.id).toBe('string');
-    const byName = await get(app, viewer, `/auction/search?q=${encodeURIComponent('철검')}`);
+    const byName = await get(app, viewer, `/auction/search?q=${encodeURIComponent('장검')}`);
     expect(byName.body.meta.total).toBe(2);
-    const byInitial = await get(app, viewer, `/auction/search?q=${encodeURIComponent('ㅊㄱ')}`);
+    const byInitial = await get(app, viewer, `/auction/search?q=${encodeURIComponent('ㅈㄱ')}`);
     expect(byInitial.body.meta.total).toBe(2);
     const bone = await get(app, viewer, '/auction/search?category=material');
     expect(bone.body.meta.total).toBe(1);
@@ -405,11 +405,11 @@ describe('조회 API', () => {
     const buyer = await mk(app);
     await buyoutReq(app, buyer, await listIron(app, seller, { buyout: 1000 }));
     await buyoutReq(app, buyer, await listIron(app, seller, { buyout: 2000 }));
-    const p = await get(app, seller, '/auction/prices/eq_sword_iron');
+    const p = await get(app, seller, '/auction/prices/eq_sword_10_u');
     expect(p.body.data).toMatchObject({ avg7d: 1500, min: 1000, max: 2000, unit_avg: 1500, volume: 2, source: 'vendor' });
     expect(p.body.data.daily).toHaveLength(1);
     expect((await get(app, seller, '/auction/prices/no_such_key')).body.errors.code).toBe('ITEM_UNKNOWN');
-    expect((await get(app, seller, '/auction/prices/eq_sword_iron?count=0')).status).toBe(400);
+    expect((await get(app, seller, '/auction/prices/eq_sword_10_u?count=0')).status).toBe(400);
     expect(await post(app, seller, '/auction/listings', {})).toHaveProperty('status', 400);
   });
 });

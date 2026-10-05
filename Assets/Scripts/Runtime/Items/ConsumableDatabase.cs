@@ -106,14 +106,31 @@ namespace DotRPG
     public static class ItemPrices
     {
         /// <summary>What the general store sells, in shelf order.</summary>
-        public static readonly string[] ShopStock =
+        static readonly string[] BaseStock =
         {
             ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll,
             "mat_bone", "mat_ore", "mat_essence", ConsumableDatabase.ProtectTicket,
         };
 
+        /// <summary>
+        /// What the general store sells, in shelf order: the goods above, then every common piece of gear (all tiers and
+        /// classes; the store window shows only my class up to my level, and the server checks the level when buying).
+        /// </summary>
+        public static readonly string[] ShopStock = BuildStock();
+
+        static string[] BuildStock()
+        {
+            var list = new System.Collections.Generic.List<string>(BaseStock);
+            foreach (var e in EquipmentDatabase.All)
+                if (!e.starter && !e.bossOnly && e.rarity == ItemRarity.Common) list.Add(e.id);
+            return list.ToArray();
+        }
+
         public static int BuyPrice(string id)
         {
+            // Common gear: 100 gold per tier step (Lv.1 100 ... Lv.40 800).
+            var gear = EquipmentDatabase.Get(id);
+            if (gear != null) return gear.starter || gear.bossOnly || gear.rarity != ItemRarity.Common ? 0 : 100 * (gear.levelTier + 1);
             switch (id)
             {
                 case ConsumableDatabase.HpPotion: return 30;

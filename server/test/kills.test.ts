@@ -217,7 +217,7 @@ describe('POST /characters/:id/kills', () => {
     const res = await post(app, h, '/kills', forestKill);
     const keys = res.body.data.drops.map((d: { item_key: string }) => d.item_key);
     // 골드, 뼈 1개, 강화석 1개, 마력 정수 1개, 장비 1개(마법사 가중 목록의 첫 장비)
-    expect(keys).toEqual(['gold', 'mat_bone', 'mat_ore', 'mat_essence', 'eq_staff_crystal']);
+    expect(keys).toEqual(['gold', 'mat_bone', 'mat_ore', 'mat_essence', 'eq_staff_1_c']);
   });
 
   it('미수령 드롭이 상한이면 경험치만 인정하고 드롭 굴림은 건너뛴다', async () => {
@@ -278,7 +278,7 @@ describe('POST /characters/:id/drops/claim', () => {
     const res = await post(app, h, '/drops/claim', { drop_ids: drops.map((d) => d.id) });
     expect(res.body.data.results.every((r: { result: string }) => r.result === 'claimed')).toBe(true);
     expect(await countOf(h, 'mat_bone')).toBe(1);
-    expect(await countOf(h, 'eq_sword_iron')).toBe(1);
+    expect(await countOf(h, 'eq_sword_1_c')).toBe(1);
     expect(res.body.data.delta.stacks).toEqual(
       expect.arrayContaining([{ item_key: 'mat_bone', location: 'bag', bind: 'none', count: 1 }]),
     );
@@ -390,7 +390,7 @@ describe('화력 상한 규칙(순수 함수)', () => {
     expect(powerAllows(eco, pol, cap, 5, [boss])).toBe(true); // 한 마리는 항상 통과
     expect(powerAllows(eco, pol, cap, 5, [boss, boss, boss])).toBe(false); // 5초에 보스 셋은 불가능
     // 레벨과 장비가 오르면 상한이 오른다
-    const strong = attackCap(eco, pol, 30, ['eq_sword_dragon+10']);
+    const strong = attackCap(eco, pol, 30, ['eq_sword_20_l+10']);
     expect(strong).toBeGreaterThan(cap * 10);
     expect(powerAllows(eco, pol, strong, 30, [boss, boss, boss])).toBe(true);
     expect(powerAllows(eco, pol, cap, 30, [boss, boss, boss])).toBe(false);
@@ -405,7 +405,7 @@ function buildDataDir(): string {
 describe('착용 장비는 화력 상한에 반영된다', () => {
   it('착용 행이 있어도 처치는 정상 처리된다', async () => {
     const h = await newHero(app);
-    await seedWorn(h, 1, 'eq_neck_bone');
+    await seedWorn(h, 1, 'eq_neck_10_r');
     const res = await post(app, h, '/kills', forestKill);
     expect(res.status).toBe(200);
   });

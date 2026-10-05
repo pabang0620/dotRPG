@@ -29,6 +29,11 @@ export function buy(accountId: number, characterUuid: string, body: BuyBody): Pr
     handler: async (ctx) => {
       const unit = getGameData().economy.shop.stock.get(body.item_id);
       if (unit === undefined) throw new AppError(422, '판매하지 않는 물건입니다.', 'NOT_FOR_SALE');
+      // 커먼 장비는 착용 레벨이 된 단계만 판다
+      const gear = getGameData().economy.shop.equipment.get(body.item_id);
+      if (gear && ctx.level < gear.reqLevel) {
+        throw new AppError(422, `레벨 ${gear.reqLevel}부터 살 수 있습니다.`, 'LEVEL_TOO_LOW', { need: gear.reqLevel, have: ctx.level });
+      }
       const total = unit * body.count;
       if (ctx.gold < total) {
         throw new AppError(422, '골드가 모자랍니다.', 'NOT_ENOUGH_GOLD', { need: total, have: ctx.gold });

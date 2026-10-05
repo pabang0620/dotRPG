@@ -33,7 +33,7 @@ namespace DotRPG
             bag.Add(ConsumableDatabase.Gold, 99999);
             bag.Add(ConsumableDatabase.HpPotion, 12); bag.Add(ConsumableDatabase.MpPotion, 8); bag.Add(ConsumableDatabase.TownScroll, 4);
             bag.Add("mat_bone", 60); bag.Add("mat_ore", 30); bag.Add("mat_essence", 9);
-            foreach (var id in new[] { "eq_staff_crystal", "eq_neck_leaf", "eq_ring_wind", "eq_ring_copper", "eq_top_leather", "eq_bot_cloth" })
+            foreach (var id in new[] { "eq_staff_10_u", "eq_neck_1_c", "eq_ring_10_r", "eq_ring_1_c", "eq_robe_1_u", "eq_skirt_1_c" })
                 bag.Add(id, 1);
             eq.AutoEquip(Game.Player.Class);
             prog.AddXp(4000);

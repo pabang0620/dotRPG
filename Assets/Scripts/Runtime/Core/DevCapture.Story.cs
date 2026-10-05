@@ -137,7 +137,7 @@ namespace DotRPG
             yield return SettleStory();
             StoryCheck($"1-6 ready to report ({St("c1_rebuild")})", St("c1_rebuild") == QuestStatus.ReadyToTurnIn);
             Talk("chief");
-            StoryCheck($"1-6 complete, ruby ring in the bag ({Game.Session.Inventory.Count("eq_ring_ruby")})", St("c1_rebuild") == QuestStatus.Completed && Game.Session.Inventory.Count("eq_ring_ruby") > 0);
+            StoryCheck($"1-6 complete, guardian ring in the bag ({Game.Session.Inventory.Count("eq_ring_1_r")})", St("c1_rebuild") == QuestStatus.Completed && Game.Session.Inventory.Count("eq_ring_1_r") > 0);
 
             StoryCheck($"raids locked by the story: '{DungeonDirector.RaidLockReason(DungeonDatabase.SkeletonKing)}'", DungeonDirector.RaidLockReason(DungeonDatabase.SkeletonKing) != null);
             // Rest of chapter 1 by signals.

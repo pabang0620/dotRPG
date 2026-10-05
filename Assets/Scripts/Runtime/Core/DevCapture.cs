@@ -168,14 +168,15 @@ namespace DotRPG
             var eq = Game.Session.Equipment;
             var bag = Game.Session.Inventory;
             Log($"before gear: atk+{eq.AttackBonus} hp={Game.Player.Health.Max} block={eq.BlockChance}% speed+{eq.SpeedBonus}% weapon={eq[EquipSlot.Weapon]}");
-            foreach (var id in new[] { "eq_staff_crystal", "eq_neck_leaf", "eq_ring_wind", "eq_ring_copper", "eq_top_leather", "eq_bot_cloth", "eq_sword_iron" })
+            Game.Session.Progression.SetFromServer(10, 0); // the Lv.10 staff and ring below need it
+            foreach (var id in new[] { "eq_staff_10_u", "eq_neck_1_c", "eq_ring_10_r", "eq_ring_1_c", "eq_robe_1_u", "eq_skirt_1_c", "eq_sword_10_u" })
                 bag.Add(id, 1);
             Game.Flow.OpenInventory();
             yield return Wait(0.5f);
             yield return Shot("03b_inventory_before");
-            foreach (var id in new[] { "eq_staff_crystal", "eq_neck_leaf", "eq_ring_wind", "eq_ring_copper", "eq_top_leather", "eq_bot_cloth" })
+            foreach (var id in new[] { "eq_staff_10_u", "eq_neck_1_c", "eq_ring_10_r", "eq_ring_1_c", "eq_robe_1_u", "eq_skirt_1_c" })
                 Log($"equip {id}: {eq.Equip(id, Game.Player.Class)}");
-            Log($"equip eq_sword_iron as mage (should be false): {eq.Equip("eq_sword_iron", Game.Player.Class)}");
+            Log($"equip eq_sword_10_u as mage (should be false): {eq.Equip("eq_sword_10_u", Game.Player.Class)}");
             yield return Wait(0.5f);
             yield return Shot("03c_inventory_after");
             // Mouse hover → tooltip (sent through the real UI event system).
@@ -295,10 +296,10 @@ namespace DotRPG
             yield return Teleport(new Vector2(44f, 39f));
             yield return Shot("06b_lookout");
             var chest = FindAnyObjectByType<TreasureChest>();
-            int ironBefore = Game.Session.Inventory.Count("eq_top_iron");
+            int ironBefore = Game.Session.Inventory.Count("eq_neck_10_r");
             if (chest != null) chest.Interact(Game.Player);
             yield return Wait(1.5f);
-            Log($"chest: found={chest != null} opened={(chest != null && !chest.CanInteract)} ironPlate {ironBefore}->{Game.Session.Inventory.Count("eq_top_iron")}");
+            Log($"chest: found={chest != null} opened={(chest != null && !chest.CanInteract)} chestNeck {ironBefore}->{Game.Session.Inventory.Count("eq_neck_10_r")}");
             yield return Teleport(new Vector2(17f, 14f));
             yield return Shot("06c_bridge");
             yield return Teleport(new Vector2(24f, 53f));
@@ -480,16 +481,16 @@ namespace DotRPG
                 Log($"buy 10 mp potions with {gold0 - 30} gold: mp {mp0}->{bag.Count(ConsumableDatabase.MpPotion)} gold={Game.Session.Gold} msg='{Strip(shop.DevResult)}'");
                 yield return Wait(0.3f);
                 yield return Shot("svc_shop_buy");
-                bag.Add("eq_sword_iron", 1);
+                bag.Add("eq_sword_10_u", 1);
                 bag.Add("mat_bone", 12);
                 bag.Add(ItemIds.Wood, 3);
                 shop.DevMode(true);
                 int g1 = Game.Session.Gold;
-                shop.DevSelect("eq_sword_iron");
+                shop.DevSelect("eq_sword_10_u");
                 shop.DevTrade(1);
                 shop.DevSelect("mat_bone");
                 shop.DevTrade(int.MaxValue);
-                Log($"sell iron sword + 12 bone: gold {g1}->{Game.Session.Gold} sword={bag.Count("eq_sword_iron")} bone={bag.Count("mat_bone")} msg='{Strip(shop.DevResult)}'");
+                Log($"sell iron sword + 12 bone: gold {g1}->{Game.Session.Gold} sword={bag.Count("eq_sword_10_u")} bone={bag.Count("mat_bone")} msg='{Strip(shop.DevResult)}'");
                 shop.DevSelect(ItemIds.Wood);
                 yield return Wait(0.3f);
                 yield return Shot("svc_shop_sell");
@@ -830,11 +831,11 @@ namespace DotRPG
             var looks = new List<CharacterLook>
             {
                 CharacterLook.Player,
-                CharacterLook.WithGear(CharacterLook.Player, "eq_top_cloth", "eq_bot_cloth"),
-                CharacterLook.WithGear(CharacterLook.Player, "eq_top_leather", "eq_bot_leather"),
-                CharacterLook.WithGear(CharacterLook.Player, "eq_top_iron", "eq_bot_leather"),
+                CharacterLook.WithGear(CharacterLook.Player, "eq_plate_1_c", "eq_greaves_1_c"),
+                CharacterLook.WithGear(CharacterLook.Player, "eq_plate_1_u", "eq_greaves_1_u"),
+                CharacterLook.WithGear(CharacterLook.Player, "eq_plate_10_e", "eq_greaves_1_u"),
                 CharacterLook.Mage,
-                CharacterLook.WithGear(CharacterLook.Mage, "eq_top_iron", "eq_bot_cloth"),
+                CharacterLook.WithGear(CharacterLook.Mage, "eq_robe_10_e", "eq_skirt_1_c"),
                 CharacterLook.Skeleton,
                 CharacterLook.Chief,
                 CharacterLook.Farmer,
@@ -968,7 +969,7 @@ namespace DotRPG
                 // Worn gear shows on the character: put on a full set, then close-ups facing three ways.
                 var bag = Game.Session.Inventory;
                 var worn = Game.Session.Equipment;
-                foreach (var gid in mage ? new[] { "eq_staff_star", "eq_top_cloth", "eq_bot_leather" } : new[] { "eq_sword_dragon", "eq_top_iron", "eq_bot_leather" })
+                foreach (var gid in mage ? new[] { "eq_staff_20_l", "eq_robe_1_c", "eq_skirt_1_u" } : new[] { "eq_sword_20_l", "eq_plate_10_e", "eq_greaves_1_u" })
                 {
                     bag.Add(gid, 1);
                     Log($"fx equip {gid}: {worn.Equip(gid, cls)}");

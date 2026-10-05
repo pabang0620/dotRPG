@@ -247,7 +247,7 @@ namespace DotRPG
             {
                 id = Id(KindId(k), level, r), name = name, category = CategoryOf(k), rarity = r, classOnly = ClassOf(k),
                 attack = atk, maxHealth = hp, block = block, speed = spd, xpBonus = xp, aoeBonus = aoe,
-                iconKey = OldIcon(k, art), description = Describe(k, level, r),
+                iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = OldIcon(k, art), description = Describe(k, level, r),
                 dropWeight = r <= ItemRarity.Rare ? 30 - 8 * (int)r : r == ItemRarity.Epic ? 3 : 0,
                 reqLevel = level, levelTier = t, Tier = art,
             };

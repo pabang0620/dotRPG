@@ -12,12 +12,13 @@ namespace DotRPG
     /// </summary>
     public class BulkSellPanel : MonoBehaviour
     {
-        enum Kind { Common, Uncommon, Rare, Consumable, Material }
+        enum Kind { Common, Uncommon, Rare, Consumable, Material, LowTierOnly }
 
         static readonly (Kind kind, string label)[] Options =
         {
             (Kind.Common, "커먼 장비"), (Kind.Uncommon, "언커먼 장비"), (Kind.Rare, "레어 장비"),
             (Kind.Consumable, "소비 아이템 (물약 · 주문서)"), (Kind.Material, "재료"),
+            (Kind.LowTierOnly, "장비는 내 레벨 단계보다 낮은 것만"),
         };
         const string PrefKey = "dotrpg.bulkSell";
 
@@ -31,7 +32,7 @@ namespace DotRPG
         {
             var bg = UIFactory.Panel(parent, "BulkSell", true);
             bg.raycastTarget = true; // clicks stop here, not on the list underneath
-            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 470f));
+            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 520f));
             var p = bg.gameObject.AddComponent<BulkSellPanel>();
             p.changed = onSold;
             var title = UIFactory.Text(bg.transform, "Title", "일괄 판매", 28, UIColors.Highlight, TextAnchor.UpperCenter, true);
@@ -48,7 +49,7 @@ namespace DotRPG
                 p.boxes.Add(t);
             }
             var note = UIFactory.Text(bg.transform, "Note", "<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>", 15, Color.white, TextAnchor.UpperCenter, true);
-            UIFactory.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -334f), new Vector2(500f, 44f));
+            UIFactory.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -386f), new Vector2(500f, 44f));
             p.summary = UIFactory.Text(bg.transform, "Summary", "", 20, UIColors.Cream, TextAnchor.MiddleCenter, true);
             UIFactory.Place(p.summary.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 76f), new Vector2(520f, 30f));
             MakeButton(bg.transform, "판매", "ui_btn", new Vector2(-6f, 16f), new Vector2(1f, 0f), p.AskSell);
@@ -82,7 +83,7 @@ namespace DotRPG
         void Load()
         {
             string saved = "";
-            try { saved = PlayerPrefs.GetString(PrefKey, "11000"); } catch { }
+            try { saved = PlayerPrefs.GetString(PrefKey, "110001"); } catch { }
             for (int i = 0; i < ticked.Length; i++) ticked[i] = i < saved.Length && saved[i] == '1';
         }
 
@@ -132,6 +133,9 @@ namespace DotRPG
             {
                 var k = KindOf(id);
                 if (k == null || !ticked[(int)k.Value]) continue;
+                // [GEAR] Optionally keep gear of my current tier and above (sell only what I have outgrown).
+                var g = EquipmentDatabase.Get(id);
+                if (g != null && ticked[(int)Kind.LowTierOnly] && g.levelTier >= GearCatalog.TierOfLevel(Game.Session.Progression.Level)) continue;
                 int n = bag.Count(id);
                 if (n <= 0) continue;
                 list.Add((id, n));
