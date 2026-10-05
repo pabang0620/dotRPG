@@ -186,7 +186,7 @@ namespace DotRPG
                 reviveTitle.text = $"부활하시겠습니까?  <color=#ffe066>{left}</color>";
                 var input = Game.Input;
                 reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회 · 제자리에서 완전 회복 + 3초 무적\n" +
-                                  $"<color=#b8c4d8>[Enter / {input.GetBindingLabel(GameAction.Attack)}] 부활    [Esc] 포기</color>";
+                                  $"<color=#b8c4d8>[Enter / {input.GetBindingLabel(GameAction.Attack)}] 부활    [ESC] 포기</color>";
             }
         }
 

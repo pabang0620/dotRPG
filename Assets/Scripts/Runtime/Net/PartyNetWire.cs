@@ -37,6 +37,8 @@ namespace DotRPG
         public List<string> passives = new List<string>();
         public List<string> gemSlots = new List<string>();
         public CareerSave career;
+        /// <summary>Worn costume skin id (empty = none).</summary>
+        public string skin = "";
 
         public bool IsAi => !string.IsNullOrEmpty(mercId);
 
@@ -60,6 +62,7 @@ namespace DotRPG
             card.passives = save.passives ?? new List<string>();
             card.gemSlots = save.gemSlots ?? new List<string>();
             card.career=save.career;
+            card.skin = d.SkinId ?? "";
             return card;
         }
 
@@ -79,6 +82,7 @@ namespace DotRPG
                 string key = string.IsNullOrEmpty(gear[i]) ? null : gear[i];
                 if (d.Equipment[(EquipSlot)i] != key) d.Equipment.Set((EquipSlot)i, key);
             }
+            if ((d.SkinId ?? "") != (skin ?? "")) { d.SkinId = skin ?? ""; body.RefreshLook(); }
             body.RefreshStats();
         }
 
@@ -92,6 +96,7 @@ namespace DotRPG
             for (int i = 0; i < Equipment.SlotCount; i++)
                 if (!string.IsNullOrEmpty(gear[i])) data.Equipment.Set((EquipSlot)i, gear[i]);
             data.DisplayName = name;
+            data.SkinId = skin ?? "";
             return data;
         }
 
@@ -108,6 +113,7 @@ namespace DotRPG
             WriteList(w, passives);
             WriteList(w, gemSlots);
             w.Write(JsonUtility.ToJson(career??new CareerSave()));
+            w.Write(skin ?? "");
         }
 
         public static MemberCard Read(BinaryReader r)
@@ -126,6 +132,7 @@ namespace DotRPG
             c.passives = ReadList(r);
             c.gemSlots = ReadList(r);
             c.career=JsonUtility.FromJson<CareerSave>(r.ReadString());
+            c.skin = r.ReadString();
             return c;
         }
 

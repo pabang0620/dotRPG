@@ -104,7 +104,13 @@ namespace DotRPG
             detail.rectTransform.sizeDelta = new Vector2(718, 38);
             detail.fontSize = 16;
             detail.text = current ? "NPC 번호나 이름을 선택하세요." : "NPC 기본 위치 · 지역 선택은 캐릭터를 이동시키지 않습니다.";
-            if (zone != null) detail.text = $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 처치 경험치 {zone.KillXp} · {HuntingGrounds.RespawnSeconds:0}초 재생성\n귀환 마을: {MapRegistry.Get(zone.village).displayName}";
+            if (zone != null)
+            {
+                int lv = Game.Session.Progression.Level;
+                detail.rectTransform.sizeDelta = new Vector2(718, 44);
+                detail.text = $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
+                              $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치, 실측 아님)</color>";
+            }
             tooltip.gameObject.SetActive(false); roomButton.gameObject.SetActive(false);
             foreach (var pin in pins) { pin.SetActive(false); Destroy(pin); } pins.Clear(); npcPins.Clear();
             foreach (var pos in preview.exits)

@@ -175,7 +175,7 @@ namespace DotRPG
                 c.button.image.sprite = Game.Art.Get(inParty ? "ui_btngray" : "ui_btn");
                 c.button.image.color = full ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
             }
-            hint.text = "<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸운다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  Esc 닫기</color>";
+            hint.text = "<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸운다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>";
         }
 
         static Sprite Portrait(MercenaryDef def, int level)

@@ -7,7 +7,7 @@ namespace DotRPG
     /// <summary>One achievement as the server judged it (the server owns the list, the goals and the progress).</summary>
     public sealed class AchievementView
     {
-        public string id, title, description;
+        public string id, title, description, category;
         public int goal, progress;
         public bool achieved;
     }
@@ -96,7 +96,7 @@ namespace DotRPG
                 var a = o as Dictionary<string, object>;
                 All.Add(new AchievementView
                 {
-                    id = MiniJson.Str(a, "id"), title = MiniJson.Str(a, "title", ""), description = MiniJson.Str(a, "description", ""),
+                    id = MiniJson.Str(a, "id"), title = MiniJson.Str(a, "title", ""), description = MiniJson.Str(a, "description", ""), category = MiniJson.Str(a, "category", "growth"),
                     goal = MiniJson.Int(a, "goal", 1), progress = MiniJson.Int(a, "progress"),
                     achieved = !string.IsNullOrEmpty(MiniJson.Str(a, "achieved_at")),
                 });

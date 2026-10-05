@@ -53,7 +53,8 @@ namespace DotRPG
             view.Add("menuicon_finder", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
             view.Add("menuicon_quest", "업적", () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
-            view.Add("menuicon_cosmetics", "캐시샵", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));
+            view.Add("menuicon_cashshop", "캐시샵", () => Game.Flow.OpenWindow(GachaScreen.Instance)); // 뽑기
+            view.Add("menuicon_cosmetics", "옷장", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));     // 오라·스킨 착용, 확정 구매
             int rows = (view.entries.Count + Columns - 1) / Columns;
             UIFactory.Place(view.gridBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(Pad * 2f + Columns * StepX, Pad * 2f + rows * StepY - 8f));
             view.column.gameObject.SetActive(false);

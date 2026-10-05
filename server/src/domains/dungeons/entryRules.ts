@@ -87,7 +87,8 @@ export async function checkEntry(
   }
   const diff = diffOf(eco, d, difficulty);
   if (!diff) throw new AppError(422, '알 수 없는 난이도입니다.', 'DUNGEON_UNKNOWN');
-  const need = diff.recommendedLevel - slack;
+  // 레이드는 권장 레벨이 곧 입장 레벨이다(해골왕 20, 골렘 30, 최종 레이드 40). 요일던전만 여유를 준다
+  const need = d.isRaid ? diff.recommendedLevel : diff.recommendedLevel - slack;
   if (c.level < need) throw new AppError(422, '레벨이 부족합니다.', 'LEVEL_TOO_LOW', { need, have: c.level });
 
   const resetDay = new Date(resetBoundaries(now).dailyStartAt);

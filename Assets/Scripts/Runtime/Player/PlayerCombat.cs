@@ -106,11 +106,11 @@ namespace DotRPG
             {
                 switch (f)
                 {
-                    case Facing.Up: pos = new Vector2(-0.34f, 0.06f); rot = 6f; order = -1; break;
-                    case Facing.Down: pos = new Vector2(0.36f, 0.04f); rot = -6f; order = 1; break;
+                    case Facing.Up: pos = new Vector2(-0.24f, 0.06f); rot = 6f; order = -1; break;
+                    case Facing.Down: pos = new Vector2(0.19f, 0.04f); rot = -6f; order = 1; break; // follows the body nudged 2 px left (CharacterAnimator)
                     case Facing.UpLeft:
-                    case Facing.UpRight: pos = new Vector2(0.3f * sx, 0.08f); rot = -6f * sx; order = -1; break;
-                    default: pos = new Vector2(0.3f * sx, 0.04f); rot = -6f * sx; order = 1; break;
+                    case Facing.UpRight: pos = new Vector2(0.24f * sx, 0.08f); rot = -6f * sx; order = -1; break;
+                    default: pos = new Vector2(0.24f * sx, 0.04f); rot = -6f * sx; order = 1; break;
                 }
             }
             else

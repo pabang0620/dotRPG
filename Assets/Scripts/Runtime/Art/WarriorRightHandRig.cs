@@ -88,16 +88,17 @@ namespace DotRPG
         static void Upper(PixelCanvas c, Vector2 shoulder, Vector2 elbow, CharacterLook look)
         {
             Stroke(c, shoulder, elbow, 6, PixelCanvas.Hex("#101116"));
-            var cloth = look.armor == ArmorStyle.None ? PixelCanvas.Hex("#23242a") : look.armorColor;
+            var cloth = look.skinSleeve.a > 0 ? look.skinSleeve : look.armor == ArmorStyle.None ? PixelCanvas.Hex("#23242a") : look.armorColor;
             Stroke(c, shoulder, elbow, 4, cloth);
         }
         static void Lower(PixelCanvas c, Vector2 elbow, Vector2 hand, CharacterLook look)
         {
             // A bell sleeve follows the forearm; a small bare hand protrudes at its cuff.
             var cuff = Vector2.Lerp(elbow, hand, .65f);
-            var cloth = look.armor == ArmorStyle.None ? PixelCanvas.Hex("#23242a") : look.armorColor;
+            var cloth = look.skinSleeve.a > 0 ? look.skinSleeve : look.armor == ArmorStyle.None ? PixelCanvas.Hex("#23242a") : look.armorColor;
             Stroke(c, elbow, cuff, 7, PixelCanvas.Hex("#101116"));
             Stroke(c, elbow, cuff, 5, cloth);
+            if (look.skinTrim.a > 0) Stroke(c, Vector2.Lerp(elbow, cuff, .85f), cuff, 5, look.skinTrim);
             Stroke(c, elbow + new Vector2(-1, 0), cuff + new Vector2(-1, 0), 1, PixelCanvas.Shade(cloth, 1.45f));
             Stroke(c, cuff, hand, 3, PixelCanvas.Hex("#dfb6b1"));
             c.Rect((int)hand.x - 1, (int)hand.y - 1, 3, 3, PixelCanvas.Hex("#f5d6c1"));

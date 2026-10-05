@@ -323,7 +323,7 @@ namespace DotRPG
             id = Raid, name = "해골왕", theme = MapTheme.Canyon, themeName = "북쪽 고개 성채", isRaid = true,
             // [RAID] Chapter 1 mid raid: three gates a week, a seal key fragment chance on each rewarded clear.
             raidTier = RaidTier.Mid, chapter = 1, unlockQuest = "c1_fortress", keyMin = 20, keyMax = 50,
-            raidNumbers = RaidNumbers(22, 4400, 2.6f, 1.4f, 14, ItemRarity.Rare, 6),
+            raidNumbers = RaidNumbers(20, 4000, 2.6f, 1.4f, 12, ItemRarity.Rare, 6),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnRaid1, new SpawnGroup(1, "skel_knight", 4, 2), new SpawnGroup(2, "skel_shield", 2, 2)),
@@ -346,7 +346,7 @@ namespace DotRPG
         {
             id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
             raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 60,
-            raidNumbers = RaidNumbers(24, 4900, 2.1f, 1.6f, 17, ItemRarity.Rare, 8),
+            raidNumbers = RaidNumbers(40, 9600, 2.1f, 1.6f, 33, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnBargas1, new SpawnGroup(1, "skel_knight", 5, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
@@ -369,7 +369,7 @@ namespace DotRPG
         {
             id = RaidGolem, name = "바위 심장", theme = MapTheme.Canyon, themeName = "수호석 외곽 석실", isRaid = true,
             raidTier = RaidTier.Mid, chapter = 2, unlockQuest = "c2_golem", keyMin = 20, keyMax = 50,
-            raidNumbers = RaidNumbers(28, 6200, 2.2f, 1.8f, 22, ItemRarity.Epic, 8),
+            raidNumbers = RaidNumbers(30, 6600, 2.2f, 1.8f, 23, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGolem1, new SpawnGroup(1, "skel_miner", 5, 2), new SpawnGroup(2, "skel_gold", 3, 2)),
@@ -392,7 +392,7 @@ namespace DotRPG
         {
             id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
             raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 60,
-            raidNumbers = RaidNumbers(31, 7200, 1.9f, 1.7f, 25, ItemRarity.Epic, 10),
+            raidNumbers = RaidNumbers(40, 10400, 1.9f, 1.7f, 35, ItemRarity.Epic, 10),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),

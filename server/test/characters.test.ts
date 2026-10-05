@@ -499,7 +499,7 @@ describe('PUT /characters/:uuid/state', () => {
       expect(await reasonOf([], { tracked_quest: 'nope' })).toBe('UNKNOWN_QUEST');
     });
 
-    it('퇴보 금지: 완료한 퀘스트와 플래그는 되돌릴 수 없다', async () => {
+    it('퇴보 금지: 완료한 퀘스트는 되돌릴 수 없다(스토리 플래그는 컷신이 지울 수 있다)', async () => {
       const { s, id } = await fresh();
       const done = emptyState(0, {
         quests: [{ id: 'c1_morning', status: 4, step: 4, counts: [] }],
@@ -509,11 +509,11 @@ describe('PUT /characters/:uuid/state', () => {
       const undo = await put(s, id, emptyState(1, { quests: [{ id: 'c1_morning', status: 1, step: 1, counts: [] }], story_flags: ['f1'] }));
       expect(undo.status).toBe(422);
       expect(undo.body.errors).toMatchObject({ code: 'INVALID_QUEST_STATE', reason: 'REGRESSION' });
-      const dropped = await put(s, id, emptyState(1, { quests: done.quests, story_flags: [] }));
-      expect(dropped.body.errors.reason).toBe('REGRESSION');
       const removed = await put(s, id, emptyState(1, { quests: [], story_flags: ['f1'] }));
       expect(removed.body.errors.reason).toBe('REGRESSION');
-      const more = await put(s, id, emptyState(1, { quests: done.quests, story_flags: ['f1', 'f2'] }));
+      const cleared = await put(s, id, emptyState(1, { quests: done.quests, story_flags: [] }));
+      expect(cleared.status).toBe(200);
+      const more = await put(s, id, emptyState(2, { quests: done.quests, story_flags: ['f1', 'f2'] }));
       expect(more.status).toBe(200);
     });
   });

@@ -135,13 +135,16 @@ namespace DotRPG
             return Image(parent, name, Game.Art.Get(dark ? "ui_dark" : "ui_panel"), Color.white);
         }
 
+        /// <summary>All UI text a notch smaller than the layout sizes (big letters crowded the panels).</summary>
+        public const float TextScale = 0.88f;
+
         public static Text Text(Transform parent, string name, string content, int size, Color color, TextAnchor align, bool shadow = false)
         {
             var rt = Rect(parent, name);
             var text = rt.gameObject.AddComponent<Text>();
             text.font = UIFont.Get();
             text.text = content;
-            text.fontSize = size;
+            text.fontSize = Mathf.Max(13, Mathf.RoundToInt(size * TextScale));
             text.color = color;
             text.alignment = align;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;

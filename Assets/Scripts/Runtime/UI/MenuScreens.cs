@@ -152,7 +152,7 @@ namespace DotRPG
             screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
             screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.ReturnToTitle()));
-            screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame()));
+            screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame(), keepOpenOnYes: true));
             screen.menu.OnCancel = () => Game.Flow.Resume();
             screen.FitPanel();
             return screen;
@@ -312,6 +312,7 @@ namespace DotRPG
         Text message;
         Action onYes;
         UIRoot ui;
+        bool keepOpen, closing;
 
         public static ConfirmScreen Create(Transform canvas, UIRoot ui)
         {
@@ -322,12 +323,21 @@ namespace DotRPG
             screen.message = screen.panel.Find("Body").GetComponent<Text>();
             screen.menu.AddButton("예", () =>
             {
+                if (screen.closing) return;
                 var action = screen.onYes;
+                if (screen.keepOpen)
+                {
+                    // Quitting: the dialog stays up (no flash of the game) while the last save goes out.
+                    screen.closing = true;
+                    screen.message.text = "게임을 종료하는 중...";
+                    action?.Invoke();
+                    return;
+                }
                 screen.ui.Pop();
                 action?.Invoke();
             });
-            screen.menu.AddButton("아니오", () => screen.ui.Pop());
-            screen.menu.OnCancel = () => screen.ui.Pop();
+            screen.menu.AddButton("아니오", () => { if (!screen.closing) screen.ui.Pop(); });
+            screen.menu.OnCancel = () => { if (!screen.closing) screen.ui.Pop(); };
             screen.FitPanel();
             return screen;
         }
@@ -336,10 +346,12 @@ namespace DotRPG
         public const float DefaultWidth = 560f, WideWidth = 820f;
         const int BodySize = 20;
 
-        public void Setup(string text, Action yes, float width = DefaultWidth)
+        public void Setup(string text, Action yes, float width = DefaultWidth, bool keepOpenOnYes = false)
         {
             message.text = text;
             onYes = yes;
+            keepOpen = keepOpenOnYes;
+            closing = false;
             // Same layout as BuildPanel: title, body under it, then the menu.
             int lines = Mathf.Max(2, (text ?? "").Split('\n').Length);
             float h = lines * BodySize * 1.45f + 8f;

@@ -8,6 +8,7 @@ import {
 import { getPool, isUniqueViolation, withTransaction, type Queryable } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
+import { logger } from '../../utils/logger';
 import { CHARACTER_LIMIT } from '../auth/authService';
 import { hasActiveAuction } from '../auction/auctionSearchRepository';
 import { lockCharacter, readEconomyDetail } from '../economy/economyRepository';
@@ -222,7 +223,14 @@ export async function saveState(accountId: number, uuid: string, input: StateBod
     // 상태 행을 잠가 같은 캐릭터의 동시 저장을 한 줄로 세운다
     const stored = await repo.getStateForUpdate(client, c.id);
     // 레벨·직업은 서버 값. 요청 값이 아니다
-    const { passives } = validateState(data, input, { level: c.level, class: c.class }, stored);
+    let passives: string[];
+    try {
+      ({ passives } = validateState(data, input, { level: c.level, class: c.class }, stored));
+    } catch (err) {
+      // 저장 거절은 진행이 사라지는 원인이 되므로 사유를 남긴다
+      if (err instanceof AppError) logger.warn({ character: uuid, code: err.code, extra: err.extra }, 'state save rejected');
+      throw err;
+    }
     const saved = await repo.updateStateIfVersion(client, c.id, input.version, {
       mapId: input.map_id,
       posX: input.pos ? input.pos.x : null,

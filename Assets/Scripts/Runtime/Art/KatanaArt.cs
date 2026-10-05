@@ -11,7 +11,8 @@ namespace DotRPG
         public static bool Handles(string key) => key.StartsWith("wpn_sword_") || key.StartsWith("eqicon_sword_") || key == "tool_sword";
         public static Sprite Get(string key)
         {
-            if (sheet == null) sheet = Resources.Load<Texture2D>("SilverWarrior/katanas");
+            // katanas_v2: the redrawn blades (same 64 px cells and grip row); the original sheet stays as the fallback.
+            if (sheet == null) sheet = Resources.Load<Texture2D>("SilverWarrior/katanas_v2") ?? Resources.Load<Texture2D>("SilverWarrior/katanas");
             if (sheet == null) throw new InvalidOperationException("Katana sheet has not been baked.");
             int tier = key == "tool_sword" ? 1 : Mathf.Clamp(key[key.Length - 1] - '0', 0, 3);
             bool icon = key.StartsWith("eqicon");

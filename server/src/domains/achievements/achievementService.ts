@@ -40,6 +40,7 @@ export async function listAchievements(accountId: number, characterUuid: string)
       id: a.id,
       title: a.title,
       description: a.description,
+      category: a.category,
       goal: a.goal,
       progress: Math.min(stats[a.stat], a.goal),
       achieved_at: done.get(a.id)?.toISOString() ?? null,

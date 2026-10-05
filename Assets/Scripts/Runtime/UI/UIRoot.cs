@@ -251,10 +251,10 @@ namespace DotRPG
         /// Yes/no question. <paramref name="overlay"/> = drawn over the current screen, which stays visible
         /// (dimmed) and gets no input until the answer; otherwise the current screen is hidden meanwhile.
         /// </summary>
-        public void Confirm(string message, Action onYes, bool overlay = false)
+        public void Confirm(string message, Action onYes, bool overlay = false, bool keepOpenOnYes = false)
         {
             // [ENH] overlay option (wider dialog for the longer item questions)
-            confirm.Setup(message, onYes, overlay ? ConfirmScreen.WideWidth : ConfirmScreen.DefaultWidth);
+            confirm.Setup(message, onYes, overlay ? ConfirmScreen.WideWidth : ConfirmScreen.DefaultWidth, keepOpenOnYes);
             if (overlay) PushOverlay(confirm);
             else Push(confirm);
         }

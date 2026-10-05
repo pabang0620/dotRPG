@@ -113,7 +113,12 @@ namespace DotRPG
             target.flipX = !SilverWarriorArt.Supports(look.id) && facing.IsLeft();
             if (SilverWarriorArt.Supports(look.id)) SilverWarriorPresentation.ApplyMaterial(target);
             else HdMaterial.Apply(target);
+            // The mage's front view sits 2 art pixels right of the feet ring: nudge it back so it stands centred.
+            bool nudge = player != null && !SilverWarriorArt.Supports(look.id) && facing == Facing.Down && target.sprite != null;
+            target.transform.localPosition = new Vector3(nudge ? -FrontNudgePixels / target.sprite.pixelsPerUnit : 0f, 0f, 0f);
         }
+
+        const float FrontNudgePixels = 2f;
 
         CharacterLook shownLook;
         Facing shownFacing;

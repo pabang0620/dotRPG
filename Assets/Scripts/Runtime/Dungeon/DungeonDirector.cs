@@ -97,6 +97,8 @@ namespace DotRPG
                 // [RAID] The story opens each raid; a final raid needs the seal key fragments in the bag.
                 string locked = RaidLockReason(dungeon);
                 if (locked != null) return locked;
+                int need = DungeonDatabase.DifficultyFor(dungeon, difficulty).recommendedLevel;
+                if (Game.Session.Progression.Level < need) return $"Lv.{need}부터 입장할 수 있는 레이드다.";
                 if (dungeon.keyCost > 0 && Progress.RaidRewardAvailable(dungeon, now))
                 {
                     int have = Game.Session.Inventory.Count(DungeonDatabase.SealKey);

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    public enum CosmeticRarity { Free, Common, Rare, Legend }
+    public enum CosmeticRarity { Free, Common, Rare, Unique }
 
     /// <summary>Legend auras move: a rainbow hue cycle or a slow glow pulse. Purely visual.</summary>
     public enum CosmeticEffect { None, Rainbow, Pulse }
@@ -27,6 +27,13 @@ namespace DotRPG
             Rarity = isFree ? CosmeticRarity.Free : rarity;
             Effect = effect;
         }
+
+        /// <summary>A costume skin (whole-body repaint for one class) rather than a foot aura.</summary>
+        public SkinDef Skin => SkinCatalog.Find(Id);
+        public bool IsSkin => Skin != null;
+
+        /// <summary>Attack bonus (%) while worn: auras by grade, costume skins a flat 5 (server: starshopDefs).</summary>
+        public int DamagePercent => IsSkin ? 5 : Rarity == CosmeticRarity.Unique ? 3 : Rarity == CosmeticRarity.Rare ? 2 : Rarity == CosmeticRarity.Common ? 1 : 0;
 
         /// <summary>The colour at a moment (legend auras animate; the rest stay still).</summary>
         public Color ColorAt(float time)
@@ -66,9 +73,14 @@ namespace DotRPG
             new CosmeticProduct("aura_frost", "서리별 오라", new Color32(170, 230, 255, 200)),
             new CosmeticProduct("aura_rose", "장미별 오라", new Color32(255, 110, 140, 200)),
             new CosmeticProduct("aura_jade", "비취별 오라", new Color32(90, 220, 170, 200)),
-            new CosmeticProduct("aura_rainbow", "무지개 오라", new Color32(255, 255, 255, 220), false, CosmeticRarity.Legend, CosmeticEffect.Rainbow),
-            new CosmeticProduct("aura_gold", "황금 오라", new Color32(255, 210, 80, 230), false, CosmeticRarity.Legend, CosmeticEffect.Pulse),
-            new CosmeticProduct("aura_abyss", "심연 오라", new Color32(120, 80, 255, 230), false, CosmeticRarity.Legend, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_rainbow", "무지개 오라", new Color32(255, 255, 255, 220), false, CosmeticRarity.Unique, CosmeticEffect.Rainbow),
+            new CosmeticProduct("aura_gold", "황금 오라", new Color32(255, 210, 80, 230), false, CosmeticRarity.Unique, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_abyss", "심연 오라", new Color32(120, 80, 255, 230), false, CosmeticRarity.Unique, CosmeticEffect.Pulse),
+            // Costume skins (SkinCatalog): direct purchase with 별조각, never in the gacha pool.
+            new CosmeticProduct("skin_lion", "황금 사자 기사", Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_moon", "월광 검귀", Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_starnight", "성야의 마녀", Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_crimson", "홍염의 마녀", Color.white, false, CosmeticRarity.Unique),
         });
 
         public static CosmeticProduct Find(string id)
@@ -79,9 +91,9 @@ namespace DotRPG
         }
 
         public static string RarityName(CosmeticRarity r) =>
-            r == CosmeticRarity.Legend ? "전설" : r == CosmeticRarity.Rare ? "희귀" : r == CosmeticRarity.Common ? "일반" : "무료";
+            r == CosmeticRarity.Unique ? "유니크" : r == CosmeticRarity.Rare ? "희귀" : r == CosmeticRarity.Common ? "일반" : "무료";
 
         public static string RarityHex(CosmeticRarity r) =>
-            r == CosmeticRarity.Legend ? "#ffb347" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";
+            r == CosmeticRarity.Unique ? "#ffb347" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";
     }
 }

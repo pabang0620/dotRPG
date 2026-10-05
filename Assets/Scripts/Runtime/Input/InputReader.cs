@@ -221,9 +221,9 @@ namespace DotRPG
                 case GameAction.Attack: return gamepad ? "X" : "X";
                 case GameAction.Interact: return gamepad ? "A" : "F";
                 case GameAction.UseItem: return gamepad ? "Y" : "1";
-                case GameAction.Pause: return gamepad ? "Start" : "Esc";
+                case GameAction.Pause: return gamepad ? "Start" : "ESC";
                 case GameAction.Submit: return gamepad ? "A" : "Enter";
-                case GameAction.Cancel: return gamepad ? "B" : "Esc";
+                case GameAction.Cancel: return gamepad ? "B" : "ESC";
                 case GameAction.Inventory: return gamepad ? "Select" : "I";
                 case GameAction.Skill1: return gamepad ? "LB" : "Q";
                 case GameAction.Skill2: return gamepad ? "RB" : "W";

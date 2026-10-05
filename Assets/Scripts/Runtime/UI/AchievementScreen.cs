@@ -11,11 +11,16 @@ namespace DotRPG
     public class AchievementScreen : OnlineWindow
     {
         public static AchievementScreen Instance { get; private set; }
-        const int PerColumn = 9;
-        const float CellW = 590f, CellH = 58f, ColGap = 20f, Top = -56f;
+        const int PerColumn = 5;
+        const float CellW = 590f, CellH = 64f, ColGap = 20f, Top = -106f;
+        static readonly (string id, string name)[] Tabs =
+            { ("growth", "성장"), ("combat", "전투"), ("dungeon", "던전"), ("enhance", "강화"), ("wealth", "재화"), ("cash", "캐시샵") };
 
         Text header;
         Button clearBtn;
+        readonly List<Button> tabs = new List<Button>();
+        string tab = "growth";
+        readonly List<AchievementView> visible = new List<AchievementView>();
         readonly List<(Image bg, Text name, Text info, Button equip)> cells = new List<(Image, Text, Text, Button)>();
 
         public static AchievementScreen Create(Transform canvas)
@@ -24,6 +29,11 @@ namespace DotRPG
             Instance = w;
             w.header = Label(w.content, "Header", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(900f, 40f), TextAnchor.MiddleLeft);
             w.clearBtn = Button(w.content, "Clear", "칭호 해제", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 40f), () => w.Equip(""), 17);
+            for (int i = 0; i < Tabs.Length; i++)
+            {
+                string id = Tabs[i].id;
+                w.tabs.Add(Button(w.content, "Tab_" + id, Tabs[i].name, "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(i * 168f, -50f), new Vector2(160f, 44f), () => { w.tab = id; Game.Audio.PlaySfx("select"); w.Refresh(); }, 18));
+            }
             for (int i = 0; i < PerColumn * 2; i++)
             {
                 int col = i / PerColumn, row = i % PerColumn, idx = i;
@@ -47,8 +57,7 @@ namespace DotRPG
 
         void EquipAt(int i)
         {
-            var list = AchievementClient.All;
-            if (i < list.Count && list[i].achieved) Equip(list[i].id);
+            if (i < visible.Count && visible[i].achieved) Equip(visible[i].id);
         }
 
         void Equip(string id) => AchievementClient.Equip(id, (ok, msg) =>
@@ -67,10 +76,19 @@ namespace DotRPG
                 ? "<color=#8c96a8>업적을 불러오는 중입니다...</color>"
                 : $"달성 {done}/{list.Count}   ·   칭호: " + (string.IsNullOrEmpty(AchievementClient.MyTitle) ? "<color=#8c96a8>없음</color>" : $"<color=#ffd34a>[{AchievementClient.MyTitle}]</color>  <color=#b8c4d8>채팅 이름 앞에 보입니다</color>");
             clearBtn.gameObject.SetActive(!string.IsNullOrEmpty(AchievementClient.MyTitleId));
+            visible.Clear();
+            foreach (var a0 in list) if (a0.category == tab) visible.Add(a0);
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                int all = 0, got = 0;
+                foreach (var a0 in list) if (a0.category == Tabs[i].id) { all++; if (a0.achieved) got++; }
+                string label = $"{Tabs[i].name} {got}/{all}";
+                TextOf(tabs[i]).text = Tabs[i].id == tab ? $"<color=#ffd34a><b>{label}</b></color>" : label;
+            }
             for (int i = 0; i < cells.Count; i++)
             {
                 var c = cells[i];
-                var a = i < list.Count ? list[i] : null;
+                var a = i < visible.Count ? visible[i] : null;
                 c.bg.gameObject.SetActive(a != null);
                 if (a == null) continue;
                 c.name.text = a.achieved ? $"<color=#ffd34a><b>{a.title}</b></color>  <color=#8fe28f>달성</color>" : $"<color=#b8c4d8>{a.title}</color>";

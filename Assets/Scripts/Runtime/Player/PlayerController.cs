@@ -171,7 +171,7 @@ namespace DotRPG
         void OnLevelUp(int level)
         {
             RefreshStats();
-            if(level==15) GameEvents.RaiseToast("전직 가능! 스킬창에서 파이터·수호자 또는 메이지·비숍을 선택하세요.");
+            if (level == 15 && IsLocal) GameEvents.RaiseToast("<color=#ffd34a>전직 가능!</color> 마을 광장의 전직 안내원에게 가면 '전직의 길' 퀘스트를 받을 수 있습니다.");
             health.Heal(health.Max);
             Data.Mana = Data.Stats.MaxMp;
             Game.Audio.PlaySfx("quest");
@@ -248,9 +248,20 @@ namespace DotRPG
         {
             if (animator == null || combat == null || Game.Session == null || Data == null) return;
             var eq = Data.Equipment;
-            animator.SetLook(CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
+            // A costume skin replaces the whole body (worn clothes don't show over it); the weapon still does.
+            if (IsLocal)
+            {
+                Data.SkinId = Game.Cosmetics?.SkinFor(Class) ?? "";
+                Data.CosmeticDamage = Game.Cosmetics?.DamageBonus(Class) ?? 0;
+            }
+            var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);
+            animator.SetLook(skinLook ?? CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
+            SkinTrail.Set(this, animator.Renderer, skinLook != null ? SkinCatalog.Find(Data.SkinId) : null);
             combat.RefreshWeapon();
         }
+
+        /// <summary>Re-applies the body look (a costume skin was put on or taken off).</summary>
+        public void RefreshLook() => ApplyGear();
 
         public void Spawn(Vector2 position, Facing facing, int currentHealth, int maxHealth)
         {

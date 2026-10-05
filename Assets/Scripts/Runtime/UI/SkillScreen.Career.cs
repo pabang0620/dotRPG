@@ -51,7 +51,7 @@ namespace DotRPG
             if(!p.IsPromoted)
             {
                 CareerText(side.transform,"Compare",$"<b>{CareerCatalog.Name(browsing)}</b>\n{CareerCatalog.Role(browsing)}\n\n대표: {skills[1].name} / {skills[5].name}\n각성: {skills[8].name}\n\n{skills[1].description}\n\n{skills[5].description}\n\n전직은 되돌릴 수 없습니다.\n선택 후 한 번 더 확정하세요.",21,20,20,374,420);
-                CareerButton("Promote",confirmation==browsing?"이 직업으로 전직 확정":"전직 선택",824,467,365,52,()=>{if(!p.CanPromote(browsing)){GameEvents.RaiseToast("15레벨 이상, 자신의 기본 직업 계열만 전직할 수 있습니다.");return;}if(confirmation!=browsing){confirmation=browsing;Refresh();return;}p.Promote(browsing);GameEvents.RaiseToast(CareerCatalog.Name(browsing)+" 전직 완료 · 초기 4포인트");Game.Flow.Autosave();Refresh();});
+                CareerButton("Promote",confirmation==browsing?"이 직업으로 전직 확정":"전직 선택",824,467,365,52,()=>{if(!p.CanPromote(browsing)){GameEvents.RaiseToast("15레벨 이상, 자신의 기본 직업 계열만 전직할 수 있습니다.");return;}if(confirmation!=browsing){confirmation=browsing;Refresh();return;}p.Promote(browsing);Game.Quest.SetFlag(NpcController.CareerFlag);GameEvents.RaiseToast(CareerCatalog.Name(browsing)+" 전직 완료 · 초기 4포인트");Game.Flow.Autosave();Refresh();});
             }
             else if(chosen.kind==CareerSkillKind.Awakening)
             {

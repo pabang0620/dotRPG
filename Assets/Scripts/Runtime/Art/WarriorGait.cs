@@ -48,7 +48,8 @@ namespace DotRPG
         static void DrawLeg(PixelCanvas c, Leg l, CharacterLook look, Vector2 forward, bool far)
         {
             var outline = PixelCanvas.Hex("#101116");
-            var stocking = look.bottomTier >= 0 ? look.pants : PixelCanvas.Hex("#655861");
+            var stocking = look.skinLeg.a > 0 ? look.skinLeg : look.bottomTier >= 0 ? look.pants : PixelCanvas.Hex("#655861");
+            var boot = look.skinBoot.a > 0 ? look.skinBoot : PixelCanvas.Hex("#23242a");
             if (far) stocking = PixelCanvas.Shade(stocking, .75f);
             WarriorRightHandRig.Stroke(c, l.hip, l.knee, 5, outline);
             WarriorRightHandRig.Stroke(c, l.hip, l.knee, 3, stocking);
@@ -56,10 +57,10 @@ namespace DotRPG
             WarriorRightHandRig.Stroke(c, l.knee, l.foot, 3, stocking);
             var bootTop = Vector2.Lerp(l.knee, l.foot, .3f);
             WarriorRightHandRig.Stroke(c, bootTop, l.foot, 5, outline);
-            WarriorRightHandRig.Stroke(c, bootTop, l.foot, 3, PixelCanvas.Hex("#23242a"));
+            WarriorRightHandRig.Stroke(c, bootTop, l.foot, 3, boot);
             var toe = l.foot + new Vector2(forward.x * 2, forward.y < 0 ? 1 : 0);
             WarriorRightHandRig.Stroke(c, l.foot, toe, 4, outline);
-            c.Set(Mathf.RoundToInt(bootTop.x), Mathf.RoundToInt(bootTop.y), PixelCanvas.Hex("#71797e"));
+            c.Set(Mathf.RoundToInt(bootTop.x), Mathf.RoundToInt(bootTop.y), look.skinTrim.a > 0 ? look.skinTrim : PixelCanvas.Hex("#71797e"));
             c.Set(Mathf.RoundToInt(bootTop.x), Mathf.RoundToInt(bootTop.y) + 2, PixelCanvas.Hex("#4c5057"));
         }
         public static void Draw(PixelCanvas c, Facing facing, string frame, int waist, CharacterLook look)

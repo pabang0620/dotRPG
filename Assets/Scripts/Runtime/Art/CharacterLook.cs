@@ -68,6 +68,12 @@ namespace DotRPG
         [Tooltip("Robe skirt colour (alpha 0 = same as the shirt).")]
         public Color32 robeColor;
         public int bottomTier = -1;
+        [Tooltip("Costume skin: the warrior sheet folder under SilverWarrior/Skins (empty = the shipped sheets).")]
+        public string skinSheet;
+        [Tooltip("Costume skin colours for the limbs the warrior draws in code (alpha 0 = default).")]
+        public Color32 skinSleeve, skinLeg, skinBoot, skinTrim;
+        [Tooltip("Costume skin cape colour: sheet pixels near it below the waist are drawn behind the legs (alpha 0 = none).")]
+        public Color32 skinCape;
 
         public CharacterLook() { }
 
