@@ -8,7 +8,7 @@
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'unique';
 
-export const RATES_VERSION = '2026-10-05.6';
+export const RATES_VERSION = '2026-10-05.7';
 
 /** 확률 단위: 십만분율(0.001% 단위) */
 export const RATE_SCALE = 100_000;
@@ -61,8 +61,49 @@ export const PULL_PRICE = 100;
 /** 10회 묶음: 1,000개에 11회 */
 export const TEN_PRICE = 1000;
 export const TEN_COUNT = 11;
-/** 같은 등급을 모두 가졌을 때 나온 중복은 별조각으로 돌려준다 */
+/**
+ * 이미 가진 외형이 또 나오면 여분으로 쌓인다(합성 재료). 여분은 언제든 이 값으로 분해해 별조각으로 바꿀 수 있다
+ * (예전 중복 환급과 같은 값이라, 합성을 하지 않아도 손해가 없다)
+ */
 export const DUPLICATE_REFUND: Record<Rarity, number> = { common: 20, rare: 50, epic: 300, unique: 1500 };
+export const DISMANTLE_STARS = DUPLICATE_REFUND;
+
+/**
+ * 합성: 같은 등급 여분 4개 -> 일정 확률로 한 등급 위 외형 하나. 실패하면 넣은 것 중 1개를 돌려준다.
+ * 연속 실패가 pity번 쌓이면 다음 합성은 성공한다(0 = 천장 없음). 확률은 천분율.
+ *   일반 -> 희귀 오라 40%, 희귀 -> 에픽(오라 또는 내 직업 에픽 스킨) 10%(15회 실패 뒤 확정),
+ *   에픽 -> 내 직업 유니크 스킨 3%(10회 실패 뒤 확정)
+ */
+export const SYNTH_COUNT = 4;
+export const SYNTH: Record<'common' | 'rare' | 'epic', { to: Rarity; permille: number; pity: number }> = {
+  common: { to: 'rare', permille: 400, pity: 0 },
+  rare: { to: 'epic', permille: 100, pity: 15 },
+  epic: { to: 'unique', permille: 30, pity: 10 },
+};
+export type SynthFrom = keyof typeof SYNTH;
+
+/**
+ * 컬렉션: 세트의 외형을 모두 가지면 등록할 수 있고, 등록하면 계정 전체에 능력치가 붙는다(외형은 소모하지 않는다).
+ * attack/health는 %. "옷장의 주인"은 다른 다섯 세트를 모두 등록해야 열린다
+ */
+export interface CollectionDef {
+  id: string;
+  name: string;
+  members: string[];
+  requires?: string[];
+  attack: number;
+  health: number;
+}
+export const COLLECTIONS: readonly CollectionDef[] = [
+  { id: 'col_dawn', name: '새벽빛 오라', members: ['aura_dew', 'aura_maple', 'aura_blossom', 'aura_forest', 'aura_ash'], attack: 0, health: 2 },
+  { id: 'col_starlight', name: '별빛 오라', members: ['aura_sunset', 'aura_violet', 'aura_frost', 'aura_rose', 'aura_jade'], attack: 1, health: 0 },
+  { id: 'col_legend', name: '찬란한 오라', members: ['aura_rainbow', 'aura_gold', 'aura_abyss'], attack: 1, health: 2 },
+  { id: 'col_sword', name: '검사의 의상실', members: ['skin_maple', 'skin_obsidian', 'skin_lion', 'skin_moon'], attack: 1, health: 2 },
+  { id: 'col_magic', name: '마법사의 의상실', members: ['skin_forest', 'skin_ice', 'skin_starnight', 'skin_crimson'], attack: 1, health: 2 },
+  { id: 'col_master', name: '옷장의 주인', members: [], requires: ['col_dawn', 'col_starlight', 'col_legend', 'col_sword', 'col_magic'], attack: 0, health: 3 },
+];
+export const COLLECTION_BY_ID = new Map(COLLECTIONS.map((c) => [c.id, c] as const));
+export const COLLECTION_ATTACK_MAX = COLLECTIONS.reduce((a, c) => a + c.attack, 0);
 /** 원하는 외형을 바로 얻는 확정 교환 가격. 0 = 교환 불가(유니크 스킨은 선택 게이지로만) */
 export const EXCHANGE_PRICE: Record<Rarity, number> = { common: 300, rare: 1000, epic: 3000, unique: 0 };
 export const EPIC_SKIN_PRICE = 4000;

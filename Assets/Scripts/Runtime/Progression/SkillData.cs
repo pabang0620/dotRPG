@@ -398,7 +398,7 @@ namespace DotRPG
             get
             {
                 float flat = data.BaseMaxHp + (Level - 1) * HpPerLevel + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
-                float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0);
+                float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0) + data.CollectionHealth;
                 return Mathf.Max(1, Mathf.RoundToInt(flat * (1f + inc / 100f)));
             }
         }

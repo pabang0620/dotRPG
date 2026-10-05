@@ -4,7 +4,8 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './starshopService';
-import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
+import * as synthService from './starshopSynth';
+import type { ClaimBody, CollectionBody, DismantleBody, ExchangeBody, PullBody, SynthBody } from './starshopValidation';
 
 type P = { uuid: string };
 const acc = (res: Response) => getAccount(res.locals).id;
@@ -40,6 +41,33 @@ export async function exchange(_req: Request, res: Response, next: NextFunction)
   try {
     const { body, params } = getValidated<ExchangeBody, P>(res);
     sendStored(res, await service.exchange(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function synth(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<SynthBody, P>(res);
+    sendStored(res, await synthService.synth(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function dismantle(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<DismantleBody, P>(res);
+    sendStored(res, await synthService.dismantle(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function collection(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<CollectionBody, P>(res);
+    sendStored(res, await synthService.registerCollection(acc(res), params.uuid, body));
   } catch (err) {
     next(err);
   }

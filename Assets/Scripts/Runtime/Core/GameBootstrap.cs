@@ -54,6 +54,7 @@ namespace DotRPG
             Game.Player = PlayerController.Create(cfg, gameplayRoot);
             CosmeticAura.Attach(Game.Player, Game.Cosmetics);
             Game.Cosmetics.Changed += () => { if (Game.Player != null) Game.Player.RefreshLook(); }; // costume skin on/off
+            StarShopClient.Changed += () => { if (Game.Player != null) Game.Player.RefreshLook(); }; // collection bonuses
             Game.Player.gameObject.SetActive(false);
             Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
             Game.Dungeon = DungeonDirector.Create(gameplayRoot); // [DUNGEON]

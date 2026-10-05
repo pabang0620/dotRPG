@@ -252,7 +252,9 @@ namespace DotRPG
             if (IsLocal)
             {
                 Data.SkinId = Game.Cosmetics?.SkinFor(Class) ?? "";
-                Data.CosmeticDamage = Game.Cosmetics?.DamageBonus(Class) ?? 0;
+                Data.CosmeticDamage = (Game.Cosmetics?.DamageBonus(Class) ?? 0) + StarShopClient.CollectionAttack;
+                Data.CollectionHealth = StarShopClient.CollectionHealth;
+                RefreshStats();
             }
             var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);
             animator.SetLook(skinLook ?? CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
