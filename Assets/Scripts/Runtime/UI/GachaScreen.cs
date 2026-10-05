@@ -698,7 +698,8 @@ namespace DotRPG
                 sb.Append("· 등급을 먼저 정하고, 그 등급의 장비 중 하나가 같은 확률로 나옵니다. 그 뽑기에 없는 등급의 몫은 가장 낮은 등급이 가집니다.\n");
                 sb.Append("· 뽑은 장비는 +0으로 바로 가방에 들어갑니다. 선택 게이지는 없습니다.\n");
             }
-            sb.Append($"· 10+1회는 별조각 {StarShopClient.PriceTen:N0}로 {StarShopClient.TenCount}회를 뽑습니다(마지막 1회가 보너스).</color>");
+            sb.Append($"· 10+1회는 별조각 {StarShopClient.PriceTen:N0}로 {StarShopClient.TenCount}회를 뽑습니다(마지막 1회가 보너스). "
+                + (banner == "aura" || banner == "skin" ? "보너스 1회는 희귀 이상만 나옵니다." : "보너스 1회도 위 확률 그대로입니다.") + "</color>");
             return sb.ToString();
         }
     }

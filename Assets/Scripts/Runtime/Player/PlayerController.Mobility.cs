@@ -6,7 +6,7 @@ namespace DotRPG
     public partial class PlayerController
     {
         public const float DashDistance = 2.8f, DashDuration = .18f, DashCooldown = 1.4f;
-        public const float BlinkDistance = 3.5f, BlinkCooldown = 2f;
+        public const float BlinkDistance = 3.5f, BlinkCooldown = 1.5f;
         const float MobilitySkin = .03f;
         readonly List<RaycastHit2D> mobilityHits = new List<RaycastHit2D>(16);
         float mobilityReadyAt, dashRemaining, nextDashDust;

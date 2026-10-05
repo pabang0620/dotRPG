@@ -215,9 +215,9 @@ async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: r
   const table = gearTable(banner, ctx.char.class);
   if (table.length === 0) throw new AppError(422, '뽑을 수 있는 장비가 없습니다.', 'NO_GEAR');
   for (let i = 0; i < times; i++) {
-    // 10+1의 보너스(마지막) 1회는 최하 등급을 빼고 굴린다: 남은 등급끼리 같은 비율
-    const bonus = times > 1 && i === times - 1 && table.length > 1;
-    const pool = bonus ? table.slice(0, -1) : table;
+    // 장비 뽑기는 10+1의 보너스 1회도 같은 확률로 굴린다. 뽑기마다 등급이 2~3개뿐이라 "최하 등급 제외"를 하면
+    // 장신구는 유니크, 방어구는 에픽이 확정되어 버린다(외형 뽑기의 보너스만 희귀 이상)
+    const pool = table;
     const total = pool.reduce((a, t) => a + t.permille, 0);
     let roll = getRng().int(0, total);
     let tier = pool[pool.length - 1]!;
