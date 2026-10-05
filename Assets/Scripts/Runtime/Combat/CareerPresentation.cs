@@ -48,24 +48,26 @@ namespace DotRPG
     {
         static readonly List<CareerAreaView> active=new List<CareerAreaView>();
         public static int Count=>active.Count;
-        PlayerController owner;string map,id;float end,pulse;SpriteRenderer image;
+        PlayerController owner;string map,id;float end,pulse;SpriteRenderer image;bool follow;
         public float Radius {get;private set;}
-        public static void Show(CareerSkill s,Vector2 at,float radius,float life,PlayerController source)
+        public static CareerAreaView Show(CareerSkill s,Vector2 at,float radius,float life,PlayerController source,bool follows=false)
         {
-            if(active.Count>=24||radius<=0)return;
+            if(active.Count>=24||radius<=0)return null;
             var go=new GameObject("Career boundary "+s.id);if(Fx.Root!=null)go.transform.SetParent(Fx.Root,false);go.transform.position=at;
-            var v=go.AddComponent<CareerAreaView>();v.owner=source;v.map=Game.Session.MapId;v.id=s.id;v.end=Time.time+life;v.Radius=radius;v.pulse=Time.time+.12f;
+            var v=go.AddComponent<CareerAreaView>();v.owner=source;v.map=Game.Session.MapId;v.id=s.id;v.end=Time.time+life;v.Radius=radius;v.follow=follows;v.pulse=Time.time+.12f;
             v.image=go.AddComponent<SpriteRenderer>();v.image.sprite=CareerArt.VisualFrame("boundary",0);v.image.sortingOrder=SkillFx.GroundOrder+24;
-            go.transform.localScale=Vector3.one*radius*48/43;v.image.color=CareerCatalog.Color(s.career);active.Add(v);
+            go.transform.localScale=Vector3.one*radius*48/43;v.image.color=CareerCatalog.Color(s.career);active.Add(v);return v;
         }
-        public static void Pulse(PlayerController p,string id){foreach(var v in active)if(v.owner==p&&v.id==id)v.pulse=Time.time+.14f;}
-        void Update(){if(Time.time>=end||owner==null||owner.IsDead||!owner.gameObject.activeInHierarchy||Game.Session.MapId!=map){Destroy(gameObject);return;}var c=image.color;c.a=Time.time<pulse?.5f:.22f;image.color=c;}
+        public static void Clear(PlayerController p){foreach(var v in active.ToArray())if(v!=null&&v.owner==p)Destroy(v.gameObject);}
+        public static void Pulse(PlayerController p,string id){foreach(var v in active)if(v.owner==p&&v.id==id)v.pulse=Time.time+.14f;CareerPaintEffect.Pulse(p,id);CareerRenewalFx.Pulse(p,id);}
+        void Update(){if(Time.time>=end||owner==null||owner.IsDead||!owner.gameObject.activeInHierarchy||Game.Session.MapId!=map){Destroy(gameObject);return;}if(follow)transform.position=owner.Center;var c=image.color;c.a=Time.time<pulse?.5f:.22f;image.color=c;}
         void OnDestroy(){active.Remove(this);}
     }
     /// <summary>An instantaneous tracer at the actual hit, not a delayed gameplay projectile.</summary>
     public sealed class CareerLinkView : MonoBehaviour
     {
-        static int count; PlayerController owner;string map;float start,life;LineRenderer line;Color tint;
+        static int count; PlayerController owner;string map;float start,life;LineRenderer line,core,fork;Color tint;
+        Vector2 from,to,side;bool lightning;
         public static int Count=>count;
         public static void Show(CareerSkill s,Vector2 from,Vector2 to,float life,PlayerController source)
         {
@@ -73,12 +75,23 @@ namespace DotRPG
             var go=new GameObject("Career tracer");if(Fx.Root!=null)go.transform.SetParent(Fx.Root,false);
             var v=go.AddComponent<CareerLinkView>();v.owner=source;v.map=Game.Session.MapId;v.start=Time.time;v.life=life;count++;
             v.line=go.AddComponent<LineRenderer>();v.line.sharedMaterial=FxMaterials.Alpha;v.line.useWorldSpace=true;v.line.numCapVertices=v.line.numCornerVertices=0;v.line.sortingOrder=SkillFx.At(to.y,80);
-            v.tint=s.effect=="fire"?new Color(1,.55f,.2f):s.effect=="storm"?new Color(1,.88f,.45f):CareerCatalog.Color(s.career);
+            v.from=from;v.to=to;v.side=new Vector2(-(to-from).y,(to-from).x).normalized;v.lightning=s.effect=="storm";
+            v.tint=s.effect=="fire"?new Color(1,.55f,.2f):s.effect=="storm"?new Color(.53f,.48f,1):CareerCatalog.Color(s.career);
             int n=s.effect=="storm"?9:2;v.line.positionCount=n;Vector2 side=new Vector2(-(to-from).y,(to-from).x).normalized;
             for(int i=0;i<n;i++){var at=Vector2.Lerp(from,to,i/(float)(n-1));if(i>0&&i<n-1)at+=side*((i%2==0?1:-1)*.09f);v.line.SetPosition(i,new Vector3(Mathf.Round(at.x*48)/48,Mathf.Round(at.y*48)/48,0));}
             v.line.startWidth=.065f;v.line.endWidth=.025f;v.line.startColor=v.line.endColor=v.tint;
+            if(v.lightning){v.core=v.MakeLine("White lightning core",.027f,.016f);v.fork=v.MakeLine("Branch discharge",.035f,.008f);}
         }
-        void Update(){float t=(Time.time-start)/life;if(t>=1||owner==null||owner.IsDead||!owner.gameObject.activeInHierarchy||Game.Session.MapId!=map){Destroy(gameObject);return;}var c=tint;c.a=1-t;line.startColor=line.endColor=c;}
+        LineRenderer MakeLine(string name,float width,float endWidth)
+        {var go=new GameObject(name);go.transform.SetParent(transform,false);var r=go.AddComponent<LineRenderer>();r.sharedMaterial=FxMaterials.Alpha;r.useWorldSpace=true;r.numCapVertices=r.numCornerVertices=0;r.sortingOrder=line.sortingOrder+1;r.startWidth=width;r.endWidth=endWidth;return r;}
+        void Update(){float t=(Time.time-start)/life;if(t>=1||owner==null||owner.IsDead||!owner.gameObject.activeInHierarchy||Game.Session.MapId!=map){Destroy(gameObject);return;}var c=tint;c.a=1-t;line.startColor=line.endColor=c;
+            if(lightning){
+                int beat=Mathf.FloorToInt((Time.time-start)*24);const int n=13;line.positionCount=core.positionCount=n;
+                for(int i=0;i<n;i++){var at=Vector2.Lerp(from,to,i/(float)(n-1));if(i>0&&i<n-1)at+=side*(Mathf.Sin(i*7.31f+beat*3.7f)*.13f);at.x=Mathf.Round(at.x*48)/48;at.y=Mathf.Round(at.y*48)/48;line.SetPosition(i,at);core.SetPosition(i,at);}
+                core.startColor=core.endColor=new Color(1,.98f,1,(1-t)*.9f);
+                fork.positionCount=3;var mid=Vector2.Lerp(from,to,.58f);fork.SetPosition(0,mid);fork.SetPosition(1,mid+side*.2f+(to-from).normalized*.1f);fork.SetPosition(2,mid+side*.4f-(to-from).normalized*.1f);fork.startColor=fork.endColor=c;
+            }
+        }
         void OnDestroy(){count=Mathf.Max(0,count-1);}
     }
     public sealed class CareerMarkView : MonoBehaviour
@@ -103,7 +116,7 @@ namespace DotRPG
         public int VisibleCount {get {int n=0;foreach(var icon in icons)if(icon!=null&&icon.enabled)n++;return n;}}
         public static CareerStatusView For(PlayerController p,CareerCombat c)
         {var v=p.GetComponent<CareerStatusView>();if(v==null)v=p.gameObject.AddComponent<CareerStatusView>();v.player=p;v.state=c;return v;}
-        public void ShieldHit(){impactUntil=Time.time+.12f;}
+        public void ShieldHit(){impactUntil=Time.time+.12f;var s=CareerCatalog.Get(state.ShieldCareer==Career.Bishop?"b_wing":state.ShieldCareer==Career.Arcanist?"m_veil":"g_wall");CareerEffect.Hit(s,player.Center,player.Facing.ToVector(),player);}
         public void Passive(string id)
         {
             if(Time.time<passiveUntil-.35f)return;
@@ -127,9 +140,14 @@ namespace DotRPG
             if(wasOn[index]&&!on)fadeUntil[index]=Time.time+.22f;wasOn[index]=on;
             bool visible=on||Time.time<fadeUntil[index];if(!visible){if(icons[index]!=null)icons[index].enabled=false;return;}
             if(icons[index]==null){icons[index]=new GameObject("Career state "+index).AddComponent<SpriteRenderer>();icons[index].transform.SetParent(transform,false);}
-            var icon=icons[index];icon.enabled=true;icon.sprite=CareerArt.VisualFrame(key,Mathf.FloorToInt(Time.time*4)%12);icon.transform.position=player.Center;
-            icon.transform.localScale=Vector3.one*size;icon.sortingOrder=SkillFx.At(player.Center.y,index==0?35:30);
-            float alpha=on?(index==0&&Time.time<impactUntil?.95f:.5f):Mathf.Clamp01((fadeUntil[index]-Time.time)/.22f)*.5f;icon.color=new Color(1,1,1,alpha);
+            var icon=icons[index];icon.enabled=true;
+            Career career=index==0?state.ShieldCareer:index==2?Career.Fighter:index>=3&&index<=4?Career.Bishop:Career.Guardian;
+            int row=index==0?(career==Career.Guardian?2:career==Career.Bishop?1:3):index==1?0:index==2?2:index==3?1:index==4?2:0;
+            icon.sprite=CareerPulseArt.Frame(career,row,2)??CareerArt.VisualFrame(key,Mathf.FloorToInt(Time.time*4)%12);
+            icon.transform.position=player.Center+(index==0?Vector2.up*.1f:index==4?Vector2.down*.3f:Vector2.zero);
+            icon.transform.localScale=new Vector3(size*(index==0?1.9f:1.2f),size*(index==0?1.7f:.95f),1);icon.sortingOrder=index==4?SkillFx.GroundOrder+23:SkillFx.At(player.Center.y,30);
+            float baseAlpha=index==0?.23f:.15f;
+            float alpha=on?(index==0&&Time.time<impactUntil?.65f:baseAlpha):Mathf.Clamp01((fadeUntil[index]-Time.time)/.22f)*baseAlpha;icon.color=new Color(1,1,1,alpha);
         }
         void OnDisable(){Clear();}
     }

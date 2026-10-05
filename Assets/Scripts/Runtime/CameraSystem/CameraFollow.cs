@@ -21,6 +21,8 @@ namespace DotRPG
         bool lastInterior;
         float shakeUntil;
         float shakeStrength;
+        float careerImpulseEnd,careerImpulseStart,careerImpulseStrength;
+        Vector2 careerImpulseDirection;
 
         int titleIndex;
         bool hasFocus;
@@ -74,6 +76,14 @@ namespace DotRPG
             shakeUntil = Time.unscaledTime + duration;
         }
 
+        // Separate visual clock and deterministic waveform: skill feedback consumes no combat RNG.
+        public void CareerImpulse(Vector2 direction,float strength,float duration)
+        {
+            if(ShakeMute>0||(Game.Settings!=null&&!Game.Settings.Data.screenShake))return;
+            careerImpulseStart=Time.unscaledTime;careerImpulseEnd=careerImpulseStart+duration;
+            careerImpulseStrength=strength;careerImpulseDirection=direction.normalized;
+        }
+
         void UpdateZoom(bool force)
         {
             bool interior = Game.World != null && Game.World.Map.IsInterior;
@@ -110,6 +120,10 @@ namespace DotRPG
             Vector2 shake = Vector2.zero;
             if (Time.unscaledTime < shakeUntil)
                 shake = Random.insideUnitCircle * shakeStrength;
+            if(Time.unscaledTime<careerImpulseEnd&&(Game.Settings==null||Game.Settings.Data.screenShake)){
+                float t=(Time.unscaledTime-careerImpulseStart)/Mathf.Max(.01f,careerImpulseEnd-careerImpulseStart);
+                shake+=careerImpulseDirection*(Mathf.Sin(t*Mathf.PI*4)*(1-t)*careerImpulseStrength);
+            }
             ApplyPosition(focus, shake);
         }
 

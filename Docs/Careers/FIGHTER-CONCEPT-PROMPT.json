@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "source_reference": "User supplied Fighter concept sheet, 2026-10-05; visual reference only",
+  "output": "Assets/StreamingAssets/CareerRenewal/FighterConcept.png",
+  "prompt": "Use case: stylized-concept. Asset type: production transparent pixel-art RPG Fighter VFX spritesheet.\nInput image 1 is ONLY a visual language reference: compressed crimson sword force, hot orange blade core, torn black trailing ribbons, directional jagged ground fractures. Do not reproduce characters, lettering, logos or any exact design.\nGenerate a brand new square 4 rows x 4 columns atlas with sixteen isolated effects, each centered within its own equally sized cell, ample transparent gutters. NO text, NO characters, NO weapons as physical objects, NO backgrounds, NO grid lines. Real transparent alpha. Each row depicts ONE motif at FOUR temporal phases: column1 condensed anticipation, column2 released motion, column3 brightest peak, column4 disintegrating residual. Maintain exactly the same center/pivot within each row, especially as shapes change between cels.\nPixel art with sharp deliberate square clusters, intricate but clear silhouettes, limited dark wine/crimson/scarlet/orange/ivory palette, strong dark ink trailing ribbons. No blur, no smooth gradient, no soft bloom. Detail resolution suitable for a high definition pixel RPG; effects must read clearly when rendered ~200 pixels wide. Shard edges tapered and broken, avoid generic round fire explosions.\nRow 1: a thick open crescent sword slash shaped like ')' bowing RIGHT/EAST, tips to LEFT, convex blade edge at RIGHT. 150-degree broad single sweeping arc. Dark wine-black torn ribbons strictly behind left side of arc; hot ivory narrow outer edge, thick orange core, crimson secondary swept lines. ALL four cels have this same RIGHT-facing silhouette, do NOT turn toward different angles. Middle of cell is geometric bounding center.\nRow 2: a long razor/sharp spear-like thrust wave pointing RIGHT/EAST, crimson blade pressure with hot narrow orange point, forked black-crimson trail on LEFT. This is one sword-force wave, NOT three arrows and not a fireball.\nRow 3: compact angular impact burst and rising compressed sword aura, cruciform edged flash, ground fracture flakes beneath, torn wine-black ribbon loops, crimson vertical plume. Distinguishable stages of compression, ignition, concentrated impact, cooling shards. Sharp rather than circular magic.\nRow 4: a long horizontal jagged sword-cut ground fissure traveling LEFT to RIGHT/EAST. Thin bright ivory cutting spine, two broad crimson torn bands along the spine, several hot orange fissure shards, black torn edges and broken ground chips. Clearly a straight sword-force tear in space with tapered right tip, NOT a fire beam, not a ring.\nIn every motif distinguish preparation, motion, peak, dissipation. Preserve transparent negative space and no more than a handful of individual scattered embers per cell. Every effect fits entirely in its assigned cell with transparent gutters and generous margin.",
+  "phases": [
+    "charge",
+    "release",
+    "peak",
+    "residue"
+  ],
+  "motifs": [
+    "east-facing crescent",
+    "east-facing thrust",
+    "impact and rising aura",
+    "east-facing fissure"
+  ]
+}

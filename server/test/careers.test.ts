@@ -37,17 +37,29 @@ describe('career invariants',()=>{
   for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual(careerIds[c]);
   for(const s of catalog.skills)expect(s.level).toBe(s.index===8?15:s.index%4<2?15:s.index%4===2?18:22);
  });
- test('reborn catalog exposes role mechanics while retaining saved node identities',()=>{
+ test('renewal catalog exposes role mechanics while retaining saved node identities',()=>{
   const {skills}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8'));
   const skill=(id:string)=>skills.find((s:{id:string})=>s.id===id);
-  expect(skill('f_awake')).toMatchObject({name:'천지일선',range:18,hits:1});
-  expect(skill('f_break').range).toBeGreaterThan(6);
+  expect(skill('f_awake')).toMatchObject({name:'천검귀일',range:5,hits:4});
+  expect(skill('f_break')).toMatchObject({name:'천검낙',range:5,effect:'f_drop'});
   expect(skill('g_taunt').radius).toBe(5);
   expect(skill('g_bash').range).toBe(3);
   expect(skill('m_storm')).toMatchObject({hits:5,radius:3});
   expect(skill('b_heal').radius).toBe(4);
   expect(skill('b_bloom')).toMatchObject({duration:6,hits:6});
   expect(skill('b_awake')).toMatchObject({duration:8,hits:8});
+  const active=skills.filter((s:{kind:number})=>s.kind!==0);
+  expect(new Set(active.map((s:{delivery:string})=>s.delivery)).size).toBe(28);
+  expect(skill('f_cross')).toMatchObject({name:'월아검',delivery:'moon-projectile',mp:12,cooldown:4,hits:1,range:6});
+  expect(skill('f_flurry')).toMatchObject({name:'자월난무',delivery:'violet-three-beats',mp:25,cooldown:11,hits:3});
+  expect(skill('f_flurry').radius).toBeCloseTo(2.8,5);
+  expect(skill('f_focus')).toMatchObject({name:'염룡승천',delivery:'rising-eruptions',hits:3});
+  expect(skill('f_rhythm').effect).toBe('swordflow');
+  expect(skill('f_edge').effect).toBe('opening');
+  expect(skills.filter((s:{career:number;kind:number})=>s.career===1&&s.kind!==0).every((s:{effect:string})=>s.effect.startsWith('f_'))).toBe(true);
+  expect(skill('g_wall').delivery).toBe('returning-shield');
+  expect(skill('m_fire').delivery).toBe('fire-lance');
+  expect(skill('b_heal').delivery).toBe('healing-feathers');
   for(const s of skills){expect(Number.isFinite(s.power)).toBe(true);expect(s.cooldown).toBeGreaterThanOrEqual(0);}
  });
 });

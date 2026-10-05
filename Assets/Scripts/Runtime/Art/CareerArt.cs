@@ -13,6 +13,8 @@ namespace DotRPG
             if(key==null || !key.StartsWith("career_")) return null;
             if(cache.TryGetValue(key,out var found)) return found;
             var s=CareerCatalog.Get(key.Substring(7)); if(s==null) return null;
+            if(s.id=="g_awake" && CareerPulseArt.Frame(Career.Guardian,3,2)!=null) return cache[key]=CareerPulseArt.Frame(Career.Guardian,3,2);
+            if(s.career==Career.Fighter)return cache[key]=FighterReforgeArt.Icon(s);
             return cache[key]=CareerPaintArt.Cell(s.career,0)!=null?SpriteOf(CareerPaintArt.Icon(s),key,64):Resources.Load<Sprite>("Art/Careers/Icons/"+key) ?? SpriteOf(Icon(s),key,32);
         }
         public static Sprite SpriteOf(PixelCanvas p,string name,float ppu)
@@ -134,7 +136,7 @@ namespace DotRPG
         Mesh mesh; Vector3[] vertices; Color[] colors; static int live;
         static Material particleMaterial;
         PlayerController source; string map; bool bound;
-        public static int ActiveCount=>live+CareerPaintEffect.ActiveCount;
+        public static int ActiveCount=>live+CareerPaintEffect.ActiveCount+CareerRenewalFx.Count;
         public static void Play(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life=.55f,PlayerController source=null)=>Spawn(s,at,radius,direction,life,0,source);
         public static void Charge(CareerSkill s,Vector2 at,float radius,Vector2 direction,float life,PlayerController source=null)=>Spawn(s,at,radius,direction,Mathf.Max(.15f,life),1,source);
         public static void Hit(CareerSkill s,Vector2 at,Vector2 direction,PlayerController source=null)=>Spawn(s,at,.46f,direction,.34f,2,source);

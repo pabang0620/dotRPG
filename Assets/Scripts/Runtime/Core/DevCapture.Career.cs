@@ -15,7 +15,7 @@ namespace DotRPG
             yield return Wait(1);
             Game.Config.autosave=false;
             var careers=new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop};
-            var loadouts=new[]{new[]{1,2,3,7},new[]{1,2,5,7},new[]{1,2,3,7},new[]{1,3,5,6}};
+            var loadouts=new[]{new[]{1,2,5,7},new[]{2,5,6,7},new[]{1,2,3,7},new[]{1,2,6,7}};
             for(int slot=0;slot<careers.Length;slot++)
             {
                 var career=careers[slot];
@@ -61,9 +61,25 @@ namespace DotRPG
         {
             dgnPassed=dgnFailed=0;ApplyRequestedResolution();yield return Wait(1);
             Game.Config.autosave=false;Game.Flow.NewGame(CharacterClass.Warrior);yield return Wait(1.5f);Game.Player.Input=new ScriptedInput();
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgePreview")>=0){yield return FighterReforgeLifecycleChecks();yield return CareerVisualCaptures();Log($"REFORGE LIFECYCLE RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;}
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgeOnly")>=0){
+                yield return FighterReforgeChecks();yield return CareerRenewalChecks();
+                File.WriteAllText(Path.Combine(folder,"skills.json"),JsonUtility.ToJson(new CareerExport{skills=CareerCatalog.All},true));
+                yield return CareerVisualCaptures();Log($"FIGHTER REFORGE RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;
+            }
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterRevisionOnly")>=0){
+                yield return CareerPulseChecks();yield return FighterRevisionChecks();
+                File.WriteAllText(Path.Combine(folder,"skills.json"),JsonUtility.ToJson(new CareerExport{skills=CareerCatalog.All},true));
+                yield return CareerVisualCaptures();Log($"FIGHTER REVISION RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;
+            }
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerPulseOnly")>=0){yield return CareerPulseChecks();Log($"PULSE RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;}
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerPreviewOnly")>=0){yield return CareerVisualCaptures();yield break;}
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerRenewalStateOnly")>=0){yield return CareerRenewalChecks();Log($"RENEWAL STATE RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;}
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerRenewalOnly")>=0){yield return CareerPulseChecks();yield return CareerRenewalChecks();yield return CareerVisualCaptures();Log($"RENEWAL RESULTS: {dgnPassed} passed, {dgnFailed} failed");yield break;}
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerUiOnly")>=0){yield return CareerUiChecks();yield break;}
             DCheck("catalog exactly 36",CareerCatalog.All.Length==36);
+            yield return CareerPulseChecks();
+            yield return CareerRenewalChecks();
             foreach(Career c in new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop})
             {
                 var list=CareerCatalog.For(c);DCheck(c+" 2 passives / 6 actives / 1 awakening",list.Count(x=>x.kind==CareerSkillKind.Passive)==2&&list.Count(x=>x.kind==CareerSkillKind.Active)==6&&list.Count(x=>x.kind==CareerSkillKind.Awakening)==1);
@@ -171,7 +187,14 @@ namespace DotRPG
         IEnumerator CareerVisualCaptures()
         {
             string dest=Path.Combine(folder,"comparison");Directory.CreateDirectory(dest);
-            foreach(string id in new[]{"f_cross","f_awake","g_wall","g_awake","m_fire","m_awake","b_heal","b_awake"}){
+            var ids=new[]{"f_cross","f_awake","g_wall","g_awake","m_fire","m_awake","b_heal","b_awake"};
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterRevisionOnly")>=0)ids=new[]{"f_cross","f_flurry","f_break"};
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterConceptGallery")>=0)ids=new[]{"f_cross","f_rush","f_flurry","f_break","f_focus","f_execute","f_awake"};
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgeOnly")>=0)ids=new[]{"f_cross","f_rush","f_flurry","f_break","f_focus","f_execute","f_awake"};
+            bool reforgeGallery=Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgeOnly")>=0||Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgeGallery")>=0||Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterReforgePreview")>=0;
+            if(reforgeGallery)ids=new[]{"f_cross","f_rush","f_flurry","f_break","f_focus","f_execute","f_awake"};
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterGallery")>=0)ids=ids.Concat(new[]{"f_rush","f_flurry","f_break","f_focus","f_execute"}).ToArray();
+            foreach(string id in ids){
                 var s=CareerCatalog.Get(id);Game.Flow.NewGame(CareerCatalog.Base(s.career));yield return Wait(.4f);
                 var player=Game.Player;player.Input=new ScriptedInput();var p=player.Data.Progression;p.SetFromServer(40,0);p.Promote(s.career);
                 foreach(var node in CareerCatalog.For(s.career))if(node.kind!=CareerSkillKind.Awakening)p.Learn(node.id);for(int stage=0;stage<5;stage++)p.AdvanceAwakening(stage);
@@ -180,12 +203,14 @@ namespace DotRPG
                 var at=player.Position;player.Place(at,Facing.Right);player.Health.Drain(150);
                 var stats=Instantiate(Game.Config.skeletonStats);stats.maxHealth=100000;stats.attackDamage=stats.xpReward=0;stats.wanderSpeed=stats.chaseSpeed=stats.knockbackSpeed=0;stats.invulnerableTime=.01f;
                 var enemy=EnemyController.Create(stats,CharacterLook.Skeleton,at+Vector2.right*1.8f,Game.World.ObjectsRoot);
-                var rect=new Rect(at.x-4,at.y-3,8,6);
+                bool wideConcept=id=="f_awake"&&Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterConceptGallery")>=0;
+                var rect=reforgeGallery?new Rect(at.x-4,at.y-5,12,10):wideConcept?new Rect(at.x-2,at.y-4,22,8):new Rect(at.x-4,at.y-3,8,6);
                 // Remove only setup particles before casting; keep all particles produced by the actual skill.
                 foreach(var setup in UnityEngine.Object.FindObjectsByType<FxParticle>(FindObjectsSortMode.None))Destroy(setup.gameObject);
                 yield return null;
                 StartCoroutine(CareerCombat.For(player).Cast(s,player.Data.Stats.Skill(player.Class,0,s.Gem,new SkillGem[0])));
-                for(int frame=0;frame<18;frame++){RenderRegion(Path.Combine(dest,id+"_"+frame.ToString("00")+".png"),rect,48);yield return Wait(.1f);}
+                int frameCount=Array.IndexOf(Environment.GetCommandLineArgs(),"-careerFighterRevisionOnly")>=0?36:24;
+                for(int frame=0;frame<frameCount;frame++){RenderRegion(Path.Combine(dest,id+"_"+frame.ToString("00")+".png"),rect,reforgeGallery?40:wideConcept?32:48);yield return Wait(.1f);}
                 Destroy(enemy.gameObject);Destroy(stats);
             }
         }
@@ -207,8 +232,10 @@ namespace DotRPG
                     player.Health.Drain(150);int hp=player.Health.Current,enemyHp=foe.Health.Current;
                     var numbers=player.Data.Stats.Skill(player.Class,0,s.Gem,new SkillGem[0]);
                     if(s.effect=="cleanse")CareerCombat.For(player).AddCurse(10);
+                    int pulseStarts=(CareerPaintEffect.Starts(s.id)+CareerRenewalFx.Starts(s.id));
                     StartCoroutine(CareerCombat.For(player).Cast(s,numbers));yield return Wait(s.cast+.13f);
-                    if(s.kind==CareerSkillKind.Awakening)RenderRegion(Path.Combine(folder,"combat_"+s.id+".png"),new Rect(at.x-5,at.y-4,10,8),64);
+                    DCheck(s.id+" new animated artwork connected",(CareerPaintEffect.Starts(s.id)+CareerRenewalFx.Starts(s.id))>pulseStarts);
+                    RenderRegion(Path.Combine(folder,"combat_"+s.id+".png"),new Rect(at.x-5,at.y-4,10,8),64);
                     yield return Wait(s.effect=="hot"||s.effect=="rift"?s.duration+.2f:s.effect=="counter"?3.2f:1.1f);
                     bool heal=s.effect=="heal"||s.effect=="hot"||s.effect=="cleanse"||s.effect=="dawn";
                     bool attack=s.power>0&&s.effect!="focus"&&s.effect!="guard"&&s.effect!="blink"&&s.effect!="shield"&&s.effect!="ward"&&s.effect!="citadel"&&s.effect!="wings"&&s.effect!="bless"&&!heal;

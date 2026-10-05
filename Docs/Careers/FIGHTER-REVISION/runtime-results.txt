@@ -1,0 +1,242 @@
+[1.34] capture started
+[1.34] verification audio volume: 0
+[2.78] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN Fighter pulse row 0 cel 0 PASS
+DGN Fighter pulse row 0 cel 1 PASS
+DGN Fighter pulse row 0 cel 2 PASS
+DGN Fighter pulse row 0 cel 3 PASS
+DGN Fighter pulse row 1 cel 0 PASS
+DGN Fighter pulse row 1 cel 1 PASS
+DGN Fighter pulse row 1 cel 2 PASS
+DGN Fighter pulse row 1 cel 3 PASS
+DGN Fighter pulse row 2 cel 0 PASS
+DGN Fighter pulse row 2 cel 1 PASS
+DGN Fighter pulse row 2 cel 2 PASS
+DGN Fighter pulse row 2 cel 3 PASS
+DGN Fighter pulse row 3 cel 0 PASS
+DGN Fighter pulse row 3 cel 1 PASS
+DGN Fighter pulse row 3 cel 2 PASS
+DGN Fighter pulse row 3 cel 3 PASS
+DGN Guardian pulse row 0 cel 0 PASS
+DGN Guardian pulse row 0 cel 1 PASS
+DGN Guardian pulse row 0 cel 2 PASS
+DGN Guardian pulse row 0 cel 3 PASS
+DGN Guardian pulse row 1 cel 0 PASS
+DGN Guardian pulse row 1 cel 1 PASS
+DGN Guardian pulse row 1 cel 2 PASS
+DGN Guardian pulse row 1 cel 3 PASS
+DGN Guardian pulse row 2 cel 0 PASS
+DGN Guardian pulse row 2 cel 1 PASS
+DGN Guardian pulse row 2 cel 2 PASS
+DGN Guardian pulse row 2 cel 3 PASS
+DGN Guardian pulse row 3 cel 0 PASS
+DGN Guardian pulse row 3 cel 1 PASS
+DGN Guardian pulse row 3 cel 2 PASS
+DGN Guardian pulse row 3 cel 3 PASS
+DGN Arcanist pulse row 0 cel 0 PASS
+DGN Arcanist pulse row 0 cel 1 PASS
+DGN Arcanist pulse row 0 cel 2 PASS
+DGN Arcanist pulse row 0 cel 3 PASS
+DGN Arcanist pulse row 1 cel 0 PASS
+DGN Arcanist pulse row 1 cel 1 PASS
+DGN Arcanist pulse row 1 cel 2 PASS
+DGN Arcanist pulse row 1 cel 3 PASS
+DGN Arcanist pulse row 2 cel 0 PASS
+DGN Arcanist pulse row 2 cel 1 PASS
+DGN Arcanist pulse row 2 cel 2 PASS
+DGN Arcanist pulse row 2 cel 3 PASS
+DGN Arcanist pulse row 3 cel 0 PASS
+DGN Arcanist pulse row 3 cel 1 PASS
+DGN Arcanist pulse row 3 cel 2 PASS
+DGN Arcanist pulse row 3 cel 3 PASS
+DGN Bishop pulse row 0 cel 0 PASS
+DGN Bishop pulse row 0 cel 1 PASS
+DGN Bishop pulse row 0 cel 2 PASS
+DGN Bishop pulse row 0 cel 3 PASS
+DGN Bishop pulse row 1 cel 0 PASS
+DGN Bishop pulse row 1 cel 1 PASS
+DGN Bishop pulse row 1 cel 2 PASS
+DGN Bishop pulse row 1 cel 3 PASS
+DGN Bishop pulse row 2 cel 0 PASS
+DGN Bishop pulse row 2 cel 1 PASS
+DGN Bishop pulse row 2 cel 2 PASS
+DGN Bishop pulse row 2 cel 3 PASS
+DGN Bishop pulse row 3 cel 0 PASS
+DGN Bishop pulse row 3 cel 1 PASS
+DGN Bishop pulse row 3 cel 2 PASS
+DGN Bishop pulse row 3 cel 3 PASS
+DGN fighter concept atlas row 0 PASS
+DGN fighter concept atlas row 1 PASS
+DGN fighter concept atlas row 2 PASS
+DGN fighter concept atlas row 3 PASS
+DGN pulse spawn does not consume combat RNG PASS
+DGN native cel animation advances PASS
+DGN pulse playback never pauses combat or changes resources PASS
+DGN pulse animation cleans renderers PASS
+DGN reset removes sustained painted effects PASS
+[4.82] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN blocked strikes do not create hit feedback PASS
+DGN successful wide cleave creates exactly one impact reaction PASS
+DGN impact silhouettes expire PASS
+DGN missed swings do not create hit reactions PASS
+[9.19] Warning: Releasing render texture that is set to be RenderTexture.active!
+[9.24] PULSE ART: 64 original temporal cels; Point/Clamp; combat clock unaffected; AudioListener.volume=0
+DGN fighter revisions muted PASS
+DGN fighter revised deliveries PASS
+DGN fighter catalog costs and cooldowns retained PASS
+DGN cleave combines former two-strike budget 0 PASS
+DGN cleave artwork stays in facing front 0 PASS
+DGN single wide cleave front once only 0 PASS
+DGN wide cleave keeps position and facing 0 PASS
+DGN circle combines former three-strike budget 0 PASS
+DGN single circle hits all around once 0 PASS
+DGN circle rotates visual rig through eight views 0 PASS
+DGN circle restores facing and clears artwork 0 PASS
+DGN wave branch angle 0/-1 PASS
+DGN wave branch angle 0/0 PASS
+DGN wave branch angle 0/1 PASS
+DGN ground slam winds up before emission 0 PASS
+DGN ground slam three diverging waves hit once 0 PASS
+DGN triple waves exclude side and rear 0 PASS
+DGN triple waves and impact expire 0 PASS
+[13.00] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 1 PASS
+DGN cleave artwork stays in facing front 1 PASS
+DGN single wide cleave front once only 1 PASS
+DGN wide cleave keeps position and facing 1 PASS
+DGN circle combines former three-strike budget 1 PASS
+DGN single circle hits all around once 1 PASS
+DGN circle rotates visual rig through eight views 1 PASS
+DGN circle restores facing and clears artwork 1 PASS
+DGN wave branch angle 1/-1 PASS
+DGN wave branch angle 1/0 PASS
+DGN wave branch angle 1/1 PASS
+DGN ground slam winds up before emission 1 PASS
+DGN ground slam three diverging waves hit once 1 PASS
+DGN triple waves exclude side and rear 1 PASS
+DGN triple waves and impact expire 1 PASS
+[16.30] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 2 PASS
+DGN cleave artwork stays in facing front 2 PASS
+DGN single wide cleave front once only 2 PASS
+DGN wide cleave keeps position and facing 2 PASS
+DGN circle combines former three-strike budget 2 PASS
+DGN single circle hits all around once 2 PASS
+DGN circle rotates visual rig through eight views 2 PASS
+DGN circle restores facing and clears artwork 2 PASS
+DGN wave branch angle 2/-1 PASS
+DGN wave branch angle 2/0 PASS
+DGN wave branch angle 2/1 PASS
+DGN ground slam winds up before emission 2 PASS
+DGN ground slam three diverging waves hit once 2 PASS
+DGN triple waves exclude side and rear 2 PASS
+DGN triple waves and impact expire 2 PASS
+[19.62] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 3 PASS
+DGN cleave artwork stays in facing front 3 PASS
+DGN single wide cleave front once only 3 PASS
+DGN wide cleave keeps position and facing 3 PASS
+DGN circle combines former three-strike budget 3 PASS
+DGN single circle hits all around once 3 PASS
+DGN circle rotates visual rig through eight views 3 PASS
+DGN circle restores facing and clears artwork 3 PASS
+DGN wave branch angle 3/-1 PASS
+DGN wave branch angle 3/0 PASS
+DGN wave branch angle 3/1 PASS
+DGN ground slam winds up before emission 3 PASS
+DGN ground slam three diverging waves hit once 3 PASS
+DGN triple waves exclude side and rear 3 PASS
+DGN triple waves and impact expire 3 PASS
+[22.92] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 4 PASS
+DGN cleave artwork stays in facing front 4 PASS
+DGN single wide cleave front once only 4 PASS
+DGN wide cleave keeps position and facing 4 PASS
+DGN circle combines former three-strike budget 4 PASS
+DGN single circle hits all around once 4 PASS
+DGN circle rotates visual rig through eight views 4 PASS
+DGN circle restores facing and clears artwork 4 PASS
+DGN wave branch angle 4/-1 PASS
+DGN wave branch angle 4/0 PASS
+DGN wave branch angle 4/1 PASS
+DGN ground slam winds up before emission 4 PASS
+DGN ground slam three diverging waves hit once 4 PASS
+DGN triple waves exclude side and rear 4 PASS
+DGN triple waves and impact expire 4 PASS
+[26.21] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 5 PASS
+DGN cleave artwork stays in facing front 5 PASS
+DGN single wide cleave front once only 5 PASS
+DGN wide cleave keeps position and facing 5 PASS
+DGN circle combines former three-strike budget 5 PASS
+DGN single circle hits all around once 5 PASS
+DGN circle rotates visual rig through eight views 5 PASS
+DGN circle restores facing and clears artwork 5 PASS
+DGN wave branch angle 5/-1 PASS
+DGN wave branch angle 5/0 PASS
+DGN wave branch angle 5/1 PASS
+DGN ground slam winds up before emission 5 PASS
+DGN ground slam three diverging waves hit once 5 PASS
+DGN triple waves exclude side and rear 5 PASS
+DGN triple waves and impact expire 5 PASS
+[29.49] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 6 PASS
+DGN cleave artwork stays in facing front 6 PASS
+DGN single wide cleave front once only 6 PASS
+DGN wide cleave keeps position and facing 6 PASS
+DGN circle combines former three-strike budget 6 PASS
+DGN single circle hits all around once 6 PASS
+DGN circle rotates visual rig through eight views 6 PASS
+DGN circle restores facing and clears artwork 6 PASS
+DGN wave branch angle 6/-1 PASS
+DGN wave branch angle 6/0 PASS
+DGN wave branch angle 6/1 PASS
+DGN ground slam winds up before emission 6 PASS
+DGN ground slam three diverging waves hit once 6 PASS
+DGN triple waves exclude side and rear 6 PASS
+DGN triple waves and impact expire 6 PASS
+[32.77] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN cleave combines former two-strike budget 7 PASS
+DGN cleave artwork stays in facing front 7 PASS
+DGN single wide cleave front once only 7 PASS
+DGN wide cleave keeps position and facing 7 PASS
+DGN circle combines former three-strike budget 7 PASS
+DGN single circle hits all around once 7 PASS
+DGN circle rotates visual rig through eight views 7 PASS
+DGN circle restores facing and clears artwork 7 PASS
+DGN wave branch angle 7/-1 PASS
+DGN wave branch angle 7/0 PASS
+DGN wave branch angle 7/1 PASS
+DGN ground slam winds up before emission 7 PASS
+DGN ground slam three diverging waves hit once 7 PASS
+DGN triple waves exclude side and rear 7 PASS
+DGN triple waves and impact expire 7 PASS
+[36.04] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN f_rush release pose continues from windup contact PASS
+DGN f_rush concept release artwork expires PASS
+[37.65] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN f_execute release pose continues from windup contact PASS
+DGN f_execute concept release artwork expires PASS
+[39.54] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN f_awake release pose continues from windup contact PASS
+DGN f_awake concept release artwork expires PASS
+[41.84] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN focus concept aura accompanies active buff PASS
+DGN focus state and aura expire PASS
+[48.83] Warning: Releasing render texture that is set to be RenderTexture.active!
+DGN revised cleave remains equippable PASS
+DGN single cleave input spends MP once PASS
+DGN single cleave recovery ends but cooldown retained PASS
+DGN circle map cancel restores facing and effects PASS
+DGN circle reset cancels turn and artwork PASS
+DGN reset during slam windup cancels emission PASS
+DGN death cancels circle and rig turn PASS
+[52.57] Warning: Releasing render texture that is set to be RenderTexture.active!
+[59.93] Warning: Releasing render texture that is set to be RenderTexture.active!
+[67.24] Warning: Releasing render texture that is set to be RenderTexture.active!
+[74.59] Warning: Releasing render texture that is set to be RenderTexture.active!
+[81.95] Warning: Releasing render texture that is set to be RenderTexture.active!
+[89.27] Warning: Releasing render texture that is set to be RenderTexture.active!
+[96.63] Warning: Releasing render texture that is set to be RenderTexture.active!
+[103.73] FIGHTER REVISION RESULTS: 215 passed, 0 failed
+[103.73] capture finished

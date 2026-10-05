@@ -1,0 +1,7 @@
+{
+  "Assets/Scripts/Runtime/Progression/CareerData.cs": true,
+  "Assets/Scripts/Runtime/Progression/CareerNumbers.cs": true,
+  "Assets/Scripts/Runtime/Combat/SkillEffects.cs": true,
+  "Assets/Scripts/Runtime/Player/SkillCaster.cs": true,
+  "server/data/careers.json": true
+}

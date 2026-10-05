@@ -28,7 +28,7 @@ namespace DotRPG
             bool silver = owner.Class == CharacterClass.Warrior;
             silverGrip.enabled = silver && !owner.IsDead && weapon.sprite != null;
             if (!silver) return;
-            SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, owner.Facing, !owner.IsDead);
+            SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, characterAnimator!=null?characterAnimator.PresentationFacing(owner.Facing):owner.Facing, !owner.IsDead);
         }
 
         PlayerController owner;

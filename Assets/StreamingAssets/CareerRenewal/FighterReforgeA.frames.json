@@ -1,0 +1,132 @@
+{
+  "rects": [
+    {
+      "row": 0,
+      "frame": 0,
+      "x": 78,
+      "y": 1004,
+      "width": 160,
+      "height": 136
+    },
+    {
+      "row": 0,
+      "frame": 1,
+      "x": 364,
+      "y": 992,
+      "width": 210,
+      "height": 166
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "x": 644,
+      "y": 961,
+      "width": 278,
+      "height": 216
+    },
+    {
+      "row": 0,
+      "frame": 3,
+      "x": 1011,
+      "y": 970,
+      "width": 190,
+      "height": 195
+    },
+    {
+      "row": 1,
+      "frame": 0,
+      "x": 60,
+      "y": 755,
+      "width": 220,
+      "height": 77
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "x": 328,
+      "y": 739,
+      "width": 263,
+      "height": 100
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "x": 614,
+      "y": 711,
+      "width": 318,
+      "height": 157
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "x": 955,
+      "y": 765,
+      "width": 246,
+      "height": 49
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "x": 62,
+      "y": 481,
+      "width": 202,
+      "height": 139
+    },
+    {
+      "row": 2,
+      "frame": 1,
+      "x": 326,
+      "y": 446,
+      "width": 270,
+      "height": 200
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "x": 613,
+      "y": 431,
+      "width": 318,
+      "height": 233
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "x": 951,
+      "y": 451,
+      "width": 255,
+      "height": 194
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "x": 104,
+      "y": 71,
+      "width": 101,
+      "height": 336
+    },
+    {
+      "row": 3,
+      "frame": 1,
+      "x": 356,
+      "y": 63,
+      "width": 202,
+      "height": 324
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "x": 614,
+      "y": 63,
+      "width": 308,
+      "height": 297
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "x": 976,
+      "y": 63,
+      "width": 217,
+      "height": 316
+    }
+  ]
+}

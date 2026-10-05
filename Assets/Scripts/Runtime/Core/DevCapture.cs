@@ -33,6 +33,7 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void RedirectSaves()
         {
+            if (GuardianLab.Enabled) { GuardianLab.Configure(); return; }
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
                 if (Array.IndexOf(Modes, args[i]) >= 0)
@@ -40,7 +41,7 @@ namespace DotRPG
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
                     if (args[i] == "-dotrpgCareerDemo") SaveSystem.SlotCount = 4;
                     // Automated verification is silent; the interactive demo retains player settings.
-                    if (args[i] != "-dotrpgCareerDemo") AudioListener.volume = 0f;
+                    if (args[i] != "-dotrpgCareerDemo" || Array.IndexOf(args, "-batchmode") >= 0) AudioListener.volume = 0f;
                     GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
@@ -49,6 +50,7 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
+            if (GuardianLab.TryStart()) return;
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
@@ -100,8 +102,9 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
-            if (mode != "-dotrpgCareerDemo") { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
-            if (mode == "-dotrpgCareerDemo") { yield return CareerDemoRun(); Log("career demo ready: four level-40 characters"); log.Close(); log=null; Destroy(this); yield break; }
+            bool automatedDemo = mode == "-dotrpgCareerDemo" && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
+            if (mode != "-dotrpgCareerDemo" || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
+            if (mode == "-dotrpgCareerDemo") { yield return CareerDemoRun(); Log("career demo ready: four level-40 characters"); log.Close(); log=null; if(automatedDemo)Application.Quit();else Destroy(this); yield break; }
             if (mode == "-dotrpgCareer") { yield return CareerRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]
             if (mode == "-dotrpgPerf") { yield return PerfRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [P5]

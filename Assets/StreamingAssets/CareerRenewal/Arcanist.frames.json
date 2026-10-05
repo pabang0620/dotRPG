@@ -1,0 +1,132 @@
+{
+  "rects": [
+    {
+      "row": 0,
+      "frame": 0,
+      "x": 81,
+      "y": 934,
+      "width": 165,
+      "height": 96
+    },
+    {
+      "row": 0,
+      "frame": 1,
+      "x": 371,
+      "y": 930,
+      "width": 265,
+      "height": 121
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "x": 725,
+      "y": 860,
+      "width": 252,
+      "height": 251
+    },
+    {
+      "row": 0,
+      "frame": 3,
+      "x": 1083,
+      "y": 901,
+      "width": 230,
+      "height": 171
+    },
+    {
+      "row": 1,
+      "frame": 0,
+      "x": 75,
+      "y": 606,
+      "width": 193,
+      "height": 210
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "x": 381,
+      "y": 630,
+      "width": 281,
+      "height": 167
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "x": 729,
+      "y": 584,
+      "width": 279,
+      "height": 259
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "x": 1076,
+      "y": 620,
+      "width": 248,
+      "height": 200
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "x": 62,
+      "y": 345,
+      "width": 219,
+      "height": 223
+    },
+    {
+      "row": 2,
+      "frame": 1,
+      "x": 388,
+      "y": 318,
+      "width": 273,
+      "height": 249
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "x": 707,
+      "y": 315,
+      "width": 305,
+      "height": 256
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "x": 1097,
+      "y": 334,
+      "width": 237,
+      "height": 212
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "x": 71,
+      "y": 67,
+      "width": 189,
+      "height": 212
+    },
+    {
+      "row": 3,
+      "frame": 1,
+      "x": 409,
+      "y": 50,
+      "width": 218,
+      "height": 209
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "x": 715,
+      "y": 55,
+      "width": 281,
+      "height": 235
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "x": 1081,
+      "y": 60,
+      "width": 243,
+      "height": 215
+    }
+  ]
+}

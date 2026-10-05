@@ -1,0 +1,132 @@
+{
+  "rects": [
+    {
+      "row": 0,
+      "frame": 0,
+      "x": 60,
+      "y": 961,
+      "width": 183,
+      "height": 155
+    },
+    {
+      "row": 0,
+      "frame": 1,
+      "x": 346,
+      "y": 959,
+      "width": 246,
+      "height": 228
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "x": 654,
+      "y": 954,
+      "width": 264,
+      "height": 280
+    },
+    {
+      "row": 0,
+      "frame": 3,
+      "x": 991,
+      "y": 954,
+      "width": 227,
+      "height": 228
+    },
+    {
+      "row": 1,
+      "frame": 0,
+      "x": 76,
+      "y": 705,
+      "width": 153,
+      "height": 144
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "x": 342,
+      "y": 667,
+      "width": 239,
+      "height": 207
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "x": 644,
+      "y": 644,
+      "width": 275,
+      "height": 281
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "x": 980,
+      "y": 653,
+      "width": 231,
+      "height": 243
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "x": 37,
+      "y": 345,
+      "width": 235,
+      "height": 268
+    },
+    {
+      "row": 2,
+      "frame": 1,
+      "x": 329,
+      "y": 356,
+      "width": 261,
+      "height": 240
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "x": 636,
+      "y": 347,
+      "width": 297,
+      "height": 275
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "x": 981,
+      "y": 351,
+      "width": 248,
+      "height": 219
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "x": 93,
+      "y": 91,
+      "width": 145,
+      "height": 154
+    },
+    {
+      "row": 3,
+      "frame": 1,
+      "x": 355,
+      "y": 39,
+      "width": 246,
+      "height": 245
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "x": 653,
+      "y": 29,
+      "width": 278,
+      "height": 277
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "x": 1010,
+      "y": 74,
+      "width": 182,
+      "height": 175
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "rects": [
+    {
+      "row": 0,
+      "frame": 0,
+      "x": 70,
+      "y": 962,
+      "width": 201,
+      "height": 146
+    },
+    {
+      "row": 0,
+      "frame": 1,
+      "x": 398,
+      "y": 951,
+      "width": 201,
+      "height": 184
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "x": 711,
+      "y": 922,
+      "width": 239,
+      "height": 229
+    },
+    {
+      "row": 0,
+      "frame": 3,
+      "x": 1061,
+      "y": 921,
+      "width": 222,
+      "height": 222
+    },
+    {
+      "row": 1,
+      "frame": 0,
+      "x": 56,
+      "y": 633,
+      "width": 221,
+      "height": 195
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "x": 369,
+      "y": 606,
+      "width": 259,
+      "height": 265
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "x": 673,
+      "y": 610,
+      "width": 319,
+      "height": 260
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "x": 1048,
+      "y": 613,
+      "width": 239,
+      "height": 219
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "x": 44,
+      "y": 349,
+      "width": 245,
+      "height": 190
+    },
+    {
+      "row": 2,
+      "frame": 1,
+      "x": 353,
+      "y": 332,
+      "width": 286,
+      "height": 212
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "x": 703,
+      "y": 332,
+      "width": 259,
+      "height": 231
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "x": 1041,
+      "y": 340,
+      "width": 250,
+      "height": 190
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "x": 56,
+      "y": 49,
+      "width": 223,
+      "height": 229
+    },
+    {
+      "row": 3,
+      "frame": 1,
+      "x": 360,
+      "y": 48,
+      "width": 279,
+      "height": 239
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "x": 690,
+      "y": 47,
+      "width": 285,
+      "height": 241
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "x": 1028,
+      "y": 50,
+      "width": 271,
+      "height": 229
+    }
+  ]
+}

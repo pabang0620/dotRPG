@@ -28,12 +28,15 @@ namespace DotRPG
         void StrikeEnemy(CareerSkill s,EnemyController e,int damage,Vector2 from,Vector2 dir,bool authority,float multiplier=1,int stage=0)
         {
             if(e==null||e.IsDead)return;
+            bool landed=!authority;
             if(authority){
                 if(s.effect=="break")broken[e]=Time.time+s.duration;
                 if(s.effect=="execute"&&e.Health.Current<e.Health.Max*.35f)multiplier*=1.5f;
                 if(s.effect=="flurry")multiplier*=1+ComboStacks*.03f;
-                int before=e.Health.Current;Damage(e,Mathf.RoundToInt(damage*multiplier));
+                int before=e.Health.Current;string previousSkill=CurrentSkill;CurrentSkill=s.id;
+                try{Damage(e,Mathf.RoundToInt(damage*multiplier));}finally{CurrentSkill=previousSkill;}
                 if(e.Health.Current<before){
+                    landed=true;
                     if(s.effect=="ice")e.Freeze(s.duration);
                     if(s.effect=="bash")e.Stun(s.duration);
                     if(s.effect=="eclipse"&&stage==1)e.Freeze(1);
@@ -43,7 +46,7 @@ namespace DotRPG
                     }
                 }
             }
-            CareerEffect.Hit(s,e.Center,dir,owner);
+            if(landed)CareerImpact.Show(s,e,dir,owner,stage);
         }
         IEnumerator RebuiltCast(CareerSkill s,SkillNumbers n,Vector2 dir,string map,bool authority,Vector2 spellTarget)
         {
@@ -122,8 +125,8 @@ namespace DotRPG
                     if(s.effect=="rift")yield return new WaitForSeconds(interval);
                     if(!Valid(map))yield break;
                     CareerAreaView.Pulse(owner,s.id);
-                    var art=s.effect=="eclipse"?CareerCatalog.Get(i==0?"m_fire":i==1?"m_ice":"m_storm"):s;
-                    CareerEffect.Play(art,center,Mathf.Min(n.radius,2.7f),dir,.5f,owner);
+                    if(s.effect=="eclipse")CareerPaintEffect.AwakeningStage(s,center,n.radius,dir,i,owner);
+                    else CareerEffect.Play(s,center,Mathf.Min(n.radius,2.7f),dir,.5f,owner);
                     foreach(var e in Enemies(center,n.radius))StrikeEnemy(s,e,n.damage,origin,dir,authority,1,i);
                     if(s.effect=="eclipse"&&i<s.hits-1)yield return new WaitForSeconds(interval);
                 }yield break;

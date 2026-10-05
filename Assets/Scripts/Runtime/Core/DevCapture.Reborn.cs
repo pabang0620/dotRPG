@@ -36,22 +36,11 @@ namespace DotRPG
                 DCheck("fan facing "+i,CareerGeometry.Fan(dir*2,Vector2.zero,dir,3,120)&&!CareerGeometry.Fan(-dir*2,Vector2.zero,dir,3,120));
             }
             yield return RebornSetup(Career.Fighter);var p=Game.Player;var at=p.Center;
-            EnemyController near=RebornDummy(at+Vector2.right*2),far=RebornDummy(at+Vector2.right*5),outside=RebornDummy(at+new Vector2(4,2)),behind=RebornDummy(at+Vector2.left*2);
-            var wave=CareerCatalog.Get("f_break");var n=RebornNumbers(wave.id);int before=near.Health.Current;
-            StartCoroutine(CareerCombat.For(p).Cast(wave,n));yield return Wait(wave.cast+.02f);
-            DCheck("wave not instant at distant target",far.Health.Current==far.Health.Max);
-            yield return Wait(.7f);
-            DCheck("wave pierces both targets",near.Health.Current<before&&far.Health.Current<far.Health.Max);
-            DCheck("wave single hit per target",before-near.Health.Current<=Mathf.CeilToInt(n.damage*1.73f));
-            DCheck("wave excludes side and rear",outside.Health.Current==outside.Health.Max&&behind.Health.Current==behind.Health.Max);
-            var distant=RebornDummy(at+Vector2.right*12);int outHp=outside.Health.Current,backHp=behind.Health.Current;
-            yield return CareerCombat.For(p).Cast(CareerCatalog.Get("f_awake"),RebornNumbers("f_awake"));
-            DCheck("world cut reaches 12m",distant.Health.Current<distant.Health.Max);
-            DCheck("world cut excludes side and rear",outside.Health.Current==outHp&&behind.Health.Current==backHp);
-            yield return Wait(.1f);
-            RenderRegion(Path.Combine(folder,"reborn_world_cut.png"),new Rect(at.x-2,at.y-4,22,8),48);
-            foreach(var e in new[]{near,far,outside,behind,distant})Destroy(e.gameObject);
-
+            var landing=RevisionDummy(at+Vector2.right*3);var outside=RevisionDummy(at+Vector2.right*8);
+            var drop=CareerCatalog.Get("f_break");StartCoroutine(CareerCombat.For(p).Cast(drop,RebornNumbers(drop.id)));
+            yield return Wait(drop.cast+.08f);DCheck("new falling sword waits for landing",landing.Health.Current==landing.Health.Max);
+            yield return Wait(.7f);DCheck("new falling sword local impact",landing.Health.Current<landing.Health.Max&&outside.Health.Current==outside.Health.Max);
+            Destroy(landing.gameObject);Destroy(outside.gameObject);
             yield return RebornSetup(Career.Arcanist);p=Game.Player;at=p.Center;
             EnemyController first=RebornDummy(at+Vector2.right*2),second=RebornDummy(at+new Vector2(3,1)),third=RebornDummy(at+new Vector2(4,2)),isolated=RebornDummy(at+new Vector2(-5,-5));
             yield return CareerCombat.For(p).Cast(CareerCatalog.Get("m_storm"),RebornNumbers("m_storm"));

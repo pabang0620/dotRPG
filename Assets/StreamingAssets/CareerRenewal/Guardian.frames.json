@@ -1,0 +1,132 @@
+{
+  "rects": [
+    {
+      "row": 0,
+      "frame": 0,
+      "x": 71,
+      "y": 981,
+      "width": 136,
+      "height": 147
+    },
+    {
+      "row": 0,
+      "frame": 1,
+      "x": 334,
+      "y": 959,
+      "width": 249,
+      "height": 220
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "x": 616,
+      "y": 907,
+      "width": 333,
+      "height": 342
+    },
+    {
+      "row": 0,
+      "frame": 3,
+      "x": 969,
+      "y": 945,
+      "width": 257,
+      "height": 257
+    },
+    {
+      "row": 1,
+      "frame": 0,
+      "x": 49,
+      "y": 679,
+      "width": 177,
+      "height": 127
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "x": 307,
+      "y": 651,
+      "width": 276,
+      "height": 196
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "x": 620,
+      "y": 636,
+      "width": 315,
+      "height": 256
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "x": 963,
+      "y": 639,
+      "width": 261,
+      "height": 222
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "x": 66,
+      "y": 376,
+      "width": 141,
+      "height": 152
+    },
+    {
+      "row": 2,
+      "frame": 1,
+      "x": 338,
+      "y": 354,
+      "width": 237,
+      "height": 225
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "x": 643,
+      "y": 338,
+      "width": 278,
+      "height": 271
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "x": 968,
+      "y": 339,
+      "width": 242,
+      "height": 249
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "x": 39,
+      "y": 78,
+      "width": 191,
+      "height": 198
+    },
+    {
+      "row": 3,
+      "frame": 1,
+      "x": 326,
+      "y": 49,
+      "width": 267,
+      "height": 262
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "x": 643,
+      "y": 43,
+      "width": 278,
+      "height": 277
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "x": 972,
+      "y": 25,
+      "width": 256,
+      "height": 285
+    }
+  ]
+}

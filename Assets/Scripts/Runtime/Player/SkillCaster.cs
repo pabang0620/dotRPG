@@ -102,14 +102,10 @@ namespace DotRPG
             castEnd = Time.time + (gem.IsUltimate ? 0.6f : 0.25f);
             var career=CareerCatalog.Get(gem.id);
             if(career!=null) {
-                bool channel=career.effect!="hot"&&career.effect!="rift"&&career.effect!="storm";
-                float follow=channel?Mathf.Max(0,career.hits-1)*(career.kind==CareerSkillKind.Awakening?.38f:.18f):0;
-                if(career.effect=="dawn")follow=0; // Healing field continues independently; never lock controls for its duration.
-                if(career.effect=="rush"||career.effect=="bash")follow=.22f;
-                castEnd=Time.time+career.cast+follow+.15f;
+                castEnd=Time.time+career.cast+CareerMoves.Recovery(career)+.08f;
                 StartCoroutine(CareerCombat.For(owner).Cast(career,n));
             }
-            else StartCoroutine(Cast(gem, n));
+            else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 

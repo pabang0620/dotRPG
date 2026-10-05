@@ -30,6 +30,13 @@ namespace DotRPG
         CharacterAnim current = CharacterAnim.Idle;
         Facing facing = Facing.Down;
         float timer, walkDistance;
+        float careerPoseStart,careerPoseEnd,careerPoseFrom,careerPoseTo=1,careerFacingEnd;int careerPoseStage;Facing careerFacing;
+        public Facing PresentationFacing(Facing fallback)=>player!=null&&!player.IsDead&&player.Data.Progression.Career!=Career.None&&Time.time<careerFacingEnd&&(combat==null||!combat.IsAttacking)?careerFacing:fallback;
+        public void SetCareerFacing(Facing direction){careerFacing=direction;careerFacingEnd=Time.time+.12f;}
+        public void BeginCareerPose(float seconds,int stage=0,float from=0,float to=1)
+        {careerPoseStart=Time.time;careerPoseEnd=Time.time+seconds;careerPoseStage=stage;careerPoseFrom=from;careerPoseTo=to;}
+        public void EndCareerPose(){careerPoseEnd=careerFacingEnd=0;}
+
         Vector2 previousPosition;
         PlayerController player;
         PlayerCombat combat;
@@ -105,16 +112,21 @@ namespace DotRPG
                 case CharacterAnim.Hurt: frame = "hurt"; break;
                 default: frame = IdleFrames[FrameIndex()]; break;
             }
+            if(player!=null&&!player.IsDead&&player.Data.Progression.Career!=Career.None&&Time.time<careerPoseEnd&&SilverWarriorArt.Supports(look.id)){
+                if(combat==null)combat=GetComponent<PlayerCombat>();
+                if(combat==null||!combat.IsAttacking)frame=WarriorAttackMotion.Frame(Mathf.Lerp(careerPoseFrom,careerPoseTo,Mathf.Clamp01((Time.time-careerPoseStart)/Mathf.Max(.01f,careerPoseEnd-careerPoseStart))),careerPoseStage);
+            }
             FrameKey = frame;
+            var visibleFacing=PresentationFacing(facing);
             // [P5] Same look, facing and frame as last time: nothing to do (the sprite lookup builds a key string).
-            if (ReferenceEquals(look, shownLook) && facing == shownFacing && ReferenceEquals(frame, shownFrame) && target.sprite != null) return;
-            shownLook = look; shownFacing = facing; shownFrame = frame;
-            target.sprite = Game.Art.GetCharacter(look, SilverWarriorArt.Supports(look.id) ? SilverWarriorArt.ViewKey(facing) : facing.SpriteKey(), frame);
-            target.flipX = !SilverWarriorArt.Supports(look.id) && facing.IsLeft();
+            if (ReferenceEquals(look, shownLook) && visibleFacing == shownFacing && ReferenceEquals(frame, shownFrame) && target.sprite != null) return;
+            shownLook = look; shownFacing = visibleFacing; shownFrame = frame;
+            target.sprite = Game.Art.GetCharacter(look, SilverWarriorArt.Supports(look.id) ? SilverWarriorArt.ViewKey(visibleFacing) : visibleFacing.SpriteKey(), frame);
+            target.flipX = !SilverWarriorArt.Supports(look.id) && visibleFacing.IsLeft();
             if (SilverWarriorArt.Supports(look.id)) SilverWarriorPresentation.ApplyMaterial(target);
             else HdMaterial.Apply(target);
             // The mage's front view sits 2 art pixels right of the feet ring: nudge it back so it stands centred.
-            bool nudge = player != null && !SilverWarriorArt.Supports(look.id) && facing == Facing.Down && target.sprite != null;
+            bool nudge = player != null && !SilverWarriorArt.Supports(look.id) && visibleFacing == Facing.Down && target.sprite != null;
             target.transform.localPosition = new Vector3(nudge ? -FrontNudgePixels / target.sprite.pixelsPerUnit : 0f, 0f, 0f);
         }
 
