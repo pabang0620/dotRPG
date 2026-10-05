@@ -31,6 +31,14 @@ namespace DotRPG
         public const float CurveScale = 13.4f;
         public static int BaseXpToNext(int level) => 40 + (level - 1) * 30 + (level - 1) * (level - 1) * 5;
         public static int XpToNext(int level) => (int)Math.Round(BaseXpToNext(level) * CurveScale);
+
+        /// <summary>An XP amount as a share of a level's bar ("12.3%"), the way players read progress. Max level: "만렙".</summary>
+        public static string XpPercent(long xp, int level)
+        {
+            if (level >= MaxLevel) return "만렙";
+            double pct = xp * 100.0 / Math.Max(1, XpToNext(level));
+            return pct >= 10 ? $"{pct:0}%" : pct >= 1 ? $"{pct:0.#}%" : $"{pct:0.##}%";
+        }
         /// <summary>Quest XP rewards keep their share of the growth: data value x the curve scale.</summary>
         public static int QuestXp(int dataXp) => (int)Math.Round(dataXp * CurveScale);
         public int XpNeeded => Level >= MaxLevel ? 0 : XpToNext(Level);

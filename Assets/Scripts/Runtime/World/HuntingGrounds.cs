@@ -26,6 +26,8 @@ namespace DotRPG
         public const float RespawnSeconds = 25f, RespawnSafeRadius = 4f;
         /// <summary>Monsters per map spawn point (playtest: meet many more monsters, each worth less).</summary>
         public const int PackSize = 3;
+        /// <summary>Kills an hour of steady field hunting assumed by the balance model (15 a minute, 75% of the time).</summary>
+        public const int KillsPerHourEstimate = 675;
         static readonly Vector2[] PackOffsets = { Vector2.zero, new Vector2(0.75f, 0.35f), new Vector2(-0.7f, 0.45f) };
 
         /// <summary>Each map spawn point becomes a small pack. The same order is used by the data export (server supply limits).</summary>

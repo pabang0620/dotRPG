@@ -175,7 +175,7 @@ namespace DotRPG
             {
                 all.Add($"\n<size=24><b>합계 {s.Total}점</b></size>   랭크 <color=#{ColorUtility.ToHtmlStringRGB(DungeonRanking.Tint(run.Rank))}>{run.Rank}</color>");
                 all.Add(run.RewardsLocked ? "<color=#b8c4d8>경험치 없음 (연습 입장)</color>"
-                    : $"경험치 <color=#8fe28f>+{run.XpGained:N0}</color>  <color=#b8c4d8>(랭크 보너스 +{DungeonRanking.XpBonusPercent(run.Rank)}%)</color>");
+                    : $"경험치 <color=#8fe28f>+{Progression.XpPercent(run.XpGained, Game.Session.Progression.Level)}</color>  <color=#b8c4d8>(현재 레벨 기준 · 랭크 보너스 +{DungeonRanking.XpBonusPercent(run.Rank)}%)</color>");
             }
             else all.Add("\n<color=#b8c4d8>실패한 던전은 랭크와 경험치가 없다.</color>");
             return string.Join("\n", all.GetRange(0, Mathf.Clamp(lines, 0, all.Count)));

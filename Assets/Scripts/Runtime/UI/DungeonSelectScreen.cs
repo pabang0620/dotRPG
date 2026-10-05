@@ -239,7 +239,7 @@ namespace DotRPG
                     : $"입장 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (클리어 시 소모)";
                 raidLine.text = $"<color=#b8c4d8>{schedule}</color>\n{state}";
             }
-            rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {DungeonRewards.ClearXp(def, numbers, DungeonRank.C):N0} + 랭크 보너스(SSS +50%)</color>";
+            rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";
             var list2 = DungeonRewards.Slots(def, numbers, cls);
             for (int i = 0; i < slots.Count; i++)
             {
