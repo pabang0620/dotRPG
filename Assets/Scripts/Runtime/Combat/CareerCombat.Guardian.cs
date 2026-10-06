@@ -54,8 +54,8 @@ namespace DotRPG
             var fx = CareerFx.Clip("g_spin", start, Vector2.zero, 1.1f, 28f, VfxLayer.Top, false, null, false, 10f, true);
             var shielded = new HashSet<PlayerController> { owner };
             GiveShield(c, owner, WallShield, c.s.duration);
-            // A slow flight keeps several shields out together; each node rank above 1 throws 15% faster.
-            float leg = .42f / (1f + .15f * (Mathf.Max(1, Prog.Rank("g_wall")) - 1));
+            // A slow flight (1.1 s there and back) keeps several shields out together; ranks throw faster (SkillCaster).
+            const float leg = .55f;
             shieldsOut++;
             try
             {

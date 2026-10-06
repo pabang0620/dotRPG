@@ -19,6 +19,7 @@ namespace DotRPG
                 case "ice": yield return IceSpears(c); break;
                 case "storm": yield return ChainLightning(c); break;
                 case "orbit": yield return StarShots(c); break;
+                case "nebula": yield return Nebula(c); break;
                 case "blink": yield return PhaseBlink(c); break;
                 case "rift": StartCoroutine(GravityRift(c)); break;
                 case "cataclysm": yield return Cataclysm(c); break;
@@ -278,6 +279,28 @@ namespace DotRPG
         }
 
         /// <summary>천체 붕괴: a fire, an ice and a lightning star fall in turn, then the middle collapses.</summary>
+        /// <summary>[CHARGE] Where 성운 폭발 lands: the monster the caster faces in reach, else ahead (also the charge marker).</summary>
+        public Vector2 ChargePoint(float range)
+        {
+            Target(owner.AutoAim(range + 1.5f), range, out Vector2 point);
+            return point;
+        }
+
+        /// <summary>성운 폭발: the charged burst (damage and radius already scaled by the charge in SkillCaster).</summary>
+        IEnumerator Nebula(Run c)
+        {
+            Vector2 center = ChargePoint(c.n.range);
+            CareerFx.Clip("m_collapse", center, Vector2.zero, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
+            yield return new WaitForSeconds(.2f);
+            if (!Live(c)) yield break;
+            CareerFx.Clip("m_starburst", center, Vector2.zero, c.n.radius / 1.5f, 24f, VfxLayer.Top, false);
+            CareerFx.Clip("impact", center, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet);
+            Sound("c_heavy");
+            Sound("c_arcane", .8f);
+            Feel(c.n.radius >= 4.5f ? 2 : 1, Vector2.down);
+            foreach (var e in Enemies(center, c.n.radius)) Strike(c, e, c.n.damage, center, 10f, 2, "c_arcane");
+        }
+
         IEnumerator Cataclysm(Run c)
         {
             Target(c.dir, c.n.range, out Vector2 center);

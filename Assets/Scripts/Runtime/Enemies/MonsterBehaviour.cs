@@ -65,6 +65,8 @@ namespace DotRPG
                 E.GiveUp();
                 return false;
             }
+            // [BALANCE] Just spotted the player: walk in and size them up before the first attack.
+            if (E.HoldingFirstStrike && !(E.Def != null && E.Def.boss)) { E.ApproachOnly(target); return true; }
             Engaged(target, Vector2.Distance(E.Position, target.Position));
             return true;
         }

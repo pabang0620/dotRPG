@@ -206,7 +206,7 @@ namespace DotRPG
                         break;
                     }
                     MoveTowards(target.Position, stats.chaseSpeed);
-                    if (distToPlayer <= stats.attackRange)
+                    if (distToPlayer <= stats.attackRange && !HoldingFirstStrike)
                     {
                         facing = FacingExtensions.FromVector(target.Position - Position, facing);
                         EnterState(State.Windup, stats.windupTime);
@@ -255,14 +255,32 @@ namespace DotRPG
             body.SetVelocity(Vector2.MoveTowards(body.GetVelocity(), desiredVelocity, MonsterAcceleration * Time.fixedDeltaTime)); // [MONSTER] dashes accelerate faster
         }
 
+        /// <summary>[BALANCE] A new encounter: the monster closes in but holds its first attack for 0.5-1.5 s.</summary>
+        public const float FirstStrikeMin = .5f, FirstStrikeMax = 1.5f;
+        float firstStrikeAt;
+
+        /// <summary>True while the monster is still sizing up the player after spotting them (no attacks yet).</summary>
+        public bool HoldingFirstStrike => Time.time < firstStrikeAt;
+
         void StartChase()
         {
             if (state != State.Chase)
             {
                 alertIcon.enabled = true;
                 Invoke(nameof(HideAlert), 0.4f);
+                firstStrikeAt = Time.time + UnityEngine.Random.Range(FirstStrikeMin, FirstStrikeMax);
             }
             state = State.Chase;
+        }
+
+        /// <summary>Closes in on the target but stops at attack range, facing it (used during the first-strike hold).</summary>
+        public void ApproachOnly(PlayerController target)
+        {
+            if (target == null) return;
+            float dist = Vector2.Distance(Position, target.Position);
+            facing = FacingExtensions.FromVector(target.Position - Position, facing);
+            if (dist > stats.attackRange * .9f) MoveTowards(target.Position, stats.chaseSpeed);
+            else desiredVelocity = Vector2.zero;
         }
 
         void HideAlert()

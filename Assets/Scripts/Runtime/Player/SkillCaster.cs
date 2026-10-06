@@ -101,12 +101,15 @@ namespace DotRPG
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
+            if (BeginCharge(slot, careerSkill, n)) return; // [CHARGE] fires on release, cooldown starts then
             readyAt[slot] = Time.time + (NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
             skillReady[gem.id]=readyAt[slot];
             castEnd = Time.time + (gem.IsUltimate ? 0.6f : 0.25f);
             var career=CareerCatalog.Get(gem.id);
             if(career!=null) {
                 castEnd=Time.time+career.cast+CareerMoves.Recovery(career)+.08f;
+                // [BALANCE] 회귀의 방패: each node rank above 1 throws 0.04 s sooner (rank 3: about 4.5 throws a second).
+                if (career.effect == "shieldthrow") castEnd -= .04f * (Mathf.Clamp(Prog.Rank(career.id), 1, 3) - 1);
                 StartCoroutine(CareerCombat.For(owner).Cast(career,n));
             }
             else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}

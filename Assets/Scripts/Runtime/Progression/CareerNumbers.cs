@@ -34,6 +34,8 @@ namespace DotRPG
                 case "fire":effect=$"폭발 피해 {d} · 반경 {n.radius:0.#}m · 화상 {Mathf.RoundToInt(d*.07f)} × 3";break;
                 case "ice":effect=$"피해 {d} · 얼음창 3갈래 · 빙결 {s.duration:0.#}초";break;
                 case "storm":effect=$"피해 {d} · 최대 {s.hits}명 연쇄";break;
+                case "nebula":effect=$"피해 {d} ~ {d*3} · 반경 {n.radius:0.#} ~ {n.radius*1.8f:0.#}m · 최대 2초 모으기";break;
+                case "sanctuary":effect=$"반경 {n.radius:0.#}m 아군 {s.duration:0.#}초 무적";break;
                 case "orbit":effect=$"착탄 피해 {d} × {s.hits}발";break;
                 case "blink":effect=$"잔상 폭발 {d} · {Shield(.12f)}";break;
                 case "rift":effect=$"피해 {d} × {s.hits}회 + 붕괴 {d*2} · 끌어당김";break;

@@ -15,6 +15,7 @@ namespace DotRPG
                 case "cleanse": Bell(c); break;
                 case "light": yield return LightSpear(c); break;
                 case "wings": yield return Feathers(c, true); break;
+                case "sanctuary": DivineGuard(c); break;
                 case "bless": yield return BlessChain(c); break;
                 case "dawn": yield return Dawn(c); break;
             }
@@ -245,6 +246,24 @@ namespace DotRPG
                     FootHeal(p, HolyGold);
                     if (c.authority) { var st = For(p); st.hotSource = owner; st.hotEnd = Time.time + interval + .1f; }
                 }
+            }
+        }
+
+        /// <summary>신의 가호: every ally in reach (and the bishop) takes no damage for a moment, with a golden glow.</summary>
+        void DivineGuard(Run c)
+        {
+            Pose(.2f, 2);
+            Sound("c_holy");
+            CareerFx.Clip("b_pillar", owner.Position, Vector2.zero, c.n.radius / 2.2f, 18f, VfxLayer.Ground, false);
+            CareerFx.Clip("b_wings", owner.Center, Vector2.zero, 1.2f, 20f);
+            var allies = Allies(owner.Center, c.n.radius);
+            if (!allies.Contains(owner)) allies.Add(owner);
+            foreach (var p in allies)
+            {
+                if (p == null || p.IsDead) continue;
+                p.Health.SetInvulnerable(c.s.duration);
+                PowerAura.Play(p, c.s.duration, new Color(1f, .9f, .45f), new Color(1f, 1f, .85f));
+                CareerFx.Clip("b_cross", p.Center, Vector2.zero, .9f, 22f);
             }
         }
     }

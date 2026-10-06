@@ -367,7 +367,7 @@ namespace DotRPG
                 AimDirection = SnapTo8(move);
             }
 
-            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier * CareerCombat.For(this).MoveScale;
+            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier * CareerCombat.For(this).MoveScale * skills.ChargeMoveScale;
 
             // Ignore action buttons on the frame a menu/dialogue closed, so the same press
             // doesn't immediately trigger an attack or re-open the conversation.
