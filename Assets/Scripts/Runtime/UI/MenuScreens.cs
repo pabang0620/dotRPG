@@ -117,7 +117,11 @@ namespace DotRPG
 
             // [I] Both go through the save-slot picker (3 slots).
             // Online RPG: the only way in is the online login (offline new game / continue are not offered).
-            screen.menu.AddButton("게임 시작", () => ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin));
+            screen.menu.AddButton("게임 시작", () =>
+            {
+                if (GameFlow.DemoSlots) { ui.Slots.Open(true); return; } // [DEMO] trial characters are local slots
+                ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin);
+            });
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
@@ -151,6 +155,8 @@ namespace DotRPG
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
+            if (GameFlow.DemoSlots) // [DEMO] the flag is set from the command line before the UI is built
+                screen.menu.AddButton("캐릭터 변경", () => ui.Confirm("다른 체험 캐릭터로 바꿀까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.SwitchCharacter()));
             screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.ReturnToTitle()));
             screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame(), keepOpenOnYes: true));
             screen.menu.OnCancel = () => Game.Flow.Resume();

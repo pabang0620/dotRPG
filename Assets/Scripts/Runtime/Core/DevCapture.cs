@@ -27,7 +27,7 @@ namespace DotRPG
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
         static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo", "-dotrpgSanctum", "-dotrpgRoutes", "-dotrpgSanctumFields" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo", "-dotrpgMonsterDemo", "-dotrpgSanctum", "-dotrpgRoutes", "-dotrpgSanctumFields" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -38,9 +38,10 @@ namespace DotRPG
                 if (Array.IndexOf(Modes, args[i]) >= 0)
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
-                    if (args[i] == "-dotrpgCareerDemo") { SaveSystem.SlotCount = 4; SkillCaster.NoCooldown = true; } // [DEMO] no cooldowns while trying careers
-                    // Automated verification is silent; the interactive demo retains player settings.
-                    if (args[i] != "-dotrpgCareerDemo" || Array.IndexOf(args, "-batchmode") >= 0) AudioListener.volume = 0f;
+                    bool demo = args[i] == "-dotrpgCareerDemo" || args[i] == "-dotrpgMonsterDemo";
+                    if (demo) { SaveSystem.SlotCount = 4; SkillCaster.NoCooldown = true; GameFlow.DemoSlots = true; } // [DEMO] no cooldowns, local trial slots
+                    // Automated verification is silent; the interactive demos retain player settings.
+                    if (!demo || Array.IndexOf(args, "-batchmode") >= 0) AudioListener.volume = 0f;
                     GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
@@ -100,11 +101,13 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
-            bool automatedDemo = mode == "-dotrpgCareerDemo" && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
-            if (mode != "-dotrpgCareerDemo" || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
+            bool interactiveDemo = mode == "-dotrpgCareerDemo" || mode == "-dotrpgMonsterDemo";
+            bool automatedDemo = interactiveDemo && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
+            if (!interactiveDemo || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
             if(mode=="-dotrpgSanctumFields"){yield return SanctumFieldsRun();log.Close();log=null;if(Array.IndexOf(Environment.GetCommandLineArgs(),"-batchmode")>=0)Application.Quit();else Destroy(this);yield break;}
             if (mode == "-dotrpgRoutes") { yield return RoutesRun(); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgSanctum") { yield return SanctumRun(); log.Close(); log=null; if(Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(), "-sanctumVerify")>=0)Application.Quit();else Destroy(this); yield break; }
+            if (mode == "-dotrpgMonsterDemo") { yield return MonsterDemoRun(); Log("monster demo ready: four region characters"); log.Close(); log=null; if(automatedDemo)Application.Quit();else Destroy(this); yield break; }
             if (mode == "-dotrpgCareerDemo") { yield return CareerDemoRun(); Log("career demo ready: four level-40 characters"); log.Close(); log=null; if(automatedDemo)Application.Quit();else Destroy(this); yield break; }
             if (mode == "-dotrpgCareer") { yield return CareerRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgStory") { yield return StoryRun(); Log("capture finished"); log.Close(); Application.Quit(); yield break; } // [STORY]

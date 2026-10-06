@@ -313,6 +313,23 @@ namespace DotRPG
             return Game.Saves.Write(data);
         }
 
+        /// <summary>[DEMO] Trial builds (career, monster regions) play local save slots: the title opens them, not the online login.</summary>
+        public static bool DemoSlots;
+
+        /// <summary>[DEMO] Save, go back to the title and open the slot list to pick another trial character.</summary>
+        public void SwitchCharacter()
+        {
+            ReturnToTitle();
+            StartCoroutine(OpenSlotsAfterTitle());
+        }
+
+        System.Collections.IEnumerator OpenSlotsAfterTitle()
+        {
+            yield return null;
+            while (IsTransitioning) yield return null;
+            Game.UI.Slots.Open(true);
+        }
+
         public void ReturnToTitle()
         {
             // [SERVER] Online: send the last position before leaving (the upload finishes in the background).

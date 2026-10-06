@@ -12,7 +12,7 @@ namespace DotRPG
         RectTransform mapRect, playerDot, tooltip;
         Text caption, legend, detail, tooltipText, npcPageText;
         Transform side;
-        Button roomButton;
+        Button roomButton, travelButton;
         Image bossIcon;
         readonly List<GameObject> pins = new List<GameObject>();
         readonly List<(string id, Button button)> regionButtons = new List<(string, Button)>();
@@ -32,8 +32,17 @@ namespace DotRPG
         {
             var w = CreateWindow<WorldMapScreen>(canvas, "WorldMap", "세계 지도", "menuicon_map");
             var frame = Panel(w.content, "Frame", TL, TL, Vector2.zero, new Vector2(760, 590), UiTheme.PanelDeep);
-            w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(400, 32));
+            w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(GameFlow.DemoSlots ? 260 : 400, 32));
             w.BuildAtlasButton(frame.transform); // [UI] whole-world route map
+            if (GameFlow.DemoSlots) // [DEMO] trial builds jump straight to any region
+                w.travelButton = Button(frame.transform, "DemoTravel", "이 지역으로 이동", "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-324, -10), new Vector2(150, 34), () =>
+                {
+                    var target = w.selectedMap;
+                    var info = MapRegistry.Get(target);
+                    if (info == null || info.IsInterior || target == Game.World.MapId) return;
+                    w.Close();
+                    Game.Flow.TravelTo(target, true);
+                }, 17);
             Button(frame.transform, "CurrentRegion", "현재 위치", "ui_btngray", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -10), new Vector2(150, 34), () => w.SelectMap(Game.World.MapId), 17);
             var viewport = UIFactory.Place(UIFactory.Rect(frame.transform, "MapViewport"), TL, TL, new Vector2(10, -54), new Vector2(740, 416));
             viewport.gameObject.AddComponent<RectMask2D>();
