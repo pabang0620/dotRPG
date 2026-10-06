@@ -131,7 +131,7 @@ namespace DotRPG
         public static ShopScreen Create(Transform canvas)
         {
             var w = CreateWindow<ShopScreen>(canvas, "Shop", "잡화점", "menuicon_shop");
-            var left = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListW + 40f, 594f), new Color32(24, 36, 54, 235));
+            var left = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListW + 40f, 594f), UiTheme.Panel);
             for (int i = 0; i < 2; i++)
             {
                 int index = i;
@@ -160,7 +160,7 @@ namespace DotRPG
                 UIFactory.Stretch(r.frame.rectTransform);
                 r.name = UIFactory.Text(r.bg.transform, "Name", "", 23, Color.white, TextAnchor.UpperLeft, true);
                 UIFactory.Place(r.name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -8f), new Vector2(380f, 30f));
-                r.sub = UIFactory.Text(r.bg.transform, "Sub", "", 16, new Color32(184, 196, 216, 255), TextAnchor.UpperLeft, true);
+                r.sub = UIFactory.Text(r.bg.transform, "Sub", "", 16, UiTheme.TextSecondary, TextAnchor.UpperLeft, true);
                 UIFactory.Place(r.sub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -40f), new Vector2(400f, 22f));
                 r.price = UIFactory.Text(r.bg.transform, "Price", "", 24, Color.white, TextAnchor.MiddleRight, true);
                 UIFactory.Place(r.price.rectTransform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-14f, 0f), new Vector2(180f, 40f));
@@ -176,12 +176,12 @@ namespace DotRPG
             w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 10f, 12f), new Vector2(50f, 40f), () => w.Page(1), 22);
             w.pageText = Label(left.transform, "Page", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 100f, 12f), new Vector2(90f, 40f), TextAnchor.MiddleCenter);
 
-            var right = Panel(w.content, "Detail", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(500f, 594f), new Color32(24, 36, 54, 235));
+            var right = Panel(w.content, "Detail", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(500f, 594f), UiTheme.Panel);
             var goldChip = Img(right.transform, "Gold", "ui_dark", new Color(1f, 1f, 1f, 0.95f));
             UIFactory.Place(goldChip.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(230f, 50f));
             var coin = UIFactory.Image(goldChip.transform, "Coin", Game.Art.Get("icon_gold"), Color.white);
             UIFactory.Place(coin.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(34f, 34f));
-            w.goldText = UIFactory.Text(goldChip.transform, "Amount", "", 26, new Color32(255, 216, 74, 255), TextAnchor.MiddleRight, true);
+            w.goldText = UIFactory.Text(goldChip.transform, "Amount", "", 26, UiTheme.Accent, TextAnchor.MiddleRight, true);
             UIFactory.Stretch(w.goldText.rectTransform, 50f, 0f, 14f, 0f);
             var iconBg = Img(right.transform, "IconBg", "ui_slotblue", Color.white);
             UIFactory.Place(iconBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -80f), new Vector2(112f, 112f));
@@ -191,7 +191,7 @@ namespace DotRPG
             UIFactory.Stretch(w.bigFrame.rectTransform);
             w.bigName = Label(right.transform, "Name", "", 26, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(152f, -84f), new Vector2(330f, 70f));
             w.bigKind = Label(right.transform, "Kind", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(152f, -158f), new Vector2(330f, 30f));
-            w.bigKind.color = new Color32(184, 196, 216, 255);
+            w.bigKind.color = UiTheme.TextSecondary;
             w.bigDesc = Label(right.transform, "Desc", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -212f), new Vector2(452f, 170f));
             w.bigPrice = Label(right.transform, "PriceLine", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -392f), new Vector2(452f, 34f));
             w.result = Label(right.transform, "Result", "", 20, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(460f, 30f), TextAnchor.MiddleCenter);
@@ -293,8 +293,8 @@ namespace DotRPG
             for (int i = 0; i < 2; i++)
             {
                 bool on = (i == 1) == selling;
-                tabBg[i].color = on ? new Color32(70, 96, 130, 255) : new Color32(36, 50, 70, 255);
-                tabText[i].color = on ? new Color32(255, 224, 102, 255) : new Color32(150, 170, 200, 255);
+                tabBg[i].color = on ? UiTheme.Line : UiTheme.Background;
+                tabText[i].color = on ? UiTheme.AccentLight : new Color32(150, 170, 200, 255);
             }
             int pages = Mathf.Max(1, (entries.Count + RowsPerPage - 1) / RowsPerPage);
             selected = Mathf.Clamp(selected, 0, Mathf.Max(0, entries.Count - 1));
@@ -307,7 +307,7 @@ namespace DotRPG
                 r.bg.gameObject.SetActive(r.id != null);
                 if (r.id == null) continue;
                 bool sel = index == selected;
-                r.bg.color = sel ? new Color32(64, 92, 128, 255) : new Color32(34, 48, 68, 255);
+                r.bg.color = sel ? UiTheme.Line : UiTheme.Background;
                 r.icon.sprite = ItemText.Icon(r.id);
                 r.frame.color = ItemText.Frame(r.id);
                 r.name.text = ItemText.Name(r.id);
@@ -504,7 +504,7 @@ namespace DotRPG
         {
             var w = CreateWindow<StorageScreen>(canvas, "Storage", "창고", "menuicon_storage");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
-            var left = Panel(w.content, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(24, 36, 54, 235));
+            var left = Panel(w.content, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), UiTheme.Panel);
             var right = Panel(w.content, "Store", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(30, 44, 40, 235));
             w.bagTitle = Label(left.transform, "Title", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(gridW, 34f));
             w.storeTitle = Label(right.transform, "Title", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(gridW, 34f));
@@ -523,10 +523,10 @@ namespace DotRPG
             w.bagPageText = Label(left.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
             w.storePageText = Label(right.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
 
-            var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), new Color32(18, 28, 44, 235));
+            var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), UiTheme.Panel);
             w.info = Label(bottom.transform, "Text", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -10f), new Vector2(1180f, 64f));
             w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(1180f, 26f));
-            w.cursor = Img(w.content, "Cursor", "ui_frame", new Color32(255, 211, 74, 255));
+            w.cursor = Img(w.content, "Cursor", "ui_frame", UiTheme.Accent);
             w.cursor.raycastTarget = false;
             return w;
         }
@@ -545,7 +545,7 @@ namespace DotRPG
             UIFactory.Stretch(c.frame.rectTransform);
             c.count = UIFactory.Text(c.bg.transform, "Count", "", 20, Color.white, TextAnchor.LowerRight, true);
             UIFactory.Stretch(c.count.rectTransform, 4f, 2f, 6f, 2f);
-            c.level = UIFactory.Text(c.bg.transform, "Level", "", 18, new Color32(255, 224, 102, 255), TextAnchor.UpperRight, true);
+            c.level = UIFactory.Text(c.bg.transform, "Level", "", 18, UiTheme.AccentLight, TextAnchor.UpperRight, true);
             UIFactory.Stretch(c.level.rectTransform, 4f, 2f, 6f, 2f);
             var relay = c.bg.gameObject.AddComponent<PointerRelay>();
             int index = storage ? CellsPer + i : i;

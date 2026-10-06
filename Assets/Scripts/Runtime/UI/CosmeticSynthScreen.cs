@@ -113,8 +113,8 @@ namespace DotRPG
             showCollections = collections;
             synthTab.gameObject.SetActive(!collections);
             collectionTab.gameObject.SetActive(collections);
-            synthTabBtn.image.sprite = Game.Art.Get(collections ? "ui_btngray" : "ui_btn");
-            collectionTabBtn.image.sprite = Game.Art.Get(collections ? "ui_btn" : "ui_btngray");
+            synthTabBtn.image.sprite = UiTheme.Tab(!collections);
+            collectionTabBtn.image.sprite = UiTheme.Tab(collections);
             Refresh();
         }
 

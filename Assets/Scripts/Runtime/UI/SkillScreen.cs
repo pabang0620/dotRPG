@@ -101,7 +101,7 @@ namespace DotRPG
 
         void BuildTree()
         {
-            var area = Panel(treePage, "TreeArea", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), Vector2.zero, new Vector2(1010f, 530f), new Color32(16, 22, 34, 255));
+            var area = Panel(treePage, "TreeArea", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), Vector2.zero, new Vector2(1010f, 530f), UiTheme.PanelDeep);
             var center = UIFactory.Place(UIFactory.Rect(area.transform, "Center"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             BuildConstellation(center);
             var done = new HashSet<string>();
@@ -148,7 +148,7 @@ namespace DotRPG
                 nodeViews.Add(view);
             }
 
-            var side = Panel(treePage, "Side", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), Vector2.zero, new Vector2(200f, 530f), new Color32(24, 36, 54, 235));
+            var side = Panel(treePage, "Side", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), Vector2.zero, new Vector2(200f, 530f), UiTheme.Panel);
             pointsText = Label(side.transform, "Points", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -12f), new Vector2(176f, 64f));
             legendText = Label(side.transform, "Legend", "", 14, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -92f), new Vector2(180f, 150f));
             summaryText = Label(side.transform, "Summary", "", 14, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -250f), new Vector2(180f, 190f));
@@ -191,7 +191,7 @@ namespace DotRPG
                 Color cluster = ClusterColors[Mathf.Clamp(v.node.cluster, 0, ClusterColors.Length - 1)];
                 v.owned = owned; v.available = can; v.accent = cluster;
                 v.ornament.color = owned ? new Color(1f, .78f, .38f, .85f) : new Color(.38f, .53f, .72f, .45f);
-                v.fill.color = Color.Lerp(new Color32(12, 19, 32, 255), cluster, owned ? .27f : reachable ? .19f : .08f);
+                v.fill.color = Color.Lerp(UiTheme.PanelDeep, cluster, owned ? .27f : reachable ? .19f : .08f);
                 v.ring.color = owned ? new Color32(255, 214, 90, 255) : can ? new Color32(240, 240, 240, 255) : new Color32(70, 76, 90, 255);
                 if (v.node.kind == PassiveKind.Keystone && !owned) v.ring.color = can ? new Color32(255, 170, 90, 255) : new Color32(120, 80, 60, 255);
                 if (v.glyph != null) v.glyph.color = new Color(1f, 1f, 1f, owned ? 1f : reachable ? .9f : .55f);
@@ -200,7 +200,7 @@ namespace DotRPG
             {
                 bool a = prog.Allocated.Contains(l.a.id), b = prog.Allocated.Contains(l.b.id);
                 l.glow.color = a && b ? new Color(.22f, .55f, .85f, .2f) : Color.clear;
-                l.line.color = a && b ? new Color32(230, 190, 90, 255) : a || b ? new Color32(150, 156, 170, 255) : new Color32(52, 58, 72, 255);
+                l.line.color = a && b ? new Color32(230, 190, 90, 255) : a || b ? UiTheme.TextMuted : new Color32(52, 58, 72, 255);
             }
             pointsText.text = $"<b>Lv.{prog.Level}</b>\n남은 포인트  <color=#ffe066><size=26>{prog.PointsLeft}</size></color>";
 
@@ -230,7 +230,7 @@ namespace DotRPG
             {
                 bool ult = s == SkillGems.UltimateSlot;
                 var row = Panel(gemPage, "Slot" + s, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -s * (RowHeight + RowGap)), new Vector2(1220f, RowHeight),
-                    ult ? new Color32(52, 44, 30, 240) : new Color32(24, 36, 54, 235));
+                    ult ? new Color32(52, 44, 30, 240) : UiTheme.Panel);
                 slotTitle[s] = Label(row.transform, "Title", "", 18, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(92f, 80f), TextAnchor.MiddleCenter);
                 // Link bar behind the three sockets.
                 var link = Img(row.transform, "Link", "ui_white", new Color32(150, 120, 70, 255));
@@ -261,7 +261,7 @@ namespace DotRPG
                 slotLockText[s] = Label(row.transform, "LockText", "", 20, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-24f, 0f), new Vector2(360f, 40f), TextAnchor.MiddleRight);
             }
             float listY = -SkillGems.Slots * (RowHeight + RowGap);
-            var list = Panel(gemPage, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, listY), new Vector2(1220f, 38f), new Color32(18, 26, 40, 255));
+            var list = Panel(gemPage, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, listY), new Vector2(1220f, 38f), UiTheme.PanelDeep);
             gemListText = Label(list.transform, "Text", "", UiTheme.FontMin, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(16f, 0f), new Vector2(1190f, 34f), TextAnchor.MiddleLeft);
         }
 
@@ -381,8 +381,13 @@ namespace DotRPG
 
         protected override void Refresh()
         {
-            tabBg[0].color = tab == TabId.Tree ? new Color32(70, 96, 130, 255) : new Color32(30, 44, 64, 255);
-            tabBg[1].color = tab == TabId.Gems ? new Color32(70, 96, 130, 255) : new Color32(30, 44, 64, 255);
+            for (int i = 0; i < 2; i++)
+            {
+                bool on = (int)tab == i;
+                tabBg[i].sprite = UiTheme.Tab(on);
+                tabBg[i].type = Image.Type.Sliced;
+                tabBg[i].color = Color.white;
+            }
             treePage.gameObject.SetActive(tab == TabId.Tree);
             gemPage.gameObject.SetActive(tab == TabId.Gems);
             if (selectedNode == null) selectedNode = nodeViews.Find(v => v.node.id == PassiveTree.Start);

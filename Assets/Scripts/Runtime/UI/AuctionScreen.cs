@@ -195,7 +195,7 @@ namespace DotRPG
             var banner = content.Find("Preview");
             if (banner != null) banner.gameObject.SetActive(!Service.IsOnline);
             if (Service is ServerAuctionService server) server.Tick(true);
-            foreach (var kv in tabs) kv.Value.image.sprite = Game.Art.Get(kv.Key == tab ? "ui_btn" : "ui_btngray");
+            foreach (var kv in tabs) kv.Value.image.sprite = UiTheme.Tab(kv.Key == tab);
             int mailN = Service.UnclaimedMail;
             TextOf(tabs[Tab.Mail]).text = mailN > 0 ? $"우편함 <color=#ff6b6b>●{mailN}</color>" : "우편함";
             goldText.text = $"<color=#ffd34a>{Game.Session?.Gold ?? 0:N0} G</color>";

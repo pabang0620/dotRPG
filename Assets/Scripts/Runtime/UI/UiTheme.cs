@@ -98,6 +98,18 @@ namespace DotRPG
         // ---------- Tooltip ----------
         public static readonly Color TooltipBg = new Color32(16, 22, 34, 245);
         public static readonly Color TooltipBorder = new Color32(110, 134, 170, 255);
+        /// <summary>[UI] Tab look: its own selected/unselected frames when drawn (Art/ui_tab_on/off), else the button frames.</summary>
+        public static Sprite Tab(bool selected) =>
+            Game.Art.Optional(selected ? "ui_tab_on" : "ui_tab_off") ?? Game.Art.Get(selected ? "ui_btn" : "ui_btngray");
+
+        // [UI] Shared window tones that several screens repeated as literals.
+        public static readonly Color RowDark = new Color32(28, 39, 57, 255);      // list row / cell background
+        public static readonly Color TabOff = new Color32(30, 44, 64, 255);       // unselected tab, idle slot
+        public static readonly Color Slate = new Color32(55, 69, 89, 255);        // neutral frame, empty socket
+        public static readonly Color SelectBlue = new Color32(41, 105, 151, 255); // chosen row / socket
+        public static readonly Color AccentLight = new Color32(255, 224, 102, 255); // key labels, highlights
+        public static readonly Color AccentWarm = new Color32(235, 189, 95, 255);  // warm gold frames
+        public static readonly Color Overlay = new Color32(16, 22, 36, 252);       // modal backdrop
         public const float TooltipPadding = 14f, TooltipWidth = 320f;
 
         /// <summary>Adds a translucent plate behind a HUD element (stretched under it, drawn first).</summary>

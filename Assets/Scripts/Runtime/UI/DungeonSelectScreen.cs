@@ -178,8 +178,8 @@ namespace DotRPG
                     if (ResetClock.IsOpen(list[i], now)) { selected = i; break; }
             }
 
-            tabWeekday.image.sprite = Game.Art.Get(raidTab ? "ui_btngray" : "ui_btn");
-            tabRaid.image.sprite = Game.Art.Get(raidTab ? "ui_btn" : "ui_btngray");
+            tabWeekday.image.sprite = UiTheme.Tab(!raidTab);
+            tabRaid.image.sprite = UiTheme.Tab(raidTab);
             var day = ResetClock.GameDay(now);
             string weekend = day == DayOfWeek.Saturday || day == DayOfWeek.Sunday ? "  <color=#8fe28f>주말: 모든 요일던전 개방</color>" : "";
             dayText.text = raidTab

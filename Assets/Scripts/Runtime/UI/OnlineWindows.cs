@@ -263,8 +263,8 @@ namespace DotRPG
             if (banner != null) banner.gameObject.SetActive(!Service.IsOnline); // [PARTY] real board online
             listRoot.gameObject.SetActive(!createTab);
             createRoot.gameObject.SetActive(createTab);
-            tabList.image.sprite = Game.Art.Get(createTab ? "ui_btngray" : "ui_btn");
-            tabCreate.image.sprite = Game.Art.Get(createTab ? "ui_btn" : "ui_btngray");
+            tabList.image.sprite = UiTheme.Tab(!createTab);
+            tabCreate.image.sprite = UiTheme.Tab(createTab);
             RefreshQueue();
             var ds = Dungeons;
             TextOf(filterBtn).text = filter < 0 ? "던전: 전체" : "던전: " + ds[filter].name;

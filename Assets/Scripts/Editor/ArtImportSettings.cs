@@ -26,6 +26,19 @@ namespace DotRPG.EditorTools
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = 64f;
+            string file = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
+            // Generated skill effect pictures are drawn at twice the pixel density of the procedural fx.
+            if (importer.assetPath.Contains("/FxImg/")) importer.spritePixelsPerUnit = 128f;
+            // 9-slice UI frames: a 12 px rim, scaled to the same on-screen thickness as ui_btn (8 px at 32 ppu).
+            if (file.StartsWith("ui_tab_") || file == "ui_btn_disabled")
+            {
+                importer.spritePixelsPerUnit = 48f;
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(settings);
+                importer.spriteBorder = new Vector4(12f, 12f, 12f, 12f);
+            }
             importer.filterMode = FilterMode.Point;
             importer.mipmapEnabled = false;
             importer.alphaIsTransparency = true;

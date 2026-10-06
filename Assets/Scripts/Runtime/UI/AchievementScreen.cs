@@ -89,6 +89,7 @@ namespace DotRPG
                 foreach (var a0 in list) if (a0.category == Tabs[i].id) { all++; if (a0.achieved) got++; }
                 string label = $"{Tabs[i].name} {got}/{all}";
                 TextOf(tabs[i]).text = Tabs[i].id == tab ? $"<color=#ffd34a><b>{label}</b></color>" : label;
+                tabs[i].image.sprite = UiTheme.Tab(Tabs[i].id == tab);
             }
             for (int i = 0; i < cells.Count; i++)
             {

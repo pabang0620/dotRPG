@@ -67,7 +67,7 @@ namespace DotRPG
             {
                 var b = Banners[i];
                 var card = new Card { id = b.id };
-                var bg = Panel(w.content, "Card_" + b.id, tl, tl, new Vector2(0f, -i * (CardH + 10f)), new Vector2(ListW, CardH), new Color32(14, 20, 32, 255));
+                var bg = Panel(w.content, "Card_" + b.id, tl, tl, new Vector2(0f, -i * (CardH + 10f)), new Vector2(ListW, CardH), UiTheme.PanelDeep);
                 bg.raycastTarget = true;
                 bg.gameObject.AddComponent<RectMask2D>();
                 var art = UIFactory.Image(bg.transform, "Art", Game.Art.Get("Banners/banner_gacha_" + b.id), Color.white);
@@ -106,7 +106,7 @@ namespace DotRPG
             w.gaugeBg = UIFactory.Image(bigBox.transform, "Gauge", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 220));
             w.gaugeBg.preserveAspect = false; w.gaugeBg.raycastTarget = false;
             UIFactory.Place(w.gaugeBg.rectTransform, tl, tl, new Vector2(30f, -238f), new Vector2(GaugeW, 22f));
-            w.gaugeFill = UIFactory.Image(w.gaugeBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(255, 200, 70, 255));
+            w.gaugeFill = UIFactory.Image(w.gaugeBg.transform, "Fill", Game.Art.Get("ui_white"), UiTheme.Accent);
             w.gaugeFill.preserveAspect = false; w.gaugeFill.raycastTarget = false;
             UIFactory.Place(w.gaugeFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 16f));
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
@@ -176,7 +176,7 @@ namespace DotRPG
             UIFactory.Stretch(w.flash.rectTransform);
 
             // Choice window: the gauge is full, pick one top item you don't own yet.
-            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), new Color32(16, 22, 36, 252));
+            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), UiTheme.Overlay);
             cm.raycastTarget = true;
             w.choiceModal = cm.rectTransform;
             Label(cm.transform, "Title", "<b>원하는 것을 하나 고르세요</b>", 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
@@ -196,7 +196,7 @@ namespace DotRPG
             cm.gameObject.SetActive(false);
 
             // 확률 보기 window (over everything in the shop).
-            var modal = Panel(w.content, "RateModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 560f), new Color32(16, 22, 36, 252));
+            var modal = Panel(w.content, "RateModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 560f), UiTheme.Overlay);
             modal.raycastTarget = true;
             w.rateModal = modal.rectTransform;
             var vp = UIFactory.Place(UIFactory.Rect(modal.transform, "Viewport"), tl, tl, new Vector2(24f, -20f), new Vector2(672f, 456f));
@@ -494,10 +494,10 @@ namespace DotRPG
             if (chooseBtn != null && chooseBtn.gameObject.activeSelf)
             {
                 float k = 0.5f + 0.5f * Mathf.Sin(t * 5f);
-                gaugeFill.color = Color.Lerp(new Color32(255, 200, 70, 255), Color.white, k * 0.6f);
+                gaugeFill.color = Color.Lerp(UiTheme.Accent, Color.white, k * 0.6f);
                 chooseBtn.transform.localScale = Vector3.one * (1f + 0.05f * k);
             }
-            else if (gaugeFill != null) gaugeFill.color = new Color32(255, 200, 70, 255);
+            else if (gaugeFill != null) gaugeFill.color = UiTheme.Accent;
             float f = Mathf.Clamp01(1f - (t - flashAt) / 0.8f);
             flash.color = new Color(flashColor.r, flashColor.g, flashColor.b, f * f * .8f);
             for (int i = sparks.Count - 1; i >= 0; i--)
@@ -611,7 +611,7 @@ namespace DotRPG
                 bool on = c.id == banner;
                 c.frame.color = on ? new Color(1f, .83f, .3f, 1f) : Color.clear;
                 c.name.text = on ? $"<color=#ffd34a><b>{NameOf(c.id)}</b></color>" : NameOf(c.id);
-                c.bg.color = on ? new Color32(40, 52, 74, 255) : new Color32(14, 20, 32, 255);
+                c.bg.color = on ? UiTheme.Background : UiTheme.PanelDeep;
             }
             big.sprite = Game.Art.Get("Banners/banner_gacha_" + banner);
             bigTitle.text = $"<b>{cur.name}</b>";

@@ -24,6 +24,7 @@ namespace DotRPG
         public bool DevQuestVisible => questPanel != null && questPanel.gameObject.activeInHierarchy;
         RectTransform prompt;
         Text promptText;
+        Image promptPad; // [UI] gamepad: the A button picture instead of "[A]"
         Text controlsHint;
         Text mobilityHint;
         Image controlsPlate; // [UI]
@@ -138,6 +139,10 @@ namespace DotRPG
             UIFactory.Stretch(pbg.rectTransform);
             promptText = UIFactory.Text(prompt, "Text", "", 18, UIColors.Cream, TextAnchor.MiddleCenter);
             UIFactory.Stretch(promptText.rectTransform, 8, 0, 8, 0);
+            promptPad = UIFactory.SharpIcon(prompt, "Pad", Color.white);
+            promptPad.raycastTarget = false;
+            UIFactory.Place(promptPad.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(8, 0), new Vector2(26, 26));
+            promptPad.enabled = false;
             prompt.gameObject.SetActive(false);
 
             // Toasts (bottom-centre, above the dialogue box area).
@@ -369,8 +374,12 @@ namespace DotRPG
                 return;
             }
             if (!prompt.gameObject.activeSelf) prompt.gameObject.SetActive(true);
-            promptText.text = $"<color=#ffd34a>[{Game.Input.GetBindingLabel(GameAction.Interact)}]</color> {target.Prompt}";
-            prompt.sizeDelta = new Vector2(Mathf.Max(150f, promptText.preferredWidth + 36f), 40f);
+            var padIcon = Game.Input.UsingGamepad ? Game.Art.Optional("pad_" + Game.Input.GetBindingLabel(GameAction.Interact).ToLowerInvariant()) : null;
+            promptPad.enabled = padIcon != null;
+            promptPad.sprite = padIcon;
+            promptText.text = padIcon != null ? target.Prompt : $"<color=#ffd34a>[{Game.Input.GetBindingLabel(GameAction.Interact)}]</color> {target.Prompt}";
+            promptText.rectTransform.offsetMin = new Vector2(padIcon != null ? 38f : 8f, 0f);
+            prompt.sizeDelta = new Vector2(Mathf.Max(150f, promptText.preferredWidth + (padIcon != null ? 66f : 36f)), 40f);
             Vector3 screen = Game.Camera.Camera.WorldToScreenPoint(target.PromptWorldPosition);
             prompt.position = screen + new Vector3(0f, Mathf.Sin(Time.unscaledTime * 4f) * 3f, 0f);
         }

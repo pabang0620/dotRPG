@@ -61,7 +61,7 @@ namespace DotRPG
             if (a >= GameAction.MoveUp && a <= GameAction.MoveRight || a == GameAction.Mobility) return new Color32(94, 180, 237, 255);
             if (a == GameAction.Attack || a >= GameAction.Skill1 && a <= GameAction.Skill5) return new Color32(186, 126, 241, 255);
             if (a == GameAction.UseItem || a == GameAction.UseMana || a == GameAction.TownScroll) return new Color32(113, 210, 158, 255);
-            return new Color32(235, 189, 95, 255);
+            return UiTheme.AccentWarm;
         }
         public static KeyBindScreen Create(Transform canvas, UIRoot ui)
         {
@@ -91,7 +91,7 @@ namespace DotRPG
         }
         void Build()
         {
-            TextAt(panel, "Instructions", "기능이나 배정된 키 선택 → 새 키 입력 / 클릭 → 적용    ·    겹치는 단축키는 서로 교환됩니다.", new Vector2(30, -76), new Vector2(1140, 28), 17, new Color32(179, 199, 222, 255));
+            TextAt(panel, "Instructions", "기능이나 배정된 키 선택 → 새 키 입력 / 클릭 → 적용    ·    겹치는 단축키는 서로 교환됩니다.", new Vector2(30, -76), new Vector2(1140, 28), 17, UiTheme.TextSecondary);
             TextAt(panel, "Categories", "<color=#5eb4ed>■ 이동</color>     <color=#ba7ef1>■ 공격 · 스킬</color>     <color=#71d29e>■ 아이템</color>     <color=#ebbd5f>■ 편의 기능</color>     <color=#8391a7>■ 고정 키</color>", new Vector2(30, -105), new Vector2(1140, 25), 15, Color.white);
             var keyboard = Plate(panel, "Keyboard", new Vector2(30, -139), new Vector2(1140, 252), new Color32(10, 17, 28, 255)).rectTransform;
             BuildKeyboard(keyboard);
@@ -100,16 +100,16 @@ namespace DotRPG
             for (int i = 0; i < InputReader.Rebindable.Length; i++)
             {
                 var a = InputReader.Rebindable[i]; int col = i / 6, row = i % 6;
-                var bg = Plate(panel, "Binding_" + a, new Vector2(30 + col * 382, -433 - row * 24), new Vector2(370, 22), new Color32(28, 39, 57, 255));
+                var bg = Plate(panel, "Binding_" + a, new Vector2(30 + col * 382, -433 - row * 24), new Vector2(370, 22), UiTheme.RowDark);
                 bg.raycastTarget = true; bg.gameObject.AddComponent<PointerRelay>().onClick = _ => BeginBinding(a);
                 var label = TextAt(bg.transform, "BindingText", "", new Vector2(10, 0), new Vector2(348, 22), 15, Color.white);
                 actions.Add(new ActionView { action = a, bg = bg, text = label });
             }
             status = TextAt(panel, "Status", "", new Vector2(30, -578), new Vector2(1130, 24), 16, new Color32(170, 211, 240, 255));
-            ButtonAt("ResetKeys", "기본값", 30, 115, ResetDraft, new Color32(55, 69, 89, 255));
-            dirtyLabel = TextAt(panel, "PendingChanges", "", new Vector2(165, -607), new Vector2(615, 38), 15, new Color32(235, 189, 95, 255));
-            ButtonAt("ApplyKeys", "적용", 887, 125, ApplyChanges, new Color32(41, 105, 151, 255));
-            ButtonAt("CloseKeys", "닫기 / 취소", 1022, 148, () => ui.Pop(), new Color32(55, 69, 89, 255));
+            ButtonAt("ResetKeys", "기본값", 30, 115, ResetDraft, UiTheme.Slate);
+            dirtyLabel = TextAt(panel, "PendingChanges", "", new Vector2(165, -607), new Vector2(615, 38), 15, UiTheme.AccentWarm);
+            ButtonAt("ApplyKeys", "적용", 887, 125, ApplyChanges, UiTheme.SelectBlue);
+            ButtonAt("CloseKeys", "닫기 / 취소", 1022, 148, () => ui.Pop(), UiTheme.Slate);
         }
         Image MakeTab(string name, string label, float x, bool windows)
         {
@@ -130,14 +130,14 @@ namespace DotRPG
                 v.bg.rectTransform.anchoredPosition = new Vector2(30 + (index / 6) * 382, -433 - (index % 6) * 24);
                 index++;
             }
-            combatTab.color = !windows ? new Color32(41, 105, 151, 255) : new Color32(28, 39, 57, 255);
-            windowTab.color = windows ? new Color32(41, 105, 151, 255) : new Color32(28, 39, 57, 255);
+            combatTab.color = !windows ? UiTheme.SelectBlue : UiTheme.RowDark;
+            windowTab.color = windows ? UiTheme.SelectBlue : UiTheme.RowDark;
         }
         void Key(RectTransform parent, KeyCode code, string label, float x, int row, float width = 1)
         {
             const float unit = 45, height = 38;
             var pos = new Vector2(12 + x * unit, -8 - row * 40);
-            var bg = Plate(parent, "Key_" + code, pos, new Vector2(width * unit - 3, height), new Color32(30, 41, 58, 255));
+            var bg = Plate(parent, "Key_" + code, pos, new Vector2(width * unit - 3, height), UiTheme.RowDark);
             var stripe = Plate(bg.transform, "Category", new Vector2(2, -height + 4), new Vector2(width * unit - 7, 2), Color.clear);
             bg.raycastTarget = true;
             bg.gameObject.AddComponent<PointerRelay>().onClick = _ => ClickKey(code);
@@ -237,13 +237,13 @@ namespace DotRPG
                 if (!assigned.HasValue && key.key == KeyCode.Tab && InputReader.KeyboardKey(GameAction.Inventory) == KeyCode.I) { assigned = GameAction.Inventory; alias = true; }
                 Color c = assigned.HasValue ? Category(assigned.Value) : new Color32(93, 109, 132, 255);
                 bool selected = assigned.HasValue && listening == assigned;
-                key.cap.color = Color.Lerp(new Color32(18, 27, 42, 255), c, selected ? .85f : assigned.HasValue ? .4f : .14f);
+                key.cap.color = Color.Lerp(UiTheme.PanelDeep, c, selected ? .85f : assigned.HasValue ? .4f : .14f);
                 key.stripe.color = assigned.HasValue ? c : Color.clear;
                 key.action.text = assigned.HasValue ? ShortName(assigned.Value) + (alias ? "*" : "") : key.key == KeyCode.Escape ? "메뉴" : key.key == KeyCode.Return || key.key == KeyCode.KeypadEnter ? "확인" : key.key == KeyCode.Backspace ? "취소" : "";
             }
             foreach (var v in actions)
             {
-                v.bg.color = listening == v.action ? new Color32(47, 82, 112, 255) : new Color32(28, 39, 57, 255);
+                v.bg.color = listening == v.action ? new Color32(47, 82, 112, 255) : UiTheme.RowDark;
                 var c = (Color32)Category(v.action);
                 v.text.text = $"<color=#{c.r:x2}{c.g:x2}{c.b:x2}>●</color> {ActionName(v.action)}    <color=#d6eaff>{(listening == v.action ? "새 키 입력…" : InputReader.KeyLabel(InputReader.KeyboardKey(v.action)))}</color>";
             }
