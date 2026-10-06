@@ -28,7 +28,7 @@ namespace DotRPG
         }
 
         Color32[] PaintWinterSurface(char[,] ground, int w, int h, out int pw, out int ph)
-            => WinterTerrain.Paint(ground, w, h, out pw, out ph, StoreWaterField);
+            => WinterTerrain.Paint(ground, w, h, out pw, out ph, StoreWaterField, HuntingGrounds.Get(MapId)!=null);
 
         /// <summary>Winter objects in 32px art. Returns false for symbols the shared code handles (NPCs, portals, P, k).</summary>
         bool SpawnWinterHdObject(char c, int x, int y, System.Random rng)

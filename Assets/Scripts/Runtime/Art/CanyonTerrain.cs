@@ -79,6 +79,7 @@ namespace DotRPG
             public float[] shade;     // per pixel soft shade multiplier (1 = none)
             public Color32[] px;
             public int seed;
+            public int fieldVariant=-1;
 
             public byte Cell(int x, int y)
             {
@@ -110,9 +111,9 @@ namespace DotRPG
         }
 
         /// <summary>Paints the canyon. <paramref name="ground"/>[x, y] is the ground code of each cell (y = 0 at the bottom).</summary>
-        public static Color32[] Paint(char[,] ground, int w, int h, out int pw, out int ph, System.Action<WaterField> waterReady = null)
+        public static Color32[] Paint(char[,] ground, int w, int h, out int pw, out int ph, System.Action<WaterField> waterReady = null, int fieldVariant = -1)
         {
-            var j = new Job { w = w, h = h, pw = w * Px, ph = h * Px, seed = 131 };
+            var j = new Job { w = w, h = h, pw = w * Px, ph = h * Px, seed = 131,fieldVariant=fieldVariant };
             pw = j.pw;
             ph = j.ph;
             j.cells = new byte[w * h];
@@ -264,6 +265,7 @@ namespace DotRPG
                 switch (k)
                 {
                     case Flag:
+                        if(j.fieldVariant>=0){c=FieldSand(j,px,py);if(j.shade[i]<.999f)c=PixelCanvas.Shade(c,j.shade[i]);break;}
                         c = StoneOrNull(j, px, py, out bool stone);
                         if (!stone)
                             c = edge && other == Grass ? GrassAt(j, px, py, i)
@@ -285,6 +287,19 @@ namespace DotRPG
                 }
                 j.px[i] = c;
             }
+        }
+
+        // Broad dusty rock planes, broken paving patches and wind bands replace the town's uniform cobbles.
+        static readonly Color32[] FieldSandRamp={new Color32(132,104,77,255),new Color32(149,116,84,255),new Color32(165,130,92,255),new Color32(181,146,105,255),new Color32(193,160,118,255)};
+        static Color32 FieldSand(Job j,int x,int y){
+            float broad=Noise(x/150f,y/130f,321+j.fieldVariant*13);
+            int tone=Mathf.Clamp((int)((broad+1)*2.5f),0,4);
+
+            // Retain scattered ancient paving instead of covering the entire canyon in a city floor.
+            if(Noise(x/110f,y/95f,714+j.fieldVariant)> .5f){var stone=StoneOrNull(j,x,y,out bool yes);if(yes)return PixelCanvas.Shade(stone,.91f);}
+            var c=FieldSandRamp[tone];int band=(y+(int)(10*Noise(x/82f,y/140f,457)))%39;
+            if(band<2&&Noise(x/31f,y/39f,42)>.15f)c=PixelCanvas.Shade(c,.88f);
+            return c;
         }
 
         static Color32 GrassAt(Job j, int px, int py, int i)

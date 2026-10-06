@@ -54,6 +54,10 @@ namespace DotRPG
             new HuntingZone("winter_lake", "얼어붙은 호숫가", "winter", MapTheme.Winter, 29, 33, 31, 1, "skel_shield", "skel_archer", "skel_knight"),
             new HuntingZone("winter_peak", "눈보라 봉우리", "winter", MapTheme.Winter, 34, 40, 36, 2, "skel_knight", "skel_knight", "skel_archer"),
             new HuntingZone("winter_reach", "해빙된 성소 입구", "winter", MapTheme.Winter, 36, 40, 39, 3, "skel_warrior", "skel_shield", "skel_archer"),
+            new HuntingZone("sanctum_hall", "침수된 회랑", MapRegistry.Sanctum, MapTheme.SanctumField, 38, 40, 40, 0, "skel_warrior", "skel_shield", "skel_archer"),
+            new HuntingZone("sanctum_archive", "잠긴 서고", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 1, "skel_archer", "skel_warrior", "skel_shield"),
+            new HuntingZone("sanctum_roots", "뿌리 잠식 지하묘", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 2, "skel_warrior", "skel_shield", "skel_archer"),
+            new HuntingZone("sanctum_court", "망각의 내전", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 3, "skel_shield", "skel_archer", "skel_warrior"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
         public static int XpAt(int level) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
@@ -109,7 +113,7 @@ namespace DotRPG
         public static string Layout(string id)
         {
             var z = Get(id);
-            return z == null ? null : HuntingLayouts.Build(z);
+            return z == null ? null : z.theme==MapTheme.SanctumField ? SanctumHunting.Layout(z) : HuntingLayouts.Build(z);
         }
     }
 }

@@ -245,6 +245,7 @@ namespace DotRPG
             var rng = new System.Random(1234);
             if (map.IsInterior) { BuildInterior(); return; }
             if (MapId == MapRegistry.Sanctum) { BuildSunkenSanctum(); return; }
+            if (map.theme == MapTheme.SanctumField) { BuildSanctumField(); return; }
 
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
@@ -266,6 +267,7 @@ namespace DotRPG
             }
             else if (CanyonHd) BuildCanyonHd();
             else if (WinterHd) BuildWinterHd();
+            HuntingScenery.Dress(objectsRoot,cells,width,height,HuntingGrounds.Get(MapId));
             CreateBoundaryWalls();
             ConfigureTownServices();
             SpawnDungeonGuide(); // [DUNGEON] 던전 안내원 by the village plaza
@@ -362,12 +364,13 @@ namespace DotRPG
             var small = RenderTexture.GetTemporary(tw, th, 0, RenderTextureFormat.ARGB32);
             var hidden = HideForMinimap();
             Texture2D tex = null;
+            var previousActive = RenderTexture.active;
             try
             {
                 cam.targetTexture = big;
                 cam.Render();
                 Graphics.Blit(big, small);
-                var prev = RenderTexture.active;
+
                 RenderTexture.active = small;
                 tex = new Texture2D(tw, th, TextureFormat.RGBA32, true)
                 {
@@ -377,7 +380,7 @@ namespace DotRPG
                 };
                 tex.ReadPixels(new Rect(0, 0, tw, th), 0, 0);
                 tex.Apply(true, false);
-                RenderTexture.active = prev;
+                RenderTexture.active = previousActive;
             }
             catch (System.Exception e)
             {
@@ -389,6 +392,7 @@ namespace DotRPG
             {
                 foreach (var r in hidden) if (r != null) r.forceRenderingOff = false;
                 cam.targetTexture = null;
+                RenderTexture.active = previousActive;
                 RenderTexture.ReleaseTemporary(big);
                 RenderTexture.ReleaseTemporary(small);
                 Destroy(camGo);

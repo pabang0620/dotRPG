@@ -1,0 +1,240 @@
+[1.27] capture started
+[1.27] verification audio volume: 0
+DGN sixteen hunting fields PASS
+DGN village four fields PASS
+DGN village split PASS
+DGN forest_ruins branch to merge PASS
+DGN forest_depths branch to merge PASS
+DGN forest_crossing next region PASS
+DGN canyon four fields PASS
+DGN canyon split PASS
+DGN canyon_mine branch to merge PASS
+DGN canyon_ridge branch to merge PASS
+DGN canyon_gate next region PASS
+DGN winter four fields PASS
+DGN winter split PASS
+DGN winter_lake branch to merge PASS
+DGN winter_peak branch to merge PASS
+DGN winter_reach next region PASS
+DGN village spawn free PASS
+DGN village arrival reachable from forest PASS
+DGN village portal to forest PASS
+DGN village no arrival bounce forest PASS
+DGN forest spawn free PASS
+DGN forest arrival reachable from village PASS
+DGN forest portal to village PASS
+DGN forest no arrival bounce village PASS
+DGN forest arrival reachable from forest_ruins PASS
+DGN forest portal to forest_ruins PASS
+DGN forest no arrival bounce forest_ruins PASS
+DGN forest arrival reachable from forest_depths PASS
+DGN forest portal to forest_depths PASS
+DGN forest no arrival bounce forest_depths PASS
+DGN forest has monsters PASS
+DGN forest all camps reachable PASS
+DGN forest_ruins spawn free PASS
+DGN forest_ruins arrival reachable from forest PASS
+DGN forest_ruins portal to forest PASS
+DGN forest_ruins no arrival bounce forest PASS
+DGN forest_ruins arrival reachable from forest_crossing PASS
+DGN forest_ruins portal to forest_crossing PASS
+DGN forest_ruins no arrival bounce forest_crossing PASS
+DGN forest_ruins has monsters PASS
+DGN forest_ruins all camps reachable PASS
+DGN forest_depths spawn free PASS
+DGN forest_depths arrival reachable from forest PASS
+DGN forest_depths portal to forest PASS
+DGN forest_depths no arrival bounce forest PASS
+DGN forest_depths arrival reachable from forest_crossing PASS
+DGN forest_depths portal to forest_crossing PASS
+DGN forest_depths no arrival bounce forest_crossing PASS
+DGN forest_depths has monsters PASS
+DGN forest_depths all camps reachable PASS
+DGN forest_crossing spawn free PASS
+DGN forest_crossing arrival reachable from canyon PASS
+DGN forest_crossing portal to canyon PASS
+DGN forest_crossing no arrival bounce canyon PASS
+DGN forest_crossing arrival reachable from forest_ruins PASS
+DGN forest_crossing portal to forest_ruins PASS
+DGN forest_crossing no arrival bounce forest_ruins PASS
+DGN forest_crossing arrival reachable from forest_depths PASS
+DGN forest_crossing portal to forest_depths PASS
+DGN forest_crossing no arrival bounce forest_depths PASS
+DGN forest_crossing has monsters PASS
+DGN forest_crossing all camps reachable PASS
+DGN canyon spawn free PASS
+DGN canyon arrival reachable from forest_crossing PASS
+DGN canyon portal to forest_crossing PASS
+DGN canyon no arrival bounce forest_crossing PASS
+DGN canyon arrival reachable from canyon_pass PASS
+DGN canyon portal to canyon_pass PASS
+DGN canyon no arrival bounce canyon_pass PASS
+DGN canyon_pass spawn free PASS
+DGN canyon_pass arrival reachable from canyon PASS
+DGN canyon_pass portal to canyon PASS
+DGN canyon_pass no arrival bounce canyon PASS
+DGN canyon_pass arrival reachable from canyon_mine PASS
+DGN canyon_pass portal to canyon_mine PASS
+DGN canyon_pass no arrival bounce canyon_mine PASS
+DGN canyon_pass arrival reachable from canyon_ridge PASS
+DGN canyon_pass portal to canyon_ridge PASS
+DGN canyon_pass no arrival bounce canyon_ridge PASS
+DGN canyon_pass has monsters PASS
+DGN canyon_pass all camps reachable PASS
+DGN canyon_mine spawn free PASS
+DGN canyon_mine arrival reachable from canyon_pass PASS
+DGN canyon_mine portal to canyon_pass PASS
+DGN canyon_mine no arrival bounce canyon_pass PASS
+DGN canyon_mine arrival reachable from canyon_gate PASS
+DGN canyon_mine portal to canyon_gate PASS
+DGN canyon_mine no arrival bounce canyon_gate PASS
+DGN canyon_mine has monsters PASS
+DGN canyon_mine all camps reachable PASS
+DGN canyon_ridge spawn free PASS
+DGN canyon_ridge arrival reachable from canyon_pass PASS
+DGN canyon_ridge portal to canyon_pass PASS
+DGN canyon_ridge no arrival bounce canyon_pass PASS
+DGN canyon_ridge arrival reachable from canyon_gate PASS
+DGN canyon_ridge portal to canyon_gate PASS
+DGN canyon_ridge no arrival bounce canyon_gate PASS
+DGN canyon_ridge has monsters PASS
+DGN canyon_ridge all camps reachable PASS
+DGN canyon_gate spawn free PASS
+DGN canyon_gate arrival reachable from winter PASS
+DGN canyon_gate portal to winter PASS
+DGN canyon_gate no arrival bounce winter PASS
+DGN canyon_gate arrival reachable from canyon_mine PASS
+DGN canyon_gate portal to canyon_mine PASS
+DGN canyon_gate no arrival bounce canyon_mine PASS
+DGN canyon_gate arrival reachable from canyon_ridge PASS
+DGN canyon_gate portal to canyon_ridge PASS
+DGN canyon_gate no arrival bounce canyon_ridge PASS
+DGN canyon_gate has monsters PASS
+DGN canyon_gate all camps reachable PASS
+DGN winter spawn free PASS
+DGN winter arrival reachable from canyon_gate PASS
+DGN winter portal to canyon_gate PASS
+DGN winter no arrival bounce canyon_gate PASS
+DGN winter arrival reachable from winter_edge PASS
+DGN winter portal to winter_edge PASS
+DGN winter no arrival bounce winter_edge PASS
+DGN winter_edge spawn free PASS
+DGN winter_edge arrival reachable from winter PASS
+DGN winter_edge portal to winter PASS
+DGN winter_edge no arrival bounce winter PASS
+DGN winter_edge arrival reachable from winter_lake PASS
+DGN winter_edge portal to winter_lake PASS
+DGN winter_edge no arrival bounce winter_lake PASS
+DGN winter_edge arrival reachable from winter_peak PASS
+DGN winter_edge portal to winter_peak PASS
+DGN winter_edge no arrival bounce winter_peak PASS
+DGN winter_edge has monsters PASS
+DGN winter_edge all camps reachable PASS
+DGN winter_lake spawn free PASS
+DGN winter_lake arrival reachable from winter_edge PASS
+DGN winter_lake portal to winter_edge PASS
+DGN winter_lake no arrival bounce winter_edge PASS
+DGN winter_lake arrival reachable from winter_reach PASS
+DGN winter_lake portal to winter_reach PASS
+DGN winter_lake no arrival bounce winter_reach PASS
+DGN winter_lake has monsters PASS
+DGN winter_lake all camps reachable PASS
+DGN winter_peak spawn free PASS
+DGN winter_peak arrival reachable from winter_edge PASS
+DGN winter_peak portal to winter_edge PASS
+DGN winter_peak no arrival bounce winter_edge PASS
+DGN winter_peak arrival reachable from winter_reach PASS
+DGN winter_peak portal to winter_reach PASS
+DGN winter_peak no arrival bounce winter_reach PASS
+DGN winter_peak has monsters PASS
+DGN winter_peak all camps reachable PASS
+DGN winter_reach spawn free PASS
+DGN winter_reach arrival reachable from sunken_sanctum PASS
+DGN winter_reach portal to sunken_sanctum PASS
+DGN winter_reach no arrival bounce sunken_sanctum PASS
+DGN winter_reach arrival reachable from winter_lake PASS
+DGN winter_reach portal to winter_lake PASS
+DGN winter_reach no arrival bounce winter_lake PASS
+DGN winter_reach arrival reachable from winter_peak PASS
+DGN winter_reach portal to winter_peak PASS
+DGN winter_reach no arrival bounce winter_peak PASS
+DGN winter_reach has monsters PASS
+DGN winter_reach all camps reachable PASS
+DGN sunken_sanctum spawn free PASS
+DGN sunken_sanctum arrival reachable from winter_reach PASS
+DGN sunken_sanctum portal to winter_reach PASS
+DGN sunken_sanctum no arrival bounce winter_reach PASS
+DGN sunken_sanctum arrival reachable from sanctum_hall PASS
+DGN sunken_sanctum portal to sanctum_hall PASS
+DGN sunken_sanctum no arrival bounce sanctum_hall PASS
+DGN sanctum_hall spawn free PASS
+DGN sanctum_hall arrival reachable from sunken_sanctum PASS
+DGN sanctum_hall portal to sunken_sanctum PASS
+DGN sanctum_hall no arrival bounce sunken_sanctum PASS
+DGN sanctum_hall arrival reachable from sanctum_archive PASS
+DGN sanctum_hall portal to sanctum_archive PASS
+DGN sanctum_hall no arrival bounce sanctum_archive PASS
+DGN sanctum_hall arrival reachable from sanctum_roots PASS
+DGN sanctum_hall portal to sanctum_roots PASS
+DGN sanctum_hall no arrival bounce sanctum_roots PASS
+DGN sanctum_hall has monsters PASS
+DGN sanctum_hall all camps reachable PASS
+DGN sanctum_archive spawn free PASS
+DGN sanctum_archive arrival reachable from sanctum_hall PASS
+DGN sanctum_archive portal to sanctum_hall PASS
+DGN sanctum_archive no arrival bounce sanctum_hall PASS
+DGN sanctum_archive arrival reachable from sanctum_court PASS
+DGN sanctum_archive portal to sanctum_court PASS
+DGN sanctum_archive no arrival bounce sanctum_court PASS
+DGN sanctum_archive has monsters PASS
+DGN sanctum_archive all camps reachable PASS
+DGN sanctum_roots spawn free PASS
+DGN sanctum_roots arrival reachable from sanctum_hall PASS
+DGN sanctum_roots portal to sanctum_hall PASS
+DGN sanctum_roots no arrival bounce sanctum_hall PASS
+DGN sanctum_roots arrival reachable from sanctum_court PASS
+DGN sanctum_roots portal to sanctum_court PASS
+DGN sanctum_roots no arrival bounce sanctum_court PASS
+DGN sanctum_roots has monsters PASS
+DGN sanctum_roots all camps reachable PASS
+DGN sanctum_court spawn free PASS
+DGN sanctum_court arrival reachable from sanctum_archive PASS
+DGN sanctum_court portal to sanctum_archive PASS
+DGN sanctum_court no arrival bounce sanctum_archive PASS
+DGN sanctum_court arrival reachable from sanctum_roots PASS
+DGN sanctum_court portal to sanctum_roots PASS
+DGN sanctum_court no arrival bounce sanctum_roots PASS
+DGN sanctum_court has monsters PASS
+DGN sanctum_court all camps reachable PASS
+DGN forest trigger -> forest_ruins PASS
+DGN forest_ruins stays after arrival PASS
+DGN forest_ruins trigger -> forest_crossing PASS
+DGN forest_crossing stays after arrival PASS
+DGN forest trigger -> forest_depths PASS
+DGN forest_depths stays after arrival PASS
+DGN forest_depths trigger -> forest_crossing PASS
+DGN forest_crossing stays after arrival PASS
+DGN forest_crossing trigger -> canyon PASS
+DGN canyon stays after arrival PASS
+DGN canyon_pass trigger -> canyon_mine PASS
+DGN canyon_mine stays after arrival PASS
+DGN canyon_mine trigger -> canyon_gate PASS
+DGN canyon_gate stays after arrival PASS
+DGN canyon_pass trigger -> canyon_ridge PASS
+DGN canyon_ridge stays after arrival PASS
+DGN canyon_ridge trigger -> canyon_gate PASS
+DGN canyon_gate stays after arrival PASS
+DGN canyon_gate trigger -> winter PASS
+DGN winter stays after arrival PASS
+DGN winter_edge trigger -> winter_lake PASS
+DGN winter_lake stays after arrival PASS
+DGN winter_lake trigger -> winter_reach PASS
+DGN winter_reach stays after arrival PASS
+DGN winter_edge trigger -> winter_peak PASS
+DGN winter_peak stays after arrival PASS
+DGN winter_peak trigger -> winter_reach PASS
+DGN winter_reach stays after arrival PASS
+DGN winter_reach trigger -> sunken_sanctum PASS
+DGN sunken_sanctum stays after arrival PASS
+DGN muted routes verification PASS
+[43.72] ROUTES RESULTS: 237 passed, 0 failed

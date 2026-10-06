@@ -50,13 +50,17 @@ namespace DotRPG
             w.roomButton.gameObject.SetActive(false);
             w.side = Panel(w.content, "Side", new Vector2(1, 1), new Vector2(1, 1), Vector2.zero, new Vector2(420, 590), UiTheme.Panel).transform;
             Label(w.side, "RegionHeading", "지역 선택 · 이동 없이 둘러보기", 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
+            var regions=Panel(w.side,"RegionsViewport",TL,TL,new Vector2(16,-44),new Vector2(388,294),UiTheme.PanelDeep);
+            regions.gameObject.AddComponent<RectMask2D>();
+            var list=UIFactory.Place(UIFactory.Rect(regions.transform,"RegionsContent"),TL,TL,Vector2.zero,new Vector2(388,MapRegistry.All.Count()*27));
+            var scroll=regions.gameObject.AddComponent<ScrollRect>();scroll.viewport=regions.rectTransform;scroll.content=list;scroll.horizontal=false;scroll.vertical=true;scroll.scrollSensitivity=27;scroll.movementType=ScrollRect.MovementType.Clamped;
             int row = 0;
             foreach (var info in MapRegistry.All)
             {
                 string id = info.id; var zone = HuntingGrounds.Get(id);
                 string name = id == MapRegistry.Village ? "해골 숲 옆 작은 마을" : info.displayName;
                 string tag = zone == null ? (MapRegistry.IsTown(id) ? "<color=#91c9b0>마을</color>" : "<color=#91c9b0>탐험</color>") : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
-                var button = Button(w.side, "Region_" + id, name + "   " + tag, "ui_btngray", TL, TL, new Vector2(16, -44 - row * 19), new Vector2(388, 18), () => w.SelectMap(id), 14);
+                var button = Button(list, "Region_" + id, name + "   " + tag, "ui_btngray", TL, TL, new Vector2(0, -row * 27), new Vector2(388, 26), () => w.SelectMap(id), 14);
                 var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 14, 0, 8, 0);
                 w.regionButtons.Add((id, button)); row++;
             }

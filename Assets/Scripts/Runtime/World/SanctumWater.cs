@@ -40,11 +40,12 @@ namespace DotRPG
             var go=new GameObject(name);go.transform.SetParent(transform,false);go.transform.position=pos;go.transform.localScale=new Vector3(scale.x,scale.y,1);
             var sr=go.AddComponent<SpriteRenderer>();sr.sprite=sprite;sr.sortingOrder=order;return sr;
         }
-        public void Setup(char[,] cells,int w,int h)
+        public void Setup(char[,] cells,int w,int h,bool withWaterfall=true)
         {
             Prepare();
             for(int y=0;y<h;y++)for(int x=0;x<w;x++)if(cells[x,y]=='~'&&((x*73856093^y*19349663)&0x7fffffff)%7==0&&water.Count<100)
                 water.Add(Add("Quiet water",new Vector2(x+.5f,y+.5f),ripples[(x+y)%12],-29400,Vector2.one*.82f));
+            if(!withWaterfall)return;
             waterfall.Add(Add("Thin upper fall",new Vector2(24,62),falls[0],YSort.OrderFor(54)+1,new Vector2(.8f,2)));
             waterfall.Add(Add("Broken ledge fall",new Vector2(24,53.3f),falls[0],YSort.OrderFor(49),new Vector2(.65f,.68f)));
             spray.Add(Add("Ledge foam",new Vector2(24,55.5f),foam[0],YSort.OrderFor(54)+2,new Vector2(1.3f,1)));

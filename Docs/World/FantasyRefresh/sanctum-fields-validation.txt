@@ -1,0 +1,186 @@
+[1.19] capture started
+[1.19] verification audio volume: 0
+DGN sanctum_sentineldownidle0 PASS
+DGN sanctum_sentineldownidle1 PASS
+DGN sanctum_sentineldownwalk0 PASS
+DGN sanctum_sentineldownwalk1 PASS
+DGN sanctum_sentineldownwalk2 PASS
+DGN sanctum_sentineldownwalk3 PASS
+DGN sanctum_sentineldownattack PASS
+DGN sanctum_sentineldownhurt PASS
+DGN sanctum_sentineldownsideidle0 PASS
+DGN sanctum_sentineldownsideidle1 PASS
+DGN sanctum_sentineldownsidewalk0 PASS
+DGN sanctum_sentineldownsidewalk1 PASS
+DGN sanctum_sentineldownsidewalk2 PASS
+DGN sanctum_sentineldownsidewalk3 PASS
+DGN sanctum_sentineldownsideattack PASS
+DGN sanctum_sentineldownsidehurt PASS
+DGN sanctum_sentinelsideidle0 PASS
+DGN sanctum_sentinelsideidle1 PASS
+DGN sanctum_sentinelsidewalk0 PASS
+DGN sanctum_sentinelsidewalk1 PASS
+DGN sanctum_sentinelsidewalk2 PASS
+DGN sanctum_sentinelsidewalk3 PASS
+DGN sanctum_sentinelsideattack PASS
+DGN sanctum_sentinelsidehurt PASS
+DGN sanctum_sentinelupsideidle0 PASS
+DGN sanctum_sentinelupsideidle1 PASS
+DGN sanctum_sentinelupsidewalk0 PASS
+DGN sanctum_sentinelupsidewalk1 PASS
+DGN sanctum_sentinelupsidewalk2 PASS
+DGN sanctum_sentinelupsidewalk3 PASS
+DGN sanctum_sentinelupsideattack PASS
+DGN sanctum_sentinelupsidehurt PASS
+DGN sanctum_sentinelupidle0 PASS
+DGN sanctum_sentinelupidle1 PASS
+DGN sanctum_sentinelupwalk0 PASS
+DGN sanctum_sentinelupwalk1 PASS
+DGN sanctum_sentinelupwalk2 PASS
+DGN sanctum_sentinelupwalk3 PASS
+DGN sanctum_sentinelupattack PASS
+DGN sanctum_sentineluphurt PASS
+DGN sanctum_sentinel_guarddownidle0 PASS
+DGN sanctum_sentinel_guarddownidle1 PASS
+DGN sanctum_sentinel_guarddownwalk0 PASS
+DGN sanctum_sentinel_guarddownwalk1 PASS
+DGN sanctum_sentinel_guarddownwalk2 PASS
+DGN sanctum_sentinel_guarddownwalk3 PASS
+DGN sanctum_sentinel_guarddownattack PASS
+DGN sanctum_sentinel_guarddownhurt PASS
+DGN sanctum_sentinel_guarddownsideidle0 PASS
+DGN sanctum_sentinel_guarddownsideidle1 PASS
+DGN sanctum_sentinel_guarddownsidewalk0 PASS
+DGN sanctum_sentinel_guarddownsidewalk1 PASS
+DGN sanctum_sentinel_guarddownsidewalk2 PASS
+DGN sanctum_sentinel_guarddownsidewalk3 PASS
+DGN sanctum_sentinel_guarddownsideattack PASS
+DGN sanctum_sentinel_guarddownsidehurt PASS
+DGN sanctum_sentinel_guardsideidle0 PASS
+DGN sanctum_sentinel_guardsideidle1 PASS
+DGN sanctum_sentinel_guardsidewalk0 PASS
+DGN sanctum_sentinel_guardsidewalk1 PASS
+DGN sanctum_sentinel_guardsidewalk2 PASS
+DGN sanctum_sentinel_guardsidewalk3 PASS
+DGN sanctum_sentinel_guardsideattack PASS
+DGN sanctum_sentinel_guardsidehurt PASS
+DGN sanctum_sentinel_guardupsideidle0 PASS
+DGN sanctum_sentinel_guardupsideidle1 PASS
+DGN sanctum_sentinel_guardupsidewalk0 PASS
+DGN sanctum_sentinel_guardupsidewalk1 PASS
+DGN sanctum_sentinel_guardupsidewalk2 PASS
+DGN sanctum_sentinel_guardupsidewalk3 PASS
+DGN sanctum_sentinel_guardupsideattack PASS
+DGN sanctum_sentinel_guardupsidehurt PASS
+DGN sanctum_sentinel_guardupidle0 PASS
+DGN sanctum_sentinel_guardupidle1 PASS
+DGN sanctum_sentinel_guardupwalk0 PASS
+DGN sanctum_sentinel_guardupwalk1 PASS
+DGN sanctum_sentinel_guardupwalk2 PASS
+DGN sanctum_sentinel_guardupwalk3 PASS
+DGN sanctum_sentinel_guardupattack PASS
+DGN sanctum_sentinel_guarduphurt PASS
+DGN sanctum_sentinel_throwerdownidle0 PASS
+DGN sanctum_sentinel_throwerdownidle1 PASS
+DGN sanctum_sentinel_throwerdownwalk0 PASS
+DGN sanctum_sentinel_throwerdownwalk1 PASS
+DGN sanctum_sentinel_throwerdownwalk2 PASS
+DGN sanctum_sentinel_throwerdownwalk3 PASS
+DGN sanctum_sentinel_throwerdownattack PASS
+DGN sanctum_sentinel_throwerdownhurt PASS
+DGN sanctum_sentinel_throwerdownsideidle0 PASS
+DGN sanctum_sentinel_throwerdownsideidle1 PASS
+DGN sanctum_sentinel_throwerdownsidewalk0 PASS
+DGN sanctum_sentinel_throwerdownsidewalk1 PASS
+DGN sanctum_sentinel_throwerdownsidewalk2 PASS
+DGN sanctum_sentinel_throwerdownsidewalk3 PASS
+DGN sanctum_sentinel_throwerdownsideattack PASS
+DGN sanctum_sentinel_throwerdownsidehurt PASS
+DGN sanctum_sentinel_throwersideidle0 PASS
+DGN sanctum_sentinel_throwersideidle1 PASS
+DGN sanctum_sentinel_throwersidewalk0 PASS
+DGN sanctum_sentinel_throwersidewalk1 PASS
+DGN sanctum_sentinel_throwersidewalk2 PASS
+DGN sanctum_sentinel_throwersidewalk3 PASS
+DGN sanctum_sentinel_throwersideattack PASS
+DGN sanctum_sentinel_throwersidehurt PASS
+DGN sanctum_sentinel_throwerupsideidle0 PASS
+DGN sanctum_sentinel_throwerupsideidle1 PASS
+DGN sanctum_sentinel_throwerupsidewalk0 PASS
+DGN sanctum_sentinel_throwerupsidewalk1 PASS
+DGN sanctum_sentinel_throwerupsidewalk2 PASS
+DGN sanctum_sentinel_throwerupsidewalk3 PASS
+DGN sanctum_sentinel_throwerupsideattack PASS
+DGN sanctum_sentinel_throwerupsidehurt PASS
+DGN sanctum_sentinel_throwerupidle0 PASS
+DGN sanctum_sentinel_throwerupidle1 PASS
+DGN sanctum_sentinel_throwerupwalk0 PASS
+DGN sanctum_sentinel_throwerupwalk1 PASS
+DGN sanctum_sentinel_throwerupwalk2 PASS
+DGN sanctum_sentinel_throwerupwalk3 PASS
+DGN sanctum_sentinel_throwerupattack PASS
+DGN sanctum_sentinel_throweruphurt PASS
+DGN forest scenery placed PASS
+DGN forest_ruins scenery placed PASS
+DGN forest_depths scenery placed PASS
+DGN forest_crossing scenery placed PASS
+DGN canyon_pass scenery placed PASS
+DGN canyon_mine scenery placed PASS
+DGN canyon_ridge scenery placed PASS
+DGN canyon_gate scenery placed PASS
+DGN winter_edge scenery placed PASS
+DGN winter_lake scenery placed PASS
+DGN winter_peak scenery placed PASS
+DGN winter_reach scenery placed PASS
+DGN sanctum_hall free spawn PASS
+DGN sanctum_hall reachable mobs PASS
+DGN sanctum_hall three statue roles PASS
+DGN sanctum_hall retained XP PASS
+DGN sanctum_hall arrival sunken_sanctum PASS
+DGN sanctum_hall arrival sanctum_archive PASS
+DGN sanctum_hall arrival sanctum_roots PASS
+DGN sanctum_hall water and walls blocked PASS
+DGN sanctum_hall actual terrain traversal PASS
+DGN sanctum_archive free spawn PASS
+DGN sanctum_archive reachable mobs PASS
+DGN sanctum_archive three statue roles PASS
+DGN sanctum_archive retained XP PASS
+DGN sanctum_archive arrival sanctum_hall PASS
+DGN sanctum_archive arrival sanctum_court PASS
+DGN sanctum_archive water and walls blocked PASS
+DGN sanctum_archive actual terrain traversal PASS
+DGN sanctum_roots free spawn PASS
+DGN sanctum_roots reachable mobs PASS
+DGN sanctum_roots three statue roles PASS
+DGN sanctum_roots retained XP PASS
+DGN sanctum_roots arrival sanctum_hall PASS
+DGN sanctum_roots arrival sanctum_court PASS
+DGN sanctum_roots water and walls blocked PASS
+DGN sanctum_roots actual terrain traversal PASS
+DGN sanctum_court free spawn PASS
+DGN sanctum_court reachable mobs PASS
+DGN sanctum_court three statue roles PASS
+DGN sanctum_court retained XP PASS
+DGN sanctum_court arrival sanctum_archive PASS
+DGN sanctum_court arrival sanctum_roots PASS
+DGN sanctum_court water and walls blocked PASS
+DGN sanctum_court actual terrain traversal PASS
+DGN sunken_sanctum portal sanctum_hall PASS
+DGN no bounce sanctum_hall PASS
+DGN sanctum_hall portal sanctum_archive PASS
+DGN no bounce sanctum_archive PASS
+DGN sanctum_hall portal sanctum_roots PASS
+DGN no bounce sanctum_roots PASS
+DGN sanctum_archive portal sanctum_court PASS
+DGN no bounce sanctum_court PASS
+DGN sanctum_roots portal sanctum_court PASS
+DGN no bounce sanctum_court PASS
+DGN sanctum_court portal sanctum_archive PASS
+DGN no bounce sanctum_archive PASS
+DGN sanctum_court portal sanctum_roots PASS
+DGN no bounce sanctum_roots PASS
+DGN sanctum_hall portal sunken_sanctum PASS
+DGN no bounce sunken_sanctum PASS
+DGN water cleaned on exit PASS
+DGN muted PASS
+[81.54] SANCTUM FIELDS RESULTS: 183 passed, 0 failed
