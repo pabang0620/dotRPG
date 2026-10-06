@@ -28,9 +28,10 @@ namespace DotRPG
             // ----- Header -----
             var header = Tinted(root, "Header", "ui_white", new Color32(22, 31, 46, 255));
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, 76f));
-            var back = MakeButton(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(56f, 52f), Close, 26);
+            var back = MakeButton(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), Close, 24);
+            back.GetComponentInChildren<Text>().text = "◀ <size=17>ESC</size>"; // [UI] same back button as every other window
             var title = UIFactory.Text(root, "Title", "가방", 40, Color.white, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(92f, -12f), new Vector2(200f, 52f));
+            UIFactory.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(132f, -12f), new Vector2(200f, 52f));
             float cxHead = -24f;
             var chipIds = new List<(string id, string icon)> { (ConsumableDatabase.Gold, "icon_gold") };
             for (int i = Game.Config.items.Count - 1; i >= 0; i--) chipIds.Add((Game.Config.items[i].id, Game.Config.items[i].iconKey));
@@ -161,7 +162,7 @@ namespace DotRPG
             UIFactory.Stretch(s.level.rectTransform, 4f, 2f, 6f, 2f);
             if (worn.HasValue)
             {
-                s.label = UIFactory.Text(s.rect, "SlotName", EquipmentDatabase.SlotName(worn.Value), 15, new Color(1f, 1f, 1f, 0.55f), TextAnchor.MiddleCenter, true);
+                s.label = UIFactory.Text(s.rect, "SlotName", EquipmentDatabase.SlotName(worn.Value), 16, new Color(1f, 1f, 1f, 0.75f), TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(s.label.rectTransform);
             }
             var relay = s.bg.gameObject.AddComponent<PointerRelay>();

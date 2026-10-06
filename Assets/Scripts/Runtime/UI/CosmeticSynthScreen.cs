@@ -15,11 +15,12 @@ namespace DotRPG
     public class CosmeticSynthScreen : OnlineWindow
     {
         const int SpareRows = 10, SetRows = 6;
+        int sparePage, setPage; // [UI] lists longer than their rows turn pages
         protected override bool PadNavigation => !busy;
         const float RuleH = 170f, SpareH = 56f, SetH = 104f;
 
         sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; }
-        sealed class SpareView { public RectTransform row; public Text name; public Button dismantle; public string id; }
+        sealed class SpareView { public RectTransform row; public Image icon; public Text name; public Button dismantle; public string id; }
         sealed class SetView { public RectTransform row; public Text title, members; public Button register; public string id; }
 
         public static CosmeticSynthScreen Instance { get; private set; }
@@ -66,11 +67,15 @@ namespace DotRPG
             w.resultText = Label(w.synthTab, "Result", "", 19, tl, tl, new Vector2(0f, -40f - 3 * (RuleH + 12f)), new Vector2(720f, 120f));
 
             var sparePanel = Panel(w.synthTab, "Spares", tl, tl, new Vector2(744f, -40f), new Vector2(740f, 40f + SpareRows * SpareH + 20f), new Color32(18, 26, 40, 240));
-            w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(700f, 30f));
+            w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(560f, 30f));
+            w.sparePager = Pager(sparePanel.transform, new Vector2(-10f, -6f), d => { w.sparePage += d; w.Refresh(); });
             for (int i = 0; i < SpareRows; i++)
             {
                 var v = new SpareView { row = Row(sparePanel.transform, i, -44f, SpareH, 740f) };
-                v.name = Cell(v.row, "Name", 16f, 440f);
+                v.icon = UIFactory.SharpIcon(v.row, "Icon", Color.white);
+                v.icon.raycastTarget = false;
+                UIFactory.Place(v.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
+                v.name = Cell(v.row, "Name", 60f, 400f);
                 var view = v;
                 v.dismantle = Button(v.row, "Dismantle", "", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(250f, 44f), () => w.AskDismantle(view.id), 16);
                 w.spares.Add(v);
@@ -78,7 +83,8 @@ namespace DotRPG
 
             // ---------- 컬렉션 ----------
             w.collectionTab = UIFactory.Place(UIFactory.Rect(w.content, "Collection"), tl, tl, new Vector2(0f, -66f), new Vector2(1500f, 860f));
-            w.bonusText = Label(w.collectionTab, "Bonus", "", 20, tl, tl, Vector2.zero, new Vector2(1500f, 32f), TextAnchor.MiddleLeft);
+            w.bonusText = Label(w.collectionTab, "Bonus", "", 20, tl, tl, Vector2.zero, new Vector2(1060f, 32f), TextAnchor.MiddleLeft);
+            w.setPager = Pager(w.collectionTab, new Vector2(-300f, 0f), d => { w.setPage += d; w.Refresh(); });
             for (int i = 0; i < SetRows; i++)
             {
                 var v = new SetView { row = Row(w.collectionTab, i, -44f, SetH, 1200f) };
@@ -158,13 +164,20 @@ namespace DotRPG
             int total = 0;
             foreach (var x in list) total += x.n;
             spareHead.text = list.Count == 0 ? "<b>여분</b>   <color=#8c96a8>아직 여분이 없습니다. 이미 가진 외형이 다시 나오면 여기에 쌓입니다.</color>" : $"<b>여분</b> {total}개   <color=#b8c4d8>분해하면 별조각으로 돌려받습니다.</color>";
+            int sparePages = Mathf.Max(1, (list.Count + SpareRows - 1) / SpareRows);
+            sparePage = Mathf.Clamp(sparePage, 0, sparePages - 1);
+            SetPager(sparePager, sparePage, sparePages);
             for (int i = 0; i < spares.Count; i++)
             {
                 var v = spares[i];
-                bool on = i < list.Count;
+                int at = sparePage * SpareRows + i;
+                bool on = at < list.Count;
                 v.row.gameObject.SetActive(on);
                 if (!on) { v.id = null; continue; }
-                var (p, n) = list[i];
+                var (p, n) = list[at];
+                var card = CosmeticAura.Card(p);
+                v.icon.enabled = card != null;
+                v.icon.sprite = card;
                 string key = StarShopClient.RarityKey(p.Rarity);
                 StarShopClient.Dismantle.TryGetValue(key, out int each);
                 v.id = p.Id;
@@ -174,17 +187,43 @@ namespace DotRPG
             }
         }
 
+        (Button prev, Text label, Button next) sparePager, setPager;
+
+        /// <summary>◀ 1/3 ▶ at the top-right of a list (hidden while everything fits on one page).</summary>
+        static (Button, Text, Button) Pager(Transform parent, Vector2 topRight, System.Action<int> turn)
+        {
+            var tr = new Vector2(1f, 1f);
+            var next = Button(parent, "PageNext", "▶", "ui_btngray", tr, tr, topRight, new Vector2(40f, 32f), () => turn(1), 16);
+            var label = Label(parent, "PageText", "", 16, tr, tr, topRight + new Vector2(-44f, 0f), new Vector2(60f, 32f), TextAnchor.MiddleCenter);
+            var prev = Button(parent, "PagePrev", "◀", "ui_btngray", tr, tr, topRight + new Vector2(-108f, 0f), new Vector2(40f, 32f), () => turn(-1), 16);
+            return (prev, label, next);
+        }
+
+        static void SetPager((Button prev, Text label, Button next) p, int page, int pages)
+        {
+            bool show = pages > 1;
+            p.prev.gameObject.SetActive(show); p.next.gameObject.SetActive(show); p.label.gameObject.SetActive(show);
+            if (!show) return;
+            p.label.text = $"{page + 1}/{pages}";
+            p.prev.interactable = page > 0;
+            p.next.interactable = page < pages - 1;
+        }
+
         void RefreshCollections()
         {
             bonusText.text = $"<b>컬렉션 효과</b>   공격력 <color=#ffb347>+{StarShopClient.CollectionAttack}%</color>   최대 체력 <color=#8fe28f>+{StarShopClient.CollectionHealth}%</color>   <color=#b8c4d8>(계정 전체 · 외형은 소모되지 않음)</color>";
             var all = StarShopClient.Collections;
+            int setPages = Mathf.Max(1, (all.Count + SetRows - 1) / SetRows);
+            setPage = Mathf.Clamp(setPage, 0, setPages - 1);
+            SetPager(setPager, setPage, setPages);
             for (int i = 0; i < sets.Count; i++)
             {
                 var v = sets[i];
-                bool on = i < all.Count;
+                int at = setPage * SetRows + i;
+                bool on = at < all.Count;
                 v.row.gameObject.SetActive(on);
                 if (!on) { v.id = null; continue; }
-                var c = all[i];
+                var c = all[at];
                 v.id = c.id;
                 var reward = new List<string>();
                 if (c.attack > 0) reward.Add($"공격력 +{c.attack}%");

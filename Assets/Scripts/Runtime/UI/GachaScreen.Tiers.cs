@@ -24,6 +24,10 @@ namespace DotRPG
             {
                 int index = i;
                 var b = Button(box, "Tier" + i, "", "ui_btngray", tl, tl, new Vector2(30f + i * 72f, -244f), new Vector2(66f, 40f), () => ChooseTier(index), 16);
+                // [UI] Tiers above my level carry a lock.
+                var lockImg = UIFactory.Image(b.transform, "Lock", Game.Art.Get("ui_lock"), Color.white);
+                lockImg.raycastTarget = false;
+                UIFactory.Place(lockImg.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(4f, 6f), new Vector2(18f, 18f));
                 tierButtons.Add(b);
             }
         }
@@ -57,6 +61,7 @@ namespace DotRPG
         void ChooseTier(int index)
         {
             if (busy || Revealing) return;
+            if (index > StarShopClient.MyTier) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast("내 레벨 단계까지만 고를 수 있습니다."); return; }
             chosenTier[banner] = index;
             Game.Audio.PlaySfx("select");
             Refresh();
@@ -74,12 +79,15 @@ namespace DotRPG
                 bool has = on && i < tiers.Count;
                 b.gameObject.SetActive(has);
                 if (!has) continue;
-                bool sel = i == selected;
+                bool sel = i == selected, locked = i > StarShopClient.MyTier, mine = i == StarShopClient.MyTier;
                 b.image.sprite = Game.Art.Get(sel ? "ui_btn" : "ui_btngray");
-                TextOf(b).text = sel ? $"<b>Lv.{tiers[i].level}</b>" : $"Lv.{tiers[i].level}";
+                b.image.color = locked ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
+                string lv = $"Lv.{tiers[i].level}";
+                TextOf(b).text = sel ? $"<b>{lv}</b>" : mine ? $"<color=#ffd34a>{lv}</color>" : locked ? $"<color=#8c96a8>{lv}</color>" : lv;
+                b.transform.Find("Lock").gameObject.SetActive(locked);
                 b.interactable = !busy;
             }
-            if (on) tierHint.text = $"<color=#ffd34a>레벨 단계</color> 선택 · 내 직업 Lv.{SelectedTierLevel()} 장비가 나옵니다 <color=#8c96a8>(내 레벨까지 열림)</color>";
+            if (on) tierHint.text = $"<color=#ffd34a>레벨 단계</color> 선택 · 내 직업 Lv.{SelectedTierLevel()} 장비가 나옵니다 <color=#8c96a8>(노란 단계가 내 레벨, 그 위는 잠김)</color>";
         }
     }
 }
