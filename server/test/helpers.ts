@@ -29,6 +29,13 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'mail_campaign_deliveries',
+      'mail_attachments',
+      'mail_campaign_attachments',
+      'sweep_ticket_ledger',
+      'dungeon_sweeps',
+      'sweep_ticket_lots',
+      'account_week_counters',
       'auction_trade_flags',
       'economy_holds',
       'income_hourly',
@@ -50,6 +57,7 @@ export async function resetDb(): Promise<void> {
       'auction_flags',
       'auction_sinks',
       'mails',
+      'mail_campaigns',
       'auction_price_daily',
       'auction_trades',
       'auction_bids',

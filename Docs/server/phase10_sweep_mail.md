@@ -1193,3 +1193,27 @@ DROP TABLE sweep_ticket_lots;
 | D11 | 경제 정지 중 구매·주간 수령 | (a) 둘 다 차단 / (b) 소탕·우편만(PLAN 그대로) | **(a)** | 계정 지갑이라 정지된 캐릭터의 골드·성과가 정지 안 된 캐릭터의 소탕으로 옮겨진다(8.1절). PLAN은 소탕·우편 수령만 적었으므로 확장분이다 |
 
 "PLAN과 달라진 점"은 0.1절 표와 D1(저장 방식), D11(차단 범위 확장), 소탕 해금 기록에서 보상 잠긴 판 제외, 소탕 요청의 프레즌스 요구 네 가지다. 모두 PLAN의 규칙(조건, 횟수, 보상, 한도)은 바꾸지 않고 구현 방식과 부정 방지 경계를 보탠 것이다.
+
+## 16. 구현 기록 (설계와 달라진 점, 서버 구현 시점)
+
+코드는 `server/src/domains/sweep/`, `server/src/domains/mail/`(mailAttachments, campaignCache, campaignDelivery), `server/src/admin/mailcampaigns/`, `server/src/ops/jobs/sweepJobs.ts`, `server/src/config/sweepEnv.ts`, `server/src/gamedata/sweepData.ts`, 마이그레이션 `0021_sweep_and_mail.sql`(9절 초안 그대로, UP/DOWN/UP 확인), 이론표 `Tools/balance/theory_sweep.py`(`--check`가 3.3절 표와 맞는지 확인)이다. 규칙(조건, 횟수, 보상, 한도)은 바꾸지 않았고 아래는 구현 방식의 차이와 해석이다.
+
+| # | 문서 | 구현 | 이유 |
+|---|---|---|---|
+| 1 | 작업 `campaign_revoke` 30초 | 작업 이름은 하이픈(`sweep-ticket-expire`, `campaign-sweep`, `campaign-revoke`, `job_runs.job` CHECK). 회수는 `minutes: 0.5` | 기존 작업 이름 규칙 |
+| 2 | 지표 `buy_limit_hits_1h` | `buy_limit_hits`(프로세스 시작 이후 누계) | 시간 창 집계기가 이 지표에 없다. 후속에 창을 붙이면 이름을 바꾼다 |
+| 3 | `last_login_before` | `accounts.last_login_at`을 그대로 비교 | 로그인이 이 값을 갱신하므로 "방금 로그인한 휴면 복귀자"는 이 조건에 안 걸린다(refresh로 접속한 사람만 걸린다). 휴면 복귀 보상을 쓰려면 이전 로그인 시각을 따로 남기는 열이 필요하다(후속, 결정 필요) |
+| 4 | MC4 승인과 플래그 | `CAMPAIGN_DELIVERY_ENABLED=false`이면 승인만 `503 FEATURE_DISABLED`. 작성·목록·현황·취소·배달 목록은 항상 동작, 배달은 플래그가 꺼져 있으면 하지 않는다 | 11절 "캠페인 배달·관리자 API(MC4 승인) 켜기"와 7.6절 "승인돼도 배달하지 않는다"를 함께 만족 |
+| 5 | 입력 검증 실패 | `400 VALIDATION`(기존 `validate` 미들웨어 규칙) | 1~2단계 0.1절 |
+| 6 | 소탕 4.1의 4번 | 방치된(`RUN_STALE_SECONDS`) `playing` 판은 소탕을 막지 않는다 | 직접 입장(`processEnter`)이 방치 판을 닫고 들어가는 규칙과 같게 |
+| 7 | S3 `limited_by` | 입장 수와 클리어권이 같으면 `null`(키는 항상 있다) | 어느 쪽에도 제한되지 않음을 구분 |
+| 8 | S1 `weekly_activity.progress` | 목표(`goal`)까지만 보인다(내부 카운터는 그 이상으로 센다) | 화면에 14/10이 나오지 않게 |
+| 9 | 소탕 응답 `sweeps[].xp` | 실제로 들어간 경험치(만렙이면 0). 예상 경험치는 S1의 `xp` | 4.5절 예시 |
+| 10 | 점검 중 새 판 차단 | `/characters/{uuid}/sweep/run`, `sweep/run-all`을 `maintenanceGuard`의 새 판 경로에 더함 | 4.1의 1번 |
+| 11 | E7 | 운영 지급(EC2)도 클리어권 키를 `ITEM_NOT_FOUND`로 거절한다 | 지급 우편을 받을 때 `addItem`이 던지는 일을 막기 위해 |
+| 12 | 회수 | `expires_at = now`로 앞당길 때 `created_at + 1ms`보다 작아지지 않게 한다 | `mails_time_chk` |
+| 13 | MC2·MC6 커서 | `data.next_before`(문서 그대로). 값은 기존 EC3처럼 내부 id 문자열 | 기존 관례 |
+| 14 | 이론표 | 스크립트는 카드 개수를 반올림하지 않은 기대값으로 계산하고, 직접 S 클리어는 반올림한 기본값 x 1.30(표와 같은 방식). 표의 두 칸(무기고 영웅 w=0 66.6, 수련의 숲 영웅 w=1 68.7)은 소수 첫째 자리 반올림이 0.1 다르다 | 표는 방향 판단용, 서버는 이 표를 읽지 않는다 |
+| 15 | `sweep.json` `cardCount` | 서버는 1만 받는다(다른 값이면 로더가 거절) | 소탕은 선택 단계가 없다 |
+
+정합성 점검(`integrity-nightly`)은 I3에 캠페인 골드(첨부 표)와 첨부 아이템을 더했고 클리어권 로트별 `SUM(delta) = remaining`(기한 지난 이벤트 로트 제외) 항목을 더했다. 테스트: `sweepRules`, `sweep`, `sweepShop`, `sweepOps`, `mailAttachments`, `mailCampaign`(+ `contribution`의 주간 카운터 단언 한 줄).

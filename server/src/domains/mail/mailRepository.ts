@@ -5,7 +5,7 @@ import type { Bind } from '../economy/economyRepository';
 import { announceMail, type MailKind } from './mailNotify';
 import { insertItemLedger } from '../economy/economyRepository';
 
-export type SystemCode = 'compensation' | 'event' | 'refund' | 'notice';
+export type SystemCode = 'compensation' | 'event' | 'refund' | 'notice' | 'maintenance' | 'apology' | 'attendance' | 'other';
 
 export interface NewMail {
   characterId: number;
@@ -22,6 +22,11 @@ export interface NewMail {
   gold: number;
   createdAt: Date;
   expiresAt: Date;
+  /** 10단계 캠페인 우편: 제목·본문·캠페인·첨부 수(첨부가 있으면 item_key는 NULL, gold는 0) */
+  title?: string | null;
+  body?: string | null;
+  campaignId?: number | null;
+  attachN?: number;
 }
 
 export async function insertMail(
@@ -31,13 +36,13 @@ export async function insertMail(
   const r = await client.query<{ id: string; uuid: string; char_uuid: string }>(
     `WITH ins AS (
        INSERT INTO mails (character_id, kind, listing_id, bid_id, ref_item_key, ref_count, item_key, count, bind, gold,
-                          created_at, expires_at, system_code)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                          created_at, expires_at, system_code, title, body, campaign_id, attach_n)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        RETURNING id, uuid)
      SELECT ins.id, ins.uuid, (SELECT uuid FROM characters WHERE id = $1) AS char_uuid FROM ins`,
     [
       m.characterId, m.kind, m.listingId, m.bidId, m.refItemKey, m.refCount, m.itemKey, m.count, m.bind, m.gold,
-      m.createdAt, m.expiresAt, m.systemCode ?? null,
+      m.createdAt, m.expiresAt, m.systemCode ?? null, m.title ?? null, m.body ?? null, m.campaignId ?? null, m.attachN ?? 0,
     ],
   );
   const row = r.rows[0] as { id: string; uuid: string; char_uuid: string };
@@ -106,6 +111,11 @@ export interface MailRow {
   expiresAt: Date;
   claimedAt: Date | null;
   expiredAt: Date | null;
+  /** 10단계: 옛 우편은 null / 0 */
+  title: string | null;
+  body: string | null;
+  campaignId: number | null;
+  attachN: number;
 }
 
 interface RawMail {
@@ -125,10 +135,14 @@ interface RawMail {
   expires_at: Date;
   claimed_at: Date | null;
   expired_at: Date | null;
+  title: string | null;
+  body: string | null;
+  campaign_id: string | null;
+  attach_n: number;
 }
 
 const MAIL_COLS = `id, uuid, character_id, kind, system_code, listing_id, ref_item_key, ref_count, item_key, count, bind, gold,
-  created_at, expires_at, claimed_at, expired_at`;
+  created_at, expires_at, claimed_at, expired_at, title, body, campaign_id, attach_n`;
 
 const toMail = (r: RawMail): MailRow => ({
   id: Number(r.id),
@@ -147,6 +161,10 @@ const toMail = (r: RawMail): MailRow => ({
   expiresAt: r.expires_at,
   claimedAt: r.claimed_at,
   expiredAt: r.expired_at,
+  title: r.title,
+  body: r.body,
+  campaignId: r.campaign_id === null ? null : Number(r.campaign_id),
+  attachN: r.attach_n,
 });
 
 /** 한 통을 잠그고 읽는다(받는 사람 확인은 호출 쪽) */
@@ -192,7 +210,13 @@ export async function listOpenMails(
   limit: number,
   offset: number,
 ): Promise<{ rows: MailRow[]; total: number }> {
-  const filter = tab === 'gold' ? 'AND gold > 0' : tab === 'item' ? 'AND item_key IS NOT NULL' : '';
+  // 첨부 표가 있는 우편(10단계)은 첨부 종류로 탭을 가른다: 골드 탭 = 골드 첨부, 아이템 탭 = 아이템·클리어권 첨부
+  const filter =
+    tab === 'gold'
+      ? `AND (gold > 0 OR EXISTS (SELECT 1 FROM mail_attachments a WHERE a.mail_id = mails.id AND a.kind = 'gold'))`
+      : tab === 'item'
+        ? `AND (item_key IS NOT NULL OR EXISTS (SELECT 1 FROM mail_attachments a WHERE a.mail_id = mails.id AND a.kind IN ('item', 'sweep_ticket')))`
+        : '';
   const base = `FROM mails WHERE character_id = $1 AND claimed_at IS NULL AND expired_at IS NULL AND expires_at > $2 ${filter}`;
   const rows = await db.query<RawMail>(
     `SELECT ${MAIL_COLS} ${base} ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4`,

@@ -23,6 +23,7 @@ import {
   type DiffNumbers,
 } from './dungeonRules';
 import { raidPeriod } from './entryRules';
+import { bumpDirectClear } from '../sweep/weeklyCounter';
 import type { ResultBody } from './dungeonValidation';
 
 /** 허용 오차: 입장 후 서버 경과 시간 + 5초 */
@@ -273,6 +274,8 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     lockReason: reason,
     contribution: contrib ? { share: contrib.share, hits: contrib.hits, source: contrib.source, met: contrib.met } : null,
   });
+  // 10단계 E3: 보상이 잠기지 않은 요일 던전 직접 클리어는 계정 주간 활동에 +1(그 요청의 마지막 쓰기)
+  if (!dungeon.isRaid && !locked) await bumpDirectClear(ctx.client, ctx.char.accountId, inp.at);
   const data: Record<string, unknown> = {
     result: 'cleared',
     rank: RANK_NAMES[rank] ?? 'F',

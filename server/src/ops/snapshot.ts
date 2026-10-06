@@ -64,6 +64,9 @@ export interface Snapshot {
   /** 9단계: 프레즌스·경제 속도 감시 지표(12.10) */
   presence?: { online: number; device_limit_hits: number; presence_required: number };
   economy?: { holds_active: number; holds_shadow_24h: number; holds_active_24h: number; income_flush_ms: number };
+  /** 10단계: 소탕·운영 우편 캠페인 지표(설계 11절) */
+  sweep?: { runs_1h: number; tickets_outstanding: number; buy_limit_hits: number };
+  campaign?: { active: number; delivered_1h: number; cap_reached: number; revoke_pending: number };
   steam?: ReturnType<typeof steamStats>;
   shutting_down: boolean;
   disk_used_pct: number | null;
@@ -170,6 +173,23 @@ export async function collectSnapshot(): Promise<Snapshot> {
   } catch {
     // DB가 내려가 있으면 비워 둔다
   }
+  let sweepInfo: NonNullable<Snapshot['sweep']> = { runs_1h: 0, tickets_outstanding: 0, buy_limit_hits: metrics.sweepBuyLimitHits };
+  let campaignInfo: NonNullable<Snapshot['campaign']> = { active: 0, delivered_1h: 0, cap_reached: 0, revoke_pending: 0 };
+  try {
+    const sw = await db.query<{ runs: string; outstanding: string; active: string; delivered: string; capped: string; revoke: string }>(
+      `SELECT (SELECT count(*) FROM dungeon_sweeps WHERE created_at > now() - interval '1 hour') AS runs,
+              (SELECT coalesce(sum(remaining), 0) FROM sweep_ticket_lots WHERE remaining > 0 AND (expires_at IS NULL OR expires_at > now())) AS outstanding,
+              (SELECT count(*) FROM mail_campaigns WHERE status = 'active') AS active,
+              (SELECT count(*) FROM mail_campaign_deliveries WHERE created_at > now() - interval '1 hour') AS delivered,
+              (SELECT count(*) FROM mail_campaigns WHERE status IN ('active', 'ended') AND issued_count >= cap_count) AS capped,
+              (SELECT count(*) FROM mail_campaigns WHERE revoke_requested AND revoke_done_at IS NULL) AS revoke`,
+    );
+    const y = sw.rows[0] as { runs: string; outstanding: string; active: string; delivered: string; capped: string; revoke: string };
+    sweepInfo = { ...sweepInfo, runs_1h: n(y.runs), tickets_outstanding: n(y.outstanding) };
+    campaignInfo = { active: n(y.active), delivered_1h: n(y.delivered), cap_reached: n(y.capped), revoke_pending: n(y.revoke) };
+  } catch {
+    // DB가 내려가 있으면 비워 둔다
+  }
   const m1 = 60_000;
   const h1 = metrics.http(60_000);
   const h5 = metrics.http(5 * 60_000);
@@ -238,6 +258,8 @@ export async function collectSnapshot(): Promise<Snapshot> {
     field: fieldInfo,
     presence,
     economy,
+    sweep: sweepInfo,
+    campaign: campaignInfo,
     steam: steamStats(),
     shutting_down: isShuttingDown(),
     disk_used_pct: diskUsedPct(),

@@ -297,7 +297,9 @@ export type AnomalyKind =
   | 'ip_cluster'
   | 'member_card'
   | 'career_state'
-  | 'contribution';
+  | 'contribution'
+  // 10단계(0021)
+  | 'sweep_denied';
 
 /** 롤백되는 트랜잭션 밖에서도 남기려고 풀에서 직접 쓴다(호출 쪽이 선택) */
 export async function insertAnomaly(

@@ -69,9 +69,11 @@ export async function findPlayingRun(db: Queryable, characterId: number): Promis
   return r.rows[0] ? toRun(r.rows[0]) : null;
 }
 
+/** 하루 입장 횟수: 직접 입장 + 소탕(10단계 E1). 직접 입장·파티 시작·목록·소탕이 모두 이 함수를 쓴다 */
 export async function countEntries(db: Queryable, characterId: number, resetDay: Date): Promise<number> {
   const r = await db.query<{ n: string }>(
-    'SELECT count(*) AS n FROM dungeon_runs WHERE character_id = $1 AND reset_day = $2 AND counts_entry',
+    `SELECT (SELECT count(*) FROM dungeon_runs WHERE character_id = $1 AND reset_day = $2 AND counts_entry)
+          + (SELECT count(*) FROM dungeon_sweeps WHERE character_id = $1 AND reset_day = $2) AS n`,
     [characterId, resetDay],
   );
   return Number((r.rows[0] as { n: string }).n);
@@ -230,13 +232,17 @@ export async function clearSummary(
   return r.rows;
 }
 
+/** 퀘스트 "던전 클리어 N회" 전용: 직접 클리어에 소탕을 더한다(10단계 E2). 난이도 해금·랭크는 clearSummary가 맡고 소탕을 읽지 않는다 */
 export async function clearCounts(
   db: Queryable,
   characterId: number,
 ): Promise<{ total: number; byDungeon: Map<string, number> }> {
   const r = await db.query<{ dungeon_id: string; n: string }>(
-    `SELECT dungeon_id, count(*) AS n FROM dungeon_runs
-      WHERE character_id = $1 AND state = 'cleared' GROUP BY dungeon_id`,
+    `SELECT dungeon_id, sum(n) AS n FROM (
+       SELECT dungeon_id, count(*) AS n FROM dungeon_runs WHERE character_id = $1 AND state = 'cleared' GROUP BY dungeon_id
+       UNION ALL
+       SELECT dungeon_id, count(*) AS n FROM dungeon_sweeps WHERE character_id = $1 GROUP BY dungeon_id
+     ) t GROUP BY dungeon_id`,
     [characterId],
   );
   const byDungeon = new Map<string, number>();

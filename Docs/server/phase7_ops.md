@@ -531,6 +531,7 @@ CLI는 `node:util` `parseArgs`만으로 만든다(새 의존성 없음). 비밀�
 | `mails`(수령된 일반 우편) | `claimed_at < now - MAIL_CLAIMED_RETENTION_DAYS(180)` 이고 `kind <> 'system'` | `purge-daily` | `mails_claimed_idx` | 소각 기록이 가리키는 폐기 우편과 `admin_grants`가 가리키는 system 우편은 남긴다 |
 | `admin_sessions` | 만료·폐기 후 30일 | `purge-daily` | `admin_sessions_expires` | |
 | `job_runs` | `JOB_RUN_RETENTION_DAYS(90)` | `purge-daily` | `job_runs_started` | |
+| `account_week_counters` (10단계) | 60일(주 시작 기준) | `purge-daily` | `account_week_counters_week` | 복합 키 표라 (계정, 주, 종류)로 지운다 |
 
 **지우지 않는 것과 이유**
 
@@ -542,6 +543,7 @@ CLI는 `node:util` `parseArgs`만으로 만든다(새 의존성 없음). 비밀�
 | `dungeon_runs` | 난이도 해금·최고 랭크·퀘스트 "요일 던전 클리어 n회" 검증이 `cleared` 행을 읽는다(평생 필요). `party_runs`·`party_run_members`·`party_run_host_reports`·`parties`는 `dungeon_runs`·`chat_messages` FK로 묶여 함께 남는다(phase4의 "30일"은 이 이유로 취소) |
 | `reports`, `account_sanctions`, `admin_*`, `held_run_reviews`, `maintenance_windows` | 이력이 곧 기록이다. 행 수가 작다 |
 | `kill_stats`, `character_*`, `quest_claims`, `raid_claims` | 현재 상태 |
+| `sweep_ticket_lots`, `sweep_ticket_ledger`, `dungeon_sweeps`, `mail_campaigns`, `mail_campaign_attachments`, `mail_attachments`, `mail_campaign_deliveries` (10단계) | 원장·소탕·배달은 추가 전용 트리거 + FK 연결 + 감사 근거. 캠페인은 삭제 트리거가 막고 상태로 닫는다. 소진된 클리어권 로트는 행이 작아 보관한다 |
 
 다른 곳의 보관 정책 문서(phase3 10, phase4 14, phase6 3, `schema.sql` 머리말)는 이 표가 정정한다.
 

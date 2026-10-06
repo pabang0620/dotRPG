@@ -2,6 +2,7 @@ import path from 'node:path';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 import { antiAbuseShape, buildAntiAbuse, type AntiAbuseConfig } from './antiAbuseEnv';
+import { buildSweep, sweepShape, type SweepConfig } from './sweepEnv';
 import { buildPhase8, phase8Shape, type FieldConfig, type Phase8Config, type RelayConfig, type TransportConfig } from './phase8Env';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
@@ -218,6 +219,7 @@ const envSchema = z.object({
   IMAGE_VERSION: z.string().default('dev'),
   ...phase8Shape,
   ...antiAbuseShape,
+  ...sweepShape,
 });
 
 export interface AppConfig {
@@ -409,6 +411,8 @@ export interface AppConfig {
   transport: TransportConfig;
   /** 9단계: 부정 행위 방지 */
   aa: AntiAbuseConfig;
+  /** 10단계: 던전 클리어권(소탕)과 운영 우편 캠페인 */
+  sweep: SweepConfig;
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -720,6 +724,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     field: p8.field,
     transport: p8.transport,
     aa,
+    sweep: buildSweep(e, { prod, adminGrantMaxGold: e.ADMIN_GRANT_MAX_GOLD }),
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,

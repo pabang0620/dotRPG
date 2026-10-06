@@ -1,5 +1,6 @@
 // CLI 명령 정의(phase7_ops.md 5.9). 명령 하나는 관리자 API 호출 하나(또는 몇 개)에 대응한다.
 import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
 
 export interface CmdCtx {
   /** 위치 인자(명령 이름 뒤) */
@@ -132,6 +133,21 @@ export const COMMANDS: Command[] = [
       }),
   },
   { path: ['grant', 'list'], usage: 'grant list [--character uuid]', run: (c) => c.get('/admin/grants', q(c, ['character', 'before', 'limit'])) },
+  // 10단계 운영 우편 캠페인 MC1~MC6
+  {
+    path: ['campaign', 'create'],
+    usage: 'campaign create --file <캠페인.json>   (title, body, category, delivery_unit, target, mail_days, starts_at, ends_at, cap_count, attachments, memo)',
+    run: (c) => c.post('/admin/mail-campaigns', JSON.parse(fs.readFileSync(mustFlag(c, 'file'), 'utf8')) as Record<string, unknown>),
+  },
+  { path: ['campaign', 'list'], usage: 'campaign list [--status pending|active|ended|cancelled]', run: (c) => c.get('/admin/mail-campaigns', q(c, ['status', 'limit', 'before'])) },
+  { path: ['campaign', 'show'], usage: 'campaign show <campaign_uuid>', run: (c) => c.get(`/admin/mail-campaigns/${need(c.args[0], 'campaign_uuid')}`) },
+  { path: ['campaign', 'approve'], usage: 'campaign approve <campaign_uuid>   (작성자 외 owner)', run: (c) => c.post(`/admin/mail-campaigns/${need(c.args[0], 'campaign_uuid')}/approve`) },
+  {
+    path: ['campaign', 'cancel'],
+    usage: 'campaign cancel <campaign_uuid> --reason <사유> [--revoke]',
+    run: (c) => c.post(`/admin/mail-campaigns/${need(c.args[0], 'campaign_uuid')}/cancel`, { reason: mustFlag(c, 'reason'), revoke_unclaimed: c.flags.revoke === true }),
+  },
+  { path: ['campaign', 'deliveries'], usage: 'campaign deliveries <campaign_uuid> [--state claimed|open|expired|revoked]', run: (c) => c.get(`/admin/mail-campaigns/${need(c.args[0], 'campaign_uuid')}/deliveries`, q(c, ['state', 'limit', 'before'])) },
   { path: ['maint', 'status'], usage: 'maint status', run: (c) => c.get('/admin/maintenance') },
   {
     path: ['maint', 'schedule'],

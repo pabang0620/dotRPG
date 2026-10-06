@@ -4,6 +4,7 @@ import type { PoolClient } from 'pg';
 import { getConfig } from '../../config/env';
 import { logger } from '../../utils/logger';
 import { getGameData } from '../../gamedata/loader';
+import { isSweepTicketKey } from '../../gamedata/sweepData';
 import { AppError } from '../../utils/AppError';
 import { parseItemKey } from '../../utils/itemKey';
 import { IncomeNote } from '../antiabuse/incomeMeter';
@@ -80,6 +81,8 @@ export class EconCtx {
     bind?: Bind,
   ): Promise<void> {
     if (n <= 0) throw new Error('addItem 수량은 양수여야 합니다');
+    // 10단계 E7: 던전 클리어권은 계정 지갑에만 있다. 가방·창고에 넣는 길을 프로그래밍 오류로 막는다
+    if (isSweepTicketKey(getGameData().sweep, key)) throw new Error(`클리어권 ${key} 은 가방에 넣을 수 없습니다`);
     const b = bind ? strongerBind(bind, this.bindOf(key)) : this.bindFor(reason, key);
     const rowCount = await repo.upsertStack(this.client, this.char.id, location, key, n, b);
     const total = await repo.stackCount(this.client, this.char.id, location, key);

@@ -249,6 +249,11 @@ describe('파티 요일 던전의 기여', () => {
     const h = await settle(host, hostRun);
     expect(h.body.data.granted_xp).toBeGreaterThan(0);
     expect(h.body.data.reward_locked).toBeUndefined();
+    // 10단계 E3: 보상이 잠긴 판은 계정 주간 활동(direct_clear)에 세지 않고, 정상 보상을 받은 방장의 클리어는 센다
+    const weekly = async (x: Hero): Promise<number> =>
+      Number(((await getPool().query("SELECT coalesce(sum(used), 0) AS n FROM account_week_counters WHERE kind = 'direct_clear' AND account_id = (SELECT account_id FROM characters WHERE id = $1)", [x.dbId])).rows[0] as { n: string }).n);
+    expect(await weekly(member)).toBe(0);
+    expect(await weekly(host)).toBe(1);
     expect(await runRow(memberRun)).toMatchObject({ reward_locked: true, lock_reason: 'LOW_CONTRIBUTION', contribution: { source: 'host', met: false, hits: 39 } });
     expect((await get(app, member, '/dungeons')).body.data.entries.used).toBe(1);
     const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE reason = 'dungeon_clear' AND character_id = $1", [member.dbId]);

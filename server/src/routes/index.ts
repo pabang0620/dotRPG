@@ -27,6 +27,7 @@ import { createStarshopRouter } from '../domains/starshop/starshopRoutes';
 import { createSystemRouter } from '../domains/system/systemRoutes';
 import { createPresenceRouter } from '../domains/antiabuse/presenceRoutes';
 import { createCareerGrantRouter } from '../domains/characters/careerGrantRoutes';
+import { createSweepRouter } from '../domains/sweep/sweepRoutes';
 
 export function createRouter(): Router {
   const r = Router();
@@ -65,5 +66,7 @@ export function createRouter(): Router {
   // 9단계: 프레즌스(P1~P3), 전직·각성 서버 기록(C1~C4). 캐릭터 경로 아래라 데이터 버전까지 검사한다
   r.use(createPresenceRouter());
   r.use(createCareerGrantRouter());
+  // 10단계: 던전 소탕·클리어권 구매·주간 활동(캐릭터 경로 아래, 데이터 버전까지 검사). SWEEP_ENABLED가 꺼져 있으면 503
+  r.use(createSweepRouter());
   return r;
 }

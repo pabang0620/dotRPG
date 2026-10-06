@@ -9,6 +9,7 @@ import { adminErrorHandler, adminNotFound } from './common/adminErrors';
 import { createEconomyAdminRouter } from './economy/economyAdminRoutes';
 import { createEconomyHoldsRouter } from './economyholds/economyHoldsRoutes';
 import { createHeldRunsRouter } from './heldruns/heldRunsRoutes';
+import { createMailCampaignsRouter } from './mailcampaigns/mailCampaignsRoutes';
 import { createMaintenanceAdminRouter } from './maintenance/maintenanceAdminRoutes';
 import { createOpsRouter } from './ops/opsRoutes';
 import { createPlayersRouter } from './players/playersRoutes';
@@ -36,6 +37,7 @@ export function createAdminApp(): Express {
   app.use(createWatchRouter());
   app.use(createEconomyAdminRouter());
   app.use(createEconomyHoldsRouter());
+  app.use(createMailCampaignsRouter());
   app.use(createMaintenanceAdminRouter());
   app.use(createOpsRouter());
   app.use(adminNotFound);

@@ -53,11 +53,11 @@ export async function assertKillPresence(ctx: EconCtx, o: KillPresenceInput): Pr
   }
 }
 
-export type ActionKind = 'gather' | 'chest' | 'drop_claim';
+export type ActionKind = 'gather' | 'chest' | 'drop_claim' | 'sweep';
 
 /**
  * 채집·상자·드롭 줍기의 프레즌스 검사(처치와 같은 PRESENCE_KILL_MODE 스위치): 신선도, 맵을 아는 요청은 현재 맵(유예 포함).
- * log 모드는 기록만 하고 통과한다. 드롭 줍기는 맵을 보내지 않으므로 신선도만 본다.
+ * log 모드는 기록만 하고 통과한다. 드롭 줍기·소탕은 맵을 보내지 않으므로 신선도만 본다.
  */
 export async function assertActionPresence(ctx: EconCtx, action: ActionKind, mapId: string | null): Promise<void> {
   const pc = getConfig().aa.presence;

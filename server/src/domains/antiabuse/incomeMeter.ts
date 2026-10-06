@@ -8,7 +8,7 @@ import { parseItemKey } from '../../utils/itemKey';
 import { sellPriceOf } from '../shop/sellPrice';
 
 /** 집계에 들어가는 원장 사유(12.3 표). 그 밖의 사유(quest_reward, shop_sell, mail_claim, gacha, admin_* 등)는 제외 */
-export const XP_REASONS: ReadonlySet<string> = new Set(['kill', 'dungeon_clear']);
+export const XP_REASONS: ReadonlySet<string> = new Set(['kill', 'dungeon_clear', 'dungeon_sweep']);
 export const GOLD_REASONS: ReadonlySet<string> = new Set(['drop_claim', 'dungeon_card']);
 export const ITEM_REASONS: ReadonlySet<string> = new Set(['drop_claim', 'gather', 'chest', 'dungeon_card', 'raid_core', 'raid_key']);
 

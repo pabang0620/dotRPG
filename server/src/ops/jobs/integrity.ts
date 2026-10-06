@@ -79,28 +79,40 @@ async function i3(): Promise<CheckResult> {
   );
   const back = await num("SELECT coalesce(sum(delta), 0) AS v FROM gold_ledger WHERE reason = 'mail_claim'");
   const system = await num("SELECT coalesce(sum(gold), 0) AS v FROM mails WHERE kind = 'system'");
+  // 10단계: 캠페인 우편의 골드는 mails.gold가 아니라 첨부 표에 있다(mails.gold는 0). 수령하면 같은 mail_claim 원장으로 들어온다
+  const campaignGold = await num("SELECT coalesce(sum(amount), 0) AS v FROM mail_attachments WHERE kind = 'gold'");
+  const campaignGoldOpen = await num(
+    `SELECT coalesce(sum(a.amount), 0) AS v FROM mail_attachments a JOIN mails m ON m.id = a.mail_id
+      WHERE a.kind = 'gold' AND m.claimed_at IS NULL AND m.expired_at IS NULL`,
+  );
   const grants = await num('SELECT coalesce(sum(gold), 0) AS v FROM admin_grants');
   const deposits = await num("SELECT coalesce(sum(deposit), 0) AS v FROM auction_listings WHERE status = 'active'");
   const bids = await num("SELECT coalesce(sum(current_bid), 0) AS v FROM auction_listings WHERE status = 'active'");
-  const inMail = await num('SELECT coalesce(sum(gold), 0) AS v FROM mails WHERE claimed_at IS NULL AND expired_at IS NULL');
+  const inMail = (await num('SELECT coalesce(sum(gold), 0) AS v FROM mails WHERE claimed_at IS NULL AND expired_at IS NULL')) + campaignGoldOpen;
   const sinks = await num('SELECT coalesce(sum(amount), 0) AS v FROM auction_sinks');
   const samples: Record<string, unknown>[] = [];
-  const left = out - back + system;
+  const left = out - back + system + campaignGold;
   const right = deposits + bids + inMail + sinks;
-  if (left !== right) samples.push({ kind: 'gold_conservation', left, right, out, back, system, deposits, bids, in_mail: inMail, sinks });
+  if (left !== right) samples.push({ kind: 'gold_conservation', left, right, out, back, system, campaign_gold: campaignGold, deposits, bids, in_mail: inMail, sinks });
   if (system !== grants) samples.push({ kind: 'system_mail_vs_admin_grants', system_mail_gold: system, admin_grants_gold: grants });
   const items = await getPool().query<{ item_key: string; loc: string; led: string; held: string }>(
     `SELECT k.item_key, k.loc, coalesce(l.s, 0) AS led, coalesce(h.s, 0) AS held FROM (
        SELECT item_key, location AS loc FROM item_ledger WHERE location IN ('auction', 'mail')
        UNION SELECT item_key, 'auction' FROM auction_listings WHERE status = 'active'
-       UNION SELECT item_key, 'mail' FROM mails WHERE item_key IS NOT NULL) k
+       UNION SELECT item_key, 'mail' FROM mails WHERE item_key IS NOT NULL
+       UNION SELECT item_key, 'mail' FROM mail_attachments WHERE kind = 'item') k
      LEFT JOIN (SELECT item_key, location AS loc, sum(delta) AS s FROM item_ledger WHERE location IN ('auction', 'mail')
                 GROUP BY 1, 2) l ON l.item_key = k.item_key AND l.loc = k.loc
      LEFT JOIN (
-       SELECT item_key, 'auction' AS loc, sum(count) AS s FROM auction_listings WHERE status = 'active' GROUP BY 1
-       UNION ALL
-       SELECT item_key, 'mail', sum(count) FROM mails
-        WHERE item_key IS NOT NULL AND claimed_at IS NULL AND expired_at IS NULL GROUP BY 1) h
+       SELECT item_key, loc, sum(s) AS s FROM (
+         SELECT item_key, 'auction' AS loc, sum(count) AS s FROM auction_listings WHERE status = 'active' GROUP BY 1
+         UNION ALL
+         SELECT item_key, 'mail', sum(count) FROM mails
+          WHERE item_key IS NOT NULL AND claimed_at IS NULL AND expired_at IS NULL GROUP BY 1
+         UNION ALL
+         SELECT a.item_key, 'mail', sum(a.amount) FROM mail_attachments a JOIN mails m ON m.id = a.mail_id
+          WHERE a.kind = 'item' AND m.claimed_at IS NULL AND m.expired_at IS NULL GROUP BY 1) u
+       GROUP BY 1, 2) h
        ON h.item_key = k.item_key AND h.loc = k.loc`,
   );
   for (const r of items.rows) {
@@ -109,7 +121,17 @@ async function i3(): Promise<CheckResult> {
     }
   }
   const itemBad = items.rows.filter((r) => Number(r.led) !== Number(r.held)).length;
-  const count = (left !== right ? 1 : 0) + (system !== grants ? 1 : 0) + itemBad;
+  // 10단계: 클리어권 로트별 SUM(원장 delta) = remaining (만료 작업이 아직 못 돈 기한 지난 로트는 제외)
+  const lots = await getPool().query<{ id: string; remaining: number; s: string }>(
+    `SELECT l.id, l.remaining, coalesce(sum(e.delta), 0) AS s FROM sweep_ticket_lots l
+       LEFT JOIN sweep_ticket_ledger e ON e.lot_id = l.id
+      WHERE NOT (l.kind = 'event' AND l.expires_at <= now() AND l.remaining > 0)
+      GROUP BY l.id, l.remaining HAVING l.remaining <> coalesce(sum(e.delta), 0)`,
+  );
+  for (const r of lots.rows) {
+    if (samples.length < SAMPLE_MAX) samples.push({ kind: 'sweep_ticket_conservation', lot: Number(r.id), remaining: r.remaining, ledger: Number(r.s) });
+  }
+  const count = (left !== right ? 1 : 0) + (system !== grants ? 1 : 0) + itemBad + lots.rows.length;
   return { count, samples };
 }
 

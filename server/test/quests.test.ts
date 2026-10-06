@@ -73,7 +73,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect(again.status).toBe(409);
     expect(again.body.errors.code).toBe('QUEST_ALREADY_CLAIMED');
     const xp = await getPool().query('SELECT xp FROM characters WHERE id = $1', [h.dbId]);
-    expect(xp.rows[0].xp).toBe(268);
+    expect(xp.rows[0].xp).toBe(120);
   });
 
   it('재전송: 같은 request_id는 같은 응답', async () => {

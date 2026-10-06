@@ -53,12 +53,25 @@ export function scoreRun(
   return { time, hits, kills: killScore, combo, revive_penalty: revivePenalty, total };
 }
 
+/** 난이도 번호(0 일반 ... 3 영웅). 레이드는 0 */
+function tierIndex(eco: EconomyData, d: DungeonDef, diff: DiffNumbers): number {
+  return d.isRaid ? 0 : Math.max(0, eco.dungeons.difficulties.findIndex((x) => x.monsterLevel === diff.monsterLevel));
+}
+
+/** 클리어 경험치의 보너스 앞 값: max(clearXp x rewardMul, 하한[난이도]) x xpMul (float32). 소탕은 난이도 번호를 직접 준다 */
+export function clearXpBase(d: DungeonDef, diff: Pick<DiffNumbers, 'rewardMul'>, tier: number): number {
+  const base = Math.max(f32(d.clearXp * diff.rewardMul), d.clearXpFloor[tier] ?? 0);
+  return f32(base * d.xpMul);
+}
+
+/** 보너스 퍼센트를 곱해 반올림(짝수 쪽). 직접 플레이는 랭크 보너스, 소탕은 sweep.json 값을 준다 */
+export function applyXpBonus(xp: number, bonusPercent: number): number {
+  return roundHalfEven(f32(xp * f32(1 + bonusPercent / 100)));
+}
+
 /** DungeonRewards.ClearXp: round(clearXp * rewardMul * xpMul * (1 + 랭크보너스/100)) */
 export function clearXp(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, rank: number): number {
-  const tier = d.isRaid ? 0 : Math.max(0, eco.dungeons.difficulties.findIndex((x) => x.monsterLevel === diff.monsterLevel));
-  const base = Math.max(f32(d.clearXp * diff.rewardMul), d.clearXpFloor[tier] ?? 0);
-  const xp = f32(base * d.xpMul);
-  return roundHalfEven(f32(xp * f32(1 + xpBonusPercent(eco, rank) / 100)));
+  return applyXpBonus(clearXpBase(d, diff, tierIndex(eco, d, diff)), xpBonusPercent(eco, rank));
 }
 
 export interface Card {
@@ -111,48 +124,76 @@ export function rollGear(eco: EconomyData, cls: string, minRarity: string, rng: 
   return keyAt((pool[0] as { id: string }).id, 0);
 }
 
-/** DungeonRewards.RollCards + Resolve */
-export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cls: string, rng: Rng): Card[] {
+type RewardEntry = DungeonDef['rewards'][number];
+
+/** 카드 표: 던전 보상 + 난이도 보호권 항목 */
+function cardTable(eco: EconomyData, d: DungeonDef, diff: DiffNumbers): RewardEntry[] {
   const table = [...d.rewards];
   if (diff.ticketWeight > 0) {
     table.push({ itemId: eco.enhance.ticketItem, min: 1, max: 1, weight: diff.ticketWeight });
   }
+  return table;
+}
+
+/** 가중 추첨 한 번(합이 0이면 roll 상한 1, 마지막으로 떨어지면 첫 항목: C# 원본과 같다) */
+function pickWeighted(table: RewardEntry[], rng: Rng): RewardEntry {
   const total = table.reduce((a, e) => a + Math.max(0, e.weight), 0);
-  const tier = tierOfLevel(diff.recommendedLevel);
-  const cards: Card[] = [];
-  for (let i = 0; i < eco.dungeons.cards.count; i++) {
-    let roll = rng.int(0, Math.max(1, total));
-    let pick = table[0] as (typeof table)[number];
-    for (const e of table) {
-      if (roll < e.weight) {
-        pick = e;
-        break;
-      }
-      roll -= e.weight;
+  let roll = rng.int(0, Math.max(1, total));
+  let pick = table[0] as RewardEntry;
+  for (const e of table) {
+    if (roll < e.weight) {
+      pick = e;
+      break;
     }
-    let card: Card;
-    if (pick.itemId === 'gear') {
-      card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng, tier), count: 1 };
-      // 레이드 장비 카드: 아주 낮은 확률로 그 단계의 레전더리(Lv.20 해골왕, Lv.40 그라흐)
-      if (d.isRaid && rng.int(0, 1000) < RAID_LEGENDARY_PERMILLE) {
-        const legend = eco.shop.equipmentList.find(
-          (e) => e.rarity === 'Legendary' && e.levelTier === tier && (e.classOnly === null || e.classOnly === cls) && e.category === pickCategory(rng),
-        );
-        if (legend) card = { item_key: keyAt(legend.id, 0), count: 1 };
-      }
-    } else {
-      let n = rng.int(pick.min, pick.max + 1);
-      // 보호권은 곱하지 않고, 나머지는 난이도 보상 배율을 곱한다
-      if (pick.itemId !== eco.enhance.ticketItem) n = Math.max(1, roundHalfEven(f32(n * diff.rewardMul)));
-      card = { item_key: pick.itemId, count: n };
-    }
-    // 대박 카드: 카드마다 아주 낮은 확률(천분율)로 에픽 위 등급(유니크·레전더리) 장비로 바뀐다(C# DungeonRewards와 같은 순서)
-    if ((diff.jackpotPerMille ?? 0) > 0 && rng.int(0, 1000) < (diff.jackpotPerMille ?? 0)) {
-      const jackpot = rollJackpot(eco, cls, rng, tier);
-      if (jackpot) card = { item_key: jackpot, count: 1 };
-    }
-    cards.push(card);
+    roll -= e.weight;
   }
+  return pick;
+}
+
+/** 소탕 옵션: 장비가 뽑히면 gearKeepPercent 확률로만 유지하고 아니면 장비 없는 풀에서 다시 뽑는다. 대박 굴림은 하지 않는다 */
+export interface OneCardOpts {
+  sweepGearKeepPercent?: number;
+}
+
+/** 카드 한 장 굴림(직접 플레이 rollCards의 루프 본문과 같다. 난수 호출 순서는 바뀌지 않는다) */
+export function rollOneCard(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cls: string, rng: Rng, opts: OneCardOpts = {}): Card {
+  const table = cardTable(eco, d, diff);
+  const tier = tierOfLevel(diff.recommendedLevel);
+  let pick = pickWeighted(table, rng);
+  const sweep = opts.sweepGearKeepPercent !== undefined;
+  if (sweep && pick.itemId === 'gear' && rng.int(0, 100) >= (opts.sweepGearKeepPercent as number)) {
+    const others = table.filter((e) => e.itemId !== 'gear');
+    // 장비가 아닌 항목이 하나도 없으면 장비로 둔다
+    if (others.length > 0) pick = pickWeighted(others, rng);
+  }
+  let card: Card;
+  if (pick.itemId === 'gear') {
+    card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng, tier), count: 1 };
+    // 레이드 장비 카드: 아주 낮은 확률로 그 단계의 레전더리(Lv.20 해골왕, Lv.40 그라흐)
+    if (d.isRaid && rng.int(0, 1000) < RAID_LEGENDARY_PERMILLE) {
+      const legend = eco.shop.equipmentList.find(
+        (e) => e.rarity === 'Legendary' && e.levelTier === tier && (e.classOnly === null || e.classOnly === cls) && e.category === pickCategory(rng),
+      );
+      if (legend) card = { item_key: keyAt(legend.id, 0), count: 1 };
+    }
+  } else {
+    let n = rng.int(pick.min, pick.max + 1);
+    // 보호권은 곱하지 않고, 나머지는 난이도 보상 배율을 곱한다
+    if (pick.itemId !== eco.enhance.ticketItem) n = Math.max(1, roundHalfEven(f32(n * diff.rewardMul)));
+    card = { item_key: pick.itemId, count: n };
+  }
+  // 대박 카드: 카드마다 아주 낮은 확률(천분율)로 에픽 위 등급(유니크·레전더리) 장비로 바뀐다(C# DungeonRewards와 같은 순서)
+  if (!sweep && (diff.jackpotPerMille ?? 0) > 0 && rng.int(0, 1000) < (diff.jackpotPerMille ?? 0)) {
+    const jackpot = rollJackpot(eco, cls, rng, tier);
+    if (jackpot) card = { item_key: jackpot, count: 1 };
+  }
+  return card;
+}
+
+/** DungeonRewards.RollCards + Resolve */
+export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cls: string, rng: Rng): Card[] {
+  const cards: Card[] = [];
+  for (let i = 0; i < eco.dungeons.cards.count; i++) cards.push(rollOneCard(eco, d, diff, cls, rng));
   return cards;
 }
 

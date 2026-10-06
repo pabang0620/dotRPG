@@ -94,3 +94,13 @@ for (const k of ['RATE_PRESENCE_PER_10S', 'RATE_PRESENCE_PER_MIN', 'RATE_CAREER_
 // 구매자 자격은 시험 편의로 낮춘다(자격 테스트가 직접 올린다)
 process.env.AUCTION_BUYER_MIN_LEVEL = '1';
 process.env.AUCTION_BUYER_MIN_ACCOUNT_AGE_DAYS = '0';
+// 10단계(소탕·운영 우편): 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 기능 플래그는 테스트 파일이 켠다(기본 꺼짐 확인용)
+for (const k of [
+  'RATE_SWEEP_STATUS_PER_SEC',
+  'RATE_SWEEP_RUN_PER_SEC',
+  'RATE_SWEEP_ALL_PER_SEC',
+  'RATE_SWEEP_BUY_PER_SEC',
+  'RATE_SWEEP_CLAIM_PER_SEC',
+]) {
+  process.env[k] = '10000';
+}

@@ -10,6 +10,7 @@ import { logger } from '../../utils/logger';
 import { metrics } from '../../ops/metrics';
 import * as econRepo from '../economy/economyRepository';
 import { accessSignal, ipGroup, normalizeIp, recordLogin } from './deviceRecords';
+import { deliverCampaignsInBackground } from '../mail/campaignDelivery';
 import { hourStart } from './incomeMeter';
 import * as repo from './presenceRepository';
 import type { OnlineRow } from './presenceRepository';
@@ -41,7 +42,8 @@ export async function sendPresence(accountId: number, characterUuid: string, bod
   const cfg = getConfig().aa;
   const pc = cfg.presence;
   if (!getGameData().maps.has(body.map_id)) throw new AppError(422, '알 수 없는 맵입니다.', 'INVALID_MAP');
-  return withTransaction(async (client) => {
+  let entered: number | null = null;
+  const result = await withTransaction(async (client) => {
     const char = await ownedChar(client, accountId, characterUuid);
     const now = getNow();
     const acct = await repo.accountSession(client, accountId);
@@ -132,8 +134,12 @@ export async function sendPresence(accountId: number, characterUuid: string, bod
       const others = await repo.countOthersOnDevice(client, acct.active_device_hash, accountId, new Date(now.getTime() - pc.onlineSeconds * 1000));
       device = { online: others + 1, max: cfg.device.maxConcurrent };
     }
+    if (entering) entered = char.id;
     return { server_time: now.toISOString(), interval_seconds: pc.intervalSeconds, counted, device };
   });
+  // 10단계 E12: 세션 진입이 커밋된 뒤 캠페인 우편 배달(실패해도 이 응답에 영향이 없다)
+  if (entered !== null) deliverCampaignsInBackground(accountId, entered);
+  return result;
 }
 
 /** P2: 접속 종료 알림(기기 칸 반환). 이미 끝났거나 다른 캐릭터면 아무것도 하지 않고 성공(멱등) */

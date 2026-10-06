@@ -134,6 +134,12 @@ export function purgeDaily(ctx: JobCtx): Promise<JobResult> {
     ],
     ['relay_room_stats', del('relay_room_stats', `ended_at < ${days(cfg.relay.retentionDays)}`)],
     // 9단계 15절: 기기·IP 개인정보는 보관 기간 뒤 삭제한다(login_events 90일, 집계 표는 마지막 관측 후 180일)
+    // 10단계 5.4: 지난 주 계정 주간 카운터(60일). 복합 키 표라 (계정, 주, 종류)로 지운다
+    [
+      'account_week_counters',
+      `DELETE FROM account_week_counters WHERE (account_id, week_start, kind) IN (
+         SELECT account_id, week_start, kind FROM account_week_counters WHERE week_start < ${days(60)} LIMIT $1)`,
+    ],
     ['login_events', del('login_events', `created_at < ${days(cfg.aa.loginEventDays)}`)],
     [
       'account_devices',
