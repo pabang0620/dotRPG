@@ -52,6 +52,7 @@ namespace DotRPG
             view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (WindowScreen)PartyLobbyScreen.Instance : Game.UI.Party));
             view.Add("menuicon_finder", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
+            view.mailEntry = view.Add("menuicon_mail", "우편", () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
             view.Add("menuicon_achievement", "업적", () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
             view.Add("menuicon_cashshop", "캐시샵", () => Game.Flow.OpenWindow(GachaScreen.Instance)); // 뽑기
             view.Add("menuicon_cosmetics", "옷장", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));     // 오라·스킨 착용, 확정 구매
@@ -61,11 +62,35 @@ namespace DotRPG
             return view;
         }
 
-        void Add(string icon, string label, Action onClick)
+        RectTransform Add(string icon, string label, Action onClick)
         {
             var rt = MakeIcon(column, icon, label, () => { Toggle(); onClick(); }, true);
             UIFactory.Place(rt, new Vector2(0f, 1f), new Vector2(0f, 1f), SlotPos(entries.Count), new Vector2(Size, Size));
             entries.Add(rt);
+            return rt;
+        }
+
+        // [MAIL 10] Red dot on the menu button and on 우편 while mail waits (summary polled slowly in the background).
+        RectTransform mailEntry;
+        Image menuDot, mailDot;
+
+        static Image Dot(RectTransform parent)
+        {
+            var dot = UIFactory.Image(parent, "Dot", Game.Art.Get("ui_circle"), new Color32(232, 64, 64, 255));
+            dot.raycastTarget = false;
+            UIFactory.Place(dot.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(4f, 4f), new Vector2(14f, 14f));
+            dot.enabled = false;
+            return dot;
+        }
+
+        void UpdateMailDot()
+        {
+            if (menuDot == null) { menuDot = Dot((RectTransform)transform); if (mailEntry != null) mailDot = Dot(mailEntry); }
+            var svc = OnlineServices.Auction;
+            if (svc is ServerAuctionService server && OnlineSession.Playing) server.Tick(false);
+            bool waiting = OnlineSession.Playing && svc.UnclaimedMail > 0;
+            menuDot.enabled = waiting && !open;
+            if (mailDot != null) mailDot.enabled = waiting;
         }
 
         RectTransform MakeIcon(Transform parent, string icon, string label, Action onClick, bool showLabel)
@@ -111,6 +136,7 @@ namespace DotRPG
 
         void Update()
         {
+            UpdateMailDot();
             if (!open) return;
             // Close when the game leaves normal play (a window opened, pause, dialogue).
             if (!Game.IsPlaying) { open = IsOpen = false; column.gameObject.SetActive(false); return; }

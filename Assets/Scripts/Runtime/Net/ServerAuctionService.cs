@@ -165,14 +165,32 @@ namespace DotRPG
                 foreach (var o in MiniJson.Arr(r.data, "mails") ?? new List<object>())
                 {
                     var item = MiniJson.Obj(o, "item");
-                    mail.Add(new AuctionMail
+                    var m = new AuctionMail
                     {
                         id = MiniJson.Str(o, "id"),
                         itemKey = MiniJson.Str(item, "item_key"),
                         count = MiniJson.Int(item, "count"),
                         gold = (long)MiniJson.Num(o, "gold"),
+                        kind = MiniJson.Str(o, "kind"),
+                        systemCode = MiniJson.Str(o, "system_code"),
+                        title = MiniJson.Str(o, "title"),
+                        body = MiniJson.Str(o, "body"),
+                        campaign = MiniJson.Has(o, "campaign") && o is Dictionary<string, object> od && od["campaign"] is bool cb && cb,
+                        daysLeft = MiniJson.Int(o, "days_left"),
                         text = MailText(MiniJson.Str(o, "kind"), MiniJson.Str(o, "ref_item_key"), MiniJson.Int(o, "ref_count", 1), MiniJson.Int(o, "days_left"), MiniJson.Str(o, "system_code")),
-                    });
+                    };
+                    // [MAIL 10] Attachments (the server also builds them for old mail); old servers: from item/gold.
+                    var atts = MiniJson.Arr(o, "attachments");
+                    if (atts != null)
+                        foreach (var a in atts)
+                            m.attachments.Add(new MailAttachment { kind = MiniJson.Str(a, "kind"), itemKey = MiniJson.Str(a, "item_key"), count = (long)MiniJson.Num(a, "count"), validDays = MiniJson.Int(a, "valid_days_after_claim") });
+                    else
+                    {
+                        if (m.gold > 0) m.attachments.Add(new MailAttachment { kind = "gold", count = m.gold });
+                        if (!string.IsNullOrEmpty(m.itemKey)) m.attachments.Add(new MailAttachment { kind = "item", itemKey = m.itemKey, count = m.count });
+                    }
+                    if (!string.IsNullOrEmpty(m.title)) m.text = m.title + (m.daysLeft > 0 ? $"  <color=#8c96a8>{m.daysLeft}일 남음</color>" : "");
+                    mail.Add(m);
                 }
                 unclaimed = mail.Count;
                 Changed?.Invoke();
@@ -191,7 +209,8 @@ namespace DotRPG
                 case "expired": head = $"[기간 만료] {name}"; break;
                 case "cancelled": head = $"[등록 취소] {name} (보증금 미반환)"; break;
                 case "system":
-                    string tag = systemCode == "compensation" ? "[보상]" : systemCode == "event" ? "[이벤트]" : systemCode == "refund" ? "[환불]" : "[안내]";
+                    string tag = systemCode == "compensation" ? "[보상]" : systemCode == "event" ? "[이벤트]" : systemCode == "refund" ? "[환불]"
+                        : systemCode == "maintenance" ? "[점검 보상]" : systemCode == "apology" ? "[사과 보상]" : systemCode == "attendance" ? "[출석]" : "[안내]";
                     head = string.IsNullOrEmpty(name) ? $"{tag} 운영팀이 보낸 우편" : $"{tag} {name}";
                     break;
                 default: head = name; break;
@@ -271,6 +290,7 @@ namespace DotRPG
             {
                 busy = false;
                 if (r.ok) OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
+                if (r.ok) SweepClient.ReadTickets(MiniJson.Obj(MiniJson.Obj(r.data, "claimed"), "tickets") ?? MiniJson.Obj(r.data, "tickets")); // [MAIL 10] event tickets
                 GameEvents.RaiseToast(r.ok ? success(r) : Explain(r));
                 searchAt = mineAt = mailAt = sellAt = -99f; // everything may have moved
                 Summary();
@@ -350,7 +370,10 @@ namespace DotRPG
                 latestAt = MiniJson.Str(r.data, "latest_at", latestAt) ?? "";
                 if (!first)
                     foreach (var n in MiniJson.Arr(r.data, "new") ?? new List<object>())
-                        GameEvents.RaiseToast("<color=#ffd84a>[우편]</color> " + MailText(MiniJson.Str(n, "kind"), MiniJson.Str(n, "ref_item_key"), 1, 0));
+                    {
+                        string title = MiniJson.Str(n, "title");
+                        GameEvents.RaiseToast("<color=#ffd84a>[우편]</color> " + (!string.IsNullOrEmpty(title) ? title : MailText(MiniJson.Str(n, "kind"), MiniJson.Str(n, "ref_item_key"), 1, 0)));
+                    }
                 if (unclaimed != before) { mailAt = -99f; Changed?.Invoke(); }
             });
         }

@@ -14,7 +14,7 @@ namespace DotRPG
     /// The 레이드 tab shows 해골왕 and this week's reward status.
     /// Keys: ↑/↓ dungeon, ←/→ difficulty, Enter 입장, E switches the tab, Esc closes.
     /// </summary>
-    public class DungeonSelectScreen : WindowScreen
+    public partial class DungeonSelectScreen : WindowScreen
     {
         const float ListW = 380f, RowH = 96f, RowGap = 8f, DetailX = 392f, DetailW = 828f, PanelTop = -52f, PanelH = 540f;
         const float DiffW = 150f, DiffH = 46f, DiffGap = 12f;
@@ -87,8 +87,9 @@ namespace DotRPG
                 var name = Label(d, "SlotName" + i, "", 16, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 34f), TextAnchor.UpperCenter);
                 w.slots.Add((frame, icon, name));
             }
-            w.status = Label(d, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 22f), new Vector2(520f, 50f), TextAnchor.LowerLeft);
+            w.status = Label(d, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 22f), new Vector2(380f, 50f), TextAnchor.LowerLeft);
             w.enterButton = Button(d, "Enter", "입장", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 20f), new Vector2(240f, 62f), () => w.TryEnter(), 28);
+            w.BuildSweep(d); // [SWEEP] "소탕" button and its panel over the detail
             w.hint = Label(w.content, "Hint", "", 16, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(820f, 24f), TextAnchor.UpperRight);
             return w;
         }
@@ -290,6 +291,7 @@ namespace DotRPG
             enterButton.image.sprite = Game.Art.Get(practice != null ? "ui_btngray" : "ui_btn");
             TextOf(enterButton).text = practice != null ? "연습 입장" : "입장";
             hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   ESC 닫기</color>";
+            RefreshSweep();
         }
 
         /// <summary>The mid raids that drop seal key fragments, by name ("해골왕").</summary>
@@ -343,6 +345,12 @@ namespace DotRPG
 
         protected override void Update()
         {
+            // [SWEEP] The sweep panel takes Esc (closes itself, not the window) and blocks the list keys under it.
+            if (SweepOpen)
+            {
+                if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) CloseSweep();
+                return;
+            }
             base.Update();
             if (!TakesInput || !gameObject.activeInHierarchy) return;
             var input = Game.Input;
