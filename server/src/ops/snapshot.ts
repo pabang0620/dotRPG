@@ -5,6 +5,7 @@ import { getPool, poolStats } from '../db/pool';
 import { registry } from '../domains/chat/realtimeNotifier';
 import { getQueueStore } from '../domains/match/queueStore';
 import { steamStats } from '../domains/auth/steamProvider';
+import { flushStats } from '../domains/antiabuse/incomeMeter';
 import { relayHub } from '../domains/relay/relayHub';
 import { relayMetrics } from '../domains/relay/relayMetrics';
 import { getGameData } from '../gamedata/loader';
@@ -60,6 +61,9 @@ export interface Snapshot {
     host_changes_1m: number;
   };
   field?: { sessions_active: number; avg_members: number };
+  /** 9단계: 프레즌스·경제 속도 감시 지표(12.10) */
+  presence?: { online: number; device_limit_hits: number; presence_required: number };
+  economy?: { holds_active: number; holds_shadow_24h: number; holds_active_24h: number; income_flush_ms: number };
   steam?: ReturnType<typeof steamStats>;
   shutting_down: boolean;
   disk_used_pct: number | null;
@@ -150,6 +154,22 @@ export async function collectSnapshot(): Promise<Snapshot> {
   } catch {
     // DB가 내려가 있으면 비워 둔다
   }
+  let presence: NonNullable<Snapshot['presence']> = { online: 0, device_limit_hits: metrics.presenceDeviceLimitHits, presence_required: metrics.presenceRequired };
+  let economy: NonNullable<Snapshot['economy']> = { holds_active: 0, holds_shadow_24h: 0, holds_active_24h: 0, income_flush_ms: flushStats().avg_ms };
+  try {
+    const p = await db.query<{ online: string; active: string; shadow24: string; active24: string }>(
+      `SELECT (SELECT count(*) FROM online_sessions WHERE ended_at IS NULL AND last_seen_at > now() - ($1::int * interval '1 second')) AS online,
+              (SELECT count(*) FROM economy_holds WHERE state IN ('active', 'clawed_back')) AS active,
+              (SELECT count(*) FROM economy_holds WHERE state = 'shadow' AND created_at > now() - interval '24 hours') AS shadow24,
+              (SELECT count(*) FROM economy_holds WHERE state = 'active' AND created_at > now() - interval '24 hours') AS active24`,
+      [cfg.aa.presence.onlineSeconds],
+    );
+    const x = p.rows[0] as { online: string; active: string; shadow24: string; active24: string };
+    presence = { ...presence, online: n(x.online) };
+    economy = { ...economy, holds_active: n(x.active), holds_shadow_24h: n(x.shadow24), holds_active_24h: n(x.active24) };
+  } catch {
+    // DB가 내려가 있으면 비워 둔다
+  }
   const m1 = 60_000;
   const h1 = metrics.http(60_000);
   const h5 = metrics.http(5 * 60_000);
@@ -216,6 +236,8 @@ export async function collectSnapshot(): Promise<Snapshot> {
       host_changes_1m: relayMetrics.hostChanges.sum(m1),
     },
     field: fieldInfo,
+    presence,
+    economy,
     steam: steamStats(),
     shutting_down: isShuttingDown(),
     disk_used_pct: diskUsedPct(),

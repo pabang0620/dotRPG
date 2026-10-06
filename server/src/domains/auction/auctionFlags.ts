@@ -27,12 +27,19 @@ export async function recordFlag(f: FlagError['flag']): Promise<void> {
   }
 }
 
+/** PostgreSQL 교착 감지(40P01): 서로 반대 방향으로 거래하는 두 요청이 상대 캐릭터 행의 FK 잠금에서 맞물릴 수 있다 */
+const isDeadlock = (err: unknown): boolean => (err as { code?: string } | null)?.code === '40P01';
+
 export async function runAuction(o: RunOptions): Promise<StoredResult> {
-  try {
-    return await runEconomy(o);
-  } catch (err) {
-    if (err instanceof FlagError) await recordFlag(err.flag);
-    throw err;
+  // 교착의 희생자는 롤백되어 아무것도 저장되지 않았으므로(request_log 포함) 같은 요청을 다시 처리해도 안전하다
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await runEconomy(o);
+    } catch (err) {
+      if (isDeadlock(err) && attempt < 2) continue;
+      if (err instanceof FlagError) await recordFlag(err.flag);
+      throw err;
+    }
   }
 }
 

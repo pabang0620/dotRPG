@@ -1,6 +1,7 @@
 // 장비 승급: 같은 부위의 다음 등급 장비로 바꾼다(강화 수치는 그대로). 재료 "고대의 핵"은 레이드 클리어 보상으로만 나온다.
 // 표는 C# PromoteRules에서 내보낸 enhance.json의 promote(서버와 클라이언트가 같은 표를 쓴다).
 import { randomUUID } from 'node:crypto';
+import { assertNoHold } from '../antiabuse/holds';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { keyAt, parseItemKey } from '../../utils/itemKey';
@@ -23,6 +24,8 @@ export function promote(accountId: number, characterUuid: string, body: PromoteB
 const invalidTarget = () => new AppError(422, '승급할 수 없는 장비입니다.', 'PROMOTE_INVALID_TARGET');
 
 async function processPromote(ctx: EconCtx, body: PromoteBody) {
+  // 9단계 12.5: 경제 정지 중에는 승급할 수 없다
+  await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
   const eco = getGameData().economy;
   const table = eco.enhance.promote;
   if (!table) throw new AppError(503, '승급을 준비 중입니다.', 'PROMOTE_UNAVAILABLE');

@@ -15,6 +15,8 @@ export interface FieldKillInfo {
   xpFactor: number | null;
   /** 재료·장비 드롭 확률에 곱하는 값 */
   dropMul: number;
+  /** 9단계: 하드 격차(몬스터 레벨 - 멤버 레벨 >= FIELD_CARRY_HARD_GAP): 경험치는 정확히 1, 기본 골드도 1 */
+  hardXp: boolean;
 }
 
 export interface KillTarget {

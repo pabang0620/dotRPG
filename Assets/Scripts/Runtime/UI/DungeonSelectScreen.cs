@@ -66,7 +66,7 @@ namespace DotRPG
             w.banner.preserveAspect = true;
             UIFactory.Place(w.banner.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-18f, -14f), new Vector2(240f, 80f));
             w.info = Label(d, "Info", "", 17, tl, tl, new Vector2(24f, -106f), new Vector2(780f, 46f));
-            w.diffTitle = Label(d, "DiffTitle", "<b>난이도</b>", 19, tl, tl, new Vector2(24f, -160f), new Vector2(200f, 26f));
+            w.diffTitle = Label(d, "DiffTitle", "<b>난이도</b>", 19, tl, tl, new Vector2(24f, -160f), new Vector2(780f, 26f));
             for (int i = 0; i < 4; i++)
             {
                 int index = i;
@@ -84,7 +84,7 @@ namespace DotRPG
                 var icon = UIFactory.Image(frame.transform, "Icon", null, Color.white);
                 icon.preserveAspect = true;
                 UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(SlotIcon - 6f, SlotIcon - 6f));
-                var name = Label(d, "SlotName" + i, "", 13, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 34f), TextAnchor.UpperCenter);
+                var name = Label(d, "SlotName" + i, "", 16, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 34f), TextAnchor.UpperCenter);
                 w.slots.Add((frame, icon, name));
             }
             w.status = Label(d, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 22f), new Vector2(520f, 50f), TextAnchor.LowerLeft);
@@ -244,15 +244,29 @@ namespace DotRPG
 
             // Raid: its own schedule and reward status on one line where the difficulty buttons would be.
             raidLine.gameObject.SetActive(def.isRaid);
-            diffTitle.text = def.isRaid ? "<b>레이드 일정</b>" : "<b>난이도</b>";
+            string schedule = def.isRaid ? (def.raidTier == RaidTier.Mid ? $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 하루 1회 보상" : $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 주 1회 보상") : "";
+            diffTitle.text = def.isRaid ? $"<b>레이드 일정</b>   <color=#b8c4d8>{schedule}</color>" : "<b>난이도</b>";
             if (def.isRaid)
             {
-                string schedule = def.raidTier == RaidTier.Mid ? $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 하루 1회 보상" : $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 주 1회 보상";
-                string state = !progress.RaidRewardAvailable(def, now)
-                    ? (def.raidTier == RaidTier.Mid ? "<color=#ff9f7a>오늘 보상 받음 · 연습만 가능</color>" : "<color=#ff9f7a>이번 주 보상 받음 · 연습만 가능</color>")
-                    : def.raidTier == RaidTier.Mid ? $"봉인 열쇠 조각 <color=#ffe066>{def.keyMin}~{def.keyMax}</color> · 이번 주 {progress.RaidClearsThisWeek(def, now)}/3"
-                    : $"보상 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (보유 {Game.Session.Inventory.Count(DungeonDatabase.SealKey)}) · <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻음 · 모자라면 연습 입장";
-                raidLine.text = $"<color=#b8c4d8>{schedule}</color>\n{state}";
+                // Two lines: what this entry gives now, then where its keys come from.
+                string state, how;
+                if (!progress.RaidRewardAvailable(def, now))
+                {
+                    state = def.raidTier == RaidTier.Mid ? "<color=#ff9f7a>오늘 보상을 받았습니다 · 지금은 연습 입장</color>" : "<color=#ff9f7a>이번 주 보상을 받았습니다 · 지금은 연습 입장</color>";
+                    how = def.raidTier == RaidTier.Mid ? "<color=#b8c4d8>보상은 매일 06:00에 다시 열립니다.</color>" : "<color=#b8c4d8>보상은 매주 목요일 06:00에 다시 열립니다.</color>";
+                }
+                else if (def.raidTier == RaidTier.Mid)
+                {
+                    state = $"보상  봉인 열쇠 조각 <color=#ffe066>{def.keyMin}~{def.keyMax}개</color> · 이번 주 클리어 {progress.RaidClearsThisWeek(def, now)}/3";
+                    how = "<color=#b8c4d8>모은 조각은 최종 레이드 보상 조건에 쓰입니다.</color>";
+                }
+                else
+                {
+                    int have = Game.Session.Inventory.Count(DungeonDatabase.SealKey);
+                    state = $"보상 조건  봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> <color={(have >= def.keyCost ? "#8fe28f" : "#ff9f7a")}>(보유 {have})</color>";
+                    how = $"<color=#b8c4d8>조각은 <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻습니다 · 모자라면 연습 입장</color>";
+                }
+                raidLine.text = $"{state}\n{how}";
             }
             rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";
             var list2 = DungeonRewards.Slots(def, numbers, cls);
@@ -270,8 +284,11 @@ namespace DotRPG
             }
 
             string reason = Game.Dungeon != null ? Game.Dungeon.CannotEnterReason(def, difficulty, now) : "준비 중";
-            status.text = reason == null ? "<color=#8fe28f>입장할 수 있다.</color>" : $"<color=#ff9f7a>{reason}</color>";
+            string practice = reason == null ? PracticeReason(def, now) : null;
+            status.text = reason != null ? $"<color=#ff9f7a>{reason}</color>" : practice != null ? $"<color=#ffe066>보상 없는 연습 입장입니다.</color> <color=#b8c4d8>{practice}</color>" : "<color=#8fe28f>입장할 수 있습니다.</color>";
             enterButton.image.color = reason == null ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+            enterButton.image.sprite = Game.Art.Get(practice != null ? "ui_btngray" : "ui_btn");
+            TextOf(enterButton).text = practice != null ? "연습 입장" : "입장";
             hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   ESC 닫기</color>";
         }
 
@@ -298,10 +315,27 @@ namespace DotRPG
             Refresh();
         }
 
+        static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
+
+        /// <summary>Why a raid entry would give no reward (null = it gives the reward). Daily dungeons always reward.</summary>
+        string PracticeReason(DungeonDef def, DateTime now)
+        {
+            if (def == null || !def.isRaid) return null;
+            if (!Game.Session.Dungeons.RaidRewardAvailable(def, now)) return def.raidTier == RaidTier.Mid ? "오늘 보상을 이미 받았습니다." : "이번 주 보상을 이미 받았습니다.";
+            if (def.keyCost > 0 && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < def.keyCost) return "봉인 열쇠 조각이 모자랍니다.";
+            return null;
+        }
+
         bool TryEnter()
         {
             var def = Selected;
             if (def == null || Game.Dungeon == null) return false;
+            string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, ResetClock.Now) : null;
+            if (practice != null)
+            {
+                Game.UI.Confirm($"{practice}\n<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?", () => { if (!Game.Dungeon.Enter(def, difficulty)) Refresh(); }, true);
+                return false;
+            }
             bool ok = Game.Dungeon.Enter(def, difficulty);
             if (!ok) Refresh();
             return ok;

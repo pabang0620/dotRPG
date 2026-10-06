@@ -220,6 +220,17 @@ namespace DotRPG
             int have = StarShopClient.SparesOf(from);
             int times = all ? Mathf.Min(20, have / rule.count) : 1;
             if (times < 1) { Game.Audio.PlaySfx("cancel"); return; }
+            if (all)
+            {
+                Game.UI.Confirm($"여분 {times * rule.count}개로 {times}번 합성합니다.\n<size=18>실패할 때마다 넣은 여분 중 1개만 돌아옵니다.</size>\n합성할까요?", () => Synth(from, times), true);
+                return;
+            }
+            Synth(from, times);
+        }
+
+        void Synth(string from, int times)
+        {
+            if (busy) return;
             busy = true;
             resultText.text = "<color=#b8c4d8>합성하는 중...</color>";
             Refresh();

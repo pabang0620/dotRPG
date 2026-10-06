@@ -413,7 +413,7 @@ namespace DotRPG
         // ---------- Enhancement level colours ----------
 
         /// <summary>
-        /// Colour of a "+N" label, in the bands of Dungeon&amp;Fighter's weapon glow:
+        /// Colour of a "+N" label, in weapon glow bands:
         /// +1–6 green, +7–8 yellow, +9–12 blue, +13–14 pink, +15–16 orange, +17 and up gold.
         /// </summary>
         public static string LevelColor(int level)
@@ -438,7 +438,7 @@ namespace DotRPG
         // ---------- Enhancement growth ----------
 
         /// <summary>
-        /// Reinforcement coefficient per +level, after Dungeon&amp;Fighter's weapon reinforcement table
+        /// Reinforcement coefficient per +level, after a classic weapon reinforcement table
         /// (+8..+20 are the published values, +1..+7 interpolated). Bonus at +L = seed × coefficient[L].
         /// </summary>
         static readonly float[] EnhanceCoef =

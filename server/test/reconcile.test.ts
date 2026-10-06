@@ -96,6 +96,8 @@ describe('4단계 환경변수 검증', () => {
       NODE_ENV: 'production',
       STEAM_AUTH_MODE: 'web_api',
       STEAM_WEB_API_KEY: 'k',
+      DEPLOY_STAGE: 'live',
+      DEVICE_HASH_PEPPER: 'Pe9rL4vK7mQ2xW5tY8uZ3aB6cD1eF0gHnJkLoNpRs',
       PARTY_TRANSPORT: 'steam',
       TRUST_PROXY: '1',
       RELAY_TICKET_SECRET: 'Qm8vN2xK5pL7wR3tY6uZ9aB4cD1eF0gHiJkLmNoPq', RELAY_PUBLIC_URL: 'wss://game.example.org/relay',

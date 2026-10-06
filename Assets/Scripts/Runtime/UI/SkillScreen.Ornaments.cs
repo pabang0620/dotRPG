@@ -21,7 +21,7 @@ namespace DotRPG
                 float x = (i * 137 % 960) - 480, y = (i * 83 % 480) - 240;
                 Ornament(center, "ConstellationStar", "star", new Vector2(x, y), Vector2.one * (i % 3 == 0 ? 7 : 3), new Color(.6f, .75f, 1f, .18f));
             }
-            var label = UIFactory.Text(center, "TreeCaption", "성장의 별자리", 15, new Color(.57f, .7f, .88f, .8f), TextAnchor.MiddleLeft, true);
+            var label = UIFactory.Text(center, "TreeCaption", "성장의 별자리", 16, new Color(.57f, .7f, .88f, .8f), TextAnchor.MiddleLeft, true);
             UIFactory.Place(label.rectTransform, Vector2.one * .5f, new Vector2(0, .5f), new Vector2(-475, 244), new Vector2(180, 24));
         }
         void AnimateTree()

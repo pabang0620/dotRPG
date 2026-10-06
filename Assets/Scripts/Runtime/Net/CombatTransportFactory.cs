@@ -33,6 +33,7 @@ namespace DotRPG
                 seats.Add(s);
                 if (ulong.TryParse(MiniJson.Str(m, "steam_id"), out var id)) seatSteam[s] = id;
                 if (MiniJson.Str(m, "character_id") == hostCharacterId) hostSeat = s;
+                MemberCardCheck.Read(kind + ":" + roomId, m); // [ANTI-ABUSE] server values for the host's card check
             }
         }
     }

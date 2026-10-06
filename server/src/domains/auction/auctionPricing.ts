@@ -66,8 +66,12 @@ export async function referenceOf(db: Queryable, itemKey: string, now: Date): Pr
 
 const ceilDiv = (x: bigint, y: bigint): bigint => (x + y - 1n) / y;
 
-/** count개 묶음의 등록 가능한 즉시 구매가 범위. 하한은 올림, 상한은 내림. 기준이 없으면 null */
-export function limitsOf(ref: Reference, count: number): { min: number; max: number } | null {
+/**
+ * count개 묶음의 등록 가능한 즉시 구매가 범위. 하한은 올림, 상한은 내림. 기준이 없으면 null
+ * itemKey를 주면 9단계 상점 품목 상한을 적용한다: 상점이 파는 기본 id의 +0이면 max = min(max, 상점가 x 개수 x AUCTION_SHOP_CEIL_MULT)
+ * (체결 기록이 부풀려져도 상점가의 3배를 못 넘는다). 강화된 장비(+n)와 상점에서 팔지 않는 것은 해당 없음
+ */
+export function limitsOf(ref: Reference, count: number, itemKey?: string): { min: number; max: number } | null {
   const a = getConfig().auction;
   const data = getGameData().auction;
   const c = BigInt(count);
@@ -82,6 +86,14 @@ export function limitsOf(ref: Reference, count: number): { min: number; max: num
     max = BigInt(ref.vendorUnit) * c * BigInt(a.coldCeilMult);
   } else {
     return null;
+  }
+  if (itemKey !== undefined) {
+    const parsed = parseItemKey(itemKey);
+    const shopPrice = parsed && parsed.level === 0 ? getGameData().economy.shop.stock.get(parsed.base) : undefined;
+    if (shopPrice !== undefined) {
+      const ceil = BigInt(shopPrice) * c * BigInt(getConfig().aa.auction.shopCeilMult);
+      if (max > ceil) max = ceil;
+    }
   }
   const cap = BigInt(a.maxPrice);
   if (min < 1n) min = 1n;

@@ -16,6 +16,15 @@ export interface TownLook {
   level: number;
 }
 
+export interface ServerProfile {
+  cls: number;
+  level: number;
+  career: number;
+  weapon: string;
+  /** 이 계정이 소유한 외형 id(없으면 빈 집합) */
+  ownedSkins: Set<string>;
+}
+
 const MAX_BUFFERED_BYTES = 1024 * 1024;
 
 export class ChatSession {
@@ -32,6 +41,11 @@ export class ChatSession {
   /** 제재로 인한 채팅 금지 끝 시각(ms). 0이면 없음 */
   sanctionMuteUntil = 0;
   sanctionMuteSource: 'sanction' | null = null;
+  /** 9단계: 액세스 토큰의 세션 id(sid). 다른 곳에서 로그인하면 이 값과 다른 통지가 와서 끊긴다 */
+  familyId: string | null = null;
+  /** 9단계: 마을 표시에 쓰는 서버 값(townPresence). 클라이언트가 보낸 값은 무시한다 */
+  profile: ServerProfile | null = null;
+  profileAt = 0;
   tokenWarned = false;
   lastFrameAt = Date.now();
   lastRevalidateAt = Date.now();

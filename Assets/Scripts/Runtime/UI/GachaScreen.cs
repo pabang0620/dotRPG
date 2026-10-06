@@ -155,10 +155,12 @@ namespace DotRPG
                 c.icon.preserveAspect = true;
                 c.icon.rectTransform.anchorMin = new Vector2(0.1f, 0.42f); c.icon.rectTransform.anchorMax = new Vector2(0.9f, 0.94f);
                 c.icon.rectTransform.offsetMin = c.icon.rectTransform.offsetMax = Vector2.zero;
-                c.name = Label(c.bg.transform, "Name", "", 15, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+                int cellIndex = i;
+                GearTooltip.Hook(c.icon, () => cellIndex < w.revealed && cellIndex < w.shown.Count && w.shown[cellIndex].gear ? w.shown[cellIndex].itemId : null);
+                c.name = Label(c.bg.transform, "Name", "", 16, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
                 c.name.rectTransform.anchorMin = new Vector2(0f, 0.16f); c.name.rectTransform.anchorMax = new Vector2(1f, 0.42f);
                 c.name.rectTransform.offsetMin = new Vector2(3f, 0f); c.name.rectTransform.offsetMax = new Vector2(-3f, 0f);
-                c.note = Label(c.bg.transform, "Note", "", 13, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+                c.note = Label(c.bg.transform, "Note", "", 16, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
                 c.note.rectTransform.anchorMin = new Vector2(0f, 0.02f); c.note.rectTransform.anchorMax = new Vector2(1f, 0.17f);
                 c.note.rectTransform.offsetMin = c.note.rectTransform.offsetMax = Vector2.zero;
                 w.cells.Add(c);

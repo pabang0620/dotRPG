@@ -75,6 +75,7 @@ namespace DotRPG
                 var icon = UIFactory.Image(r, "Icon", null, Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
+                GearTooltip.Hook(icon, () => w.TableKey(idx));
                 var a = Button(r, "A", "즉시 구매", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-82f, 0f), new Vector2(104f, 34f), () => w.RowAction(idx, true), 16);
                 var b = Button(r, "B", "입찰", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(72f, 34f), () => w.RowAction(idx, false), 16);
                 w.rows.Add((r, icon, Cell(r, "Name", 50f, 330f), Cell(r, "Grade", 385f, 95f, 17), Cell(r, "Price", 485f, 140f, 18, TextAnchor.MiddleRight),
@@ -96,6 +97,7 @@ namespace DotRPG
                 var icon = UIFactory.Image(r, "Icon", null, Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
+                GearTooltip.Hook(icon, () => { int at = w.regPage * 8 + idx; return at < w.bagKeys.Count ? w.bagKeys[at] : null; });
                 var pick = Button(r, "Pick", "선택", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(80f, 36f), () => { w.regSel = w.regPage * 8 + idx; w.regPrice = 0; w.Refresh(); }, 16);
                 w.regRows.Add((r, icon, Cell(r, "Name", 50f, 340f), Cell(r, "Bind", 395f, 110f, 16), pick));
             }
@@ -125,6 +127,14 @@ namespace DotRPG
         {
             int i = page * PageSize + idx;
             return i < listings.Count ? listings[i] : null;
+        }
+
+        /// <summary>The item key shown on table row <paramref name="idx"/> of this page (for the gear tooltip).</summary>
+        string TableKey(int idx)
+        {
+            int i = page * PageSize + idx;
+            if (tab == Tab.Mail) return i < mails.Count ? mails[i].itemKey : null;
+            return i < listings.Count ? listings[i].itemKey : null;
         }
 
         void RowAction(int idx, bool primary)

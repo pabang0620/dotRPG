@@ -138,7 +138,7 @@ describe('GET /characters/:id/maps/:map_id/nodes', () => {
 });
 
 describe('POST /characters/:id/chests/open', () => {
-  const chest = { chest_id: 'forest:33:39' };
+  const chest = { chest_id: 'canyon:46:40' };
 
   it('정상: 서버 데이터의 보상을 한 번만', async () => {
     const h = await newHero(app);
@@ -147,7 +147,7 @@ describe('POST /characters/:id/chests/open', () => {
     expect(res.body.data.granted).toEqual({ item_key: 'eq_neck_10_r', count: 1 });
     expect(await countOf(h, 'eq_neck_10_r')).toBe(1);
     const detail = await get(app, h, '');
-    expect(detail.body.data.character.opened_chests).toEqual(['forest:33:39']);
+    expect(detail.body.data.character.opened_chests).toEqual(['canyon:46:40']);
   });
 
   it('두 번째는 409 CHEST_ALREADY_OPENED(다른 request_id여도)', async () => {

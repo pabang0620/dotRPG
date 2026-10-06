@@ -71,6 +71,7 @@ namespace DotRPG
                 b.onClick.AddListener(() => { w.cursor = index; w.PlayerPick(index); });
                 c.icon = UIFactory.Image(c.bg.transform, "Icon", null, Color.white);
                 UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(72f, 72f));
+                GearTooltip.Hook(c.icon, () => c.icon.enabled && w.run?.Cards != null && index < w.run.Cards.Count ? w.run.Cards[index].itemId : null);
                 c.face = UIFactory.Text(c.bg.transform, "Face", "", 17, UIColors.Cream, TextAnchor.UpperCenter, true);
                 UIFactory.Place(c.face.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -114f), new Vector2(CardW - 16f, 80f));
                 c.who = Label(cardsPanel.transform, "Who" + i, "", 18, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),

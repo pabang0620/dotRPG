@@ -7,6 +7,7 @@ import { getRng } from '../../utils/rng';
 import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
 import { effectiveHp, attackCap, powerAllows } from '../kills/killRules';
+import { humanGroups, underlevelFactor } from '../antiabuse/contribution';
 import { killsOfRun } from '../kills/killRepository';
 import * as repo from './dungeonRepository';
 import {
@@ -137,15 +138,29 @@ export async function holdRun(
 /**
  * 레이드 보상 최소 인원 재확인: 아직 진행 중이거나 클리어를 보고(정산 대기)·확정한 사람만 센다.
  * 실패·보류·이탈로 끝난 사람은 세지 않는다(친구가 바로 실패해 대조를 피하는 것을 막는다).
+ * 9단계: 사람 수는 같은 기기·같은 Steam 소유자를 한 사람으로 센 연결 요소 수이고, metBy가 주어지면(CONTRIBUTION_MODE=enforce)
+ * 기여 충족 멤버가 한 명 이상 있는 요소만 센다(서 있기만 하는 부계정은 "다른 사람"이 아니다).
  */
-async function humansStanding(ctx: EconCtx, run: repo.RunRow): Promise<number> {
+async function humansStanding(ctx: EconCtx, run: repo.RunRow, metBy: Map<number, boolean> | null): Promise<number> {
   if (run.party_run_id === null) return run.humans;
-  const r = await ctx.client.query<{ n: string }>(
-    `SELECT count(*) AS n FROM dungeon_runs
-      WHERE party_run_id = $1 AND state IN ('playing', 'reported', 'cleared')`,
+  const r = await ctx.client.query<{ character_id: string; device_hash: string | null; steam_key: string | null; install_id: string | null }>(
+    `SELECT m.character_id, m.device_hash, m.steam_key, m.install_id FROM dungeon_runs d
+       JOIN party_run_members m ON m.dungeon_run_id = d.id
+      WHERE d.party_run_id = $1 AND d.state IN ('playing', 'reported', 'cleared')`,
     [run.party_run_id],
   );
-  return Number((r.rows[0] as { n: string }).n);
+  const members = r.rows.map((x) => ({ characterId: Number(x.character_id), deviceHash: x.device_hash, steamKey: x.steam_key, installId: x.install_id }));
+  const groups = humanGroups(members);
+  return metBy ? groups.filter((g) => g.some((m) => metBy.get(m.characterId) === true)).length : groups.length;
+}
+
+/** 9단계: 파티 정산이 호스트 관찰로 계산한 이 멤버의 기여(5.3). metByCharacter는 같은 판 모든 멤버의 충족 여부(사람 수 판정용) */
+export interface ClearContribution {
+  share: number;
+  hits: number | null;
+  source: 'host' | 'none';
+  met: boolean;
+  metByCharacter: Map<number, boolean> | null;
 }
 
 export interface ClearInput {
@@ -157,6 +172,8 @@ export interface ClearInput {
   /** 기록할 stats(주장) */
   stats: Record<string, unknown>;
   at: Date;
+  /** 9단계: 파티 판이면 호스트 관찰 기반 기여(없으면 판단 불가) */
+  contribution?: ClearContribution | null;
 }
 
 /** 검증을 통과한 클리어를 확정한다: 랭크, (레이드 청구), 경험치, 카드, 레이드 열쇠. 한 트랜잭션 안에서만 부른다 */
@@ -177,13 +194,25 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   const rank = rankOf(eco, score.total);
 
   // ---- 레이드 보상 잠금(10.3, 10.4): 기간당 한 번은 raid_claims의 PK가 막는다. 경험치·카드보다 먼저 한다 ----
+  const aa = getConfig().aa.contribution;
   let locked = run.reward_locked;
   let reason = run.lock_reason;
+  const contrib = aa.mode !== 'off' ? (inp.contribution ?? null) : null;
+  // 판정 순서: ALREADY_CLAIMED(입장 때 미리 잠금) -> LOW_CONTRIBUTION -> TOO_FEW_HUMANS -> KEYS_MISSING -> 청구 INSERT.
+  // 잠그면 기간당 1회 청구(raid_claims)가 소진되지 않는다
+  if (contrib && !contrib.met && run.party_run_id !== null && reason !== 'ALREADY_CLAIMED') {
+    if (aa.mode === 'enforce') {
+      locked = true;
+      reason = 'LOW_CONTRIBUTION';
+    } else {
+      await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 1, { run_id: run.uuid, why: 'low_contribution_log', share: contrib.share, hits: contrib.hits });
+    }
+  }
   let keyGain = 0;
   let keyCost = 0;
   let coreGain = 0;
   if (dungeon.isRaid && !locked) {
-    if ((await humansStanding(ctx, run)) < pol.raidRewardMinHumans) {
+    if ((await humansStanding(ctx, run, aa.mode === 'enforce' ? (contrib?.metByCharacter ?? null) : null)) < pol.raidRewardMinHumans) {
       locked = true;
       reason = 'TOO_FEW_HUMANS';
     } else if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0 && (await ctx.stackCount('bag', eco.dungeons.keyItem)) < dungeon.keyCost) {
@@ -207,7 +236,10 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   let leveledUp = false;
   let cards: { item_key: string; count: number }[] | null = null;
   if (!locked) {
-    const xp = clearXp(eco, dungeon, diff, rank);
+    let xp = clearXp(eco, dungeon, diff, rank);
+    // 9단계 A4: 권장 레벨보다 DUNGEON_UNDERLEVEL_GAP 이상 낮은 멤버는 클리어 경험치를 깎는다(카드·열쇠는 줄이지 않는다)
+    const under = underlevelFactor(diff.recommendedLevel - ctx.level, aa);
+    if (under < 1) xp = Math.max(1, Math.round(xp * under));
     ({ granted, leveledUp } = await ctx.grantXp(xp, 'dungeon_clear', run.uuid));
     // 선택 전에는 내용을 클라이언트에 주지 않는다
     cards = rollCards(eco, dungeon, diff, ctx.char.class, getRng());
@@ -239,6 +271,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     cards,
     rewardLocked: locked,
     lockReason: reason,
+    contribution: contrib ? { share: contrib.share, hits: contrib.hits, source: contrib.source, met: contrib.met } : null,
   });
   const data: Record<string, unknown> = {
     result: 'cleared',
@@ -249,6 +282,11 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     card_count: cards ? cards.length : 0,
     delta: ctx.delta(),
   };
+  // 9단계: 파티 던전(레이드 아님)의 기여 잠금은 data.reward_locked / reward_lock_reason 으로 알린다
+  if (!dungeon.isRaid && locked) {
+    data.reward_locked = true;
+    data.reward_lock_reason = reason;
+  }
   if (dungeon.isRaid) {
     data.raid = {
       reward_locked: locked,

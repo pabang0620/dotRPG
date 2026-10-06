@@ -33,6 +33,12 @@ namespace DotRPG
             CancelMobility();
         }
 
+        /// <summary>The last position the network gave (or the body's own when not network driven).</summary>
+        public Vector2 NetTarget => NetDriven ? netTarget : Position;
+
+        /// <summary>[ANTI-ABUSE] Fastest this body can walk right now (buffs and career movement included).</summary>
+        public float TopSpeed => stats.moveSpeed * Mathf.Max(1f, Data.Stats.SpeedMultiplier) * Mathf.Max(1f, CareerCombat.For(this).MoveScale);
+
         /// <summary>Where the network says this member stands now.</summary>
         public void NetMoveTo(Vector2 target, Facing facing)
         {

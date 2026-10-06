@@ -208,6 +208,15 @@ namespace DotRPG
             return result;
         }
 
+        /// <summary>A drawn image from Resources/Art if there is one (null otherwise: the caller keeps its text fallback).</summary>
+        public Sprite Optional(string key)
+        {
+            if (cache.TryGetValue(key, out var sprite)) return sprite;
+            sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            if (sprite != null) cache[key] = sprite;
+            return sprite;
+        }
+
         Sprite Missing(string key)
         {
             Debug.LogWarning($"[dotRPG] No sprite for key '{key}'. Add Resources/{OverrideFolder}{key}.png or a ProceduralArt case.");

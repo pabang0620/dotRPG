@@ -441,7 +441,7 @@ describe('레벨 격차 감쇠(6.7)', () => {
     expect(keys(0.2)).toBe(0);
   });
 
-  it('통합: 몬스터 레벨 20 필드에서 레벨 1 멤버는 경험치 x0.2, 레벨 12 멤버는 x0.64, 솔로는 감쇠 없음', async () => {
+  it('통합: 몬스터 레벨 20 필드에서 레벨 1 멤버는 하드 격차(경험치 1), 레벨 12 멤버는 x0.55(9단계 기본값), 솔로는 감쇠 없음', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gd-'));
     for (const f of fs.readdirSync(DATA_DIR)) fs.copyFileSync(path.join(DATA_DIR, f), path.join(dir, f));
     const maps = JSON.parse(fs.readFileSync(path.join(dir, 'maps.json'), 'utf8')) as { maps: { id: string; fieldSpawns: { level?: number }[] }[] };
@@ -460,11 +460,13 @@ describe('레벨 격차 감쇠(6.7)', () => {
     const ka = await post(high, a, '/kills', { map_id: 'forest', monster_id: 'skeleton', session_id: s, monster_ref: 1 });
     const kb = await post(high, b, '/kills', { map_id: 'forest', monster_id: 'skeleton', session_id: s, monster_ref: 1 });
     expect(ka.status).toBe(200);
-    expect(ka.body.data.field.xp_factor).toBe(0.2);
-    expect(ka.body.data.granted_xp).toBe(Math.max(1, Math.round(base * 0.2)));
-    expect(kb.body.data.field.xp_factor).toBe(0.64);
-    expect(kb.body.data.granted_xp).toBe(Math.round(base * 0.64));
-    expect(Number((await getPool().query('SELECT xp_factor FROM kill_log WHERE character_id = $1', [a.dbId])).rows[0].xp_factor)).toBe(0.2);
+    // d = 20 - 1 = 19 >= FIELD_CARRY_HARD_GAP(15): 경험치는 정확히 1(배율은 하한 0.02)
+    expect(ka.body.data.field.xp_factor).toBe(0.02);
+    expect(ka.body.data.granted_xp).toBe(1);
+    // d = 20 - 12 = 8: 1 - 0.15 x (8 - 5) = 0.55
+    expect(kb.body.data.field.xp_factor).toBe(0.55);
+    expect(kb.body.data.granted_xp).toBe(Math.round(base * 0.55));
+    expect(Number((await getPool().query('SELECT xp_factor FROM kill_log WHERE character_id = $1', [a.dbId])).rows[0].xp_factor)).toBe(0.02);
     const solo = await newHero(high);
     const ks = await post(high, solo, '/kills', { map_id: 'forest', monster_id: 'skeleton' });
     expect(ks.body.data.granted_xp).toBe(base);

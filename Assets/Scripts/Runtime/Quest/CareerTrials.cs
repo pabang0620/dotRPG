@@ -35,7 +35,13 @@ namespace DotRPG
             if(prog.Career==Career.Bishop && (prog.Rank("b_cleanse")==0||prog.Rank("b_wing")==0))return "정화의 종·천사의 품을 해금하세요. (Lv.22, 노드 7개)";
             if(prog.Career==Career.Guardian && (prog.Rank("g_taunt")==0||prog.Rank("g_wall")==0))return "대지의 호령·회귀의 방패를 해금하세요. (Lv.18, 노드 5개)";
             Game.Flow.CloseInventory();
-            var go=new GameObject("AwakeningTrial");Running=go.AddComponent<CareerTrials>();Running.Setup(p);return "";
+            // [ANTI-ABUSE] Online, the server opens the trial first; the stage only moves on its answer at the end.
+            CareerClient.TrialStart((ok,msg)=>{
+                if(!ok){GameEvents.RaiseToast(msg);return;}
+                if(Running!=null)return;
+                var go=new GameObject("AwakeningTrial");Running=go.AddComponent<CareerTrials>();Running.Setup(p);
+            });
+            return "";
         }
         void Setup(PlayerController p)
         {
@@ -79,7 +85,12 @@ namespace DotRPG
         }
         void Finish(bool success)
         {
-            if(success) {player.Data.Progression.AdvanceAwakening(2);Game.Flow.Autosave();}
+            var prog=player!=null?player.Data.Progression:null;
+            CareerClient.TrialFinish(success,(ok,msg,stage)=>{
+                if(prog==null)return;
+                if(ok&&success){prog.AdvanceAwakening(2);Game.Flow.Autosave();}
+                else if(!ok){GameEvents.RaiseToast(msg);prog.SyncAwakening(stage);}
+            });
             if(player!=null&&!player.IsDead){player.Health.Heal(Mathf.Max(0,hp-player.Health.Current));player.Data.Mana=mana;}
             GameEvents.RaiseToast(success?"시련 완료! 전직 안내원과 각성의 대화를 마무리하세요.":"시련 실패. 진행 단계는 유지됩니다. 다시 도전할 수 있습니다.");
             Running=null;Destroy(gameObject);

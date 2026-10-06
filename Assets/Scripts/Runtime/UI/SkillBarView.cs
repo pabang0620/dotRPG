@@ -60,7 +60,7 @@ namespace DotRPG
                 var padlock = UIFactory.Image(v.locks[i].transform, "Padlock", Game.Art.Get("ui_lock"), Color.white);
                 padlock.preserveAspect = true;
                 UIFactory.Place(padlock.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 9f), new Vector2(24f, 24f));
-                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 15, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
+                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 16, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
                 UIFactory.Stretch(v.lockTexts[i].rectTransform, 0f, 4f, 0f, 0f);
 
                 v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 24 : 21, Color.white, TextAnchor.MiddleCenter, true);

@@ -21,6 +21,21 @@ namespace DotRPG.EditorTools
     {
         [Serializable] sealed class CareerCatalogJson { public int schema = 1; public CareerSkill[] skills = CareerCatalog.All; }
 
+        /// <summary>
+        /// careers.json: the skill catalog plus the awakening trial rules the server enforces (phase9 19.4): the least
+        /// seconds a successful trial can take and the nodes it needs, keyed by career number (CareerTrials.Begin, Update).
+        /// </summary>
+        static string CareersJson()
+        {
+            string json = JsonUtility.ToJson(new CareerCatalogJson());
+            const string trials = ",\"trials\":{" +
+                "\"1\":{\"minSeconds\":2,\"requiredNodes\":[]}," +
+                "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
+                "\"3\":{\"minSeconds\":2,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
+                "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}}";
+            return json.Substring(0, json.Length - 1) + trials + "}";
+        }
+
         static string OutDir => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "server", "data"));
 
         [MenuItem("dotRPG/Export Server Data")]
@@ -35,7 +50,7 @@ namespace DotRPG.EditorTools
                 ["items.json"] = Items(),
                 ["passive_tree.json"] = PassiveTreeJson(),
                 ["skill_gems.json"] = SkillGemsJson(),
-                ["careers.json"] = JsonUtility.ToJson(new CareerCatalogJson()),
+                ["careers.json"] = CareersJson(),
                 ["quest_index.json"] = QuestIndex(),
                 ["enums.json"] = Enums(),
                 ["shop.json"] = Shop(),

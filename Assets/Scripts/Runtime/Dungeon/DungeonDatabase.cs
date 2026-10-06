@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    /// <summary>Dungeon&amp;Fighter difficulty names: 일반 / 모험 / 왕 / 영웅.</summary>
+    /// <summary>Difficulty names: 일반 / 모험 / 왕 / 영웅.</summary>
     public enum DungeonDifficulty
     {
         Normal = 0,

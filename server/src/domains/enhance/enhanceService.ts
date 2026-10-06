@@ -1,5 +1,6 @@
 // 강화: C# Equipment.TryEnhance / EnhanceRules와 같은 규칙을 서버가 굴린다.
 import { randomUUID } from 'node:crypto';
+import { assertNoHold } from '../antiabuse/holds';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { keyAt, parseItemKey } from '../../utils/itemKey';
@@ -31,6 +32,8 @@ export function enhance(accountId: number, characterUuid: string, body: EnhanceB
 const invalidTarget = () => new AppError(422, '강화할 수 없는 대상입니다.', 'ENHANCE_INVALID_TARGET');
 
 async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
+  // 9단계 12.5: 경제 정지 중에는 강화할 수 없다
+  await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
   const eco = getGameData().economy;
   const en = eco.enhance;
   const wornSlot = 'worn_slot' in body.target ? body.target.worn_slot : null;

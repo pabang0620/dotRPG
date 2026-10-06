@@ -1,4 +1,5 @@
 import { getPool } from '../../db/pool';
+import { assertNoHold } from '../antiabuse/holds';
 import { TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
 import { getGameData } from '../../gamedata/loader';
 import { keyAt } from '../../utils/itemKey';
@@ -191,6 +192,8 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
     requestId,
     payload,
     handler: async (ctx) => {
+      // 9단계 12.5: 경제 정지 중에는 별조각을 쓸 수 없다
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const banner: Banner = body.banner ?? 'aura';
       const price = body.count === 10 ? TEN_PRICE : PULL_PRICE;
@@ -288,6 +291,7 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
     requestId,
     payload,
     handler: async (ctx) => {
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const def = STAR_COSMETIC_BY_ID.get(body.item_id);
       if (!def) throw new AppError(404, '교환할 수 없는 외형입니다.', 'COSMETIC_UNKNOWN');
@@ -316,6 +320,7 @@ export function claim(accountId: number, characterUuid: string, body: ClaimBody)
     requestId,
     payload,
     handler: async (ctx) => {
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const max = GAUGE[body.banner].max;
       const wallet = await repo.lockWallet(db, accountId);

@@ -290,7 +290,14 @@ export type AnomalyKind =
   | 'raid_enter'
   | 'field_uncredited'
   | 'field_host'
-  | 'relay_abuse';
+  | 'relay_abuse'
+  // 9단계(0020)
+  | 'kill_presence'
+  | 'device_limit'
+  | 'ip_cluster'
+  | 'member_card'
+  | 'career_state'
+  | 'contribution';
 
 /** 롤백되는 트랜잭션 밖에서도 남기려고 풀에서 직접 쓴다(호출 쪽이 선택) */
 export async function insertAnomaly(

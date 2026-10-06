@@ -34,6 +34,12 @@ namespace DotRPG
                     Api.StartCoroutine(After(1f, () => Api.Post(full, body, r2 => Finish(r2, done, quiet))));
                     return;
                 }
+                // [ANTI-ABUSE] The server has no fresh presence for this map: send it, then repeat with the same request_id.
+                if (r.code == "PRESENCE_REQUIRED")
+                {
+                    PresenceClient.Ping(() => Api.Post(full, body, r2 => Finish(r2, done, quiet)));
+                    return;
+                }
                 Finish(r, done, quiet);
             });
         }

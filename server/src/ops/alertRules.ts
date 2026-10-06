@@ -35,9 +35,11 @@ export const THRESHOLDS = {
   steamToRelay10m: 5,
   relayUnavailableSeconds: 300,
   loginFailures5m: 100,
+  /** 9단계: 24시간 신규 active 경제 정지가 이 수 이상이면 정상 규모를 넘은 것(상한 오설정 의심) */
+  holdsActive24h: 5,
   heldRunAgeS: 24 * 3600,
   openReportAgeS: 48 * 3600,
-  jobStaleHours: { 'purge-hourly': 3, 'purge-daily': 30, 'integrity-nightly': 30, 'stale-runs': 1 } as Record<string, number>,
+  jobStaleHours: { 'purge-hourly': 3, 'purge-daily': 30, 'integrity-nightly': 30, 'stale-runs': 1, 'presence-sweep': 1, 'income-reconcile': 30 } as Record<string, number>,
 } as const;
 
 export interface RuleInput {
@@ -117,6 +119,9 @@ export function evaluate(i: RuleInput, now: Date = new Date()): Alert[] {
     if (r.abuse_10m >= T.relayAbuse10m) add('relay_abuse', 'warning', '중계 남용 시도', `최근 10분 ${r.abuse_10m}건`);
     if (r.steam_to_relay_10m >= T.steamToRelay10m) add('transport_fallback', 'warning', 'Steam 경로 장애 의심', `최근 10분 steam -> relay 전환 ${r.steam_to_relay_10m}건`);
     if (r.unavailable_for_s >= T.relayUnavailableSeconds) add('relay_unavailable', 'critical', '중계 정지', `RELAY_UNAVAILABLE 응답이 ${Math.round(r.unavailable_for_s / 60)}분째 이어집니다.`);
+  }
+  if (s.economy && s.economy.holds_active_24h >= T.holdsActive24h) {
+    add('hold_burst', 'warning', '경제 정지 급증', `최근 24시간 신규 정지 ${s.economy.holds_active_24h}건입니다. 상한(income_caps) 오설정을 의심하세요.`);
   }
   if (s.steam?.misconfigured_recent) add('steam_auth_misconfigured', 'critical', 'Steam 로그인 설정 오류', 'Steam Web API가 키·앱 ID를 거절했습니다. 키 만료 또는 STEAM_APP_ID 오설정을 확인하세요.');
   if (s.steam?.breaker_open) add('steam_breaker', 'warning', 'Steam 인증 회로 차단', 'Steam 호출이 연속 실패해 잠시 차단되었습니다.');

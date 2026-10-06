@@ -204,6 +204,7 @@ namespace DotRPG
                     return;
                 }
                 if (MiniJson.Str(r.data, "state") == "ended") { EndLocally(); return; }
+                foreach (var m in MiniJson.Arr(r.data, "members") ?? new List<object>()) MemberCardCheck.Read("field:" + id, m);
                 var host = MiniJson.Obj(r.data, "host");
                 bool changed = r.data.TryGetValue("host_changed", out var c) && c is bool b && b;
                 if (!changed || host == null) return;

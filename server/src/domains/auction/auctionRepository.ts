@@ -277,16 +277,17 @@ export interface NewTrade {
   tradedAt: Date;
 }
 
-export async function insertTrade(client: PoolClient, t: NewTrade): Promise<void> {
-  await client.query(
+export async function insertTrade(client: PoolClient, t: NewTrade): Promise<number> {
+  const r = await client.query<{ id: string }>(
     `INSERT INTO auction_trades (listing_id, item_key, item_base, count, price, fee_pct, fee, deposit_returned,
         seller_payout, kind, buyer_character_id, buyer_account_id, seller_character_id, seller_account_id, traded_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
     [
       t.listingId, t.itemKey, t.itemBase, t.count, t.price, t.feePct, t.fee, t.depositReturned, t.sellerPayout, t.kind,
       t.buyerCharacterId, t.buyerAccountId, t.sellerCharacterId, t.sellerAccountId, t.tradedAt,
     ],
   );
+  return Number((r.rows[0] as { id: string }).id);
 }
 
 export async function upsertPriceDaily(
@@ -345,35 +346,43 @@ export async function insertFlag(
 }
 
 /**
- * 같은 판매자-구매자 계정 쌍의 오늘(게임 일) 체결 수와 금액 합 + 구매자 계정이 판매자 계정의 진행 중 등록에 걸어 둔
- * 최고 입찰(아직 체결 전이지만 마감에 낙찰된다). excludeListingId는 지금 판정 중인 등록(이 등록의 내 입찰은 세지 않는다).
- * 호출 전에 lockPair로 쌍을 직렬화해야 정확하다.
+ * 두 계정 사이의 오늘(게임 일) 체결 수와 금액 합 + 진행 중 등록에 걸린 최고 입찰(아직 체결 전이지만 마감에 낙찰된다).
+ * 9단계: 양방향 합산이다(A->B 3건 뒤 B->A 구매도 같은 한도를 쓴다: 부계정 이전 통로를 양쪽에서 막는다).
+ * excludeListingId는 지금 판정 중인 등록(이 등록의 내 입찰은 세지 않는다). 호출 전에 lockPair로 쌍을 직렬화해야 정확하다.
+ * 기존 인덱스 auction_trades_pair(seller, buyer, traded_at)가 두 방향 범위 스캔에 그대로 쓰인다.
  */
 export async function pairToday(
   db: Queryable,
-  sellerAccountId: number,
-  buyerAccountId: number,
+  accountA: number,
+  accountB: number,
   dayStart: string,
   excludeListingId: number,
 ): Promise<{ trades: number; gold: number }> {
   const r = await db.query<{ n: string; g: string }>(
     `SELECT (SELECT count(*) FROM auction_trades
-              WHERE seller_account_id = $1 AND buyer_account_id = $2 AND traded_at >= $3)
+              WHERE ((seller_account_id = $1 AND buyer_account_id = $2) OR (seller_account_id = $2 AND buyer_account_id = $1)) AND traded_at >= $3)
           + (SELECT count(*) FROM auction_listings
-              WHERE seller_account_id = $1 AND current_bidder_account_id = $2 AND status = 'active' AND id <> $4) AS n,
+              WHERE ((seller_account_id = $1 AND current_bidder_account_id = $2) OR (seller_account_id = $2 AND current_bidder_account_id = $1))
+                AND status = 'active' AND id <> $4) AS n,
             (SELECT coalesce(sum(price), 0) FROM auction_trades
-              WHERE seller_account_id = $1 AND buyer_account_id = $2 AND traded_at >= $3)
+              WHERE ((seller_account_id = $1 AND buyer_account_id = $2) OR (seller_account_id = $2 AND buyer_account_id = $1)) AND traded_at >= $3)
           + (SELECT coalesce(sum(current_bid), 0) FROM auction_listings
-              WHERE seller_account_id = $1 AND current_bidder_account_id = $2 AND status = 'active' AND id <> $4) AS g`,
-    [sellerAccountId, buyerAccountId, dayStart, excludeListingId],
+              WHERE ((seller_account_id = $1 AND current_bidder_account_id = $2) OR (seller_account_id = $2 AND current_bidder_account_id = $1))
+                AND status = 'active' AND id <> $4) AS g`,
+    [accountA, accountB, dayStart, excludeListingId],
   );
   const row = r.rows[0] as { n: string; g: string };
   return { trades: Number(row.n), gold: Number(row.g) };
 }
 
-/** 같은 계정 쌍의 동시 요청(다른 캐릭터, 다른 등록)을 직렬화한다. listing 락 뒤에 잡는다(8.3의 안전한 순서) */
-export async function lockPair(client: PoolClient, sellerAccountId: number, buyerAccountId: number): Promise<void> {
-  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`auction-pair:${sellerAccountId}:${buyerAccountId}`]);
+/**
+ * 같은 계정 쌍의 동시 요청(다른 캐릭터, 다른 등록, 반대 방향)을 직렬화한다. listing 락 뒤에 잡는다(8.3의 안전한 순서).
+ * 9단계: 키가 대칭이다(작은 id:큰 id). 예전에는 seller:buyer 순서라 반대 방향 요청이 서로 직렬화되지 않았다.
+ */
+export async function lockPair(client: PoolClient, accountA: number, accountB: number): Promise<void> {
+  const lo = Math.min(accountA, accountB);
+  const hi = Math.max(accountA, accountB);
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`auction-pair:${lo}:${hi}`]);
 }
 
 export async function accountCreatedAt(db: Queryable, accountId: number): Promise<Date> {

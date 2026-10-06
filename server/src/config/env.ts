@@ -1,5 +1,7 @@
 import path from 'node:path';
 import { z } from 'zod';
+import { logger } from '../utils/logger';
+import { antiAbuseShape, buildAntiAbuse, type AntiAbuseConfig } from './antiAbuseEnv';
 import { buildPhase8, phase8Shape, type FieldConfig, type Phase8Config, type RelayConfig, type TransportConfig } from './phase8Env';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
@@ -164,7 +166,8 @@ const envSchema = z.object({
   AUCTION_COLD_FLOOR_MULT: posInt(1),
   AUCTION_COLD_CEIL_MULT: posInt(100),
   AUCTION_PAIR_DAILY_TRADES: posInt(3),
-  AUCTION_PAIR_DAILY_GOLD: posInt(100_000_000),
+  // 9단계 결정 5: 쌍별 일일 골드 한도 1억 -> 1천만(부계정 이전 통로의 규모를 직접 줄인다)
+  AUCTION_PAIR_DAILY_GOLD: posInt(10_000_000),
   MAIL_CLAIM_ALL_MAX: posInt(50),
   AUCTION_TICK_ENABLED: boolStr.default(true),
   // 7단계(운영): 관리자, 가입 스위치, 점검, 종료, 정리, 감시. 값의 뜻은 phase7_ops.md 3.3
@@ -214,6 +217,7 @@ const envSchema = z.object({
   SERVER_NAME: z.string().min(1).default('dotrpg'),
   IMAGE_VERSION: z.string().default('dev'),
   ...phase8Shape,
+  ...antiAbuseShape,
 });
 
 export interface AppConfig {
@@ -403,6 +407,8 @@ export interface AppConfig {
   relay: RelayConfig;
   field: FieldConfig;
   transport: TransportConfig;
+  /** 9단계: 부정 행위 방지 */
+  aa: AntiAbuseConfig;
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -514,6 +520,17 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     }
   }
   const p8 = buildPhase8(e, { prod, jwtSecret: e.JWT_SECRET, port: e.PORT, legacyTransport: e.PARTY_TRANSPORT, wsMaxConnections: e.WS_MAX_CONNECTIONS });
+  // 9단계: 운영에서 DEPLOY_STAGE 가 환경에 명시되지 않으면 기동 실패(조용히 live 로 보이는 상태를 없앤다)
+  if (prod && clean(raw).DEPLOY_STAGE === undefined) {
+    throw new Error('환경변수 검증 실패: 운영(NODE_ENV=production)에서는 DEPLOY_STAGE(test 또는 live)를 명시해야 합니다');
+  }
+  const aa = buildAntiAbuse(e, {
+    prod,
+    jwtSecret: e.JWT_SECRET,
+    gameDataDir: e.GAME_DATA_DIR ?? path.resolve(__dirname, '..', '..', 'data'),
+    fieldCarry: { slack: e.FIELD_CARRY_SLACK, hardGap: e.FIELD_CARRY_HARD_GAP },
+    warn: (m) => logger.warn(m),
+  });
   const announce = e.MAINT_ANNOUNCE_MINUTES.split(',')
     .map((x) => Number(x.trim()))
     .filter((n) => Number.isInteger(n) && n > 0)
@@ -702,6 +719,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     relay: p8.relay,
     field: p8.field,
     transport: p8.transport,
+    aa,
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,

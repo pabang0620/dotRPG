@@ -37,6 +37,10 @@ export const hostReportBody = z.strictObject({
         max_combo: z.number().int().min(0).max(9999),
         revives_used: z.number().int().min(0).max(9),
         damage_dealt: z.number().int().min(0).max(2_147_483_647),
+        /** 9단계: 호스트가 관찰한 이 멤버의 적중 횟수(없어도 동작: 지분만으로 판정) */
+        hits_landed: z.number().int().min(0).max(100_000).optional(),
+        /** 9단계: 호스트가 멤버 카드(레벨·장비·직업)와 서버 뷰의 불일치를 봤다. 기록만 하고 판 결과에 쓰지 않는다 */
+        card_mismatch: z.boolean().optional(),
       }),
     )
     .min(1)

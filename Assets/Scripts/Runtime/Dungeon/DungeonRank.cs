@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    /// <summary>Clear rank, best first (Dungeon&amp;Fighter classic).</summary>
+    /// <summary>Clear rank, best first.</summary>
     public enum DungeonRank
     {
         SSS = 0,

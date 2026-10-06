@@ -5,6 +5,7 @@ import { findRunById } from '../dungeons/dungeonRepository';
 import type { PartyRunRow } from '../party/partyTx';
 import * as repo from './partyRunRepository';
 import { entryToken } from './runTokens';
+import { memberLooks, type MemberLook } from '../antiabuse/memberView';
 
 export interface TransportView {
   current: 'relay' | 'steam' | 'dev';
@@ -40,7 +41,19 @@ export interface RunView {
     reward_locked: boolean;
     lock_reason: string | null;
   } | null;
-  members: { character_id: string; name: string; class: string; level: number; slot: number; state: string; steam_id: string | null }[];
+  members: {
+    character_id: string;
+    name: string;
+    class: string;
+    level: number;
+    slot: number;
+    state: string;
+    steam_id: string | null;
+    /** 9단계: 멤버 카드 대조용 서버 값(장비 지문, 착용 장비 원본, 서버 기록 전직) */
+    gear_hash: string;
+    worn: MemberLook['worn'];
+    career: number;
+  }[];
 }
 
 export async function hostInfo(
@@ -57,6 +70,7 @@ export async function hostInfo(
 export async function buildRunView(db: Queryable, run: PartyRunRow, meCharacterId: number): Promise<RunView> {
   const members = await repo.runMembers(db, run.id);
   const steam = await repo.steamIdsOf(db, members.map((m) => m.account_id));
+  const looks = await memberLooks(db, members.map((m) => m.character_id));
   const me = members.find((m) => m.character_id === meCharacterId);
   let meView: RunView['me'] = null;
   if (me) {
@@ -91,6 +105,9 @@ export async function buildRunView(db: Queryable, run: PartyRunRow, meCharacterI
       slot: m.slot,
       state: m.state,
       steam_id: steam.get(m.account_id) ?? null,
+      gear_hash: looks.get(m.character_id)?.gear_hash ?? '',
+      worn: looks.get(m.character_id)?.worn ?? [],
+      career: looks.get(m.character_id)?.career ?? 0,
     })),
   };
 }

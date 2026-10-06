@@ -26,6 +26,7 @@ import { handleTownPos, leaveTown } from './townPresence';
 import { checkBan, refreshAccount, startSanctionListener, stopSanctionListener } from './sanctionService';
 import { CLOSE, PROTOCOL_VERSION, clientFrame, type ClientFrame, type Frame } from './wsProtocol';
 import { incomingInvites } from '../partyinvites/partyInvitesService';
+import { startSessionListener, stopSessionListener } from '../antiabuse/sessionListener';
 
 export interface RealtimeHandle {
   close(): Promise<void>;
@@ -144,6 +145,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
           });
         }
         if (e instanceof AppError && e.code === 'TOKEN_EXPIRED') return closeWith(CLOSE.TOKEN_EXPIRED, 'TOKEN_EXPIRED', true);
+        if (e instanceof AppError && e.code === 'SESSION_REPLACED') return closeWith(CLOSE.REPLACED, 'SESSION_REPLACED', false);
         if (e instanceof AppError) return closeWith(CLOSE.TOKEN_INVALID, 'TOKEN_INVALID', false);
         throw e;
       }
@@ -160,6 +162,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
         'SELECT blocked_account_id AS a FROM blocks WHERE blocker_account_id = $1 AND deleted_at IS NULL',
         [account.id],
       );
+      s.familyId = verified.familyId;
       s.blocks = new Set(blocks.rows.map((x) => Number(x.a)));
       await loadMute(s);
       if (f.caps?.steam_p2p === true) {
@@ -243,6 +246,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
           } catch (e) {
             if (e instanceof AppError && e.code === 'TOKEN_EXPIRED') s.close(CLOSE.TOKEN_EXPIRED, 'TOKEN_EXPIRED', true);
             else if (e instanceof AppError && e.code === 'ACCOUNT_BANNED') await checkBan(s);
+            else if (e instanceof AppError && e.code === 'SESSION_REPLACED') s.close(CLOSE.REPLACED, 'SESSION_REPLACED', false);
             else s.close(CLOSE.TOKEN_INVALID, 'TOKEN_INVALID', false);
           }
           return;
@@ -263,7 +267,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
           }
           return;
         case 'town.pos':
-          handleTownPos(s, f);
+          await handleTownPos(s, f);
           return;
       }
     }
@@ -341,6 +345,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
   tick.unref();
 
   await startSanctionListener();
+  await startSessionListener();
 
   return {
     async close(): Promise<void> {
@@ -354,6 +359,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
       }
       await getChatWriter().drain();
       await stopSanctionListener();
+      await stopSessionListener();
       await new Promise<void>((resolve) => {
         const kill = setTimeout(() => {
           for (const c of wss.clients) c.terminate();

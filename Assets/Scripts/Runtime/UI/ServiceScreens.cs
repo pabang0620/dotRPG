@@ -155,6 +155,7 @@ namespace DotRPG
                 UIFactory.Place(slot.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(58f, 58f));
                 r.icon = UIFactory.SharpIcon(slot.transform, "Icon", Color.white);
                 UIFactory.Place(r.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(44f, 44f));
+                GearTooltip.Hook(r.icon, () => r.id);
                 r.frame = Img(slot.transform, "Frame", "ui_frame", Color.clear);
                 UIFactory.Stretch(r.frame.rectTransform);
                 r.name = UIFactory.Text(r.bg.transform, "Name", "", 23, Color.white, TextAnchor.UpperLeft, true);
@@ -539,6 +540,7 @@ namespace DotRPG
                 new Vector2(20f + (i % Cols) * (Cell + Gap), -56f - (i / Cols) * (Cell + Gap)), new Vector2(Cell, Cell));
             c.icon = UIFactory.SharpIcon(c.bg.transform, "Icon", Color.white);
             UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(Cell * 0.7f, Cell * 0.7f));
+            GearTooltip.Hook(c.icon, () => c.icon.enabled ? c.id : null);
             c.frame = Img(c.bg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(c.frame.rectTransform);
             c.count = UIFactory.Text(c.bg.transform, "Count", "", 20, Color.white, TextAnchor.LowerRight, true);

@@ -29,6 +29,16 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'auction_trade_flags',
+      'economy_holds',
+      'income_hourly',
+      'play_time_hourly',
+      'online_sessions',
+      'login_events',
+      'account_devices',
+      'account_ips',
+      'character_career_trials',
+      'character_career',
       'admin_grants',
       'held_run_reviews',
       'admin_account_notes',
@@ -144,7 +154,9 @@ export async function createChar(
     .send({ request_id: requestId, name, class: cls });
 }
 
-export const randomName = (): string => `영웅${randomBytes(3).toString('hex').slice(0, 5)}`.slice(0, 8);
+// 9단계 예약어 규칙(혼동 문자 접기 5->s 등)에 우연히 걸리지 않도록 c·s·g·m·n·p·v·y와 숫자 5를 뺀 문자만 쓴다
+const NAME_ALPHABET = 'abdef012346789';
+export const randomName = (): string => `영웅${Array.from(randomBytes(6), (b) => NAME_ALPHABET[b % NAME_ALPHABET.length]).join('')}`;
 
 export function emptyState(version: number, over: object = {}): Record<string, unknown> {
   return {

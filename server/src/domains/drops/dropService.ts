@@ -1,4 +1,5 @@
 import { runEconomy, type StoredResult } from '../economy/economyService';
+import { assertActionPresence } from '../antiabuse/killPresence';
 import * as econRepo from '../economy/economyRepository';
 import * as repo from './dropRepository';
 import type { ClaimBody } from './dropValidation';
@@ -17,6 +18,7 @@ export function claimDrops(accountId: number, characterUuid: string, body: Claim
     requestId,
     payload: { drop_ids: ids },
     handler: async (ctx) => {
+      await assertActionPresence(ctx, 'drop_claim', null);
       const claimed = await repo.claimOpen(ctx.client, ctx.char.id, uniqueIds, ctx.now);
       const result = new Map<string, ClaimResult>();
       for (const d of claimed) {

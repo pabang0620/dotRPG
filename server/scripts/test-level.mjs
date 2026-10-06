@@ -1,9 +1,13 @@
 // 시험 서버 전용: 캐릭터를 지정 레벨까지 올린다(경험치 원장에 test_boost로 남긴다).
 // 사용: node scripts/test-level.mjs <캐릭터 이름> <레벨>   (서버 .env의 DATABASE_URL 사용)
-// 운영 서버(DEPLOY_STAGE=live)에서는 실행을 거절한다.
+// DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다.
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
+import { assertTestStage } from './_stageGuard.mjs';
+
+// 시험 서버 전용 가드: DEPLOY_STAGE=test 가 명시된 환경에서만 실행한다(맨 앞에서 확인)
+assertTestStage();
 
 const env = Object.fromEntries(
   readFileSync(new URL('../.env', import.meta.url), 'utf8')
@@ -11,11 +15,6 @@ const env = Object.fromEntries(
     .filter((l) => /^[A-Z0-9_]+=/.test(l))
     .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),
 );
-const stage = process.env.DEPLOY_STAGE ?? env.DEPLOY_STAGE ?? 'dev';
-if (stage === 'live') {
-  console.error('운영 서버(DEPLOY_STAGE=live)에서는 쓸 수 없습니다.');
-  process.exit(1);
-}
 const [name, levelArg] = process.argv.slice(2);
 const target = Number(levelArg);
 if (!name || !Number.isInteger(target) || target < 2) {

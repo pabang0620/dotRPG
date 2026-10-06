@@ -52,7 +52,7 @@ namespace DotRPG
             UIFactory.Stretch(v.log.rectTransform);
 
             // Tab label (click to switch 전체 / 파티 / 귓속말).
-            v.tabText = UIFactory.Text(root, "Tab", "", 15, UiTheme.Accent, TextAnchor.MiddleLeft, true);
+            v.tabText = UIFactory.Text(root, "Tab", "", 16, UiTheme.Accent, TextAnchor.MiddleLeft, true);
             UIFactory.Place(v.tabText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(8f, -2f), new Vector2(Width - 16f, 22f));
             v.tabText.raycastTarget = true;
             v.tabText.gameObject.AddComponent<Button>().onClick.AddListener(() => { v.tab = (v.tab + 1) % Tabs.Length; v.idle = 0f; v.Redraw(); });
@@ -72,12 +72,12 @@ namespace DotRPG
             var box = UIFactory.Panel(root, "Input", true);
             UIFactory.Place(box.rectTransform, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(Width, InputH));
             box.raycastTarget = true;
-            channelText = UIFactory.Text(box.transform, "Channel", "", 15, Color.white, TextAnchor.MiddleLeft, false);
+            channelText = UIFactory.Text(box.transform, "Channel", "", 16, Color.white, TextAnchor.MiddleLeft, false);
             UIFactory.Place(channelText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(92f, InputH));
             var text = UIFactory.Text(box.transform, "Text", "", 16, Color.white, TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(text.rectTransform, 98f, 2f, 8f, 2f);
             text.supportRichText = false;
-            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · ESC 닫기 · /p /g /w 이름", 14, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
+            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · ESC 닫기 · /p /g /w 이름", 16, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(placeholder.rectTransform, 98f, 2f, 8f, 2f);
             field = box.gameObject.AddComponent<InputField>();
             field.textComponent = text;

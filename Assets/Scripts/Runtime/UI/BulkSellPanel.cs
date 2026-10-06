@@ -48,7 +48,7 @@ namespace DotRPG
                 UIFactory.Stretch(t.rectTransform, 16f, 0f, 10f, 0f);
                 p.boxes.Add(t);
             }
-            var note = UIFactory.Text(bg.transform, "Note", "<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>", 15, Color.white, TextAnchor.UpperCenter, true);
+            var note = UIFactory.Text(bg.transform, "Note", "<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>", 16, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -386f), new Vector2(500f, 44f));
             p.summary = UIFactory.Text(bg.transform, "Summary", "", 20, UIColors.Cream, TextAnchor.MiddleCenter, true);
             UIFactory.Place(p.summary.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 76f), new Vector2(520f, 30f));

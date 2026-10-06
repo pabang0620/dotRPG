@@ -10,6 +10,7 @@ import { getPool, isUniqueViolation, withTransaction, type Queryable } from '../
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import { logger } from '../../utils/logger';
+import { flush as flushIncome } from '../antiabuse/incomeMeter';
 import { EconCtx } from './economyContext';
 import * as repo from './economyRepository';
 import type { AnomalyKind } from './economyRepository';
@@ -95,6 +96,8 @@ export async function runEconomy(o: RunOptions): Promise<StoredResult> {
 
       const ctx = new EconCtx(client, c, o.requestId, getNow());
       const r = await o.handler(ctx);
+      // 9단계: 원장에서 파생한 시간별 집계를 같은 트랜잭션에서 올린다(경제 속도 감시)
+      await flushIncome(client, c.id, ctx.level, ctx.now, ctx.income);
       const body: ApiBody = { success: true, message: r.message ?? '', data: r.data };
       await saveRequest(client, o.accountId, o.requestId, o.endpoint, hash, r.status, body);
       return { status: r.status, body, replay: false };

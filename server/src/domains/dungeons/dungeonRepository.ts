@@ -1,6 +1,9 @@
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 
+/** 보상 잠금 사유(0020에서 LOW_CONTRIBUTION 추가) */
+export type LockReason = 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | 'KEYS_MISSING' | 'LOW_CONTRIBUTION';
+
 export interface RunRow {
   id: number;
   uuid: string;
@@ -23,11 +26,11 @@ export interface RunRow {
   ai_count: number;
   counts_entry: boolean;
   reward_locked: boolean;
-  lock_reason: 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | 'KEYS_MISSING' | null;
+  lock_reason: LockReason | null;
   power_cap: number | null;
   reported_outcome: 'cleared' | 'failed' | null;
   reported_at: Date | null;
-  stats: { elapsed_ms?: number; hits_taken?: number; max_combo?: number; revives_used?: number } | null;
+  stats: { elapsed_ms?: number; hits_taken?: number; max_combo?: number; revives_used?: number; damage_dealt?: number; hits_landed?: number } | null;
   xp_granted: number | null;
   score: Record<string, number> | null;
 }
@@ -84,7 +87,7 @@ export interface NewRun {
   aiCount: number;
   countsEntry: boolean;
   rewardLocked: boolean;
-  lockReason: 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | 'KEYS_MISSING' | null;
+  lockReason: LockReason | null;
   powerCap: number | null;
   partyRunId?: number;
   slot?: number;
@@ -148,7 +151,9 @@ export interface RunClose {
   holdReason: string | null;
   cards: { item_key: string; count: number }[] | null;
   rewardLocked?: boolean;
-  lockReason?: 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | 'KEYS_MISSING' | null;
+  lockReason?: LockReason | null;
+  /** 9단계: 정산 때의 기여 판정 { share, hits, source, met }(관리자 검토용) */
+  contribution?: Record<string, unknown> | null;
 }
 
 export async function closeRun(client: PoolClient, runId: number, c: RunClose): Promise<void> {
@@ -157,7 +162,8 @@ export async function closeRun(client: PoolClient, runId: number, c: RunClose): 
         SET state = $2, ended_at = $3, stats = $4::jsonb, rank = $5, score = $6::jsonb,
             xp_granted = $7, hold_reason = $8, cards = $9::jsonb,
             reward_locked = COALESCE($10, reward_locked),
-            lock_reason = CASE WHEN $10::boolean IS NULL THEN lock_reason ELSE $11 END
+            lock_reason = CASE WHEN $10::boolean IS NULL THEN lock_reason ELSE $11 END,
+            contribution = COALESCE($12::jsonb, contribution)
       WHERE id = $1`,
     [
       runId,
@@ -171,6 +177,7 @@ export async function closeRun(client: PoolClient, runId: number, c: RunClose): 
       c.cards ? JSON.stringify(c.cards) : null,
       c.rewardLocked ?? null,
       c.lockReason ?? null,
+      c.contribution ? JSON.stringify(c.contribution) : null,
     ],
   );
 }

@@ -1,6 +1,7 @@
 // 외형 여분 활용: 합성(같은 등급 4개 -> 한 등급 위), 분해(여분 -> 별조각), 컬렉션 등록(세트 완성 -> 능력치).
 // 모두 계정 지갑 행을 잠근 뒤 처리한다(같은 계정의 동시 요청은 줄을 선다). 규칙과 수치는 starshopDefs.
 import { AppError } from '../../utils/AppError';
+import { assertNoHold } from '../antiabuse/holds';
 import { getRng } from '../../utils/rng';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import { COLLECTION_BY_ID, DISMANTLE_STARS, STAR_COSMETICS, STAR_COSMETIC_BY_ID, SYNTH, SYNTH_COUNT, type Rarity, type SynthFrom } from './starshopDefs';
@@ -38,6 +39,7 @@ export function synth(accountId: number, characterUuid: string, body: SynthBody)
     requestId,
     payload,
     handler: async (ctx) => {
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const from: SynthFrom = body.rarity;
       const rule = SYNTH[from];

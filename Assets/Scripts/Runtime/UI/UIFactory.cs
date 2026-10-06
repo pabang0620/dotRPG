@@ -144,7 +144,7 @@ namespace DotRPG
             var text = rt.gameObject.AddComponent<Text>();
             text.font = UIFont.Get();
             text.text = content;
-            text.fontSize = Mathf.Max(13, Mathf.RoundToInt(size * TextScale));
+            text.fontSize = Mathf.Max(14, Mathf.RoundToInt(size * TextScale));
             text.color = color;
             text.alignment = align;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;

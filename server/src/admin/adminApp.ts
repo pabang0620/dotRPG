@@ -7,6 +7,7 @@ import { createAdminAuthRouter } from './auth/adminAuthRoutes';
 import { originGuard } from './common/adminAuth';
 import { adminErrorHandler, adminNotFound } from './common/adminErrors';
 import { createEconomyAdminRouter } from './economy/economyAdminRoutes';
+import { createEconomyHoldsRouter } from './economyholds/economyHoldsRoutes';
 import { createHeldRunsRouter } from './heldruns/heldRunsRoutes';
 import { createMaintenanceAdminRouter } from './maintenance/maintenanceAdminRoutes';
 import { createOpsRouter } from './ops/opsRoutes';
@@ -34,6 +35,7 @@ export function createAdminApp(): Express {
   app.use(createHeldRunsRouter());
   app.use(createWatchRouter());
   app.use(createEconomyAdminRouter());
+  app.use(createEconomyHoldsRouter());
   app.use(createMaintenanceAdminRouter());
   app.use(createOpsRouter());
   app.use(adminNotFound);

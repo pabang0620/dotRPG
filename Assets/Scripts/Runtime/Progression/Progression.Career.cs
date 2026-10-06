@@ -59,6 +59,15 @@ namespace DotRPG
             for(int i=0;i<SkillGems.Slots;i++) if(i!=slot && Active(i)?.id==id) return false;
             slots[slot,0]=id; Changed?.Invoke(); return true;
         }
+        /// <summary>[ANTI-ABUSE] The server's awakening stage wins when the two disagree (online).</summary>
+        internal void SyncAwakening(int stage)
+        {
+            if(!IsPromoted || stage<0 || stage>5 || stage==careerState.questStage) return;
+            careerState.questStage=stage;
+            careerState.awakened=stage==5;
+            if(stage==5) slots[4,0]=CareerCatalog.For(Career)[8].id;
+            Changed?.Invoke();
+        }
         // Only the role trial may advance these stages. Rewards are derived from the final state, never added repeatedly.
         internal bool AdvanceAwakening(int expected)
         {

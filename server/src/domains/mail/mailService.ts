@@ -1,5 +1,6 @@
 // 우편: 목록, 수령, 모두 받기, 요약. 수령 락 순서는 요청자 캐릭터 행 -> 자기 우편 행들(phase6_api.md 8.1).
 import { getConfig } from '../../config/env';
+import { assertNoHold } from '../antiabuse/holds';
 import { getPool } from '../../db/pool';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
@@ -87,6 +88,8 @@ export function claimMail(accountId: number, characterUuid: string, mailUuid: st
     requestId: body.request_id,
     payload: { mail_id: mailUuid },
     handler: async (ctx) => {
+      // 9단계 12.5: 경제 정지 중에는 우편을 받을 수 없다(우편은 쌓이므로 의심 거래 대금이 정지 중 인출되지 않는다)
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const m = await repo.lockMailByUuid(ctx.client, mailUuid);
       if (!m || m.characterId !== ctx.char.id) {
         const err = new AppError(404, '우편을 찾을 수 없습니다.', 'MAIL_NOT_FOUND');
@@ -125,6 +128,7 @@ export function claimAll(accountId: number, characterUuid: string, body: ClaimAl
     requestId: body.request_id,
     payload: {},
     handler: async (ctx) => {
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const now = getNow();
       const max = getConfig().auction.mailClaimAllMax;
       const total = await repo.countOpenMails(ctx.client, ctx.char.id, now);

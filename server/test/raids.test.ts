@@ -99,7 +99,7 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     expect(locked.body.errors.code).toBe('RAID_LOCKED');
     expect(await anomalyKinds(h)).toContain('raid_enter');
     const low = await raidHero(1, ['c1_fortress']);
-    expect((await enter(low)).body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 17 });
+    expect((await enter(low)).body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 20 });
     expect((await enter(h, { difficulty: 1 })).body.errors.code).toBe('RAID_LOCKED');
     const ok = await raidHero(20, ['c1_fortress']);
     expect((await enter(ok, { difficulty: 1 })).body.errors.code).toBe('DIFFICULTY_LOCKED');
@@ -282,6 +282,9 @@ describe('레이드 파티 정산', () => {
     const t0 = fixed.getTime();
     await clearAll(app, host, runs.get(host.id) as string, advance, 'raid_skeleton_king', 20);
     at(new Date(t0 + 300_000).toISOString());
+    // 9단계: 레이드는 호스트 보고로 기여를 판정하므로 방장 보고가 필요하다(없으면 기여를 몰라 보류된다)
+    const rep = await post(app, host, `/party-runs/${runId}/host-report`, await honestHostReport(runs.get(host.id) as string, [host], { elapsed_ms: 300_000 }, 'raid_skeleton_king'));
+    expect(rep.status).toBe(200);
     const res = await result(host, runs.get(host.id) as string, { outcome: 'cleared', stats: stats({ elapsed_ms: 300_000, max_combo: 300 }) });
     expect(res.body.data.result).toBe('cleared');
     expect(res.body.data).toMatchObject({ granted_xp: 0, card_count: 0 });

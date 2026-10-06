@@ -201,6 +201,7 @@ namespace DotRPG
             switch (reason)
             {
                 case "TOO_FEW_HUMANS": return "레이드 보상은 2명 이상의 파티만 받는다. (연습 입장)";
+                case "LOW_CONTRIBUTION": return "전투 기여가 부족해 클리어 보상이 없습니다.";
                 case "ALREADY_CLAIMED": return "이번 기간 레이드 보상을 이미 받았다. (연습 입장)";
                 case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라 연습 입장이다. 클리어하면 이야기는 이어지지만 보상은 없다.";
                 default: return "레이드 보상이 없는 연습 입장이다.";
@@ -584,6 +585,9 @@ namespace DotRPG
                 int count = MiniJson.Int(data, "card_count");
                 run.Cards = count > 0 ? new List<RewardCard>(new RewardCard[count]) : null;
                 Progress.RecordClear(run.Dungeon.id, run.Difficulty, run.Rank);
+                // [ANTI-ABUSE] A party daily dungeon pays nothing to a member who barely fought.
+                if (data.TryGetValue("reward_locked", out var pl) && pl is bool partyLocked && partyLocked)
+                    GameEvents.RaiseToast(RaidLockText(MiniJson.Str(data, "reward_lock_reason")));
                 var raid = MiniJson.Obj(data, "raid");
                 if (raid != null && raid.TryGetValue("reward_locked", out var rl) && rl is bool locked && locked)
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));

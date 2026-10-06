@@ -131,7 +131,7 @@ namespace DotRPG
             }
             refreshing = true;
             ApiResult r = null;
-            yield return Raw("POST", "/auth/refresh", new Dictionary<string, object> { ["refresh_token"] = RefreshToken }, false, x => r = x);
+            yield return Raw("POST", "/auth/refresh", new Dictionary<string, object> { ["refresh_token"] = RefreshToken, ["device"] = DeviceIdentity.Body() }, false, x => r = x);
             if (r.ok)
             {
                 // Store the new refresh token before dropping the old one (phase1_2_api §2.5 client rule).
@@ -176,9 +176,19 @@ namespace DotRPG
                 result.code = MiniJson.Str(result.errors, "code");
                 result.message = MiniJson.Str(json, "message") ?? (result.ok ? "" : $"서버 오류 ({req.responseCode})");
                 if (!result.ok && result.status == 426) result.code = result.code ?? "CLIENT_OUTDATED";
+                if (result.code == "SESSION_REPLACED" && Time.unscaledTime - replacedAt > 5f)
+                {
+                    replacedAt = Time.unscaledTime;
+                    ClearTokens();
+                    SessionReplaced?.Invoke();
+                }
                 done(result);
             }
         }
+
+        /// <summary>[ANTI-ABUSE] The account logged in somewhere else: this session is over (no refresh, no retry).</summary>
+        public static event Action SessionReplaced;
+        static float replacedAt = -99f;
 
         /// <summary>A new request_id (one per user action; resend the same id on retry).</summary>
         public static string NewRequestId() => Guid.NewGuid().ToString();

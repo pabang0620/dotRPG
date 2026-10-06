@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -69,6 +70,9 @@ beforeAll(resetDb);afterAll(shutdown);
 test('HTTP save/load carries career, loadout and one-time refund; wrong class rejected',async()=>{
  const account=await registerAccount(app);const made=await createChar(app,account,randomName(),'warrior');const c=made.body.data.character;
  await getPool().query('UPDATE characters SET level=15 WHERE uuid=$1',[c.id]);
+ // 9단계: 전직은 서버가 기록한다(C1). 서버가 부여하지 않은 값은 PUT state가 거절한다
+ const promoted=await request(app).post(`/characters/${c.id}/career/promote`).set(auth(account)).send({request_id:randomUUID(),career:1});
+ expect(promoted.status).toBe(200);
  const career=blank(1);career.nodes=[{id:'f_rhythm',rank:1},{id:'f_cross',rank:1}];
  const input={...emptyState(0),career,skill_gems:[{slot:0,active:'f_cross',supports:[null,null]}]};
  const saved=await request(app).put(`/characters/${c.id}/state`).set(auth(account)).set(ver()).send(input);

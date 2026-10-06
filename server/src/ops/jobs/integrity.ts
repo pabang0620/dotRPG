@@ -3,6 +3,8 @@
 import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { getNow } from '../../utils/clock';
+import { reconcileIncome } from '../../domains/antiabuse/incomeReconcile';
+import { forbiddenReason } from '../../domains/antiabuse/reservedNames';
 import type { JobCtx, JobResult } from '../jobRunner';
 
 const SAMPLE_MAX = 20;
@@ -168,6 +170,30 @@ async function i5(): Promise<CheckResult> {
   );
 }
 
+/** 9단계 정보 점검(경보의 mismatches에 넣지 않는다: 파생 표는 스스로 고쳐지고, 이름·정지는 운영 판단이다) */
+async function nineInfo(): Promise<Record<string, CheckResult>> {
+  const income = await reconcileIncome({ hours: 48, fix: false });
+  const names = await getPool().query<{ uuid: string; name: string }>('SELECT uuid, name FROM characters WHERE deleted_at IS NULL');
+  const badNames = names.rows.filter((r) => forbiddenReason(r.name) !== null);
+  const career = await rows(
+    `SELECT c.uuid AS character, COALESCE((cs.career->>'career')::int, 0) AS state_career, COALESCE(cc.career, 0) AS granted
+       FROM character_state cs JOIN characters c ON c.id = cs.character_id
+       LEFT JOIN character_career cc ON cc.character_id = c.id
+      WHERE c.deleted_at IS NULL AND (cs.career IS NULL OR jsonb_typeof(cs.career) = 'object')
+        AND COALESCE((cs.career->>'career')::int, 0) <> COALESCE(cc.career, 0)
+      ORDER BY c.id`,
+  );
+  const holds = await rows(
+    "SELECT uuid, account_id, character_id, created_at FROM economy_holds WHERE state = 'active' AND reviewed_at IS NULL AND created_at < now() - interval '24 hours' ORDER BY id",
+  );
+  return {
+    'I-income': { count: income.mismatched, samples: income.samples },
+    'I-names': { count: badNames.length, samples: badNames.slice(0, SAMPLE_MAX).map((r) => ({ character: r.uuid, name: r.name })) },
+    'I-career': career,
+    'I-holds': holds,
+  };
+}
+
 export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
   const full = ctx.opts.full === true || isKstSunday(getNow());
   const checks: Record<string, CheckResult> = {
@@ -178,5 +204,6 @@ export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
     I5: await i5(),
   };
   const mismatches = Object.values(checks).reduce((a, c) => a + c.count, 0);
-  return { rows: 0, detail: { scope: full ? 'full' : 'recent', mismatches, checks } };
+  const info = await nineInfo();
+  return { rows: 0, detail: { scope: full ? 'full' : 'recent', mismatches, checks, info } };
 }

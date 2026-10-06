@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// [MONSTER] Dungeon&amp;Fighter style boss bar, top-centre under the dungeon timer band: name and level,
+    /// [MONSTER] Classic action-RPG boss bar, top-centre under the dungeon timer band: name and level,
     /// a multi-line HP bar ("×N" lines left, each line a different colour so the next one shows through),
     /// a pale lag chunk that drains after a hit, an overall strip with the phase markers, and the 무력화
     /// (groggy) gauge with "GROGGY!" while the boss is down. Super armor hits flash the frame. Binding a boss

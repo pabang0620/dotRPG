@@ -7,6 +7,7 @@ import type { StoredResult } from '../economy/economyService';
 import { lockPartyAndRun, runParty, withPartyLocks, type PartyRunRow } from '../party/partyTx';
 import * as repo from './partyRunRepository';
 import { relayHub } from '../relay/relayHub';
+import { recordCardMismatch } from '../antiabuse/cardMismatch';
 import { gearHashes } from '../fieldsessions/gearHash';
 import { hostInfo, transportView } from './runView';
 import { setPartyState } from './partyRunRepository';
@@ -181,6 +182,14 @@ export function hostReport(accountId: number, characterUuid: string, runUuid: st
         ai: body.ai,
       }, ctx.now);
       await repo.setFirstReport(ctx.client, run.id, ctx.now);
+      // 9단계 9.3: 호스트가 본 멤버 카드 불일치를 기록한다(판의 활성 멤버가 아니면 무시, 판 결과에는 쓰지 않는다)
+      for (const hm of body.members) {
+        if (hm.card_mismatch !== true) continue;
+        const target = members.find((m) => m.character_uuid === hm.character_id && m.character_id !== ctx.char.id);
+        if (target && repo.ACTIVE_STATES.includes(target.state)) {
+          await recordCardMismatch(ctx.client, { accountId: target.account_id, characterId: target.character_id, characterUuid: target.character_uuid }, { kind: 'run_id', id: run.uuid });
+        }
+      }
       return { status: 200, data: { accepted: true, epoch: run.host_epoch } };
     },
   });

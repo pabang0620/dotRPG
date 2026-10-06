@@ -187,7 +187,9 @@ namespace DotRPG
                 FillIcon(s, s.itemId, gear);
                 s.corner.enabled = gear != null && eq.IsUpgrade(s.itemId, cls);
                 int n = s.itemId != null ? bag.Count(s.itemId) : 0;
-                s.count.text = n > 1 ? n.ToString() : "";
+                bool lowLevel = gear != null && gear.UsableBy(cls) && !eq.CanWear(gear, cls);
+                // [UI] Gear above the character's level carries its required level in red instead of only going dark.
+                s.count.text = lowLevel ? $"<color=#ff7070>Lv{gear.reqLevel}</color>" : n > 1 ? n.ToString() : "";
                 s.icon.color = gear != null && !eq.CanWear(gear, cls) ? new Color(0.45f, 0.45f, 0.5f, 1f) : Color.white;
             }
 

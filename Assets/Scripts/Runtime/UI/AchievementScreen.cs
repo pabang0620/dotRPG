@@ -40,7 +40,7 @@ namespace DotRPG
                 var bg = Panel(w.content, "A" + i, new Vector2(0f, 1f), new Vector2(0f, 1f),
                     new Vector2(col * (CellW + ColGap), Top - row * CellH), new Vector2(CellW, CellH - 4f), i % 2 == 0 ? RowA : RowB);
                 var name = Label(bg.transform, "Name", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -4f), new Vector2(360f, 26f), TextAnchor.MiddleLeft);
-                var info = Label(bg.transform, "Info", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -28f), new Vector2(440f, 24f), TextAnchor.MiddleLeft);
+                var info = Label(bg.transform, "Info", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -28f), new Vector2(440f, 24f), TextAnchor.MiddleLeft);
                 var equip = Button(bg.transform, "Equip", "장착", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(110f, 38f), () => w.EquipAt(idx), 16);
                 w.cells.Add((bg, name, info, equip));
             }

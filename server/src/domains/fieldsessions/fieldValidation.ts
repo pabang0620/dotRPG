@@ -17,7 +17,7 @@ export const observeBody = z.strictObject({
   host_epoch: z.number().int().min(1),
   window_ms: z.number().int().min(1000).max(30000),
   credits: z
-    .array(z.strictObject({ seat: z.number().int().min(0).max(3), kills: z.number().int().min(0).max(99) }))
+    .array(z.strictObject({ seat: z.number().int().min(0).max(3), kills: z.number().int().min(0).max(99), card_mismatch: z.boolean().optional() }))
     .min(1)
     .max(4)
     .refine((cs) => new Set(cs.map((c) => c.seat)).size === cs.length, '좌석이 중복되었습니다'),

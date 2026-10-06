@@ -17,6 +17,9 @@ import { computePower } from './powerEstimate';
 import { listWornKeys } from '../economy/economyRepository';
 import * as repo from './characterRepository';
 import { validateState } from './stateRules';
+import { getGrant } from './careerGrantRepository';
+import { getConfig } from '../../config/env';
+import { checkReservedName } from '../antiabuse/reservedNames';
 import type { CreateCharacterBody, StateBody } from './characterValidation';
 
 const NAME_UNIQUE = 'characters_name_alive';
@@ -169,6 +172,8 @@ export async function createCharacter(
   input: CreateCharacterBody,
 ): Promise<StoredResult> {
   const hash = hashRequest({ name: input.name, class: input.class });
+  // 9단계 10: 운영 예약어·금칙어 이름은 거절한다(길이·문자 검증을 통과한 뒤, 중복 검사 전)
+  checkReservedName(input.name);
   try {
     return await withTransaction(async (client) => {
       // 계정 행 잠금: 같은 계정의 동시 생성(슬롯 초과, 같은 request_id)을 한 줄로 세운다
@@ -225,7 +230,10 @@ export async function saveState(accountId: number, uuid: string, input: StateBod
     // 레벨·직업은 서버 값. 요청 값이 아니다
     let passives: string[];
     try {
-      ({ passives } = validateState(data, input, { level: c.level, class: c.class }, stored));
+      // 9단계 E9: 서버가 부여한 전직·각성 기록과 일치하는 값만 받는다(CAREER_SERVER_TRUTH off|log|enforce)
+      const truth = getConfig().aa.career.serverTruth;
+      const grant = truth === 'off' ? null : await getGrant(client, c.id);
+      ({ passives } = validateState(data, input, { level: c.level, class: c.class }, stored, truth === 'off' ? undefined : { granted: grant ? { career: grant.career, stage: grant.stage } : null, mode: truth }));
     } catch (err) {
       // 저장 거절은 진행이 사라지는 원인이 되므로 사유를 남긴다
       if (err instanceof AppError) logger.warn({ character: uuid, code: err.code, extra: err.extra }, 'state save rejected');

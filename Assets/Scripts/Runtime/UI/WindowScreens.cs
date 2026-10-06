@@ -150,7 +150,7 @@ namespace DotRPG
 
     /// <summary>
     /// Blacksmith (anvil or 대장장이): pick a piece of gear — worn slots first, then the bag — pay gold and
-    /// monster materials and try to raise it one +level, Dungeon&amp;Fighter style: the chance falls from 100%
+    /// monster materials and try to raise it one +level: the chance falls from 100%
     /// to 10%, a weapon failing from +10 / +11 drops 3 levels, and from +12 (other gear +10) a failure
     /// destroys the piece unless a protection ticket in the bag saves it at +0. Risky attempts ask first,
     /// then the hammer falls twice (unscaled time: windows pause the game). Rules: <see cref="EnhanceRules"/>.

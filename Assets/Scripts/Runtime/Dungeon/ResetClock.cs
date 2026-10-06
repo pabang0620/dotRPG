@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// Daily / weekly reset times on the local PC clock (plan D3): the day turns over at 06:00, the week at
-    /// Thursday 06:00, like Dungeon&amp;Fighter KR. Pure functions of a <see cref="DateTime"/> so they are testable;
+    /// Thursday 06:00. Pure functions of a <see cref="DateTime"/> so they are testable;
     /// no protection against changing the clock (offline single player).
     /// </summary>
     public static class ResetClock
