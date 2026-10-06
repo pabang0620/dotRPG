@@ -25,6 +25,8 @@ namespace DotRPG
         [SerializeField] float walkFps = 9f;
         [SerializeField] float idleFps = 1.8f;
         [SerializeField] SpriteRenderer target;
+        /// <summary>The body sprite renderer (career skill afterimages copy it).</summary>
+        public SpriteRenderer Body => target;
 
         CharacterLook look;
         CharacterAnim current = CharacterAnim.Idle;

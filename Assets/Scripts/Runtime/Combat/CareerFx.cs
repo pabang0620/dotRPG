@@ -23,6 +23,42 @@ namespace DotRPG
         static Color A(Color c, float a) => new Color(c.r, c.g, c.b, a);
         public static float Angle(Vector2 dir) => Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
+        // ---------- Frame clips (Docs/PLAN_SKILL_VFX.md) ----------
+
+        /// <summary>Plays a frame clip; facing left is a mirror image of the right-facing art (VfxPlayer).</summary>
+        public static VfxPlayer Clip(string clip, Vector2 at, Vector2 dir, float scale = 1f, float fps = 24f, VfxLayer layer = VfxLayer.Top,
+            bool turn = true, Color? tint = null, bool additive = false, float life = 0f, bool loop = false) =>
+            VfxPlayer.Play(clip, at, dir, tint ?? Color.white, scale, fps, additive, life, loop, layer, turn);
+
+        /// <summary>Turns a right-facing offset angle into the aim's mirror-correct direction (tilts mirror on the left).</summary>
+        public static Vector2 Tilt(Vector2 dir, float degrees) => Rotate(dir, dir.x < -0.01f ? -degrees : degrees);
+
+        /// <summary>The career's own hit mark on a monster, bigger for heavier blows.</summary>
+        public static void Hit(Vector2 at, Vector2 dir, Career career, int weight)
+        {
+            float k = weight == 2 ? 1.5f : weight == 1 ? 1.15f : 0.85f;
+            string clip = career == Career.Fighter ? "f_x" : career == Career.Guardian ? "g_clang" : career == Career.Arcanist ? "m_hit" : "b_cross";
+            Clip(clip, at, career == Career.Fighter ? dir : Vector2.zero, k, 30f, VfxLayer.Top, career == Career.Fighter);
+            if (weight == 2) SkillVisuals.Flash(at, new Color(1f, 1f, 1f, 0.55f), 1.4f, 0.1f);
+        }
+
+        /// <summary>A tinted copy of the body sprite left behind (dash and leap afterimages).</summary>
+        public static void Ghost(PlayerController owner, Color tint, float life = 0.28f)
+        {
+            var body = owner != null ? owner.GetComponent<CharacterAnimator>()?.Body : null;
+            if (body == null || body.sprite == null) return;
+            var go = new GameObject("Afterimage");
+            if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
+            go.transform.position = body.transform.position;
+            go.transform.localScale = body.transform.lossyScale;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = body.sprite;
+            sr.flipX = body.flipX;
+            sr.sharedMaterial = FxMaterials.Additive;
+            sr.sortingOrder = body.sortingOrder - 1;
+            go.AddComponent<GhostFade>().Begin(sr, tint, life);
+        }
+
         // ---------- Blades ----------
 
         /// <summary>A sword arc in front of <paramref name="center"/>: white edge over a coloured afterglow and wind streaks.</summary>
@@ -227,6 +263,20 @@ namespace DotRPG
         {
             float a = degrees * Mathf.Deg2Rad;
             return new Vector2(d.x * Mathf.Cos(a) - d.y * Mathf.Sin(a), d.x * Mathf.Sin(a) + d.y * Mathf.Cos(a));
+        }
+    }
+
+    /// <summary>Fades an afterimage out.</summary>
+    public sealed class GhostFade : MonoBehaviour
+    {
+        SpriteRenderer sr; Color tint; float life, age;
+        public void Begin(SpriteRenderer r, Color c, float seconds) { sr = r; tint = c; life = seconds; sr.color = c; }
+        void Update()
+        {
+            age += Time.deltaTime;
+            if (age >= life) { Destroy(gameObject); return; }
+            float a = 1f - age / life;
+            sr.color = new Color(tint.r, tint.g, tint.b, tint.a * a * a);
         }
     }
 

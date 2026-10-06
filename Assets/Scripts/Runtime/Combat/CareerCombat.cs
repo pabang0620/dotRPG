@@ -280,7 +280,7 @@ namespace DotRPG
                 finally { currentSkill = previous; }
             }
             if (!landed) return false;
-            CareerFx.Hit(e.Center, dir, CareerFx.Main(c.s.career), weight);
+            CareerFx.Hit(e.Center, dir, c.s.career, weight);
             ImpactSound(sound, weight == 2 ? 1f : .8f);
             Feel(weight, dir);
             return true;
@@ -331,7 +331,7 @@ namespace DotRPG
                 int actual = p.Health.Heal(value);
                 if (actual > 0) CareerTrials.Record(owner, "heal", actual);
             }
-            CareerFx.Bless(p.Center, CareerFx.Life, false);
+            CareerFx.Clip("b_heal", p.Position, Vector2.zero, 1f, 22f, VfxLayer.AtFeet, false);
         }
 
         /// <summary>A shield of <paramref name="fraction"/> of the target's max HP (축복의 그릇 adds to it).</summary>
