@@ -306,7 +306,7 @@ namespace DotRPG
             if (def == null || def.isRaid) return;
             if (!Game.Session.Dungeons.IsUnlocked(def, d))
             {
-                GameEvents.RaiseToast($"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 한다.");
+                GameEvents.RaiseToast($"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 합니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }

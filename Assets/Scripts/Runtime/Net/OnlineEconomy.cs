@@ -125,7 +125,7 @@ namespace DotRPG
                 int xp = MiniJson.Int(r.data, "granted_xp");
                 if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
                 var field = MiniJson.Obj(r.data, "field");
-                if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast("<color=#8c96a8>레벨 차이로 경험치가 줄었다.</color>");
+                if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast("<color=#8c96a8>레벨 차이로 경험치가 줄었습니다.</color>");
                 if (parent == null) return;
                 foreach (var d in MiniJson.Arr(r.data, "drops") ?? new List<object>())
                 {

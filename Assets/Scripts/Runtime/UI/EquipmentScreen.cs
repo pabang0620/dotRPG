@@ -267,7 +267,7 @@ namespace DotRPG
                 {
                     // [SERVER] A mage always holds a staff (FixSlots); online the server refuses an empty weapon slot.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast("마법사는 무기를 뺄 수 없다. 다른 무기를 장착하면 바뀐다.");
+                    GameEvents.RaiseToast("마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.");
                     return;
                 }
                 var wornBefore = OnlineEconomy.WornSnapshot();
@@ -286,7 +286,7 @@ namespace DotRPG
                 {
                     // The protection ticket only works on its own, from the enhancement window.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용된다.");
+                    GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용됩니다.");
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
                 else if (s.itemId == ItemIds.Carrot && Game.Player != null) Game.Player.TryEatCarrot();
@@ -296,13 +296,13 @@ namespace DotRPG
             if (!gear.UsableBy(Class))
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비다.");
+                GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비입니다.");
                 return;
             }
             if (gear.reqLevel > Game.Session.Progression.Level)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있다. (지금 Lv.{Game.Session.Progression.Level})");
+                GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있습니다. (지금 Lv.{Game.Session.Progression.Level})");
                 return;
             }
             string key = s.itemId;
@@ -315,7 +315,7 @@ namespace DotRPG
             var before = OnlineEconomy.WornSnapshot();
             int n = Game.Session.Equipment.AutoEquip(Class);
             if (n > 0) OnlineEconomy.SyncWorn(before); // [SERVER]
-            GameEvents.RaiseToast(n > 0 ? $"더 좋은 장비 {n}개를 장착했다." : "이미 가장 좋은 장비를 착용 중이다.");
+            GameEvents.RaiseToast(n > 0 ? $"더 좋은 장비 {n}개를 장착했습니다." : "이미 가장 좋은 장비를 착용 중입니다.");
         }
 
         void ToggleSort()

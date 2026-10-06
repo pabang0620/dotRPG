@@ -99,7 +99,7 @@ namespace DotRPG
             amHost = hostCharacterId != null && hostCharacterId == OnlineSession.Current?.ActiveCharacter;
             EnsureNet();
             if (state == "playing" && !began && !string.IsNullOrEmpty(myRunId)) Begin();
-            if (state == "ended" || state == "cancelled" || myState == "left") Finish(state == "cancelled" ? "출발이 취소되었다." : null);
+            if (state == "ended" || state == "cancelled" || myState == "left") Finish(state == "cancelled" ? "출발이 취소되었습니다." : null);
         }
 
         /// <summary>The fight connection: the host listens, a member connects and says hello with its token.</summary>
@@ -235,7 +235,7 @@ namespace DotRPG
                     hostCharacterId = MiniJson.Str(host, "character_id");
                     bool wasHost = amHost;
                     amHost = hostCharacterId == OnlineSession.Current?.ActiveCharacter;
-                    if (wasHost && !amHost) GameEvents.RaiseToast("방장 권한이 다른 파티원에게 넘어갔다.");
+                    if (wasHost && !amHost) GameEvents.RaiseToast("방장 권한이 다른 파티원에게 넘어갔습니다.");
                 }
                 if (state == "ended" || myState == "left") Finish(null);
             });
@@ -281,7 +281,7 @@ namespace DotRPG
             PartyNet.End(keepTransport: keep != null);
             foreach (var b in bodies) Game.Party?.RemoveNetMember(b);
             foreach (var e in new List<EnemyController>(EnemyController.Active)) if (e != null && e.Puppet) e.ReleasePuppet();
-            GameEvents.RaiseToast("방장이 떠나 내가 방장을 이어받았다.");
+            GameEvents.RaiseToast("방장이 떠나 내가 방장을 이어받았습니다.");
             amHost = true;
             transportInfo.amHost = true;
             PartyNet.BeginHost(keep ?? BuildTransport(), runId, mySlot, hostKey, Mathf.Max(1, humans));

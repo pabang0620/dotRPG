@@ -391,7 +391,7 @@ namespace DotRPG
         {
             bigIcon.enabled = false;
             bigFrame.color = Color.clear;
-            title.text = "강화할 장비가 없다.";
+            title.text = "강화할 장비가 없습니다.";
             statsText.text = costTitle.text = chanceText.text = failText.text = "";
             foreach (var t in costCells) t.text = "";
             enhanceButton.interactable = false;
@@ -453,7 +453,7 @@ namespace DotRPG
 
         static string MaterialName(string id) => EquipmentDatabase.GetMaterial(id)?.name ?? id;
 
-        const string NoStatChange = "<color=#8c96a8>이번 단계는 능력치 변화가 없다 (높은 단계일수록 크게 오른다)</color>";
+        const string NoStatChange = "<color=#8c96a8>이번 단계는 능력치 변화가 없습니다 (높은 단계일수록 크게 오릅니다)</color>";
         const string PickAgain = "강화할 장비를 다시 골라 주세요.";
 
         static string FailureLine(EnhanceCost cost, int tickets, bool starter)
@@ -465,7 +465,7 @@ namespace DotRPG
                 default:
                     if (cost.usesTicket) return $"실패 시: <color=#ffd84a>장비 보호권 1장 자동 사용 → +0 초기화 (보유 {tickets}장)</color>";
                     return starter && tickets > 0
-                        ? "실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않는다)</color>"
+                        ? "실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않습니다)</color>"
                         : "실패 시: <color=#ff5050><b>장비 파괴!</b></color>";
             }
         }
@@ -540,8 +540,8 @@ namespace DotRPG
             {
                 Game.Audio.PlaySfx("cancel");
                 resultText.text = Game.Session.Gold < cost.gold
-                    ? "<color=#ff7070>골드가 부족하다. 해골을 쓰러뜨리거나 물건을 팔아 모으자.</color>"
-                    : "<color=#ff7070>재료가 부족하다. 해골을 더 쓰러뜨리자.</color>";
+                    ? "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>"
+                    : "<color=#ff7070>재료가 부족합니다. 해골을 더 쓰러뜨리세요.</color>";
                 return;
             }
             string warning = RiskWarning(cost);
@@ -651,26 +651,26 @@ namespace DotRPG
                 case EnhanceOutcome.Keep:
                     Game.Audio.PlaySfx("enhance_fail");
                     EnhanceFx.Fail(bigIcon.rectTransform, false);
-                    resultText.text = "<color=#ffb070>강화 실패… 강화 수치는 그대로다.</color>";
+                    resultText.text = "<color=#ffb070>강화 실패… 강화 수치는 그대로입니다.</color>";
                     break;
                 case EnhanceOutcome.Drop3:
                     Game.Audio.PlaySfx("enhance_fail");
                     EnhanceFx.Fail(bigIcon.rectTransform, false);
-                    resultText.text = $"<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌다.  (+{r.oldLevel} → +{r.newLevel})</color>";
+                    resultText.text = $"<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌습니다.  (+{r.oldLevel} → +{r.newLevel})</color>";
                     break;
                 case EnhanceOutcome.Destroyed:
                     Game.Audio.PlaySfx("enhance_break");
                     EnhanceFx.Fail(bigIcon.rectTransform, true);
-                    resultText.text = $"<color=#ff5050><b>강화 실패… 장비가 파괴되었다!</b></color>\n<color=#ff8080>{EquipmentDatabase.NameOfKey(r.oldKey)}</color>";
+                    resultText.text = $"<color=#ff5050><b>강화 실패… 장비가 파괴되었습니다!</b></color>\n<color=#ff8080>{EquipmentDatabase.NameOfKey(r.oldKey)}</color>";
                     GameEvents.RaiseToast($"<color=#ff5050>장비 파괴: {EquipmentDatabase.NameOfKey(r.oldKey)}</color>");
                     break;
                 case EnhanceOutcome.Protected:
                     Game.Audio.PlaySfx("confirm");
-                    resultText.text = $"<color=#ffd84a>강화 실패… 장비 보호권이 장비를 지켰다.</color>\n<color=#b8c4d8>{EquipmentDatabase.NameOfKey(r.newKey)} (+0으로 초기화)</color>";
+                    resultText.text = $"<color=#ffd84a>강화 실패… 장비 보호권이 장비를 지켰습니다.</color>\n<color=#b8c4d8>{EquipmentDatabase.NameOfKey(r.newKey)} (+0으로 초기화)</color>";
                     break;
                 case EnhanceOutcome.NotEnough:
                     Game.Audio.PlaySfx("cancel");
-                    resultText.text = "<color=#ff7070>골드나 재료가 부족하다.</color>";
+                    resultText.text = "<color=#ff7070>골드나 재료가 부족합니다.</color>";
                     break;
                 default:
                     Game.Audio.PlaySfx("cancel");

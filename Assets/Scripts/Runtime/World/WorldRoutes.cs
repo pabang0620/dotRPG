@@ -43,7 +43,7 @@ namespace DotRPG
             foreach(var id in new[]{"sanctum_archive","sanctum_roots"}){Get(id).previousMap=hall.id;Get(id).nextMap="sanctum_court";}
             var court=Get("sanctum_court");court.northMap="sanctum_archive";court.southMap="sanctum_roots";
             hall.hint="북쪽: 잠긴 서고 / 남쪽: 뿌리 잠식 지하묘 / 서쪽: 성소";
-            court.hint="두 갈래가 합류한 성소 최심부 · 북쪽/남쪽으로 돌아갈 수 있다.";
+            court.hint="두 갈래가 합류한 성소 최심부 · 북쪽/남쪽으로 돌아갈 수 있습니다.";
         }
     }
 }

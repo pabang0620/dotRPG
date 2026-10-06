@@ -436,12 +436,12 @@ namespace DotRPG
             var inventory = Game.Session.Inventory;
             if (health.Current >= health.Max)
             {
-                GameEvents.RaiseToast("체력이 가득 차 있다.");
+                GameEvents.RaiseToast("체력이 가득 차 있습니다.");
                 return;
             }
             if (!inventory.Remove(ItemIds.Carrot, 1))
             {
-                GameEvents.RaiseToast("체력 물약도 당근도 없다. 마을 잡화상인에게서 물약을 사자.");
+                GameEvents.RaiseToast("체력 물약도 당근도 없습니다. 마을 잡화상인에게서 물약을 사세요.");
                 return;
             }
             if (OnlineEconomy.On) OnlineEconomy.UseItem(ItemIds.Carrot); // [SERVER] consume there too
@@ -477,7 +477,7 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             if (bag.Count(id) <= 0)
             {
-                GameEvents.RaiseToast($"{item.name}{Josa(item.name, "이", "가")} 없다. 마을 잡화상인에게서 살 수 있다.");
+                GameEvents.RaiseToast($"{item.name}{Josa(item.name, "이", "가")} 없습니다. 마을 잡화상인에게서 살 수 있습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -485,7 +485,7 @@ namespace DotRPG
             {
                 case ConsumableKind.HealHp:
                 {
-                    if (health.Current >= health.Max) { GameEvents.RaiseToast("체력이 가득 차 있다."); return false; }
+                    if (health.Current >= health.Max) { GameEvents.RaiseToast("체력이 가득 차 있습니다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
@@ -501,7 +501,7 @@ namespace DotRPG
                 case ConsumableKind.HealMp:
                 {
                     int maxMp = Data.Stats.MaxMp;
-                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있다."); return false; }
+                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있습니다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
@@ -548,7 +548,7 @@ namespace DotRPG
             {
                 Fx.Sparkle(Center + Vector2.up * 0.3f, 3, 0.35f);
                 Game.Audio.PlaySfx("mine", IsLocal ? 1f : 0.5f);
-                if (IsLocal) GameEvents.RaiseToast("막았다!");
+                if (IsLocal) GameEvents.RaiseToast("막았습니다!");
                 return false;
             }
             int guard = Data.GuardReduction; // class passive (was 철벽 / 마나 보호막)

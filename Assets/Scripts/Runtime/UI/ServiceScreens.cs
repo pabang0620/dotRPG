@@ -60,9 +60,9 @@ namespace DotRPG
             }
             switch (id)
             {
-                case ItemIds.Wood: return "해골 숲의 나무를 베어 얻는다. 공방 재건에 쓰인다.";
-                case ItemIds.Stone: return "해골 숲의 바위를 깨서 얻는다. 공방 재건에 쓰인다.";
-                case ItemIds.Carrot: return "마을 밭에서 뽑은 당근. 먹으면 체력을 조금 회복한다.";
+                case ItemIds.Wood: return "해골 숲의 나무를 베어 얻습니다. 공방 재건에 쓰입니다.";
+                case ItemIds.Stone: return "해골 숲의 바위를 깨서 얻습니다. 공방 재건에 쓰입니다.";
+                case ItemIds.Carrot: return "마을 밭에서 뽑은 당근. 먹으면 체력을 조금 회복합니다.";
             }
             return "";
         }
@@ -334,7 +334,7 @@ namespace DotRPG
             if (cur == null)
             {
                 bigFrame.color = Color.clear;
-                bigName.text = selling ? "팔 물건이 없다." : "";
+                bigName.text = selling ? "팔 물건이 없습니다." : "";
                 bigKind.text = bigDesc.text = bigPrice.text = "";
                 buyOne.interactable = buyMany.interactable = false;
                 buyOneLabel.text = selling ? "1개 판매" : "1개 구매";
@@ -397,7 +397,7 @@ namespace DotRPG
                 if (n <= 0)
                 {
                     Game.Audio.PlaySfx("cancel");
-                    result.text = "<color=#ff7070>골드가 부족하다. 해골을 쓰러뜨리거나 물건을 팔아 모으자.</color>";
+                    result.text = "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>";
                     return;
                 }
                 if (OnlineEconomy.On)
@@ -407,7 +407,7 @@ namespace DotRPG
                     OnlineEconomy.ShopBuy(id, bought, ok =>
                     {
                         Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
-                        if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀다.  -{each * bought:N0} G</color>";
+                        if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀습니다.  -{each * bought:N0} G</color>";
                         dirty = true;
                     });
                     return;
@@ -416,8 +416,8 @@ namespace DotRPG
                 bag.Add(id, n);
                 Game.Audio.PlaySfx("confirm");
                 result.text = n < count && count > 1
-                    ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀다.  -{each * n:N0} G</color>"
-                    : $"<color=#8fe28f>{name} {n}개를 샀다.  -{each * n:N0} G</color>";
+                    ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀습니다.  -{each * n:N0} G</color>"
+                    : $"<color=#8fe28f>{name} {n}개를 샀습니다.  -{each * n:N0} G</color>";
             }
             dirty = true;
         }
@@ -435,7 +435,7 @@ namespace DotRPG
                 OnlineEconomy.ShopSell(id, n, ok =>
                 {
                     Game.Audio.PlaySfx(ok ? "pickup" : "cancel");
-                    if (ok) result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
+                    if (ok) result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았습니다.  +{each * n:N0} G</color>";
                     dirty = true;
                 });
                 return;
@@ -443,7 +443,7 @@ namespace DotRPG
             if (!bag.Remove(id, n)) { Game.Audio.PlaySfx("cancel"); return; }
             bag.Add(ConsumableDatabase.Gold, each * n);
             Game.Audio.PlaySfx("pickup");
-            result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
+            result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았습니다.  +{each * n:N0} G</color>";
             dirty = true;
         }
 
@@ -653,7 +653,7 @@ namespace DotRPG
                             $"<color=#dfe6f2>{ItemText.Description(target.id).Replace('\n', ' ')}</color>";
             }
             else info.text = "<color=#b8c4d8>클릭: 1개 옮기기   ·   우클릭: 전부 옮기기   ·   방향키로 고르고 " +
-                             $"{Game.Input.GetBindingLabel(GameAction.Submit)} 키로 옮기기</color>\n<color=#8c96a8>창고에 맡긴 물건은 죽거나 다른 지역에 가도 그대로 남는다.</color>";
+                             $"{Game.Input.GetBindingLabel(GameAction.Submit)} 키로 옮기기</color>\n<color=#8c96a8>창고에 맡긴 물건은 죽거나 다른 지역에 가도 그대로 남습니다.</color>";
 
             var cell = CursorCell();
             var rt = cell.bg.rectTransform;
@@ -705,7 +705,7 @@ namespace DotRPG
             if (!c.inStorage && to.Count(id) == 0 && StorageOrder(to).Count >= Capacity)
             {
                 Game.Audio.PlaySfx("cancel");
-                message.text = "<color=#ff7070>창고가 가득 찼다. 다른 물건을 먼저 꺼내자.</color>";
+                message.text = "<color=#ff7070>창고가 가득 찼습니다. 다른 물건을 먼저 꺼내세요.</color>";
                 dirty = true;
                 return;
             }
@@ -716,7 +716,7 @@ namespace DotRPG
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(new[] { (id, !c.inStorage, n) }, _ => dirty = true);
             Game.Audio.PlaySfx("select");
             string name = Game.Config.GetItem(id).displayName;
-            message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼다.</color>";
+            message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈습니다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼습니다.</color>";
             dirty = true;
         }
 
@@ -742,7 +742,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
-            message.text = moved > 0 ? $"<color=#8fe28f>재료 {moved}개를 창고에 맡겼다.</color>" : "<color=#b8c4d8>맡길 재료가 없다.</color>";
+            message.text = moved > 0 ? $"<color=#8fe28f>재료 {moved}개를 창고에 맡겼습니다.</color>" : "<color=#b8c4d8>맡길 재료가 없습니다.</color>";
             dirty = true;
         }
 
@@ -762,7 +762,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
-            message.text = moved > 0 ? $"<color=#8fe28f>창고의 물건 {moved}개를 모두 꺼냈다.</color>" : "<color=#b8c4d8>창고가 비어 있다.</color>";
+            message.text = moved > 0 ? $"<color=#8fe28f>창고의 물건 {moved}개를 모두 꺼냈습니다.</color>" : "<color=#b8c4d8>창고가 비어 있습니다.</color>";
             dirty = true;
         }
 

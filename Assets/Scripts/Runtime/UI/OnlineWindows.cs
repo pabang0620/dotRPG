@@ -173,7 +173,7 @@ namespace DotRPG
             var days = d.openDays != null && d.openDays.Length > 0 ? string.Join("·", System.Array.ConvertAll(d.openDays, x => DayNames[(int)x])) + "요일" : "매일";
             bool open = ResetClock.IsOpen(d, ResetClock.Now);
             sb.Append($"\n열리는 날: {days}{(d.isRaid ? "" : " (주말엔 모든 요일던전)")}\n오늘: {(open ? "<color=#8fe28f>열림</color>" : "<color=#ff9f7a>닫힘</color>")}");
-            sb.Append("\n\n<color=#8c96a8>초록 = 내 캐릭터가 권장을 넘음. 빈자리는 방장의 AI 동료가 채운다. 모집 글은 10분 뒤 내려간다.</color>");
+            sb.Append("\n\n<color=#8c96a8>초록 = 내 캐릭터가 권장을 넘음. 빈자리는 방장의 AI 동료가 채웁니다. 모집 글은 10분 뒤 내려갑니다.</color>");
             return sb.ToString();
         }
 
@@ -347,8 +347,8 @@ namespace DotRPG
         {
             var def = DungeonDatabase.Get(q.dungeonId);
             if (def == null || Game.Dungeon == null) return;
-            if (Game.Dungeon.InRun) { GameEvents.RaiseToast("이미 던전 안에 있어 매칭 출발을 취소했다."); return; }
-            GameEvents.RaiseToast($"매칭 완료: 사람 {q.humans}명 + AI 용병 {ai}명. {def.name}에 입장한다.");
+            if (Game.Dungeon.InRun) { GameEvents.RaiseToast("이미 던전 안에 있어 매칭 출발을 취소했습니다."); return; }
+            GameEvents.RaiseToast($"매칭 완료: 사람 {q.humans}명 + AI 용병 {ai}명. {def.name}에 입장합니다.");
             Game.Dungeon.Enter(def, q.difficulty);
         }
 

@@ -39,7 +39,7 @@ namespace DotRPG
             var w = CreateWindow<PartyScreen>(canvas, "Party", "파티", "menuicon_party");
             w.partyTitle = Label(w.content, "PartyTitle", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, 0f), new Vector2(800f, 32f));
             for (int i = 0; i < PartyManager.MaxMembers; i++) w.slots.Add(w.BuildSlot(i));
-            Label(w.content, "MercTitle", "<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있다.</color>", 22,
+            Label(w.content, "MercTitle", "<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>", 22,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, -150f), new Vector2(1180f, 30f));
             foreach (var def in MercenaryDatabase.All) w.cards.Add(w.BuildCard(def, w.cards.Count));
             w.hint = Label(w.content, "Hint", "", 17, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-4f, 2f), new Vector2(760f, 28f), TextAnchor.UpperRight);
@@ -91,25 +91,25 @@ namespace DotRPG
         {
             var party = Game.Party;
             if (party == null || def == null) return false;
-            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast("던전 안에서는 파티를 바꿀 수 없다."); Game.Audio.PlaySfx("cancel"); return false; } // [DUNGEON]
+            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast("던전 안에서는 파티를 바꿀 수 없습니다."); Game.Audio.PlaySfx("cancel"); return false; } // [DUNGEON]
             bool ok;
             if (party.Has(def.id) || Game.Session.PartyRoster.Contains(def.id))
             {
                 ok = party.RemoveCompanion(def.id);
-                if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에서 떠났다.");
+                if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에서 떠났습니다.");
             }
             else if (Game.Session.PartyRoster.Count >= PartyManager.CompanionLimit)
             {
                 ok = false;
                 int people = PartyManager.PeopleInParty;
                 GameEvents.RaiseToast(people > 1
-                    ? $"파티원 {people}명이 있어 AI 동료는 {PartyManager.CompanionLimit}명까지 넣을 수 있다. (최대 {PartyManager.MaxMembers}명)"
-                    : $"파티가 가득 찼다. (최대 {PartyManager.MaxMembers}명)");
+                    ? $"파티원 {people}명이 있어 AI 동료는 {PartyManager.CompanionLimit}명까지 넣을 수 있습니다. (최대 {PartyManager.MaxMembers}명)"
+                    : $"파티가 가득 찼습니다. (최대 {PartyManager.MaxMembers}명)");
             }
             else
             {
                 ok = party.AddCompanion(def.id) != null || Game.Session.PartyRoster.Contains(def.id);
-                if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에 합류했다.");
+                if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에 합류했습니다.");
             }
             Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
             Refresh();
@@ -125,7 +125,7 @@ namespace DotRPG
             var roster = session.PartyRoster;
             int people = PartyManager.PeopleInParty, limit = PartyManager.CompanionLimit;
             partyTitle.text = $"<b>현재 파티</b>  <color=#ffe066>사람 {people}명 · AI {Mathf.Min(roster.Count, limit)}명 / {PartyManager.MaxMembers}</color>"
-                + (roster.Count > limit ? $"   <color=#ff9f7a>자리가 {limit}개라 던전에는 앞의 {limit}명만 들어간다</color>" : "");
+                + (roster.Count > limit ? $"   <color=#ff9f7a>자리가 {limit}개라 던전에는 앞의 {limit}명만 들어갑니다</color>" : "");
 
             // Party slots: me first, then the roster in order.
             for (int i = 0; i < slots.Count; i++)
@@ -175,7 +175,7 @@ namespace DotRPG
                 c.button.image.sprite = Game.Art.Get(inParty ? "ui_btngray" : "ui_btn");
                 c.button.image.color = full ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
             }
-            hint.text = "<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸운다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>";
+            hint.text = "<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸웁니다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>";
         }
 
         static Sprite Portrait(MercenaryDef def, int level)

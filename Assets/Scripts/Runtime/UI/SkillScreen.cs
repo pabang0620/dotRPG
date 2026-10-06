@@ -166,7 +166,7 @@ namespace DotRPG
             {
                 Game.Audio.PlaySfx("cancel");
                 if (!prog.Allocated.Contains(n.id))
-                    GameEvents.RaiseToast(prog.PointsLeft <= 0 ? "패시브 포인트가 없다. 사냥으로 레벨을 올리자." : "이미 찍은 노드와 연결된 곳만 찍을 수 있다.");
+                    GameEvents.RaiseToast(prog.PointsLeft <= 0 ? "패시브 포인트가 없습니다. 사냥으로 레벨을 올리세요." : "이미 찍은 노드와 연결된 곳만 찍을 수 있습니다.");
             }
             Refresh();
         }
@@ -174,7 +174,7 @@ namespace DotRPG
         void Refund(PassiveNode n)
         {
             if (Game.Session.Progression.Refund(n)) Game.Audio.PlaySfx("select");
-            else { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast("다른 노드가 이 노드에 연결되어 있어 되돌릴 수 없다."); }
+            else { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast("다른 노드가 이 노드에 연결되어 있어 되돌릴 수 없습니다."); }
             Refresh();
         }
 
@@ -271,7 +271,7 @@ namespace DotRPG
             if (!prog.IsSlotOpen(v.slot))
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"이 슬롯은 Lv.{Progression.SlotLevel(v.slot)}에 열린다.");
+                GameEvents.RaiseToast($"이 슬롯은 Lv.{Progression.SlotLevel(v.slot)}에 열립니다.");
                 return;
             }
 
@@ -281,7 +281,7 @@ namespace DotRPG
             if (options.Count <= 1)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast("사용할 수 있는 보조 젬이 없다. (Lv.3부터 해금)");
+                GameEvents.RaiseToast("사용할 수 있는 보조 젬이 없습니다. (Lv.3부터 해금)");
                 return;
             }
             prog.SetGem(v.slot, v.socket, options[(i + dir + options.Count) % options.Count]);
@@ -349,7 +349,7 @@ namespace DotRPG
                 foreach (var g in prog.Supports(s)) sup.Add(g.name);
                 string bonus = TreeBonus(s);
                 sb.Append("\n");
-                sb.Append(sup.Count > 0 ? $"<color=#8fe28f>보조: {string.Join(", ", sup)}</color>" : "<color=#8c96a8>보조 젬을 연결하면 스킬이 강해진다.</color>");
+                sb.Append(sup.Count > 0 ? $"<color=#8fe28f>보조: {string.Join(", ", sup)}</color>" : "<color=#8c96a8>보조 젬을 연결하면 스킬이 강해집니다.</color>");
                 if (bonus.Length > 0) sb.Append($"   <color=#ffcf70>트리: {bonus}</color>");
                 slotInfo[s].text = sb.ToString();
             }
@@ -469,8 +469,8 @@ namespace DotRPG
             var sb = new StringBuilder($"<b>{n.name}</b>  {kind}\n\n{(n.kind == PassiveKind.Start ? "여기서부터 네 방향으로 트리를 뻗어 나간다.\n왼쪽·오른쪽·아래·위 = 스킬 1·2·3·4 강화" : n.StatText())}\n\n");
             if (prog.Allocated.Contains(n.id)) sb.Append(n.kind == PassiveKind.Start ? "" : prog.CanRefund(n) ? "<color=#8c96a8>우클릭: 되돌리기</color>" : "<color=#8c96a8>투자 완료</color>");
             else if (prog.CanAllocate(n)) sb.Append("<color=#ffe066>클릭: 투자 (포인트 1)</color>");
-            else if (prog.PointsLeft <= 0) sb.Append("<color=#ff8080>남은 포인트가 없다</color>");
-            else sb.Append("<color=#ff8080>연결된 노드를 먼저 찍어야 한다</color>");
+            else if (prog.PointsLeft <= 0) sb.Append("<color=#ff8080>남은 포인트가 없습니다</color>");
+            else sb.Append("<color=#ff8080>연결된 노드를 먼저 찍어야 합니다</color>");
             SetTooltip(sb.ToString().TrimEnd('\n'));
         }
 
@@ -490,7 +490,7 @@ namespace DotRPG
             var gem = SkillGems.Get(prog.SlotGem(v.slot, v.socket));
             if (gem == null)
             {
-                SetTooltip($"<b>빈 보조 소켓</b>\n\n클릭해서 보조 젬을 끼운다.\n<color=#8c96a8>보조 젬: Lv.3부터 해금</color>");
+                SetTooltip($"<b>빈 보조 소켓</b>\n\n클릭해서 보조 젬을 끼웁니다.\n<color=#8c96a8>보조 젬: Lv.3부터 해금</color>");
                 return;
             }
             SetTooltip($"<b>{gem.name}</b>  <color=#8fe28f>보조 젬</color>\n\n{gem.description}\n\n<color=#8c96a8>클릭: 다음 젬 · 우클릭: 이전 젬</color>");

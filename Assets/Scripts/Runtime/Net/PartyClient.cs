@@ -169,12 +169,12 @@ namespace DotRPG
                 lastNoticeAt = at;
                 switch (MiniJson.Str(notice, "code"))
                 {
-                    case "KICKED": GameEvents.RaiseToast("파티에서 내보내졌다."); break;
-                    case "PARTY_CLOSED": GameEvents.RaiseToast("파티가 해산되었다."); break;
-                    case "START_TIMEOUT": GameEvents.RaiseToast("매칭된 파티가 제때 출발하지 않아 해산되었다."); break;
+                    case "KICKED": GameEvents.RaiseToast("파티에서 내보내졌습니다."); break;
+                    case "PARTY_CLOSED": GameEvents.RaiseToast("파티가 해산되었습니다."); break;
+                    case "START_TIMEOUT": GameEvents.RaiseToast("매칭된 파티가 제때 출발하지 않아 해산되었습니다."); break;
                 }
             }
-            if (wasQueued && !Queued && InParty) GameEvents.RaiseToast("매칭 완료! 파티 창을 확인하자.");
+            if (wasQueued && !Queued && InParty) GameEvents.RaiseToast("매칭 완료! 파티 창을 확인하세요.");
             Changed?.Invoke();
         }
 
@@ -239,7 +239,7 @@ namespace DotRPG
         /// <summary>Every action answers with the party (or null when I left); errors come back as a Korean line.</summary>
         void Act(string method, string path, Dictionary<string, object> body, Action<bool, string> done, bool withRequestId = true)
         {
-            if (!OnlineSession.Playing) { done?.Invoke(false, "온라인 캐릭터로 접속해야 한다."); return; }
+            if (!OnlineSession.Playing) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
             if (body == null) body = new Dictionary<string, object>();
             if (withRequestId) body["request_id"] = ApiClient.NewRequestId();
             Action<ApiResult> handle = r =>
@@ -353,21 +353,21 @@ namespace DotRPG
 
         void RespondInvite(string inviteId, bool accept) =>
             Act("POST", $"/party/invites/{inviteId}/respond", new Dictionary<string, object> { ["accept"] = accept },
-                (ok, msg) => GameEvents.RaiseToast(!ok ? msg : accept ? "파티에 들어갔다." : "초대를 거절했다."));
+                (ok, msg) => GameEvents.RaiseToast(!ok ? msg : accept ? "파티에 들어갔습니다." : "초대를 거절했습니다."));
 
         public static string Explain(ApiResult r)
         {
             switch (r.code)
             {
-                case "NETWORK": return "서버에 연결할 수 없다.";
-                case "PARTY_FULL": return "파티 인원이 가득 찼다.";
-                case "POWER_TOO_LOW": return "전투력이 모자라다.";
-                case "NOT_ALL_READY": return "모든 파티원이 준비를 마쳐야 출발할 수 있다.";
-                case "ALREADY_IN_PARTY": return "이미 파티에 들어가 있다.";
-                case "IN_QUEUE": return "자동 매칭 대기 중이다.";
-                case "TOO_MANY_APPLICATIONS": return "동시에 신청할 수 있는 파티는 3곳까지다.";
-                case "MEMBER_NOT_ELIGIBLE": return "입장할 수 없는 파티원이 있다. (입장 횟수, 레벨, 해금)";
-                default: return string.IsNullOrEmpty(r.message) ? $"요청이 실패했다. ({r.status})" : r.message;
+                case "NETWORK": return "서버에 연결할 수 없습니다.";
+                case "PARTY_FULL": return "파티 인원이 가득 찼습니다.";
+                case "POWER_TOO_LOW": return "전투력이 모자랍니다.";
+                case "NOT_ALL_READY": return "모든 파티원이 준비를 마쳐야 출발할 수 있습니다.";
+                case "ALREADY_IN_PARTY": return "이미 파티에 들어가 있습니다.";
+                case "IN_QUEUE": return "자동 매칭 대기 중입니다.";
+                case "TOO_MANY_APPLICATIONS": return "동시에 신청할 수 있는 파티는 3곳까지입니다.";
+                case "MEMBER_NOT_ELIGIBLE": return "입장할 수 없는 파티원이 있습니다. (입장 횟수, 레벨, 해금)";
+                default: return string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message;
             }
         }
     }

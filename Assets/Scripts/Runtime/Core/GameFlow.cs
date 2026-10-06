@@ -179,7 +179,7 @@ namespace DotRPG
                 {
                     // Two toasts: one line is wider than the toast column.
                     GameEvents.RaiseToast("강화 규칙이 새로 바뀌었습니다.");
-                    GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았다.");
+                    GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았습니다.");
                 }
             }));
         }
@@ -248,13 +248,13 @@ namespace DotRPG
             // [DUNGEON] Dungeons are left through the result screen.
             if (Game.Dungeon != null && Game.Dungeon.InRun)
             {
-                GameEvents.RaiseToast("던전 안에서는 사용할 수 없다.");
+                GameEvents.RaiseToast("던전 안에서는 사용할 수 없습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
             if (Game.World.MapId == HuntingGrounds.HomeOf(Game.World.MapId))
             {
-                GameEvents.RaiseToast("이미 마을에 있다.");
+                GameEvents.RaiseToast("이미 마을에 있습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -282,7 +282,7 @@ namespace DotRPG
         }
 
         /// <summary>Text shown when saving is refused inside a dungeon.</summary>
-        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없다."; // [DUNGEON]
+        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없습니다."; // [DUNGEON]
 
         public void SaveGame()
         {

@@ -93,7 +93,7 @@ namespace DotRPG
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
                 if (!owner.IsLocal) return;
-                GameEvents.RaiseToast(n.usesLife ? "HP가 부족하다." : "MP가 부족하다.");
+                GameEvents.RaiseToast(n.usesLife ? "HP가 부족합니다." : "MP가 부족합니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }

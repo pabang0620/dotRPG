@@ -609,7 +609,7 @@ namespace DotRPG
             {
                 s.status = (int)QuestStatus.ReadyToTurnIn;
                 Game.Audio.PlaySfx("quest");
-                GameEvents.RaiseToast($"{NpcName(q.turnIn)}에게 보고하자.");
+                GameEvents.RaiseToast($"{NpcName(q.turnIn)}에게 보고하세요.");
             }
         }
 

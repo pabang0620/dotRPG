@@ -458,7 +458,7 @@ namespace DotRPG
             }
             else if (phase == 3)
             {
-                Announce?.Invoke(this, "해골왕이 광폭해진다!", new Color(1f, 0.3f, 0.25f));
+                Announce?.Invoke(this, "해골왕이 광폭해집니다!", new Color(1f, 0.3f, 0.25f));
                 Game.Audio?.PlayMusic(MapRegistry.MusicRaidEnrage); // [BGM] enrage track until the room / result changes it
                 nextJudgmentAt = Time.time + JudgmentFirstDelay;
             }

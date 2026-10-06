@@ -29,7 +29,7 @@ namespace DotRPG
                 if (fieldBoss == e) fieldBoss = null;
                 GameEvents.RaiseToast($"<color=#ff9f43>필드 보스</color> {e.Stats.displayName} 처치! 다음 출현까지 {FieldBosses.SecondsToNext / 60 + 1}분");
             };
-            GameEvents.RaiseToast($"<color=#ff9f43>필드 보스</color> {MonsterDatabase.Get(def.monsterId)?.name}이(가) 나타났다!");
+            GameEvents.RaiseToast($"<color=#ff9f43>필드 보스</color> {MonsterDatabase.Get(def.monsterId)?.name}이(가) 나타났습니다!");
             Game.Audio?.PlaySfx("rank_reveal");
         }
     }

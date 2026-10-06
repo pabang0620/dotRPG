@@ -244,7 +244,7 @@ namespace DotRPG
             {
                 string bench = roster[roster.Count - 1];
                 Game.Party.RemoveCompanion(bench);
-                GameEvents.RaiseToast($"{MercenaryDatabase.Get(bench)?.name}이(가) 잠시 파티에서 빠졌다.");
+                GameEvents.RaiseToast($"{MercenaryDatabase.Get(bench)?.name}이(가) 잠시 파티에서 빠졌습니다.");
             }
             Game.Party.AddCompanion(id);
         }

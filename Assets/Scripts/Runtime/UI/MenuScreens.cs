@@ -269,7 +269,7 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "GameOver", true);
             var screen = root.gameObject.AddComponent<GameOverScreen>();
-            screen.BuildPanel(root, "쓰러졌다...", 460, "마을 사람들이 당신을 집까지 데려다 주었다.\n가진 물건과 의뢰 진행은 그대로다.", 18);
+            screen.BuildPanel(root, "쓰러졌습니다...", 460, "마을 사람들이 당신을 집까지 데려다 주었습니다.\n가진 물건과 의뢰 진행은 그대로입니다.", 18);
             screen.menu.AddButton("마을에서 다시 일어나기", () => Game.Flow.RespawnInVillage());
             screen.menu.AddButton("마지막 저장 불러오기", () => Game.Flow.ContinueGame(), () => Game.Saves.HasSave());
             screen.menu.AddButton("타이틀로", () => Game.Flow.ReturnToTitle());
@@ -300,7 +300,7 @@ namespace DotRPG
             var p = Game.Session.Quest;
             int seconds = Mathf.FloorToInt(Game.Session.PlayTimeSeconds);
             statsText.text =
-                $"새 공방이 세워지고 마을에 활기가 돌아왔다.\n" +
+                $"새 공방이 세워지고 마을에 활기가 돌아왔습니다.\n" +
                 $"플레이 시간 {seconds / 60:00}:{seconds % 60:00}   ·   해골 퇴치 {p.skeletonsDefeated}\n" +
                 $"보상: 최대 HP +{Game.Quest.Config.rewardMaxHealth}\n" +
                 "세로 슬라이스를 플레이해 주셔서 감사합니다!";

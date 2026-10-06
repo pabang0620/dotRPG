@@ -24,7 +24,7 @@ namespace DotRPG
         static MapInfo Room(string id, string name, string file, MapTheme theme, string music) => new MapInfo
         {
             id = id, displayName = name, resource = "Maps/Dungeons/" + file, music = music, theme = theme,
-            safe = false, instanced = true, hint = "던전 안. 방의 적을 모두 쓰러뜨리면 문이 열린다.",
+            safe = false, instanced = true, hint = "던전 안. 방의 적을 모두 쓰러뜨리면 문이 열립니다.",
         };
 
         static readonly MapInfo[] DungeonRooms =
