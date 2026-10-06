@@ -70,7 +70,7 @@ dotrpg-admin campaign cancel <campaign_uuid> --reason "금액 오류" --revoke  
 | 2 | 새 클라이언트 배포 | |
 | 3 | 소탕 켜기 | `SWEEP_ENABLED=true` |
 | 4 | 대부분이 새 클라이언트로 바뀐 뒤 우편 배달 켜기 | `CAMPAIGN_DELIVERY_ENABLED=true` (옛 클라이언트에는 운영 우편이 빈 우편으로 보인다) |
-| 5 | 부정 방지 기록 1~2주 확인 후 차단으로 전환 | `DEVICE_INFO_REQUIRED=true`, `DEVICE_LIMIT_MODE=enforce`(PC당 2개), `PRESENCE_KILL_MODE=enforce` |
+| 5 | 새 클라이언트 배포와 함께 차단 켜기(플레이어가 적어 관찰 기간 생략, 2026-10-06 결정) | `DEVICE_LIMIT_MODE=enforce`(PC당 2개), `PRESENCE_KILL_MODE=enforce`. 옛 클라이언트가 사라지면 `DEVICE_INFO_REQUIRED=true` |
 | 6 | 재화 이상 2주 분포 확인 후 자동 정지 켜기 | `ECONOMY_HOLD_MODE=enforce` |
 
 배포 직후부터 바로 걸리는 것: 전직·각성 서버 승인, 레이드·파티 던전 기여 판정, 이름 금칙어, 필드 캐리 감쇠, 경매 구매 자격, 별조각 장비 계정 귀속.
