@@ -22,7 +22,7 @@ namespace DotRPG
         readonly List<Button> tabs = new List<Button>();
         string tab = "growth";
         readonly List<AchievementView> visible = new List<AchievementView>();
-        readonly List<(Image bg, Text name, Text info, Button equip)> cells = new List<(Image, Text, Text, Button)>();
+        readonly List<(Image bg, Text name, Text info, Button equip, Image icon)> cells = new List<(Image, Text, Text, Button, Image)>();
 
         public static AchievementScreen Create(Transform canvas)
         {
@@ -40,10 +40,14 @@ namespace DotRPG
                 int col = i / PerColumn, row = i % PerColumn, idx = i;
                 var bg = Panel(w.content, "A" + i, new Vector2(0f, 1f), new Vector2(0f, 1f),
                     new Vector2(col * (CellW + ColGap), Top - row * CellH), new Vector2(CellW, CellH - 4f), i % 2 == 0 ? RowA : RowB);
-                var name = Label(bg.transform, "Name", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -4f), new Vector2(360f, 26f), TextAnchor.MiddleLeft);
-                var info = Label(bg.transform, "Info", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -28f), new Vector2(440f, 24f), TextAnchor.MiddleLeft);
+                // [UI] Category icon at the left of each row (Art/ach_<category>).
+                var icon = UIFactory.SharpIcon(bg.transform, "Icon", Color.white);
+                icon.raycastTarget = false;
+                UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
+                var name = Label(bg.transform, "Name", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -4f), new Vector2(330f, 26f), TextAnchor.MiddleLeft);
+                var info = Label(bg.transform, "Info", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -28f), new Vector2(400f, 24f), TextAnchor.MiddleLeft);
                 var equip = Button(bg.transform, "Equip", "장착", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(110f, 38f), () => w.EquipAt(idx), 16);
-                w.cells.Add((bg, name, info, equip));
+                w.cells.Add((bg, name, info, equip, icon));
             }
             AchievementClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
@@ -92,6 +96,10 @@ namespace DotRPG
                 var a = i < visible.Count ? visible[i] : null;
                 c.bg.gameObject.SetActive(a != null);
                 if (a == null) continue;
+                var mark = Game.Art.Optional("ach_" + a.category);
+                c.icon.enabled = mark != null;
+                c.icon.sprite = mark;
+                c.icon.color = a.achieved ? Color.white : new Color(0.45f, 0.45f, 0.5f, 1f);
                 c.name.text = a.achieved ? $"<color=#ffd34a><b>{a.title}</b></color>  <color=#8fe28f>달성</color>" : $"<color=#b8c4d8>{a.title}</color>";
                 c.info.text = a.achieved ? $"<color=#b8c4d8>{a.description}</color>" : $"<color=#8c96a8>{a.description}  ({a.progress:N0}/{a.goal:N0})</color>";
                 bool equipped = AchievementClient.MyTitleId == a.id;

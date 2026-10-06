@@ -72,9 +72,10 @@ namespace DotRPG
                 row.label.alignment = TextAnchor.MiddleLeft;
                 UIFactory.Stretch(row.label.rectTransform, 92f, 0f, 10f, 0f);
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
-                row.thumb = UIFactory.Image(b.transform, "Thumbnail", look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p), look != null ? Color.white : p.Color);
+                var card = CosmeticAura.Card(p);
+                row.thumb = UIFactory.Image(b.transform, "Thumbnail", card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p)), card != null || look != null ? Color.white : p.Color);
                 row.thumb.preserveAspect = true;
-                UIFactory.Place(row.thumb.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(72f, look != null ? 60f : 36f));
+                UIFactory.Place(row.thumb.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(72f, card != null ? 64f : look != null ? 60f : 36f));
                 s.rows.Add(row);
             }
 

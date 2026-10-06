@@ -266,8 +266,9 @@ namespace DotRPG
                 var p = choices[i];
                 bool owned = StarShopClient.Owned.Contains(p.Id);
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
-                row.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
-                row.icon.color = look != null ? Color.white : p.Color;
+                var card = CosmeticAura.Card(p);
+                row.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
+                row.icon.color = card != null || look != null ? Color.white : p.Color;
                 row.label.text = owned ? $"<color=#8c96a8>{p.Name} · 보유 중</color>" : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{p.Name}</color>  <size=15>공격력 +{p.DamagePercent}%</size>";
                 row.btn.interactable = !owned;
             }
@@ -589,8 +590,9 @@ namespace DotRPG
                 {
                     var p = CosmeticCatalog.Find(r.itemId);
                     var look = p != null && p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
-                    c.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
-                    c.icon.color = look != null ? Color.white : p != null ? p.Color : Color.white;
+                    var card = CosmeticAura.Card(p);
+                    c.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
+                    c.icon.color = card != null || look != null ? Color.white : p != null ? p.Color : Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
                     c.note.text = r.duplicate ? "<color=#b8c4d8>여분 +1</color>"
                         : r.byPity ? "<color=#ffd34a>선택 · NEW</color>" : "<color=#8fe28f>NEW</color>";

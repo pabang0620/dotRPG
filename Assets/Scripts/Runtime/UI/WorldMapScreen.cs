@@ -13,6 +13,7 @@ namespace DotRPG
         Text caption, legend, detail, tooltipText, npcPageText;
         Transform side;
         Button roomButton;
+        Image bossIcon;
         readonly List<GameObject> pins = new List<GameObject>();
         readonly List<(string id, Button button)> regionButtons = new List<(string, Button)>();
         readonly List<(Button button, Text label)> npcRows = new List<(Button, Text)>();
@@ -48,6 +49,11 @@ namespace DotRPG
             w.roomButton = Button(frame.transform, "ViewInterior", "실내 보기", "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 12), new Vector2(160, 34), () =>
             { if (w.selectedNpc >= 0 && w.npcs[w.selectedNpc].interior != null) w.SelectMap(w.npcs[w.selectedNpc].interior); }, 17);
             w.roomButton.gameObject.SetActive(false);
+            // [FIELD BOSS] The region's boss face next to its schedule line.
+            w.bossIcon = UIFactory.SharpIcon(frame.transform, "BossIcon", Color.white);
+            w.bossIcon.raycastTarget = false;
+            UIFactory.Place(w.bossIcon.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 14), new Vector2(56, 56));
+            w.bossIcon.enabled = false;
             w.side = Panel(w.content, "Side", new Vector2(1, 1), new Vector2(1, 1), Vector2.zero, new Vector2(420, 590), UiTheme.Panel).transform;
             Label(w.side, "RegionHeading", "지역 선택 · 이동 없이 둘러보기", 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
             var regions=Panel(w.side,"RegionsViewport",TL,TL,new Vector2(16,-44),new Vector2(388,294),UiTheme.PanelDeep);
@@ -144,6 +150,7 @@ namespace DotRPG
             var zone = HuntingGrounds.Get(selectedMap);
             detail.rectTransform.sizeDelta = new Vector2(718, 38);
             detail.fontSize = 16;
+            bossIcon.enabled = false;
             detail.text = current ? "NPC 번호나 이름을 선택하세요." : "NPC 기본 위치 · 지역 선택은 캐릭터를 이동시키지 않습니다.";
             if (zone != null)
             {
@@ -152,7 +159,10 @@ namespace DotRPG
                 detail.text = $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
                               $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치)</color>";
                 string boss = FieldBosses.InfoLine(zone.id); // [FIELD BOSS]
-                if (boss != null) { detail.rectTransform.sizeDelta = new Vector2(718, 84); detail.text += "\n" + boss; }
+                var face = boss != null ? Game.Art.Optional("fboss_icon_" + zone.id.Split('_')[0]) : null;
+                bossIcon.enabled = face != null;
+                bossIcon.sprite = face;
+                if (boss != null) { detail.rectTransform.sizeDelta = new Vector2(face != null ? 650 : 718, 84); detail.text += "\n" + boss; }
             }
             if(zone!=null)detail.text += "\n" + WorldRoutes.Directions(info);
             tooltip.gameObject.SetActive(false); roomButton.gameObject.SetActive(false);

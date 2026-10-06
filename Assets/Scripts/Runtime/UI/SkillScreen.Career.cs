@@ -50,7 +50,16 @@ namespace DotRPG
             var side=Panel(careerRoot,"CareerDetail",new Vector2(0,1),new Vector2(0,1),new Vector2(802,-4),new Vector2(414,550),new Color32(20,29,45,255));
             if(!p.IsPromoted)
             {
-                CareerText(side.transform,"Compare",$"<b>{CareerCatalog.Name(browsing)}</b>\n{CareerCatalog.Role(browsing)}\n\n대표: {skills[1].name} / {skills[5].name}\n각성: {skills[8].name}\n\n{skills[1].description}\n\n{skills[5].description}\n\n전직은 되돌릴 수 없습니다.\n전직 선택을 누르면 한 번 더 확인합니다.",21,20,20,374,420);
+                // [UI] The career's card art beside its name and signature skills (text only when no card is drawn).
+                var card=Game.Art.Optional("Careers/career_card_"+browsing.ToString().ToLowerInvariant());
+                if(card!=null)
+                {
+                    var img=UIFactory.SharpIcon(side.transform,"Card",Color.white);img.sprite=card;img.raycastTarget=false;
+                    UIFactory.Place(img.rectTransform,new Vector2(0,1),new Vector2(0,1),new Vector2(18,-18),new Vector2(128,192));
+                    CareerText(side.transform,"Head",$"<b>{CareerCatalog.Name(browsing)}</b>\n{CareerCatalog.Role(browsing)}\n\n대표 기술\n{skills[1].name}\n{skills[5].name}\n\n각성: {skills[8].name}",19,160,20,236,192);
+                    CareerText(side.transform,"Compare",$"{skills[1].description}\n\n{skills[5].description}\n\n<color=#ff9f7a>전직은 되돌릴 수 없습니다.</color>",17,20,222,374,226);
+                }
+                else CareerText(side.transform,"Compare",$"<b>{CareerCatalog.Name(browsing)}</b>\n{CareerCatalog.Role(browsing)}\n\n대표: {skills[1].name} / {skills[5].name}\n각성: {skills[8].name}\n\n{skills[1].description}\n\n{skills[5].description}\n\n전직은 되돌릴 수 없습니다.\n전직 선택을 누르면 한 번 더 확인합니다.",21,20,20,374,420);
                 CareerButton("Promote","전직 선택",824,467,365,52,()=>{if(!p.CanPromote(browsing)){GameEvents.RaiseToast("15레벨 이상, 자신의 기본 직업 계열만 전직할 수 있습니다.");return;}var pick=browsing;Game.UI.Confirm($"<b>{CareerCatalog.Name(pick)}</b>{Ro(CareerCatalog.Name(pick))} 전직합니다.\n<size=18>전직은 되돌릴 수 없습니다.</size>\n전직할까요?",()=>CareerClient.Promote(pick,(ok,msg)=>{if(!ok){GameEvents.RaiseToast(msg);return;}p.Promote(pick);Game.Quest.SetFlag(NpcController.CareerFlag);GameEvents.RaiseToast(CareerCatalog.Name(pick)+" 전직 완료 · 전직 포인트 4");Game.Flow.Autosave();Refresh();}),true);});
             }
             else if(chosen.kind==CareerSkillKind.Awakening)
