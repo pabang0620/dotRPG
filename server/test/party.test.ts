@@ -7,7 +7,7 @@ import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { auth, buildApp, resetDb, shutdown } from './helpers';
 import { fakeRng, seedLevel, seedWorn } from './economyHelpers';
-import { createParty, del, formParty, get, newHero, patch, post, raw, type Hero } from './partyHelpers';
+import { createParty, del, formParty, get, newHero, patch, post, raidEntryLevel, raw, type Hero } from './partyHelpers';
 import request from 'supertest';
 
 const app = buildApp();
@@ -107,8 +107,8 @@ describe('모집 게시판: 만들기, 목록, 신청, 수락', () => {
     await getPool().query("INSERT INTO quest_claims (character_id, quest_id, reward) VALUES ($1, 'c1_fortress', '{}'::jsonb)", [h.dbId]);
     const res = await createParty(app, h, { dungeon_id: 'raid_skeleton_king', difficulty: 0 });
     expect(res.status).toBe(422);
-    expect(res.body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 17, have: 1 });
-    await seedLevel(h, 17);
+    expect(res.body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: raidEntryLevel(), have: 1 });
+    await seedLevel(h, raidEntryLevel());
     expect((await createParty(app, h, { dungeon_id: 'raid_skeleton_king', difficulty: 0, max_members: 4 })).status).toBe(201);
   });
 

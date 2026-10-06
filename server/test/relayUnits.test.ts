@@ -2,8 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { ADDR_ALL, CH, decodeFrame, encodeBatch, encodePing, encodePong, routePacket, splitBatches, type Packet } from '../src/domains/relay/relayFrames';
 import { TokenBucket } from '../src/domains/relay/relaySession';
 import { MemoryTicketStore, signTicket, verifyTicket } from '../src/domains/relay/relayTicket';
+import { getNow } from '../src/utils/clock';
 import { setMaintenance } from '../src/ops/maintenanceState';
-import { buildApp, resetDb, shutdown } from './helpers';
+import { buildApp, resetDb, shutdown, pinClockToMondayFlowing } from './helpers';
 import { formParty, newHero, startAndBegin, type Hero } from './partyHelpers';
 import { RelayClient, ticketFor } from './relayHelpers';
 import { startServer, type TestServer } from './wsHelpers';
@@ -11,6 +12,7 @@ import { startServer, type TestServer } from './wsHelpers';
 const app = buildApp({ RELAY_HOST_GRACE_MS: '300' });
 let srv: TestServer;
 beforeAll(async () => {
+  pinClockToMondayFlowing();
   await resetDb();
   srv = await startServer(app);
 });
@@ -121,7 +123,7 @@ describe('점검', () => {
     const c = await RelayClient.open(srv.port);
     c.hello(t.body.data.ticket);
     await c.waitT('ready');
-    const now = Date.now();
+    const now = getNow().getTime();
     setMaintenance({ uuid: randomUUID(), notice: '', blockLoginAt: new Date(now - 60_000), startsAt: new Date(now - 1000), endsAt: new Date(now + 600_000) });
     const blocked = await ticketFor(app, heroes[1] as Hero, 'run', runId);
     expect(blocked.status).toBe(503);

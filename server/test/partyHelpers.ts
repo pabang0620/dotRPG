@@ -25,6 +25,14 @@ export function roomsOf(dungeonId = 'gold_vein'): { map: string; kills: [string,
   return d.rooms.map((r) => ({ map: r.mapId, kills: r.groups.map((g) => [g.monsterId, g.count] as [string, number]) }));
 }
 
+/** 레이드 입장 레벨(dungeons.json raidNumbers.recommendedLevel). 데이터가 바뀌어도 테스트가 따라간다 */
+export function raidEntryLevel(dungeonId = 'raid_skeleton_king'): number {
+  const d = getGameData().economy.dungeons.byId.get(dungeonId);
+  const need = d?.raidNumbers?.recommendedLevel;
+  if (need === undefined) throw new Error(`레이드 없음 ${dungeonId}`);
+  return need;
+}
+
 export interface Duo {
   host: Hero;
   member: Hero;

@@ -4,13 +4,14 @@ import { registerAllJobs } from '../src/ops/jobs';
 import { integrityJob } from '../src/ops/jobs/integrity';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
-import { buildApp, resetDb, shutdown } from './helpers';
+import { buildApp, pinClockToMondayFlowing, resetDb, shutdown } from './helpers';
 import { fakeRng } from './economyHelpers';
 import { formParty, newHero, post, type Hero } from './partyHelpers';
 
 const app = buildApp({ PURGE_BATCH: '5' });
 registerAllJobs();
 beforeAll(async () => {
+  pinClockToMondayFlowing();
   await resetDb();
   resetJobStop();
 });

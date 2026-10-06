@@ -7,7 +7,7 @@ import { getLimiterStore } from '../src/domains/chat/limiterStore';
 import { hasObfuscatedBannedWord, maskBannedWords } from '../src/utils/bannedWords';
 import { getGameData } from '../src/gamedata/loader';
 import { newHero, type Hero } from './economyHelpers';
-import { auth, buildApp, resetDb, shutdown } from './helpers';
+import { auth, buildApp, resetDb, shutdown, openDungeonToday } from './helpers';
 import { chat, connect, helloFrame, sleep, startServer, until, WsClient, type TestServer } from './wsHelpers';
 
 let app: Express;
@@ -395,7 +395,7 @@ describe('친구 접속 상태, 파티 알림과 초대', () => {
     const M1 = await join(M);
     const O1 = await join(O);
     const create = await rest.post(H, `/characters/${H.id}/parties`, {
-      request_id: randomUUID(), dungeon_id: 'gold_vein', difficulty: 0, max_members: 4, min_power: 0, listed: false,
+      request_id: randomUUID(), dungeon_id: openDungeonToday(), difficulty: 0, max_members: 4, min_power: 0, listed: false,
     });
     expect(create.status).toBe(201);
     H1.c.send(chat('party', '파티 시작'));
@@ -441,7 +441,7 @@ describe('친구 접속 상태, 파티 알림과 초대', () => {
     const H1 = await join(H);
     const M1 = await join(M);
     await rest.post(H, `/characters/${H.id}/parties`, {
-      request_id: randomUUID(), dungeon_id: 'gold_vein', difficulty: 0, max_members: 2, min_power: 0, listed: false,
+      request_id: randomUUID(), dungeon_id: openDungeonToday(), difficulty: 0, max_members: 2, min_power: 0, listed: false,
     });
     const inv = await rest.post(H, `/characters/${H.id}/party/invites`, { request_id: randomUUID(), target: M.id });
     await M1.c.waitT('party.invite');

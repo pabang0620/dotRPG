@@ -7,7 +7,7 @@ import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { anomalyKinds, fakeRng, seedClaims, seedLevel } from './economyHelpers';
-import { clearAll, createParty, formParty, get, honestHostReport, newHero, post, roomsOf, stats, startAndBegin, type Hero } from './partyHelpers';
+import { clearAll, createParty, formParty, get, honestHostReport, newHero, post, raidEntryLevel, roomsOf, stats, startAndBegin, type Hero } from './partyHelpers';
 
 const app = buildApp();
 const MONDAY = '2026-10-05T03:00:00Z';
@@ -82,7 +82,7 @@ describe('감사 2: 레이드 최소 인원은 클리어를 유지한 사람만 
     fixed = new Date('2026-10-07T03:00:00Z');
     const mk = async () => {
       const h = await newHero(app);
-      await seedLevel(h, 17);
+      await seedLevel(h, raidEntryLevel());
       await seedClaims(h, ['c1_fortress']);
       return h;
     };

@@ -6,7 +6,9 @@ import request from 'supertest';
 import { createApp } from '../src/app';
 import { initConfig, getConfig } from '../src/config/env';
 import { closePool, getPool } from '../src/db/pool';
-import { initGameData } from '../src/gamedata/loader';
+import { isOpenToday } from '../src/domains/dungeons/dungeonRules';
+import { getGameData, initGameData } from '../src/gamedata/loader';
+import { getNow, setClockOverride } from '../src/utils/clock';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 
 export const CLIENT_VERSION = '0.2.0';
@@ -194,4 +196,21 @@ export function emptyState(version: number, over: object = {}): Record<string, u
     skill_gems: [],
     ...over,
   };
+}
+
+/**
+ * 서버 시계를 요일던전 gold_vein 이 열리는 월요일 낮으로 옮기되 흐름은 실제 시간 그대로 둔다(중계 타이머 테스트용).
+ * 실제 요일에 상관없이 gold_vein 파티가 만들어진다. 끝나면 setClockOverride(null).
+ */
+export function pinClockToMondayFlowing(): void {
+  const offset = Date.parse('2026-10-05T03:00:00Z') - Date.now();
+  setClockOverride(() => new Date(Date.now() + offset));
+}
+
+/** 오늘(서버 시계 기준) 열려 있는 요일던전 중 첫 번째 id. 요일에 따라 테스트가 깨지지 않게 gold_vein 대신 쓴다 */
+export function openDungeonToday(): string {
+  const eco = getGameData().economy;
+  const now = getNow();
+  for (const d of eco.dungeons.byId.values()) if (!d.isRaid && isOpenToday(eco, d, now)) return d.id;
+  throw new Error('오늘 열린 요일던전이 없습니다');
 }

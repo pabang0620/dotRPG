@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { resetSwitchCooldowns } from '../src/domains/transport/fallbackService';
-import { auth, buildApp, createChar, randomName, resetDb, shutdown, ver, type Session } from './helpers';
+import { auth, buildApp, createChar, randomName, resetDb, shutdown, ver, type Session, pinClockToMondayFlowing } from './helpers';
 import { formParty, get, newHero, post, startAndBegin, type Hero } from './partyHelpers';
 import { joinRoom, ticketFor } from './relayHelpers';
 import { helloFrame, startServer, WsClient, type TestServer } from './wsHelpers';
@@ -13,6 +13,7 @@ let srv: TestServer;
 const sockets: WsClient[] = [];
 
 beforeAll(async () => {
+  pinClockToMondayFlowing();
   await resetDb();
   srv = await startServer(app);
 });

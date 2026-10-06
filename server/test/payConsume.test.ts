@@ -5,7 +5,7 @@ import { setClockOverride } from '../src/utils/clock';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 import { debit } from '../src/domains/starshop/starWallet';
 import * as starshop from '../src/domains/starshop/starshopService';
-import { RATES_VERSION } from '../src/domains/starshop/starshopDefs';
+import { exchangePriceOf, RATES_VERSION, STAR_COSMETIC_BY_ID } from '../src/domains/starshop/starshopDefs';
 import { adminApp } from './opsHelpers';
 import { post } from './economyHelpers';
 import { resetDb, shutdown } from './helpers';
@@ -71,7 +71,11 @@ describe('E. 소비 강화', () => {
     expect(over.body.errors).toMatchObject({ code: 'STAR_SPEND_CAP', limit: 300, used: 300 });
     expect(Date.parse(over.body.errors.resets_at)).not.toBeNaN();
     getRateLimitStore().clear();
-    expect((await post(app, hero, '/starshop/exchange', { item_id: 'aura_maple' })).status).toBe(422);
+    // 뽑기로 이미 얻은 외형이면 소유 검사(409)가 먼저라서, 가지지 않은 교환 가능 외형을 고른다
+    const ownedRows = await getPool().query<{ item_id: string }>('SELECT item_id FROM account_cosmetics WHERE account_id = $1', [p.accountId]);
+    const owned = new Set(ownedRows.rows.map((r) => r.item_id));
+    const target = [...STAR_COSMETIC_BY_ID.values()].find((c) => !owned.has(c.id) && exchangePriceOf(c) > 0)!;
+    expect((await post(app, hero, '/starshop/exchange', { item_id: target.id })).status).toBe(422);
     // 요약에 상한이 보인다
     const sum = await (await import('supertest')).default(app).get(`/characters/${hero.id}/starshop`).set((await import('./payHelpers')).authP(p));
     expect(sum.body.data.spend_cap).toMatchObject({ limit: 300, used: 300, left: 0 });

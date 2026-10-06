@@ -7,7 +7,7 @@ import { getConfig } from '../src/config/env';
 import { attachRelay } from '../src/domains/relay/relayServer';
 import { relayHub } from '../src/domains/relay/relayHub';
 import { relayMetrics } from '../src/domains/relay/relayMetrics';
-import { auth, buildApp, resetDb, shutdown } from './helpers';
+import { auth, buildApp, resetDb, shutdown, pinClockToMondayFlowing } from './helpers';
 import { formParty, newHero, post, startAndBegin, type Hero } from './partyHelpers';
 import { joinRoom, RelayClient, ticketFor } from './relayHelpers';
 import { sleep, startServer, until, type TestServer } from './wsHelpers';
@@ -17,6 +17,7 @@ let app = buildApp(OVERRIDES);
 let srv: TestServer;
 
 beforeAll(async () => {
+  pinClockToMondayFlowing();
   await resetDb();
   srv = await startServer(app);
 });
