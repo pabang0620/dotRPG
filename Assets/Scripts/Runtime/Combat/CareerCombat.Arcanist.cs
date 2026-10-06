@@ -283,11 +283,13 @@ namespace DotRPG
             Target(c.dir, c.n.range, out Vector2 center);
             CareerFx.Clip("m_vortex", center, Vector2.zero, c.n.radius / 1.56f, 10f, VfxLayer.Ground, false, new Color(1f, 1f, 1f, .6f), false, 2f, true).Squash(1f, .72f).FadeOut(.4f);
             string[] elements = { "fire", "ice", "storm" };
-            for (int i = 0; i < 3; i++)
+            // Fire, ice and lightning stars fall in turn around the centre (more of them after the 2026-10-06 balance).
+            int stars = Mathf.Max(3, c.s.hits - 1);
+            for (int i = 0; i < stars; i++)
             {
                 if (!Live(c)) yield break;
-                Vector2 ground = center + Rotate(c.dir, 90f + i * 120f) * c.n.radius * .45f;
-                StartCoroutine(ElementStar(c, ground, elements[i]));
+                Vector2 ground = center + Rotate(c.dir, 90f + i * 360f / stars) * c.n.radius * .45f;
+                StartCoroutine(ElementStar(c, ground, elements[i % 3]));
                 yield return new WaitForSeconds(.3f);
             }
             yield return new WaitForSeconds(.45f);

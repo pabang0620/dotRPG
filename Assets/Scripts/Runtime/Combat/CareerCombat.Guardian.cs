@@ -36,7 +36,7 @@ namespace DotRPG
             Sound("c_shield");
             Feel(1, Vector2.down);
             foreach (var e in Enemies(owner.Center, c.n.radius)) Strike(c, e, c.n.damage, owner.Center, 10f, 1, "c_shield");
-            if (c.authority) { AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); guardSlowEnd = Time.time + c.s.duration; }
+            if (c.authority) { AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); guardSlowEnd = Time.time + c.s.duration * .5f; } // the slow stays short while the guard lasts
         }
 
         /// <summary>회귀의 방패: the thrown shield hits on the way out and back, and shields every ally it touches.</summary>

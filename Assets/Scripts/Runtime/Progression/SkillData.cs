@@ -280,17 +280,18 @@ namespace DotRPG
         static List<SkillGem> CreateV2() => new List<SkillGem>
         {
             // Warrior.
-            Active("crush", "파쇄 일격", CharacterClass.Warrior, 0, "눈앞의 적 하나를 온 힘으로 내려친다. 주변에 충격파가 퍼진다. 보스와 강적을 상대하는 주력기.").With(g => { g.damageMult = 3.2f; g.cooldown = 2.5f; g.range = 2.0f; g.radius = 0.8f; g.manaCost = 6; }),
-            Active("whirl", "회전 베기", CharacterClass.Warrior, 1, "제자리에서 한 바퀴 돌며 주변의 모든 적을 벤다. 적이 셋 이상 몰렸을 때 쓴다.").With(g => { g.damageMult = 2.0f; g.cooldown = 5f; g.radius = 2.0f; g.manaCost = 14; }),
-            Active("cry", "전쟁 함성", CharacterClass.Warrior, 2, "함성으로 주변 적을 기절시키고 어그로를 끈다.").With(g => { g.damageMult = 0.5f; g.cooldown = 14f; g.radius = 2.9f; g.stun = 1.3f; g.manaCost = 18; }),
-            Active("charge", "돌진 베기", CharacterClass.Warrior, 3, "겨눈 방향으로 돌진하며 길목의 적을 모두 베고 밀어낸다. 무리 속으로 파고들 때 쓴다.").With(g => { g.damageMult = 3.0f; g.cooldown = 7f; g.range = 4.6f; g.radius = 1.0f; g.manaCost = 14; }),
-            Active("blades", "천검 강림", CharacterClass.Warrior, 4, "하늘에서 거대한 검을 떨어뜨려 주변의 적을 꿰뚫는다.").With(g => { g.damageMult = 2.6f; g.cooldown = 30f; g.radius = 1.4f; g.range = 5.4f; g.hits = 10; g.manaCost = 40; }),
+            // [BALANCE 2026-10-06] Cheaper, quicker, wider: about 1.2x damage per second, used far more often.
+            Active("crush", "파쇄 일격", CharacterClass.Warrior, 0, "눈앞의 적 하나를 온 힘으로 내려친다. 주변에 충격파가 퍼진다. 보스와 강적을 상대하는 주력기.").With(g => { g.damageMult = 2.7f; g.cooldown = 1.6f; g.range = 2.2f; g.radius = 1.3f; g.manaCost = 4; }),
+            Active("whirl", "회전 베기", CharacterClass.Warrior, 1, "제자리에서 한 바퀴 돌며 주변의 모든 적을 벤다. 적이 셋 이상 몰렸을 때 쓴다.").With(g => { g.damageMult = 1.7f; g.cooldown = 3f; g.radius = 3.2f; g.manaCost = 8; }),
+            Active("cry", "전쟁 함성", CharacterClass.Warrior, 2, "함성으로 주변 적을 기절시키고 어그로를 끈다.").With(g => { g.damageMult = 0.5f; g.cooldown = 10f; g.radius = 4.2f; g.stun = 1.3f; g.manaCost = 12; }),
+            Active("charge", "돌진 베기", CharacterClass.Warrior, 3, "겨눈 방향으로 돌진하며 길목의 적을 모두 베고 밀어낸다. 무리 속으로 파고들 때 쓴다.").With(g => { g.damageMult = 2.5f; g.cooldown = 4.5f; g.range = 5f; g.radius = 1.6f; g.manaCost = 9; }),
+            Active("blades", "천검 강림", CharacterClass.Warrior, 4, "하늘에서 거대한 검을 떨어뜨려 주변의 적을 꿰뚫는다.").With(g => { g.damageMult = 2.4f; g.cooldown = 24f; g.radius = 2f; g.range = 6f; g.hits = 12; g.manaCost = 30; }),
             // Mage.
-            Active("lance", "번개 창", CharacterClass.Mage, 0, "가장 가까운 적 하나에게 굵은 번개를 내리꽂는다. 맞은 자리 주변에도 전기가 튄다. 보스와 강적을 상대하는 주력기.").With(g => { g.damageMult = 3.0f; g.cooldown = 2.5f; g.range = 8f; g.radius = 0.8f; g.manaCost = 6; }),
-            Active("frostorb", "빙뢰구", CharacterClass.Mage, 1, "얼음 구체를 날려 부딪힌 자리의 적들을 얼음 파편으로 터뜨린다. 적이 셋 이상 몰렸을 때 쓴다.").With(g => { g.damageMult = 1.9f; g.cooldown = 5f; g.radius = 2.0f; g.range = 8f; g.manaCost = 14; }),
-            Active("nova", "서리 폭발", CharacterClass.Mage, 2, "주변에 냉기를 터뜨려 다가온 적을 1.4초 동안 얼린다.").With(g => { g.damageMult = 0.5f; g.cooldown = 14f; g.radius = 2.8f; g.freeze = 1.4f; g.manaCost = 18; }),
-            Active("firefield", "화염 장판", CharacterClass.Mage, 3, "적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.").With(g => { g.damageMult = 0.45f; g.cooldown = 9f; g.range = 7.5f; g.radius = 2.0f; g.hits = 6; g.manaCost = 16; }),
-            Active("meteor", "메테오", CharacterClass.Mage, 4, "거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.").With(g => { g.damageMult = 3f; g.cooldown = 30f; g.radius = 1.9f; g.range = 6.2f; g.hits = 7; g.manaCost = 45; }),
+            Active("lance", "번개 창", CharacterClass.Mage, 0, "가장 가까운 적 하나에게 굵은 번개를 내리꽂는다. 맞은 자리 주변에도 전기가 튄다. 보스와 강적을 상대하는 주력기.").With(g => { g.damageMult = 2.5f; g.cooldown = 1.6f; g.range = 8f; g.radius = 1.3f; g.manaCost = 4; }),
+            Active("frostorb", "빙뢰구", CharacterClass.Mage, 1, "얼음 구체를 날려 부딪힌 자리의 적들을 얼음 파편으로 터뜨린다. 적이 셋 이상 몰렸을 때 쓴다.").With(g => { g.damageMult = 1.6f; g.cooldown = 3f; g.radius = 3.1f; g.range = 8f; g.manaCost = 8; }),
+            Active("nova", "서리 폭발", CharacterClass.Mage, 2, "주변에 냉기를 터뜨려 다가온 적을 1.4초 동안 얼린다.").With(g => { g.damageMult = 0.5f; g.cooldown = 10f; g.radius = 4.1f; g.freeze = 1.4f; g.manaCost = 12; }),
+            Active("firefield", "화염 장판", CharacterClass.Mage, 3, "적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.").With(g => { g.damageMult = 0.4f; g.cooldown = 6f; g.range = 7.5f; g.radius = 3.2f; g.hits = 6; g.manaCost = 10; }),
+            Active("meteor", "메테오", CharacterClass.Mage, 4, "거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.").With(g => { g.damageMult = 2.8f; g.cooldown = 24f; g.radius = 2.8f; g.range = 7f; g.hits = 8; g.manaCost = 32; }),
 
             new SkillGem { id = "sup_dmg", name = "추가 피해", icon = "gem_sup_dmg", kind = GemKind.Support, unlockLevel = 3, moreDamage = 35, manaMult = 1.3f,
                 description = "연결된 스킬의 피해 35% 증폭. MP 소모 30% 증가." },
@@ -397,13 +398,31 @@ namespace DotRPG
         {
             get
             {
-                float flat = data.BaseMaxHp + (Level - 1) * HpPerLevel + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
+                bool warrior = data.Class == CharacterClass.Warrior;
+                float flat = data.BaseMaxHp + (warrior ? WarriorHpBonus : 0) + (Level - 1) * (HpPerLevel + (warrior ? WarriorHpPerLevel : 0)) + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
                 float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0) + data.CollectionHealth;
-                return Mathf.Max(1, Mathf.RoundToInt(flat * (1f + inc / 100f)));
+                return Mathf.Max(1, Mathf.RoundToInt(flat * (1f + inc / 100f) * CareerHp(Prog.Career)));
             }
         }
 
-        public int MaxMp => Has(Keystone.BloodMagic) ? 0 : BaseMana + (Level - 1) * MpPerLevel + Sum(PassiveStat.FlatMp);
+        public int MaxMp
+        {
+            get
+            {
+                if (Has(Keystone.BloodMagic)) return 0;
+                bool mage = data.Class == CharacterClass.Mage;
+                float mp = BaseMana + (mage ? MageMpBonus : WarriorMpBonus) + (Level - 1) * (MpPerLevel + (mage ? MageMpPerLevel : 0)) + Sum(PassiveStat.FlatMp);
+                return Mathf.RoundToInt(mp * CareerMp(Prog.Career));
+            }
+        }
+
+        /// <summary>
+        /// [BALANCE 2026-10-06] Class identity in the base numbers: warriors are the sturdy ones (more HP, more per
+        /// level), mages carry the big mana pool; the career then leans further (guardian +30% HP, bishop +25% MP...).
+        /// </summary>
+        public const int WarriorHpBonus = 50, WarriorHpPerLevel = 6, WarriorMpBonus = 10, MageMpBonus = 40, MageMpPerLevel = 3;
+        public static float CareerHp(Career c) => c == Career.Guardian ? 1.3f : c == Career.Fighter ? 1.1f : c == Career.Bishop ? 1.05f : 1f;
+        public static float CareerMp(Career c) => c == Career.Bishop ? 1.25f : c == Career.Arcanist ? 1.2f : 1f;
 
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>
         public float ManaRegen => MaxMp * 0.05f * (1f + Sum(PassiveStat.ManaRegen) / 100f);

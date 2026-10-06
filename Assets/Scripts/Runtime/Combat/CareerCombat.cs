@@ -168,7 +168,7 @@ namespace DotRPG
             if (!Prog.CareerUnlocked(s)) yield break;
             string map = Game.Session.MapId;
             int version = castVersion;
-            Vector2 dir = Aim();
+            Vector2 dir = owner.AutoAim(Mathf.Max(4f, Mathf.Max(s.range, s.radius) + 1.5f)); // [AIM] every skill finds its target
             bool authority = !PartyNet.IsMember;
             Windup(s, dir);
             if (s.cast > 0) yield return new WaitForSeconds(s.cast);

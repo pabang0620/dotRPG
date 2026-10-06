@@ -168,7 +168,7 @@ namespace DotRPG
                 Debug.LogWarning($"[dotRPG] Unknown monster id '{id}', spawning a skeleton.");
                 def = Get(Warrior);
             }
-            return SpawnDef(def, pos, parent, hpMul, dmgMul, level);
+            return SpawnDef(def.Clone(), pos, parent, hpMul, dmgMul, level); // a copy: SpawnDef adjusts the pace on it
         }
 
         /// <summary>Summoned helpers (necro, boss, totems): no XP and no loot.</summary>
@@ -193,9 +193,27 @@ namespace DotRPG
             return SpawnDef(def, pos, parent, 1f, 1f, level, xp);
         }
 
+        /// <summary>
+        /// [BALANCE 2026-10-06] Ordinary monsters attack half as often as their table says (fields hold three times the
+        /// monsters they used to): the wind-up is 1.4x longer so it can be read and dodged, the whole cycle twice as long,
+        /// and ranged / caster skill timers doubled. Bosses and raids keep their authored patterns.
+        /// </summary>
+        public const float AttackPace = 2f, WindupStretch = 1.4f;
+
+        static void Slow(MonsterDef def)
+        {
+            if (def.boss || def.raid) return;
+            float cycle = (def.windup + def.recover) * AttackPace;
+            def.windup *= WindupStretch;
+            def.recover = Mathf.Max(0.2f, cycle - def.windup);
+            def.skillInterval *= AttackPace;
+            def.summonInterval *= AttackPace;
+        }
+
         static EnemyController SpawnDef(MonsterDef def, Vector2 pos, Transform parent, float hpMul, float dmgMul, int level, int xpOverride = -1)
         {
             level = Mathf.Max(1, level);
+            Slow(def);
             var stats = ScriptableObject.CreateInstance<EnemyStats>();
             stats.name = def.id;
             stats.enemyId = def.id;

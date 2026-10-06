@@ -38,7 +38,53 @@ namespace DotRPG
         public static string Role(Career c) => c == Career.Fighter ? "검기·기동·연계 / 검술 딜러" : c == Career.Guardian ? "도발·방벽 / 보호 탱커" : c == Career.Arcanist ? "원소 연계·광역 / 마법 딜러" : "회복·정화·축복 / 지원 힐러";
         public static string[] Branches(Career c) => c == Career.Fighter ? new[] { "검기의 흐름", "검의 현현" } : c == Career.Guardian ? new[] { "철벽과 보호", "도발과 반격" } : c == Career.Arcanist ? new[] { "원소의 공명", "마력 운용" } : new[] { "회복과 유지", "축복과 보호" };
         public static Color Color(Career c) => c == Career.Fighter ? new Color32(103, 179, 255, 255) : c == Career.Guardian ? new Color32(73, 205, 211, 255) : c == Career.Arcanist ? new Color32(174, 128, 250, 255) : new Color32(244, 215, 132, 255);
-        static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음") => new CareerSkill {
+        /// <summary>
+        /// [BALANCE 2026-10-06] Skills are used more often and reach wider: actives cost 0.65x mana, recharge in 0.7x
+        /// the time and cover 1.5x the radius; damage per cast 0.85x (about 1.2x damage per second), heals 0.8x,
+        /// buffs and shields last twice as long with cooldown 1.6x. The awakening skill goes the other way: cooldown 1.25x but duration and hit count 1.5x
+        /// (radius 1.3x, mana 0.75x). Passives (slots
+        /// 0 and 4) are untouched. "반경 Nm" in a description follows the new radius.
+        /// </summary>
+        static readonly string[] HealEffects = { "heal", "bloom", "wings", "cleanse" };
+        static readonly string[] BuffEffects = { "guard", "oath", "bless", "counter" };
+        /// <summary>Lasting buffs and shields: twice as long, cast less often (pressing them again and again is a chore).</summary>
+        static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter", "wings" };
+        static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음")
+        {
+            bool passive = i == 0 || i == 4, awaken = i == 8;
+            if (!passive)
+            {
+                float radiusK = awaken ? 1.3f : 1.5f;
+                if (radius > 0f)
+                {
+                    float before = radius;
+                    radius = Mathf.Round(radius * radiusK * 10f) / 10f;
+                    desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(반경|주변) (\d+(?:\.\d+)?)m", m =>
+                        Mathf.Abs(float.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) - before) < 0.05f ? $"{m.Groups[1].Value} {radius:0.#}m" : m.Value);
+                }
+                mp = Mathf.Max(1, Mathf.RoundToInt(mp * (awaken ? 0.75f : 0.65f)));
+                // The awakening is the big moment: it comes back more slowly but lasts longer and lands more often.
+                bool longBuff = System.Array.IndexOf(LongBuffs, effect) >= 0;
+                cd = Mathf.Max(0.5f, Mathf.Round(cd * (awaken ? 1.25f : longBuff ? 1.6f : 0.7f) * 2f) / 2f);
+                if (longBuff)
+                {
+                    float was = duration;
+                    duration *= 2f;
+                    desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(\d+(?:\.\d+)?)초", m =>
+                        Mathf.Abs(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - was) < 0.05f ? $"{duration:0.#}초" : m.Value);
+                }
+                if (awaken)
+                {
+                    duration *= 1.5f;
+                    hits = Mathf.Max(hits, Mathf.CeilToInt(hits * 1.5f));
+                }
+                if (System.Array.IndexOf(HealEffects, effect) >= 0) power *= 0.8f;
+                else if (System.Array.IndexOf(BuffEffects, effect) < 0 && !awaken) power *= 0.85f;
+            }
+            return Make(c, i, id, name, desc, effect, power, mp, cd, range, radius, cast, duration, hits, synergy);
+        }
+
+        static CareerSkill Make(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration, int hits, string synergy) => new CareerSkill {
             career=c,index=i,delivery=effect,id=id,name=name,description=desc,effect=effect,power=power,mp=mp,cooldown=cd,range=range,radius=radius,cast=cast,duration=duration,hits=hits,synergy=synergy,
             kind=i==8?CareerSkillKind.Awakening:(i==0||i==4)?CareerSkillKind.Passive:CareerSkillKind.Active,
             branch=i<4?0:1,tier=i%4,level=i==8?15:i%4<2?15:i%4==2?18:22 };

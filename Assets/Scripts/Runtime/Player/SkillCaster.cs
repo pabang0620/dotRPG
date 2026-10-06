@@ -111,8 +111,13 @@ namespace DotRPG
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 
+        /// <summary>[AIM] The direction of the cast in progress: toward the nearest monster in reach, else the aim.</summary>
+        Vector2 castAim = Vector2.right;
+
         IEnumerator Cast(SkillGem gem, SkillNumbers n)
         {
+            castAim = owner.AutoAim(Mathf.Max(4f, Mathf.Max(n.range, n.radius) + 1.5f));
+            if (!owner.NetPuppet) owner.FaceTowards(owner.Position + castAim); // the body turns to its target
             for (int i = 0; i <= n.repeats; i++)
             {
                 if (owner.IsDead) yield break;
@@ -126,7 +131,7 @@ namespace DotRPG
                     // v1 + v2 (v1-only ones stay for SkillGems.UseLegacy)
                     case "whirl": Whirl(n); break;
                     case "slam": Slam(n); break;
-                    case "wave": StartCoroutine(Wave(n, owner.AimDirection)); break;
+                    case "wave": StartCoroutine(Wave(n, castAim)); break;
                     case "cry": WarCry(n); break;
                     case "blades": yield return StartCoroutine(Blades(n, i == 0)); break;
                     case "arc": StartCoroutine(Arc(n)); break;
@@ -264,7 +269,7 @@ namespace DotRPG
         /// <summary>[SKILL v2] 파쇄 일격: one heavy blow on the monster in front (the nearest, leaning towards the aim).</summary>
         void Crush(SkillNumbers n)
         {
-            Vector2 c = owner.Center, aim = owner.AimDirection;
+            Vector2 c = owner.Center, aim = castAim;
             EnemyController target = null;
             float best = float.MaxValue;
             foreach (var e in EnemyController.Active)
@@ -295,12 +300,12 @@ namespace DotRPG
         {
             Vector2 from = owner.Center;
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.MageViolet);
-            SkillVisuals.StaffFlash(from + owner.AimDirection * 0.35f, SkillVisuals.ArcGlow);
+            SkillVisuals.StaffFlash(from + castAim * 0.35f, SkillVisuals.ArcGlow);
             var target = Nearest(from, n.range, null);
             Game.Audio.PlaySfx("magic");
             if (target == null)
             {
-                SkillVisuals.ArcBolt(from, from + owner.AimDirection * 2.5f, false);
+                SkillVisuals.ArcBolt(from, from + castAim * 2.5f, false);
                 return;
             }
             SkillVisuals.Thunder(target.Position);
@@ -315,7 +320,7 @@ namespace DotRPG
         /// <summary>돌진 베기: dash along the aim, cutting and shoving every monster met on the way.</summary>
         IEnumerator Charge(SkillNumbers n)
         {
-            Vector2 dir = owner.AimDirection.sqrMagnitude > 0.0001f ? owner.AimDirection.normalized : owner.Facing.ToVector();
+            Vector2 dir = castAim;
             // A puppet (another PC's body) only shows the cut; its position comes from that PC.
             float dist = owner.NetPuppet ? 0f : owner.SkillDash(dir, n.range);
             Game.Audio.PlaySfx("swing");
@@ -364,7 +369,7 @@ namespace DotRPG
         /// <summary>대지 강타: a shock wave that runs along the aim direction, cracking the ground as it goes.</summary>
         void Slam(SkillNumbers n)
         {
-            Vector2 dir = owner.AimDirection;
+            Vector2 dir = castAim;
             StartCoroutine(SlamWave(n, dir, owner.Position + dir * 0.6f));
         }
 
@@ -428,7 +433,7 @@ namespace DotRPG
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("rock_break");
             SkillVisuals.WarCry(c, owner.Position, n.radius);
-            var aim = owner.AimDirection.sqrMagnitude > 0.0001f ? owner.AimDirection : owner.Facing.ToVector();
+            var aim = castAim;
             CareerFx.Clip("g_roar", c, aim, n.radius / 3f, 22f, VfxLayer.Top, true);
             CareerFx.Clip("g_roar", c, -aim, n.radius / 3.4f, 22f, VfxLayer.Top, true);
             Shake(0.12f, 0.25f);
@@ -477,13 +482,13 @@ namespace DotRPG
             Game.Audio.PlaySfx("magic");
             Vector2 from = owner.Center;
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.MageViolet);
-            SkillVisuals.StaffFlash(from + owner.AimDirection * 0.35f, SkillVisuals.ArcGlow);
+            SkillVisuals.StaffFlash(from + castAim * 0.35f, SkillVisuals.ArcGlow);
             var hit = new HashSet<EnemyController>();
             EnemyController current = Nearest(from, n.range, hit);
             if (current == null)
             {
                 // Nothing in range: a short zap in the aim direction so the cast still reads.
-                SkillVisuals.ArcBolt(from, from + owner.AimDirection * 2.5f, false);
+                SkillVisuals.ArcBolt(from, from + castAim * 2.5f, false);
                 yield break;
             }
             for (int jump = 0; current != null && jump <= n.chains; jump++)
@@ -533,7 +538,7 @@ namespace DotRPG
             Game.Audio.PlaySfx("magic");
             Vector2 from = owner.Center;
             var target = Nearest(from, n.range, null);
-            Vector2 dir = target != null ? (target.Center - from).normalized : owner.AimDirection;
+            Vector2 dir = target != null ? (target.Center - from).normalized : castAim;
             if (target != null) owner.FaceTowards(target.Position);
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.FrostBlue);
             SkillVisuals.StaffFlash(from + dir * 0.35f, SkillVisuals.ArcGlow);
@@ -619,7 +624,7 @@ namespace DotRPG
             if (done == 0)
                 for (int k = 0; k < 2; k++)
                 {
-                    SkillVisuals.Thunder(owner.Position + owner.AimDirection * (1.6f + k * 1.2f) + Random.insideUnitCircle * 0.4f);
+                    SkillVisuals.Thunder(owner.Position + castAim * (1.6f + k * 1.2f) + Random.insideUnitCircle * 0.4f);
                     yield return new WaitForSeconds(0.08f);
                 }
         }
@@ -629,7 +634,7 @@ namespace DotRPG
         IEnumerator FireField(SkillNumbers n)
         {
             var target = Nearest(owner.Center, n.range, null);
-            Vector2 at = target != null ? target.Position : owner.Position + owner.AimDirection * Mathf.Min(4f, n.range);
+            Vector2 at = target != null ? target.Position : owner.Position + castAim * Mathf.Min(4f, n.range);
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.FireOrange);
             SkillVisuals.Explosion(at + Vector2.up * 0.2f, at, n.radius * 0.8f, false);
             CareerFx.Clip("m_explode", at + Vector2.up * 0.2f, Vector2.zero, n.radius / 1.6f, 22f, VfxLayer.Top, false);

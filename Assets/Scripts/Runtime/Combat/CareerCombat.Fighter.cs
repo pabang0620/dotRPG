@@ -212,7 +212,7 @@ namespace DotRPG
             // Swords go to the monsters in front first; with fewer than six they fall on the same ones again.
             var foes = Fan(owner.Center, c.dir, c.n.range + 1f, 160f);
             Vector2 zone = owner.Center + c.dir * c.n.range * .6f;
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < Mathf.Max(6, c.s.hits); i++) // awakening hit count (9 after the 2026-10-06 balance)
             {
                 if (!Live(c)) yield break;
                 var foe = foes.Count > 0 ? foes[i % foes.Count] : null;
