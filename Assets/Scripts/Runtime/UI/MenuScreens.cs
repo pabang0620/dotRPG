@@ -271,17 +271,36 @@ namespace DotRPG
 
     public class GameOverScreen : MenuScreen
     {
+        MenuList.Item reviveHere;
+
         public static GameOverScreen Create(Transform canvas, UIRoot ui)
         {
             var root = CreateRoot(canvas, "GameOver", true);
             var screen = root.gameObject.AddComponent<GameOverScreen>();
-            screen.BuildPanel(root, "쓰러졌습니다...", 460, "마을 사람들이 당신을 집까지 데려다 주었습니다.\n가진 물건과 의뢰 진행은 그대로입니다.", 18);
+            screen.BuildPanel(root, "쓰러졌습니다...", 520, "그 자리에서 일어나거나, 마을에서 다시 시작할 수 있습니다.\n가진 물건과 의뢰 진행은 그대로입니다.", 18);
+            // [REVIVE] Where you fell: free up to Lv.10, then one revive coin (one a day).
+            screen.reviveHere = screen.menu.AddButton(ReviveCoins.Label(), () => Game.Flow.ReviveHere(), () => ReviveCoins.CanUse && !ReviveCoins.Busy);
+            ReviveCoins.Changed += screen.RefreshRevive;
             screen.menu.AddButton("마을에서 다시 일어나기", () => Game.Flow.RespawnInVillage());
             screen.menu.AddButton("마지막 저장 불러오기", () => Game.Flow.ContinueGame(), () => Game.Saves.HasSave());
             screen.menu.AddButton("타이틀로", () => Game.Flow.ReturnToTitle());
             screen.FitPanel();
             return screen;
         }
+
+        public override void Show()
+        {
+            base.Show();
+            RefreshRevive();
+            ReviveCoins.Refresh();
+        }
+
+        void RefreshRevive()
+        {
+            if (reviveHere != null && reviveHere.labelText != null) reviveHere.labelText.text = ReviveCoins.Label();
+        }
+
+        void OnDestroy() => ReviveCoins.Changed -= RefreshRevive;
     }
 
     public class EndingScreen : MenuScreen

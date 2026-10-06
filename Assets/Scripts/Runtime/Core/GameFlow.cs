@@ -390,6 +390,25 @@ namespace DotRPG
             if (Game.Player != null && Game.Player.IsDead) Game.State.Set(GameState.GameOver);
         }
 
+        /// <summary>[REVIVE] Gets up where the player fell (full HP / MP, 3 s invulnerable) after the coin is paid.</summary>
+        public void ReviveHere()
+        {
+            var player = Game.Player;
+            if (player == null || !player.IsDead) return;
+            ReviveCoins.Use("field", (ok, why) =>
+            {
+                if (!ok) { GameEvents.RaiseToast(why); Game.Audio.PlaySfx("cancel"); return; }
+                if (Game.Player == null || !Game.Player.IsDead) return;
+                var p = Game.Player;
+                if (Game.Party != null) Game.Party.ReviveMember(p, 1f, DungeonDirector.ReviveInvulnerable);
+                else p.Revive(1f, DungeonDirector.ReviveInvulnerable);
+                p.Data.Mana = p.MaxMana;
+                Game.Audio.PlaySfx("quest");
+                GameEvents.RaiseToast(ReviveCoins.Free ? "그 자리에서 다시 일어났습니다." : $"부활 코인을 사용했습니다. (남은 코인 {ReviveCoins.Coins})");
+                Game.State.Set(GameState.Playing);
+            });
+        }
+
         public void RespawnInVillage()
         {
             StartCoroutine(Transition(() =>

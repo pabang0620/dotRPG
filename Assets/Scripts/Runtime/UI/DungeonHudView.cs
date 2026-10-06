@@ -221,7 +221,8 @@ namespace DotRPG
                 int left = Mathf.CeilToInt(director.ReviveRemaining);
                 reviveTitle.text = $"부활하시겠습니까?  <color=#ffe066>{left}</color>";
                 var input = Game.Input;
-                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회 · 제자리에서 완전 회복 + 3초 무적\n" +
+                string coin = ReviveCoins.Free ? $"Lv.{ReviveCoins.FreeUntilLevel}까지 무료" : ReviveCoins.Coins > 0 ? $"부활 코인 1 사용 (보유 {ReviveCoins.Coins})" : "<color=#ff8a7a>부활 코인 없음</color>";
+                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회 · {coin} · 완전 회복 + 3초 무적\n" +
                                   $"<color=#b8c4d8>[Enter / {input.GetBindingLabel(GameAction.Attack)}] 부활    [ESC] 포기</color>";
             }
         }

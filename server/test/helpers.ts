@@ -29,6 +29,7 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'revive_log',
       // 11단계: 결제·별조각(원장 트리거는 위에서 끈 상태)
       'star_spend_allocs',
       'star_paid_lots',
