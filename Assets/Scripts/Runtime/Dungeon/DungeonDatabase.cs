@@ -286,7 +286,7 @@ namespace DotRPG
                     Room(MapRegistry.DgnForest2, new SpawnGroup(1, "skel_archer", 3, 1), new SpawnGroup(2, "skel_warrior", 3)),
                     Room(MapRegistry.DgnForest1, new SpawnGroup(1, "skel_archer", 3, 1), new SpawnGroup(2, "skel_shield", 2)),
                     Boss(MapRegistry.DgnForestBoss, "boss_archer_chief", "skel_archer", 2)),
-                bossRoom = 3, referenceSeconds = new[] { 160f, 180f, 200f, 220f }, clearXp = 140, xpMul = 2.5f,
+                bossRoom = 3, referenceSeconds = new[] { 160f, 180f, 200f, 220f }, clearXp = 140, xpMul = 1.5f,
                 rewards = new[]
                 {
                     new RewardEntry(ConsumableDatabase.Gold, 200, 400, 35),

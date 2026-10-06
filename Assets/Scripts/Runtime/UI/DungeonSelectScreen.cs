@@ -251,7 +251,7 @@ namespace DotRPG
                 string state = !progress.RaidRewardAvailable(def, now)
                     ? (def.raidTier == RaidTier.Mid ? "<color=#ff9f7a>오늘 보상 받음 · 연습만 가능</color>" : "<color=#ff9f7a>이번 주 보상 받음 · 연습만 가능</color>")
                     : def.raidTier == RaidTier.Mid ? $"봉인 열쇠 조각 <color=#ffe066>{def.keyMin}~{def.keyMax}</color> · 이번 주 {progress.RaidClearsThisWeek(def, now)}/3"
-                    : $"입장 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (보유 {Game.Session.Inventory.Count(DungeonDatabase.SealKey)}) · <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻음";
+                    : $"보상 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (보유 {Game.Session.Inventory.Count(DungeonDatabase.SealKey)}) · <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻음 · 모자라면 연습 입장";
                 raidLine.text = $"<color=#b8c4d8>{schedule}</color>\n{state}";
             }
             rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";

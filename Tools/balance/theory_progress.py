@@ -64,6 +64,10 @@ def pack_rate(level):
 
 
 TRAVEL = 4.0
+# 조정 시험용 덮어쓰기 (데이터에 반영한 뒤에는 비워 둔다)
+QUEST_SCALE = 1.0
+MIN_LEVEL = {}
+XP_MUL = {}
 FIXED_KPM = None
 
 
@@ -119,7 +123,7 @@ def dungeon_run(day, level, done_counts):
             if level < diff["recommendedLevel"] - 2:
                 continue
             base = max(d["clearXp"] * diff["rewardMul"], d["clearXpFloor"][tier])
-            xp = base * d["xpMul"] * 1.2  # A등급 보너스 20%
+            xp = base * XP_MUL.get(d["id"], d["xpMul"]) * 1.2  # A등급 보너스 20%
             secs = d["referenceSeconds"][tier] + 60
             if best is None or xp / secs > best[0] / best[1]:
                 best = (xp, secs)
@@ -154,13 +158,14 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 keys += 35
             try_quests()
         if level >= 40 and "c2_north" in claimed and weekday == "Sunday" and done_raid.get("grah") != day // 7:
-            if keys >= 60:
-                done_raid["grah"] = day // 7
-                total_min += 12
-                raid_clears["raid_grah"] = raid_clears.get("raid_grah", 0) + 1
+            # 열쇠가 모자라면 연습 입장: 클리어는 퀘스트에 인정되고 보상은 없다
+            done_raid["grah"] = day // 7
+            total_min += 12
+            raid_clears["raid_grah"] = raid_clears.get("raid_grah", 0) + 1
+            if friend and keys >= 60:
                 keys -= 60
                 gain(27900 * 1.2)
-                try_quests()
+            try_quests()
 
     def try_quests():
         nonlocal total_min
@@ -175,7 +180,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 o = q["objectives"]
                 if any(r not in claimed for r in q["requires"]):
                     continue
-                if level < q["minLevel"] or level < o["levelNeed"]:
+                if level < MIN_LEVEL.get(q["id"], q["minLevel"]) or level < o["levelNeed"]:
                     continue
                 if any(monster_zone_level(m) > level + 2 for m in o["killNeeds"]):
                     continue
@@ -193,8 +198,8 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     total_min += minutes
                     stats["quest_kill_min"] += minutes
                     gain(xp_gain)
-                stats["quest_xp"] += q["reward"]["xp"]
-                gain(q["reward"]["xp"])
+                stats["quest_xp"] += q["reward"]["xp"] * QUEST_SCALE
+                gain(q["reward"]["xp"] * QUEST_SCALE)
                 if q["kind"] == "main":
                     events.append((total_min / 60, day, level, q["id"], q["reward"]["xp"]))
                 progress = True

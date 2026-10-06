@@ -60,7 +60,7 @@ namespace DotRPG
         void OnQuest(string questId)
         {
             if (questId == "c1_stronger")
-                Show("raid_schedule", "레이드 일정", "중간 레이드는 수·토·일에 열리고 하루 1회 보상과 <color=#ffd84a>봉인 열쇠 조각</color>을 줍니다.\n조각 100개가 모이면 일요일에 최종 레이드에 들어갈 수 있습니다.");
+                Show("raid_schedule", "레이드 일정", "중간 레이드는 수·토·일에 열리고 하루 1회 보상과 <color=#ffd84a>봉인 열쇠 조각</color>을 줍니다.\n최종 레이드는 일요일에 열립니다. 조각 60개가 있으면 주 1회 보상을 받고, 모자라도 연습으로 들어가 이야기를 이어갈 수 있습니다.");
             else if (questId == "c1_rise")
                 Show("menu", "메뉴", $"왼쪽 위 메뉴 버튼(또는 [{K(GameAction.Pause)}])에서 가방·스킬·지도·퀘스트를 엽니다.\n레벨이 오르면 스킬 창에서 패시브 포인트를 쓰세요.");
         }

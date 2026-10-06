@@ -125,15 +125,13 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     expect([x, y].find((r) => r.status === 409)?.body.errors.code).toBe('RUN_ACTIVE');
   });
 
-  it('최종 레이드 열쇠 부족: KEYS_MISSING, 열쇠가 있으면 입장(횟수 소모 없음)', async () => {
+  it('최종 레이드 열쇠 부족: 보상 없는 연습판으로 입장(혼자서도 스토리 완료 가능), 열쇠가 있어도 입장(횟수 소모 없음)', async () => {
     at(SUN);
     const h = await raidHero(40, ['c2_grah']);
     const no = await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 });
-    expect(no.status).toBe(422);
-    expect(no.body.errors).toMatchObject({ code: 'KEYS_MISSING', need: 100, have: 0 });
-    expect(await anomalyKinds(h)).toContain('raid_enter');
-    await seedItem(h, 'key_seal', 100);
-    expect((await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 })).status).toBe(201);
+    expect(no.status).toBe(201);
+    expect(no.body.data.run).toMatchObject({ reward_locked: true });
+    expect(await anomalyKinds(h)).not.toContain('raid_enter');
   });
 
   it('연습판(사람 1명): 처치 경험치·드롭이 없고, 클리어해도 카드·청구·열쇠가 없다. 레이드 몬스터는 필드에서 받지 않는다', async () => {

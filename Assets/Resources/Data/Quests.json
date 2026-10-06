@@ -1420,7 +1420,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 0,
+   "minLevel": 23,
    "giver": "knight_mo",
    "offerDialogue": "c2s_letter_offer",
    "turnIn": "knight_mo",
@@ -1821,7 +1821,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 17,
+   "minLevel": 23,
    "giver": "knight_ivy",
    "offerDialogue": "c2s_quarry_offer",
    "turnIn": "knight_ivy",
@@ -1878,7 +1878,7 @@
     "c2_mine"
    ],
    "requiresFlags": [],
-   "minLevel": 21,
+   "minLevel": 24,
    "giver": "leona",
    "offerDialogue": "c2s_ridge_offer",
    "turnIn": "leona",
@@ -1935,7 +1935,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 0,
+   "minLevel": 27,
    "giver": "knight_mo",
    "offerDialogue": "c2s_errands_offer",
    "turnIn": "knight_mo",
@@ -1978,7 +1978,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 25,
+   "minLevel": 27,
    "giver": "winter_hunter",
    "offerDialogue": "w_edge_offer",
    "turnIn": "winter_hunter",
@@ -2035,7 +2035,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 29,
+   "minLevel": 31,
    "giver": "winter_hunter",
    "offerDialogue": "w_lake_offer",
    "turnIn": "winter_hunter",
@@ -2092,7 +2092,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 34,
+   "minLevel": 36,
    "giver": "winter_hunter",
    "offerDialogue": "w_peak_offer",
    "turnIn": "winter_hunter",
@@ -2583,7 +2583,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 14,
+   "minLevel": 23,
    "giver": "knight_dorn",
    "offerDialogue": "c2s_dorn_drill_offer",
    "turnIn": "knight_dorn",
@@ -2631,7 +2631,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 16,
+   "minLevel": 23,
    "giver": "leona",
    "offerDialogue": "c2s_leona_drill_offer",
    "turnIn": "leona",
@@ -2727,7 +2727,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 19,
+   "minLevel": 24,
    "giver": "knight_mo",
    "offerDialogue": "c2s_mo_scout_offer",
    "turnIn": "knight_mo",
@@ -2779,7 +2779,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 22,
+   "minLevel": 25,
    "giver": "knight_ivy",
    "offerDialogue": "c2s_ivy_knights_offer",
    "turnIn": "knight_ivy",
@@ -2827,7 +2827,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 25,
+   "minLevel": 27,
    "giver": "winter_innkeeper",
    "offerDialogue": "w_firewood_offer",
    "turnIn": "winter_innkeeper",
@@ -2875,7 +2875,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 26,
+   "minLevel": 28,
    "giver": "winter_elder",
    "offerDialogue": "w_edge_archers_offer",
    "turnIn": "winter_elder",
@@ -2923,7 +2923,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 30,
+   "minLevel": 32,
    "giver": "winter_innkeeper",
    "offerDialogue": "w_lake_shields_offer",
    "turnIn": "winter_innkeeper",
@@ -2971,7 +2971,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 32,
+   "minLevel": 33,
    "giver": "winter_elder",
    "offerDialogue": "w_essence_offer",
    "turnIn": "winter_elder",
@@ -3019,7 +3019,7 @@
     "w_peak"
    ],
    "requiresFlags": [],
-   "minLevel": 35,
+   "minLevel": 37,
    "giver": "winter_hunter",
    "offerDialogue": "w_peak_knights_offer",
    "turnIn": "winter_hunter",
@@ -3067,7 +3067,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 25,
+   "minLevel": 29,
    "giver": "winter_elder",
    "offerDialogue": "w_errands_offer",
    "turnIn": "winter_elder",

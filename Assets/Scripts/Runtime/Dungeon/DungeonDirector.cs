@@ -99,11 +99,7 @@ namespace DotRPG
                 if (locked != null) return locked;
                 int need = DungeonDatabase.DifficultyFor(dungeon, difficulty).recommendedLevel;
                 if (Game.Session.Progression.Level < need) return $"Lv.{need}부터 입장할 수 있는 레이드다.";
-                if (dungeon.keyCost > 0 && Progress.RaidRewardAvailable(dungeon, now))
-                {
-                    int have = Game.Session.Inventory.Count(DungeonDatabase.SealKey);
-                    if (have < dungeon.keyCost) return $"봉인 열쇠 조각이 부족하다. ({have}/{dungeon.keyCost})";
-                }
+                // A final raid without the seal keys is still entered, as a practice run (no reward): solo story can finish.
             }
             if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0) return "오늘 입장 횟수를 모두 사용했다. (06:00 초기화)";
             if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return $"최대 {dungeon.maxParty}명까지 입장할 수 있다.";
@@ -267,6 +263,11 @@ namespace DotRPG
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
             run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now);
+            if (dungeon.isRaid && dungeon.keyCost > 0 && !run.RewardsLocked && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < dungeon.keyCost)
+            {
+                run.RewardsLocked = true;
+                GameEvents.RaiseToast($"봉인 열쇠 조각이 모자라 연습 입장이다. 클리어하면 이야기는 이어지지만 보상은 없다. ({Game.Session.Inventory.Count(DungeonDatabase.SealKey)}/{dungeon.keyCost})");
+            }
             if (party != null)
             {
                 party.SetCompanionAutoRevive(false);
