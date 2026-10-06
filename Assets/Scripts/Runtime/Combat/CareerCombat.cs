@@ -281,6 +281,7 @@ namespace DotRPG
             }
             if (!landed) return false;
             CareerFx.Hit(e.Center, dir, c.s.career, weight);
+            if (weight == 2) e.HeavyHit(dir); // [FEEL] big skill hits read instantly
             ImpactSound(sound, weight == 2 ? 1f : .8f);
             Feel(weight, dir);
             return true;

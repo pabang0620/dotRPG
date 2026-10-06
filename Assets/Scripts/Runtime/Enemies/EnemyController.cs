@@ -346,6 +346,26 @@ namespace DotRPG
             visual.localPosition = Vector3.zero;
         }
 
+        /// <summary>
+        /// [FEEL] A heavy blow landed (big skill hit, finisher): black-then-white silhouette, a white star burst and a
+        /// puff of grey dust around the body.
+        /// </summary>
+        public void HeavyHit(Vector2 dir)
+        {
+            if (state == State.Dead && flash == null) return;
+            flash?.FlashHeavy();
+            Vector2 c = Center;
+            SkillFx.Spawn("fx_star", c, Color.white, .14f, SkillFx.TopOrder + 6).Scale(.3f, 1.7f * Mathf.Max(1f, Size)).Rotate(UnityEngine.Random.Range(0f, 45f)).Fade(FxFade.Quick);
+            SkillFx.Spawn("fx_glow", c, new Color(1f, 1f, 1f, .7f), .12f, SkillFx.TopOrder + 5).Additive().Scale(.6f, 1.8f).Fade(FxFade.Quick);
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i * Mathf.PI / 3f + UnityEngine.Random.Range(-.3f, .3f);
+                var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * .6f) + dir * .4f;
+                SkillFx.Spawn("fx_dust", Position + new Vector2(0f, .15f), new Color(.82f, .82f, .86f, .75f), UnityEngine.Random.Range(.3f, .45f), SkillFx.At(Position.y, 5))
+                    .Move(d * UnityEngine.Random.Range(2.2f, 3.4f), 5f).Scale(.8f, 1.9f).Fade(FxFade.Late);
+            }
+        }
+
         public bool TakeDamage(DamageInfo info)
         {
             if (state == State.Dead || info.team == Team.Enemy) return false;

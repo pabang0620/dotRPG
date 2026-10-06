@@ -94,7 +94,7 @@ namespace DotRPG
         /// </summary>
         public const int DisplayScale = 1;
 
-        SpriteRenderer[] digits;
+        SpriteRenderer[] digits, rims;
         Vector3 start;
         Vector2 drift;
         float age;
@@ -120,6 +120,7 @@ namespace DotRPG
                 var go = new GameObject("DamageNumber");
                 number = go.AddComponent<DamageNumber>();
                 number.digits = new SpriteRenderer[MaxDigits];
+                number.rims = new SpriteRenderer[MaxDigits];
                 for (int i = 0; i < MaxDigits; i++)
                 {
                     var sr = new GameObject("d").AddComponent<SpriteRenderer>();
@@ -127,13 +128,26 @@ namespace DotRPG
                     sr.sortingOrder = 20010;
                     HdMaterial.Apply(sr);
                     number.digits[i] = sr;
+                    // [FEEL] A black rim one pixel wide behind each digit so numbers read on any ground.
+                    var rim = new GameObject("r").AddComponent<SpriteRenderer>();
+                    rim.transform.SetParent(sr.transform, false);
+                    rim.sortingOrder = 20009;
+                    HdMaterial.Apply(rim);
+                    number.rims[i] = rim;
                 }
             }
             if (Fx.Root != null && number.transform.parent != Fx.Root) number.transform.SetParent(Fx.Root, false);
             number.gameObject.SetActive(true);
             number.age = 0f;
-            number.start = position + new Vector2(Random.Range(-0.12f, 0.12f), 0f);
-            number.drift = new Vector2(Random.Range(-0.25f, 0.25f), 1.1f);
+            // [FEEL] Hits landing on the same spot within a moment stack upward instead of piling on one another.
+            var cell = new Vector2Int(Mathf.RoundToInt(position.x * 2f), Mathf.RoundToInt(position.y * 2f));
+            int stack = 0;
+            if (Stacks.TryGetValue(cell, out var last) && Time.time - last.at < 0.45f) stack = Mathf.Min(last.count + 1, 5);
+            Stacks[cell] = (Time.time, stack);
+            if (Stacks.Count > 256) Stacks.Clear();
+            number.big = big;
+            number.start = position + new Vector2(Random.Range(-0.08f, 0.08f), stack * 0.34f);
+            number.drift = new Vector2(Random.Range(-0.1f, 0.1f), 0.55f);
             number.transform.position = number.start;
             number.transform.localScale = Vector3.one;
 
@@ -152,8 +166,15 @@ namespace DotRPG
                 sr.transform.localPosition = new Vector3(i * DigitSpacing - width * 0.5f, 0f, 0f);
                 sr.sprite = Game.Art.Get(DigitKeys[digit]);
                 sr.color = color;
+                var rim = number.rims[i];
+                rim.sprite = Game.Art.GetOutline(sr.sprite);
+                rim.enabled = rim.sprite != null;
+                rim.color = new Color(0.05f, 0.04f, 0.08f, 1f);
             }
         }
+
+        static readonly System.Collections.Generic.Dictionary<Vector2Int, (float at, int count)> Stacks = new System.Collections.Generic.Dictionary<Vector2Int, (float, int)>();
+        bool big;
 
         static int Pow10(int n) { int r = 1; while (n-- > 0) r *= 10; return r; }
 
@@ -170,8 +191,10 @@ namespace DotRPG
             // Quick pop, then float upwards while slowing down.
             float rise = 1f - (1f - t) * (1f - t);
             transform.position = start + (Vector3)(drift * rise * 0.6f);
-            float scale = t < 0.12f ? Mathf.Lerp(1.2f, 2.8f, t / 0.12f) : Mathf.Lerp(2.8f, 2.2f, Mathf.Clamp01((t - 0.12f) / 0.2f));
-            transform.localScale = Vector3.one * scale;
+            // [FEEL] Bigger and held longer in place (critical hits a third larger); little drift so a burst stays readable.
+            float k = big ? 1.35f : 1f;
+            float scale = t < 0.1f ? Mathf.Lerp(1.4f, 3.4f, t / 0.1f) : Mathf.Lerp(3.4f, 2.7f, Mathf.Clamp01((t - 0.1f) / 0.15f));
+            transform.localScale = Vector3.one * scale * k;
             float alpha = t < 0.6f ? 1f : 1f - (t - 0.6f) / 0.4f;
             for (int i = 0; i < shown; i++)
             {
@@ -179,6 +202,9 @@ namespace DotRPG
                 var c = sr.color;
                 c.a = alpha;
                 sr.color = c;
+                var r = rims[i].color;
+                r.a = alpha;
+                rims[i].color = r;
             }
         }
     }

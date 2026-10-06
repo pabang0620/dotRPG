@@ -148,6 +148,7 @@ namespace DotRPG
             // Hit feel: a harder shove, sparks and a tiny freeze-frame on the local player's hits.
             bool landed = enemy.TakeDamage(new DamageInfo(damage, from, knockback * 1.2f, Team.Player, owner.gameObject));
             if (landed) HitFeel(enemy, knockback >= 8f);
+            if (landed && knockback >= 8f) enemy.HeavyHit((enemy.Center - from).normalized); // [FEEL]
             if (landed && n.leechPct > 0)
                 owner.Heal(Mathf.Max(1, damage * n.leechPct / 100));
         }

@@ -9,6 +9,9 @@ namespace DotRPG
     /// </summary>
     public static partial class VfxArt
     {
+        /// <summary>[PERF] Every clip name, so the loading screen can build them all before play.</summary>
+        public static readonly string[] AllClips = { "f_arc", "f_x", "f_wave", "f_line", "f_cut", "f_shatter", "f_vslash", "f_spark", "impact", "g_dome", "g_domeloop", "g_hexburst", "g_spin", "g_clang", "g_ward", "g_roar", "g_bash", "g_chain", "m_fireball", "m_explode", "m_icebloom", "m_spark", "m_star", "m_starburst", "m_portal", "m_vortex", "m_collapse", "m_hit", "b_feather", "b_heal", "b_lotus", "b_bell", "b_spear", "b_cross", "b_wings", "b_pillar" };
+
         public const int Density = 4;
         public const float Ppu = 16f * Density;
 

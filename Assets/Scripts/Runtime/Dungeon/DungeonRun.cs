@@ -81,6 +81,12 @@ namespace DotRPG
             if (Combo > MaxCombo) MaxCombo = Combo;
         }
 
+        /// <summary>[FEEL] The combo still running at <paramref name="time"/> (0 once the window has passed), for the HUD.</summary>
+        public int LiveCombo(float time) => time - lastHitAt > DungeonRanking.ComboWindow ? 0 : Combo;
+
+        /// <summary>0..1 of the combo window left (1 = just hit).</summary>
+        public float ComboTimeLeft(float time) => Mathf.Clamp01(1f - (time - lastHitAt) / DungeonRanking.ComboWindow);
+
         /// <summary>"02:31" style clock.</summary>
         public static string Clock(float seconds)
         {

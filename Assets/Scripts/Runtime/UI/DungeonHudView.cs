@@ -21,6 +21,11 @@ namespace DotRPG
         const float Cell = 30f, CellGap = 10f, MapWidth = 176f;
 
         RectTransform clock, roomMap, banner, revive;
+        // [FEEL] Combo counter (dungeons rank on combo): the count, a pop on each hit, a bar for the time left.
+        RectTransform comboRoot, comboBar;
+        Text comboText;
+        int shownCombo;
+        float comboPopAt = -10f;
         Text clockText, roomText, bannerText, reviveTitle, reviveBody, mapTitle;
         Image bannerBg;
         readonly List<Image> cells = new List<Image>();
@@ -52,6 +57,17 @@ namespace DotRPG
             UIFactory.Stretch(roomText.rectTransform, 140f, 0f, 22f, 0f);
 
             // Room map (where the round minimap sits).
+            comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -122f), new Vector2(MapWidth, 64f));
+            comboText = UIFactory.Text(comboRoot, "Count", "", 30, UIColors.Highlight, TextAnchor.MiddleRight, true);
+            UIFactory.Place(comboText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(MapWidth, 44f));
+            var comboTrack = UIFactory.Image(comboRoot, "Track", Game.Art.Get("ui_white"), new Color(1f, 1f, 1f, .15f));
+            UIFactory.Place(comboTrack.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f), new Vector2(MapWidth - 20f, 5f));
+            var comboFill = UIFactory.Image(comboTrack.transform, "Fill", Game.Art.Get("ui_white"), UiTheme.Accent);
+            comboBar = comboFill.rectTransform;
+            comboBar.anchorMin = Vector2.zero; comboBar.anchorMax = new Vector2(0f, 1f); comboBar.pivot = new Vector2(1f, .5f);
+            comboBar.anchorMin = new Vector2(1f, 0f); comboBar.anchorMax = new Vector2(1f, 1f);
+            comboBar.anchoredPosition = Vector2.zero; comboBar.sizeDelta = Vector2.zero;
+            comboRoot.gameObject.SetActive(false);
             roomMap = UIFactory.Place(UIFactory.Rect(root, "RoomMap"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -16f), new Vector2(MapWidth, 96f));
             var mbg = UIFactory.Panel(roomMap, "Bg", true);
             UIFactory.Stretch(mbg.rectTransform);
@@ -132,6 +148,25 @@ namespace DotRPG
 
         void ShowClear() => bannerAt = Time.unscaledTime;
 
+        /// <summary>Shown from 3 hits: white, gold from 20, orange from 50; pops on every new hit; the bar is the time left.</summary>
+        void UpdateCombo(DungeonRun run)
+        {
+            int combo = run.LiveCombo(Time.time);
+            bool show = combo >= 3;
+            if (comboRoot.gameObject.activeSelf != show) comboRoot.gameObject.SetActive(show);
+            if (!show) { shownCombo = 0; return; }
+            if (combo != shownCombo)
+            {
+                shownCombo = combo;
+                comboPopAt = Time.unscaledTime;
+                string color = combo >= 50 ? "#ff9f43" : combo >= 20 ? "#ffd34a" : "#ffffff";
+                comboText.text = $"<color={color}><b>{combo}</b></color> <size=18><color=#b8c4d8>콤보</color></size>";
+            }
+            float pop = Mathf.Clamp01((Time.unscaledTime - comboPopAt) / .12f);
+            comboText.rectTransform.localScale = Vector3.one * Mathf.Lerp(1.25f, 1f, pop);
+            comboBar.sizeDelta = new Vector2((MapWidth - 20f) * run.ComboTimeLeft(Time.time), 0f);
+        }
+
         void Update()
         {
             var director = Game.Dungeon;
@@ -153,7 +188,8 @@ namespace DotRPG
                 if (quest != null) quest.gameObject.SetActive(!inRun);
                 if (!inRun) { revive.gameObject.SetActive(false); banner.gameObject.SetActive(false); }
             }
-            if (!inRun) return;
+            if (!inRun) { if (comboRoot.gameObject.activeSelf) comboRoot.gameObject.SetActive(false); return; }
+            UpdateCombo(run);
 
             // [P5] Re-format only when the second, room or revive count changes.
             int sec = Mathf.FloorToInt(run.Elapsed);
