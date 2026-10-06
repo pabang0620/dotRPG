@@ -28,7 +28,19 @@ namespace DotRPG.EditorTools
             importer.spritePixelsPerUnit = 64f;
             string file = System.IO.Path.GetFileNameWithoutExtension(importer.assetPath);
             // Generated skill effect pictures are drawn at twice the pixel density of the procedural fx.
-            if (importer.assetPath.Contains("/FxImg/")) importer.spritePixelsPerUnit = 128f;
+            if (importer.assetPath.Contains("/FxImg/"))
+            {
+                importer.spritePixelsPerUnit = 128f;
+                // Falling swords stand on their tip, like the procedural fx_bigsword (pivot 2 px above the bottom of 152).
+                if (file.Contains("bigsword"))
+                {
+                    var s = new TextureImporterSettings();
+                    importer.ReadTextureSettings(s);
+                    s.spriteAlignment = (int)SpriteAlignment.Custom;
+                    importer.SetTextureSettings(s);
+                    importer.spritePivot = new Vector2(0.5f, 2f / 152f);
+                }
+            }
             // 9-slice UI frames: a 12 px rim, scaled to the same on-screen thickness as ui_btn (8 px at 32 ppu).
             if (file.StartsWith("ui_tab_") || file == "ui_btn_disabled")
             {
@@ -44,6 +56,8 @@ namespace DotRPG.EditorTools
             importer.alphaIsTransparency = true;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.wrapMode = TextureWrapMode.Clamp;
+            // The painted world map is shown smaller than drawn: smooth sampling keeps it from shimmering.
+            if (System.IO.Path.GetFileNameWithoutExtension(importer.assetPath) == "worldmap_atlas") importer.filterMode = FilterMode.Bilinear;
         }
 
         public static void FixExisting()
@@ -52,7 +66,8 @@ namespace DotRPG.EditorTools
             foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { ArtFolder.TrimEnd('/') }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (AssetImporter.GetAtPath(path) is TextureImporter importer && importer.textureType == TextureImporterType.Default)
+                if (AssetImporter.GetAtPath(path) is TextureImporter importer && (importer.textureType == TextureImporterType.Default
+                    || (System.IO.Path.GetFileNameWithoutExtension(path) == "worldmap_atlas" && importer.filterMode != FilterMode.Bilinear)))
                 {
                     Apply(importer);
                     importer.SaveAndReimport();

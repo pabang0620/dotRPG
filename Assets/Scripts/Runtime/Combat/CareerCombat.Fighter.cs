@@ -204,7 +204,7 @@ namespace DotRPG
                 yield return new WaitForSeconds(CutGap);
             }
             Target(c.dir, c.n.range, out Vector2 center);
-            CareerFx.SwordDrop(center, .35f, CareerFx.Steel, 1.6f);
+            CareerFx.SwordDrop(center, .35f, CareerFx.Steel, 1.6f, true); // the finisher: the dark greatsword
             yield return new WaitForSeconds(.35f);
             if (!Live(c)) yield break;
             Pose(.3f, 2);
@@ -219,7 +219,7 @@ namespace DotRPG
                 yield return new WaitForSeconds(fall);
             }
             if (!Live(c)) yield break;
-            SkillFx.Spawn("fx_bigsword", ground, Color.white, giant ? .9f : .5f, SkillFx.At(ground.y, 6)).Scale(giant ? 1.4f : 1f, giant ? 1.4f : 1f).Fade(FxFade.Late);
+            SkillFx.Spawn(giant ? SkillFx.Pick("fxi_bigsword_dark", "fx_bigsword") : SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, giant ? .9f : .5f, SkillFx.At(ground.y, 6)).Scale(giant ? 1.4f : 1f, giant ? 1.4f : 1f).Fade(FxFade.Late);
             CareerFx.Clip("f_spark", ground, Vector2.zero, giant ? 2f : 1f, 26f, VfxLayer.Top, false);
             if (giant)
             {

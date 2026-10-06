@@ -200,11 +200,11 @@ namespace DotRPG
             Vector2 at = owner.Center, feet = owner.Position;
             // A giant shield falls from the sky onto the guardian's spot.
             const float fall = .22f;
-            SkillFx.Spawn("fx_aegis", feet + Vector2.up * 4.5f, Color.white, fall, SkillFx.TopOrder + 4).Move(Vector2.down * (4f / fall)).Scale(2.6f, 2.6f).Fade(FxFade.None);
+            SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), feet + Vector2.up * 4.5f, Color.white, fall, SkillFx.TopOrder + 4).Move(Vector2.down * (4f / fall)).Scale(2.6f, 2.6f).Fade(FxFade.None);
             GlowLineFx.Spawn(feet + Vector2.up * 5f, feet, new Color(.4f, .95f, .9f, .55f), .8f, fall + .1f, SkillFx.TopOrder + 3);
             yield return new WaitForSeconds(fall);
             if (!Live(c)) yield break;
-            SkillFx.Spawn("fx_aegis", feet + Vector2.up * .9f, Color.white, .8f, SkillFx.At(feet.y, 6)).Scale(2.6f, 2.4f).Fade(FxFade.Late);
+            SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), feet + Vector2.up * .9f, Color.white, .8f, SkillFx.At(feet.y, 6)).Scale(2.6f, 2.4f).Fade(FxFade.Late);
             CareerFx.Clip("impact", feet, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Teal);
             CareerFx.Clip("g_hexburst", at, Vector2.zero, c.n.radius / 1.3f, 24f, VfxLayer.Top, false);
             SkillFx.Spawn("fx_crack", feet, Color.white, 1.8f, SkillFx.GroundOrder + 2).Scale(c.n.radius * .8f, c.n.radius * 1.1f).Fade(FxFade.Late);

@@ -123,12 +123,18 @@ namespace DotRPG
         public static int At(float y, int boost = 40) => YSort.OrderFor(y) + boost;
 
         SpriteRenderer sr;
-        float life, age, delay, spin, drag;
+        float life, age, delay, spin, drag, swingDeg, swingHz;
         Vector3 scaleFrom = Vector3.one, scaleTo = Vector3.one;
         Vector2 velocity;
         bool pop, faceMotion;
         Color color;
         FxFade fade = FxFade.Linear;
+
+        /// <summary>[VFX] The generated picture (Art/FxImg/&lt;img&gt;) when it exists, else the procedural sprite.</summary>
+        public static string Pick(string img, string fallback) => Game.Art != null && Game.Art.Optional("FxImg/" + img) != null ? "FxImg/" + img : fallback;
+
+        /// <summary>True when the generated picture is there (callers then skip the procedural flipbook it replaces).</summary>
+        public static bool HasImage(string img) => Game.Art != null && Game.Art.Optional("FxImg/" + img) != null;
 
         public static SkillFx Spawn(string sprite, Vector2 position, Color color, float life, int order)
         {
@@ -162,6 +168,9 @@ namespace DotRPG
 
         /// <summary>Degrees per second; negative = clockwise.</summary>
         public SkillFx Spin(float degreesPerSecond) { spin = degreesPerSecond; return this; }
+
+        /// <summary>Rocks back and forth around the pivot (a ringing bell): <paramref name="degrees"/> either side, dying out.</summary>
+        public SkillFx Swing(float degrees, float hz) { swingDeg = degrees; swingHz = hz; return this; }
 
         public SkillFx Rotate(float degrees) { transform.rotation = Quaternion.Euler(0f, 0f, degrees); return this; }
 
@@ -198,6 +207,7 @@ namespace DotRPG
                 if (faceMotion) Face();
             }
             if (spin != 0f) transform.Rotate(0f, 0f, spin * dt);
+            if (swingDeg != 0f) transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Sin(age * swingHz * Mathf.PI * 2f) * swingDeg * (1f - Mathf.Clamp01(age / life)));
             Apply(t);
         }
 
@@ -929,7 +939,7 @@ namespace DotRPG
         public static void SwordDrop(Vector2 ground, float fallTime)
         {
             const float height = 5f;
-            SkillFx.Spawn("fx_bigsword", ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
                 .Move(Vector2.down * (height / fallTime)).Fade(FxFade.None);
             GlowLineFx.Spawn(ground + Vector2.up * height, ground, new Color(1f, 0.85f, 0.4f, 0.7f), 0.5f, fallTime + 0.12f, SkillFx.TopOrder + 3);
             SkillFx.Spawn("fx_ring", ground, new Color(1f, 0.8f, 0.3f, 0.9f), fallTime, SkillFx.GroundOrder + 8).Scale(1.4f, 0.4f).Fade(FxFade.None);
@@ -938,7 +948,7 @@ namespace DotRPG
         public static void SwordImpact(Vector2 ground, float radius)
         {
             // The sword stays stuck in the ground for a moment.
-            SkillFx.Spawn("fx_bigsword", ground, Color.white, 0.75f, SkillFx.At(ground.y, 6)).Fade(FxFade.Late);
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, 0.75f, SkillFx.At(ground.y, 6)).Fade(FxFade.Late);
             SkillFx.Spawn("fx_crack", ground, Color.white, 1.2f, SkillFx.GroundOrder + 2).Scale(radius, radius * 1.1f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
             SkillFx.Spawn("fx_shock", ground + Vector2.up * 0.1f, new Color(1f, 0.78f, 0.3f, 0.95f), 0.3f, SkillFx.TopOrder).Scale(radius * 0.3f, radius * 1.2f).Fade(FxFade.Quick);
             Flash(ground + Vector2.up * 0.3f, new Color(1f, 0.85f, 0.45f, 0.6f), radius * 1.8f, 0.2f);
@@ -1099,7 +1109,9 @@ namespace DotRPG
             Vector2 start = ground + new Vector2(-2.6f, 6f);
             Vector2 vel = (ground - start) / fallTime;
             SkillFx.Spawn("fx_glow", start, new Color(1f, 0.5f, 0.15f, 0.8f), fallTime, SkillFx.TopOrder + 3).Additive().Move(vel).Scale(2f, 2.4f).Fade(FxFade.None);
-            SkillFx.Spawn("fx_meteor", start, Color.white, fallTime, SkillFx.TopOrder + 4).Move(vel).Spin(-420f).Scale(1.6f, 1.9f).Fade(FxFade.None);
+            // [VFX] The drawn meteor already trails its fire down-right along this path, so it does not spin.
+            var rock = SkillFx.Spawn(SkillFx.Pick("fxi_meteor", "fx_meteor"), start, Color.white, fallTime, SkillFx.TopOrder + 4).Move(vel).Scale(1.6f, 1.9f).Fade(FxFade.None);
+            if (!SkillFx.HasImage("fxi_meteor")) rock.Spin(-420f);
             // Flame trail left along the path as the meteor passes.
             for (int k = 1; k <= 10; k++)
             {

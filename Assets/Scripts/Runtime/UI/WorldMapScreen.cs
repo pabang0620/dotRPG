@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>Atlas browser: selecting a region never changes the active world or character position.</summary>
-    public class WorldMapScreen : WindowScreen
+    public partial class WorldMapScreen : WindowScreen
     {
         RawImage map;
         RectTransform mapRect, playerDot, tooltip;
@@ -32,7 +32,8 @@ namespace DotRPG
         {
             var w = CreateWindow<WorldMapScreen>(canvas, "WorldMap", "세계 지도", "menuicon_map");
             var frame = Panel(w.content, "Frame", TL, TL, Vector2.zero, new Vector2(760, 590), UiTheme.PanelDeep);
-            w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(510, 32));
+            w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(400, 32));
+            w.BuildAtlasButton(frame.transform); // [UI] whole-world route map
             Button(frame.transform, "CurrentRegion", "현재 위치", "ui_btngray", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -10), new Vector2(150, 34), () => w.SelectMap(Game.World.MapId), 17);
             var viewport = UIFactory.Place(UIFactory.Rect(frame.transform, "MapViewport"), TL, TL, new Vector2(10, -54), new Vector2(740, 416));
             viewport.gameObject.AddComponent<RectMask2D>();
@@ -129,7 +130,7 @@ namespace DotRPG
 
         protected override bool PadNavigation => true;
 
-        public override void Show() { selectedMap = Game.World.MapId; base.Show(); }
+        public override void Show() { selectedMap = Game.World.MapId; if (atlasPanel != null) atlasPanel.gameObject.SetActive(false); base.Show(); }
         public void SelectMap(string id)
         {
             if (MapRegistry.Get(id) == null) return;

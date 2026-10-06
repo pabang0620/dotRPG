@@ -53,7 +53,7 @@ namespace DotRPG
             if (shield)
             {
                 // Translucent wings open behind the ally, then the shield settles on them.
-                VfxPlayer.Play("b_wings", target.Center + Vector2.up * .15f, Vector2.zero, new Color(1f, 1f, 1f, .75f), .75f, 18f, false, .7f, false, VfxLayer.AtFeet, false, -60)?.FadeOut(.25f);
+                Wings(target.Center + Vector2.up * .15f, target.Position.y, .75f, .7f);
                 GiveShield(c, target, c.s.power, c.s.duration);
             }
             else Heal(c, target, c.n.damage);
@@ -79,12 +79,35 @@ namespace DotRPG
             }
         }
 
+        /// <summary>
+        /// [VFX] Angel wings behind someone: the drawn pair opens from narrow to full and fades, under the body (wings
+        /// image); otherwise the procedural flipbook.
+        /// </summary>
+        static void Wings(Vector2 at, float feetY, float scale, float life)
+        {
+            if (!SkillFx.HasImage("fxi_wings"))
+            {
+                VfxPlayer.Play("b_wings", at, Vector2.zero, new Color(1f, 1f, 1f, scale < 1f ? .75f : 1f), scale, scale < 1f ? 18f : 14f, false, life, false, VfxLayer.AtFeet, false, -60)?.FadeOut(life * .3f);
+                return;
+            }
+            float k = scale * .62f;
+            SkillFx.Spawn("fx_glow", at, new Color(1f, .95f, .75f, .45f), life, SkillFx.At(feetY, -61)).Additive().Scale(new Vector2(k * 1.2f, k * .8f), new Vector2(k * 3.2f, k * 1.8f)).Fade(FxFade.Late);
+            SkillFx.Spawn(SkillFx.Pick("fxi_wings", "fx_holy"), at, Color.white, life, SkillFx.At(feetY, -60)).Scale(new Vector2(k * .25f, k * .8f), new Vector2(k, k)).Fade(FxFade.Late);
+        }
+
         /// <summary>정화의 종: a ring of bell light that cleanses and heals allies and pushes monsters away.</summary>
         void Bell(Run c)
         {
             Vector2 at = owner.Center;
             // A bell of light swings and rings above the bishop; the ring of sound spreads over the ground.
-            CareerFx.Clip("b_bell", at + Vector2.up * 1.4f, Vector2.zero, 1f, 20f, VfxLayer.Top, false);
+            if (SkillFx.HasImage("fxi_bell"))
+            {
+                // [VFX] The drawn bell drops in, rings (swings and dies out) and leaves a flash of light.
+                Vector2 bell = at + Vector2.up * 1.5f;
+                SkillFx.Spawn("fx_glow", bell, new Color(1f, .9f, .55f, .55f), .7f, SkillFx.TopOrder + 3).Additive().Scale(1.2f, 2.6f).Fade(FxFade.Late);
+                SkillFx.Spawn(SkillFx.Pick("fxi_bell", "fx_holy"), bell, Color.white, .95f, SkillFx.TopOrder + 4).Scale(.55f, .9f).Swing(16f, 2.4f).Fade(FxFade.Late);
+            }
+            else CareerFx.Clip("b_bell", at + Vector2.up * 1.4f, Vector2.zero, 1f, 20f, VfxLayer.Top, false);
             for (int k = 0; k < 2; k++)
                 SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .92f, .6f, .85f), .5f, SkillFx.GroundOrder + 14).Scale(new Vector2(.3f, .21f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late).Delay(k * .12f);
             Sound("c_holy");
@@ -158,7 +181,7 @@ namespace DotRPG
             Vector2 at = owner.Center;
             // The sky opens: a great column of light on the bishop, wings and light spread behind, pillars on every monster.
             CareerFx.Clip("b_pillar", owner.Position, Vector2.zero, 1.7f, 18f, VfxLayer.Top, false);
-            VfxPlayer.Play("b_wings", owner.Center + Vector2.up * .2f, Vector2.zero, Color.white, 1.3f, 14f, false, 1.4f, false, VfxLayer.AtFeet, false, -60)?.FadeOut(.4f);
+            Wings(owner.Center + Vector2.up * .2f, owner.Position.y, 1.3f, 1.4f);
             CareerFx.Clip("b_lotus", owner.Position, Vector2.zero, c.n.radius / 1.6f, 16f, VfxLayer.Ground, false, new Color(1f, .95f, .7f, .8f), false, 1.2f).Squash(1f, .7f).FadeOut(.4f);
             Sound("c_holy");
             Sound("c_heavy", .5f);

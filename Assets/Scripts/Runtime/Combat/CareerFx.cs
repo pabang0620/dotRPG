@@ -102,10 +102,10 @@ namespace DotRPG
         }
 
         /// <summary>A big sword dropping onto <paramref name="ground"/> (steel blue beam, warning ring).</summary>
-        public static void SwordDrop(Vector2 ground, float fallTime, Color color, float size = 1f)
+        public static void SwordDrop(Vector2 ground, float fallTime, Color color, float size = 1f, bool dark = false)
         {
             float height = 4.5f * size;
-            SkillFx.Spawn("fx_bigsword", ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
+            SkillFx.Spawn(SkillFx.Pick(dark ? "fxi_bigsword_dark" : "fxi_bigsword", "fx_bigsword"), ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
                 .Move(Vector2.down * (height / fallTime)).Scale(size, size).Fade(FxFade.None);
             GlowLineFx.Spawn(ground + Vector2.up * height, ground, A(color, 0.6f), 0.45f * size, fallTime + 0.1f, SkillFx.TopOrder + 3);
             SkillFx.Spawn("fx_ring", ground, A(color, 0.9f), fallTime, SkillFx.GroundOrder + 8).Scale(1.4f * size, 0.45f * size).Fade(FxFade.None);
@@ -114,7 +114,7 @@ namespace DotRPG
         public static void SwordImpact(Vector2 ground, float radius, Color color, bool big)
         {
             float k = big ? 1.4f : 1f;
-            SkillFx.Spawn("fx_bigsword", ground, Color.white, big ? 0.9f : 0.5f, SkillFx.At(ground.y, 6)).Scale(k, k).Fade(FxFade.Late);
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, big ? 0.9f : 0.5f, SkillFx.At(ground.y, 6)).Scale(k, k).Fade(FxFade.Late);
             SkillFx.Spawn("fx_crack", ground, Color.white, big ? 1.6f : 1f, SkillFx.GroundOrder + 2).Scale(radius * 0.8f, radius * 1.1f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
             Shock(ground + Vector2.up * 0.1f, radius, color, 0.3f);
             SkillVisuals.Flash(ground + Vector2.up * 0.3f, A(color, 0.7f), radius * 1.8f, 0.2f);
@@ -220,7 +220,7 @@ namespace DotRPG
         {
             var fx = new MovingFx();
             fx.Add(SkillFx.Spawn("fx_glow", pos, A(color, 0.7f), 10f, SkillFx.TopOrder + 1).Additive().Scale(1.4f, 1.4f).Fade(FxFade.None));
-            fx.Add(SkillFx.Spawn("fx_aegis", pos, Color.white, 10f, SkillFx.TopOrder + 2).Scale(0.8f, 0.8f).Spin(900f).Fade(FxFade.None));
+            fx.Add(SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), pos, Color.white, 10f, SkillFx.TopOrder + 2).Scale(0.8f, 0.8f).Spin(900f).Fade(FxFade.None));
             return fx;
         }
 
