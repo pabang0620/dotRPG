@@ -77,10 +77,9 @@ namespace DotRPG
             Pose(.2f, 2);
             Sound("c_heavy", .9f);
             Feel(1, Vector2.up);
-            Vector2 body = owner.Center - owner.Position;
             for (int i = 0; i < 4; i++) CareerFx.Clip("f_arc", owner.Center, CareerFx.Tilt(Vector2.right, i * 90f), 1.1f, 40f).FlipY(i % 2 == 1);
-            CareerFx.Clip("g_domeloop", owner.Center, Vector2.zero, 1.15f, 12f, VfxLayer.Top, false, new Color(1f, .45f, .3f, .45f), false, c.s.duration, true)
-                .Follow(owner.transform, body + Vector2.up * .1f).FadeOut(.4f);
+            // Burning silhouette, afterimages and embers off the body for the whole window.
+            PowerAura.Play(owner, c.s.duration, new Color(1f, .25f, .12f), new Color(1f, .78f, .3f));
             frenzy = Mathf.RoundToInt(c.s.power * c.Scale);
             frenzyEnd = Time.time + c.s.duration;
         }

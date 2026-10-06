@@ -243,11 +243,10 @@ namespace DotRPG
 
         CharacterLook BaseLook(CharacterClassInfo info) => !IsLocal && Data.Look != null ? Data.Look : info.Look;
 
-        /// <summary>Worn top, bottom and weapon show on the character (necklace and rings don't).</summary>
+        /// <summary>Only the weapon of the worn gear shows on the character; a costume skin replaces the body.</summary>
         void ApplyGear()
         {
             if (animator == null || combat == null || Game.Session == null || Data == null) return;
-            var eq = Data.Equipment;
             // A costume skin replaces the whole body (worn clothes don't show over it); the weapon still does.
             if (IsLocal)
             {
@@ -257,7 +256,8 @@ namespace DotRPG
                 RefreshStats();
             }
             var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);
-            animator.SetLook(skinLook ?? CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
+            // [ART] Worn armour no longer changes the body: only the weapon in hand shows the gear (skins still apply).
+            animator.SetLook(skinLook ?? BaseLook(CharacterClassInfo.Get(Class)));
             SkinTrail.Set(this, animator.Renderer, skinLook != null ? SkinCatalog.Find(Data.SkinId) : null);
             combat.RefreshWeapon();
         }
