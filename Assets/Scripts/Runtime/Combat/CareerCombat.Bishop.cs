@@ -261,7 +261,7 @@ namespace DotRPG
             foreach (var p in allies)
             {
                 if (p == null || p.IsDead) continue;
-                p.Health.SetInvulnerable(c.s.duration);
+                if (c.authority) p.Health.SetInvulnerable(c.s.duration);
                 PowerAura.Play(p, c.s.duration, new Color(1f, .9f, .45f), new Color(1f, 1f, .85f));
                 CareerFx.Clip("b_cross", p.Center, Vector2.zero, .9f, 22f);
             }

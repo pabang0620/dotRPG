@@ -15,6 +15,7 @@ namespace DotRPG
         int chargeSlot = -1;
         float chargeStart, nextMarker;
         CareerSkill chargeSkill;
+        string chargeGem;
         SkillNumbers chargeNumbers;
 
         public bool Charging => chargeSlot >= 0;
@@ -31,6 +32,7 @@ namespace DotRPG
             if (!Charges(s) || !owner.IsLocal || owner.NetPuppet || Game.Input == null) return false;
             chargeSlot = slot;
             chargeSkill = s;
+            chargeGem = Prog.Active(slot)?.id;
             chargeNumbers = n;
             chargeStart = Time.time;
             nextMarker = 0f;
@@ -69,8 +71,8 @@ namespace DotRPG
             chargeSlot = -1;
             castEnd = Time.time + CareerMoves.Recovery(chargeSkill) + .08f;
             readyAt[slot] = Time.time + (NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
-            var gem = Prog.Active(slot);
-            if (gem != null) skillReady[gem.id] = readyAt[slot];
+            // The cooldown belongs to the skill that was charged, even if the key was changed meanwhile.
+            if (!string.IsNullOrEmpty(chargeGem)) skillReady[chargeGem] = readyAt[slot];
             StartCoroutine(CareerCombat.For(owner).Cast(chargeSkill, n));
             Casted?.Invoke(owner, slot);
         }
@@ -80,5 +82,7 @@ namespace DotRPG
             chargeSlot = -1;
             castEnd = 0f;
         }
+
+        void OnDisable() { if (Charging) CancelCharge(); }
     }
 }

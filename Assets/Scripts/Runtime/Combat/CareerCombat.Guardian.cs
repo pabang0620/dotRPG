@@ -10,10 +10,12 @@ namespace DotRPG
         const float WallShield = .18f;
         /// <summary>회귀의 방패 has no cooldown: three shields fly at once, one more per node rank above 1 (up to 5).</summary>
         public int MaxShieldsOut => Mathf.Clamp(2 + Mathf.Max(1, Prog.Rank("g_wall")), 3, 5);
-        int shieldsOut;
+        /// <summary>When each thrown shield is back (a time list, so a stopped coroutine can never leave one counted forever).</summary>
+        readonly List<float> shieldBack = new List<float>();
+        int ShieldsOut { get { shieldBack.RemoveAll(t => t <= Time.time); return shieldBack.Count; } }
 
         /// <summary>False while every shield of 회귀의 방패 is still out (checked before mana is spent).</summary>
-        public bool CanCast(CareerSkill s) => s.effect != "shieldthrow" || shieldsOut < MaxShieldsOut;
+        public bool CanCast(CareerSkill s) => s.effect != "shieldthrow" || ShieldsOut < MaxShieldsOut;
 
         IEnumerator Guardian(Run c)
         {
@@ -56,8 +58,7 @@ namespace DotRPG
             GiveShield(c, owner, WallShield, c.s.duration);
             // A slow flight (1.1 s there and back) keeps several shields out together; ranks throw faster (SkillCaster).
             const float leg = .55f;
-            shieldsOut++;
-            try
+            shieldBack.Add(Time.time + leg * 2f + .05f);
             {
             // A monster hit on the way out can be hit again on the way back once its hit invulnerability is over.
             var outbound = new Dictionary<EnemyController, float>();
@@ -87,7 +88,6 @@ namespace DotRPG
             fx?.Stop();
             if (Live(c)) { CareerFx.Clip("g_clang", owner.Center + c.dir * .3f, Vector2.zero, 1.2f, 30f); Sound("c_shield", .5f); }
             }
-            finally { shieldsOut = Mathf.Max(0, shieldsOut - 1); }
         }
 
         /// <summary>수호의 맹세: a ward that follows the guardian; allies inside take less damage and get a shield once.</summary>

@@ -67,6 +67,15 @@ namespace DotRPG
         }
 
         internal void MarkTaken() => taken = true;
+
+        void OnDisable()
+        {
+            if (ghost == null) return;
+            Destroy(ghost.gameObject);
+            ghost = null;
+            Held = null;
+            HeldChanged?.Invoke();
+        }
     }
 
     public sealed class DropTarget : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler

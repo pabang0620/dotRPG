@@ -70,7 +70,7 @@ export async function revive(accountId: number, uuid: string, body: ReviveBody):
     const free = c.level <= REVIVE_FREE_UNTIL_LEVEL;
     if (!free) {
       if (coins <= 0) {
-        // 지급 반영은 남겨 둔다(롤백하면 같은 날 다시 계산할 뿐이라 결과는 같다)
+        // 409를 던지면 트랜잭션이 롤백되어 지급 반영도 취소된다(다음 조회 때 같은 날 기준으로 다시 계산하므로 결과는 같다)
         throw new AppError(409, '부활 코인이 없습니다.', 'NO_REVIVE_COIN', { next_grant_at: nextGrantAt });
       }
       coins -= 1;

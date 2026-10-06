@@ -51,6 +51,7 @@ export async function claim(accountId: number, body: ClaimBody): Promise<ClaimRe
       await repo.lockAccount(db, accountId);
       // 1. 같은 request_id: 그때 결과를 그대로(잠금 뒤에 봐서 동시 재전송도 여기로 온다)
       const prior = await repo.byRequest(db, accountId, body.request_id);
+      if (prior && prior.level !== body.level) throw new AppError(409, '같은 요청 번호가 다른 단계에 이미 쓰였습니다.', 'REQUEST_ID_REUSED', { level: prior.level });
       if (prior) return replay(db, accountId, prior);
       // 2. 단계 표에 없는 level
       if (!tier) throw new AppError(422, '존재하지 않는 보상 단계입니다.', 'UNKNOWN_TIER', { level: body.level });

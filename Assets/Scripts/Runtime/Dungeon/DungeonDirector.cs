@@ -680,6 +680,7 @@ namespace DotRPG
             if (run == null || run.State != DungeonRunState.Playing) { ReviveOpen = false; return; }
             if (Game.Player != null && !Game.Player.IsDead) { ReviveOpen = false; return; }
             if (!Game.IsWorldRunning) return;
+            if (ReviveCoins.Busy) return; // [REVIVE] the countdown waits for the coin answer (a paid coin must not time out)
             reviveClock += Time.deltaTime;
             var input = Game.Input;
             if (Game.IsPlaying && !Game.State.ChangedThisFrame && input != null)
@@ -710,7 +711,8 @@ namespace DotRPG
         void DoRevive()
         {
             var local = Game.Player;
-            if (!ReviveOpen || run == null || local == null || !local.IsDead || run.RevivesLeft <= 0) return;
+            // The coin is already paid here: revive whenever the run is still going and the player is still down.
+            if (run == null || run.State != DungeonRunState.Playing || local == null || !local.IsDead || run.RevivesLeft <= 0) return;
             ReviveOpen = false;
             run.RevivesUsed++;
             if (NetHost) PartyNet.Current.HostRevived(local);

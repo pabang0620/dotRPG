@@ -59,6 +59,7 @@ namespace DotRPG
         protected override void Refresh()
         {
             var tiers = LevelRewardClient.Tiers;
+            if (tiers.Count > rows.Count) Debug.LogWarning($"[dotRPG] level rewards: {tiers.Count} tiers but only {rows.Count} rows are shown");
             header.text = !OnlineSession.Playing ? "<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>"
                 : !LevelRewardClient.Loaded ? "<color=#8c96a8>불러오는 중입니다...</color>"
                 : $"계정 최고 레벨 <color=#ffd34a>Lv.{LevelRewardClient.AccountLevel}</color>  ·  <color=#b8c4d8>계정당 한 번씩 받을 수 있습니다</color>";

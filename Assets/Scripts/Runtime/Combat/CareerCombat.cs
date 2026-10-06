@@ -92,7 +92,7 @@ namespace DotRPG
             shield = guard = bless = stacks = 0;
             shieldEnd = guardEnd = guardSlowEnd = blessEnd = rhythmEnd = retalEnd = retalReady = counterEnd = hotEnd = oathEnd = 0;
             counterDamage = 0;
-            shieldsOut = 0;
+            shieldBack.Clear();
             frenzy = 0; frenzyEnd = 0;
             OathRadius = 0;
             hotSource = null;
