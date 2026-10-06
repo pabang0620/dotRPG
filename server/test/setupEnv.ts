@@ -104,3 +104,7 @@ for (const k of [
 ]) {
   process.env[k] = '10000';
 }
+// 11단계(결제): 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 결제 기능 플래그는 기본 꺼짐이고 결제 테스트 파일이 켠다(mock Steam)
+for (const k of ['RATE_PAY_READ_PER_MIN', 'RATE_PAY_ORDER_PER_MIN', 'RATE_PAY_ORDER_IP_PER_MIN', 'RATE_PAY_SYNC_PER_MIN', 'RATE_STARSHOP_SPEND_PER_MIN']) {
+  process.env[k] = '10000';
+}

@@ -1,0 +1,9 @@
+{
+  "version": "2026-10-06.1",
+  "note": "운영 전 확정: 묶음 구성, 별조각 수, 가격(Steamworks 가격 설정과 같아야 한다), steam_item_id 는 모두 시작값이다. 보너스 별조각은 두지 않는다(설계 D11). 이 파일은 클라이언트에 내려가지 않고 data_version 해시에 포함하지 않는다.",
+  "products": [
+    { "id": "stars_300", "steam_item_id": 1001, "name": "별조각 300", "stars": 300, "enabled": true, "sort": 1, "prices": { "KRW": 1100 } },
+    { "id": "stars_1000", "steam_item_id": 1002, "name": "별조각 1,000", "stars": 1000, "enabled": true, "sort": 2, "prices": { "KRW": 3300 } },
+    { "id": "stars_3000", "steam_item_id": 1003, "name": "별조각 3,000", "stars": 3000, "enabled": true, "sort": 3, "prices": { "KRW": 9900 } }
+  ]
+}

@@ -78,5 +78,7 @@ export function getMeta(now = getNow()) {
     relay: { enabled: cfg.relay.enabled },
     steam: { identity: cfg.steam.identity, app_id: cfg.steam.appId },
     combat_transport_order: cfg.transport.order.join(','),
+    // 11단계: 결제 UI 표시 여부(PAYMENTS_ENABLED, 기본 꺼짐). 값만 알려 주고 설정 상세는 싣지 않는다
+    payments: { enabled: cfg.pay.enabled },
   };
 }

@@ -143,6 +143,8 @@ export function release(admin: AdminCtx, ip: string, uuid: string, body: Release
     handler: async (client) => {
       const h = await holdsRepo.lockHoldByUuid(client, uuid);
       if (!h) throw NOT_FOUND();
+      // 11단계 E7: 결제 경제 정지(kind='payment')는 돈 문제라 owner만 해제한다(결제 정지 해제가 경제 정지를 풀지도 않는다)
+      if (h.kind === 'payment' && admin.role !== 'owner') throw new AppError(403, '권한이 없습니다.', 'FORBIDDEN_ROLE');
       const now = getNow();
       let released = (await holdsRepo.release(client, h.id, admin.loginId, body.note, now)) ? 1 : 0;
       if (body.release_linked === true) {

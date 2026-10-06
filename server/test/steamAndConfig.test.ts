@@ -163,7 +163,7 @@ describe('설정 검증(DEPLOY_STAGE, 중계 가드 G2/G8/G9/G10)', () => {
     expect(() => loadConfig({ ...base, RELAY_MAX_CONNECTIONS: '-1' })).toThrow(/RELAY_MAX_CONNECTIONS/);
     const c = loadConfig(base);
     expect(c.relay).toMatchObject({ ticketTtlSeconds: 60, maxConnections: 400, maxRooms: 120, frameMaxBytes: 8192, packetMaxBytes: 6144, flushMs: 20, hostGraceMs: 3000, strikesPerMin: 20, roomEgressBps: 262144 });
-    expect(c.field).toMatchObject({ electionWindowSeconds: 5, staleSeconds: 300, uncreditedMax: 24, creditSurplus: 8, carrySlack: 5, carryStep: 0.12, carryMin: 0.2 });
+    expect(c.field).toMatchObject({ electionWindowSeconds: 5, staleSeconds: 300, uncreditedMax: 24, creditSurplus: 8, carrySlack: 5, carryStep: 0.15, carryMin: 0.02 });
     expect(c.steam).toMatchObject({ webApiBase: 'https://api.steampowered.com', retries: 1, breakerFailures: 5, breakerOpenSeconds: 30 });
   });
 });

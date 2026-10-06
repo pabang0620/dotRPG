@@ -29,9 +29,9 @@ namespace DotRPG.EditorTools
         {
             string json = JsonUtility.ToJson(new CareerCatalogJson());
             const string trials = ",\"trials\":{" +
-                "\"1\":{\"minSeconds\":2,\"requiredNodes\":[]}," +
+                "\"1\":{\"minSeconds\":4,\"requiredNodes\":[]}," +
                 "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
-                "\"3\":{\"minSeconds\":2,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
+                "\"3\":{\"minSeconds\":4,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
                 "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}}";
             return json.Substring(0, json.Length - 1) + trials + "}";
         }

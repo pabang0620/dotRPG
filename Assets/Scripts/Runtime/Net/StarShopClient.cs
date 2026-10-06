@@ -76,8 +76,22 @@ namespace DotRPG
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다.", null); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["count"] = count, ["banner"] = banner };
             if (tier >= 0 && banner != "aura" && banner != "skin") body["tier"] = tier; // gear: the chosen level tier
+            // [PAY 11] The rates the player was shown: the server refuses the pull if they changed meanwhile.
+            if (!string.IsNullOrEmpty(RatesVersion)) body["rates_version"] = RatesVersion;
             Api.Post(Base + "/pull", body, r =>
             {
+                if (!r.ok && r.code == "RATES_CHANGED")
+                {
+                    // New rates: reload them so the window shows the current table, then ask again.
+                    _ = RefreshAsync();
+                    done?.Invoke(false, "확률표가 바뀌었습니다. 새 확률을 확인한 뒤 다시 뽑아 주세요.", null);
+                    return;
+                }
+                if (!r.ok && (r.code == "STAR_DEBT" || r.code == "STAR_SPEND_CAP"))
+                {
+                    done?.Invoke(false, r.code == "STAR_DEBT" ? "환불된 결제로 갚아야 할 별조각이 있어 지금은 뽑을 수 없습니다." : "오늘 쓸 수 있는 별조각 한도를 넘었습니다. (06:00 초기화)", null);
+                    return;
+                }
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "뽑기에 실패했습니다." : r.message, null); return; }
                 var results = new List<StarPullResult>();
                 foreach (var o in MiniJson.Arr(r.data, "results") ?? new List<object>())

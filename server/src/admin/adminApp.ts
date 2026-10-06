@@ -12,6 +12,7 @@ import { createHeldRunsRouter } from './heldruns/heldRunsRoutes';
 import { createMailCampaignsRouter } from './mailcampaigns/mailCampaignsRoutes';
 import { createMaintenanceAdminRouter } from './maintenance/maintenanceAdminRoutes';
 import { createOpsRouter } from './ops/opsRoutes';
+import { createPaymentsAdminRouter } from './payments/paymentsAdminRoutes';
 import { createPlayersRouter } from './players/playersRoutes';
 import { createReportsAdminRouter } from './reports/reportsRoutes';
 import { createSanctionsRouter } from './sanctions/sanctionsRoutes';
@@ -38,6 +39,7 @@ export function createAdminApp(): Express {
   app.use(createEconomyAdminRouter());
   app.use(createEconomyHoldsRouter());
   app.use(createMailCampaignsRouter());
+  app.use(createPaymentsAdminRouter());
   app.use(createMaintenanceAdminRouter());
   app.use(createOpsRouter());
   app.use(adminNotFound);

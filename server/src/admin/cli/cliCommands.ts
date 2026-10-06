@@ -168,6 +168,50 @@ export const COMMANDS: Command[] = [
     run: (c) => c.post(`/admin/mail-campaigns/${need(c.args[0], 'campaign_uuid')}/cancel`, { reason: mustFlag(c, 'reason'), revoke_unclaimed: c.flags.revoke === true }),
   },
   { path: ['campaign', 'deliveries'], usage: 'campaign deliveries <campaign_uuid> [--state claimed|open|expired|revoked]', run: (c) => c.get(`/admin/mail-campaigns/${need(c.args[0], 'campaign_uuid')}/deliveries`, q(c, ['state', 'limit', 'before'])) },
+  // 11단계 결제 PA1~PA14(서버에 환불 API는 없다: 환불은 Steamworks 파트너 사이트에서 하고 서버가 감시로 감지한다)
+  { path: ['pay', 'order', 'list'], usage: 'pay order list [--state s] [--account uuid] [--review true|false]', run: (c) => c.get('/admin/payments/orders', { ...q(c, ['state', 'account', 'from', 'to', 'cursor', 'limit']), needs_review: flag(c, 'review') }) },
+  { path: ['pay', 'order', 'show'], usage: 'pay order show <order_uuid>', run: (c) => c.get(`/admin/payments/orders/${need(c.args[0], 'order_uuid')}`) },
+  { path: ['pay', 'order', 'recheck'], usage: 'pay order recheck <order_uuid>', run: (c) => c.post(`/admin/payments/orders/${need(c.args[0], 'order_uuid')}/recheck`) },
+  { path: ['pay', 'account', 'show'], usage: 'pay account show <account_uuid>', run: (c) => c.get(`/admin/payments/accounts/${need(c.args[0], 'account_uuid')}`) },
+  {
+    path: ['pay', 'account', 'block'],
+    usage: 'pay account block <account_uuid> --note <사유> [--reason manual|fraud_suspect]',
+    run: (c) => c.post(`/admin/payments/accounts/${need(c.args[0], 'account_uuid')}/block`, { note: mustFlag(c, 'note'), reason: flag(c, 'reason') ?? 'manual' }),
+  },
+  { path: ['pay', 'account', 'unblock'], usage: 'pay account unblock <account_uuid> --note <근거>   (owner)', run: (c) => c.post(`/admin/payments/accounts/${need(c.args[0], 'account_uuid')}/unblock`, { note: mustFlag(c, 'note') }) },
+  { path: ['pay', 'flag', 'list'], usage: 'pay flag list [--state open|confirmed|dismissed] [--account uuid]', run: (c) => c.get('/admin/payments/flags', q(c, ['state', 'account', 'cursor', 'limit'])) },
+  {
+    path: ['pay', 'flag', 'resolve'],
+    usage: 'pay flag resolve <flag_uuid> --as confirmed|dismissed --note <메모>',
+    run: (c) => c.post(`/admin/payments/flags/${need(c.args[0], 'flag_uuid')}/resolve`, { resolution: mustFlag(c, 'as'), note: mustFlag(c, 'note') }),
+  },
+  {
+    path: ['stars', 'grant', 'create'],
+    usage: 'stars grant create <account_uuid> (--stars n | --forgive-debt) [--order uuid] --memo <사유>   (승인 대기, 별조각은 승인 전에 움직이지 않는다)',
+    run: (c) =>
+      c.post('/admin/payments/star-grants', {
+        kind: c.flags['forgive-debt'] ? 'debt_forgive' : 'grant',
+        account_id: need(c.args[0], 'account_uuid'),
+        ...(c.flags['forgive-debt'] ? {} : { stars: Number(mustFlag(c, 'stars')) }),
+        ...(flag(c, 'order') ? { related_order_id: flag(c, 'order') } : {}),
+        memo: mustFlag(c, 'memo'),
+      }),
+  },
+  { path: ['stars', 'grant', 'list'], usage: 'stars grant list [--state pending|applied|cancelled|expired] [--account uuid]', run: (c) => c.get('/admin/payments/star-grants', q(c, ['state', 'account', 'cursor', 'limit'])) },
+  { path: ['stars', 'grant', 'approve'], usage: 'stars grant approve <grant_uuid>   (작성자 외 owner)', run: (c) => c.post(`/admin/payments/star-grants/${need(c.args[0], 'grant_uuid')}/approve`) },
+  { path: ['stars', 'grant', 'cancel'], usage: 'stars grant cancel <grant_uuid>', run: (c) => c.post(`/admin/payments/star-grants/${need(c.args[0], 'grant_uuid')}/cancel`) },
+  {
+    path: ['pay', 'revoke'],
+    usage: 'pay revoke <order_uuid> --note <사유> [--apply <preview_hash>] [--no-cosmetics] [--no-gear] [--no-gauge]   (owner, 먼저 미리보기)',
+    run: (c) =>
+      c.post(`/admin/payments/orders/${need(c.args[0], 'order_uuid')}/revoke-outcomes`, {
+        mode: flag(c, 'apply') ? 'apply' : 'preview',
+        include: { cosmetics: !c.flags['no-cosmetics'], gear: !c.flags['no-gear'], gauge: !c.flags['no-gauge'] },
+        ...(flag(c, 'apply') ? { preview_hash: flag(c, 'apply') } : {}),
+        note: mustFlag(c, 'note'),
+      }),
+  },
+  { path: ['pay', 'report'], usage: 'pay report   (대사 현황 + payment-report 수동 실행은 ops run payment-report)', run: (c) => c.get('/admin/payments/reconcile') },
   { path: ['maint', 'status'], usage: 'maint status', run: (c) => c.get('/admin/maintenance') },
   {
     path: ['maint', 'schedule'],
@@ -186,7 +230,7 @@ export const COMMANDS: Command[] = [
   { path: ['broadcast'], usage: 'broadcast <문구>', run: (c) => c.post('/admin/broadcast', { text: c.args.join(' ') }) },
   { path: ['ops', 'status'], usage: 'ops status', run: (c) => c.get('/admin/ops/status') },
   { path: ['ops', 'jobs'], usage: 'ops jobs', run: (c) => c.get('/admin/ops/jobs') },
-  { path: ['ops', 'run'], usage: 'ops run <purge-hourly|purge-daily|stale-runs|integrity-nightly> [--full]', run: (c) => c.post(`/admin/ops/jobs/${need(c.args[0], 'job')}/run`, c.flags.full ? { full: true } : {}) },
+  { path: ['ops', 'run'], usage: 'ops run <purge-hourly|purge-daily|stale-runs|integrity-nightly|payment-report|...> [--full]', run: (c) => c.post(`/admin/ops/jobs/${need(c.args[0], 'job')}/run`, c.flags.full ? { full: true } : {}) },
 ];
 
 export const newRequestId = (): string => randomUUID();

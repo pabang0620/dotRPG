@@ -39,7 +39,16 @@ export const THRESHOLDS = {
   holdsActive24h: 5,
   heldRunAgeS: 24 * 3600,
   openReportAgeS: 48 * 3600,
-  jobStaleHours: { 'purge-hourly': 3, 'purge-daily': 30, 'integrity-nightly': 30, 'stale-runs': 1, 'presence-sweep': 1, 'income-reconcile': 30 } as Record<string, number>,
+  jobStaleHours: { 'purge-hourly': 3, 'purge-daily': 30, 'integrity-nightly': 30, 'stale-runs': 1, 'presence-sweep': 1, 'income-reconcile': 30, 'payment-reconcile': 1, 'payment-watch': 2, 'payment-report': 30 } as Record<string, number>,
+  // 11단계(결제, 설계 12.4). 시작값: 운영하며 조정한다
+  payFailRateMinOrders: 10,
+  payFailRate: 0.3,
+  payRefund24h: 5,
+  payRefundRatio: 0.2,
+  payLimitHitsPerAccount1h: 3,
+  payLimitHitsTotal1h: 20,
+  payReviewAgeS: 24 * 3600,
+  starGrantPendingAgeS: 12 * 3600,
 } as const;
 
 export interface RuleInput {
@@ -125,5 +134,27 @@ export function evaluate(i: RuleInput, now: Date = new Date()): Alert[] {
   }
   if (s.steam?.misconfigured_recent) add('steam_auth_misconfigured', 'critical', 'Steam 로그인 설정 오류', 'Steam Web API가 키·앱 ID를 거절했습니다. 키 만료 또는 STEAM_APP_ID 오설정을 확인하세요.');
   if (s.steam?.breaker_open) add('steam_breaker', 'warning', 'Steam 인증 회로 차단', 'Steam 호출이 연속 실패해 잠시 차단되었습니다.');
+  // ---- 11단계: 결제(phase11_payments.md 12.4) ----
+  const p = s.payments;
+  if (p) {
+    if (p.chargebacks_24h >= 1) add('payment_chargeback', 'critical', '결제 차지백 발생', `최근 24시간 신규 차지백 ${p.chargebacks_24h}건입니다. 검토 큐를 확인하세요.`);
+    if (p.unknown_orders_open >= 1) add('payment_unknown_order', 'critical', 'Steam에만 있는 주문', `미해결 ${p.unknown_orders_open}건. 퍼블리셔 키 유출을 의심하세요.`);
+    if (p.mismatch_24h >= 1) add('payment_amount_mismatch', 'critical', '결제 검증 불일치', `최근 24시간 금액·Steam ID·appid 불일치 ${p.mismatch_24h}건입니다.`);
+    if (p.stuck_orders >= 1) add('payment_stuck', 'critical', '결제 주문 정체', `막힌 주문 ${p.stuck_orders}건입니다(대사 작업·Steam 상태를 확인하세요).`);
+    if (p.key_rejected_recent) add('payment_key_rejected', 'critical', '결제 키 거절', 'Steam 결제 API가 퍼블리셔 키를 거절했습니다(최근 10분). 키 만료·유출·IP 제한을 확인하세요.');
+    if (p.finalized_ungranted >= 1) add('payment_finalized_ungranted', 'critical', '확정 후 미지급', `확정(finalized)된 뒤 5분 넘게 지급되지 않은 주문 ${p.finalized_ungranted}건입니다.`);
+    if (p.orders_1h >= T.payFailRateMinOrders && (p.failed_1h + p.expired_1h) / p.orders_1h >= T.payFailRate) {
+      add('payment_fail_rate', 'warning', '결제 실패 비율 높음', `최근 1시간 ${p.orders_1h}건 중 실패·만료 ${p.failed_1h + p.expired_1h}건입니다.`);
+    }
+    if (p.refunds_24h >= T.payRefund24h || (p.granted_24h > 0 && p.refunds_24h / p.granted_24h >= T.payRefundRatio)) {
+      add('payment_refund_spike', 'warning', '환불 급증', `최근 24시간 환불 ${p.refunds_24h}건(지급 ${p.granted_24h}건)입니다.`);
+    }
+    if (p.limit_hits_1h_max_account >= T.payLimitHitsPerAccount1h || p.limit_hits_1h_total >= T.payLimitHitsTotal1h) {
+      add('payment_limit_hits', 'warning', '결제 한도 초과 반복', `최근 1시간 ${p.limit_hits_1h_total}회(한 계정 최대 ${p.limit_hits_1h_max_account}회)입니다.`);
+    }
+    if (p.steam_breaker_open) add('payment_steam_breaker', 'warning', 'Steam 결제 회로 차단', 'Steam 결제 호출이 연속 실패해 잠시 차단되었습니다.');
+    if (p.review_oldest_age_s !== null && p.review_oldest_age_s > T.payReviewAgeS) add('payment_review_age', 'warning', '결제 검토 지연', '가장 오래된 열린 검토 항목이 24시간을 넘었습니다.');
+    if (p.grants_pending_oldest_age_s !== null && p.grants_pending_oldest_age_s > T.starGrantPendingAgeS) add('star_grant_pending_age', 'warning', '별조각 운영 지급 승인 지연', '승인 대기 지급이 12시간을 넘었습니다.');
+  }
   return out;
 }

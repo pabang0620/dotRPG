@@ -8,6 +8,8 @@ export const pullBody = z.strictObject({
   banner: z.enum(['aura', 'skin', 'weapon', 'armor', 'accessory']).optional(),
   /** 장비 뽑기의 레벨 단계(0 = Lv.1 ... 7 = Lv.40). 없으면 내 레벨의 단계 */
   tier: z.number().int().min(0).max(7).optional(),
+  /** 클라이언트가 화면에 보여 준 확률표 버전(11단계 11.4). STAR_RATES_ACK_REQUIRED 이면 필수 */
+  rates_version: z.string().min(1).max(40).optional(),
 });
 export const exchangeBody = z.strictObject({
   request_id: requestId,

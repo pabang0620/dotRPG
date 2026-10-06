@@ -17,6 +17,7 @@ import { metrics } from '../../ops/metrics';
 import { logger } from '../../utils/logger';
 import * as repo from './authRepository';
 import { verifyTicket } from './steamProvider';
+import { reconcileOpenOrderQuietly } from '../payments/paymentsService';
 
 const REFRESH_DAYS = 14;
 const ARGON_OPTS = { type: argon2.argon2id } as const;
@@ -281,7 +282,7 @@ export async function steamLogin(ticket: string, meta: AccessMeta = {}, ip = '')
     throw new AppError(403, '정지된 계정입니다.', 'ACCOUNT_BANNED', { banned_until: account.banned_until.toISOString() });
   }
   const acc = account;
-  return withTransaction(async (client) => {
+  const result = await withTransaction(async (client) => {
     const lastLogin = await repo.touchLastLogin(client, acc.id);
     await repo.setSteamOwner(client, acc.id, ownerId);
     const { tokens, session } = await openSession(client, acc, 'steam_login', sig, { steamId: id.steamId, steamOwnerId: ownerId });
@@ -292,6 +293,9 @@ export async function steamLogin(ticket: string, meta: AccessMeta = {}, ip = '')
       created,
     };
   });
+  // 11단계 7.4: 로그인 직후 그 계정의 열린 결제 주문 1개를 즉시 대사한다(응답을 기다리지 않는다)
+  if (!created) reconcileOpenOrderQuietly(acc.id);
+  return result;
 }
 
 /** A2: 기존 계정에 Steam 연결 */

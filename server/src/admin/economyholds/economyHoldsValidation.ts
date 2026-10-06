@@ -4,7 +4,7 @@ export const uuidParams = z.object({ uuid: z.uuid() });
 
 export const holdListQuery = z.object({
   state: z.enum(['shadow', 'active', 'released', 'clawed_back']).optional(),
-  kind: z.enum(['velocity', 'auction', 'linked', 'manual']).optional(),
+  kind: z.enum(['velocity', 'auction', 'linked', 'manual', 'payment']).optional(),
   q: z.string().min(1).max(40).optional(),
   cursor: z.string().max(40).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),

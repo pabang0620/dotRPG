@@ -6,7 +6,7 @@ export interface HoldRow {
   uuid: string;
   account_id: number;
   character_id: number | null;
-  kind: 'velocity' | 'auction' | 'linked' | 'manual';
+  kind: 'velocity' | 'auction' | 'linked' | 'manual' | 'payment';
   state: 'shadow' | 'active' | 'released' | 'clawed_back';
   origin_hold_id: number | null;
   window_kind: string | null;

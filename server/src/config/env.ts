@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { logger } from '../utils/logger';
 import { antiAbuseShape, buildAntiAbuse, type AntiAbuseConfig } from './antiAbuseEnv';
 import { buildSweep, sweepShape, type SweepConfig } from './sweepEnv';
+import { buildPay, payShape, type PayConfig } from './payEnv';
 import { buildPhase8, phase8Shape, type FieldConfig, type Phase8Config, type RelayConfig, type TransportConfig } from './phase8Env';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
@@ -220,6 +221,7 @@ const envSchema = z.object({
   ...phase8Shape,
   ...antiAbuseShape,
   ...sweepShape,
+  ...payShape,
 });
 
 export interface AppConfig {
@@ -413,6 +415,8 @@ export interface AppConfig {
   aa: AntiAbuseConfig;
   /** 10단계: 던전 클리어권(소탕)과 운영 우편 캠페인 */
   sweep: SweepConfig;
+  /** 11단계: 별조각 Steam 결제와 결제 보호(기본 꺼짐) */
+  pay: PayConfig;
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -535,6 +539,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     fieldCarry: { slack: e.FIELD_CARRY_SLACK, hardGap: e.FIELD_CARRY_HARD_GAP },
     warn: (m) => logger.warn(m),
   });
+  const pay = buildPay(e, { prod, jwtSecret: e.JWT_SECRET, steamAuthMode: e.STEAM_AUTH_MODE, deployStage: p8.deployStage, warn: (m) => logger.warn(m) });
   const announce = e.MAINT_ANNOUNCE_MINUTES.split(',')
     .map((x) => Number(x.trim()))
     .filter((n) => Number.isInteger(n) && n > 0)
@@ -725,6 +730,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     transport: p8.transport,
     aa,
     sweep: buildSweep(e, { prod, adminGrantMaxGold: e.ADMIN_GRANT_MAX_GOLD }),
+    pay,
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,

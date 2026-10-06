@@ -3,7 +3,7 @@
 // DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다. 게임에서는 캐시샵 창을 다시 열면 보인다.
 import { initConfig } from '../src/config/env';
 import { closePool, getPool, withTransaction } from '../src/db/pool';
-import { changeBalance, lockWallet } from '../src/domains/starshop/starshopRepository';
+import { creditFree, lockWallet } from '../src/domains/starshop/starWallet';
 
 import { assertTestStage } from './_stageGuard.mjs';
 
@@ -19,8 +19,10 @@ import { assertTestStage } from './_stageGuard.mjs';
   const accountId = Number(r.rows[0]?.account_id ?? 0);
   if (!accountId) throw new Error(`캐릭터 '${name}'을(를) 찾지 못했습니다.`);
   const after = await withTransaction(async (db) => {
+    // DB 트리거(star_ledger_backing)가 이 세션 설정이 없는 test_grant 입금을 거절한다(11단계 4절). 스테이지 가드와 별개의 마지막 방어선
+    await db.query("SET LOCAL dotrpg.allow_test_grant = 'on'");
     await lockWallet(db, accountId);
-    return changeBalance(db, accountId, amount, 'test_grant', 'scripts/test-stars', null);
+    return (await creditFree(db, { accountId, reason: 'test_grant', amount, ref: 'scripts/test-stars', requestId: null })).balance;
   });
   console.log(`${name}: 별조각 +${amount} (잔액 ${after})`);
   await closePool();

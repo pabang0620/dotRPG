@@ -14,6 +14,7 @@ import { runMatchTick } from './domains/match/matchService';
 import { runSettleTick } from './domains/partyruns/partySettle';
 import { runCardAutoPickTick } from './domains/dungeons/dungeonService';
 import { initGameData } from './gamedata/loader';
+import { initPayments } from './domains/payments/payInit';
 import { beginShutdown, inFlightCount, isShuttingDown, setWsState, waitForInFlight } from './ops/lifecycle';
 import { closeInterruptedRuns, requestJobStop, runJob, startJobRunner } from './ops/jobRunner';
 import { registerAllJobs } from './ops/jobs';
@@ -33,6 +34,8 @@ async function main(): Promise<void> {
   const cfg = initConfig();
   const data = initGameData(cfg.gameDataDir);
   await getPool().query('SELECT 1');
+  // 11단계: 상품표 검증·확률표 스냅샷(같은 버전에 다른 내용이면 여기서 기동이 멈춘다)
+  await initPayments();
 
   registerAllJobs();
   const interrupted = await closeInterruptedRuns();

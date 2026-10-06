@@ -11,6 +11,13 @@ export const LOG_REDACT = [
   '*.secret',
   '*.STEAM_WEB_API_KEY',
   'STEAM_WEB_API_KEY',
+  // 11단계(결제): 퍼블리셔 키와 견적 서명 비밀은 어떤 로그에도 남기지 않는다
+  'STEAM_PUBLISHER_API_KEY',
+  '*.STEAM_PUBLISHER_API_KEY',
+  'PAYMENT_QUOTE_SECRET',
+  '*.PAYMENT_QUOTE_SECRET',
+  '*.key',
+  '*.steam_key',
   'ALERT_WEBHOOK_URL',
   'OPS_HEARTBEAT_URL',
 ];

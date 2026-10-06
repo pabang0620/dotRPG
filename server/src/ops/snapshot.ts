@@ -5,6 +5,7 @@ import { getPool, poolStats } from '../db/pool';
 import { registry } from '../domains/chat/realtimeNotifier';
 import { getQueueStore } from '../domains/match/queueStore';
 import { steamStats } from '../domains/auth/steamProvider';
+import { payPartnerStats } from '../domains/payments/steamPartner';
 import { flushStats } from '../domains/antiabuse/incomeMeter';
 import { relayHub } from '../domains/relay/relayHub';
 import { relayMetrics } from '../domains/relay/relayMetrics';
@@ -67,6 +68,31 @@ export interface Snapshot {
   /** 10단계: 소탕·운영 우편 캠페인 지표(설계 11절) */
   sweep?: { runs_1h: number; tickets_outstanding: number; buy_limit_hits: number };
   campaign?: { active: number; delivered_1h: number; cap_reached: number; revoke_pending: number };
+  /** 11단계: 결제 지표(설계 12.5). 경보 규칙(12.4)이 쓰는 보조 값을 함께 둔다 */
+  payments?: {
+    enabled: boolean;
+    orders_1h: number;
+    granted_1h: number;
+    failed_1h: number;
+    expired_1h: number;
+    open_orders: number;
+    stuck_orders: number;
+    finalized_ungranted: number;
+    refunds_24h: number;
+    granted_24h: number;
+    chargebacks_24h: number;
+    mismatch_24h: number;
+    review_open: number;
+    review_oldest_age_s: number | null;
+    holds_payment_active: number;
+    debt_accounts: number;
+    unknown_orders_open: number;
+    limit_hits_1h_total: number;
+    limit_hits_1h_max_account: number;
+    grants_pending_oldest_age_s: number | null;
+    steam_breaker_open: boolean;
+    key_rejected_recent: boolean;
+  };
   steam?: ReturnType<typeof steamStats>;
   shutting_down: boolean;
   disk_used_pct: number | null;
@@ -190,6 +216,82 @@ export async function collectSnapshot(): Promise<Snapshot> {
   } catch {
     // DB가 내려가 있으면 비워 둔다
   }
+  const partner = payPartnerStats();
+  let payments: NonNullable<Snapshot['payments']> = {
+    enabled: cfg.pay.enabled,
+    orders_1h: 0,
+    granted_1h: 0,
+    failed_1h: 0,
+    expired_1h: 0,
+    open_orders: 0,
+    stuck_orders: 0,
+    finalized_ungranted: 0,
+    refunds_24h: 0,
+    granted_24h: 0,
+    chargebacks_24h: 0,
+    mismatch_24h: 0,
+    review_open: 0,
+    review_oldest_age_s: null,
+    holds_payment_active: 0,
+    debt_accounts: 0,
+    unknown_orders_open: 0,
+    limit_hits_1h_total: 0,
+    limit_hits_1h_max_account: 0,
+    grants_pending_oldest_age_s: null,
+    steam_breaker_open: partner.breaker_open,
+    key_rejected_recent: partner.key_rejected_recent,
+  };
+  try {
+    const q = await db.query<Record<string, string | null>>(
+      `SELECT (SELECT count(*) FROM star_orders WHERE created_at > now() - interval '1 hour') AS orders_1h,
+              (SELECT count(*) FROM star_orders WHERE created_at > now() - interval '1 hour' AND granted_at IS NOT NULL) AS granted_1h,
+              (SELECT count(*) FROM star_orders WHERE created_at > now() - interval '1 hour' AND state = 'failed') AS failed_1h,
+              (SELECT count(*) FROM star_orders WHERE created_at > now() - interval '1 hour' AND state = 'expired') AS expired_1h,
+              (SELECT count(*) FROM star_orders WHERE state IN ('pending_init', 'created', 'authorized', 'finalized')) AS open_orders,
+              (SELECT count(*) FROM star_orders WHERE (state = 'pending_init' AND created_at < now() - interval '10 minutes')
+                  OR (state IN ('created', 'authorized') AND expires_at < now() - interval '10 minutes')
+                  OR (state = 'finalized' AND finalized_at < now() - interval '5 minutes')) AS stuck,
+              (SELECT count(*) FROM star_orders WHERE state = 'finalized' AND finalized_at < now() - interval '5 minutes') AS fin_stuck,
+              (SELECT count(*) FROM star_orders WHERE state = 'refunded' AND reversed_at > now() - interval '24 hours') AS refunds_24h,
+              (SELECT count(*) FROM star_orders WHERE granted_at > now() - interval '24 hours') AS granted_24h,
+              (SELECT count(*) FROM star_orders WHERE state = 'chargeback' AND reversed_at > now() - interval '24 hours') AS cb_24h,
+              (SELECT count(*) FROM payment_flags WHERE kind IN ('amount_mismatch', 'steamid_mismatch', 'appid_mismatch') AND created_at > now() - interval '24 hours') AS mismatch_24h,
+              (SELECT count(*) FROM payment_flags WHERE state = 'open') AS review_open,
+              (SELECT extract(epoch FROM now() - min(created_at)) FROM payment_flags WHERE state = 'open') AS review_oldest,
+              (SELECT count(*) FROM economy_holds WHERE kind = 'payment' AND state IN ('active', 'clawed_back')) AS holds_payment,
+              (SELECT count(*) FROM star_wallets WHERE debt > 0) AS debt_accounts,
+              ((SELECT count(*) FROM payment_flags WHERE kind = 'unknown_steam_order' AND state = 'open')
+               + coalesce((SELECT (detail->>'unknown_orders')::int FROM job_runs WHERE job = 'payment-report' AND status = 'ok' ORDER BY started_at DESC LIMIT 1), 0)) AS unknown_open,
+              (SELECT count(*) FROM payment_flags WHERE kind = 'limit_exceeded' AND created_at > now() - interval '1 hour') AS limit_total,
+              (SELECT coalesce(max(c), 0) FROM (SELECT count(*) AS c FROM payment_flags WHERE kind = 'limit_exceeded' AND created_at > now() - interval '1 hour' GROUP BY account_id) t) AS limit_max,
+              (SELECT extract(epoch FROM now() - min(created_at)) FROM star_admin_grants WHERE state = 'pending') AS grant_oldest`,
+    );
+    const x = q.rows[0] as Record<string, string | null>;
+    payments = {
+      ...payments,
+      orders_1h: n(x.orders_1h),
+      granted_1h: n(x.granted_1h),
+      failed_1h: n(x.failed_1h),
+      expired_1h: n(x.expired_1h),
+      open_orders: n(x.open_orders),
+      stuck_orders: n(x.stuck),
+      finalized_ungranted: n(x.fin_stuck),
+      refunds_24h: n(x.refunds_24h),
+      granted_24h: n(x.granted_24h),
+      chargebacks_24h: n(x.cb_24h),
+      mismatch_24h: n(x.mismatch_24h),
+      review_open: n(x.review_open),
+      review_oldest_age_s: x.review_oldest === null ? null : Math.round(n(x.review_oldest)),
+      holds_payment_active: n(x.holds_payment),
+      debt_accounts: n(x.debt_accounts),
+      unknown_orders_open: n(x.unknown_open),
+      limit_hits_1h_total: n(x.limit_total),
+      limit_hits_1h_max_account: n(x.limit_max),
+      grants_pending_oldest_age_s: x.grant_oldest === null ? null : Math.round(n(x.grant_oldest)),
+    };
+  } catch {
+    // DB가 내려가 있으면 비워 둔다
+  }
   const m1 = 60_000;
   const h1 = metrics.http(60_000);
   const h5 = metrics.http(5 * 60_000);
@@ -260,6 +362,7 @@ export async function collectSnapshot(): Promise<Snapshot> {
     economy,
     sweep: sweepInfo,
     campaign: campaignInfo,
+    payments,
     steam: steamStats(),
     shutting_down: isShuttingDown(),
     disk_used_pct: diskUsedPct(),

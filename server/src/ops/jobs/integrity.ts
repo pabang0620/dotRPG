@@ -192,6 +192,89 @@ async function i5(): Promise<CheckResult> {
   );
 }
 
+/** I6: 별조각 결제·지갑(11단계 12.3). 불일치는 critical. 열 이름이 아니라 종류(kind)별로 샘플을 남긴다 */
+async function i6(): Promise<CheckResult> {
+  const parts: [string, CheckResult][] = [];
+  const add = async (kind: string, sql: string): Promise<void> => {
+    const r = await rows(sql);
+    if (r.count > 0) parts.push([kind, { count: r.count, samples: r.samples.map((x) => ({ kind, ...x })) }]);
+  };
+  // I6-1 지갑: balance = SUM(delta) = 마지막 balance_after, paid_balance = SUM(paid_delta) = SUM(로트 remaining), debt = SUM(debt_delta)
+  await add(
+    'wallet',
+    `SELECT a.uuid AS account, w.balance, coalesce(l.s, 0) AS ledger_sum, l.last_bal AS ledger_last, w.paid_balance, coalesce(l.ps, 0) AS paid_sum,
+            coalesce(lots.r, 0) AS lots_remaining, w.debt, coalesce(l.ds, 0) AS debt_sum
+       FROM star_wallets w JOIN accounts a ON a.id = w.account_id
+       LEFT JOIN (SELECT account_id, sum(delta) AS s, sum(paid_delta) AS ps, sum(debt_delta) AS ds, (array_agg(balance_after ORDER BY id DESC))[1] AS last_bal
+                    FROM star_ledger GROUP BY account_id) l ON l.account_id = w.account_id
+       LEFT JOIN (SELECT account_id, sum(remaining) AS r FROM star_paid_lots GROUP BY account_id) lots ON lots.account_id = w.account_id
+      WHERE w.balance <> coalesce(l.s, 0) OR w.balance <> coalesce(l.last_bal, 0) OR w.paid_balance <> coalesce(l.ps, 0)
+         OR w.paid_balance <> coalesce(lots.r, 0) OR w.debt <> coalesce(l.ds, 0)
+      ORDER BY w.account_id`,
+  );
+  // I6-2 주문당 1회: 지급된 주문마다 purchase 원장 정확히 1줄(delta = stars), 회수된 주문마다 회수 원장 정확히 1줄. 주문 없는 purchase 원장은 0줄
+  await add(
+    'order_ledger',
+    `SELECT o.uuid AS "order", o.state, o.stars,
+            (SELECT count(*) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) AS purchases,
+            (SELECT coalesce(sum(delta), 0) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) AS purchased
+       FROM star_orders o
+      WHERE o.granted_at IS NOT NULL
+        AND ((SELECT count(*) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) <> 1
+          OR (SELECT coalesce(sum(delta), 0) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) <> o.stars
+          OR (o.state IN ('refunded', 'chargeback')
+              AND (SELECT count(*) FROM star_ledger l WHERE l.reason IN ('refund_revoke', 'chargeback_revoke') AND l.ref = o.uuid::text) <> 1))
+      ORDER BY o.id`,
+  );
+  await add(
+    'orphan_purchase',
+    `SELECT l.id AS ledger_id, l.ref FROM star_ledger l WHERE l.reason = 'purchase' AND NOT EXISTS (SELECT 1 FROM star_orders o WHERE o.uuid::text = l.ref) ORDER BY l.id`,
+  );
+  // I6-3 Steam 확정 금액 = 주문 스냅샷 금액(과거 가격은 주문 행이 정본이다)
+  await add(
+    'steam_amount',
+    `SELECT o.uuid AS "order", o.amount_minor, o.steam_amount_minor, o.currency, o.steam_currency FROM star_orders o
+      WHERE o.granted_at IS NOT NULL AND (o.steam_amount_minor IS DISTINCT FROM o.amount_minor OR o.steam_currency IS DISTINCT FROM o.currency) ORDER BY o.id`,
+  );
+  // I6-4 배분: 유료분 감소 원장 줄마다 -paid_delta = SUM(배분)
+  await add(
+    'alloc',
+    `SELECT l.id AS ledger_id, l.paid_delta, (SELECT coalesce(sum(a.stars), 0) FROM star_spend_allocs a WHERE a.ledger_id = l.id) AS allocated
+       FROM star_ledger l WHERE l.paid_delta < 0 AND -l.paid_delta <> (SELECT coalesce(sum(a.stars), 0) FROM star_spend_allocs a WHERE a.ledger_id = l.id) ORDER BY l.id`,
+  );
+  // I6-5 막힌 주문
+  await add(
+    'stuck_order',
+    `SELECT uuid AS "order", state, created_at FROM star_orders
+      WHERE (state = 'pending_init' AND created_at < now() - interval '10 minutes')
+         OR (state IN ('created', 'authorized') AND expires_at < now() - interval '10 minutes')
+         OR (state = 'finalized' AND finalized_at < now() - interval '5 minutes') ORDER BY id`,
+  );
+  // I6-6 근거 없는 입금(트리거가 꺼진 DB 대비): 승인 없는 운영 지급·탕감
+  await add(
+    'unbacked_credit',
+    `SELECT l.id AS ledger_id, l.reason, l.ref FROM star_ledger l
+      WHERE l.reason IN ('admin_grant', 'debt_forgive')
+        AND NOT EXISTS (SELECT 1 FROM star_admin_grants g WHERE g.uuid::text = l.ref AND g.state = 'applied') ORDER BY l.id`,
+  );
+  // I6-7 Steam 교차: 마지막 payment-report 결과의 미지 주문, 해결되지 않은 unknown_steam_order 플래그
+  await add(
+    'unknown_steam_order',
+    `SELECT 'report' AS source, (detail->>'unknown_orders')::int AS n FROM (
+        SELECT detail FROM job_runs WHERE job = 'payment-report' AND status = 'ok' ORDER BY started_at DESC LIMIT 1) j
+      WHERE coalesce((detail->>'unknown_orders')::int, 0) > 0
+     UNION ALL SELECT 'flag', count(*)::int FROM payment_flags WHERE kind = 'unknown_steam_order' AND state = 'open' HAVING count(*) > 0`,
+  );
+  // I6-8 부채 일관: debt > 0 인 계정마다 그 부채를 만든 회수 원장이 있다
+  await add(
+    'debt_without_revoke',
+    `SELECT a.uuid AS account, w.debt FROM star_wallets w JOIN accounts a ON a.id = w.account_id
+      WHERE w.debt > 0 AND NOT EXISTS (SELECT 1 FROM star_ledger l WHERE l.account_id = w.account_id AND l.reason IN ('refund_revoke', 'chargeback_revoke') AND l.debt_delta > 0)
+      ORDER BY w.account_id`,
+  );
+  return { count: parts.reduce((a, [, r]) => a + r.count, 0), samples: parts.flatMap(([, r]) => r.samples).slice(0, SAMPLE_MAX) };
+}
+
 /** 9단계 정보 점검(경보의 mismatches에 넣지 않는다: 파생 표는 스스로 고쳐지고, 이름·정지는 운영 판단이다) */
 async function nineInfo(): Promise<Record<string, CheckResult>> {
   const income = await reconcileIncome({ hours: 48, fix: false });
@@ -224,6 +307,7 @@ export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
     I3: await i3(),
     I4: await i4(),
     I5: await i5(),
+    I6: await i6(),
   };
   const mismatches = Object.values(checks).reduce((a, c) => a + c.count, 0);
   const info = await nineInfo();

@@ -1,9 +1,11 @@
+import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { assertNoHold } from '../antiabuse/holds';
 import { TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
 import { getGameData } from '../../gamedata/loader';
 import { keyAt } from '../../utils/itemKey';
 import { AppError } from '../../utils/AppError';
+import { getNow } from '../../utils/clock';
 import { getRng } from '../../utils/rng';
 import * as charRepo from '../characters/characterRepository';
 import type { EconCtx } from '../economy/economyContext';
@@ -39,6 +41,8 @@ import {
   type Rarity,
 } from './starshopDefs';
 import * as repo from './starshopRepository';
+import * as wallets from './starWallet';
+import { assertSpendAllowed, spendCapView } from './starSpend';
 import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 
 const RARITIES: Rarity[] = ['unique', 'epic', 'rare', 'common'];
@@ -51,6 +55,15 @@ function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string) {
 }
 
 export { poolOf };
+
+/** 뽑기 본문의 rates_version 확인(11.4). STAR_RATES_ACK_REQUIRED 이면 없는 요청을 거절한다 */
+function assertRatesAck(seen: string | undefined): void {
+  if (seen === undefined) {
+    if (getConfig().pay.ratesAckRequired) throw new AppError(400, '확률표 버전(rates_version)을 함께 보내야 합니다.', 'VALIDATION', { fields: [{ path: 'rates_version', message: '필수 값' }] });
+    return;
+  }
+  if (seen !== RATES_VERSION) throw new AppError(409, '확률표가 바뀌었습니다. 다시 확인해 주세요.', 'RATES_CHANGED', { rates_version: RATES_VERSION });
+}
 
 /** 오라·스킨 뽑기 확률표(%). 하나 = 등급 확률 / 그 등급 수(중복 방지 전 기준). 확률 0인 등급은 싣지 않는다 */
 function auraTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
@@ -104,12 +117,18 @@ async function myCharacter(accountId: number, characterUuid: string) {
 export async function summary(accountId: number, characterUuid: string) {
   const ch = await myCharacter(accountId, characterUuid);
   const db = getPool();
-  const wallet = await repo.readWallet(db, accountId);
+  const wallet = await wallets.readWallet(db, accountId);
   const owned = await repo.ownedOf(db, accountId);
   const copies = await repo.copiesOf(db, accountId);
   const registered = await repo.collectionsOf(db, accountId);
   return {
     balance: wallet.balance,
+    // 11단계: 유료·무료 구분, 부채, 일일 소비 상한, 결제 기능 표시(기존 필드는 그대로)
+    paid_balance: wallet.paidBalance,
+    free_balance: wallet.balance - wallet.paidBalance,
+    debt: wallet.debt,
+    spend_cap: await spendCapView(db, accountId, getNow()),
+    payments: { enabled: getConfig().pay.enabled },
     pity: wallet.pity,
     skin_pity: wallet.skinPity,
     pity_max: PITY_MAX,
@@ -192,24 +211,28 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
     requestId,
     payload,
     handler: async (ctx) => {
+      // 11단계 11.4: 클라이언트가 화면에서 본 확률표 버전이 지금과 다르면 거절한다(지급 근거가 아니라 "이 표를 보고 뽑겠다"는 확인)
+      assertRatesAck(body.rates_version);
       // 9단계 12.5: 경제 정지 중에는 별조각을 쓸 수 없다
       await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const banner: Banner = body.banner ?? 'aura';
       const price = body.count === 10 ? TEN_PRICE : PULL_PRICE;
       const times = body.count === 10 ? TEN_COUNT : 1;
-      const wallet = await repo.lockWallet(db, accountId);
+      const wallet = await wallets.lockWallet(db, accountId);
+      wallets.assertNoStarDebt(wallet);
       if (wallet.balance < price) {
         throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
       }
-      let balance = await repo.changeBalance(db, accountId, -price, 'gacha', `${banner}_${body.count}`, requestId);
+      await assertSpendAllowed(db, accountId, price, ctx.now);
+      let balance = (await wallets.debit(db, { accountId, reason: 'gacha', price, ref: `${banner}_${body.count}`, requestId })).balance;
       const rows: repo.PullRow[] = [];
       let pity = banner === 'skin' ? wallet.skinPity : wallet.pity;
       if (banner === 'aura' || banner === 'skin') {
         const r = await rollAuras(ctx, accountId, banner, times, pity, rows);
         pity = r.pity;
-        await repo.setPity(db, accountId, pity, banner === 'skin');
-        if (r.refund > 0) balance = await repo.changeBalance(db, accountId, r.refund, 'gacha_refund', `${banner}_${body.count}`, requestId);
+        await wallets.setPity(db, accountId, pity, banner === 'skin');
+        // 중복 환급은 하지 않는다(refund는 항상 0, 여분으로 쌓인다). gacha_refund 원장은 새로 쓰지 않는다
       } else {
         const tier = body.tier ?? tierOfLevel(ctx.char.level);
         if (tier > tierOfLevel(ctx.char.level)) {
@@ -295,7 +318,8 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
       const db = ctx.client;
       const def = STAR_COSMETIC_BY_ID.get(body.item_id);
       if (!def) throw new AppError(404, '교환할 수 없는 외형입니다.', 'COSMETIC_UNKNOWN');
-      const wallet = await repo.lockWallet(db, accountId);
+      const wallet = await wallets.lockWallet(db, accountId);
+      wallets.assertNoStarDebt(wallet);
       const owned = await repo.ownedOf(db, accountId);
       if (owned.has(def.id)) throw new AppError(409, '이미 가진 외형입니다.', 'COSMETIC_OWNED');
       const price = exchangePriceOf(def);
@@ -303,7 +327,8 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
       if (wallet.balance < price) {
         throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
       }
-      const balance = await repo.changeBalance(db, accountId, -price, 'exchange', def.id, requestId);
+      await assertSpendAllowed(db, accountId, price, ctx.now);
+      const balance = (await wallets.debit(db, { accountId, reason: 'exchange', price, ref: def.id, requestId })).balance;
       await repo.addCosmetic(db, accountId, def.id, 'exchange');
       return { status: 200, data: { item_id: def.id, price, balance } };
     },
@@ -323,7 +348,8 @@ export function claim(accountId: number, characterUuid: string, body: ClaimBody)
       await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const max = GAUGE[body.banner].max;
-      const wallet = await repo.lockWallet(db, accountId);
+      const wallet = await wallets.lockWallet(db, accountId);
+      wallets.assertNoStarDebt(wallet);
       const gauge = body.banner === 'skin' ? wallet.skinPity : wallet.pity;
       if (gauge < max) throw new AppError(422, '선택 게이지가 아직 다 차지 않았습니다.', 'GAUGE_NOT_FULL', { need: max, have: gauge });
       const choices = poolOf(body.banner, GAUGE[body.banner].rarity, ctx.char.class);
@@ -333,7 +359,7 @@ export function claim(accountId: number, characterUuid: string, body: ClaimBody)
       if (owned.has(def.id)) throw new AppError(409, '이미 가진 외형입니다.', 'COSMETIC_OWNED');
       await repo.addCosmetic(db, accountId, def.id, 'gacha');
       const left = gauge - max;
-      await repo.setPity(db, accountId, left, body.banner === 'skin');
+      await wallets.setPity(db, accountId, left, body.banner === 'skin');
       await repo.insertPulls(db, accountId, requestId, RATES_VERSION, body.banner, [
         { seq: 0, rarity: GAUGE[body.banner].rarity, itemId: def.id, pityBefore: gauge, pityAfter: left, byPity: true, duplicate: false, refund: 0, kind: 'cosmetic' },
       ]);

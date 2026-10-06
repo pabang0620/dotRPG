@@ -151,6 +151,11 @@ export function purgeDaily(ctx: JobCtx): Promise<JobResult> {
       `DELETE FROM account_ips WHERE (account_id, ip) IN (
          SELECT account_id, ip FROM account_ips WHERE last_seen_at < ${days(cfg.aa.accountDeviceDays)} LIMIT $1)`,
     ],
+    // 11단계 10.4: 결제 주문의 IP는 PAY_IP_RETENTION_DAYS 뒤 NULL로 지운다(주문·이벤트 행은 지우지 않는다)
+    [
+      'star_orders_ip',
+      `UPDATE star_orders SET ip = NULL WHERE id IN (SELECT id FROM star_orders WHERE ip IS NOT NULL AND created_at < ${days(cfg.pay.ipRetentionDays)} ORDER BY id LIMIT $1)`,
+    ],
     // 끝난 프레즌스 행 7일, 활동 시간·소득 집계 35일(PLAY_TIME_RETENTION_DAYS)
     [
       'online_sessions',
