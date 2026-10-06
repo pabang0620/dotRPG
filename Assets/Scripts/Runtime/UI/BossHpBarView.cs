@@ -176,7 +176,7 @@ namespace DotRPG
             string level = boss.Level > 1 ? $"  <size=16><color=#d8c8a8>Lv.{boss.Level}</color></size>" : "";
             nameText.text = boss.DisplayName + level;
             bannerTitle.text = boss.DisplayName;
-            bannerSub.text = boss.Def != null && boss.Def.raid ? "— 레이드 보스 —" : "— 던전 보스 —";
+            bannerSub.text = boss.Def != null && boss.Def.raid ? "· 레이드 보스 ·" : "· 던전 보스 ·";
             introAt = Time.unscaledTime;
             banner.gameObject.SetActive(true);
             Game.Camera?.Shake(0.25f, 0.4f);

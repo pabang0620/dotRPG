@@ -149,7 +149,7 @@ namespace DotRPG
             b.lineBottom = UIFactory.Image(root, "LineBottom", Game.Art.Get("ui_white"), Color.white);
             b.lineBottom.preserveAspect = false;
             UIFactory.Place(b.lineBottom.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
-            b.caption = UIFactory.Text(root, "Caption", "— 각 성 —", 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
+            b.caption = UIFactory.Text(root, "Caption", "· 각 성 ·", 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
             UIFactory.Place(b.caption.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(UiTheme.HudBannerWidth - 20f, 28f));
             b.title = UIFactory.Text(root, "Title", "", 46, Color.white, TextAnchor.MiddleCenter, true);
             var outline = b.title.gameObject.AddComponent<Outline>();

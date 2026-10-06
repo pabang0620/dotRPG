@@ -62,6 +62,7 @@ namespace DotRPG
             heartsRoot = UIFactory.Place(UIFactory.Rect(root, "Hearts"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -20), new Vector2(10, 10));
             heartsRoot.gameObject.SetActive(false);
             StatusBarsView.Create(root);
+            BuffBarView.Create(root); // [UI] buffs and debuffs under the currency line
             SkillBarView.Create(root);
             AwakeningBanner.Create(root);
             AwakeningCutIn.Create(root); // class illustration slides in at the bottom-left on an awakening skill
@@ -232,7 +233,7 @@ namespace DotRPG
             controlsHint.text =
                 $"이동 {input.GetBindingLabel(GameAction.Move)}   공격 {input.GetBindingLabel(GameAction.Attack)}   " +
                 $"상호작용 {input.GetBindingLabel(GameAction.Interact)}   물약 {input.GetBindingLabel(GameAction.UseItem)}/{input.GetBindingLabel(GameAction.UseMana)}   " +
-                $"가방 {input.GetBindingLabel(GameAction.Inventory)}   지도 M   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
+                $"가방 {input.GetBindingLabel(GameAction.Inventory)}   지도 {input.GetBindingLabel(GameAction.Map)}   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
             // [UI] Size the text box (and its plate) to the text.
             controlsHint.rectTransform.sizeDelta = new Vector2(Mathf.Min(900f, controlsHint.preferredWidth + 4f), 26f);
             if (controlsPlate != null)

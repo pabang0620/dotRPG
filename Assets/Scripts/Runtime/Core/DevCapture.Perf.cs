@@ -8,7 +8,7 @@ using UnityEngine.Profiling;
 namespace DotRPG
 {
     /// <summary>
-    /// [P5] <c>-dotrpgPerf &lt;folder&gt;</c>: frame time and garbage while playing — the village with the full
+    /// [P5] <c>-dotrpgPerf &lt;folder&gt;</c>: frame time and garbage while playing - the village with the full
     /// party walking, then a weekday dungeon fought by the scripted player at normal speed.
     /// Report lines "PERF &lt;what&gt; PASS|FAIL" and "PERF summary: N passed, M failed".
     /// </summary>

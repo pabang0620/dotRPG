@@ -135,7 +135,7 @@ namespace DotRPG
 
         public void Circle(float cx, float cy, float r, Color32 c) => Ellipse(cx, cy, r, r, c);
 
-        /// <summary>Paints (only on opaque pixels) the part of an ellipse — used for highlights/shadows.</summary>
+        /// <summary>Paints (only on opaque pixels) the part of an ellipse - used for highlights/shadows.</summary>
         public void PaintEllipse(float cx, float cy, float rx, float ry, Color32 c)
         {
             int x0 = (int)Math.Floor(cx - rx), x1 = (int)Math.Ceiling(cx + rx);

@@ -12,7 +12,7 @@ namespace DotRPG
     /// <summary>
     /// Owns the UI canvas and decides which screen is visible for each <see cref="GameState"/>.
     /// Menus are kept on a stack so sub-screens (settings, controls, confirm) return to whoever
-    /// opened them — title or pause menu.
+    /// opened them - title or pause menu.
     /// </summary>
     public class UIRoot : MonoBehaviour
     {

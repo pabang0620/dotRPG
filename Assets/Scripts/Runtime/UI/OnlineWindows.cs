@@ -87,7 +87,7 @@ namespace DotRPG
 
         public static PartyFinderScreen Create(Transform canvas)
         {
-            var w = CreateWindow<PartyFinderScreen>(canvas, "PartyFinder", "파티 찾기", "menuicon_party");
+            var w = CreateWindow<PartyFinderScreen>(canvas, "PartyFinder", "파티 찾기", "menuicon_finder");
             Instance = w;
             w.PreviewBanner();
             w.tabList = Button(w.content, "TabList", "모집 목록", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(150f, 42f), () => { w.createTab = false; w.Refresh(); }, 20);

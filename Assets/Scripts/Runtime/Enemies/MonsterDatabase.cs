@@ -101,7 +101,7 @@ namespace DotRPG
         public float knockbackSpeed = 6f, hurtTime = 0.3f, invulnerable = 0.15f, attackKnockback = 7f;
         public int xp = 20;
 
-        /// <summary>Hits never stagger or push it (bosses; knights only while attacking — see the behaviour).</summary>
+        /// <summary>Hits never stagger or push it (bosses; knights only while attacking - see the behaviour).</summary>
         public bool superArmor;
         /// <summary>무력화 게이지. 0 = no gauge.</summary>
         public float groggyMax;

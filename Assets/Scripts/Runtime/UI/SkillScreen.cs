@@ -8,10 +8,10 @@ namespace DotRPG
 {
     /// <summary>
     /// Skill window modelled on Path of Exile:
-    /// • 패시브 트리 — one point per level. The start sits in the middle; the left / right / down / up
+    /// • 패시브 트리 - one point per level. The start sits in the middle; the left / right / down / up
     ///   arms strengthen skills 1-4 (area, damage and cooldown notables with stat nodes in between,
     ///   a mastery at the end). Keystones in the corners. Left click allocates, right click refunds.
-    /// • 스킬 젬 — the five skill slots (the fifth is the awakening skill). Each slot opens at a level
+    /// • 스킬 젬 - the five skill slots (the fifth is the awakening skill). Each slot opens at a level
     ///   with its skill; two support gems link into it. Click a support socket to cycle gems.
     /// </summary>
     public partial class SkillScreen : WindowScreen
@@ -375,6 +375,9 @@ namespace DotRPG
             tooltipText = Label(tooltip, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -12f), new Vector2(332f, 300f));
             tooltip.gameObject.SetActive(false);
         }
+
+        // The career tree page is plain buttons: the gamepad moves between them (the gem page keeps its own cursor).
+        protected override bool PadNavigation => tab == TabId.Tree;
 
         protected override void Refresh()
         {

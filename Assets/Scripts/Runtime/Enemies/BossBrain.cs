@@ -7,7 +7,7 @@ namespace DotRPG
 {
     /// <summary>
     /// Boss pattern sequencer (every <see cref="MonsterKind.Boss"/>). Walks towards its threat target and,
-    /// between short gaps, plays one <see cref="BossPattern"/> picked by <see cref="ChoosePattern"/> — the single
+    /// between short gaps, plays one <see cref="BossPattern"/> picked by <see cref="ChoosePattern"/> - the single
     /// decision point a host / server can take over through <see cref="PatternAuthority"/>. Phases come from
     /// <see cref="MonsterDef.phases"/>. The raid boss 해골왕 adds its gimmicks: phase 2 raises two 사령 토템
     /// (both must fall within <see cref="TotemWindow"/> seconds of each other, otherwise the broken one comes
@@ -49,7 +49,7 @@ namespace DotRPG
 
         public bool CastingJudgment { get; private set; }
         public float JudgmentProgress { get; private set; }
-        /// <summary>(boss, broken): the cast ended — broken by groggy, or resolved on the party.</summary>
+        /// <summary>(boss, broken): the cast ended - broken by groggy, or resolved on the party.</summary>
         public event Action<BossBrain, bool> JudgmentEnded;
         public int JudgmentHits { get; private set; }
 

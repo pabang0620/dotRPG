@@ -84,7 +84,7 @@ namespace DotRPG
                 var locked = SkillGems.ForSlot(owner.Class, slot);
                 GameEvents.RaiseToast(slot == SkillGems.UltimateSlot
                     ? "전직 후 자신의 각성 퀘스트를 완료해야 사용할 수 있습니다."
-                    : $"아직 잠긴 스킬이다 — {locked?.name} (Lv.{Progression.SlotLevel(slot)}에 해금)");
+                    : $"아직 잠긴 스킬입니다: {locked?.name} (Lv.{Progression.SlotLevel(slot)}에 해금)");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }

@@ -109,6 +109,7 @@ namespace DotRPG
 
         protected virtual void Update()
         {
+            PadNavigate();
             if (!TakesInput) return;
             var input = Game.Input;
             if (input.InventoryPressed || input.CancelPressed || (input.MapPressed && this is WorldMapScreen))
@@ -117,39 +118,81 @@ namespace DotRPG
                 Close();
             }
         }
-    }
 
-    // =====================================================================================
+        // ---------------- [UI] gamepad: move between this window's buttons ----------------
 
-    // =====================================================================================
+        /// <summary>
+        /// Windows without their own cursor turn this on: with a gamepad the stick / d-pad moves between the window's
+        /// buttons (Unity UI navigation) and A presses the one under the yellow frame.
+        /// </summary>
+        protected virtual bool PadNavigation => false;
+        Image padCursor;
 
-    /// <summary>Mini-dungeon / raid information window (content not open yet).</summary>
-    public class ContentScreen : WindowScreen
-    {
-        Text status;
-
-        public static ContentScreen Create(Transform canvas, string title, string icon, string desc, string req, string reward)
+        protected void PadNavigate()
         {
-            var w = CreateWindow<ContentScreen>(canvas, "Content_" + title, title, icon);
-            var panel = Panel(w.content, "Panel", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(1000f, 580f), new Color32(24, 36, 54, 235));
-            var big = UIFactory.Image(panel.transform, "Art", Game.Art.Get(icon), Color.white);
-            UIFactory.Place(big.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -40f), new Vector2(200f, 200f));
-            Label(panel.transform, "Desc", $"<size=30><b>{title}</b></size>\n\n{desc}\n\n<color=#b8c4d8>{req}</color>\n<color=#ffe066>{reward}</color>", 22,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(280f, -40f), new Vector2(680f, 380f));
-            var enter = Button(panel.transform, "Enter", "입장", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(260f, 64f),
-                () => { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast($"{title}은(는) 아직 준비 중이다."); }, 28);
-            w.status = Label(panel.transform, "Status", "<color=#ff9f43>준비 중 — 다음 업데이트에서 열립니다</color>", 20,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 122f), new Vector2(600f, 30f), TextAnchor.MiddleCenter);
-            return w;
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return;
+            var current = es.currentSelectedGameObject;
+            bool mine = current != null && current.transform.IsChildOf(transform);
+            bool on = PadNavigation && IsTop && Game.Input != null && Game.Input.UsingGamepad && gameObject.activeInHierarchy;
+            if (!on)
+            {
+                // Nothing of this window stays selected under a dialog or with mouse and keyboard: A would press it.
+                if (mine) es.SetSelectedGameObject(null);
+                if (padCursor != null) padCursor.enabled = false;
+                return;
+            }
+            var selectable = mine && current.activeInHierarchy ? current.GetComponent<Selectable>() : null;
+            if (selectable == null || !selectable.IsInteractable())
+            {
+                selectable = null;
+                foreach (var s in GetComponentsInChildren<Selectable>(false))
+                    if (s.IsInteractable() && s.navigation.mode != Navigation.Mode.None) { selectable = s; break; }
+                if (selectable == null) { if (padCursor != null) padCursor.enabled = false; return; }
+                es.SetSelectedGameObject(selectable.gameObject);
+            }
+            var target = (RectTransform)selectable.transform;
+            KeepInView(target);
+            if (padCursor == null)
+            {
+                padCursor = UIFactory.Image(transform, "PadCursor", Game.Art.Get("ui_frame"), new Color32(255, 211, 74, 255));
+                padCursor.preserveAspect = false;
+                padCursor.raycastTarget = false;
+                padCursor.rectTransform.anchorMin = padCursor.rectTransform.anchorMax = padCursor.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            }
+            var root = (RectTransform)transform;
+            var r = target.rect;
+            Vector2 min = root.InverseTransformPoint(target.TransformPoint(r.min));
+            Vector2 max = root.InverseTransformPoint(target.TransformPoint(r.max));
+            padCursor.rectTransform.anchoredPosition = (min + max) * 0.5f;
+            padCursor.rectTransform.sizeDelta = max - min + new Vector2(8f, 8f);
+            padCursor.rectTransform.SetAsLastSibling();
+            padCursor.enabled = true;
         }
 
-        protected override void Refresh() { }
+        /// <summary>Scrolls a list so the selected row is inside its viewport.</summary>
+        static void KeepInView(RectTransform target)
+        {
+            var scroll = target.GetComponentInParent<ScrollRect>();
+            if (scroll == null || scroll.content == null || scroll.viewport == null || !target.IsChildOf(scroll.content)) return;
+            var view = scroll.viewport;
+            Vector3[] c = new Vector3[4];
+            target.GetWorldCorners(c);
+            float top = view.InverseTransformPoint(c[1]).y, bottom = view.InverseTransformPoint(c[0]).y;
+            float viewTop = view.rect.yMax, viewBottom = view.rect.yMin;
+            float shift = top > viewTop ? top - viewTop : bottom < viewBottom ? bottom - viewBottom : 0f;
+            if (Mathf.Abs(shift) > 0.5f) scroll.content.anchoredPosition -= new Vector2(0f, shift);
+        }
     }
+
+    // =====================================================================================
+
+    // =====================================================================================
 
     // =====================================================================================
 
     /// <summary>
-    /// Blacksmith (anvil or 대장장이): pick a piece of gear — worn slots first, then the bag — pay gold and
+    /// Blacksmith (anvil or 대장장이): pick a piece of gear - worn slots first, then the bag - pay gold and
     /// monster materials and try to raise it one +level: the chance falls from 100%
     /// to 10%, a weapon failing from +10 / +11 drops 3 levels, and from +12 (other gear +10) a failure
     /// destroys the piece unless a protection ticket in the bag saves it at +0. Risky attempts ask first,
@@ -196,7 +239,7 @@ namespace DotRPG
 
         public static EnhanceScreen Create(Transform canvas)
         {
-            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 강화 · 승급", "anvil");
+            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 강화 · 승급", "menuicon_enhance");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Left", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 590f), new Color32(24, 36, 54, 235));
             Label(left.transform, "Hint", "강화할 장비를 고르세요 (착용 중 + 가방)", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(500f, 30f));

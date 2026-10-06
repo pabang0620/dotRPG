@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// High-resolution (density 2, 32px per tile) characters and monsters. Same world size as the old
-    /// 16x20 art — a frame is 32x40 with doubled pivot — but twice the detail: eyes with highlights,
+    /// 16x20 art - a frame is 32x40 with doubled pivot - but twice the detail: eyes with highlights,
     /// hair strands and shine, cloth folds, armour plates and rivets, belts and buckles, a clean 1px
     /// dark outline. Five views (down, up, side, downside, upside; left = flipped by the renderer) x
     /// eight frames (idle0, idle1, walk0-3, attack, hurt). Also the held weapons wpn_*, held tools
@@ -923,7 +923,7 @@ namespace DotRPG
             return c.WithPivot(16, 3f);
         }
 
-        /// <summary>Carried supply crate (tool_crate) at density 2 — a wooden box of carrots.</summary>
+        /// <summary>Carried supply crate (tool_crate) at density 2 - a wooden box of carrots.</summary>
         static PixelCanvas DrawCrateHd()
         {
             var c = Hd(32, 34);

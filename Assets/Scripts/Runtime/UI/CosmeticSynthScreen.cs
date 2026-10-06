@@ -15,6 +15,7 @@ namespace DotRPG
     public class CosmeticSynthScreen : OnlineWindow
     {
         const int SpareRows = 10, SetRows = 6;
+        protected override bool PadNavigation => !busy;
         const float RuleH = 170f, SpareH = 56f, SetH = 104f;
 
         sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; }
@@ -33,7 +34,7 @@ namespace DotRPG
 
         public static CosmeticSynthScreen Create(Transform canvas)
         {
-            var w = CreateWindow<CosmeticSynthScreen>(canvas, "CosmeticSynth", "합성 · 컬렉션", "menuicon_cashshop");
+            var w = CreateWindow<CosmeticSynthScreen>(canvas, "CosmeticSynth", "합성 · 컬렉션", "menuicon_synth");
             Instance = w;
             var tl = new Vector2(0f, 1f);
             w.synthTabBtn = Button(w.content, "TabSynth", "합성", "ui_btn", tl, tl, Vector2.zero, new Vector2(200f, 52f), () => w.ShowTab(false), 20);

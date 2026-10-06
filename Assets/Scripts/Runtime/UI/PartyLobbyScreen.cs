@@ -11,6 +11,15 @@ namespace DotRPG
     /// </summary>
     public class PartyLobbyScreen : OnlineWindow
     {
+        /// <summary>"로" after a vowel or ㄹ, "으로" after any other final consonant.</summary>
+        static string Ro(string word)
+        {
+            char c = string.IsNullOrEmpty(word) ? 'a' : word[word.Length - 1];
+            if (c < 0xAC00 || c > 0xD7A3) return "로";
+            int jong = (c - 0xAC00) % 28;
+            return jong == 0 || jong == 8 ? "로" : "으로";
+        }
+
         public static PartyLobbyScreen Instance { get; private set; }
         const float RowH = 56f, Width = 1180f;
 
@@ -206,7 +215,7 @@ namespace DotRPG
             if (Client == null || !Client.InParty) return;
             if (next.id == Client.DungeonId) { picker.gameObject.SetActive(false); return; }
             Client.SetTarget(next.id, next.isRaid ? DungeonDifficulty.Normal : Client.Difficulty,
-                (ok, msg) => { Done(ok, msg, $"목적지를 {next.name}(으)로 바꿨습니다."); RefreshPicker(); });
+                (ok, msg) => { Done(ok, msg, $"목적지를 {next.name}{Ro(next.name)} 바꿨습니다."); RefreshPicker(); });
         }
 
         void PickDifficulty(DungeonDifficulty next)
@@ -215,7 +224,7 @@ namespace DotRPG
             var d = DungeonDatabase.Get(Client.DungeonId);
             if (d != null && d.isRaid) { SetStatus("레이드는 난이도가 하나입니다.", false); return; }
             if (next == Client.Difficulty) return;
-            Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, $"난이도를 {PartyFinderRules.DifficultyName(next)}(으)로 바꿨습니다."); RefreshPicker(); });
+            Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, $"난이도를 {PartyFinderRules.DifficultyName(next)}{Ro(PartyFinderRules.DifficultyName(next))} 바꿨습니다."); RefreshPicker(); });
         }
 
         /// <summary>[AI] The leader's own roster fills the free seats: at most the hired mercenaries that fit.</summary>

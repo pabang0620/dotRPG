@@ -43,6 +43,8 @@ namespace DotRPG
         const float GaugeW = 420f;
         Button one, ten, rateBtn, wardrobeBtn;
         RectTransform rateModal, cellRoot, resultPage;
+        // Gamepad moves between the banner, tier and draw buttons, never while a result page or a modal is up (A closes those).
+        protected override bool PadNavigation => (resultPage == null || !resultPage.gameObject.activeSelf) && (rateModal == null || !rateModal.gameObject.activeSelf) && (choiceModal == null || !choiceModal.gameObject.activeSelf);
         Text resultTitle;
         Button skipBtn, againBtn, okBtn;
         int lastCount = 1;
@@ -424,6 +426,7 @@ namespace DotRPG
 
         protected override void Update()
         {
+            PadNavigate(); // first: a result page or modal clears the pad selection before A is read below
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
             if (choiceModal != null && choiceModal.gameObject.activeSelf && Game.Input.CancelPressed) { choiceModal.gameObject.SetActive(false); return; }
             if (resultPage != null && resultPage.gameObject.activeSelf && (Game.Input.CancelPressed || Game.Input.SubmitPressed))

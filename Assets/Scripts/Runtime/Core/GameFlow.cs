@@ -231,7 +231,7 @@ namespace DotRPG
                 Game.UI.Hud.RefreshAll();
                 Game.Audio.PlayMusic(Game.World.Map.music);
                 Game.Audio.PlaySfx("confirm");
-                GameEvents.RaiseToast($"— {Game.World.Map.displayName} —");
+                GameEvents.RaiseToast($"· {Game.World.Map.displayName} ·");
                 if (arriveAtSpawn) Fx.Sparkle(player.Center + Vector2.up * 0.3f, 8, 0.8f);
             }));
         }

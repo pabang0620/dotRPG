@@ -7,7 +7,7 @@ namespace DotRPG
     /// Every window / HUD / icon sprite key goes through <see cref="DrawUiFamily"/>
     /// (ui_*, icon_*, eqicon_*, maticon_*, menuicon_*, gem_*, node_*, heart_*), so the whole UI art
     /// set is authored here in one place. Each canvas sets <c>Density = 2</c>, which makes
-    /// <see cref="SpriteLibrary"/> import it at twice the pixels per unit — same on-screen size as the
+    /// <see cref="SpriteLibrary"/> import it at twice the pixels per unit - same on-screen size as the
     /// old 16px art, twice the detail. 9-slice borders are given in the (doubled) HD pixel space and
     /// <see cref="UIFactory"/> keeps the on-screen border thickness constant across densities.
     /// </summary>
@@ -919,7 +919,7 @@ namespace DotRPG
             return null;
         }
 
-        /// <summary>Blacksmith anvil on a stump with a hammer — the "anvil" world sprite fallback.</summary>
+        /// <summary>Blacksmith anvil on a stump with a hammer - the "anvil" world sprite fallback.</summary>
         static PixelCanvas DrawAnvil()
         {
             var c = new PixelCanvas(28, 24);

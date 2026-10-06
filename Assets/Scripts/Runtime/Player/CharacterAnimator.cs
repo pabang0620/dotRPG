@@ -51,7 +51,7 @@ namespace DotRPG
         public Facing Facing => facing;
         public CharacterAnim Current => current;
 
-        /// <summary>Raised when a walk cycle plants a foot (frame 0 and 2) — used for dust/footstep sounds.</summary>
+        /// <summary>Raised when a walk cycle plants a foot (frame 0 and 2) - used for dust/footstep sounds.</summary>
         public event System.Action Footstep;
 
         public void Setup(CharacterLook characterLook, SpriteRenderer renderer)

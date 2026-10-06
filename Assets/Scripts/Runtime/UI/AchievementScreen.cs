@@ -11,6 +11,7 @@ namespace DotRPG
     public class AchievementScreen : OnlineWindow
     {
         public static AchievementScreen Instance { get; private set; }
+        protected override bool PadNavigation => true;
         const int PerColumn = 5;
         const float CellW = 590f, CellH = 64f, ColGap = 20f, Top = -106f;
         static readonly (string id, string name)[] Tabs =
@@ -25,7 +26,7 @@ namespace DotRPG
 
         public static AchievementScreen Create(Transform canvas)
         {
-            var w = CreateWindow<AchievementScreen>(canvas, "Achievements", "업적", "menuicon_quest");
+            var w = CreateWindow<AchievementScreen>(canvas, "Achievements", "업적", "menuicon_achievement");
             Instance = w;
             w.header = Label(w.content, "Header", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(900f, 40f), TextAnchor.MiddleLeft);
             w.clearBtn = Button(w.content, "Clear", "칭호 해제", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 40f), () => w.Equip(""), 17);

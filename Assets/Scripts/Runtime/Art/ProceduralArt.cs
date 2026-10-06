@@ -8,7 +8,7 @@ namespace DotRPG
     /// dark outlines, chibi characters). Nothing here is copied from the reference; every sprite is
     /// generated from simple shapes so the project is free of licensing questions.
     ///
-    /// Replace any sprite by placing a PNG at Resources/Art/{key}.png — see <see cref="SpriteLibrary"/>.
+    /// Replace any sprite by placing a PNG at Resources/Art/{key}.png - see <see cref="SpriteLibrary"/>.
     /// </summary>
     public static partial class ProceduralArt
     {

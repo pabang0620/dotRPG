@@ -10,6 +10,7 @@ namespace DotRPG
     public class AuctionScreen : OnlineWindow
     {
         public static AuctionScreen Instance { get; private set; }
+        protected override bool PadNavigation => true;
         enum Tab { Search, Mine, Register, Mail }
         const int PageSize = 9;
         const float RowH = 42f, TableW = 1220f, TableTop = -150f;
@@ -40,7 +41,7 @@ namespace DotRPG
 
         public static AuctionScreen Create(Transform canvas)
         {
-            var w = CreateWindow<AuctionScreen>(canvas, "Auction", "경매장", "icon_gold");
+            var w = CreateWindow<AuctionScreen>(canvas, "Auction", "경매장", "menuicon_auction");
             Instance = w;
             w.PreviewBanner();
             string[] names = { "검색", "내 등록", "등록하기", "우편함" };

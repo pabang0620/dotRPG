@@ -90,7 +90,7 @@ namespace DotRPG
         const float DigitSpacing = 4f / 16f; // 3px digit + 1px gap
         /// <summary>
         /// Health points are tiny (a skeleton has 3), so numbers are shown ×10 ("10" instead of "1").
-        /// Purely cosmetic — the real damage values and the balance are unchanged.
+        /// Purely cosmetic - the real damage values and the balance are unchanged.
         /// </summary>
         public const int DisplayScale = 1;
 

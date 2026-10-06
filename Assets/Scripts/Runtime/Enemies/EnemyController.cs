@@ -45,7 +45,7 @@ namespace DotRPG
         public event Action<EnemyController> Died;
         public Vector2 Position => body.position;
         public bool IsDead => state == State.Dead;
-        /// <summary>Centre of the body (the transform sits at the feet) — what spells aim at.</summary>
+        /// <summary>Centre of the body (the transform sits at the feet) - what spells aim at.</summary>
         public Vector2 Center => Position + new Vector2(0f, 0.4f * CenterHeight); // [MONSTER] bigger bodies
 
         /// <summary>Every enemy currently in the world (used by the mage's auto-targeting).</summary>
@@ -55,7 +55,7 @@ namespace DotRPG
 
         void OnDisable() => Active.Remove(this);
 
-        /// <summary>(enemy, xp reward) — the player listens to gain experience.</summary>
+        /// <summary>(enemy, xp reward) - the player listens to gain experience.</summary>
         public static event Action<EnemyController, int> Killed;
 
         float frozenUntil;

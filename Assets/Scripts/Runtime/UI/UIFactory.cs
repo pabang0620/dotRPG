@@ -91,7 +91,7 @@ namespace DotRPG
                 // twice the border, so sizing them against the density-1 reference PPU (BaseArtPixels)
                 // cancels the extra pixels out: a 32px/10px-border frame renders exactly like the old
                 // 16px/5px-border frame. (The old code divided by the sprite's own PPU, which halved
-                // the multiplier for HD frames and — unless borders were doubled — doubled their size.)
+                // the multiplier for HD frames and - unless borders were doubled - doubled their size.)
                 img.pixelsPerUnitMultiplier = 100f / BaseArtPixels / UiPixelScale;
             }
             else
@@ -119,7 +119,7 @@ namespace DotRPG
         /// <summary>
         /// An icon Image for a slot that starts empty and is filled with high-resolution pixel-art
         /// icons later (bag cells, gem sockets, shop rows, tooltip icons). The sharp material is set up
-        /// front so the crisp shader is in place before the first sprite is assigned — the plain
+        /// front so the crisp shader is in place before the first sprite is assigned - the plain
         /// <see cref="Image"/> path only knows to add it when a sprite is present at creation time.
         /// </summary>
         public static Image SharpIcon(Transform parent, string name, Color color)

@@ -13,7 +13,7 @@ namespace DotRPG
         IEnumerator UiShowcase()
         {
             // The standalone player keeps the desktop resolution in windowed mode, so honour the
-            // requested -screen-width/-screen-height ourselves — the UI is resolution-dependent and the
+            // requested -screen-width/-screen-height ourselves - the UI is resolution-dependent and the
             // brief wants a 1280x720 pass and a 1920x1080 pass.
             ApplyRequestedResolution();
             yield return Wait(1.2f);

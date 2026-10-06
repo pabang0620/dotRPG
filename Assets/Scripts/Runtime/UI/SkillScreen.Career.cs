@@ -35,7 +35,7 @@ namespace DotRPG
                 {
                     var s=skills[b*4+tier];float x=14+tier*195,y=162+b*150;
                     var bg=Panel(careerRoot,"Node_"+s.id,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(183,116),new Color32(26,35,54,255));
-                    bg.raycastTarget=true;bg.gameObject.AddComponent<PointerRelay>().onClick=_=>{selectedSkill=s.id;Refresh();};
+                    bg.raycastTarget=true;var nodeBtn=bg.gameObject.AddComponent<Button>();nodeBtn.targetGraphic=bg;nodeBtn.transition=Selectable.Transition.None;nodeBtn.onClick.AddListener(()=>{selectedSkill=s.id;Refresh();}); // a Button so the gamepad can reach it
                     var icon=UIFactory.Image(bg.transform,"Icon",CareerMoves.Icon(s.Icon),Color.white);
                     UIFactory.Place(icon.rectTransform,new Vector2(0,1),new Vector2(0,1),new Vector2(10,-10),Vector2.one*48);
                     CareerText(bg.transform,"Name",$"<b>{s.name}</b>\nLv.{s.level} · {p.Rank(s.id)}/3",16,65,10,115,52);

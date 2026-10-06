@@ -15,7 +15,7 @@ namespace DotRPG
 
     /// <summary>
     /// Statistics of one dungeon run (plan §6.0): where the party is, how long it took (playing time only),
-    /// kills, hits taken, the best combo, revives, per-member damage and — once over — the score and rewards.
+    /// kills, hits taken, the best combo, revives, per-member damage and - once over - the score and rewards.
     /// Plain data; <see cref="DungeonDirector"/> drives it.
     /// </summary>
     public sealed class DungeonRun

@@ -130,7 +130,7 @@ namespace DotRPG
 
         public static ShopScreen Create(Transform canvas)
         {
-            var w = CreateWindow<ShopScreen>(canvas, "Shop", "잡화점", "icon_potion_hp");
+            var w = CreateWindow<ShopScreen>(canvas, "Shop", "잡화점", "menuicon_shop");
             var left = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListW + 40f, 594f), new Color32(24, 36, 54, 235));
             for (int i = 0; i < 2; i++)
             {
@@ -502,7 +502,7 @@ namespace DotRPG
 
         public static StorageScreen Create(Transform canvas)
         {
-            var w = CreateWindow<StorageScreen>(canvas, "Storage", "창고", "icon_chest");
+            var w = CreateWindow<StorageScreen>(canvas, "Storage", "창고", "menuicon_storage");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(24, 36, 54, 235));
             var right = Panel(w.content, "Store", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(30, 44, 40, 235));

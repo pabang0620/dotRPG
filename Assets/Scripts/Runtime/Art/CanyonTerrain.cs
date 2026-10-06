@@ -361,7 +361,7 @@ namespace DotRPG
             return ramp[tone];
         }
 
-        // ---------- Cliffs: 3/4-view — rocky plateau tops + sedimentary south-facing walls ----------
+        // ---------- Cliffs: 3/4-view - rocky plateau tops + sedimentary south-facing walls ----------
 
         /// <summary>Rows of cliff below this cell down to lower ground (1..4; 4 = deep rock mass / plateau).</summary>
         static int WallDepth(Job j, int cx, int cy)
@@ -592,7 +592,7 @@ namespace DotRPG
         {
             int cx = px / Px, cy = py / Px;
             int local = Mod(px, Px);
-            // Which edges of this deck cell are open (no neighbouring deck) — rails go there.
+            // Which edges of this deck cell are open (no neighbouring deck) - rails go there.
             bool openN = j.CellKind(cx, cy + 1) != Deck;
             bool openS = j.CellKind(cx, cy - 1) != Deck;
             bool openW = j.CellKind(cx - 1, cy) != Deck;
@@ -714,7 +714,7 @@ namespace DotRPG
             var land = new float[pw * ph];
             const float Far = 9999f;
             for (int i = 0; i < land.Length; i++) land[i] = (j.kind[i] == Water) ? 0f : Far;
-            // Only need a few px of reach — do a small BFS-ish sweep both directions.
+            // Only need a few px of reach - do a small BFS-ish sweep both directions.
             for (int py = 0; py < ph; py++)
                 for (int px = 0; px < pw; px++)
                 {
@@ -768,7 +768,7 @@ namespace DotRPG
                     else if (depth >= 7) tone = 1;           // inner edge fading to ground
                     else tone = joint ? 1 : 2 + (IHashB(block, 0, j.seed + 250) % 3); // block top face
 
-                    // Corners: a clean mitred block — diagonal joint, still lit on top.
+                    // Corners: a clean mitred block - diagonal joint, still lit on top.
                     if (corner)
                     {
                         int diagJoint = ((px + py) % 13);
@@ -852,7 +852,7 @@ namespace DotRPG
         /// <summary>On a plateau top: a moss/grass tuft or a pebble clump clinging to the rock.</summary>
         static void PlateauDetail(Job j, int x, int y, System.Random rng)
         {
-            // Only on plateau tops (a cliff pixel with a cliff cell above and below — not on a wall face).
+            // Only on plateau tops (a cliff pixel with a cliff cell above and below - not on a wall face).
             int cx = x / Px, cy = y / Px;
             if (WallDepth(j, cx, cy) <= 3) return;
             if (rng.NextDouble() < 0.5)
