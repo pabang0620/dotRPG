@@ -20,6 +20,8 @@ namespace DotRPG
         Protection,
         /// <summary>[RAID] Seal key fragment: opens final raids. Sits in the "기타" tab, never used by hand.</summary>
         Key,
+        /// <summary>[SWEEP] Dungeon clear ticket: kept in the account wallet on the server, never in the bag.</summary>
+        Sweep,
     }
 
     /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
@@ -58,6 +60,10 @@ namespace DotRPG
                 description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
             new ConsumableItem { id = DungeonDatabase.RaidCore, name = "고대의 핵", iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = "레이드 보스에게서만 얻는 고대 마력의 핵. 대장간에서 장비를 한 등급 위 장비로 승급할 때 쓴다. (강화 수치 유지)" },
+            new ConsumableItem { id = DungeonSweep.TicketItem, name = "던전 클리어권", iconKey = "icon_sweep", kind = ConsumableKind.Sweep, grade = ItemRarity.Epic,
+                description = "직접 B등급 이상으로 깬 요일 던전을 전투 없이 한 번 끝낸다. 입장 횟수 1회를 함께 쓰고, 보상은 기본 경험치와 카드 1장이다. (계정 공용)" },
+            new ConsumableItem { id = DungeonSweep.EventTicketItem, name = "이벤트 클리어권", iconKey = "icon_sweep_event", kind = ConsumableKind.Sweep, grade = ItemRarity.Unique,
+                description = "던전 클리어권과 같지만 받은 날부터 14일 안에 써야 한다. 기한이 가까운 것부터 먼저 쓰인다. (계정 공용)" },
         };
 
         /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>
@@ -72,7 +78,7 @@ namespace DotRPG
             get { foreach (var i in Items) if (i.kind == ConsumableKind.Protection || i.kind == ConsumableKind.Key) yield return i; }
         }
 
-        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection && kind != ConsumableKind.Key;
+        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection && kind != ConsumableKind.Key && kind != ConsumableKind.Sweep;
 
         public static ConsumableItem Get(string id)
         {
