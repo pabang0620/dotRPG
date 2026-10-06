@@ -20,7 +20,7 @@ namespace DotRPG
         const float RuleH = 170f, SpareH = 56f, SetH = 104f;
 
         sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; }
-        sealed class SpareView { public RectTransform row; public Image icon; public Text name; public Button dismantle; public string id; }
+        sealed class SpareView { public RectTransform row; public Image icon; public Text name; public Button dismantle, dismantleOne; public string id; }
         sealed class SetView { public RectTransform row; public Text title, members; public Button register; public string id; }
 
         public static CosmeticSynthScreen Instance { get; private set; }
@@ -75,9 +75,10 @@ namespace DotRPG
                 v.icon = UIFactory.SharpIcon(v.row, "Icon", Color.white);
                 v.icon.raycastTarget = false;
                 UIFactory.Place(v.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
-                v.name = Cell(v.row, "Name", 60f, 400f);
+                v.name = Cell(v.row, "Name", 60f, 320f);
                 var view = v;
-                v.dismantle = Button(v.row, "Dismantle", "", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(250f, 44f), () => w.AskDismantle(view.id), 16);
+                v.dismantle = Button(v.row, "Dismantle", "", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(230f, 44f), () => w.AskDismantle(view.id, false), 16);
+                v.dismantleOne = Button(v.row, "DismantleOne", "1개 분해", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-248f, 0f), new Vector2(100f, 44f), () => w.AskDismantle(view.id, true), 16);
                 w.spares.Add(v);
             }
 
@@ -184,6 +185,8 @@ namespace DotRPG
                 v.name.text = $"<color={Hex(key)}>[{Grade(key)}]</color> {p.Name}{(p.IsSkin ? " (스킨)" : "")}   여분 <b>{n}</b>";
                 TextOf(v.dismantle).text = $"모두 분해 · 별조각 {each * n:N0}";
                 v.dismantle.interactable = !busy;
+                v.dismantleOne.gameObject.SetActive(n > 1);
+                v.dismantleOne.interactable = !busy;
             }
         }
 
@@ -298,11 +301,12 @@ namespace DotRPG
             });
         }
 
-        void AskDismantle(string id)
+        void AskDismantle(string id, bool one)
         {
             if (busy || string.IsNullOrEmpty(id)) return;
             var p = CosmeticCatalog.Find(id);
             int n = StarShopClient.CopiesOf(id);
+            if (one) n = Mathf.Min(1, n);
             if (p == null || n <= 0) return;
             StarShopClient.Dismantle.TryGetValue(StarShopClient.RarityKey(p.Rarity), out int each);
             Game.UI.Confirm($"{p.Name} 여분 {n}개를 분해합니다.\n별조각 {each * n:N0}개를 받습니다. (착용 중인 외형은 그대로)", () =>
