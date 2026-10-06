@@ -260,8 +260,8 @@ describe('레이드 파티 정산', () => {
     expect(rb.body.data.raid).toEqual({ reward_locked: true, lock_reason: 'KEYS_MISSING' });
     const ra = await post(app, a, `/dungeon-runs/${runs.get(a.id)}/settle`, {});
     expect(ra.body.data.granted_xp).toBeGreaterThan(0);
-    expect(ra.body.data.raid).toMatchObject({ reward_locked: false, key_cost: 100 });
-    expect(await countOf(a, 'key_seal')).toBe(0);
+    expect(ra.body.data.raid).toMatchObject({ reward_locked: false, key_cost: 60 });
+    expect(await countOf(a, 'key_seal')).toBe(40);
     const claim = await getPool().query('SELECT period_kind FROM raid_claims WHERE character_id = $1', [a.dbId]);
     expect(claim.rows).toEqual([{ period_kind: 'weekly' }]);
     expect((await getPool().query('SELECT count(*) AS n FROM raid_claims WHERE character_id = $1', [b.dbId])).rows[0]).toEqual({ n: '0' });

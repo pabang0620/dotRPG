@@ -15,6 +15,7 @@ namespace DotRPG
         PlayerController owner;
         CareerAura aura;
         readonly Dictionary<EnemyController, float> broken = new Dictionary<EnemyController, float>();
+        float guardSlowEnd;
         float shieldEnd, guardEnd, blessEnd, rhythmEnd, retalEnd, retalReady, hotEnd, counterEnd, elementEnd, oathEnd;
         int shield, guard, bless, stacks, counterDamage, castVersion;
         string lastElement = "";
@@ -61,10 +62,13 @@ namespace DotRPG
             CareerTrials.Record(owner, "shield", amount);
         }
 
+        /// <summary>Damage reduction for a while. A weaker guard never stretches a stronger one that is running.</summary>
         public void AddGuard(int percent, float duration)
         {
-            guard = Mathf.Max(Time.time < guardEnd ? guard : 0, percent);
-            guardEnd = Mathf.Max(guardEnd, Time.time + duration);
+            bool running = Time.time < guardEnd;
+            if (running && percent < guard) return;
+            guardEnd = running && percent == guard ? Mathf.Max(guardEnd, Time.time + duration) : Time.time + duration;
+            guard = percent;
         }
 
         public void AddCurse(float slow = 0) { Cursed = true; SlowUntil = Time.time + slow; }
@@ -83,7 +87,8 @@ namespace DotRPG
             StopAllCoroutines();
             owner.GetComponent<CharacterAnimator>()?.EndCareerPose();
             shield = guard = bless = stacks = 0;
-            shieldEnd = guardEnd = blessEnd = rhythmEnd = retalEnd = counterEnd = hotEnd = oathEnd = 0;
+            shieldEnd = guardEnd = guardSlowEnd = blessEnd = rhythmEnd = retalEnd = retalReady = counterEnd = hotEnd = oathEnd = 0;
+            counterDamage = 0;
             OathRadius = 0;
             hotSource = null;
             Cleanse();
@@ -92,7 +97,8 @@ namespace DotRPG
             aura?.Clear();
         }
 
-        public float MoveScale => Time.time < SlowUntil ? .6f : Time.time < guardEnd && guard >= 30 && counterEnd <= 0f ? .7f : 1f;
+        /// <summary>Curses slow; only the 강철의 보루 stance itself slows the guardian.</summary>
+        public float MoveScale => Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : 1f;
 
         /// <summary>Damage the owner takes, after guard, 강철의 심장 and shields. Also arms 수호의 반향 and 응보의 방진.</summary>
         public int Absorb(int damage)
@@ -170,7 +176,6 @@ namespace DotRPG
             if (s.kind == CareerSkillKind.Awakening) Awaken(s);
             if (s.career == Career.Fighter) n.damage = Mathf.RoundToInt(n.damage * SpendRhythm());
             var run = new Run { s = s, n = n, dir = dir, map = map, version = version, authority = authority };
-            if (authority && s.effect != "fire" && s.effect != "ice" && s.effect != "storm") CareerTrials.Record(owner, s.effect, 1);
             switch (s.career)
             {
                 case Career.Fighter: yield return Fighter(run); break;
@@ -287,7 +292,7 @@ namespace DotRPG
             if (e == null || e.IsDead) return;
             bool old = secondaryDamage;
             secondaryDamage = true;
-            try { e.TakeDamage(new DamageInfo(damage, e.Position, 0f, Team.Player, owner.gameObject)); }
+            try { e.TakeDamage(new DamageInfo(damage, e.Position, 0f, Team.Player, owner.gameObject) { noHitInvulnerability = true }); }
             finally { secondaryDamage = old; }
         }
 
@@ -413,7 +418,7 @@ namespace DotRPG
         }
 
         /// <summary>Moves the owner like a dash (stops at walls). Only the PC that owns the body moves it.</summary>
-        float Dash(Vector2 dir, float distance) => owner.NetPuppet ? distance : owner.SkillDash(dir, distance);
+        float Dash(Vector2 dir, float distance) => owner.NetPuppet ? owner.SkillClearance(dir, distance) : owner.SkillDash(dir, distance);
 
         float DashSeconds(float distance) => distance / (PlayerController.DashDistance / PlayerController.DashDuration);
 

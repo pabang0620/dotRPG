@@ -163,7 +163,7 @@ namespace DotRPG
                 StartRun(dungeon, difficulty, now);
                 // The server decides whether this raid clear pays (once per period, enough people).
                 run.RewardsLocked = serverRun.TryGetValue("reward_locked", out var v) && v is bool b && b;
-                if (run.RewardsLocked && dungeon.isRaid) GameEvents.RaiseToast(RaidLockText(MiniJson.Str(serverRun, "lock_reason")));
+                lockReason = run.RewardsLocked ? MiniJson.Str(serverRun, "lock_reason") : null; // shown once the room loads
             });
             return true;
         }
@@ -193,13 +193,16 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>Why this raid run pays nothing (server code or the local check), shown when the first room loads.</summary>
+        string lockReason;
+
         static string RaidLockText(string reason)
         {
             switch (reason)
             {
                 case "TOO_FEW_HUMANS": return "레이드 보상은 2명 이상의 파티만 받는다. (연습 입장)";
                 case "ALREADY_CLAIMED": return "이번 기간 레이드 보상을 이미 받았다. (연습 입장)";
-                case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라다. (연습 입장)";
+                case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라 연습 입장이다. 클리어하면 이야기는 이어지지만 보상은 없다.";
                 default: return "레이드 보상이 없는 연습 입장이다.";
             }
         }
@@ -263,10 +266,12 @@ namespace DotRPG
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
             run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now);
+            lockReason = run.RewardsLocked ? "ALREADY_CLAIMED" : null;
+            // A final raid without the seal keys is a practice run: the clear still moves the story on.
             if (dungeon.isRaid && dungeon.keyCost > 0 && !run.RewardsLocked && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < dungeon.keyCost)
             {
                 run.RewardsLocked = true;
-                GameEvents.RaiseToast($"봉인 열쇠 조각이 모자라 연습 입장이다. 클리어하면 이야기는 이어지지만 보상은 없다. ({Game.Session.Inventory.Count(DungeonDatabase.SealKey)}/{dungeon.keyCost})");
+                lockReason = "KEYS_MISSING";
             }
             if (party != null)
             {
@@ -284,7 +289,7 @@ namespace DotRPG
                 Game.Session.MapId = MapRegistry.Village; // where the run returns to
                 LoadRoom(Mathf.Clamp(startRoom, 0, run.RoomCount - 1), true);
                 GameEvents.RaiseToast($"{dungeon.name} · {run.Numbers.name}");
-                if (run.RewardsLocked) GameEvents.RaiseToast(dungeon.raidTier == RaidTier.Mid ? "오늘 레이드 보상을 이미 받았다. (연습 입장)" : "이번 주 레이드 보상을 이미 받았다. (연습 입장)");
+                if (run.RewardsLocked) GameEvents.RaiseToast(RaidLockText(lockReason));
             }));
         }
 

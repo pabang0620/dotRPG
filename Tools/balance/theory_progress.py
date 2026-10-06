@@ -200,8 +200,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     gain(xp_gain)
                 stats["quest_xp"] += q["reward"]["xp"] * QUEST_SCALE
                 gain(q["reward"]["xp"] * QUEST_SCALE)
-                if q["kind"] == "main":
-                    events.append((total_min / 60, day, level, q["id"], q["reward"]["xp"]))
+                events.append((total_min / 60, day, level, q["id"], q["reward"]["xp"], q["kind"]))
                 progress = True
 
     while day < 400 and not ("c2_end" in claimed and level >= 40):
@@ -255,10 +254,15 @@ def report(eff, hours, friend, quests=True):
         else:
             print(f"| {lv} | 도달 못 함 | |")
     print("\n주요 메인 퀘스트 완료:")
-    for h, d, lv, qid, x in events:
+    for h, d, lv, qid, x, kind in events:
         if qid in ("c1_stronger", "c1_fortress", "c1_road", "c2_trial", "c2_growth", "c2_golem", "c2_north", "c2_grah", "c2_end"):
             print(f"- {qid}: {h:.1f}시간 ({DAYS[d % 7]}), Lv{lv}")
     print(f"XP 출처(Lv40까지 대략): 퀘스트 {st['quest_xp']:,.0f} / 사냥 {st['hunt_xp']:,.0f} ({st['hunt_min'] / 60:.1f}시간) / 퀘스트 처치 {st['quest_kill_min'] / 60:.1f}시간 / 던전 {st['dungeon_xp']:,.0f} ({st['dungeon_min'] / 60:.1f}시간) / 레이드 {st['raid_xp']:,.0f}")
+    gaps = []
+    for (h0, _, lv0, q0, *_), (h1, _, lv1, q1, *_) in zip(events, events[1:]):
+        if h1 - h0 >= 4:
+            gaps.append(f"{h0:.0f}~{h1:.0f}시간 Lv{lv0}~{lv1} ({q0} 다음 {q1})")
+    print("퀘스트 공백 4시간 이상:", "; ".join(gaps) if gaps else "없음")
     missing = [q["id"] for q in QUESTS if q["id"] not in claimed]
     if missing:
         print("미완료:", ", ".join(missing))

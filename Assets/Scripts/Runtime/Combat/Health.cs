@@ -38,7 +38,7 @@ namespace DotRPG
         {
             if (IsDead || IsInvulnerable || info.amount <= 0) return false;
             current = Mathf.Max(0, current - info.amount);
-            invulnerableUntil = Time.time + invulnerableTime;
+            if (!info.noHitInvulnerability) invulnerableUntil = Time.time + invulnerableTime;
             Damaged?.Invoke(info);
             Changed?.Invoke(current, max);
             if (current == 0) Died?.Invoke();

@@ -103,6 +103,10 @@ namespace DotRPG
             return clear;
         }
 
+        /// <summary>[CAREER] How far a skill dash along <paramref name="direction"/> could go before a wall, without moving.</summary>
+        public float SkillClearance(Vector2 direction, float distance) =>
+            direction.sqrMagnitude < .0001f ? 0f : MobilityClearance(direction.normalized, distance);
+
         // Sweep the actual feet collider, including its offset and the physics collision mask.
         // Triggers (pickups / door prompts) are not walls; solids cannot be tunneled through.
         float MobilityClearance(Vector2 direction, float distance)

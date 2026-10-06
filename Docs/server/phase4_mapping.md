@@ -70,7 +70,7 @@
 | `RaidClearsThisWeek(raid, now)` ("이번 주 n/3") | 마지막 청구일까지의 개방 요일 수로 추정 | 같은 주간 구간의 `raid_claims` 행 수 | 정확한 값을 GET `/raids`가 준다 |
 | `SaveData.raidClaimedStamp`, `raidClaims` (`RaidClaimSave`) | 세이브에 저장 | 온라인은 사용하지 않는다(서버 `raid_claims`가 정본) | 오프라인 세이브는 그대로 |
 | `DungeonDirector.RaidLockReason(raid)` (`unlockQuest` 수락 이상) | 로컬 퀘스트 상태 | 서버 `RAID_LOCKED`: `quest_claims`에 해금 퀘스트, 또는 선행(`requires`) 전부 청구 + 클라이언트 저장 상태 수락 | phase4_api 10.2 |
-| 최종 레이드 `keyCost` 확인 (`CannotEnterReason`) | 가방 `key_seal` 수 | `checkEntry`의 `KEYS_MISSING`(보상 가능 기간일 때만), 정산 때 재확인 | 보상을 이미 받은 주에는 열쇠 없이도 연습 입장 |
+| 최종 레이드 `keyCost` 확인 (`CannotEnterReason`) | 가방 `key_seal` 수 | 입장은 막지 않고 `lockAtEntry`·정산에서 `KEYS_MISSING` 보상 잠금 | 열쇠가 모자라면 연습 입장(보상 없음, 퀘스트 인정) |
 | `PayRaidKeys`: 최종은 `min(cost, have)` 소모, 중간은 `keyMin..keyMax` 지급 | 로컬 `Random` | `item_ledger('raid_key_cost' / 'raid_key')`, 서버 RNG | 부족하면 서버는 소모 대신 보상 잠금(`KEYS_MISSING`) |
 | `RunStart`의 `RewardsLocked`(연습 입장) | 클리어 경험치·카드·열쇠·청구 없음, 처치 경험치·드롭은 지급 | `dungeon_runs.reward_locked/lock_reason`. 처치 보상은 `RAID_PRACTICE_PAYS_KILLS`(기본 지급 안 함) | **게임 동작 변경**(결정 대기 3) |
 | `ResetClock.IsOpen(dungeon, now)`: 레이드는 `openDays`만, 요일 던전은 토·일 전체 개방 | 로컬 | 서버 `isOpenToday`는 모든 던전에 토·일 전체 개방을 적용(3단계). **레이드 분기를 추가해야 한다** | 5절 서버 변경 목록 |

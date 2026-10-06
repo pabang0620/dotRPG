@@ -22,6 +22,8 @@ namespace DotRPG
         public GameObject attacker;
         // [MONSTER] Boss telegraphs / charges: the target's block roll is skipped.
         public bool unblockable;
+        /// <summary>Damage over time (burn ticks): it does not start the target's hit invulnerability, so it never eats a real blow.</summary>
+        public bool noHitInvulnerability;
 
         public DamageInfo(int amount, Vector2 sourcePosition, float knockback, Team team)
             : this(amount, sourcePosition, knockback, team, null) { }
@@ -34,6 +36,7 @@ namespace DotRPG
             this.team = team;
             this.attacker = attacker;
             unblockable = false; // [MONSTER]
+            noHitInvulnerability = false;
         }
 
         /// <summary>The party member that dealt the hit, or null.</summary>

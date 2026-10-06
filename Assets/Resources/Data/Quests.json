@@ -1369,7 +1369,7 @@
    "title": "누리의 짐 수레",
    "summary": "협곡 상인 누리의 수레가 광산 길에서 해골들에게 털렸다.",
    "requires": [
-    "c1_stronger"
+    "c1_trail"
    ],
    "requiresFlags": [],
    "minLevel": 13,
@@ -2532,7 +2532,7 @@
    "title": "누리의 호위",
    "summary": "협곡 상인 누리의 짐 수레가 붉은 돌 고개에서 해골에게 습격당했다.",
    "requires": [
-    "c1_stronger"
+    "c1_trail"
    ],
    "requiresFlags": [],
    "minLevel": 13,

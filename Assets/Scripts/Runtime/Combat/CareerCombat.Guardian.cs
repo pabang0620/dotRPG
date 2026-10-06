@@ -32,7 +32,7 @@ namespace DotRPG
             Sound("c_shield");
             Feel(1, Vector2.down);
             foreach (var e in Enemies(owner.Center, c.n.radius)) Strike(c, e, c.n.damage, owner.Center, 10f, 1, "c_shield");
-            if (c.authority) AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration);
+            if (c.authority) { AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); guardSlowEnd = Time.time + c.s.duration; }
         }
 
         /// <summary>회귀의 방패: the thrown shield hits on the way out and back, and shields every ally it touches.</summary>
@@ -45,6 +45,8 @@ namespace DotRPG
             var shielded = new HashSet<PlayerController> { owner };
             GiveShield(c, owner, WallShield, c.s.duration);
             const float leg = .28f;
+            // A monster hit on the way out can be hit again on the way back once its hit invulnerability is over.
+            var outbound = new Dictionary<EnemyController, float>();
             for (int pass = 0; pass < 2; pass++)
             {
                 var hit = new HashSet<EnemyController>();
@@ -57,7 +59,12 @@ namespace DotRPG
                     fx.MoveTo(at);
                     CareerFx.OrbTrail(at, (at - previous).normalized, CareerFx.Teal);
                     foreach (var e in Corridor(previous, at, .75f))
-                        if (hit.Add(e) && Strike(c, e, c.n.damage, previous, 6f, 1, "c_shield")) Stun(c, e, .5f);
+                    {
+                        if (hit.Contains(e) || pass == 1 && outbound.TryGetValue(e, out float when) && Time.time - when < CutGap) continue;
+                        hit.Add(e);
+                        if (pass == 0) outbound[e] = Time.time;
+                        if (Strike(c, e, c.n.damage, previous, 6f, 1, "c_shield")) Stun(c, e, .5f);
+                    }
                     foreach (var p in Allies(at, .9f)) if (shielded.Add(p)) GiveShield(c, p, WallShield, c.s.duration);
                     previous = at;
                     yield return null;

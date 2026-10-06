@@ -229,9 +229,13 @@ namespace DotRPG
                     SkillFx.Spawn("fx_streak", point + d * c.n.radius, new Color(.75f, .6f, 1f, .9f), .3f, SkillFx.TopOrder)
                         .Move(-d * c.n.radius / .3f, 1f).FaceMotion().Scale(1.2f, .4f);
                 }
-                // Knockback is pushed away from the source: a source beyond each monster pulls it into the rift.
+                // Knockback pushes away from the source (from the feet): a source beyond each monster pulls it into the rift.
                 foreach (var e in Enemies(point, c.n.radius))
-                    Strike(c, e, c.n.damage, e.Center * 2f - point, e.IsBoss ? 0f : 3.5f, 0, "c_arcane");
+                {
+                    Vector2 inward = point - e.Center;
+                    bool pull = !e.IsBoss && inward.sqrMagnitude > .16f;
+                    Strike(c, e, c.n.damage, pull ? e.Position - inward : e.Position, pull ? 3.5f : 0f, 0, "c_arcane");
+                }
             }
             yield return new WaitForSeconds(CutGap);
             if (!Live(c)) yield break;
