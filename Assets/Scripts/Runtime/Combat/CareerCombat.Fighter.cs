@@ -173,11 +173,14 @@ namespace DotRPG
                 }
             }
             if (!Live(c)) yield break;
-            Vector2 at = owner.Center + dir * .6f;
+            // Up/down aims land a little farther (the body is taller than it is wide) and an upward blow is drawn by
+            // depth, behind the fighter, instead of over the head; a downward blow stays in front.
+            bool vertical = Mathf.Abs(dir.y) > Mathf.Abs(dir.x);
+            Vector2 at = owner.Center + dir * (vertical ? (dir.y > 0f ? .95f : .8f) : .6f);
             Pose(.25f, 2);
             // The overhead cut lands on the target, the ground cracks (the Fighter's only cracking blow).
             Vector2 ground = at + Vector2.down * .35f;
-            CareerFx.Clip("f_vslash", ground, dir, .85f, 30f, VfxLayer.Top, false);
+            CareerFx.Clip("f_vslash", ground, dir, .85f, 30f, vertical && dir.y > 0f ? VfxLayer.AtFeet : VfxLayer.Top, false);
             CareerFx.Clip("impact", ground, Vector2.zero, c.n.radius / 1.7f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
             SkillFx.Crack(ground, c.n.radius, 1.4f);
             Sound("c_heavy");
