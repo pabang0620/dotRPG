@@ -38,7 +38,7 @@ namespace DotRPG
                 if (Array.IndexOf(Modes, args[i]) >= 0)
                 {
                     SaveSystem.DirectoryOverride = Path.Combine(args[i + 1], "saves");
-                    if (args[i] == "-dotrpgCareerDemo") SaveSystem.SlotCount = 4;
+                    if (args[i] == "-dotrpgCareerDemo") { SaveSystem.SlotCount = 4; SkillCaster.NoCooldown = true; } // [DEMO] no cooldowns while trying careers
                     // Automated verification is silent; the interactive demo retains player settings.
                     if (args[i] != "-dotrpgCareerDemo" || Array.IndexOf(args, "-batchmode") >= 0) AudioListener.volume = 0f;
                     GameFlow.PauseOnFocusLoss = false;
