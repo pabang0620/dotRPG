@@ -52,7 +52,7 @@ namespace DotRPG
             w.inviteField.characterLimit = 16;
             w.inviteField.onEndEdit.AddListener(_ => { if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) w.InviteTyped(); });
             w.focusField = w.inviteField;
-            w.rosterBtn = Button(w.content, "Roster", "AI 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(130f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
+            w.rosterBtn = Button(w.content, "Roster", "AI 동료 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(150f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
             Label(w.content, "MembersHead", "<color=#b8c4d8>파티원</color>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -48f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < PartyManager.MaxMembers; i++)
             {
@@ -73,19 +73,23 @@ namespace DotRPG
                 w.appRows.Add((r, Cell(r, "Who", 14f, 700f, 19), yes, no));
             }
             w.runText = Label(w.content, "Run", "", 19, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 64f), new Vector2(Width, 34f), TextAnchor.MiddleLeft);
+            // [UI] Button weight: settings on the left (gray), the one main action big at the right (출발 / 지금 출발 /
+            // 준비 share the spot, only one shows), leaving the party apart in the far corner.
             float bx = 0f;
-            Button Add(string name, string label, System.Action a, float width = 170f)
+            Button Side(string name, string label, System.Action a)
             {
-                var b = Button(w.content, name, label, "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(bx, 8f), new Vector2(width, 48f), a, 19);
-                bx += width + 12f;
+                var b = Button(w.content, name, label, "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(bx, 8f), new Vector2(190f, 48f), a, 18);
+                bx += 202f;
                 return b;
             }
-            w.startBtn = Add("Start", "출발", w.Depart);
-            w.beginBtn = Add("Begin", "지금 출발", () => PartyRunSession.Instance?.BeginNow());
-            w.readyBtn = Add("Ready", "준비", w.ToggleReady);
-            w.aiBtn = Add("Ai", "AI 용병", w.CycleAi, 190f);
-            w.listBtn = Add("List", "모집 공개", w.ToggleListed, 190f);
-            w.leaveBtn = Add("Leave", "파티 나가기", w.LeaveParty, 190f);
+            Button Main(string name, string label, System.Action a) =>
+                Button(w.content, name, label, "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-206f, 8f), new Vector2(240f, 56f), a, 22);
+            w.aiBtn = Side("Ai", "AI 용병", w.CycleAi);
+            w.listBtn = Side("List", "모집 공개", w.ToggleListed);
+            w.startBtn = Main("Start", "출발", w.Depart);
+            w.beginBtn = Main("Begin", "지금 출발", () => PartyRunSession.Instance?.BeginNow());
+            w.readyBtn = Main("Ready", "준비", w.ToggleReady);
+            w.leaveBtn = Button(w.content, "Leave", "<color=#ff9f7a>나가기</color>", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 8f), new Vector2(190f, 48f), w.LeaveParty, 18);
             w.status = Label(w.content, "Status", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 100f), new Vector2(Width, 30f), TextAnchor.MiddleLeft);
             PartyClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;

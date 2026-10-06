@@ -36,7 +36,7 @@ namespace DotRPG
 
         public static PartyScreen Create(Transform canvas)
         {
-            var w = CreateWindow<PartyScreen>(canvas, "Party", "파티", "menuicon_party");
+            var w = CreateWindow<PartyScreen>(canvas, "Party", "AI 동료 편성", "menuicon_party");
             w.partyTitle = Label(w.content, "PartyTitle", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, 0f), new Vector2(800f, 32f));
             for (int i = 0; i < PartyManager.MaxMembers; i++) w.slots.Add(w.BuildSlot(i));
             Label(w.content, "MercTitle", "<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>", 22,
