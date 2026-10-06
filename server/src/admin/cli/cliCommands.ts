@@ -133,6 +133,26 @@ export const COMMANDS: Command[] = [
       }),
   },
   { path: ['grant', 'list'], usage: 'grant list [--character uuid]', run: (c) => c.get('/admin/grants', q(c, ['character', 'before', 'limit'])) },
+  // 9단계 재화 이상 정지(economy holds): 목록·상세·수동 정지·해제·회수. 회수 금액은 서버가 원장에서 계산한다
+  { path: ['holds', 'list'], usage: 'holds list [--state shadow|active|released|clawed_back] [--kind velocity|auction|linked|manual] [--q 이름]', run: (c) => c.get('/admin/economy/holds', q(c, ['state', 'kind', 'q', 'cursor', 'limit'])) },
+  { path: ['holds', 'show'], usage: 'holds show <hold_uuid>', run: (c) => c.get(`/admin/economy/holds/${need(c.args[0], 'hold_uuid')}`) },
+  {
+    path: ['holds', 'add'],
+    usage: 'holds add (--character <uuid> | --account <uuid>) --note <사유>',
+    run: (c) => c.post('/admin/economy/holds', { ...(flag(c, 'character') ? { character_id: flag(c, 'character') } : { account_id: mustFlag(c, 'account') }), note: mustFlag(c, 'note') }),
+  },
+  {
+    path: ['holds', 'release'],
+    usage: 'holds release <hold_uuid> --note <사유> [--linked]',
+    run: (c) => c.post(`/admin/economy/holds/${need(c.args[0], 'hold_uuid')}/release`, { note: mustFlag(c, 'note'), ...(c.flags.linked ? { release_linked: true } : {}) }),
+  },
+  {
+    path: ['holds', 'clawback'],
+    usage: 'holds clawback <hold_uuid> --note <사유> [--no-gold] [--no-items] [--no-mail]   (owner)',
+    run: (c) => c.post(`/admin/economy/holds/${need(c.args[0], 'hold_uuid')}/clawback`, { note: mustFlag(c, 'note'), gold: !c.flags['no-gold'], items: !c.flags['no-items'], void_mail: !c.flags['no-mail'] }),
+  },
+  { path: ['char', 'velocity'], usage: 'char velocity <character_uuid>', run: (c) => c.get(`/admin/characters/${need(c.args[0], 'uuid')}/velocity`) },
+  { path: ['account', 'links'], usage: 'account links <account_uuid>', run: (c) => c.get(`/admin/accounts/${need(c.args[0], 'uuid')}/links`) },
   // 10단계 운영 우편 캠페인 MC1~MC6
   {
     path: ['campaign', 'create'],

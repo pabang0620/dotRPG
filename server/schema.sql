@@ -127,6 +127,7 @@ CREATE TABLE accounts (
   uuid          UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   last_login_at TIMESTAMPTZ,
+  prev_login_at TIMESTAMPTZ,
   banned_until  TIMESTAMPTZ,
   deleted_at    TIMESTAMPTZ
 );
@@ -134,6 +135,7 @@ COMMENT ON TABLE  accounts IS '게임 계정. 로그인 수단은 auth_identitie
 COMMENT ON COLUMN accounts.id IS '내부 키. API에 노출하지 않는다';
 COMMENT ON COLUMN accounts.uuid IS '외부 노출용 id. JWT sub, 응답의 account id';
 COMMENT ON COLUMN accounts.last_login_at IS '마지막 로그인 성공 시각 (refresh는 갱신하지 않는다)';
+COMMENT ON COLUMN accounts.prev_login_at IS '바로 앞 로그인 성공 시각. 휴면 복귀 판정(캠페인 last_login_before)에 쓴다 (0022)';
 COMMENT ON COLUMN accounts.banned_until IS '이 시각 전까지 로그인·refresh 거부. NULL = 정지 아님';
 COMMENT ON COLUMN accounts.deleted_at IS '소프트 삭제. NULL이 아니면 로그인 불가';
 

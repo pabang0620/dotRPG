@@ -252,7 +252,8 @@ describe('E7 대상 조건', () => {
   const facts = (over: Partial<Facts> = {}): Facts => ({
     accountUuid: randomUUID(),
     createdAt: new Date('2026-09-01T00:00:00Z'),
-    lastLoginAt: new Date('2026-08-01T00:00:00Z'),
+    lastLoginAt: new Date('2026-10-06T00:00:00Z'), // just logged in (delivery runs after a login)
+    prevLoginAt: new Date('2026-08-01T00:00:00Z'), // the visit before: two months away
     accountMaxLevel: 20,
     charLevel: 12,
     charClass: 'warrior',
@@ -274,7 +275,9 @@ describe('E7 대상 조건', () => {
     expect(m({ account_created_from: '2026-09-02T00:00:00Z' })).toBe(false);
     expect(m({ last_login_before: '2026-09-01T00:00:00Z' })).toBe(true);
     expect(m({ last_login_before: '2026-07-01T00:00:00Z' })).toBe(false);
-    expect(m({ last_login_before: '2026-09-01T00:00:00Z' }, facts({ lastLoginAt: null }))).toBe(false);
+    expect(m({ last_login_before: '2026-09-01T00:00:00Z' }, facts({ prevLoginAt: null }))).toBe(false); // first login ever
+    // A returning player: the fresh login does not hide the long break
+    expect(m({ last_login_before: '2026-09-01T00:00:00Z' }, facts({ lastLoginAt: new Date() }))).toBe(true);
     const f = facts();
     expect(m({ account_ids: [f.accountUuid] }, f)).toBe(true);
     expect(m({ account_ids: [randomUUID()] }, f)).toBe(false);

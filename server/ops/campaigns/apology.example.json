@@ -1,0 +1,17 @@
+{
+  "title": "서버 오류 사과 보상",
+  "body": "접속 오류로 불편을 드려 죄송합니다.\n오류 시간에 접속하셨던 분께 사과의 뜻으로 보상을 드립니다.",
+  "category": "apology",
+  "delivery_unit": "account",
+  "target": { "all": true },
+  "mail_days": 14,
+  "starts_at": "2026-10-10T12:00:00+09:00",
+  "ends_at": "2026-10-24T12:00:00+09:00",
+  "cap_count": 100000,
+  "attachments": [
+    { "kind": "gold", "amount": 50000 },
+    { "kind": "item", "item_key": "ticket_protect", "count": 1, "bind": "character" },
+    { "kind": "sweep_ticket", "count": 3 }
+  ],
+  "memo": "10-10 접속 오류 사과"
+}

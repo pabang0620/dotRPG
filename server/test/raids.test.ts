@@ -259,7 +259,8 @@ describe('레이드 파티 정산', () => {
     expect(rb.body.data).toMatchObject({ granted_xp: 0, card_count: 0 });
     expect(rb.body.data.raid).toEqual({ reward_locked: true, lock_reason: 'KEYS_MISSING' });
     const ra = await post(app, a, `/dungeon-runs/${runs.get(a.id)}/settle`, {});
-    expect(ra.body.data.granted_xp).toBeGreaterThan(0);
+    // Lv.40 is the level cap: no XP, so the reward shows in the cards
+    expect(ra.body.data.card_count).toBeGreaterThan(0);
     expect(ra.body.data.raid).toMatchObject({ reward_locked: false, key_cost: 60 });
     expect(await countOf(a, 'key_seal')).toBe(40);
     const claim = await getPool().query('SELECT period_kind FROM raid_claims WHERE character_id = $1', [a.dbId]);

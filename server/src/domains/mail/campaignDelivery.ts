@@ -15,6 +15,8 @@ export interface Facts {
   accountUuid: string;
   createdAt: Date;
   lastLoginAt: Date | null;
+  /** The login before the current one (0022): delivery runs right after a login, so this is when they last played. */
+  prevLoginAt: Date | null;
   accountMaxLevel: number;
   charLevel: number;
   charClass: string;
@@ -26,12 +28,13 @@ async function loadFacts(accountId: number, characterId: number): Promise<Facts 
     account_uuid: string;
     created_at: Date;
     last_login_at: Date | null;
+    prev_login_at: Date | null;
     max_level: number;
     level: number;
     class: string;
     char_uuid: string;
   }>(
-    `SELECT a.uuid AS account_uuid, a.created_at, a.last_login_at,
+    `SELECT a.uuid AS account_uuid, a.created_at, a.last_login_at, a.prev_login_at,
             (SELECT max(level) FROM characters WHERE account_id = a.id) AS max_level,
             c.level, c.class, c.uuid AS char_uuid
        FROM accounts a JOIN characters c ON c.id = $2 AND c.account_id = a.id AND c.deleted_at IS NULL
@@ -40,7 +43,7 @@ async function loadFacts(accountId: number, characterId: number): Promise<Facts 
   );
   const x = r.rows[0];
   return x
-    ? { accountUuid: x.account_uuid, createdAt: x.created_at, lastLoginAt: x.last_login_at, accountMaxLevel: x.max_level, charLevel: x.level, charClass: x.class, charUuid: x.char_uuid }
+    ? { accountUuid: x.account_uuid, createdAt: x.created_at, lastLoginAt: x.last_login_at, prevLoginAt: x.prev_login_at, accountMaxLevel: x.max_level, charLevel: x.level, charClass: x.class, charUuid: x.char_uuid }
     : null;
 }
 
@@ -55,7 +58,8 @@ export function matchesTarget(c: Pick<CachedCampaign, 'target'>, f: Facts): bool
   if (t.classes !== undefined && !t.classes.includes(f.charClass)) return false;
   if (t.account_created_from !== undefined && f.createdAt.getTime() < Date.parse(t.account_created_from)) return false;
   if (t.account_created_to !== undefined && f.createdAt.getTime() > Date.parse(t.account_created_to)) return false;
-  if (t.last_login_before !== undefined && !(f.lastLoginAt !== null && f.lastLoginAt.getTime() < Date.parse(t.last_login_before))) return false;
+  // 휴면 복귀: 이번 로그인 바로 앞의 접속이 기준 시각보다 이전이어야 한다(0022 prev_login_at, 첫 로그인은 해당 없음)
+  if (t.last_login_before !== undefined && !(f.prevLoginAt !== null && f.prevLoginAt.getTime() < Date.parse(t.last_login_before))) return false;
   if (t.account_ids !== undefined && !t.account_ids.includes(f.accountUuid)) return false;
   return true;
 }

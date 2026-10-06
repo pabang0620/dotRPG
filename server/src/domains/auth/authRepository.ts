@@ -66,7 +66,7 @@ export async function findDevIdentity(loginId: string): Promise<DevIdentityRow |
 
 export async function touchLastLogin(client: PoolClient, accountId: number): Promise<Date> {
   const r = await client.query<{ last_login_at: Date }>(
-    'UPDATE accounts SET last_login_at = now() WHERE id = $1 RETURNING last_login_at',
+    'UPDATE accounts SET prev_login_at = last_login_at, last_login_at = now() WHERE id = $1 RETURNING last_login_at', // 0022: keep the login before this one
     [accountId],
   );
   return (r.rows[0] as { last_login_at: Date }).last_login_at;
