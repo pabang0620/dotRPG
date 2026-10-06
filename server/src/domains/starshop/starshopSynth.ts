@@ -122,6 +122,8 @@ export function dismantle(accountId: number, characterUuid: string, body: Disman
       const db = ctx.client;
       const def = STAR_COSMETIC_BY_ID.get(body.item_id);
       if (!def) throw new AppError(404, '분해할 수 없는 외형입니다.', 'COSMETIC_UNKNOWN');
+      // 경제 정지 중에는 별조각이 늘어나는 분해도 막는다(정지 기간에 재화가 쌓이지 않게)
+      await assertNoHold(db, ctx.char.accountId, ctx.char.id);
       await repo.lockWallet(db, accountId);
       if (!(await repo.takeCopies(db, accountId, def.id, body.count))) {
         throw new AppError(422, '분해할 여분이 모자랍니다.', 'DISMANTLE_NOT_ENOUGH');
@@ -146,6 +148,7 @@ export function registerCollection(accountId: number, characterUuid: string, bod
       const db = ctx.client;
       const def = COLLECTION_BY_ID.get(body.set_id);
       if (!def) throw new AppError(404, '알 수 없는 컬렉션입니다.', 'COLLECTION_UNKNOWN');
+      await assertNoHold(db, ctx.char.accountId, ctx.char.id);
       await repo.lockWallet(db, accountId);
       const owned = await repo.ownedOf(db, accountId);
       const done = await repo.collectionsOf(db, accountId);
