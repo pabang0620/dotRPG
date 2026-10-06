@@ -115,7 +115,7 @@ namespace DotRPG
         {
             float k = big ? 1.4f : 1f;
             SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, big ? 0.9f : 0.5f, SkillFx.At(ground.y, 6)).Scale(k, k).Fade(FxFade.Late);
-            SkillFx.Spawn("fx_crack", ground, Color.white, big ? 1.6f : 1f, SkillFx.GroundOrder + 2).Scale(radius * 0.8f, radius * 1.1f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(ground, radius, big ? 1.6f : 1f);
             Shock(ground + Vector2.up * 0.1f, radius, color, 0.3f);
             SkillVisuals.Flash(ground + Vector2.up * 0.3f, A(color, 0.7f), radius * 1.8f, 0.2f);
             SkillVisuals.Sparks(ground + Vector2.up * 0.2f, Color.Lerp(color, Color.white, 0.4f), big ? 14 : 7, 7.5f, 0.24f);
@@ -141,7 +141,7 @@ namespace DotRPG
         /// <summary>Ground slam: dust ring, rock chips, cracks and a shock ring.</summary>
         public static void Slam(Vector2 feet, float radius, Color color, bool big)
         {
-            SkillFx.Spawn("fx_crack", feet, Color.white, big ? 1.8f : 1.2f, SkillFx.GroundOrder + 2).Scale(radius * 0.7f, radius * (big ? 1.2f : 1f)).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(feet, radius * (big ? 1.1f : 0.9f), big ? 1.8f : 1.2f);
             Shock(feet + Vector2.up * 0.1f, radius, color, 0.35f);
             if (big) Shock(feet + Vector2.up * 0.1f, radius * 0.6f, Color.white, 0.25f, 0.06f);
             SkillVisuals.Flash(feet + Vector2.up * 0.25f, A(color, 0.6f), radius * 1.6f, 0.22f);
@@ -170,17 +170,23 @@ namespace DotRPG
             SkillFx.Spawn("fx_ring", ground, A(color, 0.9f), life, SkillFx.GroundOrder + 8).Scale(width * 0.4f, width * 1.4f).Fade(FxFade.Quick);
         }
 
+        /// <summary>[VFX] The drawn small shield (same family as the falling aegis) when it exists: shown in its own colours.</summary>
+        public static bool ShieldArt => SkillFx.HasImage("fxi_shield_small");
+        public static string ShieldSprite => SkillFx.Pick("fxi_shield_small", "fx_aegis");
+
         /// <summary>Guardian crest flashing over a point.</summary>
         public static void Aegis(Vector2 at, float size, Color color, float life)
         {
-            SkillFx.Spawn("fx_aegis", at, A(color, 0.95f), life, SkillFx.TopOrder + 3).Scale(size * 0.5f, size).Pop().Fade(FxFade.Late);
+            if (ShieldArt) SkillFx.Spawn(ShieldSprite, at, Color.white, life, SkillFx.TopOrder + 3).Scale(size * 0.8f, size * 1.6f).Pop().Fade(FxFade.Late);
+            else SkillFx.Spawn("fx_aegis", at, A(color, 0.95f), life, SkillFx.TopOrder + 3).Scale(size * 0.5f, size).Pop().Fade(FxFade.Late);
             SkillFx.Spawn("fx_glow", at, A(color, 0.5f), life, SkillFx.TopOrder + 2).Additive().Scale(size * 1.2f, size * 1.8f).Fade(FxFade.Quick);
         }
 
         /// <summary>A bright mark that a healing / shield / blessing reached an ally.</summary>
         public static void Bless(Vector2 at, Color color, bool shield)
         {
-            SkillFx.Spawn(shield ? "fx_aegis" : "fx_holy", at + Vector2.up * 0.2f, A(color, 0.95f), 0.45f, SkillFx.TopOrder + 3).Scale(0.4f, shield ? 0.95f : 0.85f).Pop().Fade(FxFade.Late);
+            if (shield && ShieldArt) SkillFx.Spawn(ShieldSprite, at + Vector2.up * 0.25f, Color.white, 0.5f, SkillFx.TopOrder + 3).Scale(0.7f, 1.25f).Pop().Fade(FxFade.Late);
+            else SkillFx.Spawn(shield ? "fx_aegis" : "fx_holy", at + Vector2.up * 0.2f, A(color, 0.95f), 0.45f, SkillFx.TopOrder + 3).Scale(0.4f, shield ? 0.95f : 0.85f).Pop().Fade(FxFade.Late);
             SkillFx.Spawn("fx_glow", at, A(color, 0.5f), 0.35f, SkillFx.TopOrder + 1).Additive().Scale(0.8f, 1.6f).Fade(FxFade.Quick);
             for (int i = 0; i < 6; i++)
             {

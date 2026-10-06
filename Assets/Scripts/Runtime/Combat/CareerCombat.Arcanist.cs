@@ -220,7 +220,17 @@ namespace DotRPG
         IEnumerator GravityRift(Run c)
         {
             Target(c.dir, c.n.range, out Vector2 point);
-            CareerFx.Clip("m_vortex", point, Vector2.zero, c.n.radius / 1.56f, 14f, VfxLayer.Ground, false, null, false, c.s.duration + .3f, true).Squash(1f, .72f).FadeOut(.3f);
+            bool hole = SkillFx.HasImage("fxi_blackhole");
+            float hk = c.n.radius * .9f;
+            if (hole)
+            {
+                // [VFX] A black hole holding a galaxy: the drawn disc turns slowly, a dark halo around it, and stars keep
+                // falling into the middle for the whole duration.
+                SkillFx.Spawn("fx_glow", point, new Color(.35f, .15f, .7f, .55f), c.s.duration + .3f, SkillFx.GroundOrder + 9).Additive().Scale(new Vector2(hk * 1.2f, hk * .85f), new Vector2(hk * 2.6f, hk * 1.9f)).Fade(FxFade.InOut);
+                SkillFx.Spawn(SkillFx.Pick("fxi_blackhole", "fx_glow"), point, Color.white, c.s.duration + .3f, SkillFx.GroundOrder + 10).Spin(-70f).Scale(new Vector2(hk * .3f, hk * .22f), new Vector2(hk, hk * .72f)).Fade(FxFade.Late);
+                StartCoroutine(StarsInto(point, c.n.radius, c.s.duration));
+            }
+            else CareerFx.Clip("m_vortex", point, Vector2.zero, c.n.radius / 1.56f, 14f, VfxLayer.Ground, false, null, false, c.s.duration + .3f, true).Squash(1f, .72f).FadeOut(.3f);
             Sound("c_arcane");
             float interval = c.s.duration / c.s.hits;
             for (int i = 0; i < c.s.hits; i++)
@@ -245,8 +255,26 @@ namespace DotRPG
             yield return new WaitForSeconds(CutGap);
             if (!Live(c)) yield break;
             CareerFx.Clip("m_collapse", point, Vector2.zero, c.n.radius / 1.4f, 26f, VfxLayer.Top, false);
+            if (hole) SkillFx.Spawn(SkillFx.Pick("fxi_blackhole", "fx_glow"), point, Color.white, .3f, SkillFx.TopOrder + 2).Spin(-720f).Scale(new Vector2(hk, hk * .72f), new Vector2(.05f, .04f)).Fade(FxFade.None);
             Sound("c_heavy");
             foreach (var e in Enemies(point, c.n.radius)) Strike(c, e, c.n.damage * 2, point, 10f, 2, "c_arcane");
+        }
+
+        /// <summary>Stars of every colour spiral into the black hole while it is open (about 14 a second).</summary>
+        IEnumerator StarsInto(Vector2 point, float radius, float seconds)
+        {
+            var tones = new[] { new Color(1f, 1f, 1f, 1f), new Color(.7f, .85f, 1f, 1f), new Color(.85f, .6f, 1f, 1f), new Color(.5f, 1f, .95f, 1f) };
+            for (float t = 0f; t < seconds; t += .07f)
+            {
+                if (owner == null) yield break;
+                float ang = Random.Range(0f, Mathf.PI * 2f);
+                var d = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang) * .72f);
+                // Starts on the rim and falls in along a curve (a sideways drift turns it into a spiral).
+                Vector2 side = new Vector2(-d.y, d.x) * radius * 1.4f;
+                SkillFx.Spawn("fx_sparkle", point + d * radius * Random.Range(.9f, 1.25f), tones[Random.Range(0, tones.Length)], .55f, SkillFx.GroundOrder + 11)
+                    .Move(-d * radius / .55f + side, 2.5f).Scale(Random.Range(.5f, .9f), .15f).Fade(FxFade.Late);
+                yield return new WaitForSeconds(.07f);
+            }
         }
 
         /// <summary>천체 붕괴: a fire, an ice and a lightning star fall in turn, then the middle collapses.</summary>

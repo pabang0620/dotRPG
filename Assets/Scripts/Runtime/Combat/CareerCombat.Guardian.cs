@@ -133,7 +133,17 @@ namespace DotRPG
             if (!Live(c)) yield break;
             Pose(.22f, 2);
             Vector2 at = owner.Center;
-            CareerFx.Clip("g_bash", at, c.dir, 1.15f, 26f);
+            if (SkillFx.HasImage("fxi_aegis"))
+            {
+                // [VFX] The drawn shield punches forward and stops at the hit line; a clang and a shock ring mark the blow.
+                Vector2 hit = at + c.dir * Mathf.Min(1.3f, c.n.range * .6f);
+                SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), at + c.dir * .3f, Color.white, .3f, SkillFx.TopOrder + 4)
+                    .Move(c.dir * 5f, 18f).Scale(.42f, .58f).Fade(FxFade.Late);
+                CareerFx.Clip("g_clang", hit, Vector2.zero, 1.25f, 30f, VfxLayer.Top, false);
+                CareerFx.Clip("impact", hit + Vector2.down * .35f, Vector2.zero, .6f, 28f, VfxLayer.Ground, false, CareerFx.Teal);
+                SkillFx.Spawn("fx_ring", hit, new Color(.5f, 1f, .95f, .8f), .25f, SkillFx.TopOrder + 2).Scale(.2f, 1.1f).Fade(FxFade.Quick);
+            }
+            else CareerFx.Clip("g_bash", at, c.dir, 1.15f, 26f);
             Sound("c_shield");
             foreach (var e in Fan(at, c.dir, c.n.range, 110f))
                 if (Strike(c, e, c.n.damage, at, 12f, 2, "c_shield")) Stun(c, e, c.s.duration);
@@ -155,7 +165,11 @@ namespace DotRPG
         {
             var gold = new Color(1f, .86f, .45f, .95f);
             var shields = new SkillFx[3];
-            for (int k = 0; k < 3; k++) shields[k] = SkillFx.Spawn("fx_aegis", owner.Center, gold, seconds + .1f, SkillFx.TopOrder + 2).Scale(.55f, .55f).Fade(FxFade.None);
+            // [VFX] Small drawn shields (subtle: about a quarter of a tile), else the old crest kept small.
+            for (int k = 0; k < 3; k++)
+                shields[k] = CareerFx.ShieldArt
+                    ? SkillFx.Spawn(CareerFx.ShieldSprite, owner.Center, new Color(1f, 1f, 1f, .85f), seconds + .1f, SkillFx.TopOrder + 2).Scale(.5f, .5f).Fade(FxFade.None)
+                    : SkillFx.Spawn("fx_aegis", owner.Center, gold, seconds + .1f, SkillFx.TopOrder + 2).Scale(.35f, .35f).Fade(FxFade.None);
             float end = Time.time + seconds;
             while (Time.time < end && counterEnd > Time.time && owner != null)
             {
@@ -163,7 +177,7 @@ namespace DotRPG
                 {
                     if (shields[k] == null) continue;
                     float a = Time.time * 4f + k * Mathf.PI * 2f / 3f;
-                    shields[k].transform.position = owner.Center + new Vector2(Mathf.Cos(a) * .85f, Mathf.Sin(a) * .5f);
+                    shields[k].transform.position = owner.Center + new Vector2(Mathf.Cos(a) * .7f, Mathf.Sin(a) * .4f);
                 }
                 yield return null;
             }
@@ -206,8 +220,19 @@ namespace DotRPG
             if (!Live(c)) yield break;
             SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), feet + Vector2.up * .9f, Color.white, .8f, SkillFx.At(feet.y, 6)).Scale(2.6f, 2.4f).Fade(FxFade.Late);
             CareerFx.Clip("impact", feet, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Teal);
-            CareerFx.Clip("g_hexburst", at, Vector2.zero, c.n.radius / 1.3f, 24f, VfxLayer.Top, false);
-            SkillFx.Spawn("fx_crack", feet, Color.white, 1.8f, SkillFx.GroundOrder + 2).Scale(c.n.radius * .8f, c.n.radius * 1.1f).Fade(FxFade.Late);
+            if (CareerFx.ShieldArt)
+            {
+                // [VFX] Eight small shields burst out from the slam in a ring (same art family as the falling aegis).
+                for (int k = 0; k < 8; k++)
+                {
+                    float a = k * Mathf.PI / 4f;
+                    var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * .6f);
+                    SkillFx.Spawn(CareerFx.ShieldSprite, at, Color.white, .45f, SkillFx.TopOrder + 3).Move(d * c.n.radius * 2.2f, 5f).Scale(.9f, .6f).Fade(FxFade.Late);
+                }
+                SkillFx.Spawn("fx_ring", feet, new Color(.5f, 1f, .95f, .85f), .4f, SkillFx.GroundOrder + 8).Scale(new Vector2(.4f, .28f), new Vector2(c.n.radius * 1.2f, c.n.radius * .84f)).Fade(FxFade.Quick);
+            }
+            else CareerFx.Clip("g_hexburst", at, Vector2.zero, c.n.radius / 1.3f, 24f, VfxLayer.Top, false);
+            SkillFx.Crack(feet, c.n.radius, 1.8f);
             Sound("c_heavy");
             Sound("c_shield");
             foreach (var e in Enemies(at, c.n.radius))

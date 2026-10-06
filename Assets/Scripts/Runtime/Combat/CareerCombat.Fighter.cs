@@ -179,7 +179,7 @@ namespace DotRPG
             Vector2 ground = at + Vector2.down * .35f;
             CareerFx.Clip("f_vslash", ground, dir, .85f, 30f, VfxLayer.Top, false);
             CareerFx.Clip("impact", ground, Vector2.zero, c.n.radius / 1.7f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
-            SkillFx.Spawn("fx_crack", ground, Color.white, 1.4f, SkillFx.GroundOrder + 2).Scale(c.n.radius * .8f, c.n.radius * 1.05f).Fade(FxFade.Late);
+            SkillFx.Crack(ground, c.n.radius, 1.4f);
             Sound("c_heavy");
             foreach (var e in Enemies(at, c.n.radius))
             {
@@ -189,7 +189,10 @@ namespace DotRPG
             }
         }
 
-        /// <summary>천검귀일: six swords rain onto the monsters in front, then a giant sword pins the centre.</summary>
+        /// <summary>
+        /// 천검귀일: six striking swords rain onto the monsters in front inside a storm of extra swords (two more per
+        /// strike, for the look only, no damage), then the dark greatsword pins the centre.
+        /// </summary>
         IEnumerator SwordRain(Run c)
         {
             // Swords go to the monsters in front first; with fewer than six they fall on the same ones again.
@@ -201,6 +204,9 @@ namespace DotRPG
                 var foe = foes.Count > 0 ? foes[i % foes.Count] : null;
                 Vector2 point = foe != null && !foe.IsDead ? foe.Center + Random.insideUnitCircle * .35f : zone + Random.insideUnitCircle * 2f;
                 StartCoroutine(FallingSword(c, point, c.n.damage, 1.2f, .22f, false));
+                // [VFX] The storm: more swords land around the zone between the strikes (no damage, damage stays on the six).
+                for (int k = 0; k < 2; k++)
+                    StartCoroutine(RainSword(zone + Random.insideUnitCircle * (c.n.range * .45f), .18f + k * .06f));
                 yield return new WaitForSeconds(CutGap);
             }
             Target(c.dir, c.n.range, out Vector2 center);
@@ -209,6 +215,16 @@ namespace DotRPG
             if (!Live(c)) yield break;
             Pose(.3f, 2);
             yield return FallingSword(c, center, Mathf.RoundToInt(c.n.damage * 3.75f), c.n.radius, 0f, true);
+        }
+
+        /// <summary>A sword of the rain that only shows: smaller, lands, sparks and fades.</summary>
+        IEnumerator RainSword(Vector2 ground, float fall)
+        {
+            CareerFx.SwordDrop(ground, fall, CareerFx.Steel, .6f);
+            yield return new WaitForSeconds(fall);
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, .4f, SkillFx.At(ground.y, 6)).Scale(.75f, .75f).Fade(FxFade.Late);
+            CareerFx.Clip("f_spark", ground, Vector2.zero, .7f, 28f, VfxLayer.Top, false);
+            Sound("c_heavy", .25f);
         }
 
         IEnumerator FallingSword(Run c, Vector2 ground, int damage, float radius, float fall, bool giant)
@@ -224,7 +240,7 @@ namespace DotRPG
             if (giant)
             {
                 CareerFx.Clip("impact", ground, Vector2.zero, radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Steel);
-                SkillFx.Spawn("fx_crack", ground, Color.white, 1.8f, SkillFx.GroundOrder + 2).Scale(radius * .8f, radius * 1.1f).Fade(FxFade.Late);
+                SkillFx.Crack(ground, radius, 1.8f);
             }
             Sound("c_heavy", giant ? 1f : .6f);
             foreach (var e in Enemies(ground, radius))

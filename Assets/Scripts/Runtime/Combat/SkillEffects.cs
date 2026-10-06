@@ -133,6 +133,23 @@ namespace DotRPG
         /// <summary>[VFX] The generated picture (Art/FxImg/&lt;img&gt;) when it exists, else the procedural sprite.</summary>
         public static string Pick(string img, string fallback) => Game.Art != null && Game.Art.Optional("FxImg/" + img) != null ? "FxImg/" + img : fallback;
 
+        /// <summary>
+        /// [VFX] Cracked ground under a heavy blow, sized to <paramref name="radius"/>: the drawn crack decal (thin
+        /// fissures, see-through between them) when it exists, else the old procedural crack kept small. Short-lived so
+        /// it reads as the ground splitting, not as a patch over the screen.
+        /// </summary>
+        public static void Crack(Vector2 ground, float radius, float life)
+        {
+            bool flip = Random.value < 0.5f;
+            if (HasImage("fxi_crack"))
+            {
+                float k = radius * 0.62f;
+                Spawn("FxImg/fxi_crack", ground, Color.white, life * 0.8f, GroundOrder + 2).Scale(new Vector2(k * 0.55f, k * 0.55f), new Vector2(k, k)).Flip(flip).Fade(FxFade.Late);
+                return;
+            }
+            Spawn("fx_crack", ground, new Color(1f, 1f, 1f, 0.85f), life * 0.7f, GroundOrder + 2).Scale(radius * 0.55f, radius * 0.75f).Flip(flip).Fade(FxFade.Late);
+        }
+
         /// <summary>True when the generated picture is there (callers then skip the procedural flipbook it replaces).</summary>
         public static bool HasImage(string img) => Game.Art != null && Game.Art.Optional("FxImg/" + img) != null;
 
@@ -757,8 +774,7 @@ namespace DotRPG
         {
             float s = radius / 0.85f;
             // Cracked ground that lingers, and a glowing fissure from the previous step.
-            SkillFx.Spawn("fx_crack", p, Color.white, 1.3f, SkillFx.GroundOrder + 2)
-                .Scale(s * 0.7f, s * (last ? 1.25f : 1f)).Flip(Random.value < 0.5f, Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(p, s * (last ? 1f : 0.8f), 1.3f);
             if ((p - from).sqrMagnitude > 0.01f)
                 GlowLineFx.Spawn(from, p, new Color(1f, 0.45f, 0.1f, 0.9f), 0.42f * s, 0.9f, SkillFx.GroundOrder + 3);
             // Shock ring, warm light, rock spikes bursting up, flying chips and dust.
@@ -949,7 +965,7 @@ namespace DotRPG
         {
             // The sword stays stuck in the ground for a moment.
             SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, 0.75f, SkillFx.At(ground.y, 6)).Fade(FxFade.Late);
-            SkillFx.Spawn("fx_crack", ground, Color.white, 1.2f, SkillFx.GroundOrder + 2).Scale(radius, radius * 1.1f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(ground, radius, 1.2f);
             SkillFx.Spawn("fx_shock", ground + Vector2.up * 0.1f, new Color(1f, 0.78f, 0.3f, 0.95f), 0.3f, SkillFx.TopOrder).Scale(radius * 0.3f, radius * 1.2f).Fade(FxFade.Quick);
             Flash(ground + Vector2.up * 0.3f, new Color(1f, 0.85f, 0.45f, 0.6f), radius * 1.8f, 0.2f);
             Sparks(ground + Vector2.up * 0.2f, new Color(1f, 0.9f, 0.5f, 1f), 8, 7f, 0.22f);
@@ -1127,7 +1143,7 @@ namespace DotRPG
         public static void MeteorImpact(Vector2 ground, float radius)
         {
             Explosion(ground + Vector2.up * 0.35f, ground, radius, true);
-            SkillFx.Spawn("fx_crack", ground, Color.white, 1.6f, SkillFx.GroundOrder + 2).Scale(radius * 0.8f, radius * 1.2f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(ground, radius, 1.6f);
             SkillFx.Spawn("fx_shock", ground + Vector2.up * 0.1f, new Color(1f, 0.85f, 0.5f, 0.8f), 0.4f, SkillFx.TopOrder).Scale(radius * 0.5f, radius * 1.6f).Fade(FxFade.Quick).Delay(0.05f);
             Fx.Burst("fx_chip", ground, 6, 4f, 0.7f);
         }
