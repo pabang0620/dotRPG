@@ -1,0 +1,9 @@
+{
+  "tiers": [
+    { "level": 10, "stars": 300 },
+    { "level": 15, "stars": 300 },
+    { "level": 20, "stars": 600 },
+    { "level": 30, "stars": 1000 },
+    { "level": 40, "stars": 3000 }
+  ]
+}

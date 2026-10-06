@@ -149,7 +149,7 @@ export async function creditPaid(db: Queryable, o: { accountId: number; orderId:
 /** 무료 입금: 분해, 승인된 운영 지급, 시험 지급. 환불 대상이 아니다 */
 export async function creditFree(
   db: Queryable,
-  o: { accountId: number; reason: 'dismantle' | 'admin_grant' | 'test_grant'; amount: number; ref: string | null; requestId: string | null },
+  o: { accountId: number; reason: 'dismantle' | 'admin_grant' | 'test_grant' | 'level_reward'; amount: number; ref: string | null; requestId: string | null },
 ): Promise<CreditResult> {
   await lockWallet(db, o.accountId);
   const a = await apply(db, { accountId: o.accountId, delta: o.amount, paidDelta: 0, debtDelta: 0, reason: o.reason, ref: o.ref, requestId: o.requestId });

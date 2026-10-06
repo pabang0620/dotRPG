@@ -30,6 +30,7 @@ import { createCareerGrantRouter } from '../domains/characters/careerGrantRoutes
 import { createSweepRouter } from '../domains/sweep/sweepRoutes';
 import { createReviveRouter } from '../domains/revive/reviveRoutes';
 import { createPaymentsRouter } from '../domains/payments/paymentsRoutes';
+import { createLevelRewardsRouter } from '../domains/levelrewards/levelRewardsRoutes';
 
 export function createRouter(): Router {
   const r = Router();
@@ -74,5 +75,7 @@ export function createRouter(): Router {
   r.use(createReviveRouter());
   // 11단계: 별조각 Steam 결제(계정 단위 /payments/*, 클라이언트 버전만 검사). PAYMENTS_ENABLED가 꺼져 있으면 B1·B2는 503
   r.use(createPaymentsRouter());
+  // 13단계: 레벨 달성 보상(계정 단위 /level-rewards, 클라이언트 버전만 검사)
+  r.use(createLevelRewardsRouter());
   return r;
 }
