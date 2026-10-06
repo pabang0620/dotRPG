@@ -180,7 +180,18 @@ namespace DotRPG
             Pose(.25f, 2);
             // The overhead cut lands on the target, the ground cracks (the Fighter's only cracking blow).
             Vector2 ground = at + Vector2.down * .35f;
-            CareerFx.Clip("f_vslash", ground, dir, .85f, 30f, vertical && dir.y > 0f ? VfxLayer.AtFeet : VfxLayer.Top, false);
+            if (vertical)
+            {
+                // Up/down: the side-view chop arc would read as a sideways swing, so the cut is drawn along the aim
+                // instead: a thin straight slash from the fighter to the target, a narrow beam of the blade coming down
+                // on the spot, and the spark where it lands (behind the body when striking upward).
+                var layer = dir.y > 0f ? VfxLayer.AtFeet : VfxLayer.Top;
+                float reach = Mathf.Max(.8f, (at - owner.Center).magnitude + .4f);
+                CareerFx.Clip("f_line", owner.Center, dir, 1f, 30f, layer, true).Squash(reach / 6f, .55f);
+                GlowLineFx.Spawn(at + Vector2.up * 1.1f, ground, new Color(.75f, .9f, 1f, .85f), .22f, .16f, SkillFx.TopOrder + 2);
+                CareerFx.Clip("f_spark", ground, Vector2.zero, 1.1f, 30f, layer, false);
+            }
+            else CareerFx.Clip("f_vslash", ground, dir, .85f, 30f, VfxLayer.Top, false);
             CareerFx.Clip("impact", ground, Vector2.zero, c.n.radius / 1.7f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
             SkillFx.Crack(ground, c.n.radius, 1.4f);
             Sound("c_heavy");
