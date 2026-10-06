@@ -24,11 +24,14 @@ namespace DotRPG
             ItemRarity.Uncommon => 0.8f,
             ItemRarity.Rare => 1f,
             ItemRarity.Epic => 1.25f,
-            ItemRarity.Unique => 1.5f,
-            _ => 1.85f,
+            // [BALANCE 2026-10-06] Unique and legendary are a clear jump over epic: one piece alone changes a fight.
+            ItemRarity.Unique => 2.3f,
+            _ => 3.2f,
         };
+        /// <summary>Block grows slower than attack and HP (it is a % chance, capped at 75).</summary>
+        static float BlockMul(ItemRarity r) => r == ItemRarity.Unique ? 1.8f : r == ItemRarity.Legendary ? 2.3f : GradeMul(r);
         /// <summary>Walking speed % of leg armour (and rings) by grade.</summary>
-        static int SpeedOf(ItemRarity r) => r switch { ItemRarity.Rare => 2, ItemRarity.Epic => 4, ItemRarity.Unique => 5, ItemRarity.Legendary => 7, _ => 0 };
+        static int SpeedOf(ItemRarity r) => r switch { ItemRarity.Rare => 2, ItemRarity.Epic => 4, ItemRarity.Unique => 8, ItemRarity.Legendary => 12, _ => 0 };
 
         enum Kind { Sword, Staff, Plate, Greaves, Robe, Skirt, Neck, Ring }
 
@@ -226,19 +229,19 @@ namespace DotRPG
                 case Kind.Sword:
                 case Kind.Staff:
                     atk = Mathf.RoundToInt(w * m);
-                    if (r == ItemRarity.Legendary) aoe = 5;
+                    if (r == ItemRarity.Unique) aoe = 5; else if (r == ItemRarity.Legendary) aoe = 12;
                     break;
-                case Kind.Plate: hp = Mathf.RoundToInt(h * m); block = Mathf.RoundToInt(b * m); break;
+                case Kind.Plate: hp = Mathf.RoundToInt(h * m); block = Mathf.RoundToInt(b * BlockMul(r)); break;
                 case Kind.Greaves: hp = Mathf.RoundToInt(h * 0.6f * m); spd = SpeedOf(r); break;
                 case Kind.Robe: hp = Mathf.RoundToInt(h * 0.7f * m); atk = Mathf.RoundToInt(w * 0.25f * m); break;
                 case Kind.Skirt: hp = Mathf.RoundToInt(h * 0.45f * m); spd = SpeedOf(r); break;
                 case Kind.Neck:
                     atk = Mathf.RoundToInt(w * 0.3f * m); hp = Mathf.RoundToInt(h * 0.3f * m);
-                    if (r == ItemRarity.Unique) xp = 3; else if (r == ItemRarity.Legendary) xp = 6;
+                    if (r == ItemRarity.Unique) xp = 5; else if (r == ItemRarity.Legendary) xp = 10;
                     break;
                 default:
                     atk = Mathf.RoundToInt(w * 0.35f * m); spd = r >= ItemRarity.Epic ? SpeedOf(r) - 1 : 0;
-                    if (r == ItemRarity.Unique) aoe = 5; else if (r == ItemRarity.Legendary) aoe = 8;
+                    if (r == ItemRarity.Unique) aoe = 8; else if (r == ItemRarity.Legendary) aoe = 14;
                     break;
             }
             int level = TierLevels[t];

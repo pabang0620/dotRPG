@@ -162,9 +162,9 @@ namespace DotRPG
             };
             list.AddRange(GearCatalog.Build());
             // [FIELD BOSS] Growth accessories: moderate stats plus a growth option, only from field bosses (FieldBosses).
-            list.Add(Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 6, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), 10, xp: 5));
-            list.Add(Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, hp: 30, block: 3, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), 20, aoe: 10));
-            list.Add(Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 8, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), 35, xp: 6, aoe: 5));
+            list.Add(Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 9, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), 10, xp: 5));
+            list.Add(Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, atk: 6, hp: 50, block: 5, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), 20, aoe: 10));
+            list.Add(Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 16, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), 35, xp: 6, aoe: 5));
             return list;
         }
 

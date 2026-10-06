@@ -91,6 +91,8 @@ namespace DotRPG
                 return;
             }
             if (Time.time < ReadyAt(slot) || IsCasting) return;
+            var careerSkill = CareerCatalog.Get(gem.id);
+            if (careerSkill != null && !CareerCombat.For(owner).CanCast(careerSkill)) return; // e.g. all three shields still out
             var n = Numbers(slot);
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {

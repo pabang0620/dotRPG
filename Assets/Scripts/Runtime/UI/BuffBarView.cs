@@ -45,6 +45,7 @@ namespace DotRPG
                 if (c.Shield > 0) Put(ref n, "buff_shield", "");
                 if (c.GuardVisible) Put(ref n, "buff_guard", "");
                 if (c.BlessVisible) Put(ref n, "buff_bless", "");
+                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", Mathf.CeilToInt(c.FrenzyLeft).ToString());
                 if (c.HotVisible) Put(ref n, "buff_regen", "");
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", c.ComboStacks.ToString());
                 if (c.Cursed) Put(ref n, "buff_curse", "");

@@ -17,13 +17,16 @@ namespace DotRPG
         readonly Dictionary<EnemyController, float> broken = new Dictionary<EnemyController, float>();
         float guardSlowEnd;
         float shieldEnd, guardEnd, blessEnd, rhythmEnd, retalEnd, retalReady, hotEnd, counterEnd, elementEnd, oathEnd;
-        int shield, guard, bless, stacks, counterDamage, castVersion;
+        int shield, guard, bless, stacks, counterDamage, castVersion, frenzy;
+        float frenzyEnd;
         string lastElement = "";
         PlayerController hotSource;
 
         public Career ShieldCareer { get; private set; } = Career.Guardian;
         public bool GuardVisible => Time.time < guardEnd && counterEnd <= 0f;
         public bool BlessVisible => Time.time < blessEnd;
+        /// <summary>Seconds left of 검귀 해방 (0 = off).</summary>
+        public float FrenzyLeft => Mathf.Max(0f, frenzyEnd - Time.time);
         public bool HotVisible => Time.time < hotEnd && hotSource != null && !hotSource.IsDead;
         public bool CounterVisible => counterEnd > Time.time;
         public float OathRadius { get; private set; }
@@ -89,6 +92,8 @@ namespace DotRPG
             shield = guard = bless = stacks = 0;
             shieldEnd = guardEnd = guardSlowEnd = blessEnd = rhythmEnd = retalEnd = retalReady = counterEnd = hotEnd = oathEnd = 0;
             counterDamage = 0;
+            shieldsOut = 0;
+            frenzy = 0; frenzyEnd = 0;
             OathRadius = 0;
             hotSource = null;
             Cleanse();
@@ -127,6 +132,7 @@ namespace DotRPG
         {
             if (secondaryDamage) return amount;
             float mult = Time.time < blessEnd ? 1 + bless / 100f : 1;
+            if (Time.time < frenzyEnd) mult *= 1 + frenzy / 100f;
             if (broken.TryGetValue(enemy, out var until) && Time.time < until) mult *= 1.15f;
             if (Time.time < retalEnd) { mult *= 1 + (20 + 5 * (Prog.Rank("g_retal") - 1)) / 100f; retalEnd = 0; }
             int edge = Prog.Rank("f_edge");

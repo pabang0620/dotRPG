@@ -15,7 +15,7 @@ namespace DotRPG
     public partial class GachaScreen : OnlineWindow
     {
         public static GachaScreen Instance { get; private set; }
-        const float ListW = 260f, CardH = 98f, BigH = 440f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
+        const float ListW = 260f, CardH = 98f, BigH = 440f, BigW = 940f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
         const float Step = 0.13f, Anticipation = 0.8f;
 
         sealed class Card { public string id; public Image bg, frame; public Text name; }
@@ -42,6 +42,9 @@ namespace DotRPG
         readonly List<(Button btn, Image icon, Text label)> choiceRows = new List<(Button, Image, Text)>();
         const float GaugeW = 420f;
         Button one, ten, rateBtn, wardrobeBtn;
+        RectTransform main;
+        // Banner list + banner + button row (5 cards of 98 + 10 gaps on the left are the tallest part).
+        const float MainW = ListW + 16f + BigW, MainH = 5 * (CardH + 10f);
         RectTransform rateModal, cellRoot, resultPage;
         // Gamepad moves between the banner, tier and draw buttons, never while a result page or a modal is up (A closes those).
         protected override bool PadNavigation => (resultPage == null || !resultPage.gameObject.activeSelf) && (rateModal == null || !rateModal.gameObject.activeSelf) && (choiceModal == null || !choiceModal.gameObject.activeSelf);
@@ -61,13 +64,16 @@ namespace DotRPG
             var w = CreateWindow<GachaScreen>(canvas, "Gacha", "캐시샵", "menuicon_cashshop");
             Instance = w;
             var tl = new Vector2(0f, 1f);
+            // [UI] The shop is laid out at a fixed size and shrunk to fit the window (1280x720 or a bigger UI scale
+            // used to push the right end of the button row off screen).
+            w.main = UIFactory.Place(UIFactory.Rect(w.content, "Main"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(MainW, MainH));
 
             // Left: banner cards.
             for (int i = 0; i < Banners.Length; i++)
             {
                 var b = Banners[i];
                 var card = new Card { id = b.id };
-                var bg = Panel(w.content, "Card_" + b.id, tl, tl, new Vector2(0f, -i * (CardH + 10f)), new Vector2(ListW, CardH), UiTheme.PanelDeep);
+                var bg = Panel(w.main, "Card_" + b.id, tl, tl, new Vector2(0f, -i * (CardH + 10f)), new Vector2(ListW, CardH), UiTheme.PanelDeep);
                 bg.raycastTarget = true;
                 bg.gameObject.AddComponent<RectMask2D>();
                 var art = UIFactory.Image(bg.transform, "Art", Game.Art.Get("Banners/banner_gacha_" + b.id), Color.white);
@@ -90,7 +96,7 @@ namespace DotRPG
             }
 
             // Right: the chosen banner, large.
-            var bigBox = Panel(w.content, "Banner", tl, tl, new Vector2(ListW + 16f, 0f), new Vector2(940f, BigH), new Color32(10, 14, 24, 255));
+            var bigBox = Panel(w.main, "Banner", tl, tl, new Vector2(ListW + 16f, 0f), new Vector2(BigW, BigH), new Color32(10, 14, 24, 255));
             bigBox.gameObject.AddComponent<RectMask2D>();
             w.big = UIFactory.Image(bigBox.transform, "Art", null, Color.white);
             w.big.preserveAspect = false;
@@ -118,15 +124,16 @@ namespace DotRPG
             w.wallet = Label(bigBox.transform, "Wallet", "", 22, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(68f, 18f), new Vector2(440f, 30f), TextAnchor.MiddleLeft);
 
             float by = -(BigH + 14f), bx = ListW + 16f;
-            w.one = Button(w.content, "One", "", "ui_btn", tl, tl, new Vector2(bx, by), new Vector2(250f, 58f), () => w.Ask(1), 18);
-            w.ten = Button(w.content, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 262f, by), new Vector2(320f, 58f), () => w.Ask(10), 18);
-            w.rateBtn = Button(w.content, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 594f, by), new Vector2(170f, 58f), w.OpenRates, 18);
-            w.wardrobeBtn = Button(w.content, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 776f, by), new Vector2(164f, 58f), w.OpenWardrobe, 18);
+            // The five buttons share the banner's width (940 = 230 + 270 + 130 + 110 + 152 + 4 gaps of 12).
+            w.one = Button(w.main, "One", "", "ui_btn", tl, tl, new Vector2(bx, by), new Vector2(230f, 58f), () => w.Ask(1), 17);
+            w.ten = Button(w.main, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 242f, by), new Vector2(270f, 58f), () => w.Ask(10), 17);
+            w.rateBtn = Button(w.main, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 524f, by), new Vector2(130f, 58f), w.OpenRates, 17);
+            w.wardrobeBtn = Button(w.main, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 666f, by), new Vector2(110f, 58f), w.OpenWardrobe, 17);
             // Spares (a cosmetic drawn again): synthesis, dismantling and collections.
-            Button(w.content, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 952f, by), new Vector2(210f, 58f),
+            Button(w.main, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 788f, by), new Vector2(152f, 58f),
                 () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 18);
             // keep the price text off the button edges
-            foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 16f, 0f, 16f, 0f);
+            foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 10f, 0f, 10f, 0f);
 
             // Result page: opens over the shop after a purchase and reveals the cards there.
             var page = Panel(w.content, "ResultPage", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1220f, 640f), new Color32(8, 10, 18, 248));
@@ -425,8 +432,18 @@ namespace DotRPG
         /// <summary>Result i sits in cell i; a single draw lands in the first cell, a 10+1 fills ten plus the bonus.</summary>
         int CellOf(int i) => i;
 
+        /// <summary>Shrinks the fixed-size shop layout to the window (never enlarges it).</summary>
+        void FitMain()
+        {
+            if (main == null) return;
+            var r = content.rect;
+            float k = Mathf.Min(1f, r.width / MainW, r.height / MainH);
+            if (!Mathf.Approximately(main.localScale.x, k)) main.localScale = new Vector3(k, k, 1f);
+        }
+
         protected override void Update()
         {
+            FitMain();
             PadNavigate(); // first: a result page or modal clears the pad selection before A is read below
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
             if (choiceModal != null && choiceModal.gameObject.activeSelf && Game.Input.CancelPressed) { choiceModal.gameObject.SetActive(false); return; }

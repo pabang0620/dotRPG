@@ -8,13 +8,19 @@ namespace DotRPG
     public sealed partial class CareerCombat
     {
         const float WallShield = .18f;
+        /// <summary>회귀의 방패 has no cooldown: three shields fly at once, one more per node rank above 1 (up to 5).</summary>
+        public int MaxShieldsOut => Mathf.Clamp(2 + Mathf.Max(1, Prog.Rank("g_wall")), 3, 5);
+        int shieldsOut;
+
+        /// <summary>False while every shield of 회귀의 방패 is still out (checked before mana is spent).</summary>
+        public bool CanCast(CareerSkill s) => s.effect != "shieldthrow" || shieldsOut < MaxShieldsOut;
 
         IEnumerator Guardian(Run c)
         {
             switch (c.s.effect)
             {
                 case "guard": GuardStance(c); break;
-                case "shieldthrow": yield return ShieldThrow(c); break;
+                case "shieldthrow": StartCoroutine(ShieldThrow(c)); break; // the next throw does not wait for this one
                 case "oath": StartCoroutine(Oath(c)); break;
                 case "taunt": yield return TauntRoar(c); break;
                 case "bash": yield return ShieldBash(c); break;
@@ -48,7 +54,11 @@ namespace DotRPG
             var fx = CareerFx.Clip("g_spin", start, Vector2.zero, 1.1f, 28f, VfxLayer.Top, false, null, false, 10f, true);
             var shielded = new HashSet<PlayerController> { owner };
             GiveShield(c, owner, WallShield, c.s.duration);
-            const float leg = .28f;
+            // A slow flight keeps several shields out together; each node rank above 1 throws 15% faster.
+            float leg = .42f / (1f + .15f * (Mathf.Max(1, Prog.Rank("g_wall")) - 1));
+            shieldsOut++;
+            try
+            {
             // A monster hit on the way out can be hit again on the way back once its hit invulnerability is over.
             var outbound = new Dictionary<EnemyController, float>();
             for (int pass = 0; pass < 2; pass++)
@@ -67,7 +77,7 @@ namespace DotRPG
                         if (hit.Contains(e) || pass == 1 && outbound.TryGetValue(e, out float when) && Time.time - when < CutGap) continue;
                         hit.Add(e);
                         if (pass == 0) outbound[e] = Time.time;
-                        if (Strike(c, e, c.n.damage, previous, 6f, 1, "c_shield")) Stun(c, e, .5f);
+                        if (Strike(c, e, c.n.damage, previous, 6f, 1, "c_shield")) Stun(c, e, .3f);
                     }
                     foreach (var p in Allies(at, .9f)) if (shielded.Add(p)) GiveShield(c, p, WallShield, c.s.duration);
                     previous = at;
@@ -76,6 +86,8 @@ namespace DotRPG
             }
             fx?.Stop();
             if (Live(c)) { CareerFx.Clip("g_clang", owner.Center + c.dir * .3f, Vector2.zero, 1.2f, 30f); Sound("c_shield", .5f); }
+            }
+            finally { shieldsOut = Mathf.Max(0, shieldsOut - 1); }
         }
 
         /// <summary>수호의 맹세: a ward that follows the guardian; allies inside take less damage and get a shield once.</summary>

@@ -17,6 +17,7 @@ namespace DotRPG
                 case "cross": yield return CrossCut(c); break;
                 case "rush": yield return FlashRush(c); break;
                 case "flurry": yield return Flurry(c); break;
+                case "frenzy": Frenzy(c); break;
                 case "break": yield return BreakWave(c); break;
                 case "iaido": yield return Iaido(c); break;
                 case "execute": yield return Execute(c); break;
@@ -68,6 +69,20 @@ namespace DotRPG
             CareerFx.Clip("f_line", start, c.dir, 1f, 26f).Squash(Mathf.Max(.2f, distance / 6f), 1f);
             yield return new WaitForSeconds(.12f);
             foreach (var e in hit) if (e != null && !e.IsDead) CareerFx.Clip("f_cut", e.Center, c.dir, 1.3f, 26f);
+        }
+
+        /// <summary>검귀 해방: the fighter's burst window. For a while every hit of mine lands much harder.</summary>
+        void Frenzy(Run c)
+        {
+            Pose(.2f, 2);
+            Sound("c_heavy", .9f);
+            Feel(1, Vector2.up);
+            Vector2 body = owner.Center - owner.Position;
+            for (int i = 0; i < 4; i++) CareerFx.Clip("f_arc", owner.Center, CareerFx.Tilt(Vector2.right, i * 90f), 1.1f, 40f).FlipY(i % 2 == 1);
+            CareerFx.Clip("g_domeloop", owner.Center, Vector2.zero, 1.15f, 12f, VfxLayer.Top, false, new Color(1f, .45f, .3f, .45f), false, c.s.duration, true)
+                .Follow(owner.transform, body + Vector2.up * .1f).FadeOut(.4f);
+            frenzy = Mathf.RoundToInt(c.s.power * c.Scale);
+            frenzyEnd = Time.time + c.s.duration;
         }
 
         /// <summary>난무: four quick cuts in front, then a big rising finisher.</summary>

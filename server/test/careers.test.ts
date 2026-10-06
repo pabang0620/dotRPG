@@ -53,7 +53,8 @@ describe('career invariants',()=>{
   expect(new Set(active.map((s:{delivery:string})=>s.delivery)).size).toBe(28);
   expect(skill('f_cross')).toMatchObject({name:'십자참',delivery:'cross',mp:6,cooldown:2,hits:2});
   expect(skill('f_cross').range).toBeCloseTo(2.3,5);
-  expect(skill('f_flurry')).toMatchObject({name:'난무',delivery:'flurry',mp:13,cooldown:6.5,hits:5});
+  expect(skill('f_flurry')).toMatchObject({name:'검귀 해방',delivery:'frenzy',mp:13,cooldown:45,duration:10});
+  expect(skill('f_break').cooldown).toBe(0);expect(skill('g_wall').cooldown).toBe(0);
   expect(skill('f_focus')).toMatchObject({name:'일섬',delivery:'iaido',range:6});
   expect(skill('f_rhythm').effect).toBe('swordflow');
   expect(skill('f_edge').effect).toBe('opening');

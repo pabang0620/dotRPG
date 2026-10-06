@@ -132,6 +132,7 @@ export const STAR_COSMETICS: readonly CosmeticDef[] = [
   { id: 'aura_abyss', name: '심연 오라', rarity: 'epic' },
   { id: 'skin_maple', name: '단풍 무사', rarity: 'epic', skin: 'warrior' },
   { id: 'skin_obsidian', name: '흑요 기사', rarity: 'epic', skin: 'warrior' },
+  { id: 'skin_noir', name: '칠흑의 검희', rarity: 'epic', skin: 'warrior' },
   { id: 'skin_forest', name: '숲의 정령', rarity: 'epic', skin: 'mage' },
   { id: 'skin_ice', name: '얼음 여왕', rarity: 'epic', skin: 'mage' },
   { id: 'skin_lion', name: '황금 사자 기사', rarity: 'unique', skin: 'warrior' },

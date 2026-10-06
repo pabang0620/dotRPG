@@ -48,8 +48,8 @@ namespace DotRPG
         static void DrawLeg(PixelCanvas c, Leg l, CharacterLook look, Vector2 forward, bool far)
         {
             var outline = PixelCanvas.Hex("#101116");
-            var stocking = look.skinLeg.a > 0 ? look.skinLeg : look.bottomTier >= 0 ? look.pants : PixelCanvas.Hex("#655861");
-            var boot = look.skinBoot.a > 0 ? look.skinBoot : PixelCanvas.Hex("#23242a");
+            var stocking = look.skinLeg.a > 0 ? look.skinLeg : look.bottomTier >= 0 ? look.pants : PixelCanvas.Hex("#5a3d2a"); // [ART] novice warrior: brown trousers
+            var boot = look.skinBoot.a > 0 ? look.skinBoot : PixelCanvas.Hex("#4a2c1a");
             if (far) stocking = PixelCanvas.Shade(stocking, .75f);
             WarriorRightHandRig.Stroke(c, l.hip, l.knee, 5, outline);
             WarriorRightHandRig.Stroke(c, l.hip, l.knee, 3, stocking);

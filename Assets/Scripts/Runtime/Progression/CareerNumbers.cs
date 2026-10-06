@@ -18,13 +18,14 @@ namespace DotRPG
             {
                 case "cross":effect=$"피해 {d} × 2회 · 부채꼴 {n.range:0.#}m";break;
                 case "rush":effect=$"경로 피해 {d} · 돌진 {n.range:0.#}m";break;
+                case "frenzy":effect=$"모든 공격 피해 +{Mathf.RoundToInt(s.power*scale)}% · {s.duration:0.#}초";break;
                 case "flurry":effect=$"피해 {d} × 4회 + 마무리 {Mathf.RoundToInt(d*1.6f/.7f)}";break;
                 case "break":effect=$"관통 피해 {d} · {n.range:0.#}m · 맞은 적 {s.duration:0.#}초간 받는 피해 +15%";break;
                 case "iaido":effect=$"직선 피해 {d} · 길이 {n.range:0.#}m";break;
                 case "execute":effect=$"피해 {d} · HP 35% 미만 {Mathf.RoundToInt(d*1.6f)} · 반경 {n.radius:0.#}m";break;
                 case "swordrain":effect=$"낙검 {d} × 6 · 거대한 검 {Mathf.RoundToInt(d*3.75f)} · 반경 {n.radius:0.#}m";break;
                 case "guard":effect=$"받는 피해 -{Mathf.RoundToInt(30*scale)}% · {s.duration:0.#}초 · 밀쳐내기 피해 {d}";break;
-                case "shieldthrow":effect=$"피해 {d} × 왕복 · {Shield(.18f)}";break;
+                case "shieldthrow":effect=$"피해 {d} × 왕복 · 동시 {Mathf.Clamp(2+Mathf.Max(1,data.Progression.Rank("g_wall")),3,5)}개 · {Shield(.18f)}";break;
                 case "oath":effect=$"결계 안 받는 피해 -20% · {Shield(s.power)}";break;
                 case "taunt":effect=$"도발 {s.duration:0.#}초 · 피해 {d} · 반경 {n.radius:0.#}m";break;
                 case "bash":effect=$"피해 {d} · 기절 {s.duration:0.#}초";break;

@@ -297,7 +297,7 @@ namespace DotRPG
         {
             switch (s.effect)
             {
-                case "cross": case "light": case "heal": case "guard": case "blink": return 0.1f;
+                case "cross": case "light": case "heal": case "guard": case "blink": case "frenzy": return 0.1f;
                 case "break": case "fire": case "ice": case "storm": case "orbit": case "taunt": return 0.15f;
                 case "flurry": return 0.7f;
                 case "iaido": case "bash": case "shieldthrow": return 0.22f;

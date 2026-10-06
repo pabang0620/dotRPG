@@ -31,8 +31,8 @@ namespace DotRPG
             new SkinDef
             {
                 id = "skin_lion", name = "황금 사자 기사", cls = CharacterClass.Warrior, sheet = "lion",
-                blurb = "백금 갑옷에 진홍 망토, 황금 월계관. 걸음마다 금빛 불티가 흩날린다.",
-                sleeve = C("#cdbb93"), leg = C("#d8caa6"), boot = C("#b8892e"), trim = C("#ffd86b"), cape = C("#9c1d22"),
+                blurb = "금테 두른 은백 판금 갑옷과 진홍 망토, 금빛 서클릿. 걸음마다 금빛 불티가 흩날린다.",
+                sleeve = C("#d1dae3"), leg = C("#bdc6d0"), boot = C("#8a96a6"), trim = C("#f6ab3e"), cape = C("#9c1d22"),
                 trail = SkinTrailKind.GoldSparks, trailA = new Color(1f, .85f, .35f), trailB = new Color(1f, .97f, .8f), afterimage = true,
             },
             new SkinDef
@@ -60,6 +60,15 @@ namespace DotRPG
                 blurb = "금빛 단풍 무늬 하오리와 옻칠 어깨받이. 걸을 때 단풍빛 불티가 인다.",
                 sleeve = C("#bf512a"), leg = C("#522b22"), boot = C("#1c1a1a"), trim = C("#e8b84a"), cape = C("#bf512a"),
                 trail = SkinTrailKind.Embers, trailA = new Color(1f, .5f, .18f), trailB = new Color(1f, .8f, .35f),
+            },
+            new SkinDef
+            {
+                // The warrior's first look (black bob, red eyes, black battle dress), kept as a skin when the default
+                // became a plain novice warrior.
+                id = "skin_noir", name = "칠흑의 검희", cls = CharacterClass.Warrior, sheet = "noir",
+                blurb = "검은 단발과 붉은 눈, 칠흑의 전투복. 곁에 붉은 빛 조각이 떠오른다.",
+                sleeve = C("#23242a"), leg = C("#655861"), boot = C("#23242a"), trim = C("#71797e"),
+                trail = SkinTrailKind.MoonMotes, trailA = new Color(1f, .35f, .4f), trailB = new Color(1f, .85f, .85f),
             },
             new SkinDef
             {
