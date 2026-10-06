@@ -621,13 +621,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "버려진 채석장의 흑철 진영을 무너뜨리고 바르가스를 쓰러뜨린다.",
+     "text": "버려진 채석장의 흑철 진영과 그들이 부리는 골렘을 무너뜨리고 바르가스를 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_shield",
        "count": 40,
-       "text": "흑철 방패병 처치",
+       "text": "흑철 진영 골렘 수호병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_mine"
@@ -636,7 +636,7 @@
        "type": "kill",
        "target": "skel_miner",
        "count": 30,
-       "text": "진영 광부 처치",
+       "text": "진영 골렘 돌격병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_mine"
@@ -906,13 +906,13 @@
      "setFlags": []
     },
     {
-     "text": "인내의 관문: 방패 든 해골을 꺾어라.",
+     "text": "인내의 관문: 방패 든 암석 골렘을 꺾어라.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_shield",
        "count": 12,
-       "text": "해골 방패병 처치",
+       "text": "암석 골렘 수호병 처치",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1147,7 +1147,7 @@
    "kind": "main",
    "code": "2-6",
    "title": "석실 문지기",
-   "summary": "수호석 외곽 석실 앞을 해골 기사단이 지키고 있다. 문지기들을 무너뜨려 석실 문을 연다.",
+   "summary": "수호석 외곽 석실 앞을 골렘 전사들이 지키고 있다. 문지기들을 무너뜨려 석실 문을 연다.",
    "requires": [
     "c2_growth"
    ],
@@ -1160,13 +1160,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "바람칼 능선의 해골 기사단을 무너뜨린다.",
+     "text": "바람칼 능선의 골렘 전사들을 무너뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_knight",
        "count": 80,
-       "text": "석실 문지기 해골 기사 처치",
+       "text": "석실 문지기 골렘 전사 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_ridge"
@@ -1367,7 +1367,7 @@
    "kind": "sub",
    "code": "",
    "title": "누리의 짐 수레",
-   "summary": "협곡 상인 누리의 수레가 광산 길에서 해골들에게 털렸다.",
+   "summary": "협곡 상인 누리의 수레가 광산 길에서 암석 골렘 돌격병들에게 털렸다.",
    "requires": [
     "c1_trail"
    ],
@@ -1380,13 +1380,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "해골들이 가져간 물건을 되찾는다.",
+     "text": "골렘들이 흩어 놓은 물건을 되찾는다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_miner",
        "count": 10,
-       "text": "해골 광부 처치",
+       "text": "암석 골렘 돌격병 처치",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -1759,7 +1759,7 @@
    "kind": "sub",
    "code": "",
    "title": "붉은 돌 고개 정리",
-   "summary": "기사 돈이 협곡 남쪽 고개에 몰린 해골 광부를 치워 보급로를 열자고 한다.",
+   "summary": "기사 돈이 협곡 남쪽 고개에 몰린 골렘 돌격병을 치워 보급로를 열자고 한다.",
    "requires": [
     "c2_canyon"
    ],
@@ -1772,13 +1772,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "붉은 돌 고개의 해골을 정리한다.",
+     "text": "붉은 돌 고개의 골렘을 정리한다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_miner",
        "count": 40,
-       "text": "해골 광부 처치",
+       "text": "암석 골렘 돌격병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_pass"
@@ -1787,7 +1787,7 @@
        "type": "kill",
        "target": "skel_warrior",
        "count": 30,
-       "text": "해골 전사 처치",
+       "text": "암석 골렘 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_pass"
@@ -1815,8 +1815,8 @@
    "chapter": 2,
    "kind": "sub",
    "code": "",
-   "title": "채석장의 방패병",
-   "summary": "기사 아이비가 버려진 채석장을 점령한 해골 방패병 부대를 무너뜨리자고 한다.",
+   "title": "채석장의 골렘 수호병",
+   "summary": "기사 아이비가 버려진 채석장을 점령한 골렘 수호병 부대를 무너뜨리자고 한다.",
    "requires": [
     "c2_trial"
    ],
@@ -1829,13 +1829,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "채석장의 해골 부대를 무너뜨린다.",
+     "text": "채석장의 골렘 부대를 무너뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_shield",
        "count": 50,
-       "text": "해골 방패병 처치",
+       "text": "암석 골렘 수호병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_mine"
@@ -1844,7 +1844,7 @@
        "type": "kill",
        "target": "skel_miner",
        "count": 20,
-       "text": "해골 광부 처치",
+       "text": "암석 골렘 돌격병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_mine"
@@ -1872,8 +1872,8 @@
    "chapter": 2,
    "kind": "sub",
    "code": "",
-   "title": "바람칼 능선의 기사",
-   "summary": "기사단장 레오나가 능선을 넘어오는 해골 기사단을 막으라고 명령한다.",
+   "title": "바람칼 능선의 골렘 전사",
+   "summary": "기사단장 레오나가 능선을 넘어오는 골렘 전사들을 막으라고 명령한다.",
    "requires": [
     "c2_mine"
    ],
@@ -1886,13 +1886,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "바람칼 능선의 해골 기사를 막는다.",
+     "text": "바람칼 능선의 골렘 전사를 막는다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_knight",
        "count": 40,
-       "text": "해골 기사 처치",
+       "text": "암석 골렘 전사 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_ridge"
@@ -1901,7 +1901,7 @@
        "type": "kill",
        "target": "skel_archer",
        "count": 30,
-       "text": "해골 궁수 처치",
+       "text": "암석 골렘 투척병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_ridge"
@@ -1972,7 +1972,7 @@
    "chapter": 2,
    "kind": "sub",
    "code": "",
-   "title": "서리 소나무 숲의 해골",
+   "title": "서리 소나무 숲의 예티",
    "summary": "설원 사냥꾼 하람이 사냥터를 되찾을 사람을 찾는다.",
    "requires": [
     "c2_trial"
@@ -1986,13 +1986,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "서리 소나무 숲의 해골을 몰아낸다.",
+     "text": "서리 소나무 숲의 설산 예티를 몰아낸다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_warrior",
        "count": 50,
-       "text": "해골 전사 처치",
+       "text": "설산 예티 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_edge"
@@ -2001,7 +2001,7 @@
        "type": "kill",
        "target": "skel_shield",
        "count": 30,
-       "text": "해골 방패병 처치",
+       "text": "설산 예티 수호병 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_edge"
@@ -2030,7 +2030,7 @@
    "kind": "sub",
    "code": "",
    "title": "얼어붙은 호숫가",
-   "summary": "하람이 호숫가의 얼음 낚시터를 지키는 해골 기사를 쓰러뜨려 달라고 한다.",
+   "summary": "하람이 호숫가의 얼음 낚시터를 점령한 설산 예티 전사를 쓰러뜨려 달라고 한다.",
    "requires": [
     "c2_trial"
    ],
@@ -2043,13 +2043,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "얼어붙은 호숫가의 해골을 쓰러뜨린다.",
+     "text": "얼어붙은 호숫가의 설산 예티를 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_shield",
        "count": 50,
-       "text": "해골 방패병 처치",
+       "text": "설산 예티 수호병 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_lake"
@@ -2058,7 +2058,7 @@
        "type": "kill",
        "target": "skel_knight",
        "count": 30,
-       "text": "해골 기사 처치",
+       "text": "설산 예티 전사 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_lake"
@@ -2087,7 +2087,7 @@
    "kind": "sub",
    "code": "",
    "title": "눈보라 봉우리",
-   "summary": "하람이 봉우리 위에서 내려오는 해골 기사단의 본대를 막아 달라고 한다.",
+   "summary": "하람이 봉우리 위에서 내려오는 설산 예티 전사 무리를 막아 달라고 한다.",
    "requires": [
     "c2_trial"
    ],
@@ -2100,13 +2100,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "눈보라 봉우리의 해골 기사단을 막는다.",
+     "text": "눈보라 봉우리의 설산 예티 전사를 막는다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_knight",
        "count": 80,
-       "text": "해골 기사 처치",
+       "text": "설산 예티 전사 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_peak"
@@ -2530,7 +2530,7 @@
    "kind": "sub",
    "code": "",
    "title": "누리의 호위",
-   "summary": "협곡 상인 누리의 짐 수레가 붉은 돌 고개에서 해골에게 습격당했다.",
+   "summary": "협곡 상인 누리의 짐 수레가 붉은 돌 고개에서 암석 골렘에게 습격당했다.",
    "requires": [
     "c1_trail"
    ],
@@ -2543,13 +2543,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "붉은 돌 고개의 해골 전사를 쓰러뜨린다.",
+     "text": "붉은 돌 고개의 암석 골렘을 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_warrior",
        "count": 80,
-       "text": "해골 전사 처치",
+       "text": "암석 골렘 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_pass"
@@ -2578,7 +2578,7 @@
    "kind": "sub",
    "code": "",
    "title": "기사 돈의 훈련",
-   "summary": "기사 돈이 실전 훈련 삼아 고개의 해골 궁수를 정리하자고 한다.",
+   "summary": "기사 돈이 실전 훈련 삼아 고개의 골렘 투척병을 정리하자고 한다.",
    "requires": [
     "c2_trial"
    ],
@@ -2591,13 +2591,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "붉은 돌 고개의 해골 궁수를 쓰러뜨린다.",
+     "text": "붉은 돌 고개의 골렘 투척병을 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_archer",
        "count": 60,
-       "text": "해골 궁수 처치",
+       "text": "암석 골렘 투척병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_pass"
@@ -2722,7 +2722,7 @@
    "kind": "sub",
    "code": "",
    "title": "기사 모의 정찰",
-   "summary": "기사 모가 채석장 해골 광부들의 움직임을 끊어 놓자고 한다.",
+   "summary": "기사 모가 채석장 골렘 돌격병들의 움직임을 끊어 놓자고 한다.",
    "requires": [
     "c2_trial"
    ],
@@ -2735,13 +2735,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "버려진 채석장의 해골 광부를 쓰러뜨린다.",
+     "text": "버려진 채석장의 골렘 돌격병을 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_miner",
        "count": 80,
-       "text": "해골 광부 처치",
+       "text": "암석 골렘 돌격병 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_mine"
@@ -2773,8 +2773,8 @@
    "chapter": 2,
    "kind": "sub",
    "code": "",
-   "title": "능선의 해골 기사",
-   "summary": "기사 아이비가 바람칼 능선에서 옛 기사단 갑옷을 입은 해골을 봤다고 한다.",
+   "title": "능선의 골렘 전사",
+   "summary": "기사 아이비가 바람칼 능선에서 옛 기사단 갑옷처럼 깎인 골렘을 봤다고 한다.",
    "requires": [
     "c2_trial"
    ],
@@ -2787,13 +2787,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "바람칼 능선의 해골 기사를 쓰러뜨린다.",
+     "text": "바람칼 능선의 골렘 전사를 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_knight",
        "count": 60,
-       "text": "해골 기사 처치",
+       "text": "암석 골렘 전사 처치",
        "dialogue": "",
        "consume": false,
        "map": "canyon_ridge"
@@ -2869,8 +2869,8 @@
    "chapter": 2,
    "kind": "sub",
    "code": "",
-   "title": "소나무 숲의 궁수",
-   "summary": "눈꽃 마을 촌장 세라가 사냥꾼들을 노리는 해골 궁수를 걱정한다.",
+   "title": "소나무 숲의 투척병",
+   "summary": "눈꽃 마을 촌장 세라가 사냥꾼들을 노리는 설산 예티 투척병을 걱정한다.",
    "requires": [
     "c2_trial"
    ],
@@ -2883,13 +2883,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "서리 소나무 숲의 해골 궁수를 쓰러뜨린다.",
+     "text": "서리 소나무 숲의 설산 예티 투척병을 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_archer",
        "count": 80,
-       "text": "해골 궁수 처치",
+       "text": "설산 예티 투척병 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_edge"
@@ -2918,7 +2918,7 @@
    "kind": "sub",
    "code": "",
    "title": "호숫가의 방패벽",
-   "summary": "보라가 호숫가 얼음길을 막아선 해골 방패병 때문에 식재료를 못 받는다.",
+   "summary": "보라가 호숫가 얼음길을 막아선 설산 예티 수호병 때문에 식재료를 못 받는다.",
    "requires": [
     "c2_trial"
    ],
@@ -2931,13 +2931,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "얼어붙은 호숫가의 해골 방패병을 쓰러뜨린다.",
+     "text": "얼어붙은 호숫가의 설산 예티 수호병을 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_shield",
        "count": 80,
-       "text": "해골 방패병 처치",
+       "text": "설산 예티 수호병 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_lake"
@@ -3013,8 +3013,8 @@
    "chapter": 2,
    "kind": "sub",
    "code": "",
-   "title": "봉우리의 해골 기사단",
-   "summary": "하람이 눈보라 봉우리를 지키는 해골 기사단을 무너뜨리자고 한다.",
+   "title": "봉우리의 예티 전사",
+   "summary": "하람이 눈보라 봉우리를 점령한 설산 예티 전사들을 무너뜨리자고 한다.",
    "requires": [
     "w_peak"
    ],
@@ -3027,13 +3027,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "눈보라 봉우리의 해골 기사를 쓰러뜨린다.",
+     "text": "눈보라 봉우리의 설산 예티 전사를 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
        "target": "skel_knight",
        "count": 120,
-       "text": "해골 기사 처치",
+       "text": "설산 예티 전사 처치",
        "dialogue": "",
        "consume": false,
        "map": "winter_peak"
@@ -3097,6 +3097,289 @@
     "items": [],
     "maxHealth": 10,
     "setFlags": []
+   }
+  },
+  {
+   "id": "w_reach",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "녹아내린 봉인",
+   "summary": "하람이 해빙된 성소 입구에서 미쳐 날뛰는 설산 예티를 막아 달라고 한다.",
+   "requires": [
+    "c2_trial"
+   ],
+   "requiresFlags": [],
+   "minLevel": 34,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_reach_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_reach_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "해빙된 성소 입구의 설산 예티를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 60,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_reach"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 40,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_reach"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 11000,
+    "gold": 16000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "s_hall",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "물에 잠긴 회랑",
+   "summary": "촌장 세라가 침수된 고대 성소로 들어가 회랑을 지키는 석상을 쓰러뜨려 달라고 한다.",
+   "requires": [
+    "w_reach"
+   ],
+   "requiresFlags": [],
+   "minLevel": 38,
+   "giver": "winter_elder",
+   "offerDialogue": "s_hall_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "s_hall_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "침수된 고대 성소에 들어가 회랑의 성소 석상을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "sunken_sanctum",
+       "count": 1,
+       "text": "침수된 고대 성소에 들어가기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 60,
+       "text": "성소 석상 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_hall"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 12000,
+    "gold": 18000,
+    "items": [
+     {
+      "id": "mat_essence",
+      "count": 2
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "s_archive",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "잠긴 서고",
+   "summary": "세라가 회랑 너머 잠긴 서고를 지키는 석상 투척병을 정리해 달라고 한다. 반쯤 지워진 비문이 있다고 한다.",
+   "requires": [
+    "s_hall"
+   ],
+   "requiresFlags": [],
+   "minLevel": 39,
+   "giver": "winter_elder",
+   "offerDialogue": "s_archive_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "s_archive_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "잠긴 서고의 성소 석상 투척병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 60,
+       "text": "성소 석상 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_archive"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 12500,
+    "gold": 19000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "s_roots",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "뿌리 잠식 지하묘",
+   "summary": "하람이 뿌리에 잠식된 성소 지하묘의 석상 수호병을 쓰러뜨려 달라고 한다.",
+   "requires": [
+    "s_hall"
+   ],
+   "requiresFlags": [],
+   "minLevel": 39,
+   "giver": "winter_hunter",
+   "offerDialogue": "s_roots_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "s_roots_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "뿌리 잠식 지하묘의 성소 석상 수호병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 60,
+       "text": "성소 석상 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_roots"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 12500,
+    "gold": 19000,
+    "items": [
+     {
+      "id": "mat_essence",
+      "count": 2
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "s_court",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "망각의 내전",
+   "summary": "세라가 서고와 지하묘 너머 망각의 내전을 지키는 석상을 쓰러뜨리고 안쪽 벽을 살펴봐 달라고 한다.",
+   "requires": [
+    "s_archive",
+    "s_roots"
+   ],
+   "requiresFlags": [],
+   "minLevel": 40,
+   "giver": "winter_elder",
+   "offerDialogue": "s_court_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "s_court_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "망각의 내전의 성소 석상을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 40,
+       "text": "성소 석상 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_court"
+      },
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 30,
+       "text": "성소 석상 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_court"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 30,
+       "text": "성소 석상 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_court"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 15000,
+    "gold": 25000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 2
+     },
+     {
+      "id": "mat_core",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": [
+     "sanctum_mural_seen"
+    ]
    }
   }
  ]

@@ -290,7 +290,7 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     const b = await kill(m, sid, 7);
     expect(a.status).toBe(200);
     expect(b.status).toBe(200);
-    expect(a.body.data).toMatchObject({ granted_xp: 20, leveled_up: false, field: { shared: true, xp_factor: 1 } });
+    expect(a.body.data).toMatchObject({ granted_xp: 7, leveled_up: false, field: { shared: true, xp_factor: 1 } });
     expect(a.body.data.drops).toHaveLength(1);
     const dup = await kill(L, sid, 7, {}, randomUUID());
     expect(dup.status).toBe(409);
@@ -331,7 +331,7 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     expect(b.body).toEqual(a.body);
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(Number((await getPool().query('SELECT count(*) AS n FROM kill_log WHERE character_id = $1', [m.dbId])).rows[0].n)).toBe(1);
-    expect(Number((await getPool().query('SELECT xp FROM characters WHERE id = $1', [m.dbId])).rows[0].xp)).toBe(20);
+    expect(Number((await getPool().query('SELECT xp FROM characters WHERE id = $1', [m.dbId])).rows[0].xp)).toBe(7);
   });
 
   it('동시 요청: 두 멤버의 동시 보고가 모두 받아들여지고, 같은 멤버의 같은 monster_ref 동시 보고는 하나만 통과한다', async () => {
@@ -346,10 +346,10 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     expect(acc.rows.map((r) => r.kills_accepted)).toEqual([3, 2]);
   });
 
-  it('공급 한도는 멤버마다 센다(리스폰 25초에 17마리), 한도를 넘으면 KILL_REJECTED(멤버는 severity 1)', async () => {
+  it('공급 한도는 멤버마다 센다(해골 숲 39지점 x 1.1 = 리스폰 25초에 43마리), 한도를 넘으면 KILL_REJECTED(멤버는 severity 1)', async () => {
     const { M, sid } = await team(2);
     const m = M[0] as Hero;
-    for (let i = 0; i < 17; i++) {
+    for (let i = 0; i < 43; i++) {
       advance(0.5);
       const r = await kill(m, sid, 100 + i);
       expect(r.status).toBe(200);

@@ -990,6 +990,7 @@ namespace DotRPG
 
         static PixelCanvas DrawFx(string kind)
         {
+            if (HdEffects) { var hd = DrawFxHd(kind); if (hd != null) return hd; }
             switch (kind)
             {
                 case "slash":
