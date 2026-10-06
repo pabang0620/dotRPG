@@ -4,8 +4,8 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// Three quick-use slots to the right of the skill bar: health potion (Q), mana potion (R) and the
-    /// town return scroll (T), each with its key and how many are left. Empty slots are dimmed.
+    /// Three quick-use slots to the right of the skill bar: health potion (1), mana potion (2) and the
+    /// town return scroll (3) by default (rebindable; each slot shows its current key), and how many are left. Empty slots are dimmed.
     /// </summary>
     public class QuickItemBar : MonoBehaviour
     {

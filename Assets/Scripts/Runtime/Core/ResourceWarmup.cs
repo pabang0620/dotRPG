@@ -73,6 +73,9 @@ namespace DotRPG
             foreach (var clip in VfxArt.AllClips) { string c = clip; jobs.Add(() => VfxLibrary.Get(c)); }
             foreach (var key in FxKeys) { string k = key; jobs.Add(() => Game.Art.Get(k)); }
             foreach (var img in FxImages) { string i = img; jobs.Add(() => Game.Art.Optional("FxImg/" + i)); }
+            // Regional monster atlases are read from StreamingAssets on first sight; load them here instead.
+            foreach (var species in new[] { RegionalMonsterArt.Rock, RegionalMonsterArt.Yeti, RegionalMonsterArt.Sanctum })
+                foreach (var look in new[] { species, species + "_guard", species + "_thrower" }) { string l = look; jobs.Add(() => RegionalMonsterArt.Get(l, "down", "idle0")); }
             var sw = new Stopwatch();
             int done = 0;
             while (done < jobs.Count)

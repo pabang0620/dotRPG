@@ -281,7 +281,7 @@ namespace DotRPG
             if (options.Count <= 1)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast("사용할 수 있는 보조 젬이 없습니다. (Lv.3부터 해금)");
+                GameEvents.RaiseToast(v.socket == 0 ? "이 칸에 넣을 수 있는 다른 스킬이 없습니다." : "사용할 수 있는 보조 젬이 없습니다. (Lv.3부터 해금)");
                 return;
             }
             prog.SetGem(v.slot, v.socket, options[(i + dir + options.Count) % options.Count]);
@@ -400,10 +400,11 @@ namespace DotRPG
             base.Update();
             if (!gameObject.activeSelf) return;
             var input = Game.Input;
-            tabKeyHint.text = $"<color=#8c96a8>{input.GetBindingLabel(GameAction.Skill1)} / {input.GetBindingLabel(GameAction.Skill2)} : 탭 전환</color>";
+            tabKeyHint.text = "<color=#8c96a8>Tab / LB · RB : 탭 전환</color>";
             if (Time.frameCount != shownFrame && !Game.State.ChangedThisFrame)
             {
-                if (input.Skill1Pressed || input.Skill2Pressed) { tab = tab == TabId.Tree ? TabId.Gems : TabId.Tree; Game.Audio.PlaySfx("select"); Refresh(); }
+                // [UX] Tab (or the shoulder buttons) switches pages; the skill keys stay free in this window.
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) { tab = tab == TabId.Tree ? TabId.Gems : TabId.Tree; Game.Audio.PlaySfx("select"); Refresh(); }
                 var nav = input.NavigateStep;
                 if (nav != Vector2Int.zero)
                 {

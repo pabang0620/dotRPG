@@ -335,7 +335,7 @@ namespace DotRPG
             string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, ResetClock.Now) : null;
             if (practice != null)
             {
-                Game.UI.Confirm($"{practice}\n<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?", () => { if (!Game.Dungeon.Enter(def, difficulty)) Refresh(); }, true);
+                Game.UI.Confirm($"{practice}\n<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?", () => { if (!Game.Dungeon.Enter(def, difficulty)) Refresh(); }, defaultYes: true, overlay: true); // [UX] nothing is lost: cursor on 예
                 return false;
             }
             bool ok = Game.Dungeon.Enter(def, difficulty);

@@ -158,7 +158,15 @@ namespace DotRPG
             if (busy) return;
             var list = Picked(out long total);
             if (list.Count == 0) { Game.Audio.PlaySfx("cancel"); return; }
-            Game.UI.Confirm($"{list.Count}종의 아이템을 {total:N0} G에 모두 판매할까요?", () => Sell(list), true);
+            // [UX] Rare-or-higher gear (and enhanced gear, should any get in) is called out with its count.
+            int valuable = 0;
+            foreach (var (id, count) in list)
+            {
+                var g = EquipmentDatabase.Get(id);
+                if (g != null && (g.rarity >= ItemRarity.Rare || EquipmentDatabase.LevelOfKey(id) > 0)) valuable += count;
+            }
+            string warn = valuable > 0 ? $"\n<size=18><color=#ffb060>레어 이상 또는 강화된 장비 {valuable}개가 포함되어 있습니다.</color></size>" : "";
+            Game.UI.Confirm($"{list.Count}종의 아이템을 {total:N0} G에 모두 판매할까요?{warn}", () => Sell(list), true);
         }
 
         void Sell(List<(string id, int count)> list)

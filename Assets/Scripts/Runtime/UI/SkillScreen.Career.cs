@@ -26,7 +26,11 @@ namespace DotRPG
                 CareerButton("CareerA",CareerCatalog.Name(a)+" · "+CareerCatalog.Role(a),10,75,380,44,()=>{browsing=a;confirmation=Career.None;selectedSkill="";Refresh();});
                 CareerButton("CareerB",CareerCatalog.Name(b)+" · "+CareerCatalog.Role(b),400,75,380,44,()=>{browsing=b;confirmation=Career.None;selectedSkill="";Refresh();});
             }
-            else CareerButton("ResetCareer","전직 기술 초기화",540,75,240,40,()=>Game.UI.Confirm("배운 전직 기술을 모두 초기화합니다.\n<size=18>쓴 포인트는 전부 돌아오고, 장착한 직업 스킬은 해제됩니다.</size>\n초기화할까요?",()=>{p.ResetCareerNodes();Game.Flow.Autosave();Refresh();},true));
+            else
+            {
+                RecommendedButton(p);
+                CareerButton("ResetCareer","전직 기술 초기화",540,75,240,40,()=>Game.UI.Confirm("배운 전직 기술을 모두 초기화합니다.\n<size=18>쓴 포인트는 전부 돌아오고, 장착한 직업 스킬은 해제됩니다.</size>\n초기화할까요?",()=>{p.ResetCareerNodes();Game.Flow.Autosave();Refresh();},true));
+            }
             var branch=CareerCatalog.Branches(browsing);var skills=CareerCatalog.For(browsing);
             for(int b=0;b<2;b++)
             {
@@ -34,13 +38,9 @@ namespace DotRPG
                 for(int tier=0;tier<4;tier++)
                 {
                     var s=skills[b*4+tier];float x=14+tier*195,y=162+b*150;
-                    var bg=Panel(careerRoot,"Node_"+s.id,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(183,116),new Color32(26,35,54,255));
-                    bg.raycastTarget=true;var nodeBtn=bg.gameObject.AddComponent<Button>();nodeBtn.targetGraphic=bg;nodeBtn.transition=Selectable.Transition.None;nodeBtn.onClick.AddListener(()=>{selectedSkill=s.id;Refresh();}); // a Button so the gamepad can reach it
-                    var icon=UIFactory.Image(bg.transform,"Icon",CareerMoves.Icon(s.Icon),Color.white);
-                    UIFactory.Place(icon.rectTransform,new Vector2(0,1),new Vector2(0,1),new Vector2(10,-10),Vector2.one*48);
-                    CareerText(bg.transform,"Name",$"<b>{s.name}</b>\nLv.{s.level} · {p.Rank(s.id)}/3",16,65,10,115,52);
-                    CareerText(bg.transform,"State",NodeState(s,p),16,9,78,168,30);
-                    if(p.Rank(s.id)==0){var lockImg=UIFactory.Image(bg.transform,"Lock",Game.Art.Get("ui_lock"),new Color(1,1,1,.7f));UIFactory.Place(lockImg.rectTransform,Vector2.one,Vector2.one,new Vector2(-5,-5),Vector2.one*16);}
+                    var bg=NodeCard(s,p,x,y,selectedSkill==s.id); // [UX] styled card (frame by state, ring, rank pips)
+                    if(tier<3)NodeLink(p,skills[b*4+tier+1],x+183,y+58);
+                    if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);} // [UX] drag onto the key bar; badge = its key
                 }
             }
             CareerText(careerRoot,"Awakening",$"<color=#ffe0a0><b>별도 각성 영역 · {skills[8].name}</b></color>\n{(p.Awakened?"각성 완료 · T 슬롯에서 사용":"포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성")}",18,16,445,740,60);
@@ -69,10 +69,10 @@ namespace DotRPG
             }
             else
             {
-                CareerText(side.transform,"SkillDetail",DescribeCareer(chosen,p),17,20,20,374,378);
+                CareerText(side.transform,"SkillDetail",DescribeCareer(chosen,p),17,20,20,374,350);
                 string why=p.NodeLock(chosen);
-                CareerButton("Learn",why==""?$"습득 / 강화 ({p.Rank(chosen.id)+1}P)":why,824,405,365,45,()=>{if(!p.Learn(chosen.id))GameEvents.RaiseToast(p.NodeLock(chosen));Game.Flow.Autosave();Refresh();});
-                if(chosen.kind==CareerSkillKind.Active)for(int i=0;i<4;i++){int slot=i;CareerButton("Equip"+i,Game.Input.GetBindingLabel(SkillGems.ActionFor(i))+(p.Active(i)?.id==chosen.id?" 장착됨":" 장착"),824+i*93,468,86,42,()=>{if(!p.EquipSkill(slot,chosen.id))GameEvents.RaiseToast("스킬 습득·슬롯 레벨을 확인하세요. 중복 장착은 불가합니다.");Game.Flow.Autosave();Refresh();});}
+                CareerButton("Learn",why==""?$"습득 / 강화 ({p.Rank(chosen.id)+1}P)":why,824,380,365,42,()=>{if(!p.Learn(chosen.id))GameEvents.RaiseToast(p.NodeLock(chosen));Game.Flow.Autosave();Refresh();});
+                BuildKeyBar(side.transform,p,chosen); // [UX] drag-and-drop key bar instead of four "Q 장착" buttons
             }
         }
         /// <summary>"로" after a vowel or ㄹ, "으로" after any other final consonant.</summary>

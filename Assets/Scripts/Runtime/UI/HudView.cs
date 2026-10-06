@@ -147,6 +147,10 @@ namespace DotRPG
 
             // Toasts (bottom-centre, above the dialogue box area).
             toastRoot = UIFactory.Place(UIFactory.Rect(root, "Toasts"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 200), new Vector2(700, 200));
+            // [UX] Toasts draw above every window (they used to sit under opaque full-screen windows).
+            var toastCanvas = toastRoot.gameObject.AddComponent<Canvas>();
+            toastCanvas.overrideSorting = true;
+            toastCanvas.sortingOrder = 500;
         }
 
         void OnEnable()

@@ -75,6 +75,7 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<EquipmentScreen>();
             screen.ui = ui;
             screen.Build(root);
+            screen.BuildDragAndMenu(root);
             return screen;
         }
 
@@ -95,6 +96,7 @@ namespace DotRPG
 
         public override void Hide()
         {
+            CloseMenu();
             if (Game.Session != null)
             {
                 Game.Session.Equipment.Changed -= MarkDirty;
@@ -293,6 +295,18 @@ namespace DotRPG
                 else Game.Audio.PlaySfx("cancel");
                 return;
             }
+            EquipGear(s.itemId);
+        }
+
+        /// <summary>
+        /// Bag gear → worn (click, confirm, drag, context menu). <paramref name="into"/> picks the ring slot
+        /// for a drop on 반지 1 / 반지 2; other gear always goes to its own slot.
+        /// </summary>
+        void EquipGear(string key, EquipSlot? into = null)
+        {
+            var gear = EquipmentDatabase.Get(key);
+            if (gear == null) return;
+            var eq = Game.Session.Equipment;
             if (!gear.UsableBy(Class))
             {
                 Game.Audio.PlaySfx("cancel");
@@ -305,9 +319,10 @@ namespace DotRPG
                 GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있습니다. (지금 Lv.{Game.Session.Progression.Level})");
                 return;
             }
-            string key = s.itemId;
             var before = OnlineEconomy.WornSnapshot();
-            if (eq.Equip(key, Class)) { OnlineEconomy.SyncWorn(before); /* [SERVER] */ Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
+            bool ok = into.HasValue && gear.category == EquipCategory.Ring ? EquipRingInto(key, into.Value) : eq.Equip(key, Class);
+            OnlineEconomy.SyncWorn(before); // [SERVER] (no-op when nothing changed)
+            if (ok) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
         }
 
         void AutoEquip()
@@ -373,6 +388,18 @@ namespace DotRPG
             character.sprite = Game.Art.GetCharacter(look, "down", Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1");
             PlaceWeaponPreview();
 
+            if (MenuOpen)
+            {
+                // [UX] The right-click menu is up: Esc / I only close it, the tooltip stays hidden.
+                tooltip.gameObject.SetActive(false);
+                cursor.enabled = false;
+                if (Time.frameCount != shownFrame && (Game.Input.InventoryPressed || Game.Input.CancelPressed))
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    CloseMenu();
+                }
+                return;
+            }
             HandleKeys();
             UpdateCursorAndTooltip();
         }

@@ -119,7 +119,7 @@ namespace DotRPG
         readonly Text[] tabText = new Text[2];
         Text goldText, pageText, bigName, bigKind, bigDesc, bigPrice, result;
         Image bigIcon, bigFrame;
-        Button buyOne, buyMany, pagePrev, pageNext;
+        Button buyOne, buyMany, buyMax, pagePrev, pageNext;
         Text buyOneLabel, buyManyLabel;
         bool selling;
         int selected, page;
@@ -197,6 +197,9 @@ namespace DotRPG
             w.result = Label(right.transform, "Result", "", 20, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(460f, 30f), TextAnchor.MiddleCenter);
             w.buyOne = Button(right.transform, "One", "1개 구매", "ui_btn", new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-6f, 18f), new Vector2(214f, 62f), () => w.Trade(1), 26);
             w.buyMany = Button(right.transform, "Many", "10개 구매", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(6f, 18f), new Vector2(214f, 62f), () => w.Trade(w.selling ? int.MaxValue : 10), 26);
+            // [UX] 최대: as many as the gold buys (buy tab only; the sell tab keeps its two buttons).
+            w.buyMax = Button(right.transform, "Max", "최대", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(84f, 18f), new Vector2(140f, 62f), () => w.Trade(MaxBuyCount), 26);
+            w.LayoutTradeButtons(false);
             w.buyOneLabel = w.buyOne.GetComponentInChildren<Text>();
             w.buyManyLabel = w.buyMany.GetComponentInChildren<Text>();
             // 일괄 판매 (sell tab): kinds ticked once are remembered.
@@ -209,6 +212,7 @@ namespace DotRPG
         public override void Show()
         {
             selling = false;
+            LayoutTradeButtons(false);
             selected = 0;
             page = 0;
             result.text = "";
@@ -233,12 +237,34 @@ namespace DotRPG
         /// <summary>The current list (buy stock or sell list) in display order.</summary>
         public List<string> DevEntries() { BuildEntries(); return new List<string>(entries); }
 
+        /// <summary>Most of one item bought at once (the server's shop limit per purchase).</summary>
+        const int MaxBuyCount = 999;
+
+        /// <summary>Buy tab: 1 · 10 · 최대 side by side. Sell tab: 1 · 모두 (the original two wide buttons).</summary>
+        void LayoutTradeButtons(bool sell)
+        {
+            var one = (RectTransform)buyOne.transform;
+            var many = (RectTransform)buyMany.transform;
+            buyMax.gameObject.SetActive(!sell);
+            if (sell)
+            {
+                one.anchoredPosition = new Vector2(-6f, 18f); one.sizeDelta = new Vector2(214f, 62f);
+                many.pivot = new Vector2(0f, 0f); many.anchoredPosition = new Vector2(6f, 18f); many.sizeDelta = new Vector2(214f, 62f);
+            }
+            else
+            {
+                one.anchoredPosition = new Vector2(-84f, 18f); one.sizeDelta = new Vector2(140f, 62f);
+                many.pivot = new Vector2(0.5f, 0f); many.anchoredPosition = new Vector2(0f, 18f); many.sizeDelta = new Vector2(156f, 62f);
+            }
+        }
+
         void SetMode(bool sell)
         {
             if (selling == sell) return;
             selling = sell;
             bulkBtn.gameObject.SetActive(sell);
             if (!sell) bulk.gameObject.SetActive(false);
+            LayoutTradeButtons(sell);
             selected = 0;
             page = 0;
             result.text = "";
@@ -336,7 +362,7 @@ namespace DotRPG
                 bigFrame.color = Color.clear;
                 bigName.text = selling ? "팔 물건이 없습니다." : "";
                 bigKind.text = bigDesc.text = bigPrice.text = "";
-                buyOne.interactable = buyMany.interactable = false;
+                buyOne.interactable = buyMany.interactable = buyMax.interactable = false;
                 buyOneLabel.text = selling ? "1개 판매" : "1개 구매";
                 buyManyLabel.text = selling ? "모두 판매" : "10개 구매";
                 dirty = false;
@@ -364,6 +390,7 @@ namespace DotRPG
                 buyManyLabel.text = "10개 구매";
                 buyOne.interactable = gold >= each;
                 buyMany.interactable = gold >= each;
+                buyMax.interactable = gold >= each;
             }
             dirty = false;
         }
@@ -380,9 +407,9 @@ namespace DotRPG
                 int n = Mathf.Min(count, bag.Count(id));
                 int each = ItemPrices.SellPrice(id);
                 if (n <= 0 || each <= 0) { Game.Audio.PlaySfx("cancel"); return; }
-                if (EquipmentDatabase.LevelOfKey(id) > 0)
+                if (NeedsSellConfirm(id))
                 {
-                    // Enhanced gear is never sold on one key press: ask first, drawn over the shop.
+                    // Enhanced gear and rare-or-higher gear are never sold on one key press: ask first, drawn over the shop.
                     string what = n > 1 ? $"{name} {n}개를" : $"{name} 을(를)";
                     Game.Audio.PlaySfx("select");
                     Game.UI.Confirm($"{what} {each * n:N0} G에 판매할까요?", () => Sell(id, n), true);
@@ -400,25 +427,52 @@ namespace DotRPG
                     result.text = "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>";
                     return;
                 }
-                if (OnlineEconomy.On)
+                if (count == MaxBuyCount && n > 10)
                 {
-                    // [SERVER] The server charges and delivers; its delta updates gold and the bag.
-                    int bought = n;
-                    OnlineEconomy.ShopBuy(id, bought, ok =>
-                    {
-                        Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
-                        if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀습니다.  -{each * bought:N0} G</color>";
-                        dirty = true;
-                    });
+                    // [UX] 최대 can spend most of the gold at once: ask first (purchases default to "아니오").
+                    int many = n;
+                    Game.Audio.PlaySfx("select");
+                    Game.UI.Confirm($"{name} {many}개를 {each * many:N0} G에 살까요?", () => Buy(id, many, many), true);
                     return;
                 }
-                bag.Remove(ConsumableDatabase.Gold, each * n);
-                bag.Add(id, n);
-                Game.Audio.PlaySfx("confirm");
-                result.text = n < count && count > 1
-                    ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀습니다.  -{each * n:N0} G</color>"
-                    : $"<color=#8fe28f>{name} {n}개를 샀습니다.  -{each * n:N0} G</color>";
+                Buy(id, n, count == MaxBuyCount ? n : count);
             }
+            dirty = true;
+        }
+
+        /// <summary>Rare-or-higher gear and enhanced gear (+1 and up) are sold only after a yes.</summary>
+        static bool NeedsSellConfirm(string id)
+        {
+            var gear = EquipmentDatabase.Get(id);
+            return gear != null && (EquipmentDatabase.LevelOfKey(id) > 0 || gear.rarity >= ItemRarity.Rare);
+        }
+
+        /// <summary>Buys <paramref name="n"/> of an id (<paramref name="count"/> = how many were asked for, for the message).</summary>
+        void Buy(string id, int n, int count)
+        {
+            var bag = Game.Session.Inventory;
+            string name = Game.Config.GetItem(id).displayName;
+            int each = ItemPrices.BuyPrice(id);
+            n = each > 0 ? Mathf.Min(n, Game.Session.Gold / each) : 0; // re-checked: gold may have changed while a confirm was open
+            if (n <= 0) { Game.Audio.PlaySfx("cancel"); dirty = true; return; }
+            if (OnlineEconomy.On)
+            {
+                // [SERVER] The server charges and delivers; its delta updates gold and the bag.
+                int bought = n;
+                OnlineEconomy.ShopBuy(id, bought, ok =>
+                {
+                    Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
+                    if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀습니다.  -{each * bought:N0} G</color>";
+                    dirty = true;
+                });
+                return;
+            }
+            bag.Remove(ConsumableDatabase.Gold, each * n);
+            bag.Add(id, n);
+            Game.Audio.PlaySfx("confirm");
+            result.text = n < count && count > 1
+                ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀습니다.  -{each * n:N0} G</color>"
+                : $"<color=#8fe28f>{name} {n}개를 샀습니다.  -{each * n:N0} G</color>";
             dirty = true;
         }
 
@@ -449,6 +503,13 @@ namespace DotRPG
 
         protected override void Update()
         {
+            // [UX] The bulk sell panel takes Esc (closes itself, not the shop) and blocks the list keys under it (as the sweep panel).
+            if (bulk != null && bulk.gameObject.activeSelf)
+            {
+                if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) { Game.Audio.PlaySfx("cancel"); bulk.gameObject.SetActive(false); }
+                if (dirty) Refresh();
+                return;
+            }
             base.Update();
             if (!gameObject.activeSelf) return;
             if (TakesInput)
@@ -525,7 +586,10 @@ namespace DotRPG
 
             var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), UiTheme.Panel);
             w.info = Label(bottom.transform, "Text", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -10f), new Vector2(1180f, 64f));
-            w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(1180f, 26f));
+            w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(800f, 26f));
+            // [UX] Always-visible controls hint (the info line above turns into the item's details on hover).
+            var hint = Label(bottom.transform, "Hint", "클릭: 1개 이동 · 우클릭: 전부 이동", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(380f, 26f), TextAnchor.MiddleRight);
+            hint.color = UiTheme.TextSecondary;
             w.cursor = Img(w.content, "Cursor", "ui_frame", UiTheme.Accent);
             w.cursor.raycastTarget = false;
             return w;

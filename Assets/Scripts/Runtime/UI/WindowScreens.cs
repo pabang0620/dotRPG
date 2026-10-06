@@ -418,7 +418,7 @@ namespace DotRPG
                 costTitle.text = chanceText.text = failText.text = "";
                 foreach (var t in costCells) t.text = "";
                 enhanceButton.interactable = false;
-                enhanceLabel.text = "최대";
+                enhanceLabel.text = "최대 강화";
                 return;
             }
             var next = gear.StatsAt(level + 1);

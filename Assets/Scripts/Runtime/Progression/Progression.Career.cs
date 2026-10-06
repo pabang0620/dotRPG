@@ -56,8 +56,21 @@ namespace DotRPG
             if(!IsSlotOpen(slot)) return false;
             var gem=SkillGems.Get(id); var s=CareerCatalog.Get(id);
             if(gem==null || gem.kind!=GemKind.Active || !IsUnlocked(gem) || (s!=null && s.kind==CareerSkillKind.Passive) || (slot==4)!=gem.IsUltimate) return false;
-            for(int i=0;i<SkillGems.Slots;i++) if(i!=slot && Active(i)?.id==id) return false;
+            // [UX] Already on another key: the two keys swap skills instead of refusing.
+            for(int i=0;i<SkillGems.Slots;i++) if(i!=slot && Active(i)?.id==id) { slots[i,0]=slots[slot,0]; break; }
             slots[slot,0]=id; Changed?.Invoke(); return true;
+        }
+        /// <summary>[UX] Takes the chosen skill off a key; the key falls back to its basic skill.</summary>
+        public void ClearSkill(int slot)
+        {
+            if(slot<0 || slot>=SkillGems.Slots || slots[slot,0]==null) return;
+            slots[slot,0]=null; Changed?.Invoke();
+        }
+        /// <summary>[UX] The key (slot) a skill sits on, or -1.</summary>
+        public int SlotOf(string id)
+        {
+            for(int i=0;i<SkillGems.Slots;i++) if(Active(i)?.id==id) return i;
+            return -1;
         }
         /// <summary>[ANTI-ABUSE] The server's awakening stage wins when the two disagree (online).</summary>
         internal void SyncAwakening(int stage)
