@@ -2,6 +2,7 @@
 import { getConfig } from '../../config/env';
 import type { Queryable } from '../../db/pool';
 import type { RoomKind } from './relayTicket';
+import { getNow } from '../../utils/clock';
 
 export type TransportName = 'relay' | 'steam' | 'dev';
 
@@ -38,7 +39,7 @@ interface RawMember {
 const rejoinOk = (state: string, at: Date | null, nowMs: number): boolean =>
   state !== 'disconnected' || at === null || nowMs - at.getTime() <= getConfig().policy.partyRejoinSeconds * 1000;
 
-export async function snapshotRun(db: Queryable, uuid: string, nowMs = Date.now()): Promise<RoomSnapshot | null> {
+export async function snapshotRun(db: Queryable, uuid: string, nowMs = getNow().getTime()): Promise<RoomSnapshot | null> {
   const r = await db.query<{ id: string; state: string; host_character_id: string; host_epoch: number; transport: TransportName; transport_epoch: number }>(
     'SELECT id, state, host_character_id, host_epoch, transport, transport_epoch FROM party_runs WHERE uuid = $1',
     [uuid],
@@ -71,7 +72,7 @@ export async function snapshotRun(db: Queryable, uuid: string, nowMs = Date.now(
   };
 }
 
-export async function snapshotField(db: Queryable, uuid: string, nowMs = Date.now()): Promise<RoomSnapshot | null> {
+export async function snapshotField(db: Queryable, uuid: string, nowMs = getNow().getTime()): Promise<RoomSnapshot | null> {
   const r = await db.query<{ id: string; state: string; host_character_id: string | null; host_epoch: number; transport: TransportName; transport_epoch: number }>(
     'SELECT id, state, host_character_id, host_epoch, transport, transport_epoch FROM field_sessions WHERE uuid = $1',
     [uuid],

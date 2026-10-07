@@ -24,11 +24,13 @@ namespace DotRPG
         public event Action<int> LeveledUp;
 
         /// <summary>
-        /// Level-up XP is the base curve times <see cref="CurveScale"/>: the mid raid (Lv22) after about 20 hours of play
-        /// (Tools/balance/theory_growth.py: 15 field kills a minute in packs of three, 75% of the time hunting, dungeons +25%).
+        /// Level-up XP is the base curve times <see cref="CurveScale"/>: the mid raid (Lv22) after about 20 hours and Lv40
+        /// after about 50 hours of play, quests, daily dungeons and raids included (Tools/balance/theory_progress.py).
         /// Kill XP and the dungeon floors are priced from the base curve (HuntingGrounds.XpAt), so only the pace changes.
         /// </summary>
-        public const float CurveScale = 13.4f;
+        public const float CurveScale = 22f;
+        /// <summary>Quest rewards: data XP x this. Kept apart from the curve so quests stay a share of the growth, not most of it.</summary>
+        public const float QuestScale = 6f;
         public static int BaseXpToNext(int level) => 40 + (level - 1) * 30 + (level - 1) * (level - 1) * 5;
         public static int XpToNext(int level) => (int)Math.Round(BaseXpToNext(level) * CurveScale);
 
@@ -39,8 +41,8 @@ namespace DotRPG
             double pct = xp * 100.0 / Math.Max(1, XpToNext(level));
             return pct >= 10 ? $"{pct:0}%" : pct >= 1 ? $"{pct:0.#}%" : $"{pct:0.##}%";
         }
-        /// <summary>Quest XP rewards keep their share of the growth: data value x the curve scale.</summary>
-        public static int QuestXp(int dataXp) => (int)Math.Round(dataXp * CurveScale);
+        /// <summary>Quest XP rewards: data value x <see cref="QuestScale"/>.</summary>
+        public static int QuestXp(int dataXp) => (int)Math.Round(dataXp * QuestScale);
         public int XpNeeded => Level >= MaxLevel ? 0 : XpToNext(Level);
 
         /// <summary>Passive points earned minus spent (the start node is free).</summary>
@@ -85,17 +87,7 @@ namespace DotRPG
 
         // ---------- Passive tree ----------
 
-        public bool CanAllocate(PassiveNode node) => false; // Legacy training retained; only career nodes are spendable.
-
-        public bool Allocate(PassiveNode node)
-        {
-            if (!CanAllocate(node)) return false;
-            Allocated.Add(node.id);
-            Changed?.Invoke();
-            return true;
-        }
-
-        /// <summary>Refunds a node if every other allocated node stays connected to the start.</summary>
+        /// <summary>Whether a node could be refunded (every other allocated node stays connected to the start).</summary>
         public bool CanRefund(PassiveNode node)
         {
             if (node == null || !Allocated.Contains(node.id) || node.kind == PassiveKind.Start) return false;
@@ -110,14 +102,6 @@ namespace DotRPG
                     if (link != node.id && Allocated.Contains(link) && reach.Add(link)) queue.Enqueue(link);
             }
             return reach.Count == Allocated.Count - 1;
-        }
-
-        public bool Refund(PassiveNode node)
-        {
-            if (!CanRefund(node)) return false;
-            Allocated.Remove(node.id);
-            Changed?.Invoke();
-            return true;
         }
 
         public void ResetTree()

@@ -13,6 +13,7 @@ import * as repo from './killRepository';
 import { parseItemKey } from '../../utils/itemKey';
 import { attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops } from './killRules';
 import { rejected, resolveFieldTarget, type KillTarget } from './killTarget';
+import { assertKillPresence } from '../antiabuse/killPresence';
 import type { KillBody } from './killValidation';
 
 const ENDPOINT = 'POST /characters/:uuid/kills';
@@ -64,6 +65,13 @@ async function processKill(ctx: EconCtx, body: KillBody) {
     throw new AppError(403, '처치 보고가 일시적으로 제한되었습니다.', 'KILL_BLOCKED');
   }
 
+  // 9단계 E3: 신선한 프레즌스, 현재 맵, 필드 보스 체류(resolveTarget 직전)
+  await assertKillPresence(ctx, {
+    mapId: body.map_id,
+    dungeon: body.run_id !== undefined,
+    isFieldBoss: eco.mapExtra.get(body.map_id)?.fieldBoss?.monsterId === body.monster_id,
+    monsterId: body.monster_id,
+  });
   const target = await resolveTarget(ctx, body);
   if (def.raid && !target.isRaid) throw raidDenied();
 
@@ -105,10 +113,12 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const baseXp = target.xpOverride ?? monsterXp(eco, def, target.level);
   // 파티 세션의 레벨 격차 감쇠(활성 멤버 2명 이상). 0이 되지 않게 최소 1
   const xpf = target.field?.xpFactor ?? null;
-  const shared = xpf !== null && baseXp > 0 ? Math.max(1, Math.round(baseXp * xpf)) : baseXp;
+  const hardXp = target.field?.hardXp === true;
+  const shared = hardXp && baseXp > 0 ? 1 : xpf !== null && baseXp > 0 ? Math.max(1, Math.round(baseXp * xpf)) : baseXp;
   // 착용한 필드 보스 장신구의 경험치 옵션(%). 장비 키에서 기본 id를 찾아 데이터 값만 쓴다
   const xpBonus = worn.reduce((a, k) => a + (eco.shop.equipment.get(parseItemKey(k)?.base ?? '')?.xpBonus ?? 0), 0);
-  const xp = xpBonus > 0 && shared > 0 ? Math.round(shared * (1 + xpBonus / 100)) : shared;
+  // 하드 격차의 경험치는 정확히 1이다(장신구 보너스로 늘리지 않는다)
+  const xp = !hardXp && xpBonus > 0 && shared > 0 ? Math.round(shared * (1 + xpBonus / 100)) : shared;
   // 연습판(레이드 보상 잠금)은 처치를 받아들이되 경험치·드롭을 주지 않는다(무한 입장 파밍 방지)
   const { granted, leveledUp } = target.rewardLocked
     ? { granted: 0, leveledUp: false }
@@ -142,7 +152,9 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const open = await repo.countOpenDrops(ctx.client, ctx.char.id, ctx.now);
   if (!target.rewardLocked && open < pol.dropOpenPerCharacter) {
     const expiresAt = new Date(ctx.now.getTime() + pol.dropTtlSeconds * 1000);
-    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1, target.level)) {
+    // 9단계: 캐리 중(경험치 배율 < 1)에는 처치당 기본 골드도 같은 배율로 줄인다(하드 격차는 1)
+    const goldMul = getConfig().field.carryGoldScale && xpf !== null && (hardXp || xpf < 1) ? (hardXp ? 0 : xpf) : 1;
+    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1, target.level, goldMul)) {
       const row = await repo.insertDrop(ctx.client, ctx.char.id, killId, spec.itemKey, spec.count, expiresAt, ctx.now);
       drops.push({ id: row.uuid, item_key: row.item_key, count: row.count, expires_at: row.expires_at.toISOString() });
     }

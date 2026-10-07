@@ -31,7 +31,11 @@ namespace DotRPG
             for (int i = 0; i < SaveSystem.SlotCount; i++)
             {
                 int slot = i;
-                menu.AddButton(Summary(slot), () => Pick(slot), () => !loading || Game.Saves.HasSave(slot));
+                var row = menu.AddButton(Summary(slot), () => Pick(slot), () => !loading || Game.Saves.HasSave(slot));
+                // [UI] A long summary (name, story title, time, date) shrinks to one row instead of wrapping into the next.
+                row.labelText.resizeTextForBestFit = true;
+                row.labelText.resizeTextMinSize = 14;
+                row.labelText.resizeTextMaxSize = row.labelText.fontSize;
             }
             menu.AddButton("돌아가기", () => ui.Pop());
             menu.OnCancel = () => ui.Pop();
@@ -111,7 +115,7 @@ namespace DotRPG
             sb.Append($"<color=#ffd84a>전투</color>  공격 [{Key(GameAction.Attack)}]  이동기 [{Key(GameAction.Mobility)}]  스킬 [{Key(GameAction.Skill1)}][{Key(GameAction.Skill2)}][{Key(GameAction.Skill3)}][{Key(GameAction.Skill4)}]  각성 [{Key(GameAction.Skill5)}]\n");
             sb.Append($"<color=#ffd84a>회복</color>  체력 물약 [{Key(GameAction.UseItem)}]  마나 물약 [{Key(GameAction.UseMana)}]  귀환 주문서 [{Key(GameAction.TownScroll)}]\n");
             sb.Append("<color=#ffd84a>요일 던전</color>  광장의 던전 안내원. 요일마다 열리는 던전이 다르고 주말엔 전부 열립니다. 하루 3회.\n");
-            sb.Append("<color=#ffd84a>레이드</color>  중간 레이드는 수·토·일, 하루 1회 보상과 봉인 열쇠 조각. 조각 100개로 일요일 최종 레이드.\n");
+            sb.Append("<color=#ffd84a>레이드</color>  중간 레이드는 수·토·일, 하루 1회 보상과 봉인 열쇠 조각. 일요일 최종 레이드는 조각 60개로 보상, 모자라면 연습 입장.\n");
             sb.Append("<color=#ffd84a>강화</color>  대장간. +10부터 실패하면 장비가 파괴될 수 있으니 장비 보호권을 챙기세요.\n");
             sb.Append("<color=#ffd84a>성장</color>  레벨마다 패시브 포인트 1. 메뉴 → 스킬에서 트리와 보조 젬을 고르세요.\n");
             sb.Append("<color=#ffd84a>파티</color>  메뉴 → 파티에서 용병을 고용합니다. 스토리 동료는 마을 밖에서 자동으로 합류합니다.");

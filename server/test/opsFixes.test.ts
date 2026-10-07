@@ -34,6 +34,9 @@ const PROD = {
   NODE_ENV: 'production',
   STEAM_AUTH_MODE: 'web_api',
   STEAM_APP_ID: '2800000',
+  // 9단계: 운영은 DEPLOY_STAGE 명시와 기기 지문 비밀(DEVICE_HASH_PEPPER)이 필요하다
+  DEPLOY_STAGE: 'live',
+  DEVICE_HASH_PEPPER: 'Pe9rL4vK7mQ2xW5tY8uZ3aB6cD1eF0gHnJkLoNpRs',
   STEAM_WEB_API_KEY: 'k',
   PARTY_TRANSPORT: 'steam',
   TRUST_PROXY: '1',

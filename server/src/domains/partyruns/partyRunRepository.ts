@@ -209,7 +209,7 @@ export interface HostReportRow {
   outcome: 'cleared' | 'failed';
   elapsed_ms: number;
   rooms: { room_index: number; kills: { monster_id: string; count: number }[] }[];
-  members: { character_id: string; hits_taken: number; max_combo: number; revives_used: number; damage_dealt: number }[];
+  members: { character_id: string; hits_taken: number; max_combo: number; revives_used: number; damage_dealt: number; hits_landed?: number; card_mismatch?: boolean }[];
   ai: { slot: number; damage_dealt: number }[];
   created_at: Date;
 }

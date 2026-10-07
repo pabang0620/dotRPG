@@ -162,9 +162,9 @@ namespace DotRPG
             };
             list.AddRange(GearCatalog.Build());
             // [FIELD BOSS] Growth accessories: moderate stats plus a growth option, only from field bosses (FieldBosses).
-            list.Add(Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 6, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), 10, xp: 5));
-            list.Add(Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, hp: 30, block: 3, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), 20, aoe: 10));
-            list.Add(Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 8, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), 35, xp: 6, aoe: 5));
+            list.Add(Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 9, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), 10, xp: 5));
+            list.Add(Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, atk: 6, hp: 50, block: 5, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), 20, aoe: 10));
+            list.Add(Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 16, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), 35, xp: 6, aoe: 5));
             return list;
         }
 
@@ -413,7 +413,7 @@ namespace DotRPG
         // ---------- Enhancement level colours ----------
 
         /// <summary>
-        /// Colour of a "+N" label, in the bands of Dungeon&amp;Fighter's weapon glow:
+        /// Colour of a "+N" label, in weapon glow bands:
         /// +1–6 green, +7–8 yellow, +9–12 blue, +13–14 pink, +15–16 orange, +17 and up gold.
         /// </summary>
         public static string LevelColor(int level)
@@ -438,7 +438,7 @@ namespace DotRPG
         // ---------- Enhancement growth ----------
 
         /// <summary>
-        /// Reinforcement coefficient per +level, after Dungeon&amp;Fighter's weapon reinforcement table
+        /// Reinforcement coefficient per +level, after a classic weapon reinforcement table
         /// (+8..+20 are the published values, +1..+7 interpolated). Bonus at +L = seed × coefficient[L].
         /// </summary>
         static readonly float[] EnhanceCoef =
@@ -446,8 +446,6 @@ namespace DotRPG
             0f, 1.1f, 2.2f, 3.3f, 4.5f, 5.7f, 7.0f, 8.3f, 11.11f, 14.7f, 18.9f,
             27.25f, 37.13f, 43.43f, 49.8f, 56.11f, 62.38f, 68.59f, 74.77f, 80.9f, 86.98f,
         };
-
-        public static float EnhanceCoefficient(int level) => EnhanceCoef[Mathf.Clamp(level, 0, MaxEnhance)];
 
         /// <summary>
         /// Growth per coefficient point: the item's own <see cref="EquipmentItem.enhanceSeed"/>, or the default

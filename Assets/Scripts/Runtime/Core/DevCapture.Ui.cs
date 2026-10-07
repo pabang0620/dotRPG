@@ -13,7 +13,7 @@ namespace DotRPG
         IEnumerator UiShowcase()
         {
             // The standalone player keeps the desktop resolution in windowed mode, so honour the
-            // requested -screen-width/-screen-height ourselves — the UI is resolution-dependent and the
+            // requested -screen-width/-screen-height ourselves - the UI is resolution-dependent and the
             // brief wants a 1280x720 pass and a 1920x1080 pass.
             ApplyRequestedResolution();
             yield return Wait(1.2f);
@@ -65,8 +65,6 @@ namespace DotRPG
 
             // ---- Skill window: passive tree + gem sockets ----
             var menuBtn = GameObject.Find("Btn_메뉴");
-            foreach (var id in new[] { "Lt0", "Lt1", "Ld1", "LD", "Lc1", "LC", "Rt0", "Rt1", "UM" })
-                prog.Allocate(PassiveTree.Get(id));
             prog.SetGem(0, 1, "sup_dmg"); prog.SetGem(0, 2, "sup_chain");
             prog.SetGem(1, 1, "sup_aoe"); prog.SetGem(1, 2, "sup_multi");
             yield return OpenMenu(menuBtn, "스킬", "07_skill_tree");
@@ -189,8 +187,8 @@ namespace DotRPG
 
         static readonly string[] GemKeys =
         {
-            "gem_whirl", "gem_slam", "gem_wave", "gem_cry", "gem_blades",
-            "gem_arc", "gem_nova", "gem_frostorb", "gem_thunder", "gem_meteor",
+            "gem_whirl", "gem_cry", "gem_blades",
+            "gem_nova", "gem_frostorb", "gem_meteor",
             "gem_sup_dmg", "gem_sup_aoe", "gem_sup_multi", "gem_sup_eff", "gem_sup_leech", "gem_sup_chain",
         };
 

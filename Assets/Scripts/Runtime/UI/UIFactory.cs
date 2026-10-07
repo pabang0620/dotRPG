@@ -32,7 +32,6 @@ namespace DotRPG
     public static class UIColors
     {
         public static readonly Color Ink = new Color32(62, 39, 26, 255);
-        public static readonly Color InkSoft = new Color32(120, 84, 58, 255);
         public static readonly Color Cream = new Color32(246, 231, 200, 255);
         public static readonly Color Highlight = new Color32(255, 211, 74, 255);
         public static readonly Color Disabled = new Color32(150, 140, 130, 255);
@@ -91,7 +90,7 @@ namespace DotRPG
                 // twice the border, so sizing them against the density-1 reference PPU (BaseArtPixels)
                 // cancels the extra pixels out: a 32px/10px-border frame renders exactly like the old
                 // 16px/5px-border frame. (The old code divided by the sprite's own PPU, which halved
-                // the multiplier for HD frames and — unless borders were doubled — doubled their size.)
+                // the multiplier for HD frames and - unless borders were doubled - doubled their size.)
                 img.pixelsPerUnitMultiplier = 100f / BaseArtPixels / UiPixelScale;
             }
             else
@@ -119,7 +118,7 @@ namespace DotRPG
         /// <summary>
         /// An icon Image for a slot that starts empty and is filled with high-resolution pixel-art
         /// icons later (bag cells, gem sockets, shop rows, tooltip icons). The sharp material is set up
-        /// front so the crisp shader is in place before the first sprite is assigned — the plain
+        /// front so the crisp shader is in place before the first sprite is assigned - the plain
         /// <see cref="Image"/> path only knows to add it when a sprite is present at creation time.
         /// </summary>
         public static Image SharpIcon(Transform parent, string name, Color color)
@@ -144,7 +143,7 @@ namespace DotRPG
             var text = rt.gameObject.AddComponent<Text>();
             text.font = UIFont.Get();
             text.text = content;
-            text.fontSize = Mathf.Max(13, Mathf.RoundToInt(size * TextScale));
+            text.fontSize = Mathf.Max(14, Mathf.RoundToInt(size * TextScale));
             text.color = color;
             text.alignment = align;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;

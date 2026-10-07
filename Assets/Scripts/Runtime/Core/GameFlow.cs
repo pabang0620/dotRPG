@@ -51,6 +51,8 @@ namespace DotRPG
             foreach (var action in InputReader.WindowActions)
             {
                 if (!pressed(action)) continue;
+                // [UX] Tab switches the pages of the dungeon / skill windows: it neither closes them nor opens the bag.
+                if (action == GameAction.Inventory && Game.UI.Top is WindowScreen tabbed && tabbed.TabSwallowsInventory) continue;
                 var target = WindowFor(action);
                 if (target == null) return false;
                 bool sameTab = target != Game.UI.Dungeon || Game.UI.Dungeon.IsRaidTab == (action == GameAction.RaidWindow);
@@ -179,7 +181,7 @@ namespace DotRPG
                 {
                     // Two toasts: one line is wider than the toast column.
                     GameEvents.RaiseToast("강화 규칙이 새로 바뀌었습니다.");
-                    GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았다.");
+                    GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았습니다.");
                 }
             }));
         }
@@ -231,7 +233,7 @@ namespace DotRPG
                 Game.UI.Hud.RefreshAll();
                 Game.Audio.PlayMusic(Game.World.Map.music);
                 Game.Audio.PlaySfx("confirm");
-                GameEvents.RaiseToast($"— {Game.World.Map.displayName} —");
+                GameEvents.RaiseToast($"· {Game.World.Map.displayName} ·");
                 if (arriveAtSpawn) Fx.Sparkle(player.Center + Vector2.up * 0.3f, 8, 0.8f);
             }));
         }
@@ -248,13 +250,13 @@ namespace DotRPG
             // [DUNGEON] Dungeons are left through the result screen.
             if (Game.Dungeon != null && Game.Dungeon.InRun)
             {
-                GameEvents.RaiseToast("던전 안에서는 사용할 수 없다.");
+                GameEvents.RaiseToast("던전 안에서는 사용할 수 없습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
             if (Game.World.MapId == HuntingGrounds.HomeOf(Game.World.MapId))
             {
-                GameEvents.RaiseToast("이미 마을에 있다.");
+                GameEvents.RaiseToast("이미 마을에 있습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -282,7 +284,7 @@ namespace DotRPG
         }
 
         /// <summary>Text shown when saving is refused inside a dungeon.</summary>
-        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없다."; // [DUNGEON]
+        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없습니다."; // [DUNGEON]
 
         public void SaveGame()
         {
@@ -311,6 +313,23 @@ namespace DotRPG
             if (Game.Dungeon != null && Game.Dungeon.InRun) return false; // [DUNGEON] also blocks autosave
             var data = Game.Session.Capture(player.Position, player.Facing);
             return Game.Saves.Write(data);
+        }
+
+        /// <summary>[DEMO] Trial builds (career, monster regions) play local save slots: the title opens them, not the online login.</summary>
+        public static bool DemoSlots;
+
+        /// <summary>[DEMO] Save, go back to the title and open the slot list to pick another trial character.</summary>
+        public void SwitchCharacter()
+        {
+            ReturnToTitle();
+            StartCoroutine(OpenSlotsAfterTitle());
+        }
+
+        System.Collections.IEnumerator OpenSlotsAfterTitle()
+        {
+            yield return null;
+            while (IsTransitioning) yield return null;
+            Game.UI.Slots.Open(true);
         }
 
         public void ReturnToTitle()
@@ -371,6 +390,25 @@ namespace DotRPG
         {
             yield return new WaitForSecondsRealtime(1.2f);
             if (Game.Player != null && Game.Player.IsDead) Game.State.Set(GameState.GameOver);
+        }
+
+        /// <summary>[REVIVE] Gets up where the player fell (full HP / MP, 3 s invulnerable) after the coin is paid.</summary>
+        public void ReviveHere()
+        {
+            var player = Game.Player;
+            if (player == null || !player.IsDead) return;
+            ReviveCoins.Use("field", (ok, why) =>
+            {
+                if (!ok) { GameEvents.RaiseToast(why); Game.Audio.PlaySfx("cancel"); return; }
+                if (Game.Player == null || !Game.Player.IsDead) return;
+                var p = Game.Player;
+                if (Game.Party != null) Game.Party.ReviveMember(p, 1f, DungeonDirector.ReviveInvulnerable);
+                else p.Revive(1f, DungeonDirector.ReviveInvulnerable);
+                p.Data.Mana = p.MaxMana;
+                Game.Audio.PlaySfx("quest");
+                GameEvents.RaiseToast("그 자리에서 다시 일어났습니다.");
+                Game.State.Set(GameState.Playing);
+            });
         }
 
         public void RespawnInVillage()

@@ -53,7 +53,7 @@ namespace DotRPG
 
             screen.description = UIFactory.Text(screen.panel, "Description", "", 19, UiTheme.TextSecondary, TextAnchor.UpperCenter, true); // [UI] dark panel
             screen.description.lineSpacing = 1.2f;
-            UIFactory.Place(screen.description.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -340f), new Vector2(700f, 60f));
+            UIFactory.Place(screen.description.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -346f), new Vector2(700f, 48f)); // [UI] between the name box (to -342) and the menu (from -394)
             screen.nameField = BuildNameField(screen.panel);
 
             foreach (var cls in Classes)

@@ -15,6 +15,8 @@ import { lockPartyAndRun, runParty, withPartyLocks, type PartyCtx, type PartyRun
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import { closeMembershipOf } from '../fieldsessions/fieldCore';
 import { pickTransport } from '../transport/pickTransport';
+import { humanGroups } from '../antiabuse/contribution';
+import { snapshotRunHumans } from '../antiabuse/humans';
 import * as repo from './partyRunRepository';
 import { buildRunView } from './runView';
 import { entryToken, tokenMatches } from './runTokens';
@@ -157,6 +159,11 @@ async function beginRun(ctx: PartyCtx, run: PartyRunRow): Promise<'begun' | 'can
     return 'cancelled';
   }
 
+  // 9단계 5.1: 판 시작 때 각 멤버 세션의 기기·Steam 소유자를 스냅샷으로 남기고, 같은 기기·같은 Steam 소유자는 한 사람으로 센다.
+  // 파티 크기(AI 채우기·몬스터 체력 배율)는 실제 머릿수 그대로이고, 보상 최소 인원(TOO_FEW_HUMANS) 판정에만 "사람 수"를 쓴다
+  const humanKeys = await snapshotRunHumans(ctx.client, run.id, standing.map((m) => ({ characterId: m.character_id, accountId: m.account_id })));
+  const humanCount = humanGroups(standing.map((m) => humanKeys.get(m.character_id) ?? { deviceHash: null, steamKey: null, installId: null })).length;
+
   // 3. 불참한 자리는 AI가 채운다(합 4 이하)
   const humans = standing.length;
   const aiCount = Math.max(0, Math.min(eco.dungeons.mercenary.maxCompanions, 4 - humans, run.ai_count + (run.humans - humans)));
@@ -171,7 +178,7 @@ async function beginRun(ctx: PartyCtx, run: PartyRunRow): Promise<'begun' | 'can
   // 4. 멤버마다 dungeon_runs(전원 같은 started_at). 요일 던전은 입장 횟수를 쓴다
   const resetDay = new Date(resetBoundaries(ctx.now).dailyStartAt);
   for (const m of standing) {
-    const lock = await lockAtEntry(ctx.client, m.character_id, dungeon, humans, ctx.now);
+    const lock = await lockAtEntry(ctx.client, m.character_id, dungeon, humanCount, ctx.now);
     const dr = await dungeonRepo.insertRun(ctx.client, {
       characterId: m.character_id,
       dungeonId: run.dungeon_id,

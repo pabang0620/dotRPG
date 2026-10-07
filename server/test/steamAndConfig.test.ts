@@ -106,6 +106,9 @@ describe('설정 검증(DEPLOY_STAGE, 중계 가드 G2/G8/G9/G10)', () => {
     NODE_ENV: 'production',
     STEAM_AUTH_MODE: 'web_api',
     STEAM_APP_ID: '2800000',
+    // 9단계: 운영은 DEPLOY_STAGE 명시와 기기 지문 비밀(DEVICE_HASH_PEPPER)이 필요하다
+    DEPLOY_STAGE: 'live',
+    DEVICE_HASH_PEPPER: 'Pe9rL4vK7mQ2xW5tY8uZ3aB6cD1eF0gHnJkLoNpRs',
     STEAM_WEB_API_KEY: 'k',
     TRUST_PROXY: '1',
     ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
@@ -160,7 +163,7 @@ describe('설정 검증(DEPLOY_STAGE, 중계 가드 G2/G8/G9/G10)', () => {
     expect(() => loadConfig({ ...base, RELAY_MAX_CONNECTIONS: '-1' })).toThrow(/RELAY_MAX_CONNECTIONS/);
     const c = loadConfig(base);
     expect(c.relay).toMatchObject({ ticketTtlSeconds: 60, maxConnections: 400, maxRooms: 120, frameMaxBytes: 8192, packetMaxBytes: 6144, flushMs: 20, hostGraceMs: 3000, strikesPerMin: 20, roomEgressBps: 262144 });
-    expect(c.field).toMatchObject({ electionWindowSeconds: 5, staleSeconds: 300, uncreditedMax: 24, creditSurplus: 8, carrySlack: 5, carryStep: 0.12, carryMin: 0.2 });
+    expect(c.field).toMatchObject({ electionWindowSeconds: 5, staleSeconds: 300, uncreditedMax: 24, creditSurplus: 8, carrySlack: 5, carryStep: 0.15, carryMin: 0.02 });
     expect(c.steam).toMatchObject({ webApiBase: 'https://api.steampowered.com', retries: 1, breakerFailures: 5, breakerOpenSeconds: 30 });
   });
 });

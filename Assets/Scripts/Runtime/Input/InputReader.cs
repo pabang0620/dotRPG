@@ -28,6 +28,8 @@ namespace DotRPG
         Mobility,
         MoveUp, MoveDown, MoveLeft, MoveRight, Map,
         SkillWindow, QuestWindow, WeekdayDungeon, RaidWindow, PartyWindow, PartyFinder, Auction, Friends, Cosmetics,
+        /// <summary>[AUTO] HUD toggles: 자동 진행 / 자동 사냥 (HudView reads them).</summary>
+        AutoQuest, AutoHunt,
     }
 
     /// <summary>
@@ -69,6 +71,10 @@ namespace DotRPG
         public bool UseManaPressed { get; private set; }
         /// <summary>3: town return scroll.</summary>
         public bool TownScrollPressed { get; private set; }
+
+        /// <summary>[CHARGE] Whether the skill key of a slot (0-4) is held down now (charged skills).</summary>
+        public bool SkillHeld(int slot) => slot >= 0 && slot < held.Length && held[slot];
+        readonly bool[] held = new bool[5];
 
         /// <summary>Whether the skill key of a slot (0-4) was pressed this frame.</summary>
         public bool SkillPressed(int slot) => slot == 0 ? Skill1Pressed : slot == 1 ? Skill2Pressed : slot == 2 ? Skill3Pressed : slot == 3 ? Skill4Pressed : slot == 4 && Skill5Pressed;
@@ -113,13 +119,6 @@ namespace DotRPG
 #endif
         }
 
-        public void ResetBindings()
-        {
-#if ENABLE_INPUT_SYSTEM
-            map?.RemoveAllBindingOverrides();
-#endif
-        }
-
         void OnDestroy()
         {
 #if ENABLE_INPUT_SYSTEM
@@ -148,6 +147,7 @@ namespace DotRPG
             MobilityPressed = AttackPressed = InteractPressed = UseItemPressed = SubmitPressed = InventoryPressed = MapPressed = false;
             Skill1Pressed = Skill2Pressed = Skill3Pressed = Skill4Pressed = Skill5Pressed = UseManaPressed = TownScrollPressed = false;
             PausePressed = CancelPressed = false;
+            for (int i = 0; i < held.Length; i++) held[i] = false;
         }
 
         void UpdateNavigateRepeat()
@@ -193,7 +193,14 @@ namespace DotRPG
                     var binding = inputAction.bindings[i];
                     if (binding.isComposite || binding.isPartOfComposite) continue;
                     if (binding.effectivePath != null && binding.effectivePath.StartsWith(wanted))
+                    {
+                        // [UI] Short names for the stick presses. Note: this block only compiles with the new Input System
+                        // (the project runs the legacy input manager, activeInputHandler 0), so the L3 / R3 labels shown in
+                        // play come from DefaultLabel below.
+                        if (binding.effectivePath.EndsWith("/leftStickPress")) return "L3";
+                        if (binding.effectivePath.EndsWith("/rightStickPress")) return "R3";
                         return inputAction.GetBindingDisplayString(i);
+                    }
                 }
             }
 #endif
@@ -368,6 +375,8 @@ namespace DotRPG
             Skill3Pressed = skill3Action.WasPressedThisFrame();
             Skill4Pressed = skill4Action.WasPressedThisFrame();
             Skill5Pressed = skill5Action.WasPressedThisFrame();
+            held[0] = skill1Action.IsPressed(); held[1] = skill2Action.IsPressed(); held[2] = skill3Action.IsPressed();
+            held[3] = skill4Action.IsPressed(); held[4] = skill5Action.IsPressed();
             UseManaPressed = manaAction.WasPressedThisFrame();
             TownScrollPressed = scrollAction.WasPressedThisFrame();
 
@@ -420,6 +429,7 @@ namespace DotRPG
             GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight, GameAction.Map,
             GameAction.SkillWindow, GameAction.QuestWindow, GameAction.WeekdayDungeon, GameAction.RaidWindow,
             GameAction.PartyWindow, GameAction.PartyFinder, GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
+            GameAction.AutoQuest, GameAction.AutoHunt,
         };
 
         public static readonly GameAction[] WindowActions =
@@ -429,6 +439,8 @@ namespace DotRPG
             GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
         };
         public static bool IsWindowAction(GameAction action) => System.Array.IndexOf(WindowActions, action) >= 0;
+        /// <summary>[AUTO] A rebindable keyboard hotkey that is not a window (자동 진행 / 자동 사냥).</summary>
+        public bool HotkeyPressed(GameAction action) => !TextInputActive && Input.GetKeyDown(KeyboardKey(action));
         public bool WindowPressed(GameAction action) => !TextInputActive && (action == GameAction.Inventory ? InventoryPressed : Input.GetKeyDown(KeyboardKey(action)));
 
         static readonly System.Collections.Generic.Dictionary<GameAction, KeyCode> keyOverrides = new System.Collections.Generic.Dictionary<GameAction, KeyCode>();
@@ -463,6 +475,8 @@ namespace DotRPG
                 case GameAction.Auction: return KeyCode.U;
                 case GameAction.Friends: return KeyCode.L;
                 case GameAction.Cosmetics: return KeyCode.C;
+                case GameAction.AutoQuest: return KeyCode.F6;
+                case GameAction.AutoHunt: return KeyCode.F7;
                 default: return KeyCode.None;
             }
         }
@@ -599,6 +613,8 @@ namespace DotRPG
             Skill3Pressed = AnyDown(Skill3Keys);
             Skill4Pressed = AnyDown(Skill4Keys);
             Skill5Pressed = AnyDown(Skill5Keys);
+            held[0] = AnyHeld(Skill1Keys); held[1] = AnyHeld(Skill2Keys); held[2] = AnyHeld(Skill3Keys);
+            held[3] = AnyHeld(Skill4Keys); held[4] = AnyHeld(Skill5Keys);
             UseManaPressed = AnyDown(ManaKeys);
             TownScrollPressed = AnyDown(ScrollKeys);
 
@@ -617,6 +633,13 @@ namespace DotRPG
         {
             foreach (var code in codes)
                 if (Input.GetKeyDown(code)) return true;
+            return false;
+        }
+
+        static bool AnyHeld(KeyCode[] codes)
+        {
+            foreach (var code in codes)
+                if (Input.GetKey(code)) return true;
             return false;
         }
 

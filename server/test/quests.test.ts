@@ -38,8 +38,8 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     const h = await newHero(app);
     const res = await claim(h, 'c1_morning');
     expect(res.status).toBe(200);
-    expect(res.body.data.reward).toMatchObject({ xp: 268, gold: 0, items: [], set_flags: ['festival_eve'] });
-    expect(res.body.data.delta).toEqual({ level: 1, xp: 268 });
+    expect(res.body.data.reward).toMatchObject({ xp: 120, gold: 0, items: [], set_flags: ['festival_eve'] });
+    expect(res.body.data.delta).toEqual({ level: 1, xp: 120 });
     const detail = await get(app, h, '');
     expect(detail.body.data.character.claimed_quests).toEqual(['c1_morning']);
     await expectLedgerConsistent(h);
@@ -51,7 +51,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     await setKills(h, 'skeleton', 3);
     const res = await claim(h, 'c1_rise');
     expect(res.status).toBe(200);
-    expect(res.body.data.reward).toMatchObject({ xp: 1608, gold: 300, items: [{ item_key: 'potion_hp', count: 5 }] });
+    expect(res.body.data.reward).toMatchObject({ xp: 720, gold: 300, items: [{ item_key: 'potion_hp', count: 5 }] });
     expect(await goldOf(h)).toBe(400);
     expect(await countOf(h, 'potion_hp')).toBe(8);
     const gl = await getPool().query("SELECT ref FROM gold_ledger WHERE character_id = $1 AND reason = 'quest_reward'", [h.dbId]);
@@ -73,7 +73,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect(again.status).toBe(409);
     expect(again.body.errors.code).toBe('QUEST_ALREADY_CLAIMED');
     const xp = await getPool().query('SELECT xp FROM characters WHERE id = $1', [h.dbId]);
-    expect(xp.rows[0].xp).toBe(268);
+    expect(xp.rows[0].xp).toBe(120);
   });
 
   it('재전송: 같은 request_id는 같은 응답', async () => {

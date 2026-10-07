@@ -25,6 +25,13 @@ import { createQuestRouter } from '../domains/quests/questRoutes';
 import { createShopRouter } from '../domains/shop/shopRoutes';
 import { createStarshopRouter } from '../domains/starshop/starshopRoutes';
 import { createSystemRouter } from '../domains/system/systemRoutes';
+import { createPresenceRouter } from '../domains/antiabuse/presenceRoutes';
+import { createCareerGrantRouter } from '../domains/characters/careerGrantRoutes';
+import { createSweepRouter } from '../domains/sweep/sweepRoutes';
+import { createReviveRouter } from '../domains/revive/reviveRoutes';
+import { createPaymentsRouter } from '../domains/payments/paymentsRoutes';
+import { createLevelRewardsRouter } from '../domains/levelrewards/levelRewardsRoutes';
+import { createSealedBoxRouter } from '../domains/sealedbox/sealedBoxRoutes';
 
 export function createRouter(): Router {
   const r = Router();
@@ -60,5 +67,18 @@ export function createRouter(): Router {
   // 8단계: 전투 중계 입장 티켓·전송 전환, 필드 파티 세션(캐릭터 경로 아래, 데이터 버전까지 검사)
   r.use(createRelayRouter());
   r.use(createFieldRouter());
+  // 9단계: 프레즌스(P1~P3), 전직·각성 서버 기록(C1~C4). 캐릭터 경로 아래라 데이터 버전까지 검사한다
+  r.use(createPresenceRouter());
+  r.use(createCareerGrantRouter());
+  // 10단계: 던전 소탕·클리어권 구매·주간 활동(캐릭터 경로 아래, 데이터 버전까지 검사). SWEEP_ENABLED가 꺼져 있으면 503
+  r.use(createSweepRouter());
+  // 12단계: 부활 코인(캐릭터 경로 아래, 데이터 버전까지 검사)
+  r.use(createReviveRouter());
+  // 11단계: 별조각 Steam 결제(계정 단위 /payments/*, 클라이언트 버전만 검사). PAYMENTS_ENABLED가 꺼져 있으면 B1·B2는 503
+  r.use(createPaymentsRouter());
+  // 13단계: 레벨 달성 보상(계정 단위 /level-rewards, 클라이언트 버전만 검사)
+  r.use(createLevelRewardsRouter());
+  // 14단계: 봉인된 상자(캐시샵 뽑기·상자 아이템 열기), 강화권(enhance), 성장 패스(level-rewards)
+  r.use(createSealedBoxRouter());
   return r;
 }

@@ -1,6 +1,6 @@
 // 시험 서버 전용: 보류(held)된 캐릭터의 던전 판을 확정해 보상 카드를 받을 수 있게 한다(운영 해제와 같은 계산).
 // 사용: npx tsx scripts/test-release-held.ts <캐릭터 이름>
-// 운영 서버(DEPLOY_STAGE=live)에서는 실행을 거절한다. 운영은 관리자 held release를 쓴다.
+// DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다. 운영은 관리자 held release를 쓴다.
 import { randomUUID } from 'node:crypto';
 import { initConfig } from '../src/config/env';
 import { closePool, getPool } from '../src/db/pool';
@@ -9,9 +9,12 @@ import { finalizeCleared, minClearSeconds, runContext } from '../src/domains/dun
 import * as dungeonRepo from '../src/domains/dungeons/dungeonRepository';
 import { runEconomy } from '../src/domains/economy/economyService';
 
+import { assertTestStage } from './_stageGuard.mjs';
+
 (async () => {
+  // 시험 서버 전용 가드: DEPLOY_STAGE=test 가 명시된 환경에서만 실행한다(맨 앞에서 확인)
+  assertTestStage();
   if (!process.env.DATABASE_URL) process.loadEnvFile(new URL('../.env', import.meta.url));
-  if ((process.env.DEPLOY_STAGE ?? 'dev') === 'live') throw new Error('운영 서버(DEPLOY_STAGE=live)에서는 쓸 수 없습니다.');
   const [name] = process.argv.slice(2);
   if (!name) throw new Error('사용: npx tsx scripts/test-release-held.ts <캐릭터 이름>');
   const cfg = initConfig();

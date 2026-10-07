@@ -12,7 +12,7 @@ namespace DotRPG
     /// <summary>
     /// Owns the UI canvas and decides which screen is visible for each <see cref="GameState"/>.
     /// Menus are kept on a stack so sub-screens (settings, controls, confirm) return to whoever
-    /// opened them — title or pause menu.
+    /// opened them - title or pause menu.
     /// </summary>
     public class UIRoot : MonoBehaviour
     {
@@ -145,7 +145,7 @@ namespace DotRPG
             ui.Cosmetics = CosmeticShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
-            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
+            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); MailScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);

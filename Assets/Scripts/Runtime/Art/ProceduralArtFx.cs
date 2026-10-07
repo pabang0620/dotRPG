@@ -57,6 +57,7 @@ namespace DotRPG
 
         static PixelCanvas DrawSkillFx(string kind)
         {
+            if (HdEffects) { var hd = DrawSkillFxHd(kind); if (hd != null) return hd; }
             switch (kind)
             {
                 case "glow":

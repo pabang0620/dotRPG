@@ -15,7 +15,7 @@ namespace DotRPG
             yield return Wait(1);
             Game.Config.autosave=false;
             var careers=new[]{Career.Fighter,Career.Guardian,Career.Arcanist,Career.Bishop};
-            var loadouts=new[]{new[]{1,2,5,7},new[]{2,5,6,7},new[]{1,2,3,7},new[]{1,2,6,7}};
+            var loadouts=new[]{new[]{1,2,5,3},new[]{2,5,6,7},new[]{1,2,3,5},new[]{5,1,2,6}};
             for(int slot=0;slot<careers.Length;slot++)
             {
                 var career=careers[slot];

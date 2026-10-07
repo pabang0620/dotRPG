@@ -1,22 +1,11 @@
 import { getGameData } from '../../gamedata/loader';
+import { assertNoHold } from '../antiabuse/holds';
 import { AppError } from '../../utils/AppError';
-import { parseItemKey, roundHalfAway } from '../../utils/itemKey';
 import { runEconomy, type StoredResult } from '../economy/economyService';
+import { sellPriceOf } from './sellPrice';
 import type { BuyBody, SellBody } from './shopValidation';
 
-/** ItemPrices.SellPrice: 장비는 round(기본가 * (1 + 보너스 * 강화단계)) (.5는 올림), 그 밖은 표. 팔 수 없으면 0 */
-export function sellPriceOf(itemKey: string): number {
-  const eco = getGameData().economy;
-  const p = parseItemKey(itemKey);
-  if (!p) return 0;
-  const equip = eco.shop.equipment.get(p.base);
-  if (equip) {
-    if (p.level > eco.enhance.maxEnhance) return 0;
-    return roundHalfAway(equip.sellPrice * (1 + eco.shop.enhancedSellBonusPerLevel * p.level));
-  }
-  if (p.level !== 0) return 0;
-  return eco.shop.sellPrices.get(p.base) ?? 0;
-}
+export { sellPriceOf } from './sellPrice';
 
 export function buy(accountId: number, characterUuid: string, body: BuyBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;
@@ -58,6 +47,8 @@ export function sell(accountId: number, characterUuid: string, body: SellBody): 
     requestId,
     payload,
     handler: async (ctx) => {
+      // 9단계 12.5: 경제 정지 중에는 팔 수 없다
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const unit = sellPriceOf(body.item_key);
       if (unit <= 0) throw new AppError(422, '팔 수 없는 물건입니다.', 'NOT_SELLABLE');
       // 대상은 가방 스택뿐이다(착용·창고는 못 판다)

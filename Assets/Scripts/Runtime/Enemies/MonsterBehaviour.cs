@@ -65,6 +65,8 @@ namespace DotRPG
                 E.GiveUp();
                 return false;
             }
+            // [BALANCE] Just spotted the player: walk in and size them up before the first attack.
+            if (E.HoldingFirstStrike && !(E.Def != null && E.Def.boss)) { E.ApproachOnly(target); return true; }
             Engaged(target, Vector2.Distance(E.Position, target.Position));
             return true;
         }
@@ -168,8 +170,6 @@ namespace DotRPG
             float r = degrees * Mathf.Deg2Rad, c = Mathf.Cos(r), s = Mathf.Sin(r);
             return new Vector2(v.x * c - v.y * s, v.x * s + v.y * c);
         }
-
-        protected Vector2 ChestOf(EnemyController e) => e.Center;
 
         /// <summary>A free point near <paramref name="p"/> (falls back to the monster's own position).</summary>
         protected Vector2 FreeNear(Vector2 p)

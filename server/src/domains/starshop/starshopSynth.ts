@@ -1,10 +1,12 @@
 // 외형 여분 활용: 합성(같은 등급 4개 -> 한 등급 위), 분해(여분 -> 별조각), 컬렉션 등록(세트 완성 -> 능력치).
 // 모두 계정 지갑 행을 잠근 뒤 처리한다(같은 계정의 동시 요청은 줄을 선다). 규칙과 수치는 starshopDefs.
 import { AppError } from '../../utils/AppError';
+import { assertNoHold } from '../antiabuse/holds';
 import { getRng } from '../../utils/rng';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import { COLLECTION_BY_ID, DISMANTLE_STARS, STAR_COSMETICS, STAR_COSMETIC_BY_ID, SYNTH, SYNTH_COUNT, type Rarity, type SynthFrom } from './starshopDefs';
 import * as repo from './starshopRepository';
+import * as wallets from './starWallet';
 import { poolOf } from './starshopService';
 import type { CollectionBody, DismantleBody, SynthBody } from './starshopValidation';
 
@@ -38,11 +40,13 @@ export function synth(accountId: number, characterUuid: string, body: SynthBody)
     requestId,
     payload,
     handler: async (ctx) => {
+      await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
       const from: SynthFrom = body.rarity;
       const rule = SYNTH[from];
       const tier = rule.to as 'rare' | 'epic' | 'unique';
-      const wallet = await repo.lockWallet(db, accountId);
+      const wallet = await wallets.lockWallet(db, accountId);
+      wallets.assertNoStarDebt(wallet);
       const owned = await repo.ownedOf(db, accountId);
       const copies = await repo.copiesOf(db, accountId);
       const spare = spareOf(copies, from);
@@ -92,7 +96,7 @@ export function synth(accountId: number, characterUuid: string, body: SynthBody)
         }
         logs.push({ seq: i, fromRarity: from, inputs, success, byPity, resultItem: result, failsBefore, failsAfter: fails });
       }
-      await repo.setSynthFail(db, accountId, tier, fails);
+      await wallets.setSynthFail(db, accountId, tier, fails);
       await repo.insertSynthLog(db, accountId, requestId, logs);
       return {
         status: 200,
@@ -120,12 +124,15 @@ export function dismantle(accountId: number, characterUuid: string, body: Disman
       const db = ctx.client;
       const def = STAR_COSMETIC_BY_ID.get(body.item_id);
       if (!def) throw new AppError(404, '분해할 수 없는 외형입니다.', 'COSMETIC_UNKNOWN');
-      await repo.lockWallet(db, accountId);
+      // 경제 정지 중에는 별조각이 늘어나는 분해도 막는다(정지 기간에 재화가 쌓이지 않게)
+      await assertNoHold(db, ctx.char.accountId, ctx.char.id);
+      await wallets.lockWallet(db, accountId);
       if (!(await repo.takeCopies(db, accountId, def.id, body.count))) {
         throw new AppError(422, '분해할 여분이 모자랍니다.', 'DISMANTLE_NOT_ENOUGH');
       }
       const stars = DISMANTLE_STARS[def.rarity] * body.count;
-      const balance = await repo.changeBalance(db, accountId, stars, 'dismantle', def.id, requestId);
+      // 입금 함수가 부채를 먼저 갚는다(11단계 8.5). balance는 입금 직후(상환 반영) 값이다
+      const balance = (await wallets.creditFree(db, { accountId, reason: 'dismantle', amount: stars, ref: def.id, requestId })).balance;
       return { status: 200, data: { item_id: def.id, count: body.count, stars, balance } };
     },
   });
@@ -144,7 +151,8 @@ export function registerCollection(accountId: number, characterUuid: string, bod
       const db = ctx.client;
       const def = COLLECTION_BY_ID.get(body.set_id);
       if (!def) throw new AppError(404, '알 수 없는 컬렉션입니다.', 'COLLECTION_UNKNOWN');
-      await repo.lockWallet(db, accountId);
+      await assertNoHold(db, ctx.char.accountId, ctx.char.id);
+      await wallets.lockWallet(db, accountId);
       const owned = await repo.ownedOf(db, accountId);
       const done = await repo.collectionsOf(db, accountId);
       if (done.has(def.id)) throw new AppError(409, '이미 등록한 컬렉션입니다.', 'COLLECTION_DONE');

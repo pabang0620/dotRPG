@@ -88,14 +88,14 @@ namespace DotRPG
         static void Upper(PixelCanvas c, Vector2 shoulder, Vector2 elbow, CharacterLook look)
         {
             Stroke(c, shoulder, elbow, 6, PixelCanvas.Hex("#101116"));
-            var cloth = look.skinSleeve.a > 0 ? look.skinSleeve : look.armor == ArmorStyle.None ? PixelCanvas.Hex("#23242a") : look.armorColor;
+            var cloth = look.skinSleeve.a > 0 ? look.skinSleeve : look.armor == ArmorStyle.None ? PixelCanvas.Hex("#6b4a30") : look.armorColor;
             Stroke(c, shoulder, elbow, 4, cloth);
         }
         static void Lower(PixelCanvas c, Vector2 elbow, Vector2 hand, CharacterLook look)
         {
             // A bell sleeve follows the forearm; a small bare hand protrudes at its cuff.
             var cuff = Vector2.Lerp(elbow, hand, .65f);
-            var cloth = look.skinSleeve.a > 0 ? look.skinSleeve : look.armor == ArmorStyle.None ? PixelCanvas.Hex("#23242a") : look.armorColor;
+            var cloth = look.skinSleeve.a > 0 ? look.skinSleeve : look.armor == ArmorStyle.None ? PixelCanvas.Hex("#6b4a30") : look.armorColor;
             Stroke(c, elbow, cuff, 7, PixelCanvas.Hex("#101116"));
             Stroke(c, elbow, cuff, 5, cloth);
             if (look.skinTrim.a > 0) Stroke(c, Vector2.Lerp(elbow, cuff, .85f), cuff, 5, look.skinTrim);

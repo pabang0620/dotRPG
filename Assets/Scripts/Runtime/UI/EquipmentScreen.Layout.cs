@@ -28,9 +28,10 @@ namespace DotRPG
             // ----- Header -----
             var header = Tinted(root, "Header", "ui_white", new Color32(22, 31, 46, 255));
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, 76f));
-            var back = MakeButton(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(56f, 52f), Close, 26);
+            var back = MakeButton(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), Close, 24);
+            back.GetComponentInChildren<Text>().text = "◀ <size=17>ESC</size>"; // [UI] same back button as every other window
             var title = UIFactory.Text(root, "Title", "가방", 40, Color.white, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(92f, -12f), new Vector2(200f, 52f));
+            UIFactory.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(132f, -12f), new Vector2(200f, 52f));
             float cxHead = -24f;
             var chipIds = new List<(string id, string icon)> { (ConsumableDatabase.Gold, "icon_gold") };
             for (int i = Game.Config.items.Count - 1; i >= 0; i--) chipIds.Add((Game.Config.items[i].id, Game.Config.items[i].iconKey));
@@ -105,8 +106,8 @@ namespace DotRPG
 
             // Paging under the grid (only shown when the tab holds more than one page).
             float gridMid = -24f - gridW * 0.5f;
-            pagePrev = MakeButton(root, "BagPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid - 70f, 102f), new Vector2(56f, 44f), () => TurnPage(-1, false), 22, true);
-            pageNext = MakeButton(root, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid + 126f, 102f), new Vector2(56f, 44f), () => TurnPage(1, false), 22, true);
+            pagePrev = MakeButton(root, "BagPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid - 70f, 107f), UiSizes.PageButton, () => TurnPage(-1, false), UiSizes.PageFont, true);
+            pageNext = MakeButton(root, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid + 120f, 107f), UiSizes.PageButton, () => TurnPage(1, false), UiSizes.PageFont, true);
             pageText = UIFactory.Text(root, "BagPage", "", 22, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Place(pageText.rectTransform, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(gridMid, 102f), new Vector2(130f, 44f));
 
@@ -116,7 +117,8 @@ namespace DotRPG
             UIFactory.Place(gridIcon.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 40f, 26f), new Vector2(56f, 56f));
             capacity = UIFactory.Text(root, "Capacity", "", 28, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(capacity.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 250f, 26f), new Vector2(190f, 60f));
-            MakeButton(root, "Auto", "자동장착", "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
+            autoButton = MakeButton(root, "Auto", "자동장착", "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
+            autoLabel = autoButton.GetComponentInChildren<Text>();
             sortButton = MakeButton(root, "Sort", "정렬", "ui_btngray", new Vector2(1f, 0f), new Vector2(-24f, 26f), new Vector2(150f, 60f), ToggleSort, 26, true);
             sortLabel = sortButton.GetComponentInChildren<Text>();
 
@@ -161,7 +163,7 @@ namespace DotRPG
             UIFactory.Stretch(s.level.rectTransform, 4f, 2f, 6f, 2f);
             if (worn.HasValue)
             {
-                s.label = UIFactory.Text(s.rect, "SlotName", EquipmentDatabase.SlotName(worn.Value), 15, new Color(1f, 1f, 1f, 0.55f), TextAnchor.MiddleCenter, true);
+                s.label = UIFactory.Text(s.rect, "SlotName", EquipmentDatabase.SlotName(worn.Value), 16, new Color(1f, 1f, 1f, 0.75f), TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(s.label.rectTransform);
             }
             var relay = s.bg.gameObject.AddComponent<PointerRelay>();

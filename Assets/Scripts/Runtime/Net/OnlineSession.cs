@@ -40,6 +40,20 @@ namespace DotRPG
 
         static ApiClient Api => ApiClient.Instance;
 
+        /// <summary>[ANTI-ABUSE] Another login took this account over: leave play and go back to the title.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void HookSessionReplaced()
+        {
+            ApiClient.SessionReplaced += () =>
+            {
+                if (Current == null) return;
+                bool playing = Playing;
+                Current = null;
+                if (playing && Game.Flow != null) Game.Flow.ReturnToTitle();
+                GameEvents.RaiseToast("다른 곳에서 로그인하여 이 접속이 종료되었습니다.");
+            };
+        }
+
         /// <summary>Kept for the older automated check: offline unless someone logged in.</summary>
         public static bool TryConnect(out string error)
         {
@@ -64,7 +78,7 @@ namespace DotRPG
                     done(new ApiResult { code = "DATA_OUTDATED", status = 426, message = "게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요." });
                     return;
                 }
-                var body = new Dictionary<string, object> { ["login_id"] = loginId, ["password"] = password };
+                var body = new Dictionary<string, object> { ["login_id"] = loginId, ["password"] = password, ["device"] = DeviceIdentity.Body() };
                 Api.Post(register ? "/auth/dev/register" : "/auth/dev/login", body, r =>
                 {
                     if (!r.ok) { done(r); return; }
@@ -122,7 +136,7 @@ namespace DotRPG
                 steam.GetAuthTicket(identity, ticket =>
                 {
                     if (string.IsNullOrEmpty(ticket)) { done(new ApiResult { code = "STEAM_TICKET", message = "Steam 인증 티켓을 받지 못했습니다." }); return; }
-                    Api.Post("/auth/steam", new Dictionary<string, object> { ["ticket"] = ticket }, r =>
+                    Api.Post("/auth/steam", new Dictionary<string, object> { ["ticket"] = ticket, ["device"] = DeviceIdentity.Body() }, r =>
                     {
                         if (!r.ok) { done(r); return; }
                         Api.SetTokens(MiniJson.Str(r.data, "access_token"), MiniJson.Str(r.data, "refresh_token"));
@@ -200,16 +214,23 @@ namespace DotRPG
             {
                 if (!r.ok) { done(r, null); return; }
                 var detail = MiniJson.Obj(r.data, "character");
-                ActiveCharacter = id;
-                Game.State?.RefreshTimeScale();
-                stateVersion = MiniJson.Int(MiniJson.Obj(detail, "state"), "version");
-                done(r, ToSaveData(detail));
+                var save = ToSaveData(detail);
+                // [ANTI-ABUSE] The presence signal goes first (the server refuses a third character on this PC).
+                PresenceClient.Begin(id, save != null && !string.IsNullOrEmpty(save.mapId) ? save.mapId : MapRegistry.Village, (ok, refusal) =>
+                {
+                    if (!ok) { done(new ApiResult { ok = false, code = "DEVICE_LIMIT", message = refusal }, null); return; }
+                    ActiveCharacter = id;
+                    Game.State?.RefreshTimeScale();
+                    stateVersion = MiniJson.Int(MiniJson.Obj(detail, "state"), "version");
+                    done(r, save);
+                });
             });
         }
 
         /// <summary>Back to the title: the next save goes to a file again.</summary>
         public void LeaveCharacter()
         {
+            PresenceClient.Leave(); // [ANTI-ABUSE]
             PartyClient.DetachOnline(); // [PARTY]
             OnlineServices.DetachChat(); // [SERVER 5]
             OnlineServices.DetachAuction(); // [SERVER 6]

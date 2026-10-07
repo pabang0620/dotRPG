@@ -12,8 +12,11 @@ namespace DotRPG
     public class PartyFramesView : MonoBehaviour
     {
         // Layout (reference pixels, 1280x720 canvas). The side menu (button + 2-column grid) ends at x≈136.
-        public const float Left = 18f, Top = -188f, Width = 206f, Height = 50f, Gap = 6f; // left-aligned with the status bars, under the party status line
+        public const float Left = 18f, Top = -214f, Width = 206f, Height = 50f, Gap = 6f; // left-aligned with the status bars, under the party status line
         const float BarW = 150f;
+        // [UI] Short canvases (UI size 1.3, 554 tall): three frames at 0.82 end at 214 + 162 * 0.82 = 347 from the top
+        // (207 from the bottom), above the compact chat box (ChatView, top 202).
+        const float CompactScale = 0.82f, CompactBelow = 600f;
 
         sealed class Frame
         {
@@ -118,6 +121,9 @@ namespace DotRPG
 
         void Update()
         {
+            var hud = transform.parent as RectTransform;
+            float scale = hud != null && hud.rect.height > 0f && hud.rect.height < CompactBelow ? CompactScale : 1f;
+            if (!Mathf.Approximately(transform.localScale.x, scale)) transform.localScale = new Vector3(scale, scale, 1f);
             var party = Game.Party;
             int visibleCount = 0;
             // Everyone with a body here (AI in a dungeon, friends hunting or fighting with me), then the people of my

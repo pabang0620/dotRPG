@@ -53,5 +53,5 @@
 
 ## 6. v1로 되돌리기
 
-- 코드 안에서: `Assets/Scripts/Runtime/Progression/SkillData.cs`의 `SkillGems.UseLegacy`를 `true`로 바꾼다. v1 스킬 정의는 `SkillGemsLegacy.cs`, v1 스킬 발동 코드(대지 강타·검기·번개 사슬·낙뢰)는 `SkillCaster`에 그대로 있다. 범위 공식과 연속 제어 점감도 v1 방식으로 돌아간다. 용병 우선순위는 v2 기준이라 함께 되돌리려면 아래 태그를 쓴다.
+- v1 코드(`SkillGemsLegacy.cs`, 대지 강타·검기·번개 사슬·낙뢰 발동 코드, `UseLegacy` 분기)는 2026-10-07 정리 때 코드에서 지웠다. 아래 태그로만 되돌린다.
 - git 전체: 개편 직전 상태가 태그 `skills-v1`에 있다. `git checkout skills-v1 -- <파일>`로 필요한 파일만 가져올 수 있다.

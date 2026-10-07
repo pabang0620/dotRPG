@@ -30,7 +30,6 @@ namespace DotRPG
         public DungeonDifficulty difficulty;
         public float elapsed;
         public int humans = 1;
-        public float Remaining => Math.Max(0f, PartyFinderRules.QueueSeconds - elapsed);
     }
 
     public static class PartyFinderRules

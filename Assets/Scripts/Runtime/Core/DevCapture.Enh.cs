@@ -24,7 +24,7 @@ namespace DotRPG
             log?.WriteLine($"ENH {what} {(ok ? "PASS" : "FAIL")}");
         }
 
-        /// <summary>Success % for +0→+1 … +19→+20 disclosed for Dungeon&amp;Fighter KR on 2021-12-02.</summary>
+        /// <summary>Success % for +0→+1 … +19→+20 (reference table).</summary>
         static readonly int[] ExpectedChances = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 15, 14, 13, 12, 11, 10, 10, 10, 10 };
 
         const string PickAgainText = "강화할 장비를 다시 골라 주세요.";

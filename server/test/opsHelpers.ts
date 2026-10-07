@@ -6,7 +6,6 @@ import { createAdminApp } from '../src/admin/adminApp';
 import { encryptSecret } from '../src/admin/common/secretBox';
 import { newTotpSecret, stepOf, totpCode } from '../src/admin/common/totp';
 import { getPool } from '../src/db/pool';
-import { setMaintenance } from '../src/ops/maintenanceState';
 
 export const adminApp = (): Express => createAdminApp();
 export const rid = (): string => randomUUID();
@@ -50,8 +49,6 @@ export async function sessionFor(adminId: number, scope: 'full' | 'setup' = 'ful
 
 /** 지금 구간(offset 0) 또는 앞뒤 구간의 TOTP 코드 */
 export const codeFor = (secret: Buffer, offset = 0): string => totpCode(secret, stepOf(new Date()) + offset);
-
-export const resetMaintenance = (): void => setMaintenance(null);
 
 export const adminGet = (app: Express, t: TestAdmin | string, path: string) =>
   request(app).get(path).set(bearer(typeof t === 'string' ? t : t.token));

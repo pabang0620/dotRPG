@@ -18,11 +18,13 @@ export const resultBody = z.strictObject({
     hits_taken: z.number().int().min(0).max(999),
     max_combo: z.number().int().min(0).max(9999),
     revives_used: z.number().int().min(0).max(9),
+    /** 9단계: 멤버 본인 주장(지급 근거가 아니다). 호스트 관찰과 크게 어긋나면 정산이 보류된다 */
+    damage_dealt: z.number().min(0).max(2_147_483_647).optional(),
+    hits_landed: z.number().int().min(0).max(100_000).optional(),
   }),
 });
 
 export const settleBody = z.strictObject({ request_id: requestId });
-export const runIdParams = z.object({ uuid: z.uuid(), run_id: z.uuid() });
 
 export const pickBody = z.strictObject({ request_id: requestId, index: z.number().int().min(0).max(3) });
 export const runParams = z.object({ uuid: z.uuid(), run_id: z.uuid() });

@@ -8,6 +8,8 @@ export interface AccountRow {
   last_login_at: Date | null;
   banned_until: Date | null;
   deleted_at: Date | null;
+  /** 9단계: 현재 유효한 세션(리프레시 가족). 한 번도 로그인하지 않은 옛 계정은 null */
+  active_family_id?: string | null;
 }
 
 export interface DevIdentityRow extends AccountRow {
@@ -21,6 +23,8 @@ export interface RefreshRow {
   used_at: Date | null;
   revoked_at: Date | null;
   expires_at: Date;
+  revoke_reason: string | null;
+  device_hash: string | null;
 }
 
 interface RawAccount extends Omit<AccountRow, 'id'> {
@@ -62,7 +66,7 @@ export async function findDevIdentity(loginId: string): Promise<DevIdentityRow |
 
 export async function touchLastLogin(client: PoolClient, accountId: number): Promise<Date> {
   const r = await client.query<{ last_login_at: Date }>(
-    'UPDATE accounts SET last_login_at = now() WHERE id = $1 RETURNING last_login_at',
+    'UPDATE accounts SET prev_login_at = last_login_at, last_login_at = now() WHERE id = $1 RETURNING last_login_at', // 0022: keep the login before this one
     [accountId],
   );
   return (r.rows[0] as { last_login_at: Date }).last_login_at;
@@ -74,11 +78,13 @@ export async function insertRefreshToken(
   familyId: string,
   tokenHash: string,
   expiresAt: Date,
+  installId: string | null = null,
+  deviceHash: string | null = null,
 ): Promise<void> {
   await client.query(
-    `INSERT INTO refresh_tokens (account_id, family_id, token_hash, expires_at)
-     VALUES ($1, $2, $3, $4)`,
-    [accountId, familyId, tokenHash, expiresAt],
+    `INSERT INTO refresh_tokens (account_id, family_id, token_hash, expires_at, install_id, device_hash)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [accountId, familyId, tokenHash, expiresAt, installId, deviceHash],
   );
 }
 
@@ -106,7 +112,7 @@ export async function findRefreshForUpdate(
   tokenHash: string,
 ): Promise<RefreshRow | null> {
   const r = await client.query<RawRefresh>(
-    `SELECT id, account_id, family_id, used_at, revoked_at, expires_at
+    `SELECT id, account_id, family_id, used_at, revoked_at, expires_at, revoke_reason, device_hash
        FROM refresh_tokens WHERE token_hash = $1 FOR UPDATE`,
     [tokenHash],
   );
@@ -118,10 +124,12 @@ export async function markRefreshUsed(client: PoolClient, id: number): Promise<v
   await client.query('UPDATE refresh_tokens SET used_at = now() WHERE id = $1', [id]);
 }
 
-export async function revokeFamily(client: Queryable, familyId: string): Promise<void> {
+export type RevokeReason = 'logout' | 'reuse' | 'replaced' | 'device_mismatch' | 'admin';
+
+export async function revokeFamily(client: Queryable, familyId: string, reason: RevokeReason): Promise<void> {
   await client.query(
-    'UPDATE refresh_tokens SET revoked_at = now() WHERE family_id = $1 AND revoked_at IS NULL',
-    [familyId],
+    'UPDATE refresh_tokens SET revoked_at = now(), revoke_reason = $2 WHERE family_id = $1 AND revoked_at IS NULL',
+    [familyId, reason],
   );
 }
 
@@ -135,7 +143,7 @@ export async function findFamilyByHash(client: PoolClient, tokenHash: string): P
 
 export async function findAccountById(client: PoolClient, id: number): Promise<AccountRow | null> {
   const r = await client.query<RawAccount>(
-    'SELECT id, uuid, created_at, last_login_at, banned_until, deleted_at FROM accounts WHERE id = $1',
+    'SELECT id, uuid, created_at, last_login_at, banned_until, deleted_at, active_family_id FROM accounts WHERE id = $1',
     [id],
   );
   const row = r.rows[0];
@@ -181,8 +189,18 @@ export async function findAccountBySteam(steamId: string): Promise<AccountRow | 
   return r.rows[0] ? toAccount(r.rows[0]) : null;
 }
 
-export async function insertSteamIdentity(client: Queryable, accountId: number, steamId: string): Promise<void> {
-  await client.query("INSERT INTO auth_identities (account_id, provider, subject) VALUES ($1, 'steam', $2)", [accountId, steamId]);
+export async function insertSteamIdentity(client: Queryable, accountId: number, steamId: string, ownerSteamId: string | null = null): Promise<void> {
+  await client.query("INSERT INTO auth_identities (account_id, provider, subject, steam_owner_id) VALUES ($1, 'steam', $2, $3)", [accountId, steamId, ownerSteamId]);
+}
+
+/** 9단계: 패밀리 공유 로그인이면 앱 소유자의 SteamID를, 아니면 NULL을 기록한다(사람 키 = COALESCE(steam_owner_id, subject)) */
+export async function setSteamOwner(client: Queryable, accountId: number, ownerSteamId: string | null): Promise<void> {
+  await client.query("UPDATE auth_identities SET steam_owner_id = $2 WHERE account_id = $1 AND provider = 'steam' AND steam_owner_id IS DISTINCT FROM $2", [accountId, ownerSteamId]);
+}
+
+/** 한 번도 세션이 없던 옛 계정(active_family_id가 비어 있음)의 첫 리프레시가 그 가족을 현재 세션으로 삼는다 */
+export async function adoptFamilyIfNone(client: Queryable, accountId: number, familyId: string): Promise<void> {
+  await client.query('UPDATE accounts SET active_family_id = $2, active_session_at = now() WHERE id = $1 AND active_family_id IS NULL', [accountId, familyId]);
 }
 
 export async function hasSteam(accountId: number): Promise<boolean> {

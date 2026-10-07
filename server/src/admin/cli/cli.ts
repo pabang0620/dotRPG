@@ -40,6 +40,17 @@ const OPTIONS = {
   dismiss: { type: 'boolean' },
   'no-merge': { type: 'boolean' },
   full: { type: 'boolean' },
+  // 10단계 운영 우편 캠페인
+  file: { type: 'string' },
+  status: { type: 'string' },
+  revoke: { type: 'boolean' },
+  // 9단계 재화 이상 정지
+  q: { type: 'string' },
+  cursor: { type: 'string' },
+  linked: { type: 'boolean' },
+  'no-gold': { type: 'boolean' },
+  'no-items': { type: 'boolean' },
+  'no-mail': { type: 'boolean' },
 } as const;
 
 const usage = (): string[] => [

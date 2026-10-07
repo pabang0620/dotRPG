@@ -10,8 +10,8 @@ const EXEMPT = /^\/(health(\/live|\/ready)?|meta)$/;
 const LOGOUT = '/auth/logout';
 /** 새 로그인 경로 */
 const LOGIN_PATHS = new Set(['/auth/dev/login', '/auth/dev/register', '/auth/steam']);
-/** "새 판" 경로 한 곳 정의: 던전 입장, 파티 출발, 자동 매칭 대기·AI 채우기(POST만) */
-const NEW_RUN = /^\/characters\/[^/]+\/(dungeon-runs|party\/start|match\/queue|match\/fill-ai|field-sessions\/enter)$/;
+/** "새 판" 경로 한 곳 정의: 던전 입장, 파티 출발, 자동 매칭 대기·AI 채우기, 소탕(POST만) */
+const NEW_RUN = /^\/characters\/[^/]+\/(dungeon-runs|party\/start|match\/queue|match\/fill-ai|field-sessions\/enter|sweep\/run|sweep\/run-all)$/;
 
 export const maintenanceGuard: RequestHandler = (req, _res, next) => {
   const phase = maintPhase();

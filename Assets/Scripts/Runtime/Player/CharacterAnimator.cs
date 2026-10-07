@@ -25,6 +25,8 @@ namespace DotRPG
         [SerializeField] float walkFps = 9f;
         [SerializeField] float idleFps = 1.8f;
         [SerializeField] SpriteRenderer target;
+        /// <summary>The body sprite renderer (career skill afterimages copy it).</summary>
+        public SpriteRenderer Body => target;
 
         CharacterLook look;
         CharacterAnim current = CharacterAnim.Idle;
@@ -49,7 +51,7 @@ namespace DotRPG
         public Facing Facing => facing;
         public CharacterAnim Current => current;
 
-        /// <summary>Raised when a walk cycle plants a foot (frame 0 and 2) — used for dust/footstep sounds.</summary>
+        /// <summary>Raised when a walk cycle plants a foot (frame 0 and 2) - used for dust/footstep sounds.</summary>
         public event System.Action Footstep;
 
         public void Setup(CharacterLook characterLook, SpriteRenderer renderer)

@@ -3,6 +3,8 @@
 import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { getNow } from '../../utils/clock';
+import { reconcileIncome } from '../../domains/antiabuse/incomeReconcile';
+import { forbiddenReason } from '../../domains/antiabuse/reservedNames';
 import type { JobCtx, JobResult } from '../jobRunner';
 
 const SAMPLE_MAX = 20;
@@ -77,28 +79,40 @@ async function i3(): Promise<CheckResult> {
   );
   const back = await num("SELECT coalesce(sum(delta), 0) AS v FROM gold_ledger WHERE reason = 'mail_claim'");
   const system = await num("SELECT coalesce(sum(gold), 0) AS v FROM mails WHERE kind = 'system'");
+  // 10단계: 캠페인 우편의 골드는 mails.gold가 아니라 첨부 표에 있다(mails.gold는 0). 수령하면 같은 mail_claim 원장으로 들어온다
+  const campaignGold = await num("SELECT coalesce(sum(amount), 0) AS v FROM mail_attachments WHERE kind = 'gold'");
+  const campaignGoldOpen = await num(
+    `SELECT coalesce(sum(a.amount), 0) AS v FROM mail_attachments a JOIN mails m ON m.id = a.mail_id
+      WHERE a.kind = 'gold' AND m.claimed_at IS NULL AND m.expired_at IS NULL`,
+  );
   const grants = await num('SELECT coalesce(sum(gold), 0) AS v FROM admin_grants');
   const deposits = await num("SELECT coalesce(sum(deposit), 0) AS v FROM auction_listings WHERE status = 'active'");
   const bids = await num("SELECT coalesce(sum(current_bid), 0) AS v FROM auction_listings WHERE status = 'active'");
-  const inMail = await num('SELECT coalesce(sum(gold), 0) AS v FROM mails WHERE claimed_at IS NULL AND expired_at IS NULL');
+  const inMail = (await num('SELECT coalesce(sum(gold), 0) AS v FROM mails WHERE claimed_at IS NULL AND expired_at IS NULL')) + campaignGoldOpen;
   const sinks = await num('SELECT coalesce(sum(amount), 0) AS v FROM auction_sinks');
   const samples: Record<string, unknown>[] = [];
-  const left = out - back + system;
+  const left = out - back + system + campaignGold;
   const right = deposits + bids + inMail + sinks;
-  if (left !== right) samples.push({ kind: 'gold_conservation', left, right, out, back, system, deposits, bids, in_mail: inMail, sinks });
+  if (left !== right) samples.push({ kind: 'gold_conservation', left, right, out, back, system, campaign_gold: campaignGold, deposits, bids, in_mail: inMail, sinks });
   if (system !== grants) samples.push({ kind: 'system_mail_vs_admin_grants', system_mail_gold: system, admin_grants_gold: grants });
   const items = await getPool().query<{ item_key: string; loc: string; led: string; held: string }>(
     `SELECT k.item_key, k.loc, coalesce(l.s, 0) AS led, coalesce(h.s, 0) AS held FROM (
        SELECT item_key, location AS loc FROM item_ledger WHERE location IN ('auction', 'mail')
        UNION SELECT item_key, 'auction' FROM auction_listings WHERE status = 'active'
-       UNION SELECT item_key, 'mail' FROM mails WHERE item_key IS NOT NULL) k
+       UNION SELECT item_key, 'mail' FROM mails WHERE item_key IS NOT NULL
+       UNION SELECT item_key, 'mail' FROM mail_attachments WHERE kind = 'item') k
      LEFT JOIN (SELECT item_key, location AS loc, sum(delta) AS s FROM item_ledger WHERE location IN ('auction', 'mail')
                 GROUP BY 1, 2) l ON l.item_key = k.item_key AND l.loc = k.loc
      LEFT JOIN (
-       SELECT item_key, 'auction' AS loc, sum(count) AS s FROM auction_listings WHERE status = 'active' GROUP BY 1
-       UNION ALL
-       SELECT item_key, 'mail', sum(count) FROM mails
-        WHERE item_key IS NOT NULL AND claimed_at IS NULL AND expired_at IS NULL GROUP BY 1) h
+       SELECT item_key, loc, sum(s) AS s FROM (
+         SELECT item_key, 'auction' AS loc, sum(count) AS s FROM auction_listings WHERE status = 'active' GROUP BY 1
+         UNION ALL
+         SELECT item_key, 'mail', sum(count) FROM mails
+          WHERE item_key IS NOT NULL AND claimed_at IS NULL AND expired_at IS NULL GROUP BY 1
+         UNION ALL
+         SELECT a.item_key, 'mail', sum(a.amount) FROM mail_attachments a JOIN mails m ON m.id = a.mail_id
+          WHERE a.kind = 'item' AND m.claimed_at IS NULL AND m.expired_at IS NULL GROUP BY 1) u
+       GROUP BY 1, 2) h
        ON h.item_key = k.item_key AND h.loc = k.loc`,
   );
   for (const r of items.rows) {
@@ -107,7 +121,17 @@ async function i3(): Promise<CheckResult> {
     }
   }
   const itemBad = items.rows.filter((r) => Number(r.led) !== Number(r.held)).length;
-  const count = (left !== right ? 1 : 0) + (system !== grants ? 1 : 0) + itemBad;
+  // 10단계: 클리어권 로트별 SUM(원장 delta) = remaining (만료 작업이 아직 못 돈 기한 지난 로트는 제외)
+  const lots = await getPool().query<{ id: string; remaining: number; s: string }>(
+    `SELECT l.id, l.remaining, coalesce(sum(e.delta), 0) AS s FROM sweep_ticket_lots l
+       LEFT JOIN sweep_ticket_ledger e ON e.lot_id = l.id
+      WHERE NOT (l.kind = 'event' AND l.expires_at <= now() AND l.remaining > 0)
+      GROUP BY l.id, l.remaining HAVING l.remaining <> coalesce(sum(e.delta), 0)`,
+  );
+  for (const r of lots.rows) {
+    if (samples.length < SAMPLE_MAX) samples.push({ kind: 'sweep_ticket_conservation', lot: Number(r.id), remaining: r.remaining, ledger: Number(r.s) });
+  }
+  const count = (left !== right ? 1 : 0) + (system !== grants ? 1 : 0) + itemBad + lots.rows.length;
   return { count, samples };
 }
 
@@ -168,6 +192,113 @@ async function i5(): Promise<CheckResult> {
   );
 }
 
+/** I6: 별조각 결제·지갑(11단계 12.3). 불일치는 critical. 열 이름이 아니라 종류(kind)별로 샘플을 남긴다 */
+async function i6(): Promise<CheckResult> {
+  const parts: [string, CheckResult][] = [];
+  const add = async (kind: string, sql: string): Promise<void> => {
+    const r = await rows(sql);
+    if (r.count > 0) parts.push([kind, { count: r.count, samples: r.samples.map((x) => ({ kind, ...x })) }]);
+  };
+  // I6-1 지갑: balance = SUM(delta) = 마지막 balance_after, paid_balance = SUM(paid_delta) = SUM(로트 remaining), debt = SUM(debt_delta)
+  await add(
+    'wallet',
+    `SELECT a.uuid AS account, w.balance, coalesce(l.s, 0) AS ledger_sum, l.last_bal AS ledger_last, w.paid_balance, coalesce(l.ps, 0) AS paid_sum,
+            coalesce(lots.r, 0) AS lots_remaining, w.debt, coalesce(l.ds, 0) AS debt_sum
+       FROM star_wallets w JOIN accounts a ON a.id = w.account_id
+       LEFT JOIN (SELECT account_id, sum(delta) AS s, sum(paid_delta) AS ps, sum(debt_delta) AS ds, (array_agg(balance_after ORDER BY id DESC))[1] AS last_bal
+                    FROM star_ledger GROUP BY account_id) l ON l.account_id = w.account_id
+       LEFT JOIN (SELECT account_id, sum(remaining) AS r FROM star_paid_lots GROUP BY account_id) lots ON lots.account_id = w.account_id
+      WHERE w.balance <> coalesce(l.s, 0) OR w.balance <> coalesce(l.last_bal, 0) OR w.paid_balance <> coalesce(l.ps, 0)
+         OR w.paid_balance <> coalesce(lots.r, 0) OR w.debt <> coalesce(l.ds, 0)
+      ORDER BY w.account_id`,
+  );
+  // I6-2 주문당 1회: 지급된 주문마다 purchase 원장 정확히 1줄(delta = stars), 회수된 주문마다 회수 원장 정확히 1줄. 주문 없는 purchase 원장은 0줄
+  await add(
+    'order_ledger',
+    `SELECT o.uuid AS "order", o.state, o.stars,
+            (SELECT count(*) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) AS purchases,
+            (SELECT coalesce(sum(delta), 0) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) AS purchased
+       FROM star_orders o
+      WHERE o.granted_at IS NOT NULL
+        AND ((SELECT count(*) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) <> 1
+          OR (SELECT coalesce(sum(delta), 0) FROM star_ledger l WHERE l.reason = 'purchase' AND l.ref = o.uuid::text) <> o.stars
+          OR (o.state IN ('refunded', 'chargeback')
+              AND (SELECT count(*) FROM star_ledger l WHERE l.reason IN ('refund_revoke', 'chargeback_revoke') AND l.ref = o.uuid::text) <> 1))
+      ORDER BY o.id`,
+  );
+  await add(
+    'orphan_purchase',
+    `SELECT l.id AS ledger_id, l.ref FROM star_ledger l WHERE l.reason = 'purchase' AND NOT EXISTS (SELECT 1 FROM star_orders o WHERE o.uuid::text = l.ref) ORDER BY l.id`,
+  );
+  // I6-3 Steam 확정 금액 = 주문 스냅샷 금액(과거 가격은 주문 행이 정본이다)
+  await add(
+    'steam_amount',
+    `SELECT o.uuid AS "order", o.amount_minor, o.steam_amount_minor, o.currency, o.steam_currency FROM star_orders o
+      WHERE o.granted_at IS NOT NULL AND (o.steam_amount_minor IS DISTINCT FROM o.amount_minor OR o.steam_currency IS DISTINCT FROM o.currency) ORDER BY o.id`,
+  );
+  // I6-4 배분: 유료분 감소 원장 줄마다 -paid_delta = SUM(배분)
+  await add(
+    'alloc',
+    `SELECT l.id AS ledger_id, l.paid_delta, (SELECT coalesce(sum(a.stars), 0) FROM star_spend_allocs a WHERE a.ledger_id = l.id) AS allocated
+       FROM star_ledger l WHERE l.paid_delta < 0 AND -l.paid_delta <> (SELECT coalesce(sum(a.stars), 0) FROM star_spend_allocs a WHERE a.ledger_id = l.id) ORDER BY l.id`,
+  );
+  // I6-5 막힌 주문
+  await add(
+    'stuck_order',
+    `SELECT uuid AS "order", state, created_at FROM star_orders
+      WHERE (state = 'pending_init' AND created_at < now() - interval '10 minutes')
+         OR (state IN ('created', 'authorized') AND expires_at < now() - interval '10 minutes')
+         OR (state = 'finalized' AND finalized_at < now() - interval '5 minutes') ORDER BY id`,
+  );
+  // I6-6 근거 없는 입금(트리거가 꺼진 DB 대비): 승인 없는 운영 지급·탕감
+  await add(
+    'unbacked_credit',
+    `SELECT l.id AS ledger_id, l.reason, l.ref FROM star_ledger l
+      WHERE l.reason IN ('admin_grant', 'debt_forgive')
+        AND NOT EXISTS (SELECT 1 FROM star_admin_grants g WHERE g.uuid::text = l.ref AND g.state = 'applied') ORDER BY l.id`,
+  );
+  // I6-7 Steam 교차: 마지막 payment-report 결과의 미지 주문, 해결되지 않은 unknown_steam_order 플래그
+  await add(
+    'unknown_steam_order',
+    `SELECT 'report' AS source, (detail->>'unknown_orders')::int AS n FROM (
+        SELECT detail FROM job_runs WHERE job = 'payment-report' AND status = 'ok' ORDER BY started_at DESC LIMIT 1) j
+      WHERE coalesce((detail->>'unknown_orders')::int, 0) > 0
+     UNION ALL SELECT 'flag', count(*)::int FROM payment_flags WHERE kind = 'unknown_steam_order' AND state = 'open' HAVING count(*) > 0`,
+  );
+  // I6-8 부채 일관: debt > 0 인 계정마다 그 부채를 만든 회수 원장이 있다
+  await add(
+    'debt_without_revoke',
+    `SELECT a.uuid AS account, w.debt FROM star_wallets w JOIN accounts a ON a.id = w.account_id
+      WHERE w.debt > 0 AND NOT EXISTS (SELECT 1 FROM star_ledger l WHERE l.account_id = w.account_id AND l.reason IN ('refund_revoke', 'chargeback_revoke') AND l.debt_delta > 0)
+      ORDER BY w.account_id`,
+  );
+  return { count: parts.reduce((a, [, r]) => a + r.count, 0), samples: parts.flatMap(([, r]) => r.samples).slice(0, SAMPLE_MAX) };
+}
+
+/** 9단계 정보 점검(경보의 mismatches에 넣지 않는다: 파생 표는 스스로 고쳐지고, 이름·정지는 운영 판단이다) */
+async function nineInfo(): Promise<Record<string, CheckResult>> {
+  const income = await reconcileIncome({ hours: 48, fix: false });
+  const names = await getPool().query<{ uuid: string; name: string }>('SELECT uuid, name FROM characters WHERE deleted_at IS NULL');
+  const badNames = names.rows.filter((r) => forbiddenReason(r.name) !== null);
+  const career = await rows(
+    `SELECT c.uuid AS character, COALESCE((cs.career->>'career')::int, 0) AS state_career, COALESCE(cc.career, 0) AS granted
+       FROM character_state cs JOIN characters c ON c.id = cs.character_id
+       LEFT JOIN character_career cc ON cc.character_id = c.id
+      WHERE c.deleted_at IS NULL AND (cs.career IS NULL OR jsonb_typeof(cs.career) = 'object')
+        AND COALESCE((cs.career->>'career')::int, 0) <> COALESCE(cc.career, 0)
+      ORDER BY c.id`,
+  );
+  const holds = await rows(
+    "SELECT uuid, account_id, character_id, created_at FROM economy_holds WHERE state = 'active' AND reviewed_at IS NULL AND created_at < now() - interval '24 hours' ORDER BY id",
+  );
+  return {
+    'I-income': { count: income.mismatched, samples: income.samples },
+    'I-names': { count: badNames.length, samples: badNames.slice(0, SAMPLE_MAX).map((r) => ({ character: r.uuid, name: r.name })) },
+    'I-career': career,
+    'I-holds': holds,
+  };
+}
+
 export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
   const full = ctx.opts.full === true || isKstSunday(getNow());
   const checks: Record<string, CheckResult> = {
@@ -176,7 +307,9 @@ export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
     I3: await i3(),
     I4: await i4(),
     I5: await i5(),
+    I6: await i6(),
   };
   const mismatches = Object.values(checks).reduce((a, c) => a + c.count, 0);
-  return { rows: 0, detail: { scope: full ? 'full' : 'recent', mismatches, checks } };
+  const info = await nineInfo();
+  return { rows: 0, detail: { scope: full ? 'full' : 'recent', mismatches, checks, info } };
 }

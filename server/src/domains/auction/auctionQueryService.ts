@@ -64,7 +64,7 @@ export async function priceOf(accountId: number, characterUuid: string, itemKey:
   const now = getNow();
   const day = resetBoundaries(now).dailyStartAt;
   const ref = await referenceOf(getPool(), itemKey, now);
-  const limits = limitsOf(ref, q.count);
+  const limits = limitsOf(ref, q.count, itemKey);
   const rows = await search.priceDaily(getPool(), itemKey, day, 14);
   const weekStart = Date.parse(day) - 6 * DAY_MS;
   const week = rows.filter((r) => r.day.getTime() >= weekStart);
@@ -111,7 +111,7 @@ export async function sellable(accountId: number, characterUuid: string) {
         ref = await referenceOf(getPool(), row.itemKey, now);
         refs.set(row.itemKey, ref);
       }
-      limits = limitsOf(ref, maxCount);
+      limits = limitsOf(ref, maxCount, row.itemKey);
       if (!limits) reason = 'NO_PRICE';
     }
     items.push({

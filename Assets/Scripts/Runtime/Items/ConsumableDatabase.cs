@@ -20,6 +20,16 @@ namespace DotRPG
         Protection,
         /// <summary>[RAID] Seal key fragment: opens final raids. Sits in the "기타" tab, never used by hand.</summary>
         Key,
+        /// <summary>[SWEEP] Dungeon clear ticket: kept in the account wallet on the server, never in the bag.</summary>
+        Sweep,
+        /// <summary>[CASH] Timed buff scroll (power = % more damage, minutes in <see cref="ConsumableItem.minutes"/>).</summary>
+        Buff,
+        /// <summary>[CASH] +N enhancement ticket (power = N): used on a piece of gear at the forge, never fails.</summary>
+        EnhanceTicket,
+        /// <summary>[CASH] "+N 강화권 상자 (P%)": the server opens it (power = N, chance = P).</summary>
+        LuckBox,
+        /// <summary>[CASH] 봉인된 상자 kept in the bag (pass rewards): opened by the server with the shop table.</summary>
+        SealedBox,
     }
 
     /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
@@ -32,6 +42,8 @@ namespace DotRPG
         public GameAction? hotkey;
         /// <summary>Grade colour for the name and the icon frame (null = plain item).</summary>
         public ItemRarity? grade;
+        /// <summary>[CASH] Buff length in minutes; % chance of a luck box.</summary>
+        public int minutes, chance;
     }
 
     public static class ConsumableDatabase
@@ -41,6 +53,10 @@ namespace DotRPG
         public const string MpPotion = "potion_mp";
         public const string TownScroll = "scroll_town";
         public const string ProtectTicket = "ticket_protect";
+        // [CASH] Docs/PLAN_CASH_BOX_PASS.md
+        public const string HpPotionHi = "potion_hp_hi", MpPotionHi = "potion_mp_hi", PowerScroll = "scroll_power", SealedBox = "box_sealed";
+        public static string EnhanceTicket(int level) => "ticket_enh" + level;
+        public static string LuckBox(int level, int chance) => $"box_enh{level}_{chance}";
 
         static readonly List<ConsumableItem> Items = new List<ConsumableItem>
         {
@@ -58,7 +74,41 @@ namespace DotRPG
                 description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
             new ConsumableItem { id = DungeonDatabase.RaidCore, name = "고대의 핵", iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = "레이드 보스에게서만 얻는 고대 마력의 핵. 대장간에서 장비를 한 등급 위 장비로 승급할 때 쓴다. (강화 수치 유지)" },
+            new ConsumableItem { id = DungeonSweep.TicketItem, name = "던전 클리어권", iconKey = "icon_sweep", kind = ConsumableKind.Sweep, grade = ItemRarity.Epic,
+                description = "직접 B등급 이상으로 깬 요일 던전을 전투 없이 한 번 끝낸다. 입장 횟수 1회를 함께 쓰고, 보상은 기본 경험치와 카드 1장이다. (계정 공용)" },
+            new ConsumableItem { id = DungeonSweep.EventTicketItem, name = "이벤트 클리어권", iconKey = "icon_sweep_event", kind = ConsumableKind.Sweep, grade = ItemRarity.Unique,
+                description = "던전 클리어권과 같지만 받은 날부터 14일 안에 써야 한다. 기한이 가까운 것부터 먼저 쓰인다. (계정 공용)" },
+            // [CASH] Sealed box rewards and their luck boxes (Docs/PLAN_CASH_BOX_PASS.md).
+            new ConsumableItem { id = HpPotionHi, name = "상급 체력 물약", iconKey = "icon_potion_hp_hi", kind = ConsumableKind.HealHp, power = 70, grade = ItemRarity.Rare,
+                description = "진하게 달인 물약. 마시면 최대 HP의 70%를 회복한다. 물약 단축키는 이것부터 쓴다." },
+            new ConsumableItem { id = MpPotionHi, name = "상급 마나 물약", iconKey = "icon_potion_mp_hi", kind = ConsumableKind.HealMp, power = 70, grade = ItemRarity.Rare,
+                description = "진하게 달인 마나 물약. 마시면 최대 MP의 70%를 회복한다. 마나 단축키는 이것부터 쓴다." },
+            new ConsumableItem { id = PowerScroll, name = "투지의 주문서", iconKey = "icon_scroll_power", kind = ConsumableKind.Buff, power = 15, minutes = 30, grade = ItemRarity.Epic,
+                description = "펼치면 30분 동안 공격 피해가 15% 늘어난다. 다시 쓰면 남은 시간이 30분으로 갱신된다." },
+            Ticket(10, ItemRarity.Epic), Ticket(12, ItemRarity.Unique), Ticket(13, ItemRarity.Legendary), Ticket(15, ItemRarity.Legendary),
+            Luck(10, 30, ItemRarity.Rare), Luck(12, 10, ItemRarity.Epic), Luck(12, 50, ItemRarity.Unique), Luck(15, 50, ItemRarity.Legendary),
+            new ConsumableItem { id = SealedBox, name = "봉인된 상자", iconKey = "icon_box_sealed", kind = ConsumableKind.SealedBox, grade = ItemRarity.Epic,
+                description = "캐시샵의 봉인된 상자와 같은 상자. 열면 확률표에 따라 보상 하나가 나온다. 봉인 해제 게이지도 함께 찬다." },
         };
+
+        static ConsumableItem Ticket(int level, ItemRarity grade) => new ConsumableItem
+        {
+            id = EnhanceTicket(level), name = $"+{level} 강화권", iconKey = "icon_ticket_enh" + level, kind = ConsumableKind.EnhanceTicket, power = level, grade = grade,
+            description = $"대장간에서 장비 하나의 강화 단계를 +{level}로 바로 올린다. 실패하지 않는다. 이미 +{level} 이상인 장비에는 쓸 수 없다.",
+        };
+
+        static ConsumableItem Luck(int level, int chance, ItemRarity grade) => new ConsumableItem
+        {
+            id = LuckBox(level, chance), name = $"+{level} 강화권 상자 ({chance}%)", iconKey = level >= 15 ? "icon_box_enh_gold" : "icon_box_enh", kind = ConsumableKind.LuckBox,
+            power = level, chance = chance, grade = grade,
+            description = $"열면 {chance}% 확률로 +{level} 강화권이 나온다. 아니면 마력 정수 20개.",
+        };
+
+        /// <summary>[CASH] The sealed-box family: high potions, the buff scroll, enhancement tickets and boxes.</summary>
+        public static IEnumerable<ConsumableItem> Cash
+        {
+            get { foreach (var i in Items) if (i.kind == ConsumableKind.Buff || i.kind == ConsumableKind.EnhanceTicket || i.kind == ConsumableKind.LuckBox || i.kind == ConsumableKind.SealedBox || i.id == HpPotionHi || i.id == MpPotionHi) yield return i; }
+        }
 
         /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>
         public static IEnumerable<ConsumableItem> Usable
@@ -69,10 +119,10 @@ namespace DotRPG
         /// <summary>Items that work on their own from the bag ("기타" tab): the equipment protection ticket.</summary>
         public static IEnumerable<ConsumableItem> Tickets
         {
-            get { foreach (var i in Items) if (i.kind == ConsumableKind.Protection || i.kind == ConsumableKind.Key) yield return i; }
+            get { foreach (var i in Items) if (i.kind == ConsumableKind.Protection || i.kind == ConsumableKind.Key || i.kind == ConsumableKind.EnhanceTicket) yield return i; }
         }
 
-        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection && kind != ConsumableKind.Key;
+        static bool IsUsableKind(ConsumableKind kind) => kind != ConsumableKind.Currency && kind != ConsumableKind.Protection && kind != ConsumableKind.Key && kind != ConsumableKind.Sweep && kind != ConsumableKind.EnhanceTicket;
 
         public static ConsumableItem Get(string id)
         {

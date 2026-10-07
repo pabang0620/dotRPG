@@ -51,7 +51,6 @@ namespace DotRPG
             Game.Player.Input = new ScriptedInput(); Game.Player.Health.SetInvulnerable(600);
             var bag = Game.Session.Inventory; var gear = Game.Session.Equipment;
             Game.Session.Progression.AddXp(25000);
-            foreach (var id in new[] { "Lt0", "Lt1", "Ld1", "LD", "La1", "LA", "Lx1", "LM", "Rt0", "Rt1", "Rd1", "RD" }) Game.Session.Progression.Allocate(PassiveTree.Get(id));
             Game.Flow.OpenWindow(Game.UI.Skills); yield return Wait(.3f);
             DCheck("skill nodes built", Game.UI.Skills.GetComponentsInChildren<Image>().Count(i => i.name.StartsWith("Node_")) == PassiveTree.All.Count());
             yield return PresentationShot("01_skill_tree");

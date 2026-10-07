@@ -1,7 +1,8 @@
 -- dotRPG 서버 전체 스키마 (1~8단계 기준. 6단계 0007, 7단계 0008, 8단계 0009는 초안). 정본은 migrations/*.sql 이고, 이 파일은 읽기용으로 UP 본문을 모아 둔 것이다.
 -- 마이그레이션을 추가하면 이 파일도 같은 커밋에서 맞춘다. 구성: 0001_init(1~2단계) + 0002_economy(3단계) + 0003_dungeon_solo(3단계-b, 선택)
 -- + 0004_gather_rate(이상 기록 kind, 위 anomaly_log 정의에 이미 포함) + 0005_party(4단계) + 0006_chat_social(5단계, 이 파일 아래쪽) + 0007_auction(6단계, 0006 구역 바로 앞)
--- + 0008_ops(7단계, 이 파일 아래쪽) + 0009_relay_field(8단계, 이 파일 맨 아래).
+-- + 0008_ops(7단계, 이 파일 아래쪽) + 0009_relay_field(8단계) + 0020_anti_abuse(9단계, 이 파일 아래쪽. 0010~0019는 이 파일에 합치지 않았다)
+-- + 0021_sweep_and_mail(10단계, 이 파일 아래쪽) + 0023_payments(11단계, 이 파일 맨 아래. 0022는 accounts.prev_login_at 한 열이라 합치지 않았다).
 -- (0006의 accounts.last_character_id는 아래 accounts 정의에 합치지 않고 0006 구역의 ALTER로 둔다: 정본 순서를 그대로 보이기 위해서다.)
 --
 -- 컨벤션
@@ -57,6 +58,18 @@
 --   | 필드 세션 처치 보고 (8단계)  | 처치 보고와 같다 + field_sessions, field_session_members(멤버십·화력 상한 합·기여 부채) | 처치 보고와 같다 + kill_log.field_session_id/monster_ref/xp_factor, field_session_members.kills_accepted |
 --   | 방치 필드 세션 정리 (8단계)  | field_sessions, field_session_members | field_sessions(ended), field_session_members(left), job_runs |
 --   | WebSocket 접속·채팅 전송 (5단계) | accounts, characters, party_members(파티 채널 수신자), blocks(접속 때 세션 메모리로), account_sanctions(채팅 금지) | chat_messages, accounts.last_character_id, account_sanctions(자동 제재) |
+--   | 상품 조회 B1 (11단계)        | auth_identities, payment_profiles, star_orders(열린 주문·한도 합산), account_devices, economy_holds, accounts | (열린 주문 대사 시 아래 행) |
+--   | 주문 생성 B2 (11단계)        | accounts(행 잠금), auth_identities, payment_profiles, star_orders(한도·속도), account_devices, economy_holds | star_orders, star_order_events, payment_profiles(last_country), payment_flags |
+--   | 주문 확인 B3·B6, 대사 작업 (11단계) | star_orders(행 잠금·임대), payment_profiles, auth_identities | star_orders, star_order_events, payment_flags |
+--   | 지급 (11단계)                | star_orders(행 잠금), star_wallets(행 잠금), star_paid_lots | star_wallets, star_ledger(purchase, debt_settle), star_paid_lots, star_spend_allocs, star_order_events, star_orders |
+--   | 환불·차지백 회수 (11단계)    | star_orders(행 잠금), star_wallets(행 잠금), star_paid_lots, star_spend_allocs, account_devices, economy_holds | star_wallets, star_ledger(refund_revoke, chargeback_revoke), star_paid_lots, star_spend_allocs, star_orders, star_order_events, payment_profiles, payment_flags, economy_holds(kind=payment) |
+--   | 별조각 소비 (11단계 변경)    | characters(행 잠금), star_wallets(행 잠금), star_paid_lots(행 잠금), star_ledger(오늘 소비 합), economy_holds, star_rates_snapshots(기동 때) | star_wallets, star_ledger(gacha, exchange), star_spend_allocs, gacha_pulls |
+--   | 분해 (11단계 변경)           | characters(행 잠금), account_cosmetics, star_wallets(행 잠금) | account_cosmetics.copies, star_wallets, star_ledger(dismantle, debt_settle) |
+--   | 운영 지급·탕감 PA9~PA12 (11단계) | admin_users, accounts, star_wallets, star_admin_grants | star_admin_grants, star_wallets, star_ledger(admin_grant, debt_forgive), admin_audit_log |
+--   | 결제 관리 PA1~PA8, PA13, PA14 (11단계) | star_orders, star_order_events, payment_profiles, payment_flags, star_spend_allocs, gacha_pulls, account_cosmetics, account_devices | payment_profiles, payment_flags(검토 필드), account_cosmetics·character_items·item_ledger(PA13 적용), star_order_events, admin_audit_log |
+--   | 대사·감시·리포트 작업 (11단계) | star_orders, auth_identities | star_orders, star_order_events, payment_flags, job_runs |
+--   | 확률표 스냅샷 (11단계)       | star_rates_snapshots          | star_rates_snapshots(기동 때 한 줄)                         |
+--   | 정합성 점검 I6 (11단계)      | star_wallets, star_ledger, star_paid_lots, star_spend_allocs, star_orders | job_runs |
 --   | 놓친 메시지 따라잡기 (5단계) | chat_messages, party_members(가입 시각), blocks(세션 메모리)                | -                                                           |
 --   | 친구 목록·요청·수락·삭제 (5단계) | friendships, characters, accounts(last_character_id), blocks               | friendships, request_log                                    |
 --   | 차단·해제 (5단계)            | blocks, characters            | blocks, friendships(상태 removed), party_invites(cancelled), request_log |
@@ -82,6 +95,26 @@
 --   | 점검 창 예약·취소·연장·종료, 공지 방송 (7단계) | maintenance_windows | maintenance_windows, admin_audit_log (chat.sys 푸시는 메모리) |
 --   | 점검 중 로그인·새 판 차단 (7단계) | maintenance_windows(서버가 주기적으로 읽어 메모리에 둔다) | -                                  |
 --   | 정리·점검 작업 (7단계)       | job_runs, 각 정리 대상 표, 원장(정합성 점검) | job_runs, 각 정리 대상 표(삭제), dungeon_runs·parties(방치 정리) |
+--   | 로그인·가입·Steam 로그인 (9단계) | accounts(행 잠금), auth_identities, account_devices | accounts(active_*), refresh_tokens(가족 폐기·device), login_events, account_devices, account_ips, auth_identities.steam_owner_id |
+--   | refresh (9단계)              | refresh_tokens, accounts      | refresh_tokens, login_events(기기·IP가 바뀐 때만)           |
+--   | 프레즌스 (9단계)             | characters, accounts(active_*), online_sessions(같은 기기 수) | online_sessions, play_time_hourly, login_events(kind=enter), anomaly_log(ip_cluster, device_limit) |
+--   | 처치 보고 맵·체류 검사 (9단계) | online_sessions             | anomaly_log(kill_presence)                                  |
+--   | 파티 판 시작·정산 (9단계)    | party_run_members(device_hash, steam_key), party_run_host_reports, auth_identities | party_run_members(스냅샷), dungeon_runs(contribution, lock_reason), anomaly_log(contribution, member_card) |
+--   | 경매 구매·입찰·체결 (9단계)  | account_devices, account_ips, auth_identities, auction_trades | auction_trade_flags, income_hourly(auction_*)        |
+--   | 소탕 현황 S1 (10단계)        | characters, accounts, dungeon_runs(클리어 기록), dungeon_sweeps(오늘 횟수), sweep_ticket_lots, account_week_counters, economy_holds | - |
+--   | 소탕 S2, S3 (10단계)         | characters(행 잠금), accounts(행 잠금), dungeon_runs, dungeon_sweeps, sweep_ticket_lots(행 잠금), economy_holds, online_sessions | dungeon_sweeps, sweep_ticket_lots, sweep_ticket_ledger(sweep_use), characters(level, xp, gold), xp_ledger(dungeon_sweep), gold_ledger·item_ledger(dungeon_card), character_items, income_hourly, anomaly_log(sweep_denied), request_log |
+--   | 클리어권 구매 T1 (10단계)    | characters(행 잠금, 골드), accounts(행 잠금), characters(계정 최고 레벨), account_week_counters, economy_holds | characters.gold, gold_ledger(sweep_ticket_buy), sweep_ticket_lots, sweep_ticket_ledger(shop_buy), account_week_counters(sweep_buy), request_log |
+--   | 주간 활동 수령 T2 (10단계)   | characters(행 잠금), accounts(행 잠금), account_week_counters, economy_holds | account_week_counters(activity_claim), sweep_ticket_lots, sweep_ticket_ledger(weekly_activity), request_log |
+--   | 요일 던전 직접 클리어 (10단계 변경) | (기존) | account_week_counters(direct_clear) |
+--   | 우편 조회·요약 (10단계 변경) | mails, mail_attachments, mail_campaigns(캠페인 캐시) | (배달 시 아래 행) |
+--   | 우편 수령·모두 받기 (10단계 변경) | characters(행 잠금), accounts(행 잠금), mails(행 잠금), mail_attachments, sweep_ticket_lots, economy_holds | mails.claimed_at, characters.gold, gold_ledger(mail_claim), character_items, item_ledger(mail_claim), sweep_ticket_lots, sweep_ticket_ledger(campaign_claim), request_log |
+--   | 캠페인 배달 (10단계)         | mail_campaigns(캐시), mail_campaign_deliveries, accounts, characters, mail_campaign_attachments | mails, mail_attachments, item_ledger(admin_grant, 위치 mail), mail_campaign_deliveries, mail_campaigns.issued_count |
+--   | 캠페인 관리자 MC1~MC6 (10단계) | mail_campaigns, mail_campaign_attachments, mail_campaign_deliveries, mails, accounts, admin_users | mail_campaigns, mail_campaign_attachments, admin_audit_log |
+--   | 클리어권 만료·캠페인 정리 작업 (10단계) | sweep_ticket_lots, mail_campaigns, mails | sweep_ticket_lots(remaining 0), sweep_ticket_ledger(expire), mail_campaigns(status), mails.expires_at(회수), job_runs |
+--   | 전직·각성 (9단계)            | characters, character_career, character_career_trials, online_sessions, character_state(career) | character_career, character_career_trials, character_state.career, request_log |
+--   | 경제 속도 감시 (9단계)       | income_hourly, play_time_hourly, characters(level), economy_holds, account_devices | economy_holds, anomaly_log                    |
+--   | 경제 정지 대상 7개 경로 (9단계) | economy_holds              | -                                                           |
+--   | 관리자 회수 (9단계)          | characters(행 잠금), economy_holds, income_hourly, gold_ledger, item_ledger, mails | gold_ledger(admin_clawback), item_ledger(admin_clawback), characters.gold, character_items, mails.expires_at, economy_holds, admin_audit_log |
 --
 --   보관·정리(7단계에서 정식화, 상세 Docs/server/phase7_ops.md 6절)
 --     지운다: request_log 7일, kill_log 7일(drops는 ON DELETE CASCADE + 1일), anomaly_log 심각도 1은 30일·2 이상은 180일, chat_messages 7일(CHAT_RETENTION_DAYS),
@@ -106,6 +139,7 @@ CREATE TABLE accounts (
   uuid          UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   last_login_at TIMESTAMPTZ,
+  prev_login_at TIMESTAMPTZ,
   banned_until  TIMESTAMPTZ,
   deleted_at    TIMESTAMPTZ
 );
@@ -113,6 +147,7 @@ COMMENT ON TABLE  accounts IS '게임 계정. 로그인 수단은 auth_identitie
 COMMENT ON COLUMN accounts.id IS '내부 키. API에 노출하지 않는다';
 COMMENT ON COLUMN accounts.uuid IS '외부 노출용 id. JWT sub, 응답의 account id';
 COMMENT ON COLUMN accounts.last_login_at IS '마지막 로그인 성공 시각 (refresh는 갱신하지 않는다)';
+COMMENT ON COLUMN accounts.prev_login_at IS '바로 앞 로그인 성공 시각. 휴면 복귀 판정(캠페인 last_login_before)에 쓴다 (0022)';
 COMMENT ON COLUMN accounts.banned_until IS '이 시각 전까지 로그인·refresh 거부. NULL = 정지 아님';
 COMMENT ON COLUMN accounts.deleted_at IS '소프트 삭제. NULL이 아니면 로그인 불가';
 
@@ -1737,3 +1772,932 @@ COMMENT ON COLUMN relay_room_stats.close_codes IS '종료 코드별 횟수 예: 
 CREATE INDEX relay_room_stats_ended ON relay_room_stats (ended_at);
 CREATE INDEX relay_room_stats_room ON relay_room_stats (room_kind, room_ref);
 
+-- ================= 9단계: 부정 행위 방지 (0020_anti_abuse, Docs/server/phase9_anti_abuse.md) =================
+
+-- ---------- 1. 계정 세션, 로그인 기록 ----------
+
+ALTER TABLE accounts
+  ADD COLUMN active_family_id    UUID,
+  ADD COLUMN active_install_id   UUID,
+  ADD COLUMN active_device_hash  TEXT CHECK (active_device_hash ~ '^[0-9a-f]{64}$'),
+  ADD COLUMN active_session_at   TIMESTAMPTZ;
+COMMENT ON COLUMN accounts.active_family_id IS '현재 유효한 세션(리프레시 가족). 액세스 토큰 sid가 이것과 다르면 SESSION_REPLACED. 같은 계정 재로그인이 갱신';
+COMMENT ON COLUMN accounts.active_device_hash IS '현재 세션의 기기(클라이언트 지문의 HMAC-SHA256 hex). 프레즌스의 기기 한도·레이드 사람 수 스냅샷의 원본. 기기를 모르면 NULL';
+
+ALTER TABLE auth_identities
+  ADD COLUMN steam_owner_id TEXT CHECK (steam_owner_id ~ '^[0-9]{17}$');
+COMMENT ON COLUMN auth_identities.steam_owner_id IS 'Steam 패밀리 공유일 때 앱 소유자의 SteamID(AuthenticateUserTicket ownersteamid). 사람 키 = COALESCE(steam_owner_id, subject)';
+CREATE INDEX auth_identities_steam_owner ON auth_identities (steam_owner_id) WHERE steam_owner_id IS NOT NULL;
+
+ALTER TABLE refresh_tokens
+  ADD COLUMN install_id    UUID,
+  ADD COLUMN device_hash   TEXT CHECK (device_hash ~ '^[0-9a-f]{64}$'),
+  ADD COLUMN revoke_reason TEXT CHECK (revoke_reason IN ('logout', 'reuse', 'replaced', 'device_mismatch', 'admin', 'legacy')),
+  ADD CONSTRAINT refresh_tokens_revoke_chk CHECK (revoke_reason IS NULL OR revoked_at IS NOT NULL);
+UPDATE refresh_tokens SET revoke_reason = 'legacy' WHERE revoked_at IS NOT NULL;
+COMMENT ON COLUMN refresh_tokens.device_hash IS '이 가족을 만든 로그인의 기기. 리프레시 기기 불일치 감지용';
+COMMENT ON COLUMN refresh_tokens.revoke_reason IS 'replaced는 같은 계정 재로그인으로 정상 교체(REFRESH_REUSED 경보를 내지 않는다)';
+
+CREATE TABLE login_events (
+  id             BIGSERIAL PRIMARY KEY,
+  account_id     BIGINT NOT NULL REFERENCES accounts(id),
+  character_id   BIGINT REFERENCES characters(id),
+  kind           TEXT NOT NULL CHECK (kind IN ('register', 'login', 'steam_login', 'refresh', 'enter')),
+  install_id     UUID,
+  device_hash    TEXT CHECK (device_hash ~ '^[0-9a-f]{64}$'),
+  ip             INET,
+  steam_id       TEXT CHECK (steam_id ~ '^[0-9]{17}$'),
+  steam_owner_id TEXT CHECK (steam_owner_id ~ '^[0-9]{17}$'),
+  client_version TEXT,
+  flags          TEXT[] NOT NULL DEFAULT '{}',
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  login_events IS '로그인·세션 진입 기록(추가 위주, 90일 보관). 다계정 추적과 사후 조사의 원본. 외부 노출 id 없음(관리자 응답은 필드만)';
+COMMENT ON COLUMN login_events.character_id IS 'kind=enter(프레즌스 첫 신호)일 때만';
+COMMENT ON COLUMN login_events.flags IS 'device_missing / device_mismatch / replaced_other';
+COMMENT ON COLUMN login_events.ip IS '개인정보 성격. 보관 기간 후 삭제';
+CREATE INDEX login_events_account_time ON login_events (account_id, created_at DESC);
+CREATE INDEX login_events_created ON login_events (created_at);
+CREATE INDEX login_events_device ON login_events (device_hash, created_at DESC) WHERE device_hash IS NOT NULL;
+CREATE INDEX login_events_ip ON login_events (ip, created_at DESC) WHERE ip IS NOT NULL;
+
+CREATE TABLE account_devices (
+  account_id    BIGINT NOT NULL REFERENCES accounts(id),
+  device_hash   TEXT NOT NULL CHECK (device_hash ~ '^[0-9a-f]{64}$'),
+  first_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_seen_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  seen_count    INT NOT NULL DEFAULT 1 CHECK (seen_count >= 1),
+  PRIMARY KEY (account_id, device_hash)
+);
+COMMENT ON TABLE account_devices IS '계정이 쓴 기기 집계. "같은 기기를 쓴 계정" 조회(레이드·경매 플래그·정지 전파)의 원본. 마지막 관측 180일 뒤 삭제';
+CREATE INDEX account_devices_device ON account_devices (device_hash, last_seen_at DESC);
+CREATE INDEX account_devices_seen ON account_devices (last_seen_at);
+
+CREATE TABLE account_ips (
+  account_id    BIGINT NOT NULL REFERENCES accounts(id),
+  ip            INET NOT NULL,
+  first_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_seen_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  seen_count    INT NOT NULL DEFAULT 1 CHECK (seen_count >= 1),
+  PRIMARY KEY (account_id, ip)
+);
+COMMENT ON TABLE account_ips IS '계정이 쓴 IP 집계. 거절 근거가 아니라 감시 점수와 경매 SAME_IP 플래그용';
+CREATE INDEX account_ips_ip ON account_ips (ip, last_seen_at DESC);
+CREATE INDEX account_ips_seen ON account_ips (last_seen_at);
+
+-- ---------- 2. 프레즌스, 플레이 시간 ----------
+
+CREATE TABLE online_sessions (
+  account_id       BIGINT PRIMARY KEY REFERENCES accounts(id),
+  character_id     BIGINT NOT NULL REFERENCES characters(id),
+  family_id        UUID NOT NULL,
+  install_id       UUID,
+  device_hash      TEXT CHECK (device_hash ~ '^[0-9a-f]{64}$'),
+  ip               INET,
+  map_id           TEXT NOT NULL,
+  prev_map_id      TEXT,
+  map_since        TIMESTAMPTZ NOT NULL,
+  map_changed_at   TIMESTAMPTZ NOT NULL,
+  auto_play        BOOLEAN NOT NULL DEFAULT false,
+  input_recent     BOOLEAN NOT NULL DEFAULT true,
+  unattended_since TIMESTAMPTZ,
+  started_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_seen_at     TIMESTAMPTZ NOT NULL,
+  ended_at         TIMESTAMPTZ,
+  end_reason       TEXT CHECK (end_reason IN ('leave', 'replaced', 'timeout', 'banned')),
+  CONSTRAINT online_sessions_end_chk CHECK ((ended_at IS NULL) = (end_reason IS NULL))
+);
+COMMENT ON TABLE  online_sessions IS '계정당 한 행: 지금(또는 마지막) 온라인 캐릭터. 온라인 = ended_at IS NULL AND last_seen_at > now() - PRESENCE_ONLINE_SECONDS(90). 기기 동시 접속·처치 맵 확인·보스 체류의 근거';
+COMMENT ON COLUMN online_sessions.map_since IS '현재 맵에 끊김 없이 있기 시작한 시각(맵 이동 또는 신호 공백 때 갱신). 필드 보스 체류';
+COMMENT ON COLUMN online_sessions.prev_map_id IS '직전 맵. 맵 이동 직후 PRESENCE_MAP_GRACE_SECONDS 동안 옛 맵 처치 보고를 받아 준다';
+CREATE INDEX online_sessions_device ON online_sessions (device_hash, last_seen_at) WHERE ended_at IS NULL AND device_hash IS NOT NULL;
+CREATE INDEX online_sessions_ip ON online_sessions (ip, last_seen_at) WHERE ended_at IS NULL AND ip IS NOT NULL;
+CREATE INDEX online_sessions_char ON online_sessions (character_id);
+
+CREATE TABLE play_time_hourly (
+  character_id       BIGINT NOT NULL REFERENCES characters(id),
+  hour_start         TIMESTAMPTZ NOT NULL,
+  active_seconds     SMALLINT NOT NULL DEFAULT 0 CHECK (active_seconds BETWEEN 0 AND 3600),
+  auto_seconds       SMALLINT NOT NULL DEFAULT 0 CHECK (auto_seconds BETWEEN 0 AND 3600),
+  unattended_seconds SMALLINT NOT NULL DEFAULT 0 CHECK (unattended_seconds BETWEEN 0 AND 3600),
+  beats              SMALLINT NOT NULL DEFAULT 0 CHECK (beats >= 0),
+  PRIMARY KEY (character_id, hour_start)
+);
+COMMENT ON TABLE  play_time_hourly IS '프레즌스가 쌓은 활동 시간(서버 시계, 신호 간격 60초 이하만). 경제 속도 정지의 분모. 35일 보관';
+COMMENT ON COLUMN play_time_hourly.hour_start IS 'date_trunc(hour, 신호를 받은 시각) UTC';
+CREATE INDEX play_time_hourly_hour ON play_time_hourly (hour_start);
+
+-- ---------- 3. 경제 속도 감시 ----------
+
+CREATE TABLE income_hourly (
+  character_id  BIGINT NOT NULL REFERENCES characters(id),
+  hour_start    TIMESTAMPTZ NOT NULL,
+  level_max     SMALLINT NOT NULL CHECK (level_max >= 1),
+  xp            BIGINT NOT NULL DEFAULT 0 CHECK (xp >= 0),
+  gold_acq      BIGINT NOT NULL DEFAULT 0 CHECK (gold_acq >= 0),
+  item_value    BIGINT NOT NULL DEFAULT 0 CHECK (item_value >= 0),
+  ore           INT NOT NULL DEFAULT 0 CHECK (ore >= 0),
+  essence       INT NOT NULL DEFAULT 0 CHECK (essence >= 0),
+  core          INT NOT NULL DEFAULT 0 CHECK (core >= 0),
+  epic_plus     INT NOT NULL DEFAULT 0 CHECK (epic_plus >= 0),
+  unique_plus   INT NOT NULL DEFAULT 0 CHECK (unique_plus >= 0),
+  auction_in    BIGINT NOT NULL DEFAULT 0 CHECK (auction_in >= 0),
+  auction_in_w  BIGINT NOT NULL DEFAULT 0 CHECK (auction_in_w >= 0),
+  auction_out   BIGINT NOT NULL DEFAULT 0 CHECK (auction_out >= 0),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (character_id, hour_start)
+);
+COMMENT ON TABLE  income_hourly IS '원장에서 파생한 시간별 획득 집계(재화 정본은 원장). 경제 요청 트랜잭션이 같은 트랜잭션에서 증분하고 일 1회 원장과 대조·재계산한다. 35일 보관';
+COMMENT ON COLUMN income_hourly.item_value IS '획득한 아이템을 상점 판매가로 환산한 값. 모아 두고 팔지 않아도 감시된다';
+COMMENT ON COLUMN income_hourly.auction_in_w IS '경매 판매 수입 x 상대 위험 가중(플래그 최댓값/100). 다른 계정에서 들어온 순유입 감시';
+CREATE INDEX income_hourly_updated ON income_hourly (updated_at);
+CREATE INDEX income_hourly_hour ON income_hourly (hour_start);
+
+CREATE TABLE economy_holds (
+  id             BIGSERIAL PRIMARY KEY,
+  uuid           UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  account_id     BIGINT NOT NULL REFERENCES accounts(id),
+  character_id   BIGINT REFERENCES characters(id),
+  scope_char     BIGINT GENERATED ALWAYS AS (COALESCE(character_id, 0)) STORED,
+  kind           TEXT NOT NULL CHECK (kind IN ('velocity', 'auction', 'linked', 'manual')),
+  state          TEXT NOT NULL CHECK (state IN ('shadow', 'active', 'released', 'clawed_back')),
+  origin_hold_id BIGINT REFERENCES economy_holds(id),
+  window_kind    TEXT CHECK (window_kind IN ('1h', '24h', '7d', 'auction_24h')),
+  window_start   TIMESTAMPTZ,
+  window_end     TIMESTAMPTZ,
+  evidence       JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(evidence) = 'object'),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reviewed_by    TEXT,
+  reviewed_at    TIMESTAMPTZ,
+  released_at    TIMESTAMPTZ,
+  note           TEXT CHECK (char_length(note) <= 500),
+  clawback       JSONB CHECK (clawback IS NULL OR jsonb_typeof(clawback) = 'object'),
+  CONSTRAINT economy_holds_linked_chk CHECK ((kind = 'linked') = (origin_hold_id IS NOT NULL)),
+  CONSTRAINT economy_holds_review_chk CHECK (state IN ('shadow', 'active') OR reviewed_at IS NOT NULL)
+);
+COMMENT ON TABLE  economy_holds IS '경제 정지(검토 중). shadow = log_only 모드 기록(막지 않음), active = 막음. 자동 해제 없음. 기록은 지우지 않는다';
+COMMENT ON COLUMN economy_holds.character_id IS 'NULL이면 계정 전체(경매 위반·연결 전파·수동 계정 정지)';
+COMMENT ON COLUMN economy_holds.evidence IS '근거: { metric, value, cap, mult, active_seconds, band, windows:{...} }. 플레이어에게 보이지 않는다';
+COMMENT ON COLUMN economy_holds.released_at IS '해제 시각. 이후 평가에서 이 시각 이전 버킷은 제외(운영자가 승인한 수입)';
+-- 막는 상태는 active와 clawed_back(회수 뒤에도 운영자가 해제할 때까지 막는다). 같은 (계정, 범위)에 막는 정지는 하나
+CREATE UNIQUE INDEX economy_holds_one_active ON economy_holds (account_id, scope_char) WHERE state IN ('active', 'clawed_back');
+CREATE INDEX economy_holds_account_active ON economy_holds (account_id) WHERE state IN ('active', 'clawed_back');
+CREATE INDEX economy_holds_state_time ON economy_holds (state, created_at DESC);
+CREATE INDEX economy_holds_shadow ON economy_holds (account_id, scope_char, created_at DESC) WHERE state = 'shadow';
+CREATE INDEX economy_holds_origin ON economy_holds (origin_hold_id) WHERE origin_hold_id IS NOT NULL;
+
+-- ---------- 4. 파티 사람 수, 기여 ----------
+
+ALTER TABLE party_run_members
+  ADD COLUMN device_hash TEXT CHECK (device_hash ~ '^[0-9a-f]{64}$'),
+  ADD COLUMN steam_key   TEXT CHECK (steam_key ~ '^[0-9]{17}$'),
+  ADD COLUMN install_id  UUID;
+COMMENT ON COLUMN party_run_members.install_id IS '판 시작 때 세션의 설치 id 스냅샷(device_hash를 생략·위조해도 같은 설치 = 한 사람)';
+COMMENT ON COLUMN party_run_members.device_hash IS '판 시작 때 이 멤버 세션의 기기 스냅샷(같은 기기 = 한 사람)';
+COMMENT ON COLUMN party_run_members.steam_key IS '판 시작 때 COALESCE(steam_owner_id, steam subject) 스냅샷(같은 Steam 소유자 = 한 사람)';
+
+ALTER TABLE dungeon_runs ADD COLUMN contribution JSONB CHECK (contribution IS NULL OR jsonb_typeof(contribution) = 'object');
+COMMENT ON COLUMN dungeon_runs.contribution IS '정산 때의 기여 판정 { share, hits, source: host|none, met }. 관리자 검토용';
+
+ALTER TABLE dungeon_runs DROP CONSTRAINT dungeon_runs_lock_reason_check;
+ALTER TABLE dungeon_runs ADD CONSTRAINT dungeon_runs_lock_reason_check
+  CHECK (lock_reason IN ('ALREADY_CLAIMED', 'TOO_FEW_HUMANS', 'KEYS_MISSING', 'LOW_CONTRIBUTION'));
+COMMENT ON COLUMN dungeon_runs.lock_reason IS 'ALREADY_CLAIMED 이번 기간 보상 수령 / TOO_FEW_HUMANS 보상 최소 인원(사람 수, 같은 기기·Steam은 1명) 미달 / KEYS_MISSING 열쇠 부족 / LOW_CONTRIBUTION 피해 지분·적중 수 기여 부족';
+
+-- ---------- 5. 전직·각성 서버 기록 ----------
+
+CREATE TABLE character_career (
+  character_id     BIGINT PRIMARY KEY REFERENCES characters(id),
+  career           SMALLINT NOT NULL CHECK (career BETWEEN 1 AND 4),
+  stage            SMALLINT NOT NULL DEFAULT 0 CHECK (stage BETWEEN 0 AND 5),
+  promoted_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  stage_changed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  source           TEXT NOT NULL CHECK (source IN ('promote', 'legacy_backfill', 'admin'))
+);
+COMMENT ON TABLE  character_career IS '전직·각성의 서버 진실. 행 없음 = 미전직. PUT state는 이 값과 일치하는 career·questStage·awakened만 받는다';
+COMMENT ON COLUMN character_career.stage IS 'Progression.AwakeningStage와 같다: 0~1 대화, 2 시련 대기, 3~4 대화, 5 각성 완료';
+COMMENT ON COLUMN character_career.source IS 'legacy_backfill = 이 마이그레이션 전에 클라이언트 값으로 저장된 상태를 이전(감사용)';
+
+CREATE TABLE character_career_trials (
+  id           BIGSERIAL PRIMARY KEY,
+  character_id BIGINT NOT NULL REFERENCES characters(id),
+  career       SMALLINT NOT NULL CHECK (career BETWEEN 1 AND 4),
+  started_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ended_at     TIMESTAMPTZ,
+  outcome      TEXT CHECK (outcome IN ('success', 'fail', 'expired')),
+  CONSTRAINT career_trials_end_chk CHECK ((ended_at IS NULL) = (outcome IS NULL))
+);
+COMMENT ON TABLE character_career_trials IS '각성 시련 시도(시작과 보고). 성공 보고는 최소 시간·마을 체류 검증을 통과해야 stage 3으로 넘어간다';
+CREATE UNIQUE INDEX career_trials_one_open ON character_career_trials (character_id) WHERE ended_at IS NULL;
+CREATE INDEX career_trials_char ON character_career_trials (character_id, started_at DESC);
+
+INSERT INTO character_career (character_id, career, stage, promoted_at, stage_changed_at, source)
+SELECT cs.character_id,
+       (cs.career->>'career')::int,
+       LEAST(5, GREATEST(0, COALESCE((cs.career->>'questStage')::int, 0))),
+       now(), now(), 'legacy_backfill'
+  FROM character_state cs
+ WHERE cs.career IS NOT NULL AND jsonb_typeof(cs.career) = 'object'
+   AND COALESCE((cs.career->>'career')::int, 0) BETWEEN 1 AND 4;
+
+-- ---------- 6. 경매 의심 거래 ----------
+
+CREATE TABLE auction_trade_flags (
+  id         BIGSERIAL PRIMARY KEY,
+  trade_id   BIGINT NOT NULL REFERENCES auction_trades(id),
+  flag       TEXT NOT NULL CHECK (flag IN ('CEILING_PRICE', 'NEW_BUYER', 'SAME_DEVICE', 'SAME_STEAM', 'SAME_IP', 'PAIR_REPEAT')),
+  weight_pct SMALLINT NOT NULL CHECK (weight_pct BETWEEN 100 AND 1000),
+  detail     JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (trade_id, flag)
+);
+COMMENT ON TABLE auction_trade_flags IS '성공한 체결의 의심 표시(추가만). 거절하지 않고 기록해 관리자 목록·경매 위반 가중·정지 전파의 근거가 된다';
+CREATE INDEX auction_trade_flags_time ON auction_trade_flags (created_at DESC);
+CREATE INDEX auction_trade_flags_flag ON auction_trade_flags (flag, created_at DESC);
+CREATE TRIGGER auction_trade_flags_append_only BEFORE UPDATE OR DELETE ON auction_trade_flags
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER auction_trade_flags_no_truncate BEFORE TRUNCATE ON auction_trade_flags
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- ---------- 7. 원장 사유, 이상 기록 종류, 관리자 감사 대상 ----------
+
+ALTER TABLE gold_ledger DROP CONSTRAINT gold_ledger_reason_check;
+ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'quest_reward', 'shop_buy', 'shop_sell', 'enhance_cost', 'dungeon_card',
+                    'auction_deposit', 'auction_bid', 'auction_buyout', 'mail_claim',
+                    'promote_cost', 'admin_clawback'));
+
+ALTER TABLE item_ledger DROP CONSTRAINT item_ledger_reason_check;
+ALTER TABLE item_ledger ADD CONSTRAINT item_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'gather', 'chest', 'quest_reward', 'quest_consume', 'delivery',
+                    'shop_buy', 'shop_sell', 'enhance_cost', 'enhance_result',
+                    'equip', 'unequip', 'storage_move', 'use_item', 'dungeon_card',
+                    'raid_key', 'raid_key_cost',
+                    'auction_list', 'auction_return', 'auction_sold', 'auction_buy', 'mail_claim', 'mail_expire',
+                    'admin_grant', 'test_boost', 'gacha',
+                    'raid_core', 'promote_cost', 'promote_result', 'gear_renewal', 'admin_clawback'));
+
+ALTER TABLE anomaly_log DROP CONSTRAINT anomaly_log_kind_check;
+ALTER TABLE anomaly_log ADD CONSTRAINT anomaly_log_kind_check
+  CHECK (kind IN ('kill_target', 'kill_rate', 'kill_supply', 'kill_power',
+                  'gather_node', 'gather_early', 'gather_rate', 'drop_foreign', 'quest_denied', 'chest_unknown',
+                  'dungeon_enter', 'dungeon_result',
+                  'party_result', 'party_host', 'raid_enter',
+                  'field_uncredited', 'field_host', 'relay_abuse',
+                  'kill_presence', 'device_limit', 'ip_cluster', 'member_card', 'career_state', 'contribution'));
+COMMENT ON COLUMN anomaly_log.kind IS '기존 값 + kill_presence 처치 보고의 맵·보스 체류 불일치 / device_limit 기기 동시 접속 초과 / ip_cluster 같은 IP 다수 동시 접속(감시 점수) / member_card 호스트가 보고한 멤버 카드 불일치 / career_state 전직·각성 비정상 시도 / contribution 기여 판단 불가·분쟁';
+
+ALTER TABLE admin_audit_log DROP CONSTRAINT admin_audit_log_target_type_check;
+ALTER TABLE admin_audit_log ADD CONSTRAINT admin_audit_log_target_type_check
+  CHECK (target_type IN ('account', 'character', 'report', 'dungeon_run', 'sanction', 'maintenance', 'job', 'admin', 'mail', 'server', 'hold'));
+
+-- ============================================================
+-- 10단계: 던전 클리어권(소탕)과 운영 우편 캠페인 (migrations/0021_sweep_and_mail.sql UP 본문)
+-- ============================================================
+
+-- ---------- 1. 클리어권 지갑 ----------
+
+CREATE TABLE sweep_ticket_lots (
+  id         BIGSERIAL PRIMARY KEY,
+  account_id BIGINT NOT NULL REFERENCES accounts(id),
+  kind       TEXT NOT NULL CHECK (kind IN ('normal', 'event')),
+  granted    INT NOT NULL CHECK (granted > 0),
+  remaining  INT NOT NULL CHECK (remaining >= 0),
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT sweep_lots_expiry_chk    CHECK ((kind = 'event') = (expires_at IS NOT NULL)),
+  CONSTRAINT sweep_lots_remaining_chk CHECK (remaining <= granted)
+);
+COMMENT ON TABLE  sweep_ticket_lots IS '던전 클리어권 지갑(계정 소유). normal은 계정당 1행(누적), event는 지급(우편 수령)마다 1행. 가방·창고·경매에 들어가지 않는다. 외부에 id를 노출하지 않는다(잔량과 만료 시각만 응답에 나간다)';
+COMMENT ON COLUMN sweep_ticket_lots.granted    IS 'normal은 누적 지급 수, event는 그 로트의 지급 수. remaining <= granted';
+COMMENT ON COLUMN sweep_ticket_lots.remaining  IS '남은 장수. 소모는 UPDATE ... WHERE remaining >= 1로만. 변경은 sweep_ticket_ledger와 같은 트랜잭션에서만';
+COMMENT ON COLUMN sweep_ticket_lots.expires_at IS 'event만 값이 있다(수령 시각 + 서버 데이터 eventTicketDays일). normal은 NULL(기한 없음). 지난 로트는 조회·소모에서 제외하고 작업이 remaining을 0으로 만든다';
+-- 계정당 일반 로트는 하나 (추가는 ON CONFLICT DO UPDATE)
+CREATE UNIQUE INDEX sweep_lots_normal_uq ON sweep_ticket_lots (account_id) WHERE kind = 'normal';
+-- 소탕 때 쓸 로트 조회: 계정의 남은 로트를 만료 가까운 순(일반은 NULLS LAST)으로
+CREATE INDEX sweep_lots_live ON sweep_ticket_lots (account_id, expires_at) WHERE remaining > 0;
+-- 만료 작업: 기한이 지났고 남은 event 로트
+CREATE INDEX sweep_lots_expiring ON sweep_ticket_lots (expires_at) WHERE kind = 'event' AND remaining > 0;
+
+CREATE TABLE sweep_ticket_ledger (
+  id            BIGSERIAL PRIMARY KEY,
+  account_id    BIGINT NOT NULL REFERENCES accounts(id),
+  lot_id        BIGINT NOT NULL REFERENCES sweep_ticket_lots(id),
+  character_id  BIGINT REFERENCES characters(id),
+  delta         INT NOT NULL CHECK (delta <> 0),
+  balance_after INT NOT NULL CHECK (balance_after >= 0),
+  reason        TEXT NOT NULL CHECK (reason IN ('shop_buy', 'weekly_activity', 'campaign_claim', 'sweep_use', 'expire')),
+  ref           TEXT,
+  request_id    UUID,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT sweep_ledger_sign_chk CHECK ((reason IN ('sweep_use', 'expire')) = (delta < 0))
+);
+COMMENT ON TABLE  sweep_ticket_ledger IS '클리어권 변동 원장(추가만, 트리거가 UPDATE/DELETE 차단). 로트별 SUM(delta) = sweep_ticket_lots.remaining(만료 작업 지연 구간 제외)';
+COMMENT ON COLUMN sweep_ticket_ledger.character_id IS '요청한 캐릭터. 만료 작업은 NULL';
+COMMENT ON COLUMN sweep_ticket_ledger.balance_after IS '변동 직후 그 계정의 쓸 수 있는 클리어권 합계';
+COMMENT ON COLUMN sweep_ticket_ledger.ref IS 'shop_buy: 요청 request_id / weekly_activity: weekly:{계정 uuid}:{주 시작 ISO} / campaign_claim: 우편 uuid / sweep_use: 소탕 uuid / expire: 로트 id';
+-- 계정별 이력 조회, 한 요청이 만든 행 찾기
+CREATE INDEX sweep_ledger_account ON sweep_ticket_ledger (account_id, id);
+CREATE INDEX sweep_ledger_request ON sweep_ticket_ledger (request_id) WHERE request_id IS NOT NULL;
+-- 같은 주 활동 보상·같은 우편의 이중 지급을 DB가 막는다
+CREATE UNIQUE INDEX sweep_ledger_grant_uq ON sweep_ticket_ledger (reason, ref) WHERE reason IN ('weekly_activity', 'campaign_claim');
+CREATE TRIGGER sweep_ticket_ledger_append_only BEFORE UPDATE OR DELETE ON sweep_ticket_ledger
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER sweep_ticket_ledger_no_truncate BEFORE TRUNCATE ON sweep_ticket_ledger
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- ---------- 2. 소탕 기록 ----------
+
+CREATE TABLE dungeon_sweeps (
+  id           BIGSERIAL PRIMARY KEY,
+  uuid         UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  character_id BIGINT NOT NULL REFERENCES characters(id),
+  dungeon_id   TEXT NOT NULL,
+  difficulty   SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 3),
+  reset_day    TIMESTAMPTZ NOT NULL,
+  lot_id       BIGINT NOT NULL REFERENCES sweep_ticket_lots(id),
+  xp_granted   INT NOT NULL CHECK (xp_granted >= 0),
+  card         JSONB NOT NULL CHECK (jsonb_typeof(card) = 'object'),
+  request_id   UUID NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  dungeon_sweeps IS '던전 소탕 한 번(추가만). dungeon_runs와 섞지 않는다: 난이도 해금·업적·최고 랭크는 이 표를 읽지 않는다. 하루 입장 횟수와 퀘스트 클리어 횟수만 이 표를 더해 읽는다';
+COMMENT ON COLUMN dungeon_sweeps.reset_day IS '소탕 시각이 속한 일일 초기화 구간의 시작(resetBoundaries().dailyStartAt). 오늘 입장 수 집계 키';
+COMMENT ON COLUMN dungeon_sweeps.lot_id    IS '쓴 클리어권 로트(이벤트인지 일반인지)';
+COMMENT ON COLUMN dungeon_sweeps.xp_granted IS '실제로 들어간 경험치(만렙이면 0)';
+COMMENT ON COLUMN dungeon_sweeps.card      IS '지급한 카드 {item_key, count}';
+COMMENT ON COLUMN dungeon_sweeps.request_id IS '요청의 request_id. 모두 소탕 한 번이 만든 행들이 같은 값';
+-- 오늘 입장 횟수(countEntries), 소탕은 캐릭터 단위
+CREATE INDEX dungeon_sweeps_char_day ON dungeon_sweeps (character_id, reset_day);
+-- 퀘스트 "던전 클리어 N회"의 던전별 합계
+CREATE INDEX dungeon_sweeps_char_dungeon ON dungeon_sweeps (character_id, dungeon_id);
+CREATE TRIGGER dungeon_sweeps_append_only BEFORE UPDATE OR DELETE ON dungeon_sweeps
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER dungeon_sweeps_no_truncate BEFORE TRUNCATE ON dungeon_sweeps
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- ---------- 3. 계정 주간 카운터 ----------
+
+CREATE TABLE account_week_counters (
+  account_id BIGINT NOT NULL REFERENCES accounts(id),
+  week_start TIMESTAMPTZ NOT NULL,
+  kind       TEXT NOT NULL CHECK (kind IN ('sweep_buy', 'direct_clear', 'activity_claim')),
+  used       INT NOT NULL DEFAULT 0 CHECK (used >= 0),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (account_id, week_start, kind),
+  CONSTRAINT week_counters_claim_chk CHECK (kind <> 'activity_claim' OR used = 1)
+);
+COMMENT ON TABLE  account_week_counters IS '계정 주간 카운터. week_start는 resetBoundaries().weeklyStartAt(목요일 06:00 KST). 주가 바뀌면 새 행이 생겨 초기화 작업이 없다';
+COMMENT ON COLUMN account_week_counters.kind IS 'sweep_buy 이번 주 클리어권 구매 장수 / direct_clear 이번 주 보상이 잠기지 않은 요일 던전 직접 클리어 수(계정 합산) / activity_claim 주간 보상 수령(행이 있으면 받음, used=1)';
+-- 지난 주 행 정리(purge)
+CREATE INDEX account_week_counters_week ON account_week_counters (week_start);
+
+-- ---------- 4. 운영 우편 캠페인 ----------
+
+CREATE TABLE mail_campaigns (
+  id               BIGSERIAL PRIMARY KEY,
+  uuid             UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  title            TEXT NOT NULL CHECK (char_length(title) BETWEEN 1 AND 40),
+  body             TEXT NOT NULL DEFAULT '' CHECK (char_length(body) <= 1000),
+  category         TEXT NOT NULL CHECK (category IN ('maintenance', 'apology', 'event', 'attendance', 'other')),
+  delivery_unit    TEXT NOT NULL DEFAULT 'account' CHECK (delivery_unit IN ('account', 'character')),
+  target           JSONB NOT NULL CHECK (jsonb_typeof(target) = 'object'),
+  mail_days        SMALLINT NOT NULL CHECK (mail_days BETWEEN 1 AND 30),
+  starts_at        TIMESTAMPTZ NOT NULL,
+  ends_at          TIMESTAMPTZ NOT NULL,
+  cap_count        INT NOT NULL CHECK (cap_count > 0),
+  issued_count     INT NOT NULL DEFAULT 0 CHECK (issued_count >= 0),
+  status           TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'ended', 'cancelled')),
+  memo             TEXT NOT NULL CHECK (char_length(memo) BETWEEN 1 AND 200),
+  created_by       BIGINT NOT NULL REFERENCES admin_users(id),
+  approved_by      BIGINT REFERENCES admin_users(id),
+  approved_at      TIMESTAMPTZ,
+  ended_at         TIMESTAMPTZ,
+  cancelled_by     BIGINT REFERENCES admin_users(id),
+  cancelled_at     TIMESTAMPTZ,
+  cancel_reason    TEXT CHECK (char_length(cancel_reason) <= 200),
+  revoke_requested BOOLEAN NOT NULL DEFAULT false,
+  revoke_done_at   TIMESTAMPTZ,
+  revoked_count    INT NOT NULL DEFAULT 0 CHECK (revoked_count >= 0),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT mail_campaigns_window_chk     CHECK (ends_at > starts_at),
+  CONSTRAINT mail_campaigns_cap_chk        CHECK (issued_count <= cap_count),
+  CONSTRAINT mail_campaigns_two_person_chk CHECK (approved_by IS NULL OR approved_by <> created_by),
+  CONSTRAINT mail_campaigns_state_chk CHECK (
+       (status = 'pending'            AND approved_by IS NULL AND cancelled_at IS NULL)
+    OR (status IN ('active', 'ended') AND approved_by IS NOT NULL AND approved_at IS NOT NULL AND cancelled_at IS NULL)
+    OR (status = 'cancelled'          AND cancelled_at IS NOT NULL))
+);
+COMMENT ON TABLE  mail_campaigns IS '운영 우편 캠페인(공지 우편 한 종류). 대상이 접속할 때 우편을 만든다(전체 발송 때 한 번에 넣지 않는다). 내용 열은 만든 뒤 못 바꾸고(트리거) 삭제하지 않는다(상태로 닫는다)';
+COMMENT ON COLUMN mail_campaigns.category      IS '점검 보상 maintenance / 사과 보상 apology / 이벤트 event / 출석 attendance / 기타 other. 우편의 system_code로 그대로 간다';
+COMMENT ON COLUMN mail_campaigns.delivery_unit IS 'account 계정당 1통(받을 캐릭터는 그 계정에서 처음 접속·폴링한 캐릭터) / character 캐릭터당 1통(드물게)';
+COMMENT ON COLUMN mail_campaigns.target        IS '{"all":true} 또는 조건 조합(min_account_level, max_account_level, classes, account_created_from/to, last_login_before, account_ids). 서버가 만들 때 검증한다';
+COMMENT ON COLUMN mail_campaigns.mail_days     IS '우편 수령 기한(배달 시각부터 일수, 1~30)';
+COMMENT ON COLUMN mail_campaigns.starts_at     IS '배달 기간. 이 구간 밖에서는 우편을 만들지 않는다';
+COMMENT ON COLUMN mail_campaigns.cap_count     IS '총 지급 통수 상한(필수). 배달의 조건부 UPDATE가 강제한다';
+COMMENT ON COLUMN mail_campaigns.issued_count  IS '지금까지 만든 우편 수. 배달 트랜잭션의 마지막 문장에서만 +1';
+COMMENT ON COLUMN mail_campaigns.created_by    IS '작성 관리자. 승인자와 달라야 한다(2인 확인)';
+COMMENT ON COLUMN mail_campaigns.cancelled_by  IS 'NULL이면 시스템 취소(승인 전 기간 만료 등)';
+COMMENT ON COLUMN mail_campaigns.revoke_requested IS '취소 때 미수령 회수를 요청했는가. 작업 campaign_revoke가 처리하고 revoke_done_at을 기록한다';
+-- 캐시 갱신·상태 작업: 진행 중·대기 중 캠페인만
+CREATE INDEX mail_campaigns_open ON mail_campaigns (status, ends_at) WHERE status IN ('pending', 'active');
+-- 목록(최신순 커서)
+CREATE INDEX mail_campaigns_created ON mail_campaigns (created_at DESC);
+-- 회수 작업 대상
+CREATE INDEX mail_campaigns_revoke ON mail_campaigns (id) WHERE revoke_requested AND revoke_done_at IS NULL;
+
+CREATE FUNCTION mail_campaigns_guard() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'mail_campaigns is never deleted (close it by status)';
+  END IF;
+  IF NEW.title IS DISTINCT FROM OLD.title OR NEW.body IS DISTINCT FROM OLD.body
+     OR NEW.category IS DISTINCT FROM OLD.category OR NEW.delivery_unit IS DISTINCT FROM OLD.delivery_unit
+     OR NEW.target IS DISTINCT FROM OLD.target OR NEW.mail_days IS DISTINCT FROM OLD.mail_days
+     OR NEW.starts_at IS DISTINCT FROM OLD.starts_at OR NEW.ends_at IS DISTINCT FROM OLD.ends_at
+     OR NEW.cap_count IS DISTINCT FROM OLD.cap_count OR NEW.created_by IS DISTINCT FROM OLD.created_by
+     OR NEW.memo IS DISTINCT FROM OLD.memo OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
+    RAISE EXCEPTION 'mail_campaigns content is immutable after creation';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER mail_campaigns_guard_upd BEFORE UPDATE ON mail_campaigns
+  FOR EACH ROW EXECUTE FUNCTION mail_campaigns_guard();
+CREATE TRIGGER mail_campaigns_guard_del BEFORE DELETE ON mail_campaigns
+  FOR EACH ROW EXECUTE FUNCTION mail_campaigns_guard();
+
+CREATE TABLE mail_campaign_attachments (
+  id          BIGSERIAL PRIMARY KEY,
+  campaign_id BIGINT NOT NULL REFERENCES mail_campaigns(id),
+  slot        SMALLINT NOT NULL CHECK (slot BETWEEN 1 AND 5),
+  kind        TEXT NOT NULL CHECK (kind IN ('gold', 'item', 'sweep_ticket')),
+  item_key    TEXT,
+  amount      BIGINT NOT NULL CHECK (amount > 0),
+  bind        TEXT CHECK (bind IN ('none', 'account', 'character')),
+  UNIQUE (campaign_id, slot),
+  CONSTRAINT mail_campaign_att_shape_chk CHECK (
+       (kind = 'gold'         AND item_key IS NULL     AND bind IS NULL)
+    OR (kind = 'item'         AND item_key IS NOT NULL AND item_key <> 'gold' AND bind IS NOT NULL AND amount <= 2147483647)
+    OR (kind = 'sweep_ticket' AND item_key IS NOT NULL AND bind IS NULL AND amount <= 1000))
+);
+COMMENT ON TABLE  mail_campaign_attachments IS '캠페인 첨부(최대 5, 추가만). 배달 때 mail_attachments로 복사된다';
+COMMENT ON COLUMN mail_campaign_attachments.amount   IS 'gold는 골드, item·sweep_ticket은 개수';
+COMMENT ON COLUMN mail_campaign_attachments.item_key IS 'sweep_ticket은 표시용 이벤트 클리어권 키(서버 데이터 sweep.json이 정한다). 값은 서버가 검증한다';
+-- 골드·클리어권 첨부는 캠페인당 하나
+CREATE UNIQUE INDEX mail_campaign_att_gold_uq   ON mail_campaign_attachments (campaign_id) WHERE kind = 'gold';
+CREATE UNIQUE INDEX mail_campaign_att_ticket_uq ON mail_campaign_attachments (campaign_id) WHERE kind = 'sweep_ticket';
+CREATE TRIGGER mail_campaign_attachments_append_only BEFORE UPDATE OR DELETE ON mail_campaign_attachments
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+
+-- ---------- 5. 우편 확장 (기존 열은 그대로) ----------
+
+ALTER TABLE mails
+  ADD COLUMN title       TEXT CHECK (char_length(title) BETWEEN 1 AND 40),
+  ADD COLUMN body        TEXT CHECK (char_length(body) <= 1000),
+  ADD COLUMN campaign_id BIGINT REFERENCES mail_campaigns(id),
+  ADD COLUMN attach_n    SMALLINT NOT NULL DEFAULT 0 CHECK (attach_n BETWEEN 0 AND 5);
+COMMENT ON COLUMN mails.title       IS '제목. 옛 우편은 NULL(클라이언트가 종류·system_code로 문구를 조립). kind=system일 때만';
+COMMENT ON COLUMN mails.body        IS '본문(줄바꿈 허용). 옛 우편은 NULL';
+COMMENT ON COLUMN mails.campaign_id IS '캠페인이 배달한 우편이면 그 캠페인';
+COMMENT ON COLUMN mails.attach_n    IS 'mail_attachments의 첨부 수. 0이 아니면 첨부는 그 표에 있고 이 행의 item_key는 NULL, gold는 0이다';
+
+-- 첨부가 표에 있는 우편은 내용 검사를 통과시키고(content), 옛 열과 섞이지 않게 한다(mode)
+ALTER TABLE mails DROP CONSTRAINT mails_content_chk;
+ALTER TABLE mails ADD CONSTRAINT mails_content_chk CHECK (item_key IS NOT NULL OR gold > 0 OR attach_n > 0);
+ALTER TABLE mails ADD CONSTRAINT mails_attach_mode_chk CHECK (attach_n = 0 OR (item_key IS NULL AND gold = 0));
+ALTER TABLE mails ADD CONSTRAINT mails_title_chk CHECK ((title IS NULL AND body IS NULL) OR (kind = 'system' AND title IS NOT NULL));
+ALTER TABLE mails ADD CONSTRAINT mails_campaign_chk CHECK (campaign_id IS NULL OR (kind = 'system' AND attach_n > 0));
+ALTER TABLE mails ADD CONSTRAINT mails_attach_kind_chk CHECK (attach_n = 0 OR kind = 'system');
+
+-- 캠페인 분류가 우편의 system_code (기존 4개 유지)
+ALTER TABLE mails DROP CONSTRAINT mails_system_code_check;
+ALTER TABLE mails ADD CONSTRAINT mails_system_code_check
+  CHECK (system_code IN ('compensation', 'event', 'refund', 'notice', 'maintenance', 'apology', 'attendance', 'other'));
+COMMENT ON COLUMN mails.system_code IS 'kind=system일 때만 값. compensation 보상 / event 이벤트 / refund 환불 / notice 안내 / maintenance 점검 보상 / apology 사과 보상 / attendance 출석 / other 기타. 캠페인 우편은 category가 그대로 온다';
+
+-- 캠페인당 한 캐릭터에 한 통(배달 표와 이중 방어)
+CREATE UNIQUE INDEX mails_campaign_once ON mails (campaign_id, character_id) WHERE campaign_id IS NOT NULL;
+-- 취소 회수 작업: 캠페인의 미수령 우편을 id 순으로 배치 처리, 현황 집계
+CREATE INDEX mails_campaign_open ON mails (campaign_id, id) WHERE campaign_id IS NOT NULL AND claimed_at IS NULL AND expired_at IS NULL;
+
+CREATE TABLE mail_attachments (
+  id       BIGSERIAL PRIMARY KEY,
+  mail_id  BIGINT NOT NULL REFERENCES mails(id),
+  slot     SMALLINT NOT NULL CHECK (slot BETWEEN 1 AND 5),
+  kind     TEXT NOT NULL CHECK (kind IN ('gold', 'item', 'sweep_ticket')),
+  item_key TEXT,
+  amount   BIGINT NOT NULL CHECK (amount > 0),
+  bind     TEXT CHECK (bind IN ('none', 'account', 'character')),
+  UNIQUE (mail_id, slot),
+  CONSTRAINT mail_att_shape_chk CHECK (
+       (kind = 'gold'         AND item_key IS NULL     AND bind IS NULL)
+    OR (kind = 'item'         AND item_key IS NOT NULL AND item_key <> 'gold' AND bind IS NOT NULL AND amount <= 2147483647)
+    OR (kind = 'sweep_ticket' AND item_key IS NOT NULL AND bind IS NULL AND amount <= 1000))
+);
+COMMENT ON TABLE  mail_attachments IS '여러 첨부가 있는 우편의 첨부(추가만). 수령 여부는 mails.claimed_at이 정한다(부분 수령 없음). 첨부 아이템은 우편 위치(mail)의 item_ledger +n, 수령하면 mail -n / bag +n';
+CREATE TRIGGER mail_attachments_append_only BEFORE UPDATE OR DELETE ON mail_attachments
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+-- 한 페이지 우편의 첨부를 mail_id IN (...)으로 읽는 것은 UNIQUE (mail_id, slot)이 맡는다
+
+CREATE TABLE mail_campaign_deliveries (
+  id           BIGSERIAL PRIMARY KEY,
+  campaign_id  BIGINT NOT NULL REFERENCES mail_campaigns(id),
+  delivery_key BIGINT NOT NULL,
+  account_id   BIGINT NOT NULL REFERENCES accounts(id),
+  character_id BIGINT NOT NULL REFERENCES characters(id),
+  mail_id      BIGINT NOT NULL UNIQUE REFERENCES mails(id),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (campaign_id, delivery_key)
+);
+COMMENT ON TABLE  mail_campaign_deliveries IS '캠페인 배달 기록(추가만): 누구에게 어느 캐릭터로 언제. UNIQUE(campaign_id, delivery_key)가 계정당(또는 캐릭터당) 1통을 DB에서 강제한다';
+COMMENT ON COLUMN mail_campaign_deliveries.delivery_key IS 'delivery_unit=account이면 계정 id, character이면 캐릭터 id';
+-- 캠페인별 배달 목록(관리자 MC6, id 커서)
+CREATE INDEX mail_campaign_deliveries_campaign ON mail_campaign_deliveries (campaign_id, id);
+-- 한 계정이 받은 캠페인(계정 상세)
+CREATE INDEX mail_campaign_deliveries_account ON mail_campaign_deliveries (account_id, created_at DESC);
+CREATE TRIGGER mail_campaign_deliveries_append_only BEFORE UPDATE OR DELETE ON mail_campaign_deliveries
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+
+-- ---------- 6. 보조 인덱스, 원장 사유, 이상 기록, 감사 대상 ----------
+
+-- 클리어권 가격 계산: 계정의 최고 레벨(삭제한 캐릭터 포함). 기존 characters_account_alive는 살아 있는 캐릭터만 덮는다
+CREATE INDEX characters_account_level ON characters (account_id, level DESC);
+
+ALTER TABLE gold_ledger DROP CONSTRAINT gold_ledger_reason_check;
+ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'quest_reward', 'shop_buy', 'shop_sell', 'enhance_cost', 'dungeon_card',
+                    'auction_deposit', 'auction_bid', 'auction_buyout', 'mail_claim',
+                    'promote_cost', 'admin_clawback', 'sweep_ticket_buy'));
+
+ALTER TABLE xp_ledger DROP CONSTRAINT xp_ledger_reason_check;
+ALTER TABLE xp_ledger ADD CONSTRAINT xp_ledger_reason_check
+  CHECK (reason IN ('kill', 'quest_reward', 'dungeon_clear', 'test_boost', 'dungeon_sweep'));
+COMMENT ON COLUMN xp_ledger.reason IS 'kill 처치 / quest_reward 퀘스트 보상 / dungeon_clear 던전 클리어 / test_boost 시험 서버 레벨 조정 / dungeon_sweep 던전 소탕(ref = 소탕 uuid)';
+
+ALTER TABLE anomaly_log DROP CONSTRAINT anomaly_log_kind_check;
+ALTER TABLE anomaly_log ADD CONSTRAINT anomaly_log_kind_check
+  CHECK (kind IN ('kill_target', 'kill_rate', 'kill_supply', 'kill_power',
+                  'gather_node', 'gather_early', 'gather_rate', 'drop_foreign', 'quest_denied', 'chest_unknown',
+                  'dungeon_enter', 'dungeon_result',
+                  'party_result', 'party_host', 'raid_enter',
+                  'field_uncredited', 'field_host', 'relay_abuse',
+                  'kill_presence', 'device_limit', 'ip_cluster', 'member_card', 'career_state', 'contribution',
+                  'sweep_denied'));
+COMMENT ON COLUMN anomaly_log.kind IS '0020의 값 + sweep_denied 소탕 화면 조건을 우회한 요청(미클리어, 등급 미달, 레벨 부족, 소탕 불가 던전)';
+
+ALTER TABLE admin_audit_log DROP CONSTRAINT admin_audit_log_target_type_check;
+ALTER TABLE admin_audit_log ADD CONSTRAINT admin_audit_log_target_type_check
+  CHECK (target_type IN ('account', 'character', 'report', 'dungeon_run', 'sanction', 'maintenance', 'job', 'admin', 'mail', 'server', 'hold', 'campaign'));
+
+-- ============================================================
+-- 11단계: 별조각 Steam 결제와 결제 보호 (migrations/0023_payments.sql UP 본문, Docs/server/phase11_payments.md 14절)
+-- 선행: 0013(star_wallets, star_ledger), 0016, 0018은 이 파일에 합치지 않았다(이 파일은 읽기용). 이 구역의 ALTER는 그 표들이 있다고 가정한다.
+-- ============================================================
+-- 1. 확률표 스냅샷(추가 전용): 같은 버전에 다른 내용이면 서버가 기동하지 않는다
+CREATE TABLE star_rates_snapshots (
+  version      TEXT PRIMARY KEY CHECK (char_length(version) BETWEEN 1 AND 40),
+  content      JSONB NOT NULL CHECK (jsonb_typeof(content) = 'object'),
+  content_hash TEXT NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  star_rates_snapshots IS '뽑기 확률표 버전별 스냅샷(추가 전용). gacha_pulls.rates_version이 가리킨다. 확률 분쟁·공개 자료의 근거';
+COMMENT ON COLUMN star_rates_snapshots.content IS '그 버전의 확률·가격·천장·게이지·중복 규칙 전체(서버가 starshopDefs에서 만든다)';
+CREATE TRIGGER star_rates_snapshots_append_only BEFORE UPDATE OR DELETE ON star_rates_snapshots
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER star_rates_snapshots_no_truncate BEFORE TRUNCATE ON star_rates_snapshots
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- 2. 결제 계정 상태
+CREATE TABLE payment_profiles (
+  account_id       BIGINT PRIMARY KEY REFERENCES accounts(id),
+  status           TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'blocked')),
+  block_reason     TEXT CHECK (block_reason IN ('chargeback', 'refund_abuse', 'linked_chargeback', 'fraud_suspect', 'manual')),
+  blocked_at       TIMESTAMPTZ,
+  blocked_by       TEXT CHECK (char_length(blocked_by) <= 40),
+  tier_floor       TEXT NOT NULL DEFAULT 'none' CHECK (tier_floor IN ('none', 'restricted')),
+  tier_floor_until TIMESTAMPTZ,
+  last_country     TEXT CHECK (last_country ~ '^[A-Z]{2}$'),
+  last_currency    TEXT CHECK (last_currency ~ '^[A-Z]{3}$'),
+  note             TEXT CHECK (char_length(note) <= 500),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT payment_profiles_block_chk CHECK ((status = 'blocked') = (block_reason IS NOT NULL AND blocked_at IS NOT NULL)),
+  CONSTRAINT payment_profiles_floor_chk CHECK (tier_floor = 'none' OR tier_floor_until IS NOT NULL)
+);
+COMMENT ON TABLE  payment_profiles IS '계정의 결제 상태. 행이 없으면 정상(active, 제한 없음). 결제 정지와 제한 단계 하한만 담고 한도 사용량은 star_orders에서 계산한다(파생 값을 따로 저장하지 않는다)';
+COMMENT ON COLUMN payment_profiles.status IS 'blocked면 새 주문을 만들 수 없다(B1, B2가 PAYMENT_BLOCKED). 해제는 owner';
+COMMENT ON COLUMN payment_profiles.blocked_by IS '"system" 또는 관리자 login_id(표시용). 정본 기록은 admin_audit_log';
+COMMENT ON COLUMN payment_profiles.tier_floor IS 'restricted면 tier_floor_until 전까지 제한 단계(낮은 한도) 적용. 자동(환불 반복, 국가 변경 등)과 수동이 올린다';
+COMMENT ON COLUMN payment_profiles.last_country IS '마지막 주문에서 Steam이 알려 준 국가. 국가 변경 감지용';
+
+-- 3. 주문
+CREATE SEQUENCE star_order_no_seq AS BIGINT START WITH 1000000 INCREMENT BY 1 NO CYCLE;
+COMMENT ON SEQUENCE star_order_no_seq IS 'Steam 주문 번호(uint64 범위 안의 양수). 서버만 발급하고 한 번 쓴 번호는 재사용하지 않는다';
+
+CREATE TABLE star_orders (
+  id               BIGSERIAL PRIMARY KEY,
+  uuid             UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  account_id       BIGINT NOT NULL REFERENCES accounts(id),
+  request_id       UUID NOT NULL,
+  request_hash     TEXT NOT NULL,
+  steam_order_id   BIGINT NOT NULL UNIQUE DEFAULT nextval('star_order_no_seq'),
+  steam_trans_id   BIGINT UNIQUE,
+  steam_id         TEXT NOT NULL CHECK (steam_id ~ '^[0-9]{17}$'),
+  app_id           BIGINT NOT NULL CHECK (app_id > 0),
+  product_id       TEXT NOT NULL CHECK (product_id ~ '^[a-z0-9_]{3,40}$'),
+  steam_item_id    INT NOT NULL CHECK (steam_item_id > 0),
+  catalog_version  TEXT NOT NULL,
+  stars            INT NOT NULL CHECK (stars > 0),
+  currency         TEXT NOT NULL CHECK (currency ~ '^[A-Z]{3}$'),
+  amount_minor     BIGINT NOT NULL CHECK (amount_minor > 0),
+  steam_country    TEXT CHECK (steam_country ~ '^[A-Z]{2}$'),
+  steam_status     TEXT CHECK (char_length(steam_status) <= 40),
+  steam_amount_minor BIGINT,
+  steam_currency   TEXT CHECK (steam_currency ~ '^[A-Z]{3}$'),
+  tier             TEXT NOT NULL CHECK (tier IN ('new', 'standard', 'restricted')),
+  state            TEXT NOT NULL CHECK (state IN ('pending_init', 'created', 'authorized', 'finalized', 'granted',
+                                                  'failed', 'expired', 'refunded', 'chargeback')),
+  fail_reason      TEXT CHECK (fail_reason IN ('init_rejected', 'init_lost', 'user_denied', 'steam_failed', 'blocked', 'mismatch')),
+  needs_review     BOOLEAN NOT NULL DEFAULT false,
+  review_reason    TEXT CHECK (char_length(review_reason) <= 100),
+  ip               INET,
+  device_hash      TEXT CHECK (device_hash ~ '^[0-9a-f]{64}$'),
+  lease_until      TIMESTAMPTZ,
+  lease_token      UUID,
+  attempts         INT NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  next_check_at    TIMESTAMPTZ,
+  last_checked_at  TIMESTAMPTZ,
+  expires_at       TIMESTAMPTZ NOT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  init_at          TIMESTAMPTZ,
+  authorized_at    TIMESTAMPTZ,
+  finalized_at     TIMESTAMPTZ,
+  granted_at       TIMESTAMPTZ,
+  reversed_at      TIMESTAMPTZ,
+  closed_at        TIMESTAMPTZ,
+  UNIQUE (account_id, request_id),
+  CONSTRAINT star_orders_fail_chk      CHECK ((state = 'failed') = (fail_reason IS NOT NULL)),
+  CONSTRAINT star_orders_granted_chk   CHECK (state <> 'granted' OR granted_at IS NOT NULL),
+  CONSTRAINT star_orders_granted_at_chk CHECK (granted_at IS NULL OR state IN ('granted', 'refunded', 'chargeback')),
+  CONSTRAINT star_orders_reversed_chk  CHECK ((state IN ('refunded', 'chargeback')) = (reversed_at IS NOT NULL)),
+  CONSTRAINT star_orders_expiry_chk    CHECK (expires_at > created_at),
+  CONSTRAINT star_orders_lease_chk     CHECK ((lease_until IS NULL) = (lease_token IS NULL)),
+  CONSTRAINT star_orders_review_chk    CHECK (needs_review OR review_reason IS NULL)
+);
+COMMENT ON TABLE  star_orders IS '별조각 결제 주문(상태 기계, 정본). 가격·별조각·통화·Steam ID·appid는 주문 시점 스냅샷이며 상품표가 바뀌어도 변하지 않는다. 지우지 않는다';
+COMMENT ON COLUMN star_orders.uuid IS '외부 노출 id(클라이언트·관리자). 내부 id와 steam_order_id는 직접 조회 키로 쓰지 않는다';
+COMMENT ON COLUMN star_orders.request_id IS 'B2의 멱등 키. (account_id, request_id) 유일';
+COMMENT ON COLUMN star_orders.request_hash IS '요청 본문 정규화 해시. 같은 request_id에 다른 본문이면 IDEMPOTENCY_MISMATCH';
+COMMENT ON COLUMN star_orders.steam_order_id IS '서버가 발급해 InitTxn에 보낸 주문 번호. 클라이언트가 정하지 않는다';
+COMMENT ON COLUMN star_orders.steam_trans_id IS 'Steam이 돌려준 거래 번호(응답에 있을 때). 유일';
+COMMENT ON COLUMN star_orders.steam_id IS '결제 주체 Steam ID. 로그인 계정의 auth_identities에서만 얻는다(요청으로 받지 않는다)';
+COMMENT ON COLUMN star_orders.catalog_version IS '주문 시점 star_products.json 버전';
+COMMENT ON COLUMN star_orders.amount_minor IS '통화 최소 단위 정수. 서버 상품표 값';
+COMMENT ON COLUMN star_orders.steam_amount_minor IS 'QueryTxn이 돌려준 항목 금액(검증 후 기록). amount_minor와 같아야 지급한다';
+COMMENT ON COLUMN star_orders.steam_status IS '마지막 QueryTxn 상태 문자열(표시·감사용, 로직은 state)';
+COMMENT ON COLUMN star_orders.tier IS '주문 시점 적용한 한도 단계';
+COMMENT ON COLUMN star_orders.state IS 'pending_init InitTxn 결과 미확정 / created 승인 대기 / authorized Steam 승인됨(확정 전) / finalized 확정·성공 확인(지급 대기) / granted 지급 완료 / failed 청구 없이 종료 / expired 만료 / refunded 환불 / chargeback 지불 거절';
+COMMENT ON COLUMN star_orders.needs_review IS '청구되었을 수 있는데 검증이 어긋난 주문 등 사람이 봐야 하는 주문. 상태와 별개로 대사 일정을 유지한다';
+COMMENT ON COLUMN star_orders.ip IS '개인정보 성격. 보관 기간(PAY_IP_RETENTION_DAYS) 뒤 NULL로 지운다';
+COMMENT ON COLUMN star_orders.lease_until IS '진행 임대 만료. 한 시점에 한 작업자만 주문을 진행한다';
+COMMENT ON COLUMN star_orders.lease_token IS '임대 펜싱 토큰. 이후 쓰기는 이 값과 기대 상태를 WHERE에 건다';
+COMMENT ON COLUMN star_orders.next_check_at IS '다음 Steam 확인 시각(열린 주문은 수십 초 간격, 지급된 주문은 나이별 감시 간격, 감시 종료 뒤 NULL)';
+-- 계정당 열린 주문 1개(동시 주문·한도 우회 방지, 새 견적 전에 열린 주문을 먼저 대사하는 계약의 DB 보장)
+CREATE UNIQUE INDEX star_orders_one_open ON star_orders (account_id)
+  WHERE state IN ('pending_init', 'created', 'authorized', 'finalized');
+-- 한도 합산(계정의 기간 내 주문), 내 주문 이력: account_id + 최신순
+CREATE INDEX star_orders_account_time ON star_orders (account_id, created_at DESC);
+-- 대사·감시 작업이 "확인할 시각이 된 주문"만 읽는다(열린 주문 + 지급된 주문)
+CREATE INDEX star_orders_due ON star_orders (next_check_at)
+  WHERE next_check_at IS NOT NULL AND state IN ('pending_init', 'created', 'authorized', 'finalized', 'granted', 'refunded', 'failed');
+-- 검토 큐(needs_review) 조회
+CREATE INDEX star_orders_review ON star_orders (created_at) WHERE needs_review;
+-- 관리자 목록(상태별 최신순)
+CREATE INDEX star_orders_state_time ON star_orders (state, created_at DESC);
+-- Steam ID로 주문 찾기(관리자 조회, 리포트 교차 점검)
+CREATE INDEX star_orders_steam_id ON star_orders (steam_id, created_at DESC);
+
+-- 4. 주문 이벤트(추가 전용): 결제의 모든 전이와 Steam 조회 결과
+CREATE TABLE star_order_events (
+  id          BIGSERIAL PRIMARY KEY,
+  order_id    BIGINT NOT NULL REFERENCES star_orders(id),
+  kind        TEXT NOT NULL CHECK (kind IN ('created', 'init_ok', 'init_failed', 'init_unknown', 'status_seen', 'authorized',
+                                            'finalize_ok', 'finalize_failed', 'finalized', 'granted', 'failed', 'expired',
+                                            'refunded', 'chargeback', 'revoked_stars', 'mismatch', 'needs_review',
+                                            'review_cleared', 'admin_recheck', 'outcomes_revoked')),
+  from_state  TEXT,
+  to_state    TEXT,
+  steam_status TEXT CHECK (char_length(steam_status) <= 40),
+  actor       TEXT NOT NULL CHECK (actor IN ('player', 'job', 'admin', 'system')),
+  detail      JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(detail) = 'object'),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  star_order_events IS '주문 이벤트 원장(추가 전용). detail에는 허용 목록 필드(상태 문자열, 주문·거래 번호, 통화, 금액, 국가, 사유 코드)만 넣고 키·URL·원문 응답·IP는 넣지 않는다. 지우지 않는다';
+-- 주문 상세에서 시간순 이벤트
+CREATE INDEX star_order_events_order ON star_order_events (order_id, id);
+CREATE TRIGGER star_order_events_append_only BEFORE UPDATE OR DELETE ON star_order_events
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER star_order_events_no_truncate BEFORE TRUNCATE ON star_order_events
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- 5. 유료 로트(주문 1개 = 로트 1개) 와 소비 배분
+CREATE TABLE star_paid_lots (
+  order_id   BIGINT PRIMARY KEY REFERENCES star_orders(id),
+  account_id BIGINT NOT NULL REFERENCES accounts(id),
+  granted    INT NOT NULL CHECK (granted > 0),
+  remaining  INT NOT NULL CHECK (remaining >= 0 AND remaining <= granted),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  revoked_at TIMESTAMPTZ
+);
+COMMENT ON TABLE  star_paid_lots IS '유료 별조각 로트(지급된 주문마다 한 행, PK = order_id라 주문당 1회 지급을 한 번 더 막는다). 소비는 오래된 로트부터, 환불은 그 주문 로트만 회수한다. SUM(remaining) = star_wallets.paid_balance';
+COMMENT ON COLUMN star_paid_lots.remaining IS '아직 쓰지 않은 유료 별조각. 소비·회수·부채 상환으로만 줄어든다';
+-- 소비가 계정의 남은 로트를 오래된 순으로 읽는다(FOR UPDATE)
+CREATE INDEX star_paid_lots_open ON star_paid_lots (account_id, created_at, order_id) WHERE remaining > 0;
+
+CREATE TABLE star_spend_allocs (
+  id        BIGSERIAL PRIMARY KEY,
+  ledger_id BIGINT NOT NULL REFERENCES star_ledger(id),
+  order_id  BIGINT NOT NULL REFERENCES star_orders(id),
+  stars     INT NOT NULL CHECK (stars > 0),
+  UNIQUE (ledger_id, order_id)
+);
+COMMENT ON TABLE  star_spend_allocs IS '유료 별조각 감소 원장 줄(소비·회수·상환)이 어느 주문 로트에서 몇 개를 가져갔나(추가 전용). 환불된 주문의 별조각으로 얻은 것을 되짚는 근거. 줄마다 SUM(stars) = -paid_delta';
+-- "이 주문의 별조각이 어디에 쓰였나"(환불 분석, 관리자 상세)
+CREATE INDEX star_spend_allocs_order ON star_spend_allocs (order_id);
+CREATE TRIGGER star_spend_allocs_append_only BEFORE UPDATE OR DELETE ON star_spend_allocs
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER star_spend_allocs_no_truncate BEFORE TRUNCATE ON star_spend_allocs
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- 6. 운영 지급·부채 탕감(2인 승인)
+CREATE TABLE star_admin_grants (
+  id               BIGSERIAL PRIMARY KEY,
+  uuid             UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  kind             TEXT NOT NULL CHECK (kind IN ('grant', 'debt_forgive')),
+  account_id       BIGINT NOT NULL REFERENCES accounts(id),
+  stars            BIGINT,
+  related_order_id BIGINT REFERENCES star_orders(id),
+  memo             TEXT NOT NULL CHECK (char_length(memo) BETWEEN 1 AND 200),
+  state            TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'applied', 'cancelled', 'expired')),
+  request_id       UUID NOT NULL,
+  created_by       BIGINT NOT NULL REFERENCES admin_users(id),
+  approved_by      BIGINT REFERENCES admin_users(id),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  approved_at      TIMESTAMPTZ,
+  expires_at       TIMESTAMPTZ NOT NULL,
+  closed_at        TIMESTAMPTZ,
+  applied_stars    BIGINT,
+  UNIQUE (created_by, request_id),
+  CONSTRAINT star_admin_grants_stars_chk   CHECK ((kind = 'grant') = (stars IS NOT NULL AND stars > 0)),
+  CONSTRAINT star_admin_grants_two_person  CHECK (approved_by IS NULL OR approved_by <> created_by),
+  CONSTRAINT star_admin_grants_applied_chk CHECK ((state = 'applied') = (approved_by IS NOT NULL AND approved_at IS NOT NULL)),
+  CONSTRAINT star_admin_grants_expiry_chk  CHECK (expires_at > created_at)
+);
+COMMENT ON TABLE  star_admin_grants IS '관리자 별조각 지급·부채 탕감(2인 승인, 추가 전용에 가깝다: 내용은 불변, 상태만 pending에서 한 번 변한다). 지급 경로를 만드는 유일한 운영 경로. 승인 전에는 별조각이 움직이지 않는다';
+COMMENT ON COLUMN star_admin_grants.kind IS 'grant 무료 별조각 지급 / debt_forgive 승인 시점 부채 전액 탕감';
+COMMENT ON COLUMN star_admin_grants.stars IS 'grant의 지급량(상한은 서버 환경변수가 검사). debt_forgive는 NULL(전액만, 금액을 입력하지 않는다)';
+COMMENT ON COLUMN star_admin_grants.applied_stars IS '실제 적용량(grant는 stars, debt_forgive는 승인 시점 부채)';
+COMMENT ON COLUMN star_admin_grants.approved_by IS '작성자와 다른 owner. DB CHECK가 이중 장치';
+-- 대상 계정의 지급 이력(계정 상세), 관리자별·전체 일일 합계(상한 검사), 승인 대기 목록
+CREATE INDEX star_admin_grants_account ON star_admin_grants (account_id, created_at DESC);
+CREATE INDEX star_admin_grants_creator_time ON star_admin_grants (created_by, created_at) WHERE kind = 'grant';
+CREATE INDEX star_admin_grants_pending ON star_admin_grants (created_at) WHERE state = 'pending';
+CREATE FUNCTION star_admin_grants_guard() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'star_admin_grants rows are never deleted';
+  END IF;
+  IF NEW.kind <> OLD.kind OR NEW.account_id <> OLD.account_id OR NEW.stars IS DISTINCT FROM OLD.stars
+     OR NEW.memo <> OLD.memo OR NEW.created_by <> OLD.created_by OR NEW.created_at <> OLD.created_at
+     OR NEW.related_order_id IS DISTINCT FROM OLD.related_order_id THEN
+    RAISE EXCEPTION 'star_admin_grants content is immutable';
+  END IF;
+  IF OLD.state <> 'pending' AND NEW.state <> OLD.state THEN
+    RAISE EXCEPTION 'star_admin_grants state is final';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER star_admin_grants_guard BEFORE UPDATE OR DELETE ON star_admin_grants
+  FOR EACH ROW EXECUTE FUNCTION star_admin_grants_guard();
+
+-- 7. 결제 플래그(검토 큐)
+CREATE TABLE payment_flags (
+  id          BIGSERIAL PRIMARY KEY,
+  uuid        UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  account_id  BIGINT NOT NULL REFERENCES accounts(id),
+  order_id    BIGINT REFERENCES star_orders(id),
+  kind        TEXT NOT NULL CHECK (kind IN ('rapid_orders', 'limit_exceeded', 'fail_burst', 'country_changed', 'shared_device',
+                                            'linked_chargeback', 'refund_after_spend', 'chargeback', 'partial_refund',
+                                            'amount_mismatch', 'steamid_mismatch', 'appid_mismatch', 'unknown_steam_order',
+                                            'stuck_order', 'report_gap', 'unknown_steam_status')),
+  severity    SMALLINT NOT NULL CHECK (severity BETWEEN 1 AND 3),
+  detail      JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(detail) = 'object'),
+  state       TEXT NOT NULL DEFAULT 'open' CHECK (state IN ('open', 'confirmed', 'dismissed')),
+  reviewed_by TEXT CHECK (char_length(reviewed_by) <= 40),
+  reviewed_at TIMESTAMPTZ,
+  note        TEXT CHECK (char_length(note) <= 500),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT payment_flags_review_chk CHECK ((state = 'open') = (reviewed_at IS NULL))
+);
+COMMENT ON TABLE  payment_flags IS '결제 이상 신호와 검토 큐. 막지 않고 기록하는 신호(한도 반복, 국가 변경 등)와 반드시 사람이 보는 신호(차지백, 금액 불일치, 미지 주문)를 함께 둔다. 검토 필드만 바뀐다';
+COMMENT ON COLUMN payment_flags.account_id IS '신호의 대상 계정. 미지 주문처럼 계정을 특정하지 못하는 신호는 이 표에 넣지 않고 job_runs.detail과 경보로만 남긴다(unknown_steam_order는 Steam ID로 우리 계정을 찾은 경우에만 이 표에 들어간다)';
+-- 검토 큐(열린 것, 심각도 높은 순, 오래된 순)
+CREATE INDEX payment_flags_open ON payment_flags (severity DESC, created_at) WHERE state = 'open';
+-- 계정 상세에서 그 계정의 플래그, 같은 종류 중복 억제 조회
+CREATE INDEX payment_flags_account ON payment_flags (account_id, kind, created_at DESC);
+
+-- 8. 별조각 지갑·원장 확장
+ALTER TABLE star_wallets
+  ADD COLUMN paid_balance BIGINT NOT NULL DEFAULT 0 CHECK (paid_balance >= 0),
+  ADD COLUMN debt         BIGINT NOT NULL DEFAULT 0 CHECK (debt >= 0),
+  ADD CONSTRAINT star_wallets_paid_le_balance CHECK (paid_balance <= balance);
+COMMENT ON COLUMN star_wallets.paid_balance IS '그중 유료분(결제로 산 별조각). = SUM(star_paid_lots.remaining). 무료분 = balance - paid_balance';
+COMMENT ON COLUMN star_wallets.debt IS '환불·차지백된 주문 중 이미 소비된 별조각. >0이면 별조각 소비 차단, 모든 입금이 먼저 상환한다. 음수 잔액 대신 쓴다';
+
+ALTER TABLE star_ledger
+  ADD COLUMN paid_delta         BIGINT NOT NULL DEFAULT 0,
+  ADD COLUMN paid_balance_after BIGINT NOT NULL DEFAULT 0 CHECK (paid_balance_after >= 0),
+  ADD COLUMN debt_delta         BIGINT NOT NULL DEFAULT 0,
+  ADD COLUMN debt_after         BIGINT NOT NULL DEFAULT 0 CHECK (debt_after >= 0),
+  ADD CONSTRAINT star_ledger_paid_le_balance CHECK (paid_balance_after <= balance_after);
+COMMENT ON COLUMN star_ledger.paid_delta IS '유료분 증감(유료 입금 +, 유료 소비·회수·상환 -). 무료 변동은 0';
+COMMENT ON COLUMN star_ledger.debt_delta IS '부채 증감(회수 +, 상환·탕감 -)';
+
+ALTER TABLE star_ledger DROP CONSTRAINT star_ledger_reason_check;
+ALTER TABLE star_ledger ADD CONSTRAINT star_ledger_reason_check
+  CHECK (reason IN ('purchase', 'test_grant', 'gacha', 'gacha_refund', 'exchange', 'refund_revoke', 'dismantle',
+                    'chargeback_revoke', 'debt_settle', 'debt_forgive', 'admin_grant'));
+COMMENT ON COLUMN star_ledger.reason IS 'purchase 결제 지급(주문 필수) / admin_grant 승인된 운영 지급 / dismantle 여분 분해 / test_grant 시험 서버 전용 / gacha·exchange 소비 / refund_revoke·chargeback_revoke 환불·차지백 회수 / debt_settle 입금이 부채 상환 / debt_forgive 승인된 부채 탕감 / gacha_refund 새 입금 금지(과거 행만)';
+COMMENT ON COLUMN star_ledger.ref IS 'purchase·refund_revoke·chargeback_revoke는 주문 uuid, admin_grant·debt_forgive는 star_admin_grants uuid';
+
+-- 사유별 부호 규칙(앱 버그가 엉뚱한 부호로 원장을 쓰는 것을 DB가 막는다)
+ALTER TABLE star_ledger ADD CONSTRAINT star_ledger_sign_chk CHECK (
+     (reason = 'purchase'                                 AND delta > 0 AND paid_delta = delta AND debt_delta = 0)
+  OR (reason IN ('refund_revoke', 'chargeback_revoke')    AND delta <= 0 AND paid_delta = delta AND debt_delta >= 0)
+  OR (reason IN ('gacha', 'exchange')                     AND delta < 0 AND paid_delta BETWEEN delta AND 0 AND debt_delta = 0)
+  OR (reason = 'debt_settle'                              AND delta < 0 AND paid_delta BETWEEN delta AND 0 AND debt_delta = delta)
+  OR (reason = 'debt_forgive'                             AND delta = 0 AND paid_delta = 0 AND debt_delta < 0)
+  OR (reason IN ('admin_grant', 'dismantle', 'test_grant', 'gacha_refund') AND delta > 0 AND paid_delta = 0 AND debt_delta = 0)
+);
+
+-- 주문당 지급 1줄, 주문당 회수 1줄, 운영 지급당 1줄(이중 지급의 DB 보장)
+CREATE UNIQUE INDEX star_ledger_purchase_uq ON star_ledger (ref) WHERE reason = 'purchase';
+CREATE UNIQUE INDEX star_ledger_revoke_uq   ON star_ledger (ref) WHERE reason IN ('refund_revoke', 'chargeback_revoke');
+CREATE UNIQUE INDEX star_ledger_admin_uq    ON star_ledger (ref) WHERE reason IN ('admin_grant', 'debt_forgive');
+-- 일일 소비 상한: 계정의 오늘 gacha·exchange 합계(지갑 행을 잠근 상태에서 읽는다)
+CREATE INDEX star_ledger_spend_time ON star_ledger (account_id, created_at) WHERE reason IN ('gacha', 'exchange');
+
+-- 원장을 추가 전용으로(0013 이후 처음)
+CREATE TRIGGER star_ledger_append_only BEFORE UPDATE OR DELETE ON star_ledger
+  FOR EACH ROW EXECUTE FUNCTION ledger_block_mutation();
+CREATE TRIGGER star_ledger_no_truncate BEFORE TRUNCATE ON star_ledger
+  FOR EACH STATEMENT EXECUTE FUNCTION ledger_block_mutation();
+
+-- 근거 없는 입금을 커밋 시점에 거절(지연 제약 트리거: 같은 트랜잭션에서 주문·지급 상태를 먼저 바꿔도 된다)
+CREATE FUNCTION star_ledger_backing_check() RETURNS trigger AS $$
+BEGIN
+  IF NEW.reason = 'purchase' THEN
+    IF NOT EXISTS (SELECT 1 FROM star_orders o
+                    WHERE o.uuid::text = NEW.ref AND o.account_id = NEW.account_id AND o.stars = NEW.delta
+                      AND o.granted_at IS NOT NULL AND o.state IN ('granted', 'refunded', 'chargeback')) THEN
+      RAISE EXCEPTION 'star_ledger purchase % has no granted order', NEW.ref;
+    END IF;
+  ELSIF NEW.reason IN ('refund_revoke', 'chargeback_revoke') THEN
+    IF NOT EXISTS (SELECT 1 FROM star_orders o
+                    WHERE o.uuid::text = NEW.ref AND o.account_id = NEW.account_id
+                      AND o.granted_at IS NOT NULL AND o.state IN ('refunded', 'chargeback')) THEN
+      RAISE EXCEPTION 'star_ledger % % has no reversed order', NEW.reason, NEW.ref;
+    END IF;
+  ELSIF NEW.reason IN ('admin_grant', 'debt_forgive') THEN
+    IF NOT EXISTS (SELECT 1 FROM star_admin_grants g
+                    WHERE g.uuid::text = NEW.ref AND g.account_id = NEW.account_id AND g.state = 'applied'
+                      AND g.kind = CASE WHEN NEW.reason = 'admin_grant' THEN 'grant' ELSE 'debt_forgive' END) THEN
+      RAISE EXCEPTION 'star_ledger % % has no approved grant', NEW.reason, NEW.ref;
+    END IF;
+  ELSIF NEW.reason = 'test_grant' THEN
+    IF coalesce(current_setting('dotrpg.allow_test_grant', true), '') <> 'on' THEN
+      RAISE EXCEPTION 'star_ledger test_grant is allowed only on the test stage';
+    END IF;
+  ELSIF NEW.reason = 'gacha_refund' THEN
+    RAISE EXCEPTION 'star_ledger gacha_refund is retired';
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+CREATE CONSTRAINT TRIGGER star_ledger_backing AFTER INSERT ON star_ledger
+  DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION star_ledger_backing_check();
+
+-- 9. 경제 정지: 결제 종류 추가, 활성 정지 유일 인덱스에 "결제 여부"를 넣어 속도 정지와 공존
+ALTER TABLE economy_holds DROP CONSTRAINT economy_holds_kind_check;
+ALTER TABLE economy_holds ADD CONSTRAINT economy_holds_kind_check
+  CHECK (kind IN ('velocity', 'auction', 'linked', 'manual', 'payment'));
+DROP INDEX economy_holds_one_active;
+CREATE UNIQUE INDEX economy_holds_one_active ON economy_holds (account_id, scope_char, ((kind = 'payment')))
+  WHERE state IN ('active', 'clawed_back');
+
+-- 10. 감사 로그 대상 종류
+ALTER TABLE admin_audit_log DROP CONSTRAINT admin_audit_log_target_type_check;
+ALTER TABLE admin_audit_log ADD CONSTRAINT admin_audit_log_target_type_check
+  CHECK (target_type IN ('account', 'character', 'report', 'dungeon_run', 'sanction', 'maintenance', 'job', 'admin', 'mail',
+                         'server', 'hold', 'campaign', 'payment_order', 'payment_account', 'star_grant', 'payment_flag'));

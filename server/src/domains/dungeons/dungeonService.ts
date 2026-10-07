@@ -95,7 +95,7 @@ async function processEnter(ctx: EconCtx, body: EnterBody) {
     info = await checkEntry(ctx.client, ctx.char, body.dungeon_id, body.difficulty, ctx.now);
   } catch (err) {
     // 클라이언트 UI가 막은 레이드 조건을 우회해 들어오려 한 흔적
-    if (err instanceof AppError && (err.code === 'RAID_LOCKED' || err.code === 'KEYS_MISSING')) {
+    if (err instanceof AppError && err.code === 'RAID_LOCKED') {
       throw new AnomalyError(err.status, err.message, err.code, {
         kind: 'raid_enter',
         severity: 2,

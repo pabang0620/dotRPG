@@ -1,0 +1,6 @@
+{
+  "note": "운영 예약어. 운영자가 수정하며 서버가 파일 수정 시각으로 다시 읽는다. substring은 이름에 포함되면 금지, token은 짧은 영문 토큰으로 이름이 같거나 토큰으로 시작/끝나면 금지, allow는 오탐 구제(정확히 같은 이름만).",
+  "substring": ["운영자", "관리자", "운영팀", "개발자", "스태프", "공지", "시스템", "고객센터", "administrator", "moderator"],
+  "token": ["gm", "admin", "mod", "staff", "cs", "dev", "npc", "system", "sys"],
+  "allow": []
+}

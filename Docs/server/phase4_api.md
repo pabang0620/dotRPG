@@ -453,14 +453,14 @@ C# `DungeonDirector.RaidLockReason`은 해금 퀘스트를 "받았거나 완료"
 |---|---|
 | `ALREADY_CLAIMED` | 이번 기간의 `raid_claims`가 이미 있다. 기간은 **중간 레이드: 일일(`dailyStartAt`), 최종 레이드: 주간(`weeklyStartAt`)**(`resetBoundaries` 한 함수) |
 | `TOO_FEW_HUMANS` | 판을 만들 때 사람 수가 `RAID_REWARD_MIN_HUMANS`(기본 2) 미만(솔로 AI 레이드는 연습, 결정 대기 2). **정산 때도 다시 본다**: 이탈하지 않은 사람(`left`·`no_show`·`dropped`가 아닌 멤버)이 최소 인원 미만이면 잠근다(친구가 들어왔다가 바로 나가 대조를 피하는 것을 막는다) |
-| `KEYS_MISSING` | **정산 때** 최종 레이드의 봉인 열쇠가 `keyCost`보다 적다(입장 때는 `checkEntry`가 막지만 판 도중 열쇠를 팔면 정산에서 잠긴다) |
+| `KEYS_MISSING` | 판을 만들 때 또는 **정산 때** 최종 레이드의 봉인 열쇠가 `keyCost`보다 적다. 입장은 막지 않는다(2026-10-06): 연습판이 되고 클리어는 퀘스트에 인정되어 혼자서도 스토리를 끝낼 수 있다 |
 
 잠긴 판은 "연습 입장"이다: 클리어 경험치·카드·열쇠·`raid_claims`가 없다. 처치 경험치·드롭은 `RAID_PRACTICE_PAYS_KILLS`에 따른다(7.2). 클리어 기록(`cleared`, 해금·최고 랭크)은 남는다(C# `RecordClear`는 잠금과 무관).
 
 ### 10.4 정산 (레이드 클리어, `settle`의 마지막 단계)
 보상 가능(`reward_locked=false`)인 클리어를 3단계 9.5 5~7의 결과로 확정한 뒤, 같은 트랜잭션에서:
 1. `raid_claims` INSERT(PK = `(캐릭터, 던전, 기간 시작)`). 충돌하면(동시에 다른 판이 먼저 받음) `reward_locked=true, ALREADY_CLAIMED`로 되돌리고 클리어 경험치·카드를 주지 않는다. **이 INSERT를 경험치·카드보다 먼저 한다**(DB가 "기간당 한 번"을 막는다).
-2. 최종 레이드: 가방의 봉인 열쇠(`key_seal`) >= `keyCost`이면 `keyCost`만큼 `item_ledger('raid_key_cost')`로 소모(C#은 `min(cost, have)`를 쓰지만 서버는 부족하면 보상 자체를 잠근다 - 입장 때 부족하면 못 들어오므로 정직한 흐름에서는 같다).
+2. 최종 레이드: 가방의 봉인 열쇠(`key_seal`) >= `keyCost`이면 `keyCost`만큼 `item_ledger('raid_key_cost')`로 소모(C#은 `min(cost, have)`를 쓰지만 서버는 부족하면 보상 자체를 잠근다. 입장 때 부족했으면 처음부터 연습판이다).
 3. 중간 레이드: `rng.int(keyMin, keyMax + 1)`개를 `item_ledger('raid_key')`로 지급(`ref` = 판 uuid).
 - `GET /raids`가 "이번 주 n/3"을 위한 `clears_this_period`(중간 레이드: 같은 주간 구간의 `raid_claims` 행 수)를 준다.
 

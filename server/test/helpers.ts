@@ -6,7 +6,9 @@ import request from 'supertest';
 import { createApp } from '../src/app';
 import { initConfig, getConfig } from '../src/config/env';
 import { closePool, getPool } from '../src/db/pool';
-import { initGameData } from '../src/gamedata/loader';
+import { isOpenToday } from '../src/domains/dungeons/dungeonRules';
+import { getGameData, initGameData } from '../src/gamedata/loader';
+import { getNow, setClockOverride } from '../src/utils/clock';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 
 export const CLIENT_VERSION = '0.2.0';
@@ -29,6 +31,43 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'revive_log',
+      'account_level_rewards',
+      'account_pass_claims',
+      'account_growth_pass',
+      'sealed_pulls',
+      'account_sealed_state',
+      // 11단계: 결제·별조각(원장 트리거는 위에서 끈 상태)
+      'star_spend_allocs',
+      'star_paid_lots',
+      'star_order_events',
+      'payment_flags',
+      'star_admin_grants',
+      'star_orders',
+      'payment_profiles',
+      'star_ledger',
+      'star_wallets',
+      'gacha_pulls',
+      'star_synth_log',
+      'account_collections',
+      'account_cosmetics',
+      'mail_campaign_deliveries',
+      'mail_attachments',
+      'mail_campaign_attachments',
+      'sweep_ticket_ledger',
+      'dungeon_sweeps',
+      'sweep_ticket_lots',
+      'account_week_counters',
+      'auction_trade_flags',
+      'economy_holds',
+      'income_hourly',
+      'play_time_hourly',
+      'online_sessions',
+      'login_events',
+      'account_devices',
+      'account_ips',
+      'character_career_trials',
+      'character_career',
       'admin_grants',
       'held_run_reviews',
       'admin_account_notes',
@@ -40,6 +79,7 @@ export async function resetDb(): Promise<void> {
       'auction_flags',
       'auction_sinks',
       'mails',
+      'mail_campaigns',
       'auction_price_daily',
       'auction_trades',
       'auction_bids',
@@ -144,7 +184,9 @@ export async function createChar(
     .send({ request_id: requestId, name, class: cls });
 }
 
-export const randomName = (): string => `영웅${randomBytes(3).toString('hex').slice(0, 5)}`.slice(0, 8);
+// 9단계 예약어 규칙(혼동 문자 접기 5->s 등)에 우연히 걸리지 않도록 c·s·g·m·n·p·v·y와 숫자 5를 뺀 문자만 쓴다
+const NAME_ALPHABET = 'abdef012346789';
+export const randomName = (): string => `영웅${Array.from(randomBytes(6), (b) => NAME_ALPHABET[b % NAME_ALPHABET.length]).join('')}`;
 
 export function emptyState(version: number, over: object = {}): Record<string, unknown> {
   return {
@@ -159,4 +201,21 @@ export function emptyState(version: number, over: object = {}): Record<string, u
     skill_gems: [],
     ...over,
   };
+}
+
+/**
+ * 서버 시계를 요일던전 gold_vein 이 열리는 월요일 낮으로 옮기되 흐름은 실제 시간 그대로 둔다(중계 타이머 테스트용).
+ * 실제 요일에 상관없이 gold_vein 파티가 만들어진다. 끝나면 setClockOverride(null).
+ */
+export function pinClockToMondayFlowing(): void {
+  const offset = Date.parse('2026-10-05T03:00:00Z') - Date.now();
+  setClockOverride(() => new Date(Date.now() + offset));
+}
+
+/** 오늘(서버 시계 기준) 열려 있는 요일던전 중 첫 번째 id. 요일에 따라 테스트가 깨지지 않게 gold_vein 대신 쓴다 */
+export function openDungeonToday(): string {
+  const eco = getGameData().economy;
+  const now = getNow();
+  for (const d of eco.dungeons.byId.values()) if (!d.isRaid && isOpenToday(eco, d, now)) return d.id;
+  throw new Error('오늘 열린 요일던전이 없습니다');
 }

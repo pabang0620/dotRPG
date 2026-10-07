@@ -120,7 +120,7 @@ namespace DotRPG
             transportInfo.amHost = amHost;
             transportInfo.hostKey = PartyNet.FromBase64Url(hostKey);
             var t = CombatTransportFactory.Create(transportInfo);
-            if (t == null) { GameEvents.RaiseToast("파티원과 연결할 수 없어 혼자 사냥한다."); Leave(); EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Local); return; }
+            if (t == null) { GameEvents.RaiseToast("파티원과 연결할 수 없어 혼자 사냥합니다."); Leave(); EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Local); return; }
             OnlineEconomy.FieldSessionId = sessionId;
             // [AI] The host's companions fill the seats people leave free; members show those, not their own.
             Game.Party?.SetRosterHidden(!amHost);
@@ -134,7 +134,7 @@ namespace DotRPG
                 EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Follower);
                 PartyNet.BeginFieldMember(t, sessionId, seat, OnlineSession.Current?.ActiveCharacter, mapId);
             }
-            GameEvents.RaiseToast("파티원과 같은 사냥터에 있다. 몬스터를 함께 잡는다.");
+            GameEvents.RaiseToast("파티원과 같은 사냥터에 있습니다. 몬스터를 함께 잡습니다.");
             heartbeatTimer = HeartbeatSeconds;
             observeTimer = ObserveSeconds;
         }
@@ -204,6 +204,7 @@ namespace DotRPG
                     return;
                 }
                 if (MiniJson.Str(r.data, "state") == "ended") { EndLocally(); return; }
+                foreach (var m in MiniJson.Arr(r.data, "members") ?? new List<object>()) MemberCardCheck.Read("field:" + id, m);
                 var host = MiniJson.Obj(r.data, "host");
                 bool changed = r.data.TryGetValue("host_changed", out var c) && c is bool b && b;
                 if (!changed || host == null) return;
@@ -260,7 +261,7 @@ namespace DotRPG
             transportInfo.amHost = true;
             Game.Party?.SetRosterHidden(false);
             PartyNet.BeginFieldHost(keep ?? CombatTransportFactory.Create(transportInfo), sessionId, seat, mapId).SetFieldHumanSeats(transportInfo.seats);
-            GameEvents.RaiseToast("이 사냥터의 몬스터 계산을 내가 이어받았다.");
+            GameEvents.RaiseToast("이 사냥터의 몬스터 계산을 내가 이어받았습니다.");
         }
 
         /// <summary>Another PC became host (this one came back after a drop): draw its monsters instead.</summary>
@@ -284,7 +285,7 @@ namespace DotRPG
             if (PartyNet.Active && PartyNet.Current.FieldMode) PartyNet.End();
             amHost = false;
             GoSolo();
-            GameEvents.RaiseToast("함께 사냥이 끝났다. 이제 혼자 사냥한다.");
+            GameEvents.RaiseToast("함께 사냥이 끝났습니다. 이제 혼자 사냥합니다.");
         }
 
         /// <summary>Host's monsters disappear from this screen and the local spawner fills the field again.</summary>

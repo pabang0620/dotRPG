@@ -15,7 +15,7 @@ namespace DotRPG.EditorTools
         /// <summary>(sprite key, world size, measure by height?) - widths for wide props, heights for tall ones.</summary>
         static readonly (string key, float size, bool byHeight)[] Props =
         {
-            ("town_fountain_0", 3.0f, false), ("town_fountain_1", 3.0f, false), ("town_fountain_2", 3.0f, false),
+            ("town_fountain_0", 3.0f, false),
             ("town_well", 2.0f, false), ("town_board", 2.0f, false), ("town_lamp", 2.3f, true),
             ("town_barrel", 1.0f, true), ("town_crate", 0.95f, true), ("town_sacks", 1.15f, false),
             ("town_hay", 1.05f, true), ("town_woodpile", 2.0f, false), ("town_ccrate", 1.0f, false),

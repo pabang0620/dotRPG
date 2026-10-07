@@ -72,9 +72,10 @@ namespace DotRPG
                 row.label.alignment = TextAnchor.MiddleLeft;
                 UIFactory.Stretch(row.label.rectTransform, 92f, 0f, 10f, 0f);
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
-                row.thumb = UIFactory.Image(b.transform, "Thumbnail", look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p), look != null ? Color.white : p.Color);
+                var card = CosmeticAura.Card(p);
+                row.thumb = UIFactory.Image(b.transform, "Thumbnail", card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p)), card != null || look != null ? Color.white : p.Color);
                 row.thumb.preserveAspect = true;
-                UIFactory.Place(row.thumb.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(72f, look != null ? 60f : 36f));
+                UIFactory.Place(row.thumb.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(72f, card != null ? 64f : look != null ? 60f : 36f));
                 s.rows.Add(row);
             }
 
@@ -177,7 +178,7 @@ namespace DotRPG
             for (int i = 0; i < v.Count; i++)
             {
                 var item = v[i].product;
-                string state = Wearing(item) ? "<color=#8fe28f>착용 중</color>" : store.Owns(item.Id) ? "보유" : "<color=#8c96a8>미보유</color>";
+                string state = Wearing(item) ? "<color=#8fe28f>장착 중</color>" : store.Owns(item.Id) ? "보유" : "<color=#8c96a8>미보유</color>";
                 string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{CosmeticCatalog.RarityName(item.Rarity)}{(item.IsSkin ? " 스킨" : "")}</color>";
                 string dmg = item.DamagePercent > 0 ? $" · <color=#ffb347>공격력 +{item.DamagePercent}%</color>" : "";
                 v[i].label.text = $"<b>{item.Name}</b>\n<size=16>{grade}{dmg} · {state}</size>";
@@ -199,13 +200,13 @@ namespace DotRPG
                 previewCharacter.sprite = animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
             }
             title.text = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{product.Name}</color>";
-            bonus.text = product.DamagePercent > 0 ? $"착용 시 <color=#ffb347>공격력 +{product.DamagePercent}%</color>" : "<color=#8c96a8>능력치 없음</color>";
+            bonus.text = product.DamagePercent > 0 ? $"장착 시 <color=#ffb347>공격력 +{product.DamagePercent}%</color>" : "<color=#8c96a8>능력치 없음</color>";
             // The price is on the buy button; here only what it is (kept short so it never runs under the button).
             string have = product.IsFree ? "무료" : owned ? "<color=#8fe28f>보유 중</color>" : store.IsAvailable ? "" : "<color=#8c96a8>온라인 전용</color>";
             description.text = skin != null
                 ? $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{CosmeticCatalog.RarityName(product.Rarity)} 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n<color=#b8c4d8>8방향 모든 동작 전용 그림 · {(skin.afterimage ? "걸으면 잔상과 입자" : "주위에 빛 입자")}</color>\n{have}"
                 : $"{(product.IsFree ? "기본" : CosmeticCatalog.RarityName(product.Rarity))} 등급 발밑 오라 · 영구 소장\n모든 직업 공용\n{have}";
-            actionLabel.text = equipped ? (skin != null ? "벗기" : "착용 중") : owned ? "착용하기" : offer != null ? $"{offer.LocalizedPrice}로 구매"
+            actionLabel.text = equipped ? (skin != null ? "벗기" : "장착 중") : owned ? "장착하기" : offer != null ? $"{offer.LocalizedPrice}로 구매"
                 : product.GaugeOnly && store.IsAvailable ? "선택 게이지로만 획득" : "온라인 전용";
             action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;

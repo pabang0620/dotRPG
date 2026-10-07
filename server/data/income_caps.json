@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "generatedBy": "Tools/balance/theory_income.py",
+  "killsPerMinute": 30,
+  "bossesPerHour": 4,
+  "bands": [
+    {
+      "minLevel": 1,
+      "maxLevel": 4,
+      "zone": "forest_ruins",
+      "monsterLevel": 6,
+      "fieldBoss": null,
+      "dungeonDifficulty": 0,
+      "perHour": {
+        "xp": 16200,
+        "goldEq": 77656,
+        "ore": 630.0,
+        "essence": 144.0,
+        "epicPlus": 0.0
+      },
+      "perDay": {
+        "dungeonXp": 8600,
+        "dungeonGoldEq": 3600,
+        "raidMidXp": 0,
+        "raidMidGoldEq": 0
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 5,
+      "maxLevel": 8,
+      "zone": "forest_depths",
+      "monsterLevel": 10,
+      "fieldBoss": null,
+      "dungeonDifficulty": 0,
+      "perHour": {
+        "xp": 21600,
+        "goldEq": 87248,
+        "ore": 630.0,
+        "essence": 144.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 8600,
+        "dungeonGoldEq": 3600,
+        "raidMidXp": 0,
+        "raidMidGoldEq": 0
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 9,
+      "maxLevel": 12,
+      "zone": "canyon_pass",
+      "monsterLevel": 14,
+      "fieldBoss": "forest_depths",
+      "dungeonDifficulty": 1,
+      "perHour": {
+        "xp": 31800,
+        "goldEq": 90327,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 20871,
+        "dungeonGoldEq": 5760,
+        "raidMidXp": 0,
+        "raidMidGoldEq": 0
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 13,
+      "maxLevel": 16,
+      "zone": "canyon_mine",
+      "monsterLevel": 18,
+      "fieldBoss": "forest_depths",
+      "dungeonDifficulty": 1,
+      "perHour": {
+        "xp": 42600,
+        "goldEq": 95909,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 20871,
+        "dungeonGoldEq": 5760,
+        "raidMidXp": 0,
+        "raidMidGoldEq": 0
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 17,
+      "maxLevel": 20,
+      "zone": "canyon_ridge",
+      "monsterLevel": 22,
+      "fieldBoss": "forest_depths",
+      "dungeonDifficulty": 2,
+      "perHour": {
+        "xp": 55200,
+        "goldEq": 101607,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 43477,
+        "dungeonGoldEq": 8640,
+        "raidMidXp": 10092,
+        "raidMidGoldEq": 4500
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 21,
+      "maxLevel": 24,
+      "zone": "winter_edge",
+      "monsterLevel": 26,
+      "fieldBoss": "canyon_ridge",
+      "dungeonDifficulty": 2,
+      "perHour": {
+        "xp": 73200,
+        "goldEq": 107003,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 43477,
+        "dungeonGoldEq": 8640,
+        "raidMidXp": 10092,
+        "raidMidGoldEq": 4500
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 25,
+      "maxLevel": 28,
+      "zone": "winter_edge",
+      "monsterLevel": 26,
+      "fieldBoss": "canyon_ridge",
+      "dungeonDifficulty": 3,
+      "perHour": {
+        "xp": 73200,
+        "goldEq": 107003,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 90011,
+        "dungeonGoldEq": 12240,
+        "raidMidXp": 10092,
+        "raidMidGoldEq": 4500
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 29,
+      "maxLevel": 33,
+      "zone": "winter_lake",
+      "monsterLevel": 31,
+      "fieldBoss": "canyon_ridge",
+      "dungeonDifficulty": 3,
+      "perHour": {
+        "xp": 96600,
+        "goldEq": 112700,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 90011,
+        "dungeonGoldEq": 12240,
+        "raidMidXp": 10092,
+        "raidMidGoldEq": 4500
+      },
+      "perWeek": {
+        "raidFinalXp": 0,
+        "raidFinalGoldEq": 0
+      }
+    },
+    {
+      "minLevel": 34,
+      "maxLevel": 40,
+      "zone": "sanctum_hall",
+      "monsterLevel": 40,
+      "fieldBoss": "winter_peak",
+      "dungeonDifficulty": 3,
+      "perHour": {
+        "xp": 150700,
+        "goldEq": 124044,
+        "ore": 646.0,
+        "essence": 148.0,
+        "epicPlus": 31.3
+      },
+      "perDay": {
+        "dungeonXp": 90011,
+        "dungeonGoldEq": 12240,
+        "raidMidXp": 10092,
+        "raidMidGoldEq": 4500
+      },
+      "perWeek": {
+        "raidFinalXp": 41850,
+        "raidFinalGoldEq": 18000
+      }
+    }
+  ],
+  "uniquePlus": {
+    "perDay": 4,
+    "perHour": 0.12
+  }
+}

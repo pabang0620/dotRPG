@@ -7,7 +7,7 @@ namespace DotRPG
     /// Every window / HUD / icon sprite key goes through <see cref="DrawUiFamily"/>
     /// (ui_*, icon_*, eqicon_*, maticon_*, menuicon_*, gem_*, node_*, heart_*), so the whole UI art
     /// set is authored here in one place. Each canvas sets <c>Density = 2</c>, which makes
-    /// <see cref="SpriteLibrary"/> import it at twice the pixels per unit — same on-screen size as the
+    /// <see cref="SpriteLibrary"/> import it at twice the pixels per unit - same on-screen size as the
     /// old 16px art, twice the detail. 9-slice borders are given in the (doubled) HD pixel space and
     /// <see cref="UIFactory"/> keeps the on-screen border thickness constant across densities.
     /// </summary>
@@ -717,8 +717,8 @@ namespace DotRPG
             bool support = id.StartsWith("sup_");
             bool ultimate = id == "blades" || id == "meteor";
             Color32 baseCol = ultimate ? PixelCanvas.Hex("#e0a020")
-                : id == "whirl" || id == "slam" || id == "wave" || id == "cry" ? PixelCanvas.Hex("#d9443a")
-                : id == "arc" || id == "nova" || id == "frostorb" || id == "thunder" ? PixelCanvas.Hex("#3f7fe0")
+                : id == "whirl" || id == "cry" ? PixelCanvas.Hex("#d9443a")
+                : id == "nova" || id == "frostorb" ? PixelCanvas.Hex("#3f7fe0")
                 : id == "sup_leech" ? PixelCanvas.Hex("#c0304a")
                 : id == "sup_chain" || id == "sup_eff" ? PixelCanvas.Hex("#4a78d8")
                 : PixelCanvas.Hex("#4fb34a");
@@ -753,9 +753,6 @@ namespace DotRPG
             var mark = White;
             switch (id)
             {
-                case "wave":
-                    c.Circle(19f, 19f, 10f, mark); c.Circle(15f, 19f, 8.6f, baseCol); c.Circle(15f, 15f, 3f, baseCol);
-                    break;
                 case "cry":
                     c.Set(10, 18, mark); c.Set(10, 19, mark); c.Set(10, 20, mark); c.Set(11, 19, mark);
                     for (int r = 6; r <= 14; r += 4)
@@ -771,18 +768,11 @@ namespace DotRPG
                     c.Set(16, 16, mark); c.Set(14, 18, mark); c.Set(15, 15, mark);
                     c.Line(24, 6, 18, 18, PixelCanvas.Hex("#ffe070")); c.Line(18, 18, 24, 20, PixelCanvas.Hex("#ffe070")); c.Line(24, 20, 16, 32, PixelCanvas.Hex("#ffe070"));
                     break;
-                case "thunder":
-                    c.Ellipse(19f, 11f, 10f, 4.6f, mark);
-                    c.Line(20, 16, 16, 24, mark); c.Line(16, 24, 22, 24, mark); c.Line(22, 24, 18, 32, mark);
-                    c.Line(21, 16, 17, 24, mark);
-                    break;
                 case "meteor":
                     c.Line(6, 6, 18, 18, PixelCanvas.Hex("#ffe070")); c.Line(10, 6, 20, 16, PixelCanvas.Hex("#ffe070")); c.Line(6, 10, 16, 20, PixelCanvas.Hex("#ffe070"));
                     c.Circle(24f, 24f, 6.8f, mark); c.Circle(25f, 25f, 3.6f, PixelCanvas.Hex("#e8401c"));
                     break;
                 case "whirl": c.Circle(19f, 19f, 7f, mark); c.Circle(19f, 19f, 4f, baseCol); c.Set(26, 14, mark); c.Set(12, 24, mark); break;
-                case "slam": c.Rect(16, 10, 8, 14, mark); c.Rect(12, 24, 16, 4, mark); c.Set(19, 8, mark); break;
-                case "arc": c.Line(22, 8, 14, 20, mark); c.Line(14, 20, 24, 20, mark); c.Line(24, 20, 16, 32, mark); c.Line(23, 8, 15, 20, mark); break;
                 case "nova": c.VLine(18, 8, 31, mark); c.VLine(19, 8, 31, mark); c.HLine(8, 31, 18, mark); c.HLine(8, 31, 19, mark); c.Line(12, 12, 27, 27, mark); c.Line(27, 12, 12, 27, mark); break;
                 case "sup_dmg": c.VLine(18, 10, 29, mark); c.VLine(19, 10, 29, mark); c.HLine(10, 29, 18, mark); c.HLine(10, 29, 19, mark); break;
                 case "sup_aoe": c.Circle(19f, 19f, 10f, mark); c.Circle(19f, 19f, 7f, baseCol); break;
@@ -797,13 +787,13 @@ namespace DotRPG
 
         // ===================================================================================
         //  Legacy helpers still referenced by the shared ProceduralArt.cs (do not remove).
-        //  DrawItemIcon16 backs the old 16px DrawIcon; DrawAnvil is the "anvil" world sprite
+        //  DrawItemIcon16 backs the 16px ticket icon; DrawAnvil is the "anvil" world sprite
         //  fallback (the HD town anvil comes from the town stream's town_* keys).
         // ===================================================================================
 
         static readonly Color32 handleColor = PixelCanvas.Hex("#6b4226");
 
-        /// <summary>16x16 item icons kept for the legacy DrawIcon path in ProceduralArt.cs.</summary>
+        /// <summary>16x16 item icons (only the ticket icon still routes here).</summary>
         static PixelCanvas DrawItemIcon16(string kind)
         {
             switch (kind)
@@ -919,7 +909,7 @@ namespace DotRPG
             return null;
         }
 
-        /// <summary>Blacksmith anvil on a stump with a hammer — the "anvil" world sprite fallback.</summary>
+        /// <summary>Blacksmith anvil on a stump with a hammer - the "anvil" world sprite fallback.</summary>
         static PixelCanvas DrawAnvil()
         {
             var c = new PixelCanvas(28, 24);

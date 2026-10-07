@@ -48,8 +48,6 @@ namespace DotRPG
         public static EnhanceTarget Worn(EquipSlot slot) => new EnhanceTarget(slot, null);
         public static EnhanceTarget Bag(string key) => new EnhanceTarget(null, key);
 
-        public bool IsWorn => slot.HasValue;
-
         public override string ToString() => slot.HasValue ? $"worn {slot.Value}" : $"bag {bagKey}";
     }
 

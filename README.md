@@ -6,10 +6,10 @@
 ![타이틀](Docs/images/store_01_title.png)
 ![마을 광장](Docs/images/store_02_village.png)
 
-- 설계 문서: [`Docs/DESIGN.md`](Docs/DESIGN.md) · 스토리: [`Docs/STORY.md`](Docs/STORY.md) · 진행 체크리스트: [`Docs/MASTER_CHECKLIST.md`](Docs/MASTER_CHECKLIST.md)
+- 스토리: [`Docs/STORY.md`](Docs/STORY.md) · 진행 체크리스트: [`Docs/MASTER_CHECKLIST.md`](Docs/MASTER_CHECKLIST.md)
 - 던전·레이드: [`Docs/PLAN_DUNGEON_RAID.md`](Docs/PLAN_DUNGEON_RAID.md) · 온라인 구조: [`Docs/PLAN_ONLINE.md`](Docs/PLAN_ONLINE.md) · 경매장: [`Docs/PLAN_AUCTION.md`](Docs/PLAN_AUCTION.md)
 - 게임 서버: [`Docs/PLAN_SERVER.md`](Docs/PLAN_SERVER.md) · 단계별 명세 [`Docs/server/`](Docs/server/) · 서버 운영 런북 [`server/ops/README.md`](server/ops/README.md)
-- 스토어 소개 문구: [`Docs/STORE.md`](Docs/STORE.md) · 에셋 교체 가이드: [`Docs/ASSETS.md`](Docs/ASSETS.md)
+- 스토어 소개 문구: [`Docs/STORE.md`](Docs/STORE.md)
 
 ---
 
@@ -133,7 +133,7 @@ Docs/             설계 문서, 에셋 가이드, 미리보기 이미지
 
 ### 설계 원칙
 - **수치는 데이터에**: 속도·체력·쿨다운·요구량·리젠 시간 등은 `Resources/Data/*.asset`에서 Inspector로 조정. 대사는 JSON, 맵은 텍스트.
-- **교체 가능한 임시 에셋**: 스프라이트는 `Resources/Art/{키}.png`, 사운드는 `Resources/Audio/{키}`, 폰트는 `Resources/Fonts/UIFont`를 넣으면 코드 수정 없이 교체 ([Docs/ASSETS.md](Docs/ASSETS.md)).
+- **교체 가능한 임시 에셋**: 스프라이트는 `Resources/Art/{키}.png`, 사운드는 `Resources/Audio/{키}`, 폰트는 `Resources/Fonts/UIFont`를 넣으면 코드 수정 없이 교체.
 - **입력은 한 곳에서만**: 게임 코드는 키를 직접 읽지 않고 `Game.Input.AttackPressed` 등만 사용 → 키 변경·Steam Input 확장이 쉬움.
 - **상태 한 곳에서만**: `GameStateMachine`이 `Time.timeScale`과 UI 표시를 결정.
 

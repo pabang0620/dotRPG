@@ -23,25 +23,35 @@ namespace DotRPG
             // players see how to close every window, and a thin accent line separates header and content.
             var bg = UIFactory.Overlay(root, "Bg", UiTheme.Background);
             bg.raycastTarget = true;
-            var header = Img(root, "Header", "ui_header", Color.white); // [UI] wooden header strip (9-slice)
+            // [UI] Header and content are laid out together on a fixed 1280x720 rect (pinned to the top centre) that
+            // scales uniformly to fit the window (UI scale 1.15 / 1.3, small screens); it never grows. The background
+            // above stays full-screen.
+            var layout = UIFactory.Place(UIFactory.Rect(root, "Layout"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, UIFactory.ReferenceResolution);
+            layout.gameObject.AddComponent<FitToParent>().design = UIFactory.ReferenceResolution;
+            var header = Img(layout, "Header", "ui_header", Color.white); // [UI] wooden header strip (9-slice)
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, UiTheme.HeaderHeight));
-            var headerLine = Img(root, "HeaderLine", "ui_white", new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f));
+            var headerLine = Img(layout, "HeaderLine", "ui_white", new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f));
             UIFactory.Place(headerLine.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -UiTheme.HeaderHeight), new Vector2(4000f, 2f));
-            var back = Button(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), w.Close, 24);
+            var back = Button(layout, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), w.Close, 24);
             var backText = back.GetComponentInChildren<Text>();
             backText.text = "◀ <size=17>ESC</size>";
             if (!string.IsNullOrEmpty(icon))
             {
-                var ic = UIFactory.Image(root, "Icon", Game.Art.Get(icon), Color.white);
+                var ic = UIFactory.Image(layout, "Icon", Game.Art.Get(icon), Color.white);
                 UIFactory.Place(ic.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(134f, -14f), new Vector2(48f, 48f));
             }
-            var t = UIFactory.Text(root, "Title", title, UiTheme.FontTitle, Color.white, TextAnchor.MiddleLeft, true);
+            var t = UIFactory.Text(layout, "Title", title, UiTheme.FontTitle, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(192f, -12f), new Vector2(560f, 52f));
-            w.keeperLine = UIFactory.Text(root, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
+            w.keeperLine = UIFactory.Text(layout, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
             UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(760f, 52f));
-            w.content = UIFactory.Stretch(UIFactory.Rect(root, "Content"), 30f, 30f, 30f, 96f);
+            // Every window's content is the same 1220x594 rect (1280x720 minus margins and header).
+            var area = UIFactory.Stretch(UIFactory.Rect(layout, "ContentArea"), 30f, 30f, 30f, 96f);
+            w.content = UIFactory.Place(UIFactory.Rect(area, "Content"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, ContentSize);
             return w;
         }
+
+        /// <summary>The design size of every window's content.</summary>
+        public static readonly Vector2 ContentSize = new Vector2(1220f, 594f);
 
         Text keeperLine;
 
@@ -107,50 +117,109 @@ namespace DotRPG
         /// <summary>True when this frame's keys belong to this window (on top, not the frame it was shown or the state changed).</summary>
         protected bool TakesInput => IsTop && Time.frameCount != shownFrame && !Game.State.ChangedThisFrame;
 
+        /// <summary>[UX] Windows that switch pages with Tab: Tab is not the bag key there (I / gamepad Back still close).</summary>
+        protected virtual bool UsesTabKey => false;
+
+        /// <summary>This frame's Inventory press is the Tab key of a window that switches pages with it (GameFlow skips it too).</summary>
+        public bool TabSwallowsInventory => UsesTabKey && UnityEngine.Input.GetKeyDown(KeyCode.Tab);
+
+        /// <summary>[UX] Windows whose labels carry key tags ("[2]" / "[L3]") redraw when the player switches keyboard / gamepad.</summary>
+        protected virtual bool HasKeyTags => false;
+        bool keyTagsPad;
+
         protected virtual void Update()
         {
+            PadNavigate();
+            bool pad = Game.Input != null && Game.Input.UsingGamepad;
+            if (pad != keyTagsPad)
+            {
+                keyTagsPad = pad;
+                if (HasKeyTags && gameObject.activeInHierarchy) Refresh();
+            }
             if (!TakesInput) return;
             var input = Game.Input;
-            if (input.InventoryPressed || input.CancelPressed || (input.MapPressed && this is WorldMapScreen))
+            if ((input.InventoryPressed && !TabSwallowsInventory) || input.CancelPressed || (input.MapPressed && this is WorldMapScreen))
             {
                 Game.Audio.PlaySfx("cancel");
                 Close();
             }
         }
-    }
 
-    // =====================================================================================
+        // ---------------- [UI] gamepad: move between this window's buttons ----------------
 
-    // =====================================================================================
+        /// <summary>
+        /// Windows without their own cursor turn this on: with a gamepad the stick / d-pad moves between the window's
+        /// buttons (Unity UI navigation) and A presses the one under the yellow frame.
+        /// </summary>
+        protected virtual bool PadNavigation => false;
+        Image padCursor;
 
-    /// <summary>Mini-dungeon / raid information window (content not open yet).</summary>
-    public class ContentScreen : WindowScreen
-    {
-        Text status;
-
-        public static ContentScreen Create(Transform canvas, string title, string icon, string desc, string req, string reward)
+        protected void PadNavigate()
         {
-            var w = CreateWindow<ContentScreen>(canvas, "Content_" + title, title, icon);
-            var panel = Panel(w.content, "Panel", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(1000f, 580f), new Color32(24, 36, 54, 235));
-            var big = UIFactory.Image(panel.transform, "Art", Game.Art.Get(icon), Color.white);
-            UIFactory.Place(big.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -40f), new Vector2(200f, 200f));
-            Label(panel.transform, "Desc", $"<size=30><b>{title}</b></size>\n\n{desc}\n\n<color=#b8c4d8>{req}</color>\n<color=#ffe066>{reward}</color>", 22,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(280f, -40f), new Vector2(680f, 380f));
-            var enter = Button(panel.transform, "Enter", "입장", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(260f, 64f),
-                () => { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast($"{title}은(는) 아직 준비 중이다."); }, 28);
-            w.status = Label(panel.transform, "Status", "<color=#ff9f43>준비 중 — 다음 업데이트에서 열립니다</color>", 20,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 122f), new Vector2(600f, 30f), TextAnchor.MiddleCenter);
-            return w;
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            if (es == null) return;
+            var current = es.currentSelectedGameObject;
+            bool mine = current != null && current.transform.IsChildOf(transform);
+            bool on = PadNavigation && IsTop && Game.Input != null && Game.Input.UsingGamepad && gameObject.activeInHierarchy;
+            if (!on)
+            {
+                // Nothing of this window stays selected under a dialog or with mouse and keyboard: A would press it.
+                if (mine) es.SetSelectedGameObject(null);
+                if (padCursor != null) padCursor.enabled = false;
+                return;
+            }
+            var selectable = mine && current.activeInHierarchy ? current.GetComponent<Selectable>() : null;
+            if (selectable == null || !selectable.IsInteractable())
+            {
+                selectable = null;
+                foreach (var s in GetComponentsInChildren<Selectable>(false))
+                    if (s.IsInteractable() && s.navigation.mode != Navigation.Mode.None) { selectable = s; break; }
+                if (selectable == null) { if (padCursor != null) padCursor.enabled = false; return; }
+                es.SetSelectedGameObject(selectable.gameObject);
+            }
+            var target = (RectTransform)selectable.transform;
+            KeepInView(target);
+            if (padCursor == null)
+            {
+                padCursor = UIFactory.Image(transform, "PadCursor", Game.Art.Get("ui_frame"), new Color32(255, 211, 74, 255));
+                padCursor.preserveAspect = false;
+                padCursor.raycastTarget = false;
+                padCursor.rectTransform.anchorMin = padCursor.rectTransform.anchorMax = padCursor.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            }
+            var root = (RectTransform)transform;
+            var r = target.rect;
+            Vector2 min = root.InverseTransformPoint(target.TransformPoint(r.min));
+            Vector2 max = root.InverseTransformPoint(target.TransformPoint(r.max));
+            padCursor.rectTransform.anchoredPosition = (min + max) * 0.5f;
+            padCursor.rectTransform.sizeDelta = max - min + new Vector2(8f, 8f);
+            padCursor.rectTransform.SetAsLastSibling();
+            padCursor.enabled = true;
         }
 
-        protected override void Refresh() { }
+        /// <summary>Scrolls a list so the selected row is inside its viewport.</summary>
+        static void KeepInView(RectTransform target)
+        {
+            var scroll = target.GetComponentInParent<ScrollRect>();
+            if (scroll == null || scroll.content == null || scroll.viewport == null || !target.IsChildOf(scroll.content)) return;
+            var view = scroll.viewport;
+            Vector3[] c = new Vector3[4];
+            target.GetWorldCorners(c);
+            float top = view.InverseTransformPoint(c[1]).y, bottom = view.InverseTransformPoint(c[0]).y;
+            float viewTop = view.rect.yMax, viewBottom = view.rect.yMin;
+            float shift = top > viewTop ? top - viewTop : bottom < viewBottom ? bottom - viewBottom : 0f;
+            if (Mathf.Abs(shift) > 0.5f) scroll.content.anchoredPosition -= new Vector2(0f, shift);
+        }
     }
+
+    // =====================================================================================
+
+    // =====================================================================================
 
     // =====================================================================================
 
     /// <summary>
-    /// Blacksmith (anvil or 대장장이): pick a piece of gear — worn slots first, then the bag — pay gold and
-    /// monster materials and try to raise it one +level, Dungeon&amp;Fighter style: the chance falls from 100%
+    /// Blacksmith (anvil or 대장장이): pick a piece of gear - worn slots first, then the bag - pay gold and
+    /// monster materials and try to raise it one +level: the chance falls from 100%
     /// to 10%, a weapon failing from +10 / +11 drops 3 levels, and from +12 (other gear +10) a failure
     /// destroys the piece unless a protection ticket in the bag saves it at +0. Risky attempts ask first,
     /// then the hammer falls twice (unscaled time: windows pause the game). Rules: <see cref="EnhanceRules"/>.
@@ -196,7 +265,7 @@ namespace DotRPG
 
         public static EnhanceScreen Create(Transform canvas)
         {
-            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 강화 · 승급", "anvil");
+            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 강화 · 승급", "menuicon_enhance");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Left", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 590f), new Color32(24, 36, 54, 235));
             Label(left.transform, "Hint", "강화할 장비를 고르세요 (착용 중 + 가방)", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(500f, 30f));
@@ -249,6 +318,7 @@ namespace DotRPG
             w.enhanceButton = Button(right.transform, "Go", "강화", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
             w.BuildPromote(right.transform);
+            w.BuildTicket(right.transform); // [CASH] 강화권
             return w;
         }
 
@@ -274,12 +344,24 @@ namespace DotRPG
             pickRequired = false;
             resultText.text = "";
             bigIcon.rectTransform.anchoredPosition = Vector2.zero;
+            if (ticketPending)
+            {
+                // [UX] Reopened before the server answered a 강화권: stay locked (no hammer / promote / second ticket) until it does.
+                busy = true;
+                resultText.text = TicketPendingText;
+            }
             base.Show();
         }
 
         public override void Hide()
         {
-            if (busy)
+            if (busy && ticketPending)
+            {
+                // [UX] Closed while the server answers a 강화권: the answer still lands (toast, bag) when it comes.
+                busy = false;
+                bigIcon.rectTransform.anchoredPosition = Vector2.zero;
+            }
+            else if (busy)
             {
                 // Closed mid-swing (e.g. a state change): the attempt is called off. Nothing is paid before the hammer lands.
                 StopAllCoroutines();
@@ -290,10 +372,13 @@ namespace DotRPG
             base.Hide();
         }
 
-        /// <summary>The window stays open until the hammer lands.</summary>
+        /// <summary>
+        /// The window stays open until the hammer lands. Only a 강화권 waiting on the server may be closed: nothing else
+        /// starts while it is pending, so busy with ticketPending is never a hammer swing or a 승급.
+        /// </summary>
         public override void Close()
         {
-            if (!busy) base.Close();
+            if (!busy || ticketPending) base.Close();
         }
 
         protected override void Refresh()
@@ -348,11 +433,12 @@ namespace DotRPG
         {
             bigIcon.enabled = false;
             bigFrame.color = Color.clear;
-            title.text = "강화할 장비가 없다.";
+            title.text = "강화할 장비가 없습니다.";
             statsText.text = costTitle.text = chanceText.text = failText.text = "";
             foreach (var t in costCells) t.text = "";
             enhanceButton.interactable = false;
             enhanceLabel.text = "강화";
+            RefreshTicket(null); // no gear: the 강화권 button goes too
         }
 
         void ShowDetails(Entry e)
@@ -362,6 +448,7 @@ namespace DotRPG
             var gear = EquipmentDatabase.Get(e.key);
             int level = EquipmentDatabase.LevelOfKey(e.key);
             bool max = level >= EquipmentDatabase.MaxEnhance;
+            RefreshTicket(e.key);
             bigIcon.enabled = true;
             bigIcon.sprite = Game.Art.Get(gear.iconKey);
             bigFrame.color = EquipmentDatabase.RarityTint(gear.rarity);
@@ -375,7 +462,7 @@ namespace DotRPG
                 costTitle.text = chanceText.text = failText.text = "";
                 foreach (var t in costCells) t.text = "";
                 enhanceButton.interactable = false;
-                enhanceLabel.text = "최대";
+                enhanceLabel.text = "최대 강화";
                 return;
             }
             var next = gear.StatsAt(level + 1);
@@ -410,7 +497,7 @@ namespace DotRPG
 
         static string MaterialName(string id) => EquipmentDatabase.GetMaterial(id)?.name ?? id;
 
-        const string NoStatChange = "<color=#8c96a8>이번 단계는 능력치 변화가 없다 (높은 단계일수록 크게 오른다)</color>";
+        const string NoStatChange = "<color=#8c96a8>이번 단계는 능력치 변화가 없습니다 (높은 단계일수록 크게 오릅니다)</color>";
         const string PickAgain = "강화할 장비를 다시 골라 주세요.";
 
         static string FailureLine(EnhanceCost cost, int tickets, bool starter)
@@ -422,7 +509,7 @@ namespace DotRPG
                 default:
                     if (cost.usesTicket) return $"실패 시: <color=#ffd84a>장비 보호권 1장 자동 사용 → +0 초기화 (보유 {tickets}장)</color>";
                     return starter && tickets > 0
-                        ? "실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않는다)</color>"
+                        ? "실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않습니다)</color>"
                         : "실패 시: <color=#ff5050><b>장비 파괴!</b></color>";
             }
         }
@@ -477,7 +564,7 @@ namespace DotRPG
         /// <summary>Button / Enter: checks the price, asks first when the attempt is risky, then swings the hammer.</summary>
         void OnEnhancePressed()
         {
-            if (busy || entries.Count == 0 || !IsTop) return;
+            if (busy || ticketPending || entries.Count == 0 || !IsTop) return;
             if (pickRequired)
             {
                 // After a destroy the cursor sits on a piece the player never chose.
@@ -497,8 +584,8 @@ namespace DotRPG
             {
                 Game.Audio.PlaySfx("cancel");
                 resultText.text = Game.Session.Gold < cost.gold
-                    ? "<color=#ff7070>골드가 부족하다. 해골을 쓰러뜨리거나 물건을 팔아 모으자.</color>"
-                    : "<color=#ff7070>재료가 부족하다. 해골을 더 쓰러뜨리자.</color>";
+                    ? "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>"
+                    : "<color=#ff7070>재료가 부족합니다. 해골을 더 쓰러뜨리세요.</color>";
                 return;
             }
             string warning = RiskWarning(cost);
@@ -514,7 +601,7 @@ namespace DotRPG
 
         void StartAttempt(Entry e)
         {
-            if (busy || !gameObject.activeInHierarchy) return;
+            if (busy || ticketPending || !gameObject.activeInHierarchy) return;
             StartCoroutine(AttemptRoutine(e));
         }
 
@@ -608,26 +695,26 @@ namespace DotRPG
                 case EnhanceOutcome.Keep:
                     Game.Audio.PlaySfx("enhance_fail");
                     EnhanceFx.Fail(bigIcon.rectTransform, false);
-                    resultText.text = "<color=#ffb070>강화 실패… 강화 수치는 그대로다.</color>";
+                    resultText.text = "<color=#ffb070>강화 실패… 강화 수치는 그대로입니다.</color>";
                     break;
                 case EnhanceOutcome.Drop3:
                     Game.Audio.PlaySfx("enhance_fail");
                     EnhanceFx.Fail(bigIcon.rectTransform, false);
-                    resultText.text = $"<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌다.  (+{r.oldLevel} → +{r.newLevel})</color>";
+                    resultText.text = $"<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌습니다.  (+{r.oldLevel} → +{r.newLevel})</color>";
                     break;
                 case EnhanceOutcome.Destroyed:
                     Game.Audio.PlaySfx("enhance_break");
                     EnhanceFx.Fail(bigIcon.rectTransform, true);
-                    resultText.text = $"<color=#ff5050><b>강화 실패… 장비가 파괴되었다!</b></color>\n<color=#ff8080>{EquipmentDatabase.NameOfKey(r.oldKey)}</color>";
+                    resultText.text = $"<color=#ff5050><b>강화 실패… 장비가 파괴되었습니다!</b></color>\n<color=#ff8080>{EquipmentDatabase.NameOfKey(r.oldKey)}</color>";
                     GameEvents.RaiseToast($"<color=#ff5050>장비 파괴: {EquipmentDatabase.NameOfKey(r.oldKey)}</color>");
                     break;
                 case EnhanceOutcome.Protected:
                     Game.Audio.PlaySfx("confirm");
-                    resultText.text = $"<color=#ffd84a>강화 실패… 장비 보호권이 장비를 지켰다.</color>\n<color=#b8c4d8>{EquipmentDatabase.NameOfKey(r.newKey)} (+0으로 초기화)</color>";
+                    resultText.text = $"<color=#ffd84a>강화 실패… 장비 보호권이 장비를 지켰습니다.</color>\n<color=#b8c4d8>{EquipmentDatabase.NameOfKey(r.newKey)} (+0으로 초기화)</color>";
                     break;
                 case EnhanceOutcome.NotEnough:
                     Game.Audio.PlaySfx("cancel");
-                    resultText.text = "<color=#ff7070>골드나 재료가 부족하다.</color>";
+                    resultText.text = "<color=#ff7070>골드나 재료가 부족합니다.</color>";
                     break;
                 default:
                     Game.Audio.PlaySfx("cancel");
@@ -650,10 +737,19 @@ namespace DotRPG
             }
         }
 
+        protected override bool HasKeyTags => true;
+
         protected override void Update()
         {
             if (busy)
             {
+                // [UX] A 강화권 waits on the server (up to the API timeout): Esc / I still close the forge meanwhile.
+                if (ticketPending && TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed))
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    Close();
+                    return;
+                }
                 // No input while the hammer falls; the piece shakes a little.
                 busyTime += Time.unscaledDeltaTime;
                 bigIcon.rectTransform.anchoredPosition = new Vector2(Mathf.Sin(busyTime * 70f) * 3f, 0f);
@@ -673,6 +769,12 @@ namespace DotRPG
                     Picked();
                 }
                 if (Game.Input.SubmitPressed) OnEnhancePressed();
+                // [UX] Keys for the side buttons: UseMana = 강화권, UseItem = 승급, [ / ] or LB / RB = switch 강화권.
+                // (Interact shares F / A with Submit, which already presses 강화.)
+                else if (Game.Input.UseManaPressed) UseTicket();
+                else if (Game.Input.UseItemPressed) OnPromotePressed();
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.RightBracket) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) SwitchTicket(1);
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.LeftBracket) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4)) SwitchTicket(-1);
             }
             if (dirty) Refresh();
         }

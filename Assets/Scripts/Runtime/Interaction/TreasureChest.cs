@@ -51,7 +51,7 @@ namespace DotRPG
             else Pickup.Create(Reward, 1, at, transform.parent);
             Game.Audio.PlaySfx("quest");
             Fx.Sparkle((Vector2)transform.position + Vector2.up * 0.5f, 5, 0.6f);
-            GameEvents.RaiseToast("보물상자를 열었다!");
+            GameEvents.RaiseToast("보물상자를 열었습니다!");
             Game.Flow.Autosave();
         }
     }

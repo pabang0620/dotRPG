@@ -1,5 +1,5 @@
 import { validateCareer, validCareerActive } from './careerRules';
-import type { CareerState } from './careerRules';
+import type { CareerState, ServerCareer } from './careerRules';
 import type { GameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
@@ -16,11 +16,12 @@ export function validateState(
   input: StateBody,
   character: { level: number; class: string },
   stored: StateRow,
+  server?: ServerCareer,
 ): { passives: string[] } {
   checkFacing(data, input);
   checkMap(data, input);
   const passives = checkPassives(data, input.passives, character.level);
-  validateCareer(input.career, stored.career, character, stored.passives, id=>data.passive.nodes.has(id));
+  validateCareer(input.career, stored.career, character, stored.passives, id=>data.passive.nodes.has(id), server);
   checkGems(data, input.skill_gems, character, input.career ?? stored.career);
   checkQuests(data, input, stored);
   return { passives };

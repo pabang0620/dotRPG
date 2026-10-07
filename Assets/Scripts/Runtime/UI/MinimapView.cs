@@ -67,6 +67,16 @@ namespace DotRPG
             view.label = UIFactory.Text(root, "Name", "", UiTheme.FontCaption, UIColors.Cream, TextAnchor.MiddleCenter, true);
             UIFactory.Place(view.label.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -11f), new Vector2(176f, 24f));
             view.label.fontSize = 16;
+
+            // [FIELD BOSS] Live countdown under the region name on maps with a field boss.
+            view.bossPlate = UIFactory.Image(root, "BossPlate", Game.Art.Get("ui_dark"), Color.white);
+            view.bossPlate.preserveAspect = false;
+            UIFactory.Place(view.bossPlate.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-6f, 4f), new Vector2(200f, 30f)); // left of the minimap (the quest tracker sits below it)
+            view.bossIcon = UIFactory.SharpIcon(view.bossPlate.transform, "Icon", Color.white);
+            UIFactory.Place(view.bossIcon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(24f, 24f));
+            view.bossText = UIFactory.Text(view.bossPlate.transform, "Text", "", 16, UIColors.Cream, TextAnchor.MiddleLeft, true);
+            UIFactory.Stretch(view.bossText.rectTransform, 34f, 0f, 6f, 0f);
+            view.bossPlate.gameObject.SetActive(false);
             return view;
         }
 
@@ -144,12 +154,32 @@ namespace DotRPG
             return dot;
         }
 
+        Image bossPlate, bossIcon;
+        Text bossText;
+        int bossShownSecond = -1;
+
+        void UpdateBossTimer(string mapId)
+        {
+            var def = FieldBosses.For(mapId);
+            bool on = def != null;
+            if (bossPlate.gameObject.activeSelf != on) bossPlate.gameObject.SetActive(on);
+            if (!on) return;
+            int left = FieldBosses.SecondsToNext;
+            if (left == bossShownSecond) return;
+            bossShownSecond = left;
+            var face = Game.Art.Optional("fboss_icon_" + mapId.Split('_')[0]);
+            bossIcon.enabled = face != null;
+            bossIcon.sprite = face;
+            bossText.text = FieldBosses.DefeatedThisWindow(mapId) ? $"필드 보스 <color=#ffd34a>{left / 60:00}:{left % 60:00}</color> 후" : "<color=#ff9f43>필드 보스 출현 중</color>";
+        }
+
         void LateUpdate()
         {
             var world = Game.World;
             var player = Game.Player;
             float pixelsPerTile = world != null && world.Map.IsInterior ? 28f : PixelsPerTile;
             if (world == null || world.Minimap == null || player == null) return;
+            UpdateBossTimer(world.MapId);
 
             if (world.Minimap != shownTexture)
             {

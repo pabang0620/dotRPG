@@ -10,7 +10,7 @@ namespace DotRPG
     /// </summary>
     public class PartyStatusView : MonoBehaviour
     {
-        public const float Left = 18f, Top = -152f, Width = 372f, Height = 30f;
+        public const float Left = 18f, Top = -180f, Width = 372f, Height = 30f; // under the buff row (BuffBarView, 150..178): the two overlapped online
 
         Image plate;
         Text text;

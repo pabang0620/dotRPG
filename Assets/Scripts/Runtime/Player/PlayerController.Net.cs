@@ -33,6 +33,34 @@ namespace DotRPG
             CancelMobility();
         }
 
+        /// <summary>The last position the network gave (or the body's own when not network driven).</summary>
+        public Vector2 NetTarget => NetDriven ? netTarget : Position;
+
+        /// <summary>
+        /// [AIM] Skills aim themselves: toward the nearest living monster within <paramref name="range"/>, monsters in
+        /// front of the character counted a little closer; with none in reach, the current aim.
+        /// </summary>
+        public Vector2 AutoAim(float range)
+        {
+            Vector2 aim = AimDirection.sqrMagnitude > 0.0001f ? AimDirection.normalized : Facing.ToVector();
+            Vector2 c = Center;
+            EnemyController best = null;
+            float bestScore = float.MaxValue;
+            foreach (var e in EnemyController.Active)
+            {
+                if (e == null || e.IsDead || !e.isActiveAndEnabled) continue;
+                Vector2 to = e.Center - c;
+                float d = to.magnitude;
+                if (d > range || d < 0.01f) continue;
+                float score = d - Vector2.Dot(to / d, aim) * 0.8f;
+                if (score < bestScore) { bestScore = score; best = e; }
+            }
+            return best != null ? (best.Center - c).normalized : aim;
+        }
+
+        /// <summary>[ANTI-ABUSE] Fastest this body can walk right now (buffs and career movement included).</summary>
+        public float TopSpeed => stats.moveSpeed * Mathf.Max(1f, Data.Stats.SpeedMultiplier) * Mathf.Max(1f, CareerCombat.For(this).MoveScale);
+
         /// <summary>Where the network says this member stands now.</summary>
         public void NetMoveTo(Vector2 target, Facing facing)
         {

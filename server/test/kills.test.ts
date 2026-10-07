@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
+import { getGameData } from '../src/gamedata/loader';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { auth, buildApp, resetDb, shutdown } from './helpers';
@@ -37,13 +38,20 @@ beforeEach(() => {
 
 const forestKill = { map_id: 'forest', monster_id: 'skeleton' };
 
+// 데이터(server/data)에서 파생한다: 숲 첫 스폰의 처치 경험치·스폰점 수, 1레벨 필요 경험치
+const forestSpawn = () => {
+  const sp = getGameData().economy.mapExtra.get('forest')!.fieldSpawns.find((x) => x.monsterId === 'skeleton')!;
+  return { xp: sp.xp as number, points: sp.points as number };
+};
+const xpToNext = () => getGameData().economy.progression.xpToNext;
+
 describe('POST /characters/:id/kills', () => {
   it('정상: 경험치와 드롭을 서버가 정한다(골드 1더미, 잔액은 줍기 전까지 그대로)', async () => {
     const h = await newHero(app);
     const res = await post(app, h, '/kills', forestKill);
     expect(res.status).toBe(200);
-    expect(res.body.data.granted_xp).toBe(20);
-    expect(res.body.data.delta).toEqual({ level: 1, xp: 20 });
+    expect(res.body.data.granted_xp).toBe(forestSpawn().xp);
+    expect(res.body.data.delta).toEqual({ level: 1, xp: forestSpawn().xp });
     expect(res.body.data.drops).toHaveLength(1);
     expect(res.body.data.drops[0]).toMatchObject({ item_key: 'gold', count: 8 });
     expect(await goldOf(h)).toBe(100);
@@ -52,16 +60,18 @@ describe('POST /characters/:id/kills', () => {
     const stats = await db.query('SELECT kills FROM kill_stats WHERE character_id = $1 AND monster_id = $2', [h.dbId, 'skeleton']);
     expect(Number(stats.rows[0].kills)).toBe(1);
     const xl = await db.query('SELECT delta, reason, ref FROM xp_ledger WHERE character_id = $1', [h.dbId]);
-    expect(xl.rows).toEqual([{ delta: 20, reason: 'kill', ref: 'skeleton' }]);
+    expect(xl.rows).toEqual([{ delta: forestSpawn().xp, reason: 'kill', ref: 'skeleton' }]);
   });
 
   it('레벨업: 경험치가 한 번에 여러 레벨을 올린다', async () => {
     const h = await newHero(app);
-    // xp 38 + 20 = 58 >= 40 -> 레벨 2, 남은 18
-    await getPool().query('UPDATE characters SET xp = 38 WHERE id = $1', [h.dbId]);
+    // 필요 경험치 - 1 에서 한 마리를 잡으면 레벨 2
+    const need = xpToNext()[0]!;
+    const xp = forestSpawn().xp;
+    await getPool().query('UPDATE characters SET xp = $2 WHERE id = $1', [h.dbId, need - 1]);
     const res = await post(app, h, '/kills', forestKill);
     expect(res.body.data.leveled_up).toBe(true);
-    expect(res.body.data.delta).toEqual({ level: 2, xp: 18 });
+    expect(res.body.data.delta).toEqual({ level: 2, xp: need - 1 + xp - need });
   });
 
   it('입력 오류: 경험치·드롭을 보내거나 run_id만 보내면 400', async () => {
@@ -112,7 +122,11 @@ describe('POST /characters/:id/kills', () => {
     const n2 = await getPool().query('SELECT count(*)::int AS n FROM kill_log WHERE character_id = $1', [h.dbId]);
     expect(n2.rows[0].n).toBe(3);
     const xp = await getPool().query('SELECT level, xp FROM characters WHERE id = $1', [h.dbId]);
-    expect(xp.rows[0]).toEqual({ level: 2, xp: 20 }); // 20 x 3 = 60 = 40 + 20
+    // 처치 경험치 x 3 을 1레벨부터 누적한 결과
+    let lv = 1;
+    let rest = forestSpawn().xp * 3;
+    while (rest >= xpToNext()[lv - 1]!) rest -= xpToNext()[lv++ - 1]!;
+    expect(xp.rows[0]).toEqual({ level: lv, xp: rest });
   });
 
   it('그럴듯함: 맵에 없는 몬스터는 거절하고 이상 기록을 남긴다', async () => {
@@ -155,7 +169,7 @@ describe('POST /characters/:id/kills', () => {
 
   it('공급: 리스폰 창 안에 스폰점 수 x 1.1(올림)을 넘으면 거절한다', async () => {
     const h = await newHero(app);
-    const rows = Array.from({ length: 17 }, () => randomUUID());
+    const rows = Array.from({ length: Math.ceil(forestSpawn().points * 1.1) }, () => randomUUID());
     for (const rid of rows) {
       await getPool().query(
         `INSERT INTO kill_log (character_id, map_id, monster_id, monster_level, context, hits, xp_granted, request_id, created_at)
@@ -229,7 +243,7 @@ describe('POST /characters/:id/kills', () => {
     const b = await post(small, h, '/kills', forestKill);
     expect(b.status).toBe(200);
     expect(b.body.data.drops).toEqual([]);
-    expect(b.body.data.granted_xp).toBe(20);
+    expect(b.body.data.granted_xp).toBe(forestSpawn().xp);
     app = buildApp();
   });
 
@@ -381,11 +395,13 @@ describe('POST /characters/:id/drops/claim', () => {
 describe('화력 상한 규칙(순수 함수)', () => {
   it('실효 HP 합이 상한 x 창 x AOE + 최대 HP를 넘으면 불허', async () => {
     const { loadGameData } = await import('../src/gamedata/loader');
-    const { attackCap, powerAllows, effectiveHp } = await import('../src/domains/kills/killRules');
+    const { attackCap, powerAllows, effectiveHp, gearAttack } = await import('../src/domains/kills/killRules');
+    const { COSMETIC_DAMAGE_MAX, COLLECTION_ATTACK_MAX } = await import('../src/domains/starshop/starshopDefs');
     const eco = loadGameData(buildDataDir()).economy;
     const pol = { powerPassivePerLevel: 0.11, powerSkillFactor: 2, powerAoeCap: 5 };
     const cap = attackCap(eco, pol, 1, ['eq_sword_wood']);
-    expect(cap).toBe(10);
+    const cosmetic = 1 + (COSMETIC_DAMAGE_MAX + COLLECTION_ATTACK_MAX) / 100;
+    expect(cap).toBeCloseTo((eco.player.attackDamage + gearAttack(eco, 'eq_sword_wood')) * cosmetic, 9);
     const boss = effectiveHp(eco, eco.monsters.get('boss_grah') as never, 26, 2.7);
     expect(powerAllows(eco, pol, cap, 5, [boss])).toBe(true); // 한 마리는 항상 통과
     expect(powerAllows(eco, pol, cap, 5, [boss, boss, boss])).toBe(false); // 5초에 보스 셋은 불가능

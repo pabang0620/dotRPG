@@ -87,7 +87,12 @@ namespace DotRPG
         /// <summary>Both classes: always % less damage taken (철벽 / 마나 보호막, now passives).</summary>
         public const int GuardPassive = 10;
 
-        public int BuffDamage => Class == CharacterClass.Warrior ? WarriorDamagePassive : 0;
+        /// <summary>[CASH] 투지의 주문서: % more damage until this time (Time.time; a session buff).</summary>
+        public float ScrollUntil;
+        public int ScrollPower;
+        public float ScrollLeft => Mathf.Max(0f, ScrollUntil - Time.time);
+
+        public int BuffDamage => (Class == CharacterClass.Warrior ? WarriorDamagePassive : 0) + (Time.time < ScrollUntil ? ScrollPower : 0);
 
         /// <summary>% less damage taken.</summary>
         public int GuardReduction => GuardPassive;

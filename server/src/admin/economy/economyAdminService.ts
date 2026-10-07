@@ -5,6 +5,7 @@ import { getPool } from '../../db/pool';
 import { createSystemMail } from '../../domains/mail/mailRepository';
 import { strongerBind, type Bind } from '../../domains/economy/economyRepository';
 import { getGameData } from '../../gamedata/loader';
+import { isSweepTicketKey } from '../../gamedata/sweepData';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import { parseItemKey } from '../../utils/itemKey';
@@ -86,7 +87,7 @@ export function createGrant(admin: AdminCtx, ip: string, body: GrantBody): Promi
         if (body.item.count > cfg.grantMaxItemCount) throw new AppError(422, `1회 지급 아이템 수량 한도(${cfg.grantMaxItemCount})를 넘었습니다.`, 'GRANT_LIMIT');
         const parsed = parseItemKey(body.item.item_key);
         const def = parsed ? gd.economy.items.get(parsed.base) : undefined;
-        if (!parsed || !def || def.kind === 'currency') throw new AppError(422, '지급할 수 없는 아이템입니다.', 'ITEM_NOT_FOUND');
+        if (!parsed || !def || def.kind === 'currency' || isSweepTicketKey(gd.sweep, parsed.base)) throw new AppError(422, '지급할 수 없는 아이템입니다.', 'ITEM_NOT_FOUND');
         // 귀속은 서버가 정한다: 장비는 캐릭터 귀속, 재료·소모품은 아이템 종류의 하한(보통 귀속 없음)
         bind = gd.economy.shop.equipment.has(parsed.base) ? strongerBind('character', def.bind) : def.bind;
       }

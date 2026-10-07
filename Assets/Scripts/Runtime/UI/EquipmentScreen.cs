@@ -43,8 +43,8 @@ namespace DotRPG
         Image character, cursor, weaponPreview;
         Text className, power, stats, capacity, hint;
         readonly Text[] statCells = new Text[6];
-        Button sortButton;
-        Text sortLabel;
+        Button sortButton, autoButton;
+        Text sortLabel, autoLabel;
 
         // Tooltip.
         RectTransform tooltip;
@@ -74,7 +74,13 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Equipment", false);
             var screen = root.gameObject.AddComponent<EquipmentScreen>();
             screen.ui = ui;
-            screen.Build(root);
+            // [UI] The bag is laid out on a fixed 1280x720 rect that shrinks to fit (UI scale 1.15 / 1.3), like other windows.
+            var bg = UIFactory.Overlay(root, "FitBackground", UiTheme.Background);
+            bg.raycastTarget = true;
+            var layout = UIFactory.Place(UIFactory.Rect(root, "Layout"), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, UIFactory.ReferenceResolution);
+            layout.gameObject.AddComponent<FitToParent>().design = UIFactory.ReferenceResolution;
+            screen.Build(layout);
+            screen.BuildDragAndMenu(layout);
             return screen;
         }
 
@@ -95,6 +101,7 @@ namespace DotRPG
 
         public override void Hide()
         {
+            CloseMenu();
             if (Game.Session != null)
             {
                 Game.Session.Equipment.Changed -= MarkDirty;
@@ -187,7 +194,9 @@ namespace DotRPG
                 FillIcon(s, s.itemId, gear);
                 s.corner.enabled = gear != null && eq.IsUpgrade(s.itemId, cls);
                 int n = s.itemId != null ? bag.Count(s.itemId) : 0;
-                s.count.text = n > 1 ? n.ToString() : "";
+                bool lowLevel = gear != null && gear.UsableBy(cls) && !eq.CanWear(gear, cls);
+                // [UI] Gear above the character's level carries its required level in red instead of only going dark.
+                s.count.text = lowLevel ? $"<color=#ff7070>Lv{gear.reqLevel}</color>" : n > 1 ? n.ToString() : "";
                 s.icon.color = gear != null && !eq.CanWear(gear, cls) ? new Color(0.45f, 0.45f, 0.5f, 1f) : Color.white;
             }
 
@@ -217,8 +226,10 @@ namespace DotRPG
             // Real count (the grid pages, so nothing is hidden): this tab / whole bag.
             capacity.text = tab == Tab.All ? $"{all.Count}종" : $"{shown.Count} / {all.Count}종";
             foreach (var pair in currencies) pair.Value.text = bag.Count(pair.Key).ToString("N0");
-            sortLabel.text = sortByRarity ? "등급순" : "정렬";
             var input = Game.Input;
+            // [UX] Key of each bottom button (1 / Y 자동장착, 2 / L3 정렬), as small text after the label.
+            sortLabel.text = (sortByRarity ? "등급순" : "정렬") + $" <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
+            autoLabel.text = $"자동장착 <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseItem)}]</color></size>";
             hint.text = $"아이콘에 마우스를 올리면 설명 · 클릭: 장착/해제    방향키 이동  {input.GetBindingLabel(GameAction.Submit)} 선택  {input.GetBindingLabel(GameAction.Inventory)}/{input.GetBindingLabel(GameAction.Cancel)} 닫기";
             dirty = false;
         }
@@ -229,9 +240,6 @@ namespace DotRPG
             for (int i = 0; i < Equipment.SlotCount; i++) if (!string.IsNullOrEmpty(eq[(EquipSlot)i])) n++;
             return n;
         }
-
-        /// <summary>전투력 = base attack·health + everything worn (see <see cref="Equipment.Score"/>).</summary>
-        static int PowerScore(int baseAtk, int baseHp, Equipment eq) => baseAtk * 100 + baseHp * 50 + eq.GearScore;
 
         static string Bonus(int v) => v > 0 ? $"<color=#8fe28f>(+{v})</color>" : "";
 
@@ -265,7 +273,7 @@ namespace DotRPG
                 {
                     // [SERVER] A mage always holds a staff (FixSlots); online the server refuses an empty weapon slot.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast("마법사는 무기를 뺄 수 없다. 다른 무기를 장착하면 바뀐다.");
+                    GameEvents.RaiseToast("마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.");
                     return;
                 }
                 var wornBefore = OnlineEconomy.WornSnapshot();
@@ -284,28 +292,41 @@ namespace DotRPG
                 {
                     // The protection ticket only works on its own, from the enhancement window.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용된다.");
+                    GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용됩니다.");
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
                 else if (s.itemId == ItemIds.Carrot && Game.Player != null) Game.Player.TryEatCarrot();
                 else Game.Audio.PlaySfx("cancel");
                 return;
             }
+            EquipGear(s.itemId);
+        }
+
+        /// <summary>
+        /// Bag gear → worn (click, confirm, drag, context menu). <paramref name="into"/> picks the ring slot
+        /// for a drop on 반지 1 / 반지 2; other gear always goes to its own slot.
+        /// </summary>
+        void EquipGear(string key, EquipSlot? into = null)
+        {
+            var gear = EquipmentDatabase.Get(key);
+            if (gear == null) return;
+            var eq = Game.Session.Equipment;
             if (!gear.UsableBy(Class))
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비다.");
+                GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비입니다.");
                 return;
             }
             if (gear.reqLevel > Game.Session.Progression.Level)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있다. (지금 Lv.{Game.Session.Progression.Level})");
+                GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있습니다. (지금 Lv.{Game.Session.Progression.Level})");
                 return;
             }
-            string key = s.itemId;
             var before = OnlineEconomy.WornSnapshot();
-            if (eq.Equip(key, Class)) { OnlineEconomy.SyncWorn(before); /* [SERVER] */ Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
+            bool ok = into.HasValue && gear.category == EquipCategory.Ring ? EquipRingInto(key, into.Value) : eq.Equip(key, Class);
+            OnlineEconomy.SyncWorn(before); // [SERVER] (no-op when nothing changed)
+            if (ok) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
         }
 
         void AutoEquip()
@@ -313,7 +334,7 @@ namespace DotRPG
             var before = OnlineEconomy.WornSnapshot();
             int n = Game.Session.Equipment.AutoEquip(Class);
             if (n > 0) OnlineEconomy.SyncWorn(before); // [SERVER]
-            GameEvents.RaiseToast(n > 0 ? $"더 좋은 장비 {n}개를 장착했다." : "이미 가장 좋은 장비를 착용 중이다.");
+            GameEvents.RaiseToast(n > 0 ? $"더 좋은 장비 {n}개를 장착했습니다." : "이미 가장 좋은 장비를 착용 중입니다.");
         }
 
         void ToggleSort()
@@ -360,9 +381,14 @@ namespace DotRPG
 
         // ================= Per frame =================
 
+        bool keyTagsPad;
+
         void Update()
         {
             if (Game.Session == null) return;
+            // [UX] The 정렬 / 자동장착 key tags follow the device in use.
+            bool pad = Game.Input != null && Game.Input.UsingGamepad;
+            if (pad != keyTagsPad) { keyTagsPad = pad; dirty = true; }
             if (dirty) Refresh();
 
             animTimer += Time.unscaledDeltaTime;
@@ -371,6 +397,18 @@ namespace DotRPG
             character.sprite = Game.Art.GetCharacter(look, "down", Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1");
             PlaceWeaponPreview();
 
+            if (MenuOpen)
+            {
+                // [UX] The right-click menu is up: Esc / I only close it, the tooltip stays hidden.
+                tooltip.gameObject.SetActive(false);
+                cursor.enabled = false;
+                if (Time.frameCount != shownFrame && (Game.Input.InventoryPressed || Game.Input.CancelPressed))
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    CloseMenu();
+                }
+                return;
+            }
             HandleKeys();
             UpdateCursorAndTooltip();
         }
@@ -428,6 +466,9 @@ namespace DotRPG
                 if (region == 1 && cy < 0) return;
                 Use(CursorSlot());
             }
+            // [UX] The bottom buttons without the mouse: 1 / Y 자동장착, 2 / L3 정렬 (same as clicking them).
+            if (input.UseItemPressed) { Game.Audio.PlaySfx("confirm"); AutoEquip(); }
+            else if (input.UseManaPressed) { Game.Audio.PlaySfx("confirm"); ToggleSort(); }
         }
 
         void MoveCursor(int dx, int dy)
@@ -526,5 +567,23 @@ namespace DotRPG
         public void OnPointerEnter(PointerEventData e) => onEnter?.Invoke();
         public void OnPointerExit(PointerEventData e) => onExit?.Invoke();
         public void OnPointerClick(PointerEventData e) => onClick?.Invoke(e.button);
+    }
+
+    /// <summary>[UI] Scales a fixed-size layout rect down to fit its parent (never up).</summary>
+    public sealed class FitToParent : MonoBehaviour
+    {
+        public Vector2 design;
+        Vector2 last;
+
+        void LateUpdate()
+        {
+            var parent = transform.parent as RectTransform;
+            if (parent == null) return;
+            var size = parent.rect.size;
+            if (size == last) return;
+            last = size;
+            float k = Mathf.Min(1f, size.x / design.x, size.y / design.y);
+            transform.localScale = new Vector3(k, k, 1f);
+        }
     }
 }

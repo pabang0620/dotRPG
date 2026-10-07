@@ -45,7 +45,7 @@ namespace DotRPG
         public event Action<EnemyController> Died;
         public Vector2 Position => body.position;
         public bool IsDead => state == State.Dead;
-        /// <summary>Centre of the body (the transform sits at the feet) — what spells aim at.</summary>
+        /// <summary>Centre of the body (the transform sits at the feet) - what spells aim at.</summary>
         public Vector2 Center => Position + new Vector2(0f, 0.4f * CenterHeight); // [MONSTER] bigger bodies
 
         /// <summary>Every enemy currently in the world (used by the mage's auto-targeting).</summary>
@@ -55,7 +55,7 @@ namespace DotRPG
 
         void OnDisable() => Active.Remove(this);
 
-        /// <summary>(enemy, xp reward) — the player listens to gain experience.</summary>
+        /// <summary>(enemy, xp reward) - the player listens to gain experience.</summary>
         public static event Action<EnemyController, int> Killed;
 
         float frozenUntil;
@@ -206,7 +206,7 @@ namespace DotRPG
                         break;
                     }
                     MoveTowards(target.Position, stats.chaseSpeed);
-                    if (distToPlayer <= stats.attackRange)
+                    if (distToPlayer <= stats.attackRange && !HoldingFirstStrike)
                     {
                         facing = FacingExtensions.FromVector(target.Position - Position, facing);
                         EnterState(State.Windup, stats.windupTime);
@@ -255,14 +255,32 @@ namespace DotRPG
             body.SetVelocity(Vector2.MoveTowards(body.GetVelocity(), desiredVelocity, MonsterAcceleration * Time.fixedDeltaTime)); // [MONSTER] dashes accelerate faster
         }
 
+        /// <summary>[BALANCE] A new encounter: the monster closes in but holds its first attack for 0.5-1.5 s.</summary>
+        public const float FirstStrikeMin = .5f, FirstStrikeMax = 1.5f;
+        float firstStrikeAt;
+
+        /// <summary>True while the monster is still sizing up the player after spotting them (no attacks yet).</summary>
+        public bool HoldingFirstStrike => Time.time < firstStrikeAt;
+
         void StartChase()
         {
             if (state != State.Chase)
             {
                 alertIcon.enabled = true;
                 Invoke(nameof(HideAlert), 0.4f);
+                firstStrikeAt = Time.time + UnityEngine.Random.Range(FirstStrikeMin, FirstStrikeMax);
             }
             state = State.Chase;
+        }
+
+        /// <summary>Closes in on the target but stops at attack range, facing it (used during the first-strike hold).</summary>
+        public void ApproachOnly(PlayerController target)
+        {
+            if (target == null) return;
+            float dist = Vector2.Distance(Position, target.Position);
+            facing = FacingExtensions.FromVector(target.Position - Position, facing);
+            if (dist > stats.attackRange * .9f) MoveTowards(target.Position, stats.chaseSpeed);
+            else desiredVelocity = Vector2.zero;
         }
 
         void HideAlert()
@@ -344,6 +362,26 @@ namespace DotRPG
                     break;
             }
             visual.localPosition = Vector3.zero;
+        }
+
+        /// <summary>
+        /// [FEEL] A heavy blow landed (big skill hit, finisher): black-then-white silhouette, a white star burst and a
+        /// puff of grey dust around the body.
+        /// </summary>
+        public void HeavyHit(Vector2 dir)
+        {
+            if (state == State.Dead && flash == null) return;
+            flash?.FlashHeavy();
+            Vector2 c = Center;
+            SkillFx.Spawn("fx_star", c, Color.white, .14f, SkillFx.TopOrder + 6).Scale(.3f, 1.7f * Mathf.Max(1f, Size)).Rotate(UnityEngine.Random.Range(0f, 45f)).Fade(FxFade.Quick);
+            SkillFx.Spawn("fx_glow", c, new Color(1f, 1f, 1f, .7f), .12f, SkillFx.TopOrder + 5).Additive().Scale(.6f, 1.8f).Fade(FxFade.Quick);
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i * Mathf.PI / 3f + UnityEngine.Random.Range(-.3f, .3f);
+                var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * .6f) + dir * .4f;
+                SkillFx.Spawn("fx_dust", Position + new Vector2(0f, .15f), new Color(.82f, .82f, .86f, .75f), UnityEngine.Random.Range(.3f, .45f), SkillFx.At(Position.y, 5))
+                    .Move(d * UnityEngine.Random.Range(2.2f, 3.4f), 5f).Scale(.8f, 1.9f).Fade(FxFade.Late);
+            }
         }
 
         public bool TakeDamage(DamageInfo info)

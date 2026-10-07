@@ -27,6 +27,9 @@ export function useItem(accountId: number, characterUuid: string, body: UseBody)
     handler: async (ctx) => {
       const usable = getGameData().economy.config.usableItems.some((u) => u.id === body.item_id);
       if (!usable) throw new AppError(422, '사용할 수 없는 아이템입니다.', 'NOT_USABLE');
+      // 14단계: 확률 상자·봉인된 상자는 서버가 결과를 정하는 열기 API로만 연다(여기서 소모만 하면 보상 없이 사라진다)
+      const use = getGameData().economy.items.get(body.item_id)?.use;
+      if (use === 'LuckBox' || use === 'SealedBox') throw new AppError(422, '이 아이템은 열기로 사용합니다.', 'USE_OPEN_INSTEAD');
       const have = await ctx.stackCount('bag', body.item_id);
       if (have < 1) throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have });
 

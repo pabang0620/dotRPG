@@ -61,7 +61,7 @@ namespace DotRPG
             void Town(string id, string name, string resource, MapTheme theme, string music)
             {
                 maps.Add(new MapInfo { id = id, displayName = name, resource = resource, theme = theme, music = music,
-                    hint = "안전한 마을. 사냥터 1 → 북쪽 2 / 남쪽 3 → 합류 4 → 다음 지역\n지도에서 연결 지역과 권장 레벨을 확인하자." });
+                    hint = "안전한 마을. 사냥터 1 → 북쪽 2 / 남쪽 3 → 합류 4 → 다음 지역\n지도에서 연결 지역과 권장 레벨을 확인하세요." });
                 foreach (var z in HuntingGrounds.All)
                     if (z.village == id) maps.Add(new MapInfo { id = z.id, displayName = z.name, theme = z.theme, safe = false,
                         resource = z.id == Forest ? "Maps/Forest" : null, music = theme == MapTheme.Town ? "music_forest" : music,

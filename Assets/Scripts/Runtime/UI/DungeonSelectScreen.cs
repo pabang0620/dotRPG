@@ -14,7 +14,7 @@ namespace DotRPG
     /// The 레이드 tab shows 해골왕 and this week's reward status.
     /// Keys: ↑/↓ dungeon, ←/→ difficulty, Enter 입장, E switches the tab, Esc closes.
     /// </summary>
-    public class DungeonSelectScreen : WindowScreen
+    public partial class DungeonSelectScreen : WindowScreen
     {
         const float ListW = 380f, RowH = 96f, RowGap = 8f, DetailX = 392f, DetailW = 828f, PanelTop = -52f, PanelH = 540f;
         const float DiffW = 150f, DiffH = 46f, DiffGap = 12f;
@@ -29,7 +29,7 @@ namespace DotRPG
         readonly List<Row> rows = new List<Row>();
         readonly Button[] diffButtons = new Button[4];
         readonly Text[] diffLabels = new Text[4];
-        Button tabWeekday, tabRaid, enterButton;
+        Button tabWeekday, tabRaid, enterButton, partyButton;
         Image banner;
         Text diffTitle;
         Text dayText, title, desc, info, recommend, partyText, rewards, raidLine, status, hint;
@@ -66,7 +66,7 @@ namespace DotRPG
             w.banner.preserveAspect = true;
             UIFactory.Place(w.banner.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-18f, -14f), new Vector2(240f, 80f));
             w.info = Label(d, "Info", "", 17, tl, tl, new Vector2(24f, -106f), new Vector2(780f, 46f));
-            w.diffTitle = Label(d, "DiffTitle", "<b>난이도</b>", 19, tl, tl, new Vector2(24f, -160f), new Vector2(200f, 26f));
+            w.diffTitle = Label(d, "DiffTitle", "<b>난이도</b>", 19, tl, tl, new Vector2(24f, -160f), new Vector2(780f, 26f));
             for (int i = 0; i < 4; i++)
             {
                 int index = i;
@@ -75,7 +75,7 @@ namespace DotRPG
             w.raidLine = Label(d, "RaidLine", "", 17, tl, tl, new Vector2(24f, -188f), new Vector2(780f, 46f));
             w.recommend = Label(d, "Recommend", "", 17, tl, tl, new Vector2(24f, -246f), new Vector2(380f, 46f));
             w.partyText = Label(d, "Party", "", 17, tl, tl, new Vector2(420f, -246f), new Vector2(220f, 46f));
-            Button(d, "PartyButton", "파티 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -246f), new Vector2(150f, 44f),
+            w.partyButton = Button(d, "PartyButton", "파티 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -246f), new Vector2(150f, 44f),
                 () => Game.Flow.OpenWindow(Game.UI.Party), 18);
             w.rewards = Label(d, "Rewards", "", 17, tl, tl, new Vector2(24f, -300f), new Vector2(780f, 26f));
             for (int i = 0; i < SlotCount; i++)
@@ -84,11 +84,12 @@ namespace DotRPG
                 var icon = UIFactory.Image(frame.transform, "Icon", null, Color.white);
                 icon.preserveAspect = true;
                 UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(SlotIcon - 6f, SlotIcon - 6f));
-                var name = Label(d, "SlotName" + i, "", 13, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 34f), TextAnchor.UpperCenter);
+                var name = Label(d, "SlotName" + i, "", 16, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 34f), TextAnchor.UpperCenter);
                 w.slots.Add((frame, icon, name));
             }
-            w.status = Label(d, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 22f), new Vector2(520f, 50f), TextAnchor.LowerLeft);
+            w.status = Label(d, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 22f), new Vector2(380f, 50f), TextAnchor.LowerLeft);
             w.enterButton = Button(d, "Enter", "입장", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 20f), new Vector2(240f, 62f), () => w.TryEnter(), 28);
+            w.BuildSweep(d); // [SWEEP] "소탕" button and its panel over the detail
             w.hint = Label(w.content, "Hint", "", 16, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(820f, 24f), TextAnchor.UpperRight);
             return w;
         }
@@ -177,8 +178,8 @@ namespace DotRPG
                     if (ResetClock.IsOpen(list[i], now)) { selected = i; break; }
             }
 
-            tabWeekday.image.sprite = Game.Art.Get(raidTab ? "ui_btngray" : "ui_btn");
-            tabRaid.image.sprite = Game.Art.Get(raidTab ? "ui_btn" : "ui_btngray");
+            tabWeekday.image.sprite = UiTheme.Tab(!raidTab);
+            tabRaid.image.sprite = UiTheme.Tab(raidTab);
             var day = ResetClock.GameDay(now);
             string weekend = day == DayOfWeek.Saturday || day == DayOfWeek.Sunday ? "  <color=#8fe28f>주말: 모든 요일던전 개방</color>" : "";
             dayText.text = raidTab
@@ -244,15 +245,29 @@ namespace DotRPG
 
             // Raid: its own schedule and reward status on one line where the difficulty buttons would be.
             raidLine.gameObject.SetActive(def.isRaid);
-            diffTitle.text = def.isRaid ? "<b>레이드 일정</b>" : "<b>난이도</b>";
+            string schedule = def.isRaid ? (def.raidTier == RaidTier.Mid ? $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 하루 1회 보상" : $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 주 1회 보상") : "";
+            diffTitle.text = def.isRaid ? $"<b>레이드 일정</b>   <color=#b8c4d8>{schedule}</color>" : "<b>난이도</b>";
             if (def.isRaid)
             {
-                string schedule = def.raidTier == RaidTier.Mid ? $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 하루 1회 보상" : $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 주 1회 보상";
-                string state = !progress.RaidRewardAvailable(def, now)
-                    ? (def.raidTier == RaidTier.Mid ? "<color=#ff9f7a>오늘 보상 받음 · 연습만 가능</color>" : "<color=#ff9f7a>이번 주 보상 받음 · 연습만 가능</color>")
-                    : def.raidTier == RaidTier.Mid ? $"봉인 열쇠 조각 <color=#ffe066>{def.keyMin}~{def.keyMax}</color> · 이번 주 {progress.RaidClearsThisWeek(def, now)}/3"
-                    : $"입장 조건 봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> (보유 {Game.Session.Inventory.Count(DungeonDatabase.SealKey)}) · <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻음";
-                raidLine.text = $"<color=#b8c4d8>{schedule}</color>\n{state}";
+                // Two lines: what this entry gives now, then where its keys come from.
+                string state, how;
+                if (!progress.RaidRewardAvailable(def, now))
+                {
+                    state = def.raidTier == RaidTier.Mid ? "<color=#ff9f7a>오늘 보상을 받았습니다 · 지금은 연습 입장</color>" : "<color=#ff9f7a>이번 주 보상을 받았습니다 · 지금은 연습 입장</color>";
+                    how = def.raidTier == RaidTier.Mid ? "<color=#b8c4d8>보상은 매일 06:00에 다시 열립니다.</color>" : "<color=#b8c4d8>보상은 매주 목요일 06:00에 다시 열립니다.</color>";
+                }
+                else if (def.raidTier == RaidTier.Mid)
+                {
+                    state = $"보상  봉인 열쇠 조각 <color=#ffe066>{def.keyMin}~{def.keyMax}개</color> · 이번 주 클리어 {progress.RaidClearsThisWeek(def, now)}/3";
+                    how = "<color=#b8c4d8>모은 조각은 최종 레이드 보상 조건에 쓰입니다.</color>";
+                }
+                else
+                {
+                    int have = Game.Session.Inventory.Count(DungeonDatabase.SealKey);
+                    state = $"보상 조건  봉인 열쇠 조각 <color=#ffe066>{def.keyCost}개</color> <color={(have >= def.keyCost ? "#8fe28f" : "#ff9f7a")}>(보유 {have})</color>";
+                    how = $"<color=#b8c4d8>조각은 <color=#8fe28f>{KeySources()}</color> 클리어 보상으로 얻습니다 · 모자라면 연습 입장</color>";
+                }
+                raidLine.text = $"{state}\n{how}";
             }
             rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";
             var list2 = DungeonRewards.Slots(def, numbers, cls);
@@ -270,9 +285,16 @@ namespace DotRPG
             }
 
             string reason = Game.Dungeon != null ? Game.Dungeon.CannotEnterReason(def, difficulty, now) : "준비 중";
-            status.text = reason == null ? "<color=#8fe28f>입장할 수 있다.</color>" : $"<color=#ff9f7a>{reason}</color>";
+            string practice = reason == null ? PracticeReason(def, now) : null;
+            status.text = reason != null ? $"<color=#ff9f7a>{reason}</color>" : practice != null ? $"<color=#ffe066>보상 없는 연습 입장입니다.</color> <color=#b8c4d8>{practice}</color>" : "<color=#8fe28f>입장할 수 있습니다.</color>";
             enterButton.image.color = reason == null ? Color.white : new Color(1f, 1f, 1f, 0.45f);
-            hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   ESC 닫기</color>";
+            enterButton.image.sprite = Game.Art.Get(practice != null ? "ui_btngray" : "ui_btn");
+            TextOf(enterButton).text = practice != null ? "연습 입장" : "입장";
+            RefreshSweep(); // sets whether 소탕 shows, which the hint below follows
+            var input = Game.Input;
+            string sweepKey = sweepButton != null && sweepButton.gameObject.activeSelf ? $"   {input.GetBindingLabel(GameAction.UseItem)} 소탕" : "";
+            hint.text = $"<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   {input.GetBindingLabel(GameAction.Submit)} 입장   Tab / LB·RB 탭 전환{sweepKey}   {input.GetBindingLabel(GameAction.UseMana)} 파티 편성   {input.GetBindingLabel(GameAction.Cancel)} 닫기</color>";
+            TextOf(partyButton).text = $"파티 편성 <size=15><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
         }
 
         /// <summary>The mid raids that drop seal key fragments, by name ("해골왕").</summary>
@@ -289,7 +311,7 @@ namespace DotRPG
             if (def == null || def.isRaid) return;
             if (!Game.Session.Dungeons.IsUnlocked(def, d))
             {
-                GameEvents.RaiseToast($"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 한다.");
+                GameEvents.RaiseToast($"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 합니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -298,17 +320,43 @@ namespace DotRPG
             Refresh();
         }
 
+        static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
+
+        /// <summary>Why a raid entry would give no reward (null = it gives the reward). Daily dungeons always reward.</summary>
+        string PracticeReason(DungeonDef def, DateTime now)
+        {
+            if (def == null || !def.isRaid) return null;
+            if (!Game.Session.Dungeons.RaidRewardAvailable(def, now)) return def.raidTier == RaidTier.Mid ? "오늘 보상을 이미 받았습니다." : "이번 주 보상을 이미 받았습니다.";
+            if (def.keyCost > 0 && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < def.keyCost) return "봉인 열쇠 조각이 모자랍니다.";
+            return null;
+        }
+
         bool TryEnter()
         {
             var def = Selected;
             if (def == null || Game.Dungeon == null) return false;
+            string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, ResetClock.Now) : null;
+            if (practice != null)
+            {
+                Game.UI.Confirm($"{practice}\n<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?", () => { if (!Game.Dungeon.Enter(def, difficulty)) Refresh(); }, defaultYes: true, overlay: true); // [UX] nothing is lost: cursor on 예
+                return false;
+            }
             bool ok = Game.Dungeon.Enter(def, difficulty);
             if (!ok) Refresh();
             return ok;
         }
 
+        protected override bool UsesTabKey => true;
+        protected override bool HasKeyTags => true;
+
         protected override void Update()
         {
+            // [SWEEP] The sweep panel takes Esc (closes itself, not the window) and blocks the list keys under it.
+            if (SweepOpen)
+            {
+                if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) CloseSweep();
+                return;
+            }
             base.Update();
             if (!TakesInput || !gameObject.activeInHierarchy) return;
             var input = Game.Input;
@@ -328,8 +376,12 @@ namespace DotRPG
                 var next = (DungeonDifficulty)Mathf.Clamp((int)difficulty + dx, 0, DungeonDatabase.DifficultyCount - 1);
                 if (next != difficulty) PickDifficulty(next);
             }
-            if (input.InteractPressed) SetTab(!raidTab);
+            // [UX] Tab / LB · RB switch the tab; A (Submit) only enters (A was bound to both, so the pad could never enter).
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) SetTab(!raidTab);
             else if (input.SubmitPressed) TryEnter();
+            // [UX] The mouse-only buttons get keys too: 1 / Y 소탕 (weekday dungeons online), 2 / L3 파티 편성.
+            else if (input.UseItemPressed && sweepButton != null && sweepButton.gameObject.activeInHierarchy) OpenSweep();
+            else if (input.UseManaPressed) { Game.Audio.PlaySfx("select"); Game.Flow.OpenWindow(Game.UI.Party); }
         }
 
         // ---------- Automated checks ----------

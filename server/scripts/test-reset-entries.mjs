@@ -1,8 +1,12 @@
 // 시험 서버 전용: 캐릭터의 오늘 던전 입장 횟수를 되돌린다(오늘 판의 counts_entry를 false로).
 // 사용: node scripts/test-reset-entries.mjs <캐릭터 이름> [<캐릭터 이름> ...]   (서버 .env의 DATABASE_URL 사용)
-// 판 기록과 보상은 그대로 두고 횟수 계산에서만 뺀다. 운영 서버(DEPLOY_STAGE=live)에서는 실행을 거절한다.
+// 판 기록과 보상은 그대로 두고 횟수 계산에서만 뺀다. DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다.
 import { readFileSync } from 'node:fs';
 import pg from 'pg';
+import { assertTestStage } from './_stageGuard.mjs';
+
+// 시험 서버 전용 가드: DEPLOY_STAGE=test 가 명시된 환경에서만 실행한다(맨 앞에서 확인)
+assertTestStage();
 
 const env = Object.fromEntries(
   readFileSync(new URL('../.env', import.meta.url), 'utf8')
@@ -10,10 +14,6 @@ const env = Object.fromEntries(
     .filter((l) => /^[A-Z0-9_]+=/.test(l))
     .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),
 );
-if ((process.env.DEPLOY_STAGE ?? env.DEPLOY_STAGE ?? 'dev') === 'live') {
-  console.error('운영 서버(DEPLOY_STAGE=live)에서는 쓸 수 없습니다.');
-  process.exit(1);
-}
 const names = process.argv.slice(2);
 if (names.length === 0) {
   console.error('사용: node scripts/test-reset-entries.mjs <캐릭터 이름> ...');

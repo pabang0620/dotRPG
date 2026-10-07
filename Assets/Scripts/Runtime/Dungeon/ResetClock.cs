@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// Daily / weekly reset times on the local PC clock (plan D3): the day turns over at 06:00, the week at
-    /// Thursday 06:00, like Dungeon&amp;Fighter KR. Pure functions of a <see cref="DateTime"/> so they are testable;
+    /// Thursday 06:00. Pure functions of a <see cref="DateTime"/> so they are testable;
     /// no protection against changing the clock (offline single player).
     /// </summary>
     public static class ResetClock
@@ -23,9 +23,6 @@ namespace DotRPG
             var today = now.Date.AddHours(ResetHour);
             return now >= today ? today : today.AddDays(-1);
         }
-
-        /// <summary>The next daily reset after <paramref name="now"/>.</summary>
-        public static DateTime NextDailyReset(DateTime now) => DailyResetStart(now).AddDays(1);
 
         /// <summary>The most recent Thursday 06:00 at or before <paramref name="now"/>.</summary>
         public static DateTime WeeklyResetStart(DateTime now)

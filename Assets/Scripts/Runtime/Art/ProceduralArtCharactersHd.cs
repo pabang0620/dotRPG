@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// High-resolution (density 2, 32px per tile) characters and monsters. Same world size as the old
-    /// 16x20 art — a frame is 32x40 with doubled pivot — but twice the detail: eyes with highlights,
+    /// 16x20 art - a frame is 32x40 with doubled pivot - but twice the detail: eyes with highlights,
     /// hair strands and shine, cloth folds, armour plates and rivets, belts and buckles, a clean 1px
     /// dark outline. Five views (down, up, side, downside, upside; left = flipped by the renderer) x
     /// eight frames (idle0, idle1, walk0-3, attack, hurt). Also the held weapons wpn_*, held tools
@@ -20,7 +20,6 @@ namespace DotRPG
         // Frame is 32 wide x 40 tall. Old layout x2: head rows 4..23, body 24..31, legs 32..37.
         const int W = 32, HGT = 40;
 
-        static readonly Color32 ChSkinShade = PixelCanvas.Hex("#00000000"); // unused placeholder
         static readonly Color32 Blush = PixelCanvas.Hex("#f0968a");
         static readonly Color32 EyeWhite = PixelCanvas.Hex("#f7f2e8");
         static readonly Color32 ShoeCol = PixelCanvas.Hex("#4a3226");
@@ -29,21 +28,7 @@ namespace DotRPG
 
         static Color32 Lit(Color32 c, float f) => PixelCanvas.Shade(c, f);
 
-        /// <summary>Fills a solid vertical-lit column block: darker at the bottom/right edges.</summary>
-        static void Body3(PixelCanvas c, int x, int y, int w, int h, Color32 col)
-        {
-            var dark = Lit(col, 0.8f);
-            var light = Lit(col, 1.15f);
-            c.Rect(x, y, w, h, col);
-            c.VLine(x, y, y + h - 1, dark);           // left shade
-            c.HLine(x, x + w - 1, y + h - 1, dark);    // bottom shade
-            c.HLine(x, x + w - 1, y, light);           // top light
-        }
-
         // ---------- Router entry points (called by ProceduralArt.Draw) ----------
-
-        /// <summary>Canvas for the 64px-per-tile (density 4) characters: same world size, twice the dots of the 32px art.</summary>
-        static PixelCanvas Xd(int w, int h) => new PixelCanvas(w, h) { Density = 4 };
 
         static PixelCanvas DrawCharacterHd(CharacterLook look, string dir, string frame)
         {
@@ -923,7 +908,7 @@ namespace DotRPG
             return c.WithPivot(16, 3f);
         }
 
-        /// <summary>Carried supply crate (tool_crate) at density 2 — a wooden box of carrots.</summary>
+        /// <summary>Carried supply crate (tool_crate) at density 2 - a wooden box of carrots.</summary>
         static PixelCanvas DrawCrateHd()
         {
             var c = Hd(32, 34);

@@ -105,7 +105,11 @@ namespace DotRPG
         {
             base.Show();
             pwField.text = "";
-            Say($"서버: {ApiClient.Instance.BaseUrl}   (개발용 로그인)");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Say($"서버: {ApiClient.Instance.BaseUrl}");
+#else
+            Say("");
+#endif
             // [SERVER 7] Planned or running maintenance shows before anyone tries to log in.
             ApiClient.Instance.Get("/meta", r =>
             {

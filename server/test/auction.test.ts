@@ -194,7 +194,7 @@ describe('S5 마감 연장', () => {
     // 마감 4분 전으로 시계를 옮긴다
     const first = (await listingRow(id)).ends_at as Date;
     setNowAt(new Date(first.getTime() - 4 * MIN));
-    let amount = 25;
+    let amount = 31; // the start bid
     for (let i = 0; i < 7; i++) {
       const who = i % 2 === 0 ? a : b;
       const res = await bidReq(app, who, id, amount);
@@ -364,7 +364,7 @@ describe('조회 API', () => {
     const byName = await get(app, viewer, `/auction/search?q=${encodeURIComponent('장검')}`);
     expect(byName.body.meta.total).toBe(2);
     const byInitial = await get(app, viewer, `/auction/search?q=${encodeURIComponent('ㅈㄱ')}`);
-    expect(byInitial.body.meta.total).toBe(2);
+    expect(byInitial.body.meta.total).toBe(3); // 장검 2 + '뼈 조각'(ㅈㄱ)
     const bone = await get(app, viewer, '/auction/search?category=material');
     expect(bone.body.meta.total).toBe(1);
     expect(bone.body.data.listings[0]).toMatchObject({ will_bind: null, unit_price: 15 });

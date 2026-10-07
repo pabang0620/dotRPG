@@ -243,11 +243,10 @@ namespace DotRPG
 
         CharacterLook BaseLook(CharacterClassInfo info) => !IsLocal && Data.Look != null ? Data.Look : info.Look;
 
-        /// <summary>Worn top, bottom and weapon show on the character (necklace and rings don't).</summary>
+        /// <summary>Only the weapon of the worn gear shows on the character; a costume skin replaces the body.</summary>
         void ApplyGear()
         {
             if (animator == null || combat == null || Game.Session == null || Data == null) return;
-            var eq = Data.Equipment;
             // A costume skin replaces the whole body (worn clothes don't show over it); the weapon still does.
             if (IsLocal)
             {
@@ -257,7 +256,8 @@ namespace DotRPG
                 RefreshStats();
             }
             var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);
-            animator.SetLook(skinLook ?? CharacterLook.WithGear(BaseLook(CharacterClassInfo.Get(Class)), eq[EquipSlot.Top], eq[EquipSlot.Bottom]));
+            // [ART] Worn armour no longer changes the body: only the weapon in hand shows the gear (skins still apply).
+            animator.SetLook(skinLook ?? BaseLook(CharacterClassInfo.Get(Class)));
             SkinTrail.Set(this, animator.Renderer, skinLook != null ? SkinCatalog.Find(Data.SkinId) : null);
             combat.RefreshWeapon();
         }
@@ -367,7 +367,7 @@ namespace DotRPG
                 AimDirection = SnapTo8(move);
             }
 
-            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier * CareerCombat.For(this).MoveScale;
+            desiredVelocity = stunned ? Vector2.zero : move * stats.moveSpeed * st.SpeedMultiplier * CareerCombat.For(this).MoveScale * skills.ChargeMoveScale;
 
             // Ignore action buttons on the frame a menu/dialogue closed, so the same press
             // doesn't immediately trigger an attack or re-open the conversation.
@@ -382,7 +382,7 @@ namespace DotRPG
                 if (IsLocal)
                 {
                     if (cmd.useHealing) UseHealing();
-                    if (cmd.useMana) UseConsumable(ConsumableDatabase.MpPotion);
+                    if (cmd.useMana) UseConsumable(Game.Session.Inventory.Count(ConsumableDatabase.MpPotionHi) > 0 ? ConsumableDatabase.MpPotionHi : ConsumableDatabase.MpPotion);
                     if (cmd.townScroll) UseConsumable(ConsumableDatabase.TownScroll);
                 }
                 if (cmd.skillSlot >= 0 && cmd.skillSlot < SkillGems.Slots) skills.TryCast(cmd.skillSlot);
@@ -436,12 +436,12 @@ namespace DotRPG
             var inventory = Game.Session.Inventory;
             if (health.Current >= health.Max)
             {
-                GameEvents.RaiseToast("체력이 가득 차 있다.");
+                GameEvents.RaiseToast("체력이 가득 차 있습니다.");
                 return;
             }
             if (!inventory.Remove(ItemIds.Carrot, 1))
             {
-                GameEvents.RaiseToast("체력 물약도 당근도 없다. 마을 잡화상인에게서 물약을 사자.");
+                GameEvents.RaiseToast("체력 물약도 당근도 없습니다. 마을 잡화상인에게서 물약을 사세요.");
                 return;
             }
             if (OnlineEconomy.On) OnlineEconomy.UseItem(ItemIds.Carrot); // [SERVER] consume there too
@@ -465,7 +465,8 @@ namespace DotRPG
         public void UseHealing()
         {
             if (!IsLocal) return;
-            if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
+            if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotionHi) > 0) UseConsumable(ConsumableDatabase.HpPotionHi); // [CASH] the strong one first
+            else if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
             else TryEatCarrot();
         }
 
@@ -477,7 +478,7 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             if (bag.Count(id) <= 0)
             {
-                GameEvents.RaiseToast($"{item.name}{Josa(item.name, "이", "가")} 없다. 마을 잡화상인에게서 살 수 있다.");
+                GameEvents.RaiseToast($"{item.name}{Josa(item.name, "이", "가")} 없습니다. 마을 잡화상인에게서 살 수 있습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -485,7 +486,7 @@ namespace DotRPG
             {
                 case ConsumableKind.HealHp:
                 {
-                    if (health.Current >= health.Max) { GameEvents.RaiseToast("체력이 가득 차 있다."); return false; }
+                    if (health.Current >= health.Max) { GameEvents.RaiseToast("체력이 가득 차 있습니다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
@@ -495,13 +496,13 @@ namespace DotRPG
                     Game.Audio.PlaySfx("heal");
                     SkillVisuals.Flash(Center, new Color(1f, 0.35f, 0.35f, 0.55f), 1.6f, 0.3f);
                     Fx.Sparkle(Center + Vector2.up * 0.4f, 3, 0.4f);
-                    GameEvents.RaiseToast($"체력 물약  <color=#ff8a8a>+{amount} HP</color>");
+                    GameEvents.RaiseToast($"{item.name}  <color=#ff8a8a>+{amount} HP</color>");
                     return true;
                 }
                 case ConsumableKind.HealMp:
                 {
                     int maxMp = Data.Stats.MaxMp;
-                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있다."); return false; }
+                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있습니다."); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
@@ -512,11 +513,28 @@ namespace DotRPG
                     Game.Audio.PlaySfx("heal");
                     SkillVisuals.Flash(Center, new Color(0.4f, 0.6f, 1f, 0.6f), 1.6f, 0.3f);
                     Fx.Sparkle(Center + Vector2.up * 0.4f, 3, 0.4f);
-                    GameEvents.RaiseToast($"마나 물약  <color=#8ab8ff>+{amount} MP</color>");
+                    GameEvents.RaiseToast($"{item.name}  <color=#8ab8ff>+{amount} MP</color>");
                     return true;
                 }
                 case ConsumableKind.TownScroll:
                     return Game.Flow.UseTownScroll();
+                case ConsumableKind.Buff:
+                {
+                    // [CASH] 투지의 주문서: refreshes to the full time, never stacks.
+                    bag.Remove(id, 1);
+                    if (OnlineEconomy.On) OnlineEconomy.UseItem(id);
+                    Data.ScrollPower = item.power;
+                    Data.ScrollUntil = Time.time + item.minutes * 60f;
+                    RefreshStats();
+                    Game.Audio.PlaySfx("magic");
+                    SkillVisuals.Flash(Center, new Color(1f, .55f, .25f, .6f), 1.8f, .35f);
+                    GameEvents.RaiseToast($"{item.name}: {item.minutes}분 동안 공격 피해 +{item.power}%");
+                    return true;
+                }
+                case ConsumableKind.LuckBox:
+                case ConsumableKind.SealedBox:
+                    CashClient.OpenItem(id); // [CASH] the server opens boxes
+                    return false;
             }
             return false;
         }
@@ -548,7 +566,7 @@ namespace DotRPG
             {
                 Fx.Sparkle(Center + Vector2.up * 0.3f, 3, 0.35f);
                 Game.Audio.PlaySfx("mine", IsLocal ? 1f : 0.5f);
-                if (IsLocal) GameEvents.RaiseToast("막았다!");
+                if (IsLocal) GameEvents.RaiseToast("막았습니다!");
                 return false;
             }
             int guard = Data.GuardReduction; // class passive (was 철벽 / 마나 보호막)

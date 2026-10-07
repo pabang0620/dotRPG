@@ -253,7 +253,7 @@ namespace DotRPG
 
         /// <summary>
         /// Contact sheet sized from the REAL sprite rects (max width/height over every frame, plus a
-        /// margin) so nothing is cropped — the wizard-hat frames are the tallest. Every look
+        /// margin) so nothing is cropped - the wizard-hat frames are the tallest. Every look
         /// (player + 3 gear looks, mage + gear, skeleton, every NPC incl. 미르/무쇠/보람) is a block of
         /// 5 views (down, downside, side, upside, up) x 8 frames (idle0,idle1,walk0-3,attack,hurt).
         /// </summary>

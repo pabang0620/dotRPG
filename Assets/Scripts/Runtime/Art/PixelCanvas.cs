@@ -135,7 +135,7 @@ namespace DotRPG
 
         public void Circle(float cx, float cy, float r, Color32 c) => Ellipse(cx, cy, r, r, c);
 
-        /// <summary>Paints (only on opaque pixels) the part of an ellipse — used for highlights/shadows.</summary>
+        /// <summary>Paints (only on opaque pixels) the part of an ellipse - used for highlights/shadows.</summary>
         public void PaintEllipse(float cx, float cy, float rx, float ry, Color32 c)
         {
             int x0 = (int)Math.Floor(cx - rx), x1 = (int)Math.Ceiling(cx + rx);
@@ -163,16 +163,6 @@ namespace DotRPG
         }
 
         bool Opaque(Color32[] buffer, int x, int y) => InBounds(x, y) && buffer[y * Width + x].a > 128;
-
-        public void FlipHorizontal()
-        {
-            for (int y = 0; y < Height; y++)
-                for (int x = 0; x < Width / 2; x++)
-                {
-                    int a = y * Width + x, b = y * Width + (Width - 1 - x);
-                    (Pixels[a], Pixels[b]) = (Pixels[b], Pixels[a]);
-                }
-        }
 
         /// <summary>Copies another canvas on top (alpha blended) at the given top-left offset.</summary>
         public void Blit(PixelCanvas src, int ox, int oy)

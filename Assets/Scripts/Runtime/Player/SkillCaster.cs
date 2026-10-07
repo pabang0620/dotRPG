@@ -14,6 +14,8 @@ namespace DotRPG
     {
         PlayerController owner;
         readonly float[] readyAt = new float[SkillGems.Slots];
+        /// <summary>[DEMO] Career trial build: skills come back almost at once so every skill can be tried in a row.</summary>
+        public static bool NoCooldown;
         float castEnd;
         readonly Dictionary<string,float> skillReady = new Dictionary<string,float>();
         float ReadyAt(int slot) {var g=Prog.Active(slot);return g!=null&&skillReady.TryGetValue(g.id,out var t)?t:0;}
@@ -84,33 +86,43 @@ namespace DotRPG
                 var locked = SkillGems.ForSlot(owner.Class, slot);
                 GameEvents.RaiseToast(slot == SkillGems.UltimateSlot
                     ? "전직 후 자신의 각성 퀘스트를 완료해야 사용할 수 있습니다."
-                    : $"아직 잠긴 스킬이다 — {locked?.name} (Lv.{Progression.SlotLevel(slot)}에 해금)");
+                    : $"아직 잠긴 스킬입니다: {locked?.name} (Lv.{Progression.SlotLevel(slot)}에 해금)");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
             if (Time.time < ReadyAt(slot) || IsCasting) return;
+            var careerSkill = CareerCatalog.Get(gem.id);
+            if (careerSkill != null && !CareerCombat.For(owner).CanCast(careerSkill)) return; // e.g. all three shields still out
             var n = Numbers(slot);
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
                 if (!owner.IsLocal) return;
-                GameEvents.RaiseToast(n.usesLife ? "HP가 부족하다." : "MP가 부족하다.");
+                GameEvents.RaiseToast(n.usesLife ? "HP가 부족합니다." : "MP가 부족합니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
-            readyAt[slot] = Time.time + n.cooldown;
+            if (BeginCharge(slot, careerSkill, n)) return; // [CHARGE] fires on release, cooldown starts then
+            readyAt[slot] = Time.time + (NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
             skillReady[gem.id]=readyAt[slot];
             castEnd = Time.time + (gem.IsUltimate ? 0.6f : 0.25f);
             var career=CareerCatalog.Get(gem.id);
             if(career!=null) {
                 castEnd=Time.time+career.cast+CareerMoves.Recovery(career)+.08f;
+                // [BALANCE] 회귀의 방패: each node rank above 1 throws 0.04 s sooner (rank 3: about 4.5 throws a second).
+                if (career.effect == "shieldthrow") castEnd -= .04f * (Mathf.Clamp(Prog.Rank(career.id), 1, 3) - 1);
                 StartCoroutine(CareerCombat.For(owner).Cast(career,n));
             }
             else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 
+        /// <summary>[AIM] The direction of the cast in progress: toward the nearest monster in reach, else the aim.</summary>
+        Vector2 castAim = Vector2.right;
+
         IEnumerator Cast(SkillGem gem, SkillNumbers n)
         {
+            castAim = owner.AutoAim(Mathf.Max(4f, Mathf.Max(n.range, n.radius) + 1.5f));
+            if (!owner.NetPuppet) owner.FaceTowards(owner.Position + castAim); // the body turns to its target
             for (int i = 0; i <= n.repeats; i++)
             {
                 if (owner.IsDead) yield break;
@@ -121,16 +133,12 @@ namespace DotRPG
                     case "lance": Lance(n); break;
                     case "charge": yield return StartCoroutine(Charge(n)); break;
                     case "firefield": StartCoroutine(FireField(n)); break;
-                    // v1 + v2 (v1-only ones stay for SkillGems.UseLegacy)
+                    // v1 + v2
                     case "whirl": Whirl(n); break;
-                    case "slam": Slam(n); break;
-                    case "wave": StartCoroutine(Wave(n, owner.AimDirection)); break;
                     case "cry": WarCry(n); break;
                     case "blades": yield return StartCoroutine(Blades(n, i == 0)); break;
-                    case "arc": StartCoroutine(Arc(n)); break;
                     case "nova": Nova(n); break;
                     case "frostorb": StartCoroutine(FrostOrb(n)); break;
-                    case "thunder": StartCoroutine(Thunder(n)); break;
                     case "meteor": yield return StartCoroutine(Meteor(n, i == 0)); break;
                 }
                 if (i < n.repeats) yield return new WaitForSeconds(0.28f);
@@ -146,6 +154,7 @@ namespace DotRPG
             // Hit feel: a harder shove, sparks and a tiny freeze-frame on the local player's hits.
             bool landed = enemy.TakeDamage(new DamageInfo(damage, from, knockback * 1.2f, Team.Player, owner.gameObject));
             if (landed) HitFeel(enemy, knockback >= 8f);
+            if (landed && knockback >= 8f) enemy.HeavyHit((enemy.Center - from).normalized); // [FEEL]
             if (landed && n.leechPct > 0)
                 owner.Heal(Mathf.Max(1, damage * n.leechPct / 100));
         }
@@ -261,7 +270,7 @@ namespace DotRPG
         /// <summary>[SKILL v2] 파쇄 일격: one heavy blow on the monster in front (the nearest, leaning towards the aim).</summary>
         void Crush(SkillNumbers n)
         {
-            Vector2 c = owner.Center, aim = owner.AimDirection;
+            Vector2 c = owner.Center, aim = castAim;
             EnemyController target = null;
             float best = float.MaxValue;
             foreach (var e in EnemyController.Active)
@@ -275,11 +284,14 @@ namespace DotRPG
             }
             Vector2 at = target != null ? target.Center : c + aim * Mathf.Min(1.1f, n.range);
             Game.Audio.PlaySfx("rock_break");
-            SkillVisuals.SlamImpact(at, n.radius);
+            // [VFX] A downward cut on the target, the shock spreading on the ground under it.
+            Vector2 ground = target != null ? target.Position : at + Vector2.down * 0.3f;
+            CareerFx.Clip("f_vslash", ground, aim, 0.8f, 30f, VfxLayer.Top, false);
+            CareerFx.Clip("impact", ground, Vector2.zero, n.radius / 1.4f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
             if (target != null)
             {
                 Hit(target, n, c, 9f);
-                SkillVisuals.SlashHit(target.Center, SkillVisuals.WhirlGold);
+                CareerFx.Hit(target.Center, aim, Career.Fighter, 2);
             }
             Shake(0.1f, 0.16f);
         }
@@ -289,15 +301,17 @@ namespace DotRPG
         {
             Vector2 from = owner.Center;
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.MageViolet);
-            SkillVisuals.StaffFlash(from + owner.AimDirection * 0.35f, SkillVisuals.ArcGlow);
+            SkillVisuals.StaffFlash(from + castAim * 0.35f, SkillVisuals.ArcGlow);
             var target = Nearest(from, n.range, null);
             Game.Audio.PlaySfx("magic");
             if (target == null)
             {
-                SkillVisuals.ArcBolt(from, from + owner.AimDirection * 2.5f, false);
+                SkillVisuals.ArcBolt(from, from + castAim * 2.5f, false);
                 return;
             }
             SkillVisuals.Thunder(target.Position);
+            CareerFx.Clip("m_spark", target.Center, Vector2.zero, 1.3f, 30f, VfxLayer.Top, false);
+            CareerFx.Clip("impact", target.Position, Vector2.zero, 0.55f, 26f, VfxLayer.Ground, false, CareerFx.Violet);
             Hit(target, n, from, 4f);
             Shake(0.06f, 0.12f);
         }
@@ -307,7 +321,7 @@ namespace DotRPG
         /// <summary>돌진 베기: dash along the aim, cutting and shoving every monster met on the way.</summary>
         IEnumerator Charge(SkillNumbers n)
         {
-            Vector2 dir = owner.AimDirection.sqrMagnitude > 0.0001f ? owner.AimDirection.normalized : owner.Facing.ToVector();
+            Vector2 dir = castAim;
             // A puppet (another PC's body) only shows the cut; its position comes from that PC.
             float dist = owner.NetPuppet ? 0f : owner.SkillDash(dir, n.range);
             Game.Audio.PlaySfx("swing");
@@ -315,18 +329,22 @@ namespace DotRPG
             float speed = PlayerController.DashDistance / PlayerController.DashDuration;
             float end = Time.time + dist / speed + 0.05f;
             var hit = new HashSet<EnemyController>();
+            // [VFX] A cut line along the dash and afterimages of the body.
+            CareerFx.Clip("f_line", owner.Center, dir, 1f, 26f).Squash(Mathf.Max(.25f, Mathf.Max(dist, 1.5f) / 6f), 1f);
+            float ghost = 0f;
             do
             {
-                SkillVisuals.Flash(owner.Center, new Color(1f, 0.85f, 0.4f, 0.35f), 1.1f, 0.12f);
+                ghost -= Time.deltaTime;
+                if (ghost <= 0f) { ghost = 0.04f; CareerFx.Ghost(owner, new Color(1f, 0.85f, 0.45f, 0.6f)); }
                 foreach (var e in EnemiesInRadius(owner.Center + dir * 0.3f, n.radius))
                 {
                     if (!hit.Add(e)) continue;
                     Hit(e, n, owner.Center - dir, 10f);
-                    SkillVisuals.SlashHit(e.Center, SkillVisuals.WhirlGold);
+                    CareerFx.Hit(e.Center, dir, Career.Fighter, 1);
                 }
                 yield return null;
             } while (Time.time < end);
-            SkillVisuals.SlamImpact(owner.Center + dir * 0.5f, n.radius);
+            CareerFx.Clip("impact", owner.Position + dir * 0.5f, Vector2.zero, n.radius / 1.5f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
             Shake(hit.Count > 0 ? 0.15f : 0.06f, 0.18f);
         }
 
@@ -335,74 +353,18 @@ namespace DotRPG
         {
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("swing");
-            SkillVisuals.Whirl(c, owner.Position, n.radius);
+            // [VFX] Four crescents around the body make one full turn of the blade.
+            for (int k = 0; k < 4; k++)
+            {
+                float a = k * 90f * Mathf.Deg2Rad;
+                CareerFx.Clip("f_arc", c, new Vector2(Mathf.Cos(a), Mathf.Sin(a)), n.radius / 1.35f, 40f).FlipY(k % 2 == 1);
+            }
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
                 Hit(e, n, c, 7f);
-                SkillVisuals.SlashHit(e.Center, SkillVisuals.WhirlGold);
+                CareerFx.Hit(e.Center, (e.Center - c).normalized, Career.Fighter, 0);
             }
             Shake(0.06f, 0.12f);
-        }
-
-        /// <summary>대지 강타: a shock wave that runs along the aim direction, cracking the ground as it goes.</summary>
-        void Slam(SkillNumbers n)
-        {
-            Vector2 dir = owner.AimDirection;
-            StartCoroutine(SlamWave(n, dir, owner.Position + dir * 0.6f));
-        }
-
-        IEnumerator SlamWave(SkillNumbers n, Vector2 dir, Vector2 start)
-        {
-            Game.Audio.PlaySfx("rock_break");
-            Shake(0.16f, 0.22f);
-            SkillVisuals.SlamImpact(start, n.radius);
-            var hit = new HashSet<EnemyController>();
-            int steps = Mathf.Max(4, Mathf.RoundToInt(n.range / 0.75f) + 1);
-            Vector2 prev = start;
-            for (int i = 0; i < steps; i++)
-            {
-                Vector2 p = start + dir * (n.range * i / (steps - 1));
-                if (!owner.IsLocal) CameraFollow.ShakeMute++;
-                try { SkillVisuals.SlamStep(prev, p, n.radius, i == steps - 1); }
-                finally { if (!owner.IsLocal) CameraFollow.ShakeMute--; }
-                foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius))
-                    if (hit.Add(e))
-                    {
-                        Hit(e, n, owner.Position, 9f);
-                        SkillVisuals.EarthHit(e.Center);
-                    }
-                prev = p;
-                if (i < steps - 1) yield return new WaitForSeconds(0.06f);
-            }
-        }
-
-        /// <summary>검기: a crescent blade flies along the aim direction and cuts every monster it passes.</summary>
-        IEnumerator Wave(SkillNumbers n, Vector2 dir)
-        {
-            Game.Audio.PlaySfx("swing");
-            const float speed = 13f;
-            Vector2 pos = owner.Center + dir * 0.4f;
-            var blade = SkillVisuals.WaveBlade(pos, dir, n.radius);
-            var hit = new HashSet<EnemyController>();
-            float travelled = 0f, trail = 0f;
-            while (travelled < n.range)
-            {
-                float step = speed * Time.deltaTime;
-                pos += dir * step;
-                travelled += step;
-                blade.MoveTo(pos);
-                trail -= Time.deltaTime;
-                if (trail <= 0f) { trail = 0.03f; SkillVisuals.WaveTrail(pos, dir, n.radius); }
-                foreach (var e in EnemiesInRadius(pos, n.radius))
-                    if (hit.Add(e))
-                    {
-                        Hit(e, n, pos - dir, 6f);
-                        SkillVisuals.SlashHit(e.Center, SkillVisuals.WhirlGold);
-                    }
-                if (Blocked(pos)) break;
-                yield return null;
-            }
-            SkillVisuals.WaveEnd(blade, pos, dir, n.radius);
         }
 
         /// <summary>전쟁 함성: stun everything nearby and raise all damage for a while.</summary>
@@ -411,6 +373,9 @@ namespace DotRPG
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("rock_break");
             SkillVisuals.WarCry(c, owner.Position, n.radius);
+            var aim = castAim;
+            CareerFx.Clip("g_roar", c, aim, n.radius / 3f, 22f, VfxLayer.Top, true);
+            CareerFx.Clip("g_roar", c, -aim, n.radius / 3.4f, 22f, VfxLayer.Top, true);
             Shake(0.12f, 0.25f);
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
@@ -438,6 +403,7 @@ namespace DotRPG
                 StartCoroutine(After(fall, () =>
                 {
                     SkillVisuals.SwordImpact(p, n.radius);
+                    CareerFx.Clip("f_shatter", p + Vector2.up * 0.3f, Vector2.zero, 1.1f, 22f);
                     Game.Audio.PlaySfx("rock_break", 0.6f);
                     foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius)) Hit(e, n, p, 5f);
                     Shake(0.07f, 0.1f);
@@ -450,42 +416,18 @@ namespace DotRPG
 
         // ================= Mage =================
 
-        /// <summary>번개 사슬: strike the nearest enemy, then jump from monster to monster.</summary>
-        IEnumerator Arc(SkillNumbers n)
-        {
-            Game.Audio.PlaySfx("magic");
-            Vector2 from = owner.Center;
-            SkillVisuals.CastCircle(owner.Position, SkillVisuals.MageViolet);
-            SkillVisuals.StaffFlash(from + owner.AimDirection * 0.35f, SkillVisuals.ArcGlow);
-            var hit = new HashSet<EnemyController>();
-            EnemyController current = Nearest(from, n.range, hit);
-            if (current == null)
-            {
-                // Nothing in range: a short zap in the aim direction so the cast still reads.
-                SkillVisuals.ArcBolt(from, from + owner.AimDirection * 2.5f, false);
-                yield break;
-            }
-            for (int jump = 0; current != null && jump <= n.chains; jump++)
-            {
-                Vector2 to = current.Center;
-                SkillVisuals.ArcBolt(from, to, true);
-                Hit(current, n, from, 3f);
-                hit.Add(current);
-                if (jump == 0) Shake(0.04f, 0.08f);
-                from = to;
-                if (jump == n.chains) break;
-                // A short beat between jumps so the chain visibly travels.
-                yield return new WaitForSeconds(0.06f);
-                current = Nearest(from, n.radius, hit);
-            }
-        }
-
         /// <summary>서리 폭발: damage and freeze everything around the player.</summary>
         void Nova(SkillNumbers n)
         {
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("magic");
             SkillVisuals.Nova(c, owner.Position, n.radius);
+            // [VFX] Ice blooms open in a ring around the caster.
+            for (int k = 0; k < 6; k++)
+            {
+                float a = k * 60f * Mathf.Deg2Rad;
+                CareerFx.Clip("m_icebloom", owner.Position + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.7f) * n.radius * 0.6f, Vector2.zero, 0.9f, 22f, VfxLayer.AtFeet, false);
+            }
             Shake(0.08f, 0.15f);
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
@@ -506,7 +448,7 @@ namespace DotRPG
             Game.Audio.PlaySfx("magic");
             Vector2 from = owner.Center;
             var target = Nearest(from, n.range, null);
-            Vector2 dir = target != null ? (target.Center - from).normalized : owner.AimDirection;
+            Vector2 dir = target != null ? (target.Center - from).normalized : castAim;
             if (target != null) owner.FaceTowards(target.Position);
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.FrostBlue);
             SkillVisuals.StaffFlash(from + dir * 0.35f, SkillVisuals.ArcGlow);
@@ -540,7 +482,7 @@ namespace DotRPG
                     // Crackle: small bolts to the closest monsters around the orb.
                     var near = EnemiesInRadius(pos, zapRange);
                     near.Sort((a, b) => Vector2.Distance(a.Center, pos).CompareTo(Vector2.Distance(b.Center, pos)));
-                    for (int k = 0; k < near.Count && k < (SkillGems.UseLegacy ? Mathf.Max(1, n.chains) : n.chains); k++) // v2: no zaps in flight (chains 0)
+                    for (int k = 0; k < near.Count && k < n.chains; k++) // v2: no zaps in flight (chains 0)
                     {
                         SkillVisuals.FrostOrbZap(pos, near[k].Center);
                         if (near[k].TakeDamage(new DamageInfo(zapDamage, pos, 1.5f, Team.Player, owner.gameObject)) && n.leechPct > 0)
@@ -553,6 +495,7 @@ namespace DotRPG
             }
             orb.Kill();
             SkillVisuals.FrostOrbBurst(pos, pos + Vector2.down * 0.4f, n.radius);
+            for (int k = -1; k <= 1; k++) CareerFx.Clip("m_icebloom", pos + new Vector2(k * 0.55f, -0.4f - 0.1f * Mathf.Abs(k)), Vector2.zero, 1.15f, 22f, VfxLayer.AtFeet, false);
             Game.Audio.PlaySfx("rock_break");
             Shake(0.09f, 0.14f);
             foreach (var e in EnemiesInRadius(pos, n.radius))
@@ -563,47 +506,15 @@ namespace DotRPG
             }
         }
 
-        /// <summary>낙뢰: lightning from the sky on several nearby monsters at once, stunning them briefly.</summary>
-        IEnumerator Thunder(SkillNumbers n)
-        {
-            Game.Audio.PlaySfx("magic");
-            SkillVisuals.CastCircle(owner.Position, SkillVisuals.ArcGlow);
-            int strikes = 1 + n.chains;
-            var hit = new HashSet<EnemyController>();
-            int done = 0;
-            foreach (var e in EnemiesByDistance(n.range))
-            {
-                if (done >= strikes) break;
-                if (e == null || e.IsDead || hit.Contains(e)) continue;
-                Vector2 ground = e.Position;
-                SkillVisuals.Thunder(ground);
-                foreach (var t in EnemiesInRadius(ground + Vector2.up * 0.3f, n.radius))
-                    if (hit.Add(t))
-                    {
-                        Hit(t, n, ground, 3f);
-                        t.Stun(n.stun);
-                        StunStars.Attach(t);
-                    }
-                done++;
-                Shake(0.05f, 0.08f);
-                yield return new WaitForSeconds(0.08f);
-            }
-            if (done == 0)
-                for (int k = 0; k < 2; k++)
-                {
-                    SkillVisuals.Thunder(owner.Position + owner.AimDirection * (1.6f + k * 1.2f) + Random.insideUnitCircle * 0.4f);
-                    yield return new WaitForSeconds(0.08f);
-                }
-        }
-
         /// <summary>메테오 (awakening): burning rocks crash down across the area around the player.</summary>
         /// <summary>화염 장판: a burning patch on the crowd around the nearest monster, ticking <c>hits</c> times over 3 s.</summary>
         IEnumerator FireField(SkillNumbers n)
         {
             var target = Nearest(owner.Center, n.range, null);
-            Vector2 at = target != null ? target.Position : owner.Position + owner.AimDirection * Mathf.Min(4f, n.range);
+            Vector2 at = target != null ? target.Position : owner.Position + castAim * Mathf.Min(4f, n.range);
             SkillVisuals.CastCircle(owner.Position, SkillVisuals.FireOrange);
             SkillVisuals.Explosion(at + Vector2.up * 0.2f, at, n.radius * 0.8f, false);
+            CareerFx.Clip("m_explode", at + Vector2.up * 0.2f, Vector2.zero, n.radius / 1.6f, 22f, VfxLayer.Top, false);
             Game.Audio.PlaySfx("magic");
             Shake(0.06f, 0.12f);
             int ticks = Mathf.Max(1, n.hits);
@@ -615,6 +526,8 @@ namespace DotRPG
                     SkillVisuals.Flash(p + Vector2.up * 0.15f, new Color(1f, 0.5f, 0.12f, 0.55f), 0.9f, 0.4f);
                     SkillVisuals.Sparks(p, SkillVisuals.FireOrange, 3, 1.4f, 0.4f);
                 }
+                // [VFX] Small bursts of flame rise from the patch every tick.
+                CareerFx.Clip("m_explode", at + Random.insideUnitCircle * n.radius * 0.6f + Vector2.up * 0.15f, Vector2.zero, 0.55f, 26f, VfxLayer.Top, false);
                 foreach (var e in EnemiesInRadius(at, n.radius)) Hit(e, n, at, 1.5f);
                 yield return new WaitForSeconds(3f / ticks);
             }
@@ -635,6 +548,7 @@ namespace DotRPG
                 StartCoroutine(After(fall, () =>
                 {
                     SkillVisuals.MeteorImpact(p, n.radius);
+                    CareerFx.Clip("m_explode", p + Vector2.up * 0.3f, Vector2.zero, n.radius / 1.2f, 22f, VfxLayer.Top, false);
                     Game.Audio.PlaySfx("rock_break");
                     foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius)) Hit(e, n, p, 9f);
                     Shake(0.14f, 0.18f);

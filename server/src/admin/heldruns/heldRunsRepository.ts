@@ -58,11 +58,6 @@ export async function lockRun(db: Queryable, id: number): Promise<void> {
   await db.query('SELECT 1 FROM dungeon_runs WHERE id = $1 FOR UPDATE', [id]);
 }
 
-export async function reviewExists(db: Queryable, runId: number): Promise<boolean> {
-  const r = await db.query('SELECT 1 FROM held_run_reviews WHERE dungeon_run_id = $1', [runId]);
-  return r.rows.length > 0;
-}
-
 export async function insertReview(
   db: Queryable,
   v: { runId: number; adminId: number; decision: 'released' | 'rejected'; note: string; prevEndedAt: Date; requestId: string },

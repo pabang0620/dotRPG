@@ -4,8 +4,10 @@ import type { PoolClient } from 'pg';
 import { getConfig } from '../../config/env';
 import { logger } from '../../utils/logger';
 import { getGameData } from '../../gamedata/loader';
+import { isSweepTicketKey } from '../../gamedata/sweepData';
 import { AppError } from '../../utils/AppError';
 import { parseItemKey } from '../../utils/itemKey';
+import { IncomeNote } from '../antiabuse/incomeMeter';
 import * as repo from './economyRepository';
 import { strongerBind, type Bind, type Consumed, type LockedChar, type StackLocation } from './economyRepository';
 
@@ -24,6 +26,8 @@ export class EconCtx {
   private readonly startLevel: number;
   private readonly startXp: number;
   private goldChanged = false;
+  /** 9단계: 경제 속도 감시용 시간별 집계의 요청 안 누계(12.3). runEconomy가 성공 직후 같은 트랜잭션에서 올린다 */
+  readonly income = new IncomeNote();
   private readonly stacks = new Map<string, { item_key: string; location: string; bind: Bind; count: number }>();
   private readonly worn = new Map<number, string | null>();
 
@@ -54,6 +58,8 @@ export class EconCtx {
     if (!isEquipment) return floor;
     if (reason === 'quest_reward') return strongerBind(floor, 'character');
     if (reason === 'shop_buy') return strongerBind(floor, 'account');
+    // 9단계 A7: 별조각 장비 뽑기는 계정 귀속(상점 구매와 같다). 이미 가진 옛 스택은 소급하지 않는다
+    if (reason === 'gacha') return strongerBind(floor, 'account');
     return floor;
   }
 
@@ -75,11 +81,14 @@ export class EconCtx {
     bind?: Bind,
   ): Promise<void> {
     if (n <= 0) throw new Error('addItem 수량은 양수여야 합니다');
+    // 10단계 E7: 던전 클리어권은 계정 지갑에만 있다. 가방·창고에 넣는 길을 프로그래밍 오류로 막는다
+    if (isSweepTicketKey(getGameData().sweep, key)) throw new Error(`클리어권 ${key} 은 가방에 넣을 수 없습니다`);
     const b = bind ? strongerBind(bind, this.bindOf(key)) : this.bindFor(reason, key);
     const rowCount = await repo.upsertStack(this.client, this.char.id, location, key, n, b);
     const total = await repo.stackCount(this.client, this.char.id, location, key);
     await repo.insertItemLedger(this.client, this.char.id, key, n, total, location, reason, ref, this.requestId);
     this.noteStack(location, key, b, rowCount);
+    this.income.item(key, n, reason);
   }
 
   /** 모자라면 null(아무것도 바꾸지 않는다). 강한 귀속부터 소모하고 소모한 귀속별 수량을 돌려준다 */
@@ -158,6 +167,7 @@ export class EconCtx {
     await repo.insertGoldLedger(this.client, this.char.id, delta, next, reason, ref, this.requestId);
     this.gold = next;
     this.goldChanged = true;
+    this.income.gold(delta, reason);
   }
 
   /** Progression.AddXp: 만렙이거나 0 이하면 아무 일도 없다. 레벨업을 반복하고 만렙에 닿으면 xp=0 */
@@ -176,6 +186,7 @@ export class EconCtx {
     const leveledUp = level > this.level;
     this.level = level;
     this.xp = xp;
+    this.income.xp(amount, reason);
     return { granted: amount, leveledUp };
   }
 

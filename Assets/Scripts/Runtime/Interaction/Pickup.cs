@@ -36,7 +36,7 @@ namespace DotRPG
             pickup.sr = go.AddComponent<SpriteRenderer>();
             pickup.sr.sprite = Game.Art.Get(Game.Config.GetItem(itemId).iconKey);
             // High-resolution (density-2) icons are bilinear-filtered, so draw them through the sharp
-            // scaling material like the rest of the 32px art — otherwise they shimmer on the ground.
+            // scaling material like the rest of the 32px art - otherwise they shimmer on the ground.
             if (pickup.sr.sprite != null && pickup.sr.sprite.pixelsPerUnit > 16.5f && FxMaterials.Sharp != null)
                 pickup.sr.sharedMaterial = FxMaterials.Sharp;
             var gear = EquipmentDatabase.Get(itemId);

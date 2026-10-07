@@ -17,6 +17,7 @@ namespace DotRPG
                 case "cross": yield return CrossCut(c); break;
                 case "rush": yield return FlashRush(c); break;
                 case "flurry": yield return Flurry(c); break;
+                case "frenzy": Frenzy(c); break;
                 case "break": yield return BreakWave(c); break;
                 case "iaido": yield return Iaido(c); break;
                 case "execute": yield return Execute(c); break;
@@ -32,7 +33,9 @@ namespace DotRPG
                 if (!Live(c)) yield break;
                 Vector2 from = owner.Center;
                 Pose(.14f, i);
-                CareerFx.Slash(from, c.dir, c.n.range, CareerFx.Steel, i == 0 ? 28f : -28f, i == 1);
+                // First a downward cut, then a rising one: the second arc is the first one flipped, so they cross.
+                CareerFx.Clip("f_arc", from, CareerFx.Tilt(c.dir, i == 0 ? 12f : -12f), c.n.range / 1.35f, 34f).FlipY(i == 1);
+                if (i == 1) CareerFx.Clip("f_x", from + c.dir * c.n.range * .55f, c.dir, 1.6f, 30f);
                 Sound("c_slash", .8f);
                 foreach (var e in Fan(from, c.dir, c.n.range, 120f))
                     Strike(c, e, c.n.damage, from, i == 0 ? 4f : 9f, i, "c_slash");
@@ -49,21 +52,36 @@ namespace DotRPG
             Vector2 end = start + c.dir * distance;
             var hit = new HashSet<EnemyController>();
             Sound("c_dash");
-            CareerFx.Slash(start, c.dir, 1.2f, CareerFx.Steel, 0f, false, .12f);
             Vector2 previous = start;
+            float nextGhost = 0f;
             for (float t = 0; t < seconds; t += Time.deltaTime)
             {
                 if (!Live(c)) yield break;
                 Vector2 at = Vector2.Lerp(start, end, Mathf.Clamp01((t + Time.deltaTime) / seconds));
-                CareerFx.DashTrail(at, at + Vector2.down * .45f, c.dir, CareerFx.Steel);
+                if (t >= nextGhost) { nextGhost = t + seconds / 4f; CareerFx.Ghost(owner, new Color(.45f, .7f, 1f, .75f), .3f); }
                 foreach (var e in Corridor(previous, at, c.n.radius))
                     if (hit.Add(e)) Strike(c, e, c.n.damage, e.Center - c.dir, 7f, 1, "c_slash");
                 previous = at;
                 yield return null;
             }
             if (!Live(c)) yield break;
-            CareerFx.Slash(end, c.dir, 1.6f, CareerFx.Steel, 0f, true, .2f);
-            CareerFx.Line(start, end, CareerFx.SteelDeep, .25f, .25f);
+            // A straight blade of light along the path, then every monster passed shows its cut at once.
+            CareerFx.Clip("f_line", start, c.dir, 1f, 26f).Squash(Mathf.Max(.2f, distance / 6f), 1f);
+            yield return new WaitForSeconds(.12f);
+            foreach (var e in hit) if (e != null && !e.IsDead) CareerFx.Clip("f_cut", e.Center, c.dir, 1.3f, 26f);
+        }
+
+        /// <summary>검귀 해방: the fighter's burst window. For a while every hit of mine lands much harder.</summary>
+        void Frenzy(Run c)
+        {
+            Pose(.2f, 2);
+            Sound("c_heavy", .9f);
+            Feel(1, Vector2.up);
+            for (int i = 0; i < 4; i++) CareerFx.Clip("f_arc", owner.Center, CareerFx.Tilt(Vector2.right, i * 90f), 1.1f, 40f).FlipY(i % 2 == 1);
+            // Burning silhouette, afterimages and embers off the body for the whole window.
+            PowerAura.Play(owner, c.s.duration, new Color(1f, .25f, .12f), new Color(1f, .78f, .3f));
+            frenzy = Mathf.RoundToInt(c.s.power * c.Scale);
+            frenzyEnd = Time.time + c.s.duration;
         }
 
         /// <summary>난무: four quick cuts in front, then a big rising finisher.</summary>
@@ -75,7 +93,8 @@ namespace DotRPG
                 if (!Live(c)) yield break;
                 Vector2 from = owner.Center;
                 Pose(.12f, i % 2);
-                CareerFx.Slash(from, c.dir, c.n.range, CareerFx.Steel, Random.Range(-40f, 40f), i % 2 == 1, .12f);
+                float[] tilt = { 22f, -18f, 38f, -30f };
+                CareerFx.Clip("f_arc", from, CareerFx.Tilt(c.dir, tilt[i]), c.n.range / 1.45f, 46f).FlipY(i % 2 == 1);
                 Sound("c_slash", .6f);
                 foreach (var e in Fan(from, c.dir, c.n.range, 140f)) Strike(c, e, c.n.damage, from, 2.5f, 0, "c_slash");
                 yield return new WaitForSeconds(CutGap);
@@ -83,8 +102,9 @@ namespace DotRPG
             if (!Live(c)) yield break;
             Vector2 at = owner.Center;
             Pose(.25f, 2);
-            CareerFx.Slash(at, c.dir, c.n.range * 1.2f, CareerFx.Steel, 0f, false, .25f);
-            CareerFx.Shock(at + c.dir * c.n.range * .5f, c.n.range * .7f, CareerFx.Steel);
+            // The finisher: a big rising cut with wind streaks thrown forward.
+            CareerFx.Clip("f_arc", at, CareerFx.Tilt(c.dir, -8f), c.n.range / 1.1f, 30f).FlipY(true);
+            for (int k = 0; k < 5; k++) CareerFx.DashTrail(at + c.dir * (.4f + k * .3f) + new Vector2(0f, (k - 2) * .18f), at, -c.dir, CareerFx.Steel);
             Sound("c_heavy", .8f);
             int finisher = Mathf.RoundToInt(c.n.damage * 1.6f / .7f);
             foreach (var e in Fan(at, c.dir, c.n.range + .3f, 150f)) Strike(c, e, finisher, at, 11f, 2, "c_heavy");
@@ -97,49 +117,53 @@ namespace DotRPG
             Pose(.2f, 1);
             Sound("c_slash");
             Vector2 start = owner.Center + c.dir * .4f, at = start;
-            var blade = new MovingFx();
-            float size = c.n.radius / .7f;
-            blade.Add(SkillFx.Spawn("fx_glow", at, new Color(.4f, .7f, 1f, .6f), 10f, SkillFx.TopOrder + 1).Additive().Scale(size * 1.6f, size * 1.6f).Fade(FxFade.None));
-            blade.Add(SkillFx.Spawn("fx_arc", at, Color.white, 10f, SkillFx.TopOrder + 2).Rotate(CareerFx.Angle(c.dir)).Scale(size * .6f, size).Fade(FxFade.None));
+            float size = c.n.radius / .95f;                       // the crescent clip is 2.5 units tall
+            var blade = CareerFx.Clip("f_wave", at, c.dir, size, 16f, VfxLayer.Top, true, null, false, 10f, true);
             var hit = new HashSet<EnemyController>();
-            float travelled = 0f;
+            float travelled = 0f, nextTrail = 0f;
             while (travelled < c.n.range)
             {
-                if (!Live(c)) { blade.Kill(); yield break; }
+                if (!Live(c)) { blade?.Stop(); yield break; }
                 float step = speed * Time.deltaTime;
                 Vector2 next = at + c.dir * step;
-                blade.MoveTo(next);
-                SkillFx.Spawn("fx_arc", next - c.dir * .15f, new Color(.45f, .75f, 1f, .5f), .16f, SkillFx.TopOrder).Additive().Rotate(CareerFx.Angle(c.dir)).Scale(size * .9f, size * .8f);
+                blade?.Place(next);
+                if (travelled >= nextTrail)
+                {
+                    nextTrail = travelled + .45f;
+                    CareerFx.Clip("f_wave", next - c.dir * .2f, c.dir, size * .92f, 16f, VfxLayer.Top, true, new Color(.6f, .8f, 1f, .45f), true, .2f).FadeOut(.2f);
+                }
                 foreach (var e in Corridor(at, next, c.n.radius))
                     if (hit.Add(e) && Strike(c, e, c.n.damage, e.Center - c.dir, 6f, 1, "c_slash") && c.authority)
                     {
                         broken[e] = Time.time + c.s.duration;
-                        SkillFx.Spawn("fx_crack", e.Center, CareerFx.Steel, .6f, SkillFx.TopOrder + 3).Scale(.4f, .7f).Fade(FxFade.Late);
+                        CareerFx.Clip("f_shatter", e.Center, Vector2.zero, 1.2f, 20f);
                     }
                 at = next;
                 travelled += step;
                 yield return null;
             }
-            blade.Kill();
-            SkillVisuals.Flash(at, CareerFx.Steel, 1.4f, .18f);
-            SkillVisuals.Sparks(at, CareerFx.Steel, 7, 6f, .2f);
+            blade?.Stop();
+            CareerFx.Clip("f_x", at, c.dir, 1.2f, 30f);
         }
 
         /// <summary>일섬: a thin line is drawn first; a beat later everything on it is cut at once.</summary>
         IEnumerator Iaido(Run c)
         {
             Vector2 from = owner.Center + c.dir * .3f, to = from + c.dir * c.n.range;
-            GlowLineFx.Spawn(from, to, new Color(.6f, .85f, 1f, .45f), .12f, .2f, SkillFx.TopOrder + 1);
+            float stretch = c.n.range / 6f;
+            // A hairline flickers first (frame 0 of the clip held), then the blade of light splits the line.
+            CareerFx.Clip("f_line", from, c.dir, 1f, 5.5f, VfxLayer.Top, true, new Color(1f, 1f, 1f, .7f), false, .18f).Squash(stretch, .6f);
             Sound("c_slash", .5f);
             yield return new WaitForSeconds(.18f);
             if (!Live(c)) yield break;
             Pose(.2f, 2);
-            CareerFx.Line(from, to, CareerFx.Steel, c.n.radius * .6f, .3f);
-            SkillVisuals.Flash(owner.Center + c.dir * c.n.range * .5f, new Color(.7f, .9f, 1f, .5f), c.n.range * .8f, .15f);
+            CareerFx.Clip("f_line", from, c.dir, 1f, 22f).Squash(stretch, 1.2f);
+            if (owner.IsLocal) SkillVisuals.Flash(owner.Center + c.dir * c.n.range * .5f, new Color(.85f, .95f, 1f, .45f), c.n.range * 1.4f, .1f);
             Sound("c_heavy", .9f);
+            int k = 0;
             foreach (var e in Corridor(from, to, c.n.radius))
                 if (Strike(c, e, c.n.damage, from, 8f, 2, "c_slash"))
-                    CareerFx.Slash(e.Center - c.dir * .5f, c.dir, 1f, CareerFx.Steel, Random.Range(-60f, 60f), Random.value < .5f, .14f);
+                    CareerFx.Clip("f_cut", e.Center, CareerFx.Tilt(c.dir, (k++ % 3 - 1) * 25f), 1.5f, 26f);
         }
 
         /// <summary>단죄: leap onto the monster in front and bring the sword down; low-HP targets take 1.6×.</summary>
@@ -154,48 +178,81 @@ namespace DotRPG
                 distance = Dash(dir, distance);
                 Sound("c_dash", .7f);
                 float seconds = DashSeconds(distance);
+                float nextGhost = 0f;
                 for (float t = 0; t < seconds; t += Time.deltaTime)
                 {
                     if (!Live(c)) yield break;
-                    CareerFx.DashTrail(owner.Center, owner.Position, dir, CareerFx.Steel);
+                    if (t >= nextGhost) { nextGhost = t + .05f; CareerFx.Ghost(owner, new Color(.45f, .7f, 1f, .7f), .25f); }
                     yield return null;
                 }
             }
             if (!Live(c)) yield break;
-            Vector2 at = owner.Center + dir * .6f;
+            // Up/down aims land a little farther (the body is taller than it is wide) and an upward blow is drawn by
+            // depth, behind the fighter, instead of over the head; a downward blow stays in front.
+            bool vertical = Mathf.Abs(dir.y) > Mathf.Abs(dir.x);
+            Vector2 at = owner.Center + dir * (vertical ? (dir.y > 0f ? .95f : .8f) : .6f);
             Pose(.25f, 2);
-            CareerFx.Slash(owner.Center, Vector2.down, 1.6f, CareerFx.Steel, 0f, false, .2f);
-            CareerFx.Slam(at + Vector2.down * .3f, c.n.radius, CareerFx.Steel, true);
+            // The overhead cut lands on the target, the ground cracks (the Fighter's only cracking blow).
+            Vector2 ground = at + Vector2.down * .35f;
+            if (vertical)
+            {
+                // Up/down: the side-view chop arc would read as a sideways swing, so the cut is drawn along the aim
+                // instead: a thin straight slash from the fighter to the target, a narrow beam of the blade coming down
+                // on the spot, and the spark where it lands (behind the body when striking upward).
+                var layer = dir.y > 0f ? VfxLayer.AtFeet : VfxLayer.Top;
+                float reach = Mathf.Max(.8f, (at - owner.Center).magnitude + .4f);
+                CareerFx.Clip("f_line", owner.Center, dir, 1f, 30f, layer, true).Squash(reach / 6f, .55f);
+                GlowLineFx.Spawn(at + Vector2.up * 1.1f, ground, new Color(.75f, .9f, 1f, .85f), .22f, .16f, SkillFx.TopOrder + 2);
+                CareerFx.Clip("f_spark", ground, Vector2.zero, 1.1f, 30f, layer, false);
+            }
+            else CareerFx.Clip("f_vslash", ground, dir, .85f, 30f, VfxLayer.Top, false);
+            CareerFx.Clip("impact", ground, Vector2.zero, c.n.radius / 1.7f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
+            SkillFx.Crack(ground, c.n.radius, 1.4f);
             Sound("c_heavy");
             foreach (var e in Enemies(at, c.n.radius))
             {
                 bool low = e.Health.Current < e.Health.Max * .35f;
                 Strike(c, e, Mathf.RoundToInt(c.n.damage * (low ? 1.6f : 1f)), at, 11f, 2, "c_heavy");
-                if (low) SkillFx.Spawn("fx_cut", e.Center, Color.white, .25f, SkillFx.TopOrder + 6).Rotate(90f).Scale(new Vector2(.5f, 1.4f), new Vector2(1.8f, .7f)).Fade(FxFade.Quick);
+                if (low) CareerFx.Clip("f_x", e.Center, dir, 2.2f, 26f);
             }
         }
 
-        /// <summary>천검귀일: six swords rain onto the monsters in front, then a giant sword pins the centre.</summary>
+        /// <summary>
+        /// 천검귀일: six striking swords rain onto the monsters in front inside a storm of extra swords (two more per
+        /// strike, for the look only, no damage), then the dark greatsword pins the centre.
+        /// </summary>
         IEnumerator SwordRain(Run c)
         {
             // Swords go to the monsters in front first; with fewer than six they fall on the same ones again.
             var foes = Fan(owner.Center, c.dir, c.n.range + 1f, 160f);
             Vector2 zone = owner.Center + c.dir * c.n.range * .6f;
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < Mathf.Max(6, c.s.hits); i++) // awakening hit count (9 after the 2026-10-06 balance)
             {
                 if (!Live(c)) yield break;
                 var foe = foes.Count > 0 ? foes[i % foes.Count] : null;
                 Vector2 point = foe != null && !foe.IsDead ? foe.Center + Random.insideUnitCircle * .35f : zone + Random.insideUnitCircle * 2f;
                 StartCoroutine(FallingSword(c, point, c.n.damage, 1.2f, .22f, false));
+                // [VFX] The storm: more swords land around the zone between the strikes (no damage, damage stays on the six).
+                for (int k = 0; k < 2; k++)
+                    StartCoroutine(RainSword(zone + Random.insideUnitCircle * (c.n.range * .45f), .18f + k * .06f));
                 yield return new WaitForSeconds(CutGap);
             }
             Target(c.dir, c.n.range, out Vector2 center);
-            CareerFx.SwordDrop(center, .35f, CareerFx.Steel, 1.6f);
+            CareerFx.SwordDrop(center, .35f, CareerFx.Steel, 1.6f, true); // the finisher: the dark greatsword
             yield return new WaitForSeconds(.35f);
             if (!Live(c)) yield break;
             Pose(.3f, 2);
             yield return FallingSword(c, center, Mathf.RoundToInt(c.n.damage * 3.75f), c.n.radius, 0f, true);
-            SkillVisuals.UltFinish(center, CareerFx.Steel, c.n.radius);
+        }
+
+        /// <summary>A sword of the rain that only shows: smaller, lands, sparks and fades.</summary>
+        IEnumerator RainSword(Vector2 ground, float fall)
+        {
+            CareerFx.SwordDrop(ground, fall, CareerFx.Steel, .6f);
+            yield return new WaitForSeconds(fall);
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, .4f, SkillFx.At(ground.y, 6)).Scale(.75f, .75f).Fade(FxFade.Late);
+            CareerFx.Clip("f_spark", ground, Vector2.zero, .7f, 28f, VfxLayer.Top, false);
+            Sound("c_heavy", .25f);
         }
 
         IEnumerator FallingSword(Run c, Vector2 ground, int damage, float radius, float fall, bool giant)
@@ -206,8 +263,13 @@ namespace DotRPG
                 yield return new WaitForSeconds(fall);
             }
             if (!Live(c)) yield break;
-            CareerFx.SwordImpact(ground, radius, CareerFx.Steel, giant);
-            if (giant) CareerFx.Slam(ground, radius, CareerFx.Steel, true);
+            SkillFx.Spawn(giant ? SkillFx.Pick("fxi_bigsword_dark", "fx_bigsword") : SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, giant ? .9f : .5f, SkillFx.At(ground.y, 6)).Scale(giant ? 1.4f : 1f, giant ? 1.4f : 1f).Fade(FxFade.Late);
+            CareerFx.Clip("f_spark", ground, Vector2.zero, giant ? 2f : 1f, 26f, VfxLayer.Top, false);
+            if (giant)
+            {
+                CareerFx.Clip("impact", ground, Vector2.zero, radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Steel);
+                SkillFx.Crack(ground, radius, 1.8f);
+            }
             Sound("c_heavy", giant ? 1f : .6f);
             foreach (var e in Enemies(ground, radius))
                 if (Strike(c, e, damage, ground, giant ? 12f : 5f, giant ? 2 : 1, "c_heavy") && giant) Stun(c, e, .8f);

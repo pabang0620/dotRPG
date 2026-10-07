@@ -51,6 +51,11 @@ class Metrics {
   /** 지금 실행 중인 틱 수(관리자 드레인 판단) */
   readonly running = new Map<string, number>();
   auctionLagSeconds = 0;
+  /** 9단계: 기기 한도 초과 진입 수, 프레즌스 없는 처치 보고 수(프로세스 시작 이후 누계) */
+  presenceDeviceLimitHits = 0;
+  presenceRequired = 0;
+  /** 10단계: 클리어권 주간 구매 한도에 걸린 요청 수(프로세스 시작 이후 누계) */
+  sweepBuyLimitHits = 0;
 
   /** 틱 한 번을 감싼다: 실행 중 수와 마지막 실행 시각·소요를 기록한다 */
   async track<T>(name: string, fn: () => Promise<T>): Promise<T> {
@@ -116,6 +121,9 @@ class Metrics {
     this.loginFailures = [];
     this.ticks.clear();
     this.wsHandshakeRejected = 0;
+    this.presenceDeviceLimitHits = 0;
+    this.presenceRequired = 0;
+    this.sweepBuyLimitHits = 0;
   }
 }
 

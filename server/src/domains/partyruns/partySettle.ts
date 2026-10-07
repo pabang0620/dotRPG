@@ -7,13 +7,15 @@ import { logger } from '../../utils/logger';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import * as dungeonRepo from '../dungeons/dungeonRepository';
-import { finalizeCleared, holdRun, minClearSeconds, runContext, ELAPSED_SLACK_SECONDS, validateClear } from '../dungeons/dungeonResult';
+import { finalizeCleared, holdRun, minClearSeconds, runContext, ELAPSED_SLACK_SECONDS, validateClear, type ClearContribution } from '../dungeons/dungeonResult';
+import { contributionsOf, hitsCap, isDisputed, type MemberDamage } from '../antiabuse/contribution';
 import { RANK_NAMES } from '../dungeons/dungeonRules';
 import type { ResultBody, SettleBody } from '../dungeons/dungeonValidation';
 import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
 import { runEconomy, type EconResult, type StoredResult } from '../economy/economyService';
 import { attackCap, effectiveHp } from '../kills/killRules';
+import { countDungeonRevives } from '../revive/reviveRepository';
 import { killsOfRun } from '../kills/killRepository';
 import { lockPartyAndRun } from '../party/partyTx';
 import * as repo from './partyRunRepository';
@@ -114,6 +116,10 @@ function storedResult(run: dungeonRepo.RunRow): EconResult {
     card_count: run.cards ? run.cards.length : 0,
   };
   if (dungeon?.isRaid) data.raid = { reward_locked: run.reward_locked, ...(run.lock_reason ? { lock_reason: run.lock_reason } : {}) };
+  else if (run.reward_locked) {
+    data.reward_locked = true;
+    data.reward_lock_reason = run.lock_reason;
+  }
   return { status: 200, data };
 }
 
@@ -199,10 +205,11 @@ async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconRes
   }
 
   // 정산 값 합성: 피격·부활은 큰 값, 콤보는 작은 값. H가 무효면 내 값을 쓴다
-  const st = run.stats as { elapsed_ms: number; hits_taken: number; max_combo: number; revives_used: number };
+  const st = run.stats as { elapsed_ms: number; hits_taken: number; max_combo: number; revives_used: number; damage_dealt?: number; hits_landed?: number };
   const hm = hostValid && h ? h.members.find((m) => m.character_id === ctx.char.uuid) : undefined;
   const merged = mergeStats({
-    mine: { hits: st.hits_taken, combo: st.max_combo, revives: st.revives_used },
+    // 내 부활 횟수는 서버 기록(revive_log)보다 적을 수 없다
+    mine: { hits: st.hits_taken, combo: st.max_combo, revives: Math.max(st.revives_used, await countDungeonRevives(ctx.client, ctx.char.id, run.started_at)) },
     host: hm ? { hits: hm.hits_taken, combo: hm.max_combo, revives: hm.revives_used } : null,
   });
   if (merged.outlier) {
@@ -218,7 +225,50 @@ async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconRes
   }
   const claimed = st.elapsed_ms / 1000;
   const serverElapsed = ((run.reported_at as Date).getTime() - run.started_at.getTime()) / 1000;
+
+  // ---- 9단계 5.2~5.3: 호스트 관찰로 기여를 판정한다 ----
+  const aa = getConfig().aa.contribution;
+  let contribution: ClearContribution | null = null;
+  if (aa.mode !== 'off') {
+    if (hostValid && h) {
+      const minShare = dungeon.isRaid ? aa.raidMinShare : aa.dungeonMinShare;
+      const minHits = dungeon.isRaid ? aa.raidMinHits : aa.dungeonMinHits;
+      const byUuid = new Map(members.map((m) => [m.character_uuid, m] as const));
+      const entries = new Map<number, MemberDamage>();
+      for (const m of members) if (!['no_show', 'dropped'].includes(m.state)) entries.set(m.character_id, { id: m.character_id, damage: 0, hits: null });
+      for (const hm of h.members) {
+        const m = byUuid.get(hm.character_id);
+        if (m) entries.set(m.character_id, { id: m.character_id, damage: hm.damage_dealt, hits: hm.hits_landed ?? null });
+      }
+      const list = [...entries.values()];
+      const all = contributionsOf(list, minShare, minHits);
+      const metBy = new Map([...all].map(([id, c]) => [id, c.met] as const));
+      const mine2 = all.get(ctx.char.id) ?? { share: 0, hits: null, met: false };
+      const hostMine = entries.get(ctx.char.id);
+      const disputed = isDisputed(
+        { damage: hostMine?.damage ?? 0, hits: hostMine?.hits ?? null, totalDamage: list.reduce((a, e) => a + e.damage, 0) },
+        { damage: st.damage_dealt, hits: st.hits_landed },
+        { ratio: aa.disputeRatio, minShare, minHits },
+      );
+      if (disputed) {
+        if (aa.mode === 'enforce') {
+          await holdRun(ctx, run, (run.stats ?? {}) as Record<string, unknown>, ['CONTRIBUTION_DISPUTE'], ctx.now, 'party_result');
+          return { status: 200, data: { result: 'held' } };
+        }
+        await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 2, { run_id: run.uuid, why: 'dispute_log', claimed_damage: st.damage_dealt ?? null, claimed_hits: st.hits_landed ?? null });
+      }
+      contribution = { share: mine2.share, hits: mine2.hits, source: 'host', met: mine2.met, metByCharacter: metBy };
+    } else if (dungeon.isRaid && aa.mode === 'enforce') {
+      // 호스트 보고를 무효로 해 기여 판정을 피하는 짝을 막는다: 그 멤버 정산을 보류하고 관리자가 검토한다
+      await holdRun(ctx, run, (run.stats ?? {}) as Record<string, unknown>, ['CONTRIBUTION_UNKNOWN'], ctx.now, 'party_result');
+      return { status: 200, data: { result: 'held' } };
+    } else {
+      // 파티 던전(레이드 아님)은 잠그지 않는다: 판단 불가만 기록
+      await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 1, { run_id: run.uuid, why: 'host_report_unusable', raid: dungeon.isRaid });
+    }
+  }
   return finalizeCleared(ctx, run, {
+    contribution,
     hitsTaken: merged.hits,
     maxCombo: merged.combo,
     revivesUsed: merged.revives,
@@ -289,6 +339,8 @@ async function validateHostReport(
     const cap = attackCap(eco, pol, m.level, await econRepo.listWornKeys(ctx.client, m.character_id));
     const dpsCap = (cap / eco.player.attackCooldown) * pol.powerSkillFactor;
     if (hm.damage_dealt > dpsCap * (serverElapsed + ELAPSED_SLACK_SECONDS) * pol.powerAoeCap) reasons.push('DAMAGE_OVER_CAP');
+    // 9단계: 적중 수의 물리 상한(콤보 검사와 같은 식)
+    if (hm.hits_landed !== undefined && hm.hits_landed > hitsCap(serverElapsed, ELAPSED_SLACK_SECONDS, eco.player.attackCooldown, pol.powerAoeCap)) reasons.push('HITS_OVER_CAP');
     // 4. 부활
     if (hm.revives_used > diff.revives) reasons.push('REVIVES_OVER');
   }

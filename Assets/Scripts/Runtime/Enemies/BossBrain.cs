@@ -7,7 +7,7 @@ namespace DotRPG
 {
     /// <summary>
     /// Boss pattern sequencer (every <see cref="MonsterKind.Boss"/>). Walks towards its threat target and,
-    /// between short gaps, plays one <see cref="BossPattern"/> picked by <see cref="ChoosePattern"/> — the single
+    /// between short gaps, plays one <see cref="BossPattern"/> picked by <see cref="ChoosePattern"/> - the single
     /// decision point a host / server can take over through <see cref="PatternAuthority"/>. Phases come from
     /// <see cref="MonsterDef.phases"/>. The raid boss 해골왕 adds its gimmicks: phase 2 raises two 사령 토템
     /// (both must fall within <see cref="TotemWindow"/> seconds of each other, otherwise the broken one comes
@@ -40,7 +40,6 @@ namespace DotRPG
         public static event Action<BossBrain, string, Color> Announce;
 
         public int Phase { get; private set; } = 1;
-        public int PhaseCount => (Def.phases != null ? Def.phases.Length : 0) + 1;
         public event Action<BossBrain, int> PhaseChanged;
         public BossPattern CurrentPattern { get; private set; }
         public bool Enraged => Def.raid && Phase >= 3;
@@ -49,7 +48,7 @@ namespace DotRPG
 
         public bool CastingJudgment { get; private set; }
         public float JudgmentProgress { get; private set; }
-        /// <summary>(boss, broken): the cast ended — broken by groggy, or resolved on the party.</summary>
+        /// <summary>(boss, broken): the cast ended - broken by groggy, or resolved on the party.</summary>
         public event Action<BossBrain, bool> JudgmentEnded;
         public int JudgmentHits { get; private set; }
 
@@ -458,7 +457,7 @@ namespace DotRPG
             }
             else if (phase == 3)
             {
-                Announce?.Invoke(this, "해골왕이 광폭해진다!", new Color(1f, 0.3f, 0.25f));
+                Announce?.Invoke(this, "해골왕이 광폭해집니다!", new Color(1f, 0.3f, 0.25f));
                 Game.Audio?.PlayMusic(MapRegistry.MusicRaidEnrage); // [BGM] enrage track until the room / result changes it
                 nextJudgmentAt = Time.time + JudgmentFirstDelay;
             }

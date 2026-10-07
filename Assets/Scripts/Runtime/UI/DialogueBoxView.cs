@@ -11,6 +11,9 @@ namespace DotRPG
         Text nameText;
         Text bodyText;
         Text nextIndicator;
+        Image portrait;
+        string portraitFor;
+        const float PortraitSize = 128f;
 
         public static DialogueBoxView Create(Transform canvas)
         {
@@ -35,6 +38,12 @@ namespace DotRPG
             UIFactory.Stretch(nbg.rectTransform);
             nameText = UIFactory.Text(namePlate, "Text", "", 22, UIColors.Highlight, TextAnchor.MiddleCenter);
             UIFactory.Stretch(nameText.rectTransform, 10, 0, 10, 0);
+
+            // [UI] Speaker portrait at the left of the box (only when that NPC has one drawn).
+            portrait = UIFactory.SharpIcon(box, "Portrait", Color.white);
+            portrait.raycastTarget = false;
+            UIFactory.Place(portrait.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(22, 0), new Vector2(PortraitSize, PortraitSize));
+            portrait.enabled = false;
 
             nextIndicator = UIFactory.Text(box, "Next", "▼", 22, UIColors.Highlight, TextAnchor.LowerRight);
             UIFactory.Stretch(nextIndicator.rectTransform, 0, 14, 28, 0);
@@ -76,6 +85,16 @@ namespace DotRPG
             if (!show) return;
 
             bool hasName = !string.IsNullOrEmpty(dialogue.Speaker);
+            if (portraitFor != dialogue.Speaker)
+            {
+                portraitFor = dialogue.Speaker;
+                var face = hasName ? PortraitOf(dialogue.Speaker) : null;
+                portrait.enabled = face != null;
+                portrait.sprite = face;
+                float left = face != null ? 36 + PortraitSize : 36;
+                UIFactory.Stretch(bodyText.rectTransform, left, 30, 36, 34);
+                namePlate.anchoredPosition = new Vector2(face != null ? 26 + PortraitSize : 26, -12);
+            }
             namePlate.gameObject.SetActive(hasName);
             if (hasName)
             {
@@ -90,6 +109,25 @@ namespace DotRPG
 
             nextIndicator.enabled = dialogue.LineComplete && Mathf.Repeat(Time.unscaledTime * 2f, 1f) < 0.6f;
             nextIndicator.text = dialogue.HasMoreLines ? "▼" : "■";
+        }
+
+        /// <summary>The drawn portrait (Art/Portraits/portrait_&lt;npcId&gt;) of the NPC with this name on the map or in the config.</summary>
+        static Sprite PortraitOf(string speaker)
+        {
+            string id = null;
+            foreach (var npc in NpcController.All)
+                if (npc != null && npc.Definition != null && npc.Definition.displayName == speaker) { id = npc.Definition.npcId; break; }
+            if (id == null && Game.Config != null)
+                foreach (var def in Game.Config.npcs)
+                    if (def.displayName == speaker) { id = def.npcId; break; }
+            // Titles differ between the dialogue and the NPC ("기사단장 레오나" / "레오나"): match on the name part.
+            if (id == null)
+                foreach (var npc in NpcController.All)
+                {
+                    string n = npc != null && npc.Definition != null ? npc.Definition.displayName : null;
+                    if (!string.IsNullOrEmpty(n) && (speaker.EndsWith(" " + n) || n.EndsWith(" " + speaker))) { id = npc.Definition.npcId; break; }
+                }
+            return id != null ? Game.Art.Optional("Portraits/portrait_" + id) : null;
         }
     }
 }

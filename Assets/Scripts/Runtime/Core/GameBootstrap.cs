@@ -62,6 +62,7 @@ namespace DotRPG
             Game.Quest.Bind();
 
             Game.UI = UIRoot.Create(transform);
+            ResourceWarmup.Begin(Game.UI.transform); // [PERF] build every generated effect now, not mid-fight
 
             Game.State.Set(GameState.Title);
             Game.Audio.PlayMusic("music_title");

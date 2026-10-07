@@ -23,6 +23,7 @@ namespace DotRPG
             public RectTransform root;
             public Text labelText;
             public Text valueText;
+            public Text leftArrow, rightArrow; // option rows: separate click areas (◀ lowers, ▶ raises)
             public Image highlight;
 
             public bool IsEnabled => enabled == null || enabled();
@@ -107,11 +108,17 @@ namespace DotRPG
             bool isOption = item.value != null;
             item.labelText = UIFactory.Text(row, "Label", item.label, fontSize, textColor,
                 isOption || AlignLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter, dark);
-            UIFactory.Stretch(item.labelText.rectTransform, 18f, 0f, isOption ? width * 0.45f : 18f, 0f);
+            UIFactory.Stretch(item.labelText.rectTransform, 18f, 0f, isOption ? width * 0.55f : 18f, 0f); // option label ends where ◀ starts (0.45 of the row)
             if (isOption)
             {
-                item.valueText = UIFactory.Text(row, "Value", "", fontSize, textColor, TextAnchor.MiddleRight, dark);
-                UIFactory.Stretch(item.valueText.rectTransform, width * 0.45f, 0f, 18f, 0f);
+                // ◀ and ▶ are their own click areas at both ends of the value; the value sits between them.
+                float arrowW = fontSize * 1.8f;
+                item.valueText = UIFactory.Text(row, "Value", "", fontSize, textColor, TextAnchor.MiddleCenter, dark);
+                UIFactory.Stretch(item.valueText.rectTransform, width * 0.45f + arrowW, 0f, 18f + arrowW, 0f);
+                item.leftArrow = AddArrow(row, "ArrowLeft", index, -1, textColor);
+                UIFactory.Place(item.leftArrow.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(width * 0.45f, 0f), new Vector2(arrowW, rowHeight - 4f));
+                item.rightArrow = AddArrow(row, "ArrowRight", index, 1, textColor);
+                UIFactory.Place(item.rightArrow.rectTransform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-18f, 0f), new Vector2(arrowW, rowHeight - 4f));
             }
 
             var pointer = row.gameObject.AddComponent<MenuItemPointer>();
@@ -121,6 +128,17 @@ namespace DotRPG
             item.root = row;
             items.Add(item);
             RectTransform.sizeDelta = new Vector2(width, Height);
+        }
+
+        Text AddArrow(RectTransform row, string name, int index, int direction, Color color)
+        {
+            var arrow = UIFactory.Text(row, name, "", fontSize, color, TextAnchor.MiddleCenter, dark);
+            arrow.raycastTarget = true; // clickable even while blank (the row is not selected yet)
+            var pointer = arrow.gameObject.AddComponent<MenuArrowPointer>();
+            pointer.list = this;
+            pointer.index = index;
+            pointer.direction = direction;
+            return arrow;
         }
 
         void OnEnable()
@@ -227,8 +245,16 @@ namespace DotRPG
                 if (shadow != null) shadow.enabled = !(isSelected && enabled);
                 if (item.valueText != null)
                 {
-                    item.valueText.text = isSelected ? $"◀ {item.value()} ▶" : item.value();
+                    item.valueText.text = item.value();
                     item.valueText.color = color;
+                    item.leftArrow.text = isSelected ? "◀" : "";
+                    item.rightArrow.text = isSelected ? "▶" : "";
+                    item.leftArrow.color = item.rightArrow.color = color;
+                    foreach (var arrow in new[] { item.leftArrow, item.rightArrow })
+                    {
+                        var aShadow = arrow.GetComponent<Shadow>();
+                        if (aShadow != null) aShadow.enabled = !(isSelected && enabled);
+                    }
                     var vShadow = item.valueText.GetComponent<Shadow>();
                     if (vShadow != null) vShadow.enabled = !(isSelected && enabled);
                 }
@@ -248,5 +274,15 @@ namespace DotRPG
         {
             list.Activate(index, eventData.button == PointerEventData.InputButton.Right ? -1 : 1);
         }
+    }
+
+    /// <summary>The ◀ / ▶ of an option row: a click always lowers (◀) or raises (▶) the value.</summary>
+    public class MenuArrowPointer : MonoBehaviour, IPointerClickHandler
+    {
+        public MenuList list;
+        public int index;
+        public int direction;
+
+        public void OnPointerClick(PointerEventData eventData) => list.Activate(index, direction);
     }
 }

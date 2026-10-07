@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// 32px (density 2) art of the canyon town: sprite keys "cyn_*". Only the canyon-specific
-    /// landmarks live here — the inn, the market stall, the red- and green-roofed houses and the north
+    /// landmarks live here - the inn, the market stall, the red- and green-roofed houses and the north
     /// gate. Everything else (barrel, crate, sign, fences, bushes, trees, rocks, well, bench, chest,
     /// anvil) reuses the shared "town_*" set, which already fits the canyon's warm palette.
     ///
@@ -65,7 +65,7 @@ namespace DotRPG
             CynWindow(c, x0 + 12, wallTop + 12, 13, 13);
             CynWindow(c, x1 - 25, wallTop + 12, 13, 13);
             Door(c, cx, baseY - 5, 16, 28, true, false);
-            // Flat, gently sloped tiled roof with a thick parapet — desert style, low pitch.
+            // Flat, gently sloped tiled roof with a thick parapet - desert style, low pitch.
             int roofBottom = wallTop + 4, roofTop = roofBottom - roofH;
             Shingles(c, 1, W - 2, roofTop + 16, roofBottom, 8, roof, seed + 40);
             // A rounded terracotta ridge cap and small vent.

@@ -137,7 +137,7 @@ namespace DotRPG
 
         /// <summary>
         /// Canyon water. Where land is directly above, the rock face continues below the land surface
-        /// and ripples only touch the wall's foot — no blue strip between land and rock.
+        /// and ripples only touch the wall's foot - no blue strip between land and rock.
         /// </summary>
         static void DrawCanyonWater(PixelCanvas c, int mask, int v)
         {

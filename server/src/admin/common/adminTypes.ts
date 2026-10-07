@@ -27,7 +27,13 @@ export type AuditTarget =
   | 'job'
   | 'admin'
   | 'mail'
-  | 'server';
+  | 'server'
+  | 'hold'
+  | 'campaign'
+  | 'payment_order'
+  | 'payment_account'
+  | 'star_grant'
+  | 'payment_flag';
 
 /** 라우트가 res.locals.audit에 싣는 감사 정보(실패 때 오류 처리기가 한 줄을 남긴다) */
 export interface AuditMeta {

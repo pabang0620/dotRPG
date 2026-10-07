@@ -17,17 +17,13 @@ export interface NotificationEvent {
   refItemKey: string | null;
   gold: number;
   at: string;
+  /** 10단계: 캠페인 우편 제목(없으면 기존 문구) */
+  title?: string | null;
 }
 
 export interface NotificationPublisher {
   /** 동기, 실패해도 던지지 않는다(best-effort) */
   publish(event: NotificationEvent): void;
-}
-
-export class NoopPublisher implements NotificationPublisher {
-  publish(): void {
-    // 알림 없음: 폴링(GET /mail/summary)만으로 동작한다
-  }
 }
 
 const nameOf = (key: string | null): string => {
@@ -50,7 +46,7 @@ export class ChatSysPublisher implements NotificationPublisher {
         n.systemLine(e.characterUuid, `[경매] ${item} 입찰이 밀려 ${e.gold}G가 우편으로 반환되었습니다.`);
       } else if (e.kind !== 'sold' && e.kind !== 'outbid') {
         // 구체 이벤트가 따로 가는 우편은 일반 안내를 한 번 더 보내지 않는다
-        n.systemLine(e.characterUuid, '[우편] 새 우편이 도착했습니다.');
+        n.systemLine(e.characterUuid, e.title ? `[우편] ${e.title}` : '[우편] 새 우편이 도착했습니다.');
       }
     } catch (err) {
       logger.error({ err }, 'mail notification failed');
@@ -66,7 +62,7 @@ export function setNotificationPublisher(p: NotificationPublisher): void {
 /** 우편 한 통이 만들어졌다: 커밋 뒤에 mail.arrived(+ 종류별 이벤트)를 발행한다 */
 export function announceMail(
   client: PoolClient,
-  m: { characterUuid: string; mailUuid: string; kind: MailKind; refItemKey: string | null; gold: number; at: Date },
+  m: { characterUuid: string; mailUuid: string; kind: MailKind; refItemKey: string | null; gold: number; at: Date; title?: string | null },
 ): void {
   afterCommit(client, () => {
     const base = {
@@ -76,6 +72,7 @@ export function announceMail(
       refItemKey: m.refItemKey,
       gold: m.gold,
       at: m.at.toISOString(),
+      ...(m.title ? { title: m.title } : {}),
     };
     publisher.publish({ ...base, type: 'mail.arrived' });
     if (m.kind === 'sold') publisher.publish({ ...base, type: 'auction.sold' });

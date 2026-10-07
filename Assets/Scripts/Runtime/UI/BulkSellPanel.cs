@@ -32,7 +32,7 @@ namespace DotRPG
         {
             var bg = UIFactory.Panel(parent, "BulkSell", true);
             bg.raycastTarget = true; // clicks stop here, not on the list underneath
-            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 520f));
+            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 540f)); // [UI] 540: the summary line sat on the note at 520
             var p = bg.gameObject.AddComponent<BulkSellPanel>();
             p.changed = onSold;
             var title = UIFactory.Text(bg.transform, "Title", "일괄 판매", 28, UIColors.Highlight, TextAnchor.UpperCenter, true);
@@ -48,7 +48,7 @@ namespace DotRPG
                 UIFactory.Stretch(t.rectTransform, 16f, 0f, 10f, 0f);
                 p.boxes.Add(t);
             }
-            var note = UIFactory.Text(bg.transform, "Note", "<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>", 15, Color.white, TextAnchor.UpperCenter, true);
+            var note = UIFactory.Text(bg.transform, "Note", "<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>", 16, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -386f), new Vector2(500f, 44f));
             p.summary = UIFactory.Text(bg.transform, "Summary", "", 20, UIColors.Cream, TextAnchor.MiddleCenter, true);
             UIFactory.Place(p.summary.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 76f), new Vector2(520f, 30f));
@@ -158,7 +158,15 @@ namespace DotRPG
             if (busy) return;
             var list = Picked(out long total);
             if (list.Count == 0) { Game.Audio.PlaySfx("cancel"); return; }
-            Game.UI.Confirm($"{list.Count}종의 아이템을 {total:N0} G에 모두 판매할까요?", () => Sell(list), true);
+            // [UX] Rare-or-higher gear (and enhanced gear, should any get in) is called out with its count.
+            int valuable = 0;
+            foreach (var (id, count) in list)
+            {
+                var g = EquipmentDatabase.Get(id);
+                if (g != null && (g.rarity >= ItemRarity.Rare || EquipmentDatabase.LevelOfKey(id) > 0)) valuable += count;
+            }
+            string warn = valuable > 0 ? $"\n<size=18><color=#ffb060>레어 이상 또는 강화된 장비 {valuable}개가 포함되어 있습니다.</color></size>" : "";
+            Game.UI.Confirm($"{list.Count}종의 아이템을 {total:N0} G에 모두 판매할까요?{warn}", () => Sell(list), true);
         }
 
         void Sell(List<(string id, int count)> list)

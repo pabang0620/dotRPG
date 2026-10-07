@@ -11,8 +11,19 @@ namespace DotRPG
     /// </summary>
     public class PartyLobbyScreen : OnlineWindow
     {
+        /// <summary>"로" after a vowel or ㄹ, "으로" after any other final consonant.</summary>
+        static string Ro(string word)
+        {
+            char c = string.IsNullOrEmpty(word) ? 'a' : word[word.Length - 1];
+            if (c < 0xAC00 || c > 0xD7A3) return "로";
+            int jong = (c - 0xAC00) % 28;
+            return jong == 0 || jong == 8 ? "로" : "으로";
+        }
+
         public static PartyLobbyScreen Instance { get; private set; }
-        const float RowH = 56f, Width = 1180f;
+        protected override bool PadNavigation => focusField == null || !focusField.isFocused;
+        // [UI] Member rows of 50 and applicant rows of 44 keep the third applicant above the status line (bottom 130).
+        const float RowH = 50f, AppH = 44f, Width = 1180f;
 
         static PartyClient Client => PartyClient.Instance;
 
@@ -43,7 +54,7 @@ namespace DotRPG
             w.inviteField.characterLimit = 16;
             w.inviteField.onEndEdit.AddListener(_ => { if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) w.InviteTyped(); });
             w.focusField = w.inviteField;
-            w.rosterBtn = Button(w.content, "Roster", "AI 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(130f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
+            w.rosterBtn = Button(w.content, "Roster", "AI 동료 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(150f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
             Label(w.content, "MembersHead", "<color=#b8c4d8>파티원</color>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -48f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < PartyManager.MaxMembers; i++)
             {
@@ -57,26 +68,30 @@ namespace DotRPG
             Label(w.content, "AppsHead", "<color=#b8c4d8>참가 신청</color>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, appTop + 4f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < 3; i++)
             {
-                var r = Row(w.content, i, appTop - 28f, 48f, Width);
+                var r = Row(w.content, i, appTop - 28f, AppH, Width);
                 int idx = i;
                 var yes = Button(r, "Yes", "수락", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-140f, 0f), new Vector2(120f, 38f), () => w.Respond(idx, true), 17);
                 var no = Button(r, "No", "거절", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(120f, 38f), () => w.Respond(idx, false), 17);
                 w.appRows.Add((r, Cell(r, "Who", 14f, 700f, 19), yes, no));
             }
             w.runText = Label(w.content, "Run", "", 19, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 64f), new Vector2(Width, 34f), TextAnchor.MiddleLeft);
+            // [UI] Button weight: settings on the left (gray), the one main action big at the right (출발 / 지금 출발 /
+            // 준비 share the spot, only one shows), leaving the party apart in the far corner.
             float bx = 0f;
-            Button Add(string name, string label, System.Action a, float width = 170f)
+            Button Side(string name, string label, System.Action a)
             {
-                var b = Button(w.content, name, label, "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(bx, 8f), new Vector2(width, 48f), a, 19);
-                bx += width + 12f;
+                var b = Button(w.content, name, label, "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(bx, 8f), new Vector2(190f, 48f), a, 18);
+                bx += 202f;
                 return b;
             }
-            w.startBtn = Add("Start", "출발", w.Depart);
-            w.beginBtn = Add("Begin", "지금 출발", () => PartyRunSession.Instance?.BeginNow());
-            w.readyBtn = Add("Ready", "준비", w.ToggleReady);
-            w.aiBtn = Add("Ai", "AI 용병", w.CycleAi, 190f);
-            w.listBtn = Add("List", "모집 공개", w.ToggleListed, 190f);
-            w.leaveBtn = Add("Leave", "파티 나가기", w.LeaveParty, 190f);
+            Button Main(string name, string label, System.Action a) =>
+                Button(w.content, name, label, "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-206f, 8f), new Vector2(240f, 56f), a, 22);
+            w.aiBtn = Side("Ai", "AI 용병", w.CycleAi);
+            w.listBtn = Side("List", "모집 공개", w.ToggleListed);
+            w.startBtn = Main("Start", "출발", w.Depart);
+            w.beginBtn = Main("Begin", "지금 출발", () => PartyRunSession.Instance?.BeginNow());
+            w.readyBtn = Main("Ready", "준비", w.ToggleReady);
+            w.leaveBtn = Button(w.content, "Leave", "<color=#ff9f7a>나가기</color>", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 8f), new Vector2(190f, 48f), w.LeaveParty, 18);
             w.status = Label(w.content, "Status", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 100f), new Vector2(Width, 30f), TextAnchor.MiddleLeft);
             PartyClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
@@ -206,7 +221,7 @@ namespace DotRPG
             if (Client == null || !Client.InParty) return;
             if (next.id == Client.DungeonId) { picker.gameObject.SetActive(false); return; }
             Client.SetTarget(next.id, next.isRaid ? DungeonDifficulty.Normal : Client.Difficulty,
-                (ok, msg) => { Done(ok, msg, $"목적지를 {next.name}(으)로 바꿨습니다."); RefreshPicker(); });
+                (ok, msg) => { Done(ok, msg, $"목적지를 {next.name}{Ro(next.name)} 바꿨습니다."); RefreshPicker(); });
         }
 
         void PickDifficulty(DungeonDifficulty next)
@@ -215,7 +230,7 @@ namespace DotRPG
             var d = DungeonDatabase.Get(Client.DungeonId);
             if (d != null && d.isRaid) { SetStatus("레이드는 난이도가 하나입니다.", false); return; }
             if (next == Client.Difficulty) return;
-            Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, $"난이도를 {PartyFinderRules.DifficultyName(next)}(으)로 바꿨습니다."); RefreshPicker(); });
+            Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, $"난이도를 {PartyFinderRules.DifficultyName(next)}{Ro(PartyFinderRules.DifficultyName(next))} 바꿨습니다."); RefreshPicker(); });
         }
 
         /// <summary>[AI] The leader's own roster fills the free seats: at most the hired mercenaries that fit.</summary>

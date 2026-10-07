@@ -47,6 +47,5 @@ let state: 'unused' | 'pending' | 'attached' | 'closing' = 'unused';
 export const setRelayState = (v: typeof state): void => {
   state = v;
 };
-export const getRelayState = (): typeof state => state;
 /** GET /health/ready 의 relay 항목: 리스너가 등록됐고 종료 중이 아니다 */
 export const isRelayReady = (): boolean => state === 'unused' || state === 'attached';

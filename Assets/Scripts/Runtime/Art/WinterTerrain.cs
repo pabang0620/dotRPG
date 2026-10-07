@@ -506,7 +506,7 @@ namespace DotRPG
             // Irregular layered rock. Rows are horizontal strata whose heights wobble and drift across the
             // face (uneven, never a ruled grid); within each stratum the rock is broken into slabs of varied
             // width by staggered vertical joints, and the odd wider boulder spans two rows.
-            // 1) Which stratum (layer) this pixel is in — cumulative wobbling row heights.
+            // 1) Which stratum (layer) this pixel is in - cumulative wobbling row heights.
             float rowWob = 2.5f * Noise(px / 34f, py / 40f, j.seed + 85);
             float layerH = 13f + 5f * Hash01(0, Mathf.FloorToInt(py / 15f), j.seed + 92);   // rows 13..18 px tall, varying
             float layerF = (py + rowWob) / layerH + 0.5f * Noise(px / 40f, 0f, j.seed + 86);

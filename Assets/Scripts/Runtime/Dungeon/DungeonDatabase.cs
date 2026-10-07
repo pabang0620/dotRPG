@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    /// <summary>Dungeon&amp;Fighter difficulty names: 일반 / 모험 / 왕 / 영웅.</summary>
+    /// <summary>Difficulty names: 일반 / 모험 / 왕 / 영웅.</summary>
     public enum DungeonDifficulty
     {
         Normal = 0,
@@ -143,9 +143,6 @@ namespace DotRPG
         public const int RaidRevives = 3;
         /// <summary>Monster HP multiplier by party size 1..4 (head-count scaling).</summary>
         public static readonly float[] PartyHpScale = { 1.0f, 1.7f, 2.4f, 3.0f };
-        /// <summary>Boss monsters: HP multiplier on top of the difficulty (see <see cref="DungeonMonsters"/>).</summary>
-        public const float BossHpMul = 8f;
-        public const float BossScale = 1.6f;
 
         public const string Raid = "raid_skeleton_king";
         public const string RaidBargas = "raid_bargas";
@@ -286,7 +283,7 @@ namespace DotRPG
                     Room(MapRegistry.DgnForest2, new SpawnGroup(1, "skel_archer", 3, 1), new SpawnGroup(2, "skel_warrior", 3)),
                     Room(MapRegistry.DgnForest1, new SpawnGroup(1, "skel_archer", 3, 1), new SpawnGroup(2, "skel_shield", 2)),
                     Boss(MapRegistry.DgnForestBoss, "boss_archer_chief", "skel_archer", 2)),
-                bossRoom = 3, referenceSeconds = new[] { 160f, 180f, 200f, 220f }, clearXp = 140, xpMul = 2.5f,
+                bossRoom = 3, referenceSeconds = new[] { 160f, 180f, 200f, 220f }, clearXp = 140, xpMul = 1.5f,
                 rewards = new[]
                 {
                     new RewardEntry(ConsumableDatabase.Gold, 200, 400, 35),

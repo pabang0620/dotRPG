@@ -21,6 +21,21 @@ namespace DotRPG.EditorTools
     {
         [Serializable] sealed class CareerCatalogJson { public int schema = 1; public CareerSkill[] skills = CareerCatalog.All; }
 
+        /// <summary>
+        /// careers.json: the skill catalog plus the awakening trial rules the server enforces (phase9 19.4): the least
+        /// seconds a successful trial can take and the nodes it needs, keyed by career number (CareerTrials.Begin, Update).
+        /// </summary>
+        static string CareersJson()
+        {
+            string json = JsonUtility.ToJson(new CareerCatalogJson());
+            const string trials = ",\"trials\":{" +
+                "\"1\":{\"minSeconds\":4,\"requiredNodes\":[]}," +
+                "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
+                "\"3\":{\"minSeconds\":4,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
+                "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}}";
+            return json.Substring(0, json.Length - 1) + trials + "}";
+        }
+
         static string OutDir => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "server", "data"));
 
         [MenuItem("dotRPG/Export Server Data")]
@@ -35,7 +50,7 @@ namespace DotRPG.EditorTools
                 ["items.json"] = Items(),
                 ["passive_tree.json"] = PassiveTreeJson(),
                 ["skill_gems.json"] = SkillGemsJson(),
-                ["careers.json"] = JsonUtility.ToJson(new CareerCatalogJson()),
+                ["careers.json"] = CareersJson(),
                 ["quest_index.json"] = QuestIndex(),
                 ["enums.json"] = Enums(),
                 ["shop.json"] = Shop(),
@@ -47,6 +62,7 @@ namespace DotRPG.EditorTools
                 ["player.json"] = PlayerJson(),
                 ["chat.json"] = ChatJson(), // [SERVER 5] chat limits and report reasons
                 ["auction.json"] = AuctionJson(), // [SERVER 6] auction house rules
+                ["sweep.json"] = SweepJson(), // [SWEEP] clear ticket rules (phase10 10)
             };
 
             using (var sha = SHA256.Create())
@@ -86,11 +102,21 @@ namespace DotRPG.EditorTools
             foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
-            return Doc().Arr("items", rows, (o, r) => o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
-                .Str("name", DungeonDatabase.ItemName(r.id))
-                // [SERVER 6] the binding floor of the kind; how an item was obtained can bind it further (server)
-                .Str("bind", AuctionRules.BindFloor(r.id) == ItemBind.CharacterBound ? "character" : "none")
-                .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot).End()).End().ToString();
+            foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
+            // [CASH] Sealed box rewards (Docs/PLAN_CASH_BOX_PASS.md): account-bound, never on the auction.
+            var cash = new HashSet<string>();
+            foreach (var c in ConsumableDatabase.Cash) { rows.Add((c.id, "consumable", true)); cash.Add(c.id); }
+            return Doc().Arr("items", rows, (o, r) =>
+            {
+                o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
+                    .Str("name", DungeonDatabase.ItemName(r.id))
+                    // [SERVER 6] the binding floor of the kind; how an item was obtained can bind it further (server)
+                    .Str("bind", cash.Contains(r.id) || r.id == DungeonSweep.TicketItem || r.id == DungeonSweep.EventTicketItem ? "account" : AuctionRules.BindFloor(r.id) == ItemBind.CharacterBound ? "character" : "none")
+                    .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot);
+                var ci = cash.Contains(r.id) ? ConsumableDatabase.Get(r.id) : null;
+                if (ci != null) o.Str("use", ci.kind.ToString()).Num("power", ci.power).Num("chance", ci.chance).Num("minutes", ci.minutes);
+                return o.End();
+            }).End().ToString();
         }
 
         static string Starter()
@@ -235,6 +261,15 @@ namespace DotRPG.EditorTools
                 .End()
                 .End().ToString();
         }
+
+        /// <summary>[SWEEP] Clear ticket rules from <see cref="DungeonSweep"/> (Docs/server/phase10_sweep_mail.md 10).</summary>
+        static string SweepJson() => Doc()
+            .Str("ticketItem", DungeonSweep.TicketItem).Str("eventTicketItem", DungeonSweep.EventTicketItem)
+            .Num("eventTicketDays", DungeonSweep.EventTicketDays).Num("minRank", (int)DungeonSweep.MinRank)
+            .Num("xpBonusPercent", DungeonSweep.XpBonusPercent).Num("cardCount", DungeonSweep.CardCount).Num("gearKeepPercent", DungeonSweep.GearKeepPercent)
+            .Key("shop").Obj().Num("basePrice", DungeonSweep.ShopBasePrice).Num("weeklyLimit", DungeonSweep.ShopWeeklyLimit).End()
+            .Key("weekly").Obj().Num("directClears", DungeonSweep.WeeklyDirectClears).Num("rewardTickets", DungeonSweep.WeeklyRewardTickets).End()
+            .End().ToString();
 
         static string AuctionJson()
         {

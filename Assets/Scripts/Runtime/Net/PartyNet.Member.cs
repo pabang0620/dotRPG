@@ -34,7 +34,7 @@ namespace DotRPG
         void MemberTick()
         {
             bool connected = transport.IsConnected;
-            if (wasConnected && !connected) GameEvents.RaiseToast("방장과의 연결이 끊겼다.");
+            if (wasConnected && !connected) GameEvents.RaiseToast("방장과의 연결이 끊겼습니다.");
             wasConnected = connected;
 
             if (!welcomed)
@@ -122,7 +122,7 @@ namespace DotRPG
             Game.Party?.SetRosterHidden(true);
             if (again) { foreach (var c in cards) AddPuppet(c); return; }
             foreach (var c in cards) AddPuppet(c);
-            GameEvents.RaiseToast("방장에게 연결되었다.");
+            GameEvents.RaiseToast("방장에게 연결되었습니다.");
             if (field) { FieldMode = true; FieldMap = fieldMap; expectedRoom = 0; return; }
             if (inRun) StartFollowing(dungeonId, difficulty, room);
         }

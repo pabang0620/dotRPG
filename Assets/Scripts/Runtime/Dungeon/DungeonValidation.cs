@@ -7,14 +7,11 @@ namespace DotRPG
     /// [CONTENT] Startup data check of every dungeon room: each <see cref="SpawnGroup"/> digit must have at least one
     /// cell in the room's map (otherwise the group falls back to a spot near the entry), and each map needs its
     /// 'P' entry (otherwise the party starts in the middle of the room, on top of the monsters).
-    /// Problems are logged with Debug.LogError once at startup and kept in <see cref="Errors"/>.
+    /// Problems are logged with Debug.LogError once at startup.
     /// </summary>
     public static class DungeonValidation
     {
         static List<string> errors;
-
-        /// <summary>Every problem found (empty when the data is consistent). Runs the check on first use.</summary>
-        public static IReadOnlyList<string> Errors => errors ?? Validate();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void RunAtStartup()

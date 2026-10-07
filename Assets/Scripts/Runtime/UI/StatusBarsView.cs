@@ -26,14 +26,14 @@ namespace DotRPG
             var v = root.gameObject.AddComponent<StatusBarsView>();
             v.fillW = BarW - InsetX * 2f;
 
-            // [ART] Generated gold-rimmed medallion (ui_level_badge); "LV" and the number sit on its dark centre.
+            // [ART] Generated winged gold crest with an obsidian disc (ui_level_badge); "LV" and the number sit on the disc.
             var badge = Img(root, "Badge", "ui_level_badge", Color.white);
             badge.preserveAspect = true;
             UIFactory.Place(badge.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(-4f, 2f), new Vector2(80f, 80f));
             var lvCaption = UIFactory.Text(badge.transform, "Lv", "LV", 11, new Color32(255, 214, 110, 255), TextAnchor.MiddleCenter, true);
-            UIFactory.Place(lvCaption.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 12f), new Vector2(40f, 14f));
+            UIFactory.Place(lvCaption.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 8f), new Vector2(40f, 14f)); // [ART] winged crest: the dark disc sits ~4 px below the middle
             v.levelText = UIFactory.Text(badge.transform, "Level", "1", 22, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Place(v.levelText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -4f), new Vector2(48f, 26f));
+            UIFactory.Place(v.levelText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -9f), new Vector2(48f, 26f));
 
             v.hpFill = Bar(root, "HP", 0f, 30f, 17, new Color32(214, 48, 49, 255), out v.hpLag, out v.hpText, v.fillW);
             v.mpFill = Bar(root, "MP", -31f, 26f, 15, new Color32(52, 120, 230, 255), out _, out v.mpText, v.fillW);

@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { loadAuctionData, type AuctionData } from './auctionData';
 import { loadChatData, type ChatData } from './chatData';
 import { loadEconomyData, type EconomyData } from './economyData';
+import { getConfig } from '../config/env';
+import { loadSweepData, type SweepData } from './sweepData';
 
 // 알 수 없는 필드는 무시(looseObject)해서 데이터에 필드가 늘어도 기동이 깨지지 않는다.
 const schemaVer = z.literal(1);
@@ -142,6 +144,8 @@ export interface GameData {
   chat: ChatData;
   /** 6단계(경매) 수수료·보증금·기간·가격 한도 */
   auction: AuctionData;
+  /** 10단계(소탕): SWEEP_ENABLED가 꺼져 있고 파일이 없거나 깨졌으면 null */
+  sweep: SweepData | null;
 }
 
 function readJson<T extends z.ZodType>(dir: string, file: string, schema: T): z.infer<T> {
@@ -256,6 +260,7 @@ export function loadGameData(dir: string): GameData {
     economy: loadEconomyData(dir, new Set(mapById.keys())),
     chat: loadChatData(dir),
     auction: loadAuctionData(dir),
+    sweep: loadSweepData(dir, getConfig().sweep.enabled, itemIds),
   };
 }
 

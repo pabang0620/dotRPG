@@ -133,5 +133,44 @@ export function purgeDaily(ctx: JobCtx): Promise<JobResult> {
       ),
     ],
     ['relay_room_stats', del('relay_room_stats', `ended_at < ${days(cfg.relay.retentionDays)}`)],
+    // 9단계 15절: 기기·IP 개인정보는 보관 기간 뒤 삭제한다(login_events 90일, 집계 표는 마지막 관측 후 180일)
+    // 10단계 5.4: 지난 주 계정 주간 카운터(60일). 복합 키 표라 (계정, 주, 종류)로 지운다
+    [
+      'account_week_counters',
+      `DELETE FROM account_week_counters WHERE (account_id, week_start, kind) IN (
+         SELECT account_id, week_start, kind FROM account_week_counters WHERE week_start < ${days(60)} LIMIT $1)`,
+    ],
+    ['login_events', del('login_events', `created_at < ${days(cfg.aa.loginEventDays)}`)],
+    [
+      'account_devices',
+      `DELETE FROM account_devices WHERE (account_id, device_hash) IN (
+         SELECT account_id, device_hash FROM account_devices WHERE last_seen_at < ${days(cfg.aa.accountDeviceDays)} LIMIT $1)`,
+    ],
+    [
+      'account_ips',
+      `DELETE FROM account_ips WHERE (account_id, ip) IN (
+         SELECT account_id, ip FROM account_ips WHERE last_seen_at < ${days(cfg.aa.accountDeviceDays)} LIMIT $1)`,
+    ],
+    // 11단계 10.4: 결제 주문의 IP는 PAY_IP_RETENTION_DAYS 뒤 NULL로 지운다(주문·이벤트 행은 지우지 않는다)
+    [
+      'star_orders_ip',
+      `UPDATE star_orders SET ip = NULL WHERE id IN (SELECT id FROM star_orders WHERE ip IS NOT NULL AND created_at < ${days(cfg.pay.ipRetentionDays)} ORDER BY id LIMIT $1)`,
+    ],
+    // 끝난 프레즌스 행 7일, 활동 시간·소득 집계 35일(PLAY_TIME_RETENTION_DAYS)
+    [
+      'online_sessions',
+      `DELETE FROM online_sessions WHERE account_id IN (
+         SELECT account_id FROM online_sessions WHERE ended_at IS NOT NULL AND ended_at < ${days(7)} LIMIT $1)`,
+    ],
+    [
+      'play_time_hourly',
+      `DELETE FROM play_time_hourly WHERE (character_id, hour_start) IN (
+         SELECT character_id, hour_start FROM play_time_hourly WHERE hour_start < ${days(cfg.aa.presence.retentionDays)} LIMIT $1)`,
+    ],
+    [
+      'income_hourly',
+      `DELETE FROM income_hourly WHERE (character_id, hour_start) IN (
+         SELECT character_id, hour_start FROM income_hourly WHERE hour_start < ${days(cfg.aa.presence.retentionDays)} LIMIT $1)`,
+    ],
   ]);
 }

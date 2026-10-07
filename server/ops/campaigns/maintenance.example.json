@@ -1,0 +1,17 @@
+{
+  "title": "정기 점검 보상",
+  "body": "점검 시간 동안 기다려 주셔서 감사합니다.\n작은 보상을 드립니다.",
+  "category": "maintenance",
+  "delivery_unit": "account",
+  "target": { "all": true },
+  "mail_days": 7,
+  "starts_at": "2026-10-10T06:00:00+09:00",
+  "ends_at": "2026-10-17T06:00:00+09:00",
+  "cap_count": 100000,
+  "attachments": [
+    { "kind": "gold", "amount": 20000 },
+    { "kind": "item", "item_key": "potion_hp", "count": 10 },
+    { "kind": "sweep_ticket", "count": 2 }
+  ],
+  "memo": "10-10 정기 점검 보상"
+}

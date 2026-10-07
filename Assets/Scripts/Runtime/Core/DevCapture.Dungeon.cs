@@ -27,7 +27,7 @@ namespace DotRPG
             log?.WriteLine($"DGN {what} {(ok ? "PASS" : "FAIL")}");
         }
 
-        /// <summary>Monday 2025-03-03 10:00 (local clock) — 황금 광맥 is open.</summary>
+        /// <summary>Monday 2025-03-03 10:00 (local clock) - 황금 광맥 is open.</summary>
         static readonly DateTime Monday = new DateTime(2025, 3, 3, 10, 0, 0);
 
         static List<EnemyController> DungeonEnemies() =>

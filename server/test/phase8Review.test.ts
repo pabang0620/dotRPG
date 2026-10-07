@@ -3,6 +3,8 @@ import request from 'supertest';
 import { loadConfig } from '../src/config/env';
 import { getPool } from '../src/db/pool';
 import { MemoryTicketReplayStore, resetSteamStats, steamStats, webApiVerifier } from '../src/domains/auth/steamProvider';
+import { observeCap } from '../src/domains/fieldsessions/fieldService';
+import { getGameData } from '../src/gamedata/loader';
 import * as killRepo from '../src/domains/kills/killRepository';
 import { MemoryTicketStore } from '../src/domains/relay/relayTicket';
 import { switchMapSizes, resetSwitchCooldowns } from '../src/domains/transport/fallbackService';
@@ -44,6 +46,8 @@ beforeEach(() => {
 
 const enter = (h: Hero, rid?: string) => post(app, h, '/field-sessions/enter', { map_id: 'forest' }, rid);
 const hb = (h: Hero, sid: string, synced = true) => raw(app, h, `/field-sessions/${sid}/heartbeat`, { seen_epoch: 1, synced });
+// 숲 첫 스폰의 처치 경험치(데이터에서 읽는다)
+const forestXp = (): number => getGameData().economy.mapExtra.get('forest')!.fieldSpawns[0]!.xp as number;
 const kill = (h: Hero, sid: string, ref: number, over: Record<string, unknown> = {}) =>
   post(app, h, '/kills', { map_id: 'forest', monster_id: 'skeleton', session_id: sid, monster_ref: ref, ...over });
 const observe = (h: Hero, sid: string, credits: { seat: number; kills: number }[], windowMs = 10_000) =>
@@ -113,17 +117,19 @@ describe('경제 E1~E7', () => {
 
   it('E3: observe 창은 서버가 정한다(요청 window_ms 와 마지막 관찰 이후 실제 경과 중 작은 값)', async () => {
     const { L, M, sid } = await team(2);
-    // 시계가 흐르지 않았는데 30초 창을 주장해도 경과 0: 공급 한도는 17(+1창)이라 20마리는 거절
-    const big = await observe(L, sid, [{ seat: 1, kills: 20 }], 30_000);
+    // 시계가 흐르지 않았는데 30초 창을 주장해도 경과 0: 공급 한도(+1창)를 넘는 마릿수는 거절
+    const over0 = observeCap('forest', 0) + 3;
+    const big = await observe(L, sid, [{ seat: 1, kills: over0 }], 30_000);
     expect(big.status).toBe(200);
     const row = async () => Number((await getPool().query('SELECT kills_credited AS n FROM field_session_members WHERE character_id = $1', [(M[0] as Hero).dbId])).rows[0].n);
     expect(await row()).toBe(0);
     expect(await anomalyKinds(L)).toContain('field_host');
     const detail = (await getPool().query("SELECT detail FROM anomaly_log WHERE kind = 'field_host' AND character_id = $1 ORDER BY id DESC LIMIT 1", [L.dbId])).rows[0].detail;
     expect(detail).toMatchObject({ window_used_ms: 0, window_ms: 30_000 });
-    // 실제로 10초가 지났으면 같은 주장도 통과(경과 10초 -> 17 x (10/25 + 1) = 24)
+    // 실제로 10초가 지났으면 같은 주장도 통과(경과 10초 한도가 더 커진다)
     advance(10);
-    await observe(L, sid, [{ seat: 1, kills: 20 }], 30_000);
+    expect(observeCap('forest', 10_000)).toBeGreaterThanOrEqual(over0);
+    await observe(L, sid, [{ seat: 1, kills: over0 }], 30_000);
     expect(await row()).toBe(8); // 받아들인 처치 0 + 크레딧 여유 8
   });
 
@@ -142,7 +148,7 @@ describe('경제 E1~E7', () => {
     expect(early.body.data.field.xp_factor).toBe(1);
     advance(150); // 마지막 활동(세션 생성) 후 3분 넘음
     const a = await kill(m, sid, 2);
-    expect(a.body.data).toMatchObject({ granted_xp: 10, field: { xp_factor: 0.5 } });
+    expect(a.body.data).toMatchObject({ granted_xp: Math.round(forestXp() * 0.5), field: { xp_factor: 0.5 } });
     advance(1);
     await kill(m, sid, 3);
     const n = await getPool().query("SELECT count(*) AS n FROM anomaly_log WHERE kind = 'field_host' AND severity = 2 AND detail->>'why' = 'observe_lapsed' AND detail->>'session_id' = $1", [sid]);

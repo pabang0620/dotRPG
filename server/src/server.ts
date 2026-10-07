@@ -5,6 +5,7 @@ import { createApp } from './app';
 import { initConfig } from './config/env';
 import { closePool, getPool } from './db/pool';
 import { startAuctionTicker } from './domains/auction/auctionTicker';
+import { startHoldWorker } from './domains/antiabuse/holdSweep';
 import { attachRealtime } from './domains/chat/wsServer';
 import { setRelayState } from './domains/relay/relayHub';
 import { attachRelay } from './domains/relay/relayServer';
@@ -13,6 +14,7 @@ import { runMatchTick } from './domains/match/matchService';
 import { runSettleTick } from './domains/partyruns/partySettle';
 import { runCardAutoPickTick } from './domains/dungeons/dungeonService';
 import { initGameData } from './gamedata/loader';
+import { initPayments } from './domains/payments/payInit';
 import { beginShutdown, inFlightCount, isShuttingDown, setWsState, waitForInFlight } from './ops/lifecycle';
 import { closeInterruptedRuns, requestJobStop, runJob, startJobRunner } from './ops/jobRunner';
 import { registerAllJobs } from './ops/jobs';
@@ -32,6 +34,8 @@ async function main(): Promise<void> {
   const cfg = initConfig();
   const data = initGameData(cfg.gameDataDir);
   await getPool().query('SELECT 1');
+  // 11단계: 상품표 검증·확률표 스냅샷(같은 버전에 다른 내용이면 여기서 기동이 멈춘다)
+  await initPayments();
 
   registerAllJobs();
   const interrupted = await closeInterruptedRuns();
@@ -67,6 +71,9 @@ async function main(): Promise<void> {
   }, 1000);
   tick.unref();
 
+  // 9단계: 경제 속도 감시 더티 워커(ECONOMY_HOLD_CHECK_SECONDS마다 소득이 바뀐 캐릭터만 평가). 전체 훑기·원장 대조는 작업 스케줄러가 돈다
+  const stopHoldWorker = startHoldWorker();
+
   // 경매 마감 정산 틱(기동 직후 즉시 1회 + 주기). AUCTION_TICK_ENABLED=false면 쓰지 않는다
   const stopAuction = cfg.auction.tickEnabled ? startAuctionTicker() : () => undefined;
 
@@ -98,6 +105,7 @@ async function main(): Promise<void> {
       // 2. 틱·작업 정지 신호
       clearInterval(tick);
       stopAuction();
+      stopHoldWorker();
       requestJobStop();
       for (const s of stops) s();
       // 3. 진행 중인 요청 대기(최대 10초)

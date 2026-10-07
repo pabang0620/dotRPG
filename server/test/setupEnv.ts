@@ -86,3 +86,25 @@ process.env.TRANSPORT_SWITCH_COOLDOWN_SECONDS = '0';
 process.env.RELAY_HANDSHAKE_PER_MIN_IP = '100000';
 process.env.RELAY_UNAUTH_PER_IP = '1000';
 process.env.RELAY_CONN_PER_IP = '1000';
+// 9단계(부정 행위 방지): 프레즌스·전직 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 기기 지문 HMAC 비밀(테스트 전용 값)
+process.env.DEVICE_HASH_PEPPER = 'test-device-pepper-test-device-pepper-0123456789';
+for (const k of ['RATE_PRESENCE_PER_10S', 'RATE_PRESENCE_PER_MIN', 'RATE_CAREER_PER_SEC']) {
+  process.env[k] = '10000';
+}
+// 구매자 자격은 시험 편의로 낮춘다(자격 테스트가 직접 올린다)
+process.env.AUCTION_BUYER_MIN_LEVEL = '1';
+process.env.AUCTION_BUYER_MIN_ACCOUNT_AGE_DAYS = '0';
+// 10단계(소탕·운영 우편): 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 기능 플래그는 테스트 파일이 켠다(기본 꺼짐 확인용)
+for (const k of [
+  'RATE_SWEEP_STATUS_PER_SEC',
+  'RATE_SWEEP_RUN_PER_SEC',
+  'RATE_SWEEP_ALL_PER_SEC',
+  'RATE_SWEEP_BUY_PER_SEC',
+  'RATE_SWEEP_CLAIM_PER_SEC',
+]) {
+  process.env[k] = '10000';
+}
+// 11단계(결제): 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 결제 기능 플래그는 기본 꺼짐이고 결제 테스트 파일이 켠다(mock Steam)
+for (const k of ['RATE_PAY_READ_PER_MIN', 'RATE_PAY_ORDER_PER_MIN', 'RATE_PAY_ORDER_IP_PER_MIN', 'RATE_PAY_SYNC_PER_MIN', 'RATE_STARSHOP_SPEND_PER_MIN']) {
+  process.env[k] = '10000';
+}

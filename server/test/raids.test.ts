@@ -99,7 +99,7 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     expect(locked.body.errors.code).toBe('RAID_LOCKED');
     expect(await anomalyKinds(h)).toContain('raid_enter');
     const low = await raidHero(1, ['c1_fortress']);
-    expect((await enter(low)).body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 17 });
+    expect((await enter(low)).body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 20 });
     expect((await enter(h, { difficulty: 1 })).body.errors.code).toBe('RAID_LOCKED');
     const ok = await raidHero(20, ['c1_fortress']);
     expect((await enter(ok, { difficulty: 1 })).body.errors.code).toBe('DIFFICULTY_LOCKED');
@@ -125,15 +125,13 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     expect([x, y].find((r) => r.status === 409)?.body.errors.code).toBe('RUN_ACTIVE');
   });
 
-  it('최종 레이드 열쇠 부족: KEYS_MISSING, 열쇠가 있으면 입장(횟수 소모 없음)', async () => {
+  it('최종 레이드 열쇠 부족: 보상 없는 연습판으로 입장(혼자서도 스토리 완료 가능), 열쇠가 있어도 입장(횟수 소모 없음)', async () => {
     at(SUN);
     const h = await raidHero(40, ['c2_grah']);
     const no = await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 });
-    expect(no.status).toBe(422);
-    expect(no.body.errors).toMatchObject({ code: 'KEYS_MISSING', need: 100, have: 0 });
-    expect(await anomalyKinds(h)).toContain('raid_enter');
-    await seedItem(h, 'key_seal', 100);
-    expect((await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_grah', difficulty: 0 })).status).toBe(201);
+    expect(no.status).toBe(201);
+    expect(no.body.data.run).toMatchObject({ reward_locked: true });
+    expect(await anomalyKinds(h)).not.toContain('raid_enter');
   });
 
   it('연습판(사람 1명): 처치 경험치·드롭이 없고, 클리어해도 카드·청구·열쇠가 없다. 레이드 몬스터는 필드에서 받지 않는다', async () => {
@@ -261,9 +259,10 @@ describe('레이드 파티 정산', () => {
     expect(rb.body.data).toMatchObject({ granted_xp: 0, card_count: 0 });
     expect(rb.body.data.raid).toEqual({ reward_locked: true, lock_reason: 'KEYS_MISSING' });
     const ra = await post(app, a, `/dungeon-runs/${runs.get(a.id)}/settle`, {});
-    expect(ra.body.data.granted_xp).toBeGreaterThan(0);
-    expect(ra.body.data.raid).toMatchObject({ reward_locked: false, key_cost: 100 });
-    expect(await countOf(a, 'key_seal')).toBe(0);
+    // Lv.40 is the level cap: no XP, so the reward shows in the cards
+    expect(ra.body.data.card_count).toBeGreaterThan(0);
+    expect(ra.body.data.raid).toMatchObject({ reward_locked: false, key_cost: 60 });
+    expect(await countOf(a, 'key_seal')).toBe(40);
     const claim = await getPool().query('SELECT period_kind FROM raid_claims WHERE character_id = $1', [a.dbId]);
     expect(claim.rows).toEqual([{ period_kind: 'weekly' }]);
     expect((await getPool().query('SELECT count(*) AS n FROM raid_claims WHERE character_id = $1', [b.dbId])).rows[0]).toEqual({ n: '0' });
@@ -284,6 +283,9 @@ describe('레이드 파티 정산', () => {
     const t0 = fixed.getTime();
     await clearAll(app, host, runs.get(host.id) as string, advance, 'raid_skeleton_king', 20);
     at(new Date(t0 + 300_000).toISOString());
+    // 9단계: 레이드는 호스트 보고로 기여를 판정하므로 방장 보고가 필요하다(없으면 기여를 몰라 보류된다)
+    const rep = await post(app, host, `/party-runs/${runId}/host-report`, await honestHostReport(runs.get(host.id) as string, [host], { elapsed_ms: 300_000 }, 'raid_skeleton_king'));
+    expect(rep.status).toBe(200);
     const res = await result(host, runs.get(host.id) as string, { outcome: 'cleared', stats: stats({ elapsed_ms: 300_000, max_combo: 300 }) });
     expect(res.body.data.result).toBe('cleared');
     expect(res.body.data).toMatchObject({ granted_xp: 0, card_count: 0 });

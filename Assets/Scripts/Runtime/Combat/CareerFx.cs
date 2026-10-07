@@ -9,19 +9,51 @@ namespace DotRPG
     public static class CareerFx
     {
         public static readonly Color Steel = new Color(0.55f, 0.82f, 1f, 0.95f);
-        public static readonly Color SteelDeep = new Color(0.2f, 0.45f, 1f, 0.85f);
         public static readonly Color Teal = new Color(0.38f, 0.95f, 0.88f, 0.95f);
-        public static readonly Color TealDeep = new Color(0.1f, 0.55f, 0.6f, 0.85f);
         public static readonly Color Violet = new Color(0.74f, 0.52f, 1f, 0.95f);
-        public static readonly Color VioletDeep = new Color(0.42f, 0.22f, 0.95f, 0.85f);
         public static readonly Color Holy = new Color(1f, 0.9f, 0.55f, 0.95f);
         public static readonly Color HolyWarm = new Color(1f, 0.72f, 0.3f, 0.85f);
         public static readonly Color Life = new Color(0.6f, 1f, 0.6f, 0.9f);
 
         public static Color Main(Career c) => c == Career.Fighter ? Steel : c == Career.Guardian ? Teal : c == Career.Arcanist ? Violet : Holy;
-        public static Color Deep(Career c) => c == Career.Fighter ? SteelDeep : c == Career.Guardian ? TealDeep : c == Career.Arcanist ? VioletDeep : HolyWarm;
         static Color A(Color c, float a) => new Color(c.r, c.g, c.b, a);
         public static float Angle(Vector2 dir) => Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        // ---------- Frame clips (Docs/PLAN_SKILL_VFX.md) ----------
+
+        /// <summary>Plays a frame clip; facing left is a mirror image of the right-facing art (VfxPlayer).</summary>
+        public static VfxPlayer Clip(string clip, Vector2 at, Vector2 dir, float scale = 1f, float fps = 24f, VfxLayer layer = VfxLayer.Top,
+            bool turn = true, Color? tint = null, bool additive = false, float life = 0f, bool loop = false) =>
+            VfxPlayer.Play(clip, at, dir, tint ?? Color.white, scale, fps, additive, life, loop, layer, turn);
+
+        /// <summary>Turns a right-facing offset angle into the aim's mirror-correct direction (tilts mirror on the left).</summary>
+        public static Vector2 Tilt(Vector2 dir, float degrees) => Rotate(dir, dir.x < -0.01f ? -degrees : degrees);
+
+        /// <summary>The career's own hit mark on a monster, bigger for heavier blows.</summary>
+        public static void Hit(Vector2 at, Vector2 dir, Career career, int weight)
+        {
+            float k = weight == 2 ? 1.5f : weight == 1 ? 1.15f : 0.85f;
+            string clip = career == Career.Fighter ? "f_x" : career == Career.Guardian ? "g_clang" : career == Career.Arcanist ? "m_hit" : "b_cross";
+            Clip(clip, at, career == Career.Fighter ? dir : Vector2.zero, k, 30f, VfxLayer.Top, career == Career.Fighter);
+            if (weight == 2) SkillVisuals.Flash(at, new Color(1f, 1f, 1f, 0.55f), 1.4f, 0.1f);
+        }
+
+        /// <summary>A tinted copy of the body sprite left behind (dash and leap afterimages).</summary>
+        public static void Ghost(PlayerController owner, Color tint, float life = 0.28f)
+        {
+            var body = owner != null ? owner.GetComponent<CharacterAnimator>()?.Body : null;
+            if (body == null || body.sprite == null) return;
+            var go = new GameObject("Afterimage");
+            if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
+            go.transform.position = body.transform.position;
+            go.transform.localScale = body.transform.lossyScale;
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = body.sprite;
+            sr.flipX = body.flipX;
+            sr.sharedMaterial = FxMaterials.Additive;
+            sr.sortingOrder = body.sortingOrder - 1;
+            go.AddComponent<GhostFade>().Begin(sr, tint, life);
+        }
 
         // ---------- Blades ----------
 
@@ -66,10 +98,10 @@ namespace DotRPG
         }
 
         /// <summary>A big sword dropping onto <paramref name="ground"/> (steel blue beam, warning ring).</summary>
-        public static void SwordDrop(Vector2 ground, float fallTime, Color color, float size = 1f)
+        public static void SwordDrop(Vector2 ground, float fallTime, Color color, float size = 1f, bool dark = false)
         {
             float height = 4.5f * size;
-            SkillFx.Spawn("fx_bigsword", ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
+            SkillFx.Spawn(SkillFx.Pick(dark ? "fxi_bigsword_dark" : "fxi_bigsword", "fx_bigsword"), ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
                 .Move(Vector2.down * (height / fallTime)).Scale(size, size).Fade(FxFade.None);
             GlowLineFx.Spawn(ground + Vector2.up * height, ground, A(color, 0.6f), 0.45f * size, fallTime + 0.1f, SkillFx.TopOrder + 3);
             SkillFx.Spawn("fx_ring", ground, A(color, 0.9f), fallTime, SkillFx.GroundOrder + 8).Scale(1.4f * size, 0.45f * size).Fade(FxFade.None);
@@ -78,8 +110,8 @@ namespace DotRPG
         public static void SwordImpact(Vector2 ground, float radius, Color color, bool big)
         {
             float k = big ? 1.4f : 1f;
-            SkillFx.Spawn("fx_bigsword", ground, Color.white, big ? 0.9f : 0.5f, SkillFx.At(ground.y, 6)).Scale(k, k).Fade(FxFade.Late);
-            SkillFx.Spawn("fx_crack", ground, Color.white, big ? 1.6f : 1f, SkillFx.GroundOrder + 2).Scale(radius * 0.8f, radius * 1.1f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, big ? 0.9f : 0.5f, SkillFx.At(ground.y, 6)).Scale(k, k).Fade(FxFade.Late);
+            SkillFx.Crack(ground, radius, big ? 1.6f : 1f);
             Shock(ground + Vector2.up * 0.1f, radius, color, 0.3f);
             SkillVisuals.Flash(ground + Vector2.up * 0.3f, A(color, 0.7f), radius * 1.8f, 0.2f);
             SkillVisuals.Sparks(ground + Vector2.up * 0.2f, Color.Lerp(color, Color.white, 0.4f), big ? 14 : 7, 7.5f, 0.24f);
@@ -94,18 +126,10 @@ namespace DotRPG
             SkillFx.Spawn("fx_shock", at, A(color, 0.45f), life * 1.3f, SkillFx.TopOrder - 5).Additive().Scale(radius * 0.3f, radius * 1.15f).Delay(delay);
         }
 
-        /// <summary>A magic circle on the ground.</summary>
-        public static void Sigil(Vector2 feet, float radius, Color color, float life, float spin = -120f)
-        {
-            SkillFx.Spawn("fx_rune", feet, A(color, 0.9f), life, SkillFx.GroundOrder + 6).Scale(radius * 0.85f, radius * 0.95f).Spin(spin).Fade(FxFade.InOut);
-            SkillFx.Spawn("fx_rune", feet, new Color(1f, 1f, 1f, 0.4f), life * 0.9f, SkillFx.GroundOrder + 7).Rotate(30f).Scale(radius * 0.6f, radius * 0.7f).Spin(-spin * 1.4f).Fade(FxFade.InOut);
-            SkillFx.Spawn("fx_glow", feet, A(color, 0.35f), life, SkillFx.GroundOrder + 5).Additive().Scale(radius * 1.2f, radius * 1.5f).Fade(FxFade.InOut);
-        }
-
         /// <summary>Ground slam: dust ring, rock chips, cracks and a shock ring.</summary>
         public static void Slam(Vector2 feet, float radius, Color color, bool big)
         {
-            SkillFx.Spawn("fx_crack", feet, Color.white, big ? 1.8f : 1.2f, SkillFx.GroundOrder + 2).Scale(radius * 0.7f, radius * (big ? 1.2f : 1f)).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(feet, radius * (big ? 1.1f : 0.9f), big ? 1.8f : 1.2f);
             Shock(feet + Vector2.up * 0.1f, radius, color, 0.35f);
             if (big) Shock(feet + Vector2.up * 0.1f, radius * 0.6f, Color.white, 0.25f, 0.06f);
             SkillVisuals.Flash(feet + Vector2.up * 0.25f, A(color, 0.6f), radius * 1.6f, 0.22f);
@@ -134,17 +158,15 @@ namespace DotRPG
             SkillFx.Spawn("fx_ring", ground, A(color, 0.9f), life, SkillFx.GroundOrder + 8).Scale(width * 0.4f, width * 1.4f).Fade(FxFade.Quick);
         }
 
-        /// <summary>Guardian crest flashing over a point.</summary>
-        public static void Aegis(Vector2 at, float size, Color color, float life)
-        {
-            SkillFx.Spawn("fx_aegis", at, A(color, 0.95f), life, SkillFx.TopOrder + 3).Scale(size * 0.5f, size).Pop().Fade(FxFade.Late);
-            SkillFx.Spawn("fx_glow", at, A(color, 0.5f), life, SkillFx.TopOrder + 2).Additive().Scale(size * 1.2f, size * 1.8f).Fade(FxFade.Quick);
-        }
+        /// <summary>[VFX] The drawn small shield (same family as the falling aegis) when it exists: shown in its own colours.</summary>
+        public static bool ShieldArt => SkillFx.HasImage("fxi_shield_small");
+        public static string ShieldSprite => SkillFx.Pick("fxi_shield_small", "fx_aegis");
 
         /// <summary>A bright mark that a healing / shield / blessing reached an ally.</summary>
         public static void Bless(Vector2 at, Color color, bool shield)
         {
-            SkillFx.Spawn(shield ? "fx_aegis" : "fx_holy", at + Vector2.up * 0.2f, A(color, 0.95f), 0.45f, SkillFx.TopOrder + 3).Scale(0.4f, shield ? 0.95f : 0.85f).Pop().Fade(FxFade.Late);
+            if (shield && ShieldArt) SkillFx.Spawn(ShieldSprite, at + Vector2.up * 0.25f, Color.white, 0.5f, SkillFx.TopOrder + 3).Scale(0.7f, 1.25f).Pop().Fade(FxFade.Late);
+            else SkillFx.Spawn(shield ? "fx_aegis" : "fx_holy", at + Vector2.up * 0.2f, A(color, 0.95f), 0.45f, SkillFx.TopOrder + 3).Scale(0.4f, shield ? 0.95f : 0.85f).Pop().Fade(FxFade.Late);
             SkillFx.Spawn("fx_glow", at, A(color, 0.5f), 0.35f, SkillFx.TopOrder + 1).Additive().Scale(0.8f, 1.6f).Fade(FxFade.Quick);
             for (int i = 0; i < 6; i++)
             {
@@ -184,7 +206,7 @@ namespace DotRPG
         {
             var fx = new MovingFx();
             fx.Add(SkillFx.Spawn("fx_glow", pos, A(color, 0.7f), 10f, SkillFx.TopOrder + 1).Additive().Scale(1.4f, 1.4f).Fade(FxFade.None));
-            fx.Add(SkillFx.Spawn("fx_aegis", pos, Color.white, 10f, SkillFx.TopOrder + 2).Scale(0.8f, 0.8f).Spin(900f).Fade(FxFade.None));
+            fx.Add(SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), pos, Color.white, 10f, SkillFx.TopOrder + 2).Scale(0.8f, 0.8f).Spin(900f).Fade(FxFade.None));
             return fx;
         }
 
@@ -230,6 +252,20 @@ namespace DotRPG
         }
     }
 
+    /// <summary>Fades an afterimage out.</summary>
+    public sealed class GhostFade : MonoBehaviour
+    {
+        SpriteRenderer sr; Color tint; float life, age;
+        public void Begin(SpriteRenderer r, Color c, float seconds) { sr = r; tint = c; life = seconds; sr.color = c; }
+        void Update()
+        {
+            age += Time.deltaTime;
+            if (age >= life) { Destroy(gameObject); return; }
+            float a = 1f - age / life;
+            sr.color = new Color(tint.r, tint.g, tint.b, tint.a * a * a);
+        }
+    }
+
     /// <summary>Career skill icons (Resources/Art/Careers/Icons) and the after-cast recovery of each skill.</summary>
     public static class CareerMoves
     {
@@ -241,10 +277,11 @@ namespace DotRPG
         {
             switch (s.effect)
             {
-                case "cross": case "light": case "heal": case "guard": case "blink": return 0.1f;
+                case "cross": case "light": case "heal": case "guard": case "blink": case "frenzy": case "nebula": case "sanctuary": return 0.1f;
                 case "break": case "fire": case "ice": case "storm": case "orbit": case "taunt": return 0.15f;
                 case "flurry": return 0.7f;
-                case "iaido": case "bash": case "shieldthrow": return 0.22f;
+                case "iaido": case "bash": return 0.22f;
+                case "shieldthrow": return 0.14f;
                 case "rush": return 0.25f;
                 case "execute": return 0.32f;
                 case "swordrain": case "aegis": case "cataclysm": case "dawn": return 0.5f;

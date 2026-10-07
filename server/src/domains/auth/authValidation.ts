@@ -8,8 +8,17 @@ const loginId = z
 
 const password = z.string().min(8, '비밀번호는 8~64자입니다').max(64, '비밀번호는 8~64자입니다');
 
-export const credentialsBody = z.strictObject({ login_id: loginId, password });
-export const refreshBody = z.strictObject({ refresh_token: z.string().min(1).max(256) });
+/**
+ * 9단계 E1: 기기 신호. install_id는 설치마다 한 번 만드는 UUID, device_hash는 SHA-256 hex(소문자).
+ * SystemInfo.deviceUniqueIdentifier가 "n/a"(미지원)이면 device_hash를 생략하고 install_id만 보낸다.
+ */
+export const deviceBody = z.strictObject({
+  install_id: z.uuid(),
+  device_hash: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+});
+
+export const credentialsBody = z.strictObject({ login_id: loginId, password, device: deviceBody.optional() });
+export const refreshBody = z.strictObject({ refresh_token: z.string().min(1).max(256), device: deviceBody.optional() });
 
 export type CredentialsBody = z.infer<typeof credentialsBody>;
 export type RefreshBody = z.infer<typeof refreshBody>;
@@ -21,5 +30,6 @@ export const steamBody = z.strictObject({
     .min(16)
     .max(2048)
     .regex(/^(?:[0-9a-fA-F]+|mock:\d{17}:[A-Za-z0-9]{8,32})$/),
+  device: deviceBody.optional(),
 });
 export type SteamBody = z.infer<typeof steamBody>;

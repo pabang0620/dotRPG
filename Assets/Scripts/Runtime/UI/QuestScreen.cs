@@ -23,23 +23,29 @@ namespace DotRPG
         }
 
         RectTransform listRoot;
-        Text detail, hint, empty;
+        Text detail, hint, empty, moreUp, moreDown;
         readonly List<Row> rows = new List<Row>();
-        int selected;
+        // [UI] Every quest is in the list; only VisibleRows of them are built, from `top` (wheel, arrows, selection).
+        List<QuestDef> quests = new List<QuestDef>();
+        int selected, top;
         string selectedId = "";
+        const int VisibleRows = 9;
 
         public static QuestScreen Create(Transform canvas)
         {
             var w = CreateWindow<QuestScreen>(canvas, "QuestLog", "퀘스트", "menuicon_quest");
             var list = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListWidth, 590f), new Color32(18, 26, 40, 240));
             w.listRoot = list.rectTransform;
-            w.empty = Label(list.transform, "Empty", "진행 중인 퀘스트가 없다.", 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
+            w.moreUp = Label(list.transform, "MoreUp", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -2f), new Vector2(160f, 20f), TextAnchor.UpperRight);
+            w.moreDown = Label(list.transform, "MoreDown", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -8f - VisibleRows * RowHeight), new Vector2(160f, 20f), TextAnchor.UpperRight);
+            w.empty = Label(list.transform, "Empty", "진행 중인 퀘스트가 없습니다.", 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
             var side = Panel(w.content, "Detail", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(ListWidth + 20f, 0f), new Vector2(760f, 590f), new Color32(24, 36, 54, 235));
             w.detail = Label(side.transform, "Body", "", 21, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -22f), new Vector2(704f, 500f));
             w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 16f), new Vector2(704f, 30f));
             w.hint.color = new Color32(184, 196, 216, 255);
             // Check this quest for auto-progress (nothing checked: the main quest first, then the pinned side quest).
-            w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행에 체크", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(240f, 44f), w.ToggleAutoTarget, 18);
+            w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행에 체크", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(280f, 44f), w.ToggleAutoTarget, 18);
+            w.pinBtn = Button(side.transform, "Pin", "알리미에 추적", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-310f, 52f), new Vector2(250f, 44f), w.TogglePin, 18);
             Button(list.transform,"CareerQuest","전직 · 각성 이야기 보기", "ui_btngray",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(390,48),()=>Game.UI.Skills.ShowAwakening(),20);
             if (Game.Quest != null) Game.Quest.Changed += w.OnQuestChanged;
             return w;
@@ -74,23 +80,31 @@ namespace DotRPG
 
         protected override void Refresh()
         {
-            foreach (var r in rows) Destroy(r.bg.gameObject);
-            rows.Clear();
-            var quests = Ordered();
+            quests = Ordered();
             empty.gameObject.SetActive(quests.Count == 0);
-            int maxRows = Mathf.FloorToInt((520f - 16f) / RowHeight);
-            for (int i = 0; i < quests.Count && i < maxRows; i++) rows.Add(BuildRow(quests[i], i));
             selected = 0;
-            for (int i = 0; i < rows.Count; i++) if (rows[i].quest.id == selectedId) selected = i;
+            for (int i = 0; i < quests.Count; i++) if (quests[i].id == selectedId) selected = i;
             Select(selected);
         }
 
-        Row BuildRow(QuestDef q, int index)
+        /// <summary>Rebuilds the visible rows from `top`.</summary>
+        void BuildRows()
+        {
+            foreach (var r in rows) Destroy(r.bg.gameObject);
+            rows.Clear();
+            top = Mathf.Clamp(top, 0, Mathf.Max(0, quests.Count - VisibleRows));
+            for (int i = top; i < quests.Count && i < top + VisibleRows; i++) rows.Add(BuildRow(quests[i], i, i - top));
+            moreUp.text = top > 0 ? $"<color=#b8c4d8>▲ 위로 {top}개</color>" : "";
+            int below = quests.Count - (top + rows.Count);
+            moreDown.text = below > 0 ? $"<color=#b8c4d8>▼ 아래로 {below}개</color>" : "";
+        }
+
+        Row BuildRow(QuestDef q, int index, int line)
         {
             var row = new Row { quest = q };
             row.bg = Img(listRoot, "Row_" + q.id, "ui_white", Color.clear);
             row.bg.raycastTarget = true;
-            UIFactory.Place(row.bg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(8f, -8f - index * RowHeight), new Vector2(ListWidth - 16f, RowHeight - 4f));
+            UIFactory.Place(row.bg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(8f, -14f - line * RowHeight), new Vector2(ListWidth - 16f, RowHeight - 4f));
             var st = Game.Quest.StatusOf(q.id);
             string tag = q.Kind == QuestKind.Main ? "<color=#ffd640>메인</color>" : "<color=#78d6ff>서브</color>";
             string state = st == QuestStatus.Completed ? "<color=#8fe28f>완료</color>"
@@ -110,8 +124,18 @@ namespace DotRPG
                 var outline = row.box.gameObject.AddComponent<Outline>();
                 outline.effectColor = new Color32(184, 196, 216, 255);
                 outline.effectDistance = new Vector2(1.5f, -1.5f);
-                row.check = UIFactory.Text(row.box.rectTransform, "Check", on ? "V" : "", 18, Color.white, TextAnchor.MiddleCenter, true);
+                // Checked: the order it will be done in (1, 2, ...), over the check image when there is one.
+                var tick = on ? Game.Art.Optional("ui_check") : null;
+                if (tick != null)
+                {
+                    var img = UIFactory.Image(row.box.rectTransform, "Tick", tick, Color.white);
+                    img.raycastTarget = false;
+                    UIFactory.Stretch(img.rectTransform, 2f, 2f, 2f, 2f);
+                }
+                int order = QuestAutoPilot.Targets.IndexOf(q.id) + 1;
+                row.check = UIFactory.Text(row.box.rectTransform, "Check", on ? (tick != null ? $"<size=16>{order}</size>" : order.ToString()) : "", 18, Color.white, TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(row.check.rectTransform, 0f, 0f, 0f, 0f);
+                if (tick != null) { row.check.alignment = TextAnchor.LowerRight; UIFactory.Stretch(row.check.rectTransform, 0f, -2f, -4f, 0f); }
                 var boxButton = row.box.gameObject.AddComponent<Button>();
                 boxButton.targetGraphic = row.box;
                 string qid = q.id;
@@ -122,29 +146,33 @@ namespace DotRPG
             int captured = index;
             button.onClick.AddListener(() =>
             {
-                if (captured == selected) TogglePin();
-                else
-                {
-                    Game.Audio.PlaySfx("select", 0.5f);
-                    Select(captured);
-                }
+                // A click only selects (pinning is the Enter key or the button, so a second click does nothing hidden).
+                if (captured == selected) return;
+                Game.Audio.PlaySfx("select", 0.5f);
+                Select(captured);
             });
             return row;
         }
 
         void Select(int index)
         {
-            if (rows.Count == 0)
+            if (quests.Count == 0)
             {
+                BuildRows();
                 detail.text = "";
                 hint.text = "";
+                autoBtn.gameObject.SetActive(false);
+                pinBtn.gameObject.SetActive(false);
                 return;
             }
-            selected = Mathf.Clamp(index, 0, rows.Count - 1);
-            selectedId = rows[selected].quest.id;
+            selected = Mathf.Clamp(index, 0, quests.Count - 1);
+            selectedId = quests[selected].id;
+            if (selected < top) top = selected;
+            else if (selected >= top + VisibleRows) top = selected - VisibleRows + 1;
+            BuildRows();
             for (int i = 0; i < rows.Count; i++)
-                rows[i].bg.color = i == selected ? new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.28f) : new Color(1f, 1f, 1f, 0.04f);
-            ShowDetail(rows[selected].quest);
+                rows[i].bg.color = i + top == selected ? new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.28f) : new Color(1f, 1f, 1f, 0.04f);
+            ShowDetail(quests[selected]);
         }
 
         void ShowDetail(QuestDef q)
@@ -171,11 +199,13 @@ namespace DotRPG
             detail.text = sb.ToString();
             bool canAuto = st != QuestStatus.Completed && st != QuestStatus.Locked;
             autoBtn.gameObject.SetActive(canAuto);
-            if (canAuto) TextOf(autoBtn).text = QuestAutoPilot.IsTarget(q.id) ? "자동 진행 체크 해제" : "자동 진행에 체크";
-            string autoHint = QuestAutoPilot.Targets.Count > 0 ? $"자동 진행: 체크한 {QuestAutoPilot.Targets.Count}개를 체크한 순서대로" : "왼쪽 칸을 체크하면 그 퀘스트만 자동 진행";
-            hint.text = q.Kind == QuestKind.Sub && st != QuestStatus.Completed
-                ? $"[{Game.Input.GetBindingLabel(GameAction.Submit)}] 알리미 추적 / 해제   ·   {autoHint}"
-                : $"↑↓ 선택   ·   {autoHint}";
+            string autoKey = Game.Input.GetBindingLabel(GameAction.Interact);
+            if (canAuto) TextOf(autoBtn).text = (QuestAutoPilot.IsTarget(q.id) ? "자동 진행 체크 해제" : "자동 진행에 체크") + $" [{autoKey}]";
+            bool canPin = q.Kind == QuestKind.Sub && st != QuestStatus.Completed;
+            pinBtn.gameObject.SetActive(canPin);
+            if (canPin) TextOf(pinBtn).text = (Game.Session.Journal.Tracked == q.id ? "알리미 추적 해제" : "알리미에 추적") + $" [{Game.Input.GetBindingLabel(GameAction.Submit)}]";
+            string autoHint = QuestAutoPilot.Targets.Count > 0 ? $"자동 진행: 체크한 {QuestAutoPilot.Targets.Count}개를 번호 순서대로" : "왼쪽 칸을 체크하면 그 퀘스트만 자동 진행";
+            hint.text = $"↑↓ 선택   ·   {autoHint}";
         }
 
         static string RewardText(QuestRewardDef r)
@@ -191,14 +221,14 @@ namespace DotRPG
             return string.Join("   ·   ", parts);
         }
 
-        Button autoBtn;
+        Button autoBtn, pinBtn;
 
         static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
 
         void ToggleAutoTarget()
         {
-            if (rows.Count == 0) return;
-            ToggleAuto(rows[selected].quest.id);
+            if (quests.Count == 0) return;
+            ToggleAuto(quests[selected].id);
         }
 
         void ToggleAuto(string questId)
@@ -215,8 +245,8 @@ namespace DotRPG
 
         void TogglePin()
         {
-            if (rows.Count == 0) return;
-            var q = rows[selected].quest;
+            if (quests.Count == 0) return;
+            var q = quests[selected];
             if (q.Kind != QuestKind.Sub || Game.Quest.StatusOf(q.id) == QuestStatus.Completed) return;
             var j = Game.Session.Journal;
             j.Tracked = j.Tracked == q.id ? "" : q.id;
@@ -230,12 +260,30 @@ namespace DotRPG
             if (!TakesInput || !gameObject.activeInHierarchy) return;
             var input = Game.Input;
             int dy = input.NavigateStep.y;
-            if (dy != 0 && rows.Count > 0)
+            if (dy != 0 && quests.Count > 0)
             {
                 Game.Audio.PlaySfx("select", 0.5f);
-                Select((selected - dy + rows.Count) % rows.Count);
+                Select((selected - dy + quests.Count) % quests.Count);
+            }
+            // Mouse wheel over the list scrolls it without changing the selection.
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+            if (mouse != null && quests.Count > VisibleRows && RectTransformUtility.RectangleContainsScreenPoint(listRoot, mouse.position.ReadValue()))
+            {
+                float wheel = mouse.scroll.ReadValue().y;
+                if (Mathf.Abs(wheel) > 0.01f)
+                {
+                    int before = top;
+                    top = Mathf.Clamp(top - (int)Mathf.Sign(wheel), 0, quests.Count - VisibleRows);
+                    if (top != before)
+                    {
+                        BuildRows();
+                        for (int i = 0; i < rows.Count; i++)
+                            rows[i].bg.color = i + top == selected ? new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.28f) : new Color(1f, 1f, 1f, 0.04f);
+                    }
+                }
             }
             if (input.SubmitPressed) TogglePin();
+            if (input.InteractPressed) ToggleAutoTarget();
         }
     }
 }

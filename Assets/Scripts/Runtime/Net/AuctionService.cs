@@ -55,6 +55,20 @@ namespace DotRPG
         public int count;
         public long gold;
         public bool claimed;
+        // [MAIL 10] Operator mail: title, body and several attachments (old mail: title/body null, attachments made from item/gold).
+        public string title, body, kind, systemCode;
+        public int daysLeft;
+        public bool campaign;
+        public readonly List<MailAttachment> attachments = new List<MailAttachment>();
+    }
+
+    /// <summary>[MAIL 10] One attachment: gold (count = amount), item, or event sweep tickets.</summary>
+    public sealed class MailAttachment
+    {
+        public string kind, itemKey;
+        public long count;
+        /// <summary>Event sweep tickets: usable this many days after they are claimed (0 = no limit).</summary>
+        public int validDays;
     }
 
     public sealed class AuctionPrice

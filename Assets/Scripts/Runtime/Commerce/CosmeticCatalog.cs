@@ -85,6 +85,7 @@ namespace DotRPG
             // Costume skins (SkinCatalog): epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
             new CosmeticProduct("skin_maple", "단풍 무사", Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_obsidian", "흑요 기사", Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_noir", "칠흑의 검희", Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_forest", "숲의 정령", Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_ice", "얼음 여왕", Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_lion", "황금 사자 기사", Color.white, false, CosmeticRarity.Unique),

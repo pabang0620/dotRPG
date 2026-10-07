@@ -16,7 +16,28 @@ namespace DotRPG
         {
             shownFrame = Time.frameCount;
             gameObject.SetActive(true);
+            if (fitToScreen) FitToScreen();
             menu?.ResetSelection();
+        }
+
+        // [UI] BuildPanel panels shrink to fit the canvas (the settings list is taller than 720, and the
+        // bigger UI sizes shrink the canvas to 1280/k x 720/k).
+        bool fitToScreen;
+
+        protected void FitToScreen()
+        {
+            if (panel == null) return;
+            Vector2 canvas = UIFactory.ReferenceResolution;
+            var scaler = GetComponentInParent<CanvasScaler>();
+            if (scaler != null && Screen.width > 0 && Screen.height > 0)
+            {
+                var r = scaler.referenceResolution;
+                float sf = Mathf.Min(Screen.width / r.x, Screen.height / r.y); // ScreenMatchMode.Expand
+                canvas = new Vector2(Screen.width / sf, Screen.height / sf);
+            }
+            var size = panel.sizeDelta;
+            float k = Mathf.Min(1f, Mathf.Min((canvas.x - 24f) / Mathf.Max(1f, size.x), (canvas.y - 24f) / Mathf.Max(1f, size.y)));
+            panel.localScale = new Vector3(k, k, 1f);
         }
 
         public virtual void Hide() => gameObject.SetActive(false);
@@ -40,6 +61,7 @@ namespace DotRPG
         protected void BuildPanel(RectTransform root, string title, float width, string body = null, int bodySize = 20)
         {
             panel = UIFactory.Place(UIFactory.Rect(root, "Panel"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(width, 200));
+            fitToScreen = true;
             // [UI] Dark panel like every other window (the cream panel mixed two themes); see UiTheme.
             var fill = UIFactory.Image(panel, "Fill", Game.Art.Get("ui_white"), UiTheme.PanelDeep); // opaque: nothing shows through
             fill.preserveAspect = false;
@@ -117,7 +139,11 @@ namespace DotRPG
 
             // [I] Both go through the save-slot picker (3 slots).
             // Online RPG: the only way in is the online login (offline new game / continue are not offered).
-            screen.menu.AddButton("게임 시작", () => ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin));
+            screen.menu.AddButton("게임 시작", () =>
+            {
+                if (GameFlow.DemoSlots) { ui.Slots.Open(true); return; } // [DEMO] trial characters are local slots
+                ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin);
+            });
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
@@ -151,6 +177,8 @@ namespace DotRPG
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
             screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
+            if (GameFlow.DemoSlots) // [DEMO] the flag is set from the command line before the UI is built
+                screen.menu.AddButton("캐릭터 변경", () => ui.Confirm("다른 체험 캐릭터로 바꿀까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.SwitchCharacter()));
             screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.ReturnToTitle()));
             screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame(), keepOpenOnYes: true));
             screen.menu.OnCancel = () => Game.Flow.Resume();
@@ -170,6 +198,7 @@ namespace DotRPG
     {
         List<Vector2Int> resolutions;
         UIRoot ui;
+        int keepRow = -1; // row to return to after the keep-display question
 
         public static SettingsScreen Create(Transform canvas, UIRoot ui)
         {
@@ -189,20 +218,17 @@ namespace DotRPG
                 screen.resolutions ??= SettingsManager.GetResolutionOptions();
                 int current = screen.resolutions.IndexOf(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight));
                 int next = ((Mathf.Max(0, current) + d) % screen.resolutions.Count + screen.resolutions.Count) % screen.resolutions.Count;
-                s.Data.resolutionWidth = screen.resolutions[next].x;
-                s.Data.resolutionHeight = screen.resolutions[next].y;
-                s.Apply();
+                screen.ChangeDisplay(() => { s.Data.resolutionWidth = screen.resolutions[next].x; s.Data.resolutionHeight = screen.resolutions[next].y; });
             });
             menu.AddOption("화면 모드", () => SettingsManager.WindowModeLabel(s.Data.windowMode), d =>
             {
                 int count = Enum.GetValues(typeof(WindowMode)).Length;
-                s.Data.windowMode = (WindowMode)((((int)s.Data.windowMode + d) % count + count) % count);
-                s.Apply();
+                screen.ChangeDisplay(() => s.Data.windowMode = (WindowMode)((((int)s.Data.windowMode + d) % count + count) % count));
             });
             menu.AddOption("수직 동기화", () => s.Data.vSync ? "켜기" : "끄기", d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
             menu.AddOption("화면 흔들림", () => s.Data.screenShake ? "켜기" : "끄기", d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
             // [I] Accessibility and keys.
-            menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); });
+            menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
             menu.AddOption("색약 보정", () => s.Data.colorBlind ? "켜기" : "끄기", d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
             // Loot filter: what is left on the ground (gold and higher gear are always picked up).
             menu.AddButton("줍기 설정", () => ui.Push(ui.LootFilter)); // its own screen: the list stays within the screen height
@@ -214,6 +240,33 @@ namespace DotRPG
         }
 
         static string Percent(float v) => $"{Mathf.RoundToInt(v * 100f)}%";
+
+        // [UX] Resolution / window mode: apply, then keep only when confirmed within 10 s (else back to the old values).
+        const float KeepDisplaySeconds = 10f;
+
+        void ChangeDisplay(Action change)
+        {
+            var d = Game.Settings.Data;
+            int oldW = d.resolutionWidth, oldH = d.resolutionHeight;
+            var oldMode = d.windowMode;
+            change();
+            if (d.resolutionWidth == oldW && d.resolutionHeight == oldH && d.windowMode == oldMode) return;
+            Game.Settings.Apply();
+            // Not an overlay: this screen's menu list would still read the keys under the dialog.
+            keepRow = menu.Selected;
+            ui.Confirm("이 설정을 유지할까요? ({초}초 후 되돌림)", () => Game.Settings.Save(), defaultYes: false, onNo: () =>
+            {
+                d.resolutionWidth = oldW; d.resolutionHeight = oldH; d.windowMode = oldMode;
+                Game.Settings.Apply();
+                menu.Refresh();
+            }, timeoutSeconds: KeepDisplaySeconds);
+        }
+
+        public override void Show()
+        {
+            base.Show();
+            if (keepRow >= 0) { menu.SetSelectedSilently(keepRow); keepRow = -1; }
+        }
 
         static float Step(float value, int direction) => Mathf.Clamp01(Mathf.Round((value + direction * 0.1f) * 10f) / 10f);
 
@@ -265,17 +318,37 @@ namespace DotRPG
 
     public class GameOverScreen : MenuScreen
     {
+        MenuList.Item reviveHere;
+
         public static GameOverScreen Create(Transform canvas, UIRoot ui)
         {
             var root = CreateRoot(canvas, "GameOver", true);
             var screen = root.gameObject.AddComponent<GameOverScreen>();
-            screen.BuildPanel(root, "쓰러졌다...", 460, "마을 사람들이 당신을 집까지 데려다 주었다.\n가진 물건과 의뢰 진행은 그대로다.", 18);
+            screen.BuildPanel(root, "쓰러졌습니다...", 520, "그 자리에서 일어나거나, 마을에서 다시 시작할 수 있습니다.\n가진 물건과 의뢰 진행은 그대로입니다.", 18);
+            // [REVIVE] Where you fell: free up to Lv.10, then one revive coin (one a day).
+            screen.reviveHere = screen.menu.AddButton(ReviveCoins.FieldLabel, () => Game.Flow.ReviveHere(), () => !ReviveCoins.Busy); // [REVIVE] fields: always free
+            ReviveCoins.Changed += screen.RefreshRevive;
             screen.menu.AddButton("마을에서 다시 일어나기", () => Game.Flow.RespawnInVillage());
-            screen.menu.AddButton("마지막 저장 불러오기", () => Game.Flow.ContinueGame(), () => Game.Saves.HasSave());
-            screen.menu.AddButton("타이틀로", () => Game.Flow.ReturnToTitle());
+            // [UX] Both drop the progress since the last save: ask first.
+            screen.menu.AddButton("마지막 저장 불러오기", () => ui.Confirm("마지막 저장을 불러올까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>", () => Game.Flow.ContinueGame()), () => Game.Saves.HasSave());
+            screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>", () => Game.Flow.ReturnToTitle()));
             screen.FitPanel();
             return screen;
         }
+
+        public override void Show()
+        {
+            base.Show();
+            RefreshRevive();
+            ReviveCoins.Refresh();
+        }
+
+        void RefreshRevive()
+        {
+            if (reviveHere != null && reviveHere.labelText != null) reviveHere.labelText.text = ReviveCoins.FieldLabel;
+        }
+
+        void OnDestroy() => ReviveCoins.Changed -= RefreshRevive;
     }
 
     public class EndingScreen : MenuScreen
@@ -300,7 +373,7 @@ namespace DotRPG
             var p = Game.Session.Quest;
             int seconds = Mathf.FloorToInt(Game.Session.PlayTimeSeconds);
             statsText.text =
-                $"새 공방이 세워지고 마을에 활기가 돌아왔다.\n" +
+                $"새 공방이 세워지고 마을에 활기가 돌아왔습니다.\n" +
                 $"플레이 시간 {seconds / 60:00}:{seconds % 60:00}   ·   해골 퇴치 {p.skeletonsDefeated}\n" +
                 $"보상: 최대 HP +{Game.Quest.Config.rewardMaxHealth}\n" +
                 "세로 슬라이스를 플레이해 주셔서 감사합니다!";
@@ -313,6 +386,11 @@ namespace DotRPG
         Action onYes;
         UIRoot ui;
         bool keepOpen, closing;
+        // Options for the next question only (set through UIRootConfirmExtensions, cleared by Setup).
+        bool nextDefaultYes, defaultYes;
+        Action nextOnNo, onNo;
+        float nextTimeout, deadline;
+        string question;
 
         public static ConfirmScreen Create(Transform canvas, UIRoot ui)
         {
@@ -333,11 +411,12 @@ namespace DotRPG
                     action?.Invoke();
                     return;
                 }
+                screen.onNo = null;
                 screen.ui.Pop();
                 action?.Invoke();
             });
-            screen.menu.AddButton("아니오", () => { if (!screen.closing) screen.ui.Pop(); });
-            screen.menu.OnCancel = () => { if (!screen.closing) screen.ui.Pop(); };
+            screen.menu.AddButton("아니오", screen.AnswerNo);
+            screen.menu.OnCancel = screen.AnswerNo;
             screen.FitPanel();
             return screen;
         }
@@ -348,10 +427,14 @@ namespace DotRPG
 
         public void Setup(string text, Action yes, float width = DefaultWidth, bool keepOpenOnYes = false)
         {
-            message.text = text;
+            message.text = question = text;
             onYes = yes;
             keepOpen = keepOpenOnYes;
             closing = false;
+            defaultYes = nextDefaultYes; onNo = nextOnNo;
+            deadline = nextTimeout > 0f ? Time.unscaledTime + nextTimeout : 0f;
+            nextDefaultYes = false; nextOnNo = null; nextTimeout = 0f;
+            if (deadline > 0f) message.text = question.Replace("{초}", Mathf.CeilToInt(deadline - Time.unscaledTime).ToString());
             // Same layout as BuildPanel: title, body under it, then the menu.
             int lines = Mathf.Max(2, (text ?? "").Split('\n').Length);
             float h = lines * BodySize * 1.45f + 8f;
@@ -374,11 +457,56 @@ namespace DotRPG
         /// <summary>Answers through the same menu path as a click on "예" / "아니오".</summary>
         public void DevAnswer(bool yes) => menu.Activate(yes ? 0 : 1, 1);
 
+        /// <summary>
+        /// Options for the next <see cref="Setup"/> only: cursor on "예", an action for "아니오" / Esc,
+        /// and a time limit after which the dialog closes as "아니오".
+        /// </summary>
+        public void PrepareNext(bool defaultYes, Action onNo = null, float timeoutSeconds = 0f)
+        {
+            nextDefaultYes = defaultYes;
+            nextOnNo = onNo;
+            nextTimeout = timeoutSeconds;
+        }
+
+        void AnswerNo()
+        {
+            if (closing) return;
+            var action = onNo;
+            onNo = null;
+            deadline = 0f;
+            ui.Pop();
+            action?.Invoke();
+        }
+
+        void Update()
+        {
+            if (deadline <= 0f || closing) return;
+            float left = deadline - Time.unscaledTime;
+            if (left <= 0f) { AnswerNo(); return; }
+            message.text = question.Replace("{초}", Mathf.CeilToInt(left).ToString());
+        }
+
         public override void Show()
         {
             base.Show();
-            // Default to "아니오" for destructive questions.
-            menu.Select(1);
+            // Default to "아니오" for destructive questions (unless the caller asked for "예").
+            if (!defaultYes) menu.Select(1);
+        }
+    }
+
+    /// <summary>[UX] <c>Game.UI.Confirm</c> with a default answer, an action for "아니오" and an optional time limit.</summary>
+    public static class UIRootConfirmExtensions
+    {
+        /// <summary>
+        /// Call with the named argument <c>defaultYes:</c> (positional bools still go to <see cref="UIRoot.Confirm"/>).
+        /// Same as <see cref="UIRoot.Confirm"/>, plus: <paramref name="defaultYes"/> puts the cursor on "예";
+        /// <paramref name="onNo"/> runs on "아니오" / Esc / time out; <paramref name="timeoutSeconds"/> &gt; 0 answers
+        /// "아니오" by itself after that many seconds ("{초}" in the message shows the seconds left).
+        /// </summary>
+        public static void Confirm(this UIRoot ui, string message, Action onYes, bool defaultYes, Action onNo = null, float timeoutSeconds = 0f, bool overlay = false)
+        {
+            ui.ConfirmDialog.PrepareNext(defaultYes, onNo, timeoutSeconds);
+            ui.Confirm(message, onYes, overlay);
         }
     }
 }

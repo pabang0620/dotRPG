@@ -1,14 +1,17 @@
 // 시험 서버 전용: 캐릭터 가방에 아이템을 넣는다(아이템 원장에 test_boost로 남긴다).
 // 사용: npx tsx scripts/test-give.ts <캐릭터 이름> <item_key> <개수> [<item_key> <개수> ...]
-// 운영 서버(DEPLOY_STAGE=live)에서는 실행을 거절한다. 접속 중이면 다시 접속해야 가방에 보인다.
+// DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다. 접속 중이면 다시 접속해야 가방에 보인다.
 import { randomUUID } from 'node:crypto';
 import { initConfig } from '../src/config/env';
 import { closePool, getPool } from '../src/db/pool';
 import { initGameData } from '../src/gamedata/loader';
 import { runEconomy } from '../src/domains/economy/economyService';
 
+import { assertTestStage } from './_stageGuard.mjs';
+
 (async () => {
-  if ((process.env.DEPLOY_STAGE ?? 'dev') === 'live') throw new Error('운영 서버(DEPLOY_STAGE=live)에서는 쓸 수 없습니다.');
+  // 시험 서버 전용 가드: DEPLOY_STAGE=test 가 명시된 환경에서만 실행한다(맨 앞에서 확인)
+  assertTestStage();
   const [name, ...pairs] = process.argv.slice(2);
   if (!name || pairs.length === 0 || pairs.length % 2 !== 0) throw new Error('사용: npx tsx scripts/test-give.ts <캐릭터 이름> <item_key> <개수> ...');
   const cfg = initConfig();

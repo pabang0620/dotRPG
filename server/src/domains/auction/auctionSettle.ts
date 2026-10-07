@@ -3,6 +3,10 @@
 import type { PoolClient } from 'pg';
 import { getGameData } from '../../gamedata/loader';
 import { resetBoundaries } from '../../utils/resetBoundaries';
+import { afterCommit } from '../../db/pool';
+import { checkAuction } from '../antiabuse/holds';
+import { noteAuction } from '../antiabuse/incomeMeter';
+import { evaluateTrade } from '../antiabuse/tradeFlags';
 import { insertItemLedger } from '../economy/economyRepository';
 import { announceMail, type MailKind } from '../mail/mailNotify';
 import { insertMail } from '../mail/mailRepository';
@@ -97,7 +101,7 @@ export async function closeAsSold(
   await insertItemLedger(client, l.sellerCharacterId, l.itemKey, -l.count, 0, 'auction', 'auction_sold', l.uuid, env.requestId);
   await insertItemLedger(client, buyer.characterId, l.itemKey, l.count, l.count, 'mail', 'auction_buy', l.uuid, env.requestId);
 
-  await repo.insertTrade(client, {
+  const tradeId = await repo.insertTrade(client, {
     listingId: l.id,
     itemKey: l.itemKey,
     itemBase: l.itemBase,
@@ -116,6 +120,16 @@ export async function closeAsSold(
   });
   await repo.upsertPriceDaily(client, l.itemKey, resetBoundaries(now).dailyStartAt, l.count, price, now);
   await repo.insertSink(client, 'fee', fee, l.id, null, l.sellerCharacterId, now);
+
+  // 9단계 7.4: 의심 거래 표시(거절하지 않고 기록만). 틱 정산에서도 같은 함수가 돈다
+  const verdict = await evaluateTrade(client, { tradeId, itemKey: l.itemKey, count: l.count, price, sellerAccountId: l.sellerAccountId, buyerAccountId: buyer.accountId, now });
+  // 12.3: 경제 속도 감시의 경매 집계. 판매자는 수입과 상대 위험 가중 수입, 구매자는 지출
+  await noteAuction(client, l.sellerCharacterId, now, { inAmount: payout, inWeighted: Math.floor((payout * verdict.weightPct) / 100) });
+  await noteAuction(client, buyer.characterId, now, { out: price });
+  // 큰 이전은 30초 더티 워커를 기다리지 않고 판매자 계정의 경매 창을 커밋 직후 평가한다(결과는 체결에 영향이 없다)
+  afterCommit(client, async () => {
+    await checkAuction(l.sellerAccountId, now);
+  });
 }
 
 /** 9.2: 입찰 없이 마감(expired) 또는 판매자 취소(cancelled). 아이템은 판매자 우편으로, 보증금은 소각 */

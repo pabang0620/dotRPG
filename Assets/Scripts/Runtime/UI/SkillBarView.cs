@@ -60,7 +60,7 @@ namespace DotRPG
                 var padlock = UIFactory.Image(v.locks[i].transform, "Padlock", Game.Art.Get("ui_lock"), Color.white);
                 padlock.preserveAspect = true;
                 UIFactory.Place(padlock.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 9f), new Vector2(24f, 24f));
-                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 15, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
+                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 16, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
                 UIFactory.Stretch(v.lockTexts[i].rectTransform, 0f, 4f, 0f, 0f);
 
                 v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 24 : 21, Color.white, TextAnchor.MiddleCenter, true);
@@ -149,7 +149,7 @@ namespace DotRPG
             b.lineBottom = UIFactory.Image(root, "LineBottom", Game.Art.Get("ui_white"), Color.white);
             b.lineBottom.preserveAspect = false;
             UIFactory.Place(b.lineBottom.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
-            b.caption = UIFactory.Text(root, "Caption", "— 각 성 —", 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
+            b.caption = UIFactory.Text(root, "Caption", "· 각 성 ·", 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
             UIFactory.Place(b.caption.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(UiTheme.HudBannerWidth - 20f, 28f));
             b.title = UIFactory.Text(root, "Title", "", 46, Color.white, TextAnchor.MiddleCenter, true);
             var outline = b.title.gameObject.AddComponent<Outline>();

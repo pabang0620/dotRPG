@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// [MONSTER] Dungeon&amp;Fighter style boss bar, top-centre under the dungeon timer band: name and level,
+    /// [MONSTER] Classic action-RPG boss bar, bottom-centre just above the skill bar: name and level,
     /// a multi-line HP bar ("×N" lines left, each line a different colour so the next one shows through),
     /// a pale lag chunk that drains after a hit, an overall strip with the phase markers, and the 무력화
     /// (groggy) gauge with "GROGGY!" while the boss is down. Super armor hits flash the frame. Binding a boss
@@ -13,12 +13,19 @@ namespace DotRPG
     public sealed class BossHpBarView : MonoBehaviour
     {
         // ---------- Layout (reference 1280x720) ----------
-        // [CONTENT] Centre column between the left party frames (x ≤ 356) and the right quest panel / room map
-        // (x ≥ 900) at the 1280x720 reference; top sits right under the dungeon timer band.
-        const float Top = -(DungeonHudView.ReservedBottom + 2f), Width = 440f, BarHeight = 22f;
-        const float BarBlockHeight = 92f, WarningWidth = 540f;
+        // [UI] Bottom centre, 400 wide (bar 376), y 166..258 from the bottom: above the skill bar (top 156) and clear of the
+        // top-left status / currency / party blocks at every UI size. At 1.3 (985 wide) it spans x 292..692, left of the
+        // 자동 사냥 button (x >= 693); at 1.0 x 440..840. GROGGY / 무력화하라 sits right above it (262..298) and a boss
+        // warning above that line (262, or 300 while the groggy line shows; at 1.3 that is 214 from the top, under the
+        // party status line at 180..210).
+        const float Bottom = 166f, Width = 376f, BarHeight = 22f;
+        const float BarBlockHeight = 92f, WarningWidth = 480f, GroggyLineHeight = 36f;
+        const float WarningBottom = Bottom + BarBlockHeight + 4f; // 262
         const float LagHold = 0.35f, LagSpeed = 0.9f;
         const float IntroTime = 2.6f, WarningTime = 2.2f;
+        // [UI] "In the fight": the player within this range of the boss, or the boss lost HP this recently (a field boss
+        // stays bound until killed, so a bound bar alone does not mean the player is fighting it).
+        const float EngageRange = 14f, EngageHold = 8f;
 
         static readonly Color[] LineColors =
         {
@@ -44,7 +51,7 @@ namespace DotRPG
         Text nameText, linesText, groggyText, groggyLabel, bannerTitle, bannerSub, warningText;
         RectTransform markers;
         Image[] markerImages = new Image[0];
-        float lagHp, lastHp, lagHoldUntil, glowUntil, introAt = -99f, warningAt = -99f, unbindAt = -1f;
+        float lagHp, lastHp, lagHoldUntil, glowUntil, introAt = -99f, warningAt = -99f, unbindAt = -1f, hitAt = -99f;
         BossBrain brain;
 
         public static BossHpBarView Create(Transform hud)
@@ -86,7 +93,7 @@ namespace DotRPG
 
         void Build(RectTransform canvasRoot)
         {
-            root = UIFactory.Place(UIFactory.Rect(canvasRoot, "Bar"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, Top), new Vector2(Width + 24f, 92f));
+            root = UIFactory.Place(UIFactory.Rect(canvasRoot, "Bar"), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, Bottom), new Vector2(Width + 24f, BarBlockHeight));
             frameGlow = Solid(root, "Glow", new Color(1f, 0.85f, 0.35f, 0f));
             UIFactory.Stretch(frameGlow.rectTransform, -4, -4, -4, -4);
             var bg = UIFactory.Panel(root, "Bg", true);
@@ -127,7 +134,7 @@ namespace DotRPG
             var go = groggyText.gameObject.AddComponent<Outline>();
             go.effectColor = new Color(0.15f, 0.05f, 0.1f, 1f);
             go.effectDistance = new Vector2(2f, -2f);
-            UIFactory.Place(groggyText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(Width, 40f));
+            UIFactory.Place(groggyText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, 4f), new Vector2(Width + 24f, GroggyLineHeight)); // above the bar
 
             // Intro banner (screen centre-top) and warnings (under the bar).
             banner = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossBanner"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(UiTheme.HudBannerWidth, 120f)); // [UI] centre column only: clear of party frames / quest tracker
@@ -146,8 +153,8 @@ namespace DotRPG
             UIFactory.Place(bannerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(UiTheme.HudBannerWidth - 20f, 70f));
             banner.gameObject.SetActive(false);
 
-            // [CONTENT] Right under the bar, inside the same centre column (clear of party frames and quest panel).
-            warning = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossWarning"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, Top - BarBlockHeight - 4f), new Vector2(WarningWidth, 40f));
+            // [CONTENT] Right above the bar, inside the same centre column (clear of party frames and quest panel).
+            warning = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossWarning"), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, WarningBottom), new Vector2(WarningWidth, 40f));
             warningText = UIFactory.Text(warning, "Text", "", 28, Color.white, TextAnchor.MiddleCenter, true);
             var wo = warningText.gameObject.AddComponent<Outline>();
             wo.effectColor = new Color(0.1f, 0.02f, 0.02f, 1f);
@@ -170,13 +177,14 @@ namespace DotRPG
             brain = boss.Behaviour as BossBrain;
             lagHp = lastHp = boss.Health.Current;
             unbindAt = -1f;
+            hitAt = -99f;
             boss.SuperArmorHit += OnSuperArmor;
             BuildMarkers();
             root.gameObject.SetActive(true);
             string level = boss.Level > 1 ? $"  <size=16><color=#d8c8a8>Lv.{boss.Level}</color></size>" : "";
             nameText.text = boss.DisplayName + level;
             bannerTitle.text = boss.DisplayName;
-            bannerSub.text = boss.Def != null && boss.Def.raid ? "— 레이드 보스 —" : "— 던전 보스 —";
+            bannerSub.text = boss.Def != null && boss.Def.raid ? "· 레이드 보스 ·" : "· 던전 보스 ·";
             introAt = Time.unscaledTime;
             banner.gameObject.SetActive(true);
             Game.Camera?.Shake(0.25f, 0.4f);
@@ -237,6 +245,14 @@ namespace DotRPG
                 if (unbindAt < 0f) unbindAt = now + 1.2f;
                 if (now >= unbindAt) { Unbind(); return; }
             }
+            // [UI] The dialogue box (y 24..194, name plate to 226) covers the bar: it steps aside while a conversation is open.
+            bool talking = Game.Dialogue != null && Game.Dialogue.IsOpen;
+            if (root.gameObject.activeSelf == talking) root.gameObject.SetActive(!talking);
+            if (talking)
+            {
+                if (warning.gameObject.activeSelf) warning.gameObject.SetActive(false);
+                return;
+            }
             Refresh();
         }
 
@@ -259,6 +275,9 @@ namespace DotRPG
             }
             if (warning.gameObject.activeSelf)
             {
+                // Above the GROGGY / 무력화하라 line while it shows, else right on the bar.
+                float wy = groggyText.text.Length > 0 && root.gameObject.activeSelf ? WarningBottom + GroggyLineHeight + 2f : WarningBottom;
+                if (!Mathf.Approximately(warning.anchoredPosition.y, wy)) warning.anchoredPosition = new Vector2(0f, wy);
                 float t = (now - warningAt) / WarningTime;
                 if (t >= 1f) warning.gameObject.SetActive(false);
                 else
@@ -290,7 +309,7 @@ namespace DotRPG
             float cur = hp.Current;
 
             // Lag chunk: holds a moment after a hit, then drains.
-            if (cur < lastHp) lagHoldUntil = Time.unscaledTime + LagHold;
+            if (cur < lastHp) { lagHoldUntil = Time.unscaledTime + LagHold; hitAt = Time.unscaledTime; }
             lastHp = cur;
             if (cur > lagHp) lagHp = cur;
             if (lagHp > cur && Time.unscaledTime >= lagHoldUntil)
@@ -329,6 +348,32 @@ namespace DotRPG
             // Super armor flash.
             float g = Mathf.Clamp01((glowUntil - Time.unscaledTime) / 0.18f);
             frameGlow.color = new Color(1f, 0.85f, 0.35f, g * 0.85f);
+        }
+
+        /// <summary>
+        /// [UI] The bar is showing and the player is actually fighting the boss (near it, or it was hit in the last
+        /// <see cref="EngageHold"/> s). HudView / TipView only give up the quest column then.
+        /// </summary>
+        public bool Engaged
+        {
+            get
+            {
+                if (!DevVisible || Current == null) return false;
+                if (Time.unscaledTime - hitAt < EngageHold) return true;
+                var player = Game.Player;
+                return player != null && Vector2.Distance(player.Position, Current.transform.position) <= EngageRange;
+            }
+        }
+
+        /// <summary>[UI] Top edge (from the bottom) of the bar block: the bar, the GROGGY / 무력화하라 line and a warning over it.</summary>
+        public float TopEdge
+        {
+            get
+            {
+                if (!DevVisible) return 0f;
+                if (warning.gameObject.activeSelf) return warning.anchoredPosition.y + warning.sizeDelta.y;
+                return groggyText.text.Length > 0 ? WarningBottom + GroggyLineHeight : Bottom + BarBlockHeight;
+            }
         }
 
         // ---------- Test hooks ----------

@@ -5,6 +5,7 @@ import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import * as charRepo from '../characters/characterRepository';
 import type { EconCtx } from '../economy/economyContext';
+import { assertActionPresence } from '../antiabuse/killPresence';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './gatheringRepository';
 import type { ChestBody, DeliveryBody, GatherBody } from './gatheringValidation';
@@ -26,6 +27,7 @@ export function gather(accountId: number, characterUuid: string, body: GatherBod
 }
 
 async function processGather(ctx: EconCtx, body: GatherBody) {
+  await assertActionPresence(ctx, 'gather', body.map_id);
   const eco = getGameData().economy;
   const grace = getConfig().policy.gatherGraceSeconds;
   const kind = eco.mapExtra.get(body.map_id)?.nodes.get(body.node_id);
@@ -117,6 +119,8 @@ export function openChest(accountId: number, characterUuid: string, body: ChestB
           detail: { chest_id: body.chest_id },
         });
       }
+      const chestMap = [...eco.mapExtra].find(([, m]) => m.chests.has(body.chest_id))?.[0] ?? null;
+      await assertActionPresence(ctx, 'chest', chestMap);
       // PK(character_id, chest_id)가 "캐릭터당 한 번"을 DB에서 보장한다
       if (!(await repo.insertChest(ctx.client, ctx.char.id, body.chest_id, ctx.now))) {
         throw new AppError(409, '이미 연 상자입니다.', 'CHEST_ALREADY_OPENED');

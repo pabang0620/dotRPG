@@ -27,12 +27,13 @@ namespace DotRPG
             var (cores, _) = PromoteRules.CostInto(next.rarity);
             int have = Game.Session.Inventory.Count(PromoteRules.CoreItem);
             promoteButton.interactable = !busy;
-            promoteLabel.text = have >= cores ? "승급" : $"승급\n<size=15>핵 {have}/{cores}</size>";
+            string head = $"승급 <size=17>({Game.Input.GetBindingLabel(GameAction.UseItem)})</size>";
+            promoteLabel.text = have >= cores ? head : $"{head}\n<size=15>핵 {have}/{cores}</size>";
         }
 
         void OnPromotePressed()
         {
-            if (busy || entries.Count == 0 || !IsTop) return;
+            if (busy || ticketPending || entries.Count == 0 || !IsTop) return;
             var e = entries[selected];
             var gear = EquipmentDatabase.Get(e.key);
             var next = PromoteRules.NextOf(gear);
@@ -52,6 +53,7 @@ namespace DotRPG
             Game.Audio.PlaySfx("select");
             Game.UI.Confirm($"<b>장비 승급</b>\n{from}  →  {to}\n<color=#b8c4d8>강화 수치 +{level} 그대로 · 고대의 핵 {cores}개 · 골드 {gold:N0}</color>\n승급할까요?", () =>
             {
+                if (busy || ticketPending) return;
                 busy = true;
                 resultText.text = "<color=#b8c4d8>승급하는 중…</color>";
                 OnlineEconomy.Promote(e.slot.HasValue ? (int)e.slot.Value : (int?)null, e.slot.HasValue ? null : e.key, d =>

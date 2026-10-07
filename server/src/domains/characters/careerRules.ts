@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { AppError } from '../../utils/AppError';
+import { logger } from '../../utils/logger';
 
 export const careerSchema = z.strictObject({
   schema: z.literal(1), career: z.number().int().min(0).max(4),
@@ -13,10 +14,23 @@ export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge'
  ['m_elements','m_fire','m_ice','m_storm','m_flow','m_orbit','m_veil','m_rift','m_awake'],
  ['b_mercy','b_heal','b_bloom','b_cleanse','b_grace','b_light','b_wing','b_bless','b_awake']];
 const reject = (why: string): never => { throw new AppError(422, '전직 상태가 올바르지 않습니다.', 'INVALID_CAREER', {reason:why}); };
+/** 9단계: 서버가 기록한 전직(character_career). granted가 null이면 행 없음(미전직). log는 거절하지 않고 기록만 한다 */
+export interface ServerCareer { granted: {career:number;stage:number} | null; mode: 'log' | 'enforce' }
 export function validateCareer(next: CareerState | undefined | null, prev: CareerState | undefined | null,
-  character: {level:number;class:string}, oldPassives: string[], validTraining: (id:string)=>boolean): void {
+  character: {level:number;class:string}, oldPassives: string[], validTraining: (id:string)=>boolean, server?: ServerCareer): void {
   if (!next) { if(prev?.career) reject('MISSING_STATE'); return; }
   const c=next.career;
+  if (server) {
+    // 서버 진실(8.3): 서버가 부여하지 않은 전직·각성 값은 거절한다
+    const g=server.granted; let why: string | null = null;
+    if (!g) { if (c!==0) why='NOT_GRANTED'; }
+    else if (c===0) why='MISSING_STATE';
+    else if (c!==g.career) why='NOT_GRANTED';
+    else if (next.questStage>g.stage) why='STAGE_NOT_GRANTED';
+    else if (next.awakened && g.stage!==5) why='NOT_GRANTED';
+    else if (next.questStage<g.stage) why='QUEST_REGRESSION';
+    if (why) { if (server.mode==='enforce') reject(why); else logger.warn({reason:why,career:c},'career state not granted by server (log mode)'); }
+  }
   if(c && (character.level<15 || ((c<=2?'warrior':'mage')!==character.class))) reject('LEVEL_OR_BASE_CLASS');
   if(prev?.career && c!==prev.career) reject('ALREADY_PROMOTED');
   if(!c && (next.nodes.length||next.questStage||next.awakened)) reject('BASE_CLASS_LOCK');

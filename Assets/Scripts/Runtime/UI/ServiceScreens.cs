@@ -60,9 +60,9 @@ namespace DotRPG
             }
             switch (id)
             {
-                case ItemIds.Wood: return "해골 숲의 나무를 베어 얻는다. 공방 재건에 쓰인다.";
-                case ItemIds.Stone: return "해골 숲의 바위를 깨서 얻는다. 공방 재건에 쓰인다.";
-                case ItemIds.Carrot: return "마을 밭에서 뽑은 당근. 먹으면 체력을 조금 회복한다.";
+                case ItemIds.Wood: return "해골 숲의 나무를 베어 얻습니다. 공방 재건에 쓰입니다.";
+                case ItemIds.Stone: return "해골 숲의 바위를 깨서 얻습니다. 공방 재건에 쓰입니다.";
+                case ItemIds.Carrot: return "마을 밭에서 뽑은 당근. 먹으면 체력을 조금 회복합니다.";
             }
             return "";
         }
@@ -105,7 +105,8 @@ namespace DotRPG
     public class ShopScreen : WindowScreen
     {
         const int RowsPerPage = 7;
-        const float RowH = 68f, RowGap = 6f, ListW = 660f;
+        // [UI] 7 rows of 60 end at -530, above the page buttons (rows of 68 ran under them).
+        const float RowH = 60f, RowGap = 6f, ListW = 660f;
 
         sealed class Row
         {
@@ -119,7 +120,7 @@ namespace DotRPG
         readonly Text[] tabText = new Text[2];
         Text goldText, pageText, bigName, bigKind, bigDesc, bigPrice, result;
         Image bigIcon, bigFrame;
-        Button buyOne, buyMany, pagePrev, pageNext;
+        Button buyOne, buyMany, buyMax, pagePrev, pageNext;
         Text buyOneLabel, buyManyLabel;
         bool selling;
         int selected, page;
@@ -130,8 +131,8 @@ namespace DotRPG
 
         public static ShopScreen Create(Transform canvas)
         {
-            var w = CreateWindow<ShopScreen>(canvas, "Shop", "잡화점", "icon_potion_hp");
-            var left = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListW + 40f, 594f), new Color32(24, 36, 54, 235));
+            var w = CreateWindow<ShopScreen>(canvas, "Shop", "잡화점", "menuicon_shop");
+            var left = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListW + 40f, 594f), UiTheme.Panel);
             for (int i = 0; i < 2; i++)
             {
                 int index = i;
@@ -155,12 +156,13 @@ namespace DotRPG
                 UIFactory.Place(slot.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(58f, 58f));
                 r.icon = UIFactory.SharpIcon(slot.transform, "Icon", Color.white);
                 UIFactory.Place(r.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(44f, 44f));
+                GearTooltip.Hook(r.icon, () => r.id);
                 r.frame = Img(slot.transform, "Frame", "ui_frame", Color.clear);
                 UIFactory.Stretch(r.frame.rectTransform);
                 r.name = UIFactory.Text(r.bg.transform, "Name", "", 23, Color.white, TextAnchor.UpperLeft, true);
-                UIFactory.Place(r.name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -8f), new Vector2(380f, 30f));
-                r.sub = UIFactory.Text(r.bg.transform, "Sub", "", 16, new Color32(184, 196, 216, 255), TextAnchor.UpperLeft, true);
-                UIFactory.Place(r.sub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -40f), new Vector2(400f, 22f));
+                UIFactory.Place(r.name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -4f), new Vector2(380f, 30f));
+                r.sub = UIFactory.Text(r.bg.transform, "Sub", "", 16, UiTheme.TextSecondary, TextAnchor.UpperLeft, true);
+                UIFactory.Place(r.sub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -34f), new Vector2(400f, 22f));
                 r.price = UIFactory.Text(r.bg.transform, "Price", "", 24, Color.white, TextAnchor.MiddleRight, true);
                 UIFactory.Place(r.price.rectTransform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-14f, 0f), new Vector2(180f, 40f));
                 var relay = r.bg.gameObject.AddComponent<PointerRelay>();
@@ -171,16 +173,16 @@ namespace DotRPG
                 };
                 w.rows.Add(r);
             }
-            w.pagePrev = Button(left.transform, "Prev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 150f, 12f), new Vector2(50f, 40f), () => w.Page(-1), 22);
-            w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 10f, 12f), new Vector2(50f, 40f), () => w.Page(1), 22);
-            w.pageText = Label(left.transform, "Page", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 100f, 12f), new Vector2(90f, 40f), TextAnchor.MiddleCenter);
+            w.pagePrev = Button(left.transform, "Prev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 170f, 15f), UiSizes.PageButton, () => w.Page(-1), UiSizes.PageFont);
+            w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 30f, 15f), UiSizes.PageButton, () => w.Page(1), UiSizes.PageFont);
+            w.pageText = Label(left.transform, "Page", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 120f, 12f), new Vector2(90f, 40f), TextAnchor.MiddleCenter);
 
-            var right = Panel(w.content, "Detail", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(500f, 594f), new Color32(24, 36, 54, 235));
+            var right = Panel(w.content, "Detail", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(500f, 594f), UiTheme.Panel);
             var goldChip = Img(right.transform, "Gold", "ui_dark", new Color(1f, 1f, 1f, 0.95f));
             UIFactory.Place(goldChip.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(230f, 50f));
             var coin = UIFactory.Image(goldChip.transform, "Coin", Game.Art.Get("icon_gold"), Color.white);
             UIFactory.Place(coin.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(34f, 34f));
-            w.goldText = UIFactory.Text(goldChip.transform, "Amount", "", 26, new Color32(255, 216, 74, 255), TextAnchor.MiddleRight, true);
+            w.goldText = UIFactory.Text(goldChip.transform, "Amount", "", 26, UiTheme.Accent, TextAnchor.MiddleRight, true);
             UIFactory.Stretch(w.goldText.rectTransform, 50f, 0f, 14f, 0f);
             var iconBg = Img(right.transform, "IconBg", "ui_slotblue", Color.white);
             UIFactory.Place(iconBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -80f), new Vector2(112f, 112f));
@@ -190,12 +192,15 @@ namespace DotRPG
             UIFactory.Stretch(w.bigFrame.rectTransform);
             w.bigName = Label(right.transform, "Name", "", 26, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(152f, -84f), new Vector2(330f, 70f));
             w.bigKind = Label(right.transform, "Kind", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(152f, -158f), new Vector2(330f, 30f));
-            w.bigKind.color = new Color32(184, 196, 216, 255);
+            w.bigKind.color = UiTheme.TextSecondary;
             w.bigDesc = Label(right.transform, "Desc", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -212f), new Vector2(452f, 170f));
             w.bigPrice = Label(right.transform, "PriceLine", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -392f), new Vector2(452f, 34f));
             w.result = Label(right.transform, "Result", "", 20, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(460f, 30f), TextAnchor.MiddleCenter);
             w.buyOne = Button(right.transform, "One", "1개 구매", "ui_btn", new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-6f, 18f), new Vector2(214f, 62f), () => w.Trade(1), 26);
             w.buyMany = Button(right.transform, "Many", "10개 구매", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(6f, 18f), new Vector2(214f, 62f), () => w.Trade(w.selling ? int.MaxValue : 10), 26);
+            // [UX] 최대: as many as the gold buys (buy tab only; the sell tab keeps its two buttons).
+            w.buyMax = Button(right.transform, "Max", "최대", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(84f, 18f), new Vector2(140f, 62f), () => w.Trade(MaxBuyCount), 26);
+            w.LayoutTradeButtons(false);
             w.buyOneLabel = w.buyOne.GetComponentInChildren<Text>();
             w.buyManyLabel = w.buyMany.GetComponentInChildren<Text>();
             // 일괄 판매 (sell tab): kinds ticked once are remembered.
@@ -208,6 +213,7 @@ namespace DotRPG
         public override void Show()
         {
             selling = false;
+            LayoutTradeButtons(false);
             selected = 0;
             page = 0;
             result.text = "";
@@ -232,12 +238,37 @@ namespace DotRPG
         /// <summary>The current list (buy stock or sell list) in display order.</summary>
         public List<string> DevEntries() { BuildEntries(); return new List<string>(entries); }
 
+        /// <summary>Most of one item bought at once (the server's shop limit per purchase).</summary>
+        const int MaxBuyCount = 999;
+
+        /// <summary>[UX] Small "[key]" after a button label: the key that presses it (10개 / 모두 판매: 1, 최대 / 일괄 판매: 2).</summary>
+        static string KeyTag(GameAction action) => $" <size=16><color=#b8c4d8>[{Game.Input.GetBindingLabel(action)}]</color></size>";
+
+        /// <summary>Buy tab: 1 · 10 · 최대 side by side. Sell tab: 1 · 모두 (the original two wide buttons).</summary>
+        void LayoutTradeButtons(bool sell)
+        {
+            var one = (RectTransform)buyOne.transform;
+            var many = (RectTransform)buyMany.transform;
+            buyMax.gameObject.SetActive(!sell);
+            if (sell)
+            {
+                one.anchoredPosition = new Vector2(-6f, 18f); one.sizeDelta = new Vector2(214f, 62f);
+                many.pivot = new Vector2(0f, 0f); many.anchoredPosition = new Vector2(6f, 18f); many.sizeDelta = new Vector2(214f, 62f);
+            }
+            else
+            {
+                one.anchoredPosition = new Vector2(-84f, 18f); one.sizeDelta = new Vector2(140f, 62f);
+                many.pivot = new Vector2(0.5f, 0f); many.anchoredPosition = new Vector2(0f, 18f); many.sizeDelta = new Vector2(156f, 62f);
+            }
+        }
+
         void SetMode(bool sell)
         {
             if (selling == sell) return;
             selling = sell;
             bulkBtn.gameObject.SetActive(sell);
             if (!sell) bulk.gameObject.SetActive(false);
+            LayoutTradeButtons(sell);
             selected = 0;
             page = 0;
             result.text = "";
@@ -292,8 +323,8 @@ namespace DotRPG
             for (int i = 0; i < 2; i++)
             {
                 bool on = (i == 1) == selling;
-                tabBg[i].color = on ? new Color32(70, 96, 130, 255) : new Color32(36, 50, 70, 255);
-                tabText[i].color = on ? new Color32(255, 224, 102, 255) : new Color32(150, 170, 200, 255);
+                tabBg[i].color = on ? UiTheme.Line : UiTheme.Background;
+                tabText[i].color = on ? UiTheme.AccentLight : new Color32(150, 170, 200, 255);
             }
             int pages = Mathf.Max(1, (entries.Count + RowsPerPage - 1) / RowsPerPage);
             selected = Mathf.Clamp(selected, 0, Mathf.Max(0, entries.Count - 1));
@@ -306,7 +337,7 @@ namespace DotRPG
                 r.bg.gameObject.SetActive(r.id != null);
                 if (r.id == null) continue;
                 bool sel = index == selected;
-                r.bg.color = sel ? new Color32(64, 92, 128, 255) : new Color32(34, 48, 68, 255);
+                r.bg.color = sel ? UiTheme.Line : UiTheme.Background;
                 r.icon.sprite = ItemText.Icon(r.id);
                 r.frame.color = ItemText.Frame(r.id);
                 r.name.text = ItemText.Name(r.id);
@@ -333,11 +364,12 @@ namespace DotRPG
             if (cur == null)
             {
                 bigFrame.color = Color.clear;
-                bigName.text = selling ? "팔 물건이 없다." : "";
+                bigName.text = selling ? "팔 물건이 없습니다." : "";
                 bigKind.text = bigDesc.text = bigPrice.text = "";
-                buyOne.interactable = buyMany.interactable = false;
+                buyOne.interactable = buyMany.interactable = buyMax.interactable = false;
                 buyOneLabel.text = selling ? "1개 판매" : "1개 구매";
-                buyManyLabel.text = selling ? "모두 판매" : "10개 구매";
+                buyManyLabel.text = (selling ? "모두 판매" : "10개 구매") + KeyTag(GameAction.UseItem);
+                RefreshKeyTags();
                 dirty = false;
                 return;
             }
@@ -352,7 +384,7 @@ namespace DotRPG
                 int each = ItemPrices.SellPrice(cur);
                 bigPrice.text = $"판매가 {ItemText.Gold(each)}   ·   보유 {owned}개";
                 buyOneLabel.text = "1개 판매";
-                buyManyLabel.text = owned > 1 ? $"모두 판매 ({owned})" : "모두 판매";
+                buyManyLabel.text = (owned > 1 ? $"모두 판매 ({owned})" : "모두 판매") + KeyTag(GameAction.UseItem);
                 buyOne.interactable = buyMany.interactable = owned > 0;
             }
             else
@@ -360,15 +392,29 @@ namespace DotRPG
                 int each = ItemPrices.BuyPrice(cur);
                 bigPrice.text = $"가격 {ItemText.Gold(each)}   ·   보유 {owned}개";
                 buyOneLabel.text = "1개 구매";
-                buyManyLabel.text = "10개 구매";
+                buyManyLabel.text = "10개 구매" + KeyTag(GameAction.UseItem);
                 buyOne.interactable = gold >= each;
                 buyMany.interactable = gold >= each;
+                buyMax.interactable = gold >= each;
             }
+            RefreshKeyTags();
             dirty = false;
         }
 
-        /// <summary>Buys or sells up to <paramref name="count"/> of the selected item.</summary>
-        void Trade(int count)
+        /// <summary>Key labels follow the device in use (keyboard 2 / gamepad L3).</summary>
+        void RefreshKeyTags()
+        {
+            TextOf(buyMax).text = "최대" + KeyTag(GameAction.UseMana);
+            TextOf(bulkBtn).text = "일괄 판매" + KeyTag(GameAction.UseMana);
+        }
+
+        static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
+
+        /// <summary>
+        /// Buys or sells up to <paramref name="count"/> of the selected item. <paramref name="fromKey"/>: pressed with the
+        /// 1 / Y key (also the HP potion key), so a sale always asks first.
+        /// </summary>
+        void Trade(int count, bool fromKey = false)
         {
             if (selected >= entries.Count) return;
             string id = entries[selected];
@@ -379,9 +425,9 @@ namespace DotRPG
                 int n = Mathf.Min(count, bag.Count(id));
                 int each = ItemPrices.SellPrice(id);
                 if (n <= 0 || each <= 0) { Game.Audio.PlaySfx("cancel"); return; }
-                if (EquipmentDatabase.LevelOfKey(id) > 0)
+                if (NeedsSellConfirm(id) || fromKey)
                 {
-                    // Enhanced gear is never sold on one key press: ask first, drawn over the shop.
+                    // Enhanced gear, rare-or-higher gear and any sale by the 1 / Y key are never sold on one press: ask first, drawn over the shop.
                     string what = n > 1 ? $"{name} {n}개를" : $"{name} 을(를)";
                     Game.Audio.PlaySfx("select");
                     Game.UI.Confirm($"{what} {each * n:N0} G에 판매할까요?", () => Sell(id, n), true);
@@ -396,28 +442,55 @@ namespace DotRPG
                 if (n <= 0)
                 {
                     Game.Audio.PlaySfx("cancel");
-                    result.text = "<color=#ff7070>골드가 부족하다. 해골을 쓰러뜨리거나 물건을 팔아 모으자.</color>";
+                    result.text = "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>";
                     return;
                 }
-                if (OnlineEconomy.On)
+                if (count == MaxBuyCount && n > 10)
                 {
-                    // [SERVER] The server charges and delivers; its delta updates gold and the bag.
-                    int bought = n;
-                    OnlineEconomy.ShopBuy(id, bought, ok =>
-                    {
-                        Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
-                        if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀다.  -{each * bought:N0} G</color>";
-                        dirty = true;
-                    });
+                    // [UX] 최대 can spend most of the gold at once: ask first (purchases default to "아니오").
+                    int many = n;
+                    Game.Audio.PlaySfx("select");
+                    Game.UI.Confirm($"{name} {many}개를 {each * many:N0} G에 살까요?", () => Buy(id, many, many), true);
                     return;
                 }
-                bag.Remove(ConsumableDatabase.Gold, each * n);
-                bag.Add(id, n);
-                Game.Audio.PlaySfx("confirm");
-                result.text = n < count && count > 1
-                    ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀다.  -{each * n:N0} G</color>"
-                    : $"<color=#8fe28f>{name} {n}개를 샀다.  -{each * n:N0} G</color>";
+                Buy(id, n, count == MaxBuyCount ? n : count);
             }
+            dirty = true;
+        }
+
+        /// <summary>Rare-or-higher gear and enhanced gear (+1 and up) are sold only after a yes.</summary>
+        static bool NeedsSellConfirm(string id)
+        {
+            var gear = EquipmentDatabase.Get(id);
+            return gear != null && (EquipmentDatabase.LevelOfKey(id) > 0 || gear.rarity >= ItemRarity.Rare);
+        }
+
+        /// <summary>Buys <paramref name="n"/> of an id (<paramref name="count"/> = how many were asked for, for the message).</summary>
+        void Buy(string id, int n, int count)
+        {
+            var bag = Game.Session.Inventory;
+            string name = Game.Config.GetItem(id).displayName;
+            int each = ItemPrices.BuyPrice(id);
+            n = each > 0 ? Mathf.Min(n, Game.Session.Gold / each) : 0; // re-checked: gold may have changed while a confirm was open
+            if (n <= 0) { Game.Audio.PlaySfx("cancel"); dirty = true; return; }
+            if (OnlineEconomy.On)
+            {
+                // [SERVER] The server charges and delivers; its delta updates gold and the bag.
+                int bought = n;
+                OnlineEconomy.ShopBuy(id, bought, ok =>
+                {
+                    Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
+                    if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀습니다.  -{each * bought:N0} G</color>";
+                    dirty = true;
+                });
+                return;
+            }
+            bag.Remove(ConsumableDatabase.Gold, each * n);
+            bag.Add(id, n);
+            Game.Audio.PlaySfx("confirm");
+            result.text = n < count && count > 1
+                ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀습니다.  -{each * n:N0} G</color>"
+                : $"<color=#8fe28f>{name} {n}개를 샀습니다.  -{each * n:N0} G</color>";
             dirty = true;
         }
 
@@ -434,7 +507,7 @@ namespace DotRPG
                 OnlineEconomy.ShopSell(id, n, ok =>
                 {
                     Game.Audio.PlaySfx(ok ? "pickup" : "cancel");
-                    if (ok) result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
+                    if (ok) result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았습니다.  +{each * n:N0} G</color>";
                     dirty = true;
                 });
                 return;
@@ -442,12 +515,21 @@ namespace DotRPG
             if (!bag.Remove(id, n)) { Game.Audio.PlaySfx("cancel"); return; }
             bag.Add(ConsumableDatabase.Gold, each * n);
             Game.Audio.PlaySfx("pickup");
-            result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았다.  +{each * n:N0} G</color>";
+            result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았습니다.  +{each * n:N0} G</color>";
             dirty = true;
         }
 
+        protected override bool HasKeyTags => true;
+
         protected override void Update()
         {
+            // [UX] The bulk sell panel takes Esc (closes itself, not the shop) and blocks the list keys under it (as the sweep panel).
+            if (bulk != null && bulk.gameObject.activeSelf)
+            {
+                if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) { Game.Audio.PlaySfx("cancel"); bulk.gameObject.SetActive(false); }
+                if (dirty) Refresh();
+                return;
+            }
             base.Update();
             if (!gameObject.activeSelf) return;
             if (TakesInput)
@@ -456,6 +538,13 @@ namespace DotRPG
                 if (nav.y != 0 && entries.Count > 0) Select(Mathf.Clamp(selected - nav.y, 0, entries.Count - 1));
                 if (nav.x != 0) SetMode(nav.x > 0);
                 if (Game.Input.SubmitPressed) Trade(1);
+                // [UX] The mouse-only buttons get keys too: 1 / Y = 10개 구매 or 모두 판매, 2 / L3 = 최대 or 일괄 판매.
+                if (Game.Input.UseItemPressed && buyMany.interactable) Trade(selling ? int.MaxValue : 10, true);
+                else if (Game.Input.UseManaPressed)
+                {
+                    if (selling) { Game.Audio.PlaySfx("select"); bulk.Open(); }
+                    else if (buyMax.interactable) Trade(MaxBuyCount);
+                }
             }
             if (dirty) Refresh();
         }
@@ -501,9 +590,9 @@ namespace DotRPG
 
         public static StorageScreen Create(Transform canvas)
         {
-            var w = CreateWindow<StorageScreen>(canvas, "Storage", "창고", "icon_chest");
+            var w = CreateWindow<StorageScreen>(canvas, "Storage", "창고", "menuicon_storage");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
-            var left = Panel(w.content, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(24, 36, 54, 235));
+            var left = Panel(w.content, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), UiTheme.Panel);
             var right = Panel(w.content, "Store", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(30, 44, 40, 235));
             w.bagTitle = Label(left.transform, "Title", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(gridW, 34f));
             w.storeTitle = Label(right.transform, "Title", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(gridW, 34f));
@@ -515,17 +604,20 @@ namespace DotRPG
             Button(left.transform, "DepositMats", "재료 모두 맡기기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.DepositMaterials, 22);
             Button(right.transform, "WithdrawAll", "모두 꺼내기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.WithdrawAll, 22);
             // Page buttons in the bottom corners, the page number top right.
-            w.bagPrev = Button(left.transform, "BagPrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 12f), new Vector2(56f, 52f), () => w.Page(false, -1), 22);
-            w.bagNext = Button(left.transform, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(56f, 52f), () => w.Page(false, 1), 22);
-            w.storePrev = Button(right.transform, "StorePrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 12f), new Vector2(56f, 52f), () => w.Page(true, -1), 22);
-            w.storeNext = Button(right.transform, "StoreNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(56f, 52f), () => w.Page(true, 1), 22);
+            w.bagPrev = Button(left.transform, "BagPrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 21f), UiSizes.PageButton, () => w.Page(false, -1), UiSizes.PageFont);
+            w.bagNext = Button(left.transform, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 21f), UiSizes.PageButton, () => w.Page(false, 1), UiSizes.PageFont);
+            w.storePrev = Button(right.transform, "StorePrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 21f), UiSizes.PageButton, () => w.Page(true, -1), UiSizes.PageFont);
+            w.storeNext = Button(right.transform, "StoreNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 21f), UiSizes.PageButton, () => w.Page(true, 1), UiSizes.PageFont);
             w.bagPageText = Label(left.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
             w.storePageText = Label(right.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
 
-            var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), new Color32(18, 28, 44, 235));
+            var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), UiTheme.Panel);
             w.info = Label(bottom.transform, "Text", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -10f), new Vector2(1180f, 64f));
-            w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(1180f, 26f));
-            w.cursor = Img(w.content, "Cursor", "ui_frame", new Color32(255, 211, 74, 255));
+            w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(800f, 26f));
+            // [UX] Always-visible controls hint (the info line above turns into the item's details on hover).
+            var hint = Label(bottom.transform, "Hint", "클릭: 1개 이동 · 우클릭: 전부 이동", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(380f, 26f), TextAnchor.MiddleRight);
+            hint.color = UiTheme.TextSecondary;
+            w.cursor = Img(w.content, "Cursor", "ui_frame", UiTheme.Accent);
             w.cursor.raycastTarget = false;
             return w;
         }
@@ -539,11 +631,12 @@ namespace DotRPG
                 new Vector2(20f + (i % Cols) * (Cell + Gap), -56f - (i / Cols) * (Cell + Gap)), new Vector2(Cell, Cell));
             c.icon = UIFactory.SharpIcon(c.bg.transform, "Icon", Color.white);
             UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(Cell * 0.7f, Cell * 0.7f));
+            GearTooltip.Hook(c.icon, () => c.icon.enabled ? c.id : null);
             c.frame = Img(c.bg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(c.frame.rectTransform);
             c.count = UIFactory.Text(c.bg.transform, "Count", "", 20, Color.white, TextAnchor.LowerRight, true);
             UIFactory.Stretch(c.count.rectTransform, 4f, 2f, 6f, 2f);
-            c.level = UIFactory.Text(c.bg.transform, "Level", "", 18, new Color32(255, 224, 102, 255), TextAnchor.UpperRight, true);
+            c.level = UIFactory.Text(c.bg.transform, "Level", "", 18, UiTheme.AccentLight, TextAnchor.UpperRight, true);
             UIFactory.Stretch(c.level.rectTransform, 4f, 2f, 6f, 2f);
             var relay = c.bg.gameObject.AddComponent<PointerRelay>();
             int index = storage ? CellsPer + i : i;
@@ -579,7 +672,6 @@ namespace DotRPG
         // ---------- Developer automation (DevCapture) ----------
 
         public void DevDepositMaterials() { DepositMaterials(); Refresh(); }
-        public void DevWithdrawAll() { WithdrawAll(); Refresh(); }
 
         /// <summary>Moves an item as if its cell were clicked (bag → storage when <paramref name="fromBag"/>).</summary>
         public bool DevMove(string id, bool fromBag, bool all)
@@ -651,7 +743,7 @@ namespace DotRPG
                             $"<color=#dfe6f2>{ItemText.Description(target.id).Replace('\n', ' ')}</color>";
             }
             else info.text = "<color=#b8c4d8>클릭: 1개 옮기기   ·   우클릭: 전부 옮기기   ·   방향키로 고르고 " +
-                             $"{Game.Input.GetBindingLabel(GameAction.Submit)} 키로 옮기기</color>\n<color=#8c96a8>창고에 맡긴 물건은 죽거나 다른 지역에 가도 그대로 남는다.</color>";
+                             $"{Game.Input.GetBindingLabel(GameAction.Submit)} 키로 옮기기</color>\n<color=#8c96a8>창고에 맡긴 물건은 죽거나 다른 지역에 가도 그대로 남습니다.</color>";
 
             var cell = CursorCell();
             var rt = cell.bg.rectTransform;
@@ -703,7 +795,7 @@ namespace DotRPG
             if (!c.inStorage && to.Count(id) == 0 && StorageOrder(to).Count >= Capacity)
             {
                 Game.Audio.PlaySfx("cancel");
-                message.text = "<color=#ff7070>창고가 가득 찼다. 다른 물건을 먼저 꺼내자.</color>";
+                message.text = "<color=#ff7070>창고가 가득 찼습니다. 다른 물건을 먼저 꺼내세요.</color>";
                 dirty = true;
                 return;
             }
@@ -714,7 +806,7 @@ namespace DotRPG
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(new[] { (id, !c.inStorage, n) }, _ => dirty = true);
             Game.Audio.PlaySfx("select");
             string name = Game.Config.GetItem(id).displayName;
-            message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼다.</color>";
+            message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈습니다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼습니다.</color>";
             dirty = true;
         }
 
@@ -740,7 +832,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
-            message.text = moved > 0 ? $"<color=#8fe28f>재료 {moved}개를 창고에 맡겼다.</color>" : "<color=#b8c4d8>맡길 재료가 없다.</color>";
+            message.text = moved > 0 ? $"<color=#8fe28f>재료 {moved}개를 창고에 맡겼습니다.</color>" : "<color=#b8c4d8>맡길 재료가 없습니다.</color>";
             dirty = true;
         }
 
@@ -760,7 +852,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
-            message.text = moved > 0 ? $"<color=#8fe28f>창고의 물건 {moved}개를 모두 꺼냈다.</color>" : "<color=#b8c4d8>창고가 비어 있다.</color>";
+            message.text = moved > 0 ? $"<color=#8fe28f>창고의 물건 {moved}개를 모두 꺼냈습니다.</color>" : "<color=#b8c4d8>창고가 비어 있습니다.</color>";
             dirty = true;
         }
 

@@ -118,7 +118,7 @@ namespace DotRPG
             }
             else if (!Quest.MaterialsComplete)
             {
-                GameEvents.RaiseToast($"재료가 부족하다. 목재 {Quest.WoodStillNeeded}개, 돌 {Quest.StoneStillNeeded}개가 더 필요하다.");
+                GameEvents.RaiseToast($"재료가 부족합니다. 목재 {Quest.WoodStillNeeded}개, 돌 {Quest.StoneStillNeeded}개가 더 필요합니다.");
             }
 
             if (Quest.MaterialsComplete) StartCoroutine(BuildSequence());
@@ -142,7 +142,7 @@ namespace DotRPG
             Quest.MarkWorkshopBuilt();
             RefreshVisuals();
             buildingInProgress = false;
-            GameEvents.RaiseToast("공방이 완성되었다!");
+            GameEvents.RaiseToast("공방이 완성되었습니다!");
         }
     }
 }

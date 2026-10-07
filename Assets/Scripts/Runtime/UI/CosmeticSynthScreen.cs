@@ -14,11 +14,14 @@ namespace DotRPG
     /// </summary>
     public class CosmeticSynthScreen : OnlineWindow
     {
-        const int SpareRows = 10, SetRows = 6;
-        const float RuleH = 170f, SpareH = 56f, SetH = 104f;
+        const int SpareRows = 6, SetRows = 5;
+        int sparePage, setPage; // [UI] lists longer than their rows turn pages
+        protected override bool PadNavigation => !busy;
+        // [UI] Sized for the 1220 x 594 window content (the old 1500 x 860 layout ran off the right and bottom).
+        const float RuleH = 144f, RuleGap = 8f, RuleW = 600f, SpareX = 616f, SpareW = 604f, SpareH = 56f, SetH = 88f;
 
         sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; }
-        sealed class SpareView { public RectTransform row; public Text name; public Button dismantle; public string id; }
+        sealed class SpareView { public RectTransform row; public Image icon; public Text name; public Button dismantle, dismantleOne; public string id; }
         sealed class SetView { public RectTransform row; public Text title, members; public Button register; public string id; }
 
         public static CosmeticSynthScreen Instance { get; private set; }
@@ -33,56 +36,62 @@ namespace DotRPG
 
         public static CosmeticSynthScreen Create(Transform canvas)
         {
-            var w = CreateWindow<CosmeticSynthScreen>(canvas, "CosmeticSynth", "합성 · 컬렉션", "menuicon_cashshop");
+            var w = CreateWindow<CosmeticSynthScreen>(canvas, "CosmeticSynth", "합성 · 컬렉션", "menuicon_synth");
             Instance = w;
             var tl = new Vector2(0f, 1f);
             w.synthTabBtn = Button(w.content, "TabSynth", "합성", "ui_btn", tl, tl, Vector2.zero, new Vector2(200f, 52f), () => w.ShowTab(false), 20);
             w.collectionTabBtn = Button(w.content, "TabCollection", "컬렉션", "ui_btngray", tl, tl, new Vector2(212f, 0f), new Vector2(200f, 52f), () => w.ShowTab(true), 20);
 
             // ---------- 합성 ----------
-            w.synthTab = UIFactory.Place(UIFactory.Rect(w.content, "Synth"), tl, tl, new Vector2(0f, -66f), new Vector2(1500f, 860f));
+            w.synthTab = UIFactory.Place(UIFactory.Rect(w.content, "Synth"), tl, tl, new Vector2(0f, -66f), new Vector2(1220f, 528f));
             Label(w.synthTab, "Help", "같은 외형이 또 나오면 <color=#ffd34a>여분</color>으로 쌓입니다. 같은 등급 여분 4개로 한 등급 위 외형에 도전하거나, 여분을 별조각으로 분해할 수 있습니다.", 18,
-                tl, tl, Vector2.zero, new Vector2(1500f, 30f), TextAnchor.MiddleLeft);
+                tl, tl, Vector2.zero, new Vector2(1220f, 30f), TextAnchor.MiddleLeft);
             string[] froms = { "common", "rare", "epic" };
             for (int i = 0; i < froms.Length; i++)
             {
                 string from = froms[i];
-                var card = Panel(w.synthTab, "Rule" + i, tl, tl, new Vector2(0f, -40f - i * (RuleH + 12f)), new Vector2(720f, RuleH), new Color32(24, 36, 54, 235));
+                var card = Panel(w.synthTab, "Rule" + i, tl, tl, new Vector2(0f, -40f - i * (RuleH + RuleGap)), new Vector2(RuleW, RuleH), new Color32(24, 36, 54, 235));
                 var v = new RuleView();
-                v.title = Label(card.transform, "Title", "", 22, tl, tl, new Vector2(20f, -14f), new Vector2(680f, 32f));
-                v.info = Label(card.transform, "Info", "", 17, tl, tl, new Vector2(20f, -50f), new Vector2(680f, 52f));
+                v.title = Label(card.transform, "Title", "", 22, tl, tl, new Vector2(20f, -12f), new Vector2(560f, 30f));
+                v.info = Label(card.transform, "Info", "", 17, tl, tl, new Vector2(20f, -44f), new Vector2(560f, 48f));
                 var barBg = UIFactory.Image(card.transform, "PityBg", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 230));
                 barBg.preserveAspect = false; barBg.raycastTarget = false;
-                UIFactory.Place(barBg.rectTransform, tl, tl, new Vector2(20f, -108f), new Vector2(330f, 16f));
+                UIFactory.Place(barBg.rectTransform, tl, tl, new Vector2(20f, -100f), new Vector2(280f, 16f));
                 v.bar = UIFactory.Image(barBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(197, 140, 255, 255));
                 v.bar.preserveAspect = false; v.bar.raycastTarget = false;
                 UIFactory.Place(v.bar.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 12f));
-                v.pity = Label(card.transform, "Pity", "", 16, tl, tl, new Vector2(20f, -128f), new Vector2(420f, 30f));
-                v.one = Button(card.transform, "One", "1회 합성", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-196f, 16f), new Vector2(170f, 54f), () => w.DoSynth(from, false), 18);
-                v.all = Button(card.transform, "All", "모두 합성", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-16f, 16f), new Vector2(170f, 54f), () => w.DoSynth(from, true), 18);
+                v.pity = Label(card.transform, "Pity", "", 16, tl, tl, new Vector2(20f, -118f), new Vector2(280f, 24f));
+                v.one = Button(card.transform, "One", "1회 합성", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-154f, 10f), new Vector2(130f, 46f), () => w.DoSynth(from, false), 18);
+                v.all = Button(card.transform, "All", "모두 합성", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-14f, 10f), new Vector2(130f, 46f), () => w.DoSynth(from, true), 18);
                 w.rules.Add(v);
             }
-            w.resultText = Label(w.synthTab, "Result", "", 19, tl, tl, new Vector2(0f, -40f - 3 * (RuleH + 12f)), new Vector2(720f, 120f));
+            w.resultText = Label(w.synthTab, "Result", "", 19, tl, tl, new Vector2(SpareX, -40f - (40f + SpareRows * SpareH + 16f) - 8f), new Vector2(SpareW, 48f));
 
-            var sparePanel = Panel(w.synthTab, "Spares", tl, tl, new Vector2(744f, -40f), new Vector2(740f, 40f + SpareRows * SpareH + 20f), new Color32(18, 26, 40, 240));
-            w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(700f, 30f));
+            var sparePanel = Panel(w.synthTab, "Spares", tl, tl, new Vector2(SpareX, -40f), new Vector2(SpareW, 40f + SpareRows * SpareH + 16f), new Color32(18, 26, 40, 240));
+            w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(420f, 30f));
+            w.sparePager = Pager(sparePanel.transform, new Vector2(-10f, -6f), d => { w.sparePage += d; w.Refresh(); });
             for (int i = 0; i < SpareRows; i++)
             {
-                var v = new SpareView { row = Row(sparePanel.transform, i, -44f, SpareH, 740f) };
-                v.name = Cell(v.row, "Name", 16f, 440f);
+                var v = new SpareView { row = Row(sparePanel.transform, i, -44f, SpareH, SpareW) };
+                v.icon = UIFactory.SharpIcon(v.row, "Icon", Color.white);
+                v.icon.raycastTarget = false;
+                UIFactory.Place(v.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
+                v.name = Cell(v.row, "Name", 60f, 232f);
                 var view = v;
-                v.dismantle = Button(v.row, "Dismantle", "", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(250f, 44f), () => w.AskDismantle(view.id), 16);
+                v.dismantle = Button(v.row, "Dismantle", "", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(200f, 44f), () => w.AskDismantle(view.id, false), 16);
+                v.dismantleOne = Button(v.row, "DismantleOne", "1개 분해", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-218f, 0f), new Vector2(90f, 44f), () => w.AskDismantle(view.id, true), 16);
                 w.spares.Add(v);
             }
 
             // ---------- 컬렉션 ----------
-            w.collectionTab = UIFactory.Place(UIFactory.Rect(w.content, "Collection"), tl, tl, new Vector2(0f, -66f), new Vector2(1500f, 860f));
-            w.bonusText = Label(w.collectionTab, "Bonus", "", 20, tl, tl, Vector2.zero, new Vector2(1500f, 32f), TextAnchor.MiddleLeft);
+            w.collectionTab = UIFactory.Place(UIFactory.Rect(w.content, "Collection"), tl, tl, new Vector2(0f, -66f), new Vector2(1220f, 528f));
+            w.bonusText = Label(w.collectionTab, "Bonus", "", 20, tl, tl, Vector2.zero, new Vector2(1060f, 32f), TextAnchor.MiddleLeft);
+            w.setPager = Pager(w.collectionTab, new Vector2(-20f, 0f), d => { w.setPage += d; w.Refresh(); });
             for (int i = 0; i < SetRows; i++)
             {
                 var v = new SetView { row = Row(w.collectionTab, i, -44f, SetH, 1200f) };
-                v.title = Label(v.row, "Title", "", 21, tl, tl, new Vector2(18f, -10f), new Vector2(900f, 34f));
-                v.members = Label(v.row, "Members", "", 17, tl, tl, new Vector2(18f, -48f), new Vector2(900f, 50f));
+                v.title = Label(v.row, "Title", "", 21, tl, tl, new Vector2(18f, -8f), new Vector2(900f, 32f));
+                v.members = Label(v.row, "Members", "", 17, tl, tl, new Vector2(18f, -42f), new Vector2(900f, 42f));
                 var view = v;
                 v.register = Button(v.row, "Register", "", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-18f, 0f), new Vector2(220f, 56f), () => w.Register(view.id), 18);
                 w.sets.Add(v);
@@ -105,8 +114,8 @@ namespace DotRPG
             showCollections = collections;
             synthTab.gameObject.SetActive(!collections);
             collectionTab.gameObject.SetActive(collections);
-            synthTabBtn.image.sprite = Game.Art.Get(collections ? "ui_btngray" : "ui_btn");
-            collectionTabBtn.image.sprite = Game.Art.Get(collections ? "ui_btn" : "ui_btngray");
+            synthTabBtn.image.sprite = UiTheme.Tab(!collections);
+            collectionTabBtn.image.sprite = UiTheme.Tab(collections);
             Refresh();
         }
 
@@ -138,7 +147,7 @@ namespace DotRPG
                 v.bar.transform.parent.gameObject.SetActive(hasPity);
                 if (hasPity)
                 {
-                    v.bar.rectTransform.sizeDelta = new Vector2(326f * Mathf.Clamp01(r.fails / (float)r.pity), 12f);
+                    v.bar.rectTransform.sizeDelta = new Vector2(276f * Mathf.Clamp01(r.fails / (float)r.pity), 12f);
                     v.pity.text = r.fails >= r.pity ? "<color=#ffd34a><b>다음 합성은 성공 확정!</b></color>" : $"연속 실패 {r.fails}/{r.pity} · {r.pity}번 실패하면 다음은 확정";
                 }
                 else v.pity.text = "";
@@ -157,33 +166,68 @@ namespace DotRPG
             int total = 0;
             foreach (var x in list) total += x.n;
             spareHead.text = list.Count == 0 ? "<b>여분</b>   <color=#8c96a8>아직 여분이 없습니다. 이미 가진 외형이 다시 나오면 여기에 쌓입니다.</color>" : $"<b>여분</b> {total}개   <color=#b8c4d8>분해하면 별조각으로 돌려받습니다.</color>";
+            int sparePages = Mathf.Max(1, (list.Count + SpareRows - 1) / SpareRows);
+            sparePage = Mathf.Clamp(sparePage, 0, sparePages - 1);
+            SetPager(sparePager, sparePage, sparePages);
             for (int i = 0; i < spares.Count; i++)
             {
                 var v = spares[i];
-                bool on = i < list.Count;
+                int at = sparePage * SpareRows + i;
+                bool on = at < list.Count;
                 v.row.gameObject.SetActive(on);
                 if (!on) { v.id = null; continue; }
-                var (p, n) = list[i];
+                var (p, n) = list[at];
+                var card = CosmeticAura.Card(p);
+                v.icon.enabled = card != null;
+                v.icon.sprite = card;
                 string key = StarShopClient.RarityKey(p.Rarity);
                 StarShopClient.Dismantle.TryGetValue(key, out int each);
                 v.id = p.Id;
                 v.name.text = $"<color={Hex(key)}>[{Grade(key)}]</color> {p.Name}{(p.IsSkin ? " (스킨)" : "")}   여분 <b>{n}</b>";
                 TextOf(v.dismantle).text = $"모두 분해 · 별조각 {each * n:N0}";
                 v.dismantle.interactable = !busy;
+                v.dismantleOne.gameObject.SetActive(n > 1);
+                v.dismantleOne.interactable = !busy;
             }
+        }
+
+        (Button prev, Text label, Button next) sparePager, setPager;
+
+        /// <summary>◀ 1/3 ▶ at the top-right of a list (hidden while everything fits on one page).</summary>
+        static (Button, Text, Button) Pager(Transform parent, Vector2 topRight, System.Action<int> turn)
+        {
+            var tr = new Vector2(1f, 1f);
+            var next = Button(parent, "PageNext", "▶", "ui_btngray", tr, tr, topRight, new Vector2(40f, 32f), () => turn(1), 16);
+            var label = Label(parent, "PageText", "", 16, tr, tr, topRight + new Vector2(-44f, 0f), new Vector2(60f, 32f), TextAnchor.MiddleCenter);
+            var prev = Button(parent, "PagePrev", "◀", "ui_btngray", tr, tr, topRight + new Vector2(-108f, 0f), new Vector2(40f, 32f), () => turn(-1), 16);
+            return (prev, label, next);
+        }
+
+        static void SetPager((Button prev, Text label, Button next) p, int page, int pages)
+        {
+            bool show = pages > 1;
+            p.prev.gameObject.SetActive(show); p.next.gameObject.SetActive(show); p.label.gameObject.SetActive(show);
+            if (!show) return;
+            p.label.text = $"{page + 1}/{pages}";
+            p.prev.interactable = page > 0;
+            p.next.interactable = page < pages - 1;
         }
 
         void RefreshCollections()
         {
             bonusText.text = $"<b>컬렉션 효과</b>   공격력 <color=#ffb347>+{StarShopClient.CollectionAttack}%</color>   최대 체력 <color=#8fe28f>+{StarShopClient.CollectionHealth}%</color>   <color=#b8c4d8>(계정 전체 · 외형은 소모되지 않음)</color>";
             var all = StarShopClient.Collections;
+            int setPages = Mathf.Max(1, (all.Count + SetRows - 1) / SetRows);
+            setPage = Mathf.Clamp(setPage, 0, setPages - 1);
+            SetPager(setPager, setPage, setPages);
             for (int i = 0; i < sets.Count; i++)
             {
                 var v = sets[i];
-                bool on = i < all.Count;
+                int at = setPage * SetRows + i;
+                bool on = at < all.Count;
                 v.row.gameObject.SetActive(on);
                 if (!on) { v.id = null; continue; }
-                var c = all[i];
+                var c = all[at];
                 v.id = c.id;
                 var reward = new List<string>();
                 if (c.attack > 0) reward.Add($"공격력 +{c.attack}%");
@@ -220,6 +264,17 @@ namespace DotRPG
             int have = StarShopClient.SparesOf(from);
             int times = all ? Mathf.Min(20, have / rule.count) : 1;
             if (times < 1) { Game.Audio.PlaySfx("cancel"); return; }
+            if (all)
+            {
+                Game.UI.Confirm($"여분 {times * rule.count}개로 {times}번 합성합니다.\n<size=18>실패할 때마다 넣은 여분 중 1개만 돌아옵니다.</size>\n합성할까요?", () => Synth(from, times), true);
+                return;
+            }
+            Synth(from, times);
+        }
+
+        void Synth(string from, int times)
+        {
+            if (busy) return;
             busy = true;
             resultText.text = "<color=#b8c4d8>합성하는 중...</color>";
             Refresh();
@@ -247,11 +302,12 @@ namespace DotRPG
             });
         }
 
-        void AskDismantle(string id)
+        void AskDismantle(string id, bool one)
         {
             if (busy || string.IsNullOrEmpty(id)) return;
             var p = CosmeticCatalog.Find(id);
             int n = StarShopClient.CopiesOf(id);
+            if (one) n = Mathf.Min(1, n);
             if (p == null || n <= 0) return;
             StarShopClient.Dismantle.TryGetValue(StarShopClient.RarityKey(p.Rarity), out int each);
             Game.UI.Confirm($"{p.Name} 여분 {n}개를 분해합니다.\n별조각 {each * n:N0}개를 받습니다. (착용 중인 외형은 그대로)", () =>

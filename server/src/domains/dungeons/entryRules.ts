@@ -97,10 +97,8 @@ export async function checkEntry(
   if (!d.isRaid) {
     used = await repo.countEntries(db, c.id, resetDay);
     if (used >= limit) throw new AppError(422, '오늘 입장 횟수를 모두 사용했습니다.', 'NO_ENTRIES_LEFT');
-  } else if (d.keyCost > 0 && !(await raidClaimed(db, c.id, d, now))) {
-    const have = await stackCount(db, c.id, 'bag', eco.dungeons.keyItem);
-    if (have < d.keyCost) throw new AppError(422, '봉인 열쇠 조각이 부족합니다.', 'KEYS_MISSING', { need: d.keyCost, have });
   }
+  // 최종 레이드 열쇠가 모자라도 입장은 된다. 보상 없는 연습판(KEYS_MISSING)이 되어 혼자서도 스토리를 끝낼 수 있다
   return { dungeon: d, diff, resetDay, countsEntry: !d.isRaid, used, limit };
 }
 
@@ -111,9 +109,12 @@ export async function lockAtEntry(
   d: DungeonDef,
   humans: number,
   now: Date,
-): Promise<{ locked: boolean; reason: 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | null }> {
+): Promise<{ locked: boolean; reason: 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | 'KEYS_MISSING' | null }> {
   if (!d.isRaid) return { locked: false, reason: null };
   if (await raidClaimed(db, characterId, d, now)) return { locked: true, reason: 'ALREADY_CLAIMED' };
   if (humans < getConfig().policy.raidRewardMinHumans) return { locked: true, reason: 'TOO_FEW_HUMANS' };
+  if (d.keyCost > 0 && (await stackCount(db, characterId, 'bag', getGameData().economy.dungeons.keyItem)) < d.keyCost) {
+    return { locked: true, reason: 'KEYS_MISSING' };
+  }
   return { locked: false, reason: null };
 }

@@ -31,8 +31,6 @@ namespace DotRPG
         const float FadeSeconds = 0.35f;
         /// <summary>Companions walk in with the player before they start fighting.</summary>
         const float RoomRegroupSeconds = 0.8f;
-        /// <summary>Monster numbers per level offset of a spawn group (until MonsterDatabase owns levels).</summary>
-        const float LevelStep = 0.08f;
 
         DungeonRun run;
         DungeonDoor door;
@@ -87,26 +85,22 @@ namespace DotRPG
         public string CannotEnterReason(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now)
         {
             if (dungeon == null) return "던전을 고르세요.";
-            if (InRun) return "이미 던전 안에 있다.";
+            if (InRun) return "이미 던전 안에 있습니다.";
             if (busy || (Game.Flow != null && Game.Flow.IsTransitioning)) return "잠시 후에 다시 시도하세요.";
-            if (Game.Player == null || Game.Player.IsDead) return "쓰러진 상태로는 입장할 수 없다.";
-            if (!ResetClock.IsOpen(dungeon, now)) return $"오늘({DungeonDatabase.DayName(ResetClock.GameDay(now))})은 열리지 않는 던전이다.";
-            if (!Progress.IsUnlocked(dungeon, difficulty)) return $"{DungeonDatabase.Difficulty(difficulty - 1).name} 난이도를 먼저 클리어해야 한다.";
+            if (Game.Player == null || Game.Player.IsDead) return "쓰러진 상태로는 입장할 수 없습니다.";
+            if (!ResetClock.IsOpen(dungeon, now)) return $"오늘({DungeonDatabase.DayName(ResetClock.GameDay(now))})은 열리지 않는 던전입니다.";
+            if (!Progress.IsUnlocked(dungeon, difficulty)) return $"{DungeonDatabase.Difficulty(difficulty - 1).name} 난이도를 먼저 클리어해야 합니다.";
             if (dungeon.isRaid)
             {
                 // [RAID] The story opens each raid; a final raid needs the seal key fragments in the bag.
                 string locked = RaidLockReason(dungeon);
                 if (locked != null) return locked;
                 int need = DungeonDatabase.DifficultyFor(dungeon, difficulty).recommendedLevel;
-                if (Game.Session.Progression.Level < need) return $"Lv.{need}부터 입장할 수 있는 레이드다.";
-                if (dungeon.keyCost > 0 && Progress.RaidRewardAvailable(dungeon, now))
-                {
-                    int have = Game.Session.Inventory.Count(DungeonDatabase.SealKey);
-                    if (have < dungeon.keyCost) return $"봉인 열쇠 조각이 부족하다. ({have}/{dungeon.keyCost})";
-                }
+                if (Game.Session.Progression.Level < need) return $"Lv.{need}부터 입장할 수 있는 레이드입니다.";
+                // A final raid without the seal keys is still entered, as a practice run (no reward): solo story can finish.
             }
-            if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0) return "오늘 입장 횟수를 모두 사용했다. (06:00 초기화)";
-            if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return $"최대 {dungeon.maxParty}명까지 입장할 수 있다.";
+            if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0) return "오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)";
+            if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return $"최대 {dungeon.maxParty}명까지 입장할 수 있습니다.";
             return null;
         }
 
@@ -117,7 +111,7 @@ namespace DotRPG
             var st = Game.Quest.StatusOf(raid.unlockQuest);
             if (st == QuestStatus.Active || st == QuestStatus.ReadyToTurnIn || st == QuestStatus.Completed) return null;
             var q = Game.Quest.Database.Get(raid.unlockQuest);
-            return q != null ? $"메인 퀘스트 '{q.DisplayTitle}'를 받으면 열린다." : "아직 열리지 않았다.";
+            return q != null ? $"메인 퀘스트 '{q.DisplayTitle}'를 받으면 열립니다." : "아직 열리지 않았습니다.";
         }
 
         /// <summary>
@@ -167,7 +161,7 @@ namespace DotRPG
                 StartRun(dungeon, difficulty, now);
                 // The server decides whether this raid clear pays (once per period, enough people).
                 run.RewardsLocked = serverRun.TryGetValue("reward_locked", out var v) && v is bool b && b;
-                if (run.RewardsLocked && dungeon.isRaid) GameEvents.RaiseToast(RaidLockText(MiniJson.Str(serverRun, "lock_reason")));
+                lockReason = run.RewardsLocked ? MiniJson.Str(serverRun, "lock_reason") : null; // shown once the room loads
             });
             return true;
         }
@@ -197,14 +191,18 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>Why this raid run pays nothing (server code or the local check), shown when the first room loads.</summary>
+        string lockReason;
+
         static string RaidLockText(string reason)
         {
             switch (reason)
             {
-                case "TOO_FEW_HUMANS": return "레이드 보상은 2명 이상의 파티만 받는다. (연습 입장)";
-                case "ALREADY_CLAIMED": return "이번 기간 레이드 보상을 이미 받았다. (연습 입장)";
-                case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라다. (연습 입장)";
-                default: return "레이드 보상이 없는 연습 입장이다.";
+                case "TOO_FEW_HUMANS": return "레이드 보상은 2명 이상의 파티만 받습니다. (연습 입장)";
+                case "LOW_CONTRIBUTION": return "전투 기여가 부족해 클리어 보상이 없습니다.";
+                case "ALREADY_CLAIMED": return "이번 기간 레이드 보상을 이미 받았습니다. (연습 입장)";
+                case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라 연습 입장입니다. 클리어하면 이야기는 이어지지만 보상은 없습니다.";
+                default: return "레이드 보상이 없는 연습 입장입니다.";
             }
         }
 
@@ -233,7 +231,7 @@ namespace DotRPG
             var now = ResetClock.Now;
             if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0)
             {
-                GameEvents.RaiseToast("오늘 입장 횟수를 모두 사용했다.");
+                GameEvents.RaiseToast("오늘 입장 횟수를 모두 사용했습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -267,6 +265,13 @@ namespace DotRPG
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
             run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now);
+            lockReason = run.RewardsLocked ? "ALREADY_CLAIMED" : null;
+            // A final raid without the seal keys is a practice run: the clear still moves the story on.
+            if (dungeon.isRaid && dungeon.keyCost > 0 && !run.RewardsLocked && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < dungeon.keyCost)
+            {
+                run.RewardsLocked = true;
+                lockReason = "KEYS_MISSING";
+            }
             if (party != null)
             {
                 party.SetCompanionAutoRevive(false);
@@ -283,7 +288,7 @@ namespace DotRPG
                 Game.Session.MapId = MapRegistry.Village; // where the run returns to
                 LoadRoom(Mathf.Clamp(startRoom, 0, run.RoomCount - 1), true);
                 GameEvents.RaiseToast($"{dungeon.name} · {run.Numbers.name}");
-                if (run.RewardsLocked) GameEvents.RaiseToast(dungeon.raidTier == RaidTier.Mid ? "오늘 레이드 보상을 이미 받았다. (연습 입장)" : "이번 주 레이드 보상을 이미 받았다. (연습 입장)");
+                if (run.RewardsLocked) GameEvents.RaiseToast(RaidLockText(lockReason));
             }));
         }
 
@@ -317,7 +322,7 @@ namespace DotRPG
             run.ClearedRooms.Add(run.RoomIndex);
             if (door != null) door.Open();
             Game.Audio.PlaySfx("build_complete");
-            GameEvents.RaiseToast("방을 정리했다! 방장이 문으로 이동하면 함께 넘어간다.");
+            GameEvents.RaiseToast("방을 정리했습니다! 방장이 문으로 이동하면 함께 넘어갑니다.");
             RoomChanged?.Invoke();
         }
 
@@ -331,7 +336,7 @@ namespace DotRPG
             run.MaxCombo = mine.maxCombo;
             run.RevivesUsed = mine.revives;
             if (cleared) StartCoroutine(ClearRoutine());
-            else Fail(string.IsNullOrEmpty(reason) ? "파티가 던전 공략에 실패했다." : reason);
+            else Fail(string.IsNullOrEmpty(reason) ? "파티가 던전 공략에 실패했습니다." : reason);
         }
 
         // =============================== Rooms ===============================
@@ -462,7 +467,7 @@ namespace DotRPG
             run.ClearedRooms.Add(run.RoomIndex);
             if (door != null) door.Open();
             Game.Audio.PlaySfx("build_complete");
-            GameEvents.RaiseToast("방을 정리했다! 문이 열렸다.");
+            GameEvents.RaiseToast("방을 정리했습니다! 문이 열렸습니다.");
             RoomChanged?.Invoke();
         }
 
@@ -578,6 +583,9 @@ namespace DotRPG
                 int count = MiniJson.Int(data, "card_count");
                 run.Cards = count > 0 ? new List<RewardCard>(new RewardCard[count]) : null;
                 Progress.RecordClear(run.Dungeon.id, run.Difficulty, run.Rank);
+                // [ANTI-ABUSE] A party daily dungeon pays nothing to a member who barely fought.
+                if (data.TryGetValue("reward_locked", out var pl) && pl is bool partyLocked && partyLocked)
+                    GameEvents.RaiseToast(RaidLockText(MiniJson.Str(data, "reward_lock_reason")));
                 var raid = MiniJson.Obj(data, "raid");
                 if (raid != null && raid.TryGetValue("reward_locked", out var rl) && rl is bool locked && locked)
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));
@@ -585,7 +593,7 @@ namespace DotRPG
                 {
                     Progress.ClaimRaid(run.Dungeon, ResetClock.Now); // the server paid this period's reward
                     int cores = MiniJson.Int(raid, "core_gain");
-                    if (cores > 0) GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 쓴다)");
+                    if (cores > 0) GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 씁니다)");
                 }
             }
             else
@@ -594,7 +602,7 @@ namespace DotRPG
                 run.XpGained = 0;
                 run.Cards = null;
                 run.NoRewardNote = result == "held" ? "held" : "noanswer";
-                GameEvents.RaiseToast(result == "held" ? "결과를 확인하는 중이다. 보상은 확인 후 지급된다." : "서버에 결과를 보내지 못했다.");
+                GameEvents.RaiseToast(result == "held" ? "결과를 확인하는 중입니다. 보상은 확인 후 지급됩니다." : "서버에 결과를 보내지 못했습니다.");
             }
             EndRunState();
             RunEnded?.Invoke(run);
@@ -620,7 +628,7 @@ namespace DotRPG
             if (raid.keyCost > 0)
             {
                 bag.Remove(DungeonDatabase.SealKey, Mathf.Min(raid.keyCost, bag.Count(DungeonDatabase.SealKey)));
-                GameEvents.RaiseToast($"봉인 열쇠 조각 {raid.keyCost}개가 빛을 잃었다.");
+                GameEvents.RaiseToast($"봉인 열쇠 조각 {raid.keyCost}개가 빛을 잃었습니다.");
             }
             if (raid.keyMax > 0)
             {
@@ -632,7 +640,7 @@ namespace DotRPG
             if (cores > 0)
             {
                 bag.Add(DungeonDatabase.RaidCore, cores);
-                GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 쓴다)");
+                GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 씁니다)");
             }
         }
 
@@ -649,17 +657,18 @@ namespace DotRPG
             if (Follower)
             {
                 // [PARTY NET] Downed members get up at the next room (the host's rule for every member).
-                GameEvents.RaiseToast("쓰러졌다. 다음 방에서 다시 일어난다.");
+                GameEvents.RaiseToast("쓰러졌습니다. 다음 방에서 다시 일어납니다.");
                 return true;
             }
             if (run.RevivesLeft <= 0)
             {
-                StartCoroutine(FailLater("부활 횟수를 모두 사용했다."));
+                StartCoroutine(FailLater("부활 횟수를 모두 사용했습니다."));
                 return true;
             }
             ReviveOpen = true;
             reviveClock = 0f;
             reviveUntil = ReviveSeconds;
+            ReviveCoins.Refresh();
             Game.Audio.PlaySfx("cancel");
             return true;
         }
@@ -669,6 +678,7 @@ namespace DotRPG
             if (run == null || run.State != DungeonRunState.Playing) { ReviveOpen = false; return; }
             if (Game.Player != null && !Game.Player.IsDead) { ReviveOpen = false; return; }
             if (!Game.IsWorldRunning) return;
+            if (ReviveCoins.Busy) return; // [REVIVE] the countdown waits for the coin answer (a paid coin must not time out)
             reviveClock += Time.deltaTime;
             var input = Game.Input;
             if (Game.IsPlaying && !Game.State.ChangedThisFrame && input != null)
@@ -676,14 +686,31 @@ namespace DotRPG
                 if (input.SubmitPressed || input.InteractPressed || input.AttackPressed) { AcceptRevive(); return; }
                 if (input.CancelPressed) { GiveUp(); return; }
             }
-            if (reviveClock >= reviveUntil) { ReviveOpen = false; Fail("부활하지 않았다. (시간 초과)"); }
+            if (reviveClock >= reviveUntil) { ReviveOpen = false; Fail("부활하지 않았습니다. (시간 초과)"); }
         }
 
-        /// <summary>부활: spends one revive; full HP / MP where the player fell and 3 s of invulnerability.</summary>
+        /// <summary>
+        /// 부활: spends one of the run's revives and (from Lv.11) one revive coin; full HP / MP where the player fell
+        /// and 3 s of invulnerability. The coin is confirmed first, so the countdown keeps running while it is asked.
+        /// </summary>
         public bool AcceptRevive()
         {
             var local = Game.Player;
-            if (!ReviveOpen || run == null || local == null || !local.IsDead || run.RevivesLeft <= 0) return false;
+            if (!ReviveOpen || run == null || local == null || !local.IsDead || run.RevivesLeft <= 0 || ReviveCoins.Busy) return false;
+            if (!ReviveCoins.CanUse) { GameEvents.RaiseToast("부활 코인이 없습니다. (매일 06:00에 1개 지급)"); Game.Audio.PlaySfx("cancel"); return false; }
+            ReviveCoins.Use("dungeon", (ok, why) =>
+            {
+                if (!ok) { GameEvents.RaiseToast(why); Game.Audio.PlaySfx("cancel"); return; }
+                DoRevive();
+            });
+            return true;
+        }
+
+        void DoRevive()
+        {
+            var local = Game.Player;
+            // The coin is already paid here: revive whenever the run is still going and the player is still down.
+            if (run == null || run.State != DungeonRunState.Playing || local == null || !local.IsDead || run.RevivesLeft <= 0) return;
             ReviveOpen = false;
             run.RevivesUsed++;
             if (NetHost) PartyNet.Current.HostRevived(local);
@@ -691,9 +718,8 @@ namespace DotRPG
             else local.Revive(1f, ReviveInvulnerable);
             local.Data.Mana = local.MaxMana;
             Game.Audio.PlaySfx("quest");
-            GameEvents.RaiseToast($"부활했다! (남은 부활 {run.RevivesLeft})");
+            GameEvents.RaiseToast(ReviveCoins.Free ? $"부활했습니다! (남은 부활 {run.RevivesLeft})" : $"부활했습니다! (남은 부활 {run.RevivesLeft} · 부활 코인 {ReviveCoins.Coins})");
             RoomChanged?.Invoke();
-            return true;
         }
 
         bool leaving;
@@ -708,7 +734,7 @@ namespace DotRPG
             {
                 leaving = true;
                 ReviveOpen = false;
-                Fail("던전에서 나왔다.");
+                Fail("던전에서 나왔습니다.");
                 if (!run.IsOver) { leaving = false; return; } // could not end it right now (clearing)
             }
             leaving = false;
@@ -720,7 +746,7 @@ namespace DotRPG
         {
             if (!ReviveOpen) return;
             ReviveOpen = false;
-            Fail("던전 공략을 포기했다.");
+            Fail("던전 공략을 포기했습니다.");
         }
 
         IEnumerator FailLater(string reason)

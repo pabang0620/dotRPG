@@ -4,10 +4,11 @@ import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { newHero, type Hero } from './economyHelpers';
-import { auth, buildApp, resetDb, shutdown, ver } from './helpers';
+import { auth, buildApp, pinClockToMondayFlowing, resetDb, shutdown, ver } from './helpers';
 
 let app: Express;
 beforeAll(() => {
+  pinClockToMondayFlowing();
   app = buildApp();
 });
 beforeEach(async () => {

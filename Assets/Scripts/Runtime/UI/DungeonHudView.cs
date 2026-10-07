@@ -5,22 +5,27 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// HUD parts shown only inside a dungeon run: the top-centre clock with "방 2/4" and the revives left,
+    /// HUD parts shown only inside a dungeon run: the top-right clock (left of the room map) with "방 2/4" and the revives left,
     /// the room-grid map in place of the round minimap (current room highlighted, cleared rooms dimmed, the
     /// boss room marked with a skull), the CLEAR banner and the coin countdown ("부활하시겠습니까?").
-    /// The band just below the clock (y −70 … −150) is left free for the boss HP bar.
+    /// The boss HP bar sits at the bottom centre (BossHpBarView).
     /// </summary>
     public class DungeonHudView : MonoBehaviour
     {
         int shownSecond = -1, shownRoom = -1;
 
         // ---------- Layout ----------
-        public const float ClockWidth = 420f, ClockHeight = 50f, ClockTop = 12f;
-        /// <summary>Lowest point of the clock panel (the boss HP bar may start below this).</summary>
-        public const float ReservedBottom = ClockTop + ClockHeight + 8f;
+        // [UI] Top right, left of the room map (W-196): x W-528..W-208, so at UI size 1.3 (985 wide) it starts at 457, clear of
+        // the status bars (x <= 390) and the menu button (SideMenuView, x 404..454); 1.15: 585..905, 1.0: 752..1072.
+        public const float ClockWidth = 320f, ClockHeight = 50f, ClockTop = 12f, ClockRight = 208f;
         const float Cell = 30f, CellGap = 10f, MapWidth = 176f;
 
         RectTransform clock, roomMap, banner, revive;
+        // [FEEL] Combo counter (dungeons rank on combo): the count, a pop on each hit, a bar for the time left.
+        RectTransform comboRoot, comboBar;
+        Text comboText;
+        int shownCombo;
+        float comboPopAt = -10f;
         Text clockText, roomText, bannerText, reviveTitle, reviveBody, mapTitle;
         Image bannerBg;
         readonly List<Image> cells = new List<Image>();
@@ -42,8 +47,8 @@ namespace DotRPG
 
         void Build(RectTransform root)
         {
-            // Clock (top centre).
-            clock = UIFactory.Place(UIFactory.Rect(root, "Clock"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -ClockTop), new Vector2(ClockWidth, ClockHeight));
+            // Clock (top right, left of the room map).
+            clock = UIFactory.Place(UIFactory.Rect(root, "Clock"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-ClockRight, -ClockTop), new Vector2(ClockWidth, ClockHeight));
             var cbg = UIFactory.Panel(clock, "Bg", true);
             UIFactory.Stretch(cbg.rectTransform);
             clockText = UIFactory.Text(clock, "Time", "", 28, UIColors.Highlight, TextAnchor.MiddleLeft, true);
@@ -52,6 +57,17 @@ namespace DotRPG
             UIFactory.Stretch(roomText.rectTransform, 140f, 0f, 22f, 0f);
 
             // Room map (where the round minimap sits).
+            comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -172f), new Vector2(MapWidth, 64f)); // under the 마을로 button (room map 16..112, button 120..164)
+            comboText = UIFactory.Text(comboRoot, "Count", "", 30, UIColors.Highlight, TextAnchor.MiddleRight, true);
+            UIFactory.Place(comboText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(MapWidth, 44f));
+            var comboTrack = UIFactory.Image(comboRoot, "Track", Game.Art.Get("ui_white"), new Color(1f, 1f, 1f, .15f));
+            UIFactory.Place(comboTrack.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -48f), new Vector2(MapWidth - 20f, 5f));
+            var comboFill = UIFactory.Image(comboTrack.transform, "Fill", Game.Art.Get("ui_white"), UiTheme.Accent);
+            comboBar = comboFill.rectTransform;
+            comboBar.anchorMin = Vector2.zero; comboBar.anchorMax = new Vector2(0f, 1f); comboBar.pivot = new Vector2(1f, .5f);
+            comboBar.anchorMin = new Vector2(1f, 0f); comboBar.anchorMax = new Vector2(1f, 1f);
+            comboBar.anchoredPosition = Vector2.zero; comboBar.sizeDelta = Vector2.zero;
+            comboRoot.gameObject.SetActive(false);
             roomMap = UIFactory.Place(UIFactory.Rect(root, "RoomMap"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -16f), new Vector2(MapWidth, 96f));
             var mbg = UIFactory.Panel(roomMap, "Bg", true);
             UIFactory.Stretch(mbg.rectTransform);
@@ -74,6 +90,9 @@ namespace DotRPG
             revive = UIFactory.Place(UIFactory.Rect(root, "Revive"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(520f, 210f));
             var rbg = UIFactory.Panel(revive, "Bg", true);
             UIFactory.Stretch(rbg.rectTransform);
+            var coin = UIFactory.Image(revive, "Coin", Game.Art.Get("icon_revive_coin"), Color.white); // [ART] revive coin
+            coin.preserveAspect = true; coin.raycastTarget = false;
+            UIFactory.Place(coin.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -12f), new Vector2(48f, 48f));
             reviveTitle = UIFactory.Text(revive, "Title", "부활하시겠습니까?", 30, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(reviveTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -18f), new Vector2(480f, 40f));
             reviveBody = UIFactory.Text(revive, "Body", "", 20, UIColors.Cream, TextAnchor.UpperCenter, true);
@@ -132,6 +151,25 @@ namespace DotRPG
 
         void ShowClear() => bannerAt = Time.unscaledTime;
 
+        /// <summary>Shown from 3 hits: white, gold from 20, orange from 50; pops on every new hit; the bar is the time left.</summary>
+        void UpdateCombo(DungeonRun run)
+        {
+            int combo = run.LiveCombo(Time.time);
+            bool show = combo >= 3;
+            if (comboRoot.gameObject.activeSelf != show) comboRoot.gameObject.SetActive(show);
+            if (!show) { shownCombo = 0; return; }
+            if (combo != shownCombo)
+            {
+                shownCombo = combo;
+                comboPopAt = Time.unscaledTime;
+                string color = combo >= 50 ? "#ff9f43" : combo >= 20 ? "#ffd34a" : "#ffffff";
+                comboText.text = $"<color={color}><b>{combo}</b></color> <size=18><color=#b8c4d8>콤보</color></size>";
+            }
+            float pop = Mathf.Clamp01((Time.unscaledTime - comboPopAt) / .12f);
+            comboText.rectTransform.localScale = Vector3.one * Mathf.Lerp(1.25f, 1f, pop);
+            comboBar.sizeDelta = new Vector2((MapWidth - 20f) * run.ComboTimeLeft(Time.time), 0f);
+        }
+
         void Update()
         {
             var director = Game.Dungeon;
@@ -153,7 +191,8 @@ namespace DotRPG
                 if (quest != null) quest.gameObject.SetActive(!inRun);
                 if (!inRun) { revive.gameObject.SetActive(false); banner.gameObject.SetActive(false); }
             }
-            if (!inRun) return;
+            if (!inRun) { if (comboRoot.gameObject.activeSelf) comboRoot.gameObject.SetActive(false); return; }
+            UpdateCombo(run);
 
             // [P5] Re-format only when the second, room or revive count changes.
             int sec = Mathf.FloorToInt(run.Elapsed);
@@ -185,7 +224,8 @@ namespace DotRPG
                 int left = Mathf.CeilToInt(director.ReviveRemaining);
                 reviveTitle.text = $"부활하시겠습니까?  <color=#ffe066>{left}</color>";
                 var input = Game.Input;
-                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회 · 제자리에서 완전 회복 + 3초 무적\n" +
+                string coin = ReviveCoins.Free ? $"Lv.{ReviveCoins.FreeUntilLevel}까지 무료" : ReviveCoins.Coins > 0 ? $"부활 코인 1 사용 (보유 {ReviveCoins.Coins})" : "<color=#ff8a7a>부활 코인 없음</color>";
+                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회 · {coin} · 완전 회복 + 3초 무적\n" +
                                   $"<color=#b8c4d8>[Enter / {input.GetBindingLabel(GameAction.Attack)}] 부활    [ESC] 포기</color>";
             }
         }

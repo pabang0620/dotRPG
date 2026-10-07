@@ -183,7 +183,7 @@ namespace DotRPG
                         float mana = r.ReadSingle();
                         var copy = OwnsSlot(p.from, slot) ? MemberAt(slot) : null;
                         if (copy == null) break;
-                        copy.NetMoveTo(pos, facing);
+                        copy.NetMoveTo(ClampMove(slot, copy, pos), facing);
                         copy.Data.Mana = Mathf.Clamp(mana, 0f, copy.Data.Stats.MaxMp);
                     }
                     break;
@@ -197,6 +197,7 @@ namespace DotRPG
                             var card = MemberCard.Read(r);
                             if (!OwnsSlot(p.from, card.slot)) break;
                             if (humanCards.TryGetValue(card.slot, out var old)) card.characterId = old.characterId;
+                            MemberCardCheck.Correct(card, false);
                             humanCards[card.slot] = card;
                             card.ApplyTo(MemberAt(card.slot));
                             Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.CardUpdate); card.Write(w); }), p.from);
@@ -210,6 +211,28 @@ namespace DotRPG
                     }
                     break;
             }
+        }
+
+        readonly Dictionary<int, float> moveBudget = new Dictionary<int, float>();
+        readonly Dictionary<int, float> moveAt = new Dictionary<int, float>();
+
+        /// <summary>
+        /// [ANTI-ABUSE] A member's reported position may move at most 1.5 x its top speed per second (phase9 19.6). A
+        /// small banked allowance covers dashes and blinks; a teleport beyond it is cut to the allowed distance.
+        /// </summary>
+        Vector2 ClampMove(int slot, PlayerController copy, Vector2 pos)
+        {
+            const float Burst = 8f;
+            float now = Time.unscaledTime;
+            float dt = moveAt.TryGetValue(slot, out float last) ? Mathf.Clamp(now - last, 0f, 1f) : 1f;
+            moveAt[slot] = now;
+            float speed = copy.TopSpeed * 1.5f;
+            float budget = Mathf.Min(Burst + speed * .5f, (moveBudget.TryGetValue(slot, out float b) ? b : Burst) + speed * dt);
+            Vector2 delta = pos - copy.NetTarget;
+            float step = delta.magnitude;
+            if (step > budget) { pos = copy.NetTarget + delta / step * budget; step = budget; }
+            moveBudget[slot] = budget - step;
+            return pos;
         }
 
         bool OwnsSlot(int peer, int slot) => peerSlot.TryGetValue(peer, out int s) && s == slot;
@@ -233,6 +256,7 @@ namespace DotRPG
                 if (kv.Value == slot && kv.Key != peer) return; // seat already taken by another connection
             card.slot = slot;
             card.characterId = characterId;
+            MemberCardCheck.Correct(card, true); // [ANTI-ABUSE] level, gear and career as the server has them
             bool fresh = !peerSlot.ContainsKey(peer);
             peerSlot[peer] = slot;
             humanCards[slot] = card;

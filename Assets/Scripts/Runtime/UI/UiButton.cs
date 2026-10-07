@@ -90,6 +90,26 @@ namespace DotRPG
             Game.Audio?.PlaySfx("select", 0.45f);
         }
 
+        Sprite enabledFrame;
+
+        /// <summary>
+        /// [UI] A disabled plain button shows its own grey frame (Art/ui_btn_disabled) instead of only fading; the frame
+        /// it had comes back when it is enabled again. Buttons with other art (icons, cards) are left alone.
+        /// </summary>
+        void SwapDisabledFrame(bool on)
+        {
+            var img = button != null ? button.targetGraphic as Image : null;
+            if (img == null || img.sprite == null) return;
+            var disabled = Game.Art != null ? Game.Art.Optional("ui_btn_disabled") : null;
+            if (disabled == null) return;
+            if (!on)
+            {
+                string n = img.sprite.name;
+                if (img.sprite != disabled && (n == "ui_btn" || n == "ui_btngray")) { enabledFrame = img.sprite; img.sprite = disabled; }
+            }
+            else if (img.sprite == disabled && enabledFrame != null) { img.sprite = enabledFrame; enabledFrame = null; }
+        }
+
         void LateUpdate()
         {
             bool on = Interactable;
@@ -98,6 +118,7 @@ namespace DotRPG
                 lastInteractable = on;
                 group.alpha = on ? 1f : DisabledAlpha;
             }
+            SwapDisabledFrame(on);
 
             var rt = (RectTransform)transform;
             float shakeAge = Time.unscaledTime - shakeAt;

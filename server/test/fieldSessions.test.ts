@@ -290,7 +290,7 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     const b = await kill(m, sid, 7);
     expect(a.status).toBe(200);
     expect(b.status).toBe(200);
-    expect(a.body.data).toMatchObject({ granted_xp: 20, leveled_up: false, field: { shared: true, xp_factor: 1 } });
+    expect(a.body.data).toMatchObject({ granted_xp: 7, leveled_up: false, field: { shared: true, xp_factor: 1 } });
     expect(a.body.data.drops).toHaveLength(1);
     const dup = await kill(L, sid, 7, {}, randomUUID());
     expect(dup.status).toBe(409);
@@ -331,7 +331,7 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     expect(b.body).toEqual(a.body);
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(Number((await getPool().query('SELECT count(*) AS n FROM kill_log WHERE character_id = $1', [m.dbId])).rows[0].n)).toBe(1);
-    expect(Number((await getPool().query('SELECT xp FROM characters WHERE id = $1', [m.dbId])).rows[0].xp)).toBe(20);
+    expect(Number((await getPool().query('SELECT xp FROM characters WHERE id = $1', [m.dbId])).rows[0].xp)).toBe(7);
   });
 
   it('동시 요청: 두 멤버의 동시 보고가 모두 받아들여지고, 같은 멤버의 같은 monster_ref 동시 보고는 하나만 통과한다', async () => {
@@ -346,10 +346,10 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     expect(acc.rows.map((r) => r.kills_accepted)).toEqual([3, 2]);
   });
 
-  it('공급 한도는 멤버마다 센다(리스폰 25초에 17마리), 한도를 넘으면 KILL_REJECTED(멤버는 severity 1)', async () => {
+  it('공급 한도는 멤버마다 센다(해골 숲 39지점 x 1.1 = 리스폰 25초에 43마리), 한도를 넘으면 KILL_REJECTED(멤버는 severity 1)', async () => {
     const { M, sid } = await team(2);
     const m = M[0] as Hero;
-    for (let i = 0; i < 17; i++) {
+    for (let i = 0; i < 43; i++) {
       advance(0.5);
       const r = await kill(m, sid, 100 + i);
       expect(r.status).toBe(200);
@@ -375,12 +375,12 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     // 세션 화력 합을 줄이면(멤버 attack_cap 1 + 1): 개인 상한 1 x (1 + 알파 1.0) = 2 이므로 한도는 (2 / 0.36 x 10 + 30) / 30 = 2마리
     await getPool().query('UPDATE field_session_members SET attack_cap = 1 WHERE session_id = (SELECT id FROM field_sessions WHERE uuid = $1)', [sid]);
     advance(11);
-    for (let i = 0; i < 2; i++) {
+    // 몬스터 체력·장비가 데이터에서 바뀌므로 정확한 마릿수 대신 "작은 합이면 12마리 안에 거절된다"로 본다
+    let over = await kill(L, sid, 320);
+    for (let i = 1; over.status === 200 && i < 12; i++) {
       advance(0.5);
-      expect((await kill(L, sid, 320 + i)).status).toBe(200);
+      over = await kill(L, sid, 320 + i);
     }
-    advance(0.5);
-    const over = await kill(L, sid, 330);
     expect(over.status).toBe(422);
     expect(over.body.errors.code).toBe('KILL_REJECTED');
     expect(await anomalyKinds(L)).toContain('kill_power');
@@ -441,7 +441,7 @@ describe('레벨 격차 감쇠(6.7)', () => {
     expect(keys(0.2)).toBe(0);
   });
 
-  it('통합: 몬스터 레벨 20 필드에서 레벨 1 멤버는 경험치 x0.2, 레벨 12 멤버는 x0.64, 솔로는 감쇠 없음', async () => {
+  it('통합: 몬스터 레벨 20 필드에서 레벨 1 멤버는 하드 격차(경험치 1), 레벨 12 멤버는 x0.55(9단계 기본값), 솔로는 감쇠 없음', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gd-'));
     for (const f of fs.readdirSync(DATA_DIR)) fs.copyFileSync(path.join(DATA_DIR, f), path.join(dir, f));
     const maps = JSON.parse(fs.readFileSync(path.join(dir, 'maps.json'), 'utf8')) as { maps: { id: string; fieldSpawns: { level?: number }[] }[] };
@@ -460,11 +460,13 @@ describe('레벨 격차 감쇠(6.7)', () => {
     const ka = await post(high, a, '/kills', { map_id: 'forest', monster_id: 'skeleton', session_id: s, monster_ref: 1 });
     const kb = await post(high, b, '/kills', { map_id: 'forest', monster_id: 'skeleton', session_id: s, monster_ref: 1 });
     expect(ka.status).toBe(200);
-    expect(ka.body.data.field.xp_factor).toBe(0.2);
-    expect(ka.body.data.granted_xp).toBe(Math.max(1, Math.round(base * 0.2)));
-    expect(kb.body.data.field.xp_factor).toBe(0.64);
-    expect(kb.body.data.granted_xp).toBe(Math.round(base * 0.64));
-    expect(Number((await getPool().query('SELECT xp_factor FROM kill_log WHERE character_id = $1', [a.dbId])).rows[0].xp_factor)).toBe(0.2);
+    // d = 20 - 1 = 19 >= FIELD_CARRY_HARD_GAP(15): 경험치는 정확히 1(배율은 하한 0.02)
+    expect(ka.body.data.field.xp_factor).toBe(0.02);
+    expect(ka.body.data.granted_xp).toBe(1);
+    // d = 20 - 12 = 8: 1 - 0.15 x (8 - 5) = 0.55
+    expect(kb.body.data.field.xp_factor).toBe(0.55);
+    expect(kb.body.data.granted_xp).toBe(Math.round(base * 0.55));
+    expect(Number((await getPool().query('SELECT xp_factor FROM kill_log WHERE character_id = $1', [a.dbId])).rows[0].xp_factor)).toBe(0.02);
     const solo = await newHero(high);
     const ks = await post(high, solo, '/kills', { map_id: 'forest', monster_id: 'skeleton' });
     expect(ks.body.data.granted_xp).toBe(base);

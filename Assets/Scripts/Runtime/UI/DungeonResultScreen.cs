@@ -71,6 +71,7 @@ namespace DotRPG
                 b.onClick.AddListener(() => { w.cursor = index; w.PlayerPick(index); });
                 c.icon = UIFactory.Image(c.bg.transform, "Icon", null, Color.white);
                 UIFactory.Place(c.icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(72f, 72f));
+                GearTooltip.Hook(c.icon, () => c.icon.enabled && w.run?.Cards != null && index < w.run.Cards.Count ? w.run.Cards[index].itemId : null);
                 c.face = UIFactory.Text(c.bg.transform, "Face", "", 17, UIColors.Cream, TextAnchor.UpperCenter, true);
                 UIFactory.Place(c.face.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -114f), new Vector2(CardW - 16f, 80f));
                 c.who = Label(cardsPanel.transform, "Who" + i, "", 18, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
@@ -149,14 +150,14 @@ namespace DotRPG
         static string NoCardsText(DungeonRun run)
         {
             if (run.NoRewardNote == "held")
-                return "<color=#ffe066>결과를 확인하는 중이다.</color>\n<color=#b8c4d8>확인되면 보상 카드를 고를 수 있다는 알림이 온다.</color>";
+                return "<color=#ffe066>결과를 확인하는 중입니다.</color>\n<color=#b8c4d8>확인되면 보상 카드를 고를 수 있다는 알림이 옵니다.</color>";
             if (run.NoRewardNote == "noanswer")
-                return "<color=#ff9f7a>서버에 결과를 보내지 못했다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인한다.</color>";
+                return "<color=#ff9f7a>서버에 결과를 보내지 못했습니다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인합니다.</color>";
             if (run.Dungeon.isRaid)
                 return run.Dungeon.raidTier == RaidTier.Mid
-                    ? "<color=#ff9f7a>오늘 이 레이드 보상을 이미 받았다.</color>\n<color=#b8c4d8>매일 06:00에 초기화된다.</color>"
-                    : "<color=#ff9f7a>이번 주 이 레이드 보상을 이미 받았다.</color>\n<color=#b8c4d8>목요일 06:00에 초기화된다.</color>";
-            return "<color=#ff9f7a>이번 판은 보상이 없는 연습 입장이다.</color>";
+                    ? "<color=#ff9f7a>오늘 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>매일 06:00에 초기화됩니다.</color>"
+                    : "<color=#ff9f7a>이번 주 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>목요일 06:00에 초기화됩니다.</color>";
+            return "<color=#ff9f7a>이번 판은 보상이 없는 연습 입장입니다.</color>";
         }
 
         string BreakdownText(int lines)
@@ -177,7 +178,7 @@ namespace DotRPG
                 all.Add(run.RewardsLocked ? "<color=#b8c4d8>경험치 없음 (연습 입장)</color>"
                     : $"경험치 <color=#8fe28f>+{Progression.XpPercent(run.XpGained, Game.Session.Progression.Level)}</color>  <color=#b8c4d8>(현재 레벨 기준 · 랭크 보너스 +{DungeonRanking.XpBonusPercent(run.Rank)}%)</color>");
             }
-            else all.Add("\n<color=#b8c4d8>실패한 던전은 랭크와 경험치가 없다.</color>");
+            else all.Add("\n<color=#b8c4d8>실패한 던전은 랭크와 경험치가 없습니다.</color>");
             return string.Join("\n", all.GetRange(0, Mathf.Clamp(lines, 0, all.Count)));
         }
 
@@ -385,7 +386,7 @@ namespace DotRPG
             if (!done || Game.Dungeon == null) return;
             if (!Game.Dungeon.CanRetry)
             {
-                GameEvents.RaiseToast("오늘 입장 횟수를 모두 사용했다.");
+                GameEvents.RaiseToast("오늘 입장 횟수를 모두 사용했습니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -407,7 +408,6 @@ namespace DotRPG
 
         // ---------- Automated checks ----------
         public bool DevDone => done;
-        public bool DevPicked => picked;
         public string DevStamp => stamp != null ? stamp.text : "";
         public string DevWho(int i) => i >= 0 && i < cards.Count ? cards[i].who.text : "";
         public bool DevFlipped(int i) => i >= 0 && i < cards.Count && cards[i].flipped;

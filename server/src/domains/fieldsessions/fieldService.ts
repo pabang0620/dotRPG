@@ -14,6 +14,8 @@ import { recordAnomaly, type StoredResult } from '../economy/economyService';
 import { attackCap } from '../kills/killRules';
 import * as partyRepo from '../party/partyRepository';
 import { runParty, withPartyLocks, type PartyCtx } from '../party/partyTx';
+import { touchMap } from '../antiabuse/presenceService';
+import { recordCardMismatch } from '../antiabuse/cardMismatch';
 import { relayHub } from '../relay/relayHub';
 import { pickTransport } from '../transport/pickTransport';
 import { transportView } from '../partyruns/runView';
@@ -133,6 +135,8 @@ async function processEnter(ctx: PartyCtx, mapId: string) {
     }
     await repo.bump(client, target.id, now);
   }
+  // 9단계 E4: 서버가 맵을 확정하는 순간 프레즌스 맵도 맞춘다(처치 보고의 맵 확인이 세션 맵과 어긋나지 않게)
+  await touchMap(client, me.id, mapId, now);
   notifyFieldChanged(client, target.id);
   const fresh = (await repo.getById(client, target.id)) as repo.SessionRow;
   return {
@@ -269,6 +273,7 @@ export function claimHost(accountId: number, characterUuid: string, sessionUuid:
       }
       await repo.touchMember(client, session.id, me.id, now);
       await repo.setHost(client, session.id, me.id, now);
+      await touchMap(client, me.id, session.map_id, now);
       if (host && host.state !== 'disconnected') await repo.setMemberState(client, session.id, host.character_id, 'disconnected', now);
       await repo.bump(client, session.id, now);
       notifyFieldChanged(client, session.id);
@@ -326,6 +331,10 @@ export function observe(accountId: number, characterUuid: string, sessionUuid: s
       for (const c of body.credits) {
         const m = members.find((x) => x.seat === c.seat);
         if (!m) continue;
+        // 9단계 9.3: 호스트가 멤버 카드 불일치를 봤다. 활성 멤버(호스트 본인 제외)만 기록하고 세션당 한 번만 남긴다
+        if (c.card_mismatch === true && m.character_id !== me.id) {
+          await recordCardMismatch(client, { accountId: m.account_id, characterId: m.character_id, characterUuid: m.character_uuid }, { kind: 'session_id', id: session.uuid });
+        }
         if (c.kills > max) {
           await recordAnomaly(accountId, me.id, { kind: 'field_host', severity: 2, detail: { session_id: session.uuid, seat: c.seat, kills: c.kills, max, window_ms: body.window_ms, window_used_ms: windowMs } }, client);
           continue;

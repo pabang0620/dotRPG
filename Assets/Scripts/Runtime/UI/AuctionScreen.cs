@@ -10,6 +10,7 @@ namespace DotRPG
     public class AuctionScreen : OnlineWindow
     {
         public static AuctionScreen Instance { get; private set; }
+        protected override bool PadNavigation => true;
         enum Tab { Search, Mine, Register, Mail }
         const int PageSize = 9;
         const float RowH = 42f, TableW = 1220f, TableTop = -150f;
@@ -26,7 +27,9 @@ namespace DotRPG
         RectTransform tableRoot, filterRoot, registerRoot;
         Button catBtn, rarBtn, enhBtn, priceBtn, sortBtn, claimAllBtn;
         InputField search;
-        Text pageText, goldText, headText;
+        Text pageText, goldText, headText, emptyText, regEmptyText;
+        // [UI] Column headings placed over the row cells (a space-padded heading line drifted off the columns).
+        Text[] headCols;
         readonly List<(RectTransform row, Image icon, Text name, Text grade, Text price, Text bid, Text seller, Text time, Button a, Button b)> rows =
             new List<(RectTransform, Image, Text, Text, Text, Text, Text, Text, Button, Button)>();
         List<AuctionListing> listings = new List<AuctionListing>();
@@ -40,7 +43,7 @@ namespace DotRPG
 
         public static AuctionScreen Create(Transform canvas)
         {
-            var w = CreateWindow<AuctionScreen>(canvas, "Auction", "경매장", "icon_gold");
+            var w = CreateWindow<AuctionScreen>(canvas, "Auction", "경매장", "menuicon_auction");
             Instance = w;
             w.PreviewBanner();
             string[] names = { "검색", "내 등록", "등록하기", "우편함" };
@@ -68,22 +71,29 @@ namespace DotRPG
             // ----- table (search / mine / mail) -----
             w.tableRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Table"));
             var head = Panel(w.tableRoot, "Head", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, TableTop + 46f), new Vector2(TableW, 30f), HeadRow);
-            w.headText = Label(head.transform, "Text", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(TableW - 20f, 28f), TextAnchor.MiddleLeft);
+            w.headText = Label(head.transform, "Text", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(50f, 0f), new Vector2(330f, 28f), TextAnchor.MiddleLeft);
+            Text HeadCol(string n, float hx, float hw, TextAnchor align) => Label(head.transform, n, "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(hx, 0f), new Vector2(hw, 28f), align);
+            w.headCols = new[] { HeadCol("HGrade", 385f, 95f, TextAnchor.MiddleLeft), HeadCol("HPrice", 485f, 140f, TextAnchor.MiddleRight), HeadCol("HBid", 635f, 125f, TextAnchor.MiddleRight),
+                HeadCol("HSeller", 780f, 120f, TextAnchor.MiddleLeft), HeadCol("HTime", 905f, 120f, TextAnchor.MiddleLeft) };
             for (int i = 0; i < PageSize; i++)
             {
                 var r = Row(w.tableRoot, i, TableTop + 14f, RowH, TableW);
                 var icon = UIFactory.Image(r, "Icon", null, Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
+                GearTooltip.Hook(icon, () => w.TableKey(idx));
                 var a = Button(r, "A", "즉시 구매", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-82f, 0f), new Vector2(104f, 34f), () => w.RowAction(idx, true), 16);
                 var b = Button(r, "B", "입찰", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(72f, 34f), () => w.RowAction(idx, false), 16);
                 w.rows.Add((r, icon, Cell(r, "Name", 50f, 330f), Cell(r, "Grade", 385f, 95f, 17), Cell(r, "Price", 485f, 140f, 18, TextAnchor.MiddleRight),
                     Cell(r, "Bid", 635f, 125f, 17, TextAnchor.MiddleRight), Cell(r, "Seller", 780f, 120f, 17), Cell(r, "Time", 905f, 120f, 16), a, b));
             }
-            w.claimAllBtn = Button(w.tableRoot, "ClaimAll", "모두 받기", "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(920f, 0f), new Vector2(120f, 34f), () => w.Report(w.Service.ClaimAll()), 17);
-            Button(w.tableRoot, "Prev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-130f, 0f), new Vector2(44f, 34f), () => { w.page = Math.Max(0, w.page - 1); w.Refresh(); }, 18);
-            w.pageText = Label(w.tableRoot, "Page", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-48f, 0f), new Vector2(80f, 34f), TextAnchor.MiddleCenter);
-            Button(w.tableRoot, "Next", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(44f, 34f), () => { w.page++; w.Refresh(); }, 18);
+            w.emptyText = Label(w.tableRoot, "Empty", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, TableTop - 10f), new Vector2(TableW, 40f), TextAnchor.MiddleCenter);
+            w.emptyText.color = new Color32(184, 196, 216, 255);
+            // 모두 받기 shows on the mail tab only, where the table sits 50 higher: the bottom-left corner is free (status line is below it).
+            w.claimAllBtn = Button(w.tableRoot, "ClaimAll", "모두 받기", "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), UiSizes.ClaimAllButton, () => w.Report(w.Service.ClaimAll()), UiSizes.ClaimAllFont);
+            Button(w.tableRoot, "Prev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-140f, 0f), UiSizes.PageButton, () => { w.page = Math.Max(0, w.page - 1); w.Refresh(); }, UiSizes.PageFont);
+            w.pageText = Label(w.tableRoot, "Page", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-54f, 0f), new Vector2(80f, 34f), TextAnchor.MiddleCenter);
+            Button(w.tableRoot, "Next", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), UiSizes.PageButton, () => { w.page++; w.Refresh(); }, UiSizes.PageFont);
 
             // ----- register -----
             w.registerRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Register"));
@@ -96,12 +106,15 @@ namespace DotRPG
                 var icon = UIFactory.Image(r, "Icon", null, Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
+                GearTooltip.Hook(icon, () => { int at = w.regPage * 8 + idx; return at < w.bagKeys.Count ? w.bagKeys[at] : null; });
                 var pick = Button(r, "Pick", "선택", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(80f, 36f), () => { w.regSel = w.regPage * 8 + idx; w.regPrice = 0; w.Refresh(); }, 16);
                 w.regRows.Add((r, icon, Cell(r, "Name", 50f, 340f), Cell(r, "Bind", 395f, 110f, 16), pick));
             }
-            Button(left.transform, "RPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-130f, 8f), new Vector2(44f, 32f), () => { w.regPage = Math.Max(0, w.regPage - 1); w.Refresh(); }, 18);
-            w.regPageText = Label(left.transform, "RPage", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-58f, 8f), new Vector2(70f, 32f), TextAnchor.MiddleCenter);
-            Button(left.transform, "RNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-10f, 8f), new Vector2(44f, 32f), () => { w.regPage++; w.Refresh(); }, 18);
+            w.regEmptyText = Label(left.transform, "Empty", "가방에 등록할 수 있는 아이템이 없습니다.", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -60f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
+            w.regEmptyText.color = new Color32(184, 196, 216, 255);
+            Button(left.transform, "RPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-140f, 8f), UiSizes.PageButton, () => { w.regPage = Math.Max(0, w.regPage - 1); w.Refresh(); }, UiSizes.PageFont);
+            w.regPageText = Label(left.transform, "RPage", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-64f, 8f), new Vector2(70f, 34f), TextAnchor.MiddleCenter);
+            Button(left.transform, "RNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-10f, 8f), UiSizes.PageButton, () => { w.regPage++; w.Refresh(); }, UiSizes.PageFont);
             var right = Panel(w.registerRoot, "Form", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -54f), new Vector2(590f, 470f), new Color32(24, 36, 54, 235));
             w.regInfo = Label(right.transform, "Info", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(550f, 270f));
             long[] steps = { -1000, -100, 100, 1000 };
@@ -125,6 +138,14 @@ namespace DotRPG
         {
             int i = page * PageSize + idx;
             return i < listings.Count ? listings[i] : null;
+        }
+
+        /// <summary>The item key shown on table row <paramref name="idx"/> of this page (for the gear tooltip).</summary>
+        string TableKey(int idx)
+        {
+            int i = page * PageSize + idx;
+            if (tab == Tab.Mail) return i < mails.Count ? mails[i].itemKey : null;
+            return i < listings.Count ? listings[i].itemKey : null;
         }
 
         void RowAction(int idx, bool primary)
@@ -184,7 +205,7 @@ namespace DotRPG
             var banner = content.Find("Preview");
             if (banner != null) banner.gameObject.SetActive(!Service.IsOnline);
             if (Service is ServerAuctionService server) server.Tick(true);
-            foreach (var kv in tabs) kv.Value.image.sprite = Game.Art.Get(kv.Key == tab ? "ui_btn" : "ui_btngray");
+            foreach (var kv in tabs) kv.Value.image.sprite = UiTheme.Tab(kv.Key == tab);
             int mailN = Service.UnclaimedMail;
             TextOf(tabs[Tab.Mail]).text = mailN > 0 ? $"우편함 <color=#ff6b6b>●{mailN}</color>" : "우편함";
             goldText.text = $"<color=#ffd34a>{Game.Session?.Gold ?? 0:N0} G</color>";
@@ -212,17 +233,22 @@ namespace DotRPG
             {
                 mails = Service.Mailbox().ToList();
                 total = mails.Count;
-                headText.text = "<color=#b8c4d8>내용                                                                                                                          보관 30일</color>";
+                SetHead("내용", "", "", "", "", "보관 30일");
             }
             else
             {
                 listings = (tab == Tab.Search ? Service.Search(query) : Service.MyListings()).ToList();
                 total = listings.Count;
-                headText.text = "<color=#b8c4d8>        아이템                                                  등급              즉시 구매가               입찰가           판매자              남은 시간</color>";
+                SetHead("아이템", "등급", "즉시 구매가", "입찰가", "판매자", "남은 시간");
             }
             int pages = Math.Max(1, (total + PageSize - 1) / PageSize);
             page = Mathf.Clamp(page, 0, pages - 1);
             pageText.text = $"{page + 1} / {pages}";
+            emptyText.gameObject.SetActive(total == 0);
+            emptyText.text = tab == Tab.Mail ? "받을 우편이 없습니다."
+                : tab == Tab.Mine ? "등록한 물건이 없습니다. 등록하기 탭에서 가방의 아이템을 올릴 수 있습니다."
+                : "조건에 맞는 물건이 없습니다.";
+            if (tab == Tab.Mail) claimAllBtn.interactable = total > 0;
             for (int r = 0; r < rows.Count; r++)
             {
                 int i = page * PageSize + r;
@@ -269,12 +295,19 @@ namespace DotRPG
             }
         }
 
+        void SetHead(string name, params string[] cols)
+        {
+            headText.text = $"<color=#b8c4d8>{name}</color>";
+            for (int i = 0; i < headCols.Length; i++) headCols[i].text = i < cols.Length && cols[i] != "" ? $"<color=#b8c4d8>{cols[i]}</color>" : "";
+        }
+
         void RefreshRegister()
         {
             bagKeys = TradableBag();
             int pages = Math.Max(1, (bagKeys.Count + 7) / 8);
             regPage = Mathf.Clamp(regPage, 0, pages - 1);
             regPageText.text = $"{regPage + 1} / {pages}";
+            regEmptyText.gameObject.SetActive(bagKeys.Count == 0);
             var bag = Game.Session.Inventory;
             for (int r = 0; r < regRows.Count; r++)
             {

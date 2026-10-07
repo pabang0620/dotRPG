@@ -123,12 +123,35 @@ namespace DotRPG
         public static int At(float y, int boost = 40) => YSort.OrderFor(y) + boost;
 
         SpriteRenderer sr;
-        float life, age, delay, spin, drag;
+        float life, age, delay, spin, drag, swingDeg, swingHz;
         Vector3 scaleFrom = Vector3.one, scaleTo = Vector3.one;
         Vector2 velocity;
         bool pop, faceMotion;
         Color color;
         FxFade fade = FxFade.Linear;
+
+        /// <summary>[VFX] The generated picture (Art/FxImg/&lt;img&gt;) when it exists, else the procedural sprite.</summary>
+        public static string Pick(string img, string fallback) => Game.Art != null && Game.Art.Optional("FxImg/" + img) != null ? "FxImg/" + img : fallback;
+
+        /// <summary>
+        /// [VFX] Cracked ground under a heavy blow, sized to <paramref name="radius"/>: the drawn crack decal (thin
+        /// fissures, see-through between them) when it exists, else the old procedural crack kept small. Short-lived so
+        /// it reads as the ground splitting, not as a patch over the screen.
+        /// </summary>
+        public static void Crack(Vector2 ground, float radius, float life)
+        {
+            bool flip = Random.value < 0.5f;
+            if (HasImage("fxi_crack"))
+            {
+                float k = radius * 0.62f;
+                Spawn("FxImg/fxi_crack", ground, Color.white, life * 0.8f, GroundOrder + 2).Scale(new Vector2(k * 0.55f, k * 0.55f), new Vector2(k, k)).Flip(flip).Fade(FxFade.Late);
+                return;
+            }
+            Spawn("fx_crack", ground, new Color(1f, 1f, 1f, 0.85f), life * 0.7f, GroundOrder + 2).Scale(radius * 0.55f, radius * 0.75f).Flip(flip).Fade(FxFade.Late);
+        }
+
+        /// <summary>True when the generated picture is there (callers then skip the procedural flipbook it replaces).</summary>
+        public static bool HasImage(string img) => Game.Art != null && Game.Art.Optional("FxImg/" + img) != null;
 
         public static SkillFx Spawn(string sprite, Vector2 position, Color color, float life, int order)
         {
@@ -162,6 +185,9 @@ namespace DotRPG
 
         /// <summary>Degrees per second; negative = clockwise.</summary>
         public SkillFx Spin(float degreesPerSecond) { spin = degreesPerSecond; return this; }
+
+        /// <summary>Rocks back and forth around the pivot (a ringing bell): <paramref name="degrees"/> either side, dying out.</summary>
+        public SkillFx Swing(float degrees, float hz) { swingDeg = degrees; swingHz = hz; return this; }
 
         public SkillFx Rotate(float degrees) { transform.rotation = Quaternion.Euler(0f, 0f, degrees); return this; }
 
@@ -198,6 +224,7 @@ namespace DotRPG
                 if (faceMotion) Face();
             }
             if (spin != 0f) transform.Rotate(0f, 0f, spin * dt);
+            if (swingDeg != 0f) transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Sin(age * swingHz * Mathf.PI * 2f) * swingDeg * (1f - Mathf.Clamp01(age / life)));
             Apply(t);
         }
 
@@ -726,60 +753,8 @@ namespace DotRPG
 
         // ---------- 대지 강타 (Slam) ----------
 
-        /// <summary>The hammer blow itself, where the shock wave starts.</summary>
-        public static void SlamImpact(Vector2 pos, float radius)
-        {
-            Flash(pos + Vector2.up * 0.2f, new Color(1f, 0.7f, 0.3f, 0.45f), radius * 2.2f, 0.25f, SkillFx.At(pos.y, 44));
-            SkillFx.Spawn("fx_shock", pos + Vector2.up * 0.1f, new Color(0.95f, 0.62f, 0.25f, 0.95f), 0.35f, SkillFx.At(pos.y, 45))
-                .Scale(radius * 0.3f, radius * 1.8f).Fade(FxFade.Quick);
-            for (int i = 0; i < 8; i++)
-            {
-                float ang = i * Mathf.PI * 2f / 8f + Random.Range(-0.2f, 0.2f);
-                var dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
-                SkillFx.Spawn("fx_dust", pos + dir * 0.2f, new Color(0.95f, 0.9f, 0.8f, 0.7f), 0.5f, SkillFx.At(pos.y, 46))
-                    .Move(dir * 2.6f, 4f).Scale(0.9f, 1.8f);
-            }
-            Fx.Burst("fx_chip", pos, 6, 3.5f, 0.7f);
-        }
 
-        /// <summary>One step of the travelling shock wave.</summary>
-        public static void SlamStep(Vector2 from, Vector2 p, float radius, bool last)
-        {
-            float s = radius / 0.85f;
-            // Cracked ground that lingers, and a glowing fissure from the previous step.
-            SkillFx.Spawn("fx_crack", p, Color.white, 1.3f, SkillFx.GroundOrder + 2)
-                .Scale(s * 0.7f, s * (last ? 1.25f : 1f)).Flip(Random.value < 0.5f, Random.value < 0.5f).Fade(FxFade.Late);
-            if ((p - from).sqrMagnitude > 0.01f)
-                GlowLineFx.Spawn(from, p, new Color(1f, 0.45f, 0.1f, 0.9f), 0.42f * s, 0.9f, SkillFx.GroundOrder + 3);
-            // Shock ring, warm light, rock spikes bursting up, flying chips and dust.
-            SkillFx.Spawn("fx_shock", p + Vector2.up * 0.1f, new Color(0.95f, 0.6f, 0.25f, 0.9f), 0.3f, SkillFx.At(p.y, 45))
-                .Scale(radius * 0.3f, radius * 1.15f).Fade(FxFade.Quick);
-            Flash(p + Vector2.up * 0.2f, new Color(EarthOrange.r, EarthOrange.g, EarthOrange.b, 0.4f), radius * 1.6f, 0.22f, SkillFx.At(p.y, 44));
-            int spikes = last ? 4 : 2;
-            for (int k = 0; k < spikes; k++)
-            {
-                Vector2 q = p + Random.insideUnitCircle * radius * 0.55f;
-                float size = Random.Range(1f, 1.4f) * (last ? 1.25f : 1f);
-                SkillFx.Spawn("fx_spike", q, Color.white, Random.Range(0.55f, 0.7f), SkillFx.At(q.y, 2))
-                    .Scale(size, size).Pop().Flip(Random.value < 0.5f).Delay(k * 0.03f);
-            }
-            Fx.Burst("fx_chip", p, last ? 7 : 4, 3f, 0.6f);
-            for (int k = 0; k < 2; k++)
-            {
-                Vector2 dir = Random.insideUnitCircle.normalized;
-                SkillFx.Spawn("fx_dust", p + dir * 0.2f, new Color(0.95f, 0.9f, 0.8f, 0.6f), 0.45f, SkillFx.At(p.y, 46))
-                    .Move(dir * 1.8f, 4f).Scale(0.8f, 1.5f);
-            }
-            Game.Camera?.Shake(last ? 0.1f : 0.05f, 0.1f);
-        }
 
-        /// <summary>A monster caught by the shock wave.</summary>
-        public static void EarthHit(Vector2 pos)
-        {
-            Flash(pos, new Color(1f, 0.7f, 0.3f, 0.7f), 1.2f, 0.16f);
-            Sparks(pos, new Color(1f, 0.85f, 0.45f, 1f), 6, 6f, 0.2f);
-            Fx.Burst("fx_chip", pos, 3, 2.5f, 0.5f);
-        }
 
         // ---------- 번개 사슬 (Arc) ----------
 
@@ -869,38 +844,8 @@ namespace DotRPG
 
         static float Angle(Vector2 dir) => Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-        /// <summary>The flying crescent blade (moved by the skill code).</summary>
-        public static MovingFx WaveBlade(Vector2 pos, Vector2 dir, float radius)
-        {
-            float s = radius / 0.7f;
-            var fx = new MovingFx();
-            fx.Add(SkillFx.Spawn("fx_glow", pos, new Color(1f, 0.75f, 0.3f, 0.55f), 10f, SkillFx.TopOrder + 1).Additive().Scale(s * 1.6f, s * 1.6f).Fade(FxFade.None));
-            fx.Add(SkillFx.Spawn("fx_crescent", pos, Color.white, 10f, SkillFx.TopOrder + 2).Rotate(Angle(dir)).Scale(s * 0.6f, s).Fade(FxFade.None));
-            Flash(pos, new Color(1f, 0.85f, 0.45f, 0.5f), 1.2f, 0.15f);
-            return fx;
-        }
 
-        public static void WaveTrail(Vector2 pos, Vector2 dir, float radius)
-        {
-            float s = radius / 0.7f;
-            SkillFx.Spawn("fx_crescent", pos - dir * 0.15f, new Color(1f, 0.78f, 0.35f, 0.55f), 0.16f, SkillFx.TopOrder)
-                .Additive().Rotate(Angle(dir)).Scale(s * 0.95f, s * 0.8f);
-            if (Random.value < 0.5f)
-            {
-                var side = new Vector2(-dir.y, dir.x) * Random.Range(-0.5f, 0.5f) * s;
-                SkillFx.Spawn("fx_streak", pos + side, new Color(1f, 0.92f, 0.6f, 0.9f), 0.2f, SkillFx.TopOrder)
-                    .Move(-dir * 2f + side, 3f).FaceMotion().Scale(1.2f, 0.4f);
-            }
-        }
 
-        public static void WaveEnd(MovingFx blade, Vector2 pos, Vector2 dir, float radius)
-        {
-            blade.Kill();
-            float s = radius / 0.7f;
-            SkillFx.Spawn("fx_crescent", pos, Color.white, 0.2f, SkillFx.TopOrder + 2).Rotate(Angle(dir)).Scale(new Vector2(s * 0.6f, s), new Vector2(s * 0.2f, s * 1.4f)).Fade(FxFade.Quick);
-            Flash(pos, new Color(1f, 0.8f, 0.4f, 0.5f), 1.4f, 0.18f);
-            Sparks(pos, new Color(1f, 0.85f, 0.45f, 1f), 7, 6f, 0.2f);
-        }
 
         // ---------- 전쟁 함성 (War Cry) ----------
 
@@ -929,7 +874,7 @@ namespace DotRPG
         public static void SwordDrop(Vector2 ground, float fallTime)
         {
             const float height = 5f;
-            SkillFx.Spawn("fx_bigsword", ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground + Vector2.up * height, Color.white, fallTime, SkillFx.TopOrder + 4)
                 .Move(Vector2.down * (height / fallTime)).Fade(FxFade.None);
             GlowLineFx.Spawn(ground + Vector2.up * height, ground, new Color(1f, 0.85f, 0.4f, 0.7f), 0.5f, fallTime + 0.12f, SkillFx.TopOrder + 3);
             SkillFx.Spawn("fx_ring", ground, new Color(1f, 0.8f, 0.3f, 0.9f), fallTime, SkillFx.GroundOrder + 8).Scale(1.4f, 0.4f).Fade(FxFade.None);
@@ -938,8 +883,8 @@ namespace DotRPG
         public static void SwordImpact(Vector2 ground, float radius)
         {
             // The sword stays stuck in the ground for a moment.
-            SkillFx.Spawn("fx_bigsword", ground, Color.white, 0.75f, SkillFx.At(ground.y, 6)).Fade(FxFade.Late);
-            SkillFx.Spawn("fx_crack", ground, Color.white, 1.2f, SkillFx.GroundOrder + 2).Scale(radius, radius * 1.1f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Spawn(SkillFx.Pick("fxi_bigsword", "fx_bigsword"), ground, Color.white, 0.75f, SkillFx.At(ground.y, 6)).Fade(FxFade.Late);
+            SkillFx.Crack(ground, radius, 1.2f);
             SkillFx.Spawn("fx_shock", ground + Vector2.up * 0.1f, new Color(1f, 0.78f, 0.3f, 0.95f), 0.3f, SkillFx.TopOrder).Scale(radius * 0.3f, radius * 1.2f).Fade(FxFade.Quick);
             Flash(ground + Vector2.up * 0.3f, new Color(1f, 0.85f, 0.45f, 0.6f), radius * 1.8f, 0.2f);
             Sparks(ground + Vector2.up * 0.2f, new Color(1f, 0.9f, 0.5f, 1f), 8, 7f, 0.22f);
@@ -947,8 +892,6 @@ namespace DotRPG
         }
 
         // ---------- 빙뢰구 (Frost Orb: ice + lightning) ----------
-
-        public static readonly Color OrbCyan = new Color(0.55f, 0.9f, 1f, 1f);
 
         /// <summary>The flying orb: a faceted ice core in a cold glow, with a crackling electric halo.</summary>
         public static MovingFx FrostOrbHead(Vector2 pos, Vector2 dir)
@@ -1099,7 +1042,9 @@ namespace DotRPG
             Vector2 start = ground + new Vector2(-2.6f, 6f);
             Vector2 vel = (ground - start) / fallTime;
             SkillFx.Spawn("fx_glow", start, new Color(1f, 0.5f, 0.15f, 0.8f), fallTime, SkillFx.TopOrder + 3).Additive().Move(vel).Scale(2f, 2.4f).Fade(FxFade.None);
-            SkillFx.Spawn("fx_meteor", start, Color.white, fallTime, SkillFx.TopOrder + 4).Move(vel).Spin(-420f).Scale(1.6f, 1.9f).Fade(FxFade.None);
+            // [VFX] The drawn meteor already trails its fire down-right along this path, so it does not spin.
+            var rock = SkillFx.Spawn(SkillFx.Pick("fxi_meteor", "fx_meteor"), start, Color.white, fallTime, SkillFx.TopOrder + 4).Move(vel).Scale(1.6f, 1.9f).Fade(FxFade.None);
+            if (!SkillFx.HasImage("fxi_meteor")) rock.Spin(-420f);
             // Flame trail left along the path as the meteor passes.
             for (int k = 1; k <= 10; k++)
             {
@@ -1115,7 +1060,7 @@ namespace DotRPG
         public static void MeteorImpact(Vector2 ground, float radius)
         {
             Explosion(ground + Vector2.up * 0.35f, ground, radius, true);
-            SkillFx.Spawn("fx_crack", ground, Color.white, 1.6f, SkillFx.GroundOrder + 2).Scale(radius * 0.8f, radius * 1.2f).Flip(Random.value < 0.5f).Fade(FxFade.Late);
+            SkillFx.Crack(ground, radius, 1.6f);
             SkillFx.Spawn("fx_shock", ground + Vector2.up * 0.1f, new Color(1f, 0.85f, 0.5f, 0.8f), 0.4f, SkillFx.TopOrder).Scale(radius * 0.5f, radius * 1.6f).Fade(FxFade.Quick).Delay(0.05f);
             Fx.Burst("fx_chip", ground, 6, 4f, 0.7f);
         }

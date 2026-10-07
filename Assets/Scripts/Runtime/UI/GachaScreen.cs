@@ -15,7 +15,7 @@ namespace DotRPG
     public partial class GachaScreen : OnlineWindow
     {
         public static GachaScreen Instance { get; private set; }
-        const float ListW = 260f, CardH = 98f, BigH = 440f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
+        const float ListW = 260f, CardH = 80f, BigH = 440f, BigW = 940f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
         const float Step = 0.13f, Anticipation = 0.8f;
 
         sealed class Card { public string id; public Image bg, frame; public Text name; }
@@ -29,7 +29,9 @@ namespace DotRPG
             ("weapon", "무기 뽑기", "레전더리 무기 0.05%"),
             ("armor", "방어구 뽑기", "상의 · 하의"),
             ("accessory", "장신구 뽑기", "목걸이 · 반지"),
+            ("sealed", "봉인된 상자", "강화권 · 10회마다 부스터"), // [CASH] Docs/PLAN_CASH_BOX_PASS.md
         };
+        bool Sealed => banner == "sealed";
 
         readonly List<Card> cards = new List<Card>();
         readonly List<Cell> cells = new List<Cell>();
@@ -42,7 +44,12 @@ namespace DotRPG
         readonly List<(Button btn, Image icon, Text label)> choiceRows = new List<(Button, Image, Text)>();
         const float GaugeW = 420f;
         Button one, ten, rateBtn, wardrobeBtn;
+        RectTransform main;
+        // Banner list + banner + button row (6 cards of 80 + 10 gaps on the left are the tallest part).
+        const float MainW = ListW + 16f + BigW, MainH = 6 * (CardH + 10f);
         RectTransform rateModal, cellRoot, resultPage;
+        // Gamepad moves between the banner, tier and draw buttons, never while a result page or a modal is up (A closes those).
+        protected override bool PadNavigation => (resultPage == null || !resultPage.gameObject.activeSelf) && (rateModal == null || !rateModal.gameObject.activeSelf) && (choiceModal == null || !choiceModal.gameObject.activeSelf);
         Text resultTitle;
         Button skipBtn, againBtn, okBtn;
         int lastCount = 1;
@@ -59,13 +66,16 @@ namespace DotRPG
             var w = CreateWindow<GachaScreen>(canvas, "Gacha", "캐시샵", "menuicon_cashshop");
             Instance = w;
             var tl = new Vector2(0f, 1f);
+            // [UI] The shop is laid out at a fixed size and shrunk to fit the window (1280x720 or a bigger UI scale
+            // used to push the right end of the button row off screen).
+            w.main = UIFactory.Place(UIFactory.Rect(w.content, "Main"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(MainW, MainH));
 
             // Left: banner cards.
             for (int i = 0; i < Banners.Length; i++)
             {
                 var b = Banners[i];
                 var card = new Card { id = b.id };
-                var bg = Panel(w.content, "Card_" + b.id, tl, tl, new Vector2(0f, -i * (CardH + 10f)), new Vector2(ListW, CardH), new Color32(14, 20, 32, 255));
+                var bg = Panel(w.main, "Card_" + b.id, tl, tl, new Vector2(0f, -i * (CardH + 10f)), new Vector2(ListW, CardH), UiTheme.PanelDeep);
                 bg.raycastTarget = true;
                 bg.gameObject.AddComponent<RectMask2D>();
                 var art = UIFactory.Image(bg.transform, "Art", Game.Art.Get("Banners/banner_gacha_" + b.id), Color.white);
@@ -88,7 +98,7 @@ namespace DotRPG
             }
 
             // Right: the chosen banner, large.
-            var bigBox = Panel(w.content, "Banner", tl, tl, new Vector2(ListW + 16f, 0f), new Vector2(940f, BigH), new Color32(10, 14, 24, 255));
+            var bigBox = Panel(w.main, "Banner", tl, tl, new Vector2(ListW + 16f, 0f), new Vector2(BigW, BigH), new Color32(10, 14, 24, 255));
             bigBox.gameObject.AddComponent<RectMask2D>();
             w.big = UIFactory.Image(bigBox.transform, "Art", null, Color.white);
             w.big.preserveAspect = false;
@@ -104,7 +114,7 @@ namespace DotRPG
             w.gaugeBg = UIFactory.Image(bigBox.transform, "Gauge", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 220));
             w.gaugeBg.preserveAspect = false; w.gaugeBg.raycastTarget = false;
             UIFactory.Place(w.gaugeBg.rectTransform, tl, tl, new Vector2(30f, -238f), new Vector2(GaugeW, 22f));
-            w.gaugeFill = UIFactory.Image(w.gaugeBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(255, 200, 70, 255));
+            w.gaugeFill = UIFactory.Image(w.gaugeBg.transform, "Fill", Game.Art.Get("ui_white"), UiTheme.Accent);
             w.gaugeFill.preserveAspect = false; w.gaugeFill.raycastTarget = false;
             UIFactory.Place(w.gaugeFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 16f));
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
@@ -116,15 +126,16 @@ namespace DotRPG
             w.wallet = Label(bigBox.transform, "Wallet", "", 22, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(68f, 18f), new Vector2(440f, 30f), TextAnchor.MiddleLeft);
 
             float by = -(BigH + 14f), bx = ListW + 16f;
-            w.one = Button(w.content, "One", "", "ui_btn", tl, tl, new Vector2(bx, by), new Vector2(250f, 58f), () => w.Ask(1), 18);
-            w.ten = Button(w.content, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 262f, by), new Vector2(320f, 58f), () => w.Ask(10), 18);
-            w.rateBtn = Button(w.content, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 594f, by), new Vector2(170f, 58f), w.OpenRates, 18);
-            w.wardrobeBtn = Button(w.content, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 776f, by), new Vector2(164f, 58f), w.OpenWardrobe, 18);
+            // The five buttons share the banner's width (940 = 230 + 270 + 130 + 110 + 152 + 4 gaps of 12).
+            w.one = Button(w.main, "One", "", "ui_btn", tl, tl, new Vector2(bx, by), new Vector2(230f, 58f), () => w.Ask(1), 17);
+            w.ten = Button(w.main, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 242f, by), new Vector2(270f, 58f), () => w.Ask(10), 17);
+            w.rateBtn = Button(w.main, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 524f, by), new Vector2(130f, 58f), w.OpenRates, 17);
+            w.wardrobeBtn = Button(w.main, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 666f, by), new Vector2(110f, 58f), w.OpenWardrobe, 17);
             // Spares (a cosmetic drawn again): synthesis, dismantling and collections.
-            Button(w.content, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 952f, by), new Vector2(210f, 58f),
-                () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 18);
+            Button(w.main, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 788f, by), new Vector2(152f, 58f),
+                () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 17);
             // keep the price text off the button edges
-            foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 16f, 0f, 16f, 0f);
+            foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 10f, 0f, 10f, 0f);
 
             // Result page: opens over the shop after a purchase and reveals the cards there.
             var page = Panel(w.content, "ResultPage", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1220f, 640f), new Color32(8, 10, 18, 248));
@@ -155,10 +166,12 @@ namespace DotRPG
                 c.icon.preserveAspect = true;
                 c.icon.rectTransform.anchorMin = new Vector2(0.1f, 0.42f); c.icon.rectTransform.anchorMax = new Vector2(0.9f, 0.94f);
                 c.icon.rectTransform.offsetMin = c.icon.rectTransform.offsetMax = Vector2.zero;
-                c.name = Label(c.bg.transform, "Name", "", 15, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+                int cellIndex = i;
+                GearTooltip.Hook(c.icon, () => cellIndex < w.revealed && cellIndex < w.shown.Count && w.shown[cellIndex].gear ? w.shown[cellIndex].itemId : null);
+                c.name = Label(c.bg.transform, "Name", "", 16, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
                 c.name.rectTransform.anchorMin = new Vector2(0f, 0.16f); c.name.rectTransform.anchorMax = new Vector2(1f, 0.42f);
                 c.name.rectTransform.offsetMin = new Vector2(3f, 0f); c.name.rectTransform.offsetMax = new Vector2(-3f, 0f);
-                c.note = Label(c.bg.transform, "Note", "", 13, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
+                c.note = Label(c.bg.transform, "Note", "", 16, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
                 c.note.rectTransform.anchorMin = new Vector2(0f, 0.02f); c.note.rectTransform.anchorMax = new Vector2(1f, 0.17f);
                 c.note.rectTransform.offsetMin = c.note.rectTransform.offsetMax = Vector2.zero;
                 w.cells.Add(c);
@@ -172,7 +185,7 @@ namespace DotRPG
             UIFactory.Stretch(w.flash.rectTransform);
 
             // Choice window: the gauge is full, pick one top item you don't own yet.
-            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), new Color32(16, 22, 36, 252));
+            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), UiTheme.Overlay);
             cm.raycastTarget = true;
             w.choiceModal = cm.rectTransform;
             Label(cm.transform, "Title", "<b>원하는 것을 하나 고르세요</b>", 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
@@ -192,7 +205,7 @@ namespace DotRPG
             cm.gameObject.SetActive(false);
 
             // 확률 보기 window (over everything in the shop).
-            var modal = Panel(w.content, "RateModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 560f), new Color32(16, 22, 36, 252));
+            var modal = Panel(w.content, "RateModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 560f), UiTheme.Overlay);
             modal.raycastTarget = true;
             w.rateModal = modal.rectTransform;
             var vp = UIFactory.Place(UIFactory.Rect(modal.transform, "Viewport"), tl, tl, new Vector2(24f, -20f), new Vector2(672f, 456f));
@@ -207,6 +220,7 @@ namespace DotRPG
             modal.gameObject.SetActive(false);
 
             StarShopClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
+            CashClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); }; // [CASH]
             return w;
         }
 
@@ -218,6 +232,7 @@ namespace DotRPG
             revealed = 0;
             waiting = -1;
             Refresh();
+            CashClient.Refresh(); // [CASH] sealed box table and gauge
             if (!StarShopClient.Available) return;
             await StarShopClient.RefreshAsync();
             Refresh();
@@ -262,8 +277,9 @@ namespace DotRPG
                 var p = choices[i];
                 bool owned = StarShopClient.Owned.Contains(p.Id);
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
-                row.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
-                row.icon.color = look != null ? Color.white : p.Color;
+                var card = CosmeticAura.Card(p);
+                row.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
+                row.icon.color = card != null || look != null ? Color.white : p.Color;
                 row.label.text = owned ? $"<color=#8c96a8>{p.Name} · 보유 중</color>" : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{p.Name}</color>  <size=15>공격력 +{p.DamagePercent}%</size>";
                 row.btn.interactable = !owned;
             }
@@ -311,6 +327,7 @@ namespace DotRPG
         void Ask(int count)
         {
             if (busy || !StarShopClient.Available || Revealing) return;
+            if (Sealed) { AskSealed(count); return; }
             int price = count == 10 ? StarShopClient.PriceTen : StarShopClient.PriceOne;
             int times = count == 10 ? StarShopClient.TenCount : 1;
             if (StarShopClient.Balance < price)
@@ -420,8 +437,19 @@ namespace DotRPG
         /// <summary>Result i sits in cell i; a single draw lands in the first cell, a 10+1 fills ten plus the bonus.</summary>
         int CellOf(int i) => i;
 
+        /// <summary>Shrinks the fixed-size shop layout to the window (never enlarges it).</summary>
+        void FitMain()
+        {
+            if (main == null) return;
+            var r = content.rect;
+            float k = Mathf.Min(1f, r.width / MainW, r.height / MainH);
+            if (!Mathf.Approximately(main.localScale.x, k)) main.localScale = new Vector3(k, k, 1f);
+        }
+
         protected override void Update()
         {
+            FitMain();
+            PadNavigate(); // first: a result page or modal clears the pad selection before A is read below
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
             if (choiceModal != null && choiceModal.gameObject.activeSelf && Game.Input.CancelPressed) { choiceModal.gameObject.SetActive(false); return; }
             if (resultPage != null && resultPage.gameObject.activeSelf && (Game.Input.CancelPressed || Game.Input.SubmitPressed))
@@ -488,10 +516,10 @@ namespace DotRPG
             if (chooseBtn != null && chooseBtn.gameObject.activeSelf)
             {
                 float k = 0.5f + 0.5f * Mathf.Sin(t * 5f);
-                gaugeFill.color = Color.Lerp(new Color32(255, 200, 70, 255), Color.white, k * 0.6f);
+                gaugeFill.color = Color.Lerp(UiTheme.Accent, Color.white, k * 0.6f);
                 chooseBtn.transform.localScale = Vector3.one * (1f + 0.05f * k);
             }
-            else if (gaugeFill != null) gaugeFill.color = new Color32(255, 200, 70, 255);
+            else if (gaugeFill != null) gaugeFill.color = UiTheme.Accent;
             float f = Mathf.Clamp01(1f - (t - flashAt) / 0.8f);
             flash.color = new Color(flashColor.r, flashColor.g, flashColor.b, f * f * .8f);
             for (int i = sparks.Count - 1; i >= 0; i--)
@@ -537,6 +565,7 @@ namespace DotRPG
 
         static string NameOf(StarPullResult r)
         {
+            if (r.cash) return DungeonDatabase.ItemName(r.itemId) + (r.count > 1 ? $" x{r.count}" : "");
             if (r.gear)
             {
                 var g = EquipmentDatabase.Get(r.itemId);
@@ -572,7 +601,15 @@ namespace DotRPG
                 string hex = GradeHex(r.rarity);
                 c.bg.color = IsTop(r) ? new Color32(110, 76, 22, 245) : IsEpic(r) ? new Color32(72, 40, 112, 245) : IsGood(r) ? new Color32(36, 56, 104, 245) : RowB;
                 c.frame.color = PixelHex(hex);
-                if (r.gear)
+                if (r.cash)
+                {
+                    var item = ConsumableDatabase.Get(r.itemId);
+                    c.icon.sprite = Game.Art.Get(item != null ? item.iconKey : DungeonDatabase.ItemIcon(r.itemId));
+                    c.icon.color = Color.white;
+                    c.name.text = $"<color={hex}>{NameOf(r)}</color>";
+                    c.note.text = r.boosted ? "<color=#ffd34a><b>부스터 x2</b></color>" : "";
+                }
+                else if (r.gear)
                 {
                     var g = EquipmentDatabase.Get(r.itemId);
                     c.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(r.itemId));
@@ -584,8 +621,9 @@ namespace DotRPG
                 {
                     var p = CosmeticCatalog.Find(r.itemId);
                     var look = p != null && p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
-                    c.icon.sprite = look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p);
-                    c.icon.color = look != null ? Color.white : p != null ? p.Color : Color.white;
+                    var card = CosmeticAura.Card(p);
+                    c.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
+                    c.icon.color = card != null || look != null ? Color.white : p != null ? p.Color : Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
                     c.note.text = r.duplicate ? "<color=#b8c4d8>여분 +1</color>"
                         : r.byPity ? "<color=#ffd34a>선택 · NEW</color>" : "<color=#8fe28f>NEW</color>";
@@ -604,7 +642,7 @@ namespace DotRPG
                 bool on = c.id == banner;
                 c.frame.color = on ? new Color(1f, .83f, .3f, 1f) : Color.clear;
                 c.name.text = on ? $"<color=#ffd34a><b>{NameOf(c.id)}</b></color>" : NameOf(c.id);
-                c.bg.color = on ? new Color32(40, 52, 74, 255) : new Color32(14, 20, 32, 255);
+                c.bg.color = on ? UiTheme.Background : UiTheme.PanelDeep;
             }
             big.sprite = Game.Art.Get("Banners/banner_gacha_" + banner);
             bigTitle.text = $"<b>{cur.name}</b>";
@@ -622,10 +660,11 @@ namespace DotRPG
             badge.text = $"<b>유니크 {uniques.Count} · 에픽 {epics.Count}</b>";
             int pity = banner == "skin" ? StarShopClient.SkinPity : StarShopClient.Pity;
             bool hasPity = banner == "skin" || banner == "aura";
+            bool showGauge = hasPity || Sealed;
             int gaugeMax = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
             bool full = hasPity && pity >= gaugeMax;
-            gaugeBg.gameObject.SetActive(hasPity);
-            gaugeText.gameObject.SetActive(hasPity);
+            gaugeBg.gameObject.SetActive(showGauge);
+            gaugeText.gameObject.SetActive(showGauge);
             chooseBtn.gameObject.SetActive(full);
             if (hasPity)
             {
@@ -634,16 +673,23 @@ namespace DotRPG
                 gaugeText.text = full ? $"<color=#ffd34a><b>선택 게이지 가득!</b></color> {goal}{(banner == "skin" ? "을" : "를")} 직접 고를 수 있습니다"
                     : $"선택 게이지 {Mathf.Min(pity, gaugeMax)}/{gaugeMax} · 가득 차면 {goal} 직접 선택";
             }
+            else if (Sealed)
+            {
+                // [CASH] 봉인 해제 게이지: 10 opens fill it, the next open is boosted.
+                gaugeFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * (CashClient.NextBoosted ? 1f : Mathf.Clamp01(CashClient.Gauge / 10f)), 16f);
+                gaugeText.text = CashClient.NextBoosted ? "<color=#ffd34a><b>봉인 해제!</b></color> 다음 1회는 희귀 이상 확률 2배 · 수량 2배"
+                    : $"봉인 해제 게이지 {CashClient.Gauge}/10 · 가득 차면 다음 1회 부스터";
+            }
             bigSub.text = $"{cur.sub}\n" +
-                          (hasPity ? "" : "뽑은 장비는 바로 가방으로\n") +
+                          (hasPity ? "" : Sealed ? "나온 아이템은 바로 가방으로\n" : "뽑은 장비는 바로 가방으로\n") +
                           (banner == "skin" ? $"<color=#ffb347>유니크 {string.Join(" · ", uniques)} (+5%)</color>\n<color=#c58cff>에픽 {string.Join(" · ", epics)} (+4%)</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
             wallet.text = online
                 ? (StarShopClient.Loaded ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>불러오는 중...</color>")
                 : "<color=#8c96a8>온라인 캐릭터로 접속하면 이용할 수 있습니다.</color>";
-            TextOf(one).text = $"1회 · 별조각 {StarShopClient.PriceOne:N0}";
-            TextOf(ten).text = $"{StarShopClient.TenCount - 1}+1회 · 별조각 {StarShopClient.PriceTen:N0}";
+            TextOf(one).text = $"1회 · 별조각 {(Sealed ? CashClient.PriceOne : StarShopClient.PriceOne):N0}";
+            TextOf(ten).text = Sealed ? $"10+1회 · 별조각 {CashClient.PriceEleven:N0}" : $"{StarShopClient.TenCount - 1}+1회 · 별조각 {StarShopClient.PriceTen:N0}";
             one.interactable = ten.interactable = online && StarShopClient.Loaded && !busy;
-            RefreshTierPicker(!hasPity && online && StarShopClient.Loaded);
+            RefreshTierPicker(!hasPity && !Sealed && online && StarShopClient.Loaded);
             if (rateModal.gameObject.activeSelf) rateText.text = RateText();
             DrawCells();
         }
@@ -666,6 +712,7 @@ namespace DotRPG
 
         string RateText()
         {
+            if (Sealed) return SealedRateText();
             var list = CurrentRates();
             if (list.Count == 0) return "<color=#8c96a8>확률표를 불러오는 중입니다.</color>";
             var sb = new StringBuilder();

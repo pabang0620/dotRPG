@@ -54,8 +54,12 @@ export const phase8Shape = {
   FIELD_POWER_SLACK: z.coerce.number().min(1).default(1.15),
   KILL_BURST_FIELD_PER_EXTRA: z.coerce.number().int().min(0).default(2),
   FIELD_CARRY_SLACK: z.coerce.number().int().min(0).default(5),
-  FIELD_CARRY_STEP: z.coerce.number().min(0).default(0.12),
-  FIELD_CARRY_MIN: z.coerce.number().gt(0).max(1).default(0.2),
+  // 9단계: 기본값 0.12/0.2 -> 0.15/0.02, 하드 격차(경험치 1)와 골드 감쇠를 더한다(phase9_anti_abuse.md 6절)
+  FIELD_CARRY_STEP: z.coerce.number().min(0).default(0.15),
+  FIELD_CARRY_MIN: z.coerce.number().gt(0).max(1).default(0.02),
+  FIELD_CARRY_HARD_GAP: posInt(15),
+  FIELD_CARRY_HARD_DROP_MUL: z.coerce.number().min(0).max(1).default(0),
+  FIELD_CARRY_GOLD_SCALE: boolStr.default(true),
   FIELD_PARTY_XP_FACTOR: z.coerce.number().gt(0).max(1).default(1),
   FIELD_PARTY_DROP_FACTOR: z.coerce.number().gt(0).max(1).default(1),
   FIELD_RECORD_RETENTION_DAYS: posInt(30),
@@ -126,6 +130,9 @@ export interface FieldConfig {
   carrySlack: number;
   carryStep: number;
   carryMin: number;
+  carryHardGap: number;
+  carryHardDropMul: number;
+  carryGoldScale: boolean;
   partyXpFactor: number;
   partyDropFactor: number;
   retentionDays: number;
@@ -262,6 +269,9 @@ export function buildPhase8(
       carrySlack: e.FIELD_CARRY_SLACK,
       carryStep: e.FIELD_CARRY_STEP,
       carryMin: e.FIELD_CARRY_MIN,
+      carryHardGap: e.FIELD_CARRY_HARD_GAP,
+      carryHardDropMul: e.FIELD_CARRY_HARD_DROP_MUL,
+      carryGoldScale: e.FIELD_CARRY_GOLD_SCALE,
       partyXpFactor: e.FIELD_PARTY_XP_FACTOR,
       partyDropFactor: e.FIELD_PARTY_DROP_FACTOR,
       retentionDays: e.FIELD_RECORD_RETENTION_DAYS,

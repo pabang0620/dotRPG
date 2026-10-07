@@ -160,6 +160,18 @@ const enhanceSchema = z.looseObject({
     .optional(),
 });
 
+export interface ItemInfo {
+  kind: string;
+  name: string;
+  bind: 'none' | 'account' | 'character';
+  usable: boolean;
+  /** 소모품 효과 종류(없으면 null). EnhanceTicket은 power = 목표 강화 단계, LuckBox는 power = 단계·chance = % */
+  use: string | null;
+  power: number;
+  chance: number;
+  minutes: number;
+}
+
 const itemsSchema = z.looseObject({
   schema: schemaVer,
   items: z.array(
@@ -170,6 +182,11 @@ const itemsSchema = z.looseObject({
       name: z.string().min(1),
       bind: z.enum(['none', 'account', 'character']),
       usable: z.boolean(),
+      // 14단계: 소모품 효과(HealHp/HealMp/Buff/EnhanceTicket/LuckBox/SealedBox). 옛 아이템에는 없다
+      use: z.string().optional(),
+      power: z.number().optional(),
+      chance: z.number().optional(),
+      minutes: z.number().optional(),
     }),
   ),
 });
@@ -354,7 +371,7 @@ export interface EconomyData {
       raidCoreFinal: number[];
     } | null;
   };
-  items: Map<string, { kind: string; name: string; bind: 'none' | 'account' | 'character'; usable: boolean }>;
+  items: Map<string, ItemInfo>;
   quests: Map<string, QuestRule>;
   mapExtra: Map<string, MapExtra>;
   dungeons: {
@@ -417,7 +434,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     throw new Error('게임 데이터 검증 실패: progression.xpToNext 가 maxLevel-1 개보다 적습니다');
   }
   const itemMap = new Map(
-    items.items.map((i) => [i.id, { kind: i.kind, name: i.name, bind: i.bind, usable: i.usable }] as const),
+    items.items.map((i) => [i.id, { kind: i.kind, name: i.name, bind: i.bind, usable: i.usable, use: i.use ?? null, power: i.power ?? 0, chance: i.chance ?? 0, minutes: i.minutes ?? 0 }] as const),
   );
   const needItem = (id: string, where: string): void => {
     if (!itemMap.has(id)) throw new Error(`게임 데이터 검증 실패: ${where} 의 ${id} 이 items.json에 없습니다`);

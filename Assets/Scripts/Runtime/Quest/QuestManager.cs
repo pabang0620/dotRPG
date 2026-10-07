@@ -215,13 +215,6 @@ namespace DotRPG
             return list;
         }
 
-        /// <summary>HUD tracker lines of the current main quest (kept for older callers).</summary>
-        public List<QuestObjective> GetObjectives()
-        {
-            var q = CurrentMain();
-            return q != null ? ObjectivesOf(q) : new List<QuestObjective>();
-        }
-
         public QuestMark MarkFor(string npcId)
         {
             if (string.IsNullOrEmpty(npcId)) return QuestMark.None;
@@ -609,7 +602,7 @@ namespace DotRPG
             {
                 s.status = (int)QuestStatus.ReadyToTurnIn;
                 Game.Audio.PlaySfx("quest");
-                GameEvents.RaiseToast($"{NpcName(q.turnIn)}에게 보고하자.");
+                GameEvents.RaiseToast($"{NpcName(q.turnIn)}에게 보고하세요.");
             }
         }
 

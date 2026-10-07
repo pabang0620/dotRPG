@@ -22,8 +22,6 @@ namespace DotRPG
             this.pixelsPerUnit = pixelsPerUnit;
         }
 
-        public int PixelsPerUnit => pixelsPerUnit;
-
         public Sprite Get(string key)
         {
             if (cache.TryGetValue(key, out var sprite)) return sprite;
@@ -93,7 +91,8 @@ namespace DotRPG
             // High-resolution art (density 2) is drawn through the sharp-scaling material, which needs
             // bilinear sampling; everything else stays point-filtered.
             bool hd = canvas.Density > 1;
-            bool smooth = key == "fx_glow" || (hd && FxMaterials.Sharp != null);
+            // Skill effects use the plain sprite materials, so their high-resolution art stays point-filtered (crisp pixels).
+            bool smooth = key == "fx_glow" || (hd && FxMaterials.Sharp != null && !key.StartsWith("fx_"));
             var texture = new Texture2D(canvas.Width, canvas.Height, TextureFormat.RGBA32, false)
             {
                 name = key,
@@ -205,6 +204,57 @@ namespace DotRPG
             }
             silhouettes[source] = result;
             return result;
+        }
+
+        readonly Dictionary<Sprite, Sprite> outlines = new Dictionary<Sprite, Sprite>();
+
+        /// <summary>
+        /// [FEEL] A solid white copy grown by one pixel on every side (drawn black behind a sprite as its outline:
+        /// damage digits). Null when the source is not CPU-readable.
+        /// </summary>
+        public Sprite GetOutline(Sprite source)
+        {
+            if (source == null) return null;
+            if (outlines.TryGetValue(source, out var cached)) return cached;
+            Sprite result = null;
+            var texture = source.texture;
+            if (texture != null && texture.isReadable)
+            {
+                var rect = source.textureRect;
+                int x = Mathf.RoundToInt(rect.x), y = Mathf.RoundToInt(rect.y), w = Mathf.RoundToInt(rect.width), h = Mathf.RoundToInt(rect.height);
+                var src = texture.GetPixels(x, y, w, h);
+                int W = w + 2, H = h + 2;
+                var px = new Color[W * H];
+                for (int j = 0; j < H; j++)
+                    for (int i = 0; i < W; i++)
+                    {
+                        bool on = false;
+                        for (int dy = -1; dy <= 1 && !on; dy++)
+                            for (int dx = -1; dx <= 1 && !on; dx++)
+                            {
+                                int sx = i - 1 + dx, sy = j - 1 + dy;
+                                if (sx >= 0 && sy >= 0 && sx < w && sy < h && src[sy * w + sx].a > 0.1f) on = true;
+                            }
+                        px[j * W + i] = on ? Color.white : Color.clear;
+                    }
+                var tex = new Texture2D(W, H, TextureFormat.RGBA32, false) { name = source.name + "_outline", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+                tex.SetPixels(px);
+                tex.Apply(false, true);
+                var pivot = new Vector2((source.pivot.x + 1f) / W, (source.pivot.y + 1f) / H);
+                result = Sprite.Create(tex, new Rect(0, 0, W, H), pivot, source.pixelsPerUnit, 0, SpriteMeshType.FullRect);
+                result.name = tex.name;
+            }
+            outlines[source] = result;
+            return result;
+        }
+
+        /// <summary>A drawn image from Resources/Art if there is one (null otherwise: the caller keeps its text fallback).</summary>
+        public Sprite Optional(string key)
+        {
+            if (cache.TryGetValue(key, out var sprite)) return sprite;
+            sprite = Resources.Load<Sprite>(OverrideFolder + key);
+            if (sprite != null) cache[key] = sprite;
+            return sprite;
         }
 
         Sprite Missing(string key)

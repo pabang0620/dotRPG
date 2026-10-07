@@ -146,14 +146,6 @@ export async function decStack(
   return out;
 }
 
-export async function getWornBind(client: Queryable, characterId: number, slot: number): Promise<Bind | null> {
-  const r = await client.query<{ bind: Bind }>(
-    "SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2",
-    [characterId, slot],
-  );
-  return r.rows[0]?.bind ?? null;
-}
-
 export async function getWornKey(client: Queryable, characterId: number, slot: number): Promise<string | null> {
   const r = await client.query<{ item_key: string }>(
     "SELECT item_key FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2",
@@ -290,7 +282,16 @@ export type AnomalyKind =
   | 'raid_enter'
   | 'field_uncredited'
   | 'field_host'
-  | 'relay_abuse';
+  | 'relay_abuse'
+  // 9단계(0020)
+  | 'kill_presence'
+  | 'device_limit'
+  | 'ip_cluster'
+  | 'member_card'
+  | 'career_state'
+  | 'contribution'
+  // 10단계(0021)
+  | 'sweep_denied';
 
 /** 롤백되는 트랜잭션 밖에서도 남기려고 풀에서 직접 쓴다(호출 쪽이 선택) */
 export async function insertAnomaly(

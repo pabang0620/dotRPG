@@ -58,8 +58,8 @@ describe('S12 동시 입찰', () => {
   it('금액이 다른 N건: 최고 입찰이 최종 최고가, 나머지는 BID_TOO_LOW 또는 우편 반환, 최고 입찰자는 하나', async () => {
     const seller = await mk(app);
     const bidders = await many(6);
-    const id = await listIron(app, seller, { buyout: 2500, start_bid: 25 });
-    const amounts = [30, 60, 120, 240, 480, 960];
+    const id = await listIron(app, seller, { buyout: 2500, start_bid: 31 });
+    const amounts = [40, 60, 120, 240, 480, 960];
     const res = await Promise.all(bidders.map((b, i) => bidReq(app, b, id, amounts[i] as number)));
     for (const r of res) expect([200, 409]).toContain(r.status);
     for (const r of res.filter((x) => x.status === 409)) expect(r.body.errors.code).toBe('BID_TOO_LOW');

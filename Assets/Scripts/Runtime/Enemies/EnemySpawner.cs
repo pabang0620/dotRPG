@@ -22,7 +22,6 @@ namespace DotRPG
 
         EnemyStats stats;
         HuntingZone zone;
-        public int SpawnCount => points.Count;
         CharacterLook look;
         readonly List<Vector2> points = new List<Vector2>();
         EnemyController[] alive;

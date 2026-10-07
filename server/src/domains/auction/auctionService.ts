@@ -10,6 +10,8 @@ import type { EconCtx } from '../economy/economyContext';
 import { insertItemLedger, lockCharacter } from '../economy/economyRepository';
 import type { EconResult, StoredResult } from '../economy/economyService';
 import * as mailRepo from '../mail/mailRepository';
+import { assertNoHold } from '../antiabuse/holds';
+import { shareDevice, shareSteam } from '../antiabuse/tradeFlags';
 import { FlagError, recordFlag, runAuction } from './auctionFlags';
 import * as repo from './auctionRepository';
 import type { ListingRow } from './auctionRepository';
@@ -43,8 +45,10 @@ async function processList(ctx: EconCtx, body: ListBody): Promise<EconResult> {
   const eco = getGameData().economy;
   const now = getNow();
   const flagBase = { accountId: ctx.char.accountId, characterId: ctx.char.id };
+  // 9단계 12.5: 경제 정지 중에는 등록하지 못한다
+  await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
 
-  // 1. 자격(둘 중 하나라도 미달이면 불가). 구매·입찰은 가능
+  // 1. 자격(둘 중 하나라도 미달이면 불가). 구매·입찰은 9단계부터 별도 자격(BUYER_GATE)
   const created = await repo.accountCreatedAt(ctx.client, ctx.char.accountId);
   const ageOk = created.getTime() <= now.getTime() - cfg.minAccountAgeDays * DAY_MS;
   if (ctx.char.level < cfg.minLevel || !ageOk) {
@@ -78,7 +82,7 @@ async function processList(ctx: EconCtx, body: ListBody): Promise<EconResult> {
     throw new AppError(422, '가방에 아이템이 부족합니다.', 'NOT_ENOUGH_ITEMS', { need: body.count, have: haveNone });
   }
   const ref = await referenceOf(ctx.client, body.item_key, now);
-  const limits = limitsOf(ref, body.count);
+  const limits = limitsOf(ref, body.count, body.item_key);
   if (!limits) throw new AppError(422, '거래할 수 없는 아이템입니다.', 'NOT_TRADABLE', { reason: 'NO_PRICE' });
 
   // 3. 기간
@@ -152,6 +156,8 @@ async function processList(ctx: EconCtx, body: ListBody): Promise<EconResult> {
 async function lockAndCheck(ctx: EconCtx, listingUuid: string, price: (l: ListingRow) => number): Promise<{ l: ListingRow; now: Date }> {
   const l = await repo.lockListingByUuid(ctx.client, listingUuid);
   if (!l) throw LISTING_NOT_FOUND();
+  // 9단계 12.5: 경제 정지 중에는 구매·입찰하지 못한다(listing 락 직후)
+  await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
   if (l.status !== 'active') throw new AppError(409, '이미 팔렸거나 끝난 등록입니다.', 'LISTING_NOT_ACTIVE');
   const now = getNow(); // 락을 잡은 뒤의 시각
   if (l.endsAt.getTime() <= now.getTime()) throw new AppError(409, '마감된 등록입니다.', 'LISTING_ENDED');
@@ -165,7 +171,27 @@ async function lockAndCheck(ctx: EconCtx, listingUuid: string, price: (l: Listin
     });
   }
   const cfg = getConfig().auction;
+  // 9단계 7.1: 등록 자격(Lv, 계정 나이)을 구매·입찰에도 적용한다(내 계정 판정 직후, 쌍 한도 직전)
+  const aaCfg = getConfig().aa.auction;
+  const created = await repo.accountCreatedAt(ctx.client, ctx.char.accountId);
+  const buyerAgeOk = created.getTime() <= now.getTime() - aaCfg.buyerMinAccountAgeDays * DAY_MS;
+  if (ctx.char.level < aaCfg.buyerMinLevel || !buyerAgeOk) {
+    throw new FlagError(
+      422,
+      '아직 경매에서 구매할 수 없습니다.',
+      'BUYER_GATE',
+      { ...flagBase, kind: 'gate', severity: 1, detail: { side: 'buyer', level: ctx.char.level } },
+      { need_level: aaCfg.buyerMinLevel, need_days: aaCfg.buyerMinAccountAgeDays },
+    );
+  }
   await repo.lockPair(ctx.client, l.sellerAccountId, ctx.char.accountId);
+  // 같은 기기·같은 Steam 소유자 쌍의 구매 차단은 켰을 때만(기본은 기록만: 체결 후 SAME_DEVICE·SAME_STEAM 표시)
+  if (aaCfg.blockSameDevice) {
+    const sameDevice = await shareDevice(ctx.client, l.sellerAccountId, ctx.char.accountId, new Date(now.getTime() - aaCfg.flagDeviceDays * DAY_MS));
+    if (sameDevice || (await shareSteam(ctx.client, l.sellerAccountId, ctx.char.accountId))) {
+      throw new FlagError(403, '같은 기기의 계정과는 거래할 수 없습니다.', 'SAME_DEVICE_TRADE', { ...flagBase, kind: 'self_account', severity: 2, detail: { listing: l.uuid, why: 'same_device_or_steam' } });
+    }
+  }
   const today = await repo.pairToday(ctx.client, l.sellerAccountId, ctx.char.accountId, resetBoundaries(now).dailyStartAt, l.id);
   const p = price(l);
   if (today.trades >= cfg.pairDailyTrades || today.gold + p > cfg.pairDailyGold) {

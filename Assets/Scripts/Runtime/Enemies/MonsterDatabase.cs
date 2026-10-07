@@ -101,7 +101,7 @@ namespace DotRPG
         public float knockbackSpeed = 6f, hurtTime = 0.3f, invulnerable = 0.15f, attackKnockback = 7f;
         public int xp = 20;
 
-        /// <summary>Hits never stagger or push it (bosses; knights only while attacking — see the behaviour).</summary>
+        /// <summary>Hits never stagger or push it (bosses; knights only while attacking - see the behaviour).</summary>
         public bool superArmor;
         /// <summary>무력화 게이지. 0 = no gauge.</summary>
         public float groggyMax;
@@ -168,7 +168,7 @@ namespace DotRPG
                 Debug.LogWarning($"[dotRPG] Unknown monster id '{id}', spawning a skeleton.");
                 def = Get(Warrior);
             }
-            return SpawnDef(def, pos, parent, hpMul, dmgMul, level);
+            return SpawnDef(def.Clone(), pos, parent, hpMul, dmgMul, level); // a copy: SpawnDef adjusts the pace on it
         }
 
         /// <summary>Summoned helpers (necro, boss, totems): no XP and no loot.</summary>
@@ -193,9 +193,27 @@ namespace DotRPG
             return SpawnDef(def, pos, parent, 1f, 1f, level, xp);
         }
 
+        /// <summary>
+        /// [BALANCE 2026-10-06] Ordinary monsters attack half as often as their table says (fields hold three times the
+        /// monsters they used to): the wind-up is 1.4x longer so it can be read and dodged, the whole cycle twice as long,
+        /// and ranged / caster skill timers doubled. Bosses and raids keep their authored patterns.
+        /// </summary>
+        public const float AttackPace = 2f, WindupStretch = 1.4f;
+
+        static void Slow(MonsterDef def)
+        {
+            if (def.boss || def.raid) return;
+            float cycle = (def.windup + def.recover) * AttackPace;
+            def.windup *= WindupStretch;
+            def.recover = Mathf.Max(0.2f, cycle - def.windup);
+            def.skillInterval *= AttackPace;
+            def.summonInterval *= AttackPace;
+        }
+
         static EnemyController SpawnDef(MonsterDef def, Vector2 pos, Transform parent, float hpMul, float dmgMul, int level, int xpOverride = -1)
         {
             level = Mathf.Max(1, level);
+            Slow(def);
             var stats = ScriptableObject.CreateInstance<EnemyStats>();
             stats.name = def.id;
             stats.enemyId = def.id;
@@ -225,17 +243,11 @@ namespace DotRPG
 
         /// <summary>
         /// Seed base for monster AI decisions (pattern picks, flee / strafe turns, field placement). A dungeon
-        /// run (or later the host / server) calls <see cref="ResetSeed"/> on entry, so every client that spawns
+        /// run (or later the host / server) can reseed it on entry, so every client that spawns
         /// the same monsters in the same order rolls the same decisions.
         /// </summary>
         public static int RunSeed { get; private set; } = 20240601;
         static int spawnCounter;
-
-        public static void ResetSeed(int seed)
-        {
-            RunSeed = seed;
-            spawnCounter = 0;
-        }
 
         static int NextSeed(string id)
         {
