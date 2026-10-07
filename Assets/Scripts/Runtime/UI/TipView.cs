@@ -12,13 +12,15 @@ namespace DotRPG
         RectTransform box;
         Text title, body;
         float hideAt;
-        bool shown, inColumn, laidOut;
+        bool shown, inColumn, laidOut, laidOutNarrow;
         float laidOutWidth = -1f;
 
         // [UI] Wide canvases (UI size 1.0 and smaller, W >= 1240): centred 404..876 at 1.0, clear of the currency bar (x <= 382)
         // and the field-boss plate left of the minimap (x >= 878). Narrower (1.15 / 1.3) the centre is taken by the status
         // and party blocks, so the tip uses the quest column under the minimap (W-380..W-20) and the tracker hides meanwhile.
-        const float WideWidth = 472f, WideTop = 110f, ColumnWidth = 360f, ColumnRight = 20f, ColumnBelow = 1240f;
+        // While a boss bar is bound on a canvas under 1160 (its right end reaches W-380) the column narrows to the auto
+        // buttons' width (W-292..W-20), like the quest tracker.
+        const float WideWidth = 472f, WideTop = 110f, ColumnWidth = 360f, ColumnNarrowWidth = 272f, ColumnRight = 20f, ColumnBelow = 1240f, BossClearBelow = 1160f;
 
         /// <summary>[UI] A tip is showing in the quest tracker's column (HudView hides the tracker meanwhile).</summary>
         public static bool InQuestColumn { get; private set; }
@@ -94,15 +96,18 @@ namespace DotRPG
         void Layout()
         {
             float w = ((RectTransform)box.parent).rect.width;
-            if (laidOut && Mathf.Approximately(w, laidOutWidth)) return;
+            var bossBar = BossHpBarView.Instance;
+            bool narrow = bossBar != null && bossBar.DevVisible && w < BossClearBelow;
+            if (laidOut && Mathf.Approximately(w, laidOutWidth) && narrow == laidOutNarrow) return;
             laidOut = true;
             laidOutWidth = w;
+            laidOutNarrow = narrow;
             inColumn = w > 0f && w < ColumnBelow;
             if (inColumn)
             {
                 box.anchorMin = box.anchorMax = box.pivot = new Vector2(1f, 1f);
                 box.anchoredPosition = new Vector2(-ColumnRight, -HudView.QuestTop);
-                box.sizeDelta = new Vector2(ColumnWidth, box.sizeDelta.y);
+                box.sizeDelta = new Vector2(narrow ? ColumnNarrowWidth : ColumnWidth, box.sizeDelta.y);
             }
             else
             {
@@ -115,7 +120,7 @@ namespace DotRPG
 
         void Update()
         {
-            if (shown) Layout(); // UI size changed while showing
+            if (shown) Layout(); // UI size or boss bar changed while showing
             // [UI] In the quest column (UI size 1.15 / 1.3) the tip would sit on the bottom-centre boss bar and its warning
             // line: it waits out the boss fight (its 9 s start again where they stopped).
             var bossBar = BossHpBarView.Instance;

@@ -33,7 +33,7 @@ namespace DotRPG
 
         void OnPromotePressed()
         {
-            if (busy || entries.Count == 0 || !IsTop) return;
+            if (busy || ticketPending || entries.Count == 0 || !IsTop) return;
             var e = entries[selected];
             var gear = EquipmentDatabase.Get(e.key);
             var next = PromoteRules.NextOf(gear);
@@ -53,6 +53,7 @@ namespace DotRPG
             Game.Audio.PlaySfx("select");
             Game.UI.Confirm($"<b>장비 승급</b>\n{from}  →  {to}\n<color=#b8c4d8>강화 수치 +{level} 그대로 · 고대의 핵 {cores}개 · 골드 {gold:N0}</color>\n승급할까요?", () =>
             {
+                if (busy || ticketPending) return;
                 busy = true;
                 resultText.text = "<color=#b8c4d8>승급하는 중…</color>";
                 OnlineEconomy.Promote(e.slot.HasValue ? (int)e.slot.Value : (int?)null, e.slot.HasValue ? null : e.key, d =>

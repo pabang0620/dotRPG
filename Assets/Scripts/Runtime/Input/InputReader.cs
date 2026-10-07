@@ -201,7 +201,9 @@ namespace DotRPG
                     if (binding.isComposite || binding.isPartOfComposite) continue;
                     if (binding.effectivePath != null && binding.effectivePath.StartsWith(wanted))
                     {
-                        // [UI] The stick presses have no short display name ("Left Stick Press" overflows the key tags).
+                        // [UI] Short names for the stick presses. Note: this block only compiles with the new Input System
+                        // (the project runs the legacy input manager, activeInputHandler 0), so the L3 / R3 labels shown in
+                        // play come from DefaultLabel below.
                         if (binding.effectivePath.EndsWith("/leftStickPress")) return "L3";
                         if (binding.effectivePath.EndsWith("/rightStickPress")) return "R3";
                         return inputAction.GetBindingDisplayString(i);

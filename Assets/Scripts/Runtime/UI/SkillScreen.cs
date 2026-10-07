@@ -405,7 +405,7 @@ namespace DotRPG
             if (!gameObject.activeSelf) return;
             var input = Game.Input;
             tabKeyHint.text = "<color=#8c96a8>Tab / LB · RB : 탭 전환</color>";
-            if (Time.frameCount != shownFrame && !Game.State.ChangedThisFrame)
+            if (TakesInput) // [UX] not under a confirm (전직 기술 초기화, 추천 배치, 전직 선택) drawn over this window
             {
                 // [UX] Tab (or the shoulder buttons) switches pages; the skill keys stay free in this window.
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) { tab = tab == TabId.Tree ? TabId.Gems : TabId.Tree; Game.Audio.PlaySfx("select"); Refresh(); }

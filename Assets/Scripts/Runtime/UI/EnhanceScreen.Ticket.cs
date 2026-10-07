@@ -61,10 +61,13 @@ namespace DotRPG
 
         /// <summary>[UX] A 강화권 request is waiting on the server (busy, but the forge may be closed).</summary>
         bool ticketPending;
+        /// <summary>[UX] Id of the latest 강화권 request: only its answer unlocks the forge.</summary>
+        int ticketToken;
+        const string TicketPendingText = "<color=#b8c4d8>처리 중… (닫아도 결과는 알림으로 받습니다)</color>";
 
         void UseTicket()
         {
-            if (busy || !IsTop) return; // not while the hammer falls / the server answers, nor under a dialog
+            if (busy || ticketPending || !IsTop) return; // not while the hammer falls / the server answers, nor under a dialog
             if (entries.Count == 0 || selected >= entries.Count) return;
             var e = entries[selected];
             var options = TicketsFor(EquipmentDatabase.LevelOfKey(e.key));
@@ -73,13 +76,15 @@ namespace DotRPG
             string key = e.key;
             Game.UI.Confirm($"<b>{EquipmentDatabase.RichName(key)}</b>\n+{t} 강화권을 써서 바로 +{t}로 올립니다.\n실패하지 않습니다. 사용할까요?", () =>
             {
-                if (busy) return;
+                if (busy || ticketPending) return;
                 busy = true; // locked until the server answers
                 ticketPending = true;
+                int token = ++ticketToken;
                 Refresh();
-                resultText.text = "<color=#b8c4d8>처리 중… (닫아도 결과는 알림으로 받습니다)</color>";
+                resultText.text = TicketPendingText;
                 CashClient.UseTicket(ConsumableDatabase.EnhanceTicket(t), key, (ok, msg) =>
                 {
+                    if (token != ticketToken) { if (ok) GameEvents.RaiseToast($"+{t} 강화 성공! (강화권)"); return; } // an older request: leave the lock to the latest one
                     busy = false;
                     ticketPending = false;
                     bigIcon.rectTransform.anchoredPosition = Vector2.zero; // Update shakes the piece while busy

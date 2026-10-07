@@ -344,6 +344,12 @@ namespace DotRPG
             pickRequired = false;
             resultText.text = "";
             bigIcon.rectTransform.anchoredPosition = Vector2.zero;
+            if (ticketPending)
+            {
+                // [UX] Reopened before the server answered a 강화권: stay locked (no hammer / promote / second ticket) until it does.
+                busy = true;
+                resultText.text = TicketPendingText;
+            }
             base.Show();
         }
 
@@ -366,7 +372,10 @@ namespace DotRPG
             base.Hide();
         }
 
-        /// <summary>The window stays open until the hammer lands (a 강화권 waiting on the server may be closed).</summary>
+        /// <summary>
+        /// The window stays open until the hammer lands. Only a 강화권 waiting on the server may be closed: nothing else
+        /// starts while it is pending, so busy with ticketPending is never a hammer swing or a 승급.
+        /// </summary>
         public override void Close()
         {
             if (!busy || ticketPending) base.Close();
@@ -555,7 +564,7 @@ namespace DotRPG
         /// <summary>Button / Enter: checks the price, asks first when the attempt is risky, then swings the hammer.</summary>
         void OnEnhancePressed()
         {
-            if (busy || entries.Count == 0 || !IsTop) return;
+            if (busy || ticketPending || entries.Count == 0 || !IsTop) return;
             if (pickRequired)
             {
                 // After a destroy the cursor sits on a piece the player never chose.
@@ -592,7 +601,7 @@ namespace DotRPG
 
         void StartAttempt(Entry e)
         {
-            if (busy || !gameObject.activeInHierarchy) return;
+            if (busy || ticketPending || !gameObject.activeInHierarchy) return;
             StartCoroutine(AttemptRoutine(e));
         }
 

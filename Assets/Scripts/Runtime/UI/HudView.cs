@@ -103,7 +103,7 @@ namespace DotRPG
             DungeonHudView.Create(root); // [DUNGEON] clock, room map, CLEAR banner, coin countdown
             TipView.Create(root); // [E5] first-time tips
             ChatView.Create(root); // [F5] chat box + quick signals
-            questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -QuestTop), new Vector2(360, 130));
+            questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -QuestTop), new Vector2(QuestWidth, 130));
             var qbg = UIFactory.Panel(questPanel, "Bg", true);
             UIFactory.Stretch(qbg.rectTransform);
             questTitle = UIFactory.Text(questPanel, "Title", "", 22, UIColors.Highlight, TextAnchor.UpperLeft, true);
@@ -262,6 +262,7 @@ namespace DotRPG
             // quick item bar under the right column (top at 128, +8 gap) when the canvas is short (UI size 1.15 / 1.3 =
             // 626 / 554 tall). At 1.3 that leaves 554 - 234 - 88 - 136 = 96 px: title + 2 body lines.
             questFitHeight = ((RectTransform)transform).rect.height;
+            questFitWidth = questPanel.sizeDelta.x;
             float room = questFitHeight > 0f ? questFitHeight - QuestTop - 88f - 136f : wanted;
             float height = Mathf.Min(wanted, Mathf.Max(30f + titleH + 22f, room));
             questBody.verticalOverflow = height < wanted ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
@@ -270,7 +271,9 @@ namespace DotRPG
 
         /// <summary>Top of the quest tracker under the minimap (TipView uses the same column on narrow canvases).</summary>
         public const float QuestTop = 16f + MinimapView.Diameter + 42f;
-        float questFitHeight;
+        /// <summary>[UI] Quest tracker width; narrowed to the auto buttons' column while a boss bar shows on a narrow canvas.</summary>
+        const float QuestWidth = 360f, QuestNarrowWidth = 272f;
+        float questFitHeight, questFitWidth;
 
         static void AppendObjective(StringBuilder sb, QuestObjective o)
         {
@@ -395,7 +398,11 @@ namespace DotRPG
             // stays bound until killed). A first-time tip in the column hides it too.
             bool showQuest = !inRun && !TipView.InQuestColumn && !(bossShown && bossBar.Engaged && hudRect.width < 1160f);
             if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
-            if (showQuest && !Mathf.Approximately(hudRect.height, questFitHeight)) RefreshQuest(); // UI size changed
+            // [UI] A bound but not engaged boss bar on a narrow canvas: the tracker narrows to the auto buttons' column
+            // (W-292..W-20) so it stays clear of the bar's right end (its "xN" count), and widens back afterwards.
+            float questWidth = bossShown && hudRect.width < 1160f ? QuestNarrowWidth : QuestWidth;
+            if (!Mathf.Approximately(questPanel.sizeDelta.x, questWidth)) questPanel.sizeDelta = new Vector2(questWidth, questPanel.sizeDelta.y);
+            if (showQuest && (!Mathf.Approximately(questWidth, questFitWidth) || !Mathf.Approximately(hudRect.height, questFitHeight))) RefreshQuest(); // UI size / width changed
             // [AUTO] Hotkeys for 자동 진행 / 자동 사냥 (rebindable, default F6 / F7), only in normal play with no window open.
             var keys = Game.Input;
             if (keys != null && Game.IsPlaying && (!inRun || QuestAutoPilot.Active))
@@ -424,6 +431,9 @@ namespace DotRPG
             float toastY = bossShown ? Mathf.Max(ToastBaseBoss, bossBar.TopEdge + 4f) : dialogue != null && dialogue.IsOpen ? ToastBaseDialogue : ToastBase;
             if (!Mathf.Approximately(toastRoot.anchoredPosition.y, toastY)) toastRoot.anchoredPosition = new Vector2(0f, toastY);
             float now = Time.unscaledTime;
+            // [UI] Over the boss bar (a warning lifts the base to 344) the stack must stay under the party status line and
+            // the currency row (top 212 px): at UI size 1.3 only 1 toast fits, at 1.15 3. Older ones fade out early.
+            int maxToasts = bossShown ? Mathf.Max(1, Mathf.FloorToInt((hudRect.height - 212f - toastY - ToastHeight) / ToastStep) + 1) : 4;
             // Toast layout & fade.
             for (int i = toasts.Count - 1; i >= 0; i--)
             {
@@ -434,6 +444,12 @@ namespace DotRPG
                     Destroy(t.root.gameObject);
                     toasts.RemoveAt(i);
                 }
+            }
+            for (int i = 0; i < toasts.Count - maxToasts; i++)
+            {
+                // Pushed past the limit: jump to the last 0.5 s (the normal fade) instead of covering the HUD above.
+                var t = toasts[i];
+                if (now - t.bornAt < ToastLife - 0.5f) t.bornAt = now - (ToastLife - 0.5f);
             }
             for (int i = 0; i < toasts.Count; i++)
             {
