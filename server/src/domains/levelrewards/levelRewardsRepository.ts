@@ -43,3 +43,34 @@ export async function insertClaim(db: Queryable, o: { accountId: number; level: 
     [o.accountId, o.level, o.stars, o.requestId, o.characterId],
   );
 }
+
+// ---------------- 성장 패스(14단계) ----------------
+
+export async function passOwned(db: Queryable, accountId: number): Promise<boolean> {
+  const r = await db.query('SELECT 1 FROM account_growth_pass WHERE account_id = $1', [accountId]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+export async function passByRequest(db: Queryable, accountId: number, requestId: string): Promise<boolean> {
+  const r = await db.query('SELECT 1 FROM account_growth_pass WHERE account_id = $1 AND request_id = $2', [accountId, requestId]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+export async function insertPass(db: Queryable, o: { accountId: number; stars: number; requestId: string }): Promise<void> {
+  await db.query('INSERT INTO account_growth_pass (account_id, stars, request_id) VALUES ($1, $2, $3)', [o.accountId, o.stars, o.requestId]);
+}
+
+/** 패스 구매 원장의 이후 잔액(재전송 응답용) */
+export async function passLedgerBalanceAfter(db: Queryable, accountId: number, requestId: string): Promise<number | null> {
+  const r = await db.query<{ balance_after: string }>("SELECT balance_after FROM star_ledger WHERE account_id = $1 AND reason = 'pass_buy' AND request_id = $2", [accountId, requestId]);
+  return r.rows[0] ? Number(r.rows[0].balance_after) : null;
+}
+
+export async function claimedPassLevels(db: Queryable, accountId: number): Promise<number[]> {
+  const r = await db.query<{ level: number }>('SELECT level FROM account_pass_claims WHERE account_id = $1', [accountId]);
+  return r.rows.map((x) => x.level);
+}
+
+export async function insertPassClaim(db: Queryable, o: { accountId: number; level: number; requestId: string; characterId: number }): Promise<void> {
+  await db.query('INSERT INTO account_pass_claims (account_id, level, request_id, character_id) VALUES ($1, $2, $3, $4)', [o.accountId, o.level, o.requestId, o.characterId]);
+}

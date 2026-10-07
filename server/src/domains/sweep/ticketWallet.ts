@@ -4,7 +4,7 @@ import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 
 export type LotKind = 'normal' | 'event';
-export type LedgerReason = 'shop_buy' | 'weekly_activity' | 'campaign_claim' | 'sweep_use' | 'expire';
+export type LedgerReason = 'shop_buy' | 'weekly_activity' | 'campaign_claim' | 'sweep_use' | 'expire' | 'sealed_box';
 
 export interface Lot {
   id: number;
@@ -96,7 +96,7 @@ export interface WalletActor {
 }
 
 /** 일반권 n장 추가(구매, 주간 활동): 계정당 1행 upsert */
-export async function addNormal(client: PoolClient, a: WalletActor, n: number, reason: 'shop_buy' | 'weekly_activity', ref: string): Promise<void> {
+export async function addNormal(client: PoolClient, a: WalletActor, n: number, reason: 'shop_buy' | 'weekly_activity' | 'sealed_box', ref: string): Promise<void> {
   const r = await client.query<{ id: string }>(
     `INSERT INTO sweep_ticket_lots (account_id, kind, granted, remaining) VALUES ($1, 'normal', $2, $2)
      ON CONFLICT (account_id) WHERE kind = 'normal'
@@ -136,4 +136,17 @@ export async function expireLot(client: PoolClient, lotId: number, now: Date): P
   await client.query('UPDATE sweep_ticket_lots SET remaining = 0 WHERE id = $1', [lotId]);
   await writeLedger(client, { accountId: Number(row.account_id), lotId, characterId: null, delta: -row.remaining, reason: 'expire', ref: String(lotId), requestId: null, now });
   return row.remaining;
+}
+
+/** 환불 결과물 회수(관리자): 쓸 수 있는 로트에서 n장까지 걷는다(계정 행을 잠근 뒤 부른다). 원장은 expire 사유, ref 로 구분한다. 걷은 장수를 돌려준다 */
+export async function revokeUpTo(client: PoolClient, accountId: number, n: number, ref: string, now: Date): Promise<number> {
+  let left = n;
+  for (const lot of await lockLive(client, accountId, now)) {
+    if (left <= 0) break;
+    const take = Math.min(lot.remaining, left);
+    await client.query('UPDATE sweep_ticket_lots SET remaining = remaining - $2 WHERE id = $1', [lot.id, take]);
+    await writeLedger(client, { accountId, lotId: lot.id, characterId: null, delta: -take, reason: 'expire', ref, requestId: null, now });
+    left -= take;
+  }
+  return n - left;
 }

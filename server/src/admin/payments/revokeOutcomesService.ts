@@ -2,6 +2,7 @@
 // 자동 회수는 없다(정직한 환불자의 계정 물건을 서버가 빼앗지 않는다): 부채와 정지가 막고, 확정적인 부정만 owner가 이 도구로 되돌린다.
 // 대상: 그 주문의 별조각이 배분된 소비 원장 줄(gacha, exchange)의 결과. 뽑기는 그 요청의 결과 전체를 본다(한 요청이 여러 주문 로트에 걸쳐도 같다).
 // 외형 최초 획득은 외형 행 삭제, 중복 획득은 여분 -1, 장비는 가방·창고에 남은 수량만 item_ledger(admin_clawback), 게이지는 뽑은 칸 수만큼.
+// 14단계: sealed_pull(상자 결과물: item_ledger sealed_box + 클리어권 지갑)과 pass_buy(패스 보유·수령 기록 삭제 + pass_reward 아이템)도 같은 방식이다.
 // 합성 결과(star_synth_log)와 착용 해제는 이 도구의 범위 밖이다(TODO: 착용 중인 외형을 서버가 저장하는지 확인, 구현 기록 20절).
 import type { PoolClient } from 'pg';
 import { hashRequest } from '../../db/idempotency';
@@ -9,6 +10,7 @@ import { getPool, type Queryable } from '../../db/pool';
 import * as econRepo from '../../domains/economy/economyRepository';
 import * as payRepo from '../../domains/payments/paymentsRepository';
 import { lockWallet, readWallet, setPity } from '../../domains/starshop/starWallet';
+import { lockAccount, revokeUpTo } from '../../domains/sweep/ticketWallet';
 import { AppError } from '../../utils/AppError';
 import type { AdminCtx } from '../common/adminTypes';
 import { auditView, runAdminAction, type ActionResult } from '../common/audit';
@@ -20,6 +22,10 @@ interface Plan {
   cosmetics: { item_id: string; remove: boolean; copies: number }[];
   gear: { character_id: string; item_key: string; count: number }[];
   gauge: { aura: number; skin: number };
+  /** 봉인된 상자 뽑기로 계정 클리어권 지갑에 들어간 장수 */
+  sweep_tickets: number;
+  /** 이 주문 별조각으로 산 성장 패스(보유 기록·수령 기록 삭제, 받은 보상은 gear 로 회수) */
+  pass: boolean;
 }
 
 async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: RevokeBody['include']): Promise<{ plan: Plan; characters: Map<string, number> }> {
@@ -31,6 +37,14 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
   const gear = new Map<string, { character_id: string; item_key: string; count: number }>();
   const characters = new Map<string, number>();
   const gauge = { aura: 0, skin: 0 };
+  let sweepTickets = 0;
+  let pass = false;
+  const addGear = (x: { uuid: string; character_id: string; item_key: string; delta: number }): void => {
+    const k = `${x.uuid}|${x.item_key}`;
+    const cur = gear.get(k) ?? { character_id: x.uuid, item_key: x.item_key, count: 0 };
+    gear.set(k, { ...cur, count: cur.count + x.delta });
+    characters.set(x.uuid, Number(x.character_id));
+  };
   const note = (id: string, remove: boolean, copies: number): void => {
     const cur = cos.get(id) ?? { remove: false, copies: 0 };
     cos.set(id, { remove: cur.remove || remove, copies: cur.copies + copies });
@@ -38,6 +52,28 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
   for (const l of lines.rows) {
     if (l.reason === 'exchange' && l.ref) {
       note(l.ref, true, 0);
+      continue;
+    }
+    if (l.reason === 'sealed_pull' && l.request_id) {
+      // 봉인된 상자 뽑기: 지급 줄(item_ledger sealed_box, 같은 request_id)을 gacha 장비처럼 회수하고, 클리어권은 지갑에서 걷는다
+      const items = await db.query<{ uuid: string; character_id: string; item_key: string; delta: number }>(
+        `SELECT c.uuid, i.character_id, i.item_key, i.delta FROM item_ledger i JOIN characters c ON c.id = i.character_id
+          WHERE i.request_id = $1 AND i.reason = 'sealed_box' AND i.delta > 0 ORDER BY i.id`,
+        [l.request_id],
+      );
+      items.rows.forEach(addGear);
+      const sw = await db.query<{ n: string }>("SELECT coalesce(sum(delta), 0) AS n FROM sweep_ticket_ledger WHERE account_id = $1 AND request_id = $2 AND reason = 'sealed_box'", [order.account_id, l.request_id]);
+      sweepTickets += Number(sw.rows[0]?.n ?? 0);
+      continue;
+    }
+    if (l.reason === 'pass_buy') {
+      pass = true;
+      const items = await db.query<{ uuid: string; character_id: string; item_key: string; delta: number }>(
+        `SELECT c.uuid, i.character_id, i.item_key, i.delta FROM item_ledger i JOIN characters c ON c.id = i.character_id
+          WHERE c.account_id = $1 AND i.reason = 'pass_reward' AND i.delta > 0 ORDER BY i.id`,
+        [order.account_id],
+      );
+      items.rows.forEach(addGear);
       continue;
     }
     if (l.reason !== 'gacha' || !l.request_id) continue;
@@ -58,18 +94,15 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
         WHERE i.request_id = $1 AND i.reason = 'gacha' AND i.delta > 0 ORDER BY i.id`,
       [l.request_id],
     );
-    for (const x of g.rows) {
-      const k = `${x.uuid}|${x.item_key}`;
-      const cur = gear.get(k) ?? { character_id: x.uuid, item_key: x.item_key, count: 0 };
-      gear.set(k, { ...cur, count: cur.count + x.delta });
-      characters.set(x.uuid, Number(x.character_id));
-    }
+    g.rows.forEach(addGear);
   }
   const plan: Plan = {
     order: order.uuid,
     cosmetics: include.cosmetics ? [...cos].map(([item_id, v]) => ({ item_id, ...v })).sort((a, b) => a.item_id.localeCompare(b.item_id)) : [],
     gear: include.gear ? [...gear.values()].sort((a, b) => (a.character_id + a.item_key).localeCompare(b.character_id + b.item_key)) : [],
     gauge: include.gauge ? gauge : { aura: 0, skin: 0 },
+    sweep_tickets: include.gear ? sweepTickets : 0,
+    pass: include.gear ? pass : false,
   };
   return { plan, characters };
 }
@@ -110,7 +143,7 @@ export async function revokeOutcomes(admin: AdminCtx, ip: string, uuid: string, 
       const ids = [...first.characters.values()].sort((a, b) => a - b);
       if (ids.length > 0) await econRepo.lockCharacters(client, ids);
       const summary = await apply(client, o, first.plan, first.characters, body.request_id);
-      await payRepo.insertEvent(client, o.id, { kind: 'outcomes_revoked', actor: 'admin', detail: { cosmetics: summary.cosmetics_removed, copies: summary.copies_removed, gear: summary.gear_removed, shortfall: summary.gear_shortfall, gauge: summary.gauge } });
+      await payRepo.insertEvent(client, o.id, { kind: 'outcomes_revoked', actor: 'admin', detail: { cosmetics: summary.cosmetics_removed, copies: summary.copies_removed, gear: summary.gear_removed, shortfall: summary.gear_shortfall, gauge: summary.gauge, sweep_tickets: summary.sweep_tickets_removed, sweep_shortfall: summary.sweep_shortfall, pass: summary.pass_removed } });
       return { status: 200, data: { mode: 'apply', ...summary } };
     },
   });
@@ -146,6 +179,19 @@ async function apply(client: PoolClient, o: payRepo.OrderRow, plan: Plan, charac
     }
     shortfall += left;
   }
+  // 클리어권(계정 지갑): 락 순서 ②. 이미 쓴 만큼은 모자란 장수로 보고한다
+  let sweepRemoved = 0;
+  if (plan.sweep_tickets > 0) {
+    await lockAccount(client, o.account_id);
+    sweepRemoved = await revokeUpTo(client, o.account_id, plan.sweep_tickets, `revoke:${o.uuid}`, new Date());
+  }
+  // 성장 패스: 수령 기록과 보유 기록을 지운다(받은 보상은 위 gear 회수가 처리, 모자란 것은 shortfall)
+  let passRemoved = false;
+  if (plan.pass) {
+    await lockAccount(client, o.account_id);
+    await client.query('DELETE FROM account_pass_claims WHERE account_id = $1', [o.account_id]);
+    passRemoved = ((await client.query('DELETE FROM account_growth_pass WHERE account_id = $1', [o.account_id])).rowCount ?? 0) > 0;
+  }
   const gauge = { aura: 0, skin: 0 };
   if (plan.gauge.aura > 0 || plan.gauge.skin > 0) {
     await lockWallet(client, o.account_id);
@@ -155,5 +201,5 @@ async function apply(client: PoolClient, o: payRepo.OrderRow, plan: Plan, charac
     if (gauge.aura > 0) await setPity(client, o.account_id, w.pity - gauge.aura, false);
     if (gauge.skin > 0) await setPity(client, o.account_id, w.skinPity - gauge.skin, true);
   }
-  return { cosmetics_removed: cosmeticsRemoved, copies_removed: copiesRemoved, gear_removed: gearRemoved, gear_shortfall: shortfall, gauge };
+  return { cosmetics_removed: cosmeticsRemoved, copies_removed: copiesRemoved, gear_removed: gearRemoved, gear_shortfall: shortfall, gauge, sweep_tickets_removed: sweepRemoved, sweep_shortfall: plan.sweep_tickets - sweepRemoved, pass_removed: passRemoved };
 }

@@ -5,5 +5,18 @@
     { "level": 20, "stars": 600 },
     { "level": 30, "stars": 1000 },
     { "level": 40, "stars": 3000 }
-  ]
+  ],
+  "pass": {
+    "price": 9000,
+    "tiers": [
+      { "level": 5, "rewards": [{ "item_key": "box_sealed", "count": 5 }] },
+      { "level": 10, "rewards": [{ "item_key": "ticket_enh10", "count": 1 }, { "item_key": "box_sealed", "count": 5 }] },
+      { "level": 15, "rewards": [{ "item_key": "ticket_protect", "count": 5 }] },
+      { "level": 20, "rewards": [{ "item_key": "ticket_enh10", "count": 2 }] },
+      { "level": 25, "rewards": [{ "item_key": "box_sealed", "count": 10 }] },
+      { "level": 30, "rewards": [{ "item_key": "box_enh12_50", "count": 1 }] },
+      { "level": 35, "rewards": [{ "item_key": "box_sealed", "count": 10 }, { "item_key": "ticket_protect", "count": 5 }] },
+      { "level": 40, "rewards": [{ "item_key": "ticket_enh12", "count": 1 }, { "item_key": "box_sealed", "count": 20 }] }
+    ]
+  }
 }

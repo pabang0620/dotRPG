@@ -461,7 +461,7 @@ async function reversalPolicy(client: Tx, o: OrderRow, kind: Reversal, taken: nu
     const burnEnd = new Date(o.granted_at.getTime() + pay.burnMinutes * 60_000);
     const burned = await client.query<{ s: string }>(
       `SELECT coalesce(sum(a.stars), 0) AS s FROM star_spend_allocs a JOIN star_ledger l ON l.id = a.ledger_id
-        WHERE a.order_id = $1 AND l.reason IN ('gacha', 'exchange') AND l.created_at <= $2`,
+        WHERE a.order_id = $1 AND l.reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy') AND l.created_at <= $2`,
       [o.id, burnEnd],
     );
     if (Number(burned.rows[0]?.s ?? 0) >= o.stars * 0.9) severity = 3;

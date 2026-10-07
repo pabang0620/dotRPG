@@ -8,7 +8,7 @@ import { getRng } from '../../utils/rng';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './enhanceRepository';
-import type { EnhanceBody } from './enhanceValidation';
+import type { EnhanceBody, TicketBody } from './enhanceValidation';
 
 /** 파괴된 착용 무기를 시작 무기로 다시 채울지. C# Equipment.FixSlots는 전사를 뺀다(cls != Warrior) */
 export function reissuesStarterWeapon(cls: string): boolean {
@@ -164,7 +164,7 @@ async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
 }
 
 /** 대상의 키를 바꾼다(newKey null = 사라짐). 원장은 enhance_result(옛 키 -1, 새 키 +1) */
-async function replaceTarget(
+export async function replaceTarget(
   ctx: EconCtx,
   wornSlot: number | null,
   oldKey: string,
@@ -179,4 +179,76 @@ async function replaceTarget(
   // 강화해도 귀속은 소모한 행 그대로(파괴·+0 초기화도 같다)
   const consumed = await ctx.removeItem('bag', oldKey, 1, 'enhance_result', logId);
   if (newKey !== null && consumed !== null) await ctx.addConsumed('bag', newKey, consumed, 'enhance_result', logId);
+}
+
+// ---------- 강화권(14단계): 고른 장비의 강화 단계를 그 단계로 바로 올린다. 실패·파괴 없음, 비용 없음 ----------
+
+export function applyTicket(accountId: number, characterUuid: string, body: TicketBody): Promise<StoredResult> {
+  const { request_id: requestId, ...payload } = body;
+  return runEconomy({
+    accountId,
+    characterUuid,
+    endpoint: 'POST /characters/:uuid/enhance/ticket',
+    requestId,
+    payload,
+    handler: (ctx) => processTicket(ctx, body),
+  });
+}
+
+async function processTicket(ctx: EconCtx, body: TicketBody) {
+  await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
+  const eco = getGameData().economy;
+  const en = eco.enhance;
+  const ticket = eco.items.get(body.ticket_key);
+  if (!ticket || ticket.use !== 'EnhanceTicket' || ticket.power < 1) {
+    throw new AppError(422, '강화권이 아닙니다.', 'NOT_A_TICKET');
+  }
+  const target = ticket.power;
+  const parsed = parseItemKey(body.gear_key);
+  if (!parsed || !en.steps.has(parsed.base) || !eco.shop.equipment.has(parsed.base) || target > en.maxEnhance) throw invalidTarget();
+
+  // 대상: 가방 스택 우선, 없으면 이 캐릭터가 착용 중인 슬롯(0~5)
+  let wornSlot: number | null = null;
+  if ((await ctx.stackCount('bag', body.gear_key)) < 1) {
+    for (let slot = 0; slot <= 5 && wornSlot === null; slot++) {
+      if ((await ctx.wornKey(slot)) === body.gear_key) wornSlot = slot;
+    }
+    if (wornSlot === null) throw invalidTarget();
+  }
+  if (parsed.level >= target) {
+    throw new AppError(409, '이미 같거나 더 높은 강화 단계입니다.', 'ALREADY_HIGHER', { have: parsed.level, ticket: target });
+  }
+  const haveTicket = await ctx.stackCount('bag', body.ticket_key);
+  if (haveTicket < 1) throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have: haveTicket });
+
+  const logId = randomUUID();
+  const newKey = keyAt(parsed.base, target);
+  if ((await ctx.removeItem('bag', body.ticket_key, 1, 'enhance_ticket', logId)) === null) {
+    throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have: 0 });
+  }
+  // 옛 단계에 쌓인 천장은 의미를 잃는다(강화 성공 때와 같이 지운다)
+  const pityBefore = await repo.getPity(ctx.client, ctx.char.id, body.gear_key);
+  await repo.clearPity(ctx.client, ctx.char.id, body.gear_key);
+  await replaceTarget(ctx, wornSlot, body.gear_key, newKey, logId);
+  await repo.insertEnhanceLog(ctx.client, {
+    uuid: logId,
+    characterId: ctx.char.id,
+    requestId: ctx.requestId,
+    fromKey: body.gear_key,
+    toKey: newKey,
+    targetLocation: wornSlot !== null ? 'worn' : 'bag',
+    targetSlot: wornSlot,
+    outcome: 'ticket',
+    roll: 0,
+    successPercent: 100,
+    pityBefore,
+    pityAfter: 0,
+    gold: 0,
+    bone: 0,
+    ore: 0,
+    essence: 0,
+    ticketUsed: false,
+    createdAt: ctx.now,
+  });
+  return { status: 200, data: { gear_key_before: body.gear_key, gear_key_after: newKey, delta: ctx.delta() } };
 }

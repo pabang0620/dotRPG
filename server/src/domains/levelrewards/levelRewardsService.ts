@@ -1,6 +1,6 @@
 // 레벨 달성 보상(Docs/server/phase13_level_rewards.md). 계정 행을 잠근 한 트랜잭션에서 검사 -> 무료 별조각 지급 -> 기록.
 import { getPool, isUniqueViolation, withTransaction, type Queryable } from '../../db/pool';
-import { getLevelRewards } from '../../gamedata/levelRewards';
+import { getGrowthPass, getLevelRewards } from '../../gamedata/levelRewards';
 import { AppError } from '../../utils/AppError';
 import { assertNoHold } from '../antiabuse/holds';
 import * as wallets from '../starshop/starWallet';
@@ -13,18 +13,37 @@ export interface TierView {
   claimable: boolean;
   claimed: boolean;
 }
+export interface PassTierView {
+  level: number;
+  rewards: { item_key: string; count: number }[];
+  claimable: boolean;
+  claimed: boolean;
+}
 export interface RewardsView {
   max_level: number;
   tiers: TierView[];
+  pass_owned: boolean;
+  pass_price: number;
+  pass_tiers: PassTierView[];
 }
 
-async function view(db: Queryable, accountId: number): Promise<RewardsView> {
+/** 패스 보상 줄: 패스를 가졌고 계정 최고 레벨이 단계에 닿았고 아직 안 받았으면 claimable */
+export async function passTiers(db: Queryable, accountId: number, maxLevel: number, owned: boolean): Promise<PassTierView[]> {
+  const claimed = new Set(await repo.claimedPassLevels(db, accountId));
+  return getGrowthPass().tiers.map((t) => ({ level: t.level, rewards: t.rewards, claimed: claimed.has(t.level), claimable: owned && !claimed.has(t.level) && maxLevel >= t.level }));
+}
+
+export async function view(db: Queryable, accountId: number): Promise<RewardsView> {
   const top = await repo.topCharacter(db, accountId);
   const maxLevel = top?.level ?? 0;
   const claimed = new Set(await repo.claimedLevels(db, accountId));
+  const owned = await repo.passOwned(db, accountId);
   return {
     max_level: maxLevel,
     tiers: getLevelRewards().map((t) => ({ level: t.level, stars: t.stars, claimed: claimed.has(t.level), claimable: !claimed.has(t.level) && maxLevel >= t.level })),
+    pass_owned: owned,
+    pass_price: getGrowthPass().price,
+    pass_tiers: await passTiers(db, accountId, maxLevel, owned),
   };
 }
 

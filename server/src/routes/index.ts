@@ -31,6 +31,7 @@ import { createSweepRouter } from '../domains/sweep/sweepRoutes';
 import { createReviveRouter } from '../domains/revive/reviveRoutes';
 import { createPaymentsRouter } from '../domains/payments/paymentsRoutes';
 import { createLevelRewardsRouter } from '../domains/levelrewards/levelRewardsRoutes';
+import { createSealedBoxRouter } from '../domains/sealedbox/sealedBoxRoutes';
 
 export function createRouter(): Router {
   const r = Router();
@@ -77,5 +78,7 @@ export function createRouter(): Router {
   r.use(createPaymentsRouter());
   // 13단계: 레벨 달성 보상(계정 단위 /level-rewards, 클라이언트 버전만 검사)
   r.use(createLevelRewardsRouter());
+  // 14단계: 봉인된 상자(캐시샵 뽑기·상자 아이템 열기), 강화권(enhance), 성장 패스(level-rewards)
+  r.use(createSealedBoxRouter());
   return r;
 }
