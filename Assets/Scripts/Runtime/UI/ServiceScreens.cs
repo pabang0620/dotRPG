@@ -105,7 +105,8 @@ namespace DotRPG
     public class ShopScreen : WindowScreen
     {
         const int RowsPerPage = 7;
-        const float RowH = 68f, RowGap = 6f, ListW = 660f;
+        // [UI] 7 rows of 60 end at -530, above the page buttons (rows of 68 ran under them).
+        const float RowH = 60f, RowGap = 6f, ListW = 660f;
 
         sealed class Row
         {
@@ -159,9 +160,9 @@ namespace DotRPG
                 r.frame = Img(slot.transform, "Frame", "ui_frame", Color.clear);
                 UIFactory.Stretch(r.frame.rectTransform);
                 r.name = UIFactory.Text(r.bg.transform, "Name", "", 23, Color.white, TextAnchor.UpperLeft, true);
-                UIFactory.Place(r.name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -8f), new Vector2(380f, 30f));
+                UIFactory.Place(r.name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -4f), new Vector2(380f, 30f));
                 r.sub = UIFactory.Text(r.bg.transform, "Sub", "", 16, UiTheme.TextSecondary, TextAnchor.UpperLeft, true);
-                UIFactory.Place(r.sub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -40f), new Vector2(400f, 22f));
+                UIFactory.Place(r.sub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(80f, -34f), new Vector2(400f, 22f));
                 r.price = UIFactory.Text(r.bg.transform, "Price", "", 24, Color.white, TextAnchor.MiddleRight, true);
                 UIFactory.Place(r.price.rectTransform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-14f, 0f), new Vector2(180f, 40f));
                 var relay = r.bg.gameObject.AddComponent<PointerRelay>();
@@ -172,9 +173,9 @@ namespace DotRPG
                 };
                 w.rows.Add(r);
             }
-            w.pagePrev = Button(left.transform, "Prev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 150f, 12f), new Vector2(50f, 40f), () => w.Page(-1), 22);
-            w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 10f, 12f), new Vector2(50f, 40f), () => w.Page(1), 22);
-            w.pageText = Label(left.transform, "Page", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 100f, 12f), new Vector2(90f, 40f), TextAnchor.MiddleCenter);
+            w.pagePrev = Button(left.transform, "Prev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 170f, 12f), new Vector2(50f, 40f), () => w.Page(-1), 22);
+            w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 30f, 12f), new Vector2(50f, 40f), () => w.Page(1), 22);
+            w.pageText = Label(left.transform, "Page", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 120f, 12f), new Vector2(90f, 40f), TextAnchor.MiddleCenter);
 
             var right = Panel(w.content, "Detail", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(500f, 594f), UiTheme.Panel);
             var goldChip = Img(right.transform, "Gold", "ui_dark", new Color(1f, 1f, 1f, 0.95f));

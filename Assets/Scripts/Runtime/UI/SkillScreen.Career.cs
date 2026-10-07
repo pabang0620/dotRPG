@@ -19,7 +19,7 @@ namespace DotRPG
             if(p.IsPromoted)browsing=p.Career;
             else if(browsing==Career.None||CareerCatalog.Base(browsing)!=Game.Session.PlayerClass)browsing=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist;
             CareerText(careerRoot,"CareerTitle",$"<b>{p.ClassLabel}</b>  Lv.{p.Level}  ·  전직 포인트 <color=#ffe0a0>{p.CareerPoints}</color>",24,12,4,780,32);
-            CareerText(careerRoot,"PointRule",p.IsPromoted?$"전직 시 4포인트 + 이후 레벨당 1포인트 · 단계별 비용 1/2/3포인트 · 돌려받은 포인트 {p.RefundedPoints}":"15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능",16,12,40,800,28);
+            CareerText(careerRoot,"PointRule",p.IsPromoted?$"전직 시 4포인트 + 이후 레벨당 1포인트 · 단계별 비용 1/2/3포인트 · 돌려받은 포인트 {p.RefundedPoints}":"15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능",16,12,40,780,28);
             if(!p.IsPromoted)
             {
                 Career a=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist,b=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Guardian:Career.Bishop;
@@ -43,11 +43,11 @@ namespace DotRPG
                     if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);} // [UX] drag onto the key bar; badge = its key
                 }
             }
-            CareerText(careerRoot,"Awakening",$"<color=#ffe0a0><b>별도 각성 영역 · {skills[8].name}</b></color>\n{(p.Awakened?"각성 완료 · T 슬롯에서 사용":"포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성")}",18,16,445,740,60);
-            CareerButton("AwakeningInfo","각성 이야기 · 진행",16,510,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
-            CareerButton("BaseSkillTab","기본 스킬 · 장착 / 보조 젬",325,510,340,42,()=>{tab=TabId.Gems;Refresh();});
+            CareerText(careerRoot,"Awakening",$"<color=#ffe0a0><b>별도 각성 영역 · {skills[8].name}</b></color>\n{(p.Awakened?"각성 완료 · T 슬롯에서 사용":"포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성")}",18,16,436,740,50);
+            CareerButton("AwakeningInfo","각성 이야기 · 진행",16,492,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
+            CareerButton("BaseSkillTab","기본 스킬 · 장착 / 보조 젬",325,492,340,42,()=>{tab=TabId.Gems;Refresh();});
             var chosen=CareerCatalog.Get(selectedSkill);if(chosen==null||chosen.career!=browsing)chosen=skills[1];
-            var side=Panel(careerRoot,"CareerDetail",new Vector2(0,1),new Vector2(0,1),new Vector2(802,-4),new Vector2(414,550),new Color32(20,29,45,255));
+            var side=Panel(careerRoot,"CareerDetail",new Vector2(0,1),new Vector2(0,1),new Vector2(802,-4),new Vector2(414,530),new Color32(20,29,45,255));
             if(!p.IsPromoted)
             {
                 // [UI] The career's card art beside its name and signature skills (text only when no card is drawn).

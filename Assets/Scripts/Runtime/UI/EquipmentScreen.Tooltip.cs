@@ -71,7 +71,7 @@ namespace DotRPG
 
         void PositionTooltip(Slot s)
         {
-            var canvasRect = (RectTransform)transform;
+            var canvasRect = (RectTransform)tooltip.parent; // the fitted layout rect (it may be scaled down)
             var size = tooltip.sizeDelta;
             float halfW = canvasRect.rect.width * 0.5f, halfH = canvasRect.rect.height * 0.5f;
             // Bag cells (right half): show on the left so the grid stays visible; worn slots: on the right.

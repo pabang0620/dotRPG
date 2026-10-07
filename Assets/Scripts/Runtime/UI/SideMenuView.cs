@@ -143,6 +143,8 @@ namespace DotRPG
             open = !open;
             IsOpen = open;
             column.gameObject.SetActive(open);
+            // [UI] Above the HUD built after it: at UI size 1.3 the quest tracker reaches the grid's third column.
+            if (open) transform.SetAsLastSibling();
             anim = 0f;
         }
 

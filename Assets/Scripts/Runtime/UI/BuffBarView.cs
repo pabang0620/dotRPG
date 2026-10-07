@@ -28,6 +28,7 @@ namespace DotRPG
                 UIFactory.Stretch(icon.rectTransform, 2f, 2f, 2f, 2f);
                 var label = UIFactory.Text(back.transform, "Label", "", 14, Color.white, TextAnchor.LowerRight, true);
                 label.raycastTarget = false;
+                label.horizontalOverflow = HorizontalWrapMode.Overflow; // "60분" is wider than the 28 px slot: never wrap "분" onto a second line
                 UIFactory.Stretch(label.rectTransform, 0f, -3f, -1f, 0f);
                 back.gameObject.SetActive(false);
                 v.slots.Add((icon, label, back));

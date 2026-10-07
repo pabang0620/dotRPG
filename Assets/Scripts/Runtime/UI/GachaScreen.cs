@@ -45,7 +45,7 @@ namespace DotRPG
         const float GaugeW = 420f;
         Button one, ten, rateBtn, wardrobeBtn;
         RectTransform main;
-        // Banner list + banner + button row (5 cards of 98 + 10 gaps on the left are the tallest part).
+        // Banner list + banner + button row (6 cards of 80 + 10 gaps on the left are the tallest part).
         const float MainW = ListW + 16f + BigW, MainH = 6 * (CardH + 10f);
         RectTransform rateModal, cellRoot, resultPage;
         // Gamepad moves between the banner, tier and draw buttons, never while a result page or a modal is up (A closes those).

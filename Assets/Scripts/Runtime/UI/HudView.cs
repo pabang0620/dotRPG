@@ -98,7 +98,7 @@ namespace DotRPG
             DungeonHudView.Create(root); // [DUNGEON] clock, room map, CLEAR banner, coin countdown
             TipView.Create(root); // [E5] first-time tips
             ChatView.Create(root); // [F5] chat box + quick signals
-            questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -16 - MinimapView.Diameter - 42), new Vector2(360, 130));
+            questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -QuestTop), new Vector2(360, 130));
             var qbg = UIFactory.Panel(questPanel, "Bg", true);
             UIFactory.Stretch(qbg.rectTransform);
             questTitle = UIFactory.Text(questPanel, "Title", "", 22, UIColors.Highlight, TextAnchor.UpperLeft, true);
@@ -234,8 +234,18 @@ namespace DotRPG
             // [UI] Height from the laid-out text (long titles and objectives wrap) instead of a line count.
             float titleH = Mathf.Max(24f, questTitle.preferredHeight);
             questBody.rectTransform.offsetMax = new Vector2(questBody.rectTransform.offsetMax.x, -(16f + titleH));
-            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, 30f + titleH + Mathf.Max(22f, questBody.preferredHeight));
+            float wanted = 30f + titleH + Mathf.Max(22f, questBody.preferredHeight);
+            // [UI] The 자동 사냥 / 자동 진행 buttons and the status line hang 88 px under the panel: keep them above the
+            // skill bar / quick items (top at 156) when the canvas is short (UI size 1.15 / 1.3 = 626 / 554 tall).
+            questFitHeight = ((RectTransform)transform).rect.height;
+            float room = questFitHeight > 0f ? questFitHeight - QuestTop - 88f - 160f : wanted;
+            float height = Mathf.Min(wanted, Mathf.Max(30f + titleH + 22f, room));
+            questBody.verticalOverflow = height < wanted ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
+            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, height);
         }
+
+        const float QuestTop = 16f + MinimapView.Diameter + 42f;
+        float questFitHeight;
 
         static void AppendObjective(StringBuilder sb, QuestObjective o)
         {
@@ -314,6 +324,7 @@ namespace DotRPG
             // [CONTENT] The quest tracker is hidden inside dungeons (room map + boss bar own that space).
             bool showQuest = Game.Dungeon == null || !Game.Dungeon.InRun;
             if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
+            if (showQuest && !Mathf.Approximately(((RectTransform)transform).rect.height, questFitHeight)) RefreshQuest(); // UI size changed
             if (autoLabel != null)
             {
                 bool auto = QuestAutoPilot.Active;

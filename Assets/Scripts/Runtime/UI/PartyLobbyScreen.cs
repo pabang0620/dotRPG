@@ -21,7 +21,8 @@ namespace DotRPG
         }
 
         public static PartyLobbyScreen Instance { get; private set; }
-        const float RowH = 56f, Width = 1180f;
+        // [UI] Member rows of 50 and applicant rows of 44 keep the third applicant above the status line (bottom 130).
+        const float RowH = 50f, AppH = 44f, Width = 1180f;
 
         static PartyClient Client => PartyClient.Instance;
 
@@ -66,7 +67,7 @@ namespace DotRPG
             Label(w.content, "AppsHead", "<color=#b8c4d8>참가 신청</color>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, appTop + 4f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < 3; i++)
             {
-                var r = Row(w.content, i, appTop - 28f, 48f, Width);
+                var r = Row(w.content, i, appTop - 28f, AppH, Width);
                 int idx = i;
                 var yes = Button(r, "Yes", "수락", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-140f, 0f), new Vector2(120f, 38f), () => w.Respond(idx, true), 17);
                 var no = Button(r, "No", "거절", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(120f, 38f), () => w.Respond(idx, false), 17);

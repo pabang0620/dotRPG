@@ -42,7 +42,8 @@ namespace DotRPG
             Label(w.content, "MercTitle", "<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>", 22,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, -150f), new Vector2(1180f, 30f));
             foreach (var def in MercenaryDatabase.All) w.cards.Add(w.BuildCard(def, w.cards.Count));
-            w.hint = Label(w.content, "Hint", "", 17, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-4f, 2f), new Vector2(760f, 28f), TextAnchor.UpperRight);
+            // [UI] Key hint under the cards (top right it ran into the party title once the "자리가 N개라" warning showed).
+            w.hint = Label(w.content, "Hint", "", 17, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-4f, 2f), new Vector2(1180f, 28f), TextAnchor.LowerRight);
             return w;
         }
 

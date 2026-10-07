@@ -108,7 +108,7 @@ namespace DotRPG
             bool isOption = item.value != null;
             item.labelText = UIFactory.Text(row, "Label", item.label, fontSize, textColor,
                 isOption || AlignLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter, dark);
-            UIFactory.Stretch(item.labelText.rectTransform, 18f, 0f, isOption ? width * 0.45f : 18f, 0f);
+            UIFactory.Stretch(item.labelText.rectTransform, 18f, 0f, isOption ? width * 0.55f : 18f, 0f); // option label ends where ◀ starts (0.45 of the row)
             if (isOption)
             {
                 // ◀ and ▶ are their own click areas at both ends of the value; the value sits between them.

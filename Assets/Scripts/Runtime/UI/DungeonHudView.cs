@@ -15,7 +15,7 @@ namespace DotRPG
         int shownSecond = -1, shownRoom = -1;
 
         // ---------- Layout ----------
-        public const float ClockWidth = 420f, ClockHeight = 50f, ClockTop = 12f;
+        public const float ClockWidth = 360f, ClockHeight = 50f, ClockTop = 12f; // 640 - 180 = 460: clear of the menu button (SideMenuView, x 404..454)
         /// <summary>Lowest point of the clock panel (the boss HP bar may start below this).</summary>
         public const float ReservedBottom = ClockTop + ClockHeight + 8f;
         const float Cell = 30f, CellGap = 10f, MapWidth = 176f;
@@ -57,7 +57,7 @@ namespace DotRPG
             UIFactory.Stretch(roomText.rectTransform, 140f, 0f, 22f, 0f);
 
             // Room map (where the round minimap sits).
-            comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -122f), new Vector2(MapWidth, 64f));
+            comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -172f), new Vector2(MapWidth, 64f)); // under the 마을로 button (room map 16..112, button 120..164)
             comboText = UIFactory.Text(comboRoot, "Count", "", 30, UIColors.Highlight, TextAnchor.MiddleRight, true);
             UIFactory.Place(comboText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(MapWidth, 44f));
             var comboTrack = UIFactory.Image(comboRoot, "Track", Game.Art.Get("ui_white"), new Color(1f, 1f, 1f, .15f));

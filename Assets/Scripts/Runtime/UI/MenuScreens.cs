@@ -16,7 +16,28 @@ namespace DotRPG
         {
             shownFrame = Time.frameCount;
             gameObject.SetActive(true);
+            if (fitToScreen) FitToScreen();
             menu?.ResetSelection();
+        }
+
+        // [UI] BuildPanel panels shrink to fit the canvas (the settings list is taller than 720, and the
+        // bigger UI sizes shrink the canvas to 1280/k x 720/k).
+        bool fitToScreen;
+
+        protected void FitToScreen()
+        {
+            if (panel == null) return;
+            Vector2 canvas = UIFactory.ReferenceResolution;
+            var scaler = GetComponentInParent<CanvasScaler>();
+            if (scaler != null && Screen.width > 0 && Screen.height > 0)
+            {
+                var r = scaler.referenceResolution;
+                float sf = Mathf.Min(Screen.width / r.x, Screen.height / r.y); // ScreenMatchMode.Expand
+                canvas = new Vector2(Screen.width / sf, Screen.height / sf);
+            }
+            var size = panel.sizeDelta;
+            float k = Mathf.Min(1f, Mathf.Min((canvas.x - 24f) / Mathf.Max(1f, size.x), (canvas.y - 24f) / Mathf.Max(1f, size.y)));
+            panel.localScale = new Vector3(k, k, 1f);
         }
 
         public virtual void Hide() => gameObject.SetActive(false);
@@ -40,6 +61,7 @@ namespace DotRPG
         protected void BuildPanel(RectTransform root, string title, float width, string body = null, int bodySize = 20)
         {
             panel = UIFactory.Place(UIFactory.Rect(root, "Panel"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(width, 200));
+            fitToScreen = true;
             // [UI] Dark panel like every other window (the cream panel mixed two themes); see UiTheme.
             var fill = UIFactory.Image(panel, "Fill", Game.Art.Get("ui_white"), UiTheme.PanelDeep); // opaque: nothing shows through
             fill.preserveAspect = false;
@@ -206,7 +228,7 @@ namespace DotRPG
             menu.AddOption("수직 동기화", () => s.Data.vSync ? "켜기" : "끄기", d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
             menu.AddOption("화면 흔들림", () => s.Data.screenShake ? "켜기" : "끄기", d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
             // [I] Accessibility and keys.
-            menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); });
+            menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
             menu.AddOption("색약 보정", () => s.Data.colorBlind ? "켜기" : "끄기", d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
             // Loot filter: what is left on the ground (gold and higher gear are always picked up).
             menu.AddButton("줍기 설정", () => ui.Push(ui.LootFilter)); // its own screen: the list stays within the screen height

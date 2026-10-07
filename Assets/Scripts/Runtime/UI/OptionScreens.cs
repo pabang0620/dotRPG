@@ -31,7 +31,11 @@ namespace DotRPG
             for (int i = 0; i < SaveSystem.SlotCount; i++)
             {
                 int slot = i;
-                menu.AddButton(Summary(slot), () => Pick(slot), () => !loading || Game.Saves.HasSave(slot));
+                var row = menu.AddButton(Summary(slot), () => Pick(slot), () => !loading || Game.Saves.HasSave(slot));
+                // [UI] A long summary (name, story title, time, date) shrinks to one row instead of wrapping into the next.
+                row.labelText.resizeTextForBestFit = true;
+                row.labelText.resizeTextMinSize = 14;
+                row.labelText.resizeTextMaxSize = row.labelText.fontSize;
             }
             menu.AddButton("돌아가기", () => ui.Pop());
             menu.OnCancel = () => ui.Pop();

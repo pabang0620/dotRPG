@@ -33,7 +33,7 @@ namespace DotRPG
             var w = CreateWindow<MailScreen>(canvas, "Mail", "우편함", "menuicon_mail");
             Instance = w;
             var tl = new Vector2(0f, 1f);
-            var list = Panel(w.content, "List", tl, tl, new Vector2(0f, -6f), new Vector2(ListW, Rows * RowH + 70f), new Color32(18, 26, 40, 240));
+            var list = Panel(w.content, "List", tl, tl, new Vector2(0f, -6f), new Vector2(ListW, Rows * RowH + 66f), new Color32(18, 26, 40, 240));
             for (int i = 0; i < Rows; i++)
             {
                 int idx = i;
@@ -58,7 +58,7 @@ namespace DotRPG
             Button(list.transform, "Next", "▶", "ui_btngray", br, br, new Vector2(-8f, 10f), new Vector2(44f, 40f), () => w.Turn(1), 18);
             w.claimAllBtn = Button(list.transform, "ClaimAll", "모두 받기", "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(10f, 8f), new Vector2(200f, 48f), w.ClaimAll, 20);
 
-            var detail = Panel(w.content, "Detail", tl, tl, new Vector2(ListW + 16f, -6f), new Vector2(DetailW, Rows * RowH + 70f), new Color32(24, 36, 54, 235));
+            var detail = Panel(w.content, "Detail", tl, tl, new Vector2(ListW + 16f, -6f), new Vector2(DetailW, Rows * RowH + 66f), new Color32(24, 36, 54, 235));
             var d = detail.transform;
             w.title = Label(d, "Title", "", 26, tl, tl, new Vector2(24f, -16f), new Vector2(DetailW - 48f, 38f));
             w.meta = Label(d, "Meta", "", 16, tl, tl, new Vector2(24f, -56f), new Vector2(DetailW - 48f, 24f));

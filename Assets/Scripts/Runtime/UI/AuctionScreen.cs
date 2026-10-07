@@ -28,6 +28,8 @@ namespace DotRPG
         Button catBtn, rarBtn, enhBtn, priceBtn, sortBtn, claimAllBtn;
         InputField search;
         Text pageText, goldText, headText;
+        // [UI] Column headings placed over the row cells (a space-padded heading line drifted off the columns).
+        Text[] headCols;
         readonly List<(RectTransform row, Image icon, Text name, Text grade, Text price, Text bid, Text seller, Text time, Button a, Button b)> rows =
             new List<(RectTransform, Image, Text, Text, Text, Text, Text, Text, Button, Button)>();
         List<AuctionListing> listings = new List<AuctionListing>();
@@ -69,7 +71,10 @@ namespace DotRPG
             // ----- table (search / mine / mail) -----
             w.tableRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Table"));
             var head = Panel(w.tableRoot, "Head", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, TableTop + 46f), new Vector2(TableW, 30f), HeadRow);
-            w.headText = Label(head.transform, "Text", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(TableW - 20f, 28f), TextAnchor.MiddleLeft);
+            w.headText = Label(head.transform, "Text", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(50f, 0f), new Vector2(330f, 28f), TextAnchor.MiddleLeft);
+            Text HeadCol(string n, float hx, float hw, TextAnchor align) => Label(head.transform, n, "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(hx, 0f), new Vector2(hw, 28f), align);
+            w.headCols = new[] { HeadCol("HGrade", 385f, 95f, TextAnchor.MiddleLeft), HeadCol("HPrice", 485f, 140f, TextAnchor.MiddleRight), HeadCol("HBid", 635f, 125f, TextAnchor.MiddleRight),
+                HeadCol("HSeller", 780f, 120f, TextAnchor.MiddleLeft), HeadCol("HTime", 905f, 120f, TextAnchor.MiddleLeft) };
             for (int i = 0; i < PageSize; i++)
             {
                 var r = Row(w.tableRoot, i, TableTop + 14f, RowH, TableW);
@@ -223,13 +228,13 @@ namespace DotRPG
             {
                 mails = Service.Mailbox().ToList();
                 total = mails.Count;
-                headText.text = "<color=#b8c4d8>내용                                                                                                                          보관 30일</color>";
+                SetHead("내용", "", "", "", "", "보관 30일");
             }
             else
             {
                 listings = (tab == Tab.Search ? Service.Search(query) : Service.MyListings()).ToList();
                 total = listings.Count;
-                headText.text = "<color=#b8c4d8>        아이템                                                  등급              즉시 구매가               입찰가           판매자              남은 시간</color>";
+                SetHead("아이템", "등급", "즉시 구매가", "입찰가", "판매자", "남은 시간");
             }
             int pages = Math.Max(1, (total + PageSize - 1) / PageSize);
             page = Mathf.Clamp(page, 0, pages - 1);
@@ -278,6 +283,12 @@ namespace DotRPG
                     row.b.interactable = l.Biddable;
                 }
             }
+        }
+
+        void SetHead(string name, params string[] cols)
+        {
+            headText.text = $"<color=#b8c4d8>{name}</color>";
+            for (int i = 0; i < headCols.Length; i++) headCols[i].text = i < cols.Length && cols[i] != "" ? $"<color=#b8c4d8>{cols[i]}</color>" : "";
         }
 
         void RefreshRegister()

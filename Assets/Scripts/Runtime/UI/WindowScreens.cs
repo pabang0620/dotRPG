@@ -39,8 +39,31 @@ namespace DotRPG
             UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(192f, -12f), new Vector2(560f, 52f));
             w.keeperLine = UIFactory.Text(root, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
             UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(760f, 52f));
-            w.content = UIFactory.Stretch(UIFactory.Rect(root, "Content"), 30f, 30f, 30f, 96f);
+            // [UI] Every window is laid out on a fixed 1220x594 content area (1280x720 minus margins and header) that
+            // shrinks to fit when the window is smaller (UI scale 1.15 / 1.3, small screens); it never grows.
+            var area = UIFactory.Stretch(UIFactory.Rect(root, "ContentArea"), 30f, 30f, 30f, 96f);
+            w.content = UIFactory.Place(UIFactory.Rect(area, "Content"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, ContentSize);
+            area.gameObject.AddComponent<ContentFit>().content = w.content;
             return w;
+        }
+
+        /// <summary>The design size of every window's content.</summary>
+        public static readonly Vector2 ContentSize = new Vector2(1220f, 594f);
+
+        /// <summary>Scales a window's fixed-size content down to fit its area.</summary>
+        sealed class ContentFit : MonoBehaviour
+        {
+            public RectTransform content;
+            Vector2 last;
+
+            void LateUpdate()
+            {
+                var size = ((RectTransform)transform).rect.size;
+                if (content == null || size == last) return;
+                last = size;
+                float k = Mathf.Min(1f, size.x / ContentSize.x, size.y / ContentSize.y);
+                content.localScale = new Vector3(k, k, 1f);
+            }
         }
 
         Text keeperLine;

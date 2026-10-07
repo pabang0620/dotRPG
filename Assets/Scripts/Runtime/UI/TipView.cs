@@ -15,7 +15,7 @@ namespace DotRPG
 
         public static TipView Create(Transform parent)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "Tip"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(560f, 110f));
+            var root = UIFactory.Place(UIFactory.Rect(parent, "Tip"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(472f, 110f)); // [UI] 404..876: clear of the currency bar (x <= 400) and the field-boss plate left of the minimap (x >= 878)
             var v = root.gameObject.AddComponent<TipView>();
             v.box = root;
             var bg = UIFactory.Image(root, "Bg", Game.Art.Get("ui_tooltip"), Color.white);

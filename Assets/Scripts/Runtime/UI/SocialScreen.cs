@@ -59,6 +59,7 @@ namespace DotRPG
             else if (view == View.Report) BuildReport();
             else BuildList();
             FitPanel();
+            FitToScreen(); // [UI] a long friend list grows the panel after Show fitted it
             menu.Refresh();
         }
 

@@ -32,7 +32,7 @@ namespace DotRPG
         {
             var bg = UIFactory.Panel(parent, "BulkSell", true);
             bg.raycastTarget = true; // clicks stop here, not on the list underneath
-            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 520f));
+            UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 540f)); // [UI] 540: the summary line sat on the note at 520
             var p = bg.gameObject.AddComponent<BulkSellPanel>();
             p.changed = onSold;
             var title = UIFactory.Text(bg.transform, "Title", "일괄 판매", 28, UIColors.Highlight, TextAnchor.UpperCenter, true);

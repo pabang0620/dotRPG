@@ -26,21 +26,21 @@ namespace DotRPG
         {
             int slot = p.SlotOf(id);
             if (slot < 0) return;
-            var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, -4), new Vector2(34, 26), new Color32(255, 211, 74, 235));
+            var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, -60), new Vector2(34, 26), new Color32(255, 211, 74, 235));
             Label(badge.transform, "Key", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 16,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(34, 26), TextAnchor.MiddleCenter).color = new Color32(30, 24, 10, 255);
         }
 
         void BuildKeyBar(Transform side, Progression p, CareerSkill chosen)
         {
-            CareerText(side, "KeyBarTitle", "<b>장착 슬롯</b>  <size=14><color=#b8c4d8>스킬을 끌어다 놓거나, 스킬을 고른 뒤 칸을 누르세요 · 우클릭: 해제</color></size>", 16, 18, 432, 390, 24);
+            CareerText(side, "KeyBarTitle", "<b>장착 슬롯</b>  <size=14><color=#b8c4d8>우클릭: 해제</color></size>\n<size=14><color=#b8c4d8>스킬을 끌어다 놓거나, 스킬을 고른 뒤 칸을 누르세요</color></size>", 16, 18, 422, 390, 40);
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 int slot = i;
                 var gem = p.Active(slot);
                 bool ultimate = slot == 4;
                 bool holdsChosen = chosen != null && gem != null && gem.id == chosen.id;
-                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + slot * 76, -460), new Vector2(68, 68),
+                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + slot * 76, -466), new Vector2(68, 68),
                     holdsChosen ? new Color32(90, 74, 30, 255) : new Color32(14, 20, 32, 255));
                 box.raycastTarget = true;
                 var icon = UIFactory.Image(box.transform, "Icon", SkillIcon(gem), gem != null ? Color.white : new Color(1, 1, 1, 0));
