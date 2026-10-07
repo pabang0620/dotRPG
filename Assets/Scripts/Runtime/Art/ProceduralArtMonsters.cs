@@ -37,18 +37,8 @@ namespace DotRPG
         static readonly Color32 MonCoin = PixelCanvas.Hex("#ffd84a");
         static readonly Color32 MonCape = PixelCanvas.Hex("#b0283a");
         static readonly Color32 MonCapeDark = PixelCanvas.Hex("#761a28");
-        static readonly Color32 MonCapeLight = PixelCanvas.Hex("#dc4a52");
         static readonly Color32 MonFur = PixelCanvas.Hex("#f4efe6");
         static readonly Color32 MonSocket = PixelCanvas.Hex("#2b1d16");
-
-        /// <summary>Monster frame dispatch (CharacterLook.body == Monster, keyed by look.id).</summary>
-        static PixelCanvas DrawMonsterCharacter(CharacterLook look, string dir, string frame)
-        {
-            var v = new View(dir);
-            if (look.id == "totem") return DrawTotem(frame);
-            if (look.id.StartsWith("boss_")) return DrawBoss(look, v, frame);
-            return DrawSmallMonster(look, v, frame);
-        }
 
         // =====================================================================================
         // Small monsters (16x20, same body as the field skeleton)
@@ -66,62 +56,6 @@ namespace DotRPG
             if (v.side) return attack ? new Grip { x = 13, y = 12 + o, forward = true } : new Grip { x = 9 + step, y = 14 + o };
             if (v.diag) return attack ? new Grip { x = 13, y = 12 + o, forward = true } : new Grip { x = 11, y = 14 + o };
             return attack ? new Grip { x = 12, y = 9 + o, raised = true } : new Grip { x = 12, y = 14 + o };
-        }
-
-        static PixelCanvas DrawSmallMonster(CharacterLook L, View v, string frame)
-        {
-            var c = new PixelCanvas(16, 20);
-            FrameInfo(frame, out int bob, out int step);
-            bool attack = frame == "attack";
-            int o = bob, hx = 4, hy = 3 + o;
-            var g = SmallGrip(v, attack, o, step);
-            bool behindTool = v.back && !attack;
-
-            // Behind the body.
-            switch (L.id)
-            {
-                case "skel_gold": GoldSack(c, v, o); break;
-                case "skel_archer": ArcherQuiver(c, v, o); break;
-                case "skel_miner": if (behindTool) SmallPickaxe(c, g); break;
-                case "skel_knight": if (behindTool) SmallSword(c, g, true); break;
-            }
-
-            DrawSkeletonBody(c, L, v, frame);
-
-            switch (L.id)
-            {
-                case "skel_gold":
-                    // Gold glints on the skull and a coin in the hand.
-                    if (!v.back) c.Set(hx + 2, hy + 1, MonHelmLight);
-                    c.Set(hx + 5, hy, White);
-                    if (v.front && !v.side) c.Set(v.diag ? 10 : 11, 15 + o, MonCoin);
-                    break;
-                case "skel_miner":
-                    SmallHelmet(c, v, hx, hy, MonHelm, MonHelmDark, MonHelmLight, true);
-                    if (!behindTool) SmallPickaxe(c, g);
-                    break;
-                case "skel_necro":
-                    NecroRobe(c, v, o, step);
-                    NecroHood(c, v, hx, hy, attack);
-                    SmallStaff(c, v, g, attack, o);
-                    break;
-                case "skel_archer":
-                    ArcherHood(c, v, hx, hy);
-                    SmallBow(c, v, g, attack, o);
-                    break;
-                case "skel_shield":
-                    SmallHelmet(c, v, hx, hy, MonIron, MonIronDark, MonIronLight, false);
-                    if (!v.back) SmallShortSword(c, v, g);
-                    TowerShieldSmall(c, v, o);
-                    break;
-                case "skel_knight":
-                    KnightArmor(c, v, o);
-                    KnightHelm(c, v, hx, hy);
-                    if (!behindTool) SmallSword(c, g, false);
-                    break;
-            }
-            c.Outline(Outline);
-            return c.WithPivot(8, 1.5f);
         }
 
         static void SmallHelmet(PixelCanvas c, View v, int hx, int hy, Color32 col, Color32 dark, Color32 light, bool lamp)
@@ -398,8 +332,6 @@ namespace DotRPG
         // Totem (사령 토템)
         // =====================================================================================
 
-        static PixelCanvas DrawTotem(string frame) => DrawTotemRaw(frame).OutlinedWithPivot(8, 1.5f);
-
         /// <summary>Totem frame before the outline (the HD path upscales this).</summary>
         static PixelCanvas DrawTotemRaw(string frame)
         {
@@ -455,8 +387,6 @@ namespace DotRPG
             /// <summary>Weapon grip in boss canvas coordinates; weapons always point up from it.</summary>
             public int gx, gy;
         }
-
-        static PixelCanvas DrawBoss(CharacterLook L, View v, string frame) => DrawBossRaw(L, v, frame).OutlinedWithPivot(BossW / 2f, 1.5f);
 
         /// <summary>Boss frame before the outline (the HD path upscales this).</summary>
         static PixelCanvas DrawBossRaw(CharacterLook L, View v, string frame)

@@ -210,8 +210,6 @@ namespace DotRPG
             yield return Wait(0.3f);
             Log($"level up: Lv={prog.Level} xp={prog.Xp}/{prog.XpNeeded} points={prog.PointsLeft} hp {hpBefore}->{Game.Player.Health.Max} mp {mpBefore}->{CharacterStats.MaxMp}");
             var arcBefore = Game.Player.Skills.Numbers(0);
-            foreach (var id in new[] { "Lt0", "Lt1", "Ld1", "LD", "Lc1", "LC", "Rt0", "Rt1", "UM" })
-                Log($"allocate {id}: {prog.Allocate(PassiveTree.Get(id))}");
             Log($"after tree: points={prog.PointsLeft} dmg={CharacterStats.AttackDamage(Game.Player.Class)} inc={CharacterStats.IncDamage}% hp={Game.Player.Health.Max} mp={CharacterStats.MaxMp} speed+{CharacterStats.SpeedBonus}% refund LD allowed={prog.CanRefund(PassiveTree.Get("LD"))} refund Ld1 allowed={prog.CanRefund(PassiveTree.Get("Ld1"))}");
             prog.SetGem(0, 1, "sup_dmg"); prog.SetGem(0, 2, "sup_chain");
             prog.SetGem(1, 1, "sup_aoe"); prog.SetGem(1, 2, "sup_multi");

@@ -32,33 +32,6 @@ namespace DotRPG
         }
     }
 
-    /// <summary>Plays a looping sprite animation from sprite keys (the plaza fountain's water).</summary>
-    public class SpriteCycler : MonoBehaviour
-    {
-        SpriteRenderer sr;
-        string[] keys;
-        float fps = 6f, time;
-        int frame;
-
-        public void Setup(string[] frameKeys, float framesPerSecond)
-        {
-            keys = frameKeys;
-            fps = framesPerSecond;
-            sr = GetComponent<SpriteRenderer>();
-            time = Random.value * 3f;
-        }
-
-        void Update()
-        {
-            if (sr == null || keys == null || keys.Length == 0) return;
-            time += Time.deltaTime * fps;
-            int f = (int)time % keys.Length;
-            if (f == frame) return;
-            frame = f;
-            sr.sprite = Game.Art.Get(keys[f]);
-        }
-    }
-
     /// <summary>Cached water-only animation for the existing plaza fountain. Masonry, pivot and collision stay fixed.</summary>
     public sealed class FountainWater : MonoBehaviour
     {

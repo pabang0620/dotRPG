@@ -115,12 +115,6 @@ namespace DotRPG
         }
 
         public void Tick() => now++;
-
-        public void Disconnect()
-        {
-            if (other != null) other.other = null;
-            other = null;
-        }
     }
 
     /// <summary>

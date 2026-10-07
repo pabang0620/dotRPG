@@ -447,8 +447,6 @@ namespace DotRPG
             27.25f, 37.13f, 43.43f, 49.8f, 56.11f, 62.38f, 68.59f, 74.77f, 80.9f, 86.98f,
         };
 
-        public static float EnhanceCoefficient(int level) => EnhanceCoef[Mathf.Clamp(level, 0, MaxEnhance)];
-
         /// <summary>
         /// Growth per coefficient point: the item's own <see cref="EquipmentItem.enhanceSeed"/>, or the default
         /// for its category and tier t: weapon 0.135 × (t + 1) (≈ +50% of base + weapon attack at +12),

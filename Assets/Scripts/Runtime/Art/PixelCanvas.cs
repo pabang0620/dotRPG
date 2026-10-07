@@ -164,16 +164,6 @@ namespace DotRPG
 
         bool Opaque(Color32[] buffer, int x, int y) => InBounds(x, y) && buffer[y * Width + x].a > 128;
 
-        public void FlipHorizontal()
-        {
-            for (int y = 0; y < Height; y++)
-                for (int x = 0; x < Width / 2; x++)
-                {
-                    int a = y * Width + x, b = y * Width + (Width - 1 - x);
-                    (Pixels[a], Pixels[b]) = (Pixels[b], Pixels[a]);
-                }
-        }
-
         /// <summary>Copies another canvas on top (alpha blended) at the given top-left offset.</summary>
         public void Blit(PixelCanvas src, int ox, int oy)
         {

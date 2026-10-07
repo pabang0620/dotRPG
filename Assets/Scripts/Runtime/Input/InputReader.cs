@@ -119,13 +119,6 @@ namespace DotRPG
 #endif
         }
 
-        public void ResetBindings()
-        {
-#if ENABLE_INPUT_SYSTEM
-            map?.RemoveAllBindingOverrides();
-#endif
-        }
-
         void OnDestroy()
         {
 #if ENABLE_INPUT_SYSTEM

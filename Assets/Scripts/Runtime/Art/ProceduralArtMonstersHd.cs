@@ -28,12 +28,6 @@ namespace DotRPG
             return DrawSmallMonsterHd(look, v, frame);
         }
 
-        static PixelCanvas OutlinedWithPivot(this PixelCanvas c, float px, float py)
-        {
-            c.Outline(Outline);
-            return c.WithPivot(px, py);
-        }
-
         // ---------- Small monsters ----------
 
         static PixelCanvas DrawSmallMonsterHd(CharacterLook L, View v, string frame)

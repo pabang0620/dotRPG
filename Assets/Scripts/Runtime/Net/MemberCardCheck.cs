@@ -42,8 +42,6 @@ namespace DotRPG
             }
         }
 
-        public static bool Mismatched(string characterId) => !string.IsNullOrEmpty(characterId) && mismatched.Contains(characterId);
-
         /// <summary>
         /// Brings a human's card to the server values; true when anything had to change. A card sent later in the run
         /// (<paramref name="joining"/> false) may be a level or two ahead of a view read at the start, and its gear may

@@ -87,17 +87,7 @@ namespace DotRPG
 
         // ---------- Passive tree ----------
 
-        public bool CanAllocate(PassiveNode node) => false; // Legacy training retained; only career nodes are spendable.
-
-        public bool Allocate(PassiveNode node)
-        {
-            if (!CanAllocate(node)) return false;
-            Allocated.Add(node.id);
-            Changed?.Invoke();
-            return true;
-        }
-
-        /// <summary>Refunds a node if every other allocated node stays connected to the start.</summary>
+        /// <summary>Whether a node could be refunded (every other allocated node stays connected to the start).</summary>
         public bool CanRefund(PassiveNode node)
         {
             if (node == null || !Allocated.Contains(node.id) || node.kind == PassiveKind.Start) return false;
@@ -112,14 +102,6 @@ namespace DotRPG
                     if (link != node.id && Allocated.Contains(link) && reach.Add(link)) queue.Enqueue(link);
             }
             return reach.Count == Allocated.Count - 1;
-        }
-
-        public bool Refund(PassiveNode node)
-        {
-            if (!CanRefund(node)) return false;
-            Allocated.Remove(node.id);
-            Changed?.Invoke();
-            return true;
         }
 
         public void ResetTree()

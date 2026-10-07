@@ -116,9 +116,6 @@ namespace DotRPG
             props.Clear();
         }
 
-        /// <summary>Leaves any screen tint in place across scenes (night of the attack) until a scene clears it.</summary>
-        public void ClearTint() => tint.color = new Color(0f, 0f, 0f, 0f);
-
         // =============================== Timeline ===============================
 
         IEnumerator Run(CutsceneDef def, Action done)

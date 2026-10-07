@@ -99,11 +99,9 @@ namespace DotRPG
             }
         }
         public static WarriorRightHandRig.Pose Pose(string direction, string frame) => WarriorRightHandRig.Sample(FacingOf(direction), frame, Frame(direction, frame).waist);
-        public static bool Behind(string direction) => Pose(direction, "idle0").rightHandBack;
         // This warrior's lower-diagonal source faces the opposite side of the engine convention.
         // Swap only its SE/SW visual mapping; world movement and other characters stay unchanged.
         public static bool Mirror(Facing facing) => facing == Facing.DownRight || (facing.IsLeft() && facing != Facing.DownLeft);
-        public static int AttackIndex(float t) => t < .16f ? 0 : t < .30f ? 1 : t < .44f ? 2 : t < .60f ? 3 : t < .80f ? 4 : 5;
         public static float Angle(string direction, string frame)
         {
             return Pose(direction, frame).swordAngle;

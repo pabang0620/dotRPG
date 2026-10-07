@@ -151,13 +151,10 @@ namespace DotRPG
             if (Def.boss) return seconds * BossCrowdControlScale;
             // [SKILL v2] Diminishing returns: each stun / freeze within CcChainWindow of the last one lasts half as
             // long (1, 1/2, 1/4 ...), so two control skills can no longer keep a monster locked.
-            if (!SkillGems.UseLegacy)
-            {
-                if (Time.time > ccChainUntil) ccChain = 0;
-                seconds *= Mathf.Pow(0.5f, ccChain);
-                ccChain++;
-                ccChainUntil = Time.time + CcChainWindow;
-            }
+            if (Time.time > ccChainUntil) ccChain = 0;
+            seconds *= Mathf.Pow(0.5f, ccChain);
+            ccChain++;
+            ccChainUntil = Time.time + CcChainWindow;
             if (!SuperArmorActive) behaviour?.Interrupt();
             return seconds;
         }
@@ -264,7 +261,6 @@ namespace DotRPG
 
         // =============================== API for behaviours ===============================
 
-        internal bool InChase => state == State.Chase;
         internal bool CanAct => state != State.Dead && !IsFrozen && !IsStunned && !IsGroggy && Game.IsWorldRunning;
         internal Vector2 Home => home;
         internal Facing MonsterFacing => facing;

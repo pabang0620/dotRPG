@@ -9,17 +9,13 @@ namespace DotRPG
     public static class CareerFx
     {
         public static readonly Color Steel = new Color(0.55f, 0.82f, 1f, 0.95f);
-        public static readonly Color SteelDeep = new Color(0.2f, 0.45f, 1f, 0.85f);
         public static readonly Color Teal = new Color(0.38f, 0.95f, 0.88f, 0.95f);
-        public static readonly Color TealDeep = new Color(0.1f, 0.55f, 0.6f, 0.85f);
         public static readonly Color Violet = new Color(0.74f, 0.52f, 1f, 0.95f);
-        public static readonly Color VioletDeep = new Color(0.42f, 0.22f, 0.95f, 0.85f);
         public static readonly Color Holy = new Color(1f, 0.9f, 0.55f, 0.95f);
         public static readonly Color HolyWarm = new Color(1f, 0.72f, 0.3f, 0.85f);
         public static readonly Color Life = new Color(0.6f, 1f, 0.6f, 0.9f);
 
         public static Color Main(Career c) => c == Career.Fighter ? Steel : c == Career.Guardian ? Teal : c == Career.Arcanist ? Violet : Holy;
-        public static Color Deep(Career c) => c == Career.Fighter ? SteelDeep : c == Career.Guardian ? TealDeep : c == Career.Arcanist ? VioletDeep : HolyWarm;
         static Color A(Color c, float a) => new Color(c.r, c.g, c.b, a);
         public static float Angle(Vector2 dir) => Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
@@ -130,14 +126,6 @@ namespace DotRPG
             SkillFx.Spawn("fx_shock", at, A(color, 0.45f), life * 1.3f, SkillFx.TopOrder - 5).Additive().Scale(radius * 0.3f, radius * 1.15f).Delay(delay);
         }
 
-        /// <summary>A magic circle on the ground.</summary>
-        public static void Sigil(Vector2 feet, float radius, Color color, float life, float spin = -120f)
-        {
-            SkillFx.Spawn("fx_rune", feet, A(color, 0.9f), life, SkillFx.GroundOrder + 6).Scale(radius * 0.85f, radius * 0.95f).Spin(spin).Fade(FxFade.InOut);
-            SkillFx.Spawn("fx_rune", feet, new Color(1f, 1f, 1f, 0.4f), life * 0.9f, SkillFx.GroundOrder + 7).Rotate(30f).Scale(radius * 0.6f, radius * 0.7f).Spin(-spin * 1.4f).Fade(FxFade.InOut);
-            SkillFx.Spawn("fx_glow", feet, A(color, 0.35f), life, SkillFx.GroundOrder + 5).Additive().Scale(radius * 1.2f, radius * 1.5f).Fade(FxFade.InOut);
-        }
-
         /// <summary>Ground slam: dust ring, rock chips, cracks and a shock ring.</summary>
         public static void Slam(Vector2 feet, float radius, Color color, bool big)
         {
@@ -173,14 +161,6 @@ namespace DotRPG
         /// <summary>[VFX] The drawn small shield (same family as the falling aegis) when it exists: shown in its own colours.</summary>
         public static bool ShieldArt => SkillFx.HasImage("fxi_shield_small");
         public static string ShieldSprite => SkillFx.Pick("fxi_shield_small", "fx_aegis");
-
-        /// <summary>Guardian crest flashing over a point.</summary>
-        public static void Aegis(Vector2 at, float size, Color color, float life)
-        {
-            if (ShieldArt) SkillFx.Spawn(ShieldSprite, at, Color.white, life, SkillFx.TopOrder + 3).Scale(size * 0.8f, size * 1.6f).Pop().Fade(FxFade.Late);
-            else SkillFx.Spawn("fx_aegis", at, A(color, 0.95f), life, SkillFx.TopOrder + 3).Scale(size * 0.5f, size).Pop().Fade(FxFade.Late);
-            SkillFx.Spawn("fx_glow", at, A(color, 0.5f), life, SkillFx.TopOrder + 2).Additive().Scale(size * 1.2f, size * 1.8f).Fade(FxFade.Quick);
-        }
 
         /// <summary>A bright mark that a healing / shield / blessing reached an ally.</summary>
         public static void Bless(Vector2 at, Color color, bool shield)

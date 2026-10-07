@@ -408,7 +408,6 @@ namespace DotRPG
 
         // ---------- Automated checks ----------
         public bool DevDone => done;
-        public bool DevPicked => picked;
         public string DevStamp => stamp != null ? stamp.text : "";
         public string DevWho(int i) => i >= 0 && i < cards.Count ? cards[i].who.text : "";
         public bool DevFlipped(int i) => i >= 0 && i < cards.Count && cards[i].flipped;

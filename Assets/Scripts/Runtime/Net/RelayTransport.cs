@@ -32,7 +32,6 @@ namespace DotRPG
         public static byte[] PingFrame(uint nonce) { var b = new byte[5]; b[0] = Ping; WriteU32(b, 1, nonce); return b; }
 
         static void WriteU32(byte[] b, int o, uint v) { b[o] = (byte)v; b[o + 1] = (byte)(v >> 8); b[o + 2] = (byte)(v >> 16); b[o + 3] = (byte)(v >> 24); }
-        public static uint ReadU32(byte[] b, int o) => (uint)(b[o] | b[o + 1] << 8 | b[o + 2] << 16 | b[o + 3] << 24);
 
         /// <summary>Packs packets into as few BATCH frames as the size limit allows.</summary>
         public static List<byte[]> Pack(List<Packet> packets)

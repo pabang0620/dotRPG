@@ -99,7 +99,6 @@ namespace DotRPG
 
         public VfxPlayer Follow(Transform target, Vector2 offset) { follow = target; followOffset = offset; return this; }
         public VfxPlayer Move(Vector2 speed) { velocity = speed; return this; }
-        public VfxPlayer Grow(float from, float to) { scaleFrom = Vector2.one * from; scaleTo = Vector2.one * to; transform.localScale = scaleFrom; return this; }
         public VfxPlayer Squash(float x, float y) { scaleFrom = new Vector2(scaleFrom.x * x, scaleFrom.y * y); scaleTo = new Vector2(scaleTo.x * x, scaleTo.y * y); transform.localScale = scaleFrom; return this; }
         public VfxPlayer FadeOut(float seconds) { fadeOut = seconds; return this; }
         public VfxPlayer FlipY(bool on) { sr.flipY = on; return this; }

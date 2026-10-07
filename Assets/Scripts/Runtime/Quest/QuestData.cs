@@ -155,7 +155,6 @@ namespace DotRPG
         readonly Dictionary<string, QuestDef> byId = new Dictionary<string, QuestDef>();
 
         public IReadOnlyList<QuestDef> All => quests;
-        public IReadOnlyList<ChapterDef> Chapters => chapters;
 
         public QuestDatabase(TextAsset source)
         {

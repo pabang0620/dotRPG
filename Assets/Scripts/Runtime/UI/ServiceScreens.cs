@@ -672,7 +672,6 @@ namespace DotRPG
         // ---------- Developer automation (DevCapture) ----------
 
         public void DevDepositMaterials() { DepositMaterials(); Refresh(); }
-        public void DevWithdrawAll() { WithdrawAll(); Refresh(); }
 
         /// <summary>Moves an item as if its cell were clicked (bag → storage when <paramref name="fromBag"/>).</summary>
         public bool DevMove(string id, bool fromBag, bool all)

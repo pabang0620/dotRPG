@@ -171,8 +171,6 @@ namespace DotRPG
             return new Vector2(v.x * c - v.y * s, v.x * s + v.y * c);
         }
 
-        protected Vector2 ChestOf(EnemyController e) => e.Center;
-
         /// <summary>A free point near <paramref name="p"/> (falls back to the monster's own position).</summary>
         protected Vector2 FreeNear(Vector2 p)
         {

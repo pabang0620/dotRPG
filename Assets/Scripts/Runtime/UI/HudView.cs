@@ -6,14 +6,12 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// In-game HUD: hearts, item counts, quest tracker, context prompt ("[E] 대화하기"),
+    /// In-game HUD: item counts, quest tracker, context prompt ("[E] 대화하기"),
     /// control hints and toast messages. Purely reactive: it listens to events and polls
     /// the interactor, never changes game state.
     /// </summary>
     public class HudView : MonoBehaviour
     {
-        RectTransform heartsRoot;
-        readonly List<Image> hearts = new List<Image>();
         readonly Dictionary<string, Text> itemCounts = new Dictionary<string, Text>();
         readonly Dictionary<string, float> itemPulse = new Dictionary<string, float>();
         Text questTitle;
@@ -63,8 +61,6 @@ namespace DotRPG
         void Build(RectTransform root)
         {
             // Level + HP / MP / EXP bars (top-left) and the skill bar (bottom-centre).
-            heartsRoot = UIFactory.Place(UIFactory.Rect(root, "Hearts"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -20), new Vector2(10, 10));
-            heartsRoot.gameObject.SetActive(false);
             StatusBarsView.Create(root);
             BuffBarView.Create(root); // [UI] buffs and debuffs under the currency line
             SkillBarView.Create(root);

@@ -753,59 +753,8 @@ namespace DotRPG
 
         // ---------- 대지 강타 (Slam) ----------
 
-        /// <summary>The hammer blow itself, where the shock wave starts.</summary>
-        public static void SlamImpact(Vector2 pos, float radius)
-        {
-            Flash(pos + Vector2.up * 0.2f, new Color(1f, 0.7f, 0.3f, 0.45f), radius * 2.2f, 0.25f, SkillFx.At(pos.y, 44));
-            SkillFx.Spawn("fx_shock", pos + Vector2.up * 0.1f, new Color(0.95f, 0.62f, 0.25f, 0.95f), 0.35f, SkillFx.At(pos.y, 45))
-                .Scale(radius * 0.3f, radius * 1.8f).Fade(FxFade.Quick);
-            for (int i = 0; i < 8; i++)
-            {
-                float ang = i * Mathf.PI * 2f / 8f + Random.Range(-0.2f, 0.2f);
-                var dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
-                SkillFx.Spawn("fx_dust", pos + dir * 0.2f, new Color(0.95f, 0.9f, 0.8f, 0.7f), 0.5f, SkillFx.At(pos.y, 46))
-                    .Move(dir * 2.6f, 4f).Scale(0.9f, 1.8f);
-            }
-            Fx.Burst("fx_chip", pos, 6, 3.5f, 0.7f);
-        }
 
-        /// <summary>One step of the travelling shock wave.</summary>
-        public static void SlamStep(Vector2 from, Vector2 p, float radius, bool last)
-        {
-            float s = radius / 0.85f;
-            // Cracked ground that lingers, and a glowing fissure from the previous step.
-            SkillFx.Crack(p, s * (last ? 1f : 0.8f), 1.3f);
-            if ((p - from).sqrMagnitude > 0.01f)
-                GlowLineFx.Spawn(from, p, new Color(1f, 0.45f, 0.1f, 0.9f), 0.42f * s, 0.9f, SkillFx.GroundOrder + 3);
-            // Shock ring, warm light, rock spikes bursting up, flying chips and dust.
-            SkillFx.Spawn("fx_shock", p + Vector2.up * 0.1f, new Color(0.95f, 0.6f, 0.25f, 0.9f), 0.3f, SkillFx.At(p.y, 45))
-                .Scale(radius * 0.3f, radius * 1.15f).Fade(FxFade.Quick);
-            Flash(p + Vector2.up * 0.2f, new Color(EarthOrange.r, EarthOrange.g, EarthOrange.b, 0.4f), radius * 1.6f, 0.22f, SkillFx.At(p.y, 44));
-            int spikes = last ? 4 : 2;
-            for (int k = 0; k < spikes; k++)
-            {
-                Vector2 q = p + Random.insideUnitCircle * radius * 0.55f;
-                float size = Random.Range(1f, 1.4f) * (last ? 1.25f : 1f);
-                SkillFx.Spawn("fx_spike", q, Color.white, Random.Range(0.55f, 0.7f), SkillFx.At(q.y, 2))
-                    .Scale(size, size).Pop().Flip(Random.value < 0.5f).Delay(k * 0.03f);
-            }
-            Fx.Burst("fx_chip", p, last ? 7 : 4, 3f, 0.6f);
-            for (int k = 0; k < 2; k++)
-            {
-                Vector2 dir = Random.insideUnitCircle.normalized;
-                SkillFx.Spawn("fx_dust", p + dir * 0.2f, new Color(0.95f, 0.9f, 0.8f, 0.6f), 0.45f, SkillFx.At(p.y, 46))
-                    .Move(dir * 1.8f, 4f).Scale(0.8f, 1.5f);
-            }
-            Game.Camera?.Shake(last ? 0.1f : 0.05f, 0.1f);
-        }
 
-        /// <summary>A monster caught by the shock wave.</summary>
-        public static void EarthHit(Vector2 pos)
-        {
-            Flash(pos, new Color(1f, 0.7f, 0.3f, 0.7f), 1.2f, 0.16f);
-            Sparks(pos, new Color(1f, 0.85f, 0.45f, 1f), 6, 6f, 0.2f);
-            Fx.Burst("fx_chip", pos, 3, 2.5f, 0.5f);
-        }
 
         // ---------- 번개 사슬 (Arc) ----------
 
@@ -895,38 +844,8 @@ namespace DotRPG
 
         static float Angle(Vector2 dir) => Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-        /// <summary>The flying crescent blade (moved by the skill code).</summary>
-        public static MovingFx WaveBlade(Vector2 pos, Vector2 dir, float radius)
-        {
-            float s = radius / 0.7f;
-            var fx = new MovingFx();
-            fx.Add(SkillFx.Spawn("fx_glow", pos, new Color(1f, 0.75f, 0.3f, 0.55f), 10f, SkillFx.TopOrder + 1).Additive().Scale(s * 1.6f, s * 1.6f).Fade(FxFade.None));
-            fx.Add(SkillFx.Spawn("fx_crescent", pos, Color.white, 10f, SkillFx.TopOrder + 2).Rotate(Angle(dir)).Scale(s * 0.6f, s).Fade(FxFade.None));
-            Flash(pos, new Color(1f, 0.85f, 0.45f, 0.5f), 1.2f, 0.15f);
-            return fx;
-        }
 
-        public static void WaveTrail(Vector2 pos, Vector2 dir, float radius)
-        {
-            float s = radius / 0.7f;
-            SkillFx.Spawn("fx_crescent", pos - dir * 0.15f, new Color(1f, 0.78f, 0.35f, 0.55f), 0.16f, SkillFx.TopOrder)
-                .Additive().Rotate(Angle(dir)).Scale(s * 0.95f, s * 0.8f);
-            if (Random.value < 0.5f)
-            {
-                var side = new Vector2(-dir.y, dir.x) * Random.Range(-0.5f, 0.5f) * s;
-                SkillFx.Spawn("fx_streak", pos + side, new Color(1f, 0.92f, 0.6f, 0.9f), 0.2f, SkillFx.TopOrder)
-                    .Move(-dir * 2f + side, 3f).FaceMotion().Scale(1.2f, 0.4f);
-            }
-        }
 
-        public static void WaveEnd(MovingFx blade, Vector2 pos, Vector2 dir, float radius)
-        {
-            blade.Kill();
-            float s = radius / 0.7f;
-            SkillFx.Spawn("fx_crescent", pos, Color.white, 0.2f, SkillFx.TopOrder + 2).Rotate(Angle(dir)).Scale(new Vector2(s * 0.6f, s), new Vector2(s * 0.2f, s * 1.4f)).Fade(FxFade.Quick);
-            Flash(pos, new Color(1f, 0.8f, 0.4f, 0.5f), 1.4f, 0.18f);
-            Sparks(pos, new Color(1f, 0.85f, 0.45f, 1f), 7, 6f, 0.2f);
-        }
 
         // ---------- 전쟁 함성 (War Cry) ----------
 
@@ -973,8 +892,6 @@ namespace DotRPG
         }
 
         // ---------- 빙뢰구 (Frost Orb: ice + lightning) ----------
-
-        public static readonly Color OrbCyan = new Color(0.55f, 0.9f, 1f, 1f);
 
         /// <summary>The flying orb: a faceted ice core in a cold glow, with a crackling electric halo.</summary>
         public static MovingFx FrostOrbHead(Vector2 pos, Vector2 dir)

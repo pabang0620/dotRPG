@@ -32,7 +32,6 @@ namespace DotRPG
     public static class UIColors
     {
         public static readonly Color Ink = new Color32(62, 39, 26, 255);
-        public static readonly Color InkSoft = new Color32(120, 84, 58, 255);
         public static readonly Color Cream = new Color32(246, 231, 200, 255);
         public static readonly Color Highlight = new Color32(255, 211, 74, 255);
         public static readonly Color Disabled = new Color32(150, 140, 130, 255);

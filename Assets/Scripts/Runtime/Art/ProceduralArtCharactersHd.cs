@@ -20,7 +20,6 @@ namespace DotRPG
         // Frame is 32 wide x 40 tall. Old layout x2: head rows 4..23, body 24..31, legs 32..37.
         const int W = 32, HGT = 40;
 
-        static readonly Color32 ChSkinShade = PixelCanvas.Hex("#00000000"); // unused placeholder
         static readonly Color32 Blush = PixelCanvas.Hex("#f0968a");
         static readonly Color32 EyeWhite = PixelCanvas.Hex("#f7f2e8");
         static readonly Color32 ShoeCol = PixelCanvas.Hex("#4a3226");
@@ -29,21 +28,7 @@ namespace DotRPG
 
         static Color32 Lit(Color32 c, float f) => PixelCanvas.Shade(c, f);
 
-        /// <summary>Fills a solid vertical-lit column block: darker at the bottom/right edges.</summary>
-        static void Body3(PixelCanvas c, int x, int y, int w, int h, Color32 col)
-        {
-            var dark = Lit(col, 0.8f);
-            var light = Lit(col, 1.15f);
-            c.Rect(x, y, w, h, col);
-            c.VLine(x, y, y + h - 1, dark);           // left shade
-            c.HLine(x, x + w - 1, y + h - 1, dark);    // bottom shade
-            c.HLine(x, x + w - 1, y, light);           // top light
-        }
-
         // ---------- Router entry points (called by ProceduralArt.Draw) ----------
-
-        /// <summary>Canvas for the 64px-per-tile (density 4) characters: same world size, twice the dots of the 32px art.</summary>
-        static PixelCanvas Xd(int w, int h) => new PixelCanvas(w, h) { Density = 4 };
 
         static PixelCanvas DrawCharacterHd(CharacterLook look, string dir, string frame)
         {

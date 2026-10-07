@@ -224,6 +224,5 @@ namespace DotRPG
             foreach (var c in cards) if (c.def.id == mercId) return c.buttonText.text;
             return null;
         }
-        public string DevPartyTitle => partyTitle.text;
     }
 }

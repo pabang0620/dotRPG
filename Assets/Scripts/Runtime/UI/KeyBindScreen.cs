@@ -21,7 +21,6 @@ namespace DotRPG
         bool dirty, windowsTab;
         Image combatTab, windowTab;
         public bool IsListening => listening.HasValue;
-        public bool HasChanges => dirty;
         public static string ActionName(GameAction a)
         {
             switch (a)

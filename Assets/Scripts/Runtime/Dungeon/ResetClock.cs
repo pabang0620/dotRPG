@@ -24,9 +24,6 @@ namespace DotRPG
             return now >= today ? today : today.AddDays(-1);
         }
 
-        /// <summary>The next daily reset after <paramref name="now"/>.</summary>
-        public static DateTime NextDailyReset(DateTime now) => DailyResetStart(now).AddDays(1);
-
         /// <summary>The most recent Thursday 06:00 at or before <paramref name="now"/>.</summary>
         public static DateTime WeeklyResetStart(DateTime now)
         {

@@ -36,11 +36,6 @@ namespace DotRPG
         static readonly Color32 WhPine2 = PixelCanvas.Hex("#468f79");
         static readonly Color32 WhPine3 = PixelCanvas.Hex("#316f62");
 
-        static readonly Color32 WhCliff = PixelCanvas.Hex("#9a8ea6");
-        static readonly Color32 WhCliffL = PixelCanvas.Hex("#b2a7bd");
-        static readonly Color32 WhCliffD = PixelCanvas.Hex("#7a6e88");
-        static readonly Color32 WhCliffDD = PixelCanvas.Hex("#5e536b");
-
         static readonly Color32 WhWarm = PixelCanvas.Hex("#ffd98a");
         static readonly Color32 WhWarmL = PixelCanvas.Hex("#fff1c4");
         static readonly Color32 WhLamp = PixelCanvas.Hex("#3f7d5c");
@@ -64,8 +59,6 @@ namespace DotRPG
             t = Mathf.Clamp01(t);
             return new Color32((byte)(a.r + (b.r - a.r) * t), (byte)(a.g + (b.g - a.g) * t), (byte)(a.b + (b.b - a.b) * t), (byte)(a.a + (b.a - a.a) * t));
         }
-
-        static bool WSame(Color32 a, Color32 b) => a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 
         // ---------- Dispatch ----------
 

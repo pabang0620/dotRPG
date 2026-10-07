@@ -241,9 +241,6 @@ namespace DotRPG
             return n;
         }
 
-        /// <summary>전투력 = base attack·health + everything worn (see <see cref="Equipment.Score"/>).</summary>
-        static int PowerScore(int baseAtk, int baseHp, Equipment eq) => baseAtk * 100 + baseHp * 50 + eq.GearScore;
-
         static string Bonus(int v) => v > 0 ? $"<color=#8fe28f>(+{v})</color>" : "";
 
         void FillIcon(Slot s, string id, EquipmentItem gear)

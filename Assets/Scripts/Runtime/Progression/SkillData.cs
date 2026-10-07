@@ -67,7 +67,6 @@ namespace DotRPG
         static readonly Dictionary<string, PassiveNode> nodes = new Dictionary<string, PassiveNode>();
         public static IEnumerable<PassiveNode> All => nodes.Values;
         public static PassiveNode Get(string id) => id != null && nodes.TryGetValue(id, out var n) ? n : null;
-        public static string StartOf(CharacterClass cls) => Start;
 
         static PassiveNode N(string id, string name, PassiveKind kind, float x, float y, int cluster, params (PassiveStat, int)[] stats)
         {
@@ -203,9 +202,9 @@ namespace DotRPG
                 case PassiveStat.LifeOnKill: return $"처치 시 HP +{v}";
                 case PassiveStat.ManaOnKill: return $"처치 시 MP +{v}";
                 // [SKILL v2] slot 4 is the defence skill (철벽 / 마나 보호막): see CharacterStatsCalc.Skill.
-                case PassiveStat.SkillDamage when slot == 3 && !SkillGems.UseLegacy: return $"{SlotLabel(slot)} 받는 피해 감소 +{Mathf.RoundToInt(v / 4f)}%";
-                case PassiveStat.SkillArea when slot == 3 && !SkillGems.UseLegacy: return $"{SlotLabel(slot)} 지속시간 {v}% 증가";
-                case PassiveStat.SkillRepeat when slot == 3 && !SkillGems.UseLegacy: return $"{SlotLabel(slot)} (방어 스킬은 추가 발동 없음)";
+                case PassiveStat.SkillDamage when slot == 3: return $"{SlotLabel(slot)} 받는 피해 감소 +{Mathf.RoundToInt(v / 4f)}%";
+                case PassiveStat.SkillArea when slot == 3: return $"{SlotLabel(slot)} 지속시간 {v}% 증가";
+                case PassiveStat.SkillRepeat when slot == 3: return $"{SlotLabel(slot)} (방어 스킬은 추가 발동 없음)";
                 case PassiveStat.SkillDamage: return $"{SlotLabel(slot)} 피해 {v}% 증가";
                 case PassiveStat.SkillArea: return $"{SlotLabel(slot)} 범위 {v}% 증가";
                 case PassiveStat.SkillCooldown: return $"{SlotLabel(slot)} 재사용 대기시간 {v}% 감소";
@@ -257,19 +256,16 @@ namespace DotRPG
     {
         public const int Slots = 5, SupportsPerSlot = 2, UltimateSlot = 4;
 
-        /// <summary>[SKILL v2] false = the reworked skill set; true = the v1 set in <see cref="SkillGemsLegacy"/>.</summary>
-        public const bool UseLegacy = false;
-
         /// <summary>
         /// Level at which each skill slot (and its skill) opens. Slot 5 is the awakening skill.
         /// v2 spreads them over the climb to the first mid raid (Lv22, about 20 hours): about 0 / 0.6 / 4 / 11 / 20 hours.
         /// </summary>
-        public static readonly int[] SlotLevels = UseLegacy ? SkillGemsLegacy.SlotLevels : new[] { 2, 6, 12, 18, 15 };
+        public static readonly int[] SlotLevels = { 2, 6, 12, 18, 15 };
 
         static SkillGem Active(string id, string name, CharacterClass cls, int slot, string desc)
             => new SkillGem { id = id, name = name, icon = "gem_" + id, kind = GemKind.Active, classOnly = cls, slot = slot, unlockLevel = SlotLevels[slot], description = desc };
 
-        static readonly List<SkillGem> gems = UseLegacy ? SkillGemsLegacy.Create() : CreateV2();
+        static readonly List<SkillGem> gems = CreateV2();
 
         /// <summary>
         /// [SKILL v2] One job per slot (Tools/balance/theory_skills.py): 1 single-target main attack, 2 the one
@@ -482,7 +478,7 @@ namespace DotRPG
             n.damage = Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + inc / 100f) * active.damageMult * more * rankScale));
             // [SKILL v2] Area bonuses grow the AREA (radius by the square root); v1 multiplied the radius,
             // which squared every bonus (+35% and +25% made a 2.85x area).
-            float grow = SkillGems.UseLegacy ? area : Mathf.Sqrt(area);
+            float grow = Mathf.Sqrt(area);
             n.radius = active.radius * grow;
             // An ultimate's target area grows with its area bonuses too.
             if (active.IsUltimate) n.range = active.range * grow;

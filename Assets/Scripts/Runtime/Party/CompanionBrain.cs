@@ -289,19 +289,13 @@ namespace DotRPG
                     return CountNear(c, n.radius * 0.9f) >= 1 && (CountNear(c, n.radius) >= 2 || !TargetsMe(self));
                 case "whirl":
                     // v2: the area skill pays off from three monsters (Tools/balance/theory_skills.py).
-                    return CountNear(c, n.radius * 0.9f) >= (SkillGems.UseLegacy ? (Def.role == MercRole.Tank ? 1 : 2) : 3);
+                    return CountNear(c, n.radius * 0.9f) >= 3;
                 case "nova":
                     // Freeze whatever gets close (the control mage's answer to melee monsters).
                     return CountNear(c, n.radius * 0.85f) >= 1;
-                case "slam":
-                case "wave":
-                    return dist <= n.range * 0.9f;
                 case "frostorb":
                     // v2: thrown into a group of three or more around the target.
-                    return dist <= n.range * 0.9f && (SkillGems.UseLegacy || (Target != null && CountNear(Target.Center, n.radius) >= 3));
-                case "arc":
-                case "thunder":
-                    return dist <= n.range * 0.9f;
+                    return dist <= n.range * 0.9f && Target != null && CountNear(Target.Center, n.radius) >= 3;
                 default:
                     // Awakening skills: only into a crowd.
                     return gem.IsUltimate && CountNear(self.Position, n.range * 0.8f) >= UltimateMinTargets;

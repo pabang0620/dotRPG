@@ -243,17 +243,11 @@ namespace DotRPG
 
         /// <summary>
         /// Seed base for monster AI decisions (pattern picks, flee / strafe turns, field placement). A dungeon
-        /// run (or later the host / server) calls <see cref="ResetSeed"/> on entry, so every client that spawns
+        /// run (or later the host / server) can reseed it on entry, so every client that spawns
         /// the same monsters in the same order rolls the same decisions.
         /// </summary>
         public static int RunSeed { get; private set; } = 20240601;
         static int spawnCounter;
-
-        public static void ResetSeed(int seed)
-        {
-            RunSeed = seed;
-            spawnCounter = 0;
-        }
 
         static int NextSeed(string id)
         {

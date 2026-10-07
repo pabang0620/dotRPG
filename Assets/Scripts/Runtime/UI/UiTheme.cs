@@ -22,8 +22,6 @@ namespace DotRPG
         public static readonly Color Header = new Color32(22, 31, 46, 255);
         /// <summary>Content panel inside a window.</summary>
         public static readonly Color Panel = new Color32(24, 36, 54, 235);
-        /// <summary>Alternate / nested panel (rows, side columns).</summary>
-        public static readonly Color PanelAlt = new Color32(32, 47, 70, 235);
         /// <summary>Deep inset (map frames, bar tracks).</summary>
         public static readonly Color PanelDeep = new Color32(18, 26, 40, 255);
         /// <summary>Translucent plate under HUD text that sits on the world (toasts, labels, hints).</summary>
@@ -37,24 +35,18 @@ namespace DotRPG
         public static readonly Color TextPrimary = new Color32(246, 240, 228, 255);
         public static readonly Color TextSecondary = new Color32(184, 196, 216, 255);
         public static readonly Color TextMuted = new Color32(140, 150, 168, 255);
-        public static readonly Color TextDisabled = new Color32(120, 126, 138, 255);
 
         public static readonly Color Good = new Color32(143, 226, 143, 255);
         public static readonly Color Bad = new Color32(255, 122, 110, 255);
-        public static readonly Color Warn = new Color32(255, 159, 67, 255);
 
         /// <summary>Rich-text hex of the same tokens.</summary>
-        public const string HexAccent = "#ffd34a", HexGood = "#8fe28f", HexBad = "#ff7a6e", HexWarn = "#ff9f43",
+        public const string HexGood = "#8fe28f", HexBad = "#ff7a6e", HexWarn = "#ff9f43",
             HexSecondary = "#b8c4d8", HexMuted = "#8c96a8", HexKey = "#ffe066";
 
         // ---------- Font size scale ----------
-        public const int FontDisplay = 52;   // banners (boss intro, CLEAR)
         public const int FontTitle = 40;     // window titles
-        public const int FontHeading = 26;   // panel headings
         public const int FontSubheading = 22;
-        public const int FontBody = 20;
         public const int FontCaption = 17;   // secondary info, key hints
-        public const int FontNumber = 22;    // counters, prices
         /// <summary>Smallest size any player-facing text may use (720p reference).</summary>
         public const int FontMin = 16;
 
@@ -62,11 +54,9 @@ namespace DotRPG
         public static int Size(int size) => Mathf.Max(FontMin, size);
 
         // ---------- Spacing ----------
-        public const float SpaceXS = 4f, SpaceS = 8f, SpaceM = 12f, SpaceL = 20f, SpaceXL = 30f;
-        /// <summary>Window content margin (left/right/bottom) and header height.</summary>
-        public const float WindowMargin = 30f, HeaderHeight = 76f;
-        /// <summary>Height reserved at the bottom of a window for the key-hint footer.</summary>
-        public const float FooterHeight = 28f;
+        public const float SpaceS = 8f, SpaceM = 12f, SpaceL = 20f, SpaceXL = 30f;
+        /// <summary>Window header height.</summary>
+        public const float HeaderHeight = 76f;
 
         // ---------- HUD layout (720p reference) ----------
         // Left column: status bars / currency / side menu / party frames end at x = 356 (PartyFramesView).
@@ -77,7 +67,7 @@ namespace DotRPG
         public const float HudCurrencyMaxRight = 382f;
 
         // ---------- Buttons ----------
-        public const float ButtonHeight = 56f, ButtonHeightSmall = 44f, ButtonWidth = 250f;
+        public const float ButtonHeightSmall = 44f, ButtonWidth = 250f;
         public const int ButtonFont = 24, ButtonFontSmall = 20;
         public const float HoverScale = 1.04f, PressScale = 0.95f;
 
@@ -95,31 +85,18 @@ namespace DotRPG
             return c;
         }
 
-        // ---------- Tooltip ----------
-        public static readonly Color TooltipBg = new Color32(16, 22, 34, 245);
-        public static readonly Color TooltipBorder = new Color32(110, 134, 170, 255);
+        // ---------- Tabs ----------
         /// <summary>[UI] Tab look: its own selected/unselected frames when drawn (Art/ui_tab_on/off), else the button frames.</summary>
         public static Sprite Tab(bool selected) =>
             Game.Art.Optional(selected ? "ui_tab_on" : "ui_tab_off") ?? Game.Art.Get(selected ? "ui_btn" : "ui_btngray");
 
         // [UI] Shared window tones that several screens repeated as literals.
         public static readonly Color RowDark = new Color32(28, 39, 57, 255);      // list row / cell background
-        public static readonly Color TabOff = new Color32(30, 44, 64, 255);       // unselected tab, idle slot
         public static readonly Color Slate = new Color32(55, 69, 89, 255);        // neutral frame, empty socket
         public static readonly Color SelectBlue = new Color32(41, 105, 151, 255); // chosen row / socket
         public static readonly Color AccentLight = new Color32(255, 224, 102, 255); // key labels, highlights
         public static readonly Color AccentWarm = new Color32(235, 189, 95, 255);  // warm gold frames
         public static readonly Color Overlay = new Color32(16, 22, 36, 252);       // modal backdrop
-        public const float TooltipPadding = 14f, TooltipWidth = 320f;
-
-        /// <summary>Adds a translucent plate behind a HUD element (stretched under it, drawn first).</summary>
-        public static Image AddPlate(RectTransform target, float padX = 10f, float padY = 4f)
-        {
-            var plate = UIFactory.Image(target, "Plate", Game.Art.Get("ui_white"), HudPlate);
-            plate.preserveAspect = false;
-            UIFactory.Stretch(plate.rectTransform, -padX, -padY, -padX, -padY);
-            plate.transform.SetAsFirstSibling();
-            return plate;
-        }
+        public const float TooltipWidth = 320f;
     }
 }

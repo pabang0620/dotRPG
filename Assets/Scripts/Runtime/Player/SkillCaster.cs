@@ -133,16 +133,12 @@ namespace DotRPG
                     case "lance": Lance(n); break;
                     case "charge": yield return StartCoroutine(Charge(n)); break;
                     case "firefield": StartCoroutine(FireField(n)); break;
-                    // v1 + v2 (v1-only ones stay for SkillGems.UseLegacy)
+                    // v1 + v2
                     case "whirl": Whirl(n); break;
-                    case "slam": Slam(n); break;
-                    case "wave": StartCoroutine(Wave(n, castAim)); break;
                     case "cry": WarCry(n); break;
                     case "blades": yield return StartCoroutine(Blades(n, i == 0)); break;
-                    case "arc": StartCoroutine(Arc(n)); break;
                     case "nova": Nova(n); break;
                     case "frostorb": StartCoroutine(FrostOrb(n)); break;
-                    case "thunder": StartCoroutine(Thunder(n)); break;
                     case "meteor": yield return StartCoroutine(Meteor(n, i == 0)); break;
                 }
                 if (i < n.repeats) yield return new WaitForSeconds(0.28f);
@@ -371,67 +367,6 @@ namespace DotRPG
             Shake(0.06f, 0.12f);
         }
 
-        /// <summary>대지 강타: a shock wave that runs along the aim direction, cracking the ground as it goes.</summary>
-        void Slam(SkillNumbers n)
-        {
-            Vector2 dir = castAim;
-            StartCoroutine(SlamWave(n, dir, owner.Position + dir * 0.6f));
-        }
-
-        IEnumerator SlamWave(SkillNumbers n, Vector2 dir, Vector2 start)
-        {
-            Game.Audio.PlaySfx("rock_break");
-            Shake(0.16f, 0.22f);
-            SkillVisuals.SlamImpact(start, n.radius);
-            var hit = new HashSet<EnemyController>();
-            int steps = Mathf.Max(4, Mathf.RoundToInt(n.range / 0.75f) + 1);
-            Vector2 prev = start;
-            for (int i = 0; i < steps; i++)
-            {
-                Vector2 p = start + dir * (n.range * i / (steps - 1));
-                if (!owner.IsLocal) CameraFollow.ShakeMute++;
-                try { SkillVisuals.SlamStep(prev, p, n.radius, i == steps - 1); }
-                finally { if (!owner.IsLocal) CameraFollow.ShakeMute--; }
-                foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius))
-                    if (hit.Add(e))
-                    {
-                        Hit(e, n, owner.Position, 9f);
-                        SkillVisuals.EarthHit(e.Center);
-                    }
-                prev = p;
-                if (i < steps - 1) yield return new WaitForSeconds(0.06f);
-            }
-        }
-
-        /// <summary>검기: a crescent blade flies along the aim direction and cuts every monster it passes.</summary>
-        IEnumerator Wave(SkillNumbers n, Vector2 dir)
-        {
-            Game.Audio.PlaySfx("swing");
-            const float speed = 13f;
-            Vector2 pos = owner.Center + dir * 0.4f;
-            var blade = SkillVisuals.WaveBlade(pos, dir, n.radius);
-            var hit = new HashSet<EnemyController>();
-            float travelled = 0f, trail = 0f;
-            while (travelled < n.range)
-            {
-                float step = speed * Time.deltaTime;
-                pos += dir * step;
-                travelled += step;
-                blade.MoveTo(pos);
-                trail -= Time.deltaTime;
-                if (trail <= 0f) { trail = 0.03f; SkillVisuals.WaveTrail(pos, dir, n.radius); }
-                foreach (var e in EnemiesInRadius(pos, n.radius))
-                    if (hit.Add(e))
-                    {
-                        Hit(e, n, pos - dir, 6f);
-                        SkillVisuals.SlashHit(e.Center, SkillVisuals.WhirlGold);
-                    }
-                if (Blocked(pos)) break;
-                yield return null;
-            }
-            SkillVisuals.WaveEnd(blade, pos, dir, n.radius);
-        }
-
         /// <summary>전쟁 함성: stun everything nearby and raise all damage for a while.</summary>
         void WarCry(SkillNumbers n)
         {
@@ -480,36 +415,6 @@ namespace DotRPG
         }
 
         // ================= Mage =================
-
-        /// <summary>번개 사슬: strike the nearest enemy, then jump from monster to monster.</summary>
-        IEnumerator Arc(SkillNumbers n)
-        {
-            Game.Audio.PlaySfx("magic");
-            Vector2 from = owner.Center;
-            SkillVisuals.CastCircle(owner.Position, SkillVisuals.MageViolet);
-            SkillVisuals.StaffFlash(from + castAim * 0.35f, SkillVisuals.ArcGlow);
-            var hit = new HashSet<EnemyController>();
-            EnemyController current = Nearest(from, n.range, hit);
-            if (current == null)
-            {
-                // Nothing in range: a short zap in the aim direction so the cast still reads.
-                SkillVisuals.ArcBolt(from, from + castAim * 2.5f, false);
-                yield break;
-            }
-            for (int jump = 0; current != null && jump <= n.chains; jump++)
-            {
-                Vector2 to = current.Center;
-                SkillVisuals.ArcBolt(from, to, true);
-                Hit(current, n, from, 3f);
-                hit.Add(current);
-                if (jump == 0) Shake(0.04f, 0.08f);
-                from = to;
-                if (jump == n.chains) break;
-                // A short beat between jumps so the chain visibly travels.
-                yield return new WaitForSeconds(0.06f);
-                current = Nearest(from, n.radius, hit);
-            }
-        }
 
         /// <summary>서리 폭발: damage and freeze everything around the player.</summary>
         void Nova(SkillNumbers n)
@@ -577,7 +482,7 @@ namespace DotRPG
                     // Crackle: small bolts to the closest monsters around the orb.
                     var near = EnemiesInRadius(pos, zapRange);
                     near.Sort((a, b) => Vector2.Distance(a.Center, pos).CompareTo(Vector2.Distance(b.Center, pos)));
-                    for (int k = 0; k < near.Count && k < (SkillGems.UseLegacy ? Mathf.Max(1, n.chains) : n.chains); k++) // v2: no zaps in flight (chains 0)
+                    for (int k = 0; k < near.Count && k < n.chains; k++) // v2: no zaps in flight (chains 0)
                     {
                         SkillVisuals.FrostOrbZap(pos, near[k].Center);
                         if (near[k].TakeDamage(new DamageInfo(zapDamage, pos, 1.5f, Team.Player, owner.gameObject)) && n.leechPct > 0)
@@ -599,39 +504,6 @@ namespace DotRPG
                 e.Freeze(n.freeze);
                 if (!e.IsDead && e.IsFrozen) IceEncase.Attach(e);
             }
-        }
-
-        /// <summary>낙뢰: lightning from the sky on several nearby monsters at once, stunning them briefly.</summary>
-        IEnumerator Thunder(SkillNumbers n)
-        {
-            Game.Audio.PlaySfx("magic");
-            SkillVisuals.CastCircle(owner.Position, SkillVisuals.ArcGlow);
-            int strikes = 1 + n.chains;
-            var hit = new HashSet<EnemyController>();
-            int done = 0;
-            foreach (var e in EnemiesByDistance(n.range))
-            {
-                if (done >= strikes) break;
-                if (e == null || e.IsDead || hit.Contains(e)) continue;
-                Vector2 ground = e.Position;
-                SkillVisuals.Thunder(ground);
-                foreach (var t in EnemiesInRadius(ground + Vector2.up * 0.3f, n.radius))
-                    if (hit.Add(t))
-                    {
-                        Hit(t, n, ground, 3f);
-                        t.Stun(n.stun);
-                        StunStars.Attach(t);
-                    }
-                done++;
-                Shake(0.05f, 0.08f);
-                yield return new WaitForSeconds(0.08f);
-            }
-            if (done == 0)
-                for (int k = 0; k < 2; k++)
-                {
-                    SkillVisuals.Thunder(owner.Position + castAim * (1.6f + k * 1.2f) + Random.insideUnitCircle * 0.4f);
-                    yield return new WaitForSeconds(0.08f);
-                }
         }
 
         /// <summary>메테오 (awakening): burning rocks crash down across the area around the player.</summary>

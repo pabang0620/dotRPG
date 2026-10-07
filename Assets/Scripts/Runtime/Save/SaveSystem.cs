@@ -30,12 +30,6 @@ namespace DotRPG
 
         public bool HasSave(int slot = -1) => File.Exists(SlotPath(Resolve(slot))) || File.Exists(SlotPath(Resolve(slot)) + ".bak");
 
-        public bool HasAnySave()
-        {
-            for (int i = 0; i < SlotCount; i++) if (HasSave(i)) return true;
-            return false;
-        }
-
         public bool Write(SaveData data, int slot = -1)
         {
             // [SERVER] An online character is saved on the server, never in a local slot (PLAN_ONLINE O1).

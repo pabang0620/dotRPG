@@ -116,8 +116,6 @@ namespace DotRPG
         /// <summary>Hireable mercenaries (the party window). Story companions are not listed.</summary>
         public static IReadOnlyList<MercenaryDef> All => Defs;
 
-        public static bool IsStory(string id) => id != null && id.StartsWith("story_");
-
         public static MercenaryDef Get(string id)
         {
             if (string.IsNullOrEmpty(id)) return null;

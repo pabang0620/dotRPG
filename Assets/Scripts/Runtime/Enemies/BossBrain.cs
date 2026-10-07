@@ -40,7 +40,6 @@ namespace DotRPG
         public static event Action<BossBrain, string, Color> Announce;
 
         public int Phase { get; private set; } = 1;
-        public int PhaseCount => (Def.phases != null ? Def.phases.Length : 0) + 1;
         public event Action<BossBrain, int> PhaseChanged;
         public BossPattern CurrentPattern { get; private set; }
         public bool Enraged => Def.raid && Phase >= 3;

@@ -113,13 +113,6 @@ namespace DotRPG
             ApplyMusicVolumes();
         }
 
-        /// <summary>Fades all music out.</summary>
-        public void StopMusic()
-        {
-            currentMusic = null;
-            activeMusic = -1;
-        }
-
         void Update()
         {
             float step = Time.unscaledDeltaTime / MusicFadeSeconds;

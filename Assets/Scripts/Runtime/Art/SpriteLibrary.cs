@@ -22,8 +22,6 @@ namespace DotRPG
             this.pixelsPerUnit = pixelsPerUnit;
         }
 
-        public int PixelsPerUnit => pixelsPerUnit;
-
         public Sprite Get(string key)
         {
             if (cache.TryGetValue(key, out var sprite)) return sprite;

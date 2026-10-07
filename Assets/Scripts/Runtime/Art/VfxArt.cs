@@ -129,15 +129,6 @@ namespace DotRPG
             c.Set(x, y, col);
         }
 
-        /// <summary>Keeps the brighter of the existing and the new pixel (light layers).</summary>
-        static void Light(PixelCanvas c, int x, int y, Color32 col)
-        {
-            if (col.a == 0 || !c.InBounds(x, y)) return;
-            var d = c.Pixels[y * c.Width + x];
-            if (d.a == 0 || col.a >= d.a && (col.r + col.g + col.b) >= (d.r + d.g + d.b) - 30) c.Pixels[y * c.Width + x] = col;
-            else c.Set(x, y, col);
-        }
-
         static void Dot(PixelCanvas c, float x, float y, float r, Color32 col)
         {
             int x0 = Mathf.FloorToInt(x - r), x1 = Mathf.CeilToInt(x + r), y0 = Mathf.FloorToInt(y - r), y1 = Mathf.CeilToInt(y + r);

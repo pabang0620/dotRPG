@@ -699,14 +699,6 @@ namespace DotRPG
             // (kept in Stamps for the deterministic scatter)
         }
 
-        static bool BordersWater(Job j, int px, int py)
-        {
-            return j.KindAt(px - 1, py) == Water || j.KindAt(px + 1, py) == Water
-                || j.KindAt(px, py - 1) == Water || j.KindAt(px, py + 1) == Water
-                || j.KindAt(px - 1, py - 1) == Water || j.KindAt(px + 1, py - 1) == Water
-                || j.KindAt(px - 1, py + 1) == Water || j.KindAt(px + 1, py + 1) == Water;
-        }
-
         static void PaintCoping(Job j, float[] dist)
         {
             int pw = j.pw, ph = j.ph;

@@ -18,8 +18,6 @@ namespace DotRPG
         // [UI] Top right, left of the room map (W-196): x W-528..W-208, so at UI size 1.3 (985 wide) it starts at 457, clear of
         // the status bars (x <= 390) and the menu button (SideMenuView, x 404..454); 1.15: 585..905, 1.0: 752..1072.
         public const float ClockWidth = 320f, ClockHeight = 50f, ClockTop = 12f, ClockRight = 208f;
-        /// <summary>Lowest point of the clock panel (the boss HP bar may start below this).</summary>
-        public const float ReservedBottom = ClockTop + ClockHeight + 8f;
         const float Cell = 30f, CellGap = 10f, MapWidth = 176f;
 
         RectTransform clock, roomMap, banner, revive;

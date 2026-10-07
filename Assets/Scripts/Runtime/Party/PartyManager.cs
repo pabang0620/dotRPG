@@ -161,9 +161,6 @@ namespace DotRPG
             else Changed?.Invoke();
         }
 
-        /// <summary>The roster members allowed out now, in roster order.</summary>
-        public int CompanionCap => companionCap;
-
         /// <summary>A member that came from the network (remote human on the host, puppet on a member PC).</summary>
         public bool IsNetMember(PlayerController m) => m != null && netMembers.Contains(m);
 
@@ -352,9 +349,6 @@ namespace DotRPG
                 return n;
             }
         }
-
-        /// <summary>Every member is down (dungeon failure rule).</summary>
-        public bool IsWiped => AliveCount == 0;
 
         /// <summary>Alive members whose body centre is within <paramref name="radius"/> of <paramref name="center"/>.</summary>
         public List<PlayerController> MembersInCircle(Vector2 center, float radius)

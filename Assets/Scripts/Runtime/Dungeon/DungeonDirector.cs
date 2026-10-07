@@ -31,8 +31,6 @@ namespace DotRPG
         const float FadeSeconds = 0.35f;
         /// <summary>Companions walk in with the player before they start fighting.</summary>
         const float RoomRegroupSeconds = 0.8f;
-        /// <summary>Monster numbers per level offset of a spawn group (until MonsterDatabase owns levels).</summary>
-        const float LevelStep = 0.08f;
 
         DungeonRun run;
         DungeonDoor door;

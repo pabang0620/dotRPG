@@ -23,7 +23,6 @@ namespace DotRPG
             this.slot = slot;
         }
 
-        public static ActorId Account(long accountId, long characterId, int slot) => new ActorId(accountId, characterId, (byte)slot);
         public static ActorId Ai(int slot) => new ActorId(0, 0, (byte)slot);
         /// <summary>The offline local player (slot 0, no account).</summary>
         public static ActorId LocalOffline => new ActorId(0, 0, 0);
@@ -63,7 +62,6 @@ namespace DotRPG
             return id.slot < party.Members.Count ? party.Members[id.slot] : null;
         }
 
-        public static void Assign(PlayerController member, ActorId id) { if (member != null) assigned[member] = id; }
         public static void Clear() => assigned.Clear();
     }
 

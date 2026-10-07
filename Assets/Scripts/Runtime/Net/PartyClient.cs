@@ -59,7 +59,6 @@ namespace DotRPG
         public readonly List<PartyApplicationView> Applications = new List<PartyApplicationView>();
         public Dictionary<string, object> Run { get; private set; }
         public bool IsLeader { get { foreach (var m in Members) if (m.me) return m.leader; return false; } }
-        public bool AllReady { get { foreach (var m in Members) if (!m.leader && !m.ready) return false; return true; } }
         public PartyMemberView Me { get { foreach (var m in Members) if (m.me) return m; return null; } }
 
         // auto-match
