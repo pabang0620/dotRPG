@@ -23,10 +23,14 @@ namespace DotRPG
 
         public static LevelRewardScreen Create(Transform canvas)
         {
-            var w = CreateWindow<LevelRewardScreen>(canvas, "LevelRewards", "레벨 보상", "menuicon_achievement");
+            var w = CreateWindow<LevelRewardScreen>(canvas, "LevelRewards", "레벨 보상", "menuicon_levelreward");
             Instance = w;
             w.header = Label(w.content, "Header", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(860f, 44f), TextAnchor.MiddleLeft);
             w.buyPass = Button(w.content, "BuyPass", "", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(330f, 50f), w.BuyPass, 18);
+            var passIcon = UIFactory.Image(w.buyPass.transform, "PassIcon", Game.Art.Get("menuicon_pass"), Color.white); // [ART] growth pass ticket
+            passIcon.preserveAspect = true; passIcon.raycastTarget = false;
+            UIFactory.Place(passIcon.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(8f, 0f), new Vector2(44f, 36f));
+            UIFactory.Stretch(TextOf(w.buyPass).rectTransform, 50f, 0f, 8f, 0f);
             Label(w.content, "ColLevel", "<b>달성 레벨</b>", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -60f), new Vector2(140f, 30f), TextAnchor.MiddleLeft);
             Label(w.content, "ColFree", "<b>무료 보상</b> <color=#8c96a8>(별조각)</color>", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, -60f), new Vector2(380f, 30f), TextAnchor.MiddleLeft);
             Label(w.content, "ColPass", "<b><color=#ffd34a>성장 패스 보상</color></b>", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(560f, -60f), new Vector2(600f, 30f), TextAnchor.MiddleLeft);

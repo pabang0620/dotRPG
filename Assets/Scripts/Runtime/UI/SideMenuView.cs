@@ -54,7 +54,7 @@ namespace DotRPG
             view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
             view.mailEntry = view.Add("menuicon_mail", "우편", () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
             view.Add("menuicon_achievement", "업적", () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
-            view.rewardEntry = view.Add("icon_star_shard", "레벨 보상", () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]
+            view.rewardEntry = view.Add("menuicon_levelreward", "레벨 보상", () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]
             view.Add("menuicon_cashshop", "캐시샵", () => Game.Flow.OpenWindow(GachaScreen.Instance)); // 뽑기
             view.Add("menuicon_cosmetics", "옷장", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));     // 오라·스킨 착용, 확정 구매
             int rows = (view.entries.Count + Columns - 1) / Columns;

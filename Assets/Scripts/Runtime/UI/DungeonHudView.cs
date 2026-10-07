@@ -90,6 +90,9 @@ namespace DotRPG
             revive = UIFactory.Place(UIFactory.Rect(root, "Revive"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(520f, 210f));
             var rbg = UIFactory.Panel(revive, "Bg", true);
             UIFactory.Stretch(rbg.rectTransform);
+            var coin = UIFactory.Image(revive, "Coin", Game.Art.Get("icon_revive_coin"), Color.white); // [ART] revive coin
+            coin.preserveAspect = true; coin.raycastTarget = false;
+            UIFactory.Place(coin.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -12f), new Vector2(48f, 48f));
             reviveTitle = UIFactory.Text(revive, "Title", "부활하시겠습니까?", 30, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(reviveTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -18f), new Vector2(480f, 40f));
             reviveBody = UIFactory.Text(revive, "Body", "", 20, UIColors.Cream, TextAnchor.UpperCenter, true);

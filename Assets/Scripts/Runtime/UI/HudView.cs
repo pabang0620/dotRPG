@@ -115,7 +115,8 @@ namespace DotRPG
             autoBtn.onClick.AddListener(QuestAutoPilot.Toggle);
             UiButton.Attach(autoBtn);
             autoLabel = UIFactory.Text(autoImg.transform, "Text", "자동 진행", 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(autoLabel.rectTransform);
+            UIFactory.Stretch(autoLabel.rectTransform, 30f, 0f, 4f, 0f);
+            ButtonIcon(autoImg.transform, "menuicon_autoquest"); // [ART]
             // [AUTO] 자동 사냥 (hunting grounds only), left of 자동 진행.
             var huntImg = UIFactory.Image(questPanel, "AutoHunt", Game.Art.Get("ui_btn"), Color.white);
             huntImg.raycastTarget = true;
@@ -125,7 +126,8 @@ namespace DotRPG
             huntBtn.onClick.AddListener(QuestAutoPilot.ToggleHunt);
             UiButton.Attach(huntBtn);
             huntLabel = UIFactory.Text(huntImg.transform, "Text", "자동 사냥", 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(huntLabel.rectTransform);
+            UIFactory.Stretch(huntLabel.rectTransform, 30f, 0f, 4f, 0f);
+            ButtonIcon(huntImg.transform, "menuicon_autohunt"); // [ART]
             autoStatus = UIFactory.Text(questPanel, "AutoStatus", "", 16, new Color32(143, 226, 143, 255), TextAnchor.UpperRight, true);
             UIFactory.Place(autoStatus.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(360f, 44f));
             autoStatus.raycastTarget = false;
@@ -316,6 +318,15 @@ namespace DotRPG
         static void FitToast(Toast t)
         {
             t.plate.rectTransform.sizeDelta = new Vector2(Mathf.Min(700f, t.text.preferredWidth + 32f), ToastHeight);
+        }
+
+        /// <summary>[ART] A small icon at the left end of a HUD button.</summary>
+        static void ButtonIcon(Transform button, string sprite)
+        {
+            var ic = UIFactory.Image(button, "Icon", Game.Art.Get(sprite), Color.white);
+            ic.preserveAspect = true;
+            ic.raycastTarget = false;
+            UIFactory.Place(ic.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(5f, 0f), new Vector2(26f, 26f));
         }
 
         void Update()
