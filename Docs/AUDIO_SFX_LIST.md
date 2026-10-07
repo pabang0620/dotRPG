@@ -1,6 +1,6 @@
 ## 효과음 청취 체크리스트
 
-원본 WAV는 `AudioSource/Sfx/<key>.wav`, 게임에 들어가는 파일은 `Assets/Resources/Audio/<key>.ogg`다. 전체를 한 번에 들으려면 `AudioSource/Sfx/_preview_all.wav`(분류 순서: 전투, 스킬, 월드, UI, 징글. 분류 사이에 작은 삐 소리 두 번)를 재생한다. 다시 만들려면 `python3 Tools/sfx/make_sfx.py --replace`, 검증 결과는 `AudioSource/Sfx/report.txt`.
+원본 WAV는 `python3 Tools/sfx/make_sfx.py --replace`로 `AudioSource/Sfx/<key>.wav`에 다시 만든다(로컬 작업 파일, git 제외). 게임에 들어가는 파일은 `Assets/Resources/Audio/<key>.ogg`다. 전체를 한 번에 들으려면 `AudioSource/Sfx/_preview_all.wav`(분류 순서: 전투, 스킬, 월드, UI, 징글. 분류 사이에 작은 삐 소리 두 번)를 재생한다. 다시 만들려면 `python3 Tools/sfx/make_sfx.py --replace`, 검증 결과는 `AudioSource/Sfx/report.txt`.
 
 형식: 키 - 게임에서 들리는 곳 - 의도한 느낌
 

@@ -2,6 +2,7 @@
 """Gen2 BGM 후보(c1, c2 ...)를 모두 검증·루프 처리하고, 곡마다 가장 나은 후보를 게임에 넣는다.
 
 순서: 검증 통과 > 대표 멜로디 반복 횟수 > 루프 일치도 > 이음매 > 박 흔들림.
+사람이 듣고 고른 후보는 Tools/audio/bgm_overrides.json ({"<키>": "cN"})이 자동 선정보다 우선한다.
 게임: Assets/Resources/Audio/<key>.ogg (뽑힌 후보), 비교용: AudioSource/Gen2/candidates/<key>_cN.ogg
 보고: AudioSource/Gen2/report.json, report.txt
 이음매 미리듣기: AudioSource/Gen2/seam_preview/<key>.wav (뽑힌 루프의 끝 8초 + 처음 8초, 이어지는 곳에서 끊김이 들리면 문제)
@@ -14,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GEN = ROOT / "AudioSource" / "Gen2"
-BPM = {"music_title": 92, "music_village": 100, "music_canyon": 104, "music_winter": 88, "music_forest": 120,
+BPM = {"music_title": 92, "music_village": 72, "music_canyon": 104, "music_winter": 88, "music_forest": 120,
        "music_dgn_canyon": 128, "music_dgn_forest": 112, "music_dgn_winter": 132, "music_boss": 150, "music_raid": 140,
        "music_raid_enrage": 165, "music_clear": 112, "music_fail": 76}
 BPB = {"music_winter": 3}
@@ -35,6 +36,8 @@ def main():
     apply = "--apply" in sys.argv
     cand_dir = GEN / "candidates"; cand_dir.mkdir(exist_ok=True)
     report = {}
+    ov_path = Path(__file__).with_name("bgm_overrides.json")
+    overrides = json.loads(ov_path.read_text(encoding="utf-8")) if ov_path.exists() else {}
     for key, bpm in BPM.items():
         rows = []
         for wav in sorted(GEN.glob(f"c*/{key}_c*.wav")):
@@ -49,6 +52,8 @@ def main():
             if (out / f"{key}.ogg").exists(): shutil.copyfile(out / f"{key}.ogg", cand_dir / f"{key}_{tag}.ogg")
         if not rows: continue
         best = max(rows, key=score)
+        forced = next((r for r in rows if r["candidate"] == overrides.get(key) and "loop_len_s" in r), None)
+        if forced: best = forced
         report[key] = {"picked": best["candidate"], "candidates": rows}
         if apply and "loop_len_s" in best:
             shutil.copyfile(GEN / f"out_{best['candidate']}" / f"{key}.ogg", ROOT / "Assets" / "Resources" / "Audio" / f"{key}.ogg")

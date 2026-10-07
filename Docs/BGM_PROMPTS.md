@@ -16,7 +16,7 @@
 | 키 | 상황 | BPM | 조 | 대표 악기 |
 |---|---|---|---|---|
 | music_title | 타이틀 | 92 | D장조 | 플루트 |
-| music_village | 해골 숲 옆 작은 마을 | 100 | G장조 | 오카리나, 기타, 글로켄슈필 |
+| music_village | 해골 숲 옆 작은 마을 | 72 | G장조 | 오카리나, 핑거피킹 기타, 피아노 (느리고 아련하게) |
 | music_canyon | 바위 협곡 마을, 협곡 사냥터, 침수된 고대 성소 | 104 | D 도리안 | 마림바, 핸드드럼 |
 | music_winter | 눈꽃 숲 마을 | 88 | E플랫장조 3/4 | 오르골, 첼레스타 |
 | music_forest | 사냥터 · 해골 숲 | 120 | A단조 | 피치카토, 바순 |
@@ -51,12 +51,12 @@ Warm heroic fantasy adventure main theme for a cute pixel-art RPG, 92 BPM in D m
 
 ### music_village
 ```
-Cheerful cozy village theme for a cute pixel-art RPG town by a river, 100 BPM in G major, bouncy and carefree, signature instrument: sweet ocarina playing the hook, acoustic guitar strumming, glockenspiel answers, pizzicato bass, light shaker and woodblock. Built around ONE simple, catchy, hummable 4-bar melody hook (stepwise with one memorable leap, easy to sing back), stated clearly in the first 8 seconds and repeated many times through the piece with small variations, call-and-response between two instruments. Steady constant tempo played to a click, no rubato, no tempo changes. SEAMLESS LOOP: no intro, no ending, no fade out, no final chord; the last bar must flow straight back into the first bar. Instrumental only: no vocals, no choir, no vocal chops.
+Wistful, nostalgic small-village theme for a cute pixel-art RPG, slow 72 BPM in G major, gentle and bittersweet like a warm memory of home at dusk, signature instrument: soft breathy ocarina playing the hook with long held notes, fingerpicked nylon guitar, warm felt piano, a few glockenspiel touches, soft string pad, very light brushed percussion, warm spacious reverb. Built around ONE simple, hummable 4-bar melody hook (mostly stepwise with one tender upward leap, easy to sing back), stated clearly in the first 8 seconds and repeated many times through the piece with small variations, call-and-response between ocarina and piano. Steady constant slow tempo played to a click, no rubato, no tempo changes. SEAMLESS LOOP: no intro, no ending, no fade out, no final chord; the last bar must flow straight back into the first bar. Instrumental only: no vocals, no choir, no vocal chops.
 
-[0:00-0:30] A: ocarina hook, glockenspiel answers
-[0:30-1:00] A': clarinet joins in harmony
-[1:00-1:30] B: playful bridge with accordion
-[1:30-2:00] A: hook returns, last bar turns back to the start
+[0:00-0:30] A: ocarina hook over fingerpicked guitar, piano answers
+[0:30-1:00] A': strings join softly under the hook
+[1:00-1:30] B: tender piano bridge, glockenspiel sparkles
+[1:30-2:00] A: hook returns on ocarina, last bar turns back to the start
 ```
 
 ### music_canyon

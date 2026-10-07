@@ -8,14 +8,9 @@
 | 무엇 | 위치 |
 |---|---|
 | 게임에 들어간 BGM | `Assets/Resources/Audio/music_*.ogg` |
-| 곡마다 후보 전부(비교용) | `AudioSource/Gen2/candidates/<키>_c1.ogg`, `_c2.ogg` (눈꽃 마을은 c4까지, 클리어는 c3까지) |
-| 이음매만 듣기(루프 끝 8초 + 처음 8초) | `AudioSource/Gen2/seam_preview/<키>.wav` |
-| BGM 자동 검증 결과 | `AudioSource/Gen2/report.txt` (`*` 표시가 게임에 들어간 후보) |
-| 효과음 전체 연속 재생 | `AudioSource/Sfx/_preview_all.wav` (전투, 스킬, 월드, UI, 징글 순, 분류 사이에 삐 두 번) |
-| 효과음 자동 검증 결과 | `AudioSource/Sfx/report.txt` |
-| 다시 만들기 | BGM `Tools/audio/bgm_pick.py --apply` / 효과음 `python3 Tools/sfx/make_sfx.py --replace` |
+| 다시 만들기 | BGM: Flow Music으로 후보 생성(`Tools/audio/bgm_jobs.json`) 후 `Tools/audio/bgm_pick.py --apply`, 사람이 고른 후보는 `Tools/audio/bgm_overrides.json` / 효과음: `python3 Tools/sfx/make_sfx.py --replace` (원본 WAV, 전체 미리듣기, 검증 결과를 `AudioSource/Sfx/`에 다시 만든다) |
 
-다른 후보가 더 좋으면 "`music_village`는 c2로"처럼 말해 주면 바꿔 넣는다.
+선정이 끝난 뒤 게임에 들어가지 않은 후보와 작업 파일(`AudioSource/`)은 지웠다.
 
 ## 1. 자동 검증 (완료)
 
@@ -38,13 +33,13 @@ BGM은 곡마다 다음을 수치로 확인했다(`Tools/audio/bgm_loop.py`).
 | 곡 | 후보 | 측정 BPM | 박 흔들림 | 멜로디 반복 | 루프 길이 | 루프 일치도 | 이음매 | 판정 |
 |---|---|---|---|---|---|---|---|---|
 | music_title | c2 | 76.0 | 9.7ms | 3회 | 51.2초 | 0.961 | 0.0dB | 확인 필요: 템포가 의도(92)보다 느리게 측정됨. 박은 일정해서 넣었다. 템포가 처지게 들리면 알려 줄 것 |
-| music_village | c2 | 103.4 | 15.8ms | 2회 | 65.6초 | 0.993 | 0.46dB | 통과 |
+| music_village | c5 | 76.0 | 10.8ms | 2회 | 50.53초 | 0.98 | 1.34dB | 통과 |
 | music_canyon | c1 | 103.4 | 11.0ms | 5회 | 69.98초 | 0.991 | 0.0dB | 통과 |
 | music_winter | c1 | 89.1 | 10.7ms | 2회 | 88.0초 | 0.972 | 3.47dB | 확인 필요: 이음매 음량 차이가 기준(3dB)을 조금 넘음. `seam_preview/music_winter.wav`로 이어지는 곳을 꼭 들어 볼 것. 다른 후보(c2~c4)는 3박자 박 검출이 틀어져 수치를 믿기 어렵다 |
 | music_forest | c2 | 117.5 | 13.6ms | 7회 | 63.99초 | 1.009 | 0.0dB | 통과 |
 | music_dgn_canyon | c1 | 129.2 | 7.6ms | 12회 | 59.07초 | 1.006 | 0.99dB | 통과 |
 | music_dgn_forest | c2 | 112.3 | 12.0ms | 2회 | 87.35초 | 0.997 | 0.19dB | 통과 |
-| music_dgn_winter | c2 | 129.2 | 10.6ms | 9회 | 89.09초 | 0.963 | 0.45dB | 통과 |
+| music_dgn_winter | c1 | 152.0 | 9.7ms | 3회 | 51.2초 | 0.961 | 0.26dB | 확인 필요: 사용자가 듣고 고른 후보(자동 측정 템포가 의도와 다름) |
 | music_boss | c2 | 152.0 | 10.9ms | 9회 | 100.38초 | 0.918 | 0.0dB | 통과 |
 | music_raid | c1 | 143.6 | 10.6ms | 12회 | 69.06초 | 0.979 | 1.29dB | 통과 |
 | music_raid_enrage | c2 | 161.5 | 8.2ms | 8회 | 54.01초 | 1.015 | 0.89dB | 통과 |
@@ -85,8 +80,8 @@ BGM은 곡마다 다음을 수치로 확인했다(`Tools/audio/bgm_loop.py`).
 - B-TTL-5 컷신에서 타이틀 곡을 부르는 장면에서 자연스럽게 바뀌는가
 - B-TTL-6 템포가 처지거나 졸리게 들리지 않는가(자동 측정이 의도보다 느리게 나온 곡)
 
-### 첫 마을 `music_village` (100 BPM, G장조, 오카리나·기타·글로켄슈필)
-- B-VIL-1 아늑하고 밝은 시작 마을 느낌인가
+### 첫 마을 `music_village` (72 BPM, G장조, 오카리나·핑거피킹 기타·피아노)
+- B-VIL-1 느리고 아련한, 해 질 녘 고향 같은 느낌인가
 - B-VIL-2 오카리나 멜로디가 귀에 남는가(가장 오래 듣는 곡이라 가장 중요)
 - B-VIL-3 마을에 오래 서 있어도 질리지 않는가
 - B-VIL-4 마을 안 건물(상점, 대장간 등)에 들어가도 같은 곡이 끊기지 않고 이어지는가
@@ -107,7 +102,7 @@ BGM은 곡마다 다음을 수치로 확인했다(`Tools/audio/bgm_loop.py`).
 - B-WIN-2 오르골, 첼레스타가 눈 내리는 느낌을 주는가
 - B-WIN-3 너무 졸리거나 처지지 않는가
 - B-WIN-4 3박자 곡이라 이어지는 곳에서 박이 한 칸 밀리지 않는가(특히 주의)
-- B-WIN-5 `AudioSource/Gen2/seam_preview/music_winter.wav` 8초 지점에서 소리가 갑자기 커지거나 작아지지 않는가(자동 검증에서 유일하게 이음매 수치가 기준을 넘은 곡)
+- B-WIN-5 게임에서 3번 이상 반복될 때 이어지는 곳에서 소리가 갑자기 커지거나 작아지지 않는가(자동 검증에서 유일하게 이음매 수치가 기준을 넘은 곡)
 
 ### 협곡 던전 `music_dgn_canyon` (128 BPM, C단조, 금관 리프·타이코)
 - B-DCA-1 긴장감 있고 힘찬가
