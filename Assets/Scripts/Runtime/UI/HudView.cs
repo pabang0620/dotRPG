@@ -18,7 +18,7 @@ namespace DotRPG
         readonly Dictionary<string, float> itemPulse = new Dictionary<string, float>();
         Text questTitle;
         Text questBody;
-        Text autoLabel, autoStatus; // [QUEST] auto-progress toggle under the tracker
+        Text autoLabel, autoStatus, huntLabel; // [QUEST] auto-progress toggle under the tracker
         RectTransform questPanel;
         // [CONTENT] for capture checks
         public bool DevQuestVisible => questPanel != null && questPanel.gameObject.activeInHierarchy;
@@ -116,6 +116,16 @@ namespace DotRPG
             UiButton.Attach(autoBtn);
             autoLabel = UIFactory.Text(autoImg.transform, "Text", "자동 진행", 17, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(autoLabel.rectTransform);
+            // [AUTO] 자동 사냥 (hunting grounds only), left of 자동 진행.
+            var huntImg = UIFactory.Image(questPanel, "AutoHunt", Game.Art.Get("ui_btn"), Color.white);
+            huntImg.raycastTarget = true;
+            UIFactory.Place(huntImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-140f, -4f), new Vector2(132f, 36f));
+            var huntBtn = huntImg.gameObject.AddComponent<Button>();
+            huntBtn.targetGraphic = huntImg;
+            huntBtn.onClick.AddListener(QuestAutoPilot.ToggleHunt);
+            UiButton.Attach(huntBtn);
+            huntLabel = UIFactory.Text(huntImg.transform, "Text", "자동 사냥", 17, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(huntLabel.rectTransform);
             autoStatus = UIFactory.Text(questPanel, "AutoStatus", "", 16, new Color32(143, 226, 143, 255), TextAnchor.UpperRight, true);
             UIFactory.Place(autoStatus.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(360f, 44f));
             autoStatus.raycastTarget = false;
@@ -307,7 +317,9 @@ namespace DotRPG
             if (autoLabel != null)
             {
                 bool auto = QuestAutoPilot.Active;
-                autoLabel.text = auto ? "자동 중지" : QuestAutoPilot.Targets.Count > 0 ? $"자동 진행 ({QuestAutoPilot.Targets.Count})" : "자동 진행";
+                bool hunting = QuestAutoPilot.Hunting;
+                autoLabel.text = auto && !hunting ? "자동 중지" : QuestAutoPilot.Targets.Count > 0 ? $"자동 진행 ({QuestAutoPilot.Targets.Count})" : "자동 진행";
+                if (huntLabel != null) huntLabel.text = hunting ? "사냥 중지" : "자동 사냥";
                 autoStatus.text = auto ? QuestAutoPilot.Status : "";
             }
             float now = Time.unscaledTime;

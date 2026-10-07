@@ -304,7 +304,7 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<GameOverScreen>();
             screen.BuildPanel(root, "쓰러졌습니다...", 520, "그 자리에서 일어나거나, 마을에서 다시 시작할 수 있습니다.\n가진 물건과 의뢰 진행은 그대로입니다.", 18);
             // [REVIVE] Where you fell: free up to Lv.10, then one revive coin (one a day).
-            screen.reviveHere = screen.menu.AddButton(ReviveCoins.Label(), () => Game.Flow.ReviveHere(), () => ReviveCoins.CanUse && !ReviveCoins.Busy);
+            screen.reviveHere = screen.menu.AddButton(ReviveCoins.FieldLabel, () => Game.Flow.ReviveHere(), () => !ReviveCoins.Busy); // [REVIVE] fields: always free
             ReviveCoins.Changed += screen.RefreshRevive;
             screen.menu.AddButton("마을에서 다시 일어나기", () => Game.Flow.RespawnInVillage());
             // [UX] Both drop the progress since the last save: ask first.
@@ -323,7 +323,7 @@ namespace DotRPG
 
         void RefreshRevive()
         {
-            if (reviveHere != null && reviveHere.labelText != null) reviveHere.labelText.text = ReviveCoins.Label();
+            if (reviveHere != null && reviveHere.labelText != null) reviveHere.labelText.text = ReviveCoins.FieldLabel;
         }
 
         void OnDestroy() => ReviveCoins.Changed -= RefreshRevive;

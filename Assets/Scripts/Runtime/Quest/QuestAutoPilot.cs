@@ -28,6 +28,26 @@ namespace DotRPG
         public static bool Active => Instance != null && Instance.on;
         /// <summary>One line for the HUD ("자동 진행: 한나에게 가는 중").</summary>
         public static string Status => Active ? Instance.status : "";
+        /// <summary>
+        /// [AUTO] 자동 사냥: fights in the hunting ground the hero stands in. Only in hunting-ground fields, never in a
+        /// dungeon, weekday dungeon or raid (those are always played by hand). Turned on by its own button, or by
+        /// auto-progress on arriving at the ground of a kill / level step (then it goes back to the story when done).
+        /// </summary>
+        public static bool Hunting => Active && Instance.huntMode;
+        bool huntMode, huntForQuest;
+        string huntTarget = "*";
+
+        static bool InHuntingGround => Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun);
+
+        public static void ToggleHunt()
+        {
+            if (Hunting) { Stop("자동 사냥을 멈췄습니다."); return; }
+            if (!InHuntingGround) { GameEvents.RaiseToast("자동 사냥은 사냥터에서만 켤 수 있습니다. (던전·요일던전·레이드는 직접 플레이)"); Game.Audio.PlaySfx("cancel"); return; }
+            if (Active) Stop("");
+            if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
+            Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*";
+            Instance.Begin();
+        }
 
         sealed class AutoInput : IActorInput
         {
@@ -65,8 +85,9 @@ namespace DotRPG
 
         public static void Toggle()
         {
-            if (Active) { Stop("자동 진행을 멈췄습니다."); return; }
+            if (Active) { Stop(Hunting ? "자동 사냥을 멈췄습니다." : "자동 진행을 멈췄습니다."); return; }
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
+            Instance.huntMode = false;
             Instance.Begin();
         }
 
@@ -74,6 +95,7 @@ namespace DotRPG
         {
             if (Instance == null || !Instance.on) return;
             Instance.on = false;
+            Instance.huntMode = false;
             Instance.status = "";
             Instance.Release();
             if (!string.IsNullOrEmpty(why)) GameEvents.RaiseToast(why);
@@ -89,6 +111,7 @@ namespace DotRPG
             Acquire(p);
             lastPos = p.Position;
             lastProgressAt = Time.time;
+            if (huntMode) { GameEvents.RaiseToast("자동 사냥을 시작합니다. 아무 키나 누르면 멈춥니다."); return; }
             GameEvents.RaiseToast(Targets.Count > 0 ? $"체크한 퀘스트 {Targets.Count}개를 자동 진행합니다. 아무 키나 누르면 멈춥니다."
                 : "퀘스트 자동 진행을 시작합니다. 퀘스트 창에서 진행할 퀘스트를 체크할 수 있습니다.");
         }
@@ -126,8 +149,8 @@ namespace DotRPG
             GameEvents.QuestAccepted -= OnQuestAccepted;
         }
 
-        void OnQuestCompleted(string id) { if (on) Stop("퀘스트 완료! 다음 퀘스트도 진행하려면 [자동 진행]을 다시 누르세요."); }
-        void OnQuestAccepted(string id) { if (on) Stop("새 퀘스트를 받았습니다. 이어서 하려면 [자동 진행]을 다시 누르세요."); }
+        void OnQuestCompleted(string id) { if (on && !(huntMode && !huntForQuest)) Stop("퀘스트 완료! 다음 퀘스트도 진행하려면 [자동 진행]을 다시 누르세요."); }
+        void OnQuestAccepted(string id) { if (on && !(huntMode && !huntForQuest)) Stop("새 퀘스트를 받았습니다. 이어서 하려면 [자동 진행]을 다시 누르세요."); }
 
         void Update()
         {
@@ -140,6 +163,22 @@ namespace DotRPG
             input.next = ActorCommand.None;
             // Conversations, windows and map changes pause the walk; it carries on afterwards.
             if (!Game.IsPlaying || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
+
+            // [AUTO] 자동 사냥: stays in this hunting ground; a quest hunt hands back to the story once its step is done.
+            if (huntMode)
+            {
+                if (!InHuntingGround) { Stop("사냥터를 벗어나 자동 사냥을 멈췄습니다."); return; }
+                if (huntForQuest)
+                {
+                    var q = Resolve();
+                    if (q.kind != GoalKind.Hunt) { huntMode = false; GameEvents.RaiseToast("사냥을 마쳐서 이야기를 이어 갑니다."); return; }
+                    huntTarget = q.id;
+                }
+                var hunt = new Goal { kind = GoalKind.Hunt, id = huntTarget, map = "", label = huntForQuest ? "자동 사냥 중 (퀘스트)" : "자동 사냥 중" };
+                status = hunt.label;
+                DoHunt(p, hunt);
+                return;
+            }
 
             var goal = Resolve();
             string key = goal.kind + ":" + goal.id + ":" + goal.map;
@@ -167,7 +206,11 @@ namespace DotRPG
                 case GoalKind.Npc: DoNpc(p, goal); break;
                 case GoalKind.Prop: DoProp(p, goal); break;
                 case GoalKind.Site: DoSite(p, goal); break;
-                case GoalKind.Hunt: DoHunt(p, goal); break;
+                case GoalKind.Hunt:
+                    // [AUTO] At the hunting ground: the fighting is done by 자동 사냥 (fields only).
+                    if (InHuntingGround) { huntMode = true; huntForQuest = true; huntTarget = goal.id; GameEvents.RaiseToast("사냥터에 도착해 자동 사냥을 켰습니다."); }
+                    else DoHunt(p, goal);
+                    break;
                 case GoalKind.Gather: DoGather(p, goal); break;
                 case GoalKind.DungeonGuide: DoDungeonGuide(p, goal); break;
                 case GoalKind.Map: Stop($"{MapName(goal.map)}에 도착했습니다."); break;

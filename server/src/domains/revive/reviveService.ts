@@ -67,7 +67,8 @@ export async function revive(accountId: number, uuid: string, body: ReviveBody):
     const { day, nextGrantAt } = gameDay(now);
     let coins = applyGrant(c.revive_coins, c.revive_coin_day, day);
     // 3~4. 무료 구간 또는 코인 1개 소모
-    const free = c.level <= REVIVE_FREE_UNTIL_LEVEL;
+    // 사냥터(필드) 부활은 항상 무료, 코인은 던전·요일던전·레이드에서만 쓴다
+    const free = body.context === 'field' || c.level <= REVIVE_FREE_UNTIL_LEVEL;
     if (!free) {
       if (coins <= 0) {
         // 409를 던지면 트랜잭션이 롤백되어 지급 반영도 취소된다(다음 조회 때 같은 날 기준으로 다시 계산하므로 결과는 같다)

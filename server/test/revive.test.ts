@@ -28,7 +28,7 @@ const state = async (h: Hero) =>
 const logCount = async (h: Hero) =>
   Number((await getPool().query<{ n: string }>('SELECT count(*) AS n FROM revive_log WHERE character_id = $1', [h.dbId])).rows[0]!.n);
 const use = (h: Hero, body: Record<string, unknown> = {}, id: string = h.id) =>
-  request(app).post(`/characters/${id}/revive`).set(auth(h.s)).send({ request_id: randomUUID(), context: 'field', ...body });
+  request(app).post(`/characters/${id}/revive`).set(auth(h.s)).send({ request_id: randomUUID(), context: 'dungeon', ...body });
 const get = (h: Hero, id: string = h.id) => request(app).get(`/characters/${id}/revive`).set(auth(h.s));
 
 describe('부활 코인', () => {
@@ -61,6 +61,15 @@ describe('부활 코인', () => {
     expect(r2.body.errors.code).toBe('NO_REVIVE_COIN');
     expect(await state(h)).toBe(0);
     expect(await logCount(h)).toBe(1);
+  });
+
+  it('사냥터(필드) 부활은 레벨과 상관없이 무료이고 코인을 쓰지 않는다', async () => {
+    const h = await newHero(app, 'warrior');
+    await setLevel(h, 30);
+    const r = await use(h, { context: 'field', map_id: 'forest' });
+    expect(r.status).toBe(200);
+    expect(r.body.data).toMatchObject({ free: true, coins: 1 });
+    expect(await state(h)).toBe(1);
   });
 
   it('지난 게임 일수만큼 지급하고, 상한 5에서 버려진다', async () => {

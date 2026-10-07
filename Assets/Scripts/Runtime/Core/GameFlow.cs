@@ -404,7 +404,7 @@ namespace DotRPG
                 else p.Revive(1f, DungeonDirector.ReviveInvulnerable);
                 p.Data.Mana = p.MaxMana;
                 Game.Audio.PlaySfx("quest");
-                GameEvents.RaiseToast(ReviveCoins.Free ? "그 자리에서 다시 일어났습니다." : $"부활 코인을 사용했습니다. (남은 코인 {ReviveCoins.Coins})");
+                GameEvents.RaiseToast("그 자리에서 다시 일어났습니다.");
                 Game.State.Set(GameState.Playing);
             });
         }

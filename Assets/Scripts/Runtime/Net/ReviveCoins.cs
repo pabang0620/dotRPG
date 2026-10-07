@@ -5,8 +5,8 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// [REVIVE] Get up where you fell (Docs/server/phase12_revive_coins.md). Up to Lv.10 it is free; from Lv.11 each
-    /// revive spends one revive coin, one coin comes every game day (06:00) and at most 5 are kept. Online the server
+    /// [REVIVE] Get up where you fell (Docs/server/phase12_revive_coins.md). In hunting grounds (fields) it is always
+    /// free; in dungeons, weekday dungeons and raids it is free up to Lv.10, and from Lv.11 each revive spends one revive coin, one coin comes every game day (06:00) and at most 5 are kept. Online the server
     /// owns the count; offline play (demos) keeps the same rule in PlayerPrefs per save slot.
     /// </summary>
     public static class ReviveCoins
@@ -22,7 +22,10 @@ namespace DotRPG
 
         public static bool Free => Game.Session == null || Game.Session.Progression.Level <= FreeUntilLevel;
 
-        /// <summary>Button text: "그 자리에서 부활 (무료)" or the coin cost with what is left.</summary>
+        /// <summary>Button text in the field (always free).</summary>
+        public static string FieldLabel => "그 자리에서 부활 (무료)";
+
+        /// <summary>Button text in a dungeon: free up to Lv.10, else the coin cost with what is left.</summary>
         public static string Label(string verb = "그 자리에서 부활")
             => Free ? $"{verb} (Lv.{FreeUntilLevel}까지 무료)" : $"{verb} (부활 코인 1 · 보유 {Coins}/{Max})";
 
@@ -75,7 +78,7 @@ namespace DotRPG
                 return;
             }
             LoadLocal();
-            if (!Free)
+            if (!Free && context != "field")
             {
                 if (Coins <= 0) { done(false, "부활 코인이 없습니다. (매일 06:00에 1개 지급)"); return; }
                 Coins--;
