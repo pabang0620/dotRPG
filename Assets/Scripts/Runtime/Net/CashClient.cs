@@ -19,6 +19,8 @@ namespace DotRPG
         /// <summary>Opens done since the last boosted one (0..9); the 11th open is boosted.</summary>
         public static int Gauge { get; private set; }
         public static bool NextBoosted { get; private set; }
+        /// <summary>The rate table version the player last saw (sent with each pull; the server refuses a changed table).</summary>
+        public static string RatesVersion { get; private set; }
         public static bool Loaded { get; private set; }
         public static bool Busy { get; private set; }
         public static event Action Changed;
@@ -35,6 +37,7 @@ namespace DotRPG
                 {
                     PriceOne = MiniJson.Int(r.data, "price_one", PriceOne);
                     PriceEleven = MiniJson.Int(r.data, "price_eleven", PriceEleven);
+                    RatesVersion = MiniJson.Str(r.data, "rates_version");
                     ReadBooster(MiniJson.Obj(r.data, "booster"));
                     ReadTable(MiniJson.Arr(r.data, "table"), Table);
                     ReadTable(MiniJson.Arr(r.data, "boosted_table"), BoostedTable);
@@ -84,6 +87,7 @@ namespace DotRPG
         {
             "NOT_ENOUGH_STARS" => "별조각이 모자랍니다.",
             "ALREADY_HIGHER" => "이미 그 단계 이상인 장비입니다.",
+            "RATES_CHANGED" => "확률표가 바뀌었습니다. 확률을 다시 확인한 뒤 열어 주세요.",
             "OFFLINE" or "BUSY" => r.message,
             "NETWORK" => "서버에 연결할 수 없습니다.",
             _ => string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message,
@@ -92,9 +96,11 @@ namespace DotRPG
         /// <summary>Opens 1 or 11 sealed boxes from the shop.</summary>
         public static void Pull(int count, Action<bool, string, List<Reward>> done)
         {
-            Send(Char + "/starshop/sealed/pull", new Dictionary<string, object> { ["count"] = count }, r =>
+            var body = new Dictionary<string, object> { ["count"] = count };
+            if (!string.IsNullOrEmpty(RatesVersion)) body["rates_version"] = RatesVersion;
+            Send(Char + "/starshop/sealed/pull", body, r =>
             {
-                if (!r.ok) { done(false, Explain(r), null); return; }
+                if (!r.ok) { if (r.code == "RATES_CHANGED") Refresh(); done(false, Explain(r), null); return; }
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 ReadBooster(MiniJson.Obj(r.data, "booster"));
                 _ = StarShopClient.RefreshAsync();
