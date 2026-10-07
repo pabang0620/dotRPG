@@ -73,28 +73,42 @@ def main():
         for i in range(nb):
             sim[i, max(0, i - 1):i + 2] = -1
         rep = float(np.mean(sim.max(axis=1)))
-        hook = bars[:4].reshape(-1); hook /= np.linalg.norm(hook) + 1e-9
-        i = 4
-        while i + 4 <= nb:
-            seg = bars[i:i + 4].reshape(-1); seg /= np.linalg.norm(seg) + 1e-9
-            if float(seg @ hook) > 0.85: hook_hits += 1; i += 4
-            else: i += 1
+        # the hook = the 4-bar phrase in the first 8 bars that comes back most often
+        def returns(h0):
+            hook = bars[h0:h0 + 4].reshape(-1); hook = hook / (np.linalg.norm(hook) + 1e-9)
+            n, i = 0, h0 + 4
+            while i + 4 <= nb:
+                seg = bars[i:i + 4].reshape(-1); seg = seg / (np.linalg.norm(seg) + 1e-9)
+                if float(seg @ hook) > 0.85: n += 1; i += 4
+                else: i += 1
+            return n
+        hook_hits = max(returns(h0) for h0 in range(0, min(8, nb - 8) + 1))
 
-    # 3) loop points: S = first downbeat after 0.3 s, E = later downbeat whose next bar matches the bar at S
+    # 3) loop points: bars S (first 30%) and E (later) whose next two bars sound the same; [S, E) is the loop
     loop = None
+    # a generated file sometimes holds two takes with a gap between them: a loop must not span a silence over 1s
+    fr = int(0.1 * sr0)
+    quiet = np.array([20 * np.log10(np.sqrt(np.mean(mono[i:i + fr] ** 2)) + 1e-9) < -50 for i in range(0, len(mono) - fr, fr)])
+    gaps, run = [], 0  # (start, end) of each silence over 1s
+    for i, q in enumerate(list(quiet) + [False]):
+        if q: run += 1; continue
+        if run > 10: gaps.append(((i - run) * 0.1, i * 0.1))
+        run = 0
+    min_len = 45.0 if gaps else max(45.0, 0.5 * dur)
     if nb >= 8:
-        s_idx = next((k for k, t in enumerate(bars_t) if t > 0.3), 0)
-        best = (-1, None)
-        for e_idx in range(s_idx + 8, len(bars) - 1):
-            length = bars_t[e_idx] - bars_t[s_idx]
-            if length < max(45.0, 0.55 * dur) or bars_t[e_idx] + 60.0 / max(bpm, 1) > dur - 0.2: continue
-            # match the next two bars too when available
-            sc = bars[e_idx] @ bars[s_idx]
-            if e_idx + 1 < nb and s_idx + 1 < nb: sc = (sc + bars[e_idx + 1] @ bars[s_idx + 1]) / 2
-            sc += 0.02 * (length / dur)  # prefer longer loops a little
-            if sc > best[0]: best = (sc, e_idx)
+        best = (-1.0, None, None)
+        bpm_safe = max(bpm, 1)
+        for s_idx in range(0, max(1, int(nb * (0.6 if gaps else 0.3)))):
+            if bars_t[s_idx] < 0.3: continue
+            for e_idx in range(s_idx + 8, nb - 1):
+                length = bars_t[e_idx] - bars_t[s_idx]
+                if length < min_len or bars_t[e_idx] + 60.0 / bpm_safe > dur - 0.2: continue
+                if any(g0 < bars_t[e_idx] + 60.0 / bpm_safe and g1 > bars_t[s_idx] - 0.2 for g0, g1 in gaps): continue
+                sc = (bars[e_idx] @ bars[s_idx] + bars[e_idx + 1] @ bars[s_idx + 1]) / 2
+                sc += 0.03 * (length / dur)  # prefer longer loops a little
+                if sc > best[0]: best = (sc, s_idx, e_idx)
         if best[1] is not None:
-            loop = (s_idx, best[1], float(best[0]))
+            loop = (best[1], best[2], float(best[0]))
 
     rec = {"key": a.key, "duration_s": round(dur, 2), "bpm_hint": a.bpm, "bpm": round(bpm, 1),
            "bpm_error_pct": round(abs(bpm - a.bpm) / a.bpm * 100, 1), "beat_jitter_ms": round(jitter_ms, 1),
@@ -126,7 +140,14 @@ def main():
     # seam: level jump and sample step at the loop point (end -> start)
     w = int(0.05 * sr0)
     rms = lambda x: float(np.sqrt(np.mean(x ** 2)) + 1e-9)
-    seam_db = abs(20 * np.log10(rms(body[-w:]) / rms(body[:w])))
+    seam_raw = abs(20 * np.log10(rms(body[-w:]) / rms(body[:w])))
+    # a downbeat is naturally louder than the end of the bar before it: judge the seam against the same jump at the
+    # loop's own bar lines (only the excess over that is a seam problem)
+    inner = []
+    for t in bars_t[s_idx + 1:e_idx]:
+        k = int(round(t * sr0)) - S0
+        if w <= k < len(body) - w: inner.append(abs(20 * np.log10(rms(body[k - w:k]) / rms(body[k:k + w]))))
+    seam_db = max(0.0, seam_raw - (float(np.median(inner)) if inner else 0.0))
     step = float(np.max(np.abs(body[0] - body[-1])))
     local = float(np.median(np.abs(np.diff(body[:w], axis=0))) + 1e-6)
     click_ratio = step / local
@@ -140,7 +161,7 @@ def main():
     rec.update({"loop_start_s": round(bars_t[s_idx], 2), "loop_end_s": round(bars_t[e_idx], 2),
                 "loop_len_s": round((E0 - S0) / sr0, 2), "loop_bar_match": round(match, 3),
                 "lufs": round(meter.integrated_loudness(body), 1), "peak_dbfs": round(peak_db, 2), "clipped_samples": clipped,
-                "seam_level_db": round(seam_db, 2), "seam_click_ratio": round(click_ratio, 1), "longest_silence_s": round(sil * 0.1, 1)})
+                "seam_level_db": round(seam_db, 2), "seam_raw_db": round(seam_raw, 2), "seam_click_ratio": round(click_ratio, 1), "longest_silence_s": round(sil * 0.1, 1)})
     # verdict
     fails = []
     if rec["bpm_error_pct"] > 6: fails.append("tempo off")
