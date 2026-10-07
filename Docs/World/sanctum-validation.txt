@@ -1,7 +1,5 @@
-[1.43] capture started
-[1.43] verification audio volume: 0
-[2.87] Warning: Releasing render texture that is set to be RenderTexture.active!
-[5.22] Warning: Releasing render texture that is set to be RenderTexture.active!
+[1.15] capture started
+[1.15] verification audio volume: 0
 DGN 48x72 bounds PASS
 DGN altar spawn free PASS
 DGN spawn away from return portal PASS
@@ -18,11 +16,20 @@ DGN dedicated asset floor PASS
 DGN dedicated asset terrace_wall PASS
 DGN dedicated asset stairs PASS
 DGN dedicated asset pillar PASS
+DGN dedicated asset cliff_face PASS
+DGN shared shore geometry loaded PASS
+DGN curved bank water blocked (657 probes, 0 misses) PASS
+DGN stone cap walkable (313 probes, 0 blocked) PASS
 DGN connected route (23, 21) PASS
 DGN connected route (19, 33) PASS
 DGN connected route (23, 44) PASS
 DGN connected route (14, 49) PASS
 DGN connected route (32, 49) PASS
+DGN west cliff shoulder remains blocked PASS
+DGN aligned altar approach free (24.00, 18.50) PASS
+DGN aligned altar approach free (24.00, 20.50) PASS
+DGN aligned altar approach free (23.50, 21.50) PASS
+DGN aligned altar approach free (22.50, 22.50) PASS
 DGN physically walked to (23.00, 18.00) PASS
 DGN physically walked to (22.50, 22.00) PASS
 DGN physically walked to (22.00, 25.00) PASS
@@ -35,10 +42,9 @@ DGN physically walked to (18.00, 47.20) PASS
 DGN physically walked to (18.00, 49.00) PASS
 DGN companion follows to upper terrace PASS
 DGN companion feet stay free PASS
-[22.10] Warning: Releasing render texture that is set to be RenderTexture.active!
 DGN water removed on exit PASS
-[22.28] Warning: Releasing render texture that is set to be RenderTexture.active!
 DGN one water system after reentry PASS
+DGN one shoreline collider after reentry PASS
 DGN bounded animated objects PASS
 DGN muted verification PASS
-[22.42] SANCTUM RESULTS: 37 passed, 0 failed
+[27.77] SANCTUM RESULTS: 47 passed, 0 failed

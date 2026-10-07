@@ -40,11 +40,16 @@ namespace DotRPG
             var go=new GameObject(name);go.transform.SetParent(transform,false);go.transform.position=pos;go.transform.localScale=new Vector3(scale.x,scale.y,1);
             var sr=go.AddComponent<SpriteRenderer>();sr.sprite=sprite;sr.sortingOrder=order;return sr;
         }
-        public void Setup(char[,] cells,int w,int h,bool withWaterfall=true)
+        public void Setup(char[,] cells,int w,int h,bool withWaterfall=true,SunkenSanctumShore shore=null)
         {
             Prepare();
             for(int y=0;y<h;y++)for(int x=0;x<w;x++)if(cells[x,y]=='~'&&((x*73856093^y*19349663)&0x7fffffff)%7==0&&water.Count<100)
-                water.Add(Add("Quiet water",new Vector2(x+.5f,y+.5f),ripples[(x+y)%12],-29400,Vector2.one*.82f));
+            {
+                var at=new Vector2(x+.5f,y+.5f);
+                // Leave the extruded rock face and wet contact shadow clear of water sprites.
+                if(shore!=null&&(shore.LandDistance(at.x,at.y)>-.95f||shore.WaterDistance(at.x,at.y)<.5f))continue;
+                water.Add(Add("Quiet water",at,ripples[(x+y)%12],-29400,Vector2.one*.82f));
+            }
             if(!withWaterfall)return;
             waterfall.Add(Add("Thin upper fall",new Vector2(24,62),falls[0],YSort.OrderFor(54)+1,new Vector2(.8f,2)));
             waterfall.Add(Add("Broken ledge fall",new Vector2(24,53.3f),falls[0],YSort.OrderFor(49),new Vector2(.65f,.68f)));
