@@ -47,3 +47,23 @@ export async function insertLog(
     [v.characterId, v.requestId, v.context, v.free, v.coinsAfter, v.level, v.mapId, v.at],
   );
 }
+
+/** 진행 중인 던전·요일던전·레이드 판(솔로 또는 파티)이 있는가: 있으면 부활은 클라이언트가 뭐라 보내든 던전 부활이다 */
+export async function inPlayingRun(db: Queryable, characterId: number): Promise<boolean> {
+  const r = await db.query<{ v: boolean }>(
+    `SELECT EXISTS (SELECT 1 FROM dungeon_runs WHERE character_id = $1 AND state = 'playing')
+         OR EXISTS (SELECT 1 FROM party_run_members m JOIN party_runs p ON p.id = m.party_run_id
+                     WHERE m.character_id = $1 AND p.state = 'playing' AND m.state IN ('joined', 'playing', 'disconnected')) AS v`,
+    [characterId],
+  );
+  return r.rows[0]?.v === true;
+}
+
+/** `since` 이후 던전 부활 횟수(정산 때 클라이언트 보고값의 하한) */
+export async function countDungeonRevives(db: Queryable, characterId: number, since: Date): Promise<number> {
+  const r = await db.query<{ n: number }>(
+    `SELECT count(*)::int AS n FROM revive_log WHERE character_id = $1 AND context = 'dungeon' AND created_at >= $2`,
+    [characterId, since],
+  );
+  return r.rows[0]?.n ?? 0;
+}

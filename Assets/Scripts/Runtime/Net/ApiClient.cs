@@ -29,6 +29,11 @@ namespace DotRPG
     public class ApiClient : MonoBehaviour
     {
         public const string DefaultServer = "http://127.0.0.1:3000";
+        /// <summary>
+        /// [RELEASE] The live server (https). A release build (BuildScript.BuildWindowsRelease, define DOTRPG_RELEASE)
+        /// always uses it and ignores -dotrpgServer / PlayerPrefs; that build fails while this is not an https address.
+        /// </summary>
+        public const string ReleaseServer = "";
         const string RefreshKey = "dotrpg.refresh", ServerKey = "dotrpg.server";
         const int TimeoutSeconds = 10;
 
@@ -76,11 +81,15 @@ namespace DotRPG
 
         void Awake()
         {
+#if DOTRPG_RELEASE
+            BaseUrl = ReleaseServer.TrimEnd('/');
+#else
             string url = null;
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++) if (args[i] == "-dotrpgServer") url = args[i + 1];
             if (string.IsNullOrEmpty(url)) { try { url = PlayerPrefs.GetString(ServerKey, ""); } catch (Exception) { } }
             BaseUrl = (string.IsNullOrEmpty(url) ? DefaultServer : url).TrimEnd('/');
+#endif
         }
 
         public void SetTokens(string access, string refresh)

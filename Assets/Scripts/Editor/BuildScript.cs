@@ -23,14 +23,27 @@ namespace DotRPG.EditorTools
         [MenuItem("dotRPG/Build/Windows Steam test (app 480)", priority = 23)]
         public static void BuildWindowsSteamTest() => Build(BuildTarget.StandaloneWindows64, "WindowsSteamTest", ProjectSetup.ProductName + ".exe", steamTest: true);
 
+        /// <summary>
+        /// [RELEASE] The build that ships: define DOTRPG_RELEASE (no capture / dev network modes, server address fixed to
+        /// ApiClient.ReleaseServer). Refuses to build while that address is not https.
+        /// </summary>
+        [MenuItem("dotRPG/Build/Windows release (ships)", priority = 19)]
+        public static void BuildWindowsRelease() => Build(BuildTarget.StandaloneWindows64, "WindowsRelease", ProjectSetup.ProductName + ".exe", release: true);
+
         [MenuItem("dotRPG/Build/macOS", priority = 21)]
         public static void BuildMac() => Build(BuildTarget.StandaloneOSX, "macOS", ProjectSetup.ProductName + ".app");
 
         [MenuItem("dotRPG/Build/Linux (x64)", priority = 22)]
         public static void BuildLinux() => Build(BuildTarget.StandaloneLinux64, "Linux", ProjectSetup.ProductName + ".x86_64");
 
-        static void Build(BuildTarget target, string folder, string executable, bool steamTest = false)
+        static void Build(BuildTarget target, string folder, string executable, bool steamTest = false, bool release = false)
         {
+            if (release && !ApiClient.ReleaseServer.StartsWith("https://", StringComparison.Ordinal))
+            {
+                Debug.LogError("[dotRPG] Release build needs the live server address: set ApiClient.ReleaseServer (https://...).");
+                if (Application.isBatchMode) EditorApplication.Exit(1);
+                return;
+            }
             ProjectSetup.Apply();
             string output = Path.Combine("Builds", folder, executable);
             var options = new BuildPlayerOptions
@@ -39,6 +52,7 @@ namespace DotRPG.EditorTools
                 locationPathName = output,
                 target = target,
                 options = BuildOptions.None,
+                extraScriptingDefines = release ? new[] { "DOTRPG_RELEASE" } : null,
             };
             BuildReport report = BuildPipeline.BuildPlayer(options);
             var summary = report.summary;

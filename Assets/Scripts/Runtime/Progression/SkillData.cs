@@ -30,7 +30,7 @@ namespace DotRPG
 
     public enum Keystone { None, Unwavering, GlassCannon, BloodMagic, Awakening }
 
-    /// <summary>One node of the passive tree (Path of Exile style: allocate nodes connected to what you own).</summary>
+    /// <summary>One node of the passive tree (allocate nodes connected to what you own).</summary>
     public sealed class PassiveNode
     {
         public string id, name;
@@ -218,7 +218,7 @@ namespace DotRPG
     public enum GemKind { Active, Support }
 
     /// <summary>
-    /// Path of Exile style gems. Each class has one active skill per slot (slot 5 = awakening ultimate),
+    /// Skill gems. Each class has one active skill per slot (slot 5 = awakening ultimate),
     /// unlocked when the slot opens. Support gems linked into a slot change how its skill works
     /// (more damage, bigger area, casting twice...). Supports unlock as the character levels up.
     /// </summary>

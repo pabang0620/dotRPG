@@ -245,6 +245,7 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void FromCommandLine()
         {
+#if !DOTRPG_RELEASE // [RELEASE] development party test only
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
@@ -255,6 +256,7 @@ namespace DotRPG
                 else BeginMember(udp, "dev", 1, "", "");
                 Debug.Log($"[PARTY] dev party net as {(asHost ? "host" : "member")}");
             }
+#endif
         }
     }
 }

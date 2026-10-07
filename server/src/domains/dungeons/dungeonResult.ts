@@ -24,6 +24,7 @@ import {
 } from './dungeonRules';
 import { raidPeriod } from './entryRules';
 import { bumpDirectClear } from '../sweep/weeklyCounter';
+import { countDungeonRevives } from '../revive/reviveRepository';
 import type { ResultBody } from './dungeonValidation';
 
 /** 허용 오차: 입장 후 서버 경과 시간 + 5초 */
@@ -306,7 +307,9 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
 export async function settleResult(ctx: EconCtx, runUuid: string, body: ResultBody) {
   const run = await repo.findRunByUuid(ctx.client, ctx.char.id, runUuid);
   if (!run || run.state !== 'playing') throw new AppError(409, '진행 중인 던전이 아닙니다.', 'RUN_NOT_PLAYING');
-  const stats = body.stats;
+  // 부활 횟수는 서버 기록(revive_log)보다 적게 보고할 수 없다: 줄여 보고해 부활 감점·상한을 피하는 것을 막는다
+  const revives = Math.max(body.stats.revives_used, await countDungeonRevives(ctx.client, ctx.char.id, run.started_at));
+  const stats = { ...body.stats, revives_used: revives };
 
   if (body.outcome === 'failed') {
     // 이미 받은 처치 경험치·드롭은 유지된다. 보상 없음

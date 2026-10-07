@@ -117,7 +117,6 @@ namespace DotRPG
                 }
             }
             Game.Flow.OpenWindow(Game.UI.WorldMap); atlas.SelectMap(MapRegistry.Winter); atlas.SelectNpc(0); yield return PresentationShot("12_atlas_winter_actual"); Game.Flow.CloseInventory();
-            DCheck("removed enhancement attribution caption", !Game.UI.Enhance.GetComponentsInChildren<Text>(true).Any(t => t.text.Contains("던전앤파이터 공개")));
         }
     }
 }

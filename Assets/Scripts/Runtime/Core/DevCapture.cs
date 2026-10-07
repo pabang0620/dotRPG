@@ -50,6 +50,7 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Init()
         {
+#if !DOTRPG_RELEASE // [RELEASE] the capture / check modes are not in a release build (anyone could start them from Steam)
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
@@ -70,6 +71,7 @@ namespace DotRPG
                 QuestManager.StoryEnabled = args[i] == "-dotrpgStory"; // [STORY] older checks play without the prologue scenes
                 return;
             }
+#endif
         }
 
         bool mapOnly, townOnly;

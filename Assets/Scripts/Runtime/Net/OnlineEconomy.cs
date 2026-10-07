@@ -107,6 +107,9 @@ namespace DotRPG
 
         /// <summary>Dungeon context for kill reports (set by the dungeon flow; null in the field).</summary>
         public static string RunId;
+        // A solo run whose end was not reported yet: leaving it mid-way closes it as failed (else the server keeps it
+        // 'playing' for up to an hour and counts a field revive in that time as a dungeon revive).
+        static bool soloRun, runReported;
         public static int RoomIndex;
 
         /// <summary>A monster died: the server grants XP and rolls its drops, which appear as claimable pickups.</summary>
@@ -321,7 +324,7 @@ namespace DotRPG
             Post("/dungeon-runs", Body(("dungeon_id", dungeonId), ("difficulty", difficulty), ("ai_count", Mathf.Clamp(aiCount, 0, 3))), r =>
             {
                 var run = r.ok ? MiniJson.Obj(r.data, "run") : null;
-                if (run != null) { RunId = MiniJson.Str(run, "id"); RoomIndex = 0; }
+                if (run != null) { RunId = MiniJson.Str(run, "id"); RoomIndex = 0; soloRun = true; runReported = false; }
                 done?.Invoke(run);
             });
         }
@@ -331,6 +334,7 @@ namespace DotRPG
         {
             RunId = runId;
             RoomIndex = 0;
+            soloRun = false;
         }
 
         /// <summary>Longest wait for a party result (other members' reports, phase4_api §7.4).</summary>
@@ -341,6 +345,7 @@ namespace DotRPG
         {
             if (RunId == null) { done?.Invoke(null); return; }
             string run = RunId;
+            runReported = true;
             var stats = Body(("elapsed_ms", Mathf.RoundToInt(elapsedSeconds * 1000f)), ("hits_taken", Mathf.Clamp(hitsTaken, 0, 999)),
                 ("max_combo", Mathf.Clamp(maxCombo, 0, 9999)), ("revives_used", Mathf.Clamp(revivesUsed, 0, 9)));
             Post($"/dungeon-runs/{run}/result", Body(("outcome", cleared ? "cleared" : "failed"), ("stats", stats)), r =>
@@ -387,7 +392,16 @@ namespace DotRPG
             });
         }
 
-        public static void LeaveDungeon() => RunId = null;
+        public static void LeaveDungeon()
+        {
+            if (RunId != null && soloRun && !runReported)
+            {
+                var stats = Body(("elapsed_ms", 0), ("hits_taken", 0), ("max_combo", 0), ("revives_used", 0));
+                Post($"/dungeon-runs/{RunId}/result", Body(("outcome", "failed"), ("stats", stats)), null, quiet: true);
+            }
+            RunId = null;
+            soloRun = runReported = false;
+        }
 
         // ---------------- entering the world ----------------
 

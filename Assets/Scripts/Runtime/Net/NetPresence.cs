@@ -37,9 +37,11 @@ namespace DotRPG
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void FromCommandLine()
         {
+#if !DOTRPG_RELEASE // [RELEASE] development network test only
             var args = System.Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
                 if (args[i] == "-dotrpgNet") Begin(args[i + 1] == "host");
+#endif
         }
 
         public static NetPresence Begin(bool host)

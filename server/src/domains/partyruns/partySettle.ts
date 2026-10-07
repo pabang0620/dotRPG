@@ -15,6 +15,7 @@ import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
 import { runEconomy, type EconResult, type StoredResult } from '../economy/economyService';
 import { attackCap, effectiveHp } from '../kills/killRules';
+import { countDungeonRevives } from '../revive/reviveRepository';
 import { killsOfRun } from '../kills/killRepository';
 import { lockPartyAndRun } from '../party/partyTx';
 import * as repo from './partyRunRepository';
@@ -207,7 +208,8 @@ async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconRes
   const st = run.stats as { elapsed_ms: number; hits_taken: number; max_combo: number; revives_used: number; damage_dealt?: number; hits_landed?: number };
   const hm = hostValid && h ? h.members.find((m) => m.character_id === ctx.char.uuid) : undefined;
   const merged = mergeStats({
-    mine: { hits: st.hits_taken, combo: st.max_combo, revives: st.revives_used },
+    // 내 부활 횟수는 서버 기록(revive_log)보다 적을 수 없다
+    mine: { hits: st.hits_taken, combo: st.max_combo, revives: Math.max(st.revives_used, await countDungeonRevives(ctx.client, ctx.char.id, run.started_at)) },
     host: hm ? { hits: hm.hits_taken, combo: hm.max_combo, revives: hm.revives_used } : null,
   });
   if (merged.outlier) {

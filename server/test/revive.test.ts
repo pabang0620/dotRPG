@@ -72,6 +72,24 @@ describe('부활 코인', () => {
     expect(await state(h)).toBe(1);
   });
 
+  it('진행 중인 던전 판이 있으면 context=field로 보내도 던전 부활로 코인을 쓴다', async () => {
+    const h = await newHero(app, 'warrior');
+    await setLevel(h, 30);
+    await getPool().query(
+      `INSERT INTO dungeon_runs (character_id, dungeon_id, difficulty, reset_day) VALUES ($1, 'dgn_bargas_1', 0, now())`,
+      [h.dbId],
+    );
+    const r = await use(h, { context: 'field', map_id: 'forest' });
+    expect(r.status).toBe(200);
+    expect(r.body.data).toMatchObject({ free: false, coins: 0 });
+    const ctx = await getPool().query<{ context: string }>('SELECT context FROM revive_log WHERE character_id = $1', [h.dbId]);
+    expect(ctx.rows[0]!.context).toBe('dungeon');
+    // 판이 끝나면 다시 필드 무료
+    await getPool().query("UPDATE dungeon_runs SET state = 'failed', ended_at = now() WHERE character_id = $1", [h.dbId]);
+    const r2 = await use(h, { context: 'field', map_id: 'forest' });
+    expect(r2.body.data).toMatchObject({ free: true, coins: 0 });
+  });
+
   it('지난 게임 일수만큼 지급하고, 상한 5에서 버려진다', async () => {
     const h = await newHero(app, 'warrior');
     await setLevel(h, 20);

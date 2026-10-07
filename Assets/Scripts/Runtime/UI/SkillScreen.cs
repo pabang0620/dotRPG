@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// Skill window modelled on Path of Exile:
+    /// Skill window (passive tree + skill gems):
     /// • 패시브 트리 - one point per level. The start sits in the middle; the left / right / down / up
     ///   arms strengthen skills 1-4 (area, damage and cooldown notables with stat nodes in between,
     ///   a mastery at the end). Keystones in the corners. Left click allocates, right click refunds.
