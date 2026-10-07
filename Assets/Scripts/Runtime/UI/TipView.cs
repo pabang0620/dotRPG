@@ -12,7 +12,7 @@ namespace DotRPG
         RectTransform box;
         Text title, body;
         float hideAt;
-        bool inColumn, laidOut;
+        bool shown, inColumn, laidOut;
         float laidOutWidth = -1f;
 
         // [UI] Wide canvases (UI size 1.0 and smaller, W >= 1240): centred 404..876 at 1.0, clear of the currency bar (x <= 382)
@@ -82,6 +82,7 @@ namespace DotRPG
             if (j == null || !QuestManager.StoryEnabled || !j.Flags.Add("tip_" + id)) return;
             title.text = heading;
             body.text = text;
+            shown = true;
             box.gameObject.SetActive(true);
             laidOut = false;
             Layout();
@@ -114,9 +115,16 @@ namespace DotRPG
 
         void Update()
         {
-            if (box.gameObject.activeSelf && Time.unscaledTime >= hideAt) box.gameObject.SetActive(false);
-            if (box.gameObject.activeSelf) Layout(); // UI size changed while showing
-            InQuestColumn = box.gameObject.activeSelf && inColumn;
+            if (shown) Layout(); // UI size changed while showing
+            // [UI] In the quest column (UI size 1.15 / 1.3) the tip would sit on the bottom-centre boss bar and its warning
+            // line: it waits out the boss fight (its 9 s start again where they stopped).
+            var bossBar = BossHpBarView.Instance;
+            bool hold = shown && inColumn && bossBar != null && bossBar.Engaged;
+            if (hold) hideAt += Time.unscaledDeltaTime;
+            if (shown && Time.unscaledTime >= hideAt) shown = false;
+            bool visible = shown && !hold;
+            if (box.gameObject.activeSelf != visible) box.gameObject.SetActive(visible);
+            InQuestColumn = visible && inColumn;
         }
     }
 }

@@ -117,12 +117,28 @@ namespace DotRPG
         /// <summary>True when this frame's keys belong to this window (on top, not the frame it was shown or the state changed).</summary>
         protected bool TakesInput => IsTop && Time.frameCount != shownFrame && !Game.State.ChangedThisFrame;
 
+        /// <summary>[UX] Windows that switch pages with Tab: Tab is not the bag key there (I / gamepad Back still close).</summary>
+        protected virtual bool UsesTabKey => false;
+
+        /// <summary>This frame's Inventory press is the Tab key of a window that switches pages with it (GameFlow skips it too).</summary>
+        public bool TabSwallowsInventory => UsesTabKey && UnityEngine.Input.GetKeyDown(KeyCode.Tab);
+
+        /// <summary>[UX] Windows whose labels carry key tags ("[2]" / "[L3]") redraw when the player switches keyboard / gamepad.</summary>
+        protected virtual bool HasKeyTags => false;
+        bool keyTagsPad;
+
         protected virtual void Update()
         {
             PadNavigate();
+            bool pad = Game.Input != null && Game.Input.UsingGamepad;
+            if (pad != keyTagsPad)
+            {
+                keyTagsPad = pad;
+                if (HasKeyTags && gameObject.activeInHierarchy) Refresh();
+            }
             if (!TakesInput) return;
             var input = Game.Input;
-            if (input.InventoryPressed || input.CancelPressed || (input.MapPressed && this is WorldMapScreen))
+            if ((input.InventoryPressed && !TabSwallowsInventory) || input.CancelPressed || (input.MapPressed && this is WorldMapScreen))
             {
                 Game.Audio.PlaySfx("cancel");
                 Close();
@@ -333,7 +349,13 @@ namespace DotRPG
 
         public override void Hide()
         {
-            if (busy)
+            if (busy && ticketPending)
+            {
+                // [UX] Closed while the server answers a 강화권: the answer still lands (toast, bag) when it comes.
+                busy = false;
+                bigIcon.rectTransform.anchoredPosition = Vector2.zero;
+            }
+            else if (busy)
             {
                 // Closed mid-swing (e.g. a state change): the attempt is called off. Nothing is paid before the hammer lands.
                 StopAllCoroutines();
@@ -344,10 +366,10 @@ namespace DotRPG
             base.Hide();
         }
 
-        /// <summary>The window stays open until the hammer lands.</summary>
+        /// <summary>The window stays open until the hammer lands (a 강화권 waiting on the server may be closed).</summary>
         public override void Close()
         {
-            if (!busy) base.Close();
+            if (!busy || ticketPending) base.Close();
         }
 
         protected override void Refresh()
@@ -706,10 +728,19 @@ namespace DotRPG
             }
         }
 
+        protected override bool HasKeyTags => true;
+
         protected override void Update()
         {
             if (busy)
             {
+                // [UX] A 강화권 waits on the server (up to the API timeout): Esc / I still close the forge meanwhile.
+                if (ticketPending && TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed))
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    Close();
+                    return;
+                }
                 // No input while the hammer falls; the piece shakes a little.
                 busyTime += Time.unscaledDeltaTime;
                 bigIcon.rectTransform.anchoredPosition = new Vector2(Mathf.Sin(busyTime * 70f) * 3f, 0f);

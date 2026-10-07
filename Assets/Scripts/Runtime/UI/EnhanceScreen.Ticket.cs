@@ -59,6 +59,9 @@ namespace DotRPG
             Refresh();
         }
 
+        /// <summary>[UX] A 강화권 request is waiting on the server (busy, but the forge may be closed).</summary>
+        bool ticketPending;
+
         void UseTicket()
         {
             if (busy || !IsTop) return; // not while the hammer falls / the server answers, nor under a dialog
@@ -72,11 +75,15 @@ namespace DotRPG
             {
                 if (busy) return;
                 busy = true; // locked until the server answers
+                ticketPending = true;
                 Refresh();
+                resultText.text = "<color=#b8c4d8>처리 중… (닫아도 결과는 알림으로 받습니다)</color>";
                 CashClient.UseTicket(ConsumableDatabase.EnhanceTicket(t), key, (ok, msg) =>
                 {
                     busy = false;
+                    ticketPending = false;
                     bigIcon.rectTransform.anchoredPosition = Vector2.zero; // Update shakes the piece while busy
+                    resultText.text = "";
                     if (!ok) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); Refresh(); return; }
                     Game.Audio.PlaySfx("rank_reveal");
                     GameEvents.RaiseToast($"+{t} 강화 성공! (강화권)");

@@ -346,6 +346,9 @@ namespace DotRPG
             return ok;
         }
 
+        protected override bool UsesTabKey => true;
+        protected override bool HasKeyTags => true;
+
         protected override void Update()
         {
             // [SWEEP] The sweep panel takes Esc (closes itself, not the window) and blocks the list keys under it.

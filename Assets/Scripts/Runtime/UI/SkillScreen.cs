@@ -395,6 +395,8 @@ namespace DotRPG
             RefreshGems();
         }
 
+        protected override bool UsesTabKey => true;
+
         protected override void Update()
         {
             // [UX] Cancel / UseItem on a selected key box clears that key (before the base closes the window on Cancel).

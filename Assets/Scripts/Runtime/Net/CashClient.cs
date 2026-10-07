@@ -140,10 +140,19 @@ namespace DotRPG
             Send(Char + "/enhance/ticket", new Dictionary<string, object> { ["ticket_key"] = ticketKey, ["gear_key"] = gearKey }, r =>
             {
                 if (!r.ok) { done(false, Explain(r)); return; }
-                OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
-                Game.Flow.Autosave();
-                Changed?.Invoke();
-                done(true, null);
+                // The caller is locked (busy) until done(): it runs even when applying the answer throws.
+                bool applied = false;
+                try
+                {
+                    OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
+                    Game.Flow.Autosave();
+                    Changed?.Invoke();
+                    applied = true;
+                }
+                finally
+                {
+                    done(applied, applied ? null : "강화 결과를 반영하지 못했습니다. 다시 접속하면 반영됩니다.");
+                }
             });
         }
     }

@@ -196,7 +196,7 @@ namespace DotRPG
         {
             if (!built || Game.Session == null) return;
             OnHealthChanged(Game.Session.PlayerHealth, Game.Session.PlayerMaxHealth);
-            foreach (var pair in itemCounts) pair.Value.text = Game.Session.Inventory.Count(pair.Key).ToString("N0");
+            foreach (var pair in itemCounts) pair.Value.text = CountText(pair.Key, Game.Session.Inventory.Count(pair.Key));
             RefreshQuest();
             RefreshControls(true);
         }
@@ -216,10 +216,21 @@ namespace DotRPG
         {
             if (itemCounts.TryGetValue(id, out var text))
             {
-                text.text = count.ToString("N0");
+                text.text = CountText(id, count);
                 if (delta > 0) itemPulse[id] = Time.unscaledTime;
             }
             RefreshQuest();
+        }
+
+        /// <summary>
+        /// [UI] The gold cell has about 100 px for digits ("999,999" fits, "1,234,567" does not): from a million up the
+        /// HUD shows 만 / 억 units, rounded down ("123.4만", "12.34억"), so the bar still ends at UiTheme.HudCurrencyMaxRight.
+        /// </summary>
+        static string CountText(string id, long count)
+        {
+            if (id != ConsumableDatabase.Gold || count < 1000000L) return count.ToString("N0");
+            if (count < 100000000L) return (System.Math.Floor(count / 1000.0) / 10.0).ToString("#,0.#") + "만";
+            return (System.Math.Floor(count / 1000000.0) / 100.0).ToString("#,0.##") + "억";
         }
 
         void RefreshQuest()
@@ -380,8 +391,9 @@ namespace DotRPG
             var bossBar = BossHpBarView.Instance;
             bool bossShown = bossBar != null && bossBar.DevVisible;
             // [UI] On narrow canvases (UI size 1.15 / 1.3: W < 1160) the bottom-centre boss bar (W/2 +- 200) reaches the
-            // quest column (W-380): a field boss fight owns that space. A first-time tip in the column hides it too.
-            bool showQuest = !inRun && !TipView.InQuestColumn && !(bossShown && hudRect.width < 1160f);
+            // quest column (W-380): a field boss fight owns that space, but only while the player is in it (a field boss
+            // stays bound until killed). A first-time tip in the column hides it too.
+            bool showQuest = !inRun && !TipView.InQuestColumn && !(bossShown && bossBar.Engaged && hudRect.width < 1160f);
             if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
             if (showQuest && !Mathf.Approximately(hudRect.height, questFitHeight)) RefreshQuest(); // UI size changed
             // [AUTO] Hotkeys for 자동 진행 / 자동 사냥 (rebindable, default F6 / F7), only in normal play with no window open.
@@ -408,7 +420,8 @@ namespace DotRPG
             }
             // [UI] Toasts move up over the dialogue name plate and over the boss bar.
             var dialogue = Game.Dialogue;
-            float toastY = bossShown ? ToastBaseBoss : dialogue != null && dialogue.IsOpen ? ToastBaseDialogue : ToastBase;
+            // A boss warning lifted over the GROGGY line (300..340) pushes them higher still.
+            float toastY = bossShown ? Mathf.Max(ToastBaseBoss, bossBar.TopEdge + 4f) : dialogue != null && dialogue.IsOpen ? ToastBaseDialogue : ToastBase;
             if (!Mathf.Approximately(toastRoot.anchoredPosition.y, toastY)) toastRoot.anchoredPosition = new Vector2(0f, toastY);
             float now = Time.unscaledTime;
             // Toast layout & fade.

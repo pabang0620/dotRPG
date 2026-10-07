@@ -384,9 +384,14 @@ namespace DotRPG
 
         // ================= Per frame =================
 
+        bool keyTagsPad;
+
         void Update()
         {
             if (Game.Session == null) return;
+            // [UX] The 정렬 / 자동장착 key tags follow the device in use.
+            bool pad = Game.Input != null && Game.Input.UsingGamepad;
+            if (pad != keyTagsPad) { keyTagsPad = pad; dirty = true; }
             if (dirty) Refresh();
 
             animTimer += Time.unscaledDeltaTime;

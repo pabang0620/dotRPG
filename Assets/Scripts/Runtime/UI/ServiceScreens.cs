@@ -410,8 +410,11 @@ namespace DotRPG
 
         static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
 
-        /// <summary>Buys or sells up to <paramref name="count"/> of the selected item.</summary>
-        void Trade(int count)
+        /// <summary>
+        /// Buys or sells up to <paramref name="count"/> of the selected item. <paramref name="fromKey"/>: pressed with the
+        /// 1 / Y key (also the HP potion key), so a sale always asks first.
+        /// </summary>
+        void Trade(int count, bool fromKey = false)
         {
             if (selected >= entries.Count) return;
             string id = entries[selected];
@@ -422,9 +425,9 @@ namespace DotRPG
                 int n = Mathf.Min(count, bag.Count(id));
                 int each = ItemPrices.SellPrice(id);
                 if (n <= 0 || each <= 0) { Game.Audio.PlaySfx("cancel"); return; }
-                if (NeedsSellConfirm(id))
+                if (NeedsSellConfirm(id) || fromKey)
                 {
-                    // Enhanced gear and rare-or-higher gear are never sold on one key press: ask first, drawn over the shop.
+                    // Enhanced gear, rare-or-higher gear and any sale by the 1 / Y key are never sold on one press: ask first, drawn over the shop.
                     string what = n > 1 ? $"{name} {n}개를" : $"{name} 을(를)";
                     Game.Audio.PlaySfx("select");
                     Game.UI.Confirm($"{what} {each * n:N0} G에 판매할까요?", () => Sell(id, n), true);
@@ -516,6 +519,8 @@ namespace DotRPG
             dirty = true;
         }
 
+        protected override bool HasKeyTags => true;
+
         protected override void Update()
         {
             // [UX] The bulk sell panel takes Esc (closes itself, not the shop) and blocks the list keys under it (as the sweep panel).
@@ -534,7 +539,7 @@ namespace DotRPG
                 if (nav.x != 0) SetMode(nav.x > 0);
                 if (Game.Input.SubmitPressed) Trade(1);
                 // [UX] The mouse-only buttons get keys too: 1 / Y = 10개 구매 or 모두 판매, 2 / L3 = 최대 or 일괄 판매.
-                if (Game.Input.UseItemPressed && buyMany.interactable) Trade(selling ? int.MaxValue : 10);
+                if (Game.Input.UseItemPressed && buyMany.interactable) Trade(selling ? int.MaxValue : 10, true);
                 else if (Game.Input.UseManaPressed)
                 {
                     if (selling) { Game.Audio.PlaySfx("select"); bulk.Open(); }

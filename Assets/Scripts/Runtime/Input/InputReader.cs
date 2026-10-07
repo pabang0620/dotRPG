@@ -200,7 +200,12 @@ namespace DotRPG
                     var binding = inputAction.bindings[i];
                     if (binding.isComposite || binding.isPartOfComposite) continue;
                     if (binding.effectivePath != null && binding.effectivePath.StartsWith(wanted))
+                    {
+                        // [UI] The stick presses have no short display name ("Left Stick Press" overflows the key tags).
+                        if (binding.effectivePath.EndsWith("/leftStickPress")) return "L3";
+                        if (binding.effectivePath.EndsWith("/rightStickPress")) return "R3";
                         return inputAction.GetBindingDisplayString(i);
+                    }
                 }
             }
 #endif

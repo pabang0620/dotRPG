@@ -51,6 +51,8 @@ namespace DotRPG
             foreach (var action in InputReader.WindowActions)
             {
                 if (!pressed(action)) continue;
+                // [UX] Tab switches the pages of the dungeon / skill windows: it neither closes them nor opens the bag.
+                if (action == GameAction.Inventory && Game.UI.Top is WindowScreen tabbed && tabbed.TabSwallowsInventory) continue;
                 var target = WindowFor(action);
                 if (target == null) return false;
                 bool sameTab = target != Game.UI.Dungeon || Game.UI.Dungeon.IsRaidTab == (action == GameAction.RaidWindow);
