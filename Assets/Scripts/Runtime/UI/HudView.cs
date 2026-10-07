@@ -255,7 +255,9 @@ namespace DotRPG
             }
             questBody.text = sb.ToString().TrimEnd('\n');
             // [UI] Height from the laid-out text (long titles and objectives wrap) instead of a line count.
-            float titleH = Mathf.Max(24f, questTitle.preferredHeight);
+            // [UI] At most two title lines (a very long title in the narrow panel is cut rather than pushing the buttons down).
+            float titleH = Mathf.Clamp(questTitle.preferredHeight, 24f, 56f);
+            questTitle.verticalOverflow = questTitle.preferredHeight > 56f ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
             questBody.rectTransform.offsetMax = new Vector2(questBody.rectTransform.offsetMax.x, -(16f + titleH));
             float wanted = 30f + titleH + Mathf.Max(22f, questBody.preferredHeight);
             // [UI] The 자동 사냥 / 자동 진행 buttons and the status line hang 88 px under the panel: keep them above the

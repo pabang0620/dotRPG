@@ -115,7 +115,15 @@ namespace DotRPG
                 box.anchoredPosition = new Vector2(0f, -WideTop);
                 box.sizeDelta = new Vector2(WideWidth, box.sizeDelta.y);
             }
-            box.sizeDelta = new Vector2(box.sizeDelta.x, 56f + body.preferredHeight);
+            float height = 56f + body.preferredHeight;
+            if (inColumn)
+            {
+                // [UI] In the quest column the box stops above the quick item bar; a longer body is cut (rare, UI size 1.3).
+                float room = ((RectTransform)box.parent).rect.height - HudView.QuestTop - 136f;
+                body.verticalOverflow = height > room ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
+                height = Mathf.Min(height, Mathf.Max(80f, room));
+            }
+            box.sizeDelta = new Vector2(box.sizeDelta.x, height);
         }
 
         void Update()
