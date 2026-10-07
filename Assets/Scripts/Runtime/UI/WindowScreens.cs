@@ -292,6 +292,7 @@ namespace DotRPG
             w.enhanceButton = Button(right.transform, "Go", "강화", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
             w.BuildPromote(right.transform);
+            w.BuildTicket(right.transform); // [CASH] 강화권
             return w;
         }
 
@@ -405,6 +406,7 @@ namespace DotRPG
             var gear = EquipmentDatabase.Get(e.key);
             int level = EquipmentDatabase.LevelOfKey(e.key);
             bool max = level >= EquipmentDatabase.MaxEnhance;
+            RefreshTicket(e.key);
             bigIcon.enabled = true;
             bigIcon.sprite = Game.Art.Get(gear.iconKey);
             bigFrame.color = EquipmentDatabase.RarityTint(gear.rarity);

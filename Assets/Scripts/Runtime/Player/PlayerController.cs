@@ -382,7 +382,7 @@ namespace DotRPG
                 if (IsLocal)
                 {
                     if (cmd.useHealing) UseHealing();
-                    if (cmd.useMana) UseConsumable(ConsumableDatabase.MpPotion);
+                    if (cmd.useMana) UseConsumable(Game.Session.Inventory.Count(ConsumableDatabase.MpPotionHi) > 0 ? ConsumableDatabase.MpPotionHi : ConsumableDatabase.MpPotion);
                     if (cmd.townScroll) UseConsumable(ConsumableDatabase.TownScroll);
                 }
                 if (cmd.skillSlot >= 0 && cmd.skillSlot < SkillGems.Slots) skills.TryCast(cmd.skillSlot);
@@ -465,7 +465,8 @@ namespace DotRPG
         public void UseHealing()
         {
             if (!IsLocal) return;
-            if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
+            if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotionHi) > 0) UseConsumable(ConsumableDatabase.HpPotionHi); // [CASH] the strong one first
+            else if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
             else TryEatCarrot();
         }
 
@@ -495,7 +496,7 @@ namespace DotRPG
                     Game.Audio.PlaySfx("heal");
                     SkillVisuals.Flash(Center, new Color(1f, 0.35f, 0.35f, 0.55f), 1.6f, 0.3f);
                     Fx.Sparkle(Center + Vector2.up * 0.4f, 3, 0.4f);
-                    GameEvents.RaiseToast($"체력 물약  <color=#ff8a8a>+{amount} HP</color>");
+                    GameEvents.RaiseToast($"{item.name}  <color=#ff8a8a>+{amount} HP</color>");
                     return true;
                 }
                 case ConsumableKind.HealMp:
@@ -512,11 +513,28 @@ namespace DotRPG
                     Game.Audio.PlaySfx("heal");
                     SkillVisuals.Flash(Center, new Color(0.4f, 0.6f, 1f, 0.6f), 1.6f, 0.3f);
                     Fx.Sparkle(Center + Vector2.up * 0.4f, 3, 0.4f);
-                    GameEvents.RaiseToast($"마나 물약  <color=#8ab8ff>+{amount} MP</color>");
+                    GameEvents.RaiseToast($"{item.name}  <color=#8ab8ff>+{amount} MP</color>");
                     return true;
                 }
                 case ConsumableKind.TownScroll:
                     return Game.Flow.UseTownScroll();
+                case ConsumableKind.Buff:
+                {
+                    // [CASH] 투지의 주문서: refreshes to the full time, never stacks.
+                    bag.Remove(id, 1);
+                    if (OnlineEconomy.On) OnlineEconomy.UseItem(id);
+                    Data.ScrollPower = item.power;
+                    Data.ScrollUntil = Time.time + item.minutes * 60f;
+                    RefreshStats();
+                    Game.Audio.PlaySfx("magic");
+                    SkillVisuals.Flash(Center, new Color(1f, .55f, .25f, .6f), 1.8f, .35f);
+                    GameEvents.RaiseToast($"{item.name}: {item.minutes}분 동안 공격 피해 +{item.power}%");
+                    return true;
+                }
+                case ConsumableKind.LuckBox:
+                case ConsumableKind.SealedBox:
+                    CashClient.OpenItem(id); // [CASH] the server opens boxes
+                    return false;
             }
             return false;
         }

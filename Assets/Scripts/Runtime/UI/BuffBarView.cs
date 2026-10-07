@@ -46,6 +46,7 @@ namespace DotRPG
                 if (c.GuardVisible) Put(ref n, "buff_guard", "");
                 if (c.BlessVisible) Put(ref n, "buff_bless", "");
                 if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", Mathf.CeilToInt(c.FrenzyLeft).ToString());
+                if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_focus", Mathf.CeilToInt(p.Data.ScrollLeft / 60f) + "분"); // [CASH] 투지의 주문서
                 if (c.HotVisible) Put(ref n, "buff_regen", "");
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", c.ComboStacks.ToString());
                 if (c.Cursed) Put(ref n, "buff_curse", "");

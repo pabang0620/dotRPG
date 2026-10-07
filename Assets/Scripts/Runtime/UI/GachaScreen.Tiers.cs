@@ -37,7 +37,7 @@ namespace DotRPG
 
         int SelectedTier()
         {
-            if (banner == "aura" || banner == "skin") return -1;
+            if (banner == "aura" || banner == "skin" || banner == "sealed") return -1;
             var tiers = TiersOf(banner);
             if (tiers == null || tiers.Count == 0) return -1;
             int t = chosenTier.TryGetValue(banner, out int c) && c >= 0 ? c : StarShopClient.MyTier;

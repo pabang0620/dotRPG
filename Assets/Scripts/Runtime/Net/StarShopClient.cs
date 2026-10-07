@@ -17,6 +17,9 @@ namespace DotRPG
         public string itemId, rarity;
         public bool byPity, duplicate, gear;
         public int refund;
+        /// <summary>[CASH] A sealed-box reward (a bag item with a count; boosted = the 2x booster open).</summary>
+        public bool cash, boosted;
+        public int count = 1;
     }
 
     /// <summary>

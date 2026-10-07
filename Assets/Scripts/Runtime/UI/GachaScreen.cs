@@ -15,7 +15,7 @@ namespace DotRPG
     public partial class GachaScreen : OnlineWindow
     {
         public static GachaScreen Instance { get; private set; }
-        const float ListW = 260f, CardH = 98f, BigH = 440f, BigW = 940f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
+        const float ListW = 260f, CardH = 80f, BigH = 440f, BigW = 940f, CellW = 118f, CellH = 158f, BonusW = 150f, BonusH = 200f;
         const float Step = 0.13f, Anticipation = 0.8f;
 
         sealed class Card { public string id; public Image bg, frame; public Text name; }
@@ -29,7 +29,9 @@ namespace DotRPG
             ("weapon", "무기 뽑기", "레전더리 무기 0.05%"),
             ("armor", "방어구 뽑기", "상의 · 하의"),
             ("accessory", "장신구 뽑기", "목걸이 · 반지"),
+            ("sealed", "봉인된 상자", "강화권 · 10회마다 부스터"), // [CASH] Docs/PLAN_CASH_BOX_PASS.md
         };
+        bool Sealed => banner == "sealed";
 
         readonly List<Card> cards = new List<Card>();
         readonly List<Cell> cells = new List<Cell>();
@@ -44,7 +46,7 @@ namespace DotRPG
         Button one, ten, rateBtn, wardrobeBtn;
         RectTransform main;
         // Banner list + banner + button row (5 cards of 98 + 10 gaps on the left are the tallest part).
-        const float MainW = ListW + 16f + BigW, MainH = 5 * (CardH + 10f);
+        const float MainW = ListW + 16f + BigW, MainH = 6 * (CardH + 10f);
         RectTransform rateModal, cellRoot, resultPage;
         // Gamepad moves between the banner, tier and draw buttons, never while a result page or a modal is up (A closes those).
         protected override bool PadNavigation => (resultPage == null || !resultPage.gameObject.activeSelf) && (rateModal == null || !rateModal.gameObject.activeSelf) && (choiceModal == null || !choiceModal.gameObject.activeSelf);
@@ -218,6 +220,7 @@ namespace DotRPG
             modal.gameObject.SetActive(false);
 
             StarShopClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
+            CashClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); }; // [CASH]
             return w;
         }
 
@@ -229,6 +232,7 @@ namespace DotRPG
             revealed = 0;
             waiting = -1;
             Refresh();
+            CashClient.Refresh(); // [CASH] sealed box table and gauge
             if (!StarShopClient.Available) return;
             await StarShopClient.RefreshAsync();
             Refresh();
@@ -323,6 +327,7 @@ namespace DotRPG
         void Ask(int count)
         {
             if (busy || !StarShopClient.Available || Revealing) return;
+            if (Sealed) { AskSealed(count); return; }
             int price = count == 10 ? StarShopClient.PriceTen : StarShopClient.PriceOne;
             int times = count == 10 ? StarShopClient.TenCount : 1;
             if (StarShopClient.Balance < price)
@@ -560,6 +565,7 @@ namespace DotRPG
 
         static string NameOf(StarPullResult r)
         {
+            if (r.cash) return DungeonDatabase.ItemName(r.itemId) + (r.count > 1 ? $" x{r.count}" : "");
             if (r.gear)
             {
                 var g = EquipmentDatabase.Get(r.itemId);
@@ -595,7 +601,15 @@ namespace DotRPG
                 string hex = GradeHex(r.rarity);
                 c.bg.color = IsTop(r) ? new Color32(110, 76, 22, 245) : IsEpic(r) ? new Color32(72, 40, 112, 245) : IsGood(r) ? new Color32(36, 56, 104, 245) : RowB;
                 c.frame.color = PixelHex(hex);
-                if (r.gear)
+                if (r.cash)
+                {
+                    var item = ConsumableDatabase.Get(r.itemId);
+                    c.icon.sprite = Game.Art.Get(item != null ? item.iconKey : DungeonDatabase.ItemIcon(r.itemId));
+                    c.icon.color = Color.white;
+                    c.name.text = $"<color={hex}>{NameOf(r)}</color>";
+                    c.note.text = r.boosted ? "<color=#ffd34a><b>부스터 x2</b></color>" : "";
+                }
+                else if (r.gear)
                 {
                     var g = EquipmentDatabase.Get(r.itemId);
                     c.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(r.itemId));
@@ -646,10 +660,11 @@ namespace DotRPG
             badge.text = $"<b>유니크 {uniques.Count} · 에픽 {epics.Count}</b>";
             int pity = banner == "skin" ? StarShopClient.SkinPity : StarShopClient.Pity;
             bool hasPity = banner == "skin" || banner == "aura";
+            bool showGauge = hasPity || Sealed;
             int gaugeMax = banner == "skin" ? StarShopClient.SkinGaugeMax : StarShopClient.AuraGaugeMax;
             bool full = hasPity && pity >= gaugeMax;
-            gaugeBg.gameObject.SetActive(hasPity);
-            gaugeText.gameObject.SetActive(hasPity);
+            gaugeBg.gameObject.SetActive(showGauge);
+            gaugeText.gameObject.SetActive(showGauge);
             chooseBtn.gameObject.SetActive(full);
             if (hasPity)
             {
@@ -658,16 +673,23 @@ namespace DotRPG
                 gaugeText.text = full ? $"<color=#ffd34a><b>선택 게이지 가득!</b></color> {goal}{(banner == "skin" ? "을" : "를")} 직접 고를 수 있습니다"
                     : $"선택 게이지 {Mathf.Min(pity, gaugeMax)}/{gaugeMax} · 가득 차면 {goal} 직접 선택";
             }
+            else if (Sealed)
+            {
+                // [CASH] 봉인 해제 게이지: 10 opens fill it, the next open is boosted.
+                gaugeFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * (CashClient.NextBoosted ? 1f : Mathf.Clamp01(CashClient.Gauge / 10f)), 16f);
+                gaugeText.text = CashClient.NextBoosted ? "<color=#ffd34a><b>봉인 해제!</b></color> 다음 1회는 희귀 이상 확률 2배 · 수량 2배"
+                    : $"봉인 해제 게이지 {CashClient.Gauge}/10 · 가득 차면 다음 1회 부스터";
+            }
             bigSub.text = $"{cur.sub}\n" +
-                          (hasPity ? "" : "뽑은 장비는 바로 가방으로\n") +
+                          (hasPity ? "" : Sealed ? "나온 아이템은 바로 가방으로\n" : "뽑은 장비는 바로 가방으로\n") +
                           (banner == "skin" ? $"<color=#ffb347>유니크 {string.Join(" · ", uniques)} (+5%)</color>\n<color=#c58cff>에픽 {string.Join(" · ", epics)} (+4%)</color>" : banner == "aura" ? "<color=#ffb347>오라 공격력 +1~3%</color>" : "");
             wallet.text = online
                 ? (StarShopClient.Loaded ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>불러오는 중...</color>")
                 : "<color=#8c96a8>온라인 캐릭터로 접속하면 이용할 수 있습니다.</color>";
-            TextOf(one).text = $"1회 · 별조각 {StarShopClient.PriceOne:N0}";
-            TextOf(ten).text = $"{StarShopClient.TenCount - 1}+1회 · 별조각 {StarShopClient.PriceTen:N0}";
+            TextOf(one).text = $"1회 · 별조각 {(Sealed ? CashClient.PriceOne : StarShopClient.PriceOne):N0}";
+            TextOf(ten).text = Sealed ? $"10+1회 · 별조각 {CashClient.PriceEleven:N0}" : $"{StarShopClient.TenCount - 1}+1회 · 별조각 {StarShopClient.PriceTen:N0}";
             one.interactable = ten.interactable = online && StarShopClient.Loaded && !busy;
-            RefreshTierPicker(!hasPity && online && StarShopClient.Loaded);
+            RefreshTierPicker(!hasPity && !Sealed && online && StarShopClient.Loaded);
             if (rateModal.gameObject.activeSelf) rateText.text = RateText();
             DrawCells();
         }
@@ -690,6 +712,7 @@ namespace DotRPG
 
         string RateText()
         {
+            if (Sealed) return SealedRateText();
             var list = CurrentRates();
             if (list.Count == 0) return "<color=#8c96a8>확률표를 불러오는 중입니다.</color>";
             var sb = new StringBuilder();

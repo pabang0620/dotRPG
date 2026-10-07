@@ -103,11 +103,20 @@ namespace DotRPG.EditorTools
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
             foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
-            return Doc().Arr("items", rows, (o, r) => o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
-                .Str("name", DungeonDatabase.ItemName(r.id))
-                // [SERVER 6] the binding floor of the kind; how an item was obtained can bind it further (server)
-                .Str("bind", r.id == DungeonSweep.TicketItem || r.id == DungeonSweep.EventTicketItem ? "account" : AuctionRules.BindFloor(r.id) == ItemBind.CharacterBound ? "character" : "none")
-                .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot).End()).End().ToString();
+            // [CASH] Sealed box rewards (Docs/PLAN_CASH_BOX_PASS.md): account-bound, never on the auction.
+            var cash = new HashSet<string>();
+            foreach (var c in ConsumableDatabase.Cash) { rows.Add((c.id, "consumable", true)); cash.Add(c.id); }
+            return Doc().Arr("items", rows, (o, r) =>
+            {
+                o.Obj().Str("id", r.id).Str("kind", r.kind).Bool("stackable", r.stackable)
+                    .Str("name", DungeonDatabase.ItemName(r.id))
+                    // [SERVER 6] the binding floor of the kind; how an item was obtained can bind it further (server)
+                    .Str("bind", cash.Contains(r.id) || r.id == DungeonSweep.TicketItem || r.id == DungeonSweep.EventTicketItem ? "account" : AuctionRules.BindFloor(r.id) == ItemBind.CharacterBound ? "character" : "none")
+                    .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot);
+                var ci = cash.Contains(r.id) ? ConsumableDatabase.Get(r.id) : null;
+                if (ci != null) o.Str("use", ci.kind.ToString()).Num("power", ci.power).Num("chance", ci.chance).Num("minutes", ci.minutes);
+                return o.End();
+            }).End().ToString();
         }
 
         static string Starter()
