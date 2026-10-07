@@ -101,14 +101,6 @@ export async function lockMany(client: PoolClient, ids: number[]): Promise<Sessi
   return r.rows.map(toSession);
 }
 
-export async function lockActive(client: PoolClient, partyId: number, mapId: string): Promise<SessionRow | null> {
-  const r = await client.query<RawSession>(
-    `SELECT ${SESSION_COLS} FROM field_sessions WHERE party_id = $1 AND map_id = $2 AND state = 'active' FOR UPDATE`,
-    [partyId, mapId],
-  );
-  return r.rows[0] ? toSession(r.rows[0]) : null;
-}
-
 export async function activeSessionsOfParty(db: Queryable, partyId: number): Promise<number[]> {
   const r = await db.query<{ id: string }>("SELECT id FROM field_sessions WHERE party_id = $1 AND state = 'active' ORDER BY id", [partyId]);
   return r.rows.map((x) => Number(x.id));
@@ -272,11 +264,6 @@ export async function addAccepted(client: Queryable, sessionId: number, characte
 }
 
 // ---------- 선출·파티 정보(읽기 전용, 다른 캐릭터를 잠그지 않는다) ----------
-
-export interface PartyOrderRow {
-  character_id: number;
-  joined_at: Date;
-}
 
 export async function partyOrder(db: Queryable, partyId: number): Promise<{ leaderId: number | null; order: Map<number, number> }> {
   const lead = await db.query<{ leader: string }>('SELECT leader_character_id AS leader FROM parties WHERE id = $1', [partyId]);

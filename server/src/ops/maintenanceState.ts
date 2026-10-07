@@ -17,16 +17,10 @@ export interface MaintWindow {
 export type MaintPhase = 'none' | 'scheduled' | 'pre_block' | 'active';
 
 let current: MaintWindow | null = null;
-const listeners: (() => void)[] = [];
 
-export function onMaintenanceChange(fn: () => void): void {
-  listeners.push(fn);
-}
 
 export function setMaintenance(w: MaintWindow | null): void {
-  const changed = (current?.uuid ?? null) !== (w?.uuid ?? null) || current?.endsAt.getTime() !== w?.endsAt.getTime() || current?.startsAt.getTime() !== w?.startsAt.getTime();
   current = w;
-  if (changed) for (const l of listeners) l();
 }
 
 export const getMaintenance = (): MaintWindow | null => current;

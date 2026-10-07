@@ -2,8 +2,6 @@
 import type { Queryable } from '../../db/pool';
 
 export type OrderState = 'pending_init' | 'created' | 'authorized' | 'finalized' | 'granted' | 'failed' | 'expired' | 'refunded' | 'chargeback';
-export const OPEN_STATES: readonly OrderState[] = ['pending_init', 'created', 'authorized', 'finalized'];
-export const COUNTED_EXCLUDED: readonly OrderState[] = ['failed', 'expired'];
 export type FailReason = 'init_rejected' | 'init_lost' | 'user_denied' | 'steam_failed' | 'blocked' | 'mismatch';
 
 export interface OrderRow {
@@ -432,11 +430,6 @@ export async function dueOrders(db: Queryable, states: OrderState[], now: Date, 
     [states, now, limit],
   );
   return r.rows.map((x) => ({ id: Number(x.id), account_id: Number(x.account_id) }));
-}
-
-export async function orderStatsSince(db: Queryable, since: Date): Promise<Record<string, number>> {
-  const r = await db.query<{ state: string; n: string }>('SELECT state, count(*) AS n FROM star_orders WHERE created_at > $1 GROUP BY state', [since]);
-  return Object.fromEntries(r.rows.map((x) => [x.state, Number(x.n)]));
 }
 
 export async function oldestOrderSince(db: Queryable, accountId: number, since: Date): Promise<Date | null> {

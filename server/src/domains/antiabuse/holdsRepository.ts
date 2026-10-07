@@ -110,11 +110,6 @@ export async function holdById(db: Queryable, id: number): Promise<HoldRow | nul
   return r.rows[0] ? toHold(r.rows[0]) : null;
 }
 
-export async function holdByUuid(db: Queryable, uuid: string): Promise<HoldRow | null> {
-  const r = await db.query<RawHold>(`SELECT ${HOLD_COLS} FROM economy_holds WHERE uuid = $1`, [uuid]);
-  return r.rows[0] ? toHold(r.rows[0]) : null;
-}
-
 export async function lockHoldByUuid(db: Queryable, uuid: string): Promise<HoldRow | null> {
   const r = await db.query<RawHold>(`SELECT ${HOLD_COLS} FROM economy_holds WHERE uuid = $1 FOR UPDATE`, [uuid]);
   return r.rows[0] ? toHold(r.rows[0]) : null;

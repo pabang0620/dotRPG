@@ -16,7 +16,6 @@ export function setNowAt(t: Date): void {
   offsetMs = t.getTime() - Date.now();
   setClockOverride(() => new Date(Date.now() + offsetMs));
 }
-export const clockNow = (): number => Date.now() + offsetMs;
 export function resetClock(): void {
   offsetMs = 0;
   setClockOverride(null);

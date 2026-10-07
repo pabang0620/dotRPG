@@ -74,7 +74,6 @@ export function takeDirty(): number[] {
   dirty.clear();
   return ids;
 }
-export const dirtySize = (): number => dirty.size;
 
 let flushMsTotal = 0;
 let flushCount = 0;

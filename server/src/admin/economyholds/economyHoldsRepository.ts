@@ -272,12 +272,6 @@ export async function markClawedBack(db: Queryable, id: number, by: string, note
   );
 }
 
-/** 막는 정지를 수동으로 만든다(H5): 이미 같은 범위의 막는 정지가 있으면 그 uuid */
-export async function characterOwnerAccount(db: Queryable, characterId: number): Promise<number | null> {
-  const r = await db.query<{ account_id: string }>('SELECT account_id FROM characters WHERE id = $1', [characterId]);
-  return r.rows[0] ? Number(r.rows[0].account_id) : null;
-}
-
 /** 이 캐릭터의 정지와 계정 전체 정지(최근순) */
 export async function recentHoldsOfAccount(db: Queryable, accountId: number, characterId: number, limit: number): Promise<{ uuid: string; state: string; kind: string; created_at: Date }[]> {
   const r = await db.query<{ uuid: string; state: string; kind: string; created_at: Date }>(

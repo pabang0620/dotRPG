@@ -33,15 +33,6 @@ export function raidEntryLevel(dungeonId = 'raid_skeleton_king'): number {
   return need;
 }
 
-export interface Duo {
-  host: Hero;
-  member: Hero;
-  partyId: string;
-  runId: string;
-  hostRun: string;
-  memberRun: string;
-}
-
 export const createParty = (app: Express, h: Hero, over: Record<string, unknown> = {}) =>
   post(app, h, '/parties', { dungeon_id: 'gold_vein', difficulty: 0, max_members: 4, min_power: 0, listed: true, ...over });
 

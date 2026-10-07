@@ -146,14 +146,6 @@ export async function decStack(
   return out;
 }
 
-export async function getWornBind(client: Queryable, characterId: number, slot: number): Promise<Bind | null> {
-  const r = await client.query<{ bind: Bind }>(
-    "SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2",
-    [characterId, slot],
-  );
-  return r.rows[0]?.bind ?? null;
-}
-
 export async function getWornKey(client: Queryable, characterId: number, slot: number): Promise<string | null> {
   const r = await client.query<{ item_key: string }>(
     "SELECT item_key FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2",

@@ -26,7 +26,6 @@ const fileSchema = z.looseObject({
   luckBoxFallback: reward,
 });
 
-export type SealedReward = z.infer<typeof reward>;
 export type SealedRow = z.infer<typeof row>;
 export type SealedData = z.infer<typeof fileSchema>;
 

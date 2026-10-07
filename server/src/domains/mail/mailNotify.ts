@@ -26,12 +26,6 @@ export interface NotificationPublisher {
   publish(event: NotificationEvent): void;
 }
 
-export class NoopPublisher implements NotificationPublisher {
-  publish(): void {
-    // 알림 없음: 폴링(GET /mail/summary)만으로 동작한다
-  }
-}
-
 const nameOf = (key: string | null): string => {
   if (!key) return '아이템';
   const p = parseItemKey(key);

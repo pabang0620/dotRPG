@@ -147,53 +147,6 @@ export async function activeParty(characterId: number): Promise<{ partyId: numbe
   return { partyId: Number(first.party_id), memberIds: r.rows.map((x) => Number(x.character_id)) };
 }
 
-/** 보관 기간이 지난 채팅을 5000건씩 지운다 */
-export async function purgeChatMessages(retentionDays: number): Promise<number> {
-  let total = 0;
-  for (;;) {
-    const r = await query(
-      `DELETE FROM chat_messages WHERE id IN (
-         SELECT id FROM chat_messages WHERE created_at < now() - ($1::int * interval '1 day') LIMIT 5000)`,
-      [retentionDays],
-    );
-    const n = r.rowCount ?? 0;
-    total += n;
-    if (n < 5000) return total;
-  }
-}
-
-async function purgeBatched(sql: string, params: unknown[]): Promise<number> {
-  let total = 0;
-  for (;;) {
-    const n = (await query(sql, params)).rowCount ?? 0;
-    total += n;
-    if (n < 5000) return total;
-  }
-}
-
-/** 매시간 정리(phase5_api.md 10.1): 채팅, 끝난 친구 행, 해제된 차단, 초대, 닫힌 신고의 증거 */
-export async function purgeChatData(chatDays: number, reportDays: number): Promise<void> {
-  await purgeChatMessages(chatDays);
-  await purgeBatched(
-    `DELETE FROM friendships WHERE id IN (SELECT id FROM friendships WHERE ended_at IS NOT NULL AND ended_at < now() - interval '90 days' LIMIT 5000)`,
-    [],
-  );
-  await purgeBatched(
-    `DELETE FROM blocks WHERE id IN (SELECT id FROM blocks WHERE deleted_at IS NOT NULL AND deleted_at < now() - interval '90 days' LIMIT 5000)`,
-    [],
-  );
-  await purgeBatched(
-    `DELETE FROM party_invites WHERE id IN (SELECT id FROM party_invites WHERE created_at < now() - interval '7 days' LIMIT 5000)`,
-    [],
-  );
-  await purgeBatched(
-    `DELETE FROM report_lines WHERE id IN (
-       SELECT l.id FROM report_lines l JOIN reports r ON r.id = l.report_id
-        WHERE r.state IN ('actioned', 'dismissed') AND r.handled_at < now() - ($1::int * interval '1 day') LIMIT 5000)`,
-    [reportDays],
-  );
-}
-
 /** blocker가 blocked 계정을 차단 중인가 */
 export async function isBlockedBy(blocker: number, blocked: number): Promise<boolean> {
   const r = await query('SELECT 1 FROM blocks WHERE blocker_account_id = $1 AND blocked_account_id = $2 AND deleted_at IS NULL', [blocker, blocked]);

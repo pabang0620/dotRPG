@@ -25,7 +25,6 @@ export const resultBody = z.strictObject({
 });
 
 export const settleBody = z.strictObject({ request_id: requestId });
-export const runIdParams = z.object({ uuid: z.uuid(), run_id: z.uuid() });
 
 export const pickBody = z.strictObject({ request_id: requestId, index: z.number().int().min(0).max(3) });
 export const runParams = z.object({ uuid: z.uuid(), run_id: z.uuid() });

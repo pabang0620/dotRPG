@@ -149,11 +149,6 @@ export async function sweepStale(db: Queryable, olderThan: Date): Promise<number
   return r.rowCount ?? 0;
 }
 
-export async function countOnline(db: Queryable, freshSince: Date): Promise<number> {
-  const r = await db.query<{ n: string }>('SELECT count(*) AS n FROM online_sessions WHERE ended_at IS NULL AND last_seen_at > $1', [freshSince]);
-  return Number((r.rows[0] as { n: string }).n);
-}
-
 /** 같은 IP·같은 시간대에 이미 ip_cluster 기록이 있는가(시간대당 한 번만 남긴다) */
 export async function ipClusterLogged(db: Queryable, group: string, hour: string): Promise<boolean> {
   const r = await db.query(

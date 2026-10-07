@@ -294,8 +294,3 @@ export async function findMailOfListing(
   );
   return r.rows[0]?.uuid ?? null;
 }
-
-export async function mailOwnerOf(db: Queryable, uuid: string): Promise<number | null> {
-  const r = await db.query<{ character_id: string }>('SELECT character_id FROM mails WHERE uuid = $1', [uuid]);
-  return r.rows[0] ? Number(r.rows[0].character_id) : null;
-}

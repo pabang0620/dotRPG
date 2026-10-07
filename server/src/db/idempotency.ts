@@ -66,11 +66,3 @@ export async function saveRequest(
     [accountId, requestId, endpoint, requestHash, statusCode, JSON.stringify(response)],
   );
 }
-
-export async function purgeExpiredRequestLogs(db: Queryable, ttlDays: number): Promise<number> {
-  const r = await db.query(
-    `DELETE FROM request_log WHERE created_at < now() - ($1::int * interval '1 day')`,
-    [ttlDays],
-  );
-  return r.rowCount ?? 0;
-}
