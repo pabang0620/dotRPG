@@ -21,6 +21,7 @@ namespace DotRPG
         }
 
         public static PartyLobbyScreen Instance { get; private set; }
+        protected override bool PadNavigation => focusField == null || !focusField.isFocused;
         // [UI] Member rows of 50 and applicant rows of 44 keep the third applicant above the status line (bottom 130).
         const float RowH = 50f, AppH = 44f, Width = 1180f;
 

@@ -133,7 +133,7 @@ namespace DotRPG
             w.wardrobeBtn = Button(w.main, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 666f, by), new Vector2(110f, 58f), w.OpenWardrobe, 17);
             // Spares (a cosmetic drawn again): synthesis, dismantling and collections.
             Button(w.main, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 788f, by), new Vector2(152f, 58f),
-                () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 18);
+                () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 17);
             // keep the price text off the button edges
             foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 10f, 0f, 10f, 0f);
 

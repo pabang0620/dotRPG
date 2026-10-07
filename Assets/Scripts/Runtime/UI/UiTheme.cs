@@ -73,8 +73,8 @@ namespace DotRPG
         // Right column: minimap / room map / quest tracker start at x = 1280 - 380 = 900.
         /// <summary>Width of centre-screen banners (boss intro, awakening, CLEAR) so they stay between the columns.</summary>
         public const float HudBannerWidth = 520f;
-        /// <summary>Right edge of the currency bar (must stay left of the boss bar at 640 - 232 = 408).</summary>
-        public const float HudCurrencyMaxRight = 400f;
+        /// <summary>Right edge of the currency bar: left of the centred first-time tip (640 - 236 = 404 at UI size 1.0).</summary>
+        public const float HudCurrencyMaxRight = 382f;
 
         // ---------- Buttons ----------
         public const float ButtonHeight = 56f, ButtonHeightSmall = 44f, ButtonWidth = 250f;

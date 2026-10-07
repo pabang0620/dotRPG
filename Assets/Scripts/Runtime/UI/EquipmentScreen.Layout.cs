@@ -106,8 +106,8 @@ namespace DotRPG
 
             // Paging under the grid (only shown when the tab holds more than one page).
             float gridMid = -24f - gridW * 0.5f;
-            pagePrev = MakeButton(root, "BagPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid - 70f, 102f), new Vector2(56f, 44f), () => TurnPage(-1, false), 22, true);
-            pageNext = MakeButton(root, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid + 126f, 102f), new Vector2(56f, 44f), () => TurnPage(1, false), 22, true);
+            pagePrev = MakeButton(root, "BagPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid - 70f, 107f), UiSizes.PageButton, () => TurnPage(-1, false), UiSizes.PageFont, true);
+            pageNext = MakeButton(root, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(gridMid + 120f, 107f), UiSizes.PageButton, () => TurnPage(1, false), UiSizes.PageFont, true);
             pageText = UIFactory.Text(root, "BagPage", "", 22, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Place(pageText.rectTransform, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(gridMid, 102f), new Vector2(130f, 44f));
 
@@ -117,7 +117,8 @@ namespace DotRPG
             UIFactory.Place(gridIcon.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 40f, 26f), new Vector2(56f, 56f));
             capacity = UIFactory.Text(root, "Capacity", "", 28, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(capacity.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 250f, 26f), new Vector2(190f, 60f));
-            MakeButton(root, "Auto", "자동장착", "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
+            autoButton = MakeButton(root, "Auto", "자동장착", "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
+            autoLabel = autoButton.GetComponentInChildren<Text>();
             sortButton = MakeButton(root, "Sort", "정렬", "ui_btngray", new Vector2(1f, 0f), new Vector2(-24f, 26f), new Vector2(150f, 60f), ToggleSort, 26, true);
             sortLabel = sortButton.GetComponentInChildren<Text>();
 

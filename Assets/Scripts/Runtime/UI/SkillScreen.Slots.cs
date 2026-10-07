@@ -40,7 +40,7 @@ namespace DotRPG
                 var gem = p.Active(slot);
                 bool ultimate = slot == 4;
                 bool holdsChosen = chosen != null && gem != null && gem.id == chosen.id;
-                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + slot * 76, -466), new Vector2(68, 68),
+                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + slot * 76, -460), new Vector2(68, 68),
                     holdsChosen ? new Color32(90, 74, 30, 255) : new Color32(14, 20, 32, 255));
                 box.raycastTarget = true;
                 var icon = UIFactory.Image(box.transform, "Icon", SkillIcon(gem), gem != null ? Color.white : new Color(1, 1, 1, 0));
@@ -59,21 +59,46 @@ namespace DotRPG
                 drop.highlight = box;
                 drop.accepts = o => o is string id && CanPut(p, slot, id);
                 drop.onDrop = o => Put(p, slot, (string)o);
+                // [UX] A Button so the gamepad can reach the key: left click / Submit puts the chosen skill, right click
+                // (or Cancel / UseItem while selected, see ClearSelectedKey) clears it.
+                var btn = box.gameObject.AddComponent<Button>();
+                btn.targetGraphic = box;
+                btn.onClick.AddListener(() => { if (chosen != null && chosen.kind != CareerSkillKind.Passive) Put(p, slot, chosen.id); });
                 var relay = box.gameObject.AddComponent<PointerRelay>();
                 relay.onClick = button =>
                 {
-                    if (button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
-                    {
-                        if (ultimate) return;
-                        p.ClearSkill(slot);
-                        Game.Audio.PlaySfx("cancel");
-                        Game.Flow.Autosave();
-                        Refresh();
-                        return;
-                    }
-                    if (chosen != null && chosen.kind != CareerSkillKind.Passive) Put(p, slot, chosen.id);
+                    if (button == UnityEngine.EventSystems.PointerEventData.InputButton.Right) ClearKey(p, slot);
                 };
             }
+        }
+
+        void ClearKey(Progression p, int slot)
+        {
+            if (slot == 4) return; // the awakening key stays
+            p.ClearSkill(slot);
+            Game.Audio.PlaySfx("cancel");
+            Game.Flow.Autosave();
+            Refresh();
+        }
+
+        /// <summary>
+        /// Cancel or UseItem with a key box selected (gamepad) clears that key. Cancel only takes this when the key holds a
+        /// career skill, so a second Cancel still closes the window. True when the key press was used here.
+        /// </summary>
+        bool ClearSelectedKey()
+        {
+            var input = Game.Input;
+            if (!input.CancelPressed && !input.UseItemPressed) return false;
+            var es = UnityEngine.EventSystems.EventSystem.current;
+            var go = es != null ? es.currentSelectedGameObject : null;
+            if (go == null || !go.activeInHierarchy || !go.transform.IsChildOf(careerRoot) || !go.name.StartsWith("Key")) return false;
+            if (!int.TryParse(go.name.Substring(3), out int slot) || slot < 0 || slot >= SkillGems.Slots) return false;
+            var p = Game.Session.Progression;
+            var gem = p.Active(slot);
+            bool career = gem != null && CareerCatalog.Get(gem.id) != null;
+            if (input.CancelPressed && (!career || slot == 4)) return false;
+            ClearKey(p, slot);
+            return true;
         }
 
         static bool CanPut(Progression p, int slot, string id)

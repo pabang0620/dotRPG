@@ -12,10 +12,20 @@ namespace DotRPG
         RectTransform box;
         Text title, body;
         float hideAt;
+        bool inColumn, laidOut;
+        float laidOutWidth = -1f;
+
+        // [UI] Wide canvases (UI size 1.0 and smaller, W >= 1240): centred 404..876 at 1.0, clear of the currency bar (x <= 382)
+        // and the field-boss plate left of the minimap (x >= 878). Narrower (1.15 / 1.3) the centre is taken by the status
+        // and party blocks, so the tip uses the quest column under the minimap (W-380..W-20) and the tracker hides meanwhile.
+        const float WideWidth = 472f, WideTop = 110f, ColumnWidth = 360f, ColumnRight = 20f, ColumnBelow = 1240f;
+
+        /// <summary>[UI] A tip is showing in the quest tracker's column (HudView hides the tracker meanwhile).</summary>
+        public static bool InQuestColumn { get; private set; }
 
         public static TipView Create(Transform parent)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "Tip"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(472f, 110f)); // [UI] 404..876: clear of the currency bar (x <= 400) and the field-boss plate left of the minimap (x >= 878)
+            var root = UIFactory.Place(UIFactory.Rect(parent, "Tip"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -WideTop), new Vector2(WideWidth, 110f));
             var v = root.gameObject.AddComponent<TipView>();
             v.box = root;
             var bg = UIFactory.Image(root, "Bg", Game.Art.Get("ui_tooltip"), Color.white);
@@ -34,6 +44,7 @@ namespace DotRPG
 
         void OnDestroy()
         {
+            InQuestColumn = false;
             GameEvents.MapEntered -= OnMap;
             GameEvents.QuestCompleted -= OnQuest;
         }
@@ -71,15 +82,41 @@ namespace DotRPG
             if (j == null || !QuestManager.StoryEnabled || !j.Flags.Add("tip_" + id)) return;
             title.text = heading;
             body.text = text;
-            box.sizeDelta = new Vector2(box.sizeDelta.x, 56f + body.preferredHeight);
             box.gameObject.SetActive(true);
+            laidOut = false;
+            Layout();
             hideAt = Time.unscaledTime + 9f;
             Game.Audio.PlaySfx("quest", 0.5f);
+        }
+
+        /// <summary>Centre or quest column by the canvas width; the height follows the wrapped body.</summary>
+        void Layout()
+        {
+            float w = ((RectTransform)box.parent).rect.width;
+            if (laidOut && Mathf.Approximately(w, laidOutWidth)) return;
+            laidOut = true;
+            laidOutWidth = w;
+            inColumn = w > 0f && w < ColumnBelow;
+            if (inColumn)
+            {
+                box.anchorMin = box.anchorMax = box.pivot = new Vector2(1f, 1f);
+                box.anchoredPosition = new Vector2(-ColumnRight, -HudView.QuestTop);
+                box.sizeDelta = new Vector2(ColumnWidth, box.sizeDelta.y);
+            }
+            else
+            {
+                box.anchorMin = box.anchorMax = box.pivot = new Vector2(0.5f, 1f);
+                box.anchoredPosition = new Vector2(0f, -WideTop);
+                box.sizeDelta = new Vector2(WideWidth, box.sizeDelta.y);
+            }
+            box.sizeDelta = new Vector2(box.sizeDelta.x, 56f + body.preferredHeight);
         }
 
         void Update()
         {
             if (box.gameObject.activeSelf && Time.unscaledTime >= hideAt) box.gameObject.SetActive(false);
+            if (box.gameObject.activeSelf) Layout(); // UI size changed while showing
+            InQuestColumn = box.gameObject.activeSelf && inColumn;
         }
     }
 }

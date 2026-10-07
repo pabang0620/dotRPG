@@ -43,8 +43,8 @@ namespace DotRPG
         Image character, cursor, weaponPreview;
         Text className, power, stats, capacity, hint;
         readonly Text[] statCells = new Text[6];
-        Button sortButton;
-        Text sortLabel;
+        Button sortButton, autoButton;
+        Text sortLabel, autoLabel;
 
         // Tooltip.
         RectTransform tooltip;
@@ -226,8 +226,10 @@ namespace DotRPG
             // Real count (the grid pages, so nothing is hidden): this tab / whole bag.
             capacity.text = tab == Tab.All ? $"{all.Count}종" : $"{shown.Count} / {all.Count}종";
             foreach (var pair in currencies) pair.Value.text = bag.Count(pair.Key).ToString("N0");
-            sortLabel.text = sortByRarity ? "등급순" : "정렬";
             var input = Game.Input;
+            // [UX] Key of each bottom button (1 / Y 자동장착, 2 / L3 정렬), as small text after the label.
+            sortLabel.text = (sortByRarity ? "등급순" : "정렬") + $" <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
+            autoLabel.text = $"자동장착 <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseItem)}]</color></size>";
             hint.text = $"아이콘에 마우스를 올리면 설명 · 클릭: 장착/해제    방향키 이동  {input.GetBindingLabel(GameAction.Submit)} 선택  {input.GetBindingLabel(GameAction.Inventory)}/{input.GetBindingLabel(GameAction.Cancel)} 닫기";
             dirty = false;
         }
@@ -462,6 +464,9 @@ namespace DotRPG
                 if (region == 1 && cy < 0) return;
                 Use(CursorSlot());
             }
+            // [UX] The bottom buttons without the mouse: 1 / Y 자동장착, 2 / L3 정렬 (same as clicking them).
+            if (input.UseItemPressed) { Game.Audio.PlaySfx("confirm"); AutoEquip(); }
+            else if (input.UseManaPressed) { Game.Audio.PlaySfx("confirm"); ToggleSort(); }
         }
 
         void MoveCursor(int dx, int dy)

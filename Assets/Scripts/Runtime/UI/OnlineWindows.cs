@@ -66,6 +66,7 @@ namespace DotRPG
     public class PartyFinderScreen : OnlineWindow
     {
         public static PartyFinderScreen Instance { get; private set; }
+        protected override bool PadNavigation => focusField == null || !focusField.isFocused;
         const int PageSize = 9;
         const float RowH = 44f, TableW = 1220f, ListTop = -104f;
 
@@ -75,7 +76,7 @@ namespace DotRPG
         int filter = -1; // -1 = every dungeon
         RectTransform listRoot, createRoot;
         Button tabList, tabCreate, filterBtn, queueBtn, aiBtn, cancelQueueBtn;
-        Text queueText, pageText;
+        Text queueText, pageText, emptyText;
         readonly List<(RectTransform row, Text dungeon, Text diff, Text members, Text power, Text leader, Text msg, Button apply)> rows = new List<(RectTransform, Text, Text, Text, Text, Text, Text, Button)>();
         List<PartyPost> shown = new List<PartyPost>();
         // create tab
@@ -113,9 +114,11 @@ namespace DotRPG
                 w.rows.Add((r, Cell(r, "Dungeon", 12f, 215f), Cell(r, "Diff", 232f, 105f), Cell(r, "Members", 342f, 75f), Cell(r, "Power", 422f, 145f),
                     Cell(r, "Leader", 572f, 215f, 17), Cell(r, "Msg", 792f, 290f, 17), apply));
             }
-            Button(w.listRoot, "Prev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-180f, 0f), new Vector2(50f, 34f), () => { w.page = Math.Max(0, w.page - 1); w.Refresh(); }, 18);
+            w.emptyText = Label(w.listRoot, "Empty", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, ListTop - 40f), new Vector2(TableW, 40f), TextAnchor.MiddleCenter);
+            w.emptyText.color = new Color32(184, 196, 216, 255);
+            Button(w.listRoot, "Prev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-180f, 0f), UiSizes.PageButton, () => { w.page = Math.Max(0, w.page - 1); w.Refresh(); }, UiSizes.PageFont);
             w.pageText = Label(w.listRoot, "Page", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 0f), new Vector2(110f, 34f), TextAnchor.MiddleCenter);
-            Button(w.listRoot, "Next", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(50f, 34f), () => { w.page++; w.Refresh(); }, 18);
+            Button(w.listRoot, "Next", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), UiSizes.PageButton, () => { w.page++; w.Refresh(); }, UiSizes.PageFont);
 
             // ----- create tab -----
             w.createRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Create"));
@@ -272,6 +275,8 @@ namespace DotRPG
             int pages = Math.Max(1, (shown.Count + PageSize - 1) / PageSize);
             page = Mathf.Clamp(page, 0, pages - 1);
             pageText.text = $"{page + 1} / {pages}";
+            emptyText.gameObject.SetActive(shown.Count == 0);
+            emptyText.text = filter < 0 ? "등록된 모집 글이 없습니다. 모집 글을 등록하거나 자동 매칭을 써 보세요." : "이 던전의 모집 글이 없습니다.";
             int power = MyPower;
             for (int r = 0; r < rows.Count; r++)
             {

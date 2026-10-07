@@ -28,6 +28,8 @@ namespace DotRPG
         Mobility,
         MoveUp, MoveDown, MoveLeft, MoveRight, Map,
         SkillWindow, QuestWindow, WeekdayDungeon, RaidWindow, PartyWindow, PartyFinder, Auction, Friends, Cosmetics,
+        /// <summary>[AUTO] HUD toggles: 자동 진행 / 자동 사냥 (HudView reads them).</summary>
+        AutoQuest, AutoHunt,
     }
 
     /// <summary>
@@ -427,6 +429,7 @@ namespace DotRPG
             GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight, GameAction.Map,
             GameAction.SkillWindow, GameAction.QuestWindow, GameAction.WeekdayDungeon, GameAction.RaidWindow,
             GameAction.PartyWindow, GameAction.PartyFinder, GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
+            GameAction.AutoQuest, GameAction.AutoHunt,
         };
 
         public static readonly GameAction[] WindowActions =
@@ -436,6 +439,8 @@ namespace DotRPG
             GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
         };
         public static bool IsWindowAction(GameAction action) => System.Array.IndexOf(WindowActions, action) >= 0;
+        /// <summary>[AUTO] A rebindable keyboard hotkey that is not a window (자동 진행 / 자동 사냥).</summary>
+        public bool HotkeyPressed(GameAction action) => !TextInputActive && Input.GetKeyDown(KeyboardKey(action));
         public bool WindowPressed(GameAction action) => !TextInputActive && (action == GameAction.Inventory ? InventoryPressed : Input.GetKeyDown(KeyboardKey(action)));
 
         static readonly System.Collections.Generic.Dictionary<GameAction, KeyCode> keyOverrides = new System.Collections.Generic.Dictionary<GameAction, KeyCode>();
@@ -470,6 +475,8 @@ namespace DotRPG
                 case GameAction.Auction: return KeyCode.U;
                 case GameAction.Friends: return KeyCode.L;
                 case GameAction.Cosmetics: return KeyCode.C;
+                case GameAction.AutoQuest: return KeyCode.F6;
+                case GameAction.AutoHunt: return KeyCode.F7;
                 default: return KeyCode.None;
             }
         }

@@ -39,7 +39,9 @@ namespace DotRPG
                 case GameAction.WeekdayDungeon: return "요일던전"; case GameAction.RaidWindow: return "레이드";
                 case GameAction.PartyWindow: return "파티창"; case GameAction.PartyFinder: return "파티 찾기";
                 case GameAction.Auction: return "경매장"; case GameAction.Friends: return "친구 목록";
-                case GameAction.Cosmetics: return "외형 상점"; default: return a.ToString();
+                case GameAction.Cosmetics: return "외형 상점";
+                case GameAction.AutoQuest: return "자동 진행"; case GameAction.AutoHunt: return "자동 사냥";
+                default: return a.ToString();
             }
         }
         static string ShortName(GameAction a)
@@ -53,6 +55,7 @@ namespace DotRPG
                 case GameAction.Skill5: return "각성"; case GameAction.UseItem: return "HP"; case GameAction.UseMana: return "MP";
                 case GameAction.MoveUp: return "이동"; case GameAction.MoveDown: return "이동";
                 case GameAction.MoveLeft: return "이동"; case GameAction.MoveRight: return "이동";
+                case GameAction.AutoQuest: return "자동"; case GameAction.AutoHunt: return "사냥";
                 default: return ActionName(a);
             }
         }

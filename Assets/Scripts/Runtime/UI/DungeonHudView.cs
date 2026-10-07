@@ -5,17 +5,19 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// HUD parts shown only inside a dungeon run: the top-centre clock with "방 2/4" and the revives left,
+    /// HUD parts shown only inside a dungeon run: the top-right clock (left of the room map) with "방 2/4" and the revives left,
     /// the room-grid map in place of the round minimap (current room highlighted, cleared rooms dimmed, the
     /// boss room marked with a skull), the CLEAR banner and the coin countdown ("부활하시겠습니까?").
-    /// The band just below the clock (y −70 … −150) is left free for the boss HP bar.
+    /// The boss HP bar sits at the bottom centre (BossHpBarView).
     /// </summary>
     public class DungeonHudView : MonoBehaviour
     {
         int shownSecond = -1, shownRoom = -1;
 
         // ---------- Layout ----------
-        public const float ClockWidth = 360f, ClockHeight = 50f, ClockTop = 12f; // 640 - 180 = 460: clear of the menu button (SideMenuView, x 404..454)
+        // [UI] Top right, left of the room map (W-196): x W-528..W-208, so at UI size 1.3 (985 wide) it starts at 457, clear of
+        // the status bars (x <= 390) and the menu button (SideMenuView, x 404..454); 1.15: 585..905, 1.0: 752..1072.
+        public const float ClockWidth = 320f, ClockHeight = 50f, ClockTop = 12f, ClockRight = 208f;
         /// <summary>Lowest point of the clock panel (the boss HP bar may start below this).</summary>
         public const float ReservedBottom = ClockTop + ClockHeight + 8f;
         const float Cell = 30f, CellGap = 10f, MapWidth = 176f;
@@ -47,8 +49,8 @@ namespace DotRPG
 
         void Build(RectTransform root)
         {
-            // Clock (top centre).
-            clock = UIFactory.Place(UIFactory.Rect(root, "Clock"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -ClockTop), new Vector2(ClockWidth, ClockHeight));
+            // Clock (top right, left of the room map).
+            clock = UIFactory.Place(UIFactory.Rect(root, "Clock"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-ClockRight, -ClockTop), new Vector2(ClockWidth, ClockHeight));
             var cbg = UIFactory.Panel(clock, "Bg", true);
             UIFactory.Stretch(cbg.rectTransform);
             clockText = UIFactory.Text(clock, "Time", "", 28, UIColors.Highlight, TextAnchor.MiddleLeft, true);

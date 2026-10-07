@@ -397,6 +397,8 @@ namespace DotRPG
 
         protected override void Update()
         {
+            // [UX] Cancel / UseItem on a selected key box clears that key (before the base closes the window on Cancel).
+            if (tab == TabId.Tree && TakesInput && ClearSelectedKey()) return;
             base.Update();
             if (!gameObject.activeSelf) return;
             var input = Game.Input;
@@ -410,10 +412,14 @@ namespace DotRPG
                 {
                     mouse = false;
                     keyboardUsed = true;
-                    if (tab == TabId.Tree) MoveNode(new Vector2(nav.x, nav.y));
-                    else { selectedSocket = (selectedSocket + (nav.x != 0 ? nav.x : nav.y * -3) + sockets.Count * 3) % sockets.Count; }
-                    Game.Audio.PlaySfx("select", 0.5f);
-                    Refresh();
+                    // The career page is plain buttons: the UI navigation moves the selection there, so only the gem
+                    // page moves its own cursor and redraws (a rebuild would drop the selected button).
+                    if (tab == TabId.Gems)
+                    {
+                        selectedSocket = (selectedSocket + (nav.x != 0 ? nav.x : nav.y * -3) + sockets.Count * 3) % sockets.Count;
+                        Game.Audio.PlaySfx("select", 0.5f);
+                        Refresh();
+                    }
                 }
                 if (input.SubmitPressed)
                 {

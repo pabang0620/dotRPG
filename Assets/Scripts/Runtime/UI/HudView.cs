@@ -19,6 +19,9 @@ namespace DotRPG
         Text questTitle;
         Text questBody;
         Text autoLabel, autoStatus, huntLabel; // [QUEST] auto-progress toggle under the tracker
+        Text autoKey, huntKey; // [AUTO] hotkey badges (InputReader AutoQuest / AutoHunt)
+        string autoKeyShown, huntKeyShown;
+        Button huntBtn;
         RectTransform questPanel;
         // [CONTENT] for capture checks
         public bool DevQuestVisible => questPanel != null && questPanel.gameObject.activeInHierarchy;
@@ -72,7 +75,8 @@ namespace DotRPG
             var items = UIFactory.Place(UIFactory.Rect(root, "Items"), new Vector2(0, 1), new Vector2(0, 1), new Vector2(18, -104), new Vector2(380, 40));
             var bg = UIFactory.Panel(items, "Bg", true);
             UIFactory.Stretch(bg.rectTransform);
-            // [UI] Compact steps keep the bar left of the centred boss bar (UiTheme.HudCurrencyMaxRight).
+            // [UI] Compact steps keep the bar left of the centred tip (UiTheme.HudCurrencyMaxRight): gold + 3 items end at
+            // 12 + 128 + 3 * 72 = 356, so the frame is 364 wide (18..382) and the last count cell (ends 354) stays inside it.
             float x = 12f;
             var shown = new List<(string id, string icon)> { (ConsumableDatabase.Gold, "icon_gold") };
             foreach (var def in Game.Config.items) shown.Add((def.id, def.iconKey));
@@ -80,13 +84,14 @@ namespace DotRPG
             {
                 bool gold = id == ConsumableDatabase.Gold;
                 var icon = UIFactory.Image(items, "Icon_" + id, Game.Art.Get(iconKey), Color.white);
-                UIFactory.Place(icon.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x, 0), new Vector2(26, 26));
+                UIFactory.Place(icon.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x, 0), new Vector2(24, 24));
                 var count = UIFactory.Text(items, "Count_" + id, "0", 20, gold ? (Color)new Color32(255, 216, 74, 255) : UIColors.Cream, TextAnchor.MiddleLeft, true);
-                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 30, 0), new Vector2(gold ? 108 : 52, 34));
+                count.horizontalOverflow = HorizontalWrapMode.Overflow; // a long number never breaks onto a second line
+                UIFactory.Place(count.rectTransform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(x + 27, 0), new Vector2(gold ? 98 : 43, 34));
                 itemCounts[id] = count;
-                x += gold ? 146f : 88f; // [UI] room for the wider pixel-font digits
+                x += gold ? 128f : 72f; // [UI] room for the wider pixel-font digits
             }
-            items.sizeDelta = new Vector2(Mathf.Min(x + 10f, UiTheme.HudCurrencyMaxRight), 44); // [UI] the last count stays inside the rim
+            items.sizeDelta = new Vector2(Mathf.Min(x + 8f, UiTheme.HudCurrencyMaxRight - 18f), 44); // [UI] the last count stays inside the rim
             QuickItemBar.Create(root);
 
             // Round minimap (top-right) with the quest tracker underneath.
@@ -115,21 +120,26 @@ namespace DotRPG
             autoBtn.onClick.AddListener(QuestAutoPilot.Toggle);
             UiButton.Attach(autoBtn);
             autoLabel = UIFactory.Text(autoImg.transform, "Text", "자동 진행", 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(autoLabel.rectTransform, 30f, 0f, 4f, 0f);
+            UIFactory.Stretch(autoLabel.rectTransform, 30f, 0f, 24f, 0f);
+            FitLabel(autoLabel);
+            autoKey = KeyBadge(autoImg.transform);
             ButtonIcon(autoImg.transform, "menuicon_autoquest"); // [ART]
             // [AUTO] 자동 사냥 (hunting grounds only), left of 자동 진행.
             var huntImg = UIFactory.Image(questPanel, "AutoHunt", Game.Art.Get("ui_btn"), Color.white);
             huntImg.raycastTarget = true;
             UIFactory.Place(huntImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-140f, -4f), new Vector2(132f, 36f));
-            var huntBtn = huntImg.gameObject.AddComponent<Button>();
+            huntBtn = huntImg.gameObject.AddComponent<Button>();
             huntBtn.targetGraphic = huntImg;
             huntBtn.onClick.AddListener(QuestAutoPilot.ToggleHunt);
             UiButton.Attach(huntBtn);
             huntLabel = UIFactory.Text(huntImg.transform, "Text", "자동 사냥", 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(huntLabel.rectTransform, 30f, 0f, 4f, 0f);
+            UIFactory.Stretch(huntLabel.rectTransform, 30f, 0f, 24f, 0f);
+            FitLabel(huntLabel);
+            huntKey = KeyBadge(huntImg.transform);
             ButtonIcon(huntImg.transform, "menuicon_autohunt"); // [ART]
+            // [UI] As wide as the two buttons above it (W-292..W-20): clear of the skill bar and the bottom-centre boss bar.
             autoStatus = UIFactory.Text(questPanel, "AutoStatus", "", 16, new Color32(143, 226, 143, 255), TextAnchor.UpperRight, true);
-            UIFactory.Place(autoStatus.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(360f, 44f));
+            UIFactory.Place(autoStatus.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(272f, 44f));
             autoStatus.raycastTarget = false;
 
             var mobilityPlate = UIFactory.Panel(root, "MobilityPlate", true);
@@ -157,8 +167,8 @@ namespace DotRPG
             promptPad.enabled = false;
             prompt.gameObject.SetActive(false);
 
-            // Toasts (bottom-centre, above the dialogue box area).
-            toastRoot = UIFactory.Place(UIFactory.Rect(root, "Toasts"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 200), new Vector2(700, 200));
+            // Toasts (bottom-centre, above the dialogue box area; raised in Update over the name plate / boss bar).
+            toastRoot = UIFactory.Place(UIFactory.Rect(root, "Toasts"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, ToastBase), new Vector2(700, 200));
             // [UX] Toasts draw above every window (they used to sit under opaque full-screen windows).
             var toastCanvas = toastRoot.gameObject.AddComponent<Canvas>();
             toastCanvas.overrideSorting = true;
@@ -238,15 +248,17 @@ namespace DotRPG
             questBody.rectTransform.offsetMax = new Vector2(questBody.rectTransform.offsetMax.x, -(16f + titleH));
             float wanted = 30f + titleH + Mathf.Max(22f, questBody.preferredHeight);
             // [UI] The 자동 사냥 / 자동 진행 buttons and the status line hang 88 px under the panel: keep them above the
-            // skill bar / quick items (top at 156) when the canvas is short (UI size 1.15 / 1.3 = 626 / 554 tall).
+            // quick item bar under the right column (top at 128, +8 gap) when the canvas is short (UI size 1.15 / 1.3 =
+            // 626 / 554 tall). At 1.3 that leaves 554 - 234 - 88 - 136 = 96 px: title + 2 body lines.
             questFitHeight = ((RectTransform)transform).rect.height;
-            float room = questFitHeight > 0f ? questFitHeight - QuestTop - 88f - 160f : wanted;
+            float room = questFitHeight > 0f ? questFitHeight - QuestTop - 88f - 136f : wanted;
             float height = Mathf.Min(wanted, Mathf.Max(30f + titleH + 22f, room));
             questBody.verticalOverflow = height < wanted ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
             questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, height);
         }
 
-        const float QuestTop = 16f + MinimapView.Diameter + 42f;
+        /// <summary>Top of the quest tracker under the minimap (TipView uses the same column on narrow canvases).</summary>
+        public const float QuestTop = 16f + MinimapView.Diameter + 42f;
         float questFitHeight;
 
         static void AppendObjective(StringBuilder sb, QuestObjective o)
@@ -314,10 +326,40 @@ namespace DotRPG
         }
 
         const float ToastHeight = 32f, ToastStep = 36f; // [UI]
+        // [UI] Toast base heights: normal / over the dialogue name plate (box 24..194, plate top 226) / over the
+        // bottom-centre boss bar (166..258) and its groggy line (262..298).
+        const float ToastBase = 200f, ToastBaseDialogue = 240f, ToastBaseBoss = 306f;
 
         static void FitToast(Toast t)
         {
             t.plate.rectTransform.sizeDelta = new Vector2(Mathf.Min(700f, t.text.preferredWidth + 32f), ToastHeight);
+        }
+
+        /// <summary>[UI] Long labels ("자동 진행 (3)") shrink to fit next to the key badge instead of wrapping.</summary>
+        static void FitLabel(Text t)
+        {
+            t.resizeTextForBestFit = true;
+            t.resizeTextMinSize = 12;
+            t.resizeTextMaxSize = t.fontSize;
+        }
+
+        /// <summary>[AUTO] The hotkey ("F6") at the right end of a HUD button.</summary>
+        static Text KeyBadge(Transform button)
+        {
+            var t = UIFactory.Text(button, "Key", "", 14, new Color32(255, 211, 74, 255), TextAnchor.MiddleRight, true);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow; // a rebound "Space" grows to the left, never wraps
+            UIFactory.Place(t.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-5f, 0f), new Vector2(24f, 20f));
+            return t;
+        }
+
+        static void ShowKey(Text badge, GameAction action, ref string shown)
+        {
+            var input = Game.Input;
+            string key = input == null || input.UsingGamepad ? "" : input.GetBindingLabel(action);
+            if (key == "?") key = "";
+            if (ReferenceEquals(key, shown)) return;
+            shown = key;
+            badge.text = key;
         }
 
         /// <summary>[ART] A small icon at the left end of a HUD button.</summary>
@@ -333,9 +375,22 @@ namespace DotRPG
         {
             if (!built) return;
             // [CONTENT] The quest tracker is hidden inside dungeons (room map + boss bar own that space).
-            bool showQuest = Game.Dungeon == null || !Game.Dungeon.InRun;
+            bool inRun = Game.Dungeon != null && Game.Dungeon.InRun;
+            var hudRect = ((RectTransform)transform).rect;
+            var bossBar = BossHpBarView.Instance;
+            bool bossShown = bossBar != null && bossBar.DevVisible;
+            // [UI] On narrow canvases (UI size 1.15 / 1.3: W < 1160) the bottom-centre boss bar (W/2 +- 200) reaches the
+            // quest column (W-380): a field boss fight owns that space. A first-time tip in the column hides it too.
+            bool showQuest = !inRun && !TipView.InQuestColumn && !(bossShown && hudRect.width < 1160f);
             if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
-            if (showQuest && !Mathf.Approximately(((RectTransform)transform).rect.height, questFitHeight)) RefreshQuest(); // UI size changed
+            if (showQuest && !Mathf.Approximately(hudRect.height, questFitHeight)) RefreshQuest(); // UI size changed
+            // [AUTO] Hotkeys for 자동 진행 / 자동 사냥 (rebindable, default F6 / F7), only in normal play with no window open.
+            var keys = Game.Input;
+            if (keys != null && Game.IsPlaying && (!inRun || QuestAutoPilot.Active))
+            {
+                if (keys.HotkeyPressed(GameAction.AutoQuest)) QuestAutoPilot.Toggle();
+                else if (keys.HotkeyPressed(GameAction.AutoHunt)) QuestAutoPilot.ToggleHunt();
+            }
             if (autoLabel != null)
             {
                 bool auto = QuestAutoPilot.Active;
@@ -343,7 +398,18 @@ namespace DotRPG
                 autoLabel.text = auto && !hunting ? "자동 중지" : QuestAutoPilot.Targets.Count > 0 ? $"자동 진행 ({QuestAutoPilot.Targets.Count})" : "자동 진행";
                 if (huntLabel != null) huntLabel.text = hunting ? "사냥 중지" : "자동 사냥";
                 autoStatus.text = auto ? QuestAutoPilot.Status : "";
+                if (huntBtn != null)
+                {
+                    bool canHunt = hunting || QuestAutoPilot.CanHuntHere;
+                    if (huntBtn.interactable != canHunt) huntBtn.interactable = canHunt;
+                }
+                ShowKey(autoKey, GameAction.AutoQuest, ref autoKeyShown);
+                ShowKey(huntKey, GameAction.AutoHunt, ref huntKeyShown);
             }
+            // [UI] Toasts move up over the dialogue name plate and over the boss bar.
+            var dialogue = Game.Dialogue;
+            float toastY = bossShown ? ToastBaseBoss : dialogue != null && dialogue.IsOpen ? ToastBaseDialogue : ToastBase;
+            if (!Mathf.Approximately(toastRoot.anchoredPosition.y, toastY)) toastRoot.anchoredPosition = new Vector2(0f, toastY);
             float now = Time.unscaledTime;
             // Toast layout & fade.
             for (int i = toasts.Count - 1; i >= 0; i--)

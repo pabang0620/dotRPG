@@ -29,7 +29,7 @@ namespace DotRPG
         readonly List<Row> rows = new List<Row>();
         readonly Button[] diffButtons = new Button[4];
         readonly Text[] diffLabels = new Text[4];
-        Button tabWeekday, tabRaid, enterButton;
+        Button tabWeekday, tabRaid, enterButton, partyButton;
         Image banner;
         Text diffTitle;
         Text dayText, title, desc, info, recommend, partyText, rewards, raidLine, status, hint;
@@ -75,7 +75,7 @@ namespace DotRPG
             w.raidLine = Label(d, "RaidLine", "", 17, tl, tl, new Vector2(24f, -188f), new Vector2(780f, 46f));
             w.recommend = Label(d, "Recommend", "", 17, tl, tl, new Vector2(24f, -246f), new Vector2(380f, 46f));
             w.partyText = Label(d, "Party", "", 17, tl, tl, new Vector2(420f, -246f), new Vector2(220f, 46f));
-            Button(d, "PartyButton", "파티 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -246f), new Vector2(150f, 44f),
+            w.partyButton = Button(d, "PartyButton", "파티 편성", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -246f), new Vector2(150f, 44f),
                 () => Game.Flow.OpenWindow(Game.UI.Party), 18);
             w.rewards = Label(d, "Rewards", "", 17, tl, tl, new Vector2(24f, -300f), new Vector2(780f, 26f));
             for (int i = 0; i < SlotCount; i++)
@@ -290,8 +290,11 @@ namespace DotRPG
             enterButton.image.color = reason == null ? Color.white : new Color(1f, 1f, 1f, 0.45f);
             enterButton.image.sprite = Game.Art.Get(practice != null ? "ui_btngray" : "ui_btn");
             TextOf(enterButton).text = practice != null ? "연습 입장" : "입장";
-            hint.text = "<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   Enter 입장   E 탭 전환   ESC 닫기</color>";
-            RefreshSweep();
+            RefreshSweep(); // sets whether 소탕 shows, which the hint below follows
+            var input = Game.Input;
+            string sweepKey = sweepButton != null && sweepButton.gameObject.activeSelf ? $"   {input.GetBindingLabel(GameAction.UseItem)} 소탕" : "";
+            hint.text = $"<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   {input.GetBindingLabel(GameAction.Submit)} 입장   Tab / LB·RB 탭 전환{sweepKey}   {input.GetBindingLabel(GameAction.UseMana)} 파티 편성   {input.GetBindingLabel(GameAction.Cancel)} 닫기</color>";
+            TextOf(partyButton).text = $"파티 편성 <size=15><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
         }
 
         /// <summary>The mid raids that drop seal key fragments, by name ("해골왕").</summary>
@@ -370,8 +373,12 @@ namespace DotRPG
                 var next = (DungeonDifficulty)Mathf.Clamp((int)difficulty + dx, 0, DungeonDatabase.DifficultyCount - 1);
                 if (next != difficulty) PickDifficulty(next);
             }
-            if (input.InteractPressed) SetTab(!raidTab);
+            // [UX] Tab / LB · RB switch the tab; A (Submit) only enters (A was bound to both, so the pad could never enter).
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) SetTab(!raidTab);
             else if (input.SubmitPressed) TryEnter();
+            // [UX] The mouse-only buttons get keys too: 1 / Y 소탕 (weekday dungeons online), 2 / L3 파티 편성.
+            else if (input.UseItemPressed && sweepButton != null && sweepButton.gameObject.activeInHierarchy) OpenSweep();
+            else if (input.UseManaPressed) { Game.Audio.PlaySfx("select"); Game.Flow.OpenWindow(Game.UI.Party); }
         }
 
         // ---------- Automated checks ----------

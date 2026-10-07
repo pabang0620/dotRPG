@@ -173,8 +173,8 @@ namespace DotRPG
                 };
                 w.rows.Add(r);
             }
-            w.pagePrev = Button(left.transform, "Prev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 170f, 12f), new Vector2(50f, 40f), () => w.Page(-1), 22);
-            w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 30f, 12f), new Vector2(50f, 40f), () => w.Page(1), 22);
+            w.pagePrev = Button(left.transform, "Prev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 170f, 15f), UiSizes.PageButton, () => w.Page(-1), UiSizes.PageFont);
+            w.pageNext = Button(left.transform, "Next", "▶", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 30f, 15f), UiSizes.PageButton, () => w.Page(1), UiSizes.PageFont);
             w.pageText = Label(left.transform, "Page", "", 20, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(ListW - 120f, 12f), new Vector2(90f, 40f), TextAnchor.MiddleCenter);
 
             var right = Panel(w.content, "Detail", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(500f, 594f), UiTheme.Panel);
@@ -240,6 +240,9 @@ namespace DotRPG
 
         /// <summary>Most of one item bought at once (the server's shop limit per purchase).</summary>
         const int MaxBuyCount = 999;
+
+        /// <summary>[UX] Small "[key]" after a button label: the key that presses it (10개 / 모두 판매: 1, 최대 / 일괄 판매: 2).</summary>
+        static string KeyTag(GameAction action) => $" <size=16><color=#b8c4d8>[{Game.Input.GetBindingLabel(action)}]</color></size>";
 
         /// <summary>Buy tab: 1 · 10 · 최대 side by side. Sell tab: 1 · 모두 (the original two wide buttons).</summary>
         void LayoutTradeButtons(bool sell)
@@ -365,7 +368,8 @@ namespace DotRPG
                 bigKind.text = bigDesc.text = bigPrice.text = "";
                 buyOne.interactable = buyMany.interactable = buyMax.interactable = false;
                 buyOneLabel.text = selling ? "1개 판매" : "1개 구매";
-                buyManyLabel.text = selling ? "모두 판매" : "10개 구매";
+                buyManyLabel.text = (selling ? "모두 판매" : "10개 구매") + KeyTag(GameAction.UseItem);
+                RefreshKeyTags();
                 dirty = false;
                 return;
             }
@@ -380,7 +384,7 @@ namespace DotRPG
                 int each = ItemPrices.SellPrice(cur);
                 bigPrice.text = $"판매가 {ItemText.Gold(each)}   ·   보유 {owned}개";
                 buyOneLabel.text = "1개 판매";
-                buyManyLabel.text = owned > 1 ? $"모두 판매 ({owned})" : "모두 판매";
+                buyManyLabel.text = (owned > 1 ? $"모두 판매 ({owned})" : "모두 판매") + KeyTag(GameAction.UseItem);
                 buyOne.interactable = buyMany.interactable = owned > 0;
             }
             else
@@ -388,13 +392,23 @@ namespace DotRPG
                 int each = ItemPrices.BuyPrice(cur);
                 bigPrice.text = $"가격 {ItemText.Gold(each)}   ·   보유 {owned}개";
                 buyOneLabel.text = "1개 구매";
-                buyManyLabel.text = "10개 구매";
+                buyManyLabel.text = "10개 구매" + KeyTag(GameAction.UseItem);
                 buyOne.interactable = gold >= each;
                 buyMany.interactable = gold >= each;
                 buyMax.interactable = gold >= each;
             }
+            RefreshKeyTags();
             dirty = false;
         }
+
+        /// <summary>Key labels follow the device in use (keyboard 2 / gamepad L3).</summary>
+        void RefreshKeyTags()
+        {
+            TextOf(buyMax).text = "최대" + KeyTag(GameAction.UseMana);
+            TextOf(bulkBtn).text = "일괄 판매" + KeyTag(GameAction.UseMana);
+        }
+
+        static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
 
         /// <summary>Buys or sells up to <paramref name="count"/> of the selected item.</summary>
         void Trade(int count)
@@ -519,6 +533,13 @@ namespace DotRPG
                 if (nav.y != 0 && entries.Count > 0) Select(Mathf.Clamp(selected - nav.y, 0, entries.Count - 1));
                 if (nav.x != 0) SetMode(nav.x > 0);
                 if (Game.Input.SubmitPressed) Trade(1);
+                // [UX] The mouse-only buttons get keys too: 1 / Y = 10개 구매 or 모두 판매, 2 / L3 = 최대 or 일괄 판매.
+                if (Game.Input.UseItemPressed && buyMany.interactable) Trade(selling ? int.MaxValue : 10);
+                else if (Game.Input.UseManaPressed)
+                {
+                    if (selling) { Game.Audio.PlaySfx("select"); bulk.Open(); }
+                    else if (buyMax.interactable) Trade(MaxBuyCount);
+                }
             }
             if (dirty) Refresh();
         }
@@ -578,10 +599,10 @@ namespace DotRPG
             Button(left.transform, "DepositMats", "재료 모두 맡기기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.DepositMaterials, 22);
             Button(right.transform, "WithdrawAll", "모두 꺼내기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.WithdrawAll, 22);
             // Page buttons in the bottom corners, the page number top right.
-            w.bagPrev = Button(left.transform, "BagPrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 12f), new Vector2(56f, 52f), () => w.Page(false, -1), 22);
-            w.bagNext = Button(left.transform, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(56f, 52f), () => w.Page(false, 1), 22);
-            w.storePrev = Button(right.transform, "StorePrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 12f), new Vector2(56f, 52f), () => w.Page(true, -1), 22);
-            w.storeNext = Button(right.transform, "StoreNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(56f, 52f), () => w.Page(true, 1), 22);
+            w.bagPrev = Button(left.transform, "BagPrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 21f), UiSizes.PageButton, () => w.Page(false, -1), UiSizes.PageFont);
+            w.bagNext = Button(left.transform, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 21f), UiSizes.PageButton, () => w.Page(false, 1), UiSizes.PageFont);
+            w.storePrev = Button(right.transform, "StorePrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 21f), UiSizes.PageButton, () => w.Page(true, -1), UiSizes.PageFont);
+            w.storeNext = Button(right.transform, "StoreNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 21f), UiSizes.PageButton, () => w.Page(true, 1), UiSizes.PageFont);
             w.bagPageText = Label(left.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
             w.storePageText = Label(right.transform, "Page", "", 20, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -14f), new Vector2(110f, 30f), TextAnchor.MiddleRight);
 

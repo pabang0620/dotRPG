@@ -13,7 +13,11 @@ namespace DotRPG
     {
         public static ChatView Instance { get; private set; }
 
+        // [UI] Width = Min(400, W/2 - 224): the right edge stays 10 px left of the centred skill bar (W/2 - 202) at every UI
+        // size (1.0: 400, 1.15: 332, 1.3: 268). Short canvases (H < 600, UI size 1.3) use 112 px from y 90 (top 202): under
+        // the party frames, which shrink there (PartyFramesView, bottom 207 from the bottom with three members).
         const float Width = 400f, Height = 154f, Left = 12f, Bottom = 96f, InputH = 30f;
+        const float CompactHeight = 112f, CompactBottom = 90f, CompactBelow = 600f, SkillBarClear = 224f;
         const int ShownLines = 6;
         static readonly KeyCode[] SignalKeys = { KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8 };
         static readonly string[] Tabs = { "전체", "파티", "귓속말" };
@@ -23,7 +27,8 @@ namespace DotRPG
         Text log, tabText, channelText;
         GameObject inputRoot;
         InputField field;
-        RectTransform canvasRect, bubble;
+        RectTransform canvasRect, bubble, root, inputBox;
+        Vector2 laidOutFor;
         Text bubbleText;
         float idle = 99f, bubbleTime;
         int tab, openedFrame;
@@ -39,6 +44,7 @@ namespace DotRPG
             var root = UIFactory.Place(UIFactory.Rect(parent, "Chat"), Vector2.zero, Vector2.zero, new Vector2(Left, Bottom), new Vector2(Width, Height));
             var v = root.gameObject.AddComponent<ChatView>();
             Instance = v;
+            v.root = root;
             v.group = root.gameObject.AddComponent<CanvasGroup>();
             v.canvasRect = (RectTransform)parent; // HUD root: stretched over the whole canvas
 
@@ -71,14 +77,18 @@ namespace DotRPG
         {
             var box = UIFactory.Panel(root, "Input", true);
             UIFactory.Place(box.rectTransform, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(Width, InputH));
+            inputBox = box.rectTransform;
             box.raycastTarget = true;
             channelText = UIFactory.Text(box.transform, "Channel", "", 16, Color.white, TextAnchor.MiddleLeft, false);
             UIFactory.Place(channelText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(92f, InputH));
             var text = UIFactory.Text(box.transform, "Text", "", 16, Color.white, TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(text.rectTransform, 98f, 2f, 8f, 2f);
             text.supportRichText = false;
-            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · ESC 닫기 · /p /g /w 이름", 16, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
+            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · /p /g /w", 16, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(placeholder.rectTransform, 98f, 2f, 8f, 2f);
+            placeholder.resizeTextForBestFit = true; // the narrow box at UI size 1.3 shrinks the hint instead of wrapping it
+            placeholder.resizeTextMinSize = 12;
+            placeholder.resizeTextMaxSize = placeholder.fontSize;
             field = box.gameObject.AddComponent<InputField>();
             field.textComponent = text;
             field.placeholder = placeholder;
@@ -132,8 +142,23 @@ namespace DotRPG
 
         bool PlayingNow => Game.State != null && Game.State.Current == GameState.Playing;
 
+        /// <summary>[UI] Fits the box to the canvas (UI size changes): left of the skill bar, under the party frames.</summary>
+        void Layout()
+        {
+            var size = canvasRect.rect.size;
+            if (size == laidOutFor || size.x <= 0f) return;
+            laidOutFor = size;
+            bool compact = size.y < CompactBelow;
+            float w = Mathf.Min(Width, size.x * 0.5f - SkillBarClear);
+            root.anchoredPosition = new Vector2(Left, compact ? CompactBottom : Bottom);
+            root.sizeDelta = new Vector2(w, compact ? CompactHeight : Height);
+            tabText.rectTransform.sizeDelta = new Vector2(w - 16f, tabText.rectTransform.sizeDelta.y);
+            inputBox.sizeDelta = new Vector2(w, InputH);
+        }
+
         void Update()
         {
+            Layout();
             Service.Tick(Time.unscaledDeltaTime);
             idle += Time.unscaledDeltaTime;
             if (Typing)

@@ -79,6 +79,7 @@ namespace DotRPG
             var def = Selected;
             bool daily = def != null && !def.isRaid;
             sweepButton.gameObject.SetActive(daily && OnlineSession.Playing);
+            TextOf(sweepButton).text = $"소탕 <size=18><color=#b8c4d8>[{Game.Input.GetBindingLabel(GameAction.UseItem)}]</color></size>";
             if (!SweepOpen) return;
             if (!daily) { sweepPanel.gameObject.SetActive(false); return; }
 

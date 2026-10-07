@@ -38,6 +38,8 @@ namespace DotRPG
         string huntTarget = "*";
 
         static bool InHuntingGround => Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun);
+        /// <summary>[AUTO] For the HUD button state: 자동 사냥 can start on this map.</summary>
+        public static bool CanHuntHere => InHuntingGround;
 
         public static void ToggleHunt()
         {

@@ -53,10 +53,10 @@ namespace DotRPG
             }
             w.empty = Label(list.transform, "Empty", "받을 우편이 없습니다.", 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(ListW - 40f, 40f), TextAnchor.MiddleCenter);
             var br = new Vector2(1f, 0f);
-            Button(list.transform, "Prev", "◀", "ui_btngray", br, br, new Vector2(-130f, 10f), new Vector2(44f, 40f), () => w.Turn(-1), 18);
-            w.pageText = Label(list.transform, "Page", "", 18, br, br, new Vector2(-54f, 10f), new Vector2(76f, 40f), TextAnchor.MiddleCenter);
-            Button(list.transform, "Next", "▶", "ui_btngray", br, br, new Vector2(-8f, 10f), new Vector2(44f, 40f), () => w.Turn(1), 18);
-            w.claimAllBtn = Button(list.transform, "ClaimAll", "모두 받기", "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(10f, 8f), new Vector2(200f, 48f), w.ClaimAll, 20);
+            Button(list.transform, "Prev", "◀", "ui_btngray", br, br, new Vector2(-142f, 15f), UiSizes.PageButton, () => w.Turn(-1), UiSizes.PageFont);
+            w.pageText = Label(list.transform, "Page", "", 18, br, br, new Vector2(-62f, 15f), new Vector2(76f, 34f), TextAnchor.MiddleCenter);
+            Button(list.transform, "Next", "▶", "ui_btngray", br, br, new Vector2(-8f, 15f), UiSizes.PageButton, () => w.Turn(1), UiSizes.PageFont);
+            w.claimAllBtn = Button(list.transform, "ClaimAll", "모두 받기", "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(10f, 8f), UiSizes.ClaimAllButton, w.ClaimAll, UiSizes.ClaimAllFont);
 
             var detail = Panel(w.content, "Detail", tl, tl, new Vector2(ListW + 16f, -6f), new Vector2(DetailW, Rows * RowH + 66f), new Color32(24, 36, 54, 235));
             var d = detail.transform;
@@ -77,7 +77,7 @@ namespace DotRPG
                 w.atts.Add((icon, count));
             }
             w.attNote = Label(d, "AttNote", "", 16, tl, tl, new Vector2(24f, -450f), new Vector2(DetailW - 48f, 44f));
-            w.claimBtn = Button(d, "Claim", "받기", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 14f), new Vector2(220f, 56f), w.ClaimSelected, 22);
+            w.claimBtn = Button(d, "Claim", "받기", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 14f), UiSizes.ClaimButton, w.ClaimSelected, UiSizes.ClaimFont);
             w.Service.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
         }

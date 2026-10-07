@@ -14,7 +14,18 @@ namespace DotRPG
         {Button(careerRoot,name,text,"ui_btngray",new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(w,h),action,18);}
         void RefreshCareer()
         {
+            // [UX] The page is rebuilt on every change: keep the gamepad selection on the button of the same name.
+            var es=UnityEngine.EventSystems.EventSystem.current;
+            var was=es!=null?es.currentSelectedGameObject:null;
+            string keep=was!=null&&was.transform.IsChildOf(careerRoot)?was.name:null;
             for(int i=careerRoot.childCount-1;i>=0;i--){var child=careerRoot.GetChild(i).gameObject;child.SetActive(false);Destroy(child);}
+            BuildCareerPage();
+            if(keep==null||es==null)return;
+            foreach(var sel in careerRoot.GetComponentsInChildren<Selectable>(false))
+                if(sel.name==keep&&sel.IsInteractable()){es.SetSelectedGameObject(sel.gameObject);break;}
+        }
+        void BuildCareerPage()
+        {
             var p=Game.Session.Progression;
             if(p.IsPromoted)browsing=p.Career;
             else if(browsing==Career.None||CareerCatalog.Base(browsing)!=Game.Session.PlayerClass)browsing=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist;

@@ -23,48 +23,35 @@ namespace DotRPG
             // players see how to close every window, and a thin accent line separates header and content.
             var bg = UIFactory.Overlay(root, "Bg", UiTheme.Background);
             bg.raycastTarget = true;
-            var header = Img(root, "Header", "ui_header", Color.white); // [UI] wooden header strip (9-slice)
+            // [UI] Header and content are laid out together on a fixed 1280x720 rect (pinned to the top centre) that
+            // scales uniformly to fit the window (UI scale 1.15 / 1.3, small screens); it never grows. The background
+            // above stays full-screen.
+            var layout = UIFactory.Place(UIFactory.Rect(root, "Layout"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, UIFactory.ReferenceResolution);
+            layout.gameObject.AddComponent<FitToParent>().design = UIFactory.ReferenceResolution;
+            var header = Img(layout, "Header", "ui_header", Color.white); // [UI] wooden header strip (9-slice)
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, UiTheme.HeaderHeight));
-            var headerLine = Img(root, "HeaderLine", "ui_white", new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f));
+            var headerLine = Img(layout, "HeaderLine", "ui_white", new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.35f));
             UIFactory.Place(headerLine.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -UiTheme.HeaderHeight), new Vector2(4000f, 2f));
-            var back = Button(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), w.Close, 24);
+            var back = Button(layout, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), w.Close, 24);
             var backText = back.GetComponentInChildren<Text>();
             backText.text = "◀ <size=17>ESC</size>";
             if (!string.IsNullOrEmpty(icon))
             {
-                var ic = UIFactory.Image(root, "Icon", Game.Art.Get(icon), Color.white);
+                var ic = UIFactory.Image(layout, "Icon", Game.Art.Get(icon), Color.white);
                 UIFactory.Place(ic.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(134f, -14f), new Vector2(48f, 48f));
             }
-            var t = UIFactory.Text(root, "Title", title, UiTheme.FontTitle, Color.white, TextAnchor.MiddleLeft, true);
+            var t = UIFactory.Text(layout, "Title", title, UiTheme.FontTitle, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(192f, -12f), new Vector2(560f, 52f));
-            w.keeperLine = UIFactory.Text(root, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
+            w.keeperLine = UIFactory.Text(layout, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
             UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(760f, 52f));
-            // [UI] Every window is laid out on a fixed 1220x594 content area (1280x720 minus margins and header) that
-            // shrinks to fit when the window is smaller (UI scale 1.15 / 1.3, small screens); it never grows.
-            var area = UIFactory.Stretch(UIFactory.Rect(root, "ContentArea"), 30f, 30f, 30f, 96f);
+            // Every window's content is the same 1220x594 rect (1280x720 minus margins and header).
+            var area = UIFactory.Stretch(UIFactory.Rect(layout, "ContentArea"), 30f, 30f, 30f, 96f);
             w.content = UIFactory.Place(UIFactory.Rect(area, "Content"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, ContentSize);
-            area.gameObject.AddComponent<ContentFit>().content = w.content;
             return w;
         }
 
         /// <summary>The design size of every window's content.</summary>
         public static readonly Vector2 ContentSize = new Vector2(1220f, 594f);
-
-        /// <summary>Scales a window's fixed-size content down to fit its area.</summary>
-        sealed class ContentFit : MonoBehaviour
-        {
-            public RectTransform content;
-            Vector2 last;
-
-            void LateUpdate()
-            {
-                var size = ((RectTransform)transform).rect.size;
-                if (content == null || size == last) return;
-                last = size;
-                float k = Mathf.Min(1f, size.x / ContentSize.x, size.y / ContentSize.y);
-                content.localScale = new Vector3(k, k, 1f);
-            }
-        }
 
         Text keeperLine;
 
@@ -420,6 +407,7 @@ namespace DotRPG
             foreach (var t in costCells) t.text = "";
             enhanceButton.interactable = false;
             enhanceLabel.text = "강화";
+            RefreshTicket(null); // no gear: the 강화권 button goes too
         }
 
         void ShowDetails(Entry e)
@@ -741,6 +729,12 @@ namespace DotRPG
                     Picked();
                 }
                 if (Game.Input.SubmitPressed) OnEnhancePressed();
+                // [UX] Keys for the side buttons: UseMana = 강화권, UseItem = 승급, [ / ] or LB / RB = switch 강화권.
+                // (Interact shares F / A with Submit, which already presses 강화.)
+                else if (Game.Input.UseManaPressed) UseTicket();
+                else if (Game.Input.UseItemPressed) OnPromotePressed();
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.RightBracket) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) SwitchTicket(1);
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.LeftBracket) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4)) SwitchTicket(-1);
             }
             if (dirty) Refresh();
         }

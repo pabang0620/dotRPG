@@ -27,7 +27,8 @@ namespace DotRPG
             var (cores, _) = PromoteRules.CostInto(next.rarity);
             int have = Game.Session.Inventory.Count(PromoteRules.CoreItem);
             promoteButton.interactable = !busy;
-            promoteLabel.text = have >= cores ? "승급" : $"승급\n<size=15>핵 {have}/{cores}</size>";
+            string head = $"승급 <size=17>({Game.Input.GetBindingLabel(GameAction.UseItem)})</size>";
+            promoteLabel.text = have >= cores ? head : $"{head}\n<size=15>핵 {have}/{cores}</size>";
         }
 
         void OnPromotePressed()

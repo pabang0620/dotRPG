@@ -15,8 +15,9 @@ namespace DotRPG
         const float RowH = 56f, Top = -96f;
         const int Rows = 8;
 
-        Text header;
-        Button buyPass;
+        Text header, pageText;
+        Button buyPass, pagePrev, pageNext;
+        int page;
         sealed class Row { public Image bg; public Text level, free, pass; public Button freeBtn, passBtn; }
         readonly List<Row> rows = new List<Row>();
         readonly List<int> levels = new List<int>();
@@ -40,12 +41,17 @@ namespace DotRPG
                 var r = new Row();
                 r.bg = Panel(w.content, "Row" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, Top - i * RowH), new Vector2(1200f, RowH - 4f), i % 2 == 0 ? RowA : RowB);
                 r.level = Label(r.bg.transform, "Level", "", 20, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(12f, 0f), new Vector2(140f, 40f), TextAnchor.MiddleLeft);
-                r.free = Label(r.bg.transform, "Free", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(160f, 0f), new Vector2(260f, 40f), TextAnchor.MiddleLeft);
-                r.freeBtn = Button(r.bg.transform, "FreeClaim", "받기", "ui_btn", new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(420f, 0f), new Vector2(110f, 40f), () => w.ClaimFree(idx), 16);
-                r.pass = Label(r.bg.transform, "Pass", "", 16, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(560f, 0f), new Vector2(500f, 44f), TextAnchor.MiddleLeft);
-                r.passBtn = Button(r.bg.transform, "PassClaim", "받기", "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), new Vector2(110f, 40f), () => w.ClaimPass(idx), 16);
+                r.free = Label(r.bg.transform, "Free", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(160f, 0f), new Vector2(250f, 40f), TextAnchor.MiddleLeft);
+                r.freeBtn = Button(r.bg.transform, "FreeClaim", "받기", "ui_btn", new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(410f, 0f), UiSizes.ClaimButton, () => w.ClaimFree(idx), UiSizes.ClaimFont);
+                r.pass = Label(r.bg.transform, "Pass", "", 16, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(560f, 0f), new Vector2(480f, 44f), TextAnchor.MiddleLeft);
+                r.passBtn = Button(r.bg.transform, "PassClaim", "받기", "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), UiSizes.ClaimButton, () => w.ClaimPass(idx), UiSizes.ClaimFont);
                 w.rows.Add(r);
             }
+            // Paging under the rows: only shown when there are more levels than rows.
+            var br = new Vector2(1f, 0f);
+            w.pagePrev = Button(w.content, "Prev", "◀", "ui_btngray", br, br, new Vector2(-140f, 0f), UiSizes.PageButton, () => w.Turn(-1), UiSizes.PageFont);
+            w.pageText = Label(w.content, "Page", "", 18, br, br, new Vector2(-54f, 0f), new Vector2(80f, 34f), TextAnchor.MiddleCenter);
+            w.pageNext = Button(w.content, "Next", "▶", "ui_btngray", br, br, new Vector2(0f, 0f), UiSizes.PageButton, () => w.Turn(1), UiSizes.PageFont);
             LevelRewardClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
         }
@@ -60,16 +66,29 @@ namespace DotRPG
         LevelRewardClient.Tier FreeAt(int level) { foreach (var t in LevelRewardClient.Tiers) if (t.level == level) return t; return null; }
         LevelRewardClient.PassTier PassAt(int level) { foreach (var t in LevelRewardClient.PassTiers) if (t.level == level) return t; return null; }
 
-        void ClaimFree(int i)
+        int Pages => Mathf.Max(1, (levels.Count + Rows - 1) / Rows);
+
+        void Turn(int delta)
         {
+            int next = Mathf.Clamp(page + delta, 0, Pages - 1);
+            if (next == page) return;
+            page = next;
+            Game.Audio.PlaySfx("select", 0.5f);
+            Refresh();
+        }
+
+        void ClaimFree(int row)
+        {
+            int i = page * Rows + row;
             if (i >= levels.Count) return;
             var t = FreeAt(levels[i]);
             if (t == null || !t.claimable) return;
             LevelRewardClient.Claim(t.level, Answer);
         }
 
-        void ClaimPass(int i)
+        void ClaimPass(int row)
         {
+            int i = page * Rows + row;
             if (i >= levels.Count) return;
             var t = PassAt(levels[i]);
             if (t == null || !t.claimable) return;
@@ -112,10 +131,18 @@ namespace DotRPG
             foreach (var t in LevelRewardClient.Tiers) if (!levels.Contains(t.level)) levels.Add(t.level);
             foreach (var t in LevelRewardClient.PassTiers) if (!levels.Contains(t.level)) levels.Add(t.level);
             levels.Sort();
-            if (levels.Count > rows.Count) Debug.LogWarning($"[dotRPG] level rewards: {levels.Count} levels but only {rows.Count} rows are shown");
-            for (int i = 0; i < rows.Count; i++)
+            int pages = Pages;
+            page = Mathf.Clamp(page, 0, pages - 1);
+            pageText.text = $"{page + 1} / {pages}";
+            pageText.gameObject.SetActive(pages > 1);
+            pagePrev.gameObject.SetActive(pages > 1);
+            pageNext.gameObject.SetActive(pages > 1);
+            pagePrev.interactable = page > 0;
+            pageNext.interactable = page < pages - 1;
+            for (int row = 0; row < rows.Count; row++)
             {
-                var r = rows[i];
+                var r = rows[row];
+                int i = page * Rows + row;
                 bool used = i < levels.Count;
                 r.bg.gameObject.SetActive(used);
                 if (!used) continue;
