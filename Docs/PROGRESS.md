@@ -53,19 +53,17 @@
 3. 실제 배포 (업체·도메인·오프사이트 백업·웹훅 결정 후 `server/ops/README.md`)
 4. 결정 대기 2건: 파티 저레벨 처치 경험치 감쇠, 강화 직후 판매 차익
 5. 출시 전 운영 항목: 금칙어 목록 보강, 개인정보 처리방침
+6. 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md)
 
-## 현재 상태 스냅샷 (2026-10-01, 이후 서버 작업은 위 표와 PLAN_SERVER 참고)
+## 현재 상태 스냅샷 (2026-10-08 기준)
 
 | 항목 | 내용 |
 |---|---|
-| 작업 브랜치 | `feature/dungeon-raid` (원격과 동일). `main`에는 미병합 |
-| 병합 완료 브랜치 | wt/enh, wt/party, wt/dungeon, wt/art, wt/content, wt/bgm, wt/monhd, wt/dgnterrain, wt/ui, wt/online, integ/merge-art, claude/amazing-clarke-5zadhj |
-| 원격 브랜치 | main, feature/dungeon-raid, claude/amazing-clarke-5zadhj, wt/bgm, wt/ui, wt/online (나머지 wt/* 는 로컬 전용, 모두 feature/dungeon-raid에 포함됨) |
-| 엔진 | Unity 6000.5.9f1 (README의 6000.3.24f1 표기는 옛 값) |
-| 컴파일 | UI·온라인 병합 후 배치 컴파일 통과 (error CS 0) |
-| 자동 테스트 | 마지막 병합 3건(BGM, 아트 통합, UI·온라인) 이후 실행 안 함 |
-| 워크트리 | `C:\Users\admin\Desktop\games\dotRPG-wt\*` 12개. 미커밋 변경은 Unity가 자동 생성한 `ProjectSettings.asset`뿐이라 버려도 됨 |
-| 메인 폴더 미커밋 | `ProjectSettings/ProjectSettings.asset` (Unity 자동 재생성분, 커밋하지 않음) |
+| 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개이고 모두 원격에 있다 |
+| 워크트리 | 쓰지 않는다(`wt/*` 체계 폐기). 작업 폴더 하나에서 브랜치로 나뉜다 |
+| 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
+| 게임 서버 | `server/`(Node·TypeScript·PostgreSQL). 단계별 진행 현황은 `PLAN_SERVER.md` 표와 `Docs/server/` |
+| 검증 | 컴파일과 서버 자동 테스트는 작업 묶음 끝에 확인한다. 게임 실행 자동 테스트는 요청이 있을 때만 돌린다 |
 
 ### 체크리스트 진행률 요약
 
