@@ -13,7 +13,7 @@ namespace DotRPG
     /// whatever the local code did meanwhile is overwritten with the server's truth.
     /// Call sites check <see cref="On"/> and skip their offline grant.
     /// </summary>
-    public static class OnlineEconomy
+    public static partial class OnlineEconomy
     {
         public static bool On => OnlineSession.Playing;
         static ApiClient Api => ApiClient.Instance;
@@ -21,17 +21,31 @@ namespace DotRPG
 
         // ---------------- plumbing ----------------
 
-        /// <summary>POST with a fresh request_id; a network failure is retried once with the same id (no double grant).</summary>
+        /// <summary>Resends after a lost answer: 1s, 2s, 4s (same request_id and body, so the server replays the stored result).</summary>
+        static readonly float[] RetryDelays = { 1f, 2f, 4f };
+
+        /// <summary>POST with a fresh request_id; a network failure is resent up to 3 times with the same id (no double grant).</summary>
         static void Post(string path, Dictionary<string, object> body, Action<ApiResult> done, bool quiet = false)
         {
             if (!On) { done?.Invoke(ApiResult.Network("오프라인")); return; }
             body["request_id"] = ApiClient.NewRequestId();
-            string full = Char + path;
+            Send(Char + path, body, 0, done, quiet);
+        }
+
+        static void Send(string full, Dictionary<string, object> body, int retry, Action<ApiResult> done, bool quiet)
+        {
             Api.Post(full, body, r =>
             {
                 if (r.code == "NETWORK")
                 {
-                    Api.StartCoroutine(After(1f, () => Api.Post(full, body, r2 => Finish(r2, done, quiet))));
+                    if (retry < RetryDelays.Length)
+                    {
+                        Api.StartCoroutine(After(RetryDelays[retry], () => Send(full, body, retry + 1, done, quiet)));
+                        return;
+                    }
+                    // The server may have processed it: the answer was lost, not necessarily the action.
+                    r.message = "결과를 확인하는 중 연결이 끊겼습니다. 다시 접속하면 반영됩니다.";
+                    Finish(r, done, quiet);
                     return;
                 }
                 // [ANTI-ABUSE] The server has no fresh presence for this map: send it, then repeat with the same request_id.
@@ -265,37 +279,6 @@ namespace DotRPG
         }
 
         public static void Unequip(int slot, Action<bool> done) => Post("/equipment/unequip", Body(("slot", slot)), r => done?.Invoke(r.ok));
-
-        /// <summary>Worn keys right now (for <see cref="SyncWorn"/>).</summary>
-        public static string[] WornSnapshot()
-        {
-            var eq = Game.Session.Equipment;
-            var keys = new string[Equipment.SlotCount];
-            for (int i = 0; i < keys.Length; i++) keys[i] = eq[(EquipSlot)i];
-            return keys;
-        }
-
-        /// <summary>
-        /// Sends the slot changes the local equip code just made (compared with <paramref name="before"/>) as
-        /// equip / unequip requests, one after another (the server checks them in order). Each answer's delta
-        /// puts back whatever the server refused.
-        /// </summary>
-        public static void SyncWorn(string[] before)
-        {
-            if (!On || before == null) return;
-            var now = WornSnapshot();
-            var steps = new List<Action<Action>>();
-            for (int i = 0; i < now.Length; i++)
-            {
-                if (now[i] == before[i]) continue;
-                int slot = i;
-                string key = now[i];
-                bool ring = slot == (int)EquipSlot.Ring1 || slot == (int)EquipSlot.Ring2;
-                if (key == null) steps.Add(next => Unequip(slot, _ => next()));
-                else steps.Add(next => Equip(key, ring ? slot : (int?)null, _ => next()));
-            }
-            RunInOrder(steps, 0);
-        }
 
         static void RunInOrder(List<Action<Action>> steps, int i)
         {

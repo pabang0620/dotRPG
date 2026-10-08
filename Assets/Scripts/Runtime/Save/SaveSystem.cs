@@ -143,6 +143,8 @@ namespace DotRPG
             if (data.version < 5) MigrateStory(data);
             if (data.quests == null) data.quests = new List<QuestSave>();
             if (data.storyFlags == null) data.storyFlags = new List<string>();
+            // v6 added SaveData.career; older saves must reach Progression.RestoreCareer as null (legacy path), never as a blank CareerSave.
+            if (data.version < 6) data.career = null;
             data.version = SaveData.CurrentVersion;
             return data;
         }

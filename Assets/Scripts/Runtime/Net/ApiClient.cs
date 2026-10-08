@@ -22,7 +22,7 @@ namespace DotRPG
 
     /// <summary>
     /// [SERVER] HTTP client for the game server (Docs/server/phase1_2_api.md). Adds X-Client-Version and
-    /// X-Data-Version to every request, keeps the access token in memory and the refresh token in PlayerPrefs,
+    /// X-Data-Version to every request, keeps the access token in memory and the refresh token in PlayerPrefs (encrypted with DPAPI on Windows, see TokenVault),
     /// and refreshes once (one refresh at a time) when the server answers TOKEN_EXPIRED.
     /// Server address: -dotrpgServer &lt;url&gt; on the command line, else PlayerPrefs "dotrpg.server", else localhost.
     /// </summary>
@@ -34,7 +34,7 @@ namespace DotRPG
         /// always uses it and ignores -dotrpgServer / PlayerPrefs; that build fails while this is not an https address.
         /// </summary>
         public const string ReleaseServer = "";
-        const string RefreshKey = "dotrpg.refresh", ServerKey = "dotrpg.server";
+        const string ServerKey = "dotrpg.server";
         const int TimeoutSeconds = 10;
 
         static ApiClient instance;
@@ -56,8 +56,8 @@ namespace DotRPG
         public string AccessToken { get; private set; }
         public string RefreshToken
         {
-            get { try { return PlayerPrefs.GetString(RefreshKey, ""); } catch (Exception) { return ""; } }
-            private set { try { PlayerPrefs.SetString(RefreshKey, value ?? ""); PlayerPrefs.Save(); } catch (Exception) { } }
+            get => TokenVault.Load(); // [SECURITY] DPAPI-encrypted on Windows, plain PlayerPrefs elsewhere
+            private set => TokenVault.Save(value);
         }
         public bool HasRefreshToken => !string.IsNullOrEmpty(RefreshToken);
 

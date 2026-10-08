@@ -37,6 +37,10 @@ namespace DotRPG
         bool uploading;
         SaveData pendingUpload;
         string pendingId;
+        // [J3] Network failures: the newest snapshot stays queued and goes out again after a growing pause.
+        int networkFailures;
+        bool retryScheduled;
+        static readonly float[] UploadRetryDelays = { 5f, 15f, 30f, 60f };
 
         static ApiClient Api => ApiClient.Instance;
 
@@ -149,6 +153,7 @@ namespace DotRPG
 
         public static void Logout()
         {
+            Current?.FlushPending(); // [J3] the access token is still valid here
             string refresh = Api.RefreshToken;
             if (!string.IsNullOrEmpty(refresh))
                 Api.Post("/auth/logout", new Dictionary<string, object> { ["refresh_token"] = refresh }, _ => { }, auth: false);
@@ -234,6 +239,7 @@ namespace DotRPG
             PartyClient.DetachOnline(); // [PARTY]
             OnlineServices.DetachChat(); // [SERVER 5]
             OnlineServices.DetachAuction(); // [SERVER 6]
+            FlushPending(); // [J3] a snapshot that failed to upload gets one more try now
             ActiveCharacter = null; // a save still waiting keeps its own character id and is sent
             Game.State?.RefreshTimeScale();
         }
@@ -384,6 +390,24 @@ namespace DotRPG
             if (!uploading) SendNext(retriedConflict: false);
         }
 
+        /// <summary>[J3] Sends a snapshot left over from a network failure right away (title / logout).</summary>
+        void FlushPending()
+        {
+            if (pendingUpload != null && !uploading) SendNext(retriedConflict: false);
+        }
+
+        void ScheduleUploadRetry()
+        {
+            if (retryScheduled) return;
+            retryScheduled = true;
+            float wait = UploadRetryDelays[Math.Min(networkFailures - 1, UploadRetryDelays.Length - 1)];
+            Api.StartCoroutine(After(wait, () =>
+            {
+                retryScheduled = false;
+                if (pendingUpload != null && !uploading) SendNext(retriedConflict: false);
+            }));
+        }
+
         static System.Collections.IEnumerator After(float seconds, Action action)
         {
             yield return new WaitForSecondsRealtime(seconds);
@@ -399,7 +423,7 @@ namespace DotRPG
             uploading = true;
             Api.Put($"/characters/{id}/state", ToState(data, stateVersion), r =>
             {
-                if (r.ok) stateVersion = MiniJson.Int(r.data, "version", stateVersion + 1);
+                if (r.ok) { stateVersion = MiniJson.Int(r.data, "version", stateVersion + 1); networkFailures = 0; }
                 else if (r.status == 429)
                 {
                     // 1 save per second per character: wait and send the newest snapshot.
@@ -419,7 +443,15 @@ namespace DotRPG
                 {
                     Debug.LogWarning($"[Online] state save failed: {r.status} {r.code} {r.message}");
                     if (r.code != null && r.code.StartsWith("INVALID_")) GameEvents.RaiseToast("서버 저장에 실패했습니다. (" + r.message + ")");
-                    else if (r.code == "NETWORK") GameEvents.RaiseToast("서버에 연결할 수 없어 저장하지 못했습니다.");
+                    else if (r.code == "NETWORK")
+                    {
+                        // [J3] Keep this snapshot unless a newer one already waits (an old state never overwrites a new one).
+                        if (pendingUpload == null) { pendingUpload = data; pendingId = id; }
+                        if (networkFailures++ == 0) GameEvents.RaiseToast("서버에 연결할 수 없어 저장하지 못했습니다. 연결되면 다시 저장합니다.");
+                        uploading = false;
+                        ScheduleUploadRetry();
+                        return;
+                    }
                 }
                 SendNext(retriedConflict: false);
             });
