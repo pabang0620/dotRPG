@@ -19,7 +19,7 @@ namespace DotRPG
     }
 
     /// <summary>Rolls the result cards from a dungeon's reward table × difficulty (plan §6.0 결과 화면).</summary>
-    public static class DungeonRewards
+    public static partial class DungeonRewards
     {
         public const int CardCount = 4;
         /// <summary>Weight given to gear without a monster drop weight (uniques, legendaries) in dungeon rolls.</summary>
@@ -27,6 +27,7 @@ namespace DotRPG
 
         public static List<RewardCard> RollCards(DungeonDef dungeon, DifficultyDef diff, CharacterClass cls, System.Random rng)
         {
+            if (dungeon.raidReward != null) return RollRaidCards(dungeon, cls, rng); // [RAID] 4 cards, all taken
             var table = new List<RewardEntry>(dungeon.rewards);
             if (diff.ticketWeight > 0) table.Add(new RewardEntry(ConsumableDatabase.ProtectTicket, 1, 1, diff.ticketWeight));
             int totalWeight = 0;
@@ -149,6 +150,7 @@ namespace DotRPG
         /// <summary>What a reward card can be, as slots for the select window: icon key, short name, highlighted.</summary>
         public static List<(string icon, string name, bool special)> Slots(DungeonDef dungeon, DifficultyDef diff, CharacterClass cls)
         {
+            if (dungeon.raidReward != null) return RaidSlots(dungeon, cls);
             var slots = new List<(string, string, bool)>();
             var seen = new HashSet<string>();
             foreach (var entry in dungeon.rewards)
@@ -182,6 +184,7 @@ namespace DotRPG
 
         public static string Preview(DungeonDef dungeon, DifficultyDef diff)
         {
+            if (dungeon.raidReward != null) return RaidPreview(dungeon);
             var names = new List<string>();
             foreach (var entry in dungeon.rewards)
             {

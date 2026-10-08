@@ -19,6 +19,11 @@ export interface RunRow {
   rank: number | null;
   cards: { item_key: string; count: number }[] | null;
   card_picked: number | null;
+  /** 13단계: pick_one 4장 중 1장 / take_all 4장 모두 받기(레이드) */
+  cards_mode: 'pick_one' | 'take_all';
+  /** take_all에서 이미 준 카드의 비트집합(비트 i = 카드 i, 15 = 4장 모두) */
+  cards_taken: number;
+  raid_gold: number;
   character_id: number;
   party_run_id: number | null;
   slot: number | null;
@@ -42,7 +47,7 @@ interface RawRun extends Omit<RunRow, 'id' | 'character_id' | 'party_run_id' | '
   power_cap: string | null;
 }
 const COLS = `id, uuid, character_id, dungeon_id, difficulty, party_size, state, reset_day, started_at, ended_at,
-              room_index, room_kills, rank, cards, card_picked, party_run_id, slot, humans, ai_count,
+              room_index, room_kills, rank, cards, card_picked, cards_mode, cards_taken, raid_gold, party_run_id, slot, humans, ai_count,
               counts_entry, reward_locked, lock_reason, power_cap, reported_outcome, reported_at, stats,
               xp_granted, score`;
 const toRun = (r: RawRun): RunRow => ({
@@ -154,6 +159,9 @@ export interface RunClose {
   cards: { item_key: string; count: number }[] | null;
   rewardLocked?: boolean;
   lockReason?: LockReason | null;
+  /** 13단계: 레이드 클리어 확정이면 'take_all'과 확정 골드 */
+  cardsMode?: 'pick_one' | 'take_all';
+  raidGold?: number;
   /** 9단계: 정산 때의 기여 판정 { share, hits, source, met }(관리자 검토용) */
   contribution?: Record<string, unknown> | null;
 }
@@ -165,7 +173,9 @@ export async function closeRun(client: PoolClient, runId: number, c: RunClose): 
             xp_granted = $7, hold_reason = $8, cards = $9::jsonb,
             reward_locked = COALESCE($10, reward_locked),
             lock_reason = CASE WHEN $10::boolean IS NULL THEN lock_reason ELSE $11 END,
-            contribution = COALESCE($12::jsonb, contribution)
+            contribution = COALESCE($12::jsonb, contribution),
+            cards_mode = COALESCE($13, cards_mode),
+            raid_gold = COALESCE($14, raid_gold)
       WHERE id = $1`,
     [
       runId,
@@ -180,6 +190,8 @@ export async function closeRun(client: PoolClient, runId: number, c: RunClose): 
       c.rewardLocked ?? null,
       c.lockReason ?? null,
       c.contribution ? JSON.stringify(c.contribution) : null,
+      c.cardsMode ?? null,
+      c.raidGold ?? null,
     ],
   );
 }
@@ -218,6 +230,16 @@ export async function setCardPicked(client: PoolClient, runId: number, index: nu
     index,
     at,
   ]);
+}
+
+/** 13단계: take_all 카드 한 장을 받았다고 표시한다. 이미 받은 비트면 false(영향 행 0) */
+export async function takeCard(client: PoolClient, runId: number, bit: number, at: Date): Promise<boolean> {
+  const r = await client.query(
+    `UPDATE dungeon_runs SET cards_taken = cards_taken | $2::smallint, cards_taken_at = $3
+      WHERE id = $1 AND (cards_taken & $2::smallint) = 0`,
+    [runId, bit, at],
+  );
+  return (r.rowCount ?? 0) > 0;
 }
 
 export async function clearSummary(
@@ -268,13 +290,35 @@ export async function partyRunUuid(db: Queryable, partyRunId: number): Promise<s
   return r.rows[0]?.uuid ?? null;
 }
 
-/** 카드를 아직 고르지 않은 클리어 판(보류 해제로 늦게 확정된 판 포함). since 이후에 끝난 것만 */
-export async function unpickedRuns(db: Queryable, characterId: number, since: Date): Promise<{ uuid: string; ended_at: Date }[]> {
-  const r = await db.query<{ uuid: string; ended_at: Date }>(
-    `SELECT uuid, ended_at FROM dungeon_runs
-      WHERE character_id = $1 AND state = 'cleared' AND cards IS NOT NULL AND card_picked IS NULL AND ended_at > $2
+/** 받지 않은 카드가 남은 클리어 판(보류 해제로 늦게 확정된 판 포함). since 이후에 끝난 것만. 조건은 0028 부분 인덱스와 같다 */
+export async function unpickedRuns(
+  db: Queryable,
+  characterId: number,
+  since: Date,
+): Promise<{ uuid: string; ended_at: Date; cards_mode: 'pick_one' | 'take_all'; cards_taken: number; card_count: number }[]> {
+  const r = await db.query<{ uuid: string; ended_at: Date; cards_mode: 'pick_one' | 'take_all'; cards_taken: number; card_count: number }>(
+    `SELECT uuid, ended_at, cards_mode, cards_taken, jsonb_array_length(cards) AS card_count FROM dungeon_runs
+      WHERE character_id = $1 AND state = 'cleared' AND cards IS NOT NULL AND ended_at > $2
+        AND ((cards_mode = 'pick_one' AND card_picked IS NULL) OR (cards_mode = 'take_all' AND cards_taken <> 15))
       ORDER BY ended_at DESC LIMIT 20`,
     [characterId, since],
+  );
+  return r.rows;
+}
+
+/** 서버 틱 대상: 끝난 지 cutoff 이전이고 받지 않은 카드가 남은 클리어 판 */
+export async function pendingCardRuns(
+  db: Queryable,
+  cutoff: Date,
+  limit: number,
+): Promise<{ uuid: string; account_id: string; char_uuid: string }[]> {
+  const r = await db.query<{ uuid: string; account_id: string; char_uuid: string }>(
+    `SELECT d.uuid, c.account_id, c.uuid AS char_uuid
+       FROM dungeon_runs d JOIN characters c ON c.id = d.character_id
+      WHERE d.state = 'cleared' AND d.cards IS NOT NULL AND d.ended_at < $1
+        AND ((d.cards_mode = 'pick_one' AND d.card_picked IS NULL) OR (d.cards_mode = 'take_all' AND d.cards_taken <> 15))
+      ORDER BY d.ended_at LIMIT $2`,
+    [cutoff, limit],
   );
   return r.rows;
 }

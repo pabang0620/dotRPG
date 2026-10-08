@@ -27,6 +27,7 @@ namespace DotRPG
         public OnlineLoginScreen OnlineLogin { get; private set; }       // [SERVER]
         public OnlineCharacterScreen OnlineCharacters { get; private set; }
         public OnlineCreateScreen OnlineCreate { get; private set; }
+        public WithdrawalScreen Withdrawal { get; private set; }         // [W2]
         public SaveSlotScreen Slots { get; private set; }
         public HelpScreen Help { get; private set; }
         public ControlsScreen Controls { get; private set; }
@@ -130,6 +131,7 @@ namespace DotRPG
             ui.OnlineLogin = OnlineLoginScreen.Create(t, ui); // [SERVER]
             ui.OnlineCharacters = OnlineCharacterScreen.Create(t, ui);
             ui.OnlineCreate = OnlineCreateScreen.Create(t, ui);
+            ui.Withdrawal = WithdrawalScreen.Create(t, ui); // [W2]
             ui.Slots = SaveSlotScreen.Create(t, ui); // [I]
             ui.Help = HelpScreen.Create(t, ui); // [E5]
             ui.Controls = ControlsScreen.Create(t, ui);
@@ -239,7 +241,7 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
+            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Withdrawal, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
             if (Cosmetics != null) Cosmetics.Hide();

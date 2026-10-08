@@ -16,6 +16,8 @@ namespace DotRPG
         public Dictionary<string, object> errors;
         public string code;
         public string message;
+        /// <summary>Seconds from the Retry-After header (429 / 503), 0 when absent.</summary>
+        public float retryAfter;
 
         public static ApiResult Network(string message) => new ApiResult { ok = false, status = 0, code = "NETWORK", message = message };
     }
@@ -112,6 +114,41 @@ namespace DotRPG
         public void Patch(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("PATCH", path, body, auth, done, true));
         public void Delete(string path, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("DELETE", path, null, auth, done, true));
 
+        /// <summary>
+        /// [J2] POST for a body that carries a request_id (money paths). A lost answer (NETWORK) is sent again up to 3 times
+        /// after 1 s, 2 s, 4 s with the SAME body and request_id, so the server replays the stored result instead of granting twice.
+        /// 429 / 503 with a Retry-After header wait that long (at most 10 s) and use the same 3 tries. Other refusals (4xx) are never resent.
+        /// A body without request_id is sent once.
+        /// </summary>
+        public void PostIdempotent(string path, Dictionary<string, object> body, Action<ApiResult> done) => StartCoroutine(SendIdempotent(path, body, done));
+
+        static readonly float[] IdempotentDelays = { 1f, 2f, 4f };
+        const float MaxRetryAfterSeconds = 10f;
+
+        IEnumerator SendIdempotent(string path, Dictionary<string, object> body, Action<ApiResult> done)
+        {
+            bool keyed = body != null && body.ContainsKey("request_id");
+            for (int attempt = 0; ; attempt++)
+            {
+                ApiResult result = null;
+                yield return Send("POST", path, body, true, r => result = r, true);
+                float wait = -1f;
+                if (keyed && attempt < IdempotentDelays.Length)
+                {
+                    if (result.code == "NETWORK") wait = IdempotentDelays[attempt];
+                    else if ((result.status == 429 || result.status == 503) && result.retryAfter > 0f) wait = Mathf.Min(result.retryAfter, MaxRetryAfterSeconds);
+                }
+                if (wait < 0f)
+                {
+                    // The server may have processed it: the answer was lost, not necessarily the action.
+                    if (keyed && result.code == "NETWORK") result.message = "결과를 확인하는 중 연결이 끊겼습니다. 다시 접속하면 반영됩니다.";
+                    done?.Invoke(result);
+                    yield break;
+                }
+                yield return new WaitForSecondsRealtime(wait);
+            }
+        }
+
         IEnumerator Send(string method, string path, object body, bool auth, Action<ApiResult> done, bool mayRefresh)
         {
             ApiResult result = null;
@@ -183,6 +220,7 @@ namespace DotRPG
                 result.data = MiniJson.Obj(json, "data");
                 result.errors = MiniJson.Obj(json, "errors");
                 result.code = MiniJson.Str(result.errors, "code");
+                if (float.TryParse(req.GetResponseHeader("Retry-After"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float after) && after > 0f) result.retryAfter = after;
                 result.message = MiniJson.Str(json, "message") ?? (result.ok ? "" : $"서버 오류 ({req.responseCode})");
                 if (!result.ok && result.status == 426) result.code = result.code ?? "CLIENT_OUTDATED";
                 if (result.code == "SESSION_REPLACED" && Time.unscaledTime - replacedAt > 5f)

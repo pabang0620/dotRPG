@@ -113,7 +113,7 @@ namespace DotRPG
         {
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다.", null); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["rarity"] = rarity, ["times"] = times };
-            Api.Post(Base + "/synth", body, r =>
+            Api.PostIdempotent(Base + "/synth", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "합성하지 못했습니다." : r.message, null); return; }
                 var list = new List<StarSynthResult>();
@@ -128,7 +128,7 @@ namespace DotRPG
         {
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다.", 0); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["item_id"] = itemId, ["count"] = count };
-            Api.Post(Base + "/dismantle", body, r =>
+            Api.PostIdempotent(Base + "/dismantle", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "분해하지 못했습니다." : r.message, 0); return; }
                 int stars = MiniJson.Int(r.data, "stars");
@@ -141,7 +141,7 @@ namespace DotRPG
         {
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["set_id"] = setId };
-            Api.Post(Base + "/collection", body, r =>
+            Api.PostIdempotent(Base + "/collection", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "등록하지 못했습니다." : r.message); return; }
                 _ = RefreshAfter(() => done?.Invoke(true, ""));

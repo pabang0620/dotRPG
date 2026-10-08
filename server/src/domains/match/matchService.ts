@@ -1,5 +1,6 @@
 // 자동 매칭(M1~M3)과 1초 틱. 대기열은 QueueStore(메모리), 맞춰진 결과만 parties 행이 된다.
 import { getConfig } from '../../config/env';
+import { REQUEST_LOG_UNIQUE, findRequest, hashRequest, saveRequest } from '../../db/idempotency';
 import { getPool, isUniqueViolation, withTransaction } from '../../db/pool';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
@@ -89,7 +90,31 @@ export async function cancelQueue(accountId: number, characterUuid: string) {
 
 // ---------- M3 POST /match/fill-ai ----------
 
-export async function fillAi(accountId: number, characterUuid: string, _body: RequestOnlyBody) {
+const FILL_ENDPOINT = 'POST /characters/:uuid/match/fill-ai';
+
+/** 같은 request_id 재전송은 저장된 첫 결과를 돌려준다(클라이언트 재시도용). 실패 응답은 저장하지 않는다 */
+export async function fillAi(accountId: number, characterUuid: string, body: RequestOnlyBody) {
+  const hash = hashRequest({ endpoint: FILL_ENDPOINT, character: characterUuid, payload: {} });
+  const replayOf = (st: NonNullable<Awaited<ReturnType<typeof findRequest>>>) => {
+    if (st.requestHash !== hash || st.endpoint !== FILL_ENDPOINT) {
+      throw new AppError(422, '같은 request_id로 다른 요청을 보낼 수 없습니다.', 'IDEMPOTENCY_MISMATCH');
+    }
+    return (st.response as { data: unknown }).data;
+  };
+  const prior = await findRequest(getPool(), accountId, body.request_id);
+  if (prior) return replayOf(prior);
+  const data = await processFillAi(accountId, characterUuid);
+  try {
+    await saveRequest(getPool(), accountId, body.request_id, FILL_ENDPOINT, hash, 201, { success: true, message: '', data });
+  } catch (err) {
+    if (!isUniqueViolation(err, REQUEST_LOG_UNIQUE)) throw err;
+    const stored = await findRequest(getPool(), accountId, body.request_id);
+    if (stored) return replayOf(stored);
+  }
+  return data;
+}
+
+async function processFillAi(accountId: number, characterUuid: string) {
   const c = await charRepo.findOwnedAlive(getPool(), accountId, characterUuid);
   if (!c) throw new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
   const ticket = getQueueStore().get(c.id);

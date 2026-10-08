@@ -165,6 +165,19 @@ dotRPG.exe -dotrpgNetPair <폴더> -dotrpgNet host   # 창 2개: 하나는 host,
 dotRPG.exe -dotrpgNetPair <폴더> -dotrpgNet join   #         하나는 join
 ```
 
+### 장시간 점검 (soak)
+
+```
+dotRPG.exe -dotrpgSoak [분, 기본 60] [-soakOut <절대경로>]
+```
+
+새 로컬 전사가 해골 숲에서 치트 없이 자동 사냥을 합니다. 5분마다 가방·스킬·지도·퀘스트·상점·창고·강화·설정 창을 열고 닫고, 15분마다 요일 던전 1판(일반)을 돕니다. 세이브는 결과 폴더의 `saves/`에만 쓰므로 실제 슬롯은 건드리지 않습니다. 결과 폴더 기본값은 `Application.persistentDataPath/soak`입니다.
+
+- `soak.csv`: 1분마다 한 줄 (경과 분, 처치 누적·분당, GC·Unity 할당·mono MB, 프레임 평균·최악 ms, GameObject 수, 세이브 바이트, 맵, 사망 수)
+- `soak_report.txt`: PASS/FAIL과 이유. FAIL은 처음 10분 평균 대비 마지막 10분 평균 메모리(세 종 중 하나)가 20% 넘게 늘었거나, 5분 이상 처치가 0일 때
+- `report.txt`: 진행 로그와 경고·오류. 끝나면 스스로 종료합니다. 출시 빌드(`DOTRPG_RELEASE`)에는 없습니다.
+- 편의: `Builds\장시간점검.bat` (`Builds\Windows\dotRPG.exe`를 `-dotrpgSoak 60`으로 실행, 결과는 `Builds\SoakResult`)
+
 ## 8. 아직 하지 않은 것
 
 - 서버 실제 배포(업체·도메인 미정). 배포 절차는 `server/ops/README.md`에 준비되어 있음

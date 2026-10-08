@@ -63,6 +63,7 @@ namespace DotRPG.EditorTools
                 ["chat.json"] = ChatJson(), // [SERVER 5] chat limits and report reasons
                 ["auction.json"] = AuctionJson(), // [SERVER 6] auction house rules
                 ["sweep.json"] = SweepJson(), // [SWEEP] clear ticket rules (phase10 10)
+                ["raid_shop.json"] = RaidShopJson(), // [RAID] raid shop products (phase13 5.4)
             };
 
             using (var sha = SHA256.Create())
@@ -99,7 +100,7 @@ namespace DotRPG.EditorTools
             var rows = new List<(string id, string kind, bool stackable)>();
             foreach (var e in EquipmentDatabase.All) rows.Add((e.id, "equipment", false));
             foreach (var m in EquipmentDatabase.AllMaterials) rows.Add((m.id, "material", true));
-            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore })
+            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
             foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
@@ -133,7 +134,7 @@ namespace DotRPG.EditorTools
         /// <summary>[Phase 3] Store stock and prices, equipment details and trade binding.</summary>
         static string Shop()
         {
-            var j = Doc().Num("enhancedSellBonusPerLevel", 0.25).Str("sellRounding", "awayFromZero"); // ItemPrices.SellPrice
+            var j = Doc().Num("enhancedSellBonusPerLevel", 0.25).Num("enhancedSellGoldRatio", ItemPrices.EnhancedSellGoldRatio).Str("sellRounding", "awayFromZero"); // ItemPrices.SellPrice
             j.Arr("stock", ItemPrices.ShopStock, (o, id) => o.Obj().Str("id", id).Num("buyPrice", ItemPrices.BuyPrice(id)).End());
             j.Arr("equipment", EquipmentDatabase.All, (o, e) => o.Obj()
                 .Str("id", e.id).Str("category", e.category.ToString()).Str("rarity", e.rarity.ToString())
@@ -394,6 +395,7 @@ namespace DotRPG.EditorTools
                 {
                     o.Key("raidNumbers"); Difficulty(o, DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal));
                     o.Num("keyMin", d.keyMin).Num("keyMax", d.keyMax); // [SERVER 4] mid raids drop seal key fragments
+                    if (d.raidReward != null) RaidRewardJson(o, d.raidReward); // [RAID] sure gold + cards (phase13 6.1); "rewards" above is empty for these
                 }
                 return o.End();
             });

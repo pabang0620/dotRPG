@@ -56,6 +56,13 @@ namespace DotRPG
             {
                 run.XpGained = auth.ClearXp(run, run.Rank);
                 if (run.XpGained > 0) Game.Session.Progression.AddXp(run.XpGained);
+                // [RAID] The sure gold first (it is paid even if no card is flipped), then four cards that are all taken.
+                if (run.Dungeon.raidReward != null)
+                {
+                    run.RaidGold = auth.RaidGold(run);
+                    if (run.RaidGold > 0) Game.Session.Inventory.Add(ConsumableDatabase.Gold, run.RaidGold);
+                    run.CardsTakeAll = true;
+                }
                 run.Cards = auth.DealCards(run, Game.Player.Class);
                 if (run.Dungeon.isRaid)
                 {
@@ -111,8 +118,12 @@ namespace DotRPG
                 else if (run.Dungeon.isRaid)
                 {
                     Progress.ClaimRaid(run.Dungeon, ResetClock.Now); // the server paid this period's reward
-                    int cores = MiniJson.Int(raid, "core_gain");
-                    if (cores > 0) GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 씁니다)");
+                    run.RaidGold = MiniJson.Int(raid, "gold_gain");
+                    run.RaidCoreGain = MiniJson.Int(raid, "core_gain");
+                    run.RaidKeyGain = MiniJson.Int(raid, "key_gain");
+                    // A missing card_mode counts as the old pick-one raid (a run closed before the server change).
+                    run.CardsTakeAll = MiniJson.Str(raid, "card_mode", "pick_one") == "take_all" && run.Cards != null;
+                    if (!run.CardsTakeAll && run.RaidCoreGain > 0) GameEvents.RaiseToast($"고대의 핵 +{run.RaidCoreGain} (대장간에서 장비 승급에 씁니다)");
                 }
             }
             else
@@ -128,10 +139,26 @@ namespace DotRPG
             ShowResult();
         }
 
-        /// <summary>[SERVER] Flips card <paramref name="index"/> on the server; done(own card or null). All four cards are filled in.</summary>
+        /// <summary>
+        /// [SERVER] Flips card <paramref name="index"/> on the server; done(own card or null). A pick-one run gets all four
+        /// cards filled in; a raid (take all) gets only this card, one request per card.
+        /// </summary>
         public void TakeCardOnline(int index, Action<RewardCard?> done)
         {
             var current = run;
+            if (current != null && current.CardsTakeAll)
+            {
+                OnlineEconomy.FlipRaidCard(index, card =>
+                {
+                    if (card.HasValue && current.Cards != null && index >= 0 && index < current.Cards.Count)
+                    {
+                        current.Cards[index] = card.Value;
+                        current.TakenMask |= 1 << index;
+                    }
+                    done?.Invoke(card);
+                });
+                return;
+            }
             OnlineEconomy.PickCard(index, (own, all) =>
             {
                 if (current != null && all != null && current.Cards != null)
@@ -153,14 +180,16 @@ namespace DotRPG
             {
                 int keys = UnityEngine.Random.Range(raid.keyMin, raid.keyMax + 1);
                 bag.Add(DungeonDatabase.SealKey, keys);
-                GameEvents.RaiseToast($"봉인 열쇠 조각 +{keys} (보유 {bag.Count(DungeonDatabase.SealKey)})");
+                if (run != null) run.RaidKeyGain = keys;
+                if (run == null || !run.CardsTakeAll) GameEvents.RaiseToast($"봉인 열쇠 조각 +{keys} (보유 {bag.Count(DungeonDatabase.SealKey)})");
             }
             int cores = PromoteRules.CoreGain(raid, run != null ? run.Difficulty : DungeonDifficulty.Normal);
             if (cores > 0)
             {
                 bag.Add(DungeonDatabase.RaidCore, cores);
-                GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 씁니다)");
+                if (run == null || !run.CardsTakeAll) GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 씁니다)");
             }
+            if (run != null) run.RaidCoreGain = cores;
         }
 
         // =============================== Death / revive / failure ===============================

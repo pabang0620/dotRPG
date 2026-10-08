@@ -43,6 +43,7 @@ namespace DotRPG.EditorTools
             PlayerSettings.visibleInBackground = true;
             PlayerSettings.allowFullscreenSwitch = true;
             PlayerSettings.usePlayerLog = true;
+            ApplyAppIcon();
 
             if (File.Exists(MainScene))
             {
@@ -50,7 +51,25 @@ namespace DotRPG.EditorTools
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[dotRPG] Project settings applied (product name, PC window defaults, build scenes).");
+            Debug.Log("[dotRPG] Project settings applied (product name, PC window defaults, icon, build scenes).");
+        }
+
+        /// <summary>Game icon for the exe, taskbar and window title bar (instead of the Unity logo).</summary>
+        public const string AppIcon = "Assets/Art/AppIcon/app_icon_1024.png";
+
+        static void ApplyAppIcon()
+        {
+            if (!File.Exists(AppIcon)) return;
+            AssetDatabase.ImportAsset(AppIcon);
+            if (AssetImporter.GetAtPath(AppIcon) is TextureImporter importer
+                && (importer.textureCompression != TextureImporterCompression.Uncompressed || importer.mipmapEnabled))
+            {
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.mipmapEnabled = false;
+                importer.SaveAndReimport();
+            }
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(AppIcon);
+            if (icon != null) PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
         }
     }
 }

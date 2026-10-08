@@ -25,7 +25,7 @@ afterAll(async () => {
 describe('확률 표', () => {
   it('일반 표와 부스터 표 모두 합이 100, 부스터는 희귀 이상 x2·일반 비례 축소·수량 x2', () => {
     const d = getSealedBox();
-    expect(d.rows.length).toBe(14);
+    expect(d.rows.length).toBe(13);
     const sum = (t: { rate: number }[]) => t.reduce((a, r) => a + r.rate, 0);
     const normal = sealedTable(d, false);
     const boosted = sealedTable(d, true);
@@ -46,8 +46,8 @@ describe('확률 표', () => {
     const r = await sealedInfo(app, pl);
     expect(r.status).toBe(200);
     expect(r.body.data).toMatchObject({ price_one: 100, price_eleven: 1000, booster: { gauge: 0, next_boosted: false } });
-    expect(r.body.data.table).toHaveLength(14);
-    expect(r.body.data.boosted_table).toHaveLength(14);
+    expect(r.body.data.table).toHaveLength(13);
+    expect(r.body.data.boosted_table).toHaveLength(13);
     expect(r.body.data.table[0]).toMatchObject({ item_key: 'potion_hp_hi', count: 5, tier: 'common' });
     expect(r.body.data.boosted_table[0].count).toBe(10);
   });
@@ -118,18 +118,6 @@ describe('뽑기', () => {
     const twelfth = await sealed.pull(pl.p.accountId, pl.hero.id, { request_id: randomUUID(), count: 1 });
     expect((twelfth.body.data as { results: { boosted: boolean }[] }).results[0]!.boosted).toBe(false);
     expect(await countOf(pl.hero, 'ticket_protect')).toBe(10 + 2 + 1);
-  });
-
-  it('던전 클리어권 칸은 가방이 아니라 계정 클리어권 지갑으로 간다', async () => {
-    const pl = await newPlayer(app, 200);
-    scriptRng([rollOf('sweep_x2', false)]);
-    const r = await pullApi(app, pl, 1);
-    expect(r.status).toBe(200);
-    expect(await countOf(pl.hero, 'ticket_sweep')).toBe(0);
-    const lot = await getPool().query<{ remaining: number }>("SELECT remaining FROM sweep_ticket_lots WHERE account_id = $1 AND kind = 'normal'", [pl.p.accountId]);
-    expect(lot.rows[0]!.remaining).toBe(2);
-    const led = await getPool().query("SELECT reason, delta FROM sweep_ticket_ledger WHERE account_id = $1", [pl.p.accountId]);
-    expect(led.rows).toEqual([{ reason: 'sealed_box', delta: 2 }]);
   });
 
   it('같은 request_id 재전송: 같은 결과, 한 번만 차감·지급', async () => {

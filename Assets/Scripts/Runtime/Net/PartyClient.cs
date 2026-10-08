@@ -263,7 +263,7 @@ namespace DotRPG
             string full = Char + path;
             switch (method)
             {
-                case "POST": Api.Post(full, body, handle); break;
+                case "POST": Api.PostIdempotent(full, body, handle); break;
                 case "PATCH": Api.Patch(full, body, handle); break;
                 case "DELETE": Api.Delete(full, handle); break;
             }
@@ -308,7 +308,7 @@ namespace DotRPG
         public void StartRun(int aiCount, Action<bool, string> done)
         {
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["ai_count"] = Mathf.Clamp(aiCount, 0, 3) };
-            Api.Post(Char + "/party/start", body, r =>
+            Api.PostIdempotent(Char + "/party/start", body, r =>
             {
                 // Only the leader gets the run key (it checks the members' entry tokens on its own PC).
                 if (r.ok) PartyRunSession.Observe(MiniJson.Obj(r.data, "run"), MiniJson.Str(r.data, "host_key"));

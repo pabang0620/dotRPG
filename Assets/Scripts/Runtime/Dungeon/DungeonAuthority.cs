@@ -16,6 +16,9 @@ namespace DotRPG
         /// <summary>Clear XP including the rank bonus.</summary>
         int ClearXp(DungeonRun run, DungeonRank rank);
 
+        /// <summary>[RAID] The sure gold of a rewarded raid clear (rolled before the cards).</summary>
+        int RaidGold(DungeonRun run);
+
         /// <summary>The four face-down reward cards (item ids and counts) for the local player's class.</summary>
         List<RewardCard> DealCards(DungeonRun run, CharacterClass cls);
 
@@ -41,6 +44,8 @@ namespace DotRPG
         }
 
         public int ClearXp(DungeonRun run, DungeonRank rank) => DungeonRewards.ClearXp(run.Dungeon, run.Numbers, rank);
+
+        public int RaidGold(DungeonRun run) => run.Dungeon.raidReward == null ? 0 : DungeonRewards.RollRaidGold(run.Dungeon.raidReward, rng);
 
         public List<RewardCard> DealCards(DungeonRun run, CharacterClass cls) => DungeonRewards.RollCards(run.Dungeon, run.Numbers, cls, rng);
 

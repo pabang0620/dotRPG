@@ -224,6 +224,10 @@ namespace DotRPG
                 case 4003: StopReason = StopReason ?? "이용이 정지되었습니다."; break;
                 case 4004: case 4005: case 4010: StopReason = StopReason ?? "채팅 서버 인증에 실패했습니다."; break;
                 case 4426: StopReason = StopReason ?? "게임을 업데이트해 주세요."; break;
+                case 4012: // the account asked to be withdrawn: no reconnect, back to the login screen
+                    StopReason = StopReason ?? "탈퇴 요청이 접수되어 접속이 종료되었습니다.";
+                    OnlineSession.EndByWithdrawal(openLogin: true);
+                    break;
                 case 4002: // token expired: refresh, then come back right away
                     var api = ApiClient.Instance;
                     api.StartCoroutine(api.RefreshOnce(ok => { retryAt = 0f; if (!ok) StopReason = "다시 로그인해 주세요."; }));

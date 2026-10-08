@@ -90,6 +90,7 @@ namespace DotRPG
             w.status = Label(d, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 22f), new Vector2(380f, 50f), TextAnchor.LowerLeft);
             w.enterButton = Button(d, "Enter", "입장", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 20f), new Vector2(240f, 62f), () => w.TryEnter(), 28);
             w.BuildSweep(d); // [SWEEP] "소탕" button and its panel over the detail
+            w.BuildRaidShop(d); // [RAID] "레이드 상점" button (raid tab) and its panel
             w.hint = Label(w.content, "Hint", "", 16, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(820f, 24f), TextAnchor.UpperRight);
             return w;
         }
@@ -269,7 +270,8 @@ namespace DotRPG
                 }
                 raidLine.text = $"{state}\n{how}";
             }
-            rewards.text = $"<color=#ffe066>보상</color>  카드 4장 중 1장   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";
+            string cardRule = def.raidReward != null ? "확정 골드 + 카드 4장 모두" : "카드 4장 중 1장";
+            rewards.text = $"<color=#ffe066>보상</color>  {cardRule}   <color=#b8c4d8>클리어 경험치 {Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level)} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>";
             var list2 = DungeonRewards.Slots(def, numbers, cls);
             for (int i = 0; i < slots.Count; i++)
             {
@@ -291,8 +293,10 @@ namespace DotRPG
             enterButton.image.sprite = Game.Art.Get(practice != null ? "ui_btngray" : "ui_btn");
             TextOf(enterButton).text = practice != null ? "연습 입장" : "입장";
             RefreshSweep(); // sets whether 소탕 shows, which the hint below follows
+            RefreshRaidShopButton(); // [RAID] 레이드 상점 takes 소탕's place on the raid tab
             var input = Game.Input;
             string sweepKey = sweepButton != null && sweepButton.gameObject.activeSelf ? $"   {input.GetBindingLabel(GameAction.UseItem)} 소탕" : "";
+            sweepKey += RaidShopKeyHint();
             hint.text = $"<color=#b8c4d8>↑/↓ 던전   ←/→ 난이도   {input.GetBindingLabel(GameAction.Submit)} 입장   Tab / LB·RB 탭 전환{sweepKey}   {input.GetBindingLabel(GameAction.UseMana)} 파티 편성   {input.GetBindingLabel(GameAction.Cancel)} 닫기</color>";
             TextOf(partyButton).text = $"파티 편성 <size=15><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
         }
@@ -357,6 +361,7 @@ namespace DotRPG
                 if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) CloseSweep();
                 return;
             }
+            if (RaidShopOpen) { RaidShopInput(); return; } // [RAID] the shop panel (and its box popup) takes the keys
             base.Update();
             if (!TakesInput || !gameObject.activeInHierarchy) return;
             var input = Game.Input;
@@ -381,6 +386,7 @@ namespace DotRPG
             else if (input.SubmitPressed) TryEnter();
             // [UX] The mouse-only buttons get keys too: 1 / Y 소탕 (weekday dungeons online), 2 / L3 파티 편성.
             else if (input.UseItemPressed && sweepButton != null && sweepButton.gameObject.activeInHierarchy) OpenSweep();
+            else if (input.UseItemPressed && raidShopButton != null && raidShopButton.gameObject.activeInHierarchy) OpenRaidShop();
             else if (input.UseManaPressed) { Game.Audio.PlaySfx("select"); Game.Flow.OpenWindow(Game.UI.Party); }
         }
 

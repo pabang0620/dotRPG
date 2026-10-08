@@ -48,7 +48,11 @@ namespace DotRPG
             sweepPanel.gameObject.SetActive(false);
         }
 
-        void OnDisable() { if (sweepPanel != null) sweepPanel.gameObject.SetActive(false); }
+        void OnDisable()
+        {
+            if (sweepPanel != null) sweepPanel.gameObject.SetActive(false);
+            CloseRaidShopQuiet(); // [RAID]
+        }
 
         bool SweepOpen => sweepPanel != null && sweepPanel.gameObject.activeSelf;
 

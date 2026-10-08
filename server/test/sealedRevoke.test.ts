@@ -37,25 +37,22 @@ async function refundAndRevoke(owner: Awaited<ReturnType<typeof makeAdmin>>, p: 
 }
 
 describe('결과물 회수 14단계', () => {
-  it('봉인된 상자 뽑기: 남은 아이템·클리어권을 걷고, 이미 쓴 만큼은 모자란 수량으로 보고한다', async () => {
+  it('봉인된 상자 뽑기: 남은 아이템을 걷고, 이미 쓴 만큼은 모자란 수량으로 보고한다', async () => {
     const owner = await makeAdmin('owner');
     const p = await newPayer(app);
     const hero = await heroOf(app, p);
     const o = await purchase(app, p, 'stars_1000');
-    scriptRng([rollOf('sweep_x2', false), ...Array<number>(9).fill(rollOf('potion_hi_x5', false)), rollOf('potion_hi_x5', true)]);
+    scriptRng([...Array<number>(10).fill(rollOf('potion_hi_x5', false)), rollOf('potion_hi_x5', true)]);
     const pull = await post(app, hero, '/starshop/sealed/pull', { count: 11 });
     expect(pull.status).toBe(200);
-    expect(await countOf(hero, 'potion_hp_hi')).toBe(55);
-    // 일부를 이미 썼다: 상급 체력 물약 5개, 클리어권 1장
+    expect(await countOf(hero, 'potion_hp_hi')).toBe(60);
+    // 일부를 이미 썼다: 상급 체력 물약 5개
     await getPool().query("UPDATE character_items SET count = count - 5 WHERE character_id = $1 AND item_key = 'potion_hp_hi'", [hero.dbId]);
-    await getPool().query("UPDATE sweep_ticket_lots SET remaining = 1 WHERE account_id = $1", [p.accountId]);
     const r = await refundAndRevoke(owner, p, o);
-    expect(r.preview.sweep_tickets).toBe(2);
-    expect(r.applied).toMatchObject({ gear_removed: 105, gear_shortfall: 5, sweep_tickets_removed: 1, sweep_shortfall: 1 });
+    expect(r.preview.sweep_tickets).toBe(0);
+    expect(r.applied).toMatchObject({ gear_removed: 115, gear_shortfall: 5, sweep_tickets_removed: 0, sweep_shortfall: 0 });
     expect(await countOf(hero, 'potion_hp_hi')).toBe(0);
     expect(await countOf(hero, 'potion_mp_hi')).toBe(0);
-    const lot = await getPool().query<{ remaining: number }>('SELECT remaining FROM sweep_ticket_lots WHERE account_id = $1', [p.accountId]);
-    expect(lot.rows[0]!.remaining).toBe(0);
   });
 
   it('성장 패스: 보유·수령 기록을 지우고 받은 보상을 걷는다(쓴 만큼은 모자란 수량)', async () => {

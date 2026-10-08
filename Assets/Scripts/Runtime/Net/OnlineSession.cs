@@ -12,7 +12,7 @@ namespace DotRPG
     /// <see cref="Playing"/> is true, saves go to <c>PUT /characters/{id}/state</c> instead of a file.
     /// Phase 2: level, XP, gold and items are read-only server values (phase 3 moves their changes to the server).
     /// </summary>
-    public sealed class OnlineSession
+    public sealed partial class OnlineSession
     {
         public sealed class CharacterSummary
         {
@@ -33,14 +33,6 @@ namespace DotRPG
         public int CharacterLimit { get; private set; } = 4;
         public readonly List<CharacterSummary> Characters = new List<CharacterSummary>();
         public string ActiveCharacter { get; private set; }
-        int stateVersion;
-        bool uploading;
-        SaveData pendingUpload;
-        string pendingId;
-        // [J3] Network failures: the newest snapshot stays queued and goes out again after a growing pause.
-        int networkFailures;
-        bool retryScheduled;
-        static readonly float[] UploadRetryDelays = { 5f, 15f, 30f, 60f };
 
         static ApiClient Api => ApiClient.Instance;
 
@@ -213,7 +205,10 @@ namespace DotRPG
         }
 
         /// <summary>Loads a character's detail and turns it into SaveData for the normal restore path.</summary>
-        public void EnterCharacter(string id, Action<ApiResult, SaveData> done)
+        public void EnterCharacter(string id, Action<ApiResult, SaveData> done) =>
+            WhenUploadsSent(SwitchWaitSeconds, () => EnterCharacterNow(id, done)); // [J3] the previous character's waiting state goes out first
+
+        void EnterCharacterNow(string id, Action<ApiResult, SaveData> done)
         {
             Api.Get("/characters/" + id, r =>
             {
@@ -226,7 +221,7 @@ namespace DotRPG
                     if (!ok) { done(new ApiResult { ok = false, code = "DEVICE_LIMIT", message = refusal }, null); return; }
                     ActiveCharacter = id;
                     Game.State?.RefreshTimeScale();
-                    stateVersion = MiniJson.Int(MiniJson.Obj(detail, "state"), "version");
+                    stateVersions[id] = MiniJson.Int(MiniJson.Obj(detail, "state"), "version");
                     done(r, save);
                 });
             });
@@ -374,87 +369,6 @@ namespace DotRPG
                 ["skill_gems"] = gems,
                 ["career"]=MiniJson.Parse(JsonUtility.ToJson(d.career??new CareerSave())),
             };
-        }
-
-        // ---------------- saving ----------------
-
-        /// <summary>
-        /// Called by SaveSystem.Write while <see cref="Playing"/>. Uploads run one at a time; a save that comes in
-        /// meanwhile replaces the waiting one (only the newest snapshot matters).
-        /// </summary>
-        public void UploadState(SaveData data)
-        {
-            if (ActiveCharacter == null) return;
-            pendingUpload = data;
-            pendingId = ActiveCharacter;
-            if (!uploading) SendNext(retriedConflict: false);
-        }
-
-        /// <summary>[J3] Sends a snapshot left over from a network failure right away (title / logout).</summary>
-        void FlushPending()
-        {
-            if (pendingUpload != null && !uploading) SendNext(retriedConflict: false);
-        }
-
-        void ScheduleUploadRetry()
-        {
-            if (retryScheduled) return;
-            retryScheduled = true;
-            float wait = UploadRetryDelays[Math.Min(networkFailures - 1, UploadRetryDelays.Length - 1)];
-            Api.StartCoroutine(After(wait, () =>
-            {
-                retryScheduled = false;
-                if (pendingUpload != null && !uploading) SendNext(retriedConflict: false);
-            }));
-        }
-
-        static System.Collections.IEnumerator After(float seconds, Action action)
-        {
-            yield return new WaitForSecondsRealtime(seconds);
-            action();
-        }
-
-        void SendNext(bool retriedConflict)
-        {
-            var data = pendingUpload;
-            string id = pendingId;
-            if (data == null || id == null) { uploading = false; return; }
-            pendingUpload = null;
-            uploading = true;
-            Api.Put($"/characters/{id}/state", ToState(data, stateVersion), r =>
-            {
-                if (r.ok) { stateVersion = MiniJson.Int(r.data, "version", stateVersion + 1); networkFailures = 0; }
-                else if (r.status == 429)
-                {
-                    // 1 save per second per character: wait and send the newest snapshot.
-                    if (pendingUpload == null) { pendingUpload = data; pendingId = id; }
-                    ApiClient.Instance.StartCoroutine(After(1.2f, () => SendNext(retriedConflict)));
-                    return;
-                }
-                else if (r.code == "VERSION_CONFLICT" && !retriedConflict)
-                {
-                    // Another session saved in between: this client's snapshot wins (non-economy state only).
-                    stateVersion = MiniJson.Int(r.errors, "current_version", stateVersion);
-                    if (pendingUpload == null) { pendingUpload = data; pendingId = id; }
-                    SendNext(retriedConflict: true);
-                    return;
-                }
-                else
-                {
-                    Debug.LogWarning($"[Online] state save failed: {r.status} {r.code} {r.message}");
-                    if (r.code != null && r.code.StartsWith("INVALID_")) GameEvents.RaiseToast("서버 저장에 실패했습니다. (" + r.message + ")");
-                    else if (r.code == "NETWORK")
-                    {
-                        // [J3] Keep this snapshot unless a newer one already waits (an old state never overwrites a new one).
-                        if (pendingUpload == null) { pendingUpload = data; pendingId = id; }
-                        if (networkFailures++ == 0) GameEvents.RaiseToast("서버에 연결할 수 없어 저장하지 못했습니다. 연결되면 다시 저장합니다.");
-                        uploading = false;
-                        ScheduleUploadRetry();
-                        return;
-                    }
-                }
-                SendNext(retriedConflict: false);
-            });
         }
     }
 }

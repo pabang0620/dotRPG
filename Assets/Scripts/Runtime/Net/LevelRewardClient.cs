@@ -85,7 +85,7 @@ namespace DotRPG
             if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
             Busy = true;
             body["request_id"] = ApiClient.NewRequestId();
-            Api.Post(path, body, r =>
+            Api.PostIdempotent(path, body, r =>
             {
                 Busy = false;
                 if (!r.ok)
@@ -117,7 +117,7 @@ namespace DotRPG
             if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
             Busy = true;
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["level"] = level };
-            Api.Post("/level-rewards/claim", body, r =>
+            Api.PostIdempotent("/level-rewards/claim", body, r =>
             {
                 Busy = false;
                 if (!r.ok)

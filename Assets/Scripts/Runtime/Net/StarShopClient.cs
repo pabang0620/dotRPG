@@ -81,7 +81,7 @@ namespace DotRPG
             if (tier >= 0 && banner != "aura" && banner != "skin") body["tier"] = tier; // gear: the chosen level tier
             // [PAY 11] The rates the player was shown: the server refuses the pull if they changed meanwhile.
             if (!string.IsNullOrEmpty(RatesVersion)) body["rates_version"] = RatesVersion;
-            Api.Post(Base + "/pull", body, r =>
+            Api.PostIdempotent(Base + "/pull", body, r =>
             {
                 if (!r.ok && r.code == "RATES_CHANGED")
                 {
@@ -116,7 +116,7 @@ namespace DotRPG
         {
             if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["banner"] = banner, ["item_id"] = itemId };
-            Api.Post(Base + "/claim", body, r =>
+            Api.PostIdempotent(Base + "/claim", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "선택하지 못했습니다." : r.message); return; }
                 if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity); else Pity = MiniJson.Int(r.data, "pity", Pity);
@@ -133,7 +133,7 @@ namespace DotRPG
             var done = new TaskCompletionSource<bool>();
             if (!Available) { done.SetException(new InvalidOperationException("offline")); return done.Task; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["item_id"] = itemId };
-            Api.Post(Base + "/exchange", body, r =>
+            Api.PostIdempotent(Base + "/exchange", body, r =>
             {
                 if (!r.ok) { done.TrySetException(new InvalidOperationException(r.message ?? "exchange failed")); return; }
                 Balance = (long)MiniJson.Num(r.data, "balance", Balance);

@@ -164,8 +164,8 @@ def raid_lumps(tier):
     for d in DUNGEONS["dungeons"]:
         if d["isRaid"] and d["raidTier"] == tier:
             xp = d["clearXpFloor"][0] * TOP_RANK_XP_MUL
-            card_gold = max((r["max"] for r in d["rewards"] if r["itemId"] == "gold"), default=0)
-            gold = card_gold * d["raidNumbers"]["rewardMul"]
+            # 13단계: 레이드 골드는 카드가 아니라 클리어 확정 골드(raidReward.goldMax, 난이도 배율 없음)
+            gold = d["raidReward"]["goldMax"]
             return d["raidNumbers"]["recommendedLevel"], xp, gold
     return None
 

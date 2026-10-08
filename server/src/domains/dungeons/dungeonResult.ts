@@ -17,6 +17,8 @@ import {
   RANK_NAMES,
   rankOf,
   rollCards,
+  rollRaidCards,
+  rollRaidGold,
   roomKillCount,
   roomTotal,
   scoreRun,
@@ -243,6 +245,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   let granted = 0;
   let leveledUp = false;
   let cards: { item_key: string; count: number }[] | null = null;
+  let raidGold = 0;
   if (!locked) {
     let xp = clearXp(eco, dungeon, diff, rank);
     // 9단계 A4: 권장 레벨보다 DUNGEON_UNDERLEVEL_GAP 이상 낮은 멤버는 클리어 경험치를 깎는다(카드·열쇠는 줄이지 않는다)
@@ -250,7 +253,16 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     if (under < 1) xp = Math.max(1, Math.round(xp * under));
     ({ granted, leveledUp } = await ctx.grantXp(xp, 'dungeon_clear', run.uuid));
     // 선택 전에는 내용을 클라이언트에 주지 않는다
-    cards = rollCards(eco, dungeon, diff, ctx.char.class, getRng());
+    if (dungeon.isRaid) {
+      // 13단계: 난수 순서는 확정 골드 1회 -> 카드 4장(장비 카드는 부위 -> 등급). 골드는 카드를 안 뒤집어도 이 트랜잭션에서 들어간다
+      const rolled = rollRaidGold(dungeon, getRng());
+      const before = ctx.gold;
+      if (rolled > 0) await ctx.changeGold(rolled, 'raid_gold', run.uuid);
+      raidGold = ctx.gold - before; // 골드 상한에 걸리면 실제로 들어간 만큼만
+      cards = rollRaidCards(eco, dungeon, ctx.char.class, getRng());
+    } else {
+      cards = rollCards(eco, dungeon, diff, ctx.char.class, getRng());
+    }
     if (dungeon.isRaid) {
       if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0) {
         keyCost = dungeon.keyCost;
@@ -281,6 +293,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     cards,
     rewardLocked: locked,
     lockReason: reason,
+    ...(dungeon.isRaid && cards ? { cardsMode: 'take_all' as const, raidGold } : {}),
     contribution: contrib ? { share: contrib.share, hits: contrib.hits, source: contrib.source, met: contrib.met } : null,
   });
   // 10단계 E3: 보상이 잠기지 않은 요일 던전 직접 클리어는 계정 주간 활동에 +1(그 요청의 마지막 쓰기)
@@ -306,6 +319,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
       ...(keyGain > 0 ? { key_gain: keyGain } : {}),
       ...(keyCost > 0 ? { key_cost: keyCost } : {}),
       ...(coreGain > 0 ? { core_gain: coreGain } : {}),
+      ...(!locked ? { gold_gain: raidGold, card_mode: 'take_all' } : {}),
     };
   }
   return { status: 200, data };

@@ -80,7 +80,7 @@ namespace DotRPG
             if (Busy) { done(new ApiResult { ok = false, code = "BUSY", message = "이전 요청을 처리하는 중입니다." }); return; }
             Busy = true;
             body["request_id"] = ApiClient.NewRequestId();
-            Api.Post(path, body, r => { Busy = false; done(r); });
+            Api.PostIdempotent(path, body, r => { Busy = false; done(r); });
         }
 
         static string Explain(ApiResult r) => r.code switch

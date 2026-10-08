@@ -49,6 +49,12 @@ namespace DotRPG
         public DungeonRank Rank = DungeonRank.F;
         public int XpGained;
         public List<RewardCard> Cards;
+        /// <summary>[RAID] Sure gold of a rewarded raid clear (already in the bag / wallet), and the cores / seal keys it paid, for the result's top row.</summary>
+        public int RaidGold, RaidCoreGain, RaidKeyGain;
+        /// <summary>[RAID] All four cards are taken one by one (false = pick one of four, the weekday dungeons).</summary>
+        public bool CardsTakeAll;
+        /// <summary>[RAID] Bit i = card i is already in the bag.</summary>
+        public int TakenMask;
         /// <summary>Damage per member display name (from <see cref="PartyManager.DamageDealt"/>), local first.</summary>
         public readonly List<(string name, int damage, bool local)> MemberDamage = new List<(string, int, bool)>();
 

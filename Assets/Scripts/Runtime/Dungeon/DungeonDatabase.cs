@@ -125,6 +125,8 @@ namespace DotRPG
         public int keyMin, keyMax;
         /// <summary>[J10] This raid's own numbers (null = the shared <see cref="DungeonDatabase.RaidDifficulty"/>).</summary>
         public DifficultyDef raidNumbers;
+        /// <summary>[RAID] Sure gold, own material and the 4 cards that are all taken (null = the old 4-cards-pick-one table in <see cref="rewards"/>).</summary>
+        public RaidRewardDef raidReward;
 
         public int RoomCount => rooms.Length;
     }
@@ -322,22 +324,16 @@ namespace DotRPG
             id = Raid, name = "해골왕", theme = MapTheme.Canyon, themeName = "북쪽 고개 성채", isRaid = true,
             // [RAID] Chapter 1 mid raid: three gates a week, a seal key fragment chance on each rewarded clear.
             raidTier = RaidTier.Mid, chapter = 1, unlockQuest = "c1_fortress", keyMin = 20, keyMax = 50,
-            raidNumbers = RaidNumbers(20, 4000, 2.6f, 1.4f, 12, ItemRarity.Rare, 6),
+            raidNumbers = RaidNumbers(20, 4000, 2.6f, 1.4f, 12, ItemRarity.Epic, 0),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnRaid1, new SpawnGroup(1, "skel_knight", 4, 2), new SpawnGroup(2, "skel_shield", 2, 2)),
                 Room(MapRegistry.DgnRaid2, new SpawnGroup(1, "skel_necro", 3, 2), new SpawnGroup(2, "skel_knight", 3, 2)),
                 Boss(MapRegistry.DgnRaidBoss, "boss_skeleton_king", "skel_knight", 0)),
             bossRoom = 2, referenceSeconds = new[] { 300f, 300f, 300f, 300f }, clearXp = 400,
-            rewards = new[]
-            {
-                new RewardEntry(GearReward, 1, 1, 45),
-                new RewardEntry(EnhanceRules.Essence, 3, 6, 20),
-                new RewardEntry(EnhanceRules.Ore, 6, 10, 15),
-                new RewardEntry(ConsumableDatabase.Gold, 800, 1500, 20),
-            },
+            rewards = new RewardEntry[0], raidReward = RaidRewards.King, // [RAID] sure gold + 4 cards, see RaidRewards
             description = "북쪽 고개 너머에서 깨어난 해골왕과 그의 친위대.\n친위대 전초 두 곳을 돌파하고 해골왕을 쓰러뜨리자.",
-            specialty = "유니크 · 레전더리 장비", featureMonster = "해골 기사단, 해골 사령술사", bossName = "해골왕",
+            specialty = "확정 골드 · 에픽 이상 장비", featureMonster = "해골 기사단, 해골 사령술사", bossName = "해골왕",
         };
 
         /// <summary>[RAID] Chapter 1 final raid: 흑철의 바르가스, Sunday only, costs seal key fragments.</summary>
@@ -391,21 +387,15 @@ namespace DotRPG
         {
             id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
             raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 60,
-            raidNumbers = RaidNumbers(40, 10400, 1.9f, 1.7f, 35, ItemRarity.Epic, 10),
+            raidNumbers = RaidNumbers(40, 10400, 1.9f, 1.7f, 35, ItemRarity.Epic, 0),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),
                 Boss(MapRegistry.DgnGrahBoss, "boss_grah", "skel_knight", 0)),
             bossRoom = 1, referenceSeconds = new[] { 360f, 360f, 360f, 360f }, clearXp = 1500,
-            rewards = new[]
-            {
-                new RewardEntry(GearReward, 1, 1, 55),
-                new RewardEntry(EnhanceRules.Essence, 6, 10, 15),
-                new RewardEntry(ConsumableDatabase.ProtectTicket, 1, 2, 10),
-                new RewardEntry(ConsumableDatabase.Gold, 4000, 6000, 20),
-            },
+            rewards = new RewardEntry[0], raidReward = RaidRewards.Grah, // [RAID] sure gold + 4 cards, see RaidRewards
             description = "검은 수호석을 지키는 마족 장수 그라흐.\n석실의 정예를 뚫고 수호자를 쓰러뜨린 뒤, 네 손으로 수호석을 깨라.",
-            specialty = "레전더리 장비, 장비 보호권", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",
+            specialty = "확정 골드 · 레전더리 장비", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",
         };
 
         /// <summary>

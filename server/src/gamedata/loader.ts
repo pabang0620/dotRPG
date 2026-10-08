@@ -7,6 +7,7 @@ import { loadChatData, type ChatData } from './chatData';
 import { loadEconomyData, type EconomyData } from './economyData';
 import { getConfig } from '../config/env';
 import { loadSweepData, type SweepData } from './sweepData';
+import { loadRaidShop, type RaidShopData } from './raidShop';
 
 // 알 수 없는 필드는 무시(looseObject)해서 데이터에 필드가 늘어도 기동이 깨지지 않는다.
 const schemaVer = z.literal(1);
@@ -147,6 +148,8 @@ export interface GameData {
   auction: AuctionData;
   /** 10단계(소탕): SWEEP_ENABLED가 꺼져 있고 파일이 없거나 깨졌으면 null */
   sweep: SweepData | null;
+  /** 13단계(레이드 상점): raid_shop.json이 없으면 null */
+  raidShop: RaidShopData | null;
 }
 
 function readJson<T extends z.ZodType>(dir: string, file: string, schema: T): z.infer<T> {
@@ -238,6 +241,7 @@ export function loadGameData(dir: string): GameData {
     '젬',
   );
 
+  const economy = loadEconomyData(dir, new Set(mapById.keys()));
   return {
     dataVersion: ver.version,
     maps: mapById,
@@ -258,10 +262,11 @@ export function loadGameData(dir: string): GameData {
     quests: { byId: uniqueMap(quests.quests, '퀘스트'), flags: new Set(quests.flags) },
     facingCount: enums.facingCount,
     questStatusMax: enums.questStatusMax,
-    economy: loadEconomyData(dir, new Set(mapById.keys())),
+    economy,
     chat: loadChatData(dir),
     auction: loadAuctionData(dir),
     sweep: loadSweepData(dir, getConfig().sweep.enabled, itemIds),
+    raidShop: loadRaidShop(dir, economy),
   };
 }
 

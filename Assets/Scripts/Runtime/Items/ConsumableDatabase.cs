@@ -74,6 +74,11 @@ namespace DotRPG
                 description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
             new ConsumableItem { id = DungeonDatabase.RaidCore, name = "고대의 핵", iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = "레이드 보스에게서만 얻는 고대 마력의 핵. 대장간에서 장비를 한 등급 위 장비로 승급할 때 쓴다. (강화 수치 유지)" },
+            // [RAID] Raid-only materials (Docs/server/phase13_raid_rewards.md §4): paid for weapon boxes in the raid shop.
+            new ConsumableItem { id = RaidRewards.RaidMatKing, name = "해골왕의 왕관 조각", iconKey = "maticon_bone", kind = ConsumableKind.Key, grade = ItemRarity.Unique,
+                description = "해골왕이 쓰고 있던 왕관의 파편. 해골왕 레이드 보상 카드로만 얻고, 레이드 상점에서 해골왕 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다." },
+            new ConsumableItem { id = RaidRewards.RaidMatGrah, name = "수호석 파편", iconKey = "maticon_ore", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+                description = "수호자 그라흐가 지키던 수호석의 파편. 그라흐 레이드 보상 카드로만 얻고, 레이드 상점에서 그라흐 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다." },
             new ConsumableItem { id = DungeonSweep.TicketItem, name = "던전 클리어권", iconKey = "icon_sweep", kind = ConsumableKind.Sweep, grade = ItemRarity.Epic,
                 description = "직접 B등급 이상으로 깬 요일 던전을 전투 없이 한 번 끝낸다. 입장 횟수 1회를 함께 쓰고, 보상은 기본 경험치와 카드 1장이다. (계정 공용)" },
             new ConsumableItem { id = DungeonSweep.EventTicketItem, name = "이벤트 클리어권", iconKey = "icon_sweep_event", kind = ConsumableKind.Sweep, grade = ItemRarity.Unique,
@@ -196,9 +201,12 @@ namespace DotRPG
 
         static readonly int[] GearSell = { 10, 25, 60, 150, 300, 600 };
 
+        /// <summary>Selling price gained from enhancing is capped at this share of the gold spent on the successful path up to that level.</summary>
+        public const double EnhancedSellGoldRatio = 0.5;
+
         /// <summary>
         /// Gold the store pays for one item (0 = cannot be sold). Gear keys pay the grade price
-        /// × (1 + 0.25 per +level), rounded.
+        /// × (1 + 0.25 per +level), rounded, with the gain capped by the gold spent enhancing.
         /// </summary>
         public static int SellPrice(string id)
         {
@@ -207,7 +215,11 @@ namespace DotRPG
             {
                 // Grade price x (1 + 0.25 per level tier): Lv.40 gear sells for close to triple the Lv.1 price.
                 int basePrice = gear.starter ? 2 : (int)System.Math.Round(GearSell[(int)gear.rarity] * (1.0 + 0.25 * gear.levelTier), System.MidpointRounding.AwayFromZero);
-                return (int)Math.Round(basePrice * (1.0 + 0.25 * EquipmentDatabase.LevelOfKey(id)), MidpointRounding.AwayFromZero);
+                int level = EquipmentDatabase.LevelOfKey(id);
+                int plain = (int)Math.Round(basePrice * (1.0 + 0.25 * level), MidpointRounding.AwayFromZero);
+                int spent = 0;
+                for (int k = 0; k < level; k++) spent += EnhanceRules.GoldFor(gear, k);
+                return Math.Min(plain, basePrice + (int)Math.Floor(EnhancedSellGoldRatio * spent));
             }
             switch (id)
             {

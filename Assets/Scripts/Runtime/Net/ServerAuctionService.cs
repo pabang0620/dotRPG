@@ -301,7 +301,7 @@ namespace DotRPG
             {
                 body = body ?? new Dictionary<string, object>();
                 body["request_id"] = ApiClient.NewRequestId();
-                Api.Post(Char + path, body, done);
+                Api.PostIdempotent(Char + path, body, done);
             }
             return AuctionResult.Ok("서버에 요청했습니다...");
         }

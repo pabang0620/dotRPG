@@ -34,6 +34,15 @@ namespace DotRPG
         static void RedirectSaves()
         {
             var args = Environment.GetCommandLineArgs();
+#if !DOTRPG_RELEASE
+            if (SoakRequested(out _, out var soakFolder)) // [SOAK] own save folder, silent
+            {
+                SaveSystem.DirectoryOverride = Path.Combine(soakFolder, "saves");
+                AudioListener.volume = 0f;
+                GameFlow.PauseOnFocusLoss = false;
+                return;
+            }
+#endif
             for (int i = 0; i < args.Length - 1; i++)
                 if (Array.IndexOf(Modes, args[i]) >= 0)
                 {
@@ -52,6 +61,13 @@ namespace DotRPG
         {
 #if !DOTRPG_RELEASE // [RELEASE] the capture / check modes are not in a release build (anyone could start them from Steam)
             var args = Environment.GetCommandLineArgs();
+            if (SoakRequested(out _, out var soakFolder)) // [SOAK]
+            {
+                var soakGo = new GameObject("DevCapture");
+                DontDestroyOnLoad(soakGo);
+                SoakAttach(soakGo, soakFolder);
+                return;
+            }
             for (int i = 0; i < args.Length - 1; i++)
             {
                 if (Array.IndexOf(Modes, args[i]) < 0) continue;
@@ -106,6 +122,7 @@ namespace DotRPG
             bool interactiveDemo = mode == "-dotrpgCareerDemo" || mode == "-dotrpgMonsterDemo";
             bool automatedDemo = interactiveDemo && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
             if (!interactiveDemo || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
+            if (mode == SoakFlag) { yield return SoakRun(); log.Close(); log = null; Application.Quit(); yield break; } // [SOAK]
             if(mode=="-dotrpgSanctumFields"){yield return SanctumFieldsRun();log.Close();log=null;if(Array.IndexOf(Environment.GetCommandLineArgs(),"-batchmode")>=0)Application.Quit();else Destroy(this);yield break;}
             if (mode == "-dotrpgRoutes") { yield return RoutesRun(); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgSanctum") { yield return SanctumRun(); log.Close(); log=null; if(Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(), "-sanctumVerify")>=0)Application.Quit();else Destroy(this); yield break; }

@@ -43,7 +43,7 @@ namespace DotRPG
         {
             body["request_id"] = ApiClient.NewRequestId();
             string full = Char + path;
-            void Send() => Api.Post(full, body, r =>
+            void Send() => Api.PostIdempotent(full, body, r =>
             {
                 if (r.ok) { done(true, null, MiniJson.Int(r.data, "stage", -1)); return; }
                 int stage = r.errors != null && r.errors.ContainsKey("stage") ? MiniJson.Int(r.errors, "stage", -1) : -1;

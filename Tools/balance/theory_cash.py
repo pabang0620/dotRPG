@@ -13,11 +13,10 @@ BOOST_EVERY = 10
 
 # (id, 기본 확률 %, 희귀 이상 여부) - 희귀 이상만 부스터에서 x2, 그만큼 일반 등급이 줄어든다.
 TABLE = [
-    ("potion_hi_x5", 34.032, False),     # 상급 물약 5개
-    ("buff_power_30m", 26.0, False),   # 30분 공격 +15% 주문서
-    ("essence_x10", 12.0, False),
-    ("protect_x1", 8.0, False),
-    ("sweep_x2", 5.0, False),
+    ("potion_hi_x5", 36.158, False),     # 상급 물약 5개
+    ("buff_power_30m", 27.624, False),   # 30분 공격 +15% 주문서
+    ("essence_x10", 12.75, False),
+    ("protect_x1", 8.5, False),
     ("protect_x3", 6.0, True),
     ("box10_30", 4.5, True),           # +10 강화권 상자(30%)
     ("ticket10", 2.4, True),

@@ -8,6 +8,7 @@ import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
 import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
 import { createPromoteRouter } from '../domains/promote/promoteRoutes';
+import { createRaidShopRouter } from '../domains/raidshop/raidShopRoutes';
 import { createFriendsRouter } from '../domains/friends/friendsRoutes';
 import { createFieldRouter } from '../domains/fieldsessions/fieldRoutes';
 import { createRelayRouter } from '../domains/relay/relayRoutes';
@@ -51,6 +52,7 @@ export function createRouter(): Router {
   r.use(createStarshopRouter()); // 캐시샵(별조각 뽑기·교환)
   r.use(createEnhanceRouter());
   r.use(createPromoteRouter());
+  r.use(createRaidShopRouter()); // 13단계: 레이드 상점
   r.use(createInventoryRouter());
   r.use(createDungeonRouter());
   // 4단계: 파티 협동, 자동 매칭, 파티 판, 레이드 (모두 /characters/{uuid}/... 아래)

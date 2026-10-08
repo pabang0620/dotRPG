@@ -207,7 +207,8 @@ describe('레이드 파티 정산', () => {
     expect(rm.body.data.result).toBe('cleared');
     expect(rm.body.data.granted_xp).toBeGreaterThan(0);
     expect(rm.body.data.card_count).toBe(4);
-    expect(rm.body.data.raid).toMatchObject({ reward_locked: false, key_gain: 20 });
+    // 13단계: 확정 골드가 카드와 별개로 들어오고, 카드는 4장 모두 받는 방식(take_all)이다
+    expect(rm.body.data.raid).toMatchObject({ reward_locked: false, key_gain: 20, card_mode: 'take_all', gold_gain: 3000 });
     const rh = await post(app, host, `/dungeon-runs/${runs.get(host.id)}/settle`, {});
     expect(rh.body.data.result).toBe('cleared');
     for (const h of [host, member]) {

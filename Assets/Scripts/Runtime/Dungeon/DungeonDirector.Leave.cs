@@ -85,10 +85,16 @@ namespace DotRPG
 
         // =============================== Result actions ===============================
 
-        /// <summary>Flips card <paramref name="index"/> for the local player: its reward goes into the bag. Null if not allowed.</summary>
+        /// <summary>Flips card <paramref name="index"/> for the local player: its reward goes into the bag. Null if not allowed (a raid card already taken).</summary>
         public RewardCard? TakeCard(int index)
         {
             if (run == null || run.Cards == null || index < 0 || index >= run.Cards.Count) return null;
+            if (run.CardsTakeAll)
+            {
+                // [RAID] Every card is taken once; a number already in the bag gives nothing.
+                if ((run.TakenMask & (1 << index)) != 0) return null;
+                run.TakenMask |= 1 << index;
+            }
             var card = run.Cards[index];
             if (card.count > 0 && !string.IsNullOrEmpty(card.itemId)) Game.Session.Inventory.Add(card.itemId, card.count);
             return card;

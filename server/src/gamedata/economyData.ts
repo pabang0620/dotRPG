@@ -113,6 +113,7 @@ const equipmentSchema = z.looseObject({
 const shopSchema = z.looseObject({
   schema: schemaVer,
   enhancedSellBonusPerLevel: z.number().min(0),
+  enhancedSellGoldRatio: z.number().min(0),
   stock: z.array(z.looseObject({ id: z.string().min(1), buyPrice: z.number().int().positive() })),
   equipment: z.array(equipmentSchema),
   materials: z.array(
@@ -239,6 +240,19 @@ const groupSchema = z.looseObject({
   levelOffset: int,
   isBoss: z.boolean(),
 });
+/** 13단계: 레이드 보상(확정 골드 + 카드 4장 모두 받기). 카드 표의 itemId 'gear'는 레이드 장비 카드 */
+const raidRewardSchema = z.looseObject({
+  goldMin: nonNegInt,
+  goldMax: nonNegInt,
+  goldStep: z.number().int().positive(),
+  materialItem: z.string().min(1),
+  gearCategories: z.array(z.string().min(1)).min(1),
+  gearRarityWeights: z.partialRecord(z.enum(['Epic', 'Unique', 'Legendary']), nonNegInt),
+  cards: z
+    .array(z.looseObject({ itemId: z.string().min(1), min: z.number().int().positive(), max: z.number().int().positive(), weight: nonNegInt }))
+    .min(1),
+});
+
 const dungeonsSchema = z.looseObject({
   schema: schemaVer,
   difficulties: z
@@ -278,6 +292,7 @@ const dungeonsSchema = z.looseObject({
   dungeons: z.array(
     z.looseObject({
       id: z.string().min(1),
+      name: z.string().default(''),
       isRaid: z.boolean(),
       raidTier: z.string().default('None'),
       unlockQuest: z.string().default(''),
@@ -297,6 +312,7 @@ const dungeonsSchema = z.looseObject({
           jackpotPerMille: nonNegInt.default(0),
         })
         .optional(),
+      raidReward: raidRewardSchema.optional(),
       clearXp: nonNegInt,
       clearXpFloor: z.array(nonNegInt).length(4).default([0, 0, 0, 0]),
       xpMul: z.number().positive(),
@@ -354,6 +370,7 @@ export interface EconomyData {
     materials: z.infer<typeof shopSchema>['materials'];
     sellPrices: Map<string, number>;
     enhancedSellBonusPerLevel: number;
+    enhancedSellGoldRatio: number;
   };
   enhance: {
     maxEnhance: number;
@@ -415,6 +432,22 @@ function uniqueBy<T>(rows: T[], key: (r: T) => string, what: string): Map<string
     m.set(k, row);
   }
   return m;
+}
+
+function validateRaidReward(d: z.infer<typeof dungeonsSchema>['dungeons'][number], itemMap: Map<string, unknown>): void {
+  const rr = d.raidReward;
+  const fail = (msg: string): never => {
+    throw new Error(`게임 데이터 검증 실패: 레이드 ${d.id} raidReward ${msg}`);
+  };
+  if (!rr) return fail('가 없습니다');
+  if (rr.goldMax < rr.goldMin || (rr.goldMax - rr.goldMin) % rr.goldStep !== 0) fail('골드 범위가 단위로 나누어 떨어지지 않습니다');
+  if (rr.cards.reduce((a, c) => a + c.weight, 0) <= 0) fail('카드 가중치 합이 0입니다');
+  if (!itemMap.has(rr.materialItem)) fail(`전용 재료 ${rr.materialItem} 이 items.json에 없습니다`);
+  for (const c of rr.cards) {
+    if (c.itemId !== 'gear' && !itemMap.has(c.itemId)) fail(`카드 ${c.itemId} 이 items.json에 없습니다`);
+    if (c.max < c.min) fail(`카드 ${c.itemId} 의 수량 범위가 거꾸로입니다`);
+  }
+  if (Object.values(rr.gearRarityWeights).reduce((a, w) => a + w, 0) <= 0) fail('장비 등급 가중치 합이 0입니다');
 }
 
 export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
@@ -532,6 +565,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
         throw new Error(`게임 데이터 검증 실패: 던전 ${d.id} 보상 ${r.itemId} 이 items.json에 없습니다`);
       }
     }
+    if (d.isRaid) validateRaidReward(d, itemMap);
   }
   if (dng.ranking.thresholds.length + 1 !== dng.ranking.xpBonus.length) {
     throw new Error('게임 데이터 검증 실패: ranking.xpBonus 는 thresholds 보다 1개 많아야 합니다');
@@ -563,6 +597,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       materials: shop.materials,
       sellPrices,
       enhancedSellBonusPerLevel: shop.enhancedSellBonusPerLevel,
+      enhancedSellGoldRatio: shop.enhancedSellGoldRatio,
     },
     enhance: {
       maxEnhance: enh.maxEnhance,

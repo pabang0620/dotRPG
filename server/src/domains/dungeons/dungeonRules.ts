@@ -79,11 +79,6 @@ export interface Card {
   count: number;
 }
 
-/** 레이드 장비 카드가 레전더리로 바뀌는 천분율 */
-export const RAID_LEGENDARY_PERMILLE = 5;
-const CATEGORIES = ['Weapon', 'Top', 'Bottom', 'Necklace', 'Ring'] as const;
-const pickCategory = (rng: Rng): string => CATEGORIES[rng.int(0, CATEGORIES.length)] as string;
-
 const rarityIdx = (r: string): number => RARITY_ORDER.indexOf(r as (typeof RARITY_ORDER)[number]);
 
 /** DungeonRewards.RollGear: 몬스터 드롭표 시도(절반) 후 희귀 장비까지 든 가중 풀. +0 기본 id를 돌려준다 */
@@ -169,13 +164,6 @@ export function rollOneCard(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, 
   let card: Card;
   if (pick.itemId === 'gear') {
     card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng, tier), count: 1 };
-    // 레이드 장비 카드: 아주 낮은 확률로 그 단계의 레전더리(Lv.20 해골왕, Lv.40 그라흐)
-    if (d.isRaid && rng.int(0, 1000) < RAID_LEGENDARY_PERMILLE) {
-      const legend = eco.shop.equipmentList.find(
-        (e) => e.rarity === 'Legendary' && e.levelTier === tier && (e.classOnly === null || e.classOnly === cls) && e.category === pickCategory(rng),
-      );
-      if (legend) card = { item_key: keyAt(legend.id, 0), count: 1 };
-    }
   } else {
     let n = rng.int(pick.min, pick.max + 1);
     // 보호권은 곱하지 않고, 나머지는 난이도 보상 배율을 곱한다
@@ -188,6 +176,49 @@ export function rollOneCard(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, 
     if (jackpot) card = { item_key: jackpot, count: 1 };
   }
   return card;
+}
+
+/** 13단계: 레이드 확정 골드. goldMin + step * int(0 .. (goldMax-goldMin)/step). 난이도 배율은 곱하지 않는다 */
+export function rollRaidGold(d: DungeonDef, rng: Rng): number {
+  const rr = d.raidReward;
+  if (!rr) throw new Error(`레이드 보상 데이터가 없습니다: ${d.id}`);
+  return rr.goldMin + rr.goldStep * rng.int(0, Math.floor((rr.goldMax - rr.goldMin) / rr.goldStep) + 1);
+}
+
+/** 13단계: 레이드 장비 카드 한 장. 난수 순서는 부위 -> 등급. 단계는 레이드 권장 레벨의 단계, 결과는 +0 키 */
+export function rollRaidGear(eco: EconomyData, d: DungeonDef, cls: string, rng: Rng): string {
+  const rr = d.raidReward;
+  if (!rr || !d.raidNumbers) throw new Error(`레이드 보상 데이터가 없습니다: ${d.id}`);
+  const tier = tierOfLevel(d.raidNumbers.recommendedLevel);
+  const category = rr.gearCategories[rng.int(0, rr.gearCategories.length)] as string;
+  const weights = (['Epic', 'Unique', 'Legendary'] as const).map((r) => ({ r, w: rr.gearRarityWeights[r] ?? 0 }));
+  let roll = rng.int(0, weights.reduce((a, x) => a + x.w, 0));
+  let rarity: string = weights[0]?.r ?? 'Epic';
+  for (const x of weights) {
+    if (roll < x.w) {
+      rarity = x.r;
+      break;
+    }
+    roll -= x.w;
+  }
+  const found = eco.shop.equipmentList.find(
+    (e) => !e.bossOnly && e.levelTier === tier && e.category === category && e.rarity === rarity && (e.classOnly === null || e.classOnly === cls),
+  );
+  if (!found) throw new Error(`레이드 장비를 찾을 수 없습니다: ${d.id} ${cls} ${category} ${rarity}`);
+  return keyAt(found.id, 0);
+}
+
+/** 13단계: 레이드 카드 4장(각각 독립 추첨, 수량은 표 그대로). 골드 카드는 없다 */
+export function rollRaidCards(eco: EconomyData, d: DungeonDef, cls: string, rng: Rng): Card[] {
+  const rr = d.raidReward;
+  if (!rr) throw new Error(`레이드 보상 데이터가 없습니다: ${d.id}`);
+  const cards: Card[] = [];
+  for (let i = 0; i < eco.dungeons.cards.count; i++) {
+    const pick = pickWeighted(rr.cards, rng);
+    if (pick.itemId === 'gear') cards.push({ item_key: rollRaidGear(eco, d, cls, rng), count: 1 });
+    else cards.push({ item_key: pick.itemId, count: rng.int(pick.min, pick.max + 1) });
+  }
+  return cards;
 }
 
 /** DungeonRewards.RollCards + Resolve */

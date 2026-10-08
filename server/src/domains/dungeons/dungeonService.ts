@@ -44,7 +44,12 @@ export async function listDungeons(accountId: number, characterUuid: string) {
     reset: { daily_start_at: b.dailyStartAt, next_daily_at: b.nextDailyAt },
     entries: { limit, used, left: Math.max(0, limit - used) },
     // 접속 때 카드 창을 띄울 판(보류가 해제돼 나중에 확정된 판도 여기서 알 수 있다: phase7_ops.md 5.8 HR3)
-    unpicked_runs: unpicked.map((u) => ({ run_id: u.uuid, ended_at: u.ended_at.toISOString() })),
+    unpicked_runs: unpicked.map((u) => ({
+      run_id: u.uuid,
+      ended_at: u.ended_at.toISOString(),
+      card_mode: u.cards_mode,
+      remaining: u.cards_mode === 'take_all' ? u.card_count - popcount(u.cards_taken) : 1,
+    })),
     active_run: active
       ? {
           id: active.uuid,
@@ -206,16 +211,60 @@ export function pickCard(
       const run = await dungeonRepo.findRunByUuid(ctx.client, ctx.char.id, runUuid);
       if (!run) throw new AppError(404, '던전 기록을 찾을 수 없습니다.', 'RUN_NOT_FOUND');
       if (run.state !== 'cleared' || !run.cards) throw new AppError(422, '고를 카드가 없습니다.', 'NO_CARDS');
-      if (run.card_picked !== null) throw new AppError(409, '이미 카드를 골랐습니다.', 'CARD_ALREADY_PICKED');
+      if (run.cards_mode === 'pick_one' && run.card_picked !== null) throw new AppError(409, '이미 카드를 골랐습니다.', 'CARD_ALREADY_PICKED');
       const ttl = getConfig().policy.dungeonCardTtlHours * 3_600_000;
       if (ctx.now.getTime() > (run.ended_at as Date).getTime() + ttl) {
         throw new AppError(410, '카드를 고를 수 있는 시간이 지났습니다.', 'CARDS_EXPIRED');
       }
+      if (run.cards_mode === 'take_all') return flipCard(ctx, run, body.index);
       const card = await grantCard(ctx, run, body.index);
       // 나머지 카드는 동료 AI가 뒤집는 연출용 공개일 뿐 지급되지 않는다
       return { status: 200, data: { card, cards: run.cards, delta: ctx.delta() } };
     },
   });
+}
+
+const popcount = (n: number): number => {
+  let c = 0;
+  for (let x = n; x > 0; x >>= 1) c += x & 1;
+  return c;
+};
+
+/** take_all 판에서 이미 받은 카드 번호(오름차순) */
+const takenIndexes = (run: dungeonRepo.RunRow): number[] =>
+  (run.cards ?? []).map((_c, i) => i).filter((i) => (run.cards_taken & (1 << i)) !== 0);
+
+/** 13단계: 레이드 카드 한 장을 뒤집어 가방에 넣는다(순서 자유). 이미 받은 번호는 409 + 카드 내용 */
+async function flipCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
+  const cards = run.cards as { item_key: string; count: number }[];
+  const card = cards[index];
+  if (!card) throw new AppError(422, '고를 카드가 없습니다.', 'NO_CARDS');
+  const bit = 1 << index;
+  if ((run.cards_taken & bit) !== 0) {
+    throw new AppError(409, '이미 받은 카드입니다.', 'CARD_ALREADY_FLIPPED', { index, card, taken: takenIndexes(run) });
+  }
+  await grantRaidCard(ctx, run, index);
+  const taken = takenIndexes({ ...run, cards_taken: run.cards_taken | bit });
+  return {
+    status: 200,
+    data: {
+      index,
+      card,
+      taken,
+      remaining: cards.length - taken.length,
+      cards: cards.map((c, i) => (taken.includes(i) ? c : null)),
+      delta: ctx.delta(),
+    },
+  };
+}
+
+/** take_all 카드 한 장 지급 + 받음 표시(원장 ref = 판 uuid:카드번호) */
+async function grantRaidCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number): Promise<void> {
+  const card = (run.cards as { item_key: string; count: number }[])[index] as { item_key: string; count: number };
+  if (!(await dungeonRepo.takeCard(ctx.client, run.id, 1 << index, ctx.now))) {
+    throw new AppError(409, '이미 받은 카드입니다.', 'CARD_ALREADY_FLIPPED', { index, card });
+  }
+  await ctx.addItem('bag', card.item_key, card.count, 'dungeon_card', `${run.uuid}:${index}`);
 }
 
 async function grantCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
@@ -230,19 +279,14 @@ async function grantCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
 // ---------- 서버 틱: 고르지 않은 카드 ----------
 
 /**
- * 클리어 뒤 DUNGEON_CARD_AUTO_PICK_MINUTES가 지나도록 카드를 고르지 않은 판(결과 화면 전에 끊김, 클리어 뒤 이탈해
- * 서버가 대신 정산한 판)은 서버가 한 장을 골라 가방에 넣는다. 네 장은 뒤집기 전 모두 같은 가치라 무작위로 고른다.
+ * 클리어 뒤 DUNGEON_CARD_AUTO_PICK_MINUTES가 지나도록 받지 않은 카드가 남은 판(결과 화면 전에 끊김, 클리어 뒤 이탈해
+ * 서버가 대신 정산한 판)을 서버가 대신 지급한다. pick_one(요일던전)은 무작위 한 장, take_all(레이드)은 남은 카드를 번호 순서로 전부.
+ * 판 하나가 한 트랜잭션이라 도중에 실패하면 그 판은 통째로 롤백되고 다음 틱이 처음부터 다시 한다.
  */
 export async function runCardAutoPickTick(): Promise<void> {
   const cutoff = new Date(getNow().getTime() - getConfig().policy.dungeonCardAutoPickMinutes * 60_000);
-  const r = await getPool().query<{ uuid: string; account_id: string; char_uuid: string }>(
-    `SELECT d.uuid, c.account_id, c.uuid AS char_uuid
-       FROM dungeon_runs d JOIN characters c ON c.id = d.character_id
-      WHERE d.state = 'cleared' AND d.cards IS NOT NULL AND d.card_picked IS NULL AND d.ended_at < $1
-      LIMIT 50`,
-    [cutoff],
-  );
-  for (const row of r.rows) {
+  const rows = await dungeonRepo.pendingCardRuns(getPool(), cutoff, 50);
+  for (const row of rows) {
     await runEconomy({
       accountId: Number(row.account_id),
       characterUuid: row.char_uuid,
@@ -251,9 +295,17 @@ export async function runCardAutoPickTick(): Promise<void> {
       payload: { run_id: row.uuid },
       handler: async (ctx) => {
         const run = await dungeonRepo.findRunByUuid(ctx.client, ctx.char.id, row.uuid);
-        if (!run || run.state !== 'cleared' || !run.cards || run.cards.length === 0 || run.card_picked !== null) {
-          return { status: 200, data: { result: 'none' } };
+        if (!run || run.state !== 'cleared' || !run.cards || run.cards.length === 0) return { status: 200, data: { result: 'none' } };
+        if (run.cards_mode === 'take_all') {
+          const granted: number[] = [];
+          for (let i = 0; i < run.cards.length; i++) {
+            if ((run.cards_taken & (1 << i)) !== 0) continue;
+            await grantRaidCard(ctx, run, i);
+            granted.push(i);
+          }
+          return { status: 200, data: { granted } };
         }
+        if (run.card_picked !== null) return { status: 200, data: { result: 'none' } };
         const card = await grantCard(ctx, run, getRng().int(0, run.cards.length));
         return { status: 200, data: { card } };
       },
@@ -289,6 +341,9 @@ export async function getRun(accountId: number, characterUuid: string, runUuid: 
             granted_xp: run.xp_granted ?? 0,
             card_count: run.cards ? run.cards.length : 0,
             card_picked: run.card_picked,
+            card_mode: run.cards_mode,
+            raid_gold: run.raid_gold,
+            taken: (run.cards ?? []).flatMap((c, i) => ((run.cards_taken & (1 << i)) !== 0 ? [{ index: i, item_key: c.item_key, count: c.count }] : [])),
           }
         : {}),
     },

@@ -383,6 +383,7 @@ namespace DotRPG
                 Post($"/dungeon-runs/{RunId}/result", Body(("outcome", "failed"), ("stats", stats)), null, quiet: true);
             }
             RunId = null;
+            flipRequestIds.Clear();
             soloRun = runReported = false;
         }
 
@@ -420,6 +421,8 @@ namespace DotRPG
                 {
                     string run = MiniJson.Str(o, "run_id");
                     if (string.IsNullOrEmpty(run)) continue;
+                    // [RAID] take-all runs: every card still face down is taken, one request each.
+                    if (MiniJson.Str(o, "card_mode", "pick_one") == "take_all") { TakeRemainingRaidCards(run, 0, MiniJson.Int(o, "remaining", DungeonRewards.CardCount), new List<RewardCard>()); continue; }
                     Post($"/dungeon-runs/{run}/cards/pick", Body(("index", UnityEngine.Random.Range(0, 4))), res =>
                     {
                         var card = MiniJson.Obj(res.data, "card");

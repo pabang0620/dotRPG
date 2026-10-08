@@ -368,6 +368,19 @@ namespace DotRPG
             var b = new LocalDungeonAuthority(7).DealCards(r1, CharacterClass.Warrior);
             bool same = a.Count == 4 && a.Select(c => c.itemId + c.count).SequenceEqual(b.Select(c => c.itemId + c.count));
             DCheck($"authority: seeded deals match={same} cards=[{string.Join(", ", a.Select(c => c.Label))}]", same);
+
+            // [RAID] The raid deals four cards without gold, and the sure gold is a 100-step value in the raid's range.
+            foreach (var raidDef in DungeonDatabase.Raids)
+            {
+                var rr = new DungeonRun(raidDef, DungeonDifficulty.Normal, 1);
+                var rAuth = new LocalDungeonAuthority(11);
+                int rg = rAuth.RaidGold(rr);
+                var rc = rAuth.DealCards(rr, CharacterClass.Warrior);
+                var def2 = raidDef.raidReward;
+                bool rOk = def2 != null && rc.Count == 4 && rc.All(c => c.itemId != ConsumableDatabase.Gold && c.count > 0)
+                    && rg >= def2.goldMin && rg <= def2.goldMax && rg % def2.goldStep == 0 && def2.TotalCardWeight == 100;
+                DCheck($"raid rewards {raidDef.id}: gold={rg} cards=[{string.Join(", ", rc.Select(c => c.Label))}]", rOk);
+            }
         }
 
         // =============================== Room helpers ===============================

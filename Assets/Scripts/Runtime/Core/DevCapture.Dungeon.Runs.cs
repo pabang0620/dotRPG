@@ -85,10 +85,16 @@ namespace DotRPG
             yield return KillAllEnemies(local, 0.05f);
             yield return Wait(DungeonDirector.SlowMotionSeconds + DungeonDirector.ClearHoldSeconds + 1f);
             var result = Game.UI.DungeonResult;
-            bool rp = result.PlayerPick(0);
-            yield return Wait(3.8f);
-            DCheck($"raid clear: pick={rp} state={run.State} cards={run.Cards?.Count} raidAvail={progress.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now())} done={result.DevDone}",
-                run.State == DungeonRunState.Cleared && run.Cards != null && run.Cards.Count == 4 && !progress.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now()) && result.DevDone);
+            // [RAID] The four cards are all taken, one by one (a legendary card's staging takes up to ~2 s).
+            bool rp = true;
+            for (int i = 0; i < 4; i++)
+            {
+                rp &= result.PlayerPick(i);
+                yield return Wait(2.4f);
+            }
+            DCheck($"raid clear: pick={rp} state={run.State} cards={run.Cards?.Count} takeAll={run.CardsTakeAll} gold={run.RaidGold} raidAvail={progress.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now())} done={result.DevDone}",
+                run.State == DungeonRunState.Cleared && run.Cards != null && run.Cards.Count == 4 && run.CardsTakeAll && run.RaidGold >= 3000 && run.RaidGold <= 4500
+                && !progress.RaidRewardAvailable(DungeonDatabase.SkeletonKing, now()) && result.DevDone);
             yield return Shot("dgn_16_raid_result");
             result.DevLeave(false);
             yield return Wait(1.4f);

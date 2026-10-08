@@ -199,7 +199,7 @@ namespace DotRPG
             Busy = true;
             body["request_id"] = ApiClient.NewRequestId();
             string full = Char + path;
-            void Post(bool retried) => Api.Post(full, body, r =>
+            void Post(bool retried) => Api.PostIdempotent(full, body, r =>
             {
                 if (!r.ok && r.code == "PRESENCE_REQUIRED" && !retried) { PresenceClient.Ping(() => Post(true)); return; }
                 Busy = false;

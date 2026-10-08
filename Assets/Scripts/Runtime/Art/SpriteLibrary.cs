@@ -92,7 +92,7 @@ namespace DotRPG
             // bilinear sampling; everything else stays point-filtered.
             bool hd = canvas.Density > 1;
             // Skill effects use the plain sprite materials, so their high-resolution art stays point-filtered (crisp pixels).
-            bool smooth = key == "fx_glow" || (hd && FxMaterials.Sharp != null && !key.StartsWith("fx_"));
+            bool smooth = key == "fx_glow" || key == "raid_glow" || key == "raid_ring" || key == "raid_rays" || (hd && FxMaterials.Sharp != null && !key.StartsWith("fx_"));
             var texture = new Texture2D(canvas.Width, canvas.Height, TextureFormat.RGBA32, false)
             {
                 name = key,

@@ -174,6 +174,7 @@ namespace DotRPG
                     case "crop": return DrawCrop(parts[1]);
                     case "fx": return DrawFx(parts[1]);
                     case "dgn": return DrawDungeon(parts); // [DUNGEON] gates, room-map skull, reward cards (ProceduralArtDungeon.cs)
+                    case "raid": return DrawRaid(parts);   // [RAID] raid reward card back / fronts and light shapes (ProceduralArtRaid.cs)
                     // [MONSTER] Projectiles, telegraph textures, summon circles (ProceduralArtMonsters).
                     case "mon": return DrawMonsterKey(parts);
                 }

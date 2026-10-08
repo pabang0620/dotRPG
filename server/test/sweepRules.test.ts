@@ -3,7 +3,7 @@ import { getGameData } from '../src/gamedata/loader';
 import type { DungeonDef } from '../src/gamedata/economyData';
 import { f32, keyAt, roundHalfEven } from '../src/utils/itemKey';
 import { tierOfLevel } from '../src/utils/gearTier';
-import { rollCards, rollGear, rollJackpot, RAID_LEGENDARY_PERMILLE, diffOf, type Card, type DiffNumbers } from '../src/domains/dungeons/dungeonRules';
+import { rollCards, rollGear, rollJackpot, diffOf, type Card, type DiffNumbers } from '../src/domains/dungeons/dungeonRules';
 import { rollSweepCard, sweepXp, ticketUnitPrice } from '../src/domains/sweep/sweepRules';
 import type { Rng } from '../src/utils/rng';
 import { buildApp, shutdown } from './helpers';
@@ -123,7 +123,6 @@ function legacyRollCards(eco: ReturnType<typeof gd>['economy'], d: DungeonDef, d
   const total = table.reduce((a, e) => a + Math.max(0, e.weight), 0);
   const tier = tierOfLevel(diff.recommendedLevel);
   const cards: Card[] = [];
-  const CATS = ['Weapon', 'Top', 'Bottom', 'Necklace', 'Ring'];
   for (let i = 0; i < eco.dungeons.cards.count; i++) {
     let roll = rng.int(0, Math.max(1, total));
     let pick = table[0] as (typeof table)[number];
@@ -137,12 +136,6 @@ function legacyRollCards(eco: ReturnType<typeof gd>['economy'], d: DungeonDef, d
     let card: Card;
     if (pick.itemId === 'gear') {
       card = { item_key: rollGear(eco, cls, diff.minGearRarity, rng, tier), count: 1 };
-      if (d.isRaid && rng.int(0, 1000) < RAID_LEGENDARY_PERMILLE) {
-        const legend = eco.shop.equipmentList.find(
-          (e) => e.rarity === 'Legendary' && e.levelTier === tier && (e.classOnly === null || e.classOnly === cls) && e.category === (CATS[rng.int(0, CATS.length)] as string),
-        );
-        if (legend) card = { item_key: keyAt(legend.id, 0), count: 1 };
-      }
     } else {
       let n = rng.int(pick.min, pick.max + 1);
       if (pick.itemId !== eco.enhance.ticketItem) n = Math.max(1, roundHalfEven(f32(n * diff.rewardMul)));
@@ -162,6 +155,8 @@ describe('A3 직접 플레이 rollCards 불변', () => {
     const eco = gd().economy;
     let compared = 0;
     for (const d of eco.dungeons.byId.values()) {
+      // 13단계: 레이드는 rollRaidCards(카드 4장 모두 받기)로 갈라져 옛 루프와 비교하지 않는다(raidRewards.test.ts)
+      if (d.isRaid) continue;
       const diffs = d.isRaid ? [d.raidNumbers as DiffNumbers] : eco.dungeons.difficulties.map((_x, i) => diffOf(eco, d, i) as DiffNumbers);
       for (const diff of diffs) {
         for (const cls of ['warrior', 'mage']) {

@@ -12,7 +12,7 @@ namespace DotRPG
     /// are revealed. Then 다시 도전 (entries left) / 던전 선택 / 마을로. Animations run on unscaled time (the
     /// window freezes the world). Keys: ←/→ card, Enter / attack flips; afterwards Enter or Esc = 마을로.
     /// </summary>
-    public class DungeonResultScreen : WindowScreen
+    public partial class DungeonResultScreen : WindowScreen
     {
         const float LeftW = 380f, RightX = 392f, RightW = 828f;
         const float CardW = 150f, CardH = 210f, CardGap = 20f;
@@ -98,6 +98,7 @@ namespace DotRPG
             w.selectButton = Button(w.content, "Select", "던전 선택", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-262f, -524f), new Vector2(250f, 62f), () => w.Leave(true), 24);
             w.villageButton = Button(w.content, "Village", "마을로", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -524f), new Vector2(250f, 62f), () => w.Leave(false), 24);
             w.hint = Label(cardsPanel.transform, "Hint", "", 16, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(400f, 24f), TextAnchor.LowerRight);
+            w.BuildRaid(cardsPanel.transform, total); // [RAID] take-all cards, sure-reward chips (DungeonResultScreen.Raid.cs)
             return w;
         }
 
@@ -117,9 +118,10 @@ namespace DotRPG
                 c.face.text = "";
                 c.who.text = "";
                 c.rt.localScale = Vector3.one;
-                c.frame.gameObject.SetActive(hasCards);
-                c.who.gameObject.SetActive(hasCards);
+                c.frame.gameObject.SetActive(hasCards && !RaidMode);
+                c.who.gameObject.SetActive(hasCards && !RaidMode);
             }
+            SetupRaid(hasCards);
             if (!hasCards) done = true;
         }
 
@@ -128,6 +130,7 @@ namespace DotRPG
             base.Show();
             shownAt = Time.unscaledTime;
             Game.Audio.PlaySfx(run != null && run.State == DungeonRunState.Cleared ? "quest" : "cancel");
+            StartRaidAppear();
         }
 
         protected override void Refresh()
@@ -186,6 +189,7 @@ namespace DotRPG
         {
             bool hasCards = run.Cards != null && run.Cards.Count > 0;
             if (!hasCards) { cardTitle.text = "<b>보상 카드</b>"; return; }
+            if (RaidMode) { RefreshRaidTitle(); return; }
             cardTitle.text = !picked ? "<b>보상 카드</b>  <color=#ffe066>카드 한 장을 고르세요</color>" : done ? "<b>보상 카드</b>  <color=#8fe28f>획득 완료</color>" : "<b>보상 카드</b>  파티원이 카드를 고르는 중…";
             for (int i = 0; i < cards.Count; i++)
                 if (!cards[i].flipped) cards[i].frame.color = !picked && i == cursor ? (Color)UIColors.Highlight : new Color(1f, 1f, 1f, 0f);
@@ -218,6 +222,7 @@ namespace DotRPG
             foreach (var b in new[] { retryButton, selectButton, villageButton }) b.gameObject.SetActive(done);
             retryButton.image.color = canRetry ? Color.white : new Color(1f, 1f, 1f, 0.4f);
             hint.text = done ? "<color=#b8c4d8>Enter / ESC 마을로</color>" : "<color=#b8c4d8>←/→ 카드   Enter 뒤집기</color>";
+            RefreshRaidButtons();
         }
 
         protected override void Update()
@@ -233,6 +238,7 @@ namespace DotRPG
             stamp.color = c;
             if (t >= 1f && !stampLanded) { stampLanded = true; Game.Audio.PlaySfx("rank_reveal"); Game.Camera?.Shake(0.08f, 0.15f); }
             if (age < StampDelay) stampLanded = false;
+            UpdateRaidChips(age);
             int lines = Mathf.FloorToInt((age - StampDelay - StampTime) / LineStep) + 1;
             string text = BreakdownText(Mathf.Max(0, lines));
             if (breakdown.text != text) breakdown.text = text;
@@ -241,6 +247,7 @@ namespace DotRPG
             var input = Game.Input;
             if (!done)
             {
+                if (RaidMode) { RaidInput(); return; }
                 if (picked) return;
                 float x = input.Move.x;
                 int dir = x > 0.5f && lastMoveX <= 0.5f ? 1 : x < -0.5f && lastMoveX >= -0.5f ? -1 : 0;
@@ -264,6 +271,7 @@ namespace DotRPG
         /// <summary>The local player's pick; companions and the reveal follow.</summary>
         public bool PlayerPick(int index)
         {
+            if (RaidMode) return RaidPick(index);
             if (run == null || run.Cards == null || picking || picked || index < 0 || index >= cards.Count || cards[index].flipped) return false;
             if (Time.unscaledTime - shownAt < StampDelay) return false;
             picking = true;
@@ -409,8 +417,8 @@ namespace DotRPG
         // ---------- Automated checks ----------
         public bool DevDone => done;
         public string DevStamp => stamp != null ? stamp.text : "";
-        public string DevWho(int i) => i >= 0 && i < cards.Count ? cards[i].who.text : "";
-        public bool DevFlipped(int i) => i >= 0 && i < cards.Count && cards[i].flipped;
+        public string DevWho(int i) => RaidMode ? DevRaidWho(i) : i >= 0 && i < cards.Count ? cards[i].who.text : "";
+        public bool DevFlipped(int i) => RaidMode ? DevRaidFlipped(i) : i >= 0 && i < cards.Count && cards[i].flipped;
         public void DevRetry() => OnRetry();
         public void DevLeave(bool openSelect) => Leave(openSelect);
     }

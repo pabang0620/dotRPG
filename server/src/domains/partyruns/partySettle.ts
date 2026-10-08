@@ -115,7 +115,13 @@ function storedResult(run: dungeonRepo.RunRow): EconResult {
     granted_xp: run.xp_granted ?? 0,
     card_count: run.cards ? run.cards.length : 0,
   };
-  if (dungeon?.isRaid) data.raid = { reward_locked: run.reward_locked, ...(run.lock_reason ? { lock_reason: run.lock_reason } : {}) };
+  if (dungeon?.isRaid) {
+    data.raid = {
+      reward_locked: run.reward_locked,
+      ...(run.lock_reason ? { lock_reason: run.lock_reason } : {}),
+      ...(!run.reward_locked && run.cards_mode === 'take_all' ? { gold_gain: run.raid_gold, card_mode: run.cards_mode } : {}),
+    };
+  }
   else if (run.reward_locked) {
     data.reward_locked = true;
     data.reward_lock_reason = run.lock_reason;

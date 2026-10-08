@@ -61,7 +61,7 @@ namespace DotRPG
                 Busy = true;
                 var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["context"] = context };
                 if (Game.World != null) body["map_id"] = Game.World.MapId;
-                Api.Post(Path, body, r =>
+                Api.PostIdempotent(Path, body, r =>
                 {
                     Busy = false;
                     if (!r.ok)

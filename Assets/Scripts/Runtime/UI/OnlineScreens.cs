@@ -79,6 +79,8 @@ namespace DotRPG
     public class OnlineLoginScreen : OnlineMenuScreen
     {
         InputField idField, pwField;
+        // [W3] The last login was refused because the account waits for withdrawal: offer the cancel button.
+        bool cancelOffered, cancelSteam;
 
         protected override bool AnyFieldFocused => idField.isFocused || pwField.isFocused;
 
@@ -91,20 +93,71 @@ namespace DotRPG
             screen.idField = screen.Field("아이디", -100f, "영문 소문자·숫자 4~20자", 20, false);
             screen.pwField = screen.Field("비밀번호", -150f, "8자 이상", 64, true);
             screen.Status(-200f);
-            // [PARTY 8] Steam players log in with their Steam account (shown only while Steam is running).
-            screen.menu.AddButton("Steam으로 접속", () => screen.SubmitSteam(), () => SteamBridge.Current != null && SteamBridge.Current.Ready);
-            screen.menu.AddButton("로그인", () => screen.Submit(false));
-            screen.menu.AddButton("새 계정 만들기", () => screen.Submit(true));
-            screen.menu.AddButton("돌아가기", () => ui.Pop());
-            screen.menu.OnCancel = () => ui.Pop();
-            screen.FitPanel();
+            screen.BuildMenu();
             return screen;
+        }
+
+        void BuildMenu()
+        {
+            menu.Clear();
+            // [PARTY 8] Steam players log in with their Steam account (shown only while Steam is running).
+            menu.AddButton("Steam으로 접속", () => SubmitSteam(), () => SteamBridge.Current != null && SteamBridge.Current.Ready);
+            menu.AddButton("로그인", () => Submit(false));
+            menu.AddButton("새 계정 만들기", () => Submit(true));
+            if (cancelOffered)
+                menu.AddButton("탈퇴 철회", () => ui.Confirm("탈퇴 요청을 철회할까요?\n<size=18>철회하면 계정과 캐릭터가 그대로 돌아옵니다.</size>", CancelWithdrawal, overlay: true));
+            menu.AddButton("돌아가기", () => ui.Pop());
+            menu.OnCancel = () => ui.Pop();
+            FitPanel();
+            menu.Refresh();
+        }
+
+        /// <summary>[W3] 403 ACCOUNT_WITHDRAWAL_PENDING: say so, show the cancel button and ask once.</summary>
+        void OfferCancel(bool steam, ApiResult r)
+        {
+            bool allowed = r.errors != null && r.errors.TryGetValue("cancel_allowed", out var a) && a is bool b && b;
+            if (!allowed)
+            {
+                Say("탈퇴 처리 중인 계정입니다. 고객 지원에 문의하세요.", true);
+                return;
+            }
+            cancelOffered = true;
+            cancelSteam = steam;
+            BuildMenu();
+            Say("탈퇴 대기 중인 계정입니다.", true);
+            string due = WithdrawalClient.LocalTime(MiniJson.Str(r.errors, "due_at"));
+            ui.Confirm($"탈퇴 대기 중인 계정입니다.\n{(due.Length > 0 ? due + "까지 철회할 수 있습니다." : "기한 안에는 철회할 수 있습니다.")}\n\n지금 탈퇴를 철회할까요?", CancelWithdrawal, overlay: true);
+        }
+
+        void CancelWithdrawal()
+        {
+            if (busy) return;
+            string id = idField.text.Trim().ToLowerInvariant(), pw = pwField.text;
+            if (!cancelSteam && (id.Length < 4 || pw.Length < 8)) { Say("아이디와 비밀번호를 입력해 주세요.", true); return; }
+            busy = true;
+            Say("탈퇴를 철회하는 중...");
+            WithdrawalClient.Cancel(cancelSteam ? null : id, cancelSteam ? null : pw, r =>
+            {
+                busy = false;
+                if (!r.ok)
+                {
+                    Say(WithdrawalClient.Explain(r), true);
+                    Game.Audio.PlaySfx("cancel");
+                    if (r.code == "NO_PENDING_WITHDRAWAL" || r.code == "WITHDRAWAL_DUE" || r.code == "CANCEL_NOT_ALLOWED") { cancelOffered = false; BuildMenu(); }
+                    return;
+                }
+                cancelOffered = false;
+                BuildMenu();
+                Say("탈퇴를 철회했습니다. 접속하는 중...");
+                if (cancelSteam) SubmitSteam(); else Submit(false); // the cancel used the ticket / password up: log in again
+            });
         }
 
         public override void Show()
         {
             base.Show();
             pwField.text = "";
+            if (cancelOffered) { cancelOffered = false; BuildMenu(); }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Say($"서버: {ApiClient.Instance.BaseUrl}");
 #else
@@ -134,7 +187,12 @@ namespace DotRPG
             OnlineSession.LoginSteam(r =>
             {
                 busy = false;
-                if (!r.ok) { Say(Explain(r), true); Game.Audio.PlaySfx("cancel"); return; }
+                if (!r.ok)
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    if (r.code == "ACCOUNT_WITHDRAWAL_PENDING") OfferCancel(true, r); else Say(Explain(r), true);
+                    return;
+                }
                 Game.Audio.PlaySfx("confirm");
                 ui.Pop();
                 ui.Push(ui.OnlineCharacters);
@@ -151,7 +209,12 @@ namespace DotRPG
             OnlineSession.Login(id, pw, register, r =>
             {
                 busy = false;
-                if (!r.ok) { Say(Explain(r), true); Game.Audio.PlaySfx("cancel"); return; }
+                if (!r.ok)
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    if (r.code == "ACCOUNT_WITHDRAWAL_PENDING") OfferCancel(false, r); else Say(Explain(r), true);
+                    return;
+                }
                 Game.Audio.PlaySfx("confirm");
                 ui.Pop();
                 ui.Push(ui.OnlineCharacters);
@@ -211,6 +274,7 @@ namespace DotRPG
             {
                 menu.AddButton("새 캐릭터 만들기", () => ui.Push(ui.OnlineCreate), () => session != null && session.Characters.Count < session.CharacterLimit);
                 menu.AddButton("캐릭터 삭제", () => { deleting = true; Rebuild(); }, () => session != null && session.Characters.Count > 0);
+                menu.AddButton("회원 탈퇴", () => ui.Push(ui.Withdrawal)); // [W2]
                 menu.AddButton("로그아웃", () => { OnlineSession.Logout(); ui.Pop(); });
                 menu.OnCancel = () => { OnlineSession.Logout(); ui.Pop(); };
             }

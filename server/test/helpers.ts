@@ -12,7 +12,8 @@ import { getNow, setClockOverride } from '../src/utils/clock';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 
 export const CLIENT_VERSION = '0.2.0';
-export const DATA_DIR = path.resolve(__dirname, '..', 'data');
+// GAME_DATA_DIR이 있으면(임시 폴더로 복사한 데이터로 시험할 때) 그 폴더를 쓴다
+export const DATA_DIR = process.env.GAME_DATA_DIR ?? path.resolve(__dirname, '..', 'data');
 export const DATA_VERSION = (
   JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'data_version.json'), 'utf8')) as { version: string }
 ).version;
@@ -31,6 +32,7 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'raid_shop_purchases',
       // 탈퇴(0027): 계정을 가리키는 표를 먼저
       'account_destruction_log',
       'withdrawn_identities',

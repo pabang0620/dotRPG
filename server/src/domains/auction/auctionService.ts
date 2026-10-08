@@ -1,7 +1,8 @@
 // 경매 쓰기 요청: 등록, 취소, 즉시 구매, 입찰. 락 순서는 요청자 캐릭터 행 -> auction_listings 한 행(phase6_api.md 8.1).
 import { randomUUID } from 'node:crypto';
 import { getConfig } from '../../config/env';
-import { withTransaction } from '../../db/pool';
+import { REQUEST_LOG_UNIQUE, findRequest, hashRequest, saveRequest } from '../../db/idempotency';
+import { getPool, isUniqueViolation, withTransaction } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
@@ -309,11 +310,28 @@ export function bid(accountId: number, characterUuid: string, listingUuid: strin
 
 // ---------- A5 취소 ----------
 
+const CANCEL_ENDPOINT = 'DELETE /characters/:uuid/auction/listings/:listing_id';
+
+/**
+ * request_id가 있으면 첫 결과를 request_log에 저장하고, 같은 request_id 재전송에는 저장된 같은 결과를 돌려준다
+ * (클라이언트 재시도용). 없으면 예전처럼 상태 기반 멱등만 쓴다.
+ */
 export async function cancelListing(accountId: number, characterUuid: string, listingUuid: string, requestId: string | null = null): Promise<Record<string, unknown>> {
+  const hash = hashRequest({ endpoint: CANCEL_ENDPOINT, character: characterUuid, payload: { listing_id: listingUuid } });
+  const replayOf = (st: NonNullable<Awaited<ReturnType<typeof findRequest>>>): Record<string, unknown> => {
+    if (st.requestHash !== hash || st.endpoint !== CANCEL_ENDPOINT) {
+      throw new AppError(422, '같은 request_id로 다른 요청을 보낼 수 없습니다.', 'IDEMPOTENCY_MISMATCH');
+    }
+    return (st.response as { data: Record<string, unknown> }).data;
+  };
   try {
     return await withTransaction(async (client) => {
       const c = await lockCharacter(client, accountId, characterUuid);
       if (!c) throw NOT_FOUND_CHAR();
+      if (requestId) {
+        const stored = await findRequest(client, accountId, requestId);
+        if (stored) return replayOf(stored);
+      }
       const l = await repo.lockListingByUuid(client, listingUuid);
       if (!l) throw LISTING_NOT_FOUND();
       if (l.sellerCharacterId !== c.id) {
@@ -336,10 +354,17 @@ export async function cancelListing(accountId: number, characterUuid: string, li
       if (l.currentBid !== null) throw new AppError(409, '입찰자가 있어 취소할 수 없습니다.', 'HAS_BIDS');
       await returnToSeller({ client, now, requestId }, l, 'cancelled');
       const mail = await mailRepo.findMailOfListing(client, l.id, c.id, 'cancelled');
-      return { already: false, mail_id: mail, forfeited_deposit: l.deposit };
+      const data = { already: false, mail_id: mail, forfeited_deposit: l.deposit };
+      if (requestId) await saveRequest(client, accountId, requestId, CANCEL_ENDPOINT, hash, 200, { success: true, message: '', data });
+      return data;
     });
   } catch (err) {
     if (err instanceof FlagError) await recordFlag(err.flag);
+    // 락을 우회한 UNIQUE 충돌(이론상 드묾): 먼저 끝난 요청의 결과를 돌려준다
+    if (requestId && isUniqueViolation(err, REQUEST_LOG_UNIQUE)) {
+      const stored = await findRequest(getPool(), accountId, requestId);
+      if (stored) return replayOf(stored);
+    }
     throw err;
   }
 }
