@@ -51,7 +51,7 @@ namespace DotRPG
         public const int FontMin = 16;
 
         /// <summary>Clamps a size to <see cref="FontMin"/>.</summary>
-        public static int Size(int size) => Mathf.Max(FontMin, size);
+        public static int Size(int size) => Mathf.Max(TouchUi.Enabled ? UIFactory.MinFontSize : FontMin, size);
 
         // ---------- Spacing ----------
         public const float SpaceS = 8f, SpaceM = 12f, SpaceL = 20f, SpaceXL = 30f;

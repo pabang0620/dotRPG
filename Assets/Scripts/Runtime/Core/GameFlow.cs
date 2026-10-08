@@ -105,8 +105,27 @@ namespace DotRPG
         /// </summary>
         public static bool PauseOnFocusLoss = false;
 
+        // [ANDROID] A phone can end the process while the game is in the background: save when it leaves the screen.
+        float lastBackgroundSave = -10f;
+
+        void OnApplicationPause(bool paused)
+        {
+            if (paused) SaveOnBackground();
+        }
+
+        void SaveOnBackground()
+        {
+            if (!Application.isMobilePlatform || Game.State == null || Time.realtimeSinceStartup - lastBackgroundSave < 1f) return;
+            lastBackgroundSave = Time.realtimeSinceStartup;
+            Game.Settings?.Save();
+            // WriteSave refuses inside a dungeon (no saving there: the last save continues in the village).
+            if (Game.IsPlaying || Game.State.Current == GameState.Paused) WriteSave();
+            OnlineSession.FlushOnBackground();
+        }
+
         void OnApplicationFocus(bool hasFocus)
         {
+            if (!hasFocus) SaveOnBackground();
             // Common PC courtesy: alt-tabbing out pauses the game (not in the editor, where it gets in the way).
             // Automated capture runs (they redirect saves) keep playing so several can run side by side.
             if (!hasFocus && PauseOnFocusLoss && !Application.isEditor && SaveSystem.DirectoryOverride == null && Game.State != null &&

@@ -19,10 +19,10 @@ namespace DotRPG
             {
                 attempted = true;
                 var path = Path.Combine(Application.streamingAssetsPath, "Art", "winter_village_atlas.png");
-                if (File.Exists(path))
+                if (StreamingFiles.Exists(path))
                 {
                     atlas = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-                    if (!atlas.LoadImage(File.ReadAllBytes(path))) { Object.Destroy(atlas); atlas = null; }
+                    if (!atlas.LoadImage(StreamingFiles.ReadAllBytes(path))) { Object.Destroy(atlas); atlas = null; }
                     else { atlas.filterMode = FilterMode.Point; atlas.wrapMode = TextureWrapMode.Clamp; }
                 }
             }

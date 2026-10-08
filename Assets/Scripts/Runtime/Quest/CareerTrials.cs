@@ -63,7 +63,22 @@ namespace DotRPG
             if(what=="cleanse"&&actor==r.player)r.cleansed++;
             string[] order={"fire","ice","storm"};if(System.Array.IndexOf(order,what)>=0&&actor==r.player){if(r.sequence<3&&what==order[r.sequence])r.sequence++;else if(r.sequence<3)r.sequence=what=="fire"?1:0;}
         }
-        void OnGUI(){if(Running!=this)return;GUI.Box(new Rect(Screen.width/2-300,86,600,56),status+"\n"+Mathf.Max(0,45-(Time.time-started)).ToString("0")+"초 남음 · 실패 시 재도전 가능");}
+        void OnGUI()
+        {
+            if(Running!=this)return;
+            string message=status+"\n"+Mathf.Max(0,45-(Time.time-started)).ToString("0")+"초 남음 · 실패 시 재도전 가능";
+            if(TouchUi.Enabled)
+            {
+                // [TOUCH] The 600x56 banner is tiny on a phone: bigger text and box, inside the safe area.
+                float k=Mathf.Max(1.6f,Screen.height/450f);
+                float width=Mathf.Min(Screen.width-40f,600f*k);
+                var style=new GUIStyle(GUI.skin.box){fontSize=Mathf.RoundToInt(15*k),wordWrap=true,alignment=TextAnchor.MiddleCenter};
+                float top=Screen.height-Screen.safeArea.yMax+16f*k;
+                GUI.Box(new Rect(Screen.width/2f-width/2f,top,width,56f*k),message,style);
+                return;
+            }
+            GUI.Box(new Rect(Screen.width/2-300,86,600,56),message);
+        }
         void Update()
         {
             if(player==null||player.IsDead||companion==null||companion.IsDead||Game.Session.MapId!=map){Finish(false);return;}

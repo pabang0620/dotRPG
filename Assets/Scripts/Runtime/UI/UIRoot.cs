@@ -94,7 +94,7 @@ namespace DotRPG
             var holder = GetComponent<UIRootScale>();
             if (holder == null || holder.scaler == null) return;
             float k = UiTheme.UiScales[Mathf.Clamp(index, 0, UiTheme.UiScales.Length - 1)];
-            holder.scaler.referenceResolution = UIFactory.ReferenceResolution / k;
+            holder.scaler.referenceResolution = UIFactory.CanvasReference / k;
         }
 
         public static UIRoot Create(Transform parent)
@@ -108,7 +108,7 @@ namespace DotRPG
             var scaler = go.AddComponent<CanvasScaler>();
             go.AddComponent<UIRootScale>().scaler = scaler;
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = UIFactory.ReferenceResolution;
+            scaler.referenceResolution = UIFactory.CanvasReference; // [TOUCH] 1024x576 on a phone
             // [UI] Expand: the 1280x720 reference always fits inside the canvas, so 16:10 (Steam Deck 1280x800)
             // and 21:9 only add space instead of shrinking the width (MatchWidthOrHeight 0.5 made the centred
             // boss bar overlap the status bars at 16:10). 16:9 resolutions scale exactly as before.

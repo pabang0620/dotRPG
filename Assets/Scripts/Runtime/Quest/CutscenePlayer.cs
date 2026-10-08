@@ -62,6 +62,7 @@ namespace DotRPG
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1280f, 720f);
             scaler.matchWidthOrHeight = 1f;
+            if (TouchUi.Enabled) scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand; // [TOUCH] same rule as the UI canvas; PC keeps match-height
             var root = (RectTransform)cgo.transform;
 
             tint = MakeImage(root, "Tint", new Color(0f, 0f, 0f, 0f));

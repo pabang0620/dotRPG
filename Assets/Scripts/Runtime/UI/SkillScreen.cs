@@ -107,6 +107,7 @@ namespace DotRPG
                     relay.onEnter = () => { hovered = view; mouse = true; };
                     relay.onExit = () => { if (hovered == view) hovered = null; };
                     relay.onClick = b => { selectedSocket = index; Cycle(view, b == PointerEventData.InputButton.Right ? -1 : 1); };
+                    LongPress.Add(bg.gameObject, () => { selectedSocket = index; Cycle(view, -1); }); // touch: hold = right click
                     sockets.Add(view);
                 }
                 slotInfo[s] = Label(row.transform, "Info", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(368f, 0f), new Vector2(840f, 84f), TextAnchor.MiddleLeft);

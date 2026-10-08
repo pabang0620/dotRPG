@@ -77,7 +77,7 @@ namespace DotRPG
             // [UI] The bag is laid out on a fixed 1280x720 rect that shrinks to fit (UI scale 1.15 / 1.3), like other windows.
             var bg = UIFactory.Overlay(root, "FitBackground", UiTheme.Background);
             bg.raycastTarget = true;
-            var layout = UIFactory.Place(UIFactory.Rect(root, "Layout"), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, UIFactory.ReferenceResolution);
+            var layout = UIFactory.Place(UIFactory.Rect(SafeAreaFitter.Wrap(root), "Layout"), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, UIFactory.ReferenceResolution);
             layout.gameObject.AddComponent<FitToParent>().design = UIFactory.ReferenceResolution;
             screen.Build(layout);
             screen.BuildDragAndMenu(layout);
@@ -389,7 +389,11 @@ namespace DotRPG
 
         public void OnPointerEnter(PointerEventData e) => onEnter?.Invoke();
         public void OnPointerExit(PointerEventData e) => onExit?.Invoke();
-        public void OnPointerClick(PointerEventData e) => onClick?.Invoke(e.button);
+        public void OnPointerClick(PointerEventData e)
+        {
+            if (LongPress.TakeFired(gameObject)) return; // the long press already did its action
+            onClick?.Invoke(e.button);
+        }
     }
 
     /// <summary>[UI] Scales a fixed-size layout rect down to fit its parent (never up).</summary>

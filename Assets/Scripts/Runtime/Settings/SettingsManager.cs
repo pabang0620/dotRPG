@@ -13,6 +13,13 @@ namespace DotRPG
     {
         public SettingsData Data { get; private set; } = new SettingsData();
         public event Action Applied;
+        static bool mobileQualitySet;
+
+        /// <summary>
+        /// [ANDROID] True on a phone/tablet: resolution, window mode and vSync do not apply there, so the settings menu
+        /// should not list them. The menu (UI/MenuScreens.cs, SettingsScreen.Create) reads this flag.
+        /// </summary>
+        public static bool HideDisplayOptions => Application.isMobilePlatform;
 
         public static string FilePath => Path.Combine(SaveSystem.DirectoryOverride ?? Application.persistentDataPath, "settings.json");
 
@@ -57,11 +64,26 @@ namespace DotRPG
             AudioListener.volume = Data.masterVolume;
             if (Game.Audio != null) Game.Audio.SetVolumes(Data.musicVolume, Data.sfxVolume);
 
-            QualitySettings.vSyncCount = Data.vSync ? 1 : 0;
-            Application.targetFrameRate = Data.vSync ? -1 : Mathf.Max(30, Data.targetFrameRate);
+            if (HideDisplayOptions)
+            {
+                // [ANDROID] The phone decides the screen size; frame pacing is fixed (no vSync, 60 fps).
+                if (!mobileQualitySet)
+                {
+                    mobileQualitySet = true;
+                    int low = Array.IndexOf(QualitySettings.names, "Low");
+                    QualitySettings.SetQualityLevel(low >= 0 ? low : 0, true);
+                }
+                QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = 60;
+            }
+            else
+            {
+                QualitySettings.vSyncCount = Data.vSync ? 1 : 0;
+                Application.targetFrameRate = Data.vSync ? -1 : Mathf.Max(30, Data.targetFrameRate);
+            }
 
 #if !UNITY_EDITOR
-            ApplyDisplay();
+            if (!HideDisplayOptions) ApplyDisplay();
 #endif
             UiTheme.ColorBlind = Data.colorBlind;
             Game.UI?.ApplyUiScale(Data.uiScale);

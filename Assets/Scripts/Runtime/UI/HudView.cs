@@ -51,6 +51,7 @@ namespace DotRPG
         public static HudView Create(Transform canvas)
         {
             var root = UIFactory.Stretch(UIFactory.Rect(canvas, "HUD"));
+            root.gameObject.AddComponent<SafeAreaFitter>(); // [TOUCH] keep the HUD out of notches and rounded corners
             var hud = root.gameObject.AddComponent<HudView>();
             hud.Build(root);
             hud.built = true;
@@ -63,7 +64,8 @@ namespace DotRPG
             // Level + HP / MP / EXP bars (top-left) and the skill bar (bottom-centre).
             StatusBarsView.Create(root);
             BuffBarView.Create(root); // [UI] buffs and debuffs under the currency line
-            SkillBarView.Create(root);
+            var skillBar = SkillBarView.Create(root);
+            if (TouchUi.Enabled) skillBar.gameObject.SetActive(false); // [TOUCH] the touch skill buttons take its place (UI/TouchControls.cs)
             AwakeningBanner.Create(root);
             AwakeningCutIn.Create(root); // class illustration slides in at the bottom-left on an awakening skill
 
@@ -88,7 +90,8 @@ namespace DotRPG
                 x += gold ? 128f : 72f; // [UI] room for the wider pixel-font digits
             }
             items.sizeDelta = new Vector2(Mathf.Min(x + 8f, UiTheme.HudCurrencyMaxRight - 18f), 44); // [UI] the last count stays inside the rim
-            QuickItemBar.Create(root);
+            var quickBar = QuickItemBar.Create(root);
+            if (TouchUi.Enabled) quickBar.gameObject.SetActive(false); // [TOUCH] touch potion buttons
 
             // Round minimap (top-right) with the quest tracker underneath.
             SideMenuView.Create(root);
@@ -100,6 +103,12 @@ namespace DotRPG
             TipView.Create(root); // [E5] first-time tips
             ChatView.Create(root); // [F5] chat box + quick signals
             questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -QuestTop), new Vector2(QuestWidth, 130));
+            if (TouchUi.Enabled)
+            {
+                // [TOUCH] The right column belongs to the touch buttons: the tracker moves to the top, left of the menu buttons.
+                questPanel.anchoredPosition = new Vector2(-MobileQuestRight, -MobileQuestTop);
+                questPanel.sizeDelta = new Vector2(QuestNarrowWidth, 130);
+            }
             var qbg = UIFactory.Panel(questPanel, "Bg", true);
             UIFactory.Stretch(qbg.rectTransform);
             questTitle = UIFactory.Text(questPanel, "Title", "", 22, UIColors.Highlight, TextAnchor.UpperLeft, true);
@@ -169,6 +178,15 @@ namespace DotRPG
             var toastCanvas = toastRoot.gameObject.AddComponent<Canvas>();
             toastCanvas.overrideSorting = true;
             toastCanvas.sortingOrder = 500;
+
+            if (TouchUi.Enabled)
+            {
+                // [TOUCH] Keyboard hints make no sense on a phone, and the touch buttons sit where they were.
+                mobilityPlate.gameObject.SetActive(false);
+                controlsHint.gameObject.SetActive(false);
+                controlsPlate.gameObject.SetActive(false);
+                TouchControls.Create(root);
+            }
         }
 
         void OnEnable()
@@ -261,7 +279,7 @@ namespace DotRPG
             // 626 / 554 tall). At 1.3 that leaves 554 - 234 - 88 - 136 = 96 px: title + 2 body lines.
             questFitHeight = ((RectTransform)transform).rect.height;
             questFitWidth = questPanel.sizeDelta.x;
-            float room = questFitHeight > 0f ? questFitHeight - QuestTop - 88f - 136f : wanted;
+            float room = questFitHeight > 0f ? questFitHeight - (TouchUi.Enabled ? MobileQuestTop : QuestTop) - 88f - 136f : wanted;
             float height = Mathf.Min(wanted, Mathf.Max(30f + titleH + 22f, room));
             questBody.verticalOverflow = height < wanted ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
             questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, height);
@@ -271,6 +289,8 @@ namespace DotRPG
         public const float QuestTop = 16f + MinimapView.Diameter + 42f;
         /// <summary>[UI] Quest tracker width; narrowed to the auto buttons' column while a boss bar shows on a narrow canvas.</summary>
         const float QuestWidth = 360f, QuestNarrowWidth = 272f;
+        /// <summary>[TOUCH] Tracker position on a phone: below the side menu button, left of the menu / pause buttons.</summary>
+        const float MobileQuestRight = 360f, MobileQuestTop = 72f;
         float questFitHeight, questFitWidth;
 
         static void AppendObjective(StringBuilder sb, QuestObjective o)
@@ -367,7 +387,7 @@ namespace DotRPG
         static void ShowKey(Text badge, GameAction action, ref string shown)
         {
             var input = Game.Input;
-            string key = input == null || input.UsingGamepad ? "" : input.GetBindingLabel(action);
+            string key = input == null || input.UsingGamepad || TouchUi.Enabled ? "" : input.GetBindingLabel(action);
             if (key == "?") key = "";
             if (ReferenceEquals(key, shown)) return;
             shown = key;

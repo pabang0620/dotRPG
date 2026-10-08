@@ -36,12 +36,12 @@ namespace DotRPG
             if (!sheets.TryGetValue(id, out var cells))
             {
                 string path = Path.Combine(Application.streamingAssetsPath, "RegionalMonsters", id + ".png");
-                if (!File.Exists(path)) { Debug.LogError("Missing regional monster atlas: " + path); return null; }
+                if (!StreamingFiles.Exists(path)) { Debug.LogError("Missing regional monster atlas: " + path); return null; }
                 var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false)
                 { name = id, filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-                if (!ImageConversion.LoadImage(texture, File.ReadAllBytes(path), false)) { UnityEngine.Object.Destroy(texture); return null; }
+                if (!ImageConversion.LoadImage(texture, StreamingFiles.ReadAllBytes(path), false)) { UnityEngine.Object.Destroy(texture); return null; }
                 texture.filterMode = FilterMode.Point;
-                var atlas = JsonUtility.FromJson<Atlas>(File.ReadAllText(Path.ChangeExtension(path, ".json")));
+                var atlas = JsonUtility.FromJson<Atlas>(StreamingFiles.ReadAllText(Path.ChangeExtension(path, ".json")));
                 cells = new Sprite[40];
                 // Authored bounds isolate uneven source spacing; a common PPU preserves pose proportions.
                 for (int row = 0; row < 5; row++) for (int col = 0; col < 8; col++)

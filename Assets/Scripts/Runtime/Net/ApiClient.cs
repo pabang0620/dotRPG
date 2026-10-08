@@ -73,7 +73,7 @@ namespace DotRPG
                 {
                     var asset = Resources.Load<TextAsset>("Data/DataVersion");
                     var path = System.IO.Path.Combine(Application.streamingAssetsPath, "DataVersion.txt");
-                    dataVersion = System.IO.File.Exists(path) ? System.IO.File.ReadAllText(path).Trim() : asset != null ? asset.text.Trim() : "";
+                    dataVersion = StreamingFiles.Exists(path) ? StreamingFiles.ReadAllText(path).Trim() : asset != null ? asset.text.Trim() : "";
                 }
                 return dataVersion;
             }
@@ -93,6 +93,28 @@ namespace DotRPG
             BaseUrl = (string.IsNullOrEmpty(url) ? DefaultServer : url).TrimEnd('/');
 #endif
         }
+
+#if !DOTRPG_RELEASE
+        /// <summary>
+        /// [ANDROID] Development builds: the login screen sets the server address on a phone (no command line there).
+        /// Stored under the same PlayerPrefs key Awake reads; empty goes back to the default. A new address drops the old tokens.
+        /// </summary>
+        public void SetServer(string url)
+        {
+            url = (url ?? "").Trim().TrimEnd('/');
+            if (url.Length > 0 && !url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) url = "http://" + url;
+            try
+            {
+                if (url.Length == 0) PlayerPrefs.DeleteKey(ServerKey); else PlayerPrefs.SetString(ServerKey, url);
+                PlayerPrefs.Save();
+            }
+            catch (Exception) { }
+            string next = url.Length == 0 ? DefaultServer : url;
+            if (next == BaseUrl) return;
+            BaseUrl = next;
+            ClearTokens();
+        }
+#endif
 
         public void SetTokens(string access, string refresh)
         {

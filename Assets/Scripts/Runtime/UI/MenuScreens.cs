@@ -145,7 +145,7 @@ namespace DotRPG
                 ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin);
             });
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
-            screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
+            if (!Application.isMobilePlatform) screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
             screen.panel.sizeDelta = new Vector2(380, screen.menu.Height + 48);
 
@@ -175,7 +175,7 @@ namespace DotRPG
             screen.menu.AddButton("계속하기", () => Game.Flow.Resume());
             screen.menu.AddButton("가방 · 장비", () => Game.Flow.OpenWindow(null));
             screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
-            screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
+            if (!Application.isMobilePlatform) screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
             if (GameFlow.DemoSlots) // [DEMO] the flag is set from the command line before the UI is built
                 screen.menu.AddButton("캐릭터 변경", () => ui.Confirm("다른 체험 캐릭터로 바꿀까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.SwitchCharacter()));
@@ -213,26 +213,29 @@ namespace DotRPG
             menu.AddOption("전체 음량", () => Percent(s.Data.masterVolume), d => { s.Data.masterVolume = Step(s.Data.masterVolume, d); s.Apply(); });
             menu.AddOption("배경음", () => Percent(s.Data.musicVolume), d => { s.Data.musicVolume = Step(s.Data.musicVolume, d); s.Apply(); });
             menu.AddOption("효과음", () => Percent(s.Data.sfxVolume), d => { s.Data.sfxVolume = Step(s.Data.sfxVolume, d); s.Apply(); });
-            menu.AddOption("해상도", () => SettingsManager.ResolutionLabel(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight)), d =>
+            if (!SettingsManager.HideDisplayOptions)
             {
-                screen.resolutions ??= SettingsManager.GetResolutionOptions();
-                int current = screen.resolutions.IndexOf(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight));
-                int next = ((Mathf.Max(0, current) + d) % screen.resolutions.Count + screen.resolutions.Count) % screen.resolutions.Count;
-                screen.ChangeDisplay(() => { s.Data.resolutionWidth = screen.resolutions[next].x; s.Data.resolutionHeight = screen.resolutions[next].y; });
-            });
-            menu.AddOption("화면 모드", () => SettingsManager.WindowModeLabel(s.Data.windowMode), d =>
-            {
-                int count = Enum.GetValues(typeof(WindowMode)).Length;
-                screen.ChangeDisplay(() => s.Data.windowMode = (WindowMode)((((int)s.Data.windowMode + d) % count + count) % count));
-            });
-            menu.AddOption("수직 동기화", () => s.Data.vSync ? "켜기" : "끄기", d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
+                menu.AddOption("해상도", () => SettingsManager.ResolutionLabel(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight)), d =>
+                {
+                    screen.resolutions ??= SettingsManager.GetResolutionOptions();
+                    int current = screen.resolutions.IndexOf(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight));
+                    int next = ((Mathf.Max(0, current) + d) % screen.resolutions.Count + screen.resolutions.Count) % screen.resolutions.Count;
+                    screen.ChangeDisplay(() => { s.Data.resolutionWidth = screen.resolutions[next].x; s.Data.resolutionHeight = screen.resolutions[next].y; });
+                });
+                menu.AddOption("화면 모드", () => SettingsManager.WindowModeLabel(s.Data.windowMode), d =>
+                {
+                    int count = Enum.GetValues(typeof(WindowMode)).Length;
+                    screen.ChangeDisplay(() => s.Data.windowMode = (WindowMode)((((int)s.Data.windowMode + d) % count + count) % count));
+                });
+                menu.AddOption("수직 동기화", () => s.Data.vSync ? "켜기" : "끄기", d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
+            }
             menu.AddOption("화면 흔들림", () => s.Data.screenShake ? "켜기" : "끄기", d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
             // [I] Accessibility and keys.
             menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
             menu.AddOption("색약 보정", () => s.Data.colorBlind ? "켜기" : "끄기", d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
             // Loot filter: what is left on the ground (gold and higher gear are always picked up).
             menu.AddButton("줍기 설정", () => ui.Push(ui.LootFilter)); // its own screen: the list stays within the screen height
-            menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
+            if (!Application.isMobilePlatform) menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
             menu.AddButton("돌아가기", () => screen.Close());
             menu.OnCancel = screen.Close;
             screen.FitPanel();

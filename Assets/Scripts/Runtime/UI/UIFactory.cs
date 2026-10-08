@@ -44,6 +44,10 @@ namespace DotRPG
     {
         /// <summary>Canvas reference resolution. Art is 16px; UI panels are drawn at 3x.</summary>
         public static readonly Vector2 ReferenceResolution = new Vector2(1280, 720);
+        /// <summary>Reference resolution of the UI canvas scaler: a phone uses 1024x576 (everything about 1.25x bigger).</summary>
+        public static Vector2 CanvasReference => TouchUi.Enabled ? new Vector2(1024, 576) : ReferenceResolution;
+        /// <summary>Smallest font size of any UI text (22 with touch controls, 14 otherwise).</summary>
+        public static int MinFontSize => TouchUi.Enabled ? 22 : 14;
         const float UiPixelScale = 3f;
         /// <summary>Density-1 art resolution (pixels per tile). HD (density-2) UI frames are sized
         /// against this so their on-screen 9-slice borders match the old 16px frames.</summary>
@@ -143,7 +147,7 @@ namespace DotRPG
             var text = rt.gameObject.AddComponent<Text>();
             text.font = UIFont.Get();
             text.text = content;
-            text.fontSize = Mathf.Max(14, Mathf.RoundToInt(size * TextScale));
+            text.fontSize = Mathf.Max(MinFontSize, Mathf.RoundToInt(size * TextScale));
             text.color = color;
             text.alignment = align;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;

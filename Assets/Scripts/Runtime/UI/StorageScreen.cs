@@ -98,6 +98,7 @@ namespace DotRPG
             relay.onEnter = () => { hovered = c; dirty = true; };
             relay.onExit = () => { if (hovered == c) { hovered = null; dirty = true; } };
             relay.onClick = b => { cursorIndex = index; Move(c, b == PointerEventData.InputButton.Right); };
+            LongPress.Add(c.bg.gameObject, () => { cursorIndex = index; Move(c, true); }); // touch: hold = right click
             return c;
         }
 

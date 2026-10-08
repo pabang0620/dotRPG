@@ -63,12 +63,13 @@ namespace DotRPG
                 // (or Cancel / UseItem while selected, see ClearSelectedKey) clears it.
                 var btn = box.gameObject.AddComponent<Button>();
                 btn.targetGraphic = box;
-                btn.onClick.AddListener(() => { if (chosen != null && chosen.kind != CareerSkillKind.Passive) Put(p, slot, chosen.id); });
+                btn.onClick.AddListener(() => { if (LongPress.TakeFired(box.gameObject)) return; if (chosen != null && chosen.kind != CareerSkillKind.Passive) Put(p, slot, chosen.id); });
                 var relay = box.gameObject.AddComponent<PointerRelay>();
                 relay.onClick = button =>
                 {
                     if (button == UnityEngine.EventSystems.PointerEventData.InputButton.Right) ClearKey(p, slot);
                 };
+                LongPress.Add(box.gameObject, () => ClearKey(p, slot)); // touch: hold = right click
             }
         }
 

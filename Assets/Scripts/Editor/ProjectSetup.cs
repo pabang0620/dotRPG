@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 
 namespace DotRPG.EditorTools
@@ -52,6 +54,54 @@ namespace DotRPG.EditorTools
 
             AssetDatabase.SaveAssets();
             Debug.Log("[dotRPG] Project settings applied (product name, PC window defaults, icon, build scenes).");
+        }
+
+        public const string AndroidApplicationId = "com.dotrpg.game";
+
+        /// <summary>
+        /// [ANDROID] Applied right before an Android build (BuildScript), after <see cref="Apply"/> so the PC window values set
+        /// there are never touched. Android-only settings (id, scripting backend, ARM64, SDK levels) stay. Settings that every
+        /// platform shares (screen orientation list, insecureHttpOption, AAB switch) are changed for this build only: the
+        /// returned action puts them back, so the PC builds keep the values they had.
+        /// </summary>
+        public static Action ApplyAndroid(bool development)
+        {
+            var orientation = PlayerSettings.defaultInterfaceOrientation;
+            bool left = PlayerSettings.allowedAutorotateToLandscapeLeft, right = PlayerSettings.allowedAutorotateToLandscapeRight;
+            bool portrait = PlayerSettings.allowedAutorotateToPortrait, upsideDown = PlayerSettings.allowedAutorotateToPortraitUpsideDown;
+            var http = PlayerSettings.insecureHttpOption;
+            bool bundle = EditorUserBuildSettings.buildAppBundle;
+
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, AndroidApplicationId);
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)35;
+
+            // Landscape only (left or right, whichever way the phone is held). Standalone players ignore these.
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            PlayerSettings.allowedAutorotateToPortrait = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+
+            // http:// servers (a PC on the LAN) only in the development apk; the store build must use https.
+            PlayerSettings.insecureHttpOption = development ? InsecureHttpOption.AlwaysAllowed : InsecureHttpOption.NotAllowed;
+            EditorUserBuildSettings.buildAppBundle = !development;
+
+            ArtImportSettings.ApplyAndroidToExisting();
+            AssetDatabase.SaveAssets();
+            return () =>
+            {
+                PlayerSettings.defaultInterfaceOrientation = orientation;
+                PlayerSettings.allowedAutorotateToLandscapeLeft = left;
+                PlayerSettings.allowedAutorotateToLandscapeRight = right;
+                PlayerSettings.allowedAutorotateToPortrait = portrait;
+                PlayerSettings.allowedAutorotateToPortraitUpsideDown = upsideDown;
+                PlayerSettings.insecureHttpOption = http;
+                EditorUserBuildSettings.buildAppBundle = bundle;
+                AssetDatabase.SaveAssets();
+            };
         }
 
         /// <summary>Game icon for the exe, taskbar and window title bar (instead of the Unity logo).</summary>

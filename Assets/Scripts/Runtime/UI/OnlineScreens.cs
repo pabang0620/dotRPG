@@ -78,23 +78,48 @@ namespace DotRPG
     /// <summary>[SERVER] 온라인 접속: development login (id + password) or a new account.</summary>
     public class OnlineLoginScreen : OnlineMenuScreen
     {
-        InputField idField, pwField;
+        InputField idField, pwField, serverField; // serverField: development builds on a phone only
         // [W3] The last login was refused because the account waits for withdrawal: offer the cancel button.
         bool cancelOffered, cancelSteam;
 
-        protected override bool AnyFieldFocused => idField.isFocused || pwField.isFocused;
+        protected override bool AnyFieldFocused => idField.isFocused || pwField.isFocused || (serverField != null && serverField.isFocused);
 
         public static OnlineLoginScreen Create(Transform canvas, UIRoot ui)
         {
             var root = CreateRoot(canvas, "OnlineLogin", true);
             var screen = root.gameObject.AddComponent<OnlineLoginScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "온라인 접속", 640, "\n\n\n\n\n", 20);
+            float statusY = -200f;
+#if !DOTRPG_RELEASE
+            // [ANDROID] A phone has no command line: development builds type the server address here.
+            bool serverRow = Application.isMobilePlatform;
+            if (serverRow) statusY = -250f;
+#else
+            bool serverRow = false;
+#endif
+            screen.BuildPanel(root, "온라인 접속", 640, serverRow ? "\n\n\n\n\n\n" : "\n\n\n\n\n", 20);
             screen.idField = screen.Field("아이디", -100f, "영문 소문자·숫자 4~20자", 20, false);
             screen.pwField = screen.Field("비밀번호", -150f, "8자 이상", 64, true);
-            screen.Status(-200f);
+#if !DOTRPG_RELEASE
+            if (serverRow)
+            {
+                screen.serverField = screen.Field("서버 주소", -200f, "http://192.168.0.10:3000", 120, false);
+                screen.serverField.onEndEdit.AddListener(_ => screen.ApplyServer());
+            }
+#endif
+            screen.Status(statusY);
             screen.BuildMenu();
             return screen;
+        }
+
+        /// <summary>[ANDROID] Development builds: store the typed server address (same PlayerPrefs key as -dotrpgServer's fallback).</summary>
+        void ApplyServer()
+        {
+#if !DOTRPG_RELEASE
+            if (serverField == null) return;
+            ApiClient.Instance.SetServer(serverField.text);
+            serverField.text = ApiClient.Instance.BaseUrl == ApiClient.DefaultServer ? "" : ApiClient.Instance.BaseUrl;
+#endif
         }
 
         void BuildMenu()
@@ -157,6 +182,9 @@ namespace DotRPG
         {
             base.Show();
             pwField.text = "";
+#if !DOTRPG_RELEASE
+            if (serverField != null) serverField.text = ApiClient.Instance.BaseUrl == ApiClient.DefaultServer ? "" : ApiClient.Instance.BaseUrl;
+#endif
             if (cancelOffered) { cancelOffered = false; BuildMenu(); }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Say($"서버: {ApiClient.Instance.BaseUrl}");
@@ -202,6 +230,7 @@ namespace DotRPG
         void Submit(bool register)
         {
             if (busy) return;
+            ApplyServer();
             string id = idField.text.Trim().ToLowerInvariant(), pw = pwField.text;
             if (id.Length < 4 || pw.Length < 8) { Say("아이디는 4자 이상, 비밀번호는 8자 이상이어야 합니다.", true); return; }
             busy = true;

@@ -124,6 +124,7 @@ namespace DotRPG
             var pointer = row.gameObject.AddComponent<MenuItemPointer>();
             pointer.list = this;
             pointer.index = index;
+            LongPress.Add(row.gameObject, () => Activate(index, -1)); // touch: hold = right click
 
             item.root = row;
             items.Add(item);
@@ -272,6 +273,7 @@ namespace DotRPG
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (LongPress.TakeFired(gameObject)) return; // touch: the long press already stepped the value back
             list.Activate(index, eventData.button == PointerEventData.InputButton.Right ? -1 : 1);
         }
     }

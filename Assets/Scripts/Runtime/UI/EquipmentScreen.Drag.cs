@@ -45,7 +45,7 @@ namespace DotRPG
                 var relay = cell.bg.GetComponent<PointerRelay>();
                 relay.onClick = b =>
                 {
-                    if (b == PointerEventData.InputButton.Right && EquipmentDatabase.Get(cell.itemId) != null) OpenMenu(cell);
+                    if ((b == PointerEventData.InputButton.Right || TouchUi.Enabled) && EquipmentDatabase.Get(cell.itemId) != null) OpenMenu(cell); // touch: a tap opens the menu (장착 / 닫기) instead of equipping at once
                     else Use(cell);
                 };
             }
@@ -88,7 +88,7 @@ namespace DotRPG
             menu.gameObject.SetActive(false);
 
             // Hint above the stat box (empty space under the character).
-            var dragHint = UIFactory.Text(root, "DragHint", "드래그해서 장착 · 우클릭: 메뉴", UiTheme.FontCaption, new Color(1f, 1f, 1f, 0.82f), TextAnchor.MiddleCenter, true);
+            var dragHint = UIFactory.Text(root, "DragHint", TouchUi.Enabled ? "드래그해서 장착 · 터치: 메뉴" : "드래그해서 장착 · 우클릭: 메뉴", UiTheme.FontCaption, new Color(1f, 1f, 1f, 0.82f), TextAnchor.MiddleCenter, true);
             UIFactory.Place(dragHint.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(120f, 120f), new Vector2(460f, 24f));
         }
 

@@ -36,6 +36,7 @@ namespace DotRPG
             var w = CreateWindow<QuestScreen>(canvas, "QuestLog", "퀘스트", "menuicon_quest");
             var list = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListWidth, 590f), new Color32(18, 26, 40, 240));
             w.listRoot = list.rectTransform;
+            SwipeSteps.Add(list.gameObject, RowHeight, w.ScrollRows); // touch: swipe instead of the mouse wheel
             w.moreUp = Label(list.transform, "MoreUp", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -2f), new Vector2(160f, 20f), TextAnchor.UpperRight);
             w.moreDown = Label(list.transform, "MoreDown", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -8f - VisibleRows * RowHeight), new Vector2(160f, 20f), TextAnchor.UpperRight);
             w.empty = Label(list.transform, "Empty", "진행 중인 퀘스트가 없습니다.", 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
@@ -252,6 +253,18 @@ namespace DotRPG
             j.Tracked = j.Tracked == q.id ? "" : q.id;
             Game.Audio.PlaySfx("confirm");
             Game.Quest.NotifyChanged();
+        }
+
+        /// <summary>Moves the visible window of the list by whole rows (swipe); the selection stays.</summary>
+        void ScrollRows(int rowsDown)
+        {
+            if (quests.Count <= VisibleRows) return;
+            int before = top;
+            top = Mathf.Clamp(top + rowsDown, 0, quests.Count - VisibleRows);
+            if (top == before) return;
+            BuildRows();
+            for (int i = 0; i < rows.Count; i++)
+                rows[i].bg.color = i + top == selected ? new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.28f) : new Color(1f, 1f, 1f, 0.04f);
         }
 
         protected override void Update()

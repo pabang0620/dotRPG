@@ -86,6 +86,13 @@ namespace DotRPG
             if (target == null) return;
             target.raycastTarget = true;
             var relay = target.GetComponent<HoverRelay>() ?? target.gameObject.AddComponent<HoverRelay>();
+            if (TouchUi.Enabled)
+            {
+                // Touch: hold for half a second to see the tooltip, lift to hide it.
+                relay.onEnter = relay.onExit = null;
+                LongPress.Add(target.gameObject, () => GearTip.Show(key(), target.rectTransform), GearTip.Hide);
+                return;
+            }
             relay.onEnter = () => GearTip.Show(key(), target.rectTransform);
             relay.onExit = GearTip.Hide;
         }

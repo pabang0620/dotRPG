@@ -22,7 +22,7 @@ namespace DotRPG
             if (questPanel.gameObject.activeSelf != showQuest) questPanel.gameObject.SetActive(showQuest);
             // [UI] A bound but not engaged boss bar on a narrow canvas: the tracker narrows to the auto buttons' column
             // (W-292..W-20) so it stays clear of the bar's right end (its "xN" count), and widens back afterwards.
-            float questWidth = bossShown && hudRect.width < 1160f ? QuestNarrowWidth : QuestWidth;
+            float questWidth = TouchUi.Enabled || (bossShown && hudRect.width < 1160f) ? QuestNarrowWidth : QuestWidth;
             if (!Mathf.Approximately(questPanel.sizeDelta.x, questWidth)) questPanel.sizeDelta = new Vector2(questWidth, questPanel.sizeDelta.y);
             if (showQuest && (!Mathf.Approximately(questWidth, questFitWidth) || !Mathf.Approximately(hudRect.height, questFitHeight))) RefreshQuest(); // UI size / width changed
             // [AUTO] Hotkeys for 자동 진행 / 자동 사냥 (rebindable, default F6 / F7), only in normal play with no window open.
@@ -132,7 +132,7 @@ namespace DotRPG
             var padIcon = Game.Input.UsingGamepad ? Game.Art.Optional("pad_" + Game.Input.GetBindingLabel(GameAction.Interact).ToLowerInvariant()) : null;
             promptPad.enabled = padIcon != null;
             promptPad.sprite = padIcon;
-            promptText.text = padIcon != null ? target.Prompt : $"<color=#ffd34a>[{Game.Input.GetBindingLabel(GameAction.Interact)}]</color> {target.Prompt}";
+            promptText.text = padIcon != null || TouchUi.Enabled ? target.Prompt : $"<color=#ffd34a>[{Game.Input.GetBindingLabel(GameAction.Interact)}]</color> {target.Prompt}";
             promptText.rectTransform.offsetMin = new Vector2(padIcon != null ? 38f : 8f, 0f);
             prompt.sizeDelta = new Vector2(Mathf.Max(150f, promptText.preferredWidth + (padIcon != null ? 66f : 36f)), 40f);
             Vector3 screen = Game.Camera.Camera.WorldToScreenPoint(target.PromptWorldPosition);

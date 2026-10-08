@@ -13,7 +13,7 @@ namespace DotRPG
         public static string Layout()
         {
             var asset=Resources.Load<TextAsset>("Maps/SunkenSanctum");
-            return asset!=null?asset.text:File.ReadAllText(Path.Combine(Application.streamingAssetsPath,"SunkenSanctum/layout.txt"));
+            return asset!=null?asset.text:StreamingFiles.ReadAllText(Path.Combine(Application.streamingAssetsPath,"SunkenSanctum/layout.txt"));
         }
         static Color32 C(int r,int g,int b)=>new Color32((byte)Mathf.Clamp(r,0,255),(byte)Mathf.Clamp(g,0,255),(byte)Mathf.Clamp(b,0,255),255);
         static int Hash(int x,int y)=>unchecked((x*73856093 ^ y*19349663)&0x7fffffff);
@@ -28,9 +28,9 @@ namespace DotRPG
         {
             if(sprites.TryGetValue(name,out var found))return found;
             string file=Path.Combine(Application.streamingAssetsPath,"SunkenSanctum",name+".png");
-            if(!File.Exists(file))return null;
+            if(!StreamingFiles.Exists(file))return null;
             var t=new Texture2D(2,2,TextureFormat.RGBA32,false){name="sanctum_"+name,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
-            ImageConversion.LoadImage(t,File.ReadAllBytes(file));t.filterMode=FilterMode.Point;
+            ImageConversion.LoadImage(t,StreamingFiles.ReadAllBytes(file));t.filterMode=FilterMode.Point;
             var p=t.GetPixels32();int left=t.width,right=0,bottom=t.height,top=0;
             for(int y=0;y<t.height;y++)for(int x=0;x<t.width;x++)if(p[y*t.width+x].a>32){left=Math.Min(left,x);right=Math.Max(right,x);bottom=Math.Min(bottom,y);top=Math.Max(top,y);}
             if(right<=left){UnityEngine.Object.Destroy(t);return null;}

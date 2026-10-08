@@ -134,6 +134,7 @@ namespace DotRPG
 #else
             ReadLegacy();
 #endif
+            ApplyTouch();
             if (TextInputActive) ClearForTyping();
             UpdateNavigateRepeat();
         }

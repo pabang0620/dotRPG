@@ -12,8 +12,8 @@ namespace DotRPG {
   public static bool Solid(char c)=>c=='W'||c=='%';
   static Sprite Make(PixelCanvas p,string key,Vector2 pivot){var t=new Texture2D(p.Width,p.Height,TextureFormat.RGBA32,false){name=key,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};t.SetPixels32(p.ToTexturePixels());t.Apply();return Sprite.Create(t,new Rect(0,0,t.width,t.height),pivot,32,0,SpriteMeshType.FullRect);}
   public static Sprite Landmark(string key){
-   if(art.TryGetValue(key,out var found))return found;string path=Path.Combine(Application.streamingAssetsPath,"HuntingScenery",key+".png");if(!File.Exists(path))return null;
-   var t=new Texture2D(2,2,TextureFormat.RGBA32,false){name=key,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};ImageConversion.LoadImage(t,File.ReadAllBytes(path));t.filterMode=FilterMode.Point;
+   if(art.TryGetValue(key,out var found))return found;string path=Path.Combine(Application.streamingAssetsPath,"HuntingScenery",key+".png");if(!StreamingFiles.Exists(path))return null;
+   var t=new Texture2D(2,2,TextureFormat.RGBA32,false){name=key,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};ImageConversion.LoadImage(t,StreamingFiles.ReadAllBytes(path));t.filterMode=FilterMode.Point;
    var px=t.GetPixels32();int l=t.width,b=t.height,rr=0,tt=0;for(int y=0;y<t.height;y++)for(int x=0;x<t.width;x++)if(px[y*t.width+x].a>64){l=Math.Min(l,x);rr=Math.Max(rr,x);b=Math.Min(b,y);tt=Math.Max(tt,y);}
    return art[key]=Sprite.Create(t,new Rect(l,b,rr-l+1,tt-b+1),new Vector2(.5f,0),32,0,SpriteMeshType.FullRect);
   }

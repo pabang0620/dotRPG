@@ -44,6 +44,13 @@ namespace DotRPG
             Application.Quit();
         }
 
+        /// <summary>[ANDROID] The app goes to the background: send a waiting state now. Does not wait (the process may be frozen).</summary>
+        public static void FlushOnBackground()
+        {
+            var session = Current;
+            if (session != null && session.HasUnsent) session.FlushPending();
+        }
+
         /// <summary>
         /// The account is in withdrawal (W2 answered, or the server closed the socket with 4012): drop the tokens and the session,
         /// leave the world if an online character was playing and, then, open the login screen. Nothing more is uploaded.

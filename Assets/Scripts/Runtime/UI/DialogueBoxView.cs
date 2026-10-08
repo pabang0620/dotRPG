@@ -18,6 +18,7 @@ namespace DotRPG
         public static DialogueBoxView Create(Transform canvas)
         {
             var root = UIFactory.Stretch(UIFactory.Rect(canvas, "Dialogue"));
+            root.gameObject.AddComponent<SafeAreaFitter>(); // [TOUCH]
             var view = root.gameObject.AddComponent<DialogueBoxView>();
             view.Build(root);
             return view;
@@ -25,6 +26,16 @@ namespace DotRPG
 
         void Build(RectTransform root)
         {
+            if (TouchUi.Enabled)
+            {
+                // [TOUCH] Tap anywhere to go to the next line (below the box and the skip plate, above the HUD).
+                tapLayer = UIFactory.Overlay(root, "TapLayer", Color.clear);
+                tapLayer.raycastTarget = true;
+                var tap = tapLayer.gameObject.AddComponent<Button>();
+                tap.transition = Selectable.Transition.None;
+                tap.onClick.AddListener(() => { if (Game.Input != null) Game.Input.TouchTap(GameAction.Submit); });
+                tapLayer.gameObject.SetActive(false);
+            }
             box = UIFactory.Place(UIFactory.Rect(root, "Box"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 24), new Vector2(980, 170));
             var bg = UIFactory.Panel(box, "Bg", false);
             UIFactory.Stretch(bg.rectTransform);
@@ -56,8 +67,17 @@ namespace DotRPG
             skipHint = UIFactory.Text(skipPlate, "Text", "", 20, UIColors.Cream, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(skipHint.rectTransform, 8, 0, 8, 0);
             skipPlate.gameObject.SetActive(false);
+            if (TouchUi.Enabled)
+            {
+                // [TOUCH] The skip plate is a button (the same as pressing Esc).
+                sbg.raycastTarget = true;
+                var skip = sbg.gameObject.AddComponent<Button>();
+                skip.targetGraphic = sbg;
+                skip.onClick.AddListener(() => { if (Game.Input != null) Game.Input.TouchTap(GameAction.Pause); });
+            }
         }
 
+        Image tapLayer;
         Text skipHint;
         RectTransform skipPlate;
 
@@ -74,13 +94,19 @@ namespace DotRPG
                 if (skippable) transform.SetAsLastSibling(); // above the fader during black narration
             }
             if (skippable)
-                skipHint.text = $"<color=#ffd34a><b>ESC</b></color>  {(inScene ? "장면 건너뛰기" : "대화 건너뛰기")}";
+                skipHint.text = TouchUi.Enabled ? (inScene ? "장면 건너뛰기" : "대화 건너뛰기")
+                    : $"<color=#ffd34a><b>ESC</b></color>  {(inScene ? "장면 건너뛰기" : "대화 건너뛰기")}";
             if (box.gameObject.activeSelf != show)
             {
                 box.gameObject.SetActive(show);
                 // Story narration plays over a faded-out screen: the box must sit above the fader (created after it),
                 // or the lines are invisible and the scene looks stuck on black.
                 if (show) transform.SetAsLastSibling();
+            }
+            if (tapLayer != null)
+            {
+                bool tappable = show && Game.State.Current == GameState.Dialogue;
+                if (tapLayer.gameObject.activeSelf != tappable) tapLayer.gameObject.SetActive(tappable);
             }
             if (!show) return;
 

@@ -18,10 +18,11 @@ namespace DotRPG
 
         void BuildTicket(Transform right)
         {
-            ticketButton = Button(right, "Ticket", "", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(16f, 17f), new Vector2(158f, 54f), UseTicket, 15); // left of the centred 강화 button
+            ticketButton = Button(right, "Ticket", "", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(16f, 17f), new Vector2(158f, 54f), () => { if (ticketButton != null && LongPress.TakeFired(ticketButton.gameObject)) return; UseTicket(); }, 15); // left of the centred 강화 button
             ticketLabel = ticketButton.GetComponentInChildren<Text>();
             var relay = ticketButton.gameObject.AddComponent<PointerRelay>();
             relay.onClick = b => { if (b == PointerEventData.InputButton.Right) SwitchTicket(1); };
+            LongPress.Add(ticketButton.gameObject, () => SwitchTicket(1)); // touch: hold = right click
             ticketButton.gameObject.SetActive(false);
         }
 

@@ -36,6 +36,58 @@ namespace DotRPG.EditorTools
         [MenuItem("dotRPG/Build/Linux (x64)", priority = 22)]
         public static void BuildLinux() => Build(BuildTarget.StandaloneLinux64, "Linux", ProjectSetup.ProductName + ".x86_64");
 
+        /// <summary>[ANDROID] Development apk (Development build, http servers allowed) for testing on a phone over USB.</summary>
+        [MenuItem("dotRPG/Build/Android dev apk", priority = 24)]
+        public static void BuildAndroidDev() => BuildAndroid(release: false);
+
+        /// <summary>[ANDROID] Play Store bundle (aab): DOTRPG_RELEASE, https server only, needs a keystore in Publishing Settings.</summary>
+        [MenuItem("dotRPG/Build/Android release (aab)", priority = 25)]
+        public static void BuildAndroidRelease() => BuildAndroid(release: true);
+
+        static void BuildAndroid(bool release)
+        {
+            if (release && !ApiClient.ReleaseServer.StartsWith("https://", StringComparison.Ordinal))
+            {
+                FailAndroid("Release build needs the live server address: set ApiClient.ReleaseServer (https://...).");
+                return;
+            }
+            if (release && (string.IsNullOrEmpty(PlayerSettings.Android.keystoreName) || !File.Exists(PlayerSettings.Android.keystoreName)
+                || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName)))
+            {
+                FailAndroid("Release build needs a keystore: Project Settings > Player > Android > Publishing Settings (custom keystore file, alias and passwords). See Docs/ANDROID.md.");
+                return;
+            }
+            if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android))
+            {
+                FailAndroid("Could not switch to Android: install Android Build Support (with OpenJDK, SDK and NDK) in Unity Hub. See Docs/ANDROID.md.");
+                return;
+            }
+            ProjectSetup.Apply();
+            var restore = ProjectSetup.ApplyAndroid(development: !release);
+            try
+            {
+                string output = Path.Combine("Builds", "Android", release ? ProjectSetup.ProductName + ".aab" : ProjectSetup.ProductName + "-dev.apk");
+                var options = new BuildPlayerOptions
+                {
+                    scenes = new[] { ProjectSetup.MainScene },
+                    locationPathName = output,
+                    target = BuildTarget.Android,
+                    options = release ? BuildOptions.None : BuildOptions.Development,
+                    extraScriptingDefines = release ? new[] { "DOTRPG_RELEASE" } : null,
+                };
+                var summary = BuildPipeline.BuildPlayer(options).summary;
+                if (summary.result == BuildResult.Succeeded) Debug.Log($"[dotRPG] Build succeeded: {output} ({summary.totalSize / (1024 * 1024)} MB)");
+                else FailAndroid($"Build {summary.result}: {summary.totalErrors} error(s).");
+            }
+            finally { restore(); }
+        }
+
+        static void FailAndroid(string message)
+        {
+            Debug.LogError("[dotRPG] " + message);
+            if (Application.isBatchMode) EditorApplication.Exit(1);
+        }
+
         static void Build(BuildTarget target, string folder, string executable, bool steamTest = false, bool release = false)
         {
             if (release && !ApiClient.ReleaseServer.StartsWith("https://", StringComparison.Ordinal))

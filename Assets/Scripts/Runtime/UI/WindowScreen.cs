@@ -26,7 +26,7 @@ namespace DotRPG
             // [UI] Header and content are laid out together on a fixed 1280x720 rect (pinned to the top centre) that
             // scales uniformly to fit the window (UI scale 1.15 / 1.3, small screens); it never grows. The background
             // above stays full-screen.
-            var layout = UIFactory.Place(UIFactory.Rect(root, "Layout"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, UIFactory.ReferenceResolution);
+            var layout = UIFactory.Place(UIFactory.Rect(SafeAreaFitter.Wrap(root), "Layout"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, UIFactory.ReferenceResolution);
             layout.gameObject.AddComponent<FitToParent>().design = UIFactory.ReferenceResolution;
             var header = Img(layout, "Header", "ui_header", Color.white); // [UI] wooden header strip (9-slice)
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, UiTheme.HeaderHeight));
