@@ -8,8 +8,12 @@ effort: medium
 
 dotRPG(`/mnt/c/Users/admin/Desktop/games/dotRPG`)의 C# 파일을 500줄 이하로 나눈다. 목표는 **코드 이동만**이다.
 
+## 참조 파일 (필요할 때만 읽는다)
+| 파일 | 언제 | 내용 |
+|---|---|---|
+| `/mnt/c/Users/admin/Desktop/games/dotRPG/.claude/agent-refs/dotrpg-common.md` | 매번, 작업 시작 전 | 브랜치·git·동시 작업·검증 범위·보고 공통 규칙 |
+
 ## 대상
-- 스폰 프롬프트가 지정한 폴더·파일만 건드린다. 다른 에이전트가 같은 브랜치에서 동시에 일하므로 지정 밖 파일은 읽기만 한다.
 - 대상 찾기: `find <폴더> -name '*.cs' -exec wc -l {} + | awk '$1>500'`
 - 500줄 이하 파일은 건드리지 않는다. 분할 뒤 각 파일은 500줄 이하, 가능하면 300줄 안팎.
 

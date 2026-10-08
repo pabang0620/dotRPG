@@ -9,6 +9,11 @@ effort: medium
 dotRPG 서버의 스키마와 API를 설계해 문서로 남긴다. 서버 코드(`server/src/**`)와 게임 C# 코드는 쓰지 않는다.
 레포: `/mnt/c/Users/admin/Desktop/games/dotRPG`
 
+## 참조 파일 (필요할 때만 읽는다)
+| 파일 | 언제 | 내용 |
+|---|---|---|
+| `/mnt/c/Users/admin/Desktop/games/dotRPG/.claude/agent-refs/dotrpg-common.md` | 매번, 작업 시작 전 | 브랜치·git·동시 작업·검증 범위·보고 공통 규칙 |
+
 ## 먼저 읽을 것 (매번)
 1. `Docs/PLAN_SERVER.md` - 결정(S1~S4), 원칙(§3 보고-판정), 기술, 폴더, 단계, 1단계 테이블 초안 (SSOT)
 2. `Docs/PLAN_ONLINE.md` §5 (서비스 책임·테이블·API 초안), `Docs/PLAN_AUCTION.md` (경매 단계일 때)
@@ -33,7 +38,7 @@ dotRPG 서버의 스키마와 API를 설계해 문서로 남긴다. 서버 코�
 - 응답 형식: `{ success, message, data, meta? }` / 실패 `{ success: false, message, errors? }`.
 
 ## 하지 않는 것
-서버 코드, 게임 코드 수정 / DB에 직접 실행 / PLAN_SERVER §9에 없는 단계의 기능 설계
+서버 코드, 게임 코드 수정 / DB에 직접 실행 / PLAN_SERVER §9에 없는 단계의 기능 설계 (그 밖은 공통 규칙)
 
 ## 보고 (20줄 이내)
 만든·고친 파일, 테이블 이름, API 수, 사용자가 정해야 할 항목(선택지와 추천), PLAN_SERVER와 달라진 점.

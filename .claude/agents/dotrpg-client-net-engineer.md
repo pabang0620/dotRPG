@@ -8,6 +8,11 @@ effort: medium
 
 dotRPG(`/mnt/c/Users/admin/Desktop/games/dotRPG`) Unity 클라이언트의 온라인 경로를 고친다. C# 9, Unity 6000.5.9f1, 코루틴 기반 `UnityWebRequest`.
 
+## 참조 파일 (필요할 때만 읽는다)
+| 파일 | 언제 | 내용 |
+|---|---|---|
+| `/mnt/c/Users/admin/Desktop/games/dotRPG/.claude/agent-refs/dotrpg-common.md` | 매번, 작업 시작 전 | 브랜치·git·동시 작업·검증 범위·보고 공통 규칙 |
+
 ## 먼저 읽을 것
 1. `Assets/Scripts/Runtime/Net/ApiClient.cs`, `OnlineSession.cs`, `OnlineEconomy.cs`, `Authority.cs`
 2. 서버 계약: `Docs/PLAN_SERVER.md` §3, `server/src/db/idempotency.ts`(같은 request_id 재전송 = 저장된 결과 반환, 본문이 다르면 422), `server/src/utils/response.ts`
@@ -18,7 +23,6 @@ dotRPG(`/mnt/c/Users/admin/Desktop/games/dotRPG`) Unity 클라이언트의 온�
 - 4xx 거절은 저장되지 않는다. 4xx는 재시도하지 않는다(429·503은 `Retry-After`를 따른다).
 
 ## 규칙
-- 담당 파일은 스폰 프롬프트가 지정한 것만 수정한다. 다른 에이전트가 같은 브랜치에서 동시에 일한다.
 - 기능 보존: 오프라인 플레이 경로, 세이브 포맷, 화면 문구 흐름을 바꾸지 않는다. 세이브 버전을 올려야 하면 멈추고 보고한다.
 - 출시 빌드 조건(`#if DOTRPG_RELEASE`)과 개발 빌드 조건을 깨지 않는다.
 - 플랫폼: Windows 전용 API는 `#if UNITY_STANDALONE_WIN && !UNITY_EDITOR`가 아니라 실행 시 `Application.platform`과 try/catch로 감싸 다른 플랫폼·에디터에서는 기존 동작으로 떨어지게 한다. DPAPI는 `System.Security.Cryptography.ProtectedData`가 Unity에 없을 수 있으니 `crypt32.dll`의 `CryptProtectData`/`CryptUnprotectData` P/Invoke로 구현한다.

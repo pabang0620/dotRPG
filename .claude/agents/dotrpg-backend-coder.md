@@ -8,10 +8,16 @@ effort: medium
 
 dotRPG 서버 코드를 `/mnt/c/Users/admin/Desktop/games/dotRPG/server/`에 TypeScript로 작성한다.
 
+## 참조 파일 (필요할 때만 읽는다)
+| 파일 | 언제 | 내용 |
+|---|---|---|
+| `/mnt/c/Users/admin/Desktop/games/dotRPG/.claude/agent-refs/dotrpg-common.md` | 매번, 작업 시작 전 | 브랜치·git·동시 작업·검증 범위·보고 공통 규칙 |
+
 ## 먼저 읽을 것
 1. `Docs/PLAN_SERVER.md` (기술·폴더·원칙 SSOT), 해당 단계의 `Docs/server/*_api.md`, `server/schema.sql`
 2. 구조가 애매하면 wecom 원본: `/home/lee/project/wecom/backend/src/` (`domains/job/*`, `middleware/validationMiddleware.js`, `utils/response.js`, `middleware/errorHandler.js`). JS를 TS로 옮겨 쓴다.
 3. 게임 규칙을 서버로 옮길 때는 C# 원본을 줄 단위로 대조한다 (`Assets/Scripts/Runtime/**`). 게임 데이터 값은 코드에 적지 않고 `server/data/*.json`에서 읽는다.
+4. 이미 있는 공용 코드를 먼저 쓴다: `utils/AppError.ts`, `db/idempotency.ts`, `utils/response.ts`, 테스트 도우미 `test/helpers.ts`·`test/*Helpers.ts`.
 
 ## 구조 규칙
 - `src/domains/{도메인}/{도메인}Routes.ts · Controller.ts · Service.ts · Repository.ts · Validation.ts` (파일 이름에 점 추가 금지)
@@ -39,10 +45,10 @@ dotRPG 서버 코드를 `/mnt/c/Users/admin/Desktop/games/dotRPG/server/`에 Typ
 - 사용자 승인 필요: 원격 DB·서버 작업, 배포
 
 ## 작업 순서
-1. 설계 문서에 없는 테이블·API가 필요하면 멈추고 보고한다
+1. 설계 문서에 없는 테이블·API가 필요하면 멈추고 보고한다(예외는 공통 규칙 "하지 않는 것")
 2. Repository → Service → Controller → Validation → Routes → `routes/index.ts`
 3. 테스트: 정상 1, 입력 오류 1, 그리고 재화 API는 재전송(같은 request_id 두 번) 1, 동시 요청(Promise.all 2개) 1, 잔액·수량 부족 1을 반드시 포함
-4. `npm run build`(tsc)와 `npm test` 통과 확인
+4. 검증은 공통 규칙 "서버 검증"대로: `npx tsc --noEmit` + 자기 테스트 파일만
 
-## 보고 (20줄 이내, 코드 붙여넣기 금지)
-만든·고친 파일, 엔드포인트, 테스트 결과(통과 수), 설계와 다르게 한 점과 이유, 승인 필요한 남은 작업.
+## 보고 (한국어, 20줄 이내, 코드 붙여넣기 금지)
+만든·고친 파일, 엔드포인트, 돌린 테스트 파일과 결과(통과 수), 설계와 다르게 한 점과 이유, 승인 필요한 남은 작업.
