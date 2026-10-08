@@ -1,0 +1,173 @@
+[
+  {
+    "map_id": "hollow_descent",
+    "passed": 16,
+    "failed": 0,
+    "checks": {
+      "one_safe_spawn": true,
+      "all_standable_centres_connected": true,
+      "water_rock_blocked": true,
+      "18_camps": true,
+      "authored_transitions_safe_if_present": true,
+      "54_pack_points_safe_connected": true,
+      "quiet_spawn": true,
+      "arrival_]": true,
+      "portal_width_]": true,
+      "approach_]": true,
+      "arrival_}": true,
+      "portal_width_}": true,
+      "approach_}": true,
+      "arrival_[": true,
+      "portal_width_[": true,
+      "approach_[": true
+    },
+    "safe_centres": 540,
+    "reachable_centres": 540,
+    "disconnected_centres": [],
+    "stairs": 0,
+    "unsafe_stairs": [],
+    "camps": 18,
+    "invalid_pack_points": [],
+    "arrivals": {
+      "]": [
+        28.5,
+        2.7
+      ],
+      "}": [
+        2.7,
+        24.5
+      ],
+      "[": [
+        28.5,
+        45.3
+      ]
+    },
+    "water_subcells": 1397,
+    "land_subcells": 38746,
+    "layout_sha256": "8abde8605f9af426634bdc14042d34eb1f5f3a4b220f489b68437f98b38f1a59",
+    "mask_sha256": "8e284055f213c6f4b427e03d109f01335b1607adf5369eefc46618654b85a50e"
+  },
+  {
+    "map_id": "hollow_roots",
+    "passed": 13,
+    "failed": 0,
+    "checks": {
+      "one_safe_spawn": true,
+      "all_standable_centres_connected": true,
+      "water_rock_blocked": true,
+      "18_camps": true,
+      "authored_transitions_safe_if_present": true,
+      "54_pack_points_safe_connected": true,
+      "quiet_spawn": true,
+      "arrival_<": true,
+      "portal_width_<": true,
+      "approach_<": true,
+      "arrival_>": true,
+      "portal_width_>": true,
+      "approach_>": true
+    },
+    "safe_centres": 636,
+    "reachable_centres": 636,
+    "disconnected_centres": [],
+    "stairs": 0,
+    "unsafe_stairs": [],
+    "camps": 18,
+    "invalid_pack_points": [],
+    "arrivals": {
+      "<": [
+        2.7,
+        24.5
+      ],
+      ">": [
+        53.3,
+        24.5
+      ]
+    },
+    "water_subcells": 936,
+    "land_subcells": 44731,
+    "layout_sha256": "ad66e50c984985b0535f2fadaaf1afda3361b8cb3cb4ee5cec4784d11f9b1f9c",
+    "mask_sha256": "2d5c5891294ae3b50eca06d891629048552dfa1cdfa3ced32d42ec090508cea4"
+  },
+  {
+    "map_id": "hollow_fungal",
+    "passed": 13,
+    "failed": 0,
+    "checks": {
+      "one_safe_spawn": true,
+      "all_standable_centres_connected": true,
+      "water_rock_blocked": true,
+      "18_camps": true,
+      "authored_transitions_safe_if_present": true,
+      "54_pack_points_safe_connected": true,
+      "quiet_spawn": true,
+      "arrival_<": true,
+      "portal_width_<": true,
+      "approach_<": true,
+      "arrival_>": true,
+      "portal_width_>": true,
+      "approach_>": true
+    },
+    "safe_centres": 628,
+    "reachable_centres": 628,
+    "disconnected_centres": [],
+    "stairs": 0,
+    "unsafe_stairs": [],
+    "camps": 18,
+    "invalid_pack_points": [],
+    "arrivals": {
+      "<": [
+        2.7,
+        24.5
+      ],
+      ">": [
+        53.3,
+        24.5
+      ]
+    },
+    "water_subcells": 1603,
+    "land_subcells": 44198,
+    "layout_sha256": "111bc83e13f6942a6edc91ef10d2c90513bf39b924f1def9b4bef73f8368776f",
+    "mask_sha256": "a6a6a7413c4128b40b76ec025daaec193699f68ee0f30693f9f756bb516090cb"
+  },
+  {
+    "map_id": "hollow_depths",
+    "passed": 13,
+    "failed": 0,
+    "checks": {
+      "one_safe_spawn": true,
+      "all_standable_centres_connected": true,
+      "water_rock_blocked": true,
+      "18_camps": true,
+      "authored_transitions_safe_if_present": true,
+      "54_pack_points_safe_connected": true,
+      "quiet_spawn": true,
+      "arrival_]": true,
+      "portal_width_]": true,
+      "approach_]": true,
+      "arrival_[": true,
+      "portal_width_[": true,
+      "approach_[": true
+    },
+    "safe_centres": 490,
+    "reachable_centres": 490,
+    "disconnected_centres": [],
+    "stairs": 0,
+    "unsafe_stairs": [],
+    "camps": 18,
+    "invalid_pack_points": [],
+    "arrivals": {
+      "]": [
+        28.5,
+        2.7
+      ],
+      "[": [
+        28.5,
+        45.3
+      ]
+    },
+    "water_subcells": 1056,
+    "land_subcells": 35749,
+    "layout_sha256": "5aeaed3ed392dd05655c80ec38c44d0689a574e557b67183a0d20a6c6721500c",
+    "mask_sha256": "a7c18d2a3ddcf1310c82773b51bef93e2b90ade3346788c84697896cfd31a8a2"
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "mapId": "hollow_descent",
+  "width": 1792,
+  "height": 1536,
+  "pixelsPerTile": 32,
+  "origin": "northwest",
+  "camps": 18,
+  "floorSubcells": 38746,
+  "reachableFloorSubcells": 38746,
+  "waterSubcells": 1397,
+  "portals": [
+    "]:27,0",
+    "]:28,0",
+    "]:29,0",
+    "}:0,23",
+    "}:0,24",
+    "}:0,25",
+    "[:27,47",
+    "[:28,47",
+    "[:29,47"
+  ],
+  "guideColors": {
+    "water": "#224759",
+    "deepBackground": "#171F32",
+    "structuralFront": "#554A48",
+    "floor": "#B59C71"
+  },
+  "maskColors": {
+    "water": "blue",
+    "deepBackground": "black",
+    "structuralFront": "green",
+    "floor": "red"
+  }
+}

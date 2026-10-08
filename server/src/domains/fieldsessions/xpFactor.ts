@@ -8,6 +8,11 @@ export interface CarryPolicy {
   carryHardGap?: number;
 }
 
+/** Post-cap cave levels express enemy difficulty. Carry checks compare against an attainable player level. */
+export function carryReferenceLevel(monsterLevel: number, worldLayer: 'surface' | 'underground' | undefined, playerCap: number): number {
+  return worldLayer === 'underground' ? Math.min(monsterLevel, playerCap) : monsterLevel;
+}
+
 export function xpFactor(monsterLevel: number, memberLevel: number, p: CarryPolicy): number {
   const gap = Math.max(0, monsterLevel - p.carrySlack - memberLevel);
   const f = 1 - p.carryStep * gap;

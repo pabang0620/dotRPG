@@ -1,0 +1,346 @@
+[1.61] capture started
+[1.61] verification audio volume: 0
+DGN four surface regions PASS
+DGN central village remains surface PASS
+DGN four persistent underground maps PASS
+DGN village four hunting fields PASS
+DGN village entry split PASS
+DGN forest_ruins branch merge PASS
+DGN forest_depths branch merge PASS
+DGN forest_crossing connects next town PASS
+DGN village central town path PASS
+DGN canyon four hunting fields PASS
+DGN canyon entry split PASS
+DGN canyon_mine branch merge PASS
+DGN canyon_ridge branch merge PASS
+DGN canyon_gate connects next town PASS
+DGN canyon central town path PASS
+DGN winter four hunting fields PASS
+DGN winter entry split PASS
+DGN winter_lake branch merge PASS
+DGN winter_peak branch merge PASS
+DGN winter_reach connects next town PASS
+DGN winter central town path PASS
+DGN sunken_sanctum four hunting fields PASS
+DGN sunken_sanctum entry split PASS
+DGN sanctum_archive branch merge PASS
+DGN sanctum_roots branch merge PASS
+DGN sanctum_court connects next town PASS
+DGN sunken_sanctum central town path PASS
+DGN surface ring closes PASS
+DGN village reciprocal route sanctum_court PASS
+DGN village reciprocal route forest PASS
+DGN village reciprocal route undergate PASS
+DGN forest reciprocal route village PASS
+DGN forest reciprocal route forest_ruins PASS
+DGN forest reciprocal route forest_depths PASS
+DGN forest_ruins reciprocal route forest PASS
+DGN forest_ruins reciprocal route forest_crossing PASS
+DGN forest_depths reciprocal route forest PASS
+DGN forest_depths reciprocal route forest_crossing PASS
+DGN forest_crossing reciprocal route canyon PASS
+DGN forest_crossing reciprocal route forest_ruins PASS
+DGN forest_crossing reciprocal route forest_depths PASS
+DGN canyon reciprocal route forest_crossing PASS
+DGN canyon reciprocal route canyon_pass PASS
+DGN canyon reciprocal route undergate PASS
+DGN canyon_pass reciprocal route canyon PASS
+DGN canyon_pass reciprocal route canyon_mine PASS
+DGN canyon_pass reciprocal route canyon_ridge PASS
+DGN canyon_mine reciprocal route canyon_pass PASS
+DGN canyon_mine reciprocal route canyon_gate PASS
+DGN canyon_ridge reciprocal route canyon_pass PASS
+DGN canyon_ridge reciprocal route canyon_gate PASS
+DGN canyon_gate reciprocal route winter PASS
+DGN canyon_gate reciprocal route canyon_mine PASS
+DGN canyon_gate reciprocal route canyon_ridge PASS
+DGN winter reciprocal route canyon_gate PASS
+DGN winter reciprocal route winter_edge PASS
+DGN winter reciprocal route undergate PASS
+DGN winter_edge reciprocal route winter PASS
+DGN winter_edge reciprocal route winter_lake PASS
+DGN winter_edge reciprocal route winter_peak PASS
+DGN winter_lake reciprocal route winter_edge PASS
+DGN winter_lake reciprocal route winter_reach PASS
+DGN winter_peak reciprocal route winter_edge PASS
+DGN winter_peak reciprocal route winter_reach PASS
+DGN winter_reach reciprocal route sunken_sanctum PASS
+DGN winter_reach reciprocal route winter_lake PASS
+DGN winter_reach reciprocal route winter_peak PASS
+DGN sunken_sanctum reciprocal route winter_reach PASS
+DGN sunken_sanctum reciprocal route sanctum_hall PASS
+DGN sunken_sanctum reciprocal route undergate PASS
+DGN sanctum_hall reciprocal route sunken_sanctum PASS
+DGN sanctum_hall reciprocal route sanctum_archive PASS
+DGN sanctum_hall reciprocal route sanctum_roots PASS
+DGN sanctum_archive reciprocal route sanctum_hall PASS
+DGN sanctum_archive reciprocal route sanctum_court PASS
+DGN sanctum_roots reciprocal route sanctum_hall PASS
+DGN sanctum_roots reciprocal route sanctum_court PASS
+DGN sanctum_court reciprocal route village PASS
+DGN sanctum_court reciprocal route sanctum_archive PASS
+DGN sanctum_court reciprocal route sanctum_roots PASS
+DGN undergate reciprocal route village PASS
+DGN undergate reciprocal route winter PASS
+DGN undergate reciprocal route canyon PASS
+DGN undergate reciprocal route sunken_sanctum PASS
+DGN undergate reciprocal route hollow_descent PASS
+DGN hollow_descent reciprocal route hollow_roots PASS
+DGN hollow_descent reciprocal route hollow_fungal PASS
+DGN hollow_descent reciprocal route undergate PASS
+DGN hollow_roots reciprocal route hollow_descent PASS
+DGN hollow_roots reciprocal route hollow_depths PASS
+DGN hollow_fungal reciprocal route hollow_descent PASS
+DGN hollow_fungal reciprocal route hollow_depths PASS
+DGN hollow_depths reciprocal route hollow_roots PASS
+DGN hollow_depths reciprocal route hollow_fungal PASS
+DGN B1 branches PASS
+DGN B3 reunites branches PASS
+DGN underground depths PASS
+DGN hollow_scarab 40 pixel animation frames PASS
+DGN hollow_scarab five distinct direction poses PASS
+DGN hollow_scarab transparent unclipped frame margin PASS
+DGN hollow_guard 40 pixel animation frames PASS
+DGN hollow_guard five distinct direction poses PASS
+DGN hollow_guard transparent unclipped frame margin PASS
+DGN hollow_hexer 40 pixel animation frames PASS
+DGN hollow_hexer five distinct direction poses PASS
+DGN hollow_hexer transparent unclipped frame margin PASS
+DGN village free spawn PASS
+DGN village connected floor PASS
+DGN village actual portal sanctum_court PASS
+DGN village safe arrival sanctum_court PASS
+DGN village no immediate bounce sanctum_court PASS
+DGN village actual portal forest PASS
+DGN village safe arrival forest PASS
+DGN village no immediate bounce forest PASS
+DGN village actual portal undergate PASS
+DGN village safe arrival undergate PASS
+DGN village no immediate bounce undergate PASS
+DGN village outside bounds blocked PASS
+DGN canyon free spawn PASS
+DGN canyon connected floor PASS
+DGN canyon actual portal forest_crossing PASS
+DGN canyon safe arrival forest_crossing PASS
+DGN canyon no immediate bounce forest_crossing PASS
+DGN canyon actual portal canyon_pass PASS
+DGN canyon safe arrival canyon_pass PASS
+DGN canyon no immediate bounce canyon_pass PASS
+DGN canyon actual portal undergate PASS
+DGN canyon safe arrival undergate PASS
+DGN canyon no immediate bounce undergate PASS
+DGN canyon outside bounds blocked PASS
+DGN winter free spawn PASS
+DGN winter connected floor PASS
+DGN winter actual portal canyon_gate PASS
+DGN winter safe arrival canyon_gate PASS
+DGN winter no immediate bounce canyon_gate PASS
+DGN winter actual portal winter_edge PASS
+DGN winter safe arrival winter_edge PASS
+DGN winter no immediate bounce winter_edge PASS
+DGN winter actual portal undergate PASS
+DGN winter safe arrival undergate PASS
+DGN winter no immediate bounce undergate PASS
+DGN winter outside bounds blocked PASS
+DGN sunken_sanctum free spawn PASS
+DGN sunken_sanctum connected floor PASS
+DGN sunken_sanctum actual portal winter_reach PASS
+DGN sunken_sanctum safe arrival winter_reach PASS
+DGN sunken_sanctum no immediate bounce winter_reach PASS
+DGN sunken_sanctum actual portal sanctum_hall PASS
+DGN sunken_sanctum safe arrival sanctum_hall PASS
+DGN sunken_sanctum no immediate bounce sanctum_hall PASS
+DGN sunken_sanctum actual portal undergate PASS
+DGN sunken_sanctum safe arrival undergate PASS
+DGN sunken_sanctum no immediate bounce undergate PASS
+DGN sunken_sanctum outside bounds blocked PASS
+DGN undergate free spawn PASS
+DGN undergate connected floor PASS
+DGN undergate actual portal village PASS
+DGN undergate safe arrival village PASS
+DGN undergate no immediate bounce village PASS
+DGN undergate actual portal winter PASS
+DGN undergate safe arrival winter PASS
+DGN undergate no immediate bounce winter PASS
+DGN undergate actual portal canyon PASS
+DGN undergate safe arrival canyon PASS
+DGN undergate no immediate bounce canyon PASS
+DGN undergate actual portal sunken_sanctum PASS
+DGN undergate safe arrival sunken_sanctum PASS
+DGN undergate no immediate bounce sunken_sanctum PASS
+DGN undergate actual portal hollow_descent PASS
+DGN undergate safe arrival hollow_descent PASS
+DGN undergate no immediate bounce hollow_descent PASS
+DGN undergate outside bounds blocked PASS
+DGN sanctum_court free spawn PASS
+DGN sanctum_court connected floor PASS
+DGN sanctum_court actual portal village PASS
+DGN sanctum_court safe arrival village PASS
+DGN sanctum_court no immediate bounce village PASS
+DGN sanctum_court actual portal sanctum_archive PASS
+DGN sanctum_court safe arrival sanctum_archive PASS
+DGN sanctum_court no immediate bounce sanctum_archive PASS
+DGN sanctum_court actual portal sanctum_roots PASS
+DGN sanctum_court safe arrival sanctum_roots PASS
+DGN sanctum_court no immediate bounce sanctum_roots PASS
+DGN sanctum_court outside bounds blocked PASS
+DGN hollow_descent free spawn PASS
+DGN hollow_descent connected floor PASS
+DGN hollow_descent actual portal hollow_roots PASS
+DGN hollow_descent safe arrival hollow_roots PASS
+DGN hollow_descent no immediate bounce hollow_roots PASS
+DGN hollow_descent actual portal hollow_fungal PASS
+DGN hollow_descent safe arrival hollow_fungal PASS
+DGN hollow_descent no immediate bounce hollow_fungal PASS
+DGN hollow_descent actual portal undergate PASS
+DGN hollow_descent safe arrival undergate PASS
+DGN hollow_descent no immediate bounce undergate PASS
+DGN hollow_descent outside bounds blocked PASS
+DGN hollow_descent repeatable field monsters PASS
+DGN hollow_descent three dedicated underground species PASS
+DGN hollow_descent new monster visuals retain their own look PASS
+DGN hollow_descent reachable camps PASS
+DGN hollow_descent blocked water/rock (1687 probes) PASS
+DGN hollow_descent projectile test patch ~ PASS
+DGN hollow_descent distinct static terrain mask ~ PASS
+DGN hollow_descent water blocks feet but passes a moving bolt PASS
+DGN hollow_descent projectile test patch W PASS
+DGN hollow_descent distinct static terrain mask W PASS
+DGN hollow_descent static composite rock stops a bolt PASS
+DGN hollow_descent actual walking traversal PASS
+DGN hollow_roots free spawn PASS
+DGN hollow_roots connected floor PASS
+DGN hollow_roots actual portal hollow_descent PASS
+DGN hollow_roots safe arrival hollow_descent PASS
+DGN hollow_roots no immediate bounce hollow_descent PASS
+DGN hollow_roots actual portal hollow_depths PASS
+DGN hollow_roots safe arrival hollow_depths PASS
+DGN hollow_roots no immediate bounce hollow_depths PASS
+DGN hollow_roots outside bounds blocked PASS
+DGN hollow_roots repeatable field monsters PASS
+DGN hollow_roots three dedicated underground species PASS
+DGN hollow_roots new monster visuals retain their own look PASS
+DGN hollow_roots reachable camps PASS
+DGN hollow_roots blocked water/rock (1604 probes) PASS
+DGN hollow_roots projectile test patch ~ PASS
+DGN hollow_roots distinct static terrain mask ~ PASS
+DGN hollow_roots water blocks feet but passes a moving bolt PASS
+DGN hollow_roots projectile test patch W PASS
+DGN hollow_roots distinct static terrain mask W PASS
+DGN hollow_roots static composite rock stops a bolt PASS
+DGN hollow_roots actual walking traversal PASS
+DGN hollow_fungal free spawn PASS
+DGN hollow_fungal connected floor PASS
+DGN hollow_fungal actual portal hollow_descent PASS
+DGN hollow_fungal safe arrival hollow_descent PASS
+DGN hollow_fungal no immediate bounce hollow_descent PASS
+DGN hollow_fungal actual portal hollow_depths PASS
+DGN hollow_fungal safe arrival hollow_depths PASS
+DGN hollow_fungal no immediate bounce hollow_depths PASS
+DGN hollow_fungal outside bounds blocked PASS
+DGN hollow_fungal repeatable field monsters PASS
+DGN hollow_fungal three dedicated underground species PASS
+DGN hollow_fungal new monster visuals retain their own look PASS
+DGN hollow_fungal reachable camps PASS
+DGN hollow_fungal blocked water/rock (1537 probes) PASS
+DGN hollow_fungal projectile test patch ~ PASS
+DGN hollow_fungal distinct static terrain mask ~ PASS
+DGN hollow_fungal water blocks feet but passes a moving bolt PASS
+DGN hollow_fungal projectile test patch W PASS
+DGN hollow_fungal distinct static terrain mask W PASS
+DGN hollow_fungal static composite rock stops a bolt PASS
+DGN hollow_fungal actual walking traversal PASS
+DGN hollow_depths free spawn PASS
+DGN hollow_depths connected floor PASS
+DGN hollow_depths actual portal hollow_roots PASS
+DGN hollow_depths safe arrival hollow_roots PASS
+DGN hollow_depths no immediate bounce hollow_roots PASS
+DGN hollow_depths actual portal hollow_fungal PASS
+DGN hollow_depths safe arrival hollow_fungal PASS
+DGN hollow_depths no immediate bounce hollow_fungal PASS
+DGN hollow_depths outside bounds blocked PASS
+DGN hollow_depths repeatable field monsters PASS
+DGN hollow_depths three dedicated underground species PASS
+DGN hollow_depths new monster visuals retain their own look PASS
+DGN hollow_depths reachable camps PASS
+DGN hollow_depths blocked water/rock (1697 probes) PASS
+DGN hollow_depths projectile test patch ~ PASS
+DGN hollow_depths distinct static terrain mask ~ PASS
+DGN hollow_depths water blocks feet but passes a moving bolt PASS
+DGN hollow_depths projectile test patch W PASS
+DGN hollow_depths distinct static terrain mask W PASS
+DGN hollow_depths static composite rock stops a bolt PASS
+DGN hollow_depths actual walking traversal PASS
+DGN village trigger exists undergate PASS
+DGN village actual trigger -> undergate PASS
+DGN undergate arrival stable PASS
+DGN undergate trigger exists village PASS
+DGN undergate actual trigger -> village PASS
+DGN village arrival stable PASS
+DGN canyon trigger exists undergate PASS
+DGN canyon actual trigger -> undergate PASS
+DGN undergate arrival stable PASS
+DGN undergate trigger exists canyon PASS
+DGN undergate actual trigger -> canyon PASS
+DGN canyon arrival stable PASS
+DGN winter trigger exists undergate PASS
+DGN winter actual trigger -> undergate PASS
+DGN undergate arrival stable PASS
+DGN undergate trigger exists winter PASS
+DGN undergate actual trigger -> winter PASS
+DGN winter arrival stable PASS
+DGN sunken_sanctum trigger exists undergate PASS
+DGN sunken_sanctum actual trigger -> undergate PASS
+DGN undergate arrival stable PASS
+DGN undergate trigger exists sunken_sanctum PASS
+DGN undergate actual trigger -> sunken_sanctum PASS
+DGN sunken_sanctum arrival stable PASS
+DGN sanctum_court trigger exists village PASS
+DGN sanctum_court actual trigger -> village PASS
+DGN village arrival stable PASS
+DGN village trigger exists sanctum_court PASS
+DGN village actual trigger -> sanctum_court PASS
+DGN sanctum_court arrival stable PASS
+DGN undergate trigger exists hollow_descent PASS
+DGN undergate actual trigger -> hollow_descent PASS
+DGN hollow_descent arrival stable PASS
+DGN hollow_descent trigger exists hollow_roots PASS
+DGN hollow_descent actual trigger -> hollow_roots PASS
+DGN hollow_roots arrival stable PASS
+DGN hollow_descent trigger exists hollow_fungal PASS
+DGN hollow_descent actual trigger -> hollow_fungal PASS
+DGN hollow_fungal arrival stable PASS
+DGN hollow_descent trigger exists undergate PASS
+DGN hollow_descent actual trigger -> undergate PASS
+DGN undergate arrival stable PASS
+DGN hollow_roots trigger exists hollow_descent PASS
+DGN hollow_roots actual trigger -> hollow_descent PASS
+DGN hollow_descent arrival stable PASS
+DGN hollow_roots trigger exists hollow_depths PASS
+DGN hollow_roots actual trigger -> hollow_depths PASS
+DGN hollow_depths arrival stable PASS
+DGN hollow_fungal trigger exists hollow_descent PASS
+DGN hollow_fungal actual trigger -> hollow_descent PASS
+DGN hollow_descent arrival stable PASS
+DGN hollow_fungal trigger exists hollow_depths PASS
+DGN hollow_fungal actual trigger -> hollow_depths PASS
+DGN hollow_depths arrival stable PASS
+DGN hollow_depths trigger exists hollow_roots PASS
+DGN hollow_depths actual trigger -> hollow_roots PASS
+DGN hollow_roots arrival stable PASS
+DGN hollow_depths trigger exists hollow_fungal PASS
+DGN hollow_depths actual trigger -> hollow_fungal PASS
+DGN hollow_fungal arrival stable PASS
+DGN scarab warned charge moves and actually hits PASS
+DGN guard actual frontal/rear damage 10/50 PASS
+DGN guard lowers shield to land an actual bash PASS
+DGN hexer AI aims and launches its moving void projectile PASS
+DGN monster attack telegraphs and bolts clean up PASS
+DGN Surface atlas visible PASS
+DGN Surface list filtered PASS
+DGN Underground atlas visible PASS
+DGN Underground list filtered PASS
+DGN B3 detail selected PASS
+DGN map browsing never travels PASS
+DGN verification remains muted PASS
+[435.38] WORLD LAYERS RESULTS: 343 passed, 0 failed

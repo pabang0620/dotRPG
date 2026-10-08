@@ -1,0 +1,31 @@
+{
+  "mapId": "hollow_depths",
+  "width": 1792,
+  "height": 1536,
+  "pixelsPerTile": 32,
+  "origin": "northwest",
+  "camps": 18,
+  "floorSubcells": 35749,
+  "reachableFloorSubcells": 35749,
+  "waterSubcells": 1056,
+  "portals": [
+    "]:27,0",
+    "]:28,0",
+    "]:29,0",
+    "[:27,47",
+    "[:28,47",
+    "[:29,47"
+  ],
+  "guideColors": {
+    "floor": "#B59C71",
+    "structuralFront": "#554A48",
+    "deepBackground": "#171F32",
+    "water": "#224759"
+  },
+  "maskColors": {
+    "floor": "red",
+    "water": "blue",
+    "deepBackground": "black",
+    "structuralFront": "green"
+  }
+}

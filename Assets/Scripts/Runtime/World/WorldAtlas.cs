@@ -62,13 +62,16 @@ namespace DotRPG
             // Unvisited regions use a clearly labelled atlas schematic from the exact playable layout.
             const int tile = 6; var c = new PixelCanvas(w * tile, h * tile);
             bool snow = info.theme == MapTheme.Winter;
+            bool cave = info.worldLayer == WorldLayer.Underground;
+            bool rootTown = info.theme == MapTheme.UnderTown;
+            bool sanctum = info.theme == MapTheme.SunkenSanctum || info.theme == MapTheme.SanctumField;
             for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
             {
                 char ch = x < rows[y].Length ? rows[y][x] : '.';
-                string color = snow ? "c3d4df" : info.theme == MapTheme.Canyon ? "968470" : "59764c";
-                if (ch == '~' || ch == 'V') color = "3c7892";
-                else if (ch == 'W') color = "626475";
-                else if (ch == ',' || ch == '=' || ch == 'd' || ch == 'L' || ch == 'P' || ch == '<' || ch == '>') color = snow ? "969eaa" : "bea57c";
+                string color = cave ? "77654b" : rootTown ? "526347" : sanctum ? "77745e" : snow ? "c3d4df" : info.theme == MapTheme.Canyon ? "968470" : "59764c";
+                if (ch == '~' || ch == 'V') color = cave ? "31585e" : rootTown || sanctum ? "254d43" : "3c7892";
+                else if (ch == 'W') color = cave ? "292e30" : rootTown ? "34453c" : sanctum ? "343b32" : "626475";
+                else if (ch == ',' || ch == '=' || ch == 'd' || ch == 'L' || ch == 'P' || WorldRoutes.Portal(ch)) color = cave ? "917957" : rootTown ? "a49470" : sanctum ? "b2a17a" : snow ? "969eaa" : "bea57c";
                 c.Rect(x * tile, y * tile, tile, tile, PixelCanvas.Hex(color));
                 bool tree = ch == 'T' || ch == '%' || ch == 'Y' || ch == 'q' || (snow && (ch == 'Q' || ch == 'y'));
                 if (tree) { c.Circle(x * tile + 3, y * tile + 3, 3, PixelCanvas.Hex(snow ? "557c76" : "2b5141")); c.Rect(x * tile + 2, y * tile + 1, 2, 2, PixelCanvas.Hex("7c9c67")); }
@@ -88,6 +91,17 @@ namespace DotRPG
                 c.Rect(x * tile, (y - bh + 1) * tile, bw * tile, bh * tile, PixelCanvas.Hex("293740"));
                 c.Rect(x * tile + 1, (y - bh + 1) * tile + 1, bw * tile - 2, bh * tile - 3, PixelCanvas.Hex(snow ? "8c9dac" : "846953"));
                 c.HLine(x * tile + 2, (x + bw) * tile - 3, (y - bh / 2) * tile, PixelCanvas.Hex("c5b58a"));
+            }
+            if (id == MapRegistry.Undergate)
+            {
+                foreach (var foot in RootTownBuildings)
+                {
+                    int x = Mathf.RoundToInt((foot.x - 5) * tile), y = Mathf.RoundToInt((h - foot.y - 8) * tile);
+                    c.Rect(x, y, 10 * tile, 8 * tile, PixelCanvas.Hex("273c39"));
+                    c.Rect(x + 2, y + 2, 10 * tile - 4, 6 * tile, PixelCanvas.Hex("63725d"));
+                    c.HLine(x + 2, x + 10 * tile - 3, y + 3 * tile, PixelCanvas.Hex("c4b68b"));
+                    c.Rect(x + 4 * tile, y + 6 * tile, 2 * tile, 2 * tile, PixelCanvas.Hex("bea57c"));
+                }
             }
             var groups = new List<List<Vector2>>();
             foreach (var exit in p.exits)
@@ -139,9 +153,14 @@ namespace DotRPG
                 if (def == null || (MapRegistry.IsTown(id) && MapRegistry.IsIndoorService(def.service)) || (id == MapRegistry.Village && StoryCast.VillagersHidden)) continue;
                 list.Add(new Marker { id = def.npcId, name = def.displayName, service = def.service, position = pos });
             }
-            if (MapRegistry.IsTown(id))
+            if (MapRegistry.IsTown(id) && id != MapRegistry.Sanctum)
             {
                 if (entrances.TryGetValue(id, out var doors)) { list.RemoveAll(m => m.interior != null); list.AddRange(doors); }
+                else if (id == MapRegistry.Undergate)
+                {
+                    string[] keys = { "town_store", "town_smithy", "town_warehouse" };
+                    for (int i = 0; i < keys.Length; i++) AddDoor(MapRegistry.IndoorServices[i], RootTownBuildings[i] + VillageBuildingArt.Find(keys[i]).Entrance);
+                }
                 else if (id != MapRegistry.Village)
                 {
                     buildings = buildings.OrderBy(p => Vector2.Distance(p, spawn)).ToList();
@@ -178,5 +197,6 @@ namespace DotRPG
                     interior = MapRegistry.InteriorFor(id, service), position = position });
             }
         }
+        static readonly Vector2[] RootTownBuildings = { new Vector2(10, 29), new Vector2(42, 25), new Vector2(10, 13) };
     }
 }

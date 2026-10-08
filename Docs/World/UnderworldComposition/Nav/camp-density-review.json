@@ -1,0 +1,42 @@
+[
+  {
+    "map": "hollow_depths",
+    "initialDetectionPeak": 17,
+    "at": [
+      25.5,
+      27.5
+    ],
+    "nearestCampSeparation": 3.61,
+    "monsters": 54
+  },
+  {
+    "map": "hollow_descent",
+    "initialDetectionPeak": 15,
+    "at": [
+      31.5,
+      37.5
+    ],
+    "nearestCampSeparation": 3.61,
+    "monsters": 54
+  },
+  {
+    "map": "hollow_fungal",
+    "initialDetectionPeak": 14,
+    "at": [
+      25.5,
+      15.5
+    ],
+    "nearestCampSeparation": 4.47,
+    "monsters": 54
+  },
+  {
+    "map": "hollow_roots",
+    "initialDetectionPeak": 13,
+    "at": [
+      14.5,
+      24.5
+    ],
+    "nearestCampSeparation": 4.47,
+    "monsters": 54
+  }
+]

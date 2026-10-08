@@ -68,6 +68,7 @@ namespace DotRPG
             SunkenSanctumArt.Build(objectsRoot,cells,width,height,sanctumShore);
             CreateBoundaryWalls();
             PointsOfInterest.Add(PlayerSpawn);PointsOfInterest.Add(new Vector2(21,35));PointsOfInterest.Add(new Vector2(24,51));
+            BuildWorldHubGates();
             BuildMinimap();
         }
     }

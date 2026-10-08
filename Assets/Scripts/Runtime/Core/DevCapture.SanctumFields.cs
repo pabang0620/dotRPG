@@ -13,7 +13,7 @@ namespace DotRPG {
    if(Array.IndexOf(Environment.GetCommandLineArgs(),"-batchmode")<0){Game.Player.Input=new LocalInput();GameEvents.RaiseToast("성소 사냥터 · 방향키 이동 / X 공격 / 지도에서 지역 보기");yield break;}
    dgnPassed=dgnFailed=0;Game.Player.Input=new ScriptedInput();
    foreach(string species in new[]{RegionalMonsterArt.Sanctum})foreach(string role in new[]{"","_guard","_thrower"})foreach(string dir in new[]{"down","downside","side","upside","up"})foreach(string pose in new[]{"idle0","idle1","walk0","walk1","walk2","walk3","attack","hurt"})DCheck(species+role+dir+pose,RegionalMonsterArt.Get(species+role,dir,pose)!=null);
-   foreach(var z in HuntingGrounds.All){
+   foreach(var z in HuntingGrounds.All.Where(z=>z.theme!=MapTheme.Underground)){
     Game.World.Load(z.id);Game.Player.Place(Game.World.PlayerSpawn,Facing.Right);yield return Wait(.2f);Physics2D.SyncTransforms();
     if(z.theme==MapTheme.SanctumField){
      var seen=new HashSet<Vector2Int>();var tested=new HashSet<Vector2Int>();var q=new Queue<Vector2Int>();var start=Vector2Int.FloorToInt(Game.Player.Position);seen.Add(start);tested.Add(start);q.Enqueue(start);

@@ -1,0 +1,13 @@
+{
+  "tool": "built-in image_gen",
+  "prompts": [
+    {
+      "file": "ground-masonry.png",
+      "prompt": "Original production environment MATERIAL texture, top-down orthographic flat ancient limestone paving for an atmospheric pixel-art subterranean ruin RPG. Entire square1024x1024 filled with one consistent surface, tileable visual character, no isolated objects. Large worn rectangular and irregular quadrilateral fitted flagstones, organized into subtly interrupted courses, many different slab sizes, sparse eroded abstract shallow chiselled bands, occasional broken corners. Mostly large QUIET stone faces with sparse fine cracks, extremely little grain. A few desaturated dark olive moss traces only inside cracks. Low contrast charcoal slate grey/olive-grey neutral stone, dark joints, subdued broad light from upperleft. Matching monumental old temple masonry rather than round cobblestones. Dense professional hand-authored pixel clusters, hard edges, no antialiasing, no blurry gradients, no blur. No perspective horizon, no sidewall, no holes, no terrain edge, no drop shadows cast by objects, no grass patches, no giant symbols, no gems, no pebbles carpeting surface, no checkerboard symmetry, no UI/text. Ready for tinting into ochre, olive, teal, indigo. Thin joints unlike heavy black outlined comic tiles. Stones roughly70–160px wide and40–90px tall. This is a game-used pixel texture notphotograph."
+    },
+    {
+      "file": "retaining-masonry.png",
+      "prompt": "Original production vertical surface MATERIAL texture for atmospheric pixel-art subterranean ruin RPG. Entire1024x1024square occupied by old massive ash-grey limestone masonry foundation, front orthographic view. Exactly one FLAT SURFACE of bonded rectangular large stone blocks in uneven staggered courses, alternating long thick blocks and shorter repaired ones. Thick load-bearing blocks supporting ancient temple, shallow chipped bevels, occasional modest eroded geometric chisel markings, spare dark cracks and damp olive stains in joints. Big restrained planes, coherent structural lines. Some broad supporting stone seams, no regular repeating arches, no protruding objects, no windows, no doors, no sky, no border, no ground plane, no perspective, no piledboulders. Professional highdetail PIXEL ART with crisp authored clusters and limited shade steps, light subdued from upperleft, cool neutralgrey material suitable forregionaltint. No randomnoise, blur, smoothgradients, 3Drender orphotography. Itmustvisuallymatchquietwornflagstonefloorinalongforgotten temple. Large blocks120–260pxwide/90–170pxtall, lowcontrastdarkgrout, no comicblackthickoutlines."
+    }
+  ]
+}

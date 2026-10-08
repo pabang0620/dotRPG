@@ -23,6 +23,8 @@ const mapsSchema = z.looseObject({
       id: z.string().min(1),
       instanced: z.boolean(),
       safe: z.boolean().optional(),
+      worldLayer: z.enum(['surface', 'underground']).optional(),
+      depth: z.number().int().nonnegative().optional(),
       bounds: z
         .looseObject({
           minX: z.number(),
@@ -95,6 +97,8 @@ export interface MapInfo {
   instanced: boolean;
   /** 마을(전투 없는 맵). 마을에서는 같은 채널 사람들이 서로 보인다 */
   safe?: boolean;
+  worldLayer?: 'surface' | 'underground';
+  depth?: number;
   bounds?: { minX: number; minY: number; maxX: number; maxY: number };
 }
 export interface PassiveNode {

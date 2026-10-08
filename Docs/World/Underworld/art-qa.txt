@@ -1,0 +1,32 @@
+[1.63] capture started
+[1.63] verification audio volume: 0
+DGN hollow_scarab 40 pixel animation frames PASS
+DGN hollow_scarab five distinct direction poses PASS
+DGN hollow_scarab transparent unclipped frame margin PASS
+DGN hollow_scarab idle/walk/hurt body drift 1.82px <5 PASS
+DGN hollow_scarab common feet baseline within one pixel PASS
+DGN hollow_scarab constant scale and sprite pivot PASS
+DGN hollow_guard 40 pixel animation frames PASS
+DGN hollow_guard five distinct direction poses PASS
+DGN hollow_guard transparent unclipped frame margin PASS
+DGN hollow_guard idle/walk/hurt body drift 3.08px <5 PASS
+DGN hollow_guard common feet baseline within one pixel PASS
+DGN hollow_guard constant scale and sprite pivot PASS
+DGN hollow_hexer 40 pixel animation frames PASS
+DGN hollow_hexer five distinct direction poses PASS
+DGN hollow_hexer transparent unclipped frame margin PASS
+DGN hollow_hexer idle/walk/hurt body drift 1.83px <5 PASS
+DGN hollow_hexer common feet baseline within one pixel PASS
+DGN hollow_hexer constant scale and sprite pivot PASS
+DGN hollow_descent art review has three new species PASS
+DGN hollow_descent scenic capture remains on playable floor PASS
+DGN hollow_roots art review has three new species PASS
+DGN hollow_roots scenic capture remains on playable floor PASS
+DGN hollow_fungal art review has three new species PASS
+DGN hollow_fungal scenic capture remains on playable floor PASS
+DGN hollow_depths art review has three new species PASS
+DGN hollow_depths scenic capture remains on playable floor PASS
+DGN Surface atlas in art review PASS
+DGN Underground atlas in art review PASS
+DGN art verification remains muted PASS
+[75.26] WORLD LAYERS ART RESULTS: 29 passed, 0 failed

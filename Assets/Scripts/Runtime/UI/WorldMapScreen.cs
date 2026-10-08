@@ -12,6 +12,10 @@ namespace DotRPG
         RectTransform mapRect, playerDot, tooltip;
         Text caption, legend, detail, tooltipText, npcPageText;
         Transform side;
+        RectTransform regionsContent;
+        ScrollRect regionsScroll;
+        Button surfaceTab, undergroundTab;
+        WorldLayer selectedWorld;
         Button roomButton, travelButton;
         Image bossIcon;
         readonly List<GameObject> pins = new List<GameObject>();
@@ -26,6 +30,9 @@ namespace DotRPG
         float mapScale;
         public string SelectedMap => selectedMap;
         public int NpcCount => npcs.Count;
+        public WorldLayer SelectedWorld => selectedWorld;
+        public int ListedRegionCount => regionButtons.Count;
+        public bool AtlasVisible => atlasPanel != null && atlasPanel.gameObject.activeSelf;
         static readonly Vector2 TL = new Vector2(0, 1), C = new Vector2(.5f, .5f);
 
         public static WorldMapScreen Create(Transform canvas)
@@ -65,29 +72,14 @@ namespace DotRPG
             UIFactory.Place(w.bossIcon.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 14), new Vector2(56, 56));
             w.bossIcon.enabled = false;
             w.side = Panel(w.content, "Side", new Vector2(1, 1), new Vector2(1, 1), Vector2.zero, new Vector2(420, 590), UiTheme.Panel).transform;
-            Label(w.side, "RegionHeading", "지역 선택 · 이동 없이 둘러보기", 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
-            var regions=Panel(w.side,"RegionsViewport",TL,TL,new Vector2(16,-44),new Vector2(388,294),UiTheme.PanelDeep);
+            Label(w.side, "RegionHeading", "월드 선택 · 지역을 눌러 자세히 보기", 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
+            w.surfaceTab = Button(w.side, "WorldSurface", "지상월드", "ui_btn", TL, TL, new Vector2(16, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Surface), 19);
+            w.undergroundTab = Button(w.side, "WorldUnderground", "지하월드", "ui_btngray", TL, TL, new Vector2(214, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Underground), 19);
+            var regions=Panel(w.side,"RegionsViewport",TL,TL,new Vector2(16,-94),new Vector2(388,244),UiTheme.PanelDeep);
             regions.gameObject.AddComponent<RectMask2D>();
-            // [UI] Regions grouped by the town they hang off (towns and explore areas head a group, hunting grounds
-            // below them by level), so branch areas and sanctums show where they connect.
-            const float RowH = 30f;
-            var groups = RegionGroups();
-            int rowCount = groups.Sum(g => g.Count);
-            var list=UIFactory.Place(UIFactory.Rect(regions.transform,"RegionsContent"),TL,TL,Vector2.zero,new Vector2(388,rowCount*RowH));
-            var scroll=regions.gameObject.AddComponent<ScrollRect>();scroll.viewport=regions.rectTransform;scroll.content=list;scroll.horizontal=false;scroll.vertical=true;scroll.scrollSensitivity=RowH;scroll.movementType=ScrollRect.MovementType.Clamped;
-            int row = 0;
-            foreach (var group in groups)
-                for (int k = 0; k < group.Count; k++)
-                {
-                    var info = group[k];
-                    string id = info.id; var zone = HuntingGrounds.Get(id);
-                    string name = id == MapRegistry.Village ? "해골 숲 옆 작은 마을" : info.displayName;
-                    string tag = zone == null ? (MapRegistry.IsTown(id) ? "<color=#91c9b0>마을</color>" : "<color=#91c9b0>탐험</color>") : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
-                    string label = k == 0 ? $"<b>{name}</b>   {tag}" : $"<color=#8c96a8>{(k == group.Count - 1 ? "└" : "├")}</color> {name}   {tag}";
-                    var button = Button(list, "Region_" + id, label, k == 0 ? "ui_btn" : "ui_btngray", TL, TL, new Vector2(k == 0 ? 0 : 18, -row * RowH), new Vector2(k == 0 ? 388 : 370, RowH - 2), () => w.SelectMap(id), 16);
-                    var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 12, 0, 8, 0);
-                    w.regionButtons.Add((id, button)); row++;
-                }
+            w.regionsContent=UIFactory.Place(UIFactory.Rect(regions.transform,"RegionsContent"),TL,TL,Vector2.zero,new Vector2(388,244));
+            w.regionsScroll=regions.gameObject.AddComponent<ScrollRect>();w.regionsScroll.viewport=regions.rectTransform;w.regionsScroll.content=w.regionsContent;w.regionsScroll.horizontal=false;w.regionsScroll.vertical=true;w.regionsScroll.scrollSensitivity=32;w.regionsScroll.movementType=ScrollRect.MovementType.Clamped;
+            w.RebuildRegions();
             for (int i = 0; i < MapRegistry.IndoorServices.Length; i++)
             {
                 var service = MapRegistry.IndoorServices[i];
@@ -111,9 +103,9 @@ namespace DotRPG
         }
 
         /// <summary>Every listed region, grouped under its town or explore area (first in each group), in registry order.</summary>
-        static List<List<MapInfo>> RegionGroups()
+        List<List<MapInfo>> RegionGroups()
         {
-            var all = MapRegistry.All.Where(m => !m.instanced).ToList();
+            var all = MapRegistry.All.Where(m => !m.instanced && m.worldLayer == selectedWorld).ToList();
             string Hub(MapInfo m)
             {
                 var zone = HuntingGrounds.Get(m.id);
@@ -137,13 +129,64 @@ namespace DotRPG
             return groups;
         }
 
+        void RebuildRegions()
+        {
+            if (regionsContent == null) return;
+            foreach (var entry in regionButtons) { entry.button.gameObject.SetActive(false); Destroy(entry.button.gameObject); }
+            regionButtons.Clear();
+            const float rowH = 32;
+            var groups = RegionGroups();
+            regionsContent.sizeDelta = new Vector2(388, Mathf.Max(244, groups.Sum(g => g.Count) * rowH));
+            regionsContent.anchoredPosition = Vector2.zero;
+            int row = 0;
+            foreach (var group in groups)
+                for (int k = 0; k < group.Count; k++)
+                {
+                    var info = group[k]; string id = info.id; var zone = HuntingGrounds.Get(id);
+                    string badge = selectedWorld == WorldLayer.Underground && !info.displayName.StartsWith("B" + info.depth) ? $"B{info.depth} · " : "";
+                    string tag = zone == null ? (MapRegistry.IsTown(id) ? "<color=#b9dbab>마을</color>" : "<color=#91c9b0>탐험</color>") : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
+                    string label = k == 0 ? $"<b>{badge}{info.displayName}</b>   {tag}" : $"<color=#8c96a8>{(k == group.Count - 1 ? "└" : "├")}</color> {badge}{info.displayName}   {tag}";
+                    var button = Button(regionsContent, "Region_" + id, label, k == 0 && zone == null ? "ui_btn" : "ui_btngray", TL, TL,
+                        new Vector2(k == 0 ? 0 : 14, -row * rowH), new Vector2(k == 0 ? 388 : 374, rowH - 2), () => SelectMap(id), 16);
+                    var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 10, 0, 8, 0);
+                    regionButtons.Add((id, button)); row++;
+                }
+            RefreshWorldTabs();
+        }
+
+        void RefreshWorldTabs()
+        {
+            if (surfaceTab == null || undergroundTab == null) return;
+            surfaceTab.GetComponent<Image>().sprite = UiTheme.Tab(selectedWorld == WorldLayer.Surface);
+            undergroundTab.GetComponent<Image>().sprite = UiTheme.Tab(selectedWorld == WorldLayer.Underground);
+            surfaceTab.GetComponentInChildren<Text>().color = selectedWorld == WorldLayer.Surface ? UiTheme.AccentLight : UiTheme.TextSecondary;
+            undergroundTab.GetComponentInChildren<Text>().color = selectedWorld == WorldLayer.Underground ? UiTheme.AccentBlue : UiTheme.TextSecondary;
+        }
+
+        public void SelectWorld(WorldLayer world)
+        {
+            selectedWorld = world;
+            RebuildRegions();
+            if (string.IsNullOrEmpty(selectedMap) || WorldLayers.Of(selectedMap) != world)
+                selectedMap = Game.World != null && WorldLayers.Of(Game.World.MapId) == world ? Game.World.MapId
+                    : MapRegistry.All.FirstOrDefault(m => !m.instanced && m.worldLayer == world)?.id;
+            selectedNpc = -1; npcPage = 0;
+            Refresh(); ShowAtlas();
+        }
+
         protected override bool PadNavigation => true;
 
-        public override void Show() { selectedMap = Game.World.MapId; if (atlasPanel != null) atlasPanel.gameObject.SetActive(false); base.Show(); }
+        public override void Show()
+        {
+            selectedMap = Game.World.MapId; selectedWorld = WorldLayers.Of(selectedMap);
+            RebuildRegions(); SetAtlasVisible(false); base.Show(); ShowAtlas();
+        }
         public void SelectMap(string id)
         {
             if (MapRegistry.Get(id) == null) return;
-            selectedMap = id; selectedNpc = -1; npcPage = 0; Refresh();
+            selectedMap = id; selectedNpc = -1; npcPage = 0;
+            if (selectedWorld != WorldLayers.Of(id)) { selectedWorld = WorldLayers.Of(id); RebuildRegions(); }
+            SetAtlasVisible(false); Refresh();
         }
         protected override void Refresh()
         {
@@ -166,8 +209,11 @@ namespace DotRPG
             {
                 int lv = Game.Session.Progression.Level;
                 detail.rectTransform.sizeDelta = new Vector2(718, 84);
-                detail.text = $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
-                              $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치)</color>";
+                detail.text = WorldLayers.IsUnderground(selectedMap)
+                    ? $"지역 등급 Lv.{zone.minLevel}~{zone.maxLevel} · 몬스터 Lv.{zone.monsterLevel} · 귀환: {MapRegistry.Get(zone.village).displayName}\n" +
+                      "Lv.40 만렙 이후 도전 · 강화 장비·파티 권장 <color=#b8c4d8>(캐릭터 상한 Lv.40)</color>"
+                    : $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
+                      $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치)</color>";
                 string boss = FieldBosses.InfoLine(zone.id); // [FIELD BOSS]
                 var face = boss != null ? Game.Art.Optional("fboss_icon_" + zone.id.Split('_')[0]) : null;
                 bossIcon.enabled = face != null;
@@ -197,9 +243,11 @@ namespace DotRPG
             playerDot.gameObject.SetActive(current); playerDot.anchoredPosition = Place(Game.Player.Position); playerDot.SetAsLastSibling();
             foreach (var entry in regionButtons)
                 entry.button.GetComponent<Image>().color = entry.id == (info.exteriorMap ?? selectedMap) ? new Color32(180, 208, 223, 255) : Color.white;
-            bool town = info.IsInterior || MapRegistry.IsTown(selectedMap);
+            bool town = info.IsInterior || (MapRegistry.IsTown(selectedMap) && selectedMap != MapRegistry.Sanctum);
             for (int i = 0; i < roomTabs.Count; i++) roomTabs[i].interactable = town;
             RenderNpcRows();
+            RefreshWorldTabs();
+            RefreshAtlas();
         }
         Vector2 Place(Vector2 pos) => (pos - preview.bounds.center) * mapScale;
         void PageNpcs(int delta) { npcPage = Mathf.Clamp(npcPage + delta, 0, Mathf.Max(0, (npcs.Count - 1) / 6)); RenderNpcRows(); }
@@ -218,6 +266,7 @@ namespace DotRPG
         }
         public void SelectNpc(int index)
         {
+            if (AtlasVisible) { SetAtlasVisible(false); Refresh(); }
             if (index < 0 || index >= npcs.Count) return;
             selectedNpc = index; npcPage = index / 6; RenderNpcRows();
             detail.rectTransform.sizeDelta = new Vector2(530, 38);
@@ -235,7 +284,7 @@ namespace DotRPG
         protected override void Update()
         {
             base.Update();
-            if (selectedMap != Game.World.MapId || preview == null) return;
+            if (AtlasVisible || selectedMap != Game.World.MapId || preview == null) return;
             playerDot.anchoredPosition = Place(Game.Player.Position);
             foreach (var entry in npcPins)
             {

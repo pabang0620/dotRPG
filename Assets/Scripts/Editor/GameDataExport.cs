@@ -412,7 +412,8 @@ namespace DotRPG.EditorTools
             var j = Doc();
             j.Arr("maps", MapRegistry.All.Concat(MapRegistry.Interiors).Concat(MapRegistry.Rooms), (o, m) =>
             {
-                o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe);
+                o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe)
+                    .Str("worldLayer", m.worldLayer == WorldLayer.Underground ? "underground" : "surface").Num("depth", m.depth);
                 var census = Census(m);
                 // [SERVER 8] A field party can share this map's monsters (open map with a field spawner).
                 o.Bool("sharedField", !m.instanced && !m.safe && census.spawnPoints > 0);
@@ -466,6 +467,13 @@ namespace DotRPG.EditorTools
             var rows = source.Split('\n').Select(r => r.TrimEnd('\r')).Where(l => !l.StartsWith("//") && l.Trim().Length > 0).ToList();
             c.height = rows.Count;
             c.width = rows.Count == 0 ? 0 : rows.Max(r => r.Length);
+            // Purpose-built cave scenery is decorative, not the legacy tree/rock gathering alphabet.
+            // Keep server supply caps in step with WorldBuilder.Underworld's authored spawn marks.
+            if (map.theme == MapTheme.UnderTown || map.theme == MapTheme.Underground)
+            {
+                c.spawnPoints = rows.Sum(row => row.Count(ch => ch == 'k'));
+                return c;
+            }
             bool canyon = map.theme == MapTheme.Canyon, winter = map.theme == MapTheme.Winter, hd = map.HighRes;
             char filler = canyon ? ',' : '.';
             var cells = new char[c.width, c.height];

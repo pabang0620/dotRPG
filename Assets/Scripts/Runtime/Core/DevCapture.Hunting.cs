@@ -23,10 +23,11 @@ namespace DotRPG
             dgnPassed = dgnFailed = 0;
             yield return Wait(1f); Game.Config.autosave = false;
             Game.Flow.NewGame(CharacterClass.Warrior); yield return Wait(1.5f);
+            AudioListener.volume = 0; Game.Audio?.SetVolumes(0, 0);
             Game.Player.Health.SetInvulnerable(600f); Game.Player.Input = new ScriptedInput();
             var export = new List<object>(); var dungeonExport = new List<object>();
-            DCheck("three towns and twelve fields", MapRegistry.All.Count(m => MapRegistry.IsTown(m.id)) == 3 && HuntingGrounds.All.Length == 12);
-            foreach (var village in new[] { MapRegistry.Village, MapRegistry.Canyon, MapRegistry.Winter })
+            DCheck("five towns and twenty fields", MapRegistry.All.Count(m => MapRegistry.IsTown(m.id)) == 5 && HuntingGrounds.All.Length == 20);
+            foreach (var village in new[] { MapRegistry.Village, MapRegistry.Canyon, MapRegistry.Winter, MapRegistry.Sanctum, MapRegistry.Undergate })
                 DCheck(village + " has four hunting grounds", HuntingGrounds.All.Count(z => z.village == village) == 4);
             foreach (var map in MapRegistry.All)
             {

@@ -337,6 +337,27 @@ namespace DotRPG
                 knockbackSpeed = 0f, detect = 0f,
             });
 
+            // The persistent underground world has its own enemies and art. At the same level,
+            // each has about 40% more health and 20% more damage than its corresponding surface role.
+            // Existing surface/dungeon definitions and the global readable attack pacing are unchanged.
+            Add(new MonsterDef
+            {
+                id = "hollow_scarab", name = "흑갑 굴파괴충", look = Look("hollow_scarab", C(52, 48, 68)), kind = MonsterKind.Charger,
+                hp = 63, damage = 16, xp = 35, chaseSpeed = 2.0f, attackRange = 1.0f,
+                skillInterval = 3.5f, projectileSpeed = 11f,
+            });
+            Add(new MonsterDef
+            {
+                id = "hollow_guard", name = "심연의 방패 파수꾼", look = Look("hollow_guard", C(45, 52, 68)), kind = MonsterKind.ShieldGuard,
+                hp = 84, damage = 15, xp = 40, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f,
+            });
+            Add(new MonsterDef
+            {
+                id = "hollow_hexer", name = "공허의 주술사", look = Look("hollow_hexer", C(64, 37, 76)), kind = MonsterKind.Archer,
+                hp = 40, damage = 14, xp = 33, chaseSpeed = 2.2f, keepDistance = 5f,
+                skillInterval = 2.4f, projectileSpeed = 10f, detect = 7.5f, loseInterest = 11f,
+            });
+
             // ----- Weekday bosses (§6.1) -----
             Add(Boss("boss_gold_foreman", "황금 광부장", Bone, hp: 900, dmg: 20, lines: 18, speed: 2.1f,
                 new BossPattern(PatternKind.Slash3, 5f, 1f, 3, maxRange: 3.2f, weight: 1.4f),

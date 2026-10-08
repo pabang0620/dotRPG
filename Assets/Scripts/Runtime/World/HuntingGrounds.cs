@@ -12,7 +12,15 @@ namespace DotRPG
         public readonly int minLevel, maxLevel, monsterLevel, variant;
         public readonly string[] monsters;
         /// <summary>One kill's XP: the per-level rate split over the pack (three times the monsters, a third the XP each).</summary>
-        public int KillXp => Math.Max(1, (HuntingGrounds.XpAt(monsterLevel) + HuntingGrounds.PackSize / 2) / HuntingGrounds.PackSize);
+        public int KillXp
+        {
+            get
+            {
+                int ordinary = Math.Max(1, (HuntingGrounds.XpAt(monsterLevel, theme == MapTheme.Underground) + HuntingGrounds.PackSize / 2) / HuntingGrounds.PackSize);
+                // Stronger underground roles earn 25% more per kill, without changing any surface field.
+                return theme == MapTheme.Underground ? (ordinary * 5 + 3) / 4 : ordinary;
+            }
+        }
         public HuntingZone(string id, string name, string village, MapTheme theme, int min, int max, int level, int variant, params string[] monsters)
         {
             this.id = id; this.name = name; this.village = village; this.theme = theme;
@@ -58,10 +66,16 @@ namespace DotRPG
             new HuntingZone("sanctum_archive", "잠긴 서고", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 1, "skel_archer", "skel_warrior", "skel_shield"),
             new HuntingZone("sanctum_roots", "뿌리 잠식 지하묘", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 2, "skel_warrior", "skel_shield", "skel_archer"),
             new HuntingZone("sanctum_court", "망각의 내전", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 3, "skel_shield", "skel_archer", "skel_warrior"),
+            new HuntingZone("hollow_descent", "B1 · 뿌리 아래 갱도", MapRegistry.Undergate, MapTheme.Underground, 40, 45, 42, 0, "hollow_scarab", "hollow_guard", "hollow_hexer"),
+            new HuntingZone("hollow_roots", "B2 · 뒤엉킨 뿌리굴", MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 1, "hollow_scarab", "hollow_guard", "hollow_hexer"),
+            new HuntingZone("hollow_fungal", "B2 · 푸른 포자 동굴", MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 2, "hollow_hexer", "hollow_scarab", "hollow_guard"),
+            new HuntingZone("hollow_depths", "B3 · 반딧불 심연", MapRegistry.Undergate, MapTheme.Underground, 50, 55, 53, 3, "hollow_guard", "hollow_hexer", "hollow_scarab"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
-        public static int XpAt(int level) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
-        public static string HomeOf(string mapId) => mapId == MapRegistry.Sanctum ? MapRegistry.Winter : MapRegistry.Get(mapId)?.exteriorMap ?? Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
+        /// <summary>Enemy data may exceed the player cap in the underground world; ordinary fields keep the original cap.</summary>
+        public const int MaxMonsterLevel = 60;
+        public static int XpAt(int level, bool underground = false) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(underground ? MaxMonsterLevel : Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
+        public static string HomeOf(string mapId) => MapRegistry.Get(mapId)?.exteriorMap ?? Get(mapId)?.village ?? (MapRegistry.Get(mapId)?.safe == true ? mapId : MapRegistry.Village);
 
         // Equal-level gear / 12 field kills per minute, normal route at its reference time.
         // Floor applies to TOTAL dungeon XP (kills + clear); rank/specialty rewards then add value.
@@ -112,6 +126,7 @@ namespace DotRPG
         /// <summary>Deterministic, distinct outdoor layouts using the existing forest/canyon/snow art.</summary>
         public static string Layout(string id)
         {
+            if (id == MapRegistry.Undergate || Get(id)?.theme == MapTheme.Underground) return UnderworldLayouts.Layout(id);
             var z = Get(id);
             return z == null ? null : z.theme==MapTheme.SanctumField ? SanctumHunting.Layout(z) : HuntingLayouts.Build(z);
         }
