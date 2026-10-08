@@ -139,6 +139,7 @@ BACKUP_DEST=/tmp/b BACKUP_ALLOW_PLAINTEXT=1 PG_DUMP_CMD='...' ./backup.sh test  
 | 운영 지급 | `grant add <캐릭터 uuid> --code compensation --gold 5000 --memo "문의 #123"` (system 우편으로만, 한도는 `ADMIN_GRANT_*`). 회수 기능은 없다: 사고는 정지 + 개별 대응 |
 | 점검·방송 | `maint status/schedule/cancel/extend/end/drain`, `broadcast "문구"` |
 | 작업 | `ops jobs`, `ops run purge-hourly \| purge-daily \| stale-runs \| integrity-nightly [--full]` |
+| 회원 탈퇴 | `withdraw list [--state requested\|completed\|cancelled] [--deferred]`, `withdraw show <계정 uuid>`, `withdraw start <계정 uuid> --note ...`(정보주체 요청 대행, 정지 계정 포함. `--no-cancel` 은 owner), `withdraw cancel <탈퇴 uuid> --note ...`, `withdraw hold <탈퇴 uuid> --on\|--off --note ...`, `withdraw anonymize-now <탈퇴 uuid> --note ... [--override-deferral]`(owner), `tombstone find --steam <ID>`, `tombstone release <id> --note ...`(owner). 작업 `ops run withdrawal-anonymize \| withdrawal-destroy`. 메모에 Steam ID·실명을 쓰지 않는다 |
 | 관리자 계정(owner) | `admins list/add/role/disable/enable/reset-2fa/unlock/reset-password`, `audit` |
 
 기기를 잃어 2FA 를 못 쓰면(셸 접근자만): `docker compose exec api node dist/admin/bootstrap.js reset-totp <아이디>`.
@@ -154,3 +155,34 @@ BACKUP_DEST=/tmp/b BACKUP_ALLOW_PLAINTEXT=1 PG_DUMP_CMD='...' ./backup.sh test  
 | 웹훅·하트비트 URL | URL 자체가 비밀이다. 새로 만들어 교체 |
 
 `.env` 와 `docker compose config`, `env` 출력을 채팅·이슈에 붙이지 않는다(값이 펼쳐진다).
+
+## 9. 회원 탈퇴 5년 파기 (`withdrawal-destroy`, 기본 꺼짐)
+
+설계는 `Docs/server/phase12_withdrawal.md` 8절. 기본(`WITHDRAW_DESTROY_ENABLED=false`)에서는 매일 KST 04:55에 보관 기한이 지난 탈퇴 계정 수와 표별 파기 예정 행 수만 `job_runs.detail`(`mode: dry_run`)에 기록하고 아무것도 지우지 않는다. 첫 대상은 탈퇴 5년 뒤에야 생긴다.
+
+켜기 전에: 법무 확인(보관 범위, 백업 안의 개인정보 보관 기간)과 dry-run 건수 점검. 켤 때만 아래 역할을 만든다(슈퍼유저 작업, 앱 풀은 이 역할로 붙지 않는다).
+
+```sql
+CREATE ROLE dotrpg_purge LOGIN PASSWORD '<비밀값>';
+-- 파기 대상 표만 준다(정책: withdrawalPolicy.ts PURGE_GRANT_TABLES = DESTROY_ORDER + characters, account_withdrawals, accounts). admin_audit_log 등 forever 표는 주지 않는다
+GRANT SELECT, DELETE ON
+         anomaly_log, drops, kill_log, kill_stats, raid_claims, party_run_members, dungeon_sweeps,
+         sweep_ticket_ledger, sweep_ticket_lots, dungeon_runs, revive_log, character_achievements,
+         character_career, character_career_trials, character_chests, character_enhance_pity,
+         character_node_state, character_state, quest_claims, site_deliveries, character_items,
+         gold_ledger, item_ledger, xp_ledger, enhance_log, account_level_rewards,
+         account_pass_claims, sealed_pulls, gacha_pulls, star_synth_log, account_collections,
+         account_cosmetics, account_growth_pass, account_sealed_state, account_week_counters,
+         economy_holds, account_sanctions, admin_account_notes, admin_grants, auction_flags,
+         auction_sinks, mail_attachments, mail_campaign_deliveries, mails, auction_trade_flags,
+         auction_trades, auction_bids, auction_listings, friendships, blocks, report_lines, reports,
+         party_applications, party_members, party_invites, field_session_members,
+         party_run_host_reports, party_runs, field_sessions, parties, star_spend_allocs,
+         star_ledger, star_paid_lots, star_order_events, payment_flags, star_admin_grants,
+         star_orders, star_wallets, payment_profiles, characters, account_withdrawals, accounts
+  TO dotrpg_purge;
+GRANT INSERT ON account_destruction_log TO dotrpg_purge;               -- 파기 관리대장(추가만)
+GRANT USAGE ON SEQUENCE account_destruction_log_id_seq TO dotrpg_purge;
+```
+
+접속 문자열은 `PURGE_DATABASE_URL`(비밀값)에 둔다. 추가 전용 원장 트리거(`ledger_block_mutation`)는 `session_user = dotrpg_purge` 의 DELETE 만 허용 표(13개 + 계정 한 곳에 속한 4개)에서 통과시키고 UPDATE, TRUNCATE, 감사 로그 삭제는 이 역할도 거절한다. 외래 키로 막히는 행(상대가 아직 활동 중인 친구·경매 기록 등)은 지우지 않고 계정 껍데기(개인 정보 없음)를 남기며, 다음 실행에서 다시 시도한다.

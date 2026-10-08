@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
@@ -266,7 +267,46 @@ export function loadGameData(dir: string): GameData {
 
 let cached: GameData | null = null;
 
+const sha256 = (b: Buffer): string => crypto.createHash('sha256').update(b).digest('hex');
+
+/**
+ * data_version.json의 files 해시와 version을 실제 파일과 대조한다(GameDataExport.cs와 같은 방식).
+ * 파일 해시 = 파일 바이트(UTF-8, BOM 없음)의 SHA-256 hex. version = 파일명 서수 정렬 순서로 내용을 이어 붙인 SHA-256 hex의 앞 16자.
+ * files에 없는 서버 전용 파일은 대조하지 않는다.
+ */
+export function verifyDataHashes(dir: string): void {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(fs.readFileSync(path.join(dir, 'data_version.json'), 'utf8'));
+  } catch (err) {
+    throw new Error(`게임 데이터 data_version.json 을 읽을 수 없습니다: ${(err as Error).message}`);
+  }
+  const r = z
+    .looseObject({ version: z.string(), files: z.record(z.string(), z.string()) })
+    .safeParse(raw);
+  if (!r.success) throw new Error('게임 데이터 data_version.json 에 files 해시 목록이 없습니다');
+  const names = Object.keys(r.data.files).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  if (names.length === 0) throw new Error('게임 데이터 data_version.json 의 files 가 비어 있습니다');
+  const parts: Buffer[] = [];
+  for (const name of names) {
+    let buf: Buffer;
+    try {
+      buf = fs.readFileSync(path.join(dir, name));
+    } catch {
+      throw new Error(`게임 데이터 해시 대조 실패: ${name} 파일이 없습니다`);
+    }
+    if (sha256(buf) !== r.data.files[name]) {
+      throw new Error(`게임 데이터 해시 대조 실패: ${name} 내용이 data_version.json 의 해시와 다릅니다`);
+    }
+    parts.push(buf);
+  }
+  if (sha256(Buffer.concat(parts)).slice(0, 16) !== r.data.version) {
+    throw new Error('게임 데이터 해시 대조 실패: data_version.json 의 version 이 파일 내용과 다릅니다');
+  }
+}
+
 export function initGameData(dir: string): GameData {
+  verifyDataHashes(dir);
   cached = loadGameData(dir);
   return cached;
 }

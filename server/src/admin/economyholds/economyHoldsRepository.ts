@@ -63,8 +63,9 @@ export async function accountUuid(db: Queryable, accountId: number): Promise<str
   return r.rows[0]?.uuid ?? null;
 }
 
+/** 탈퇴 유예 중(deleted_at 있음)인 계정에도 경제 정지를 걸 수 있어야 한다: 익명화된 계정만 제외한다(phase12_withdrawal.md 11.1) */
 export async function accountIdByUuid(db: Queryable, uuid: string): Promise<number | null> {
-  const r = await db.query<{ id: string }>('SELECT id FROM accounts WHERE uuid = $1 AND deleted_at IS NULL', [uuid]);
+  const r = await db.query<{ id: string }>('SELECT id FROM accounts WHERE uuid = $1 AND anonymized_at IS NULL', [uuid]);
   return r.rows[0] ? Number(r.rows[0].id) : null;
 }
 

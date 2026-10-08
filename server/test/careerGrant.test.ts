@@ -9,7 +9,7 @@ import { getPool } from '../src/db/pool';
 import { resetAntiAbuseDataCache } from '../src/gamedata/antiAbuseData';
 import { advance, resetClock, setNowAt } from './auctionHelpers';
 import { anomalyKinds, get, newHero, post, seedLevel, type Hero } from './economyHelpers';
-import { auth, buildApp, DATA_DIR, emptyState, resetDb, shutdown, ver } from './helpers';
+import { auth, buildApp, DATA_DIR, emptyState, rehashDataDir, resetDb, shutdown, ver } from './helpers';
 import { formParty, startAndBegin } from './partyHelpers';
 
 let app: Express;
@@ -254,6 +254,7 @@ describe('C2~C4 각성 흐름', () => {
     const careers = JSON.parse(fs.readFileSync(path.join(dir, 'careers.json'), 'utf8')) as Record<string, unknown>;
     careers.trials = { '1': { minSeconds: 6, requiredNodes: [] }, '2': { minSeconds: 20, requiredNodes: ['g_taunt', 'g_wall'] } };
     fs.writeFileSync(path.join(dir, 'careers.json'), JSON.stringify(careers));
+    rehashDataDir(dir);
     resetAntiAbuseDataCache();
     const withTrials = buildApp({ GAME_DATA_DIR: dir });
     const h = await warrior();

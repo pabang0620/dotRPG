@@ -124,13 +124,19 @@ export async function markRefreshUsed(client: PoolClient, id: number): Promise<v
   await client.query('UPDATE refresh_tokens SET used_at = now() WHERE id = $1', [id]);
 }
 
-export type RevokeReason = 'logout' | 'reuse' | 'replaced' | 'device_mismatch' | 'admin';
+export type RevokeReason = 'logout' | 'reuse' | 'replaced' | 'device_mismatch' | 'admin' | 'withdrawal';
 
 export async function revokeFamily(client: Queryable, familyId: string, reason: RevokeReason): Promise<void> {
   await client.query(
     'UPDATE refresh_tokens SET revoked_at = now(), revoke_reason = $2 WHERE family_id = $1 AND revoked_at IS NULL',
     [familyId, reason],
   );
+}
+
+/** 탈퇴 요청: 이 계정의 살아 있는 모든 갱신 토큰(가족 전체)을 폐기한다 */
+export async function revokeAllForAccount(client: Queryable, accountId: number, reason: RevokeReason): Promise<number> {
+  const r = await client.query('UPDATE refresh_tokens SET revoked_at = now(), revoke_reason = $2 WHERE account_id = $1 AND revoked_at IS NULL', [accountId, reason]);
+  return r.rowCount ?? 0;
 }
 
 export async function findFamilyByHash(client: PoolClient, tokenHash: string): Promise<string | null> {

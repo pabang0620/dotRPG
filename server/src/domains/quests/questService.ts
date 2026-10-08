@@ -5,6 +5,7 @@ import { AppError } from '../../utils/AppError';
 import { clearCounts } from '../dungeons/dungeonRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
+import { getGrant } from '../characters/careerGrantRepository';
 import { getDeliveries } from '../gathering/gatheringRepository';
 import * as repo from './questRepository';
 import type { ClaimBody } from './questValidation';
@@ -100,13 +101,9 @@ async function processClaim(ctx: EconCtx, questId: string) {
   }
 
   for (const f of obj.flagNeeds) {
-    // 전직의 길: 저장된 전직 상태(character_state.career)로 확인한다
+    // 전직의 길: 클라이언트가 올린 상태(character_state.career)가 아니라 서버 기록(character_career)으로 확인한다
     if (f === 'career_promoted') {
-      const r = await ctx.client.query<{ career: number | null }>(
-        "SELECT (career->>'career')::int AS career FROM character_state WHERE character_id = $1",
-        [ctx.char.id],
-      );
-      if (!(Number(r.rows[0]?.career ?? 0) > 0)) throw notDone({ type: 'flag', flag: f });
+      if (!(await getGrant(ctx.client, ctx.char.id))) throw notDone({ type: 'flag', flag: f });
       continue;
     }
     // "<납품처>_built" 플래그는 납품 기록(site_deliveries)으로 직접 확인한다. 그 밖의 플래그는 검증할 수 없다

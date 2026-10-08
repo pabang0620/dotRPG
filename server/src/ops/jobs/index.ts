@@ -6,10 +6,11 @@ import { maintenanceCloseJob } from './maintenanceClose';
 import { purgeDaily, purgeHourly } from './purge';
 import { staleRunsJob } from './staleRuns';
 import { paymentReconcileJob, paymentReportJob, paymentWatchJob, starGrantExpireJob } from './paymentJobs';
+import { withdrawalAnonymizeJob, withdrawalDestroyJob } from './withdrawalJobs';
 import { campaignRevokeJob, campaignSweepJob, sweepTicketExpireJob } from './sweepJobs';
 
 /** 관리자 OP3가 수동 실행할 수 있는 작업(허용 목록) */
-export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire'] as const;
+export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy'] as const;
 
 let done = false;
 
@@ -34,5 +35,8 @@ export function registerAllJobs(): void {
   registerJob({ name: 'payment-watch', schedule: { kind: 'every', minutes: 5 }, run: paymentWatchJob });
   registerJob({ name: 'payment-report', schedule: { kind: 'daily_kst', hour: 4, minute: 50 }, run: paymentReportJob });
   registerJob({ name: 'star-grant-expire', schedule: { kind: 'every', minutes: 60 }, run: starGrantExpireJob });
+  // 회원 탈퇴: 익명화(10분), 5년 파기(매일 KST 04:55, payment-report 04:50 뒤. 기본 dry-run)
+  registerJob({ name: 'withdrawal-anonymize', schedule: { kind: 'every', minutes: 10 }, run: withdrawalAnonymizeJob });
+  registerJob({ name: 'withdrawal-destroy', schedule: { kind: 'daily_kst', hour: 4, minute: 55 }, run: withdrawalDestroyJob });
   registerJob({ name: 'maintenance-close', schedule: { kind: 'every', minutes: 1 }, run: maintenanceCloseJob });
 }

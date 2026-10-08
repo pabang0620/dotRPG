@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { antiAbuseShape, buildAntiAbuse, type AntiAbuseConfig } from './antiAbuseEnv';
 import { buildSweep, sweepShape, type SweepConfig } from './sweepEnv';
 import { buildPay, payShape, type PayConfig } from './payEnv';
+import { buildWithdraw, withdrawShape, type WithdrawConfig } from './withdrawEnv';
 import { buildPhase8, phase8Shape, type FieldConfig, type Phase8Config, type RelayConfig, type TransportConfig } from './phase8Env';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
@@ -222,6 +223,7 @@ const envSchema = z.object({
   ...antiAbuseShape,
   ...sweepShape,
   ...payShape,
+  ...withdrawShape,
 });
 
 export interface AppConfig {
@@ -417,6 +419,8 @@ export interface AppConfig {
   sweep: SweepConfig;
   /** 11단계: 별조각 Steam 결제와 결제 보호(기본 꺼짐) */
   pay: PayConfig;
+  /** 회원 탈퇴(유예, 보관, 파기 스위치). 값은 법무 확인 전 기본값이며 환경변수로 바꾼다 */
+  withdraw: WithdrawConfig;
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -540,6 +544,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     warn: (m) => logger.warn(m),
   });
   const pay = buildPay(e, { prod, jwtSecret: e.JWT_SECRET, steamAuthMode: e.STEAM_AUTH_MODE, deployStage: p8.deployStage, warn: (m) => logger.warn(m) });
+  const withdraw = buildWithdraw(e, { prod, jwtSecret: e.JWT_SECRET });
   const announce = e.MAINT_ANNOUNCE_MINUTES.split(',')
     .map((x) => Number(x.trim()))
     .filter((n) => Number.isInteger(n) && n > 0)
@@ -731,6 +736,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     aa,
     sweep: buildSweep(e, { prod, adminGrantMaxGold: e.ADMIN_GRANT_MAX_GOLD }),
     pay,
+    withdraw,
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,

@@ -22,7 +22,7 @@ import {
   scoreRun,
   type DiffNumbers,
 } from './dungeonRules';
-import { raidPeriod } from './entryRules';
+import { raidClaimed, raidPeriod } from './entryRules';
 import { bumpDirectClear } from '../sweep/weeklyCounter';
 import { countDungeonRevives } from '../revive/reviveRepository';
 import type { ResultBody } from './dungeonValidation';
@@ -200,6 +200,12 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   let locked = run.reward_locked;
   let reason = run.lock_reason;
   const contrib = aa.mode !== 'off' ? (inp.contribution ?? null) : null;
+  // 입장 때 ALREADY_CLAIMED였어도 클리어 시각이 새 기간(리셋 경계를 넘김)이면 그 기간의 청구가 없을 때만 다시 판정한다.
+  // 두 번 받는 길은 아래 raid_claims INSERT(PK, ON CONFLICT)가 막는다
+  if (dungeon.isRaid && locked && reason === 'ALREADY_CLAIMED' && !(await raidClaimed(ctx.client, ctx.char.id, dungeon, inp.at))) {
+    locked = false;
+    reason = null;
+  }
   // 판정 순서: ALREADY_CLAIMED(입장 때 미리 잠금) -> LOW_CONTRIBUTION -> TOO_FEW_HUMANS -> KEYS_MISSING -> 청구 INSERT.
   // 잠그면 기간당 1회 청구(raid_claims)가 소진되지 않는다
   if (contrib && !contrib.met && run.party_run_id !== null && reason !== 'ALREADY_CLAIMED') {
@@ -248,7 +254,9 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     if (dungeon.isRaid) {
       if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0) {
         keyCost = dungeon.keyCost;
-        await ctx.removeItem('bag', eco.dungeons.keyItem, keyCost, 'raid_key_cost', run.uuid);
+        const spent = await ctx.removeItem('bag', eco.dungeons.keyItem, keyCost, 'raid_key_cost', run.uuid);
+        // 앞의 stackCount 확인 덕에 오지 않는 경로. 열쇠 없이 보상이 나가지 않도록 던져 판 전체를 롤백한다
+        if (spent === null) throw new AppError(409, '레이드 열쇠가 부족합니다.', 'RAID_KEY_MISSING');
       } else if (dungeon.keyMax > 0) {
         keyGain = getRng().int(dungeon.keyMin, dungeon.keyMax + 1);
         if (keyGain > 0) await ctx.addItem('bag', eco.dungeons.keyItem, keyGain, 'raid_key', run.uuid);

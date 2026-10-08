@@ -17,6 +17,8 @@ export const CLOSE = {
   IDLE: 4009,
   CHARACTER_INVALID: 4010,
   KICKED: 4011,
+  /** 탈퇴 요청으로 끊김(재연결하지 않는다) */
+  WITHDRAWN: 4012,
   CLIENT_OUTDATED: 4426,
 } as const;
 

@@ -51,6 +51,13 @@ const OPTIONS = {
   'no-gold': { type: 'boolean' },
   'no-items': { type: 'boolean' },
   'no-mail': { type: 'boolean' },
+  // 회원 탈퇴
+  deferred: { type: 'boolean' },
+  'no-cancel': { type: 'boolean' },
+  'override-deferral': { type: 'boolean' },
+  on: { type: 'boolean' },
+  off: { type: 'boolean' },
+  steam: { type: 'string' },
 } as const;
 
 const usage = (): string[] => [

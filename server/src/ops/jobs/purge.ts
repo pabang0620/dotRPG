@@ -156,6 +156,12 @@ export function purgeDaily(ctx: JobCtx): Promise<JobResult> {
       'star_orders_ip',
       `UPDATE star_orders SET ip = NULL WHERE id IN (SELECT id FROM star_orders WHERE ip IS NOT NULL AND created_at < ${days(cfg.pay.ipRetentionDays)} ORDER BY id LIMIT $1)`,
     ],
+    // 탈퇴(7.4): 만료된 이월 표시 삭제. 주문의 기기 지문도 IP 와 같은 일정으로 NULL 로 지운다
+    ['withdrawn_identities', del('withdrawn_identities', 'expires_at < now()')],
+    [
+      'star_orders_device_hash',
+      `UPDATE star_orders SET device_hash = NULL WHERE id IN (SELECT id FROM star_orders WHERE device_hash IS NOT NULL AND created_at < ${days(cfg.pay.ipRetentionDays)} ORDER BY id LIMIT $1)`,
+    ],
     // 끝난 프레즌스 행 7일, 활동 시간·소득 집계 35일(PLAY_TIME_RETENTION_DAYS)
     [
       'online_sessions',

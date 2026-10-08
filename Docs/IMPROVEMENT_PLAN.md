@@ -68,4 +68,22 @@
 
 ## 결과
 
-(작업 후 기록)
+| ID | 결과 |
+|---|---|
+| S1 | 서버 기동 시 `data_version.json` 해시 대조(`gamedata/loader.ts` `verifyDataHashes`). 데이터를 고치는 시험은 `rehashDataDir`로 해시를 다시 계산한다 |
+| S2 | "전직의 길" 완료를 서버 전직 기록(`careerGrantRepository.getGrant`)으로 확인 |
+| S3 | 시험 추가: achievements, versionCheck, promote, transportFallback |
+| S4 | 재화 점검 CRITICAL·HIGH·MEDIUM 0건, LOW 4건 |
+| S6 | LOW 4건 수정: 최종 레이드 열쇠 차감 실패 시 409, 주기 경계를 넘은 레이드 재판정, 캐릭터 단위 캠페인의 소탕권 첨부 거절, 경매 정산 골드 0 싱크 기록 생략 |
+| S5·S7 | 회원 탈퇴 설계(`Docs/server/phase12_withdrawal.md`)와 구현(마이그레이션 0027, W1~W3, WD1~WD8, 익명화·파기 작업 2개). D1~D11은 설계서 추천 기본값. 보안 점검 후 파기 전용 역할 권한을 표별로 좁히고, 관리자 tombstone 경로를 uuid로 바꾸고, 철회 Steam 경로에 로그인과 같은 속도 제한을 걸었다 |
+| C1 | refresh 토큰 DPAPI 저장(`TokenVault.cs`), 같은 request_id 재시도, 상태 업로드 재전송 |
+| C2·C3 | 분기 누락 점검 후 장비 착용 서버 거절 시 되돌리기(`OnlineEconomy.Equipment.cs`) 등 수정 |
+| R1~R3 | 500줄 초과 C# 파일 40개 partial 분할 |
+| D1 | 기획 문서 11개를 코드 기준으로 갱신 |
+
+검증: Unity 배치 컴파일 `error CS` 0, 서버 `npm run build` 통과, `npm test` 88개 묶음 1,103개 통과.
+
+남은 위험
+- 클라이언트: 앱 종료 시점 상태 업로드 불가, 재시도 중 캐릭터 전환 시 대기 상태 유실, `OnlineEconomy`를 거치지 않는 재화 클라이언트(StarShop, Cash, ReviveCoins, LevelReward, Sweep, Career, ServerAuction, Party)는 재시도 미적용
+- 운영 배포 전: `WITHDRAW_ID_HMAC_KEY` 설정, 5년 실삭제를 켜려면 `dotrpg_purge` 역할 생성과 `PURGE_DATABASE_URL`, 법무 확인
+- Unity 탈퇴 화면은 아직 없다

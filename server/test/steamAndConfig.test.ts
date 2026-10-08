@@ -114,6 +114,8 @@ describe('설정 검증(DEPLOY_STAGE, 중계 가드 G2/G8/G9/G10)', () => {
     ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
     RELAY_TICKET_SECRET: SECRET,
     RELAY_PUBLIC_URL: 'wss://game.example.org/relay',
+    // 회원 탈퇴(0027): 운영은 이월 표시용 HMAC 키가 필요하다(WITHDRAW_ENABLED 기본 true)
+    WITHDRAW_ID_HMAC_KEY: 'Wd7hK2mQ9xL4vR8tY1uZ5aB3cD6eF0gHnJkLoNpRsTw',
   };
 
   it('G5: 480은 DEPLOY_STAGE=live(기본)에서 거부하고 test 에서는 허용한다. test 에서는 시험 구성(개발 로그인)도 허용', () => {

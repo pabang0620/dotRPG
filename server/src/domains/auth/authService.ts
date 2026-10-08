@@ -18,6 +18,8 @@ import { logger } from '../../utils/logger';
 import * as repo from './authRepository';
 import { verifyTicket } from './steamProvider';
 import { reconcileOpenOrderQuietly } from '../payments/paymentsService';
+import { applyCarry, checkRejoin } from '../withdrawal/withdrawalIdentity';
+import { pendingWithdrawalError } from '../withdrawal/withdrawalLogin';
 
 const REFRESH_DAYS = 14;
 const ARGON_OPTS = { type: argon2.argon2id } as const;
@@ -126,7 +128,15 @@ export async function login(loginId: string, password: string, ip: string, meta:
   const identity = await repo.findDevIdentity(loginId);
   // 아이디가 없어도 더미 해시와 비교해 응답 시간을 맞춘다
   const ok = await argon2.verify(identity ? identity.secret_hash : await getDummyHash(), password);
-  if (!identity || !ok || identity.deleted_at) {
+  if (!identity || !ok) {
+    store.add(failKey, failWindow);
+    metrics.recordLoginFailure();
+    throw new AppError(401, '아이디 또는 비밀번호가 올바르지 않습니다.', 'INVALID_CREDENTIALS');
+  }
+  if (identity.deleted_at) {
+    // 비밀번호가 맞은 뒤에만 탈퇴 유예를 알린다(틀리면 위의 INVALID_CREDENTIALS: 계정 존재를 알리지 않는다)
+    const pending = await pendingWithdrawalError(identity.id);
+    if (pending) throw pending;
     store.add(failKey, failWindow);
     metrics.recordLoginFailure();
     throw new AppError(401, '아이디 또는 비밀번호가 올바르지 않습니다.', 'INVALID_CREDENTIALS');
@@ -246,6 +256,8 @@ export async function getMe(accountId: number) {
     character_count: me.character_count,
     character_limit: CHARACTER_LIMIT,
     steam_linked: await repo.hasSteam(accountId),
+    // 탈퇴 유예 중에는 토큰이 없어 이 API를 부를 수 없다: 활동 계정은 항상 null(안내용 자리)
+    withdrawal: null,
   };
 }
 
@@ -267,8 +279,11 @@ export async function steamLogin(ticket: string, meta: AccessMeta = {}, ip = '')
   if (!account) {
     try {
       account = await withTransaction(async (client) => {
+        // 탈퇴 이월 표시(9.3): 정지가 남았으면 계정을 만들지 않고 403, 결제·경제 이월은 만든 계정에 건다
+        const carry = await checkRejoin(client, id.steamId);
         const a = await repo.insertAccount(client);
         await repo.insertSteamIdentity(client, a.id, id.steamId, ownerId);
+        if (carry) await applyCarry(client, a.id, carry);
         return a;
       });
       created = true;
@@ -276,6 +291,11 @@ export async function steamLogin(ticket: string, meta: AccessMeta = {}, ip = '')
       if (!isUniqueViolation(err, STEAM_UNIQUE)) throw err;
       account = await repo.findAccountBySteam(id.steamId);
     }
+  }
+  if (account?.deleted_at) {
+    // 탈퇴 유예 중: 새 계정을 만들지 않고 철회 안내(E1). 열린 요청이 없으면 기존처럼 무효 처리
+    const pending = await pendingWithdrawalError(account.id);
+    if (pending) throw pending;
   }
   if (!account || account.deleted_at) throw new AppError(401, 'Steam 티켓이 올바르지 않습니다.', 'STEAM_TICKET_INVALID');
   if (account.banned_until && account.banned_until.getTime() > Date.now()) {

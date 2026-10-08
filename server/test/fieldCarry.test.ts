@@ -10,7 +10,7 @@ import { monsterXp, rollKillDrops } from '../src/domains/kills/killRules';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { fakeRng, seedLevel } from './economyHelpers';
-import { buildApp, DATA_DIR, resetDb, shutdown } from './helpers';
+import { buildApp, DATA_DIR, rehashDataDir, resetDb, shutdown } from './helpers';
 import { formParty, newHero, post, type Hero } from './partyHelpers';
 
 beforeEach(async () => {
@@ -63,6 +63,7 @@ function appWithLevel(level: number, env: Record<string, string> = {}) {
   spawn.level = level;
   delete spawn.xp;
   fs.writeFileSync(path.join(dir, 'maps.json'), JSON.stringify(maps));
+  rehashDataDir(dir);
   return buildApp({ GAME_DATA_DIR: dir, ...env });
 }
 

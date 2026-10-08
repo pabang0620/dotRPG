@@ -17,6 +17,7 @@ import { createPlayersRouter } from './players/playersRoutes';
 import { createReportsAdminRouter } from './reports/reportsRoutes';
 import { createSanctionsRouter } from './sanctions/sanctionsRoutes';
 import { createWatchRouter } from './watch/watchRoutes';
+import { createWithdrawalsAdminRouter } from './withdrawals/withdrawalsRoutes';
 
 export function createAdminApp(): Express {
   // OP2·OP3가 작업 목록을 쓴다(여러 번 불러도 한 번만 등록)
@@ -40,6 +41,7 @@ export function createAdminApp(): Express {
   app.use(createEconomyHoldsRouter());
   app.use(createMailCampaignsRouter());
   app.use(createPaymentsAdminRouter());
+  app.use(createWithdrawalsAdminRouter());
   app.use(createMaintenanceAdminRouter());
   app.use(createOpsRouter());
   app.use(adminNotFound);

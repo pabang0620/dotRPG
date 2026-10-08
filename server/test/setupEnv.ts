@@ -108,3 +108,8 @@ for (const k of [
 for (const k of ['RATE_PAY_READ_PER_MIN', 'RATE_PAY_ORDER_PER_MIN', 'RATE_PAY_ORDER_IP_PER_MIN', 'RATE_PAY_SYNC_PER_MIN', 'RATE_STARSHOP_SPEND_PER_MIN']) {
   process.env[k] = '10000';
 }
+// 회원 탈퇴: 속도 제한은 크게(속도 제한 테스트가 직접 낮춘다). 이월 표시 HMAC 키(테스트 전용 값)
+for (const k of ['RATE_WITHDRAW_INFO_PER_MIN', 'RATE_WITHDRAW_PER_HOUR', 'RATE_WITHDRAW_IP_PER_HOUR', 'RATE_WITHDRAW_CANCEL_ACCOUNT_PER_HOUR', 'RATE_WITHDRAW_CANCEL_IP_PER_HOUR']) {
+  process.env[k] = '10000';
+}
+process.env.WITHDRAW_ID_HMAC_KEY = 'test-withdraw-hmac-key-test-withdraw-hmac-key-0123456789';

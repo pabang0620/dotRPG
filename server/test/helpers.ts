@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Express } from 'express';
@@ -31,6 +31,10 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      // 탈퇴(0027): 계정을 가리키는 표를 먼저
+      'account_destruction_log',
+      'withdrawn_identities',
+      'account_withdrawals',
       'revive_log',
       'account_level_rewards',
       'account_pass_claims',
@@ -139,7 +143,31 @@ export async function shutdown(): Promise<void> {
 }
 
 export function ver(extra: Record<string, string> = {}): Record<string, string> {
-  return { 'X-Client-Version': CLIENT_VERSION, 'X-Data-Version': DATA_VERSION, ...extra };
+  return { 'X-Client-Version': CLIENT_VERSION, 'X-Data-Version': currentDataVersion(), ...extra };
+}
+
+/** 지금 올라간 게임 데이터의 버전(시험이 바꾼 데이터 폴더로 앱을 만들었으면 그 버전) */
+function currentDataVersion(): string {
+  try {
+    return getGameData().dataVersion;
+  } catch {
+    return DATA_VERSION;
+  }
+}
+
+/** 시험이 데이터 파일을 고친 뒤 data_version.json의 files 해시와 version을 다시 계산한다(GameDataExport.cs와 같은 방식) */
+export function rehashDataDir(dir: string): void {
+  const p = path.join(dir, 'data_version.json');
+  const ver = JSON.parse(fs.readFileSync(p, 'utf8')) as { version: string; files: Record<string, string> };
+  const names = Object.keys(ver.files).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const parts: Buffer[] = [];
+  for (const name of names) {
+    const buf = fs.readFileSync(path.join(dir, name));
+    ver.files[name] = createHash('sha256').update(buf).digest('hex');
+    parts.push(buf);
+  }
+  ver.version = createHash('sha256').update(Buffer.concat(parts)).digest('hex').slice(0, 16);
+  fs.writeFileSync(p, JSON.stringify(ver, null, 2));
 }
 
 export const randomLoginId = (): string => `t${randomBytes(6).toString('hex')}`;

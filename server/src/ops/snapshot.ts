@@ -33,7 +33,7 @@ export interface Snapshot {
     oldest_held_age_s: number | null;
     unnotified_sanctions: number;
   };
-  security: { login_failures_5m: number };
+  security: { login_failures_5m: number; withdrawal_requested_total?: number };
   maintenance: { phase: string; remaining_s: number | null };
   /** 8단계: 전투 중계(phase8_api.md 4.12) */
   relay?: {
@@ -327,7 +327,7 @@ export async function collectSnapshot(): Promise<Snapshot> {
     auction: { lag_seconds: Math.round(metrics.auctionLagSeconds) },
     jobs,
     queues,
-    security: { login_failures_5m: metrics.loginFailures.length },
+    security: { login_failures_5m: metrics.loginFailures.length, withdrawal_requested_total: metrics.withdrawalRequested },
     maintenance: {
       phase,
       remaining_s: phase !== 'none' && w ? Math.max(0, Math.round((w.endsAt.getTime() - now.getTime()) / 1000)) : null,

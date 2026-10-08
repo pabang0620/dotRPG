@@ -6,7 +6,7 @@ import { logger } from '../../utils/logger';
 import { registry } from '../chat/realtimeNotifier';
 import { CLOSE } from '../chat/wsProtocol';
 import { relayHub } from '../relay/relayHub';
-import { SESSION_CHANNEL } from './sessionService';
+import { SESSION_CHANNEL, WITHDRAWN_FAMILY } from './sessionService';
 
 let listener: Client | null = null;
 let stopped = true;
@@ -18,6 +18,12 @@ export function handleSessionNotice(payload: string): void {
   const accountId = Number(idRaw);
   if (!Number.isInteger(accountId) || !familyId) return;
   const s = registry.ofAccount(accountId);
+  // 탈퇴 요청: 재연결하지 않는 코드로 /ws 와 중계 연결을 모두 닫는다(REPLACED 경로와 구분)
+  if (familyId === WITHDRAWN_FAMILY) {
+    s?.close(CLOSE.WITHDRAWN, 'WITHDRAWN', false);
+    relayHub().kickAccount(accountId, CLOSE.WITHDRAWN, 'WITHDRAWN');
+    return;
+  }
   if (s && s.familyId !== familyId) {
     s.close(CLOSE.REPLACED, 'SESSION_REPLACED', false);
   }

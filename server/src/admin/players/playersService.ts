@@ -10,6 +10,7 @@ import { hashPassword, newTempPassword } from '../auth/adminAuthService';
 import { auditView, runAdminAction, type ActionResult } from '../common/audit';
 import type { AdminCtx } from '../common/adminTypes';
 import * as watch from '../watch/watchRepository';
+import * as withdrawalRepo from '../../domains/withdrawal/withdrawalRepository';
 import * as repo from './playersRepository';
 import type { DevCreateBody, LedgerQuery, NoteBody } from './playersValidation';
 
@@ -49,7 +50,7 @@ export async function accountDetail(admin: AdminCtx, ip: string, uuid: string) {
   const a = await repo.accountByUuid(db, uuid);
   if (!a) throw new AppError(404, '계정을 찾을 수 없습니다.', 'ACCOUNT_NOT_FOUND');
   const cfg = getConfig().admin;
-  const [brief, sanctions, reports, anomalies, flags, held, trades, notes, actions, score] = await Promise.all([
+  const [brief, sanctions, reports, anomalies, flags, held, trades, notes, actions, score, withdrawals] = await Promise.all([
     accountBrief(a),
     repo.sanctionsOf(db, a.id),
     repo.reportSummary(db, a.id),
@@ -60,6 +61,7 @@ export async function accountDetail(admin: AdminCtx, ip: string, uuid: string) {
     repo.notesOf(db, a.id),
     repo.recentAdminActions(db, uuid),
     watch.watchlist(db, cfg.watchlistWindowHours, 1, 1, a.id),
+    withdrawalRepo.historyOf(db, a.id, 50),
   ]);
   await auditView(admin, ip, 'account.view', 'account', uuid);
   const total = Number(reports.by.total);
@@ -78,6 +80,19 @@ export async function accountDetail(admin: AdminCtx, ip: string, uuid: string) {
     notes: notes.map((n) => ({ id: n.uuid, kind: n.kind, note: n.note, by: n.admin, at: n.created_at.toISOString() })),
     admin_actions: actions.map((x) => ({ action: x.action, result: x.result, by: x.admin, at: x.created_at.toISOString() })),
     watch_score: score[0]?.score ?? 0,
+    // E6: 탈퇴 요약(현재 상태, 기한, 보류 사유, 이력 건수). 상세는 WD2
+    withdrawal: (() => {
+      const cur = withdrawals.find((w) => w.state === 'requested') ?? withdrawals.find((w) => w.state === 'completed') ?? null;
+      return {
+        state: cur ? cur.state : null,
+        id: cur ? cur.uuid : null,
+        due_at: cur ? cur.due_at.toISOString() : null,
+        defer_reasons: cur ? cur.defer_reasons : [],
+        manual_hold: cur ? cur.manual_hold : false,
+        anonymized: a.deleted_at !== null && withdrawals.some((w) => w.state === 'completed'),
+        history_count: withdrawals.length,
+      };
+    })(),
   };
 }
 

@@ -20,6 +20,7 @@ import type { ApproveBody, CancelBody, CreateBody, DeliveriesQuery, ListQuery } 
 const DAY_MS = 86_400_000;
 
 const limitErr = (field: string, message: string) => new AppError(422, message, 'CAMPAIGN_LIMIT', { field });
+const ACCOUNT_ONLY_MSG = '클리어권은 계정 단위 캠페인에서만 첨부할 수 있습니다.';
 const targetErr = (message: string) => new AppError(422, message, 'CAMPAIGN_TARGET_INVALID');
 
 function campaignView(c: CampaignRow, atts: Attachment[]) {
@@ -94,6 +95,9 @@ async function validateCreate(b: CreateBody, now: Date): Promise<{ startsAt: Dat
       atts.push({ slot, kind: 'sweep_ticket', itemKey: gd.sweep.eventTicketItem, amount: a.count, bind: null });
     }
   }
+
+  // 클리어권은 계정 지갑 재화다. 캐릭터 단위로 보내면 계정 지갑에 캐릭터 수만큼 쌓인다
+  if (b.delivery_unit === 'character' && hasTicket) throw limitErr('attachments.sweep_ticket', ACCOUNT_ONLY_MSG);
 
   const t = b.target;
   if (b.delivery_unit === 'account' && (t.classes !== undefined || t.min_level !== undefined || t.max_level !== undefined)) {
@@ -209,10 +213,12 @@ export async function approveCampaign(admin: AdminCtx, ip: string, uuid: string,
       if (c.createdBy === admin.id) throw new AppError(403, '작성자는 승인할 수 없습니다. 다른 owner가 승인해야 합니다.', 'CAMPAIGN_SELF_APPROVAL');
       const now = getNow();
       if (c.endsAt.getTime() <= now.getTime()) throw new AppError(422, '배달 기간이 이미 끝났습니다.', 'CAMPAIGN_WINDOW_PASSED');
+      const atts = await repo.campaignAttachments(client, c.id);
+      if (c.deliveryUnit === 'character' && atts.some((a) => a.kind === 'sweep_ticket')) throw limitErr('attachments.sweep_ticket', ACCOUNT_ONLY_MSG);
       await repo.markApproved(client, c.id, admin.id, now);
       invalidateCampaignCache();
       const row = (await repo.findByUuid(client, uuid)) as CampaignRow;
-      return { status: 200, data: { campaign: detailView(row, await repo.campaignAttachments(client, c.id)) } };
+      return { status: 200, data: { campaign: detailView(row, atts) } };
     },
   });
 }

@@ -62,6 +62,8 @@ describe('운영 기동 가드: DEPLOY_STAGE 명시', () => {
     STEAM_WEB_API_KEY: 'k',
     TRUST_PROXY: '1',
     ADMIN_SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
+    // 회원 탈퇴(0027): 운영은 이월 표시용 HMAC 키가 필요하다(WITHDRAW_ENABLED 기본 true)
+    WITHDRAW_ID_HMAC_KEY: 'Wd7hK2mQ9xL4vR8tY1uZ5aB3cD6eF0gHnJkLoNpRsTw',
     RELAY_TICKET_SECRET: 'Qm8vN2xK5pL7wR3tY6uZ9aB4cD1eF0gHiJkLmNoPq',
     RELAY_PUBLIC_URL: 'wss://game.example.org/relay',
     DEVICE_HASH_PEPPER: 'Pe9rL4vK7mQ2xW5tY8uZ3aB6cD1eF0gHnJkLoNpRs',

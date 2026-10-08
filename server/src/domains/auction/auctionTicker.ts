@@ -36,7 +36,7 @@ async function expireMailById(id: number): Promise<boolean> {
     if (m.itemKey !== null && m.count !== null) {
       await insertItemLedger(client, m.characterId, m.itemKey, -m.count, 0, 'mail', 'mail_expire', m.uuid, null);
     }
-    await repo.insertSink(client, 'mail_expire', m.gold, m.listingId, m.id, m.characterId, now);
+    if (m.gold > 0) await repo.insertSink(client, 'mail_expire', m.gold, m.listingId, m.id, m.characterId, now);
     // 10단계 E9: 첨부 표가 있는 우편(캠페인 우편)의 아이템 -n, 골드 소각 기록
     if (m.attachN > 0) await expireAttachments(client, m, now);
     return true;

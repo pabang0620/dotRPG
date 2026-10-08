@@ -299,6 +299,35 @@ async function nineInfo(): Promise<Record<string, CheckResult>> {
   };
 }
 
+/**
+ * I7 (탈퇴): 익명화 누락과 상태 어긋남. 읽기 전용.
+ *  a 익명화된 계정에 신원·토큰·접속 기록이 남아 있다  b 익명화된 계정에 살아 있는/자리표시가 아닌 캐릭터가 있다
+ *  c 요청 상태와 accounts.deleted_at 이 어긋난다     d 요청이 보류 상한(WITHDRAW_DEFER_MAX_DAYS)을 넘게 지났다(작업 정지)
+ */
+async function i7(): Promise<CheckResult> {
+  const maxDays = Math.trunc(getConfig().withdraw.deferMaxDays);
+  const leftovers = ['auth_identities', 'refresh_tokens', 'login_events', 'account_devices', 'account_ips', 'online_sessions']
+    .map((t) => `SELECT a.uuid AS account, '${t}' AS leftover FROM accounts a WHERE a.anonymized_at IS NOT NULL AND EXISTS (SELECT 1 FROM ${t} x WHERE x.account_id = a.id)`)
+    .join(' UNION ALL ');
+  const a = await rows(leftovers);
+  const b = await rows(
+    `SELECT a.uuid AS account, c.uuid AS character FROM accounts a JOIN characters c ON c.account_id = a.id
+      WHERE a.anonymized_at IS NOT NULL AND (c.deleted_at IS NULL OR c.name !~ '^탈퇴[0-9a-f]{6}$') ORDER BY c.id`,
+  );
+  const c = await rows(
+    `SELECT a.uuid AS account, w.uuid AS withdrawal, w.state FROM account_withdrawals w JOIN accounts a ON a.id = w.account_id
+      WHERE (w.state = 'requested' AND a.deleted_at IS NULL) OR (w.state = 'completed' AND a.anonymized_at IS NULL)
+     UNION ALL
+     SELECT a.uuid, NULL, 'no_request' FROM accounts a
+      WHERE a.deleted_at IS NOT NULL AND NOT EXISTS (SELECT 1 FROM account_withdrawals w WHERE w.account_id = a.id AND w.state IN ('requested', 'completed'))`,
+  );
+  const d = await rows(
+    `SELECT uuid AS withdrawal, due_at FROM account_withdrawals
+      WHERE state = 'requested' AND NOT manual_hold AND due_at < now() - (${maxDays}::int * interval '1 day') ORDER BY id`,
+  );
+  return { count: a.count + b.count + c.count + d.count, samples: [...a.samples, ...b.samples, ...c.samples, ...d.samples].slice(0, SAMPLE_MAX) };
+}
+
 export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
   const full = ctx.opts.full === true || isKstSunday(getNow());
   const checks: Record<string, CheckResult> = {
@@ -308,6 +337,7 @@ export async function integrityJob(ctx: JobCtx): Promise<JobResult> {
     I4: await i4(),
     I5: await i5(),
     I6: await i6(),
+    I7: await i7(),
   };
   const mismatches = Object.values(checks).reduce((a, c) => a + c.count, 0);
   const info = await nineInfo();

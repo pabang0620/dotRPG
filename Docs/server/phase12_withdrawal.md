@@ -162,6 +162,7 @@ CREATE INDEX account_withdrawals_account_time ON account_withdrawals (account_id
 
 CREATE TABLE withdrawn_identities (
   id                   BIGSERIAL PRIMARY KEY,
+  uuid                 UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   identity_hash        TEXT NOT NULL UNIQUE CHECK (identity_hash ~ '^[0-9a-f]{64}$'),
   source_account_id    BIGINT NOT NULL REFERENCES accounts(id),
   carry_ban_until      TIMESTAMPTZ,
@@ -176,6 +177,7 @@ CREATE TABLE withdrawn_identities (
   CONSTRAINT withdrawn_identities_release_chk CHECK ((released_at IS NULL) = (released_by IS NULL))
 );
 COMMENT ON TABLE  withdrawn_identities IS '탈퇴한 Steam 계정의 제재·결제 차단 이월 표시. identity_hash = HMAC-SHA256(키 WITHDRAW_ID_HMAC_KEY, steam_id)라 원문 Steam ID는 어디에도 없고 키 없이 되돌릴 수 없다. 이월할 사유가 있을 때만 만든다. expires_at 뒤 정리 작업이 지운다';
+COMMENT ON COLUMN withdrawn_identities.uuid IS '관리자 API 외부 식별자. 내부 id는 밖으로 내보내지 않는다';
 COMMENT ON COLUMN withdrawn_identities.carry_ban_until IS '활성 정지의 종료 시각(영구 정지는 9999-12-31). 재가입 시 이 시각 전이면 계정을 만들지 않고 ACCOUNT_BANNED';
 COMMENT ON COLUMN withdrawn_identities.carry_payment_block IS '결제 정지 사유 또는 별조각 부채가 남은 경우의 chargeback. 재가입 계정에 payment_profiles(blocked)를 만든다';
 COMMENT ON COLUMN withdrawn_identities.carry_econ_hold IS '활성 경제 정지가 있었는가. 재가입 계정에 수동 경제 정지를 건다';
@@ -744,14 +746,14 @@ SELECT id, account_id FROM account_withdrawals
 
 | # | 메서드 | 경로 | 역할 | 하는 일 |
 |---|---|---|---|---|
-| WD1 | GET | `/admin/withdrawals` | viewer | 목록: `state?`, `deferred?`(보류만), `due_before?`, 커서 페이지. 항목: 요청 uuid, 계정 uuid, `source`, `requested_at`, `due_at`, `defer_reasons`, `manual_hold`, 남은 일수 |
+| WD1 | GET | `/admin/withdrawals` | viewer | 목록: `state?`, `deferred?`(보류만), `due_before?`, 커서 페이지(`next_cursor`는 마지막 항목의 요청 uuid, 내부 id 비노출). 항목: 요청 uuid, 계정 uuid, `source`, `requested_at`, `due_at`, `defer_reasons`, `manual_hold`, 남은 일수 |
 | WD2 | GET | `/admin/accounts/{uuid}/withdrawal` | viewer | 계정의 탈퇴 이력과 현재 상태, 보류 사유별 근거 건수(제재·신고·정지·주문). 감사 `withdrawal.view` |
 | WD3 | POST | `/admin/accounts/{uuid}/withdrawal` | operator | 대행 요청 `{ request_id, note: string(1..200), cancel_allowed?: boolean }`. `cancel_allowed:false`는 owner만(`403 FORBIDDEN_ROLE`). 재인증·확인 문구 없음(운영자 책임, 메모 필수). 정지 계정 가능. 5.2~5.5와 같은 처리 |
 | WD4 | POST | `/admin/withdrawals/{uuid}/cancel` | operator | 유예 중 운영자 취소 `{ request_id, note }`. 기한 경과 후에는 `409 WITHDRAWAL_DUE` |
 | WD5 | POST | `/admin/withdrawals/{uuid}/anonymize-now` | owner | 유예를 건너뛰고 즉시 익명화 `{ request_id, note, override_deferral?: boolean }`. 보류 사유가 있는데 override가 아니면 `409 DEFERRED`(`errors.defer_reasons`). 7.2를 요청 안에서 실행하고 감사 행이 같은 트랜잭션 |
 | WD6 | POST | `/admin/withdrawals/{uuid}/hold` | operator | 운영자 보류 켜기·끄기 `{ request_id, on: boolean, note }` (`manual` 사유) |
-| WD7 | GET | `/admin/tombstones` | viewer | `?steam=<steam_id64>`로 조회(서버가 HMAC 계산, **입력 원문을 감사 `params`·로그에 남기지 않는다**, 해시 앞 8자만 표시). 이월 내용·만료·해제 여부. 감사 `tombstone.view` |
-| WD8 | POST | `/admin/tombstones/{id}/release` | owner | 이월 해제 `{ request_id, note }` (`released_at/by`). 감사 |
+| WD7 | GET | `/admin/tombstones` | viewer | `?steam=<steam_id64>`로 조회(서버가 HMAC 계산, **입력 원문을 감사 `params`·로그에 남기지 않는다**, 해시 앞 8자만 표시). 이월 내용·만료·해제 여부. 응답 `tombstone.id`는 uuid(내부 숫자 id 비노출). 감사 `tombstone.view` |
+| WD8 | POST | `/admin/tombstones/{uuid}/release` | owner | 이월 해제 `{ request_id, note }` (`released_at/by`). 감사 |
 
 - 에러: 공통(`400`, `401`, `403 FORBIDDEN_ROLE`, `404 NOT_FOUND`, `422 IDEMPOTENCY_MISMATCH`, `429`) + `409 WITHDRAWAL_ALREADY_REQUESTED`, `409 WITHDRAWAL_DUE`, `409 DEFERRED`, `409 WITHDRAW_BLOCKED`(열린 결제), `404 ACCOUNT_NOT_FOUND`, `409 ALREADY_ANONYMIZED`.
 - 속도 제한: 7단계 5.6 값(조회 120/분, 변경 30/분). WD5는 관리자당 분당 5회.
@@ -765,7 +767,7 @@ CLI 명령(7단계 5.9 표에 추가):
 | `withdraw list [--state requested\|completed\|cancelled] [--deferred]`, `withdraw show <account-uuid>` | WD1, WD2 |
 | `withdraw start <account-uuid> --note ... [--no-cancel]`, `withdraw cancel <withdrawal-uuid> --note ...` | WD3, WD4 |
 | `withdraw anonymize-now <withdrawal-uuid> --note ... [--override-deferral]`, `withdraw hold <withdrawal-uuid> --on\|--off --note ...` | WD5, WD6 |
-| `tombstone find --steam <id>`, `tombstone release <id> --note ...` | WD7, WD8 |
+| `tombstone find --steam <id>`, `tombstone release <uuid> --note ...` | WD7, WD8 |
 | `ops run withdrawal-anonymize`, `ops run withdrawal-destroy` | OP3(허용 목록에 추가) |
 
 `account find <q>`(PL1)의 `steam:` 검색은 익명화 뒤에는 결과가 없다(`auth_identities`가 없으므로). 구매 이력이 있는 사용자는 결제 관리의 Steam ID 조회(`star_orders_steam_id`)로 찾고, 신원 이월은 `tombstone find`로 본다.
@@ -822,3 +824,13 @@ CLI 명령(7단계 5.9 표에 추가):
 6. 파기 작업 dry-run + 트리거 함수 변경 시험(T-W28, T-W29).
 
 끝났다는 기준: 시나리오 "Steam 계정 가입 -> 캐릭터·재화·경매·우편 보유 -> 탈퇴 요청 -> 즉시 모든 요청 401·WebSocket 종료 -> 유예 안 철회 시 이름·재화 그대로 복구 -> 다시 탈퇴 -> 30일 뒤 익명화 -> 개인 식별 값이 허용 위치 외에 없음 -> 야간 정합성 점검 불일치 0 -> 같은 Steam ID로 새 계정 가입"이 시험으로 통과하고, 제재 중 계정은 보류·이월이 동작한다.
+
+## 16. 구현 메모 (S7, 설계와 달라진 점)
+
+- 허용 표(3.2의 `ledger_block_mutation`): 설계의 13개에 계정·캐릭터 한 곳에 속한 `dungeon_sweeps`, `mail_attachments`, `mail_campaign_deliveries`, `admin_grants`, `party_run_host_reports`를 더했다(파기 순서의 자식 표라서). `held_run_reviews`와 감사 로그는 넣지 않는다. 일치 여부는 T-W30이 `pg_trigger`와 대조한다.
+- 파기(8절): 껍데기를 남기는 계정은 `account_withdrawals` 행도 함께 남겨 다음 실행에서 남은 공유 기록을 다시 시도한다(설계는 행 삭제). 관리대장은 지운 행이 있을 때만 한 줄 쓰므로 한 계정에 `shell_kept: true` 줄과 마지막 `shell_kept: false` 줄이 둘 다 있을 수 있다. 외래 키(23503)로 막힌 표는 SAVEPOINT로 되돌리고 남긴다.
+- 정책 레지스트리의 SQL은 `$1/$2` 대신 `:acc/:chr` 자리표시를 쓰고 `bindIds()`가 바꾼다(문장마다 쓰는 배열이 달라서).
+- 환경변수: 설계 13절에 IP당 W2 속도 제한 이름이 없어 `RATE_WITHDRAW_IP_PER_HOUR`로 정했다. `WITHDRAW_REJOIN_COOLDOWN_DAYS`는 익명화 때 `withdrawn_identities.carry_ban_until`을 그 일수만큼 거는 방식으로 구현했다. 개발·시험에서 `WITHDRAW_ID_HMAC_KEY`가 없으면 JWT_SECRET에서 파생한 키를 쓴다(운영은 필수).
+- W2의 멱등 재전송은 1회용 Steam 티켓을 쓰는 재인증보다 먼저 확인한다(같은 `request_id`면 새 티켓 없이 첫 응답).
+- 관리자 감사: 대상 종류(`target_type`)는 늘리지 않았다. WD4~WD6의 성공 행은 계정 uuid를 대상으로, 실패 행은 경로의 탈퇴 uuid를 대상으로 남는다. 운영 메모는 계정 메모(`admin_account_notes`)에 `[탈퇴 ...]` 접두로 남기고 감사 `params`에는 길이만 넣는다.
+- 기존 시험 변경: 운영 설정을 검증하는 시험의 `prod` 값에 `WITHDRAW_ID_HMAC_KEY`를 더했다(운영 필수 비밀이 새로 생긴 의미 변경).

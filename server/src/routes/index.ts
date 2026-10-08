@@ -32,11 +32,14 @@ import { createReviveRouter } from '../domains/revive/reviveRoutes';
 import { createPaymentsRouter } from '../domains/payments/paymentsRoutes';
 import { createLevelRewardsRouter } from '../domains/levelrewards/levelRewardsRoutes';
 import { createSealedBoxRouter } from '../domains/sealedbox/sealedBoxRoutes';
+import { createWithdrawalRouter } from '../domains/withdrawal/withdrawalRoutes';
 
 export function createRouter(): Router {
   const r = Router();
   r.use(createSystemRouter());
   r.use(createAuthRouter());
+  // 회원 탈퇴 W1~W3(계정 단위라 /characters 앞에 둔다)
+  r.use(createWithdrawalRouter());
   // 버전(426)과 인증은 createCharacterRouter의 /characters 공통 미들웨어가 처리한다.
   // /characters/{uuid}/... 3단계(경제) 라우터는 반드시 그 뒤에 등록한다(res.locals.account를 쓴다).
   r.use(createCharacterRouter());

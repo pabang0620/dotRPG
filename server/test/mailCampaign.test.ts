@@ -218,7 +218,7 @@ describe('E4~E5 배달', () => {
     const [o1, o2] = await twoOwners();
     const a = await newHero(app);
     const b = await secondChar(app, a);
-    const id = await activeCampaign(admin, o1, o2, { delivery_unit: 'character' });
+    const id = await activeCampaign(admin, o1, o2, { delivery_unit: 'character', attachments: [{ kind: 'gold', amount: 5000 }, { kind: 'item', item_key: 'potion_hp', count: 10 }] });
     expect(await deliverTo(a)).toBe(1);
     expect(await deliverTo(b)).toBe(1);
     expect(await deliverTo(a)).toBe(0);
@@ -306,7 +306,7 @@ describe('E7 대상 조건', () => {
     const [o1, o2] = await twoOwners();
     const w = await newHero(app, 'warrior');
     const mg = await newHero(app, 'mage');
-    const id = await activeCampaign(admin, o1, o2, { delivery_unit: 'character', target: { classes: ['mage'] } });
+    const id = await activeCampaign(admin, o1, o2, { delivery_unit: 'character', attachments: [{ kind: 'gold', amount: 5000 }, { kind: 'item', item_key: 'potion_hp', count: 10 }], target: { classes: ['mage'] } });
     expect(await deliverTo(w)).toBe(0);
     expect(await deliverTo(mg)).toBe(1);
     expect(await campaignMails(id)).toHaveLength(1);

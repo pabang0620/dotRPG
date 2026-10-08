@@ -228,9 +228,33 @@ export const COMMANDS: Command[] = [
   { path: ['maint', 'end'], usage: 'maint end <window_uuid>', run: (c) => c.post(`/admin/maintenance/${need(c.args[0], 'uuid')}/end`) },
   { path: ['maint', 'drain'], usage: 'maint drain', run: (c) => c.get('/admin/maintenance/drain') },
   { path: ['broadcast'], usage: 'broadcast <문구>', run: (c) => c.post('/admin/broadcast', { text: c.args.join(' ') }) },
+  // 회원 탈퇴(phase12_withdrawal.md 14절): 목록·이력·대행 요청·취소·즉시 익명화·보류, 이월 표시 조회·해제
+  { path: ['withdraw', 'list'], usage: 'withdraw list [--state requested|completed|cancelled] [--deferred]', run: (c) => c.get('/admin/withdrawals', { ...q(c, ['state', 'cursor', 'limit']), ...(c.flags.deferred ? { deferred: 'true' } : {}) }) },
+  { path: ['withdraw', 'show'], usage: 'withdraw show <account-uuid>', run: (c) => c.get(`/admin/accounts/${need(c.args[0], 'account_uuid')}/withdrawal`) },
+  {
+    path: ['withdraw', 'start'],
+    usage: 'withdraw start <account-uuid> --note <사유> [--no-cancel]   (--no-cancel 은 owner)',
+    run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'account_uuid')}/withdrawal`, { note: mustFlag(c, 'note'), ...(c.flags['no-cancel'] ? { cancel_allowed: false } : {}) }),
+  },
+  { path: ['withdraw', 'cancel'], usage: 'withdraw cancel <withdrawal-uuid> --note <사유>', run: (c) => c.post(`/admin/withdrawals/${need(c.args[0], 'withdrawal_uuid')}/cancel`, { note: mustFlag(c, 'note') }) },
+  {
+    path: ['withdraw', 'anonymize-now'],
+    usage: 'withdraw anonymize-now <withdrawal-uuid> --note <사유> [--override-deferral]   (owner)',
+    run: (c) => c.post(`/admin/withdrawals/${need(c.args[0], 'withdrawal_uuid')}/anonymize-now`, { note: mustFlag(c, 'note'), ...(c.flags['override-deferral'] ? { override_deferral: true } : {}) }),
+  },
+  {
+    path: ['withdraw', 'hold'],
+    usage: 'withdraw hold <withdrawal-uuid> (--on | --off) --note <사유>',
+    run: (c) => {
+      if (!c.flags.on === !c.flags.off) throw new Error('--on 또는 --off 중 하나만 필요합니다');
+      return c.post(`/admin/withdrawals/${need(c.args[0], 'withdrawal_uuid')}/hold`, { on: c.flags.on === true, note: mustFlag(c, 'note') });
+    },
+  },
+  { path: ['tombstone', 'find'], usage: 'tombstone find --steam <steam_id64>', run: (c) => c.get('/admin/tombstones', { steam: mustFlag(c, 'steam') }) },
+  { path: ['tombstone', 'release'], usage: 'tombstone release <uuid> --note <사유>   (owner)', run: (c) => c.post(`/admin/tombstones/${need(c.args[0], 'uuid')}/release`, { note: mustFlag(c, 'note') }) },
   { path: ['ops', 'status'], usage: 'ops status', run: (c) => c.get('/admin/ops/status') },
   { path: ['ops', 'jobs'], usage: 'ops jobs', run: (c) => c.get('/admin/ops/jobs') },
-  { path: ['ops', 'run'], usage: 'ops run <purge-hourly|purge-daily|stale-runs|integrity-nightly|payment-report|...> [--full]', run: (c) => c.post(`/admin/ops/jobs/${need(c.args[0], 'job')}/run`, c.flags.full ? { full: true } : {}) },
+  { path: ['ops', 'run'], usage: 'ops run <purge-hourly|purge-daily|stale-runs|integrity-nightly|payment-report|withdrawal-anonymize|withdrawal-destroy|...> [--full]', run: (c) => c.post(`/admin/ops/jobs/${need(c.args[0], 'job')}/run`, c.flags.full ? { full: true } : {}) },
 ];
 
 export const newRequestId = (): string => randomUUID();

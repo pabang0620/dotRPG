@@ -4,6 +4,8 @@ import { getConfig } from '../../config/env';
 import type { AccessSignal } from './deviceRecords';
 
 export const SESSION_CHANNEL = 'dotrpg_session';
+/** 알림 payload 의 family 자리에 이 값이 오면 탈퇴 요청이다("<accountId>:withdrawn"): /ws 와 중계 연결을 CLOSE.WITHDRAWN 으로 끊는다 */
+export const WITHDRAWN_FAMILY = 'withdrawn';
 
 /**
  * 로그인 성공 직후 같은 트랜잭션에서 부른다. 계정 행을 잠가 동시 로그인을 직렬화한다(정확히 하나의 가족만 살아남는다).

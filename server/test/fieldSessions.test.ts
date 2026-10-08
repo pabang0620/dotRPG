@@ -11,7 +11,7 @@ import { electHost, electionWinner, type Candidate } from '../src/domains/fields
 import { sweepStale } from '../src/ops/jobs/staleRuns';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
-import { auth, buildApp, DATA_DIR, resetDb, shutdown } from './helpers';
+import { auth, buildApp, DATA_DIR, rehashDataDir, resetDb, shutdown } from './helpers';
 import { anomalyKinds, expectLedgerConsistent, fakeRng, seedLevel } from './economyHelpers';
 import { formParty, get, newHero, post, raw, type Hero } from './partyHelpers';
 import { joinRoom, ticketFor } from './relayHelpers';
@@ -449,6 +449,7 @@ describe('레벨 격차 감쇠(6.7)', () => {
     spawn.level = 20;
     delete spawn.xp; // 사냥터 고정 경험치 대신 레벨 공식으로 본다
     fs.writeFileSync(path.join(dir, 'maps.json'), JSON.stringify(maps));
+    rehashDataDir(dir);
     const high = buildApp({ GAME_DATA_DIR: dir });
     const eco = getGameData().economy;
     const base = monsterXp(eco, eco.monsters.get('skeleton') as never, 20);

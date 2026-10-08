@@ -16,6 +16,7 @@
 | 9 부정 행위 방지 | 구현 | - | phase9_anti_abuse.md | 마이그레이션 0020, 경제 속도 정지(`economy_holds`), 프레즌스, 전직·각성 서버 기록 |
 | 10 소탕·운영 우편 | 구현 | - | phase10_sweep_mail.md | 마이그레이션 0021, 0022(`prev_login_at`). 소탕·운영 우편 캠페인은 플래그 기본 꺼짐 |
 | 11 별조각 결제 | 구현(플래그 기본 꺼짐, 실제 Steam 연동은 샌드박스 실측 전) | - | phase11_payments.md | 마이그레이션 0023. Steam 호출은 어댑터 뒤에 있고 테스트는 가짜 Steam. 7.8 [확인] 항목은 코드 TODO. 가격·묶음·한도는 운영 전 확정 |
+| 회원 탈퇴 | 구현(5년 실삭제는 기본 꺼짐, dry-run만) | - | server/phase12_withdrawal.md | 마이그레이션 0027, 공개 API W1~W3, 관리자 WD1~WD8, 작업 withdrawal-anonymize·withdrawal-destroy. 법률 자문 전 기본값(유예 30일, 보관 5년 등)은 환경변수. Unity 탈퇴 화면은 클라이언트 작업 |
 
 검증: 서버 자동 테스트 442개 통과(`npm test`), Unity 배치 컴파일 통과, 단계마다 재화·보안 점검 에이전트 지적 반영. 창 2개 협동은 실제로 플레이해 보지 않았다(서버 흐름은 계정 2개로 확인).
 

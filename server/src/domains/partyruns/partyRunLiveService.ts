@@ -21,7 +21,7 @@ const notFound = () => new AppError(404, '판을 찾을 수 없습니다.', 'RUN
  *   정산은 대기 마감 뒤 서버 틱(runSettleTick)이 하고, 카드는 접속 때 자동으로 뒤집히거나 시간이 지나면 서버가 지급한다.
  * - 그 밖: abandoned(이미 받은 처치 보상은 유지, 클리어 보상 없음)
  */
-async function abandonMemberRun(client: PoolClient, partyRunId: number, member: repo.RunMemberRow, at: Date): Promise<void> {
+export async function abandonMemberRun(client: PoolClient, partyRunId: number, member: repo.RunMemberRow, at: Date): Promise<void> {
   if (member.dungeon_run_id === null) return;
   const dr = await dungeonRepo.findRunById(client, member.dungeon_run_id);
   if (!dr || dr.state !== 'playing') return;
