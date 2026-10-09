@@ -89,6 +89,9 @@ namespace DotRPG
                 case '<':
                 case '[':
                 case ']':
+                case '^':
+                case '{':
+                case '}':
                     if (Hd) return ForestMap ? '=' : ',';
                     return Canyon || Winter ? ',' : '=';
                 case '\0':

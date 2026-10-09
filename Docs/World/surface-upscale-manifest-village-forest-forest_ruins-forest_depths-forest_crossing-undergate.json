@@ -1,0 +1,99 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 48 pixels/tile",
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "village",
+      "source": "work\\natural-world-forest\\originals\\village.png",
+      "source_size": [
+        1299,
+        1211
+      ],
+      "source_sha256": "8b6a369c67f5de5f22bd3bbe3dbf2da007ca1ae085ded29b2b3b05725941ec27",
+      "output": "Assets/StreamingAssets/SurfaceWorld/village.png",
+      "output_size": [
+        2784,
+        2592
+      ],
+      "output_sha256": "ccc099a78649da84d3fed3d779625f9c07e99f80eed0e34ef86a937a551b2bd8"
+    },
+    {
+      "id": "forest",
+      "source": "work\\natural-world-forest\\originals\\forest.png",
+      "source_size": [
+        1512,
+        1040
+      ],
+      "source_sha256": "0111288922b01b28ad53a402c5d96c3c434bf8dbdbfbb8277a82182d5a58fae3",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "output_size": [
+        3072,
+        2112
+      ],
+      "output_sha256": "ce5d1f746e24c1f6ff85065c29aa3764a2011b019be1b03731cc4d56511bbb9f"
+    },
+    {
+      "id": "forest_ruins",
+      "source": "work\\natural-world-forest\\originals\\forest_ruins.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "5915e40253ffdec8b5a1316d71509d2ebe072dda2a7aebfdca112046bafe72bf",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "605828952e4adc5af2063b7f18bd132c1f7609af19beba20e0e861b46282681c"
+    },
+    {
+      "id": "forest_depths",
+      "source": "work\\natural-world-forest\\originals\\forest_depths.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "0fbe916c92a1fb47a4b26e0638c53e044b5149cd45d79cf0e8785e776e173729",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "ec93bfcae7a9984f27d44112a5441975ea60181c7a67c70cba560019a0c65787"
+    },
+    {
+      "id": "forest_crossing",
+      "source": "work\\natural-world-forest\\originals\\forest_crossing.png",
+      "source_size": [
+        1415,
+        1111
+      ],
+      "source_sha256": "67468528692c6cc945cd71e66ce4057aac3cd1d106518a0240b411bd563f11b7",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "bb3776a4abeffaa3c8253b99e17bf23b859a8b5964798eb5d4e40db98c42977e"
+    },
+    {
+      "id": "undergate",
+      "source": "work\\natural-world-forest\\originals\\undergate.png",
+      "source_size": [
+        1363,
+        1154
+      ],
+      "source_sha256": "c1f74a29ab94a7918e7a65f557b40768c1d9b02d99592187969499f387c0fe9e",
+      "output": "Assets/StreamingAssets/SurfaceWorld/undergate.png",
+      "output_size": [
+        2496,
+        2112
+      ],
+      "output_sha256": "acee650412d307e5d53ea113b9eb1b212110a97ec7c97eb47fa2eeebcbd611bc"
+    }
+  ]
+}

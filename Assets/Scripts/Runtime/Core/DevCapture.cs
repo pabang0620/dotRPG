@@ -26,13 +26,14 @@ namespace DotRPG
         /// -dotrpgCanyon / -dotrpgWinter / -dotrpgChars / -dotrpgUi: 32px canyon, winter village, characters
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
-        static readonly string[] Modes = { "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
-            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo", "-dotrpgMonsterDemo", "-dotrpgSanctum", "-dotrpgRoutes", "-dotrpgSanctumFields" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
+        static readonly string[] Modes = { "-dotrpgSurface", "-surfaceWorldExport", "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
+            "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo", "-dotrpgMonsterDemo", "-dotrpgSanctum", "-dotrpgRoutes", "-dotrpgSanctumFields", "-dotrpgWorldLayers", "-dotrpgWeaponAppearance" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void RedirectSaves()
         {
+#if !DOTRPG_RELEASE
             var args = Environment.GetCommandLineArgs();
 #if !DOTRPG_RELEASE
             if (SoakRequested(out _, out var soakFolder)) // [SOAK] own save folder, silent
@@ -54,6 +55,7 @@ namespace DotRPG
                     GameFlow.PauseOnFocusLoss = false;
                     return;
                 }
+#endif
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -123,6 +125,9 @@ namespace DotRPG
             bool automatedDemo = interactiveDemo && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
             if (!interactiveDemo || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }
             if (mode == SoakFlag) { yield return SoakRun(); log.Close(); log = null; Application.Quit(); yield break; } // [SOAK]
+            if (mode == "-dotrpgWeaponAppearance") { yield return WeaponAppearanceRun(); log.Close(); log = null; Application.Quit(); yield break; }
+            if (mode == "-dotrpgSurface" || mode == "-surfaceWorldExport") { yield return SurfaceWorldRun(); log.Close(); log = null; Application.Quit(); yield break; }
+            if (mode == "-dotrpgWorldLayers") { yield return WorldLayersRun(); log.Close(); log = null; if (Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0 || Array.IndexOf(Environment.GetCommandLineArgs(), "-worldLayersVerify") >= 0) Application.Quit(); else Destroy(this); yield break; }
             if(mode=="-dotrpgSanctumFields"){yield return SanctumFieldsRun();log.Close();log=null;if(Array.IndexOf(Environment.GetCommandLineArgs(),"-batchmode")>=0)Application.Quit();else Destroy(this);yield break;}
             if (mode == "-dotrpgRoutes") { yield return RoutesRun(); log.Close(); Application.Quit(); yield break; }
             if (mode == "-dotrpgSanctum") { yield return SanctumRun(); log.Close(); log=null; if(Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(), "-sanctumVerify")>=0)Application.Quit();else Destroy(this); yield break; }

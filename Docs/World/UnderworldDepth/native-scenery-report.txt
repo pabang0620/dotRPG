@@ -1,0 +1,129 @@
+[1.26] capture started
+[1.26] verification audio volume: 0
+DGN hollow_descent dedicated scenery root PASS
+DGN hollow_descent authored primary landmark PASS
+DGN hollow_descent monument silhouette inside map PASS
+DGN hollow_descent monument grounded on already blocked rock PASS
+DGN hollow_descent dedicated pixel panorama behind terrain PASS
+DGN hollow_descent continuous panorama covers map once PASS
+DGN hollow_descent two visible interior column remnants PASS
+DGN hollow_descent interior columns keep terrain pixel density PASS
+DGN hollow_descent interior column feet on existing Cliffs PASS
+DGN hollow_descent bounded scenery renderers (32) PASS
+DGN hollow_descent scenery remains cosmetic PASS
+DGN hollow_descent finite scenery transforms PASS
+DGN hollow_descent one contained depth ambience PASS
+[21.07] SCENERY hollow_descent: renderers=32, objects=33, primary=(12.50, 33.16, 0.00)
+DGN hollow_descent scenery preserves connected floor PASS
+DGN hollow_descent scenery exit exists hollow_roots PASS
+DGN hollow_descent scenery exit reachable hollow_roots PASS
+DGN hollow_descent scenery arrival avoids portal bounce hollow_roots PASS
+DGN hollow_descent clear cardinal exit approach hollow_roots PASS
+DGN hollow_descent scenery exit exists hollow_fungal PASS
+DGN hollow_descent scenery exit reachable hollow_fungal PASS
+DGN hollow_descent scenery arrival avoids portal bounce hollow_fungal PASS
+DGN hollow_descent clear cardinal exit approach hollow_fungal PASS
+DGN hollow_descent scenery exit exists undergate PASS
+DGN hollow_descent scenery exit reachable undergate PASS
+DGN hollow_descent scenery arrival avoids portal bounce undergate PASS
+DGN hollow_descent clear cardinal exit approach undergate PASS
+DGN hollow_descent scenery preserves blocked outer bounds PASS
+DGN hollow_descent scenery water/rock remains blocked (426 probes) PASS
+DGN hollow_descent actual walk between exits after scenery PASS
+DGN hollow_descent focal player stands on walkable floor PASS
+DGN hollow_descent previous scenery and world root destroyed PASS
+DGN hollow_descent repeat-load scenery count stable PASS
+DGN hollow_descent repeat-load ambience not duplicated PASS
+DGN hollow_roots dedicated scenery root PASS
+DGN hollow_roots authored primary landmark PASS
+DGN hollow_roots monument silhouette inside map PASS
+DGN hollow_roots monument grounded on already blocked rock PASS
+DGN hollow_roots dedicated pixel panorama behind terrain PASS
+DGN hollow_roots continuous panorama covers map once PASS
+DGN hollow_roots two visible interior column remnants PASS
+DGN hollow_roots interior columns keep terrain pixel density PASS
+DGN hollow_roots interior column feet on existing Cliffs PASS
+DGN hollow_roots bounded scenery renderers (32) PASS
+DGN hollow_roots scenery remains cosmetic PASS
+DGN hollow_roots finite scenery transforms PASS
+DGN hollow_roots one contained depth ambience PASS
+[60.88] SCENERY hollow_roots: renderers=32, objects=33, primary=(11.50, 34.16, 0.00)
+DGN hollow_roots scenery preserves connected floor PASS
+DGN hollow_roots scenery exit exists hollow_descent PASS
+DGN hollow_roots scenery exit reachable hollow_descent PASS
+DGN hollow_roots scenery arrival avoids portal bounce hollow_descent PASS
+DGN hollow_roots clear cardinal exit approach hollow_descent PASS
+DGN hollow_roots scenery exit exists hollow_depths PASS
+DGN hollow_roots scenery exit reachable hollow_depths PASS
+DGN hollow_roots scenery arrival avoids portal bounce hollow_depths PASS
+DGN hollow_roots clear cardinal exit approach hollow_depths PASS
+DGN hollow_roots scenery preserves blocked outer bounds PASS
+DGN hollow_roots scenery water/rock remains blocked (404 probes) PASS
+DGN hollow_roots actual walk between exits after scenery PASS
+DGN hollow_roots focal player stands on walkable floor PASS
+DGN hollow_roots previous scenery and world root destroyed PASS
+DGN hollow_roots repeat-load scenery count stable PASS
+DGN hollow_roots repeat-load ambience not duplicated PASS
+DGN hollow_fungal dedicated scenery root PASS
+DGN hollow_fungal authored primary landmark PASS
+DGN hollow_fungal monument silhouette inside map PASS
+DGN hollow_fungal monument grounded on already blocked rock PASS
+DGN hollow_fungal dedicated pixel panorama behind terrain PASS
+DGN hollow_fungal continuous panorama covers map once PASS
+DGN hollow_fungal two visible interior column remnants PASS
+DGN hollow_fungal interior columns keep terrain pixel density PASS
+DGN hollow_fungal interior column feet on existing Cliffs PASS
+DGN hollow_fungal bounded scenery renderers (33) PASS
+DGN hollow_fungal scenery remains cosmetic PASS
+DGN hollow_fungal finite scenery transforms PASS
+DGN hollow_fungal one contained depth ambience PASS
+[99.41] SCENERY hollow_fungal: renderers=33, objects=34, primary=(17.50, 34.16, 0.00)
+DGN hollow_fungal scenery preserves connected floor PASS
+DGN hollow_fungal scenery exit exists hollow_descent PASS
+DGN hollow_fungal scenery exit reachable hollow_descent PASS
+DGN hollow_fungal scenery arrival avoids portal bounce hollow_descent PASS
+DGN hollow_fungal clear cardinal exit approach hollow_descent PASS
+DGN hollow_fungal scenery exit exists hollow_depths PASS
+DGN hollow_fungal scenery exit reachable hollow_depths PASS
+DGN hollow_fungal scenery arrival avoids portal bounce hollow_depths PASS
+DGN hollow_fungal clear cardinal exit approach hollow_depths PASS
+DGN hollow_fungal scenery preserves blocked outer bounds PASS
+DGN hollow_fungal scenery water/rock remains blocked (378 probes) PASS
+DGN hollow_fungal actual walk between exits after scenery PASS
+DGN hollow_fungal focal player stands on walkable floor PASS
+DGN hollow_fungal previous scenery and world root destroyed PASS
+DGN hollow_fungal repeat-load scenery count stable PASS
+DGN hollow_fungal repeat-load ambience not duplicated PASS
+DGN hollow_depths dedicated scenery root PASS
+DGN hollow_depths authored primary landmark PASS
+DGN hollow_depths monument silhouette inside map PASS
+DGN hollow_depths monument grounded on already blocked rock PASS
+DGN hollow_depths dedicated pixel panorama behind terrain PASS
+DGN hollow_depths continuous panorama covers map once PASS
+DGN hollow_depths two visible interior column remnants PASS
+DGN hollow_depths interior columns keep terrain pixel density PASS
+DGN hollow_depths interior column feet on existing Cliffs PASS
+DGN hollow_depths bounded scenery renderers (33) PASS
+DGN hollow_depths scenery remains cosmetic PASS
+DGN hollow_depths finite scenery transforms PASS
+DGN hollow_depths one contained depth ambience PASS
+[138.31] SCENERY hollow_depths: renderers=33, objects=34, primary=(33.50, 37.16, 0.00)
+DGN hollow_depths scenery preserves connected floor PASS
+DGN hollow_depths scenery exit exists hollow_roots PASS
+DGN hollow_depths scenery exit reachable hollow_roots PASS
+DGN hollow_depths scenery arrival avoids portal bounce hollow_roots PASS
+DGN hollow_depths clear cardinal exit approach hollow_roots PASS
+DGN hollow_depths scenery exit exists hollow_fungal PASS
+DGN hollow_depths scenery exit reachable hollow_fungal PASS
+DGN hollow_depths scenery arrival avoids portal bounce hollow_fungal PASS
+DGN hollow_depths clear cardinal exit approach hollow_fungal PASS
+DGN hollow_depths scenery preserves blocked outer bounds PASS
+DGN hollow_depths scenery water/rock remains blocked (428 probes) PASS
+DGN hollow_depths actual walk between exits after scenery PASS
+DGN hollow_depths focal player stands on walkable floor PASS
+DGN hollow_depths previous scenery and world root destroyed PASS
+DGN hollow_depths repeat-load scenery count stable PASS
+DGN hollow_depths repeat-load ambience not duplicated PASS
+DGN underground ambience removed on surface return PASS
+DGN scenery verification remains muted PASS
+[165.45] WORLD LAYERS SCENERY RESULTS: 122 passed, 0 failed

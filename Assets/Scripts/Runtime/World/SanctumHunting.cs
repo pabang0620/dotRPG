@@ -12,11 +12,11 @@ namespace DotRPG {
    if(z.variant==0){Ell(29,24,17,10);Ell(30,38,12,7);Ell(25,9,15,7);Line(0,24,29,24);Line(29,24,30,47);Line(29,24,25,0);Ell(39,25,5,4,'~');}
    if(z.variant==1){Ell(30,24,24,17);for(int y=14;y<=34;y++)for(int x=25;x<=33;x++)a[x,y]='~';Line(0,24,17,24);Line(42,24,59,24);Line(17,11,44,11);Line(17,38,44,38);}
    if(z.variant==2){Ell(13,24,11,12);Ell(25,12,13,9);Ell(40,22,14,10);Ell(45,36,10,8);Line(0,24,13,24);Line(13,24,25,12,4);Line(25,12,40,22,4);Line(40,22,45,36,4);Line(40,22,59,24);Ell(29,29,7,5,'~');}
-   if(z.variant==3){Ell(30,24,23,18);Ell(30,24,16,11,'~');Ell(30,24,10,7);Line(30,0,30,47,3);Line(9,24,51,24,3);}
+   if(z.variant==3){Ell(30,24,23,18);Ell(30,24,16,11,'~');Ell(30,24,10,7);Line(30,0,30,47,3);Line(9,24,59,24,3);}
    // Traversal markers are single cells inside broad approaches; arrivals are inset by the existing portal code.
    if(z.variant==0){a[0,24]='<';a[30,47]='[';a[25,0]=']';}
    else if(z.variant<3){a[0,24]='<';a[59,24]='>';}
-   else {a[30,47]='[';a[30,0]=']';}
+   else {a[30,47]='[';a[30,0]=']';a[59,24]='>';}
    a[z.variant==3?30:7,24]='P';
    var candidates=new List<Vector2Int>();
    for(int y=6;y<h-6;y++)for(int x=7;x<w-7;x++){bool clear=true;for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)if(a[x+dx,y+dy]!='.')clear=false;if(clear)candidates.Add(new Vector2Int(x,y));}

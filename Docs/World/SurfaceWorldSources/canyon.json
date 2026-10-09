@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-10-09T01:31:22.119Z",
+  "tool": "OpenAI built-in image_gen.imagegen",
+  "authoring": "Original generated outdoor canyon art using this project's terrain references; no external game assets copied.",
+  "renderingScope": "Terrain and static blocked background only. Existing runtime props, houses, trees, enemies, portals and effects stay separate.",
+  "review": "All five outputs inspected visually. This records art creation, not a claim of pixel-exact collision alignment. Parent integration must compare native gameplay and collision overlay, especially pond edges and cliff foot/front projections. Generated dimensions are below requested target; integration/upscale is separate.",
+  "maps": [
+    {
+      "mapId": "canyon",
+      "worldTiles": {
+        "width": 48,
+        "height": 60
+      },
+      "requestedPixels": {
+        "width": 1536,
+        "height": 1920
+      },
+      "actualPixels": {
+        "id": "canyon",
+        "width": 1122,
+        "height": 1402
+      },
+      "generatedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-fdd4768c-fd21-4d6a-aa1d-4259c349325d.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "references": [
+        "work/surface-before/canyon-overview.png",
+        "work/surface-before/canyon-guide.png"
+      ],
+      "prompt": "Use case: style-transfer. Create one production terrain-only replacement background for an existing top-down 2D RPG. Edit Image 1 (the existing complete map) using Image 2 as the EXACT collision silhouette registration guide. Output portrait 1536×1920, matching Image 1's full extent and camera, no crop, no border. The map is 48×60 world tiles. In Image 2 TAN is traversable floor, BLUE is impassable water, DARK NAVY is impassable rock/background, MUTED PURPLE is an existing runtime prop footprint which MUST be painted as ordinary continuous floor because the prop is rendered separately. Preserve every floor/water boundary, bridge rectangle, stair rectangle, road location and every map-edge exit at exactly the same normalized pixel coordinates. IMPORTANT: remove ALL houses, trees, shrubs, barrels, stalls, NPCs, signs, benches, arrows, glowing effects and UI from Image 1, reconstruct plain floor underneath; these exact objects are already separate runtime sprites. Keep just TERRAIN, built-in stone stair treads and the two existing bridge surfaces. Redesign the terrain as a sunlit brown-limestone cliffside town, with finely drawn tan worn irregular flagstones and occasional broad exposed compacted earth, muted olive moss in floor cracks, coherent cliff strata and supporting rock faces on DARK NAVY regions only. Connect the exact upper walking ledge edge to a visible vertical supporting rock face and a lower, slightly blue-gray-desaturated distant ravine, all in one consistent high oblique orthographic game perspective. Distant ravine must remain outdoors, open to daylight, not a cave or cathedral. Do not replace broad floor areas with chasms or make new cliffs/obstacles on floor. Reproduce the west/south winding turquoise stream with its exact shore contour and bridge positions; sharp low stone lips on land, deep teal water, only modest drawn highlights since water animates in-game. Preserve exact town footprint and the main upper wide central stair and smaller right stair. Original high-detail game illustration with clean pixel-sized edges and compact color clusters, readable small stone joints, restrained relief, no blurry painterly noise, no watercolor, no smooth bloom, no full-image fog. No text, glyphs, map legend, frame, characters, props, new bridges, new buildings or new trees. The guide is a strict silhouette not an image to display. This is original terrain art, not copied game assets.",
+      "reviewed": true
+    },
+    {
+      "mapId": "canyon_pass",
+      "worldTiles": {
+        "width": 56,
+        "height": 44
+      },
+      "requestedPixels": {
+        "width": 1792,
+        "height": 1408
+      },
+      "actualPixels": {
+        "id": "canyon_pass",
+        "width": 1414,
+        "height": 1113
+      },
+      "generatedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-6a415413-eda4-497a-bb17-857e01107b02.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+      "references": [
+        "work/surface-before/canyon_pass-overview.png",
+        "work/surface-before/canyon_pass-guide.png",
+        "generated_images/exec-fdd4768c-fd21-4d6a-aa1d-4259c349325d.png (style only)"
+      ],
+      "prompt": "Use case: style-transfer. Edit Image 1 into TERRAIN ONLY for an existing RPG map, registered exactly to Image 2. Image 3 gives the desired surface rock material and lighting only; do not borrow its layout. Deliver landscape 1792×1408, same full map extent as Image 1, 56×44 tiles, no crop. Image2 TAN=all walkable floor, BLUE=all water, DARK NAVY=blocked rock/background, muted PURPLE=existing runtime prop footprints to erase to ordinary floor. Keep the exact land silhouette and every blue water pixel region at the same normalized coordinates, including the broad left pool around x5–35%,y32–44%, right crooked diagonal stream x55–98%,y32–71%, central small triangle pool x36–47%,y55–66%, tiny left-edge pool. Keep all thin NORTH,SOUTH,WEST exit corridors open at original position and width. Remove ALL Image1 trees, shrubs, loose boulder props, red mechanical cliff landmarks, monsters, signs, portal arrows and every cast shadow belonging to those props; these remain separate runtime sprites. Reconstruct compacted dusty tawny walking floor beneath them. Original high-detail RPG surface canyon pass: broad natural sandstone benches, fine shallow cracks, small embedded pebbles and restrained shale patches, exposed buff rock in the walking plane; no obstacle boulders on the floor. Within DARK NAVY only, replace flat wall tiles with convincing layered brown cliff fronts, offset wind-worn buttresses and a distant lower outdoor ravine. Use one coherent high oblique orthographic perspective: exact walking rim connects directly to its vertical strata supporting faces, then lower desaturated rock valleys, never a floating detached plate. Sunlit ochre/brown stone, muted olive traces, soft bluegray atmospheric distance; NOT underground, no blue cathedral, no architecture. Water deep teal with narrow wet stone rims, few restrained reflections because it will animate separately. The shore can look chipped but cannot relocate or expand. Fine clean pixel-defined illustration, consistent hard surfaces, readable small texture, crisp outlines, no blurry noise or haze, no new structures, bridges, trees or stairs. No text/UI/actors. Preserve collisions strictly; do not simplify the asymmetric map into a circle or create decorative cliffs across walkable land.",
+      "reviewed": true,
+      "revisions": [
+        {
+          "supersededGeneratedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-c7fd7af3-a000-40cc-872d-8194ee7253f7.png",
+          "repair": {
+            "id": "canyon_pass",
+            "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-6a415413-eda4-497a-bb17-857e01107b02.png",
+            "width": 1414,
+            "height": 1113,
+            "prompt": "One tiny local correction to reference1 canyon_pass game texture. Keep the entire painting and map registration unchanged except REMOVE the single freestanding thin little stone pillar in the upper middle, at pixel approximately (640,56) of the 1414x1113 source, normalized x45.3%, y5.0%, world coordinate (25.35,41.8) in this 56x44 bottom-left world. It is on navigable floor and must be seamlessly replaced with ordinary flat tan dust/small flagstone ground, matching adjacent floor. This is the narrow isolated vertical pillar just left of the north path, NOT the large blocked perimeter wall masses. Remove its tiny shadow too. Reference2 exact clean ground confirms that point is flat floor. Reference3 guide tan means walkable and dark navy means blocked; keep all boundaries unchanged. Preserve all four cyan water pools EXACTLY, the north/south/west exits, all cliff boundaries, broad floor and warm outdoor palette. Do not add any new pillars, gaps, arches, rocks, objects, people, text or UI. Do not change camera, crop, layout, scale, illumination, pixel-art detail or framing. Export opaque landscape map texture, same aspect ratio as reference1; requested1792x1408. This repair should be imperceptible anywhere except that small removed pillar.",
+            "reason": "Removed added narrow stone pillar on passable ground near world (25.35,41.8)."
+          }
+        }
+      ]
+    },
+    {
+      "mapId": "canyon_mine",
+      "worldTiles": {
+        "width": 56,
+        "height": 44
+      },
+      "requestedPixels": {
+        "width": 1792,
+        "height": 1408
+      },
+      "actualPixels": {
+        "id": "canyon_mine",
+        "width": 1415,
+        "height": 1112
+      },
+      "generatedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-bc637527-aee8-4d2e-800a-97043763a182.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "references": [
+        "work/surface-guides/canyon_mine-ground-only.png",
+        "work/surface-before/canyon_mine-guide.png",
+        "generated_images/exec-fdd4768c-fd21-4d6a-aa1d-4259c349325d.png (style only)"
+      ],
+      "prompt": "Use case: style-transfer. Edit Image1, the actual empty RPG terrain, using Image2 as a STRICT pixel-registration collision guide. Image3 supplies only palette/material style. Output1792×1408 landscape, full identical camera and framing, world56×44 tiles, no crop oraddedborder. Do not invent a new layout. Guide TAN is WALKABLE floor, DARK NAVY is BLOCKED stone, small PURPLE markers are separately rendered props so replace them with FLOOR. There is NO WATER here. Preserve all floor versus rock boundary positions exactly, including every interior thin rock rib. This is an old sunlit open-air limestone quarry hunting area, not a subterranean dungeon. Paint broad tan-brown compacted quarry dust and scattered small embedded slate on walkable floor, worn irregular quarry stone joins and shallow extraction scoring, tiny ochre gravel and occasional muted olive moss only. Preserve the wide WEST and EAST exits halfway down, and keep the north and south edges blocked as the guide. The four interior rock bars MUST retain their exact footprint: upper horizontal at x36–66%,y27–32%; narrow left rib around x27–32%,y40–62%; narrow right rib around x69–75%,y39–64%; lower horizontal aroundx31–68%,y66–73%, plus the guide's short surrounding rock slivers. Render those blocked ribs as low, naturally fractured quarry cuts rather than new towers, arches, houses or obstacles. In the outer DARK NAVY blocked border only, use layered brown sandstone retaining faces and lower desaturated rocky ravine scenery, coherently connected to the exact walking top edge. High oblique orthographic RPG perspective, all terrain uses the same diagonal axes, sky-lit outdoors, strong readable tops and shaded vertical cut faces, no disconnected floating painting. Preserve entire central area as empty traversable ground for runtime actors and props. No trees, bushes, boulders, statues, machinery, scaffolds, torches, buildings, grass clumps, signs, text, UI, arrows, actors or monsters anywhere. Do not draw quarry equipment: game already places props. Original detailed game terrain illustration with sharp pixel-sized edges, fine restrained cracks and moderate texture, coherent buff/ochre/brown palette and blue-gray distant rock. No blue cathedral, no added pools, no cliff lines or large shadows crossing TAN floor. All guide geometry is immutable.",
+      "reviewed": true
+    },
+    {
+      "mapId": "canyon_ridge",
+      "worldTiles": {
+        "width": 56,
+        "height": 44
+      },
+      "requestedPixels": {
+        "width": 1792,
+        "height": 1408
+      },
+      "actualPixels": {
+        "id": "canyon_ridge",
+        "width": 1415,
+        "height": 1112
+      },
+      "generatedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-d3a846af-ddd1-42df-ae3c-b55472f35ae9.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "references": [
+        "work/surface-guides/canyon_ridge-ground-only.png",
+        "work/surface-before/canyon_ridge-guide.png",
+        "generated_images/exec-fdd4768c-fd21-4d6a-aa1d-4259c349325d.png (style only)"
+      ],
+      "prompt": "Use case: style-transfer. Produce ONE original terrain-only background by editing Image1, while treating Image2 as immutable collision/registration geometry. Image3 is material and lighting style only. Landscape1792×1408, full extent, same high oblique orthographic camera,56×44 tiles. TAN guide pixels are continuous walkable floor. DARK NAVY are solid rock/nonwalkable background. Tiny muted-purple spots are existing props: paint normal floor there, do not draw props. NO water anywhere. This is a sunlit wind-scoured outdoor canyon ridge with ochre limestone, broad light weather-worn rock planes, shallow longitudinal wind scratches, sparse small embedded gravel, compacted tawny dirt. Every edge of the floor in Image1/2 must stay at the exact normalized coordinates. Preserve the thin WEST/EAST open exits around mid-height. Preserve the blocked irregular outer outline, the deep indented northwest block, the northeastern protruding floor ledge, the narrow left-middle protruding arm, the long thin internal rocky spine at x68–75%,y30–61%, the smaller left spine aroundx27–33%,y37–57%, and tiny upper-middle horizontal ridge aroundx45–55%,y25–27%. Walkable TAN including isolated-looking arms must stay floor at one navigable height; do not turn them into new raised islands or erase routes. In DARK NAVY only, replace the flat repetitive wall/cobble texture with wind-shaped rocky buttresses descending from the exact floor edge and a much lower desaturated outdoor canyon landscape, with more visible vertical strata than other canyon maps. Near walking floor, supporting cliff faces and far ravine must share a single slanted orthographic construction, with naturally matching horizontal ledge lines and coherent sunlight. No sky horizon, no underground blue temple, no cathedral, no fake floating plate. Keep interior cliffs/ribs bounded by their guide footprints; do not widen them onto usable floor. No statues, buildings, trees, loose boulder props, grass tufts, machinery, NPCs, monsters, portals, arrows, labels, text or UI; runtime game places all of those separately. Crisp compact-pixel game illustration, detailed but restrained stone cracks, clean material separations, no blur, bloom or heavy fog. Prioritize exact silhouette and seamlessly grounded rock over added decorations.",
+      "reviewed": true
+    },
+    {
+      "mapId": "canyon_gate",
+      "worldTiles": {
+        "width": 56,
+        "height": 44
+      },
+      "requestedPixels": {
+        "width": 1792,
+        "height": 1408
+      },
+      "actualPixels": {
+        "id": "canyon_gate",
+        "width": 1414,
+        "height": 1112
+      },
+      "generatedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-3eda7540-d43e-4e48-a790-c377de373cab.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "references": [
+        "work/surface-guides/canyon_gate-ground-only.png",
+        "work/surface-before/canyon_gate-guide.png",
+        "generated_images/exec-fdd4768c-fd21-4d6a-aa1d-4259c349325d.png (style only)"
+      ],
+      "prompt": "Create the final terrain-only GAME MAP texture for canyon_gate, a 56x44 tile outdoor brown limestone cliff hunting ground, output 1792x1408 landscape. This is a STRICT registered repaint of references 1 and 2, NOT a freely redesigned illustration. Ref1 is exact existing ground image; ref2 is exact footprint guide: tan = walkable ground, very dark blue = impassable W rock, purple dots = existing props that are drawn by game separately and MUST disappear into normal floor in your image. Ref3 is ONLY palette/pixel-art style reference, do not borrow its geometry. Keep camera perfectly perpendicular to map axes with high oblique orthographic vertical faces. Exact same framing, no margins, preserve every tan/dark boundary and every exit position including top middle, bottom middle, right middle. Keep left long interior vertical rock rib at x32-41% from y20-79%, right upper rectangular rib at x63-73% y20-43%, right lower rib at x63-73% y55-79%. These are IMPASSABLE rock buttresses, not floor. Preserve all open passages around them, do not join them. This map has NO WATER; add none. Walkable floor is continuous warm ochre packed dust with irregular small limestone slabs and sparse flat gravel, variations readable but NOT new obstacles. All existing floor shadows/blotches of removed objects in ref1 should be replaced with ordinary ground. No trees, houses, enemies, people, chests, lamps, portal symbols, text, UI, or new foreground props. In dark blocked regions only, develop convincing outdoor stratum rock masses and vertical supporting rock faces that directly attach to the existing floor rims, with muted lower ravine beyond. Rock sidewalls recede downward toward bottom of image. Do not create arbitrary new walkable terraces or disconnected floor. A subtle naturally eroded stone arch may appear high in the far upper-left blocked background only; it must not span or obscure the walkable floor, and must not look like a building or dungeon door. Daylit open-air canyon, brown limestone and restrained gray warm shadows, a little muted olive moss only at blocked edges. High quality sharp dense pixel clusters, crisp nearest-neighbor appearance, no smooth blur, no deep blue underground cathedral, no fog blanket. Floor edge location is more important than dramatic decoration. Fully opaque single terrain texture.",
+      "reviewed": true,
+      "revisions": [
+        {
+          "supersededGeneratedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-8f120d8e-5350-4ada-9ef7-905e44b4e64e.png",
+          "repair": {
+            "id": "canyon_gate",
+            "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-3eda7540-d43e-4e48-a790-c377de373cab.png",
+            "width": 1414,
+            "height": 1112,
+            "prompt": "PRECISE LOCAL GAME-TEXTURE REPAIR, not a redesign. Reference 1 is the current canyon_gate painting to EDIT. Reference2 is the exact original terrain-floor layout. Reference3 is the exact navigation footprint: tan is passable floor, dark navy is blocked W rock; purple dots are separately rendered props, ignore/remove the dots. This 56x44 world map must have ALL tan regions as continuous flat dry ochre stone ground. Fix the current painting's two large errors: (A) upper-left interior ravine and arch near x18%-35%, y3%-28% currently gouge into passable floor; REMOVE THE ARCH ENTIRELY and fill the ravine INSIDE THE TAN GUIDE with flat textured ochre limestone floor, seamless with surrounding floor. Especially restore world x10..19,y34..42 where coordinates begin bottom-left. Also the narrow left edge ravine currently cuts inside the guide at x1..5 world,y23..35: restore all tan floor to exact guide boundary. (B) lower-right interior ravine at x82%-99%,y66%-81%, worldx46..54,y9..15, is also erroneously on floor. FILL it with ordinary flat continuous ochre floor up to the exact guide boundary. All remaining genuinely blocked dark guide regions may keep cliff faces and distant canyon. NO NEW HOLES, no arch, no water anywhere in map. Keep exactly the existing three long central raised stone ribs, their footprint and vertical faces. Keep the three exits top-middle,bottom-middle,right-middle exact and clear. Keep all other composition and coloration, dense crisp pixel art, high oblique orthographic axes, bright outdoor brown rock material. NO structures/props/actors/vegetation in open floor. Match the old terrain reference geometry precisely, do not invent cliff coves inside its floor. Export opaque 1792x1408 landscape with no border or text. Only terrain texture; no labels, arrows, grid, guide colors, or UI.",
+            "reason": "Removed erroneous passable-floor ravine/arch at world x10..19,y34..42 and southeast ravine x46..54,y9..15; restored flat floor against guide boundary."
+          }
+        }
+      ]
+    }
+  ],
+  "materialBoundaryReview": {
+    "createdUtc": "2026-10-09T01:40:19.985Z",
+    "method": "Read-only source RGB material test against exact ground.txt cell rectangles, plus manually inspected boundary overlays. A saturated cyan heuristic detects water only; cliff-face correctness is manual. Purple runtime prop footprints excluded from obstacle invention interpretation.",
+    "quantitative": {
+      "canyonMaxWaterInLandTiles": 0.044,
+      "canyonPassMaxWaterInLandTiles": 0.163,
+      "waterIntrusionsOverOneTile": 0
+    },
+    "qualitative": "All five boundary overlays inspected. Mine/ridge/canyon show no visually obvious added walls or holes more than one tile into original floor. Gate and pass were repaired and reinspected. This does not replace native movement/collision QA.",
+    "analysisScript": "work/check_canyon_material_alignment.py",
+    "evidence": "work/canyon-source-alignment-review/"
+  }
+}

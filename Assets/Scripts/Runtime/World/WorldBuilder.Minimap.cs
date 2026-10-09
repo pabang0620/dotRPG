@@ -48,9 +48,7 @@ namespace DotRPG
         {
             if (Minimap != null) Destroy(Minimap);
             PortalPoints.Clear();
-            for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
-                    if (WorldRoutes.Portal(cells[x,y])) PortalPoints.Add(new Vector2(x + 0.5f, y + 0.5f));
+            foreach (var group in portalCells.Values) PortalPoints.AddRange(group);
             GroupPortals();
             Minimap = SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null ? RenderMinimap() : null;
             if (Minimap == null) Minimap = BuildFlatMinimap();

@@ -1,11 +1,12 @@
 // 필드 파티 세션 맥락의 처치 보고(phase8_api.md 6.5): 세션 멤버십, 파티 속도, 세션 화력 상한, 기여 부채 게이트, 레벨 격차 감쇠.
 import { getConfig } from '../../config/env';
+import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import type { EconCtx } from '../economy/economyContext';
 import { fieldRefExists } from '../kills/killRepository';
 import { rejected, resolveFieldTarget, type KillTarget } from '../kills/killTarget';
 import * as repo from './fieldRepository';
-import { isHardGap, xpFactor } from './xpFactor';
+import { carryReferenceLevel, isHardGap, xpFactor } from './xpFactor';
 
 const invalid = () => new AppError(409, '필드 세션이 유효하지 않습니다.', 'FIELD_SESSION_INVALID');
 
@@ -51,12 +52,15 @@ export async function resolveSessionTarget(
   const own = me.attack_cap;
   const powerCap = n >= 2 ? Math.min((own + playingSum) * fc.powerSlack, own * (1 + fc.memberPowerAlpha)) : null;
   // 7. 레벨 격차 감쇠(활성 멤버 2명 이상일 때만). 경제 손잡이는 기본 1.0
-  const monsterLevel = base.level;
+  const gameData = getGameData();
+  // Only the underground world's impossible-to-reach post-cap levels are normalized for carry rules.
+  // Combat HP, actual level, drop tier and kill power checks continue to use base.level.
+  const carryLevel = carryReferenceLevel(base.level, gameData.maps.get(base.mapId)?.worldLayer, gameData.economy.progression.maxLevel);
   let factor: number | null = null;
   let dropMul = 1;
   let hardXp = false;
   if (n >= 2) {
-    factor = Math.round(xpFactor(monsterLevel, ctx.level, fc) * fc.partyXpFactor * 1000) / 1000;
+    factor = Math.round(xpFactor(carryLevel, ctx.level, fc) * fc.partyXpFactor * 1000) / 1000;
     // 호스트 관찰이 오래 끊긴 세션(고장 난 호스트 클라이언트가 게이트를 영구히 끄는 것을 막는다): 경험치 배율을 낮추고 한 번 기록한다
     const lapsed = ctx.now.getTime() - (session.last_observe_at ?? session.created_at).getTime() > fc.observeLapseMinutes * 60_000;
     if (lapsed) {
@@ -65,7 +69,7 @@ export async function resolveSessionTarget(
     }
     dropMul = Math.round(factor * fc.partyDropFactor * 1000) / 1000;
     // 9단계: 하드 격차는 경험치 1과 재료·장비 드롭 배율 FIELD_CARRY_HARD_DROP_MUL 로 막는다(고레벨 사냥터에 저레벨을 끌고 가는 캐리의 끝)
-    if (isHardGap(monsterLevel, ctx.level, fc)) {
+    if (isHardGap(carryLevel, ctx.level, fc)) {
       hardXp = true;
       dropMul = fc.carryHardDropMul;
     }

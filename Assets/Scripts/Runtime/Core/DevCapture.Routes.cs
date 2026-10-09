@@ -15,7 +15,7 @@ namespace DotRPG
             Game.Flow.NewGame(CharacterClass.Warrior,"동선 검증");yield return Wait(1.5f);
             Game.Player.Input=new ScriptedInput();Game.Player.Health.SetInvulnerable(600);
             AudioListener.volume=0;Game.Audio?.SetVolumes(0,0);dgnPassed=dgnFailed=0;
-            DCheck("sixteen hunting fields",HuntingGrounds.All.Length==16);
+            DCheck("twenty hunting fields",HuntingGrounds.All.Length==20);
             foreach(var r in WorldRoutes.Regions){
                 DCheck(r[0]+" four fields",HuntingGrounds.All.Count(z=>z.village==r[0])==4);
                 DCheck(r[0]+" split",WorldRoutes.Neighbors(r[1]).OrderBy(x=>x).SequenceEqual(new[]{r[0],r[2],r[3]}.OrderBy(x=>x)));

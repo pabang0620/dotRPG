@@ -1,0 +1,118 @@
+[1.55] capture started
+[1.55] verification audio volume: 0
+DGN wpn_sword_0 dimensions, density, and grip unchanged PASS
+DGN wpn_sword_0 readable nearest-neighbour source PASS
+DGN wpn_sword_0 hand remains inside opaque grip PASS
+DGN wpn_sword_0 selected by equipment tier PASS
+DGN wpn_sword_0 same pose in paired capture PASS
+DGN wpn_sword_1 dimensions, density, and grip unchanged PASS
+DGN wpn_sword_1 readable nearest-neighbour source PASS
+DGN wpn_sword_1 hand remains inside opaque grip PASS
+DGN wpn_sword_1 selected by equipment tier PASS
+DGN wpn_sword_1 same pose in paired capture PASS
+DGN wpn_sword_2 dimensions, density, and grip unchanged PASS
+DGN wpn_sword_2 readable nearest-neighbour source PASS
+DGN wpn_sword_2 hand remains inside opaque grip PASS
+DGN wpn_sword_2 selected by equipment tier PASS
+DGN wpn_sword_2 same pose in paired capture PASS
+DGN wpn_sword_3 dimensions, density, and grip unchanged PASS
+DGN wpn_sword_3 readable nearest-neighbour source PASS
+DGN wpn_sword_3 hand remains inside opaque grip PASS
+DGN wpn_sword_3 selected by equipment tier PASS
+DGN wpn_sword_3 same pose in paired capture PASS
+DGN Warrior enhancement +0 unchanged PASS
+DGN Warrior enhancement +6 unchanged PASS
+DGN Warrior enhancement +7 unchanged PASS
+DGN Warrior enhancement +10 unchanged PASS
+DGN Warrior enhancement +11 unchanged PASS
+DGN Warrior enhancement +12 unchanged PASS
+DGN katana anatomical right-hand idle Down PASS
+DGN katana blade direction preserved Down PASS
+DGN Warrior attack mask alignment Down PASS
+DGN katana anatomical right-hand attack Down PASS
+DGN katana anatomical right-hand idle Up PASS
+DGN katana blade direction preserved Up PASS
+DGN Warrior attack mask alignment Up PASS
+DGN katana anatomical right-hand attack Up PASS
+DGN katana anatomical right-hand idle Left PASS
+DGN katana blade direction preserved Left PASS
+DGN Warrior attack mask alignment Left PASS
+DGN katana anatomical right-hand attack Left PASS
+DGN katana anatomical right-hand idle Right PASS
+DGN katana blade direction preserved Right PASS
+DGN Warrior attack mask alignment Right PASS
+DGN katana anatomical right-hand attack Right PASS
+DGN katana anatomical right-hand idle DownLeft PASS
+DGN katana blade direction preserved DownLeft PASS
+DGN Warrior attack mask alignment DownLeft PASS
+DGN katana anatomical right-hand attack DownLeft PASS
+DGN katana anatomical right-hand idle DownRight PASS
+DGN katana blade direction preserved DownRight PASS
+DGN Warrior attack mask alignment DownRight PASS
+DGN katana anatomical right-hand attack DownRight PASS
+DGN katana anatomical right-hand idle UpLeft PASS
+DGN katana blade direction preserved UpLeft PASS
+DGN Warrior attack mask alignment UpLeft PASS
+DGN katana anatomical right-hand attack UpLeft PASS
+DGN katana anatomical right-hand idle UpRight PASS
+DGN katana blade direction preserved UpRight PASS
+DGN Warrior attack mask alignment UpRight PASS
+DGN katana anatomical right-hand attack UpRight PASS
+DGN Warrior unequip removes enhancement PASS
+DGN wpn_staff_0 excluded from warrior art PASS
+DGN wpn_staff_0 original procedural geometry PASS
+DGN wpn_staff_0 original visible pixels unchanged PASS
+DGN wpn_staff_0 selected by equipment tier PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN wpn_staff_1 selected by equipment tier PASS
+DGN wpn_staff_2 excluded from warrior art PASS
+DGN wpn_staff_2 original procedural geometry PASS
+DGN wpn_staff_2 original visible pixels unchanged PASS
+DGN wpn_staff_2 selected by equipment tier PASS
+DGN wpn_staff_3 excluded from warrior art PASS
+DGN wpn_staff_3 original procedural geometry PASS
+DGN wpn_staff_3 original visible pixels unchanged PASS
+DGN wpn_staff_3 selected by equipment tier PASS
+DGN Mage enhancement +0 unchanged PASS
+DGN Mage enhancement +6 unchanged PASS
+DGN Mage enhancement +7 unchanged PASS
+DGN Mage enhancement +10 unchanged PASS
+DGN Mage enhancement +11 unchanged PASS
+DGN Mage enhancement +12 unchanged PASS
+DGN Mage attack mask alignment Down PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment Up PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment Left PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment Right PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment DownLeft PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment DownRight PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment UpLeft PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage attack mask alignment UpRight PASS
+DGN wpn_staff_1 excluded from warrior art PASS
+DGN wpn_staff_1 original procedural geometry PASS
+DGN wpn_staff_1 original visible pixels unchanged PASS
+DGN Mage unequip removes enhancement PASS
+DGN audio remains muted PASS
+[20.91] WEAPON APPEARANCE summary: 115 passed, 0 failed

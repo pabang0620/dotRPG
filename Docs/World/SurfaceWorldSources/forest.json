@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "date": "2026-10-09",
+  "method": "Built-in image_gen, one call per map, style-transfer using original runtime overview plus semantic collision guide. Generated files copied verbatim; no pixel editing or resampling.",
+  "skill": "C:/Users/darac/.codex/skills/.system/imagegen/SKILL.md",
+  "intendedUse": "Terrain replacement only; existing standalone props, enemies, services, portal logic and collision remain runtime-owned.",
+  "verification": {
+    "inputsViewed": true,
+    "outputsViewed": true,
+    "aspectRelativeErrorBelow": 0.0003,
+    "nativeCollisionOverlay": "Pending parent integration. Visual contour similarity is not proof of exact collision/art agreement.",
+    "limitations": [
+      "Tool output resolution is lower than requested; parent owns upscale.",
+      "The first forest output retains a few small tree-like silhouettes around internal forest masses. Check against the ground-only guide and existing independent sprites before acceptance.",
+      "Generated shores and wooden bank-strip extents require native overlay review; collision/layout was not changed."
+    ]
+  },
+  "assets": [
+    {
+      "id": "forest",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-420d-75e0-9e9d-12349befc0d9/exec-cfdcc32e-145f-4802-aaf2-88a8ac9ec76d.png",
+      "destination": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "width": 1513,
+      "height": 1040,
+      "worldWidth": 64,
+      "worldHeight": 44,
+      "aspectRelativeError": 0.0001802884615382805,
+      "sha256": "09223a5d9b2aee2b08803b1e9ab9c9d2fc7b01aac89dffb2ace38a6c834e6bac",
+      "references": [
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest-overview.png",
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest-guide.png"
+      ],
+      "prompt": "Use case: style-transfer. Production asset: terrain-only map painting for an existing orthographic 2D pixel RPG. Create ONE landscape PNG, precisely 2048 by 1408 pixels (64:44 world aspect), full-bleed with no margins.\n\nImage 1 is the old rendered map and supplies exact top-down path/water placement. Image 2 is its authoritative collision guide at the SAME full-map framing: TAN means flat walkable ground; DARK NAVY means impassable forest; dusty purple specks are existing separate prop footprints, which must become flat ground in this painting; dark blue water patch is the same small pool visible bottom-center-left in image1. Preserve geometry and all clearings, internal dark forest islands, branching dirt trails, and north/left/south exits at exactly the same fractional coordinates. Do not crop, rotate, mirror, shift, widen or narrow any path or shore.\n\nReplace the old terrain with a beautifully art-directed storybook fantasy woodland, high orthographic oblique viewpoint, parallel axes, no horizon. Readable emerald and olive grass, warm mossy earth trails with gentle wear, restrained coherent leaf litter and flat embedded stone. Rich depth ONLY in the DARK impassable regions: layered distant woodland canopy, softly shaded forest terraces, huge old root ridges at the boundary; detailed pixel clusters and crisp clean texture, not random grain. Foreground playable floor remains luminous and calm, shadows tied to the same lighting direction from upper left. Every flat TAN area stays flat, clear, walkable and free of obstacles.\n\nCRITICAL TERRAIN-ONLY REMOVAL: remove ALL existing freestanding tree sprites (including every large tree visible inside the clearings), stone archways/gates, tall ruins/columns, signs, rocks, dead trunks, logs, bushes, mushroom objects, arrows, markers, characters, enemies, text, UI and all cast shadows of these individual props. Their original positions must be filled with matching flat ground. Runtime will put those objects back itself. Do NOT copy the existing stone gateways at top corners or east-middle. You may suggest remote tree canopy only within dark blocked regions, never introduce a new standing tree/ruin on TAN space. Keep the small original blue-green pool at its exact outline; no added ponds, no bridges, no river. No white rim around the map, no grid, no labels, no vignette border. Make the painting a continuous spatial scene without changing the game's navigation layout."
+    },
+    {
+      "id": "forest_ruins",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-420d-75e0-9e9d-12349befc0d9/exec-97672018-d3fc-4f8f-ac7a-24c31d67fa71.png",
+      "destination": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "width": 1415,
+      "height": 1112,
+      "worldWidth": 56,
+      "worldHeight": 44,
+      "aspectRelativeError": 0.0001927029804728031,
+      "sha256": "1981b7c5419a14c3e05a69e66eb5203d8319cfe9a5c021e5edecad2f72aa4607",
+      "references": [
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest_ruins-overview.png",
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest_ruins-guide.png"
+      ],
+      "prompt": "Use case: style-transfer. Create one production terrain-only PNG for a 2D pixel RPG, exact output 1792x1408 (56:44 aspect). Full map view, edge-to-edge, north up, absolutely no camera reframing.\nImage1 is the old terrain/prop render; Image2 is the authoritative same-framing physical mask. Preserve ALL land/water/blocked edges at exactly the same fractional locations. TAN is flat open walkable grass/path, dark NAVY is impassable woodland, blue-green is water, tiny purple specks are existing independent prop footprints to fill as flat land. Use the mask contour as strict stencil, never cover tan with new obstacle.\nRepaint an ancient mossy forest ruin clearing with luminous layered emerald/olive pixel art, coherent rectangular embedded stone remnants in the paths (all flat, walkable), warm muted earth and tranquil grass. Existing loop road with west/east entrances stays exactly in position. The central rectangular impassable ring remains in its exact footprint, with shallow raised root-and-moss forest terrace texture; its central open rectangular floor stays entirely open and flat. The top-right lake must keep precisely its old outline and shoreline, and the wooden bridge-strip already on its west edge remains flat at the same coordinates; paint water with gentle still blue-green values, no animated streaks or fish.\nMake the deep dark regions at the outer map edge feel like layered remote woodland seen from high orthographic oblique game camera, no horizon, parallel axes, distant canopies and restrained root relief. Do not introduce ruins or architecture rising out of the ground: runtime retains them separately.\nREMOVE ALL freestanding props from image1: every stone gate/portal ruin, arch, column, little upright stump, dead tree, mushroom, log, rock, tall tree (including the free trees adjacent to the middle ring), fish, actors, arrows, UI. Fill each removed object and cast shadow with seamless appropriate flat ground. The three standing stone arch monuments at the upper corners and above the central clearing MUST NOT appear. No new tree trunks or aboveground structures on TAN regions; remote canopy only within NAVY regions. No circular magic pattern, no new water, no islands, no labels.\nCrisp sophisticated hand-placed pixel clusters, art-directed large material patches, nuanced but low-contrast ground details with breathing room. Sunlight from upper-left, same projection/scale throughout, no blur, no excessive white shoreline, no noisy pixel confetti. This is a locked navigation geometry repaint, NOT a reimagined layout."
+    },
+    {
+      "id": "forest_depths",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-420d-75e0-9e9d-12349befc0d9/exec-6dde34e1-db7d-4521-ae7d-7de2c4783096.png",
+      "destination": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "width": 1415,
+      "height": 1112,
+      "worldWidth": 56,
+      "worldHeight": 44,
+      "aspectRelativeError": 0.0001927029804728031,
+      "sha256": "8102ebfdb27befc4b62b1b9ad6b1d18c48e3fa7e45649e902528e3528fd48ebf",
+      "references": [
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest_depths-overview.png",
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest_depths-guide.png"
+      ],
+      "prompt": "Use case: style-transfer. Production TERRAIN-ONLY replacement for a locked 2D RPG forest map. One PNG, EXACT 1792x1408 pixels, aspect56:44, no margins, no reframing. Copy geometry, change material artistry only.\nInput1 is the old map snapshot. Input2 is the strict SAME-FRAMING physical guide: TAN is walkable ground (both grass and dirt), dark navy is blocked outer woodland, blue-green is water. Tiny dusty purple prop-footprint marks must become seamless flat ground because runtime props will be rendered separately. The old loop-road and its bridges, central vertical curving lake, north pond, small southeast lake and southern pond segment must remain at exactly the same position, size and contour. Preserve every bit of water visible in input1 and never connect pools through road crossings or move bank outlines. Preserve west/east exits.\nScene: deep wet fairytale woodland with misty cool forest DEPTH BEHIND the blocking perimeter, subtle jade and moss greens, wet earth, soft diffuse pale daylight on walkable floor, low-contrast scattered leaf beds and flat washed stones. Cool dark depths and complex roots ONLY occupy NAVY regions, in the exact locked silhouette. Painting uses one high orthographic oblique camera with parallel axes/no horizon and readable earth top-plane. Use hand-crafted precise fine pixel clusters, rich cohesive material forms, clear quiet battle-floor areas, not noisy stippling. Still water deep teal with restrained lighter shallows precisely following old bank shape; do not bake fish, foam stripes or floating objects. The old small wooden bridge strips must remain only at the existing ground/water contacts.\nREMOVE all independent sprites and their shadows: every individual freestanding tree inside all open clearings including central island, all bare dead trees, arch monuments at corners, mushrooms, big rocks, logs, signs, creatures, UI and arrows. Fill them with appropriate flat grass or flat trail. Do not add any new tree, arch, shrine, boulder, tall root obstacle or mushroom on TAN. Do NOT preserve the conspicuous stone portals at upper-left upper-right lower-left. Trees at the outer boundary may become distant layered woodland entirely inside DARK NAVY, and no canopy may hide additional walkable land. Restrained narrow moist bank edges, no white glow or outline ring. No text, no labels, no watermarks, no minimap. Completely preserve navigation topology and avoid adding any feature needing new collision."
+    },
+    {
+      "id": "forest_crossing",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-420d-75e0-9e9d-12349befc0d9/exec-933d8211-0c78-48ad-a4f1-9ad6cbdca28f.png",
+      "destination": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "width": 1415,
+      "height": 1112,
+      "worldWidth": 56,
+      "worldHeight": 44,
+      "aspectRelativeError": 0.0001927029804728031,
+      "sha256": "8743ef97b71e98cbd7f154e5c1bbd8004b8bbdee6af6722456755a8a4e96aca1",
+      "references": [
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest_crossing-overview.png",
+        "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-before/forest_crossing-guide.png"
+      ],
+      "prompt": "Use case: style-transfer. Production game terrain-only painting. One precisely1792x1408 landscape PNG (56:44), full-frame locked orthographic map. Use Image1 old map only for exact geometry and Image2 as authoritative physical stencil. TAN is walkable floor, navy blocked perimeter woodland, dark teal water, tiny purple points are old props to REMOVE. Preserve every shoreline, trail and exit coordinate; no cropping/reframing.\nThis is an old forest watercourse merge leading east into a rocky canyon. Keep the map's north-south central dirt road and one eastbound road at the same widths, exact three separated elongated water bodies: northwest-to-southwest stream west of main road, northeast stream above east road, southeast stream below it. Reproduce their silhouette from Image1 exactly and keep road crossings dry/walkable. Existing little wooden planks at bank intrusions remain at the same specific locations. No extra river connections or new bridge.\nCreate an exquisite coherent high-view orthographic pixel-art landscape, sunlight from upper-left, layered emerald forest on the blocked outside, rich mossy ochre trail and flat embedded pale weathered sandstone gradually increasing toward the east. Only DARK NAVY at the far right perimeter may expose layered warm-grey canyon rock beneath roots; no cliff inside any TAN zone. Lovely deep teal water with subtle broad bottom shading and narrow soft stepped moist bank, no glaring white outline, no fish or baked white water streaks. Grass clearings calm, low-contrast leaf litter and restrained flat flowers, very precise pixel clusters instead of uniform noisy grain. Keep physical ground nearly level; depth comes from blocked tree/root strata and remote forest valleys beyond.\nREMOVE all freestanding original props and shadows: all stone arch monuments, every dead bare tree, every independent tree standing within open grass, signs, mushrooms, rocks, logs, characters, monsters, arrows, UI and text. In particular remove the old upper-left/upper-right/lower-left giant portal ruins and ALL central scattered tree sprites. Fill their positions with continuous flat grass or trail. Runtime separately overlays trees and landmarks. Do not add ANY new stand-alone tree or tall obstacle on walkable TAN. Outer canopy confined to the exact blocked mask. Avoid overhanging onto paths or water. No buildings, no shrine, no new terrain platform, no vista horizon, no grid. This is a faithful terrain-material upgrade with strictly unchanged map geometry."
+    }
+  ]
+}

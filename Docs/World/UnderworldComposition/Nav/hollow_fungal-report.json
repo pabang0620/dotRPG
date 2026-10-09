@@ -1,0 +1,31 @@
+{
+  "mapId": "hollow_fungal",
+  "width": 1792,
+  "height": 1536,
+  "pixelsPerTile": 32,
+  "origin": "northwest",
+  "camps": 18,
+  "floorSubcells": 44198,
+  "reachableFloorSubcells": 44198,
+  "waterSubcells": 1603,
+  "portals": [
+    "<:0,23",
+    ">:55,23",
+    "<:0,24",
+    ">:55,24",
+    "<:0,25",
+    ">:55,25"
+  ],
+  "guideColors": {
+    "water": "#224759",
+    "deepBackground": "#171F32",
+    "structuralFront": "#554A48",
+    "floor": "#B59C71"
+  },
+  "maskColors": {
+    "water": "blue",
+    "deepBackground": "black",
+    "structuralFront": "green",
+    "floor": "red"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 48 pixels/tile",
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "canyon",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon.png",
+      "source_size": [
+        1122,
+        1402
+      ],
+      "source_sha256": "29f99b746805bf3c8e85d2a88425ec8c450cef515be24d679cc12c38e599b472",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "output_size": [
+        2304,
+        2880
+      ],
+      "output_sha256": "118faff1cd657b31a517d4fb8d34e92634e6d35126495a0beca10ada2d457de7"
+    },
+    {
+      "id": "canyon_mine",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_mine.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "6369307dbb19fd8a6e8205dc0bce206e2e1be5f3b0f5eeab1f5ffe468bf1e98a",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "83f89c6c92dbfa9e7919acf36f8105744561ab17c5c7dcffa217adffe311a689"
+    },
+    {
+      "id": "canyon_ridge",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_ridge.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "5ed0d49d3370abd457bfb807057c1ef8349417f0eede9e0bd2c3242a5dc7cc4d",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "292ee6e053fffe227a1b64bd42ea4c08ffbc5a9128ffd2834d35a5cecd033931"
+    },
+    {
+      "id": "canyon_gate",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_gate.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "c89c64628912e475658c53b3f27ed65a5d059bf80d253c96e314f17dcae69aa8",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "04ee0545207a6215c0721b10796728be713f7983019ccaee9b25755d3ee9b707"
+    },
+    {
+      "id": "sunken_sanctum",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sunken_sanctum.png",
+      "source_size": [
+        1024,
+        1536
+      ],
+      "source_sha256": "7e91632316e26dba0171def8975fdba5e56a99b81bc589e8f6848804420c4011",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "output_size": [
+        2304,
+        3456
+      ],
+      "output_sha256": "d8b2e76f8bc672b5affa6a95993be87c4d0d268eb72423f0e6c96b20ffec37ee"
+    }
+  ]
+}

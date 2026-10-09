@@ -220,7 +220,8 @@ const mapExtraSchema = z.looseObject({
   maps: z.array(
     z.looseObject({
       id: z.string().min(1),
-      fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive(), level: z.number().int().min(1).max(40).default(1), xp: nonNegInt.optional(), respawnSeconds: z.number().positive().default(25) })).default([]),
+      // Enemy levels can exceed the player cap in the post-40 underground world (C# HuntingGrounds.MaxMonsterLevel).
+      fieldSpawns: z.array(z.looseObject({ monsterId: z.string(), points: z.number().int().positive(), level: z.number().int().min(1).max(60).default(1), xp: nonNegInt.optional(), respawnSeconds: z.number().positive().default(25) })).default([]),
       sharedField: z.boolean().optional(),
       fieldBoss: z
         .looseObject({ monsterId: z.string().min(1), level: z.number().int().min(1).max(60), xp: nonNegInt, intervalSeconds: z.number().int().positive() })

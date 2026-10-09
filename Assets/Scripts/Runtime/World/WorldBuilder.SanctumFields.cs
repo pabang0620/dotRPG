@@ -15,7 +15,7 @@ namespace DotRPG {
    HuntingScenery.BuildSanctum(objectsRoot,cells,width,height,HuntingGrounds.Get(MapId));
    CreateBoundaryWalls();PointsOfInterest.AddRange(camps);
    var spawner=new GameObject("Sanctuary sentinels").AddComponent<EnemySpawner>();spawner.transform.SetParent(objectsRoot,false);spawner.SetupField(HuntingGrounds.Get(MapId),HuntingGrounds.PackPoints(camps));
-   AddTreeFades();BuildMinimap();
+   AddTreeFades();ApplySurfaceComposition();BuildMinimap();
   }
  }
 }

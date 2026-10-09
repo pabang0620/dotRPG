@@ -41,6 +41,7 @@ namespace DotRPG
         Tilemap groundMap, waterMap, decoMap, cliffMap, edgeMap;
         readonly Dictionary<string, Tile> tiles = new Dictionary<string, Tile>();
         readonly Dictionary<string, List<Vector2>> portalCells = new Dictionary<string, List<Vector2>>();
+        readonly Dictionary<string, Vector2> portalArrivals = new Dictionary<string, Vector2>();
 
         public Vector2 PlayerSpawn { get; private set; }
         public Rect Bounds { get; private set; }
@@ -149,6 +150,7 @@ namespace DotRPG
         public Vector2 ArrivalFrom(string fromMap, out Facing facing)
         {
             facing = Facing.Down;
+            if (fromMap != null && portalArrivals.TryGetValue(fromMap, out var arrival)) return arrival;
             if (MapId == MapRegistry.Sanctum) { facing = Facing.Up; return PlayerSpawn; }
             if (map.IsInterior) { facing = Facing.Up; return PlayerSpawn; }
             var from = MapRegistry.Get(fromMap);
@@ -240,12 +242,15 @@ namespace DotRPG
 
             var skeletonSpawns = new List<Vector2>();
             portalCells.Clear();
+            portalArrivals.Clear();
+            DungeonGuidePosition = null;
             ClearDungeonMarks(); // [DUNGEON]
             PlayerSpawn = new Vector2(width * 0.5f, height * 0.5f);
             var rng = new System.Random(1234);
             if (map.IsInterior) { BuildInterior(); return; }
             if (MapId == MapRegistry.Sanctum) { BuildSunkenSanctum(); return; }
             if (map.theme == MapTheme.SanctumField) { BuildSanctumField(); return; }
+            if (map.theme == MapTheme.UnderTown || map.theme == MapTheme.Underground) { BuildUnderworld(); return; }
 
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
@@ -285,7 +290,9 @@ namespace DotRPG
             if (Hd || CanyonHd || WinterHd) ApplySharpMaterial();
             ApplyDungeonTint(); // [DGNTERRAIN] darker mine / ice cave rooms (WorldBuilder.DungeonLook.cs)
             AddTreeFades();
+            BuildWorldHubGates();
             if (PointsOfInterest.Count == 0) PointsOfInterest.Add(PlayerSpawn);
+            ApplySurfaceComposition();
             BuildMinimap();
             AddDungeonVignette(); // [DGNTERRAIN]
         }

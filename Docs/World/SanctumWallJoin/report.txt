@@ -1,0 +1,50 @@
+[2.67] capture started
+[2.67] verification audio volume: 0
+DGN surface export has five towns and sixteen fields PASS
+DGN requested surface map exists: sunken_sanctum PASS
+DGN runtime layout export access PASS
+[5.45] SURFACE EXPORT sunken_sanctum
+DGN sunken_sanctum previous composition resources released PASS
+DGN sunken_sanctum portal sanctum_hall PASS
+DGN sunken_sanctum safe arrival sanctum_hall PASS
+DGN sunken_sanctum portal undergate PASS
+DGN sunken_sanctum safe arrival undergate PASS
+DGN sunken_sanctum portal winter_reach PASS
+DGN sunken_sanctum safe arrival winter_reach PASS
+DGN sunken_sanctum spawn free PASS
+DGN sunken_sanctum collision buffer complete PASS
+DGN sunken_sanctum spawn anchors to actual quarter-tile navigation PASS
+DGN sunken_sanctum spawn reaches portal arrival sanctum_hall PASS
+DGN sunken_sanctum spawn reaches portal arrival undergate PASS
+DGN sunken_sanctum spawn reaches portal arrival winter_reach PASS
+DGN sunken_sanctum short movement route available PASS
+DGN sunken_sanctum actual input moves forward PASS
+DGN sunken_sanctum actual input returns without portal travel PASS
+DGN sunken_sanctum actual movement feet remain free PASS
+DGN sanctum exactly one active foreground staircase PASS
+DGN sanctum original stairs sprite position size and order retained PASS
+DGN sanctum two original stair curb collisions retained PASS
+DGN sanctum existing stair and upper landing feet corridor free PASS
+DGN sanctum upper central pond remains blocked PASS
+DGN sanctum actual input climbs stairs and reaches upper terrace PASS
+DGN sanctum actual input returns down original stairs PASS
+DGN sanctum stair traversal feet stay free PASS
+DGN sanctum stair traversal restores player and camera PASS
+DGN sunken_sanctum baseline exists PASS
+DGN sunken_sanctum navigation and services unchanged PASS
+DGN sunken_sanctum original static ground painting available PASS
+DGN sunken_sanctum scenic camera anchor fits actual player collision PASS
+DGN sunken_sanctum scenic capture restores boss intro banner PASS
+DGN sunken_sanctum requested composition exists at 96ppu PASS
+DGN sunken_sanctum one map-owned surface composition PASS
+DGN sunken_sanctum composition belongs to current map PASS
+DGN sunken_sanctum exclusive composition layer slots PASS
+DGN sunken_sanctum supporting edges avoid walkable terrain PASS
+DGN sunken_sanctum composition uses sharp pixels PASS
+DGN sunken_sanctum composition shares one unreadable source texture PASS
+DGN sunken_sanctum mesh cells and source UVs exactly partition artwork PASS
+DGN sunken_sanctum registered source resolution is preserved PASS
+DGN sunken_sanctum requested artwork resolution 96 PASS
+DGN last exported composition resources released PASS
+DGN surface export silent PASS
+[20.75] SURFACE RESULTS: 46 passed, 0 failed; 1 maps

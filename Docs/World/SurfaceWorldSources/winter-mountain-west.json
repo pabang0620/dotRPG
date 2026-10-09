@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-10-09T02:17:20.913Z",
+  "tool": "OpenAI built-in image_gen.imagegen",
+  "request": "Change winter background from cliff pillars/ravines into snow mountains; retain existing paths, lake, camera and navigation.",
+  "scope": "Only authored terrain bitmap candidates. No repo HD image, geometry, collision or runtime code changed by this authoring task.",
+  "review": {
+    "script": "work/check_winter_mountain_sources.py",
+    "outputs": "work/winter-mountain-review/",
+    "method": "Manual navigation-boundary overlays and quarter-tile RGB comparison with old source. Bright-floor to dark samples are a heuristic, not semantic obstacle classification.",
+    "notes": [
+      "First iterations of small repeating mountain cones were rejected.",
+      "Chosen candidates use broad cropped slopes and connected ridge faces, with no sky or cliff columns.",
+      "winter_peak guide-overlay floor contour unchanged; no newly dark mountain/water samples in old bright floor.",
+      "winter_lake two local imagegen passes remove dark ridge tips from floor. Remaining 14 darkening samples inspected: mostly existing cobbled-path texture and five sub-tile margin shadow samples; the reported raw maximum4.125tile is road texture, not mountain intrusion.",
+      "Lake shore and cobbled route layout retained by visual overlay; final runtime inspection remains root integration responsibility."
+    ]
+  },
+  "maps": [
+    {
+      "mapId": "winter_lake",
+      "worldTiles": [
+        56,
+        44
+      ],
+      "generatedPixels": [
+        1415,
+        1112
+      ],
+      "selectedGeneratedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-161e7ea2-2941-473b-bf0f-0338fb44fa83.png",
+      "originalReference": "work/surface-upscale/originals/winter_lake.png",
+      "guide": "work/surface-guides/winter_lake-guide.png",
+      "ground": "work/surface-guides/winter_lake-ground-only.png",
+      "iterations": [
+        {
+          "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-500db88d-e9a0-4ddc-abbf-96084bb7f62d.png",
+          "prompt": "Edit reference1 winter_lake into a SNOW MOUNTAIN environment, replacing ONLY the blocked background geology. It is a registered terrain texture for a 56x44 tile top-down high-oblique orthographic RPG, target1792x1408. Reference2 is authoritative footprint: tan means walkable floor, cyan-dark-blue center means nonwalkable lake, very dark navy outside means blocked mountain background, purple points are separate runtime props and must NOT be drawn. Reference3 shows precise ground/road/lake registration. LOCK THE ENTIRE PLAYABLE WHITE SNOW FLOOR, stone ring road around lake, horizontal left and right road exits and exact lake perimeter/position; retain those pixels/composition as faithfully as possible. Replace all ugly repeated vertical ice-cliff columns, tall sheer canyon walls, terraces and deep chasms at the outer margins with continuous snow-covered MOUNTAINS: natural alpine peaks, long connected rounded shoulder ridges, diagonal snow gullies, and sloping white snowbanks supporting the snow basin. The nearer playable snowfield should blend into slightly higher folded snow slopes in blocked territory; farther ridges have soft blue-gray color contrast, but crisp pixel shapes. Mountain flanks must slope broadly, not have columnar vertical rock faces, battlement terraces, ice pillars or flat sliced tops. A mountain peak is a three-dimensional mound viewed FROM ABOVE in the SAME orthographic camera, not a front-facing postcard mountain against a sky. Absolutely NO sky strip or horizon, no change of viewing angle, no photorealistic mountain backdrop. Use a few dark slate rock seams under snow to show ridges, most outer terrain is snow with blue-lit recesses. Near and far forms should be physically connected, not floating disconnected slabs. All slope forms remain strictly OUTSIDE the tan floor region. Snow floor inside stays smooth and available for existing game actors. Keep the central icy deep-blue lake shape exactly unchanged, add no water elsewhere. Do not add trees/structures/actors/rocks on walkable ground; existing game supplies props. Beautiful original detailed pixel art, readable 2D game texture, sharp pixels, consistent local scale, no blur/fog blanket. Output opaque full-canvas terrain, no text/labels/arrows/UI/grid.",
+          "status": "rejected repeated complete miniature peaks"
+        },
+        {
+          "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-7b90571c-24a1-4923-b596-98807c3d56e6.png",
+          "prompt": "CRITICAL ART DIRECTION: This is a playable high-oblique orthographic pixel RPG map, NOT an illustrated world map. The replacement must show a few LARGE CONTINUOUS ALPINE MOUNTAIN FLANKS from above, occupying the full blocked margin, and naturally attaching to the playable snow surface. Do NOT draw complete triangular mountain icons/cones repeated in rows. Do NOT depict mountain fronts or a scenic horizontal skyline. Do NOT repeat miniature peaks. Show only PARTS of broad snow-covered mountain shoulders and sinuous ridges cropped by the image edges. The camera looks DOWN on the tops and sloping sides of these connected landforms; the valleys are snowy folds, not deep vertical canyons. At the playable boundary, smooth snowdrifts rise gradually into the adjoining blocked slope, with larger shadow planes indicating steep terrain; no thin blue contour line, no cutout rectangular rim. The light side, blue shadow side and ridge crest of a slope should continue naturally in a unified oblique projection. Exposed slate rock is sparse and follows diagonal geological seams rather than upright stacks. Blocked areas should contain 2-4 coherent broad ridgelines across the canvas, never dozens of tiny separate mountains. Farther cropped ridges lower contrast but remain crisp. All pixel patterns retain the existing game pixel density, not a photograph; no blur. Reference1 is the current registered terrain texture to repaint ONLY OUTSIDE WALKABLE GROUND. Reference2 authoritative guide: tan=walkable snow/road, dark navy=blocked outside where slope art can change, purple existing runtime props are not part of background; cyan is lake if present. Reference3 is original ground confirmation. Keep every road, snow clearing, navigable outline, portal approach, framing and camera position exactly. Match each blocked region's footprint without encroaching on tan. Preserve existing floor texture/material/brightness and world scale. No new actors, trees, buildings, obstacles, paths, text, map labels, horizon or sky. Requested opaque1792x1408. This is winter_lake. The large central blue lake, all its jagged shoreline and surrounding cobblestone loop plus left/right road entrances must be preserved exactly. No water added elsewhere. The narrow blocked outer corners should show broad snowy mountain shoulder surfaces cropped off-screen, only a few diagonally connected ridge crests. Snowbanks blend into existing white basin floor without abrupt graphic seams.",
+          "status": "broad slopes accepted in concept; edge rock intrusion repaired"
+        },
+        {
+          "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-756e7c7e-1739-4063-a3cb-5acebae0d424.png",
+          "prompt": "LOCAL NAVIGATION-ALIGNMENT REPAIR to reference1 winter_lake. Keep the new LARGE CONTINUOUS SNOW MOUNTAIN FLANKS around the outside; do not revert to cliff pillars or miniature mountain symbols. Keep camera/palette/full picture unchanged. Repair ONLY the handful of dark exposed rock / steep blue slope tips that have crept into walkable white snow around the perimeter. Reference2 footprint is authoritative: TAN areas must be flat pale walkable snow or existing stone road; all dark exposed mountain rocks and steep mountain-shadow faces belong ONLY on the very dark NAVY outside. Blend the boundary on the BLOCKED side with pale snowbanks, not by pushing mountains into floor. Restore original snow surface from reference3 inside tan, while maintaining the new broad mountain backgrounds outside. Specific intrusions to remove: in upper-left inside tan near x18%-23%,y3%-8%; upper-right inside tan near x79%-82%,y6%-11%; lower-left inside tan near x12%-25%,y79%-88%; lower-right inside tan near x78%-96%,y74%-88%. These are small dark rocky tips; replace only their overlapping parts inside tan with clean gentle white snow, leave mountain ridges outside tan intact. Preserve central lake boundary, all floating ice, cobbled ring and both horizontal path entrances exactly unchanged; there must be NO water elsewhere. Do not redraw the entire landscape or introduce other objects. No blue line or rectangle outline along floor edge. No UI/grid/labels/text. Same registered opaque landscape texture, target1792x1408.",
+          "status": "first local correction; additional dark ridge tips remained"
+        },
+        {
+          "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-161e7ea2-2941-473b-bf0f-0338fb44fa83.png",
+          "prompt": "Perform only four VERY SMALL PAINT REPAIRS on reference1, a1415x1112 winter_lake game texture. Everything else must remain unchanged, especially lake and paths. Reference2 is diagnostic: thin pink outlines show exact edge of playable floor; ignore tiny isolated pink rectangles which mark separately placed props. Do NOT copy pink lines to output. Remove dark mountain-rock tips only where they cross inward onto the flat SNOW SIDE of these pink boundaries. Replace those tips with ordinary flat white snow, matching neighboring plain snow. Exact repair rectangles in image pixel coordinates: (1) x145..195,y850..885, the little rock spur above the lower-left outline; (2) x1300..1365,y802..885, the narrow rock tips left of the lower-right boundary; (3) x510..638,y20..66, a few dark tips under the top boundary; (4) x125..137,y230..254 and x1286..1312,y230..244, tiny rock tips near upper side steps. Snow should have pale blue flat mottling but NOT steep dark shadows in these tiny repaired areas. Use reference3's tan region as exact floor mask; retain mountain geometry in dark-navy territory. Keep background as broad connected alpine slope landforms; no miniature mountain icons, no cliff pillars. No changes to other parts, camera, world footprint, central water shape, ring paving, lighting or palette. Output clean opaque terrain texture same aspect and resolution, no marks or words.",
+          "status": "selected after boundary review; no repo HD overwrite"
+        }
+      ]
+    },
+    {
+      "mapId": "winter_peak",
+      "worldTiles": [
+        56,
+        44
+      ],
+      "generatedPixels": [
+        1415,
+        1112
+      ],
+      "selectedGeneratedSource": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-b5f54d96-685a-4259-a1fe-df307a569181.png",
+      "originalReference": "work/surface-upscale/originals/winter_peak.png",
+      "guide": "work/surface-guides/winter_peak-guide.png",
+      "ground": "work/surface-guides/winter_peak-ground-only.png",
+      "iterations": [
+        {
+          "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-26762734-47d5-40ac-b1f8-9786fc144c4d.png",
+          "prompt": "Edit reference1 winter_peak game texture: replace ONLY the blocked cliff/canyon background with natural SNOW MOUNTAIN terrain. This is a registered 56x44 tile map, target1792x1408, SAME high oblique orthographic top-down camera and framing. Ref2 authoritative navigation footprint: tan=walkable floor, dark navy=blocked terrain, purple dots=existing runtime props that must not be painted. Ref3 exact original ground/road positions. Preserve every white snow WALKABLE floor outline and the entire broad cobbled road loop/crossing, horizontal left/right exits and bottom/top narrow connections in exactly their original positions and widths. The central large snow clearing MUST remain empty level snow; do not place mountains, cliffs or obstacles there. Absolutely NO lake or water in this map. All old repeated vertical blue ice pillars/stepped battlement cliffs/deep ravines must be replaced by continuous alpine snow mountains viewed FROM ABOVE: tall snowy pyramidal summits near outer corners, connected long diagonal ridgelines, broad sloping snow shoulders, small exposed slate rock seams and low-contrast pale-blue distant ridges. Foreground snow land should merge into snowbanks then mountain flanks only within the blocked navy region. The narrow existing blocked vertical ribs just left and right of central clearing should become sculpted elongated snow/rock ridges in the SAME narrow footprint, not tall walls and not widened into the clearing. Keep the small upper-middle blocked horizontal bar as a low impassable snow ridge exactly in place. No front-facing postcard mountain scene, no sky/horizon strip, no fog blanket, no camera change, no rivers/blue chasms. Same dense sharp pixel-art detailing and white/blue palette as reference4, which is STYLE ONLY from adjacent mountain lake map: do NOT copy its central lake or roads. Outside background ridges must be physically connected to near slopes rather than float behind flat cutout slabs. Do not add actors, houses, trees, statues, labels or UI. Existing game renders props separately. The canvas remains a fully opaque game-terrain image with clear ground paths, not a painted map diagram. Exact registration and passable-floor preservation are higher priority than spectacular mountains.",
+          "status": "rejected repeated miniature cones"
+        },
+        {
+          "source": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-b5f54d96-685a-4259-a1fe-df307a569181.png",
+          "prompt": "CRITICAL ART DIRECTION: This is a playable high-oblique orthographic pixel RPG map, NOT an illustrated world map. The replacement must show a few LARGE CONTINUOUS ALPINE MOUNTAIN FLANKS from above, occupying the full blocked margin, and naturally attaching to the playable snow surface. Do NOT draw complete triangular mountain icons/cones repeated in rows. Do NOT depict mountain fronts or a scenic horizontal skyline. Do NOT repeat miniature peaks. Show only PARTS of broad snow-covered mountain shoulders and sinuous ridges cropped by the image edges. The camera looks DOWN on the tops and sloping sides of these connected landforms; the valleys are snowy folds, not deep vertical canyons. At the playable boundary, smooth snowdrifts rise gradually into the adjoining blocked slope, with larger shadow planes indicating steep terrain; no thin blue contour line, no cutout rectangular rim. The light side, blue shadow side and ridge crest of a slope should continue naturally in a unified oblique projection. Exposed slate rock is sparse and follows diagonal geological seams rather than upright stacks. Blocked areas should contain 2-4 coherent broad ridgelines across the canvas, never dozens of tiny separate mountains. Farther cropped ridges lower contrast but remain crisp. All pixel patterns retain the existing game pixel density, not a photograph; no blur. Reference1 is the current registered terrain texture to repaint ONLY OUTSIDE WALKABLE GROUND. Reference2 authoritative guide: tan=walkable snow/road, dark navy=blocked outside where slope art can change, purple existing runtime props are not part of background; cyan is lake if present. Reference3 is original ground confirmation. Keep every road, snow clearing, navigable outline, portal approach, framing and camera position exactly. Match each blocked region's footprint without encroaching on tan. Preserve existing floor texture/material/brightness and world scale. No new actors, trees, buildings, obstacles, paths, text, map labels, horizon or sky. Requested opaque1792x1408. This is winter_peak. Keep the entire EMPTY white central clearing and all the encircling cobbled roads exact. No water anywhere. The thin blocked left/right interior strips should be one continuous wind-sculpted snowbank crest each, not a row of mountain symbols or icy towers. The little north-middle horizontal blocked strip is just a low snow ridge with one shadow slope. Beyond perimeter paths, broad connected sloping mountain flanks extend off canvas; their crests only partially visible, not complete tiny mountains. Remove old cliff-column visual logic entirely.",
+          "status": "selected broad cropped mountain flanks; original stepped navigation contour remains visible"
+        }
+      ]
+    }
+  ]
+}

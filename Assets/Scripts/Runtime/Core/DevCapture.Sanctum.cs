@@ -26,7 +26,8 @@ namespace DotRPG
             DCheck("altar spawn free",Game.World.IsFree(Game.Player.Position));
             DCheck("spawn away from return portal",Game.World.ObjectsRoot.GetComponentsInChildren<MapPortal>().All(p=>Vector2.Distance(p.transform.position,Game.Player.Position)>2));
             foreach(var pos in new[]{new Vector2(24,51),new Vector2(31,33),new Vector2(13,11),new Vector2(10,44),new Vector2(24,65)})DCheck("water/cliff blocked "+pos,!Game.World.IsFree(pos));
-            foreach(var asset in new[]{"arch","tower_left","tower_right","altar","floor","terrace_wall","stairs","pillar"})DCheck("dedicated asset "+asset,SunkenSanctumArt.Asset(asset)!=null);
+            foreach(var asset in new[]{"arch","tower_left","tower_right","altar","floor","terrace_wall","stairs","pillar","cliff_face"})DCheck("dedicated asset "+asset,SunkenSanctumArt.Asset(asset)!=null);
+            VerifySanctumShore();
             var input=new ScriptedInput();Game.Player.Input=input;
             Game.Party.SetDungeonCompanions(true); // Explicit follower probe; normal outdoor hiring rules stay unchanged.
             var mate=Game.Party.AddCompanion("merc_bron") ?? Game.Party.Find("merc_bron");
@@ -36,11 +37,23 @@ namespace DotRPG
             foreach(var pt in new[]{new Vector2Int(23,21),new Vector2Int(19,33),new Vector2Int(23,44),new Vector2Int(14,49),new Vector2Int(32,49)})DCheck("connected route "+pt,visited.Contains(pt));
             RenderRegion(Path.Combine(folder,"sanctum-overview.png"),Game.World.Bounds,32);
             RenderRegion(Path.Combine(folder,"sanctum-altar-play.png"),new Rect(14,6,20,12),64);
+            RenderRegion(Path.Combine(folder,"sanctum-central-bank.png"),new Rect(17,26,20,17),64);
+            RenderRegion(Path.Combine(folder,"sanctum-upper-bank.png"),new Rect(17,46,15,10),64);
+            RenderRegion(Path.Combine(folder,"sanctum-west-cliff.png"),new Rect(13,21,14,11),80);
+            RenderRegion(Path.Combine(folder,"sanctum-altar-join.png"),new Rect(16,13,16,13),80);
+            DCheck("west cliff shoulder remains blocked",!Game.World.IsFree(new Vector2(17.5f,25.5f)));
+            foreach(var point in new[]{new Vector2(24,18.5f),new Vector2(24,20.5f),new Vector2(23.5f,21.5f),new Vector2(22.5f,22.5f)})
+                DCheck("aligned altar approach free "+point,Game.World.IsFree(point));
             if(screenshots)SanctumScreenshot("sanctum-gameplay-hud");
             var route=new[]{new Vector2(23,18),new Vector2(22.5f,22),new Vector2(22,25),new Vector2(20,29),new Vector2(19,34),new Vector2(20,38),new Vector2(23.5f,41),new Vector2(23.5f,47.2f),new Vector2(18,47.2f),new Vector2(18,49)};
             foreach(var target in route){float deadline=Time.time+10;
                 while(Vector2.Distance(Game.Player.Position,target)>.3f&&Time.time<deadline){input.Move=(target-Game.Player.Position).normalized;yield return null;}
                 input.Move=Vector2.zero;DCheck("physically walked to "+target,Vector2.Distance(Game.Player.Position,target)<.4f);
+                if(screenshots&&(target==new Vector2(23,18)||target==new Vector2(22,25)))
+                {
+                    Game.Camera.SetTarget(Game.Player.transform,true);yield return Wait(.15f);
+                    SanctumScreenshot(target.y==18?"sanctum-altar-join-hud":"sanctum-west-cliff-hud");
+                }
             }
             yield return Wait(2);
             DCheck("companion follows to upper terrace",mate!=null&&Vector2.Distance(mate.Position,Game.Player.Position)<5);
@@ -53,9 +66,42 @@ namespace DotRPG
             DCheck("water removed on exit",UnityEngine.Object.FindObjectsByType<SanctumWater>(FindObjectsSortMode.None).Length==0);
             Game.World.Load(MapRegistry.Sanctum);Game.Player.Place(Game.World.PlayerSpawn,Facing.Up);yield return Wait(.15f);
             DCheck("one water system after reentry",UnityEngine.Object.FindObjectsByType<SanctumWater>(FindObjectsSortMode.None).Length==1);
+            DCheck("one shoreline collider after reentry",Game.World.ObjectsRoot.parent.GetComponentsInChildren<UnityEngine.CompositeCollider2D>().Length==1);
             DCheck("bounded animated objects",Game.World.ObjectsRoot.GetComponentInChildren<SanctumWater>().ElementCount<=105);
             DCheck("muted verification",AudioListener.volume==0);
             Log($"SANCTUM RESULTS: {dgnPassed} passed, {dgnFailed} failed");
+        }
+        void VerifySanctumShore()
+        {
+            var shore=Game.World.SanctumShore;
+            DCheck("shared shore geometry loaded",shore!=null);
+            if(shore==null)return;
+            // Probe the real collider on both sides of the edited contour, including sub-tile corners.
+            int waterProbes=0,waterMisses=0,landProbes=0,landBlocked=0;
+            var regions=new[]{new Rect(18,48,13,6),new Rect(25,27,9,12),new Rect(17,18,10,6)};
+            foreach(var rect in regions)
+            for(float y=rect.yMin+.07f;y<rect.yMax;y+=.19f)for(float x=rect.xMin+.07f;x<rect.xMax;x+=.19f)
+            {
+                float d=shore.LandDistance(x,y);
+                if(shore.IsWater(x,y)&&d<-.08f&&d>-.55f)
+                {
+                    waterProbes++;
+                    if(!Physics2D.OverlapCircleAll(new Vector2(x,y),.015f).Any(c=>!c.isTrigger))waterMisses++;
+                }
+                else if(shore.IsLand(x,y)&&d>.32f&&d<.58f&&shore.IsLandCircleClear(x,y,.26f+Physics2D.defaultContactOffset))
+                {
+                    landProbes++;
+                    // Use exact cell-square clearance for feet; the chamfer field is only a shading distance.
+                    // IsFree uses feet+.22 as the player collider center and the physics contact margin.
+                    if(!Game.World.IsFree(new Vector2(x,y-.22f)))
+                    {
+                        landBlocked++;
+                        if(landBlocked<=8)Log($"Shore land probe blocked at {x:F3},{y:F3}, distance {d:F3}: "+string.Join(",",Physics2D.OverlapCircleAll(new Vector2(x,y),.26f).Where(c=>!c.isTrigger).Select(c=>c.name)));
+                    }
+                }
+            }
+            DCheck($"curved bank water blocked ({waterProbes} probes, {waterMisses} misses)",waterProbes>100&&waterMisses==0);
+            DCheck($"stone cap walkable ({landProbes} probes, {landBlocked} blocked)",landProbes>100&&landBlocked==0);
         }
         // A hidden window may not have a back buffer. Render the real camera and HUD explicitly.
         void SanctumScreenshot(string name)

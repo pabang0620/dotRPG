@@ -6,12 +6,15 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>Independent geometry, painted terrain, occluding architecture and animated water.</summary>
-    public static class SunkenSanctumArt
+    public static partial class SunkenSanctumArt
     {
         static readonly Dictionary<string,Sprite> sprites = new Dictionary<string,Sprite>();
         static Sprite terrain;
         public static string Layout()
         {
+            string paintedLayout=Path.Combine(Application.streamingAssetsPath,"SunkenSanctum/layout.txt");
+            // Keep the layout delivered with this map's art authoritative in local preview players too.
+            if(File.Exists(paintedLayout))return File.ReadAllText(paintedLayout);
             var asset=Resources.Load<TextAsset>("Maps/SunkenSanctum");
             return asset!=null?asset.text:StreamingFiles.ReadAllText(Path.Combine(Application.streamingAssetsPath,"SunkenSanctum/layout.txt"));
         }
@@ -50,19 +53,21 @@ namespace DotRPG
             // Bases sit in blocked cliff cells. Upper sprite may overlap the edge of walkable ground.
             TreeFade.Attach(sr.gameObject);
         }
-        public static void Build(Transform root,char[,] cells,int w,int h)
+        public static void Build(Transform root,char[,] cells,int w,int h,SunkenSanctumShore shore)
         {
-            if(terrain==null)terrain=Paint(cells,w,h);
+            if(terrain==null)terrain=PaintShore(cells,w,h,shore);
             Put(root,"Sanctum terrain",terrain,Vector2.zero,new Vector2(w,h),-30000);
-            Put(root,"Terrace retaining wall west",Asset("terrace_wall"),new Vector2(16.5f,43),new Vector2(11,4.5f),-29000);
-            Put(root,"Terrace retaining wall east",Asset("terrace_wall"),new Vector2(31.5f,43),new Vector2(11,4.5f),-29000);
+            // The stair rails taper inward above their feet. Extend the walls beneath
+            // those rails, keeping their outer ends fixed and the stairs drawn in front.
+            Put(root,"Terrace retaining wall west",Asset("terrace_wall"),new Vector2(16.95f,43),new Vector2(11.9f,4.5f),-29000);
+            Put(root,"Terrace retaining wall east",Asset("terrace_wall"),new Vector2(31.05f,43),new Vector2(11.9f,4.5f),-29000);
             Structure(root,"arch",new Vector2(24,54),new Vector2(19,17));
             Structure(root,"tower_left",new Vector2(9.5f,46),new Vector2(15,24));
             Structure(root,"tower_right",new Vector2(38,46),new Vector2(15,24),.94f);
             Structure(root,"tower_left",new Vector2(5,29),new Vector2(12,23),.68f);
             Structure(root,"tower_right",new Vector2(43,29),new Vector2(12,22),.64f);
-            Structure(root,"tower_right",new Vector2(8,14),new Vector2(15,23),.38f);
-            Structure(root,"tower_left",new Vector2(40,14),new Vector2(15,22),.42f);
+            Structure(root,"tower_right",new Vector2(8,14),new Vector2(15,23),.50f);
+            Structure(root,"tower_left",new Vector2(40,14),new Vector2(15,22),.50f);
             Structure(root,"tower_left",new Vector2(2,0),new Vector2(11,18),.36f);
             Structure(root,"tower_right",new Vector2(47,0),new Vector2(11,19),.32f);
             Put(root,"Central terrace stairs",Asset("stairs"),new Vector2(24,42),new Vector2(4,6.2f),-27900);
@@ -80,7 +85,7 @@ namespace DotRPG
             Debris(root,new Vector2(33,50),true);
             // Small peripheral rubble does not block the path.
             foreach(var pos in new[]{new Vector2(13,35),new Vector2(17,27),new Vector2(28,44),new Vector2(12,49),new Vector2(35,53)})Debris(root,pos,false);
-            var water=new GameObject("Sanctum living water");water.transform.SetParent(root,false);water.AddComponent<SanctumWater>().Setup(cells,w,h);
+            var water=new GameObject("Sanctum living water");water.transform.SetParent(root,false);water.AddComponent<SanctumWater>().Setup(cells,w,h,true,shore);
             var marker=new PixelCanvas(40,24);marker.Ellipse(20,12,17,9,C(50,57,43));marker.Ellipse(20,10,16,8,C(156,150,111));marker.Ellipse(20,10,11,5,C(61,78,59));
             marker.Line(13,10,26,10,C(187,193,151));marker.Line(13,10,18,6,C(187,193,151));marker.Line(13,10,18,14,C(187,193,151));
             Put(root,"Return to snow hunting field",Raster(marker,"sanctum_return",Vector2.one*.5f),new Vector2(24.5f,10.5f),new Vector2(1.1f,.65f),-27000);
@@ -104,54 +109,5 @@ namespace DotRPG
             Put(root,key,s,pos,longPiece?new Vector2(4,2.2f):new Vector2(1.6f,.8f),YSort.OrderFor(pos.y));
             if(longPiece){var go=new GameObject("Remnant collision");go.transform.SetParent(root,false);go.transform.position=pos+Vector2.up*.5f;go.AddComponent<BoxCollider2D>().size=new Vector2(2.7f,.9f);}
         }
-        static Sprite Paint(char[,] cells,int w,int h)
-        {
-            var p=new PixelCanvas(w*32,h*32);
-            var material=Asset("floor").texture;var materialPixels=material.GetPixels32();
-            char Cell(int x,int y)=>x<0||y<0||x>=w||y>=h?'W':cells[x,h-1-y];
-            for(int y=0;y<p.Height;y++)for(int x=0;x<p.Width;x++){
-                int tx=x/32,ty=y/32;char c=Cell(tx,ty);int bx=x%32,by=y%32;
-                float nx=x/32f,ny=y/32f;
-                int slabX=(x+((y/43)%2)*24)/59,slabY=y/43;int seed=Hash(slabX,slabY);
-                int noise=(seed%13)-6;bool seam=(x+((y/43)%2)*24)%59<2||y%43<2;
-                Color32 color;
-                Color32 stone=materialPixels[((y*2)%material.height)*material.width+(x*2)%material.width];
-                if(Land(c)){
-                    int light=ny>51?15:ny<27?-7:3;
-                    color=C(stone.r+light,stone.g+light,stone.b+light);
-                    if(!Land(Cell(tx,ty+1))&&by>26)color=by<29?C(177,161,118):C(69,74,54);
-                    if(!Land(Cell(tx-1,ty))&&bx<3)color=C(85,96,55);
-                    if(c=='L'){int step=y%16;color=step<3?C(185,173,134):step<11?C(139,136,110):C(63,70,55);if(bx<2&&(tx==22||tx==25))color=C(170,162,123);}
-                    bool moss=(Hash(x/13,y/11)%19<3)&&(!Land(Cell(tx+1,ty))||!Land(Cell(tx,ty-1)));
-                    if(moss)color=C((int)(stone.r*.72f),(int)(stone.g*.88f),(int)(stone.b*.57f));
-                }else if(c=='~'){
-                    float distance=3;
-                    for(int yy=ty-2;yy<=ty+2;yy++)for(int xx=tx-2;xx<=tx+2;xx++)if(Land(Cell(xx,yy)))
-                        distance=Mathf.Min(distance,Vector2.Distance(new Vector2(nx,ny),new Vector2(Mathf.Clamp(nx,xx,xx+1),Mathf.Clamp(ny,yy,yy+1))));
-                    float shallow=Mathf.Floor(Mathf.Clamp01(1-distance/3)*8)/8;
-                    color=C((int)(22+shallow*19+stone.r*.025f),(int)(54+shallow*25+stone.g*.03f),(int)(43+shallow*14+stone.b*.02f));
-                    if(ny>51&&Mathf.Abs(nx-24)<13)color=C(color.r+8,color.g+10,color.b+2);
-                }else{
-                    float central=Mathf.Clamp01(1-Mathf.Abs(nx-24)/24);int v=(int)(central*13);
-                    color=C((int)(stone.r*.18f)+v/3,(int)(stone.g*.23f)+v/3,(int)(stone.b*.2f)+v/3);
-                    // Thick exposed front of the raised upper terrace; no walking on this face.
-                    if(ty>=25&&ty<29&&tx>=11&&tx<=36)color=C(stone.r/3,stone.g/3,stone.b/3);
-                }
-                p.Set(x,y,color);
-            }
-            // Broken outer ring: separate ruins on the bank around the altar pool.
-            for(int i=0;i<52;i++){
-                float a=i*Mathf.PI*2/52;float ringX=24+19*Mathf.Cos(a),ringY=58+12*Mathf.Sin(a);
-                if(ringY<50||ringY>70)continue;int x=(int)(ringX*32),y=(int)(ringY*32);int size=19+Hash(i,5)%15;
-                for(int yy=-size/2;yy<size/2;yy++)for(int xx=-size;xx<size;xx++){
-                    int cut=Math.Abs(yy)*2/5;if(Math.Abs(xx)>size-cut||Hash(i,5)%7==0)continue;
-                    var stone=materialPixels[((y+yy+material.height)%material.height)*material.width+(x+xx+material.width)%material.width];
-                    float shade=yy>size/7?.43f:.83f;p.Set(x+xx,y+yy,C((int)(stone.r*shade),(int)(stone.g*shade),(int)(stone.b*shade)));
-                }
-            }
-            return Raster(p,"sanctum_terrain",Vector2.zero);
-        }
     }
 }
-
-

@@ -1,0 +1,521 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 96 pixels/tile",
+  "pixels_per_tile": 96,
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "village",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\originals\\village.png",
+      "source_size": [
+        1299,
+        1211
+      ],
+      "source_sha256": "8b6a369c67f5de5f22bd3bbe3dbf2da007ca1ae085ded29b2b3b05725941ec27",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\village-4x.png",
+      "inference_sha256": "588c860105e7bbce4b88e465b9f4aec0d1d4fcc11aba6e1b37f52aba20b7db83",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2784,
+        2592
+      ],
+      "previous_output_sha256": "ccc099a78649da84d3fed3d779625f9c07e99f80eed0e34ef86a937a551b2bd8",
+      "output": "Assets/StreamingAssets/SurfaceWorld/village.png",
+      "output_size": [
+        5568,
+        5184
+      ],
+      "output_sha256": "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a"
+    },
+    {
+      "id": "forest",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\originals\\forest.png",
+      "source_size": [
+        1512,
+        1040
+      ],
+      "source_sha256": "0111288922b01b28ad53a402c5d96c3c434bf8dbdbfbb8277a82182d5a58fae3",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\forest-4x.png",
+      "inference_sha256": "2f4bbc274b864209ff4309e2ddcac866fa7b457849388799b980c979d1596548",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        3072,
+        2112
+      ],
+      "previous_output_sha256": "ce5d1f746e24c1f6ff85065c29aa3764a2011b019be1b03731cc4d56511bbb9f",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "output_size": [
+        6144,
+        4224
+      ],
+      "output_sha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa"
+    },
+    {
+      "id": "forest_ruins",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\originals\\forest_ruins.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "5915e40253ffdec8b5a1316d71509d2ebe072dda2a7aebfdca112046bafe72bf",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\forest_ruins-4x.png",
+      "inference_sha256": "67b51e65dd468e6aef5e52cc1941508c0c09179a156d80eb19d7b83d54702ebe",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "605828952e4adc5af2063b7f18bd132c1f7609af19beba20e0e861b46282681c",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0"
+    },
+    {
+      "id": "forest_depths",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\originals\\forest_depths.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "0fbe916c92a1fb47a4b26e0638c53e044b5149cd45d79cf0e8785e776e173729",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\forest_depths-4x.png",
+      "inference_sha256": "b7623b1fd6e7657eee2822c681b5d839d6212176c516f9a8e892466533901f05",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "ec93bfcae7a9984f27d44112a5441975ea60181c7a67c70cba560019a0c65787",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b"
+    },
+    {
+      "id": "forest_crossing",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\originals\\forest_crossing.png",
+      "source_size": [
+        1415,
+        1111
+      ],
+      "source_sha256": "67468528692c6cc945cd71e66ce4057aac3cd1d106518a0240b411bd563f11b7",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\forest_crossing-4x.png",
+      "inference_sha256": "a168c7c3c482a3b3c56fc19829d4f5c5efd5d7e9eeea986461fc5c672e45971c",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "bb3776a4abeffaa3c8253b99e17bf23b859a8b5964798eb5d4e40db98c42977e",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e"
+    },
+    {
+      "id": "canyon",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon.png",
+      "source_size": [
+        1122,
+        1402
+      ],
+      "source_sha256": "29f99b746805bf3c8e85d2a88425ec8c450cef515be24d679cc12c38e599b472",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\canyon-4x.png",
+      "inference_sha256": "a7146a87e334673cacb635bdb9fd8755b3fa876bc110e30abedf9a377ce1d923",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2304,
+        2880
+      ],
+      "previous_output_sha256": "118faff1cd657b31a517d4fb8d34e92634e6d35126495a0beca10ada2d457de7",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "output_size": [
+        4608,
+        5760
+      ],
+      "output_sha256": "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c"
+    },
+    {
+      "id": "canyon_pass",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_pass.png",
+      "source_size": [
+        1415,
+        1111
+      ],
+      "source_sha256": "2981f08d19bc22f283ed6762a8fb045cf22a7f36ae36136ac9e8697dcc1a6c29",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\canyon_pass-4x.png",
+      "inference_sha256": "fcaf1aa88f24e005268a6ef8e974468f2d50fd413bdc2439d2a60706fc731e39",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "81c7e52a30f96b06981338b720cbda1a0f0f467b1470d9a50ca49eef65a7f00b",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5"
+    },
+    {
+      "id": "canyon_mine",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_mine.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "6369307dbb19fd8a6e8205dc0bce206e2e1be5f3b0f5eeab1f5ffe468bf1e98a",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\canyon_mine-4x.png",
+      "inference_sha256": "035726e9d8b7ae95bf2b541572a9b8245321a8b99f599577fbde3818bd5c97f8",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "83f89c6c92dbfa9e7919acf36f8105744561ab17c5c7dcffa217adffe311a689",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9"
+    },
+    {
+      "id": "canyon_ridge",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_ridge.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "5ed0d49d3370abd457bfb807057c1ef8349417f0eede9e0bd2c3242a5dc7cc4d",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\canyon_ridge-4x.png",
+      "inference_sha256": "b53e25346f6bfc8db67783c87f364b0e678fe9112838de38be4203378d797ccd",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "292ee6e053fffe227a1b64bd42ea4c08ffbc5a9128ffd2834d35a5cecd033931",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35"
+    },
+    {
+      "id": "canyon_gate",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\canyon_gate.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "c89c64628912e475658c53b3f27ed65a5d059bf80d253c96e314f17dcae69aa8",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\canyon_gate-4x.png",
+      "inference_sha256": "db254577751676e873fc3eb1e5ca2fcf36abb547ae93d05832a38e3e0b13c993",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "04ee0545207a6215c0721b10796728be713f7983019ccaee9b25755d3ee9b707",
+      "output": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f"
+    },
+    {
+      "id": "winter",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter.png",
+      "source_size": [
+        1333,
+        1180
+      ],
+      "source_sha256": "1070be0f3443fbb19ffee9471e036332b2d380c071367c8c62ec293fe60c6686",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\winter-4x.png",
+      "inference_sha256": "4806b7a5b1b6f30f59f812f7c72cfc9881d6dce3f46b72019af493f595f17af8",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2496,
+        2208
+      ],
+      "previous_output_sha256": "e34f4ce44034a25269486c287a00ac702898dd5ac164a5000d82d2f33776e2a5",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "output_size": [
+        4992,
+        4416
+      ],
+      "output_sha256": "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728"
+    },
+    {
+      "id": "winter_edge",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_edge.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "ae1231e4f2acb8e79c7fa46b98cc5cf32b09feb407c92368f1bc2c610dbd45af",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\winter_edge-4x.png",
+      "inference_sha256": "b249b5491702560c04ecd0f626fa554382334ed04295bbc6fa369e6180c1e61b",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "188ae25b1ab547fc5be6b0cc3044b5061cfb369cae1640bbbcd8fede3882a24f",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845"
+    },
+    {
+      "id": "winter_lake",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_lake.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "5146071c0da10857423a2e1a4c833fa28220ee5fea198d5342dfef6a70e3e077",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\winter_lake-4x.png",
+      "inference_sha256": "01c32201ec1136142370dae7b520981522bf6218b2cd826866ec7cbef2b51eee",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "d03cc9746dd3c511541ef6d890e149b757a9c40ab2cb2c4dcf08f244237ce61c",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9"
+    },
+    {
+      "id": "winter_peak",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_peak.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "594bbf45fd3a23b9c9e6d918b679cc0499c0fe6ca325390ffa47347fe6823a9e",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\winter_peak-4x.png",
+      "inference_sha256": "46a5e7dd096cd8a1413b9cba2d64e58c56d4348abcbfd1150cdaf278eebf83e5",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "32d4444612505d9940a66064b8d07c612459d2cbb1594cc13595f61358ad2fc0",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7"
+    },
+    {
+      "id": "winter_reach",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_reach.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "c5ba22a84005862730aa4464eb74736c873eec3a63263fa492a8412530957947",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\winter_reach-4x.png",
+      "inference_sha256": "f985352ce9cc1d599c081b1df198adec8bb8dda4a7e72bf44abc9186f22c62e7",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2688,
+        2112
+      ],
+      "previous_output_sha256": "c822a7016da675689848ddf51277575127cf2b6adab17fdbc17146112c693e59",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418"
+    },
+    {
+      "id": "sunken_sanctum",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sunken_sanctum.png",
+      "source_size": [
+        1024,
+        1536
+      ],
+      "source_sha256": "7e91632316e26dba0171def8975fdba5e56a99b81bc589e8f6848804420c4011",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\sunken_sanctum-4x.png",
+      "inference_sha256": "19c86ad604606f2b34b69d2d0247657faf199248291aa819808b098b6efb74f6",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2304,
+        3456
+      ],
+      "previous_output_sha256": "d8b2e76f8bc672b5affa6a95993be87c4d0d268eb72423f0e6c96b20ffec37ee",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "output_size": [
+        4608,
+        6912
+      ],
+      "output_sha256": "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33",
+      "postprocess": {
+        "id": "remove-duplicate-background-stairs",
+        "method": "built-in image_gen local removal, same Real-ESRGAN 4x/96PPU registration, localized source-preserving assembly",
+        "source": "Docs/World/SurfaceWorldSources/sanctum-stair-removal.png",
+        "source_sha256": "35fce0c9e551fa82fc0baf406e4a94cb0db59377a18d3d09aaf69c8f1e187de4",
+        "base_registered_sha256": "0fac9fdbd8cf7893faa9f9622484da20dbdc2cd64695b68f2a3dd82d1b913f40",
+        "edited_source_bounds": [
+          452,
+          518,
+          573,
+          655
+        ],
+        "opaque_core_source_bounds": [
+          464,
+          531,
+          559,
+          642
+        ],
+        "source_canvas": [
+          1024,
+          1536
+        ],
+        "assembly_tool": "Tools/art/apply_sanctum_stair_patch.ps1",
+        "windows_powershell": "5.1",
+        "provenance": "Docs/World/SurfaceWorldSources/sanctum-stair-removal.json",
+        "outside_patch_pixels": "unchanged",
+        "note": "Keep the separate foreground stairs sprite and all movement collision. Reapply this edit when registering art again."
+      }
+    },
+    {
+      "id": "sanctum_hall",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sanctum_hall.png",
+      "source_size": [
+        1403,
+        1121
+      ],
+      "source_sha256": "2f964af45f4871d0ddc729771c129017e0aeda5e73e9590cba1f76a4a25d6de2",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\sanctum_hall-4x.png",
+      "inference_sha256": "9dc3b341e6dd04e8d3a35e0d601ab8bc182ce780366cc215906d69152999502e",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2880,
+        2304
+      ],
+      "previous_output_sha256": "bfcc8dc1fa68440a5278bffcdc885580d4ccf23643f4f8740a30467f403a297f",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+      "output_size": [
+        5760,
+        4608
+      ],
+      "output_sha256": "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5"
+    },
+    {
+      "id": "sanctum_archive",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sanctum_archive.png",
+      "source_size": [
+        1402,
+        1122
+      ],
+      "source_sha256": "8a73614df60bce6b990ba8d8635c2a6712eb0ad786f198661847df55bbd437f8",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\sanctum_archive-4x.png",
+      "inference_sha256": "989f0ccc5517221ab3b5191da9c2521887b83ebd06bb8239076f5a3355644b14",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2880,
+        2304
+      ],
+      "previous_output_sha256": "0e2e054a3166cee6434a55302e68f5f28143eb81b86493d074a6ff1b9a739488",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sanctum_archive.png",
+      "output_size": [
+        5760,
+        4608
+      ],
+      "output_sha256": "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609"
+    },
+    {
+      "id": "sanctum_roots",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sanctum_roots.png",
+      "source_size": [
+        1402,
+        1122
+      ],
+      "source_sha256": "b0c1cc25292a9d1101c6b24821a330de812672ede7c422f8453662dd0e780423",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\sanctum_roots-4x.png",
+      "inference_sha256": "0de2815dbd5677ef2b78d79bc9b1a8db2371e48b63053629bd9b59889db6ff9d",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2880,
+        2304
+      ],
+      "previous_output_sha256": "cea945952ce82c7c432ec2bd3571f29de3851239a25ba68d0d9d000263b6767e",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sanctum_roots.png",
+      "output_size": [
+        5760,
+        4608
+      ],
+      "output_sha256": "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37"
+    },
+    {
+      "id": "sanctum_court",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sanctum_court.png",
+      "source_size": [
+        1402,
+        1122
+      ],
+      "source_sha256": "daa11afac79508c41b67bc261272d647bea3544bed851d682fe455290c1aac76",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\sanctum_court-4x.png",
+      "inference_sha256": "6aca5ff8e17fad0be2f7d046a97bdfa99e30719fc735c667b0b30ed1024794fd",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2880,
+        2304
+      ],
+      "previous_output_sha256": "de2724426fcc1a420fcd960e2e876834fb1d41e4b5798fc5c0ae50689f3eb79d",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sanctum_court.png",
+      "output_size": [
+        5760,
+        4608
+      ],
+      "output_sha256": "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281"
+    },
+    {
+      "id": "undergate",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\originals\\undergate.png",
+      "source_size": [
+        1363,
+        1154
+      ],
+      "source_sha256": "c1f74a29ab94a7918e7a65f557b40768c1d9b02d99592187969499f387c0fe9e",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-forest\\undergate-4x.png",
+      "inference_sha256": "382395ea36d390610dc4cc54eb623976faf8a13d5c5821c8e311c7103d1a838c",
+      "inference_cache_reused": true,
+      "previous_output_size": [
+        2496,
+        2112
+      ],
+      "previous_output_sha256": "acee650412d307e5d53ea113b9eb1b212110a97ec7c97eb47fa2eeebcbd611bc",
+      "output": "Assets/StreamingAssets/SurfaceWorld/undergate.png",
+      "output_size": [
+        4992,
+        4224
+      ],
+      "output_sha256": "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429"
+    }
+  ]
+}

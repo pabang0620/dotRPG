@@ -109,7 +109,8 @@ namespace DotRPG
             foreach (var col in overlap)
             {
                 if (col == null || col.isTrigger) continue;
-                if (col.attachedRigidbody != null) continue; // bodies (monsters, members) do not stop it
+                // Characters do not stop a shot here; static composite tilemaps still must.
+                if (col.attachedRigidbody != null && col.attachedRigidbody.bodyType != RigidbodyType2D.Static) continue;
                 if (col.gameObject.name == "Water") continue;
                 return true;
             }

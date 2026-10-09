@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "date": "2026-10-09",
+  "method": "Built-in image_gen edits with clean ground-only and exact navigation guide; all generated source files retained without pixel editing.",
+  "supersedes": "forest.json initial assets; use these sources for final runtime upscale",
+  "reason": "Initial canopy/trunk art covered walkable grass 2–5 tiles beyond blocked contours. Revised all four sources to low flat undergrowth inside blocked silhouettes; runtime props provide standing trees and height.",
+  "verification": {
+    "allInputsAndOutputsViewed": true,
+    "manualSilhouetteReview": "Central/outer open grass and shorelines remain visible; high tree silhouettes removed. Previously flagged forest_depths and forest_crossing floor locations are flat grass.",
+    "sampleAudit": "9 color samples per floor cell, positive threshold 6/9, at least2-cell-center distance from original water; all4 revised forest assets and all5 winter assets have zero water-on-floor candidates. Winter dark-rock-on-floor candidates also zero.",
+    "scopeLimit": "Offline color screening and visual review; this is not an exact per-pixel proof nor native collision/occlusion QA. Original PNGs only; parent owns asset copying/upscaling and runtime integration.",
+    "report": "work/surface-color-audit.json"
+  },
+  "assets": [
+    {
+      "id": "forest",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-07d13e9d-9533-46a7-b6e6-71d15c1d1689.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "references": [
+        "work/surface-guides/forest-ground-only.png",
+        "work/surface-guides/forest-guide.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Production terrain-only forest map retexture. Input1 is the authoritative clean ground-only render, world64x44 exact aspect; Input2 is same-framing exact navigation stencil. Output2048x1408 or higher. Change surface materials only. Keep every ground, dirt trail, river edge and dark green blocked pixel island EXACTLY where Input1 shows it. No crop, reframe, rotate or reshape. This asset will have ALL tall trees and objects drawn separately at runtime. Absolutely NO tall tree trunks, individual standing trees, tall root ridges, raised tree canopies, rocks, buildings, ruins or props anywhere in this painting. In particular the small separated dark-green internal blocking islands at center and right MUST stay small and separate, no connecting or enlarging them into forests. Paint them only with FLAT dark moss and low soft undergrowth, never a tall tree crown. The surrounding large dark-green perimeter can be deep low contrast FLAT forest-floor moss with gently layered receding terrain shading strictly confined within the exact blocked footprint, still no standing trees or canopy in this terrain source. All lighter green open regions remain bright flat grass with restrained leaf patches. Dirt trail geometry unchanged, weathered warm ochre earthy paths, subtle embedded flatstones. Preserve small bottom pool including its thin isolated right-side sliver as in image1; water deep blue-green with narrow earthy banks. Elegant cohesive fine pixel art, emerald and olive grass, warm trails, shaded moss perimeter, restrained intentional clean clusters, stepped material value differences. No photorealism, blur, grain, edgeglow or heavy cast shadows. Do not fill open space with objects; flat clearings are deliberate because runtime props will supply depth. Image2 tan is playable and must remain FLAT and clear. No terrain crossing changes, no additional water, no deleted water. No text, labels, grid, symbols, UI or frame. Exact navigation registration is highest priority."
+    },
+    {
+      "id": "forest_ruins",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-a4adc1f3-8993-4ee7-a181-1ef1edd1f32d.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "references": [
+        "work/surface-guides/forest_ruins-ground-only.png",
+        "work/surface-guides/forest_ruins-guide.png"
+      ],
+      "prompt": "Use case: precise-object-edit. TERRAIN-ONLY forest_ruins map retexture, output1792x1408 or higher,56:44 full-map aspect. Input1 is authoritative clean ground-only and exact pixel-coordinate shape. Input2 is authoritative same-framing navigation mask. Preserve all material boundary positions and every small detail of topology. Only upgrade material art, no new geometry. CRITICAL: central broken narrow rectangular DARK GREEN low forest ring must stay only1–2tiles thick as input, including OPEN WALKABLE gaps at its upper-left side and upper-right side. Never close those openings; never grow canopy across nearby dirt-road or central grass. Topright pool has a tiny SEPARATE pool in the central ring's upper-right corner: retain both, including small shore deck squares at their exact existing positions. No extra bridge or lake connection. Absolutely NO tall trees, no standing trunks, aboveground roots, large boulders, high canopy, arches, columns, ruins, gates, structures, props or cast shadows ANYWHERE; they are separately rendered by game. All blocked dark green pixels including outer perimeter shall become flat low dark moss/undergrowth and shaded woodland floor, no height silhouette expansion. All tan/green walkable pixels stay flat clear grass or same dirtpath. Refined emerald/olive woodland grass with restrained natural leaf beds, mossy weathered ochre paths and sparse FLAT embedded stone fragments, deep cool blue-green liquid water with narrow earthy shore. Fine controlled pixel clusters, stepped palette, calm readable clearings, coherent soft upper-left light, no smooth blur/noisy grain/whiteglow. Preserve exact road loop widths and west/east exits, keep central rectangular clearing entirely open, same framing no cropping. No text/grid/map symbols/UI/actors. Accurate collision registration has priority over any decorative drama. Image2 tan must remain flat and empty for existing runtime objects."
+    },
+    {
+      "id": "forest_depths",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-f85abda5-da55-44f6-ac5f-d0eb63bad06a.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "references": [
+        "work/surface-guides/forest_depths-ground-only.png",
+        "work/surface-guides/forest_depths-guide.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Repaint production TERRAIN-ONLY forest_depths map,56:44 aspect,1792x1408orhigher. Image1 is authoritative ground-only image and Image2 same-framing exact navigation stencil. Preserve every ground/water/blocked boundary pixel registration, paths, separated streams, tiny shore decks, entrances, scale and fullframe. Change surface materials only. Entire output contains NO TALL TREES, NO CANOPY, NO TRUNKS, NO TALL ROOTS, NO BOULDERS OR RUINS, NO STRUCTURES OR PROPS; runtime separately renders every standing object. This includes outerblocked regions: make them FLAT low dark moss/low undergrowth instead of tall forest with overhangs. They must stay exactlywithin original darkgreen/navy contours, especially southwest grass peninsula and bottom strip which are playable and must remainflat and clear. Do not hide any southern water below shrubs; preserve the separate bottom pool in its complete original footprint. Preserve big curving central vertical lake, small north pool, southeast elongated basin, old earth road circuit and west/east exit paths EXACTLY. Clear flat mossgreen and jade grass, wet olive earth trail with gentle leaf-beds, sparse embedded FLAT stone, deep still blue-green liquid water, narrow moist banks same geometry. Refined coherent fantasy pixelart, fine intentional clusters and stepped colors, calm clear battle floor, subtle cool ambient light from upperleft. No mist over floor, blur,haze,grain,pixelnoise,white rim or glow. NO symbols,text,actors,maplabels/UI. Recreate exactterrain silhouette, no cropped/reimagined view, no extra water, no water connections, no additional bridge. All tan pixels in guide are dry unobstructed floor; do not draw trees or shrubs inside them. Existing darkgreen boundaries can have low foliage under1tile height confined to footprint, never spilling onto grass."
+    },
+    {
+      "id": "forest_crossing",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-2441c4f1-2856-486b-a5ee-0eca73bd6013.png",
+      "destination": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "references": [
+        "work/surface-guides/forest_crossing-ground-only.png",
+        "work/surface-guides/forest_crossing-guide.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Production TERRAIN-ONLY forest_crossing map retexture. Input1 authoritative ground-only map56:44; Input2 exactsame-framing navigation stencil. Output1792x1408orhigher, sameframing. Preserve ALL land,trail,water,blocked edges exactly. Repaint materials only. No talltreecanopy, no treetrunks, no abovegroundroots, no rocks, no structures or props anywhere: all standing trees are rendered separately by game. In outerblocked darkgreen areas, paint flat dark moss/low soft undergrowth without silhouette enlargement. In particular SOUTHERN corridor and grass either side of its road must not be hidden by crowns/root ridges; keep right-stream bottom shoreline and left-stream bottom tip completely visible. Every brightgreen/tan walkablepoint stays flat clear grass/soil. Preserve three separate elongated watercourses and central north-south dirtpath with east branch, and3little shoredecks at exactlytheiroriginalpositions. No deleted orconnectedwater, no additional bridges. Refined emerald/olive flat grass with restrained leafbeds and subtle flowers, warm earthpath with sparse FLAT embedded sandstone increasing toward eastern exit; deepblue-green liquidwater with narrow moist banks exactlyregistered. Shadow values in blockedperimeter recede but no highcanopy/hardcastshadowoverfloor. Crisp detailed handcrafted pixelclusters and steppedtones, no smoothblur, fog, photo-grain or whiteglowingedge. No statues,portals,ruins,boulders,deadtrees,people,labels,UI,arrowsorborder. Locked orthographic elevatedRPG projection, no rotation, no crop, no perspectivewarp. Navigation matching is aboveall; this terrain source is flat deliberately because runtimeobjects provide height."
+    }
+  ]
+}

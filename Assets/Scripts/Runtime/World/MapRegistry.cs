@@ -16,6 +16,8 @@ namespace DotRPG
         Interior,
         SunkenSanctum,
         SanctumField,
+        UnderTown,
+        Underground,
     }
 
     /// <summary>One playable map. Portals '&gt;' lead to <see cref="nextMap"/>, '&lt;' to <see cref="previousMap"/>.</summary>
@@ -30,6 +32,11 @@ namespace DotRPG
         public string nextMap;
         public string previousMap;
         public string northMap, southMap;
+        /// <summary>Central town route and stairs between world layers; independent of cardinal field exits.</summary>
+        public string hubMap, downMap, upMap;
+        public WorldLayer worldLayer = WorldLayer.Surface;
+        /// <summary>0 on the surface, 1..3 in the persistent underground world.</summary>
+        public int depth;
         /// <summary>One-line tip shown in the map window.</summary>
         public string hint;
         /// <summary>Town (no monsters) vs. hunting ground; shown in the map window.</summary>
@@ -52,6 +59,7 @@ namespace DotRPG
         public const string Canyon = "canyon";
         public const string Winter = "winter";
         public const string Sanctum = "sunken_sanctum";
+        public const string Undergate = "undergate";
 
         static readonly MapInfo[] Maps = BuildMaps();
 
@@ -70,16 +78,18 @@ namespace DotRPG
             Town(Village, "해골 숲 옆 작은 마을", "Maps/Village", MapTheme.Town, "music_village");
             Town(Canyon, "바위 협곡 마을", "Maps/Canyon", MapTheme.Canyon, "music_canyon");
             Town(Winter, "눈꽃 숲 마을", "Maps/Winter", MapTheme.Winter, "music_winter");
-            for (int i = 0; i < maps.Count; i++)
-            {
-                maps[i].previousMap = i > 0 ? maps[i-1].id : null;
-                maps[i].nextMap = i + 1 < maps.Count ? maps[i+1].id : Winter;
-            }
             maps.Add(new MapInfo { id = Sanctum, displayName = "침수된 고대 성소", resource = "Maps/SunkenSanctum",
                 theme = MapTheme.SunkenSanctum, music = "music_canyon",
-                hint = "제단 북쪽 → 좁은 연결부 → 왼쪽 돌길 → 중앙 계단 → 상단 단상\n물·절벽은 통행 불가 · 하단 귀환 표식: 해빙된 성소 입구" });
+                hint = "지상 제4마을 · 북쪽 단상: 성소 사냥터 · 뿌리샘 길: 중앙 마을\n물·절벽은 통행 불가 · 남쪽 귀환 표식: 해빙된 성소 입구" });
             foreach(var z in HuntingGrounds.All) if(z.theme==MapTheme.SanctumField)
                 maps.Add(new MapInfo { id=z.id,displayName=z.name,theme=z.theme,safe=false,music="music_canyon",hint="성소 심층 · Lv.40 반복 사냥" });
+            maps.Add(new MapInfo { id = Undergate, displayName = "뿌리샘 마을", theme = MapTheme.UnderTown,
+                music = "music_village", hint = "지상 중앙 마을 · 네 마을을 잇는 뿌리길\n중앙 계단: Lv.40+ 지하세계 B1 · 몬스터 Lv.42부터" });
+            foreach (var z in HuntingGrounds.All)
+                if (z.theme == MapTheme.Underground)
+                    maps.Add(new MapInfo { id = z.id, displayName = z.name, theme = z.theme, safe = false,
+                        worldLayer = WorldLayer.Underground, depth = z.variant == 0 ? 1 : z.variant == 3 ? 3 : 2,
+                        music = MusicDgnCanyon, hint = $"지하세계 · 지역 등급 Lv.{z.minLevel}~{z.maxLevel} · 몬스터 Lv.{z.monsterLevel}\nLv.40 만렙 이후 도전 · 강화 장비·파티 권장\n처치 경험치 {z.KillXp} · 재생성 {HuntingGrounds.RespawnSeconds:0}초 · 귀환: 뿌리샘 마을" });
             WorldRoutes.Configure(maps);
             return maps.ToArray();
         }
@@ -102,7 +112,7 @@ namespace DotRPG
         public static MapInfo Default => Maps[0];
 
         public static readonly NpcService[] IndoorServices = { NpcService.Shop, NpcService.Blacksmith, NpcService.Storage };
-        public static bool IsTown(string id) => id == Village || id == Canyon || id == Winter;
+        public static bool IsTown(string id) => id == Village || id == Canyon || id == Winter || id == Sanctum || id == Undergate;
         public static bool IsIndoorService(NpcService service) => service == NpcService.Shop || service == NpcService.Blacksmith || service == NpcService.Storage;
         public static string ServiceName(NpcService service) => service == NpcService.Shop ? "잡화점" : service == NpcService.Blacksmith ? "대장간 · 장비강화" : "창고";
         public static string InteriorFor(string town, NpcService service) => IsTown(town) && IsIndoorService(service) ? town + "_" + service.ToString().ToLowerInvariant() : null;
@@ -115,6 +125,7 @@ namespace DotRPG
                         foreach (var service in IndoorServices)
                             yield return new MapInfo { id = InteriorFor(town.id, service), displayName = ServiceName(service),
                                 theme = MapTheme.Interior, exteriorMap = town.id, interiorService = service, music = town.music,
+                                worldLayer = town.worldLayer, depth = town.depth,
                                 previousMap = town.id, hint = "5×5 실내 · 안쪽 NPC와 대화하여 이용\n아래쪽 출입구: " + town.displayName };
             }
         }

@@ -1,0 +1,207 @@
+[1.28] capture started
+[1.28] verification audio volume: 0
+DGN hollow_descent authored composition active, no legacy fallback PASS
+DGN hollow_descent source artwork exists PASS
+DGN hollow_descent exactly three registered artwork layers PASS
+DGN hollow_descent 32 pixel raster matches world bounds PASS
+DGN hollow_descent layer masks cover every source pixel once PASS
+DGN hollow_descent three partition masks cover the complete raster PASS
+DGN hollow_descent vertical masonry never assigned over walkable ground PASS
+DGN hollow_descent same origin scale bounds and sharp pixels on all layers PASS
+DGN hollow_descent deep scenery masonry and floor have distinct ascending sort PASS
+DGN hollow_descent no legacy texture plate underneath new composition PASS
+DGN hollow_descent bounded composition renderers (28) PASS
+DGN hollow_descent composition creates no extra collision PASS
+DGN hollow_descent one contained depth ambience PASS
+DGN hollow_descent one contained water animation PASS
+[26.32] COMPOSITION hollow_descent: source=1355x1161, raster=1792x1536, renderers=28, focus=(25.50, 25.50)
+DGN hollow_descent original three underground species retained PASS
+DGN hollow_descent original underground monster level retained PASS
+DGN hollow_descent safe connected spawn PASS
+DGN hollow_descent all standable tile centres connected (649) FAIL
+[26.34] Disconnected floor: (42.50, 9.50), (41.50, 8.50)
+DGN hollow_descent authored stair treads walkable and reachable PASS
+DGN hollow_descent all 18 encounter camps retained PASS
+DGN hollow_descent encounter pack footprints fit connected floor PASS
+DGN hollow_descent camps preserve quiet spawn clearance PASS
+DGN hollow_descent actual spawned monsters stand on reachable ground PASS
+DGN hollow_descent water and rock remain blocked (1999 probes) PASS
+DGN hollow_descent artwork covers actual connected floor (647 points) PASS
+DGN hollow_descent scenery exit exists hollow_roots PASS
+DGN hollow_descent scenery exit reachable hollow_roots PASS
+DGN hollow_descent scenery arrival avoids portal bounce hollow_roots PASS
+DGN hollow_descent clear cardinal exit approach hollow_roots PASS
+DGN hollow_descent scenery exit exists hollow_fungal PASS
+DGN hollow_descent scenery exit reachable hollow_fungal PASS
+DGN hollow_descent scenery arrival avoids portal bounce hollow_fungal PASS
+DGN hollow_descent clear cardinal exit approach hollow_fungal PASS
+DGN hollow_descent scenery exit exists undergate PASS
+DGN hollow_descent scenery exit reachable undergate PASS
+DGN hollow_descent scenery arrival avoids portal bounce undergate PASS
+DGN hollow_descent clear cardinal exit approach undergate PASS
+DGN hollow_descent all four outer bounds blocked PASS
+DGN hollow_descent projectile test patch ~ PASS
+DGN hollow_descent distinct static terrain mask ~ PASS
+DGN hollow_descent water blocks feet but passes a moving bolt PASS
+DGN hollow_descent projectile test patch W PASS
+DGN hollow_descent distinct static terrain mask W PASS
+DGN hollow_descent static composite rock stops a bolt PASS
+DGN hollow_descent actual walk between exits after scenery PASS
+DGN hollow_descent composition focal point fits actual player collision PASS
+DGN hollow_descent focal player stands on walkable floor PASS
+DGN hollow_descent previous scenery and world root destroyed PASS
+DGN hollow_descent repeat-load scenery count stable PASS
+DGN hollow_descent prior composition sprites and textures released PASS
+DGN hollow_descent repeat-load ambience not duplicated PASS
+DGN hollow_descent composition does not change monster combat values PASS
+DGN hollow_roots authored composition active, no legacy fallback PASS
+DGN hollow_roots source artwork exists PASS
+DGN hollow_roots exactly three registered artwork layers PASS
+DGN hollow_roots 32 pixel raster matches world bounds PASS
+DGN hollow_roots layer masks cover every source pixel once PASS
+DGN hollow_roots three partition masks cover the complete raster PASS
+DGN hollow_roots vertical masonry never assigned over walkable ground PASS
+DGN hollow_roots same origin scale bounds and sharp pixels on all layers PASS
+DGN hollow_roots deep scenery masonry and floor have distinct ascending sort PASS
+DGN hollow_roots no legacy texture plate underneath new composition PASS
+DGN hollow_roots bounded composition renderers (32) PASS
+DGN hollow_roots composition creates no extra collision PASS
+DGN hollow_roots one contained depth ambience PASS
+DGN hollow_roots one contained water animation PASS
+[78.95] COMPOSITION hollow_roots: source=1354x1161, raster=1792x1536, renderers=32, focus=(25.50, 35.50)
+DGN hollow_roots original three underground species retained PASS
+DGN hollow_roots original underground monster level retained PASS
+DGN hollow_roots safe connected spawn PASS
+DGN hollow_roots all standable tile centres connected (710) PASS
+DGN hollow_roots authored stair treads walkable and reachable FAIL
+DGN hollow_roots all 18 encounter camps retained PASS
+DGN hollow_roots encounter pack footprints fit connected floor PASS
+DGN hollow_roots camps preserve quiet spawn clearance PASS
+DGN hollow_roots actual spawned monsters stand on reachable ground PASS
+DGN hollow_roots water and rock remain blocked (1937 probes) PASS
+DGN hollow_roots artwork covers actual connected floor (710 points) PASS
+DGN hollow_roots scenery exit exists hollow_descent PASS
+DGN hollow_roots scenery exit reachable hollow_descent PASS
+DGN hollow_roots scenery arrival avoids portal bounce hollow_descent PASS
+DGN hollow_roots clear cardinal exit approach hollow_descent PASS
+DGN hollow_roots scenery exit exists hollow_depths PASS
+DGN hollow_roots scenery exit reachable hollow_depths PASS
+DGN hollow_roots scenery arrival avoids portal bounce hollow_depths PASS
+DGN hollow_roots clear cardinal exit approach hollow_depths PASS
+DGN hollow_roots all four outer bounds blocked PASS
+DGN hollow_roots projectile test patch ~ PASS
+DGN hollow_roots distinct static terrain mask ~ PASS
+DGN hollow_roots water blocks feet but passes a moving bolt PASS
+DGN hollow_roots projectile test patch W PASS
+DGN hollow_roots distinct static terrain mask W PASS
+DGN hollow_roots static composite rock stops a bolt PASS
+DGN hollow_roots actual walk between exits after scenery PASS
+DGN hollow_roots composition focal point fits actual player collision PASS
+DGN hollow_roots focal player stands on walkable floor PASS
+DGN hollow_roots previous scenery and world root destroyed PASS
+DGN hollow_roots repeat-load scenery count stable PASS
+DGN hollow_roots prior composition sprites and textures released PASS
+DGN hollow_roots repeat-load ambience not duplicated PASS
+DGN hollow_roots composition does not change monster combat values PASS
+DGN hollow_fungal authored composition active, no legacy fallback PASS
+DGN hollow_fungal source artwork exists PASS
+DGN hollow_fungal exactly three registered artwork layers PASS
+DGN hollow_fungal 32 pixel raster matches world bounds PASS
+DGN hollow_fungal layer masks cover every source pixel once PASS
+DGN hollow_fungal three partition masks cover the complete raster PASS
+DGN hollow_fungal vertical masonry never assigned over walkable ground PASS
+DGN hollow_fungal same origin scale bounds and sharp pixels on all layers PASS
+DGN hollow_fungal deep scenery masonry and floor have distinct ascending sort PASS
+DGN hollow_fungal no legacy texture plate underneath new composition PASS
+DGN hollow_fungal bounded composition renderers (33) PASS
+DGN hollow_fungal composition creates no extra collision PASS
+DGN hollow_fungal one contained depth ambience PASS
+DGN hollow_fungal one contained water animation PASS
+[132.12] COMPOSITION hollow_fungal: source=1354x1161, raster=1792x1536, renderers=33, focus=(31.50, 37.50)
+DGN hollow_fungal original three underground species retained PASS
+DGN hollow_fungal original underground monster level retained PASS
+DGN hollow_fungal safe connected spawn PASS
+DGN hollow_fungal all standable tile centres connected (716) PASS
+DGN hollow_fungal authored stair treads walkable and reachable PASS
+DGN hollow_fungal all 18 encounter camps retained PASS
+DGN hollow_fungal encounter pack footprints fit connected floor PASS
+DGN hollow_fungal camps preserve quiet spawn clearance PASS
+DGN hollow_fungal actual spawned monsters stand on reachable ground PASS
+DGN hollow_fungal water and rock remain blocked (1925 probes) PASS
+DGN hollow_fungal artwork covers actual connected floor (716 points) PASS
+DGN hollow_fungal scenery exit exists hollow_descent PASS
+DGN hollow_fungal scenery exit reachable hollow_descent PASS
+DGN hollow_fungal scenery arrival avoids portal bounce hollow_descent PASS
+DGN hollow_fungal clear cardinal exit approach hollow_descent PASS
+DGN hollow_fungal scenery exit exists hollow_depths PASS
+DGN hollow_fungal scenery exit reachable hollow_depths PASS
+DGN hollow_fungal scenery arrival avoids portal bounce hollow_depths PASS
+DGN hollow_fungal clear cardinal exit approach hollow_depths PASS
+DGN hollow_fungal all four outer bounds blocked PASS
+DGN hollow_fungal projectile test patch ~ PASS
+DGN hollow_fungal distinct static terrain mask ~ PASS
+DGN hollow_fungal water blocks feet but passes a moving bolt PASS
+DGN hollow_fungal projectile test patch W PASS
+DGN hollow_fungal distinct static terrain mask W PASS
+DGN hollow_fungal static composite rock stops a bolt PASS
+DGN hollow_fungal actual walk between exits after scenery PASS
+DGN hollow_fungal composition focal point fits actual player collision PASS
+DGN hollow_fungal focal player stands on walkable floor PASS
+DGN hollow_fungal previous scenery and world root destroyed PASS
+DGN hollow_fungal repeat-load scenery count stable PASS
+DGN hollow_fungal prior composition sprites and textures released PASS
+DGN hollow_fungal repeat-load ambience not duplicated PASS
+DGN hollow_fungal composition does not change monster combat values PASS
+DGN hollow_depths authored composition active, no legacy fallback PASS
+DGN hollow_depths source artwork exists PASS
+DGN hollow_depths exactly three registered artwork layers PASS
+DGN hollow_depths 32 pixel raster matches world bounds PASS
+DGN hollow_depths layer masks cover every source pixel once PASS
+DGN hollow_depths three partition masks cover the complete raster PASS
+DGN hollow_depths vertical masonry never assigned over walkable ground PASS
+DGN hollow_depths same origin scale bounds and sharp pixels on all layers PASS
+DGN hollow_depths deep scenery masonry and floor have distinct ascending sort PASS
+DGN hollow_depths no legacy texture plate underneath new composition PASS
+DGN hollow_depths bounded composition renderers (29) PASS
+DGN hollow_depths composition creates no extra collision PASS
+DGN hollow_depths one contained depth ambience PASS
+DGN hollow_depths one contained water animation PASS
+[186.67] COMPOSITION hollow_depths: source=1355x1161, raster=1792x1536, renderers=29, focus=(31.50, 25.50)
+DGN hollow_depths original three underground species retained PASS
+DGN hollow_depths original underground monster level retained PASS
+DGN hollow_depths safe connected spawn PASS
+DGN hollow_depths all standable tile centres connected (656) PASS
+DGN hollow_depths authored stair treads walkable and reachable PASS
+DGN hollow_depths all 18 encounter camps retained PASS
+DGN hollow_depths encounter pack footprints fit connected floor PASS
+DGN hollow_depths camps preserve quiet spawn clearance PASS
+DGN hollow_depths actual spawned monsters stand on reachable ground PASS
+DGN hollow_depths water and rock remain blocked (1995 probes) PASS
+DGN hollow_depths artwork covers actual connected floor (656 points) PASS
+DGN hollow_depths scenery exit exists hollow_roots PASS
+DGN hollow_depths scenery exit reachable hollow_roots PASS
+DGN hollow_depths scenery arrival avoids portal bounce hollow_roots PASS
+DGN hollow_depths clear cardinal exit approach hollow_roots PASS
+DGN hollow_depths scenery exit exists hollow_fungal PASS
+DGN hollow_depths scenery exit reachable hollow_fungal PASS
+DGN hollow_depths scenery arrival avoids portal bounce hollow_fungal PASS
+DGN hollow_depths clear cardinal exit approach hollow_fungal PASS
+DGN hollow_depths all four outer bounds blocked PASS
+DGN hollow_depths projectile test patch ~ PASS
+DGN hollow_depths distinct static terrain mask ~ PASS
+DGN hollow_depths water blocks feet but passes a moving bolt PASS
+DGN hollow_depths projectile test patch W PASS
+DGN hollow_depths distinct static terrain mask W PASS
+DGN hollow_depths static composite rock stops a bolt PASS
+DGN hollow_depths actual walk between exits after scenery PASS
+DGN hollow_depths composition focal point fits actual player collision PASS
+DGN hollow_depths focal player stands on walkable floor PASS
+DGN hollow_depths previous scenery and world root destroyed PASS
+DGN hollow_depths repeat-load scenery count stable PASS
+DGN hollow_depths prior composition sprites and textures released PASS
+DGN hollow_depths repeat-load ambience not duplicated PASS
+DGN hollow_depths composition does not change monster combat values PASS
+DGN underground composition removed on surface return PASS
+DGN underground ambience removed on surface return PASS
+DGN scenery verification remains muted PASS
+[221.71] WORLD LAYERS SCENERY RESULTS: 197 passed, 2 failed

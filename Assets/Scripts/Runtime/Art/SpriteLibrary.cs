@@ -36,8 +36,10 @@ namespace DotRPG
                 return sprite;
             }
 
-            // Redrawn weapons (held staffs and weapon icons) live in Art/Weapons and win over the old art.
-            if (key.StartsWith("wpn_") || key.StartsWith("eqicon_")) sprite = Resources.Load<Sprite>(OverrideFolder + "Weapons/" + key);
+            // The four held katana silhouettes share the original grip rig, with dedicated v3 art.
+            // Mage staffs, other weapon families and all item icons retain their existing resource resolution.
+            sprite = PlayerWeaponArt.Get(key);
+            if (sprite == null && (key.StartsWith("wpn_") || key.StartsWith("eqicon_"))) sprite = Resources.Load<Sprite>(OverrideFolder + "Weapons/" + key);
             sprite = sprite ?? CareerMoves.Icon(key) ?? WinterVillageArt.Get(key) ?? Resources.Load<Sprite>(OverrideFolder + key);
             var building = VillageBuildingArt.Find(key);
             if (sprite == null && building != null) sprite = Resources.Load<Sprite>(building.ResourcePath);
