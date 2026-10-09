@@ -1,0 +1,67 @@
+숲 사냥터 소품 고도화 — 2026-10-09
+
+대상
+해골 숲(forest), 이끼 낀 유적(forest_ruins), 검은 뿌리 숲(forest_depths), 옛 수로 합류지(forest_crossing).
+마을과 나머지 지상 지역, 지하 지역은 이번 수정에서 제외.
+
+시각 변경
+- 배경의 큰 잎 형태와 올리브색에 맞춰 수관의 명암을 넓게 묶고 작은 잎 노이즈를 줄임.
+- 참나무·활엽수·소나무 각각 서로 다른 실루엣 두 가지. grove/개별 발점에 고정된 해시로 변형 선택.
+- 기존 pine_layered를 일반 pine과 별도 그림으로 연결. 물가 willow의 종 구분 유지.
+- 고사목 두 종류, 이끼 바위 두 종류, 덤불, 통나무, 그루터기, 이끼에 묻힌 작은 석주 제작.
+- 큰 건축물/배경/지형/동선은 유지. 소품 위치, 크기 변환, RGB, 충돌, 채집 보상과 재생 시간은 유지.
+- 신규 PNG 원본 알파 보존. crop view + 밑동 피벗 + nearest-neighbor(Point)로 렌더링.
+- 채집 후 그루터기, 실제 재생 시 새 나무/바위 그림과 접지 그림자 유지.
+
+실제 이미지
+Assets/StreamingAssets/WorldProps/forest_fields.png
+1254×1254 RGBA, 원본 SHA256:
+1f5c94f9f759359e96c8162d9deef0aabf9efc0e68ce9eed4fe5d9f20ab6e0f8
+built-in image_gen으로 새로 제작한 실제 투명 PNG, 임시 대체 그림 없음.
+요청 캔버스는 2048×2048이었으나 도구가 실제 1254×1254를 반환했으므로 실제 치수로 등록함.
+16종 중 일반 배치에 14종, 채집 후 그루터기 1종을 사용. 고사리 1종은 준비된 변형이며 이번 배치에서는 선택되지 않음.
+제작 프롬프트: prompt.json. 알파 등록 검사: alpha-audit.json.
+총 360개 소품: forest 260 / ruins 29 / depths 27 / crossing 44.
+기존 WorldProps의 4개 PNG와 crop/pivot 선언은 그대로 보존.
+
+수정 파일
+Assets/Scripts/Runtime/Art/BiomePropArt.cs: 별도 AtlasId, AtlasSourcePath 및 16셀 로딩 지원
+Assets/Scripts/Runtime/World/WorldBuilder.PropIntegration.cs: 숲4 전용 atlas와 변형 선택, 작은 Ruin 연결
+Assets/Scripts/Runtime/Core/DevCapture.PropIntegration.cs: 적용 범위, 원화 경로/SHA, atlas별 실제 채집 재생 확인
+Assets/StreamingAssets/WorldProps/metadata.json: forest_fields 등록 추가
+Tools/art/register_forest_fields.py: 원본 PNG 재등록
+Tools/art/register_world_props.py: 기존 등록기 재실행 시 확장 atlas 보존
+Tools/art/verify_forest_refinement.py: 이번 작업 이전 상태와 비교
+나머지 git 변경은 이전 작업에서 이어진 것으로 이 변경과 함께 보존함.
+
+실행 확인
+- Runtime C# 컴파일 성공(오류 0, 기존 경고 존재).
+- 기존 네이티브 로컬 플레이어에 DLL과 StreamingAssets를 반영하여 실제 렌더링.
+- 자동 테스트 시작부터 볼륨 0, 별도 테스트 저장 경로 사용.
+- 21개 지상 맵: 954 통과 / 0 실패.
+- 지도 크기, 텍스트 지형, 실제 충돌 마스크, 경로 연결, 포털 도착, NPC/서비스 위치 보존.
+- 보호 파일 97개와 기존 atlas 4개 선언 동일.
+- 비대상 지상 17맵의 소품 구성/그림 atlas/접지/수관 상태 동일.
+- 새 atlas가 숲4에만 적용되고 fallback 없이 실제 PNG로 렌더링됨.
+- forest atlas와 forest_fields atlas의 Tree/Rock 각각 실제 고갈→재생 coroutine 검사 성공.
+- 맵 전환 후 새 texture와 sprite 정상 해제.
+- 원본 유효 알파 누락 0, 소나무 상단 여백 7px. 원본 재색칠/리샘플링 없음.
+- 두 등록기의 격리 재실행은 metadata 의미 및 PNG 바이트를 보존함.
+
+확인 방법 및 한계
+before-after.jpg: 직전 구현과 이번 구현 비교. 상단은 실제 해골 숲 플레이 화면, 하단은 동일 카메라의 검은 뿌리 숲 환경 렌더.
+four-forests-after.jpg: 숲4 실제 플레이 화면 모음. 전투 경고와 UI도 그대로 포함.
+*-overview.png: 전체 맵.
+각 맵은 대표 카메라 화면과 전체 맵을 확인했으며 모든 가능한 발 위치를 사람이 순회한 검증은 아님.
+이번 턴은 지하 지역 재플레이를 반복하지 않았고 관련 아트·소스 보존으로 범위를 확인함.
+Unity Editor 라이선스 제약으로 새 Editor player build를 만들지는 못함. 기존 native player에 새 runtime/PNG를 반영하여 위 검증을 실행함.
+
+재현
+python Tools/art/verify_forest_refinement.py --index Docs/World/ForestRefinement/surface-index.json
+네이티브 자동 검증 옵션:
+-batchmode -dotrpgSurface <output> -surfaceExpectedPpu 96 -propsVerify -forestFields -surfaceBaseline <previous-output>
+로컬 체험판:
+C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/window-shortcuts-player/dotRPG.exe
+바탕화면의 기존 'dotRPG 지상·지하 월드 체험' 바로가기로 실행 가능.
+반영 DLL SHA256:
+6edf154652ad09808f68d20667659d0bfc5ec6def9074eaaae05eeb5067bdea2

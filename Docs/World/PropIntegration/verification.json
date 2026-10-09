@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-09",
+  "branch": "jaein",
+  "scope": "Independent surface props; terrain/background/architecture/physics preserved",
+  "build": {
+    "method": "Roslyn runtime DLL deployed into existing Unity native player",
+    "freshUnityEditorBuild": false,
+    "limitation": "Unity Editor license unavailable",
+    "compilerErrors": 0,
+    "runtimeSha256": "552bb56a0024ae19239f211d05473593b13b9e278637e8d359eecc381d5f5e4e"
+  },
+  "assets": {
+    "generator": "built-in image_gen",
+    "transparentAtlases": 4,
+    "authoredSlots": 48,
+    "activeSlots": 32,
+    "reserveSlots": 16,
+    "atlasBytes": 7509008,
+    "activeSlotsByBiome": {
+      "forest": [
+        "broadleaf",
+        "bush",
+        "cherry",
+        "dead",
+        "fruit",
+        "golden",
+        "log",
+        "oak",
+        "pine",
+        "rock",
+        "stump",
+        "willow"
+      ],
+      "canyon": [
+        "broadleaf",
+        "pebbles",
+        "pine",
+        "rockA",
+        "rockB",
+        "rockC",
+        "shrub"
+      ],
+      "winter": [
+        "broadleaf",
+        "fir",
+        "grass",
+        "log",
+        "pebbles",
+        "pine",
+        "rockA",
+        "rockB",
+        "shrub"
+      ],
+      "sanctum": [
+        "longremnant",
+        "moss",
+        "pillar",
+        "rubble"
+      ]
+    },
+    "placeholders": 0
+  },
+  "surface": {
+    "passed": 911,
+    "failed": 0,
+    "maps": 21,
+    "appliedProps": 1132,
+    "hiddenUnsupportedDecorations": 125,
+    "lifecycleSamples": 3
+  },
+  "underground": {
+    "passed": 219,
+    "failed": 0,
+    "maps": 4,
+    "appearanceChanged": false
+  },
+  "audioVolume": 0,
+  "localPlayerUpdated": true,
+  "screenshots": [
+    "before-after.jpg",
+    "four-regions-after.jpg"
+  ],
+  "sourceProtection": {
+    "protectedFiles": 61,
+    "runtimeMaps": 25,
+    "failed": 0,
+    "failures": []
+  }
+}

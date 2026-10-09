@@ -25,6 +25,8 @@ namespace DotRPG
         string fullSpriteKey;
         string stumpKey = "stump";
         float fxHeight = 1f;
+        Sprite fullVisualOverride;
+        Sprite stumpVisualOverride;
 
         SpriteRenderer spriteRenderer;
         CircleCollider2D circle;
@@ -37,6 +39,23 @@ namespace DotRPG
         public ResourceKind Kind => kind;
         /// <summary>Standing (not a stump waiting to regrow).</summary>
         public bool Available => !depleted;
+        public SpriteRenderer VisualRenderer => spriteRenderer;
+        public bool HasVisualOverride => fullVisualOverride != null;
+        public Sprite FullVisualSprite => fullVisualOverride != null ? fullVisualOverride : Game.Art.Get(fullSpriteKey);
+        public Sprite DepletedVisualSprite => kind == ResourceKind.Tree
+            ? stumpVisualOverride != null ? stumpVisualOverride : Game.Art.Get(stumpKey) : null;
+
+        /// <summary>Map-owned pictures only; preserves health, yield, timers, transforms and collision.</summary>
+        public void ConfigureVisualOverride(Sprite full, Sprite stump)
+        {
+            if (full == null || kind == ResourceKind.Tree && stump == null) return;
+            fullVisualOverride = full;
+            stumpVisualOverride = stump;
+            if (spriteRenderer == null) return;
+            // A depleted rock remains disabled. A depleted tree immediately uses its
+            // matching stump; the existing coroutine later restores the new full view.
+            spriteRenderer.sprite = depleted && kind == ResourceKind.Tree ? DepletedVisualSprite : FullVisualSprite;
+        }
 
         void OnEnable() { if (!Active.Contains(this)) Active.Add(this); }
         void OnDisable() => Active.Remove(this);
@@ -128,7 +147,7 @@ namespace DotRPG
             if (kind == ResourceKind.Tree)
             {
                 if (!quiet) Game.Audio.PlaySfx("tree_fall");
-                spriteRenderer.sprite = Game.Art.Get(stumpKey);
+                spriteRenderer.sprite = DepletedVisualSprite;
                 circle.radius = 0.35f;
                 circle.offset = new Vector2(0f, 0.15f);
                 if (!quiet) Fx.Burst("fx_leaf", (Vector2)transform.position + new Vector2(0f, 1.2f * fxHeight), 10, 3.5f, 1f);
@@ -154,7 +173,7 @@ namespace DotRPG
             depleted = false;
             health = maxHealth;
             spriteRenderer.enabled = true;
-            spriteRenderer.sprite = Game.Art.Get(fullSpriteKey);
+            spriteRenderer.sprite = FullVisualSprite;
             circle.enabled = true;
             if (kind == ResourceKind.Tree)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -9,6 +10,29 @@ namespace DotRPG
     {
         public int SurfaceHiddenGroundRendererCount { get; private set; }
         public int SurfaceHiddenUnsupportedLandmarkCount { get; private set; }
+        public int SurfaceHiddenUnsupportedNatureCount => surfaceHiddenUnsupportedNature.Count;
+        public IReadOnlyList<SurfaceHiddenNatureRecord> SurfaceHiddenUnsupportedNature => surfaceHiddenUnsupportedNature;
+        readonly List<SurfaceHiddenNatureRecord> surfaceHiddenUnsupportedNature = new List<SurfaceHiddenNatureRecord>();
+
+        public sealed class SurfaceHiddenNatureRecord
+        {
+            public SpriteRenderer Renderer { get; }
+            public Vector3 OriginalPosition { get; }
+            public Quaternion OriginalRotation { get; }
+            public Vector3 OriginalScale { get; }
+            public Vector2Int FootCell { get; }
+            public char Ground { get; }
+
+            internal SurfaceHiddenNatureRecord(SpriteRenderer renderer, Vector2Int footCell, char ground)
+            {
+                Renderer = renderer;
+                OriginalPosition = renderer.transform.position;
+                OriginalRotation = renderer.transform.rotation;
+                OriginalScale = renderer.transform.localScale;
+                FootCell = footCell;
+                Ground = ground;
+            }
+        }
 
         /// <summary>Visual replacement only. Original terrain, water simulation and all
         /// scene objects remain alive, so travel, collision and services stay unchanged.</summary>
@@ -16,6 +40,7 @@ namespace DotRPG
         {
             SurfaceHiddenGroundRendererCount = 0;
             SurfaceHiddenUnsupportedLandmarkCount = 0;
+            surfaceHiddenUnsupportedNature.Clear();
             if (map == null || map.worldLayer != WorldLayer.Surface || map.IsInterior || map.instanced
                 || Array.IndexOf(Environment.GetCommandLineArgs(), "-surfaceGroundOnly") >= 0
                 || !StreamingFiles.Exists(SurfaceWorldArt.SourcePath(MapId))) return;
@@ -39,7 +64,30 @@ namespace DotRPG
                 renderer.enabled = false;
             }
             HideUnsupportedSurfaceLandmarks(resolved);
+            HideUnsupportedSurfaceNature(resolved);
+            ApplyBiomePropVisuals(scene);
             GroundSurfaceProps(scene, resolved);
+        }
+
+        void HideUnsupportedSurfaceNature(char[,] ground)
+        {
+            if (!UsesForestCanopyComposition) return;
+            // The approved forest background already supplies canopy on blocked %
+            // cells. Only suppress uncollidable edge overlays whose roots sit on it.
+            foreach (Transform root in objectsRoot)
+            {
+                if (root.name != "EdgeTree" && root.name != "Forest edge understory") continue;
+                var sr = root.GetComponent<SpriteRenderer>();
+                if (sr == null || !sr.enabled || root.GetComponentsInChildren<Collider2D>(true).Length != 0
+                    || root.GetComponentInChildren<ResourceNode>(true) != null
+                    || root.GetComponentInChildren<NpcController>(true) != null
+                    || root.GetComponentInChildren<ServiceDoor>(true) != null
+                    || root.GetComponentInChildren<MapPortal>(true) != null) continue;
+                int x = Mathf.FloorToInt(root.position.x), y = Mathf.FloorToInt(root.position.y);
+                if (x < 0 || y < 0 || x >= width || y >= height || ground[x, y] != '%') continue;
+                surfaceHiddenUnsupportedNature.Add(new SurfaceHiddenNatureRecord(sr, new Vector2Int(x, y), ground[x, y]));
+                sr.enabled = false;
+            }
         }
 
         void HideUnsupportedSurfaceLandmarks(char[,] ground)

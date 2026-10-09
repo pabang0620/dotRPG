@@ -1,0 +1,6472 @@
+{
+  "version": 1,
+  "allowedChanges": [
+    "Assets/StreamingAssets/SurfaceWorld/forest.png",
+    "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+    "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+    "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png"
+  ],
+  "gitHead": "395ea80df239ea0e5941347d5bfea43685fa5eb9",
+  "preexistingChanges": [
+    " M Assets/Scripts/Runtime/Core/DevCapture.SurfaceWorld.cs",
+    " M Assets/Scripts/Runtime/Core/DevCapture.WorldLayers.cs",
+    " M Assets/Scripts/Runtime/Interaction/ResourceNode.cs",
+    " M Assets/Scripts/Runtime/World/WorldBuilder.SurfaceGrounding.cs",
+    " M Assets/Scripts/Runtime/World/WorldBuilder.SurfaceWorld.cs",
+    "?? Assets/Scripts/Runtime/Art/BiomePropArt.cs",
+    "?? Assets/Scripts/Runtime/Art/BiomePropArt.cs.meta",
+    "?? Assets/Scripts/Runtime/Core/DevCapture.PropIntegration.cs",
+    "?? Assets/Scripts/Runtime/Core/DevCapture.PropIntegration.cs.meta",
+    "?? Assets/Scripts/Runtime/World/WorldBuilder.PropIntegration.cs",
+    "?? Assets/Scripts/Runtime/World/WorldBuilder.PropIntegration.cs.meta",
+    "?? Assets/StreamingAssets/WorldProps.meta",
+    "?? Assets/StreamingAssets/WorldProps/",
+    "?? Docs/World/ForestRefinement/",
+    "?? Docs/World/PropIntegration/",
+    "?? Tools/art/register_forest_fields.py",
+    "?? Tools/art/register_world_props.py",
+    "?? Tools/art/verify_forest_refinement.py",
+    "?? Tools/art/verify_prop_invariants.py"
+  ],
+  "previousIndex": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-refinement-release\\surface-index.json",
+  "previousIndexSha256": "04ec84b8b6ba2a7b3b4b5e252cb4f0512ad73f9853fa11662b42c248161df731",
+  "files": [
+    {
+      "path": "Assets/Resources/Maps/Canyon.txt",
+      "allowChange": false,
+      "sha256": "068114b082115c94c7bad85fd312477e63d905f7c966b447a558629fd61a67f2",
+      "bytes": 4258,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon1.txt",
+      "allowChange": false,
+      "sha256": "1d0b4658ead85afac2df663e44cc63fb42fbe8acdec19d41bcab6db8a2663e8e",
+      "bytes": 1115,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon2.txt",
+      "allowChange": false,
+      "sha256": "794e27f93aecc7e918e01416d1d405dddf9161397bc0b45ee1b23b98add2b278",
+      "bytes": 1125,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon3.txt",
+      "allowChange": false,
+      "sha256": "07a97b644ddb6073a2c60d748fd6640a1efd5e706e843ec87abec5fb378fdd80",
+      "bytes": 1120,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/CanyonBoss.txt",
+      "allowChange": false,
+      "sha256": "b6c700f1d508dfac779c694fdc6abe693ff0849403614df9454dece961bd53ac",
+      "bytes": 1293,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest1.txt",
+      "allowChange": false,
+      "sha256": "964626a541b6cb4269ca69aba06d9d6745bcf9d4030b8f674e61cbf05dac5585",
+      "bytes": 1172,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest2.txt",
+      "allowChange": false,
+      "sha256": "7dddfbc41911fc4d0a42df8fbceeb9568ef5ab01ef8af168c1f11c4d2eec048f",
+      "bytes": 1182,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest3.txt",
+      "allowChange": false,
+      "sha256": "4ad1279e7dc8569d71012de16ef5c13d03ab44aaa587c857c0475fe6a50a2a63",
+      "bytes": 1185,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/ForestBoss.txt",
+      "allowChange": false,
+      "sha256": "8eca4b275d9de2a06268fe3cb1fa5e84deade9c7ad7572b9962b72aa7e69187d",
+      "bytes": 1363,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Raid1.txt",
+      "allowChange": false,
+      "sha256": "3b039f45ab8c2e070ba6324e14472d938c6f24c2da7d7923cb1b76e053da2cd3",
+      "bytes": 1276,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Raid2.txt",
+      "allowChange": false,
+      "sha256": "b1b23697bd779b55ba3f175bfc397abf68dbb799e18e0d6b0b77f00c5f387dfd",
+      "bytes": 1325,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/RaidBoss.txt",
+      "allowChange": false,
+      "sha256": "c153e641f32560aad4c4cb59292c0aafca453ddde5ea16b1b4b6a1a27a534dbc",
+      "bytes": 1299,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter1.txt",
+      "allowChange": false,
+      "sha256": "45aee26cbcb5e8efc1cac30b7b81abd6e58428206cc276360cb78ee535d3b630",
+      "bytes": 1168,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter2.txt",
+      "allowChange": false,
+      "sha256": "edfe654ed569e2da3e894d4dab25cc24de31eaa06e6009e2be2b5c1bc835ff1b",
+      "bytes": 1157,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter3.txt",
+      "allowChange": false,
+      "sha256": "da4f82c220ad223a49bdfc60926533e6df8af5b10db171d921078793c8945f1b",
+      "bytes": 1183,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/WinterBoss.txt",
+      "allowChange": false,
+      "sha256": "9de4f9b207a34463263f9c23fa37f3a8922e64b32a876f032c902b9dcf1bbd7c",
+      "bytes": 1356,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Forest.txt",
+      "allowChange": false,
+      "sha256": "b270411299eb63d1f725042bfd7e4c19ce4b78397069d20c37b7c963b1d59e55",
+      "bytes": 3782,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/SunkenSanctum.txt",
+      "allowChange": false,
+      "sha256": "9f9031851934d1459b93169b660649d38ffa3bd03a1721138b665d606e42c724",
+      "bytes": 3716,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Village.txt",
+      "allowChange": false,
+      "sha256": "5129964efb79bd39868f372075c4b37c4149435044d72680949c75449c22b92b",
+      "bytes": 4696,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Resources/Maps/Winter.txt",
+      "allowChange": false,
+      "sha256": "04502e636ee847a5ad12c81911b951eebad4d6147e4d02f38bbaf7cfe79d8da1",
+      "bytes": 3635,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/BiomePropArt.cs",
+      "allowChange": false,
+      "sha256": "175822d753b8647e18a70585e0f672ba9026360d29c99cc089161476fd5b82a1",
+      "bytes": 11857,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/CanyonTerrain.cs",
+      "allowChange": false,
+      "sha256": "40554370eb5b102b1aec5fbb34d28bf33b67a11cc603c83b6337f8e1d0c413a9",
+      "bytes": 46747,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/CharacterLook.cs",
+      "allowChange": false,
+      "sha256": "79cf1d4669277304c97939ea8615422a2cf2486db65dfea223f72d1c5f468590",
+      "bytes": 6784,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/HdMaterial.cs",
+      "allowChange": false,
+      "sha256": "d253a8c1f87a7b9a4fc81bd744ca9a452036a217300ccca5a5839fe0b5661df5",
+      "bytes": 1038,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/HuntingScenery.cs",
+      "allowChange": false,
+      "sha256": "7f5238728d9d54e6e2b661c6f2f47745b735162e63c59051edd28404f027db65",
+      "bytes": 8580,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/KatanaArt.cs",
+      "allowChange": false,
+      "sha256": "234878a0553bfbf57d5feefe6e84add28ec3482823a464740dc9783f8831098a",
+      "bytes": 1158,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/PixelCanvas.cs",
+      "allowChange": false,
+      "sha256": "2ca27d58fcd7d97fc2e6c796d6aea50f0486c60ec72295ad69ce5cb889c2aaef",
+      "bytes": 7761,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/PlayerWeaponArt.Runtime.cs",
+      "allowChange": false,
+      "sha256": "fca719ad143c268cb5e911c84d3b9e5a9c62e7be8ab3074f11204f65c9db74e1",
+      "bytes": 1335,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/PlayerWeaponArt.cs",
+      "allowChange": false,
+      "sha256": "fc02059be86505b469188c9662daca9d13636fe549500eb6bbfc1943d96a6a75",
+      "bytes": 6652,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArt.cs",
+      "allowChange": false,
+      "sha256": "ecb5e3e2fb8337bd8be2267194e69259bfca0aff5bfab3579d2ec1530fd305e6",
+      "bytes": 44670,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtCanyon.cs",
+      "allowChange": false,
+      "sha256": "2c121b854c4ba8fe6e7cf551d724a434919aeca829b1d58a12a89a22dedae6a3",
+      "bytes": 18448,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtCanyonHd.cs",
+      "allowChange": false,
+      "sha256": "f0422ff8552c52619f534927a7fc9daea13ac688a9b6350d3e6125e415a1b35c",
+      "bytes": 14550,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtCharacters.cs",
+      "allowChange": false,
+      "sha256": "9909b74312020819ad3a5475c07d5f1d982abe2076bb60a2cf09c27f5e390c4f",
+      "bytes": 2725,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtCharactersHd.cs",
+      "allowChange": false,
+      "sha256": "8f53b895acdf1f9ae088d50e3a3096779abc7075764cc9fb320981e53d416d83",
+      "bytes": 51421,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtCharactersXd.cs",
+      "allowChange": false,
+      "sha256": "b5265de7405910c7ca6f5d4c4a26ada7c7b039521ff12a1ad3bd2fd932b1c678",
+      "bytes": 734,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtCourtyardHouse.cs",
+      "allowChange": false,
+      "sha256": "54e0599c2cbc4513655ddb4f61cd85f055220c0fba7f12121be2db10d346f45f",
+      "bytes": 14606,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtDungeon.cs",
+      "allowChange": false,
+      "sha256": "96c00a3393817b8873436399f3c2ad5fe1a7ab6b65f92c5d53857ef4e2ecf15c",
+      "bytes": 7077,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtFx.cs",
+      "allowChange": false,
+      "sha256": "2b64cad63b459e631c4bf04a950f25d7485aba3336bd4e8ee027cbdaa3079bf6",
+      "bytes": 29125,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtFxHd.cs",
+      "allowChange": false,
+      "sha256": "8eac97270e3608b3690c73a332001461f3076217ff6d1efc44e5b2b229dc4656",
+      "bytes": 51002,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtMonsters.cs",
+      "allowChange": false,
+      "sha256": "4a3b57d53b429b662701c7842648a3def1a361ae7f58fde9288328fc33054e3f",
+      "bytes": 58617,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtMonstersHd.cs",
+      "allowChange": false,
+      "sha256": "7a06008e59eef18cc1aad903a96cbd9b8a4f8428bc0ae36953fc3c0ff5f52343",
+      "bytes": 10792,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtParty.cs",
+      "allowChange": false,
+      "sha256": "96f067b6df9aef978e1cb1fc88085be40a333783aa69aed8f731271eec0c2c8e",
+      "bytes": 2123,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtSkeletonXd.cs",
+      "allowChange": false,
+      "sha256": "fbb8f370fe0ba79e0758a5300a872103c1757a5352035ea0e8dd8789c2d23895",
+      "bytes": 483,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtTown.cs",
+      "allowChange": false,
+      "sha256": "a3483d85434e60219becb0a973c2de0b0194efb10931e7a1461b65656d97ce90",
+      "bytes": 42620,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtTownBuildings.cs",
+      "allowChange": false,
+      "sha256": "fa6487f1266dbac4afc6437905c04b6eaa6c824de6ad59d6e932b62ff75814fd",
+      "bytes": 34010,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtUi.cs",
+      "allowChange": false,
+      "sha256": "4e1bf8c2fab2d00227b00a515fc1d6da1ab589560671f0842f4123e7370bce55",
+      "bytes": 49510,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtWinter.cs",
+      "allowChange": false,
+      "sha256": "9dd3ac1144a101ccf777ec033a2cab115706aef47896e77da9da2890fe88716d",
+      "bytes": 59392,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/ProceduralArtWinterHd.cs",
+      "allowChange": false,
+      "sha256": "42b8f5ec64a54805ef009ad14afe40fc79723d0fe5e9addb49c63f6a59e130ed",
+      "bytes": 35385,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/RegionalMonsterArt.cs",
+      "allowChange": false,
+      "sha256": "0fbc5ea06dc4c772f570ed0f123890a23d85d5d7d65f64dfc2def9439709d2a8",
+      "bytes": 6414,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SilverWarriorArt.cs",
+      "allowChange": false,
+      "sha256": "7568ef02156ff0b58ac5351e255f5042b1991d7aa73bcbd203b048d7dc6d742d",
+      "bytes": 12333,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SilverWarriorPresentation.cs",
+      "allowChange": false,
+      "sha256": "d5f1c11a5802c07db5c2e6a3be20b03ba86b5bf06d27b4ec7e5d2e014993b183",
+      "bytes": 3805,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SpriteLibrary.cs",
+      "allowChange": false,
+      "sha256": "8e6254bb412f7e04166652462fc24afae2f45d8040ad4714bd3baacdbce93dad",
+      "bytes": 14195,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/StairPainter.cs",
+      "allowChange": false,
+      "sha256": "a352856949e259ca2f14d676c4fefc06e14f139b79599d662b1a122c27892ee3",
+      "bytes": 16675,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SunkenSanctumArt.Approach.cs",
+      "allowChange": false,
+      "sha256": "c01ace8b804364ec39ba24e43b17060d7f96a6cd68df8676f148f9f806e150b4",
+      "bytes": 2003,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SunkenSanctumArt.Shore.cs",
+      "allowChange": false,
+      "sha256": "d01cf79419d554fa442886851a5345b45234a78562b02b93483e50e3ab0fdfba",
+      "bytes": 12248,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SunkenSanctumArt.cs",
+      "allowChange": false,
+      "sha256": "c3b18f788ffec168edd2b190774ace7b36b20ef13c2ba0b1a171ae6f70d7f5ae",
+      "bytes": 8476,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/SurfaceWorldArt.cs",
+      "allowChange": false,
+      "sha256": "27f1ed84a771d848ad0db09b78244398ac67bcfecb126736df5cafe659ef6c3f",
+      "bytes": 17697,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/TownTerrain.cs",
+      "allowChange": false,
+      "sha256": "81b3342c2e741bbd4252a94e0e2833d1c758725e9f6d2a6eb6476f2f1e6dc75c",
+      "bytes": 30940,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldArt.Composition.cs",
+      "allowChange": false,
+      "sha256": "1a7f99d431d449f08aaba6f5e686928230d3ad2da74a06bfd07929c3ff1c901d",
+      "bytes": 16388,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldArt.CompositionOcclusion.cs",
+      "allowChange": false,
+      "sha256": "a24cbda16123a3fc283e2a8b721355b8ee0c823774e59663aa18c61d057ab382",
+      "bytes": 5942,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldArt.Depth.cs",
+      "allowChange": false,
+      "sha256": "5dc6c49c798a86dd9e4d876390a7c7fc438a55831101133b642b164c0470dfda",
+      "bytes": 7434,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldArt.Structures.cs",
+      "allowChange": false,
+      "sha256": "b50bf700d41e118bbac5b18c39ae4fef613b4964f96ea54103033faa99d2e61a",
+      "bytes": 7778,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldArt.Terrain.cs",
+      "allowChange": false,
+      "sha256": "310e18cca994e7a17cfb18069ab305947c1fe6a0dd57a1ec57a0cbab6f20ec0d",
+      "bytes": 15133,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldArt.cs",
+      "allowChange": false,
+      "sha256": "dc78b7e5eb909ec6ce6516d1f3270167b6728223dec52f714170feddee5be6fb",
+      "bytes": 12169,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/UnderworldMonsterArt.cs",
+      "allowChange": false,
+      "sha256": "621345103e0121cff816715553f7884ac4ed215f5d561b3a06854b0fce62a134",
+      "bytes": 6147,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VfxArt.Arcanist.cs",
+      "allowChange": false,
+      "sha256": "b84a033217464cb7cbf7ec71c334624d4e6d608b968b6bca8ebaef1cb49388a4",
+      "bytes": 13946,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VfxArt.Bishop.cs",
+      "allowChange": false,
+      "sha256": "e29e9a5cefa740f91c38e20db6c0f2846ddd19d0f962ac1a44e62bd4cd36a2ea",
+      "bytes": 12168,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VfxArt.Fighter.cs",
+      "allowChange": false,
+      "sha256": "235e8ebfbcad772c65bc87e0b68121ac4cb871ba3992609bf83c2836891ab5cb",
+      "bytes": 15994,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VfxArt.Guardian.cs",
+      "allowChange": false,
+      "sha256": "4efa040051d4b44ac553eb3a4a0336ea35cbca62c764c9689dfc6f5ff40387f1",
+      "bytes": 11352,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VfxArt.cs",
+      "allowChange": false,
+      "sha256": "f1d13027904a324947a09407956478db5e728452bd462c1615ab3e8c584cef01",
+      "bytes": 10485,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VillageBuildingArt.cs",
+      "allowChange": false,
+      "sha256": "1a67d2ec0ab457f2317a6fea2f3691a957569bb717e8236138838838ff4c50f0",
+      "bytes": 2736,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/VillageNatureArt.cs",
+      "allowChange": false,
+      "sha256": "d4ff6fb1238cdec51f89ef92ce285b858fd1ad849821a05a1915b519325b6623",
+      "bytes": 3911,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WarriorAttackMotion.cs",
+      "allowChange": false,
+      "sha256": "1e5e6f35be3d3f618ae04a923d4fb82719b32a3fe082270011fda3ee31af969b",
+      "bytes": 8799,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WarriorFlameSlash.cs",
+      "allowChange": false,
+      "sha256": "f73f0002ff95be56e384151b9b153a27a61bcb4eb26d2d7373d896c698ad4fb4",
+      "bytes": 6215,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WarriorGait.cs",
+      "allowChange": false,
+      "sha256": "156fe7e9ad6983ae42d5202dcbae92e912599bb193b8ea525e7e8f837b730eb6",
+      "bytes": 4888,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WarriorLocomotion.cs",
+      "allowChange": false,
+      "sha256": "cf90253a87f690c10eaae3317d83fedbcaca9d4e1ee18a611f4a3e8158d0b81a",
+      "bytes": 2989,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WarriorRightHandRig.cs",
+      "allowChange": false,
+      "sha256": "35b1638b41bc4ac32baf6a71f4568f5860bd782d525cb468aaa138c1644da626",
+      "bytes": 7082,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WinterTerrain.cs",
+      "allowChange": false,
+      "sha256": "157dc8a2cda93480bc0bfe4ce75e0b6ceb724d01d2a918ed6aa0cc2b2d03b497",
+      "bytes": 56652,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WinterVillageArt.cs",
+      "allowChange": false,
+      "sha256": "ee6f74b5cbcc3d78efa16fb75364b0a677cdb4dee83e014c16f1bf639f672662",
+      "bytes": 2853,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Art/WorldAtlasArt.cs",
+      "allowChange": false,
+      "sha256": "ab8cd970f257dd700c2af7b816a7058d0d360533acc27e2daaa965662ef2e1a4",
+      "bytes": 24787,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Audio/AudioManager.cs",
+      "allowChange": false,
+      "sha256": "cb4f29cac7458d67a94ef4aecec4ec59bf77c1eab992792d6b3fab87454b28ea",
+      "bytes": 6021,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Audio/SfxSynth.cs",
+      "allowChange": false,
+      "sha256": "7da33e43dc62b62bb30aaa8094318a0e6513e07134e14986e1e06ef00b42eada",
+      "bytes": 19914,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/CameraSystem/CameraFollow.cs",
+      "allowChange": false,
+      "sha256": "7e2fa81dbedb1ba5bc8209422af3c8834c6cf38d874c84b21d73d290c500a922",
+      "bytes": 7170,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerAura.cs",
+      "allowChange": false,
+      "sha256": "1566887967aefd76af755b1329c606e90d40fa5bf044005d96e1f5ca3e9b45fd",
+      "bytes": 5133,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Arcanist.cs",
+      "allowChange": false,
+      "sha256": "1de79ee861b7e4b99d4e3c5eeae8c4162d40c2632da4780a673e05efb3b0894c",
+      "bytes": 20694,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Bishop.cs",
+      "allowChange": false,
+      "sha256": "090db985c06f7af0b89ffe58b9b89a3861d69319a4fcb517419aea668e14e8a4",
+      "bytes": 15190,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Fighter.cs",
+      "allowChange": false,
+      "sha256": "8534453927a16c60afddb773cf4cb59a9e8a3b9dc9b59a7fc47cee0eeaaa41fe",
+      "bytes": 15357,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Guardian.cs",
+      "allowChange": false,
+      "sha256": "8eea3507b5bcfcb1815ec2842a518eb3c4f96e5c67fa398ff0b05f55bac7ca65",
+      "bytes": 15149,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.cs",
+      "allowChange": false,
+      "sha256": "541c4d297f46bbc9d235f9bc210f2eb936ca54805165a7d05980e0c02479a6d7",
+      "bytes": 20079,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerFx.cs",
+      "allowChange": false,
+      "sha256": "a3a9934ecbdf0213d7fc29738115cb040c767579bc9131aa23bd90c6cb777d8c",
+      "bytes": 18241,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CombatFeedback.cs",
+      "allowChange": false,
+      "sha256": "32f225035312c9f98efbc8c2bcc03048fee4c30402279fedaaecb470d0ac1598",
+      "bytes": 9666,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Damage.cs",
+      "allowChange": false,
+      "sha256": "1abb100d933e8ee0b5a3fa52d167e09a2e7eaf4831df573a7dce7aaff880aa49",
+      "bytes": 1916,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Fx.cs",
+      "allowChange": false,
+      "sha256": "442beeb3807a4319faae7332f73d1a140db97d32a05b8f25867f07c36c0090b4",
+      "bytes": 5032,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Health.cs",
+      "allowChange": false,
+      "sha256": "c783f9c0c632fa3263abf7c048a6c18f6124bfa4fa9123a13e31b913112a1668",
+      "bytes": 2571,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/HitFlash.cs",
+      "allowChange": false,
+      "sha256": "c775e50784806c96cdab04c7894b5adfef86a854be543d02d02bf63a8bf52123",
+      "bytes": 3599,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/MagicBolt.cs",
+      "allowChange": false,
+      "sha256": "04e88343593a665d4d6cadb844e9110d5f6b061986999d46e6861f9dc08cf3dc",
+      "bytes": 6562,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/PowerAura.cs",
+      "allowChange": false,
+      "sha256": "c46a5ce0ce84e19626903247002423cff1de64757b3d76eb0d5b8df6238ea6d1",
+      "bytes": 6829,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/SkillEffects.cs",
+      "allowChange": false,
+      "sha256": "cdb06d47ceb77cf03eba258fea85419eecd7d0f4b1e5550b8d41a595ba0201eb",
+      "bytes": 57443,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Telegraph.cs",
+      "allowChange": false,
+      "sha256": "872f0ac7092dc648747e1d851695bdc86d623b508bb97b2da903a4e78bc45c8c",
+      "bytes": 17869,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/VfxPlayer.cs",
+      "allowChange": false,
+      "sha256": "e4cba6f97ec60acfe13c330b80663960ca1794626aea10b44d51056874e78319",
+      "bytes": 6004,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Commerce/CosmeticAura.cs",
+      "allowChange": false,
+      "sha256": "d9aecce57df24e8555a07f53c54a9e8f277aa5d9c99a6a08328757fdfdc9ead2",
+      "bytes": 5388,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Commerce/CosmeticCatalog.cs",
+      "allowChange": false,
+      "sha256": "97dc5266834069156f7ff767644922f3b751fa84714a41c2bac4b74642b12427",
+      "bytes": 6671,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Commerce/CosmeticStore.cs",
+      "allowChange": false,
+      "sha256": "6292e5a7850ad81fcaa55b13801c2898725495b79534c6188c2507cdb9f44c5d",
+      "bytes": 9257,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Commerce/ICommerceProvider.cs",
+      "allowChange": false,
+      "sha256": "695c29a024daa0d71e1845c844c5bce553e7000c8fad375ea26e1ae0061d81c2",
+      "bytes": 2176,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Commerce/SkinCatalog.cs",
+      "allowChange": false,
+      "sha256": "20adc3205d7c05d0e1d4a6828097867221a5193af6b57cbba8eeddc87ec20964",
+      "bytes": 6729,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Commerce/SkinTrail.cs",
+      "allowChange": false,
+      "sha256": "d1a4773abab60c00c1544723017bfa5a13cc02dc6fe7062daa5772b56aea1637",
+      "bytes": 7855,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Atlas.cs",
+      "allowChange": false,
+      "sha256": "a5d0f5a65a618fa99e380cbe5213050699154e48276b03ee70627561a4841c1c",
+      "bytes": 9043,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Bgm.cs",
+      "allowChange": false,
+      "sha256": "47b502d0c880240d4c2316750843850c0ee0a1b4b3297d7ad7892a6b18aff976",
+      "bytes": 3649,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Canyon.cs",
+      "allowChange": false,
+      "sha256": "ce300c420e075d0c6f662383ca07725d237abdef4f1f69de3260e524d4b8e488",
+      "bytes": 3319,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Career.cs",
+      "allowChange": false,
+      "sha256": "ee5fbc052d4bcc82f0bdb0988e38376ad40d19eb3ffc018bbf68bc822afd3de7",
+      "bytes": 7459,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Chars.cs",
+      "allowChange": false,
+      "sha256": "08253475b9441ecfd6853e88776d5c2770c80cf91c91a915a0d1c36a66bb1e3d",
+      "bytes": 18443,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Content.cs",
+      "allowChange": false,
+      "sha256": "9b1aef02d1f108ac474782be3f38503c8fa6e3ed8930f4b9a94b50530ef882f4",
+      "bytes": 29671,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Depth.cs",
+      "allowChange": false,
+      "sha256": "d6a4176ee659579a09f6e2c847cddca2ccba1dbb021b029859cad0a38a3c7db2",
+      "bytes": 7267,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Dungeon.cs",
+      "allowChange": false,
+      "sha256": "1deaf9e96c376e78811c25245b588f2d719c8e3c388f3b90306686a90bb54c43",
+      "bytes": 40923,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Enh.cs",
+      "allowChange": false,
+      "sha256": "e2b1c0ca3b8fca93652c458033a6a20fea15af362a48fa6b50315cc4823c31c2",
+      "bytes": 39555,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Houses.cs",
+      "allowChange": false,
+      "sha256": "f7d0bd7879ba3f25723ec5dea5bd1591338d4bba781fd7a1c94b774c769f6ebf",
+      "bytes": 5440,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Hunting.cs",
+      "allowChange": false,
+      "sha256": "f11714a9f42e77f80ad9a80612e4b21af84e588cfc25f77f4131fbb8ca1908c1",
+      "bytes": 9512,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Mobility.cs",
+      "allowChange": false,
+      "sha256": "21d3cb72d8a44f1503430521dde3510d2b3fc2470ab61b4c6d241a0499fb2482",
+      "bytes": 6529,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Monster.cs",
+      "allowChange": false,
+      "sha256": "ea1ed0dc6cebd8359f9f1ce268d6f1d9a9db84c13c3da465356cbb6412e9eca0",
+      "bytes": 43708,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.MonsterDemo.cs",
+      "allowChange": false,
+      "sha256": "656e00849b24fec8ff5d75d19263d23e6a5d5fbac559b8c71477f04cf6df8857",
+      "bytes": 4276,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Nature.cs",
+      "allowChange": false,
+      "sha256": "eee2bd3dba1390166974e6f8f424acde930d3150afb4bb808b6420b7a7b9728c",
+      "bytes": 6247,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Net.cs",
+      "allowChange": false,
+      "sha256": "5bcc6b30e1ada1626d5b7b05f6bcbc1f5c741fb445f7a8c9bb7e7e930e34d824",
+      "bytes": 2990,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Online.cs",
+      "allowChange": false,
+      "sha256": "0909d3899a607938440b4c60dfe1f35ee93a404cbe7613568753c64695d73918",
+      "bytes": 24206,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.OnlinePause.cs",
+      "allowChange": false,
+      "sha256": "032739b30e6f48b9d40fefa52ecac83d42c5805f33668d89cc86ba18e92b7822",
+      "bytes": 9654,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Party.cs",
+      "allowChange": false,
+      "sha256": "c79dadb1961754e8fab1c3187d71d84beb592015a05e2a3322ddadbbda9898eb",
+      "bytes": 22973,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Perf.cs",
+      "allowChange": false,
+      "sha256": "3513ce991ac2454dee2a6183ef99d1eba74224e8734a18a32b3e2497d1b9adf3",
+      "bytes": 8142,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Presentation.cs",
+      "allowChange": false,
+      "sha256": "fd21b40c791baa0580ecb6d56c150c7b2e5bf84b77b4d285db32157bda91d4c1",
+      "bytes": 13924,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.PropIntegration.cs",
+      "allowChange": false,
+      "sha256": "712d65a3c098065dcf622618eaf3022e6edd0419fe347409daceffd7d4736096",
+      "bytes": 20961,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.RegionalMonsters.cs",
+      "allowChange": false,
+      "sha256": "fdbdcfa7422cac7d5ef100858648ef10c996cb0c46c4014915078c34c7a3c6cc",
+      "bytes": 3654,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Routes.cs",
+      "allowChange": false,
+      "sha256": "e286032ee5e51bf3d1705e65030d5c6bcbde80203bef7846ffac24cdbb851271",
+      "bytes": 4802,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Sanctum.cs",
+      "allowChange": false,
+      "sha256": "8cdb2a8953746e430087ebf6a4664116dd1ed175061c99f768bdaa4c7760a6e4",
+      "bytes": 10131,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.SanctumFields.cs",
+      "allowChange": false,
+      "sha256": "d878362928f632e250443436a960d26c7607e4cea627c99c99164a45b8294689",
+      "bytes": 5561,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Silver.cs",
+      "allowChange": false,
+      "sha256": "5601b41754aaaf1365aa0d657bbb7a6125ddbb148c71e9c8519ecb97b2aa411e",
+      "bytes": 11974,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Stairs.cs",
+      "allowChange": false,
+      "sha256": "dcadc51e3175bbd58f434185a0fd3d831bab89423a3da8aad2cd7b90953ef828",
+      "bytes": 1974,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Story.cs",
+      "allowChange": false,
+      "sha256": "a19d25c5b7e8af3fab81e8e0e83be17fc24e1207c202b6ccf86d9dd1972ed059",
+      "bytes": 16027,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.SurfaceWorld.cs",
+      "allowChange": false,
+      "sha256": "44fae2cd389c325116a3333209ac3f6a5743347f1807139a40206c92224ba475",
+      "bytes": 53516,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Ui.cs",
+      "allowChange": false,
+      "sha256": "a0ff709fdaa013c1fe563a91bab5820b28bd146b830d0c49a07701b4c8009b42",
+      "bytes": 14546,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.VillageArt.cs",
+      "allowChange": false,
+      "sha256": "e29970bfe33094933a9ab05a5cdf0d1bc5735264cc156da22e6a1421fde3835f",
+      "bytes": 4223,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Water.cs",
+      "allowChange": false,
+      "sha256": "4f5a494c286607ab002b0309d1f65209ca83606e650abe1bbe03ea12a9af932c",
+      "bytes": 5065,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.WeaponAppearance.cs",
+      "allowChange": false,
+      "sha256": "4247461246bc10d046af7256d488340197192ce5192287af5f9c3148a888db6e",
+      "bytes": 9371,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.Winter.cs",
+      "allowChange": false,
+      "sha256": "b35900b28740a2373a11c779b2498650482cc2e6fbabbc78595deb621b2485e9",
+      "bytes": 3586,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.WorldLayers.cs",
+      "allowChange": false,
+      "sha256": "6a77014f2c3565227c0c9ce9ffac69b850ba6b4500a5d5833ff0b9c3c38dd875",
+      "bytes": 54149,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.cs",
+      "allowChange": false,
+      "sha256": "88c0805ef9258ed125e1e6dc260c610f6b2a79177323111e3f8dad89409e758b",
+      "bytes": 61289,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/Facing.cs",
+      "allowChange": false,
+      "sha256": "37b772ca9784885222e8fa61618c893f9a0a089e944ef982740304db6d42098a",
+      "bytes": 2764,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/Game.cs",
+      "allowChange": false,
+      "sha256": "965b28de3dcb1e7b748c5abb595b18188d9bf83209876a019f25176480f049d5",
+      "bytes": 2154,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameBootstrap.cs",
+      "allowChange": false,
+      "sha256": "88e29bb1457a49aecc75d9a30312cfa0ca8a18772ccddcedc852a88c12b4a907",
+      "bytes": 3901,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameEvents.cs",
+      "allowChange": false,
+      "sha256": "d2bbab1fb4eaec522e25a0eedf2302607ab964501e8fec782d07bd59e7c5a27c",
+      "bytes": 2284,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameFlow.cs",
+      "allowChange": false,
+      "sha256": "8ff098405088b4c14eabbe721b065022da9028f780f4810e2f3730ebb27d2229",
+      "bytes": 21297,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameSession.cs",
+      "allowChange": false,
+      "sha256": "dc8f7806996ddafe4260914b75459690abfbd132a404d7b155e555e51a8455e1",
+      "bytes": 8055,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameState.cs",
+      "allowChange": false,
+      "sha256": "3a22e5310a354b8f173c176e84f10558ad9ae6916f541de621bac847893a2ecb",
+      "bytes": 2095,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/Inventory.cs",
+      "allowChange": false,
+      "sha256": "1e54d71b1d6de58b4bf18c8a91c4e0bb89a903b9b8dc8ce4d51cd3c9bbdd6aab",
+      "bytes": 2670,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/PhysicsCompat.cs",
+      "allowChange": false,
+      "sha256": "ae88c6360140ce813a8c0fcd86a7817ab83734389c88ad19cb3ea34475da17cb",
+      "bytes": 1229,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/ResourceWarmup.cs",
+      "allowChange": false,
+      "sha256": "1065d1b4aaa71f492e7755e094de2d29ec8c74f496bb181770edc72c499af130",
+      "bytes": 5367,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/YSort.cs",
+      "allowChange": false,
+      "sha256": "ca2fe4316ff28c3892b89bff16e5d0656439e097dae7c1e45755fe67f274983d",
+      "bytes": 2918,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/EnemyStats.cs",
+      "allowChange": false,
+      "sha256": "bfbd606755363b2efd8bc46ac7b4a29d139cc78d785bd35bde69a27f9c2bda52",
+      "bytes": 1601,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/GameConfig.cs",
+      "allowChange": false,
+      "sha256": "40b87ad6de4dd7954b8cd7a8031241e803683918cd253c1fb72d3407729eb024",
+      "bytes": 9693,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/NpcDefinition.cs",
+      "allowChange": false,
+      "sha256": "289ad64e2e83c22148ddc9a911baf8a31608272a71a6843a4acdbbabddfbd46f",
+      "bytes": 3177,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/PlayerStats.cs",
+      "allowChange": false,
+      "sha256": "ff2846a34a1f657f778f62c035353cb707fc6e8dac231c5a57cf1bfea81681e6",
+      "bytes": 1337,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/QuestConfig.cs",
+      "allowChange": false,
+      "sha256": "a8475d0e08f949ed4f955ef7f160ed0c4ed0f9d2003fb74022b69c73181d45a6",
+      "bytes": 1567,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dialogue/DialogueDatabase.cs",
+      "allowChange": false,
+      "sha256": "9320897cbe8c1e0482534300461e4ad4fe51d7dd15ef47a6a2fb049fb2335235",
+      "bytes": 2586,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dialogue/DialogueManager.cs",
+      "allowChange": false,
+      "sha256": "27d21e00b107387ff723af73323b4ee43a4250cc6435868bb85a0b8133a4f568",
+      "bytes": 4773,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonAuthority.cs",
+      "allowChange": false,
+      "sha256": "7309903385b25e3189be9985cdb152612bbfddda259723e801956c1998a17ec0",
+      "bytes": 2689,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonDatabase.cs",
+      "allowChange": false,
+      "sha256": "4806a20110322647872164fcb5b5b430499e317a4769336ab070dfaa72927588",
+      "bytes": 27795,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonDirector.cs",
+      "allowChange": false,
+      "sha256": "e4a45f7436bee3a40a720f5d7372e01d037caac986ff61d3bb6228eca3523a55",
+      "bytes": 44731,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonDoor.cs",
+      "allowChange": false,
+      "sha256": "0b4462b919072f61783671c1ebdf8effb3e48a189762aabcb136028eeb054a99",
+      "bytes": 3309,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonMonsters.cs",
+      "allowChange": false,
+      "sha256": "2657bb504be440c2db10ec6b002966c2f9e6e8b8bfc9f4e1c67301aed59cfc07",
+      "bytes": 1985,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonProgress.cs",
+      "allowChange": false,
+      "sha256": "2aa08424bd264c7a2bf9cdab374d8a8be763fc2f792410daaba0643d76744be7",
+      "bytes": 6758,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonRank.cs",
+      "allowChange": false,
+      "sha256": "2c060619fc7682ce1d7d9ade65cd5b108c99494d8784f49a7ba8bafd4724a524",
+      "bytes": 3606,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonRewards.cs",
+      "allowChange": false,
+      "sha256": "772d9a94242df0f802d116e757f7bb95b4c5a674b171e19f6ee60a2d3160e669",
+      "bytes": 9902,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonRun.cs",
+      "allowChange": false,
+      "sha256": "3f027bb262204762a426c1d6c4f23ea5696ed35a64304eaf5530e11c45459fa0",
+      "bytes": 4457,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonSweep.cs",
+      "allowChange": false,
+      "sha256": "e308d0e20043f1486764e2154841e65b038fc087427cc554eaa62f8ffddc02af",
+      "bytes": 1490,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonValidation.cs",
+      "allowChange": false,
+      "sha256": "e8ff8771357d456bd3775a24fe5f94014d2b5431781dd09da6e22993dcd89016",
+      "bytes": 2611,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/ResetClock.cs",
+      "allowChange": false,
+      "sha256": "8932b9654323e90b39ff8c7e8158e1cde94a82bcec530e2bfe137aa33241653e",
+      "bytes": 2765,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/BossBrain.cs",
+      "allowChange": false,
+      "sha256": "639e7d42ee081516a3049c4a15ea610d1be4a9371fd3556a9c39a56c5a8d10a1",
+      "bytes": 23610,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.Monster.cs",
+      "allowChange": false,
+      "sha256": "8a4b09c3bd6500e7ad0dec630b2a000fb9b07ebc572a9faf266df16b5b82f752",
+      "bytes": 13901,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.Net.cs",
+      "allowChange": false,
+      "sha256": "91a256502a25a82a5a964dead071caa523abaacb5273326cfae6dbfea68698bd",
+      "bytes": 4988,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.cs",
+      "allowChange": false,
+      "sha256": "fd94a9f7ea71037d76472c0708f9438dd2ddb670687f20858bc1d6f2866f4cc4",
+      "bytes": 21836,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemySpawner.FieldBoss.cs",
+      "allowChange": false,
+      "sha256": "17dce3a3019ca8fb603313cc94535a7e30a3ffe68502b55f6b714484f9be8164",
+      "bytes": 1797,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemySpawner.cs",
+      "allowChange": false,
+      "sha256": "51792f624fc9820f5cef5620044e51169b3fb09358bc805a250f52a05bad393d",
+      "bytes": 7587,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterBehaviour.cs",
+      "allowChange": false,
+      "sha256": "0b15c6a1af7edbdcad9cf72355c7a2e25ab76aea8e8af89c5b563f604f1b96ed",
+      "bytes": 11585,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterBehaviours.cs",
+      "allowChange": false,
+      "sha256": "b219103206701182a1c0ef4f7459f234842f45206ff5f9679fd1c986850a42cd",
+      "bytes": 16649,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterDatabase.cs",
+      "allowChange": false,
+      "sha256": "74fb52f350fc50eb27008fc7a367ebc3c66e4e00fd1555b4756df9ada3b66ffb",
+      "bytes": 26091,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterProjectile.cs",
+      "allowChange": false,
+      "sha256": "23c81e3ce06593c8d08f8c329328c90975e907564ac7cccb5cc788edc9143ee1",
+      "bytes": 5533,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Input/InputReader.cs",
+      "allowChange": false,
+      "sha256": "a5c339d0ad39dc6258b61471e4e782990aedd26c366b1a811ebb08f5c47333e0",
+      "bytes": 32456,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/Anvil.cs",
+      "allowChange": false,
+      "sha256": "7f9636d155dd8f418bc24d8ac5ba5c773da616072632053caf44a5e049c897e4",
+      "bytes": 1199,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/ConstructionSite.cs",
+      "allowChange": false,
+      "sha256": "8f3432eef4dcd21eddffccedfdf937903c5dab11b42c53d8c04b04783af29f37",
+      "bytes": 6025,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/CropPlot.cs",
+      "allowChange": false,
+      "sha256": "a5f78c04230377922cbbbe35f2c36a4c6d45127bc69b857343b0382e1ed36c36",
+      "bytes": 3175,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/DialogueInteractable.cs",
+      "allowChange": false,
+      "sha256": "736e0b3eb37cdef370be05c7ad13b2ce4b29695e364aad309dab3b1fbe8b3fb3",
+      "bytes": 650,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/Interactable.cs",
+      "allowChange": false,
+      "sha256": "447b2244c97163c04e3e1b8b4044ef3c68bdacc55187773cd822b61fdf51acce",
+      "bytes": 2829,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/Pickup.cs",
+      "allowChange": false,
+      "sha256": "941af106fefb34ad36e163cb589f1b013e625074940418bfa3c9dca3587daa16",
+      "bytes": 7430,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/ResourceNode.cs",
+      "allowChange": false,
+      "sha256": "c91c0bec2dd205920e0ec2e6788b547354ff1c264d147b625bbfe88240fca61e",
+      "bytes": 8716,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/ServiceDoor.cs",
+      "allowChange": false,
+      "sha256": "3a4a526b15b0f0f361f37b9848b13016b6a62d97627f0152c258572c470b264d",
+      "bytes": 7300,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/TreasureChest.cs",
+      "allowChange": false,
+      "sha256": "649a2636b3236b2f13ab27a68c3adab5669712d94b002dad3cc00168d2d43806",
+      "bytes": 2481,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Items/ConsumableDatabase.cs",
+      "allowChange": false,
+      "sha256": "b0a16c69628fd4644fde7f0c37fe474b950ceccf228ae4365d42a21f4b3e8fa6",
+      "bytes": 14320,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Items/EnhanceRules.cs",
+      "allowChange": false,
+      "sha256": "fc6f39c51e1dc21f732c8ff59f663fb2482f955a0d45d639839d844dadffb0e4",
+      "bytes": 8608,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Items/Equipment.cs",
+      "allowChange": false,
+      "sha256": "510e7e09bcf2c975c4950bfb0bfc29757000292a5b7bc87ca5e88392f848b175",
+      "bytes": 17333,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Items/EquipmentDatabase.cs",
+      "allowChange": false,
+      "sha256": "2e7e3e36a5410c015b8f7015a8a7e7efc291d9ad6b14f55cd95ea6403a411464",
+      "bytes": 24417,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Items/GearCatalog.cs",
+      "allowChange": false,
+      "sha256": "9056add812f60599c873527b969f0f5cad1e61f3dab6808edafbc37d748f3d15",
+      "bytes": 20187,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Items/PromoteRules.cs",
+      "allowChange": false,
+      "sha256": "376d3775dc4b567c3705827773729499005021f57a73b7d46a939d54a628d4eb",
+      "bytes": 3009,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/NPC/NpcController.cs",
+      "allowChange": false,
+      "sha256": "ec9c5b4216f8d394a5aa6166c64e8cfc153b4d7363ef5a6cd7e48f126ab7f6c2",
+      "bytes": 18045,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/AchievementClient.cs",
+      "allowChange": false,
+      "sha256": "b538e7d5dd64d99dd6f35fa7b7305fb6e0e0caf082a9111ba9fff3909a478461",
+      "bytes": 5117,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ApiClient.cs",
+      "allowChange": false,
+      "sha256": "d79f69e5a8767fbbec6c9b9a760e2d9a7800cd49113adf424d1903bc4184fcf7",
+      "bytes": 9483,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/AuctionService.cs",
+      "allowChange": false,
+      "sha256": "3ae24f3740c8fbc5c9537485582006b258ded8864e296f1b5903996225e78748",
+      "bytes": 21303,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/Authority.cs",
+      "allowChange": false,
+      "sha256": "83a8f8b65053cfacc70d159fa1997a8f476c8559983f78d2fd76816f61b557d2",
+      "bytes": 3058,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/CareerClient.cs",
+      "allowChange": false,
+      "sha256": "84d164c7a083ce2235be4ce8d2f0802055fe82d08fda7fd0be2af424a5d4b7b6",
+      "bytes": 2677,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/CashClient.cs",
+      "allowChange": false,
+      "sha256": "1d4378a2c03e1f61bdfaf2e9f002e73a8d49421f282f7488c61d1afd5f9da751",
+      "bytes": 7895,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ChatService.cs",
+      "allowChange": false,
+      "sha256": "df36fe734b3da8afe40ba95de623623116b0c9f7276c8491598092969c4a7f0c",
+      "bytes": 11414,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ChatSocket.cs",
+      "allowChange": false,
+      "sha256": "3d0ada9676fb731b78da83a0b4c6e6f2714ac584ad6bbfa09279331e14da23b6",
+      "bytes": 10675,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/CombatTransportFactory.cs",
+      "allowChange": false,
+      "sha256": "2e9a58d6f951a707b76b30b3a1fd84930db9496bee3eb0f6cb16a360870864d9",
+      "bytes": 5671,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/FieldSession.cs",
+      "allowChange": false,
+      "sha256": "a1f42b9b7d20c8e28da7b60284560e46ad2397c74c0ef7ef7e367b841d06b978",
+      "bytes": 15215,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/LevelRewardClient.cs",
+      "allowChange": false,
+      "sha256": "0eb2c5fcff35f9accaa69fa1028ca3f16316c88b8a8b3725c8ec3397bc0b0873",
+      "bytes": 7084,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/MemberCardCheck.cs",
+      "allowChange": false,
+      "sha256": "81901339a6a6621d1ff4d8d26e60c1424b88646536bc1a8ac218cc2f1094d3ed",
+      "bytes": 4438,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/MiniJson.cs",
+      "allowChange": false,
+      "sha256": "9b69ec902e12a9336f62333acb15bf40b0ab73c74343bbebbf6256052d363aff",
+      "bytes": 8104,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/NetCommand.cs",
+      "allowChange": false,
+      "sha256": "f2cdbc0433dd8f99219268e7de5680d735f77857590e74e13da1f7853fc59025",
+      "bytes": 8036,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/NetPresence.cs",
+      "allowChange": false,
+      "sha256": "e56a81d70a419429def962c81e7c67e41e6e51a8936f5ead3bf2a9c33fa7be6e",
+      "bytes": 8193,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/OnlineEconomy.cs",
+      "allowChange": false,
+      "sha256": "285e93b73a5c5e61d0ba99f3d901049aead99ed6d409f64fc464b69ed8e61d0c",
+      "bytes": 24026,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/OnlineSession.cs",
+      "allowChange": false,
+      "sha256": "242aaebcff149dfddc86e1e8655078b60cbd27d88221bf547d1cf93eb1bf1177",
+      "bytes": 22689,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyClient.cs",
+      "allowChange": false,
+      "sha256": "0a425a7623c90a575d6d08ff20d9d82589f432910414b6d20f59793a62eb4a66",
+      "bytes": 18831,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyFinderService.cs",
+      "allowChange": false,
+      "sha256": "94c5023a86d37386ee4c99c30b50c5a544f9f4567fdfcd377f75a940d79387d7",
+      "bytes": 11568,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyNet.Host.cs",
+      "allowChange": false,
+      "sha256": "223df41b83c046bf1c26299e3ed043d6943663fe37e2163cb3e30513c89f3217",
+      "bytes": 25174,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyNet.Member.cs",
+      "allowChange": false,
+      "sha256": "8f8f8deaf069d2db269623fbc7a68dd1d2a8a9471b6cd6a768c5b4b974390710",
+      "bytes": 14575,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyNet.cs",
+      "allowChange": false,
+      "sha256": "18af95ce70b0a248350f5e5c0b13709b8f891329d5fee87118ac64f6341ca7ec",
+      "bytes": 11719,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyNetWire.cs",
+      "allowChange": false,
+      "sha256": "b753beb57ce65cf46cde259280092bf4fac2861470d5a05a209231a444fa561f",
+      "bytes": 7623,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PartyRunSession.cs",
+      "allowChange": false,
+      "sha256": "0f6e30c4da3283519a4d2a5156a2a62aeb2f3f9e56584cc45187252b5acf3098",
+      "bytes": 19159,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/PresenceClient.cs",
+      "allowChange": false,
+      "sha256": "55ead7e0f36256241e2e5d3406795f3ed6196d340e7158e95fba3cce0ec27f0d",
+      "bytes": 7634,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/RelayTransport.cs",
+      "allowChange": false,
+      "sha256": "32f8f4f9aa663fb171c4d6d42789c79ca4e064768f45a5430ed1c141d3810e03",
+      "bytes": 17416,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ReviveCoins.cs",
+      "allowChange": false,
+      "sha256": "20592eba18ebd7b774221c85fc43731786644656ef00b885f08e990adf1eea95",
+      "bytes": 4917,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ServerAuctionService.cs",
+      "allowChange": false,
+      "sha256": "96cf5fae0b4722d06452de8e8e04896a80d9f1900299674dec22d6864fc4532c",
+      "bytes": 19378,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ServerChatService.cs",
+      "allowChange": false,
+      "sha256": "bbf5f4e95b9c208c53a4821e69eca0ed9425f28ce5042b25b426cb7596e42b55",
+      "bytes": 18882,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/ServerPartyFinderService.cs",
+      "allowChange": false,
+      "sha256": "7cdf1fb8d0e6f4d5015444947bdc4967865b39d33c375ef65e06574dd2f5e541",
+      "bytes": 7390,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/StarShopClient.Synth.cs",
+      "allowChange": false,
+      "sha256": "a55295b52f76ebe2018c8a60392e22b93eef755f246745e41b6c18d6bb0cda7a",
+      "bytes": 8112,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/StarShopClient.cs",
+      "allowChange": false,
+      "sha256": "0b49b5f583e21f7fc9d541e21676b578936bf73fcec479bea9a60d4a8680c96a",
+      "bytes": 13452,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/SweepClient.cs",
+      "allowChange": false,
+      "sha256": "9e7db2d5b4a5b55351fdb42446353153063e0671f6da598644413173865bea50",
+      "bytes": 12521,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/TownPeers.cs",
+      "allowChange": false,
+      "sha256": "8fa2d1e8e342c8266819f84e5c4a61fba54ecec8203e783f1914c9f24a164733",
+      "bytes": 9040,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/Transport.cs",
+      "allowChange": false,
+      "sha256": "e5cb7e6f87a151681048f9e4da233a3eb1528cec9c0e03dad9e602c4719ca3b4",
+      "bytes": 6448,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Net/UdpTransport.cs",
+      "allowChange": false,
+      "sha256": "e4b14a62af027e1c70a4ae8b1b9f8a32519ff4dff85d009d14b6d40bb6efc865",
+      "bytes": 3987,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/ActorInput.cs",
+      "allowChange": false,
+      "sha256": "755946851f46b852d7747281df10a0511fec88971329e4f2088c671adbefe438",
+      "bytes": 3374,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/CharacterData.cs",
+      "allowChange": false,
+      "sha256": "b0d467f6e6004bfd5a91e21a280ff2d0fb5cb77241d7f952c45932028720379c",
+      "bytes": 4969,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/CompanionBrain.cs",
+      "allowChange": false,
+      "sha256": "9cabeb9c53be99fb97701cda0bc3e7227696e09656c2842924f4319aa2d8636c",
+      "bytes": 15457,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/MercenaryDatabase.cs",
+      "allowChange": false,
+      "sha256": "3f3935f9de327aeac960d85f922334fc08da6e1e5ceafda7a0a87aa8277a04d9",
+      "bytes": 10777,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/PartyManager.cs",
+      "allowChange": false,
+      "sha256": "9776325a04a5575614020db34d6f8f6773e7cd2853532566553ad19639bd25fb",
+      "bytes": 24023,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/ThreatTable.cs",
+      "allowChange": false,
+      "sha256": "85b9b741a7b09a33f5feb20836345c8842eb3e37a392a8c31db0642bdc9f837c",
+      "bytes": 6683,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/CharacterAnimator.cs",
+      "allowChange": false,
+      "sha256": "be5a1c016761fe73905f7a2cfdf4bdfa5a11f53fc46d9445e83210e57bf75a67",
+      "bytes": 7637,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/CharacterClass.cs",
+      "allowChange": false,
+      "sha256": "c4f6bacb33fd280cceca6fefe4f36e0ada7b37109546b2dcffb2bac2f7e342ba",
+      "bytes": 2392,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerCombat.cs",
+      "allowChange": false,
+      "sha256": "6bb6d8bbba846b4f5b22594f4038e8d19ba35dc828ae82cce6e7684629885d61",
+      "bytes": 18410,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerController.Mobility.cs",
+      "allowChange": false,
+      "sha256": "bbbd047dc6bad6cfedc26fb3345ac61b32eea5c2ce9c58564ef850e0214fd703",
+      "bytes": 7283,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerController.Net.cs",
+      "allowChange": false,
+      "sha256": "ffcff532c8f992db89e0145b74bfd06208f522d835fd6ffdb7819b0ffa549e34",
+      "bytes": 6665,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerController.Script.cs",
+      "allowChange": false,
+      "sha256": "d484a2d2c58c39e139c72b695c351b6abd7cef0d65e070638a69528e2f4d5587",
+      "bytes": 1486,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerController.cs",
+      "allowChange": false,
+      "sha256": "36880b3ab7ede43cb8404ec172a3e069ec524cbdfddc5adf966a8a840cea67c4",
+      "bytes": 30286,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerInteractor.cs",
+      "allowChange": false,
+      "sha256": "14ead22910ff50a1f24de21733ebe146c4a294df444524357d501e3f1ba814d5",
+      "bytes": 919,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/SkillCaster.Charge.cs",
+      "allowChange": false,
+      "sha256": "3b4bdb7fd4caca6cc72ff251e746142ec72f575081e2b410760baa6ddeddf1eb",
+      "bytes": 3913,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/SkillCaster.cs",
+      "allowChange": false,
+      "sha256": "f82c96c6e4fde260d9bd4302cd08e83911bb50c7937db209596039807b8e32f0",
+      "bytes": 27696,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/WeaponEnhanceVfx.cs",
+      "allowChange": false,
+      "sha256": "dac55eb8da24110508f765bb93c81cb67c82eb7be6c66ed213c49f6a93a8db1f",
+      "bytes": 6314,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Progression/CareerData.cs",
+      "allowChange": false,
+      "sha256": "ca9dd4f66275013e0422fea191c5cb54d79d1b49b35bffd5e6a5f383fe35124f",
+      "bytes": 14571,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Progression/CareerNumbers.cs",
+      "allowChange": false,
+      "sha256": "d78abf0d170ef7f251ad161301376c5b39207d506731f38aa83276f595df8346",
+      "bytes": 5243,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Progression/Progression.Career.cs",
+      "allowChange": false,
+      "sha256": "7cef108258de511a541cd93494a175c8700c4452d16fe2b599521c0fe9df2a00",
+      "bytes": 6771,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Progression/Progression.cs",
+      "allowChange": false,
+      "sha256": "4a5b086c2dfcc392cd6243a350a5f923667f2e2ee477c8e46728fb238f941e69",
+      "bytes": 10390,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Progression/SkillData.cs",
+      "allowChange": false,
+      "sha256": "69e5b27a83df53f9064820a6872b7c0d92518b97928360924407ba4176ad873d",
+      "bytes": 31592,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/CareerTrials.cs",
+      "allowChange": false,
+      "sha256": "739d986160d8a49d955f28438099106da20853e294edc230cabb4f89e6e2a945",
+      "bytes": 10425,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/CutsceneData.cs",
+      "allowChange": false,
+      "sha256": "ae8b88a419c9c732ea1e3018ab35303e84682f5827c8b9207a75e003ded32b34",
+      "bytes": 3088,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/CutscenePlayer.cs",
+      "allowChange": false,
+      "sha256": "fc64413a408b479dbc7de2b24ed001baf4e694fd3eff94fd58c68cb133fa5c9e",
+      "bytes": 20226,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestAutoPilot.cs",
+      "allowChange": false,
+      "sha256": "6dc83d281212f42c352e2e6dabf479f1bacfbfd4e2e300bb9867c1507f17405d",
+      "bytes": 30529,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestData.cs",
+      "allowChange": false,
+      "sha256": "beb65123ad81b5a800c59a27ee245f0c1ba5454418e41c62f37511506dbbd145",
+      "bytes": 7487,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestJournal.cs",
+      "allowChange": false,
+      "sha256": "674fc313a4053dba6ac68bba1914b258d755f7769a75a3ce63ae7e5acd062587",
+      "bytes": 2569,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestManager.cs",
+      "allowChange": false,
+      "sha256": "f3a9c04f4284369734220a72a6f350c4c7bf6c194a22b5380d35ca5c0e2f565b",
+      "bytes": 30247,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/StoryCast.cs",
+      "allowChange": false,
+      "sha256": "08ae4a4363ade8f9d43bfc2273b6319b6824159e08700211024352f1160e8d73",
+      "bytes": 14293,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/StoryIds.cs",
+      "allowChange": false,
+      "sha256": "26b8f45054c68ee4171b20172d6eec6426214cb419057e4c60198c5ce44c58e6",
+      "bytes": 743,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/StoryRespawn.cs",
+      "allowChange": false,
+      "sha256": "fa04292dfa0177a73c6d1e5685ccb8d9251830fa993739a347ea330fd31f33ce",
+      "bytes": 3421,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Save/SaveData.cs",
+      "allowChange": false,
+      "sha256": "703272cfe382e4e251fa7cfbd10e0d4f02c6971ceca257f05363892e8bb317e4",
+      "bytes": 4813,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Save/SaveSystem.cs",
+      "allowChange": false,
+      "sha256": "1981ed124aa63fcfd4817e38a1f5740dbeacf5a9c963664f0a3139290127ebd2",
+      "bytes": 11432,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Settings/SettingsData.cs",
+      "allowChange": false,
+      "sha256": "4f3fcf5833a01a371299892b3eb6e4c55f970fdaaebb0fdcda669612e76b26a3",
+      "bytes": 2179,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Settings/SettingsManager.cs",
+      "allowChange": false,
+      "sha256": "2a88b0d25d579d0063360aeb7af86b27d57a4c7192ae56ea7dae6ff00b51f9b4",
+      "bytes": 5111,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Steam/SteamBootstrap.cs",
+      "allowChange": false,
+      "sha256": "2722019c927ecc3ee1ba3e69a1f7d0ebc4fd4b0f2bede1375dccf206f15a9f84",
+      "bytes": 3936,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Steam/SteamP2PTransport.cs",
+      "allowChange": false,
+      "sha256": "2019282a9439d08d374d0e69d17bf22a203ce0e9225e10adbbc3d7a737d82060",
+      "bytes": 9628,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/AchievementScreen.cs",
+      "allowChange": false,
+      "sha256": "d03ad9e6fee8e034eb8be3dc5f24ee5decb15ab5d856d0da0595d5687bae55b9",
+      "bytes": 6667,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/ArcaneUiArt.cs",
+      "allowChange": false,
+      "sha256": "fdb0dc138d48399f03d419193e6b03427f9b03266b8ec48a2f7757e3cafd0601",
+      "bytes": 2409,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/AuctionScreen.cs",
+      "allowChange": false,
+      "sha256": "d707d0778aa279b522180de7748f8108f07f2b9ed9856eec4b9370fb928d4c15",
+      "bytes": 24601,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/AwakeningCutIn.cs",
+      "allowChange": false,
+      "sha256": "d06de52df97dd4f4b10153001bcc90031c8e73047a155417796319cea52ea465",
+      "bytes": 3793,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/BossHpBarView.cs",
+      "allowChange": false,
+      "sha256": "efa9e613e3295049b9d36d70f4103f0f2c7fe429e7c6dd812f5603dde15fa1b6",
+      "bytes": 20638,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/BuffBarView.cs",
+      "allowChange": false,
+      "sha256": "e9ab2a88d7971a00658924a87a6026bc4442701c68a24753a7e92b07a5f34193",
+      "bytes": 3407,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/BulkSellPanel.cs",
+      "allowChange": false,
+      "sha256": "6fac558d8626b2ef33dbe15cbf082ddae31525c6d9601cc981fbff84b64589a9",
+      "bytes": 10253,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/CharacterSelectScreen.cs",
+      "allowChange": false,
+      "sha256": "da0293c0e8fa212acdce4627a71b0cdc460936a18fa8a37c1d1bab3d156bee8e",
+      "bytes": 7623,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/ChatView.cs",
+      "allowChange": false,
+      "sha256": "3ae689dd0fac256bf307d710660175306b252fc1ebd63b2765dce7a4dafe1a4d",
+      "bytes": 15621,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/CosmeticShopScreen.cs",
+      "allowChange": false,
+      "sha256": "45583cf0285826149ce38203e5df0d77a73de005fd8738e3b21e68f6bb3b061e",
+      "bytes": 19679,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/CosmeticSynthScreen.cs",
+      "allowChange": false,
+      "sha256": "015bfb34a3ecf39056cb6a40924f19ea5b7f8358a8d29a6e499bdfe972586e56",
+      "bytes": 20728,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/DialogueBoxView.cs",
+      "allowChange": false,
+      "sha256": "d6fbaf924001fbec08fb4dd43f712723da74ec75a2192c4d48502eeeb774ed84",
+      "bytes": 6859,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/DungeonHudView.cs",
+      "allowChange": false,
+      "sha256": "6fbd1143b5f9e1b0fd37299623fccfe6cc9ee6f69e9410de1e1ba4fc09397572",
+      "bytes": 17086,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/DungeonResultScreen.cs",
+      "allowChange": false,
+      "sha256": "5d7379b79ee3ca0d4f1d7adc52a607f6dd1f8f88b74520bf079459963a277d3a",
+      "bytes": 23989,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/DungeonSelectScreen.Sweep.cs",
+      "allowChange": false,
+      "sha256": "42401d9df08e84dd53a2bad6a08f90ae37512a3abf03973350a55ec9d3e54e45",
+      "bytes": 11584,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/DungeonSelectScreen.cs",
+      "allowChange": false,
+      "sha256": "fc90ea4529c3669166562d1425a01d65acdcee7bf333a5aef5f3124820f8eb82",
+      "bytes": 25309,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EnhanceFx.cs",
+      "allowChange": false,
+      "sha256": "a1cd3e485cef70b85bbdd830ae5279d86266d823a05766d8d8485dd7b7a177c0",
+      "bytes": 7621,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EnhanceScreen.Promote.cs",
+      "allowChange": false,
+      "sha256": "91651a4921d3d535c8d6a9b9628cc127c5659b9b7dfd05b9fd0d68d413214ef0",
+      "bytes": 3988,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EnhanceScreen.Ticket.cs",
+      "allowChange": false,
+      "sha256": "b7f12aa596ad7d22328629817961e8fadc52a106c230551f4ecc8aeb37c5ca3a",
+      "bytes": 5239,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EquipmentScreen.Drag.cs",
+      "allowChange": false,
+      "sha256": "6ab59659d25a50f188e7af2ff22770b87cd7a47cb445e1b636d6a9dff4086fde",
+      "bytes": 7701,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EquipmentScreen.Layout.cs",
+      "allowChange": false,
+      "sha256": "006bf166a9f4f28fe4f340543a9ba8dbe33e1eaa0267dd0a124d309be4ac0e74",
+      "bytes": 13186,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EquipmentScreen.Tooltip.cs",
+      "allowChange": false,
+      "sha256": "bac13559449d5ebadc60907fec1bc400dd53245acd7338f7491163af2557ae04",
+      "bytes": 5056,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/EquipmentScreen.cs",
+      "allowChange": false,
+      "sha256": "073f22e037c1199674acd4f7034f6e3ffa166bbb99e654d0f146123f9779706a",
+      "bytes": 26612,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/GachaScreen.Sealed.cs",
+      "allowChange": false,
+      "sha256": "01ae83612b9baff5d30245e358edbba9fd062eaf8c92681c205572a785fee05e",
+      "bytes": 3901,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/GachaScreen.Tiers.cs",
+      "allowChange": false,
+      "sha256": "8d9bd8cca1587375b9a8fe4596fed37daa08cf5305151c34b2f7415097f957ca",
+      "bytes": 4277,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/GachaScreen.cs",
+      "allowChange": false,
+      "sha256": "649833b9df98be0e134b179aba8f679482fa1bb69f215ee1f37f5423a131a87b",
+      "bytes": 46031,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/GearTooltip.cs",
+      "allowChange": false,
+      "sha256": "aa25aaf45f38bedb495e2202a5d74d329261cdcd2a9dd097e8a7bc4ebbcb0651",
+      "bytes": 9550,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/HudView.cs",
+      "allowChange": false,
+      "sha256": "5cc5c1d2a3cb7dc3bae056aeea462e4e1cd2406dd066186839ae004c2541fe42",
+      "bytes": 29899,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/KeyBindScreen.cs",
+      "allowChange": false,
+      "sha256": "6a42ded4fa68239fc03d8e5b7b9b3b678f4b576e5c04b664f61c0ef4f897ccf6",
+      "bytes": 19668,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/LevelRewardScreen.cs",
+      "allowChange": false,
+      "sha256": "c8cfc1f5c92ff660ced036247ddf687d374fdd649d961b6f67ca435bd62d8221",
+      "bytes": 10100,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/LootFilterScreen.cs",
+      "allowChange": false,
+      "sha256": "4bdc7c0b164ddbe3c7b80759c249199f183d53518d0a450d8239ac7f26db927e",
+      "bytes": 1853,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MailScreen.cs",
+      "allowChange": false,
+      "sha256": "9d4bbd040d0e5d1075349318b9e829fa581edefa6afedabab967ebb0424f5dac",
+      "bytes": 13305,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MenuList.cs",
+      "allowChange": false,
+      "sha256": "bb26caecd6d2f31b2b8f7c915fc358d77ee38e61c6cfadd86d2303707e7a5ffd",
+      "bytes": 11632,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MenuScreens.cs",
+      "allowChange": false,
+      "sha256": "93d3149ffdbd437862f0c4e29e958dd1b3065fd2a9bca6ff8b7d9c33d526b72d",
+      "bytes": 26428,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MinimapView.cs",
+      "allowChange": false,
+      "sha256": "6b51ee84030f584ebc802c98950a05003b64c187b60fb453531fe86788342b40",
+      "bytes": 16504,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/OnlineScreens.cs",
+      "allowChange": false,
+      "sha256": "6ddd4eb5e54966131f794943f24dee64ddcc3edc766c64e8151388dcc19df4db",
+      "bytes": 14085,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/OnlineWindows.cs",
+      "allowChange": false,
+      "sha256": "d81217f6bf5fec5e58b46080d6aa0854c4e30ec13ee266e7f241da215fdce1f9",
+      "bytes": 23530,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/OptionScreens.cs",
+      "allowChange": false,
+      "sha256": "cca9b0a37b7f4380aa8bc0574ed08d379a55a0aa76b19191fcc33f26e426dcc0",
+      "bytes": 6691,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/PartyFramesView.cs",
+      "allowChange": false,
+      "sha256": "a0038254ea61aa27df07f9ef510ed06fc2d83ffecc3c8bf150700faced90988c",
+      "bytes": 10715,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/PartyLobbyScreen.cs",
+      "allowChange": false,
+      "sha256": "c5aad3f1508e12f5ebc7ae2a07c0ea9e0323b48268dcf02020c6cee18757b114",
+      "bytes": 22413,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/PartyScreen.cs",
+      "allowChange": false,
+      "sha256": "2f04207a4f1bfb8c72611f84b30c8a49a99bba93fd2c274d8231f95cf30a2db8",
+      "bytes": 12945,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/PartyStatusView.cs",
+      "allowChange": false,
+      "sha256": "79b2a593932eeea62684f0ba1caa215d0f26c319428ff5c73a021514a713a36c",
+      "bytes": 3751,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/QuestScreen.cs",
+      "allowChange": false,
+      "sha256": "6e6853a3bb41ed632cbc9d37c001bb1f8ffb502c61969efd9562dbff716d1714",
+      "bytes": 16023,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/QuickItemBar.cs",
+      "allowChange": false,
+      "sha256": "11e526983d4db65473ecbe71e1d1618f4f4c475cd68cd79f808bd643fbd484f7",
+      "bytes": 3409,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/ScreenFader.cs",
+      "allowChange": false,
+      "sha256": "57cf3ae04057c486556bd63e25c37414594b48c97a284f0a17ef4222bd800733",
+      "bytes": 4171,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/ServiceScreens.cs",
+      "allowChange": false,
+      "sha256": "a437941c7cfc27117eaeff03db6e5269c1dd024336bae262087312bf8af12d1f",
+      "bytes": 47963,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SideMenuView.cs",
+      "allowChange": false,
+      "sha256": "b1a6ef847134bdd8e274892acb46aeb15897bc04c6fd4fbdd4e1151f1786fde5",
+      "bytes": 10257,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SkillBarView.cs",
+      "allowChange": false,
+      "sha256": "79037f409cdd926977e61f0b845a03c453fa7facad4db5f3dda36fee7df0c88a",
+      "bytes": 11421,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SkillScreen.Career.cs",
+      "allowChange": false,
+      "sha256": "d747d05472eb6a609a5e759a6d5c10a89d0517642542ce4d93b4317d94b055b0",
+      "bytes": 10791,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SkillScreen.Nodes.cs",
+      "allowChange": false,
+      "sha256": "75173eff6af4094eb57f3343123f9b9176b7bed53aa220c79ce4803a0d55a3f9",
+      "bytes": 4970,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SkillScreen.Slots.cs",
+      "allowChange": false,
+      "sha256": "e1217da872b8b60d2e3ecc847847eb08beb0c51d97bfffec48dd67034c2951f3",
+      "bytes": 9742,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SkillScreen.cs",
+      "allowChange": false,
+      "sha256": "f3bcb4c4a8f2c7a08bfa2e3e3e0192ccbb7a90c0a0bc70ce73e76b5cc2313728",
+      "bytes": 18946,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SocialScreen.cs",
+      "allowChange": false,
+      "sha256": "68ac275cf082694614eec7d173c229bf40bf61fb99c1b32ca0b80f697c444645",
+      "bytes": 8477,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/StatusBarsView.cs",
+      "allowChange": false,
+      "sha256": "90c71a9c5364059c7bacef7e5e622092418e4081095c7757d5572588f8fdc594",
+      "bytes": 6735,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/TipView.cs",
+      "allowChange": false,
+      "sha256": "2f3de6760d618129e4796c7f94ffc55a46f9edc9b0ce9bf1890a0ca144b78265",
+      "bytes": 7830,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UIFactory.cs",
+      "allowChange": false,
+      "sha256": "336117d17ce7d66fbc4e44cec068948abb54b0588047af1bac107bda73426ccc",
+      "bytes": 7545,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UIRoot.cs",
+      "allowChange": false,
+      "sha256": "0366a984f0338a791ac4a147bee1c373120dc5be4db21fa83d16c02a38e24465",
+      "bytes": 12856,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UiButton.cs",
+      "allowChange": false,
+      "sha256": "80e6791739721738c7d5fc4a8070cd6ecce9f5b72a8c8a6ead642692ef6bfd87",
+      "bytes": 5654,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UiDrag.cs",
+      "allowChange": false,
+      "sha256": "016d074a2a51d2557ed703b6ee986a7eebf1ffc527aa5f52275cf1c0537d1536",
+      "bytes": 4263,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UiMaterials.cs",
+      "allowChange": false,
+      "sha256": "88e6e152243b407f5fbe9794cce79a099b53e7fa73a533316328ff0e43d0834b",
+      "bytes": 1398,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UiSizes.cs",
+      "allowChange": false,
+      "sha256": "5259d3a6a301c3bd0a22800ae42a71a16acde1096b741c222a7ec1ba3bc5768d",
+      "bytes": 859,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UiTheme.cs",
+      "allowChange": false,
+      "sha256": "52c020fd3f64e2a8f1c132e79b9623bb235acc48ea9d4db09f69a9bd5ed88c98",
+      "bytes": 5979,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/WindowScreens.cs",
+      "allowChange": false,
+      "sha256": "47689652b222e2ef802a31eedf1c5cc9778b4aa997dce8786bac073f79535290",
+      "bytes": 44944,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/WorldMapScreen.Atlas.cs",
+      "allowChange": false,
+      "sha256": "85f49d19fb9adc5b9a6a3877d8c7685b03d78742fa832f241bb32500cd749397",
+      "bytes": 13997,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/WorldMapScreen.cs",
+      "allowChange": false,
+      "sha256": "09079a41a4e37c2b0fe23c559b573d17afd36f76503ef47514c94e28ccdedb7e",
+      "bytes": 20712,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/FieldBosses.cs",
+      "allowChange": false,
+      "sha256": "3df724342e19ff7c2167e9e6637d123ad33f8115012afda61c12dbe3ca981201",
+      "bytes": 3095,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/GridPath.cs",
+      "allowChange": false,
+      "sha256": "eada9804df81f4439fab077ca8528c74239ea36e99ba93eda9bf9d3e5f4bf8a7",
+      "bytes": 6136,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingAtmosphere.cs",
+      "allowChange": false,
+      "sha256": "2d3765d7272acc03e491ade774d682ccddd3d6291372fc9fbf7bf111ea9c6ebf",
+      "bytes": 1539,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingGrounds.cs",
+      "allowChange": false,
+      "sha256": "2d658a128b7793d35bcf08c80644beafe1463709daa82e6a5e85d8fb83a072bd",
+      "bytes": 9628,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingLayouts.cs",
+      "allowChange": false,
+      "sha256": "d5f85e70758963cf57210a4c6d32a214b8a7b21ecaf5b62352db43ee970eb643",
+      "bytes": 7217,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/LivingWater.cs",
+      "allowChange": false,
+      "sha256": "96cefd6043f01e65013de2adb161d5893a4165eada1d9be98644907035e9a6f9",
+      "bytes": 12446,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapPortal.cs",
+      "allowChange": false,
+      "sha256": "cab82a32c900f45b73a55bee1c7fa8c92118c9877e1388f48f8337157669b753",
+      "bytes": 1619,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.Dungeon.cs",
+      "allowChange": false,
+      "sha256": "3828a646b100a7d57a54f22a63ba569af07c2a9c5be0f6c6a0aa45c8ec687794",
+      "bytes": 4918,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.cs",
+      "allowChange": false,
+      "sha256": "28cc07489fb5d9e16229c5251f755a03603e855ba023fcad551f812141e4e7aa",
+      "bytes": 8274,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/SanctumHunting.cs",
+      "allowChange": false,
+      "sha256": "10d471aae8ba80a73a39fa1b1bdfc15d0561ea867eb4bb858e37db4661cca19e",
+      "bytes": 2632,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/SanctumWater.cs",
+      "allowChange": false,
+      "sha256": "d731c81784d80c59980eeca2c07f0d00189af3501a7c2e9ada16eebf706b57c5",
+      "bytes": 4552,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/SunkenSanctumShore.cs",
+      "allowChange": false,
+      "sha256": "218258c70c19742c1871207521c1926e0aefd0eec20aef1368b8d29c7a759ec0",
+      "bytes": 9490,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/TreeFade.cs",
+      "allowChange": false,
+      "sha256": "5f6308a28589b98fb6c2126ad1aef0ca2e628ac9995ba41ef7d0aebbe3a655f7",
+      "bytes": 6421,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldComposition.cs",
+      "allowChange": false,
+      "sha256": "994000cb4d5115fa8296823ccd0d328edd5ad2329487ed1f6f046a265d8d31d1",
+      "bytes": 4982,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldCompositionNav.cs",
+      "allowChange": false,
+      "sha256": "08bbf8063daa5b0133fb6b38a7c6b58940a8ea925682fed5a1f311de9a6c3e61",
+      "bytes": 14719,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldContour.cs",
+      "allowChange": false,
+      "sha256": "7a3eaf95323b95fd1314e0c0e16ae28322ee87566538c43b8534647663c2b253",
+      "bytes": 4519,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldLayouts.cs",
+      "allowChange": false,
+      "sha256": "b99ad227a0e21c92bfc721c2402605bb2794894633a80c89bd41278abde9afdf",
+      "bytes": 5305,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WaterField.cs",
+      "allowChange": false,
+      "sha256": "de057ffbf1c03a42ca6a99f30e4a8201c3340e1f20043a23665cd8b997ae1273",
+      "bytes": 3453,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WinterProps.cs",
+      "allowChange": false,
+      "sha256": "74f51542bd47d8f37c76e68981853bcc759f7220c1644edb0ec488828a50dfd5",
+      "bytes": 3202,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldAtlas.cs",
+      "allowChange": false,
+      "sha256": "630405716c05b05f81d68dd80b1a32aa460072f69bf7d697291a108268d47070",
+      "bytes": 13248,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.Canyon.cs",
+      "allowChange": false,
+      "sha256": "d530a29e6833071e0b4ac9efe6dd42bec8eba9343a2c9e129abea39f62432079",
+      "bytes": 7036,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.Dungeon.cs",
+      "allowChange": false,
+      "sha256": "582d0e6ac1b547984c5f6203c6d390b5d406610973b7a8e9ecf477007b05baba",
+      "bytes": 4721,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.DungeonLook.cs",
+      "allowChange": false,
+      "sha256": "31695745493514faa910a4028ab783b7ef096aaecece9e8265617c8b11664171",
+      "bytes": 6158,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.ForestCanopy.cs",
+      "allowChange": false,
+      "sha256": "3e750487fcc630ec39717c973da3a7daf754f39a610bf1c131901303a951a398",
+      "bytes": 15278,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.Interiors.cs",
+      "allowChange": false,
+      "sha256": "c0aa5f59d7edc192a5b495af1863e7a6f260db53af5fb46a15bda13901285a3f",
+      "bytes": 11001,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.Nature.cs",
+      "allowChange": false,
+      "sha256": "9721c5c9386bf5a3ab387b84427e6f318d4be46f1ff8895dda126bd6fff6993d",
+      "bytes": 3311,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.PropIntegration.cs",
+      "allowChange": false,
+      "sha256": "0c41a432ae7fca1230d2f5b0109bd11d74c712f4b3042d7afb2bf00a5964067a",
+      "bytes": 8175,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.SanctumFields.cs",
+      "allowChange": false,
+      "sha256": "d50e3c3db563466b7c8e308c2b35381de21b6604858773787e517ed28d649a72",
+      "bytes": 1331,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.SunkenSanctum.cs",
+      "allowChange": false,
+      "sha256": "ea38f48ab66faac09dfaa64bd56b2493fbcbb436495d389f5dab4ee5f881b8a7",
+      "bytes": 4101,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.SurfaceGrounding.cs",
+      "allowChange": false,
+      "sha256": "1cc8892c8880d42160ebc999936958761eb48371756c7c8240fc17b3dc8ba809",
+      "bytes": 15983,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.SurfaceWorld.cs",
+      "allowChange": false,
+      "sha256": "f11efb26e617e5f88200af69aa7cc28106d4e282ed4ca6eaf06311e8424737eb",
+      "bytes": 7053,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.Underworld.cs",
+      "allowChange": false,
+      "sha256": "89473850943bd888d73bedaf69cd719bfff1d8175639850b06ed20f71cf51f0e",
+      "bytes": 6914,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.Winter.cs",
+      "allowChange": false,
+      "sha256": "d098206d393df5d3ed30a71ea846da2dd4c7142277da6345f337f858cfe794e8",
+      "bytes": 8518,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.cs",
+      "allowChange": false,
+      "sha256": "27182a9b7b70610ad4ac5af4ce78081f05c6381c97ed6a06125f6e266ebc4676",
+      "bytes": 78428,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldLayers.cs",
+      "allowChange": false,
+      "sha256": "b96f0a05cdec30ad244f3ae64309baefb91b3fdeb96a99c04cb4b8221231f122",
+      "bytes": 864,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldRoutes.cs",
+      "allowChange": false,
+      "sha256": "5397da029e1543068b630237341596954bf62b979536e3ab7a4031a9af0cf076",
+      "bytes": 3952,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/SunkenSanctum/layout.txt",
+      "allowChange": false,
+      "sha256": "9f9031851934d1459b93169b660649d38ffa3bd03a1721138b665d606e42c724",
+      "bytes": 3716,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/Props/dead_oak.png",
+      "allowChange": false,
+      "sha256": "1af7a42b64c9cefa79b23c5ec53ef67bc37fc7cf131945b51eee620990e673db",
+      "bytes": 1672315,
+      "pngDimensions": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "allowChange": false,
+      "sha256": "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c",
+      "bytes": 32482789,
+      "pngDimensions": [
+        4608,
+        5760
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "allowChange": false,
+      "sha256": "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f",
+      "bytes": 29029168,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "allowChange": false,
+      "sha256": "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9",
+      "bytes": 27998598,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+      "allowChange": false,
+      "sha256": "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5",
+      "bytes": 27145150,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "allowChange": false,
+      "sha256": "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35",
+      "bytes": 27684063,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "allowChange": true,
+      "sha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa",
+      "bytes": 34767348,
+      "pngDimensions": [
+        6144,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "allowChange": true,
+      "sha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e",
+      "bytes": 30900032,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "allowChange": true,
+      "sha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b",
+      "bytes": 29340061,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "allowChange": true,
+      "sha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0",
+      "bytes": 31349335,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_archive.png",
+      "allowChange": false,
+      "sha256": "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609",
+      "bytes": 28806574,
+      "pngDimensions": [
+        5760,
+        4608
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_court.png",
+      "allowChange": false,
+      "sha256": "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281",
+      "bytes": 29021351,
+      "pngDimensions": [
+        5760,
+        4608
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+      "allowChange": false,
+      "sha256": "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5",
+      "bytes": 29020227,
+      "pngDimensions": [
+        5760,
+        4608
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_roots.png",
+      "allowChange": false,
+      "sha256": "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37",
+      "bytes": 29860302,
+      "pngDimensions": [
+        5760,
+        4608
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "allowChange": false,
+      "sha256": "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33",
+      "bytes": 32891378,
+      "pngDimensions": [
+        4608,
+        6912
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/undergate.png",
+      "allowChange": false,
+      "sha256": "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429",
+      "bytes": 27457389,
+      "pngDimensions": [
+        4992,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/village.png",
+      "allowChange": false,
+      "sha256": "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a",
+      "bytes": 38636370,
+      "pngDimensions": [
+        5568,
+        5184
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "allowChange": false,
+      "sha256": "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728",
+      "bytes": 19663258,
+      "pngDimensions": [
+        4992,
+        4416
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "allowChange": false,
+      "sha256": "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845",
+      "bytes": 23753402,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "allowChange": false,
+      "sha256": "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9",
+      "bytes": 24080712,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "allowChange": false,
+      "sha256": "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7",
+      "bytes": 25700449,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "allowChange": false,
+      "sha256": "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418",
+      "bytes": 23589713,
+      "pngDimensions": [
+        5376,
+        4224
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-depths.png",
+      "allowChange": false,
+      "sha256": "8692b547935e2d713d34505a635ea5086fd0b8c8ad0dad97b706db4da93f2ebe",
+      "bytes": 2998369,
+      "pngDimensions": [
+        1355,
+        1161
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-depths_hd.png",
+      "allowChange": false,
+      "sha256": "e4644f2e40891bf3af598611827a0801cb8228e9036a4bddc70fb2dc866b4ee5",
+      "bytes": 9513167,
+      "pngDimensions": [
+        2710,
+        2322
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-descent.png",
+      "allowChange": false,
+      "sha256": "68cf0792cb973dae63aaf9274afd6ee770e037b126610cd06e0714282a87d508",
+      "bytes": 2941315,
+      "pngDimensions": [
+        1355,
+        1161
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-descent_hd.png",
+      "allowChange": false,
+      "sha256": "5062dd99ca681ba506d3fa8f28b870819b646cc165a3da53c2de9b5646322f0a",
+      "bytes": 9004394,
+      "pngDimensions": [
+        2710,
+        2322
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-fungal.png",
+      "allowChange": false,
+      "sha256": "2dc57abb79167d110d4b6bae06844a31450100011ab77b28fbfe4d010912e15d",
+      "bytes": 3274721,
+      "pngDimensions": [
+        1354,
+        1161
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-fungal_hd.png",
+      "allowChange": false,
+      "sha256": "5e11aca163d8643d36db9b5fbef969e8ea9a6cd720b4c7494713d29ccddb6112",
+      "bytes": 9760255,
+      "pngDimensions": [
+        2708,
+        2322
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-roots.png",
+      "allowChange": false,
+      "sha256": "169cc68dd4ec77769da356fad3b5e878e9e4cbb31304156fe0b478ea7450b09c",
+      "bytes": 3123482,
+      "pngDimensions": [
+        1354,
+        1161
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-roots_hd.png",
+      "allowChange": false,
+      "sha256": "5b6848b35a448fdc4adad3ef83dd7e3a5238c7585e43b0299518a7044633daf8",
+      "bytes": 9285853,
+      "pngDimensions": [
+        2708,
+        2322
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/canyon.png",
+      "allowChange": false,
+      "sha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+      "bytes": 1823371,
+      "pngDimensions": [
+        1448,
+        1086
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/canyon.png.meta",
+      "allowChange": false,
+      "sha256": "40c30e63978bc68f6ed27da7560584b409972a03ed5c0508181c77d5c4e34ce1",
+      "bytes": 159,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/forest.png",
+      "allowChange": false,
+      "sha256": "2ceaadd6c7c7fbfad0ef0cf5ab4ad2037373d0e145e4f05512ce917cfeb689da",
+      "bytes": 2291373,
+      "pngDimensions": [
+        1448,
+        1086
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/forest.png.meta",
+      "allowChange": false,
+      "sha256": "ef772c45b4dc28d8ec2fbac4b930689773678fe099a480768f2a670da084b196",
+      "bytes": 159,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/forest_fields.png",
+      "allowChange": false,
+      "sha256": "1f5c94f9f759359e96c8162d9deef0aabf9efc0e68ce9eed4fe5d9f20ab6e0f8",
+      "bytes": 2020798,
+      "pngDimensions": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/forest_fields.png.meta",
+      "allowChange": false,
+      "sha256": "b99fa0a52c7a83337220ee606ffcaef9db05075e2afb884e9f3b944e07307a7c",
+      "bytes": 159,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/metadata.json",
+      "allowChange": false,
+      "sha256": "b60e9729f5ed39728860a9fa002f5562f187f8a56f18b222d528e93efc19ebf9",
+      "bytes": 15967,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/metadata.json.meta",
+      "allowChange": false,
+      "sha256": "647baee72496c03b5e6718fc63946705978b41b56fee3543b36a16267d8baf9c",
+      "bytes": 159,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/sanctum.png",
+      "allowChange": false,
+      "sha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+      "bytes": 1450210,
+      "pngDimensions": [
+        1448,
+        1086
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/sanctum.png.meta",
+      "allowChange": false,
+      "sha256": "d8e482662cf2a707daa02f366ce9e3ccc0def133121a39a38fcdc2188eb5e5db",
+      "bytes": 159,
+      "pngDimensions": null
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/winter.png",
+      "allowChange": false,
+      "sha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+      "bytes": 1944054,
+      "pngDimensions": [
+        1448,
+        1086
+      ]
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/winter.png.meta",
+      "allowChange": false,
+      "sha256": "02798fd39e86f95d472020025a038f8fc432ffae7ec2c895ba6fd1bdfd3c9cbd",
+      "bytes": 159,
+      "pngDimensions": null
+    }
+  ],
+  "maps": {
+    "village": {
+      "width": 58,
+      "height": 54,
+      "baselineHash": "87f6a1f31ea75455a657c601fcd9d51211ce0efbfca289bfd5fdd8f88577c77f",
+      "collisionHash": "06cb3f4540cd6f69224a61bf26ab59dd26dda3d71bed9ab840690432ccb882a7",
+      "terrainHash": "17adb76c6e8f5897531cf84b571e321e698bcc10e5265cdc42f6dec9556778b9",
+      "props": {
+        "details": [
+          {
+            "biome": "forest",
+            "atlasId": "forest",
+            "atlasSourceSha256": "2ceaadd6c7c7fbfad0ef0cf5ab4ad2037373d0e145e4f05512ce917cfeb689da",
+            "eligible": 320,
+            "applied": 320,
+            "skipped": 0,
+            "resources": 6,
+            "staticProps": 314,
+            "species": 11,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 65
+              },
+              {
+                "slot": "bush",
+                "count": 7
+              },
+              {
+                "slot": "cherry",
+                "count": 3
+              },
+              {
+                "slot": "fruit",
+                "count": 12
+              },
+              {
+                "slot": "golden",
+                "count": 5
+              },
+              {
+                "slot": "log",
+                "count": 2
+              },
+              {
+                "slot": "oak",
+                "count": 107
+              },
+              {
+                "slot": "pine",
+                "count": 112
+              },
+              {
+                "slot": "rock",
+                "count": 2
+              },
+              {
+                "slot": "stump",
+                "count": 1
+              },
+              {
+                "slot": "willow",
+                "count": 4
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 346,
+          "shadowPixels": 273851,
+          "staticRenderer": true,
+          "resourceContacts": 6,
+          "resourceShadowPixels": 2546,
+          "ownedResources": 22
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 58,
+          "height": 54
+        },
+        "layerCells": [
+          477.0,
+          169.0,
+          2486.0
+        ],
+        "vertices": [
+          420,
+          168,
+          212
+        ],
+        "triangles": [
+          210,
+          84,
+          106
+        ],
+        "hiddenOriginalGroundRenderers": 61
+      },
+      "sourceSha256": "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a",
+      "pixelsPerUnit": 96
+    },
+    "forest": {
+      "width": 64,
+      "height": 44,
+      "baselineHash": "5f328d02995729cc7ec98320a2b9c3af7f3381a15c5bfc9883d07e45b665760c",
+      "collisionHash": "358718c0e80c7f9dd8ec473103893244d8d34c11d29765ff57786686dbb7f1c7",
+      "terrainHash": "32c40d7e69bffe97d7cf411a020480878d203e071dc9b06939ff26c741a6bb1a",
+      "props": {
+        "details": [
+          {
+            "biome": "forest",
+            "atlasId": "forest_fields",
+            "atlasSourceSha256": "1f5c94f9f759359e96c8162d9deef0aabf9efc0e68ce9eed4fe5d9f20ab6e0f8",
+            "eligible": 260,
+            "applied": 260,
+            "skipped": 0,
+            "resources": 15,
+            "staticProps": 245,
+            "species": 14,
+            "atlasWidth": 1254,
+            "atlasHeight": 1254,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 20
+              },
+              {
+                "slot": "broadleaf_open",
+                "count": 12
+              },
+              {
+                "slot": "bush",
+                "count": 1
+              },
+              {
+                "slot": "dead",
+                "count": 1
+              },
+              {
+                "slot": "dead_bent",
+                "count": 2
+              },
+              {
+                "slot": "log",
+                "count": 4
+              },
+              {
+                "slot": "oak",
+                "count": 57
+              },
+              {
+                "slot": "oak_lean",
+                "count": 33
+              },
+              {
+                "slot": "pine",
+                "count": 43
+              },
+              {
+                "slot": "pine_open",
+                "count": 76
+              },
+              {
+                "slot": "rock",
+                "count": 5
+              },
+              {
+                "slot": "rock_slab",
+                "count": 3
+              },
+              {
+                "slot": "ruin",
+                "count": 2
+              },
+              {
+                "slot": "willow",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 247,
+          "shadowPixels": 508922,
+          "staticRenderer": true,
+          "resourceContacts": 15,
+          "resourceShadowPixels": 6559,
+          "ownedResources": 46
+        },
+        "canopy": {
+          "edgeTrees": 16,
+          "rearTrees": 12,
+          "staticTreeViews": 235,
+          "deadTreeViews": 3,
+          "species": 5,
+          "entranceSitesSkipped": 6,
+          "ownedResources": 34
+        },
+        "hiddenNature": {
+          "count": 27,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.4375,
+                "y": 39.625
+              },
+              "cell": {
+                "x": 8,
+                "y": 39
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.625,
+                "y": 29.6562
+              },
+              "cell": {
+                "x": 1,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 11.375,
+                "y": 42.3438
+              },
+              "cell": {
+                "x": 11,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 39.6875,
+                "y": 1.375
+              },
+              "cell": {
+                "x": 39,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 6.375,
+                "y": 30.4375
+              },
+              "cell": {
+                "x": 6,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 62.375,
+                "y": 38.5
+              },
+              "cell": {
+                "x": 62,
+                "y": 38
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 61.6875,
+                "y": 8.5312
+              },
+              "cell": {
+                "x": 61,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 16.3438,
+                "y": 9.5938
+              },
+              "cell": {
+                "x": 16,
+                "y": 9
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 17.4375,
+                "y": 3.5938
+              },
+              "cell": {
+                "x": 17,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 59.7188,
+                "y": 5.3438
+              },
+              "cell": {
+                "x": 59,
+                "y": 5
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 6.6562,
+                "y": 34.5312
+              },
+              "cell": {
+                "x": 6,
+                "y": 34
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 48.5625,
+                "y": 1.4688
+              },
+              "cell": {
+                "x": 48,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 62.4062,
+                "y": 31.5
+              },
+              "cell": {
+                "x": 62,
+                "y": 31
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.4062,
+                "y": 2.3438
+              },
+              "cell": {
+                "x": 54,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 16.4062,
+                "y": 6.4375
+              },
+              "cell": {
+                "x": 16,
+                "y": 6
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 60.25,
+                "y": 42.375
+              },
+              "cell": {
+                "x": 60,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 9.5938,
+                "y": 34.5625
+              },
+              "cell": {
+                "x": 9,
+                "y": 34
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 19.5938,
+                "y": 42.4375
+              },
+              "cell": {
+                "x": 19,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 60.4062,
+                "y": 36.3125
+              },
+              "cell": {
+                "x": 60,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 23.6875,
+                "y": 2.625
+              },
+              "cell": {
+                "x": 23,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 20.4062,
+                "y": 3.3125
+              },
+              "cell": {
+                "x": 20,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 9.3125,
+                "y": 29.4375
+              },
+              "cell": {
+                "x": 9,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 43.2812,
+                "y": 29.4688
+              },
+              "cell": {
+                "x": 43,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 12.375,
+                "y": 16.3438
+              },
+              "cell": {
+                "x": 12,
+                "y": 16
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 21.4062,
+                "y": 41.6562
+              },
+              "cell": {
+                "x": 21,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 59.75,
+                "y": 38.3438
+              },
+              "cell": {
+                "x": 59,
+                "y": 38
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 55.5938,
+                "y": 41.6875
+              },
+              "cell": {
+                "x": 55,
+                "y": 41
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 44
+        },
+        "layerCells": [
+          822.0,
+          227.0,
+          1767.0
+        ],
+        "vertices": [
+          424,
+          276,
+          336
+        ],
+        "triangles": [
+          212,
+          138,
+          168
+        ],
+        "hiddenOriginalGroundRenderers": 53
+      },
+      "sourceSha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa",
+      "pixelsPerUnit": 96
+    },
+    "forest_ruins": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "8a410387921194fdbaa5096702238503853d594d8ba4b3ef690cf360b63301fe",
+      "collisionHash": "63b203f1091c75f6ebdc8101c8da7609a9623be114c2a5bc84d7f6abe76b5951",
+      "terrainHash": "94b0cd266ba2ab81af795cea045bf5befd346904a2985ee1d5ca9e8ed1de4f36",
+      "props": {
+        "details": [
+          {
+            "biome": "forest",
+            "atlasId": "forest_fields",
+            "atlasSourceSha256": "1f5c94f9f759359e96c8162d9deef0aabf9efc0e68ce9eed4fe5d9f20ab6e0f8",
+            "eligible": 29,
+            "applied": 29,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 29,
+            "species": 5,
+            "atlasWidth": 1254,
+            "atlasHeight": 1254,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf_open",
+                "count": 1
+              },
+              {
+                "slot": "oak",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 1
+              },
+              {
+                "slot": "ruin",
+                "count": 25
+              },
+              {
+                "slot": "willow",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 29,
+          "shadowPixels": 19977,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": {
+          "edgeTrees": 32,
+          "rearTrees": 4,
+          "staticTreeViews": 4,
+          "deadTreeViews": 0,
+          "species": 5,
+          "entranceSitesSkipped": 10,
+          "ownedResources": 21
+        },
+        "hiddenNature": {
+          "count": 41,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 28.4062,
+                "y": 2.6875
+              },
+              "cell": {
+                "x": 28,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 5.25,
+                "y": 8.6562
+              },
+              "cell": {
+                "x": 5,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 18.5938,
+                "y": 16.4375
+              },
+              "cell": {
+                "x": 18,
+                "y": 16
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 35.5625,
+                "y": 2.3125
+              },
+              "cell": {
+                "x": 35,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 42.75,
+                "y": 3.6562
+              },
+              "cell": {
+                "x": 42,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 30.625,
+                "y": 15.5625
+              },
+              "cell": {
+                "x": 30,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.6562,
+                "y": 37.375
+              },
+              "cell": {
+                "x": 8,
+                "y": 37
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 25.7188,
+                "y": 29.3438
+              },
+              "cell": {
+                "x": 25,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 53.5938,
+                "y": 31.4688
+              },
+              "cell": {
+                "x": 53,
+                "y": 31
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 52.3438,
+                "y": 27.4688
+              },
+              "cell": {
+                "x": 52,
+                "y": 27
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.5625,
+                "y": 5.6562
+              },
+              "cell": {
+                "x": 8,
+                "y": 5
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 34.5938,
+                "y": 15.4688
+              },
+              "cell": {
+                "x": 34,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 32.4375,
+                "y": 30.5938
+              },
+              "cell": {
+                "x": 32,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.4375,
+                "y": 9.5938
+              },
+              "cell": {
+                "x": 1,
+                "y": 9
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 46.4375,
+                "y": 2.5
+              },
+              "cell": {
+                "x": 46,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 39.5,
+                "y": 3.5312
+              },
+              "cell": {
+                "x": 39,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 14.5,
+                "y": 2.5938
+              },
+              "cell": {
+                "x": 14,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 22.4062,
+                "y": 15.4062
+              },
+              "cell": {
+                "x": 22,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.75,
+                "y": 30.6875
+              },
+              "cell": {
+                "x": 3,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 38.25,
+                "y": 15.3125
+              },
+              "cell": {
+                "x": 38,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 17.3125,
+                "y": 20.3125
+              },
+              "cell": {
+                "x": 17,
+                "y": 20
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 26.7188,
+                "y": 14.5
+              },
+              "cell": {
+                "x": 26,
+                "y": 14
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.4688,
+                "y": 8.6875
+              },
+              "cell": {
+                "x": 47,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 34.625,
+                "y": 40.6875
+              },
+              "cell": {
+                "x": 34,
+                "y": 40
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.625,
+                "y": 26.5
+              },
+              "cell": {
+                "x": 3,
+                "y": 26
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.25,
+                "y": 11.4375
+              },
+              "cell": {
+                "x": 54,
+                "y": 11
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 31.5938,
+                "y": 1.375
+              },
+              "cell": {
+                "x": 31,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 12.25,
+                "y": 42.6562
+              },
+              "cell": {
+                "x": 12,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 46.625,
+                "y": 36.4375
+              },
+              "cell": {
+                "x": 46,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 37.6875,
+                "y": 42.3125
+              },
+              "cell": {
+                "x": 37,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 6.625,
+                "y": 1.3125
+              },
+              "cell": {
+                "x": 6,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.2812,
+                "y": 5.6562
+              },
+              "cell": {
+                "x": 3,
+                "y": 5
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 19.3125,
+                "y": 15.5938
+              },
+              "cell": {
+                "x": 19,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 35.3125,
+                "y": 14.5938
+              },
+              "cell": {
+                "x": 35,
+                "y": 14
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 3.5,
+                "y": 28.4062
+              },
+              "cell": {
+                "x": 3,
+                "y": 28
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 33.2812,
+                "y": 29.3125
+              },
+              "cell": {
+                "x": 33,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 32.3125,
+                "y": 14.4062
+              },
+              "cell": {
+                "x": 32,
+                "y": 14
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 17.6875,
+                "y": 24.4375
+              },
+              "cell": {
+                "x": 17,
+                "y": 24
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 9.25,
+                "y": 4.6562
+              },
+              "cell": {
+                "x": 9,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 44.6562,
+                "y": 3.4375
+              },
+              "cell": {
+                "x": 44,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 23.4688,
+                "y": 14.5625
+              },
+              "cell": {
+                "x": 23,
+                "y": 14
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          569.0,
+          238.0,
+          1657.0
+        ],
+        "vertices": [
+          392,
+          148,
+          276
+        ],
+        "triangles": [
+          196,
+          74,
+          138
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0",
+      "pixelsPerUnit": 96
+    },
+    "forest_depths": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "35059f763d732099af07b8b3130495a405456d6a682345d6b4b4e56d62153569",
+      "collisionHash": "f8e9c4cccafefda8c653ef48dc4de2e741f59b6576d76dce0e78e3c49427263c",
+      "terrainHash": "377660cc24449aae419e18cdfc35c7ac3cb430661e872f3d173710dfa70ff0a8",
+      "props": {
+        "details": [
+          {
+            "biome": "forest",
+            "atlasId": "forest_fields",
+            "atlasSourceSha256": "1f5c94f9f759359e96c8162d9deef0aabf9efc0e68ce9eed4fe5d9f20ab6e0f8",
+            "eligible": 27,
+            "applied": 27,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 27,
+            "species": 7,
+            "atlasWidth": 1254,
+            "atlasHeight": 1254,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 1
+              },
+              {
+                "slot": "dead",
+                "count": 6
+              },
+              {
+                "slot": "dead_bent",
+                "count": 7
+              },
+              {
+                "slot": "oak",
+                "count": 3
+              },
+              {
+                "slot": "pine",
+                "count": 4
+              },
+              {
+                "slot": "pine_open",
+                "count": 3
+              },
+              {
+                "slot": "willow",
+                "count": 3
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 27,
+          "shadowPixels": 55076,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": {
+          "edgeTrees": 19,
+          "rearTrees": 1,
+          "staticTreeViews": 14,
+          "deadTreeViews": 13,
+          "species": 5,
+          "entranceSitesSkipped": 12,
+          "ownedResources": 26
+        },
+        "hiddenNature": {
+          "count": 25,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.3125,
+                "y": 32.4688
+              },
+              "cell": {
+                "x": 54,
+                "y": 32
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 35.2812,
+                "y": 2.5
+              },
+              "cell": {
+                "x": 35,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 19.3438,
+                "y": 1.4375
+              },
+              "cell": {
+                "x": 19,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 49.75,
+                "y": 36.3438
+              },
+              "cell": {
+                "x": 49,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 53.4375,
+                "y": 7.375
+              },
+              "cell": {
+                "x": 53,
+                "y": 7
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 11.25,
+                "y": 33.3125
+              },
+              "cell": {
+                "x": 11,
+                "y": 33
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 9.5,
+                "y": 29.4375
+              },
+              "cell": {
+                "x": 9,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 15.5,
+                "y": 2.4688
+              },
+              "cell": {
+                "x": 15,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 26.2812,
+                "y": 41.6562
+              },
+              "cell": {
+                "x": 26,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 36.5938,
+                "y": 42.375
+              },
+              "cell": {
+                "x": 36,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.5625,
+                "y": 27.5625
+              },
+              "cell": {
+                "x": 3,
+                "y": 27
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 10.625,
+                "y": 42.625
+              },
+              "cell": {
+                "x": 10,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 23.5938,
+                "y": 1.6562
+              },
+              "cell": {
+                "x": 23,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 31.5625,
+                "y": 40.5625
+              },
+              "cell": {
+                "x": 31,
+                "y": 40
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 48.4062,
+                "y": 8.4688
+              },
+              "cell": {
+                "x": 48,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 52.4688,
+                "y": 27.3125
+              },
+              "cell": {
+                "x": 52,
+                "y": 27
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 7.4688,
+                "y": 7.5
+              },
+              "cell": {
+                "x": 7,
+                "y": 7
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.6875,
+                "y": 4.5625
+              },
+              "cell": {
+                "x": 47,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 49.3125,
+                "y": 42.4375
+              },
+              "cell": {
+                "x": 49,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 19.3438,
+                "y": 2.4688
+              },
+              "cell": {
+                "x": 19,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 3.3438,
+                "y": 26.4375
+              },
+              "cell": {
+                "x": 3,
+                "y": 26
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 13.7188,
+                "y": 3.4062
+              },
+              "cell": {
+                "x": 13,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 20.2812,
+                "y": 1.3438
+              },
+              "cell": {
+                "x": 20,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 51.7188,
+                "y": 8.3438
+              },
+              "cell": {
+                "x": 51,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 36.3125,
+                "y": 40.375
+              },
+              "cell": {
+                "x": 36,
+                "y": 40
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          611.0,
+          138.0,
+          1715.0
+        ],
+        "vertices": [
+          336,
+          116,
+          176
+        ],
+        "triangles": [
+          168,
+          58,
+          88
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b",
+      "pixelsPerUnit": 96
+    },
+    "forest_crossing": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "d1743f39384d17881545bd3cfd5f1a2204a074cb6d5b53c522c94ef70c65cecc",
+      "collisionHash": "64fc549e751024829f172e772925ea81e51d727105558585c4c639d0153f3ad5",
+      "terrainHash": "2186badf1dcca3b8125cd77a3186656cc91113e21d6bd6aa909d80a1c7429d0f",
+      "props": {
+        "details": [
+          {
+            "biome": "forest",
+            "atlasId": "forest_fields",
+            "atlasSourceSha256": "1f5c94f9f759359e96c8162d9deef0aabf9efc0e68ce9eed4fe5d9f20ab6e0f8",
+            "eligible": 44,
+            "applied": 44,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 44,
+            "species": 9,
+            "atlasWidth": 1254,
+            "atlasHeight": 1254,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 4
+              },
+              {
+                "slot": "broadleaf_open",
+                "count": 2
+              },
+              {
+                "slot": "dead",
+                "count": 11
+              },
+              {
+                "slot": "dead_bent",
+                "count": 8
+              },
+              {
+                "slot": "oak",
+                "count": 4
+              },
+              {
+                "slot": "oak_lean",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 3
+              },
+              {
+                "slot": "pine_open",
+                "count": 6
+              },
+              {
+                "slot": "willow",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 44,
+          "shadowPixels": 101279,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": {
+          "edgeTrees": 24,
+          "rearTrees": 4,
+          "staticTreeViews": 25,
+          "deadTreeViews": 19,
+          "species": 5,
+          "entranceSitesSkipped": 18,
+          "ownedResources": 33
+        },
+        "hiddenNature": {
+          "count": 32,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 2.25,
+                "y": 19.6875
+              },
+              "cell": {
+                "x": 2,
+                "y": 19
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.6562,
+                "y": 40.375
+              },
+              "cell": {
+                "x": 47,
+                "y": 40
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.5312,
+                "y": 26.4062
+              },
+              "cell": {
+                "x": 1,
+                "y": 26
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.5312,
+                "y": 36.3438
+              },
+              "cell": {
+                "x": 54,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 40.75,
+                "y": 41.3125
+              },
+              "cell": {
+                "x": 40,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 36.3125,
+                "y": 41.5625
+              },
+              "cell": {
+                "x": 36,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.75,
+                "y": 3.4062
+              },
+              "cell": {
+                "x": 8,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 5.3438,
+                "y": 7.5312
+              },
+              "cell": {
+                "x": 5,
+                "y": 7
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 2.3438,
+                "y": 15.5
+              },
+              "cell": {
+                "x": 2,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 44.3438,
+                "y": 42.625
+              },
+              "cell": {
+                "x": 44,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.4375,
+                "y": 30.3438
+              },
+              "cell": {
+                "x": 54,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 36.7188,
+                "y": 4.5312
+              },
+              "cell": {
+                "x": 36,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.5625,
+                "y": 36.375
+              },
+              "cell": {
+                "x": 47,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.4688,
+                "y": 4.625
+              },
+              "cell": {
+                "x": 47,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 42.5938,
+                "y": 4.5
+              },
+              "cell": {
+                "x": 42,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 32.375,
+                "y": 3.4375
+              },
+              "cell": {
+                "x": 32,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 51.3125,
+                "y": 35.5625
+              },
+              "cell": {
+                "x": 51,
+                "y": 35
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 52.5312,
+                "y": 18.3438
+              },
+              "cell": {
+                "x": 52,
+                "y": 18
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.625,
+                "y": 30.5625
+              },
+              "cell": {
+                "x": 1,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.4375,
+                "y": 8.5625
+              },
+              "cell": {
+                "x": 1,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.5,
+                "y": 1.4688
+              },
+              "cell": {
+                "x": 47,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 44.625,
+                "y": 1.5625
+              },
+              "cell": {
+                "x": 44,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 50.4688,
+                "y": 38.4375
+              },
+              "cell": {
+                "x": 50,
+                "y": 38
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 39.5,
+                "y": 1.625
+              },
+              "cell": {
+                "x": 39,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 3.4688,
+                "y": 21.3438
+              },
+              "cell": {
+                "x": 3,
+                "y": 21
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 1.4062,
+                "y": 12.5312
+              },
+              "cell": {
+                "x": 1,
+                "y": 12
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 46.7188,
+                "y": 35.3125
+              },
+              "cell": {
+                "x": 46,
+                "y": 35
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 54.3438,
+                "y": 29.4375
+              },
+              "cell": {
+                "x": 54,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 38.3438,
+                "y": 41.6562
+              },
+              "cell": {
+                "x": 38,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 34.2812,
+                "y": 3.4375
+              },
+              "cell": {
+                "x": 34,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 36.2812,
+                "y": 3.6562
+              },
+              "cell": {
+                "x": 36,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 35.3438,
+                "y": 3.5312
+              },
+              "cell": {
+                "x": 35,
+                "y": 3
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          532.0,
+          136.0,
+          1796.0
+        ],
+        "vertices": [
+          368,
+          156,
+          192
+        ],
+        "triangles": [
+          184,
+          78,
+          96
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e",
+      "pixelsPerUnit": 96
+    },
+    "canyon": {
+      "width": 48,
+      "height": 60,
+      "baselineHash": "91e9d57047545502f6feff4461ca9e4db452822ddcd4acc6fea944a44224a1ae",
+      "collisionHash": "f9ee052bf730f03d7f920863dc0364f48151d098d04eb2fc111a11fa338d266e",
+      "terrainHash": "c6df1de4089fef222c9338ae0e0795c35c3c0615b6636c3cec7634c5d8561c5b",
+      "props": {
+        "details": [
+          {
+            "biome": "canyon",
+            "atlasId": "canyon",
+            "atlasSourceSha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+            "eligible": 14,
+            "applied": 14,
+            "skipped": 0,
+            "resources": 2,
+            "staticProps": 12,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 4
+              },
+              {
+                "slot": "pebbles",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 6
+              },
+              {
+                "slot": "rockA",
+                "count": 1
+              },
+              {
+                "slot": "rockC",
+                "count": 1
+              },
+              {
+                "slot": "shrub",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 27,
+          "shadowPixels": 54238,
+          "staticRenderer": true,
+          "resourceContacts": 2,
+          "resourceShadowPixels": 896,
+          "ownedResources": 6
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 48,
+          "height": 60
+        },
+        "layerCells": [
+          692.0,
+          173.0,
+          2015.0
+        ],
+        "vertices": [
+          516,
+          116,
+          284
+        ],
+        "triangles": [
+          258,
+          58,
+          142
+        ],
+        "hiddenOriginalGroundRenderers": 53
+      },
+      "sourceSha256": "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c",
+      "pixelsPerUnit": 96
+    },
+    "canyon_pass": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "7364a681992cc90795e5d9bd628b642d89f4dd20c96c6b73078eda4f1b6846ea",
+      "collisionHash": "2361d5d4c713ae66e8347c61625299b752d51b0eb2408906747746708076be5e",
+      "terrainHash": "fbde27b5b5f1fd33cb6e16e38f232cefc5c4a11cb5dfa4963cb2e4b3834d7c83",
+      "props": {
+        "details": [
+          {
+            "biome": "canyon",
+            "atlasId": "canyon",
+            "atlasSourceSha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+            "eligible": 55,
+            "applied": 55,
+            "skipped": 0,
+            "resources": 36,
+            "staticProps": 19,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 6
+              },
+              {
+                "slot": "pebbles",
+                "count": 2
+              },
+              {
+                "slot": "pine",
+                "count": 11
+              },
+              {
+                "slot": "rockA",
+                "count": 11
+              },
+              {
+                "slot": "rockB",
+                "count": 13
+              },
+              {
+                "slot": "rockC",
+                "count": 12
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 17,
+          "shadowPixels": 39411,
+          "staticRenderer": true,
+          "resourceContacts": 36,
+          "resourceShadowPixels": 16091,
+          "ownedResources": 74
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 3
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          530.0,
+          146.0,
+          1788.0
+        ],
+        "vertices": [
+          348,
+          136,
+          196
+        ],
+        "triangles": [
+          174,
+          68,
+          98
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5",
+      "pixelsPerUnit": 96
+    },
+    "canyon_mine": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "c098efaec23fe2ab468bab888fda0fb5033cf54cc28383f740888e53b4300003",
+      "collisionHash": "2e2cdf016ba956b8ac858c2af45d2f098c2811791b5e0590bc0b821ea6abe900",
+      "terrainHash": "38fc12a0721c7a067df2e7e057baf9dc30831c90a9a927833c98ab86b34b16e1",
+      "props": {
+        "details": [
+          {
+            "biome": "canyon",
+            "atlasId": "canyon",
+            "atlasSourceSha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+            "eligible": 36,
+            "applied": 36,
+            "skipped": 0,
+            "resources": 26,
+            "staticProps": 10,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 3
+              },
+              {
+                "slot": "pebbles",
+                "count": 2
+              },
+              {
+                "slot": "pine",
+                "count": 5
+              },
+              {
+                "slot": "rockA",
+                "count": 11
+              },
+              {
+                "slot": "rockB",
+                "count": 10
+              },
+              {
+                "slot": "rockC",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 8,
+          "shadowPixels": 19230,
+          "staticRenderer": true,
+          "resourceContacts": 26,
+          "resourceShadowPixels": 11594,
+          "ownedResources": 54
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 3
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          555.0,
+          272.0,
+          1637.0
+        ],
+        "vertices": [
+          368,
+          200,
+          296
+        ],
+        "triangles": [
+          184,
+          100,
+          148
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9",
+      "pixelsPerUnit": 96
+    },
+    "canyon_ridge": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "841c0092ed715b98d13b016d65723282083ee586f76cef332825c37387ffb993",
+      "collisionHash": "d8c815f4b5c31da50db80c6d99c42a0ab2083f939c0adb2efcb740abd952ecdf",
+      "terrainHash": "cd40b1cdebb2e8f377dde872c8ee7dbc696bea35dbbb9cc30511497624ef6899",
+      "props": {
+        "details": [
+          {
+            "biome": "canyon",
+            "atlasId": "canyon",
+            "atlasSourceSha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+            "eligible": 24,
+            "applied": 24,
+            "skipped": 0,
+            "resources": 11,
+            "staticProps": 13,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 5
+              },
+              {
+                "slot": "pebbles",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 7
+              },
+              {
+                "slot": "rockA",
+                "count": 3
+              },
+              {
+                "slot": "rockB",
+                "count": 5
+              },
+              {
+                "slot": "rockC",
+                "count": 3
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 12,
+          "shadowPixels": 27211,
+          "staticRenderer": true,
+          "resourceContacts": 11,
+          "resourceShadowPixels": 4928,
+          "ownedResources": 24
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 3
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          966.0,
+          256.0,
+          1242.0
+        ],
+        "vertices": [
+          392,
+          216,
+          284
+        ],
+        "triangles": [
+          196,
+          108,
+          142
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35",
+      "pixelsPerUnit": 96
+    },
+    "canyon_gate": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "dd68a8ea1671ce32b5844790874398c39b21943351bb99ebca8484a8fa1ee582",
+      "collisionHash": "c17d00e7cc210a6843addea55b3f13f0e80938375342fb160e6e934578c73d92",
+      "terrainHash": "2997d1dcbfe6001a35789892c3f8f2fea23fbf80f5ddbcf637239f0d56320a1a",
+      "props": {
+        "details": [
+          {
+            "biome": "canyon",
+            "atlasId": "canyon",
+            "atlasSourceSha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+            "eligible": 54,
+            "applied": 54,
+            "skipped": 0,
+            "resources": 34,
+            "staticProps": 20,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 7
+              },
+              {
+                "slot": "pine",
+                "count": 13
+              },
+              {
+                "slot": "rockA",
+                "count": 12
+              },
+              {
+                "slot": "rockB",
+                "count": 9
+              },
+              {
+                "slot": "rockC",
+                "count": 13
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 20,
+          "shadowPixels": 43014,
+          "staticRenderer": true,
+          "resourceContacts": 34,
+          "resourceShadowPixels": 15125,
+          "ownedResources": 70
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 3
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          704.0,
+          221.0,
+          1539.0
+        ],
+        "vertices": [
+          496,
+          176,
+          380
+        ],
+        "triangles": [
+          248,
+          88,
+          190
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f",
+      "pixelsPerUnit": 96
+    },
+    "winter": {
+      "width": 52,
+      "height": 46,
+      "baselineHash": "a02d3b30bdb3e3df70e71744f2fc6b81de2b0bd1f93272c55ab12f198d873a49",
+      "collisionHash": "4f33a992bfffcd76808405923a859e846719d3185a1f80879ffe4c89daeb4782",
+      "terrainHash": "9a7a0655185a6d5c0b1894576f6b0e7c641b98ad6e3dc999c8f03ee6ebf48c50",
+      "props": {
+        "details": [
+          {
+            "biome": "winter",
+            "atlasId": "winter",
+            "atlasSourceSha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+            "eligible": 90,
+            "applied": 90,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 90,
+            "species": 8,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 12
+              },
+              {
+                "slot": "fir",
+                "count": 21
+              },
+              {
+                "slot": "grass",
+                "count": 18
+              },
+              {
+                "slot": "log",
+                "count": 4
+              },
+              {
+                "slot": "pine",
+                "count": 19
+              },
+              {
+                "slot": "rockA",
+                "count": 5
+              },
+              {
+                "slot": "rockB",
+                "count": 2
+              },
+              {
+                "slot": "shrub",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 96,
+          "shadowPixels": 146896,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 52,
+          "height": 46
+        },
+        "layerCells": [
+          44.0,
+          132.0,
+          2216.0
+        ],
+        "vertices": [
+          12,
+          36,
+          200
+        ],
+        "triangles": [
+          6,
+          18,
+          100
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728",
+      "pixelsPerUnit": 96
+    },
+    "winter_edge": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "d21c894e734e96b669a7e3a18b0e0a7aa17b8beaee3a0d09ee1d6da727eab7aa",
+      "collisionHash": "90d5fa1e81e8a31ab8d1eb53cf20c8cf41a4713c0a5e1ada2e678ddc92f2f15e",
+      "terrainHash": "3ba5498cbcb3cf3e67bed453f2029024304d9ba20692a0e7b16683fdaa560e21",
+      "props": {
+        "details": [
+          {
+            "biome": "winter",
+            "atlasId": "winter",
+            "atlasSourceSha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+            "eligible": 53,
+            "applied": 53,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 53,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 23
+              },
+              {
+                "slot": "pebbles",
+                "count": 2
+              },
+              {
+                "slot": "pine",
+                "count": 13
+              },
+              {
+                "slot": "rockA",
+                "count": 7
+              },
+              {
+                "slot": "rockB",
+                "count": 8
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 51,
+          "shadowPixels": 66328,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          530.0,
+          146.0,
+          1788.0
+        ],
+        "vertices": [
+          348,
+          136,
+          196
+        ],
+        "triangles": [
+          174,
+          68,
+          98
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845",
+      "pixelsPerUnit": 96
+    },
+    "winter_lake": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "95a2b79e6d217194868fe4d59bae9f33472c90572ebdcf2b848e39899792152a",
+      "collisionHash": "6a7a3d1111e9f649f41c1c1cdbfa9b75bc90d3ac385db14ad9e79d4016b7dc57",
+      "terrainHash": "08554d89fed865ad6a3aa0e563959c0d5370d8c20d824141571fde255d5c36bf",
+      "props": {
+        "details": [
+          {
+            "biome": "winter",
+            "atlasId": "winter",
+            "atlasSourceSha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+            "eligible": 20,
+            "applied": 20,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 20,
+            "species": 4,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 11
+              },
+              {
+                "slot": "pine",
+                "count": 5
+              },
+              {
+                "slot": "rockA",
+                "count": 2
+              },
+              {
+                "slot": "rockB",
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 20,
+          "shadowPixels": 29095,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          533.0,
+          160.0,
+          1771.0
+        ],
+        "vertices": [
+          312,
+          108,
+          176
+        ],
+        "triangles": [
+          156,
+          54,
+          88
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9",
+      "pixelsPerUnit": 96
+    },
+    "winter_peak": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "75897627821e1546913a9714902840900e2d89c3657193f2648bfd7222ce061c",
+      "collisionHash": "dda32a2d803d73fd8e42bd3f4fd8b728fcf9cd19c356afc5bcf7af0349c53001",
+      "terrainHash": "376cc76ee1017ff79cd909192af2d6f61d37b9ba50016d9b639cb2799650cad9",
+      "props": {
+        "details": [
+          {
+            "biome": "winter",
+            "atlasId": "winter",
+            "atlasSourceSha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+            "eligible": 25,
+            "applied": 25,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 25,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 8
+              },
+              {
+                "slot": "pebbles",
+                "count": 3
+              },
+              {
+                "slot": "pine",
+                "count": 7
+              },
+              {
+                "slot": "rockA",
+                "count": 3
+              },
+              {
+                "slot": "rockB",
+                "count": 4
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 22,
+          "shadowPixels": 29359,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          941.0,
+          261.0,
+          1262.0
+        ],
+        "vertices": [
+          408,
+          220,
+          304
+        ],
+        "triangles": [
+          204,
+          110,
+          152
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7",
+      "pixelsPerUnit": 96
+    },
+    "winter_reach": {
+      "width": 56,
+      "height": 44,
+      "baselineHash": "c0aff3a7a1026e98141a9decb65c7c80f3824f90de904dade29aa1a15e11f260",
+      "collisionHash": "c69747d3d23175a107a79473345c065f9e3506bc3946c4e3f83aa847d711609b",
+      "terrainHash": "9a2e4147443e97040f05b5a67407e7d452bb47a7336209b9a587eb6bb9f035d5",
+      "props": {
+        "details": [
+          {
+            "biome": "winter",
+            "atlasId": "winter",
+            "atlasSourceSha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+            "eligible": 54,
+            "applied": 54,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 54,
+            "species": 4,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 23
+              },
+              {
+                "slot": "pine",
+                "count": 14
+              },
+              {
+                "slot": "rockA",
+                "count": 8
+              },
+              {
+                "slot": "rockB",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 54,
+          "shadowPixels": 62465,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 56,
+          "height": 44
+        },
+        "layerCells": [
+          508.0,
+          161.0,
+          1795.0
+        ],
+        "vertices": [
+          356,
+          128,
+          192
+        ],
+        "triangles": [
+          178,
+          64,
+          96
+        ],
+        "hiddenOriginalGroundRenderers": 47
+      },
+      "sourceSha256": "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418",
+      "pixelsPerUnit": 96
+    },
+    "sunken_sanctum": {
+      "width": 48,
+      "height": 72,
+      "baselineHash": "2675bd06c899f6171e20870b7813c156b487b74d7e7b115eca89c278d8bdbc5c",
+      "collisionHash": "78c6ef686cca9602f774ebcd9ec5140438214531ec7c869023c825adefae6735",
+      "terrainHash": "dd78bd2b3fe5361acb3f6846058d162694583c7a7d53b0a9967075200ecd0a6a",
+      "props": {
+        "details": [
+          {
+            "biome": "sanctum",
+            "atlasId": "sanctum",
+            "atlasSourceSha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+            "eligible": 9,
+            "applied": 9,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 9,
+            "species": 3,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 5,
+            "slots": [
+              {
+                "slot": "longremnant",
+                "count": 1
+              },
+              {
+                "slot": "pillar",
+                "count": 3
+              },
+              {
+                "slot": "rubble",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 4,
+          "shadowPixels": 2136,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 48,
+          "height": 72
+        },
+        "layerCells": [
+          2099.0,
+          98.0,
+          1259.0
+        ],
+        "vertices": [
+          508,
+          88,
+          220
+        ],
+        "triangles": [
+          254,
+          44,
+          110
+        ],
+        "hiddenOriginalGroundRenderers": 6
+      },
+      "sourceSha256": "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33",
+      "pixelsPerUnit": 96
+    },
+    "sanctum_hall": {
+      "width": 60,
+      "height": 48,
+      "baselineHash": "9dbd2db3b8b023b293819bee05511317e23ced94c28d31030a8bf6df1404fa81",
+      "collisionHash": "268e403dd4de2f80650402583f4b8d4f89ec9d87e5bd10ecf404b19844a38a3f",
+      "terrainHash": "e766168b3df2add8006fe460b2f04dc7cf1e84d9c4646034765b13afddcb5bf0",
+      "props": {
+        "details": [
+          {
+            "biome": "sanctum",
+            "atlasId": "sanctum",
+            "atlasSourceSha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+            "eligible": 3,
+            "applied": 3,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 3,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "pillar",
+                "count": 3
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 60,
+          "height": 48
+        },
+        "layerCells": [
+          718.0,
+          54.0,
+          2108.0
+        ],
+        "vertices": [
+          344,
+          44,
+          192
+        ],
+        "triangles": [
+          172,
+          22,
+          96
+        ],
+        "hiddenOriginalGroundRenderers": 6
+      },
+      "sourceSha256": "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5",
+      "pixelsPerUnit": 96
+    },
+    "sanctum_archive": {
+      "width": 60,
+      "height": 48,
+      "baselineHash": "c2f1de4a6e34db7e4a4390eb13d3ef43c860d3c551a05161908e4246237b2a4a",
+      "collisionHash": "58e4c630c65cadb99a87ea5f96859917e430b2a26cf32c612adcdd49f992178d",
+      "terrainHash": "60619d477c6096d3db623e51c5734a5bf855fa49ef5e5b017c3d3f30cb7d7eb5",
+      "props": {
+        "details": [
+          {
+            "biome": "sanctum",
+            "atlasId": "sanctum",
+            "atlasSourceSha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+            "eligible": 9,
+            "applied": 9,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 9,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "pillar",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 60,
+          "height": 48
+        },
+        "layerCells": [
+          780.0,
+          30.0,
+          2070.0
+        ],
+        "vertices": [
+          272,
+          24,
+          160
+        ],
+        "triangles": [
+          136,
+          12,
+          80
+        ],
+        "hiddenOriginalGroundRenderers": 6
+      },
+      "sourceSha256": "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609",
+      "pixelsPerUnit": 96
+    },
+    "sanctum_roots": {
+      "width": 60,
+      "height": 48,
+      "baselineHash": "606f0fe12214fadc1b2ca30c66006b0b09f5d8a3ff496a4785cb9a84205f79c5",
+      "collisionHash": "70ac49b0579d01dac850b5293ae1065419d3abd4f93dc10ad97b08df57161c2b",
+      "terrainHash": "8973637c0d068c9ffcca2f78e5bce7cf502b5ae53343fd67dfca0ff01cd5078c",
+      "props": {
+        "details": [
+          {
+            "biome": "sanctum",
+            "atlasId": "sanctum",
+            "atlasSourceSha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+            "eligible": 5,
+            "applied": 5,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 5,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "moss",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 60,
+          "height": 48
+        },
+        "layerCells": [
+          736.0,
+          63.0,
+          2081.0
+        ],
+        "vertices": [
+          284,
+          52,
+          160
+        ],
+        "triangles": [
+          142,
+          26,
+          80
+        ],
+        "hiddenOriginalGroundRenderers": 6
+      },
+      "sourceSha256": "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37",
+      "pixelsPerUnit": 96
+    },
+    "sanctum_court": {
+      "width": 60,
+      "height": 48,
+      "baselineHash": "9bbe7fc3dbb54e49fffedd74aeb296c95cdfcefc54e4b6d388a045cd12074677",
+      "collisionHash": "4d5e5c256002c7a29b5d9efe9a88305d9003531610f89c1eb5079b8119f3eae7",
+      "terrainHash": "141fbdffbe5c713e67fa9e889373bdd2543adc766e80513a5f8d2d758edbf240",
+      "props": {
+        "details": [
+          {
+            "biome": "sanctum",
+            "atlasId": "sanctum",
+            "atlasSourceSha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+            "eligible": 7,
+            "applied": 7,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 7,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "moss",
+                "count": 7
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 60,
+          "height": 48
+        },
+        "layerCells": [
+          774.0,
+          15.0,
+          2091.0
+        ],
+        "vertices": [
+          344,
+          12,
+          192
+        ],
+        "triangles": [
+          172,
+          6,
+          96
+        ],
+        "hiddenOriginalGroundRenderers": 6
+      },
+      "sourceSha256": "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281",
+      "pixelsPerUnit": 96
+    },
+    "undergate": {
+      "width": 52,
+      "height": 44,
+      "baselineHash": "625c8e9f05f1d8f1321bd57ec29f06580a15dd0653e07ea51b75c00bda53faf2",
+      "collisionHash": "4971de5426e36e453052ac279c91f57540286691eec7a2864f8fe2b310985b1d",
+      "terrainHash": "2211adb2ded06f69450df29c89b6e8e9769db1454ae859b23a0266e235d057b3",
+      "props": {
+        "details": [
+          {
+            "biome": "forest",
+            "atlasId": "forest",
+            "atlasSourceSha256": "2ceaadd6c7c7fbfad0ef0cf5ab4ad2037373d0e145e4f05512ce917cfeb689da",
+            "eligible": 21,
+            "applied": 21,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 21,
+            "species": 2,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "oak",
+                "count": 12
+              },
+              {
+                "slot": "willow",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 24,
+          "shadowPixels": 59218,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "canopy": null,
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "hiddenUnsupportedLandmarks": 0
+      },
+      "geometry": {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 52,
+          "height": 44
+        },
+        "layerCells": [
+          230.0,
+          98.0,
+          1960.0
+        ],
+        "vertices": [
+          288,
+          40,
+          176
+        ],
+        "triangles": [
+          144,
+          20,
+          88
+        ],
+        "hiddenOriginalGroundRenderers": 6
+      },
+      "sourceSha256": "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429",
+      "pixelsPerUnit": 96
+    }
+  }
+}

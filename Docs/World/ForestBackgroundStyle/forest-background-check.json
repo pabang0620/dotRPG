@@ -1,0 +1,19 @@
+{
+  "recordedFiles": 418,
+  "protectedFiles": 412,
+  "baselineSha256": "fe3328972f7f6a2425c3a8fd8f4111d00a18bc76c6027b904ca8323b8a1267e7",
+  "changedApprovedCode": [
+    "Assets/Scripts/Runtime/Art/HuntingScenery.cs",
+    "Assets/Scripts/Runtime/Core/DevCapture.SanctumFields.cs"
+  ],
+  "changedAllowedBackgrounds": [
+    "Assets/StreamingAssets/SurfaceWorld/forest.png",
+    "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+    "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+    "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png"
+  ],
+  "runtimeMaps": 21,
+  "failed": 0,
+  "failures": [],
+  "visualReviewRequired": "Collision and layer hashes cannot prove painted shoreline semantics; compare native views with walk/water guides."
+}

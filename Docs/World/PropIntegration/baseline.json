@@ -1,0 +1,373 @@
+{
+  "version": 1,
+  "gitHead": "395ea80df239ea0e5941347d5bfea43685fa5eb9",
+  "createdUtc": "2026-10-09T12:27:06.518679+00:00",
+  "files": [
+    {
+      "path": "Assets/Resources/Maps/Canyon.txt",
+      "category": "layout",
+      "bytes": 4258,
+      "sha256": "068114b082115c94c7bad85fd312477e63d905f7c966b447a558629fd61a67f2"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon1.txt",
+      "category": "layout",
+      "bytes": 1115,
+      "sha256": "1d0b4658ead85afac2df663e44cc63fb42fbe8acdec19d41bcab6db8a2663e8e"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon2.txt",
+      "category": "layout",
+      "bytes": 1125,
+      "sha256": "794e27f93aecc7e918e01416d1d405dddf9161397bc0b45ee1b23b98add2b278"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon3.txt",
+      "category": "layout",
+      "bytes": 1120,
+      "sha256": "07a97b644ddb6073a2c60d748fd6640a1efd5e706e843ec87abec5fb378fdd80"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/CanyonBoss.txt",
+      "category": "layout",
+      "bytes": 1293,
+      "sha256": "b6c700f1d508dfac779c694fdc6abe693ff0849403614df9454dece961bd53ac"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest1.txt",
+      "category": "layout",
+      "bytes": 1172,
+      "sha256": "964626a541b6cb4269ca69aba06d9d6745bcf9d4030b8f674e61cbf05dac5585"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest2.txt",
+      "category": "layout",
+      "bytes": 1182,
+      "sha256": "7dddfbc41911fc4d0a42df8fbceeb9568ef5ab01ef8af168c1f11c4d2eec048f"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest3.txt",
+      "category": "layout",
+      "bytes": 1185,
+      "sha256": "4ad1279e7dc8569d71012de16ef5c13d03ab44aaa587c857c0475fe6a50a2a63"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/ForestBoss.txt",
+      "category": "layout",
+      "bytes": 1363,
+      "sha256": "8eca4b275d9de2a06268fe3cb1fa5e84deade9c7ad7572b9962b72aa7e69187d"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Raid1.txt",
+      "category": "layout",
+      "bytes": 1276,
+      "sha256": "3b039f45ab8c2e070ba6324e14472d938c6f24c2da7d7923cb1b76e053da2cd3"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Raid2.txt",
+      "category": "layout",
+      "bytes": 1325,
+      "sha256": "b1b23697bd779b55ba3f175bfc397abf68dbb799e18e0d6b0b77f00c5f387dfd"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/RaidBoss.txt",
+      "category": "layout",
+      "bytes": 1299,
+      "sha256": "c153e641f32560aad4c4cb59292c0aafca453ddde5ea16b1b4b6a1a27a534dbc"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter1.txt",
+      "category": "layout",
+      "bytes": 1168,
+      "sha256": "45aee26cbcb5e8efc1cac30b7b81abd6e58428206cc276360cb78ee535d3b630"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter2.txt",
+      "category": "layout",
+      "bytes": 1157,
+      "sha256": "edfe654ed569e2da3e894d4dab25cc24de31eaa06e6009e2be2b5c1bc835ff1b"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter3.txt",
+      "category": "layout",
+      "bytes": 1183,
+      "sha256": "da4f82c220ad223a49bdfc60926533e6df8af5b10db171d921078793c8945f1b"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/WinterBoss.txt",
+      "category": "layout",
+      "bytes": 1356,
+      "sha256": "9de4f9b207a34463263f9c23fa37f3a8922e64b32a876f032c902b9dcf1bbd7c"
+    },
+    {
+      "path": "Assets/Resources/Maps/Forest.txt",
+      "category": "layout",
+      "bytes": 3782,
+      "sha256": "b270411299eb63d1f725042bfd7e4c19ce4b78397069d20c37b7c963b1d59e55"
+    },
+    {
+      "path": "Assets/Resources/Maps/SunkenSanctum.txt",
+      "category": "layout",
+      "bytes": 3716,
+      "sha256": "9f9031851934d1459b93169b660649d38ffa3bd03a1721138b665d606e42c724"
+    },
+    {
+      "path": "Assets/Resources/Maps/Village.txt",
+      "category": "layout",
+      "bytes": 4696,
+      "sha256": "5129964efb79bd39868f372075c4b37c4149435044d72680949c75449c22b92b"
+    },
+    {
+      "path": "Assets/Resources/Maps/Winter.txt",
+      "category": "layout",
+      "bytes": 3635,
+      "sha256": "04502e636ee847a5ad12c81911b951eebad4d6147e4d02f38bbaf7cfe79d8da1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingGrounds.cs",
+      "category": "navigation",
+      "bytes": 9628,
+      "sha256": "2d658a128b7793d35bcf08c80644beafe1463709daa82e6a5e85d8fb83a072bd"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingLayouts.cs",
+      "category": "navigation",
+      "bytes": 7217,
+      "sha256": "d5f85e70758963cf57210a4c6d32a214b8a7b21ecaf5b62352db43ee970eb643"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.Dungeon.cs",
+      "category": "navigation",
+      "bytes": 4918,
+      "sha256": "3828a646b100a7d57a54f22a63ba569af07c2a9c5be0f6c6a0aa45c8ec687794"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.cs",
+      "category": "navigation",
+      "bytes": 8274,
+      "sha256": "28cc07489fb5d9e16229c5251f755a03603e855ba023fcad551f812141e4e7aa"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/SunkenSanctumShore.cs",
+      "category": "navigation",
+      "bytes": 9490,
+      "sha256": "218258c70c19742c1871207521c1926e0aefd0eec20aef1368b8d29c7a759ec0"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldComposition.cs",
+      "category": "navigation",
+      "bytes": 4982,
+      "sha256": "994000cb4d5115fa8296823ccd0d328edd5ad2329487ed1f6f046a265d8d31d1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldCompositionNav.cs",
+      "category": "navigation",
+      "bytes": 14719,
+      "sha256": "08bbf8063daa5b0133fb6b38a7c6b58940a8ea925682fed5a1f311de9a6c3e61"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldContour.cs",
+      "category": "navigation",
+      "bytes": 4519,
+      "sha256": "7a3eaf95323b95fd1314e0c0e16ae28322ee87566538c43b8534647663c2b253"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldLayouts.cs",
+      "category": "navigation",
+      "bytes": 5305,
+      "sha256": "b99ad227a0e21c92bfc721c2402605bb2794894633a80c89bd41278abde9afdf"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldLayers.cs",
+      "category": "navigation",
+      "bytes": 864,
+      "sha256": "b96f0a05cdec30ad244f3ae64309baefb91b3fdeb96a99c04cb4b8221231f122"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldRoutes.cs",
+      "category": "navigation",
+      "bytes": 3952,
+      "sha256": "5397da029e1543068b630237341596954bf62b979536e3ab7a4031a9af0cf076"
+    },
+    {
+      "path": "Assets/StreamingAssets/SunkenSanctum/layout.txt",
+      "category": "layout",
+      "bytes": 3716,
+      "sha256": "9f9031851934d1459b93169b660649d38ffa3bd03a1721138b665d606e42c724"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "category": "surface_background",
+      "bytes": 32482789,
+      "sha256": "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "category": "surface_background",
+      "bytes": 29029168,
+      "sha256": "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "category": "surface_background",
+      "bytes": 27998598,
+      "sha256": "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+      "category": "surface_background",
+      "bytes": 27145150,
+      "sha256": "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "category": "surface_background",
+      "bytes": 27684063,
+      "sha256": "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "category": "surface_background",
+      "bytes": 34767348,
+      "sha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "category": "surface_background",
+      "bytes": 30900032,
+      "sha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "category": "surface_background",
+      "bytes": 29340061,
+      "sha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "category": "surface_background",
+      "bytes": 31349335,
+      "sha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_archive.png",
+      "category": "surface_background",
+      "bytes": 28806574,
+      "sha256": "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_court.png",
+      "category": "surface_background",
+      "bytes": 29021351,
+      "sha256": "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+      "category": "surface_background",
+      "bytes": 29020227,
+      "sha256": "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_roots.png",
+      "category": "surface_background",
+      "bytes": 29860302,
+      "sha256": "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "category": "surface_background",
+      "bytes": 32891378,
+      "sha256": "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/undergate.png",
+      "category": "surface_background",
+      "bytes": 27457389,
+      "sha256": "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/village.png",
+      "category": "surface_background",
+      "bytes": 38636370,
+      "sha256": "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "category": "surface_background",
+      "bytes": 19663258,
+      "sha256": "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "category": "surface_background",
+      "bytes": 23753402,
+      "sha256": "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "category": "surface_background",
+      "bytes": 24080712,
+      "sha256": "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "category": "surface_background",
+      "bytes": 25700449,
+      "sha256": "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "category": "surface_background",
+      "bytes": 23589713,
+      "sha256": "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-depths.png",
+      "category": "underground_background",
+      "bytes": 2998369,
+      "sha256": "8692b547935e2d713d34505a635ea5086fd0b8c8ad0dad97b706db4da93f2ebe"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-depths_hd.png",
+      "category": "underground_background",
+      "bytes": 9513167,
+      "sha256": "e4644f2e40891bf3af598611827a0801cb8228e9036a4bddc70fb2dc866b4ee5"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-descent.png",
+      "category": "underground_background",
+      "bytes": 2941315,
+      "sha256": "68cf0792cb973dae63aaf9274afd6ee770e037b126610cd06e0714282a87d508"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-descent_hd.png",
+      "category": "underground_background",
+      "bytes": 9004394,
+      "sha256": "5062dd99ca681ba506d3fa8f28b870819b646cc165a3da53c2de9b5646322f0a"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-fungal.png",
+      "category": "underground_background",
+      "bytes": 3274721,
+      "sha256": "2dc57abb79167d110d4b6bae06844a31450100011ab77b28fbfe4d010912e15d"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-fungal_hd.png",
+      "category": "underground_background",
+      "bytes": 9760255,
+      "sha256": "5e11aca163d8643d36db9b5fbef969e8ea9a6cd720b4c7494713d29ccddb6112"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-roots.png",
+      "category": "underground_background",
+      "bytes": 3123482,
+      "sha256": "169cc68dd4ec77769da356fad3b5e878e9e4cbb31304156fe0b478ea7450b09c"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-roots_hd.png",
+      "category": "underground_background",
+      "bytes": 9285853,
+      "sha256": "5b6848b35a448fdc4adad3ef83dd7e3a5238c7585e43b0299518a7044633daf8"
+    }
+  ]
+}

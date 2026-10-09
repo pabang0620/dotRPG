@@ -280,6 +280,7 @@ namespace DotRPG
 
         IEnumerator WorldLayersSceneryOnly(ScriptedInput input)
         {
+            var propSources = new List<object>();
             foreach(string id in LayerCaves)
             {
                 Game.World.Load(id);Game.Player.Place(Game.World.PlayerSpawn,Facing.Down);
@@ -290,6 +291,10 @@ namespace DotRPG
                 if(scene==null)continue;
                 var scenery=scene.transform;
                 WorldLayerCompositionChecks(id,scene);
+                var propAudit = PropAudit(id);
+                propSources.Add(PropUndergroundSource(id, scene, propAudit));
+                File.WriteAllText(Path.Combine(folder, "prop-integration-underground.json"), MiniJson.Write(propSources));
+                var ownedProps = PropOwnedResources(Game.World);
                 var renderers=scenery.GetComponentsInChildren<SpriteRenderer>(true);
                 DCheck(id+$" bounded composition renderers ({renderers.Length})",renderers.Length>=3&&renderers.Length<=64);
                 DCheck(id+" composition creates no extra collision",scenery.GetComponentsInChildren<Collider2D>(true).Length==0);
@@ -396,6 +401,7 @@ namespace DotRPG
                 DCheck(id+" previous scenery and world root destroyed",scenery==null&&root==null);
                 DCheck(id+" repeat-load scenery count stable",again!=null&&again.GetComponentsInChildren<SpriteRenderer>(true).Length==rendererCount&&again.GetComponentsInChildren<Transform>(true).Length==objectCount);
                 DCheck(id+" prior composition sprites and textures released",ownedSprites.Length==expectedOwnedCount&&ownedTextures.Length==expectedOwnedCount&&ownedSprites.All(s=>s==null)&&ownedTextures.All(t=>t==null));
+                DCheck(id+" prior prop resources released",ownedProps.All(p=>p==null));
                 var active=UnityEngine.Object.FindObjectsByType<UnderworldDepthAmbience>(FindObjectsInactive.Exclude);
                 DCheck(id+" repeat-load ambience not duplicated",again!=null&&active.Length==1&&active[0].transform.IsChildOf(again.transform));
                 DCheck(id+" composition does not change monster combat values",WorldLayerCombatSignature(EnemyController.Active.Where(e=>e!=null&&!e.IsDead))==combatSignature);

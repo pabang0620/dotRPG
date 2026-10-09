@@ -1,0 +1,56 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 96 pixels/tile",
+  "pixels_per_tile": 96,
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "forest_depths",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\originals\\forest_depths.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "4f1ce574384a4897eb72c06afe49bfbde9469acb04bf973c5eec6d838fb85064",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\forest_depths-4x.png",
+      "inference_sha256": "eba4b9490e473da74ea70b7c6470918500e5b0786019881d9edad2bb62020647",
+      "inference_cache_reused": false,
+      "previous_output_size": [
+        5376,
+        4224
+      ],
+      "previous_output_sha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "e93e37297c3168403bc64c5a1f9c329841a95e05daab0968339b43c91b2a965c"
+    },
+    {
+      "id": "forest_crossing",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\originals\\forest_crossing.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "844f38e76c4a397c8896a39066c734aafe38b5d1207b0970bdb92fafa9102959",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\forest_crossing-4x.png",
+      "inference_sha256": "d36cc7b83a087717eaec326372b323030497332f53159715ae59cd81024ad1ee",
+      "inference_cache_reused": false,
+      "previous_output_size": [
+        5376,
+        4224
+      ],
+      "previous_output_sha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "e707f9fc98c64461801a6823eb60540dfee6b33ba4b54b3a4a3b748cd4a7d0c0"
+    }
+  ]
+}
