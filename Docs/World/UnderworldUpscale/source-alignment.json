@@ -1,0 +1,66 @@
+[
+  {
+    "map": "descent",
+    "global_translation_source_pixels": [
+      0,
+      0
+    ],
+    "mean_luminance_difference_255": -0.693,
+    "source_size": [
+      1355,
+      1161
+    ],
+    "hd_size": [
+      2710,
+      2322
+    ]
+  },
+  {
+    "map": "roots",
+    "global_translation_source_pixels": [
+      0,
+      0
+    ],
+    "mean_luminance_difference_255": -0.496,
+    "source_size": [
+      1354,
+      1161
+    ],
+    "hd_size": [
+      2708,
+      2322
+    ]
+  },
+  {
+    "map": "fungal",
+    "global_translation_source_pixels": [
+      0,
+      0
+    ],
+    "mean_luminance_difference_255": -0.277,
+    "source_size": [
+      1354,
+      1161
+    ],
+    "hd_size": [
+      2708,
+      2322
+    ]
+  },
+  {
+    "map": "depths",
+    "global_translation_source_pixels": [
+      0,
+      0
+    ],
+    "mean_luminance_difference_255": -1.088,
+    "source_size": [
+      1355,
+      1161
+    ],
+    "hd_size": [
+      2710,
+      2322
+    ]
+  }
+]

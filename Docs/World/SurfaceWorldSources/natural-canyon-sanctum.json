@@ -1,0 +1,522 @@
+{
+  "date": "2026-10-09",
+  "scope": "10 canyon and sanctuary surface terrain plates; replacement art only, no gameplay code, collision, topology, camera or props changes by this art task.",
+  "authoring": "Original raster artwork and all visual repairs created with built-in image_gen. Existing game maps and exact terrain guides used as edit references. Diagnostic overlays are analysis artifacts only, not game assets.",
+  "registration": "Existing Tools/art/upscale_surface.py: local Real-ESRGAN x4plus, then exact world-size × 48 pixels registration. Upscaling does not create a new layout or prove geometric correspondence; in-game sampling remains Point.",
+  "references": [
+    {
+      "url": "https://www.playlostark.com/en-us/news/articles/elgacia-release-notes",
+      "type": "official text and linked environment images",
+      "use": "shared architectural axes and repeated masonry scale across foreground and surroundings; no copied assets"
+    },
+    {
+      "url": "https://www.jp.square-enix.com/octopathtraveler/traveler/",
+      "type": "official regional description",
+      "use": "Clifflands material context"
+    },
+    {
+      "url": "https://mega64.net/index.php/lp/19-ot/218-shrine-warbringer",
+      "type": "third-party gameplay image search descriptions",
+      "use": "broad terraced sediment strata and subdued depth, not original artwork"
+    },
+    {
+      "url": "https://www.gamesradar.com/lost-ark-morai-ruins/",
+      "type": "third-party gameplay image search descriptions",
+      "use": "continuous weathered stone and submerged ruins, no asset reproduction"
+    }
+  ],
+  "researchLimitation": "Web page text and image-search descriptions accessed; local project inputs/outputs directly visually inspected. Browser surfaces unavailable, so no claim of independent full-resolution browser inspection of remote screenshots.",
+  "artDirection": "A shared high-oblique game projection. Use blocked exterior space for sloping, rounded support masses instead of following tile stairs as upright square cliffs. Keep functional paths dry and clear; curve supporting geology and submerged stone on the blocked side. Existing separate landmarks remain in game.",
+  "qa": {
+    "type": "Offline image/material screening plus visual inspection; parent performs actual native runtime verification. This screening is not a collision test.",
+    "script": "work/check_natural_canyon_sanctum.py",
+    "samplePitchWorld": 0.25,
+    "heuristic": "Teal/green-blue pixels on the guide land mask, chamfer distance from the mask edge; examine new samples deeper than 0.5 tile. Wet stone, dark cracks and subpixel boundaries can yield false positives.",
+    "newWaterSamplesOverHalfTileTotal": 0,
+    "all10NoNewHalfTileIntrusion": true,
+    "legacySunkenGuideNote": "16 pre-existing color samples remain unchanged in the main sanctuary; the earlier guide/feet-mask review identified its narrow disconnected guide strip as non-walkable actual water. No new ground was invented to cover it.",
+    "legacyEvidence": "work/surface-material-review/sunken_sanctum-void-reachability.json",
+    "contactSheet": "work/natural-canyon-sanctum-review/contact.png",
+    "report": "work/natural-canyon-sanctum-review/report.json",
+    "limitation": "Small boundary details below the half-tile screening threshold are not certified by the color test; actual runtime scene, props and feet alignment must be reviewed separately. Existing authored straight bridges, rectangular pool sides and blocked interior ribs are retained where required by unchanged topology."
+  },
+  "assets": [
+    {
+      "id": "canyon",
+      "improvement": "Broad rounded sandstone shoulders, tapered buttresses, continuous sediment planes, subdued lower ravine; existing bridge/stair and pond locations retained.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-7c5d369b-1944-4352-90fd-417d24ac30d8.png",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "29f99b746805bf3c8e85d2a88425ec8c450cef515be24d679cc12c38e599b472",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "registeredSize": [
+        2304,
+        2880
+      ],
+      "registeredSha256": "118faff1cd657b31a517d4fb8d34e92634e6d35126495a0beca10ada2d457de7",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 9923833,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\canyon.png",
+      "previousSha256": "9127751b2655fae60076261d934cb5c469ce6f5c707e7a6220b3ac6d08e92cd6",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\canyon-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\canyon-walk-mask.png",
+      "materialReview": {
+        "id": "canyon",
+        "size": [
+          1122,
+          1402
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "canyon_pass",
+      "improvement": "Curved eroded pond banks and sloping outer strata replace sharp cliff blocks; precise small dry-floor repair at two shore samples.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-a6f827d2-d166-4674-bb3a-a2b6504ec6c2.png",
+      "sourceSize": [
+        1415,
+        1111
+      ],
+      "sourceSha256": "2981f08d19bc22f283ed6762a8fb045cf22a7f36ae36136ac9e8697dcc1a6c29",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+      "registeredSize": [
+        2688,
+        2112
+      ],
+      "registeredSha256": "81c7e52a30f96b06981338b720cbda1a0f0f467b1470d9a50ca49eef65a7f00b",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8218925,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\canyon_pass.png",
+      "previousSha256": "9f117c7d7e31a6629d7226bb45a05a87d7d4ef77dbaddcb2d5ef1f26d6a5958c",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\canyon_pass-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\canyon_pass-walk-mask.png",
+      "materialReview": {
+        "id": "canyon_pass",
+        "size": [
+          1415,
+          1111
+        ],
+        "baselineWaterMaxInsideLand": 0.125,
+        "candidateWaterMaxInsideLand": 0.375,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "canyon_mine",
+      "improvement": "Quarry floor uses small fractures and sediment rather than cobble noise. Interior blocked ribs taper into talus and outer corners use wider stratum shoulders.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-f8281f3b-c07d-404a-9b2f-805af7cf462d.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "sourceSha256": "6369307dbb19fd8a6e8205dc0bce206e2e1be5f3b0f5eeab1f5ffe468bf1e98a",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "registeredSize": [
+        2688,
+        2112
+      ],
+      "registeredSha256": "83f89c6c92dbfa9e7919acf36f8105744561ab17c5c7dcffa217adffe311a689",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8509507,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\canyon_mine.png",
+      "previousSha256": "afb0c25fc354da3d7f86e943deb8b28705ac0681e98663638bb9f773148a17f5",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\canyon_mine-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\canyon_mine-walk-mask.png",
+      "materialReview": {
+        "id": "canyon_mine",
+        "size": [
+          1415,
+          1112
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "canyon_ridge",
+      "improvement": "Wind-worn wedge buttresses and rounded eroded shelves give coherent foreground support, with contrast reduced across distant ravine.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-47d5c25a-ac5c-4297-9ca4-139bc403349c.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "sourceSha256": "5ed0d49d3370abd457bfb807057c1ef8349417f0eede9e0bd2c3242a5dc7cc4d",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "registeredSize": [
+        2688,
+        2112
+      ],
+      "registeredSha256": "292ee6e053fffe227a1b64bd42ea4c08ffbc5a9128ffd2834d35a5cecd033931",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8312422,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\canyon_ridge.png",
+      "previousSha256": "380245f34f7f848ddf156db1893fa357c7935243e7b8963e591a11f7ea6e9250",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\canyon_ridge-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\canyon_ridge-walk-mask.png",
+      "materialReview": {
+        "id": "canyon_ridge",
+        "size": [
+          1415,
+          1112
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "canyon_gate",
+      "improvement": "Blocked rock ribs have eroded tapered flanks and rounded toes. Warm terrain scale and strata match adjacent canyon maps.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-1f95ae31-72b5-4b75-88e5-8c2935d96369.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "sourceSha256": "c89c64628912e475658c53b3f27ed65a5d059bf80d253c96e314f17dcae69aa8",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "registeredSize": [
+        2688,
+        2112
+      ],
+      "registeredSha256": "04ee0545207a6215c0721b10796728be713f7983019ccaee9b25755d3ee9b707",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8762874,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\canyon_gate.png",
+      "previousSha256": "10c78f464c5d1c9f0f64873cae6f3ff41cdac6fc92383c80d1bc285ff3b130e7",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\canyon_gate-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\canyon_gate-walk-mask.png",
+      "materialReview": {
+        "id": "canyon_gate",
+        "size": [
+          1415,
+          1112
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "sunken_sanctum",
+      "improvement": "Large slanted enclosing rock masses and worn olive limestone replace repeated rectangular upright walls. Upper pond, center asymmetric water and lower altar footprint preserved; existing runtime arch/altar remain separate.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-a0cf9b09-d9b1-4011-85d6-003506280e2f.png",
+      "sourceSize": [
+        1024,
+        1536
+      ],
+      "sourceSha256": "7e91632316e26dba0171def8975fdba5e56a99b81bc589e8f6848804420c4011",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "registeredSize": [
+        2304,
+        3456
+      ],
+      "registeredSha256": "d8b2e76f8bc672b5affa6a95993be87c4d0d268eb72423f0e6c96b20ffec37ee",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 10300878,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\sunken_sanctum.png",
+      "previousSha256": "9f9a88e697a42804b05f66746dba7a7fcf4987ca871569c9223131fbaa2d8a2e",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\sunken_sanctum-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\sunken_sanctum-walk-mask.png",
+      "materialReview": {
+        "id": "sunken_sanctum",
+        "size": [
+          1024,
+          1536
+        ],
+        "baselineWaterMaxInsideLand": 0.625,
+        "candidateWaterMaxInsideLand": 0.625,
+        "candidateWaterSamplesOverHalfTile": 16,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "sanctum_hall",
+      "improvement": "Smaller worn limestone and soil infill, rounded dry shore shoulders, submerged supports outside floor. Broad contiguous dry perimeter repair eliminates water-colored notches within walkable land.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-a0a5004f-384a-4cd2-acc7-c0397a1cdfaf.png",
+      "sourceSize": [
+        1403,
+        1121
+      ],
+      "sourceSha256": "2f964af45f4871d0ddc729771c129017e0aeda5e73e9590cba1f76a4a25d6de2",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+      "registeredSize": [
+        2880,
+        2304
+      ],
+      "registeredSha256": "bfcc8dc1fa68440a5278bffcdc885580d4ccf23643f4f8740a30467f403a297f",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8893757,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\sanctum_hall.png",
+      "previousSha256": "ee7beba302b94e94e848ebafa7b7eebb734bcd7b6b366804611a36bf164746b3",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\sanctum_hall-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\sanctum_hall-walk-mask.png",
+      "materialReview": {
+        "id": "sanctum_hall",
+        "size": [
+          1403,
+          1121
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0.125,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "sanctum_archive",
+      "improvement": "Broken polygon outer shoulders and small paving scale replace oversized slab islands. Northeast and southeast dry bank extended to the authored land boundary.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-9560bb24-ef4b-40dc-8d44-3b91d2d4dbda.png",
+      "sourceSize": [
+        1402,
+        1122
+      ],
+      "sourceSha256": "8a73614df60bce6b990ba8d8635c2a6712eb0ad786f198661847df55bbd437f8",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/sanctum_archive.png",
+      "registeredSize": [
+        2880,
+        2304
+      ],
+      "registeredSha256": "0e2e054a3166cee6434a55302e68f5f28143eb81b86493d074a6ff1b9a739488",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8783401,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\sanctum_archive.png",
+      "previousSha256": "7843ebfb2f85dd5760469faf2308bc7712340574117c1394ef62536ea71ad31d",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\sanctum_archive-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\sanctum_archive-walk-mask.png",
+      "materialReview": {
+        "id": "sanctum_archive",
+        "size": [
+          1402,
+          1122
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0.375,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "sanctum_roots",
+      "improvement": "Irregular limestone/soil surface, curved ruined shoulders and pale dry margins backed by olive submerged masonry; repaired western and lower banks.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-2d117fac-f540-4fe9-beb3-0f48834edbd7.png",
+      "sourceSize": [
+        1402,
+        1122
+      ],
+      "sourceSha256": "b0c1cc25292a9d1101c6b24821a330de812672ede7c422f8453662dd0e780423",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/sanctum_roots.png",
+      "registeredSize": [
+        2880,
+        2304
+      ],
+      "registeredSha256": "cea945952ce82c7c432ec2bd3571f29de3851239a25ba68d0d9d000263b6767e",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 9198427,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\sanctum_roots.png",
+      "previousSha256": "4137ef93fc97d117862562818686cb261c61bfe85551819a27cb8ec75804430f",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\sanctum_roots-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\sanctum_roots-walk-mask.png",
+      "materialReview": {
+        "id": "sanctum_roots",
+        "size": [
+          1402,
+          1122
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0.479,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    },
+    {
+      "id": "sanctum_court",
+      "improvement": "Continuous rounded dry stone rim and weathered circular masonry retain the court topology. All inner and outer wet seams remain outside the required dry floor, with final local northeast arc correction.",
+      "source": "C:\\Users\\darac\\.codex\\generated_images\\01a1166a-af2c-7da2-9e7d-c905423afd7f\\exec-5731bd96-ba86-4b6b-a22e-9cdf1868f6fe.png",
+      "sourceSize": [
+        1402,
+        1122
+      ],
+      "sourceSha256": "daa11afac79508c41b67bc261272d647bea3544bed851d682fe455290c1aac76",
+      "registeredAsset": "Assets/StreamingAssets/SurfaceWorld/sanctum_court.png",
+      "registeredSize": [
+        2880,
+        2304
+      ],
+      "registeredSha256": "de2724426fcc1a420fcd960e2e876834fb1d41e4b5798fc5c0ae50689f3eb79d",
+      "pixelsPerWorldTile": 48,
+      "registeredBytes": 8790790,
+      "previousArtBackup": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-world-before\\sanctum_court.png",
+      "previousSha256": "fb2e1e5b2d8167c8295d79d4c49cdd8b853cade93ed599c98a2d4f927d4c36ed",
+      "guide": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-guides\\sanctum_court-guide.png",
+      "nativeFeetMask": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\surface-release\\sanctum_court-walk-mask.png",
+      "materialReview": {
+        "id": "sanctum_court",
+        "size": [
+          1402,
+          1122
+        ],
+        "baselineWaterMaxInsideLand": 0,
+        "candidateWaterMaxInsideLand": 0.375,
+        "candidateWaterSamplesOverHalfTile": 0,
+        "newWaterSamplesOverHalfTile": 0,
+        "newSuspiciousCoords": []
+      }
+    }
+  ],
+  "initialGeneration": {
+    "tool": "built-in image_gen",
+    "sources": {
+      "canyon": "exec-7c5d369b-1944-4352-90fd-417d24ac30d8.png",
+      "canyon_pass": "exec-3e7493f2-a856-45ef-b17b-7f98028c2643.png",
+      "canyon_mine": "exec-f8281f3b-c07d-404a-9b2f-805af7cf462d.png",
+      "canyon_ridge": "exec-47d5c25a-ac5c-4297-9ca4-139bc403349c.png",
+      "canyon_gate": "exec-1f95ae31-72b5-4b75-88e5-8c2935d96369.png",
+      "sunken_sanctum": "exec-a0cf9b09-d9b1-4011-85d6-003506280e2f.png",
+      "sanctum_hall": "exec-1ee450c9-027e-49e2-a971-be494f4f3722.png",
+      "sanctum_archive": "exec-9c6ab969-22fc-44dc-8edc-3b702b8bae68.png",
+      "sanctum_roots": "exec-50bad63f-ad2b-4669-9bd0-0bac32369a19.png",
+      "sanctum_court": "exec-445b8ac8-62d9-4b9a-a121-9a2ad72d4475.png"
+    },
+    "references": [
+      {
+        "url": "https://www.playlostark.com/en-us/news/articles/elgacia-release-notes",
+        "type": "official text and linked environment images",
+        "use": "shared architectural axes and repeated masonry scale across foreground and surroundings; no copied assets"
+      },
+      {
+        "url": "https://www.jp.square-enix.com/octopathtraveler/traveler/",
+        "type": "official regional description",
+        "use": "Clifflands material context"
+      },
+      {
+        "url": "https://mega64.net/index.php/lp/19-ot/218-shrine-warbringer",
+        "type": "third-party gameplay image search descriptions",
+        "use": "broad terraced sediment strata and subdued depth, not original artwork"
+      },
+      {
+        "url": "https://www.gamesradar.com/lost-ark-morai-ruins/",
+        "type": "third-party gameplay image search descriptions",
+        "use": "continuous weathered stone and submerged ruins, no asset reproduction"
+      }
+    ],
+    "researchLimitation": "Web page text and image-search descriptions accessed; local project inputs/outputs directly visually inspected. Browser surfaces unavailable, so no claim of independent full-resolution browser inspection of remote screenshots.",
+    "prompts": {
+      "canyon": "Use case: precise-object-edit. Edit target Image1 is our existing high-oblique orthographic RPG terrain plate, Image2 is its authoritative flat map mask: tan is walkable, blue water, dark blocked, small brown marks only runtime props and must not be painted as new obstacles.\nRedraw this exact canyon settlement terrain into a beautiful cohesive natural sandstone landscape. Preserve EXACT image framing and all floor/water boundaries, stairs, wooden bridge, passages, and entry openings. Replace repeated cylindrical rock-stack walls with continuous weather-eroded sandstone shelves, long horizontal sediment seams, irregular broad buttresses and dark recessed strata, all connected geologically to the walking surface. Replace the repetitive all-over cobblestone ground with natural dusty compacted sand, worn sandstone bedrock, and a few broad flush weathered paving remnants; footpath positions unchanged. The top shelf and main terrace must feel carved into one canyon massif rather than isolated table slabs. Change distant side ravines to broad receding rock landforms, not repeated forest of tall rock pillars, and reduce distant contrast. No backdrop horizon: keep the same game camera projection throughout. At water, replace bead-like curb stones with broken low ledges, a narrow wet darker bank and submerged rock that follows the exact existing blue footprint; NEVER widen water or shrink floor. Use golden ochre, cool umber shadows, sparse dusty olive vegetation on blocked rocks. Clear restrained medium-scale surface detail, painterly high-quality pixel-art readable beside small chibi characters. Upper-left light, coherent projected lower-right shadows. Terrain only, no houses, trees, actors, UI, text, new objects, giant blocks on floor, stair changes. Output portrait 4:5 at highest detail. This is a major art-quality redraw with the same registered geography.",
+      "canyon_pass": "Use case: precise-object-edit. Image1 is the edit target, Image2 is authoritative registered floor/water/blocked mask. Redraw this exact RPG canyon passage terrain at unchanged camera and crop. Tan mask MUST remain traversable ground; blue MUST remain the existing ponds; dark is blocked. Small brown dots are runtime object footprints, leave floor there.\nThe current endless repeated cylindrical rock stacks and tiny cobblestone texture look artificial. Replace them with broad connected eroded sandstone ledges and wind-carved overhang shoulders wholly inside blocked regions, irregular strata in long horizontal bands, varied slopes and scree skirts ending at existing ground edge. The floor should be sandy bedrock and compacted trails with subdued patches of embedded cracked sandstone, not paved all-over. Preserve the north narrow gaps, whole width of central route, both large ponds and tiny pools, and each portal opening EXACTLY. Water edges are natural eroded rock shelves with intermittent reed/moss only on blocked edges, a wet dark line and shallow underwater stones inside existing water. No round-bead curb, no rectangular artificial pool edging; soften visual grid corners with material cracks but do not change water silhouette. Distant perimeter canyon formations are lower-contrast broad mesas sharing the same orthographic camera, not cliffs photographed from another angle and no horizon. Harmonious gold ochre, dusty tan, deep cool brown and muted teal water. Upper-left daylight, dramatic but readable ground. Original precise pixel-art painting. No runtime props, buildings, characters, labels or new obstructions. Output landscape 14:11, highest detail. Preserve all geography but substantially redraw geology/material quality.",
+      "canyon_mine": "Use case: precise-object-edit. Image1 is our terrain plate edit target; Image2 authoritative registered layout mask (tan walkable, dark blocked, brown dots runtime props and must remain ground). Preserve ALL floor/blocked silhouettes, every path width, entrance positions, crop, orientation and same high-oblique orthographic camera. Do not invent impassable objects on tan floor, no new rivers, buildings or roads. Same small-character RPG scale. Redraw materials and geology substantially: replace cloned cylindrical block towers with connected layered sedimentary sandstone, irregular broad eroded shoulders, coherent long horizontal strata and directional faces. Floor becomes continuous packed ochre sand with flush bedrock veins and subtle wear trails; remove repetitive cobblestone tessellation and bright identical gravel stamp patches. Small loose angular chips only clustered near walls. Upper-left daylight with crisp but muted shadows that explain wall height; distant background lower contrast and same camera. Highly detailed crisp original pixel-art painting, without outlines around every pebble, no photographic background, no horizon/sky band, no labels/actors. Output landscape14:11. Location is a deserted sandstone quarry. The existing isolated internal thin wall strips in the same exact footprints are quarry extraction ribs, formed of cracked solid sandstone with horizontal cut lines, not repeated towers or high castle walls. Lower their visual height without enlarging footprints or covering paths. Peripheral quarry faces have different erosion patterns and warm rust seams. Keep the largest middle cleared arena free and all four passage directions open. No scaffolds, ore carts or buildings, those are runtime props.",
+      "canyon_ridge": "Use case: precise-object-edit. Image1 is our terrain plate edit target; Image2 authoritative registered layout mask (tan walkable, dark blocked, brown dots runtime props and must remain ground). Preserve ALL floor/blocked silhouettes, every path width, entrance positions, crop, orientation and same high-oblique orthographic camera. Do not invent impassable objects on tan floor, no new rivers, buildings or roads. Same small-character RPG scale. Redraw materials and geology substantially: replace cloned cylindrical block towers with connected layered sedimentary sandstone, irregular broad eroded shoulders, coherent long horizontal strata and directional faces. Floor becomes continuous packed ochre sand with flush bedrock veins and subtle wear trails; remove repetitive cobblestone tessellation and bright identical gravel stamp patches. Small loose angular chips only clustered near walls. Upper-left daylight with crisp but muted shadows that explain wall height; distant background lower contrast and same camera. Highly detailed crisp original pixel-art painting, without outlines around every pebble, no photographic background, no horizon/sky band, no labels/actors. Output landscape14:11. Location is a high wind-eroded ridge with a dramatic vista. Redraw perimeter deep cliffs as broad linked sandstone strata descending from the playable ledge into receding lower terraces. Eliminate rows of identical long vertical pillars. Thin existing inner wall strips become weathered fractured rock fins exactly inside the dark mask. Preserve the narrow northern and eastwest path branches absolutely; no extension of ravines into tan floor. Strong contrast near feet, subdued cool sandstone in far depths. Do not surround every edge by upright wall: southern cliff falls down from ground, northern blocked rock rises naturally behind it.",
+      "canyon_gate": "Use case: precise-object-edit. Image1 is our terrain plate edit target; Image2 authoritative registered layout mask (tan walkable, dark blocked, brown dots runtime props and must remain ground). Preserve ALL floor/blocked silhouettes, every path width, entrance positions, crop, orientation and same high-oblique orthographic camera. Do not invent impassable objects on tan floor, no new rivers, buildings or roads. Same small-character RPG scale. Redraw materials and geology substantially: replace cloned cylindrical block towers with connected layered sedimentary sandstone, irregular broad eroded shoulders, coherent long horizontal strata and directional faces. Floor becomes continuous packed ochre sand with flush bedrock veins and subtle wear trails; remove repetitive cobblestone tessellation and bright identical gravel stamp patches. Small loose angular chips only clustered near walls. Upper-left daylight with crisp but muted shadows that explain wall height; distant background lower contrast and same camera. Highly detailed crisp original pixel-art painting, without outlines around every pebble, no photographic background, no horizon/sky band, no labels/actors. Output landscape14:11. Location is an eroded sandstone gateway, ground-level ravine corridors. Existing three interior blocked rectangles become weathered low geological ribs with horizontal laminations and irregular flat-top erosion rather than gigantic isolated towers. Retain their exact footprint and every corridor between them. The top corners and bottom wall region become continuous surrounding parent rock, never framed by new deep ravines cutting playable corner floors. Do not add an arch spanning a passable lane. Minor olive scrub only at rock roots. Broad smooth dust areas and scale-consistent fracture bands create quiet readable combat floor. CRITICAL NEW ART DIRECTION: break the rigid 90-degree rectangular boundary silhouette. Use all the existing nonwalkable exterior rock space to curve cliff shoulders into broad convex ramps of exposed stratum and talus, with diagonal fractures and asymmetrical broken wedges connecting sharp corners. The actual safe path must remain full width at exact coordinates, but its supporting rock face should sweep outward around corners smoothly instead of dropping as a right-angled vertical box. The added outside shoulder is clearly STEEP sloping rock, not flat walkable ground; no new routes. The base of each formerly rectangular interior rib should be tapered/rounded by shadow and irregular wedge fractures within the existing blocked footprint. Nothing like four square islands or tall block columns.",
+      "sunken_sanctum": "Use case: precise-object-edit. Image1 is existing high-oblique orthographic RPG terrain to redesign. Image2 exact floor/water mask (tan floor, blue water, dark rock; brown tiny spots are runtime props, keep ground). Preserve image registration, each passage and all safe tan walking areas. Preserve water footprint and depth cues. No new actors, trees, buildings, columns, statues, altars, UI or text: major architectures/props are separate runtime layers. Produce original refined pixel-art game terrain with coherent camera axes and small-character scale, not a large tabletop illustration.\nReplace repetitive giant jigsaw slab tiles with weathered smaller limestone paving remnants partly buried in silty earth, broad quiet worn surfaces, occasional aligned architectural courses that explain the old structure; use purposeful cracks, not identical repeated motifs. Overall muted sage-gray stone, warm pale upper faces, olive moss, deep green water. Upper-left light with grounded shadow. Surrounding blocked rock and masonry must connect structurally with playable floor rather than form a rectangular black frame.\nCRITICAL: remove 90-degree cardboard-cutout shorelines and uniform curb-bead borders. Keep every navigable foot position, but use existing water/blocked area just outside the edge to add smooth sweeping shallow submerged broken slabs, polygonal collapsed footing fans and tapered stepped masonry, clearly UNDER WATER or SLOPING. Never create apparent passable bridges or cover genuine water with dry floor. Every wet transition follows the same stone direction/scale as dry floor. Curved submerged depth contours and asymmetrical fractured wedges soften grid corners; no encroaching water into safe floor. Outer water pool corners blend into dark sloping rock rubble so no rectangular aquarium border. Crisp fine pixel texture with reduced noise, no blur or huge fog, no neon waterline. Tall2:3map: preserve north upper pool with central stairs, broad center-left floor, long middle-right pond, thin center-bottom neck and circular lower altar foundation exactly. The upper northern dark zone is reserved for runtime huge arch and waterfall; leave it dark supporting natural rock, DO NOT paint a second arch. The lower circular island is reserved for runtime altar; keep it simple worn flush radial masonry without new altar. Major improvement: replace the wallpaper of same upright rock rectangles across whole background with broad slanted fractured damp limestone masses and a few broken buttress foundation seams integrated along both sides. High dark sidewall strata curve around the floor and shoreline; avoid overpowering the existing architecture. Make the central illuminated floor and lower island visually belong to one flooded ruin and keep the narrow neck unobstructed.",
+      "sanctum_hall": "Use case: precise-object-edit. Image1 is existing high-oblique orthographic RPG terrain to redesign. Image2 exact floor/water mask (tan floor, blue water, dark rock; brown tiny spots are runtime props, keep ground). Preserve image registration, each passage and all safe tan walking areas. Preserve water footprint and depth cues. No new actors, trees, buildings, columns, statues, altars, UI or text: major architectures/props are separate runtime layers. Produce original refined pixel-art game terrain with coherent camera axes and small-character scale, not a large tabletop illustration.\nReplace repetitive giant jigsaw slab tiles with weathered smaller limestone paving remnants partly buried in silty earth, broad quiet worn surfaces, occasional aligned architectural courses that explain the old structure; use purposeful cracks, not identical repeated motifs. Overall muted sage-gray stone, warm pale upper faces, olive moss, deep green water. Upper-left light with grounded shadow. Surrounding blocked rock and masonry must connect structurally with playable floor rather than form a rectangular black frame.\nCRITICAL: remove 90-degree cardboard-cutout shorelines and uniform curb-bead borders. Keep every navigable foot position, but use existing water/blocked area just outside the edge to add smooth sweeping shallow submerged broken slabs, polygonal collapsed footing fans and tapered stepped masonry, clearly UNDER WATER or SLOPING. Never create apparent passable bridges or cover genuine water with dry floor. Every wet transition follows the same stone direction/scale as dry floor. Curved submerged depth contours and asymmetrical fractured wedges soften grid corners; no encroaching water into safe floor. Outer water pool corners blend into dark sloping rock rubble so no rectangular aquarium border. Crisp fine pixel texture with reduced noise, no blur or huge fog, no neon waterline.Landscape5:4. This is the flooded entrance hall. Preserve north-south winding central floor and west entry arm plus small central-right pool hole. Subtle straight fragments of old floor courses are fragmented by asymmetric breaks and encroaching moss; thin wet sediment bands, shallow underwater masonry continuations. No strong new central icon. Use outer blocked zones for broader jagged sloping rubble faces instead of tiny repeated wall blocks.",
+      "sanctum_archive": "Use case: precise-object-edit. Image1 is existing high-oblique orthographic RPG terrain to redesign. Image2 exact floor/water mask (tan floor, blue water, dark rock; brown tiny spots are runtime props, keep ground). Preserve image registration, each passage and all safe tan walking areas. Preserve water footprint and depth cues. No new actors, trees, buildings, columns, statues, altars, UI or text: major architectures/props are separate runtime layers. Produce original refined pixel-art game terrain with coherent camera axes and small-character scale, not a large tabletop illustration.\nReplace repetitive giant jigsaw slab tiles with weathered smaller limestone paving remnants partly buried in silty earth, broad quiet worn surfaces, occasional aligned architectural courses that explain the old structure; use purposeful cracks, not identical repeated motifs. Overall muted sage-gray stone, warm pale upper faces, olive moss, deep green water. Upper-left light with grounded shadow. Surrounding blocked rock and masonry must connect structurally with playable floor rather than form a rectangular black frame.\nCRITICAL: remove 90-degree cardboard-cutout shorelines and uniform curb-bead borders. Keep every navigable foot position, but use existing water/blocked area just outside the edge to add smooth sweeping shallow submerged broken slabs, polygonal collapsed footing fans and tapered stepped masonry, clearly UNDER WATER or SLOPING. Never create apparent passable bridges or cover genuine water with dry floor. Every wet transition follows the same stone direction/scale as dry floor. Curved submerged depth contours and asymmetrical fractured wedges soften grid corners; no encroaching water into safe floor. Outer water pool corners blend into dark sloping rock rubble so no rectangular aquarium border. Crisp fine pixel texture with reduced noise, no blur or huge fog, no neon waterline.Landscape5:4. This is a drowned archive courtyard. Preserve the broad ring floor around exact central tall rectangular pool and both west/east paths. Let the central rectangular water recess remain recognizably the old architectural basin, but broken corner bevels and submerged slabs soften its outline inside the water; keep its opening fully clear. Outer top/bottom floor edges gain irregular collapsed footing fans under water, visually rounding the large 90degree corners without changing playable floor. Faint eroded rectangular masonry courses, a few hairline inlaid strips flush with floor, no bookshelves or columns.",
+      "sanctum_roots": "Use case: precise-object-edit. Image1 is existing high-oblique orthographic RPG terrain to redesign. Image2 exact floor/water mask (tan floor, blue water, dark rock; brown tiny spots are runtime props, keep ground). Preserve image registration, each passage and all safe tan walking areas. Preserve water footprint and depth cues. No new actors, trees, buildings, columns, statues, altars, UI or text: major architectures/props are separate runtime layers. Produce original refined pixel-art game terrain with coherent camera axes and small-character scale, not a large tabletop illustration.\nReplace repetitive giant jigsaw slab tiles with weathered smaller limestone paving remnants partly buried in silty earth, broad quiet worn surfaces, occasional aligned architectural courses that explain the old structure; use purposeful cracks, not identical repeated motifs. Overall muted sage-gray stone, warm pale upper faces, olive moss, deep green water. Upper-left light with grounded shadow. Surrounding blocked rock and masonry must connect structurally with playable floor rather than form a rectangular black frame.\nCRITICAL: remove 90-degree cardboard-cutout shorelines and uniform curb-bead borders. Keep every navigable foot position, but use existing water/blocked area just outside the edge to add smooth sweeping shallow submerged broken slabs, polygonal collapsed footing fans and tapered stepped masonry, clearly UNDER WATER or SLOPING. Never create apparent passable bridges or cover genuine water with dry floor. Every wet transition follows the same stone direction/scale as dry floor. Curved submerged depth contours and asymmetrical fractured wedges soften grid corners; no encroaching water into safe floor. Outer water pool corners blend into dark sloping rock rubble so no rectangular aquarium border. Crisp fine pixel texture with reduced noise, no blur or huge fog, no neon waterline.Landscape5:4. This is a drowned root terrace. Preserve split upper lobes, large north water bay with narrow notch descending into center and joined south floor, all west/east entrance routes. Integrate restrained olive moss and thin exposed roots flat in cracks especially shoreline, no new tree or massive roots blocking paths. Stone-to-water outline should be organically softened by underwater sloping shelves rather than hard staircase corners. Same scale across floor and sidewalls.",
+      "sanctum_court": "Use case: precise-object-edit. Image1 is existing high-oblique orthographic RPG terrain to redesign. Image2 exact floor/water mask (tan floor, blue water, dark rock; brown tiny spots are runtime props, keep ground). Preserve image registration, each passage and all safe tan walking areas. Preserve water footprint and depth cues. No new actors, trees, buildings, columns, statues, altars, UI or text: major architectures/props are separate runtime layers. Produce original refined pixel-art game terrain with coherent camera axes and small-character scale, not a large tabletop illustration.\nReplace repetitive giant jigsaw slab tiles with weathered smaller limestone paving remnants partly buried in silty earth, broad quiet worn surfaces, occasional aligned architectural courses that explain the old structure; use purposeful cracks, not identical repeated motifs. Overall muted sage-gray stone, warm pale upper faces, olive moss, deep green water. Upper-left light with grounded shadow. Surrounding blocked rock and masonry must connect structurally with playable floor rather than form a rectangular black frame.\nCRITICAL: remove 90-degree cardboard-cutout shorelines and uniform curb-bead borders. Keep every navigable foot position, but use existing water/blocked area just outside the edge to add smooth sweeping shallow submerged broken slabs, polygonal collapsed footing fans and tapered stepped masonry, clearly UNDER WATER or SLOPING. Never create apparent passable bridges or cover genuine water with dry floor. Every wet transition follows the same stone direction/scale as dry floor. Curved submerged depth contours and asymmetrical fractured wedges soften grid corners; no encroaching water into safe floor. Outer water pool corners blend into dark sloping rock rubble so no rectangular aquarium border. Crisp fine pixel texture with reduced noise, no blur or huge fog, no neon waterline.Landscape5:4. This is an ancient broken ring court. Preserve broad circular floor and four quadrant water cutouts, central eastwest/northsouth cross paths and existing small central circular rosette exactly. Emphasize subtly curved architectural masonry courses on the ring with asymmetric chips, broad worn patches and occasional short vine cracks. Replace square vertical cutout corners with sloped broken underwater masonry transition INSIDE existing water. Central rosette remains understated same size; no giant magic circle or glow.",
+      "sunken_sanctum_retry": "Use case: precise-object-edit. Image1 is the EXACT map to edit, Image2 its registration guide. Extremely conservative spatial edit. DO NOT move, enlarge, shrink or recompose any island, pool, stairs, neck, ground, shadow footprint. Portrait2:3, SAMEcrop. Floor top begins22%fromtop. Upper pond center(50%,29%), stairs(center50%,38%), center-left broad ground at(y43%-66%), narrow neck at(y69%-75%), lower circular island(center50%,82%). The empty northern0..22% must remain blocked dark rock for separately rendered architecture; do NOT reduce this empty top band or lift the pool upward.\nChange only the material/silhouette of the dark blocked rock outside the EXISTING unchanged floor/water footprints. Replace repeated tall tile-like rock rectangles with natural slanted damp limestone strata, broken broad masses, diagonal joints and curved sloping shoulders around existing corners. Do not add any new landmark. Floor and water keep their exact outer edge; improve shallow water INSIDE water only with subtle curved submerged stone wedges. All playable ground remains where it is; particularly neck and stairs stay identical shape, size and pixel position. Lower island reserved for separately rendered altar; northern rock reserved for separately rendered arch/waterfall; paint neither here. Same palette and game camera, rich crisp pixel art. Minimal material changes to ground possible but never edit spatial layout. No new trees/columns/characters/buildings/text."
+    },
+    "cornerRefinements": {
+      "canyon": "Use case: precise-object-edit. Refine this existing image (Image1); Image2 is the exact terrain registration guide. Keep all texture style, color, paths, bridge, stairs, total framing, and unobstructed tan gameplay floor. Change ONLY the angular outer cliff/water connections.  CRITICAL NEW ART DIRECTION: break the rigid 90-degree rectangular boundary silhouette. Use all the existing nonwalkable exterior rock space to curve cliff shoulders into broad convex ramps of exposed stratum and talus, with diagonal fractures and asymmetrical broken wedges connecting sharp corners. The actual safe path must remain full width at exact coordinates, but its supporting rock face should sweep outward around corners smoothly instead of dropping as a right-angled vertical box. The added outside shoulder is clearly STEEP sloping rock, not flat walkable ground; no new routes. The base of each formerly rectangular interior rib should be tapered/rounded by shadow and irregular wedge fractures within the existing blocked footprint. Nothing like four square islands or tall block columns. In ponds preserve actual blue water footprint and add curved bands of shallow submerged stones ONLY INSIDE WATER at square inside corners, avoiding a straight dark rectangular outline. Let sediment and small fractured shelves follow those curves. No floor deletion, no added water on tan ground, no new bridge. Make the broad convex wall shoulders clearly visible rather than simply rearranging tiny pebble textures. Match current image dimensions/aspect.",
+      "canyon_pass": "Use case: precise-object-edit. Refine this existing image (Image1); Image2 is the exact terrain registration guide. Keep all texture style, color, paths, bridge, stairs, total framing, and unobstructed tan gameplay floor. Change ONLY the angular outer cliff/water connections.  CRITICAL NEW ART DIRECTION: break the rigid 90-degree rectangular boundary silhouette. Use all the existing nonwalkable exterior rock space to curve cliff shoulders into broad convex ramps of exposed stratum and talus, with diagonal fractures and asymmetrical broken wedges connecting sharp corners. The actual safe path must remain full width at exact coordinates, but its supporting rock face should sweep outward around corners smoothly instead of dropping as a right-angled vertical box. The added outside shoulder is clearly STEEP sloping rock, not flat walkable ground; no new routes. The base of each formerly rectangular interior rib should be tapered/rounded by shadow and irregular wedge fractures within the existing blocked footprint. Nothing like four square islands or tall block columns. In ponds preserve actual blue water footprint and add curved bands of shallow submerged stones ONLY INSIDE WATER at square inside corners, avoiding a straight dark rectangular outline. Let sediment and small fractured shelves follow those curves. No floor deletion, no added water on tan ground, no new bridge. Make the broad convex wall shoulders clearly visible rather than simply rearranging tiny pebble textures. Match current image dimensions/aspect.",
+      "canyon_mine": "Use case: precise-object-edit. Refine Image1 only; Image2 is exact terrain registration guide. Keep its sandy floor, geological stratum painting, scale, orientation and all safe corridors.  CRITICAL NEW ART DIRECTION: break the rigid 90-degree rectangular boundary silhouette. Use all the existing nonwalkable exterior rock space to curve cliff shoulders into broad convex ramps of exposed stratum and talus, with diagonal fractures and asymmetrical broken wedges connecting sharp corners. The actual safe path must remain full width at exact coordinates, but its supporting rock face should sweep outward around corners smoothly instead of dropping as a right-angled vertical box. The added outside shoulder is clearly STEEP sloping rock, not flat walkable ground; no new routes. The base of each formerly rectangular interior rib should be tapered/rounded by shadow and irregular wedge fractures within the existing blocked footprint. Nothing like four square islands or tall block columns. This map has no water; do not add any. Make significant perimeter silhouette improvements using clearly slanted blocked-space rock ramps and broader curved wall transitions. North/south/east/west path openings unchanged, no rocks added to playable floor. Keep crop and aspect14:11.",
+      "canyon_ridge": "Use case: precise-object-edit. Refine Image1 only; Image2 is exact terrain registration guide. Keep its sandy floor, geological stratum painting, scale, orientation and all safe corridors.  CRITICAL NEW ART DIRECTION: break the rigid 90-degree rectangular boundary silhouette. Use all the existing nonwalkable exterior rock space to curve cliff shoulders into broad convex ramps of exposed stratum and talus, with diagonal fractures and asymmetrical broken wedges connecting sharp corners. The actual safe path must remain full width at exact coordinates, but its supporting rock face should sweep outward around corners smoothly instead of dropping as a right-angled vertical box. The added outside shoulder is clearly STEEP sloping rock, not flat walkable ground; no new routes. The base of each formerly rectangular interior rib should be tapered/rounded by shadow and irregular wedge fractures within the existing blocked footprint. Nothing like four square islands or tall block columns. This map has no water; do not add any. Make significant perimeter silhouette improvements using clearly slanted blocked-space rock ramps and broader curved wall transitions. North/south/east/west path openings unchanged, no rocks added to playable floor. Keep crop and aspect14:11."
+    }
+  },
+  "localRepairRound1": {
+    "sources": {
+      "canyon_pass": "exec-33a88f2b-5b34-4f8a-9bce-af6163d551e3.png",
+      "sanctum_hall": "exec-601884c7-78f8-45db-8163-5893482fbac7.png",
+      "sanctum_archive": "exec-e8d6fd61-01d9-46fa-a177-07d9d5ecbf3d.png",
+      "sanctum_roots": "exec-62b74b19-a14a-40bc-9b97-3599e4509a53.png",
+      "sanctum_court": "exec-db32c2aa-57d4-4af5-b342-696ebe818daf.png"
+    },
+    "prompts": {
+      "canyon_pass": "Use case: precise-object-edit. Only repair a few tiny shoreline alignment errors in Image1, which is otherwise approved. Image2 is a DIAGNOSTIC overlay of this same image: RED thin dots trace exact game land edge, bright MAGENTA SQUARE POINTS mark spots that must be DRY WALKABLE FLOOR but are currently painted as green water or submerged rubble. Image3 is authoritative flat mask (tan=floor,blue=water,dark=blocked).\nAt EVERY magenta point, extend the adjacent continuous dry stone floor just far enough outwards to include it and the red outline. Retain its tan-gray floor material, clearly horizontal foot surface and narrow wet bank beyond. This is small repair about0.5-1.5tile, NOT a layout redesign. All tan mask must remain dry floor. Restore missing small corner wedges from guide, especially where rounded contours inadvertently cut inward. Keep artistic curved OUTER transition in water outside these safe patches. Preserve existing new art, lighting, details, big shapes, paths, borders and crop completely. Do not change any other locations. Do NOT draw or copy diagnostic red/magenta marks or guide colors into result. Whole finalimage sameaspect. This is ochre sandstone, not gray; restore ONLY two tiny dry bank nicks at northwest edge of leftpool(x7.8%,y35%), and north edge of rightpool(x86.4%,y31.5%).",
+      "sanctum_hall": "Use case: precise-object-edit. Only repair a few tiny shoreline alignment errors in Image1, which is otherwise approved. Image2 is a DIAGNOSTIC overlay of this same image: RED thin dots trace exact game land edge, bright MAGENTA SQUARE POINTS mark spots that must be DRY WALKABLE FLOOR but are currently painted as green water or submerged rubble. Image3 is authoritative flat mask (tan=floor,blue=water,dark=blocked).\nAt EVERY magenta point, extend the adjacent continuous dry stone floor just far enough outwards to include it and the red outline. Retain its tan-gray floor material, clearly horizontal foot surface and narrow wet bank beyond. This is small repair about0.5-1.5tile, NOT a layout redesign. All tan mask must remain dry floor. Restore missing small corner wedges from guide, especially where rounded contours inadvertently cut inward. Keep artistic curved OUTER transition in water outside these safe patches. Preserve existing new art, lighting, details, big shapes, paths, borders and crop completely. Do not change any other locations. Do NOT draw or copy diagnostic red/magenta marks or guide colors into result. Whole finalimage sameaspect. Hall north lobe east edge needs little dry stone wedges, especially near image(x66.5%,15.4%) and(x68.7%,17%).",
+      "sanctum_archive": "Use case: precise-object-edit. Only repair a few tiny shoreline alignment errors in Image1, which is otherwise approved. Image2 is a DIAGNOSTIC overlay of this same image: RED thin dots trace exact game land edge, bright MAGENTA SQUARE POINTS mark spots that must be DRY WALKABLE FLOOR but are currently painted as green water or submerged rubble. Image3 is authoritative flat mask (tan=floor,blue=water,dark=blocked).\nAt EVERY magenta point, extend the adjacent continuous dry stone floor just far enough outwards to include it and the red outline. Retain its tan-gray floor material, clearly horizontal foot surface and narrow wet bank beyond. This is small repair about0.5-1.5tile, NOT a layout redesign. All tan mask must remain dry floor. Restore missing small corner wedges from guide, especially where rounded contours inadvertently cut inward. Keep artistic curved OUTER transition in water outside these safe patches. Preserve existing new art, lighting, details, big shapes, paths, borders and crop completely. Do not change any other locations. Do NOT draw or copy diagnostic red/magenta marks or guide colors into result. Whole finalimage sameaspect.Critical missing dry floor is the northeast outer corner near image(x75%-80%,y13%-25%): extend dry limestone there out to the red line, do not leave a green tinted underwater footing on the walking area. Also restore very small southeast/southwest edge wedges flagged magenta.",
+      "sanctum_roots": "Use case: precise-object-edit. Only repair a few tiny shoreline alignment errors in Image1, which is otherwise approved. Image2 is a DIAGNOSTIC overlay of this same image: RED thin dots trace exact game land edge, bright MAGENTA SQUARE POINTS mark spots that must be DRY WALKABLE FLOOR but are currently painted as green water or submerged rubble. Image3 is authoritative flat mask (tan=floor,blue=water,dark=blocked).\nAt EVERY magenta point, extend the adjacent continuous dry stone floor just far enough outwards to include it and the red outline. Retain its tan-gray floor material, clearly horizontal foot surface and narrow wet bank beyond. This is small repair about0.5-1.5tile, NOT a layout redesign. All tan mask must remain dry floor. Restore missing small corner wedges from guide, especially where rounded contours inadvertently cut inward. Keep artistic curved OUTER transition in water outside these safe patches. Preserve existing new art, lighting, details, big shapes, paths, borders and crop completely. Do not change any other locations. Do NOT draw or copy diagnostic red/magenta marks or guide colors into result. Whole finalimage sameaspect.Critical notch at exact image x45%-47%,y50%-55% must recover its RIGHT dry limestone wall/foot surface. Also restore northwest edge of left lobe near(x10%,32%) and bottom-left corner wedges. Do NOT widen water bay.",
+      "sanctum_court": "Use case: precise-object-edit. Only repair a few tiny shoreline alignment errors in Image1, which is otherwise approved. Image2 is a DIAGNOSTIC overlay of this same image: RED thin dots trace exact game land edge, bright MAGENTA SQUARE POINTS mark spots that must be DRY WALKABLE FLOOR but are currently painted as green water or submerged rubble. Image3 is authoritative flat mask (tan=floor,blue=water,dark=blocked).\nAt EVERY magenta point, extend the adjacent continuous dry stone floor just far enough outwards to include it and the red outline. Retain its tan-gray floor material, clearly horizontal foot surface and narrow wet bank beyond. This is small repair about0.5-1.5tile, NOT a layout redesign. All tan mask must remain dry floor. Restore missing small corner wedges from guide, especially where rounded contours inadvertently cut inward. Keep artistic curved OUTER transition in water outside these safe patches. Preserve existing new art, lighting, details, big shapes, paths, borders and crop completely. Do not change any other locations. Do NOT draw or copy diagnostic red/magenta marks or guide colors into result. Whole finalimage sameaspect.Restore only small magenta-marked outer-right arc wedges (image71%-86%,y18%-40%), northwest curve and tiny southeast quadrant inner corners as DRY connected limestone. Do not change central ring or rosette."
+    }
+  },
+  "localRepairRounds2Through6": {
+    "2": {
+      "sources": {
+        "canyon_pass": "exec-a6f827d2-d166-4674-bb3a-a2b6504ec6c2.png",
+        "sanctum_hall": "exec-70bd06df-b836-4d19-927a-e497d4bb0233.png",
+        "sanctum_archive": "exec-2ab4ec55-9f78-4989-a1e9-a8ff5cd149d2.png",
+        "sanctum_roots": "exec-2d117fac-f540-4fe9-beb3-0f48834edbd7.png",
+        "sanctum_court": "exec-8cac1275-8d50-4803-a5c1-d0ee5412f97b.png"
+      },
+      "prompts": {
+        "canyon_pass": "Use case: precise-object-edit. Image1 is approved terrain art. Image2 is the SAME art with PINK CIRCLES/YELLOW CROSSES marking exact shoreline fix locations. At the center of EVERY pink circle, there must be a dry light warm stone top surface CONTINUOUSLY JOINED to the adjacent main land. Currently green water/submerged stones intrude at those exact points. Extend that adjacent dry land bank to cover each whole little pink-circle area, connected back to shore, with matching floor texture and then wet edge just outside. NOT isolated stepping stones, no coins, no labels. This is only several little missing 15-30px stone corner wedges. All other pixels/composition remain unchanged. NEVER move or scale map, never redraw distant areas. Keep the rounded submerged support and all artistic improvements elsewhere. Final image contains NO circles,crosses,annotations. Same dimensions/aspect as Image1. Palette is warm golden sandstone; repair tops must match dry floor, no teal/blue tint.",
+        "sanctum_hall": "Use case: precise-object-edit. Image1 is approved terrain art. Image2 is the SAME art with PINK CIRCLES/YELLOW CROSSES marking exact shoreline fix locations. At the center of EVERY pink circle, there must be a dry light warm stone top surface CONTINUOUSLY JOINED to the adjacent main land. Currently green water/submerged stones intrude at those exact points. Extend that adjacent dry land bank to cover each whole little pink-circle area, connected back to shore, with matching floor texture and then wet edge just outside. NOT isolated stepping stones, no coins, no labels. This is only several little missing 15-30px stone corner wedges. All other pixels/composition remain unchanged. NEVER move or scale map, never redraw distant areas. Keep the rounded submerged support and all artistic improvements elsewhere. Final image contains NO circles,crosses,annotations. Same dimensions/aspect as Image1. Palette is warm gray limestone; repair tops must match dry floor, no teal/blue tint.",
+        "sanctum_archive": "Use case: precise-object-edit. Image1 is approved terrain art. Image2 is the SAME art with PINK CIRCLES/YELLOW CROSSES marking exact shoreline fix locations. At the center of EVERY pink circle, there must be a dry light warm stone top surface CONTINUOUSLY JOINED to the adjacent main land. Currently green water/submerged stones intrude at those exact points. Extend that adjacent dry land bank to cover each whole little pink-circle area, connected back to shore, with matching floor texture and then wet edge just outside. NOT isolated stepping stones, no coins, no labels. This is only several little missing 15-30px stone corner wedges. All other pixels/composition remain unchanged. NEVER move or scale map, never redraw distant areas. Keep the rounded submerged support and all artistic improvements elsewhere. Final image contains NO circles,crosses,annotations. Same dimensions/aspect as Image1. Palette is warm gray limestone; repair tops must match dry floor, no teal/blue tint.",
+        "sanctum_roots": "Use case: precise-object-edit. Image1 approved game map, Image2 diagnostic exact same map. ONLY at each magenta circle/yellowcross, REPLACE GREEN UNDERWATER MATERIAL WITH CONTIGUOUS DRY LIMESTONE FLOOR, joined to main land. Expand adjacent bank enough that the entire marked9px radius region is dry, level limestone, matching neighboring tan-gray floor. NOT isolated blocks/steppingstones. Keep all unmarked regions, exact dimensions/framing, paths, pond shapes, current detail and lighting unchanged. Source tells you exact missing floor locations; do not improvise elsewhere. Dry platform has bright warm-gray top; leave green tint and dark water outside repaired edge. Remove every annotation/cross/circle in finished output. Absolutely no repositioning or overall restyling. This is production alignment repair, small controlled edits.",
+        "sanctum_court": "Use case: precise-object-edit. Image1 approved game map, Image2 diagnostic exact same map. ONLY at each magenta circle/yellowcross, REPLACE GREEN UNDERWATER MATERIAL WITH CONTIGUOUS DRY LIMESTONE FLOOR, joined to main land. Expand adjacent bank enough that the entire marked9px radius region is dry, level limestone, matching neighboring tan-gray floor. NOT isolated blocks/steppingstones. Keep all unmarked regions, exact dimensions/framing, paths, pond shapes, current detail and lighting unchanged. Source tells you exact missing floor locations; do not improvise elsewhere. Dry platform has bright warm-gray top; leave green tint and dark water outside repaired edge. Remove every annotation/cross/circle in finished output. Absolutely no repositioning or overall restyling. This is production alignment repair, small controlled edits."
+      }
+    },
+    "3": {
+      "sources": {
+        "sanctum_hall": "exec-57cc5bb2-e085-4955-afa4-8c2d42950022.png",
+        "sanctum_archive": "exec-b40cc149-b25f-432a-b00d-3b79d44e93da.png",
+        "sanctum_court": "exec-83965593-025d-4386-b074-0dfec61b8b45.png"
+      },
+      "prompts": {
+        "sanctum_hall": "LOCAL INPAINTING / PIXEL-REGISTERED GAME TERRAIN CORRECTION. First image is the exact game map with SOLID MAGENTA diagnostic edit areas. Second image is the clean original only for matching texture. Replace EVERY solid magenta pixel and its entire footprint with DRY WARM TAN WALKABLE STONE FLOOR, same height/material as adjacent dry island. Those magenta shapes cover missing WALKABLE LAND: they must NOT be restored to water or green underwater slabs. Build broad connected warm brown/tan limestone top faces joined solidly to the existing island, close all watery gaps. Extend the dry paving to the OUTER edge of each magenta patch. These are flat floor extensions, not boulders and not isolated stepping stones. No teal, green or blue shading within the marked dry floor patches. The shoreline should move outward to the outside of the marked patches, with a thin dark vertical bank on the water side and a softly broken rounded edge. Keep the rest of the image, pools, roads, central patterns, overall geometry, cropping and viewing angle exactly registered. Do not redesign or rerender unmarked floor. Remove all magenta marks in final output. No labels, no actors, no objects. Same original 5:4 canvas. This is a precision texture repair for sanctum_hall; preserve all three-/four-way exits.",
+        "sanctum_archive": "LOCAL INPAINTING / PIXEL-REGISTERED GAME TERRAIN CORRECTION. First image is the exact game map with SOLID MAGENTA diagnostic edit areas. Second image is the clean original only for matching texture. Replace EVERY solid magenta pixel and its entire footprint with DRY WARM TAN WALKABLE STONE FLOOR, same height/material as adjacent dry island. Those magenta shapes cover missing WALKABLE LAND: they must NOT be restored to water or green underwater slabs. Build broad connected warm brown/tan limestone top faces joined solidly to the existing island, close all watery gaps. Extend the dry paving to the OUTER edge of each magenta patch. These are flat floor extensions, not boulders and not isolated stepping stones. No teal, green or blue shading within the marked dry floor patches. The shoreline should move outward to the outside of the marked patches, with a thin dark vertical bank on the water side and a softly broken rounded edge. Keep the rest of the image, pools, roads, central patterns, overall geometry, cropping and viewing angle exactly registered. Do not redesign or rerender unmarked floor. Remove all magenta marks in final output. No labels, no actors, no objects. Same original 5:4 canvas. This is a precision texture repair for sanctum_archive; preserve all three-/four-way exits.",
+        "sanctum_court": "LOCAL INPAINTING / PIXEL-REGISTERED GAME TERRAIN CORRECTION. First image is the exact game map with SOLID MAGENTA diagnostic edit areas. Second image is the clean original only for matching texture. Replace EVERY solid magenta pixel and its entire footprint with DRY WARM TAN WALKABLE STONE FLOOR, same height/material as adjacent dry island. Those magenta shapes cover missing WALKABLE LAND: they must NOT be restored to water or green underwater slabs. Build broad connected warm brown/tan limestone top faces joined solidly to the existing island, close all watery gaps. Extend the dry paving to the OUTER edge of each magenta patch. These are flat floor extensions, not boulders and not isolated stepping stones. No teal, green or blue shading within the marked dry floor patches. The shoreline should move outward to the outside of the marked patches, with a thin dark vertical bank on the water side and a softly broken rounded edge. Keep the rest of the image, pools, roads, central patterns, overall geometry, cropping and viewing angle exactly registered. Do not redesign or rerender unmarked floor. Remove all magenta marks in final output. No labels, no actors, no objects. Same original 5:4 canvas. This is a precision texture repair for sanctum_court; preserve all three-/four-way exits."
+      }
+    },
+    "4": {
+      "sources": {
+        "sanctum_hall": "exec-5617679b-2de2-4a13-ab11-2ae77afec2a0.png",
+        "sanctum_archive": "exec-9560bb24-ef4b-40dc-8d44-3b91d2d4dbda.png",
+        "sanctum_court": "exec-1d138600-95c1-4793-a3e7-7797dabe27f5.png"
+      },
+      "prompts": {
+        "sanctum_hall": "Inpaint the MAGENTA missing land areas with continuous DRY LIGHT BROWN BEIGE STONE PAVING. This is essential: FILL ALL MAGENTA WITH TAN DRY LAND not green water. Expand the dry stone island into those whole magenta patches so there is NO GREEN WATER anywhere within the patches. The magenta is a floor-extension mask, not noise to remove by restoring the underlying original water. Only edit those areas and integrate their edges. Match the adjacent dry tan floor height and texture exactly. Use small worn beige limestone paving set on solid brown earth. NO detached stepping stones and NO blue/teal shaded stones inside the marked patches. Keep every unmarked pixel and every exit and pool layout as close as possible to this source. Keep same 5:4 framing, high oblique orthographic fantasy game artwork. No text, magenta, symbols, new objects or shifted roads. Output complete repaired map.",
+        "sanctum_archive": "Inpaint the MAGENTA missing land areas with continuous DRY LIGHT BROWN BEIGE STONE PAVING. This is essential: FILL ALL MAGENTA WITH TAN DRY LAND not green water. Expand the dry stone island into those whole magenta patches so there is NO GREEN WATER anywhere within the patches. The magenta is a floor-extension mask, not noise to remove by restoring the underlying original water. Only edit those areas and integrate their edges. Match the adjacent dry tan floor height and texture exactly. Use small worn beige limestone paving set on solid brown earth. NO detached stepping stones and NO blue/teal shaded stones inside the marked patches. Keep every unmarked pixel and every exit and pool layout as close as possible to this source. Keep same 5:4 framing, high oblique orthographic fantasy game artwork. No text, magenta, symbols, new objects or shifted roads. Output complete repaired map.",
+        "sanctum_court": "Inpaint the MAGENTA missing land areas with continuous DRY LIGHT BROWN BEIGE STONE PAVING. This is essential: FILL ALL MAGENTA WITH TAN DRY LAND not green water. Expand the dry stone island into those whole magenta patches so there is NO GREEN WATER anywhere within the patches. The magenta is a floor-extension mask, not noise to remove by restoring the underlying original water. Only edit those areas and integrate their edges. Match the adjacent dry tan floor height and texture exactly. Use small worn beige limestone paving set on solid brown earth. NO detached stepping stones and NO blue/teal shaded stones inside the marked patches. Keep every unmarked pixel and every exit and pool layout as close as possible to this source. Keep same 5:4 framing, high oblique orthographic fantasy game artwork. No text, magenta, symbols, new objects or shifted roads. Output complete repaired map."
+      }
+    },
+    "5": {
+      "sources": {
+        "sanctum_hall": "exec-a0a5004f-384a-4cd2-acc7-c0397a1cdfaf.png",
+        "sanctum_court": "exec-3672e7aa-7f86-4ee1-8fcc-415a23953ad1.png"
+      },
+      "prompts": {
+        "sanctum_hall": "Fill the entire SOLID MAGENTA BAND with a BROAD CONTINUOUS DRY LIGHT TAN STONE TOP SURFACE, as a wide level walkable ledge connected to the adjacent stone land. Magenta is the entire guaranteed walkable land border. Absolutely every part of that band must become DRY FLOOR, with brown mortar in its cracks. Do not expose water or teal submerged cracks inside it. The entire dry top extends to the OUTER edge of magenta band and this edge curves gently with overlapping small worn limestone slabs. The thin wet teal bank is ONLY OUTSIDE the magenta boundary, on the water side; NEVER inside. Do not create a wall on the band, it is broad flat floor at same height as existing dry floor, not standing rocks. Keep all unmarked dry floor and all main pool centers unchanged. Keep exits position and original image registration/camera. Turn jagged magenta guide corners into softly curved broken stone lips by adding dry slab corners on the water side, NEVER cutting away guaranteed dry magenta area. Important specifically for southwest curve: make it visibly solid and dry. No scattered stepping stones, no new water cracks, no text, no remaining magenta. Precision repair of game map sanctum_hall.",
+        "sanctum_court": "Fill the entire SOLID MAGENTA BAND with a BROAD CONTINUOUS DRY LIGHT TAN STONE TOP SURFACE, as a wide level walkable ledge connected to the adjacent stone land. Magenta is the entire guaranteed walkable land border. Absolutely every part of that band must become DRY FLOOR, with brown mortar in its cracks. Do not expose water or teal submerged cracks inside it. The entire dry top extends to the OUTER edge of magenta band and this edge curves gently with overlapping small worn limestone slabs. The thin wet teal bank is ONLY OUTSIDE the magenta boundary, on the water side; NEVER inside. Do not create a wall on the band, it is broad flat floor at same height as existing dry floor, not standing rocks. Keep all unmarked dry floor and all main pool centers unchanged. Keep exits position and original image registration/camera. Turn jagged magenta guide corners into softly curved broken stone lips by adding dry slab corners on the water side, NEVER cutting away guaranteed dry magenta area. Important specifically for southwest curve: make it visibly solid and dry. No scattered stepping stones, no new water cracks, no text, no remaining magenta. Precision repair of game map sanctum_court."
+      }
+    },
+    "6": {
+      "sources": {
+        "sanctum_court": "exec-5731bd96-ba86-4b6b-a22e-9cdf1868f6fe.png"
+      },
+      "prompts": {
+        "sanctum_court": "Repair ONLY the upper-right pink/magenta missing patches by filling the entire painted region with a broad DRY LIGHT BEIGE WALKABLE STONE TOP, joined continuously to the circular stone path. Every magenta pixel must be a dry limestone top face. Extend the dry paving out to the rightmost outside edge of the magenta region, not merely half its width. Mortar is warm dry brown, absolutely no teal water pockets or underwater stones within this dry repair. Preserve ALL unmarked areas exactly: the entire left half, bottom half, all four interior ponds, central emblem, external walls and three exits. This is only a local floor extension on the upper-right arc. Dry floor should be broad enough to cover the full magenta mask, with a worn broken curving outside edge; water begins only beyond that outside edge. Same pixel-registered 5:4 image crop and orthographic camera. No new structures, no text, no symbols, no pink color in result."
+      }
+    }
+  },
+  "rejectedCandidate": {
+    "file": "exec-5037a91d-7c6a-465c-b7b6-21d624374687.png",
+    "reason": "Main sanctuary upper pool shifted north several tiles; not used in registered assets."
+  }
+}

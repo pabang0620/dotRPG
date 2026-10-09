@@ -28,7 +28,7 @@
 - 지형 원화는 `Assets/StreamingAssets/Underworld/composition-{descent,roots,fungal,depths}.png`다. 모두 이번에 내장 image_gen으로 만든 실제 사용 리소스이며 임시 도면을 게임에 표시하지 않는다.
 - 전체 프롬프트와 수정 기록: [underworld-composition-art-prompts.json](underworld-composition-art-prompts.json).
 
-생성 원본은 약 1354~1355×1161픽셀이다. 엔진에서 1792×1536(32픽셀/타일)로 한 번 최근접 샘플링하며 Point 필터를 사용한다. 이것이 원본 자체를 네이티브 32픽셀 도트로 만든다는 의미는 아니다. 캐릭터보다 지형 명암이 세밀하고 부드러운 부분이 남는다.
+최초 생성 원본은 약 1354~1355×1161픽셀이며 그대로 보관한다. 처음에는 엔진에서 1792×1536(32픽셀/타일)로 최근접 샘플링했다. 현재는 아래 선명도 업데이트의 2배 복원본과 48픽셀/타일을 우선 사용한다. 수작업으로 모든 도트를 새로 찍었다는 의미는 아니며, 캐릭터보다 지형 명암이 세밀하고 부드러운 부분이 남는다.
 
 ## 검증 기록
 
@@ -65,3 +65,32 @@
 바탕화면 **dotRPG 지상·지하 월드 체험**을 실행한 뒤 뿌리샘 마을 중앙 계단으로 들어간다. 지도에서 지하월드를 선택할 수 있다. 체험 저장은 일반 저장과 분리되어 있고 볼륨은 0이다.
 
 Unity Editor 라이선스가 없어 전체 Player 재빌드는 수행하지 못한다. 전체 런타임 C#을 컴파일하고 기존 Windows 플레이어의 DLL·StreamingAssets를 교체하는 방식으로 확인한다. 온라인 파티와 여러 PC 사양의 성능 검증은 이번 범위에서 수행하지 않는다.
+
+## 2026-10-09 선명도 업데이트
+
+승인된 구도와 지형을 유지한 채 지하 네 맵만 업스케일했다. 내장 이미지 편집의 첫 결과는 원본과 같은 해상도여서 채택하지 않았다. 로컬 업스케일 작업을 재개해 [Real-ESRGAN 공식 Windows 도구](https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0)의 `realesrgan-x4plus`로 복원한 뒤 정확한 원본 2배 크기로 Lanczos 축소했다. 애니메이션용 모델은 윤곽선이 지나치게 굵어져 제외했다. 색보정, 자르기, 워핑, 구조물 이동은 수행하지 않았다. 모델이 추정한 작은 균열·질감은 원본과 다를 수 있다.
+
+| 맵 | 원본 → 새 PNG | 게임 표시 |
+|---|---|---|
+| 갱도 / 심연 | 1355×1161 → 2710×2322 | 2688×2304, 48픽셀/타일 |
+| 뿌리굴 / 포자 동굴 | 1354×1161 → 2708×2322 | 2688×2304, 48픽셀/타일 |
+
+- 실제 리소스: `Assets/StreamingAssets/Underworld/composition-{descent,roots,fungal,depths}_hd.png`. 원본 PNG 네 개는 Git HEAD와 SHA-256이 일치한다.
+- 56×48 월드 크기, 이동 마스크, 포털, 몬스터, 전역 카메라·줌은 그대로다. 원경·축대·보행면과 심연 기둥 모두 같은 48PPU 좌표를 사용한다.
+- 입력 HD 파일의 크기·비율·PNG 헤더를 검사하며, 없거나 잘못된 경우 기존 원본과 32PPU로 복귀한다. 정상 HD 파일 로딩은 네 맵에서 실제 `ppu=48` 로그로 확인했다. 손상 파일 복귀는 코드 검토만 했으며 이번 실행에서 손상 파일을 주입하지 않았다.
+- 원본 크기로 축소한 결과의 위상 상관 분석에서 네 맵 모두 전체 이미지 이동량 `(0,0)`픽셀. 이것만으로 작은 윤곽까지 불변이라고 단정하지 않으며 동일 카메라의 플레이 화면도 비교했다.
+- [재현 스크립트](../../Tools/art/upscale_underworld.py)는 별도로 받은 공식 실행 파일 경로를 받는다. 개발용 도구·모델은 게임에 포함되지 않으며 실행 시 다운로드하지 않는다. [처리 방식·파일 해시](underworld-upscale-manifest.json)를 보관한다.
+
+무음 Windows 플레이어 검증은 **211 통과 / 0 실패**다. 실제 출구 간 이동, 물·암벽 충돌과 투사체, 캠프 위치, 기둥 앞뒤 가림, 재입장 시 이전 텍스처·스프라이트 폐기와 지상 복귀 정리를 포함한다. 일반/배포 설정 런타임 컴파일 모두 통과했다. [실행 로그](UnderworldUpscale/native-scenery-report.txt), [일반 컴파일](UnderworldUpscale/runtime-compile.log), [배포 설정 컴파일](UnderworldUpscale/release-compile.log).
+
+3개 기본 레이어의 RGBA32 픽셀 용량은 맵당 31.50MiB에서 70.88MiB로 증가한다. 심연은 기둥 오버레이가 추가된다. 이 값은 전체 프로세스·GPU 메모리 측정치가 아니다. 텍스처 정리는 확인했지만 저사양 기기 성능과 장시간 메모리 추이는 미검증이다. 지상 원근감 개선은 별도 후속 작업이며 이번 HD 자산에는 포함되지 않는다.
+
+전후 비교는 같은 2560×1440 게임 카메라의 동일 영역을 크기 변경 없이 잘라 나란히 놓았다. 움직이는 환경 입자·캐릭터 프레임은 다를 수 있다.
+
+| 비교 | 갱도 | 뿌리굴 | 포자 동굴 | 심연 |
+|---|---|---|---|---|
+| 같은 위치 전후 | [보기](UnderworldUpscale/descent-before-after.png) | [보기](UnderworldUpscale/roots-before-after.png) | [보기](UnderworldUpscale/fungal-before-after.png) | [보기](UnderworldUpscale/depths-before-after.png) |
+| 실제 플레이 | [보기](UnderworldUpscale/hollow_descent-gameplay.png) | [보기](UnderworldUpscale/hollow_roots-gameplay.png) | [보기](UnderworldUpscale/hollow_fungal-gameplay.png) | [보기](UnderworldUpscale/hollow_depths-gameplay.png) |
+| 전체 맵 | [보기](UnderworldUpscale/hollow_descent-overview.png) | [보기](UnderworldUpscale/hollow_roots-overview.png) | [보기](UnderworldUpscale/hollow_fungal-overview.png) | [보기](UnderworldUpscale/hollow_depths-overview.png) |
+
+[원경 건축물 전후](UnderworldUpscale/background-before-after.png)도 같은 카메라 위치다. 바탕화면의 기존 **dotRPG 지상·지하 월드 체험** 바로가기는 HD 파일과 새 런타임을 적용한 로컬 플레이어를 실행한다.

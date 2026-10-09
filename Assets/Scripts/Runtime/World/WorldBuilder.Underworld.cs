@@ -77,7 +77,7 @@ namespace DotRPG
                 spawner.SetupField(HuntingGrounds.Get(MapId),HuntingGrounds.PackPoints(camps));
             }
             CreateBoundaryWalls();PointsOfInterest.Add(PlayerSpawn);PointsOfInterest.Add(new Vector2(width*.5f,height*.5f));
-            ApplySharpMaterial();BuildMinimap();
+            ApplySharpMaterial();ApplySurfaceComposition();BuildMinimap();
         }
 
         static void FillUnderworldCollider(Tilemap tilemap,List<Vector3Int> positions)

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "generator": "Built-in image_gen",
+  "intent": "Terrain-only winter-region scenery; existing dynamic houses, trees, props, collisions, portals and navigation preserved",
+  "assetStatus": "Newly generated production candidates, visually reviewed and copied without image modification; parent performs runtime integration/registration QA",
+  "resolutionNote": "Built-in natural output below requested source sizes; original output retained without local image edits or upscaling. Renderer chooses source-appropriate density.",
+  "created": "2026-10-09",
+  "entries": [
+    {
+      "mapId": "winter",
+      "prompt": "Use case: precise-object-edit. Asset type: production TERRAIN-ONLY full-map background for an existing 2D pixel-art RPG. Edit target image 1 is the existing WINTER VILLAGE map overview, exact 52:46 aspect ratio. Image 2 is a strict topology guide, not artwork to reproduce. Deliver 1664x1472 or higher in precisely the same aspect ratio. Keep the original overhead three-quarter RPG view, full-map framing, every riverbank, stone-road junction, bridge/deck, staircase, and blocked-cliff position registered to the existing pixels. DO NOT redesign the map layout or make an island. REMOVE ALL existing houses, roofs, gates, individual trees, bushes, fences, benches, lamps, wells, garden beds, barrels, rocks, signs, portals, fire, objects, labels and characters: these are separately rendered by the game and must not be baked into this image. Fill their former footprints seamlessly with the same walkable snow or flat flagstone present around them. KEEP the three existing right-side wooden crossings/decks and the stairs through the north cliff exactly where they are, since these are terrain routes. Preserve broad snow fields, central stone plaza and branching streets. The long right river and the horizontal slate cliff band at about 20-28% image height are the ONLY actual deep divisions: improve that existing cliff band with coherent layered vertical slate faces, worn icy strata, a convincing frozen waterfall where the river crosses it, snow-capped upper ledge and cast shadow within the already blocked band. Do not add new cliff borders around the outer map: those snow edges are traversable. New far-depth details only inside existing blocked rock/water footprint, subtle dark blue water depth and ice shelf underneath original shore. Elegant quiet winter fantasy, pale blue-white snow, slate lavender stone, restrained cold teal water, crystalline ice highlights. Dense clean pixel clusters, fine authored pixel-art stone edges and snow shapes, limited stepped values; no blur, photographic smoothing, noisy grain or hazy overlay. Terrain silhouette and all route positions MUST remain unchanged. No text/UI/grid/map pins/canvas border, no houses or freestanding trees. This will be layered beneath all existing game objects.",
+      "outputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-e6d4960c-77da-4f56-90cb-cfc79bd176d2.png",
+      "projectPath": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "review": "Viewed generated image. Individual trees/buildings/props removed; river, bridge/decks, central staircase and connected stone streets retained. Further runtime shoreline registration QA remains.",
+      "sourceWidth": 1333,
+      "sourceHeight": 1180,
+      "worldSize": [
+        52,
+        46
+      ],
+      "aspectRatioError": 0.0006844850065188535,
+      "referencePaths": [
+        "work/surface-before/winter-overview.png",
+        "work/surface-before/winter-guide.png"
+      ]
+    },
+    {
+      "mapId": "winter_edge",
+      "prompt": "Use case: precise-object-edit. Production terrain-only full-map art for an existing pixel-art RPG. Input1 is the exact target ground image, winter_edge, 56:44 aspect. Input2 is the strict walkability silhouette guide (tan=walkable, blue=water, charcoal=blocked), not a style reference. Redraw Input1 at 1792x1408 or higher, preserve full framing, no crop and exactly registered geometry: same irregular outer snow boundary, the vertical stone road from top to bottom near x51%, leftward branch near y49%, the tall pool left of the road at x29–46% y18–43%, and the round pool at x61–80% y61–86%. Every route, shoreline and blocked edge must stay in place. Change only visual materials and depth. Make quiet premium fantasy winter pixel art: finely clustered pale blue-white snow, crisp worn lavender-gray cobblestone, deep clear cold teal water with ice-rim ledges and sparse subtle reflections. Replace the crude blue perimeter rock texture ONLY within its existing blocked footprint with coherent layered slate cliffs, snowy cornices, fractured vertical faces, and a recessed cold valley below. Small frosted conifer shapes may appear ONLY far down inside the blocked outer corner scenery, never on the traversable clearing. Keep top/bottom/west exits open exactly as input. Continuous connected shore edges, snow shelf top edge and shaded ice front must clearly separate land and water. One consistent elevated RPG camera; floor, vertical supporting sides, and distant scenery must form one coherent image. Fine deliberate pixel clusters and stepped tones, no blur/gradient haze, no photographic texture or random grain. Strict TERRAIN ONLY: no freestanding trees on snow, no houses, towers, statues, ruins, fences, standalone rocks, props, enemies, people, lights, labels, grids, UI, or borders. Those will be rendered separately at runtime. Do not invent bridges or shrink/add pools. Keep broad open snow floor unchanged.",
+      "outputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-3fd4ebcf-3fe2-4391-b3e2-a1d0a62d46cd.png",
+      "projectPath": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "review": "Viewed generated image. Both pools and T-junction visually retain their positions; blocked edge has layered slate faces and distant corner trees; no freestanding props in walkable snow. Runtime registration QA remains.",
+      "sourceWidth": 1415,
+      "sourceHeight": 1112,
+      "worldSize": [
+        56,
+        44
+      ],
+      "aspectRatioError": 0.0001927029804728031,
+      "referencePaths": [
+        "work/surface-guides/winter_edge-ground-only.png",
+        "work/surface-guides/winter_edge-guide.png"
+      ]
+    },
+    {
+      "mapId": "winter_lake",
+      "prompt": "Use case: precise-object-edit. Production terrain-only full-map art for a pixel-art fantasy RPG. Image1 edit target is winter_lake ground-only,56:44 aspect. Image2 is an exact topology guide, tan walkable/blue water/charcoal blocked; do not reproduce guide colors. Output1792x1408 or higher, same full-map framing and coordinates. Preserve the large central lake's exact footprint at approximately x28–75% and y27–70%, including stepped irregular shores. Preserve the surrounding oval stone route, its wider northern stone clearing, and west/east exits across the middle. Keep broad snow patches in the same places; no bridge across the lake or new islands. Only improve art: elegant high-detail crisp pixel-cluster snow, weathered violet-gray stone pavement gently dusted with snow, very dark cold teal lake beneath crystalline pale-blue shoreline rims. Water remains clearly nonwalkable OPEN liquid, not a walkable frozen sheet; light fractured thin ice may cling only inside existing shoreline. A subtle deep lake floor with sparse embedded glacial facets at low contrast, no creatures or structures in lake. In the existing blocked blue rock perimeter ONLY, sculpt layered snow-capped slate cliffs, coherent vertical walls and recessed distant icy ravines; keep exact inner blocked boundary. Small faraway frost trees allowed only far below within outer blocked corners. One unified elevated RPG camera with ground top, cliff faces and distant lower scenery coherently drawn. Restricted stepped color values, clean strong pixel edges, fine intentional clusters, no blur, smooth gradients, photo noise or haze. No freestanding trees, houses, castles, ruins, gates, fences, props, stones that read as colliders, actors, labels, UI, arrows or border. Existing runtime objects are separate. Retain every floor-road-water boundary and the full original walkable extent.",
+      "outputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-b7b4d3f0-3ed5-4d47-a9b9-fd5d93736d53.png",
+      "projectPath": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "review": "Viewed generated image. Single large liquid lake and broad surrounding stone loop retained; no new bridge/structure. Layered blocked outer cliff scenery and clearer ice-water rim. Runtime registration QA remains.",
+      "sourceWidth": 1415,
+      "sourceHeight": 1112,
+      "worldSize": [
+        56,
+        44
+      ],
+      "aspectRatioError": 0.0001927029804728031,
+      "referencePaths": [
+        "work/surface-guides/winter_lake-ground-only.png",
+        "work/surface-guides/winter_lake-guide.png"
+      ]
+    },
+    {
+      "mapId": "winter_peak",
+      "prompt": "Use case: precise-object-edit. Production TERRAIN-ONLY map background winter_peak for a fantasy pixel-art RPG. Image1 is exact edit target ground-only,56:44 aspect. Image2 is exact topology mask (tan walkable/charcoal blocked). Output1792x1408 or higher, no crop, same full-canvas registration. Preserve every snow patch and stone-road route in their exact footprint. This map has a large central snowy area, an irregular broad stone circuit around it, west/east horizontal exits near middle, a narrow upper-left snow finger, a upper-right snow plateau and lower-left snow peninsula. The blue stone bands BETWEEN center snow and outer stone paths are truly BLOCKED narrow rock strips: preserve them. Never join routes across those strips, do not fill blocked pockets with walkable snow. Repaint existing crude blue rock ONLY within its same mask as impressive deep cold alpine slate ravines, vertical stratified supporting faces, icicles and lower ledges. Constrain the vertical/deep scenery inside original blue rock regions, keep the tops of all walkable routes crisp and at their original positions. On the large blocked northwest/southeast corners, add receding snowy crags and tiny faraway frost conifers deep below, low contrast. No horizon or sky band. Snowy playable plateau and loop remain visually open; dense deliberate crisp pixel clusters, pale snow-blue, muted violet slate, sparse ice-white highlights and clear dark cliff shadows. Cobblestones are worn and carefully structured, snow has quiet wind-shaped patches. Unified elevated top-down RPG perspective, no isometric rotation or perspectivewarp. No new water/pools, no bridges/roads, no roofs, buildings, towers, shrines, freestanding trees, boulders, statues, fences, players, enemies, text, map markers or UI. All runtime props will be drawn separately. Geometry/collision registration takes priority over ornament. Do not cover walkable paths with snow overhang or wall shadows that read as obstacles.",
+      "outputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-9e77271c-220a-4372-92ff-5112cec90de7.png",
+      "projectPath": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "review": "Viewed generated image. Central snow plateau, stone circuit and blocked narrow strips remain visually registered. Layered deep icy ravines in blocked zones, no new open-water region or walkable-floor props. Runtime registration QA remains.",
+      "sourceWidth": 1415,
+      "sourceHeight": 1112,
+      "worldSize": [
+        56,
+        44
+      ],
+      "aspectRatioError": 0.0001927029804728031,
+      "referencePaths": [
+        "work/surface-guides/winter_peak-ground-only.png",
+        "work/surface-guides/winter_peak-guide.png"
+      ]
+    },
+    {
+      "mapId": "winter_reach",
+      "prompt": "Use case: precise-object-edit. Production terrain-only full-map background winter_reach for a pixel-art RPG. Image1 edit target is existing snowy map56:44 aspect. Image2 exact topology guide is AUTHORITATIVE: tan=walkable floor/stone path, blue=water, charcoal=blocked. Deliver1792x1408 or higher,same full-map framing and registration. Preserve geometry and roads with this one necessary depiction correction: in Image1 the old water graphics incorrectly cover EXISTING WALKABLE stone causeways. Image2 shows the correct water discontinuities. Restore the continuous north-south stone road in its same center position, x24–29 of56 tiles in the upper water band and x27–32 of56 tiles in lower water region. This is EXISTING land, not a new bridge. Upper waters are two disconnected pools left/right of the stone road, spanning roughlyy23–29%. Lower-left water is a CURVED THIN CRESCENT whose concave south edge is walkable snow, and lower-right water a separatelong basin, separated by the original stone causeway. Follow Image2 for these footprints; do not connect separate waters. The three tiny wooden landing/deck squares in Image1 remain as small shoreline details in the same positions, not huge bridges. Preserve rightward central stone-road exit, top/bottom exits, open snow fields and irregular outer blocked edge. Improve cold teal liquid water with crisp pale cyan ice rims, darker inset water edges, snow-covered violet slate cobbles and soft wind-shaped snow patches made from crisp pixel clusters. Within original blocked blue perimeter ONLY, draw coherent layered slate cliff supports, cold recessed ravines, sparse very distant frost pines down below; fixed inner boundary. One consistent elevated top-down RPG perspective and deep winter atmosphere, rich authoredpixel details, limited stepped shades, no blur/haze/random grain. Strict terrain only:no freestanding trees, houses, towers, castles, structures, fences, boulders, animals, people, labels, arrows, UI or border. No invented routes. Flat snow/stone remains clear for separately rendered runtime props and characters. Preserve every source-canvas coordinate and ensure apparent walkable causeways align to Image2.",
+      "outputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-4d9f3a6b-db5d-46c7-ba09-683e1dbe581b.png",
+      "projectPath": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "review": "Viewed latest source and compared against authoritative ground.txt. Upper dry causeway width restored to6tiles; lower dry causeway and southeast snow pocket restored. Initial24 water-on-floor color sample candidates reduced to0 after edits. Three optional tiny shore deck marks omitted by last edit; runtime props/navigation unaffected.",
+      "sourceWidth": 1414,
+      "sourceHeight": 1112,
+      "worldSize": [
+        56,
+        44
+      ],
+      "aspectRatioError": 0.0008992805755394517,
+      "referencePaths": [
+        "work/surface-guides/winter_reach-ground-only.png",
+        "work/surface-guides/winter_reach-guide.png"
+      ],
+      "previousOutputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-18a6e169-18f2-4485-b72d-697b8d777ffc.png",
+      "revisionPrompts": [
+        "Use case: precise-object-edit. Fix navigation registration ONLY. Image1 is an AUTHORITATIVE EXACT 56x44-cell map silhouette: tan means flat dry walkable ground, dark teal means OPEN WATER, dark navy means blocked cliff. Image2 is the winter art STYLE reference, but its water footprints are wrong: do NOT copy those wrong shapes. Create same full-canvas56:44 art at1792x1408orhigher. Match Image1 like a stencil, every tiny concavity matters; no zoom,crop,shift,rotation. Use image2 material style: crisp pale snow, lavender cobbled road, cold teal water, vertical snowy slate perimeter. Keep all walkable tan dry snow/stone and place water ONLY in Image1 teal. Specific fixes: UPPER two waterbars top-row10,11,12 MUST be separated by a SIX TILE wide stone causeway covering columns24,25,26,27,28,29, not a narrow3-tile bridge. In fractional canvas this is x42.857% through53.571%, y22.727% through29.545%. The LOWER stone causeway must cover columns27..32 inclusive across lower water, aboutx48.214–58.929%. Its dry width must not narrow. The southeast basin's TOP is NOT a horizontal waterbar across the map. Between y65.91%–72.73% its middle columns33..46 must remain a LARGE DRY SNOW pocket, as Image1 tan shows. Only row32 and below has the broad southeast basin. Northwest end of that southeastern basin slopes from nearx96% atrow29 leftward towardx59% atrow32, following guide. The southwest water is a thin arched CRESCENT with a large dry concavity south of it; never fill that concavity. Preserve all existing routes including central right branch and top/bottom exits, preserve guide's exactly separate four water regions. Keep3tiny shoreline wooden squares if they don't cover any water area beyond existing footprints, optional omit rather than invent a new bridge. Terrain only: no trees or high shrubs on walkable areas, no houses/statues/rocks/objects/characters/UI/text. Blocked perimeter only contains layered icy slatewalls, no geometrical change. No blur or haze; refined clean pixel art. It is critical that every tan pixel in image1 remains visually traversable, not submerged. Reproduce topology first, material finesse second.",
+        "Precise-object-edit: edit ONLY the NORTH SHORE of the SOUTHEAST pool in image1, everything else pixelregistered unchanged. Keep fullcanvas1414x1112 aspect, no crop/reframe. Existing water at pixelx850–1120,y760–809 is WRONG; this area is dry snowy ground per image2 topology stencil. Push this local north shoreline SOUTH about40pixels so the water's north edge from x860to1110 is at y809 (approximately72.73% of height), leaving a clean broad flat SNOW concavity above. At far right, water's top edge slopes northeast with the guide: x1162 reachesy783, x1212 reachesy758, x1288 reachesy733. At far left near stone path x833, a narrow1tile width inlet may remain startingy783; elsewhere x859to1135 is snowy untily809. Do not touch westcrescent, topwaterbars, roads, outercliffs oranyotherpixelgeometry. Image2 exact mask tan=dryground, teal=water and navy=blocked is authoritative. Preserve detailed icy winterpixel-artstyle, same palette and linework. No newobjects/labels/UI. This is a tiny shore footprint correction, not whole-map redesign."
+      ],
+      "intermediateOutputPath": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-9bc4fcb7-c031-47b1-aee3-8b3f2c51f347.png"
+    }
+  ],
+  "verification": {
+    "status": "Offline visual review plus heuristic color sampling, native integration remains parent-owned",
+    "method": "9 samples per walkable cell, color-positive at6/9 or more and >=2cell center distance from original material boundary",
+    "winterWaterOnFloorCandidates": 0,
+    "winterRockOnFloorCandidates": 0,
+    "scope": "Detects broad >1tile misregistration, not a proof of every shoreline pixel",
+    "report": "work/surface-color-audit.json"
+  }
+}

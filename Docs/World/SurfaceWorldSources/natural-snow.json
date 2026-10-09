@@ -1,0 +1,194 @@
+{
+  "date": "2026-10-09",
+  "task": "Natural alpine surfaces and softened landscape boundaries for five snow-region maps",
+  "scope": "Artwork only. No C#, navigation, camera, equipment, gameplay, save or map-route changes.",
+  "method": "Built-in imagegen reference edits; selected sources copied unmodified into work/natural-snow-upscale/originals; approved Tools/art/upscale_surface.py for local Real-ESRGAN x4plus and exact 48 pixels/world-unit registration. Runtime Point sampling remains unchanged.",
+  "backupFolder": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-world-before",
+  "authoritativeGuides": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/surface-release",
+  "sourceFolder": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-upscale/originals",
+  "research": [
+    {
+      "title": "CrossCode developer Bergen Trail snow",
+      "url": "https://www.radicalfishgames.com/?p=3710",
+      "image": "https://www.radicalfishgames.com/wp-content/uploads/bergen-trail-snow-final-600x338.png",
+      "inspection": "Actual official image viewed. Uneven snow overlap, brown stone contact faces, worn open path, clustered vegetation. Used environmental composition principles only."
+    },
+    {
+      "title": "CrossCode developer village environment",
+      "url": "https://www.radicalfishgames.com/?p=4274",
+      "image": "https://www.radicalfishgames.com/wp-content/uploads/life-600x338.png",
+      "inspection": "Actual official image viewed. Broad flat paving, asymmetrical accumulation around structures and clear ground contact. No borrowed artwork."
+    },
+    {
+      "title": "Sea of Stars official Steam environment",
+      "url": "https://store.steampowered.com/app/1244090/Sea_of_Stars/",
+      "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1244090/ss_f756ff477590284c7192ffcef99237de056e4aeb.1920x1080.jpg?t=1748529571",
+      "inspection": "Official snow/ice combat screenshot viewed. Large ivory snow clusters against dark blue-violet rock, broken contact contours and readable open combat space."
+    }
+  ],
+  "researchImageFolder": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-research",
+  "comparisonSheet": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-review/before-after.jpg",
+  "registrationManifest": "Docs/World/surface-upscale-manifest-winter-winter_edge-winter_lake-winter_peak-winter_reach.json",
+  "hdValidation": "All five final PNG sizes and SHA256 match registration manifest. Actual registered HD quarter-tile color sampling repeated with unchanged result: zero water samples at least 1 tile inside walkable floor; winter retains four sub-tile rim samples at0.625tile. Final HD report: work/natural-snow-hd-review.json. No native execution by this art subagent.",
+  "commonPrompt": "Asset: final production terrain-only plate for an elevated2D pixel-art RPG, registered full-map image. Make a substantial environmental repaint, more cohesive and natural, not just recoloring. Image1 exact geometry source; Image2 semantic guide tan=walkable floor/road, teal=blockedwater, navy=blockedslopes. KEEP fullcanvas origin/aspect, exact water footprint and all safe broad paths/portals. No clipping/crop/zoom. Runtime separately renders houses/trees/props, so do NOT draw new buildings, tall freestanding trees, fences, characters, lamps, gates or icons. All walkfloor stays flat and navigable; no new pits, large rocks, streams or slope walls on tan areas. Design quality: asymmetrical snow accumulation, warm-grey embedded flagstones and granular compacted snow paths, broad directional snowdrift clusters; eliminate uniform round-bead cobblestone carpet and cloudy white noise. Replace painted white cutout boundary with grounded local shadow and layered snow foothill, all steep facets remain only inside navy. Snowy mountain terrain continues from each edge as a few immense cropped landforms, not repeated full triangle peaks, no skyline/horizon strip. Ice shore: eliminate continuous neon-blue outline. Thin dark undercut contact, patchy subdued cyan/teal frozen shelves INSIDE originalwater area, occasional small cracks and floes, dark desaturated blue-green center; natural thickness variations while precisely maintaining same mean shoreline and all shallow-water blocking boundaries. No white snow island standing for walkland inside water. Clean deliberate pixel clusters, sharp small facets and restrained shading, no blur, no gradients, no AA, no independent glitter/noise. Warm ivory snow lit upperleft, periwinkle slate midshadows, subdued distantblue. Field path centers readable but road edge organically covered by snow within existing footprint. Do not replicate another game's art; all shapes original.",
+  "assets": [
+    {
+      "id": "winter",
+      "selectedGeneration": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-8e88eee4-2e99-4021-9058-f65a4dcca649.png",
+      "preservedSource": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-upscale/originals/winter.png",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "sourceSize": [
+        1333,
+        1180
+      ],
+      "registeredOutputSize": [
+        2496,
+        2208
+      ],
+      "iterations": [
+        {
+          "prompt": "Asset: final production terrain-only plate for an elevated2D pixel-art RPG, registered full-map image. Make a substantial environmental repaint, more cohesive and natural, not just recoloring. Image1 exact geometry source; Image2 semantic guide tan=walkable floor/road, teal=blockedwater, navy=blockedslopes. KEEP fullcanvas origin/aspect, exact water footprint and all safe broad paths/portals. No clipping/crop/zoom. Runtime separately renders houses/trees/props, so do NOT draw new buildings, tall freestanding trees, fences, characters, lamps, gates or icons. All walkfloor stays flat and navigable; no new pits, large rocks, streams or slope walls on tan areas. Design quality: asymmetrical snow accumulation, warm-grey embedded flagstones and granular compacted snow paths, broad directional snowdrift clusters; eliminate uniform round-bead cobblestone carpet and cloudy white noise. Replace painted white cutout boundary with grounded local shadow and layered snow foothill, all steep facets remain only inside navy. Snowy mountain terrain continues from each edge as a few immense cropped landforms, not repeated full triangle peaks, no skyline/horizon strip. Ice shore: eliminate continuous neon-blue outline. Thin dark undercut contact, patchy subdued cyan/teal frozen shelves INSIDE originalwater area, occasional small cracks and floes, dark desaturated blue-green center; natural thickness variations while precisely maintaining same mean shoreline and all shallow-water blocking boundaries. No white snow island standing for walkland inside water. Clean deliberate pixel clusters, sharp small facets and restrained shading, no blur, no gradients, no AA, no independent glitter/noise. Warm ivory snow lit upperleft, periwinkle slate midshadows, subdued distantblue. Field path centers readable but road edge organically covered by snow within existing footprint. Do not replicate another game's art; all shapes original.\nMap winter town52x46. This is a settled snow village terrain. Retain EXACT3existing wooden bridge positions/dimensions over eastern river, the central north stair landing and north-east waterfall, branch plazas and all road exits. Village props are absent intentionally and will be layered by engine. Repaint round cobblestones as a warm-grey ancient flat flagstone street, varying broad slabs and patches of compacted pale snow along the road edges; keep plaza placements and full walkfloor clear. Existing narrow horizontal blocking band across upperthird becomes natural overlapping snow drift slopes and exposed slate ledges, still broken only at centralstairs and eastwaterfall, not a regimented row of rockknobs. River retainsits full narrow footprint, but banks gain irregular snow overhang visual depth, translucent shadowed ice onwater side, meltstone colour variation. Waterfall keep exact place, use asymmetrical ribbons and a restrained little white splash. Make townground warm and inviting with fine flattened snowgrain, not empty white sheet. Palette balanced coolsnow with warmgreystone. Return exact52:46ratio requested2496x2208orhighest supported.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-079d3b07-c4f7-4a18-a55b-6b8012743b2d.png",
+          "review": "Rejected: raised rocks intruded onto free town floor"
+        },
+        {
+          "prompt": "Precise-object-edit. Image1 edit target. Image2 authoritative collision mask sameframing. Image1 mistakenly filled village with mountains and rock outcrops on walkfloor. REMOVE EVERY grey/brown rock, boulder, hill, steep slope, cliff face and darkshadow mound from ALL terrain except ONE narrow horizontal band at y20%..29%canvas where centralstairs split it. Everything above this band, everything below band, and right riverbank must be FLAT smooth walkable snow at the same ground height, no raised terrain. Cover removed terrain with fine ivory/blue flat snowgrain and occasional tiny lowbrown grass, sparse gentle flat wind-lines only. This is an open village floor for houses/trees to be added by runtime later. NO rocks, mountains, pits or hills anywhere in main villageground! Keep all beautiful new flagstone street/plaza shapes and texture, all3wooden bridges, river exactlimits and waterfall untouched. Only the existing authorized horizontal band is a slightly curving natural snowcovered sloping ledge; its base/top break as gentle broad arcs withinthatoriginalnarrowband. No verticalcanyon. Keep centralstairs. All remaining ground flat. Preserve full52:46aspect, origin and road/water registration. Crisp pixelart, no blur or text.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-a05e5c44-3ed4-4b27-908c-5e21e9d7cacc.png",
+          "review": "Flattened added rocks; superseded after river-boundary check"
+        },
+        {
+          "prompt": "Use case precise-object-edit. Image1 is finished pixel-art RPG map terrain, image2 is authoritative semantic collision guide (tan flat snow land, dark teal water). Change ONLY uppermost 9% height of the river's LEFT BANK near x80%..84% image width. It currently drifts too far left onto walking snow. At the very top edge the leftmost river/ice pixel must start at x82.7% width (43/52), and stay >=82.7% for top 4.35% height, then can gently bend left to x80.8% at height6.5%. Fill the erroneous blue-water strip on the left with continuous flat ivory snow matching immediate neighboring ground, making a subtle curving snowbank with ice only inside authorized river. Keep river right bank fixed. Keep ALL remaining map pixels, roads, bridges, cliffs, waterfall, water, colors and scale unchanged. Same full canvas 52:46 ratio, no crop/zoom, retain crisp detailed pixelart. No other additions.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-7d8881b9-3bbf-4876-9378-3bbbebf7cacb.png",
+          "review": "Moved upper river left bank back onto water footprint"
+        },
+        {
+          "prompt": "Use case precise-object-edit. Preserve the entire finished snow-town terrain artwork exactly, except three tiny RIVER EAST BANK boundary corrections. 52 by46 tilemap fullcanvas, normalized screen percentages given. At x88.5..90.3% and y9.5..11.5% (right shore just above first wooden bridge), replace the leftmost small sliver of flat snow/blue shoreline ambiguity with continuous flat ivory snow reaching left to x88.5%: water there must end at x88.5%, not90.3%, maintaining softly scalloped edge. At x86.5..88% and y64.5..66.5% (right bank below middlebridge), extend flat snow west to x86.5%, remove blue flecks there. At x88.5..90% and y74.5..76.5%, similarly extend flat snow west to x88.5%. Put the thin dark shoreline shadow just INSIDE river. Make no changes to left bank, road, bridges, water anywhere else, mountains, waterfall or snow texture. No new objects. Exact original camera and canvas52:46 ratio, no zoom/crop.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-8e88eee4-2e99-4021-9058-f65a4dcca649.png",
+          "review": "Selected: reduced eastern river-edge drift"
+        }
+      ]
+    },
+    {
+      "id": "winter_edge",
+      "selectedGeneration": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-26dec0f3-b244-430a-9026-b352e93295cf.png",
+      "preservedSource": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-upscale/originals/winter_edge.png",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "registeredOutputSize": [
+        2688,
+        2112
+      ],
+      "iterations": [
+        {
+          "prompt": "Asset: final production terrain-only plate for an elevated2D pixel-art RPG, registered full-map image. Make a substantial environmental repaint, more cohesive and natural, not just recoloring. Image1 exact geometry source; Image2 semantic guide tan=walkable floor/road, teal=blockedwater, navy=blockedslopes. KEEP fullcanvas origin/aspect, exact water footprint and all safe broad paths/portals. No clipping/crop/zoom. Runtime separately renders houses/trees/props, so do NOT draw new buildings, tall freestanding trees, fences, characters, lamps, gates or icons. All walkfloor stays flat and navigable; no new pits, large rocks, streams or slope walls on tan areas. Design quality: asymmetrical snow accumulation, warm-grey embedded flagstones and granular compacted snow paths, broad directional snowdrift clusters; eliminate uniform round-bead cobblestone carpet and cloudy white noise. Replace painted white cutout boundary with grounded local shadow and layered snow foothill, all steep facets remain only inside navy. Snowy mountain terrain continues from each edge as a few immense cropped landforms, not repeated full triangle peaks, no skyline/horizon strip. Ice shore: eliminate continuous neon-blue outline. Thin dark undercut contact, patchy subdued cyan/teal frozen shelves INSIDE originalwater area, occasional small cracks and floes, dark desaturated blue-green center; natural thickness variations while precisely maintaining same mean shoreline and all shallow-water blocking boundaries. No white snow island standing for walkland inside water. Clean deliberate pixel clusters, sharp small facets and restrained shading, no blur, no gradients, no AA, no independent glitter/noise. Warm ivory snow lit upperleft, periwinkle slate midshadows, subdued distantblue. Field path centers readable but road edge organically covered by snow within existing footprint. Do not replicate another game's art; all shapes original.\nMap winter_edge56x44. Make this a natural alpine saddle with2glacial tarns in exactly their existing positions. VERY IMPORTANT all large central snowfloor stays FLAT, no rockoutcrops, boulders, hills or cliffs there; height belongs ONLY in navy guide outside. Replace the repetitive mountains and especially sharp staircase-shaped WHITE CUTOUT OUTLINE around the plateau with a continuous curving snow mantle: outside the exact walkfloor boundary, sloped foothills roll in long broad arcs rather than dropvertically along square steps. Use dark compressed snow at contact and gently growing blue shadow farther outside; no hard luminousperimeter line, no quarter-turn vertical mountain cuts. Only2–3huge mountainfaces extend offscreen, their curved windcarved contours at multiple scales, different slopes left/right. Keep all3roadexits and exact roadcenterline but replace uniformbubble cobbles with partially buried irregular flat slate paving amid compressedwarmgrey snow, no solidbead carpet. Existing upper-left pond and lower-right pool keep exactwater footprint and position, but rectangularnorth/south poolcaps must become visually rounded INTERNAL broken ice shelves and teal shallowfrozen scallops, while the outside footcollision rim remains easytoread and in same place. Thin undercut snowcrust ratherthan brightblueoutline. Shared directional light connects surrounding snowdrifts, mountains, shore. No new objects or trees. The flat playablefield dominatescenter; no raised rocks there. Same56:44framing at2688x2112orhighest.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-762cbb2c-0976-4fa5-ac7c-de797d07fe08.png",
+          "review": "Full natural terrain repaint"
+        },
+        {
+          "prompt": "Use case precise-object-edit. The snowy RPG terrain plate is finished; make ONLY the two pond shorelines visually more organic. KEEP the outer snow/water footprint and every path, slope, pixel-art style, camera and fullmap frame unchanged. The upper pond's long straight top edge and top-right/right-bottom90-degree corners currently read as a rectangular cutout. Within the BLUE WATER area ONLY paint gently curving, asymmetric translucent blue-ice shelves and fractured crescent ice edges: broad under-ice shadow and layered cyan ice curve inward at these corners so the visible dark open-water center has rounded concave contours rather than a box. Vary shelf thickness smoothly along top, make right side a subtle bowed S curve INSIDE existing water, darken contact line, no bright white rectangular outline. Lower pond corners likewise get subtle curved blue-ice crescent transition. Keep ice recognizably blue translucent WATER with cracks, never opaque white snow/dryland, no new walkable islands. Preserve every other map element. Full original56:44 landscape dimensions, no zoom/crop.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-26dec0f3-b244-430a-9026-b352e93295cf.png",
+          "review": "Selected: rounded open-water outline with blue ice inside original water"
+        }
+      ]
+    },
+    {
+      "id": "winter_lake",
+      "selectedGeneration": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-43543095-4b37-4e9e-943b-b2203406e1ae.png",
+      "preservedSource": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-upscale/originals/winter_lake.png",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "registeredOutputSize": [
+        2688,
+        2112
+      ],
+      "iterations": [
+        {
+          "prompt": "Asset: final production terrain-only plate for an elevated2D pixel-art RPG, registered full-map image. Make a substantial environmental repaint, more cohesive and natural, not just recoloring. Image1 exact geometry source; Image2 semantic guide tan=walkable floor/road, teal=blockedwater, navy=blockedslopes. KEEP fullcanvas origin/aspect, exact water footprint and all safe broad paths/portals. No clipping/crop/zoom. Runtime separately renders houses/trees/props, so do NOT draw new buildings, tall freestanding trees, fences, characters, lamps, gates or icons. All walkfloor stays flat and navigable; no new pits, large rocks, streams or slope walls on tan areas. Design quality: asymmetrical snow accumulation, warm-grey embedded flagstones and granular compacted snow paths, broad directional snowdrift clusters; eliminate uniform round-bead cobblestone carpet and cloudy white noise. Replace painted white cutout boundary with grounded local shadow and layered snow foothill, all steep facets remain only inside navy. Snowy mountain terrain continues from each edge as a few immense cropped landforms, not repeated full triangle peaks, no skyline/horizon strip. Ice shore: eliminate continuous neon-blue outline. Thin dark undercut contact, patchy subdued cyan/teal frozen shelves INSIDE originalwater area, occasional small cracks and floes, dark desaturated blue-green center; natural thickness variations while precisely maintaining same mean shoreline and all shallow-water blocking boundaries. No white snow island standing for walkland inside water. Clean deliberate pixel clusters, sharp small facets and restrained shading, no blur, no gradients, no AA, no independent glitter/noise. Warm ivory snow lit upperleft, periwinkle slate midshadows, subdued distantblue. Field path centers readable but road edge organically covered by snow within existing footprint. Do not replicate another game's art; all shapes original.\nMap winter_lake56x44. A single large glacial tarn inside a broad alpine basin. Preserve exact lake outer footprint and existing wide complete road loop, west/east exits, all open landaroundit. Replace manufactured octagonal bright rim with asymmetrical low snowbank, dark thin undercut, scalloped translucent cracked ice shelves INSIDE water and a few thin fracturedfloes, while keeping all originalblockedwatertealpixels wetlooking. Its upper flat edge should read as a natural snowcovered ice shelf by curved internal fractures, not a straight rectangular box. Keepdeepwater darkteal desaturated, calm clear smallpixelripples and faint submergedrocks. Roadloop should no longer be a manufactured ring of identicalroundcobbles; buried uneven flat slatestones and worn compressed grey snow make broad human trail at same footprint, with asymmetric snowcreeping inwardfromsides. This mapfocus is quietbroadsurface and crescent blueiceshelves, no newlandmark. Outside navy blockedregions, replace repeated rocky mountains with two continuous sweeping snowmountainsides that curvefaroffframe, varying broad convexsnowshoulders and shallowconcavewindchannels. Remove any map-cutout outline; the slope connection should grow organically onblockedside, never sharp90degreefall. All tanfloor remains clearlywalkable flat snow; no raisedrocks, trees, buildings or newicepits. No horizon, tinytrianglepeaks or overlaidwallpaper. Strongcohesivecomposition withquietinterior, crispyfinepixelart notphotoreal. Exact56:44aspect sameorigin output2688x2112orhighest.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-cfe1f464-8642-446d-8afe-731f159dbf4f.png",
+          "review": "Full natural terrain repaint"
+        },
+        {
+          "prompt": "Use case precise-object-edit. This finished pixel-art RPG frozen-lake map needs one local correction only: remove every small DETACHED UPRIGHT BOULDER / standing rock clump on or beside the walkable ring road, and replace with flat snow or flat partly snow-buried paving matching surrounding terrain. Especially the boulder clusters along the north ring at x26..77% y15..25%, east ring at x77..85% y26..43%, and southwest ring near x27% y72%. Outer huge mountain ridges and their attached exposed rock faces stay exactly intact. Do not change the lake or shoreline silhouette at all, its ice shelves, lighting and colors, road geometry, portals, frame, scale or curved alpine basin. No new objects or houses, no labels. Preserve all other details in place. 56:44 fullmap ratio same image framing, no crop/zoom, crisp pixelart.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-43543095-4b37-4e9e-943b-b2203406e1ae.png",
+          "review": "Selected: removed detached upright rocks from walking ring"
+        }
+      ]
+    },
+    {
+      "id": "winter_peak",
+      "selectedGeneration": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-92797853-dfa1-4393-b70b-77c0223134f6.png",
+      "preservedSource": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-upscale/originals/winter_peak.png",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "registeredOutputSize": [
+        2688,
+        2112
+      ],
+      "iterations": [
+        {
+          "prompt": "Asset: final production terrain-only plate for an elevated2D pixel-art RPG, registered full-map image. Make a substantial environmental repaint, more cohesive and natural, not just recoloring. Image1 exact geometry source; Image2 semantic guide tan=walkable floor/road, teal=blockedwater, navy=blockedslopes. KEEP fullcanvas origin/aspect, exact water footprint and all safe broad paths/portals. No clipping/crop/zoom. Runtime separately renders houses/trees/props, so do NOT draw new buildings, tall freestanding trees, fences, characters, lamps, gates or icons. All walkfloor stays flat and navigable; no new pits, large rocks, streams or slope walls on tan areas. Design quality: asymmetrical snow accumulation, warm-grey embedded flagstones and granular compacted snow paths, broad directional snowdrift clusters; eliminate uniform round-bead cobblestone carpet and cloudy white noise. Replace painted white cutout boundary with grounded local shadow and layered snow foothill, all steep facets remain only inside navy. Snowy mountain terrain continues from each edge as a few immense cropped landforms, not repeated full triangle peaks, no skyline/horizon strip. Ice shore: eliminate continuous neon-blue outline. Thin dark undercut contact, patchy subdued cyan/teal frozen shelves INSIDE originalwater area, occasional small cracks and floes, dark desaturated blue-green center; natural thickness variations while precisely maintaining same mean shoreline and all shallow-water blocking boundaries. No white snow island standing for walkland inside water. Clean deliberate pixel clusters, sharp small facets and restrained shading, no blur, no gradients, no AA, no independent glitter/noise. Warm ivory snow lit upperleft, periwinkle slate midshadows, subdued distantblue. Field path centers readable but road edge organically covered by snow within existing footprint. Do not replicate another game's art; all shapes original.\nMap winter_peak56x44, high saddle crossed by a looping ancient trail. There is NO water in thismap; do not add any. Preserve all existing walkfloor regions, loop and west/east exits, exact broad path alignment. Mainchange required: all square stair-step edges that cut mountain texture abruptly must disappear, replaced by curving flowing mountain shoulders on the blockednavymask. Avoid vertical rectangular slices especially at innernorthern notch and either side of centerplateau. Model those thin blocked areas as curved steep snowbank ridges with dark compressedsnowbase, feathering visually into flat floor at originalfootline; their steepsides stayonlynavy. A few vast offscreen alpine mountains create big asymmetrical convex/concave arcs and horizontal-flowing snowdrifts instead of repeated diagonalstripes. Preserve originalperspective. Paths: partly snowburied large uneven flat greyslateflagstones mixed withpacked snow, breaking cookiecutter ringoutline into a travelworn trail while retaining same safe fullwidth. All centerfield and open lowerarea flatwalkable snow, finely stepped low blue snowgrain; no newly drawn rocks,boulders, outcrops, tallmounds or extrudedgeometry on walkfloor. ALL loose decorationless than1shoeheight and sparse. Richmaterialcontrast through firmcontact shadows just atbanks, restrainedblue distance. Originalcohesiveprofessional RPGpixelart, no blur, no existinggameassetcopied. No giantnewlandmarks or objects. Same56:44aspect fullcanvas no crop. Highestavailable outputresolution.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-92797853-dfa1-4393-b70b-77c0223134f6.png",
+          "review": "Selected: continuous alpine slopes and curved ledge transitions"
+        }
+      ]
+    },
+    {
+      "id": "winter_reach",
+      "selectedGeneration": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-8432f946-2592-4d66-8c4a-1b4860580b1c.png",
+      "preservedSource": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-upscale/originals/winter_reach.png",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "sourceSize": [
+        1415,
+        1112
+      ],
+      "registeredOutputSize": [
+        2688,
+        2112
+      ],
+      "iterations": [
+        {
+          "prompt": "Asset: final production terrain-only plate for an elevated2D pixel-art RPG, registered full-map image. Make a substantial environmental repaint, more cohesive and natural, not just recoloring. Image1 exact geometry source; Image2 semantic guide tan=walkable floor/road, teal=blockedwater, navy=blockedslopes. KEEP fullcanvas origin/aspect, exact water footprint and all safe broad paths/portals. No clipping/crop/zoom. Runtime separately renders houses/trees/props, so do NOT draw new buildings, tall freestanding trees, fences, characters, lamps, gates or icons. All walkfloor stays flat and navigable; no new pits, large rocks, streams or slope walls on tan areas. Design quality: asymmetrical snow accumulation, warm-grey embedded flagstones and granular compacted snow paths, broad directional snowdrift clusters; eliminate uniform round-bead cobblestone carpet and cloudy white noise. Replace painted white cutout boundary with grounded local shadow and layered snow foothill, all steep facets remain only inside navy. Snowy mountain terrain continues from each edge as a few immense cropped landforms, not repeated full triangle peaks, no skyline/horizon strip. Ice shore: eliminate continuous neon-blue outline. Thin dark undercut contact, patchy subdued cyan/teal frozen shelves INSIDE originalwater area, occasional small cracks and floes, dark desaturated blue-green center; natural thickness variations while precisely maintaining same mean shoreline and all shallow-water blocking boundaries. No white snow island standing for walkland inside water. Clean deliberate pixel clusters, sharp small facets and restrained shading, no blur, no gradients, no AA, no independent glitter/noise. Warm ivory snow lit upperleft, periwinkle slate midshadows, subdued distantblue. Field path centers readable but road edge organically covered by snow within existing footprint. Do not replicate another game's art; all shapes original.\nMap winter_reach56x44. Preserve exact4pool footprints, north-south trail and easternbranch. CRITICAL southwest lower-left curvedpool inner southernbank was carefullyaligned: do not expandwater downward or changeitsflatinnerline. Top2narrowpools with6tile centralroad causeway are existing glacial meltchannels, retaincenters/widths exactly. Make their stiff rectangular endcaps visually natural with curving broken tealice tongues INSIDE water, shadows under irregular thin snowcrust, no fluorescentdoubleoutline. Color mosttealborder as darkdeepwaternotwhitewalksnow; preservewaterworldmapcount. South-east pool unchangedouterfootprint too. The tall jagged squarestep cutout bordering entire snowfloor must be removed: a continuous mountain snowmantle rolls in large soft broad arcs on existing blockednavyregions, with asymmetrical windcarved curvingridgelines; snowy foothills joinflatground with gentletexturecontact, no hardstraightwhiteperimeter. Fewmassive slopes croppedbyframe, no repetitiveconepeaks and no backgroundstrip. ALL interior tanfloor remains flatwalkable; no tallrockoutcrops,boulders,hills,pits,standingtrees anywherethere. Subtle ground snow undulation like wind-compressedshallow drifts is fine. Existing widehumantrail becomes partlyburied irregularflatflagstones mixed withworn snow, same fullwidthandcenterlines. Enough negativeflatspace so runtime enemy/character readable. Path/ridge/water shareunifiedupper-leftlight/sharp smallpixel facets, no blur. Fullyoriginal art. 56:44ratio, sameframe, highestresolution.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-21ffa7a4-81a1-461f-9ef7-dc2d6bb9b2d2.png",
+          "review": "Full natural terrain repaint"
+        },
+        {
+          "prompt": "Use case precise-object-edit. Edit only detached small ROCK CLUMPS on the broad flat snowy gameplay floor of this finished RPG terrain plate: erase the obvious upright rock pile immediately above the southwest curved lake (around x35% y52%), and erase every similar detached upright rock clump scattered over open central flat snow/road. Replace them with flat continuous wind-combed snow matching adjacent colors; very tiny flat dark pebbles no more than a few pixels may remain. Keep the outer huge mountains and their connected rock faces intact. Do not change any of the four lakes' positions, silhouettes, floating ice or blue shelves; do not change road alignment, camera, frame, palette, scale, existing curved mountain foot slopes or detailed pixel-art style. No new objects, no typography. This is a local object removal edit only. Output full original56:44 frame.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-c8b78d87-dc15-4fcb-a083-7b944a28895d.png",
+          "review": "Removed detached rock piles on walk floor"
+        },
+        {
+          "prompt": "Use case precise-object-edit. Change ONLY the ice shelves INSIDE the two UPPER horizontal pools on this otherwise completed snowy RPG map. Their dark open-water outline currently feels rectangular. Sculpt continuous translucent dark-cyan/blue cracked ice tongues curving inward from corners, round off the open-water tips and bend its long edges very gently with 2 or3 large smooth crescents. Irregular shelf thickness, blue not white. Keep original outer water/snow boundary EXACTLYfixed so original collision remains aligned; no dry snow land extending into water. Bottom two curved pools already good, keep them. Keep outer large mountain slopes, every road, flat snowy floor, fullmap camera and all other details untouched. No objects or rocks. No blur, no gradient; clean existing pixel clusters. Fullsame56:44 landscape frame, no zoom/crop.",
+          "generatedImage": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-8432f946-2592-4d66-8c4a-1b4860580b1c.png",
+          "review": "Selected: curving translucent blue-ice shelves inside two upper channels"
+        }
+      ]
+    }
+  ],
+  "visualReview": {
+    "improved": [
+      "Removed the straight white cutout border between floor and background. Large curved foothills connect to cropped mountain masses.",
+      "Replaced evenly exposed gravel carpet with varied flat stonework partly buried by asymmetrical snow.",
+      "Darkened water contact and broke bright uniform shoreline into cracked, layered ice shelves.",
+      "Rounded visible open-water corners with curving translucent blue ice confined inside existing water.",
+      "Removed generated standing rocks on town floor and hunting paths. Existing runtime props remain responsible for solid obstacles."
+    ],
+    "sourceMaterialCheck": "Quarter-tile color sampling against actual baseline feet walk-mask and ground water cells. All five have zero water-color samples at least 1 tile inside legal walking floor. winter retains 4 samples 0.625 tile inside near blue shaded shore/ice. This is an approximate generated-edge registration limitation, not a pixel-perfect guarantee. Four hunting maps have zero such samples beyond0.5tile.",
+    "inverseCheck": "Bright-on-water detections were reviewed visually: waterfall foam in winter, translucent floes/shelves in winter and reach, and a sub-tile lake rim. They are water details, not new walkable dry islands.",
+    "limitations": [
+      "Navigation and blocked outer lake footprint intentionally remain unchanged. Straight stretches inherited from grid topology are softened visually by curved ice shelves rather than rerouting collisions.",
+      "No native runtime execution was performed by this art-only subagent; root will integrate and capture final game views.",
+      "Generated source density is about25.3 pixels/world unit, locally enhanced and registered to48; this is not newly hand-drawn48PPU source art.",
+      "Baked waterfall water in the town artwork still relies on the existing game overlay for motion."
+    ],
+    "checksPath": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/natural-snow-review.json"
+  }
+}

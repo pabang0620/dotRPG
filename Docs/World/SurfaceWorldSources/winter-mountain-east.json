@@ -1,0 +1,281 @@
+{
+  "version": 2,
+  "method": "Built-in image_gen precise-object-edit",
+  "date": "2026-10-09",
+  "scope": "Replace winter_edge / winter_reach blocked scenery with snow-covered mountains; preserve runtime terrain, paths, camera and independent props. Root integrates and upscales; this author does not overwrite current HD runtime assets.",
+  "sourceFolder": "work/surface-mountain-east",
+  "sources": [
+    {
+      "mapId": "winter_edge",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-aeaa4a32-871e-45b2-bb86-b176671341b0.png",
+      "workspaceSource": "work/surface-mountain-east/winter_edge.png",
+      "dimensions": [
+        1414,
+        1112
+      ],
+      "editTarget": "work/surface-upscale/originals/winter_edge.png",
+      "references": [
+        "work/surface-guides/winter_edge-guide.png"
+      ],
+      "prompt": "Precise-object-edit for an existing RPG map. Image1 edit target, winter_edge full-map1415x1112 (56:44 world aspect). Image2 exact sameframing navigation mask: tan=walkablefloor, teal=water, navy=blockedouterbackground. Change ONLY the blocked outer snowy cliff scenery into a SNOW MOUNTAIN landscape. Retain every pixel registration of open central snow plateau, both pools/icebanks, the north-south stone road and west branch/threeexits; no crop, scaling, camera change or movement of boundaries. Replace ALL dark vertical slatecolumns, sheercliff faces, crevices and terraced quarrywalls in image1 with broad snowcovered mountainous shoulders, sweeping smooth snow slopes, rounded alpine ridges and more distant pale blue snowpeaks seen from above. Near playable flat snow transitions into a snowbank slope just inside navy area; farther across navy comes layered overlapping mountain ridges with lowercontrast as they recede. Whole view remains one unified elevated orthographic RPG camera; no new horizon or sky strip, mountains are viewed from highabove and fit ONLY the existing blocked outer pixels. No rockcolumn textures, no cavern ravines, no jaggedverticalwall. Distinguish the gentle mountainslope from walkable plateau through blue-shaded snow folds whose boundary remains exactly the original. New mountains may not cover the tan navigationregion or invade pools. Use refined crisp pixelart with fine deliberate snowcluster steps, ivory/pale blue near snow, lavenderblue distant relief, clear contour lines, no blur or photo smoothing. The entire center original road/water/snow artwork must stay unchanged. No freestanding trees or props on floor, no characters, houses, labels, UI, icons or border. Runtime supplies independent objects. Requested output1792x1408orhigher same56:44ratio.",
+      "review": "Viewed full resolution. Slate columns and vertical quarry cliffs replaced by layered snowy ridges/peaks. Existing road and both water footprints preserved. No new sky band. No water-color samples deeper than0.5tile inside actual foot walk floor. One inverse snow-colour sample at0.625tile inside water is an ice fleck/rim. No >=1tile mismatch.",
+      "supersededSources": [
+        "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-e1866035-c3e6-468d-bb00-816555206e4f.png"
+      ],
+      "revisionPrompts": [
+        "Use case: precise-object-edit. Image1 is the winter_edge edit target. Image2 is ONLY a snow-mountain scale/material style reference; never copy its map roads or floor layout. Image3 is the exact matching geometry mask for Image1: tan walkablefloor, teal water, navy blockedbackground. Preserve ALL playable floor, every road cobblestone, both pools and their rims, exits, fullcanvas boundaries and origin exactly from Image1. Edit ONLY existing outside navy-region scenery. The existing background has many tiny triangle mountain icons, miniature peaks at a repeated scale. Replace them with only a few HUGE CONTINUOUS ALPINE SNOW SLOPES, like Image2. The mountain bodies are vastly larger than the camera frame, so each margin shows a cropped part of a big mountainside rather than a complete summit. Long diagonal ridgelines cross the screen border; broad blue-shadow snow gullies, wind-sculpted sweeping slopes, occasional exposed slate outcrops. No tiny pointy mountains, no repeated cones, no miniature model-like peak band, no horizon or sky. The lower margins must also show broad partial slopes continuing offscreen, not a ring of complete little mountains. Tie edge and foothills together inside the blocked navy mask with low rounded snowdrifts and coherent shadow contact, reduce harsh white cutout contour without moving any playable edge. Snow on actual playable interior remains flat and uncovered. Unified elevated orthographic RPG perspective, large landform scale, distant snow contrasts softened by palette only, crisp deliberate pixel clusters, no blur, no noisy gradients. No new trees or structures/props, characters, UI or labels. Return entire1415x1112ratio image, no crop or geometry changes."
+      ],
+      "currentReview": "Viewed full generated source. Miniature repeated complete peaks removed in favour of large cropped snow mountainsides with long diagonal ridges continuing beyond frame. Floor/path/pool registration retained. Re-ran exact footmask and reverse water-mask colour screening; no mismatches >=1tile. Subtile rim differences remain as listed in currentColourReview. No claim of exact pixel collision matching.",
+      "currentColourReview": {
+        "mapId": "winter_edge",
+        "source": "C:\\Users\\darac\\.codex\\generated_images\\01a11b5f-8772-7a01-a03c-516f6ba41266\\exec-aeaa4a32-871e-45b2-bb86-b176671341b0.png",
+        "dimensions": [
+          1414,
+          1112
+        ],
+        "waterOnActualFloor": {
+          "count": 0,
+          "maxDepth": 0,
+          "examples": []
+        },
+        "drySnowOnActualWater": {
+          "count": 1,
+          "maxDepth": 0.625,
+          "examples": [
+            {
+              "world": [
+                16.625,
+                26.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                206,
+                231,
+                249
+              ]
+            }
+          ]
+        },
+        "scope": "quarter tile source colour checks, actual feet walk mask, >0.5tile from guide boundary; manual visual inspection also required"
+      }
+    },
+    {
+      "mapId": "winter_reach",
+      "source": "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-8a6df213-8b9a-4039-8f5c-21decbfc6ba0.png",
+      "workspaceSource": "work/surface-mountain-east/winter_reach.png",
+      "dimensions": [
+        1415,
+        1112
+      ],
+      "editTarget": "work/surface-upscale/originals/winter_reach.png",
+      "references": [
+        "work/surface-guides/winter_reach-guide.png",
+        "work/surface-before/winter_reach-walk-mask.png"
+      ],
+      "prompt": "Precise-object-edit on winter_reach game terrain. Image1 is the accepted1414x1112 full-map art, Image2 authoritative same-framing collision guide tan=drywalkable/teal=water/navy=blocked, Image3 actual white=walkable foot-space mask. Make two changes only; preserve allotherground/roads/scale/framing. No crop/rotation. (A) Replace all outer navy-region vertical slate cliffs and columns by snowcovered MOUNTAIN shoulders, broad gentle snow slopes, overlapping alpine ridges, lowcontrast farther blue snowpeaks seen from highabove. Keep exactblocked boundary; snowy slopes only inside existingouterrock footprint, centerfloor unchanged. No darkrockcolumns, cavern crevices or tallverticalcliffs, no sky/horizon band. Near snowbank→far snowy ridges must share same orthographic elevated RPG perspective. (B) IMPORTANT correct TWO small water footprints usingguide and actualfeetmask. SOUTHWEST crescent pool's SOUTH INNER CONCAVE EDGE is too far south; do NOT move its north edge. Fill the wrongwater with flat snow to make dryconcavity deeper towardnorth. In input1414x1112 pixelcoords: inner southernbank should run through (76,783),(126,758),(202,733),(505,733),(555,758),(632,783),(681,809). Replace ALL existingwater/brightcyan ice BELOW this inward boundary with seamless DRY pale snow; x202..505,y733..780 must be snow, not water/blueice. Keep pooltopedge atitsoldy630–733 unchanged, keepinga thin archedcrescent. Ice-rim highlights must lie onthe water side ofthisedge, not overthe dryground. ALSO southeastpool's tiny northwest upright inlet presentlystartsnear(834,762), it must startat(834,783); fill x821..859,y750..782 withDRYsnow so playercannotstandonblueice there. Keep southeastpool's main northern edge y809 and itsfar-right extension exactly as image1. Keep upper6tile stonecauseway and allotherpool footprints untouched. Runtimeprops suppliedseparately, so no standalone trees,houses,actors,ruins,labels,UI. Finecrisp pixelart with steppedsoft snow shading, iceblue distant mountainpalette, no blur or noise. Outputsame56:44aspect at1792x1408orhigher. Accuracy of these snow/water limits takespriority.",
+      "revisionPrompts": [
+        "Use case: precise-object-edit. Image1 is the edit target, a1415x1112 pixelart RPG snow mountain map. Image2 is an exact224x176 same-full-canvas geometry guide. Preserve mountains, roads, top two pools, southeast pool and entire framing IDENTICALLY. Change ONLY the lower edge of the SOUTHWEST crescent pool. This edge was mistakenly made too concave: it currently bows upwards at its center around y704. It must instead have a nearly straight horizontal middle southern shoreline at y733, between x202 and x505. Extend its darkblue water downward into that mistakenly dry white strip (x202..505,y704..733), keeping original northern shoreline y631 untouched. Final southern shoreline coordinates in the1415x1112 canvas: (76,783),(126,758),(202,733),(505,733),(555,758),(632,783),(681,809). Join these with short stepping stone/ice segments. This yields a thicker crescent with a FLAT horizontal center bottom boundary, NOT a deep upward circular crescent. Guide2 teal water pixels are authoritative: darkblue water must cover them exactly and nowhere else; tan is dry white snow. Follow guide's staircase south shore rather than inventing a smooth curve. Inner middle white snow bay begins at y733 and below. This is only a subtle20–30px local correction. All other details must stay frozen, especially snowy mountains, exact fullcanvas56:44ratio, road and pools. Finepixelart edges/no blur, no text, no new objects. Return fullcanvas sameaspect with all original exterior unchanged.",
+        "Precise local pixelart correction: Image1 edit target entire RPG map. Leave all mountains, roads, other3pools, textures and framing exactly unchanged. Only modify the SOUTH BORDER of the bottom-left blue pool. Raise its horizontal middle southern edge UP by40pixels, from current y773 to y733 in this1415x1112canvas. Replace the40pixel-highstrip ofbluewater at x200..505,y733..773 with drywhite snow. Connect this raised central bank into existing lower end points on leftandright by diagonally stepped snow banks. Result should be a shallow arch-shaped pool with a straight middle southernedge at66%heightofcanvas, not at70%. Keepitsnorthernedge unchangedaroundy631, so itswaterdepthatcenter is100pixels. Image2 exactsamecanvas color-guide shows required pooloutline: the inneredge must precisely match tan/teal outline oflower-leftwater. Do notalteranything else. Maintain finepixelart style and full56:44aspect.",
+        "Use case: precise-object-edit. Image1 winter_reach is the exact edit target. Image2 is ONLY snow mountain scale/painting reference, do not copy its map layout. Image3 exact geometry of Image1 tan=walkfloor, teal=water, navy=blockedoutside. Keep ALL of Image1 playable snow, cobblestone roads and ALL4pool footprints exactly unchanged. Especially freeze southwestern crescent's flat inner southern bank and southeastwaterinlet; these are collision-registered, do not move or enlarge them. Camera, framing and origins same56:44aspect. Replace only outer blocked scenery: remove every repeated tiny complete mountain/conical peak icon, all decorative miniature pines, and the model-like ring of tiny summits. Paint instead massive alpine SNOW SLOPES which are bigger than the whole camera frame. At the left/right/top/bottom margins show cropped sections of huge blue-shaded snow mountainsides continuing beyond image borders, with long windswept diagonal ridges and broad uninterrupted snowgullies. Few occasional dark slate seams are embedded into snow, as in Image2. No completed small mountains atall, no ring of tiny peaks, no repeated triangular symbols, no horizon or sky strip. The floor edge remains exactly registered. Soften hard white cutout seam only from outside blocked region using low snowy foothill drifts and coherent contactshadows; don't paint on or block tanwalkfloor. Snow strata and mountains share elevated orthographic RPG camera; distant parts blue and lowercontrast, all pixelart crisp and finelyclustered. Avoid blur, gradients, new props, houses, trees, characters, UI or text. Return fullimage maintaining same1415x1111aspect; only backgroundchanges."
+      ],
+      "rejectedIntermediates": [
+        "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-a3eeb65d-5221-43a6-ad81-2512e635e82f.png",
+        "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-4f9de392-bf36-4f69-aabe-ed3a97d42190.png"
+      ],
+      "review": "Viewed final. Existing paths, large pool placements and6tile top causeway retained; snowy slopes/peaks replace all vertical slate perimeter. Actual reachable southwest water intrusion was real, not a colour false positive: previous source145 quartertile samples to1.625tile inside dry floor. Final interior southwest bank raised to follow row29 concavity and southeast tiny inlet corrected. No >=1tile mismatches either direction. Fine rim approximation remains: one cyan ice highlight at0.625tile into floor,13 snow-colour samples along stepped concave bank at0.625..0.875tile inside blocked water. This is not an assertion of pixel-perfect guide matching.",
+      "supersededSources": [
+        "C:/Users/darac/.codex/generated_images/01a11b5f-8772-7a01-a03c-516f6ba41266/exec-1e560934-53f3-4276-8f69-4456040c2324.png"
+      ],
+      "currentReview": "Viewed full generated source. Miniature repeated complete peaks removed in favour of large cropped snow mountainsides with long diagonal ridges continuing beyond frame. Floor/path/pool registration retained. Re-ran exact footmask and reverse water-mask colour screening; no mismatches >=1tile. Subtile rim differences remain as listed in currentColourReview. No claim of exact pixel collision matching.",
+      "currentColourReview": {
+        "mapId": "winter_reach",
+        "source": "C:\\Users\\darac\\.codex\\generated_images\\01a11b5f-8772-7a01-a03c-516f6ba41266\\exec-8a6df213-8b9a-4039-8f5c-21decbfc6ba0.png",
+        "dimensions": [
+          1415,
+          1112
+        ],
+        "waterOnActualFloor": {
+          "count": 2,
+          "maxDepth": 0.625,
+          "examples": [
+            {
+              "world": [
+                14.375,
+                19.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                106,
+                175,
+                245
+              ]
+            },
+            {
+              "world": [
+                14.625,
+                19.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                131,
+                188,
+                247
+              ]
+            }
+          ]
+        },
+        "drySnowOnActualWater": {
+          "count": 11,
+          "maxDepth": 0.875,
+          "examples": [
+            {
+              "world": [
+                20.875,
+                14.875
+              ],
+              "depth": 0.875,
+              "rgb": [
+                229,
+                241,
+                253
+              ]
+            },
+            {
+              "world": [
+                22.875,
+                13.875
+              ],
+              "depth": 0.875,
+              "rgb": [
+                205,
+                217,
+                246
+              ]
+            },
+            {
+              "world": [
+                23.125,
+                13.875
+              ],
+              "depth": 0.875,
+              "rgb": [
+                191,
+                214,
+                248
+              ]
+            },
+            {
+              "world": [
+                20.625,
+                14.875
+              ],
+              "depth": 0.625,
+              "rgb": [
+                222,
+                240,
+                254
+              ]
+            },
+            {
+              "world": [
+                20.625,
+                14.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                235,
+                248,
+                253
+              ]
+            },
+            {
+              "world": [
+                20.875,
+                14.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                236,
+                248,
+                253
+              ]
+            },
+            {
+              "world": [
+                21.125,
+                14.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                217,
+                224,
+                241
+              ]
+            },
+            {
+              "world": [
+                22.625,
+                13.875
+              ],
+              "depth": 0.625,
+              "rgb": [
+                196,
+                207,
+                243
+              ]
+            },
+            {
+              "world": [
+                22.625,
+                13.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                233,
+                247,
+                254
+              ]
+            },
+            {
+              "world": [
+                22.875,
+                13.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                228,
+                246,
+                253
+              ]
+            },
+            {
+              "world": [
+                23.125,
+                13.625
+              ],
+              "depth": 0.625,
+              "rgb": [
+                200,
+                230,
+                252
+              ]
+            }
+          ]
+        },
+        "scope": "quarter tile source colour checks, actual feet walk mask, >0.5tile from guide boundary; manual visual inspection also required"
+      }
+    }
+  ],
+  "qa": {
+    "script": "work/check_winter_mountains.py",
+    "report": "work/winter-mountain-east-review.json",
+    "resolution": "Quarter-tile224x176, exact actual foot walk mask + semantic ground rows, 0.5tile threshold; colour-based screening reviewed visually.",
+    "limitations": [
+      "Final runtime render/HD integration tested by parent, not this asset subtask.",
+      "Generated coastline is finely stepped and does not claim exact pixel-for-pixel collision edge matching; remaining sub-tile rim differences documented.",
+      "No nav, collision, camera, scale, gameplay code changes."
+    ]
+  },
+  "scaleRevision": "Replace miniatures/repeated complete triangular peaks by cropped massive continuous slopes extending outside frame; same floor/road/pool registration.",
+  "scaleStyleReference": "C:/Users/darac/.codex/generated_images/01a1166a-af2c-7da2-9e7d-c905423afd7f/exec-b5f54d96-685a-4259-a1fe-df307a569181.png"
+}

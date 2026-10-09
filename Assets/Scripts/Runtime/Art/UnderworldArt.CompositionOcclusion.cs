@@ -31,7 +31,7 @@ namespace DotRPG
         /// copy reveals the character over the identical background, never an empty hole.
         /// Navigation already owns the column footings; this creates no collision geometry.
         /// </summary>
-        static void BuildCompositionColumnOcclusion(Color32[] sourceRaster,int pw,int ph,UnderworldCompositionScene scene)
+        static void BuildCompositionColumnOcclusion(Color32[] sourceRaster,int pw,int ph,int ppu,UnderworldCompositionScene scene)
         {
             scene.ForegroundRenderers=new SpriteRenderer[CompositionColumnSilhouettes.Length];
             for(int column=0;column<CompositionColumnSilhouettes.Length;column++)
@@ -60,10 +60,12 @@ namespace DotRPG
                 {name="hollow_depths column occlusion "+(column+1),filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
                 scene.Own(texture);texture.SetPixels32(pixels);texture.Apply(false,false);
                 Vector2 sourceFoot=CompositionColumnFeet[column];
-                var foot=new Vector2(sourceFoot.x/ColumnReferenceWidth*pw/CompositionPpu,
-                    (1f-sourceFoot.y/ColumnReferenceHeight)*ph/CompositionPpu);
-                var pivot=new Vector2((foot.x*CompositionPpu-x0)/width,(foot.y*CompositionPpu-y0)/height);
-                var sprite=Sprite.Create(texture,new Rect(0,0,width,height),pivot,CompositionPpu,0,SpriteMeshType.FullRect);
+                // Reference coordinates describe world placement, independent of the chosen
+                // 32/48-PPU raster. Every crop still shares its base layer's exact pixel grid.
+                var foot=new Vector2(sourceFoot.x/ColumnReferenceWidth*pw/ppu,
+                    (1f-sourceFoot.y/ColumnReferenceHeight)*ph/ppu);
+                var pivot=new Vector2((foot.x*ppu-x0)/width,(foot.y*ppu-y0)/height);
+                var sprite=Sprite.Create(texture,new Rect(0,0,width,height),pivot,ppu,0,SpriteMeshType.FullRect);
                 sprite.name="hollow_depths_column_foreground_"+(column+1);scene.Own(sprite);
                 var go=new GameObject("Composition foreground column "+(column+1));
                 go.transform.SetParent(scene.transform,false);go.transform.position=new Vector3(foot.x,foot.y,0);

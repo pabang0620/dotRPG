@@ -1,0 +1,84 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 48 pixels/tile",
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "winter",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter.png",
+      "source_size": [
+        1333,
+        1180
+      ],
+      "source_sha256": "1070be0f3443fbb19ffee9471e036332b2d380c071367c8c62ec293fe60c6686",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "output_size": [
+        2496,
+        2208
+      ],
+      "output_sha256": "e34f4ce44034a25269486c287a00ac702898dd5ac164a5000d82d2f33776e2a5"
+    },
+    {
+      "id": "winter_edge",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_edge.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "ae1231e4f2acb8e79c7fa46b98cc5cf32b09feb407c92368f1bc2c610dbd45af",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "188ae25b1ab547fc5be6b0cc3044b5061cfb369cae1640bbbcd8fede3882a24f"
+    },
+    {
+      "id": "winter_lake",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_lake.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "5146071c0da10857423a2e1a4c833fa28220ee5fea198d5342dfef6a70e3e077",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "d03cc9746dd3c511541ef6d890e149b757a9c40ab2cb2c4dcf08f244237ce61c"
+    },
+    {
+      "id": "winter_peak",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_peak.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "594bbf45fd3a23b9c9e6d918b679cc0499c0fe6ca325390ffa47347fe6823a9e",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "32d4444612505d9940a66064b8d07c612459d2cbb1594cc13595f61358ad2fc0"
+    },
+    {
+      "id": "winter_reach",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-snow-upscale\\originals\\winter_reach.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "c5ba22a84005862730aa4464eb74736c873eec3a63263fa492a8412530957947",
+      "output": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "output_size": [
+        2688,
+        2112
+      ],
+      "output_sha256": "c822a7016da675689848ddf51277575127cf2b6adab17fdbc17146112c693e59"
+    }
+  ]
+}

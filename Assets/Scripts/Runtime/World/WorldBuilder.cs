@@ -292,6 +292,7 @@ namespace DotRPG
             AddTreeFades();
             BuildWorldHubGates();
             if (PointsOfInterest.Count == 0) PointsOfInterest.Add(PlayerSpawn);
+            ApplySurfaceComposition();
             BuildMinimap();
             AddDungeonVignette(); // [DGNTERRAIN]
         }
@@ -998,6 +999,7 @@ namespace DotRPG
         /// </summary>
         void DecorateForestEdges()
         {
+            if (UsesForestCanopyComposition) { BuildForestCanopyComposition(); return; }
             var rng = new System.Random(MapId.GetHashCode() & 0x7fff);
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)

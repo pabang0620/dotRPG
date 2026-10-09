@@ -300,7 +300,8 @@ namespace DotRPG
                 int expectedOwnedCount=3+scene.ForegroundRenderers.Length;
                 var ownedSprites=scene.Layers.Concat(scene.ForegroundRenderers).Where(r=>r!=null).Select(r=>r.sprite).ToArray();
                 var ownedTextures=ownedSprites.Where(s=>s!=null).Select(s=>s.texture).ToArray();
-                Log($"COMPOSITION {id}: source={scene.SourceWidth}x{scene.SourceHeight}, raster={scene.RasterWidth}x{scene.RasterHeight}, renderers={rendererCount}, focus={scene.FocusWorld}");
+                long textureBytes=ownedTextures.Where(t=>t!=null).Distinct().Sum(t=>(long)t.width*t.height*4);
+                Log($"COMPOSITION {id}: source={scene.SourceWidth}x{scene.SourceHeight}, raster={scene.RasterWidth}x{scene.RasterHeight}, ppu={scene.PixelsPerUnit}, renderers={rendererCount}, focus={scene.FocusWorld}, textureRGBA32PayloadMiB={textureBytes/1048576f:F2}, managedHeapMiB={GC.GetTotalMemory(false)/1048576f:F2}");
 
                 // Combat AI and bodies are held only in this isolated QA session so movement
                 // failures describe terrain rather than an enemy standing on a required path.
@@ -414,9 +415,11 @@ namespace DotRPG
 
         void WorldLayerCompositionChecks(string id,UnderworldCompositionScene scene)
         {
+            float ppu=scene.PixelsPerUnit;
+            bool hd=Path.GetFileNameWithoutExtension(scene.SourcePath??"").EndsWith("_hd",StringComparison.OrdinalIgnoreCase);
             DCheck(id+" source artwork exists",!string.IsNullOrEmpty(scene.SourcePath)&&File.Exists(scene.SourcePath)&&scene.SourceWidth>0&&scene.SourceHeight>0);
             DCheck(id+" exactly three registered artwork layers",scene.LayerCount==3&&scene.Layers.All(r=>r!=null&&r.sprite!=null));
-            DCheck(id+" 32 pixel raster matches world bounds",scene.RasterWidth==Mathf.RoundToInt(Game.World.Bounds.width*32)&&scene.RasterHeight==Mathf.RoundToInt(Game.World.Bounds.height*32));
+            DCheck(id+" source density preserves the same 56 by 48 world",Mathf.Approximately(ppu,hd?48:32)&&Game.World.Bounds==new Rect(0,0,56,48)&&scene.WorldBounds==Game.World.Bounds&&scene.RasterWidth==Mathf.RoundToInt(Game.World.Bounds.width*ppu)&&scene.RasterHeight==Mathf.RoundToInt(Game.World.Bounds.height*ppu));
             DCheck(id+" layer masks cover every source pixel once",scene.UncoveredPixels==0&&scene.OverlappingPixels==0&&scene.MismatchedPixels==0&&scene.LayerPixelCounts.Length==3&&scene.LayerPixelCounts.All(n=>n>0)&&scene.LayerPixelCounts.Sum()==scene.RasterOpaquePixelCount);
             DCheck(id+" three partition masks cover the complete raster",scene.LayerRasterPixelCounts.Length==3&&scene.LayerRasterPixelCounts.Sum()==scene.RasterWidth*scene.RasterHeight);
             DCheck(id+" vertical masonry never assigned over walkable ground",scene.FaceOnWalkablePixels==0);
@@ -426,7 +429,7 @@ namespace DotRPG
             {
                 if(layer==null||layer.sprite==null){registered=false;continue;}
                 var s=layer.sprite;var area=layer.bounds;
-                registered &= s.texture.filterMode==FilterMode.Point&&s.texture.isReadable&&Mathf.Approximately(s.pixelsPerUnit,32)&&s.pivot==Vector2.zero;
+                registered &= s.texture.filterMode==FilterMode.Point&&s.texture.isReadable&&Mathf.Approximately(s.pixelsPerUnit,ppu)&&s.pivot==Vector2.zero;
                 registered &= layer.transform.lossyScale==Vector3.one&&layer.transform.position==Vector3.zero&&layer.transform.rotation==Quaternion.identity;
                 registered &= Mathf.Abs(area.min.x-b.xMin)<.01f&&Mathf.Abs(area.min.y-b.yMin)<.01f&&Mathf.Abs(area.size.x-b.width)<.01f&&Mathf.Abs(area.size.y-b.height)<.01f;
             }
@@ -438,20 +441,25 @@ namespace DotRPG
             var foreground=scene.ForegroundRenderers;
             DCheck(id+" intentional foreground column overlays",foreground.Length==(id=="hollow_depths"?7:0));
             if(foreground.Length==0)return;
+            // Original source-coordinate anchors are frozen independently of replacement
+            // image dimensions and raster density. Only their pixel sampling may change.
+            var originalFeet=new[]{new Vector2(420,401),new Vector2(588,540),new Vector2(856,515),
+                new Vector2(363,782),new Vector2(334,346),new Vector2(634,410),new Vector2(692,686)};
             bool crops=true,footings=true,sorting=true;
-            foreach(var column in foreground)
+            for(int i=0;i<foreground.Length;i++)
             {
+                var column=foreground[i];
                 if(column==null||column.sprite==null){crops=footings=sorting=false;continue;}
                 var s=column.sprite;var area=column.bounds;var foot=(Vector2)column.transform.position;
-                crops &= s.texture.filterMode==FilterMode.Point&&s.texture.isReadable&&Mathf.Approximately(s.pixelsPerUnit,32);
+                crops &= s.texture.filterMode==FilterMode.Point&&s.texture.isReadable&&Mathf.Approximately(s.pixelsPerUnit,ppu);
                 crops &= column.transform.lossyScale==Vector3.one&&column.transform.rotation==Quaternion.identity;
                 crops &= area.size.x<b.width*.25f&&area.size.y<b.height*.5f;
                 crops &= area.min.x>=b.xMin-.01f&&area.max.x<=b.xMax+.01f&&area.min.y>=b.yMin-.01f&&area.max.y<=b.yMax+.01f;
-                footings &= !Game.World.IsFree(foot);
+                footings &= i<originalFeet.Length&&Vector2.Distance(foot,new Vector2(originalFeet[i].x/1355f*56,(1-originalFeet[i].y/1161f)*48))<.002f&&!Game.World.IsFree(foot);
                 sorting &= column.sortingOrder==YSort.OrderFor(foot.y)&&column.GetComponent<TreeFade>()!=null;
             }
             DCheck(id+" column crops retain sharp registered bounded pixels",crops);
-            DCheck(id+" foreground column feet remain blocked by authored terrain",footings);
+            DCheck(id+" seven original column anchors remain fixed on blocked terrain",footings);
             DCheck(id+" foreground columns use foot depth and occlusion fading",sorting);
         }
 
@@ -538,11 +546,12 @@ namespace DotRPG
         {
             if(scene.LayerCount!=3||scene.Layers[2]?.sprite==null){DCheck(id+" playable floor has registered artwork",false);return;}
             var texture=scene.Layers[2].sprite.texture;var pixels=texture.GetPixels32();
+            float ppu=scene.PixelsPerUnit;
             int missing=0;
             foreach(var p in reachable)
             {
-                int x=Mathf.Clamp(Mathf.FloorToInt((p.x+.5f)*32),0,texture.width-1);
-                int y=Mathf.Clamp(Mathf.FloorToInt((p.y+.5f)*32),0,texture.height-1);
+                int x=Mathf.Clamp(Mathf.FloorToInt((p.x+.5f)*ppu),0,texture.width-1);
+                int y=Mathf.Clamp(Mathf.FloorToInt((p.y+.5f)*ppu),0,texture.height-1);
                 if(pixels[y*texture.width+x].a==0)missing++;
             }
             // Alpha registration cannot establish that the authored image depicts safe floor;

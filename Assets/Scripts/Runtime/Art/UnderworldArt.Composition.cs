@@ -7,6 +7,8 @@ namespace DotRPG
     public static partial class UnderworldArt
     {
         const int CompositionPpu = 32;
+        const int CompositionHdPpu = 48;
+        const int CompositionHdMaxDimension = 4096;
         const int CompositionFaceDepth = 3;
         static readonly string[] CompositionKinds = { "descent", "roots", "fungal", "depths" };
         static readonly string[] CompositionNames =
@@ -29,19 +31,20 @@ namespace DotRPG
         {
             int variant = id=="hollow_descent"?0:id=="hollow_roots"?1:id=="hollow_fungal"?2:id=="hollow_depths"?3:-1;
             if(variant<0||w<=0||h<=0)return false;
-            string path=Path.Combine(Application.streamingAssetsPath,"Underworld","composition-"+CompositionKinds[variant]+".png");
+            string basePath=Path.Combine(Application.streamingAssetsPath,"Underworld","composition-"+CompositionKinds[variant]+".png");
+            string hdPath=Path.Combine(Application.streamingAssetsPath,"Underworld","composition-"+CompositionKinds[variant]+"_hd.png");
             // The old renderer remains available while original art is absent or incomplete.
-            if(!File.Exists(path))return false;
+            if(!File.Exists(basePath)&&!File.Exists(hdPath))return false;
             Texture2D source=null;
             GameObject sceneObject=null;
             try
             {
-                source=new Texture2D(2,2,TextureFormat.RGBA32,false){name="Underworld composition source "+id,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
-                if(!ImageConversion.LoadImage(source,File.ReadAllBytes(path),false)||source.width<32||source.height<32)
-                { UnityEngine.Object.Destroy(source);return false; }
+                source=LoadCompositionSource(basePath,hdPath,w,h,out string path,out bool highResolution,out string fallbackReason);
+                if(source==null)return false;
+                int ppu=highResolution?CompositionHdPpu:CompositionPpu;
                 int sourceWidth=source.width,sourceHeight=source.height;
                 var sourcePixels=source.GetPixels32();
-                int pw=w*CompositionPpu,ph=h*CompositionPpu;
+                int pw=w*ppu,ph=h*ppu;
                 int sourceOpaque=0;
                 for(int i=0;i<sourcePixels.Length;i++)if(sourcePixels[i].a>0)sourceOpaque++;
                 contour=contour??new UnderworldContour(cells,w,h,id);
@@ -55,11 +58,11 @@ namespace DotRPG
                 for(int y=0;y<ph;y++)
                 {
                     int sy=Math.Min(sourceHeight-1,(int)((y+.5f)*sourceHeight/ph));
-                    int my=Math.Min(contour.Rows-1,y*UnderworldContour.Scale/CompositionPpu);
+                    int my=Math.Min(contour.Rows-1,y*UnderworldContour.Scale/ppu);
                     for(int x=0;x<pw;x++)
                     {
                         int sx=Math.Min(sourceWidth-1,(int)((x+.5f)*sourceWidth/pw));
-                        int mx=Math.Min(contour.Columns-1,x*UnderworldContour.Scale/CompositionPpu);
+                        int mx=Math.Min(contour.Columns-1,x*UnderworldContour.Scale/ppu);
                         int at=y*pw+x,layer=mask[my*contour.Columns+mx];
                         Color32 color=sourcePixels[sy*sourceWidth+sx];
                         raster[at]=color;layers[layer][at]=color;assignedCounts[layer]++;
@@ -83,6 +86,8 @@ namespace DotRPG
                 sceneObject.transform.position=Vector3.zero;
                 var scene=sceneObject.AddComponent<UnderworldCompositionScene>();
                 scene.SourcePath=path;scene.SourceWidth=sourceWidth;scene.SourceHeight=sourceHeight;
+                scene.PixelsPerUnit=ppu;scene.UsesHighResolution=highResolution;
+                scene.HighResolutionCandidatePath=hdPath;scene.ResolutionFallbackReason=fallbackReason;
                 scene.RasterWidth=pw;scene.RasterHeight=ph;scene.WorldBounds=new Rect(0,0,w,h);
                 scene.FocusWorld=CompositionFocusOnLand(contour,CompositionFocus[variant]);
                 scene.LayerPixelCounts=counts;scene.LayerRasterPixelCounts=assignedCounts;
@@ -97,14 +102,14 @@ namespace DotRPG
                     {name=id+" composition layer "+layer,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
                     scene.Own(texture);
                     texture.SetPixels32(layers[layer]);texture.Apply(false,false);
-                    var sprite=Sprite.Create(texture,new Rect(0,0,pw,ph),Vector2.zero,CompositionPpu,0,SpriteMeshType.FullRect);
+                    var sprite=Sprite.Create(texture,new Rect(0,0,pw,ph),Vector2.zero,ppu,0,SpriteMeshType.FullRect);
                     sprite.name=id+"_composition_"+layer;scene.Own(sprite);
                     var go=new GameObject(CompositionNames[layer]);go.transform.SetParent(sceneObject.transform,false);
                     var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=sprite;
                     renderer.sortingOrder=CompositionOrders[layer];renderer.color=Color.white;
                     scene.Layers[layer]=renderer;
                 }
-                if(variant==3)BuildCompositionColumnOcclusion(raster,pw,ph,scene);
+                if(variant==3)BuildCompositionColumnOcclusion(raster,pw,ph,ppu,scene);
                 // Effects are local to this map. Distant composition sprites remain fixed;
                 // translating any layer with the camera would break their shared registration.
                 var water=new GameObject("Cave spring ripples");water.transform.SetParent(sceneObject.transform,false);
@@ -125,6 +130,79 @@ namespace DotRPG
                 Debug.LogWarning("Could not load cave composition for "+id+"; using existing cave renderer. "+error.Message);
                 return false;
             }
+        }
+
+        // HD art is opt-in per map. Merely renaming a low-resolution image must not cause
+        // a more expensive raster without supplying additional source samples. Check the PNG
+        // header before decoding to cap accidental oversized allocations, then verify decoded size.
+        static Texture2D LoadCompositionSource(string basePath,string hdPath,int w,int h,
+            out string path,out bool highResolution,out string fallbackReason)
+        {
+            path=basePath;highResolution=false;fallbackReason="HD source not present";
+            if(File.Exists(hdPath))
+            {
+                Texture2D candidate=null;
+                try
+                {
+                    if(CompositionHdHeaderValid(hdPath,w,h,out fallbackReason))
+                    {
+                        candidate=DecodeCompositionSource(hdPath);
+                        if(candidate!=null&&CompositionHdSizeValid(candidate.width,candidate.height,w,h,out fallbackReason))
+                        {
+                            path=hdPath;highResolution=true;fallbackReason="";
+                            return candidate;
+                        }
+                        if(candidate==null)fallbackReason="HD PNG could not be decoded";
+                    }
+                }
+                catch(Exception error){fallbackReason="HD source rejected: "+error.Message;}
+                if(candidate!=null)UnityEngine.Object.Destroy(candidate);
+                Debug.LogWarning("Cave HD artwork rejected; using original artwork. "+fallbackReason+" ("+hdPath+")");
+            }
+            return File.Exists(basePath)?DecodeCompositionSource(basePath):null;
+        }
+
+        static Texture2D DecodeCompositionSource(string path)
+        {
+            Texture2D texture=new Texture2D(2,2,TextureFormat.RGBA32,false)
+            {name="Underworld composition source "+Path.GetFileNameWithoutExtension(path),filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
+            try
+            {
+                if(ImageConversion.LoadImage(texture,File.ReadAllBytes(path),false)&&texture.width>=32&&texture.height>=32)return texture;
+                UnityEngine.Object.Destroy(texture);return null;
+            }
+            catch{UnityEngine.Object.Destroy(texture);throw;}
+        }
+
+        static bool CompositionHdHeaderValid(string path,int w,int h,out string reason)
+        {
+            var file=new FileInfo(path);
+            if(file.Length<24||file.Length>64L*1024*1024){reason="HD PNG file size is outside the supported range";return false;}
+            var header=new byte[24];
+            using(var stream=File.OpenRead(path))
+            {
+                int read=0;
+                while(read<header.Length){int count=stream.Read(header,read,header.Length-read);if(count==0)break;read+=count;}
+                if(read<header.Length){reason="HD PNG header is incomplete";return false;}
+            }
+            if(header[0]!=137||header[1]!=80||header[2]!=78||header[3]!=71||header[4]!=13||header[5]!=10||header[6]!=26||header[7]!=10
+                ||header[12]!=73||header[13]!=72||header[14]!=68||header[15]!=82)
+            {reason="HD source is not a PNG with an IHDR header";return false;}
+            int width=(header[16]<<24)|(header[17]<<16)|(header[18]<<8)|header[19];
+            int height=(header[20]<<24)|(header[21]<<16)|(header[22]<<8)|header[23];
+            return CompositionHdSizeValid(width,height,w,h,out reason);
+        }
+
+        static bool CompositionHdSizeValid(int width,int height,int w,int h,out string reason)
+        {
+            if(width<w*CompositionHdPpu||height<h*CompositionHdPpu)
+            {reason="HD source must provide at least "+CompositionHdPpu+" pixels per world unit";return false;}
+            if(width>CompositionHdMaxDimension||height>CompositionHdMaxDimension)
+            {reason="HD source exceeds the "+CompositionHdMaxDimension+" pixel dimension limit";return false;}
+            float ratio=(float)width/height,expected=(float)w/h;
+            if(Mathf.Abs(ratio/expected-1f)>.005f)
+            {reason="HD source aspect ratio differs from the world by more than 0.5%";return false;}
+            reason="";return true;
         }
 
         static byte[] CompositionMask(UnderworldContour contour)
@@ -172,6 +250,10 @@ namespace DotRPG
         public string SourcePath {get;internal set;}
         public int SourceWidth {get;internal set;}
         public int SourceHeight {get;internal set;}
+        public int PixelsPerUnit {get;internal set;}
+        public bool UsesHighResolution {get;internal set;}
+        public string HighResolutionCandidatePath {get;internal set;}
+        public string ResolutionFallbackReason {get;internal set;}
         public int RasterWidth {get;internal set;}
         public int RasterHeight {get;internal set;}
         public Rect WorldBounds {get;internal set;}

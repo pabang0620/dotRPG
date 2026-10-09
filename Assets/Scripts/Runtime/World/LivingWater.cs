@@ -21,6 +21,7 @@ namespace DotRPG
         readonly List<Fish> fish = new List<Fish>();
         readonly List<Texture2D> masks = new List<Texture2D>();
         readonly List<Bounds> canopyBounds = new List<Bounds>();
+        readonly HashSet<SpriteRenderer> compositionBindings = new HashSet<SpriteRenderer>();
         Material surface, koiMaterial;
         System.Random rng;
         static readonly int ClockId = Shader.PropertyToID("_WaterTime");
@@ -72,6 +73,53 @@ namespace DotRPG
             props.SetVector("_ChunkOrigin", new Vector4(ox, oy, 0, 0));
             sr.sharedMaterial = surface;
             sr.SetPropertyBlock(props);
+        }
+
+        /// <summary>Apply this map's existing water simulation to a full-rectangle composition
+        /// sprite, including 48ppu artwork. Sample the authoritative 32ppu water field in
+        /// world space; the source art texture need not be CPU-readable.</summary>
+        public bool BindComposition(SpriteRenderer renderer)
+        {
+            if (renderer == null || renderer.sprite == null || surface == null || Field == null) return false;
+            if (compositionBindings.Contains(renderer)) return true;
+            var sprite = renderer.sprite;
+            var texture = sprite.texture;
+            int w = texture.width, h = texture.height;
+            // Composition layers own a full rectangular texture, with no atlas packing.
+            if (sprite.rect.x != 0 || sprite.rect.y != 0 || sprite.rect.width != w || sprite.rect.height != h) return false;
+            var local = sprite.bounds;
+            Vector3 origin = renderer.transform.TransformPoint(local.min);
+            Vector3 dx = renderer.transform.TransformVector(new Vector3(local.size.x / w, 0, 0));
+            Vector3 dy = renderer.transform.TransformVector(new Vector3(0, local.size.y / h, 0));
+            var block = new Color32[w * h];
+            bool wet = false;
+            for (int y = 0; y < h; y++)
+            {
+                Vector3 row = origin + dy * (y + .5f) + dx * .5f;
+                for (int x = 0; x < w; x++)
+                {
+                    int sx = Mathf.FloorToInt((row.x + dx.x * x) * 32f);
+                    int sy = Mathf.FloorToInt((row.y + dx.y * x) * 32f);
+                    if (sx < 0 || sy < 0 || sx >= Field.Width || sy >= Field.Height) continue;
+                    var color = Field.Mask[sy * Field.Width + sx];
+                    block[y * w + x] = color;
+                    wet |= color.r > 0;
+                }
+            }
+            if (!wet) return false;
+            var mask = new Texture2D(w, h, TextureFormat.RGBA32, false, true)
+                { name = "Composition water mask", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            mask.SetPixels32(block); mask.Apply(false, true); masks.Add(mask);
+            var props = new MaterialPropertyBlock(); renderer.GetPropertyBlock(props);
+            props.SetTexture("_WaterMask", mask);
+            float density = 1f / Mathf.Max(.0001f, dx.magnitude);
+            props.SetVector("_ChunkOrigin", new Vector4(origin.x * density, origin.y * density, 0, 0));
+            // The shader advances in texture pixels. Compensate the denser texture so
+            // 48ppu water travels at the same world speed as the original 32ppu field.
+            props.SetVector("_Flow", surface.GetVector("_Flow") * (density / 32f));
+            renderer.sharedMaterial = surface; renderer.SetPropertyBlock(props);
+            compositionBindings.Add(renderer);
+            return true;
         }
 
         void CreateFish()

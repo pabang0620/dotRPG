@@ -1,0 +1,24 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 48 pixels/tile",
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "sanctum_hall",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\natural-canyon-sanctum-upscale\\originals\\sanctum_hall.png",
+      "source_size": [
+        1403,
+        1121
+      ],
+      "source_sha256": "2f964af45f4871d0ddc729771c129017e0aeda5e73e9590cba1f76a4a25d6de2",
+      "output": "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+      "output_size": [
+        2880,
+        2304
+      ],
+      "output_sha256": "bfcc8dc1fa68440a5278bffcdc885580d4ccf23643f4f8740a30467f403a297f"
+    }
+  ]
+}
