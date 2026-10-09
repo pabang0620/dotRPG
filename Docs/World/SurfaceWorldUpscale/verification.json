@@ -1,0 +1,15 @@
+{
+  "maps": 21,
+  "passed": 666,
+  "failed": 0,
+  "pixelsPerTile": 96,
+  "originalSourceAndCachedInferencePreserved": true,
+  "deployedAssetsMatch": true,
+  "allPhysicalHashesMatch48PPUBaseline": true,
+  "oneSharedTexturePerMap": true,
+  "loadMsMin": 1083.9309,
+  "loadMsMax": 5178.9741,
+  "textureMiBMin": 80.4375,
+  "textureMiBMax": 121.5,
+  "pngMiBTotal": 575.2377576828003
+}

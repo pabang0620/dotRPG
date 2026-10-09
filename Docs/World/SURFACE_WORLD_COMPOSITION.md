@@ -20,20 +20,48 @@
 
 숲은 [Secrets of Grindea의 Arcadia 제작 과정](https://www.secretsofgrindea.com/index.php/blog/7204)도 참고했다. 길·수면·배경을 연결한 다음 수목과 작은 장식을 더하는 구성, 큰 나무와 낮은 관목 사이의 빈 공간을 살펴보고 이 게임의 기존 동선에 맞게 재해석했다. 원화의 반복 잎 무늬를 다양한 수관·뿌리·관목 군집으로 다시 그렸다. 눈꽃 권역은 추가 요청에 따라 수직 절벽과 암주 대신 넓은 설산 사면을 적용한다. 작은 삼각 산봉우리를 일렬로 붙인 후보는 채택하지 않는다.
 
-원본과 제작 프롬프트는 `SurfaceWorldSources/*.json`, 등록된 PNG의 해시와 크기는 `surface-upscale-manifest.json`에 기록한다. 모든 리소스는 실제 생성·적용된 이미지이며 임시 대체 그림은 없다. 로컬 Real-ESRGAN으로 세부 묘사를 보강한 후 정확히 월드 1칸당 48픽셀로 등록했다. 확대 렌더링은 Point이며 게임 전체 카메라와 캐릭터 크기는 변경하지 않았다.
+원본과 제작 프롬프트는 `SurfaceWorldSources/*.json`, 현재 등록된 PNG의 해시와 크기는 `surface-upscale-manifest.json`에 기록한다. 모든 리소스는 실제 생성·적용된 이미지이며 임시 대체 그림은 없다. 최초 48PPU 등록 이후, 같은 원화와 Real-ESRGAN 4배 추론 캐시를 사용해 지상 21맵을 월드 1칸당 **96픽셀**로 다시 등록했다. 이번 해상도 변경에서 새로운 구도의 그림을 생성하지 않았다. 확대 렌더링은 Point이며 게임 전체 카메라, 월드 크기와 캐릭터 크기는 변경하지 않았다.
 
 ## 코드와 리소스
 
 - `Assets/StreamingAssets/SurfaceWorld/*.png`: 맵마다 한 개의 지형·풍경 원화, 총 21개.
-- `Assets/Scripts/Runtime/Art/SurfaceWorldArt.cs`: 원화를 원경 / 받침 지형 / 보행면·물로 분리한다. 세 레이어는 동일한 좌표·배율을 사용하고 각 픽셀은 한 레이어에만 속한다. PNG가 없거나 크기·비율이 유효하지 않으면 기존 표현을 사용한다.
+- `Assets/Scripts/Runtime/Art/SurfaceWorldArt.cs`: 원화 텍스처 한 장을 공유하는 세 SpriteRenderer를 만들고, `Sprite.OverrideGeometry`로 원경 / 받침 지형 / 보행면·물의 영역을 서로 겹치지 않는 메시로 나눈다. 세 레이어는 같은 원점·스프라이트 사각형·UV·PPU를 사용하며 각 픽셀은 한 레이어에서만 그려진다. 입력 크기에 따라 96 / 48 / 32PPU를 선택한다. PNG가 없거나 크기·비율·장치 텍스처 한도가 유효하지 않으면 기존 표현을 사용한다.
 - `Assets/Scripts/Runtime/World/WorldBuilder.SurfaceWorld.cs`: 기존 바닥 그림만 숨기고 합성한다. 건물, 기둥, 나무, 다리, NPC, 포털, 지형 충돌은 원래 오브젝트로 남는다. 기존 전경 가림 처리도 유지한다.
 - `Assets/Scripts/Runtime/World/WorldBuilder.ForestCanopy.cs`: 숲 사냥터 4곳의 장식 나무를 수관 폭에 맞춰 띄우고, 5개 수종의 군집과 앞뒤 크기·명암 차이를 만든다. 채집 나무와 기존 고체 나무의 위치·충돌은 유지한다. 비상호작용 나무 일부는 그림만 바꾸고, 새 경계 장식은 막힌 숲 영역 안에 놓는다. 재사용하는 스프라이트 뷰는 맵 전환 시 해제하며 텍스처를 복제하지 않는다.
 - `Assets/Scripts/Runtime/World/WorldBuilder.SurfaceGrounding.cs`: 새 지상 원화와 독립 소품 사이에 한 장의 32PPU 접촉 그림자를 만든다. 나무·바위·건물·고정 소품의 기존 발점과 실제 월드 bounds를 사용하며, 소품 위치나 콜라이더를 수정하지 않는다. 채집 자원과 NPC는 정적 그림자 대상에서 제외한다.
-- `Assets/Scripts/Runtime/World/LivingWater.cs`: 원래 물 판정 마스크를 새 원화의 해상도에 맞춰 등록해 물결 애니메이션을 연결한다.
+- `Assets/Scripts/Runtime/World/LivingWater.cs`: 기존 32PPU 물 판정 마스크 한 장을 합성 레이어들이 공유하고 정규화된 UV로 원화에 연결한다. 96PPU 크기의 물 마스크를 레이어마다 복제하지 않는다. 수면 이동 속도는 텍스처 밀도로 보정하며, 무늬의 공간 주기는 기존 셰이더의 텍스처 픽셀 단위를 유지한다.
 - `Assets/Scripts/Runtime/Core/DevCapture.SurfaceWorld.cs`: 소리 0, 별도 테스트 세션에서 전체 맵·플레이 화면과 충돌/포털/이동 검증 자료를 출력한다.
 - `Tools/art/upscale_surface.py`: 원본 보관, 해상도 등록, 해시 및 Unity 메타 파일 생성 도구.
 
 그림의 분할 마스크가 일치한다고 해서 그림 속 물가가 충돌 경계와 일치한다는 뜻은 아니다. 별도로 실제 충돌 가이드와 그림을 대조해 숲 수관, 절벽, 설원 수로가 보행 영역을 덮은 부분을 수정했다.
+
+## 96PPU 등록과 메모리 — 2026-10-09
+
+현재 canonical `surface-upscale-manifest.json`은 21맵 모두 `pixels_per_tile: 96`이며, 21개 모두 기존 4배 추론 캐시를 재사용했다. 등록 PNG의 크기는 실제 맵의 가로·세로 타일 수에 각각 96을 곱한 값이다. 현재 최대 변은 6912픽셀이며, 예를 들어 48×72타일 성소는 4608×6912픽셀이다. 구도, 경계의 월드 좌표, 충돌, 포털, 서비스 위치와 카메라는 유지한다. 실내·인스턴스·지하 맵을 이번 작업으로 다시 확대하지 않는다.
+
+이미 작게 등록된 48PPU PNG를 다시 늘리는 대신, manifest가 가리키는 최초 생성 원본의 SHA256을 확인하고 그 원본에서 만든 `*-4x.png`와 `*-4x.sha256` 캐시를 사용한다. 원본 또는 현재 등록 PNG가 입력 manifest의 해시와 다르면 작업을 시작하지 않는다. 캐시가 없거나 원본 해시가 달라졌다면 같은 로컬 Real-ESRGAN 모델로 다시 추론한다. 최종 월드 치수 등록은 Lanczos 보간으로 수행한다. 일부 맵은 96PPU 목표 크기가 4배 캐시보다도 크므로 추가 확대 보간이 포함된다. 따라서 새 세부를 96PPU로 직접 그린 원화나 모든 픽셀에 독립적인 새 정보가 추가된 결과라는 뜻은 아니다.
+
+이전에는 세 레이어마다 전체 맵 크기의 RGBA 텍스처를 만들었다. 현재는 동일한 원화 텍스처 한 장과 영역별 메시 세 개를 사용한다. 각 행의 같은 영역을 수평 구간으로 묶어 원본 UV를 유지하고, 빈 레이어 슬롯은 렌더러를 만들지 않는다. 정확한 등록 크기의 PNG는 로드한 텍스처 자체를 재사용한다. 이미지 분류·정합 검사를 마친 뒤 `Apply(false, true)`로 CPU 읽기 복사본을 해제하고, 임시 색상 배열도 더 이상 보관하지 않는다. 맵 전환 시 공유 텍스처와 생성 스프라이트는 맵 소유 컴포넌트가 해제하며 정적 캐시로 남기지 않는다.
+
+이는 같은 해상도에서 발생하던 텍스처 3중 복제를 없애는 조치다. 96PPU는 48PPU보다 원화 픽셀 수가 4배이므로 전체 메모리가 이전보다 작아진다는 보장은 없다. 가장 큰 4608×6912 RGBA32 원화 한 장의 픽셀 payload만 약 121.5MiB이며, 물 마스크·소품·메시·드라이버 비용과 로딩 중 디코딩/검사용 임시 메모리는 별도다. 프레임마다 원화를 다시 분할하거나 생성하지 않는다.
+
+물 마스크는 기존 32PPU를 유지하고 Point 샘플링으로 공유한다. 레이어 메시의 축소된 bounds 대신 전체 스프라이트 사각형과 피벗으로 물의 등록 좌표를 계산한다. `_Flow`에는 `원화 PPU / 32` 배율을 적용하므로 픽셀 밀도가 높아져도 흐름의 월드 이동 속도는 유지된다. 다만 셰이더 무늬의 간격은 텍스처 픽셀 기준이므로 **96PPU에서는 48PPU보다 같은 월드 공간에 무늬가 더 촘촘해진다**. 무늬 크기까지 이전과 동일하게 유지한 변경은 아니다.
+
+재현 명령은 저장소 루트에서 다음과 같다. 도구·인덱스·manifest·원본 루트는 해당 산출물을 보관한 실제 경로로 지정한다. `--source-manifest`는 실행 직전 등록 PNG의 해시와 일치해야 하며, 이전 48PPU manifest로 다시 작업하려면 해당 48PPU 백업을 먼저 복원해야 한다. 후처리가 없는 원화는 현재 96PPU manifest와 PNG가 일치하면 동일 원본으로 96PPU 재등록을 반복할 수 있다. 성소의 중복 계단 제거처럼 등록 후 부분 수정한 리소스는 예외다. manifest에 `postprocess`가 기록된 입력은 자동 재등록을 거부하며, 해당 수정 영역을 보존·재적용하는 별도 절차가 필요하다. 원래 4배 캐시만으로 덮어쓰면 삭제한 뒤 계단이 복원되므로 그대로 재등록하지 않는다.
+
+```powershell
+python Tools/art/upscale_surface.py `
+  --tool "<로컬 Real-ESRGAN 폴더>/realesrgan-ncnn-vulkan.exe" `
+  --index "<21맵 surface-index.json>" `
+  --work "<이번 등록 작업 폴더>" `
+  --source-manifest "<실행 직전 surface-upscale-manifest.json>" `
+  --source-root "<manifest 상대 원본 경로의 기준 폴더>" `
+  --pixels-per-tile 96 `
+  --backup-dir "<실행 직전 PNG를 보관할 빈 폴더>" `
+  --manifest-output "Docs/World/surface-upscale-manifest.json"
+```
+
+원본 경로가 절대 경로이면 `--source-root`는 그 항목에 영향을 주지 않는다. 부분 재등록에는 `--only winter,winter_edge`처럼 맵 ID를 지정할 수 있다. 도구는 8192픽셀 변 길이, 64MiB PNG 입력 한도와 2% 이내 종횡비를 검사하며, 런타임은 장치의 실제 최대 텍스처 크기도 검사한다. 기존 Unity 메타 파일은 유지한다.
 
 ## 실행 검증
 
@@ -42,14 +70,16 @@
 전체 지상 맵 검증:
 
 ```text
-dotRPG.exe -batchmode -dotrpgSurface "<결과 폴더>" -surfaceBaseline "<변경 전 결과 폴더>" -logFile "<로그 파일>"
+dotRPG.exe -batchmode -dotrpgSurface "<결과 폴더>" -surfaceBaseline "<변경 전 결과 폴더>" -surfaceExpectedPpu 96 -logFile "<로그 파일>"
 ```
 
-특정 맵만 확인하려면 `-surfaceOnly canyon_ridge`를 추가한다. `-surfaceGroundOnly`는 기존 지면을 가이드로 출력하는 개발용 옵션이다.
+`-surfaceExpectedPpu 96`은 실제 런타임 합성이 96PPU인지 검사하므로, PNG가 누락되거나 낮은 해상도로 폴백한 경우를 검출한다. 특정 맵만 확인하려면 `-surfaceOnly canyon_ridge`를 추가한다. `-surfaceGroundOnly`는 기존 지면을 가이드로 출력하는 개발용 옵션이다.
 
-검증 항목은 변경 전후 레이아웃·발 충돌·포털·도착점·서비스 위치의 동일성, 실제 입력 이동, 포털 도착점까지의 경로 연결, 레이어 합성 누락과 중복, 맵 전환 후 생성 리소스 해제, 볼륨 0이다. 최종 집계와 캡처는 `SurfaceWorldPreview`에 보관한다.
+검증 항목은 변경 전후 레이아웃·발 충돌·포털·도착점·서비스 위치의 동일성, 실제 입력 이동, 포털 도착점까지의 경로 연결, 레이어 합성 누락과 중복, 공유 텍스처 및 물 마스크 등록, 맵 전환 후 생성 리소스 해제, 볼륨 0이다. `SurfaceWorldPreview`는 아래의 48PPU 단계 기록이며, 96PPU 실행 결과는 `SurfaceWorldUpscale`에 별도로 보관한다.
 
-2026-10-09 최종 실행 결과는 **21개 맵, 539개 통과, 실패 0개**다. 곡선 경계 원화 21개, 접촉 그림자, 숲 군집·고사목, 협곡 부유 장식 정리를 함께 넣은 Windows 플레이어에서 확인했다. 각 맵의 로딩 측정치는 약 **0.73~4.70초**였으며, 장치와 저장장치 상태에 따라 달라진다. 이는 FPS 또는 다인 파티 부하 검증 결과가 아니다. 원본·등록 PNG·플레이어에 복사한 PNG의 SHA256, 정확한 48PPU 크기, 런타임 DLL과 고사목 파일의 일치도 별도로 검사했다.
+### 이전 48PPU 단계의 검증 기록
+
+2026-10-09의 **48PPU 단계** 실행 결과는 **21개 맵, 539개 통과, 실패 0개**였다. 곡선 경계 원화 21개, 접촉 그림자, 숲 군집·고사목, 협곡 부유 장식 정리를 함께 넣은 Windows 플레이어에서 확인했다. 당시 각 맵의 로딩 측정치는 약 **0.73~4.70초**였으며, 장치와 저장장치 상태에 따라 달라진다. 이는 96PPU 변경의 검증 결과도, FPS 또는 다인 파티 부하 검증 결과도 아니다. 당시 원본·등록 PNG·플레이어에 복사한 PNG의 SHA256, 정확한 48PPU 크기, 런타임 DLL과 고사목 파일의 일치를 별도로 검사했다.
 
 - [변경 전후 전체 맵 비교](SurfaceWorldPreview/before-after.jpg)
 - [21개 맵 전체 보기](SurfaceWorldPreview/all-21-maps.jpg)
@@ -57,6 +87,23 @@ dotRPG.exe -batchmode -dotrpgSurface "<결과 폴더>" -surfaceBaseline "<변경
 - [같은 플레이 카메라에서 HUD를 숨긴 풍경 화면](SurfaceWorldPreview/four-regions-environment.jpg)
 - [항목별 실행 결과](SurfaceWorldPreview/report.txt)
 - [맵별 지형·충돌·포털 및 합성 검사 데이터](SurfaceWorldPreview/surface-index.json)
+
+### 96PPU 실행 검증 — 2026-10-09
+
+96PPU 원화와 공유 텍스처·메시 구현을 넣은 Windows 플레이어에서 **21맵, 666개 통과, 실패 0개**를 확인했다. 전체 검증 실행은 74.80초였고, Roslyn 컴파일 오류와 실행 로그의 Exception/Error는 0개였다. 21개 모두 기존 48PPU 기준의 지형·발 충돌·포털 등 물리 해시가 유지됐으며, 원본/추론 캐시와 배포 파일의 해시, 실제 96PPU 등록, 레이어 메시의 누락·중복 없는 합성, 공유 텍스처 한 장과 맵 전환 시 해제를 검사했다. 이전 539개 통과 수치와 별도인 새 실행 결과다.
+
+맵별 로딩은 약 **1.084~5.179초**, 공유 원화 텍스처의 픽셀 payload는 **80.44~121.5MiB**였다. 물 마스크와 기타 오브젝트·드라이버·로딩 임시 메모리를 포함한 전체 사용량은 아니다. 등록 PNG 21개의 디스크 용량 합계는 약 **575.24MiB**다. 실행 장치는 RTX 4070 SUPER 12GB이며 보고된 최대 텍스처 변 길이는 16384였다. 다른 GPU의 지원이나 FPS·다인 파티 부하를 검증한 결과로 일반화하지 않는다.
+
+- [21개 맵 전체 보기 — 96PPU](SurfaceWorldUpscale/all-21-maps.jpg)
+- [48PPU와 96PPU 세부 비교](SurfaceWorldUpscale/before-after-detail.png)
+- [네 권역 실제 플레이 화면 — 96PPU](SurfaceWorldUpscale/four-regions-gameplay.jpg)
+- [네 권역 HUD 없는 풍경 화면 — 96PPU](SurfaceWorldUpscale/four-regions-environment.jpg)
+- [666개 항목의 실행 결과](SurfaceWorldUpscale/report.txt)
+- [해시·물리 동일성·해상도·메모리 집계](SurfaceWorldUpscale/verification.json)
+- [맵별 검사 데이터](SurfaceWorldUpscale/surface-index.json)
+- [내보내기 데이터](SurfaceWorldUpscale/surface-export.json)
+
+이번 실행도 기존 Windows 플레이어의 런타임 DLL과 StreamingAssets를 교체하는 방식이다. Unity 에디터에서 전체 실행 파일을 새로 빌드한 검증은 아니다. 원본 플레이 화면과 풍경 캡처도 `SurfaceWorldUpscale`에 권역별로 함께 보관했다.
 
 검증 캡처에서만 개발용 카메라로 전체 맵을 촬영했다. 일반 플레이 카메라 설정과 저장 데이터는 변경하지 않았다. 로컬 체험판은 기존 Windows 실행 파일의 런타임 DLL과 StreamingAssets를 갱신한 상태다.
 
@@ -92,6 +139,30 @@ dotRPG.exe -batchmode -dotrpgSurface "<결과 폴더>" -surfaceBaseline "<변경
 - 협곡 4개 사냥터에서는 새 원화의 수직 절벽·심연 위에 받침 없이 떠 있던 자동 배치 `Fantasy landmark {mapId}` 장식만 숨긴다. 기존 W/% 셀에 놓인 직접 자식 SpriteRenderer이며 콜라이더·자원·NPC·서비스가 없는지 검사한다. 실제 구조물과 원화의 암반은 유지하며 지형이나 충돌은 바꾸지 않는다. 원화 합성이 실패하면 기존 장식도 그대로 표시한다. QA 메타데이터의 `hiddenUnsupportedLandmarks`로 개수를 확인할 수 있다.
 - 생성 텍스처와 스프라이트는 맵 소유 컴포넌트가 해제한다. 원본 텍스처, 나무 가림, YSort, 포털·서비스·조우 데이터는 변경하지 않는다. QA는 이 추가 리소스도 맵 전환 해제 검사에 포함한다.
 
-추가 캡처는 대표 4개 맵의 `*-vista-environment.png`다. 플레이 화면과 같은 카메라 위치에서 잠시 HUD·캐릭터·전투 이펙트만 숨긴 뒤 즉시 원상복구한다. `*-vista-gameplay.png`에는 기존 HUD와 실제 플레이 오브젝트가 남는다. 최신 코드의 Roslyn 컴파일과 최종 21맵 네이티브 검증을 완료했으며 결과는 위의 539개 집계와 `SurfaceWorldPreview/report.txt`에 포함된다. 협곡 4개 사냥터에서는 각 3개의 비물리 장식만 숨겨졌고 기존 충돌 해시가 유지됐다.
+추가 캡처는 대표 4개 맵의 `*-vista-environment.png`다. 플레이 화면과 같은 카메라 위치에서 잠시 HUD·캐릭터·전투 이펙트만 숨긴 뒤 즉시 원상복구한다. `*-vista-gameplay.png`에는 기존 HUD와 실제 플레이 오브젝트가 남는다. 이 소품·지면 보완 당시 48PPU 코드의 Roslyn 컴파일과 21맵 네이티브 검증을 완료했으며 결과는 위의 과거 539개 집계와 `SurfaceWorldPreview/report.txt`에 포함된다. 협곡 4개 사냥터에서는 각 3개의 비물리 장식만 숨겨졌고 기존 충돌 해시가 유지됐다. 96PPU 변경 이후의 실행 집계는 별도 절을 따른다.
 
-최종 등록 PNG까지 물색 표본 검사를 반복했다. 협곡·성소 10개 원화에서 새로 발생한 0.5타일 초과 수면 표본은 0개였다. 48PPU 등록 후 주 성소에서 색상 기준 표본 1개가 추가됐으나, 좌표 `(19.625, 50.625)`는 최종 실행의 실제 발 이동 마스크에서도 통행 불가였다. 성소 4개 사냥터와 협곡의 신규 표본은 0개다. 눈 지역은 기존 보고의 작은 얼음·물가 색 표본이 남으며, 전체 원화 검토와 물리 검증을 함께 판단해야 한다. 이 수치들을 모든 경계의 완전한 일치나 수동 전 구간 플레이의 증거로 해석하지 않는다.
+48PPU 단계에서는 등록 PNG까지 물색 표본 검사를 반복했다. 협곡·성소 10개 원화에서 새로 발생한 0.5타일 초과 수면 표본은 0개였다. 48PPU 등록 후 주 성소에서 색상 기준 표본 1개가 추가됐으나, 좌표 `(19.625, 50.625)`는 당시 실행의 실제 발 이동 마스크에서도 통행 불가였다. 성소 4개 사냥터와 협곡의 신규 표본은 0개였다. 눈 지역은 기존 보고의 작은 얼음·물가 색 표본이 남으며, 전체 원화 검토와 물리 검증을 함께 판단해야 한다. 이 수치들을 96PPU 등록 후 색상 재검사의 결과, 모든 경계의 완전한 일치 또는 수동 전 구간 플레이의 증거로 해석하지 않는다.
+
+## 성소 중복 계단 정리 — 2026-10-09
+
+`sunken_sanctum`의 96PPU 원화에 그려진 뒤쪽 계단이 독립 전경 계단과 겹쳐 보이는 부분을 수정했다. 동일 원화를 바탕으로 내장 이미지 생성 도구에서 그 부분만 돌바닥으로 다시 그린 뒤, 등록 원화의 `x=2034..2577, y=2331..2946` 영역에 부분 합성했다. 변경된 325,204픽셀은 모두 이 영역 안에 있으며, 영역 밖의 픽셀은 원래 96PPU 이미지와 동일하다. 앞쪽 `stairs.png`와 `SunkenSanctumArt.cs`는 변경하지 않았고, 폴백 표현인 `SunkenSanctumArt.Shore.cs`에서도 중복되는 `L` 셀 계단 줄무늬만 제거했다. 지형·충돌·포털과 실제 계단 통로는 유지한다.
+
+이번 성소 대상 실행 검증은 **46개 통과, 실패 0개**, 볼륨 0이었다. 실제 입력으로 `(24,42) → (24,47.2) → (18,47.2) → (18,49)` 경로를 왕복했고, 기존 지형·충돌·기준 해시가 유지됐다. 이는 중복 계단 수정 후의 별도 검증이며, 앞의 **96PPU 전체 21맵 666개 검증은 이 부분 수정 이전 단계**의 기록이다. 이번 수정으로 전체 21맵을 다시 검증한 것으로 합산하지 않는다. 실행 방식은 동일하게 기존 Windows 플레이어의 DLL·리소스 갱신이다.
+
+- [중복 계단 개선 전후](SanctumSingleStair/before-after.jpg)
+- [실제 플레이 화면](SanctumSingleStair/gameplay.png)
+- [HUD 없는 계단 주변 풍경](SanctumSingleStair/environment.png)
+- [성소 46개 검사 결과](SanctumSingleStair/report.txt)
+- [맵별 검사 데이터](SanctumSingleStair/surface-index.json)
+- [해시와 변경 영역 검증](SanctumSingleStair/verification.json)
+
+## 성소 계단과 옹벽 연결 — 2026-10-09
+
+중복 계단 제거 뒤 드러난 난간 옆의 틈을 정리했다. `SunkenSanctumArt.cs`에서 양쪽 옹벽의 외측 끝은 그대로 두고 안쪽을 각각 0.9타일 연장해, 위쪽으로 좁아지는 계단 난간 뒤에 석재가 겹쳐 연결되도록 했다. 벽 상단 띠와 벽면에 기존 그림을 사용하며 배경 PNG와 계단 그림은 이번에 변경하지 않았다. 계단 크기·위치, 양쪽 충돌 경계와 통행 폭도 유지한다.
+
+기존 로컬 플레이어에 런타임 DLL을 반영해 볼륨 0으로 성소를 재검증했다. **46개 통과, 실패 0개**였고, 실제 계단 왕복 이동 및 지형·충돌·서비스 해시 동일성을 확인했다. 실제 화면과 알파 윤곽을 함께 검토해 벽과 난간 사이에 배경이 드러나던 틈이 닫혔음을 확인했다.
+
+- [벽과 계단 연결 전후](SanctumWallJoin/before-after.jpg)
+- [연결된 계단 실제 화면](SanctumWallJoin/environment.png)
+- [실행 결과](SanctumWallJoin/report.txt)
+- [검증 집계](SanctumWallJoin/verification.json)

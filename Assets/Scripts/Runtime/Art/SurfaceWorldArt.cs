@@ -12,7 +12,8 @@ namespace DotRPG
     /// </summary>
     public static class SurfaceWorldArt
     {
-        public const int StandardPixelsPerUnit=32,HighPixelsPerUnit=48;
+        public const int StandardPixelsPerUnit=32,HighPixelsPerUnit=48,UltraPixelsPerUnit=96;
+        const int MaxDimension=8192;
         public const string SceneName="Surface world composition";
         const int SupportDepthTiles=3;
         static readonly string[] LayerNames={"Surface distant scenery","Surface supporting edges","Surface floor and water"};
@@ -49,13 +50,18 @@ namespace DotRPG
                 int sw=source.width,sh=source.height;
                 float aspectError=Mathf.Abs(((float)sw/sh)/((float)width/height)-1f);
                 if(aspectError>.02f)throw new InvalidDataException("Surface PNG aspect ratio differs from the world by more than 2%");
-                int ppu=sw>=width*HighPixelsPerUnit&&sh>=height*HighPixelsPerUnit?HighPixelsPerUnit:StandardPixelsPerUnit;
+                int ppu=sw>=width*UltraPixelsPerUnit&&sh>=height*UltraPixelsPerUnit?UltraPixelsPerUnit
+                    :sw>=width*HighPixelsPerUnit&&sh>=height*HighPixelsPerUnit?HighPixelsPerUnit:StandardPixelsPerUnit;
                 int pw=checked(width*ppu),ph=checked(height*ppu);
-                if(pw>4096||ph>4096||(SystemInfo.maxTextureSize>0&&(pw>SystemInfo.maxTextureSize||ph>SystemInfo.maxTextureSize)))
+                if(pw>MaxDimension||ph>MaxDimension||(SystemInfo.maxTextureSize>0&&(pw>SystemInfo.maxTextureSize||ph>SystemInfo.maxTextureSize)))
                     throw new InvalidDataException("Surface raster exceeds the supported texture size");
                 var original=source.GetPixels32();
                 byte[] mask=BuildMask(terrainCells,width,height);
-                var raster=new Color32[checked(pw*ph)];
+                // Exact registered 32/48/96ppu files keep their original GPU texture.
+                // Older approximate-aspect inputs retain one nearest-neighbour registration.
+                bool registered=sw==pw&&sh==ph;
+                var raster=registered?original:new Color32[checked(pw*ph)];
+                var visiblePerCell=new int[width*height];
                 int[] opaqueCounts=new int[3],assignedCounts=new int[3];
                 int[] left={pw,pw,pw},right={-1,-1,-1},bottom={ph,ph,ph},top={-1,-1,-1};
                 int sourceOpaque=0,rasterOpaque=0,sourcePartial=0,rasterPartial=0,edgeOnLand=0;
@@ -68,9 +74,11 @@ namespace DotRPG
                     {
                         int sx=Math.Min(sw-1,(int)((x+.5f)*sw/pw)),cellX=x/ppu,index=y*pw+x;
                         int layer=mask[cellY*width+cellX];
-                        Color32 color=original[sy*sw+sx];
-                        raster[index]=color;assignedCounts[layer]++;
+                        Color32 color=original[registered?index:sy*sw+sx];
+                        if(!registered)raster[index]=color;
+                        assignedCounts[layer]++;
                         if(color.a==0)continue;
+                        visiblePerCell[cellY*width+cellX]++;
                         rasterOpaque++;opaqueCounts[layer]++;
                         if(color.a<255)rasterPartial++;
                         left[layer]=Math.Min(left[layer],x);right[layer]=Math.Max(right[layer],x);
@@ -79,10 +87,9 @@ namespace DotRPG
                     }
                 }
                 if(rasterOpaque==0)throw new InvalidDataException("Surface PNG has no visible pixels at map resolution");
-                // Keep only the raster and one reusable upload buffer, rather than three full
-                // layer buffers. The tiny ownership counter audits translucent pixels too.
-                original=null;source.Apply(false,true);UnityEngine.Object.Destroy(source);source=null;
-                var upload=new Color32[raster.Length];var coverage=new byte[raster.Length];
+                // Each layer is an exclusive mesh over one shared, unmodified texture.
+                // No three full RGBA layer copies, upload buffers or per-pixel coverage array.
+                var coverage=new byte[width*height];
                 int uncovered=0,overlap=0,mismatch=0,wrongOwner=0,boundsErrors=0;
                 root=new GameObject(SceneName);root.transform.SetParent(parent,false);root.transform.position=Vector3.zero;
                 scene=root.AddComponent<SurfaceWorldScene>();scene.MapId=mapId;scene.SourcePath=path;
@@ -94,44 +101,47 @@ namespace DotRPG
                 scene.LayerPixelCounts=opaqueCounts;scene.LayerRasterPixelCounts=assignedCounts;
                 scene.LayerOpaquePixelBounds=new RectInt[3];
                 scene.SupportOnWalkablePixels=edgeOnLand;scene.Layers=new SpriteRenderer[3];
+                scene.LayerVertexCounts=new int[3];scene.LayerTriangleCounts=new int[3];
+                Texture2D shared;
+                if(registered){shared=source;source=null;}
+                else shared=new Texture2D(pw,ph,TextureFormat.RGBA32,false);
+                scene.SharedTexture=shared;scene.Own(shared);
+                if(!registered)
+                {
+                    shared.SetPixels32(raster);
+                    UnityEngine.Object.Destroy(source);source=null;
+                }
+                shared.name=mapId+" surface shared artwork";shared.filterMode=FilterMode.Point;shared.wrapMode=TextureWrapMode.Clamp;
+                shared.Apply(false,true);original=null;raster=null;
                 for(int layer=0;layer<3;layer++)
                 {
                     // Slots stay fixed (background / support / floor) even when one is empty.
                     // An all-transparent layer contributes nothing and owns no GPU texture.
                     if(opaqueCounts[layer]==0)continue;
                     scene.LayerOpaquePixelBounds[layer]=new RectInt(left[layer],bottom[layer],right[layer]-left[layer]+1,top[layer]-bottom[layer]+1);
-                    Array.Clear(upload,0,upload.Length);
-                    for(int y=0;y<ph;y++)for(int x=0;x<pw;x++)
+                    var vertices=new List<Vector2>();var triangles=new List<ushort>();
+                    for(int y=0;y<height;y++)for(int x=0;x<width;)
                     {
-                        int i=y*pw+x;
-                        if(mask[(y/ppu)*width+x/ppu]==layer)upload[i]=raster[i];
+                        if(mask[y*width+x]!=layer){x++;continue;}
+                        int start=x;while(x<width&&mask[y*width+x]==layer)x++;
+                        AddRun(vertices,triangles,start,x,y,ppu);
                     }
-                    // Audit the actual buffer before releasing its CPU-readable texture copy.
-                    // Exact straight RGBA equality is required, including 0<alpha<255; no
-                    // opacity is multiplied between layers because every pixel has one owner.
-                    for(int y=0;y<ph;y++)for(int x=0;x<pw;x++)
-                    {
-                        int i=y*pw+x,owner=mask[(y/ppu)*width+x/ppu];
-                        Color32 actual=upload[i],expected=owner==layer?raster[i]:default;
-                        if(actual.r!=expected.r||actual.g!=expected.g||actual.b!=expected.b||actual.a!=expected.a)mismatch++;
-                        if(actual.a==0)continue;
-                        coverage[i]++;
-                        if(owner!=layer)wrongOwner++;
-                        if(!scene.LayerOpaquePixelBounds[layer].Contains(new Vector2Int(x,y)))boundsErrors++;
-                    }
-                    var texture=new Texture2D(pw,ph,TextureFormat.RGBA32,false)
-                    {name=mapId+" surface layer "+layer,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
-                    scene.Own(texture);texture.SetPixels32(upload);texture.Apply(false,true);
-                    var sprite=Sprite.Create(texture,new Rect(0,0,pw,ph),Vector2.zero,ppu,0,SpriteMeshType.FullRect);
+                    var sprite=Sprite.Create(shared,new Rect(0,0,pw,ph),Vector2.zero,ppu,0,SpriteMeshType.FullRect);
                     sprite.name=mapId+"_surface_composition_"+layer;scene.Own(sprite);
+                    // OverrideGeometry accepts pixel coordinates in Sprite.rect space;
+                    // returned vertices are in local world units and UVs are normalized.
+                    sprite.OverrideGeometry(vertices.ToArray(),triangles.ToArray());
+                    AuditMesh(sprite,vertices,triangles,mask,coverage,visiblePerCell,width,height,ppu,layer,
+                        ref mismatch,ref wrongOwner,ref boundsErrors);
+                    scene.LayerVertexCounts[layer]=sprite.vertices.Length;scene.LayerTriangleCounts[layer]=sprite.triangles.Length/3;
                     var go=new GameObject(LayerNames[layer]);go.transform.SetParent(root.transform,false);
                     var renderer=go.AddComponent<SpriteRenderer>();renderer.sprite=sprite;renderer.color=Color.white;
                     renderer.sortingOrder=LayerOrders[layer];scene.Layers[layer]=renderer;
                 }
-                for(int i=0;i<raster.Length;i++)
+                for(int i=0;i<coverage.Length;i++)
                 {
-                    if(raster[i].a>0&&coverage[i]==0)uncovered++;
-                    if(coverage[i]>1)overlap++;
+                    if(coverage[i]==0)uncovered+=visiblePerCell[i];
+                    if(coverage[i]>1)overlap+=visiblePerCell[i];
                 }
                 scene.UncoveredPixels=uncovered;scene.OverlappingPixels=overlap;scene.MismatchedPixels=mismatch;
                 scene.WrongOwnerPixels=wrongOwner;scene.PixelBoundsErrors=boundsErrors;
@@ -146,6 +156,44 @@ namespace DotRPG
                 scene=null;
                 Debug.LogWarning("Surface composition unavailable for "+mapId+"; retain existing map artwork. "+error.Message);
                 return false;
+            }
+        }
+
+        static void AddRun(List<Vector2> vertices,List<ushort> triangles,int left,int right,int y,int ppu)
+        {
+            if(vertices.Count+4>ushort.MaxValue)throw new InvalidDataException("Surface mesh exceeds sprite index capacity");
+            ushort first=(ushort)vertices.Count;
+            vertices.Add(new Vector2(left*ppu,y*ppu));vertices.Add(new Vector2(right*ppu,y*ppu));
+            vertices.Add(new Vector2(right*ppu,(y+1)*ppu));vertices.Add(new Vector2(left*ppu,(y+1)*ppu));
+            triangles.Add(first);triangles.Add((ushort)(first+1));triangles.Add((ushort)(first+2));
+            triangles.Add((ushort)(first+2));triangles.Add((ushort)(first+3));triangles.Add(first);
+        }
+
+        static void AuditMesh(Sprite sprite,List<Vector2> supplied,List<ushort> requested,byte[] mask,byte[] coverage,
+            int[] visible,int width,int height,int ppu,int layer,ref int mismatch,ref int wrongOwner,ref int boundsErrors)
+        {
+            var vertices=sprite.vertices;var uv=sprite.uv;var triangles=sprite.triangles;
+            if(vertices.Length!=supplied.Count||uv.Length!=vertices.Length||triangles.Length!=requested.Count)
+                throw new InvalidDataException("Surface sprite geometry changed unexpectedly");
+            for(int i=0;i<vertices.Length;i++)
+            {
+                Vector2 expected=supplied[i]/ppu;
+                Vector2 expectedUv=new Vector2(supplied[i].x/sprite.rect.width,supplied[i].y/sprite.rect.height);
+                if((vertices[i]-expected).sqrMagnitude>1e-8f||(uv[i]-expectedUv).sqrMagnitude>1e-10f)mismatch++;
+                if(vertices[i].x<-.0001f||vertices[i].y<-.0001f||vertices[i].x>width+.0001f||vertices[i].y>height+.0001f)boundsErrors++;
+            }
+            for(int i=0;i<triangles.Length;i++)if(triangles[i]!=requested[i])mismatch++;
+            // The returned quads are integer-tile aligned and use the two audited
+            // triangles above; cell coverage therefore proves coverage of every pixel.
+            for(int i=0;i<vertices.Length;i+=4)
+            {
+                int x0=Mathf.RoundToInt(vertices[i].x),x1=Mathf.RoundToInt(vertices[i+1].x),y=Mathf.RoundToInt(vertices[i].y);
+                if(y<0||y>=height||x0<0||x1>width||x0>=x1){boundsErrors++;continue;}
+                for(int x=x0;x<x1;x++)
+                {
+                    int cell=y*width+x;coverage[cell]++;
+                    if(mask[cell]!=layer)wrongOwner+=Math.Max(visible[cell],1);
+                }
             }
         }
 
@@ -182,7 +230,9 @@ namespace DotRPG
                 ||bytes[12]!=73||bytes[13]!=72||bytes[14]!=68||bytes[15]!=82)return false;
             int w=(bytes[16]<<24)|(bytes[17]<<16)|(bytes[18]<<8)|bytes[19];
             int h=(bytes[20]<<24)|(bytes[21]<<16)|(bytes[22]<<8)|bytes[23];
-            return w>=32&&h>=32&&w<=4096&&h<=4096;
+            int gpuLimit=SystemInfo.maxTextureSize;
+            return w>=32&&h>=32&&w<=MaxDimension&&h<=MaxDimension&&(long)w*h<=40L*1024*1024
+                &&(gpuLimit<=0||(w<=gpuLimit&&h<=gpuLimit));
         }
     }
 
@@ -212,11 +262,15 @@ namespace DotRPG
         public int PixelBoundsErrors {get;internal set;}
         public int SupportOnWalkablePixels {get;internal set;}
         public SpriteRenderer[] Layers {get;internal set;}=Array.Empty<SpriteRenderer>();
+        public Texture2D SharedTexture {get;internal set;}
+        public int[] LayerVertexCounts {get;internal set;}=Array.Empty<int>();
+        public int[] LayerTriangleCounts {get;internal set;}=Array.Empty<int>();
         public int LayerSlotCount=>Layers.Length;
         public int LayerCount {get{int n=0;foreach(var layer in Layers)if(layer!=null)n++;return n;}}
-        public long TexturePayloadBytes=>(long)LayerCount*RasterWidth*RasterHeight*4;
+        public long TexturePayloadBytes=>SharedTexture==null?0:(long)SharedTexture.width*SharedTexture.height*4;
         readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
         public int OwnedResourceCount=>owned.Count;
+        public UnityEngine.Object[] OwnedResources=>owned.ToArray();
         internal void Own(UnityEngine.Object resource)=>owned.Add(resource);
         void OnDestroy(){foreach(var resource in owned)if(resource!=null)Destroy(resource);owned.Clear();}
     }

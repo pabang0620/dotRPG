@@ -1,0 +1,23 @@
+{
+  "map": "sunken_sanctum",
+  "passed": 46,
+  "failed": 0,
+  "change": "Extend each retaining wall 0.9 world units inward beneath the original stair rails; keep outer wall ends fixed.",
+  "westBounds": [
+    11,
+    43,
+    22.9,
+    47.5
+  ],
+  "eastBounds": [
+    25.1,
+    43,
+    37,
+    47.5
+  ],
+  "stairSpritePositionSizeAndCurbsPreserved": true,
+  "collisionTerrainAndServicesUnchanged": true,
+  "artworkUnchanged": true,
+  "actualStairRoundTripPassed": true,
+  "deployedArtAndRuntimeMatch": true
+}

@@ -16,6 +16,9 @@ namespace DotRPG
         public int FishCount => fish.Count;
         public float AnimationTime { get; private set; }
         public bool FreezeAnimation { get; set; }
+        public Texture2D CompositionMask { get; private set; }
+        public Texture2D[] OwnedMasks => masks.ToArray();
+        public int CompositionBindingCount => compositionBindings.Count;
         public IEnumerable<Vector2> FishPositions { get { foreach (var f in fish) yield return f.Position; } }
         public bool FishWithinWater { get { foreach (var f in fish) if (!Field.CanSwim(f.Position, f.Radius)) return false; return true; } }
         readonly List<Fish> fish = new List<Fish>();
@@ -76,7 +79,7 @@ namespace DotRPG
         }
 
         /// <summary>Apply this map's existing water simulation to a full-rectangle composition
-        /// sprite, including 48ppu artwork. Sample the authoritative 32ppu water field in
+        /// sprite, including 96ppu artwork. Use the authoritative 32ppu water field in
         /// world space; the source art texture need not be CPU-readable.</summary>
         public bool BindComposition(SpriteRenderer renderer)
         {
@@ -87,35 +90,32 @@ namespace DotRPG
             int w = texture.width, h = texture.height;
             // Composition layers own a full rectangular texture, with no atlas packing.
             if (sprite.rect.x != 0 || sprite.rect.y != 0 || sprite.rect.width != w || sprite.rect.height != h) return false;
-            var local = sprite.bounds;
-            Vector3 origin = renderer.transform.TransformPoint(local.min);
-            Vector3 dx = renderer.transform.TransformVector(new Vector3(local.size.x / w, 0, 0));
-            Vector3 dy = renderer.transform.TransformVector(new Vector3(0, local.size.y / h, 0));
-            var block = new Color32[w * h];
-            bool wet = false;
-            for (int y = 0; y < h; y++)
+            // OverrideGeometry changes bounds to the visible mesh extent. Registration
+            // must use the full sprite rectangle/pivot, never the clipped mesh bounds.
+            float ppu = sprite.pixelsPerUnit;
+            Vector3 localOrigin = new Vector3(-sprite.pivot.x / ppu, -sprite.pivot.y / ppu, 0);
+            Vector3 origin = renderer.transform.TransformPoint(localOrigin);
+            Vector3 fullX = renderer.transform.TransformVector(new Vector3(sprite.rect.width / ppu, 0, 0));
+            Vector3 fullY = renderer.transform.TransformVector(new Vector3(0, sprite.rect.height / ppu, 0));
+            if (renderer.flipX || renderer.flipY || Mathf.Abs(origin.x) > .0001f || Mathf.Abs(origin.y) > .0001f
+                || Mathf.Abs(fullX.x - Field.Width / 32f) > .0001f || Mathf.Abs(fullX.y) > .0001f
+                || Mathf.Abs(fullY.y - Field.Height / 32f) > .0001f || Mathf.Abs(fullY.x) > .0001f || Field.WetPixels == 0) return false;
+            // Normalized UVs already map the complete scene to the complete field.
+            // A single Point mask at 32ppu is identical to its 96ppu 3x replication.
+            if (CompositionMask == null)
             {
-                Vector3 row = origin + dy * (y + .5f) + dx * .5f;
-                for (int x = 0; x < w; x++)
-                {
-                    int sx = Mathf.FloorToInt((row.x + dx.x * x) * 32f);
-                    int sy = Mathf.FloorToInt((row.y + dx.y * x) * 32f);
-                    if (sx < 0 || sy < 0 || sx >= Field.Width || sy >= Field.Height) continue;
-                    var color = Field.Mask[sy * Field.Width + sx];
-                    block[y * w + x] = color;
-                    wet |= color.r > 0;
-                }
+                CompositionMask = new Texture2D(Field.Width, Field.Height, TextureFormat.RGBA32, false, true)
+                    { name = "Composition water mask 32ppu", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+                masks.Add(CompositionMask);
+                CompositionMask.SetPixels32(Field.Mask); CompositionMask.Apply(false, true);
             }
-            if (!wet) return false;
-            var mask = new Texture2D(w, h, TextureFormat.RGBA32, false, true)
-                { name = "Composition water mask", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-            mask.SetPixels32(block); mask.Apply(false, true); masks.Add(mask);
             var props = new MaterialPropertyBlock(); renderer.GetPropertyBlock(props);
-            props.SetTexture("_WaterMask", mask);
-            float density = 1f / Mathf.Max(.0001f, dx.magnitude);
+            props.SetTexture("_WaterMask", CompositionMask);
+            float density = w / Mathf.Max(.0001f, fullX.magnitude);
             props.SetVector("_ChunkOrigin", new Vector4(origin.x * density, origin.y * density, 0, 0));
             // The shader advances in texture pixels. Compensate the denser texture so
-            // 48ppu water travels at the same world speed as the original 32ppu field.
+            // 48/96ppu water travels at the same world speed as the original 32ppu field.
+            // Spatial wave frequency remains the existing shader's texture-pixel rule.
             props.SetVector("_Flow", surface.GetVector("_Flow") * (density / 32f));
             renderer.sharedMaterial = surface; renderer.SetPropertyBlock(props);
             compositionBindings.Add(renderer);

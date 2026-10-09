@@ -1,0 +1,15 @@
+{
+  "tool": "image_gen (built-in)",
+  "intent": "Remove duplicate stairs baked into the terrain while retaining the independent foreground staircase.",
+  "prompt": "Use case: precise-object-edit. Edit this EXISTING game terrain plate, not a redesign. Remove ONLY the small light gray staircase at image center x46%-54%, y34.5%-42% (directly BELOW the upper round green pool). Erase every horizontal stair tread in that tiny rectangle. Replace that staircase footprint with a continuous worn olive-gray limestone landing / uneven rock substrate matching the surrounding pale cracked stone. This terrain plate has a separate detailed foreground staircase in the game; the staircase baked into this image is an unwanted duplicate. DO NOT draw any stairs, parallel step stripes, stair railings, new object, doors or structures in the edited spot. Keep both endpoints connected with dry stone. Preserve the pool above and its entire water edge; preserve the side cliff silhouettes. The rest of the image must remain unchanged: full 2:3 portrait crop, all pools and their precise shorelines, land widths and positions, lower altar foundation, cave walls, lighting, stone palette and all details. No camera/scale changes, no text or marks. Return the same full-map composition. High fidelity exact image registration is critical, make the smallest possible local change.",
+  "generated_source": "Docs/World/SurfaceWorldSources/sanctum-stair-removal.png",
+  "generated_source_size": [
+    1024,
+    1536
+  ],
+  "source_reference": "work/natural-canyon-sanctum-upscale/originals/sunken_sanctum.png",
+  "integration": "Existing local Real-ESRGAN 4x, 96PPU registration, then assemble only the measured stair footprint with Tools/art/apply_sanctum_stair_patch.ps1 using Windows PowerShell 5.1. All pixels outside the recorded patch remain identical.",
+  "inference_manifest": "work/sanctum-single-stair/generated-full-manifest.json",
+  "retained_foreground_asset": "Assets/StreamingAssets/SunkenSanctum/stairs.png",
+  "validation": "Docs/World/SanctumSingleStair/verification.json"
+}

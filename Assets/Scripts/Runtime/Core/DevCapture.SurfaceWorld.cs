@@ -139,6 +139,9 @@ namespace DotRPG
                 object movement = null;
                 if (!groundOnly)
                     yield return SurfaceExercise(map.id, surfaceInput, exercise, result => movement = result);
+                object stairs = null;
+                if (map.id == MapRegistry.Sanctum && Game.World.MapId == map.id)
+                    yield return SurfaceStairs(surfaceInput, !groundOnly, result => stairs = result);
                 // An unexpected portal transition is already a failed movement check;
                 // stop exporting rather than attaching the next map's state to this id.
                 if (Game.World.MapId != map.id)
@@ -189,6 +192,7 @@ namespace DotRPG
                     ("baselineHash", SurfaceHash(Encoding.UTF8.GetBytes(invariantText))), ("screenshots", graphics),
                     ("groundOnlyCapture", groundCapture), ("surfaceComposition", composition), ("vistaCapture", vistaCapture),
                     ("routeAudit", routeAudit), ("movement", movement), ("loadMilliseconds", loadMilliseconds),
+                    ("sanctumStairs", stairs),
                     ("previousCompositionReleased", oldReleased), ("previousOwnedLayerResources", oldResources.Length)));
                 File.WriteAllText(Path.Combine(folder, "surface-index.json"), MiniJson.Write(index));
                 yield return null;
@@ -317,14 +321,16 @@ namespace DotRPG
             var resources = new List<UnityEngine.Object>();
             foreach (var scene in scenes)
             {
-                foreach (var layer in scene.Layers)
-                    if (layer != null && layer.sprite != null) { resources.Add(layer.sprite); resources.Add(layer.sprite.texture); }
+                resources.AddRange(scene.OwnedResources);
                 var grounding = scene.GetComponent<SurfacePropGrounding>();
                 if (grounding != null) resources.AddRange(grounding.OwnedResources);
                 var canopy = scene.transform.parent.GetComponent<ForestCanopyScene>();
                 if (canopy != null) resources.AddRange(canopy.OwnedResources);
+                var world = scene.GetComponentInParent<WorldBuilder>();
+                if (world != null) foreach (var water in world.GetComponentsInChildren<LivingWater>())
+                    resources.AddRange(water.OwnedMasks);
             }
-            return resources.ToArray();
+            return resources.Distinct().ToArray();
         }
 
         object SurfaceRoutes(string id, Rect bounds, int w, int h, int px, byte[] free, char[,] cells, out List<Vector2> exercise)
@@ -458,6 +464,98 @@ namespace DotRPG
             }
         }
 
+        IEnumerator SurfaceStairs(ScriptedInput input, bool walk, Action<object> report)
+        {
+            var allStairs = Game.World.GetComponentsInChildren<SpriteRenderer>(true)
+                .Where(r => r.name == "Central terrace stairs" || r.sprite != null && r.sprite.name == "sanctum_stairs").ToArray();
+            var stair = allStairs.FirstOrDefault();
+            var asset = SunkenSanctumArt.Asset("stairs");
+            bool one = allStairs.Length == 1 && stair != null && stair.enabled && !stair.forceRenderingOff && stair.gameObject.activeInHierarchy;
+            bool unchanged = one && asset != null && stair.sprite == asset && stair.sprite.name == "sanctum_stairs"
+                && Vector2.Distance(stair.transform.position, new Vector2(24, 42)) < .001f
+                && (stair.transform.localScale - new Vector3(4 / asset.bounds.size.x, 6.2f / asset.bounds.size.y, 1)).sqrMagnitude < .000001f
+                && Quaternion.Angle(stair.transform.rotation, Quaternion.identity) < .001f && stair.sortingOrder == -27900;
+            DCheck("sanctum exactly one active foreground staircase", one);
+            DCheck("sanctum original stairs sprite position size and order retained", unchanged);
+            var curbs = Game.World.GetComponentsInChildren<BoxCollider2D>(true).Where(c => c.name == "Stair side curb").ToArray();
+            bool curbsUnchanged = curbs.Length == 2 && curbs.All(c => c.enabled && c.gameObject.activeInHierarchy && !c.isTrigger
+                && (c.size - new Vector2(.3f, 4.4f)).sqrMagnitude < .000001f && c.offset == Vector2.zero
+                && c.transform.localScale == Vector3.one && Quaternion.Angle(c.transform.rotation, Quaternion.identity) < .001f)
+                && new[] { 22.15f, 25.85f }.All(x => curbs.Any(c => Vector2.Distance(c.transform.position, new Vector2(x, 44.4f)) < .001f));
+            DCheck("sanctum two original stair curb collisions retained", curbsUnchanged);
+            // (24,49) is the original upper pond, not the landing. Use the real
+            // stair crest then turn west to the upper terrace, matching SanctumRun.
+            var path = new[] { new Vector2(24, 42), new Vector2(24, 47.2f), new Vector2(18, 47.2f), new Vector2(18, 49) };
+            bool routeFree = true;
+            for (int segment = 1; segment < path.Length; segment++)
+            {
+                int samples = Mathf.CeilToInt(Vector2.Distance(path[segment - 1], path[segment]) * 8);
+                for (int step = 0; step <= samples; step++)
+                    routeFree &= Game.World.IsFree(Vector2.Lerp(path[segment - 1], path[segment], step / (float)samples));
+            }
+            DCheck("sanctum existing stair and upper landing feet corridor free", routeFree);
+            DCheck("sanctum upper central pond remains blocked", !Game.World.IsFree(new Vector2(24, 49)));
+            bool outward = false, returned = false, allFeetFree = true;
+            var trace = new List<Vector2>(); float started = Time.realtimeSinceStartup;
+            Vector2 oldPosition = Game.Player.Position, oldMove = input.Move;
+            Facing oldFacing = Game.Player.Facing;
+            var camera = Game.Camera.Camera; Vector3 oldCameraPosition = camera.transform.position;
+            float oldZoom = camera.orthographicSize;
+            if (walk && routeFree)
+            {
+                IEnumerator To(Vector2 target)
+                {
+                    float deadline = Time.realtimeSinceStartup + 7f;
+                    while (Game.World.MapId == MapRegistry.Sanctum && Vector2.Distance(Game.Player.Position, target) > .06f
+                        && Time.realtimeSinceStartup < deadline)
+                    {
+                        input.Move = Vector2.ClampMagnitude((target - Game.Player.Position) / .25f, 1);
+                        yield return null;
+                        allFeetFree &= Game.World.IsFree(Game.Player.Position);
+                        if (trace.Count == 0 || Vector2.Distance(trace[trace.Count - 1], Game.Player.Position) > .25f) trace.Add(Game.Player.Position);
+                    }
+                    input.Move = Vector2.zero;
+                }
+                try
+                {
+                    Game.Player.Place(path[0], Facing.Up); Game.Camera.SetTarget(Game.Player.transform, true);
+                    bool reached = true;
+                    for (int i = 1; i < path.Length && reached; i++)
+                    {
+                        yield return To(path[i]);
+                        reached &= Game.World.MapId == MapRegistry.Sanctum && Vector2.Distance(Game.Player.Position, path[i]) < .12f;
+                    }
+                    outward = reached;
+                    for (int i = path.Length - 2; i >= 0 && reached; i--)
+                    {
+                        yield return To(path[i]);
+                        reached &= Game.World.MapId == MapRegistry.Sanctum && Vector2.Distance(Game.Player.Position, path[i]) < .12f;
+                    }
+                    returned = reached;
+                }
+                finally
+                {
+                    input.Move = oldMove;
+                    if (Game.World.MapId == MapRegistry.Sanctum)
+                    {
+                        Game.Player.Place(oldPosition, oldFacing); Game.Player.GetComponent<YSort>()?.Refresh();
+                        Game.Camera.SetTarget(Game.Player.transform, true); camera.transform.position = oldCameraPosition;
+                    }
+                }
+                DCheck("sanctum actual input climbs stairs and reaches upper terrace", outward);
+                DCheck("sanctum actual input returns down original stairs", returned);
+                DCheck("sanctum stair traversal feet stay free", allFeetFree);
+                DCheck("sanctum stair traversal restores player and camera", Game.World.MapId == MapRegistry.Sanctum
+                    && Game.Player.Position == oldPosition && Game.Player.Facing == oldFacing && camera.orthographicSize == oldZoom
+                    && camera.transform.position == oldCameraPosition);
+            }
+            report(HRow(("oneActiveStaircase", one), ("originalSpriteAndTransform", unchanged), ("curbsUnchanged", curbsUnchanged),
+                ("sprite", stair == null || stair.sprite == null ? null : stair.sprite.name), ("position", stair == null ? null : SurfacePoint(stair.transform.position)),
+                ("route", path.Select(SurfacePoint).ToList()), ("routeFree", routeFree), ("tested", walk && routeFree),
+                ("outward", outward), ("returned", returned), ("allFeetFree", allFeetFree), ("trace", trace.Select(SurfacePoint).ToList()),
+                ("milliseconds", (Time.realtimeSinceStartup - started) * 1000f)));
+        }
+
         // Exact old terrain renderers, not a broad sort-order test (which would admit
         // light glows, water overlays, arrows and props). No changes to their objects.
         static bool SurfaceOriginalGround(Renderer renderer)
@@ -522,6 +620,8 @@ namespace DotRPG
         object SurfaceSceneAudit(string mapId)
         {
             var scenes = Game.World.GetComponentsInChildren<SurfaceWorldScene>();
+            if (int.TryParse(SurfaceArg("-surfaceExpectedPpu"), out int requiredPpu))
+                DCheck(mapId + " requested composition exists at " + requiredPpu + "ppu", scenes.Length == 1);
             if (scenes.Length == 0) return null; // Baseline/fallback maps have no composition metadata.
             DCheck(mapId + " one map-owned surface composition", scenes.Length == 1);
             var s = scenes[0];
@@ -529,6 +629,20 @@ namespace DotRPG
             DCheck(mapId + " exclusive composition layer slots", s.Layers.Length == 3 && s.LayerCount > 0 && s.UncoveredPixels == 0 && s.OverlappingPixels == 0 && s.MismatchedPixels == 0);
             DCheck(mapId + " supporting edges avoid walkable terrain", s.SupportOnWalkablePixels == 0);
             DCheck(mapId + " composition uses sharp pixels", s.Layers.Where(r => r != null).All(r => r.sprite != null && r.sprite.texture.filterMode == FilterMode.Point));
+            var textures = s.Layers.Where(r => r != null).Select(r => r.sprite.texture).Distinct().ToArray();
+            DCheck(mapId + " composition shares one unreadable source texture", textures.Length == 1 && textures[0] == s.SharedTexture
+                && !s.SharedTexture.isReadable && s.OwnedResources.OfType<Texture2D>().Count() == 1);
+            DCheck(mapId + " mesh cells and source UVs exactly partition artwork", s.WrongOwnerPixels == 0 && s.PixelBoundsErrors == 0
+                && s.MismatchedPixels == 0 && s.LayerVertexCounts.Length == 3 && s.LayerTriangleCounts.Length == 3);
+            int expectedPpu = s.SourceWidth >= s.WorldBounds.width * 96 && s.SourceHeight >= s.WorldBounds.height * 96 ? 96
+                : s.SourceWidth >= s.WorldBounds.width * 48 && s.SourceHeight >= s.WorldBounds.height * 48 ? 48 : 32;
+            DCheck(mapId + " registered source resolution is preserved", s.PixelsPerUnit == expectedPpu
+                && s.RasterWidth == s.WorldBounds.width * expectedPpu && s.RasterHeight == s.WorldBounds.height * expectedPpu
+                && s.SharedTexture.width == s.RasterWidth && s.SharedTexture.height == s.RasterHeight
+                && s.SharedTexture.width <= SystemInfo.maxTextureSize && s.SharedTexture.height <= SystemInfo.maxTextureSize);
+            if (int.TryParse(SurfaceArg("-surfaceExpectedPpu"), out int requestedPpu))
+                DCheck(mapId + " requested artwork resolution " + requestedPpu, s.PixelsPerUnit == requestedPpu);
+            var waterAudit = SurfaceWaterAudit(mapId, s);
             var grounding = s.GetComponent<SurfacePropGrounding>();
             if (grounding != null)
                 DCheck(mapId + " contact layer is visual only and below actors", grounding.Renderer != null
@@ -544,6 +658,10 @@ namespace DotRPG
             }
             return HRow(("mapId", s.MapId), ("sourcePath", s.SourcePath), ("sourceWidth", s.SourceWidth), ("sourceHeight", s.SourceHeight),
                 ("propGrounding", grounding == null ? null : HRow(("props", grounding.PropCount), ("shadowPixels", grounding.ShadowPixelCount), ("ownedResources", grounding.OwnedResources.Length))),
+                ("waterRegistration", waterAudit), ("sharedTextureCount", textures.Length), ("texturePayloadBytes", s.TexturePayloadBytes),
+                ("storage", "one shared texture; exclusive tile-run sprite meshes"), ("maxTextureSize", SystemInfo.maxTextureSize),
+                ("layerVertexCounts", s.LayerVertexCounts), ("layerTriangleCounts", s.LayerTriangleCounts),
+                ("wrongOwnerPixels", s.WrongOwnerPixels), ("pixelBoundsErrors", s.PixelBoundsErrors),
                 ("forestCanopy", canopy == null ? null : HRow(("edgeTrees", canopy.EdgeTrees), ("rearTrees", canopy.RearTrees),
                     ("staticTreeViews", canopy.StaticTreeViews), ("deadTreeViews", canopy.DeadTreeViews), ("species", canopy.SpeciesCount),
                     ("entranceSitesSkipped", canopy.EntranceSitesSkipped), ("ownedResources", canopy.OwnedResources.Length))),
@@ -557,6 +675,40 @@ namespace DotRPG
                 ("hiddenUnsupportedLandmarks", Game.World.SurfaceHiddenUnsupportedLandmarkCount),
                 ("layers", s.Layers.Select(r => (object)HRow(("name", r == null ? null : r.name), ("order", r == null ? 0 : r.sortingOrder),
                     ("enabled", r != null && r.enabled))).ToList()));
+        }
+
+        object SurfaceWaterAudit(string mapId, SurfaceWorldScene scene)
+        {
+            var results = new List<object>();
+            var floor = scene.Layers.Length > 2 ? scene.Layers[2] : null;
+            foreach (var water in Game.World.GetComponentsInChildren<LivingWater>())
+            {
+                bool expectedBinding = floor != null && water.Field != null && water.Field.WetPixels > 0
+                    && water.Field.Width == scene.WorldBounds.width * 32 && water.Field.Height == scene.WorldBounds.height * 32;
+                if (expectedBinding) DCheck(mapId + " composed floor is bound to existing water simulation", water.CompositionBindingCount > 0);
+                if (water.CompositionBindingCount == 0) continue;
+                var mask = water.CompositionMask;
+                var props = new MaterialPropertyBlock(); if (floor != null) floor.GetPropertyBlock(props);
+                int errors = 0;
+                if (floor != null)
+                {
+                    var vertices = floor.sprite.vertices; var uv = floor.sprite.uv;
+                    for (int i = 0; i < vertices.Length; i++)
+                    {
+                        Vector2 world = floor.transform.TransformPoint(vertices[i]);
+                        if (Mathf.Abs(uv[i].x * water.Field.Width - world.x * 32f) > .003f
+                            || Mathf.Abs(uv[i].y * water.Field.Height - world.y * 32f) > .003f) errors++;
+                    }
+                }
+                bool aligned = floor != null && mask != null && props.GetTexture("_WaterMask") == mask
+                    && mask.width == water.Field.Width && mask.height == water.Field.Height
+                    && mask.filterMode == FilterMode.Point && !mask.isReadable && errors == 0;
+                DCheck(mapId + " shared water mask retains exact 32ppu world registration", aligned);
+                results.Add(HRow(("bindings", water.CompositionBindingCount), ("width", mask == null ? 0 : mask.width),
+                    ("height", mask == null ? 0 : mask.height), ("pixelsPerUnit", 32), ("worldUvErrors", errors),
+                    ("texturePayloadBytes", mask == null ? 0L : (long)mask.width * mask.height * 4), ("aligned", aligned)));
+            }
+            return results;
         }
 
         static bool SurfaceStatic(Collider2D hit)

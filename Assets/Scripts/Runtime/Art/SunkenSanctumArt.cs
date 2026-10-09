@@ -57,8 +57,10 @@ namespace DotRPG
         {
             if(terrain==null)terrain=PaintShore(cells,w,h,shore);
             Put(root,"Sanctum terrain",terrain,Vector2.zero,new Vector2(w,h),-30000);
-            Put(root,"Terrace retaining wall west",Asset("terrace_wall"),new Vector2(16.5f,43),new Vector2(11,4.5f),-29000);
-            Put(root,"Terrace retaining wall east",Asset("terrace_wall"),new Vector2(31.5f,43),new Vector2(11,4.5f),-29000);
+            // The stair rails taper inward above their feet. Extend the walls beneath
+            // those rails, keeping their outer ends fixed and the stairs drawn in front.
+            Put(root,"Terrace retaining wall west",Asset("terrace_wall"),new Vector2(16.95f,43),new Vector2(11.9f,4.5f),-29000);
+            Put(root,"Terrace retaining wall east",Asset("terrace_wall"),new Vector2(31.05f,43),new Vector2(11.9f,4.5f),-29000);
             Structure(root,"arch",new Vector2(24,54),new Vector2(19,17));
             Structure(root,"tower_left",new Vector2(9.5f,46),new Vector2(15,24));
             Structure(root,"tower_right",new Vector2(38,46),new Vector2(15,24),.94f);

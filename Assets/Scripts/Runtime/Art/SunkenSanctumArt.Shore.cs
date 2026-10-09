@@ -19,7 +19,6 @@ namespace DotRPG
             for(int y=0;y<p.Height;y++)for(int x=0;x<p.Width;x++)
             {
                 float wx=(x+.5f)/32,wy=h-(y+.5f)/32;
-                int tx=x/32,ty=h-1-y/32;
                 var stone=Stone(x,y);
                 float d=shore.LandDistance(wx,wy);
                 float waterDistance=shore.WaterDistance(wx,wy);
@@ -32,12 +31,9 @@ namespace DotRPG
                 {
                     // Keep the existing slab art, with restrained highlights away from the bank.
                     color=C((int)(stone.r*.94f+light*11),(int)(stone.g*.94f+light*10),(int)(stone.b*.93f+light*7));
-                    if(cells[tx,ty]=='L')
-                    {
-                        int step=y%16;
-                        color=step<3?C(185,173,134):step<11?C(139,136,110):C(63,70,55);
-                    }
-                    else if(d<.48f&&waterDistance>-.6f)
+                    // L still marks the walkable stair corridor in the layout. Its
+                    // ground stays dry stone; the separate stairs sprite draws the steps.
+                    if(d<.48f&&waterDistance>-.6f)
                     {
                         float variation=ShoreNoise(wx*1.2f,wy*.85f);
                         float cap=.23f+variation*.15f;
