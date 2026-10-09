@@ -19,9 +19,9 @@ namespace DotRPG
             if(atlas==null)
             {
                 string file=Path.Combine(Application.streamingAssetsPath,"Underworld/landmarks.png");
-                if(!File.Exists(file)){Debug.LogError("Missing underworld landmark atlas: "+file);return null;}
+                if(!StreamingFiles.Exists(file)){Debug.LogError("Missing underworld landmark atlas: "+file);return null;}
                 atlas=new Texture2D(2,2,TextureFormat.RGBA32,false){name="Underworld original landmarks"};
-                ImageConversion.LoadImage(atlas,File.ReadAllBytes(file));atlas.filterMode=FilterMode.Point;atlas.wrapMode=TextureWrapMode.Clamp;
+                ImageConversion.LoadImage(atlas,StreamingFiles.ReadAllBytes(file));atlas.filterMode=FilterMode.Point;atlas.wrapMode=TextureWrapMode.Clamp;
             }
             // Measured individual bounds retain the full generated silhouettes; source has real alpha.
             RectInt[] regions={new RectInt(0,0,553,545),new RectInt(554,0,448,525),new RectInt(1002,0,534,539),

@@ -20,7 +20,7 @@ namespace DotRPG
         static MaterialPixels ReadMaterial(string file)
         {
             var texture=new Texture2D(2,2,TextureFormat.RGBA32,false);
-            ImageConversion.LoadImage(texture,File.ReadAllBytes(Path.Combine(Application.streamingAssetsPath,"Underworld",file)));
+            ImageConversion.LoadImage(texture,StreamingFiles.ReadAllBytes(Path.Combine(Application.streamingAssetsPath,"Underworld",file)));
             var m=new MaterialPixels{pixels=texture.GetPixels32(),width=texture.width,height=texture.height};
             UnityEngine.Object.Destroy(texture);return m;
         }

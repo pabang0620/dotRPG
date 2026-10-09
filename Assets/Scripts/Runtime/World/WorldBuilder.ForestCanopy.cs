@@ -235,13 +235,13 @@ namespace DotRPG
             {
                 deadOakChecked = true;
                 string path = Path.Combine(Application.streamingAssetsPath, "SurfaceWorld", "Props", "dead_oak.png");
-                if (!File.Exists(path)) return null;
+                if (!StreamingFiles.Exists(path)) return null;
                 try
                 {
-                    if (new FileInfo(path).Length > 16 * 1024 * 1024) throw new InvalidDataException("Dead oak source is oversized");
+                    if (StreamingFiles.Length(path) > 16 * 1024 * 1024) throw new InvalidDataException("Dead oak source is oversized");
                     deadOak = new Texture2D(2, 2, TextureFormat.RGBA32, false)
                     { name = "Forest dead oak", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-                    if (!ImageConversion.LoadImage(deadOak, File.ReadAllBytes(path), false)
+                    if (!ImageConversion.LoadImage(deadOak, StreamingFiles.ReadAllBytes(path), false)
                         || deadOak.width > 2048 || deadOak.height > 2048) throw new InvalidDataException("Invalid dead oak PNG");
                     var pixels = deadOak.GetPixels32();
                     int left = deadOak.width, right = -1, bottom = deadOak.height, top = -1, clear = 0;

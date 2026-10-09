@@ -34,7 +34,7 @@ namespace DotRPG
             if(parent==null||info==null||info.worldLayer!=WorldLayer.Surface||info.IsInterior||info.instanced
                 ||width<=0||height<=0||terrainCells==null||terrainCells.GetLength(0)!=width||terrainCells.GetLength(1)!=height)return false;
             string path=SourcePath(info.id);
-            if(!File.Exists(path))return false;
+            if(!StreamingFiles.Exists(path))return false;
             var existing=parent.Find(SceneName)?.GetComponent<SurfaceWorldScene>();
             if(existing!=null&&existing.MapId==mapId){scene=existing;return true;}
 
@@ -45,7 +45,7 @@ namespace DotRPG
                 if(!SourceHeaderSupported(path))throw new InvalidDataException("Unsupported or oversized surface PNG");
                 source=new Texture2D(2,2,TextureFormat.RGBA32,false)
                 {name=mapId+" surface source",filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
-                if(!ImageConversion.LoadImage(source,File.ReadAllBytes(path),false)||source.width<32||source.height<32)
+                if(!ImageConversion.LoadImage(source,StreamingFiles.ReadAllBytes(path),false)||source.width<32||source.height<32)
                     throw new InvalidDataException("Surface PNG could not be decoded");
                 int sw=source.width,sh=source.height;
                 float aspectError=Mathf.Abs(((float)sw/sh)/((float)width/height)-1f);
@@ -220,12 +220,8 @@ namespace DotRPG
 
         static bool SourceHeaderSupported(string path)
         {
-            var file=new FileInfo(path);if(file.Length<24||file.Length>64L*1024*1024)return false;
-            var bytes=new byte[24];
-            using(var stream=File.OpenRead(path))
-            {
-                int read=0;while(read<24){int count=stream.Read(bytes,read,24-read);if(count==0)return false;read+=count;}
-            }
+            long length=StreamingFiles.Length(path);if(length<24||length>64L*1024*1024)return false;
+            var bytes=StreamingFiles.ReadHeader(path,24);if(bytes.Length<24)return false;
             if(bytes[0]!=137||bytes[1]!=80||bytes[2]!=78||bytes[3]!=71||bytes[4]!=13||bytes[5]!=10||bytes[6]!=26||bytes[7]!=10
                 ||bytes[12]!=73||bytes[13]!=72||bytes[14]!=68||bytes[15]!=82)return false;
             int w=(bytes[16]<<24)|(bytes[17]<<16)|(bytes[18]<<8)|bytes[19];

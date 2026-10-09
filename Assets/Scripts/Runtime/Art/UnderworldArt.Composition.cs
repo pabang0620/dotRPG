@@ -34,7 +34,7 @@ namespace DotRPG
             string basePath=Path.Combine(Application.streamingAssetsPath,"Underworld","composition-"+CompositionKinds[variant]+".png");
             string hdPath=Path.Combine(Application.streamingAssetsPath,"Underworld","composition-"+CompositionKinds[variant]+"_hd.png");
             // The old renderer remains available while original art is absent or incomplete.
-            if(!File.Exists(basePath)&&!File.Exists(hdPath))return false;
+            if(!StreamingFiles.Exists(basePath)&&!StreamingFiles.Exists(hdPath))return false;
             Texture2D source=null;
             GameObject sceneObject=null;
             try
@@ -139,7 +139,7 @@ namespace DotRPG
             out string path,out bool highResolution,out string fallbackReason)
         {
             path=basePath;highResolution=false;fallbackReason="HD source not present";
-            if(File.Exists(hdPath))
+            if(StreamingFiles.Exists(hdPath))
             {
                 Texture2D candidate=null;
                 try
@@ -159,7 +159,7 @@ namespace DotRPG
                 if(candidate!=null)UnityEngine.Object.Destroy(candidate);
                 Debug.LogWarning("Cave HD artwork rejected; using original artwork. "+fallbackReason+" ("+hdPath+")");
             }
-            return File.Exists(basePath)?DecodeCompositionSource(basePath):null;
+            return StreamingFiles.Exists(basePath)?DecodeCompositionSource(basePath):null;
         }
 
         static Texture2D DecodeCompositionSource(string path)
@@ -168,7 +168,7 @@ namespace DotRPG
             {name="Underworld composition source "+Path.GetFileNameWithoutExtension(path),filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
             try
             {
-                if(ImageConversion.LoadImage(texture,File.ReadAllBytes(path),false)&&texture.width>=32&&texture.height>=32)return texture;
+                if(ImageConversion.LoadImage(texture,StreamingFiles.ReadAllBytes(path),false)&&texture.width>=32&&texture.height>=32)return texture;
                 UnityEngine.Object.Destroy(texture);return null;
             }
             catch{UnityEngine.Object.Destroy(texture);throw;}
@@ -176,15 +176,10 @@ namespace DotRPG
 
         static bool CompositionHdHeaderValid(string path,int w,int h,out string reason)
         {
-            var file=new FileInfo(path);
-            if(file.Length<24||file.Length>64L*1024*1024){reason="HD PNG file size is outside the supported range";return false;}
-            var header=new byte[24];
-            using(var stream=File.OpenRead(path))
-            {
-                int read=0;
-                while(read<header.Length){int count=stream.Read(header,read,header.Length-read);if(count==0)break;read+=count;}
-                if(read<header.Length){reason="HD PNG header is incomplete";return false;}
-            }
+            long length=StreamingFiles.Length(path);
+            if(length<24||length>64L*1024*1024){reason="HD PNG file size is outside the supported range";return false;}
+            var header=StreamingFiles.ReadHeader(path,24);
+            if(header.Length<24){reason="HD PNG header is incomplete";return false;}
             if(header[0]!=137||header[1]!=80||header[2]!=78||header[3]!=71||header[4]!=13||header[5]!=10||header[6]!=26||header[7]!=10
                 ||header[12]!=73||header[13]!=72||header[14]!=68||header[15]!=82)
             {reason="HD source is not a PNG with an IHDR header";return false;}

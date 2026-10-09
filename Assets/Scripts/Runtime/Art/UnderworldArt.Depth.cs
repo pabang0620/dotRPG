@@ -13,9 +13,9 @@ namespace DotRPG
         static Texture2D DepthTexture(string filename)
         {
             var path=Path.Combine(Application.streamingAssetsPath,"Underworld",filename);
-            if(!File.Exists(path)){Debug.LogError("Missing cave scenery: "+path);return null;}
+            if(!StreamingFiles.Exists(path)){Debug.LogError("Missing cave scenery: "+path);return null;}
             var texture=new Texture2D(2,2,TextureFormat.RGBA32,false){name=filename};
-            ImageConversion.LoadImage(texture,File.ReadAllBytes(path));
+            ImageConversion.LoadImage(texture,StreamingFiles.ReadAllBytes(path));
             texture.filterMode=FilterMode.Point;texture.wrapMode=TextureWrapMode.Clamp;
             return texture;
         }

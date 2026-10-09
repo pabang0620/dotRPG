@@ -52,11 +52,11 @@ namespace DotRPG
         static PixelCanvas[] LoadPoses(string id)
         {
             string path=Path.Combine(Application.streamingAssetsPath,"Underworld",id+".png");
-            if(!File.Exists(path))throw new FileNotFoundException("Missing production underground monster atlas",path);
-            var atlas=JsonUtility.FromJson<Atlas>(File.ReadAllText(Path.ChangeExtension(path,".json")));
+            if(!StreamingFiles.Exists(path))throw new FileNotFoundException("Missing production underground monster atlas",path);
+            var atlas=JsonUtility.FromJson<Atlas>(StreamingFiles.ReadAllText(Path.ChangeExtension(path,".json")));
             if(atlas?.cells==null||atlas.cells.Length!=20)throw new InvalidDataException("Expected five facings and four authored poses: "+id);
             var source=new Texture2D(2,2,TextureFormat.RGBA32,false);
-            if(!ImageConversion.LoadImage(source,File.ReadAllBytes(path),false))throw new InvalidDataException(path);
+            if(!ImageConversion.LoadImage(source,StreamingFiles.ReadAllBytes(path),false))throw new InvalidDataException(path);
             var input=source.GetPixels32();int sourceWidth=source.width,sourceHeight=source.height;
             UnityEngine.Object.Destroy(source);
             var output=new PixelCanvas[40];

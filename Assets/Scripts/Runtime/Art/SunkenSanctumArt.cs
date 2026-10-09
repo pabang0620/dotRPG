@@ -14,7 +14,7 @@ namespace DotRPG
         {
             string paintedLayout=Path.Combine(Application.streamingAssetsPath,"SunkenSanctum/layout.txt");
             // Keep the layout delivered with this map's art authoritative in local preview players too.
-            if(File.Exists(paintedLayout))return File.ReadAllText(paintedLayout);
+            if(StreamingFiles.Exists(paintedLayout))return StreamingFiles.ReadAllText(paintedLayout);
             var asset=Resources.Load<TextAsset>("Maps/SunkenSanctum");
             return asset!=null?asset.text:StreamingFiles.ReadAllText(Path.Combine(Application.streamingAssetsPath,"SunkenSanctum/layout.txt"));
         }
