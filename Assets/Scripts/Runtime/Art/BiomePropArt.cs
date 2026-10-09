@@ -32,12 +32,12 @@ namespace DotRPG
             if (string.IsNullOrEmpty(atlasId)) atlasId = biome;
             string folder = Path.Combine(Application.streamingAssetsPath, "WorldProps");
             string metadataPath = Path.Combine(folder, "metadata.json");
-            if (!File.Exists(metadataPath)) return null;
+            if (!StreamingFiles.Exists(metadataPath)) return null;
             Texture2D texture = null;
             try
             {
-                if (new FileInfo(metadataPath).Length > 256 * 1024) throw new InvalidDataException("Oversized prop metadata");
-                var metadata = JsonUtility.FromJson<Metadata>(File.ReadAllText(metadataPath));
+                if (StreamingFiles.Length(metadataPath) > 256 * 1024) throw new InvalidDataException("Oversized prop metadata");
+                var metadata = JsonUtility.FromJson<Metadata>(StreamingFiles.ReadAllText(metadataPath));
                 Atlas atlas = null;
                 if (metadata?.atlases != null)
                     foreach (var entry in metadata.atlases) if (entry.id == atlasId) { atlas = entry; break; }
@@ -46,11 +46,11 @@ namespace DotRPG
                 if (atlas.columns <= 0 || atlas.rows <= 0 || cellCount > 64 || atlas.cells == null || atlas.cells.Length != cellCount
                     || atlas.file != atlasId + ".png") throw new InvalidDataException("Invalid prop atlas declaration: " + atlasId);
                 string file = Path.Combine(folder, atlas.file);
-                if (!File.Exists(file)) return null;
-                if (new FileInfo(file).Length > 32 * 1024 * 1024) throw new InvalidDataException("Oversized prop atlas: " + atlasId);
+                if (!StreamingFiles.Exists(file)) return null;
+                if (StreamingFiles.Length(file) > 32 * 1024 * 1024) throw new InvalidDataException("Oversized prop atlas: " + atlasId);
                 texture = new Texture2D(2, 2, TextureFormat.RGBA32, false)
                 { name = "Biome props " + atlasId, filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-                if (!ImageConversion.LoadImage(texture, File.ReadAllBytes(file), false)
+                if (!ImageConversion.LoadImage(texture, StreamingFiles.ReadAllBytes(file), false)
                     || texture.width > 4096 || texture.height > 4096)
                     throw new InvalidDataException("Invalid prop PNG: " + atlasId);
                 texture.filterMode = FilterMode.Point;
