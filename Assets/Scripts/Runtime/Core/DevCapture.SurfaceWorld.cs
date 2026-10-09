@@ -186,6 +186,10 @@ namespace DotRPG
                     }
                 }
                 object composition = SurfaceSceneAudit(map.id);
+                object propAudit = PropAudit(map.id);
+                object resourceAudit = null;
+                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-propsVerify") >= 0)
+                    yield return PropResourceExercise(result => resourceAudit = result);
                 index.Add(HRow(("id", map.id), ("name", map.displayName), ("theme", map.theme.ToString()),
                     ("town", MapRegistry.IsTown(map.id)), ("width", w), ("height", h), ("spawnFree", spawnFree),
                     ("freeSamples", freeSamples), ("collisionHash", collisionHash), ("terrainHash", terrainHash),
@@ -193,6 +197,7 @@ namespace DotRPG
                     ("groundOnlyCapture", groundCapture), ("surfaceComposition", composition), ("vistaCapture", vistaCapture),
                     ("routeAudit", routeAudit), ("movement", movement), ("loadMilliseconds", loadMilliseconds),
                     ("sanctumStairs", stairs),
+                    ("propIntegration", propAudit), ("resourceVisualLifecycle", resourceAudit),
                     ("previousCompositionReleased", oldReleased), ("previousOwnedLayerResources", oldResources.Length)));
                 File.WriteAllText(Path.Combine(folder, "surface-index.json"), MiniJson.Write(index));
                 yield return null;
@@ -329,6 +334,7 @@ namespace DotRPG
                 var world = scene.GetComponentInParent<WorldBuilder>();
                 if (world != null) foreach (var water in world.GetComponentsInChildren<LivingWater>())
                     resources.AddRange(water.OwnedMasks);
+                if (world != null) resources.AddRange(PropOwnedResources(world));
             }
             return resources.Distinct().ToArray();
         }
@@ -645,10 +651,37 @@ namespace DotRPG
             var waterAudit = SurfaceWaterAudit(mapId, s);
             var grounding = s.GetComponent<SurfacePropGrounding>();
             if (grounding != null)
-                DCheck(mapId + " contact layer is visual only and below actors", grounding.Renderer != null
-                    && grounding.Renderer.sortingOrder == -21000 && grounding.GetComponentsInChildren<Collider2D>().Length == 0
-                    && grounding.Renderer.sprite.texture.filterMode == FilterMode.Point);
+            {
+                var ownedContacts = new HashSet<UnityEngine.Object>(grounding.OwnedResources);
+                var expectedContacts = new HashSet<UnityEngine.Object>();
+                bool ContactPicture(Sprite picture)
+                {
+                    if (picture == null || picture.texture == null) return false;
+                    expectedContacts.Add(picture); expectedContacts.Add(picture.texture);
+                    return ownedContacts.Contains(picture) && ownedContacts.Contains(picture.texture)
+                        && picture.texture.filterMode == FilterMode.Point;
+                }
+                // Empty ground masks deliberately allocate no static layer. Resources
+                // may still own independent patches even when this shared layer is absent.
+                bool staticLayer = grounding.ShadowPixelCount == 0 ? grounding.Renderer == null
+                    : grounding.ShadowPixelCount > 0 && grounding.Renderer != null
+                        && grounding.Renderer.sortingOrder == -21000 && ContactPicture(grounding.Renderer.sprite);
+                bool resourceLayers = grounding.ResourceContacts.All(c => c != null && c.Node != null
+                    && c.transform.IsChildOf(s.transform) && c.Node.transform.IsChildOf(Game.World.transform)
+                    && c.Renderer != null && c.Renderer.transform.IsChildOf(c.transform)
+                    && c.Renderer.sortingOrder == -21000
+                    && (c.StandingSprite != null || c.DepletedSprite != null)
+                    && (c.StandingSprite == null || ContactPicture(c.StandingSprite))
+                    && (c.DepletedSprite == null || ContactPicture(c.DepletedSprite)));
+                bool contactCensus = grounding.ResourceContactCount == grounding.ResourceContacts.Count
+                    && (grounding.ResourceContactCount == 0 ? grounding.ResourceShadowPixelCount == 0 : grounding.ResourceShadowPixelCount > 0)
+                    && ownedContacts.Count == grounding.OwnedResources.Length && ownedContacts.SetEquals(expectedContacts);
+                DCheck(mapId + " contact layer is visual only and below actors", staticLayer && resourceLayers
+                    && grounding.GetComponentsInChildren<Collider2D>(true).Length == 0);
+                DCheck(mapId + " empty and resource contact ownership matches generated pixels", contactCensus);
+            }
             var canopy = Game.World.GetComponentInChildren<ForestCanopyScene>();
+            var hiddenNatureAudit = SurfaceHiddenNatureAudit(mapId);
             if (Game.World.SurfaceHiddenUnsupportedLandmarkCount > 0)
             {
                 var hiddenLandmarks = Game.World.GetComponentsInChildren<SpriteRenderer>()
@@ -656,8 +689,10 @@ namespace DotRPG
                 DCheck(mapId + " unsupported canyon decorations are visual only", hiddenLandmarks.Length == Game.World.SurfaceHiddenUnsupportedLandmarkCount
                     && hiddenLandmarks.All(r => r.GetComponentsInChildren<Collider2D>(true).Length == 0));
             }
-            return HRow(("mapId", s.MapId), ("sourcePath", s.SourcePath), ("sourceWidth", s.SourceWidth), ("sourceHeight", s.SourceHeight),
-                ("propGrounding", grounding == null ? null : HRow(("props", grounding.PropCount), ("shadowPixels", grounding.ShadowPixelCount), ("ownedResources", grounding.OwnedResources.Length))),
+            return HRow(("mapId", s.MapId), ("sourcePath", s.SourcePath), ("sourceSha256", SurfaceFileHash(s.SourcePath)), ("sourceWidth", s.SourceWidth), ("sourceHeight", s.SourceHeight),
+                ("propGrounding", grounding == null ? null : HRow(("props", grounding.PropCount), ("shadowPixels", grounding.ShadowPixelCount),
+                    ("staticRenderer", grounding.Renderer != null), ("resourceContacts", grounding.ResourceContactCount),
+                    ("resourceShadowPixels", grounding.ResourceShadowPixelCount), ("ownedResources", grounding.OwnedResources.Length))),
                 ("waterRegistration", waterAudit), ("sharedTextureCount", textures.Length), ("texturePayloadBytes", s.TexturePayloadBytes),
                 ("storage", "one shared texture; exclusive tile-run sprite meshes"), ("maxTextureSize", SystemInfo.maxTextureSize),
                 ("layerVertexCounts", s.LayerVertexCounts), ("layerTriangleCounts", s.LayerTriangleCounts),
@@ -673,6 +708,7 @@ namespace DotRPG
                 ("supportOnWalkablePixels", s.SupportOnWalkablePixels),
                 ("activeLayerCount", s.LayerCount), ("hiddenOriginalGroundRenderers", Game.World.SurfaceHiddenGroundRendererCount),
                 ("hiddenUnsupportedLandmarks", Game.World.SurfaceHiddenUnsupportedLandmarkCount),
+                ("hiddenUnsupportedNature", hiddenNatureAudit),
                 ("layers", s.Layers.Select(r => (object)HRow(("name", r == null ? null : r.name), ("order", r == null ? 0 : r.sortingOrder),
                     ("enabled", r != null && r.enabled))).ToList()));
         }
@@ -727,6 +763,13 @@ namespace DotRPG
         static string SurfaceHash(byte[] bytes)
         {
             using (var sha = SHA256.Create()) return BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
+        }
+
+        static string SurfaceFileHash(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
+            using (var input = File.OpenRead(path)) using (var sha = SHA256.Create())
+                return BitConverter.ToString(sha.ComputeHash(input)).Replace("-", "").ToLowerInvariant();
         }
         static void SurfacePng(string path, int w, int h, Color32[] colors)
         {

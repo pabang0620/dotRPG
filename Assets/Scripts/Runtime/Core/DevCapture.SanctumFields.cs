@@ -33,7 +33,8 @@ namespace DotRPG {
      DCheck(z.id+" actual terrain traversal",Vector2.Distance(Game.Player.Position,destination)<.5f);
      foreach(var e in mobs)foreach(var col in e.GetComponentsInChildren<Collider2D>())col.enabled=true;yield return Wait(3.5f);
      Game.Camera.SetTarget(Game.Player.transform,true);SanctumScreenshot(z.id+"-play");
-    }else DCheck(z.id+" scenery placed",Game.World.ObjectsRoot.GetComponentsInChildren<Transform>().Any(t=>t.name.StartsWith("Fantasy landmark")));
+    }else if(z.theme==MapTheme.Forest)DCheck(z.id+" decorative corner doors absent",!Game.World.ObjectsRoot.GetComponentsInChildren<Transform>(true).Any(t=>t.name.StartsWith("Fantasy landmark")));
+    else DCheck(z.id+" scenery placed",Game.World.ObjectsRoot.GetComponentsInChildren<Transform>().Any(t=>t.name.StartsWith("Fantasy landmark")));
     RenderRegion(Path.Combine(folder,z.id+"-overview.png"),Game.World.Bounds,24);
    }
    foreach(var pair in new[]{(MapRegistry.Sanctum,"sanctum_hall"),("sanctum_hall","sanctum_archive"),("sanctum_hall","sanctum_roots"),("sanctum_archive","sanctum_court"),("sanctum_roots","sanctum_court"),("sanctum_court","sanctum_archive"),("sanctum_court","sanctum_roots"),("sanctum_hall",MapRegistry.Sanctum)}){

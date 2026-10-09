@@ -1,0 +1,56 @@
+{
+  "method": "Generated original pixel-art plates; local Real-ESRGAN x4plus then Lanczos registration to exactly 96 pixels/tile",
+  "pixels_per_tile": 96,
+  "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",
+  "tool_sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c",
+  "model_sha256": "713ee713b0353afaa27976f0563a64a5043bd70b9bd8936c2e26e25ebcdbcddf",
+  "note": "Upscaling preserves registration; it does not establish collision alignment of generated artwork. In-game sampling remains Point. No camera or world-scale changes.",
+  "assets": [
+    {
+      "id": "forest",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\originals\\forest.png",
+      "source_size": [
+        1513,
+        1040
+      ],
+      "source_sha256": "1c7ae4f64a235b0a15daa24a58a545aa93c84a8e81364237d43513aff69783ce",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\forest-4x.png",
+      "inference_sha256": "9b76b742454a7b065879059c4d3890c0496094ae2835e74286349b29ab8efd63",
+      "inference_cache_reused": false,
+      "previous_output_size": [
+        6144,
+        4224
+      ],
+      "previous_output_sha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "output_size": [
+        6144,
+        4224
+      ],
+      "output_sha256": "8faae45833de096696304664ed7ad81971fccd41e4ce58f1b38e87d1e8947f63"
+    },
+    {
+      "id": "forest_ruins",
+      "source": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\originals\\forest_ruins.png",
+      "source_size": [
+        1415,
+        1112
+      ],
+      "source_sha256": "973ffcd38b3194480c6a4ab4874687b124ae45605bce1f5490547a94b48d21d2",
+      "inference_path": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\forest-background-style-art\\forest_ruins-4x.png",
+      "inference_sha256": "abaaa083ac9a3e4e17814eb041e11bd1aaa64edc9fe62c345a9fe26553207139",
+      "inference_cache_reused": false,
+      "previous_output_size": [
+        5376,
+        4224
+      ],
+      "previous_output_sha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0",
+      "output": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "output_size": [
+        5376,
+        4224
+      ],
+      "output_sha256": "3a885a81453229291321c84cb4c5d392d51682810498c3c65a2a47c23e99f82a"
+    }
+  ]
+}

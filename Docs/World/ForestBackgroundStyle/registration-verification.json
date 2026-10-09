@@ -1,0 +1,63 @@
+{
+  "status": "pass",
+  "pixels_per_tile": 96,
+  "registration_only": true,
+  "native_visual_collision_review": "pending root runtime review",
+  "other_map_count": 17,
+  "other_map_hashes_unchanged": true,
+  "old_four_backups_preserved": true,
+  "assets": [
+    {
+      "id": "forest",
+      "size": [
+        6144,
+        4224
+      ],
+      "registered_bytes": 33454790,
+      "registered_sha256": "8faae45833de096696304664ed7ad81971fccd41e4ce58f1b38e87d1e8947f63",
+      "source_sha256": "1c7ae4f64a235b0a15daa24a58a545aa93c84a8e81364237d43513aff69783ce",
+      "archived_source": "Docs/World/ForestBackgroundStyle/originals/forest.png",
+      "backup_verified": true,
+      "cache_verified": true
+    },
+    {
+      "id": "forest_ruins",
+      "size": [
+        5376,
+        4224
+      ],
+      "registered_bytes": 30110084,
+      "registered_sha256": "3a885a81453229291321c84cb4c5d392d51682810498c3c65a2a47c23e99f82a",
+      "source_sha256": "973ffcd38b3194480c6a4ab4874687b124ae45605bce1f5490547a94b48d21d2",
+      "archived_source": "Docs/World/ForestBackgroundStyle/originals/forest_ruins.png",
+      "backup_verified": true,
+      "cache_verified": true
+    },
+    {
+      "id": "forest_depths",
+      "size": [
+        5376,
+        4224
+      ],
+      "registered_bytes": 28316134,
+      "registered_sha256": "e93e37297c3168403bc64c5a1f9c329841a95e05daab0968339b43c91b2a965c",
+      "source_sha256": "4f1ce574384a4897eb72c06afe49bfbde9469acb04bf973c5eec6d838fb85064",
+      "archived_source": "Docs/World/ForestBackgroundStyle/originals/forest_depths.png",
+      "backup_verified": true,
+      "cache_verified": true
+    },
+    {
+      "id": "forest_crossing",
+      "size": [
+        5376,
+        4224
+      ],
+      "registered_bytes": 29805224,
+      "registered_sha256": "e707f9fc98c64461801a6823eb60540dfee6b33ba4b54b3a4a3b748cd4a7d0c0",
+      "source_sha256": "844f38e76c4a397c8896a39066c734aafe38b5d1207b0970bdb92fafa9102959",
+      "archived_source": "Docs/World/ForestBackgroundStyle/originals/forest_crossing.png",
+      "backup_verified": true,
+      "cache_verified": true
+    }
+  ]
+}

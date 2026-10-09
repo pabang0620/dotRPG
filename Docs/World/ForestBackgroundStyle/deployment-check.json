@@ -1,0 +1,27 @@
+[
+  {
+    "file": "DotRPG.Runtime.dll",
+    "sha256": "3DE440D20EA58D424FA57CD6F7E3295DAAD2015E166E835D5013FB478FC6C383",
+    "matched": true
+  },
+  {
+    "file": "forest.png",
+    "sha256": "8FAAE45833DE096696304664ED7AD81971FCCD41E4CE58F1B38E87D1E8947F63",
+    "matched": true
+  },
+  {
+    "file": "forest_ruins.png",
+    "sha256": "3A885A81453229291321C84CB4C5D392D51682810498C3C65A2A47C23E99F82A",
+    "matched": true
+  },
+  {
+    "file": "forest_depths.png",
+    "sha256": "E93E37297C3168403BC64C5A1F9C329841A95E05DAAB0968339B43C91B2A965C",
+    "matched": true
+  },
+  {
+    "file": "forest_crossing.png",
+    "sha256": "E707F9FC98C64461801A6823EB60540DFEE6B33BA4B54B3A4A3B748CD4A7D0C0",
+    "matched": true
+  }
+]

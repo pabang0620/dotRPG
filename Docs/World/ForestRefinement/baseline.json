@@ -1,0 +1,4008 @@
+{
+  "version": 1,
+  "targets": [
+    "forest",
+    "forest_crossing",
+    "forest_depths",
+    "forest_ruins"
+  ],
+  "gitHead": "395ea80df239ea0e5941347d5bfea43685fa5eb9",
+  "preexistingChanges": [
+    " M Assets/Scripts/Runtime/Core/DevCapture.SurfaceWorld.cs",
+    " M Assets/Scripts/Runtime/Core/DevCapture.WorldLayers.cs",
+    " M Assets/Scripts/Runtime/Interaction/ResourceNode.cs",
+    " M Assets/Scripts/Runtime/World/WorldBuilder.SurfaceGrounding.cs",
+    " M Assets/Scripts/Runtime/World/WorldBuilder.SurfaceWorld.cs",
+    "?? Assets/Scripts/Runtime/Art/BiomePropArt.cs",
+    "?? Assets/Scripts/Runtime/Art/BiomePropArt.cs.meta",
+    "?? Assets/Scripts/Runtime/Core/DevCapture.PropIntegration.cs",
+    "?? Assets/Scripts/Runtime/Core/DevCapture.PropIntegration.cs.meta",
+    "?? Assets/Scripts/Runtime/World/WorldBuilder.PropIntegration.cs",
+    "?? Assets/Scripts/Runtime/World/WorldBuilder.PropIntegration.cs.meta",
+    "?? Assets/StreamingAssets/WorldProps.meta",
+    "?? Assets/StreamingAssets/WorldProps/",
+    "?? Docs/World/PropIntegration/",
+    "?? Tools/art/register_world_props.py",
+    "?? Tools/art/verify_prop_invariants.py"
+  ],
+  "previousIndex": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\prop-integration-release\\surface-index.json",
+  "previousIndexSha256": "be65d42fccb0322adc5c2dd1920f0afffbc0d86d1d9b705c9370ea3ece9264f8",
+  "files": [
+    {
+      "path": "Assets/Resources/Maps/Canyon.txt",
+      "category": "layout",
+      "bytes": 4258,
+      "sha256": "068114b082115c94c7bad85fd312477e63d905f7c966b447a558629fd61a67f2"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon1.txt",
+      "category": "layout",
+      "bytes": 1115,
+      "sha256": "1d0b4658ead85afac2df663e44cc63fb42fbe8acdec19d41bcab6db8a2663e8e"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon2.txt",
+      "category": "layout",
+      "bytes": 1125,
+      "sha256": "794e27f93aecc7e918e01416d1d405dddf9161397bc0b45ee1b23b98add2b278"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Canyon3.txt",
+      "category": "layout",
+      "bytes": 1120,
+      "sha256": "07a97b644ddb6073a2c60d748fd6640a1efd5e706e843ec87abec5fb378fdd80"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/CanyonBoss.txt",
+      "category": "layout",
+      "bytes": 1293,
+      "sha256": "b6c700f1d508dfac779c694fdc6abe693ff0849403614df9454dece961bd53ac"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest1.txt",
+      "category": "layout",
+      "bytes": 1172,
+      "sha256": "964626a541b6cb4269ca69aba06d9d6745bcf9d4030b8f674e61cbf05dac5585"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest2.txt",
+      "category": "layout",
+      "bytes": 1182,
+      "sha256": "7dddfbc41911fc4d0a42df8fbceeb9568ef5ab01ef8af168c1f11c4d2eec048f"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Forest3.txt",
+      "category": "layout",
+      "bytes": 1185,
+      "sha256": "4ad1279e7dc8569d71012de16ef5c13d03ab44aaa587c857c0475fe6a50a2a63"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/ForestBoss.txt",
+      "category": "layout",
+      "bytes": 1363,
+      "sha256": "8eca4b275d9de2a06268fe3cb1fa5e84deade9c7ad7572b9962b72aa7e69187d"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Raid1.txt",
+      "category": "layout",
+      "bytes": 1276,
+      "sha256": "3b039f45ab8c2e070ba6324e14472d938c6f24c2da7d7923cb1b76e053da2cd3"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Raid2.txt",
+      "category": "layout",
+      "bytes": 1325,
+      "sha256": "b1b23697bd779b55ba3f175bfc397abf68dbb799e18e0d6b0b77f00c5f387dfd"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/RaidBoss.txt",
+      "category": "layout",
+      "bytes": 1299,
+      "sha256": "c153e641f32560aad4c4cb59292c0aafca453ddde5ea16b1b4b6a1a27a534dbc"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter1.txt",
+      "category": "layout",
+      "bytes": 1168,
+      "sha256": "45aee26cbcb5e8efc1cac30b7b81abd6e58428206cc276360cb78ee535d3b630"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter2.txt",
+      "category": "layout",
+      "bytes": 1157,
+      "sha256": "edfe654ed569e2da3e894d4dab25cc24de31eaa06e6009e2be2b5c1bc835ff1b"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/Winter3.txt",
+      "category": "layout",
+      "bytes": 1183,
+      "sha256": "da4f82c220ad223a49bdfc60926533e6df8af5b10db171d921078793c8945f1b"
+    },
+    {
+      "path": "Assets/Resources/Maps/Dungeons/WinterBoss.txt",
+      "category": "layout",
+      "bytes": 1356,
+      "sha256": "9de4f9b207a34463263f9c23fa37f3a8922e64b32a876f032c902b9dcf1bbd7c"
+    },
+    {
+      "path": "Assets/Resources/Maps/Forest.txt",
+      "category": "layout",
+      "bytes": 3782,
+      "sha256": "b270411299eb63d1f725042bfd7e4c19ce4b78397069d20c37b7c963b1d59e55"
+    },
+    {
+      "path": "Assets/Resources/Maps/SunkenSanctum.txt",
+      "category": "layout",
+      "bytes": 3716,
+      "sha256": "9f9031851934d1459b93169b660649d38ffa3bd03a1721138b665d606e42c724"
+    },
+    {
+      "path": "Assets/Resources/Maps/Village.txt",
+      "category": "layout",
+      "bytes": 4696,
+      "sha256": "5129964efb79bd39868f372075c4b37c4149435044d72680949c75449c22b92b"
+    },
+    {
+      "path": "Assets/Resources/Maps/Winter.txt",
+      "category": "layout",
+      "bytes": 3635,
+      "sha256": "04502e636ee847a5ad12c81911b951eebad4d6147e4d02f38bbaf7cfe79d8da1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerAura.cs",
+      "category": "combat_source",
+      "bytes": 5133,
+      "sha256": "1566887967aefd76af755b1329c606e90d40fa5bf044005d96e1f5ca3e9b45fd"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Arcanist.cs",
+      "category": "combat_source",
+      "bytes": 20694,
+      "sha256": "1de79ee861b7e4b99d4e3c5eeae8c4162d40c2632da4780a673e05efb3b0894c"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Bishop.cs",
+      "category": "combat_source",
+      "bytes": 15190,
+      "sha256": "090db985c06f7af0b89ffe58b9b89a3861d69319a4fcb517419aea668e14e8a4"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Fighter.cs",
+      "category": "combat_source",
+      "bytes": 15357,
+      "sha256": "8534453927a16c60afddb773cf4cb59a9e8a3b9dc9b59a7fc47cee0eeaaa41fe"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.Guardian.cs",
+      "category": "combat_source",
+      "bytes": 15149,
+      "sha256": "8eea3507b5bcfcb1815ec2842a518eb3c4f96e5c67fa398ff0b05f55bac7ca65"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerCombat.cs",
+      "category": "combat_source",
+      "bytes": 20079,
+      "sha256": "541c4d297f46bbc9d235f9bc210f2eb936ca54805165a7d05980e0c02479a6d7"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CareerFx.cs",
+      "category": "combat_source",
+      "bytes": 18241,
+      "sha256": "a3a9934ecbdf0213d7fc29738115cb040c767579bc9131aa23bd90c6cb777d8c"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/CombatFeedback.cs",
+      "category": "combat_source",
+      "bytes": 9666,
+      "sha256": "32f225035312c9f98efbc8c2bcc03048fee4c30402279fedaaecb470d0ac1598"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Damage.cs",
+      "category": "combat_source",
+      "bytes": 1916,
+      "sha256": "1abb100d933e8ee0b5a3fa52d167e09a2e7eaf4831df573a7dce7aaff880aa49"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Fx.cs",
+      "category": "combat_source",
+      "bytes": 5032,
+      "sha256": "442beeb3807a4319faae7332f73d1a140db97d32a05b8f25867f07c36c0090b4"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Health.cs",
+      "category": "combat_source",
+      "bytes": 2571,
+      "sha256": "c783f9c0c632fa3263abf7c048a6c18f6124bfa4fa9123a13e31b913112a1668"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/HitFlash.cs",
+      "category": "combat_source",
+      "bytes": 3599,
+      "sha256": "c775e50784806c96cdab04c7894b5adfef86a854be543d02d02bf63a8bf52123"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/MagicBolt.cs",
+      "category": "combat_source",
+      "bytes": 6562,
+      "sha256": "04e88343593a665d4d6cadb844e9110d5f6b061986999d46e6861f9dc08cf3dc"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/PowerAura.cs",
+      "category": "combat_source",
+      "bytes": 6829,
+      "sha256": "c46a5ce0ce84e19626903247002423cff1de64757b3d76eb0d5b8df6238ea6d1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/SkillEffects.cs",
+      "category": "combat_source",
+      "bytes": 57443,
+      "sha256": "cdb06d47ceb77cf03eba258fea85419eecd7d0f4b1e5550b8d41a595ba0201eb"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/Telegraph.cs",
+      "category": "combat_source",
+      "bytes": 17869,
+      "sha256": "872f0ac7092dc648747e1d851695bdc86d623b508bb97b2da903a4e78bc45c8c"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Combat/VfxPlayer.cs",
+      "category": "combat_source",
+      "bytes": 6004,
+      "sha256": "e4cba6f97ec60acfe13c330b80663960ca1794626aea10b44d51056874e78319"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/EnemyStats.cs",
+      "category": "combat_stats",
+      "bytes": 1601,
+      "sha256": "bfbd606755363b2efd8bc46ac7b4a29d139cc78d785bd35bde69a27f9c2bda52"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/GameConfig.cs",
+      "category": "combat_stats",
+      "bytes": 9693,
+      "sha256": "40b87ad6de4dd7954b8cd7a8031241e803683918cd253c1fb72d3407729eb024"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Data/PlayerStats.cs",
+      "category": "combat_stats",
+      "bytes": 1337,
+      "sha256": "ff2846a34a1f657f778f62c035353cb707fc6e8dac231c5a57cf1bfea81681e6"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/BossBrain.cs",
+      "category": "combat_source",
+      "bytes": 23610,
+      "sha256": "639e7d42ee081516a3049c4a15ea610d1be4a9371fd3556a9c39a56c5a8d10a1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.Monster.cs",
+      "category": "combat_source",
+      "bytes": 13901,
+      "sha256": "8a4b09c3bd6500e7ad0dec630b2a000fb9b07ebc572a9faf266df16b5b82f752"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.Net.cs",
+      "category": "combat_source",
+      "bytes": 4988,
+      "sha256": "91a256502a25a82a5a964dead071caa523abaacb5273326cfae6dbfea68698bd"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.cs",
+      "category": "combat_source",
+      "bytes": 21836,
+      "sha256": "fd94a9f7ea71037d76472c0708f9438dd2ddb670687f20858bc1d6f2866f4cc4"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemySpawner.FieldBoss.cs",
+      "category": "combat_source",
+      "bytes": 1797,
+      "sha256": "17dce3a3019ca8fb603313cc94535a7e30a3ffe68502b55f6b714484f9be8164"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemySpawner.cs",
+      "category": "combat_source",
+      "bytes": 7587,
+      "sha256": "51792f624fc9820f5cef5620044e51169b3fb09358bc805a250f52a05bad393d"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterBehaviour.cs",
+      "category": "combat_source",
+      "bytes": 11585,
+      "sha256": "0b15c6a1af7edbdcad9cf72355c7a2e25ab76aea8e8af89c5b563f604f1b96ed"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterBehaviours.cs",
+      "category": "combat_source",
+      "bytes": 16649,
+      "sha256": "b219103206701182a1c0ef4f7459f234842f45206ff5f9679fd1c986850a42cd"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterDatabase.cs",
+      "category": "combat_source",
+      "bytes": 26091,
+      "sha256": "74fb52f350fc50eb27008fc7a367ebc3c66e4e00fd1555b4756df9ada3b66ffb"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/MonsterProjectile.cs",
+      "category": "combat_source",
+      "bytes": 5533,
+      "sha256": "23c81e3ce06593c8d08f8c329328c90975e907564ac7cccb5cc788edc9143ee1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Interaction/ResourceNode.cs",
+      "category": "resource_behavior",
+      "bytes": 8716,
+      "sha256": "c91c0bec2dd205920e0ec2e6788b547354ff1c264d147b625bbfe88240fca61e"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingGrounds.cs",
+      "category": "navigation",
+      "bytes": 9628,
+      "sha256": "2d658a128b7793d35bcf08c80644beafe1463709daa82e6a5e85d8fb83a072bd"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/HuntingLayouts.cs",
+      "category": "navigation",
+      "bytes": 7217,
+      "sha256": "d5f85e70758963cf57210a4c6d32a214b8a7b21ecaf5b62352db43ee970eb643"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.Dungeon.cs",
+      "category": "navigation",
+      "bytes": 4918,
+      "sha256": "3828a646b100a7d57a54f22a63ba569af07c2a9c5be0f6c6a0aa45c8ec687794"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.cs",
+      "category": "navigation",
+      "bytes": 8274,
+      "sha256": "28cc07489fb5d9e16229c5251f755a03603e855ba023fcad551f812141e4e7aa"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/SunkenSanctumShore.cs",
+      "category": "navigation",
+      "bytes": 9490,
+      "sha256": "218258c70c19742c1871207521c1926e0aefd0eec20aef1368b8d29c7a759ec0"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldComposition.cs",
+      "category": "navigation",
+      "bytes": 4982,
+      "sha256": "994000cb4d5115fa8296823ccd0d328edd5ad2329487ed1f6f046a265d8d31d1"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldCompositionNav.cs",
+      "category": "navigation",
+      "bytes": 14719,
+      "sha256": "08bbf8063daa5b0133fb6b38a7c6b58940a8ea925682fed5a1f311de9a6c3e61"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldContour.cs",
+      "category": "navigation",
+      "bytes": 4519,
+      "sha256": "7a3eaf95323b95fd1314e0c0e16ae28322ee87566538c43b8534647663c2b253"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/UnderworldLayouts.cs",
+      "category": "navigation",
+      "bytes": 5305,
+      "sha256": "b99ad227a0e21c92bfc721c2402605bb2794894633a80c89bd41278abde9afdf"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldLayers.cs",
+      "category": "navigation",
+      "bytes": 864,
+      "sha256": "b96f0a05cdec30ad244f3ae64309baefb91b3fdeb96a99c04cb4b8221231f122"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldRoutes.cs",
+      "category": "navigation",
+      "bytes": 3952,
+      "sha256": "5397da029e1543068b630237341596954bf62b979536e3ab7a4031a9af0cf076"
+    },
+    {
+      "path": "Assets/StreamingAssets/SunkenSanctum/layout.txt",
+      "category": "layout",
+      "bytes": 3716,
+      "sha256": "9f9031851934d1459b93169b660649d38ffa3bd03a1721138b665d606e42c724"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/Props/dead_oak.png",
+      "category": "existing_prop_atlas",
+      "bytes": 1672315,
+      "sha256": "1af7a42b64c9cefa79b23c5ec53ef67bc37fc7cf131945b51eee620990e673db"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "category": "surface_background",
+      "bytes": 32482789,
+      "sha256": "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+      "category": "surface_background",
+      "bytes": 29029168,
+      "sha256": "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+      "category": "surface_background",
+      "bytes": 27998598,
+      "sha256": "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+      "category": "surface_background",
+      "bytes": 27145150,
+      "sha256": "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+      "category": "surface_background",
+      "bytes": 27684063,
+      "sha256": "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest.png",
+      "category": "surface_background",
+      "bytes": 34767348,
+      "sha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+      "category": "surface_background",
+      "bytes": 30900032,
+      "sha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+      "category": "surface_background",
+      "bytes": 29340061,
+      "sha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+      "category": "surface_background",
+      "bytes": 31349335,
+      "sha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_archive.png",
+      "category": "surface_background",
+      "bytes": 28806574,
+      "sha256": "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_court.png",
+      "category": "surface_background",
+      "bytes": 29021351,
+      "sha256": "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+      "category": "surface_background",
+      "bytes": 29020227,
+      "sha256": "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sanctum_roots.png",
+      "category": "surface_background",
+      "bytes": 29860302,
+      "sha256": "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "category": "surface_background",
+      "bytes": 32891378,
+      "sha256": "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/undergate.png",
+      "category": "surface_background",
+      "bytes": 27457389,
+      "sha256": "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/village.png",
+      "category": "surface_background",
+      "bytes": 38636370,
+      "sha256": "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "category": "surface_background",
+      "bytes": 19663258,
+      "sha256": "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+      "category": "surface_background",
+      "bytes": 23753402,
+      "sha256": "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+      "category": "surface_background",
+      "bytes": 24080712,
+      "sha256": "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+      "category": "surface_background",
+      "bytes": 25700449,
+      "sha256": "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+      "category": "surface_background",
+      "bytes": 23589713,
+      "sha256": "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-depths.png",
+      "category": "underground_background",
+      "bytes": 2998369,
+      "sha256": "8692b547935e2d713d34505a635ea5086fd0b8c8ad0dad97b706db4da93f2ebe"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-depths_hd.png",
+      "category": "underground_background",
+      "bytes": 9513167,
+      "sha256": "e4644f2e40891bf3af598611827a0801cb8228e9036a4bddc70fb2dc866b4ee5"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-descent.png",
+      "category": "underground_background",
+      "bytes": 2941315,
+      "sha256": "68cf0792cb973dae63aaf9274afd6ee770e037b126610cd06e0714282a87d508"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-descent_hd.png",
+      "category": "underground_background",
+      "bytes": 9004394,
+      "sha256": "5062dd99ca681ba506d3fa8f28b870819b646cc165a3da53c2de9b5646322f0a"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-fungal.png",
+      "category": "underground_background",
+      "bytes": 3274721,
+      "sha256": "2dc57abb79167d110d4b6bae06844a31450100011ab77b28fbfe4d010912e15d"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-fungal_hd.png",
+      "category": "underground_background",
+      "bytes": 9760255,
+      "sha256": "5e11aca163d8643d36db9b5fbef969e8ea9a6cd720b4c7494713d29ccddb6112"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-roots.png",
+      "category": "underground_background",
+      "bytes": 3123482,
+      "sha256": "169cc68dd4ec77769da356fad3b5e878e9e4cbb31304156fe0b478ea7450b09c"
+    },
+    {
+      "path": "Assets/StreamingAssets/Underworld/composition-roots_hd.png",
+      "category": "underground_background",
+      "bytes": 9285853,
+      "sha256": "5b6848b35a448fdc4adad3ef83dd7e3a5238c7585e43b0299518a7044633daf8"
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/canyon.png",
+      "category": "existing_prop_atlas",
+      "bytes": 1823371,
+      "sha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25"
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/forest.png",
+      "category": "existing_prop_atlas",
+      "bytes": 2291373,
+      "sha256": "2ceaadd6c7c7fbfad0ef0cf5ab4ad2037373d0e145e4f05512ce917cfeb689da"
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/sanctum.png",
+      "category": "existing_prop_atlas",
+      "bytes": 1450210,
+      "sha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035"
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldProps/winter.png",
+      "category": "existing_prop_atlas",
+      "bytes": 1944054,
+      "sha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd"
+    }
+  ],
+  "originalAtlases": [
+    {
+      "id": "forest",
+      "file": "forest.png",
+      "columns": 4,
+      "rows": 3,
+      "width": 1448,
+      "height": 1086,
+      "sha256": "2ceaadd6c7c7fbfad0ef0cf5ab4ad2037373d0e145e4f05512ce917cfeb689da",
+      "cells": [
+        {
+          "id": "broadleaf",
+          "rect": [
+            28,
+            27,
+            330,
+            387
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "oak",
+          "rect": [
+            393,
+            44,
+            339,
+            371
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "pine",
+          "rect": [
+            785,
+            22,
+            248,
+            399
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "willow",
+          "rect": [
+            1095,
+            59,
+            325,
+            360
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "cherry",
+          "rect": [
+            26,
+            450,
+            332,
+            334
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "fruit",
+          "rect": [
+            392,
+            445,
+            326,
+            345
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "golden",
+          "rect": [
+            744,
+            441,
+            334,
+            351
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "dead",
+          "rect": [
+            1135,
+            442,
+            278,
+            350
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rock",
+          "rect": [
+            51,
+            828,
+            287,
+            218
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "bush",
+          "rect": [
+            422,
+            852,
+            260,
+            188
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "log",
+          "rect": [
+            752,
+            869,
+            316,
+            174
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "stump",
+          "rect": [
+            1155,
+            896,
+            242,
+            144
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        }
+      ]
+    },
+    {
+      "id": "canyon",
+      "file": "canyon.png",
+      "columns": 4,
+      "rows": 3,
+      "width": 1448,
+      "height": 1086,
+      "sha256": "aed2517588e4a0174a6a6a498f3a062b436829fbd260d2d6d4ec0052b694ed25",
+      "cells": [
+        {
+          "id": "broadleaf",
+          "rect": [
+            12,
+            19,
+            334,
+            428
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "oak",
+          "rect": [
+            386,
+            58,
+            337,
+            386
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "pine",
+          "rect": [
+            778,
+            9,
+            274,
+            440
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "dead",
+          "rect": [
+            1160,
+            55,
+            222,
+            390
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockA",
+          "rect": [
+            20,
+            546,
+            322,
+            176
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockB",
+          "rect": [
+            407,
+            466,
+            293,
+            285
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockC",
+          "rect": [
+            745,
+            569,
+            336,
+            165
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "shrub",
+          "rect": [
+            1156,
+            555,
+            246,
+            184
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "ruin",
+          "rect": [
+            35,
+            773,
+            296,
+            280
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "log",
+          "rect": [
+            375,
+            825,
+            340,
+            220
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "stump",
+          "rect": [
+            761,
+            838,
+            286,
+            204
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "pebbles",
+          "rect": [
+            1100,
+            872,
+            310,
+            178
+          ],
+          "pivot": [
+            0.5,
+            0.1
+          ]
+        }
+      ]
+    },
+    {
+      "id": "winter",
+      "file": "winter.png",
+      "columns": 4,
+      "rows": 3,
+      "width": 1448,
+      "height": 1086,
+      "sha256": "d94dd46d088b37b4df328107c24400366128467ae29aea9e745664b230222abd",
+      "cells": [
+        {
+          "id": "fir",
+          "rect": [
+            48,
+            27,
+            281,
+            459
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "pine",
+          "rect": [
+            399,
+            27,
+            291,
+            457
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "broadleaf",
+          "rect": [
+            748,
+            67,
+            329,
+            414
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "dead",
+          "rect": [
+            1144,
+            50,
+            248,
+            433
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockA",
+          "rect": [
+            34,
+            529,
+            307,
+            232
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockB",
+          "rect": [
+            403,
+            519,
+            309,
+            244
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "shrub",
+          "rect": [
+            780,
+            544,
+            278,
+            218
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "stump",
+          "rect": [
+            1151,
+            577,
+            259,
+            183
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "log",
+          "rect": [
+            27,
+            836,
+            337,
+            201
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "ruin",
+          "rect": [
+            437,
+            819,
+            264,
+            221
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "pebbles",
+          "rect": [
+            782,
+            861,
+            295,
+            172
+          ],
+          "pivot": [
+            0.5,
+            0.1
+          ]
+        },
+        {
+          "id": "grass",
+          "rect": [
+            1174,
+            849,
+            225,
+            182
+          ],
+          "pivot": [
+            0.5,
+            0.1
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sanctum",
+      "file": "sanctum.png",
+      "columns": 4,
+      "rows": 3,
+      "width": 1448,
+      "height": 1086,
+      "sha256": "5889b7abbf206bcdeed52cc35561787b1ac5ac46b2c6a1aac7429b5a6fc38035",
+      "cells": [
+        {
+          "id": "pillar",
+          "rect": [
+            49,
+            98,
+            251,
+            259
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rubble",
+          "rect": [
+            392,
+            169,
+            300,
+            185
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "longremnant",
+          "rect": [
+            763,
+            132,
+            308,
+            243
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockA",
+          "rect": [
+            1123,
+            159,
+            286,
+            222
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "rockB",
+          "rect": [
+            40,
+            464,
+            286,
+            246
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "moss",
+          "rect": [
+            398,
+            532,
+            292,
+            176
+          ],
+          "pivot": [
+            0.5,
+            0.1
+          ]
+        },
+        {
+          "id": "bush",
+          "rect": [
+            766,
+            488,
+            283,
+            227
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "dead",
+          "rect": [
+            1150,
+            381,
+            251,
+            334
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "stump",
+          "rect": [
+            37,
+            799,
+            295,
+            227
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "log",
+          "rect": [
+            388,
+            822,
+            331,
+            207
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        },
+        {
+          "id": "pebbles",
+          "rect": [
+            778,
+            884,
+            293,
+            139
+          ],
+          "pivot": [
+            0.5,
+            0.1
+          ]
+        },
+        {
+          "id": "urn",
+          "rect": [
+            1176,
+            795,
+            203,
+            224
+          ],
+          "pivot": [
+            0.5,
+            0.055
+          ]
+        }
+      ]
+    }
+  ],
+  "maps": {
+    "village": {
+      "baselineHash": "87f6a1f31ea75455a657c601fcd9d51211ce0efbfca289bfd5fdd8f88577c77f",
+      "collisionHash": "06cb3f4540cd6f69224a61bf26ab59dd26dda3d71bed9ab840690432ccb882a7",
+      "terrainHash": "17adb76c6e8f5897531cf84b571e321e698bcc10e5265cdc42f6dec9556778b9",
+      "sourceSha256": "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a",
+      "props": {
+        "props": [
+          {
+            "biome": "forest",
+            "eligible": 320,
+            "applied": 320,
+            "skipped": 0,
+            "resources": 6,
+            "staticProps": 314,
+            "species": 11,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 65
+              },
+              {
+                "slot": "bush",
+                "count": 7
+              },
+              {
+                "slot": "cherry",
+                "count": 3
+              },
+              {
+                "slot": "fruit",
+                "count": 12
+              },
+              {
+                "slot": "golden",
+                "count": 5
+              },
+              {
+                "slot": "log",
+                "count": 2
+              },
+              {
+                "slot": "oak",
+                "count": 107
+              },
+              {
+                "slot": "pine",
+                "count": 112
+              },
+              {
+                "slot": "rock",
+                "count": 2
+              },
+              {
+                "slot": "stump",
+                "count": 1
+              },
+              {
+                "slot": "willow",
+                "count": 4
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 346,
+          "shadowPixels": 273851,
+          "staticRenderer": true,
+          "resourceContacts": 6,
+          "resourceShadowPixels": 2546,
+          "ownedResources": 22
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "forest": {
+      "baselineHash": "5f328d02995729cc7ec98320a2b9c3af7f3381a15c5bfc9883d07e45b665760c",
+      "collisionHash": "358718c0e80c7f9dd8ec473103893244d8d34c11d29765ff57786686dbb7f1c7",
+      "terrainHash": "32c40d7e69bffe97d7cf411a020480878d203e071dc9b06939ff26c741a6bb1a",
+      "sourceSha256": "4c7cfd5f7de040e9dedb54617a6a6025e3583a642982ab687b6e90916563ceaa",
+      "props": {
+        "props": [
+          {
+            "biome": "forest",
+            "eligible": 258,
+            "applied": 258,
+            "skipped": 0,
+            "resources": 15,
+            "staticProps": 243,
+            "species": 8,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 32
+              },
+              {
+                "slot": "bush",
+                "count": 1
+              },
+              {
+                "slot": "dead",
+                "count": 3
+              },
+              {
+                "slot": "log",
+                "count": 4
+              },
+              {
+                "slot": "oak",
+                "count": 90
+              },
+              {
+                "slot": "pine",
+                "count": 119
+              },
+              {
+                "slot": "rock",
+                "count": 8
+              },
+              {
+                "slot": "willow",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 247,
+          "shadowPixels": 440374,
+          "staticRenderer": true,
+          "resourceContacts": 15,
+          "resourceShadowPixels": 6559,
+          "ownedResources": 46
+        },
+        "hiddenNature": {
+          "count": 27,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.4375,
+                "y": 39.625
+              },
+              "cell": {
+                "x": 8,
+                "y": 39
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.625,
+                "y": 29.6562
+              },
+              "cell": {
+                "x": 1,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 11.375,
+                "y": 42.3438
+              },
+              "cell": {
+                "x": 11,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 39.6875,
+                "y": 1.375
+              },
+              "cell": {
+                "x": 39,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 6.375,
+                "y": 30.4375
+              },
+              "cell": {
+                "x": 6,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 62.375,
+                "y": 38.5
+              },
+              "cell": {
+                "x": 62,
+                "y": 38
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 61.6875,
+                "y": 8.5312
+              },
+              "cell": {
+                "x": 61,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 16.3438,
+                "y": 9.5938
+              },
+              "cell": {
+                "x": 16,
+                "y": 9
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 17.4375,
+                "y": 3.5938
+              },
+              "cell": {
+                "x": 17,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 59.7188,
+                "y": 5.3438
+              },
+              "cell": {
+                "x": 59,
+                "y": 5
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 6.6562,
+                "y": 34.5312
+              },
+              "cell": {
+                "x": 6,
+                "y": 34
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 48.5625,
+                "y": 1.4688
+              },
+              "cell": {
+                "x": 48,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 62.4062,
+                "y": 31.5
+              },
+              "cell": {
+                "x": 62,
+                "y": 31
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.4062,
+                "y": 2.3438
+              },
+              "cell": {
+                "x": 54,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 16.4062,
+                "y": 6.4375
+              },
+              "cell": {
+                "x": 16,
+                "y": 6
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 60.25,
+                "y": 42.375
+              },
+              "cell": {
+                "x": 60,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 9.5938,
+                "y": 34.5625
+              },
+              "cell": {
+                "x": 9,
+                "y": 34
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 19.5938,
+                "y": 42.4375
+              },
+              "cell": {
+                "x": 19,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 60.4062,
+                "y": 36.3125
+              },
+              "cell": {
+                "x": 60,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 23.6875,
+                "y": 2.625
+              },
+              "cell": {
+                "x": 23,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 20.4062,
+                "y": 3.3125
+              },
+              "cell": {
+                "x": 20,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 9.3125,
+                "y": 29.4375
+              },
+              "cell": {
+                "x": 9,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 43.2812,
+                "y": 29.4688
+              },
+              "cell": {
+                "x": 43,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 12.375,
+                "y": 16.3438
+              },
+              "cell": {
+                "x": 12,
+                "y": 16
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 21.4062,
+                "y": 41.6562
+              },
+              "cell": {
+                "x": 21,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 59.75,
+                "y": 38.3438
+              },
+              "cell": {
+                "x": 59,
+                "y": 38
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 55.5938,
+                "y": 41.6875
+              },
+              "cell": {
+                "x": 55,
+                "y": 41
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "canopy": {
+          "edgeTrees": 16,
+          "rearTrees": 12,
+          "staticTreeViews": 235,
+          "deadTreeViews": 3,
+          "species": 5,
+          "entranceSitesSkipped": 6,
+          "ownedResources": 34
+        }
+      }
+    },
+    "forest_ruins": {
+      "baselineHash": "8a410387921194fdbaa5096702238503853d594d8ba4b3ef690cf360b63301fe",
+      "collisionHash": "63b203f1091c75f6ebdc8101c8da7609a9623be114c2a5bc84d7f6abe76b5951",
+      "terrainHash": "94b0cd266ba2ab81af795cea045bf5befd346904a2985ee1d5ca9e8ed1de4f36",
+      "sourceSha256": "757951e1ef5a0b3f9a9166949b145f142bff2089440e62ed65b7dda50eb250c0",
+      "props": {
+        "props": [
+          {
+            "biome": "forest",
+            "eligible": 4,
+            "applied": 4,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 4,
+            "species": 4,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 1
+              },
+              {
+                "slot": "oak",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 1
+              },
+              {
+                "slot": "willow",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 29,
+          "shadowPixels": 18692,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 41,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 28.4062,
+                "y": 2.6875
+              },
+              "cell": {
+                "x": 28,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 5.25,
+                "y": 8.6562
+              },
+              "cell": {
+                "x": 5,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 18.5938,
+                "y": 16.4375
+              },
+              "cell": {
+                "x": 18,
+                "y": 16
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 35.5625,
+                "y": 2.3125
+              },
+              "cell": {
+                "x": 35,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 42.75,
+                "y": 3.6562
+              },
+              "cell": {
+                "x": 42,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 30.625,
+                "y": 15.5625
+              },
+              "cell": {
+                "x": 30,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.6562,
+                "y": 37.375
+              },
+              "cell": {
+                "x": 8,
+                "y": 37
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 25.7188,
+                "y": 29.3438
+              },
+              "cell": {
+                "x": 25,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 53.5938,
+                "y": 31.4688
+              },
+              "cell": {
+                "x": 53,
+                "y": 31
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 52.3438,
+                "y": 27.4688
+              },
+              "cell": {
+                "x": 52,
+                "y": 27
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.5625,
+                "y": 5.6562
+              },
+              "cell": {
+                "x": 8,
+                "y": 5
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 34.5938,
+                "y": 15.4688
+              },
+              "cell": {
+                "x": 34,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 32.4375,
+                "y": 30.5938
+              },
+              "cell": {
+                "x": 32,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.4375,
+                "y": 9.5938
+              },
+              "cell": {
+                "x": 1,
+                "y": 9
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 46.4375,
+                "y": 2.5
+              },
+              "cell": {
+                "x": 46,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 39.5,
+                "y": 3.5312
+              },
+              "cell": {
+                "x": 39,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 14.5,
+                "y": 2.5938
+              },
+              "cell": {
+                "x": 14,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 22.4062,
+                "y": 15.4062
+              },
+              "cell": {
+                "x": 22,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.75,
+                "y": 30.6875
+              },
+              "cell": {
+                "x": 3,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 38.25,
+                "y": 15.3125
+              },
+              "cell": {
+                "x": 38,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 17.3125,
+                "y": 20.3125
+              },
+              "cell": {
+                "x": 17,
+                "y": 20
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 26.7188,
+                "y": 14.5
+              },
+              "cell": {
+                "x": 26,
+                "y": 14
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.4688,
+                "y": 8.6875
+              },
+              "cell": {
+                "x": 47,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 34.625,
+                "y": 40.6875
+              },
+              "cell": {
+                "x": 34,
+                "y": 40
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.625,
+                "y": 26.5
+              },
+              "cell": {
+                "x": 3,
+                "y": 26
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.25,
+                "y": 11.4375
+              },
+              "cell": {
+                "x": 54,
+                "y": 11
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 31.5938,
+                "y": 1.375
+              },
+              "cell": {
+                "x": 31,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 12.25,
+                "y": 42.6562
+              },
+              "cell": {
+                "x": 12,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 46.625,
+                "y": 36.4375
+              },
+              "cell": {
+                "x": 46,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 37.6875,
+                "y": 42.3125
+              },
+              "cell": {
+                "x": 37,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 6.625,
+                "y": 1.3125
+              },
+              "cell": {
+                "x": 6,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.2812,
+                "y": 5.6562
+              },
+              "cell": {
+                "x": 3,
+                "y": 5
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 19.3125,
+                "y": 15.5938
+              },
+              "cell": {
+                "x": 19,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 35.3125,
+                "y": 14.5938
+              },
+              "cell": {
+                "x": 35,
+                "y": 14
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 3.5,
+                "y": 28.4062
+              },
+              "cell": {
+                "x": 3,
+                "y": 28
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 33.2812,
+                "y": 29.3125
+              },
+              "cell": {
+                "x": 33,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 32.3125,
+                "y": 14.4062
+              },
+              "cell": {
+                "x": 32,
+                "y": 14
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 17.6875,
+                "y": 24.4375
+              },
+              "cell": {
+                "x": 17,
+                "y": 24
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 9.25,
+                "y": 4.6562
+              },
+              "cell": {
+                "x": 9,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 44.6562,
+                "y": 3.4375
+              },
+              "cell": {
+                "x": 44,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 23.4688,
+                "y": 14.5625
+              },
+              "cell": {
+                "x": 23,
+                "y": 14
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "canopy": {
+          "edgeTrees": 32,
+          "rearTrees": 4,
+          "staticTreeViews": 4,
+          "deadTreeViews": 0,
+          "species": 5,
+          "entranceSitesSkipped": 10,
+          "ownedResources": 21
+        }
+      }
+    },
+    "forest_depths": {
+      "baselineHash": "35059f763d732099af07b8b3130495a405456d6a682345d6b4b4e56d62153569",
+      "collisionHash": "f8e9c4cccafefda8c653ef48dc4de2e741f59b6576d76dce0e78e3c49427263c",
+      "terrainHash": "377660cc24449aae419e18cdfc35c7ac3cb430661e872f3d173710dfa70ff0a8",
+      "sourceSha256": "656e9cf0e78c5c11c57608f994b5e04ee36671dd5c8a3a3251ba6fda460e758b",
+      "props": {
+        "props": [
+          {
+            "biome": "forest",
+            "eligible": 27,
+            "applied": 27,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 27,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 1
+              },
+              {
+                "slot": "dead",
+                "count": 13
+              },
+              {
+                "slot": "oak",
+                "count": 3
+              },
+              {
+                "slot": "pine",
+                "count": 7
+              },
+              {
+                "slot": "willow",
+                "count": 3
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 27,
+          "shadowPixels": 48827,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 25,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.3125,
+                "y": 32.4688
+              },
+              "cell": {
+                "x": 54,
+                "y": 32
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 35.2812,
+                "y": 2.5
+              },
+              "cell": {
+                "x": 35,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 19.3438,
+                "y": 1.4375
+              },
+              "cell": {
+                "x": 19,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 49.75,
+                "y": 36.3438
+              },
+              "cell": {
+                "x": 49,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 53.4375,
+                "y": 7.375
+              },
+              "cell": {
+                "x": 53,
+                "y": 7
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 11.25,
+                "y": 33.3125
+              },
+              "cell": {
+                "x": 11,
+                "y": 33
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 9.5,
+                "y": 29.4375
+              },
+              "cell": {
+                "x": 9,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 15.5,
+                "y": 2.4688
+              },
+              "cell": {
+                "x": 15,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 26.2812,
+                "y": 41.6562
+              },
+              "cell": {
+                "x": 26,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 36.5938,
+                "y": 42.375
+              },
+              "cell": {
+                "x": 36,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 3.5625,
+                "y": 27.5625
+              },
+              "cell": {
+                "x": 3,
+                "y": 27
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 10.625,
+                "y": 42.625
+              },
+              "cell": {
+                "x": 10,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 23.5938,
+                "y": 1.6562
+              },
+              "cell": {
+                "x": 23,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 31.5625,
+                "y": 40.5625
+              },
+              "cell": {
+                "x": 31,
+                "y": 40
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 48.4062,
+                "y": 8.4688
+              },
+              "cell": {
+                "x": 48,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 52.4688,
+                "y": 27.3125
+              },
+              "cell": {
+                "x": 52,
+                "y": 27
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 7.4688,
+                "y": 7.5
+              },
+              "cell": {
+                "x": 7,
+                "y": 7
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.6875,
+                "y": 4.5625
+              },
+              "cell": {
+                "x": 47,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 49.3125,
+                "y": 42.4375
+              },
+              "cell": {
+                "x": 49,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 19.3438,
+                "y": 2.4688
+              },
+              "cell": {
+                "x": 19,
+                "y": 2
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 3.3438,
+                "y": 26.4375
+              },
+              "cell": {
+                "x": 3,
+                "y": 26
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 13.7188,
+                "y": 3.4062
+              },
+              "cell": {
+                "x": 13,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 20.2812,
+                "y": 1.3438
+              },
+              "cell": {
+                "x": 20,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 51.7188,
+                "y": 8.3438
+              },
+              "cell": {
+                "x": 51,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 36.3125,
+                "y": 40.375
+              },
+              "cell": {
+                "x": 36,
+                "y": 40
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "canopy": {
+          "edgeTrees": 19,
+          "rearTrees": 1,
+          "staticTreeViews": 14,
+          "deadTreeViews": 13,
+          "species": 5,
+          "entranceSitesSkipped": 12,
+          "ownedResources": 26
+        }
+      }
+    },
+    "forest_crossing": {
+      "baselineHash": "d1743f39384d17881545bd3cfd5f1a2204a074cb6d5b53c522c94ef70c65cecc",
+      "collisionHash": "64fc549e751024829f172e772925ea81e51d727105558585c4c639d0153f3ad5",
+      "terrainHash": "2186badf1dcca3b8125cd77a3186656cc91113e21d6bd6aa909d80a1c7429d0f",
+      "sourceSha256": "948c3572a30f4f725022ccb03bbcdd2e204f412a8f1ffdcaca756e3507aa830e",
+      "props": {
+        "props": [
+          {
+            "biome": "forest",
+            "eligible": 44,
+            "applied": 44,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 44,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 6
+              },
+              {
+                "slot": "dead",
+                "count": 19
+              },
+              {
+                "slot": "oak",
+                "count": 5
+              },
+              {
+                "slot": "pine",
+                "count": 9
+              },
+              {
+                "slot": "willow",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 44,
+          "shadowPixels": 89340,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 32,
+          "scopeAndTransformsPreserved": true,
+          "records": [
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 2.25,
+                "y": 19.6875
+              },
+              "cell": {
+                "x": 2,
+                "y": 19
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.6562,
+                "y": 40.375
+              },
+              "cell": {
+                "x": 47,
+                "y": 40
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.5312,
+                "y": 26.4062
+              },
+              "cell": {
+                "x": 1,
+                "y": 26
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.5312,
+                "y": 36.3438
+              },
+              "cell": {
+                "x": 54,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 40.75,
+                "y": 41.3125
+              },
+              "cell": {
+                "x": 40,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 36.3125,
+                "y": 41.5625
+              },
+              "cell": {
+                "x": 36,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 8.75,
+                "y": 3.4062
+              },
+              "cell": {
+                "x": 8,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 5.3438,
+                "y": 7.5312
+              },
+              "cell": {
+                "x": 5,
+                "y": 7
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 2.3438,
+                "y": 15.5
+              },
+              "cell": {
+                "x": 2,
+                "y": 15
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 44.3438,
+                "y": 42.625
+              },
+              "cell": {
+                "x": 44,
+                "y": 42
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 54.4375,
+                "y": 30.3438
+              },
+              "cell": {
+                "x": 54,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 36.7188,
+                "y": 4.5312
+              },
+              "cell": {
+                "x": 36,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.5625,
+                "y": 36.375
+              },
+              "cell": {
+                "x": 47,
+                "y": 36
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.4688,
+                "y": 4.625
+              },
+              "cell": {
+                "x": 47,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 42.5938,
+                "y": 4.5
+              },
+              "cell": {
+                "x": 42,
+                "y": 4
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 32.375,
+                "y": 3.4375
+              },
+              "cell": {
+                "x": 32,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 51.3125,
+                "y": 35.5625
+              },
+              "cell": {
+                "x": 51,
+                "y": 35
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 52.5312,
+                "y": 18.3438
+              },
+              "cell": {
+                "x": 52,
+                "y": 18
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.625,
+                "y": 30.5625
+              },
+              "cell": {
+                "x": 1,
+                "y": 30
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 1.4375,
+                "y": 8.5625
+              },
+              "cell": {
+                "x": 1,
+                "y": 8
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 47.5,
+                "y": 1.4688
+              },
+              "cell": {
+                "x": 47,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 44.625,
+                "y": 1.5625
+              },
+              "cell": {
+                "x": 44,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 50.4688,
+                "y": 38.4375
+              },
+              "cell": {
+                "x": 50,
+                "y": 38
+              },
+              "ground": "%"
+            },
+            {
+              "name": "EdgeTree",
+              "position": {
+                "x": 39.5,
+                "y": 1.625
+              },
+              "cell": {
+                "x": 39,
+                "y": 1
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 3.4688,
+                "y": 21.3438
+              },
+              "cell": {
+                "x": 3,
+                "y": 21
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 1.4062,
+                "y": 12.5312
+              },
+              "cell": {
+                "x": 1,
+                "y": 12
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 46.7188,
+                "y": 35.3125
+              },
+              "cell": {
+                "x": 46,
+                "y": 35
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 54.3438,
+                "y": 29.4375
+              },
+              "cell": {
+                "x": 54,
+                "y": 29
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 38.3438,
+                "y": 41.6562
+              },
+              "cell": {
+                "x": 38,
+                "y": 41
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 34.2812,
+                "y": 3.4375
+              },
+              "cell": {
+                "x": 34,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 36.2812,
+                "y": 3.6562
+              },
+              "cell": {
+                "x": 36,
+                "y": 3
+              },
+              "ground": "%"
+            },
+            {
+              "name": "Forest edge understory",
+              "position": {
+                "x": 35.3438,
+                "y": 3.5312
+              },
+              "cell": {
+                "x": 35,
+                "y": 3
+              },
+              "ground": "%"
+            }
+          ]
+        },
+        "canopy": {
+          "edgeTrees": 24,
+          "rearTrees": 4,
+          "staticTreeViews": 25,
+          "deadTreeViews": 19,
+          "species": 5,
+          "entranceSitesSkipped": 18,
+          "ownedResources": 33
+        }
+      }
+    },
+    "canyon": {
+      "baselineHash": "91e9d57047545502f6feff4461ca9e4db452822ddcd4acc6fea944a44224a1ae",
+      "collisionHash": "f9ee052bf730f03d7f920863dc0364f48151d098d04eb2fc111a11fa338d266e",
+      "terrainHash": "c6df1de4089fef222c9338ae0e0795c35c3c0615b6636c3cec7634c5d8561c5b",
+      "sourceSha256": "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c",
+      "props": {
+        "props": [
+          {
+            "biome": "canyon",
+            "eligible": 14,
+            "applied": 14,
+            "skipped": 0,
+            "resources": 2,
+            "staticProps": 12,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 4
+              },
+              {
+                "slot": "pebbles",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 6
+              },
+              {
+                "slot": "rockA",
+                "count": 1
+              },
+              {
+                "slot": "rockC",
+                "count": 1
+              },
+              {
+                "slot": "shrub",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 27,
+          "shadowPixels": 54238,
+          "staticRenderer": true,
+          "resourceContacts": 2,
+          "resourceShadowPixels": 896,
+          "ownedResources": 6
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "canyon_pass": {
+      "baselineHash": "7364a681992cc90795e5d9bd628b642d89f4dd20c96c6b73078eda4f1b6846ea",
+      "collisionHash": "2361d5d4c713ae66e8347c61625299b752d51b0eb2408906747746708076be5e",
+      "terrainHash": "fbde27b5b5f1fd33cb6e16e38f232cefc5c4a11cb5dfa4963cb2e4b3834d7c83",
+      "sourceSha256": "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5",
+      "props": {
+        "props": [
+          {
+            "biome": "canyon",
+            "eligible": 55,
+            "applied": 55,
+            "skipped": 0,
+            "resources": 36,
+            "staticProps": 19,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 6
+              },
+              {
+                "slot": "pebbles",
+                "count": 2
+              },
+              {
+                "slot": "pine",
+                "count": 11
+              },
+              {
+                "slot": "rockA",
+                "count": 11
+              },
+              {
+                "slot": "rockB",
+                "count": 13
+              },
+              {
+                "slot": "rockC",
+                "count": 12
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 17,
+          "shadowPixels": 39411,
+          "staticRenderer": true,
+          "resourceContacts": 36,
+          "resourceShadowPixels": 16091,
+          "ownedResources": 74
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "canyon_mine": {
+      "baselineHash": "c098efaec23fe2ab468bab888fda0fb5033cf54cc28383f740888e53b4300003",
+      "collisionHash": "2e2cdf016ba956b8ac858c2af45d2f098c2811791b5e0590bc0b821ea6abe900",
+      "terrainHash": "38fc12a0721c7a067df2e7e057baf9dc30831c90a9a927833c98ab86b34b16e1",
+      "sourceSha256": "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9",
+      "props": {
+        "props": [
+          {
+            "biome": "canyon",
+            "eligible": 36,
+            "applied": 36,
+            "skipped": 0,
+            "resources": 26,
+            "staticProps": 10,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 3
+              },
+              {
+                "slot": "pebbles",
+                "count": 2
+              },
+              {
+                "slot": "pine",
+                "count": 5
+              },
+              {
+                "slot": "rockA",
+                "count": 11
+              },
+              {
+                "slot": "rockB",
+                "count": 10
+              },
+              {
+                "slot": "rockC",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 8,
+          "shadowPixels": 19230,
+          "staticRenderer": true,
+          "resourceContacts": 26,
+          "resourceShadowPixels": 11594,
+          "ownedResources": 54
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "canyon_ridge": {
+      "baselineHash": "841c0092ed715b98d13b016d65723282083ee586f76cef332825c37387ffb993",
+      "collisionHash": "d8c815f4b5c31da50db80c6d99c42a0ab2083f939c0adb2efcb740abd952ecdf",
+      "terrainHash": "cd40b1cdebb2e8f377dde872c8ee7dbc696bea35dbbb9cc30511497624ef6899",
+      "sourceSha256": "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35",
+      "props": {
+        "props": [
+          {
+            "biome": "canyon",
+            "eligible": 24,
+            "applied": 24,
+            "skipped": 0,
+            "resources": 11,
+            "staticProps": 13,
+            "species": 6,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 5
+              },
+              {
+                "slot": "pebbles",
+                "count": 1
+              },
+              {
+                "slot": "pine",
+                "count": 7
+              },
+              {
+                "slot": "rockA",
+                "count": 3
+              },
+              {
+                "slot": "rockB",
+                "count": 5
+              },
+              {
+                "slot": "rockC",
+                "count": 3
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 12,
+          "shadowPixels": 27211,
+          "staticRenderer": true,
+          "resourceContacts": 11,
+          "resourceShadowPixels": 4928,
+          "ownedResources": 24
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "canyon_gate": {
+      "baselineHash": "dd68a8ea1671ce32b5844790874398c39b21943351bb99ebca8484a8fa1ee582",
+      "collisionHash": "c17d00e7cc210a6843addea55b3f13f0e80938375342fb160e6e934578c73d92",
+      "terrainHash": "2997d1dcbfe6001a35789892c3f8f2fea23fbf80f5ddbcf637239f0d56320a1a",
+      "sourceSha256": "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f",
+      "props": {
+        "props": [
+          {
+            "biome": "canyon",
+            "eligible": 54,
+            "applied": 54,
+            "skipped": 0,
+            "resources": 34,
+            "staticProps": 20,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 7
+              },
+              {
+                "slot": "pine",
+                "count": 13
+              },
+              {
+                "slot": "rockA",
+                "count": 12
+              },
+              {
+                "slot": "rockB",
+                "count": 9
+              },
+              {
+                "slot": "rockC",
+                "count": 13
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 20,
+          "shadowPixels": 43014,
+          "staticRenderer": true,
+          "resourceContacts": 34,
+          "resourceShadowPixels": 15125,
+          "ownedResources": 70
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "winter": {
+      "baselineHash": "a02d3b30bdb3e3df70e71744f2fc6b81de2b0bd1f93272c55ab12f198d873a49",
+      "collisionHash": "4f33a992bfffcd76808405923a859e846719d3185a1f80879ffe4c89daeb4782",
+      "terrainHash": "9a7a0655185a6d5c0b1894576f6b0e7c641b98ad6e3dc999c8f03ee6ebf48c50",
+      "sourceSha256": "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728",
+      "props": {
+        "props": [
+          {
+            "biome": "winter",
+            "eligible": 90,
+            "applied": 90,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 90,
+            "species": 8,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "broadleaf",
+                "count": 12
+              },
+              {
+                "slot": "fir",
+                "count": 21
+              },
+              {
+                "slot": "grass",
+                "count": 18
+              },
+              {
+                "slot": "log",
+                "count": 4
+              },
+              {
+                "slot": "pine",
+                "count": 19
+              },
+              {
+                "slot": "rockA",
+                "count": 5
+              },
+              {
+                "slot": "rockB",
+                "count": 2
+              },
+              {
+                "slot": "shrub",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 96,
+          "shadowPixels": 146896,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "winter_edge": {
+      "baselineHash": "d21c894e734e96b669a7e3a18b0e0a7aa17b8beaee3a0d09ee1d6da727eab7aa",
+      "collisionHash": "90d5fa1e81e8a31ab8d1eb53cf20c8cf41a4713c0a5e1ada2e678ddc92f2f15e",
+      "terrainHash": "3ba5498cbcb3cf3e67bed453f2029024304d9ba20692a0e7b16683fdaa560e21",
+      "sourceSha256": "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845",
+      "props": {
+        "props": [
+          {
+            "biome": "winter",
+            "eligible": 53,
+            "applied": 53,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 53,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 23
+              },
+              {
+                "slot": "pebbles",
+                "count": 2
+              },
+              {
+                "slot": "pine",
+                "count": 13
+              },
+              {
+                "slot": "rockA",
+                "count": 7
+              },
+              {
+                "slot": "rockB",
+                "count": 8
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 51,
+          "shadowPixels": 66328,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "winter_lake": {
+      "baselineHash": "95a2b79e6d217194868fe4d59bae9f33472c90572ebdcf2b848e39899792152a",
+      "collisionHash": "6a7a3d1111e9f649f41c1c1cdbfa9b75bc90d3ac385db14ad9e79d4016b7dc57",
+      "terrainHash": "08554d89fed865ad6a3aa0e563959c0d5370d8c20d824141571fde255d5c36bf",
+      "sourceSha256": "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9",
+      "props": {
+        "props": [
+          {
+            "biome": "winter",
+            "eligible": 20,
+            "applied": 20,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 20,
+            "species": 4,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 11
+              },
+              {
+                "slot": "pine",
+                "count": 5
+              },
+              {
+                "slot": "rockA",
+                "count": 2
+              },
+              {
+                "slot": "rockB",
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 20,
+          "shadowPixels": 29095,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "winter_peak": {
+      "baselineHash": "75897627821e1546913a9714902840900e2d89c3657193f2648bfd7222ce061c",
+      "collisionHash": "dda32a2d803d73fd8e42bd3f4fd8b728fcf9cd19c356afc5bcf7af0349c53001",
+      "terrainHash": "376cc76ee1017ff79cd909192af2d6f61d37b9ba50016d9b639cb2799650cad9",
+      "sourceSha256": "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7",
+      "props": {
+        "props": [
+          {
+            "biome": "winter",
+            "eligible": 25,
+            "applied": 25,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 25,
+            "species": 5,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 8
+              },
+              {
+                "slot": "pebbles",
+                "count": 3
+              },
+              {
+                "slot": "pine",
+                "count": 7
+              },
+              {
+                "slot": "rockA",
+                "count": 3
+              },
+              {
+                "slot": "rockB",
+                "count": 4
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 22,
+          "shadowPixels": 29359,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "winter_reach": {
+      "baselineHash": "c0aff3a7a1026e98141a9decb65c7c80f3824f90de904dade29aa1a15e11f260",
+      "collisionHash": "c69747d3d23175a107a79473345c065f9e3506bc3946c4e3f83aa847d711609b",
+      "terrainHash": "9a2e4147443e97040f05b5a67407e7d452bb47a7336209b9a587eb6bb9f035d5",
+      "sourceSha256": "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418",
+      "props": {
+        "props": [
+          {
+            "biome": "winter",
+            "eligible": 54,
+            "applied": 54,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 54,
+            "species": 4,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "fir",
+                "count": 23
+              },
+              {
+                "slot": "pine",
+                "count": 14
+              },
+              {
+                "slot": "rockA",
+                "count": 8
+              },
+              {
+                "slot": "rockB",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 54,
+          "shadowPixels": 62465,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "sunken_sanctum": {
+      "baselineHash": "2675bd06c899f6171e20870b7813c156b487b74d7e7b115eca89c278d8bdbc5c",
+      "collisionHash": "78c6ef686cca9602f774ebcd9ec5140438214531ec7c869023c825adefae6735",
+      "terrainHash": "dd78bd2b3fe5361acb3f6846058d162694583c7a7d53b0a9967075200ecd0a6a",
+      "sourceSha256": "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33",
+      "props": {
+        "props": [
+          {
+            "biome": "sanctum",
+            "eligible": 9,
+            "applied": 9,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 9,
+            "species": 3,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 5,
+            "slots": [
+              {
+                "slot": "longremnant",
+                "count": 1
+              },
+              {
+                "slot": "pillar",
+                "count": 3
+              },
+              {
+                "slot": "rubble",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 4,
+          "shadowPixels": 2136,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "sanctum_hall": {
+      "baselineHash": "9dbd2db3b8b023b293819bee05511317e23ced94c28d31030a8bf6df1404fa81",
+      "collisionHash": "268e403dd4de2f80650402583f4b8d4f89ec9d87e5bd10ecf404b19844a38a3f",
+      "terrainHash": "e766168b3df2add8006fe460b2f04dc7cf1e84d9c4646034765b13afddcb5bf0",
+      "sourceSha256": "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5",
+      "props": {
+        "props": [
+          {
+            "biome": "sanctum",
+            "eligible": 3,
+            "applied": 3,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 3,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "pillar",
+                "count": 3
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "sanctum_archive": {
+      "baselineHash": "c2f1de4a6e34db7e4a4390eb13d3ef43c860d3c551a05161908e4246237b2a4a",
+      "collisionHash": "58e4c630c65cadb99a87ea5f96859917e430b2a26cf32c612adcdd49f992178d",
+      "terrainHash": "60619d477c6096d3db623e51c5734a5bf855fa49ef5e5b017c3d3f30cb7d7eb5",
+      "sourceSha256": "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609",
+      "props": {
+        "props": [
+          {
+            "biome": "sanctum",
+            "eligible": 9,
+            "applied": 9,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 9,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "pillar",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "sanctum_roots": {
+      "baselineHash": "606f0fe12214fadc1b2ca30c66006b0b09f5d8a3ff496a4785cb9a84205f79c5",
+      "collisionHash": "70ac49b0579d01dac850b5293ae1065419d3abd4f93dc10ad97b08df57161c2b",
+      "terrainHash": "8973637c0d068c9ffcca2f78e5bce7cf502b5ae53343fd67dfca0ff01cd5078c",
+      "sourceSha256": "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37",
+      "props": {
+        "props": [
+          {
+            "biome": "sanctum",
+            "eligible": 5,
+            "applied": 5,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 5,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "moss",
+                "count": 5
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "sanctum_court": {
+      "baselineHash": "9bbe7fc3dbb54e49fffedd74aeb296c95cdfcefc54e4b6d388a045cd12074677",
+      "collisionHash": "4d5e5c256002c7a29b5d9efe9a88305d9003531610f89c1eb5079b8119f3eae7",
+      "terrainHash": "141fbdffbe5c713e67fa9e889373bdd2543adc766e80513a5f8d2d758edbf240",
+      "sourceSha256": "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281",
+      "props": {
+        "props": [
+          {
+            "biome": "sanctum",
+            "eligible": 7,
+            "applied": 7,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 7,
+            "species": 1,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "moss",
+                "count": 7
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 0,
+          "shadowPixels": 0,
+          "staticRenderer": false,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 0
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    },
+    "undergate": {
+      "baselineHash": "625c8e9f05f1d8f1321bd57ec29f06580a15dd0653e07ea51b75c00bda53faf2",
+      "collisionHash": "4971de5426e36e453052ac279c91f57540286691eec7a2864f8fe2b310985b1d",
+      "terrainHash": "2211adb2ded06f69450df29c89b6e8e9769db1454ae859b23a0266e235d057b3",
+      "sourceSha256": "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429",
+      "props": {
+        "props": [
+          {
+            "biome": "forest",
+            "eligible": 21,
+            "applied": 21,
+            "skipped": 0,
+            "resources": 0,
+            "staticProps": 21,
+            "species": 2,
+            "atlasWidth": 1448,
+            "atlasHeight": 1086,
+            "floorRubbleCount": 0,
+            "slots": [
+              {
+                "slot": "oak",
+                "count": 12
+              },
+              {
+                "slot": "willow",
+                "count": 9
+              }
+            ]
+          }
+        ],
+        "grounding": {
+          "props": 24,
+          "shadowPixels": 59218,
+          "staticRenderer": true,
+          "resourceContacts": 0,
+          "resourceShadowPixels": 0,
+          "ownedResources": 2
+        },
+        "hiddenNature": {
+          "count": 0,
+          "scopeAndTransformsPreserved": true,
+          "records": []
+        },
+        "canopy": null
+      }
+    }
+  }
+}

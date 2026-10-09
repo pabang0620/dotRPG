@@ -1,0 +1,169 @@
+{
+  "alphaThreshold": 16,
+  "significantPixels": 679626,
+  "coveredPixels": 679626,
+  "uncoveredPixels": 0,
+  "pineTopMarginPixels": 7,
+  "cells": [
+    {
+      "id": "broadleaf",
+      "rect": [
+        19,
+        17,
+        277,
+        304
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "oak",
+      "rect": [
+        322,
+        23,
+        331,
+        292
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "pine",
+      "rect": [
+        671,
+        7,
+        247,
+        320
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "willow",
+      "rect": [
+        950,
+        30,
+        289,
+        303
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "broadleaf_open",
+      "rect": [
+        16,
+        336,
+        281,
+        334
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "oak_lean",
+      "rect": [
+        327,
+        337,
+        331,
+        323
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "pine_open",
+      "rect": [
+        677,
+        334,
+        251,
+        344
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "dead",
+      "rect": [
+        992,
+        356,
+        221,
+        321
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "rock",
+      "rect": [
+        13,
+        713,
+        291,
+        201
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "bush",
+      "rect": [
+        334,
+        695,
+        268,
+        209
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "log",
+      "rect": [
+        629,
+        706,
+        309,
+        203
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "stump",
+      "rect": [
+        965,
+        727,
+        266,
+        192
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "ruin",
+      "rect": [
+        23,
+        954,
+        286,
+        270
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "dead_bent",
+      "rect": [
+        367,
+        935,
+        226,
+        289
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "rock_slab",
+      "rect": [
+        618,
+        1012,
+        316,
+        185
+      ],
+      "sourceEdgeTouch": false
+    },
+    {
+      "id": "fern",
+      "rect": [
+        952,
+        989,
+        290,
+        224
+      ],
+      "sourceEdgeTouch": false
+    }
+  ]
+}

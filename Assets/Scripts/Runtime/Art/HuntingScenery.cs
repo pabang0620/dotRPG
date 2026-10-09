@@ -20,16 +20,19 @@ namespace DotRPG {
   static SpriteRenderer Put(Transform root,Sprite sprite,Vector2 foot,Vector2 size,int order,string name){if(sprite==null)return null;var go=new GameObject(name);go.transform.SetParent(root,false);go.transform.position=foot;var sr=go.AddComponent<SpriteRenderer>();sr.sprite=sprite;sr.sortingOrder=order;go.transform.localScale=new Vector3(size.x/sprite.bounds.size.x,size.y/sprite.bounds.size.y,1);return sr;}
   public static void Dress(Transform root,char[,] a,int w,int h,HuntingZone z){
    if(z==null)return;bool snow=z.theme==MapTheme.Winter,forest=z.theme==MapTheme.Forest;
-   var relic=Landmark(forest?"forest_relic":snow?"winter_relic":"canyon_relic");
-   var used=new List<Vector2>();
-   // Choose inward-facing solid shoulders. The foot and its full width are blocked; no new hidden collider.
-   for(int y=h-7;y>=3;y--)for(int x=2;x<w-2;x++){
-    if(used.Count>=3)continue;
-    bool solid=true;for(int dx=-2;dx<=2;dx++)for(int dy=0;dy<2;dy++)if(!Solid(a[x+dx,y+dy]))solid=false;
-    bool edge=false;for(int dx=-2;dx<=2;dx++)if(!Solid(a[x+dx,y-1])&&a[x+dx,y-1]!='~')edge=true;
-    edge |= x<6||x>w-7;
-    var pos=new Vector2(x+.5f,y+.1f);if(!solid||!edge||used.Exists(v=>Vector2.Distance(v,pos)<12))continue;
-    var sr=Put(root,relic,pos,new Vector2(5,6.3f),YSort.OrderFor(pos.y),"Fantasy landmark "+z.id);if(sr!=null)TreeFade.Attach(sr.gameObject);used.Add(pos);
+   // Forest fields keep their real portals and small ruins, without decorative corner doors.
+   if(!forest){
+    var relic=Landmark(snow?"winter_relic":"canyon_relic");
+    var used=new List<Vector2>();
+    // Choose inward-facing solid shoulders. The foot and its full width are blocked; no new hidden collider.
+    for(int y=h-7;y>=3;y--)for(int x=2;x<w-2;x++){
+     if(used.Count>=3)continue;
+     bool solid=true;for(int dx=-2;dx<=2;dx++)for(int dy=0;dy<2;dy++)if(!Solid(a[x+dx,y+dy]))solid=false;
+     bool edge=false;for(int dx=-2;dx<=2;dx++)if(!Solid(a[x+dx,y-1])&&a[x+dx,y-1]!='~')edge=true;
+     edge |= x<6||x>w-7;
+     var pos=new Vector2(x+.5f,y+.1f);if(!solid||!edge||used.Exists(v=>Vector2.Distance(v,pos)<12))continue;
+     var sr=Put(root,relic,pos,new Vector2(5,6.3f),YSort.OrderFor(pos.y),"Fantasy landmark "+z.id);if(sr!=null)TreeFade.Attach(sr.gameObject);used.Add(pos);
+    }
    }
    // Small bank clusters add rhythm without filling the battle floor with noisy details.
    var atmosphere=new GameObject("Quiet field atmosphere");atmosphere.transform.SetParent(root,false);atmosphere.AddComponent<HuntingAtmosphere>().Setup(a,w,h,z.theme);

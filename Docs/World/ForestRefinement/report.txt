@@ -1,0 +1,978 @@
+[4.82] capture started
+[4.82] verification audio volume: 0
+DGN surface export has five towns and sixteen fields PASS
+DGN runtime layout export access PASS
+[7.49] SURFACE EXPORT village
+DGN village previous composition resources released PASS
+DGN village portal forest PASS
+DGN village safe arrival forest PASS
+DGN village portal sanctum_court PASS
+DGN village safe arrival sanctum_court PASS
+DGN village portal undergate PASS
+DGN village safe arrival undergate PASS
+DGN village spawn free PASS
+DGN village collision buffer complete PASS
+DGN village spawn anchors to actual quarter-tile navigation PASS
+DGN village spawn reaches portal arrival forest PASS
+DGN village spawn reaches portal arrival sanctum_court PASS
+DGN village spawn reaches portal arrival undergate PASS
+DGN village short movement route available PASS
+DGN village actual input moves forward PASS
+DGN village actual input returns without portal travel PASS
+DGN village actual movement feet remain free PASS
+DGN village baseline exists PASS
+DGN village navigation and services unchanged PASS
+DGN village original static ground painting available PASS
+DGN village requested composition exists at 96ppu PASS
+DGN village one map-owned surface composition PASS
+DGN village composition belongs to current map PASS
+DGN village exclusive composition layer slots PASS
+DGN village supporting edges avoid walkable terrain PASS
+DGN village composition uses sharp pixels PASS
+DGN village composition shares one unreadable source texture PASS
+DGN village mesh cells and source UVs exactly partition artwork PASS
+DGN village registered source resolution is preserved PASS
+DGN village requested artwork resolution 96 PASS
+DGN village composed floor is bound to existing water simulation PASS
+DGN village shared water mask retains exact 32ppu world registration PASS
+DGN village contact layer is visual only and below actors PASS
+DGN village empty and resource contact ownership matches generated pixels PASS
+DGN village hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN village prop pass scope PASS
+DGN village forest field atlas stays inside the four target maps PASS
+DGN village complete prop replacement census PASS
+DGN village prop root and visual transforms preserved PASS
+DGN village prop colliders preserved PASS
+DGN village prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN village fitted prop pictures use one owned atlas PASS
+DGN village resource full and stump overrides connected PASS
+DGN village background, columns, actors and services excluded PASS
+DGN forest:Tree resource lifecycle access PASS
+DGN forest:Tree quiet depleted art state PASS
+DGN forest:Tree depleted contact matches stump or absent rock PASS
+DGN forest:Tree real respawn restores new full art and collider PASS
+DGN forest:Tree yield and health configuration preserved PASS
+DGN forest:Tree respawn restores standing contact without collider PASS
+DGN forest:Tree lifecycle probe restores timer and collision PASS
+DGN forest:Rock resource lifecycle access PASS
+DGN forest:Rock quiet depleted art state PASS
+DGN forest:Rock depleted contact matches stump or absent rock PASS
+DGN forest:Rock real respawn restores new full art and collider PASS
+DGN forest:Rock yield and health configuration preserved PASS
+DGN forest:Rock respawn restores standing contact without collider PASS
+DGN forest:Rock lifecycle probe restores timer and collision PASS
+[12.91] SURFACE EXPORT forest
+DGN forest previous composition resources released PASS
+DGN forest portal forest_depths PASS
+DGN forest safe arrival forest_depths PASS
+DGN forest portal forest_ruins PASS
+DGN forest safe arrival forest_ruins PASS
+DGN forest portal village PASS
+DGN forest safe arrival village PASS
+DGN forest spawn free PASS
+DGN forest collision buffer complete PASS
+DGN forest spawn anchors to actual quarter-tile navigation PASS
+DGN forest spawn reaches portal arrival forest_depths PASS
+DGN forest spawn reaches portal arrival forest_ruins PASS
+DGN forest spawn reaches portal arrival village PASS
+DGN forest short movement route available PASS
+DGN forest actual input moves forward PASS
+DGN forest actual input returns without portal travel PASS
+DGN forest actual movement feet remain free PASS
+DGN forest baseline exists PASS
+DGN forest navigation and services unchanged PASS
+DGN forest original static ground painting available PASS
+DGN forest requested composition exists at 96ppu PASS
+DGN forest one map-owned surface composition PASS
+DGN forest composition belongs to current map PASS
+DGN forest exclusive composition layer slots PASS
+DGN forest supporting edges avoid walkable terrain PASS
+DGN forest composition uses sharp pixels PASS
+DGN forest composition shares one unreadable source texture PASS
+DGN forest mesh cells and source UVs exactly partition artwork PASS
+DGN forest registered source resolution is preserved PASS
+DGN forest requested artwork resolution 96 PASS
+DGN forest composed floor is bound to existing water simulation PASS
+DGN forest shared water mask retains exact 32ppu world registration PASS
+DGN forest contact layer is visual only and below actors PASS
+DGN forest empty and resource contact ownership matches generated pixels PASS
+DGN forest hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN forest prop pass scope PASS
+DGN forest forest field atlas stays inside the four target maps PASS
+DGN forest field atlas declares sixteen fitted variants PASS
+DGN forest field props keep willow and open layered-pine identities PASS
+DGN forest complete prop replacement census PASS
+DGN forest prop root and visual transforms preserved PASS
+DGN forest prop colliders preserved PASS
+DGN forest prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN forest fitted prop pictures use one owned atlas PASS
+DGN forest resource full and stump overrides connected PASS
+DGN forest background, columns, actors and services excluded PASS
+DGN forest_fields:Tree resource lifecycle access PASS
+DGN forest_fields:Tree quiet depleted art state PASS
+DGN forest_fields:Tree depleted contact matches stump or absent rock PASS
+DGN forest_fields:Tree real respawn restores new full art and collider PASS
+DGN forest_fields:Tree yield and health configuration preserved PASS
+DGN forest_fields:Tree respawn restores standing contact without collider PASS
+DGN forest_fields:Tree lifecycle probe restores timer and collision PASS
+DGN forest_fields:Rock resource lifecycle access PASS
+DGN forest_fields:Rock quiet depleted art state PASS
+DGN forest_fields:Rock depleted contact matches stump or absent rock PASS
+DGN forest_fields:Rock real respawn restores new full art and collider PASS
+DGN forest_fields:Rock yield and health configuration preserved PASS
+DGN forest_fields:Rock respawn restores standing contact without collider PASS
+DGN forest_fields:Rock lifecycle probe restores timer and collision PASS
+[17.98] SURFACE EXPORT forest_ruins
+DGN forest_ruins previous composition resources released PASS
+DGN forest_ruins portal forest PASS
+DGN forest_ruins safe arrival forest PASS
+DGN forest_ruins portal forest_crossing PASS
+DGN forest_ruins safe arrival forest_crossing PASS
+DGN forest_ruins spawn free PASS
+DGN forest_ruins collision buffer complete PASS
+DGN forest_ruins spawn anchors to actual quarter-tile navigation PASS
+DGN forest_ruins spawn reaches portal arrival forest PASS
+DGN forest_ruins spawn reaches portal arrival forest_crossing PASS
+DGN forest_ruins short movement route available PASS
+DGN forest_ruins actual input moves forward PASS
+DGN forest_ruins actual input returns without portal travel PASS
+DGN forest_ruins actual movement feet remain free PASS
+DGN forest_ruins baseline exists PASS
+DGN forest_ruins navigation and services unchanged PASS
+DGN forest_ruins original static ground painting available PASS
+DGN forest_ruins requested composition exists at 96ppu PASS
+DGN forest_ruins one map-owned surface composition PASS
+DGN forest_ruins composition belongs to current map PASS
+DGN forest_ruins exclusive composition layer slots PASS
+DGN forest_ruins supporting edges avoid walkable terrain PASS
+DGN forest_ruins composition uses sharp pixels PASS
+DGN forest_ruins composition shares one unreadable source texture PASS
+DGN forest_ruins mesh cells and source UVs exactly partition artwork PASS
+DGN forest_ruins registered source resolution is preserved PASS
+DGN forest_ruins requested artwork resolution 96 PASS
+DGN forest_ruins composed floor is bound to existing water simulation PASS
+DGN forest_ruins shared water mask retains exact 32ppu world registration PASS
+DGN forest_ruins contact layer is visual only and below actors PASS
+DGN forest_ruins empty and resource contact ownership matches generated pixels PASS
+DGN forest_ruins hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN forest_ruins prop pass scope PASS
+DGN forest_ruins forest field atlas stays inside the four target maps PASS
+DGN forest_ruins field atlas declares sixteen fitted variants PASS
+DGN forest_ruins field props keep willow and open layered-pine identities PASS
+DGN forest_ruins complete prop replacement census PASS
+DGN forest_ruins prop root and visual transforms preserved PASS
+DGN forest_ruins prop colliders preserved PASS
+DGN forest_ruins prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN forest_ruins fitted prop pictures use one owned atlas PASS
+DGN forest_ruins resource full and stump overrides connected PASS
+DGN forest_ruins background, columns, actors and services excluded PASS
+[21.45] SURFACE EXPORT forest_depths
+DGN forest_depths previous composition resources released PASS
+DGN forest_depths portal forest PASS
+DGN forest_depths safe arrival forest PASS
+DGN forest_depths portal forest_crossing PASS
+DGN forest_depths safe arrival forest_crossing PASS
+DGN forest_depths spawn free PASS
+DGN forest_depths collision buffer complete PASS
+DGN forest_depths spawn anchors to actual quarter-tile navigation PASS
+DGN forest_depths spawn reaches portal arrival forest PASS
+DGN forest_depths spawn reaches portal arrival forest_crossing PASS
+DGN forest_depths short movement route available PASS
+DGN forest_depths actual input moves forward PASS
+DGN forest_depths actual input returns without portal travel PASS
+DGN forest_depths actual movement feet remain free PASS
+DGN forest_depths baseline exists PASS
+DGN forest_depths navigation and services unchanged PASS
+DGN forest_depths original static ground painting available PASS
+DGN forest_depths scenic camera anchor fits actual player collision PASS
+DGN forest_depths scenic capture restores boss intro banner PASS
+DGN forest_depths requested composition exists at 96ppu PASS
+DGN forest_depths one map-owned surface composition PASS
+DGN forest_depths composition belongs to current map PASS
+DGN forest_depths exclusive composition layer slots PASS
+DGN forest_depths supporting edges avoid walkable terrain PASS
+DGN forest_depths composition uses sharp pixels PASS
+DGN forest_depths composition shares one unreadable source texture PASS
+DGN forest_depths mesh cells and source UVs exactly partition artwork PASS
+DGN forest_depths registered source resolution is preserved PASS
+DGN forest_depths requested artwork resolution 96 PASS
+DGN forest_depths composed floor is bound to existing water simulation PASS
+DGN forest_depths shared water mask retains exact 32ppu world registration PASS
+DGN forest_depths contact layer is visual only and below actors PASS
+DGN forest_depths empty and resource contact ownership matches generated pixels PASS
+DGN forest_depths hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN forest_depths prop pass scope PASS
+DGN forest_depths forest field atlas stays inside the four target maps PASS
+DGN forest_depths field atlas declares sixteen fitted variants PASS
+DGN forest_depths field props keep willow and open layered-pine identities PASS
+DGN forest_depths complete prop replacement census PASS
+DGN forest_depths prop root and visual transforms preserved PASS
+DGN forest_depths prop colliders preserved PASS
+DGN forest_depths prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN forest_depths fitted prop pictures use one owned atlas PASS
+DGN forest_depths resource full and stump overrides connected PASS
+DGN forest_depths background, columns, actors and services excluded PASS
+[25.46] SURFACE EXPORT forest_crossing
+DGN forest_crossing previous composition resources released PASS
+DGN forest_crossing portal canyon PASS
+DGN forest_crossing safe arrival canyon PASS
+DGN forest_crossing portal forest_depths PASS
+DGN forest_crossing safe arrival forest_depths PASS
+DGN forest_crossing portal forest_ruins PASS
+DGN forest_crossing safe arrival forest_ruins PASS
+DGN forest_crossing spawn free PASS
+DGN forest_crossing collision buffer complete PASS
+DGN forest_crossing spawn anchors to actual quarter-tile navigation PASS
+DGN forest_crossing spawn reaches portal arrival canyon PASS
+DGN forest_crossing spawn reaches portal arrival forest_depths PASS
+DGN forest_crossing spawn reaches portal arrival forest_ruins PASS
+DGN forest_crossing short movement route available PASS
+DGN forest_crossing actual input moves forward PASS
+DGN forest_crossing actual input returns without portal travel PASS
+DGN forest_crossing actual movement feet remain free PASS
+DGN forest_crossing baseline exists PASS
+DGN forest_crossing navigation and services unchanged PASS
+DGN forest_crossing original static ground painting available PASS
+DGN forest_crossing requested composition exists at 96ppu PASS
+DGN forest_crossing one map-owned surface composition PASS
+DGN forest_crossing composition belongs to current map PASS
+DGN forest_crossing exclusive composition layer slots PASS
+DGN forest_crossing supporting edges avoid walkable terrain PASS
+DGN forest_crossing composition uses sharp pixels PASS
+DGN forest_crossing composition shares one unreadable source texture PASS
+DGN forest_crossing mesh cells and source UVs exactly partition artwork PASS
+DGN forest_crossing registered source resolution is preserved PASS
+DGN forest_crossing requested artwork resolution 96 PASS
+DGN forest_crossing composed floor is bound to existing water simulation PASS
+DGN forest_crossing shared water mask retains exact 32ppu world registration PASS
+DGN forest_crossing contact layer is visual only and below actors PASS
+DGN forest_crossing empty and resource contact ownership matches generated pixels PASS
+DGN forest_crossing hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN forest_crossing prop pass scope PASS
+DGN forest_crossing forest field atlas stays inside the four target maps PASS
+DGN forest_crossing field atlas declares sixteen fitted variants PASS
+DGN forest_crossing field props keep willow and open layered-pine identities PASS
+DGN forest_crossing complete prop replacement census PASS
+DGN forest_crossing prop root and visual transforms preserved PASS
+DGN forest_crossing prop colliders preserved PASS
+DGN forest_crossing prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN forest_crossing fitted prop pictures use one owned atlas PASS
+DGN forest_crossing resource full and stump overrides connected PASS
+DGN forest_crossing background, columns, actors and services excluded PASS
+[29.24] SURFACE EXPORT canyon
+DGN canyon previous composition resources released PASS
+DGN canyon portal canyon_pass PASS
+DGN canyon safe arrival canyon_pass PASS
+DGN canyon portal forest_crossing PASS
+DGN canyon safe arrival forest_crossing PASS
+DGN canyon portal undergate PASS
+DGN canyon safe arrival undergate PASS
+DGN canyon spawn free PASS
+DGN canyon collision buffer complete PASS
+DGN canyon spawn anchors to actual quarter-tile navigation PASS
+DGN canyon spawn reaches portal arrival canyon_pass PASS
+DGN canyon spawn reaches portal arrival forest_crossing PASS
+DGN canyon spawn reaches portal arrival undergate PASS
+DGN canyon short movement route available PASS
+DGN canyon actual input moves forward PASS
+DGN canyon actual input returns without portal travel PASS
+DGN canyon actual movement feet remain free PASS
+DGN canyon baseline exists PASS
+DGN canyon navigation and services unchanged PASS
+DGN canyon original static ground painting available PASS
+DGN canyon requested composition exists at 96ppu PASS
+DGN canyon one map-owned surface composition PASS
+DGN canyon composition belongs to current map PASS
+DGN canyon exclusive composition layer slots PASS
+DGN canyon supporting edges avoid walkable terrain PASS
+DGN canyon composition uses sharp pixels PASS
+DGN canyon composition shares one unreadable source texture PASS
+DGN canyon mesh cells and source UVs exactly partition artwork PASS
+DGN canyon registered source resolution is preserved PASS
+DGN canyon requested artwork resolution 96 PASS
+DGN canyon composed floor is bound to existing water simulation PASS
+DGN canyon shared water mask retains exact 32ppu world registration PASS
+DGN canyon contact layer is visual only and below actors PASS
+DGN canyon empty and resource contact ownership matches generated pixels PASS
+DGN canyon hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN canyon prop pass scope PASS
+DGN canyon forest field atlas stays inside the four target maps PASS
+DGN canyon complete prop replacement census PASS
+DGN canyon prop root and visual transforms preserved PASS
+DGN canyon prop colliders preserved PASS
+DGN canyon prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN canyon fitted prop pictures use one owned atlas PASS
+DGN canyon resource full and stump overrides connected PASS
+DGN canyon background, columns, actors and services excluded PASS
+DGN canyon:Rock resource lifecycle access PASS
+DGN canyon:Rock quiet depleted art state PASS
+DGN canyon:Rock depleted contact matches stump or absent rock PASS
+DGN canyon:Rock real respawn restores new full art and collider PASS
+DGN canyon:Rock yield and health configuration preserved PASS
+DGN canyon:Rock respawn restores standing contact without collider PASS
+DGN canyon:Rock lifecycle probe restores timer and collision PASS
+[33.22] SURFACE EXPORT canyon_pass
+DGN canyon_pass previous composition resources released PASS
+DGN canyon_pass portal canyon PASS
+DGN canyon_pass safe arrival canyon PASS
+DGN canyon_pass portal canyon_mine PASS
+DGN canyon_pass safe arrival canyon_mine PASS
+DGN canyon_pass portal canyon_ridge PASS
+DGN canyon_pass safe arrival canyon_ridge PASS
+DGN canyon_pass spawn free PASS
+DGN canyon_pass collision buffer complete PASS
+DGN canyon_pass spawn anchors to actual quarter-tile navigation PASS
+DGN canyon_pass spawn reaches portal arrival canyon PASS
+DGN canyon_pass spawn reaches portal arrival canyon_mine PASS
+DGN canyon_pass spawn reaches portal arrival canyon_ridge PASS
+DGN canyon_pass short movement route available PASS
+DGN canyon_pass actual input moves forward PASS
+DGN canyon_pass actual input returns without portal travel PASS
+DGN canyon_pass actual movement feet remain free PASS
+DGN canyon_pass baseline exists PASS
+DGN canyon_pass navigation and services unchanged PASS
+DGN canyon_pass original static ground painting available PASS
+DGN canyon_pass requested composition exists at 96ppu PASS
+DGN canyon_pass one map-owned surface composition PASS
+DGN canyon_pass composition belongs to current map PASS
+DGN canyon_pass exclusive composition layer slots PASS
+DGN canyon_pass supporting edges avoid walkable terrain PASS
+DGN canyon_pass composition uses sharp pixels PASS
+DGN canyon_pass composition shares one unreadable source texture PASS
+DGN canyon_pass mesh cells and source UVs exactly partition artwork PASS
+DGN canyon_pass registered source resolution is preserved PASS
+DGN canyon_pass requested artwork resolution 96 PASS
+DGN canyon_pass composed floor is bound to existing water simulation PASS
+DGN canyon_pass shared water mask retains exact 32ppu world registration PASS
+DGN canyon_pass contact layer is visual only and below actors PASS
+DGN canyon_pass empty and resource contact ownership matches generated pixels PASS
+DGN canyon_pass hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN canyon_pass unsupported canyon decorations are visual only PASS
+DGN canyon_pass prop pass scope PASS
+DGN canyon_pass forest field atlas stays inside the four target maps PASS
+DGN canyon_pass complete prop replacement census PASS
+DGN canyon_pass prop root and visual transforms preserved PASS
+DGN canyon_pass prop colliders preserved PASS
+DGN canyon_pass prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN canyon_pass fitted prop pictures use one owned atlas PASS
+DGN canyon_pass resource full and stump overrides connected PASS
+DGN canyon_pass background, columns, actors and services excluded PASS
+[36.74] SURFACE EXPORT canyon_mine
+DGN canyon_mine previous composition resources released PASS
+DGN canyon_mine portal canyon_gate PASS
+DGN canyon_mine safe arrival canyon_gate PASS
+DGN canyon_mine portal canyon_pass PASS
+DGN canyon_mine safe arrival canyon_pass PASS
+DGN canyon_mine spawn free PASS
+DGN canyon_mine collision buffer complete PASS
+DGN canyon_mine spawn anchors to actual quarter-tile navigation PASS
+DGN canyon_mine spawn reaches portal arrival canyon_gate PASS
+DGN canyon_mine spawn reaches portal arrival canyon_pass PASS
+DGN canyon_mine short movement route available PASS
+DGN canyon_mine actual input moves forward PASS
+DGN canyon_mine actual input returns without portal travel PASS
+DGN canyon_mine actual movement feet remain free PASS
+DGN canyon_mine baseline exists PASS
+DGN canyon_mine navigation and services unchanged PASS
+DGN canyon_mine original static ground painting available PASS
+DGN canyon_mine requested composition exists at 96ppu PASS
+DGN canyon_mine one map-owned surface composition PASS
+DGN canyon_mine composition belongs to current map PASS
+DGN canyon_mine exclusive composition layer slots PASS
+DGN canyon_mine supporting edges avoid walkable terrain PASS
+DGN canyon_mine composition uses sharp pixels PASS
+DGN canyon_mine composition shares one unreadable source texture PASS
+DGN canyon_mine mesh cells and source UVs exactly partition artwork PASS
+DGN canyon_mine registered source resolution is preserved PASS
+DGN canyon_mine requested artwork resolution 96 PASS
+DGN canyon_mine contact layer is visual only and below actors PASS
+DGN canyon_mine empty and resource contact ownership matches generated pixels PASS
+DGN canyon_mine hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN canyon_mine unsupported canyon decorations are visual only PASS
+DGN canyon_mine prop pass scope PASS
+DGN canyon_mine forest field atlas stays inside the four target maps PASS
+DGN canyon_mine complete prop replacement census PASS
+DGN canyon_mine prop root and visual transforms preserved PASS
+DGN canyon_mine prop colliders preserved PASS
+DGN canyon_mine prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN canyon_mine fitted prop pictures use one owned atlas PASS
+DGN canyon_mine resource full and stump overrides connected PASS
+DGN canyon_mine background, columns, actors and services excluded PASS
+[40.29] SURFACE EXPORT canyon_ridge
+DGN canyon_ridge previous composition resources released PASS
+DGN canyon_ridge portal canyon_gate PASS
+DGN canyon_ridge safe arrival canyon_gate PASS
+DGN canyon_ridge portal canyon_pass PASS
+DGN canyon_ridge safe arrival canyon_pass PASS
+DGN canyon_ridge spawn free PASS
+DGN canyon_ridge collision buffer complete PASS
+DGN canyon_ridge spawn anchors to actual quarter-tile navigation PASS
+DGN canyon_ridge spawn reaches portal arrival canyon_gate PASS
+DGN canyon_ridge spawn reaches portal arrival canyon_pass PASS
+DGN canyon_ridge short movement route available PASS
+DGN canyon_ridge actual input moves forward PASS
+DGN canyon_ridge actual input returns without portal travel PASS
+DGN canyon_ridge actual movement feet remain free PASS
+DGN canyon_ridge baseline exists PASS
+DGN canyon_ridge navigation and services unchanged PASS
+DGN canyon_ridge original static ground painting available PASS
+DGN canyon_ridge scenic camera anchor fits actual player collision PASS
+DGN canyon_ridge scenic capture restores boss intro banner PASS
+DGN canyon_ridge requested composition exists at 96ppu PASS
+DGN canyon_ridge one map-owned surface composition PASS
+DGN canyon_ridge composition belongs to current map PASS
+DGN canyon_ridge exclusive composition layer slots PASS
+DGN canyon_ridge supporting edges avoid walkable terrain PASS
+DGN canyon_ridge composition uses sharp pixels PASS
+DGN canyon_ridge composition shares one unreadable source texture PASS
+DGN canyon_ridge mesh cells and source UVs exactly partition artwork PASS
+DGN canyon_ridge registered source resolution is preserved PASS
+DGN canyon_ridge requested artwork resolution 96 PASS
+DGN canyon_ridge contact layer is visual only and below actors PASS
+DGN canyon_ridge empty and resource contact ownership matches generated pixels PASS
+DGN canyon_ridge hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN canyon_ridge unsupported canyon decorations are visual only PASS
+DGN canyon_ridge prop pass scope PASS
+DGN canyon_ridge forest field atlas stays inside the four target maps PASS
+DGN canyon_ridge complete prop replacement census PASS
+DGN canyon_ridge prop root and visual transforms preserved PASS
+DGN canyon_ridge prop colliders preserved PASS
+DGN canyon_ridge prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN canyon_ridge fitted prop pictures use one owned atlas PASS
+DGN canyon_ridge resource full and stump overrides connected PASS
+DGN canyon_ridge background, columns, actors and services excluded PASS
+[44.38] SURFACE EXPORT canyon_gate
+DGN canyon_gate previous composition resources released PASS
+DGN canyon_gate portal canyon_mine PASS
+DGN canyon_gate safe arrival canyon_mine PASS
+DGN canyon_gate portal canyon_ridge PASS
+DGN canyon_gate safe arrival canyon_ridge PASS
+DGN canyon_gate portal winter PASS
+DGN canyon_gate safe arrival winter PASS
+DGN canyon_gate spawn free PASS
+DGN canyon_gate collision buffer complete PASS
+DGN canyon_gate spawn anchors to actual quarter-tile navigation PASS
+DGN canyon_gate spawn reaches portal arrival canyon_mine PASS
+DGN canyon_gate spawn reaches portal arrival canyon_ridge PASS
+DGN canyon_gate spawn reaches portal arrival winter PASS
+DGN canyon_gate short movement route available PASS
+DGN canyon_gate actual input moves forward PASS
+DGN canyon_gate actual input returns without portal travel PASS
+DGN canyon_gate actual movement feet remain free PASS
+DGN canyon_gate baseline exists PASS
+DGN canyon_gate navigation and services unchanged PASS
+DGN canyon_gate original static ground painting available PASS
+DGN canyon_gate requested composition exists at 96ppu PASS
+DGN canyon_gate one map-owned surface composition PASS
+DGN canyon_gate composition belongs to current map PASS
+DGN canyon_gate exclusive composition layer slots PASS
+DGN canyon_gate supporting edges avoid walkable terrain PASS
+DGN canyon_gate composition uses sharp pixels PASS
+DGN canyon_gate composition shares one unreadable source texture PASS
+DGN canyon_gate mesh cells and source UVs exactly partition artwork PASS
+DGN canyon_gate registered source resolution is preserved PASS
+DGN canyon_gate requested artwork resolution 96 PASS
+DGN canyon_gate contact layer is visual only and below actors PASS
+DGN canyon_gate empty and resource contact ownership matches generated pixels PASS
+DGN canyon_gate hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN canyon_gate unsupported canyon decorations are visual only PASS
+DGN canyon_gate prop pass scope PASS
+DGN canyon_gate forest field atlas stays inside the four target maps PASS
+DGN canyon_gate complete prop replacement census PASS
+DGN canyon_gate prop root and visual transforms preserved PASS
+DGN canyon_gate prop colliders preserved PASS
+DGN canyon_gate prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN canyon_gate fitted prop pictures use one owned atlas PASS
+DGN canyon_gate resource full and stump overrides connected PASS
+DGN canyon_gate background, columns, actors and services excluded PASS
+[48.42] SURFACE EXPORT winter
+DGN winter previous composition resources released PASS
+DGN winter portal canyon_gate PASS
+DGN winter safe arrival canyon_gate PASS
+DGN winter portal undergate PASS
+DGN winter safe arrival undergate PASS
+DGN winter portal winter_edge PASS
+DGN winter safe arrival winter_edge PASS
+DGN winter spawn free PASS
+DGN winter collision buffer complete PASS
+DGN winter spawn anchors to actual quarter-tile navigation PASS
+DGN winter spawn reaches portal arrival canyon_gate PASS
+DGN winter spawn reaches portal arrival undergate PASS
+DGN winter spawn reaches portal arrival winter_edge PASS
+DGN winter short movement route available PASS
+DGN winter actual input moves forward PASS
+DGN winter actual input returns without portal travel PASS
+DGN winter actual movement feet remain free PASS
+DGN winter baseline exists PASS
+DGN winter navigation and services unchanged PASS
+DGN winter original static ground painting available PASS
+DGN winter requested composition exists at 96ppu PASS
+DGN winter one map-owned surface composition PASS
+DGN winter composition belongs to current map PASS
+DGN winter exclusive composition layer slots PASS
+DGN winter supporting edges avoid walkable terrain PASS
+DGN winter composition uses sharp pixels PASS
+DGN winter composition shares one unreadable source texture PASS
+DGN winter mesh cells and source UVs exactly partition artwork PASS
+DGN winter registered source resolution is preserved PASS
+DGN winter requested artwork resolution 96 PASS
+DGN winter composed floor is bound to existing water simulation PASS
+DGN winter shared water mask retains exact 32ppu world registration PASS
+DGN winter contact layer is visual only and below actors PASS
+DGN winter empty and resource contact ownership matches generated pixels PASS
+DGN winter hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN winter prop pass scope PASS
+DGN winter forest field atlas stays inside the four target maps PASS
+DGN winter complete prop replacement census PASS
+DGN winter prop root and visual transforms preserved PASS
+DGN winter prop colliders preserved PASS
+DGN winter prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN winter fitted prop pictures use one owned atlas PASS
+DGN winter resource full and stump overrides connected PASS
+DGN winter background, columns, actors and services excluded PASS
+[51.96] SURFACE EXPORT winter_edge
+DGN winter_edge previous composition resources released PASS
+DGN winter_edge portal winter PASS
+DGN winter_edge safe arrival winter PASS
+DGN winter_edge portal winter_lake PASS
+DGN winter_edge safe arrival winter_lake PASS
+DGN winter_edge portal winter_peak PASS
+DGN winter_edge safe arrival winter_peak PASS
+DGN winter_edge spawn free PASS
+DGN winter_edge collision buffer complete PASS
+DGN winter_edge spawn anchors to actual quarter-tile navigation PASS
+DGN winter_edge spawn reaches portal arrival winter PASS
+DGN winter_edge spawn reaches portal arrival winter_lake PASS
+DGN winter_edge spawn reaches portal arrival winter_peak PASS
+DGN winter_edge short movement route available PASS
+DGN winter_edge actual input moves forward PASS
+DGN winter_edge actual input returns without portal travel PASS
+DGN winter_edge actual movement feet remain free PASS
+DGN winter_edge baseline exists PASS
+DGN winter_edge navigation and services unchanged PASS
+DGN winter_edge original static ground painting available PASS
+DGN winter_edge scenic camera anchor fits actual player collision PASS
+DGN winter_edge scenic capture restores boss intro banner PASS
+DGN winter_edge requested composition exists at 96ppu PASS
+DGN winter_edge one map-owned surface composition PASS
+DGN winter_edge composition belongs to current map PASS
+DGN winter_edge exclusive composition layer slots PASS
+DGN winter_edge supporting edges avoid walkable terrain PASS
+DGN winter_edge composition uses sharp pixels PASS
+DGN winter_edge composition shares one unreadable source texture PASS
+DGN winter_edge mesh cells and source UVs exactly partition artwork PASS
+DGN winter_edge registered source resolution is preserved PASS
+DGN winter_edge requested artwork resolution 96 PASS
+DGN winter_edge composed floor is bound to existing water simulation PASS
+DGN winter_edge shared water mask retains exact 32ppu world registration PASS
+DGN winter_edge contact layer is visual only and below actors PASS
+DGN winter_edge empty and resource contact ownership matches generated pixels PASS
+DGN winter_edge hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN winter_edge prop pass scope PASS
+DGN winter_edge forest field atlas stays inside the four target maps PASS
+DGN winter_edge complete prop replacement census PASS
+DGN winter_edge prop root and visual transforms preserved PASS
+DGN winter_edge prop colliders preserved PASS
+DGN winter_edge prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN winter_edge fitted prop pictures use one owned atlas PASS
+DGN winter_edge resource full and stump overrides connected PASS
+DGN winter_edge background, columns, actors and services excluded PASS
+[55.53] SURFACE EXPORT winter_lake
+DGN winter_lake previous composition resources released PASS
+DGN winter_lake portal winter_edge PASS
+DGN winter_lake safe arrival winter_edge PASS
+DGN winter_lake portal winter_reach PASS
+DGN winter_lake safe arrival winter_reach PASS
+DGN winter_lake spawn free PASS
+DGN winter_lake collision buffer complete PASS
+DGN winter_lake spawn anchors to actual quarter-tile navigation PASS
+DGN winter_lake spawn reaches portal arrival winter_edge PASS
+DGN winter_lake spawn reaches portal arrival winter_reach PASS
+DGN winter_lake short movement route available PASS
+DGN winter_lake actual input moves forward PASS
+DGN winter_lake actual input returns without portal travel PASS
+DGN winter_lake actual movement feet remain free PASS
+DGN winter_lake baseline exists PASS
+DGN winter_lake navigation and services unchanged PASS
+DGN winter_lake original static ground painting available PASS
+DGN winter_lake requested composition exists at 96ppu PASS
+DGN winter_lake one map-owned surface composition PASS
+DGN winter_lake composition belongs to current map PASS
+DGN winter_lake exclusive composition layer slots PASS
+DGN winter_lake supporting edges avoid walkable terrain PASS
+DGN winter_lake composition uses sharp pixels PASS
+DGN winter_lake composition shares one unreadable source texture PASS
+DGN winter_lake mesh cells and source UVs exactly partition artwork PASS
+DGN winter_lake registered source resolution is preserved PASS
+DGN winter_lake requested artwork resolution 96 PASS
+DGN winter_lake composed floor is bound to existing water simulation PASS
+DGN winter_lake shared water mask retains exact 32ppu world registration PASS
+DGN winter_lake contact layer is visual only and below actors PASS
+DGN winter_lake empty and resource contact ownership matches generated pixels PASS
+DGN winter_lake hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN winter_lake prop pass scope PASS
+DGN winter_lake forest field atlas stays inside the four target maps PASS
+DGN winter_lake complete prop replacement census PASS
+DGN winter_lake prop root and visual transforms preserved PASS
+DGN winter_lake prop colliders preserved PASS
+DGN winter_lake prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN winter_lake fitted prop pictures use one owned atlas PASS
+DGN winter_lake resource full and stump overrides connected PASS
+DGN winter_lake background, columns, actors and services excluded PASS
+[58.90] SURFACE EXPORT winter_peak
+DGN winter_peak previous composition resources released PASS
+DGN winter_peak portal winter_edge PASS
+DGN winter_peak safe arrival winter_edge PASS
+DGN winter_peak portal winter_reach PASS
+DGN winter_peak safe arrival winter_reach PASS
+DGN winter_peak spawn free PASS
+DGN winter_peak collision buffer complete PASS
+DGN winter_peak spawn anchors to actual quarter-tile navigation PASS
+DGN winter_peak spawn reaches portal arrival winter_edge PASS
+DGN winter_peak spawn reaches portal arrival winter_reach PASS
+DGN winter_peak short movement route available PASS
+DGN winter_peak actual input moves forward PASS
+DGN winter_peak actual input returns without portal travel PASS
+DGN winter_peak actual movement feet remain free PASS
+DGN winter_peak baseline exists PASS
+DGN winter_peak navigation and services unchanged PASS
+DGN winter_peak original static ground painting available PASS
+DGN winter_peak requested composition exists at 96ppu PASS
+DGN winter_peak one map-owned surface composition PASS
+DGN winter_peak composition belongs to current map PASS
+DGN winter_peak exclusive composition layer slots PASS
+DGN winter_peak supporting edges avoid walkable terrain PASS
+DGN winter_peak composition uses sharp pixels PASS
+DGN winter_peak composition shares one unreadable source texture PASS
+DGN winter_peak mesh cells and source UVs exactly partition artwork PASS
+DGN winter_peak registered source resolution is preserved PASS
+DGN winter_peak requested artwork resolution 96 PASS
+DGN winter_peak contact layer is visual only and below actors PASS
+DGN winter_peak empty and resource contact ownership matches generated pixels PASS
+DGN winter_peak hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN winter_peak prop pass scope PASS
+DGN winter_peak forest field atlas stays inside the four target maps PASS
+DGN winter_peak complete prop replacement census PASS
+DGN winter_peak prop root and visual transforms preserved PASS
+DGN winter_peak prop colliders preserved PASS
+DGN winter_peak prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN winter_peak fitted prop pictures use one owned atlas PASS
+DGN winter_peak resource full and stump overrides connected PASS
+DGN winter_peak background, columns, actors and services excluded PASS
+[62.27] SURFACE EXPORT winter_reach
+DGN winter_reach previous composition resources released PASS
+DGN winter_reach portal sunken_sanctum PASS
+DGN winter_reach safe arrival sunken_sanctum PASS
+DGN winter_reach portal winter_lake PASS
+DGN winter_reach safe arrival winter_lake PASS
+DGN winter_reach portal winter_peak PASS
+DGN winter_reach safe arrival winter_peak PASS
+DGN winter_reach spawn free PASS
+DGN winter_reach collision buffer complete PASS
+DGN winter_reach spawn anchors to actual quarter-tile navigation PASS
+DGN winter_reach spawn reaches portal arrival sunken_sanctum PASS
+DGN winter_reach spawn reaches portal arrival winter_lake PASS
+DGN winter_reach spawn reaches portal arrival winter_peak PASS
+DGN winter_reach short movement route available PASS
+DGN winter_reach actual input moves forward PASS
+DGN winter_reach actual input returns without portal travel PASS
+DGN winter_reach actual movement feet remain free PASS
+DGN winter_reach baseline exists PASS
+DGN winter_reach navigation and services unchanged PASS
+DGN winter_reach original static ground painting available PASS
+DGN winter_reach requested composition exists at 96ppu PASS
+DGN winter_reach one map-owned surface composition PASS
+DGN winter_reach composition belongs to current map PASS
+DGN winter_reach exclusive composition layer slots PASS
+DGN winter_reach supporting edges avoid walkable terrain PASS
+DGN winter_reach composition uses sharp pixels PASS
+DGN winter_reach composition shares one unreadable source texture PASS
+DGN winter_reach mesh cells and source UVs exactly partition artwork PASS
+DGN winter_reach registered source resolution is preserved PASS
+DGN winter_reach requested artwork resolution 96 PASS
+DGN winter_reach composed floor is bound to existing water simulation PASS
+DGN winter_reach shared water mask retains exact 32ppu world registration PASS
+DGN winter_reach contact layer is visual only and below actors PASS
+DGN winter_reach empty and resource contact ownership matches generated pixels PASS
+DGN winter_reach hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN winter_reach prop pass scope PASS
+DGN winter_reach forest field atlas stays inside the four target maps PASS
+DGN winter_reach complete prop replacement census PASS
+DGN winter_reach prop root and visual transforms preserved PASS
+DGN winter_reach prop colliders preserved PASS
+DGN winter_reach prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN winter_reach fitted prop pictures use one owned atlas PASS
+DGN winter_reach resource full and stump overrides connected PASS
+DGN winter_reach background, columns, actors and services excluded PASS
+[66.89] SURFACE EXPORT sunken_sanctum
+DGN sunken_sanctum previous composition resources released PASS
+DGN sunken_sanctum portal sanctum_hall PASS
+DGN sunken_sanctum safe arrival sanctum_hall PASS
+DGN sunken_sanctum portal undergate PASS
+DGN sunken_sanctum safe arrival undergate PASS
+DGN sunken_sanctum portal winter_reach PASS
+DGN sunken_sanctum safe arrival winter_reach PASS
+DGN sunken_sanctum spawn free PASS
+DGN sunken_sanctum collision buffer complete PASS
+DGN sunken_sanctum spawn anchors to actual quarter-tile navigation PASS
+DGN sunken_sanctum spawn reaches portal arrival sanctum_hall PASS
+DGN sunken_sanctum spawn reaches portal arrival undergate PASS
+DGN sunken_sanctum spawn reaches portal arrival winter_reach PASS
+DGN sunken_sanctum short movement route available PASS
+DGN sunken_sanctum actual input moves forward PASS
+DGN sunken_sanctum actual input returns without portal travel PASS
+DGN sunken_sanctum actual movement feet remain free PASS
+DGN sanctum exactly one active foreground staircase PASS
+DGN sanctum original stairs sprite position size and order retained PASS
+DGN sanctum two original stair curb collisions retained PASS
+DGN sanctum existing stair and upper landing feet corridor free PASS
+DGN sanctum upper central pond remains blocked PASS
+DGN sanctum actual input climbs stairs and reaches upper terrace PASS
+DGN sanctum actual input returns down original stairs PASS
+DGN sanctum stair traversal feet stay free PASS
+DGN sanctum stair traversal restores player and camera PASS
+DGN sunken_sanctum baseline exists PASS
+DGN sunken_sanctum navigation and services unchanged PASS
+DGN sunken_sanctum original static ground painting available PASS
+DGN sunken_sanctum scenic camera anchor fits actual player collision PASS
+DGN sunken_sanctum scenic capture restores boss intro banner PASS
+DGN sunken_sanctum requested composition exists at 96ppu PASS
+DGN sunken_sanctum one map-owned surface composition PASS
+DGN sunken_sanctum composition belongs to current map PASS
+DGN sunken_sanctum exclusive composition layer slots PASS
+DGN sunken_sanctum supporting edges avoid walkable terrain PASS
+DGN sunken_sanctum composition uses sharp pixels PASS
+DGN sunken_sanctum composition shares one unreadable source texture PASS
+DGN sunken_sanctum mesh cells and source UVs exactly partition artwork PASS
+DGN sunken_sanctum registered source resolution is preserved PASS
+DGN sunken_sanctum requested artwork resolution 96 PASS
+DGN sunken_sanctum contact layer is visual only and below actors PASS
+DGN sunken_sanctum empty and resource contact ownership matches generated pixels PASS
+DGN sunken_sanctum hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN sunken_sanctum prop pass scope PASS
+DGN sunken_sanctum forest field atlas stays inside the four target maps PASS
+DGN sunken_sanctum complete prop replacement census PASS
+DGN sunken_sanctum prop root and visual transforms preserved PASS
+DGN sunken_sanctum prop colliders preserved PASS
+DGN sunken_sanctum prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN sunken_sanctum fitted prop pictures use one owned atlas PASS
+DGN sunken_sanctum resource full and stump overrides connected PASS
+DGN sunken_sanctum background, columns, actors and services excluded PASS
+[82.40] SURFACE EXPORT sanctum_hall
+DGN sanctum_hall previous composition resources released PASS
+DGN sanctum_hall portal sanctum_archive PASS
+DGN sanctum_hall safe arrival sanctum_archive PASS
+DGN sanctum_hall portal sanctum_roots PASS
+DGN sanctum_hall safe arrival sanctum_roots PASS
+DGN sanctum_hall portal sunken_sanctum PASS
+DGN sanctum_hall safe arrival sunken_sanctum PASS
+DGN sanctum_hall spawn free PASS
+DGN sanctum_hall collision buffer complete PASS
+DGN sanctum_hall spawn anchors to actual quarter-tile navigation PASS
+DGN sanctum_hall spawn reaches portal arrival sanctum_archive PASS
+DGN sanctum_hall spawn reaches portal arrival sanctum_roots PASS
+DGN sanctum_hall spawn reaches portal arrival sunken_sanctum PASS
+DGN sanctum_hall short movement route available PASS
+DGN sanctum_hall actual input moves forward PASS
+DGN sanctum_hall actual input returns without portal travel PASS
+DGN sanctum_hall actual movement feet remain free PASS
+DGN sanctum_hall baseline exists PASS
+DGN sanctum_hall navigation and services unchanged PASS
+DGN sanctum_hall original static ground painting available PASS
+DGN sanctum_hall requested composition exists at 96ppu PASS
+DGN sanctum_hall one map-owned surface composition PASS
+DGN sanctum_hall composition belongs to current map PASS
+DGN sanctum_hall exclusive composition layer slots PASS
+DGN sanctum_hall supporting edges avoid walkable terrain PASS
+DGN sanctum_hall composition uses sharp pixels PASS
+DGN sanctum_hall composition shares one unreadable source texture PASS
+DGN sanctum_hall mesh cells and source UVs exactly partition artwork PASS
+DGN sanctum_hall registered source resolution is preserved PASS
+DGN sanctum_hall requested artwork resolution 96 PASS
+DGN sanctum_hall contact layer is visual only and below actors PASS
+DGN sanctum_hall empty and resource contact ownership matches generated pixels PASS
+DGN sanctum_hall hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN sanctum_hall prop pass scope PASS
+DGN sanctum_hall forest field atlas stays inside the four target maps PASS
+DGN sanctum_hall complete prop replacement census PASS
+DGN sanctum_hall prop root and visual transforms preserved PASS
+DGN sanctum_hall prop colliders preserved PASS
+DGN sanctum_hall prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN sanctum_hall fitted prop pictures use one owned atlas PASS
+DGN sanctum_hall resource full and stump overrides connected PASS
+DGN sanctum_hall background, columns, actors and services excluded PASS
+[85.77] SURFACE EXPORT sanctum_archive
+DGN sanctum_archive previous composition resources released PASS
+DGN sanctum_archive portal sanctum_court PASS
+DGN sanctum_archive safe arrival sanctum_court PASS
+DGN sanctum_archive portal sanctum_hall PASS
+DGN sanctum_archive safe arrival sanctum_hall PASS
+DGN sanctum_archive spawn free PASS
+DGN sanctum_archive collision buffer complete PASS
+DGN sanctum_archive spawn anchors to actual quarter-tile navigation PASS
+DGN sanctum_archive spawn reaches portal arrival sanctum_court PASS
+DGN sanctum_archive spawn reaches portal arrival sanctum_hall PASS
+DGN sanctum_archive short movement route available PASS
+DGN sanctum_archive actual input moves forward PASS
+DGN sanctum_archive actual input returns without portal travel PASS
+DGN sanctum_archive actual movement feet remain free PASS
+DGN sanctum_archive baseline exists PASS
+DGN sanctum_archive navigation and services unchanged PASS
+DGN sanctum_archive original static ground painting available PASS
+DGN sanctum_archive requested composition exists at 96ppu PASS
+DGN sanctum_archive one map-owned surface composition PASS
+DGN sanctum_archive composition belongs to current map PASS
+DGN sanctum_archive exclusive composition layer slots PASS
+DGN sanctum_archive supporting edges avoid walkable terrain PASS
+DGN sanctum_archive composition uses sharp pixels PASS
+DGN sanctum_archive composition shares one unreadable source texture PASS
+DGN sanctum_archive mesh cells and source UVs exactly partition artwork PASS
+DGN sanctum_archive registered source resolution is preserved PASS
+DGN sanctum_archive requested artwork resolution 96 PASS
+DGN sanctum_archive contact layer is visual only and below actors PASS
+DGN sanctum_archive empty and resource contact ownership matches generated pixels PASS
+DGN sanctum_archive hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN sanctum_archive prop pass scope PASS
+DGN sanctum_archive forest field atlas stays inside the four target maps PASS
+DGN sanctum_archive complete prop replacement census PASS
+DGN sanctum_archive prop root and visual transforms preserved PASS
+DGN sanctum_archive prop colliders preserved PASS
+DGN sanctum_archive prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN sanctum_archive fitted prop pictures use one owned atlas PASS
+DGN sanctum_archive resource full and stump overrides connected PASS
+DGN sanctum_archive background, columns, actors and services excluded PASS
+[89.22] SURFACE EXPORT sanctum_roots
+DGN sanctum_roots previous composition resources released PASS
+DGN sanctum_roots portal sanctum_court PASS
+DGN sanctum_roots safe arrival sanctum_court PASS
+DGN sanctum_roots portal sanctum_hall PASS
+DGN sanctum_roots safe arrival sanctum_hall PASS
+DGN sanctum_roots spawn free PASS
+DGN sanctum_roots collision buffer complete PASS
+DGN sanctum_roots spawn anchors to actual quarter-tile navigation PASS
+DGN sanctum_roots spawn reaches portal arrival sanctum_court PASS
+DGN sanctum_roots spawn reaches portal arrival sanctum_hall PASS
+DGN sanctum_roots short movement route available PASS
+DGN sanctum_roots actual input moves forward PASS
+DGN sanctum_roots actual input returns without portal travel PASS
+DGN sanctum_roots actual movement feet remain free PASS
+DGN sanctum_roots baseline exists PASS
+DGN sanctum_roots navigation and services unchanged PASS
+DGN sanctum_roots original static ground painting available PASS
+DGN sanctum_roots requested composition exists at 96ppu PASS
+DGN sanctum_roots one map-owned surface composition PASS
+DGN sanctum_roots composition belongs to current map PASS
+DGN sanctum_roots exclusive composition layer slots PASS
+DGN sanctum_roots supporting edges avoid walkable terrain PASS
+DGN sanctum_roots composition uses sharp pixels PASS
+DGN sanctum_roots composition shares one unreadable source texture PASS
+DGN sanctum_roots mesh cells and source UVs exactly partition artwork PASS
+DGN sanctum_roots registered source resolution is preserved PASS
+DGN sanctum_roots requested artwork resolution 96 PASS
+DGN sanctum_roots contact layer is visual only and below actors PASS
+DGN sanctum_roots empty and resource contact ownership matches generated pixels PASS
+DGN sanctum_roots hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN sanctum_roots prop pass scope PASS
+DGN sanctum_roots forest field atlas stays inside the four target maps PASS
+DGN sanctum_roots complete prop replacement census PASS
+DGN sanctum_roots prop root and visual transforms preserved PASS
+DGN sanctum_roots prop colliders preserved PASS
+DGN sanctum_roots prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN sanctum_roots fitted prop pictures use one owned atlas PASS
+DGN sanctum_roots resource full and stump overrides connected PASS
+DGN sanctum_roots background, columns, actors and services excluded PASS
+[92.67] SURFACE EXPORT sanctum_court
+DGN sanctum_court previous composition resources released PASS
+DGN sanctum_court portal sanctum_archive PASS
+DGN sanctum_court safe arrival sanctum_archive PASS
+DGN sanctum_court portal sanctum_roots PASS
+DGN sanctum_court safe arrival sanctum_roots PASS
+DGN sanctum_court portal village PASS
+DGN sanctum_court safe arrival village PASS
+DGN sanctum_court spawn free PASS
+DGN sanctum_court collision buffer complete PASS
+DGN sanctum_court spawn anchors to actual quarter-tile navigation PASS
+DGN sanctum_court spawn reaches portal arrival sanctum_archive PASS
+DGN sanctum_court spawn reaches portal arrival sanctum_roots PASS
+DGN sanctum_court spawn reaches portal arrival village PASS
+DGN sanctum_court short movement route available PASS
+DGN sanctum_court actual input moves forward PASS
+DGN sanctum_court actual input returns without portal travel PASS
+DGN sanctum_court actual movement feet remain free PASS
+DGN sanctum_court baseline exists PASS
+DGN sanctum_court navigation and services unchanged PASS
+DGN sanctum_court original static ground painting available PASS
+DGN sanctum_court requested composition exists at 96ppu PASS
+DGN sanctum_court one map-owned surface composition PASS
+DGN sanctum_court composition belongs to current map PASS
+DGN sanctum_court exclusive composition layer slots PASS
+DGN sanctum_court supporting edges avoid walkable terrain PASS
+DGN sanctum_court composition uses sharp pixels PASS
+DGN sanctum_court composition shares one unreadable source texture PASS
+DGN sanctum_court mesh cells and source UVs exactly partition artwork PASS
+DGN sanctum_court registered source resolution is preserved PASS
+DGN sanctum_court requested artwork resolution 96 PASS
+DGN sanctum_court contact layer is visual only and below actors PASS
+DGN sanctum_court empty and resource contact ownership matches generated pixels PASS
+DGN sanctum_court hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN sanctum_court prop pass scope PASS
+DGN sanctum_court forest field atlas stays inside the four target maps PASS
+DGN sanctum_court complete prop replacement census PASS
+DGN sanctum_court prop root and visual transforms preserved PASS
+DGN sanctum_court prop colliders preserved PASS
+DGN sanctum_court prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN sanctum_court fitted prop pictures use one owned atlas PASS
+DGN sanctum_court resource full and stump overrides connected PASS
+DGN sanctum_court background, columns, actors and services excluded PASS
+[96.00] SURFACE EXPORT undergate
+DGN undergate previous composition resources released PASS
+DGN undergate portal canyon PASS
+DGN undergate safe arrival canyon PASS
+DGN undergate portal hollow_descent PASS
+DGN undergate safe arrival hollow_descent PASS
+DGN undergate portal sunken_sanctum PASS
+DGN undergate safe arrival sunken_sanctum PASS
+DGN undergate portal village PASS
+DGN undergate safe arrival village PASS
+DGN undergate portal winter PASS
+DGN undergate safe arrival winter PASS
+DGN undergate spawn free PASS
+DGN undergate collision buffer complete PASS
+DGN undergate spawn anchors to actual quarter-tile navigation PASS
+DGN undergate spawn reaches portal arrival canyon PASS
+DGN undergate spawn reaches portal arrival hollow_descent PASS
+DGN undergate spawn reaches portal arrival sunken_sanctum PASS
+DGN undergate spawn reaches portal arrival village PASS
+DGN undergate spawn reaches portal arrival winter PASS
+DGN undergate short movement route available PASS
+DGN undergate actual input moves forward PASS
+DGN undergate actual input returns without portal travel PASS
+DGN undergate actual movement feet remain free PASS
+DGN undergate baseline exists PASS
+DGN undergate navigation and services unchanged PASS
+DGN undergate original static ground painting available PASS
+DGN undergate requested composition exists at 96ppu PASS
+DGN undergate one map-owned surface composition PASS
+DGN undergate composition belongs to current map PASS
+DGN undergate exclusive composition layer slots PASS
+DGN undergate supporting edges avoid walkable terrain PASS
+DGN undergate composition uses sharp pixels PASS
+DGN undergate composition shares one unreadable source texture PASS
+DGN undergate mesh cells and source UVs exactly partition artwork PASS
+DGN undergate registered source resolution is preserved PASS
+DGN undergate requested artwork resolution 96 PASS
+DGN undergate contact layer is visual only and below actors PASS
+DGN undergate empty and resource contact ownership matches generated pixels PASS
+DGN undergate hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN undergate prop pass scope PASS
+DGN undergate forest field atlas stays inside the four target maps PASS
+DGN undergate complete prop replacement census PASS
+DGN undergate prop root and visual transforms preserved PASS
+DGN undergate prop colliders preserved PASS
+DGN undergate prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN undergate fitted prop pictures use one owned atlas PASS
+DGN undergate resource full and stump overrides connected PASS
+DGN undergate background, columns, actors and services excluded PASS
+DGN last exported composition resources released PASS
+DGN surface export silent PASS
+[101.31] SURFACE RESULTS: 954 passed, 0 failed; 21 maps

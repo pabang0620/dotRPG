@@ -1,0 +1,26 @@
+Forest background style and corner-door removal — 2026-10-09
+
+Scope
+Redrew forest, forest_ruins, forest_depths and forest_crossing background paintings with built-in image_gen, using the current forest_fields prop atlas as the style reference. Prompts and native generated PNGs are archived in prompts.json and originals/. Registered the paintings at the existing 96 pixels per tile using the established upscale pipeline; the native generation dimensions are recorded separately, not claimed as native 96-PPU output.
+Removed the three decorative tree-wrapped Fantasy landmark doors from each of the four forest fields (12 placements). Real travel portals, small ruins, collision, navigation, the current tree sprites and their transforms remain unchanged. Other biome landmarks remain enabled.
+
+Files
+Assets/StreamingAssets/SurfaceWorld/forest.png
+Assets/StreamingAssets/SurfaceWorld/forest_ruins.png
+Assets/StreamingAssets/SurfaceWorld/forest_depths.png
+Assets/StreamingAssets/SurfaceWorld/forest_crossing.png
+Assets/Scripts/Runtime/Art/HuntingScenery.cs
+Assets/Scripts/Runtime/Core/DevCapture.SanctumFields.cs
+Docs/World/surface-upscale-manifest.json
+Docs/World/ForestBackgroundStyle/ (source art, prompts, registration and verification evidence)
+
+Verification
+Runtime compilation passed. The local native player received the new runtime DLL and four PNGs; deployed SHA-256 hashes match the source files.
+Silent native surface capture completed: 954 passed, 0 failed across 21 maps (report.txt). It used an isolated capture/save context and volume 0.
+Baseline checker passed: 418 recorded files, 412 protected files, only the four paintings and two precisely approved code edits changed. All 21 runtime map signatures checked; 0 failures. Existing navigation, collision, terrain geometry, props and layer registration were preserved; the other 17 map paintings were unchanged.
+Final whole-map screenshots for all four forest fields and the forest_depths environment close-up were visually reviewed. The decorative doors are absent and portal arrows remain. Reviewed path and bank contours against the pre-redraw views and existing walk/water guides.
+before-after.jpg compares actual native gameplay/environment captures, and four-forests-after.jpg shows the four updated fields. Screenshots were refreshed after door removal.
+git diff --check passed.
+
+Limits
+Unity Editor licensing was unavailable; this was validated with the existing native player using the newly compiled runtime DLL and updated assets, not a fresh Unity Editor player build. The separate SanctumFields-specific door-absence assertion was updated but that capture mode was not executed; absence was checked in final native overview screenshots. No new multiplayer or performance stress test was performed. No commit or push was requested for this change.

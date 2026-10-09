@@ -1,0 +1,9 @@
+{
+  "recordedFiles": 418,
+  "protectedFiles": 414,
+  "changedAllowedBackgrounds": [],
+  "runtimeMaps": 21,
+  "failed": 0,
+  "failures": [],
+  "visualReviewRequired": "Collision and layer hashes cannot prove painted shoreline semantics; compare native views with walk/water guides."
+}

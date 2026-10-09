@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "request": "Remove the decorative tree-wrapped corner doors from the four forest fields; preserve real travel portals.",
+  "baselineSha256": "fe3328972f7f6a2425c3a8fd8f4111d00a18bc76c6027b904ca8323b8a1267e7",
+  "targetMaps": [
+    "forest",
+    "forest_crossing",
+    "forest_depths",
+    "forest_ruins"
+  ],
+  "codeFiles": [
+    {
+      "path": "Assets/Scripts/Runtime/Art/HuntingScenery.cs",
+      "beforeSha256": "7f5238728d9d54e6e2b661c6f2f47745b735162e63c59051edd28404f027db65",
+      "afterSha256": "c539d3290de748e696c403d73b8f6f00e502d170e414bf0210f8fe5220efbc89"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.SanctumFields.cs",
+      "beforeSha256": "d878362928f632e250443436a960d26c7607e4cea627c99c99164a45b8294689",
+      "afterSha256": "179454034330a198b1620ee107e100b2dc0e56283f9a0ae21ad440d21d442321"
+    }
+  ],
+  "removedDecorations": {
+    "forest": {
+      "name": "Fantasy landmark forest",
+      "count": 3,
+      "legacyFeet": [
+        [
+          2.5,
+          37.1
+        ],
+        [
+          61.5,
+          37.1
+        ],
+        [
+          54.5,
+          22.1
+        ]
+      ]
+    },
+    "forest_ruins": {
+      "name": "Fantasy landmark forest_ruins",
+      "count": 3,
+      "legacyFeet": [
+        [
+          2.5,
+          37.1
+        ],
+        [
+          50.5,
+          37.1
+        ],
+        [
+          22.5,
+          29.1
+        ]
+      ]
+    },
+    "forest_depths": {
+      "name": "Fantasy landmark forest_depths",
+      "count": 3,
+      "legacyFeet": [
+        [
+          2.5,
+          37.1
+        ],
+        [
+          50.5,
+          37.1
+        ],
+        [
+          2.5,
+          7.1
+        ]
+      ]
+    },
+    "forest_crossing": {
+      "name": "Fantasy landmark forest_crossing",
+      "count": 3,
+      "legacyFeet": [
+        [
+          2.5,
+          37.1
+        ],
+        [
+          50.5,
+          37.1
+        ],
+        [
+          2.5,
+          7.1
+        ]
+      ]
+    }
+  },
+  "expectedGroundingAndPropCensusDelta": 0,
+  "censusReason": "Fantasy landmark names are excluded from GroundedPropKind and StaticPropSlot; these sprites had no resource, gameplay collider or portal component.",
+  "invariants": [
+    "Original baseline file remains byte-identical",
+    "All atlas props and contact shadow statistics remain identical",
+    "All movement, collision, route, portal, service and terrain-layer geometry remain identical",
+    "The other seventeen surface maps remain unchanged"
+  ]
+}
