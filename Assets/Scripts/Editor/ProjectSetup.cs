@@ -76,7 +76,9 @@ namespace DotRPG.EditorTools
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)35;
+            // Unity 6000.5 ships Android platform 36. Pinning 35 makes Gradle try to install it into
+            // Unity's read-only SDK under Program Files, which fails before packaging the APK.
+            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)36;
 
             // Landscape only (left or right, whichever way the phone is held). Standalone players ignore these.
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;

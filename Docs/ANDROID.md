@@ -16,7 +16,7 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
 4. 로그인 화면 "서버 주소" 칸에 PC의 서버 주소 입력 (예: `http://192.168.0.10:3000`). 폰과 PC가 같은 네트워크여야 하고 PC 방화벽에서 서버 포트를 열어야 한다. 값은 PlayerPrefs `dotrpg.server`에 저장된다.
 
 빌드 직전에 코드(`ProjectSetup.ApplyAndroid`)가 적용하는 값
-- 패키지 ID `com.dotrpg.game` (Android만), IL2CPP, ARM64, minSdk 26, targetSdk 35
+- 패키지 ID `com.dotrpg.game` (Android만), IL2CPP, ARM64, minSdk 26, targetSdk 36
 - 가로 고정(좌우 가로만 자동 회전). 여러 플랫폼이 공유하는 값(화면 방향 목록, insecureHttpOption, AAB 스위치)은 빌드 뒤 원래 값으로 되돌린다. PC 빌드는 영향이 없다.
 - 개발 APK만 `insecureHttpOption = AlwaysAllowed`, 릴리스는 `NotAllowed`
 - 텍스처: `Assets/Resources` 아래 그림에 Android 개별 설정만 추가. ASTC 6x6(64px 이하는 4x4), 최대 2048. `GetPixels`로 읽는 그림(Read/Write 켜짐)은 압축하면 읽기가 실패하므로 RGBA32 그대로 둔다. 첫 빌드 때 기존 그림을 한 번 다시 임포트하므로 시간이 걸린다(.meta에 Android 항목이 추가됨).
