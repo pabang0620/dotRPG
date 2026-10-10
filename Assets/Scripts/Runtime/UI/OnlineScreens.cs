@@ -91,8 +91,9 @@ namespace DotRPG
             screen.ui = ui;
             float statusY = -200f;
 #if !DOTRPG_RELEASE
-            // [ANDROID] A phone has no command line: development builds type the server address here.
-            bool serverRow = Application.isMobilePlatform;
+            // [ANDROID] Phones connect to ApiClient.MobileTestServer on their own, so the address row stays hidden.
+            // Set this to Application.isMobilePlatform to type another server (a PC on the LAN) on a phone again.
+            bool serverRow = false;
             if (serverRow) statusY = -250f;
 #else
             bool serverRow = false;
