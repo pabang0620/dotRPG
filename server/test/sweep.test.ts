@@ -326,12 +326,17 @@ describe('B8 소탕은 해금·최고 랭크·업적·주간 활동에 반영되
   });
 });
 
-const MAIN_TO_STRONGER = ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail'];
+const MAIN_TO_STRONGER = [
+  'c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail',
+  'c1s_patrol', 'c1s_ruins', 'c1s_firstdungeon', 'c1s_depths', 'c1_crossing', 'c2s_trader', 'c2s_trader_guard',
+  'career_path', 'c2s_trader_ore', 'c1_quarry', 'c1_scout',
+];
 
 describe('B9 퀘스트 "던전 클리어 N회"', () => {
   it('직접 클리어 기록 없이 소탕 1회만으로 c1_stronger(던전 클리어 1회)를 청구할 수 있다', async () => {
     const h = await newHero(app);
-    await seedClaims(h, MAIN_TO_STRONGER);
+    // 던전 목표는 받은 퀘스트끼리 누적되므로 1-10 요일 던전(1회)은 빼고 c1_stronger 몫 1회만 보게 한다
+    await seedClaims(h, MAIN_TO_STRONGER.filter((q) => q !== 'c1s_firstdungeon'));
     await seedLevel(h, 20);
     await seedTickets(h, { normal: 1 });
     const claim = () => post(app, h, '/quests/c1_stronger/claim', {}, randomUUID());

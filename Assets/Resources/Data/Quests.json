@@ -103,7 +103,7 @@
     }
    ],
    "reward": {
-    "xp": 20,
+    "xp": 10,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -198,7 +198,7 @@
     }
    ],
    "reward": {
-    "xp": 40,
+    "xp": 10,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -259,7 +259,7 @@
     }
    ],
    "reward": {
-    "xp": 60,
+    "xp": 10,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -318,7 +318,7 @@
     }
    ],
    "reward": {
-    "xp": 30,
+    "xp": 10,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -377,7 +377,7 @@
     }
    ],
    "reward": {
-    "xp": 120,
+    "xp": 20,
     "gold": 300,
     "items": [
      {
@@ -436,7 +436,7 @@
     }
    ],
    "reward": {
-    "xp": 200,
+    "xp": 40,
     "gold": 0,
     "items": [
      {
@@ -500,9 +500,180 @@
     }
    ],
    "reward": {
-    "xp": 250,
+    "xp": 50,
     "gold": 0,
     "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_crossing",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-12",
+   "title": "옛 수로 합류지",
+   "summary": "검은 뿌리 숲을 지나 내려온 물길이 옛 수로 합류지에서 다시 막혔다. 도윤이 마지막 길목을 부탁한다.",
+   "requires": [
+    "c1s_depths"
+   ],
+   "requiresFlags": [],
+   "minLevel": 11,
+   "giver": "fisher",
+   "offerDialogue": "c1_crossing_offer",
+   "turnIn": "fisher",
+   "turnInDialogue": "c1_crossing_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "옛 수로 합류지의 해골을 몰아낸다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 40,
+       "text": "해골 방패병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_crossing"
+      },
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 30,
+       "text": "해골 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "forest_crossing"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 520,
+    "gold": 2500,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 8
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_quarry",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-17",
+   "title": "채석장 길 뚫기",
+   "summary": "누리의 납품 길이 버려진 채석장에서 막혔다. 골렘 돌격병과 수호병을 몰아내 길을 연다.",
+   "requires": [
+    "c2s_trader_ore"
+   ],
+   "requiresFlags": [],
+   "minLevel": 16,
+   "giver": "trader",
+   "offerDialogue": "c1_quarry_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c1_quarry_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "버려진 채석장 입구의 골렘을 몰아낸다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 50,
+       "text": "골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      },
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 30,
+       "text": "골렘 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1850,
+    "gold": 5000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1_scout",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-18",
+   "title": "채석장 안쪽의 깃발",
+   "summary": "채석장 안쪽에 낯선 흑철 깃발이 섰다. 누리가 무엇이 있는지 알아봐 달라고 한다.",
+   "requires": [
+    "c1_quarry"
+   ],
+   "requiresFlags": [],
+   "minLevel": 18,
+   "giver": "trader",
+   "offerDialogue": "c1_scout_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c1_scout_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "채석장 안쪽까지 들어가 골렘을 정리한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 40,
+       "text": "골렘 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      },
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 40,
+       "text": "골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2740,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
     "maxHealth": 0,
     "setFlags": []
    }
@@ -511,11 +682,11 @@
    "id": "c1_stronger",
    "chapter": 1,
    "kind": "main",
-   "code": "1-8",
+   "code": "1-19",
    "title": "강해져야 한다",
    "summary": "지금으로는 북쪽 고개 성채 문턱도 넘지 못한다. 요일 던전과 협곡 쪽 사냥터에서 레벨 20까지 실력을 쌓아라.",
    "requires": [
-    "c1_trail"
+    "c1_scout"
    ],
    "requiresFlags": [],
    "minLevel": 0,
@@ -552,7 +723,7 @@
     }
    ],
    "reward": {
-    "xp": 600,
+    "xp": 550,
     "gold": 3000,
     "items": [],
     "maxHealth": 0,
@@ -563,7 +734,7 @@
    "id": "c1_fortress",
    "chapter": 1,
    "kind": "main",
-   "code": "1-9",
+   "code": "1-20",
    "title": "북쪽 고개 성채",
    "summary": "해골왕의 성채. 성문은 수요일, 토요일, 일요일에만 열린다. (중간 레이드)",
    "requires": [
@@ -595,7 +766,7 @@
     }
    ],
    "reward": {
-    "xp": 1500,
+    "xp": 1380,
     "gold": 8000,
     "items": [],
     "maxHealth": 0,
@@ -606,7 +777,7 @@
    "id": "c1_bargas",
    "chapter": 1,
    "kind": "main",
-   "code": "1-10",
+   "code": "1-21",
    "title": "흑철의 바르가스",
    "summary": "흑철 진영이 해골 숲 동쪽 끝 버려진 채석장에 진을 쳤다. 마을을 불태운 그 갑옷, 바르가스를 찾아간다.",
    "requires": [
@@ -663,7 +834,7 @@
     }
    ],
    "reward": {
-    "xp": 3000,
+    "xp": 2980,
     "gold": 15000,
     "items": [],
     "maxHealth": 0,
@@ -751,7 +922,7 @@
     }
    ],
    "reward": {
-    "xp": 150,
+    "xp": 30,
     "gold": 500,
     "items": [],
     "maxHealth": 0,
@@ -796,7 +967,7 @@
     }
    ],
    "reward": {
-    "xp": 120,
+    "xp": 20,
     "gold": 0,
     "items": [
      {
@@ -957,7 +1128,7 @@
     }
    ],
    "reward": {
-    "xp": 1800,
+    "xp": 1790,
     "gold": 6000,
     "items": [
      {
@@ -1066,7 +1237,7 @@
     }
    ],
    "reward": {
-    "xp": 2500,
+    "xp": 2490,
     "gold": 9000,
     "items": [],
     "maxHealth": 0,
@@ -1134,7 +1305,7 @@
     }
    ],
    "reward": {
-    "xp": 3000,
+    "xp": 3650,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1177,7 +1348,7 @@
     }
    ],
    "reward": {
-    "xp": 5000,
+    "xp": 6080,
     "gold": 15000,
     "items": [],
     "maxHealth": 0,
@@ -1309,7 +1480,7 @@
     }
    ],
    "reward": {
-    "xp": 8000,
+    "xp": 10910,
     "gold": 25000,
     "items": [],
     "maxHealth": 0,
@@ -1352,7 +1523,7 @@
     }
    ],
    "reward": {
-    "xp": 2000,
+    "xp": 2730,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1363,13 +1534,13 @@
   },
   {
    "id": "c2s_trader",
-   "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-13",
    "title": "누리의 짐 수레",
    "summary": "협곡 상인 누리의 수레가 광산 길에서 암석 골렘 돌격병들에게 털렸다.",
    "requires": [
-    "c1_trail"
+    "c1_crossing"
    ],
    "requiresFlags": [],
    "minLevel": 13,
@@ -1397,7 +1568,7 @@
     }
    ],
    "reward": {
-    "xp": 900,
+    "xp": 360,
     "gold": 4000,
     "items": [
      {
@@ -1445,7 +1616,7 @@
     }
    ],
    "reward": {
-    "xp": 700,
+    "xp": 800,
     "gold": 2500,
     "items": [],
     "maxHealth": 0,
@@ -1455,12 +1626,12 @@
   {
    "id": "c1s_patrol",
    "chapter": 1,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "1-8",
    "title": "숲길 순찰",
    "summary": "나무꾼 바우가 해골 숲에서 나무를 하다 해골 떼에 쫓겨 왔다.",
    "requires": [
-    "c1_rise"
+    "c1_trail"
    ],
    "requiresFlags": [],
    "minLevel": 2,
@@ -1488,7 +1659,7 @@
     }
    ],
    "reward": {
-    "xp": 250,
+    "xp": 50,
     "gold": 400,
     "items": [
      {
@@ -1503,12 +1674,12 @@
   {
    "id": "c1s_firstdungeon",
    "chapter": 1,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "1-10",
    "title": "요일 던전 첫 도전",
    "summary": "촌장 모리가 마을 밖 던전 안내원 이야기를 꺼낸다. 요일마다 열리는 던전에서 실력을 쌓으라고 한다.",
    "requires": [
-    "c1_rebuild"
+    "c1s_ruins"
    ],
    "requiresFlags": [],
    "minLevel": 5,
@@ -1536,7 +1707,7 @@
     }
    ],
    "reward": {
-    "xp": 800,
+    "xp": 150,
     "gold": 1000,
     "items": [
      {
@@ -1551,12 +1722,12 @@
   {
    "id": "c1s_ruins",
    "chapter": 1,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "1-9",
    "title": "이끼 낀 유적의 해골",
    "summary": "광부 돌쇠가 옛 유적의 석재를 캐러 가고 싶지만 해골 전사들이 지키고 있다.",
    "requires": [
-    "c1_rebuild"
+    "c1s_patrol"
    ],
    "requiresFlags": [],
    "minLevel": 5,
@@ -1593,7 +1764,7 @@
     }
    ],
    "reward": {
-    "xp": 600,
+    "xp": 110,
     "gold": 1200,
     "items": [
      {
@@ -1641,7 +1812,7 @@
     }
    ],
    "reward": {
-    "xp": 500,
+    "xp": 90,
     "gold": 1500,
     "items": [
      {
@@ -1656,12 +1827,12 @@
   {
    "id": "c1s_depths",
    "chapter": 1,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "1-11",
    "title": "검은 뿌리 숲 토벌",
    "summary": "낚시꾼 도윤의 강 상류가 검은 뿌리 숲의 해골 방패병 때문에 막혔다.",
    "requires": [
-    "c1_trail"
+    "c1s_firstdungeon"
    ],
    "requiresFlags": [],
    "minLevel": 9,
@@ -1698,7 +1869,7 @@
     }
    ],
    "reward": {
-    "xp": 1000,
+    "xp": 180,
     "gold": 2500,
     "items": [
      {
@@ -1746,7 +1917,7 @@
     }
    ],
    "reward": {
-    "xp": 2000,
+    "xp": 360,
     "gold": 3000,
     "items": [],
     "maxHealth": 10,
@@ -1798,7 +1969,7 @@
     }
    ],
    "reward": {
-    "xp": 2200,
+    "xp": 2350,
     "gold": 4000,
     "items": [
      {
@@ -1855,7 +2026,7 @@
     }
    ],
    "reward": {
-    "xp": 3000,
+    "xp": 3430,
     "gold": 5000,
     "items": [
      {
@@ -1912,7 +2083,7 @@
     }
    ],
    "reward": {
-    "xp": 4000,
+    "xp": 4860,
     "gold": 6000,
     "items": [
      {
@@ -1960,7 +2131,7 @@
     }
    ],
    "reward": {
-    "xp": 5000,
+    "xp": 6820,
     "gold": 6000,
     "items": [],
     "maxHealth": 10,
@@ -2012,7 +2183,7 @@
     }
    ],
    "reward": {
-    "xp": 6000,
+    "xp": 8180,
     "gold": 8000,
     "items": [
      {
@@ -2069,7 +2240,7 @@
     }
    ],
    "reward": {
-    "xp": 8000,
+    "xp": 10910,
     "gold": 10000,
     "items": [
      {
@@ -2117,7 +2288,7 @@
     }
    ],
    "reward": {
-    "xp": 12000,
+    "xp": 16360,
     "gold": 15000,
     "items": [
      {
@@ -2132,11 +2303,13 @@
   {
    "id": "career_path",
    "chapter": 1,
-   "kind": "sub",
-   "code": "전직",
+   "kind": "main",
+   "code": "1-15",
    "title": "전직의 길",
    "summary": "15레벨이 되었다. 마을 광장의 전직 안내원이 다음 길을 고르라고 한다.",
-   "requires": [],
+   "requires": [
+    "c2s_trader_guard"
+   ],
    "requiresFlags": [],
    "minLevel": 15,
    "giver": "career_trainer",
@@ -2163,7 +2336,7 @@
     }
    ],
    "reward": {
-    "xp": 3000,
+    "xp": 1650,
     "gold": 3000,
     "items": [
      {
@@ -2316,7 +2489,7 @@
     }
    ],
    "reward": {
-    "xp": 20,
+    "xp": 10,
     "gold": 700,
     "items": [
      {
@@ -2364,7 +2537,7 @@
     }
    ],
    "reward": {
-    "xp": 50,
+    "xp": 10,
     "gold": 1200,
     "items": [
      {
@@ -2412,7 +2585,7 @@
     }
    ],
    "reward": {
-    "xp": 60,
+    "xp": 10,
     "gold": 1500,
     "items": [
      {
@@ -2460,7 +2633,7 @@
     }
    ],
    "reward": {
-    "xp": 90,
+    "xp": 20,
     "gold": 2000,
     "items": [
      {
@@ -2508,7 +2681,7 @@
     }
    ],
    "reward": {
-    "xp": 130,
+    "xp": 30,
     "gold": 2500,
     "items": [
      {
@@ -2526,13 +2699,13 @@
   },
   {
    "id": "c2s_trader_guard",
-   "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-14",
    "title": "누리의 호위",
    "summary": "협곡 상인 누리의 짐 수레가 붉은 돌 고개에서 암석 골렘에게 습격당했다.",
    "requires": [
-    "c1_trail"
+    "c2s_trader"
    ],
    "requiresFlags": [],
    "minLevel": 13,
@@ -2560,7 +2733,7 @@
     }
    ],
    "reward": {
-    "xp": 170,
+    "xp": 90,
     "gold": 3500,
     "items": [
      {
@@ -2608,7 +2781,7 @@
     }
    ],
    "reward": {
-    "xp": 190,
+    "xp": 220,
     "gold": 3500,
     "items": [
      {
@@ -2656,7 +2829,7 @@
     }
    ],
    "reward": {
-    "xp": 240,
+    "xp": 270,
     "gold": 4000,
     "items": [
      {
@@ -2670,16 +2843,16 @@
   },
   {
    "id": "c2s_trader_ore",
-   "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "chapter": 1,
+   "kind": "main",
+   "code": "1-16",
    "title": "협곡 강화석 거래",
    "summary": "누리가 기사단에 납품할 강화석을 구하고 있다.",
    "requires": [
-    "c2s_trader_guard"
+    "career_path"
    ],
    "requiresFlags": [],
-   "minLevel": 18,
+   "minLevel": 16,
    "giver": "trader",
    "offerDialogue": "c2s_trader_ore_offer",
    "turnIn": "trader",
@@ -2704,7 +2877,7 @@
     }
    ],
    "reward": {
-    "xp": 300,
+    "xp": 150,
     "gold": 5000,
     "items": [
      {
@@ -2752,7 +2925,7 @@
     }
    ],
    "reward": {
-    "xp": 330,
+    "xp": 430,
     "gold": 5000,
     "items": [
      {
@@ -2804,7 +2977,7 @@
     }
    ],
    "reward": {
-    "xp": 430,
+    "xp": 550,
     "gold": 6000,
     "items": [
      {
@@ -2852,7 +3025,7 @@
     }
    ],
    "reward": {
-    "xp": 550,
+    "xp": 750,
     "gold": 7000,
     "items": [
      {
@@ -2900,7 +3073,7 @@
     }
    ],
    "reward": {
-    "xp": 590,
+    "xp": 800,
     "gold": 8000,
     "items": [
      {
@@ -2948,7 +3121,7 @@
     }
    ],
    "reward": {
-    "xp": 770,
+    "xp": 1050,
     "gold": 10000,
     "items": [
      {
@@ -2996,7 +3169,7 @@
     }
    ],
    "reward": {
-    "xp": 870,
+    "xp": 1190,
     "gold": 12000,
     "items": [
      {
@@ -3044,7 +3217,7 @@
     }
    ],
    "reward": {
-    "xp": 1030,
+    "xp": 1400,
     "gold": 15000,
     "items": [
      {
@@ -3092,7 +3265,7 @@
     }
    ],
    "reward": {
-    "xp": 1090,
+    "xp": 1490,
     "gold": 20000,
     "items": [],
     "maxHealth": 10,
@@ -3144,7 +3317,7 @@
     }
    ],
    "reward": {
-    "xp": 11000,
+    "xp": 15000,
     "gold": 16000,
     "items": [
      {
@@ -3201,7 +3374,7 @@
     }
    ],
    "reward": {
-    "xp": 12000,
+    "xp": 16360,
     "gold": 18000,
     "items": [
      {
@@ -3249,7 +3422,7 @@
     }
    ],
    "reward": {
-    "xp": 12500,
+    "xp": 17050,
     "gold": 19000,
     "items": [
      {
@@ -3297,7 +3470,7 @@
     }
    ],
    "reward": {
-    "xp": 12500,
+    "xp": 17050,
     "gold": 19000,
     "items": [
      {
@@ -3364,7 +3537,7 @@
     }
    ],
    "reward": {
-    "xp": 15000,
+    "xp": 20450,
     "gold": 25000,
     "items": [
      {

@@ -24,15 +24,22 @@ namespace DotRPG
         public event Action<int> LeveledUp;
 
         /// <summary>
-        /// Level-up XP is the base curve times <see cref="CurveScale"/>: the mid raid (Lv22) after about 20 hours and Lv40
-        /// after about 50 hours of play, quests, daily dungeons and raids included (Tools/balance/theory_progress.py).
+        /// Level-up XP is the base curve times <see cref="CurveScaleAt"/>: <see cref="EarlyScale"/> up to Lv10, rising evenly to
+        /// <see cref="LateScale"/> at Lv26, so the hunting time per level grows smoothly instead of jumping at one level.
+        /// Career change (Lv15) after about 4 hours, the first raid (Lv20) after about 9 and Lv40 after about 45 hours of play,
+        /// quests, daily dungeons and raids included (Tools/balance/theory_progress.py, Docs/BALANCE_EARLY_PROGRESSION.md).
         /// Kill XP and the dungeon floors are priced from the base curve (HuntingGrounds.XpAt), so only the pace changes.
         /// </summary>
-        public const float CurveScale = 22f;
+        public const double EarlyScale = 4, LateScale = 30;
+        const int EarlyUntil = 10, LateFrom = 26;
+        public static double CurveScaleAt(int level) =>
+            level <= EarlyUntil ? EarlyScale
+            : level >= LateFrom ? LateScale
+            : EarlyScale + (LateScale - EarlyScale) * (level - EarlyUntil) / (LateFrom - EarlyUntil);
         /// <summary>Quest rewards: data XP x this. Kept apart from the curve so quests stay a share of the growth, not most of it.</summary>
         public const float QuestScale = 6f;
         public static int BaseXpToNext(int level) => 40 + (level - 1) * 30 + (level - 1) * (level - 1) * 5;
-        public static int XpToNext(int level) => (int)Math.Round(BaseXpToNext(level) * CurveScale);
+        public static int XpToNext(int level) => (int)Math.Round(BaseXpToNext(level) * CurveScaleAt(level));
 
         /// <summary>An XP amount as a share of a level's bar ("12.3%"), the way players read progress. Max level: "만렙".</summary>
         public static string XpPercent(long xp, int level)

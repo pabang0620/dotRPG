@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
+import { getGameData } from '../src/gamedata/loader';
 import { buildApp, resetDb, shutdown } from './helpers';
 import {
   anomalyKinds,
@@ -19,10 +20,16 @@ const app = buildApp();
 beforeAll(resetDb);
 afterAll(shutdown);
 
+// 보상 XP는 레벨 곡선을 따라 바뀌므로(Docs/BALANCE_EARLY_PROGRESSION.md) 숫자를 박지 않고 서버 데이터에서 읽는다
+const questXp = (questId: string): number => getGameData().economy.quests.get(questId)!.reward.xp;
 const claim = (h: Hero, questId: string, rid?: string) => post(app, h, `/quests/${questId}/claim`, {}, rid);
 
+// 1-8 ~ 1-18 (2026-10-10): 사냥터마다 메인 단계가 하나씩 c1_trail과 c1_stronger 사이에 있다(Docs/BALANCE_EARLY_PROGRESSION.md)
 const MAIN_TO_STRONGER = [
-  'c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail', 'c1_stronger',
+  'c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail',
+  'c1s_patrol', 'c1s_ruins', 'c1s_firstdungeon', 'c1s_depths', 'c1_crossing', 'c2s_trader', 'c2s_trader_guard',
+  'career_path', 'c2s_trader_ore', 'c1_quarry', 'c1_scout',
+  'c1_stronger',
 ];
 
 async function setKills(h: Hero, monster: string, kills: number): Promise<void> {
@@ -38,8 +45,8 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     const h = await newHero(app);
     const res = await claim(h, 'c1_morning');
     expect(res.status).toBe(200);
-    expect(res.body.data.reward).toMatchObject({ xp: 120, gold: 0, items: [], set_flags: ['festival_eve'] });
-    expect(res.body.data.delta).toEqual({ level: 1, xp: 120 });
+    expect(res.body.data.reward).toMatchObject({ xp: questXp('c1_morning'), gold: 0, items: [], set_flags: ['festival_eve'] });
+    expect(res.body.data.delta).toEqual({ level: 1, xp: questXp('c1_morning') });
     const detail = await get(app, h, '');
     expect(detail.body.data.character.claimed_quests).toEqual(['c1_morning']);
     await expectLedgerConsistent(h);
@@ -51,7 +58,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     await setKills(h, 'skeleton', 3);
     const res = await claim(h, 'c1_rise');
     expect(res.status).toBe(200);
-    expect(res.body.data.reward).toMatchObject({ xp: 720, gold: 300, items: [{ item_key: 'potion_hp', count: 5 }] });
+    expect(res.body.data.reward).toMatchObject({ xp: questXp('c1_rise'), gold: 300, items: [{ item_key: 'potion_hp', count: 5 }] });
     expect(await goldOf(h)).toBe(400);
     expect(await countOf(h, 'potion_hp')).toBe(8);
     const gl = await getPool().query("SELECT ref FROM gold_ledger WHERE character_id = $1 AND reason = 'quest_reward'", [h.dbId]);
@@ -73,7 +80,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect(again.status).toBe(409);
     expect(again.body.errors.code).toBe('QUEST_ALREADY_CLAIMED');
     const xp = await getPool().query('SELECT xp FROM characters WHERE id = $1', [h.dbId]);
-    expect(xp.rows[0].xp).toBe(120);
+    expect(xp.rows[0].xp).toBe(questXp('c1_morning'));
   });
 
   it('재전송: 같은 request_id는 같은 응답', async () => {
@@ -159,12 +166,13 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
 
   it('레벨·던전 목표: c1_stronger는 레벨 20과 던전 1회가 필요', async () => {
     const h = await newHero(app);
-    await seedClaims(h, MAIN_TO_STRONGER.slice(0, 7));
+    await seedClaims(h, MAIN_TO_STRONGER.slice(0, -1));
     const lv = await claim(h, 'c1_stronger');
     expect(lv.body.errors.objective).toMatchObject({ type: 'level', need: 20, have: 1 });
     await seedLevel(h, 20);
     const dg = await claim(h, 'c1_stronger');
-    expect(dg.body.errors.objective).toMatchObject({ type: 'dungeon', target: '*', need: 1, have: 0 });
+    // 던전 목표는 받은 퀘스트끼리 누적된다: 1-10 요일 던전 1회 + 1-19 1회 = 2회
+    expect(dg.body.errors.objective).toMatchObject({ type: 'dungeon', target: '*', need: 2, have: 0 });
     for (let i = 0; i < 12; i++) {
       await getPool().query(
         `INSERT INTO dungeon_runs (character_id, dungeon_id, difficulty, state, reset_day, started_at, ended_at, rank, cards)

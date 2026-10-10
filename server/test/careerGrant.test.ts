@@ -8,7 +8,7 @@ import type { Express } from 'express';
 import { getPool } from '../src/db/pool';
 import { resetAntiAbuseDataCache } from '../src/gamedata/antiAbuseData';
 import { advance, resetClock, setNowAt } from './auctionHelpers';
-import { anomalyKinds, get, newHero, post, seedLevel, type Hero } from './economyHelpers';
+import { anomalyKinds, get, newHero, post, seedClaims, seedLevel, type Hero } from './economyHelpers';
 import { auth, buildApp, DATA_DIR, emptyState, rehashDataDir, resetDb, shutdown, ver } from './helpers';
 import { formParty, startAndBegin } from './partyHelpers';
 
@@ -142,6 +142,8 @@ describe('PUT state의 서버 진실 규칙 (8.3)', () => {
 
   it('career_path 퀘스트는 서버가 부여한 전직만 인정한다(상태 JSON만 고친 값은 PUT이 막는다)', async () => {
     const h = await warrior();
+    // career_path(1-15)는 메인 1-14(c2s_trader_guard)까지 끝내야 받는다
+    await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail', 'c1s_patrol', 'c1s_ruins', 'c1s_firstdungeon', 'c1s_depths', 'c1_crossing', 'c2s_trader', 'c2s_trader_guard']);
     expect((await post(app, h, '/quests/career_path/claim', {})).body.errors.code).toBe('QUEST_NOT_DONE');
     expect((await putState(app, h, career())).status).toBe(422);
     expect((await post(app, h, '/quests/career_path/claim', {})).body.errors.code).toBe('QUEST_NOT_DONE');

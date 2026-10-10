@@ -1,17 +1,20 @@
 import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
 import { buildApp, resetDb, shutdown } from './helpers';
-import { newHero, post, seedLevel, type Hero } from './economyHelpers';
+import { newHero, post, seedClaims, seedLevel, type Hero } from './economyHelpers';
 
 const app = buildApp();
 beforeAll(resetDb);
 afterAll(shutdown);
 
+// career_path(1-15)는 메인 1-14(c2s_trader_guard)까지 끝내야 받는다
+const CAREER_PREREQS = ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail', 'c1s_patrol', 'c1s_ruins', 'c1s_firstdungeon', 'c1s_depths', 'c1_crossing', 'c2s_trader', 'c2s_trader_guard'];
 const claim = (h: Hero, rid?: string) => post(app, h, '/quests/career_path/claim', {}, rid);
 
 async function readyHero(): Promise<Hero> {
   const h = await newHero(app);
   await seedLevel(h, 15);
+  await seedClaims(h, CAREER_PREREQS);
   return h;
 }
 
