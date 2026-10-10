@@ -96,10 +96,68 @@ namespace DotRPG
         /// <summary>Local plaza passages preserve authored town silhouettes and existing save positions.</summary>
         void BuildWorldHubGates()
         {
-            if(!string.IsNullOrEmpty(map.hubMap)) AddPlazaGate(map.hubMap,PlayerSpawn+new Vector2(5,1));
+            if(!string.IsNullOrEmpty(map.hubMap)) AddHubEdgeGate(map.hubMap);
             // The old first village has no western edge exit; its returning route gets a signed plaza passage.
             if(MapId==MapRegistry.Village&&!string.IsNullOrEmpty(map.previousMap)&&!portalCells.ContainsKey(map.previousMap))
                 AddPlazaGate(map.previousMap,PlayerSpawn+new Vector2(-6,-2));
+        }
+        void AddHubEdgeGate(string target)
+        {
+            if (portalCells.ContainsKey(target)) return;
+            var desired = WorldRoutes.HubApproach(MapId);
+            var inward = WorldRoutes.HubInward(MapId);
+            var tangent = new Vector2(-inward.y, inward.x);
+            var visited = new HashSet<Vector2Int>(); var reachable = new HashSet<Vector2Int>();
+            var queue = new Queue<Vector2Int>();
+            var start = Vector2Int.FloorToInt(PlayerSpawn); visited.Add(start); reachable.Add(start); queue.Enqueue(start);
+            var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+            while (queue.Count > 0)
+            {
+                var p = queue.Dequeue();
+                foreach (var direction in directions)
+                {
+                    var n = p + direction;
+                    if (!visited.Add(n) || !IsFree((Vector2)n + Vector2.one * .5f)) continue;
+                    reachable.Add(n); queue.Enqueue(n);
+                }
+            }
+            Vector2 center = Vector2.zero; float best = float.PositiveInfinity;
+            foreach (var cell in reachable)
+            {
+                Vector2 p = (Vector2)cell + Vector2.one * .5f;
+                float score = (p - desired).sqrMagnitude;
+                if (score >= best || score > 64) continue;
+                bool clear = true;
+                for (int across = -1; across <= 1; across++)
+                    for (int depth = 0; depth <= 6; depth++)
+                        if (!IsFree(p + tangent * across + inward * (depth * .5f))) clear = false;
+                foreach (var group in portalCells.Values) foreach (var other in group)
+                    if (Vector2.Distance(p, other) < 5) clear = false;
+                if (!clear) continue;
+                best = score; center = p;
+            }
+            if (float.IsPositiveInfinity(best)) { Debug.LogError("No reachable edge approach: " + MapId); return; }
+            var points = portalCells[target] = new List<Vector2>();
+            for (int n = -1; n <= 1; n++)
+            {
+                var p = center + tangent * n;
+                MapPortal.Create(p, target, objectsRoot); points.Add(p);
+            }
+            portalArrivals[target] = center + inward * 2.4f;
+            Decoration(inward == Vector2.down ? "arrow_up" : "arrow_left", center, -19990);
+            if (MapId == MapRegistry.Sanctum)
+            {
+                // Recess the upper ruin into the north wall so the new side passage
+                // remains a continuous floor, rather than slicing a hole through columns.
+                var tower = System.Array.Find(objectsRoot.GetComponentsInChildren<SpriteRenderer>(), r => r.name == "tower_left" && Mathf.Abs(r.transform.position.y - 46) < .1f);
+                if (tower != null)
+                {
+                    tower.transform.position = new Vector2(9.5f, 56.5f);
+                    var scale = tower.transform.localScale; scale.y *= 13.5f / 24f; tower.transform.localScale = scale;
+                    tower.sortingOrder = YSort.OrderFor(56.5f);
+                }
+            }
+
         }
         void AddPlazaGate(string target,Vector2 desired)
         {

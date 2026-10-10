@@ -1,5 +1,5 @@
 // 레벨 달성 보상 단계표(server/data/level_rewards.json, Docs/server/phase13_level_rewards.md 1절).
-// star_products.json 과 같은 방식: 서버 정본, data_version 해시에 넣지 않는다(클라이언트는 GET /level-rewards 로 받는다).
+// star_products.json 과 같은 방식: 서버 정본, data_version 해시에 넣지 않는다(클라이언트는 GET /characters/:uuid/level-rewards 로 받는다).
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';

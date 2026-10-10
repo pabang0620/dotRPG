@@ -1,0 +1,251 @@
+[3.16] capture started
+[3.16] verification audio volume: 0
+DGN village preview exits have destinations PASS
+DGN village unvisited hub marker PASS
+DGN forest preview exits have destinations PASS
+DGN forest_ruins preview exits have destinations PASS
+DGN forest_depths preview exits have destinations PASS
+DGN forest_crossing preview exits have destinations PASS
+DGN canyon preview exits have destinations PASS
+DGN canyon unvisited hub marker PASS
+DGN canyon_pass preview exits have destinations PASS
+DGN canyon_mine preview exits have destinations PASS
+DGN canyon_ridge preview exits have destinations PASS
+DGN canyon_gate preview exits have destinations PASS
+DGN winter preview exits have destinations PASS
+DGN winter unvisited hub marker PASS
+DGN winter_edge preview exits have destinations PASS
+DGN winter_lake preview exits have destinations PASS
+DGN winter_peak preview exits have destinations PASS
+DGN winter_reach preview exits have destinations PASS
+DGN sunken_sanctum preview exits have destinations PASS
+DGN sunken_sanctum unvisited hub marker PASS
+DGN sanctum_hall preview exits have destinations PASS
+DGN sanctum_archive preview exits have destinations PASS
+DGN sanctum_roots preview exits have destinations PASS
+DGN sanctum_court preview exits have destinations PASS
+DGN undergate preview exits have destinations PASS
+DGN hollow_descent preview exits have destinations PASS
+DGN hollow_roots preview exits have destinations PASS
+DGN hollow_fungal preview exits have destinations PASS
+DGN hollow_depths preview exits have destinations PASS
+DGN village hub exit exists PASS
+[8.70] village hub=(0.50, 22.50) arrival=(2.90, 22.50)
+DGN village peripheral approach matches atlas PASS
+DGN village three-wide passage PASS
+DGN village arrival is free and outside trigger PASS
+DGN village hub plaza artwork removed PASS
+DGN village keeps route sanctum_court PASS
+DGN village keeps route forest PASS
+DGN village keeps route undergate PASS
+DGN village world hover destination PASS
+DGN village atlas hover destination PASS
+DGN village tooltip hides on close PASS
+DGN village minimap hover destination PASS
+DGN village walking triggers hub travel PASS
+[12.86] walk ended undergate (2.70, 22.50) state=Playing
+DGN village return route PASS
+DGN village return does not bounce PASS
+DGN canyon hub exit exists PASS
+[17.73] canyon hub=(11.50, 59.50) arrival=(11.50, 57.10)
+DGN canyon peripheral approach matches atlas PASS
+DGN canyon three-wide passage PASS
+DGN canyon arrival is free and outside trigger PASS
+DGN canyon hub plaza artwork removed PASS
+DGN canyon keeps route forest_crossing PASS
+DGN canyon keeps route canyon_pass PASS
+DGN canyon keeps route undergate PASS
+DGN canyon world hover destination PASS
+DGN canyon atlas hover destination PASS
+DGN canyon tooltip hides on close PASS
+DGN canyon minimap hover destination PASS
+DGN canyon walking triggers hub travel PASS
+[21.01] walk ended undergate (26.50, 41.30) state=Playing
+DGN canyon return route PASS
+DGN canyon return does not bounce PASS
+DGN winter hub exit exists PASS
+[25.08] winter hub=(0.50, 25.50) arrival=(2.90, 25.50)
+DGN winter peripheral approach matches atlas PASS
+DGN winter three-wide passage PASS
+DGN winter arrival is free and outside trigger PASS
+DGN winter hub plaza artwork removed PASS
+DGN winter keeps route canyon_gate PASS
+DGN winter keeps route winter_edge PASS
+DGN winter keeps route undergate PASS
+DGN winter world hover destination PASS
+DGN winter atlas hover destination PASS
+DGN winter tooltip hides on close PASS
+DGN winter minimap hover destination PASS
+DGN winter walking triggers hub travel PASS
+[28.42] walk ended undergate (49.30, 22.50) state=Playing
+DGN winter return route PASS
+DGN winter return does not bounce PASS
+DGN sunken_sanctum hub exit exists PASS
+[36.20] sunken_sanctum hub=(0.50, 53.50) arrival=(2.90, 53.50)
+DGN sunken_sanctum peripheral approach matches atlas PASS
+DGN sunken_sanctum three-wide passage PASS
+DGN sunken_sanctum arrival is free and outside trigger PASS
+DGN sunken_sanctum hub plaza artwork removed PASS
+DGN sunken_sanctum keeps route winter_reach PASS
+DGN sunken_sanctum keeps route sanctum_hall PASS
+DGN sunken_sanctum keeps route undergate PASS
+DGN sunken_sanctum world hover destination PASS
+DGN sunken_sanctum atlas hover destination PASS
+DGN sunken_sanctum tooltip hides on close PASS
+DGN sunken_sanctum minimap hover destination PASS
+DGN sunken_sanctum walking triggers hub travel PASS
+[39.49] walk ended undergate (26.50, 2.70) state=Playing
+DGN sunken_sanctum return route PASS
+DGN sunken_sanctum return does not bounce PASS
+DGN surface chart is HD and visible PASS
+DGN surface field chart exists PASS
+DGN surface chart has all sixteen distinct field labels PASS
+DGN surface chart has all sixteen distinct field nodes PASS
+DGN forest atlas node has an active clickable button PASS
+DGN forest atlas label is stage 1 PASS
+DGN forest atlas stage label is centered PASS
+DGN forest atlas node clear of unrelated nameplate hitboxes PASS
+DGN forest_ruins atlas node has an active clickable button PASS
+DGN forest_ruins atlas label is stage 2 PASS
+DGN forest_ruins atlas stage label is centered PASS
+DGN forest_ruins atlas node clear of unrelated nameplate hitboxes PASS
+DGN forest_depths atlas node has an active clickable button PASS
+DGN forest_depths atlas label is stage 3 PASS
+DGN forest_depths atlas stage label is centered PASS
+DGN forest_depths atlas node clear of unrelated nameplate hitboxes PASS
+DGN forest_crossing atlas node has an active clickable button PASS
+DGN forest_crossing atlas label is stage 4 PASS
+DGN forest_crossing atlas stage label is centered PASS
+DGN forest_crossing atlas node clear of unrelated nameplate hitboxes PASS
+DGN village atlas stage 2 is above stage 1 PASS
+DGN village atlas stage 3 is below stage 1 PASS
+DGN village atlas stage 4 is right of stages 1 2 3 PASS
+DGN canyon_pass atlas node has an active clickable button PASS
+DGN canyon_pass atlas label is stage 1 PASS
+DGN canyon_pass atlas stage label is centered PASS
+DGN canyon_pass atlas node clear of unrelated nameplate hitboxes PASS
+DGN canyon_mine atlas node has an active clickable button PASS
+DGN canyon_mine atlas label is stage 2 PASS
+DGN canyon_mine atlas stage label is centered PASS
+DGN canyon_mine atlas node clear of unrelated nameplate hitboxes PASS
+DGN canyon_ridge atlas node has an active clickable button PASS
+DGN canyon_ridge atlas label is stage 3 PASS
+DGN canyon_ridge atlas stage label is centered PASS
+DGN canyon_ridge atlas node clear of unrelated nameplate hitboxes PASS
+DGN canyon_gate atlas node has an active clickable button PASS
+DGN canyon_gate atlas label is stage 4 PASS
+DGN canyon_gate atlas stage label is centered PASS
+DGN canyon_gate atlas node clear of unrelated nameplate hitboxes PASS
+DGN canyon atlas stage 2 is above stage 1 PASS
+DGN canyon atlas stage 3 is below stage 1 PASS
+DGN canyon atlas stage 4 is right of stages 1 2 3 PASS
+DGN winter_edge atlas node has an active clickable button PASS
+DGN winter_edge atlas label is stage 1 PASS
+DGN winter_edge atlas stage label is centered PASS
+DGN winter_edge atlas node clear of unrelated nameplate hitboxes PASS
+DGN winter_lake atlas node has an active clickable button PASS
+DGN winter_lake atlas label is stage 2 PASS
+DGN winter_lake atlas stage label is centered PASS
+DGN winter_lake atlas node clear of unrelated nameplate hitboxes PASS
+DGN winter_peak atlas node has an active clickable button PASS
+DGN winter_peak atlas label is stage 3 PASS
+DGN winter_peak atlas stage label is centered PASS
+DGN winter_peak atlas node clear of unrelated nameplate hitboxes PASS
+DGN winter_reach atlas node has an active clickable button PASS
+DGN winter_reach atlas label is stage 4 PASS
+DGN winter_reach atlas stage label is centered PASS
+DGN winter_reach atlas node clear of unrelated nameplate hitboxes PASS
+DGN winter atlas stage 2 is above stage 1 PASS
+DGN winter atlas stage 3 is below stage 1 PASS
+DGN winter atlas stage 4 is right of stages 1 2 3 PASS
+DGN sanctum_hall atlas node has an active clickable button PASS
+DGN sanctum_hall atlas label is stage 1 PASS
+DGN sanctum_hall atlas stage label is centered PASS
+DGN sanctum_hall atlas node clear of unrelated nameplate hitboxes PASS
+DGN sanctum_archive atlas node has an active clickable button PASS
+DGN sanctum_archive atlas label is stage 2 PASS
+DGN sanctum_archive atlas stage label is centered PASS
+DGN sanctum_archive atlas node clear of unrelated nameplate hitboxes PASS
+DGN sanctum_roots atlas node has an active clickable button PASS
+DGN sanctum_roots atlas label is stage 3 PASS
+DGN sanctum_roots atlas stage label is centered PASS
+DGN sanctum_roots atlas node clear of unrelated nameplate hitboxes PASS
+DGN sanctum_court atlas node has an active clickable button PASS
+DGN sanctum_court atlas label is stage 4 PASS
+DGN sanctum_court atlas stage label is centered PASS
+DGN sanctum_court atlas node clear of unrelated nameplate hitboxes PASS
+DGN sunken_sanctum atlas stage 2 is above stage 1 PASS
+DGN sunken_sanctum atlas stage 3 is below stage 1 PASS
+DGN sunken_sanctum atlas stage 4 is right of stages 1 2 3 PASS
+DGN surface atlas click audit has an event system PASS
+DGN forest atlas number receives the pointer click PASS
+DGN forest atlas click selects the exact field PASS
+DGN forest atlas click preserves the active world and player PASS
+DGN forest surface atlas reopens after selection PASS
+DGN forest_ruins atlas number receives the pointer click PASS
+DGN forest_ruins atlas click selects the exact field PASS
+DGN forest_ruins atlas click preserves the active world and player PASS
+DGN forest_ruins surface atlas reopens after selection PASS
+DGN forest_depths atlas number receives the pointer click PASS
+DGN forest_depths atlas click selects the exact field PASS
+DGN forest_depths atlas click preserves the active world and player PASS
+DGN forest_depths surface atlas reopens after selection PASS
+DGN forest_crossing atlas number receives the pointer click PASS
+DGN forest_crossing atlas click selects the exact field PASS
+DGN forest_crossing atlas click preserves the active world and player PASS
+DGN forest_crossing surface atlas reopens after selection PASS
+DGN canyon_pass atlas number receives the pointer click PASS
+DGN canyon_pass atlas click selects the exact field PASS
+DGN canyon_pass atlas click preserves the active world and player PASS
+DGN canyon_pass surface atlas reopens after selection PASS
+DGN canyon_mine atlas number receives the pointer click PASS
+DGN canyon_mine atlas click selects the exact field PASS
+DGN canyon_mine atlas click preserves the active world and player PASS
+DGN canyon_mine surface atlas reopens after selection PASS
+DGN canyon_ridge atlas number receives the pointer click PASS
+DGN canyon_ridge atlas click selects the exact field PASS
+DGN canyon_ridge atlas click preserves the active world and player PASS
+DGN canyon_ridge surface atlas reopens after selection PASS
+DGN canyon_gate atlas number receives the pointer click PASS
+DGN canyon_gate atlas click selects the exact field PASS
+DGN canyon_gate atlas click preserves the active world and player PASS
+DGN canyon_gate surface atlas reopens after selection PASS
+DGN winter_edge atlas number receives the pointer click PASS
+DGN winter_edge atlas click selects the exact field PASS
+DGN winter_edge atlas click preserves the active world and player PASS
+DGN winter_edge surface atlas reopens after selection PASS
+DGN winter_lake atlas number receives the pointer click PASS
+DGN winter_lake atlas click selects the exact field PASS
+DGN winter_lake atlas click preserves the active world and player PASS
+DGN winter_lake surface atlas reopens after selection PASS
+DGN winter_peak atlas number receives the pointer click PASS
+DGN winter_peak atlas click selects the exact field PASS
+DGN winter_peak atlas click preserves the active world and player PASS
+DGN winter_peak surface atlas reopens after selection PASS
+DGN winter_reach atlas number receives the pointer click PASS
+DGN winter_reach atlas click selects the exact field PASS
+DGN winter_reach atlas click preserves the active world and player PASS
+DGN winter_reach surface atlas reopens after selection PASS
+DGN sanctum_hall atlas number receives the pointer click PASS
+DGN sanctum_hall atlas click selects the exact field PASS
+DGN sanctum_hall atlas click preserves the active world and player PASS
+DGN sanctum_hall surface atlas reopens after selection PASS
+DGN sanctum_archive atlas number receives the pointer click PASS
+DGN sanctum_archive atlas click selects the exact field PASS
+DGN sanctum_archive atlas click preserves the active world and player PASS
+DGN sanctum_archive surface atlas reopens after selection PASS
+DGN sanctum_roots atlas number receives the pointer click PASS
+DGN sanctum_roots atlas click selects the exact field PASS
+DGN sanctum_roots atlas click preserves the active world and player PASS
+DGN sanctum_roots surface atlas reopens after selection PASS
+DGN sanctum_court atlas number receives the pointer click PASS
+DGN sanctum_court atlas click selects the exact field PASS
+DGN sanctum_court atlas click preserves the active world and player PASS
+DGN sanctum_court surface atlas reopens after selection PASS
+DGN central root spring opens underground chart PASS
+DGN hollow_descent exact linear connections PASS
+DGN hollow_roots exact linear connections PASS
+DGN hollow_fungal exact linear connections PASS
+DGN hollow_depths exact linear connections PASS
+DGN portal verification muted PASS
+[45.64] PORTAL RESULTS: 240 passed, 0 failed

@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-10",
+  "branch": "jaein",
+  "artTool": "built-in image_gen",
+  "prompts": [
+    "Docs/World/HubRoadSources/refined/prompts.json",
+    "Docs/World/HubRoadSources/refined/winter-join-prompt.json"
+  ],
+  "assets": [
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/village.png",
+      "sha256": "ef1e8786c3b9fe40ec59a4bd7acb4363eaab9118053e5530582fb2a5dd101a3b",
+      "runtimeCopyMatches": true,
+      "id": "village"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+      "sha256": "849ab65b5b977f18d8a8aa6c9d8a6f75bb4dfa80a07573e10562387bba42ca33",
+      "runtimeCopyMatches": true,
+      "id": "canyon"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/winter.png",
+      "sha256": "fbb5cb9ba4d7af540db117595ace4b8a9fe7d6b4d8e97abe13f6018a24f7d653",
+      "runtimeCopyMatches": true,
+      "id": "winter"
+    },
+    {
+      "path": "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+      "sha256": "9fa576a683f306816eae7d7e90b498e328cf24614ef3bcb42c1c18251e2221bd",
+      "runtimeCopyMatches": true,
+      "id": "sunken_sanctum"
+    }
+  ],
+  "runtimeVerification": {
+    "passed": 240,
+    "failed": 0,
+    "checks": [
+      "16 field labels and stages",
+      "North/south branch layout",
+      "Label and nameplate hitbox overlap",
+      "All 16 field clicks select correct map without traveling",
+      "Four town portal walking/return",
+      "Destination tooltips",
+      "Root village underground chart selection"
+    ],
+    "volume": 0
+  },
+  "imageVerification": "Outside road crop union unchanged; dimensions and portal geometry unchanged",
+  "execution": "Unity Roslyn-compiled runtime deployed into existing native player; no fresh Unity Editor build",
+  "code": [
+    "Assets/Scripts/Runtime/UI/WorldMapScreen.Atlas.cs",
+    "Assets/Scripts/Runtime/Core/DevCapture.PortalDestinations.cs",
+    "Tools/art/register_road_crops.ps1"
+  ]
+}

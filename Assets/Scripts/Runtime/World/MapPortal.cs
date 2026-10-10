@@ -8,7 +8,10 @@ namespace DotRPG
     /// </summary>
     public class MapPortal : MonoBehaviour
     {
+        public static readonly System.Collections.Generic.List<MapPortal> Active = new System.Collections.Generic.List<MapPortal>();
         public string TargetMap { get; private set; }
+        void OnEnable() { if (!Active.Contains(this)) Active.Add(this); }
+        void OnDisable() => Active.Remove(this);
 
         public static MapPortal Create(Vector2 center, string targetMap, Transform parent)
         {

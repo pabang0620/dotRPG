@@ -1,0 +1,58 @@
+[
+  {
+    "source": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/village.png",
+    "size": [
+      7424,
+      6912
+    ],
+    "id": "village",
+    "bounds": [
+      0,
+      3387,
+      2301,
+      1521
+    ]
+  },
+  {
+    "source": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/canyon.png",
+    "size": [
+      6144,
+      7680
+    ],
+    "id": "canyon",
+    "bounds": [
+      614,
+      0,
+      1782,
+      1690
+    ]
+  },
+  {
+    "source": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/winter.png",
+    "size": [
+      6656,
+      5888
+    ],
+    "id": "winter",
+    "bounds": [
+      0,
+      1943,
+      1664,
+      1354
+    ]
+  },
+  {
+    "source": "C:/Users/darac/OneDrive/Desktop/dot-rpg/Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+    "size": [
+      6144,
+      9216
+    ],
+    "id": "sunken_sanctum",
+    "bounds": [
+      0,
+      1475,
+      2550,
+      1935
+    ]
+  }
+]

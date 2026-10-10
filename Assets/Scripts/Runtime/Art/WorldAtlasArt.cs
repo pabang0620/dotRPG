@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace DotRPG
@@ -13,6 +14,17 @@ namespace DotRPG
         {
             string key = "chart_" + layer;
             if (sprites.TryGetValue(key, out var ready)) return ready;
+            string path = Path.Combine(Application.streamingAssetsPath, "WorldAtlas", layer == WorldLayer.Underground ? "underground.png" : "surface.png");
+            if (StreamingFiles.Exists(path)) // [ANDROID] StreamingAssets live inside the APK
+            {
+                var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+                if (ImageConversion.LoadImage(texture, StreamingFiles.ReadAllBytes(path), true))
+                {
+                    var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 100);
+                    sprite.name = "IllustratedAtlas_" + layer; sprites[key] = sprite; return sprite;
+                }
+                Object.Destroy(texture);
+            }
             return Store(key, layer == WorldLayer.Underground ? Underground() : Surface());
         }
 

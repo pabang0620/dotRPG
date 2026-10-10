@@ -150,7 +150,11 @@ namespace DotRPG
         public Vector2 ArrivalFrom(string fromMap, out Facing facing)
         {
             facing = Facing.Down;
-            if (fromMap != null && portalArrivals.TryGetValue(fromMap, out var arrival)) return arrival;
+            if (fromMap != null && portalArrivals.TryGetValue(fromMap, out var arrival))
+            {
+                if (fromMap == map.hubMap) facing = FacingExtensions.FromVector(WorldRoutes.HubInward(MapId), Facing.Down);
+                return arrival;
+            }
             if (MapId == MapRegistry.Sanctum) { facing = Facing.Up; return PlayerSpawn; }
             if (map.IsInterior) { facing = Facing.Up; return PlayerSpawn; }
             var from = MapRegistry.Get(fromMap);
@@ -177,6 +181,7 @@ namespace DotRPG
 
         void Parse(string text)
         {
+            text = WorldRoutes.WithHubRoad(MapId, text);
             var rows = new List<string>();
             foreach (var raw in text.Split('\n'))
             {

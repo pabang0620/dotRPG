@@ -1,0 +1,31 @@
+{
+  "generator": "Built-in image_gen",
+  "surfacePrompt": "Create an ORIGINAL polished 2D fantasy RPG illustrated world map, landscape 2048x1152 (16:9), for a game called dotRPG. The attached screenshot is ONLY a cartographic composition reference: one richly illustrated island and miniature biome landmarks. Do not copy its island silhouette, locations, names, typography, UI, logos or distinctive buildings. Deliver ART ONLY, absolutely NO text, letters, labels, markers, dotted trails, UI, borders, watermark. The game overlays clickable nodes and routes separately. High definition crisp hand-painted pixel-art-inspired illustration with precise clustered details, organic contours, charming miniature East Asian fantasy architecture, warm sunlight, no photorealism, no blur. Ocean around all sides, deep desaturated teal blue with shallow pale turquoise coastline and discreet hand drawn wave lines. One continuous island occupies x8%-92%, y7%-93%, naturally joined land, not four disconnected panels. Geography MUST: WEST x12-38%, y30-70% lush moss-green forest, rounded oak crowns, pines and small dark tiled-roof village at (22%,48%); NORTH x36-64%, y7-34% snowy alpine peaks, silver firs, icy lake and tiny blue-roof snow village at (50%,20%); EAST x68-89%, y30-69% majestic ochre-gray layered rocky cliffs, winding ravine, quarry ruins and cliffside village at (79%,48%); SOUTH x35-67%, y69-91% ancient submerged sanctuary: roofless tall stone arches around an olive turquoise pool, broken circular altar and mossy masonry at (50%,78%); CENTER at (50%,47%) a luminous root spring town surrounded by gigantic ancient tree roots, small tiled-roof cottages, a clear circular spring and a subtle stair into the earth. Make these five landmark centers distinct with a small quiet open space for an overlaid click marker. Blend biomes via foothills, rivers and meadows with coherent perspective (top-down illustrated relief), rounded organic transitions. Richly composed attractive island, readable in-game thumbnail, generous quiet land between towns for programmatic routes. No gigantic characters, no bosses, no pasted asset-sheet appearance.",
+  "undergroundPrompt": "Create a beautiful original illustrated underground world atlas for a fantasy pixel-art RPG, wide 16:9 canvas 2048x1152. NO TEXT, no symbols, no numbers, no UI. Vertical cutaway subterranean strata inside wide composition. A single linear descending chain of FOUR large scenic cavern chambers, all centered around x50%, with landmarks centered at y26%,44%,62%,80%. Thin winding stair tunnels connect only consecutive chambers. Top entry root well at x50 y10. Chamber1 abandoned stone mine and ancient stairs warm lanterns; chamber2 enormous twisting tree roots and old tomb masonry olive green; chamber3 luminous blue mushrooms and turquoise subterranean water; chamber4 deep ancient sealed ruins and subdued gold fireflies. Surround chambers with stratified dark charcoal rock and distant atmospheric silhouettes, visually harmonious organic edges, no rectangular rooms, no branching routes or extra entrances. Hand-painted crisp miniature fantasy cartography, attractive richly textured and readable landmarks, precisely outlined clustered details, NO blur. Match high-quality colorful island fantasy atlas aesthetics but mood mysterious and darker. Keep generous black-blue rock space around chamber centers for overlay map markers, each chamber distinguishable. Image is original game map artwork, not copying any existing game.",
+  "outputs": [
+    "Assets/StreamingAssets/WorldAtlas/surface.png",
+    "Assets/StreamingAssets/WorldAtlas/underground.png"
+  ],
+  "note": "Original illustrated atlases; navigation markers and connections are rendered by the game, not baked into images.",
+  "upscale": "Existing local Real-ESRGAN x4plus; registration to 2560x1440, runtime Point sampling",
+  "registered_assets": [
+    {
+      "path": "Assets/StreamingAssets/WorldAtlas/surface.png",
+      "size": [
+        2560,
+        1440
+      ],
+      "sha256": "0a7585c44a44313835f9e003cb9c0ca1fbeb2d475b13ac451e877d54a28c9188",
+      "original": "Docs/World/AtlasSources/surface.png"
+    },
+    {
+      "path": "Assets/StreamingAssets/WorldAtlas/underground.png",
+      "size": [
+        2560,
+        1440
+      ],
+      "sha256": "b469983f197614d0411eb6565d1a6a49cee98150019f5fc2379c8a710b28d7d9",
+      "original": "Docs/World/AtlasSources/underground.png"
+    }
+  ]
+}

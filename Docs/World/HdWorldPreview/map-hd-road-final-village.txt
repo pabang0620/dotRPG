@@ -1,0 +1,65 @@
+[3.12] capture started
+[3.12] verification audio volume: 0
+DGN surface export has five towns and sixteen fields PASS
+DGN requested surface map exists: village PASS
+DGN runtime layout export access PASS
+[6.52] SURFACE EXPORT village
+DGN village previous composition resources released PASS
+DGN village portal forest PASS
+DGN village safe arrival forest PASS
+DGN village portal sanctum_court PASS
+DGN village safe arrival sanctum_court PASS
+DGN village portal undergate PASS
+DGN village safe arrival undergate PASS
+DGN village spawn free PASS
+DGN village collision buffer complete PASS
+DGN village spawn anchors to actual quarter-tile navigation PASS
+DGN village spawn reaches portal arrival forest PASS
+DGN village spawn reaches portal arrival sanctum_court PASS
+DGN village spawn reaches portal arrival undergate PASS
+DGN village short movement route available PASS
+DGN village actual input moves forward PASS
+DGN village actual input returns without portal travel PASS
+DGN village actual movement feet remain free PASS
+DGN village original static ground painting available PASS
+DGN village requested composition exists at 128ppu PASS
+DGN village one map-owned surface composition PASS
+DGN village composition belongs to current map PASS
+DGN village exclusive composition layer slots PASS
+DGN village supporting edges avoid walkable terrain PASS
+DGN village composition uses sharp pixels PASS
+DGN village composition shares one unreadable source texture PASS
+DGN village mesh cells and source UVs exactly partition artwork PASS
+DGN village registered source resolution is preserved PASS
+DGN village requested artwork resolution 128 PASS
+DGN village composed floor is bound to existing water simulation PASS
+DGN village shared water mask retains exact 32ppu world registration PASS
+DGN village contact layer is visual only and below actors PASS
+DGN village empty and resource contact ownership matches generated pixels PASS
+DGN village hidden forest duplicates are exact nonphysical blocked-cell decorations PASS
+DGN village prop pass scope PASS
+DGN village forest field atlas stays inside the four target maps PASS
+DGN village complete prop replacement census PASS
+DGN village prop root and visual transforms preserved PASS
+DGN village prop colliders preserved PASS
+DGN village prop sorting follows exact floor-rubble exception and preserves RGB PASS
+DGN village fitted prop pictures use one owned atlas PASS
+DGN village resource full and stump overrides connected PASS
+DGN village background, columns, actors and services excluded PASS
+DGN forest:Tree resource lifecycle access PASS
+DGN forest:Tree quiet depleted art state PASS
+DGN forest:Tree depleted contact matches stump or absent rock PASS
+DGN forest:Tree real respawn restores new full art and collider PASS
+DGN forest:Tree yield and health configuration preserved PASS
+DGN forest:Tree respawn restores standing contact without collider PASS
+DGN forest:Tree lifecycle probe restores timer and collision PASS
+DGN forest:Rock resource lifecycle access PASS
+DGN forest:Rock quiet depleted art state PASS
+DGN forest:Rock depleted contact matches stump or absent rock PASS
+DGN forest:Rock real respawn restores new full art and collider PASS
+DGN forest:Rock yield and health configuration preserved PASS
+DGN forest:Rock respawn restores standing contact without collider PASS
+DGN forest:Rock lifecycle probe restores timer and collision PASS
+DGN last exported composition resources released PASS
+DGN surface export silent PASS
+[13.39] SURFACE RESULTS: 61 passed, 0 failed; 1 maps

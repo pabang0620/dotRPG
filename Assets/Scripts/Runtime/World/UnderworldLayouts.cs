@@ -51,8 +51,8 @@ namespace DotRPG
             for(int x=0;x<w;x++){a[x,0]='W';a[x,h-1]='W';}for(int y=0;y<h;y++){a[0,y]='W';a[w-1,y]='W';}
             for(int k=-1;k<=1;k++)
             {
-                if(v==0){a[0,24+k]='}';a[28+k,47]='[';a[28+k,0]=']';}
-                else if(v==3){a[28+k,47]='[';a[28+k,0]=']';}
+                if(v==0){a[0,24+k]='}';a[28+k,47]='[';}
+                else if(v==3){a[28+k,0]=']';}
                 else{a[0,24+k]='<';a[55,24+k]='>';}
             }
             int spawnX=v==3?28:4,spawnY=v==3?38:24;

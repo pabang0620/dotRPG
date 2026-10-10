@@ -67,6 +67,16 @@ namespace DotRPG
             HideUnsupportedSurfaceNature(resolved);
             ApplyBiomePropVisuals(scene);
             GroundSurfaceProps(scene, resolved);
+            if (MapId == MapRegistry.Village)
+            {
+                // Edge foliage is decorative and extends beyond its anchor cell.
+                // Remove whole crowns at the authored exit, retaining organic silhouettes.
+                var opening = new Bounds(new Vector3(2.5f, 22.5f, 0), new Vector3(6, 4, 100));
+                foreach (var sr in objectsRoot.GetComponentsInChildren<SpriteRenderer>())
+                    if ((sr.name == "EdgeTree" || sr.name == "Forest edge understory") && sr.bounds.Intersects(opening)
+                        && sr.GetComponentInParent<ResourceNode>() == null && sr.GetComponentsInChildren<Collider2D>().Length == 0)
+                        sr.enabled = false;
+            }
         }
 
         void HideUnsupportedSurfaceNature(char[,] ground)

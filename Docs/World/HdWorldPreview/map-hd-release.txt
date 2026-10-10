@@ -1,0 +1,107 @@
+[3.18] capture started
+[3.18] verification audio volume: 0
+DGN village preview exits have destinations PASS
+DGN village unvisited hub marker PASS
+DGN forest preview exits have destinations PASS
+DGN forest_ruins preview exits have destinations PASS
+DGN forest_depths preview exits have destinations PASS
+DGN forest_crossing preview exits have destinations PASS
+DGN canyon preview exits have destinations PASS
+DGN canyon unvisited hub marker PASS
+DGN canyon_pass preview exits have destinations PASS
+DGN canyon_mine preview exits have destinations PASS
+DGN canyon_ridge preview exits have destinations PASS
+DGN canyon_gate preview exits have destinations PASS
+DGN winter preview exits have destinations PASS
+DGN winter unvisited hub marker PASS
+DGN winter_edge preview exits have destinations PASS
+DGN winter_lake preview exits have destinations PASS
+DGN winter_peak preview exits have destinations PASS
+DGN winter_reach preview exits have destinations PASS
+DGN sunken_sanctum preview exits have destinations PASS
+DGN sunken_sanctum unvisited hub marker PASS
+DGN sanctum_hall preview exits have destinations PASS
+DGN sanctum_archive preview exits have destinations PASS
+DGN sanctum_roots preview exits have destinations PASS
+DGN sanctum_court preview exits have destinations PASS
+DGN undergate preview exits have destinations PASS
+DGN hollow_descent preview exits have destinations PASS
+DGN hollow_roots preview exits have destinations PASS
+DGN hollow_fungal preview exits have destinations PASS
+DGN hollow_depths preview exits have destinations PASS
+DGN village hub exit exists PASS
+[8.86] village hub=(0.50, 22.50) arrival=(2.90, 22.50)
+DGN village peripheral approach matches atlas PASS
+DGN village three-wide passage PASS
+DGN village arrival is free and outside trigger PASS
+DGN village hub plaza artwork removed PASS
+DGN village keeps route sanctum_court PASS
+DGN village keeps route forest PASS
+DGN village keeps route undergate PASS
+DGN village world hover destination PASS
+DGN village atlas hover destination PASS
+DGN village tooltip hides on close PASS
+DGN village minimap hover destination PASS
+DGN village walking triggers hub travel PASS
+[13.19] walk ended undergate (2.70, 22.50) state=Playing
+DGN village return route PASS
+DGN village return does not bounce PASS
+DGN canyon hub exit exists PASS
+[18.49] canyon hub=(11.50, 59.50) arrival=(11.50, 57.10)
+DGN canyon peripheral approach matches atlas PASS
+DGN canyon three-wide passage PASS
+DGN canyon arrival is free and outside trigger PASS
+DGN canyon hub plaza artwork removed PASS
+DGN canyon keeps route forest_crossing PASS
+DGN canyon keeps route canyon_pass PASS
+DGN canyon keeps route undergate PASS
+DGN canyon world hover destination PASS
+DGN canyon atlas hover destination PASS
+DGN canyon tooltip hides on close PASS
+DGN canyon minimap hover destination PASS
+DGN canyon walking triggers hub travel PASS
+[21.84] walk ended undergate (26.50, 41.30) state=Playing
+DGN canyon return route PASS
+DGN canyon return does not bounce PASS
+DGN winter hub exit exists PASS
+[26.13] winter hub=(0.50, 25.50) arrival=(2.90, 25.50)
+DGN winter peripheral approach matches atlas PASS
+DGN winter three-wide passage PASS
+DGN winter arrival is free and outside trigger PASS
+DGN winter hub plaza artwork removed PASS
+DGN winter keeps route canyon_gate PASS
+DGN winter keeps route winter_edge PASS
+DGN winter keeps route undergate PASS
+DGN winter world hover destination PASS
+DGN winter atlas hover destination PASS
+DGN winter tooltip hides on close PASS
+DGN winter minimap hover destination PASS
+DGN winter walking triggers hub travel PASS
+[29.51] walk ended undergate (49.30, 22.50) state=Playing
+DGN winter return route PASS
+DGN winter return does not bounce PASS
+DGN sunken_sanctum hub exit exists PASS
+[37.46] sunken_sanctum hub=(0.50, 53.50) arrival=(2.90, 53.50)
+DGN sunken_sanctum peripheral approach matches atlas PASS
+DGN sunken_sanctum three-wide passage PASS
+DGN sunken_sanctum arrival is free and outside trigger PASS
+DGN sunken_sanctum hub plaza artwork removed PASS
+DGN sunken_sanctum keeps route winter_reach PASS
+DGN sunken_sanctum keeps route sanctum_hall PASS
+DGN sunken_sanctum keeps route undergate PASS
+DGN sunken_sanctum world hover destination PASS
+DGN sunken_sanctum atlas hover destination PASS
+DGN sunken_sanctum tooltip hides on close PASS
+DGN sunken_sanctum minimap hover destination PASS
+DGN sunken_sanctum walking triggers hub travel PASS
+[40.99] walk ended undergate (26.50, 2.70) state=Playing
+DGN sunken_sanctum return route PASS
+DGN sunken_sanctum return does not bounce PASS
+DGN surface chart is HD and visible PASS
+DGN central root spring opens underground chart PASS
+DGN hollow_descent exact linear connections PASS
+DGN hollow_roots exact linear connections PASS
+DGN hollow_fungal exact linear connections PASS
+DGN hollow_depths exact linear connections PASS
+DGN portal verification muted PASS
+[47.28] PORTAL RESULTS: 96 passed, 0 failed

@@ -28,6 +28,7 @@ namespace DotRPG
         readonly List<Image> serviceIcons = new List<Image>();
         readonly List<Text> questMarks = new List<Text>();
         static Sprite portalSprite;
+        List<WorldAtlas.PortalMarker> portalMarkers = new List<WorldAtlas.PortalMarker>();
 
         static readonly Color EnemyColor = new Color32(255, 80, 80, 255);
         static readonly Color PlayerColor = new Color32(120, 220, 255, 255);
@@ -36,6 +37,7 @@ namespace DotRPG
         {
             var root = UIFactory.Place(UIFactory.Rect(parent, "Minimap"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -16), new Vector2(Diameter, Diameter));
             var view = root.gameObject.AddComponent<MinimapView>();
+            PortalTooltip.Create(parent);
 
             // Circular mask; the mask graphic itself is the dark background outside the map edges.
             var maskImage = UIFactory.Image(root, "Mask", Game.Art.Get("ui_circle"), new Color(0.12f, 0.1f, 0.09f, 0.92f));
@@ -184,6 +186,7 @@ namespace DotRPG
             if (world.Minimap != shownTexture)
             {
                 shownTexture = world.Minimap;
+                portalMarkers = WorldAtlas.LivePortals(world);
                 map.texture = shownTexture;
                 mapRect.sizeDelta = new Vector2(world.Bounds.width * pixelsPerTile, world.Bounds.height * pixelsPerTile);
                 label.text = world.Map != null ? world.Map.displayName : "";
@@ -213,9 +216,9 @@ namespace DotRPG
 
             // Map exits: always visible, clamped to the rim so they point the way.
             int e = 0;
-            foreach (var portal in world.PortalCenters)
+            foreach (var portal in portalMarkers)
             {
-                Vector2 offset = (portal - p) * pixelsPerTile;
+                Vector2 offset = (portal.position - p) * pixelsPerTile;
                 if (offset.magnitude > Radius - 12f) offset = offset.normalized * (Radius - 12f);
                 if (e >= exitDots.Count)
                 {
@@ -224,6 +227,7 @@ namespace DotRPG
                     exitDots.Add(icon);
                 }
                 var dot = exitDots[e++];
+                PortalTooltip.Hook(dot, portal.target);
                 dot.transform.localScale = Vector3.one * (1f + Mathf.Sin(Time.unscaledTime * 3f) * 0.08f);
                 dot.gameObject.SetActive(true);
                 dot.rectTransform.anchoredPosition = offset;

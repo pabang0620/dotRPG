@@ -12,8 +12,8 @@ namespace DotRPG
     /// </summary>
     public static class SurfaceWorldArt
     {
-        public const int StandardPixelsPerUnit=32,HighPixelsPerUnit=48,UltraPixelsPerUnit=96;
-        const int MaxDimension=8192;
+        public const int StandardPixelsPerUnit=32,HighPixelsPerUnit=48,UltraPixelsPerUnit=96,HdPixelsPerUnit=128;
+        const int MaxDimension=12288;
         public const string SceneName="Surface world composition";
         const int SupportDepthTiles=3;
         static readonly string[] LayerNames={"Surface distant scenery","Surface supporting edges","Surface floor and water"};
@@ -50,7 +50,8 @@ namespace DotRPG
                 int sw=source.width,sh=source.height;
                 float aspectError=Mathf.Abs(((float)sw/sh)/((float)width/height)-1f);
                 if(aspectError>.02f)throw new InvalidDataException("Surface PNG aspect ratio differs from the world by more than 2%");
-                int ppu=sw>=width*UltraPixelsPerUnit&&sh>=height*UltraPixelsPerUnit?UltraPixelsPerUnit
+                int ppu=sw>=width*HdPixelsPerUnit&&sh>=height*HdPixelsPerUnit?HdPixelsPerUnit
+                    :sw>=width*UltraPixelsPerUnit&&sh>=height*UltraPixelsPerUnit?UltraPixelsPerUnit
                     :sw>=width*HighPixelsPerUnit&&sh>=height*HighPixelsPerUnit?HighPixelsPerUnit:StandardPixelsPerUnit;
                 int pw=checked(width*ppu),ph=checked(height*ppu);
                 if(pw>MaxDimension||ph>MaxDimension||(SystemInfo.maxTextureSize>0&&(pw>SystemInfo.maxTextureSize||ph>SystemInfo.maxTextureSize)))
@@ -220,14 +221,14 @@ namespace DotRPG
 
         static bool SourceHeaderSupported(string path)
         {
-            long length=StreamingFiles.Length(path);if(length<24||length>64L*1024*1024)return false;
+            long length=StreamingFiles.Length(path);if(length<24||length>96L*1024*1024)return false;
             var bytes=StreamingFiles.ReadHeader(path,24);if(bytes.Length<24)return false;
             if(bytes[0]!=137||bytes[1]!=80||bytes[2]!=78||bytes[3]!=71||bytes[4]!=13||bytes[5]!=10||bytes[6]!=26||bytes[7]!=10
                 ||bytes[12]!=73||bytes[13]!=72||bytes[14]!=68||bytes[15]!=82)return false;
             int w=(bytes[16]<<24)|(bytes[17]<<16)|(bytes[18]<<8)|bytes[19];
             int h=(bytes[20]<<24)|(bytes[21]<<16)|(bytes[22]<<8)|bytes[23];
             int gpuLimit=SystemInfo.maxTextureSize;
-            return w>=32&&h>=32&&w<=MaxDimension&&h<=MaxDimension&&(long)w*h<=40L*1024*1024
+            return w>=32&&h>=32&&w<=MaxDimension&&h<=MaxDimension&&(long)w*h<=64L*1024*1024
                 &&(gpuLimit<=0||(w<=gpuLimit&&h<=gpuLimit));
         }
     }

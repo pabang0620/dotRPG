@@ -45,6 +45,7 @@ namespace DotRPG
                 if (Current == null) return;
                 bool playing = Playing;
                 Current = null;
+                LevelRewardClient.Reset();
                 if (playing && Game.Flow != null) Game.Flow.ReturnToTitle();
                 GameEvents.RaiseToast("다른 곳에서 로그인하여 이 접속이 종료되었습니다.");
             };
@@ -80,6 +81,7 @@ namespace DotRPG
                     if (!r.ok) { done(r); return; }
                     Api.SetTokens(MiniJson.Str(r.data, "access_token"), MiniJson.Str(r.data, "refresh_token"));
                     Current = new OnlineSession { AccountId = MiniJson.Str(MiniJson.Obj(r.data, "account"), "id"), LoginId = loginId.ToLowerInvariant() };
+                    LevelRewardClient.Reset();
                     Current.LoadCharacters(done);
                 }, auth: false);
             }, auth: false);
@@ -137,6 +139,7 @@ namespace DotRPG
                         if (!r.ok) { done(r); return; }
                         Api.SetTokens(MiniJson.Str(r.data, "access_token"), MiniJson.Str(r.data, "refresh_token"));
                         Current = new OnlineSession { AccountId = MiniJson.Str(MiniJson.Obj(r.data, "account"), "id"), LoginId = "Steam" };
+                        LevelRewardClient.Reset();
                         Current.LoadCharacters(done);
                     }, auth: false);
                 });
@@ -151,6 +154,7 @@ namespace DotRPG
                 Api.Post("/auth/logout", new Dictionary<string, object> { ["refresh_token"] = refresh }, _ => { }, auth: false);
             Api.ClearTokens();
             Current = null;
+            LevelRewardClient.Reset();
         }
 
         // ---------------- characters ----------------
@@ -220,6 +224,7 @@ namespace DotRPG
                 {
                     if (!ok) { done(new ApiResult { ok = false, code = "DEVICE_LIMIT", message = refusal }, null); return; }
                     ActiveCharacter = id;
+                    LevelRewardClient.Reset();
                     Game.State?.RefreshTimeScale();
                     stateVersions[id] = MiniJson.Int(MiniJson.Obj(detail, "state"), "version");
                     done(r, save);
@@ -236,6 +241,7 @@ namespace DotRPG
             OnlineServices.DetachAuction(); // [SERVER 6]
             FlushPending(); // [J3] a snapshot that failed to upload gets one more try now
             ActiveCharacter = null; // a save still waiting keeps its own character id and is sent
+            LevelRewardClient.Reset();
             Game.State?.RefreshTimeScale();
         }
 

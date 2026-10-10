@@ -63,9 +63,9 @@
 
 - 가격: 별조각 9,000개(약 3만 3천 원), 계정당 1회, 기간 없음.
 - 레벨 보상 창에 "패스 보상" 줄이 추가된다. 무료 보상(지금의 별조각)은 그대로 두고, 패스를 사면 같은 단계에서 패스 보상을 함께 받는다.
-- 이미 지나간 단계도 패스를 사면 바로 받을 수 있다.
+- 현재 캐릭터가 이미 달성한 단계는 패스를 사면 바로 받을 수 있다. 같은 계정의 다른 캐릭터 레벨은 수령 조건에 쓰지 않으며, 단계별 지급 횟수는 계정당 한 번이다.
 
-| 계정 최고 레벨 | 패스 보상 |
+| 수령 캐릭터 레벨 | 패스 보상 |
 |---|---|
 | 5 | 봉인된 상자 5개 |
 | 10 | +10 강화권 1장, 봉인된 상자 5개 |
@@ -89,7 +89,8 @@
 | POST /characters/:id/items/open | {request_id, item_key}. 확률 상자·봉인된 상자 아이템 열기 |
 | POST /characters/:id/enhance/ticket | {request_id, ticket_key, gear_key}. 강화권 적용 |
 | POST /level-rewards/pass/buy | {request_id}. 별조각 9,000 차감, 계정 패스 기록 |
-| POST /level-rewards/pass/claim | {request_id, level}. 패스 보상 지급 |
+| GET /characters/:uuid/level-rewards | 현재 캐릭터 레벨에 따른 무료·패스 수령 가능 여부, 계정 수령 기록 |
+| POST /characters/:uuid/level-rewards/pass/claim | {request_id, level}. 해당 캐릭터 레벨 검사 후 패스 보상을 그 캐릭터에게 지급 |
 
 - 공통 규칙: 모든 결과를 서버가 정하고, request_id 멱등, 원장 기록, 재화 홀드·유료분 차감 순서는 11단계 규칙을 따른다.
 - 확률표는 `server/data/sealed_box.json`에 두고, 클라이언트 확률 보기 창에 그대로 보여 준다.

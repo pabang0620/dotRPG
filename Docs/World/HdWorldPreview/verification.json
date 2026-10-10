@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-10",
+  "branch": "jaein",
+  "atlasPixels": [
+    2560,
+    1440
+  ],
+  "playableMaps": {
+    "surfaceCount": 21,
+    "undergroundPixelsPerUnit": 96,
+    "surfacePixelsPerUnit": 128,
+    "undergroundCount": 4
+  },
+  "muted": true,
+  "tests": {
+    "sanctumRoad": {
+      "passed": 56,
+      "failed": 0
+    },
+    "finalPortalsAndAtlas": {
+      "passed": 96,
+      "failed": 0
+    },
+    "villageRoad": {
+      "passed": 61,
+      "failed": 0
+    },
+    "underground": {
+      "passed": 395,
+      "failed": 0
+    },
+    "surface": {
+      "passed": 912,
+      "failed": 0
+    }
+  },
+  "verificationMethod": "Runtime C# compiled using Unity Roslyn and deployed with HD assets into existing native Unity player.",
+  "limitations": [
+    "Fresh Unity Editor build was not performed because Editor licensing was unavailable.",
+    "Low GPU texture-limit fallback was not tested."
+  ],
+  "preserved": [
+    "World scale",
+    "Camera behavior",
+    "Character scale",
+    "Combat balance"
+  ],
+  "player": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/window-shortcuts-player/dotRPG.exe"
+}

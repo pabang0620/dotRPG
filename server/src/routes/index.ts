@@ -81,7 +81,7 @@ export function createRouter(): Router {
   r.use(createReviveRouter());
   // 11단계: 별조각 Steam 결제(계정 단위 /payments/*, 클라이언트 버전만 검사). PAYMENTS_ENABLED가 꺼져 있으면 B1·B2는 503
   r.use(createPaymentsRouter());
-  // 13단계: 레벨 달성 보상(계정 단위 /level-rewards, 클라이언트 버전만 검사)
+  // 13단계: 레벨 달성 보상(캐릭터 경로에서 현재 레벨 검사, 계정당 단계별 1회)
   r.use(createLevelRewardsRouter());
   // 14단계: 봉인된 상자(캐시샵 뽑기·상자 아이템 열기), 강화권(enhance), 성장 패스(level-rewards)
   r.use(createSealedBoxRouter());

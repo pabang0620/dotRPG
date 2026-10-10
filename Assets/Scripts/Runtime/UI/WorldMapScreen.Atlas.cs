@@ -12,28 +12,37 @@ namespace DotRPG
         WorldLayer builtWorld;
         bool atlasBuilt;
         readonly List<(string id, Image dot, Image halo, Text label)> atlasDots = new List<(string, Image, Image, Text)>();
-        static readonly string[] RingTowns = { MapRegistry.Village, MapRegistry.Canyon, MapRegistry.Winter, MapRegistry.Sanctum };
 
         static Dictionary<string, Vector2> SurfacePositions() => new Dictionary<string, Vector2>
         {
-            [MapRegistry.Village] = new Vector2(.50f, .17f),
-            ["forest"] = new Vector2(.65f, .15f), ["forest_ruins"] = new Vector2(.77f, .17f),
-            ["forest_depths"] = new Vector2(.70f, .30f), ["forest_crossing"] = new Vector2(.86f, .32f),
-            [MapRegistry.Canyon] = new Vector2(.88f, .51f),
-            ["canyon_pass"] = new Vector2(.86f, .68f), ["canyon_mine"] = new Vector2(.76f, .71f),
-            ["canyon_ridge"] = new Vector2(.80f, .85f), ["canyon_gate"] = new Vector2(.65f, .87f),
-            [MapRegistry.Winter] = new Vector2(.50f, .83f),
-            ["winter_edge"] = new Vector2(.35f, .87f), ["winter_lake"] = new Vector2(.24f, .72f),
-            ["winter_peak"] = new Vector2(.20f, .86f), ["winter_reach"] = new Vector2(.14f, .68f),
-            [MapRegistry.Sanctum] = new Vector2(.12f, .51f),
-            ["sanctum_hall"] = new Vector2(.14f, .32f), ["sanctum_archive"] = new Vector2(.23f, .17f),
-            ["sanctum_roots"] = new Vector2(.30f, .30f), ["sanctum_court"] = new Vector2(.35f, .15f),
-            [MapRegistry.Undergate] = new Vector2(.50f, .51f),
+            [MapRegistry.Village] = new Vector2(0.22f, 0.48f),
+            ["forest"] = new Vector2(0.08f, 0.31f),
+            ["forest_ruins"] = new Vector2(0.20f, 0.22f),
+            ["forest_depths"] = new Vector2(0.20f, 0.40f),
+            ["forest_crossing"] = new Vector2(0.32f, 0.31f),
+            [MapRegistry.Canyon] = new Vector2(0.79f, 0.48f),
+            ["canyon_pass"] = new Vector2(0.70f, 0.28f),
+            ["canyon_mine"] = new Vector2(0.81f, 0.18f),
+            ["canyon_ridge"] = new Vector2(0.81f, 0.38f),
+            ["canyon_gate"] = new Vector2(0.92f, 0.28f),
+            [MapRegistry.Winter] = new Vector2(0.50f, 0.20f),
+            ["winter_edge"] = new Vector2(0.34f, 0.10f),
+            ["winter_lake"] = new Vector2(0.45f, 0.035f),
+            ["winter_peak"] = new Vector2(0.45f, 0.165f),
+            ["winter_reach"] = new Vector2(0.56f, 0.10f),
+            [MapRegistry.Sanctum] = new Vector2(0.50f, 0.78f),
+            ["sanctum_hall"] = new Vector2(0.33f, 0.70f),
+            ["sanctum_archive"] = new Vector2(0.44f, 0.63f),
+            ["sanctum_roots"] = new Vector2(0.44f, 0.77f),
+            ["sanctum_court"] = new Vector2(0.55f, 0.70f),
+            [MapRegistry.Undergate] = new Vector2(0.50f, 0.47f),
         };
         static Dictionary<string, Vector2> UndergroundPositions() => new Dictionary<string, Vector2>
         {
-            ["hollow_descent"] = new Vector2(.50f, .27f), ["hollow_roots"] = new Vector2(.29f, .52f),
-            ["hollow_fungal"] = new Vector2(.71f, .52f), ["hollow_depths"] = new Vector2(.50f, .78f),
+            ["hollow_descent"] = new Vector2(.50f, 0.26f),
+            ["hollow_roots"] = new Vector2(.50f, 0.44f),
+            ["hollow_fungal"] = new Vector2(.50f, 0.62f),
+            ["hollow_depths"] = new Vector2(.50f, 0.80f),
         };
 
         void BuildAtlasButton(Transform frame)
@@ -77,9 +86,9 @@ namespace DotRPG
             Vector2 At(Vector2 p) => new Vector2(p.x * 740, -p.y * 416);
             if (underground)
             {
-                for (int floor = 1; floor <= 3; floor++)
+                for (int floor = 1; floor <= 4; floor++)
                 {
-                    float y = floor == 1 ? -.27f * 416 : floor == 2 ? -.52f * 416 : -.78f * 416;
+                    float y = -(.26f + (floor - 1) * .18f) * 416;
                     Road(new Vector2(65, y), new Vector2(675, y), new Color32(63, 76, 81, 110), 1);
                     AtlasLabel("Floor_" + floor, "B" + floor, new Vector2(40, y + 10), new Vector2(45, 30), 22, UiTheme.AccentWarm);
                 }
@@ -92,7 +101,6 @@ namespace DotRPG
             {
                 AtlasLabel("ChartTitle", "네 마을의 순환로", new Vector2(135, -12), new Vector2(235, 28), 19, UiTheme.AccentLight);
                 AtlasLabel("Compass", "N  ↑", new Vector2(693, -12), new Vector2(70, 26), 17, UiTheme.TextSecondary);
-                AtlasLabel("WorldGateway", "지하 입구", At(new Vector2(.5f, .66f)), new Vector2(110, 23), 16, UiTheme.AccentBlue);
             }
             var drawn = new HashSet<string>();
             foreach (var kv in positions)
@@ -112,8 +120,7 @@ namespace DotRPG
                     }
                     else
                     {
-                        Road(a, b, new Color32(14, 22, 25, 210), spoke ? 5 : 7);
-                        Road(a, b, line, spoke ? 2 : 3, spoke);
+                        SurfaceRoad(kv.Key, target, positions, line, spoke);
                     }
                 }
             foreach (var kv in positions)
@@ -127,32 +134,144 @@ namespace DotRPG
                 dot.raycastTarget = true;
                 UIFactory.Place(dot.rectTransform, TL, C, point, Vector2.one * (town || underground ? 34 : 24));
                 var button = dot.gameObject.AddComponent<Button>(); button.targetGraphic = dot; button.colors = UiTheme.ButtonColors();
-                button.onClick.AddListener(() => SelectMap(id));
+                button.onClick.AddListener(() => { if (gateway) SelectWorld(WorldLayer.Underground); else SelectMap(id); });
                 var hover = dot.gameObject.AddComponent<PointerRelay>();
                 hover.onEnter = () => DescribeAtlasMap(id); hover.onExit = () => RefreshAtlas();
                 Text label = null;
                 if (town || underground)
                 {
-                    string text = info.displayName; int number = System.Array.IndexOf(RingTowns, id);
-                    if (number >= 0) text = (number + 1) + "  " + (id == MapRegistry.Village ? "작은 마을" : id == MapRegistry.Sanctum ? "고대 성소" : info.displayName);
-                    Vector2 offset = id == MapRegistry.Village ? new Vector2(0, 35) : new Vector2(0, -22);
-                    float width = underground ? 240 : gateway ? 170 : 166;
+                    string text = id == MapRegistry.Village ? "작은 마을" : id == MapRegistry.Sanctum ? "고대 성소" : gateway ? "뿌리샘 · 지하 입구" : info.displayName;
+                    Vector2 offset = new Vector2(0, -22);
+                    float width = underground ? 240 : gateway ? 190 : 166;
                     var plate = UIFactory.Image(atlasContents, "NamePlate_" + id, Game.Art.Get("ui_white"), new Color32(14, 23, 28, 218));
                     plate.preserveAspect = false;
+                    plate.raycastTarget = true;
+                    var nameButton = plate.gameObject.AddComponent<Button>(); nameButton.targetGraphic = plate;
+                    nameButton.onClick.AddListener(() => { if (gateway) SelectWorld(WorldLayer.Underground); else SelectMap(id); });
+                    var nameHover = plate.gameObject.AddComponent<PointerRelay>(); nameHover.onEnter = () => DescribeAtlasMap(id); nameHover.onExit = () => RefreshAtlas();
                     UIFactory.Place(plate.rectTransform, TL, new Vector2(.5f, 1), point + offset + new Vector2(0, 2), new Vector2(width, 27));
                     label = AtlasLabel("Name_" + id, text, point + offset, new Vector2(width, 27), 17, town ? UiTheme.AccentLight : UiTheme.TextPrimary);
                 }
-                else AtlasLabel("Stage_" + id, FieldIndex(id), point + new Vector2(0, 8), new Vector2(22, 20), 16, UiTheme.TextPrimary);
+                else
+                {
+                    var stage = AtlasLabel("Stage_" + id, FieldIndex(id), point, new Vector2(24, 24), 16, UiTheme.TextPrimary);
+                    stage.alignment = TextAnchor.MiddleCenter;
+                    UIFactory.Place(stage.rectTransform, TL, C, point, new Vector2(24, 24));
+                }
                 atlasDots.Add((id, dot, halo, label));
             }
         }
 
         static string FieldIndex(string id)
         {
-            if (id == "forest" || id == "canyon_pass" || id == "winter_edge" || id == "sanctum_hall") return "1";
-            if (id == "forest_ruins" || id == "canyon_mine" || id == "winter_lake" || id == "sanctum_archive") return "2";
-            if (id == "forest_depths" || id == "canyon_ridge" || id == "winter_peak" || id == "sanctum_roots") return "3";
-            return "4";
+            foreach (var region in WorldRoutes.Regions)
+                for (int stage = 1; stage <= 4; stage++)
+                    if (region[stage] == id) return stage.ToString();
+            return "";
+        }
+        static string FieldRegion(string id)
+        {
+            string[] names = { "해골 숲", "바위 협곡", "눈꽃 숲", "고대 성소" };
+            for (int r = 0; r < WorldRoutes.Regions.Length; r++)
+                for (int stage = 1; stage <= 4; stage++)
+                    if (WorldRoutes.Regions[r][stage] == id) return names[r];
+            return "";
+        }
+        void SurfaceRoad(string source, string target, Dictionary<string, Vector2> positions, Color color, bool spoke)
+        {
+            Vector2 At(Vector2 p) => new Vector2(p.x * 740, -p.y * 416);
+            if (spoke) { DottedAtlasRoad(At(positions[source]), At(positions[target]), color, true); return; }
+            for (int r = 0; r < WorldRoutes.Regions.Length; r++)
+            {
+                var region = WorldRoutes.Regions[r];
+                bool Connects(string a, string b) => (source == a && target == b) || (source == b && target == a);
+                if (Connects(region[0], region[1]))
+                {
+                    var town = positions[region[0]]; var first = positions[region[1]];
+                    float laneX = first.x - .035f;
+                    float approachY = r == 1 ? town.y - .045f : town.y;
+                    var approach = new[] { town, new Vector2(town.x, approachY), new Vector2(laneX, approachY), new Vector2(laneX, first.y), first };
+                    RoundedSurfaceRoad(approach, color, true);
+                    return;
+                }
+                if (!Connects(region[4], region[5])) continue;
+                Vector2[] lane;
+                switch (r)
+                {
+                    case 0: lane = new[] { new Vector2(.39f, .355f), new Vector2(.65f, .355f), new Vector2(.70f, .43f) }; break;
+                    case 1: lane = new[] { new Vector2(.97f, .28f), new Vector2(.97f, .065f), new Vector2(.66f, .065f), new Vector2(.66f, .235f), new Vector2(.58f, .235f) }; break;
+                    case 2: lane = new[] { new Vector2(.62f, .10f), new Vector2(.62f, .32f), new Vector2(.945f, .54f), new Vector2(.945f, .90f), new Vector2(.64f, .90f), new Vector2(.64f, .78f) }; break;
+                    default: lane = new[] { new Vector2(.67f, .70f), new Vector2(.67f, .95f), new Vector2(.10f, .95f), new Vector2(.025f, .78f), new Vector2(.025f, .52f) }; break;
+                }
+                Color transfer = new Color32(163, 181, 187, 130);
+                var transferPath = new List<Vector2> { positions[region[4]] };
+                transferPath.AddRange(lane); transferPath.Add(positions[region[5]]);
+                RoundedSurfaceRoad(transferPath, transfer, false);
+                return;
+            }
+            // Branch edges stay inside their biome's 1 → upper 2 / lower 3 → 4 diamond.
+            DottedAtlasRoad(At(positions[source]), At(positions[target]), color, false, false);
+        }
+        void RoundedSurfaceRoad(IList<Vector2> waypoints, Color color, bool dotted)
+        {
+            var corners = new List<Vector2>();
+            foreach (var point in waypoints)
+            {
+                var at = new Vector2(point.x * 740, -point.y * 416);
+                if (corners.Count == 0 || (at - corners[corners.Count - 1]).sqrMagnitude > .01f) corners.Add(at);
+            }
+            if (corners.Count < 2) return;
+            var path = new List<Vector2> { corners[0] };
+            for (int n = 1; n < corners.Count - 1; n++)
+            {
+                Vector2 corner = corners[n], incoming = corner - corners[n - 1], outgoing = corners[n + 1] - corner;
+                float trim = Mathf.Min(12, incoming.magnitude * .45f, outgoing.magnitude * .45f);
+                Vector2 entry = corner - incoming.normalized * trim, exit = corner + outgoing.normalized * trim;
+                path.Add(entry);
+                for (int sample = 1; sample <= 6; sample++)
+                {
+                    float t = sample / 6f;
+                    path.Add((1 - t) * (1 - t) * entry + 2 * (1 - t) * t * corner + t * t * exit);
+                }
+            }
+            path.Add(corners[corners.Count - 1]);
+            float distance = 0, nextBead = 9;
+            for (int n = 1; n < path.Count; n++)
+            {
+                Vector2 delta = path[n] - path[n - 1];
+                float length = delta.magnitude;
+                if (length < .001f) continue;
+                Vector2 direction = delta / length;
+                if (dotted)
+                {
+                    while (nextBead < distance + length)
+                    {
+                        AtlasTrailBead(path[n - 1] + direction * (nextBead - distance), color, 5);
+                        nextBead += 9;
+                    }
+                }
+                else
+                {
+                    // Carry dash phase across straight sections and corner samples.
+                    float along = 0;
+                    while (along < length - .001f)
+                    {
+                        float phase = Mathf.Repeat(distance + along, 13);
+                        bool visible = phase < 7;
+                        float span = Mathf.Min(length - along, (visible ? 7 : 13) - phase);
+                        if (span < .001f) { along += .001f; continue; }
+                        if (visible) Road(path[n - 1] + direction * along, path[n - 1] + direction * (along + span), color, 1.5f);
+                        along += span;
+                    }
+                }
+                distance += length;
+            }
+        }
+        void AtlasTrailBead(Vector2 at, Color color, float size)
+        {
+            var dot = UIFactory.Image(atlasContents, "Trail bead", WorldAtlasArt.Marker("field"), color);
+            dot.raycastTarget = false;
+            UIFactory.Place(dot.rectTransform, TL, C, at, Vector2.one * size);
         }
         Text AtlasLabel(string name, string text, Vector2 p, Vector2 size, int font, Color color)
         {
@@ -168,10 +287,22 @@ namespace DotRPG
                 for (float p = 0; p < length; p += 13) Road(a + direction * p, a + direction * Mathf.Min(p + 7, length), color, width);
                 return;
             }
-            var line = UIFactory.Image(atlasContents, "Route", Game.Art.Get("ui_white"), color); line.preserveAspect = false;
+            var line = UIFactory.Image(atlasContents, "Route", Game.Art.Get("ui_white"), color); line.preserveAspect = false; line.raycastTarget = false;
             var rt = line.rectTransform; rt.anchorMin = rt.anchorMax = TL; rt.pivot = new Vector2(0, .5f);
             rt.anchoredPosition = a; rt.sizeDelta = new Vector2(length, width);
             rt.localRotation = Quaternion.Euler(0, 0, Mathf.Atan2(b.y - a.y, b.x - a.x) * Mathf.Rad2Deg);
+        }
+        void DottedAtlasRoad(Vector2 a, Vector2 b, Color color, bool spoke, bool curved = true)
+        {
+            Vector2 delta = b - a;
+            Vector2 control = (a + b) * .5f + (curved ? new Vector2(-delta.y, delta.x).normalized * Mathf.Min(12, delta.magnitude * .10f) : Vector2.zero);
+            int steps = Mathf.Max(1, Mathf.CeilToInt(delta.magnitude / (spoke ? 13 : 9)));
+            for (int n = 1; n < steps; n++)
+            {
+                float t = n / (float)steps;
+                Vector2 at = (1-t)*(1-t)*a + 2*(1-t)*t*control + t*t*b;
+                AtlasTrailBead(at, color, spoke ? 3.5f : 5f);
+            }
         }
         void CurvedRoad(Vector2 a, Vector2 control, Vector2 b, Color color, float width)
         {
@@ -187,7 +318,9 @@ namespace DotRPG
         {
             var info = MapRegistry.Get(id); if (info == null) return;
             var zone = HuntingGrounds.Get(id);
-            legend.text = info.displayName + (zone != null ? $"   Lv.{zone.minLevel}~{zone.maxLevel}" : "   안전 지역") + "   ·  클릭하여 지역 지도 보기";
+            string stage = FieldIndex(id);
+            string name = stage.Length > 0 ? FieldRegion(id) + " · 사냥터 " + stage + "  " + info.displayName : info.displayName;
+            legend.text = name + (zone != null ? $"   Lv.{zone.minLevel}~{zone.maxLevel}" : "   안전 지역") + (id == MapRegistry.Undergate ? "   ·  클릭하여 지하 던전 지도 열기" : "   ·  클릭하여 지역 지도 보기");
         }
         void RefreshAtlas()
         {
@@ -206,11 +339,11 @@ namespace DotRPG
                 if (entry.label != null) entry.label.color = current ? UiTheme.AccentBlue : MapRegistry.IsTown(entry.id) ? UiTheme.AccentLight : UiTheme.TextPrimary;
             }
             caption.text = WorldLayers.Name(selectedWorld) + " <color=#b8c4d8>· 연결 지도</color>";
-            legend.text = "<color=#78c8ff>◎</color> 현재 위치   <color=#ffe066>◆</color> 선택 지역   실선: 사냥터   점선: 마을길";
+            legend.text = "<color=#78c8ff>◎</color> 현재 위치   <color=#ffe066>◆</color> 선택 지역   금색: 사냥터   청록: 마을길   회색 점선: 다음 지역";
             detail.rectTransform.sizeDelta = new Vector2(718, 70); detail.fontSize = 17;
             detail.text = selectedWorld == WorldLayer.Surface
-                ? "1 작은 마을 → 2 바위 협곡 → 3 눈꽃 숲 → 4 고대 성소 → 1\n각 지역은 사냥터 1 → 위 2 / 아래 3 → 4로 이어집니다. 중앙 뿌리샘에서 지하로 내려갑니다."
-                : "뿌리샘 마을의 하행 계단 → B1 → B2 두 갈래 동굴 → B3\n지역을 선택하면 지형과 출구를 확인합니다. 지도를 눌러도 캐릭터는 이동하지 않습니다.";
+                ? "작은 마을 → 바위 협곡 → 눈꽃 숲 → 고대 성소 → 작은 마을\n각 지역의 사냥터: 1 → 위 2 / 아래 3 → 4. 숫자에 마우스를 올리면 지역과 이름을 확인합니다."
+                : "뿌리샘 마을의 하행 계단 → B1 → B2 → B3 → B4\n지역을 선택하면 지형과 출구를 확인합니다. 지도를 눌러도 캐릭터는 이동하지 않습니다.";
             roomButton.gameObject.SetActive(false); bossIcon.enabled = false;
         }
     }

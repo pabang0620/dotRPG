@@ -9,7 +9,8 @@ import type { ClaimBody, PassBuyBody, PassClaimBody } from './levelRewardsValida
 
 export async function list(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    successResponse(res, await service.list(getAccount(res.locals).id));
+    const { params } = getValidated<unknown, { uuid: string }>(res);
+    successResponse(res, await service.list(getAccount(res.locals).id, params.uuid));
   } catch (err) {
     next(err);
   }
@@ -17,8 +18,8 @@ export async function list(_req: Request, res: Response, next: NextFunction): Pr
 
 export async function claim(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { body } = getValidated<ClaimBody>(res);
-    successResponse(res, await service.claim(getAccount(res.locals).id, body));
+    const { body, params } = getValidated<ClaimBody, { uuid: string }>(res);
+    successResponse(res, await service.claim(getAccount(res.locals).id, params.uuid, body));
   } catch (err) {
     next(err);
   }

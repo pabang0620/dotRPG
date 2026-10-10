@@ -1,0 +1,17 @@
+﻿{
+    "id":  "winter",
+    "pixelBoundsXYWH":  [
+                            1024,
+                            1943,
+                            1920,
+                            1354
+                        ],
+    "source":  "Docs/World/HubRoadSources/refined/winter-join.png",
+    "source_sha256":  "f2e01a686d955fd8373938efe43d12c26619592c810667ec21e618a3ef71d34b",
+    "before_sha256":  "6c7259688386dcbf0112e1ec5a85d83700910e6c9155f7304e7ce1e36f4ff3a5",
+    "output_sha256":  "fbb5cb9ba4d7af540db117595ace4b8a9fe7d6b4d8e97abe13f6018a24f7d653",
+    "outsideCrop":  "unchanged",
+    "featherPixels":  160,
+    "filter":  "nearest",
+    "geometry":  "unchanged"
+}
