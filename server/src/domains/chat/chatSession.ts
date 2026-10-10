@@ -34,6 +34,10 @@ export class ChatSession {
   /** 마을에 서 있을 때의 모습·위치(townPresence). 마을 밖이면 null */
   town: TownLook | null = null;
   townAt = 0;
+  /** 15단계 L6: 마지막 presence.set 맵 변경, 마지막 마을 진입 시각(서로 따로 센다: 포털 이동은 둘이 연달아 온다) */
+  mapChangeAt = 0;
+  townEnterAt = 0;
+  mapPushPending = false;
   /** hello.caps(8단계). steam_p2p는 그 계정에 Steam 연결이 있을 때만 true로 인정한다 */
   caps = { steamP2p: false };
   shard = 1;

@@ -75,7 +75,7 @@ namespace DotRPG
         // [MAIL 10] Red dot on the menu button and on 우편 while mail waits (summary polled slowly in the background).
         RectTransform mailEntry, rewardEntry, dailyEntry;
         Image menuDot, mailDot, rewardDot, dailyDot;
-        float nextRewardCheck;
+        float nextRewardCheck, nextDailyCheck;
         int lastLevel;
         bool rewardShown;
 
@@ -94,7 +94,10 @@ namespace DotRPG
             // [LEVEL 13] Level rewards waiting: checked now and then (and right after a level-up via the window).
             int level = Game.Session != null ? Game.Session.Progression.Level : 0;
             if (level != lastLevel) { if (lastLevel > 0) nextRewardCheck = Time.unscaledTime + 2f; lastLevel = level; } // a level-up: ask again shortly
-            if (OnlineSession.Playing && Time.unscaledTime >= nextRewardCheck) { nextRewardCheck = Time.unscaledTime + 120f; LevelRewardClient.Refresh(); DailyQuestClient.Refresh(); }
+            if (OnlineSession.Playing && Time.unscaledTime >= nextRewardCheck) { nextRewardCheck = Time.unscaledTime + 120f; LevelRewardClient.Refresh(); }
+            // [LOAD L8] Daily jobs: every 120 s while their window is open, otherwise 300 s for the badge (a list read is ~13 queries).
+            bool dailyOpen = DailyQuestScreen.Instance != null && DailyQuestScreen.Instance.gameObject.activeInHierarchy;
+            if (OnlineSession.Playing && Time.unscaledTime >= nextDailyCheck) { nextDailyCheck = Time.unscaledTime + (dailyOpen ? 120f : 300f); DailyQuestClient.Refresh(); }
             bool reward = OnlineSession.Playing && LevelRewardClient.AnyClaimable;
             if (reward && !rewardShown) GameEvents.RaiseToast("레벨 달성 보상을 받을 수 있습니다! (메뉴 > 레벨 보상)");
             rewardShown = reward;

@@ -83,8 +83,12 @@ export async function handleTownPos(s: ChatSession, f: TownPosFrame): Promise<vo
   const now = Date.now();
   const entering = s.town?.map !== f.map_id;
   if (!entering && now - s.townAt < MIN_GAP_MS) return;
+  // 15단계 L6: 마을을 번갈아 들어오면 매번 프로필을 DB에서 읽는다. 진입 자체는 받되(버리면 서 있는 동안 안 보인다),
+  // 최소 간격 안의 재진입은 DB를 다시 읽지 않고 직전 프로필을 쓴다
+  const reload = entering && (!s.town || now - s.townEnterAt >= getConfig().load.ws.mapChangeMinMs);
+  if (reload) s.townEnterAt = now;
   // 마을 진입과 WS_REVALIDATE_SECONDS마다 서버 값을 다시 읽는다(레벨업·장비 교체가 수십 초 안에 반영된다)
-  if (!s.profile || entering || now - s.profileAt > getConfig().social.wsRevalidateSeconds * 1000) await loadProfile(s);
+  if (!s.profile || reload || now - s.profileAt > getConfig().social.wsRevalidateSeconds * 1000) await loadProfile(s);
   const profile = s.profile;
   if (!profile || s.closed) return;
   if (entering) leaveTown(s);

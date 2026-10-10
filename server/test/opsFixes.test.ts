@@ -345,7 +345,7 @@ describe('감시 규칙과 웹훅 알림', () => {
   const snap = (over: Partial<Snapshot> = {}): Snapshot => ({
     at: new Date().toISOString(),
     process: { uptime_s: 100000, rss_mb: 100, heap_mb: 50, eventloop_delay_p99_ms: 5, version: 'dev', data_version: 'x' },
-    http: { requests: 0, status_2xx: 0, status_4xx: 0, status_5xx: 0, p50_ms: 0, p95_ms: 0, p99_ms: 0, top_errors: [], in_flight: 0, p95_5m_ms: 10, status_5xx_5m: 0, requests_5m: 0 },
+    http: { requests: 0, status_2xx: 0, status_4xx: 0, status_5xx: 0, p50_ms: 0, p95_ms: 0, p99_ms: 0, top_errors: [], in_flight: 0, p95_5m_ms: 10, status_5xx_5m: 0, requests_5m: 0, routes_5m: [] },
     websocket: { sessions: 1, max: 500, close_reasons: {}, handshake_rejected: 0 },
     db: { pool: { total: 2, idle: 2, waiting: 0, max: 10 }, connections: 5, max_connections: 50, size_mb: 10 },
     ticks: {},
@@ -366,6 +366,9 @@ describe('감시 규칙과 웹훅 알림', () => {
     expect(keys(input(snap(), { readyFailStreak: 2 }))).toContain('critical:ready_fail');
     expect(keys(input(snap({ http: { ...snap().http, requests_5m: 100, status_5xx_5m: 5 } })))).toContain('critical:http_5xx');
     expect(keys(input(snap({ http: { ...snap().http, requests_5m: 10, status_5xx_5m: 5 } })))).not.toContain('critical:http_5xx');
+    // 15단계 G9: DB 용량(무료 한도 500MB)
+    expect(keys(input(snap({ db: { ...snap().db, size_mb: 410 } })))).toContain('warning:db_size_warn');
+    expect(keys(input(snap({ db: { ...snap().db, size_mb: 480 } })))).toContain('critical:db_size');
     expect(keys(input(snap({ db: { ...snap().db, pool: { total: 10, idle: 0, waiting: 5, max: 10 } } })))).toContain('critical:pool_waiting');
     expect(keys(input(snap(), { integrityMismatches: 1 }))).toContain('critical:integrity');
     expect(keys(input(snap({ disk_used_pct: 91 })))).toContain('critical:disk');

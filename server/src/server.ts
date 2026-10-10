@@ -26,6 +26,14 @@ import { logger } from './utils/logger';
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
+// 15단계 G2: 처리되지 않은 예외·거부는 구조화된 로그(fatal)를 남기고 종료한다(systemd가 재시작). 로그를 내보낼 시간을 조금 준다
+function crash(kind: string, err: unknown): void {
+  logger.fatal({ err, kind }, 'process.crash');
+  setTimeout(() => process.exit(1), 200).unref();
+}
+process.on('uncaughtException', (err) => crash('uncaughtException', err));
+process.on('unhandledRejection', (reason) => crash('unhandledRejection', reason));
+
 async function main(): Promise<void> {
   const envFile = path.resolve(process.cwd(), '.env');
   if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
@@ -46,8 +54,15 @@ async function main(): Promise<void> {
   setWsState('pending');
   if (cfg.relay.enabled) setRelayState('pending');
   const server = app.listen(cfg.port, () => {
-    logger.info({ port: cfg.port, dataVersion: data.dataVersion }, 'server started');
+    logger.info(
+      { port: cfg.port, dataVersion: data.dataVersion, version: cfg.ops.imageVersion, node: process.version, dbPoolMax: cfg.dbPoolMax, logLevel: cfg.logLevel },
+      'server started',
+    );
   });
+  // 15단계 L4: Node 기본(요청 300초)보다 짧게. 웹소켓 업그레이드 뒤 연결에는 적용되지 않는다
+  server.requestTimeout = cfg.load.http.requestTimeoutMs;
+  server.headersTimeout = cfg.load.http.headersTimeoutMs;
+  server.keepAliveTimeout = cfg.load.http.keepAliveTimeoutMs;
   const realtime = await attachRealtime(server);
   setWsState('attached');
   const relay = await attachRelay(server);

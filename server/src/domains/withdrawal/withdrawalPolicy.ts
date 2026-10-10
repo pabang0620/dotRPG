@@ -60,6 +60,7 @@ export const POLICY: PolicyEntry[] = [
   delT1('auth_identities', `DELETE FROM auth_identities WHERE account_id ${ACC}`),
   delT1('refresh_tokens', `DELETE FROM refresh_tokens WHERE account_id ${ACC}`),
   delT1('login_events', `DELETE FROM login_events WHERE account_id ${ACC}`),
+  delT1('client_errors', `DELETE FROM client_errors WHERE account_id ${ACC}`),
   delT1('account_devices', `DELETE FROM account_devices WHERE account_id ${ACC}`),
   delT1('account_ips', `DELETE FROM account_ips WHERE account_id ${ACC}`),
   delT1('online_sessions', `DELETE FROM online_sessions WHERE account_id ${ACC}`),

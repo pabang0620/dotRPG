@@ -143,7 +143,8 @@ function checkQuests(data: GameData, input: StateBody, stored: StateRow): void {
   const nextFlags = new Set(input.story_flags);
   const cleared = stored.story_flags.filter((f) => !nextFlags.has(f));
   if (cleared.length > 0) logger.info({ flags: cleared.slice(0, 20) }, 'story_flags cleared by the client');
-  const unknownFlags = input.story_flags.filter((f) => !data.quests.flags.has(f));
+  // tip_* 는 클라이언트 안내 표시(퀘스트와 무관)라 경고하지 않는다(15단계 G6)
+  const unknownFlags = input.story_flags.filter((f) => !data.quests.flags.has(f) && !f.startsWith('tip_'));
   if (unknownFlags.length > 0) {
     logger.warn({ flags: unknownFlags.slice(0, 20) }, 'story_flags not in quest_index (accepted)');
   }

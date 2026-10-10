@@ -155,7 +155,12 @@ namespace DotRPG
         static readonly List<string> claimQueue = new List<string>();
         static bool claimRunning;
 
-        /// <summary>A server drop was picked up: claims go out in batches (up to 50 ids) every quarter second.</summary>
+        /// <summary>[LOAD L7] Batch window: a quarter second rarely caught two pickups (392 kills, 467 claims), one second does.</summary>
+        const float ClaimBatchSeconds = 1f;
+        const int ClaimBatchEarly = 10;
+
+        /// <summary>A server drop was picked up: claims go out in batches (up to 50 ids) every second, sooner once 10 are waiting.
+        /// The pickup toast and sound play at once; only the bag count follows the server reply.</summary>
         public static void ClaimDrop(string dropId)
         {
             claimQueue.Add(dropId);
@@ -167,7 +172,7 @@ namespace DotRPG
             claimRunning = true;
             while (claimQueue.Count > 0)
             {
-                yield return new WaitForSecondsRealtime(0.25f);
+                for (float t = 0f; t < ClaimBatchSeconds && claimQueue.Count < ClaimBatchEarly; t += Time.unscaledDeltaTime) yield return null;
                 var ids = claimQueue.Take(50).ToList();
                 claimQueue.RemoveRange(0, ids.Count);
                 if (ids.Count > 0 && On) Post("/drops/claim", Body(("drop_ids", ids)), null, quiet: true);

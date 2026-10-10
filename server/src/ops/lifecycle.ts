@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import type { RequestHandler } from 'express';
 import { AppError } from '../utils/AppError';
-import { metrics } from './metrics';
+import { metrics, routeKey } from './metrics';
 
 let shuttingDown = false;
 let inFlight = 0;
@@ -43,7 +43,7 @@ export const lifecycleGuard: RequestHandler = (req, res, next) => {
     if (done) return;
     done = true;
     inFlight--;
-    metrics.recordRequest(res.statusCode, Date.now() - start, res.locals.errCode as string | undefined);
+    metrics.recordRequest(res.statusCode, Date.now() - start, res.locals.errCode as string | undefined, routeKey(req.method, req.path));
   };
   res.on('finish', finish);
   res.on('close', finish);

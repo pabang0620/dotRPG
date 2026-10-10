@@ -58,12 +58,23 @@ async function runAll(ctx: JobCtx, steps: [string, string, unknown[]?][]): Promi
 const del = (table: string, where: string, from = table): string =>
   `DELETE FROM ${table} WHERE id IN (SELECT id FROM ${from} WHERE ${where} ORDER BY id LIMIT $1)`;
 
+/** 15단계 L1: 처치·줍기·채집·아이템 사용은 요청이 잦아 request_log가 DB 용량 대부분을 차지한다. 재전송 확인은 몇 분이면 충분해 짧게 보관한다 */
+export const HOT_REQUEST_ENDPOINTS = [
+  'POST /characters/:uuid/kills',
+  'POST /characters/:uuid/drops/claim',
+  'POST /characters/:uuid/gathers',
+  'POST /characters/:uuid/items/use',
+];
+const hotList = HOT_REQUEST_ENDPOINTS.map((e) => `'${e}'`).join(', ');
+
 /** 매시 17분: 짧은 보관 표. drops(자식)를 먼저, kill_log(부모)를 나중에(CASCADE가 drops_kill_idx로 빠르게 동작) */
 export function purgeHourly(ctx: JobCtx): Promise<JobResult> {
   const cfg = getConfig();
   const days = (n: number): string => `now() - (${n}::int * interval '1 day')`;
   return runAll(ctx, [
     ['request_log', del('request_log', `created_at < ${days(cfg.requestLogTtlDays)}`)],
+    ['request_log_hot', del('request_log', `endpoint IN (${hotList}) AND created_at < now() - (${cfg.load.requestLogHotHours}::int * interval '1 hour')`)],
+    ['client_errors', del('client_errors', `created_at < ${days(cfg.load.clientErrorDays)}`)],
     ['chat_messages', del('chat_messages', `created_at < ${days(cfg.social.chatRetentionDays)}`)],
     ['party_invites', del('party_invites', `created_at < ${days(7)}`)],
     ['drops', del('drops', `expires_at < ${days(cfg.purge.dropDays)}`)],

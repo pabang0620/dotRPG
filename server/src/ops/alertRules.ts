@@ -16,6 +16,9 @@ export const THRESHOLDS = {
   poolWaitingCritical: 5,
   diskCritical: 90,
   diskWarning: 80,
+  /** 15단계 G9: Supabase 무료 한도 500MB(넘으면 읽기 전용) */
+  dbSizeWarningMb: 400,
+  dbSizeCriticalMb: 470,
   p95WarningMs: 1000,
   eventLoopP99WarningMs: 200,
   dbConnWarningRatio: 0.8,
@@ -81,6 +84,10 @@ export function evaluate(i: RuleInput, now: Date = new Date()): Alert[] {
   if (s.disk_used_pct !== null) {
     if (s.disk_used_pct >= T.diskCritical) add('disk', 'critical', '디스크 부족', `사용률 ${s.disk_used_pct}%입니다.`);
     else if (s.disk_used_pct >= T.diskWarning) add('disk_warn', 'warning', '디스크 사용량 높음', `사용률 ${s.disk_used_pct}%입니다.`);
+  }
+  if (s.db.size_mb !== null) {
+    if (s.db.size_mb >= T.dbSizeCriticalMb) add('db_size', 'critical', 'DB 용량 한도 임박', `DB ${s.db.size_mb}MB입니다(무료 한도 500MB를 넘으면 읽기 전용). 보관 기간을 줄이거나 정리하세요.`);
+    else if (s.db.size_mb >= T.dbSizeWarningMb) add('db_size_warn', 'warning', 'DB 용량 많음', `DB ${s.db.size_mb}MB입니다(무료 한도 500MB).`);
   }
   if (s.http.p95_5m_ms > T.p95WarningMs) add('p95', 'warning', '응답 느림', `최근 5분 p95 ${s.http.p95_5m_ms}ms입니다.`);
   if (s.process.eventloop_delay_p99_ms > T.eventLoopP99WarningMs) {

@@ -14,8 +14,38 @@ export function getPool(): Pool {
       statement_timeout: cfg.dbStatementTimeoutMs,
       idle_in_transaction_session_timeout: 30_000,
     });
+    // 쉬는 연결이 끊기면(풀러 재시작·네트워크) pg가 'error'를 낸다. 리스너가 없으면 프로세스가 죽는다: 기록만 하고 풀이 새 연결을 만든다
+    pool.on('error', (err) => logger.error({ err }, 'db.pool idle client error'));
+    pool.on('connect', (client) => watchSlowQueries(client, cfg.load.slowQueryMs));
   }
   return pool;
+}
+
+/** 15단계 G4: 연결마다 query를 감싸 기준(SLOW_QUERY_MS)을 넘긴 쿼리만 SQL 앞 80자와 함께 남긴다(값은 남기지 않는다) */
+function watchSlowQueries(client: PoolClient, slowMs: number): void {
+  const original = client.query.bind(client) as (...args: unknown[]) => unknown;
+  (client as unknown as { query: (...args: unknown[]) => unknown }).query = (...args: unknown[]) => {
+    const started = Date.now();
+    const done = (): void => {
+      const ms = Date.now() - started;
+      if (ms < slowMs) return;
+      const first = args[0];
+      const text = typeof first === 'string' ? first : ((first as { text?: string } | null)?.text ?? '');
+      logger.warn({ ms, sql: text.replace(/\s+/g, ' ').trim().slice(0, 80) }, 'db.query.slow');
+    };
+    // pool.query는 콜백 형태로 부른다: 콜백을 감싼다
+    const last = args[args.length - 1];
+    if (typeof last === 'function') {
+      args[args.length - 1] = (...cbArgs: unknown[]) => {
+        done();
+        return (last as (...a: unknown[]) => unknown)(...cbArgs);
+      };
+      return original(...args);
+    }
+    const result = original(...args);
+    if (result && typeof (result as Promise<unknown>).then === 'function') (result as Promise<unknown>).then(done, done);
+    return result;
+  };
 }
 
 /** 풀 상태(관리자 ops status, 감시자) */

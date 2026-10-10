@@ -33,6 +33,7 @@ import { createReviveRouter } from '../domains/revive/reviveRoutes';
 import { createPaymentsRouter } from '../domains/payments/paymentsRoutes';
 import { createLevelRewardsRouter } from '../domains/levelrewards/levelRewardsRoutes';
 import { createDailyRouter } from '../domains/dailies/dailyRoutes';
+import { createClientErrorRouter } from '../domains/clienterrors/clientErrorRoutes';
 import { createSealedBoxRouter } from '../domains/sealedbox/sealedBoxRoutes';
 import { createWithdrawalRouter } from '../domains/withdrawal/withdrawalRoutes';
 
@@ -88,5 +89,7 @@ export function createRouter(): Router {
   r.use(createSealedBoxRouter());
   // 14단계: 일일 의뢰(캐릭터 경로 아래, 데이터 버전까지 검사)
   r.use(createDailyRouter());
+  // 15단계: 클라이언트 예외 보고(계정 단위, 버전 검사 없음)
+  r.use(createClientErrorRouter());
   return r;
 }

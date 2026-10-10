@@ -19,7 +19,8 @@ import { listJobs } from './jobRunner';
 export interface Snapshot {
   at: string;
   process: { uptime_s: number; rss_mb: number; heap_mb: number; eventloop_delay_p99_ms: number; version: string; data_version: string | null };
-  http: ReturnType<typeof metrics.http> & { in_flight: number; p95_5m_ms: number; status_5xx_5m: number; requests_5m: number };
+  /** routes_5m: 15단계 G5 경로별 건수·p95(잦은 경로의 요청 로그는 debug라 여기서 본다) */
+  http: ReturnType<typeof metrics.http> & { in_flight: number; p95_5m_ms: number; status_5xx_5m: number; requests_5m: number; routes_5m: ReturnType<typeof metrics.routes> };
   websocket: { sessions: number; max: number; close_reasons: Record<string, number>; handshake_rejected: number };
   db: { pool: ReturnType<typeof poolStats>; connections: number | null; max_connections: number | null; size_mb: number | null };
   ticks: Record<string, { last_at: string; ms: number }>;
@@ -315,7 +316,7 @@ export async function collectSnapshot(): Promise<Snapshot> {
       version: cfg.ops.imageVersion,
       data_version: g,
     },
-    http: { ...h1, in_flight: inFlightCount(), p95_5m_ms: h5.p95_ms, status_5xx_5m: h5.status_5xx, requests_5m: h5.requests },
+    http: { ...h1, in_flight: inFlightCount(), p95_5m_ms: h5.p95_ms, status_5xx_5m: h5.status_5xx, requests_5m: h5.requests, routes_5m: metrics.routes() },
     websocket: {
       sessions: registry.size(),
       max: cfg.social.wsMaxConnections,

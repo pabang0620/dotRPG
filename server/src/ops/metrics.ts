@@ -6,6 +6,18 @@ interface ReqSample {
   status: number;
   ms: number;
   code?: string;
+  route?: string;
+}
+
+const UUID_SEG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** 경로 집계용 이름(15단계 G5): uuid·숫자 경로 조각을 :id로 바꾼다 */
+export function routeKey(method: string, path: string): string {
+  const norm = path
+    .split('/')
+    .map((seg) => (UUID_SEG.test(seg) || /^\d+$/.test(seg) ? ':id' : seg))
+    .join('/');
+  return `${method} ${norm}`;
 }
 
 const WINDOW_MS = 5 * 60_000;
@@ -28,9 +40,9 @@ class Metrics {
     this.loop.enable();
   }
 
-  recordRequest(status: number, ms: number, code?: string): void {
+  recordRequest(status: number, ms: number, code?: string, route?: string): void {
     const now = Date.now();
-    this.samples.push({ at: now, status, ms, ...(code ? { code } : {}) });
+    this.samples.push({ at: now, status, ms, ...(code ? { code } : {}), ...(route ? { route } : {}) });
     if (this.samples.length > 20_000) this.samples = this.samples.filter((s) => now - s.at < WINDOW_MS);
   }
 
@@ -106,6 +118,23 @@ class Metrics {
         .slice(0, 5)
         .map(([code, count]) => ({ code, count })),
     };
+  }
+
+  /** 15단계 G5: 최근 windowMs 안의 경로별 건수·p95(건수 많은 순 limit개). 잦은 경로의 요청 로그를 debug로 내린 대신 여기서 본다 */
+  routes(windowMs = 5 * 60_000, limit = 12): { route: string; count: number; p95_ms: number; errors: number }[] {
+    const now = Date.now();
+    const by = new Map<string, { ms: number[]; errors: number }>();
+    for (const s of this.samples) {
+      if (!s.route || now - s.at >= windowMs) continue;
+      const e = by.get(s.route) ?? { ms: [], errors: 0 };
+      e.ms.push(s.ms);
+      if (s.status >= 400) e.errors++;
+      by.set(s.route, e);
+    }
+    return [...by.entries()]
+      .map(([route, e]) => ({ route, count: e.ms.length, p95_ms: pct(e.ms.sort((a, b) => a - b), 95), errors: e.errors }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
   }
 
   eventLoopP99Ms(): number {

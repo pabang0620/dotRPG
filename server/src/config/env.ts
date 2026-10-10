@@ -5,6 +5,7 @@ import { antiAbuseShape, buildAntiAbuse, type AntiAbuseConfig } from './antiAbus
 import { buildSweep, sweepShape, type SweepConfig } from './sweepEnv';
 import { buildPay, payShape, type PayConfig } from './payEnv';
 import { buildWithdraw, withdrawShape, type WithdrawConfig } from './withdrawEnv';
+import { buildLoad, loadShape, type LoadConfig } from './loadEnv';
 import { buildPhase8, phase8Shape, type FieldConfig, type Phase8Config, type RelayConfig, type TransportConfig } from './phase8Env';
 
 const boolStr = z.enum(['true', 'false']).transform((v) => v === 'true');
@@ -30,7 +31,7 @@ const envSchema = z.object({
   RATE_STATE_SAVE_MAX: posInt(1),
   RATE_GENERAL_IP_MAX: posInt(120),
   // 3단계(경제) 속도 제한. 캐릭터별 한도는 창 길이가 코드 고정(초 단위 또는 분 단위)
-  RATE_ECONOMY_IP_MAX: posInt(600),
+  RATE_ECONOMY_IP_MAX: posInt(1500),
   RATE_KILL_PER_SEC: posInt(6),
   RATE_KILL_PER_MIN: posInt(90),
   RATE_CLAIM_PER_SEC: posInt(5),
@@ -206,7 +207,7 @@ const envSchema = z.object({
   REFRESH_TOKEN_PURGE_DAYS: posInt(30),
   MAIL_CLAIMED_RETENTION_DAYS: posInt(180),
   PARTY_RECORD_RETENTION_DAYS: posInt(30),
-  JOB_RUN_RETENTION_DAYS: posInt(90),
+  JOB_RUN_RETENTION_DAYS: posInt(7),
   ADMIN_SESSION_PURGE_DAYS: posInt(30),
   PURGE_BATCH: posInt(5000),
   PURGE_BATCH_SLEEP_MS: nonNegInt(100),
@@ -224,6 +225,7 @@ const envSchema = z.object({
   ...sweepShape,
   ...payShape,
   ...withdrawShape,
+  ...loadShape,
 });
 
 export interface AppConfig {
@@ -417,6 +419,8 @@ export interface AppConfig {
   aa: AntiAbuseConfig;
   /** 10단계: 던전 클리어권(소탕)과 운영 우편 캠페인 */
   sweep: SweepConfig;
+  /** 15단계: 부하 방지·로그 보강 */
+  load: LoadConfig;
   /** 11단계: 별조각 Steam 결제와 결제 보호(기본 꺼짐) */
   pay: PayConfig;
   /** 회원 탈퇴(유예, 보관, 파기 스위치). 값은 법무 확인 전 기본값이며 환경변수로 바꾼다 */
@@ -735,6 +739,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     transport: p8.transport,
     aa,
     sweep: buildSweep(e, { prod, adminGrantMaxGold: e.ADMIN_GRANT_MAX_GOLD }),
+    load: buildLoad(e),
     pay,
     withdraw,
     policy: {

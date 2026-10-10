@@ -262,6 +262,23 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
           if (s.mapId !== f.map_id) {
             s.mapId = f.map_id;
             if (s.town && s.town.map !== f.map_id) leaveTown(s);
+            // 15단계 L6: 맵 변경 알림(프레즌스·파티원)은 DB 일을 부른다. 최소 간격 안에 또 바뀌면 간격이 끝날 때 마지막 맵으로 한 번만 보낸다
+            const wait = s.mapChangeAt + getConfig().load.ws.mapChangeMinMs - Date.now();
+            if (wait > 0) {
+              if (!s.mapPushPending) {
+                s.mapPushPending = true;
+                setTimeout(() => {
+                  s.mapPushPending = false;
+                  if (s.closed) return;
+                  s.mapChangeAt = Date.now();
+                  void pushMyPresence(s.accountId)
+                    .then(() => notifyPartyMatesOfMove(s.characterId))
+                    .catch((e: unknown) => logger.error({ err: e }, 'presence push failed'));
+                }, wait).unref();
+              }
+              return;
+            }
+            s.mapChangeAt = Date.now();
             await pushMyPresence(s.accountId);
             await notifyPartyMatesOfMove(s.characterId);
           }

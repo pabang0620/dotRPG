@@ -13,7 +13,8 @@ namespace DotRPG
     /// </summary>
     public sealed class PartyRunSession : MonoBehaviour
     {
-        const float PollSeconds = 1f, HeartbeatSeconds = 5f, HostLostSeconds = 3f;
+        // [LOAD L9] Gathering poll every 2 s (was 1 s); the chat socket still pushes run changes at once (FetchNow).
+        const float PollSeconds = 2f, HeartbeatSeconds = 5f, HostLostSeconds = 3f;
 
         public static PartyRunSession Instance { get; private set; }
         public static bool Active => Instance != null;

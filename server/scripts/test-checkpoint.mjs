@@ -5,7 +5,8 @@
 // 넣는 것: 레벨, 그 구간까지의 메인 퀘스트 완료(서버 청구 기록 + 클라이언트 퀘스트 상태 + 이야기 플래그), 처치·던전 누적,
 // 전직(스테이지 0), 그 레벨 구간의 레어 장비 한 벌(무기 +5), 물약, 골드. 경험치·아이템 원장에는 test_boost로 남긴다.
 // DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다.
-import { readFileSync } from 'node:fs';
+// 시험 서버: cd /opt/dotrpg/app && sudo -u dotrpg bash -c 'set -a; . /opt/dotrpg/.env; node scripts/test-checkpoint.mjs <아이디> <이름> <구간> [전직]'
+import { existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { assertTestStage } from './_stageGuard.mjs';
@@ -26,8 +27,10 @@ const GEAR = {
 };
 const TIERS = [1, 10, 15, 20, 25, 30, 35, 40];
 
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env', import.meta.url), 'utf8')
+// server/.env가 없으면(시험 서버는 /opt/dotrpg/.env를 환경변수로 읽어 실행) 환경변수만 쓴다
+const ENV_FILE = new URL('../.env', import.meta.url);
+const env = !existsSync(ENV_FILE) ? {} : Object.fromEntries(
+  readFileSync(ENV_FILE, 'utf8')
     .split(/\r?\n/)
     .filter((l) => /^[A-Z0-9_]+=/.test(l))
     .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),
