@@ -7,8 +7,8 @@ namespace DotRPG
     public static partial class UnderworldArt
     {
         const int CompositionPpu = 32;
-        const int CompositionHdPpu = 48;
-        const int CompositionHdMaxDimension = 4096;
+        const int CompositionHdPpu = 96;
+        const int CompositionHdMaxDimension = 8192;
         const int CompositionFaceDepth = 3;
         static readonly string[] CompositionKinds = { "descent", "roots", "fungal", "depths" };
         static readonly string[] CompositionNames =

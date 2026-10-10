@@ -6,6 +6,41 @@ namespace DotRPG
     /// <summary>Four surface regions form a ring; the central town opens a separate descending world.</summary>
     public static class WorldRoutes
     {
+        // Authored three-wide roads reach the map boundary, with inward-safe arrivals.
+        public static UnityEngine.Vector2 HubApproach(string id)
+        {
+            switch (id)
+            {
+                case "village": return new UnityEngine.Vector2(.5f, 22.5f);
+                case "canyon": return new UnityEngine.Vector2(11.5f, 59.5f);
+                case "winter": return new UnityEngine.Vector2(.5f, 25.5f);
+                default: return new UnityEngine.Vector2(.5f, 53.5f);
+            }
+        }
+        public static UnityEngine.Vector2 HubInward(string id) => id == "canyon" ? UnityEngine.Vector2.down : UnityEngine.Vector2.right;
+        // Shared by gameplay and the unvisited-map preview. Only these short town
+        // approach strips are carved; all other terrain keeps its authored layout.
+        public static string WithHubRoad(string id, string text)
+        {
+            if (id != "village" && id != "canyon" && id != "winter" && id != MapRegistry.Sanctum) return text;
+            var rows = text.Split('\n').Select(r => r.TrimEnd('\r')).Where(r => !r.StartsWith("//") && !string.IsNullOrWhiteSpace(r)).Select(r => r.ToCharArray()).ToArray();
+            int h = rows.Length; if (h == 0) return text;
+            void Floor(int x, int y)
+            {
+                if (y < 0 || y >= h || x < 0 || x >= rows[h - 1 - y].Length) return;
+                char original = rows[h - 1 - y][x];
+                if (char.IsDigit(original) || original == 'P') return; // Keep authored NPCs and spawn anchors.
+                rows[h - 1 - y][x] = id == MapRegistry.Sanctum ? '.' : ',';
+            }
+            if (id == "canyon") { for (int y = 55; y < h; y++) for (int x = 10; x <= 12; x++) Floor(x, y); }
+            else
+            {
+                int cy = id == "village" ? 22 : id == "winter" ? 25 : 53;
+                int end = id == "village" ? 12 : id == "winter" ? 6 : 17;
+                for (int x = 0; x <= end; x++) for (int y = cy - 1; y <= cy + 1; y++) Floor(x, y);
+            }
+            return string.Join("\n", rows.Select(r => new string(r)));
+        }
         public static readonly string[][] Regions = {
             new[]{"village","forest","forest_ruins","forest_depths","forest_crossing","canyon"},
             new[]{"canyon","canyon_pass","canyon_mine","canyon_ridge","canyon_gate","winter"},
@@ -64,16 +99,16 @@ namespace DotRPG
             var entrance = Get("hollow_descent");
             entrance.upMap = MapRegistry.Undergate;
             entrance.northMap = "hollow_roots";
-            entrance.southMap = "hollow_fungal";
-            foreach (var id in new[] { "hollow_roots", "hollow_fungal" })
-            {
-                var branch = Get(id);
-                branch.previousMap = entrance.id;
-                branch.nextMap = "hollow_depths";
-            }
+            entrance.southMap = null;
+            var roots = Get("hollow_roots");
+            roots.previousMap = entrance.id;
+            roots.nextMap = "hollow_fungal";
+            var fungal = Get("hollow_fungal");
+            fungal.previousMap = roots.id;
+            fungal.nextMap = "hollow_depths";
             var depths = Get("hollow_depths");
-            depths.northMap = "hollow_roots";
-            depths.southMap = "hollow_fungal";
+            depths.northMap = null;
+            depths.southMap = fungal.id;
         }
     }
 }

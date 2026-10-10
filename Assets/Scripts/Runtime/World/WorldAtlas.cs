@@ -19,6 +19,25 @@ namespace DotRPG
             public Rect bounds;
             public bool rendered;
             public readonly List<Vector2> exits = new List<Vector2>();
+            public readonly List<PortalMarker> portals = new List<PortalMarker>();
+        }
+        public sealed class PortalMarker
+        {
+            public Vector2 position;
+            public string target;
+            public string Label => "→ " + (MapRegistry.Get(target)?.displayName ?? target);
+        }
+
+        public static List<PortalMarker> LivePortals(WorldBuilder world)
+        {
+            var result = new List<PortalMarker>();
+            foreach (var group in world.ObjectsRoot.GetComponentsInChildren<MapPortal>().GroupBy(p => p.TargetMap))
+            {
+                Vector2 sum = Vector2.zero; int count = 0;
+                foreach (var p in group) { sum += (Vector2)p.transform.position; count++; }
+                result.Add(new PortalMarker { position = sum / count, target = group.Key });
+            }
+            return result;
         }
         static readonly Dictionary<string, Preview> cache = new Dictionary<string, Preview>();
         static readonly Dictionary<string, List<Marker>> entrances = new Dictionary<string, List<Marker>>();
@@ -29,6 +48,7 @@ namespace DotRPG
             if (cache.TryGetValue(world.MapId, out var old) && old.texture != null) Object.Destroy(old.texture);
             var p = new Preview { texture = Object.Instantiate(world.Minimap), bounds = world.Bounds, rendered = true };
             p.exits.AddRange(world.PortalCenters); cache[world.MapId] = p;
+            p.portals.AddRange(LivePortals(world));
             entrances[world.MapId] = Doors(world).ToList();
             if (world.DungeonGuidePosition.HasValue) guides[world.MapId] = world.DungeonGuidePosition.Value;
         }
@@ -45,11 +65,11 @@ namespace DotRPG
 
         static string[] Rows(MapInfo info)
         {
-            if(info.id==MapRegistry.Sanctum)return SunkenSanctumArt.Layout().Split('\n').Select(r=>r.TrimEnd('\r')).Where(r=>!r.StartsWith("//")&&!string.IsNullOrWhiteSpace(r)).ToArray();
+            if(info.id==MapRegistry.Sanctum)return WorldRoutes.WithHubRoad(info.id, SunkenSanctumArt.Layout()).Split('\n').Select(r=>r.TrimEnd('\r')).Where(r=>!r.StartsWith("//")&&!string.IsNullOrWhiteSpace(r)).ToArray();
             if (info.IsInterior) return new[] { ".....", ".....", ".....", "..P..", "..<.." };
             string source = info.id == MapRegistry.Village && Game.Config.worldMap != null ? Game.Config.worldMap.text : HuntingGrounds.Layout(info.id);
             if (source == null) source = Resources.Load<TextAsset>(info.resource)?.text ?? "P";
-            source = HuntingGrounds.AdaptTownLayout(info.id, source);
+            source = WorldRoutes.WithHubRoad(info.id, HuntingGrounds.AdaptTownLayout(info.id, source));
             return source.Split('\n').Select(r => r.TrimEnd('\r')).Where(r => !r.StartsWith("//") && !string.IsNullOrWhiteSpace(r)).ToArray();
         }
 
@@ -79,6 +99,8 @@ namespace DotRPG
                 {
                     var pos = new Vector2(x + .5f, h - y - .5f);
                     p.exits.Add(pos);
+                    string target = WorldRoutes.Target(info, ch);
+                    if (!string.IsNullOrEmpty(target)) p.portals.Add(new PortalMarker { position = pos, target = target });
                 }
             }
             for (int y = 0; y < h; y++) for (int x = 0; x < rows[y].Length; x++)
@@ -112,6 +134,16 @@ namespace DotRPG
             }
             p.exits.Clear();
             foreach (var group in groups) { Vector2 sum = Vector2.zero; foreach (var exit in group) sum += exit; p.exits.Add(sum / group.Count); }
+            var portalGroups = p.portals.GroupBy(m => m.target).ToArray();
+            p.portals.Clear();
+            foreach (var group in portalGroups)
+            {
+                Vector2 sum = Vector2.zero; int count = 0;
+                foreach (var marker in group) { sum += marker.position; count++; }
+                p.portals.Add(new PortalMarker { target = group.Key, position = sum / count });
+            }
+            if (!string.IsNullOrEmpty(info.hubMap) && !p.portals.Any(m => m.target == info.hubMap))
+                p.portals.Add(new PortalMarker { target = info.hubMap, position = WorldRoutes.HubApproach(id) });
             var tex = new Texture2D(w * tile, h * tile, TextureFormat.RGBA32, false) { name = "Atlas_" + id, filterMode = FilterMode.Point };
             tex.SetPixels32(c.ToTexturePixels()); tex.Apply(); p.texture = tex; cache[id] = p; return p;
         }

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "village",
+    "outsideCropUnchanged": true,
+    "size": [
+      7424,
+      6912
+    ]
+  },
+  {
+    "id": "canyon",
+    "outsideCropUnchanged": true,
+    "size": [
+      6144,
+      7680
+    ]
+  },
+  {
+    "id": "winter",
+    "outsideCropUnchanged": true,
+    "size": [
+      6656,
+      5888
+    ]
+  },
+  {
+    "id": "sunken_sanctum",
+    "outsideCropUnchanged": true,
+    "size": [
+      6144,
+      9216
+    ]
+  }
+]

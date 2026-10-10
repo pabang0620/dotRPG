@@ -68,8 +68,8 @@ namespace DotRPG
             new HuntingZone("sanctum_court", "망각의 내전", MapRegistry.Sanctum, MapTheme.SanctumField, 40, 40, 40, 3, "skel_shield", "skel_archer", "skel_warrior"),
             new HuntingZone("hollow_descent", "B1 · 뿌리 아래 갱도", MapRegistry.Undergate, MapTheme.Underground, 40, 45, 42, 0, "hollow_scarab", "hollow_guard", "hollow_hexer"),
             new HuntingZone("hollow_roots", "B2 · 뒤엉킨 뿌리굴", MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 1, "hollow_scarab", "hollow_guard", "hollow_hexer"),
-            new HuntingZone("hollow_fungal", "B2 · 푸른 포자 동굴", MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 2, "hollow_hexer", "hollow_scarab", "hollow_guard"),
-            new HuntingZone("hollow_depths", "B3 · 반딧불 심연", MapRegistry.Undergate, MapTheme.Underground, 50, 55, 53, 3, "hollow_guard", "hollow_hexer", "hollow_scarab"),
+            new HuntingZone("hollow_fungal", "B3 · 푸른 포자 동굴", MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 2, "hollow_hexer", "hollow_scarab", "hollow_guard"),
+            new HuntingZone("hollow_depths", "B4 · 반딧불 심연", MapRegistry.Undergate, MapTheme.Underground, 50, 55, 53, 3, "hollow_guard", "hollow_hexer", "hollow_scarab"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
         /// <summary>Enemy data may exceed the player cap in the underground world; ordinary fields keep the original cap.</summary>

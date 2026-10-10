@@ -1,0 +1,70 @@
+﻿[
+    {
+        "id":  "village",
+        "pixelBoundsXYWH":  [
+                                0,
+                                3387,
+                                2301,
+                                1521
+                            ],
+        "source":  "Docs/World/HubRoadSources/refined/village.png",
+        "source_sha256":  "53451be0a428e35919f978540cd8657f8ad48aecedf9d5b38aa54afd5eb77906",
+        "before_sha256":  "404f63d09ddc86e5f18e3d7ee58f19036e48bf002c3d587a6c6b2a0bf3f1efc9",
+        "output_sha256":  "ef1e8786c3b9fe40ec59a4bd7acb4363eaab9118053e5530582fb2a5dd101a3b",
+        "outsideCrop":  "unchanged",
+        "featherPixels":  160,
+        "filter":  "nearest",
+        "geometry":  "unchanged"
+    },
+    {
+        "id":  "canyon",
+        "pixelBoundsXYWH":  [
+                                614,
+                                0,
+                                1782,
+                                1690
+                            ],
+        "source":  "Docs/World/HubRoadSources/refined/canyon.png",
+        "source_sha256":  "f409a687def05630cd6303db5b755fefecc0c4608a97a8f4e3f5133c744307e0",
+        "before_sha256":  "483a2b65b80f87f40ffea3e72a7185a5fb60ae3dbc1aebaee156da2148802e17",
+        "output_sha256":  "849ab65b5b977f18d8a8aa6c9d8a6f75bb4dfa80a07573e10562387bba42ca33",
+        "outsideCrop":  "unchanged",
+        "featherPixels":  160,
+        "filter":  "nearest",
+        "geometry":  "unchanged"
+    },
+    {
+        "id":  "winter",
+        "pixelBoundsXYWH":  [
+                                0,
+                                1943,
+                                1664,
+                                1354
+                            ],
+        "source":  "Docs/World/HubRoadSources/refined/winter.png",
+        "source_sha256":  "033657d36e1c92079790a211058294cabeb6050e123aa231e0c44563d105f994",
+        "before_sha256":  "df10f30230dee5154745955ddbdca8c0bdae36727d76a5a297fbbf8ff9881d19",
+        "output_sha256":  "6c7259688386dcbf0112e1ec5a85d83700910e6c9155f7304e7ce1e36f4ff3a5",
+        "outsideCrop":  "unchanged",
+        "featherPixels":  160,
+        "filter":  "nearest",
+        "geometry":  "unchanged"
+    },
+    {
+        "id":  "sunken_sanctum",
+        "pixelBoundsXYWH":  [
+                                0,
+                                1475,
+                                2550,
+                                1935
+                            ],
+        "source":  "Docs/World/HubRoadSources/refined/sunken_sanctum.png",
+        "source_sha256":  "6c165558137cb31137c4047c13e5594b03c11632b00b027e035f83a86d4095fe",
+        "before_sha256":  "08d7923df366421250ec1a7495d6a5fa3ab66668d78c6ca97c23d516da73f77b",
+        "output_sha256":  "9fa576a683f306816eae7d7e90b498e328cf24614ef3bcb42c1c18251e2221bd",
+        "outsideCrop":  "unchanged",
+        "featherPixels":  160,
+        "filter":  "nearest",
+        "geometry":  "unchanged"
+    }
+]

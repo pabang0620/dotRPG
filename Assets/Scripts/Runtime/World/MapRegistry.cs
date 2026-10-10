@@ -88,7 +88,7 @@ namespace DotRPG
             foreach (var z in HuntingGrounds.All)
                 if (z.theme == MapTheme.Underground)
                     maps.Add(new MapInfo { id = z.id, displayName = z.name, theme = z.theme, safe = false,
-                        worldLayer = WorldLayer.Underground, depth = z.variant == 0 ? 1 : z.variant == 3 ? 3 : 2,
+                        worldLayer = WorldLayer.Underground, depth = z.variant + 1,
                         music = MusicDgnCanyon, hint = $"지하세계 · 지역 등급 Lv.{z.minLevel}~{z.maxLevel} · 몬스터 Lv.{z.monsterLevel}\nLv.40 만렙 이후 도전 · 강화 장비·파티 권장\n처치 경험치 {z.KillXp} · 재생성 {HuntingGrounds.RespawnSeconds:0}초 · 귀환: 뿌리샘 마을" });
             WorldRoutes.Configure(maps);
             return maps.ToArray();

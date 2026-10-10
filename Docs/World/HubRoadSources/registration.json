@@ -1,0 +1,62 @@
+[
+  {
+    "id": "village",
+    "pixelBounds": [
+      0,
+      3698,
+      1893,
+      4596
+    ],
+    "before": "eefc011326f8b4f5347a39bf73b905e564bfc8f455ba81a8d458a28a773d56ee",
+    "after": "404f63d09ddc86e5f18e3d7ee58f19036e48bf002c3d587a6c6b2a0bf3f1efc9",
+    "source": "Docs/World/HubRoadSources/village.png",
+    "source_sha256": "c68bf01264db95e1feecaa9f4952c824584b05fab3c7f50355300f080563a6b0",
+    "outsidePatch": "unchanged",
+    "master_sha256": "1454d520f8f69827edff7a794c6a2d2947b1e15bbfc3df4a69b9b0747e320faa"
+  },
+  {
+    "id": "canyon",
+    "pixelBounds": [
+      952,
+      0,
+      2120,
+      1344
+    ],
+    "before": "520206ba2d16ced32278e6416c620ab15f8ea30e3ae620a3d0fbebef5dd8aa9f",
+    "after": "483a2b65b80f87f40ffea3e72a7185a5fb60ae3dbc1aebaee156da2148802e17",
+    "source": "Docs/World/HubRoadSources/canyon.png",
+    "source_sha256": "55f111ffe99775ee357f144f5bd3da3c9690c7582882c592aecdd282c000099d",
+    "outsidePatch": "unchanged",
+    "master_sha256": "ad4674e7c37b2b719c20b700033f7c686f14905bb8615c12d9646992904bdf6e"
+  },
+  {
+    "id": "winter",
+    "pixelBounds": [
+      0,
+      2267,
+      1231,
+      3032
+    ],
+    "before": "4bab76402d37af517c14ee2447a863491b99e2b322f5d5df66d77681760cabf1",
+    "after": "df10f30230dee5154745955ddbdca8c0bdae36727d76a5a297fbbf8ff9881d19",
+    "source": "Docs/World/HubRoadSources/winter.png",
+    "source_sha256": "00c1642abbff1abef5ec8d0b73e80c1c0dcbbeff7b82bff58ac82731b2fd905d",
+    "outsidePatch": "unchanged",
+    "master_sha256": "eb3374a36ac639296ca615ab8ffd7a06a02eed7e0897855636885b4ef7979902"
+  },
+  {
+    "id": "sunken_sanctum",
+    "pixelBounds": [
+      0,
+      1797,
+      2243,
+      2995
+    ],
+    "before": "abb8934aadce41f9973a56dad902bca6b718def5d78ae2609d21bd722a992ec3",
+    "after": "08d7923df366421250ec1a7495d6a5fa3ab66668d78c6ca97c23d516da73f77b",
+    "source": "Docs/World/HubRoadSources/sunken_sanctum.png",
+    "source_sha256": "b320ab036c3074da9ee1a38d1974c42622addf84dbe6f266a4a6e8739cf0787c",
+    "outsidePatch": "unchanged",
+    "master_sha256": "f944f94568db162991073f786dd22881fe6cc320f547a7a646665cf8564f0d60"
+  }
+]

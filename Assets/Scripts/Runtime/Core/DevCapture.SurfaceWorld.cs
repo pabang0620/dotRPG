@@ -640,7 +640,8 @@ namespace DotRPG
                 && !s.SharedTexture.isReadable && s.OwnedResources.OfType<Texture2D>().Count() == 1);
             DCheck(mapId + " mesh cells and source UVs exactly partition artwork", s.WrongOwnerPixels == 0 && s.PixelBoundsErrors == 0
                 && s.MismatchedPixels == 0 && s.LayerVertexCounts.Length == 3 && s.LayerTriangleCounts.Length == 3);
-            int expectedPpu = s.SourceWidth >= s.WorldBounds.width * 96 && s.SourceHeight >= s.WorldBounds.height * 96 ? 96
+            int expectedPpu = s.SourceWidth >= s.WorldBounds.width * 128 && s.SourceHeight >= s.WorldBounds.height * 128 ? 128
+                : s.SourceWidth >= s.WorldBounds.width * 96 && s.SourceHeight >= s.WorldBounds.height * 96 ? 96
                 : s.SourceWidth >= s.WorldBounds.width * 48 && s.SourceHeight >= s.WorldBounds.height * 48 ? 48 : 32;
             DCheck(mapId + " registered source resolution is preserved", s.PixelsPerUnit == expectedPpu
                 && s.RasterWidth == s.WorldBounds.width * expectedPpu && s.RasterHeight == s.WorldBounds.height * expectedPpu

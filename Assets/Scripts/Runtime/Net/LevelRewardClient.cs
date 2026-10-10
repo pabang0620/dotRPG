@@ -5,7 +5,7 @@ namespace DotRPG
 {
     /// <summary>
     /// [LEVEL 13] Level milestone rewards (Docs/server/phase13_level_rewards.md): free star shards once per account when
-    /// any of its characters reaches the level. The server owns the table and the claims; offline play has none.
+    /// the active character reaches the level. The server owns the table and the claims; offline play has none.
     /// </summary>
     public static class LevelRewardClient
     {
@@ -17,29 +17,65 @@ namespace DotRPG
         public static int PassPrice { get; private set; } = 9000;
 
         public static readonly List<Tier> Tiers = new List<Tier>();
-        public static bool Loaded { get; private set; }
+        public static bool Loaded => loaded && CurrentContext;
         public static bool Busy { get; private set; }
-        public static int AccountLevel { get; private set; }
+        public static int CharacterLevel { get; private set; }
         public static event Action Changed;
 
-        public static bool AnyClaimable { get { foreach (var t in Tiers) if (t.claimable) return true; foreach (var t in PassTiers) if (t.claimable) return true; return false; } }
+        static OnlineSession owner;
+        static string character;
+        static int generation, readVersion;
+        static bool loaded;
+        static bool CurrentContext => OnlineSession.Playing && ReferenceEquals(owner, OnlineSession.Current) && character == owner.ActiveCharacter;
+
+        public static bool CanClaim(Tier tier) => Loaded && !Busy && tier != null && !tier.claimed && tier.claimable && CharacterLevel >= tier.level;
+        public static bool CanClaim(PassTier tier) => Loaded && !Busy && PassOwned && tier != null && !tier.claimed && tier.claimable && CharacterLevel >= tier.level;
+        public static bool AnyClaimable { get { foreach (var t in Tiers) if (CanClaim(t)) return true; foreach (var t in PassTiers) if (CanClaim(t)) return true; return false; } }
 
         static ApiClient Api => ApiClient.Instance;
 
+        /// <summary>Invalidate cached eligibility and in-flight replies on character/account changes.</summary>
+        public static void Reset()
+        {
+            generation++;
+            readVersion++;
+            owner = null;
+            character = null;
+            loaded = Busy = PassOwned = false;
+            CharacterLevel = 0;
+            PassPrice = 9000;
+            Tiers.Clear();
+            PassTiers.Clear();
+            Changed?.Invoke();
+        }
+
+        static bool EnsureContext()
+        {
+            if (CurrentContext) return true;
+            Reset();
+            if (!OnlineSession.Playing) return false;
+            owner = OnlineSession.Current;
+            character = owner.ActiveCharacter;
+            return true;
+        }
+
         public static void Refresh()
         {
-            if (!OnlineSession.Playing) return;
-            Api.Get("/level-rewards", r =>
+            if (!EnsureContext() || Busy) return;
+            int context = generation, version = ++readVersion;
+            Api.Get("/characters/" + character + "/level-rewards", r =>
             {
-                if (r.ok) { Read(r.data); Loaded = true; }
+                if (context != generation || version != readVersion || !CurrentContext) return;
+                if (r.ok) Read(r.data);
                 Changed?.Invoke();
             });
         }
 
         static void Read(Dictionary<string, object> d)
         {
-            if (d == null) return;
-            AccountLevel = MiniJson.Int(d, "max_level", AccountLevel);
+            // Do not accept account-wide eligibility from an old server or another character's reply.
+            if (d == null || MiniJson.Str(d, "character_id") != character || !CurrentContext) return;
+            CharacterLevel = MiniJson.Int(d, "character_level");
             if (d.TryGetValue("pass_owned", out var po) && po is bool pb) PassOwned = pb;
             PassPrice = MiniJson.Int(d, "pass_price", PassPrice);
             var passList = MiniJson.Arr(d, "pass_tiers");
@@ -62,31 +98,53 @@ namespace DotRPG
                     level = MiniJson.Int(o, "level"), stars = MiniJson.Int(o, "stars"),
                     claimable = Flag(o, "claimable"), claimed = Flag(o, "claimed"),
                 });
+            loaded = true;
         }
 
         static bool Flag(object o, string key) => o is Dictionary<string, object> d && d.TryGetValue(key, out var v) && v is bool b && b;
 
         /// <summary>[CASH] Buys the growth pass with star shards (once per account).</summary>
         public static void BuyPass(Action<bool, string> done) => Post("/level-rewards/pass/buy", new Dictionary<string, object>(), r =>
-            done(true, "성장 패스를 샀습니다! 지나간 단계의 패스 보상도 바로 받을 수 있습니다."), done);
+            done(true, "성장 패스를 샀습니다! 현재 캐릭터가 달성한 레벨의 패스 보상을 받을 수 있습니다."), done);
 
         /// <summary>[CASH] Takes the pass reward of a level into the active character's bag.</summary>
-        public static void ClaimPass(int level, Action<bool, string> done) =>
-            Post("/characters/" + OnlineSession.Current.ActiveCharacter + "/level-rewards/pass/claim", new Dictionary<string, object> { ["level"] = level }, r =>
+        public static void ClaimPass(int level, Action<bool, string> done)
+        {
+            if (!CheckClaim(level, true, done)) return;
+            Post("/characters/" + character + "/level-rewards/pass/claim", new Dictionary<string, object> { ["level"] = level }, r =>
             {
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 Game.Flow.Autosave();
                 done(true, $"Lv.{level} 패스 보상을 가방에 넣었습니다.");
             }, done);
+        }
+
+        static bool CheckClaim(int level, bool pass, Action<bool, string> done)
+        {
+            if (!EnsureContext()) { done(false, "온라인 캐릭터로 접속해야 받을 수 있습니다."); return false; }
+            if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return false; }
+            bool allowed = pass ? CanClaim(PassTiers.Find(t => t.level == level)) : CanClaim(Tiers.Find(t => t.level == level));
+            if (allowed) return true;
+            done(false, !Loaded ? "보상 정보를 확인하는 중입니다. 잠시 후 다시 시도해 주세요."
+                : CharacterLevel < level ? $"현재 캐릭터가 Lv.{level}에 도달해야 합니다."
+                : "이미 받았거나 수령 조건을 충족하지 않은 보상입니다.");
+            Refresh();
+            return false;
+        }
 
         static void Post(string path, Dictionary<string, object> body, Action<ApiResult> ok, Action<bool, string> done)
         {
-            if (!OnlineSession.Playing) { done(false, "온라인 캐릭터로 접속해야 합니다."); return; }
+            if (!EnsureContext()) { done(false, "온라인 캐릭터로 접속해야 합니다."); return; }
             if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
             Busy = true;
+            loaded = false;
+            int context = generation;
+            readVersion++; // A GET started before this write cannot restore stale claim buttons.
+            Changed?.Invoke();
             body["request_id"] = ApiClient.NewRequestId();
             Api.Post(path, body, r =>
             {
+                if (context != generation || !CurrentContext) return;
                 Busy = false;
                 if (!r.ok)
                 {
@@ -95,12 +153,13 @@ namespace DotRPG
                         "NOT_ENOUGH_STARS" => $"별조각이 모자랍니다. (필요 {PassPrice:N0})",
                         "ALREADY_OWNED" => "이미 성장 패스를 가지고 있습니다.",
                         "PASS_REQUIRED" => "성장 패스가 있어야 받을 수 있습니다.",
-                        "LEVEL_NOT_REACHED" => "아직 그 레벨에 도달한 캐릭터가 없습니다.",
+                        "LEVEL_NOT_REACHED" => "현재 캐릭터가 해당 레벨에 도달해야 합니다.",
                         "ALREADY_CLAIMED" => "이미 받은 보상입니다.",
                         "NETWORK" => "서버에 연결할 수 없습니다.",
                         _ => string.IsNullOrEmpty(r.message) ? "요청이 실패했습니다." : r.message,
                     });
                     Refresh();
+                    Changed?.Invoke();
                     return;
                 }
                 Read(r.data);
@@ -113,26 +172,11 @@ namespace DotRPG
 
         public static void Claim(int level, Action<bool, string> done)
         {
-            if (!OnlineSession.Playing) { done(false, "온라인 캐릭터로 접속해야 받을 수 있습니다."); return; }
-            if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
-            Busy = true;
-            var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["level"] = level };
-            Api.Post("/level-rewards/claim", body, r =>
+            if (!CheckClaim(level, false, done)) return;
+            Post("/characters/" + character + "/level-rewards/claim", new Dictionary<string, object> { ["level"] = level }, r =>
             {
-                Busy = false;
-                if (!r.ok)
-                {
-                    done(false, r.code == "LEVEL_NOT_REACHED" ? $"Lv.{level}에 도달한 캐릭터가 있어야 합니다."
-                        : r.code == "ALREADY_CLAIMED" ? "이미 받은 보상입니다."
-                        : r.code == "NETWORK" ? "서버에 연결할 수 없습니다." : string.IsNullOrEmpty(r.message) ? "받지 못했습니다." : r.message);
-                    Refresh();
-                    return;
-                }
-                Read(r.data);
-                Changed?.Invoke();
-                _ = StarShopClient.RefreshAsync(); // the wallet shows the new shards
                 done(true, $"Lv.{level} 달성 보상: 별조각 {MiniJson.Int(r.data, "stars"):N0}개를 받았습니다.");
-            });
+            }, done);
         }
     }
 }

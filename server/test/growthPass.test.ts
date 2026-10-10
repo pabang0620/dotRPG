@@ -1,4 +1,4 @@
-// 14단계: 성장 패스(구매·수령, GET /level-rewards 확장)
+// 성장 패스: 계정 구매·계정당 1회 수령, 현재 캐릭터의 레벨 조건.
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
@@ -19,7 +19,14 @@ afterAll(shutdown);
 
 const buy = (pl: Player, rid: string = randomUUID()) => request(app).post('/level-rewards/pass/buy').set(auth({ access: pl.p.access } as never)).send({ request_id: rid });
 const claim = (pl: Player, level: number, rid?: string, hero: Hero = pl.hero) => post(app, hero, '/level-rewards/pass/claim', { level }, rid);
-const list = (pl: Player) => request(app).get('/level-rewards').set(auth({ access: pl.p.access } as never));
+const list = (pl: Player, hero: Hero = pl.hero) => request(app).get(`/characters/${hero.id}/level-rewards`).set(auth({ access: pl.p.access } as never));
+const anotherHero = async (pl: Player): Promise<Hero> => {
+  const res = await createChar(app, { access: pl.p.access } as never, randomName());
+  expect(res.status).toBe(201);
+  const id = res.body.data.character.id as string;
+  const row = await getPool().query<{ id: string }>('SELECT id FROM characters WHERE uuid = $1', [id]);
+  return { s: { access: pl.p.access } as never, id, dbId: Number(row.rows[0]!.id), cls: 'warrior' };
+};
 
 describe('성장 패스 구매', () => {
   it('9000 차감(무료분 먼저, 유료는 오래된 로트부터), 보유 표시, 기존 필드 유지', async () => {
@@ -40,6 +47,7 @@ describe('성장 패스 구매', () => {
     expect(g.body.data.pass_tiers).toHaveLength(8);
     expect(g.body.data.tiers).toHaveLength(5);
     expect(g.body.data.max_level).toBe(1);
+    expect(g.body.data).toMatchObject({ character_id: pl.hero.id, character_level: 1 });
     expect(g.body.data.pass_tiers[1]).toEqual({
       level: 10,
       rewards: [{ item_key: 'ticket_enh10', count: 1 }, { item_key: 'box_sealed', count: 5 }],
@@ -112,6 +120,7 @@ describe('성장 패스 수령', () => {
     const r = await claim(pl, 10);
     expect(r.status).toBe(200);
     expect(r.body.data.level).toBe(10);
+    expect(r.body.data).toMatchObject({ character_id: pl.hero.id, character_level: 10 });
     expect(r.body.data.rewards).toEqual([{ item_key: 'ticket_enh10', count: 1 }, { item_key: 'box_sealed', count: 5 }]);
     expect(await countOf(pl.hero, 'ticket_enh10')).toBe(1);
     expect(await countOf(pl.hero, 'box_sealed')).toBe(5);
@@ -149,6 +158,7 @@ describe('성장 패스 수령', () => {
     const id = res.body.data.character.id as string;
     const row = await getPool().query<{ id: string }>('SELECT id FROM characters WHERE uuid = $1', [id]);
     const second: Hero = { s: { access: pl.p.access } as never, id, dbId: Number(row.rows[0]!.id), cls: 'warrior' };
+    await seedLevel(second, 5);
     const other = await claim(pl, 5, undefined, second);
     expect(other.body.errors.code).toBe('ALREADY_CLAIMED');
     expect(await countOf(second, 'box_sealed')).toBe(0);
@@ -158,15 +168,40 @@ describe('성장 패스 수령', () => {
     const pl = await newPlayer(app, 9000);
     await buy(pl);
     await seedLevel(pl.hero, 5);
-    const res = await createChar(app, { access: pl.p.access } as never, randomName());
-    const id2 = res.body.data.character.id as string;
+    const second = await anotherHero(pl);
+    await seedLevel(second, 5);
     const rs = await Promise.allSettled([
       pass.claim(pl.p.accountId, pl.hero.id, { request_id: randomUUID(), level: 5 }),
-      pass.claim(pl.p.accountId, id2, { request_id: randomUUID(), level: 5 }),
+      pass.claim(pl.p.accountId, second.id, { request_id: randomUUID(), level: 5 }),
     ]);
     expect(rs.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
     expect((rs.find((r) => r.status === 'rejected') as PromiseRejectedResult).reason).toMatchObject({ code: 'ALREADY_CLAIMED' });
     const n = await getPool().query<{ n: string }>('SELECT count(*) AS n FROM account_pass_claims WHERE account_id = $1', [pl.p.accountId]);
     expect(n.rows[0]!.n).toBe('1');
+  });
+
+  it('Lv40 동료 캐릭터가 있어도 Lv1 캐릭터는 패스 단계가 잠기고 아이템을 받지 못한다', async () => {
+    const pl = await newPlayer(app, 9000);
+    await seedLevel(pl.hero, 40);
+    await buy(pl);
+    const low = await anotherHero(pl);
+    const v = (await list(pl, low)).body.data;
+    expect(v).toMatchObject({ character_id: low.id, character_level: 1, pass_owned: true });
+    expect(v.pass_tiers.every((t: { claimable: boolean }) => !t.claimable)).toBe(true);
+    for (const level of [5, 10, 15, 20, 25, 30, 35, 40]) {
+      const r = await claim(pl, level, undefined, low);
+      expect(r.status).toBe(409);
+      expect(r.body.errors.code).toBe('LEVEL_NOT_REACHED');
+    }
+    expect(await countOf(low, 'box_sealed')).toBe(0);
+    expect(await countOf(low, 'ticket_enh12')).toBe(0);
+    const claims = await getPool().query('SELECT 1 FROM account_pass_claims WHERE account_id = $1', [pl.p.accountId]);
+    expect(claims.rowCount).toBe(0);
+    await seedLevel(low, 5);
+    const accepted = await claim(pl, 5, undefined, low);
+    expect(accepted.status).toBe(200);
+    expect(accepted.body.data).toMatchObject({ character_id: low.id, character_level: 5 });
+    expect(await countOf(low, 'box_sealed')).toBe(5);
+    expect(await countOf(pl.hero, 'box_sealed')).toBe(0);
   });
 });

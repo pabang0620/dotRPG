@@ -57,9 +57,9 @@ namespace DotRPG
                 foreach (string next in WorldRoutes.Neighbors(info.id))
                     DCheck(info.id + " reciprocal route " + next, MapRegistry.Get(next) != null && WorldRoutes.Neighbors(next).Contains(info.id));
             }
-            DCheck("B1 branches", WorldRoutes.Neighbors(LayerCaves[0]).OrderBy(s => s).SequenceEqual(new[] { MapRegistry.Undergate, LayerCaves[1], LayerCaves[2] }.OrderBy(s => s)));
-            DCheck("B3 reunites branches", WorldRoutes.Neighbors(LayerCaves[3]).OrderBy(s => s).SequenceEqual(new[] { LayerCaves[1], LayerCaves[2] }.OrderBy(s => s)));
-            DCheck("underground depths", LayerCaves.Select(id => MapRegistry.Get(id).depth).SequenceEqual(new[] { 1, 2, 2, 3 }));
+            DCheck("B1 single descent", WorldRoutes.Neighbors(LayerCaves[0]).OrderBy(s => s).SequenceEqual(new[] { MapRegistry.Undergate, LayerCaves[1] }.OrderBy(s => s)));
+            DCheck("B4 terminal chamber", WorldRoutes.Neighbors(LayerCaves[3]).OrderBy(s => s).SequenceEqual(new[] { LayerCaves[2] }.OrderBy(s => s)));
+            DCheck("underground depths", LayerCaves.Select(id => MapRegistry.Get(id).depth).SequenceEqual(new[] { 1, 2, 3, 4 }));
             WorldLayerArtChecks();
 
             // Check the edited maps' real colliders and spawn/arrival positions. Older fields'
@@ -68,10 +68,14 @@ namespace DotRPG
             var fieldExport = new List<object>();
             foreach (string id in physicalMaps)
             {
+                var previousScenes = Game.World.GetComponentsInChildren<UnderworldCompositionScene>();
+                var previousArt = previousScenes.SelectMany(s => s.Layers.Concat(s.ForegroundRenderers)).Where(r => r != null && r.sprite != null)
+                    .SelectMany(r => new UnityEngine.Object[] { r.sprite, r.sprite.texture }).Distinct().ToArray();
                 Game.World.Load(id);
                 Game.Player.Place(Game.World.PlayerSpawn, Facing.Down);
                 yield return Wait(.25f);
                 Physics2D.SyncTransforms();
+                DCheck(id + " previous cave images released", previousScenes.All(s => s == null) && previousArt.All(r => r == null));
                 var reachable = LayerReachable(Game.World.PlayerSpawn);
                 DCheck(id + " free spawn", Game.World.IsFree(Game.World.PlayerSpawn));
                 DCheck(id + " connected floor", reachable.Count > 20);
@@ -89,6 +93,9 @@ namespace DotRPG
                 DCheck(id + " outside bounds blocked", !Game.World.IsFree(new Vector2(bounds.xMin - .5f, bounds.center.y)) && !Game.World.IsFree(new Vector2(bounds.xMax + .5f, bounds.center.y)));
                 if (LayerCaves.Contains(id))
                 {
+                    var composition = Game.World.GetComponentInChildren<UnderworldCompositionScene>();
+                    DCheck(id + " HD composition active", composition != null && composition.PixelsPerUnit == 96 && composition.UsesHighResolution);
+                    if (composition != null) WorldLayerCompositionChecks(id, composition);
                     var mobs = EnemyController.Active.Where(e => e != null && e.isActiveAndEnabled && !e.IsDead && !e.Def.boss && !e.Def.raid).ToArray();
                     var zone = HuntingGrounds.Get(id);
                     fieldExport.Add(HRow(("id", id), ("width", bounds.width), ("height", bounds.height),
@@ -425,7 +432,7 @@ namespace DotRPG
             bool hd=Path.GetFileNameWithoutExtension(scene.SourcePath??"").EndsWith("_hd",StringComparison.OrdinalIgnoreCase);
             DCheck(id+" source artwork exists",!string.IsNullOrEmpty(scene.SourcePath)&&File.Exists(scene.SourcePath)&&scene.SourceWidth>0&&scene.SourceHeight>0);
             DCheck(id+" exactly three registered artwork layers",scene.LayerCount==3&&scene.Layers.All(r=>r!=null&&r.sprite!=null));
-            DCheck(id+" source density preserves the same 56 by 48 world",Mathf.Approximately(ppu,hd?48:32)&&Game.World.Bounds==new Rect(0,0,56,48)&&scene.WorldBounds==Game.World.Bounds&&scene.RasterWidth==Mathf.RoundToInt(Game.World.Bounds.width*ppu)&&scene.RasterHeight==Mathf.RoundToInt(Game.World.Bounds.height*ppu));
+            DCheck(id+" source density preserves the same 56 by 48 world",Mathf.Approximately(ppu,hd?96:32)&&Game.World.Bounds==new Rect(0,0,56,48)&&scene.WorldBounds==Game.World.Bounds&&scene.RasterWidth==Mathf.RoundToInt(Game.World.Bounds.width*ppu)&&scene.RasterHeight==Mathf.RoundToInt(Game.World.Bounds.height*ppu));
             DCheck(id+" layer masks cover every source pixel once",scene.UncoveredPixels==0&&scene.OverlappingPixels==0&&scene.MismatchedPixels==0&&scene.LayerPixelCounts.Length==3&&scene.LayerPixelCounts.All(n=>n>0)&&scene.LayerPixelCounts.Sum()==scene.RasterOpaquePixelCount);
             DCheck(id+" three partition masks cover the complete raster",scene.LayerRasterPixelCounts.Length==3&&scene.LayerRasterPixelCounts.Sum()==scene.RasterWidth*scene.RasterHeight);
             DCheck(id+" vertical masonry never assigned over walkable ground",scene.FaceOnWalkablePixels==0);

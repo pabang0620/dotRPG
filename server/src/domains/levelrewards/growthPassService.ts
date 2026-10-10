@@ -71,13 +71,12 @@ export function claim(accountId: number, characterUuid: string, body: PassClaimB
       // 락 순서: 캐릭터(runEconomy) -> 계정. 같은 계정의 다른 캐릭터 요청도 여기서 줄을 선다
       await tickets.lockAccount(ctx.client, accountId);
       if (!(await repo.passOwned(ctx.client, accountId))) throw new AppError(409, '성장 패스가 필요합니다.', 'PASS_REQUIRED');
-      const top = await repo.topCharacter(ctx.client, accountId);
-      if (!top || top.level < tier.level) throw new AppError(409, '아직 이 레벨에 도달하지 않았습니다.', 'LEVEL_NOT_REACHED', { level: tier.level });
+      if (ctx.char.level < tier.level) throw new AppError(409, '현재 캐릭터가 아직 이 레벨에 도달하지 않았습니다.', 'LEVEL_NOT_REACHED', { level: tier.level });
       if ((await repo.claimedPassLevels(ctx.client, accountId)).includes(tier.level)) throw new AppError(409, '이미 받은 보상입니다.', 'ALREADY_CLAIMED', { level: tier.level });
       await grantItems(ctx, tier.rewards, 'pass_reward', `pass:${tier.level}`);
       await repo.insertPassClaim(ctx.client, { accountId, level: tier.level, requestId, characterId: ctx.char.id });
-      const v = await view(ctx.client, accountId);
-      return { status: 200, data: { level: tier.level, rewards: tier.rewards, pass_tiers: v.pass_tiers, delta: ctx.delta() } };
+      const v = await view(ctx.client, accountId, characterUuid);
+      return { status: 200, data: { character_id: v.character_id, character_level: v.character_level, level: tier.level, rewards: tier.rewards, pass_tiers: v.pass_tiers, delta: ctx.delta() } };
     },
   });
 }

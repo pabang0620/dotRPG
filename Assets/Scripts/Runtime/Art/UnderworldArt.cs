@@ -84,7 +84,16 @@ namespace DotRPG
         }
         public static void Build(Transform root,string id,char[,] cells,int w,int h,UnderworldContour contour=null)
         {
-            if(id!="undergate"&&TryBuildComposition(root,id,cells,w,h,contour))return;
+            if(id!="undergate"&&TryBuildComposition(root,id,cells,w,h,contour))
+            {
+                // Former branch exits are now visibly sealed, matching the boundary collision.
+                if (id == "hollow_descent" || id == "hollow_depths")
+                {
+                    var foot = new Vector2(28.5f, id == "hollow_descent" ? .05f : h - 1);
+                    Put(root, "Collapsed former branch", MasonryPart(3), foot, 4.2f, YSort.OrderFor(foot.y));
+                }
+                return;
+            }
             bool town=id=="undergate";var floor=town?Terrain(id,cells,w,h):CaveTerrain(id,cells,w,h,contour);
             Put(root,"Cave floor and stratified rock",floor,Vector2.zero,w,-30000);
             if(town)

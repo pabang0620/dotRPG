@@ -20,12 +20,13 @@ export async function claimedLevels(db: Queryable, accountId: number): Promise<n
   return r.rows.map((x) => x.level);
 }
 
-export async function byRequest(db: Queryable, accountId: number, requestId: string): Promise<{ level: number; stars: number } | null> {
-  const r = await db.query<{ level: number; stars: number }>(
-    'SELECT level, stars FROM account_level_rewards WHERE account_id = $1 AND request_id = $2',
+export async function byRequest(db: Queryable, accountId: number, requestId: string): Promise<{ level: number; stars: number; characterId: number | null } | null> {
+  const r = await db.query<{ level: number; stars: number; character_id: string | null }>(
+    'SELECT level, stars, character_id FROM account_level_rewards WHERE account_id = $1 AND request_id = $2',
     [accountId, requestId],
   );
-  return r.rows[0] ?? null;
+  const row = r.rows[0];
+  return row ? { level: row.level, stars: row.stars, characterId: row.character_id === null ? null : Number(row.character_id) } : null;
 }
 
 /** 그때 지급 원장의 이후 잔액(재전송 응답용) */

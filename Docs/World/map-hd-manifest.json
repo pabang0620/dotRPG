@@ -1,0 +1,357 @@
+﻿{
+    "method":  "Hash-verified existing Real-ESRGAN masters, registered without crop or geometry changes. 128 pixels/tile surface; 96 pixels/tile underground. Local stair correction preserved.",
+    "assets":  [
+                   {
+                       "id":  "village",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/village.png",
+                       "size":  [
+                                    7424,
+                                    6912
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "07dd036af8050ae60dee5b3b62355b1272bd42a45cdbf6ecaf6cf9438114385a",
+                       "master_sha256":  "588c860105e7bbce4b88e465b9f4aec0d1d4fcc11aba6e1b37f52aba20b7db83",
+                       "output_sha256":  "ef1e8786c3b9fe40ec59a4bd7acb4363eaab9118053e5530582fb2a5dd101a3b",
+                       "preserved_postprocess":  null,
+                       "road_patch":  "Docs/World/HubRoadSources/refined/registration.json"
+                   },
+                   {
+                       "id":  "forest",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/forest.png",
+                       "size":  [
+                                    8192,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "8faae45833de096696304664ed7ad81971fccd41e4ce58f1b38e87d1e8947f63",
+                       "master_sha256":  "9b76b742454a7b065879059c4d3890c0496094ae2835e74286349b29ab8efd63",
+                       "output_sha256":  "8df6f02b3ea1ec317766125f6c638b5cfcfec08beabc0e393e80c6cd17348de6",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "forest_ruins",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/forest_ruins.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "3a885a81453229291321c84cb4c5d392d51682810498c3c65a2a47c23e99f82a",
+                       "master_sha256":  "abaaa083ac9a3e4e17814eb041e11bd1aaa64edc9fe62c345a9fe26553207139",
+                       "output_sha256":  "d776b2358ea3ac0704f02917ffd5a7b4f7eebf56e7394943639685e43aa89960",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "forest_depths",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/forest_depths.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "e93e37297c3168403bc64c5a1f9c329841a95e05daab0968339b43c91b2a965c",
+                       "master_sha256":  "eba4b9490e473da74ea70b7c6470918500e5b0786019881d9edad2bb62020647",
+                       "output_sha256":  "5d78d24fd0a59e06cd38f6c7b63dfd390162d7950285902fd67d70d3cf2d98aa",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "forest_crossing",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/forest_crossing.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "e707f9fc98c64461801a6823eb60540dfee6b33ba4b54b3a4a3b748cd4a7d0c0",
+                       "master_sha256":  "d36cc7b83a087717eaec326372b323030497332f53159715ae59cd81024ad1ee",
+                       "output_sha256":  "a9ee7ee1d211fa25715ad5896cd1f4b799b824ff7761e9649887a04bc06c417b",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "canyon",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/canyon.png",
+                       "size":  [
+                                    6144,
+                                    7680
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "d87f9f42e51a37125a36a240cc6d046d7ad0059f0da30e5ed57b2323b5d57d9c",
+                       "master_sha256":  "a7146a87e334673cacb635bdb9fd8755b3fa876bc110e30abedf9a377ce1d923",
+                       "output_sha256":  "849ab65b5b977f18d8a8aa6c9d8a6f75bb4dfa80a07573e10562387bba42ca33",
+                       "preserved_postprocess":  null,
+                       "road_patch":  "Docs/World/HubRoadSources/refined/registration.json"
+                   },
+                   {
+                       "id":  "canyon_pass",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/canyon_pass.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "dad2837f834a6f7c7b078bc90ecbece78fa1400674345a837398bcde9081adc5",
+                       "master_sha256":  "fcaf1aa88f24e005268a6ef8e974468f2d50fd413bdc2439d2a60706fc731e39",
+                       "output_sha256":  "7684bf0be343e8bec944c44807afb3d07620a6df97e1c60ad292940acf56fe5b",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "canyon_mine",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/canyon_mine.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "d41923964fb577f8ac9dfae1cb3f40278ef1397b74164d1e561b7ea541fa3fb9",
+                       "master_sha256":  "035726e9d8b7ae95bf2b541572a9b8245321a8b99f599577fbde3818bd5c97f8",
+                       "output_sha256":  "7f76718f4d1d709beb682f43ef18f79b598c515963ba500c4c1440f541e64c0d",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "canyon_ridge",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/canyon_ridge.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "4b01d9a7140fed1748c32250a015e33bac9ea133d8f852f29f895f72a32b3e35",
+                       "master_sha256":  "b53e25346f6bfc8db67783c87f364b0e678fe9112838de38be4203378d797ccd",
+                       "output_sha256":  "3434bc69d4f7fec61f4446f980a5eedc551281ac7eb9d12d89a192c71ee2a68a",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "canyon_gate",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/canyon_gate.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "db75b59259eb8572ceb01be8a256c7e9aff88c53d806ab36a84a6821d56d7b2f",
+                       "master_sha256":  "db254577751676e873fc3eb1e5ca2fcf36abb547ae93d05832a38e3e0b13c993",
+                       "output_sha256":  "4457070f52d9cf05a2d8e456b17c2bfdcbb54a50db2ec7de68a13164d13cf0c6",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "winter",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/winter.png",
+                       "size":  [
+                                    6656,
+                                    5888
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "9721829829020fd7251bb79aac5ad8ef37183fc39e1984e51b3566168da27728",
+                       "master_sha256":  "4806b7a5b1b6f30f59f812f7c72cfc9881d6dce3f46b72019af493f595f17af8",
+                       "output_sha256":  "fbb5cb9ba4d7af540db117595ace4b8a9fe7d6b4d8e97abe13f6018a24f7d653",
+                       "preserved_postprocess":  null,
+                       "road_patch":  "Docs/World/HubRoadSources/refined/winter-join-registration.json"
+                   },
+                   {
+                       "id":  "winter_edge",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/winter_edge.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "f460785a423bd779696879e58fb0820996fd44afc389f60bb4a616435aa5f845",
+                       "master_sha256":  "b249b5491702560c04ecd0f626fa554382334ed04295bbc6fa369e6180c1e61b",
+                       "output_sha256":  "1f0e9856f8e58ba6d25275be3b0d1262a1921421d943bc43b345e4b5264e1a96",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "winter_lake",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/winter_lake.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "91d9bc552be53600a651923bc4d301216c76d6808a7455ca6b352e6e281d6ff9",
+                       "master_sha256":  "01c32201ec1136142370dae7b520981522bf6218b2cd826866ec7cbef2b51eee",
+                       "output_sha256":  "1532a380c93d5c6e40dbf5c78671196fed74a3b827865519dbd22052a316f892",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "winter_peak",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/winter_peak.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "eb6ed058320112a6f37c8e2a5574c69b651c85797db1aeed595e5737166dbbe7",
+                       "master_sha256":  "46a5e7dd096cd8a1413b9cba2d64e58c56d4348abcbfd1150cdaf278eebf83e5",
+                       "output_sha256":  "f95e09613003ac3e71e0db06e0dad3506cd86d6a38cad3ccdbd25f7402cc53bf",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "winter_reach",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/winter_reach.png",
+                       "size":  [
+                                    7168,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "7a3aa16bae7838575db187270fdee51ffafce52f75e52b7c377ed2380f129418",
+                       "master_sha256":  "f985352ce9cc1d599c081b1df198adec8bb8dda4a7e72bf44abc9186f22c62e7",
+                       "output_sha256":  "ba5ff6d467f69f99a4e78975edc0eab216e3972058fb176c402753ca3291d3cf",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "sunken_sanctum",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/sunken_sanctum.png",
+                       "size":  [
+                                    6144,
+                                    9216
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "97609ea4017c89f2894a19f3ff2fb8da35986a2b396682fb3a54c3030f354c33",
+                       "master_sha256":  "19c86ad604606f2b34b69d2d0247657faf199248291aa819808b098b6efb74f6",
+                       "output_sha256":  "9fa576a683f306816eae7d7e90b498e328cf24614ef3bcb42c1c18251e2221bd",
+                       "preserved_postprocess":  {
+                                                     "id":  "remove-duplicate-background-stairs",
+                                                     "method":  "built-in image_gen local removal, same Real-ESRGAN 4x/96PPU registration, localized source-preserving assembly",
+                                                     "source":  "Docs/World/SurfaceWorldSources/sanctum-stair-removal.png",
+                                                     "source_sha256":  "35fce0c9e551fa82fc0baf406e4a94cb0db59377a18d3d09aaf69c8f1e187de4",
+                                                     "base_registered_sha256":  "0fac9fdbd8cf7893faa9f9622484da20dbdc2cd64695b68f2a3dd82d1b913f40",
+                                                     "edited_source_bounds":  [
+                                                                                  452,
+                                                                                  518,
+                                                                                  573,
+                                                                                  655
+                                                                              ],
+                                                     "opaque_core_source_bounds":  [
+                                                                                       464,
+                                                                                       531,
+                                                                                       559,
+                                                                                       642
+                                                                                   ],
+                                                     "source_canvas":  [
+                                                                           1024,
+                                                                           1536
+                                                                       ],
+                                                     "assembly_tool":  "Tools/art/apply_sanctum_stair_patch.ps1",
+                                                     "windows_powershell":  "5.1",
+                                                     "provenance":  "Docs/World/SurfaceWorldSources/sanctum-stair-removal.json",
+                                                     "outside_patch_pixels":  "unchanged",
+                                                     "note":  "Keep the separate foreground stairs sprite and all movement collision. Reapply this edit when registering art again."
+                                                 },
+                       "road_patch":  "Docs/World/HubRoadSources/refined/registration.json"
+                   },
+                   {
+                       "id":  "sanctum_hall",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/sanctum_hall.png",
+                       "size":  [
+                                    7680,
+                                    6144
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "ebdbf42f53649caecbc4053a9aa54db16be4d57076c526482407f63e4b58c0f5",
+                       "master_sha256":  "9dc3b341e6dd04e8d3a35e0d601ab8bc182ce780366cc215906d69152999502e",
+                       "output_sha256":  "68d1272e9e79eeba6433bd19bda74cc586a6a614211bfc1b5002e17884b00817",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "sanctum_archive",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/sanctum_archive.png",
+                       "size":  [
+                                    7680,
+                                    6144
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "3479e65cdace98f208c4318cb6d71b63f8793e9d5ccd0d1ffa6cbf65c5e5f609",
+                       "master_sha256":  "989f0ccc5517221ab3b5191da9c2521887b83ebd06bb8239076f5a3355644b14",
+                       "output_sha256":  "11e4d2a6278b0430124f454d52a5c40446c9a6d9e6b1dc63986733a9d868e580",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "sanctum_roots",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/sanctum_roots.png",
+                       "size":  [
+                                    7680,
+                                    6144
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "3a5779a944691e9793312b7ffd4bf0ba327aba8a1ed1ab222b79a0faa5f57e37",
+                       "master_sha256":  "0de2815dbd5677ef2b78d79bc9b1a8db2371e48b63053629bd9b59889db6ff9d",
+                       "output_sha256":  "320145f98bd1a121c1ccb6cfe2676166201af31ff249027eaad97c3e58a59ebf",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "sanctum_court",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/sanctum_court.png",
+                       "size":  [
+                                    7680,
+                                    6144
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "0691af515c8bc9b66cd8dd77ff27987830eb426e3e73daa0600c9860e7a1b281",
+                       "master_sha256":  "6aca5ff8e17fad0be2f7d046a97bdfa99e30719fc735c667b0b30ed1024794fd",
+                       "output_sha256":  "34ef199d221d24555aab5cb2d27be73966740c929e32ea5fd2e443522834ce1e",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "undergate",
+                       "output":  "Assets/StreamingAssets/SurfaceWorld/undergate.png",
+                       "size":  [
+                                    6656,
+                                    5632
+                                ],
+                       "ppu":  128,
+                       "previous_sha256":  "f04ee5db86fd8e958de2b1e0ef29e46a87437c2a27708daf84bf00e219714429",
+                       "master_sha256":  "382395ea36d390610dc4cc54eb623976faf8a13d5c5821c8e311c7103d1a838c",
+                       "output_sha256":  "4ecf8f29e320957eddfaf49117d2678812de086275d15f77d48343dc1393a3dc",
+                       "preserved_postprocess":  null
+                   },
+                   {
+                       "id":  "hollow_descent",
+                       "output":  "Assets/StreamingAssets/Underworld/composition-descent_hd.png",
+                       "size":  [
+                                    5376,
+                                    4608
+                                ],
+                       "ppu":  96,
+                       "previous_sha256":  "5062dd99ca681ba506d3fa8f28b870819b646cc165a3da53c2de9b5646322f0a",
+                       "master_sha256":  "1ea9db96406ca9e176e24eb543f805cbb064ab2fe7c39bc46402fb42f3235680",
+                       "output_sha256":  "6b1f6acdf02459e138c99de781f8902a3cd4797c9476fb1e30d4c3273bc837a6"
+                   },
+                   {
+                       "id":  "hollow_roots",
+                       "output":  "Assets/StreamingAssets/Underworld/composition-roots_hd.png",
+                       "size":  [
+                                    5376,
+                                    4608
+                                ],
+                       "ppu":  96,
+                       "previous_sha256":  "5b6848b35a448fdc4adad3ef83dd7e3a5238c7585e43b0299518a7044633daf8",
+                       "master_sha256":  "263a437381fd4aa330dfa1ace3cada2ecb84be383dc87c3e290a9157c7cfc4df",
+                       "output_sha256":  "02313b494ec5dd8ac8416308e23f9c4033cc527b2e17e1df217169dcf7f68712"
+                   },
+                   {
+                       "id":  "hollow_fungal",
+                       "output":  "Assets/StreamingAssets/Underworld/composition-fungal_hd.png",
+                       "size":  [
+                                    5376,
+                                    4608
+                                ],
+                       "ppu":  96,
+                       "previous_sha256":  "5e11aca163d8643d36db9b5fbef969e8ea9a6cd720b4c7494713d29ccddb6112",
+                       "master_sha256":  "9d517a63ead698b88f45bcb13090355e96009c5884187847d12514093d187a5d",
+                       "output_sha256":  "b3916671682c7ece0153214f41d666a7e63a13833cad6778edf80e79babd39a3"
+                   },
+                   {
+                       "id":  "hollow_depths",
+                       "output":  "Assets/StreamingAssets/Underworld/composition-depths_hd.png",
+                       "size":  [
+                                    5376,
+                                    4608
+                                ],
+                       "ppu":  96,
+                       "previous_sha256":  "e4644f2e40891bf3af598611827a0801cb8228e9036a4bddc70fb2dc866b4ee5",
+                       "master_sha256":  "f370da9a580833f42f955b98c01b604e88de15480a35a238eaa85ed7796de62f",
+                       "output_sha256":  "6871797f03986487d140ccf3b62c332b2c9530f2b240e7b5a57e1132675252bf"
+                   }
+               ]
+}

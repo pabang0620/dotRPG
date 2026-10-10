@@ -223,10 +223,11 @@ namespace DotRPG
             if(zone!=null)detail.text += "\n" + WorldRoutes.Directions(info);
             tooltip.gameObject.SetActive(false); roomButton.gameObject.SetActive(false);
             foreach (var pin in pins) { pin.SetActive(false); Destroy(pin); } pins.Clear(); npcPins.Clear();
-            foreach (var pos in preview.exits)
+            foreach (var portal in preview.portals)
             {
                 var exit = UIFactory.Image(mapRect, "Exit", MinimapView.PortalSprite(), Color.white);
-                UIFactory.Place(exit.rectTransform, C, C, Place(pos), new Vector2(18, 22)); pins.Add(exit.gameObject);
+                UIFactory.Place(exit.rectTransform, C, C, Place(portal.position), new Vector2(24, 28)); pins.Add(exit.gameObject);
+                PortalTooltip.Hook(exit, portal.target);
             }
             npcs = WorldAtlas.Npcs(selectedMap).OrderByDescending(n => n.service != NpcService.None).ThenBy(n => n.name).ToList();
             for (int i = 0; i < npcs.Count; i++)
