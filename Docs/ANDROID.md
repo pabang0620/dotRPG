@@ -13,7 +13,9 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
    - 배치 모드: `Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.BuildScript.BuildAndroidDev`
 2. 결과: `Builds/Android/dotRPG-dev.apk` (Development 빌드, http 서버 허용)
 3. 설치: `adb install -r Builds/Android/dotRPG-dev.apk`
-4. 로그인 화면 "서버 주소" 칸에 PC의 서버 주소 입력 (예: `http://192.168.0.10:3000`). 폰과 PC가 같은 네트워크여야 하고 PC 방화벽에서 서버 포트를 열어야 한다. 값은 PlayerPrefs `dotrpg.server`에 저장된다.
+4. 서버: 폰은 기본으로 시험 서버 `https://35-216-2-121.sslip.io`(구글 클라우드, DB는 Supabase, `ApiClient.MobileTestServer`)에 붙는다. 서버 주소 칸은 비워 두면 된다.
+   - PC 서버로 시험하려면 로그인 화면 "서버 주소" 칸에 PC 주소 입력 (예: `http://192.168.0.10:3000`). 폰과 PC가 같은 네트워크여야 하고 PC 방화벽에서 서버 포트를 열어야 한다. 값은 PlayerPrefs `dotrpg.server`에 저장되고, 칸을 비우면 시험 서버로 돌아간다.
+   - PC 개발 빌드의 기본은 그대로 `http://127.0.0.1:3000`이다.
 
 빌드 직전에 코드(`ProjectSetup.ApplyAndroid`)가 적용하는 값
 - 패키지 ID `com.dotrpg.game` (Android만), IL2CPP, ARM64, minSdk 26, targetSdk 36
