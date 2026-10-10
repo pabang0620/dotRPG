@@ -100,6 +100,7 @@ export async function resetDb(): Promise<void> {
       'anomaly_log',
       'enhance_log',
       'character_enhance_pity',
+      'daily_quests',
       'quest_claims',
       'site_deliveries',
       'character_chests',

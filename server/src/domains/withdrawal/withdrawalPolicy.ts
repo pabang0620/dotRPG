@@ -128,6 +128,7 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('character_node_state', `character_id ${CHR}`),
   keepOwn('character_state', `character_id ${CHR}`),
   keepOwn('quest_claims', `character_id ${CHR}`),
+  keepOwn('daily_quests', `character_id ${CHR}`),
   keepOwn('site_deliveries', `character_id ${CHR}`),
   keepOwn('character_items', `character_id ${CHR}`, '원장 보존식 I2 때문에 원장과 함께 파기'),
   keepOwn('gold_ledger', `character_id ${CHR}`),
@@ -237,7 +238,7 @@ export const POLICY: PolicyEntry[] = [
 export const DESTROY_ORDER: string[] = [
   'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'sweep_ticket_ledger',
   'sweep_ticket_lots', 'dungeon_runs', 'revive_log', 'character_achievements', 'character_career', 'character_career_trials',
-  'character_chests', 'character_enhance_pity', 'character_node_state', 'character_state', 'quest_claims', 'site_deliveries',
+  'character_chests', 'character_enhance_pity', 'character_node_state', 'character_state', 'quest_claims', 'daily_quests', 'site_deliveries',
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'account_pass_claims',
   'sealed_pulls', 'raid_shop_purchases', 'gacha_pulls', 'star_synth_log', 'account_collections', 'account_cosmetics', 'account_growth_pass',
   'account_sealed_state', 'account_week_counters', 'economy_holds', 'account_sanctions', 'admin_account_notes', 'admin_grants',

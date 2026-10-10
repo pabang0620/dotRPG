@@ -55,6 +55,7 @@ namespace DotRPG
             view.mailEntry = view.Add("menuicon_mail", "우편", () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
             view.Add("menuicon_achievement", "업적", () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
             view.rewardEntry = view.Add("menuicon_levelreward", "레벨 보상", () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]
+            view.dailyEntry = view.Add("menuicon_quest", "일일 의뢰", () => Game.Flow.OpenWindow(DailyQuestScreen.Instance)); // [DAILY 14]
             view.Add("menuicon_cashshop", "캐시샵", () => Game.Flow.OpenWindow(GachaScreen.Instance)); // 뽑기
             view.Add("menuicon_cosmetics", "옷장", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));     // 오라·스킨 착용, 확정 구매
             int rows = (view.entries.Count + Columns - 1) / Columns;
@@ -72,8 +73,8 @@ namespace DotRPG
         }
 
         // [MAIL 10] Red dot on the menu button and on 우편 while mail waits (summary polled slowly in the background).
-        RectTransform mailEntry, rewardEntry;
-        Image menuDot, mailDot, rewardDot;
+        RectTransform mailEntry, rewardEntry, dailyEntry;
+        Image menuDot, mailDot, rewardDot, dailyDot;
         float nextRewardCheck;
         int lastLevel;
         bool rewardShown;
@@ -89,19 +90,21 @@ namespace DotRPG
 
         void UpdateMailDot()
         {
-            if (menuDot == null) { menuDot = Dot((RectTransform)transform); if (mailEntry != null) mailDot = Dot(mailEntry); if (rewardEntry != null) rewardDot = Dot(rewardEntry); }
+            if (menuDot == null) { menuDot = Dot((RectTransform)transform); if (mailEntry != null) mailDot = Dot(mailEntry); if (rewardEntry != null) rewardDot = Dot(rewardEntry); if (dailyEntry != null) dailyDot = Dot(dailyEntry); }
             // [LEVEL 13] Level rewards waiting: checked now and then (and right after a level-up via the window).
             int level = Game.Session != null ? Game.Session.Progression.Level : 0;
             if (level != lastLevel) { if (lastLevel > 0) nextRewardCheck = Time.unscaledTime + 2f; lastLevel = level; } // a level-up: ask again shortly
-            if (OnlineSession.Playing && Time.unscaledTime >= nextRewardCheck) { nextRewardCheck = Time.unscaledTime + 120f; LevelRewardClient.Refresh(); }
+            if (OnlineSession.Playing && Time.unscaledTime >= nextRewardCheck) { nextRewardCheck = Time.unscaledTime + 120f; LevelRewardClient.Refresh(); DailyQuestClient.Refresh(); }
             bool reward = OnlineSession.Playing && LevelRewardClient.AnyClaimable;
             if (reward && !rewardShown) GameEvents.RaiseToast("레벨 달성 보상을 받을 수 있습니다! (메뉴 > 레벨 보상)");
             rewardShown = reward;
             if (rewardDot != null) rewardDot.enabled = reward;
+            bool daily = OnlineSession.Playing && DailyQuestClient.AnyActionable; // [DAILY 14] a job to take or a reward to collect
+            if (dailyDot != null) dailyDot.enabled = daily;
             var svc = OnlineServices.Auction;
             if (svc is ServerAuctionService server && OnlineSession.Playing) server.Tick(false);
             bool waiting = OnlineSession.Playing && svc.UnclaimedMail > 0;
-            menuDot.enabled = (waiting || reward) && !open;
+            menuDot.enabled = (waiting || reward || daily) && !open;
             if (mailDot != null) mailDot.enabled = waiting;
         }
 

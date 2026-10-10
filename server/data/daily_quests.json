@@ -1,0 +1,390 @@
+{
+  "unlockQuest": "c1_stronger",
+  "perDay": 3,
+  "carryDays": 1,
+  "xpShare": 0.05,
+  "maxLevelGold": 3000,
+  "bands": [
+    {
+      "id": "canyon",
+      "minLevel": 20,
+      "maxLevel": 24,
+      "giver": "기사단 의뢰 게시판",
+      "gold": 600,
+      "templates": [
+        {
+          "id": "d_ridge_knights",
+          "type": "kill",
+          "title": "능선의 골렘 전사",
+          "text": "바람칼 능선의 암석 골렘 전사가 다시 늘었다. 길을 정리해 달라.",
+          "map": "canyon_ridge",
+          "monster": "skel_knight",
+          "label": "암석 골렘 전사",
+          "count": 40
+        },
+        {
+          "id": "d_ridge_archers",
+          "type": "kill",
+          "title": "능선의 투척병",
+          "text": "능선을 지나는 짐꾼들이 돌에 맞았다. 투척병을 쫓아내 달라.",
+          "map": "canyon_ridge",
+          "monster": "skel_archer",
+          "label": "암석 골렘 투척병",
+          "count": 50
+        },
+        {
+          "id": "d_gate_shields",
+          "type": "kill",
+          "title": "쌍벽 관문의 수호병",
+          "text": "북쪽으로 가는 관문을 골렘 수호병이 막고 있다.",
+          "map": "canyon_gate",
+          "monster": "skel_shield",
+          "label": "암석 골렘 수호병",
+          "count": 50
+        },
+        {
+          "id": "d_gate_golems",
+          "type": "kill",
+          "title": "관문 앞 정리",
+          "text": "관문 앞 골렘들을 쓰러뜨려 상인들이 지나갈 수 있게 해 달라.",
+          "map": "canyon_gate",
+          "monster": "skel_warrior",
+          "label": "암석 골렘",
+          "count": 50
+        },
+        {
+          "id": "d_canyon_dungeon",
+          "type": "dungeon",
+          "title": "기사단 훈련",
+          "text": "요일 던전을 한 번 클리어하고 보고하라.",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "winter_edge",
+      "minLevel": 25,
+      "maxLevel": 30,
+      "giver": "눈꽃 마을 의뢰 게시판",
+      "gold": 800,
+      "templates": [
+        {
+          "id": "d_edge_yeti",
+          "type": "kill",
+          "title": "소나무 숲의 예티",
+          "text": "서리 소나무 숲에 예티가 다시 내려왔다. 사냥터를 지켜 달라.",
+          "map": "winter_edge",
+          "monster": "skel_warrior",
+          "label": "설산 예티",
+          "count": 50
+        },
+        {
+          "id": "d_edge_archers",
+          "type": "kill",
+          "title": "돌 던지는 예티",
+          "text": "나무꾼들이 투척병 때문에 숲에 못 들어간다.",
+          "map": "winter_edge",
+          "monster": "skel_archer",
+          "label": "설산 예티 투척병",
+          "count": 50
+        },
+        {
+          "id": "d_edge_shields",
+          "type": "kill",
+          "title": "숲길의 수호병",
+          "text": "숲길을 막아선 예티 수호병을 물리쳐 달라.",
+          "map": "winter_edge",
+          "monster": "skel_shield",
+          "label": "설산 예티 수호병",
+          "count": 50
+        },
+        {
+          "id": "d_gate_archers",
+          "type": "kill",
+          "title": "관문의 투척병",
+          "text": "협곡과 설원을 잇는 쌍벽 관문에 투척병이 자리를 잡았다.",
+          "map": "canyon_gate",
+          "monster": "skel_archer",
+          "label": "암석 골렘 투척병",
+          "count": 50
+        },
+        {
+          "id": "d_winter_dungeon",
+          "type": "dungeon",
+          "title": "사냥꾼의 시험",
+          "text": "요일 던전을 한 번 클리어하고 하람에게 알려라.",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "winter_lake",
+      "minLevel": 31,
+      "maxLevel": 35,
+      "giver": "눈꽃 마을 의뢰 게시판",
+      "gold": 1000,
+      "templates": [
+        {
+          "id": "d_lake_shields",
+          "type": "kill",
+          "title": "호숫가의 방패벽",
+          "text": "얼어붙은 호숫가에 예티 수호병이 진을 쳤다.",
+          "map": "winter_lake",
+          "monster": "skel_shield",
+          "label": "설산 예티 수호병",
+          "count": 50
+        },
+        {
+          "id": "d_lake_knights",
+          "type": "kill",
+          "title": "호숫가의 예티 전사",
+          "text": "얼음낚시꾼들이 예티 전사에게 쫓겨났다.",
+          "map": "winter_lake",
+          "monster": "skel_knight",
+          "label": "설산 예티 전사",
+          "count": 40
+        },
+        {
+          "id": "d_lake_archers",
+          "type": "kill",
+          "title": "얼음 위의 투척병",
+          "text": "얼음 위에서 돌을 던지는 예티들을 쫓아내 달라.",
+          "map": "winter_lake",
+          "monster": "skel_archer",
+          "label": "설산 예티 투척병",
+          "count": 50
+        },
+        {
+          "id": "d_lake_dungeon",
+          "type": "dungeon",
+          "title": "얼음 정수 모으기",
+          "text": "요일 던전을 한 번 클리어하고 세라에게 알려라.",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "winter_peak",
+      "minLevel": 36,
+      "maxLevel": 999,
+      "giver": "눈꽃 마을 의뢰 게시판",
+      "gold": 1200,
+      "templates": [
+        {
+          "id": "d_peak_knights",
+          "type": "kill",
+          "title": "봉우리의 예티 전사",
+          "text": "눈보라 봉우리의 예티 전사가 마을 쪽으로 내려오고 있다.",
+          "map": "winter_peak",
+          "monster": "skel_knight",
+          "label": "설산 예티 전사",
+          "count": 40
+        },
+        {
+          "id": "d_peak_archers",
+          "type": "kill",
+          "title": "눈보라 속 투척병",
+          "text": "봉우리 길목의 투척병을 정리해 달라.",
+          "map": "winter_peak",
+          "monster": "skel_archer",
+          "label": "설산 예티 투척병",
+          "count": 50
+        },
+        {
+          "id": "d_reach_shields",
+          "type": "kill",
+          "title": "성소 입구 경계",
+          "text": "해빙된 성소 입구에 수호병이 다시 모였다.",
+          "map": "winter_reach",
+          "monster": "skel_shield",
+          "label": "설산 예티 수호병",
+          "count": 50
+        },
+        {
+          "id": "d_hall_statues",
+          "type": "kill",
+          "title": "회랑의 석상",
+          "text": "침수된 회랑의 석상이 다시 움직인다는 소문이다.",
+          "map": "sanctum_hall",
+          "monster": "skel_warrior",
+          "label": "성소 석상",
+          "count": 50
+        },
+        {
+          "id": "d_peak_dungeon",
+          "type": "dungeon",
+          "title": "설원의 단련",
+          "text": "요일 던전을 한 번 클리어하고 하람에게 알려라.",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "weekly": {
+    "perWeek": 3,
+    "xpShare": 0.15,
+    "maxLevelGold": 10000,
+    "bands": [
+      {
+        "id": "canyon",
+        "minLevel": 20,
+        "maxLevel": 24,
+        "gold": 2500,
+        "templates": [
+          {
+            "id": "w_canyon_hunt",
+            "type": "kill",
+            "title": "협곡 대청소",
+            "text": "기사단이 이번 주 협곡 길 전체를 정리하려 한다. 바람칼 능선의 골렘 전사를 잡아 달라.",
+            "map": "canyon_ridge",
+            "monster": "skel_knight",
+            "label": "암석 골렘 전사",
+            "count": 200
+          },
+          {
+            "id": "w_canyon_dungeon",
+            "type": "dungeon",
+            "title": "기사단 정기 훈련",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_canyon_raid",
+            "type": "raid",
+            "title": "해골왕 토벌",
+            "text": "해골왕 레이드를 한 번 클리어하라.",
+            "target": "raid_skeleton_king",
+            "count": 1
+          },
+          {
+            "id": "w_canyon_daily",
+            "type": "daily",
+            "title": "성실한 의뢰인",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "id": "winter_edge",
+        "minLevel": 25,
+        "maxLevel": 30,
+        "gold": 3500,
+        "templates": [
+          {
+            "id": "w_edge_hunt",
+            "type": "kill",
+            "title": "설원 사냥 주간",
+            "text": "하람이 이번 주 사냥 성과를 기다린다. 서리 소나무 숲의 설산 예티를 잡아 달라.",
+            "map": "winter_edge",
+            "monster": "skel_warrior",
+            "label": "설산 예티",
+            "count": 250
+          },
+          {
+            "id": "w_edge_dungeon",
+            "type": "dungeon",
+            "title": "사냥꾼의 단련",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_edge_raid",
+            "type": "raid",
+            "title": "해골왕 토벌",
+            "text": "해골왕 레이드를 한 번 클리어하라.",
+            "target": "raid_skeleton_king",
+            "count": 1
+          },
+          {
+            "id": "w_edge_daily",
+            "type": "daily",
+            "title": "눈꽃 마을의 일손",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "id": "winter_lake",
+        "minLevel": 31,
+        "maxLevel": 35,
+        "gold": 4500,
+        "templates": [
+          {
+            "id": "w_lake_hunt",
+            "type": "kill",
+            "title": "호숫가 정리 주간",
+            "text": "얼음낚시 철이다. 얼어붙은 호숫가의 예티 수호병을 잡아 달라.",
+            "map": "winter_lake",
+            "monster": "skel_shield",
+            "label": "설산 예티 수호병",
+            "count": 250
+          },
+          {
+            "id": "w_lake_dungeon",
+            "type": "dungeon",
+            "title": "얼음 정수 비축",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_lake_raid",
+            "type": "raid",
+            "title": "해골왕 토벌",
+            "text": "해골왕 레이드를 한 번 클리어하라.",
+            "target": "raid_skeleton_king",
+            "count": 1
+          },
+          {
+            "id": "w_lake_daily",
+            "type": "daily",
+            "title": "마을의 든든한 손",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "id": "winter_peak",
+        "minLevel": 36,
+        "maxLevel": 999,
+        "gold": 6000,
+        "templates": [
+          {
+            "id": "w_peak_hunt",
+            "type": "kill",
+            "title": "봉우리 토벌 주간",
+            "text": "눈보라 봉우리의 예티 전사를 이번 주 안에 몰아내 달라.",
+            "map": "winter_peak",
+            "monster": "skel_knight",
+            "label": "설산 예티 전사",
+            "count": 200
+          },
+          {
+            "id": "w_peak_dungeon",
+            "type": "dungeon",
+            "title": "설원의 단련",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_peak_raid",
+            "type": "raid",
+            "title": "해골왕 토벌",
+            "text": "해골왕 레이드를 한 번 클리어하라.",
+            "target": "raid_skeleton_king",
+            "count": 1
+          },
+          {
+            "id": "w_peak_daily",
+            "type": "daily",
+            "title": "설원의 수호자",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      }
+    ]
+  }
+}

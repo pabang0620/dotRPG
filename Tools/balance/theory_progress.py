@@ -39,6 +39,7 @@ for m in load("maps.json")["maps"]:
 ZONE_IDS = sorted({z[0] for z in ZONES}, key=lambda i: min(z[3] for z in ZONES if z[0] == i))
 DNG = load("dungeons.json")
 QUESTS = load("quest_index.json")["quests"]
+DAILY = load("daily_quests.json")  # 일일 의뢰(서버 전용 데이터, Docs/server/phase14_daily_quests.md)
 ENH = {s["id"]: s["levels"] for s in load("enhance.json")["steps"]}
 TIERS = [1, 10, 15, 20, 25, 30, 35, 40]
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -135,7 +136,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
     claimed, dungeon_clears, raid_clears, keys = set(), 0, {}, 0
     sk_claim_day, grah_claim_week = -1, -1
     events, reached, done_raid = [], {}, {}
-    stats = {"quest_xp": 0, "quest_kill_min": 0.0, "dungeon_xp": 0, "dungeon_min": 0.0, "raid_xp": 0, "hunt_xp": 0, "hunt_min": 0.0}
+    stats = {"quest_xp": 0, "quest_kill_min": 0.0, "dungeon_xp": 0, "dungeon_min": 0.0, "raid_xp": 0, "hunt_xp": 0, "hunt_min": 0.0, "daily_xp": 0}
 
     def gain(amount):
         nonlocal level, xp
@@ -209,6 +210,21 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
         start = total_min
         try_quests()
         raids()
+        # 일일·주간 의뢰: 처치 목표는 지금 사냥터 사냥과 겹치므로 수락·보고 시간만 더하고, 보상은 레벨 막대 x xpShare
+        if DAILY["unlockQuest"] in claimed and level < 40 and level >= min(b["minLevel"] for b in DAILY["bands"]):
+            for _ in range(DAILY["perDay"]):
+                total_min += 2
+                stats["daily_xp"] += DAILY["xpShare"] * PROG[level - 1]
+                gain(DAILY["xpShare"] * PROG[level - 1])
+            try_quests()
+            # 주간 의뢰: 한 주 동안 나눠 하지만 계산은 주 첫날(목요일)에 한 번에 받는다고 본다
+            if weekday == "Thursday" or "weekly_first" not in stats:
+                stats["weekly_first"] = 1
+                for _ in range(DAILY["weekly"]["perWeek"]):
+                    total_min += 3
+                    stats["daily_xp"] += DAILY["weekly"]["xpShare"] * PROG[level - 1]
+                    gain(DAILY["weekly"]["xpShare"] * PROG[level - 1])
+                try_quests()
         # 요일 던전 3회
         for _ in range(DNG["dailyEntries"]):
             run = dungeon_run(weekday, level, dungeon_clears)
@@ -257,7 +273,7 @@ def report(eff, hours, friend, quests=True):
     for h, d, lv, qid, x, kind in events:
         if qid in ("c1_stronger", "c1_fortress", "c1_road", "c2_trial", "c2_growth", "c2_golem", "c2_north", "c2_grah", "c2_end"):
             print(f"- {qid}: {h:.1f}시간 ({DAYS[d % 7]}), Lv{lv}")
-    print(f"XP 출처(Lv40까지 대략): 퀘스트 {st['quest_xp']:,.0f} / 사냥 {st['hunt_xp']:,.0f} ({st['hunt_min'] / 60:.1f}시간) / 퀘스트 처치 {st['quest_kill_min'] / 60:.1f}시간 / 던전 {st['dungeon_xp']:,.0f} ({st['dungeon_min'] / 60:.1f}시간) / 레이드 {st['raid_xp']:,.0f}")
+    print(f"XP 출처(Lv40까지 대략): 퀘스트 {st['quest_xp']:,.0f} / 사냥 {st['hunt_xp']:,.0f} ({st['hunt_min'] / 60:.1f}시간) / 퀘스트 처치 {st['quest_kill_min'] / 60:.1f}시간 / 던전 {st['dungeon_xp']:,.0f} ({st['dungeon_min'] / 60:.1f}시간) / 레이드 {st['raid_xp']:,.0f} / 일일·주간 의뢰 {st['daily_xp']:,.0f}")
     gaps = []
     for (h0, _, lv0, q0, *_), (h1, _, lv1, q1, *_) in zip(events, events[1:]):
         if h1 - h0 >= 4:

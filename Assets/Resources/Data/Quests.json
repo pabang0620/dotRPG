@@ -552,7 +552,7 @@
     }
    ],
    "reward": {
-    "xp": 520,
+    "xp": 580,
     "gold": 2500,
     "items": [
      {
@@ -609,7 +609,7 @@
     }
    ],
    "reward": {
-    "xp": 1850,
+    "xp": 2150,
     "gold": 5000,
     "items": [
      {
@@ -666,7 +666,7 @@
     }
    ],
    "reward": {
-    "xp": 2740,
+    "xp": 3220,
     "gold": 6000,
     "items": [
      {
@@ -723,7 +723,7 @@
     }
    ],
    "reward": {
-    "xp": 550,
+    "xp": 650,
     "gold": 3000,
     "items": [],
     "maxHealth": 0,
@@ -766,7 +766,7 @@
     }
    ],
    "reward": {
-    "xp": 1380,
+    "xp": 1640,
     "gold": 8000,
     "items": [],
     "maxHealth": 0,
@@ -834,7 +834,7 @@
     }
    ],
    "reward": {
-    "xp": 2980,
+    "xp": 3540,
     "gold": 15000,
     "items": [],
     "maxHealth": 0,
@@ -877,7 +877,7 @@
     }
    ],
    "reward": {
-    "xp": 500,
+    "xp": 600,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1035,7 +1035,7 @@
     }
    ],
    "reward": {
-    "xp": 600,
+    "xp": 720,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1128,7 +1128,7 @@
     }
    ],
    "reward": {
-    "xp": 1790,
+    "xp": 2130,
     "gold": 6000,
     "items": [
      {
@@ -1176,7 +1176,7 @@
     }
    ],
    "reward": {
-    "xp": 800,
+    "xp": 960,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1237,7 +1237,7 @@
     }
    ],
    "reward": {
-    "xp": 2490,
+    "xp": 2970,
     "gold": 9000,
     "items": [],
     "maxHealth": 0,
@@ -1305,7 +1305,7 @@
     }
    ],
    "reward": {
-    "xp": 3650,
+    "xp": 4370,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1348,7 +1348,7 @@
     }
    ],
    "reward": {
-    "xp": 6080,
+    "xp": 7280,
     "gold": 15000,
     "items": [],
     "maxHealth": 0,
@@ -1359,14 +1359,14 @@
    "id": "c2_north",
    "chapter": 2,
    "kind": "main",
-   "code": "",
+   "code": "2-7",
    "title": "북쪽 눈꽃 마을",
-   "summary": "수호자 그라흐는 지금 힘으로는 무리다. 북쪽 눈꽃 마을의 사냥꾼들과 함께 수호석 석실에 들어갈 힘(레벨 40)을 기른다.",
+   "summary": "수호자 그라흐는 지금 힘으로는 무리다. 북쪽 눈꽃 마을로 가서 설원 사람들을 도우며 석실에 들어갈 힘을 기른다.",
    "requires": [
     "c2_golem"
    ],
    "requiresFlags": [],
-   "minLevel": 0,
+   "minLevel": 25,
    "giver": "leona",
    "offerDialogue": "c2_north_offer",
    "turnIn": "",
@@ -1397,26 +1397,10 @@
      ],
      "cutscene": "",
      "setFlags": []
-    },
-    {
-     "text": "수호석 석실에 들어갈 힘을 기른다.",
-     "objectives": [
-      {
-       "type": "level",
-       "target": "",
-       "count": 40,
-       "text": "레벨 40 달성 (석실 입장 레벨)",
-       "dialogue": "",
-       "consume": false,
-       "map": ""
-      }
-     ],
-     "cutscene": "",
-     "setFlags": []
     }
    ],
    "reward": {
-    "xp": 0,
+    "xp": 1710,
     "gold": 10000,
     "items": [
      {
@@ -1432,11 +1416,11 @@
    "id": "c2_grah",
    "chapter": 2,
    "kind": "main",
-   "code": "2-7",
+   "code": "2-19",
    "title": "수호자 그라흐",
    "summary": "해골왕 레이드에서 모은 봉인 열쇠 조각 60개로 수호석 석실을 연다. 수호자 그라흐. (최종 레이드, 레벨 40, 일요일)",
    "requires": [
-    "c2_north"
+    "s_court"
    ],
    "requiresFlags": [],
    "minLevel": 0,
@@ -1480,7 +1464,7 @@
     }
    ],
    "reward": {
-    "xp": 10910,
+    "xp": 13090,
     "gold": 25000,
     "items": [],
     "maxHealth": 0,
@@ -1523,7 +1507,7 @@
     }
    ],
    "reward": {
-    "xp": 2730,
+    "xp": 3270,
     "gold": 0,
     "items": [],
     "maxHealth": 0,
@@ -1568,7 +1552,7 @@
     }
    ],
    "reward": {
-    "xp": 360,
+    "xp": 400,
     "gold": 4000,
     "items": [
      {
@@ -1616,7 +1600,7 @@
     }
    ],
    "reward": {
-    "xp": 800,
+    "xp": 960,
     "gold": 2500,
     "items": [],
     "maxHealth": 0,
@@ -1869,7 +1853,7 @@
     }
    ],
    "reward": {
-    "xp": 180,
+    "xp": 200,
     "gold": 2500,
     "items": [
      {
@@ -1969,7 +1953,7 @@
     }
    ],
    "reward": {
-    "xp": 2350,
+    "xp": 2810,
     "gold": 4000,
     "items": [
      {
@@ -2026,7 +2010,7 @@
     }
    ],
    "reward": {
-    "xp": 3430,
+    "xp": 4090,
     "gold": 5000,
     "items": [
      {
@@ -2083,7 +2067,7 @@
     }
    ],
    "reward": {
-    "xp": 4860,
+    "xp": 5820,
     "gold": 6000,
     "items": [
      {
@@ -2131,7 +2115,7 @@
     }
    ],
    "reward": {
-    "xp": 6820,
+    "xp": 8180,
     "gold": 6000,
     "items": [],
     "maxHealth": 10,
@@ -2141,12 +2125,12 @@
   {
    "id": "w_edge",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-8",
    "title": "서리 소나무 숲의 예티",
    "summary": "설원 사냥꾼 하람이 사냥터를 되찾을 사람을 찾는다.",
    "requires": [
-    "c2_trial"
+    "c2_north"
    ],
    "requiresFlags": [],
    "minLevel": 27,
@@ -2183,8 +2167,65 @@
     }
    ],
    "reward": {
-    "xp": 8180,
+    "xp": 9820,
     "gold": 8000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lakeroad",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-9",
+   "title": "호수로 가는 길",
+   "summary": "서리 소나무 숲 북쪽 끝, 얼어붙은 호숫가로 가는 길목을 예티들이 막고 있다. 하람이 길을 열어 달라고 한다.",
+   "requires": [
+    "w_edge"
+   ],
+   "requiresFlags": [],
+   "minLevel": 29,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_lakeroad_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_lakeroad_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "호수로 가는 길목의 예티를 몰아낸다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 40,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      },
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 40,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 11540,
+    "gold": 9000,
     "items": [
      {
       "id": "potion_hp",
@@ -2198,12 +2239,12 @@
   {
    "id": "w_lake",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-10",
    "title": "얼어붙은 호숫가",
    "summary": "하람이 호숫가의 얼음 낚시터를 점령한 설산 예티 전사를 쓰러뜨려 달라고 한다.",
    "requires": [
-    "c2_trial"
+    "w_lakeroad"
    ],
    "requiresFlags": [],
    "minLevel": 31,
@@ -2240,7 +2281,7 @@
     }
    ],
    "reward": {
-    "xp": 10910,
+    "xp": 13090,
     "gold": 10000,
     "items": [
      {
@@ -2253,14 +2294,128 @@
    }
   },
   {
+   "id": "w_lakelight",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-11",
+   "title": "얼음 아래의 빛",
+   "summary": "호수 얼음 아래에서 푸른 빛이 올라오고, 예티들이 그 빛 주변에 모여 사나워진다. 세라가 빛이 어디서 오는지 알아봐 달라고 한다.",
+   "requires": [
+    "w_lake"
+   ],
+   "requiresFlags": [],
+   "minLevel": 33,
+   "giver": "winter_elder",
+   "offerDialogue": "w_lakelight_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_lakelight_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "빛 주변에 모인 예티를 쓰러뜨리고 얼음 아래를 살핀다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 40,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      },
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 40,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 14730,
+    "gold": 12000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peakpass",
+   "chapter": 2,
+   "kind": "main",
+   "code": "2-12",
+   "title": "봉우리 길목",
+   "summary": "예티들이 봉우리에서 내려오는 이유를 알려면 길목부터 확보해야 한다. 하람이 봉우리 아래 길목을 함께 뚫자고 한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 35,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_peakpass_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_peakpass_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈보라 봉우리 길목의 예티를 몰아낸다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 40,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_peak"
+      },
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 40,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_peak"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 16450,
+    "gold": 13000,
+    "items": [
+     {
+      "id": "ticket_protect",
+      "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
    "id": "w_peak",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-13",
    "title": "눈보라 봉우리",
    "summary": "하람이 봉우리 위에서 내려오는 설산 예티 전사 무리를 막아 달라고 한다.",
    "requires": [
-    "c2_trial"
+    "w_peakpass"
    ],
    "requiresFlags": [],
    "minLevel": 36,
@@ -2288,7 +2443,7 @@
     }
    ],
    "reward": {
-    "xp": 16360,
+    "xp": 19640,
     "gold": 15000,
     "items": [
      {
@@ -2336,7 +2491,7 @@
     }
    ],
    "reward": {
-    "xp": 1650,
+    "xp": 1910,
     "gold": 3000,
     "items": [
      {
@@ -2733,7 +2888,7 @@
     }
    ],
    "reward": {
-    "xp": 90,
+    "xp": 110,
     "gold": 3500,
     "items": [
      {
@@ -2781,7 +2936,7 @@
     }
    ],
    "reward": {
-    "xp": 220,
+    "xp": 260,
     "gold": 3500,
     "items": [
      {
@@ -2829,7 +2984,7 @@
     }
    ],
    "reward": {
-    "xp": 270,
+    "xp": 330,
     "gold": 4000,
     "items": [
      {
@@ -2877,7 +3032,7 @@
     }
    ],
    "reward": {
-    "xp": 150,
+    "xp": 170,
     "gold": 5000,
     "items": [
      {
@@ -2925,7 +3080,7 @@
     }
    ],
    "reward": {
-    "xp": 430,
+    "xp": 510,
     "gold": 5000,
     "items": [
      {
@@ -2977,7 +3132,7 @@
     }
    ],
    "reward": {
-    "xp": 550,
+    "xp": 650,
     "gold": 6000,
     "items": [
      {
@@ -3025,7 +3180,7 @@
     }
    ],
    "reward": {
-    "xp": 750,
+    "xp": 890,
     "gold": 7000,
     "items": [
      {
@@ -3073,7 +3228,7 @@
     }
    ],
    "reward": {
-    "xp": 800,
+    "xp": 960,
     "gold": 8000,
     "items": [
      {
@@ -3121,7 +3276,7 @@
     }
    ],
    "reward": {
-    "xp": 1050,
+    "xp": 1270,
     "gold": 10000,
     "items": [
      {
@@ -3169,7 +3324,7 @@
     }
    ],
    "reward": {
-    "xp": 1190,
+    "xp": 1430,
     "gold": 12000,
     "items": [
      {
@@ -3217,7 +3372,7 @@
     }
    ],
    "reward": {
-    "xp": 1400,
+    "xp": 1680,
     "gold": 15000,
     "items": [
      {
@@ -3265,7 +3420,7 @@
     }
    ],
    "reward": {
-    "xp": 1490,
+    "xp": 1790,
     "gold": 20000,
     "items": [],
     "maxHealth": 10,
@@ -3275,15 +3430,15 @@
   {
    "id": "w_reach",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-14",
    "title": "녹아내린 봉인",
    "summary": "하람이 해빙된 성소 입구에서 미쳐 날뛰는 설산 예티를 막아 달라고 한다.",
    "requires": [
-    "c2_trial"
+    "w_peak"
    ],
    "requiresFlags": [],
-   "minLevel": 34,
+   "minLevel": 37,
    "giver": "winter_hunter",
    "offerDialogue": "w_reach_offer",
    "turnIn": "winter_hunter",
@@ -3317,7 +3472,7 @@
     }
    ],
    "reward": {
-    "xp": 15000,
+    "xp": 21130,
     "gold": 16000,
     "items": [
      {
@@ -3332,8 +3487,8 @@
   {
    "id": "s_hall",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-15",
    "title": "물에 잠긴 회랑",
    "summary": "촌장 세라가 침수된 고대 성소로 들어가 회랑을 지키는 석상을 쓰러뜨려 달라고 한다.",
    "requires": [
@@ -3374,7 +3529,7 @@
     }
    ],
    "reward": {
-    "xp": 16360,
+    "xp": 19640,
     "gold": 18000,
     "items": [
      {
@@ -3389,8 +3544,8 @@
   {
    "id": "s_archive",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-16",
    "title": "잠긴 서고",
    "summary": "세라가 회랑 너머 잠긴 서고를 지키는 석상 투척병을 정리해 달라고 한다. 반쯤 지워진 비문이 있다고 한다.",
    "requires": [
@@ -3422,7 +3577,7 @@
     }
    ],
    "reward": {
-    "xp": 17050,
+    "xp": 20470,
     "gold": 19000,
     "items": [
      {
@@ -3437,8 +3592,8 @@
   {
    "id": "s_roots",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-17",
    "title": "뿌리 잠식 지하묘",
    "summary": "하람이 뿌리에 잠식된 성소 지하묘의 석상 수호병을 쓰러뜨려 달라고 한다.",
    "requires": [
@@ -3470,7 +3625,7 @@
     }
    ],
    "reward": {
-    "xp": 17050,
+    "xp": 20470,
     "gold": 19000,
     "items": [
      {
@@ -3485,8 +3640,8 @@
   {
    "id": "s_court",
    "chapter": 2,
-   "kind": "sub",
-   "code": "",
+   "kind": "main",
+   "code": "2-18",
    "title": "망각의 내전",
    "summary": "세라가 서고와 지하묘 너머 망각의 내전을 지키는 석상을 쓰러뜨리고 안쪽 벽을 살펴봐 달라고 한다.",
    "requires": [
@@ -3537,7 +3692,7 @@
     }
    ],
    "reward": {
-    "xp": 20450,
+    "xp": 24550,
     "gold": 25000,
     "items": [
      {

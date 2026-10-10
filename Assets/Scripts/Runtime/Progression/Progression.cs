@@ -26,11 +26,11 @@ namespace DotRPG
         /// <summary>
         /// Level-up XP is the base curve times <see cref="CurveScaleAt"/>: <see cref="EarlyScale"/> up to Lv10, rising evenly to
         /// <see cref="LateScale"/> at Lv26, so the hunting time per level grows smoothly instead of jumping at one level.
-        /// Career change (Lv15) after about 4 hours, the first raid (Lv20) after about 9 and Lv40 after about 45 hours of play,
-        /// quests, daily dungeons and raids included (Tools/balance/theory_progress.py, Docs/BALANCE_EARLY_PROGRESSION.md).
+        /// Career change (Lv15) after about 4 hours, the first raid (Lv20) after about 9 and Lv40 after about 40 hours of play,
+        /// quests, daily quests, daily dungeons and raids included (Tools/balance/theory_progress.py, Docs/BALANCE_EARLY_PROGRESSION.md).
         /// Kill XP and the dungeon floors are priced from the base curve (HuntingGrounds.XpAt), so only the pace changes.
         /// </summary>
-        public const double EarlyScale = 4, LateScale = 30;
+        public const double EarlyScale = 4, LateScale = 36;
         const int EarlyUntil = 10, LateFrom = 26;
         public static double CurveScaleAt(int level) =>
             level <= EarlyUntil ? EarlyScale

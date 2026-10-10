@@ -169,7 +169,7 @@ GRANT SELECT, DELETE ON
          anomaly_log, drops, kill_log, kill_stats, raid_claims, party_run_members, dungeon_sweeps,
          sweep_ticket_ledger, sweep_ticket_lots, dungeon_runs, revive_log, character_achievements,
          character_career, character_career_trials, character_chests, character_enhance_pity,
-         character_node_state, character_state, quest_claims, site_deliveries, character_items,
+         character_node_state, character_state, quest_claims, daily_quests, site_deliveries, character_items,
          gold_ledger, item_ledger, xp_ledger, enhance_log, account_level_rewards,
          account_pass_claims, sealed_pulls, gacha_pulls, star_synth_log, account_collections,
          account_cosmetics, account_growth_pass, account_sealed_state, account_week_counters,
