@@ -72,7 +72,7 @@ namespace DotRPG.EditorTools
                     scenes = new[] { ProjectSetup.MainScene },
                     locationPathName = output,
                     target = BuildTarget.Android,
-                    options = release ? BuildOptions.None : BuildOptions.Development,
+                    options = (release ? BuildOptions.None : BuildOptions.Development) | CleanFlag(),
                     extraScriptingDefines = release ? new[] { "DOTRPG_RELEASE" } : null,
                 };
                 var summary = BuildPipeline.BuildPlayer(options).summary;
@@ -81,6 +81,12 @@ namespace DotRPG.EditorTools
             }
             finally { restore(); }
         }
+
+        /// <summary>
+        /// -dotrpgCleanBuild on the command line: rebuild without the build cache. Gradle patches the previous apk in place,
+        /// so after large assets are removed the file keeps their space as dead bytes (2026-10-11: 869 MB file, 375 MB of entries).
+        /// </summary>
+        static BuildOptions CleanFlag() => Array.IndexOf(Environment.GetCommandLineArgs(), "-dotrpgCleanBuild") >= 0 ? BuildOptions.CleanBuildCache : BuildOptions.None;
 
         static void FailAndroid(string message)
         {

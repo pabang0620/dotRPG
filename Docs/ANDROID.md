@@ -12,6 +12,7 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
 1. Unity 메뉴 `dotRPG > Build > Android dev apk`
    - 배치 모드: `Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.BuildScript.BuildAndroidDev`
 2. 결과: `Builds/Android/dotRPG-dev.apk` (Development 빌드, http 서버 허용)
+   - 큰 에셋을 옮기거나 지운 뒤에는 명령줄에 `-dotrpgCleanBuild`를 붙인다. Gradle이 이전 APK를 고쳐 쓰면서 빠진 파일 자리를 빈 공간으로 남기기 때문이다(2026-10-11: 파일 869MB, 내용물 375MB).
 3. 설치: `adb install -r Builds/Android/dotRPG-dev.apk`
 4. 서버: 폰은 시험 서버 `https://35-216-2-121.sslip.io`(구글 클라우드, DB는 Supabase, `ApiClient.MobileTestServer`)에 자동으로 붙는다. 로그인 화면에 서버 주소 칸은 없다.
    - PC 서버로 폰을 시험하려면 `OnlineScreens.cs`의 `serverRow`를 `Application.isMobilePlatform`으로 되돌려 주소 칸을 다시 연다(예: `http://192.168.0.10:3000`, 같은 네트워크, PC 방화벽에서 포트 허용). 값은 PlayerPrefs `dotrpg.server`에 저장된다.

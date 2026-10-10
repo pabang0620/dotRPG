@@ -28,7 +28,7 @@ def main():
     tool = args.tool.resolve()
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=True)
-    art = repo / "Assets/StreamingAssets/Underworld"
+    art = repo / "Assets/Resources/WorldArt/Underworld"
     report = {
         "method": "Real-ESRGAN realesrgan-x4plus, then Lanczos downsample to exactly 2x source dimensions",
         "tool_release": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0",

@@ -159,7 +159,7 @@ namespace DotRPG
                 if (!string.IsNullOrWhiteSpace(heroName)) Game.Session.Journal.PlayerName = heroName.Trim(); // [STORY]
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
-            }));
+            }, MapRegistry.Village));
         }
 
         /// <summary>[SERVER] Plays an online character: the server detail as SaveData through the normal restore.</summary>
@@ -175,7 +175,7 @@ namespace DotRPG
                 PartyClient.AttachOnline(); // [PARTY] server party board, lobby and matching
                 OnlineServices.AttachChat(OnlineSession.Current.ActiveCharacter); // [SERVER 5] chat socket
                 OnlineServices.AttachAuction(); // [SERVER 6] auction house and mailbox
-            }));
+            }, data?.mapId));
         }
 
         public void ContinueGame()
@@ -202,7 +202,7 @@ namespace DotRPG
                     GameEvents.RaiseToast("강화 규칙이 새로 바뀌었습니다.");
                     GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았습니다.");
                 }
-            }));
+            }, data.mapId));
         }
 
         void EnterWorld()
@@ -254,7 +254,7 @@ namespace DotRPG
                 Game.Audio.PlaySfx("confirm");
                 GameEvents.RaiseToast($"· {Game.World.Map.displayName} ·");
                 if (arriveAtSpawn) Fx.Sparkle(player.Center + Vector2.up * 0.3f, 8, 0.8f);
-            }));
+            }, mapId));
         }
 
         bool readingScroll;
@@ -366,7 +366,7 @@ namespace DotRPG
                 Game.Camera.SetTarget(null, false);
                 Game.State.Set(GameState.Title);
                 Game.Audio.PlayMusic("music_title");
-            }));
+            }, MapRegistry.Village));
         }
 
         public void QuitGame()
@@ -446,7 +446,7 @@ namespace DotRPG
                 Game.Session.PlayerMana = CharacterStats.MaxMp;
                 Game.Camera.SetTarget(player.transform, true);
                 Game.State.Set(GameState.Playing);
-            }));
+            }, Game.World.MapId != MapRegistry.Village ? MapRegistry.Village : null));
         }
 
         public void ShowEnding() => StartCoroutine(EndingRoutine());
@@ -458,12 +458,17 @@ namespace DotRPG
             Game.State.Set(GameState.Ending);
         }
 
-        IEnumerator Transition(Action action)
+        /// <summary>
+        /// Fade out, run the change, fade in. <paramref name="prepareMap"/>: [MAP ART] the map about to be built; its large
+        /// artwork is loaded asynchronously while the screen is dark (MapArtCache), so building it does not stall.
+        /// </summary>
+        IEnumerator Transition(Action action, string prepareMap = null)
         {
             if (transitioning) yield break;
             transitioning = true;
             var fader = Game.UI.Fader;
             yield return fader.Fade(1f, 0.35f);
+            if (!string.IsNullOrEmpty(prepareMap)) yield return MapArtCache.Prepare(prepareMap);
             try
             {
                 action();

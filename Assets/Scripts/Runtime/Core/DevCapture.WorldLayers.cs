@@ -430,11 +430,12 @@ namespace DotRPG
         {
             float ppu=scene.PixelsPerUnit;
             bool hd=Path.GetFileNameWithoutExtension(scene.SourcePath??"").EndsWith("_hd",StringComparison.OrdinalIgnoreCase);
-            DCheck(id+" source artwork exists",!string.IsNullOrEmpty(scene.SourcePath)&&File.Exists(scene.SourcePath)&&scene.SourceWidth>0&&scene.SourceHeight>0);
+            DCheck(id+" source artwork exists",!string.IsNullOrEmpty(scene.SourcePath)&&MapArtCache.Get(scene.SourcePath)!=null&&scene.SourceWidth>0&&scene.SourceHeight>0);
             DCheck(id+" exactly three registered artwork layers",scene.LayerCount==3&&scene.Layers.All(r=>r!=null&&r.sprite!=null));
             DCheck(id+" source density preserves the same 56 by 48 world",Mathf.Approximately(ppu,hd?96:32)&&Game.World.Bounds==new Rect(0,0,56,48)&&scene.WorldBounds==Game.World.Bounds&&scene.RasterWidth==Mathf.RoundToInt(Game.World.Bounds.width*ppu)&&scene.RasterHeight==Mathf.RoundToInt(Game.World.Bounds.height*ppu));
-            DCheck(id+" layer masks cover every source pixel once",scene.UncoveredPixels==0&&scene.OverlappingPixels==0&&scene.MismatchedPixels==0&&scene.LayerPixelCounts.Length==3&&scene.LayerPixelCounts.All(n=>n>0)&&scene.LayerPixelCounts.Sum()==scene.RasterOpaquePixelCount);
-            DCheck(id+" three partition masks cover the complete raster",scene.LayerRasterPixelCounts.Length==3&&scene.LayerRasterPixelCounts.Sum()==scene.RasterWidth*scene.RasterHeight);
+            // [MAP ART] -1 = compressed artwork without a CPU copy: pixel partition checks are skipped.
+            if(scene.UncoveredPixels>=0)DCheck(id+" layer masks cover every source pixel once",scene.UncoveredPixels==0&&scene.OverlappingPixels==0&&scene.MismatchedPixels==0&&scene.LayerPixelCounts.Length==3&&scene.LayerPixelCounts.All(n=>n>0)&&scene.LayerPixelCounts.Sum()==scene.RasterOpaquePixelCount);
+            if(scene.UncoveredPixels>=0)DCheck(id+" three partition masks cover the complete raster",scene.LayerRasterPixelCounts.Length==3&&scene.LayerRasterPixelCounts.Sum()==scene.RasterWidth*scene.RasterHeight);
             DCheck(id+" vertical masonry never assigned over walkable ground",scene.FaceOnWalkablePixels==0);
             var b=Game.World.Bounds;
             bool registered=scene.LayerCount==3;

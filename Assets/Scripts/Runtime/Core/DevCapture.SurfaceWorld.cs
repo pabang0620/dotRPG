@@ -632,18 +632,20 @@ namespace DotRPG
             DCheck(mapId + " one map-owned surface composition", scenes.Length == 1);
             var s = scenes[0];
             DCheck(mapId + " composition belongs to current map", s.MapId == mapId && s.WorldBounds == Game.World.Bounds);
-            DCheck(mapId + " exclusive composition layer slots", s.Layers.Length == 3 && s.LayerCount > 0 && s.UncoveredPixels == 0 && s.OverlappingPixels == 0 && s.MismatchedPixels == 0);
-            DCheck(mapId + " supporting edges avoid walkable terrain", s.SupportOnWalkablePixels == 0);
+            // [MAP ART] Compressed artwork has no CPU copy: pixel statistics are -1 (not measured) and their checks are skipped.
+            bool measured = s.UncoveredPixels >= 0;
+            DCheck(mapId + " exclusive composition layer slots", s.Layers.Length == 3 && s.LayerCount > 0 && (!measured || s.UncoveredPixels == 0 && s.OverlappingPixels == 0 && s.MismatchedPixels == 0));
+            if (measured) DCheck(mapId + " supporting edges avoid walkable terrain", s.SupportOnWalkablePixels == 0);
             DCheck(mapId + " composition uses sharp pixels", s.Layers.Where(r => r != null).All(r => r.sprite != null && r.sprite.texture.filterMode == FilterMode.Point));
             var textures = s.Layers.Where(r => r != null).Select(r => r.sprite.texture).Distinct().ToArray();
             DCheck(mapId + " composition shares one unreadable source texture", textures.Length == 1 && textures[0] == s.SharedTexture
-                && !s.SharedTexture.isReadable && s.OwnedResources.OfType<Texture2D>().Count() == 1);
-            DCheck(mapId + " mesh cells and source UVs exactly partition artwork", s.WrongOwnerPixels == 0 && s.PixelBoundsErrors == 0
+                && !s.SharedTexture.isReadable && s.OwnedResources.OfType<Texture2D>().Count() == (measured ? 1 : 0));
+            if (measured) DCheck(mapId + " mesh cells and source UVs exactly partition artwork", s.WrongOwnerPixels == 0 && s.PixelBoundsErrors == 0
                 && s.MismatchedPixels == 0 && s.LayerVertexCounts.Length == 3 && s.LayerTriangleCounts.Length == 3);
             int expectedPpu = s.SourceWidth >= s.WorldBounds.width * 128 && s.SourceHeight >= s.WorldBounds.height * 128 ? 128
                 : s.SourceWidth >= s.WorldBounds.width * 96 && s.SourceHeight >= s.WorldBounds.height * 96 ? 96
                 : s.SourceWidth >= s.WorldBounds.width * 48 && s.SourceHeight >= s.WorldBounds.height * 48 ? 48 : 32;
-            DCheck(mapId + " registered source resolution is preserved", s.PixelsPerUnit == expectedPpu
+            if (measured) DCheck(mapId + " registered source resolution is preserved", s.PixelsPerUnit == expectedPpu
                 && s.RasterWidth == s.WorldBounds.width * expectedPpu && s.RasterHeight == s.WorldBounds.height * expectedPpu
                 && s.SharedTexture.width == s.RasterWidth && s.SharedTexture.height == s.RasterHeight
                 && s.SharedTexture.width <= SystemInfo.maxTextureSize && s.SharedTexture.height <= SystemInfo.maxTextureSize);

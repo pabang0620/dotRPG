@@ -14,9 +14,12 @@ namespace DotRPG.EditorTools
         const string ArtFolder = "Assets/Resources/Art/";
         const string ResourcesFolder = "Assets/Resources/";
         const string AndroidPlatform = "Android";
+        /// <summary>[MAP ART] Large map artwork (Docs/MAP_ART_LOADING.md): GPU-compressed per platform, never read on the CPU.</summary>
+        const string WorldArtFolder = "Assets/Resources/WorldArt/";
 
         void OnPreprocessTexture()
         {
+            if (assetPath.StartsWith(WorldArtFolder)) { ApplyWorldArt((TextureImporter)assetImporter); return; }
             if (assetPath.StartsWith(ResourcesFolder)) ApplyAndroid((TextureImporter)assetImporter);
             if (!assetPath.StartsWith(ArtFolder)) return;
             var importer = (TextureImporter)assetImporter;
@@ -91,6 +94,57 @@ namespace DotRPG.EditorTools
             return true;
         }
 
+        /// <summary>
+        /// [MAP ART] Map artwork is drawn at up to 128 px per tile and 9216 px on a side. It is loaded as a texture asset
+        /// (MapArtCache) and drawn as-is, so it is compressed for the GPU instead of being decoded from PNG at run time:
+        /// PC keeps the full size as crunched DXT (DXT1 opaque, DXT5 with alpha), Android caps it at 4096 px as ASTC 6x6
+        /// (phone screens show no more, and most phone GPUs stop at 8192). Sizes that are not a multiple of 4 (small
+        /// fallback pictures) use the automatic format. Applied on every import so the rule cannot drift.
+        /// </summary>
+        static void ApplyWorldArt(TextureImporter importer)
+        {
+            importer.textureType = TextureImporterType.Default;
+            importer.npotScale = TextureImporterNPOTScale.None;
+            importer.mipmapEnabled = false;
+            importer.isReadable = false;
+            importer.filterMode = FilterMode.Point;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.alphaSource = TextureImporterAlphaSource.FromInput;
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.crunchedCompression = true;
+            importer.compressionQuality = 60;
+            var (w, h, alpha) = PngInfo(importer.assetPath);
+            bool blocks = w % 4 == 0 && h % 4 == 0;
+            importer.SetPlatformTextureSettings(new TextureImporterPlatformSettings
+            {
+                name = "Standalone", overridden = true, maxTextureSize = 16384, compressionQuality = 60, crunchedCompression = blocks,
+                textureCompression = TextureImporterCompression.Compressed,
+                format = !blocks ? TextureImporterFormat.Automatic : alpha ? TextureImporterFormat.DXT5Crunched : TextureImporterFormat.DXT1Crunched,
+            });
+            importer.SetPlatformTextureSettings(new TextureImporterPlatformSettings
+            {
+                name = AndroidPlatform, overridden = true, maxTextureSize = 4096, format = TextureImporterFormat.ASTC_6x6,
+                compressionQuality = (int)TextureCompressionQuality.Normal, textureCompression = TextureImporterCompression.Compressed,
+            });
+        }
+
+        /// <summary>Width, height and whether the PNG can carry alpha (RGBA, gray+alpha or a palette), read from its header.</summary>
+        static (int w, int h, bool alpha) PngInfo(string path)
+        {
+            try
+            {
+                using (var stream = System.IO.File.OpenRead(path))
+                {
+                    var head = new byte[26];
+                    if (stream.Read(head, 0, 26) < 26 || head[1] != (byte)'P') return (0, 0, true);
+                    int w = (head[16] << 24) | (head[17] << 16) | (head[18] << 8) | head[19];
+                    int h = (head[20] << 24) | (head[21] << 16) | (head[22] << 8) | head[23];
+                    return (w, h, head[25] != 2 && head[25] != 0);
+                }
+            }
+            catch (System.Exception) { return (0, 0, true); }
+        }
+
         /// <summary>Longer side of a PNG read from its header; a huge value when it is not a readable PNG (-> the 6x6 branch).</summary>
         static int PngLongSide(string path)
         {
@@ -118,6 +172,7 @@ namespace DotRPG.EditorTools
                 foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { ResourcesFolder.TrimEnd('/') }))
                 {
                     string path = AssetDatabase.GUIDToAssetPath(guid);
+                    if (path.StartsWith(WorldArtFolder)) continue; // own rule (ApplyWorldArt)
                     if (AssetImporter.GetAtPath(path) is TextureImporter importer && ApplyAndroid(importer))
                     {
                         importer.SaveAndReimport();

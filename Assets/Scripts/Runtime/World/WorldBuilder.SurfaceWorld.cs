@@ -43,7 +43,7 @@ namespace DotRPG
             surfaceHiddenUnsupportedNature.Clear();
             if (map == null || map.worldLayer != WorldLayer.Surface || map.IsInterior || map.instanced
                 || Array.IndexOf(Environment.GetCommandLineArgs(), "-surfaceGroundOnly") >= 0
-                || !StreamingFiles.Exists(SurfaceWorldArt.SourcePath(MapId))) return;
+                || !SurfaceWorldArt.HasArtwork(MapId)) return;
             var resolved = new char[width, height];
             for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
                 resolved[x, y] = GroundAt(x, y);

@@ -10,7 +10,7 @@ def main():
  patches={'village':(0,.535,.255,.665),'canyon':(.155,0,.345,.175),'winter':(0,.385,.185,.515),'sunken_sanctum':(0,.195,.365,.325)}
  report=[]
  for key,rect in patches.items():
-  dest=r/'Assets/StreamingAssets/SurfaceWorld'/f'{key}.png';backup=a.work/f'{key}-before-road.png';raw=a.work/f'{key}-4x.png'
+  dest=r/'Assets/Resources/WorldArt/Surface'/f'{key}.png';backup=a.work/f'{key}-before-road.png';raw=a.work/f'{key}-4x.png'
   if not backup.exists():shutil.copyfile(dest,backup)
   with Image.open(backup) as b,Image.open(raw) as edit:
    image=b.convert('RGB');w,h=image.size;box=tuple(round(v*(w if i%2==0 else h)) for i,v in enumerate(rect));x0,y0,x1,y1=box

@@ -37,7 +37,7 @@ def main():
         report['assets'].append({'id':row['id'],'output':row['output'],'size':list(size),'ppu':128,'previous_sha256':row['output_sha256'],'master_sha256':row['inference_sha256'],'output_sha256':sha(p),'preserved_postprocess':row.get('postprocess')})
         print(row['id'],size,flush=True)
     for kind in ('descent','roots','fungal','depths'):
-        p=r/f'Assets/StreamingAssets/Underworld/composition-{kind}_hd.png';raw=a.cave_cache/f'{kind}-general4.png'
+        p=r/f'Assets/Resources/WorldArt/Underworld/composition-{kind}_hd.png';raw=a.cave_cache/f'{kind}-general4.png'
         backup=a.work/p.name
         if not backup.exists():shutil.copyfile(p,backup)
         size=(56*96,48*96)

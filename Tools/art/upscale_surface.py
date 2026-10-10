@@ -21,7 +21,7 @@ def main():
     ap.add_argument('--backup-dir', type=Path, help='Keep each previous registered PNG before replacing it')
     ap.add_argument('--manifest-output', type=Path)
     a=ap.parse_args(); repo=Path(__file__).resolve().parents[2]
-    art=repo/'Assets/StreamingAssets/SurfaceWorld'; a.work.mkdir(parents=True, exist_ok=True)
+    art=repo/'Assets/Resources/WorldArt/Surface'; a.work.mkdir(parents=True, exist_ok=True)
     originals=a.work/'originals'; originals.mkdir(exist_ok=True)
     rows=json.loads(a.index.read_text(encoding='utf-8-sig'))
     if a.only:
