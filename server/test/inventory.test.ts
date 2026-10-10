@@ -1,7 +1,23 @@
 import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
 import { buildApp, resetDb, shutdown } from './helpers';
-import { countOf, expectLedgerConsistent, newHero, post, seedItem, seedLevel, wornOf, type Hero } from './economyHelpers';
+import { countOf, expectLedgerConsistent, newHero as createHero, post, seedItem, seedLevel, wornOf, type Hero } from './economyHelpers';
+
+// 이 파일의 수량 검사는 예전 시작 지급(물약 3·2, 주문서 1) 기준이다. 시작 지급이 바뀌어도 그대로 보도록 가방을 그 수량으로 맞춘다(원장도 함께)
+const LEGACY_STARTER: Record<string, number> = { potion_hp: 3, potion_mp: 2, scroll_town: 1 };
+async function newHero(app: Parameters<typeof createHero>[0], cls?: 'warrior' | 'mage'): Promise<Hero> {
+  const h = await createHero(app, cls);
+  for (const [key, n] of Object.entries(LEGACY_STARTER)) {
+    const cur = await countOf(h, key);
+    if (cur === n) continue;
+    await getPool().query("UPDATE character_items SET count = $3 WHERE character_id = $1 AND item_key = $2 AND location = 'bag'", [h.dbId, key, n]);
+    await getPool().query(
+      `INSERT INTO item_ledger (character_id, item_key, delta, reason, ref, location, balance_after) VALUES ($1, $2, $3, 'test_boost', 'legacy_starter', 'bag', $4)`,
+      [h.dbId, key, n - cur, n],
+    );
+  }
+  return h;
+}
 
 let app = buildApp();
 beforeAll(resetDb);

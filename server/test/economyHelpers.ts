@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Express } from 'express';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
+import { getGameData } from '../src/gamedata/loader';
 import type { Rng } from '../src/utils/rng';
 import { auth, createChar, randomName, registerAccount, type Session } from './helpers';
 
@@ -173,4 +174,9 @@ export function fakeRng(opts: { unit?: number | number[]; int?: (min: number, ma
     unit: () => (units ? (units.length > 1 ? (units.shift() as number) : (units[0] as number)) : fixed),
     int: opts.int ?? ((min) => min),
   };
+}
+
+/** 새 캐릭터가 받는 시작 지급 수량(starter.json). 시작 수량에 기대는 검사는 숫자 대신 이것을 더한다 */
+export function starterCount(key: string): number {
+  return getGameData().starter.items.find((i) => i.itemKey === key)?.count ?? 0;
 }

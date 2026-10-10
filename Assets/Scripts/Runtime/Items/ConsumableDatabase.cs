@@ -153,7 +153,7 @@ namespace DotRPG
         /// <summary>What a new character starts with (and what old saves receive once).</summary>
         public static readonly (string id, int count)[] StarterPack =
         {
-            (Gold, 100), (HpPotion, 3), (MpPotion, 2), (TownScroll, 1),
+            (Gold, 100), (HpPotion, 20), (MpPotion, 20), (TownScroll, 5),
         };
     }
 

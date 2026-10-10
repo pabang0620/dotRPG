@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
+import { getGameData } from '../src/gamedata/loader';
 import {
   DATA_VERSION,
   auth,
@@ -19,9 +20,14 @@ const app = buildApp();
 beforeAll(resetDb);
 afterAll(shutdown);
 
+// 시작 지급은 게임 데이터(starter.json)를 그대로 쓴다
 const starter = {
-  gold: 100,
-  items: { potion_hp: 3, potion_mp: 2, scroll_town: 1 } as Record<string, number>,
+  get gold() {
+    return getGameData().starter.gold;
+  },
+  get items(): Record<string, number> {
+    return Object.fromEntries(getGameData().starter.items.map((i) => [i.itemKey, i.count]));
+  },
 };
 
 describe('POST /characters', () => {

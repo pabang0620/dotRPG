@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { buildApp, resetDb, shutdown } from './helpers';
-import { countOf, expectLedgerConsistent, goldOf, newHero, post, seedItem } from './economyHelpers';
+import { countOf, expectLedgerConsistent, goldOf, newHero, post, seedItem, starterCount } from './economyHelpers';
 
 const app = buildApp();
 beforeAll(resetDb);
@@ -14,7 +14,7 @@ describe('POST /characters/:id/shop/buy', () => {
     expect(res.body.data).toMatchObject({ item_id: 'potion_hp', count: 2, unit_price: 30, total: 60 });
     expect(res.body.data.delta.gold).toBe(40);
     expect(await goldOf(h)).toBe(40);
-    expect(await countOf(h, 'potion_hp')).toBe(5);
+    expect(await countOf(h, 'potion_hp')).toBe(starterCount('potion_hp') + 2);
     await expectLedgerConsistent(h);
   });
 
@@ -49,14 +49,14 @@ describe('POST /characters/:id/shop/buy', () => {
   });
 
   it('동시 요청: 잔액이 한 번 살 만큼뿐이면 한쪽만 성공하고 골드는 음수가 되지 않는다', async () => {
-    const h = await newHero(app); // 골드 100, 물약 3개(90)
+    const h = await newHero(app); // 골드 100(물약 3개 값 90)
     const [a, b] = await Promise.all([
       post(app, h, '/shop/buy', { item_id: 'potion_hp', count: 3 }),
       post(app, h, '/shop/buy', { item_id: 'potion_hp', count: 3 }),
     ]);
     expect([a.status, b.status].sort()).toEqual([200, 422]);
     expect(await goldOf(h)).toBe(10);
-    expect(await countOf(h, 'potion_hp')).toBe(6);
+    expect(await countOf(h, 'potion_hp')).toBe(starterCount('potion_hp') + 3);
     await expectLedgerConsistent(h);
   });
 });

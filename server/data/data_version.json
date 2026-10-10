@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "11cdcac3adfca9d2",
-  "exportedAt": "2026-10-10T13:03:51.241Z",
+  "version": "bf30964fe8083e9f",
+  "exportedAt": "2026-10-10T15:10:21.135Z",
   "files": {
     "auction.json": "f8b32f15dbe6a233492bd817909349ed64241fe3e457aa520134bf8e3ae2f21a",
     "careers.json": "d61fdbbb7ca1ec1778ebe10069ebfd9ac0971c66bf047bddbb3372ea96b36ddb",
@@ -19,7 +19,7 @@
     "quest_index.json": "c9254512bce4a08dabc2c91aa17b7239d32f86ce0ad56c6bd2b573b5efe801be",
     "shop.json": "1f3cd7d515dbba8acb06515ea0ec4cf96609aac8051772b9f4e11944f7a17908",
     "skill_gems.json": "7662c212418a37bb6f66b9b8b4c5fbb15a2a38b2a6c8d88d8ee550a44a41338d",
-    "starter.json": "5449046a511de534e8ac7a90a1fffa9bcdb01df8297908f4ac56794f75161735",
+    "starter.json": "6eaf8e464b65d7841c659cd4a69c0010fbac49509af4654a0b9db518bd9af1ba",
     "sweep.json": "4d151fb4bca1ab0eb9ad45ca004b2545a7cedceb20c41147283518288f03228f",
     "raid_shop.json": "1924a4f215bfd6ae326bf1db6375a4466bb16f6d2c4edcc02b8d1cbca6a6c198"
   }

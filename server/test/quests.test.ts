@@ -13,6 +13,7 @@ import {
   seedClaims,
   seedItem,
   seedLevel,
+  starterCount,
   type Hero,
 } from './economyHelpers';
 
@@ -60,7 +61,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.reward).toMatchObject({ xp: questXp('c1_rise'), gold: 300, items: [{ item_key: 'potion_hp', count: 5 }] });
     expect(await goldOf(h)).toBe(400);
-    expect(await countOf(h, 'potion_hp')).toBe(8);
+    expect(await countOf(h, 'potion_hp')).toBe(starterCount('potion_hp') + 5);
     const gl = await getPool().query("SELECT ref FROM gold_ledger WHERE character_id = $1 AND reason = 'quest_reward'", [h.dbId]);
     expect(gl.rows).toEqual([{ ref: 'c1_rise' }]);
     await expectLedgerConsistent(h);

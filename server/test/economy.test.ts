@@ -4,7 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
-import { loadGameData } from '../src/gamedata/loader';
+import { getGameData, loadGameData } from '../src/gamedata/loader';
 import { gameWeekday, resetBoundaries } from '../src/utils/resetBoundaries';
 import { DATA_DIR, auth, buildApp, resetDb, shutdown } from './helpers';
 import { expectLedgerConsistent, goldOf, newHero, post, seedGold } from './economyHelpers';
@@ -42,9 +42,7 @@ describe('시작 지급 원장(0002 전제)', () => {
       [h.dbId],
     );
     expect(l.rows).toEqual([
-      { item_key: 'potion_hp', location: 'bag', balance_after: 3, delta: 3 },
-      { item_key: 'potion_mp', location: 'bag', balance_after: 2, delta: 2 },
-      { item_key: 'scroll_town', location: 'bag', balance_after: 1, delta: 1 },
+      ...getGameData().starter.items.map((i) => ({ item_key: i.itemKey, location: 'bag', balance_after: i.count, delta: i.count })),
       { item_key: 'eq_sword_wood', location: 'worn', balance_after: 1, delta: 1 },
     ]);
     const bind = await getPool().query("SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn'", [h.dbId]);
