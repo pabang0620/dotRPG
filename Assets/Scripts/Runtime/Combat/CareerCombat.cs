@@ -58,6 +58,8 @@ namespace DotRPG
         public float RetaliationLeft => Mathf.Max(0f, retalEnd - Time.time);
         public float ComboLeft => ComboStacks > 0 ? Mathf.Max(0f, rhythmEnd - Time.time) : 0f;
         public float InvulnerableLeft => Mathf.Max(0f, invulnerableEnd - Time.time);
+        /// <summary>[UI] 축복의 연결's damage bonus (%) while it runs.</summary>
+        public int BlessPercent => Time.time < blessEnd ? bless : 0;
 
         /// <summary>[GUARDIAN] Every hit is nullified until then (강철의 보루, 응보의 방진's blocked blow).</summary>
         float invulnerableEnd;
