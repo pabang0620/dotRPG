@@ -7,7 +7,13 @@ namespace DotRPG
     {
         static Material pointMaterial;
         static Sprite grip;
-        public static bool FlipBlade(Facing facing) => facing != Facing.Right && facing != Facing.Up && facing != Facing.UpRight;
+        static bool FlipBladeDrawn(Facing facing) => facing != Facing.Right && facing != Facing.Up && facing != Facing.UpRight;
+        /// <summary>Mirrored facings flip the blade the opposite way of the facing they copy (their drawing is that one flipped).</summary>
+        public static bool FlipBlade(Facing facing)
+        {
+            string twin = SilverWarriorArt.MirrorTwin(SilverWarriorArt.ViewKey(facing));
+            return twin != null ? !FlipBladeDrawn(SilverWarriorArt.FacingOf(twin)) : FlipBladeDrawn(facing);
+        }
         public static void ApplyMaterial(SpriteRenderer renderer)
         {
             if (pointMaterial == null) pointMaterial = new Material(Shader.Find("Sprites/Default"));
@@ -40,7 +46,8 @@ namespace DotRPG
             weapon.flipX = FlipBlade(facing);
             ApplyMaterial(weapon);
             hand.transform.localPosition = anchor;
-            int order = SilverWarriorArt.Pose(direction, frame).rightHandBack ? -1 : 1;
+            // [ART] The drawn hand is on the near side in every view except from behind: the blade goes behind only facing up.
+            int order = facing.IsUp() ? -1 : 1;
             weapon.sortingOrder = animator.Renderer.sortingOrder + order;
             hand.sortingOrder = animator.Renderer.sortingOrder + (order < 0 ? -1 : 2);
         }

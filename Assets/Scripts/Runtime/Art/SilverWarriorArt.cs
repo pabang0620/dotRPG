@@ -136,8 +136,14 @@ namespace DotRPG
         public static bool Mirror(Facing facing) => facing == Facing.DownRight || (facing.IsLeft() && facing != Facing.DownLeft);
         public static float Angle(string direction, string frame)
         {
-            return Pose(direction, frame).swordAngle;
+            // [ART] A mirrored facing shows its counterpart's drawing flipped, so the blade mirrors that facing's angle too.
+            string twin = MirrorTwin(direction);
+            return twin != null ? 180f - Pose(twin, frame).swordAngle : Pose(direction, frame).swordAngle;
         }
+
+        /// <summary>The drawn facing a mirrored facing copies (left -> side, upleft -> upside, downright -> downleft), else null.</summary>
+        public static string MirrorTwin(string direction) =>
+            direction == "left" ? "side" : direction == "upleft" ? "upside" : direction == "downright" ? "downleft" : null;
         public static Color32[] Pixels(SilverFrame f, string skin = null)
         {
             var unused = Data;
