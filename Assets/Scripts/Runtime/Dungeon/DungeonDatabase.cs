@@ -155,13 +155,15 @@ namespace DotRPG
         public const string RaidCore = "mat_core";
 
         // [P5] Multipliers tuned by Tools/balance/theory_balance.py: monster level growth (+12% HP, +8% damage per
-        // level) already scales the higher tiers, so these stay small. Target: 1.2 / 1.4 / 1.6x the Normal clear time.
+        // level) already scales the higher tiers. Target: 1.2 / 1.4 / 1.6x the Normal clear time.
+        // [BALANCE 2026-10-11] HP re-solved with Tools/balance/theory_dungeon.py for the career kit (spammable skills,
+        // 60 s buffs): 1.2/2.0/2.7 -> 1.9/4.8/6.7. Raids are solved to ~400 s real (Docs/BALANCE_COMBAT_2026-10-11.md).
         static readonly DifficultyDef[] Difficulties =
         {
             new DifficultyDef { id = DungeonDifficulty.Normal, name = "일반", recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0, jackpotPerMille = 3 },
-            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.2f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
-            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 2.0f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
-            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 2.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
+            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.9f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
+            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 4.8f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
+            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 6.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
         };
 
         /// <summary>The raid has one difficulty of its own.</summary>
@@ -324,7 +326,7 @@ namespace DotRPG
             id = Raid, name = "해골왕", theme = MapTheme.Canyon, themeName = "북쪽 고개 성채", isRaid = true,
             // [RAID] Chapter 1 mid raid: three gates a week, a seal key fragment chance on each rewarded clear.
             raidTier = RaidTier.Mid, chapter = 1, unlockQuest = "c1_fortress", keyMin = 20, keyMax = 50,
-            raidNumbers = RaidNumbers(20, 4000, 2.6f, 1.4f, 12, ItemRarity.Epic, 0),
+            raidNumbers = RaidNumbers(20, 4000, 5.7f, 1.4f, 12, ItemRarity.Epic, 0),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnRaid1, new SpawnGroup(1, "skel_knight", 4, 2), new SpawnGroup(2, "skel_shield", 2, 2)),
@@ -341,7 +343,7 @@ namespace DotRPG
         {
             id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
             raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 60,
-            raidNumbers = RaidNumbers(40, 9600, 2.1f, 1.6f, 33, ItemRarity.Epic, 8),
+            raidNumbers = RaidNumbers(40, 9600, 6.6f, 1.6f, 33, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnBargas1, new SpawnGroup(1, "skel_knight", 5, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
@@ -364,7 +366,7 @@ namespace DotRPG
         {
             id = RaidGolem, name = "바위 심장", theme = MapTheme.Canyon, themeName = "수호석 외곽 석실", isRaid = true,
             raidTier = RaidTier.Mid, chapter = 2, unlockQuest = "c2_golem", keyMin = 20, keyMax = 50,
-            raidNumbers = RaidNumbers(30, 6600, 2.2f, 1.8f, 23, ItemRarity.Epic, 8),
+            raidNumbers = RaidNumbers(30, 6600, 4.4f, 1.8f, 23, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGolem1, new SpawnGroup(1, "skel_miner", 5, 2), new SpawnGroup(2, "skel_gold", 3, 2)),
@@ -387,7 +389,7 @@ namespace DotRPG
         {
             id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
             raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 60,
-            raidNumbers = RaidNumbers(40, 10400, 1.9f, 1.7f, 35, ItemRarity.Epic, 0),
+            raidNumbers = RaidNumbers(40, 10400, 4.6f, 1.7f, 35, ItemRarity.Epic, 0),
             openDays = new[] { DayOfWeek.Sunday },
             rooms = Chain(
                 Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),

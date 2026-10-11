@@ -149,6 +149,8 @@ namespace DotRPG
         /// (the 15 kills a minute the 40 h leveling plan assumes). Tools/balance/theory_combat.py, Docs/BALANCE_COMBAT_2026-10-11.md.
         /// </summary>
         public const float FieldHpBase = 3f, FieldHpSlope = 0.5f, FieldDamageMax = 1.6f;
+        /// <summary>[BALANCE 2026-10-11] Field bosses (15-minute spawns) x1.5 HP so they don't melt in ~10 s (theory_dungeon.py).</summary>
+        public const float FieldBossHpMul = 1.5f;
         /// <summary>Field monster damage x1.0 at Lv1 rising to x1.6 at Lv15 (new characters before the career stay safe).</summary>
         public static float FieldDamageMul(int level) => 1f + (FieldDamageMax - 1f) * Mathf.Clamp01((level - 1) / 14f);
         public static float FieldHpMul(int level) => FieldHpBase * (1f + FieldHpSlope * (Mathf.Max(1, level) - 1)) / (1f + HpPerLevel * (Mathf.Max(1, level) - 1));
@@ -202,7 +204,7 @@ namespace DotRPG
             if (id == "skeleton") { def.id = "skeleton"; def.name = "해골"; }
             RegionalMonsterArt.ApplyFieldLook(def, Game.World != null ? Game.World.MapId : null);
             bool ordinary = !def.boss && !def.raid && def.kind != MonsterKind.GoldRunner; // field bosses and the gold runner (gold per hit) keep their own tuning
-            return SpawnDef(def, pos, parent, ordinary ? FieldHpMul(level) : 1f, ordinary ? FieldDamageMul(level) : 1f, level, xp);
+            return SpawnDef(def, pos, parent, ordinary ? FieldHpMul(level) : def.boss ? FieldBossHpMul : 1f, ordinary ? FieldDamageMul(level) : 1f, level, xp);
         }
 
         /// <summary>

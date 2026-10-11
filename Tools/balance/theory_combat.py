@@ -158,6 +158,9 @@ CAREERS = {
                 cds=[], cd_hits={}, cd_splash=1.0, more=1.18, dr=0),
 }
 TRAVEL = 4.0
+# EnemyController.LevelGapMul: player damage on monsters this many levels below (+15%/level beyond 3, max x3). --before = off.
+def gap_mul(gap):
+    return 1.0 if BEFORE else min(3.0, 1 + .15 * max(0, gap - 3))
 
 
 def player(lv, c):
@@ -229,7 +232,7 @@ def summary():
         if lv < 15:
             clear = pre_clear(lv, sum(hps))
             one = clear / 3
-            low = pre_clear(lv + 10, sum(hps)) / 3
+            low = pre_clear(lv + 10, sum(hps)) / 3 / gap_mul(10)
             def base_hp(warrior):
                 atk, ghp = gear(lv)
                 return 60 + (50 if warrior else 0) + (lv - 1) * (8 + (6 if warrior else 0)) + ghp
@@ -240,7 +243,7 @@ def summary():
                 cl.append(solve_clear(lv, c, sum(hps)))
                 d = rotation(lv, c, 3.0)[0] / 3.0
                 ones.append(sum(hps) / 3 / d)
-                lows.append(sum(hps) / 3 / (rotation(lv + 10, c, 3.0)[0] / 3.0))
+                lows.append(sum(hps) / 3 / (rotation(lv + 10, c, 3.0)[0] / 3.0) / gap_mul(10))
             geo = lambda v: math.exp(sum(map(math.log, v)) / len(v))
             clear, one, low = geo(cl), geo(ones), geo(lows)
             surv = [f"{player(lv, CAREERS[n])[1] / (incoming * (1 - CAREERS[n]['dr'] / 100)):.0f}" for n in ("파이터", "메이지", "수호자")]
@@ -266,7 +269,7 @@ def report():
             clear = solve_clear(lv, c, sum(hps))
             taken = incoming * .9 * (1 - c["dr"] / 100)
             survive = hp / taken if taken > 0 else 999
-            low = (sum(hps) / len(hps)) / (rotation(lv + 10, c, one_window)[0] / one_window)
+            low = (sum(hps) / len(hps)) / (rotation(lv + 10, c, one_window)[0] / one_window) / gap_mul(10)
             rows.append((z, name, ttk, clear, survive))
             print(f"| {z['name']} | {z['mlv']} | {name} | {ttk:.1f} | {clear:.1f} | {survive:.0f} | {survive / clear:.1f} | {low:.2f} |")
     return rows

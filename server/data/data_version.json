@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "version": "54fbc3747e19106b",
-  "exportedAt": "2026-10-11T00:59:21.352Z",
+  "version": "650f34176c1b9e35",
+  "exportedAt": "2026-10-11T01:28:21.426Z",
   "files": {
     "auction.json": "f8b32f15dbe6a233492bd817909349ed64241fe3e457aa520134bf8e3ae2f21a",
     "careers.json": "d61fdbbb7ca1ec1778ebe10069ebfd9ac0971c66bf047bddbb3372ea96b36ddb",
     "chat.json": "eafd16a2abf1a6ffe38236ed45794347a5e387d284b5d4b6d6034350c1444d9c",
-    "dungeons.json": "6253771340af8920e6f788211c5acc61f9cdf5001a5945cedcec3589703fe82f",
+    "dungeons.json": "2aa089025ebdeec942fd5515aeda6cc3ebac9494bdac744b90403250f03f67fa",
     "enhance.json": "5e069cc09dc5060b521e10b42e0a29e89d5ee134d210a62bb8e68d0d6f8777a0",
     "enums.json": "a2cedc1abacbe06d8bf0697b8fa5373cd41c69e76f37bd50bea969bd774550a1",
     "gameconfig.json": "7c5e4f415bdd159402c3ccbeaca1af62838be81834df14542c04c20101681d76",

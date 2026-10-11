@@ -387,6 +387,12 @@ namespace DotRPG
             }
         }
 
+        /// <summary>
+        /// [BALANCE 2026-10-11] Player damage on a monster this many levels below: +15% per level beyond 3, up to x3
+        /// (10 levels over = x2.05). Keeps at-level fights as tuned and lets an outgrown zone fall in 2-3 casts.
+        /// </summary>
+        public static float LevelGapMul(int gap) => Mathf.Min(3f, 1f + .15f * Mathf.Max(0, gap - 3));
+
         public bool TakeDamage(DamageInfo info)
         {
             if (state == State.Dead || info.team == Team.Enemy) return false;
@@ -395,6 +401,8 @@ namespace DotRPG
             if(health.IsInvulnerable) return false;
             var careerActor=info.AttackerMember!=null?CareerCombat.For(info.AttackerMember):null;
             if(careerActor!=null) info.amount=careerActor.ModifyDamage(this,info.amount);
+            // [BALANCE 2026-10-11] A much stronger character cuts through old monsters (bosses excluded).
+            if(info.AttackerMember!=null && !(Def!=null && Def.boss)) info.amount=Mathf.Max(1,Mathf.RoundToInt(info.amount*LevelGapMul(info.AttackerMember.Data.Progression.Level-Level)));
             if (!health.TryDamage(info)) return false;
             careerActor?.OnLanded(this);
 
