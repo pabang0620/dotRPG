@@ -149,5 +149,85 @@
   "frames": 11,
   "note": "asked 5x2/10; got 3 cols x 4 rows, last row 2 frames (11 total); source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
   "mode": "grid"
+ },
+ {
+  "id": "b2_feather",
+  "file": "b2_feather.png",
+  "background": "magenta",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single feather points right, trail left; Codex RGB 1254x1254 opaque magenta",
+  "mode": "grid"
+ },
+ {
+  "id": "b2_light_spear",
+  "file": "b2_light_spear.png",
+  "background": "transparent",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single spear points right; Codex RGBA 1254x1254 transparent glow (black-intended)",
+  "mode": "grid"
+ },
+ {
+  "id": "b2_bless_link",
+  "file": "b2_bless_link.png",
+  "background": "transparent",
+  "cols": 1,
+  "rows": 4,
+  "frames": 4,
+  "note": "4 rows stacked, chain beam spans full width and touches left/right image edge; Codex RGBA 1254x1254 transparent",
+  "mode": "grid"
+ },
+ {
+  "id": "b2_dawn_pillar",
+  "file": "b2_dawn_pillar.png",
+  "background": "transparent",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "4x2 tall frames, wide gutters; Codex RGBA 1254x1254 transparent",
+  "mode": "grid"
+ },
+ {
+  "id": "f2_break_crescent",
+  "file": "f2_break_crescent.png",
+  "background": "transparent",
+  "cols": 3,
+  "rows": 2,
+  "frames": 6,
+  "note": "3x2, crescents large in right column; Codex RGBA 1254x1254 transparent",
+  "mode": "grid"
+ },
+ {
+  "id": "f2_stance_wave",
+  "file": "f2_stance_wave.png",
+  "background": "transparent",
+  "cols": 3,
+  "rows": 2,
+  "frames": 6,
+  "note": "3x2, thin azure slash, frame1 tiny spark; Codex RGBA 1254x1254 transparent",
+  "mode": "grid"
+ },
+ {
+  "id": "g2_barrier_dome",
+  "file": "g2_barrier_dome.png",
+  "background": "transparent",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "4x2 dome build-up, frame6 flash; Codex RGBA 1254x1254 transparent",
+  "mode": "grid"
+ },
+ {
+  "id": "g2_gold_chain",
+  "file": "g2_gold_chain.png",
+  "background": "magenta",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single chain, 5 links, teal inner glow; Codex RGB 1254x1254 opaque magenta",
+  "mode": "grid"
  }
 ]
