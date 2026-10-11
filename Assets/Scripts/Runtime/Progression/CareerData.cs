@@ -66,6 +66,8 @@ namespace DotRPG
         /// <summary>Lasting buffs and shields: twice as long, cast less often (pressing them again and again is a chore).
         /// [BALANCE 2026-10-11] Their base durations are 30 s (60 s in play) with a cooldown under that, so one press a minute keeps them up.</summary>
         static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter" };
+        /// <summary>Cooldown of every lasting buff (and 검귀 해방), seconds.</summary>
+        public const float BuffCooldown = 62f;
         static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음")
         {
             bool passive = i == 0 || i == 4, awaken = i == 8;
@@ -85,6 +87,8 @@ namespace DotRPG
                 // A signature skill keeps its own numbers: 0 = spammable (no cooldown), "frenzy" = the fighter's burst window.
                 bool signature = cd <= 0f || effect == "frenzy";
                 if (!signature) cd = Mathf.Max(0.5f, Mathf.Round(cd * (awaken ? 1.25f : longBuff ? 1.6f : 0.7f) * 2f) / 2f);
+                // [BALANCE 2026-10-11] Every lasting buff: 2 minutes, back in 62 s (one press keeps it up with room to spare).
+                if (longBuff || effect == "frenzy") cd = BuffCooldown;
                 if (longBuff)
                 {
                     float was = duration;
@@ -122,7 +126,7 @@ namespace DotRPG
                 S(f,0,"f_rhythm","검기 연성","기본 공격 적중마다 검기 1개를 모은다. 최대 3개, 6초 유지. 3개일 때 다음 전직 스킬 피해 +20%, 전부 소모.","swordflow",20,0,0,0,0,0,6),
                 S(f,1,"f_cross","십자참","전방 120도, 2.3m를 X자로 두 번 벤다. 두 번째 베기가 적을 밀어낸다.","cross",1.7f,10,3,2.3f,0,.08f,0,2),
                 S(f,2,"f_rush","섬광보","전방 4m를 섬광처럼 돌진하며 경로의 적을 벤다. 벽 앞에서 멈춘다. 배우면 이동기(Shift)로 나가고 스킬 키에는 올리지 않는다.","rush",2.8f,14,6,4,.75f,.06f),
-                S(f,3,"f_flurry","검귀 해방","검기를 몸에 두르고 60초 동안 모든 공격 피해 +30%. 1분에 한 번 켜 두면 계속 유지된다.","frenzy",30,20,60,0,0,.1f,60),
+                S(f,3,"f_flurry","검귀 해방","검기를 몸에 두르고 120초 동안 모든 공격 피해 +30%. 재사용 62초라 한 번 켜 두면 여유 있게 유지된다.","frenzy",30,20,62,0,0,.1f,120),
                 S(f,4,"f_edge","파죽지세","현재 HP가 80% 이상인 적에게 직접 공격 피해 +15%. 전투의 첫 틈을 강하게 연다.","opening",15,0,0,0,0,0),
                 S(f,5,"f_break","파쇄 검기","재사용 대기시간 없이 연달아 날리는 7m 관통 초승달 검기. 맞은 적은 4초 동안 내 공격에 15% 더 큰 피해를 받는다.","break",1.4f,18,0,7,.8f,.15f,4),
                 S(f,6,"f_focus","일섬","전방 6m 직선에 칼금을 긋고 0.18초 뒤 그 위의 적을 한꺼번에 베어낸다.","iaido",4.4f,22,10,6,.55f,.25f),
@@ -130,13 +134,13 @@ namespace DotRPG
                 S(f,8,"f_awake","천검귀일","주변 5m 안의 적 위로 검 6자루가 떨어진 뒤 내 자리에 거대한 검이 꽂힌다. 거대한 검은 반경 3.5m에 600% 피해와 0.8초 기절.","swordrain",1.6f,60,60,5,3.5f,.5f,0,6,"검기 연성 3개면 모든 낙검 강화"),
                 S(f,9,"f_stance","검기 태세","켜고 끄는 태세. 켜 두는 동안 기본 공격이 검기 베기로 바뀌어 매 타격마다 초승달 검기가 앞으로 5m 날아가 관통한다. 3타째는 검기 3줄. 검기마다 MP를 쓰고 MP가 모자라면 저절로 꺼진다. 다시 누르면 끈다.","stance",1.1f,5,0,5,.8f,0f),
                 S(g,0,"g_steel","강철의 심장","받는 피해 추가 6% 감소. 다른 감소와 합산, 최대 65%.","steel",6,0,0,0,0,0),
-                S(g,1,"g_guard","강철의 보루","방패를 내려찍어 주변 2m의 적을 밀어내고 1초 동안 무적(모든 피해 무효). 이어서 30초 동안 받는 피해 30% 감소.","guard",.8f,12,10,0,2f,.1f,30),
+                S(g,1,"g_guard","강철의 보루","방패를 내려찍어 주변 2m의 적을 밀어내고 1초 동안 무적(모든 피해 무효). 이어서 60초 동안 받는 피해 30% 감소.","guard",.8f,12,10,0,2f,.1f,60),
                 S(g,2,"g_wall","회귀의 방패","재사용 대기시간 없이 방패를 5m 던졌다가 회수한다. 동시에 3개까지(강화 단계마다 +1, 최대 5개) 날리고, 강화할수록 더 빨리 던진다. 오가며 적을 치고 0.3초 기절, 닿은 아군과 자신에게 HP 18% 보호막 6초.","shieldthrow",.6f,18,0,5,0,.08f,6,2),
-                S(g,3,"g_oath","수호의 맹세","30초 동안 자신을 따라가는 반경 4m 결계. 안의 아군은 받는 피해 30% 감소, HP 15% 보호막, 저주·둔화가 풀린다.","oath",.15f,28,20,0,4,.2f,30),
+                S(g,3,"g_oath","수호의 맹세","60초 동안 자신을 따라가는 반경 4m 결계. 안의 아군은 받는 피해 30% 감소, HP 15% 보호막, 저주·둔화가 풀린다.","oath",.15f,28,20,0,4,.2f,60),
                 S(g,4,"g_retal","수호의 반향","피격 후 다음 공격 피해 +20%. 재충전 2초.","retaliate",20,0,0,0,0,0,4),
                 S(g,5,"g_taunt","대지의 호령","땅을 굴러 반경 10m의 적을 도발한다. 도발된 적은 다른 대상을 쫓던 중이어도 자신에게 달려오고, 4초 동안 공격 대상이 자신으로 고정된다(보스 1.2초).","taunt",.8f,12,8,0,10,.15f,4),
                 S(g,6,"g_bash","방패 강타","0.8m 전진하며 전방 110도, 2.2m를 방패로 친다. 기절 1.2초(보스 0.3초), 크게 밀어내고 맞은 적을 3초 도발한다.","bash",3f,16,7,2.2f,0,.18f,1.2f),
-                S(g,7,"g_counter","응보의 방진","30초 동안 받는 피해 40% 감소. 그동안 공격을 3번까지 완전히 막고(막을 때마다 무적 0.5초, 머리 위 '방어!') 반경 3m 반격 충격파를 터뜨린다(첫 번째 100%, 이후 60%). 피격이 없으면 끝날 때 70% 위력으로 방출.","counter",3.4f,20,13,0,3,.1f,30),
+                S(g,7,"g_counter","응보의 방진","60초 동안 받는 피해 40% 감소. 그동안 공격을 3번까지 완전히 막고(막을 때마다 무적 0.5초, 머리 위 '방어!') 반경 3m 반격 충격파를 터뜨린다(첫 번째 100%, 이후 60%). 피격이 없으면 끝날 때 70% 위력으로 방출.","counter",3.4f,20,13,0,3,.1f,60),
                 S(g,8,"g_awake","천쇄방패","뛰어올라 반경 5m를 내려찍는다. 기절 1.5초(보스 0.5초)와 도발. 반경 6m 아군과 자신에게 HP 25% 보호막 8초.","aegis",5f,50,70,0,5,.55f,8,1,"수호자의 보호와 제어를 한 번에"),
                 S(m,0,"m_elements","원소의 기억","다른 원소로 직접 적중하면 피해 +12%. 같은 원소 반복은 제외.","elements",12,0,0,0,0,0,5),
                 S(m,1,"m_fire","홍련구","재사용 대기시간 없이 연달아 쏘는 화염구. 목표에 닿으면 반경 1.8m로 폭발하고 맞은 적은 3초 화상.","fire",1.2f,8,0,7,1.8f,.15f,3),
@@ -154,7 +158,7 @@ namespace DotRPG
                 S(b,4,"b_grace","축복의 그릇","보호막량 +12%. 같은 보호막은 합산 없이 큰 값으로 갱신.","grace",12,0,0,0,0,0),
                 S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",.75f,3,0,7,.6f,.04f),
                 S(b,6,"b_wing","신의 가호","반경 5m 안의 아군과 자신을 1초 동안 모든 피해로부터 지킨다(무적). 바닥에 범위가 금색 원으로, 지켜진 사람 머리 위에 남은 무적 시간이 뜬다. 보스의 큰 공격을 받아 내는 순간에 쓴다.","sanctuary",0f,20,25,0,5,0f,1),
-                S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 30초.","bless",18,28,20,0,5,.3f,30),
+                S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 60초.","bless",18,28,20,0,5,.3f,60),
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 6m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%.","dawn",4.5f,60,70,0,6,.7f,8,8,"비숍의 회복과 보호를 한 번에"),
             };
         }

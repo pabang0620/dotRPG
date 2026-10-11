@@ -151,7 +151,7 @@ namespace DotRPG
             }
             cooldown = NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown;
             castEnd = Time.time + s.cast + CareerMoves.Recovery(s) + .08f;
-            StartCoroutine(CareerCombat.For(owner).Cast(s, n));
+            StartCoroutine(CareerCombat.For(owner).Cast(s, n, true)); // the dash goes where the player points, not at a monster
             Casted?.Invoke(owner, RushSlot); // [PARTY NET] the host replays it on member PCs
             return true;
         }
