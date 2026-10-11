@@ -172,7 +172,7 @@ namespace DotRPG
         IEnumerator Bolt(PlayerController target)
         {
             E.MonsterFace(target.Position);
-            yield return Hold(BoltCast, CharacterAnim.Attack, true);
+            yield return Hold(BoltCast, CharacterAnim.Attack, Def.boss); // [BALANCE] no "!" before an ordinary caster's bolt
             if (target == null) yield break;
             Game.Audio.PlaySfx("magic");
             Vector2 from = E.Center + E.MonsterFacing.ToVector() * 0.3f;
@@ -219,8 +219,10 @@ namespace DotRPG
         {
             Vector2 dir = Dir(E.Position, target.Position);
             E.MonsterFace(target.Position);
-            Track(Telegraph.Rect(E, E.Position, dir, ArrowRange, LineWidth, AimTime, 0));
-            yield return Hold(AimTime, CharacterAnim.Attack, true);
+            // [BALANCE] Ordinary archers shoot without a warning (no aim line, no "!"); bosses keep theirs.
+            bool warn = Def.boss;
+            if (warn) Track(Telegraph.Rect(E, E.Position, dir, ArrowRange, LineWidth, AimTime, 0));
+            yield return Hold(AimTime, CharacterAnim.Attack, warn);
             Game.Audio.PlaySfx("swing");
             MonsterProjectile.Fire(E, "mon_arrow", E.Center + dir * 0.4f, dir, Def.projectileSpeed, ArrowRange, ArrowRadius,
                 E.MonsterDamage(1f), 5f, new Color(0f, 0f, 0f, 0f));

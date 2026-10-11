@@ -4,12 +4,18 @@ namespace DotRPG
 {
     public partial class PlayerController
     {
+        /// <summary>[GUARDIAN] A guardian takes no damage from monsters this many levels (or more) below.</summary>
+        public const int GuardianImmuneGap = 25;
+
         public bool TakeDamage(DamageInfo info)
         {
             if (IsDead || info.team == Team.Player) return false;
             if (NetPuppet || (IsLocal && PartyNet.IsMember)) return false; // [PARTY NET] the host decides HP
             // Party members never hurt each other, whatever team the hit claims.
             if (info.AttackerMember != null) return false;
+            // [GUARDIAN] Monsters 25 or more levels below a guardian can't hurt them at all.
+            if (Data.Progression.Career == Career.Guardian && info.attacker != null && info.attacker.TryGetComponent<EnemyController>(out var foe)
+                && foe.Level <= Data.Progression.Level - GuardianImmuneGap) return false;
             // Armour / rings: a chance to shrug the hit off completely.
             if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block) // [MONSTER] unblockable skips the roll
             {
