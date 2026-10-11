@@ -22,7 +22,8 @@ namespace DotRPG
         {
             float width = Ids.Length * Size + (Ids.Length - 1) * Gap;
             // The skill bar is 404 wide and centred; this sits just right of it, bottoms aligned.
-            var root = UIFactory.Place(UIFactory.Rect(parent, "QuickItems"), new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(226f, 50f), new Vector2(width, Size + 20f));
+            // [UI] Right of the skill bar (which grew to 8 keys) with a gap, on the same baseline.
+            var root = UIFactory.Place(UIFactory.Rect(parent, "QuickItems"), new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(SkillBarView.Width * 0.5f + 18f, 50f), new Vector2(width, Size + 20f));
             var bar = root.gameObject.AddComponent<QuickItemBar>();
             for (int i = 0; i < Ids.Length; i++)
             {

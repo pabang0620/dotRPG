@@ -17,6 +17,8 @@ namespace DotRPG
 
         // [SKILL 8] Smaller buttons so eight fit (was 70 / 84 / 10 for five).
         const float Size = 58f, UltSize = 70f, Gap = 6f;
+        /// <summary>Width of the bar (bottom-centre); the potion bar sits right of it.</summary>
+        public static float Width => (SkillGems.Slots - 1) * (Size + Gap) + UltSize;
         static readonly Color UltGold = new Color(1f, 0.84f, 0.42f, 1f);
 
         readonly Image[] frames = new Image[SkillGems.Slots];
