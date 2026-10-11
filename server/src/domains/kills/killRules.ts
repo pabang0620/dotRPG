@@ -80,7 +80,8 @@ export function rollEquipmentDrop(eco: EconomyData, cls: string, chance: number,
   if (rng.unit() > chance) return null;
   const tier = tierOfLevel(monsterLevel);
   const pool = eco.shop.equipmentList.filter(
-    (e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === tier && (e.classOnly === null || e.classOnly === cls),
+    // 2026-10-11: 다른 직업 장비도 떨어진다(마법사로 사냥해도 검·갑옷이 나온다). cls는 호출 호환용으로 남긴다
+    (e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === tier,
   );
   const total = pool.reduce((a, e) => a + e.dropWeight, 0);
   if (total <= 0) return null;

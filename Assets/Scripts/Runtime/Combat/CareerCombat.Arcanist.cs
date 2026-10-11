@@ -329,7 +329,7 @@ namespace DotRPG
 
         IEnumerator ElementStar(Run c, Vector2 ground, string element)
         {
-            const float fall = .45f, radius = 1.8f;
+            const float fall = .45f, radius = 3.6f; // [BALANCE 2026-10-11] the awakening covers twice the area
             if (element == "fire") SkillVisuals.MeteorFall(ground, fall, radius);
             else
             {

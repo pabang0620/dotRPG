@@ -94,7 +94,13 @@ namespace DotRPG
                     hits = Mathf.Max(hits, Mathf.CeilToInt(hits * 1.5f));
                 }
                 if (System.Array.IndexOf(HealEffects, effect) >= 0) power *= 0.8f;
-                else if (System.Array.IndexOf(BuffEffects, effect) < 0 && !awaken) power *= 0.85f;
+                else if (System.Array.IndexOf(BuffEffects, effect) < 0 && !awaken)
+                {
+                    power *= 0.85f;
+                    // [BALANCE 2026-10-11] Every career has a spammable main hunting skill now (no cooldown), so a skill
+                    // with a cooldown has to hit harder to be worth the wait: +15% per second of cooldown, up to 2.5x.
+                    if (cd > 0f) power *= Mathf.Min(2.5f, 1f + .15f * cd);
+                }
             }
             return Make(c, i, id, name, desc, effect, power, mp, cd, range, radius, cast, duration, hits, synergy);
         }
@@ -131,12 +137,12 @@ namespace DotRPG
                 S(m,0,"m_elements","원소의 기억","다른 원소로 직접 적중하면 피해 +12%. 같은 원소 반복은 제외.","elements",12,0,0,0,0,0,5),
                 S(m,1,"m_fire","홍련구","재사용 대기시간 없이 연달아 쏘는 화염구. 목표에 닿으면 반경 1.8m로 폭발하고 맞은 적은 3초 화상.","fire",1.2f,8,0,7,1.8f,.15f,3),
                 S(m,2,"m_ice","빙결삼창","정면과 좌우 20도로 얼음창 3개를 쏜다. 6.5m 관통, 같은 적은 한 번만, 적중 시 1.2초 빙결.","ice",2.6f,24,8,6.5f,.4f,.3f,1.2f),
-                S(m,3,"m_storm","연쇄전격","전방의 적에게 전격을 꽂고 3m 안의 다른 적으로 최대 5명까지 이어진다.","storm",2.8f,28,9,7,3,.25f,0,5),
+                S(m,3,"m_storm","연쇄전격","재사용 대기시간 없이 연달아 쏘는 전격. 전방의 적에게 꽂히고 3m 안의 다른 적으로 최대 5명까지 이어진다.","storm",1.3f,18,0,7,3,.25f,0,5),
                 S(m,4,"m_flow","마력 순환","전직 주문의 MP 소모 10% 감소.","flow",10,0,0,0,0,0),
                 S(m,5,"m_orbit","성운 폭발","키를 누르고 있는 동안 마력을 모으고(최대 2초), 떼면 목표 지점에 성운이 터진다. 오래 모을수록 폭발 범위가 최대 1.8배, 피해가 최대 3배로 커진다. 모으는 동안 천천히 움직인다.","nebula",2.6f,20,6,7,2.2f,0f),
                 S(m,6,"m_veil","차원도약","3.5m 순간이동하고 HP 12% 보호막 2초. 떠난 자리의 잔상이 0.25초 뒤 반경 1.8m 폭발.","blink",2.4f,24,14,3.5f,1.8f,.05f,2),
                 S(m,7,"m_rift","중력 균열","목표 지점에 반경 2.6m 균열을 연다. 3초 동안 적을 끌어당기며 6번 타격하고 마지막에 붕괴(160%).","rift",.8f,36,15,7,2.6f,.35f,3,6),
-                S(m,8,"m_awake","천체 붕괴","화염·얼음·전격 운석이 차례로 떨어진 뒤(각 300%) 중심이 반경 4m로 붕괴한다(450%). 얼음 운석은 1.5초 빙결.","cataclysm",3f,65,65,7,4,.7f,0,4,"세 원소가 모두 터져 원소의 기억 최대 발동"),
+                S(m,8,"m_awake","천체 붕괴","화염·얼음·전격 운석이 차례로 떨어진 뒤(각 300%) 중심이 반경 8m로 붕괴한다(450%). 얼음 운석은 1.5초 빙결.","cataclysm",3f,65,65,7,8,.7f,0,4,"세 원소가 모두 터져 원소의 기억 최대 발동"),
                 S(b,0,"b_mercy","생명의 숨","회복량 +10%.","mercy",10,0,0,0,0,0),
                 S(b,1,"b_heal","치유의 깃","반경 5m 자신과 아군에게 치유의 깃이 날아가 도착하면 회복한다.","heal",2.8f,20,5,0,5,.25f),
                 S(b,2,"b_bloom","생명의 파문","시전 위치 반경 3.5m에 6초 동안 생명의 파문이 6번 퍼져 아군을 회복한다.","bloom",.8f,26,12,0,3.5f,.25f,6,6),

@@ -370,12 +370,12 @@ namespace DotRPG
             int tier = GearCatalog.TierOfLevel(level); // only the tier at or below the monster's level
             int total = 0;
             foreach (var item in Items)
-                if (item.dropWeight > 0 && item.levelTier == tier && item.UsableBy(cls)) total += item.dropWeight;
+                if (item.dropWeight > 0 && item.levelTier == tier) total += item.dropWeight; // [2026-10-11] other classes' gear drops too
             if (total <= 0) return null;
             int roll = Random.Range(0, total);
             foreach (var item in Items)
             {
-                if (item.dropWeight <= 0 || item.levelTier != tier || !item.UsableBy(cls)) continue;
+                if (item.dropWeight <= 0 || item.levelTier != tier) continue;
                 if (roll < item.dropWeight) return item.id;
                 roll -= item.dropWeight;
             }
