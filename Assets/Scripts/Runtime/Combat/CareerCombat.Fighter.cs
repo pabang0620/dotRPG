@@ -80,7 +80,8 @@ namespace DotRPG
             Feel(1, Vector2.up);
             for (int i = 0; i < 4; i++) CareerFx.Clip("f_arc", owner.Center, CareerFx.Tilt(Vector2.right, i * 90f), 1.1f, 40f).FlipY(i % 2 == 1);
             // Burning silhouette, afterimages and embers off the body for the whole window.
-            PowerAura.Play(owner, c.s.duration, new Color(1f, .25f, .12f), new Color(1f, .78f, .3f));
+            // [UI] Only the first 2 s burn on the body now that it lasts a minute; the buff row shows the rest.
+            PowerAura.Play(owner, Mathf.Min(2f, c.s.duration), new Color(1f, .25f, .12f), new Color(1f, .78f, .3f));
             frenzy = Mathf.RoundToInt(c.s.power * c.Scale);
             frenzyEnd = Time.time + c.s.duration;
         }

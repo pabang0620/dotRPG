@@ -38,7 +38,7 @@ namespace DotRPG
             // Hex tiles close a barrier around the body, the shove throws hex shards out, then the barrier holds.
             Vector2 body = owner.Center - owner.Position;
             CareerFx.Clip("g_dome", owner.Center, Vector2.zero, 1.25f, 30f, VfxLayer.Top, false, new Color(1f, 1f, 1f, .9f)).Follow(owner.transform, body + Vector2.up * .1f);
-            CareerFx.Clip("g_domeloop", owner.Center, Vector2.zero, 1.25f, 12f, VfxLayer.Top, false, new Color(1f, 1f, 1f, .55f), false, c.s.duration, true)
+            CareerFx.Clip("g_domeloop", owner.Center, Vector2.zero, 1.25f, 12f, VfxLayer.Top, false, new Color(1f, 1f, 1f, .55f), false, Mathf.Min(2f, c.s.duration), true)
                 .Follow(owner.transform, body + Vector2.up * .1f).FadeOut(.4f);
             CareerFx.Clip("g_hexburst", owner.Center, Vector2.zero, c.n.radius / 1.3f, 26f, VfxLayer.Top, false);
             Sound("c_shield");
@@ -167,7 +167,7 @@ namespace DotRPG
         void CounterStance(Run c)
         {
             Pose(.2f, 0);
-            StartCoroutine(OrbitShields(c.s.duration));
+            StartCoroutine(OrbitShields(Mathf.Min(2f, c.s.duration))); // [UI] a short show; the buff row tracks the minute
             Sound("c_shield", .6f);
             counterDamage = c.n.damage;
             counterEnd = Time.time + c.s.duration;
