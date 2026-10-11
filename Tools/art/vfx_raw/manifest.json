@@ -1,0 +1,153 @@
+[
+ {
+  "id": "m2_fireball",
+  "file": "m2_fireball.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 3,
+  "frames": 8,
+  "note": "asked 4x2/6; got 4x3, row3 has 2 frames (10 total), rows have wide empty bands; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
+ },
+ {
+  "id": "m2_fire_explosion",
+  "file": "m2_fire_explosion.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 3,
+  "frames": 12,
+  "note": "asked 4x2/8; got 4x3 12 frames, last frames nearly faded; watermark sparkle bottom-right; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
+ },
+ {
+  "id": "m2_ice_spear",
+  "file": "m2_ice_spear.png",
+  "background": "magenta",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single image, points right, shaft centered; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid"
+ },
+ {
+  "id": "m2_ice_shatter",
+  "file": "m2_ice_shatter.png",
+  "background": "magenta",
+  "cols": 3,
+  "rows": 2,
+  "frames": 6,
+  "note": "as requested; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid",
+  "crop": [
+   0,
+   0,
+   1024,
+   700
+  ]
+ },
+ {
+  "id": "m2_lightning_bolt",
+  "file": "m2_lightning_bolt.png",
+  "background": "black",
+  "cols": 1,
+  "rows": 4,
+  "frames": 4,
+  "note": "as requested, bolts span full width; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
+ },
+ {
+  "id": "m2_lightning_hit",
+  "file": "m2_lightning_hit.png",
+  "background": "black",
+  "cols": 3,
+  "rows": 2,
+  "frames": 6,
+  "note": "3x2 but frames bleed outside cell bounds (frame1 tiny, frame3 oversized, frame6 faint); WEAK, slice by connected components not fixed cells; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid",
+  "crop": [
+   0,
+   0,
+   1024,
+   700
+  ]
+ },
+ {
+  "id": "m2_charge_orb",
+  "file": "m2_charge_orb.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "from v2 retry (first try had white bg). top 2 rows are the 8 frames; extra stray orbs + green-grey blobs in lower ~25% of image must be ignored (crop to y<~520 of 1024); source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "crop": [
+   0,
+   0,
+   1024,
+   520
+  ]
+ },
+ {
+  "id": "m2_nebula_burst",
+  "file": "m2_nebula_burst.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 3,
+  "frames": 12,
+  "note": "asked 5x2/10; got 4x3 12 frames, tail frames faint; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
+ },
+ {
+  "id": "m2_blink",
+  "file": "m2_blink.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "as requested; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
+ },
+ {
+  "id": "m2_rift",
+  "file": "m2_rift.png",
+  "background": "magenta",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "as requested; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
+ },
+ {
+  "id": "m2_meteor_fire",
+  "file": "m2_meteor_fire.png",
+  "background": "magenta",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single, diagonal TL to BR; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid"
+ },
+ {
+  "id": "m2_meteor_ice",
+  "file": "m2_meteor_ice.png",
+  "background": "magenta",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single, diagonal TL to BR; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid"
+ },
+ {
+  "id": "m2_meteor_storm",
+  "file": "m2_meteor_storm.png",
+  "background": "magenta",
+  "cols": 1,
+  "rows": 1,
+  "frames": 1,
+  "note": "single, diagonal TL to BR; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid"
+ },
+ {
+  "id": "m2_cataclysm_collapse",
+  "file": "m2_cataclysm_collapse.png",
+  "background": "black",
+  "cols": 3,
+  "rows": 4,
+  "frames": 11,
+  "note": "asked 5x2/10; got 3 cols x 4 rows, last row 2 frames (11 total); source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
+  "mode": "grid"
+ }
+]

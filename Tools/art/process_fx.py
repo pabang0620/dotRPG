@@ -6,8 +6,9 @@ Input: Tools/art/vfx_raw/manifest.json = [{id, file, background: "black"|"magent
 Steps per entry:
   1. Alpha. magenta: the soft key with un-mixing from process_generated.key (no pink fringe).
      black: glow art -> alpha = brightest channel, colour = rgb / alpha (drawn additive in game, json additive=true).
-  2. Grid. The sheet is split into cols x rows cells; Flow's gutters are uneven, so each cell is re-cut to the
-     bounding box of what is actually drawn in it. Only the first `frames` cells (reading order) are used.
+  2. Frames. Flow's watermark corner is cleared (and an optional "crop": [x0,y0,x1,y1] applied), then rows and
+     frames are found from the empty bands between drawings (the grid Flow returns often differs from the prompt),
+     each cut to what is drawn. The first `frames` (reading order) are used.
   3. One scale for the whole clip (the largest frame fits the target frame with a small margin), every frame
      centred on the same canvas, so the animation does not jump. Downscaling uses area sampling.
   4. A horizontal strip PNG (frames side by side) + json {frames, frameW, frameH, fps, additive, pivotX, pivotY}.
@@ -47,23 +48,75 @@ def alpha_black(path):
     return out
 
 
-def cells(rgba, cols, rows, frames, threshold):
+def bands(profile, min_gap, min_mass):
+    """Runs of non-empty lines separated by at least min_gap empty lines (Flow's gutters are uneven)."""
+    on = profile > 0
+    runs, start, gap = [], None, 0
+    for i, v in enumerate(on):
+        if v:
+            if start is None:
+                start = i
+            gap = 0
+            end = i
+        elif start is not None:
+            gap += 1
+            if gap >= min_gap:
+                runs.append((start, end + 1))
+                start, gap = None, 0
+    if start is not None:
+        runs.append((start, end + 1))
+    return [r for r in runs if profile[r[0]:r[1]].sum() >= min_mass]
+
+
+def cells(rgba, frames, threshold):
+    """Frames in reading order: rows found from empty horizontal bands, then frames from empty vertical bands in
+    each row, each cut to what is drawn. Robust to grids that differ from the prompt and to uneven spacing."""
+    solid = rgba[..., 3] > threshold
+    rows = bands(solid.sum(axis=1), 6, 40)
+    out = []
+    for y0, y1 in rows:
+        band = solid[y0:y1]
+        for x0, x1 in bands(band.sum(axis=0), 6, 40):
+            sub = band[:, x0:x1]
+            ys, xs = np.where(sub)
+            out.append(rgba[y0 + ys.min():y0 + ys.max() + 1, x0 + xs.min():x0 + xs.max() + 1])
+    return out[:frames] if frames else out
+
+
+def grid_cells(rgba, entry, threshold):
+    """"mode": "grid": even cols x rows over the crop box (for sheets whose drawings touch across the gutters)."""
     h, w = rgba.shape[:2]
+    x0, y0, x1, y1 = entry.get("crop", [0, 0, w, h])
+    cols, rows = int(entry["cols"]), int(entry["rows"])
+    frames = int(entry.get("frames", cols * rows))
     out = []
     for r in range(rows):
         for c in range(cols):
             if len(out) >= frames:
                 return out
-            x0, x1 = round(c * w / cols), round((c + 1) * w / cols)
-            y0, y1 = round(r * h / rows), round((r + 1) * h / rows)
-            cell = rgba[y0:y1, x0:x1]
+            cx0, cx1 = x0 + round(c * (x1 - x0) / cols), x0 + round((c + 1) * (x1 - x0) / cols)
+            cy0, cy1 = y0 + round(r * (y1 - y0) / rows), y0 + round((r + 1) * (y1 - y0) / rows)
+            cell = rgba[cy0:cy1, cx0:cx1]
             solid = cell[..., 3] > threshold
             if not solid.any():
-                out.append(None)  # an empty cell keeps its place (a blank frame)
                 continue
             ys, xs = np.where(solid)
             out.append(cell[ys.min():ys.max() + 1, xs.min():xs.max() + 1])
     return out
+
+
+def clean(rgba, entry):
+    """Drop Flow's watermark sparkle (bottom-right corner) and anything outside an optional crop box."""
+    h, w = rgba.shape[:2]
+    rgba = rgba.copy()
+    rgba[int(h * 0.9):, int(w * 0.9):, 3] = 0
+    if "crop" in entry:
+        x0, y0, x1, y1 = entry["crop"]
+        mask = np.zeros((h, w), bool)
+        mask[y0:y1, x0:x1] = True
+        rgba[~mask, 3] = 0
+    rgba[rgba[..., 3] == 0] = 0
+    return rgba
 
 
 def process(entry):
@@ -73,9 +126,10 @@ def process(entry):
         return f"{cid}: raw missing ({entry['file']})"
     black = entry.get("background", "magenta") == "black"
     rgba = alpha_black(src) if black else load_any(src)
-    cols, rows = int(entry.get("cols", 1)), int(entry.get("rows", 1))
-    frames = int(entry.get("frames", cols * rows))
-    parts = cells(rgba, cols, rows, frames, 30 if black else 100)
+    rgba = clean(rgba, entry)
+    frames = int(entry.get("frames", 0))
+    threshold = 30 if black else 100
+    parts = grid_cells(rgba, entry, threshold) if entry.get("mode") == "grid" else cells(rgba, frames, threshold)
     used = [p for p in parts if p is not None]
     if not used:
         return f"{cid}: nothing drawn"
