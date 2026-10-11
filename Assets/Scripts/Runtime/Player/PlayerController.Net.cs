@@ -141,6 +141,12 @@ namespace DotRPG
                     FaceTowards(Position + cmd.aim);
                 if (cmd.attack) combat.TryAttack();
                 if (cmd.skillSlot >= 0 && cmd.skillSlot < SkillGems.Slots) skills.TryCast(cmd.skillSlot);
+                // [FIGHTER] A member's Shift 섬광보 runs here on the host (damage + replay to the other members).
+                if (cmd.mobility && skills.RushOnMobility)
+                {
+                    if (cmd.move.sqrMagnitude > .01f) { AimDirection = SnapTo8(cmd.move); Facing = FacingExtensions.FromVector(AimDirection, Facing); }
+                    skills.TryCastRush(out _);
+                }
             }
             if (combat.IsAttacking || skills.IsCasting) animator.Play(CharacterAnim.Attack, Facing);
             else if (netMoving && (netTarget - Position).sqrMagnitude > 0.0025f) animator.Play(CharacterAnim.Walk, Facing);

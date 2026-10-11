@@ -142,6 +142,8 @@ namespace DotRPG
             alertIcon.enabled = next == State.Windup;
         }
 
+        ThreatTable threatTable; // [P5] cached (added lazily by ThreatTable.For)
+
         PlayerController Target
         {
             get
@@ -181,7 +183,8 @@ namespace DotRPG
             float distToPlayer = target != null ? Vector2.Distance(Position, target.Position) : float.MaxValue;
             float distFromHome = Vector2.Distance(Position, home);
             // [GUARDIAN] Taunted: run at the taunter however far it is (no detect / lose-interest / leash limits).
-            var threat = GetComponent<ThreatTable>();
+            if (threatTable == null) threatTable = GetComponent<ThreatTable>();
+            var threat = threatTable;
             bool taunted = threat != null && threat.Forced != null && target == threat.Forced;
 
             // [MONSTER] A pluggable behaviour (ranged, charge, summon, guard, boss patterns) owns the frame once engaged.

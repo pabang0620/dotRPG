@@ -129,7 +129,8 @@ namespace DotRPG
         {
             switch (c)
             {
-                case Career.Fighter: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 3, 3 }, { 1, 2 }, { 0, 3 }, { 4, 3 }, { 2, 2 }, { 1, 3 }, { 2, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 5, 3 });
+                // 섬광보 (2) goes out on Shift once learned, so W takes 검기 태세 (9).
+                case Career.Fighter: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 9, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 3, 3 }, { 1, 2 }, { 0, 3 }, { 4, 3 }, { 2, 2 }, { 1, 3 }, { 2, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 9, 5, 3 });
                 case Career.Guardian: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 3 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 5, 2 }, { 6, 2 }, { 7, 2 } }, new[] { 2, 5, 6, 7 });
                 // [2026-10-11] Q W E R all at rank 1 first (성운 폭발 used to wait behind 홍련구 3 and leave R empty), then the
                 // spammable 연쇄전격 and the charge shot.

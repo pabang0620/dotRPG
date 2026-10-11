@@ -263,13 +263,16 @@ namespace DotRPG
             SkillFx sigil = SkillFx.HasImage("fxi_holy_sigil")
                 ? SkillFx.Spawn("FxImg/fxi_holy_sigil", owner.Position, new Color(1f, .92f, .62f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 9).Scale(3.2f, 3.2f).Fade(FxFade.Late)
                 : SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .9f, .55f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 14).Scale(new Vector2(2.8f, 1.95f), new Vector2(2.8f, 1.95f)).Fade(FxFade.Late);
-            float end = Time.time + c.s.duration, nextTick = Time.time + interval;
+            float end = Time.time + c.s.duration, nextTick = Time.time + interval, nextMark = 0f;
             while (Time.time < end)
             {
                 if (!Live(c)) { if (sigil != null) sigil.Kill(); yield break; }
                 if (sigil != null) sigil.transform.position = owner.Position;
-                foreach (var p in Allies(owner.Center, SanctumRadius))
-                    if (c.authority) For(p).sanctumEnd = Time.time + .25f; // [BALANCE] +50% damage while inside
+                if (c.authority && Time.time >= nextMark)
+                {
+                    nextMark = Time.time + .2f; // refreshed 5 times a second, not every frame
+                    foreach (var p in Allies(owner.Center, SanctumRadius)) For(p).sanctumEnd = Time.time + .35f; // [BALANCE] +50% damage while inside
+                }
                 if (Time.time >= nextTick)
                 {
                     nextTick += interval;

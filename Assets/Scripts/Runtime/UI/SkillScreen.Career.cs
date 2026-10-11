@@ -87,7 +87,7 @@ namespace DotRPG
             if(extra)
             {
                 var s=skills[CareerSkill.ExtraIndex];
-                var bg=NodeCard(s,p,599,428,selectedSkill==s.id);
+                var bg=NodeCard(s,p,599,414,selectedSkill==s.id);
                 if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);}
             }
             var chosen=CareerCatalog.Get(selectedSkill);if(chosen==null||chosen.career!=browsing)chosen=skills[1];

@@ -46,7 +46,8 @@ namespace DotRPG
         {
             if (!stanceOn || stanceSkill == null) return;
             var n = stanceNumbers;
-            if (!owner.TrySpend(n.manaCost, n.usesLife))
+            // A puppet only shows the look: its MP is not tracked, so it never pays or switches off here.
+            if (!owner.NetPuppet && !owner.TrySpend(n.manaCost, n.usesLife))
             {
                 StopStance(false);
                 if (owner.IsLocal) GameEvents.RaiseToast("MP가 부족해 검기 태세가 풀렸습니다.");
