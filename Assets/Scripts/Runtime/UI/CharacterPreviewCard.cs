@@ -12,6 +12,13 @@ namespace DotRPG
     public sealed class CharacterPreviewCard
     {
         static readonly string[] WalkFrames = { "walk0", "walk1", "walk2", "walk3" };
+        static readonly string[] WarriorWalkFrames = { "walk0", "walk1", "walk2", "walk3", "walk4", "walk5", "walk6", "walk7" };
+
+        /// <summary>Walk-in-place frame: the warrior has eight gait phases (two per drawing), other looks four.</summary>
+        public static string WalkFrame(CharacterLook look, float t) =>
+            SilverWarriorArt.Supports(look.id)
+                ? WarriorWalkFrames[Mathf.FloorToInt(t * 14f) % WarriorWalkFrames.Length]
+                : WalkFrames[Mathf.FloorToInt(t * 7f) % WalkFrames.Length];
 
         readonly Image bg, preview;
         readonly Text title, sub;
@@ -70,7 +77,7 @@ namespace DotRPG
         {
             if (look == null) return;
             string frame = selected
-                ? WalkFrames[Mathf.FloorToInt(t * 7f) % WalkFrames.Length]
+                ? WalkFrame(look, t)
                 : (Mathf.FloorToInt(t * 1.8f) % 2 == 0 ? "idle0" : "idle1");
             preview.sprite = Game.Art.GetCharacter(look, "down", frame);
         }

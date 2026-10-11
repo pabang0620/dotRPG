@@ -10,7 +10,6 @@ namespace DotRPG
     public class CharacterSelectScreen : MenuScreen
     {
         static readonly CharacterClass[] Classes = { CharacterClass.Warrior, CharacterClass.Mage };
-        static readonly string[] WalkFrames = { "walk0", "walk1", "walk2", "walk3" };
 
         readonly Image[] previews = new Image[2];
         readonly Image[] cards = new Image[2];
@@ -137,7 +136,7 @@ namespace DotRPG
             {
                 var look = CharacterClassInfo.Get(Classes[i]).Look;
                 string frame = i == shownIndex
-                    ? WalkFrames[Mathf.FloorToInt(animTimer * 7f) % WalkFrames.Length]
+                    ? CharacterPreviewCard.WalkFrame(look, animTimer)
                     : (Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1");
                 previews[i].sprite = Game.Art.GetCharacter(look, "down", frame);
             }

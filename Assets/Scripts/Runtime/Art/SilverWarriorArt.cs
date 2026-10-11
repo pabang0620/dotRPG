@@ -80,7 +80,29 @@ namespace DotRPG
         }
         public static Vector2 Hand(string direction, string frame)
         {
+            if (Drawn(frame))
+            {
+                // The sheet's own hand position (same pixel space as the rig: x from the left, y from the top).
+                var f = SheetFrame(direction, frame);
+                float x = Mirror(FacingOf(direction)) ? Size - 1 - f.hand.x : f.hand.x;
+                return new Vector2(x - 32, 58 - f.hand.y) / Ppu;
+            }
             return WarriorRightHandRig.WorldHand(Pose(direction, frame));
+        }
+
+        /// <summary>
+        /// [ART] Standing, walking, hurt and the plain attack pose are the sheet's own drawings (one image set):
+        /// no code-drawn arms or legs and no per-pixel warping. Only the sword swings still use the rig.
+        /// </summary>
+        public static bool Drawn(string frame) => !WarriorAttackMotion.IsSwing(frame) && !(frame.StartsWith("attack") && frame.Length > 6);
+        static readonly string[] SheetWalk = { "walk0", "walk1", "walk2", "walk3" };
+        /// <summary>The player's eight gait phases share the sheet's four walk drawings (two phases each).</summary>
+        static SilverFrame SheetFrame(string direction, string frame)
+        {
+            string canonical = Canonical(direction);
+            string clip = WarriorLocomotion.IsWalk(frame) ? SheetWalk[WarriorGait.Index(frame) / 2 % SheetWalk.Length] : frame;
+            foreach (var f in Data.frames) if (f.direction == canonical && f.clip == clip) return f;
+            return Frame(direction, frame);
         }
         public static string ViewKey(Facing f) => f == Facing.DownLeft ? "downleft" : f == Facing.DownRight ? "downright" : f == Facing.Left ? "left" : f == Facing.UpLeft ? "upleft" : f.SpriteKey();
         public static string Canonical(string key) => key == "downleft" || key == "downright" ? "downside" : key == "left" ? "side" : key == "upleft" ? "upside" : key;
@@ -135,7 +157,8 @@ namespace DotRPG
 
         public static PixelCanvas Compose(CharacterLook look, string direction, string frame)
         {
-            var f = Frame(direction, frame);
+            bool drawn = Drawn(frame);
+            var f = drawn ? SheetFrame(direction, frame) : Frame(direction, frame);
             var src = Pixels(f, look.skinSheet);
             var canvas = new PixelCanvas(Size, Size).WithPivot(32, 6);
             Array.Copy(src, canvas.Pixels, src.Length);
@@ -183,6 +206,15 @@ namespace DotRPG
                 }
             var oriented = new PixelCanvas(Size, Size).WithPivot(32, 6);
             bool flip = Mirror(FacingOf(direction));
+            if (drawn)
+            {
+                for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
+                {
+                    var p = canvas.Get(flip ? Size - 1 - x : x, y);
+                    if (p.a > 0) oriented.Set(x, y, p);
+                }
+                return oriented;
+            }
             var pose = Pose(direction, frame);
             // A costume skin's cape hangs below the waist: its pixels from the sheet go behind the code-drawn legs.
             if (look.skinCape.a > 0)
