@@ -38,10 +38,10 @@
       "dungeonDifficulty": 0,
       "perHour": {
         "xp": 21600,
-        "goldEq": 87248,
+        "goldEq": 87156,
         "ore": 630.0,
         "essence": 144.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 8600,
@@ -63,10 +63,10 @@
       "dungeonDifficulty": 1,
       "perHour": {
         "xp": 31800,
-        "goldEq": 90327,
+        "goldEq": 90415,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 20871,
@@ -88,10 +88,10 @@
       "dungeonDifficulty": 1,
       "perHour": {
         "xp": 42600,
-        "goldEq": 95909,
+        "goldEq": 95997,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 20871,
@@ -113,10 +113,10 @@
       "dungeonDifficulty": 2,
       "perHour": {
         "xp": 55200,
-        "goldEq": 101607,
+        "goldEq": 101603,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 43477,
@@ -138,10 +138,10 @@
       "dungeonDifficulty": 2,
       "perHour": {
         "xp": 73200,
-        "goldEq": 107003,
+        "goldEq": 107254,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 43477,
@@ -163,10 +163,10 @@
       "dungeonDifficulty": 3,
       "perHour": {
         "xp": 73200,
-        "goldEq": 107003,
+        "goldEq": 107254,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 90011,
@@ -188,10 +188,10 @@
       "dungeonDifficulty": 3,
       "perHour": {
         "xp": 96600,
-        "goldEq": 112700,
+        "goldEq": 112860,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 90011,
@@ -207,16 +207,16 @@
     {
       "minLevel": 34,
       "maxLevel": 40,
-      "zone": "sanctum_hall",
-      "monsterLevel": 40,
+      "zone": "hollow_descent",
+      "monsterLevel": 42,
       "fieldBoss": "winter_peak",
       "dungeonDifficulty": 3,
       "perHour": {
-        "xp": 150700,
-        "goldEq": 124044,
+        "xp": 202900,
+        "goldEq": 124220,
         "ore": 646.0,
         "essence": 148.0,
-        "epicPlus": 31.3
+        "epicPlus": 6.26
       },
       "perDay": {
         "dungeonXp": 90011,

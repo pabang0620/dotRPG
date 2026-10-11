@@ -432,7 +432,7 @@ namespace DotRPG
         }
 
         /// <summary>Chance of dropping one piece of equipment the player's class can use.</summary>
-        const float EquipmentDropChance = 0.4f;
+        const float EquipmentDropChance = 0.08f; // [BALANCE 2026-10-11] was 0.4: gear piled up while hunting
 
         void DropLoot()
         {

@@ -199,7 +199,7 @@ namespace DotRPG
             }
         }
 
-        static readonly int[] GearSell = { 10, 25, 60, 150, 300, 600 };
+        static readonly int[] GearSell = { 50, 125, 300, 750, 1500, 3000 }; // [BALANCE 2026-10-11] x5 with the field drop chance 0.4 -> 0.08 (same gold per kill)
 
         /// <summary>Selling price gained from enhancing is capped at this share of the gold spent on the successful path up to that level.</summary>
         public const double EnhancedSellGoldRatio = 0.5;

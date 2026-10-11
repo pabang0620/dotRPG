@@ -329,7 +329,7 @@ namespace DotRPG.EditorTools
         static string Monsters()
         {
             var j = Doc();
-            j.Num("fieldGoldMin", 8).Num("fieldGoldMaxExclusive", 17).Num("equipmentDropChance", 0.4f); // EnemyController.DropLoot
+            j.Num("fieldGoldMin", 8).Num("fieldGoldMaxExclusive", 17).Num("equipmentDropChance", 0.08f); // EnemyController.DropLoot
             j.Num("hpPerLevel", MonsterDatabase.HpPerLevel).Num("damagePerLevel", MonsterDatabase.DamagePerLevel).Num("xpPerLevel", MonsterDatabase.XpPerLevel);
             j.Key("loot").Obj().Num("goldPileDivisor", 20).Num("goldPileMin", 2).Num("goldPileMax", 6).End(); // EnemyController.MonsterLoot
             var cfg = Resources.Load<GameConfig>("Data/GameConfig");
