@@ -195,7 +195,9 @@ namespace DotRPG
                 r.bg.color = sel ? RowSelected : open ? RowColor : RowClosed;
                 r.stripe.color = sel ? (Color)UIColors.Highlight : open ? new Color32(110, 200, 130, 255) : new Color32(70, 76, 90, 255);
                 string nameColor = open ? "#ffffff" : "#8c96a8";
-                string lv = r.def.isRaid ? $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel} · " : "";
+                // [UI] Weekday dungeons show their level span too (normal to the hardest difficulty), like the raids.
+                string lv = r.def.isRaid ? $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel} · "
+                    : $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel}~{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Hero).recommendedLevel} · ";
                 r.text.text = $"<size=24><b><color={nameColor}>{r.def.name}</color></b></size>\n<color=#b8c4d8>{lv}{r.def.themeName} · {DungeonDatabase.OpenDaysLabel(r.def)}</color>\n<size=15><color=#ffe066>{r.def.specialty}</color></size>";
                 r.tag.text = open ? "<color=#8fe28f><b>오늘 개방</b></color>" : "<color=#8c96a8>닫힘</color>";
                 // Open today: a warm glow on the row so it reads as the one to play.

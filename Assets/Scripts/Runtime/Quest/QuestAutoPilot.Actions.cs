@@ -117,7 +117,10 @@ namespace DotRPG
             if (Time.time >= nextSkill)
             {
                 nextSkill = Time.time + 1.4f;
-                input.next.skillSlot = skillSlot;
+                // [FIGHTER] 검기 태세 is a toggle: switch it on once and never press it again while it is on.
+                var gem = p.Data.Progression.Active(skillSlot);
+                bool stanceOn = gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn;
+                if (!stanceOn) input.next.skillSlot = skillSlot;
                 skillSlot = (skillSlot + 1) % 4;
             }
             else if (Time.time >= nextAttack)
