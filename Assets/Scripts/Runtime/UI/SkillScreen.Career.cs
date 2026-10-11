@@ -54,9 +54,17 @@ namespace DotRPG
                     if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);} // [UX] drag onto the key bar; badge = its key
                 }
             }
-            CareerText(careerRoot,"Awakening",$"<color=#ffe0a0><b>별도 각성 영역 · {skills[8].name}</b></color>\n{(p.Awakened?"각성 완료 · T 슬롯에서 사용":"포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성")}",18,16,436,740,50);
+            // [FIGHTER] A node outside the 2x4 tree (검기 태세) sits at the bottom right; the awakening row makes room for it.
+            bool extra=skills.Length>CareerSkill.ExtraIndex;
+            CareerText(careerRoot,"Awakening",$"<color=#ffe0a0><b>별도 각성 영역 · {skills[8].name}</b></color>\n{(p.Awakened?"각성 완료 · T 슬롯에서 사용":"포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성")}",18,16,436,extra?570:740,50);
             CareerButton("AwakeningInfo","각성 이야기 · 진행",16,492,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
-            CareerButton("BaseSkillTab","기본 스킬 · 장착 / 보조 젬",325,492,340,42,()=>{tab=TabId.Gems;Refresh();});
+            CareerButton("BaseSkillTab","기본 스킬 · 장착 / 보조 젬",325,492,extra?255:340,42,()=>{tab=TabId.Gems;Refresh();});
+            if(extra)
+            {
+                var s=skills[CareerSkill.ExtraIndex];
+                var bg=NodeCard(s,p,599,428,selectedSkill==s.id);
+                if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);}
+            }
             var chosen=CareerCatalog.Get(selectedSkill);if(chosen==null||chosen.career!=browsing)chosen=skills[1];
             var side=Panel(careerRoot,"CareerDetail",new Vector2(0,1),new Vector2(0,1),new Vector2(802,-4),new Vector2(414,530),new Color32(20,29,45,255));
             if(!p.IsPromoted)

@@ -25,7 +25,9 @@ namespace DotRPG
         public int index, level, branch, tier, mp, hits;
         public float power, cooldown, range, radius, cast, duration;
         public string Icon => "career_" + id;
-        public string Prerequisite => tier == 0 || kind == CareerSkillKind.Awakening ? null : CareerCatalog.For(career)[index - 1].id;
+        public string Prerequisite => tier == 0 || kind == CareerSkillKind.Awakening ? null : CareerCatalog.For(career)[index == ExtraIndex ? 2 : index - 1].id;
+        /// <summary>[FIGHTER] The node outside the 2x4 tree (파이터 검기 태세): needs 섬광보 (index 2), Lv18.</summary>
+        public const int ExtraIndex = 9;
         public SkillGem Gem => new SkillGem { id = id, name = name, description = description, icon = Icon,
             kind = GemKind.Active, classOnly = CareerCatalog.Base(career), unlockLevel = level,
             slot = kind == CareerSkillKind.Awakening ? 4 : -1, damageMult = power, cooldown = cooldown,
@@ -89,7 +91,7 @@ namespace DotRPG
         static CareerSkill Make(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration, int hits, string synergy) => new CareerSkill {
             career=c,index=i,delivery=effect,id=id,name=name,description=desc,effect=effect,power=power,mp=mp,cooldown=cd,range=range,radius=radius,cast=cast,duration=duration,hits=hits,synergy=synergy,
             kind=i==8?CareerSkillKind.Awakening:(i==0||i==4)?CareerSkillKind.Passive:CareerSkillKind.Active,
-            branch=i<4?0:1,tier=i%4,level=i==8?15:i%4<2?15:i%4==2?18:22 };
+            branch=i<4||i==CareerSkill.ExtraIndex?0:1,tier=i==CareerSkill.ExtraIndex?2:i%4,level=i==8?15:i==CareerSkill.ExtraIndex||i%4==2?18:i%4<2?15:22 };
         public static readonly CareerSkill[] All = Build();
         static CareerSkill[] Build()
         {
@@ -101,10 +103,11 @@ namespace DotRPG
                 S(f,2,"f_rush","섬광보","전방 4m를 섬광처럼 돌진하며 경로의 적을 벤다. 벽 앞에서 멈춘다.","rush",2.8f,14,6,4,.75f,.06f),
                 S(f,3,"f_flurry","검귀 해방","검기를 몸에 두르고 10초 동안 모든 공격 피해 +100%. 이 동안 몰아치는 폭딜 구간을 연다.","frenzy",100,20,45,0,0,.1f,10),
                 S(f,4,"f_edge","파죽지세","현재 HP가 80% 이상인 적에게 직접 공격 피해 +15%. 전투의 첫 틈을 강하게 연다.","opening",15,0,0,0,0,0),
-                S(f,5,"f_break","파쇄 검기","재사용 대기시간 없이 연달아 날리는 7m 관통 초승달 검기. 맞은 적은 4초 동안 내 공격에 15% 더 큰 피해를 받는다.","break",1.4f,6,0,7,.8f,.15f,4),
+                S(f,5,"f_break","파쇄 검기","재사용 대기시간 없이 연달아 날리는 7m 관통 초승달 검기. 맞은 적은 4초 동안 내 공격에 15% 더 큰 피해를 받는다.","break",1.4f,18,0,7,.8f,.15f,4),
                 S(f,6,"f_focus","일섬","전방 6m 직선에 칼금을 긋고 0.18초 뒤 그 위의 적을 한꺼번에 베어낸다.","iaido",4.4f,22,10,6,.55f,.25f),
                 S(f,7,"f_execute","단죄","앞의 적에게 뛰어들어 내려찍는다(반경 1.3m). 대상 HP가 35% 미만이면 피해 1.6배.","execute",5.2f,26,12,3.5f,1.3f,.2f),
                 S(f,8,"f_awake","천검귀일","주변 5m 안의 적 위로 검 6자루가 떨어진 뒤 내 자리에 거대한 검이 꽂힌다. 거대한 검은 반경 3.5m에 600% 피해와 0.8초 기절.","swordrain",1.6f,60,60,5,3.5f,.5f,0,6,"검기 연성 3개면 모든 낙검 강화"),
+                S(f,9,"f_stance","검기 태세","켜고 끄는 태세. 켜 두는 동안 기본 공격이 검기 베기로 바뀌어 매 타격마다 초승달 검기가 앞으로 5m 날아가 관통한다. 3타째는 검기 3줄. 검기마다 MP를 쓰고 MP가 모자라면 저절로 꺼진다. 다시 누르면 끈다.","stance",1.1f,5,0,5,.8f,0f),
                 S(g,0,"g_steel","강철의 심장","받는 피해 추가 6% 감소. 다른 감소와 합산, 최대 65%.","steel",6,0,0,0,0,0),
                 S(g,1,"g_guard","강철의 보루","방패를 내려찍어 주변 1.6m의 적을 밀어내고, 5초 동안 받는 피해 30% 감소. 이동 속도 30% 감소.","guard",.8f,12,10,0,1.6f,.1f,5),
                 S(g,2,"g_wall","회귀의 방패","재사용 대기시간 없이 방패를 5m 던졌다가 회수한다. 동시에 3개까지(강화 단계마다 +1, 최대 5개) 날리고, 강화할수록 더 빨리 던진다. 오가며 적을 치고 0.3초 기절, 닿은 아군과 자신에게 HP 18% 보호막 6초.","shieldthrow",.38f,6,0,5,0,.08f,6,2),

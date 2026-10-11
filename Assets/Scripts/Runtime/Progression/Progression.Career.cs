@@ -56,6 +56,8 @@ namespace DotRPG
             if(!IsSlotOpen(slot)) return false;
             var gem=SkillGems.Get(id); var s=CareerCatalog.Get(id);
             if(gem==null || gem.kind!=GemKind.Active || !IsUnlocked(gem) || (s!=null && s.kind==CareerSkillKind.Passive) || (slot==4)!=gem.IsUltimate) return false;
+            // [FIGHTER] 섬광보 lives on the mobility key (Shift) once learned, so it never takes a skill key.
+            if(id==SkillCaster.RushId) { GameEvents.RaiseToast("섬광보는 배우면 이동기(Shift)로 나갑니다."); return false; }
             // [UX] Already on another key: the two keys swap skills instead of refusing.
             for(int i=0;i<SkillGems.Slots;i++) if(i!=slot && Active(i)?.id==id) { slots[i,0]=slots[slot,0]; break; }
             slots[slot,0]=id; Changed?.Invoke(); return true;

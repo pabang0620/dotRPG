@@ -94,6 +94,7 @@ namespace DotRPG
             counterDamage = 0;
             shieldBack.Clear();
             frenzy = 0; frenzyEnd = 0;
+            stanceOn = false;
             OathRadius = 0;
             hotSource = null;
             Cleanse();
@@ -125,6 +126,7 @@ namespace DotRPG
         {
             if (counterEnd > 0 && Time.time >= counterEnd) { counterEnd = 0; StartCoroutine(CounterBlast(.7f)); }
             if (OathRadius > 0 && Time.time >= oathEnd) OathRadius = 0;
+            StanceTick();
         }
 
         /// <summary>Outgoing damage of the owner on <paramref name="enemy"/> (all hits, basic attacks included).</summary>

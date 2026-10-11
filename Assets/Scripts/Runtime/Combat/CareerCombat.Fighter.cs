@@ -22,6 +22,7 @@ namespace DotRPG
                 case "iaido": yield return Iaido(c); break;
                 case "execute": yield return Execute(c); break;
                 case "swordrain": yield return SwordRain(c); break;
+                case "stance": Stance(c); break;
             }
         }
 

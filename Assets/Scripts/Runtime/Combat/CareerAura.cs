@@ -53,8 +53,9 @@ namespace DotRPG
             Vector2 c = player.Center, feet = player.Position;
             int order = SkillFx.At(c.y, 30);
 
-            // Shield: a faint crest in front of the body, brighter for a moment when it soaks a hit.
-            bool shielded = state.Shield > 0;
+            // Shield: no crest on the body any more (the small shield in the middle read as clutter); the shield
+            // still shows in the buff bar (BuffBarView).
+            bool shielded = false;
             crest.enabled = shielded;
             if (shielded)
             {

@@ -116,6 +116,11 @@ namespace DotRPG
             Facing = facing;
             AimDirection = facing.ToVector();
             if (kind == 0) combat.TryAttack();
+            else if (kind == 1 && skillSlot == SkillCaster.RushSlot)
+            {
+                Data.Mana = Data.Stats.MaxMp; // [FIGHTER] Shift 섬광보: the look only, like a slot cast
+                skills.TryCastRush(out _);
+            }
             else if (kind == 1 && skillSlot >= 0 && skillSlot < SkillGems.Slots)
             {
                 Data.Mana = Data.Stats.MaxMp; // the cast already happened on the host; only the look is replayed

@@ -15,7 +15,7 @@ namespace DotRPG
 
         public bool IsDashing => dashRemaining > 0f;
         public float MobilityCooldownRemaining => Mathf.Max(0f, mobilityReadyAt - Time.time);
-        public string MobilityName => Class == CharacterClass.Mage ? "텔레포트" : "대시";
+        public string MobilityName => Class == CharacterClass.Mage ? "텔레포트" : skills != null && skills.RushOnMobility ? "섬광보" : "대시";
 
         /// <summary>One key-down, current movement or last facing, without MP cost or invulnerability.</summary>
         public bool TryMobility(Vector2 movement)
@@ -25,6 +25,16 @@ namespace DotRPG
                 Time.time < lockedUntil || skills.IsCasting) return false;
 
             Vector2 direction = SnapTo8(movement.sqrMagnitude > .01f ? movement : AimDirection);
+            // [FIGHTER] 섬광보 learned: Shift casts it (toward the move direction) instead of the plain dash.
+            if (Class == CharacterClass.Warrior && skills.RushOnMobility)
+            {
+                combat.Cancel();
+                Facing = FacingExtensions.FromVector(direction, Facing);
+                AimDirection = direction;
+                if (!skills.TryCastRush(out float rushCooldown)) return false;
+                mobilityReadyAt = Time.time + rushCooldown;
+                return true;
+            }
             bool blink = Class == CharacterClass.Mage;
             float distance = MobilityClearance(direction, blink ? BlinkDistance : DashDistance);
             if (distance < .08f) return false;

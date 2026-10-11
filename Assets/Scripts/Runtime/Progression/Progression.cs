@@ -131,7 +131,8 @@ namespace DotRPG
         {
             if(!IsSlotOpen(slot)) return null;
             var chosen=SkillGems.Get(slots[slot,0]);
-            if(chosen!=null && IsUnlocked(chosen) && (slot==4)==chosen.IsUltimate) return chosen;
+            // [FIGHTER] 섬광보 left on a key by an older save: it now goes out on Shift, the key shows its basic skill.
+            if(chosen!=null && chosen.id!=SkillCaster.RushId && IsUnlocked(chosen) && (slot==4)==chosen.IsUltimate) return chosen;
             if(slot==4) return Awakened ? CareerCatalog.For(Career)[8].Gem : null;
             var basic=SkillGems.ForSlot(cls,slot); return IsUnlocked(basic)?basic:null;
         }

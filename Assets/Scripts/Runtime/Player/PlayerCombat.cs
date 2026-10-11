@@ -246,6 +246,7 @@ namespace DotRPG
                     hitResolved = true;
                     ResolvedStrikeCount++;
                     ResolveHits(attackFacing.ToVector());
+                    GetComponent<CareerCombat>()?.OnBasicStrike(attackFacing.ToVector(), comboStage); // [FIGHTER] 검기 태세
                     if (weapon.sprite != null) WarriorFlameSlash.Burst(owner.Center + attackFacing.ToVector() * .6f, attackFacing.ToVector(), comboStage);
                 }
                 if (Time.time < attackEnd) break;

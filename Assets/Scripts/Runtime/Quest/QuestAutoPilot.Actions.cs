@@ -79,8 +79,18 @@ namespace DotRPG
             }
             Heal(p);
             if (best == null) { status = g.label + " · 몬스터를 찾는 중"; Roam(p); return; }
+            // [BALANCE] Toned down: when nothing is close, stand a moment (3 s) before walking to a far monster.
+            if (bestD > HuntNear)
+            {
+                if (farWaitUntil <= 0f) farWaitUntil = Time.time + HuntFarWait;
+                if (Time.time < farWaitUntil) { status = g.label + " · 다음 몬스터를 찾는 중"; lastProgressAt = Time.time; lastPos = p.Position; return; }
+            }
+            else farWaitUntil = 0f;
             Fight(p, best.Position, best.Center, bestD);
         }
+
+        const float HuntNear = 4f, HuntFarWait = 3f;
+        float farWaitUntil;
 
         void DoGather(PlayerController p, Goal g)
         {

@@ -4,12 +4,12 @@ import { logger } from '../../utils/logger';
 
 export const careerSchema = z.strictObject({
   schema: z.literal(1), career: z.number().int().min(0).max(4),
-  nodes: z.array(z.strictObject({ id: z.string().max(64), rank: z.number().int().min(1).max(3) })).max(8),
+  nodes: z.array(z.strictObject({ id: z.string().max(64), rank: z.number().int().min(1).max(3) })).max(9),
   training: z.array(z.string().max(64)).max(200), refunded: z.number().int().min(0).max(39),
   questStage: z.number().int().min(0).max(5), awakened: z.boolean(),
 });
 export type CareerState = z.infer<typeof careerSchema>;
-export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge','f_break','f_focus','f_execute','f_awake'],
+export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge','f_break','f_focus','f_execute','f_awake','f_stance'],
  ['g_steel','g_guard','g_wall','g_oath','g_retal','g_taunt','g_bash','g_counter','g_awake'],
  ['m_elements','m_fire','m_ice','m_storm','m_flow','m_orbit','m_veil','m_rift','m_awake'],
  ['b_mercy','b_heal','b_bloom','b_cleanse','b_grace','b_light','b_wing','b_bless','b_awake']];
@@ -44,10 +44,11 @@ export function validateCareer(next: CareerState | undefined | null, prev: Caree
   if(nodes.size!==next.nodes.length) reject('DUPLICATE_NODE');
   let spent=0;
   for(const n of next.nodes){
-    const i=ids.indexOf(n.id);if(i<0||i>=8) reject('WRONG_CAREER_OR_AWAKENING');
-    const tier=i%4, level=tier<2?15:tier===2?18:22;
+    const i=ids.indexOf(n.id);if(i<0||i===8) reject('WRONG_CAREER_OR_AWAKENING');
+    // 9번(파이터 검기 태세)은 트리 밖 추가 노드: 섬광보(2번)를 선행으로, Lv18부터
+    const tier=i===9?2:i%4, level=tier<2?15:tier===2?18:22, before=i===9?2:i-1;
     if(character.level<level) reject('NODE_LEVEL');
-    if(tier>0&&!nodes.has(ids[i-1] as string)) reject('PREREQUISITE');
+    if(tier>0&&!nodes.has(ids[before] as string)) reject('PREREQUISITE');
     spent+=n.rank*(n.rank+1)/2;
   }
   if(c && spent>character.level-11+next.refunded)reject('OVER_BUDGET');

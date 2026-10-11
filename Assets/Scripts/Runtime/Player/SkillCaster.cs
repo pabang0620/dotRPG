@@ -92,6 +92,14 @@ namespace DotRPG
             }
             if (Time.time < ReadyAt(slot) || IsCasting) return;
             var careerSkill = CareerCatalog.Get(gem.id);
+            // [FIGHTER] 검기 태세 is a toggle: pressing it while on turns it off for free.
+            if (careerSkill != null && careerSkill.effect == "stance" && CareerCombat.For(owner).StanceOn)
+            {
+                CareerCombat.For(owner).StopStance(true);
+                castEnd = Time.time + .25f;
+                Casted?.Invoke(owner, slot);
+                return;
+            }
             if (careerSkill != null && !CareerCombat.For(owner).CanCast(careerSkill)) return; // e.g. all three shields still out
             var n = Numbers(slot);
             if (!owner.TrySpend(n.manaCost, n.usesLife))
@@ -114,6 +122,38 @@ namespace DotRPG
             }
             else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
+        }
+
+        /// <summary>[FIGHTER] Party wire code for "섬광보 on the mobility key" (not one of the five skill slots).</summary>
+        public const int RushSlot = 9;
+        public const string RushId = "f_rush";
+
+        /// <summary>[FIGHTER] 섬광보 is learned: the mobility key (Shift) casts it instead of the plain dash.</summary>
+        public bool RushOnMobility
+        {
+            get { var s = CareerCatalog.Get(RushId); return s != null && Prog.CareerUnlocked(s); }
+        }
+
+        /// <summary>
+        /// [FIGHTER] Shift casts 섬광보 with its own MP and cooldown (the cooldown shows on the mobility key).
+        /// Returns false when it can't (not learned, casting, cooling down, no MP); the caller then does nothing / dashes.
+        /// </summary>
+        public bool TryCastRush(out float cooldown)
+        {
+            cooldown = 0f;
+            var s = CareerCatalog.Get(RushId);
+            if (s == null || !Prog.CareerUnlocked(s) || owner.IsDead || owner.IsDashing || IsCasting) return false;
+            var n = owner.Data.Stats.Skill(owner.Class, 1, s.Gem, System.Array.Empty<SkillGem>());
+            if (!owner.TrySpend(n.manaCost, n.usesLife))
+            {
+                if (owner.IsLocal) { GameEvents.RaiseToast("MP가 부족합니다."); Game.Audio.PlaySfx("cancel"); }
+                return false;
+            }
+            cooldown = NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown;
+            castEnd = Time.time + s.cast + CareerMoves.Recovery(s) + .08f;
+            StartCoroutine(CareerCombat.For(owner).Cast(s, n));
+            Casted?.Invoke(owner, RushSlot); // [PARTY NET] the host replays it on member PCs
+            return true;
         }
 
         /// <summary>[AIM] The direction of the cast in progress: toward the nearest monster in reach, else the aim.</summary>

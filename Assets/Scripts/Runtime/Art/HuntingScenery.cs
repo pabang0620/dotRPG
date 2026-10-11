@@ -36,8 +36,9 @@ namespace DotRPG {
    }
    // Small bank clusters add rhythm without filling the battle floor with noisy details.
    var atmosphere=new GameObject("Quiet field atmosphere");atmosphere.transform.SetParent(root,false);atmosphere.AddComponent<HuntingAtmosphere>().Setup(a,w,h,z.theme);
-   var crystal=Detail(snow?"ice":forest?"mushroom":"amber");int count=0;
-   for(int y=3;y<h-3;y++)for(int x=3;x<w-3;x++){
+   // [ART] No mushrooms on the skeleton hunting grounds (they don't fit): the forest keeps its banks bare.
+   var crystal=forest&&!snow?null:Detail(snow?"ice":"amber");int count=0;
+   if(crystal!=null)for(int y=3;y<h-3;y++)for(int x=3;x<w-3;x++){
     if(Hash(x+z.variant*11,y)%31!=0||count>=45)continue;
     bool bank=Solid(a[x,y])&&(a[x,y-1]=='.'||a[x,y-1]==','||a[x,y-1]=='~');if(!bank)continue;
     Put(root,crystal,new Vector2(x+.5f,y+.2f),new Vector2(.9f,1.1f),YSort.OrderFor(y+.2f),"Bank accent");count++;
@@ -64,7 +65,7 @@ namespace DotRPG {
     if(a[x,y]!='~'||a[x,y-1]!='~'||Hash(x,y)%3!=0)continue;
     bool near=false;for(int dx=-2;dx<=2;dx++)for(int dy=-2;dy<=2;dy++)if(a[x+dx,y+dy]!='~'&&a[x+dx,y+dy]!='W')near=true;if(!near)continue;
     if(z.variant==1||z.variant==0){var sr=Put(root,SunkenSanctumArt.Asset("pillar"),new Vector2(x+.5f,y),new Vector2(1.1f,2.3f),YSort.OrderFor(y),"Submerged colonnade");if(sr!=null)TreeFade.Attach(sr.gameObject);}
-    else Put(root,Detail("mushroom"),new Vector2(x,y),new Vector2(1.1f,1.3f),YSort.OrderFor(y),"Moss lit shore");
+    // [ART] The moss-lit mushroom shores are gone from the sanctum hunting grounds.
    }
    var water=new GameObject("Sanctuary quiet water");water.transform.SetParent(root,false);water.AddComponent<SanctumWater>().Setup(a,w,h,false);
    root.gameObject.AddComponent<HuntingAtmosphere>().Setup(a,w,h,MapTheme.SanctumField);
