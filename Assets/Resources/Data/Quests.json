@@ -3709,6 +3709,555 @@
      "sanctum_mural_seen"
     ]
    }
+  },
+  {
+   "id": "g_equip",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "몸에 맞는 장비",
+   "summary": "대장장이 무쇠가 맨몸으로 숲에 드나드는 걸 보고 혀를 찬다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 2,
+   "giver": "smith",
+   "offerDialogue": "g_equip_offer",
+   "turnIn": "smith",
+   "turnInDialogue": "g_equip_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "장비창(I)을 열어 가방의 장비를 착용한다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_equip",
+       "count": 1,
+       "text": "장비창(I)에서 장비 하나 착용하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 200,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 5
+     },
+     {
+      "id": "mat_ore",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_enhance",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "첫 담금질",
+   "summary": "무쇠가 강화석으로 장비를 단단하게 만드는 법을 보여 주겠다고 한다.",
+   "requires": [
+    "g_equip"
+   ],
+   "requiresFlags": [],
+   "minLevel": 4,
+   "giver": "smith",
+   "offerDialogue": "g_enhance_offer",
+   "turnIn": "smith",
+   "turnInDialogue": "g_enhance_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "대장장이에게 말을 걸어 장비를 한 번 강화한다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_enhance",
+       "count": 1,
+       "text": "대장장이에게서 장비 강화 1회 하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 300,
+    "items": [
+     {
+      "id": "mat_ore",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_sell",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "가방 정리",
+   "summary": "잡화상인 미르가 가방이 터지기 전에 쓸모없는 걸 팔라고 한다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 2,
+   "giver": "merchant",
+   "offerDialogue": "g_sell_offer",
+   "turnIn": "merchant",
+   "turnInDialogue": "g_sell_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "잡화상인에게 말을 걸어 물건을 판다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_sell",
+       "count": 1,
+       "text": "잡화상인에게 물건 팔기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 100,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_storage",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "창고에 맡기기",
+   "summary": "창고지기 보람이 당장 안 쓰는 물건은 창고에 맡기라고 한다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 3,
+   "giver": "keeper",
+   "offerDialogue": "g_storage_offer",
+   "turnIn": "keeper",
+   "turnInDialogue": "g_storage_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "창고지기에게 말을 걸어 물건을 맡긴다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_storage",
+       "count": 1,
+       "text": "창고에 물건 하나 맡기기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 0,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_map",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "길 찾는 법",
+   "summary": "짐꾼 소미가 지도 보는 법과 길을 대신 걸어 주는 요령을 알려 준다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 3,
+   "giver": "carrier",
+   "offerDialogue": "g_map_offer",
+   "turnIn": "carrier",
+   "turnInDialogue": "g_map_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "월드맵을 열어 보고, 자동 진행을 한 번 켜 본다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_worldmap",
+       "count": 1,
+       "text": "월드맵(M) 열어 보기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "flag",
+       "target": "guide_autoquest",
+       "count": 1,
+       "text": "자동 진행(F6) 켜 보기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 0,
+    "items": [
+     {
+      "id": "scroll_town",
+      "count": 3
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_autohunt",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "사냥의 요령",
+   "summary": "촌장 모리가 사냥터에서 손을 덜어 주는 자동 사냥을 일러 준다.",
+   "requires": [
+    "g_map"
+   ],
+   "requiresFlags": [],
+   "minLevel": 6,
+   "giver": "chief",
+   "offerDialogue": "g_autohunt_offer",
+   "turnIn": "chief",
+   "turnInDialogue": "g_autohunt_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "사냥터에서 자동 사냥을 켠다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_autohunt",
+       "count": 1,
+       "text": "사냥터에서 자동 사냥(F7) 켜기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 0,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_gem",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "스킬 다듬기",
+   "summary": "촌장 모리가 스킬에 보조 젬을 끼워 힘을 바꾸는 법을 알려 준다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 5,
+   "giver": "chief",
+   "offerDialogue": "g_gem_offer",
+   "turnIn": "chief",
+   "turnInDialogue": "g_gem_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "스킬 창(K) 젬 탭에서 스킬에 보조 젬을 끼운다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_gem",
+       "count": 1,
+       "text": "스킬 창(K) 젬 탭에서 보조 젬 장착하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 300,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_auction",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "경매장 구경",
+   "summary": "잡화상인 미르가 다른 모험가와 물건을 사고파는 경매장을 소개한다.",
+   "requires": [
+    "c1_rebuild"
+   ],
+   "requiresFlags": [],
+   "minLevel": 10,
+   "giver": "merchant",
+   "offerDialogue": "g_auction_offer",
+   "turnIn": "merchant",
+   "turnInDialogue": "g_auction_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "경매장을 열어 둘러본다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_auction",
+       "count": 1,
+       "text": "경매장(U) 둘러보기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 1000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_party",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "함께 가는 길",
+   "summary": "촌장 모리가 혼자 벅찬 던전은 동료와 가라고 한다.",
+   "requires": [
+    "c1s_firstdungeon"
+   ],
+   "requiresFlags": [],
+   "minLevel": 10,
+   "giver": "chief",
+   "offerDialogue": "g_party_offer",
+   "turnIn": "chief",
+   "turnInDialogue": "g_party_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "파티 찾기 창을 연다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_party",
+       "count": 1,
+       "text": "파티 찾기(O) 열어 보기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 0,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_daily",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "매일의 의뢰",
+   "summary": "촌장 모리가 마을 게시판의 일일·주간 의뢰를 맡아 달라고 한다.",
+   "requires": [
+    "c1_stronger"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "chief",
+   "offerDialogue": "g_daily_offer",
+   "turnIn": "chief",
+   "turnInDialogue": "g_daily_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "메뉴의 일일 의뢰에서 의뢰를 하나 수락한다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_daily",
+       "count": 1,
+       "text": "일일 의뢰 하나 수락하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 1000,
+    "items": [
+     {
+      "id": "scroll_town",
+      "count": 5
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "g_style",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "두 가지 싸움법",
+   "summary": "전직 안내원이 파티용과 솔로용 빌드를 따로 저장하는 법을 알려 준다.",
+   "requires": [
+    "career_path"
+   ],
+   "requiresFlags": [],
+   "minLevel": 15,
+   "giver": "career_trainer",
+   "offerDialogue": "g_style_offer",
+   "turnIn": "career_trainer",
+   "turnInDialogue": "g_style_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "스킬 창 전직 탭에서 추천 배치를 받고, 스킬 스타일을 바꿔 본다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "guide_recommend",
+       "count": 1,
+       "text": "전직 탭에서 추천 배치 받기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "flag",
+       "target": "guide_style",
+       "count": 1,
+       "text": "스킬 스타일 바꿔 보기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 0,
+    "gold": 2000,
+    "items": [
+     {
+      "id": "mat_ore",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
   }
  ]
 }

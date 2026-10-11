@@ -145,7 +145,8 @@ namespace DotRPG
                 case Career.Guardian: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 3 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 5, 2 }, { 6, 2 }, { 7, 2 } }, new[] { 2, 5, 6, 7, 1, 3 });
                 // [2026-10-11] Q W E R all at rank 1 first (성운 폭발 used to wait behind 홍련구 3 and leave R empty), then the
                 // spammable 연쇄전격 and the charge shot.
-                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5, 6, 7 });
+                // 매직 배리어 (9) right after 마력 순환 (4) and on D.
+                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 9, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5, 7, 6, 9 });
                 case Career.Bishop: return (new[,] { { 0, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 6, 2 }, { 0, 3 }, { 1, 3 }, { 7, 1 }, { 4, 2 } }, new[] { 5, 1, 2, 6, 7, 3 });
                 default: return (new int[0, 2], new int[0]);
             }
@@ -168,6 +169,7 @@ namespace DotRPG
                 if (p.CareerUnlocked(s) && p.IsSlotOpen(KeySlot(k)) && p.EquipSkill(KeySlot(k), s.id)) placed++;
             }
             if (p.Awakened) p.EquipSkill(4, skills[8].id);
+            GuideFlags.Mark(GuideFlags.Recommend); // [GUIDE]
             Game.Flow.Autosave();
             GameEvents.RaiseToast(learned > 0 ? $"추천 배치: {learned}단계를 배우고 스킬 {placed}개를 장착했습니다." : $"추천 배치: 스킬 {placed}개를 장착했습니다. (남은 포인트로 더 배울 기술 없음)");
             Game.Audio.PlaySfx("quest");

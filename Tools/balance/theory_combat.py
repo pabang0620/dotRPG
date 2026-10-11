@@ -75,6 +75,14 @@ for m in re.finditer(r'id = ("[a-z_]+"|Warrior)(.{0,700}?)\}', MDB, re.S):
 MON["skeleton"] = MON["skel_warrior"]
 
 
+SANCTUM_MUL = 1.0 if BEFORE else float((re.search(r"SanctumFieldHpMul = ([0-9.]+)f", MDB) or re.search("(1)", "1")).group(1))
+
+
+def zone_mul(z):
+    """[2026-10-12] MonsterDatabase.SanctumFieldHpMul on the sanctum hunting grounds."""
+    return SANCTUM_MUL if z.get("theme") == "SanctumField" else 1.0
+
+
 def mon_hp(mid, lv):
     return MON[mid]["hp"] * HP_MUL * FIELD_HP_BASE * (1 + FIELD_HP_SLOPE * (lv - 1))
 
@@ -88,9 +96,9 @@ def mon_dps(mid, lv):
 
 # ---------------- zones ----------------
 ZONES = []
-for z in re.finditer(r'new HuntingZone\("(\w+)", "([^"]+)", [^,]+, MapTheme\.\w+, (\d+), (\d+), (\d+), \d+, ([^)]*)\)', read(RT, "World", "HuntingGrounds.cs")):
-    ZONES.append(dict(id=z.group(1), name=z.group(2), lo=int(z.group(3)), hi=int(z.group(4)), mlv=int(z.group(5)),
-                      mons=[x.strip().strip('"') for x in z.group(6).split(",")]))
+for z in re.finditer(r'new HuntingZone\("(\w+)", "([^"]+)", [^,]+, MapTheme\.(\w+), (\d+), (\d+), (\d+), \d+, ([^)]*)\)', read(RT, "World", "HuntingGrounds.cs")):
+    ZONES.append(dict(id=z.group(1), name=z.group(2), theme=z.group(3), lo=int(z.group(4)), hi=int(z.group(5)), mlv=int(z.group(6)),
+                      mons=[x.strip().strip('"') for x in z.group(7).split(",")]))
 
 # ---------------- gear ----------------
 SHOP = json.load(open(os.path.join(ROOT, "server", "data", "shop.json"), encoding="utf-8"))
@@ -227,7 +235,7 @@ def summary():
     print("|---|---|---|---|---|---|---|---|")
     for z in ZONES:
         lv = z["mlv"]
-        hps = [mon_hp(m, lv) for m in z["mons"]]
+        hps = [mon_hp(m, lv) * zone_mul(z) for m in z["mons"]]
         incoming = sum(mon_dps(m, lv) for m in z["mons"]) * .9
         if lv < 15:
             clear = pre_clear(lv, sum(hps))
@@ -259,7 +267,7 @@ def report():
         if z["mlv"] < 15:
             continue
         lv = z["mlv"]
-        hps = [mon_hp(m, z["mlv"]) for m in z["mons"]]
+        hps = [mon_hp(m, z["mlv"]) * zone_mul(z) for m in z["mons"]]
         incoming = sum(mon_dps(m, z["mlv"]) for m in z["mons"])
         for name, c in CAREERS.items():
             A, hp, mp = player(lv, c)

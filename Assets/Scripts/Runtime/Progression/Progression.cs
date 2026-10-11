@@ -155,6 +155,7 @@ namespace DotRPG
             if(socket==0) { EquipSkill(slot,gemId); return; }
             if (socket < 1 || socket > SkillGems.SupportsPerSlot || !IsSlotOpen(slot) || (gemId!=null && !OptionsFor(slot,socket).Contains(gemId))) return;
             slots[slot, socket] = gemId;
+            if (gemId != null && ReferenceEquals(this, Game.Session?.Progression)) GuideFlags.Mark(GuideFlags.Gem); // [GUIDE] 스킬 다듬기
             Changed?.Invoke();
         }
 

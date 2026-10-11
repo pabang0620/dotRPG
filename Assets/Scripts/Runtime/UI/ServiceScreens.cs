@@ -413,6 +413,7 @@ namespace DotRPG
             int n = Mathf.Min(count, bag.Count(id));
             int each = ItemPrices.SellPrice(id);
             if (n <= 0 || each <= 0) { Game.Audio.PlaySfx("cancel"); return; }
+            GuideFlags.Mark(GuideFlags.Sell); // [GUIDE] 가방 정리
             if (OnlineEconomy.On)
             {
                 // [SERVER] The server prices and pays the sale.

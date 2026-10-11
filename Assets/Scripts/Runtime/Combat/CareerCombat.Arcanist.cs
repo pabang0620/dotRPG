@@ -21,6 +21,7 @@ namespace DotRPG
                 case "orbit": yield return StarShots(c); break;
                 case "nebula": yield return Nebula(c); break;
                 case "blink": yield return PhaseBlink(c); break;
+                case "barrier": MagicBarrier(c); break;
                 case "rift": StartCoroutine(GravityRift(c)); break;
                 case "cataclysm": yield return Cataclysm(c); break;
             }
@@ -233,6 +234,21 @@ namespace DotRPG
         }
 
         /// <summary>중력 균열: a rift that drags monsters into its middle, ticking, then collapses.</summary>
+        /// <summary>매직 배리어: a violet veil closes around the mage and turns into a big shield (temporary HP).</summary>
+        void MagicBarrier(Run c)
+        {
+            Pose(.2f, 0);
+            var violet = new Color(.75f, .55f, 1f, .9f);
+            CareerFx.Clip("g_dome", owner.Center, Vector2.zero, 1.3f, 24f, VfxLayer.Top, false, violet).Follow(owner.transform, owner.Center - owner.Position + Vector2.up * .1f);
+            SkillVisuals.Flash(owner.Center, violet, 1.8f, .25f);
+            SkillVisuals.Sparks(owner.Center, violet, 10, 3.5f, .4f);
+            Sound("c_arcane", .7f);
+            if (c.authority) AddShield(Mathf.RoundToInt(owner.Health.Max * c.s.power * c.Scale), c.s.duration, Career.Arcanist);
+        }
+
+        /// <summary>중력 균열 pull: catch radius x the hit radius, pull speed (world units/s, faster at the edge).</summary>
+        const float RiftPullReach = 1.6f, RiftPullSpeed = 4.5f;
+
         IEnumerator GravityRift(Run c)
         {
             Target(c.dir, c.n.range, out Vector2 point);
@@ -258,7 +274,18 @@ namespace DotRPG
             float interval = c.s.duration / c.s.hits;
             for (int i = 0; i < c.s.hits; i++)
             {
-                yield return new WaitForSeconds(interval);
+                // [BALANCE] A steady pull the whole time (wider than the hit radius), not only a nudge on each tick.
+                for (float t = 0f; t < interval; t += Time.deltaTime)
+                {
+                    if (!Live(c)) yield break;
+                    if (c.authority)
+                        foreach (var e in Enemies(point, c.n.radius * RiftPullReach))
+                        {
+                            float d = Vector2.Distance(e.Position, point);
+                            e.PullTowards(point, RiftPullSpeed * Mathf.Lerp(.6f, 1.2f, d / (c.n.radius * RiftPullReach)), .12f);
+                        }
+                    yield return null;
+                }
                 if (!Live(c)) yield break;
                 for (int k = 0; k < 8; k++)
                 {

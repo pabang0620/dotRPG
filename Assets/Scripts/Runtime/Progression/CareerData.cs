@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,13 +35,22 @@ namespace DotRPG
         public int index, level, branch, tier, mp, hits;
         public float power, cooldown, range, radius, cast, duration;
         public string Icon => "career_" + id;
-        public string Prerequisite => tier == 0 || kind == CareerSkillKind.Awakening ? null : CareerCatalog.For(career)[index == ExtraIndex ? 2 : index - 1].id;
+        public string Prerequisite => tier == 0 || kind == CareerSkillKind.Awakening ? null : CareerCatalog.For(career)[index == ExtraIndex ? ExtraPrerequisite(career) : index - 1].id;
+        /// <summary>The node before the extra one: fighter 섬광보 (2), mage 마력 순환 (4). Server: careerRules.ts.</summary>
+        public static int ExtraPrerequisite(Career c) => c == Career.Arcanist ? 4 : 2;
+        /// <summary>The extra node's level: mage 매직 배리어 opens with the career (Lv15), fighter 검기 태세 at Lv18.</summary>
+        public static int ExtraLevel(Career c) => c == Career.Arcanist ? 15 : 18;
         /// <summary>[FIGHTER] The node outside the 2x4 tree (파이터 검기 태세): needs 섬광보 (index 2), Lv18.</summary>
         public const int ExtraIndex = 9;
         /// <summary>[BALANCE] Each career's spammable main hunting skill opens at the same level (Lv18): the hunt speeds up
         /// sharply from there, so no career gets it much earlier or later. Server: careerRules.ts MAIN_HUNTERS.</summary>
         public static readonly string[] MainHunters = { "f_break", "g_wall", "m_storm", "b_light" };
         public const int MainHunterLevel = 18;
+        /// <summary>[BALANCE 2026-10-12] Share of max MP each cast of a main hunting skill costs (before supports):
+        /// spam at full speed drains 9% of max MP a second against 5% regen. Speeds: 파쇄 검기 0.38 s, 회귀의 방패
+        /// ~3.5/s (4 shields, 1.15 s round trip), 연쇄전격 0.48 s, 심판의 광창 0.16 s. Tools/balance/theory_mana.py.</summary>
+        public static float MainHunterMpShare(string id) =>
+            id == "f_break" ? .0263f : id == "g_wall" ? .0199f : id == "m_storm" ? .0333f : id == "b_light" ? .0111f : 0f;
         public SkillGem Gem => new SkillGem { id = id, name = name, description = description, icon = Icon,
             kind = GemKind.Active, classOnly = CareerCatalog.Base(career), unlockLevel = level,
             slot = kind == CareerSkillKind.Awakening ? 4 : -1, damageMult = power, cooldown = cooldown,
@@ -62,10 +71,10 @@ namespace DotRPG
         /// 0 and 4) are untouched. "반경 Nm" in a description follows the new radius.
         /// </summary>
         static readonly string[] HealEffects = { "heal", "bloom", "cleanse" };
-        static readonly string[] BuffEffects = { "guard", "oath", "bless", "counter", "frenzy" };
+        static readonly string[] BuffEffects = { "guard", "oath", "bless", "counter", "frenzy", "barrier" };
         /// <summary>Lasting buffs and shields: twice as long, cast less often (pressing them again and again is a chore).
         /// [BALANCE 2026-10-11] Their base durations are 30 s (60 s in play) with a cooldown under that, so one press a minute keeps them up.</summary>
-        static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter" };
+        static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter", "barrier" };
         /// <summary>Cooldown of every lasting buff (and 검귀 해방), seconds.</summary>
         public const float BuffCooldown = 62f;
         static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음")
@@ -116,7 +125,7 @@ namespace DotRPG
         static CareerSkill Make(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration, int hits, string synergy) => new CareerSkill {
             career=c,index=i,delivery=effect,id=id,name=name,description=desc,effect=effect,power=power,mp=mp,cooldown=cd,range=range,radius=radius,cast=cast,duration=duration,hits=hits,synergy=synergy,
             kind=i==8?CareerSkillKind.Awakening:(i==0||i==4)?CareerSkillKind.Passive:CareerSkillKind.Active,
-            branch=i<4||i==CareerSkill.ExtraIndex?0:1,tier=i==CareerSkill.ExtraIndex?2:i%4,level=i==8?15:System.Array.IndexOf(CareerSkill.MainHunters,id)>=0||i==CareerSkill.ExtraIndex||i%4==2?18:i%4<2?15:22 };
+            branch=i<4||i==CareerSkill.ExtraIndex?0:1,tier=i==CareerSkill.ExtraIndex?(c==Career.Arcanist?1:2):i%4,level=i==8?15:i==CareerSkill.ExtraIndex?CareerSkill.ExtraLevel(c):System.Array.IndexOf(CareerSkill.MainHunters,id)>=0||i%4==2?18:i%4<2?15:22 };
         public static readonly CareerSkill[] All = Build();
         static CareerSkill[] Build()
         {
@@ -126,7 +135,7 @@ namespace DotRPG
                 S(f,0,"f_rhythm","검기 연성","기본 공격 적중마다 검기 1개를 모은다. 최대 3개, 6초 유지. 3개일 때 다음 전직 스킬 피해 +20%, 전부 소모.","swordflow",20,0,0,0,0,0,6),
                 S(f,1,"f_cross","십자참","전방 120도, 2.3m를 X자로 두 번 벤다. 두 번째 베기가 적을 밀어낸다.","cross",1.7f,10,3,2.3f,0,.08f,0,2),
                 S(f,2,"f_rush","섬광보","전방 4m를 섬광처럼 돌진하며 경로의 적을 벤다. 벽 앞에서 멈춘다. 배우면 이동기(Shift)로 나가고 스킬 키에는 올리지 않는다.","rush",2.8f,14,6,4,.75f,.06f),
-                S(f,3,"f_flurry","검귀 해방","검기를 몸에 두르고 120초 동안 모든 공격 피해 +30%. 재사용 62초라 한 번 켜 두면 여유 있게 유지된다.","frenzy",30,20,62,0,0,.1f,120),
+                S(f,3,"f_flurry","검귀 해방","검기를 몸에 두르고 120초 동안 모든 공격 피해 +20%. 재사용 62초라 한 번 켜 두면 여유 있게 유지된다.","frenzy",20,20,62,0,0,.1f,120),
                 S(f,4,"f_edge","파죽지세","현재 HP가 80% 이상인 적에게 직접 공격 피해 +15%. 전투의 첫 틈을 강하게 연다.","opening",15,0,0,0,0,0),
                 S(f,5,"f_break","파쇄 검기","재사용 대기시간 없이 연달아 날리는 7m 관통 초승달 검기. 맞은 적은 4초 동안 내 공격에 15% 더 큰 피해를 받는다.","break",1.4f,18,0,7,.8f,.15f,4),
                 S(f,6,"f_focus","일섬","전방 6m 직선에 칼금을 긋고 0.18초 뒤 그 위의 적을 한꺼번에 베어낸다.","iaido",4.4f,22,10,6,.55f,.25f),
@@ -151,12 +160,13 @@ namespace DotRPG
                 S(m,6,"m_veil","차원도약","3.5m 순간이동하고 HP 12% 보호막 2초. 떠난 자리의 잔상이 0.25초 뒤 반경 1.8m 폭발.","blink",2.4f,24,14,3.5f,1.8f,.05f,2),
                 S(m,7,"m_rift","중력 균열","목표 지점에 반경 2.6m 균열을 연다. 3초 동안 적을 끌어당기며 6번 타격하고 마지막에 붕괴(160%).","rift",.8f,36,15,7,2.6f,.35f,3,6),
                 S(m,8,"m_awake","천체 붕괴","화염·얼음·전격 운석이 차례로 떨어진 뒤(각 300%) 중심이 반경 8m로 붕괴한다(450%). 얼음 운석은 1.5초 빙결.","cataclysm",3f,65,65,7,8,.7f,0,4,"세 원소가 모두 터져 원소의 기억 최대 발동"),
+                S(m,9,"m_barrier","매직 배리어","마력의 장막을 둘러 60초 동안 최대 HP 35%만큼 보호막(임시 체력)을 얻는다. 보호막은 피해를 먼저 받아 내고, 다 깎이면 사라진다.","barrier",.35f,30,40,0,0,.2f,60),
                 S(b,0,"b_mercy","생명의 숨","회복량 +10%.","mercy",10,0,0,0,0,0),
                 S(b,1,"b_heal","치유의 깃","반경 5m 자신과 아군에게 치유의 깃이 날아가 도착하면 회복한다.","heal",2.8f,20,5,0,5,.25f),
                 S(b,2,"b_bloom","생명의 파문","시전 위치 반경 3.5m에 6초 동안 생명의 파문이 6번 퍼져 아군을 회복한다.","bloom",.8f,26,12,0,3.5f,.25f,6,6),
                 S(b,3,"b_cleanse","정화의 종","반경 4m에 종소리가 퍼져 아군의 저주·둔화를 풀고 회복한다. 적에게는 빛 피해(90%)와 밀어내기.","cleanse",1.4f,24,11,0,4,.2f),
                 S(b,4,"b_grace","축복의 그릇","보호막량 +12%. 같은 보호막은 합산 없이 큰 값으로 갱신.","grace",12,0,0,0,0,0),
-                S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",.75f,3,0,7,.6f,.04f),
+                S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",.85f,3,0,7,.6f,.04f),
                 S(b,6,"b_wing","신의 가호","반경 5m 안의 아군과 자신을 1초 동안 모든 피해로부터 지킨다(무적). 바닥에 범위가 금색 원으로, 지켜진 사람 머리 위에 남은 무적 시간이 뜬다. 보스의 큰 공격을 받아 내는 순간에 쓴다.","sanctuary",0f,20,25,0,5,0f,1),
                 S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 60초.","bless",18,28,20,0,5,.3f,60),
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 6m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%.","dawn",4.5f,60,70,0,6,.7f,8,8,"비숍의 회복과 보호를 한 번에"),

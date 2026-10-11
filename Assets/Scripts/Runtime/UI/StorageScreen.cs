@@ -260,6 +260,7 @@ namespace DotRPG
             to.Add(id, n);
             // [SERVER] Same move on the server; its delta (absolute counts) corrects anything it refused.
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(new[] { (id, !c.inStorage, n) }, _ => dirty = true);
+            if (!c.inStorage) GuideFlags.Mark(GuideFlags.Storage); // [GUIDE] 창고에 맡기기
             Game.Audio.PlaySfx("select");
             string name = Game.Config.GetItem(id).displayName;
             message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈습니다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼습니다.</color>";
@@ -268,6 +269,7 @@ namespace DotRPG
 
         void DepositMaterials()
         {
+            GuideFlags.Mark(GuideFlags.Storage); // [GUIDE]
             var bag = Game.Session.Inventory;
             var store = Game.Session.Storage;
             int moved = 0;

@@ -121,7 +121,7 @@ namespace DotRPG
             // Negative coordinates = the village start point (see GameSession.Restore).
             bool ok = Game.Saves.Write(Game.Session.Capture(new Vector2(-1f, -1f), Facing.Down));
             Game.Session.MapId = map;
-            if (ok) GameEvents.RaiseToast("자동 저장됨");
+            // [UX] silent save (no "자동 저장됨" toast)
         }
 
         void StartRun(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now, int startRoom = 0)

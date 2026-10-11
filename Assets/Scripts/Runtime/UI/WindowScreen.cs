@@ -108,6 +108,7 @@ namespace DotRPG
         {
             base.Show();
             Refresh();
+            GuideFlags.WindowShown(this); // [GUIDE] 경매장 / 파티 찾기 / 월드맵 안내 의뢰
         }
 
         protected abstract void Refresh();

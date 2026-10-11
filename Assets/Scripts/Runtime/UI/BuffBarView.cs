@@ -119,7 +119,7 @@ namespace DotRPG
                 if (c.StanceOn) Put(ref n, "buff_focus", "검기 태세 ON", "검기 태세", "기본 공격이 맞을 때마다 초승달 검기가 앞으로 날아가 관통한다(3타째는 3줄). 검기마다 MP를 쓰고, MP가 모자라면 꺼진다. 다시 누르면 끈다.");
                 if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft), "검귀 해방", "모든 공격 피해 +30%. 재사용 62초라 한 번 켜 두면 계속 유지할 수 있다.");
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", $"검기 {c.ComboStacks}/3", "검기 연성", "기본 공격이 맞을 때마다 1개씩 쌓인다(최대 3개, 6초 유지). 3개일 때 쓰는 다음 전직 스킬 피해 +20%, 전부 소모.");
-                if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", "보호막 " + Sec(c.ShieldLeft), "보호막", $"받는 피해를 먼저 흡수한다. 남은 양 {c.Shield}.");
+                if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", (c.ShieldCareer == Career.Arcanist ? "배리어 " : "보호막 ") + Sec(c.ShieldLeft), c.ShieldCareer == Career.Arcanist ? "매직 배리어" : "보호막", $"받는 피해를 체력보다 먼저 흡수한다(체력 바의 청록색 부분). 남은 양 {c.Shield}.");
                 if (c.GuardLeft > 0f) Put(ref n, "buff_guard", "보루 " + Sec(c.GuardLeft), "강철의 보루", "받는 피해 30% 감소. 다른 감소와 합쳐 최대 65%.");
                 if (c.CounterLeft > 0f) Put(ref n, "buff_guard", $"방진 {c.CounterCharges}회 " + Sec(c.CounterLeft), "응보의 방진", $"받는 피해 40% 감소. 공격을 {c.CounterCharges}번 더 완전히 막고, 막을 때마다 반격 충격파를 터뜨린다."); // blocks left + time
                 if (c.OathLeft > 0f) Put(ref n, "buff_guard", "맹세 " + Sec(c.OathLeft), "수호의 맹세", "자신을 따라다니는 결계. 안에 있는 아군은 받는 피해 30% 감소, 저주와 둔화가 풀린다.");

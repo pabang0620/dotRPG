@@ -48,6 +48,7 @@ namespace DotRPG
             if (Active) Stop("");
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
             Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*";
+            GuideFlags.Mark(GuideFlags.AutoHunt); // [GUIDE]
             Instance.Begin();
         }
 
@@ -90,6 +91,7 @@ namespace DotRPG
             if (Active) { Stop(Hunting ? "자동 사냥을 멈췄습니다." : "자동 진행을 멈췄습니다."); return; }
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
             Instance.huntMode = false;
+            GuideFlags.Mark(GuideFlags.AutoQuest); // [GUIDE]
             Instance.Begin();
         }
 
@@ -305,7 +307,8 @@ namespace DotRPG
                     case ObjectiveTypes.Reach: return new Goal { kind = GoalKind.Map, map = o.target, label = $"{MapName(o.target)}(으)로 이동 중" };
                     case ObjectiveTypes.Flag:
                         if (o.target == QuestManager.WorkshopBuiltFlag) return WorkshopGoal();
-                        return Wait("이 단계는 직접 진행해 주세요.");
+                        // [GUIDE] 안내 의뢰: the player does it by hand; say exactly what to do.
+                        return Wait(string.IsNullOrEmpty(o.text) ? "이 단계는 직접 진행해 주세요." : o.text + " (직접 해 보세요)");
                     case ObjectiveTypes.Dungeon:
                     case ObjectiveTypes.Raid:
                         return new Goal { kind = GoalKind.DungeonGuide, map = DungeonGuideMap(), label = o.type == ObjectiveTypes.Raid ? "레이드 안내인에게 가는 중" : "던전 안내인에게 가는 중" };

@@ -164,7 +164,7 @@ namespace DotRPG
         public static void Accept(Slot s, Action<bool, string> done)
         {
             if (!CanAccept(s)) { done(false, !Unlocked ? "1-19 '강해져야 한다'를 마치면 열립니다." : "지금은 수락할 수 없습니다."); return; }
-            Post("/dailies/accept", s, r => done(true, $"{Kind(s)} '{s.title}'을(를) 수락했습니다."), done);
+            Post("/dailies/accept", s, r => { GuideFlags.Mark(GuideFlags.Daily); done(true, $"{Kind(s)} '{s.title}'을(를) 수락했습니다."); }, done);
         }
 
         public static void Claim(Slot s, Action<bool, string> done)

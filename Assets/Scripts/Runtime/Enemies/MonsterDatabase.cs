@@ -149,6 +149,9 @@ namespace DotRPG
         /// (the 15 kills a minute the 40 h leveling plan assumes). Tools/balance/theory_combat.py, Docs/BALANCE_COMBAT_2026-10-11.md.
         /// </summary>
         public const float FieldHpBase = 3f, FieldHpSlope = 0.5f, FieldDamageMax = 1.6f;
+        /// <summary>[BALANCE 2026-10-12] The Lv40 sanctum hunting grounds field the light skeleton types (warrior/shield/archer)
+        /// at the cap level: x1.6 HP so a pack is not cleared in 1-3 s (Tools/balance/theory_combat.py).</summary>
+        public const float SanctumFieldHpMul = 1.6f;
         /// <summary>[BALANCE 2026-10-11] Field bosses (15-minute spawns) x1.5 HP so they don't melt in ~10 s (theory_dungeon.py).</summary>
         public const float FieldBossHpMul = 1.5f;
         /// <summary>Field monster damage x1.0 at Lv1 rising to x1.6 at Lv15 (new characters before the career stay safe).</summary>
@@ -204,7 +207,9 @@ namespace DotRPG
             if (id == "skeleton") { def.id = "skeleton"; def.name = "해골"; }
             RegionalMonsterArt.ApplyFieldLook(def, Game.World != null ? Game.World.MapId : null);
             bool ordinary = !def.boss && !def.raid && def.kind != MonsterKind.GoldRunner; // field bosses and the gold runner (gold per hit) keep their own tuning
-            return SpawnDef(def, pos, parent, ordinary ? FieldHpMul(level) : def.boss ? FieldBossHpMul : 1f, ordinary ? FieldDamageMul(level) : 1f, level, xp);
+            var zone = Game.World != null ? HuntingGrounds.Get(Game.World.MapId) : null;
+            float zoneMul = zone != null && zone.theme == MapTheme.SanctumField ? SanctumFieldHpMul : 1f;
+            return SpawnDef(def, pos, parent, ordinary ? FieldHpMul(level) * zoneMul : def.boss ? FieldBossHpMul : 1f, ordinary ? FieldDamageMul(level) : 1f, level, xp);
         }
 
         /// <summary>

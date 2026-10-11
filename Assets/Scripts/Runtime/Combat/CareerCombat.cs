@@ -404,7 +404,7 @@ namespace DotRPG
                 float bonus = rank > 0 ? 1 + (12 + 4 * (rank - 1)) / 100f : 1;
                 For(p).AddShield(Mathf.RoundToInt(p.Health.Max * fraction * c.Scale * bonus), duration, c.s.career);
             }
-            CareerFx.Bless(p.Center, CareerFx.Main(c.s.career), true);
+            CareerFx.Bless(p.Center, CareerFx.Main(c.s.career), false); // [UX] no little shield picture: the shield shows on the HP bar
         }
 
         // ---------- Queries ----------

@@ -109,6 +109,7 @@ namespace DotRPG
             careerState.activeStyle = i;
             ApplyStyle(careerState.styles[i]);
             Changed?.Invoke();
+            if (ReferenceEquals(this, Game.Session?.Progression)) GuideFlags.Mark(GuideFlags.Style); // [GUIDE] 두 가지 싸움법
             return null;
         }
     }

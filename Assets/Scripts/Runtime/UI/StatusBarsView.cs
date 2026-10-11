@@ -15,7 +15,7 @@ namespace DotRPG
         // exactly in that slot (it used to start 5 px in and cover the gold rim).
         const float FrameThin = 2f, InsetX = 7f, InsetY = 5f;
 
-        Image hpFill, hpLag, mpFill, xpFill;
+        Image hpFill, hpLag, mpFill, xpFill, shieldFill;
         Text hpText, mpText, levelText, xpText;
         float hpShown = 1f, hpLagShown = 1f;
         float fillW;
@@ -36,6 +36,11 @@ namespace DotRPG
             UIFactory.Place(v.levelText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -9f), new Vector2(48f, 26f));
 
             v.hpFill = Bar(root, "HP", 0f, 30f, 17, new Color32(214, 48, 49, 255), out v.hpLag, out v.hpText, v.fillW);
+            // [UI] Shield (보호막): a pale teal stretch right after the HP, taken before HP when hit.
+            v.shieldFill = Img(v.hpFill.transform.parent, "Shield", "ui_white", new Color32(140, 235, 225, 230));
+            UIFactory.Place(v.shieldFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(InsetX, 0f), new Vector2(0f, v.hpFill.rectTransform.sizeDelta.y));
+            v.shieldFill.transform.SetSiblingIndex(v.hpFill.transform.GetSiblingIndex() + 1);
+            v.shieldFill.enabled = false;
             v.mpFill = Bar(root, "MP", -31f, 26f, 15, new Color32(52, 120, 230, 255), out _, out v.mpText, v.fillW);
             v.xpFill = Bar(root, "XP", -58f, 24f, 14, new Color32(255, 196, 54, 255), out _, out v.xpText, v.fillW);
             return v;
@@ -83,8 +88,22 @@ namespace DotRPG
             SetFill(hpFill, hpShown);
             hpFill.color = UiTheme.ColorBlind ? new Color32(240, 140, 30, 255) : new Color32(214, 48, 49, 255);
             SetFill(hpLag, hpLagShown);
+            // Shield after the HP; when HP + shield passes the max, the shield covers the end of the bar.
+            int shield = CareerCombat.For(player).Shield;
+            shieldFill.enabled = shield > 0 && hp.Max > 0;
+            if (shieldFill.enabled)
+            {
+                float s = Mathf.Clamp01((float)shield / hp.Max);
+                float start = Mathf.Min(hpRatio, 1f - s);
+                shieldFill.rectTransform.anchoredPosition = new Vector2(InsetX + fillW * start, 0f);
+                shieldFill.rectTransform.sizeDelta = new Vector2(fillW * s, shieldFill.rectTransform.sizeDelta.y);
+            }
             // [P5] Format only when a number changes (no string garbage every frame).
-            if (hp.Current != shownHp || hp.Max != shownHpMax) { shownHp = hp.Current; shownHpMax = hp.Max; hpText.text = $"HP {hp.Current} / {hp.Max}"; }
+            if (hp.Current != shownHp || hp.Max != shownHpMax || shield != shownShield)
+            {
+                shownHp = hp.Current; shownHpMax = hp.Max; shownShield = shield;
+                hpText.text = shield > 0 ? $"HP {hp.Current} / {hp.Max} <color=#8cebe1>(+{shield})</color>" : $"HP {hp.Current} / {hp.Max}";
+            }
 
             int maxMp = player.MaxMana;
             SetFill(mpFill, maxMp > 0 ? Game.Session.PlayerMana / maxMp : 0f);
@@ -100,6 +119,7 @@ namespace DotRPG
             if (xpKey != shownXp) { shownXp = xpKey; xpText.text = need > 0 ? $"EXP {xpRatio * 100f:0.0}%" : "EXP MAX"; }
         }
 
+        int shownShield = -1;
         int shownHp = -1, shownHpMax = -1, shownMp = -1, shownMpMax = -1, shownLevel = -1, shownXp = -1;
     }
 }

@@ -245,6 +245,18 @@ namespace DotRPG
             UpdateAnimation();
         }
 
+        Vector2 pullTarget;
+        float pullUntil, pullSpeed;
+
+        /// <summary>[MAGE] Drag this monster towards <paramref name="point"/> for a moment (bosses don't move).</summary>
+        public void PullTowards(Vector2 point, float speed, float seconds)
+        {
+            if (IsDead || IsBoss) return;
+            pullTarget = point;
+            pullSpeed = speed;
+            pullUntil = Mathf.Max(pullUntil, Time.time + seconds);
+        }
+
         void FixedUpdate()
         {
             if (state == State.Dead)
@@ -253,6 +265,14 @@ namespace DotRPG
                 return;
             }
             if (Puppet) { PuppetFixedStep(); return; }
+            // [MAGE] Being sucked into 중력 균열: the pull wins over walking and short knockbacks.
+            if (Time.time < pullUntil)
+            {
+                Vector2 to = pullTarget - (Vector2)body.position;
+                float d = to.magnitude;
+                body.SetVelocity(d > .15f ? to / d * Mathf.Min(pullSpeed, d / Time.fixedDeltaTime) : Vector2.zero);
+                return;
+            }
             if (state == State.Hurt && Time.time < stateUntil - stats.hurtStunTime * 0.5f)
             {
                 body.SetVelocity(knockbackVelocity);

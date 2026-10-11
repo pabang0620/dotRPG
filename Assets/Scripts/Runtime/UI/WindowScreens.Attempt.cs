@@ -56,6 +56,7 @@ namespace DotRPG
                 bigIcon.rectTransform.anchoredPosition = Vector2.zero;
             }
             ShowResult(result);
+            GuideFlags.Mark(GuideFlags.Enhance); // [GUIDE] 첫 담금질: any finished attempt counts
             Follow(e, result);
             if (result.kind == EnhanceOutcome.Destroyed) pickRequired = true;
             if (result.Attempted) Game.Flow.Autosave();

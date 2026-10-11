@@ -32,8 +32,8 @@ describe('career invariants',()=>{
   expect(()=>validateCareer(s,s,character(),[],()=>false)).not.toThrow();
   expect(()=>validateCareer({...s,refunded:2},s,character(),[],()=>false)).toThrow();
  });
- // 2026-10-11: the fighter has a 10th node outside the 2x4 tree (f_stance, index 9)
- test('each career has eight nodes and a distinct awakening',()=>{careerIds.slice(1).forEach((ids,k)=>expect(ids.length).toBe(k===0?10:9));expect(new Set(careerIds.flat()).size).toBe(37);expect(careerIds[1]?.[9]).toBe('f_stance');for(const id of MAIN_HUNTERS)expect(careerIds.flat()).toContain(id);});
+ // 2026-10-11: the fighter and the mage have a 10th node outside the 2x4 tree (f_stance / m_barrier, index 9)
+ test('each career has eight nodes and a distinct awakening',()=>{careerIds.slice(1).forEach((ids,k)=>expect(ids.length).toBe(k===0||k===2?10:9));expect(new Set(careerIds.flat()).size).toBe(38);expect(careerIds[1]?.[9]).toBe('f_stance');expect(careerIds[3]?.[9]).toBe('m_barrier');for(const id of MAIN_HUNTERS)expect(careerIds.flat()).toContain(id);});
  test('server rules match the compiled client catalog',()=>{
   const catalog=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8')) as {skills:{id:string;career:number;index:number;level:number}[]};
   expect(catalog.skills.length).toBe(36);

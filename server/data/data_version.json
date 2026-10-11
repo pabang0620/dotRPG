@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "ccf89935acbd38c1",
-  "exportedAt": "2026-10-11T12:43:29.617Z",
+  "version": "0816e24c5bbb5011",
+  "exportedAt": "2026-10-11T15:26:42.765Z",
   "files": {
     "auction.json": "f8b32f15dbe6a233492bd817909349ed64241fe3e457aa520134bf8e3ae2f21a",
     "careers.json": "d61fdbbb7ca1ec1778ebe10069ebfd9ac0971c66bf047bddbb3372ea96b36ddb",
@@ -16,7 +16,7 @@
     "passive_tree.json": "52c6b6c2362bfd0f4e919328daa5cda55c35a710383489628451a4f3b65137b9",
     "player.json": "51a0d21c9ee8ddd3e26e49166e6a170fe4c0773af55e26126c29527b0052ba79",
     "progression.json": "1e36c81a07000703b52b3cfd735dd555316f1abdec46b2c32a4193a69313ed3b",
-    "quest_index.json": "c9254512bce4a08dabc2c91aa17b7239d32f86ce0ad56c6bd2b573b5efe801be",
+    "quest_index.json": "7196060f271a4227907749817783d67f3a62756b881f927d4ece5f543fe25061",
     "shop.json": "275ebb1253acc22de43110200663eddd77f3fabf12ac2c69d48683a758cd781b",
     "skill_gems.json": "8487fe04d1248767a59cffc2158ae837f116b75077fde21e1942c9a2c5e14aeb",
     "starter.json": "6eaf8e464b65d7841c659cd4a69c0010fbac49509af4654a0b9db518bd9af1ba",

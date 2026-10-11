@@ -178,6 +178,7 @@ namespace DotRPG
             if (!string.IsNullOrEmpty(previous)) bag.Add(previous, 1);
             slots[(int)slot] = key;
             Changed?.Invoke();
+            if (ReferenceEquals(this, Game.Session?.Equipment)) GuideFlags.Mark(GuideFlags.Equip); // [GUIDE]
             return true;
         }
 

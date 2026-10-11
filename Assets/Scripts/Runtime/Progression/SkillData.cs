@@ -194,7 +194,7 @@ namespace DotRPG
             {
                 if (Has(Keystone.BloodMagic)) return 0;
                 bool mage = data.Class == CharacterClass.Mage;
-                float mp = BaseMana + (mage ? MageMpBonus : WarriorMpBonus) + (Level - 1) * (MpPerLevel + (mage ? MageMpPerLevel : 0)) + Sum(PassiveStat.FlatMp);
+                float mp = BaseMana + (mage ? MageMpBonus : WarriorMpBonus) + (Level - 1) * (MpPerLevel + (mage ? MageMpPerLevel : WarriorMpPerLevel)) + Sum(PassiveStat.FlatMp);
                 return Mathf.RoundToInt(mp * CareerMp(Prog.Career));
             }
         }
@@ -203,7 +203,7 @@ namespace DotRPG
         /// [BALANCE 2026-10-06] Class identity in the base numbers: warriors are the sturdy ones (more HP, more per
         /// level), mages carry the big mana pool; the career then leans further (guardian +30% HP, bishop +25% MP...).
         /// </summary>
-        public const int WarriorHpBonus = 50, WarriorHpPerLevel = 6, WarriorMpBonus = 10, MageMpBonus = 40, MageMpPerLevel = 3;
+        public const int WarriorHpBonus = 50, WarriorHpPerLevel = 6, WarriorMpBonus = 40, WarriorMpPerLevel = 2, MageMpBonus = 40, MageMpPerLevel = 3; // [BALANCE 2026-10-12] warrior MP 10 + 4/Lv -> 40 + 6/Lv: room for the cooldown skills
         public static float CareerHp(Career c) => c == Career.Guardian ? 1.3f : c == Career.Fighter ? 1.1f : c == Career.Bishop ? 1.05f : 1f;
         public static float CareerMp(Career c) => c == Career.Bishop ? 1.25f : c == Career.Arcanist ? 1.2f : 1f;
 
@@ -281,6 +281,11 @@ namespace DotRPG
             }
             n.usesLife = Has(Keystone.BloodMagic);
             n.manaCost = Mathf.Max(1, Mathf.RoundToInt(active.manaCost * mana * (1f - ManaCostReduction / 100f)));
+            // [BALANCE 2026-10-12] A career's main hunting skill costs a share of max MP instead of a flat number, so
+            // nonstop spam empties a full pool in about 25 s and normal hunting needs about one MP potion a minute at
+            // every level (a flat cost was crushing at Lv18-20 and free at Lv40). Tools/balance/theory_mana.py.
+            float share = career != null && !n.usesLife ? CareerSkill.MainHunterMpShare(career.id) : 0f;
+            if (share > 0f) n.manaCost = Mathf.Max(1, Mathf.RoundToInt(MaxMp * share * mana * (1f - ManaCostReduction / 100f)));
             if(career!=null) {
                 n.careerPotency=rankScale*more;
                 n.repeats=0; n.leechPct=0; n.bossPct=0;

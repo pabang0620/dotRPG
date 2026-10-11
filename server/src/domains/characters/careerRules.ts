@@ -23,7 +23,7 @@ export type CareerState = z.infer<typeof careerSchema>;
 export const MAIN_HUNTERS = ['f_break', 'g_wall', 'm_storm', 'b_light'];
 export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge','f_break','f_focus','f_execute','f_awake','f_stance'],
  ['g_steel','g_guard','g_wall','g_oath','g_retal','g_taunt','g_bash','g_counter','g_awake'],
- ['m_elements','m_fire','m_ice','m_storm','m_flow','m_orbit','m_veil','m_rift','m_awake'],
+ ['m_elements','m_fire','m_ice','m_storm','m_flow','m_orbit','m_veil','m_rift','m_awake','m_barrier'],
  ['b_mercy','b_heal','b_bloom','b_cleanse','b_grace','b_light','b_wing','b_bless','b_awake']];
 const reject = (why: string): never => { throw new AppError(422, '전직 상태가 올바르지 않습니다.', 'INVALID_CAREER', {reason:why}); };
 /** 9단계: 서버가 기록한 전직(character_career). granted가 null이면 행 없음(미전직). log는 거절하지 않고 기록만 한다 */
@@ -67,7 +67,8 @@ function checkNodes(list: { id: string; rank: number }[], c: number, level: numb
   for(const n of list){
     const i=ids.indexOf(n.id);if(i<0||i===8) reject('WRONG_CAREER_OR_AWAKENING');
     // 9번(파이터 검기 태세)은 트리 밖 추가 노드: 섬광보(2번)를 선행으로, Lv18부터
-    const tier=i===9?2:i%4, need=MAIN_HUNTERS.includes(n.id)?18:tier<2?15:tier===2?18:22, before=i===9?2:i-1;
+    // 9번 추가 노드: 파이터 검기 태세(선행 섬광보 2번, Lv18), 메이지 매직 배리어(선행 마력 순환 4번, Lv15)
+    const arc=c===3, tier=i===9?(arc?1:2):i%4, need=MAIN_HUNTERS.includes(n.id)?18:tier<2?15:tier===2?18:22, before=i===9?(arc?4:2):i-1;
     if(level<need) reject('NODE_LEVEL');
     if(tier>0&&!nodes.has(ids[before] as string)) reject('PREREQUISITE');
     spent+=n.rank*(n.rank+1)/2;

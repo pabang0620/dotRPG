@@ -322,7 +322,7 @@ namespace DotRPG
         /// <summary>Silent save at milestones (quest start, workshop built, quest complete).</summary>
         public void Autosave()
         {
-            if (Game.Config.autosave && WriteSave()) GameEvents.RaiseToast("자동 저장됨");
+            if (Game.Config.autosave) WriteSave(); // [UX] silent: no "자동 저장됨" toast (online play syncs on its own)
         }
 
         bool WriteSave()
