@@ -44,6 +44,11 @@ namespace DotRPG
         public float OathLeft => OathRadius > 0 ? Mathf.Max(0f, oathEnd - Time.time) : 0f;
         public float RetaliationLeft => Mathf.Max(0f, retalEnd - Time.time);
         public float ComboLeft => ComboStacks > 0 ? Mathf.Max(0f, rhythmEnd - Time.time) : 0f;
+        public float InvulnerableLeft => Mathf.Max(0f, invulnerableEnd - Time.time);
+
+        /// <summary>[GUARDIAN] Every hit is nullified until then (강철의 보루, 응보의 방진's blocked blow).</summary>
+        float invulnerableEnd;
+        public void AddInvulnerable(float seconds) => invulnerableEnd = Mathf.Max(invulnerableEnd, Time.time + seconds);
 
         /// <summary>Set while a secondary hit (burn tick, counter blast) lands: passives and combo do not react to it.</summary>
         static bool secondaryDamage;
@@ -105,6 +110,7 @@ namespace DotRPG
             shieldBack.Clear();
             frenzy = 0; frenzyEnd = 0;
             stanceOn = false;
+            invulnerableEnd = 0;
             OathRadius = 0;
             hotSource = null;
             Cleanse();
@@ -120,6 +126,16 @@ namespace DotRPG
         public int Absorb(int damage)
         {
             if (owner.Health.IsInvulnerable) return damage;
+            // [GUARDIAN] Invulnerable: nothing gets through (the counter stance still answers the blow).
+            if (Time.time < invulnerableEnd) { aura?.ShieldHit(); SkillVisuals.Sparks(owner.Center, new Color(.6f, 1f, .95f, 1f), 6, 3.5f); return 0; }
+            // 응보의 방진: the first blow is blocked completely and answered at once.
+            if (counterEnd > Time.time)
+            {
+                counterEnd = 0;
+                AddInvulnerable(.5f);
+                StartCoroutine(CounterBlast(1f));
+                return 0;
+            }
             int steel = Prog.Rank("g_steel");
             int reduction = (Time.time < guardEnd ? guard : 0) + (steel > 0 ? 4 + steel * 2 : 0);
             damage = Mathf.RoundToInt(damage * (1 - Mathf.Min(65, reduction) / 100f));
@@ -128,7 +144,6 @@ namespace DotRPG
             damage -= used;
             if (used > 0) { CareerTrials.Record(owner, "absorbed", used); aura?.ShieldHit(); }
             if (Prog.Rank("g_retal") > 0 && Time.time >= retalReady) { retalEnd = Time.time + 4; retalReady = Time.time + 2; }
-            if (counterEnd > Time.time) { counterEnd = 0; StartCoroutine(CounterBlast(1f)); }
             return Mathf.Max(0, damage);
         }
 

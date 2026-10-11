@@ -44,7 +44,9 @@ namespace DotRPG
             Sound("c_shield");
             Feel(1, Vector2.down);
             foreach (var e in Enemies(owner.Center, c.n.radius)) Strike(c, e, c.n.damage, owner.Center, 10f, 1, "c_shield");
-            if (c.authority) { AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); guardSlowEnd = Time.time + c.s.duration * .5f; } // the slow stays short while the guard lasts
+            // [GUARDIAN] A clear one-second invulnerability, then the damage reduction (the old slow is gone).
+            if (c.authority) { AddInvulnerable(1f); AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); }
+            if (owner.IsLocal) SkillVisuals.Flash(owner.Center, new Color(.6f, 1f, .95f, .8f), 1.8f, .25f);
         }
 
         /// <summary>회귀의 방패: the thrown shield hits on the way out and back, and shields every ally it touches.</summary>
@@ -105,7 +107,7 @@ namespace DotRPG
             {
                 foreach (var p in Allies(owner.Center, c.n.radius))
                 {
-                    if (c.authority) For(p).AddGuard(20, .35f);
+                    if (c.authority) { For(p).AddGuard(30, .35f); For(p).Cleanse(); }
                     if (shielded.Add(p)) GiveShield(c, p, c.s.power, end - Time.time);
                 }
                 yield return new WaitForSeconds(.25f);
@@ -158,7 +160,7 @@ namespace DotRPG
             else CareerFx.Clip("g_bash", at, c.dir, 1.15f, 26f);
             Sound("c_shield");
             foreach (var e in Fan(at, c.dir, c.n.range, 110f))
-                if (Strike(c, e, c.n.damage, at, 12f, 2, "c_shield")) Stun(c, e, c.s.duration);
+                if (Strike(c, e, c.n.damage, at, 12f, 2, "c_shield")) { Stun(c, e, c.s.duration); Taunt(c, e, 3f); }
         }
 
         /// <summary>응보의 방진: hold the shield; the first blow taken (or the end of the stance) releases a counter blast.</summary>
