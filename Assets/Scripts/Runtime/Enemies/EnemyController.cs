@@ -180,6 +180,9 @@ namespace DotRPG
             var target = Target;
             float distToPlayer = target != null ? Vector2.Distance(Position, target.Position) : float.MaxValue;
             float distFromHome = Vector2.Distance(Position, home);
+            // [GUARDIAN] Taunted: run at the taunter however far it is (no detect / lose-interest / leash limits).
+            var threat = GetComponent<ThreatTable>();
+            bool taunted = threat != null && threat.Forced != null && target == threat.Forced;
 
             // [MONSTER] A pluggable behaviour (ranged, charge, summon, guard, boss patterns) owns the frame once engaged.
             if (MonsterTick()) return;
@@ -188,19 +191,19 @@ namespace DotRPG
             {
                 case State.Idle:
                     desiredVelocity = Vector2.zero;
-                    if (distToPlayer < stats.detectRadius) StartChase();
+                    if (taunted || distToPlayer < stats.detectRadius) StartChase();
                     else if (Time.time >= stateUntil) PickWanderTarget();
                     break;
 
                 case State.Wander:
                     MoveTowards(wanderTarget, stats.wanderSpeed);
-                    if (distToPlayer < stats.detectRadius) StartChase();
+                    if (taunted || distToPlayer < stats.detectRadius) StartChase();
                     else if (Vector2.Distance(Position, wanderTarget) < 0.15f || Time.time >= stateUntil || IsStuck())
                         EnterState(State.Idle, UnityEngine.Random.Range(stats.wanderPauseRange.x, stats.wanderPauseRange.y));
                     break;
 
                 case State.Chase:
-                    if (target == null || distToPlayer > stats.loseInterestRadius || distFromHome > stats.leashRadius)
+                    if (target == null || (!taunted && (distToPlayer > stats.loseInterestRadius || distFromHome > stats.leashRadius)))
                     {
                         EnterState(State.ReturnHome, 6f);
                         break;
@@ -224,14 +227,14 @@ namespace DotRPG
                     desiredVelocity = Vector2.zero;
                     if (Time.time >= stateUntil)
                     {
-                        if (distToPlayer < stats.loseInterestRadius) EnterState(State.Chase);
+                        if (taunted || distToPlayer < stats.loseInterestRadius) EnterState(State.Chase);
                         else EnterState(State.Idle, 1f);
                     }
                     break;
 
                 case State.ReturnHome:
                     MoveTowards(home, stats.wanderSpeed * 1.4f);
-                    if (distToPlayer < stats.detectRadius * 0.7f && distFromHome < stats.leashRadius * 0.8f) StartChase();
+                    if (taunted || (distToPlayer < stats.detectRadius * 0.7f && distFromHome < stats.leashRadius * 0.8f)) StartChase();
                     else if (distFromHome < 0.3f || Time.time >= stateUntil || IsStuck()) EnterState(State.Idle, 1.5f);
                     break;
             }

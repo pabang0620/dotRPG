@@ -63,9 +63,9 @@ namespace DotRPG
         {
             // Level + HP / MP / EXP bars (top-left) and the skill bar (bottom-centre).
             StatusBarsView.Create(root);
-            BuffBarView.Create(root); // [UI] buffs and debuffs under the currency line
             var skillBar = SkillBarView.Create(root);
             if (TouchUi.Enabled) skillBar.gameObject.SetActive(false); // [TOUCH] the touch skill buttons take its place (UI/TouchControls.cs)
+            BuffBarView.Create(root, TouchUi.Enabled ? null : (RectTransform)skillBar.transform); // [UI] running buffs just over the skill keys
             AwakeningBanner.Create(root);
             AwakeningCutIn.Create(root); // class illustration slides in at the bottom-left on an awakening skill
 

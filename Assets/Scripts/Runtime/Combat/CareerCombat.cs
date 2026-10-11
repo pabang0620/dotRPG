@@ -35,6 +35,16 @@ namespace DotRPG
         public int Shield => Time.time < shieldEnd ? shield : 0;
         public int ComboStacks => Time.time < rhythmEnd ? stacks : 0;
 
+        // [UI] Seconds left of each timed state, for the buff row over the skill bar (0 = not running).
+        public float ShieldLeft => Shield > 0 ? Mathf.Max(0f, shieldEnd - Time.time) : 0f;
+        public float GuardLeft => GuardVisible ? Mathf.Max(0f, guardEnd - Time.time) : 0f;
+        public float CounterLeft => Mathf.Max(0f, counterEnd - Time.time);
+        public float BlessLeft => Mathf.Max(0f, blessEnd - Time.time);
+        public float HotLeft => HotVisible ? Mathf.Max(0f, hotEnd - Time.time) : 0f;
+        public float OathLeft => OathRadius > 0 ? Mathf.Max(0f, oathEnd - Time.time) : 0f;
+        public float RetaliationLeft => Mathf.Max(0f, retalEnd - Time.time);
+        public float ComboLeft => ComboStacks > 0 ? Mathf.Max(0f, rhythmEnd - Time.time) : 0f;
+
         /// <summary>Set while a secondary hit (burn tick, counter blast) lands: passives and combo do not react to it.</summary>
         static bool secondaryDamage;
         /// <summary>The career skill whose hit is landing right now (empty for a basic attack).</summary>

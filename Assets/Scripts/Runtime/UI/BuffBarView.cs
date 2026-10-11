@@ -5,36 +5,47 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// [UI] The local player's buffs and debuffs (top-left, under the currency line): shield, guard, blessing, regen,
-    /// combo stacks, curse and slow. Combo shows its stack count.
+    /// [UI] The local player's running buffs and debuffs, left-aligned just over the skill keys (Q W E R T): a small
+    /// icon, the buff's name and the seconds left (stacks for 검기 연성, ON for a toggle). Every career's states show here.
+    /// Touch play has no skill bar, so the row stays at the top-left under the currency line there.
     /// </summary>
     public sealed class BuffBarView : MonoBehaviour
     {
-        const float Size = 28f, Gap = 4f;
-        const int Slots = 8;
+        const float Icon = 20f, ChipWidth = 92f, Gap = 4f, Height = 24f;
+        const int Slots = 10;
         readonly List<(Image icon, Text label, Image back)> slots = new List<(Image, Text, Image)>();
 
-        public static BuffBarView Create(Transform parent)
+        public static BuffBarView Create(Transform parent, RectTransform skillBar)
         {
-            var root = UIFactory.Place(UIFactory.Rect(parent, "Buffs"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -150f), new Vector2(Slots * (Size + Gap), Size));
+            RectTransform root;
+            if (skillBar != null)
+            {
+                // Same bottom-centre anchor as the skill bar; the row starts at its left edge, a little above it.
+                var bar = skillBar.sizeDelta;
+                root = UIFactory.Place(UIFactory.Rect(parent, "Buffs"), new Vector2(0.5f, 0f), new Vector2(0f, 0f),
+                    new Vector2(skillBar.anchoredPosition.x - bar.x * 0.5f, skillBar.anchoredPosition.y + bar.y + 6f), new Vector2(Slots * (ChipWidth + Gap), Height));
+            }
+            else root = UIFactory.Place(UIFactory.Rect(parent, "Buffs"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -150f), new Vector2(Slots * (ChipWidth + Gap), Height));
             var v = root.gameObject.AddComponent<BuffBarView>();
             for (int i = 0; i < Slots; i++)
             {
-                var back = UIFactory.Image(root, "Back" + i, Game.Art.Get("ui_white"), new Color32(10, 14, 22, 170));
+                var back = UIFactory.Image(root, "Back" + i, Game.Art.Get("ui_white"), new Color32(10, 14, 22, 180));
                 back.raycastTarget = false;
-                UIFactory.Place(back.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(i * (Size + Gap), 0f), new Vector2(Size, Size));
+                UIFactory.Place(back.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(i * (ChipWidth + Gap), 0f), new Vector2(ChipWidth, Height));
                 var icon = UIFactory.SharpIcon(back.transform, "Icon", Color.white);
                 icon.raycastTarget = false;
-                UIFactory.Stretch(icon.rectTransform, 2f, 2f, 2f, 2f);
-                var label = UIFactory.Text(back.transform, "Label", "", 14, Color.white, TextAnchor.LowerRight, true);
+                UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(Icon, Icon));
+                var label = UIFactory.Text(back.transform, "Label", "", 13, Color.white, TextAnchor.MiddleLeft, true);
                 label.raycastTarget = false;
-                label.horizontalOverflow = HorizontalWrapMode.Overflow; // "60분" is wider than the 28 px slot: never wrap "분" onto a second line
-                UIFactory.Stretch(label.rectTransform, 0f, -3f, -1f, 0f);
+                label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                UIFactory.Place(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Icon + 5f, 0f), new Vector2(ChipWidth - Icon - 7f, Height));
                 back.gameObject.SetActive(false);
                 v.slots.Add((icon, label, back));
             }
             return v;
         }
+
+        static string Sec(float s) => Mathf.CeilToInt(s) + "초";
 
         void LateUpdate()
         {
@@ -43,15 +54,19 @@ namespace DotRPG
             if (p != null && !p.IsDead)
             {
                 var c = CareerCombat.For(p);
-                if (c.Shield > 0) Put(ref n, "buff_shield", "");
-                if (c.GuardVisible) Put(ref n, "buff_guard", "");
-                if (c.BlessVisible) Put(ref n, "buff_bless", "");
-                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", Mathf.CeilToInt(c.FrenzyLeft).ToString());
-                if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_power", Mathf.CeilToInt(p.Data.ScrollLeft / 60f) + "분"); // [CASH] 투지의 주문서
-                if (c.HotVisible) Put(ref n, "buff_regen", "");
-                if (c.ComboStacks > 0) Put(ref n, "buff_focus", c.ComboStacks.ToString());
-                if (c.Cursed) Put(ref n, "buff_curse", "");
-                if (Time.time < c.SlowUntil) Put(ref n, "buff_slow", "");
+                if (c.StanceOn) Put(ref n, "buff_focus", "검기 태세 ON");
+                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft));
+                if (c.ComboStacks > 0) Put(ref n, "buff_focus", $"검기 {c.ComboStacks}/3");
+                if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", "보호막 " + Sec(c.ShieldLeft));
+                if (c.GuardLeft > 0f) Put(ref n, "buff_guard", "보루 " + Sec(c.GuardLeft));
+                if (c.CounterLeft > 0f) Put(ref n, "buff_guard", "방진 " + Sec(c.CounterLeft));
+                if (c.OathLeft > 0f) Put(ref n, "buff_guard", "맹세 " + Sec(c.OathLeft));
+                if (c.RetaliationLeft > 0f) Put(ref n, "buff_power", "응보 " + Sec(c.RetaliationLeft));
+                if (c.BlessLeft > 0f) Put(ref n, "buff_bless", "축복 " + Sec(c.BlessLeft));
+                if (c.HotLeft > 0f) Put(ref n, "buff_regen", "재생 " + Sec(c.HotLeft));
+                if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_power", "투지 " + Mathf.CeilToInt(p.Data.ScrollLeft / 60f) + "분"); // [CASH] 투지의 주문서
+                if (c.Cursed) Put(ref n, "buff_curse", "저주");
+                if (Time.time < c.SlowUntil) Put(ref n, "buff_slow", "둔화 " + Sec(c.SlowUntil - Time.time));
             }
             for (int i = n; i < slots.Count; i++)
                 if (slots[i].back.gameObject.activeSelf) slots[i].back.gameObject.SetActive(false);
@@ -63,7 +78,7 @@ namespace DotRPG
             var s = slots[n++];
             if (!s.back.gameObject.activeSelf) s.back.gameObject.SetActive(true);
             s.icon.sprite = Game.Art.Get(sprite);
-            s.label.text = label;
+            if (s.label.text != label) s.label.text = label;
         }
     }
 }

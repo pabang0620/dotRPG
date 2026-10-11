@@ -67,7 +67,11 @@ namespace DotRPG
             }
             // [BALANCE] Just spotted the player: walk in and size them up before the first attack.
             if (E.HoldingFirstStrike && !(E.Def != null && E.Def.boss)) { E.ApproachOnly(target); return true; }
-            Engaged(target, Vector2.Distance(E.Position, target.Position));
+            float dist = Vector2.Distance(E.Position, target.Position);
+            // [GUARDIAN] Taunted from far away: run at the taunter first (the behaviours would give up past their range).
+            var threat = E.GetComponent<ThreatTable>();
+            if (threat != null && threat.Forced == target && dist > Mathf.Max(3f, E.Def != null ? E.Def.keepDistance : 0f)) { E.ApproachOnly(target); return true; }
+            Engaged(target, dist);
             return true;
         }
 
