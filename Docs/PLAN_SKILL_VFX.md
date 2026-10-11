@@ -1,133 +1,163 @@
-# 스킬 이펙트 전면 재기획 (2026-10-06)
+# 전직 스킬 이펙트 점검과 그림 생성 계획 (2026-10-11)
 
-## 1. 사용자 요구 (지금까지 말한 것 전부)
+읽기 전용 점검 결과다. 코드는 바꾸지 않았다. 숫자(피해·범위)는 밸런스 작업이 따로 맡고, 이 문서는 "보이는 것"만 다룬다.
 
-| # | 요구 | 반영 위치 |
+## 1. 지금 이펙트가 만들어지는 방식
+
+| 종류 | 위치 | 설명 |
 |---|---|---|
-| R1 | jaein의 전직 이펙트·구성은 전부 버리고 새로(완료) | 3장, 4장 |
-| R2 | 스킬 구성 자체를 점검·재기획(완료, PLAN_CAREER_SKILLS.md) | 수치·구성 유지, 연출만 교체 |
-| R3 | 이펙트와 타격감 둘 다 챙긴다 | 2장 타격 규칙 + 4장 스킬별 타격 |
-| R4 | 퀄리티가 낮다. 도트를 촘촘히, 고해상도로 | 3장 해상도·프레임 |
-| R5 | 도트가 많다고 다가 아니다. 기존 형식을 덜어내고 처음부터 기획 | 3장 새 방식(프레임 애니메이션), 범용 연출 금지 |
-| R6 | 필요하면 이미지 생성도 써도 된다 | 3-3 이미지 생성 대상 |
-| R7 | 좌우 대칭이 안 맞아 이상하다 | 3-2 방향 규칙 |
-| R8 | 메이지 빙결삼창(얼음창 3개)은 정말 좋다 | 기준 스킬로 유지, 같은 원칙을 전체에 적용 |
-| R9 | 나머지는 바닥 깨지는 연출이 애매하게 들어간다 | 바닥 깨짐은 무거운 내려찍기 2개에만(단죄, 천쇄방패) |
-| R10 | 맞추는 건 자동 공격 그대로 | 판정·자동 조준은 바꾸지 않는다 |
-| R11 | 내가 말한 것 전부 리스트업해서 놓치지 말 것 | 이 표, 6장 점검표 |
+| 클립(flipbook) | `Runtime/Art/VfxArt.cs`, `VfxArt.{Fighter,Guardian,Arcanist,Bishop}.cs` | 코드로 픽셀을 그려 만든 프레임 묶음. Density 4(타일당 64픽셀), point 필터. `CareerFx.Clip("이름")`이 `VfxLibrary.Get`으로 불러 재생한다. 그림 파일이 아니다. |
+| 그림 한 장 | `Resources/Art/FxImg/fxi_*.png` (11장) | 생성 그림. aegis, shield_small, bigsword, bigsword_dark, blackhole, crack, holy_sigil, life_lotus, bell, wings, meteor. `SkillFx.Spawn(SkillFx.Pick("fxi_x", 대체))`로 쓰고 없으면 코드 그림으로 대체. |
+| 코드 도형 | `SkillFx`(fx_ring, fx_glow, fx_spark, fx_streak, fx_scorch...), `SkillVisuals`(Flash, Sparks, ArcBolt, MeteorFall, FrostOrbHead), `GlowLineFx`, `CareerFx.Spear/Orb/OrbTrail` | 점·원·선을 크기·색만 바꿔 쓴다. |
 
-## 2. 왜 지금 애매한가 (진단)
+결론: 메이지와 비숍 이펙트 대부분이 "코드로 그린 원·선 + 몇 개의 클립"이라 모양이 비슷하고(특히 성운 폭발과 천체 붕괴가 같은 m_collapse·m_starburst를 공유), 상용 게임 같은 덩어리감(불덩이 결, 얼음 결정, 번개 갈래)이 없다.
 
-- 모든 이펙트가 그림 한 장을 키우고·돌리고·흐리게 하는 방식이다. 움직임의 "시작-정점-잔상"이 없다.
-- 범용 연출 재사용: 바닥 깨짐 7곳, 충격 고리 8곳, 마법진 9곳, 섬광 10곳. 스킬마다 개성이 없다.
-- 방향: 베기 그림을 방향 각도로만 돌려서 왼쪽을 볼 때 기울기·음영이 위아래로 뒤집힌다(오른쪽에서 올려 베기 = 왼쪽에서 내려 베기). 무작위 회전도 섞여 있다.
-- 빙결삼창이 좋은 이유: 모양이 분명한 물체가 날아가고, 꼬리를 남기고, 맞으면 그 물체가 부서진다. 동작 하나가 처음부터 끝까지 이어진다.
+## 2. 스킬별 판정 (29개)
 
-## 3. 새 방식
+판정: **OK**(그대로) / **다듬기**(코드만 손보면 된다) / **새 그림**(생성 그림이 필요하다)
 
-### 3-1. 프레임 애니메이션 (VfxClip)
+### 메이지 (7개 전부 새 그림)
 
-- 이펙트는 4~12장짜리 프레임 애니메이션(초당 20~30장)으로 만든다. 한 장을 늘리는 대신 실제로 그려진 움직임.
-- 해상도: 1칸 64픽셀(지금 고해상도 그림과 같은 밀도). 외곽선·명암 단계가 있는 도트 스타일, 빛은 가산 합성.
-- 동작은 3단: 예비(모으기, 0.05~0.2초) -> 발동(정점) -> 잔상(흩어짐). 맞은 자리에는 그 스킬 고유의 타격 이펙트.
-- 범용 연출 금지: 스킬마다 전용 클립. 공용은 직업별 타격 불꽃 4종뿐.
+| 스킬 | 지금 | 판정 | 문제 |
+|---|---|---|---|
+| 홍련구 | m_fireball 클립 + m_explode + fx_scorch | 새 그림 | 코드 불덩이가 작고 납작해 연사기의 주인공으로 약하다. 폭발 결이 없다 |
+| 빙결삼창 | CareerFx.Spear(코드 창) + fx_snow 꼬리 + m_icebloom | 새 그림 | 얼음창이 선 하나로 보인다. 결정 질감·관통 파편 없음 |
+| 연쇄전격 | SkillVisuals.ArcBolt(코드 선) + m_spark | 새 그림 | 이제 연사기인데 번개가 가는 선 하나다. 갈래·두께·적중 섬광 부족 |
+| 성운 폭발(차징) | 모으기: fx_ring·fx_sparkle / 폭발: m_collapse·m_starburst·impact | 새 그림 | 차징 중 손에 모이는 구슬이 없어 차징인지 모른다. 폭발이 천체 붕괴와 같은 클립 |
+| 차원도약 | m_portal 2개 + m_starburst | 새 그림 | 출발·도착 표시가 작다. 잔상 폭발이 성운과 같은 클립 |
+| 중력 균열 | fxi_blackhole 회전 + fx_glow | 새 그림 | 블랙홀 한 장이 돌기만 한다(사용자가 회전 연출을 싫어함). 바닥에 열린 균열로 안 보인다 |
+| 천체 붕괴(각성) | MeteorFall(코드) + FrostOrbHead + CareerFx.Orb + m_collapse | 새 그림 | 세 원소 운석이 코드 도형이라 각성기다운 무게가 없다. 붕괴가 성운과 같다 |
 
-### 3-2. 방향 규칙 (좌우 대칭)
+### 비숍 (OK 2, 다듬기 1, 새 그림 4)
 
-- 좌우는 회전이 아니라 거울(좌우 반전)로 그린다. 오른쪽 기준으로 그린 동작을 왼쪽에서는 그대로 거울에 비춘 모양.
-- 위·아래·대각선은 오른쪽 그림을 기울이되, 왼쪽 반 평면은 거울 + 기울기로 처리해 음영 방향(위쪽이 밝음)이 항상 같게.
-- 기울기·연속 베기 순서도 거울을 따른다. 무작위 회전은 쓰지 않는다(필요하면 정해진 몇 가지 중 선택).
+| 스킬 | 지금 | 판정 | 문제 |
+|---|---|---|---|
+| 치유의 깃 | b_feather 클립(코드 깃털) | 새 그림 | 깃털이 작은 점처럼 보인다 |
+| 생명의 파문 | fxi_life_lotus + fx_ring | OK | 생성 그림이 있고 이번에 회전도 뺐다 |
+| 정화의 종 | fxi_bell + b_bell | OK | |
+| 심판의 광창 | b_spear 클립 | 새 그림 | 연사기인데 창이 가는 선 |
+| 신의 가호 | b_pillar + b_wings + 범위 원 + 머리 위 글자 | 다듬기 | 이번에 범위 원·글자를 넣었다. 기둥 클립만 조금 크게 |
+| 축복의 연결 | b_cross + fx_glow | 새 그림 | 아군 사이를 잇는 빛 사슬이 없다 |
+| 천상의 행진(각성) | b_pillar + fxi_wings + fxi_holy_sigil | 새 그림 | 하늘에서 내려오는 빛기둥이 코드 클립이라 약하다 |
 
-### 3-3. 이미지 생성
+### 파이터 (OK 4, 다듬기 2, 새 그림 2)
 
-- 절차 생성이 약한 큰 물체는 이미지 생성(Flow)으로 만든다: 거대한 검, 거대한 방패, 천사 날개, 종, 사슬, 운석, 성스러운 창. 투명 배경은 마젠타 배경 생성 후 키 처리.
-- 생성 이미지는 그대로 쓰지 않고 크기를 맞춘 뒤 프레임 애니메이션의 부품(움직이는 물체)으로 쓴다.
-- Flow가 막혀 있으면 절차 생성으로 대신하고 나중에 교체한다.
+| 스킬 | 지금 | 판정 | 문제 |
+|---|---|---|---|
+| 십자참 | f_arc, f_x | OK | 픽셀 베기 클립이 화풍과 맞는다 |
+| 섬광보(Shift) | Ghost 잔상, f_line, f_cut | OK | |
+| 검귀 해방 | PowerAura 2초, f_arc 4방향 | 다듬기 | 이제 60초 버프라 켤 때 한 번 크게: 몸에서 위로 솟는 붉은 기운 클립 정도 |
+| 파쇄 검기 | f_wave(초승달) | 다듬기 | 연사기라 괜찮지만 검기 태세도 같은 f_wave라 구분이 안 된다(색만 다름) |
+| 일섬 | f_line, f_cut | OK | |
+| 단죄 | f_vslash, impact, Crack | OK | |
+| 천검귀일(각성) | fxi_bigsword, fxi_bigsword_dark | OK | 생성 그림 있음 |
+| 검기 태세 | f_wave 재사용 | 새 그림 | 기본 공격이 바뀌는 태세인데 파쇄 검기와 같은 그림 |
 
-### 3-4. 확인
+### 수호자 (OK 5, 새 그림 2) - 이번에 코드 개편 완료
 
-- 클립마다 프레임 띠와 움직이는 미리보기(GIF)를 뽑아 그림 자체를 검토한다(게임 화면 검증 아님).
+| 스킬 | 판정 | 비고 |
+|---|---|---|
+| 강철의 보루 | 새 그림 | 코드 돔(g_dome)이 납작하다. 육각 방벽 돔 그림이 있으면 탱커 느낌이 확 산다 |
+| 회귀의 방패 | OK | fxi_aegis 회전 비행 |
+| 수호의 맹세 | OK | g_ward 반경 원 |
+| 대지의 호령 | OK | 충격 링 |
+| 방패 강타 | OK | |
+| 응보의 방진 | OK | |
+| 천쇄방패(각성) | 새 그림 | 사슬이 코드 클립(g_chain). 금빛 빛사슬 그림 필요 |
 
-## 4. 스킬별 연출
+**합계: OK 11, 다듬기 3, 새 그림 15** (메이지 7, 비숍 4, 파이터 2, 수호자 2)
 
-공통: 판정·수치·타이밍은 그대로. 맞은 몬스터에는 직업별 타격 불꽃 + 그 스킬의 전용 흔적.
+## 3. 생성할 그림 목록
 
-### 파이터 (청색 검기, 바람, 날 선 흰 가장자리)
+### 3.1 배경 규칙 (중요)
 
-| 스킬 | 연출 |
-|---|---|
-| 십자참 | 두 번의 검기 호가 칼끝을 따라 그려지며(6장) 교차점에서 X자 섬광. 몬스터에는 X자 베기 자국 |
-| 섬광보 | 몸이 지나간 자리에 푸른 잔상 4개(캐릭터 그림을 푸르게), 일직선 빛줄기, 0.15초 뒤 지나친 몬스터들에 베기 자국이 한꺼번에 |
-| 난무 | 빠른 작은 호 4번(각기 다른 정해진 각도), 마지막에 위로 크게 올려 베는 세로 호(7장)와 바람 줄기. 바닥 깨짐 없음 |
-| 파쇄 검기 | 큰 초승달 검기가 반짝이며 날아가고(4장 반복) 뒤에 잔상 3겹. 맞은 몬스터 몸에 유리 깨지듯 금 간 문양(파쇄 표식) |
-| 일섬 | 가는 선이 깜빡(예비), 화면을 가르는 굵은 빛선(3장), 선 위 몬스터마다 베기 자국, 짧은 흰 화면 번쩍임(본인 화면만) |
-| 단죄 | 도약 궤적 잔상, 하늘에서 내리찍는 세로 대형 호(8장), 착지점 검 모양 빛 충격 + 바닥 균열(파이터 유일) |
-| 천검귀일 | 하늘에 검 6자루가 빛줄기와 함께 꽂히고(검마다 낙하 잔상), 꽂힐 때 작은 빛 폭발. 마지막 거대한 검(이미지 생성)은 빛기둥 -> 낙하 -> 충격파 고리 + 균열 + 화면 어둡게 |
+- **빛·불·번개·마법처럼 빛나는 것**은 **순수 검정(#000000) 배경**으로 뽑고 게임에서 Additive(더하기) 재질로 그린다. 검정은 더하면 사라지므로 키잉이 필요 없고, 가장자리 번짐이 자연스럽다. 마젠타 키로 뽑으면 빛 번짐에 분홍 테두리가 남는다.
+- **얼음 결정·바위 운석·깃털·사슬처럼 단단한 물체**는 **마젠타(#FF00FF) 배경**으로 뽑고 `process_generated.py`의 `key()`로 알파를 만든다.
+- 시트는 칸 사이에 넓은 여백(검정 또는 마젠타)을 두고 "N columns x M rows, evenly spaced, same size frames, no frame borders, no text"를 꼭 넣는다. Flow 결과는 1376x768 또는 1024x1024 JPEG다.
+- 화풍: 캐릭터는 64px 2등신 도트(ppu36), 이펙트는 Density 4 HD 도트. 프롬프트 공통 꼬리: `pixel art, crisp hard pixel edges, limited palette, stepped shading, no anti-aliasing blur, 16-bit action RPG skill effect, game asset`.
 
-### 수호자 (청록, 육각형 방벽, 쇠와 빛)
+### 3.2 메이지 (우선)
 
-| 스킬 | 연출 |
-|---|---|
-| 강철의 보루 | 몸 둘레에 육각 타일이 차례로 켜지며 반구 방벽 형성(6장), 지속 중 은은한 일렁임, 밀쳐낼 때 육각 조각이 바깥으로 튐 |
-| 회귀의 방패 | 회전하는 방패(8장 회전, 잔상), 청록 리본 꼬리. 맞을 때 쇳소리 불꽃 별, 돌아와 잡을 때 섬광 |
-| 수호의 맹세 | 바닥에 육각 문양 원이 따라다님(바깥 육각이 차례로 점멸), 결계에 들어온 아군 위로 작은 방패 문장 |
-| 대지의 호령 | 발 구름과 동시에 소리 파동 호 3겹(앞쪽으로 퍼짐), 흙먼지 약간, 도발된 몬스터 머리 위 붉은 "!" |
-| 방패 강타 | 커다란 방패 실루엣이 앞으로 내질러짐(4장) + 정면 충격 별(5장), 몬스터에 기절 별 |
-| 응보의 방진 | 금빛 방패 3개가 몸 주위를 공전, 반격 때 방패들이 8방향으로 튀어 나가며 폭발 |
-| 천쇄방패 | 하늘에서 거대한 방패(이미지 생성) 낙하, 착지 순간 땅에서 빛의 사슬이 솟아 주변 몬스터를 묶음(기절 표현), 육각 충격파 + 균열 |
+| id | 쓰는 곳 | 종류 | 배경 |
+|---|---|---|---|
+| `m2_fireball` | 홍련구 비행 | 시트 6프레임 4x2 칸(2칸 비움), 프레임 128px, 오른쪽을 향함 | 검정 |
+| `m2_fire_explosion` | 홍련구 폭발, 천체 붕괴 불 운석 착지 | 시트 8프레임 4x2, 192px | 검정 |
+| `m2_ice_spear` | 빙결삼창 창 | 한 장 256x64, 오른쪽을 향함 | 마젠타 |
+| `m2_ice_shatter` | 빙결 적중·빙결 | 시트 6프레임 3x2, 128px | 마젠타 |
+| `m2_lightning_bolt` | 연쇄전격 줄기(늘려 쓴다) | 시트 4프레임 1x4 세로 쌓기, 256x64 | 검정 |
+| `m2_lightning_hit` | 연쇄전격 적중 섬광 | 시트 6프레임 3x2, 128px | 검정 |
+| `m2_charge_orb` | 성운 폭발 차징(손에 모이는 구슬, 반복) | 시트 8프레임 4x2, 128px | 검정 |
+| `m2_nebula_burst` | 성운 폭발 터짐 | 시트 10프레임 5x2, 256px | 검정 |
+| `m2_blink` | 차원도약 출발·도착 | 시트 8프레임 4x2, 128px | 검정 |
+| `m2_rift` | 중력 균열(바닥에 열린 균열, 반복) | 시트 8프레임 4x2, 256x160(위에서 본 눌린 타원) | 마젠타 |
+| `m2_meteor_fire` / `m2_meteor_ice` / `m2_meteor_storm` | 천체 붕괴 세 운석 | 각 한 장 128x192, 왼쪽 위에서 오른쪽 아래로 떨어지는 대각선, 꼬리 포함 | 마젠타 |
+| `m2_cataclysm_collapse` | 천체 붕괴 마지막 붕괴 | 시트 10프레임 5x2, 384px | 검정 |
 
-### 메이지 (보라 마력 + 원소)
+프롬프트(영어, 그대로 붙여 넣기):
 
-| 스킬 | 연출 |
-|---|---|
-| 홍련구 | 불꽃이 일렁이는 화염구(8장 반복)와 불씨 꼬리, 착탄 시 제대로 된 폭발 프레임(10장)과 그을음 |
-| 빙결삼창 | 지금 방식 유지(기준). 맞은 몬스터에 얼음 결정이 피어나는 빙결 이펙트만 추가 |
-| 연쇄전격 | 지금 번개 줄기 유지, 연결 지점마다 전기 불꽃 프레임(6장), 첫 발사에 지팡이 끝 방전 |
-| 성운탄 | 별 모양 탄이 꼬리별처럼 휘어 날아감(4장 반짝임), 착탄 시 별빛 폭발 |
-| 차원도약 | 출발·도착에 소용돌이 문(6장), 출발점에 보랏빛 잔상 실루엣이 안으로 빨려 들었다가 폭발 |
-| 중력 균열 | 검보라 소용돌이(나선 팔이 도는 12장 반복), 돌 조각이 나선으로 빨려 듦, 마지막에 안으로 수축 -> 섬광 |
-| 천체 붕괴 | 화면 어둡게, 화염 운석(이미지 생성)·얼음 혜성·번개 기둥이 차례로, 마지막 중심에 거대한 마력 구가 수축했다 터짐 |
+- **m2_fireball**: `Sprite sheet of a flaming fireball projectile flying to the right, 6 frames in a 4 columns x 2 rows grid (last two cells empty), each frame 128x128, evenly spaced with wide black gutters, pure solid black #000000 background. Bright yellow-white core, orange and crimson flames streaming backward into a short tail, small embers. pixel art, crisp hard pixel edges, limited palette, stepped shading, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_fire_explosion**: `Sprite sheet of a fiery explosion, 8 frames in a 4x2 grid, each 192x192, evenly spaced, pure black #000000 background. Frame 1 small white flash, frames 2-4 expanding orange fireball with rolling flame petals, frames 5-8 dark red smoke ring and fading embers. pixel art, crisp hard pixel edges, limited palette, stepped shading, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_ice_spear**: `A single ice spear projectile pointing right, 256x64, on a solid magenta #FF00FF background. Long translucent cyan crystal shard with a sharp faceted tip, inner white highlights, small frost crystals trailing behind. pixel art, crisp hard pixel edges, limited palette (white, pale cyan, cyan, deep blue), stepped shading, 16-bit action RPG, game asset, no text.`
+- **m2_ice_shatter**: `Sprite sheet of an ice impact shattering, 6 frames in a 3x2 grid, each 128x128, solid magenta #FF00FF background. Cyan crystal spikes burst outward then break into flying shards and frost mist. pixel art, crisp hard pixel edges, limited cold palette, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_lightning_bolt**: `Sprite sheet of a horizontal lightning bolt segment, 4 frames stacked vertically (1 column x 4 rows), each 256x64, pure black #000000 background. Jagged branching electric arc from left edge to right edge, white-hot core with electric blue and violet glow, each frame a different branch pattern for flicker. pixel art, crisp hard pixel edges, limited palette, 16-bit action RPG skill effect, game asset, no text.`
+- **m2_lightning_hit**: `Sprite sheet of an electric impact burst, 6 frames in a 3x2 grid, each 128x128, pure black background. White flash with radiating blue-violet lightning forks that crackle and fade. pixel art, crisp hard pixel edges, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_charge_orb**: `Sprite sheet of a magic energy orb gathering power (looping), 8 frames in a 4x2 grid, each 128x128, pure black background. Violet and magenta arcane sphere with a bright white core, small star particles spiralling inward, pulsing larger each frame then looping. pixel art, crisp hard pixel edges, limited palette, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_nebula_burst**: `Sprite sheet of a cosmic nebula explosion, 10 frames in a 5x2 grid, each 256x256, pure black background. A violet-magenta nebula cloud bursts outward from a white star core, swirling gas, scattered tiny stars, expanding ring, then fading. pixel art, crisp hard pixel edges, limited palette (white, pink, magenta, violet, deep indigo), 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_blink**: `Sprite sheet of a teleport blink effect, 8 frames in a 4x2 grid, each 128x128, pure black background. A vertical violet rune portal opens, a silhouette-shaped flash of arcane light, particles collapse inward and the portal closes. pixel art, crisp hard pixel edges, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_rift**: `Sprite sheet of a gravity rift torn open on the ground seen from a top-down 3/4 view (flattened ellipse), 8 looping frames in a 4x2 grid, each 256x160, solid magenta #FF00FF background. Dark void crack in the floor with a violet glowing rim, debris and pebbles being pulled toward the center, faint purple lightning along the edge. No spinning spiral. pixel art, crisp hard pixel edges, limited palette, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **m2_meteor_fire / ice / storm** (각각 따로 생성): `A single falling meteor, 128x192, falling diagonally from the top-left toward the bottom-right, solid magenta #FF00FF background. [FIRE: a molten rock wrapped in orange flames with a long fire tail] [ICE: a jagged cyan ice boulder with a frosty white vapour tail] [STORM: a dark stone crackling with blue-violet lightning and a sparking tail]. pixel art, crisp hard pixel edges, limited palette, 16-bit action RPG, game asset, no text.`
+- **m2_cataclysm_collapse**: `Sprite sheet of a celestial collapse finisher, 10 frames in a 5x2 grid, each 384x384, pure black background. Fire, ice and lightning energies spiral into a violet singularity, implode to a white point, then explode in a huge shockwave ring with star shards. pixel art, crisp hard pixel edges, limited palette, 16-bit action RPG ultimate skill effect, game asset, no text, no frame borders.`
 
-### 비숍 (금빛 신성, 깃털, 꽃)
+### 3.3 비숍
 
-| 스킬 | 연출 |
-|---|---|
-| 치유의 깃 | 팔랑이며 날아가는 깃털(4장), 도착하면 연두·금빛 십자 입자가 피어오름 |
-| 생명의 파문 | 바닥에 꽃잎이 열리는 연꽃 문양(8장), 파문마다 물결 고리 |
-| 정화의 종 | 머리 위에 빛의 종(이미지 생성)이 흔들리며 울림, 소리 고리 3겹, 정화된 아군에서 검은 연기가 빠져나가 흩어짐 |
-| 심판의 광창 | 길쭉한 빛의 창(끝이 빛나는 4장 반복)이 날아가고 관통한 몬스터에 빛 십자 |
-| 천사의 품 | 아군 등 뒤에 반투명 날개(이미지 생성)가 펼쳐졌다가(6장) 접히며 보호막 |
-| 축복의 연결 | 금빛 실이 아군 사이를 이어 흐르고(빛이 흐르는 4장), 축복받은 아군에 금빛 고리 |
-| 천상의 행진 | 하늘이 열리며 빛기둥 여러 줄이 훑고 지나감, 비숍 뒤로 큰 날개와 후광, 따라오는 성역은 은은한 금빛 원 |
+| id | 쓰는 곳 | 종류 | 배경 |
+|---|---|---|---|
+| `b2_feather` | 치유의 깃 | 한 장 96x48, 오른쪽을 향함, 빛 꼬리 | 마젠타 |
+| `b2_light_spear` | 심판의 광창 | 한 장 256x48 | 검정 |
+| `b2_bless_link` | 축복의 연결(아군 사이 빛 사슬, 늘려 씀) | 시트 4프레임 1x4, 256x48 | 검정 |
+| `b2_dawn_pillar` | 천상의 행진 빛기둥 | 시트 8프레임 4x2, 128x384 | 검정 |
 
-### 직업별 타격 불꽃 (공용 4종)
+- **b2_feather**: `A single glowing white angel feather flying to the right, 96x48, solid magenta #FF00FF background, soft gold edge light, short sparkling gold trail behind. pixel art, crisp hard pixel edges, limited palette (white, cream, gold), 16-bit action RPG, game asset, no text.`
+- **b2_light_spear**: `A single holy light spear pointing right, 256x48, pure black background, white-gold blade of light with a bright tip and radiant streaks, faint halo. pixel art, crisp hard pixel edges, limited palette (white, pale gold, gold), 16-bit action RPG skill effect, game asset, no text.`
+- **b2_bless_link**: `Sprite sheet of a horizontal holy light chain beam, 4 frames stacked vertically (1x4), each 256x48, pure black background, glowing golden links of light with small cross sparkles flowing left to right. pixel art, crisp hard pixel edges, 16-bit action RPG skill effect, game asset, no text.`
+- **b2_dawn_pillar**: `Sprite sheet of a divine light pillar descending from the sky, 8 frames in a 4x2 grid, each 128x384 (tall), pure black background. A thin beam appears, widens into a radiant white-gold column with falling feathers and sparkles, then fades. pixel art, crisp hard pixel edges, limited palette, 16-bit action RPG ultimate skill effect, game asset, no text, no frame borders.`
 
-- 파이터: 날카로운 X자 베기 섬광(4장)
-- 수호자: 둔탁한 쇳빛 충격 별 + 파편(5장)
-- 메이지: 보랏빛 마력 파열(5장)
-- 비숍: 금빛 십자 섬광(4장)
+### 3.4 파이터
 
-## 5. 구현 순서
+| id | 쓰는 곳 | 종류 | 배경 |
+|---|---|---|---|
+| `f2_break_crescent` | 파쇄 검기 | 시트 6프레임 3x2, 192px, 오른쪽을 향함 | 검정 |
+| `f2_stance_wave` | 검기 태세 기본 공격 검기 | 시트 6프레임 3x2, 160px | 검정 |
 
-1. VfxClip(프레임 생성·불러오기)과 VfxPlayer(재생, 거울 방향, 따라가기, 가산 합성) 기반, 미리보기 도구.
-2. 직업별 타격 불꽃 4종, 방향 규칙 적용.
-3. 파이터 -> 수호자 -> 메이지 -> 비숍 순으로 스킬별 클립과 연출 교체(범용 연출 제거).
-4. 이미지 생성 부품(거대한 검·방패·날개·종·사슬·운석) 생성 -> 키 처리 -> 교체.
-5. 컴파일, 미리보기 검토, 커밋.
+- **f2_break_crescent**: `Sprite sheet of a sword energy crescent wave flying right, 6 frames in a 3x2 grid, each 192x192, pure black background. A large steel-blue and white crescent blade of wind with sharp edges and speed lines, slight shimmer per frame. pixel art, crisp hard pixel edges, limited palette (white, ice blue, steel blue, navy), 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **f2_stance_wave**: `Sprite sheet of a thin fast azure sword-qi slash projectile flying right, 6 frames in a 3x2 grid, each 160x160, pure black background. A narrow glowing azure arc with a bright white edge and trailing blue sparks, lighter and quicker looking than a heavy crescent. pixel art, crisp hard pixel edges, 16-bit action RPG skill effect, game asset, no text, no frame borders.`
 
-## 6. 점검표
+### 3.5 수호자
 
-- 스킬 28개 각각: 전용 클립이 있는가, 범용 바닥 깨짐·충격 고리·마법진을 쓰지 않는가(예외: 단죄·천쇄방패 균열).
-- 좌우 거울: 왼쪽을 볼 때 오른쪽 동작의 거울인가(연속 베기 순서·기울기 포함).
-- 예비-발동-잔상 3단이 있는가, 맞은 자리에 전용 흔적이 있는가.
-- 판정·수치·자동 조준 변화 없음.
+| id | 쓰는 곳 | 종류 | 배경 |
+|---|---|---|---|
+| `g2_barrier_dome` | 강철의 보루 방벽 | 시트 8프레임 4x2, 192px | 검정 |
+| `g2_gold_chain` | 천쇄방패 속박 사슬 | 한 장 256x32(가로, 늘려 씀) | 마젠타 |
 
-## 7. 결과 (2026-10-06)
+- **g2_barrier_dome**: `Sprite sheet of a protective hexagon barrier dome forming around a character (character not drawn), 8 frames in a 4x2 grid, each 192x192, pure black background. Teal hexagonal energy tiles assemble from the ground up into a translucent dome with gold edges, flash, then hold. pixel art, crisp hard pixel edges, limited palette (teal, cyan, gold, white), 16-bit action RPG skill effect, game asset, no text, no frame borders.`
+- **g2_gold_chain**: `A single horizontal chain of golden light, 256x32, solid magenta #FF00FF background, heavy glowing gold links with teal inner glow. pixel art, crisp hard pixel edges, 16-bit action RPG, game asset, no text.`
 
-- 프레임 애니메이션 기반: `Runtime/Combat/VfxPlayer.cs`(재생, 거울 방향, 따라가기), `Runtime/Art/VfxArt*.cs`(클립 36종, 직업별 파일), 미리보기 `Editor/VfxPreview.cs` -> `Logs/vfx/*.png`.
-- 스킬 28개 연출 교체. 범용 바닥 깨짐·충격 고리·마법진은 제거하고 단죄·천쇄방패에만 균열을 남겼다.
-- 좌우: 모든 클립은 왼쪽에서 거울 반전. 연속 베기 기울기는 `CareerFx.Tilt`로 거울을 따른다. 무작위 회전 제거.
-- 빙결삼창은 그대로 두고 빙결 결정만 추가.
-- 타격: 직업별 타격 클립 4종(X자 베기, 쇳빛 별, 마력 파열, 빛 십자) + 기존 히트스톱·흔들림·밀어내기 유지.
-- 이미지 생성: 거대한 검·방패·날개·종·사슬은 우선 절차 생성 그림으로 넣었다. 게임에서 보고 부족하면 Flow로 생성해 교체한다.
-- 남은 범위: 기본 스킬 10종(전직 전 스킬)은 아직 예전 방식이다.
+## 4. 넣는 방법 (구현 단계, 이번 점검에서는 하지 않음)
+
+1. **생성**: game-asset-artist(flow-nanobanana) 한 세션에서 순서대로. 원본은 `.playwright-mcp/dotrpg_refs/fx/`에 보관. 연속 제출 간격 규칙을 지킨다.
+2. **처리 스크립트 새로 만들기 `Tools/art/process_fx.py`**:
+   - 검정 배경: 알파 = RGB 최댓값, 색 = RGB / 알파(미리 곱한 색 풀기), Additive 표시.
+   - 마젠타 배경: `process_generated.py`의 `key()` 재사용.
+   - 격자 자르기: 시트를 열x행으로 나누되 칸마다 실제 그림 경계로 다시 잘라 같은 크기 캔버스 가운데에 놓는다(Flow는 칸 간격이 고르지 않다). 지정한 프레임 수만 쓴다.
+   - 저장: `Assets/Resources/Art/VfxImg/<id>.png`(가로 한 줄 스트립) + `<id>.json`(frames, frameW, frameH, pivot, additive).
+3. **불러오기**: `VfxLibrary.Get(name)`이 먼저 `Art/VfxImg/<name>` 스트립을 찾고, 없으면 지금 코드 그림(VfxArt)으로 대체. 생성 그림 클립은 point 필터 + HD 재질, additive면 `FxMaterials.Additive`. 기존 `CareerFx.Clip` 호출부는 이름만 바꾸면 된다(예: `m_fireball` -> `m2_fireball`, 없으면 옛 클립).
+4. **배선**: 스킬별로 클립 이름 교체, 줄기형(번개·사슬·빛 사슬)은 길이에 맞춰 가로로 늘린다. 운석 3종은 `MeteorFall`·`FrostOrbHead`·`CareerFx.Orb` 대신 그림 한 장을 낙하시킨다.
+5. **크기 기준**: 생성 그림 1프레임 128px = 2타일(64 art px/타일). 범위 스킬은 실제 반경에 맞춰 Scale.
+
+## 5. 우선순위
+
+1. 메이지 연사기 3종(홍련구, 연쇄전격, 빙결삼창) - 가장 자주 보인다
+2. 메이지 성운 폭발 차징 구슬 + 폭발(차징인지 모른다는 사용자 지적)
+3. 천체 붕괴 운석 3 + 붕괴, 중력 균열, 차원도약
+4. 비숍 광창(연사기) -> 행진 빛기둥 -> 깃털 -> 빛 사슬
+5. 파이터 검기 2종, 수호자 방벽 돔·사슬
