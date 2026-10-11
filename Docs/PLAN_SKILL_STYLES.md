@@ -41,13 +41,13 @@ career.styles: [                            // 생략 가능, 최대 3
 - API
   - `GET /skill-styles` -> `{ style3_owned, price }`
   - `POST /skill-styles/buy {request_id}` -> `{ style3_owned: true, price, balance }`. 계정 잠금 -> 같은 request_id면 같은 결과 -> 이미 보유 409 `ALREADY_OWNED` -> 별조각 차감(무료분 먼저) -> 기록. 원장 사유 `skill_style_buy`, ref `skill_style_3`.
-- 가격: 별조각 1,000(서버 상수, `server/data`에 두지 않고 코드 상수. 바꾸기 쉽게 한 곳).
+- 가격: 별조각 3,000(서버 상수, `server/data`에 두지 않고 코드 상수. 바꾸기 쉽게 한 곳).
 
 ## 5. 클라이언트
 
 - `CareerSave`에 `activeStyle`, `styles`(직렬화 클래스 `CareerStyle { nodes, gems, passives }`).
 - `Progression.SwitchStyle(i)`: 지금 값을 `styles[active]`에 저장 -> `styles[i]`를 불러온다(없으면 빈 배분). 던전·레이드 진행 중에는 바꿀 수 없다.
-- 스킬 창 위쪽에 `스타일 1 · 파티` `스타일 2 · 솔로` `스타일 3` 버튼. 스타일 3이 잠겨 있으면 별조각 1,000 구매 확인창 -> 구매 성공 시 열림.
+- 스킬 창 위쪽에 `스타일 1 · 파티` `스타일 2 · 솔로` `스타일 3` 버튼. 스타일 3이 잠겨 있으면 별조각 3,000 구매 확인창 -> 구매 성공 시 열림.
 - 바꾼 직후 자동 저장(서버 상태 업로드).
 
 ## 6. 남기는 것

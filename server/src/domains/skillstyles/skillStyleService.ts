@@ -10,7 +10,7 @@ import * as repo from './skillStyleRepository';
 import type { StyleBuyBody } from './skillStyleValidation';
 
 /** 스타일 3 가격(별조각). 바꿀 곳은 여기 한 곳 */
-export const SKILL_STYLE3_PRICE = 1000;
+export const SKILL_STYLE3_PRICE = 3000;
 
 export interface StyleView {
   style3_owned: boolean;

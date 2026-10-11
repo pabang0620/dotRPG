@@ -9,7 +9,7 @@ namespace DotRPG
     /// </summary>
     public static class SkillStyleClient
     {
-        public static int Price { get; private set; } = 1000;
+        public static int Price { get; private set; } = 3000;
         public static bool Busy { get; private set; }
 
         static ApiClient Api => ApiClient.Instance;
