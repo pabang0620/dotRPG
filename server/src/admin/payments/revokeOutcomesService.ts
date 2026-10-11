@@ -26,6 +26,8 @@ interface Plan {
   sweep_tickets: number;
   /** 이 주문 별조각으로 산 성장 패스(보유 기록·수령 기록 삭제, 받은 보상은 gear 로 회수) */
   pass: boolean;
+  /** 이 주문 별조각으로 산 스킬 스타일 3(계정 보유 기록 삭제) */
+  skill_style: boolean;
 }
 
 async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: RevokeBody['include']): Promise<{ plan: Plan; characters: Map<string, number> }> {
@@ -39,6 +41,7 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
   const gauge = { aura: 0, skin: 0 };
   let sweepTickets = 0;
   let pass = false;
+  let skillStyle = false;
   const addGear = (x: { uuid: string; character_id: string; item_key: string; delta: number }): void => {
     const k = `${x.uuid}|${x.item_key}`;
     const cur = gear.get(k) ?? { character_id: x.uuid, item_key: x.item_key, count: 0 };
@@ -64,6 +67,10 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
       items.rows.forEach(addGear);
       const sw = await db.query<{ n: string }>("SELECT coalesce(sum(delta), 0) AS n FROM sweep_ticket_ledger WHERE account_id = $1 AND request_id = $2 AND reason = 'sealed_box'", [order.account_id, l.request_id]);
       sweepTickets += Number(sw.rows[0]?.n ?? 0);
+      continue;
+    }
+    if (l.reason === 'skill_style_buy') {
+      skillStyle = true;
       continue;
     }
     if (l.reason === 'pass_buy') {
@@ -103,6 +110,7 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
     gauge: include.gauge ? gauge : { aura: 0, skin: 0 },
     sweep_tickets: include.gear ? sweepTickets : 0,
     pass: include.gear ? pass : false,
+    skill_style: include.gear ? skillStyle : false,
   };
   return { plan, characters };
 }
@@ -143,7 +151,7 @@ export async function revokeOutcomes(admin: AdminCtx, ip: string, uuid: string, 
       const ids = [...first.characters.values()].sort((a, b) => a - b);
       if (ids.length > 0) await econRepo.lockCharacters(client, ids);
       const summary = await apply(client, o, first.plan, first.characters, body.request_id);
-      await payRepo.insertEvent(client, o.id, { kind: 'outcomes_revoked', actor: 'admin', detail: { cosmetics: summary.cosmetics_removed, copies: summary.copies_removed, gear: summary.gear_removed, shortfall: summary.gear_shortfall, gauge: summary.gauge, sweep_tickets: summary.sweep_tickets_removed, sweep_shortfall: summary.sweep_shortfall, pass: summary.pass_removed } });
+      await payRepo.insertEvent(client, o.id, { kind: 'outcomes_revoked', actor: 'admin', detail: { cosmetics: summary.cosmetics_removed, copies: summary.copies_removed, gear: summary.gear_removed, shortfall: summary.gear_shortfall, gauge: summary.gauge, sweep_tickets: summary.sweep_tickets_removed, sweep_shortfall: summary.sweep_shortfall, pass: summary.pass_removed, skill_style: summary.skill_style_removed } });
       return { status: 200, data: { mode: 'apply', ...summary } };
     },
   });
@@ -192,6 +200,12 @@ async function apply(client: PoolClient, o: payRepo.OrderRow, plan: Plan, charac
     await client.query('DELETE FROM account_pass_claims WHERE account_id = $1', [o.account_id]);
     passRemoved = ((await client.query('DELETE FROM account_growth_pass WHERE account_id = $1', [o.account_id])).rowCount ?? 0) > 0;
   }
+  // 스킬 스타일 3: 보유 기록을 지운다(저장된 3번째 스타일은 다음 저장 때 서버가 SKILL_STYLE_LOCKED로 막는다)
+  let skillStyleRemoved = false;
+  if (plan.skill_style) {
+    await lockAccount(client, o.account_id);
+    skillStyleRemoved = ((await client.query('DELETE FROM skill_style_unlocks WHERE account_id = $1', [o.account_id])).rowCount ?? 0) > 0;
+  }
   const gauge = { aura: 0, skin: 0 };
   if (plan.gauge.aura > 0 || plan.gauge.skin > 0) {
     await lockWallet(client, o.account_id);
@@ -201,5 +215,5 @@ async function apply(client: PoolClient, o: payRepo.OrderRow, plan: Plan, charac
     if (gauge.aura > 0) await setPity(client, o.account_id, w.pity - gauge.aura, false);
     if (gauge.skin > 0) await setPity(client, o.account_id, w.skinPity - gauge.skin, true);
   }
-  return { cosmetics_removed: cosmeticsRemoved, copies_removed: copiesRemoved, gear_removed: gearRemoved, gear_shortfall: shortfall, gauge, sweep_tickets_removed: sweepRemoved, sweep_shortfall: plan.sweep_tickets - sweepRemoved, pass_removed: passRemoved };
+  return { cosmetics_removed: cosmeticsRemoved, copies_removed: copiesRemoved, gear_removed: gearRemoved, gear_shortfall: shortfall, gauge, sweep_tickets_removed: sweepRemoved, sweep_shortfall: plan.sweep_tickets - sweepRemoved, pass_removed: passRemoved, skill_style_removed: skillStyleRemoved };
 }
