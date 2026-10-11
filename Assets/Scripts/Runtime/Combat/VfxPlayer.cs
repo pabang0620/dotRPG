@@ -11,9 +11,47 @@ namespace DotRPG
     {
         static readonly Dictionary<string, Sprite[]> clips = new Dictionary<string, Sprite[]>();
 
+        /// <summary>[VFX] A generated strip (Art/VfxImg/&lt;name&gt;.png + .json, Tools/art/process_fx.py): its draw settings.</summary>
+        public sealed class StripInfo { public int frames = 1, frameW, frameH; public float fps = 14f, pivotX = .5f, pivotY = .5f; public bool additive; }
+        static readonly Dictionary<string, StripInfo> strips = new Dictionary<string, StripInfo>();
+
+        /// <summary>The generated strip's settings, or null when there is no generated art for this name.</summary>
+        public static StripInfo Strip(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            if (strips.TryGetValue(name, out var info)) return info;
+            info = null;
+            var json = Resources.Load<TextAsset>("Art/VfxImg/" + name);
+            var tex = json != null ? Resources.Load<Texture2D>("Art/VfxImg/" + name) : null;
+            if (json != null && tex != null)
+            {
+                try { info = JsonUtility.FromJson<StripInfo>(json.text); } catch (System.Exception) { info = null; }
+                if (info != null)
+                {
+                    info.frames = Mathf.Max(1, info.frames);
+                    // From the texture as imported (a platform may have shrunk the strip), not from the json.
+                    info.frameW = Mathf.Max(1, tex.width / info.frames);
+                    info.frameH = tex.height;
+                    tex.filterMode = FilterMode.Point;
+                    var frames = new Sprite[info.frames];
+                    // One frame is one world unit wide, so a call's scale is simply the size in world units.
+                    for (int i = 0; i < info.frames; i++)
+                    {
+                        frames[i] = Sprite.Create(tex, new Rect(i * info.frameW, 0, info.frameW, info.frameH), new Vector2(info.pivotX, info.pivotY), info.frameW, 0, SpriteMeshType.FullRect);
+                        frames[i].name = name + "_" + i;
+                    }
+                    clips[name] = frames;
+                }
+            }
+            return strips[name] = info;
+        }
+
+        public static bool Has(string name) => Strip(name) != null;
+
         public static Sprite[] Get(string name)
         {
             if (clips.TryGetValue(name, out var frames)) return frames;
+            if (Strip(name) != null && clips.TryGetValue(name, out frames)) return frames;
             var canvases = VfxArt.Frames(name);
             if (canvases == null || canvases.Length == 0) { Debug.LogWarning("[dotRPG] Missing vfx clip: " + name); return clips[name] = new Sprite[0]; }
             frames = new Sprite[canvases.Length];
@@ -64,6 +102,8 @@ namespace DotRPG
         {
             var frames = VfxLibrary.Get(clip);
             if (frames.Length == 0) return null;
+            var strip = VfxLibrary.Strip(clip);
+            if (strip != null && strip.additive) additive = true; // glow art drawn on black
             var go = new GameObject("Vfx " + clip);
             if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
             go.transform.position = at;
@@ -103,6 +143,8 @@ namespace DotRPG
         public VfxPlayer FadeOut(float seconds) { fadeOut = seconds; return this; }
         public VfxPlayer FlipY(bool on) { sr.flipY = on; return this; }
         public void Place(Vector2 at) => transform.position = at;
+        /// <summary>Sets a steady size (world units per frame width for generated strips).</summary>
+        public void Resize(float scale) { scaleFrom = scaleTo = Vector2.one * scale; transform.localScale = scaleFrom; }
         public void Stop() { if (this != null) Destroy(gameObject); }
 
         void Sort()

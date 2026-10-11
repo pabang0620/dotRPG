@@ -17,6 +17,10 @@ namespace DotRPG
         CareerSkill chargeSkill;
         string chargeGem;
         SkillNumbers chargeNumbers;
+        /// <summary>[VFX] The generated orb gathering at the staff while charging (null without the art).</summary>
+        VfxPlayer chargeOrb;
+
+        void StopOrb() { if (chargeOrb != null) chargeOrb.Stop(); chargeOrb = null; }
 
         public bool Charging => chargeSlot >= 0;
         /// <summary>0..1 of the current charge (0 when not charging).</summary>
@@ -38,6 +42,9 @@ namespace DotRPG
             nextMarker = 0f;
             castEnd = float.MaxValue; // nothing else is cast while gathering
             Game.Audio.PlaySfx("c_arcane");
+            StopOrb();
+            if (VfxLibrary.Has("m2_charge_orb"))
+                chargeOrb = CareerFx.Gen("m2_charge_orb", null, owner.Center, Vector2.zero, .7f, 0f, 14f, VfxLayer.Top, false, null, MaxCharge + ChargeHoldCap + 1f, true);
             return true;
         }
 
@@ -47,6 +54,12 @@ namespace DotRPG
             if (owner == null || owner.IsDead) { CancelCharge(); return; }
             float held = Time.time - chargeStart;
             float k = ChargeLevel;
+            if (chargeOrb != null)
+            {
+                // Held in front of the staff, swelling from 0.7 to 1.4 units with the charge.
+                chargeOrb.Place(owner.Center + owner.AimDirection.normalized * .45f + Vector2.up * .1f);
+                chargeOrb.Resize(.7f + .7f * k);
+            }
             // The marker on the ground grows with the charge.
             if (Time.time >= nextMarker)
             {
@@ -69,6 +82,7 @@ namespace DotRPG
             n.damage = Mathf.RoundToInt(n.damage * (1f + 2f * k));
             n.radius *= 1f + .8f * k;
             chargeSlot = -1;
+            StopOrb();
             castEnd = Time.time + CareerMoves.Recovery(chargeSkill) + .08f;
             readyAt[slot] = Time.time + (NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
             // The cooldown belongs to the skill that was charged, even if the key was changed meanwhile.
@@ -79,6 +93,7 @@ namespace DotRPG
 
         void CancelCharge()
         {
+            StopOrb();
             chargeSlot = -1;
             castEnd = 0f;
         }

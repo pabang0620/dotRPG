@@ -57,7 +57,7 @@ namespace DotRPG
         {
             Target(c.dir, c.n.range, out Vector2 point);
             Vector2 at = owner.Center + c.dir * .4f;
-            var fx = CareerFx.Clip("m_fireball", at, (point - at).sqrMagnitude > .01f ? (point - at).normalized : c.dir, 1.05f, 18f, VfxLayer.Top, true, null, false, 10f, true);
+            var fx = CareerFx.Gen("m2_fireball", "m_fireball", at, (point - at).sqrMagnitude > .01f ? (point - at).normalized : c.dir, 1.4f, 1.05f, 18f, VfxLayer.Top, true, null, 10f, true);
             const float speed = 13f;
             while (true)
             {
@@ -73,7 +73,7 @@ namespace DotRPG
                 yield return null;
             }
             fx?.Stop();
-            CareerFx.Clip("m_explode", at + Vector2.up * .2f, Vector2.zero, c.n.radius / 1.25f, 22f, VfxLayer.Top, false);
+            CareerFx.Gen("m2_fire_explosion", "m_explode", at + Vector2.up * .2f, Vector2.zero, c.n.radius * 2.2f, c.n.radius / 1.25f, 22f, VfxLayer.Top, false);
             SkillFx.Spawn("fx_scorch", at, Color.white, 1.6f, SkillFx.GroundOrder + 4).Scale(c.n.radius * .7f, c.n.radius * 1.1f).Fade(FxFade.Late);
             Sound("c_fire");
             float power = ElementPower("fire");
@@ -109,14 +109,17 @@ namespace DotRPG
         {
             const float speed = 15f;
             Vector2 at = owner.Center + dir * .4f;
-            var fx = CareerFx.Spear(at, dir, IceColor, true);
+            // [VFX] The generated crystal spear when it exists (Docs/PLAN_SKILL_VFX.md), else the old glow spear.
+            var spear = VfxLibrary.Has("m2_ice_spear") ? CareerFx.Gen("m2_ice_spear", null, at, dir, 1.6f, 0f, 24f, VfxLayer.Top, true, null, 10f, true) : null;
+            var fx = spear == null ? CareerFx.Spear(at, dir, IceColor, true) : null;
             float travelled = 0f;
             while (travelled < c.n.range)
             {
-                if (!Live(c)) { fx.Kill(); yield break; }
+                if (!Live(c)) { fx?.Kill(); spear?.Stop(); yield break; }
                 float step = speed * Time.deltaTime;
                 Vector2 next = at + dir * step;
-                fx.MoveTo(next);
+                fx?.MoveTo(next);
+                spear?.Place(next);
                 CareerFx.OrbTrail(next, dir, IceColor, "fx_snow");
                 foreach (var e in Corridor(at, next, c.n.radius))
                     if (shared.Add(e) && Strike(c, e, Mathf.RoundToInt(c.n.damage * power), at, 4f, 1, "c_ice"))
@@ -124,25 +127,37 @@ namespace DotRPG
                         landed[0] = true;
                         Freeze(c, e, c.s.duration);
                         SkillVisuals.Sparks(e.Center, IceColor, 6, 5f, .2f);
-                        CareerFx.Clip("m_icebloom", e.Position, Vector2.zero, 1f, 22f, VfxLayer.AtFeet, false);
+                        CareerFx.Gen("m2_ice_shatter", "m_icebloom", e.Position, Vector2.zero, 1.4f, 1f, 22f, VfxLayer.AtFeet, false);
                     }
                 at = next;
                 travelled += step;
                 yield return null;
             }
-            fx.Kill();
+            fx?.Kill();
+            spear?.Stop();
             SkillVisuals.Flash(at, IceColor, 1f, .15f);
             Fx.Burst("fx_chip", at, 3, 2.5f, .5f);
         }
 
         /// <summary>연쇄전격: a bolt to the monster in front, jumping on to up to five.</summary>
+        /// <summary>[VFX] One lightning link: the generated bolt stretched from a to b (flickering), else the old arc.</summary>
+        static void Bolt(Vector2 a, Vector2 b, bool strong)
+        {
+            if (!VfxLibrary.Has("m2_lightning_bolt")) { SkillVisuals.ArcBolt(a, b, strong); return; }
+            Vector2 d = b - a;
+            float length = Mathf.Max(.3f, d.magnitude);
+            // The strip frame is 4:1; keep the bolt about half a unit thick whatever its length.
+            CareerFx.Gen("m2_lightning_bolt", null, (a + b) * .5f, d, length, 0f, 24f, VfxLayer.Top, true, null, strong ? .2f : .14f, true)
+                ?.Squash(1f, (strong ? .55f : .4f) / (length * .25f));
+        }
+
         IEnumerator ChainLightning(Run c)
         {
             Vector2 from = owner.Center + c.dir * .35f;
             var e = Target(c.dir, c.n.range, out Vector2 point);
             Sound("c_thunder", .9f);
-            CareerFx.Clip("m_spark", from, Vector2.zero, .8f, 30f, VfxLayer.Top, false);
-            if (e == null) { SkillVisuals.ArcBolt(from, from + c.dir * 2.5f, false); yield break; }
+            CareerFx.Gen("m2_lightning_hit", "m_spark", from, Vector2.zero, .9f, .8f, 30f, VfxLayer.Top, false);
+            if (e == null) { Bolt(from, from + c.dir * 2.5f, false); yield break; }
             float power = ElementPower("storm");
             var seen = new HashSet<EnemyController>();
             bool any = false;
@@ -150,8 +165,8 @@ namespace DotRPG
             {
                 if (!Live(c)) yield break;
                 seen.Add(e);
-                SkillVisuals.ArcBolt(from, e.Center, true);
-                CareerFx.Clip("m_spark", e.Center, Vector2.zero, 1.2f, 30f, VfxLayer.Top, false);
+                Bolt(from, e.Center, true);
+                CareerFx.Gen("m2_lightning_hit", "m_spark", e.Center, Vector2.zero, 1.3f, 1.2f, 30f, VfxLayer.Top, false);
                 if (Strike(c, e, Mathf.RoundToInt(c.n.damage * power), from, 3f, 1, "c_thunder")) { any = true; Stun(c, e, .15f); }
                 from = e.Center;
                 yield return new WaitForSeconds(.08f);
@@ -206,8 +221,8 @@ namespace DotRPG
             if (!owner.NetPuppet) owner.SkillBlink(c.dir, c.n.range);
             GiveShield(c, owner, .12f, c.s.duration);
             // Gates open where the mage leaves and arrives; a violet echo of the body stays behind and bursts.
-            CareerFx.Clip("m_portal", origin, Vector2.zero, 1.1f, 24f, VfxLayer.Top, false);
-            CareerFx.Clip("m_portal", owner.Center, Vector2.zero, 1.1f, 24f, VfxLayer.Top, false);
+            CareerFx.Gen("m2_blink", "m_portal", origin, Vector2.zero, 1.6f, 1.1f, 24f, VfxLayer.Top, false);
+            CareerFx.Gen("m2_blink", "m_portal", owner.Center, Vector2.zero, 1.6f, 1.1f, 24f, VfxLayer.Top, false);
             CareerFx.Ghost(owner, new Color(.75f, .55f, 1f, .9f), .3f);
             Sound("c_arcane", .7f);
             yield return new WaitForSeconds(.25f);
@@ -223,7 +238,14 @@ namespace DotRPG
             Target(c.dir, c.n.range, out Vector2 point);
             bool hole = SkillFx.HasImage("fxi_blackhole");
             float hk = c.n.radius * .9f;
-            if (hole)
+            if (VfxLibrary.Has("m2_rift"))
+            {
+                // [VFX] A torn rift in the floor (generated, looping, no spinning disc) with stars falling into it.
+                hole = false;
+                CareerFx.Gen("m2_rift", null, point, Vector2.zero, c.n.radius * 2.2f, 0f, 10f, VfxLayer.Ground, false, null, c.s.duration + .3f, true)?.FadeOut(.3f);
+                StartCoroutine(StarsInto(point, c.n.radius, c.s.duration));
+            }
+            else if (hole)
             {
                 // [VFX] A black hole holding a galaxy: the drawn disc turns slowly, a dark halo around it, and stars keep
                 // falling into the middle for the whole duration.
@@ -290,10 +312,13 @@ namespace DotRPG
         IEnumerator Nebula(Run c)
         {
             Vector2 center = ChargePoint(c.n.range);
-            CareerFx.Clip("m_collapse", center, Vector2.zero, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
+            bool burst = VfxLibrary.Has("m2_nebula_burst");
+            // [VFX] Its own nebula burst (no longer the same collapse as 천체 붕괴) when the generated art exists.
+            if (burst) CareerFx.Gen("m2_nebula_burst", null, center, Vector2.zero, c.n.radius * 2.4f, 0f, 18f, VfxLayer.Top, false);
+            else CareerFx.Clip("m_collapse", center, Vector2.zero, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
             yield return new WaitForSeconds(.2f);
             if (!Live(c)) yield break;
-            CareerFx.Clip("m_starburst", center, Vector2.zero, c.n.radius / 1.5f, 24f, VfxLayer.Top, false);
+            if (!burst) CareerFx.Clip("m_starburst", center, Vector2.zero, c.n.radius / 1.5f, 24f, VfxLayer.Top, false);
             CareerFx.Clip("impact", center, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet);
             Sound("c_heavy");
             Sound("c_arcane", .8f);
@@ -318,7 +343,7 @@ namespace DotRPG
             yield return new WaitForSeconds(.45f);
             if (!Live(c)) yield break;
             // The finale: a great arcane sphere sucks inward, flashes and bursts.
-            CareerFx.Clip("m_collapse", center, Vector2.zero, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
+            CareerFx.Gen("m2_cataclysm_collapse", "m_collapse", center, Vector2.zero, c.n.radius * 2.2f, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
             yield return new WaitForSeconds(.22f);
             if (!Live(c)) yield break;
             CareerFx.Clip("impact", center, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet);
@@ -330,7 +355,22 @@ namespace DotRPG
         IEnumerator ElementStar(Run c, Vector2 ground, string element)
         {
             const float fall = .45f, radius = 3.6f; // [BALANCE 2026-10-11] the awakening covers twice the area
-            if (element == "fire") SkillVisuals.MeteorFall(ground, fall, radius);
+            string meteor = "m2_meteor_" + element;
+            if (VfxLibrary.Has(meteor))
+            {
+                // [VFX] The generated meteor falls along the diagonal it is drawn on, with a ring marking the landing.
+                SkillFx.Spawn("fx_ring", ground, element == "fire" ? FireColor : element == "ice" ? IceColor : StormColor, fall, SkillFx.GroundOrder + 8).Scale(radius * 1.2f, radius * .45f).Fade(FxFade.None);
+                Vector2 start = ground + new Vector2(-2.6f, 5.5f);
+                var rock = CareerFx.Gen(meteor, null, start, Vector2.zero, 1.8f, 0f, 24f, VfxLayer.Top, false, null, fall + .1f, true);
+                for (float t = 0; t < fall; t += Time.deltaTime)
+                {
+                    if (!Live(c)) { rock?.Stop(); yield break; }
+                    rock?.Place(Vector2.Lerp(start, ground + new Vector2(0f, .4f), Mathf.Clamp01((t + Time.deltaTime) / fall)));
+                    yield return null;
+                }
+                rock?.Stop();
+            }
+            else if (element == "fire") SkillVisuals.MeteorFall(ground, fall, radius);
             else
             {
                 var color = element == "ice" ? IceColor : StormColor;
@@ -345,11 +385,11 @@ namespace DotRPG
                 }
                 head.Kill();
             }
-            if (fall > 0f && element == "fire") yield return new WaitForSeconds(fall);
+            if (fall > 0f && element == "fire" && !VfxLibrary.Has(meteor)) yield return new WaitForSeconds(fall);
             if (!Live(c)) yield break;
             if (element == "fire")
             {
-                CareerFx.Clip("m_explode", ground + Vector2.up * .3f, Vector2.zero, radius / 1.2f, 22f, VfxLayer.Top, false);
+                CareerFx.Gen("m2_fire_explosion", "m_explode", ground + Vector2.up * .3f, Vector2.zero, radius * 2.2f, radius / 1.2f, 22f, VfxLayer.Top, false);
                 SkillFx.Spawn("fx_scorch", ground, Color.white, 2f, SkillFx.GroundOrder + 4).Scale(radius * .7f, radius * 1.1f).Fade(FxFade.Late);
                 Sound("c_fire");
             }

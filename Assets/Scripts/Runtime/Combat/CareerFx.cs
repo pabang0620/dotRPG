@@ -26,6 +26,19 @@ namespace DotRPG
             bool turn = true, Color? tint = null, bool additive = false, float life = 0f, bool loop = false) =>
             VfxPlayer.Play(clip, at, dir, tint ?? Color.white, scale, fps, additive, life, loop, layer, turn);
 
+        /// <summary>
+        /// [VFX] Generated art when it exists (Art/VfxImg, Docs/PLAN_SKILL_VFX.md), else the old code-drawn clip.
+        /// <paramref name="size"/> is the generated frame's width in world units; <paramref name="oldScale"/> the old clip's scale.
+        /// The generated strip uses its own fps unless one is given.
+        /// </summary>
+        public static VfxPlayer Gen(string generated, string old, Vector2 at, Vector2 dir, float size, float oldScale, float oldFps = 24f,
+            VfxLayer layer = VfxLayer.Top, bool turn = true, Color? tint = null, float life = 0f, bool loop = false, float fps = 0f)
+        {
+            var strip = VfxLibrary.Strip(generated);
+            if (strip != null) return VfxPlayer.Play(generated, at, dir, tint ?? Color.white, size, fps > 0f ? fps : strip.fps, strip.additive, life, loop, layer, turn);
+            return old == null ? null : Clip(old, at, dir, oldScale, oldFps, layer, turn, tint, false, life, loop);
+        }
+
         /// <summary>Turns a right-facing offset angle into the aim's mirror-correct direction (tilts mirror on the left).</summary>
         public static Vector2 Tilt(Vector2 dir, float degrees) => Rotate(dir, dir.x < -0.01f ? -degrees : degrees);
 

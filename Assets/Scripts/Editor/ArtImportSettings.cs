@@ -47,6 +47,16 @@ namespace DotRPG.EditorTools
                     importer.spritePivot = new Vector2(0.5f, 2f / 152f);
                 }
             }
+            // [VFX] Generated effect strips (Tools/art/process_fx.py): a frame row can be thousands of pixels wide, so never
+            // shrink it; the runtime slices frames itself (VfxLibrary.Strip) and draws one frame per world unit.
+            if (importer.assetPath.Contains("/VfxImg/"))
+            {
+                importer.spritePixelsPerUnit = 128f;
+                importer.maxTextureSize = 8192;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.mipmapEnabled = false;
+                importer.alphaIsTransparency = true;
+            }
             // 9-slice UI frames: a 12 px rim, scaled to the same on-screen thickness as ui_btn (8 px at 32 ppu).
             if (file.StartsWith("ui_tab_") || file == "ui_btn_disabled")
             {
