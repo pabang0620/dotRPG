@@ -11,7 +11,7 @@ namespace DotRPG
     /// </summary>
     public sealed class BuffBarView : MonoBehaviour
     {
-        const float Icon = 20f, ChipWidth = 92f, Gap = 4f, Height = 24f;
+        const float Icon = 20f, ChipWidth = 108f, Gap = 4f, Height = 24f;
         const int Slots = 10;
         readonly List<(Image icon, Text label, Image back)> slots = new List<(Image, Text, Image)>();
 
@@ -55,13 +55,14 @@ namespace DotRPG
             {
                 var c = CareerCombat.For(p);
                 if (p.IsStunned) Put(ref n, "buff_slow", "기절 " + p.StunnedLeft.ToString("0.0") + "초");
+                if (Game.Cosmetics != null && Game.Cosmetics.LegendSet(p.Class)) Put(ref n, "buff_power", "전설 세트");
                 if (c.InvulnerableLeft > 0f) Put(ref n, "buff_shield", "무적 " + c.InvulnerableLeft.ToString("0.0") + "초");
                 if (c.StanceOn) Put(ref n, "buff_focus", "검기 태세 ON");
                 if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft));
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", $"검기 {c.ComboStacks}/3");
                 if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", "보호막 " + Sec(c.ShieldLeft));
                 if (c.GuardLeft > 0f) Put(ref n, "buff_guard", "보루 " + Sec(c.GuardLeft));
-                if (c.CounterLeft > 0f) Put(ref n, "buff_guard", "방진 " + Sec(c.CounterLeft));
+                if (c.CounterLeft > 0f) Put(ref n, "buff_guard", $"방진 {c.CounterCharges}회 " + Sec(c.CounterLeft)); // blocks left + time
                 if (c.OathLeft > 0f) Put(ref n, "buff_guard", "맹세 " + Sec(c.OathLeft));
                 if (c.RetaliationLeft > 0f) Put(ref n, "buff_power", "응보 " + Sec(c.RetaliationLeft));
                 if (c.SanctumLeft > 0f) Put(ref n, "buff_bless", "성역 +50%");

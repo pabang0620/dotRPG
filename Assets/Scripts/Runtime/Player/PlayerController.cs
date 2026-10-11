@@ -254,7 +254,7 @@ namespace DotRPG
             {
                 Data.SkinId = Game.Cosmetics?.SkinFor(Class) ?? "";
                 Data.CosmeticDamage = (Game.Cosmetics?.DamageBonus(Class) ?? 0) + StarShopClient.CollectionAttack;
-                Data.CollectionHealth = StarShopClient.CollectionHealth;
+                Data.CollectionHealth = StarShopClient.CollectionHealth + (Game.Cosmetics != null && Game.Cosmetics.LegendSet(Class) ? CosmeticStore.SetHealthPercent : 0);
                 RefreshStats();
             }
             var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);

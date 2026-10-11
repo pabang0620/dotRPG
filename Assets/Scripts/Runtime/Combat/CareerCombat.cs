@@ -39,6 +39,19 @@ namespace DotRPG
         public float ShieldLeft => Shield > 0 ? Mathf.Max(0f, shieldEnd - Time.time) : 0f;
         public float GuardLeft => GuardVisible ? Mathf.Max(0f, guardEnd - Time.time) : 0f;
         public float CounterLeft => Mathf.Max(0f, counterEnd - Time.time);
+        /// <summary>[GUARDIAN] Blows 응보의 방진 can still block (0 when the stance is down).</summary>
+        public int CounterCharges => CounterVisible ? counterCharges : 0;
+        public const int CounterBlocks = 3;
+        int counterCharges;
+        float blockedShownAt = -1f;
+
+        /// <summary>[UX] "방어!" over the character when a hit was stopped completely (at most ~4 a second).</summary>
+        public void ShowBlocked()
+        {
+            if (owner == null || Time.time - blockedShownAt < .25f) return;
+            blockedShownAt = Time.time;
+            WorldPopupText.Show(owner.transform, "방어!", new Color(.6f, 1f, .95f), .7f);
+        }
         public float BlessLeft => Mathf.Max(0f, blessEnd - Time.time);
         public float HotLeft => HotVisible ? Mathf.Max(0f, hotEnd - Time.time) : 0f;
         public float OathLeft => OathRadius > 0 ? Mathf.Max(0f, oathEnd - Time.time) : 0f;
@@ -114,6 +127,7 @@ namespace DotRPG
             frenzy = 0; frenzyEnd = 0;
             stanceOn = false;
             invulnerableEnd = 0;
+            counterCharges = 0;
             sanctumEnd = 0;
             OathRadius = 0;
             hotSource = null;
@@ -131,13 +145,15 @@ namespace DotRPG
         {
             if (owner.Health.IsInvulnerable) return damage;
             // [GUARDIAN] Invulnerable: nothing gets through (the counter stance still answers the blow).
-            if (Time.time < invulnerableEnd) { aura?.ShieldHit(); SkillVisuals.Sparks(owner.Center, new Color(.6f, 1f, .95f, 1f), 6, 3.5f); return 0; }
-            // 응보의 방진: the first blow is blocked completely and answered at once.
-            if (counterEnd > Time.time)
+            if (Time.time < invulnerableEnd) { aura?.ShieldHit(); SkillVisuals.Sparks(owner.Center, new Color(.6f, 1f, .95f, 1f), 6, 3.5f); ShowBlocked(); return 0; }
+            // 응보의 방진: each of its blocks stops a blow completely and answers it (full power first, then 60%).
+            if (counterEnd > Time.time && counterCharges > 0)
             {
-                counterEnd = 0;
+                counterCharges--;
+                if (counterCharges == 0) counterEnd = 0;
                 AddInvulnerable(.5f);
-                StartCoroutine(CounterBlast(1f));
+                StartCoroutine(CounterBlast(counterCharges == CounterBlocks - 1 ? 1f : .6f));
+                ShowBlocked();
                 return 0;
             }
             int steel = Prog.Rank("g_steel");
@@ -146,7 +162,7 @@ namespace DotRPG
             int used = Mathf.Min(Shield, damage);
             shield -= used;
             damage -= used;
-            if (used > 0) { CareerTrials.Record(owner, "absorbed", used); aura?.ShieldHit(); }
+            if (used > 0) { CareerTrials.Record(owner, "absorbed", used); aura?.ShieldHit(); if (damage <= 0) ShowBlocked(); }
             if (Prog.Rank("g_retal") > 0 && Time.time >= retalReady) { retalEnd = Time.time + 4; retalReady = Time.time + 2; }
             return Mathf.Max(0, damage);
         }

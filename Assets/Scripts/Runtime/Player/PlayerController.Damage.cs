@@ -15,7 +15,7 @@ namespace DotRPG
             if (info.AttackerMember != null) return false;
             // [GUARDIAN] Monsters 25 or more levels below a guardian can't hurt them at all.
             if (Data.Progression.Career == Career.Guardian && info.attacker != null && info.attacker.TryGetComponent<EnemyController>(out var foe)
-                && foe.Level <= Data.Progression.Level - GuardianImmuneGap) return false;
+                && foe.Level <= Data.Progression.Level - GuardianImmuneGap) { CareerCombat.For(this).ShowBlocked(); return false; }
             // Armour / rings: a chance to shrug the hit off completely.
             if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block) // [MONSTER] unblockable skips the roll
             {

@@ -35,12 +35,20 @@ namespace DotRPG
             return p != null && p.IsSkin && p.Skin.cls == cls && Owns(id) ? id : null;
         }
 
-        /// <summary>Attack bonus (%) of what this class wears: the aura plus its costume skin.</summary>
+        /// <summary>Attack bonus (%) of what this class wears: the aura plus its costume skin, plus the legend set.</summary>
         public int DamageBonus(CharacterClass cls)
         {
             int bonus = Equipped.DamagePercent;
             var skin = CosmeticCatalog.Find(SkinFor(cls));
-            return bonus + (skin != null ? skin.DamagePercent : 0);
+            return bonus + (skin != null ? skin.DamagePercent : 0) + (LegendSet(cls) ? SetDamagePercent : 0);
+        }
+
+        /// <summary>[COSMETIC] 전설 세트: a legend aura worn with a top-grade (unique) skin of this class.</summary>
+        public const int SetDamagePercent = 15, SetHealthPercent = 15;
+        public bool LegendSet(CharacterClass cls)
+        {
+            var skin = CosmeticCatalog.Find(SkinFor(cls));
+            return Equipped.Rarity == CosmeticRarity.Legend && skin != null && skin.IsSkin && skin.Rarity >= CosmeticRarity.Unique;
         }
 
         /// <summary>Takes the skin of a class off (back to its own look).</summary>

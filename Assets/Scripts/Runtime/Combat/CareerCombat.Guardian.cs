@@ -226,6 +226,7 @@ namespace DotRPG
             Sound("c_shield", .6f);
             counterDamage = c.n.damage;
             counterEnd = Time.time + c.s.duration;
+            counterCharges = CounterBlocks;
             if (c.authority) AddGuard(40, c.s.duration);
         }
 

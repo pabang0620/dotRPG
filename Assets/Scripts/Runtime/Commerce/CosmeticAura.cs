@@ -88,6 +88,7 @@ namespace DotRPG
             player.GetComponent<YSort>().Refresh();
             store.Changed += view.Refresh;
             view.Refresh();
+            AuraFootprints.Attach(player, store); // [COSMETIC] footprints graded by the aura's rarity
         }
 
         void Refresh()
