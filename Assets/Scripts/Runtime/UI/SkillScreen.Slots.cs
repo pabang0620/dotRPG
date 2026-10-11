@@ -131,7 +131,9 @@ namespace DotRPG
             {
                 case Career.Fighter: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 3, 3 }, { 1, 2 }, { 0, 3 }, { 4, 3 }, { 2, 2 }, { 1, 3 }, { 2, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 5, 3 });
                 case Career.Guardian: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 3 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 5, 2 }, { 6, 2 }, { 7, 2 } }, new[] { 2, 5, 6, 7 });
-                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 3 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 0, 3 }, { 4, 3 }, { 3, 2 }, { 2, 2 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5 });
+                // [2026-10-11] Q W E R all at rank 1 first (성운 폭발 used to wait behind 홍련구 3 and leave R empty), then the
+                // spammable 연쇄전격 and the charge shot.
+                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5 });
                 case Career.Bishop: return (new[,] { { 0, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 6, 2 }, { 0, 3 }, { 1, 3 }, { 7, 1 }, { 4, 2 } }, new[] { 5, 1, 2, 6 });
                 default: return (new int[0, 2], new int[0]);
             }

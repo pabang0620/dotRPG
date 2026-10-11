@@ -270,6 +270,11 @@ namespace DotRPG
             Sound("c_holy");
             CareerFx.Clip("b_pillar", owner.Position, Vector2.zero, c.n.radius / 2.2f, 18f, VfxLayer.Ground, false);
             CareerFx.Clip("b_wings", owner.Center, Vector2.zero, 1.2f, 20f);
+            // [UX] The exact reach on the ground: a gold ring of the skill's radius that holds, then fades.
+            SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .88f, .4f, .9f), 1.1f, SkillFx.GroundOrder + 14)
+                .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
+            SkillFx.Spawn("fx_glow", owner.Position, new Color(1f, .9f, .5f, .22f), .9f, SkillFx.GroundOrder + 13).Additive()
+                .Scale(new Vector2(c.n.radius * 1.6f, c.n.radius * 1.1f), new Vector2(c.n.radius * 1.9f, c.n.radius * 1.3f)).Fade(FxFade.Late);
             var allies = Allies(owner.Center, c.n.radius);
             if (!allies.Contains(owner)) allies.Add(owner);
             foreach (var p in allies)
@@ -278,6 +283,7 @@ namespace DotRPG
                 if (c.authority) p.Health.SetInvulnerable(c.s.duration);
                 PowerAura.Play(p, c.s.duration, new Color(1f, .9f, .45f), new Color(1f, 1f, .85f));
                 CareerFx.Clip("b_cross", p.Center, Vector2.zero, .9f, 22f);
+                WorldPopupText.Show(p.transform, $"{c.s.duration:0.#}초 무적", new Color(1f, .9f, .45f), c.s.duration + .5f); // [UX] who is protected, and for how long
             }
         }
     }
