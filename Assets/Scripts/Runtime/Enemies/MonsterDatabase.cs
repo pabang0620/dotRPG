@@ -141,6 +141,17 @@ namespace DotRPG
         // ---------- Level scaling (per level above 1) ----------
         public const float HpPerLevel = 0.12f;
         public const float DamagePerLevel = 0.08f;
+
+        /// <summary>
+        /// [BALANCE 2026-10-11] Hunting-ground monsters only (not dungeons, raids or field bosses): HP becomes
+        /// base x FieldHpBase x (1 + FieldHpSlope (L-1)) instead of base x (1 + HpPerLevel (L-1)), and damage x FieldDamageMul(L).
+        /// With the career skills a pack died in well under a second; this puts an at-level pack of three at about 5 s
+        /// (the 15 kills a minute the 40 h leveling plan assumes). Tools/balance/theory_combat.py, Docs/BALANCE_COMBAT_2026-10-11.md.
+        /// </summary>
+        public const float FieldHpBase = 3f, FieldHpSlope = 0.5f, FieldDamageMax = 1.6f;
+        /// <summary>Field monster damage x1.0 at Lv1 rising to x1.6 at Lv15 (new characters before the career stay safe).</summary>
+        public static float FieldDamageMul(int level) => 1f + (FieldDamageMax - 1f) * Mathf.Clamp01((level - 1) / 14f);
+        public static float FieldHpMul(int level) => FieldHpBase * (1f + FieldHpSlope * (Mathf.Max(1, level) - 1)) / (1f + HpPerLevel * (Mathf.Max(1, level) - 1));
         public const float XpPerLevel = 0.1f;
 
         public const string Warrior = "skel_warrior";
@@ -190,7 +201,8 @@ namespace DotRPG
             var def = (Get(id == "skeleton" ? Warrior : id) ?? Get(Warrior)).Clone();
             if (id == "skeleton") { def.id = "skeleton"; def.name = "해골"; }
             RegionalMonsterArt.ApplyFieldLook(def, Game.World != null ? Game.World.MapId : null);
-            return SpawnDef(def, pos, parent, 1f, 1f, level, xp);
+            bool ordinary = !def.boss && !def.raid && def.kind != MonsterKind.GoldRunner; // field bosses and the gold runner (gold per hit) keep their own tuning
+            return SpawnDef(def, pos, parent, ordinary ? FieldHpMul(level) : 1f, ordinary ? FieldDamageMul(level) : 1f, level, xp);
         }
 
         /// <summary>

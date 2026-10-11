@@ -65,6 +65,13 @@ def pack_rate(level):
 
 
 TRAVEL = 4.0
+# [BALANCE 2026-10-11] Field monsters: HP x FIELD_HP_BASE x (1 + FIELD_HP_SLOPE (L-1)) / (1 + 0.12 (L-1)) on top of the
+# normal level growth (MonsterDatabase.FieldHpMul). Docs/BALANCE_COMBAT_2026-10-11.md.
+FIELD_HP_BASE, FIELD_HP_SLOPE = 3.0, 0.5
+
+
+def field_hp_mul(level):
+    return FIELD_HP_BASE * (1 + FIELD_HP_SLOPE * (level - 1)) / (1 + 0.12 * (level - 1))
 # 조정 시험용 덮어쓰기 (데이터에 반영한 뒤에는 비워 둔다)
 QUEST_SCALE = 1.0
 MIN_LEVEL = {}
@@ -77,8 +84,8 @@ def zone_xp_per_min(zone, level, eff):
     points = sum(z[2] for z in rows)
     hp = sum(MON[z[1]]["hp"] * z[2] for z in rows) / points
     mlevel = rows[0][3]
-    xp = sum(z[4] * z[2] for z in rows) / points
-    ehp = hp * (1 + 0.12 * (mlevel - 1))
+    xp = sum(z[4] * z[2] for z in rows) / points  # maps.json fieldSpawns xp (FIELD_XP_MUL already applied there)
+    ehp = hp * (1 + 0.12 * (mlevel - 1)) * field_hp_mul(mlevel)
     dps = player_attack(level) * pack_rate(level) * eff
     seconds = 3 * ehp / dps + TRAVEL
     kills_per_min = FIXED_KPM or 3 * 60 / seconds
