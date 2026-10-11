@@ -95,6 +95,7 @@ namespace DotRPG
         {
             var old=save.career;
             careerState=new CareerSave();
+            if(old!=null) RestoreStyles(old);
             if(old==null || old.schema<1)
             {
                 var seen=new HashSet<string>();
@@ -120,6 +121,6 @@ namespace DotRPG
             }
             Allocated.Clear(); Allocated.Add(PassiveTree.Start);
         }
-        public CareerSave CaptureCareer() => JsonUtility.FromJson<CareerSave>(JsonUtility.ToJson(careerState));
+        public CareerSave CaptureCareer() { SyncActiveStyle(); return JsonUtility.FromJson<CareerSave>(JsonUtility.ToJson(careerState)); }
     }
 }

@@ -7,6 +7,13 @@ namespace DotRPG
     public enum Career { None, Fighter, Guardian, Arcanist, Bishop }
     public enum CareerSkillKind { Passive, Active, Awakening }
     [Serializable] public sealed class CareerRank { public string id; public int rank; }
+    /// <summary>[STYLE] One saved build (Docs/PLAN_SKILL_STYLES.md): career nodes, skill keys + supports (5 x 3), passive tree.</summary>
+    [Serializable] public sealed class CareerStyle
+    {
+        public List<CareerRank> nodes = new List<CareerRank>();
+        public List<string> gems = new List<string>();
+        public List<string> passives = new List<string>();
+    }
     [Serializable] public sealed class CareerSave
     {
         public int schema = 1;
@@ -16,6 +23,9 @@ namespace DotRPG
         public int refunded;
         public int questStage;
         public bool awakened;
+        /// <summary>[STYLE] Which saved build is in use (0..2) and the saved builds (empty = styles never used).</summary>
+        public int activeStyle;
+        public List<CareerStyle> styles = new List<CareerStyle>();
     }
     [Serializable] public sealed class CareerSkill
     {

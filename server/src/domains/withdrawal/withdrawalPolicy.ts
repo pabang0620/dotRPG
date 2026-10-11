@@ -145,6 +145,7 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('account_collections', `account_id ${ACC}`),
   keepOwn('account_cosmetics', `account_id ${ACC}`),
   keepOwn('account_growth_pass', `account_id ${ACC}`),
+  keepOwn('skill_style_unlocks', `account_id ${ACC}`),
   keepOwn('account_sealed_state', `account_id ${ACC}`),
   keepOwn('account_week_counters', `account_id ${ACC}`, '기존 일정(60일)도 계속 돈다'),
   // ---------- 10.4 제재·운영 메모 ----------
@@ -241,7 +242,7 @@ export const DESTROY_ORDER: string[] = [
   'sweep_ticket_lots', 'dungeon_runs', 'revive_log', 'character_achievements', 'character_career', 'character_career_trials',
   'character_chests', 'character_enhance_pity', 'character_node_state', 'character_state', 'quest_claims', 'daily_quests', 'site_deliveries',
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'account_pass_claims',
-  'sealed_pulls', 'raid_shop_purchases', 'gacha_pulls', 'star_synth_log', 'account_collections', 'account_cosmetics', 'account_growth_pass',
+  'sealed_pulls', 'raid_shop_purchases', 'gacha_pulls', 'star_synth_log', 'account_collections', 'account_cosmetics', 'account_growth_pass', 'skill_style_unlocks',
   'account_sealed_state', 'account_week_counters', 'economy_holds', 'account_sanctions', 'admin_account_notes', 'admin_grants',
   'auction_flags', 'auction_sinks', 'mail_attachments', 'mail_campaign_deliveries', 'mails', 'auction_trade_flags', 'auction_trades',
   'auction_bids', 'auction_listings', 'friendships', 'blocks', 'report_lines', 'reports', 'party_applications', 'party_members',

@@ -8,6 +8,30 @@ namespace DotRPG
         RectTransform careerRoot; Career browsing=Career.None; string selectedSkill=""; Career confirmation=Career.None;
         public void ShowAwakening(){tab=TabId.Tree;var p=Game.Session.Progression;if(p.IsPromoted)selectedSkill=CareerCatalog.For(p.Career)[8].id;Game.Flow.OpenWindow(this);}
         void BuildCareer(){careerRoot=UIFactory.Stretch(UIFactory.Rect(treePage,"Career"));}
+
+        /// <summary>[STYLE] 스타일 1·2·3 (Docs/PLAN_SKILL_STYLES.md): saved builds of career nodes, skill keys and passives.</summary>
+        void StyleButtons(Progression p)
+        {
+            string[] shortName={"1 파티","2 솔로","3 자유"};
+            for(int i=0;i<Progression.StyleCount;i++)
+            {
+                int k=i;bool on=p.ActiveStyle==i,open=Progression.StyleOpen(i);
+                string label=on?$"<b><color=#9fe8ff>{shortName[i]}</color></b>":open?shortName[i]:$"<color=#8c96a8>3 잠김</color>";
+                CareerButton("Style"+i,label,10+i*92,75,88,40,()=>
+                {
+                    if(!Progression.StyleOpen(k))
+                    {
+                        Game.UI.Confirm($"<b>스타일 3</b>을 열까요?\n<size=18>별조각 {SkillStyleClient.Price:N0} · 계정의 모든 캐릭터가 세 번째 빌드를 저장할 수 있습니다.</size>",()=>SkillStyleClient.Buy((ok,msg)=>{GameEvents.RaiseToast(msg);Refresh();}),true);
+                        return;
+                    }
+                    if(p.ActiveStyle==k)return;
+                    string why=p.SwitchStyle(k);
+                    if(why!=null){GameEvents.RaiseToast(why);Game.Audio.PlaySfx("cancel");return;}
+                    GameEvents.RaiseToast(Progression.StyleName(k)+"로 바꿨습니다."+(p.StyleUsed(k)?"":" 처음 쓰는 스타일이라 빈 배분에서 시작합니다."));
+                    Game.Flow.Autosave();Refresh();
+                });
+            }
+        }
         void CareerText(Transform parent,string name,string text,int size,float x,float y,float w,float h)
         {Label(parent,name,text,size,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(w,h));}
         void CareerButton(string name,string text,float x,float y,float w,float h,System.Action action)
@@ -29,7 +53,7 @@ namespace DotRPG
             var p=Game.Session.Progression;
             if(p.IsPromoted)browsing=p.Career;
             else if(browsing==Career.None||CareerCatalog.Base(browsing)!=Game.Session.PlayerClass)browsing=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist;
-            CareerText(careerRoot,"CareerTitle",$"<b>{p.ClassLabel}</b>  Lv.{p.Level}  ·  전직 포인트 <color=#ffe0a0>{p.CareerPoints}</color>",24,12,4,780,32);
+            CareerText(careerRoot,"CareerTitle",$"<b>{p.ClassLabel}</b>  Lv.{p.Level}  ·  전직 포인트 <color=#ffe0a0>{p.CareerPoints}</color>{(p.IsPromoted?$"  ·  <color=#9fe8ff>{Progression.StyleName(p.ActiveStyle)}</color>":"")}",24,12,4,780,32);
             CareerText(careerRoot,"PointRule",p.IsPromoted?$"전직 시 4포인트 + 이후 레벨당 1포인트 · 단계별 비용 1/2/3포인트 · 돌려받은 포인트 {p.RefundedPoints}":"15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능",16,12,40,780,28);
             if(!p.IsPromoted)
             {
@@ -39,6 +63,7 @@ namespace DotRPG
             }
             else
             {
+                StyleButtons(p);
                 RecommendedButton(p);
                 CareerButton("ResetCareer","전직 기술 초기화",540,75,240,40,()=>Game.UI.Confirm("배운 전직 기술을 모두 초기화합니다.\n<size=18>쓴 포인트는 전부 돌아오고, 장착한 직업 스킬은 해제됩니다.</size>\n초기화할까요?",()=>{p.ResetCareerNodes();Game.Flow.Autosave();Refresh();},true));
             }

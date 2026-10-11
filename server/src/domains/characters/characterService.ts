@@ -17,6 +17,8 @@ import { computePower } from './powerEstimate';
 import { listWornKeys } from '../economy/economyRepository';
 import * as repo from './characterRepository';
 import { validateState } from './stateRules';
+import { usesStyle3 } from './careerRules';
+import { style3Owned } from '../skillstyles/skillStyleRepository';
 import { getGrant } from './careerGrantRepository';
 import { getConfig } from '../../config/env';
 import { checkReservedName } from '../antiabuse/reservedNames';
@@ -234,6 +236,10 @@ export async function saveState(accountId: number, uuid: string, input: StateBod
       const truth = getConfig().aa.career.serverTruth;
       const grant = truth === 'off' ? null : await getGrant(client, c.id);
       ({ passives } = validateState(data, input, { level: c.level, class: c.class }, stored, truth === 'off' ? undefined : { granted: grant ? { career: grant.career, stage: grant.stage } : null, mode: truth }));
+      // 스킬 스타일 3은 계정이 별조각으로 해금했어야 쓴다(Docs/PLAN_SKILL_STYLES.md 4절)
+      if (usesStyle3(input.career) && !(await style3Owned(client, accountId))) {
+        throw new AppError(422, '스킬 스타일 3이 잠겨 있습니다.', 'SKILL_STYLE_LOCKED');
+      }
     } catch (err) {
       // 저장 거절은 진행이 사라지는 원인이 되므로 사유를 남긴다
       if (err instanceof AppError) logger.warn({ character: uuid, code: err.code, extra: err.extra }, 'state save rejected');

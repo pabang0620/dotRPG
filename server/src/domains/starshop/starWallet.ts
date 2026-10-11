@@ -67,10 +67,10 @@ export function assertNoStarDebt(w: Wallet): void {
   }
 }
 
-/** 오늘(since 이후) gacha·exchange·sealed_pull·pass_buy 로 쓴 별조각 합계. 지갑 행을 잠근 상태에서 읽어 경쟁이 없다 */
+/** 오늘(since 이후) gacha·exchange·sealed_pull·pass_buy·skill_style_buy 로 쓴 별조각 합계. 지갑 행을 잠근 상태에서 읽어 경쟁이 없다 */
 export async function spentSince(db: Queryable, accountId: number, since: Date): Promise<number> {
   const r = await db.query<{ s: string }>(
-    "SELECT coalesce(-sum(delta), 0) AS s FROM star_ledger WHERE account_id = $1 AND reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy') AND created_at >= $2",
+    "SELECT coalesce(-sum(delta), 0) AS s FROM star_ledger WHERE account_id = $1 AND reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy', 'skill_style_buy') AND created_at >= $2",
     [accountId, since],
   );
   return Number(r.rows[0]?.s ?? 0);
@@ -161,7 +161,7 @@ export async function creditFree(
 /** 소비(뽑기·교환): 무료분 먼저, 유료분은 오래된 로트부터(8.3). 모자라거나 부채가 있으면 던진다 */
 export async function debit(
   db: Queryable,
-  o: { accountId: number; reason: 'gacha' | 'exchange' | 'sealed_pull' | 'pass_buy'; price: number; ref: string | null; requestId: string | null },
+  o: { accountId: number; reason: 'gacha' | 'exchange' | 'sealed_pull' | 'pass_buy' | 'skill_style_buy'; price: number; ref: string | null; requestId: string | null },
 ): Promise<{ balance: number; paidBalance: number }> {
   const w = await lockWallet(db, o.accountId);
   assertNoStarDebt(w);

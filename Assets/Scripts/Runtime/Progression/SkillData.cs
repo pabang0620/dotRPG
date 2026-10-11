@@ -15,6 +15,8 @@ namespace DotRPG
     public sealed class SkillGem
     {
         public string id, name, icon, description;
+        /// <summary>[UI] One line on when the gem pays off (gem guide in the skill window).</summary>
+        public string tip;
         public GemKind kind;
         public CharacterClass? classOnly;
         public int unlockLevel;
@@ -79,18 +81,18 @@ namespace DotRPG
             Active("firefield", "화염 장판", CharacterClass.Mage, 3, "적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.").With(g => { g.damageMult = 0.4f; g.cooldown = 6f; g.range = 7.5f; g.radius = 3.2f; g.hits = 6; g.manaCost = 10; }),
             Active("meteor", "메테오", CharacterClass.Mage, 4, "거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.").With(g => { g.damageMult = 2.8f; g.cooldown = 24f; g.radius = 2.8f; g.range = 7f; g.hits = 8; g.manaCost = 32; }),
 
-            new SkillGem { id = "sup_dmg", name = "추가 피해", icon = "gem_sup_dmg", kind = GemKind.Support, unlockLevel = 3, moreDamage = 35, manaMult = 1.3f,
+            new SkillGem { id = "sup_dmg", tip = "보스·강적을 잡는 주력기(1번 스킬)에. MP 여유가 있을 때 가장 무난하다.", name = "추가 피해", icon = "gem_sup_dmg", kind = GemKind.Support, unlockLevel = 3, moreDamage = 35, manaMult = 1.3f,
                 description = "연결된 스킬의 피해 35% 증폭. MP 소모 30% 증가." },
-            new SkillGem { id = "sup_aoe", name = "범위 확대", icon = "gem_sup_aoe", kind = GemKind.Support, unlockLevel = 7, moreAoe = 35, manaMult = 1.15f,
+            new SkillGem { id = "sup_aoe", tip = "몰이 사냥용 범위 스킬(2번)에. 한 번에 더 많은 적을 맞힌다.", name = "범위 확대", icon = "gem_sup_aoe", kind = GemKind.Support, unlockLevel = 7, moreAoe = 35, manaMult = 1.15f,
                 description = "연결된 스킬의 범위(면적) 35% 증폭. MP 소모 15% 증가." },
-            new SkillGem { id = "sup_multi", name = "연속 시전", icon = "gem_sup_multi", kind = GemKind.Support, unlockLevel = 10, repeats = 1, moreDamage = -30, manaMult = 1.4f,
+            new SkillGem { id = "sup_multi", tip = "쿨타임이 긴 범위기·각성에. 피해는 줄지만 두 번 터져 총량이 늘어난다.", name = "연속 시전", icon = "gem_sup_multi", kind = GemKind.Support, unlockLevel = 10, repeats = 1, moreDamage = -30, manaMult = 1.4f,
                 description = "연결된 스킬이 한 번 더 발동한다. 피해 30% 감소, MP 소모 40% 증가." },
-            new SkillGem { id = "sup_eff", name = "마력 효율", icon = "gem_sup_eff", kind = GemKind.Support, unlockLevel = 5, manaMult = 0.7f,
+            new SkillGem { id = "sup_eff", tip = "자주 쓰는 스킬이나 MP가 모자랄 때. 다른 보조 젬의 MP 증가를 상쇄한다.", name = "마력 효율", icon = "gem_sup_eff", kind = GemKind.Support, unlockLevel = 5, manaMult = 0.7f,
                 description = "연결된 스킬의 MP 소모 30% 감소." },
-            new SkillGem { id = "sup_leech", name = "흡혈", icon = "gem_sup_leech", kind = GemKind.Support, unlockLevel = 8, leechPct = 10,
+            new SkillGem { id = "sup_leech", tip = "물약을 아끼고 싶을 때, 솔로 사냥에. 여러 적을 때리는 스킬일수록 많이 회복한다.", name = "흡혈", icon = "gem_sup_leech", kind = GemKind.Support, unlockLevel = 8, leechPct = 10,
                 description = "연결된 스킬이 입힌 피해의 10%만큼 HP를 회복한다." },
             // Same id as v1's 추가 연쇄 (saves keep their sockets); v2 has no chain skills, so it hunts bosses instead.
-            new SkillGem { id = "sup_chain", name = "보스 사냥", icon = "gem_sup_boss", kind = GemKind.Support, unlockLevel = 14, bossDamage = 30,
+            new SkillGem { id = "sup_chain", tip = "보스전·레이드 전용 주력기에. 일반 몬스터에게는 효과가 없다.", name = "보스 사냥", icon = "gem_sup_boss", kind = GemKind.Support, unlockLevel = 14, bossDamage = 30,
                 description = "연결된 스킬이 보스에게 주는 피해 30% 증폭." },
         };
 

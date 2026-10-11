@@ -23,6 +23,7 @@ export function validateState(
   const passives = checkPassives(data, input.passives, character.level);
   validateCareer(input.career, stored.career, character, stored.passives, id=>data.passive.nodes.has(id), server);
   checkGems(data, input.skill_gems, character, input.career ?? stored.career);
+  checkStyles(data, input.career, character);
   checkQuests(data, input, stored);
   return { passives };
 }
@@ -74,6 +75,22 @@ function checkPassives(data: GameData, ids: string[], level: number): string[] {
   }
   if (reached.size - 1 !== seen.size) reason('NOT_CONNECTED');
   return list;
+}
+
+/** 스킬 스타일(Docs/PLAN_SKILL_STYLES.md): 저장된 스타일마다 패시브·젬을 지금 값과 같은 규칙으로 본다 */
+function checkStyles(data: GameData, career: CareerState | null | undefined, character: { level: number; class: string }): void {
+  const width = 1 + data.gems.supportsPerSlot;
+  for (const st of career?.styles ?? []) {
+    checkPassives(data, st.passives, character.level);
+    if (st.gems.length % width !== 0 || st.gems.length / width > data.gems.slots) fail('INVALID_GEMS', '젬 구성이 올바르지 않습니다.', { reason: 'BAD_STYLE_GEMS' });
+    const entries: StateBody['skill_gems'] = [];
+    for (let slot = 0; slot * width < st.gems.length; slot++) {
+      const row = st.gems.slice(slot * width, slot * width + width);
+      entries.push({ slot, active: row[0] || null, supports: row.slice(1).map((x) => x || null) });
+    }
+    // 주 스킬의 전직 기술 여부는 그 스타일의 배분으로 판단한다
+    checkGems(data, entries, character, career ? { ...career, nodes: st.nodes } : career);
+  }
 }
 
 function checkGems(

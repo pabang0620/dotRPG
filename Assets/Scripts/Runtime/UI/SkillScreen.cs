@@ -46,6 +46,7 @@ namespace DotRPG
             keyboardUsed = false;
             mouse = false;
             hovered = null;
+            SkillStyleClient.Refresh(); // [STYLE] style 3 ownership
             base.Show();
         }
 
@@ -55,6 +56,7 @@ namespace DotRPG
             w.BuildTabs();
             w.BuildCareer();
             w.BuildGems();
+            w.BuildGemGuide();
             w.BuildTooltip();
             return w;
         }
@@ -84,7 +86,7 @@ namespace DotRPG
             for (int s = 0; s < SkillGems.Slots; s++)
             {
                 bool ult = s == SkillGems.UltimateSlot;
-                var row = Panel(gemPage, "Slot" + s, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -s * (RowHeight + RowGap)), new Vector2(1220f, RowHeight),
+                var row = Panel(gemPage, "Slot" + s, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -s * (RowHeight + RowGap)), new Vector2(800f, RowHeight),
                     ult ? new Color32(52, 44, 30, 240) : UiTheme.Panel);
                 slotTitle[s] = Label(row.transform, "Title", "", 18, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(92f, 80f), TextAnchor.MiddleCenter);
                 // Link bar behind the three sockets.
@@ -110,15 +112,16 @@ namespace DotRPG
                     LongPress.Add(bg.gameObject, () => { selectedSocket = index; Cycle(view, -1); }); // touch: hold = right click
                     sockets.Add(view);
                 }
-                slotInfo[s] = Label(row.transform, "Info", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(368f, 0f), new Vector2(840f, 84f), TextAnchor.MiddleLeft);
+                slotInfo[s] = Label(row.transform, "Info", "", 15, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(362f, 0f), new Vector2(428f, 88f), TextAnchor.MiddleLeft);
                 slotInfo[s].lineSpacing = 1.1f;
                 slotLock[s] = Img(row.transform, "Lock", "ui_white", new Color(0.02f, 0.03f, 0.06f, 0.55f));
                 UIFactory.Stretch(slotLock[s].rectTransform);
                 slotLockText[s] = Label(row.transform, "LockText", "", 20, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-24f, 0f), new Vector2(360f, 40f), TextAnchor.MiddleRight);
             }
+            // [UI] Under the rows: a one-line how-to (the full gem list and explanations are in the guide on the right).
             float listY = -SkillGems.Slots * (RowHeight + RowGap);
-            var list = Panel(gemPage, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, listY), new Vector2(1220f, 38f), UiTheme.PanelDeep);
-            gemListText = Label(list.transform, "Text", "", UiTheme.FontMin, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(16f, 0f), new Vector2(1190f, 34f), TextAnchor.MiddleLeft);
+            var list = Panel(gemPage, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, listY), new Vector2(800f, 38f), UiTheme.PanelDeep);
+            gemListText = Label(list.transform, "Text", "", UiTheme.FontMin, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(14f, 0f), new Vector2(776f, 34f), TextAnchor.MiddleLeft);
         }
 
         void Cycle(SocketView v, int dir)
@@ -188,8 +191,8 @@ namespace DotRPG
                 if (gem == null) { slotInfo[s].text = ""; continue; }
                 var n = CharacterStats.Skill(cls, s, gem, prog.Supports(s));
                 var career=CareerCatalog.Get(gem.id);
-                if(career!=null){slotInfo[s].text=$"<b>{gem.name}</b> · {gem.description}\n{CareerNumbers.Summary(career,CharacterData.Session,n)}";continue;}
-                var sb = new StringBuilder($"<b>{gem.name}</b>{(ult ? "  <color=#ffd66e>[각성 기술]</color>" : "")}   <color=#b8c4d8>{gem.description}</color>\n");
+                if(career!=null){slotInfo[s].text=$"<b>{gem.name}</b>  <color=#ff9f43>전직 기술</color>\n{CareerNumbers.Summary(career,CharacterData.Session,n)}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>";continue;}
+                var sb = new StringBuilder($"<b>{gem.name}</b>{(ult ? "  <color=#ffd66e>[각성 기술]</color>" : "")}\n");
                 // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
                 bool single = gem.id == "crush" || gem.id == "lance";
                 if (n.guardPct > 0) sb.Append($"받는 피해 <color=#ffe066>-{n.guardPct}%</color> ({n.guardTime:0}초)   {(n.usesLife ? "HP" : "MP")} 소모 {n.manaCost}   재사용 {n.cooldown:0.##}초");
@@ -205,18 +208,14 @@ namespace DotRPG
                 foreach (var g in prog.Supports(s)) sup.Add(g.name);
                 string bonus = TreeBonus(s);
                 sb.Append("\n");
-                sb.Append(sup.Count > 0 ? $"<color=#8fe28f>보조: {string.Join(", ", sup)}</color>" : "<color=#8c96a8>보조 젬을 연결하면 스킬이 강해집니다.</color>");
+                sb.Append(sup.Count > 0 ? $"<color=#8fe28f>보조: {string.Join(", ", sup)}</color>" : "<color=#8c96a8>보조 칸이 비었다. 클릭해서 보조 젬을 끼우자.</color>");
                 if (bonus.Length > 0) sb.Append($"   <color=#ffcf70>트리: {bonus}</color>");
                 slotInfo[s].text = sb.ToString();
             }
-            var list = new StringBuilder("<b>보조 젬</b>   ");
-            foreach (var g in SkillGems.All)
-            {
-                if (g.kind != GemKind.Support) continue;
-                bool ok = prog.IsUnlocked(g);
-                list.Append(ok ? $"<color=#ffffff>{g.name}</color>    " : $"<color=#6c7486>{g.name} (Lv.{g.unlockLevel})</color>    ");
-            }
-            gemListText.text = list.ToString();
+            int unlocked = 0, total = 0;
+            foreach (var g in SkillGems.All) if (g.kind == GemKind.Support) { total++; if (prog.IsUnlocked(g)) unlocked++; }
+            gemListText.text = $"<b>보조 젬 {unlocked}/{total} 해금</b>   <color=#8c96a8>보조 칸 클릭: 다음 젬 · 우클릭: 이전 젬 · 칸에 마우스를 올리면 자세한 설명</color>";
+            RefreshGemGuide();
         }
 
         // ================= Common =================
@@ -288,9 +287,9 @@ namespace DotRPG
             // Tooltip follows the hovered item (mouse) or the keyboard selection.
             object target = mouse ? hovered : !keyboardUsed ? null : tab == TabId.Tree ? null : sockets[selectedSocket];
             if (target == null) { tooltip.gameObject.SetActive(false); return; }
-            RectTransform anchor = ((SocketView)target).bg.rectTransform;
+            RectTransform anchor = target is GuideEntry ge ? ge.bg.rectTransform : ((SocketView)target).bg.rectTransform;
             if (!anchor.gameObject.activeInHierarchy) { tooltip.gameObject.SetActive(false); return; }
-            FillTooltip((SocketView)target);
+            if (target is GuideEntry entry) FillGuideTooltip(entry); else FillTooltip((SocketView)target);
             tooltip.gameObject.SetActive(true);
             var root = (RectTransform)transform;
             Vector2 p = root.InverseTransformPoint(anchor.TransformPoint(new Vector3(anchor.rect.xMax, anchor.rect.yMax, 0f)));
@@ -311,17 +310,22 @@ namespace DotRPG
                 var skill = prog.Active(v.slot);
                 if (skill == null) { SetTooltip("빈 슬롯"); return; }
                 string state = prog.IsSlotOpen(v.slot) ? "<color=#8fe28f>사용 가능</color>" : $"<color=#ff9f43>Lv.{Progression.SlotLevel(v.slot)}에 열림</color>";
-                SetTooltip($"<b>{skill.name}</b>  {(skill.IsUltimate ? "<color=#ffd66e>각성 기술</color>" : "<color=#ff9f43>액티브 스킬</color>")}\n\n{skill.description}\n\n" +
-                           $"기본 피해 배율 {skill.damageMult * 100:0}%{(skill.hits > 1 ? $" × {skill.hits}회" : "")}   MP {skill.manaCost}   재사용 {skill.cooldown:0.#}초\n\n{state}");
+                var sup = new List<string>();
+                foreach (var g in prog.Supports(v.slot)) sup.Add($"{g.name} ({GemEffect(g)})");
+                SetTooltip($"<b>{skill.name}</b>  {(skill.IsUltimate ? "<color=#ffd66e>각성 기술</color>" : "<color=#ff9f43>스킬 젬</color>")}\n\n{skill.description}\n\n" +
+                           $"기본 피해 배율 {skill.damageMult * 100:0}%{(skill.hits > 1 ? $" × {skill.hits}회" : "")}   MP {skill.manaCost}   재사용 {skill.cooldown:0.#}초\n" +
+                           (sup.Count > 0 ? $"\n<color=#8fe28f>연결된 보조 젬</color>\n{string.Join("\n", sup)}\n" : "") +
+                           $"\n{state}\n<color=#8c96a8>클릭: 이 칸에 넣을 수 있는 다른 스킬로 바꾸기</color>");
                 return;
             }
             var gem = SkillGems.Get(prog.SlotGem(v.slot, v.socket));
             if (gem == null)
             {
-                SetTooltip($"<b>빈 보조 소켓</b>\n\n클릭해서 보조 젬을 끼웁니다.\n<color=#8c96a8>보조 젬: Lv.3부터 해금</color>");
+                SetTooltip($"<b>빈 보조 칸</b>\n\n보조 젬을 끼우면 왼쪽 스킬이 바뀐다(피해·범위·연속 발동·흡혈 등).\n클릭: 다음 젬 · 우클릭: 이전 젬\n\n<color=#8c96a8>어떤 젬이 있는지는 오른쪽 '젬 안내'에서 볼 수 있다. 첫 보조 젬은 Lv.3에 해금.</color>");
                 return;
             }
-            SetTooltip($"<b>{gem.name}</b>  <color=#8fe28f>보조 젬</color>\n\n{gem.description}\n\n<color=#8c96a8>클릭: 다음 젬 · 우클릭: 이전 젬</color>");
+            SetTooltip($"<b>{gem.name}</b>  <color=#8fe28f>보조 젬</color>\n\n{gem.description}\n\n<color=#ffe066>효과</color>  {GemEffect(gem)}\n" +
+                       (string.IsNullOrEmpty(gem.tip) ? "" : $"<color=#ffe066>추천</color>  {gem.tip}\n") + "\n<color=#8c96a8>클릭: 다음 젬 · 우클릭: 이전 젬</color>");
         }
 
         void SetTooltip(string text)
