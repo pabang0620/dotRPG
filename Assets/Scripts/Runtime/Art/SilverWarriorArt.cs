@@ -80,27 +80,37 @@ namespace DotRPG
         }
         public static Vector2 Hand(string direction, string frame)
         {
-            if (Drawn(frame))
-            {
-                // The sheet's own hand position (same pixel space as the rig: x from the left, y from the top).
-                var f = SheetFrame(direction, frame);
-                float x = Mirror(FacingOf(direction)) ? Size - 1 - f.hand.x : f.hand.x;
-                return new Vector2(x - 32, 58 - f.hand.y) / Ppu;
-            }
-            return WarriorRightHandRig.WorldHand(Pose(direction, frame));
+            // The drawing's own hand (same pixel space as the rig: x from the left, y from the top).
+            var f = SheetFrame(direction, frame);
+            float x = Mirror(FacingOf(direction)) ? Size - 1 - f.hand.x : f.hand.x;
+            return new Vector2(x - 32, 58 - f.hand.y) / Ppu;
         }
 
-        /// <summary>
-        /// [ART] Standing, walking, hurt and the plain attack pose are the sheet's own drawings (one image set):
-        /// no code-drawn arms or legs and no per-pixel warping. Only the sword swings still use the rig.
-        /// </summary>
-        public static bool Drawn(string frame) => !WarriorAttackMotion.IsSwing(frame) && !(frame.StartsWith("attack") && frame.Length > 6);
+        // [ART] Every body frame is one of the sheets' own drawings (one image set): no code-drawn arms or legs and
+        // no per-pixel warping. The blade still follows the rig's angle, pivoted at the drawing's hand.
         static readonly string[] SheetWalk = { "walk0", "walk1", "walk2", "walk3" };
-        /// <summary>The player's eight gait phases share the sheet's four walk drawings (two phases each).</summary>
+        static readonly string[] SheetAttack = { "attack0", "attack1", "attack2", "attack3", "attack4", "attack5" };
+        // Swing progress at which each attack drawing starts (wind-up, lift, cut, contact, follow-through, hold).
+        static readonly float[] SwingStarts = { 0f, .14f, .26f, WarriorAttackMotion.Contact, .60f, .82f };
+
+        /// <summary>The drawing a frame name shows: eight gait phases share the four walk drawings, a swing walks through the six attack drawings.</summary>
+        static string SheetClip(string frame)
+        {
+            if (WarriorLocomotion.IsWalk(frame)) return SheetWalk[WarriorGait.Index(frame) / 2 % SheetWalk.Length];
+            if (WarriorAttackMotion.IsRecovery(frame)) return WarriorAttackMotion.Progress(frame) < .5f ? SheetAttack[5] : "idle0";
+            if (WarriorAttackMotion.IsSwing(frame))
+            {
+                float t = WarriorAttackMotion.Progress(frame);
+                int i = 0;
+                while (i + 1 < SwingStarts.Length && t >= SwingStarts[i + 1]) i++;
+                return SheetAttack[i];
+            }
+            return frame;
+        }
+
         static SilverFrame SheetFrame(string direction, string frame)
         {
-            string canonical = Canonical(direction);
-            string clip = WarriorLocomotion.IsWalk(frame) ? SheetWalk[WarriorGait.Index(frame) / 2 % SheetWalk.Length] : frame;
+            string canonical = Canonical(direction), clip = SheetClip(frame);
             foreach (var f in Data.frames) if (f.direction == canonical && f.clip == clip) return f;
             return Frame(direction, frame);
         }
@@ -143,100 +153,20 @@ namespace DotRPG
             }
             return pixels;
         }
-        /// <summary>Same colour family as the cape (its shades and its dark outline next to it).</summary>
-        static bool Near(Color32 c, Color32 cape)
-        {
-            Color.RGBToHSV(c, out float h, out float s, out float v);
-            Color.RGBToHSV(cape, out float ch, out float cs, out float cv);
-            float dh = Mathf.Abs(h - ch); dh = Mathf.Min(dh, 1f - dh);
-            return (dh < .09f && s > .35f && v > .16f) || (v < .16f && s > .2f && dh < .1f);
-        }
-        static bool Skin(Color32 c) => c.a > 0 && c.r > 145 && c.r > c.g + 6 && c.g > c.b + 5;
-        static bool Dark(Color32 c) => c.a > 0 && c.r < 135 && c.g < 115 && c.b < 155;
-        static Color32 C(string hex) => PixelCanvas.Hex(hex);
-
+        /// <summary>
+        /// [ART] One of the sheets' own drawings, mirrored for the facings the sheet doesn't draw. Nothing is painted
+        /// over it (worn armour doesn't change the body; a costume skin brings its own sheets).
+        /// </summary>
         public static PixelCanvas Compose(CharacterLook look, string direction, string frame)
         {
-            bool drawn = Drawn(frame);
-            var f = drawn ? SheetFrame(direction, frame) : Frame(direction, frame);
-            var src = Pixels(f, look.skinSheet);
-            var canvas = new PixelCanvas(Size, Size).WithPivot(32, 6);
-            Array.Copy(src, canvas.Pixels, src.Length);
-            int waist = f.waist;
-            int left = 26, right = 38;
-            // Hair and skin remain immutable; clothing is confined to the underlying garment.
-            for (int y = waist - 6; y < waist - 1; y++) for (int x = left; x <= right; x++)
-            {
-                var p = canvas.Get(x, y);
-                if (!Dark(p) || look.armor == ArmorStyle.None) continue;
-                bool outline = p.r < 36 && p.g < 36 && p.b < 42;
-                if (outline && (!canvas.IsOpaque(x - 1, y) || !canvas.IsOpaque(x + 1, y))) continue;
-                var col = look.armorColor;
-                if (look.armor == ArmorStyle.Vest)
-                    col = Mathf.Abs(x - 32) <= 1 ? C("#40364b") : PixelCanvas.Shade(col, x < 32 ? 1.05f : .78f);
-                else if (look.armor == ArmorStyle.Leather)
-                    col = (x + y) % 13 < 2 ? C("#e0bb77") : PixelCanvas.Shade(col, x < 32 ? 1.08f : .74f);
-                else
-                    col = y == waist - 4 || x == left + 2 ? C("#eef4f1") : y >= waist ? C("#677988") : PixelCanvas.Shade(col, x < 32 ? 1.05f : .72f);
-                canvas.Set(x, y, col);
-            }
-            // Shoulder plates extend the silhouette only over sleeve pixels, never over hair/face.
-            if (look.armor == ArmorStyle.Plate)
-                for (int y = waist - 4; y < waist - 2; y++)
-                    for (int x = left - 2; x <= right + 2; x++)
-                    {
-                        if (!Dark(src[y * Size + x])) continue;
-                        if (x > left && x < right) continue;
-                        canvas.Set(x, y, y == waist - 4 ? C("#edf1ee") : C("#8a9ba6"));
-                        int outward = x < 32 ? -1 : 1;
-                        if (!canvas.IsOpaque(x + outward, y)) canvas.Set(x + outward, y, C("#29343f"));
-                    }
-            // The skirt is an independent lower-equipment region. Legs are articulated below it.
-            if (look.bottomTier >= 0)
-                for (int y = waist + 2; y < waist + 6; y++) for (int x = 22; x <= 42; x++)
-                {
-                    var p = canvas.Get(x, y);
-                    if (p.a == 0) continue;
-                    if (!Skin(p) && !Dark(p)) continue;
-                    if (y > 54 && !Skin(p)) continue;
-                    if (!canvas.IsOpaque(x - 1, y) || !canvas.IsOpaque(x + 1, y))
-                    { canvas.Set(x, y, PixelCanvas.Shade(look.pants, .48f)); continue; }
-                    bool knee = look.bottomTier == 1 && y == 53;
-                    canvas.Set(x, y, PixelCanvas.Shade(look.pants, knee ? 1.4f : x < 32 ? 1.05f : .78f));
-                }
+            var src = Pixels(SheetFrame(direction, frame), look.skinSheet);
             var oriented = new PixelCanvas(Size, Size).WithPivot(32, 6);
             bool flip = Mirror(FacingOf(direction));
-            if (drawn)
+            for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
             {
-                for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
-                {
-                    var p = canvas.Get(flip ? Size - 1 - x : x, y);
-                    if (p.a > 0) oriented.Set(x, y, p);
-                }
-                return oriented;
+                var p = src[y * Size + (flip ? Size - 1 - x : x)];
+                if (p.a > 0) oriented.Set(x, y, p);
             }
-            var pose = Pose(direction, frame);
-            // A costume skin's cape hangs below the waist: its pixels from the sheet go behind the code-drawn legs.
-            if (look.skinCape.a > 0)
-                for (int y = waist + 6; y < Size; y++) for (int x = 0; x < Size; x++)
-                {
-                    var p = canvas.Get(flip ? Size - 1 - x : x, y);
-                    if (p.a > 0 && Near(p, look.skinCape)) oriented.Set(x, y, p);
-                }
-            WarriorGait.Draw(oriented, FacingOf(direction), frame, waist, look);
-            WarriorRightHandRig.Draw(oriented, pose, look, true);
-            var torso = new PixelCanvas(Size, Size);
-            for (int y = 0; y < waist + 6; y++) for (int x = 0; x < Size; x++)
-            {
-                var p = canvas.Get(flip ? Size - 1 - x : x, y);
-                if (p.a > 0) torso.Set(x, y, p);
-            }
-            if (WarriorAttackMotion.IsSwing(frame))
-                WarriorAttackMotion.BlitBody(oriented, torso, FacingOf(direction), WarriorAttackMotion.Progress(frame), waist, WarriorAttackMotion.Stage(frame), WarriorAttackMotion.IsRecovery(frame));
-            else if (WarriorLocomotion.IsWalk(frame))
-                WarriorLocomotion.BlitBody(oriented, torso, FacingOf(direction), frame, waist);
-            else oriented.Blit(torso, 0, 0);
-            WarriorRightHandRig.Draw(oriented, pose, look, false);
             return oriented;
         }
         public static Sprite Get(CharacterLook look, string direction, string frame)

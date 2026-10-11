@@ -138,7 +138,7 @@ namespace DotRPG
                     var cls = CharacterClassInfo.Get(session.PlayerClass);
                     s.stripe.color = session.PlayerClass == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
                     s.portrait.enabled = true;
-                    s.portrait.sprite = Game.Art.GetCharacter(CharacterLook.WithGear(cls.Look, session.Equipment[EquipSlot.Top], session.Equipment[EquipSlot.Bottom]), "down", "idle0");
+                    s.portrait.sprite = Game.Art.GetCharacter(CharacterPreviewCard.LookFor(session.PlayerClass), "down", "idle0");
                     int hp = me != null && me.Health != null ? me.Health.Max : CharacterStats.MaxHp;
                     s.text.text = $"<size=22><b>나</b></size>  <color=#b8c4d8>{cls.displayName}</color>\nLv.{level}   HP {hp}\n<color=#ffe066>리더</color>";
                     continue;

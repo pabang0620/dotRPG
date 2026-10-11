@@ -28,7 +28,8 @@ namespace DotRPG
         }
         public static void Pose(SpriteRenderer weapon, SpriteRenderer hand, CharacterAnimator animator, Facing facing, bool alive)
         {
-            weapon.enabled = hand.enabled = alive && weapon.sprite != null;
+            weapon.enabled = alive && weapon.sprite != null;
+            hand.enabled = false; // [ART] the body drawing has its own hand; no code-drawn grip over the hilt
             if (!weapon.enabled || animator == null) return;
             string direction = SilverWarriorArt.ViewKey(facing), frame = animator.FrameKey;
             var anchor = SilverWarriorArt.Hand(direction, frame);

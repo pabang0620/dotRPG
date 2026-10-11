@@ -22,8 +22,8 @@ namespace DotRPG
             if (dirty) Refresh();
 
             animTimer += Time.unscaledDeltaTime;
-            var eq = Game.Session.Equipment;
-            var look = CharacterLook.WithGear(CharacterClassInfo.Get(Class).Look, eq[EquipSlot.Top], eq[EquipSlot.Bottom]);
+            // Same body as in the world: the class look or its worn costume skin (worn armour doesn't change it).
+            var look = CharacterPreviewCard.LookFor(Class);
             character.sprite = Game.Art.GetCharacter(look, "down", Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1");
             PlaceWeaponPreview();
 
