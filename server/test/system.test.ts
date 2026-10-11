@@ -26,7 +26,7 @@ describe('GET /health, /meta', () => {
       min_client_version: '0.2.0',
       data_version: DATA_VERSION,
       auth: { dev_login_enabled: true },
-      character: { max_per_account: 4, name_min: 2, name_max: 8 },
+      character: { max_per_account: 6, name_min: 2, name_max: 8 },
     });
     expect(Date.parse(res.body.data.server_time)).not.toBeNaN();
     expect(res.body.data.reset.next_daily_at).toMatch(/Z$/);
