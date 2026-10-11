@@ -30,7 +30,7 @@ namespace DotRPG
 
         public string AccountId { get; private set; }
         public string LoginId { get; private set; }
-        public int CharacterLimit { get; private set; } = 4;
+        public int CharacterLimit { get; private set; } = 6;
         public readonly List<CharacterSummary> Characters = new List<CharacterSummary>();
         public string ActiveCharacter { get; private set; }
 
@@ -170,7 +170,7 @@ namespace DotRPG
                 if (r.ok)
                 {
                     Characters.Clear();
-                    CharacterLimit = MiniJson.Int(r.data, "limit", 4);
+                    CharacterLimit = MiniJson.Int(r.data, "limit", 6);
                     foreach (var o in MiniJson.Arr(r.data, "characters") ?? new List<object>())
                         Characters.Add(Summary(o));
                 }
