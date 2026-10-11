@@ -82,6 +82,10 @@ namespace DotRPG
             // Burning silhouette, afterimages and embers off the body for the whole window.
             // [UI] Only the first 2 s burn on the body now that it lasts a minute; the buff row shows the rest.
             PowerAura.Play(owner, Mathf.Min(2f, c.s.duration), new Color(1f, .25f, .12f), new Color(1f, .78f, .3f));
+            // [VFX] polish: one big red surge rising off the body when the minute-long window opens.
+            SkillFx.Spawn("fx_glow", owner.Position + Vector2.up * .3f, new Color(1f, .3f, .15f, .7f), .7f, SkillFx.TopOrder).Additive()
+                .Move(Vector2.up * 1.6f, 3f).Scale(new Vector2(.7f, .9f), new Vector2(1.5f, 3.2f)).Fade(FxFade.Late);
+            SkillVisuals.Sparks(owner.Center, new Color(1f, .55f, .25f, 1f), 14, 5f, .35f);
             frenzy = Mathf.RoundToInt(c.s.power * c.Scale);
             frenzyEnd = Time.time + c.s.duration;
         }
@@ -120,7 +124,10 @@ namespace DotRPG
             Sound("c_slash");
             Vector2 start = owner.Center + c.dir * .4f, at = start;
             float size = c.n.radius / .95f;                       // the crescent clip is 2.5 units tall
-            var blade = CareerFx.Clip("f_wave", at, c.dir, size, 16f, VfxLayer.Top, true, null, false, 10f, true);
+            // [VFX] The generated heavy crescent (f2_break_crescent, square frame) about as tall as the old one; else f_wave.
+            bool drawn = VfxLibrary.Has("f2_break_crescent");
+            float genSize = c.n.radius * 2.6f;
+            var blade = CareerFx.Gen("f2_break_crescent", "f_wave", at, c.dir, genSize, size, 16f, VfxLayer.Top, true, null, 10f, true);
             var hit = new HashSet<EnemyController>();
             float travelled = 0f, nextTrail = 0f;
             while (travelled < c.n.range)
@@ -132,7 +139,8 @@ namespace DotRPG
                 if (travelled >= nextTrail)
                 {
                     nextTrail = travelled + .45f;
-                    CareerFx.Clip("f_wave", next - c.dir * .2f, c.dir, size * .92f, 16f, VfxLayer.Top, true, new Color(.6f, .8f, 1f, .45f), true, .2f).FadeOut(.2f);
+                    if (drawn) CareerFx.Gen("f2_break_crescent", null, next - c.dir * .2f, c.dir, genSize * .92f, 0f, 16f, VfxLayer.Top, true, new Color(1f, 1f, 1f, .4f), .2f)?.FadeOut(.2f);
+                    else CareerFx.Clip("f_wave", next - c.dir * .2f, c.dir, size * .92f, 16f, VfxLayer.Top, true, new Color(.6f, .8f, 1f, .45f), true, .2f).FadeOut(.2f);
                 }
                 foreach (var e in Corridor(at, next, c.n.radius))
                     if (hit.Add(e) && Strike(c, e, c.n.damage, e.Center - c.dir, 6f, 1, "c_slash") && c.authority)

@@ -38,7 +38,11 @@ namespace DotRPG
         IEnumerator Feather(Run c, PlayerController target, float flight, bool shield)
         {
             Vector2 start = owner.Center + Vector2.up * .4f;
-            var fx = CareerFx.Clip("b_feather", start, Vector2.zero, 1f, 14f, VfxLayer.Top, false, shield ? Color.white : new Color(.85f, 1f, .85f, 1f), false, 10f, true);
+            // [VFX] The generated feather (b2_feather) points along its flight; else the old code feather.
+            bool drawn = VfxLibrary.Has("b2_feather");
+            Vector2 toward = target.Center - start;
+            var fx = CareerFx.Gen("b2_feather", "b_feather", start, drawn && toward.sqrMagnitude > .01f ? toward.normalized : Vector2.zero, .9f, 1f, 14f,
+                VfxLayer.Top, drawn, shield ? Color.white : new Color(.85f, 1f, .85f, 1f), 10f, true);
             Vector2 at = start;
             for (float t = 0; t < flight; t += Time.deltaTime)
             {
@@ -156,7 +160,7 @@ namespace DotRPG
         {
             const float speed = 20f;
             Vector2 at = owner.Center + c.dir * .4f;
-            var fx = CareerFx.Clip("b_spear", at, c.dir, 1f, 20f, VfxLayer.Top, true, null, false, 10f, true);
+            var fx = CareerFx.Gen("b2_light_spear", "b_spear", at, c.dir, 1.7f, 1f, 20f, VfxLayer.Top, true, null, 10f, true);
             Sound("c_holy", .6f);
             var hit = new System.Collections.Generic.HashSet<EnemyController>();
             float travelled = 0f;
@@ -177,6 +181,24 @@ namespace DotRPG
             CareerFx.Clip("b_cross", at, Vector2.zero, 1f, 26f, VfxLayer.Top, false);
         }
 
+        /// <summary>[VFX] The tall generated light column standing on <paramref name="feet"/> (frame 1:3), else the old pillar clip there.</summary>
+        static void DawnPillar(Vector2 feet, float width, float oldScale, float oldFps, VfxLayer layer)
+        {
+            if (VfxLibrary.Has("b2_dawn_pillar")) CareerFx.Gen("b2_dawn_pillar", null, feet + Vector2.up * width * 1.5f, Vector2.zero, width, 0f, oldFps, layer, false);
+            else CareerFx.Clip("b_pillar", feet, Vector2.zero, oldScale, oldFps, layer, false);
+        }
+
+        /// <summary>[VFX] A chain of golden light between two people (b2_bless_link stretched), else the old glow line.</summary>
+        static void BlessLink(Vector2 a, Vector2 b)
+        {
+            if (!VfxLibrary.Has("b2_bless_link")) { GlowLineFx.Spawn(a, b, new Color(1f, .85f, .45f, .85f), .35f, .3f, SkillFx.TopOrder + 1); return; }
+            Vector2 d = b - a;
+            float length = Mathf.Max(.3f, d.magnitude);
+            // The strip frame is about 5:1; keep the chain about 0.35 units thick whatever its length.
+            CareerFx.Gen("b2_bless_link", null, (a + b) * .5f, d, length, 0f, 16f, VfxLayer.Top, true, null, .45f, true)
+                ?.Squash(1f, .35f / (length * .1875f));
+        }
+
         /// <summary>축복의 연결: a thread of light to each ally in turn, raising their damage.</summary>
         IEnumerator BlessChain(Run c)
         {
@@ -185,7 +207,7 @@ namespace DotRPG
             foreach (var p in Allies(owner.Center, c.n.radius))
             {
                 if (!Live(c)) yield break;
-                GlowLineFx.Spawn(from, p.Center, new Color(1f, .85f, .45f, .85f), .35f, .3f, SkillFx.TopOrder + 1);
+                BlessLink(from, p.Center);
                 CareerFx.Clip("b_cross", p.Center + Vector2.up * .3f, Vector2.zero, .9f, 22f, VfxLayer.Top, false);
                 if (c.authority)
                 {
@@ -204,7 +226,8 @@ namespace DotRPG
         {
             Vector2 at = owner.Center;
             // The sky opens: a great column of light on the bishop, wings and light spread behind, pillars on every monster.
-            CareerFx.Clip("b_pillar", owner.Position, Vector2.zero, 1.7f, 18f, VfxLayer.Top, false);
+            // [VFX] The column of light from the sky (b2_dawn_pillar, tall), else the old pillar clip.
+            DawnPillar(owner.Position, 2.2f, 1.7f, 18f, VfxLayer.Top);
             Wings(owner.Center + Vector2.up * .2f, owner.Position.y, 1.3f, 1.4f);
             // [VFX] T is light from above: a gold sanctuary sigil (no green lotus, that is W).
             if (SkillFx.HasImage("fxi_holy_sigil"))
@@ -215,7 +238,7 @@ namespace DotRPG
             int damage = Mathf.RoundToInt(c.n.damage * 2.5f / 4.5f);
             foreach (var e in Enemies(at, c.n.radius))
             {
-                CareerFx.Clip("b_pillar", e.Position, Vector2.zero, .8f, 22f, VfxLayer.AtFeet, false);
+                DawnPillar(e.Position, 1.1f, .8f, 22f, VfxLayer.AtFeet);
                 Strike(c, e, damage, at, 10f, 2, "c_holy");
             }
             foreach (var p in Allies(at, c.n.radius))
@@ -268,7 +291,7 @@ namespace DotRPG
         {
             Pose(.2f, 2);
             Sound("c_holy");
-            CareerFx.Clip("b_pillar", owner.Position, Vector2.zero, c.n.radius / 2.2f, 18f, VfxLayer.Ground, false);
+            CareerFx.Clip("b_pillar", owner.Position, Vector2.zero, c.n.radius / 1.6f, 18f, VfxLayer.Ground, false); // [VFX] polish: a bigger pillar
             CareerFx.Clip("b_wings", owner.Center, Vector2.zero, 1.2f, 20f);
             // [UX] The exact reach on the ground: a gold ring of the skill's radius that holds, then fades.
             SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .88f, .4f, .9f), 1.1f, SkillFx.GroundOrder + 14)

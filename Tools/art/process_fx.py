@@ -32,6 +32,10 @@ TARGET = {
     "m2_charge_orb": (128, 128, 14), "m2_nebula_burst": (256, 256, 18), "m2_blink": (128, 128, 18),
     "m2_rift": (256, 160, 10), "m2_meteor_fire": (128, 192, 1), "m2_meteor_ice": (128, 192, 1),
     "m2_meteor_storm": (128, 192, 1), "m2_cataclysm_collapse": (384, 384, 16),
+    # 3.3 bishop, 3.4 fighter, 3.5 guardian
+    "b2_feather": (96, 48, 1), "b2_light_spear": (256, 48, 1), "b2_bless_link": (256, 48, 16),
+    "b2_dawn_pillar": (128, 384, 14), "f2_break_crescent": (192, 192, 18), "f2_stance_wave": (160, 160, 20),
+    "g2_barrier_dome": (192, 192, 16), "g2_gold_chain": (256, 32, 1),
 }
 DEFAULT = (128, 128, 14)
 

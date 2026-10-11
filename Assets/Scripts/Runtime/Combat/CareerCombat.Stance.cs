@@ -68,7 +68,10 @@ namespace DotRPG
             const float speed = 16f;
             Vector2 at = owner.Center + dir * .4f;
             float size = c.n.radius / .95f;
-            var blade = CareerFx.Clip("f_wave", at, dir, size, 16f, VfxLayer.Top, true, new Color(.7f, .88f, 1f, .9f), false, 10f, true);
+            // [VFX] A thin quick azure slash (f2_stance_wave), so it doesn't read as 파쇄 검기; else the tinted f_wave.
+            bool drawn = VfxLibrary.Has("f2_stance_wave");
+            var blade = CareerFx.Gen("f2_stance_wave", "f_wave", at, dir, drawn ? c.n.radius * 2.1f : size, size, 16f, VfxLayer.Top, true,
+                drawn ? Color.white : new Color(.7f, .88f, 1f, .9f), 10f, true);
             var hit = new HashSet<EnemyController>();
             float travelled = 0f;
             while (travelled < c.n.range)

@@ -57,9 +57,16 @@ namespace DotRPG
             // [VFX] The shield slams down: a teal barrier dome closes over the body (about 2 s), the shove is a dust slam
             // and a ring to the exact push radius with a gold edge.
             Vector2 body = owner.Center - owner.Position, feet = owner.Position;
-            CareerFx.Clip("g_dome", owner.Center, Vector2.zero, 1.35f, 30f, VfxLayer.Top, false, new Color(.85f, 1f, .97f, .95f)).Follow(owner.transform, body + Vector2.up * .1f);
-            CareerFx.Clip("g_domeloop", owner.Center, Vector2.zero, 1.35f, 12f, VfxLayer.Top, false, new Color(.8f, 1f, .95f, .5f), false, Mathf.Min(1.8f, c.s.duration), true)
-                .Follow(owner.transform, body + Vector2.up * .1f).FadeOut(.4f);
+            if (VfxLibrary.Has("g2_barrier_dome"))
+                // [VFX] The generated hexagon dome assembles over the body and holds (about 1.8 s).
+                CareerFx.Gen("g2_barrier_dome", null, owner.Center, Vector2.zero, 2.6f, 0f, 16f, VfxLayer.Top, false, null, Mathf.Min(1.8f, c.s.duration))
+                    ?.Follow(owner.transform, body + Vector2.up * .1f).FadeOut(.4f);
+            else
+            {
+                CareerFx.Clip("g_dome", owner.Center, Vector2.zero, 1.35f, 30f, VfxLayer.Top, false, new Color(.85f, 1f, .97f, .95f)).Follow(owner.transform, body + Vector2.up * .1f);
+                CareerFx.Clip("g_domeloop", owner.Center, Vector2.zero, 1.35f, 12f, VfxLayer.Top, false, new Color(.8f, 1f, .95f, .5f), false, Mathf.Min(1.8f, c.s.duration), true)
+                    .Follow(owner.transform, body + Vector2.up * .1f).FadeOut(.4f);
+            }
             CareerFx.Slam(feet, c.n.radius * .8f, GTeal, false);
             GuardRing(feet, c.n.radius, GTeal, .45f);
             GuardRing(feet, c.n.radius, GGold, .35f, .05f);
@@ -272,7 +279,12 @@ namespace DotRPG
                     Stun(c, e, 1.5f);
                     Taunt(c, e, 4f);
                     // Chains of light burst from the ground and bind the monster.
-                    for (int k = -1; k <= 1; k += 2) CareerFx.Clip("g_chain", e.Position + new Vector2(k * .35f, 0f), Vector2.zero, 1f, 22f, VfxLayer.AtFeet, false).FlipY(false);
+                    if (VfxLibrary.Has("g2_gold_chain"))
+                        // [VFX] Two golden light chains cross over the bound monster (g2_gold_chain).
+                        for (int k = -1; k <= 1; k += 2)
+                            CareerFx.Gen("g2_gold_chain", null, e.Center, new Vector2(1f, k * .7f).normalized, 1.7f, 0f, 1f, VfxLayer.Top, true, null, .9f)?.FadeOut(.3f);
+                    else
+                        for (int k = -1; k <= 1; k += 2) CareerFx.Clip("g_chain", e.Position + new Vector2(k * .35f, 0f), Vector2.zero, 1f, 22f, VfxLayer.AtFeet, false).FlipY(false);
                 }
             foreach (var p in Allies(at, c.n.radius + 1f)) GiveShield(c, p, .25f, c.s.duration);
         }
