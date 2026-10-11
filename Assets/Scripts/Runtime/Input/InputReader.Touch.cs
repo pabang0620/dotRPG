@@ -27,7 +27,7 @@ namespace DotRPG
     /// </summary>
     public partial class InputReader
     {
-        const int TouchActionCount = (int)GameAction.AutoHunt + 1;
+        const int TouchActionCount = (int)GameAction.Skill8 + 1;
 
         Vector2 touchMove;
         readonly bool[] touchDown = new bool[TouchActionCount];
@@ -87,8 +87,11 @@ namespace DotRPG
             if (TakeTouch(GameAction.Skill3)) { Skill3Pressed = true; used = true; }
             if (TakeTouch(GameAction.Skill4)) { Skill4Pressed = true; used = true; }
             if (TakeTouch(GameAction.Skill5)) { Skill5Pressed = true; used = true; }
+            if (TakeTouch(GameAction.Skill6)) { Skill6Pressed = true; used = true; }
+            if (TakeTouch(GameAction.Skill7)) { Skill7Pressed = true; used = true; }
+            if (TakeTouch(GameAction.Skill8)) { Skill8Pressed = true; used = true; }
             for (int s = 0; s < held.Length; s++)
-                if (touchHeld[(int)GameAction.Skill1 + s]) { held[s] = true; used = true; }
+                if (touchHeld[(int)SkillAction(s)]) { held[s] = true; used = true; }
             if (used) UsingGamepad = false;
         }
     }

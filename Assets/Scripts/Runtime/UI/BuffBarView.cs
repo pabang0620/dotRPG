@@ -54,6 +54,7 @@ namespace DotRPG
             if (p != null && !p.IsDead)
             {
                 var c = CareerCombat.For(p);
+                if (p.IsStunned) Put(ref n, "buff_slow", "기절 " + p.StunnedLeft.ToString("0.0") + "초");
                 if (c.InvulnerableLeft > 0f) Put(ref n, "buff_shield", "무적 " + c.InvulnerableLeft.ToString("0.0") + "초");
                 if (c.StanceOn) Put(ref n, "buff_focus", "검기 태세 ON");
                 if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft));

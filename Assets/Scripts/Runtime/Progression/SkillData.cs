@@ -46,13 +46,18 @@ namespace DotRPG
 
     public static class SkillGems
     {
-        public const int Slots = 5, SupportsPerSlot = 2, UltimateSlot = 4;
+        /// <summary>[SKILL 8] 8 keys: 0-3 Q W E R, 4 T (awakening, index kept for old saves), 5-7 A S D (appended).</summary>
+        public const int Slots = 8, SupportsPerSlot = 2, UltimateSlot = 4;
+
+        /// <summary>The skill bar left to right: Q W E R A S D, then the awakening T last.</summary>
+        public static readonly int[] BarOrder = { 0, 1, 2, 3, 5, 6, 7, 4 };
 
         /// <summary>
-        /// Level at which each skill slot (and its skill) opens. Slot 5 is the awakening skill.
+        /// Level at which each skill slot (and its skill) opens. Slot index 4 is the awakening skill.
         /// v2 spreads them over the climb to the first mid raid (Lv22, about 20 hours): about 0 / 0.6 / 4 / 11 / 20 hours.
+        /// [SKILL 8] The three extra keys (A S D) open at Lv20 / 25 / 30 for the career skills that did not fit on Q-R.
         /// </summary>
-        public static readonly int[] SlotLevels = { 2, 6, 12, 18, 15 };
+        public static readonly int[] SlotLevels = { 2, 6, 12, 18, 15, 20, 25, 30 };
 
         static SkillGem Active(string id, string name, CharacterClass cls, int slot, string desc)
             => new SkillGem { id = id, name = name, icon = "gem_" + id, kind = GemKind.Active, classOnly = cls, slot = slot, unlockLevel = SlotLevels[slot], description = desc };
@@ -116,17 +121,7 @@ namespace DotRPG
         }
 
         /// <summary>Key binding of a slot.</summary>
-        public static GameAction ActionFor(int slot)
-        {
-            switch (slot)
-            {
-                case 0: return GameAction.Skill1;
-                case 1: return GameAction.Skill2;
-                case 2: return GameAction.Skill3;
-                case 3: return GameAction.Skill4;
-                default: return GameAction.Skill5;
-            }
-        }
+        public static GameAction ActionFor(int slot) => InputReader.SkillAction(Mathf.Clamp(slot, 0, Slots - 1));
     }
 
     /// <summary>Final numbers of one skill after supports and passives.</summary>

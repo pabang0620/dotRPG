@@ -30,6 +30,7 @@ namespace DotRPG
                 case GameAction.Skill1: return "스킬 1"; case GameAction.Skill2: return "스킬 2";
                 case GameAction.Skill3: return "스킬 3"; case GameAction.Skill4: return "스킬 4";
                 case GameAction.Skill5: return "각성 스킬"; case GameAction.UseItem: return "체력 물약";
+                case GameAction.Skill6: return "스킬 5"; case GameAction.Skill7: return "스킬 6"; case GameAction.Skill8: return "스킬 7";
                 case GameAction.UseMana: return "마나 물약"; case GameAction.TownScroll: return "귀환";
                 case GameAction.MoveUp: return "위로 이동"; case GameAction.MoveDown: return "아래 이동";
                 case GameAction.MoveLeft: return "왼쪽 이동"; case GameAction.MoveRight: return "오른쪽 이동";
@@ -43,6 +44,10 @@ namespace DotRPG
                 default: return a.ToString();
             }
         }
+        // [SKILL 8] Seven shorter rows per column so the three extra skill keys still fit in three columns.
+        const int RowsPerColumn = 7;
+        const float RowStep = 21f;
+
         static string ShortName(GameAction a)
         {
             switch (a)
@@ -61,7 +66,7 @@ namespace DotRPG
         static Color Category(GameAction a)
         {
             if (a >= GameAction.MoveUp && a <= GameAction.MoveRight || a == GameAction.Mobility) return new Color32(94, 180, 237, 255);
-            if (a == GameAction.Attack || a >= GameAction.Skill1 && a <= GameAction.Skill5) return new Color32(186, 126, 241, 255);
+            if (a == GameAction.Attack || a >= GameAction.Skill1 && a <= GameAction.Skill5 || a >= GameAction.Skill6 && a <= GameAction.Skill8) return new Color32(186, 126, 241, 255);
             if (a == GameAction.UseItem || a == GameAction.UseMana || a == GameAction.TownScroll) return new Color32(113, 210, 158, 255);
             return UiTheme.AccentWarm;
         }
@@ -101,13 +106,13 @@ namespace DotRPG
             windowTab = MakeTab("WindowTab", "창 열기 · 닫기", 214, true);
             for (int i = 0; i < InputReader.Rebindable.Length; i++)
             {
-                var a = InputReader.Rebindable[i]; int col = i / 6, row = i % 6;
-                var bg = Plate(panel, "Binding_" + a, new Vector2(30 + col * 382, -433 - row * 24), new Vector2(370, 22), UiTheme.RowDark);
+                var a = InputReader.Rebindable[i]; int col = i / RowsPerColumn, row = i % RowsPerColumn;
+                var bg = Plate(panel, "Binding_" + a, new Vector2(30 + col * 382, -433 - row * RowStep), new Vector2(370, RowStep - 1), UiTheme.RowDark);
                 bg.raycastTarget = true; bg.gameObject.AddComponent<PointerRelay>().onClick = _ => BeginBinding(a);
-                var label = TextAt(bg.transform, "BindingText", "", new Vector2(10, 0), new Vector2(348, 22), 15, Color.white);
+                var label = TextAt(bg.transform, "BindingText", "", new Vector2(10, 0), new Vector2(348, RowStep - 1), 14, Color.white);
                 actions.Add(new ActionView { action = a, bg = bg, text = label });
             }
-            status = TextAt(panel, "Status", "", new Vector2(30, -578), new Vector2(1130, 24), 16, new Color32(170, 211, 240, 255));
+            status = TextAt(panel, "Status", "", new Vector2(30, -582), new Vector2(1130, 24), 16, new Color32(170, 211, 240, 255));
             ButtonAt("ResetKeys", "기본값", 30, 115, ResetDraft, UiTheme.Slate);
             dirtyLabel = TextAt(panel, "PendingChanges", "", new Vector2(165, -607), new Vector2(615, 38), 15, UiTheme.AccentWarm);
             ButtonAt("ApplyKeys", "적용", 887, 125, ApplyChanges, UiTheme.SelectBlue);
@@ -129,7 +134,7 @@ namespace DotRPG
                 bool visible = InputReader.IsWindowAction(v.action) == windows;
                 v.bg.gameObject.SetActive(visible);
                 if (!visible) continue;
-                v.bg.rectTransform.anchoredPosition = new Vector2(30 + (index / 6) * 382, -433 - (index % 6) * 24);
+                v.bg.rectTransform.anchoredPosition = new Vector2(30 + (index / RowsPerColumn) * 382, -433 - (index % RowsPerColumn) * RowStep);
                 index++;
             }
             combatTab.color = !windows ? UiTheme.SelectBlue : UiTheme.RowDark;

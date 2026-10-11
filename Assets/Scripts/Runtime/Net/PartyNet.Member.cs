@@ -194,6 +194,25 @@ namespace DotRPG
                         if (slot != mySlot) MemberAt(slot)?.NetAct(act, skill, facing);
                         break;
                     }
+                    case PartyMsg.RaidRoar:
+                    {
+                        int id = r.ReadInt32();
+                        PartyWire.ReadVec(r); // boss position (the puppet is already there)
+                        float cast = r.ReadSingle();
+                        var circles = new Vector2[r.ReadByte()];
+                        for (int i = 0; i < circles.Length; i++) circles[i] = PartyWire.ReadVec(r);
+                        FlushSpawns();
+                        puppets.TryGetValue(id, out var boss);
+                        RaidMechanics.ShowRoar(boss, cast, circles);
+                        break;
+                    }
+                    case PartyMsg.RaidStun:
+                    {
+                        int slot = r.ReadByte();
+                        float seconds = r.ReadSingle();
+                        (slot == mySlot ? Game.Player : MemberAt(slot))?.Stun(seconds);
+                        break;
+                    }
                     case PartyMsg.RoomCleared:
                         Game.Dungeon?.FollowRoomCleared();
                         break;

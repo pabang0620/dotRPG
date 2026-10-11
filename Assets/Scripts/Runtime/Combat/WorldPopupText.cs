@@ -12,9 +12,12 @@ namespace DotRPG
         Transform follow;
         TextMesh text, shadow;
         Color color;
-        float age, life;
+        float age, life, height = Height;
 
-        public static void Show(Transform follow, string message, Color color, float seconds)
+        public static void Show(Transform follow, string message, Color color, float seconds) => Show(follow, message, color, seconds, Height);
+
+        /// <param name="height">World units over the follow point (a big boss needs more than a player).</param>
+        public static void Show(Transform follow, string message, Color color, float seconds, float height)
         {
             if (follow == null) return;
             var go = new GameObject("PopupText");
@@ -22,6 +25,7 @@ namespace DotRPG
             var p = go.AddComponent<WorldPopupText>();
             p.follow = follow;
             p.color = color;
+            p.height = height;
             p.life = Mathf.Max(.6f, seconds);
             p.shadow = Make(go.transform, message, new Vector3(.02f, -.02f, 0f), 20019);
             p.text = Make(go.transform, message, Vector3.zero, 20020);
@@ -57,7 +61,7 @@ namespace DotRPG
         void Tick()
         {
             float rise = Mathf.Min(1f, age / .25f) * .25f;
-            transform.position = (Vector2)follow.position + new Vector2(0f, Height + rise);
+            transform.position = (Vector2)follow.position + new Vector2(0f, height + rise);
             float a = age < life - .3f ? 1f : Mathf.Clamp01((life - age) / .3f);
             text.color = new Color(color.r, color.g, color.b, a);
             shadow.color = new Color(0f, 0f, 0f, .85f * a);

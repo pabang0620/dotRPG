@@ -40,20 +40,22 @@ namespace DotRPG
                 var gem = p.Active(slot);
                 bool ultimate = slot == 4;
                 bool holdsChosen = chosen != null && gem != null && gem.id == chosen.id;
-                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + slot * 76, -460), new Vector2(68, 68),
+                // [SKILL 8] Eight smaller keys in bar order (Q W E R A S D T) instead of five 68 px ones.
+                int pos = System.Array.IndexOf(SkillGems.BarOrder, slot);
+                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + pos * 48, -464), new Vector2(44, 44),
                     holdsChosen ? new Color32(90, 74, 30, 255) : new Color32(14, 20, 32, 255));
                 box.raycastTarget = true;
                 var icon = UIFactory.Image(box.transform, "Icon", SkillIcon(gem), gem != null ? Color.white : new Color(1, 1, 1, 0));
                 icon.raycastTarget = false;
                 icon.preserveAspect = true;
-                UIFactory.Stretch(icon.rectTransform, 6, 6, 6, 6);
-                var key = Label(box.transform, "KeyLabel", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 15,
-                    new Vector2(0, 0), new Vector2(0, 0), new Vector2(3, 1), new Vector2(30, 20), TextAnchor.LowerLeft);
+                UIFactory.Stretch(icon.rectTransform, 4, 4, 4, 4);
+                var key = Label(box.transform, "KeyLabel", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 12,
+                    new Vector2(0, 0), new Vector2(0, 0), new Vector2(2, 0), new Vector2(26, 16), TextAnchor.LowerLeft);
                 key.raycastTarget = false;
                 if (!p.IsSlotOpen(slot))
                 {
                     var lockImg = UIFactory.Image(box.transform, "Lock", Game.Art.Get("ui_lock"), new Color(1, 1, 1, .8f));
-                    UIFactory.Place(lockImg.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, Vector2.one * 22);
+                    UIFactory.Place(lockImg.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, Vector2.one * 18);
                 }
                 var drop = box.gameObject.AddComponent<DropTarget>();
                 drop.highlight = box;
@@ -124,18 +126,22 @@ namespace DotRPG
 
         // ---------- 추천 배치 ----------
 
-        /// <summary>The standard build per career: (skill index, target rank) in learning order, then the Q W E R skills.</summary>
+        /// <summary>The standard build per career: (skill index, target rank) in learning order, then the skills for
+        /// Q W E R and [SKILL 8] A S D in that order (<see cref="KeySlot"/>).</summary>
+        /// <summary>[SKILL 8] The k-th recommended key: Q W E R are slots 0-3, then A S D are slots 5-7 (T, slot 4, is the awakening).</summary>
+        static int KeySlot(int k) => k < 4 ? k : k + 1;
+
         static (int[,] ranks, int[] keys) Recommended(Career c)
         {
             switch (c)
             {
                 // 섬광보 (2) goes out on Shift once learned, so W takes 검기 태세 (9).
-                case Career.Fighter: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 9, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 3, 3 }, { 1, 2 }, { 0, 3 }, { 4, 3 }, { 2, 2 }, { 1, 3 }, { 2, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 9, 5, 3 });
-                case Career.Guardian: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 3 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 5, 2 }, { 6, 2 }, { 7, 2 } }, new[] { 2, 5, 6, 7 });
+                case Career.Fighter: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 9, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 3, 3 }, { 1, 2 }, { 0, 3 }, { 4, 3 }, { 2, 2 }, { 1, 3 }, { 2, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 9, 5, 3, 6, 7 });
+                case Career.Guardian: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 3 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 5, 2 }, { 6, 2 }, { 7, 2 } }, new[] { 2, 5, 6, 7, 1, 3 });
                 // [2026-10-11] Q W E R all at rank 1 first (성운 폭발 used to wait behind 홍련구 3 and leave R empty), then the
                 // spammable 연쇄전격 and the charge shot.
-                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5 });
-                case Career.Bishop: return (new[,] { { 0, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 6, 2 }, { 0, 3 }, { 1, 3 }, { 7, 1 }, { 4, 2 } }, new[] { 5, 1, 2, 6 });
+                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5, 6, 7 });
+                case Career.Bishop: return (new[,] { { 0, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 6, 2 }, { 0, 3 }, { 1, 3 }, { 7, 1 }, { 4, 2 } }, new[] { 5, 1, 2, 6, 7, 3 });
                 default: return (new int[0, 2], new int[0]);
             }
         }
@@ -154,7 +160,7 @@ namespace DotRPG
             for (int k = 0; k < keys.Length; k++)
             {
                 var s = skills[keys[k]];
-                if (p.CareerUnlocked(s) && p.EquipSkill(k, s.id)) placed++;
+                if (p.CareerUnlocked(s) && p.IsSlotOpen(KeySlot(k)) && p.EquipSkill(KeySlot(k), s.id)) placed++;
             }
             if (p.Awakened) p.EquipSkill(4, skills[8].id);
             Game.Flow.Autosave();
@@ -170,7 +176,7 @@ namespace DotRPG
                 var (_, keys) = Recommended(p.Career);
                 var skills = CareerCatalog.For(p.Career);
                 var names = string.Join(" · ", System.Array.ConvertAll(keys, k => skills[k].name));
-                Game.UI.Confirm($"<b>{CareerCatalog.Name(p.Career)} 추천 배치</b>\n<size=18>남은 포인트로 정석 기술을 배우고\nQ W E R에 {names}를 넣습니다.\n이미 배운 기술은 그대로 둡니다.</size>", () => ApplyRecommended(p), true);
+                Game.UI.Confirm($"<b>{CareerCatalog.Name(p.Career)} 추천 배치</b>\n<size=18>남은 포인트로 정석 기술을 배우고\nQ W E R (A S D)에 {names}를 넣습니다.\n이미 배운 기술은 그대로 둡니다.</size>", () => ApplyRecommended(p), true);
             });
         }
     }

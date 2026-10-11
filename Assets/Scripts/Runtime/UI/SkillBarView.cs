@@ -4,8 +4,9 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// Bottom-centre skill bar: five slots (the last, larger one is the awakening skill) with key,
-    /// icon, MP cost, a radial cooldown with the seconds left, and a lock with the level a slot opens at.
+    /// Bottom-centre skill bar: eight slots, Q W E R A S D and the larger awakening slot T last
+    /// (<see cref="SkillGems.BarOrder"/>), with key, icon, MP cost, a radial cooldown with the seconds left,
+    /// and a lock with the level a slot opens at. An open A/S/D key with nothing on it shows empty.
     /// </summary>
     public class SkillBarView : MonoBehaviour
     {
@@ -14,7 +15,8 @@ namespace DotRPG
         readonly int[] costShown = { int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue };
         readonly int[] lockShown = { -1, -1, -1, -1, -1, -1, -1, -1 };
 
-        const float Size = 70f, UltSize = 84f, Gap = 10f;
+        // [SKILL 8] Smaller buttons so eight fit (was 70 / 84 / 10 for five).
+        const float Size = 58f, UltSize = 70f, Gap = 6f;
         static readonly Color UltGold = new Color(1f, 0.84f, 0.42f, 1f);
 
         readonly Image[] frames = new Image[SkillGems.Slots];
@@ -32,7 +34,7 @@ namespace DotRPG
             var root = UIFactory.Place(UIFactory.Rect(parent, "SkillBar"), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(width, UltSize + 22f));
             var v = root.gameObject.AddComponent<SkillBarView>();
             float x = 0f;
-            for (int i = 0; i < SkillGems.Slots; i++)
+            foreach (int i in SkillGems.BarOrder)
             {
                 bool ult = i == SkillGems.UltimateSlot;
                 float s = ult ? UltSize : Size;
@@ -59,16 +61,16 @@ namespace DotRPG
                 // [ART] Padlock above the opening level (it lives on the dark cover, so it hides with it).
                 var padlock = UIFactory.Image(v.locks[i].transform, "Padlock", Game.Art.Get("ui_lock"), Color.white);
                 padlock.preserveAspect = true;
-                UIFactory.Place(padlock.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 9f), new Vector2(24f, 24f));
-                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 16, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
-                UIFactory.Stretch(v.lockTexts[i].rectTransform, 0f, 4f, 0f, 0f);
+                UIFactory.Place(padlock.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 8f), new Vector2(20f, 20f));
+                v.lockTexts[i] = UIFactory.Text(bg.transform, "LockText", "", 14, new Color32(220, 226, 240, 255), TextAnchor.LowerCenter, true);
+                UIFactory.Stretch(v.lockTexts[i].rectTransform, 0f, 3f, 0f, 0f);
 
-                v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 24 : 21, Color.white, TextAnchor.MiddleCenter, true);
+                v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 21 : 18, Color.white, TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(v.timers[i].rectTransform);
-                v.keys[i] = UIFactory.Text(bg.transform, "Key", "", 16, new Color32(255, 224, 102, 255), TextAnchor.UpperLeft, true);
-                UIFactory.Stretch(v.keys[i].rectTransform, 9f, 2f, 2f, 7f); // [UI] inside the slot rim
+                v.keys[i] = UIFactory.Text(bg.transform, "Key", "", 14, new Color32(255, 224, 102, 255), TextAnchor.UpperLeft, true);
+                UIFactory.Stretch(v.keys[i].rectTransform, 7f, 2f, 2f, 5f); // [UI] inside the slot rim
                 v.costs[i] = UIFactory.Text(bg.transform, "Cost", "", UiTheme.FontMin, new Color32(140, 190, 255, 255), TextAnchor.LowerRight, true);
-                UIFactory.Stretch(v.costs[i].rectTransform, 2f, 7f, 9f, 2f);
+                UIFactory.Stretch(v.costs[i].rectTransform, 2f, 5f, 7f, 2f);
                 x += s + Gap;
             }
             // Caption above the awakening slot.
@@ -90,8 +92,19 @@ namespace DotRPG
                 icons[i].enabled = shown != null;
                 if (shown != null) icons[i].sprite = Game.Art.Get(shown.icon);
                 bool open = gem != null;
-                locks[i].gameObject.SetActive(!open); // the padlock child goes with it
-                lockTexts[i].enabled = !open;
+                // [SKILL 8] An A/S/D key that is open but has nothing on it: an empty slot, not a lock.
+                bool empty = !open && i != SkillGems.UltimateSlot && prog.IsSlotOpen(i);
+                locks[i].gameObject.SetActive(!open && !empty); // the padlock child goes with it
+                lockTexts[i].enabled = !open && !empty;
+                if (empty)
+                {
+                    icons[i].enabled = false;
+                    cooldowns[i].fillAmount = 0f;
+                    costs[i].text = "";
+                    timers[i].text = "";
+                    timerShown[i] = costShown[i] = int.MinValue;
+                    continue;
+                }
                 if (!open)
                 {
                     if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = i==4 ? "각성 시련" : $"Lv.{lockShown[i]}"; }

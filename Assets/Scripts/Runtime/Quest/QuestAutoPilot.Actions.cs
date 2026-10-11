@@ -121,7 +121,8 @@ namespace DotRPG
                 var gem = p.Data.Progression.Active(skillSlot);
                 bool stanceOn = gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn;
                 if (!stanceOn) input.next.skillSlot = skillSlot;
-                skillSlot = (skillSlot + 1) % 4;
+                // [SKILL 8] Q W E R then A S D (slots 0-3, 5-7); the awakening (4) is never auto-cast.
+                skillSlot = skillSlot >= SkillGems.Slots - 1 ? 0 : skillSlot == 3 ? 5 : skillSlot + 1;
             }
             else if (Time.time >= nextAttack)
             {

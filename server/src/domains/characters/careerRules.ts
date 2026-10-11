@@ -6,7 +6,7 @@ const nodeList = z.array(z.strictObject({ id: z.string().max(64), rank: z.number
 /** 스킬 스타일 하나(Docs/PLAN_SKILL_STYLES.md 3절): 전직 배분, 스킬 키·보조 젬(슬롯 x (주 1 + 보조 2), 빈칸 ""), 패시브 */
 const styleSchema = z.strictObject({
   nodes: nodeList,
-  gems: z.array(z.string().max(64)).max(15),
+  gems: z.array(z.string().max(64)).max(24), // 8 keys x (skill + 2 supports)
   passives: z.array(z.string().max(64)).max(200),
 });
 export const careerSchema = z.strictObject({
@@ -86,5 +86,6 @@ export function validCareerActive(id:string, state:CareerState|null|undefined, s
   if(!state?.career)return false;
   const list=careerIds[state.career]??[]; const index=list.indexOf(id);
   if(index===8)return slot===4&&state.awakened&&state.questStage===5;
-  return slot<4&&index>=0&&index%4!==0&&state.nodes.some(x=>x.id===id&&x.rank>0);
+  // 8 keys: career actives go on any key but T (slot 4, the awakening); slots 5-7 are A S D
+  return slot>=0&&slot<8&&slot!==4&&index>=0&&index%4!==0&&state.nodes.some(x=>x.id===id&&x.rank>0);
 }

@@ -22,6 +22,9 @@ namespace DotRPG
         static KeyCode[] Skill3Keys = { KeyCode.E };
         static KeyCode[] Skill4Keys = { KeyCode.R };
         static KeyCode[] Skill5Keys = { KeyCode.T, KeyCode.JoystickButton9 };
+        static KeyCode[] Skill6Keys = { KeyCode.A };
+        static KeyCode[] Skill7Keys = { KeyCode.S };
+        static KeyCode[] Skill8Keys = { KeyCode.D };
         static KeyCode[] ManaKeys = { KeyCode.Alpha2, KeyCode.JoystickButton8 };
         static KeyCode[] ScrollKeys = { KeyCode.Alpha3 };
 
@@ -29,7 +32,7 @@ namespace DotRPG
         public static readonly GameAction[] Rebindable =
         {
             GameAction.Attack, GameAction.Mobility, GameAction.Interact, GameAction.Skill1, GameAction.Skill2, GameAction.Skill3,
-            GameAction.Skill4, GameAction.Skill5, GameAction.UseItem, GameAction.UseMana, GameAction.TownScroll, GameAction.Inventory,
+            GameAction.Skill4, GameAction.Skill6, GameAction.Skill7, GameAction.Skill8, GameAction.Skill5, GameAction.UseItem, GameAction.UseMana, GameAction.TownScroll, GameAction.Inventory,
             GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight, GameAction.Map,
             GameAction.SkillWindow, GameAction.QuestWindow, GameAction.WeekdayDungeon, GameAction.RaidWindow,
             GameAction.PartyWindow, GameAction.PartyFinder, GameAction.Auction, GameAction.Friends, GameAction.Cosmetics,
@@ -61,6 +64,9 @@ namespace DotRPG
                 case GameAction.Skill3: return KeyCode.E;
                 case GameAction.Skill4: return KeyCode.R;
                 case GameAction.Skill5: return KeyCode.T;
+                case GameAction.Skill6: return KeyCode.A;
+                case GameAction.Skill7: return KeyCode.S;
+                case GameAction.Skill8: return KeyCode.D;
                 case GameAction.UseItem: return KeyCode.Alpha1;
                 case GameAction.UseMana: return KeyCode.Alpha2;
                 case GameAction.TownScroll: return KeyCode.Alpha3;
@@ -144,6 +150,9 @@ namespace DotRPG
             Skill3Keys = new[] { K(GameAction.Skill3) };
             Skill4Keys = new[] { K(GameAction.Skill4) };
             Skill5Keys = new[] { K(GameAction.Skill5), KeyCode.JoystickButton9 };
+            Skill6Keys = new[] { K(GameAction.Skill6) };
+            Skill7Keys = new[] { K(GameAction.Skill7) };
+            Skill8Keys = new[] { K(GameAction.Skill8) };
             ManaKeys = new[] { K(GameAction.UseMana), KeyCode.JoystickButton8 };
             ScrollKeys = new[] { K(GameAction.TownScroll) };
         }
@@ -217,8 +226,12 @@ namespace DotRPG
             Skill3Pressed = AnyDown(Skill3Keys);
             Skill4Pressed = AnyDown(Skill4Keys);
             Skill5Pressed = AnyDown(Skill5Keys);
+            Skill6Pressed = AnyDown(Skill6Keys);
+            Skill7Pressed = AnyDown(Skill7Keys);
+            Skill8Pressed = AnyDown(Skill8Keys);
             held[0] = AnyHeld(Skill1Keys); held[1] = AnyHeld(Skill2Keys); held[2] = AnyHeld(Skill3Keys);
             held[3] = AnyHeld(Skill4Keys); held[4] = AnyHeld(Skill5Keys);
+            held[5] = AnyHeld(Skill6Keys); held[6] = AnyHeld(Skill7Keys); held[7] = AnyHeld(Skill8Keys);
             UseManaPressed = AnyDown(ManaKeys);
             TownScrollPressed = AnyDown(ScrollKeys);
 

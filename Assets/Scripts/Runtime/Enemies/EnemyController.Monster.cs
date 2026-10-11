@@ -298,7 +298,7 @@ namespace DotRPG
         internal void MonsterAutoAnim() => MonsterAnim(desiredVelocity.sqrMagnitude > 0.05f ? CharacterAnim.Walk : CharacterAnim.Idle);
 
         /// <summary>Attack damage × <paramref name="mul"/> (already level / difficulty scaled).</summary>
-        internal int MonsterDamage(float mul) => Mathf.Max(1, Mathf.RoundToInt(stats.attackDamage * mul));
+        internal int MonsterDamage(float mul) => Mathf.Max(1, Mathf.RoundToInt(stats.attackDamage * mul * (behaviour is BossBrain boss ? boss.DamageMul : 1f)));
 
         internal float Speed => stats.chaseSpeed;
     }

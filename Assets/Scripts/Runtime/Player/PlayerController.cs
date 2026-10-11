@@ -183,7 +183,9 @@ namespace DotRPG
                 if (Progression.SlotLevel(s) != level) continue;
                 var gem = SkillGems.ForSlot(Class, s);
                 string key = Game.Input.GetBindingLabel(SkillGems.ActionFor(s));
-                GameEvents.RaiseToast(s == SkillGems.UltimateSlot ? $"각성 기술 해금!  {gem?.name}  [{key}]" : $"스킬 {s + 1} 해금: {gem?.name}  [{key}]");
+                GameEvents.RaiseToast(s == SkillGems.UltimateSlot ? $"각성 기술 해금!  {gem?.name}  [{key}]"
+                    : gem == null ? $"스킬 키 [{key}] 열림: 전직 스킬을 하나 더 올릴 수 있습니다 (메뉴 → 스킬)" // [SKILL 8] A S D have no basic skill
+                    : $"스킬 {s + 1} 해금: {gem.name}  [{key}]");
             }
             foreach (var g in SkillGems.All)
                 if (g.kind == GemKind.Support && g.unlockLevel == level) GameEvents.RaiseToast($"새 보조 젬: {g.name}  (메뉴 → 스킬 → 스킬 젬)");
@@ -345,6 +347,14 @@ namespace DotRPG
             var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
             // Consume/discard menu input so one-shot actions cannot leak out on resume.
             if (IsLocal && (!Game.IsPlaying || Game.State.ChangedThisFrame)) cmd = ActorCommand.None;
+            // [RAID] Stunned: every key is ignored (the host's copy of a member too, so its commands do nothing).
+            if (IsStunned)
+            {
+                Command = ActorCommand.None;
+                if (NetDriven) { NetUpdate(ActorCommand.None); return; }
+                StunFrame();
+                return;
+            }
             Command = cmd;
             if (NetDriven) { NetUpdate(cmd); return; } // [PARTY NET] position from the network
             // Mobility owns the pose and movement until the dash ends; a successful blink

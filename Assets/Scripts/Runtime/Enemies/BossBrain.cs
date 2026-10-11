@@ -42,7 +42,8 @@ namespace DotRPG
         public int Phase { get; private set; } = 1;
         public event Action<BossBrain, int> PhaseChanged;
         public BossPattern CurrentPattern { get; private set; }
-        public bool Enraged => Def.raid && Phase >= 3;
+        /// <summary>Raid enrage: phase 3 (해골왕) or HP at / under RaidMechanics.EnrageAt, whichever comes first (BossBrain.Raid.cs).</summary>
+        public bool Enraged => Def.raid && (Phase >= 3 || lowEnraged);
         public bool IsKing => Def.id == "boss_skeleton_king";
         public EnemyController Controller => E;
 
@@ -92,6 +93,7 @@ namespace DotRPG
         {
             UpdatePhase();
             UpdateTotems();
+            if (RaidTick()) return true; // [RAID] 40% enrage and the "이대론 죽을 수 없다!" roar
             if (Busy) return true;
             if (!engaged) return false;
             var target = E.MonsterTarget;

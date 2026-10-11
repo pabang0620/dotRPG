@@ -16,6 +16,7 @@ describe('career invariants',()=>{
   expect(()=>check(blank(c),character(40,c<=2?'mage':'warrior'))).toThrow();
  });
  test('promotion cannot change or revert',()=>{expect(()=>check(blank(2),character(),blank(1))).toThrow();expect(()=>check(blank(),character(),blank(1))).toThrow();});
+ test('career actives fit on Q W E R and A S D (slots 0-3, 5-7) but never on T or past the 8 keys',()=>{const s=blank(1);s.nodes=[{id:'f_cross',rank:1}];for(const slot of [0,3,5,7])expect(validCareerActive('f_cross',s,slot)).toBe(true);for(const slot of [4,8,-1])expect(validCareerActive('f_cross',s,slot)).toBe(false);});
  test('awakening requires own completed quest',()=>{const s=blank(1);s.awakened=true;expect(()=>check(s)).toThrow();s.questStage=5;expect(()=>check(s)).not.toThrow();expect(validCareerActive('f_awake',s,4)).toBe(true);expect(validCareerActive('b_awake',s,4)).toBe(false);expect(validCareerActive('f_awake',s,0)).toBe(false);});
  test('base high level cannot hold awakening',()=>{const s=blank();s.questStage=5;s.awakened=true;expect(()=>check(s,character(40))).toThrow();});
  test('nodes enforce prerequisites, rank costs and own class',()=>{

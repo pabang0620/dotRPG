@@ -112,7 +112,7 @@ namespace DotRPG
         {
             var sb = new StringBuilder();
             sb.Append($"<color=#ffd84a>퀘스트</color>  머리 위 <color=#ffd640>!</color>는 새 퀘스트, <color=#ffd640>?</color>는 진행·보고. 오른쪽 위 알리미를 따라가세요.\n");
-            sb.Append($"<color=#ffd84a>전투</color>  공격 [{Key(GameAction.Attack)}]  이동기 [{Key(GameAction.Mobility)}]  스킬 [{Key(GameAction.Skill1)}][{Key(GameAction.Skill2)}][{Key(GameAction.Skill3)}][{Key(GameAction.Skill4)}]  각성 [{Key(GameAction.Skill5)}]\n");
+            sb.Append($"<color=#ffd84a>전투</color>  공격 [{Key(GameAction.Attack)}]  이동기 [{Key(GameAction.Mobility)}]  스킬 [{Key(GameAction.Skill1)}][{Key(GameAction.Skill2)}][{Key(GameAction.Skill3)}][{Key(GameAction.Skill4)}][{Key(GameAction.Skill6)}][{Key(GameAction.Skill7)}][{Key(GameAction.Skill8)}]  각성 [{Key(GameAction.Skill5)}]\n");
             sb.Append($"<color=#ffd84a>회복</color>  체력 물약 [{Key(GameAction.UseItem)}]  마나 물약 [{Key(GameAction.UseMana)}]  귀환 주문서 [{Key(GameAction.TownScroll)}]\n");
             sb.Append("<color=#ffd84a>요일 던전</color>  광장의 던전 안내원. 요일마다 열리는 던전이 다르고 주말엔 전부 열립니다. 하루 3회.\n");
             sb.Append("<color=#ffd84a>레이드</color>  중간 레이드는 수·토·일, 하루 1회 보상과 봉인 열쇠 조각. 일요일 최종 레이드는 조각 60개로 보상, 모자라면 연습 입장.\n");

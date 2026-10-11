@@ -83,6 +83,8 @@ namespace DotRPG
             Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
+            RaidMechanics.RoarStarted += net.OnRaidRoar;
+            RaidMechanics.MemberStunned += net.OnRaidStun;
             if (t is RelayTransport relay) relay.HostChanged += net.OnRelayHostChanged;
             // [8] Level-ups and gear changes reach the other PCs (their copy / puppet of this character).
             if (Game.Session != null)
@@ -159,6 +161,8 @@ namespace DotRPG
             Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
+            RaidMechanics.RoarStarted -= net.OnRaidRoar;
+            RaidMechanics.MemberStunned -= net.OnRaidStun;
             if (net.transport is RelayTransport relay) relay.HostChanged -= net.OnRelayHostChanged;
             if (Game.Session != null)
             {

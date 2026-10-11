@@ -15,7 +15,9 @@ namespace DotRPG
         public const byte EnemySpawn = 1, EnemyDie = 2, Damage = 3, Act = 4, RoomCleared = 5, Heal = 6,
             RoomLoad = 7, RunEnd = 8, MemberJoined = 9, MemberLeft = 10, RunStart = 11,
             CardUpdate = 13, // [8] a member's level / gear / passives changed (member -> host, host -> others)
-            SeatFreed = 14; // [AI] host -> members: this seat's AI is gone (a person took the seat). Body: seat byte
+            SeatFreed = 14, // [AI] host -> members: this seat's AI is gone (a person took the seat). Body: seat byte
+            RaidRoar = 15, // [RAID] host -> members: boss net id, boss pos, cast seconds, safe circle count + centres
+            RaidStun = 16; // [RAID] host -> members: seat byte, stun seconds
     }
 
     /// <summary>

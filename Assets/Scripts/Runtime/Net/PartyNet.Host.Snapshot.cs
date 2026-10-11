@@ -93,6 +93,30 @@ namespace DotRPG
 
         void OnCasted(PlayerController m, int slot) => SendAct(m, 1, slot);
 
+        /// <summary>[RAID] The roar started on the host: members draw the same line, count, edge and safe circles.</summary>
+        void OnRaidRoar(EnemyController boss, float cast, Vector2[] circles)
+        {
+            if (!host || boss == null) return;
+            Broadcast(NetChannel.Event, PartyWire.Build(w =>
+            {
+                w.Write(PartyMsg.RaidRoar);
+                w.Write(boss.NetId);
+                PartyWire.WriteVec(w, boss.Position);
+                w.Write(cast);
+                w.Write((byte)circles.Length);
+                foreach (var c in circles) PartyWire.WriteVec(w, c);
+            }));
+        }
+
+        /// <summary>[RAID] A member was stunned on the host: that seat's PC (and everyone's copy) stuns too.</summary>
+        void OnRaidStun(PlayerController m, float seconds)
+        {
+            if (!host || m == null) return;
+            int slot = SlotOf(m);
+            if (slot < 0) return;
+            Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.RaidStun); w.Write((byte)slot); w.Write(seconds); }));
+        }
+
         void SendAct(PlayerController m, int kind, int skillSlot)
         {
             if (!host || m == null) return;

@@ -312,6 +312,8 @@ namespace DotRPG
                 Row("가방 · 장비", GameAction.Inventory),
                 Pair("스킬 1 / 2", GameAction.Skill1, GameAction.Skill2),
                 Pair("스킬 3 / 4", GameAction.Skill3, GameAction.Skill4),
+                Pair("스킬 5 / 6", GameAction.Skill6, GameAction.Skill7),
+                Row("스킬 7", GameAction.Skill8),
                 Row("각성 기술", GameAction.Skill5),
                 Row("메뉴 / 일시정지", GameAction.Pause),
                 "단축키는 메뉴의 키보드 설정에서 변경할 수 있습니다.",

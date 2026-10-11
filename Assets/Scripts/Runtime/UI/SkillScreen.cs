@@ -18,7 +18,8 @@ namespace DotRPG
     {
         enum TabId { Tree, Gems }
 
-        const float RowHeight = 92f, RowGap = 6f;
+        // [SKILL 8] Eight compact rows (Q W E R A S D T) fit where five tall ones were (was 92 / 6).
+        const float RowHeight = 58f, RowGap = 4f;
 
         TabId tab = TabId.Tree;
         RectTransform treePage, gemPage;
@@ -86,16 +87,17 @@ namespace DotRPG
             for (int s = 0; s < SkillGems.Slots; s++)
             {
                 bool ult = s == SkillGems.UltimateSlot;
-                var row = Panel(gemPage, "Slot" + s, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -s * (RowHeight + RowGap)), new Vector2(800f, RowHeight),
+                int rowIndex = System.Array.IndexOf(SkillGems.BarOrder, s); // rows in key order: Q W E R A S D, then T
+                var row = Panel(gemPage, "Slot" + s, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -rowIndex * (RowHeight + RowGap)), new Vector2(800f, RowHeight),
                     ult ? new Color32(52, 44, 30, 240) : UiTheme.Panel);
-                slotTitle[s] = Label(row.transform, "Title", "", 18, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(92f, 80f), TextAnchor.MiddleCenter);
+                slotTitle[s] = Label(row.transform, "Title", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(84f, RowHeight - 4f), TextAnchor.MiddleCenter);
                 // Link bar behind the three sockets.
                 var link = Img(row.transform, "Link", "ui_white", new Color32(150, 120, 70, 255));
-                UIFactory.Place(link.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(150f, 0f), new Vector2(180f, 6f));
+                UIFactory.Place(link.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(130f, 0f), new Vector2(130f, 5f));
                 for (int k = 0; k <= SkillGems.SupportsPerSlot; k++)
                 {
-                    float size = k == 0 ? 76f : 62f;
-                    float x = k == 0 ? 112f : 206f + (k - 1) * 76f;
+                    float size = k == 0 ? 52f : 44f;
+                    float x = k == 0 ? 100f : 168f + (k - 1) * 52f;
                     var bg = Img(row.transform, $"Socket{s}_{k}", k == 0 ? "ui_slotblue" : "ui_slot", Color.white);
                     UIFactory.Place(bg.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(x, 0f), new Vector2(size, size));
                     bg.raycastTarget = true;
@@ -112,11 +114,11 @@ namespace DotRPG
                     LongPress.Add(bg.gameObject, () => { selectedSocket = index; Cycle(view, -1); }); // touch: hold = right click
                     sockets.Add(view);
                 }
-                slotInfo[s] = Label(row.transform, "Info", "", 15, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(362f, 0f), new Vector2(428f, 88f), TextAnchor.MiddleLeft);
-                slotInfo[s].lineSpacing = 1.1f;
+                slotInfo[s] = Label(row.transform, "Info", "", 13, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(278f, 0f), new Vector2(512f, RowHeight - 2f), TextAnchor.MiddleLeft);
+                slotInfo[s].lineSpacing = 1.0f;
                 slotLock[s] = Img(row.transform, "Lock", "ui_white", new Color(0.02f, 0.03f, 0.06f, 0.55f));
                 UIFactory.Stretch(slotLock[s].rectTransform);
-                slotLockText[s] = Label(row.transform, "LockText", "", 20, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-24f, 0f), new Vector2(360f, 40f), TextAnchor.MiddleRight);
+                slotLockText[s] = Label(row.transform, "LockText", "", 16, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(360f, 34f), TextAnchor.MiddleRight);
             }
             // [UI] Under the rows: a one-line how-to (the full gem list and explanations are in the guide on the right).
             float listY = -SkillGems.Slots * (RowHeight + RowGap);
@@ -184,11 +186,17 @@ namespace DotRPG
                 bool open = prog.IsSlotOpen(s) && (s!=4 || prog.Awakened);
                 var gem = prog.Active(s);
                 string key = Game.Input.GetBindingLabel(SkillGems.ActionFor(s));
-                slotTitle[s].text = (ult ? "<color=#ffd66e><b>각성</b></color>" : $"<b>스킬 {s + 1}</b>") + $"\n<color=#ffe066><size=26>{key}</size></color>";
+                int number = System.Array.IndexOf(SkillGems.BarOrder, s) + 1; // [SKILL 8] numbered in key order
+                slotTitle[s].text = (ult ? "<color=#ffd66e><b>각성</b></color>" : $"<b>스킬 {number}</b>") + $"\n<color=#ffe066><size=20>{key}</size></color>";
                 slotLock[s].enabled = !open;
                 slotLockText[s].enabled = !open;
                 slotLockText[s].text = s==4 ? "전직 후 각성 시련을 완료하세요" : $"Lv.{Progression.SlotLevel(s)}에 슬롯 개방";
-                if (gem == null) { slotInfo[s].text = ""; continue; }
+                if (gem == null)
+                {
+                    // [SKILL 8] An open A/S/D key with nothing on it says how to fill it.
+                    slotInfo[s].text = open && !ult ? "<color=#8c96a8>빈 칸: 전직 스킬 창에서 스킬을 이 키로 끌어다 놓거나, 스킬 칸을 클릭해 고르세요.</color>" : "";
+                    continue;
+                }
                 var n = CharacterStats.Skill(cls, s, gem, prog.Supports(s));
                 var career=CareerCatalog.Get(gem.id);
                 if(career!=null){slotInfo[s].text=$"<b>{gem.name}</b>  <color=#ff9f43>전직 기술</color>\n{CareerNumbers.Summary(career,CharacterData.Session,n)}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>";continue;}

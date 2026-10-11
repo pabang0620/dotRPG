@@ -20,8 +20,10 @@ namespace DotRPG
         const float AttackSize = 104f;
         static readonly Vector2 DodgePos = new Vector2(-214f, 52f);
         const float DodgeSize = 70f;
-        static readonly Vector2[] SkillPos = { new Vector2(-228f, 136f), new Vector2(-196f, 212f), new Vector2(-130f, 262f), new Vector2(-60f, 270f), new Vector2(-46f, 178f) };
-        const float SkillSize = 66f, UltSize = 78f;
+        // [SKILL 8] Slots 5-7 (A S D) sit on an outer arc, a bit smaller, and only show once something is on them.
+        static readonly Vector2[] SkillPos = { new Vector2(-228f, 136f), new Vector2(-196f, 212f), new Vector2(-130f, 262f), new Vector2(-60f, 270f), new Vector2(-46f, 178f),
+            new Vector2(-312f, 200f), new Vector2(-286f, 276f), new Vector2(-228f, 330f) };
+        const float SkillSize = 66f, UltSize = 78f, ExtraSize = 58f;
         static readonly Vector2 InteractPos = new Vector2(-300f, 112f);
         const float InteractSize = 80f;
         const float PotionSize = 58f;
@@ -128,11 +130,12 @@ namespace DotRPG
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 bool ult = i == SkillGems.UltimateSlot;
-                var bg = Round(root, "Skill" + i, SkillPos[i], ult ? UltSize : SkillSize, ult ? UltTint : Dark);
+                float size = ult ? UltSize : i > SkillGems.UltimateSlot ? ExtraSize : SkillSize;
+                var bg = Round(root, "Skill" + i, SkillPos[i], size, ult ? UltTint : Dark);
                 skillBgs[i] = bg;
                 skillButtons[i] = AddButton(bg, SkillGems.ActionFor(i));
                 skillIcons[i] = UIFactory.Image(bg.transform, "Icon", null, Color.white);
-                UIFactory.Place(skillIcons[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2((ult ? UltSize : SkillSize) * 0.7f, (ult ? UltSize : SkillSize) * 0.7f));
+                UIFactory.Place(skillIcons[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.7f, size * 0.7f));
                 var cd = UIFactory.Image(bg.transform, "Cooldown", Game.Art.Get("ui_circle"), new Color(0f, 0f, 0f, 0.6f));
                 cd.type = Image.Type.Filled;
                 cd.fillMethod = Image.FillMethod.Radial360;
@@ -191,6 +194,13 @@ namespace DotRPG
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 var gem = prog.Active(i);
+                if (i > SkillGems.UltimateSlot)
+                {
+                    // [SKILL 8] The extra keys stay hidden until a skill is on them (keeps the thumb area clear).
+                    bool show = gem != null;
+                    if (skillBgs[i].gameObject.activeSelf != show) skillBgs[i].gameObject.SetActive(show);
+                    if (!show) continue;
+                }
                 var shown = gem ?? (i == SkillGems.UltimateSlot ? prog.IsPromoted ? CareerCatalog.For(prog.Career)[8].Gem : null : SkillGems.ForSlot(player.Class, i));
                 bool open = gem != null;
                 skillButtons[i].locked = !open;

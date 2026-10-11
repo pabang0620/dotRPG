@@ -30,6 +30,8 @@ namespace DotRPG
         SkillWindow, QuestWindow, WeekdayDungeon, RaidWindow, PartyWindow, PartyFinder, Auction, Friends, Cosmetics,
         /// <summary>[AUTO] HUD toggles: 자동 진행 / 자동 사냥 (HudView reads them).</summary>
         AutoQuest, AutoHunt,
+        /// <summary>[SKILL 8] Skill keys 6-8 (slots 5-7, default A S D). Appended at the end: touch arrays index by value.</summary>
+        Skill6, Skill7, Skill8,
     }
 
     /// <summary>
@@ -67,17 +69,37 @@ namespace DotRPG
         public bool Skill3Pressed { get; private set; }
         public bool Skill4Pressed { get; private set; }
         public bool Skill5Pressed { get; private set; }
+        public bool Skill6Pressed { get; private set; }
+        public bool Skill7Pressed { get; private set; }
+        public bool Skill8Pressed { get; private set; }
+
+        /// <summary>[SKILL 8] The action of a skill slot: 0-3 Q W E R, 4 T (awakening), 5-7 A S D.</summary>
+        public static GameAction SkillAction(int slot) => slot <= 4 ? GameAction.Skill1 + slot : GameAction.Skill6 + (slot - 5);
         /// <summary>2 / gamepad L3: mana potion.</summary>
         public bool UseManaPressed { get; private set; }
         /// <summary>3: town return scroll.</summary>
         public bool TownScrollPressed { get; private set; }
 
-        /// <summary>[CHARGE] Whether the skill key of a slot (0-4) is held down now (charged skills).</summary>
+        /// <summary>[CHARGE] Whether the skill key of a slot (0-7) is held down now (charged skills).</summary>
         public bool SkillHeld(int slot) => slot >= 0 && slot < held.Length && held[slot];
-        readonly bool[] held = new bool[5];
+        readonly bool[] held = new bool[SkillGems.Slots];
 
-        /// <summary>Whether the skill key of a slot (0-4) was pressed this frame.</summary>
-        public bool SkillPressed(int slot) => slot == 0 ? Skill1Pressed : slot == 1 ? Skill2Pressed : slot == 2 ? Skill3Pressed : slot == 3 ? Skill4Pressed : slot == 4 && Skill5Pressed;
+        /// <summary>Whether the skill key of a slot (0-7) was pressed this frame.</summary>
+        public bool SkillPressed(int slot)
+        {
+            switch (slot)
+            {
+                case 0: return Skill1Pressed;
+                case 1: return Skill2Pressed;
+                case 2: return Skill3Pressed;
+                case 3: return Skill4Pressed;
+                case 4: return Skill5Pressed;
+                case 5: return Skill6Pressed;
+                case 6: return Skill7Pressed;
+                case 7: return Skill8Pressed;
+                default: return false;
+            }
+        }
 
         /// <summary>Discrete menu navigation step for this frame (with key repeat). (0,0) when idle.</summary>
         public Vector2Int NavigateStep { get; private set; }
@@ -91,7 +113,7 @@ namespace DotRPG
 #if ENABLE_INPUT_SYSTEM
         InputActionMap map;
         InputAction mapAction;
-        InputAction moveAction, attackAction, interactAction, useItemAction, pauseAction, submitAction, cancelAction, navigateAction, inventoryAction, skill1Action, skill2Action, skill3Action, skill4Action, skill5Action, manaAction, scrollAction, mobilityAction;
+        InputAction moveAction, attackAction, interactAction, useItemAction, pauseAction, submitAction, cancelAction, navigateAction, inventoryAction, skill1Action, skill2Action, skill3Action, skill4Action, skill5Action, skill6Action, skill7Action, skill8Action, manaAction, scrollAction, mobilityAction;
 #else
         bool legacyAxesAvailable = true;
 #endif
@@ -263,6 +285,9 @@ namespace DotRPG
                 case GameAction.Skill3: return skill3Action;
                 case GameAction.Skill4: return skill4Action;
                 case GameAction.Skill5: return skill5Action;
+                case GameAction.Skill6: return skill6Action;
+                case GameAction.Skill7: return skill7Action;
+                case GameAction.Skill8: return skill8Action;
                 case GameAction.UseMana: return manaAction;
                 case GameAction.TownScroll: return scrollAction;
                 default: return null;
@@ -338,6 +363,12 @@ namespace DotRPG
             skill5Action = map.AddAction("Skill5", InputActionType.Button);
             skill5Action.AddBinding("<Keyboard>/t");
             skill5Action.AddBinding("<Gamepad>/rightStickPress");
+            skill6Action = map.AddAction("Skill6", InputActionType.Button);
+            skill6Action.AddBinding("<Keyboard>/a");
+            skill7Action = map.AddAction("Skill7", InputActionType.Button);
+            skill7Action.AddBinding("<Keyboard>/s");
+            skill8Action = map.AddAction("Skill8", InputActionType.Button);
+            skill8Action.AddBinding("<Keyboard>/d");
 
             manaAction = map.AddAction("UseMana", InputActionType.Button);
             manaAction.AddBinding("<Keyboard>/2");
@@ -376,8 +407,12 @@ namespace DotRPG
             Skill3Pressed = skill3Action.WasPressedThisFrame();
             Skill4Pressed = skill4Action.WasPressedThisFrame();
             Skill5Pressed = skill5Action.WasPressedThisFrame();
+            Skill6Pressed = skill6Action.WasPressedThisFrame();
+            Skill7Pressed = skill7Action.WasPressedThisFrame();
+            Skill8Pressed = skill8Action.WasPressedThisFrame();
             held[0] = skill1Action.IsPressed(); held[1] = skill2Action.IsPressed(); held[2] = skill3Action.IsPressed();
             held[3] = skill4Action.IsPressed(); held[4] = skill5Action.IsPressed();
+            held[5] = skill6Action.IsPressed(); held[6] = skill7Action.IsPressed(); held[7] = skill8Action.IsPressed();
             UseManaPressed = manaAction.WasPressedThisFrame();
             TownScrollPressed = scrollAction.WasPressedThisFrame();
 
@@ -391,6 +426,9 @@ namespace DotRPG
             TrackDevice(skill3Action, Skill3Pressed);
             TrackDevice(skill4Action, Skill4Pressed);
             TrackDevice(skill5Action, Skill5Pressed);
+            TrackDevice(skill6Action, Skill6Pressed);
+            TrackDevice(skill7Action, Skill7Pressed);
+            TrackDevice(skill8Action, Skill8Pressed);
             TrackDevice(useItemAction, UseItemPressed);
             TrackDevice(manaAction, UseManaPressed);
             TrackDevice(scrollAction, TownScrollPressed);
