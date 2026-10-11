@@ -257,6 +257,11 @@ namespace DotRPG
     {
         Text titleText;
         bool deleting;
+        // [UI] One card per character above the list: the highlighted row's character walks, the rest idle.
+        RectTransform cardRow;
+        Text emptyHint;
+        readonly System.Collections.Generic.List<CharacterPreviewCard> cards = new System.Collections.Generic.List<CharacterPreviewCard>();
+        float animTimer;
 
         protected override bool AnyFieldFocused => false;
 
@@ -265,9 +270,14 @@ namespace DotRPG
             var root = CreateRoot(canvas, "OnlineCharacters", true);
             var screen = root.gameObject.AddComponent<OnlineCharacterScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "온라인 캐릭터", 700, "\n", 20);
+            // Eight empty body lines reserve room for the cards (to -282) and the status line (to -326).
+            screen.BuildPanel(root, "온라인 캐릭터", 700, new string('\n', 7), 20);
             screen.titleText = screen.panel.Find("Title").GetComponent<Text>();
-            screen.Status(-100f);
+            screen.panel.Find("Body").GetComponent<Text>().text = "";
+            screen.cardRow = UIFactory.Place(UIFactory.Rect(screen.panel, "Cards"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -92f), new Vector2(660f, 190f));
+            screen.emptyHint = UIFactory.Text(screen.cardRow, "Empty", "아직 캐릭터가 없습니다.\n새 캐릭터를 만들어 주세요.", 20, UiTheme.TextSecondary, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(screen.emptyHint.rectTransform);
+            screen.Status(-292f);
             return screen;
         }
 
@@ -315,6 +325,36 @@ namespace DotRPG
             }
             FitPanel();
             menu.Refresh();
+            BuildCards(session);
+        }
+
+        void BuildCards(OnlineSession session)
+        {
+            foreach (var c in cards) Destroy(c.Rect.gameObject);
+            cards.Clear();
+            int n = session?.Characters.Count ?? 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ch = session.Characters[i];
+                var card = CharacterPreviewCard.Create(cardRow, "Card_" + i, new Vector2((i - (n - 1) * 0.5f) * 160f, 0f), new Vector2(150f, 190f), 120f, 21);
+                card.Set(ch.cls, ch.name, $"{(ch.cls == CharacterClass.Mage ? "마법사" : "전사")} Lv.{ch.level}");
+                card.BindToMenu(menu, i); // the character rows come first in the menu
+                cards.Add(card);
+            }
+            animTimer = 0f;
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+            animTimer += Time.unscaledDeltaTime;
+            emptyHint.gameObject.SetActive(cards.Count == 0 && !busy); // not while the list is loading
+            int selected = menu != null ? menu.Selected : -1;
+            for (int i = 0; i < cards.Count; i++)
+            {
+                cards[i].SetSelected(i == selected);
+                cards[i].Animate(animTimer);
+            }
         }
 
         void Pick(OnlineSession.CharacterSummary c)
@@ -355,6 +395,10 @@ namespace DotRPG
         InputField nameField;
         CharacterClass cls = CharacterClass.Warrior;
         string requestId, requestFor;
+        // [UI] The two classes as cards: the chosen one walks, the other idles. A click picks the class.
+        static readonly CharacterClass[] Classes = { CharacterClass.Warrior, CharacterClass.Mage };
+        readonly CharacterPreviewCard[] cards = new CharacterPreviewCard[2];
+        float animTimer;
 
         protected override bool AnyFieldFocused => nameField.isFocused;
 
@@ -363,11 +407,21 @@ namespace DotRPG
             var root = CreateRoot(canvas, "OnlineCreate", true);
             var screen = root.gameObject.AddComponent<OnlineCreateScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "새 온라인 캐릭터", 640, "\n\n\n", 20);
-            screen.nameField = screen.Field("이름", -100f, "한글·영문·숫자 2~8자", 8, false);
-            screen.Status(-150f);
+            // Ten empty body lines reserve room for the cards (to -292), the name box and the status line (to -384).
+            screen.BuildPanel(root, "새 온라인 캐릭터", 640, new string('\n', 9), 20);
+            screen.panel.Find("Body").GetComponent<Text>().text = "";
+            for (int i = 0; i < Classes.Length; i++)
+            {
+                var c = Classes[i];
+                var info = CharacterClassInfo.Get(c);
+                var card = CharacterPreviewCard.Create(screen.panel, "Card_" + info.saveId, new Vector2(i == 0 ? -150f : 150f, -92f), new Vector2(260f, 200f), 144f, 26);
+                card.OnClick(() => { if (screen.cls != c) Game.Audio.PlaySfx("select"); screen.PickClass(c); });
+                screen.cards[i] = card;
+            }
+            screen.nameField = screen.Field("이름", -302f, "한글·영문·숫자 2~8자", 8, false);
+            screen.Status(-350f);
             screen.menu.AddOption("직업", () => screen.cls == CharacterClass.Mage ? "마법사" : "전사",
-                d => { screen.cls = screen.cls == CharacterClass.Mage ? CharacterClass.Warrior : CharacterClass.Mage; screen.requestId = null; });
+                d => screen.PickClass(screen.cls == CharacterClass.Mage ? CharacterClass.Warrior : CharacterClass.Mage));
             screen.menu.AddButton("만들기", () => screen.Submit());
             screen.menu.AddButton("돌아가기", () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
@@ -380,12 +434,32 @@ namespace DotRPG
             base.Show();
             nameField.text = "";
             requestId = null;
+            for (int i = 0; i < Classes.Length; i++)
+            {
+                var info = CharacterClassInfo.Get(Classes[i]);
+                cards[i].Set(Classes[i], info.displayName, "");
+            }
+            animTimer = 0f;
             Say("이름은 다른 모험가와 겹칠 수 없습니다.");
+        }
+
+        void PickClass(CharacterClass c)
+        {
+            if (busy || cls == c) return;
+            cls = c;
+            requestId = null;
+            menu.Refresh();
         }
 
         protected override void Update()
         {
             base.Update();
+            animTimer += Time.unscaledDeltaTime;
+            for (int i = 0; i < Classes.Length; i++)
+            {
+                cards[i].SetSelected(Classes[i] == cls);
+                cards[i].Animate(animTimer);
+            }
             if (AnyFieldFocused && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))) Submit();
         }
 
