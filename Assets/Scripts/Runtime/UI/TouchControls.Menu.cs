@@ -40,8 +40,8 @@ namespace DotRPG
             text.resizeTextForBestFit = true;
             text.resizeTextMinSize = 12;
             text.resizeTextMaxSize = text.fontSize;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            UIFactory.Stretch(text.rectTransform, 4f, 4f, 4f, 4f);
+            text.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label
+            UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 2f, 4f, UIFactory.FrameRim - 2f, 4f); // inside the rim
             return button;
         }
 
@@ -85,8 +85,8 @@ namespace DotRPG
                 text.resizeTextForBestFit = true;
                 text.resizeTextMinSize = 12;
                 text.resizeTextMaxSize = text.fontSize;
-                text.horizontalOverflow = HorizontalWrapMode.Overflow;
-                UIFactory.Stretch(text.rectTransform, 4f, 6f, 4f, 0f);
+                text.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label
+                UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 2f, 6f, UIFactory.FrameRim - 2f, 0f); // inside the rim
                 var button = img.gameObject.AddComponent<Button>();
                 button.targetGraphic = img;
                 UiButton.Attach(button);

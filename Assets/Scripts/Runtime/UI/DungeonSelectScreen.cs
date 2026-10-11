@@ -159,7 +159,12 @@ namespace DotRPG
                 b.onClick.AddListener(() => { selected = index; Game.Audio.PlaySfx("select"); Refresh(); });
                 r.stripe = Panel(r.bg.transform, "Stripe", new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(6f, RowH), Color.white);
                 r.text = Label(r.bg.transform, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -8f), new Vector2(ListW - 30f, 84f));
-                r.text.horizontalOverflow = HorizontalWrapMode.Overflow; // one line each: never wrap into the next row
+                // [UI] Lines (name, level band, entries) shrink to fit the row instead of running past its right edge / the tag.
+                r.text.resizeTextForBestFit = true;
+                r.text.resizeTextMinSize = 12;
+                r.text.resizeTextMaxSize = r.text.fontSize;
+                r.text.verticalOverflow = VerticalWrapMode.Truncate;
+                r.text.rectTransform.sizeDelta = new Vector2(ListW - 30f - 96f, r.text.rectTransform.sizeDelta.y); // clear of the tag (top-right)
                 r.tag = Label(r.bg.transform, "Tag", "", 17, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-12f, -10f), new Vector2(110f, 28f), TextAnchor.UpperRight);
                 rows.Add(r);
             }

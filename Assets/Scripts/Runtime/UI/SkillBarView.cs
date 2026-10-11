@@ -71,6 +71,14 @@ namespace DotRPG
                 UIFactory.Stretch(v.keys[i].rectTransform, 7f, 2f, 2f, 5f); // [UI] inside the slot rim
                 v.costs[i] = UIFactory.Text(bg.transform, "Cost", "", UiTheme.FontMin, new Color32(140, 190, 255, 255), TextAnchor.LowerRight, true);
                 UIFactory.Stretch(v.costs[i].rectTransform, 2f, 5f, 7f, 2f);
+                // [UI] A long rebound key ("Space") or "각성 시련" shrinks inside the smaller slot instead of wrapping out of it.
+                foreach (var t in new[] { v.keys[i], v.lockTexts[i], v.costs[i] })
+                {
+                    t.resizeTextForBestFit = true;
+                    t.resizeTextMinSize = 9;
+                    t.resizeTextMaxSize = t.fontSize;
+                    t.verticalOverflow = VerticalWrapMode.Truncate;
+                }
                 x += s + Gap;
             }
             // Caption above the awakening slot.

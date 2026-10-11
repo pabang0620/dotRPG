@@ -119,26 +119,26 @@ namespace DotRPG
             // [QUEST] Auto-progress: walks to the next objective, any key takes control back.
             var autoImg = UIFactory.Image(questPanel, "Auto", Game.Art.Get("ui_btn"), Color.white);
             autoImg.raycastTarget = true;
-            UIFactory.Place(autoImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(132f, 36f));
+            UIFactory.Place(autoImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(AutoButtonW, 36f));
             var autoBtn = autoImg.gameObject.AddComponent<Button>();
             autoBtn.targetGraphic = autoImg;
             autoBtn.onClick.AddListener(QuestAutoPilot.Toggle);
             UiButton.Attach(autoBtn);
             autoLabel = UIFactory.Text(autoImg.transform, "Text", "자동 진행", 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(autoLabel.rectTransform, 30f, 0f, 24f, 0f);
+            UIFactory.Stretch(autoLabel.rectTransform, 36f, 2f, 32f, 2f);
             FitLabel(autoLabel);
             autoKey = KeyBadge(autoImg.transform);
             ButtonIcon(autoImg.transform, "menuicon_autoquest"); // [ART]
             // [AUTO] 자동 사냥 (hunting grounds only), left of 자동 진행.
             var huntImg = UIFactory.Image(questPanel, "AutoHunt", Game.Art.Get("ui_btn"), Color.white);
             huntImg.raycastTarget = true;
-            UIFactory.Place(huntImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-140f, -4f), new Vector2(132f, 36f));
+            UIFactory.Place(huntImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-(AutoButtonW + 6f), -4f), new Vector2(AutoButtonW, 36f));
             huntBtn = huntImg.gameObject.AddComponent<Button>();
             huntBtn.targetGraphic = huntImg;
             huntBtn.onClick.AddListener(QuestAutoPilot.ToggleHunt);
             UiButton.Attach(huntBtn);
             huntLabel = UIFactory.Text(huntImg.transform, "Text", "자동 사냥", 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(huntLabel.rectTransform, 30f, 0f, 24f, 0f);
+            UIFactory.Stretch(huntLabel.rectTransform, 36f, 2f, 32f, 2f);
             FitLabel(huntLabel);
             huntKey = KeyBadge(huntImg.transform);
             ButtonIcon(huntImg.transform, "menuicon_autohunt"); // [ART]
@@ -368,19 +368,27 @@ namespace DotRPG
         }
 
         /// <summary>[UI] Long labels ("자동 진행 (3)") shrink to fit next to the key badge instead of wrapping.</summary>
+        /// <summary>[UI] 자동 진행 / 자동 사냥 buttons: wide enough for "자동 진행 (12)" between the icon and the key badge.</summary>
+        const float AutoButtonW = 140f;
+
         static void FitLabel(Text t)
         {
             t.resizeTextForBestFit = true;
-            t.resizeTextMinSize = 12;
+            t.resizeTextMinSize = 11;
             t.resizeTextMaxSize = t.fontSize;
+            t.verticalOverflow = VerticalWrapMode.Truncate; // a long label shrinks inside the button, never spills above / below it
         }
 
         /// <summary>[AUTO] The hotkey ("F6") at the right end of a HUD button.</summary>
         static Text KeyBadge(Transform button)
         {
             var t = UIFactory.Text(button, "Key", "", 14, new Color32(255, 211, 74, 255), TextAnchor.MiddleRight, true);
-            t.horizontalOverflow = HorizontalWrapMode.Overflow; // a rebound "Space" grows to the left, never wraps
-            UIFactory.Place(t.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-5f, 0f), new Vector2(24f, 20f));
+            // [UI] Inside the button's 12 px rim (it used to sit on the frame at the screen edge); a long rebound key
+            // ("Space") shrinks to fit instead of growing past the button.
+            UIFactory.Place(t.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-UIFactory.FrameRim + 2f, 0f), new Vector2(22f, 20f));
+            t.resizeTextForBestFit = true;
+            t.resizeTextMinSize = 9;
+            t.resizeTextMaxSize = t.fontSize;
             return t;
         }
 
@@ -400,7 +408,7 @@ namespace DotRPG
             var ic = UIFactory.Image(button, "Icon", Game.Art.Get(sprite), Color.white);
             ic.preserveAspect = true;
             ic.raycastTarget = false;
-            UIFactory.Place(ic.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(5f, 0f), new Vector2(26f, 26f));
+            UIFactory.Place(ic.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(UIFactory.FrameRim - 3f, 0f), new Vector2(22f, 22f)); // inside the rim
         }
     }
 }

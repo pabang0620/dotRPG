@@ -237,7 +237,7 @@ describe('GET /me와 액세스 토큰', () => {
       provider: 'dev',
       login_id: s.loginId,
       character_count: 0,
-      character_limit: 4,
+      character_limit: 6,
     });
   });
 

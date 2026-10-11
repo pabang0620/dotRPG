@@ -27,8 +27,13 @@ namespace DotRPG
             int slot = p.SlotOf(id);
             if (slot < 0) return;
             var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, -60), new Vector2(34, 26), new Color32(255, 211, 74, 235));
-            Label(badge.transform, "Key", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 16,
-                new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(34, 26), TextAnchor.MiddleCenter).color = new Color32(30, 24, 10, 255);
+            var key = Label(badge.transform, "Key", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 16,
+                new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(32, 24), TextAnchor.MiddleCenter);
+            key.color = new Color32(30, 24, 10, 255);
+            key.resizeTextForBestFit = true; // a long rebound key ("Space") shrinks inside the badge
+            key.resizeTextMinSize = 9;
+            key.resizeTextMaxSize = key.fontSize;
+            key.verticalOverflow = VerticalWrapMode.Truncate;
         }
 
         void BuildKeyBar(Transform side, Progression p, CareerSkill chosen)

@@ -111,7 +111,7 @@ namespace DotRPG
             lb.onClick.AddListener(AskLeave);
             UiButton.Attach(lb);
             var lt = UIFactory.Text(leave.transform, "Text", "마을로", 20, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(lt.rectTransform);
+            UIFactory.FitInFrame(lt);
 
             clock.gameObject.SetActive(false);
             roomMap.gameObject.SetActive(false);
@@ -136,7 +136,7 @@ namespace DotRPG
             b.onClick.AddListener(() => onClick());
             UiButton.Attach(b); // [UI]
             var t = UIFactory.Text(img.transform, "Text", label, UiTheme.ButtonFont, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(t.rectTransform);
+            UIFactory.FitInFrame(t);
         }
 
         void OnEnable()

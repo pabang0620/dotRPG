@@ -244,7 +244,7 @@ export async function logout(refreshToken: string): Promise<{ logged_out: true }
   return { logged_out: true };
 }
 
-export const CHARACTER_LIMIT = 4;
+export const CHARACTER_LIMIT = 6;
 
 export async function getMe(accountId: number) {
   const me = await repo.findMe(accountId);

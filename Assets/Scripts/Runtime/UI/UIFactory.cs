@@ -163,6 +163,24 @@ namespace DotRPG
             return text;
         }
 
+        /// <summary>On-screen thickness of the ui_btn / ui_btngray rim (8 px border sliced at this canvas scale).</summary>
+        public const float FrameRim = 12f;
+
+        /// <summary>
+        /// [UI] A label inside a bordered button: kept inside the rim (never drawn over the frame) and shrunk to fit
+        /// (down to 60% of its size, at least 11) instead of wrapping out above and below the button.
+        /// </summary>
+        public static Text FitInFrame(Text t, float sideInset = FrameRim - 2f, float vInset = 3f)
+        {
+            Stretch(t.rectTransform, sideInset, vInset, sideInset, vInset);
+            t.resizeTextForBestFit = true;
+            t.resizeTextMaxSize = t.fontSize;
+            t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(11, Mathf.RoundToInt(t.fontSize * .6f)));
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow = VerticalWrapMode.Truncate;
+            return t;
+        }
+
         public static Image Overlay(Transform parent, string name, Color color)
         {
             var img = Image(parent, name, Game.Art.Get("ui_white"), color);

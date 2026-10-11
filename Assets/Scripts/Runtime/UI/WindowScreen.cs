@@ -91,7 +91,8 @@ namespace DotRPG
             button.onClick.AddListener(() => onClick());
             UiButton.Attach(button); // [UI] hover / press / disabled feedback + hover sound
             var text = UIFactory.Text(img.transform, "Text", label, UiTheme.Size(font), Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(text.rectTransform);
+            // [UI] Inside the frame's rim and shrunk to fit: long labels used to run over the border or wrap out of the button.
+            UIFactory.FitInFrame(text, size.x < 70f ? 6f : UIFactory.FrameRim - 2f);
             return button;
         }
 

@@ -37,7 +37,11 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(Icon, Icon));
                 var label = UIFactory.Text(back.transform, "Label", "", 13, Color.white, TextAnchor.MiddleLeft, true);
                 label.raycastTarget = false;
-                label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                // [UI] "방진 3회 120초" can be wider than the chip: shrink to fit instead of running past its edge.
+                label.resizeTextForBestFit = true;
+                label.resizeTextMinSize = 9;
+                label.resizeTextMaxSize = label.fontSize;
+                label.verticalOverflow = VerticalWrapMode.Truncate;
                 UIFactory.Place(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Icon + 5f, 0f), new Vector2(ChipWidth - Icon - 7f, Height));
                 back.gameObject.SetActive(false);
                 v.slots.Add((icon, label, back));

@@ -1,3 +1,4 @@
+import { CHARACTER_LIMIT } from '../src/domains/auth/authService';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
@@ -191,16 +192,16 @@ describe('POST /characters', () => {
     expect([ra.status, rb.status].sort()).toEqual([201, 409]);
   });
 
-  it('동시 요청: 한 계정이 6개를 동시에 만들어도 4개를 넘지 못한다 + 슬롯 초과는 422', async () => {
+  it('동시 요청: 한 계정이 8개를 동시에 만들어도 6개를 넘지 못한다 + 슬롯 초과는 422', async () => {
     const s = await registerAccount(app);
-    const results = await Promise.all(Array.from({ length: 6 }, () => createChar(app, s, randomName())));
+    const results = await Promise.all(Array.from({ length: 8 }, () => createChar(app, s, randomName())));
     const ok = results.filter((r) => r.status === 201);
     const full = results.filter((r) => r.status === 422);
-    expect(ok).toHaveLength(4);
-    expect(full).toHaveLength(2);
+    expect(ok).toHaveLength(CHARACTER_LIMIT);
+    expect(full).toHaveLength(8 - CHARACTER_LIMIT);
     expect(full[0]?.body.errors.code).toBe('CHARACTER_LIMIT_REACHED');
     const me = await request(app).get('/me').set(auth(s));
-    expect(me.body.data.character_count).toBe(4);
+    expect(me.body.data.character_count).toBe(CHARACTER_LIMIT);
     // 삭제하면 슬롯이 하나 비워진다
     const del = await request(app).delete(`/characters/${ok[0]?.body.data.character.id}`).set(auth(s));
     expect(del.status).toBe(200);
@@ -252,7 +253,7 @@ describe('GET /characters, GET/DELETE /characters/:uuid', () => {
     await createChar(app, b, randomName());
     const res = await request(app).get('/characters').set(auth(a));
     expect(res.status).toBe(200);
-    expect(res.body.data.limit).toBe(4);
+    expect(res.body.data.limit).toBe(CHARACTER_LIMIT);
     expect(res.body.data.characters.map((c: { id: string }) => c.id)).toEqual([c1.body.data.character.id, c2.body.data.character.id]);
     expect(res.body.data.characters[0]).toMatchObject({ level: 1, map_id: 'village', pos: null });
     expect(res.body.data.characters[0].updated_at).toEqual(expect.any(String));

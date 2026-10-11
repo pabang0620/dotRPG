@@ -75,6 +75,15 @@ namespace DotRPG
 
         public int Count => items.Count;
 
+        /// <summary>[UI] A row label too long for its row shrinks to fit instead of wrapping out over the next row.</summary>
+        static void Shrink(Text t)
+        {
+            t.resizeTextForBestFit = true;
+            t.resizeTextMaxSize = t.fontSize;
+            t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(11, Mathf.RoundToInt(t.fontSize * .6f)));
+            t.verticalOverflow = VerticalWrapMode.Truncate;
+        }
+
         public Item AddButton(string label, Action submit, Func<bool> enabled = null)
         {
             var item = new Item { label = label, submit = submit, enabled = enabled };
@@ -109,12 +118,14 @@ namespace DotRPG
             item.labelText = UIFactory.Text(row, "Label", item.label, fontSize, textColor,
                 isOption || AlignLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter, dark);
             UIFactory.Stretch(item.labelText.rectTransform, 18f, 0f, isOption ? width * 0.55f : 18f, 0f); // option label ends where ◀ starts (0.45 of the row)
+            Shrink(item.labelText);
             if (isOption)
             {
                 // ◀ and ▶ are their own click areas at both ends of the value; the value sits between them.
                 float arrowW = fontSize * 1.8f;
                 item.valueText = UIFactory.Text(row, "Value", "", fontSize, textColor, TextAnchor.MiddleCenter, dark);
                 UIFactory.Stretch(item.valueText.rectTransform, width * 0.45f + arrowW, 0f, 18f + arrowW, 0f);
+                Shrink(item.valueText);
                 item.leftArrow = AddArrow(row, "ArrowLeft", index, -1, textColor);
                 UIFactory.Place(item.leftArrow.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(width * 0.45f, 0f), new Vector2(arrowW, rowHeight - 4f));
                 item.rightArrow = AddArrow(row, "ArrowRight", index, 1, textColor);
