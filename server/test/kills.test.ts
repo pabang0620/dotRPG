@@ -225,13 +225,14 @@ describe('POST /characters/:id/kills', () => {
     expect((await post(app, h, '/kills', forestKill)).status).toBe(200);
   });
 
-  it('난수 주입: 재료와 장비 드롭은 u <= 확률일 때만, 장비는 직업이 쓰는 것만', async () => {
+  it('난수 주입: 재료와 장비 드롭은 u <= 확률일 때만, 장비는 직업과 무관한 그 단계 풀에서', async () => {
     const h = await newHero(app, 'mage');
     setRng(fakeRng({ unit: 0, int: (min) => min }));
     const res = await post(app, h, '/kills', forestKill);
     const keys = res.body.data.drops.map((d: { item_key: string }) => d.item_key);
-    // 골드, 뼈 1개, 강화석 1개, 마력 정수 1개, 장비 1개(마법사 가중 목록의 첫 장비)
-    expect(keys).toEqual(['gold', 'mat_bone', 'mat_ore', 'mat_essence', 'eq_staff_1_c']);
+    // 골드, 뼈 1개, 강화석 1개, 마력 정수 1개, 장비 1개(2026-10-11부터 직업 제한 없음: 그 단계 가중 목록의 첫 장비)
+    const tier0 = getGameData().economy.shop.equipmentList.find((e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === 0);
+    expect(keys).toEqual(['gold', 'mat_bone', 'mat_ore', 'mat_essence', tier0?.id]);
   });
 
   it('미수령 드롭이 상한이면 경험치만 인정하고 드롭 굴림은 건너뛴다', async () => {

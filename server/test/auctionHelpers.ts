@@ -4,7 +4,21 @@ import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { setClockOverride } from '../src/utils/clock';
 import { get, newHero, post, seedGold, seedItem, type Hero } from './economyHelpers';
-import { auth, createChar, randomName } from './helpers';
+import { getGameData } from '../src/gamedata/loader';
+import { auth, buildApp as buildBaseApp, createChar, randomName } from './helpers';
+
+/**
+ * The auction suites test auction rules (deposits, fees, limits, bids), not item balance: their fixture sword
+ * eq_sword_10_u keeps its pre-2026-10-11 shop price (31) so the gold arithmetic in them stays fixed when the gear
+ * sell prices change. Only this test process's in-memory copy changes; data files are untouched.
+ */
+export const IRON_FIXTURE_PRICE = 31;
+export function buildApp(envOverrides: Record<string, string> = {}): Express {
+  const app = buildBaseApp(envOverrides);
+  const iron = getGameData().economy.shop.equipment.get('eq_sword_10_u') as { sellPrice: number } | undefined;
+  if (iron) iron.sellPrice = IRON_FIXTURE_PRICE;
+  return app;
+}
 
 /** 서버 시계를 실제 시각에서 offsetMs만큼 앞으로 민다(0이면 실제 시각) */
 let offsetMs = 0;

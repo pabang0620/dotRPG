@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { countOf, expectLedgerConsistent, goldOf, newHero, post, seedItem, starterCount } from './economyHelpers';
+import { sellPriceOf } from '../src/domains/shop/sellPrice';
 
 const app = buildApp();
 beforeAll(resetDb);
@@ -71,10 +72,12 @@ describe('POST /characters/:id/shop/sell', () => {
     expect(await goldOf(h)).toBe(120);
     expect(await countOf(h, 'mat_bone')).toBe(6);
 
-    // 고급검 기본가 31, +2 이면 31 * 1.5 = 46.5 -> 47
+    // 고급검 기본가(데이터) x (1 + 0.25 x 2), .5는 올림. 강화 골드 상한(기본가 + 소비의 절반)과 작은 쪽
     await seedItem(h, 'eq_sword_10_u+2', 1);
     const b = await post(app, h, '/shop/sell', { item_key: 'eq_sword_10_u+2', count: 1 });
-    expect(b.body.data).toMatchObject({ unit_price: 47, total: 47 });
+    const unit = sellPriceOf('eq_sword_10_u+2');
+    expect(unit).toBeGreaterThan(sellPriceOf('eq_sword_10_u'));
+    expect(b.body.data).toMatchObject({ unit_price: unit, total: unit });
     await expectLedgerConsistent(h);
   });
 

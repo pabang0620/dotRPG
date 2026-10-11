@@ -20,7 +20,8 @@ import {
   mk,
   resetClock,
 } from './auctionHelpers';
-import { buildApp, resetDb, shutdown } from './helpers';
+import { resetDb, shutdown } from './helpers';
+import { buildApp } from './auctionHelpers';
 
 const app = buildApp();
 beforeEach(async () => {

@@ -8,7 +8,8 @@ import { runAuctionTick } from '../src/domains/auction/auctionTicker';
 import { limitsOf, type Reference } from '../src/domains/auction/auctionPricing';
 import { advance, bidReq, buyoutReq, expectConserved, flagKinds, HOUR, listIron, listReq, mk, resetClock } from './auctionHelpers';
 import { get, seedGold, seedItem, seedLevel, type Hero } from './economyHelpers';
-import { buildApp, createChar, randomLoginId, randomName, resetDb, shutdown, ver } from './helpers';
+import { createChar, randomLoginId, randomName, resetDb, shutdown, ver } from './helpers';
+import { buildApp } from './auctionHelpers';
 
 let app: Express;
 beforeEach(async () => {

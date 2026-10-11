@@ -1,7 +1,8 @@
 import type { Express } from 'express';
 import { registry } from '../src/domains/chat/realtimeNotifier';
 import { bidReq, cancelReq, listIron, mk, resetClock } from './auctionHelpers';
-import { buildApp, resetDb, shutdown } from './helpers';
+import { resetDb, shutdown } from './helpers';
+import { buildApp } from './auctionHelpers';
 import { connect, startServer, until, type TestServer, type WsClient } from './wsHelpers';
 import type { Hero } from './economyHelpers';
 

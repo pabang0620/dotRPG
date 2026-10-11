@@ -21,7 +21,8 @@ import {
   resetClock,
 } from './auctionHelpers';
 import { secondChar } from './auctionHelpers';
-import { auth, buildApp, resetDb, shutdown } from './helpers';
+import { auth, resetDb, shutdown } from './helpers';
+import { buildApp } from './auctionHelpers';
 
 // 쌍 한도는 넉넉히 두고(시세·속성 테스트), 쌍 한도 테스트가 직접 낮춘다
 let app = buildApp({ AUCTION_PAIR_DAILY_TRADES: '10000' });

@@ -15,7 +15,8 @@ import {
   resetClock,
   secondChar,
 } from './auctionHelpers';
-import { buildApp, resetDb, shutdown } from './helpers';
+import { resetDb, shutdown } from './helpers';
+import { buildApp } from './auctionHelpers';
 import { flagKinds } from './auctionHelpers';
 
 const app = buildApp();

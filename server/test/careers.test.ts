@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { careerIds, validateCareer, validCareerActive, type CareerState } from '../src/domains/characters/careerRules';
+import { careerIds, MAIN_HUNTERS, validateCareer, validCareerActive, type CareerState } from '../src/domains/characters/careerRules';
 import { getPool } from '../src/db/pool';
 import { auth, buildApp, createChar, emptyState, randomName, registerAccount, resetDb, shutdown, ver } from './helpers';
 const blank = (career=0):CareerState => ({schema:1,career,nodes:[],training:[],refunded:0,questStage:0,awakened:false});
@@ -31,11 +31,14 @@ describe('career invariants',()=>{
   expect(()=>validateCareer(s,s,character(),[],()=>false)).not.toThrow();
   expect(()=>validateCareer({...s,refunded:2},s,character(),[],()=>false)).toThrow();
  });
- test('each career has eight nodes and a distinct awakening',()=>{for(const ids of careerIds.slice(1))expect(ids.length).toBe(9);expect(new Set(careerIds.flat()).size).toBe(36);});
+ // 2026-10-11: the fighter has a 10th node outside the 2x4 tree (f_stance, index 9)
+ test('each career has eight nodes and a distinct awakening',()=>{careerIds.slice(1).forEach((ids,k)=>expect(ids.length).toBe(k===0?10:9));expect(new Set(careerIds.flat()).size).toBe(37);expect(careerIds[1]?.[9]).toBe('f_stance');for(const id of MAIN_HUNTERS)expect(careerIds.flat()).toContain(id);});
  test('server rules match the compiled client catalog',()=>{
   const catalog=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8')) as {skills:{id:string;career:number;index:number;level:number}[]};
   expect(catalog.skills.length).toBe(36);
-  for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual(careerIds[c]);
+  // careers.json (Unity export) predates f_stance and the Lv18 main-hunter rule (re-export pending): its first nine ids per
+  // career must still match the server order, and its levels the tier rule it was exported with.
+  for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual((careerIds[c]??[]).slice(0,9));
   for(const s of catalog.skills)expect(s.level).toBe(s.index===8?15:s.index%4<2?15:s.index%4===2?18:22);
  });
  test('renewal catalog exposes role mechanics while retaining saved node identities',()=>{

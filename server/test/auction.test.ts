@@ -21,7 +21,8 @@ import {
   resetClock,
   secondChar,
 } from './auctionHelpers';
-import { buildApp, resetDb, shutdown } from './helpers';
+import { resetDb, shutdown } from './helpers';
+import { buildApp } from './auctionHelpers';
 
 const app = buildApp();
 beforeEach(async () => {
@@ -299,7 +300,8 @@ describe('S9 귀속과 거래 불가', () => {
     expect((await listReq(app, h, body('mat_bone+3'))).body.errors.code).toBe('ITEM_UNKNOWN');
     // 같은 키의 귀속 재고와 거래 가능 재고가 섞여도 거래 가능한 것만 쓴다
     await seedItem(h, 'eq_ring_10_un', 1, 'bag', 'none');
-    expect((await listReq(app, h, body('eq_ring_10_un'))).status).toBe(201);
+    // (the unique ring's shop price rose with the 2026-10-11 gear prices: a buyout inside its 1~100x range)
+    expect((await listReq(app, h, { ...body('eq_ring_10_un'), buyout: 10000 })).status).toBe(201);
     expect(await bagRows(h.dbId, 'eq_ring_10_un')).toEqual([{ bind: 'character', count: 1 }]);
     // 후보 목록은 귀속별로 줄을 나눠 이유를 준다
     const s = await get(app, h, '/auction/sellable');
