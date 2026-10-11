@@ -189,7 +189,7 @@ namespace DotRPG
                 portalMarkers = WorldAtlas.LivePortals(world);
                 map.texture = shownTexture;
                 mapRect.sizeDelta = new Vector2(world.Bounds.width * pixelsPerTile, world.Bounds.height * pixelsPerTile);
-                label.text = world.Map != null ? world.Map.displayName : "";
+                label.text = world.Map != null ? world.Map.displayName + HuntingGrounds.LevelTag(world.Map.id) : "";
                 float plateWidth = Mathf.Clamp(label.preferredWidth + 24f, 150f, 260f);
                 labelPlate.rectTransform.sizeDelta = new Vector2(plateWidth, 30f);
                 label.rectTransform.sizeDelta = new Vector2(plateWidth - 14f, 24f);

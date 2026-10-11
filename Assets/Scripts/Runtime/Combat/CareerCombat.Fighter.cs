@@ -218,27 +218,28 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천검귀일: six striking swords rain onto the monsters in front inside a storm of extra swords (two more per
-        /// strike, for the look only, no damage), then the dark greatsword pins the centre.
+        /// 천검귀일: striking swords rain onto the monsters all around me (not just in front) inside a storm of extra
+        /// swords (two more per strike, for the look only, no damage), then the dark greatsword lands on me and
+        /// pins everything in its radius.
         /// </summary>
         IEnumerator SwordRain(Run c)
         {
-            // Swords go to the monsters in front first; with fewer than six they fall on the same ones again.
-            var foes = Fan(owner.Center, c.dir, c.n.range + 1f, 160f);
-            Vector2 zone = owner.Center + c.dir * c.n.range * .6f;
+            // Swords go to every monster within the range around me; with fewer than the strike count they fall on the same ones again.
+            var foes = Enemies(owner.Center, c.n.range + 1f);
+            Vector2 zone = owner.Center;
             for (int i = 0; i < Mathf.Max(6, c.s.hits); i++) // awakening hit count (9 after the 2026-10-06 balance)
             {
                 if (!Live(c)) yield break;
                 var foe = foes.Count > 0 ? foes[i % foes.Count] : null;
-                Vector2 point = foe != null && !foe.IsDead ? foe.Center + Random.insideUnitCircle * .35f : zone + Random.insideUnitCircle * 2f;
+                Vector2 point = foe != null && !foe.IsDead ? foe.Center + Random.insideUnitCircle * .35f : zone + Random.insideUnitCircle * c.n.range * .8f;
                 StartCoroutine(FallingSword(c, point, c.n.damage, 1.2f, .22f, false));
                 // [VFX] The storm: more swords land around the zone between the strikes (no damage, damage stays on the six).
                 for (int k = 0; k < 2; k++)
-                    StartCoroutine(RainSword(zone + Random.insideUnitCircle * (c.n.range * .45f), .18f + k * .06f));
+                    StartCoroutine(RainSword(zone + Random.insideUnitCircle * c.n.range, .18f + k * .06f));
                 yield return new WaitForSeconds(CutGap);
             }
-            Target(c.dir, c.n.range, out Vector2 center);
-            CareerFx.SwordDrop(center, .35f, CareerFx.Steel, 1.6f, true); // the finisher: the dark greatsword
+            Vector2 center = owner.Center;
+            CareerFx.SwordDrop(center, .35f, CareerFx.Steel, 1.6f, true); // the finisher: the dark greatsword, on me
             yield return new WaitForSeconds(.35f);
             if (!Live(c)) yield break;
             Pose(.3f, 2);

@@ -76,7 +76,7 @@ namespace DotRPG
         void Show(string target, Vector2 screen)
         {
             ShownTarget = target;
-            label.text = "→ " + (MapRegistry.Get(target)?.displayName ?? target);
+            label.text = "→ " + (MapRegistry.Get(target)?.displayName ?? target) + HuntingGrounds.LevelTag(target);
             box.sizeDelta = new Vector2(Mathf.Clamp(label.preferredWidth + 30, 190, 420), 44);
             var root = (RectTransform)box.parent;
             var canvas = root.GetComponent<Canvas>();

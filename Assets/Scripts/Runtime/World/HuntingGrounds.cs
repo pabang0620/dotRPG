@@ -72,6 +72,13 @@ namespace DotRPG
             new HuntingZone("hollow_depths", "B4 · 반딧불 심연", MapRegistry.Undergate, MapTheme.Underground, 50, 55, 53, 3, "hollow_guard", "hollow_hexer", "hollow_scarab"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
+
+        /// <summary>[UI] "  Lv.25~28" after a hunting ground's name (empty for towns and other maps).</summary>
+        public static string LevelTag(string id)
+        {
+            var z = Get(id);
+            return z == null ? "" : $"  <color=#ccb995>Lv.{z.minLevel}~{z.maxLevel}</color>";
+        }
         /// <summary>Enemy data may exceed the player cap in the underground world; ordinary fields keep the original cap.</summary>
         public const int MaxMonsterLevel = 60;
         public static int XpAt(int level, bool underground = false) => 20 + (Progression.BaseXpToNext(Math.Max(1, Math.Min(underground ? MaxMonsterLevel : Progression.MaxLevel, level))) - Progression.BaseXpToNext(1) + KillsPerLevel - 1) / KillsPerLevel;
