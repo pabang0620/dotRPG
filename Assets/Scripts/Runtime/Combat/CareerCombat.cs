@@ -48,6 +48,9 @@ namespace DotRPG
 
         /// <summary>[GUARDIAN] Every hit is nullified until then (강철의 보루, 응보의 방진's blocked blow).</summary>
         float invulnerableEnd;
+        /// <summary>[BISHOP] Standing in the 천상의 행진 sanctuary: my hits land 50% harder.</summary>
+        float sanctumEnd;
+        public float SanctumLeft => Mathf.Max(0f, sanctumEnd - Time.time);
         public void AddInvulnerable(float seconds) => invulnerableEnd = Mathf.Max(invulnerableEnd, Time.time + seconds);
 
         /// <summary>Set while a secondary hit (burn tick, counter blast) lands: passives and combo do not react to it.</summary>
@@ -111,6 +114,7 @@ namespace DotRPG
             frenzy = 0; frenzyEnd = 0;
             stanceOn = false;
             invulnerableEnd = 0;
+            sanctumEnd = 0;
             OathRadius = 0;
             hotSource = null;
             Cleanse();
@@ -160,6 +164,7 @@ namespace DotRPG
             if (secondaryDamage) return amount;
             float mult = Time.time < blessEnd ? 1 + bless / 100f : 1;
             if (Time.time < frenzyEnd) mult *= 1 + frenzy / 100f;
+            if (Time.time < sanctumEnd) mult *= 1.5f;
             if (broken.TryGetValue(enemy, out var until) && Time.time < until) mult *= 1.15f;
             if (Time.time < retalEnd) { mult *= 1 + (20 + 5 * (Prog.Rank("g_retal") - 1)) / 100f; retalEnd = 0; }
             int edge = Prog.Rank("f_edge");

@@ -63,6 +63,7 @@ namespace DotRPG
                 if (c.CounterLeft > 0f) Put(ref n, "buff_guard", "방진 " + Sec(c.CounterLeft));
                 if (c.OathLeft > 0f) Put(ref n, "buff_guard", "맹세 " + Sec(c.OathLeft));
                 if (c.RetaliationLeft > 0f) Put(ref n, "buff_power", "응보 " + Sec(c.RetaliationLeft));
+                if (c.SanctumLeft > 0f) Put(ref n, "buff_bless", "성역 +50%");
                 if (c.BlessLeft > 0f) Put(ref n, "buff_bless", "축복 " + Sec(c.BlessLeft));
                 if (c.HotLeft > 0f) Put(ref n, "buff_regen", "재생 " + Sec(c.HotLeft));
                 if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_power", "투지 " + Mathf.CeilToInt(p.Data.ScrollLeft / 60f) + "분"); // [CASH] 투지의 주문서

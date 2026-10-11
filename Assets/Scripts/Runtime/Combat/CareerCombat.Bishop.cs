@@ -67,7 +67,7 @@ namespace DotRPG
             // [VFX] W is life on the ground: a green lotus opens and turns slowly where it was cast (T is gold light from above).
             float k = c.n.radius / 1.25f;
             if (SkillFx.HasImage("fxi_life_lotus"))
-                SkillFx.Spawn("FxImg/fxi_life_lotus", at, new Color(.8f, 1f, .82f, .9f), c.s.duration + .3f, SkillFx.GroundOrder + 9).Spin(12f).Scale(new Vector2(k * .3f, k * .3f), new Vector2(k, k)).Fade(FxFade.Late);
+                SkillFx.Spawn("FxImg/fxi_life_lotus", at, new Color(.8f, 1f, .82f, .9f), c.s.duration + .3f, SkillFx.GroundOrder + 9).Scale(new Vector2(k * .3f, k * .3f), new Vector2(k, k)).Fade(FxFade.Late);
             else CareerFx.Clip("b_lotus", at, Vector2.zero, c.n.radius / 1.6f, 14f, VfxLayer.Ground, false, new Color(1f, 1f, 1f, .9f), false, c.s.duration + .3f).Squash(1f, .7f).FadeOut(.4f);
             Sound("heal", .6f);
             float interval = c.s.duration / c.s.hits;
@@ -229,25 +229,39 @@ namespace DotRPG
             yield break;
         }
 
+        /// <summary>
+        /// The sanctuary under the bishop: one steady gold sigil that follows the bishop's feet (no blinking, no turning).
+        /// Allies inside are healed every interval and hit 50% harder while they stand in it.
+        /// </summary>
         IEnumerator Sanctuary(Run c)
         {
             float interval = c.s.duration / c.s.hits;
             int amount = Mathf.Max(1, c.n.damage / 6);
-            for (int i = 0; i < c.s.hits; i++)
+            SkillFx sigil = SkillFx.HasImage("fxi_holy_sigil")
+                ? SkillFx.Spawn("FxImg/fxi_holy_sigil", owner.Position, new Color(1f, .92f, .62f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 9).Scale(3.2f, 3.2f).Fade(FxFade.Late)
+                : SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .9f, .55f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 14).Scale(new Vector2(2.8f, 1.95f), new Vector2(2.8f, 1.95f)).Fade(FxFade.Late);
+            float end = Time.time + c.s.duration, nextTick = Time.time + interval;
+            while (Time.time < end)
             {
-                yield return new WaitForSeconds(interval);
-                if (!Live(c)) yield break;
-                if (SkillFx.HasImage("fxi_holy_sigil"))
-                    SkillFx.Spawn("FxImg/fxi_holy_sigil", owner.Position, new Color(1f, .92f, .62f, .75f), interval, SkillFx.GroundOrder + 9).Spin(20f).Scale(new Vector2(3.1f, 3.1f), new Vector2(3.4f, 3.4f)).Fade(FxFade.InOut);
-                else SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .9f, .55f, .7f), interval, SkillFx.GroundOrder + 14).Scale(new Vector2(2.6f, 1.8f), new Vector2(3f, 2.1f)).Fade(FxFade.InOut);
-                foreach (var p in Allies(owner.Center, 4f))
+                if (!Live(c)) { if (sigil != null) sigil.Kill(); yield break; }
+                if (sigil != null) sigil.transform.position = owner.Position;
+                foreach (var p in Allies(owner.Center, SanctumRadius))
+                    if (c.authority) For(p).sanctumEnd = Time.time + .25f; // [BALANCE] +50% damage while inside
+                if (Time.time >= nextTick)
                 {
-                    Heal(c, p, amount);
-                    FootHeal(p, HolyGold);
-                    if (c.authority) { var st = For(p); st.hotSource = owner; st.hotEnd = Time.time + interval + .1f; }
+                    nextTick += interval;
+                    foreach (var p in Allies(owner.Center, SanctumRadius))
+                    {
+                        Heal(c, p, amount);
+                        FootHeal(p, HolyGold);
+                        if (c.authority) { var st = For(p); st.hotSource = owner; st.hotEnd = Time.time + interval + .1f; }
+                    }
                 }
+                yield return null;
             }
         }
+
+        const float SanctumRadius = 4f;
 
         /// <summary>신의 가호: every ally in reach (and the bishop) takes no damage for a moment, with a golden glow.</summary>
         void DivineGuard(Run c)
