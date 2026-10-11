@@ -38,6 +38,10 @@ namespace DotRPG
         public string Prerequisite => tier == 0 || kind == CareerSkillKind.Awakening ? null : CareerCatalog.For(career)[index == ExtraIndex ? 2 : index - 1].id;
         /// <summary>[FIGHTER] The node outside the 2x4 tree (파이터 검기 태세): needs 섬광보 (index 2), Lv18.</summary>
         public const int ExtraIndex = 9;
+        /// <summary>[BALANCE] Each career's spammable main hunting skill opens at the same level (Lv18): the hunt speeds up
+        /// sharply from there, so no career gets it much earlier or later. Server: careerRules.ts MAIN_HUNTERS.</summary>
+        public static readonly string[] MainHunters = { "f_break", "g_wall", "m_storm", "b_light" };
+        public const int MainHunterLevel = 18;
         public SkillGem Gem => new SkillGem { id = id, name = name, description = description, icon = Icon,
             kind = GemKind.Active, classOnly = CareerCatalog.Base(career), unlockLevel = level,
             slot = kind == CareerSkillKind.Awakening ? 4 : -1, damageMult = power, cooldown = cooldown,
@@ -108,7 +112,7 @@ namespace DotRPG
         static CareerSkill Make(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration, int hits, string synergy) => new CareerSkill {
             career=c,index=i,delivery=effect,id=id,name=name,description=desc,effect=effect,power=power,mp=mp,cooldown=cd,range=range,radius=radius,cast=cast,duration=duration,hits=hits,synergy=synergy,
             kind=i==8?CareerSkillKind.Awakening:(i==0||i==4)?CareerSkillKind.Passive:CareerSkillKind.Active,
-            branch=i<4||i==CareerSkill.ExtraIndex?0:1,tier=i==CareerSkill.ExtraIndex?2:i%4,level=i==8?15:i==CareerSkill.ExtraIndex||i%4==2?18:i%4<2?15:22 };
+            branch=i<4||i==CareerSkill.ExtraIndex?0:1,tier=i==CareerSkill.ExtraIndex?2:i%4,level=i==8?15:System.Array.IndexOf(CareerSkill.MainHunters,id)>=0||i==CareerSkill.ExtraIndex||i%4==2?18:i%4<2?15:22 };
         public static readonly CareerSkill[] All = Build();
         static CareerSkill[] Build()
         {
@@ -148,7 +152,7 @@ namespace DotRPG
                 S(b,2,"b_bloom","생명의 파문","시전 위치 반경 3.5m에 6초 동안 생명의 파문이 6번 퍼져 아군을 회복한다.","bloom",.8f,26,12,0,3.5f,.25f,6,6),
                 S(b,3,"b_cleanse","정화의 종","반경 4m에 종소리가 퍼져 아군의 저주·둔화를 풀고 회복한다. 적에게는 빛 피해(90%)와 밀어내기.","cleanse",1.4f,24,11,0,4,.2f),
                 S(b,4,"b_grace","축복의 그릇","보호막량 +12%. 같은 보호막은 합산 없이 큰 값으로 갱신.","grace",12,0,0,0,0,0),
-                S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",1.3f,4,0,7,.6f,.12f),
+                S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",.75f,3,0,7,.6f,.04f),
                 S(b,6,"b_wing","신의 가호","반경 5m 안의 아군과 자신을 1초 동안 모든 피해로부터 지킨다(무적). 바닥에 범위가 금색 원으로, 지켜진 사람 머리 위에 남은 무적 시간이 뜬다. 보스의 큰 공격을 받아 내는 순간에 쓴다.","sanctuary",0f,20,25,0,5,0f,1),
                 S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 30초.","bless",18,28,20,0,5,.3f,30),
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 6m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%.","dawn",4.5f,60,70,0,6,.7f,8,8,"비숍의 회복과 보호를 한 번에"),

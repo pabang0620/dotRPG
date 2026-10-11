@@ -290,7 +290,8 @@ namespace DotRPG
         {
             switch (s.effect)
             {
-                case "cross": case "light": case "heal": case "guard": case "blink": case "frenzy": case "nebula": case "sanctuary": return 0.1f;
+                case "light": return 0.04f; // [BALANCE] 심판의 광창: quick presses fire faster (about 6 a second)
+                case "cross": case "heal": case "guard": case "blink": case "frenzy": case "nebula": case "sanctuary": return 0.1f;
                 case "break": case "fire": case "ice": case "storm": case "orbit": case "taunt": return 0.15f;
                 case "flurry": return 0.7f;
                 case "iaido": case "bash": return 0.22f;

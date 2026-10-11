@@ -19,6 +19,8 @@ export const careerSchema = z.strictObject({
 });
 export type CareerStyle = z.infer<typeof styleSchema>;
 export type CareerState = z.infer<typeof careerSchema>;
+/** 직업별 주력 사냥기(연사기)는 모두 Lv18에 열린다(클라이언트 CareerSkill.MainHunters와 같다) */
+export const MAIN_HUNTERS = ['f_break', 'g_wall', 'm_storm', 'b_light'];
 export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge','f_break','f_focus','f_execute','f_awake','f_stance'],
  ['g_steel','g_guard','g_wall','g_oath','g_retal','g_taunt','g_bash','g_counter','g_awake'],
  ['m_elements','m_fire','m_ice','m_storm','m_flow','m_orbit','m_veil','m_rift','m_awake'],
@@ -65,7 +67,7 @@ function checkNodes(list: { id: string; rank: number }[], c: number, level: numb
   for(const n of list){
     const i=ids.indexOf(n.id);if(i<0||i===8) reject('WRONG_CAREER_OR_AWAKENING');
     // 9번(파이터 검기 태세)은 트리 밖 추가 노드: 섬광보(2번)를 선행으로, Lv18부터
-    const tier=i===9?2:i%4, need=tier<2?15:tier===2?18:22, before=i===9?2:i-1;
+    const tier=i===9?2:i%4, need=MAIN_HUNTERS.includes(n.id)?18:tier<2?15:tier===2?18:22, before=i===9?2:i-1;
     if(level<need) reject('NODE_LEVEL');
     if(tier>0&&!nodes.has(ids[before] as string)) reject('PREREQUISITE');
     spent+=n.rank*(n.rank+1)/2;
