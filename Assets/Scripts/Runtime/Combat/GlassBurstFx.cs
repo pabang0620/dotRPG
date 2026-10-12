@@ -14,7 +14,12 @@ namespace DotRPG
         static Sprite[] shardSprites;
 
         /// <summary>A line of space breaks like glass: shards thrown off both sides of it. No new line is drawn here.</summary>
-        public static void Burst(Vector2 a, Vector2 b, int count, int order)
+        public static void Burst(Vector2 a, Vector2 b, int count, int order) => Burst(a, b, count, order, Glass);
+
+        /// <summary>The fighter's pale-cyan glass; other skills pass their own tint (the guardian's gold wall).</summary>
+        public static readonly Color Glass = new Color(.62f, .86f, 1f);
+
+        public static void Burst(Vector2 a, Vector2 b, int count, int order, Color tint)
         {
             Vector2 d = (b - a).normalized, n = new Vector2(-d.y, d.x);
             var sprites = ShardSprites;
@@ -25,7 +30,7 @@ namespace DotRPG
                 // Mostly small slivers with a few large panes; small ones fly faster.
                 float size = Random.value < .25f ? Random.Range(.55f, .9f) : Random.Range(.18f, .45f);
                 Vector2 v = (n * side + d * Random.Range(-.6f, .6f)).normalized * Random.Range(4f, 9f) * Mathf.Lerp(1.2f, .7f, size);
-                Shard.Spawn(at, v, size, Random.Range(.7f, 1.05f), order, sprites[Random.Range(0, sprites.Length)]);
+                Shard.Spawn(at, v, size, Random.Range(.7f, 1.05f), order, sprites[Random.Range(0, sprites.Length)], tint);
             }
         }
 
@@ -63,7 +68,7 @@ namespace DotRPG
                         // A diagonal reflection band across the pane.
                         float band = Mathf.Abs((x - y) * .7071f + Size * .1f) < Size * .07f ? .55f : 0f;
                         float bodyA = .28f + band;
-                        var body = Color.Lerp(new Color(.62f, .86f, 1f), Color.white, band);
+                        var body = Color.Lerp(new Color(.8f, .8f, .8f), Color.white, band); // neutral: tinted per burst
                         var c = Color.Lerp(body, Color.white, rim);
                         c.a = Mathf.Lerp(bodyA, .95f, rim) * aa;
                         px[y * Size + x] = c;
@@ -99,9 +104,10 @@ namespace DotRPG
             SpriteRenderer pane, glint;
             Vector2 velocity;
             float spin, tumble, phase, life, age, size;
+            Color tint;
 
             /// <param name="size">World width of the shard.</param>
-            public static void Spawn(Vector2 at, Vector2 velocity, float size, float life, int order, Sprite sprite)
+            public static void Spawn(Vector2 at, Vector2 velocity, float size, float life, int order, Sprite sprite, Color tint)
             {
                 var go = new GameObject("GlassShard");
                 if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
@@ -124,6 +130,7 @@ namespace DotRPG
                 s.phase = Random.Range(0f, Mathf.PI * 2f);
                 s.life = life;
                 s.size = size;
+                s.tint = new Color(Mathf.Min(1f, tint.r * 1.25f), Mathf.Min(1f, tint.g * 1.25f), Mathf.Min(1f, tint.b * 1.25f));
                 s.Apply(0f);
             }
 
@@ -144,9 +151,9 @@ namespace DotRPG
                 float w = size * (1f - .3f * k);
                 transform.localScale = new Vector3(w * Mathf.Max(.12f, Mathf.Abs(turn)), w, 1f);
                 float fade = k < .6f ? 1f : 1f - (k - .6f) / .4f;
-                pane.color = new Color(1f, 1f, 1f, fade);
+                pane.color = new Color(tint.r, tint.g, tint.b, fade);
                 float glintA = Mathf.Pow(Mathf.Abs(turn), 8f) * fade;
-                glint.color = new Color(.9f, .97f, 1f, glintA);
+                glint.color = new Color(Mathf.Lerp(tint.r, 1f, .6f), Mathf.Lerp(tint.g, 1f, .6f), Mathf.Lerp(tint.b, 1f, .6f), glintA);
             }
         }
     }

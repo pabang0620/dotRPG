@@ -371,30 +371,124 @@ namespace DotRPG
             foreach (var e in Enemies(center, c.n.radius)) Strike(c, e, c.n.damage, center, 10f, 2, "c_arcane");
         }
 
+        /// <summary>
+        /// 천체 붕괴 (v2, 2026-10-12, Docs/PLAN_SKILL_VFX.md): one magic circle that completes and collapses. The outer ring
+        /// is drawn, then three rings complete one by one, each calling down its element's meteor and taking its colour
+        /// (fire, ice, lightning); the rings spin against each other and shrink to the centre, dragging the monsters in
+        /// (held, bosses too); the centre compresses to a point and the collapse bursts (150%), the rings flung outward.
+        /// </summary>
         IEnumerator Cataclysm(Run c)
         {
+            const float DrawOuter = .5f, PerElement = .5f, Spin = 1.3f, Press = .2f;
             Target(c.dir, c.n.range, out Vector2 center);
-            CareerFx.Clip("m_vortex", center, Vector2.zero, c.n.radius / 1.56f, 10f, VfxLayer.Ground, false, new Color(1f, 1f, 1f, .6f), false, 2f, true).Squash(1f, .72f).FadeOut(.4f);
-            string[] elements = { "fire", "ice", "storm" };
-            // Fire, ice and lightning stars fall in turn around the centre (more of them after the 2026-10-06 balance).
-            int stars = Mathf.Max(3, c.s.hits - 1);
-            for (int i = 0; i < stars; i++)
+            float R = c.n.radius;
+            int order = SkillFx.GroundOrder + 8;
+            var white = new Color(.85f, .92f, 1f);
+            var rings = new[]
             {
-                if (!Live(c)) yield break;
-                Vector2 ground = center + Rotate(c.dir, 90f + i * 360f / stars) * c.n.radius * .45f;
-                StartCoroutine(ElementStar(c, ground, elements[i % 3]));
-                yield return new WaitForSeconds(.3f);
+                RingFx.Spawn(center, R, white, order, "m4_ring_outer"),
+                RingFx.Spawn(center, R * .7f, white, order + 3, "m4_ring_mid"),
+                RingFx.Spawn(center, R * .42f, white, order + 6, "m4_ring_inner"),
+            };
+            var core = RingFx.Spawn(center, R * .22f, white, order + 9, "m4_core");
+            foreach (var ring in rings) ring.Reveal = 0f;
+            core.Reveal = 0f;
+            float[] radii = { R, R * .7f, R * .42f };
+            void KillAll() { foreach (var ring in rings) ring.Kill(); core.Kill(); }
+            // 1) The outer ring is drawn on the ground.
+            Sound("c_arcane", .6f);
+            for (float t = 0f; t < DrawOuter; t += Time.deltaTime)
+            {
+                if (!Live(c)) { KillAll(); yield break; }
+                rings[0].Reveal = t / DrawOuter;
+                rings[0].Spin = 20f * t;
+                yield return null;
             }
-            yield return new WaitForSeconds(.45f);
-            if (!Live(c)) yield break;
-            // The finale: a great arcane sphere sucks inward, flashes and bursts.
-            CareerFx.Gen("m2_cataclysm_collapse", "m_collapse", center, Vector2.zero, c.n.radius * 2.2f, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
-            yield return new WaitForSeconds(.22f);
-            if (!Live(c)) yield break;
-            CareerFx.Clip("impact", center, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet);
+            rings[0].Reveal = 1f;
+            // 2) Each ring completes and calls its element's meteor; the ring takes that element's colour as it lands.
+            string[] elements = { "fire", "ice", "storm" };
+            Color[] colors = { FireColor, IceColor, new Color(1f, .92f, .4f, .95f) };
+            for (int i = 0; i < 3; i++)
+            {
+                Vector2 ground = center + Rotate(c.dir, 90f + i * 120f) * R * .45f;
+                StartCoroutine(ElementStar(c, ground, elements[i]));
+                for (float t = 0f; t < PerElement; t += Time.deltaTime)
+                {
+                    if (!Live(c)) { KillAll(); yield break; }
+                    int ringIndex = Mathf.Min(2, i + 1);
+                    if (i < 2) rings[ringIndex].Reveal = t / PerElement;
+                    else core.Reveal = t / PerElement;
+                    // The ring of this element warms into its colour once the meteor lands (about 0.45 s).
+                    rings[i].Tint = Color.Lerp(i == 0 ? white : rings[i].Tint, colors[i], Mathf.Clamp01((t - .35f) / .15f));
+                    for (int k = 0; k < 3; k++) rings[k].Spin += (k % 2 == 0 ? 20f : -28f) * Time.deltaTime;
+                    yield return null;
+                }
+                rings[Mathf.Min(2, i + 1)].Reveal = 1f;
+            }
+            core.Reveal = 1f;
+            core.Tint = Color.Lerp(white, new Color(.75f, .55f, 1f), .6f);
+            // 3) The three rings spin against each other and shrink to the centre, dragging the monsters in.
+            var foes = Enemies(center, R * 1.15f);
+            if (c.authority) foreach (var e in foes) { e.Stagger(Spin + Press + .2f); StunStars.Attach(e); }
+            Sound("c_arcane", .8f);
+            float nextPull = 0f;
+            for (float t = 0f; t < Spin; t += Time.deltaTime)
+            {
+                if (!Live(c)) { KillAll(); yield break; }
+                float k = t / Spin, ease = k * k;
+                for (int i = 0; i < 3; i++)
+                {
+                    rings[i].Radius = Mathf.Lerp(radii[i], radii[i] * .3f, ease);
+                    rings[i].Spin += (i % 2 == 0 ? 1f : -1f) * Mathf.Lerp(60f, 540f, ease) * Time.deltaTime;
+                    rings[i].Brightness = 1f + ease;
+                }
+                core.Spin += 300f * Time.deltaTime;
+                core.Brightness = 1f + ease * 1.5f;
+                if (c.authority && t >= nextPull)
+                {
+                    nextPull = t + .2f;
+                    foreach (var e in foes) if (e != null && !e.IsDead) e.PullTowards(center, R * .55f, .25f);
+                }
+                yield return null;
+            }
+            // 4) The centre compresses to a point.
+            for (float t = 0f; t < Press; t += Time.deltaTime)
+            {
+                if (!Live(c)) { KillAll(); yield break; }
+                float k = t / Press;
+                for (int i = 0; i < 3; i++) { rings[i].Radius = Mathf.Lerp(radii[i] * .3f, R * .04f, k); rings[i].Brightness = 2.5f; }
+                core.Radius = Mathf.Lerp(R * .22f, R * .03f, k);
+                core.Brightness = 3f;
+                yield return null;
+            }
+            KillAll();
+            // 5) The collapse bursts and the rings are flung outward.
+            CareerFx.Gen("m2_cataclysm_collapse", "m_collapse", center, Vector2.zero, R * 2.2f, R / 1.4f, 22f, VfxLayer.Top, false);
+            CareerFx.Clip("impact", center, Vector2.zero, R / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet);
+            for (int i = 0; i < 3; i++) StartCoroutine(FlungRing(center, R, colors[i], order, .08f * i));
+            SkillVisuals.Flash(center, new Color(.9f, .8f, 1f, .85f), R * .8f, .2f);
+            if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
             Sound("c_heavy");
             Sound("c_arcane", .7f);
-            foreach (var e in Enemies(center, c.n.radius)) Strike(c, e, Mathf.RoundToInt(c.n.damage * 1.5f), center, 12f, 2, "c_arcane");
+            foreach (var e in Enemies(center, R)) Strike(c, e, Mathf.RoundToInt(c.n.damage * 1.5f), center, 12f, 2, "c_arcane");
+        }
+
+        /// <summary>A ring thrown outward from the collapse: it grows past the radius and fades.</summary>
+        IEnumerator FlungRing(Vector2 center, float R, Color color, int order, float delay)
+        {
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+            var ring = RingFx.Spawn(center, R * .1f, color, order);
+            ring.Width = .12f;
+            const float Life = .45f;
+            for (float t = 0f; t < Life; t += Time.deltaTime)
+            {
+                float k = t / Life;
+                ring.Radius = Mathf.Lerp(R * .1f, R * 1.15f, 1f - (1f - k) * (1f - k));
+                ring.Alpha = 1f - k;
+                ring.Brightness = 2f - k;
+                yield return null;
+            }
+            ring.Kill();
         }
 
         IEnumerator ElementStar(Run c, Vector2 ground, string element)

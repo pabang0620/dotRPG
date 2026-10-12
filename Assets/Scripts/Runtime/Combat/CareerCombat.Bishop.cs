@@ -253,29 +253,44 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// The sanctuary under the bishop: one steady gold sigil that follows the bishop's feet (no blinking, no turning).
-        /// Allies inside are healed every interval and hit 50% harder while they stand in it.
+        /// The sanctuary under the bishop (2026-10-12, Docs/PLAN_SKILL_VFX.md): a gold sanctum sigil with a slowly turning
+        /// rim that follows the bishop's feet. Each heal is visible: a ring of light closes from the rim to the centre and
+        /// light rises from every ally inside; allies standing in it (+50% damage) show a small gold arrow at their feet.
         /// </summary>
         IEnumerator Sanctuary(Run c)
         {
             float interval = c.s.duration / c.s.hits;
             int amount = Mathf.Max(1, c.n.damage / 6);
-            SkillFx sigil = SkillFx.HasImage("fxi_holy_sigil")
-                ? SkillFx.Spawn("FxImg/fxi_holy_sigil", owner.Position, new Color(1f, .92f, .62f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 9).Scale(3.2f, 3.2f).Fade(FxFade.Late)
-                : SkillFx.Spawn("fx_ring", owner.Position, new Color(1f, .9f, .55f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 14).Scale(new Vector2(2.8f, 1.95f), new Vector2(2.8f, 1.95f)).Fade(FxFade.Late);
-            float end = Time.time + c.s.duration, nextTick = Time.time + interval, nextMark = 0f;
+            var gold = new Color(1f, .88f, .5f);
+            string art = VfxLibrary.Has("b4_sanctum") ? "b4_sanctum" : null;
+            var rim = RingFx.Spawn(owner.Position, SanctumRadius, gold, SkillFx.GroundOrder + 9, art);
+            rim.Width = .07f;
+            rim.Alpha = .9f;
+            SkillFx oldSigil = art == null && SkillFx.HasImage("fxi_holy_sigil")
+                ? SkillFx.Spawn("FxImg/fxi_holy_sigil", owner.Position, new Color(1f, .92f, .62f, .7f), c.s.duration + .2f, SkillFx.GroundOrder + 8).Scale(3.2f, 3.2f).Fade(FxFade.Late)
+                : null;
+            float start = Time.time, end = Time.time + c.s.duration, nextTick = Time.time + interval, nextMark = 0f, nextArrow = 0f;
             while (Time.time < end)
             {
-                if (!Live(c)) { if (sigil != null) sigil.Kill(); yield break; }
-                if (sigil != null) sigil.transform.position = owner.Position;
+                if (!Live(c)) { rim.Kill(); if (oldSigil != null) oldSigil.Kill(); yield break; }
+                rim.Center = owner.Position;
+                rim.Spin = (Time.time - start) * 18f;
+                rim.Alpha = .9f * Mathf.Clamp01((end - Time.time) / .4f); // fades out at the end
+                if (oldSigil != null) oldSigil.transform.position = owner.Position;
                 if (c.authority && Time.time >= nextMark)
                 {
                     nextMark = Time.time + .2f; // refreshed 5 times a second, not every frame
                     foreach (var p in Allies(owner.Center, SanctumRadius)) For(p).sanctumEnd = Time.time + .35f; // [BALANCE] +50% damage while inside
                 }
+                if (Time.time >= nextArrow)
+                {
+                    nextArrow = Time.time + .7f;
+                    foreach (var p in Allies(owner.Center, SanctumRadius)) PowerArrow(p.Position, gold);
+                }
                 if (Time.time >= nextTick)
                 {
                     nextTick += interval;
+                    StartCoroutine(SanctumPulse(gold));
                     foreach (var p in Allies(owner.Center, SanctumRadius))
                     {
                         Heal(c, p, amount);
@@ -285,6 +300,37 @@ namespace DotRPG
                 }
                 yield return null;
             }
+            rim.Kill();
+            if (oldSigil != null) oldSigil.Kill();
+        }
+
+        /// <summary>A heal tick: a ring of light closes from the sanctum's rim to its centre (following the bishop).</summary>
+        IEnumerator SanctumPulse(Color color)
+        {
+            var ring = RingFx.Spawn(owner.Position, SanctumRadius, color, SkillFx.GroundOrder + 12);
+            ring.Width = .1f;
+            const float Life = .45f;
+            for (float t = 0f; t < Life; t += Time.deltaTime)
+            {
+                if (owner == null) break;
+                float k = t / Life;
+                ring.Center = owner.Position;
+                ring.Radius = Mathf.Lerp(SanctumRadius, .35f, k * k);
+                ring.Brightness = 1.6f;
+                ring.Alpha = 1f - k * .6f;
+                yield return null;
+            }
+            ring.Kill();
+        }
+
+        /// <summary>The +50% mark: a small gold upward arrow (^) that lights at an ally's feet and fades.</summary>
+        static void PowerArrow(Vector2 feet, Color color)
+        {
+            Vector2 tip = feet + new Vector2(0f, .32f);
+            var c = new Color(color.r, color.g, color.b, .85f);
+            int order = SkillFx.At(feet.y, -1);
+            GlowLineFx.Spawn(tip + new Vector2(-.22f, -.18f), tip, c, .07f, .55f, order);
+            GlowLineFx.Spawn(tip + new Vector2(.22f, -.18f), tip, c, .07f, .55f, order);
         }
 
         const float SanctumRadius = 4f;

@@ -91,11 +91,23 @@ namespace DotRPG
             return value.Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList();
         }
 
+        /// <summary>How long a skill's own scripted sequence runs (awakenings with phases), else 1.5 s.</summary>
+        static float ScriptedLength(string effect)
+        {
+            switch (effect)
+            {
+                case "xslash": return 3.2f;    // 천검귀일: cut, charge, crack, burst
+                case "cataclysm": return 4.2f; // 천체 붕괴: circle, three meteors, spin, collapse
+                case "aegis": return 3.2f;     // 천쇄방패: sigil, walls, close, burst
+                default: return 1.5f;
+            }
+        }
+
         IEnumerator RecordClip(CareerSkill s, PlayerController player)
         {
             const int Fps = 30, Lead = 10;
             // Long enough for the cast, its effect and the fade (the fighter awakening runs 3 s plus its burst).
-            float seconds = Mathf.Clamp(s.cast + Mathf.Max(s.duration, s.effect == "xslash" ? 3.2f : 1.5f) + 1.2f, 2.5f, 8f);
+            float seconds = Mathf.Clamp(s.cast + Mathf.Max(s.duration, ScriptedLength(s.effect)) + 1.2f, 2.5f, 8f);
             int frames = Lead + Mathf.CeilToInt(seconds * Fps);
             var numbers = player.Data.Stats.Skill(player.Class, s.kind == CareerSkillKind.Awakening ? 4 : 0, s.Gem, new SkillGem[0]);
             string dir = Path.Combine(folder, "clips", s.id);

@@ -250,44 +250,85 @@ namespace DotRPG
             yield break;
         }
 
-        /// <summary>천쇄방패: a leaping shield slam that stuns and taunts everything near, and shields the party.</summary>
+        /// <summary>
+        /// 천쇄방패 (v2, 2026-10-12, Docs/PLAN_SKILL_VFX.md): while the guardian leaps, a hex barrier sigil is drawn on the
+        /// ground; on the slam a ring of golden shield walls rises at its edge (monsters inside, bosses too, are held
+        /// and taunted, allies shielded), the walls close in for 1.8 s pulling the monsters together, snap shut and
+        /// burst into golden glass for the hit.
+        /// </summary>
         IEnumerator AegisSlam(Run c)
         {
-            Pose(.35f, 2);
+            const float Draw = .6f, Rise = .2f, Hold = 1.8f, Close = .15f;
+            Pose(Draw + .1f, 2);
             Vector2 at = owner.Center, feet = owner.Position;
-            // A giant shield falls from the sky onto the guardian's spot.
-            const float fall = .22f;
-            SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), feet + Vector2.up * 4.5f, Color.white, fall, SkillFx.TopOrder + 4).Move(Vector2.down * (4f / fall)).Scale(2.6f, 2.6f).Fade(FxFade.None);
-            GlowLineFx.Spawn(feet + Vector2.up * 5f, feet, new Color(.4f, .95f, .9f, .55f), .8f, fall + .1f, SkillFx.TopOrder + 3);
-            yield return new WaitForSeconds(fall);
-            if (!Live(c)) yield break;
-            SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), feet + Vector2.up * .9f, Color.white, .8f, SkillFx.At(feet.y, 6)).Scale(2.6f, 2.4f).Fade(FxFade.Late);
-            CareerFx.Clip("impact", feet, Vector2.zero, c.n.radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Teal);
-            // [VFX] The landing: a big slam (cracks, dust, rock spikes), teal and gold rings to the exact radius, a hex
-            // burst and a hard screen shake. (No ring of small shields: the user found tiny shields clutter.)
-            CareerFx.Slam(feet, c.n.radius * .7f, GTeal, true);
-            GuardRing(feet, c.n.radius, GTeal, .55f);
-            GuardRing(feet, c.n.radius, GGold, .45f, .07f);
-            CareerFx.Clip("g_hexburst", at, Vector2.zero, c.n.radius / 1.3f, 24f, VfxLayer.Top, false);
-            SkillFx.Crack(feet, c.n.radius, 1.8f);
-            Feel(2, Vector2.down);
-            if (owner.IsLocal) Game.Camera?.Shake(.3f, .35f);
-            Sound("c_heavy");
+            float r = c.n.radius;
+            int order = SkillFx.GroundOrder + 8;
+            // 1) The barrier sigil is drawn round the guardian's feet while it leaps.
+            var ring = RingFx.Spawn(feet, r, GGold, order, "g4_sigil");
+            ring.PictureScale = 1.05f;
+            ring.Reveal = 0f;
             Sound("c_shield");
-            foreach (var e in Enemies(at, c.n.radius))
-                if (Strike(c, e, c.n.damage, at, 12f, 2, "c_shield"))
+            for (float t = 0f; t < Draw; t += Time.deltaTime)
+            {
+                if (!Live(c)) { ring.Kill(); yield break; }
+                float k = t / Draw;
+                ring.Reveal = 1f - (1f - k) * (1f - k);
+                ring.Spin = -40f * t;
+                yield return null;
+            }
+            ring.Reveal = 1f;
+            // 2) The slam: walls rise at the edge, everything inside is held and taunted, allies are shielded.
+            CareerFx.Slam(feet, r * .7f, GTeal, true);
+            SkillFx.Crack(feet, r, 1.8f);
+            Feel(2, Vector2.down);
+            if (owner.IsLocal) Game.Camera?.Shake(.25f, .3f);
+            Sound("c_heavy");
+            var foes = Enemies(at, r);
+            foreach (var e in foes)
+            {
+                if (c.authority) { e.Stagger(Rise + Hold + Close + .15f); StunStars.Attach(e); }
+                Taunt(c, e, 4f);
+            }
+            foreach (var p in Allies(at, r + 1f)) GiveShield(c, p, .25f, c.s.duration);
+            var wall = ShieldWallFx.Spawn(feet, r * .95f, 12);
+            wall.Tint = GGold;
+            // 3) The walls stand, then close in slowly, brightening; the monsters are drawn toward the middle.
+            float nextPull = 0f;
+            for (float t = 0f; t < Rise + Hold; t += Time.deltaTime)
+            {
+                if (!Live(c)) { ring.Kill(); wall.Kill(); yield break; }
+                wall.Rise = Mathf.Clamp01(t / Rise);
+                float k = Mathf.Clamp01((t - Rise) / Hold), ease = k * k * (3f - 2f * k);
+                wall.Radius = Mathf.Lerp(r * .95f, r * .35f, ease);
+                wall.Brightness = 1f + ease * .9f;
+                ring.Brightness = 1f + ease * .8f;
+                ring.Spin = -40f * Draw - 25f * t;
+                if (c.authority && t >= nextPull)
                 {
-                    Stun(c, e, 1.5f);
-                    Taunt(c, e, 4f);
-                    // Chains of light burst from the ground and bind the monster.
-                    if (VfxLibrary.Has("g2_gold_chain"))
-                        // [VFX] Two golden light chains cross over the bound monster (g2_gold_chain).
-                        for (int k = -1; k <= 1; k += 2)
-                            CareerFx.Gen("g2_gold_chain", null, e.Center, new Vector2(1f, k * .7f).normalized, 1.7f, 0f, 1f, VfxLayer.Top, true, null, .9f)?.FadeOut(.3f);
-                    else
-                        for (int k = -1; k <= 1; k += 2) CareerFx.Clip("g_chain", e.Position + new Vector2(k * .35f, 0f), Vector2.zero, 1f, 22f, VfxLayer.AtFeet, false).FlipY(false);
+                    nextPull = t + .2f;
+                    foreach (var e in foes) if (e != null && !e.IsDead) e.PullTowards(feet, r * .38f, .25f);
                 }
-            foreach (var p in Allies(at, c.n.radius + 1f)) GiveShield(c, p, .25f, c.s.duration);
+                yield return null;
+            }
+            // 4) Snap shut.
+            Sound("c_shield");
+            for (float t = 0f; t < Close; t += Time.deltaTime)
+            {
+                if (!Live(c)) { ring.Kill(); wall.Kill(); yield break; }
+                wall.Radius = Mathf.Lerp(r * .35f, r * .08f, t / Close);
+                wall.Brightness = 2.2f;
+                yield return null;
+            }
+            // 5) The barrier bursts: golden glass, a shock ring to the radius, the hit.
+            wall.Shatter(order + 20);
+            ring.Kill();
+            CareerFx.Clip("impact", feet, Vector2.zero, r / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Teal);
+            GuardRing(feet, r, GGold, .5f);
+            SkillVisuals.Flash(at, new Color(1f, .9f, .55f, .8f), r * .9f, .18f);
+            Feel(2, Vector2.down);
+            if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
+            Sound("c_heavy");
+            foreach (var e in Enemies(feet, r)) Strike(c, e, c.n.damage, feet, 12f, 2, "c_shield");
         }
     }
 }
