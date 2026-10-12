@@ -23,6 +23,7 @@ namespace DotRPG
         /// <summary>1 = every shield has landed (they land one after another over about 0.7 s from the spawn).</summary>
         public float Landed => panes.Length == 0 ? 1f : Mathf.Clamp01((Time.time - spawnedAt) / ((panes.Length - 1) * Gap + FallTime));
         float spawnedAt;
+        bool picture; // a generated shield keeps its own shape and colours
         bool[] hit;
         public float Brightness = 1f;
         public Color Tint = new Color(1f, .85f, .4f);
@@ -37,6 +38,7 @@ namespace DotRPG
             string id = VfxLibrary.Has("g5_shield") ? "g5_shield" : VfxLibrary.Has("g4_wall") ? "g4_wall" : null;
             Sprite sprite = id != null && VfxLibrary.Get(id).Length > 0 ? VfxLibrary.Get(id)[0] : CodePane;
             fx.spawnedAt = Time.time;
+            fx.picture = id == "g5_shield";
             fx.paneWorldH = Mathf.Max(.01f, sprite.bounds.size.y);
             fx.paneWorldW = Mathf.Max(.01f, sprite.bounds.size.x);
             fx.pivotY = sprite.pivot.y / Mathf.Max(1f, sprite.rect.height); // generated panes are centred, the code pane stands on its foot
@@ -109,7 +111,7 @@ namespace DotRPG
 
         void Refresh()
         {
-            float h = PaneHeight;
+            float h = picture ? PaneHeight * 1.35f : PaneHeight; // the generated shield is narrower, so taller
             float b = Mathf.Max(0f, Brightness);
             for (int i = 0; i < panes.Length; i++)
             {
@@ -131,9 +133,9 @@ namespace DotRPG
                 float facing = Mathf.Lerp(.45f, 1f, Mathf.Abs(Mathf.Sin(angles[i])));
                 float span = Mathf.Clamp(2f * Mathf.PI * Radius / panes.Length * .9f, .35f, 2.6f);
                 float s = h / paneWorldH;
-                p.transform.localScale = new Vector3(span * facing / paneWorldW, s, 1f);
+                p.transform.localScale = picture ? new Vector3(s * facing, s, 1f) : new Vector3(span * facing / paneWorldW, s, 1f);
                 p.sortingOrder = SkillFx.At(foot.y, 6);
-                p.color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.85f * Mathf.Min(1f, b)));
+                p.color = picture ? Color.white : new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.85f * Mathf.Min(1f, b)));
                 // A white flash in the moment it stabs in, then the normal glow.
                 float land = k >= 1f ? Mathf.Clamp01(1f - (Time.time - spawnedAt - i * Gap - FallTime) / .2f) : 0f;
                 glows[i].color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.35f * (b - .5f) + land * .8f));

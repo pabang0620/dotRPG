@@ -296,5 +296,85 @@
   "frames": 4,
   "note": "2x2 four winged-laurel sanctum designs, center empty; 1024x1024 (converted from Flow JPEG, 1:1); Flow watermark sparkle may sit bottom-right; some pink/lavender glow tint",
   "mode": "grid"
+ },
+ {
+  "id": "m5_magma_a",
+  "file": "m5_magma_a.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four lava pool ground patches (round puddle, crescent, rock island, crack web); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m5_magma_b",
+  "file": "m5_magma_b.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four lava pool ground patches (star fissures, bubbling oval, basalt teeth rim, merged puddles); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m5_glacier_a",
+  "file": "m5_glacier_a.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four glacier ice crystal pillar clusters (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m5_glacier_b",
+  "file": "m5_glacier_b.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four glacier ice crystal pillar clusters, alt silhouettes (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m5_storm_a",
+  "file": "m5_storm_a.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four electric storm crystal clusters with lightning arcs (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m5_storm_b",
+  "file": "m5_storm_b.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four electric storm crystal clusters, alt silhouettes (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "g5_shield_a",
+  "file": "g5_shield_a.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four front-view light shields slamming down (lion, castle, sun, winged crest), light beam above; 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "g5_shield_b",
+  "file": "g5_shield_b.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four front-view light shields slamming down, alt silhouettes (regenerated once, first try had empty cell); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
  }
 ]

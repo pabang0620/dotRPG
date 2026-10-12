@@ -76,9 +76,11 @@ namespace DotRPG
             float bright = Mathf.Max(0f, Brightness);
             body.color = new Color(Mathf.Min(1f, .9f + .1f * bright), Mathf.Min(1f, .9f + .1f * bright), Mathf.Min(1f, .9f + .1f * bright), grow);
             glow.transform.position = Position + Vector2.up * (flat ? 0f : h * .35f);
-            glow.transform.localScale = new Vector3(Size * 1.4f * grow, Size * (flat ? .8f : 1.2f) * grow, 1f);
+            glow.transform.localScale = new Vector3(Size * 1.1f * grow, Size * (flat ? .7f : .9f) * grow, 1f);
             glow.sortingOrder = body.sortingOrder + 1;
-            glow.color = new Color(color.r, color.g, color.b, Mathf.Clamp01(.35f * pulse * bright) * grow);
+            // A soft halo only: the picture carries the look (a strong glow washed the ice into a grey cloud).
+            float halo = flat ? .3f : .14f;
+            glow.color = new Color(color.r, color.g, color.b, Mathf.Clamp01(halo * pulse * bright) * grow);
         }
     }
 }

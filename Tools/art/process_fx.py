@@ -41,6 +41,8 @@ TARGET = {
     # 2026-10-12 awakening parts (candidate sheets, 4 designs each; the chosen cell is copied to its final id)
     "g4_wall_v2": (192, 384, 1), "g4_wall_b_v2": (192, 384, 1),
     "b4_sanctum_v2": (384, 384, 1), "b4_sanctum_b_v2": (384, 384, 1),
+    "m5_magma_a": (384, 384, 1), "m5_magma_b": (384, 384, 1), "m5_glacier_a": (384, 384, 1), "m5_glacier_b": (384, 384, 1),
+    "m5_storm_a": (384, 384, 1), "m5_storm_b": (384, 384, 1), "g5_shield_a": (256, 384, 1), "g5_shield_b": (256, 384, 1),
 }
 DEFAULT = (128, 128, 14)
 
