@@ -13,6 +13,7 @@ namespace DotRPG
     {
         const float Size = 560f, In = 0.16f, Hold = 1.0f, Out = 0.24f, BandW = 900f;
         const int Lines = 9;
+        const float StageScale = .65f; // [UI] cut-in size on screen (2026-10-12: smaller)
 
         RectTransform portraitRt, nameRt;
         Image portrait, streak, streakEdge, flash;
@@ -31,7 +32,11 @@ namespace DotRPG
             v.flash.raycastTarget = false;
             UIFactory.Stretch(v.flash.rectTransform);
             // Colour band across the bottom-left (behind the character), with speed lines running through it.
-            v.streak = UIFactory.Image(root, "Streak", Game.Art.Get("ui_white"), Color.clear);
+            // Everything but the flash sits on a stage scaled down around the bottom-left corner.
+            var stage = UIFactory.Stretch(UIFactory.Rect(root, "Stage"));
+            stage.pivot = Vector2.zero;
+            stage.localScale = new Vector3(StageScale, StageScale, 1f);
+            v.streak = UIFactory.Image(stage, "Streak", Game.Art.Get("ui_white"), Color.clear);
             v.streak.preserveAspect = false;
             v.streak.raycastTarget = false;
             UIFactory.Place(v.streak.rectTransform, Vector2.zero, Vector2.zero, new Vector2(0f, 60f), new Vector2(BandW, 220f));
@@ -46,13 +51,13 @@ namespace DotRPG
                 l.raycastTarget = false;
                 v.lines[i] = l;
             }
-            v.portrait = UIFactory.Image(root, "Portrait", null, Color.white);
+            v.portrait = UIFactory.Image(stage, "Portrait", null, Color.white);
             v.portrait.preserveAspect = true;
             v.portrait.raycastTarget = false;
             v.portraitRt = v.portrait.rectTransform;
             UIFactory.Place(v.portraitRt, Vector2.zero, Vector2.zero, new Vector2(-Size, 0f), new Vector2(Size, Size));
             // The skill name, big, beside the character.
-            v.nameText = UIFactory.Text(root, "SkillName", "", 46, Color.white, TextAnchor.MiddleLeft, true);
+            v.nameText = UIFactory.Text(stage, "SkillName", "", 46, Color.white, TextAnchor.MiddleLeft, true);
             v.nameText.fontStyle = FontStyle.BoldAndItalic;
             v.nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
             v.nameText.raycastTarget = false;
