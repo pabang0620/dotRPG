@@ -55,6 +55,61 @@ namespace DotRPG
         /// <summary>The slit blows open: the edges fly apart and everything fades over 0.3 s.</summary>
         public void Explode() { if (explodeAt < 0f) explodeAt = age; }
 
+        /// <summary>
+        /// The burst along a finished cut: thin splinters of the same line fly off both sides (and a few along it),
+        /// so the explosion keeps the drawn line's thickness and length.
+        /// </summary>
+        public static void Shatter(Vector2 from, Vector2 to, Color color, float width, int count, int order)
+        {
+            Vector2 d = (to - from).normalized, n = new Vector2(-d.y, d.x);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 at = Vector2.Lerp(from, to, Random.Range(.05f, .95f));
+                float side = i % 2 == 0 ? 1f : -1f;
+                Vector2 dir = i % 5 == 4 ? d * (Random.value < .5f ? 1f : -1f) : (n * side + d * Random.Range(-.45f, .45f)).normalized;
+                Splinter.Spawn(at, dir, Random.Range(.5f, 1.3f), Random.Range(5f, 10f), color, width * Random.Range(.6f, 1f), Random.Range(.3f, .5f), order);
+            }
+        }
+
+        /// <summary>One flying splinter: a short thin streak that shoots out, slows down and fades.</summary>
+        sealed class Splinter : MonoBehaviour
+        {
+            LineRenderer line;
+            Vector2 at, dir;
+            Color color;
+            float len, speed, width, life, age;
+
+            public static void Spawn(Vector2 at, Vector2 dir, float len, float speed, Color color, float width, float life, int order)
+            {
+                var go = new GameObject("Splinter");
+                if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
+                var s = go.AddComponent<Splinter>();
+                s.at = at; s.dir = dir; s.len = len; s.speed = speed; s.color = color; s.width = width; s.life = life;
+                s.line = FxMaterials.NewLine(go.transform, FxMaterials.SoftAdditive, order);
+                s.line.positionCount = 2;
+                s.line.widthCurve = new AnimationCurve(new Keyframe(0f, .05f), new Keyframe(.7f, 1f), new Keyframe(1f, .3f));
+                s.Refresh();
+            }
+
+            void Update()
+            {
+                age += Time.deltaTime;
+                if (age >= life) { Destroy(gameObject); return; }
+                at += dir * speed * (1f - age / life) * Time.deltaTime;
+                Refresh();
+            }
+
+            void Refresh()
+            {
+                float k = 1f - age / life;
+                line.SetPosition(0, at - dir * len * (.4f + .6f * k));
+                line.SetPosition(1, at);
+                line.widthMultiplier = width;
+                line.startColor = new Color(color.r, color.g, color.b, 0f);
+                line.endColor = new Color(Mathf.Lerp(color.r, 1f, .6f), Mathf.Lerp(color.g, 1f, .6f), 1f, k);
+            }
+        }
+
         /// <summary>Removes it at once (the skill was interrupted).</summary>
         public void Kill() => Destroy(gameObject);
 

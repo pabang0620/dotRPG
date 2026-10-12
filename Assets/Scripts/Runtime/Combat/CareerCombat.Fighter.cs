@@ -304,23 +304,22 @@ namespace DotRPG
                 }
                 yield return null;
             }
-            // 3) The lines tear apart and blow out.
+            // 3) The lines tear apart, then burst into splinters of the same thin line, as long as the cross.
             first.Offset = second.Offset = Vector2.zero;
             first.Explode();
             second.Explode();
             Sound("c_slash");
             yield return new WaitForSeconds(Tear);
             if (!Live(c)) yield break;
-            // Shards only (the cross itself was the drawn lines): frames span about 70% of the strip cell.
-            string burstId = VfxLibrary.Has("f3_cross_burst3") ? "f3_cross_burst3" : "f3_cross_burst2";
-            float size = arm * 2f / .7f;
             // 4) Burst: the hit lands now (3 s after the cast).
-            if (VfxLibrary.Has(burstId)) CareerFx.Gen(burstId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, .5f, false, 6f / .5f);
-            else CareerFx.Clip("f_x", at, Vector2.right, 3f, 24f);
+            StrokeFx.Shatter(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, 26, order);
+            StrokeFx.Shatter(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, 26, order);
+            for (int i = 0; i < 8; i++)
+                SkillVisuals.Sparks(at + (i % 2 == 0 ? Vector2.right : Vector2.up) * Random.Range(-arm, arm), Color.Lerp(blue, Color.white, .5f), 3, 4f, .35f);
             Sound("c_heavy");
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
-            SkillVisuals.Flash(at, new Color(.75f, .92f, 1f, .9f), c.n.radius * 2.2f, .2f);
+            SkillVisuals.Flash(at, new Color(.75f, .92f, 1f, .7f), arm * 1.2f, .15f);
             foreach (var e in Enemies(at, c.n.radius))
                 if (Strike(c, e, Mathf.RoundToInt(c.n.damage * Mul), at, 10f, 2, "c_heavy"))
                     CareerFx.Clip("f_cut", e.Center, Vector2.right, 1.5f, 26f);
