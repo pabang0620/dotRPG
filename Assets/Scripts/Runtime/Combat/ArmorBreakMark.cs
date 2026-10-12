@@ -13,6 +13,7 @@ namespace DotRPG
         static Sprite left, right;
 
         EnemyController enemy;
+        Transform bar;
         SpriteRenderer a, b;
         float age;
 
@@ -21,6 +22,7 @@ namespace DotRPG
             if (enemy == null || enemy.IsDead || !enemy.ArmorBroken || enemy.GetComponent<ArmorBreakMark>() != null) return;
             var m = enemy.gameObject.AddComponent<ArmorBreakMark>();
             m.enemy = enemy;
+            m.bar = enemy.transform.Find("HealthBar");
             m.a = Half(enemy.transform, true);
             m.b = Half(enemy.transform, false);
             m.LateUpdate();
@@ -75,7 +77,9 @@ namespace DotRPG
                 return;
             }
             age += Time.deltaTime;
-            float lift = 1.45f * enemy.Size + .06f * Mathf.Sin(age * 3f);
+            // Above the monster's health bar (its height differs by monster); bosses have no bar over the head.
+            float baseY = bar != null ? bar.localPosition.y + .8f : 1.45f * enemy.Size;
+            float lift = baseY + .06f * Mathf.Sin(age * 3f);
             float split = .04f + .03f * (.5f + .5f * Mathf.Sin(age * 2.2f));
             int order = YSort.OrderFor(enemy.Position.y) + 25;
             a.transform.localPosition = new Vector3(-split, lift, 0f);

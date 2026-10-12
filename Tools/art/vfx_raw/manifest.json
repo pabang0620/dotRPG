@@ -268,26 +268,6 @@
   "mode": "grid"
  },
  {
-  "id": "m6_nebula_a",
-  "file": "m6_nebula_a.png",
-  "background": "black",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four swirling purple-navy nebula clouds with star specks, black bg for additive (regenerated once: first try had white watermark/overflow); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
-  "id": "m6_nebula_b",
-  "file": "m6_nebula_b.png",
-  "background": "black",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four swirling indigo-cyan nebula clouds, alt designs, black bg for additive; 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
   "id": "m6_marks_a",
   "file": "m6_marks_a.png",
   "background": "magenta",
@@ -325,6 +305,16 @@
   "rows": 2,
   "frames": 4,
   "note": "2x2 four hexagonal magic circles, alt designs, black bg for additive (regenerated once); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m6_cloud_a",
+  "file": "m6_cloud_a.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 dark navy-purple storm clouds with lightning glow, magenta bg (Codex, Flow login unavailable); 1024x1024",
   "mode": "grid"
  }
 ]

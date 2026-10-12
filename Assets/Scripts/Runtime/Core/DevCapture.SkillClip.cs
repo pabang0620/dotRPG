@@ -122,7 +122,7 @@ namespace DotRPG
             switch (effect)
             {
                 case "xslash": return 3.2f;    // 천검귀일: cut, charge, crack, burst
-                case "cataclysm": return 7.6f; // 유성우: nebula, 4 s of comets, finale, marks fade
+                case "cataclysm": return 7.6f; // 유성우: storm cloud, 4 s of comets, finale, marks fade
                 case "aegis": return 3.2f;     // 천쇄방패: sigil, walls, close, burst
                 default: return 1.5f;
             }
