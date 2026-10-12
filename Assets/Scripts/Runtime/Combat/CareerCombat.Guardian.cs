@@ -270,11 +270,12 @@ namespace DotRPG
             var steel = new Color(.5f, .85f, 1f);
             var hexes = new[]
             {
-                RingFx.Spawn(feet, r, steel, order),
+                RingFx.Spawn(feet, r, steel, order, "g6_hex"), // the engraved hexagonal barrier circle (generated, additive)
                 RingFx.Spawn(feet, r * .66f, steel, order + 3),
                 RingFx.Spawn(feet, r * .3f, GGold, order + 6),
             };
             hexes[0].Width = .12f;
+            hexes[0].PictureScale = 1.06f; // the picture's hexagon spans 94% of its frame: its corners meet the drawn ones
             for (int i = 0; i < hexes.Length; i++) { hexes[i].Sides = 6; hexes[i].Corner = 90f + i * 30f; hexes[i].Reveal = 0f; }
             void KillHexes() { foreach (var h in hexes) h.Kill(); }
             Sound("c_shield");

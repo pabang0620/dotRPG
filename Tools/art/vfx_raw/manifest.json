@@ -111,36 +111,6 @@
   "note": "as requested; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right"
  },
  {
-  "id": "m2_meteor_fire",
-  "file": "m2_meteor_fire.png",
-  "background": "magenta",
-  "cols": 1,
-  "rows": 1,
-  "frames": 1,
-  "note": "single, diagonal TL to BR; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
-  "mode": "grid"
- },
- {
-  "id": "m2_meteor_ice",
-  "file": "m2_meteor_ice.png",
-  "background": "magenta",
-  "cols": 1,
-  "rows": 1,
-  "frames": 1,
-  "note": "single, diagonal TL to BR; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
-  "mode": "grid"
- },
- {
-  "id": "m2_meteor_storm",
-  "file": "m2_meteor_storm.png",
-  "background": "magenta",
-  "cols": 1,
-  "rows": 1,
-  "frames": 1,
-  "note": "single, diagonal TL to BR; source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
-  "mode": "grid"
- },
- {
   "id": "b2_feather",
   "file": "b2_feather.png",
   "background": "magenta",
@@ -278,66 +248,6 @@
   "mode": "grid"
  },
  {
-  "id": "m5_magma_a",
-  "file": "m5_magma_a.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four lava pool ground patches (round puddle, crescent, rock island, crack web); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
-  "id": "m5_magma_b",
-  "file": "m5_magma_b.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four lava pool ground patches (star fissures, bubbling oval, basalt teeth rim, merged puddles); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
-  "id": "m5_glacier_a",
-  "file": "m5_glacier_a.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four glacier ice crystal pillar clusters (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
-  "id": "m5_glacier_b",
-  "file": "m5_glacier_b.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four glacier ice crystal pillar clusters, alt silhouettes (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
-  "id": "m5_storm_a",
-  "file": "m5_storm_a.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four electric storm crystal clusters with lightning arcs (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
-  "id": "m5_storm_b",
-  "file": "m5_storm_b.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four electric storm crystal clusters, alt silhouettes (3/4 view); 1024x1024 (converted from Flow JPEG, 1:1)",
-  "mode": "grid"
- },
- {
   "id": "g5_shield_a",
   "file": "g5_shield_a.png",
   "background": "magenta",
@@ -355,6 +265,66 @@
   "rows": 2,
   "frames": 4,
   "note": "2x2 four front-view light shields slamming down, alt silhouettes (regenerated once, first try had empty cell); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m6_nebula_a",
+  "file": "m6_nebula_a.png",
+  "background": "black",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four swirling purple-navy nebula clouds with star specks, black bg for additive (regenerated once: first try had white watermark/overflow); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m6_nebula_b",
+  "file": "m6_nebula_b.png",
+  "background": "black",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four swirling indigo-cyan nebula clouds, alt designs, black bg for additive; 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m6_marks_a",
+  "file": "m6_marks_a.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 flat ground marks: fire crater, frost, lightning scorch, arcane navy pit (oblique, ~1.6:1); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "m6_marks_b",
+  "file": "m6_marks_b.png",
+  "background": "magenta",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 flat ground marks, alt designs: fire crater, frost, lightning scorch, arcane navy pit; 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "g6_hex_a",
+  "file": "g6_hex_a.png",
+  "background": "black",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four top-down hexagonal guardian barrier magic circles (steel blue/silver/gold lines), black bg for additive (regenerated once); 1024x1024 (converted from Flow JPEG, 1:1)",
+  "mode": "grid"
+ },
+ {
+  "id": "g6_hex_b",
+  "file": "g6_hex_b.png",
+  "background": "black",
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "note": "2x2 four hexagonal magic circles, alt designs, black bg for additive (regenerated once); 1024x1024 (converted from Flow JPEG, 1:1)",
   "mode": "grid"
  }
 ]

@@ -30,8 +30,7 @@ TARGET = {
     "m2_fireball": (128, 128, 16), "m2_fire_explosion": (192, 192, 18), "m2_ice_spear": (256, 64, 1),
     "m2_ice_shatter": (128, 128, 18), "m2_lightning_bolt": (256, 64, 20), "m2_lightning_hit": (128, 128, 20),
     "m2_charge_orb": (128, 128, 14), "m2_nebula_burst": (256, 256, 18), "m2_blink": (128, 128, 18),
-    "m2_rift": (256, 160, 10), "m2_meteor_fire": (128, 192, 1), "m2_meteor_ice": (128, 192, 1),
-    "m2_meteor_storm": (128, 192, 1),
+    "m2_rift": (256, 160, 10), 
     # 중력 균열 v3 (2026-10-12): floating gravity sphere, inward spiral, implosion.
     "m3_rift_core": (256, 256, 12), "m3_rift_inflow": (320, 320, 14), "m3_rift_implode": (384, 384, 18),
     # 3.3 bishop, 3.4 fighter, 3.5 guardian
@@ -41,8 +40,9 @@ TARGET = {
     # 2026-10-12 awakening parts (candidate sheets, 4 designs each; the chosen cell is copied to its final id)
     "g4_wall_v2": (192, 384, 1), "g4_wall_b_v2": (192, 384, 1),
     "b4_sanctum_v2": (384, 384, 1), "b4_sanctum_b_v2": (384, 384, 1),
-    "m5_magma_a": (384, 384, 1), "m5_magma_b": (384, 384, 1), "m5_glacier_a": (384, 384, 1), "m5_glacier_b": (384, 384, 1),
-    "m5_storm_a": (384, 384, 1), "m5_storm_b": (384, 384, 1), "g5_shield_a": (256, 384, 1), "g5_shield_b": (256, 384, 1),
+    "g5_shield_a": (256, 384, 1), "g5_shield_b": (256, 384, 1),
+    "m6_nebula_a": (384, 384, 1), "m6_nebula_b": (384, 384, 1), "m6_marks_a": (256, 256, 1), "m6_marks_b": (256, 256, 1),
+    "g6_hex_a": (384, 384, 1), "g6_hex_b": (384, 384, 1),
 }
 DEFAULT = (128, 128, 14)
 

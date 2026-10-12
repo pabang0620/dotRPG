@@ -402,11 +402,12 @@ namespace DotRPG
             void Nebula(float alpha, float t)
             {
                 if (nebula == null) return;
-                nebula.transform.position = center + Vector2.up * 2.4f;
-                float s = R * 1.5f / nebulaW * (1f + .04f * Mathf.Sin(t * 1.3f));
+                // High over the battle and see-through: it is the sky the comets come from, not a lid on the fight.
+                nebula.transform.position = center + Vector2.up * 4.2f;
+                float s = R * 1.1f / nebulaW * (1f + .04f * Mathf.Sin(t * 1.3f));
                 nebula.transform.localScale = new Vector3(s, s * .62f, 1f);
                 nebula.transform.rotation = Quaternion.Euler(0f, 0f, t * 6f);
-                nebula.color = new Color(nebulaTint.r, nebulaTint.g, nebulaTint.b, alpha);
+                nebula.color = new Color(nebulaTint.r, nebulaTint.g, nebulaTint.b, alpha * .5f);
             }
             void Cleanup() { if (nebula != null) Destroy(nebula.gameObject); }
             Sound("c_arcane", .7f);
@@ -416,7 +417,7 @@ namespace DotRPG
                 if (!Live(c)) { Cleanup(); yield break; }
                 clock += Time.deltaTime;
                 Nebula(.85f * t / Gather, clock);
-                if (Random.value < .35f) SkillVisuals.Sparks(center + Vector2.up * 2.4f + Random.insideUnitCircle * R * .5f, colors[3], 1, 1f, .4f);
+                if (Random.value < .35f) SkillVisuals.Sparks(center + Vector2.up * 4.2f + Random.insideUnitCircle * R * .4f, colors[3], 1, 1f, .4f);
                 yield return null;
             }
 
