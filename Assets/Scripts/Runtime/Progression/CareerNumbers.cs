@@ -50,7 +50,7 @@ namespace DotRPG
                 case "dawn":effect=$"적 피해 {Mathf.RoundToInt(d*2.5f/4.5f)} · 회복 {Heal(d)} · {Shield(.25f)} · 성역 {Heal(d/6)} × {s.hits}회";break;
                 default:effect=$"피해 {d}";break;
             }
-            return effect+$"\n{(n.usesLife?"HP":"MP")} {n.manaCost} · 재사용 {n.cooldown:0.##}초 · 시전 {s.cast:0.##}초";
+            return effect+$"\n{(n.usesLife?"HP":"MP")} {n.manaCost} · 재사용 {(s.id==SkillCaster.RushId?SkillCaster.RushCooldown:n.cooldown):0.##}초 · 시전 {s.cast:0.##}초";
         }
         public static string Passive(CareerSkill s,int rank)
         {

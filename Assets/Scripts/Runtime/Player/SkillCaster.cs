@@ -127,6 +127,7 @@ namespace DotRPG
         /// <summary>[FIGHTER] Party wire code for "섬광보 on the mobility key" (not one of the five skill slots).</summary>
         public const int RushSlot = 9;
         public const string RushId = "f_rush";
+        public const float RushCooldown = PlayerController.DashCooldown + .2f;
 
         /// <summary>[FIGHTER] 섬광보 is learned: the mobility key (Shift) casts it instead of the plain dash.</summary>
         public bool RushOnMobility
@@ -149,7 +150,8 @@ namespace DotRPG
                 if (owner.IsLocal) { GameEvents.RaiseToast("MP가 부족합니다."); Game.Audio.PlaySfx("cancel"); }
                 return false;
             }
-            cooldown = NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown;
+            // On Shift it keeps the plain dash's rhythm: the dash cooldown + 0.2 s (not the skill's own cooldown).
+            cooldown = NoCooldown ? Mathf.Min(RushCooldown, 0.2f) : RushCooldown;
             castEnd = Time.time + s.cast + CareerMoves.Recovery(s) + .08f;
             StartCoroutine(CareerCombat.For(owner).Cast(s, n, true)); // the dash goes where the player points, not at a monster
             Casted?.Invoke(owner, RushSlot); // [PARTY NET] the host replays it on member PCs
