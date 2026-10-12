@@ -69,6 +69,7 @@ namespace DotRPG
             cb.colorMultiplier = 1.25f;
             btn.colors = cb;
             btn.onClick.AddListener(() => { selectedSkill = s.id; Refresh(); });
+            if (s.kind != CareerSkillKind.Passive) bg.gameObject.AddComponent<SkillRangeHover>().skillId = s.id; // [UI] hover = range on the ground
             return bg;
         }
 

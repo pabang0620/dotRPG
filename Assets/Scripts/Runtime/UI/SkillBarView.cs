@@ -33,6 +33,10 @@ namespace DotRPG
         readonly Image[][] rims = new Image[SkillGems.Slots][];
         readonly Image[][] runners = new Image[SkillGems.Slots][];
         readonly float[] slotSize = new float[SkillGems.Slots];
+        // [UI] Range preview: hovering a slot draws its area on the ground (SkillRangePreview); its text sits above the bar.
+        readonly float[] slotX = new float[SkillGems.Slots];
+        Text rangeLabel;
+        string rangeShown;
 
         public static SkillBarView Create(Transform parent)
         {
@@ -48,6 +52,9 @@ namespace DotRPG
                 bg.preserveAspect = false;
                 UIFactory.Place(bg.rectTransform, Vector2.zero, Vector2.zero, new Vector2(x, 0f), new Vector2(s, s));
                 v.frames[i] = bg;
+                v.slotX[i] = x + s / 2f;
+                bg.raycastTarget = true; // [UI] hover = range preview (the slot has no click action)
+                bg.gameObject.AddComponent<SkillRangeHover>().slot = i;
 
                 v.icons[i] = UIFactory.Image(bg.transform, "Icon", null, Color.white);
                 UIFactory.Place(v.icons[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(s * 0.7f, s * 0.7f));
@@ -116,6 +123,12 @@ namespace DotRPG
             // Caption above the awakening slot.
             var caption = UIFactory.Text(root, "UltCaption", "각성", UiTheme.FontMin, new Color32(255, 214, 110, 255), TextAnchor.LowerCenter, true);
             UIFactory.Place(caption.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width - UltSize * 0.5f, UltSize + 1f), new Vector2(UltSize + 20f, 20f));
+            // Above the buff row (which sits right over the bar).
+            v.rangeLabel = UIFactory.Text(root, "RangeLabel", "", 16, new Color32(255, 240, 200, 255), TextAnchor.LowerCenter, true);
+            v.rangeLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            v.rangeLabel.raycastTarget = false;
+            UIFactory.Place(v.rangeLabel.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width / 2f, UltSize + 22f + 36f), new Vector2(width, 22f));
+            v.rangeLabel.enabled = false;
             return v;
         }
 
@@ -151,6 +164,16 @@ namespace DotRPG
             var player = Game.Player;
             if (player == null || player.Skills == null) return;
             var prog = Game.Session.Progression;
+            // Range preview text over the hovered slot.
+            int hovered = SkillRangePreview.Slot;
+            string text = hovered >= 0 ? SkillRangePreview.Label : "";
+            if (text != rangeShown)
+            {
+                rangeShown = text;
+                rangeLabel.text = text;
+                rangeLabel.enabled = text.Length > 0;
+                if (hovered >= 0) rangeLabel.rectTransform.anchoredPosition = new Vector2(slotX[hovered], rangeLabel.rectTransform.anchoredPosition.y);
+            }
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 var gem = prog.Active(i);
