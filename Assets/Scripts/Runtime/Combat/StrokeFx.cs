@@ -79,12 +79,12 @@ namespace DotRPG
             edgeA.SetPosition(0, a + half); edgeA.SetPosition(1, b + half);
             edgeB.SetPosition(0, a - half); edgeB.SetPosition(1, b - half);
             inner.SetPosition(0, a); inner.SetPosition(1, b);
-            edgeA.widthMultiplier = edgeB.widthMultiplier = width * .35f;
-            inner.widthMultiplier = width + split * 1.4f;
-            var edge = new Color(.92f, .97f, 1f, fade);
+            // Vivid from the first frame: a solid white core with a strong blue glow (thin, not faint).
+            edgeA.widthMultiplier = edgeB.widthMultiplier = width * .4f;
+            inner.widthMultiplier = width + split * 1.2f;
+            var edge = new Color(1f, 1f, 1f, fade);
             edgeA.startColor = edgeA.endColor = edgeB.startColor = edgeB.endColor = edge;
-            float glowA = Mathf.Clamp01((.45f + split * 2.5f) * flare) * fade;
-            inner.startColor = inner.endColor = new Color(color.r, color.g, color.b, color.a * glowA);
+            inner.startColor = inner.endColor = new Color(color.r, color.g, color.b, Mathf.Clamp01(color.a * flare) * fade);
             // The blade tip: bright while cutting, gone once the cut is complete.
             float tipA = t < 1f ? 1f : Mathf.Max(0f, 1f - (age - draw) / .12f);
             tip.transform.position = b;

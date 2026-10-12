@@ -258,50 +258,42 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천검귀일 (v3, 2026-10-12): a gigantic cross (+) that splits the air around the fighter. Two cuts (1.3 s) open
-        /// slits as the blade passes; the slits tremble and widen (1.4 s), then tear open (0.3 s) and burst for one big
-        /// hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
+        /// 천검귀일 (v4, 2026-10-12): a vivid, thin cross (+) cut around the fighter. A horizontal cut, then a vertical
+        /// one (1.3 s), the finished cross trembles harder and harder (1.4 s), its lines tear apart (0.3 s) and it bursts
+        /// for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
         /// </summary>
         IEnumerator XSlash(Run c)
         {
-            const float Cut = .55f, Gap = .2f, Draw = 1.3f, Widen = 1.4f, Tear = .3f, Mul = 10f, Width = .14f;
-            const float Total = Draw + Widen + Tear; // 3 s
+            const float Cut = .55f, Gap = .2f, Draw = 1.3f, Shake = 1.4f, Tear = .3f, Mul = 10f, Width = .1f;
+            const float Total = Draw + Shake + Tear; // 3 s
             Vector2 at = owner.Center;
-            var blue = new Color(.6f, .88f, 1f, .95f);
+            var blue = new Color(.45f, .8f, 1f, 1f);
             Pose(Total + .2f, 2);
             if (c.authority)
                 foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Total); StunStars.Attach(e); }
             SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .6f), Total, SkillFx.GroundOrder + 10)
                 .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
-            float arm = c.n.radius * 1.1f;
+            // The cross is drawn smaller than the area it hits (the ring shows the area).
+            float arm = c.n.radius * .75f;
             int order = SkillFx.TopOrder + 2;
-            // 1) Two cuts, top to bottom then left to right; each slit opens a little as the blade passes.
-            var vertical = StrokeFx.Spawn(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, Cut, order);
-            StrokeFx horizontal = null;
+            // 1) Horizontal cut (left to right), then the vertical cut (top to bottom).
+            var first = StrokeFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, Cut, order);
             Sound("c_slash");
-            for (float t = 0f; t < Draw; t += Time.deltaTime)
-            {
-                if (!Live(c)) { vertical.Kill(); horizontal?.Kill(); yield break; }
-                if (horizontal == null && t >= Cut + Gap)
-                {
-                    horizontal = StrokeFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, Cut, order);
-                    Sound("c_slash");
-                }
-                vertical.Split = Mathf.Min(t / Cut, 1f) * .06f;
-                if (horizontal != null) horizontal.Split = Mathf.Min((t - Cut - Gap) / Cut, 1f) * .06f;
-                yield return null;
-            }
-            if (horizontal == null) horizontal = StrokeFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, .01f, order);
-            // 2) The slits tremble and widen, light leaking out with sparks, harder as the burst nears.
+            yield return new WaitForSeconds(Cut + Gap);
+            if (!Live(c)) { first.Kill(); yield break; }
+            var second = StrokeFx.Spawn(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, Cut, order);
+            Sound("c_slash");
+            yield return new WaitForSeconds(Draw - Cut - Gap);
+            if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
+            // 2) The finished cross trembles, sparks crackling along it, harder as the burst nears.
             float nextSpark = 0f;
-            for (float t = 0f; t < Widen; t += Time.deltaTime)
+            for (float t = 0f; t < Shake; t += Time.deltaTime)
             {
-                if (!Live(c)) { vertical.Kill(); horizontal.Kill(); yield break; }
-                float k = t / Widen;
-                float split = .06f + k * k * .3f;
-                vertical.Split = horizontal.Split = split;
-                vertical.Offset = Random.insideUnitCircle * .05f * (.4f + k);
-                horizontal.Offset = Random.insideUnitCircle * .05f * (.4f + k);
+                if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
+                float k = t / Shake;
+                var jitter = Random.insideUnitCircle * Mathf.Lerp(.03f, .12f, k * k);
+                first.Offset = jitter;
+                second.Offset = jitter;
                 if (t >= nextSpark)
                 {
                     nextSpark = t + Mathf.Lerp(.12f, .04f, k);
@@ -310,18 +302,18 @@ namespace DotRPG
                 }
                 yield return null;
             }
-            // 3) The slits tear open: the edges fly apart.
-            vertical.Offset = horizontal.Offset = Vector2.zero;
-            vertical.Explode();
-            horizontal.Explode();
+            // 3) The lines tear apart and blow out.
+            first.Offset = second.Offset = Vector2.zero;
+            first.Explode();
+            second.Explode();
             Sound("c_slash");
             yield return new WaitForSeconds(Tear);
             if (!Live(c)) yield break;
-            // The v2 burst cross fills about half its frame: scale it so its arms match the drawn ones.
-            string burstId = VfxLibrary.Has("f3_cross_burst2") ? "f3_cross_burst2" : "f3_cross_burst";
-            float size = arm * 2f / (burstId == "f3_cross_burst2" ? .51f : .88f);
+            // Shards only (the cross itself was the drawn lines): frames span about 70% of the strip cell.
+            string burstId = VfxLibrary.Has("f3_cross_burst3") ? "f3_cross_burst3" : "f3_cross_burst2";
+            float size = arm * 2f / .7f;
             // 4) Burst: the hit lands now (3 s after the cast).
-            if (VfxLibrary.Has(burstId)) CareerFx.Gen(burstId, null, at, Vector2.zero, size * 1.05f, 0f, 24f, VfxLayer.Top, false, null, .6f, false, 8f / .6f);
+            if (VfxLibrary.Has(burstId)) CareerFx.Gen(burstId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, .5f, false, 6f / .5f);
             else CareerFx.Clip("f_x", at, Vector2.right, 3f, 24f);
             Sound("c_heavy");
             Feel(2, Vector2.down);
