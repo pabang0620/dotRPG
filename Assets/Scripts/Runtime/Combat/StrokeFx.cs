@@ -10,7 +10,9 @@ namespace DotRPG
     /// </summary>
     public class StrokeFx : MonoBehaviour
     {
-        const int Samples = 8;
+        // A LineRenderer reads its width curve only at its points: two points would give a zero-width line (both ends
+        // are needle-thin), so the slash is drawn through many points along its length.
+        const int Samples = 8, Points = 24;
 
         LineRenderer halo, slash, core;
         SpriteRenderer tip;
@@ -50,7 +52,7 @@ namespace DotRPG
         static LineRenderer Line(Transform parent, int order)
         {
             var line = FxMaterials.NewLine(parent, FxMaterials.SoftAdditive, order);
-            line.positionCount = 2;
+            line.positionCount = Points;
             return line;
         }
 
@@ -91,8 +93,7 @@ namespace DotRPG
 
             foreach (var line in new[] { halo, slash, core })
             {
-                line.SetPosition(0, a);
-                line.SetPosition(1, b);
+                for (int i = 0; i < Points; i++) line.SetPosition(i, Vector2.Lerp(a, b, i / (Points - 1f)));
                 line.widthCurve = shape;
             }
             halo.widthMultiplier = width * 7f * swell;
