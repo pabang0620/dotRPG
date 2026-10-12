@@ -256,5 +256,15 @@
   "rows": 2,
   "frames": 10,
   "note": "5x2, narrow gutters (>=20px per row, frames 1,5 hug cell edge); Codex RGB 1254x1254 opaque black; collapse, white point, shockwave"
+ },
+ {
+  "id": "f3_xslash",
+  "file": "f3_xslash.png",
+  "background": "black",
+  "cols": 5,
+  "rows": 2,
+  "frames": 10,
+  "note": "Codex (Flow browser busy) RGBA 1983x793, 5x2 wide-aspect cells; frame 6 burst+ring, frames 7-10 sparks; columns have no clean gutters (frames 2-3, 4-5 close, faint dust between), so grid mode; fading dim embers in gutters",
+  "mode": "grid"
  }
 ]
