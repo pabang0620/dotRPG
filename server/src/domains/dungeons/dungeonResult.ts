@@ -10,6 +10,7 @@ import { effectiveHp, attackCap, powerAllows } from '../kills/killRules';
 import { humanGroups, underlevelFactor } from '../antiabuse/contribution';
 import { killsOfRun } from '../kills/killRepository';
 import * as repo from './dungeonRepository';
+import { partyHpScaleOf } from './partyScale';
 import {
   clearXp,
   diffOf,
@@ -102,7 +103,7 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
   if (claimed < minClearSeconds(run)) reasons.push('TOO_FAST');
 
   const kills = await killsOfRun(ctx.client, run.id);
-  const hpMul = diff.hpMul * (eco.dungeons.partyHpScale[run.party_size - 1] ?? 1);
+  const hpMul = diff.hpMul * partyHpScaleOf(eco, run.humans, run.ai_count);
   const hpList = kills.map((k) => {
     const def = eco.monsters.get(k.monster_id);
     return def ? effectiveHp(eco, def, k.monster_level, hpMul) : 0;

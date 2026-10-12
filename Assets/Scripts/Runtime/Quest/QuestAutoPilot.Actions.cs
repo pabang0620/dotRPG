@@ -74,6 +74,7 @@ namespace DotRPG
             foreach (var e in EnemyController.Active)
             {
                 if (e == null || e.IsDead || !e.isActiveAndEnabled || !Matches(e, g.id)) continue;
+                if (unreachable.TryGetValue(e, out float until) && Time.time < until) continue;
                 float d = Vector2.Distance(e.Position, p.Position);
                 if (d < bestD) { bestD = d; best = e; }
             }
@@ -86,8 +87,23 @@ namespace DotRPG
                 if (Time.time < farWaitUntil) { status = g.label + " · 다음 몬스터를 찾는 중"; lastProgressAt = Time.time; lastPos = p.Position; return; }
             }
             else farWaitUntil = 0f;
+            if (best != chaseTarget) { chaseTarget = best; chaseSince = Time.time; }
             Fight(p, best.Position, best.Center, bestD);
+            // [MEASURE] Walking at a monster across water or a cliff for a while without getting closer: leave it for a
+            // moment and take another (it stopped 자동 사냥 with "길이 막혀" after 25 s, 0 kills a minute in 붉은 돌 고개).
+            if (Time.time - lastProgressAt > UnreachableSeconds && Time.time - chaseSince > UnreachableSeconds)
+            {
+                unreachable[best] = Time.time + UnreachableSkip;
+                lastProgressAt = Time.time;
+                chaseTarget = null;
+                if (unreachable.Count > 64) unreachable.Clear();
+            }
         }
+
+        const float UnreachableSeconds = 5f, UnreachableSkip = 15f;
+        readonly System.Collections.Generic.Dictionary<EnemyController, float> unreachable = new System.Collections.Generic.Dictionary<EnemyController, float>();
+        EnemyController chaseTarget;
+        float chaseSince;
 
         const float HuntNear = 4f, HuntFarWait = 3f;
         float farWaitUntil;
@@ -99,25 +115,49 @@ namespace DotRPG
         {
             input.next.aim = (center - p.Center).normalized;
             input.next.faceAim = true;
-            int spam = MeasureSkilled ? SpamSlot(p) : -1;
+            int spam = SpamSlot(p);
             float reach = p.Class == CharacterClass.Mage ? MageReach : AttackReach;
             if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * 0.85f, 6f));
             if (dist > reach) { WalkTo(p, pos, reach * 0.8f); return; }
             lastProgressAt = Time.time;
             if (MeasureSkilled) { SkilledTurn(p, spam); return; }
+            AutoTurn(p, spam);
+        }
+
+        float nextSpam;
+
+        /// <summary>
+        /// [BALANCE] Auto hunt plays a little worse than a person: one ready skill every 1.6-2.2 s (in key order, skipping empty,
+        /// cooling and unaffordable keys), the career's main hunting skill with a short pause after each cast, else basic attacks.
+        /// Measured 2026-10-13: pressing every key in turn every 2.4-3.2 s (empty ones too) and never the main skill made auto hunt
+        /// 15-50% of a practised player after the career change (Docs/PLAN_PLAYTEST_MEASURE_2026-10-12.md 4.2).
+        /// </summary>
+        void AutoTurn(PlayerController p, int spam)
+        {
+            if (p.Skills == null || p.Skills.IsCasting) return;
             if (Time.time >= nextSkill)
             {
-                // [BALANCE] Auto hunt plays a little worse than a person: a skill every 2.4-3.2 s, then a short pause.
-                nextSkill = Time.time + UnityEngine.Random.Range(2.4f, 3.2f);
-                nextAttack = Mathf.Max(nextAttack, Time.time + .5f);
-                // [FIGHTER] 검기 태세 is a toggle: switch it on once and never press it again while it is on.
-                var gem = p.Data.Progression.Active(skillSlot);
-                bool stanceOn = gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn;
-                if (!stanceOn) input.next.skillSlot = skillSlot;
-                // [SKILL 8] Q W E R then A S D (slots 0-3, 5-7); the awakening (4) is never auto-cast.
-                skillSlot = skillSlot >= SkillGems.Slots - 1 ? 0 : skillSlot == 3 ? 5 : skillSlot + 1;
+                nextSkill = Time.time + UnityEngine.Random.Range(1.6f, 2.2f);
+                for (int i = 0; i < SkillKeys.Length; i++)
+                {
+                    int slot = SkillKeys[(skillSlot + i) % SkillKeys.Length];
+                    var gem = p.Data.Progression.Active(slot);
+                    if (slot == spam || gem == null || !p.Skills.IsReady(slot) || !Affordable(p, slot)) continue;
+                    // [FIGHTER] 검기 태세 is a toggle: switch it on once and never press it again while it is on.
+                    if (gem.id == "f_stance" && CareerCombat.For(p).StanceOn) continue;
+                    input.next.skillSlot = slot;
+                    skillSlot = (skillSlot + i + 1) % SkillKeys.Length;
+                    nextAttack = Mathf.Max(nextAttack, Time.time + .5f);
+                    return;
+                }
             }
-            else if (Time.time >= nextAttack)
+            if (spam >= 0 && Time.time >= nextSpam && p.Skills.IsReady(spam) && Affordable(p, spam))
+            {
+                input.next.skillSlot = spam;
+                nextSpam = Time.time + UnityEngine.Random.Range(.35f, .6f);
+                return;
+            }
+            if (Time.time >= nextAttack)
             {
                 nextAttack = Time.time + UnityEngine.Random.Range(.5f, .7f); // was 0.25 s: auto hunt out-hit real players
                 input.next.attack = true;
@@ -126,7 +166,7 @@ namespace DotRPG
 
         static readonly int[] SkillKeys = { 0, 1, 2, 3, 5, 6, 7 };
 
-        /// <summary>[MEASURE] The key holding the career's spammable main hunting skill, or -1.</summary>
+        /// <summary>The key holding the career's spammable main hunting skill, or -1 (none before the career change).</summary>
         static int SpamSlot(PlayerController p)
         {
             foreach (int k in SkillKeys)

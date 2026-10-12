@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import request from 'supertest';
+import { getConfig } from '../src/config/env';
 import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { monsterXp, rollKillDrops } from '../src/domains/kills/killRules';
@@ -346,22 +347,30 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     expect(acc.rows.map((r) => r.kills_accepted)).toEqual([3, 2]);
   });
 
-  it('공급 한도는 멤버마다 센다(해골 숲 39지점 x 1.1 = 리스폰 25초에 43마리), 한도를 넘으면 KILL_REJECTED(멤버는 severity 1)', async () => {
+  it('공급 한도는 멤버마다 센다(해골 숲 39지점 x 1.1 = 리스폰 15초에 43마리), 한도를 넘으면 KILL_REJECTED(멤버는 severity 1)', async () => {
     const { M, sid } = await team(2);
     const m = M[0] as Hero;
-    for (let i = 0; i < 43; i++) {
-      advance(0.5);
-      const r = await kill(m, sid, 100 + i);
-      expect(r.status).toBe(200);
+    // 리스폰 15초 안에 43마리는 Lv1 전투력 상한(10초 창)에 먼저 걸린다. 이 테스트는 공급 한도만 보므로 전투력 판정을 넓힌다.
+    const pol = getConfig().policy as { powerAoeCap: number };
+    const aoe = pol.powerAoeCap;
+    pol.powerAoeCap = 1000;
+    try {
+      for (let i = 0; i < 43; i++) {
+        advance(0.34);
+        const r = await kill(m, sid, 100 + i);
+        expect(r.status).toBe(200);
+      }
+      advance(0.3);
+      const over = await kill(m, sid, 200);
+      expect(over.status).toBe(422);
+      expect(over.body.errors.code).toBe('KILL_REJECTED');
+      const an = await getPool().query("SELECT kind, severity FROM anomaly_log WHERE character_id = $1 AND kind = 'kill_supply'", [m.dbId]);
+      expect(an.rows).toEqual([{ kind: 'kill_supply', severity: 1 }]);
+      advance(30);
+      expect((await kill(m, sid, 201)).status).toBe(200);
+    } finally {
+      pol.powerAoeCap = aoe;
     }
-    advance(0.5);
-    const over = await kill(m, sid, 200);
-    expect(over.status).toBe(422);
-    expect(over.body.errors.code).toBe('KILL_REJECTED');
-    const an = await getPool().query("SELECT kind, severity FROM anomaly_log WHERE character_id = $1 AND kind = 'kill_supply'", [m.dbId]);
-    expect(an.rows).toEqual([{ kind: 'kill_supply', severity: 1 }]);
-    advance(30);
-    expect((await kill(m, sid, 201)).status).toBe(200);
   });
 
   it('화력 상한: 파티 세션은 활성 멤버 화력 합 x 1.15 로 판정한다(솔로 레벨 1 한도 10마리를 넘어 받고, 합이 작으면 거절)', async () => {

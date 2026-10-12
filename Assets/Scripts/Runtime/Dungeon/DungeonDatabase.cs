@@ -145,6 +145,9 @@ namespace DotRPG
         public const int RaidRevives = 3;
         /// <summary>Monster HP multiplier by party size 1..4 (head-count scaling).</summary>
         public static readonly float[] PartyHpScale = { 1.0f, 1.6f, 2.1f, 2.5f };
+        /// <summary>[MEASURE] An AI companion counts as this much of a person in <see cref="PartyHpScale"/> (it deals about
+        /// <see cref="MercenaryDatabase.DamageScale"/> of a player's damage; counted whole, raids with AI took 2.3-3.5x longer than solo).</summary>
+        public const float AiHpWeight = 0.4f;
 
         public const string Raid = "raid_skeleton_king";
         public const string RaidBargas = "raid_bargas";
@@ -215,6 +218,16 @@ namespace DotRPG
         };
 
         public static float PartyScale(int partySize) => PartyHpScale[Mathf.Clamp(partySize, 1, PartyHpScale.Length) - 1];
+
+        /// <summary>Head-count scaling for <paramref name="humans"/> people and <paramref name="ai"/> AI companions: AI count as
+        /// <see cref="AiHpWeight"/> of a person, between two table rows the value is interpolated. Same formula on the server.</summary>
+        public static float PartyScale(int humans, int ai)
+        {
+            float n = Mathf.Clamp(Mathf.Max(1, humans) + AiHpWeight * Mathf.Max(0, ai), 1f, PartyHpScale.Length);
+            int lo = Mathf.FloorToInt(n);
+            if (lo >= PartyHpScale.Length) return PartyHpScale[PartyHpScale.Length - 1];
+            return Mathf.Lerp(PartyHpScale[lo - 1], PartyHpScale[lo], n - lo);
+        }
 
         // ---------- Rooms ----------
 

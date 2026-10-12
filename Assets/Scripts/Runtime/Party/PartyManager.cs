@@ -38,6 +38,16 @@ namespace DotRPG
         public PlayerController Leader => Local;
         public int Count => members.Count;
         public bool HasCompanions => members.Count > 1;
+        /// <summary>AI members (hired mercenaries and story companions).</summary>
+        public int AiCount
+        {
+            get
+            {
+                int n = 0;
+                foreach (var m in members) if (m != null && m.Data != null && MercenaryDatabase.Get(m.Data.MercenaryId) != null) n++;
+                return n;
+            }
+        }
 
         /// <summary>A member was downed (HP 0). For the local player the game's own death flow runs as well.</summary>
         public event Action<PlayerController> MemberDowned;

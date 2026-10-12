@@ -31,7 +31,9 @@ namespace DotRPG
     /// <summary>Repeatable fields. Recommendations never gate entry behind a level, quest or dungeon clear.</summary>
     public static class HuntingGrounds
     {
-        public const float RespawnSeconds = 25f, RespawnSafeRadius = 4f;
+        /// <summary>[MEASURE] 25 -> 15 s (2026-10-13): measured practised hunting ran out of monsters at half the modelled kill rate
+        /// (walking to the next pack, waiting for respawns). Docs/PLAN_PLAYTEST_MEASURE_2026-10-12.md 4.2.</summary>
+        public const float RespawnSeconds = 15f, RespawnSafeRadius = 4f;
         /// <summary>Monsters per map spawn point (playtest: meet many more monsters, each worth less).</summary>
         public const int PackSize = 3;
         /// <summary>Kills an hour of steady field hunting assumed by the balance model (15 a minute, 75% of the time).</summary>

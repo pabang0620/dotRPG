@@ -131,7 +131,7 @@ namespace DotRPG
             if (NetHost) PartyNet.Current.HostRunStarted(dungeon.id, difficulty); // [PARTY NET] members follow
             StoryCompanions.Refresh(true); // [STORY] 카엘 fights in dungeons and raids too
             var party = Game.Party;
-            run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
+            run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1, party != null ? party.AiCount : 0);
             run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now, run.Difficulty);
             lockReason = run.RewardsLocked ? "ALREADY_CLAIMED" : null;
             // A final raid without the seal keys is a practice run: the clear still moves the story on.

@@ -10,6 +10,7 @@ import * as dungeonRepo from '../dungeons/dungeonRepository';
 import { finalizeCleared, holdRun, minClearSeconds, runContext, ELAPSED_SLACK_SECONDS, validateClear, type ClearContribution } from '../dungeons/dungeonResult';
 import { contributionsOf, hitsCap, isDisputed, type MemberDamage } from '../antiabuse/contribution';
 import { RANK_NAMES } from '../dungeons/dungeonRules';
+import { partyHpScaleOf } from '../dungeons/partyScale';
 import type { ResultBody, SettleBody } from '../dungeons/dungeonValidation';
 import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
@@ -316,7 +317,7 @@ async function validateHostReport(
   if (h.outcome === 'cleared' && h.elapsed_ms / 1000 < minClearSeconds(mine)) reasons.push('TOO_FAST');
   // 3. 화력 일관성
   const kills = await killsOfRun(ctx.client, mine.id);
-  const hpMul = diff.hpMul * (eco.dungeons.partyHpScale[mine.party_size - 1] ?? 1);
+  const hpMul = diff.hpMul * partyHpScaleOf(eco, mine.humans, mine.ai_count);
   const hpSum = kills.reduce((a, k) => {
     const def = eco.monsters.get(k.monster_id);
     return a + (def ? effectiveHp(eco, def, k.monster_level, hpMul) : 0);

@@ -25,6 +25,8 @@ namespace DotRPG
         /// <summary>The numbers of the difficulty (the raid has its own).</summary>
         public readonly DifficultyDef Numbers;
         public readonly int PartySize;
+        /// <summary>AI companions among <see cref="PartySize"/> (they weigh less in the HP scaling).</summary>
+        public readonly int AiCount;
 
         public DungeonRunState State = DungeonRunState.Playing;
         public int RoomIndex;
@@ -60,12 +62,13 @@ namespace DotRPG
 
         float lastHitAt = -100f;
 
-        public DungeonRun(DungeonDef dungeon, DungeonDifficulty difficulty, int partySize)
+        public DungeonRun(DungeonDef dungeon, DungeonDifficulty difficulty, int partySize, int aiCount = 0)
         {
             Dungeon = dungeon;
             Difficulty = dungeon != null && dungeon.isRaid && difficulty != DungeonDatabase.RaidHeroic ? DungeonDifficulty.Normal : difficulty;
             Numbers = DungeonDatabase.DifficultyFor(dungeon, difficulty);
             PartySize = Mathf.Clamp(partySize, 1, PartyManager.MaxMembers);
+            AiCount = Mathf.Clamp(aiCount, 0, PartySize - 1);
         }
 
         public int RoomCount => Dungeon.RoomCount;
@@ -75,7 +78,7 @@ namespace DotRPG
         public bool IsOver => State == DungeonRunState.Cleared || State == DungeonRunState.Failed;
 
         /// <summary>Monster HP multiplier: difficulty × party size.</summary>
-        public float HpMul => Numbers.hpMul * DungeonDatabase.PartyScale(PartySize);
+        public float HpMul => Numbers.hpMul * DungeonDatabase.PartyScale(PartySize - AiCount, AiCount);
         public float DamageMul => Numbers.damageMul;
 
         /// <summary>A hit by the local player at <paramref name="time"/>: continues the combo if the last one was at most 1.5 s ago.</summary>

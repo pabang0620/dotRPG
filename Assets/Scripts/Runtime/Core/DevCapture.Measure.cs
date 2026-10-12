@@ -14,7 +14,7 @@ namespace DotRPG
         // M1 hunting (20 grounds), M2 weekday dungeons with three AI companions, M3 raids (normal + heroic, solo and
         // solo + 3 AI). The hero is driven by 자동 사냥 (QuestAutoPilot, allowed in runs by MeasureAnywhere) at the
         // recommended level with rare +5 gear (epic for raids); damage, potions and deaths are real. Offline.
-        // Options: -measureOnly hunting|dungeons|raids, -measureMinutes N (hunting minutes per row, game time),
+        // Options: -measureOnly hunting|dungeons|raids, -measureZones a,b (hunting grounds), -measureMinutes N (hunting minutes per row, game time),
         // -measureScale N (time scale), -measureOut <file.json>.
         // =====================================================================================================
 
@@ -190,6 +190,8 @@ namespace DotRPG
         IEnumerator MeasureHunting(List<object> rows, float minutes, float scale)
         {
             // One hero per class (before the career) or career, levelled up zone by zone (a new game per row is slow).
+            // -measureZones a,b,c: only these hunting grounds (re-measuring a few with more minutes).
+            var zoneFilter = MeasureArg("-measureZones", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var plans = new List<(CharacterClass cls, Career career)> { (CharacterClass.Warrior, Career.None), (CharacterClass.Mage, Career.None) };
             plans.AddRange(MeasureCareers.Select(c => (CareerCatalog.Base(c), c)));
             foreach (var (cls, career) in plans)
@@ -199,6 +201,7 @@ namespace DotRPG
                 {
                     int lv = Mathf.Max(1, zone.monsterLevel);
                     if ((career == Career.None) != (lv < 15)) continue;
+                    if (zoneFilter.Length > 0 && System.Array.IndexOf(zoneFilter, zone.id) < 0) continue;
                     if (!made) { yield return MeasureHero(cls, career, lv, "r"); made = true; }
                     else MeasureLevel(cls, career, lv, "r");
                     Game.Flow.TravelTo(zone.id, true);

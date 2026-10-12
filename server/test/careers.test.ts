@@ -36,30 +36,30 @@ describe('career invariants',()=>{
  test('each career has eight nodes and a distinct awakening',()=>{careerIds.slice(1).forEach((ids,k)=>expect(ids.length).toBe(k===0||k===2?10:9));expect(new Set(careerIds.flat()).size).toBe(38);expect(careerIds[1]?.[9]).toBe('f_stance');expect(careerIds[3]?.[9]).toBe('m_barrier');for(const id of MAIN_HUNTERS)expect(careerIds.flat()).toContain(id);});
  test('server rules match the compiled client catalog',()=>{
   const catalog=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8')) as {skills:{id:string;career:number;index:number;level:number}[]};
-  expect(catalog.skills.length).toBe(36);
-  // careers.json (Unity export) predates f_stance and the Lv18 main-hunter rule (re-export pending): its first nine ids per
-  // career must still match the server order, and its levels the tier rule it was exported with.
-  for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual((careerIds[c]??[]).slice(0,9));
-  for(const s of catalog.skills)expect(s.level).toBe(s.index===8?15:s.index%4<2?15:s.index%4===2?18:22);
+  expect(catalog.skills.length).toBe(38);
+  // 2026-10-13 re-export: the ids per career match the server order (f_stance / m_barrier at index 9), and the levels follow
+  // the client rule (awakening 15, main hunters and tier 2 at 18; index 9 has its own level per career).
+  for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual(careerIds[c]??[]);
+  for(const s of catalog.skills)if(s.index!==9)expect(s.level).toBe(s.index===8?15:(MAIN_HUNTERS as readonly string[]).includes(s.id)||s.index%4===2?18:s.index%4<2?15:22);
  });
  test('renewal catalog exposes role mechanics while retaining saved node identities',()=>{
   const {skills}=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8'));
   const skill=(id:string)=>skills.find((s:{id:string})=>s.id===id);
-  expect(skill('f_awake')).toMatchObject({name:'천검귀일',range:5,hits:9});
+  expect(skill('f_awake')).toMatchObject({name:'천검귀일'});expect(skill('f_awake').radius).toBeCloseTo(10,5);
   expect(skill('f_break')).toMatchObject({name:'파쇄 검기',range:7,effect:'break'});
-  expect(skill('g_taunt').radius).toBeCloseTo(7.5,5);
+  expect(skill('g_taunt').radius).toBeCloseTo(10.5,5);
   expect(skill('g_bash').range).toBeCloseTo(2.2);
   expect(skill('m_storm').hits).toBe(5);expect(skill('m_storm').radius).toBeCloseTo(4.5,5);
   expect(skill('b_heal').radius).toBeCloseTo(7.5,5);
   expect(skill('b_bloom')).toMatchObject({duration:6,hits:6});
   expect(skill('b_awake')).toMatchObject({duration:12,hits:12});
   const active=skills.filter((s:{kind:number})=>s.kind!==0);
-  expect(new Set(active.map((s:{delivery:string})=>s.delivery)).size).toBe(28);
+  expect(new Set(active.map((s:{delivery:string})=>s.delivery)).size).toBe(30);
   expect(skill('f_cross')).toMatchObject({name:'십자참',delivery:'cross',mp:6,cooldown:2,hits:2});
   expect(skill('f_cross').range).toBeCloseTo(2.3,5);
-  expect(skill('f_flurry')).toMatchObject({name:'검귀 해방',delivery:'frenzy',mp:13,cooldown:45,duration:10});
+  expect(skill('f_flurry')).toMatchObject({name:'검귀 해방',delivery:'frenzy',mp:13,cooldown:62,duration:120});
   expect(skill('f_break').cooldown).toBe(0);expect(skill('g_wall').cooldown).toBe(0);
-  expect(skill('f_focus')).toMatchObject({name:'일섬',delivery:'iaido',range:6});
+  expect(skill('f_focus')).toMatchObject({name:'일섬',delivery:'iaido',range:9});
   expect(skill('f_rhythm').effect).toBe('swordflow');
   expect(skill('f_edge').effect).toBe('opening');
   expect(skill('g_awake')).toMatchObject({name:'천쇄방패',effect:'aegis',power:5});

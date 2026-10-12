@@ -347,6 +347,7 @@ namespace DotRPG.EditorTools
             var j = Doc();
             j.Arr("difficulties", Enumerable.Range(0, DungeonDatabase.DifficultyCount).Select(i => DungeonDatabase.Difficulty((DungeonDifficulty)i)), Difficulty);
             j.Arr("partyHpScale", DungeonDatabase.PartyHpScale, (o, v) => o.Val(v));
+            j.Num("aiHpWeight", DungeonDatabase.AiHpWeight);
             j.Num("dailyEntries", DungeonDatabase.DailyEntries).Bool("weekendOpensAll", true); // ResetClock.IsOpen
             j.Key("cards").Obj().Num("count", DungeonRewards.CardCount).Num("gearRareWeight", DungeonRewards.RareGearWeight).Num("gearDropTries", DungeonRewards.DropTries).End();
             j.Key("ranking").Obj().Num("timeMax", DungeonRanking.TimeMax).Num("hitsMax", DungeonRanking.HitsMax).Num("killsMax", DungeonRanking.KillsMax)

@@ -339,8 +339,8 @@ namespace DotRPG
                 && DungeonDatabase.SkeletonKing.RoomCount == 3 && DungeonDatabase.SkeletonKing.maxParty == 4
                 && Enumerable.Range(0, 4).Select(i => DungeonDatabase.Difficulty((DungeonDifficulty)i).revives).SequenceEqual(new[] { 5, 4, 3, 2 })
                 && Enumerable.Range(0, 4).Select(i => DungeonDatabase.Difficulty((DungeonDifficulty)i).recommendedLevel).SequenceEqual(new[] { 5, 12, 20, 27 })
-                && DungeonDatabase.RaidDifficulty.revives == 3 && Enumerable.Range(1, 4).Select(DungeonDatabase.PartyScale).SequenceEqual(new[] { 1f, 1.7f, 2.4f, 3f });
-            DCheck($"dungeon table: 5 weekday x (3 rooms + boss), raid 2 + boss, revives 5/4/3/2 raid 3, rec Lv 5/12/20/27, party HP 1/1.7/2.4/3, rooms={MapRegistry.Rooms.Count()}", data);
+                && DungeonDatabase.RaidDifficulty.revives == 3 && Enumerable.Range(1, 4).Select(i => DungeonDatabase.PartyScale(i)).SequenceEqual(new[] { 1f, 1.6f, 2.1f, 2.5f });
+            DCheck($"dungeon table: 5 weekday x (3 rooms + boss), raid 2 + boss, revives 5/4/3/2 raid 3, rec Lv 5/12/20/27, party HP 1/1.6/2.1/2.5, rooms={MapRegistry.Rooms.Count()}", data);
 
             // Save fields round trip (+ old saves without them).
             var p = new DungeonProgress();

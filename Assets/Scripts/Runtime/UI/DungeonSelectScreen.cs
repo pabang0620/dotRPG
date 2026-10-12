@@ -254,8 +254,8 @@ namespace DotRPG
             var names = new List<string> { "나" };
             if (party != null)
                 for (int i = 1; i < party.Members.Count; i++) if (party.Members[i] != null) names.Add(party.Members[i].DisplayName);
-            int size = names.Count;
-            partyText.text = $"<b>파티</b> <color=#ffe066>{size}/{def.maxParty}</color> · 체력 ×{DungeonDatabase.PartyScale(size):0.0}\n<size=15>{string.Join(" · ", names)}</size>";
+            int size = names.Count, ai = party != null ? party.AiCount : 0;
+            partyText.text = $"<b>파티</b> <color=#ffe066>{size}/{def.maxParty}</color> · 체력 ×{DungeonDatabase.PartyScale(size - ai, ai):0.0#}\n<size=15>{string.Join(" · ", names)}</size>";
 
             // Raid: its own schedule and reward status on one line where the difficulty buttons would be.
             raidLine.gameObject.SetActive(def.isRaid);

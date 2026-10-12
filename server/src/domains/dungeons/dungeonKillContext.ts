@@ -5,6 +5,7 @@ import { AppError } from '../../utils/AppError';
 import type { EconCtx } from '../economy/economyContext';
 import { rejected as rejectedBase, type KillTarget } from '../kills/killTarget';
 import * as repo from './dungeonRepository';
+import { partyHpScaleOf } from './partyScale';
 import { diffOf, roomKillCount, roomTotal } from './dungeonRules';
 
 const notPlaying = () => new AppError(409, '진행 중인 던전이 아닙니다.', 'RUN_NOT_PLAYING');
@@ -74,7 +75,7 @@ export async function resolveDungeonTarget(
 
   const diff = diffOf(eco, dungeon as NonNullable<typeof dungeon>, run.difficulty);
   if (!diff) throw rejected('kill_target', 3, { ...base, why: 'difficulty' });
-  const partyScale = eco.dungeons.partyHpScale[run.party_size - 1] ?? 1;
+  const partyScale = partyHpScaleOf(eco, run.humans, run.ai_count);
   const elapsedSec = (ctx.now.getTime() - run.started_at.getTime()) / 1000;
   const newKills = { ...run.room_kills, [key]: soFar + 1 };
 
