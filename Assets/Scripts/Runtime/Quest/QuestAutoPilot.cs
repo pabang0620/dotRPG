@@ -37,7 +37,12 @@ namespace DotRPG
         bool huntMode, huntForQuest;
         string huntTarget = "*";
 
-        static bool InHuntingGround => Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun);
+        static bool InHuntingGround => MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
+        /// <summary>[MEASURE] Dev-only (-dotrpgMeasure): 자동 사냥 also fights in dungeons and raids, to time them.</summary>
+        internal static bool MeasureAnywhere;
+        /// <summary>[MEASURE] Dev-only: fight like a practised player (spam the main hunting skill, cast skills as they come
+        /// ready) instead of auto hunt's deliberately slower pace, to time manual play.</summary>
+        internal static bool MeasureSkilled;
         /// <summary>[AUTO] For the HUD button state: 자동 사냥 can start on this map.</summary>
         public static bool CanHuntHere => InHuntingGround;
 
@@ -109,7 +114,7 @@ namespace DotRPG
         {
             var p = Game.Player;
             if (p == null || p.IsDead) return;
-            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast("던전 안에서는 자동 진행을 쓸 수 없습니다."); return; }
+            if (Game.Dungeon != null && Game.Dungeon.InRun && !MeasureAnywhere) { GameEvents.RaiseToast("던전 안에서는 자동 진행을 쓸 수 없습니다."); return; }
             on = true;
             goalKey = "";
             Acquire(p);
@@ -162,7 +167,7 @@ namespace DotRPG
             var p = Game.Player;
             if (p == null || Game.Quest == null || Game.World == null) { Stop(""); return; }
             if (p.IsDead) { Stop("쓰러져서 자동 진행을 멈췄습니다."); return; }
-            if (Game.Dungeon != null && Game.Dungeon.InRun) { Stop(""); return; }
+            if (Game.Dungeon != null && Game.Dungeon.InRun && !MeasureAnywhere) { Stop(""); return; }
             if (driven != p) Acquire(p); // the map was rebuilt with a new player body
             input.next = ActorCommand.None;
             // Conversations, windows and map changes pause the walk; it carries on afterwards.

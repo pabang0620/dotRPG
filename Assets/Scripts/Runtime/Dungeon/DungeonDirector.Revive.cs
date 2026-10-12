@@ -67,6 +67,9 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>[MEASURE] Dev-only: the revive a player would buy with a coin, without the coin.</summary>
+        internal void DevRevive() => DoRevive();
+
         void DoRevive()
         {
             var local = Game.Player;

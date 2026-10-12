@@ -92,12 +92,19 @@ namespace DotRPG
         const float HuntNear = 4f, HuntFarWait = 3f;
         float farWaitUntil;
 
+        /// <summary>Mages shoot from range instead of walking into sword reach (they took every hit standing next to the pack).</summary>
+        const float MageReach = 4.5f;
+
         void Fight(PlayerController p, Vector2 pos, Vector2 center, float dist)
         {
             input.next.aim = (center - p.Center).normalized;
             input.next.faceAim = true;
-            if (dist > AttackReach) { WalkTo(p, pos, AttackReach * 0.8f); return; }
+            int spam = MeasureSkilled ? SpamSlot(p) : -1;
+            float reach = p.Class == CharacterClass.Mage ? MageReach : AttackReach;
+            if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * 0.85f, 6f));
+            if (dist > reach) { WalkTo(p, pos, reach * 0.8f); return; }
             lastProgressAt = Time.time;
+            if (MeasureSkilled) { SkilledTurn(p, spam); return; }
             if (Time.time >= nextSkill)
             {
                 // [BALANCE] Auto hunt plays a little worse than a person: a skill every 2.4-3.2 s, then a short pause.
@@ -117,11 +124,54 @@ namespace DotRPG
             }
         }
 
+        static readonly int[] SkillKeys = { 0, 1, 2, 3, 5, 6, 7 };
+
+        /// <summary>[MEASURE] The key holding the career's spammable main hunting skill, or -1.</summary>
+        static int SpamSlot(PlayerController p)
+        {
+            foreach (int k in SkillKeys)
+            {
+                var gem = p.Data.Progression.Active(k);
+                if (gem != null && System.Array.IndexOf(CareerSkill.MainHunters, gem.id) >= 0) return k;
+            }
+            return -1;
+        }
+
+        static bool Affordable(PlayerController p, int slot)
+        {
+            var n = p.Skills.Numbers(slot);
+            return n.usesLife ? p.Health.Current > n.manaCost * 2 : p.Mana >= n.manaCost;
+        }
+
+        /// <summary>[MEASURE] A practised player's turn: other skills as they come ready, else the main skill, else a basic attack.</summary>
+        void SkilledTurn(PlayerController p, int spam)
+        {
+            if (p.Skills == null || p.Skills.IsCasting) return;
+            if (Time.time >= nextSkill)
+            {
+                nextSkill = Time.time + .3f;
+                for (int i = 0; i < SkillKeys.Length; i++)
+                {
+                    int slot = SkillKeys[(skillSlot + i) % SkillKeys.Length];
+                    if (slot == spam || !p.Skills.IsReady(slot) || !Affordable(p, slot)) continue;
+                    var gem = p.Data.Progression.Active(slot);
+                    if (gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn) continue;
+                    input.next.skillSlot = slot;
+                    skillSlot = (skillSlot + i + 1) % SkillKeys.Length;
+                    return;
+                }
+            }
+            if (spam >= 0 && p.Skills.IsReady(spam) && Affordable(p, spam)) { input.next.skillSlot = spam; return; }
+            if (Time.time >= nextAttack) { nextAttack = Time.time + .3f; input.next.attack = true; }
+        }
+
         void Heal(PlayerController p)
         {
             var h = p.Health;
             if (h == null || h.Max <= 0 || Time.time < nextHeal) return;
             if (h.Current < h.Max * 0.4f) { input.next.useHealing = true; nextHeal = Time.time + 3f; }
+            // MP runs dry in long hunts: drink a mana potion below 20% like a player would.
+            else if (p.MaxMana > 0 && p.Mana < p.MaxMana * 0.2f) { input.next.useMana = true; nextHeal = Time.time + 3f; }
         }
 
         Vector2 roamTarget;
