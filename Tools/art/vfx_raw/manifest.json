@@ -325,5 +325,45 @@
    1024,
    512
   ]
+ },
+ {
+  "id": "f3_glass_crack",
+  "file": "f3_glass_crack.png",
+  "background": "magenta",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); cells ~344x384 (NOT square), plus ~333x348 centered in each cell (spans ~97% of cell width, gutter ~11px); frames 1-8 progressive cracks along equal-armed plus; light sky-blue/white with some lavender tint in early frames; Flow watermark sparkle possible at bottom-right",
+  "mode": "grid"
+ },
+ {
+  "id": "f3_glass_shatter",
+  "file": "f3_glass_shatter.png",
+  "background": "magenta",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); same grid as f3_glass_crack, cells ~344x384; frames 1-4 plus bursts into big shards (1 still plus-shaped glow), 5-8 fading sparkles (7-8 nearly empty); blue-violet glow haze around shards blends with magenta, needs g<170 style keying or haze trim; Flow watermark sparkle at bottom-right of cell 8",
+  "mode": "grid"
+ },
+ {
+  "id": "f3_glass_shards",
+  "file": "f3_glass_shards.png",
+  "background": "magenta",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); 8 distinct static shard sprites, cells ~344x384, each shard 60-80% of cell, not exactly centered (bbox x40-303/387-645/738-981/1081-1326 y35-348 row1; row2 y415-737); magenta bg has slight darker vignette; watermark sparkle at bottom-right of cell 8",
+  "mode": "grid"
+ },
+ {
+  "id": "f3_glass_crack2",
+  "file": "f3_glass_crack2.png",
+  "background": "magenta",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); cells 344x384 (not square); thin plus lines with progressive angular cracks (frame 1 few, frame 8 full), pale sky-blue/white, ~10% non-magenta pixels; ref f3_glass_shards.png attached; replaces f3_glass_crack (filled plus block)",
+  "mode": "grid"
  }
 ]

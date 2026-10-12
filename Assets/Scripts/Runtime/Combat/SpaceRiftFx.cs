@@ -117,16 +117,28 @@ namespace DotRPG
         /// <summary>The rift snaps shut in a white flash and space breaks into shards that fly off and spin away.</summary>
         public void Shatter()
         {
-            Vector2 a = from + Offset, b = to + Offset;
-            GlowLineFx.Spawn(a, b, new Color(.8f, .95f, 1f, 1f), .35f, .25f, order + 3);
-            for (int i = 0; i < ShardsPerArm; i++)
-            {
-                Vector2 at = Vector2.Lerp(a, b, Random.Range(.04f, .96f)) + normal * Random.Range(-.2f, .2f);
-                float side = Random.value < .5f ? 1f : -1f;
-                Vector2 v = (normal * side + dir * Random.Range(-.5f, .5f)).normalized * Random.Range(3.5f, 8f);
-                Shard.Spawn(at, v, Random.Range(.25f, .7f), Random.Range(.6f, .85f), order + 3);
-            }
+            Burst(from + Offset, to + Offset, ShardsPerArm, order + 3);
             Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// A line of space breaks like glass: a thick white flash along it and shards thrown off both sides. Uses the
+        /// generated glass shard sprites (f3_glass_shards) when present, else plain triangles.
+        /// </summary>
+        public static void Burst(Vector2 a, Vector2 b, int count, int order)
+        {
+            Vector2 d = (b - a).normalized, n = new Vector2(-d.y, d.x);
+            GlowLineFx.Spawn(a, b, new Color(.8f, .95f, 1f, 1f), .6f, .3f, order);
+            var glass = VfxLibrary.Has("f3_glass_shards") ? VfxLibrary.Get("f3_glass_shards") : null;
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 at = Vector2.Lerp(a, b, Random.Range(.04f, .96f)) + n * Random.Range(-.2f, .2f);
+                float side = Random.value < .5f ? 1f : -1f;
+                Vector2 v = (n * side + d * Random.Range(-.5f, .5f)).normalized * Random.Range(3.5f, 8f);
+                // The last generated shard has the watermark corner: use the first seven.
+                var sprite = glass != null && glass.Length > 0 ? glass[Random.Range(0, Mathf.Min(7, glass.Length))] : null;
+                Shard.Spawn(at, v, Random.Range(.6f, 1.2f), Random.Range(.7f, .95f), order, sprite);
+            }
         }
 
         /// <summary>Removes it at once (the skill was interrupted).</summary>
@@ -182,7 +194,8 @@ namespace DotRPG
             Vector2 velocity;
             float spin, life, age, size;
 
-            public static void Spawn(Vector2 at, Vector2 velocity, float size, float life, int order)
+            /// <param name="size">World width of the shard.</param>
+            public static void Spawn(Vector2 at, Vector2 velocity, float size, float life, int order, Sprite sprite)
             {
                 var go = new GameObject("RiftShard");
                 if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
@@ -191,13 +204,13 @@ namespace DotRPG
                 var s = go.AddComponent<Shard>();
                 s.sr = go.AddComponent<SpriteRenderer>();
                 var sprites = ShardSprites;
-                s.sr.sprite = sprites[Random.Range(0, sprites.Length)];
+                s.sr.sprite = sprite != null ? sprite : sprites[Random.Range(0, sprites.Length)];
                 if (FxMaterials.Alpha != null) s.sr.sharedMaterial = FxMaterials.Alpha;
                 s.sr.sortingOrder = order;
                 s.velocity = velocity;
                 s.spin = Random.Range(360f, 900f) * (Random.value < .5f ? 1f : -1f);
                 s.life = life;
-                s.size = size;
+                s.size = size / Mathf.Max(.01f, s.sr.sprite.bounds.size.x); // the sprite's own width becomes `size`
                 go.transform.localScale = Vector3.one * size;
             }
 

@@ -257,10 +257,13 @@ namespace DotRPG
             yield return FallingSword(c, center, Mathf.RoundToInt(c.n.damage * 3.75f), c.n.radius, 0f, true);
         }
 
+        /// <summary>How much of a glass sheet cell the cracked cross fills (measured after processing).</summary>
+        const float CrackFill = .87f;
+
         /// <summary>
-        /// 천검귀일 (v5, 2026-10-12): a cross (+) that splits space around the fighter. A horizontal cut, then a vertical
-        /// one (1.3 s); the cuts crack open into dark slits that tremble (1.4 s), tear wide (0.3 s) and shatter into
-        /// shards of space for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
+        /// 천검귀일 (v6, 2026-10-12): a cross (+) that breaks space like glass. A horizontal cut, then a vertical one
+        /// (1.3 s); glass cracks spread along the cross while it trembles (1.4 s), the cut lines tear (0.3 s) and the
+        /// cross shatters into glass shards for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
         /// </summary>
         IEnumerator XSlash(Run c)
         {
@@ -274,7 +277,7 @@ namespace DotRPG
             SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .6f), Total, SkillFx.GroundOrder + 10)
                 .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
             // The cross is drawn smaller than the area it hits (the ring shows the area).
-            float arm = c.n.radius * .75f;
+            float arm = c.n.radius * .6f; // 2026-10-12: 20% smaller than .75
             int order = SkillFx.TopOrder + 2;
             // 1) Horizontal cut (left to right), then the vertical cut (top to bottom).
             var first = Swipe(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, Cut, order);
@@ -287,46 +290,35 @@ namespace DotRPG
             CutEnd(at + Vector2.down * arm, blue);
             yield return new WaitForSeconds(Draw - Cut - Gap - Cut * .7f);
             if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
-            // 2) Space cracks along the cut (Docs/PLAN_SKILL_VFX.md "공간 균열"): each line becomes a dark slit with white
-            //    rims, jagged cracks grow out of it and it trembles harder and harder. The world dims so it stands out.
-            first.Kill();
-            second.Kill();
-            var riftH = SpaceRiftFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, order);
-            var riftV = SpaceRiftFx.Spawn(at + Vector2.up * arm, at + Vector2.down * arm, order);
-            DimFx.Show(Shake + Tear + .3f, .35f);
+            // 2) The cut cross cracks like glass (f3_glass_crack2 spreads along the lines) and trembles harder and harder.
+            //    Without the art the drawn lines just tremble.
+            VfxPlayer crack = VfxLibrary.Has("f3_glass_crack2")
+                ? CareerFx.Gen("f3_glass_crack2", null, at, Vector2.zero, arm * 2f / CrackFill, 0f, 24f, VfxLayer.Top, false, null, Shake + Tear + .05f, false, 8f / Shake)
+                : null;
+            DimFx.Show(Shake + Tear + .3f, .25f);
             float nextSpark = 0f;
-            for (float t = 0f; t < Shake; t += Time.deltaTime)
+            for (float t = 0f; t < Shake + Tear; t += Time.deltaTime)
             {
-                if (!Live(c)) { riftH.Kill(); riftV.Kill(); yield break; }
-                float k = t / Shake, ease = k * k * (3f - 2f * k);
-                riftH.Gap = riftV.Gap = .35f * ease;
-                riftH.Cracks = riftV.Cracks = ease;
-                var jitter = Random.insideUnitCircle * Mathf.Lerp(.03f, .12f, k * k);
-                riftH.Offset = riftV.Offset = jitter;
+                if (!Live(c)) { crack?.Stop(); first.Kill(); second.Kill(); yield break; }
+                float k = Mathf.Clamp01(t / Shake), e = Mathf.Clamp01((t - Shake) / Tear);
+                var jitter = Random.insideUnitCircle * (t < Shake ? Mathf.Lerp(.03f, .12f, k * k) : .14f);
+                crack?.Place(at + jitter);
+                first.Offset = second.Offset = jitter;
+                // 3) The last 0.3 s: the cut lines tear apart and the cracked cross swells before it breaks.
+                if (e > 0f) { first.Explode(); second.Explode(); crack?.Resize(arm * 2f / CrackFill * (1f + .08f * e)); }
                 if (t >= nextSpark)
                 {
                     nextSpark = t + Mathf.Lerp(.12f, .04f, k);
                     float u = Random.Range(-.9f, .9f) * arm;
                     SkillVisuals.Sparks(at + (Random.value < .5f ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 2, 2.5f, .25f);
                 }
+                if (t >= Shake && t - Time.deltaTime < Shake) Sound("c_slash");
                 yield return null;
             }
-            // 3) The rift tears open fast, rims flaring.
-            Sound("c_slash");
-            for (float t = 0f; t < Tear; t += Time.deltaTime)
-            {
-                if (!Live(c)) { riftH.Kill(); riftV.Kill(); yield break; }
-                float e = t / Tear;
-                riftH.Gap = riftV.Gap = .35f + .55f * e * e;
-                riftH.Flare = riftV.Flare = e;
-                riftH.Cracks = riftV.Cracks = 1f;
-                riftH.Offset = riftV.Offset = Random.insideUnitCircle * .14f;
-                yield return null;
-            }
-            // 4) Shatter: the hit lands now (3 s after the cast).
-            riftH.Offset = riftV.Offset = Vector2.zero;
-            riftH.Shatter();
-            riftV.Shatter();
+            // 4) Shatter: the cross breaks into glass shards (f3_glass_shards) and the hit lands now (3 s after the cast).
+            crack?.Stop();
+            SpaceRiftFx.Burst(at + Vector2.left * arm, at + Vector2.right * arm, 24, order + 3);
+            SpaceRiftFx.Burst(at + Vector2.up * arm, at + Vector2.down * arm, 24, order + 3);
             Sound("c_heavy");
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
