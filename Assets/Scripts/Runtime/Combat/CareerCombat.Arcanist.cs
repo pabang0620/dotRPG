@@ -391,13 +391,15 @@ namespace DotRPG
             // Overlapping marks do not stack: a monster takes the mark damage at most once per tick.
             var markHitUntil = new System.Collections.Generic.Dictionary<EnemyController, float>();
 
-            // 1) The sky darkens and the storm cloud gathers over the area. The mage faces the viewer (it is a circle
-            //    around the mage, not aimed), and a ring on the ground shows the exact area the comets fall in.
+            // 1) The sky darkens and the storm cloud gathers high over the area. The mage faces the viewer (it is a
+            //    circle around the mage, not aimed). The cloud's shadow on the ground marks where the comets fall.
             owner.FaceTowards(owner.Position + Vector2.down);
-            var range = RingFx.Spawn(center, R, colors[3], SkillFx.GroundOrder + 8);
-            range.Squash = 1f;
-            range.Width = .06f;
-            range.Alpha = 0f;
+            var shadow = new GameObject("CloudShadow").AddComponent<SpriteRenderer>();
+            if (Fx.Root != null) shadow.transform.SetParent(Fx.Root, false);
+            shadow.sprite = Game.Art.Get("fx_glow");
+            if (FxMaterials.Alpha != null) shadow.sharedMaterial = FxMaterials.Alpha;
+            shadow.sortingOrder = SkillFx.GroundOrder + 2;
+            float shadowW = Mathf.Max(.01f, shadow.sprite.bounds.size.x);
             DimFx.Show(Gather + Rain + 1.4f, .35f);
             // A storm cloud as wide as the area hangs over it (m6_cloud, alpha blended; else a dark glow).
             var nebula = new GameObject("StormCloud").AddComponent<SpriteRenderer>();
@@ -412,20 +414,26 @@ namespace DotRPG
             void Nebula(float alpha, float t)
             {
                 if (nebula == null) return;
-                // Right over the mage, as wide as the area (the comets fall under it), drifting a little; now and then
-                // lit from inside by lightning. The picture is wider than tall, so it is stretched toward a round cloud.
-                nebula.transform.position = center + new Vector2(.15f * Mathf.Sin(t * .7f), R * .1f);
-                float s = R * 2.1f / nebulaW * (1f + .03f * Mathf.Sin(t * 1.1f));
-                nebula.transform.localScale = new Vector3(s, art ? s * 1.3f : s * .9f, 1f);
-                if (range != null) range.Alpha = alpha * .9f;
+                // High in the sky above the area (lifted, so it reads as overhead, not as fog around the fight),
+                // drifting a little and now and then lit from inside by lightning; its shadow darkens the area below.
+                nebula.transform.position = center + new Vector2(.15f * Mathf.Sin(t * .7f), R * .95f);
+                float s = R * 2f / nebulaW * (1f + .03f * Mathf.Sin(t * 1.1f));
+                nebula.transform.localScale = new Vector3(s, art ? s : s * .55f, 1f);
+                if (shadow != null)
+                {
+                    shadow.transform.position = center + new Vector2(.15f * Mathf.Sin(t * .7f), 0f);
+                    float k = R * 2.6f / shadowW;
+                    shadow.transform.localScale = new Vector3(k, k, 1f);
+                    shadow.color = new Color(.05f, .04f, .1f, alpha * .45f);
+                }
                 if (Time.time > flashUntil && Random.value < .02f) flashUntil = Time.time + .08f;
                 float lit = Time.time < flashUntil ? 1.6f : 1f;
-                nebula.color = new Color(Mathf.Min(1f, nebulaTint.r * lit), Mathf.Min(1f, nebulaTint.g * lit), Mathf.Min(1f, nebulaTint.b * lit), alpha * .45f);
+                nebula.color = new Color(Mathf.Min(1f, nebulaTint.r * lit), Mathf.Min(1f, nebulaTint.g * lit), Mathf.Min(1f, nebulaTint.b * lit), alpha * .85f);
             }
             void Cleanup()
             {
                 if (nebula != null) Destroy(nebula.gameObject);
-                if (range != null) range.Kill();
+                if (shadow != null) Destroy(shadow.gameObject);
             }
             Sound("c_arcane", .7f);
             float clock = 0f;
