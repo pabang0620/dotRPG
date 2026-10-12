@@ -111,7 +111,9 @@ namespace DotRPG
 
         void Refresh()
         {
-            float h = picture ? PaneHeight * 1.35f : PaneHeight; // the generated shield is narrower, so taller
+            // The generated shield: 30% smaller than its first size (user, 2026-10-12) and standing 5 px (5/16 unit) higher.
+            float h = picture ? PaneHeight * 1.35f * .7f : PaneHeight;
+            float raise = picture ? 5f / 16f : 0f;
             float b = Mathf.Max(0f, Brightness);
             for (int i = 0; i < panes.Length; i++)
             {
@@ -127,7 +129,7 @@ namespace DotRPG
                     Fx.Burst("fx_dust", foot, 3, 1.4f, .45f);
                     SkillVisuals.Flash(foot + Vector2.up * .3f, new Color(1f, .92f, .6f, .7f), .9f, .1f);
                 }
-                p.transform.position = foot + Vector2.up * (h * pivotY + drop);
+                p.transform.position = foot + Vector2.up * (h * pivotY + drop + raise);
                 // Each pane covers its share of the ring (a closed wall), narrower toward the sides where it is seen
                 // edge-on, full width at the front and back.
                 float facing = Mathf.Lerp(.45f, 1f, Mathf.Abs(Mathf.Sin(angles[i])));

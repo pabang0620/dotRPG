@@ -103,6 +103,7 @@ namespace DotRPG
         {
             if (state == State.Dead || Puppet) return;
             armorBreakUntil = Mathf.Max(armorBreakUntil, Time.time + seconds);
+            ArmorBreakMark.Attach(this); // the game-wide mark: a split shield over its head while the guard is broken
         }
 
         /// <summary>[GUARDIAN] 속박: held in place (bosses too) but still attacks whoever is in reach.</summary>

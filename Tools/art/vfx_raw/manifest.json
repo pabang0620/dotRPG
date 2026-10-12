@@ -211,16 +211,6 @@
   "mode": "grid"
  },
  {
-  "id": "g2_gold_chain",
-  "file": "g2_gold_chain.png",
-  "background": "magenta",
-  "cols": 1,
-  "rows": 1,
-  "frames": 1,
-  "note": "single chain, 5 links, teal inner glow; Codex RGB 1254x1254 opaque magenta",
-  "mode": "grid"
- },
- {
   "id": "m3_rift_core",
   "file": "m3_rift_core.png",
   "background": "black",

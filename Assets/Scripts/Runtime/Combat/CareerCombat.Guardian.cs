@@ -299,9 +299,6 @@ namespace DotRPG
                 // still swinging at whoever stands next to them; taunted onto the guardian.
                 if (c.authority) e.Root(Arrive + Hold + Close + .15f);
                 Taunt(c, e, 4f);
-                if (VfxLibrary.Has("g2_gold_chain"))
-                    for (int k = -1; k <= 1; k += 2)
-                        CareerFx.Gen("g2_gold_chain", null, e.Center, new Vector2(1f, k * .7f).normalized, 1.7f, 0f, 1f, VfxLayer.Top, true, null, Arrive + Hold + Close)?.FadeOut(.3f);
             }
             foreach (var p in Allies(at, r + 1f)) GiveShield(c, p, .25f, c.s.duration);
             var wall = ShieldWallFx.Spawn(feet, r * .95f, 12);
@@ -347,8 +344,7 @@ namespace DotRPG
             {
                 Strike(c, e, c.n.damage, feet, 12f, 2, "c_shield");
                 // [ARMOR] 방어 붕괴: 8 s without armour and 20% more damage taken, for the whole party to cash in.
-                if (c.authority) e.BreakArmor(BreakTime);
-                WorldPopupText.Show(e.transform, "방어 붕괴", new Color(1f, .45f, .35f), 1.2f);
+                if (c.authority) e.BreakArmor(BreakTime); // shows the split shield over its head (ArmorBreakMark)
             }
         }
     }

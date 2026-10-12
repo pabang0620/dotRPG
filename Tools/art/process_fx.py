@@ -37,7 +37,7 @@ TARGET = {
     # 3.3 bishop, 3.4 fighter, 3.5 guardian
     "b2_feather": (96, 48, 1), "b2_light_spear": (256, 48, 1), "b2_bless_link": (256, 48, 16),
     "b2_dawn_pillar": (128, 384, 14), "f2_break_crescent": (192, 192, 18), "f2_stance_wave": (160, 160, 20),
-    "g2_barrier_dome": (192, 192, 16), "g2_gold_chain": (256, 32, 1),
+    "g2_barrier_dome": (192, 192, 16),
     # 2026-10-12 awakening parts (candidate sheets, 4 designs each; the chosen cell is copied to its final id)
     "g4_wall_v2": (192, 384, 1), "g4_wall_b_v2": (192, 384, 1),
     "b4_sanctum_v2": (384, 384, 1), "b4_sanctum_b_v2": (384, 384, 1),
