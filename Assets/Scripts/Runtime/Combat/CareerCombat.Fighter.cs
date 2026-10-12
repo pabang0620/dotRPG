@@ -290,9 +290,10 @@ namespace DotRPG
             // 2) The cut lines stay as afterimages and charge up: thicker, brighter, pulsing faster, trembling harder.
             DimFx.Show(Shake + Tear + .3f, .2f);
             float nextSpark = 0f;
+            GlassCrackFx crack = null;
             for (float t = 0f; t < Shake + Tear; t += Time.deltaTime)
             {
-                if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
+                if (!Live(c)) { first.Kill(); second.Kill(); if (crack != null) UnityEngine.Object.Destroy(crack.gameObject); yield break; }
                 float k = Mathf.Clamp01(t / Shake);
                 first.Charge = second.Charge = t < Shake ? k * k * (3f - 2f * k) : 1f;
                 // 3) The last 0.3 s: fully charged, shaking hard just before the burst.
@@ -304,12 +305,19 @@ namespace DotRPG
                     float u = Random.Range(-.9f, .9f) * arm;
                     SkillVisuals.Sparks(at + (Random.value < .5f ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 2, 2.5f, .25f);
                 }
-                if (t >= Shake && t - Time.deltaTime < Shake) Sound("c_slash");
+                // Full charge: the view cracks like struck glass around the cross.
+                if (t >= Shake && crack == null)
+                {
+                    crack = GlassCrackFx.Spawn(at, arm, blue, order - 1);
+                    Sound("c_slash");
+                    if (owner.IsLocal) Game.Camera?.Shake(.12f, .2f);
+                }
                 yield return null;
             }
             // 4) The afterimages themselves burst into glass shards; the hit lands now (3 s after the cast).
             first.Kill();
             second.Kill();
+            crack?.Fade();
             GlassBurstFx.Burst(at + Vector2.left * arm, at + Vector2.right * arm, 24, order + 3);
             GlassBurstFx.Burst(at + Vector2.up * arm, at + Vector2.down * arm, 24, order + 3);
             Sound("c_heavy");
