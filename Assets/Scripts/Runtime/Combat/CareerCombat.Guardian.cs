@@ -263,20 +263,27 @@ namespace DotRPG
             Vector2 at = owner.Center, feet = owner.Position;
             float r = c.n.radius;
             int order = SkillFx.GroundOrder + 8;
-            // 1) The barrier sigil is drawn round the guardian's feet while it leaps.
-            var ring = RingFx.Spawn(feet, r, GGold, order, "g4_sigil");
-            ring.PictureScale = 1.05f;
-            ring.Reveal = 0f;
+            // 1) The barrier is drawn round the guardian's feet while it leaps: three nested steel-blue hexagons
+            //    (a fortress shape, not a round plate like the mage's circle or the bishop's sanctum).
+            var steel = new Color(.5f, .85f, 1f);
+            var hexes = new[]
+            {
+                RingFx.Spawn(feet, r, steel, order),
+                RingFx.Spawn(feet, r * .66f, steel, order + 3),
+                RingFx.Spawn(feet, r * .3f, GGold, order + 6),
+            };
+            hexes[0].Width = .12f;
+            for (int i = 0; i < hexes.Length; i++) { hexes[i].Sides = 6; hexes[i].Corner = 90f + i * 30f; hexes[i].Reveal = 0f; }
+            void KillHexes() { foreach (var h in hexes) h.Kill(); }
             Sound("c_shield");
             for (float t = 0f; t < Draw; t += Time.deltaTime)
             {
-                if (!Live(c)) { ring.Kill(); yield break; }
+                if (!Live(c)) { KillHexes(); yield break; }
                 float k = t / Draw;
-                ring.Reveal = 1f - (1f - k) * (1f - k);
-                ring.Spin = -40f * t;
+                for (int i = 0; i < hexes.Length; i++) hexes[i].Reveal = Mathf.Clamp01((k - i * .2f) / .6f);
                 yield return null;
             }
-            ring.Reveal = 1f;
+            foreach (var h in hexes) h.Reveal = 1f;
             // 2) The slam: walls rise at the edge, everything inside is held and taunted, allies are shielded.
             CareerFx.Slam(feet, r * .7f, GTeal, true);
             SkillFx.Crack(feet, r, 1.8f);
@@ -296,13 +303,15 @@ namespace DotRPG
             float nextPull = 0f;
             for (float t = 0f; t < Rise + Hold; t += Time.deltaTime)
             {
-                if (!Live(c)) { ring.Kill(); wall.Kill(); yield break; }
+                if (!Live(c)) { KillHexes(); wall.Kill(); yield break; }
                 wall.Rise = Mathf.Clamp01(t / Rise);
                 float k = Mathf.Clamp01((t - Rise) / Hold), ease = k * k * (3f - 2f * k);
                 wall.Radius = Mathf.Lerp(r * .95f, r * .35f, ease);
                 wall.Brightness = 1f + ease * .9f;
-                ring.Brightness = 1f + ease * .8f;
-                ring.Spin = -40f * Draw - 25f * t;
+                foreach (var h in hexes) h.Brightness = 1f + ease * .8f;
+                // The inner hexagons turn against each other as the barrier tightens.
+                hexes[1].Corner = 120f + 40f * t;
+                hexes[2].Corner = 150f - 70f * t;
                 if (c.authority && t >= nextPull)
                 {
                     nextPull = t + .2f;
@@ -314,14 +323,14 @@ namespace DotRPG
             Sound("c_shield");
             for (float t = 0f; t < Close; t += Time.deltaTime)
             {
-                if (!Live(c)) { ring.Kill(); wall.Kill(); yield break; }
+                if (!Live(c)) { KillHexes(); wall.Kill(); yield break; }
                 wall.Radius = Mathf.Lerp(r * .35f, r * .08f, t / Close);
                 wall.Brightness = 2.2f;
                 yield return null;
             }
             // 5) The barrier bursts: golden glass, a shock ring to the radius, the hit.
             wall.Shatter(order + 20);
-            ring.Kill();
+            KillHexes();
             CareerFx.Clip("impact", feet, Vector2.zero, r / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Teal);
             GuardRing(feet, r, GGold, .5f);
             SkillVisuals.Flash(at, new Color(1f, .9f, .55f, .8f), r * .9f, .18f);

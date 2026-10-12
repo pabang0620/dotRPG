@@ -100,11 +100,11 @@ namespace DotRPG
             if (p == null) return;
             Vector2 feet = p.Position;
             SkillFx.Spawn("fx_glow", feet, new Color(tone.r, tone.g, tone.b, .55f), .7f, SkillFx.At(feet.y, -2)).Additive().Scale(new Vector2(.5f, .25f), new Vector2(1.3f, .55f)).Fade(FxFade.Late);
-            // The column of light rising from the ground up to the chest.
-            SkillFx.Spawn("fx_glow", feet + Vector2.up * .1f, new Color(tone.r, tone.g, tone.b, .35f), .6f, SkillFx.At(feet.y, 8)).Additive().Move(Vector2.up * 1.2f, 2f).Scale(new Vector2(.5f, .3f), new Vector2(.55f, 1.4f)).Fade(FxFade.Late);
-            for (int i = 0; i < 5; i++)
-                SkillFx.Spawn("fx_spark", feet + new Vector2(Random.Range(-.3f, .3f), Random.Range(0f, .15f)), new Color(Mathf.Lerp(tone.r, 1f, .4f), Mathf.Lerp(tone.g, 1f, .4f), Mathf.Lerp(tone.b, 1f, .4f), 1f), Random.Range(.45f, .7f), SkillFx.At(feet.y, 9))
-                    .Move(new Vector2(Random.Range(-.15f, .15f), Random.Range(1.6f, 2.4f)), 1.2f).Scale(.9f, .35f).Delay(i * .05f);
+            // The column of light rising from the feet to above the head (2026-10-12: taller, so it reads over the sprite).
+            SkillFx.Spawn("fx_glow", feet + Vector2.up * .1f, new Color(tone.r, tone.g, tone.b, .4f), .8f, SkillFx.At(feet.y, 8)).Additive().Move(Vector2.up * 2.6f, 2f).Scale(new Vector2(.5f, .4f), new Vector2(.6f, 2.6f)).Fade(FxFade.Late);
+            for (int i = 0; i < 7; i++)
+                SkillFx.Spawn("fx_spark", feet + new Vector2(Random.Range(-.3f, .3f), Random.Range(0f, .3f)), new Color(Mathf.Lerp(tone.r, 1f, .4f), Mathf.Lerp(tone.g, 1f, .4f), Mathf.Lerp(tone.b, 1f, .4f), 1f), Random.Range(.7f, 1f), SkillFx.At(feet.y, 9))
+                    .Move(new Vector2(Random.Range(-.15f, .15f), Random.Range(3f, 4.2f)), 1.2f).Scale(.9f, .35f).Delay(i * .05f);
         }
 
         /// <summary>
@@ -229,10 +229,7 @@ namespace DotRPG
             // [VFX] The column of light from the sky (b2_dawn_pillar, tall), else the old pillar clip.
             DawnPillar(owner.Position, 2.2f, 1.7f, 18f, VfxLayer.Top);
             Wings(owner.Center + Vector2.up * .2f, owner.Position.y, 1.3f, 1.4f);
-            // [VFX] T is light from above: a gold sanctuary sigil (no green lotus, that is W).
-            if (SkillFx.HasImage("fxi_holy_sigil"))
-                SkillFx.Spawn("FxImg/fxi_holy_sigil", owner.Position, new Color(1f, .92f, .62f, 1f), 1.4f, SkillFx.GroundOrder + 9).Scale(new Vector2(c.n.radius * .25f, c.n.radius * .25f), new Vector2(c.n.radius * .8f, c.n.radius * .8f)).Fade(FxFade.Late);
-            else CareerFx.Clip("b_lotus", owner.Position, Vector2.zero, c.n.radius / 1.6f, 16f, VfxLayer.Ground, false, new Color(1f, .95f, .7f, .8f), false, 1.2f).Squash(1f, .7f).FadeOut(.4f);
+            // (2026-10-12: the spreading sigil at the start was removed; the sanctum under the bishop is the ground mark.)
             Sound("c_holy");
             Sound("c_heavy", .5f);
             int damage = Mathf.RoundToInt(c.n.damage * 2.5f / 4.5f);
@@ -333,7 +330,7 @@ namespace DotRPG
             GlowLineFx.Spawn(tip + new Vector2(.22f, -.18f), tip, c, .07f, .55f, order);
         }
 
-        const float SanctumRadius = 4f;
+        const float SanctumRadius = 8f; // 2026-10-12: doubled from 4
 
         /// <summary>신의 가호: every ally in reach (and the bishop) takes no damage for a moment, with a golden glow.</summary>
         void DivineGuard(Run c)

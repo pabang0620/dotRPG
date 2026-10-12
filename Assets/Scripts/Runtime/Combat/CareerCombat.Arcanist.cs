@@ -383,7 +383,9 @@ namespace DotRPG
             Target(c.dir, c.n.range, out Vector2 center);
             float R = c.n.radius;
             int order = SkillFx.GroundOrder + 8;
-            var white = new Color(.85f, .92f, 1f);
+            // Deep arcane violet until each ring takes its element's colour (the bishop's sanctum is gold, the
+            // guardian's barrier steel blue).
+            var white = new Color(.62f, .38f, 1f);
             var rings = new[]
             {
                 RingFx.Spawn(center, R, white, order, "m4_ring_outer"),
@@ -426,7 +428,7 @@ namespace DotRPG
                 rings[Mathf.Min(2, i + 1)].Reveal = 1f;
             }
             core.Reveal = 1f;
-            core.Tint = Color.Lerp(white, new Color(.75f, .55f, 1f), .6f);
+            core.Tint = new Color(.85f, .6f, 1f);
             // 3) The three rings spin against each other and shrink to the centre, dragging the monsters in.
             var foes = Enemies(center, R * 1.15f);
             if (c.authority) foreach (var e in foes) { e.Stagger(Spin + Press + .2f); StunStars.Attach(e); }

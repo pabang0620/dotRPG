@@ -27,6 +27,10 @@ namespace DotRPG
         public Color Tint = Color.white;
         public float Brightness = 1f;
         public float Alpha = 1f;
+        /// <summary>0 = a circle; 3 or more = a regular polygon with that many corners (the guardian's hexagon).</summary>
+        public int Sides;
+        /// <summary>Turns the polygon (degrees); a circle ignores it.</summary>
+        public float Corner;
         /// <summary>Picture size relative to the ring's diameter (1 = the picture's width equals the circle's).</summary>
         public float PictureScale = 1f;
 
@@ -64,6 +68,15 @@ namespace DotRPG
 
         void LateUpdate() => Refresh();
 
+        /// <summary>Distance to a regular polygon's edge at angle a, relative to its corner radius (1 for a circle).</summary>
+        float PolygonScale(float a)
+        {
+            if (Sides < 3) return 1f;
+            float sector = Mathf.PI * 2f / Sides;
+            float local = Mathf.Repeat(a - Corner * Mathf.Deg2Rad, sector) - sector * .5f;
+            return Mathf.Cos(sector * .5f) / Mathf.Cos(local);
+        }
+
         void Refresh()
         {
             float reveal = Mathf.Clamp01(Reveal);
@@ -76,7 +89,8 @@ namespace DotRPG
                 {
                     // Drawn from the top, clockwise, so "drawing" the ring reads like a pen going round.
                     float a = Mathf.PI * .5f - Mathf.Min(i / (float)Points, reveal) * Mathf.PI * 2f;
-                    line.SetPosition(i, Center + new Vector2(Mathf.Cos(a) * Radius, Mathf.Sin(a) * Radius * Squash));
+                    float r = Radius * PolygonScale(a);
+                    line.SetPosition(i, Center + new Vector2(Mathf.Cos(a) * r, Mathf.Sin(a) * r * Squash));
                 }
             }
             float b = Mathf.Max(0f, Brightness);
