@@ -18,6 +18,7 @@ namespace DotRPG
     {
         const float ListW = 380f, RowH = 96f, RowGap = 8f, DetailX = 392f, DetailW = 828f, PanelTop = -52f, PanelH = 540f;
         const float DiffW = 150f, DiffH = 46f, DiffGap = 12f;
+        const float RaidDiffX = 520f, RaidDiffW = 110f; // [RAID] 레이드 / 영웅 buttons on the schedule line
 
         sealed class Row
         {
@@ -211,7 +212,8 @@ namespace DotRPG
 
             var def = Selected;
             if (def == null) return;
-            if (def.isRaid) difficulty = DungeonDifficulty.Normal;
+            // [RAID] A raid has 레이드 and, once cleared, 영웅 레이드.
+            if (def.isRaid && (difficulty != DungeonDatabase.RaidHeroic || !progress.IsUnlocked(def, difficulty))) difficulty = DungeonDifficulty.Normal;
             var numbers = DungeonDatabase.DifficultyFor(def, difficulty);
             banner.sprite = Game.Art.Get("banner_" + def.id);
             banner.enabled = banner.sprite != null;
@@ -223,13 +225,17 @@ namespace DotRPG
             for (int i = 0; i < diffButtons.Length; i++)
             {
                 var d = (DungeonDifficulty)i;
-                bool show = !def.isRaid;
+                bool show = !def.isRaid || i <= (int)DungeonDatabase.RaidHeroic;
                 diffButtons[i].gameObject.SetActive(show);
                 if (!show) continue;
+                // Raid: two small buttons on the schedule line (the reward lines keep their place below).
+                var rt = diffButtons[i].GetComponent<RectTransform>();
+                rt.anchoredPosition = def.isRaid ? new Vector2(RaidDiffX + i * (RaidDiffW + DiffGap), -154f) : new Vector2(24f + i * (DiffW + DiffGap), -188f);
+                rt.sizeDelta = def.isRaid ? new Vector2(RaidDiffW, 32f) : new Vector2(DiffW, DiffH);
                 bool unlocked = progress.IsUnlocked(def, d);
                 bool sel = d == difficulty;
                 var best = progress.BestRank(def.id, d);
-                string label = def.isRaid ? "레이드" : DungeonDatabase.Difficulty(d).name;
+                string label = def.isRaid ? (d == DungeonDatabase.RaidHeroic ? "영웅" : "레이드") : DungeonDatabase.Difficulty(d).name;
                 diffLabels[i].text = unlocked ? (best.HasValue ? $"{label}  <size=16><color=#ffe066>{best.Value}</color></size>" : label) : $"<color=#9aa0aa>{label} (잠김)</color>";
                 diffButtons[i].image.sprite = Game.Art.Get(sel ? "ui_btn" : "ui_btngray");
                 diffButtons[i].image.color = unlocked ? Color.white : new Color(1f, 1f, 1f, 0.45f);
@@ -255,7 +261,15 @@ namespace DotRPG
             raidLine.gameObject.SetActive(def.isRaid);
             string schedule = def.isRaid ? (def.raidTier == RaidTier.Mid ? $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 하루 1회 보상" : $"{DungeonDatabase.OpenDaysLabel(def)} 개방 · 주 1회 보상") : "";
             diffTitle.text = def.isRaid ? $"<b>레이드 일정</b>   <color=#b8c4d8>{schedule}</color>" : "<b>난이도</b>";
-            if (def.isRaid)
+            if (def.isRaid && difficulty == DungeonDatabase.RaidHeroic)
+            {
+                // [RAID] 영웅 레이드: harder numbers, its own weekly reward.
+                string keys = def.raidTier == RaidTier.Final ? $" · 봉인 열쇠 조각 {def.keyCost}개 필요" : "";
+                raidLine.text = progress.RaidRewardAvailable(def, now, difficulty)
+                    ? $"<color=#ffd34a>영웅 레이드</color>  체력 x{DungeonDatabase.RaidHeroicHpMul:0.0} · 피해 x{DungeonDatabase.RaidHeroicDamageMul:0.0} · 확정 골드 x{DungeonDatabase.RaidHeroicRewardMul:0.0} · 고대의 핵 +1\n<color=#b8c4d8>보상은 주 1회(목 06:00 초기화), 레이드 보상과 따로 받습니다{keys}.</color>"
+                    : "<color=#ff9f7a>이번 주 영웅 레이드 보상을 받았습니다 · 지금은 연습 입장</color>\n<color=#b8c4d8>보상은 매주 목요일 06:00에 다시 열립니다.</color>";
+            }
+            else if (def.isRaid)
             {
                 // Two lines: what this entry gives now, then where its keys come from.
                 string state, how;
@@ -319,10 +333,10 @@ namespace DotRPG
         void PickDifficulty(DungeonDifficulty d)
         {
             var def = Selected;
-            if (def == null || def.isRaid) return;
+            if (def == null || (def.isRaid && d > DungeonDatabase.RaidHeroic)) return;
             if (!Game.Session.Dungeons.IsUnlocked(def, d))
             {
-                GameEvents.RaiseToast($"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 합니다.");
+                GameEvents.RaiseToast(def.isRaid ? $"{def.name} 레이드를 먼저 한 번 클리어하면 영웅 레이드가 열립니다." : $"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 합니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -337,7 +351,8 @@ namespace DotRPG
         string PracticeReason(DungeonDef def, DateTime now)
         {
             if (def == null || !def.isRaid) return null;
-            if (!Game.Session.Dungeons.RaidRewardAvailable(def, now)) return def.raidTier == RaidTier.Mid ? "오늘 보상을 이미 받았습니다." : "이번 주 보상을 이미 받았습니다.";
+            if (!Game.Session.Dungeons.RaidRewardAvailable(def, now, difficulty))
+                return def.raidTier == RaidTier.Mid && difficulty != DungeonDatabase.RaidHeroic ? "오늘 보상을 이미 받았습니다." : "이번 주 보상을 이미 받았습니다.";
             if (def.keyCost > 0 && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < def.keyCost) return "봉인 열쇠 조각이 모자랍니다.";
             return null;
         }
@@ -383,9 +398,10 @@ namespace DotRPG
                 Game.Audio.PlaySfx("select");
                 Refresh();
             }
-            if (dx != 0 && Selected != null && !Selected.isRaid)
+            if (dx != 0 && Selected != null)
             {
-                var next = (DungeonDifficulty)Mathf.Clamp((int)difficulty + dx, 0, DungeonDatabase.DifficultyCount - 1);
+                int top = Selected.isRaid ? (int)DungeonDatabase.RaidHeroic : DungeonDatabase.DifficultyCount - 1;
+                var next = (DungeonDifficulty)Mathf.Clamp((int)difficulty + dx, 0, top);
                 if (next != difficulty) PickDifficulty(next);
             }
             // [UX] Tab / LB · RB switch the tab; A (Submit) only enters (A was bound to both, so the pad could never enter).

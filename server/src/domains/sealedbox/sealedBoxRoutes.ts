@@ -6,7 +6,7 @@ import { versionCheck } from '../../middleware/versionCheck';
 import { charKey } from '../economy/economyRouting';
 import { charParams } from '../economy/economyValidation';
 import * as controller from './sealedBoxController';
-import { openBody, pullBody } from './sealedBoxValidation';
+import { ceilingBody, openBody, pullBody } from './sealedBoxValidation';
 
 /**
  * 봉인된 상자(14단계). GET /starshop/sealed 는 계정 단위(클라이언트 버전만 검사),
@@ -21,6 +21,7 @@ export function createSealedBoxRouter(): Router {
   // 별조각 소비 경로: 계정당 분당 상한(뽑기·교환과 같다)
   const spendPerMin = rateLimit({ name: 'sealed_spend', limit: (c) => c.pay.rate.spendPerMin, windowMs: MINUTE, key: acct });
   r.post('/characters/:uuid/starshop/sealed/pull', perChar, perAccount, spendPerMin, validate({ params: charParams, body: pullBody }), controller.pull);
+  r.post('/characters/:uuid/starshop/sealed/ceiling', perChar, perAccount, validate({ params: charParams, body: ceilingBody }), controller.ceiling);
   r.post('/characters/:uuid/items/open', perChar, perAccount, validate({ params: charParams, body: openBody }), controller.open);
   return r;
 }

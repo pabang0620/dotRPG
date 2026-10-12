@@ -102,6 +102,7 @@ namespace DotRPG
                 Balance = (long)MiniJson.Num(r.data, "balance", Balance);
                 if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity);
                 else if (banner == "aura") Pity = MiniJson.Int(r.data, "pity", Pity);
+                ReadGearCeiling(MiniJson.Obj(r.data, "gear_ceiling")); // [CEILING] gear draws only
                 foreach (var p in results) if (!p.gear) Owned.Add(p.itemId);
                 // Gear goes straight into the bag (same delta as every other server grant).
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
@@ -200,6 +201,7 @@ namespace DotRPG
             Banners.Clear();
             GearTiers.Clear();
             MyTier = MiniJson.Int(d, "my_tier");
+            ReadGearCeiling(MiniJson.Obj(d, "gear_ceiling")); // [CEILING]
             foreach (var b in MiniJson.Arr(d, "banners") ?? new List<object>())
             {
                 string bid = MiniJson.Str(b, "id", "");

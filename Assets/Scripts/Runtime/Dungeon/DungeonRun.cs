@@ -63,7 +63,7 @@ namespace DotRPG
         public DungeonRun(DungeonDef dungeon, DungeonDifficulty difficulty, int partySize)
         {
             Dungeon = dungeon;
-            Difficulty = dungeon != null && dungeon.isRaid ? DungeonDifficulty.Normal : difficulty;
+            Difficulty = dungeon != null && dungeon.isRaid && difficulty != DungeonDatabase.RaidHeroic ? DungeonDifficulty.Normal : difficulty;
             Numbers = DungeonDatabase.DifficultyFor(dungeon, difficulty);
             PartySize = Mathf.Clamp(partySize, 1, PartyManager.MaxMembers);
         }

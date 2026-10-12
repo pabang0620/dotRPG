@@ -106,7 +106,7 @@ async function progressOf(db: Queryable, characterId: number, t: DailyTemplate, 
   let n: number;
   if (t.type === 'kill') n = await repo.killsSince(db, characterId, t.map, t.monster, since);
   else if (t.type === 'dungeon') n = await repo.clearsSince(db, characterId, nonRaidDungeons(), since);
-  else if (t.type === 'raid') n = await repo.clearsSince(db, characterId, [t.target], since);
+  else if (t.type === 'raid') n = await repo.clearsSince(db, characterId, [t.target], since, t.minDifficulty ?? 0);
   else n = await repo.dailyClaimsSince(db, characterId, since);
   return Math.min(n, t.count);
 }

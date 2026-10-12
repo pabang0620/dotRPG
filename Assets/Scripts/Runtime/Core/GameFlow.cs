@@ -28,6 +28,7 @@ namespace DotRPG
                 if (Game.Config.autosave) WriteSave();
             }
             AchievementClient.Tick(); // kills add up: the server re-judges achievements once a minute
+            StarPassClient.Tick(); // [CASH] 별빛 정기권: once a game day, the daily stars and sealed box
             if (transitioning || Game.State.ChangedThisFrame) return;
             if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
             Game.Quest.Tick();

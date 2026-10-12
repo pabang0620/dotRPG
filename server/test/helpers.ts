@@ -43,6 +43,8 @@ export async function resetDb(): Promise<void> {
       'account_growth_pass',
       'sealed_pulls',
       'account_sealed_state',
+      'ceiling_claims',
+      'account_ceilings',
       // 11단계: 결제·별조각(원장 트리거는 위에서 끈 상태)
       'star_spend_allocs',
       'star_paid_lots',

@@ -1,10 +1,66 @@
 {
-  "unlockQuest": "c1_stronger",
+  "unlockQuest": "career_path",
   "perDay": 3,
   "carryDays": 1,
   "xpShare": 0.05,
   "maxLevelGold": 3000,
   "bands": [
+    {
+      "id": "quarry",
+      "minLevel": 15,
+      "maxLevel": 19,
+      "giver": "기사단 의뢰 게시판",
+      "gold": 450,
+      "templates": [
+        {
+          "id": "d_pass_golems",
+          "type": "kill",
+          "title": "고개의 암석 골렘",
+          "text": "붉은 돌 고개에 암석 골렘이 다시 늘었다. 길을 정리해 달라.",
+          "map": "canyon_pass",
+          "monster": "skel_warrior",
+          "label": "암석 골렘",
+          "count": 40
+        },
+        {
+          "id": "d_pass_miners",
+          "type": "kill",
+          "title": "고개의 돌격병",
+          "text": "고개를 오가는 짐마차가 골렘 돌격병에게 부딪혔다. 쫓아내 달라.",
+          "map": "canyon_pass",
+          "monster": "skel_miner",
+          "label": "암석 골렘 돌격병",
+          "count": 40
+        },
+        {
+          "id": "d_mine_miners",
+          "type": "kill",
+          "title": "채석장 돌격병",
+          "text": "버려진 채석장 입구에 골렘 돌격병이 몰려 있다.",
+          "map": "canyon_mine",
+          "monster": "skel_miner",
+          "label": "골렘 돌격병",
+          "count": 40
+        },
+        {
+          "id": "d_mine_shields",
+          "type": "kill",
+          "title": "채석장 수호병",
+          "text": "채석장 안쪽 길을 골렘 수호병이 막고 있다.",
+          "map": "canyon_mine",
+          "monster": "skel_shield",
+          "label": "골렘 수호병",
+          "count": 40
+        },
+        {
+          "id": "d_quarry_dungeon",
+          "type": "dungeon",
+          "title": "기사단 견습 훈련",
+          "text": "요일 던전을 한 번 클리어하고 보고하라.",
+          "count": 1
+        }
+      ]
+    },
     {
       "id": "canyon",
       "minLevel": 20,
@@ -226,6 +282,38 @@
     "maxLevelGold": 10000,
     "bands": [
       {
+        "id": "quarry",
+        "minLevel": 15,
+        "maxLevel": 19,
+        "gold": 1800,
+        "templates": [
+          {
+            "id": "w_quarry_hunt",
+            "type": "kill",
+            "title": "채석장 대청소",
+            "text": "기사단이 이번 주 채석장 길을 정리하려 한다. 버려진 채석장의 골렘 돌격병을 잡아 달라.",
+            "map": "canyon_mine",
+            "monster": "skel_miner",
+            "label": "골렘 돌격병",
+            "count": 200
+          },
+          {
+            "id": "w_quarry_dungeon",
+            "type": "dungeon",
+            "title": "견습 정기 훈련",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_quarry_daily",
+            "type": "daily",
+            "title": "성실한 견습생",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      },
+      {
         "id": "canyon",
         "minLevel": 20,
         "maxLevel": 24,
@@ -362,6 +450,16 @@
             "count": 200
           },
           {
+            "id": "w_peak_sanctum",
+            "type": "kill",
+            "title": "성소 대청소",
+            "text": "침수된 회랑의 성소 석상이 끝없이 깨어난다. 이번 주 안에 대거 정리해 달라.",
+            "map": "sanctum_hall",
+            "monster": "skel_warrior",
+            "label": "성소 석상",
+            "count": 300
+          },
+          {
             "id": "w_peak_dungeon",
             "type": "dungeon",
             "title": "설원의 단련",
@@ -375,6 +473,15 @@
             "text": "해골왕 레이드를 한 번 클리어하라.",
             "target": "raid_skeleton_king",
             "count": 1
+          },
+          {
+            "id": "w_peak_heroic",
+            "type": "raid",
+            "title": "영웅 해골왕 토벌",
+            "text": "정예가 된 해골왕 친위대가 다시 움직인다. 영웅 레이드로 해골왕을 쓰러뜨려라.",
+            "target": "raid_skeleton_king",
+            "count": 1,
+            "minDifficulty": 1
           },
           {
             "id": "w_peak_daily",

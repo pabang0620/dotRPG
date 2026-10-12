@@ -4,6 +4,7 @@
   "products": [
     { "id": "stars_300", "steam_item_id": 1001, "name": "별조각 300", "stars": 300, "enabled": true, "sort": 1, "prices": { "KRW": 1100 } },
     { "id": "stars_1000", "steam_item_id": 1002, "name": "별조각 1,000", "stars": 1000, "enabled": true, "sort": 2, "prices": { "KRW": 3300 } },
-    { "id": "stars_3000", "steam_item_id": 1003, "name": "별조각 3,000", "stars": 3000, "enabled": true, "sort": 3, "prices": { "KRW": 9900 } }
+    { "id": "stars_3000", "steam_item_id": 1003, "name": "별조각 3,000", "stars": 3000, "enabled": true, "sort": 3, "prices": { "KRW": 9900 } },
+    { "id": "star_pass_30", "steam_item_id": 1004, "name": "별빛 정기권 (30일)", "stars": 300, "enabled": true, "sort": 4, "prices": { "KRW": 4400 }, "pass_days": 30 }
   ]
 }

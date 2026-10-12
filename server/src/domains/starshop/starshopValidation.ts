@@ -23,6 +23,15 @@ export const claimBody = z.strictObject({
 });
 export type ClaimBody = z.infer<typeof claimBody>;
 
+/** 장비 뽑기 천장 교환: 뽑기·단계·장비를 고른다(유니크인지는 서버가 표로 확인) */
+export const gearCeilingBody = z.strictObject({
+  request_id: requestId,
+  banner: z.enum(['weapon', 'armor', 'accessory']),
+  item_id: itemIdSchema,
+  tier: z.number().int().min(0).max(7).optional(),
+});
+export type GearCeilingBody = z.infer<typeof gearCeilingBody>;
+
 export const synthBody = z.strictObject({
   request_id: requestId,
   rarity: z.enum(['common', 'rare', 'epic']),

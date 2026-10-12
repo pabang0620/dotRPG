@@ -359,6 +359,9 @@ namespace DotRPG.EditorTools
             j.Arr("minClearSeconds", new[] { 87, 0, 0, 0 }, (o, v) => o.Val(v));
             // [SERVER 4] Raids: no measured floor yet (the server falls back to 0.5 x referenceSeconds), key item, AI mercenaries.
             j.Key("raidMinClearSeconds").Obj().End();
+            // [RAID] 영웅 레이드: multipliers on each raid's raidNumbers (server diffOf, difficulty 1).
+            j.Key("raidHeroic").Obj().Str("name", DungeonDatabase.RaidHeroicName).Num("hpMul", DungeonDatabase.RaidHeroicHpMul)
+                .Num("damageMul", DungeonDatabase.RaidHeroicDamageMul).Num("rewardMul", DungeonDatabase.RaidHeroicRewardMul).End();
             j.Str("keyItem", DungeonDatabase.SealKey);
             j.Key("mercenary").Obj().Num("damageScale", MercenaryDatabase.DamageScale).Num("maxCompanions", PartyManager.MaxCompanions).End();
             j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Raids), (o, d) =>

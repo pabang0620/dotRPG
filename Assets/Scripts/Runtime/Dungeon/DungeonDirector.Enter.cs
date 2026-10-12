@@ -47,7 +47,7 @@ namespace DotRPG
                 return false;
             }
             if (PartyRunSession.Active) { GameEvents.RaiseToast("이미 파티가 출발하는 중입니다."); return false; }
-            var diff = dungeon.isRaid ? DungeonDifficulty.Normal : difficulty;
+            var diff = dungeon.isRaid && difficulty != DungeonDatabase.RaidHeroic ? DungeonDifficulty.Normal : difficulty;
             int ai = Mathf.Min(Game.Session.PartyRoster.Count, PartyManager.CompanionLimit);
             void Depart() => pc.StartRun(ai, (ok, msg) =>
             {
@@ -132,7 +132,7 @@ namespace DotRPG
             StoryCompanions.Refresh(true); // [STORY] 카엘 fights in dungeons and raids too
             var party = Game.Party;
             run = new DungeonRun(dungeon, difficulty, party != null ? party.Count : 1);
-            run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now);
+            run.RewardsLocked = dungeon.isRaid && !Progress.RaidRewardAvailable(dungeon, now, run.Difficulty);
             lockReason = run.RewardsLocked ? "ALREADY_CLAIMED" : null;
             // A final raid without the seal keys is a practice run: the clear still moves the story on.
             if (dungeon.isRaid && dungeon.keyCost > 0 && !run.RewardsLocked && Game.Session.Inventory.Count(DungeonDatabase.SealKey) < dungeon.keyCost)

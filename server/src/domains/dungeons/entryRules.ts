@@ -8,7 +8,7 @@ import { AppError } from '../../utils/AppError';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import { stackCount } from '../economy/economyRepository';
 import * as repo from './dungeonRepository';
-import { diffOf, isOpenToday, type DiffNumbers } from './dungeonRules';
+import { diffOf, isOpenToday, RAID_HEROIC, type DiffNumbers } from './dungeonRules';
 
 /** 퀘스트 상태 Active(2) 이상 = 수락 이상 */
 const QUEST_ACTIVE = 2;
@@ -28,10 +28,10 @@ export interface EntryInfo {
   limit: number;
 }
 
-/** 보상 기간: 중간 레이드 일일, 최종 레이드 주간(resetBoundaries 한 함수) */
-export function raidPeriod(d: DungeonDef, now: Date): { kind: 'daily' | 'weekly'; start: Date } {
+/** 보상 기간: 중간 레이드 일일, 최종 레이드 주간(resetBoundaries 한 함수). 영웅 레이드는 언제나 주간이고 일반 보상과 따로 센다 */
+export function raidPeriod(d: DungeonDef, now: Date, difficulty = 0): { kind: 'daily' | 'weekly'; start: Date } {
   const b = resetBoundaries(now);
-  return d.raidTier === 'Final'
+  return d.raidTier === 'Final' || difficulty === RAID_HEROIC
     ? { kind: 'weekly', start: new Date(b.weeklyStartAt) }
     : { kind: 'daily', start: new Date(b.dailyStartAt) };
 }
@@ -55,13 +55,20 @@ export async function raidUnlocked(db: Queryable, characterId: number, d: Dungeo
   return saved.some((q) => q.id === d.unlockQuest && q.status >= QUEST_ACTIVE);
 }
 
-export async function raidClaimed(db: Queryable, characterId: number, d: DungeonDef, now: Date): Promise<boolean> {
-  const period = raidPeriod(d, now);
+export async function raidClaimed(db: Queryable, characterId: number, d: DungeonDef, now: Date, difficulty = 0): Promise<boolean> {
+  const period = raidPeriod(d, now, difficulty);
   const r = await db.query(
-    'SELECT 1 FROM raid_claims WHERE character_id = $1 AND dungeon_id = $2 AND period_start = $3',
-    [characterId, d.id, period.start],
+    'SELECT 1 FROM raid_claims WHERE character_id = $1 AND dungeon_id = $2 AND difficulty = $3 AND period_start = $4',
+    [characterId, d.id, difficulty, period.start],
   );
   return r.rows.length > 0;
+}
+
+/** 영웅 레이드 해금: 그 레이드(난이도 0)를 한 번 클리어했다(연습 입장 클리어도 센다) */
+export async function heroicUnlocked(db: Queryable, characterId: number, d: DungeonDef): Promise<boolean> {
+  if (!d.isRaid || !getGameData().economy.dungeons.raidHeroic) return false;
+  const clears = await repo.clearSummary(db, characterId);
+  return clears.some((r) => r.dungeon_id === d.id && r.difficulty === 0);
 }
 
 export async function checkEntry(
@@ -78,7 +85,9 @@ export async function checkEntry(
   if (!isOpenToday(eco, d, now)) throw new AppError(422, '오늘은 열리지 않는 던전입니다.', 'DUNGEON_CLOSED_TODAY');
   if (d.isRaid) {
     if (!(await raidUnlocked(db, c.id, d))) throw new AppError(422, '아직 열리지 않은 레이드입니다.', 'RAID_LOCKED');
-    if (difficulty !== 0) throw new AppError(422, '아직 입장할 수 없는 난이도입니다.', 'DIFFICULTY_LOCKED');
+    if (difficulty !== 0 && (difficulty !== RAID_HEROIC || !(await heroicUnlocked(db, c.id, d)))) {
+      throw new AppError(422, '아직 입장할 수 없는 난이도입니다.', 'DIFFICULTY_LOCKED');
+    }
   } else if (difficulty > 0) {
     const clears = await repo.clearSummary(db, c.id);
     if (!clears.some((r) => r.dungeon_id === d.id && r.difficulty === difficulty - 1)) {
@@ -109,9 +118,10 @@ export async function lockAtEntry(
   d: DungeonDef,
   humans: number,
   now: Date,
+  difficulty = 0,
 ): Promise<{ locked: boolean; reason: 'ALREADY_CLAIMED' | 'TOO_FEW_HUMANS' | 'KEYS_MISSING' | null }> {
   if (!d.isRaid) return { locked: false, reason: null };
-  if (await raidClaimed(db, characterId, d, now)) return { locked: true, reason: 'ALREADY_CLAIMED' };
+  if (await raidClaimed(db, characterId, d, now, difficulty)) return { locked: true, reason: 'ALREADY_CLAIMED' };
   if (humans < getConfig().policy.raidRewardMinHumans) return { locked: true, reason: 'TOO_FEW_HUMANS' };
   if (d.keyCost > 0 && (await stackCount(db, characterId, 'bag', getGameData().economy.dungeons.keyItem)) < d.keyCost) {
     return { locked: true, reason: 'KEYS_MISSING' };

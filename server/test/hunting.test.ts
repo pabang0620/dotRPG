@@ -43,7 +43,8 @@ it.each(golden.fields)('$id: grants hunting XP to a hero with no dungeon clears'
 it.each(golden.dungeons)('$id: server clear XP matches the C# result on all difficulties', row => {
   const eco = getGameData().economy;
   const dungeon = eco.dungeons.byId.get(row.id)!;
-  for (let tier = 0; tier < 4; tier++) {
+  // 레이드는 일반(0)과 영웅(1)만 있다. 영웅 경험치도 기존 하한에 걸려 C# 기준값과 같다
+  for (let tier = 0; tier < (dungeon.isRaid ? 2 : 4); tier++) {
     const diff = diffOf(eco, dungeon, tier)!;
     expect(clearXp(eco, dungeon, diff, 8)).toBe(row.clearXpF[tier]);
     let kills = 0;

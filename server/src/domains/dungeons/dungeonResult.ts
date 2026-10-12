@@ -14,6 +14,7 @@ import {
   clearXp,
   diffOf,
   monsterTotal,
+  RAID_HEROIC,
   RANK_NAMES,
   rankOf,
   rollCards,
@@ -204,7 +205,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   const contrib = aa.mode !== 'off' ? (inp.contribution ?? null) : null;
   // 입장 때 ALREADY_CLAIMED였어도 클리어 시각이 새 기간(리셋 경계를 넘김)이면 그 기간의 청구가 없을 때만 다시 판정한다.
   // 두 번 받는 길은 아래 raid_claims INSERT(PK, ON CONFLICT)가 막는다
-  if (dungeon.isRaid && locked && reason === 'ALREADY_CLAIMED' && !(await raidClaimed(ctx.client, ctx.char.id, dungeon, inp.at))) {
+  if (dungeon.isRaid && locked && reason === 'ALREADY_CLAIMED' && !(await raidClaimed(ctx.client, ctx.char.id, dungeon, inp.at, run.difficulty))) {
     locked = false;
     reason = null;
   }
@@ -229,11 +230,11 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
       locked = true;
       reason = 'KEYS_MISSING';
     } else {
-      const period = raidPeriod(dungeon, inp.at);
+      const period = raidPeriod(dungeon, inp.at, run.difficulty);
       const ins = await ctx.client.query(
-        `INSERT INTO raid_claims (character_id, dungeon_id, period_kind, period_start, dungeon_run_id, claimed_at)
-         VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING`,
-        [ctx.char.id, dungeon.id, period.kind, period.start, run.id, ctx.now],
+        `INSERT INTO raid_claims (character_id, dungeon_id, difficulty, period_kind, period_start, dungeon_run_id, claimed_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`,
+        [ctx.char.id, dungeon.id, run.difficulty, period.kind, period.start, run.id, ctx.now],
       );
       if ((ins.rowCount ?? 0) === 0) {
         locked = true;
@@ -255,7 +256,9 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     // 선택 전에는 내용을 클라이언트에 주지 않는다
     if (dungeon.isRaid) {
       // 13단계: 난수 순서는 확정 골드 1회 -> 카드 4장(장비 카드는 부위 -> 등급). 골드는 카드를 안 뒤집어도 이 트랜잭션에서 들어간다
-      const rolled = rollRaidGold(dungeon, getRng());
+      // 영웅 레이드는 확정 골드에 raidHeroic.rewardMul을 곱한다(DungeonDatabase.RaidRewardScale과 같은 식)
+      const goldMul = run.difficulty === RAID_HEROIC ? (eco.dungeons.raidHeroic?.rewardMul ?? 1) : 1;
+      const rolled = Math.round(rollRaidGold(dungeon, getRng()) * goldMul);
       const before = ctx.gold;
       if (rolled > 0) await ctx.changeGold(rolled, 'raid_gold', run.uuid);
       raidGold = ctx.gold - before; // 골드 상한에 걸리면 실제로 들어간 만큼만

@@ -24,6 +24,8 @@ const fileSchema = z.looseObject({
   boosterEvery: z.number().int().positive(),
   rows: z.array(row).min(2),
   luckBoxFallback: reward,
+  /** 천장(0033): 상점 뽑기·가방 상자로 every번 열 때마다 reward 하나와 교환할 수 있다(자동 지급 아님) */
+  ceiling: z.strictObject({ every: z.number().int().positive(), reward }),
 });
 
 export type SealedRow = z.infer<typeof row>;
@@ -41,7 +43,7 @@ export function validateSealedBox(raw: unknown, itemIds?: Set<string>): { data: 
   const rare = d.rows.filter((r) => r.tier === 'rare').reduce((a, r) => a + r.rate, 0);
   if (rare * 2 >= 100) errors.push('희귀 이상 확률을 2배 하면 100%를 넘습니다');
   if (itemIds) {
-    const keys = [d.luckBoxFallback.item_key, ...d.rows.flatMap((r) => r.rewards.map((x) => x.item_key))];
+    const keys = [d.luckBoxFallback.item_key, d.ceiling.reward.item_key, ...d.rows.flatMap((r) => r.rewards.map((x) => x.item_key))];
     for (const k of keys) if (!itemIds.has(k)) errors.push(`items.json에 없는 아이템: ${k}`);
   }
   return { data: d, errors };

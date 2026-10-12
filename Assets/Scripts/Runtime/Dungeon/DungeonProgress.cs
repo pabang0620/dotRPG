@@ -65,18 +65,23 @@ namespace DotRPG
         /// <summary>
         /// [RAID] Mid raids pay out once per open day (수·토·일 = 주 3회), final raids once per week (목 06:00).
         /// </summary>
-        public bool RaidRewardAvailable(DungeonDef raid, DateTime now)
+        public bool RaidRewardAvailable(DungeonDef raid, DateTime now, DungeonDifficulty difficulty = DungeonDifficulty.Normal)
         {
             if (raid == null) return false;
-            raidClaims.TryGetValue(raid.id, out long stamp);
-            return raid.raidTier == RaidTier.Mid ? ResetClock.DailyExpired(stamp, now) : ResetClock.WeeklyExpired(stamp, now);
+            bool heroic = difficulty == DungeonDatabase.RaidHeroic;
+            raidClaims.TryGetValue(ClaimKey(raid, difficulty), out long stamp);
+            return raid.raidTier == RaidTier.Mid && !heroic ? ResetClock.DailyExpired(stamp, now) : ResetClock.WeeklyExpired(stamp, now);
         }
 
-        public void ClaimRaid(DungeonDef raid, DateTime now)
+        public void ClaimRaid(DungeonDef raid, DateTime now, DungeonDifficulty difficulty = DungeonDifficulty.Normal)
         {
             if (raid == null) return;
-            raidClaims[raid.id] = raid.raidTier == RaidTier.Mid ? ResetClock.DailyResetStart(now).Ticks : ResetClock.WeeklyResetStart(now).Ticks;
+            bool heroic = difficulty == DungeonDatabase.RaidHeroic;
+            raidClaims[ClaimKey(raid, difficulty)] = raid.raidTier == RaidTier.Mid && !heroic ? ResetClock.DailyResetStart(now).Ticks : ResetClock.WeeklyResetStart(now).Ticks;
         }
+
+        /// <summary>[RAID] 영웅 레이드 is paid once a week, kept apart from the raid's own claim.</summary>
+        static string ClaimKey(DungeonDef raid, DungeonDifficulty difficulty) => difficulty == DungeonDatabase.RaidHeroic ? raid.id + ":heroic" : raid.id;
 
         /// <summary>Mid raid: rewarded clears this week (shown as "이번 주 n/3").</summary>
         public int RaidClearsThisWeek(DungeonDef raid, DateTime now)
@@ -98,7 +103,9 @@ namespace DotRPG
         public bool IsUnlocked(DungeonDef dungeon, DungeonDifficulty d)
         {
             if (dungeon == null) return false;
-            if (dungeon.isRaid || d == DungeonDifficulty.Normal) return true;
+            if (d == DungeonDifficulty.Normal) return true;
+            // [RAID] 영웅 레이드 opens after the raid's first clear; raids have no other difficulty.
+            if (dungeon.isRaid) return d == DungeonDatabase.RaidHeroic && IsCleared(dungeon.id, DungeonDifficulty.Normal);
             return IsCleared(dungeon.id, d - 1);
         }
 

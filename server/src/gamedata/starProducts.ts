@@ -14,6 +14,8 @@ const productSchema = z.strictObject({
   enabled: z.boolean(),
   sort: z.number().int(),
   prices: z.record(z.string().regex(/^[A-Z]{3}$/), z.number().int().positive()),
+  /** 정기권(별빛 정기권): 구매 시 stars 즉시 + 이 일수만큼 매일 우편 지급(Docs/PLAN_SIM_IMPROVEMENTS_2026-10-12.md B) */
+  pass_days: z.number().int().positive().max(60).optional(),
 });
 
 const catalogSchema = z.looseObject({

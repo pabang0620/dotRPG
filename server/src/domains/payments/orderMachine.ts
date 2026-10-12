@@ -10,6 +10,7 @@ import { getNow } from '../../utils/clock';
 import { logger } from '../../utils/logger';
 import * as holdsRepo from '../antiabuse/holdsRepository';
 import { creditPaid, reversePaid } from '../starshop/starWallet';
+import { grantPassForOrder, revokePassForOrder } from '../starpass/starPassService';
 import * as repo from './paymentsRepository';
 import type { EventKind, FlagKind, OrderRow, OrderState } from './paymentsRepository';
 import { RESTRICT_DAYS } from './payTier';
@@ -364,6 +365,7 @@ async function grantOrder(orderId: number, ctx: Ctx): Promise<boolean> {
     if (o.state !== 'finalized' || o.lease_token !== ctx.token) return false;
     const now = getNow();
     const r = await creditPaid(client, { accountId: o.account_id, orderId: o.id, orderUuid: o.uuid, stars: o.stars });
+    await grantPassForOrder(client, o, now); // 별빛 정기권이면 기간을 더한다(주문당 1회)
     const ok = await repo.updateFenced(client, o.id, ctx.token, 'finalized', {
       state: 'granted',
       granted_at: new Date(),
@@ -399,6 +401,7 @@ async function reverseOrder(o: OrderRow, ctx: Ctx, kind: Reversal): Promise<void
         const rv = await reversePaid(client, { accountId: cur.account_id, orderId: cur.id, orderUuid: cur.uuid, kind: kind === 'chargeback' ? 'chargeback' : 'refund' });
         taken = rv.taken;
         owed = rv.owed;
+        await revokePassForOrder(client, cur, now); // 정기권이면 그 주문이 더한 기간을 뺀다
       }
       const partial = kind === 'partial';
       const ok = await repo.updateFenced(client, cur.id, ctx.token, cur.state, {

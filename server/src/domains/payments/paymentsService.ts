@@ -5,6 +5,7 @@ import { getConfig } from '../../config/env';
 import { hashRequest } from '../../db/idempotency';
 import { getPool, isUniqueViolation, withTransaction } from '../../db/pool';
 import { getStarCatalog, productById, type StarProduct } from '../../gamedata/starProducts';
+import { assertPassPurchasable, passBlock } from '../starpass/starPassService';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
 import { getNow } from '../../utils/clock';
@@ -114,15 +115,19 @@ export async function listProducts(accountId: number, accountUuid: string) {
   const t = await computeTier(db, accountId, now, info.country);
   const limits: LimitView = await limitsFor(db, accountId, t.tier, now);
   const exp = Math.floor(now.getTime() / 1000) + cfg.quoteTtlSeconds;
+  const passBlocks = new Map<string, 'PASS_TOO_LONG' | null>();
+  for (const p of products) if (p.pass_days !== undefined) passBlocks.set(p.id, await passBlock(db, accountId, p, now));
   const offers = open
     ? []
     : products.map((p) => {
         const price = p.prices[info.currency] as number;
-        const block = limits.daily.used + p.stars > limits.daily.limit ? 'LIMIT_DAILY' : limits.monthly.used + p.stars > limits.monthly.limit ? 'LIMIT_MONTHLY' : null;
+        const block =
+          limits.daily.used + p.stars > limits.daily.limit ? 'LIMIT_DAILY' : limits.monthly.used + p.stars > limits.monthly.limit ? 'LIMIT_MONTHLY' : (passBlocks.get(p.id) ?? null);
         return {
           product_id: p.id,
           name: p.name,
           stars: p.stars,
+          pass_days: p.pass_days ?? null,
           display_price: formatPrice(price, info.currency),
           currency: info.currency,
           quote_id: signQuote({ a: accountUuid, p: p.id, c: info.currency, m: price, s: p.stars, v: catalog.version, e: exp }),
@@ -211,6 +216,7 @@ export async function createOrder(accountId: number, accountUuid: string, body: 
       const t = await computeTier(client, accountId, now, info.country);
       const limits = await limitsFor(client, accountId, t.tier, now);
       assertWithinLimits(limits, product.stars);
+      await assertPassPurchasable(client, accountId, product, now); // 정기권: 남은 기간 + 30일이 60일을 넘으면 409
       for (const s of t.signals) {
         await repo.insertFlag(client, { accountId, orderId: null, kind: s.kind, severity: s.severity, detail: s.detail, dedupeMinutes: 1440 });
         if (s.raisesFloor) await repo.raiseTierFloor(client, accountId, new Date(now.getTime() + RESTRICT_DAYS * DAY_MS));

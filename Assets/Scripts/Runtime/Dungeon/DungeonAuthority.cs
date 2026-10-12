@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace DotRPG
 {
@@ -45,7 +46,8 @@ namespace DotRPG
 
         public int ClearXp(DungeonRun run, DungeonRank rank) => DungeonRewards.ClearXp(run.Dungeon, run.Numbers, rank);
 
-        public int RaidGold(DungeonRun run) => run.Dungeon.raidReward == null ? 0 : DungeonRewards.RollRaidGold(run.Dungeon.raidReward, rng);
+        public int RaidGold(DungeonRun run) => run.Dungeon.raidReward == null ? 0
+            : Mathf.RoundToInt(DungeonRewards.RollRaidGold(run.Dungeon.raidReward, rng) * DungeonDatabase.RaidRewardScale(run.Dungeon, run.Difficulty));
 
         public List<RewardCard> DealCards(DungeonRun run, CharacterClass cls) => DungeonRewards.RollCards(run.Dungeon, run.Numbers, cls, rng);
 

@@ -178,9 +178,31 @@ namespace DotRPG
 
         public static DifficultyDef Difficulty(DungeonDifficulty d) => Difficulties[Mathf.Clamp((int)d, 0, Difficulties.Length - 1)];
 
-        /// <summary>The difficulty numbers a run of this dungeon uses.</summary>
-        public static DifficultyDef DifficultyFor(DungeonDef dungeon, DungeonDifficulty d) =>
-            dungeon != null && dungeon.isRaid ? dungeon.raidNumbers ?? RaidDifficulty : Difficulty(d);
+        /// <summary>The difficulty numbers a run of this dungeon uses (a raid: 레이드, or 영웅 레이드 for <see cref="RaidHeroic"/>).</summary>
+        public static DifficultyDef DifficultyFor(DungeonDef dungeon, DungeonDifficulty d)
+        {
+            if (dungeon == null || !dungeon.isRaid) return Difficulty(d);
+            var raid = dungeon.raidNumbers ?? RaidDifficulty;
+            return d == RaidHeroic ? Heroic(raid) : raid;
+        }
+
+        // [RAID] 영웅 레이드 (Docs/PLAN_SIM_IMPROVEMENTS_2026-10-12.md D): the raid's second difficulty, open after its
+        // first clear. Same rooms and boss, x1.8 HP and x1.3 damage, x1.5 sure gold and XP multiplier, one more ancient
+        // core (PromoteRules), rewarded once a week apart from the raid's own reward. Server: dungeons.json raidHeroic.
+        public const DungeonDifficulty RaidHeroic = DungeonDifficulty.Adventure;
+        public const string RaidHeroicName = "영웅 레이드";
+        public const float RaidHeroicHpMul = 1.8f, RaidHeroicDamageMul = 1.3f, RaidHeroicRewardMul = 1.5f;
+
+        /// <summary>Heroic numbers from a raid's own (id stays Normal so the clear XP floor is the raid's).</summary>
+        static DifficultyDef Heroic(DifficultyDef raid) => new DifficultyDef
+        {
+            id = raid.id, name = RaidHeroicName, recommendedLevel = raid.recommendedLevel, recommendedPower = Mathf.RoundToInt(raid.recommendedPower * 1.3f),
+            hpMul = raid.hpMul * RaidHeroicHpMul, damageMul = raid.damageMul * RaidHeroicDamageMul, rewardMul = raid.rewardMul * RaidHeroicRewardMul,
+            monsterLevel = raid.monsterLevel, revives = raid.revives, minGearRarity = raid.minGearRarity, ticketWeight = raid.ticketWeight, jackpotPerMille = raid.jackpotPerMille,
+        };
+
+        /// <summary>Sure raid gold multiplier of a run (영웅 레이드 x1.5), the same on the server (dungeonResult).</summary>
+        public static float RaidRewardScale(DungeonDef dungeon, DungeonDifficulty d) => dungeon != null && dungeon.isRaid && d == RaidHeroic ? RaidHeroicRewardMul : 1f;
 
         /// <summary>
         /// [J10] Story raid numbers. Chapter 1's mid raid opens around 20 hours of play (Lv 22, quest 1-8), the
@@ -332,7 +354,7 @@ namespace DotRPG
                 Room(MapRegistry.DgnRaid1, new SpawnGroup(1, "skel_knight", 4, 2), new SpawnGroup(2, "skel_shield", 2, 2)),
                 Room(MapRegistry.DgnRaid2, new SpawnGroup(1, "skel_necro", 3, 2), new SpawnGroup(2, "skel_knight", 3, 2)),
                 Boss(MapRegistry.DgnRaidBoss, "boss_skeleton_king", "skel_knight", 0)),
-            bossRoom = 2, referenceSeconds = new[] { 300f, 300f, 300f, 300f }, clearXp = 400,
+            bossRoom = 2, referenceSeconds = new[] { 300f, 450f, 300f, 300f }, clearXp = 400,
             rewards = new RewardEntry[0], raidReward = RaidRewards.King, // [RAID] sure gold + 4 cards, see RaidRewards
             description = "북쪽 고개 너머에서 깨어난 해골왕과 그의 친위대.\n친위대 전초 두 곳을 돌파하고 해골왕을 쓰러뜨리자.",
             specialty = "확정 골드 · 에픽 이상 장비", featureMonster = "해골 기사단, 해골 사령술사", bossName = "해골왕",
@@ -349,7 +371,7 @@ namespace DotRPG
                 Room(MapRegistry.DgnBargas1, new SpawnGroup(1, "skel_knight", 5, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
                 Room(MapRegistry.DgnBargas2, new SpawnGroup(1, "skel_shield", 3, 2), new SpawnGroup(2, "skel_necro", 3, 2)),
                 Boss(MapRegistry.DgnBargasBoss, "boss_bargas", "skel_knight", 0)),
-            bossRoom = 2, referenceSeconds = new[] { 360f, 360f, 360f, 360f }, clearXp = 700,
+            bossRoom = 2, referenceSeconds = new[] { 360f, 540f, 360f, 360f }, clearXp = 700,
             rewards = new[]
             {
                 new RewardEntry(GearReward, 1, 1, 50),
@@ -372,7 +394,7 @@ namespace DotRPG
                 Room(MapRegistry.DgnGolem1, new SpawnGroup(1, "skel_miner", 5, 2), new SpawnGroup(2, "skel_gold", 3, 2)),
                 Room(MapRegistry.DgnGolem2, new SpawnGroup(1, "skel_shield", 4, 2), new SpawnGroup(2, "skel_archer", 3, 2)),
                 Boss(MapRegistry.DgnGolemBoss, "boss_rock_golem", "skel_miner", 0)),
-            bossRoom = 2, referenceSeconds = new[] { 330f, 330f, 330f, 330f }, clearXp = 900,
+            bossRoom = 2, referenceSeconds = new[] { 330f, 495f, 330f, 330f }, clearXp = 900,
             rewards = new[]
             {
                 new RewardEntry(GearReward, 1, 1, 45),
@@ -394,7 +416,7 @@ namespace DotRPG
             rooms = Chain(
                 Room(MapRegistry.DgnGrah1, new SpawnGroup(1, "skel_knight", 6, 2), new SpawnGroup(2, "skel_necro", 3, 2)),
                 Boss(MapRegistry.DgnGrahBoss, "boss_grah", "skel_knight", 0)),
-            bossRoom = 1, referenceSeconds = new[] { 360f, 360f, 360f, 360f }, clearXp = 1500,
+            bossRoom = 1, referenceSeconds = new[] { 360f, 540f, 360f, 360f }, clearXp = 1500,
             rewards = new RewardEntry[0], raidReward = RaidRewards.Grah, // [RAID] sure gold + 4 cards, see RaidRewards
             description = "검은 수호석을 지키는 마족 장수 그라흐.\n석실의 정예를 뚫고 수호자를 쓰러뜨린 뒤, 네 손으로 수호석을 깨라.",
             specialty = "확정 골드 · 레전더리 장비", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",

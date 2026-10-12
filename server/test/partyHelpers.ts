@@ -4,6 +4,7 @@ import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { effectiveHp } from '../src/domains/kills/killRules';
+import { diffOf } from '../src/domains/dungeons/dungeonRules';
 import { auth } from './helpers';
 import { newHero, post, get, type Hero } from './economyHelpers';
 
@@ -140,7 +141,7 @@ export async function honestHostReport(
     'SELECT monster_id, monster_level FROM kill_log WHERE run_id = $1',
     [r.id],
   );
-  const baseMul = dungeon?.isRaid ? (dungeon.raidNumbers as { hpMul: number }).hpMul : (eco.dungeons.difficulties[r.difficulty] as { hpMul: number }).hpMul;
+  const baseMul = (diffOf(eco, dungeon as never, r.difficulty) as { hpMul: number }).hpMul; // 영웅 레이드(난이도 1) 배율 포함
   const hpMul = baseMul * (eco.dungeons.partyHpScale[r.party_size - 1] as number);
   const hp = kills.rows.reduce((a, k) => a + effectiveHp(eco, eco.monsters.get(k.monster_id) as never, k.monster_level, hpMul), 0);
   const each = Math.ceil(hp / heroes.length);

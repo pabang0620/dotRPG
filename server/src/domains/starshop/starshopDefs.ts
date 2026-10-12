@@ -48,6 +48,12 @@ export const GEAR_RARITY_PERMILLE: [string, number][] = [
   ['Uncommon', 6200], ['Rare', 3000], ['Epic', 750], ['Unique', 45], ['Legendary', 5],
 ];
 export const GEAR_RATE_SCALE = 10000;
+/**
+ * 장비 뽑기 천장(0033, Docs/PLAN_SIM_IMPROVEMENTS_2026-10-12.md A). 장비 뽑기(세 종류 합산) 1회마다 +1, max가 차면
+ * 고른 뽑기·단계의 유니크 장비 하나와 교환한다(그 단계에 유니크가 없으면 가장 높은 등급).
+ * max = 유니크 이상 확률(45 + 5 = 50/10000, 기대 200회)의 약 1.5배 = 300회(별조각 30,000).
+ */
+export const GEAR_CEILING = { max: 300, rarity: 'unique' } as const;
 export const GEAR_RARITY_NAME: Record<string, string> = {
   Common: '커먼', Uncommon: '언커먼', Rare: '레어', Epic: '에픽', Unique: '유니크', Legendary: '레전더리',
 };

@@ -58,7 +58,7 @@ const claimW = (h: Hero, day: string, slot: number) => post(app, h, '/dailies/cl
 async function unlockedHero(level: number): Promise<Hero> {
   const h = await newHero(app);
   await seedLevel(h, level);
-  await seedClaims(h, ['c1_stronger']);
+  await seedClaims(h, ['career_path']);
   return h;
 }
 
@@ -110,6 +110,18 @@ describe('일일 의뢰', () => {
     expect(new Set(today.map((s) => s.template_id))).toEqual(new Set(['d_ridge_knights', 'd_ridge_archers', 'd_canyon_dungeon']));
     for (const s of a.slots) {
       expect(s).toMatchObject({ state: 'offered', progress: 0, reward: { xp: Math.round(0.05 * xpToNext(20)), gold: 600 } });
+    }
+  });
+
+  it('Lv16 은 전직 직후 채석장 구간(15~19) 의뢰를 받는다', async () => {
+    const h = await unlockedHero(16);
+    const a = await list(h);
+    expect(a.unlocked).toBe(true);
+    // Lv16: 채석장(18)까지는 후보, 붉은 돌 고개(14)는 당연히 후보
+    const pool = new Set(['d_pass_golems', 'd_pass_miners', 'd_mine_miners', 'd_mine_shields', 'd_quarry_dungeon']);
+    for (const s of a.slots) {
+      expect(pool.has(s.template_id)).toBe(true);
+      expect(s.reward).toEqual({ xp: Math.round(0.05 * xpToNext(16)), gold: 450 });
     }
   });
 

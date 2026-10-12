@@ -8,6 +8,7 @@ import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import { getRng } from '../../utils/rng';
 import * as charRepo from '../characters/characterRepository';
+import * as ceilings from '../ceilings/ceilingRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import {
@@ -16,6 +17,7 @@ import {
   DUPLICATE_REFUND,
   GAUGE,
   GEAR_BANNERS,
+  GEAR_CEILING,
   GEAR_RARITY_NAME,
   GEAR_RARITY_PERMILLE,
   GEAR_RATE_SCALE,
@@ -135,6 +137,7 @@ export async function summary(accountId: number, characterUuid: string) {
     aura_gauge_max: AURA_GAUGE_MAX,
     skin_gauge_max: SKIN_GAUGE_MAX,
     rates_version: RATES_VERSION,
+    gear_ceiling: gearCeilingView((await ceilings.readCeilings(db, accountId)).gear),
     price_one: PULL_PRICE,
     price_ten: TEN_PRICE,
     ten_count: TEN_COUNT,
@@ -184,6 +187,11 @@ export async function summary(accountId: number, characterUuid: string) {
   };
 }
 
+/** 장비 뽑기 천장 보기(0033) */
+export function gearCeilingView(gauge: number) {
+  return { gauge, max: GEAR_CEILING.max, ready: gauge >= GEAR_CEILING.max, rarity: GEAR_CEILING.rarity };
+}
+
 /** 등급 굴림. rareOrBetter: 10+1의 보너스 1회(일반 제외, 나머지는 같은 비율) */
 function rollRarity(banner: CosmeticBanner, rareOrBetter = false): Rarity {
   const w = BANNER_WEIGHT[banner];
@@ -200,7 +208,7 @@ function rollRarity(banner: CosmeticBanner, rareOrBetter = false): Rarity {
 /**
  * 뽑기. 오라 뽑기는 등급을 먼저 정하고(천장이면 유니크 확정), 그 등급에서 아직 없는 오라 중 하나를 같은 확률로
  * 고른다. 그 등급을 모두 가졌으면 중복으로 나오고 별조각을 돌려준다. 유니크가 나오면 천장은 0으로 돌아간다.
- * 장비 뽑기는 등급표대로 하나씩 가방에 넣는다(천장·중복 처리 없음).
+ * 장비 뽑기는 등급표대로 하나씩 가방에 넣고 천장 게이지를 올린다(교환은 gearCeiling.ts, 중복 처리 없음).
  */
 export function pull(accountId: number, characterUuid: string, body: PullBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;
@@ -227,6 +235,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       await assertSpendAllowed(db, accountId, price, ctx.now);
       let balance = (await wallets.debit(db, { accountId, reason: 'gacha', price, ref: `${banner}_${body.count}`, requestId })).balance;
       const rows: repo.PullRow[] = [];
+      let gearCeiling: number | null = null;
       let pity = banner === 'skin' ? wallet.skinPity : wallet.pity;
       if (banner === 'aura' || banner === 'skin') {
         const r = await rollAuras(ctx, accountId, banner, times, pity, rows);
@@ -239,6 +248,8 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
           throw new AppError(422, '아직 열리지 않은 레벨 단계입니다.', 'GACHA_TIER_LOCKED', { need: TIER_LEVELS[tier], have: ctx.char.level });
         }
         await rollGear(ctx, banner, times, rows, body.count, tier);
+        // 천장 게이지(장비 뽑기 세 종류 합산). 락 순서상 마지막
+        gearCeiling = await ceilings.addGauge(db, accountId, 'gear', times);
       }
       await repo.insertPulls(db, accountId, requestId, RATES_VERSION, banner, rows);
       return {
@@ -250,6 +261,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
           balance,
           pity,
           pity_max: banner === 'skin' ? SKIN_GAUGE_MAX : AURA_GAUGE_MAX,
+          ...(gearCeiling === null ? {} : { gear_ceiling: gearCeilingView(gearCeiling) }),
           rates_version: RATES_VERSION,
         },
       };

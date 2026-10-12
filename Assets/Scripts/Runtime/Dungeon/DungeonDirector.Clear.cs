@@ -66,7 +66,7 @@ namespace DotRPG
                 run.Cards = auth.DealCards(run, Game.Player.Class);
                 if (run.Dungeon.isRaid)
                 {
-                    Progress.ClaimRaid(run.Dungeon, now);
+                    Progress.ClaimRaid(run.Dungeon, now, run.Difficulty);
                     PayRaidKeys(run.Dungeon);
                 }
             }
@@ -117,7 +117,7 @@ namespace DotRPG
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));
                 else if (run.Dungeon.isRaid)
                 {
-                    Progress.ClaimRaid(run.Dungeon, ResetClock.Now); // the server paid this period's reward
+                    Progress.ClaimRaid(run.Dungeon, ResetClock.Now, run.Difficulty); // the server paid this period's reward
                     run.RaidGold = MiniJson.Int(raid, "gold_gain");
                     run.RaidCoreGain = MiniJson.Int(raid, "core_gain");
                     run.RaidKeyGain = MiniJson.Int(raid, "key_gain");

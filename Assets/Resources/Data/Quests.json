@@ -622,6 +622,54 @@
    }
   },
   {
+   "id": "gate_l18",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "채석장 바깥 정리",
+   "summary": "채석장 안쪽으로 들어가기 전에 바깥의 골렘 돌격병을 더 줄여 두자고 누리가 말한다.",
+   "requires": [
+    "c1_quarry"
+   ],
+   "requiresFlags": [],
+   "minLevel": 16,
+   "giver": "trader",
+   "offerDialogue": "gate_l18_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "gate_l18_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "버려진 채석장의 골렘 돌격병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 80,
+       "text": "골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1080,
+    "gold": 3500,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
    "id": "c1_scout",
    "chapter": 1,
    "kind": "main",
@@ -668,6 +716,54 @@
    "reward": {
     "xp": 3220,
     "gold": 6000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "gate_l20",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "흑철 진영 대비",
+   "summary": "흑철의 바르가스와 맞서기 전에 채석장 수호병을 상대로 실력을 다지자고 카엘이 말한다.",
+   "requires": [
+    "c1_scout"
+   ],
+   "requiresFlags": [],
+   "minLevel": 18,
+   "giver": "kael",
+   "offerDialogue": "gate_l20_offer",
+   "turnIn": "kael",
+   "turnInDialogue": "gate_l20_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "버려진 채석장의 골렘 수호병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 80,
+       "text": "골렘 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1660,
+    "gold": 4000,
     "items": [
      {
       "id": "potion_hp",
@@ -1240,6 +1336,54 @@
     "xp": 2970,
     "gold": 9000,
     "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "gate_l24",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "능선 경계 근무",
+   "summary": "다음 싸움을 앞두고 바람칼 능선의 골렘 전사를 상대로 단련하라고 레오나가 명한다.",
+   "requires": [
+    "c2_mine"
+   ],
+   "requiresFlags": [],
+   "minLevel": 22,
+   "giver": "leona",
+   "offerDialogue": "gate_l24_offer",
+   "turnIn": "leona",
+   "turnInDialogue": "gate_l24_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "바람칼 능선의 암석 골렘 전사를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 80,
+       "text": "암석 골렘 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_ridge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3350,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
     "maxHealth": 0,
     "setFlags": []
    }
@@ -2123,6 +2267,54 @@
    }
   },
   {
+   "id": "gate_l27",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "눈길 익히기",
+   "summary": "설원에 갓 온 용사에게 촌장 세라가 서리 소나무 숲에서 눈길에 익숙해지라고 권한다.",
+   "requires": [
+    "c2_north"
+   ],
+   "requiresFlags": [],
+   "minLevel": 25,
+   "giver": "winter_elder",
+   "offerDialogue": "gate_l27_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "gate_l27_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "서리 소나무 숲의 설산 예티를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 80,
+       "text": "설산 예티 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 5160,
+    "gold": 7000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
    "id": "w_edge",
    "chapter": 2,
    "kind": "main",
@@ -2180,6 +2372,54 @@
    }
   },
   {
+   "id": "gate_l29",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "여관 손님 지키기",
+   "summary": "호숫가 길이 열리기 전까지 여관 손님을 노리는 예티 투척병을 쫓아 달라고 보라가 부탁한다.",
+   "requires": [
+    "w_edge"
+   ],
+   "requiresFlags": [],
+   "minLevel": 27,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "gate_l29_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "gate_l29_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "서리 소나무 숲의 설산 예티 투척병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 80,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 6300,
+    "gold": 8000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
    "id": "w_lakeroad",
    "chapter": 2,
    "kind": "main",
@@ -2225,6 +2465,54 @@
    ],
    "reward": {
     "xp": 11540,
+    "gold": 9000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "gate_l31",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호숫가 정찰",
+   "summary": "얼음 낚시터에 들어가기 전에 호숫가의 예티 수호병을 정리하자고 하람이 말한다.",
+   "requires": [
+    "w_lakeroad"
+   ],
+   "requiresFlags": [],
+   "minLevel": 29,
+   "giver": "winter_hunter",
+   "offerDialogue": "gate_l31_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "gate_l31_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "얼어붙은 호숫가의 설산 예티 수호병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 80,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 7200,
     "gold": 9000,
     "items": [
      {
@@ -2294,6 +2582,54 @@
    }
   },
   {
+   "id": "gate_l33",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호숫가의 불침번",
+   "summary": "호숫가 불빛을 살피기 전에 예티 전사들을 막아 달라고 세라가 부탁한다.",
+   "requires": [
+    "w_lake"
+   ],
+   "requiresFlags": [],
+   "minLevel": 31,
+   "giver": "winter_elder",
+   "offerDialogue": "gate_l33_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "gate_l33_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "얼어붙은 호숫가의 설산 예티 전사를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 80,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 8160,
+    "gold": 10000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
    "id": "w_lakelight",
    "chapter": 2,
    "kind": "main",
@@ -2340,6 +2676,54 @@
    "reward": {
     "xp": 14730,
     "gold": 12000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "gate_l35",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "봉우리 길 채비",
+   "summary": "눈보라 봉우리로 떠나기 전에 호숫가 투척병을 정리하며 채비하라고 보라가 권한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 33,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "gate_l35_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "gate_l35_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "얼어붙은 호숫가의 설산 예티 투척병을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 80,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 9180,
+    "gold": 11000,
     "items": [
      {
       "id": "potion_mp",
@@ -2981,6 +3365,54 @@
      {
       "id": "ticket_protect",
       "count": 1
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "gate_l16",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "고개 길 순찰",
+   "summary": "채석장 길을 뚫기 전에 붉은 돌 고개에서 몸을 풀어 두라고 누리가 권한다.",
+   "requires": [
+    "career_path"
+   ],
+   "requiresFlags": [],
+   "minLevel": 15,
+   "giver": "trader",
+   "offerDialogue": "gate_l16_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "gate_l16_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "붉은 돌 고개의 암석 골렘을 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 80,
+       "text": "암석 골렘 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_pass"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 840,
+    "gold": 3000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
      }
     ],
     "maxHealth": 0,
@@ -4153,7 +4585,7 @@
    "title": "매일의 의뢰",
    "summary": "촌장 모리가 마을 게시판의 일일·주간 의뢰를 맡아 달라고 한다.",
    "requires": [
-    "c1_stronger"
+    "career_path"
    ],
    "requiresFlags": [],
    "minLevel": 0,

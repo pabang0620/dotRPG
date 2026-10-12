@@ -64,6 +64,7 @@ namespace DotRPG
             TextOf(ten).text = Sealed ? $"10+1회 · 별조각 {CashClient.PriceEleven:N0}" : $"{StarShopClient.TenCount - 1}+1회 · 별조각 {StarShopClient.PriceTen:N0}";
             one.interactable = ten.interactable = online && StarShopClient.Loaded && !busy;
             RefreshTierPicker(!hasPity && !Sealed && online && StarShopClient.Loaded);
+            RefreshCeiling(online);
             if (rateModal.gameObject.activeSelf) rateText.text = RateText();
             DrawCells();
         }
@@ -125,7 +126,8 @@ namespace DotRPG
             else
             {
                 sb.Append("· 등급을 먼저 정하고, 그 등급의 장비 중 하나가 같은 확률로 나옵니다. 그 뽑기에 없는 등급의 몫은 가장 낮은 등급이 가집니다.\n");
-                sb.Append("· 뽑은 장비는 +0으로 바로 가방에 들어갑니다. 선택 게이지는 없습니다.\n");
+                sb.Append("· 뽑은 장비는 +0으로 바로 가방에 들어갑니다.\n");
+                sb.Append($"· 천장: 장비 뽑기(무기·방어구·장신구 합산) 1회마다 1칸 찹니다. {StarShopClient.GearCeilingMax}칸이 다 차면 고른 뽑기·레벨 단계의 유니크 장비 중 하나를 고릅니다(그 단계에 유니크가 없으면 가장 높은 등급). 고르면 {StarShopClient.GearCeilingMax}칸 줄고 넘친 칸은 남습니다. 뽑기에서 자연히 나와도 게이지는 줄지 않습니다.\n");
             }
             sb.Append($"· 10+1회는 별조각 {StarShopClient.PriceTen:N0}로 {StarShopClient.TenCount}회를 뽑습니다(마지막 1회가 보너스). "
                 + (banner == "aura" || banner == "skin" ? "보너스 1회는 희귀 이상만 나옵니다." : "보너스 1회도 위 확률 그대로입니다.") + "</color>");

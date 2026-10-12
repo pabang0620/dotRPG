@@ -110,7 +110,7 @@ namespace DotRPG
             string rule = weekly ? "주 3개 · 목요일 06:00 초기화 · 이월 없음" : "하루 3개 · 못 한 의뢰는 다음 날까지";
             header.text = !online ? "<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>"
                 : !DailyQuestClient.Loaded ? "<color=#8c96a8>불러오는 중입니다...</color>"
-                : !DailyQuestClient.Unlocked ? "<color=#8c96a8>1-19 '강해져야 한다'를 마치면 열립니다.</color>"
+                : !DailyQuestClient.Unlocked ? "<color=#8c96a8>1-15 '전직의 길'을 마치면 열립니다.</color>"
                 : $"{(string.IsNullOrEmpty(DailyQuestClient.Giver) ? "" : DailyQuestClient.Giver + "  ·  ")}<color=#b8c4d8>{rule}</color>  ·  <color=#8c96a8>{reset}</color>";
             refresh.gameObject.SetActive(online);
             refresh.interactable = !DailyQuestClient.Busy;

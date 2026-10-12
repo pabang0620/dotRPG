@@ -5,6 +5,7 @@
   "priceEleven": 1000,
   "elevenCount": 11,
   "boosterEvery": 10,
+  "ceiling": { "every": 100, "reward": { "item_key": "ticket_enh12", "count": 1 } },
   "rows": [
     { "id": "potion_hi_x5", "rate": 36.158, "tier": "common", "grade": "normal", "rewards": [{ "item_key": "potion_hp_hi", "count": 5 }, { "item_key": "potion_mp_hi", "count": 5 }] },
     { "id": "buff_power", "rate": 27.624, "tier": "common", "grade": "normal", "rewards": [{ "item_key": "scroll_power", "count": 1 }] },

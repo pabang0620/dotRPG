@@ -178,7 +178,7 @@ async function beginRun(ctx: PartyCtx, run: PartyRunRow): Promise<'begun' | 'can
   // 4. 멤버마다 dungeon_runs(전원 같은 started_at). 요일 던전은 입장 횟수를 쓴다
   const resetDay = new Date(resetBoundaries(ctx.now).dailyStartAt);
   for (const m of standing) {
-    const lock = await lockAtEntry(ctx.client, m.character_id, dungeon, humanCount, ctx.now);
+    const lock = await lockAtEntry(ctx.client, m.character_id, dungeon, humanCount, ctx.now, run.difficulty);
     const dr = await dungeonRepo.insertRun(ctx.client, {
       characterId: m.character_id,
       dungeonId: run.dungeon_id,

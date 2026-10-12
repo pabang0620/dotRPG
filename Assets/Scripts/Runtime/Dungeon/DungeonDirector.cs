@@ -89,7 +89,8 @@ namespace DotRPG
             if (busy || (Game.Flow != null && Game.Flow.IsTransitioning)) return "잠시 후에 다시 시도하세요.";
             if (Game.Player == null || Game.Player.IsDead) return "쓰러진 상태로는 입장할 수 없습니다.";
             if (!ResetClock.IsOpen(dungeon, now)) return $"오늘({DungeonDatabase.DayName(ResetClock.GameDay(now))})은 열리지 않는 던전입니다.";
-            if (!Progress.IsUnlocked(dungeon, difficulty)) return $"{DungeonDatabase.Difficulty(difficulty - 1).name} 난이도를 먼저 클리어해야 합니다.";
+            if (!Progress.IsUnlocked(dungeon, difficulty))
+                return dungeon.isRaid ? $"{dungeon.name} 레이드를 먼저 한 번 클리어해야 합니다." : $"{DungeonDatabase.Difficulty(difficulty - 1).name} 난이도를 먼저 클리어해야 합니다.";
             if (dungeon.isRaid)
             {
                 // [RAID] The story opens each raid; a final raid needs the seal key fragments in the bag.

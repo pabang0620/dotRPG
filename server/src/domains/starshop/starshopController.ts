@@ -4,8 +4,9 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './starshopService';
+import { claimGearCeiling } from './gearCeiling';
 import * as synthService from './starshopSynth';
-import type { ClaimBody, CollectionBody, DismantleBody, ExchangeBody, PullBody, SynthBody } from './starshopValidation';
+import type { ClaimBody, CollectionBody, DismantleBody, ExchangeBody, GearCeilingBody, PullBody, SynthBody } from './starshopValidation';
 
 type P = { uuid: string };
 const acc = (res: Response) => getAccount(res.locals).id;
@@ -68,6 +69,15 @@ export async function collection(_req: Request, res: Response, next: NextFunctio
   try {
     const { body, params } = getValidated<CollectionBody, P>(res);
     sendStored(res, await synthService.registerCollection(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function gearCeiling(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<GearCeilingBody, P>(res);
+    sendStored(res, await claimGearCeiling(acc(res), params.uuid, body));
   } catch (err) {
     next(err);
   }

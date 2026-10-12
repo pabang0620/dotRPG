@@ -20,7 +20,8 @@ const killTemplate = z.strictObject({
 });
 const dungeonTemplate = z.strictObject({ id, type: z.literal('dungeon'), title: text, text, count: z.number().int().min(1).max(20) });
 /** 주간 전용: 수락 이후 그 레이드 클리어 수 */
-const raidTemplate = z.strictObject({ id, type: z.literal('raid'), title: text, text, target: z.string().min(1), count: z.number().int().min(1).max(10) });
+/** minDifficulty 1 = 영웅 레이드 클리어만 센다(dungeons.json raidHeroic) */
+const raidTemplate = z.strictObject({ id, type: z.literal('raid'), title: text, text, target: z.string().min(1), count: z.number().int().min(1).max(10), minDifficulty: z.number().int().min(0).max(1).optional() });
 /** 주간 전용: 수락 이후 청구한 일일 의뢰 수 */
 const dailyTemplate = z.strictObject({ id, type: z.literal('daily'), title: text, text, count: z.number().int().min(1).max(50) });
 const templateSchema = z.discriminatedUnion('type', [killTemplate, dungeonTemplate, raidTemplate, dailyTemplate]);

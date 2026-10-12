@@ -68,19 +68,21 @@ namespace DotRPG
         }
 
         /// <summary>Chips of the select window for a raid: the sure gold, its material, gear, then what the cards can also give.</summary>
-        static List<(string icon, string name, bool special)> RaidSlots(DungeonDef dungeon, CharacterClass cls)
+        static List<(string icon, string name, bool special)> RaidSlots(DungeonDef dungeon, CharacterClass cls, bool heroic = false)
         {
             var def = dungeon.raidReward;
+            var tier = heroic ? DungeonDatabase.RaidHeroic : DungeonDifficulty.Normal; // [RAID] 영웅 레이드: gold x1.5, one more core
+            float goldMul = DungeonDatabase.RaidRewardScale(dungeon, tier);
             var slots = new List<(string, string, bool)>
             {
-                (DungeonDatabase.ItemIcon(ConsumableDatabase.Gold), $"확정 골드\n{def.goldMin:N0}~{def.goldMax:N0}", true),
+                (DungeonDatabase.ItemIcon(ConsumableDatabase.Gold), $"확정 골드\n{Mathf.RoundToInt(def.goldMin * goldMul):N0}~{Mathf.RoundToInt(def.goldMax * goldMul):N0}", true),
                 (DungeonDatabase.ItemIcon(def.materialItem), DungeonDatabase.ItemName(def.materialItem), true),
                 (GearIcon(cls, ItemRarity.Epic), $"{EquipmentDatabase.RarityName(ItemRarity.Epic)} 이상 장비", true),
             };
             var seen = new HashSet<string> { def.materialItem, DungeonDatabase.GearReward };
             foreach (var entry in def.cards)
                 if (seen.Add(entry.itemId)) slots.Add((DungeonDatabase.ItemIcon(entry.itemId), DungeonDatabase.ItemName(entry.itemId), false));
-            int cores = PromoteRules.CoreGain(dungeon, DungeonDifficulty.Normal);
+            int cores = PromoteRules.CoreGain(dungeon, tier);
             if (cores > 0) slots.Add((DungeonDatabase.ItemIcon(DungeonDatabase.RaidCore), $"고대의 핵 x{cores}", true));
             return slots;
         }

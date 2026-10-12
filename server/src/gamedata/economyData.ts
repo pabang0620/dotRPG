@@ -275,6 +275,10 @@ const dungeonsSchema = z.looseObject({
   }),
   minClearSeconds: z.array(z.number().min(0)).length(4),
   raidMinClearSeconds: z.record(z.string(), z.number().min(0)).default({}),
+  /** 영웅 레이드(레이드 난이도 1): 그 레이드의 raidNumbers에 곱하는 배율. 없으면 영웅 레이드가 없다 */
+  raidHeroic: z
+    .looseObject({ name: z.string().default('영웅 레이드'), hpMul: z.number().positive(), damageMul: z.number().positive(), rewardMul: z.number().positive() })
+    .optional(),
   keyItem: z.string().min(1),
   mercenary: z.looseObject({ damageScale: z.number().positive(), maxCompanions: z.number().int().min(0) }),
   dungeons: z.array(
@@ -388,6 +392,7 @@ export interface EconomyData {
     ranking: z.infer<typeof dungeonsSchema>['ranking'];
     minClearSeconds: number[];
     raidMinClearSeconds: Record<string, number>;
+    raidHeroic: { name: string; hpMul: number; damageMul: number; rewardMul: number } | null;
     keyItem: string;
     mercenary: { damageScale: number; maxCompanions: number };
   };
@@ -600,6 +605,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       ranking: dng.ranking,
       minClearSeconds: dng.minClearSeconds,
       raidMinClearSeconds: dng.raidMinClearSeconds,
+      raidHeroic: dng.raidHeroic ?? null,
       keyItem: dng.keyItem,
       mercenary: { damageScale: dng.mercenary.damageScale, maxCompanions: dng.mercenary.maxCompanions },
     },

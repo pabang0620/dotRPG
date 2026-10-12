@@ -10,5 +10,9 @@ export const pullBody = z.strictObject({
 });
 export const openBody = z.strictObject({ request_id: requestId, item_key: itemIdSchema });
 
+/** 천장 교환: 보상은 서버 표가 정한다 */
+export const ceilingBody = z.strictObject({ request_id: requestId });
+export type CeilingBody = z.infer<typeof ceilingBody>;
+
 export type PullBody = z.infer<typeof pullBody>;
 export type OpenBody = z.infer<typeof openBody>;

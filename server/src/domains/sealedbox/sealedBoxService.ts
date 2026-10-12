@@ -8,6 +8,7 @@ import { getSealedBox, sealedTable, type RatedRow, type SealedData } from '../..
 import { AppError } from '../../utils/AppError';
 import { getRng } from '../../utils/rng';
 import { assertNoHold } from '../antiabuse/holds';
+import * as ceilings from '../ceilings/ceilingRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import { assertSpendAllowed } from '../starshop/starSpend';
@@ -29,6 +30,11 @@ export interface OpenResult {
   rewards: ItemCount[];
   row_id: string;
   grade: string;
+}
+
+/** 천장 게이지 보기(0033): gauge가 every 이상이면 reward 하나와 교환할 수 있다 */
+export function ceilingView(gauge: number, d: SealedData = getSealedBox()) {
+  return { gauge, max: d.ceiling.every, ready: gauge >= d.ceiling.every, reward: d.ceiling.reward };
 }
 
 export function boosterView(gauge: number, d: SealedData = getSealedBox()): { gauge: number; next_boosted: boolean } {
@@ -62,7 +68,9 @@ function tableView(table: RatedRow[]) {
 export async function summary(accountId: number) {
   const d = getSealedBox();
   const s = await repo.readState(getPool(), accountId);
+  const c = await ceilings.readCeilings(getPool(), accountId);
   return {
+    ceiling: ceilingView(c.sealed, d),
     price_one: d.priceOne,
     price_eleven: d.priceEleven,
     eleven_count: d.elevenCount,
@@ -133,10 +141,12 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       }
       await grantItems(ctx, results.flatMap((r) => r.rewards), 'sealed_box', `sealed_${body.count}`);
       await repo.saveState(db, accountId, state);
+      // 천장 게이지: 연 횟수만큼(11연은 11). 락 순서상 마지막
+      const ceiling = await ceilings.addGauge(db, accountId, 'sealed', times);
       await repo.insertPulls(db, { accountId, characterId: ctx.char.id, requestId, version: d.ratesVersion, rows: log });
       return {
         status: 200,
-        data: { results, booster: boosterView(state.gauge, d), delta: ctx.delta(), balance: paid.balance, rates_version: d.ratesVersion },
+        data: { results, booster: boosterView(state.gauge, d), ceiling: ceilingView(ceiling, d), delta: ctx.delta(), balance: paid.balance, rates_version: d.ratesVersion },
       };
     },
   });
@@ -185,6 +195,7 @@ export function openItem(accountId: number, characterUuid: string, body: OpenBod
       const o = openOnce(d, state);
       await grantItems(ctx, o.result.rewards, 'box_open', body.item_key);
       await repo.saveState(ctx.client, accountId, state);
+      const ceiling = await ceilings.addGauge(ctx.client, accountId, 'sealed', 1);
       await repo.insertPulls(ctx.client, {
         accountId,
         characterId: ctx.char.id,
@@ -192,7 +203,7 @@ export function openItem(accountId: number, characterUuid: string, body: OpenBod
         version: d.ratesVersion,
         rows: [{ seq: 0, source: 'sealed_item', rowId: o.result.row_id, itemKey: o.result.item_key, count: o.result.count, tier: o.result.tier, boosted: o.result.boosted, rate: o.rate, gaugeBefore: o.before, gaugeAfter: o.after }],
       });
-      return { status: 200, data: { item_key: body.item_key, results: [o.result], booster: boosterView(state.gauge, d), delta: ctx.delta() } };
+      return { status: 200, data: { item_key: body.item_key, results: [o.result], booster: boosterView(state.gauge, d), ceiling: ceilingView(ceiling, d), delta: ctx.delta() } };
     },
   });
 }

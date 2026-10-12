@@ -78,13 +78,14 @@ export async function killsSince(db: Queryable, characterId: number, mapId: stri
 }
 
 /** 수락 이후 주어진 던전들의 클리어 수: 직접 클리어 + 소탕(레이드는 소탕이 없어 직접 클리어만 잡힌다) */
-export async function clearsSince(db: Queryable, characterId: number, dungeonIds: string[], since: Date): Promise<number> {
+/** minDifficulty > 0 이면 그 난이도 이상의 직접 클리어만 센다(영웅 레이드 주간 의뢰). 소탕은 난이도 0 의뢰에만 더한다 */
+export async function clearsSince(db: Queryable, characterId: number, dungeonIds: string[], since: Date, minDifficulty = 0): Promise<number> {
   const r = await db.query<{ n: string }>(
     `SELECT (SELECT count(*) FROM dungeon_runs
-              WHERE character_id = $1 AND state = 'cleared' AND ended_at >= $3 AND dungeon_id = ANY($2::text[]))
+              WHERE character_id = $1 AND state = 'cleared' AND ended_at >= $3 AND dungeon_id = ANY($2::text[]) AND difficulty >= $4)
           + (SELECT count(*) FROM dungeon_sweeps
-              WHERE character_id = $1 AND created_at >= $3 AND dungeon_id = ANY($2::text[])) AS n`,
-    [characterId, dungeonIds, since],
+              WHERE character_id = $1 AND created_at >= $3 AND dungeon_id = ANY($2::text[]) AND $4 = 0) AS n`,
+    [characterId, dungeonIds, since, minDifficulty],
   );
   return Number((r.rows[0] as { n: string }).n);
 }

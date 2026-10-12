@@ -4,7 +4,7 @@ import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { anomalyKinds, countOf, expectLedgerConsistent, fakeRng, seedClaims, seedItem, seedLevel } from './economyHelpers';
-import { clearAll, formParty, get, honestHostReport, newHero, post, roomsOf, stats, startAndBegin, type Hero } from './partyHelpers';
+import { clearAll, formParty, get, honestHostReport, newHero, patch, post, raw, roomsOf, stats, startAndBegin, type Hero } from './partyHelpers';
 
 const app = buildApp();
 const WED = '2026-10-07T03:00:00Z'; // 수요일 12:00 KST: 해골왕·바위 심장 열림
@@ -174,9 +174,9 @@ describe('레이드 입장(솔로, AI 동반)', () => {
 });
 
 /** 레이드 파티 판을 만들어 모두 클리어하고 방장 보고까지 보낸다. 정산(result)은 호출 쪽 몫 */
-async function raidParty(dungeonId: string, heroes: Hero[], step: number, totalSec: number) {
+async function raidParty(dungeonId: string, heroes: Hero[], step: number, totalSec: number, form = true) {
   const [host, ...members] = heroes as [Hero, ...Hero[]];
-  await formParty(app, host, members, { dungeon_id: dungeonId, difficulty: 0 });
+  if (form) await formParty(app, host, members, { dungeon_id: dungeonId, difficulty: 0 });
   const { runId, runs } = await startAndBegin(app, host, members);
   const t0 = fixed.getTime();
   for (const h of heroes) {
@@ -292,5 +292,53 @@ describe('레이드 파티 정산', () => {
     expect(res.body.data).toMatchObject({ granted_xp: 0, card_count: 0 });
     expect(res.body.data.raid).toEqual({ reward_locked: true, lock_reason: 'TOO_FEW_HUMANS' });
     expect((await getPool().query('SELECT count(*) AS n FROM raid_claims WHERE character_id = $1', [host.dbId])).rows[0]).toEqual({ n: '0' });
+  });
+});
+
+describe('영웅 레이드(난이도 1)', () => {
+  it('일반 레이드를 한 번 클리어해야 열리고, 보상은 주 1회로 일반 보상과 따로 센다(골드 x1.5, 고대의 핵 +1)', async () => {
+    const host = await raidHero(20, ['c1_fortress']);
+    const member = await raidHero(20, ['c1_fortress']);
+    // 클리어 전: 솔로·파티 모두 잠김, GET /raids도 잠김
+    const solo = await post(app, host, '/dungeon-runs', { dungeon_id: 'raid_skeleton_king', difficulty: 1 });
+    expect(solo.body.errors.code).toBe('DIFFICULTY_LOCKED');
+    const before = (await get(app, host, '/raids')).body.data.raids.find((r: { id: string }) => r.id === 'raid_skeleton_king');
+    expect(before.heroic).toMatchObject({ name: '영웅 레이드', unlocked: false, period_kind: 'weekly', hp_mul: 1.8, reward_mul: 1.5 });
+
+    // 일반 레이드 클리어(보상 청구 daily 1건)
+    const first = await raidParty('raid_skeleton_king', [host, member], 20, 300);
+    const body0 = { outcome: 'cleared', stats: stats({ elapsed_ms: first.elapsed, max_combo: 300 }) };
+    await result(host, first.runs.get(host.id) as string, body0);
+    expect((await result(member, first.runs.get(member.id) as string, body0)).body.data.result).toBe('cleared');
+    await post(app, host, `/dungeon-runs/${first.runs.get(host.id)}/settle`, {});
+    expect((await get(app, host, '/raids')).body.data.raids.find((r: { id: string }) => r.id === 'raid_skeleton_king').heroic)
+      .toMatchObject({ unlocked: true, reward_available: true });
+
+    // 같은 파티로 영웅 레이드: 목적 난이도를 바꾸면 준비가 풀리므로 다시 준비한다
+    expect((await patch(app, host, '/party', { dungeon_id: 'raid_skeleton_king', difficulty: 1 })).status).toBe(200);
+    expect((await raw(app, member, '/party/ready', { ready: true })).status).toBe(200);
+    const hero = await raidParty('raid_skeleton_king', [host, member], 36, 600, false);
+    const body1 = { outcome: 'cleared', stats: stats({ elapsed_ms: hero.elapsed, max_combo: 300 }) };
+    expect((await result(host, hero.runs.get(host.id) as string, body1)).body.data.result).toBe('pending');
+    const rm = await result(member, hero.runs.get(member.id) as string, body1);
+    expect(rm.body.data.result).toBe('cleared');
+    // 확정 골드 3000 x 1.5, 중간 레이드 영웅 난이도 고대의 핵 2개(일반 1개)
+    expect(rm.body.data.raid).toMatchObject({ reward_locked: false, gold_gain: 4500, core_gain: 2 });
+    const claims = await getPool().query('SELECT difficulty, period_kind FROM raid_claims WHERE character_id = $1 ORDER BY difficulty', [member.dbId]);
+    expect(claims.rows).toEqual([{ difficulty: 0, period_kind: 'daily' }, { difficulty: 1, period_kind: 'weekly' }]);
+    await expectLedgerConsistent(member);
+
+    // 같은 날 다시: 영웅 레이드는 이번 주(목 06:00 기준)에 이미 받아 연습 입장이다
+    const st = (await get(app, member, '/raids')).body.data.raids.find((r: { id: string }) => r.id === 'raid_skeleton_king');
+    expect(st.heroic.reward_available).toBe(false);
+    expect((await post(app, member, '/party/leave', {})).status).toBeLessThan(300);
+    const again = await post(app, member, '/dungeon-runs', { dungeon_id: 'raid_skeleton_king', difficulty: 1 });
+    expect(again.status).toBe(201);
+    expect(again.body.data.run).toMatchObject({ reward_locked: true, lock_reason: 'ALREADY_CLAIMED' });
+    // 다음 주 토요일(목요일 리셋 뒤)에는 다시 받을 수 있다
+    at(SAT);
+    expect((await get(app, member, '/raids')).body.data.raids.find((r: { id: string }) => r.id === 'raid_skeleton_king').heroic.reward_available).toBe(true);
+    // 없는 난이도
+    expect((await post(app, member, '/dungeon-runs', { dungeon_id: 'raid_skeleton_king', difficulty: 2 })).body.errors.code).toBe('DIFFICULTY_LOCKED');
   });
 });

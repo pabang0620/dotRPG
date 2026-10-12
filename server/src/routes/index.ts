@@ -31,6 +31,7 @@ import { createSweepRouter } from '../domains/sweep/sweepRoutes';
 import { createReviveRouter } from '../domains/revive/reviveRoutes';
 import { createPaymentsRouter } from '../domains/payments/paymentsRoutes';
 import { createLevelRewardsRouter } from '../domains/levelrewards/levelRewardsRoutes';
+import { createStarPassRouter } from '../domains/starpass/starPassRoutes';
 import { createSkillStyleRouter } from '../domains/skillstyles/skillStyleRoutes';
 import { createDailyRouter } from '../domains/dailies/dailyRoutes';
 import { createClientErrorRouter } from '../domains/clienterrors/clientErrorRoutes';
@@ -86,6 +87,8 @@ export function createRouter(): Router {
   r.use(createPaymentsRouter());
   // 13단계: 레벨 달성 보상(캐릭터 경로에서 현재 레벨 검사, 계정당 단계별 1회)
   r.use(createLevelRewardsRouter());
+  // 별빛 정기권(30일 정액): 상태는 계정 단위, 일일 지급은 캐릭터 경로
+  r.use(createStarPassRouter());
   r.use(createSkillStyleRouter());
   // 14단계: 봉인된 상자(캐시샵 뽑기·상자 아이템 열기), 강화권(enhance), 성장 패스(level-rewards)
   r.use(createSealedBoxRouter());

@@ -46,7 +46,7 @@ namespace DotRPG
                 s.tabs.Add(StoreButton(s.layout, "Tab_" + t, TabNames[i], TopLeft, TopLeft, new Vector2(i * 146f, 0f), new Vector2(138f, TabH), () => s.SelectTab(t), 19));
             }
             s.gacha = StoreButton(s.layout, "Gacha", "캐시샵 (뽑기)", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
-            s.wallet = Label(s.layout, "Wallet", "", 19, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-212f, 0f), new Vector2(300f, TabH), TextAnchor.MiddleRight);
+            s.wallet = Label(s.layout, "Wallet", "", 19, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-212f, 0f), new Vector2(400f, TabH), TextAnchor.MiddleRight);
 
             // Left: the list of the current tab, scrolling inside its panel.
             var list = Panel(s.layout, "Catalog", TopLeft, TopLeft, new Vector2(0f, -(TabH + 10f)), new Vector2(ListW, 480f), UiTheme.Panel);
@@ -104,6 +104,7 @@ namespace DotRPG
                 new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(900f, 26f), TextAnchor.MiddleLeft);
             s.store.Changed += s.Refresh;
             StarShopClient.Changed += s.Refresh;
+            StarPassClient.Changed += s.Refresh;
             s.SelectTab(Tab.Aura);
             return s;
         }
@@ -116,6 +117,7 @@ namespace DotRPG
             Reflow();
             // Open on the skins of my class when I'm wearing one, else on the auras.
             if (Game.Player != null && store.SkinFor(Game.Player.Class) != null) SelectTab(Game.Player.Class == CharacterClass.Mage ? Tab.MageSkin : Tab.WarriorSkin);
+            StarPassClient.Refresh();
             await store.RefreshAsync();
         }
 
@@ -172,7 +174,7 @@ namespace DotRPG
             if (store == null) return;
             for (int i = 0; i < tabs.Count; i++)
                 TextOf(tabs[i]).text = (Tab)i == tab ? $"<color=#ffd34a>{TabNames[i]}</color>" : TabNames[i];
-            wallet.text = store.IsAvailable ? $"보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>온라인 전용</color>";
+            wallet.text = store.IsAvailable ? $"{StarPassClient.Badge}보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>온라인 전용</color>";
             gacha.interactable = store.IsAvailable;
             var v = Visible();
             for (int i = 0; i < v.Count; i++)
@@ -333,6 +335,7 @@ namespace DotRPG
         {
             if (store != null) store.Changed -= Refresh;
             StarShopClient.Changed -= Refresh;
+            StarPassClient.Changed -= Refresh;
         }
     }
 

@@ -125,7 +125,7 @@ namespace DotRPG
 
         static string ErrorText(ApiResult r) => r.code switch
         {
-            "DAILY_LOCKED" => "1-19 '강해져야 한다'를 마치면 열립니다.",
+            "DAILY_LOCKED" => "1-15 '전직의 길'을 마치면 열립니다.",
             "DAILY_EXPIRED" => "기한이 지난 의뢰입니다.",
             "DAILY_NOT_DONE" => "아직 목표를 채우지 못했습니다.",
             "DAILY_ALREADY_CLAIMED" => "이미 보상을 받은 의뢰입니다.",
@@ -163,7 +163,7 @@ namespace DotRPG
 
         public static void Accept(Slot s, Action<bool, string> done)
         {
-            if (!CanAccept(s)) { done(false, !Unlocked ? "1-19 '강해져야 한다'를 마치면 열립니다." : "지금은 수락할 수 없습니다."); return; }
+            if (!CanAccept(s)) { done(false, !Unlocked ? "1-15 '전직의 길'을 마치면 열립니다." : "지금은 수락할 수 없습니다."); return; }
             Post("/dailies/accept", s, r => { GuideFlags.Mark(GuideFlags.Daily); done(true, $"{Kind(s)} '{s.title}'을(를) 수락했습니다."); }, done);
         }
 

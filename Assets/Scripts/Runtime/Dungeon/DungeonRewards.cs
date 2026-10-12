@@ -150,7 +150,7 @@ namespace DotRPG
         /// <summary>What a reward card can be, as slots for the select window: icon key, short name, highlighted.</summary>
         public static List<(string icon, string name, bool special)> Slots(DungeonDef dungeon, DifficultyDef diff, CharacterClass cls)
         {
-            if (dungeon.raidReward != null) return RaidSlots(dungeon, cls);
+            if (dungeon.raidReward != null) return RaidSlots(dungeon, cls, diff != null && diff.name == DungeonDatabase.RaidHeroicName);
             var slots = new List<(string, string, bool)>();
             var seen = new HashSet<string>();
             foreach (var entry in dungeon.rewards)

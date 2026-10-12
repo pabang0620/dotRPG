@@ -119,6 +119,7 @@ namespace DotRPG
             UIFactory.Place(w.gaugeFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 16f));
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
             w.BuildTierPicker(bigBox.transform);
+            w.BuildCeiling(bigBox.transform); // [CEILING]
             w.chooseBtn = Button(bigBox.transform, "Choose", "선택하기", "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), w.OpenChoices, 18);
             var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
             shard.preserveAspect = true; shard.raycastTarget = false;
@@ -262,6 +263,7 @@ namespace DotRPG
         void OpenChoices()
         {
             if (busy || Revealing) return;
+            gearPick = null;
             var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
             choices = new List<CosmeticProduct>();
             foreach (var p in CosmeticCatalog.All)
@@ -290,6 +292,7 @@ namespace DotRPG
 
         void Choose(int i)
         {
+            if (gearPick != null) { ChooseGear(i); return; } // [CEILING] picking gear with the gear ceiling
             if (i >= choices.Count) return;
             var p = choices[i];
             Game.UI.Confirm($"{p.Name}\n선택 게이지를 사용해 이것을 받습니다.", () =>

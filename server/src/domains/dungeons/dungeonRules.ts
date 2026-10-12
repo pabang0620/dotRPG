@@ -266,8 +266,18 @@ export type DiffNumbers = Pick<
   'recommendedLevel' | 'hpMul' | 'rewardMul' | 'monsterLevel' | 'revives' | 'minGearRarity' | 'ticketWeight'
 > & { jackpotPerMille?: number };
 
+/** 레이드 난이도: 0 = 레이드, 1 = 영웅 레이드(raidHeroic 배율). 그 밖은 없다 */
+export const RAID_HEROIC = 1;
+
 export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumbers | null {
-  if (d.isRaid) return d.raidNumbers ?? null;
+  if (d.isRaid) {
+    const base = d.raidNumbers;
+    if (!base) return null;
+    if (index === 0) return base;
+    const h = eco.dungeons.raidHeroic;
+    if (index !== RAID_HEROIC || !h) return null;
+    return { ...base, hpMul: base.hpMul * h.hpMul, rewardMul: base.rewardMul * h.rewardMul };
+  }
   return eco.dungeons.difficulties[index] ?? null;
 }
 

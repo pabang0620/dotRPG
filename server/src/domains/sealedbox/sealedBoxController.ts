@@ -3,8 +3,9 @@ import { getAccount } from '../../middleware/authMiddleware';
 import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
+import { claimSealedCeiling } from './sealedCeiling';
 import * as service from './sealedBoxService';
-import type { OpenBody, PullBody } from './sealedBoxValidation';
+import type { CeilingBody, OpenBody, PullBody } from './sealedBoxValidation';
 
 type P = { uuid: string };
 
@@ -29,6 +30,15 @@ export async function open(_req: Request, res: Response, next: NextFunction): Pr
   try {
     const { body, params } = getValidated<OpenBody, P>(res);
     sendStored(res, await service.openItem(getAccount(res.locals).id, params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function ceiling(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<CeilingBody, P>(res);
+    sendStored(res, await claimSealedCeiling(getAccount(res.locals).id, params.uuid, body));
   } catch (err) {
     next(err);
   }

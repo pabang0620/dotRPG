@@ -13,7 +13,7 @@ namespace DotRPG
         public const string CoreItem = DungeonDatabase.RaidCore;
 
         /// <summary>Cores per raid reward by difficulty (normal, hard, expert, master).</summary>
-        public static readonly int[] RaidCoreMid = { 1, 1, 2, 3 };
+        public static readonly int[] RaidCoreMid = { 1, 2, 2, 3 }; // [RAID] index 1 = 영웅 레이드 (+1 over the raid)
         public static readonly int[] RaidCoreFinal = { 2, 3, 4, 6 };
 
         public static int CoreGain(DungeonDef raid, DungeonDifficulty difficulty)

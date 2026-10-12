@@ -7,7 +7,8 @@ import { getNow } from '../../utils/clock';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import * as charRepo from '../characters/characterRepository';
 import { isOpenToday } from '../dungeons/dungeonRules';
-import { raidClaimed, raidPeriod, raidUnlocked } from '../dungeons/entryRules';
+import { RAID_HEROIC } from '../dungeons/dungeonRules';
+import { heroicUnlocked, raidClaimed, raidPeriod, raidUnlocked } from '../dungeons/entryRules';
 import { stackCount } from '../economy/economyRepository';
 
 export async function listRaids(accountId: number, characterUuid: string) {
@@ -25,9 +26,22 @@ export async function listRaids(accountId: number, characterUuid: string) {
     const open = isOpenToday(eco, d, now);
     const claimed = await raidClaimed(db, c.id, d, now);
     const clears = await db.query<{ n: string }>(
-      'SELECT count(*) AS n FROM raid_claims WHERE character_id = $1 AND dungeon_id = $2 AND period_start >= $3',
+      'SELECT count(*) AS n FROM raid_claims WHERE character_id = $1 AND dungeon_id = $2 AND difficulty = 0 AND period_start >= $3',
       [c.id, d.id, new Date(b.weeklyStartAt)],
     );
+    // 영웅 레이드: 그 레이드를 한 번 클리어하면 열리고, 보상은 주 1회(일반 보상과 따로)
+    const h = eco.dungeons.raidHeroic;
+    const heroic = h
+      ? {
+          name: h.name,
+          unlocked: await heroicUnlocked(db, c.id, d),
+          reward_available: open && !(await raidClaimed(db, c.id, d, now, RAID_HEROIC)) && (d.raidTier !== 'Final' || have >= d.keyCost),
+          period_kind: 'weekly' as const,
+          hp_mul: h.hpMul,
+          damage_mul: h.damageMul,
+          reward_mul: h.rewardMul,
+        }
+      : null;
     raids.push({
       id: d.id,
       tier: d.raidTier === 'Final' ? 'final' : 'mid',
@@ -38,6 +52,7 @@ export async function listRaids(accountId: number, characterUuid: string) {
       clears_this_period: Number((clears.rows[0] as { n: string }).n),
       key: { item: eco.dungeons.keyItem, have, cost: d.keyCost, drop_min: d.keyMin, drop_max: d.keyMax },
       min_humans_for_reward: getConfig().policy.raidRewardMinHumans,
+      heroic,
     });
   }
   return {

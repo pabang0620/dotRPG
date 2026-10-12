@@ -124,7 +124,7 @@ async function processEnter(ctx: EconCtx, body: EnterBody) {
 
   // 8단계: 던전 출발은 내 필드 세션을 닫는다(D1)
   await closeMembershipOf(ctx.client, ctx.char.id, 'dungeon_start', ctx.now);
-  const lock = await lockAtEntry(ctx.client, ctx.char.id, d, 1, ctx.now);
+  const lock = await lockAtEntry(ctx.client, ctx.char.id, d, 1, ctx.now, body.difficulty);
   // AI가 없으면 3단계 방식(본인 화력만), 있으면 본인 상한 x (1 + AI 수 x 용병 딜 배율)
   let powerCap: number | null = null;
   if (body.ai_count > 0) {

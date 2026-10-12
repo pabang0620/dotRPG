@@ -19,6 +19,12 @@ namespace DotRPG
         /// <summary>Opens done since the last boosted one (0..9); the 11th open is boosted.</summary>
         public static int Gauge { get; private set; }
         public static bool NextBoosted { get; private set; }
+        /// <summary>[CEILING] 천장: opens counted toward the guaranteed reward (shop and bag boxes), its size and reward.</summary>
+        public static int Ceiling { get; private set; }
+        public static int CeilingMax { get; private set; } = 100;
+        public static string CeilingReward { get; private set; } = "ticket_enh12";
+        public static int CeilingRewardCount { get; private set; } = 1;
+        public static bool CeilingReady => Ceiling >= CeilingMax;
         /// <summary>The rate table version the player last saw (sent with each pull; the server refuses a changed table).</summary>
         public static string RatesVersion { get; private set; }
         public static bool Loaded { get; private set; }
@@ -39,6 +45,7 @@ namespace DotRPG
                     PriceEleven = MiniJson.Int(r.data, "price_eleven", PriceEleven);
                     RatesVersion = MiniJson.Str(r.data, "rates_version");
                     ReadBooster(MiniJson.Obj(r.data, "booster"));
+                    ReadCeiling(MiniJson.Obj(r.data, "ceiling"));
                     ReadTable(MiniJson.Arr(r.data, "table"), Table);
                     ReadTable(MiniJson.Arr(r.data, "boosted_table"), BoostedTable);
                     Loaded = true;
@@ -60,6 +67,19 @@ namespace DotRPG
             if (b == null) return;
             Gauge = MiniJson.Int(b, "gauge");
             NextBoosted = b.TryGetValue("next_boosted", out var v) && v is bool nb && nb;
+        }
+
+        static void ReadCeiling(Dictionary<string, object> c)
+        {
+            if (c == null) return;
+            Ceiling = MiniJson.Int(c, "gauge", Ceiling);
+            CeilingMax = MiniJson.Int(c, "max", CeilingMax);
+            var reward = MiniJson.Obj(c, "reward");
+            if (reward != null)
+            {
+                CeilingReward = MiniJson.Str(reward, "item_key", CeilingReward);
+                CeilingRewardCount = MiniJson.Int(reward, "count", CeilingRewardCount);
+            }
         }
 
         static List<Reward> ReadResults(Dictionary<string, object> d)
@@ -103,6 +123,7 @@ namespace DotRPG
                 if (!r.ok) { if (r.code == "RATES_CHANGED") Refresh(); done(false, Explain(r), null); return; }
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 ReadBooster(MiniJson.Obj(r.data, "booster"));
+                ReadCeiling(MiniJson.Obj(r.data, "ceiling"));
                 _ = StarShopClient.RefreshAsync();
                 Game.Flow.Autosave();
                 Changed?.Invoke();
@@ -118,6 +139,7 @@ namespace DotRPG
                 if (!r.ok) { GameEvents.RaiseToast(Explain(r)); Game.Audio.PlaySfx("cancel"); return; }
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 ReadBooster(MiniJson.Obj(r.data, "booster"));
+                ReadCeiling(MiniJson.Obj(r.data, "ceiling"));
                 Game.Flow.Autosave();
                 Changed?.Invoke();
                 var got = ReadResults(r.data);
@@ -131,6 +153,20 @@ namespace DotRPG
                 }
                 Game.Audio.PlaySfx(big ? "rank_reveal" : "pickup");
                 GameEvents.RaiseToast((big ? "<color=#ffd34a>대박!</color> " : "") + string.Join(", ", parts));
+            });
+        }
+
+        /// <summary>[CEILING] The gauge is full: take the guaranteed reward (the server picks it from its table).</summary>
+        public static void ClaimCeiling(Action<bool, string> done)
+        {
+            Send(Char + "/starshop/sealed/ceiling", new Dictionary<string, object>(), r =>
+            {
+                if (!r.ok) { done(false, r.code == "GAUGE_NOT_FULL" ? "천장 게이지가 아직 다 차지 않았습니다." : Explain(r)); return; }
+                OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
+                ReadCeiling(MiniJson.Obj(r.data, "ceiling"));
+                Game.Flow.Autosave();
+                Changed?.Invoke();
+                done(true, null);
             });
         }
 
