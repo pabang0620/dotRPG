@@ -50,7 +50,7 @@ namespace DotRPG
         /// spam at full speed drains 9% of max MP a second against 5% regen. Speeds: 파쇄 검기 0.38 s, 회귀의 방패
         /// ~3.5/s (4 shields, 1.15 s round trip), 연쇄전격 0.48 s, 심판의 광창 0.16 s. Tools/balance/theory_mana.py.</summary>
         public static float MainHunterMpShare(string id) =>
-            id == "f_break" ? .0263f : id == "g_wall" ? .0199f : id == "m_storm" ? .0333f : id == "b_light" ? .0111f : 0f;
+            id == "f_break" ? .0263f : id == "g_wall" ? .0199f : id == "m_storm" ? .0333f : id == "b_light" ? .0146f : 0f;
         public SkillGem Gem => new SkillGem { id = id, name = name, description = description, icon = Icon,
             kind = GemKind.Active, classOnly = CareerCatalog.Base(career), unlockLevel = level,
             slot = kind == CareerSkillKind.Awakening ? 4 : -1, damageMult = power, cooldown = cooldown,
@@ -116,7 +116,8 @@ namespace DotRPG
                     power *= 0.85f;
                     // [BALANCE 2026-10-11] Every career has a spammable main hunting skill now (no cooldown), so a skill
                     // with a cooldown has to hit harder to be worth the wait: +15% per second of cooldown, up to 2.5x.
-                    if (cd > 0f) power *= Mathf.Min(2.5f, 1f + .15f * cd);
+                    // [BALANCE 2026-10-12] +10% per second, up to 2x (was +15%, 2.5x): with 8 keys more cooldown skills run at once.
+                    if (cd > 0f) power *= Mathf.Min(2.0f, 1f + .10f * cd);
                 }
             }
             return Make(c, i, id, name, desc, effect, power, mp, cd, range, radius, cast, duration, hits, synergy);
@@ -144,7 +145,7 @@ namespace DotRPG
                 S(f,9,"f_stance","검기 태세","켜고 끄는 태세. 켜 두는 동안 기본 공격이 검기 베기로 바뀌어 매 타격마다 초승달 검기가 앞으로 5m 날아가 관통한다. 3타째는 검기 3줄. 검기마다 MP를 쓰고 MP가 모자라면 저절로 꺼진다. 다시 누르면 끈다.","stance",1.1f,5,0,5,.8f,0f),
                 S(g,0,"g_steel","강철의 심장","받는 피해 추가 6% 감소. 다른 감소와 합산, 최대 65%.","steel",6,0,0,0,0,0),
                 S(g,1,"g_guard","강철의 보루","방패를 내려찍어 주변 2m의 적을 밀어내고 1초 동안 무적(모든 피해 무효). 이어서 60초 동안 받는 피해 30% 감소.","guard",.8f,12,10,0,2f,.1f,60),
-                S(g,2,"g_wall","회귀의 방패","재사용 대기시간 없이 방패를 5m 던졌다가 회수한다. 동시에 3개까지(강화 단계마다 +1, 최대 5개) 날리고, 강화할수록 더 빨리 던진다. 오가며 적을 치고 0.3초 기절, 닿은 아군과 자신에게 HP 18% 보호막 6초.","shieldthrow",.6f,18,0,5,0,.08f,6,2),
+                S(g,2,"g_wall","회귀의 방패","재사용 대기시간 없이 방패를 5m 던졌다가 회수한다. 동시에 3개까지(강화 단계마다 +1, 최대 5개) 날리고, 강화할수록 더 빨리 던진다. 오가며 적을 치고 0.3초 기절, 닿은 아군과 자신에게 HP 18% 보호막 6초.","shieldthrow",.7f,18,0,5,0,.08f,6,2),
                 S(g,3,"g_oath","수호의 맹세","60초 동안 자신을 따라가는 반경 4m 결계. 안의 아군은 받는 피해 30% 감소, HP 15% 보호막, 저주·둔화가 풀린다.","oath",.15f,28,20,0,4,.2f,60),
                 S(g,4,"g_retal","수호의 반향","피격 후 다음 공격 피해 +20%. 재충전 2초.","retaliate",20,0,0,0,0,0,4),
                 S(g,5,"g_taunt","대지의 호령","땅을 굴러 반경 7m의 적을 도발한다. 도발된 적은 다른 대상을 쫓던 중이어도 자신에게 달려오고, 4초 동안 공격 대상이 자신으로 고정된다(보스 1.2초).","taunt",.4f,12,8,0,7,.15f,4),
@@ -166,7 +167,7 @@ namespace DotRPG
                 S(b,2,"b_bloom","생명의 파문","시전 위치 반경 3.5m에 6초 동안 생명의 파문이 6번 퍼져 아군을 회복한다.","bloom",.8f,26,12,0,3.5f,.25f,6,6),
                 S(b,3,"b_cleanse","정화의 종","반경 4m에 종소리가 퍼져 아군의 저주·둔화를 풀고 회복한다. 적에게는 빛 피해(90%)와 밀어내기.","cleanse",1.4f,24,11,0,4,.2f),
                 S(b,4,"b_grace","축복의 그릇","보호막량 +12%. 같은 보호막은 합산 없이 큰 값으로 갱신.","grace",12,0,0,0,0,0),
-                S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",.85f,3,0,7,.6f,.04f),
+                S(b,5,"b_light","심판의 광창","재사용 대기시간 없이 연달아 던지는 빛의 창. 전방 7m를 관통한다.","light",1.0f,3,0,7,.6f,.04f),
                 S(b,6,"b_wing","신의 가호","반경 5m 안의 아군과 자신을 1초 동안 모든 피해로부터 지킨다(무적). 바닥에 범위가 금색 원으로, 지켜진 사람 머리 위에 남은 무적 시간이 뜬다. 보스의 큰 공격을 받아 내는 순간에 쓴다.","sanctuary",0f,20,25,0,5,0f,1),
                 S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 60초.","bless",18,28,20,0,5,.3f,60),
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 6m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%.","dawn",4.5f,60,70,0,6,.7f,8,8,"비숍의 회복과 보호를 한 번에"),

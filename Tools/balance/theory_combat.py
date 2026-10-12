@@ -127,6 +127,10 @@ def gear(lv, rarity="Rare", plus=5):
 
 # ---------------- career skills ----------------
 CD = read(RT, "Progression", "CareerData.cs")
+# cooldown damage bonus (CareerData S(): +slope per second of cooldown, capped); --cd-slope / --cd-cap to test
+_m = re.search(r"Mathf\.Min\(([0-9.]+)f, 1f \+ \.?([0-9.]+)f \* cd\)", CD)
+CD_CAP = arg("--cd-cap", float(_m.group(1)) if _m else 2.5)
+CD_SLOPE = arg("--cd-slope", float("0." + _m.group(2).lstrip(".")) if _m and not _m.group(2).startswith("0") else (float(_m.group(2)) if _m else .15))
 HEAL, BUFF = {"heal", "bloom", "cleanse"}, {"guard", "oath", "bless", "counter", "frenzy"}
 SK = {}
 for m in re.finditer(r'S\(([fgmb]),(\d+),"(\w+)","([^"]+)","[^"]*","(\w+)",([^)]*)\)', CD):
@@ -146,24 +150,28 @@ for m in re.finditer(r'S\(([fgmb]),(\d+),"(\w+)","([^"]+)","[^"]*","(\w+)",([^)]
     elif eff not in BUFF and not awaken:
         power *= .85
         if cd > 0:
-            power *= min(2.5, 1 + .15 * cd)
+            power *= min(CD_CAP, 1 + CD_SLOPE * cd)
     SK[m.group(3)] = dict(eff=eff, power=power, mp=mp, cd=cd, cast=cast, hits=hits, rad=rad * (1.3 if awaken else 1.5))
 
-RECOVERY = {"cross": .1, "light": .1, "heal": .1, "guard": .1, "blink": .1, "frenzy": .1, "nebula": .1, "sanctuary": .1,
+RECOVERY = {"cross": .1, "light": .09, "heal": .1, "guard": .1, "blink": .1, "frenzy": .1, "nebula": .1, "sanctuary": .1,
             "break": .15, "fire": .15, "ice": .15, "storm": .15, "orbit": .15, "taunt": .15, "flurry": .7, "iaido": .22,
             "bash": .22, "shieldthrow": .14, "rush": .25, "execute": .32}
 RANK3 = 1.24
+MP_SHARE = {k: float(v) for k, v in re.findall(r'id == "(\w+)" \? \.?([0-9.]+)f', CD)} if "MainHunterMpShare" in CD else {}
+MP_SHARE = {k: (v if v < 1 else v / 10000) for k, v in MP_SHARE.items()}
 
 # spam skill, its single-target hits per cast, average targets in a 3-pack, extra cooldown skills on keys
 CAREERS = {
+    # [2026-10-12] 8 skill keys: the A/S cooldown skills join the rotation (fighter 일섬·단죄, mage 중력 균열·차원도약,
+    # bishop 정화의 종); shield = share of max HP kept up (mage 매직 배리어 35% per 62 s, guardian 회귀의 방패 18%).
     "파이터": dict(cls="w", hpmul=1.1, mpcls="w", spam="f_break", spam_hits=1, splash=2.0,
-                 cds=["f_cross", "f_rush", "f_focus"], cd_hits={"f_cross": 2}, cd_splash=1.6, more=1.3 * 1.15, dr=0),
+                 cds=["f_cross", "f_rush", "f_focus", "f_execute"], cd_hits={"f_cross": 2}, cd_splash=1.6, more=1.2 * 1.15, dr=0, shield=0),
     "수호자": dict(cls="w", hpmul=1.3, mpcls="w", spam="g_wall", spam_hits=2, splash=2.0,
-                 cds=["g_taunt", "g_bash"], cd_hits={}, cd_splash=2.0, more=1.0, dr=65),
-    "메이지": dict(cls="m", hpmul=1.0, mpcls="m", spam="m_fire", spam_hits=1, splash=2.6,
-                 cds=["m_ice", "m_orbit"], cd_hits={"m_ice": 1, "m_orbit": 2.2}, cd_splash=2.4, more=1.0, dr=0),
+                 cds=["g_taunt", "g_bash"], cd_hits={}, cd_splash=2.0, more=1.0, dr=65, shield=.18),
+    "메이지": dict(cls="m", hpmul=1.0, mpcls="m", spam="m_storm", spam_hits=1, splash=2.6,
+                 cds=["m_ice", "m_orbit", "m_rift", "m_veil"], cd_hits={"m_ice": 1, "m_orbit": 2.2, "m_rift": 6}, cd_splash=2.4, more=1.0, dr=0, shield=.35),
     "비숍": dict(cls="m", hpmul=1.05, mpcls="m", spam="b_light", spam_hits=1, splash=2.0,
-                cds=[], cd_hits={}, cd_splash=1.0, more=1.18, dr=0),
+                cds=["b_cleanse"], cd_hits={}, cd_splash=2.0, more=1.18, dr=0, shield=0),
 }
 TRAVEL = 4.0
 # EnemyController.LevelGapMul: player damage on monsters this many levels below (+15%/level beyond 3, max x3). --before = off.
@@ -200,7 +208,9 @@ def rotation(lv, c, window):
         single += d
         pack += d * c["cd_splash"]
     left = max(0.0, window - busy)
-    casts = min(left / cycle, max(0.0, budget) / s["mp"])
+    share = MP_SHARE.get(c["spam"])
+    spam_mp = mp * share * 1.3 if share else s["mp"]  # [2026-10-12] CareerSkill.MainHunterMpShare x one support gem (x1.3)
+    casts = min(left / cycle, max(0.0, budget) / spam_mp)
     single += casts * per_cast
     pack += casts * per_cast * c["splash"]
     basic_time = left - casts * cycle
@@ -254,7 +264,7 @@ def summary():
                 lows.append(sum(hps) / 3 / (rotation(lv + 10, c, 3.0)[0] / 3.0) / gap_mul(10))
             geo = lambda v: math.exp(sum(map(math.log, v)) / len(v))
             clear, one, low = geo(cl), geo(ones), geo(lows)
-            surv = [f"{player(lv, CAREERS[n])[1] / (incoming * (1 - CAREERS[n]['dr'] / 100)):.0f}" for n in ("파이터", "메이지", "수호자")]
+            surv = [f"{player(lv, CAREERS[n])[1] * (1 + CAREERS[n]['shield']) / (incoming * (1 - CAREERS[n]['dr'] / 100)):.0f}" for n in ("파이터", "메이지", "수호자")]
         print(f"| {z['name']} | {lv} | {clear:.1f} | {one:.1f} | {surv[0]} | {surv[1]} | {surv[2]} | {low:.2f} |")
 
 
@@ -276,7 +286,7 @@ def report():
             ttk = (sum(hps) / len(hps)) / single3
             clear = solve_clear(lv, c, sum(hps))
             taken = incoming * .9 * (1 - c["dr"] / 100)
-            survive = hp / taken if taken > 0 else 999
+            survive = hp * (1 + c["shield"]) / taken if taken > 0 else 999
             low = (sum(hps) / len(hps)) / (rotation(lv + 10, c, one_window)[0] / one_window) / gap_mul(10)
             rows.append((z, name, ttk, clear, survive))
             print(f"| {z['name']} | {z['mlv']} | {name} | {ttk:.1f} | {clear:.1f} | {survive:.0f} | {survive / clear:.1f} | {low:.2f} |")
