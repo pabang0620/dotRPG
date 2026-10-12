@@ -4,14 +4,13 @@ namespace DotRPG
 {
     /// <summary>
     /// A sword slash drawn from one point to another that stays where it was cut (천검귀일, Docs/PLAN_SKILL_VFX.md).
-    /// While cutting, a bright blade tip runs ahead and the slash grows behind it, thickest just behind the tip; once
-    /// the cut is complete the same slash settles into a symmetric crescent (needle-thin ends, full in the middle)
-    /// and stays as the afterimage. Three layers: a wide soft halo, the blue-to-white slash and a white core.
+    /// The finished slash (a symmetric crescent: needle-thin ends, full in the middle) is revealed by a bright blade
+    /// tip running along it, like space opening behind the blade, and stays exactly as drawn. Three layers: a wide soft halo, the blue-to-white slash and a white core.
     /// <see cref="Charge"/> swells and brightens it with a faster pulse, <see cref="Offset"/> moves it (trembling).
     /// </summary>
     public class StrokeFx : MonoBehaviour
     {
-        const float Settle = .2f;
+        const int Samples = 8;
 
         LineRenderer halo, slash, core;
         SpriteRenderer tip;
@@ -68,12 +67,24 @@ namespace DotRPG
         {
             // Ease-out cut: quick, settling as it reaches the end.
             float t = Mathf.Clamp01(age / draw);
-            float k = 1f - (1f - t) * (1f - t) * (1f - t);
+            float k = Mathf.Max(.001f, 1f - (1f - t) * (1f - t) * (1f - t));
             Vector2 a = from + Offset, b = Vector2.Lerp(from, to, k) + Offset;
-            // 0 while cutting (peak just behind the tip, blunt tip end), 1 once settled (symmetric crescent).
-            float settled = Mathf.Clamp01((age - draw) / Settle);
-            float peak = Mathf.Lerp(.72f, .5f, settled), tipEnd = Mathf.Lerp(.45f, 0f, settled);
-            var shape = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(peak, 1f), new Keyframe(1f, tipEnd));
+            // The finished slash already exists along the whole line; the blade only reveals it. So the part drawn so
+            // far always has its final shape (needle ends, full in the middle) and nothing changes once it is done.
+            var shape = new AnimationCurve();
+            for (int i = 0; i <= Samples; i++)
+            {
+                float u = i / (float)Samples;
+                shape.AddKey(u, Crescent(u * k));
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                float g = i * .5f;                     // global position: start, middle, end of the whole line
+                float u = Mathf.Min(1f, g / k);        // where it sits on the part drawn so far
+                float w = Crescent(g);
+                colorKeys[i] = new GradientColorKey(Color.Lerp(color, new Color(.92f, .98f, 1f), w), u);
+                alphaKeys[i] = new GradientAlphaKey(.65f + .35f * w, u);
+            }
             // Charging: up to about 1.7x as thick, brighter, pulsing faster as the burst nears.
             float pulse = Charge > 0f ? .5f + .5f * Mathf.Sin(age * Mathf.Lerp(10f, 40f, Charge)) : 0f;
             float swell = 1f + Charge * (.45f + .25f * pulse);
@@ -87,14 +98,6 @@ namespace DotRPG
             halo.widthMultiplier = width * 7f * swell;
             halo.startColor = halo.endColor = new Color(color.r, color.g, color.b, .22f + .25f * Charge * (.5f + .5f * pulse));
             slash.widthMultiplier = width * 3.2f * swell;
-            // Blue at the ends, white where it is thickest (toward the tip while cutting, the middle once settled).
-            var white = new Color(.92f, .98f, 1f);
-            colorKeys[0] = new GradientColorKey(color, 0f);
-            colorKeys[1] = new GradientColorKey(white, peak);
-            colorKeys[2] = new GradientColorKey(Color.Lerp(white, color, settled), 1f);
-            alphaKeys[0] = new GradientAlphaKey(.65f, 0f);
-            alphaKeys[1] = new GradientAlphaKey(1f, peak);
-            alphaKeys[2] = new GradientAlphaKey(Mathf.Lerp(1f, .65f, settled), 1f);
             slashColors.SetKeys(colorKeys, alphaKeys);
             slash.colorGradient = slashColors;
             core.widthMultiplier = width * .5f * swell;
@@ -105,5 +108,8 @@ namespace DotRPG
             tip.transform.localScale = Vector3.one * (width * 6f);
             tip.color = new Color(.85f, .95f, 1f, tipA);
         }
+
+        /// <summary>The slash's width along the whole line (0..1): needle-thin at both ends, full in the middle.</summary>
+        static float Crescent(float u) => Mathf.Pow(Mathf.Sin(Mathf.Clamp01(u) * Mathf.PI), .6f);
     }
 }

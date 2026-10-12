@@ -3,21 +3,20 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// [VFX] A glowing line that breaks like glass (천검귀일's burst, Docs/PLAN_SKILL_VFX.md): a thick white flash along
-    /// the line and glass shards (generated f3_glass_shards, else plain triangles) thrown off both sides, spinning away.
+    /// [VFX] A glowing line that breaks like glass (천검귀일's burst, Docs/PLAN_SKILL_VFX.md): glass shards (generated
+    /// f3_glass_shards, else plain triangles) thrown off both sides of the line, spinning away.
     /// </summary>
     public static class GlassBurstFx
     {
         static Sprite[] shardSprites;
 
         /// <summary>
-        /// A line of space breaks like glass: a thick white flash along it and shards thrown off both sides. Uses the
-        /// generated glass shard sprites (f3_glass_shards) when present, else plain triangles.
+        /// A line of space breaks like glass: shards thrown off both sides. No new line is drawn here; the slash
+        /// itself is what breaks.
         /// </summary>
         public static void Burst(Vector2 a, Vector2 b, int count, int order)
         {
             Vector2 d = (b - a).normalized, n = new Vector2(-d.y, d.x);
-            GlowLineFx.Spawn(a, b, new Color(.8f, .95f, 1f, 1f), .6f, .3f, order);
             var glass = VfxLibrary.Has("f3_glass_shards") ? VfxLibrary.Get("f3_glass_shards") : null;
             for (int i = 0; i < count; i++)
             {
