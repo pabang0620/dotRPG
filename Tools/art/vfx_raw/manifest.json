@@ -266,5 +266,32 @@
   "frames": 10,
   "note": "Codex (Flow browser busy) RGBA 1983x793, 5x2 wide-aspect cells; frame 6 burst+ring, frames 7-10 sparks; columns have no clean gutters (frames 2-3, 4-5 close, faint dust between), so grid mode; fading dim embers in gutters",
   "mode": "grid"
+ },
+ {
+  "id": "f3_cross_draw",
+  "file": "f3_cross_draw.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Codex (Flow browser busy) RGB 1774x887; thin + cross, frames1-4 vertical cut, 5-8 horizontal cut; clean gutters (>=100px)"
+ },
+ {
+  "id": "f3_cross_hold",
+  "file": "f3_cross_hold.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 1,
+  "frames": 4,
+  "note": "Codex RGBA 2172x724 (check alpha, edge columns have faint 1px specks); complete thin + cross pulsing with sparks; clean gutters"
+ },
+ {
+  "id": "f3_cross_burst",
+  "file": "f3_cross_burst.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Codex RGB 1774x887; white flash then blue burst and embers; clean gutters"
  }
 ]
