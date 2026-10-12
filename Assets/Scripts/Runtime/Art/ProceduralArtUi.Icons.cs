@@ -17,49 +17,6 @@ namespace DotRPG
             var c = new PixelCanvas(24, 24);
             switch (kind)
             {
-                case "wood":
-                {
-                    var barkA = Bark; var barkB = PixelCanvas.Hex("#a06a38");
-                    c.Rect(2, 8, 18, 10, barkA);
-                    c.HLine(2, 19, 8, WoodLight);
-                    c.HLine(2, 19, 9, PixelCanvas.Hex("#b0824c"));
-                    c.HLine(2, 19, 16, BarkDark);
-                    c.HLine(2, 19, 17, PixelCanvas.Hex("#4a2c16"));
-                    // End grain rings on the right.
-                    c.Ellipse(20, 13, 3.4f, 5f, WoodLight);
-                    c.Ellipse(20, 13, 2.2f, 3.4f, Wood);
-                    c.Ellipse(20, 13, 1f, 1.8f, WoodDark);
-                    break;
-                }
-                case "stone":
-                {
-                    c.Ellipse(12, 14, 10, 8, StoneDark);
-                    c.PaintEllipse(11, 13, 8.5f, 6.5f, Stone);
-                    c.PaintEllipse(9, 10, 4.5f, 3.2f, StoneLight);
-                    c.Paint(16, 17, StoneDark); c.Paint(17, 15, StoneDark);
-                    c.Set(7, 8, White);
-                    break;
-                }
-                case "carrot":
-                {
-                    var body = Carrot; var bodyLo = PixelCanvas.Shade(Carrot, 0.8f);
-                    // Tapered root.
-                    for (int y = 6; y <= 20; y++)
-                    {
-                        int half = Mathf.RoundToInt(Mathf.Lerp(4.5f, 0.5f, (y - 6) / 14f));
-                        c.HLine(9 - half, 9 + half, y, body);
-                    }
-                    c.Line(6, 8, 12, 18, bodyLo);
-                    c.HLine(5, 12, 9, CarrotLight);
-                    c.HLine(6, 11, 12, CarrotLight);
-                    // Notches.
-                    c.Set(11, 11, bodyLo); c.Set(8, 14, bodyLo); c.Set(11, 16, bodyLo);
-                    // Leafy top.
-                    c.Rect(8, 2, 2, 5, Leaf);
-                    c.Line(9, 6, 4, 1, Leaf); c.Line(9, 6, 14, 1, Leaf); c.Line(9, 6, 9, 0, LeafLight);
-                    c.Set(4, 1, LeafLight); c.Set(14, 1, LeafLight); c.Set(9, 0, LeafShine);
-                    break;
-                }
                 default:
                     c.Rect(6, 6, 12, 12, Red);
                     break;

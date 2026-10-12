@@ -26,18 +26,16 @@
 --   | dev login / refresh / logout | accounts, auth_identities, refresh_tokens | refresh_tokens, accounts.last_login_at          |
 --   | GET /me                      | accounts, auth_identities, characters |  -                                                  |
 --   | 캐릭터 생성                  | accounts(행 잠금), characters, request_log | characters, character_state, character_items, gold_ledger, item_ledger, request_log |
---   | 캐릭터 목록·상세             | characters, character_state, character_items, quest_claims, character_enhance_pity, character_chests, site_deliveries | - |
+--   | 캐릭터 목록·상세             | characters, character_state, character_items, quest_claims, character_enhance_pity, character_chests | - |
 --   | 캐릭터 삭제                  | characters                    | characters.deleted_at                                       |
 --   | 상태 저장 PUT                | characters(level, class)      | character_state                                             |
 --   | 처치 보고                    | characters(행 잠금), kill_log(속도 창), kill_stats, character_items(착용 무기 화력 상한) | kill_log, kill_stats, drops, xp_ledger, characters(level, xp), anomaly_log(거절), request_log |
 --   | 드롭 줍기                    | characters(행 잠금), drops    | drops.claimed_at, characters.gold, character_items, gold_ledger, item_ledger, request_log, anomaly_log(남의 id) |
---   | 채집·노드 쿨다운 조회        | characters(행 잠금), character_node_state | character_node_state, character_items, item_ledger, request_log, anomaly_log |
 --   | 상자 열기                    | characters(행 잠금), character_chests | character_chests, character_items, item_ledger, request_log, anomaly_log |
---   | 공사장 납품                  | characters(행 잠금), quest_claims, site_deliveries, character_items | site_deliveries, character_items, item_ledger, request_log |
---   | 퀘스트 보상 청구             | characters(행 잠금), quest_claims, kill_stats, character_state(story_flags), site_deliveries, dungeon_runs(0003), character_items | quest_claims, characters(level, xp, gold), character_items, gold_ledger, item_ledger, xp_ledger, request_log, anomaly_log |
+--   | 퀘스트 보상 청구             | characters(행 잠금), quest_claims, kill_stats, character_state(story_flags), dungeon_runs(0003), character_items | quest_claims, characters(level, xp, gold), character_items, gold_ledger, item_ledger, xp_ledger, request_log, anomaly_log |
 --   | 상점 구매·판매               | characters(행 잠금), character_items | characters.gold, character_items, gold_ledger, item_ledger, request_log |
 --   | 강화                         | characters(행 잠금), character_items, character_enhance_pity | characters.gold, character_items, character_enhance_pity, enhance_log, gold_ledger, item_ledger, request_log |
---   | 아이템 사용(물약·주문서·당근)| characters(행 잠금), character_items | character_items, item_ledger, request_log                 |
+--   | 아이템 사용(물약·주문서)    | characters(행 잠금), character_items | character_items, item_ledger, request_log                 |
 --   | 창고 이동                    | characters(행 잠금), character_items | character_items, item_ledger, request_log                |
 --   | 장착·해제                    | characters(class, 행 잠금), character_items | character_items, item_ledger, request_log          |
 --   | 솔로 던전(0003)              | characters(행 잠금), dungeon_runs, kill_log | dungeon_runs, kill_log, drops, xp_ledger, characters, character_items, gold_ledger, item_ledger, request_log, anomaly_log |
@@ -462,20 +460,7 @@ COMMENT ON COLUMN drops.claimed_at IS '줍기 완료 시각. NULL = 미수령. U
 CREATE INDEX drops_char_open ON drops (character_id) WHERE claimed_at IS NULL;
 CREATE INDEX drops_expires_idx ON drops (expires_at);
 
--- ---------- 3단계: 채집 노드, 상자, 납품 ----------
-
-CREATE TABLE character_node_state (
-  character_id     BIGINT NOT NULL REFERENCES characters(id),
-  node_id          TEXT NOT NULL,
-  map_id           TEXT NOT NULL,
-  last_gathered_at TIMESTAMPTZ NOT NULL,
-  PRIMARY KEY (character_id, node_id)
-);
-COMMENT ON TABLE  character_node_state IS '캐릭터별 채집 노드(나무·바위·당근밭) 마지막 채집 시각. 재생 시간 판정의 정본. 한 번도 안 캔 노드는 행이 없다(= 언제든 가능)';
-COMMENT ON COLUMN character_node_state.node_id IS '"맵id:x:y" (상자 id와 같은 규칙, 서버 데이터 maps.json의 nodes[].id)';
-COMMENT ON COLUMN character_node_state.map_id IS 'node_id의 맵 부분(맵 입장 때 쿨다운 목록을 한 번에 읽기 위해 따로 둔다)';
-COMMENT ON COLUMN character_node_state.last_gathered_at IS '마지막으로 받아들인 채집 시각(서버 시계). 재생 시간 이후에만 다시 채집 가능';
-CREATE INDEX character_node_state_map ON character_node_state (character_id, map_id, last_gathered_at);
+-- ---------- 3단계: 상자 (채집 노드·납품은 0032에서 폐지) ----------
 
 CREATE TABLE character_chests (
   character_id BIGINT NOT NULL REFERENCES characters(id),
@@ -485,18 +470,6 @@ CREATE TABLE character_chests (
 );
 COMMENT ON TABLE  character_chests IS '연 상자(SaveData.openedChests). PK가 "캐릭터당 한 번"을 DB 수준에서 보장한다';
 COMMENT ON COLUMN character_chests.chest_id IS '"맵id:x:y" (WorldBuilder의 TreasureChest id와 같은 규칙)';
-
-CREATE TABLE site_deliveries (
-  character_id BIGINT NOT NULL REFERENCES characters(id),
-  site_id      TEXT NOT NULL,
-  item_key     TEXT NOT NULL,
-  delivered    INT NOT NULL DEFAULT 0 CHECK (delivered >= 0),
-  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  PRIMARY KEY (character_id, site_id, item_key)
-);
-COMMENT ON TABLE  site_deliveries IS '납품처(공방 공사장)에 낸 재료 누적(QuestProgress.woodDelivered/stoneDelivered 대체). 필요량은 서버 데이터 deliverySites';
-COMMENT ON COLUMN site_deliveries.site_id IS '납품처 id (예: workshop)';
-COMMENT ON COLUMN site_deliveries.delivered IS '지금까지 낸 수량. 필요량을 넘지 않는다(서버가 min으로 자른다)';
 
 -- ---------- 3단계: 퀘스트 청구 ----------
 

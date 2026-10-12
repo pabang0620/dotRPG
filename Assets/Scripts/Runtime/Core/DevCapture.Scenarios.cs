@@ -118,7 +118,7 @@ namespace DotRPG
                 yield return Shot("svc_shop_buy");
                 bag.Add("eq_sword_10_u", 1);
                 bag.Add("mat_bone", 12);
-                bag.Add(ItemIds.Wood, 3);
+                bag.Add("mat_bone", 3);
                 shop.DevMode(true);
                 int g1 = Game.Session.Gold;
                 shop.DevSelect("eq_sword_10_u");
@@ -126,7 +126,7 @@ namespace DotRPG
                 shop.DevSelect("mat_bone");
                 shop.DevTrade(int.MaxValue);
                 Log($"sell iron sword + 12 bone: gold {g1}->{Game.Session.Gold} sword={bag.Count("eq_sword_10_u")} bone={bag.Count("mat_bone")} msg='{Strip(shop.DevResult)}'");
-                shop.DevSelect(ItemIds.Wood);
+                shop.DevSelect("mat_bone");
                 yield return Wait(0.3f);
                 yield return Shot("svc_shop_sell");
                 Game.Flow.CloseInventory();
@@ -146,7 +146,7 @@ namespace DotRPG
                 Log($"storage open: top={(Game.UI.Top != null ? Game.UI.Top.name : "-")}");
                 store.DevDepositMaterials();
                 store.DevMove(ConsumableDatabase.HpPotion, true, false);
-                Log($"deposit materials + 1 hp potion: bag ore={bag.Count("mat_ore")} wood={bag.Count(ItemIds.Wood)} | storage ore={Game.Session.Storage.Count("mat_ore")} essence={Game.Session.Storage.Count("mat_essence")} wood={Game.Session.Storage.Count(ItemIds.Wood)} hp={Game.Session.Storage.Count(ConsumableDatabase.HpPotion)}");
+                Log($"deposit materials + 1 hp potion: bag ore={bag.Count("mat_ore")} bone={bag.Count("mat_bone")} | storage ore={Game.Session.Storage.Count("mat_ore")} essence={Game.Session.Storage.Count("mat_essence")} wood={Game.Session.Storage.Count("mat_bone")} hp={Game.Session.Storage.Count(ConsumableDatabase.HpPotion)}");
                 yield return Wait(0.3f);
                 yield return Shot("svc_storage");
                 var saved = Game.Session.Capture(Game.Player.Position, Game.Player.Facing);
@@ -306,12 +306,12 @@ namespace DotRPG
             const int slot = 7;
             string path = SaveSystem.SlotPath(slot);
             var old = new SaveData { version = 2, mapId = MapRegistry.Village, playerClass = "mage", playerX = 30f, playerY = 12f, playerHealth = 50, playerMaxHealth = 60, level = 3 };
-            old.inventory.Add(new ItemStack(ItemIds.Wood, 4));
+            old.inventory.Add(new ItemStack("mat_bone", 4));
             Directory.CreateDirectory(SaveSystem.SaveDirectory);
             File.WriteAllText(path, JsonUtility.ToJson(old));
             var loaded = Game.Saves.Read(slot);
             int Count(string id) { int n = 0; foreach (var s in loaded.inventory) if (s.id == id) n += s.count; return n; }
-            Log($"migration v2->v{loaded.version}: gold={Count(ConsumableDatabase.Gold)} hp={Count(ConsumableDatabase.HpPotion)} mp={Count(ConsumableDatabase.MpPotion)} scroll={Count(ConsumableDatabase.TownScroll)} wood={Count(ItemIds.Wood)} startReset={(loaded.playerX < 0f)} storage={(loaded.storage != null)}");
+            Log($"migration v2->v{loaded.version}: gold={Count(ConsumableDatabase.Gold)} hp={Count(ConsumableDatabase.HpPotion)} mp={Count(ConsumableDatabase.MpPotion)} scroll={Count(ConsumableDatabase.TownScroll)} bone={Count("mat_bone")} startReset={(loaded.playerX < 0f)} storage={(loaded.storage != null)}");
             Game.Saves.Delete(slot);
         }
 

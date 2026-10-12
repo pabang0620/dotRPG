@@ -1,4 +1,4 @@
-// 처치·채집·상자·드롭 줍기의 프레즌스 검사(4.5): 신선도, 현재 맵(맵 위조 방지), 필드 보스 체류.
+// 처치·상자·드롭 줍기의 프레즌스 검사(4.5): 신선도, 현재 맵(맵 위조 방지), 필드 보스 체류.
 // 정직한 클라이언트는 맵 로드 직후 첫 처치 전에 프레즌스를 먼저 보내므로 정상 흐름에서는 걸리지 않는다.
 import { getConfig } from '../../config/env';
 import { AppError } from '../../utils/AppError';
@@ -53,10 +53,10 @@ export async function assertKillPresence(ctx: EconCtx, o: KillPresenceInput): Pr
   }
 }
 
-export type ActionKind = 'gather' | 'chest' | 'drop_claim' | 'sweep';
+export type ActionKind = 'chest' | 'drop_claim' | 'sweep';
 
 /**
- * 채집·상자·드롭 줍기의 프레즌스 검사(처치와 같은 PRESENCE_KILL_MODE 스위치): 신선도, 맵을 아는 요청은 현재 맵(유예 포함).
+ * 상자·드롭 줍기의 프레즌스 검사(처치와 같은 PRESENCE_KILL_MODE 스위치): 신선도, 맵을 아는 요청은 현재 맵(유예 포함).
  * log 모드는 기록만 하고 통과한다. 드롭 줍기·소탕은 맵을 보내지 않으므로 신선도만 본다.
  */
 export async function assertActionPresence(ctx: EconCtx, action: ActionKind, mapId: string | null): Promise<void> {

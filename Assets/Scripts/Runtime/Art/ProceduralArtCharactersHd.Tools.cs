@@ -26,21 +26,6 @@ namespace DotRPG
                     c.Rect(14, 24, 4, 6, handle); for (int y = 25; y < 30; y += 2) c.HLine(14, 17, y, handleDark);
                     c.Rect(14, 30, 4, 2, Gold);
                     break;
-                case "axe":
-                    c.Rect(14, 6, 3, 24, handle); c.VLine(14, 7, 29, handleLight); c.VLine(16, 7, 29, handleDark);
-                    c.Rect(6, 4, 10, 10, Steel);
-                    c.VLine(6, 4, 13, SteelDark);
-                    c.Rect(4, 6, 3, 6, Steel);      // blade edge
-                    c.HLine(4, 15, 4, White);
-                    c.Set(8, 6, White); c.Set(9, 7, White); // shine
-                    break;
-                case "pickaxe":
-                    c.Rect(14, 6, 3, 24, handle); c.VLine(14, 7, 29, handleLight); c.VLine(16, 7, 29, handleDark);
-                    c.HLine(4, 27, 6, Steel); c.HLine(5, 26, 5, Steel);
-                    c.HLine(6, 25, 7, SteelDark);
-                    c.Set(4, 8, SteelDark); c.Set(27, 8, SteelDark);
-                    c.HLine(10, 20, 5, White);
-                    break;
                 case "can":
                 {
                     var body = PixelCanvas.Hex("#4a90d9");

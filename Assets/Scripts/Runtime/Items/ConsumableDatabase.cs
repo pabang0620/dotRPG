@@ -223,9 +223,6 @@ namespace DotRPG
             }
             switch (id)
             {
-                case ItemIds.Wood: return 3;
-                case ItemIds.Stone: return 3;
-                case ItemIds.Carrot: return 4;
                 case "mat_bone": return 5;
                 case "mat_ore": return 20;
                 case "mat_essence": return 80;

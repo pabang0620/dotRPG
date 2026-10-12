@@ -102,7 +102,6 @@ namespace DotRPG.EditorTools
             foreach (var m in EquipmentDatabase.AllMaterials) rows.Add((m.id, "material", true));
             foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
-            foreach (var id in new[] { ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot }) rows.Add((id, "world", true));
             foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
             // [CASH] Sealed box rewards (Docs/PLAN_CASH_BOX_PASS.md): account-bound, never on the auction.
             var cash = new HashSet<string>();
@@ -113,7 +112,7 @@ namespace DotRPG.EditorTools
                     .Str("name", DungeonDatabase.ItemName(r.id))
                     // [SERVER 6] the binding floor of the kind; how an item was obtained can bind it further (server)
                     .Str("bind", cash.Contains(r.id) || r.id == DungeonSweep.TicketItem || r.id == DungeonSweep.EventTicketItem ? "account" : AuctionRules.BindFloor(r.id) == ItemBind.CharacterBound ? "character" : "none")
-                    .Bool("usable", ConsumableDatabase.IsUsable(r.id) || r.id == ItemIds.Carrot);
+                    .Bool("usable", ConsumableDatabase.IsUsable(r.id));
                 var ci = cash.Contains(r.id) ? ConsumableDatabase.Get(r.id) : null;
                 if (ci != null) o.Str("use", ci.kind.ToString()).Num("power", ci.power).Num("chance", ci.chance).Num("minutes", ci.minutes);
                 return o.End();
@@ -147,7 +146,7 @@ namespace DotRPG.EditorTools
             j.Arr("materials", EquipmentDatabase.AllMaterials, (o, m) => o.Obj()
                 .Str("id", m.id).Str("rarity", m.rarity.ToString()).Num("dropChance", m.dropChance).Num("minDrop", m.minDrop).Num("maxDrop", m.maxDrop)
                 .Num("sellPrice", ItemPrices.SellPrice(m.id)).End());
-            j.Arr("sellPrices", new[] { ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, ItemIds.Wood, ItemIds.Stone, ItemIds.Carrot },
+            j.Arr("sellPrices", new[] { ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket },
                 (o, id) => o.Obj().Str("id", id).Num("sellPrice", ItemPrices.SellPrice(id)).End());
             return j.End().ToString();
         }
@@ -227,15 +226,10 @@ namespace DotRPG.EditorTools
         {
             var cfg = Resources.Load<GameConfig>("Data/GameConfig");
             var j = Doc();
-            j.Key("nodeKinds").Obj()
-                .Key("crop").Obj().Str("item", ItemIds.Carrot).Num("amount", 1).Num("respawnSeconds", cfg.cropRegrowSeconds).End() // CropPlot gives 1
-                .End();
             var usable = ConsumableDatabase.Usable.Select(c => (c.id, c.kind.ToString())).ToList();
-            usable.Add((ItemIds.Carrot, "HealHp")); // PlayerController.TryEatCarrot
             j.Arr("usableItems", usable, (o, u) => o.Obj().Str("id", u.Item1).Str("kind", u.Item2).End());
             j.Num("storageCapacity", StorageScreen.Capacity);
             j.Key("chestReward").Obj().Str("itemKey", TreasureChest.Reward).Num("count", 1).End();
-            j.Key("deliverySites").Obj().End(); // wood/stone deliveries removed (Docs/PLAN_REMOVE_GATHERING.md)
             return j.End().ToString();
         }
 

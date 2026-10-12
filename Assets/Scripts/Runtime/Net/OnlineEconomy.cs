@@ -180,32 +180,7 @@ namespace DotRPG
             claimRunning = false;
         }
 
-        // ---------------- crops, chests ----------------
-
-        public static string NodeId(Vector2 foot) => $"{Game.Session.MapId}:{Mathf.FloorToInt(foot.x)}:{Mathf.FloorToInt(foot.y)}";
-
-        /// <summary>A crop gave its yield: the server grants it; the pickups shown are only visuals.</summary>
-        public static void Gather(string nodeId, Vector2 at, Transform parent)
-        {
-            Post("/gathers", Body(("map_id", Game.Session.MapId), ("node_id", nodeId)), r =>
-            {
-                if (!r.ok || parent == null) return;
-                var g = MiniJson.Obj(r.data, "granted");
-                int count = MiniJson.Int(g, "count");
-                for (int i = 0; i < count; i++) Pickup.Create(MiniJson.Str(g, "item_key"), 1, at, parent).ServerGranted = true;
-            });
-        }
-
-        /// <summary>Nodes still regrowing on this map (the server counts real time); done(ids) is called once.</summary>
-        public static void LoadCoolingNodes(string mapId, Action<HashSet<string>> done)
-        {
-            Api.Get($"{Char}/maps/{mapId}/nodes", r =>
-            {
-                var set = new HashSet<string>();
-                foreach (var n in MiniJson.Arr(r.data, "cooling") ?? new List<object>()) set.Add(MiniJson.Str(n, "node_id"));
-                done(set);
-            });
-        }
+        // ---------------- chests ----------------
 
         public static void OpenChest(string chestId, Vector2 at, Transform parent, Action<bool> done)
         {
@@ -433,11 +408,6 @@ namespace DotRPG
                 nextCardCheck = UnityEngine.Time.unscaledTime + 60f;
                 ClaimUnpickedCards();
             }
-            LoadCoolingNodes(mapId, cooling =>
-            {
-                if (cooling.Count == 0 || Game.World == null || Game.World.MapId != mapId) return;
-                foreach (var c in CropPlot.Active.ToList()) if (c != null && cooling.Contains(c.NodeId)) c.StartRegrowing();
-            });
         }
     }
 }

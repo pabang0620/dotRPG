@@ -230,7 +230,7 @@ namespace DotRPG
                     return true;
                 }
                 case '&': if (MapRegistry.IsTown(MapId)) StaticProp("Anvil", "town_anvil", foot, new Vector2(.7f, .4f), new Vector2(0, .2f)); else Anvil.Create(foot, objectsRoot, "town_anvil"); return true;
-                case 'C': CropPlot.Create(foot, objectsRoot, config, true); return true;
+                case 'C': Decoration("town_crop_0", foot + new Vector2(0f, 0.1f)); return true; // [2026-10-12] crops removed: the field is scenery
                 case '$': TreasureChest.Create($"{MapId}:{x}:{y}", foot, objectsRoot, true); return true;
                 case 'g': StaticProp("Grave", $"town_grave_{rng.Next(0, 2)}", foot, new Vector2(0.75f, 0.35f), new Vector2(0f, 0.17f)); return true;
                 case 'i': StaticProp("Ruin", "town_ruin", foot, new Vector2(0.7f, 0.4f), new Vector2(0f, 0.2f)); return true;

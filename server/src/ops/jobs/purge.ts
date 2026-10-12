@@ -58,11 +58,10 @@ async function runAll(ctx: JobCtx, steps: [string, string, unknown[]?][]): Promi
 const del = (table: string, where: string, from = table): string =>
   `DELETE FROM ${table} WHERE id IN (SELECT id FROM ${from} WHERE ${where} ORDER BY id LIMIT $1)`;
 
-/** 15단계 L1: 처치·줍기·채집·아이템 사용은 요청이 잦아 request_log가 DB 용량 대부분을 차지한다. 재전송 확인은 몇 분이면 충분해 짧게 보관한다 */
+/** 15단계 L1: 처치·줍기·아이템 사용은 요청이 잦아 request_log가 DB 용량 대부분을 차지한다. 재전송 확인은 몇 분이면 충분해 짧게 보관한다 */
 export const HOT_REQUEST_ENDPOINTS = [
   'POST /characters/:uuid/kills',
   'POST /characters/:uuid/drops/claim',
-  'POST /characters/:uuid/gathers',
   'POST /characters/:uuid/items/use',
 ];
 const hotList = HOT_REQUEST_ENDPOINTS.map((e) => `'${e}'`).join(', ');

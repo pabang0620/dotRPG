@@ -18,8 +18,6 @@ namespace DotRPG
     public enum NpcTool
     {
         None,
-        Axe,
-        Pickaxe,
         WateringCan,
         FishingRod,
         Hammer,

@@ -139,8 +139,6 @@ namespace DotRPG
         {
             switch (t)
             {
-                case NpcTool.Axe: return "tool_axe";
-                case NpcTool.Pickaxe: return "tool_pickaxe";
                 case NpcTool.WateringCan: return "tool_can";
                 case NpcTool.FishingRod: return "tool_rod";
                 case NpcTool.Hammer: return "tool_hammer";
@@ -275,14 +273,6 @@ namespace DotRPG
             bool nearPlayer = Game.Player != null && Vector2.Distance(Game.Player.Position, transform.position) < 7f;
             switch (def.tool)
             {
-                case NpcTool.Axe:
-                    Fx.Burst("fx_leaf", front + Vector2.up * 0.4f, 2, 1.5f, 0.5f);
-                    if (nearPlayer) Game.Audio.PlaySfx("chop", 0.35f);
-                    break;
-                case NpcTool.Pickaxe:
-                    Fx.Burst("fx_chip", front, 2, 2f, 0.5f);
-                    if (nearPlayer) Game.Audio.PlaySfx("mine", 0.35f);
-                    break;
                 case NpcTool.WateringCan:
                     Fx.Burst("fx_water", front, 3, 1f, 0.4f);
                     break;

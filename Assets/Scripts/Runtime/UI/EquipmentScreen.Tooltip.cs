@@ -45,8 +45,7 @@ namespace DotRPG
                 {
                     sb.Append($"<b>{def.displayName}</b>\n<color=#b8c4d8>소모품 · 재료</color>\n\n");
                     sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
-                    sb.Append(s.itemId == ItemIds.Carrot ? "<color=#8fe28f>먹으면 체력을 회복합니다.</color>\n\n<color=#ffe066>클릭: 먹기</color>"
-                        : "공방 재건과 제작에 쓰이는 재료.");
+                    sb.Append("제작에 쓰이는 재료.");
                 }
             }
             else

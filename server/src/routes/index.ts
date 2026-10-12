@@ -12,7 +12,6 @@ import { createRaidShopRouter } from '../domains/raidshop/raidShopRoutes';
 import { createFriendsRouter } from '../domains/friends/friendsRoutes';
 import { createFieldRouter } from '../domains/fieldsessions/fieldRoutes';
 import { createRelayRouter } from '../domains/relay/relayRoutes';
-import { createGatheringRouter } from '../domains/gathering/gatheringRoutes';
 import { createInventoryRouter } from '../domains/inventory/inventoryRoutes';
 import { createKillRouter } from '../domains/kills/killRoutes';
 import { createMailRouter } from '../domains/mail/mailRoutes';
@@ -37,6 +36,7 @@ import { createDailyRouter } from '../domains/dailies/dailyRoutes';
 import { createClientErrorRouter } from '../domains/clienterrors/clientErrorRoutes';
 import { createSealedBoxRouter } from '../domains/sealedbox/sealedBoxRoutes';
 import { createWithdrawalRouter } from '../domains/withdrawal/withdrawalRoutes';
+import { createChestRouter } from '../domains/chests/chestRoutes';
 
 export function createRouter(): Router {
   const r = Router();
@@ -49,7 +49,7 @@ export function createRouter(): Router {
   r.use(createCharacterRouter());
   r.use(createKillRouter());
   r.use(createDropRouter());
-  r.use(createGatheringRouter());
+  r.use(createChestRouter());
   r.use(createQuestRouter());
   r.use(createShopRouter());
   r.use(createStarshopRouter()); // 캐시샵(별조각 뽑기·교환)

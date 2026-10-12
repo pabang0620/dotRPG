@@ -228,7 +228,7 @@ namespace DotRPG
             var data = Game.Saves.Read();
             StoryCheck($"save v{data?.version} keeps quests ({data?.quests?.Count}) and flags ({data?.storyFlags?.Count})",
                 data != null && data.version == SaveData.CurrentVersion && data.quests.Count >= 6 && data.storyFlags.Contains("attack_done"));
-            var old = new SaveData { version = 4, quest = new QuestProgress { stage = (int)QuestStage.Active, woodDelivered = 2, skeletonsDefeated = 1 } };
+            var old = new SaveData { version = 4, quest = new QuestProgress { stage = (int)QuestStage.Active, skeletonsDefeated = 1 } };
             SaveSystem.Migrate(old);
             StoryCheck($"v4 save migrates: prologue done, workshop active ({old.quests.Count} quests)",
                 old.quests.Exists(q => q.id == "c1_rise" && q.status == (int)QuestStatus.Completed) && old.quests.Exists(q => q.id == QuestManager.WorkshopQuest && q.status == (int)QuestStatus.Active));

@@ -38,7 +38,6 @@ namespace DotRPG.EditorTools
                     o.Key("fieldBoss").Obj().Str("monsterId", fb.monsterId).Num("level", FieldBosses.LevelOf(fb)).Num("xp", FieldBosses.XpOf(fb))
                         .Num("intervalSeconds", FieldBosses.IntervalSeconds).End();
                 o.Arr("scriptedSpawns", ScriptedSpawns(m.id), (x, sp) => x.Obj().Str("monsterId", sp.Item1).Num("total", sp.Item2).Str("quest", sp.Item3).End());
-                o.Arr("nodes", census.nodes, (x, nd) => x.Obj().Str("id", nd.Item1).Str("kind", nd.Item2).End());
                 o.Arr("chests", census.chests, (x, c) => x.Val(c));
                 return o.End();
             });
@@ -48,12 +47,11 @@ namespace DotRPG.EditorTools
         sealed class MapCensus
         {
             public int width, height, spawnPoints;
-            public readonly List<(string, string)> nodes = new List<(string, string)>();
             public readonly List<string> chests = new List<string>();
         }
 
         /// <summary>
-        /// Gathering nodes, chests and skeleton spawn points of a map, with the same rules as WorldBuilder.Parse +
+        /// Chests and skeleton spawn points of a map, with the same rules as WorldBuilder.Parse +
         /// SpawnObject: text rows flipped (first row = top), lone '%' on high-res maps drawn as 'T', then the
         /// map-type handlers in WorldBuilder's order (canyon HD, winter HD, high-res town/forest, then the base switch).
         /// Node and chest ids are "{mapId}:{x}:{y}" like TreasureChest. Keep in step with WorldBuilder.
@@ -102,13 +100,12 @@ namespace DotRPG.EditorTools
                     }
                 foreach (var p in lone) cells[p.x, p.y] = 'T';
             }
-            if (map.instanced) return c; // dungeon rooms: monsters come from the room definition, nothing to gather
+            if (map.instanced) return c; // dungeon rooms: monsters come from the room definition, no chests
             for (int y = 0; y < c.height; y++)
                 for (int x = 0; x < c.width; x++)
                 {
                     char ch = cells[x, y];
                     string id = $"{map.id}:{x}:{y}";
-                    string kind = null;
                     bool chest = false, handled = false;
                     if (canyon) // SpawnCanyonHdObject
                     {
@@ -118,17 +115,14 @@ namespace DotRPG.EditorTools
                     if (!handled && winter && ch == 'R') handled = true; // SpawnWinterHdObject: a stone prop, not a node
                     if (!handled && hd) // SpawnTownObject
                     {
-                        if (ch == 'C') { kind = "crop"; handled = true; }
-                        else if (ch == '$') { chest = true; handled = true; }
-                        else if (ch == 'T' || ch == 'O' || ch == 't' || ch == 'R') handled = true; // scenery
+                        if (ch == '$') { chest = true; handled = true; }
+                        else if (ch == 'T' || ch == 'O' || ch == 't' || ch == 'R' || ch == 'C') handled = true; // scenery
                     }
                     if (!handled) // base switch
                     {
-                        if (ch == 'C') kind = "crop";
-                        else if (ch == '$') chest = true;
+                        if (ch == '$') chest = true;
                         else if (ch == 'k') c.spawnPoints++;
                     }
-                    if (kind != null) c.nodes.Add((id, kind));
                     if (chest) c.chests.Add(id);
                 }
             return c;

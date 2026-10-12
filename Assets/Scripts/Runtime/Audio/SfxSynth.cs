@@ -172,13 +172,6 @@ namespace DotRPG
                     Tone(b, 0.05f, 0.08f, 1200f, 900f, Wave.Triangle, 0.12f);
                     return b;
                 }
-                case "chop":
-                {
-                    var b = Buffer(0.12f);
-                    Tone(b, 0f, 0.1f, 200f, 110f, Wave.Triangle, 0.45f);
-                    Noise(b, 0f, 0.06f, 0.3f, 0.2f, 13);
-                    return b;
-                }
                 case "mine":
                 {
                     var b = Buffer(0.15f);

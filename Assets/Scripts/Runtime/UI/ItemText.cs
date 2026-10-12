@@ -60,9 +60,6 @@ namespace DotRPG
             }
             switch (id)
             {
-                case ItemIds.Wood: return "더 이상 얻을 수 없는 옛 재료입니다. 상점에 팔 수 있습니다.";
-                case ItemIds.Stone: return "더 이상 얻을 수 없는 옛 재료입니다. 상점에 팔 수 있습니다.";
-                case ItemIds.Carrot: return "마을 밭에서 뽑은 당근. 먹으면 체력을 조금 회복합니다.";
             }
             return "";
         }

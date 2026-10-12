@@ -295,7 +295,6 @@ namespace DotRPG
                     GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용됩니다.");
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
-                else if (s.itemId == ItemIds.Carrot && Game.Player != null) Game.Player.TryEatCarrot();
                 else Game.Audio.PlaySfx("cancel");
                 return;
             }

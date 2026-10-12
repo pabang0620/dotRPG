@@ -4,13 +4,6 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    public static class ItemIds
-    {
-        public const string Wood = "wood";
-        public const string Stone = "stone";
-        public const string Carrot = "carrot";
-    }
-
     [Serializable]
     public class ItemDefinition
     {
@@ -57,9 +50,6 @@ namespace DotRPG
         public float cameraSmoothTime = 0.12f;
         public Color backgroundColor = new Color(0.16f, 0.30f, 0.18f);
 
-        [Header("World resources")]
-        public float cropRegrowSeconds = 40f;
-
         [Header("Save")]
         [Tooltip("Save automatically at quest milestones.")]
         public bool autosave = true;
@@ -70,12 +60,7 @@ namespace DotRPG
 
         [Header("Items")]
         [System.NonSerialized]
-        public List<ItemDefinition> items = new List<ItemDefinition>
-        {
-            new ItemDefinition(ItemIds.Wood, "목재", "icon_wood"),
-            new ItemDefinition(ItemIds.Stone, "돌", "icon_stone"),
-            new ItemDefinition(ItemIds.Carrot, "당근", "icon_carrot"),
-        };
+        public List<ItemDefinition> items = new List<ItemDefinition>();
 
         /// <summary>
         /// NPCs placed by map symbol. Defined in code (<see cref="DefaultNpcs"/>) and never serialized, so a
@@ -125,12 +110,7 @@ namespace DotRPG
             if (mainQuest == null) mainQuest = LoadOrCreate<QuestConfig>("Data/QuestConfig");
             if (worldMap == null) worldMap = Resources.Load<TextAsset>("Maps/Village");
             if (dialogues == null) dialogues = Resources.Load<TextAsset>("Data/Dialogues");
-            if (items == null || items.Count == 0) items = new List<ItemDefinition>
-            {
-                new ItemDefinition(ItemIds.Wood, "목재", "icon_wood"),
-                new ItemDefinition(ItemIds.Stone, "돌", "icon_stone"),
-                new ItemDefinition(ItemIds.Carrot, "당근", "icon_carrot"),
-            };
+            if (items == null) items = new List<ItemDefinition>();
             if (npcs == null || npcs.Count == 0) npcs = DefaultNpcs();
             pixelsPerUnit = Mathf.Max(1, pixelsPerUnit);
             targetPixelHeight = Mathf.Max(90, targetPixelHeight);
@@ -148,8 +128,8 @@ namespace DotRPG
             new NpcDefinition("2", "farmer", "농부 하나", CharacterLook.Farmer, NpcBehaviour.Work, NpcTool.WateringCan, Facing.Left, "farmer", "farmer_after"),
             new NpcDefinition("3", "fisher", "낚시꾼 도윤", CharacterLook.Fisher, NpcBehaviour.Work, NpcTool.FishingRod, Facing.Down, "fisher", "fisher_after"),
             new NpcDefinition("4", "builder", "목수 강철", CharacterLook.Builder, NpcBehaviour.Work, NpcTool.Hammer, Facing.Right, "builder_before"),
-            new NpcDefinition("5", "lumberjack", "나무꾼 바우", CharacterLook.Lumberjack, NpcBehaviour.Work, NpcTool.Axe, Facing.Up, "lumberjack", "lumberjack_after"),
-            new NpcDefinition("6", "miner", "광부 돌쇠", CharacterLook.Miner, NpcBehaviour.Work, NpcTool.Pickaxe, Facing.Right, "miner", "miner_after"),
+            new NpcDefinition("5", "lumberjack", "나무꾼 바우", CharacterLook.Lumberjack, NpcBehaviour.Idle, NpcTool.None, Facing.Down, "lumberjack", "lumberjack_after"),
+            new NpcDefinition("6", "miner", "광부 돌쇠", CharacterLook.Miner, NpcBehaviour.Idle, NpcTool.None, Facing.Down, "miner", "miner_after"),
             new NpcDefinition("7", "carrier", "짐꾼 소미", CharacterLook.Carrier, NpcBehaviour.Patrol, NpcTool.Crate, Facing.Right, "carrier", "carrier_after", new Vector2(9f, 0f)),
             new NpcDefinition("8", "kid", "꼬마 루이", new CharacterLook("kid", HairStyle.Spiky, new Color32(250, 205, 160, 255), new Color32(90, 60, 40, 255), new Color32(230, 200, 70, 255), new Color32(80, 110, 160, 255)), NpcBehaviour.Wander, NpcTool.None, Facing.Down, "kid", "kid_after"),
             new NpcDefinition("9", "trader", "협곡 상인 누리", new CharacterLook("trader", HairStyle.Bun, new Color32(222, 160, 110, 255), new Color32(60, 40, 30, 255), new Color32(40, 150, 140, 255), new Color32(90, 70, 60, 255), HatKind.Bandana, new Color32(230, 180, 60, 255)), NpcBehaviour.Idle, NpcTool.None, Facing.Down, "trader", "trader_after"),

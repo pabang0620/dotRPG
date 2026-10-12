@@ -27,7 +27,7 @@ namespace DotRPG
                 case 'f': Decoration($"deco_flower_{rng.Next(0, 2)}", center + new Vector2(rng.Next(-3, 4) / 16f, -0.3f)); break;
                 case 'r': Decoration("deco_pebble", center + new Vector2(rng.Next(-3, 4) / 16f, -0.2f)); break;
                 case 't': Decoration("deco_tuft", center); break;
-                case 'C': CropPlot.Create(foot, objectsRoot, config); break;
+                case 'C': Decoration("crop_carrot", foot + new Vector2(0f, 0.1f)); break; // [2026-10-12] crops removed: the field is scenery
                 case 'c': case 'x': break; // [ART 2026-10-12] mushrooms and wooden crates removed from every map (they did not fit)
                 case 'b':
                     StaticProp("Barrel", "barrel", foot, new Vector2(0.7f, 0.5f), new Vector2(0f, 0.25f));

@@ -29,7 +29,5 @@ namespace DotRPG
 
         [Header("Interaction & items")]
         public float interactRange = 1.25f;
-        [Tooltip("HP restored by eating one carrot.")]
-        public int carrotHealAmount = 20;
     }
 }

@@ -4,28 +4,6 @@ namespace DotRPG
 {
     public partial class PlayerController
     {
-        /// <summary>Eats one carrot to heal (Q key, or clicking a carrot in the bag).</summary>
-        public void TryEatCarrot()
-        {
-            if (!IsLocal) return;
-            var inventory = Game.Session.Inventory;
-            if (health.Current >= health.Max)
-            {
-                GameEvents.RaiseToast("체력이 가득 차 있습니다.");
-                return;
-            }
-            if (!inventory.Remove(ItemIds.Carrot, 1))
-            {
-                GameEvents.RaiseToast("체력 물약도 당근도 없습니다. 마을 잡화상인에게서 물약을 사세요.");
-                return;
-            }
-            if (OnlineEconomy.On) OnlineEconomy.UseItem(ItemIds.Carrot); // [SERVER] consume there too
-            health.Heal(stats.carrotHealAmount);
-            if (PartyNet.IsMember) PartyNet.Current.SendHeal(stats.carrotHealAmount); // [PARTY NET]
-            Game.Audio.PlaySfx("heal");
-            Fx.Sparkle(Center + Vector2.up * 0.4f, 2, 0.3f);
-        }
-
         float lockedUntil;
         readonly System.Collections.Generic.Dictionary<string, float> potionReadyAt = new System.Collections.Generic.Dictionary<string, float>();
 
@@ -36,13 +14,13 @@ namespace DotRPG
             lockedUntil = Time.time + seconds;
         }
 
-        /// <summary>Q: a health potion if there is one, otherwise a carrot.</summary>
+        /// <summary>Q: a health potion (the strong one first).</summary>
         public void UseHealing()
         {
             if (!IsLocal) return;
             if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotionHi) > 0) UseConsumable(ConsumableDatabase.HpPotionHi); // [CASH] the strong one first
             else if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
-            else TryEatCarrot();
+            else GameEvents.RaiseToast("체력 물약이 없습니다. 마을 잡화상인에게서 물약을 사세요.");
         }
 
         /// <summary>Uses one potion or scroll from the bag (local player only). Returns true when it was used up.</summary>

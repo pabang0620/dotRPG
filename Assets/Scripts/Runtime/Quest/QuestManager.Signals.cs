@@ -173,9 +173,6 @@ namespace DotRPG
         {
             switch (id)
             {
-                case ItemIds.Wood: return "목재";
-                case ItemIds.Stone: return "돌";
-                case ItemIds.Carrot: return "당근";
             }
             var eq = EquipmentDatabase.Get(EquipmentDatabase.BaseId(id));
             if (eq != null) return eq.name;

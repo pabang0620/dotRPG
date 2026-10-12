@@ -50,3 +50,14 @@
 
 ## 6. 마무리
 - 데이터 버전 갱신(`dataver.py ordinal`), 클라이언트 컴파일, 서버 테스트·타입 검사, 커밋·푸시(wonho, main, jaein), 서버 배포, PC 빌드.
+
+## 2차 정리 (2026-10-12, 사용자: "남겨둔 것도 다 처리해줘, 지금 다 테스트 데이터야")
+1차에서 남겼던 것을 모두 없앤다.
+| 대상 | 처리 |
+|---|---|
+| 목재·돌 아이템 | 아이템 정의·아이콘·설명·판매가·창고 일괄 보관 목록·퀘스트 이름표 삭제. 서버 items.json·shop.json에서 삭제, DB의 기존 보유분(가방·창고·우편·경매 등)은 마이그레이션으로 삭제 |
+| 당근 밭(작물)과 당근 | 밭 `'C'`는 장식 밭(GardenBed)으로, CropPlot·당근 아이템·당근 먹기 회복 삭제. 서버 `/gathers`·`/maps/:id/nodes`·노드 상태·`nodeKinds`·maps.json 노드·usableItems 당근 삭제 |
+| DB 테이블 `site_deliveries`, `character_node_state` | 새 마이그레이션으로 삭제(DOWN에 재생성), schema.sql·탈퇴 정책·테스트 helpers 정리 |
+| 나무꾼·광부 NPC 도구 연출 | 도끼·곡괭이 휘두르기와 도구 그림 삭제, NPC는 서 있는 일반 주민으로 |
+| 세이브 `woodDelivered`·`stoneDelivered` | 필드 삭제(옛 세이브의 남는 값은 무시됨) |
+| 클라이언트 `StreamingAssets/DataVersion.txt` | 데이터 버전 갱신 시 Resources와 함께 갱신(1차 배포 때 이 파일을 빠뜨려 버전 불일치) |

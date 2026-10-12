@@ -43,7 +43,7 @@ describe('POST /characters/:id/items/use', () => {
 
   it('수량 부족: 422 NOT_ENOUGH_ITEMS', async () => {
     const h = await newHero(app);
-    const res = await post(app, h, '/items/use', { item_id: 'carrot' });
+    const res = await post(app, h, '/items/use', { item_id: 'potion_hp_hi' });
     expect(res.status).toBe(422);
     expect(res.body.errors.code).toBe('NOT_ENOUGH_ITEMS');
   });

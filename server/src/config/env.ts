@@ -35,8 +35,6 @@ const envSchema = z.object({
   RATE_KILL_PER_SEC: posInt(6),
   RATE_KILL_PER_MIN: posInt(90),
   RATE_CLAIM_PER_SEC: posInt(5),
-  RATE_GATHER_PER_SEC: posInt(3),
-  RATE_NODES_PER_SEC: posInt(1),
   RATE_SHOP_PER_SEC: posInt(5),
   RATE_ENHANCE_PER_SEC: posInt(2),
   RATE_USE_PER_SEC: posInt(3),
@@ -52,8 +50,6 @@ const envSchema = z.object({
   POWER_AOE_CAP: posInt(5),
   ANOMALY_WINDOW_MINUTES: posInt(10),
   ANOMALY_BLOCK_COUNT: posInt(20),
-  GATHER_GRACE_SECONDS: z.coerce.number().int().min(0).default(3),
-  GATHER_PER_MINUTE: posInt(40),
   DUNGEON_TIME_OVERHEAD_SECONDS: z.coerce.number().int().min(0).default(30),
   ITEM_USE_MIN_GAP_MS: z.coerce.number().int().min(0).default(500),
   RUN_STALE_SECONDS: posInt(3600),
@@ -300,8 +296,6 @@ export interface AppConfig {
     killPerSec: number;
     killPerMin: number;
     claimPerSec: number;
-    gatherPerSec: number;
-    nodesPerSec: number;
     shopPerSec: number;
     enhancePerSec: number;
     usePerSec: number;
@@ -436,8 +430,6 @@ export interface AppConfig {
     powerAoeCap: number;
     anomalyWindowMinutes: number;
     anomalyBlockCount: number;
-    gatherGraceSeconds: number;
-    gatherPerMinute: number;
     dungeonTimeOverheadSeconds: number;
     itemUseMinGapMs: number;
     runStaleSeconds: number;
@@ -629,8 +621,6 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       killPerSec: e.RATE_KILL_PER_SEC,
       killPerMin: e.RATE_KILL_PER_MIN,
       claimPerSec: e.RATE_CLAIM_PER_SEC,
-      gatherPerSec: e.RATE_GATHER_PER_SEC,
-      nodesPerSec: e.RATE_NODES_PER_SEC,
       shopPerSec: e.RATE_SHOP_PER_SEC,
       enhancePerSec: e.RATE_ENHANCE_PER_SEC,
       usePerSec: e.RATE_USE_PER_SEC,
@@ -753,8 +743,6 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       powerAoeCap: e.POWER_AOE_CAP,
       anomalyWindowMinutes: e.ANOMALY_WINDOW_MINUTES,
       anomalyBlockCount: e.ANOMALY_BLOCK_COUNT,
-      gatherGraceSeconds: e.GATHER_GRACE_SECONDS,
-      gatherPerMinute: e.GATHER_PER_MINUTE,
       dungeonTimeOverheadSeconds: e.DUNGEON_TIME_OVERHEAD_SECONDS,
       itemUseMinGapMs: e.ITEM_USE_MIN_GAP_MS,
       runStaleSeconds: e.RUN_STALE_SECONDS,

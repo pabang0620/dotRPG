@@ -125,7 +125,7 @@ describe('7.3 상점 판매 품목의 기준가 상한(상점가 x 3)', () => {
     expect(limitsOf(vendor(15), 10)).toEqual({ min: 150, max: 15_000 });
     expect(limitsOf(vendor(200), 1, 'eq_sword_10_c')).toEqual({ min: 200, max: 600 });
     expect(limitsOf(vendor(250), 1, 'eq_sword_10_c+3')).toEqual({ min: 250, max: 25_000 });
-    expect(limitsOf(vendor(3), 1, 'wood')).toEqual({ min: 3, max: 300 });
+    expect(limitsOf(vendor(3), 1, 'mat_raid_king')).toEqual({ min: 3, max: 300 });
     expect(limitsOf(vendor(31), 1, 'eq_sword_10_u')).toEqual({ min: 31, max: 3100 });
   });
 

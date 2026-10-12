@@ -25,4 +25,3 @@ MonoBehaviour:
   attackRadius: 0.62
   attackKnockback: 6
   interactRange: 1.25
-  carrotHealAmount: 20

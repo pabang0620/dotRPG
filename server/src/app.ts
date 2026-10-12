@@ -14,7 +14,6 @@ const HEALTH_PATH = /^\/health(\/live|\/ready)?$/;
 export const QUIET_ROUTES: ReadonlySet<string> = new Set([
   'POST /characters/:id/kills',
   'POST /characters/:id/drops/claim',
-  'POST /characters/:id/gathers',
   'PUT /characters/:id/state',
   'POST /characters/:id/presence',
 ]);

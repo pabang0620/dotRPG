@@ -73,10 +73,6 @@ const playerSchema = z.looseObject({
 
 const gameconfigSchema = z.looseObject({
   schema: schemaVer,
-  nodeKinds: z.record(
-    z.string(),
-    z.looseObject({ item: z.string().min(1), amount: z.number().int().positive(), respawnSeconds: z.number().positive() }),
-  ),
   usableItems: z.array(z.looseObject({ id: z.string().min(1), kind: z.string() })),
   storageCapacity: z.number().int().positive(),
   chestReward: z.looseObject({ itemKey: z.string().min(1), count: z.number().int().positive() }),
@@ -221,7 +217,6 @@ const mapExtraSchema = z.looseObject({
       scriptedSpawns: z
         .array(z.looseObject({ monsterId: z.string(), total: z.number().int().positive() }))
         .default([]),
-      nodes: z.array(z.looseObject({ id: z.string().min(1), kind: z.string() })).default([]),
       chests: z.array(z.string()).default([]),
     }),
   ),
@@ -340,7 +335,6 @@ export interface MapExtra {
   /** 필드 보스(15분 창마다 캐릭터당 1회 인정) */
   fieldBoss: { monsterId: string; level: number; xp: number; intervalSeconds: number } | null;
   scriptedSpawns: { monsterId: string; total: number }[];
-  nodes: Map<string, string>; // 노드 id -> kind
   chests: Set<string>;
 }
 
@@ -503,7 +497,6 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
   }
   for (const id of [enh.materials.bone, enh.materials.ore, enh.materials.essence]) needItem(id, 'enhance.materials');
 
-  for (const [kind, n] of Object.entries(config.nodeKinds)) needItem(n.item, `gameconfig.nodeKinds.${kind}`);
   for (const u of config.usableItems) needItem(u.id, 'gameconfig.usableItems');
   needItem(config.chestReward.itemKey, 'gameconfig.chestReward');
 
@@ -529,14 +522,8 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       sharedField: m.sharedField ?? m.fieldSpawns.length > 0,
       fieldBoss: m.fieldBoss ?? null,
       scriptedSpawns: m.scriptedSpawns,
-      nodes: new Map(m.nodes.map((n) => [n.id, n.kind] as const)),
       chests: new Set(m.chests),
     });
-  }
-  for (const m of mapExtra.values()) {
-    for (const kind of m.nodes.values()) {
-      if (!config.nodeKinds[kind]) throw new Error(`게임 데이터 검증 실패: 노드 종류 ${kind} 이 gameconfig.nodeKinds에 없습니다`);
-    }
   }
 
   const dungeons = uniqueBy(dng.dungeons, (d) => d.id, '던전');

@@ -276,8 +276,6 @@ namespace DotRPG
             var serverMoves = new List<(string, bool, int)>();
             var ids = new List<string>();
             foreach (var m in EquipmentDatabase.AllMaterials) ids.Add(m.id);
-            ids.Add(ItemIds.Wood);
-            ids.Add(ItemIds.Stone);
             foreach (var id in ids)
             {
                 int n = bag.Count(id);

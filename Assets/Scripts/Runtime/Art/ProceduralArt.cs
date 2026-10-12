@@ -95,9 +95,9 @@ namespace DotRPG
             foreach (var k in new[] { "tree", "tree_fruit", "stump", "rock", "bush", "sign", "crate", "house", "site_blueprint", "site_built" }) yield return k;
             for (int mask = 0; mask < 16; mask++) yield return $"fence_{mask}";
             foreach (var k in new[] { "crop_carrot", "crop_sprout", "crop_hole" }) yield return k;
-            foreach (var k in new[] { "tool_sword", "tool_axe", "tool_pickaxe", "tool_can", "tool_rod", "tool_hammer", "tool_crate" }) yield return k;
+            foreach (var k in new[] { "tool_sword", "tool_can", "tool_rod", "tool_hammer", "tool_crate" }) yield return k;
             foreach (var k in new[] { "fx_slash", "fx_sparkle", "fx_dust", "fx_leaf", "fx_chip", "fx_bone", "fx_water", "fx_alert", "shadow" }) yield return k;
-            foreach (var k in new[] { "icon_wood", "icon_stone", "icon_carrot", "heart_full", "heart_half", "heart_empty" }) yield return k;
+            foreach (var k in new[] { "heart_full", "heart_half", "heart_empty" }) yield return k;
             foreach (var k in new[] { "ui_panel", "ui_dark", "ui_select", "ui_white" }) yield return k;
             // Canyon map.
             for (int v = 0; v < 4; v++)

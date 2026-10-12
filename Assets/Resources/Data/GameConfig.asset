@@ -21,6 +21,5 @@ MonoBehaviour:
   targetPixelHeight: 216
   cameraSmoothTime: 0.12
   backgroundColor: {r: 0.16, g: 0.3, b: 0.18, a: 1}
-  cropRegrowSeconds: 40
   autosave: 1
   textCharsPerSecond: 45

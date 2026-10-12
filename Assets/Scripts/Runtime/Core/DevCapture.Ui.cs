@@ -169,7 +169,6 @@ namespace DotRPG
 
         static readonly string[] IconKeys =
         {
-            "icon_wood", "icon_stone", "icon_carrot",
             "icon_gold", "icon_potion_hp", "icon_potion_mp", "icon_scroll", "icon_chest", "icon_anvil",
             "maticon_bone", "maticon_ore", "maticon_essence",
             "menuicon_menu", "menuicon_bag", "menuicon_skill", "menuicon_map", "menuicon_quest", "menuicon_dungeon", "menuicon_raid",

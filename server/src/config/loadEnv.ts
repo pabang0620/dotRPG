@@ -4,7 +4,7 @@ import { z } from 'zod';
 const posInt = (def: number) => z.coerce.number().int().positive().default(def);
 
 export const loadShape = {
-  /** 잦은 경로(처치·줍기·채집·상태 저장)의 request_log 보관 시간. 재전송 확인은 몇 분이면 충분하다 */
+  /** 잦은 경로(처치·줍기·상태 저장)의 request_log 보관 시간. 재전송 확인은 몇 분이면 충분하다 */
   REQUEST_LOG_HOT_RETENTION_HOURS: posInt(24),
   /** 경제 경로 캐릭터 단위 분당 한도(IP 한도와 별개) */
   RATE_ECONOMY_CHAR_MAX: posInt(300),

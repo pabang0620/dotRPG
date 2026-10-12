@@ -77,24 +77,16 @@ describe('1. device_hash 없이 install_id만 보내도 기기 한도와 사람 
   });
 });
 
-describe('2. 채집·상자·드롭 줍기의 프레즌스 검사', () => {
-  const crop = { map_id: 'village', node_id: 'village:6:10' }; // 당근 밭(나무·바위 채집은 폐지)
+describe('2. 상자·드롭 줍기의 프레즌스 검사', () => {
   const chest = { chest_id: 'canyon:46:40' };
 
-  it('enforce: 프레즌스 없으면 409, 신호를 보내면 통과, 다른 맵으로 채집·상자는 422', async () => {
+  it('enforce: 프레즌스 없으면 409, 신호를 보내면 통과, 다른 맵으로 상자는 422', async () => {
     const strict = buildApp({ PRESENCE_KILL_MODE: 'enforce' });
     const p = await player(strict, { install_id: randomUUID() });
-    expect((await post(strict, hero(p), '/gathers', crop)).body.errors.code).toBe('PRESENCE_REQUIRED');
     expect((await post(strict, hero(p), '/chests/open', chest)).body.errors.code).toBe('PRESENCE_REQUIRED');
     expect((await post(strict, hero(p), '/drops/claim', { drop_ids: [randomUUID()] })).body.errors.code).toBe('PRESENCE_REQUIRED');
     await beat(strict, p, { map_id: 'forest' });
-    const wrongMap = await post(strict, hero(p), '/gathers', crop);
-    expect(wrongMap.status).toBe(422);
-    expect(wrongMap.body.errors.code).toBe('PRESENCE_MAP_MISMATCH');
     expect((await post(strict, hero(p), '/chests/open', chest)).body.errors.code).toBe('PRESENCE_MAP_MISMATCH');
-    advance(2_000);
-    await beat(strict, p, { map_id: 'village' });
-    expect((await post(strict, hero(p), '/gathers', crop)).status).toBe(200);
     advance(2_000);
     await beat(strict, p, { map_id: 'canyon' });
     expect((await post(strict, hero(p), '/chests/open', chest)).status).toBe(200);
@@ -106,7 +98,7 @@ describe('2. 채집·상자·드롭 줍기의 프레즌스 검사', () => {
     expect((await post(app, hero(p), '/chests/open', chest)).status).toBe(200);
     await beat(app, p, { map_id: 'forest' });
     advance(2_000);
-    const res = await post(app, hero(p), '/gathers', crop);
+    const res = await post(app, hero(p), '/chests/open', { chest_id: 'winter:47:32' });
     expect(res.status).toBe(200);
     expect(await anomalyKinds(hero(p))).toContain('kill_presence');
   });
