@@ -318,8 +318,8 @@ namespace DotRPG
             first.Kill();
             second.Kill();
             crack?.Fade();
-            GlassBurstFx.Burst(at + Vector2.left * arm, at + Vector2.right * arm, 24, order + 3);
-            GlassBurstFx.Burst(at + Vector2.up * arm, at + Vector2.down * arm, 24, order + 3);
+            GlassBurstFx.Burst(at + Vector2.left * arm, at + Vector2.right * arm, 36, order + 3);
+            GlassBurstFx.Burst(at + Vector2.up * arm, at + Vector2.down * arm, 36, order + 3);
             Sound("c_heavy");
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);

@@ -256,15 +256,5 @@
   "rows": 2,
   "frames": 10,
   "note": "5x2, narrow gutters (>=20px per row, frames 1,5 hug cell edge); Codex RGB 1254x1254 opaque black; collapse, white point, shockwave"
- },
- {
-  "id": "f3_glass_shards",
-  "file": "f3_glass_shards.png",
-  "background": "magenta",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); 8 distinct static shard sprites, cells ~344x384, each shard 60-80% of cell, not exactly centered (bbox x40-303/387-645/738-981/1081-1326 y35-348 row1; row2 y415-737); magenta bg has slight darker vignette; watermark sparkle at bottom-right of cell 8",
-  "mode": "grid"
  }
 ]
