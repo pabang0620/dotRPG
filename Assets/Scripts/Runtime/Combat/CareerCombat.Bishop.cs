@@ -278,7 +278,13 @@ namespace DotRPG
                 if (c.authority && Time.time >= nextMark)
                 {
                     nextMark = Time.time + .2f; // refreshed 5 times a second, not every frame
-                    foreach (var p in Allies(owner.Center, SanctumRadius)) For(p).sanctumEnd = Time.time + .35f; // [BALANCE] +50% damage while inside
+                    foreach (var p in Allies(owner.Center, SanctumRadius))
+                    {
+                        For(p).sanctumEnd = Time.time + .35f; // [BALANCE] +50% damage while inside
+                        // Immune to every status effect inside: what is on them now is lifted too.
+                        For(p).Cleanse();
+                        if (p.IsStunned) p.ClearStun();
+                    }
                     foreach (var e in Enemies(owner.Center, SanctumRadius)) e.Weaken(.35f); // [ARMOR] 약화: monsters inside hit 30% softer
                 }
                 if (Time.time >= nextArrow)

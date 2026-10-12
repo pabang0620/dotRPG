@@ -108,7 +108,10 @@ namespace DotRPG
             guard = percent;
         }
 
-        public void AddCurse(float slow = 0) { Cursed = true; SlowUntil = Time.time + slow; }
+        /// <summary>[BISHOP 2026-10-12] Standing in the bishop's sanctum: immune to every status effect (stun, curse, slow).</summary>
+        public bool StatusImmune => Time.time < sanctumEnd;
+
+        public void AddCurse(float slow = 0) { if (StatusImmune) return; Cursed = true; SlowUntil = Time.time + slow; }
 
         public bool Cleanse()
         {

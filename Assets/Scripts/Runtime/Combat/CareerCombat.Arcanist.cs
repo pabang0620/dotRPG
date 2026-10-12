@@ -345,7 +345,6 @@ namespace DotRPG
             }
         }
 
-        /// <summary>천체 붕괴: a fire, an ice and a lightning star fall in turn, then the middle collapses.</summary>
         /// <summary>[CHARGE] Where 성운 폭발 lands: the monster the caster faces in reach, else ahead (also the charge marker).</summary>
         public Vector2 ChargePoint(float range)
         {
@@ -358,7 +357,7 @@ namespace DotRPG
         {
             Vector2 center = ChargePoint(c.n.range);
             bool burst = VfxLibrary.Has("m2_nebula_burst");
-            // [VFX] Its own nebula burst (no longer the same collapse as 천체 붕괴) when the generated art exists.
+            // [VFX] Its own nebula burst (not the awakening's) when the generated art exists.
             if (burst) CareerFx.Gen("m2_nebula_burst", null, center, Vector2.zero, c.n.radius * 2.4f, 0f, 18f, VfxLayer.Top, false);
             else CareerFx.Clip("m_collapse", center, Vector2.zero, c.n.radius / 1.4f, 22f, VfxLayer.Top, false);
             yield return new WaitForSeconds(.2f);
@@ -372,157 +371,130 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천체 붕괴 (v4, 2026-10-12, Docs/PLAN_SKILL_VFX.md): around the mage a fire, an ice and a lightning meteor fall in
-        /// turn (300% each); each leaves an elemental zone where it lands that lasts 6 s: the magma pool burns whoever
-        /// stands in it, the glacier chills (damage, a short freeze every 2 s), the charged crystals strike lightning at
-        /// monsters around them. The mage's awakening is damage over time and control by area, not a stagger.
+        /// 유성우 (v5, 2026-10-12, Docs/PLAN_SKILL_VFX.md, replaces 천체 붕괴): the world darkens and a swirling nebula gathers
+        /// over the mage (0.8 s); for 4 s fire, ice and lightning comets rain on the area, most aimed at monsters, each
+        /// hitting a small area (50%) and leaving an elemental mark that burns or chills whoever stands on it (damage over
+        /// time, through armour); then three great comets, one of each element, strike together (150% each) and the
+        /// nebula fades. The mage's awakening is area damage over time, not a stagger.
         /// </summary>
         IEnumerator Cataclysm(Run c)
         {
-            const float PerElement = .55f, Fall = .45f, ZoneTime = 6f, Tick = .5f;
+            const float Gather = .8f, Rain = 4f, MarkLife = 3f, Tick = .5f;
+            const int Comets = 28;
             Vector2 center = owner.Position;
             float R = c.n.radius;
-            string[] elements = { "fire", "ice", "storm" };
-            Color[] colors = { FireColor, IceColor, new Color(1f, .92f, .4f, .95f) };
-            float[] sizes = { 3.6f, 2.8f, 2.8f };
-            var spots = new Vector2[3];
-            var zones = new ElementTerrainFx[3];
-            var born = new float[3];
-            void FadeAll() { foreach (var z in zones) if (z != null) z.FadeOut(.5f); }
-            Sound("c_arcane", .6f);
-            // 1) Three meteors fall in turn around the mage; each leaves its zone where it lands.
-            for (int i = 0; i < 3; i++)
+            int order = SkillFx.TopOrder + 4;
+            Color[] colors = { FireColor, IceColor, new Color(1f, .92f, .4f, .95f), new Color(.45f, .7f, 1f, .95f) };
+            int hitDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .5f));
+            int markDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .05f));
+            var marks = new System.Collections.Generic.List<(Vector2 at, int element, float until, float next)>();
+
+            // 1) The sky darkens and the nebula gathers over the mage.
+            DimFx.Show(Gather + Rain + 1.4f, .35f);
+            var nebula = new GameObject("Nebula").AddComponent<SpriteRenderer>();
+            if (Fx.Root != null) nebula.transform.SetParent(Fx.Root, false);
+            bool art = VfxLibrary.Has("m6_nebula") && VfxLibrary.Get("m6_nebula").Length > 0;
+            nebula.sprite = art ? VfxLibrary.Get("m6_nebula")[0] : Game.Art.Get("fx_glow");
+            if (FxMaterials.Additive != null) nebula.sharedMaterial = FxMaterials.Additive;
+            nebula.sortingOrder = SkillFx.TopOrder - 2;
+            float nebulaW = Mathf.Max(.01f, nebula.sprite.bounds.size.x);
+            var nebulaTint = art ? Color.white : new Color(.5f, .4f, 1f);
+            void Nebula(float alpha, float t)
             {
-                spots[i] = center + Rotate(c.dir, 90f + i * 120f) * R * .4f;
-                StartCoroutine(ElementStar(c, spots[i], elements[i]));
-                for (float t = 0f; t < PerElement; t += Time.deltaTime)
-                {
-                    if (!Live(c)) { FadeAll(); yield break; }
-                    if (zones[i] == null && t >= Fall) { zones[i] = ElementTerrainFx.Spawn(elements[i], spots[i], sizes[i], colors[i]); born[i] = Time.time; }
-                    yield return null;
-                }
-                if (zones[i] == null) { zones[i] = ElementTerrainFx.Spawn(elements[i], spots[i], sizes[i], colors[i]); born[i] = Time.time; }
+                if (nebula == null) return;
+                nebula.transform.position = center + Vector2.up * 2.4f;
+                float s = R * 1.5f / nebulaW * (1f + .04f * Mathf.Sin(t * 1.3f));
+                nebula.transform.localScale = new Vector3(s, s * .62f, 1f);
+                nebula.transform.rotation = Quaternion.Euler(0f, 0f, t * 6f);
+                nebula.color = new Color(nebulaTint.r, nebulaTint.g, nebulaTint.b, alpha);
             }
-            // 2) The zones work for 6 s each (counted from when each one appeared).
-            int fireHit = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .12f));
-            int iceHit = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .06f));
-            int boltHit = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .2f));
-            var nextTick = new float[3];
-            int[] ticks = new int[3];
-            for (int i = 0; i < 3; i++) nextTick[i] = born[i] + Tick;
-            float end = born[2] + ZoneTime;
-            while (Time.time < end)
+            void Cleanup() { if (nebula != null) Destroy(nebula.gameObject); }
+            Sound("c_arcane", .7f);
+            float clock = 0f;
+            for (float t = 0f; t < Gather; t += Time.deltaTime)
             {
-                if (!Live(c)) { FadeAll(); yield break; }
-                for (int i = 0; i < 3; i++)
-                {
-                    if (zones[i] == null || Time.time > born[i] + ZoneTime) { if (zones[i] != null && Time.time > born[i] + ZoneTime) { zones[i].FadeOut(.5f); zones[i] = null; } continue; }
-                    if (Time.time < nextTick[i]) continue;
-                    nextTick[i] += Tick;
-                    ticks[i]++;
-                    float zoneR = sizes[i] * .5f;
-                    var inside = Enemies(spots[i], zoneR);
-                    if (elements[i] == "fire")
-                    {
-                        foreach (var e in inside)
-                        {
-                            if (c.authority) SecondaryHit(e, fireHit, true); // [ARMOR] damage over time: through armour
-                            SkillFx.Spawn("fx_flame", e.Center + Random.insideUnitCircle * .2f, Color.white, .35f, SkillFx.TopOrder + 2).Move(Vector2.up * 1.5f).Scale(1.6f, .4f);
-                        }
-                        SkillVisuals.Sparks(spots[i] + Random.insideUnitCircle * zoneR * .6f, colors[i], 3, 2.5f, .4f);
-                    }
-                    else if (elements[i] == "ice")
-                    {
-                        foreach (var e in inside)
-                        {
-                            if (c.authority) SecondaryHit(e, iceHit, true);
-                            if (ticks[i] % 4 == 0) Freeze(c, e, .7f); // a short freeze every 2 s
-                        }
-                        SkillVisuals.Sparks(spots[i] + Random.insideUnitCircle * zoneR * .6f, colors[i], 2, 1.5f, .4f);
-                    }
-                    else
-                    {
-                        // The crystals strike the nearest two monsters within reach.
-                        var near = Enemies(spots[i], zoneR * 1.6f);
-                        near.Sort((x, y) => Vector2.Distance(x.Center, spots[i]).CompareTo(Vector2.Distance(y.Center, spots[i])));
-                        for (int k = 0; k < Mathf.Min(2, near.Count); k++)
-                        {
-                            LightningFx.Strike(spots[i] + Vector2.up * 1.2f, near[k].Center, colors[i], new Color(.55f, .85f, 1f, .7f), .22f, .8f);
-                            if (c.authority) SecondaryHit(near[k], boltHit);
-                        }
-                        if (near.Count > 0) Sound("c_thunder", .35f);
-                    }
-                }
+                if (!Live(c)) { Cleanup(); yield break; }
+                clock += Time.deltaTime;
+                Nebula(.85f * t / Gather, clock);
+                if (Random.value < .35f) SkillVisuals.Sparks(center + Vector2.up * 2.4f + Random.insideUnitCircle * R * .5f, colors[3], 1, 1f, .4f);
                 yield return null;
             }
-            FadeAll();
-        }
 
-        IEnumerator ElementStar(Run c, Vector2 ground, string element)
-        {
-            const float fall = .45f, radius = 3.6f; // [BALANCE 2026-10-11] the awakening covers twice the area
-            string meteor = "m2_meteor_" + element;
-            if (VfxLibrary.Has(meteor))
+            // A comet lands: a small hit and an elemental mark that works for MarkLife seconds.
+            void Land(Vector2 at, int element, float radius, int damage, bool big)
             {
-                // [VFX] The generated meteor falls along the diagonal it is drawn on, with a ring marking the landing.
-                SkillFx.Spawn("fx_ring", ground, element == "fire" ? FireColor : element == "ice" ? IceColor : StormColor, fall, SkillFx.GroundOrder + 8).Scale(radius * 1.2f, radius * .45f).Fade(FxFade.None);
-                Vector2 start = ground + new Vector2(-2.6f, 5.5f);
-                var rock = CareerFx.Gen(meteor, null, start, Vector2.zero, 1.8f, 0f, 24f, VfxLayer.Top, false, null, fall + .1f, true);
-                for (float t = 0; t < fall; t += Time.deltaTime)
+                SkillVisuals.Flash(at, new Color(Mathf.Lerp(colors[element].r, 1f, .5f), Mathf.Lerp(colors[element].g, 1f, .5f), Mathf.Lerp(colors[element].b, 1f, .5f), .8f), radius * (big ? 1.4f : 1f), .12f);
+                SkillVisuals.Sparks(at, colors[element], big ? 10 : 4, big ? 5f : 3f, .35f);
+                if (big) { CareerFx.Clip("impact", at, Vector2.zero, radius / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet); if (owner.IsLocal) Game.Camera?.Shake(.2f, .25f); }
+                Sound(element == 0 ? "c_fire" : element == 1 ? "c_ice" : element == 2 ? "c_thunder" : "c_arcane", big ? 1f : .35f);
+                bool any = false;
+                foreach (var e in Enemies(at, radius))
                 {
-                    if (!Live(c)) { rock?.Stop(); yield break; }
-                    rock?.Place(Vector2.Lerp(start, ground + new Vector2(0f, .4f), Mathf.Clamp01((t + Time.deltaTime) / fall)));
-                    yield return null;
+                    if (!Strike(c, e, damage, at, big ? 8f : 2f, big ? 2 : 1, "c_arcane")) continue;
+                    any = true;
+                    if (element == 1) Freeze(c, e, big ? 1.2f : .4f);
                 }
-                rock?.Stop();
+                // The element-memory synergy counts fire, ice and lightning hits as before.
+                if (any && element < 3) ElementLanded(c, element == 0 ? "fire" : element == 1 ? "ice" : "storm");
+                GroundMarkFx.Spawn(at, element, colors[element], big ? 2.4f : 1.3f, MarkLife);
+                marks.Add((at, element, Time.time + MarkLife, Time.time + Tick));
             }
-            else if (element == "fire") SkillVisuals.MeteorFall(ground, fall, radius);
-            else
+
+            // 2) The rain: comets over 4 s, most aimed at monsters, the rest anywhere in the area.
+            float every = Rain / Comets, nextComet = 0f;
+            int launched = 0;
+            for (float t = 0f; t < Rain + .4f; t += Time.deltaTime)
             {
-                var color = element == "ice" ? IceColor : StormColor;
-                SkillFx.Spawn("fx_ring", ground, color, fall, SkillFx.GroundOrder + 8).Scale(radius * 1.2f, radius * .45f).Fade(FxFade.None);
-                var head = element == "ice" ? SkillVisuals.FrostOrbHead(ground + new Vector2(-2.4f, 5.5f), new Vector2(.4f, -1f)) : CareerFx.Orb(ground + new Vector2(2.4f, 5.5f), color, 1.2f, "fx_zap");
-                Vector2 start = ground + new Vector2(element == "ice" ? -2.4f : 2.4f, 5.5f);
-                for (float t = 0; t < fall; t += Time.deltaTime)
+                if (!Live(c)) { Cleanup(); yield break; }
+                clock += Time.deltaTime;
+                Nebula(.85f, clock);
+                if (launched < Comets && t >= nextComet)
                 {
-                    if (!Live(c)) { head.Kill(); yield break; }
-                    head.MoveTo(Vector2.Lerp(start, ground, Mathf.Clamp01((t + Time.deltaTime) / fall)));
-                    yield return null;
+                    nextComet += every;
+                    launched++;
+                    var foes = Enemies(center, R);
+                    Vector2 target = foes.Count > 0 && Random.value < .65f
+                        ? foes[Random.Range(0, foes.Count)].Position + Random.insideUnitCircle * .4f
+                        : center + Random.insideUnitCircle * R * .9f;
+                    int element = launched % 4 == 0 ? 3 : Random.Range(0, 3);
+                    CometFx.Spawn(target, colors[element], .32f, 1f, order, () => Land(target, element, 1.1f, hitDamage, false));
                 }
-                head.Kill();
+                TickMarks();
+                yield return null;
             }
-            if (fall > 0f && element == "fire" && !VfxLibrary.Has(meteor)) yield return new WaitForSeconds(fall);
-            if (!Live(c)) yield break;
-            if (element == "fire")
+
+            // 3) Three great comets, one of each element, strike together.
+            for (int i = 0; i < 3; i++)
             {
-                CareerFx.Gen("m2_fire_explosion", "m_explode", ground + Vector2.up * .3f, Vector2.zero, radius * 2.2f, radius / 1.2f, 22f, VfxLayer.Top, false);
-                SkillFx.Spawn("fx_scorch", ground, Color.white, 2f, SkillFx.GroundOrder + 4).Scale(radius * .7f, radius * 1.1f).Fade(FxFade.Late);
-                Sound("c_fire");
+                Vector2 target = center + Rotate(c.dir, 90f + i * 120f) * R * .35f;
+                int element = i;
+                CometFx.Spawn(target, colors[element], .45f, 2f, order + 4, () => Land(target, element, R * .4f, Mathf.RoundToInt(c.n.damage * 1.5f), true));
             }
-            else if (element == "ice")
+            Sound("c_heavy");
+            for (float t = 0f; t < MarkLife + .2f; t += Time.deltaTime)
             {
-                SkillVisuals.FrostOrbBurst(ground + Vector2.up * .3f, ground, radius);
-                for (int k = -1; k <= 1; k++) CareerFx.Clip("m_icebloom", ground + new Vector2(k * .6f, -.1f * Mathf.Abs(k)), Vector2.zero, 1.3f, 20f, VfxLayer.AtFeet, false);
-                Sound("c_ice");
+                if (!Live(c)) { Cleanup(); yield break; }
+                clock += Time.deltaTime;
+                Nebula(.85f * Mathf.Clamp01(1f - (t - .4f) / 1f), clock); // the nebula clears after the finale
+                TickMarks();
+                yield return null;
             }
-            else
+            Cleanup();
+
+            // Each mark burns, chills or shocks whoever stands on it every 0.5 s (through armour).
+            void TickMarks()
             {
-                SkillVisuals.Thunder(ground);
-                SkillVisuals.Thunder(ground + Random.insideUnitCircle * .6f);
-                CareerFx.Clip("m_spark", ground + Vector2.up * .3f, Vector2.zero, 2.2f, 26f, VfxLayer.Top, false);
-                Sound("c_thunder");
+                for (int i = marks.Count - 1; i >= 0; i--)
+                {
+                    var m = marks[i];
+                    if (Time.time > m.until) { marks.RemoveAt(i); continue; }
+                    if (Time.time < m.next) continue;
+                    m.next += Tick;
+                    marks[i] = m;
+                    foreach (var e in Enemies(m.at, .9f))
+                        if (c.authority) SecondaryHit(e, markDamage, true);
+                }
             }
-            float power = ElementPower(element);
-            bool any = false;
-            foreach (var e in Enemies(ground, radius))
-            {
-                if (!Strike(c, e, Mathf.RoundToInt(c.n.damage * power), ground, 8f, 2, element == "fire" ? "c_fire" : element == "ice" ? "c_ice" : "c_thunder")) continue;
-                any = true;
-                if (element == "ice") Freeze(c, e, 1.5f);
-                else if (element == "storm") Stun(c, e, .3f);
-                else if (c.authority) StartCoroutine(Burn(e, Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .06f)), c.map));
-            }
-            if (any) ElementLanded(c, element);
         }
     }
 }

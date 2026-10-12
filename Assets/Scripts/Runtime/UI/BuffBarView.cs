@@ -138,7 +138,7 @@ namespace DotRPG
                 if (c.CounterLeft > 0f) Put(ref n, "buff_guard", $"방진 {c.CounterCharges}회 " + Sec(c.CounterLeft), "응보의 방진", $"받는 피해 -40%. 방어 {c.CounterCharges}회 남음, 막을 때 반격."); // blocks left + time
                 if (c.OathLeft > 0f) Put(ref n, "buff_guard", "맹세 " + Sec(c.OathLeft), "수호의 맹세", "결계 안 아군 받는 피해 -30%, 저주·둔화 해제.");
                 if (c.RetaliationLeft > 0f) Put(ref n, "buff_power", "응보 " + Sec(c.RetaliationLeft), "수호의 반향", "피격 후 다음 공격 피해 증가.");
-                if (c.SanctumLeft > 0f) Put(ref n, "buff_bless", "성역 +50%", "천상의 행진 성역", "공격 피해 +50%, 지속 회복.");
+                if (c.SanctumLeft > 0f) Put(ref n, "buff_bless", "성역 +50%", "천상의 행진 성역", "공격 피해 +50%, 지속 회복, 모든 상태 이상 면역.");
                 if (c.BlessLeft > 0f) Put(ref n, "buff_bless", "축복 " + Sec(c.BlessLeft), "축복의 연결", $"공격 피해 +{c.BlessPercent}%.");
                 if (c.HotLeft > 0f) Put(ref n, "buff_regen", "재생 " + Sec(c.HotLeft), "재생", "체력 지속 회복.");
                 if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_power", "투지 " + Mathf.CeilToInt(p.Data.ScrollLeft / 60f) + "분", "투지의 주문서", "공격 피해 +15%."); // [CASH] 투지의 주문서

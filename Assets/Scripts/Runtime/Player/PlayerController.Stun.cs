@@ -13,9 +13,13 @@ namespace DotRPG
         public bool IsStunned => Time.time < stunnedUntil;
         public float StunnedLeft => Mathf.Max(0f, stunnedUntil - Time.time);
 
+        /// <summary>[BISHOP] Ends a stun at once (stepping into the sanctum).</summary>
+        public void ClearStun() => stunnedUntil = 0f;
+
         public void Stun(float seconds)
         {
             if (IsDead || seconds <= 0f) return;
+            if (CareerCombat.For(this).StatusImmune) return; // [BISHOP] the sanctum: immune to every status effect
             bool fresh = !IsStunned;
             stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
             CancelMobility();

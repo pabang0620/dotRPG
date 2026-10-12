@@ -40,7 +40,7 @@ namespace DotRPG
                 case "orbit":effect=$"착탄 피해 {d} × {s.hits}발";break;
                 case "blink":effect=$"잔상 폭발 {d} · {Shield(.12f)}";break;
                 case "rift":effect=$"피해 {d} × {s.hits}회 + 붕괴 {d*2} · 끌어당김";break;
-                case "cataclysm":effect=$"원소 운석 {d} × 3 · 지대 6초: 화상 {Mathf.RoundToInt(d*.12f)}/0.5초 · 냉기 {Mathf.RoundToInt(d*.06f)}/0.5초 · 번개 {Mathf.RoundToInt(d*.2f)}/0.5초";break;
+                case "cataclysm":effect=$"혜성 {Mathf.RoundToInt(d*.5f)} × 28 · 원소 자국 {Mathf.RoundToInt(d*.05f)}/0.5초(방어 무시) · 거대 혜성 {Mathf.RoundToInt(d*1.5f)} × 3";break;
                 case "heal":effect=$"회복 {Heal(d)} · 반경 {n.radius:0.#}m";break;
                 case "bloom":effect=$"회복 {Heal(d)} × {s.hits}회";break;
                 case "cleanse":effect=$"정화 · 회복 {Heal(d)} · 적 피해 {Mathf.RoundToInt(d*.9f/1.4f)}";break;
