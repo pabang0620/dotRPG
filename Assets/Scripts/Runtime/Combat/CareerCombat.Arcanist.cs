@@ -48,7 +48,7 @@ namespace DotRPG
             {
                 yield return new WaitForSeconds(1f);
                 if (e == null || e.IsDead || !Valid(map)) yield break;
-                SecondaryHit(e, value);
+                SecondaryHit(e, value, true); // [ARMOR] a burn goes through armour
                 SkillFx.Spawn("fx_flame", e.Center + Random.insideUnitCircle * .2f, Color.white, .35f, SkillFx.TopOrder + 2).Move(Vector2.up * 1.5f).Scale(1.6f, .4f);
             }
         }
@@ -426,7 +426,7 @@ namespace DotRPG
                     {
                         foreach (var e in inside)
                         {
-                            if (c.authority) SecondaryHit(e, fireHit);
+                            if (c.authority) SecondaryHit(e, fireHit, true); // [ARMOR] damage over time: through armour
                             SkillFx.Spawn("fx_flame", e.Center + Random.insideUnitCircle * .2f, Color.white, .35f, SkillFx.TopOrder + 2).Move(Vector2.up * 1.5f).Scale(1.6f, .4f);
                         }
                         SkillVisuals.Sparks(spots[i] + Random.insideUnitCircle * zoneR * .6f, colors[i], 3, 2.5f, .4f);
@@ -435,7 +435,7 @@ namespace DotRPG
                     {
                         foreach (var e in inside)
                         {
-                            if (c.authority) SecondaryHit(e, iceHit);
+                            if (c.authority) SecondaryHit(e, iceHit, true);
                             if (ticks[i] % 4 == 0) Freeze(c, e, .7f); // a short freeze every 2 s
                         }
                         SkillVisuals.Sparks(spots[i] + Random.insideUnitCircle * zoneR * .6f, colors[i], 2, 1.5f, .4f);

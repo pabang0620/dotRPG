@@ -70,7 +70,7 @@ for m in re.finditer(r'id = ("[a-z_]+"|Warrior)(.{0,700}?)\}', MDB, re.S):
         return float(x.group(1)) if x else d
     if "boss = true" in body:
         continue
-    MON[mid] = dict(hp=g("hp", 30), dmg=g("damage", 10), wind=g("windup", .5), rec=g("recover", .7),
+    MON[mid] = dict(hp=g("hp", 30), dmg=g("damage", 10), wind=g("windup", .5), rec=g("recover", .7), armor=g("armor", 0),
                     skill=g("skillInterval", 0), ranged="keepDistance" in body or mid in ("skel_archer", "skel_necro", "hollow_hexer"))
 MON["skeleton"] = MON["skel_warrior"]
 
@@ -83,8 +83,16 @@ def zone_mul(z):
     return SANCTUM_MUL if z.get("theme") == "SanctumField" else 1.0
 
 
+# [ARMOR 2026-10-12] Armour cuts direct hits; burns and zones go through it. Modelled as more effective HP, with
+# DIRECT_SHARE of a class's damage being direct hits (the rest damage over time). --no-armor shows the old numbers.
+ARMOR = "--no-armor" not in sys.argv
+DIRECT_SHARE = .85
+
+
 def mon_hp(mid, lv):
-    return MON[mid]["hp"] * HP_MUL * FIELD_HP_BASE * (1 + FIELD_HP_SLOPE * (lv - 1))
+    hp = MON[mid]["hp"] * HP_MUL * FIELD_HP_BASE * (1 + FIELD_HP_SLOPE * (lv - 1))
+    a = MON[mid].get("armor", 0) if ARMOR and lv >= 15 else 0  # EnemyController.ArmorFromLevel
+    return hp / (1 - a * DIRECT_SHARE)
 
 
 def mon_dps(mid, lv):

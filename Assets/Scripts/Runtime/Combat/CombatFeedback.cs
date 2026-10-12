@@ -17,7 +17,9 @@ namespace DotRPG
 
         Health health;
         Transform root;
-        SpriteRenderer bg, chunk, fill;
+        SpriteRenderer bg, chunk, fill, armorIcon;
+        EnemyController enemy;
+        static Sprite shieldSprite, brokenSprite;
         float shownRatio = 1f;   // coloured fill
         float chunkRatio = 1f;   // trailing pale part
         float chunkHoldUntil;
@@ -33,6 +35,9 @@ namespace DotRPG
             var left = new Vector3(-7f / 16f, 0f, 0f);
             chunk = Part("Chunk", "hpbar_fill", Chunk, 1, left);
             fill = Part("Fill", "hpbar_fill", High, 2, left);
+            // [ARMOR] An armoured monster shows a small shield left of its bar (cracked and red while it is broken).
+            // (made on first draw: the monster definition is applied after the bar is set up)
+            enemy = GetComponent<EnemyController>();
             health.Changed += OnChanged;
             OnChanged(health.Current, health.Max);
             chunkRatio = shownRatio;
@@ -73,8 +78,45 @@ namespace DotRPG
             Apply();
         }
 
+        /// <summary>A 7x8 pixel shield (16 px = 1 unit, like the bar); the broken one has a crack through it.</summary>
+        static Sprite ShieldIcon(bool broken)
+        {
+            if (!broken && shieldSprite != null) return shieldSprite;
+            if (broken && brokenSprite != null) return brokenSprite;
+            const int w = 7, h = 8;
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, name = broken ? "ArmorBroken" : "Armor" };
+            var px = new Color32[w * h];
+            var rim = new Color32(30, 34, 46, 255);
+            var face = broken ? new Color32(232, 84, 70, 255) : new Color32(150, 200, 235, 255);
+            var shine = broken ? new Color32(255, 170, 150, 255) : new Color32(225, 245, 255, 255);
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                // A heater shield: straight top, sides narrowing to a point at the bottom.
+                int inset = y < 3 ? 3 - y : 0;
+                bool inside = x >= inset && x < w - inset;
+                bool edge = inside && (x == inset || x == w - 1 - inset || y == h - 1 || (y < 3 && (x == inset || x == w - 1 - inset)));
+                Color32 c = !inside ? new Color32(0, 0, 0, 0) : edge ? rim : (x == 2 && y > 3 && y < 6 ? shine : face);
+                if (broken && inside && !edge && (x == 3 && y >= 2 || x == 4 && y == 5)) c = rim; // the crack
+                px[y * w + x] = c;
+            }
+            t.SetPixels32(px);
+            t.Apply(false, true);
+            var sprite = Sprite.Create(t, new Rect(0, 0, w, h), new Vector2(.5f, .5f), 16f);
+            if (broken) brokenSprite = sprite; else shieldSprite = sprite;
+            return sprite;
+        }
+
         void Apply()
         {
+            if (armorIcon == null && enemy != null && enemy.HasArmor)
+            {
+                armorIcon = new GameObject("Armor").AddComponent<SpriteRenderer>();
+                armorIcon.transform.SetParent(root, false);
+                armorIcon.transform.localPosition = new Vector3(-.68f, 0f, 0f);
+                armorIcon.sortingOrder = SortingOrder + 3;
+            }
+            if (armorIcon != null) armorIcon.sprite = ShieldIcon(enemy.ArmorBroken);
             fill.transform.localScale = new Vector3(shownRatio, 1f, 1f);
             chunk.transform.localScale = new Vector3(chunkRatio, 1f, 1f);
             fill.color = shownRatio > 0.5f ? Color.Lerp(Mid, High, (shownRatio - 0.5f) * 2f) : Color.Lerp(Low, Mid, shownRatio * 2f);

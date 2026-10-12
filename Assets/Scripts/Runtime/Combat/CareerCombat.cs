@@ -348,12 +348,13 @@ namespace DotRPG
         }
 
         /// <summary>A hit that does not count as a skill or basic attack (burn ticks).</summary>
-        void SecondaryHit(EnemyController e, int damage)
+        /// <param name="dot">Damage over time (burns, the mage's zones): it goes through armour.</param>
+        void SecondaryHit(EnemyController e, int damage, bool dot = false)
         {
             if (e == null || e.IsDead) return;
             bool old = secondaryDamage;
             secondaryDamage = true;
-            try { e.TakeDamage(new DamageInfo(damage, e.Position, 0f, Team.Player, owner.gameObject) { noHitInvulnerability = true }); }
+            try { e.TakeDamage(new DamageInfo(damage, e.Position, 0f, Team.Player, owner.gameObject) { noHitInvulnerability = true, dot = dot }); }
             finally { secondaryDamage = old; }
         }
 

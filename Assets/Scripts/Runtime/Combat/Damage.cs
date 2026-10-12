@@ -24,6 +24,8 @@ namespace DotRPG
         public bool unblockable;
         /// <summary>Damage over time (burn ticks): it does not start the target's hit invulnerability, so it never eats a real blow.</summary>
         public bool noHitInvulnerability;
+        /// <summary>[ARMOR] Damage over time (burns, the mage's zones): it goes through a monster's armour.</summary>
+        public bool dot;
 
         public DamageInfo(int amount, Vector2 sourcePosition, float knockback, Team team)
             : this(amount, sourcePosition, knockback, team, null) { }
@@ -37,13 +39,14 @@ namespace DotRPG
             this.attacker = attacker;
             unblockable = false; // [MONSTER]
             noHitInvulnerability = false;
+            dot = false; // [ARMOR]
         }
 
         /// <summary>The party member that dealt the hit, or null.</summary>
         public PlayerController AttackerMember => attacker != null ? attacker.GetComponent<PlayerController>() : null;
     }
 
-    /// <summary>Anything that reacts to attacks: enemies, the player, trees, rocks.</summary>
+    /// <summary>Anything that reacts to attacks: enemies and the player.</summary>
     public interface IDamageable
     {
         /// <returns>True if the hit landed (used for hit-stop, sounds, and "hit once per swing").</returns>

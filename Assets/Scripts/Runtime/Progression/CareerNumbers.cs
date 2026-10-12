@@ -31,7 +31,7 @@ namespace DotRPG
                 case "taunt":effect=$"도발 {s.duration:0.#}초 · 피해 {d} · 반경 {n.radius:0.#}m";break;
                 case "bash":effect=$"피해 {d} · 기절 {s.duration:0.#}초";break;
                 case "counter":effect=$"받는 피해 -40% · 반격 {d} (피격 없으면 {Mathf.RoundToInt(d*.7f)})";break;
-                case "aegis":effect=$"피해 {d} · 경직 2.3초(보스 포함) · 도발 · 아군 {Shield(.25f)}";break;
+                case "aegis":effect=$"피해 {d} · 속박 2.6초(보스 포함) · 도발 · 방어 붕괴 8초 · 아군 {Shield(.25f)}";break;
                 case "fire":effect=$"폭발 피해 {d} · 반경 {n.radius:0.#}m · 화상 {Mathf.RoundToInt(d*.07f)} × 3";break;
                 case "ice":effect=$"피해 {d} · 얼음창 3갈래 · 빙결 {s.duration:0.#}초";break;
                 case "storm":effect=$"피해 {d} · 최대 {s.hits}명 연쇄";break;

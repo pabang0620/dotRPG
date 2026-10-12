@@ -252,7 +252,8 @@ namespace DotRPG
         /// <summary>
         /// The sanctuary under the bishop (2026-10-12, Docs/PLAN_SKILL_VFX.md): a gold sanctum sigil with a slowly turning
         /// rim that follows the bishop's feet. Each heal is visible: a ring of light closes from the rim to the centre and
-        /// light rises from every ally inside; allies standing in it (+50% damage) show a small gold arrow at their feet.
+        /// light rises from every ally inside; allies standing in it (+50% damage) show a small gold arrow at their feet,
+        /// monsters in it are weakened (30% less damage dealt) and show a grey-violet arrow pointing down.
         /// </summary>
         IEnumerator Sanctuary(Run c)
         {
@@ -278,11 +279,13 @@ namespace DotRPG
                 {
                     nextMark = Time.time + .2f; // refreshed 5 times a second, not every frame
                     foreach (var p in Allies(owner.Center, SanctumRadius)) For(p).sanctumEnd = Time.time + .35f; // [BALANCE] +50% damage while inside
+                    foreach (var e in Enemies(owner.Center, SanctumRadius)) e.Weaken(.35f); // [ARMOR] 약화: monsters inside hit 30% softer
                 }
                 if (Time.time >= nextArrow)
                 {
                     nextArrow = Time.time + .7f;
                     foreach (var p in Allies(owner.Center, SanctumRadius)) PowerArrow(p.Position, gold);
+                    foreach (var e in Enemies(owner.Center, SanctumRadius)) WeakArrow(e.Position);
                 }
                 if (Time.time >= nextTick)
                 {
@@ -318,6 +321,16 @@ namespace DotRPG
                 yield return null;
             }
             ring.Kill();
+        }
+
+        /// <summary>The 약화 mark: a small grey-violet downward arrow (v) at a weakened monster's feet.</summary>
+        static void WeakArrow(Vector2 feet)
+        {
+            Vector2 tip = feet + new Vector2(0f, .12f);
+            var c = new Color(.7f, .6f, .95f, .85f);
+            int order = SkillFx.At(feet.y, -1);
+            GlowLineFx.Spawn(tip + new Vector2(-.22f, .18f), tip, c, .07f, .55f, order);
+            GlowLineFx.Spawn(tip + new Vector2(.22f, .18f), tip, c, .07f, .55f, order);
         }
 
         /// <summary>The +50% mark: a small gold upward arrow (^) that lights at an ally's feet and fades.</summary>

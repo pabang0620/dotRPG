@@ -103,6 +103,11 @@ namespace DotRPG
 
         /// <summary>Hits never stagger or push it (bosses; knights only while attacking - see the behaviour).</summary>
         public bool superArmor;
+        /// <summary>
+        /// [ARMOR 2026-10-12] Share of every direct hit the monster shrugs off (0..1). Damage over time goes through it,
+        /// and the guardian's armour break (방어 붕괴) takes it away: armoured monsters are the mage's and guardian's job.
+        /// </summary>
+        public float armor;
         /// <summary>무력화 게이지. 0 = no gauge.</summary>
         public float groggyMax;
         public bool boss, raid;
@@ -341,13 +346,13 @@ namespace DotRPG
             Add(new MonsterDef
             {
                 id = "skel_shield", name = "해골 방패병", look = Look("skel_shield", C(228, 220, 200)), kind = MonsterKind.ShieldGuard,
-                hp = 60, damage = 12, xp = 32, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f,
+                hp = 60, damage = 12, xp = 32, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f, armor = .35f,
             });
             Add(new MonsterDef
             {
                 id = "skel_knight", name = "해골 기사", look = Look("skel_knight", C(214, 208, 196)), kind = MonsterKind.Knight,
                 hp = 90, damage = 16, xp = 45, chaseSpeed = 2.3f, attackRange = 1.3f, windup = 0.45f, recover = 0.8f,
-                knockbackSpeed = 4f,
+                knockbackSpeed = 4f, armor = .25f,
             });
             Add(new MonsterDef
             {
@@ -363,12 +368,12 @@ namespace DotRPG
             {
                 id = "hollow_scarab", name = "흑갑 굴파괴충", look = Look("hollow_scarab", C(52, 48, 68)), kind = MonsterKind.Charger,
                 hp = 63, damage = 16, xp = 35, chaseSpeed = 2.0f, attackRange = 1.0f,
-                skillInterval = 3.5f, projectileSpeed = 11f,
+                skillInterval = 3.5f, projectileSpeed = 11f, armor = .3f,
             });
             Add(new MonsterDef
             {
                 id = "hollow_guard", name = "심연의 방패 파수꾼", look = Look("hollow_guard", C(45, 52, 68)), kind = MonsterKind.ShieldGuard,
-                hp = 84, damage = 15, xp = 40, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f,
+                hp = 84, damage = 15, xp = 40, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f, armor = .35f,
             });
             Add(new MonsterDef
             {
@@ -516,6 +521,8 @@ namespace DotRPG
                 attackRange = 2.2f, detect = 11f, loseInterest = 999f, leash = 999f, superArmor = true,
                 groggyMax = 320f, hpLines = lines, invulnerable = 0.05f, knockbackSpeed = 0f, attackKnockback = 9f,
                 goldMin = 150, goldMax = 250, maxMinions = 4,
+                // [ARMOR] Every boss has some; the stone and black-iron ones a lot.
+                armor = id == "boss_rock_golem" || id == "fboss_canyon" || id == "boss_bargas" ? .25f : .15f,
                 patterns = new List<BossPattern>(patterns),
             };
         }

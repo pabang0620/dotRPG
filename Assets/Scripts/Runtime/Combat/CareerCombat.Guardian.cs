@@ -252,10 +252,12 @@ namespace DotRPG
 
         /// <summary>
         /// 천쇄방패 (v2, 2026-10-12, Docs/PLAN_SKILL_VFX.md): while the guardian leaps, a hex barrier sigil is drawn on the
-        /// ground; on the slam giant shields of light fall from the sky one by one around its edge (monsters inside, bosses too, are held
-        /// and taunted, allies shielded), the walls close in for 1.8 s pulling the monsters together, snap shut and
-        /// burst into golden glass for the hit.
+        /// ground; on the slam giant shields of light fall from the sky one by one around its edge (monsters inside, bosses too, are
+        /// rooted and taunted, allies shielded), the walls close in pulling the monsters together, snap shut and burst
+        /// into golden glass for the hit, breaking the monsters' armour for 8 s (no armour, +20% damage taken).
         /// </summary>
+        const float BreakTime = 8f;
+
         IEnumerator AegisSlam(Run c)
         {
             const float Draw = .6f, Arrive = .75f, Hold = 1.6f, Close = .15f; // the shields land one by one during Arrive
@@ -293,8 +295,13 @@ namespace DotRPG
             var foes = Enemies(at, r);
             foreach (var e in foes)
             {
-                if (c.authority) { e.Stagger(Arrive + Hold + Close + .15f); StunStars.Attach(e); }
+                // [ARMOR] The guardian roots (속박) instead of the fighter's stagger: held in place, bosses too, but
+                // still swinging at whoever stands next to them; taunted onto the guardian.
+                if (c.authority) e.Root(Arrive + Hold + Close + .15f);
                 Taunt(c, e, 4f);
+                if (VfxLibrary.Has("g2_gold_chain"))
+                    for (int k = -1; k <= 1; k += 2)
+                        CareerFx.Gen("g2_gold_chain", null, e.Center, new Vector2(1f, k * .7f).normalized, 1.7f, 0f, 1f, VfxLayer.Top, true, null, Arrive + Hold + Close)?.FadeOut(.3f);
             }
             foreach (var p in Allies(at, r + 1f)) GiveShield(c, p, .25f, c.s.duration);
             var wall = ShieldWallFx.Spawn(feet, r * .95f, 12);
@@ -336,7 +343,13 @@ namespace DotRPG
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
             Sound("c_heavy");
-            foreach (var e in Enemies(feet, r)) Strike(c, e, c.n.damage, feet, 12f, 2, "c_shield");
+            foreach (var e in Enemies(feet, r))
+            {
+                Strike(c, e, c.n.damage, feet, 12f, 2, "c_shield");
+                // [ARMOR] 방어 붕괴: 8 s without armour and 20% more damage taken, for the whole party to cash in.
+                if (c.authority) e.BreakArmor(BreakTime);
+                WorldPopupText.Show(e.transform, "방어 붕괴", new Color(1f, .45f, .35f), 1.2f);
+            }
         }
     }
 }

@@ -83,6 +83,42 @@ namespace DotRPG
             desiredVelocity = Vector2.zero;
         }
 
+        // ---------------- [ARMOR 2026-10-12] armour, armour break, root, weaken ----------------
+        float armorBreakUntil, rootUntil, weakenUntil;
+        static bool armorTipShown;
+
+        /// <summary>
+        /// Share of a direct hit this monster shrugs off right now (0 while its armour is broken). Only from level 15, when
+        /// promotion gives the counters (the mage's burns and zones, the guardian's armour break).
+        /// </summary>
+        public float Armor => !HasArmor || Time.time < armorBreakUntil ? 0f : Def.armor;
+        public const int ArmorFromLevel = 15;
+        public bool HasArmor => Def != null && Def.armor > 0f && Level >= ArmorFromLevel;
+        public bool ArmorBroken => Time.time < armorBreakUntil;
+        public bool Rooted => Time.time < rootUntil;
+        public bool Weakened => Time.time < weakenUntil;
+
+        /// <summary>[GUARDIAN] 방어 붕괴: no armour and 20% more damage taken for a while (bosses too).</summary>
+        public void BreakArmor(float seconds)
+        {
+            if (state == State.Dead || Puppet) return;
+            armorBreakUntil = Mathf.Max(armorBreakUntil, Time.time + seconds);
+        }
+
+        /// <summary>[GUARDIAN] 속박: held in place (bosses too) but still attacks whoever is in reach.</summary>
+        public void Root(float seconds)
+        {
+            if (state == State.Dead || seconds <= 0f || Puppet) return;
+            rootUntil = Mathf.Max(rootUntil, Time.time + seconds);
+        }
+
+        /// <summary>[BISHOP] 약화: deals 30% less damage while it lasts.</summary>
+        public void Weaken(float seconds)
+        {
+            if (state == State.Dead || Puppet) return;
+            weakenUntil = Mathf.Max(weakenUntil, Time.time + seconds);
+        }
+
         /// <summary>Stops the enemy completely (Frost Nova). The body turns icy blue.</summary>
         public void Freeze(float seconds)
         {
@@ -282,6 +318,12 @@ namespace DotRPG
                 body.SetVelocity(d > .15f ? to / d * Mathf.Min(pullSpeed, d / Time.fixedDeltaTime) : Vector2.zero);
                 return;
             }
+            // [GUARDIAN] Rooted: it stays where it is (it can still swing at whoever is in reach).
+            if (Time.time < rootUntil)
+            {
+                body.SetVelocity(Vector2.zero);
+                return;
+            }
             if (state == State.Hurt && Time.time < stateUntil - stats.hurtStunTime * 0.5f)
             {
                 body.SetVelocity(knockbackVelocity);
@@ -435,6 +477,18 @@ namespace DotRPG
             if(careerActor!=null) info.amount=careerActor.ModifyDamage(this,info.amount);
             // [BALANCE 2026-10-11] A much stronger character cuts through old monsters (bosses excluded).
             if(info.AttackerMember!=null && !(Def!=null && Def.boss)) info.amount=Mathf.Max(1,Mathf.RoundToInt(info.amount*LevelGapMul(info.AttackerMember.Data.Progression.Level-Level)));
+            // [ARMOR] Armour cuts direct hits; damage over time goes through; a broken guard takes 20% more.
+            if(!info.dot && Armor>0f)
+            {
+                info.amount=Mathf.Max(1,Mathf.RoundToInt(info.amount*(1f-Armor)));
+                // Once per session the player learns why the hit was small (and what to do about it).
+                if(!armorTipShown && info.AttackerMember!=null && info.AttackerMember.IsLocal)
+                {
+                    armorTipShown=true;
+                    GameEvents.RaiseToast($"방패 아이콘 몬스터는 방어력 {Mathf.RoundToInt(Armor*100)}%: 지속 피해(화상·원소 지대)와 방어 붕괴가 잘 통합니다.");
+                }
+            }
+            if(ArmorBroken) info.amount=Mathf.RoundToInt(info.amount*1.2f);
             if (!health.TryDamage(info)) return false;
             careerActor?.OnLanded(this);
 

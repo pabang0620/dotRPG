@@ -16,6 +16,9 @@ namespace DotRPG
             // [GUARDIAN] Monsters 25 or more levels below a guardian can't hurt them at all.
             if (Data.Progression.Career == Career.Guardian && info.attacker != null && info.attacker.TryGetComponent<EnemyController>(out var foe)
                 && foe.Level <= Data.Progression.Level - GuardianImmuneGap) { CareerCombat.For(this).ShowBlocked(); return false; }
+            // [BISHOP] A weakened monster (in the sanctum) hits 30% softer.
+            if (info.attacker != null && info.attacker.TryGetComponent<EnemyController>(out var weak) && weak.Weakened)
+                info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * .7f));
             // Armour / rings: a chance to shrug the hit off completely.
             if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block) // [MONSTER] unblockable skips the roll
             {
