@@ -11,7 +11,8 @@ namespace DotRPG
     {
         /// <summary>
         /// [VFX] Records career skills as numbered PNG frames at a fixed 30 fps (Docs/SKILL_VIDEO_CAPTURE.md): a level-40
-        /// awakened character of the skill's career in the village, a ring of harmless dummies, one cast per skill.
+        /// awakened character of the skill's career in the village, three standing party members (all at half health, so
+        /// heals and shields show), a ring of harmless dummies, one cast per skill.
         /// "-skill f_awake,m_storm" picks skills ("all" = every active and awakening skill of the four careers);
         /// without it the fighter awakening is recorded. Frames go to &lt;folder&gt;/clips/&lt;skill id&gt;/f0000.png.
         /// </summary>
@@ -23,6 +24,7 @@ namespace DotRPG
             var ids = RequestedClipSkills();
             Career? current = null;
             var foes = new List<EnemyController>();
+            var allies = new List<PlayerController>();
             EnemyStats es = null;
             Vector2 at = Vector2.zero;
             foreach (var id in ids)
@@ -34,6 +36,8 @@ namespace DotRPG
                     // A fresh character of this career: level 40, promoted, every node learned, awakened.
                     foreach (var f in foes) if (f != null) Destroy(f.gameObject);
                     foes.Clear();
+                    foreach (var a in allies) if (a != null) Game.Party?.RemoveNetMember(a);
+                    allies.Clear();
                     Game.Flow.NewGame(CareerCatalog.Base(s.career));
                     yield return Wait(.4f);
                     while (Game.Flow.IsTransitioning) yield return null;
@@ -50,6 +54,14 @@ namespace DotRPG
                         es.maxHealth = 1000000; es.attackDamage = 0; es.xpReward = 0; es.wanderSpeed = es.chaseSpeed = es.knockbackSpeed = 0;
                     }
                     for (int i = 0; i < 8; i++) foes.Add(EnemyController.Create(es, CharacterLook.Skeleton, DummySpot(at, i), Game.World.ObjectsRoot));
+                    // Three standing party members, so heals, shields and buffs on allies are visible.
+                    if (Game.Party != null)
+                        for (int i = 0; i < AllySpots.Length; i++)
+                        {
+                            var cls = i == 1 ? CharacterClass.Mage : CharacterClass.Warrior;
+                            var data = CharacterData.CreateCompanion("clip_" + i, "파티원 " + (i + 1), cls, 300);
+                            allies.Add(Game.Party.AddNetMember(data, null, true, at + AllySpots[i], Facing.Right));
+                        }
                     Game.UI.Hud?.gameObject.SetActive(false);
                     current = s.career;
                 }
@@ -58,7 +70,16 @@ namespace DotRPG
                 CareerCombat.For(player).ResetState();
                 player.Place(at, Facing.Right);
                 player.FaceTowards(at + Vector2.right);
+                // Everyone at half health: a heal shows as a rising bar and green numbers.
                 player.HealFull();
+                player.Health.Drain(player.Health.Max / 2);
+                for (int i = 0; i < allies.Count; i++)
+                {
+                    if (allies[i] == null) continue;
+                    allies[i].Place(at + AllySpots[i], Facing.Right);
+                    allies[i].HealFull();
+                    allies[i].Health.Drain(allies[i].Health.Max / 2);
+                }
                 for (int i = 0; i < foes.Count; i++)
                 {
                     if (foes[i] == null) continue;
@@ -70,8 +91,12 @@ namespace DotRPG
                 yield return RecordClip(s, player);
             }
             foreach (var f in foes) if (f != null) Destroy(f.gameObject);
+            foreach (var a in allies) if (a != null) Game.Party?.RemoveNetMember(a);
             if (es != null) Destroy(es);
         }
+
+        /// <summary>Where the three clip party members stand, around and behind the caster.</summary>
+        static readonly Vector2[] AllySpots = { new Vector2(-1.6f, .9f), new Vector2(-1.9f, -.6f), new Vector2(-.4f, -1.3f) };
 
         static Vector2 DummySpot(Vector2 at, int i)
         {

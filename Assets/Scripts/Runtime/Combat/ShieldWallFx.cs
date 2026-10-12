@@ -3,15 +3,15 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// [VFX] 천쇄방패's barrier (Docs/PLAN_SKILL_VFX.md): a ring of standing golden shield panes around a centre, seen in
-    /// top-down perspective. Driven from outside: <see cref="Radius"/> (the ring closes in), <see cref="Rise"/>
-    /// (0 = sunk in the ground, 1 = full height), <see cref="Brightness"/>. Uses the generated pane (g4_wall) when present,
-    /// else a code-drawn translucent pane with a bright rim. Panes in front of the centre sort over characters, the
+    /// [VFX] 천쇄방패's barrier (Docs/PLAN_SKILL_VFX.md): giant shields of light that fall from the sky one after
+    /// another and stab into the ground around a centre (dust and a flash where each lands), seen in top-down
+    /// perspective. Driven from outside: <see cref="Radius"/> (the ring closes in), <see cref="Brightness"/>. Uses the
+    /// generated shield (g5_shield, else g4_wall) when present, else a code-drawn translucent pane with a bright rim. Panes in front of the centre sort over characters, the
     /// ones behind under them.
     /// </summary>
     public class ShieldWallFx : MonoBehaviour
     {
-        const float Squash = .7f, PaneHeight = 1.6f;
+        const float Squash = .7f, PaneHeight = 2f, DropHeight = 5f, FallTime = .16f, Gap = .045f;
         static Sprite codePane;
 
         SpriteRenderer[] panes, glows;
@@ -20,7 +20,10 @@ namespace DotRPG
 
         public Vector2 Center;
         public float Radius = 3f;
-        public float Rise;
+        /// <summary>1 = every shield has landed (they land one after another over about 0.7 s from the spawn).</summary>
+        public float Landed => panes.Length == 0 ? 1f : Mathf.Clamp01((Time.time - spawnedAt) / ((panes.Length - 1) * Gap + FallTime));
+        float spawnedAt;
+        bool[] hit;
         public float Brightness = 1f;
         public Color Tint = new Color(1f, .85f, .4f);
 
@@ -31,16 +34,20 @@ namespace DotRPG
             var fx = go.AddComponent<ShieldWallFx>();
             fx.Center = center;
             fx.Radius = radius;
-            Sprite sprite = VfxLibrary.Has("g4_wall") && VfxLibrary.Get("g4_wall").Length > 0 ? VfxLibrary.Get("g4_wall")[0] : CodePane;
+            string id = VfxLibrary.Has("g5_shield") ? "g5_shield" : VfxLibrary.Has("g4_wall") ? "g4_wall" : null;
+            Sprite sprite = id != null && VfxLibrary.Get(id).Length > 0 ? VfxLibrary.Get(id)[0] : CodePane;
+            fx.spawnedAt = Time.time;
             fx.paneWorldH = Mathf.Max(.01f, sprite.bounds.size.y);
             fx.paneWorldW = Mathf.Max(.01f, sprite.bounds.size.x);
             fx.pivotY = sprite.pivot.y / Mathf.Max(1f, sprite.rect.height); // generated panes are centred, the code pane stands on its foot
             fx.panes = new SpriteRenderer[count];
             fx.glows = new SpriteRenderer[count];
             fx.angles = new float[count];
+            fx.hit = new bool[count];
             for (int i = 0; i < count; i++)
             {
-                fx.angles[i] = i * Mathf.PI * 2f / count;
+                // Landing order goes round the ring from the front.
+                fx.angles[i] = -Mathf.PI * .5f + i * Mathf.PI * 2f / count;
                 var p = new GameObject("Pane").AddComponent<SpriteRenderer>();
                 p.transform.SetParent(go.transform, false);
                 p.sprite = sprite;
@@ -89,7 +96,7 @@ namespace DotRPG
             for (int i = 0; i < panes.Length; i++)
             {
                 Vector2 foot = Foot(i);
-                GlassBurstFx.Burst(foot, foot + Vector2.up * PaneHeight * Mathf.Max(.3f, Rise), 5, order, Tint);
+                GlassBurstFx.Burst(foot, foot + Vector2.up * PaneHeight, 5, order, Tint);
             }
             Destroy(gameObject);
         }
@@ -102,13 +109,23 @@ namespace DotRPG
 
         void Refresh()
         {
-            float h = PaneHeight * Mathf.Clamp01(Rise);
+            float h = PaneHeight;
             float b = Mathf.Max(0f, Brightness);
             for (int i = 0; i < panes.Length; i++)
             {
                 Vector2 foot = Foot(i);
                 var p = panes[i];
-                p.transform.position = foot + Vector2.up * h * pivotY;
+                // Falling: accelerating down from the sky, invisible until it starts.
+                float k = Mathf.Clamp01((Time.time - spawnedAt - i * Gap) / FallTime);
+                float drop = (1f - k * k) * DropHeight;
+                p.enabled = glows[i].enabled = Time.time - spawnedAt >= i * Gap;
+                if (k >= 1f && !hit[i])
+                {
+                    hit[i] = true;
+                    Fx.Burst("fx_dust", foot, 3, 1.4f, .45f);
+                    SkillVisuals.Flash(foot + Vector2.up * .3f, new Color(1f, .92f, .6f, .7f), .9f, .1f);
+                }
+                p.transform.position = foot + Vector2.up * (h * pivotY + drop);
                 // Each pane covers its share of the ring (a closed wall), narrower toward the sides where it is seen
                 // edge-on, full width at the front and back.
                 float facing = Mathf.Lerp(.45f, 1f, Mathf.Abs(Mathf.Sin(angles[i])));
@@ -117,7 +134,9 @@ namespace DotRPG
                 p.transform.localScale = new Vector3(span * facing / paneWorldW, s, 1f);
                 p.sortingOrder = SkillFx.At(foot.y, 6);
                 p.color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.85f * Mathf.Min(1f, b)));
-                glows[i].color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.35f * (b - .5f)));
+                // A white flash in the moment it stabs in, then the normal glow.
+                float land = k >= 1f ? Mathf.Clamp01(1f - (Time.time - spawnedAt - i * Gap - FallTime) / .2f) : 0f;
+                glows[i].color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.35f * (b - .5f) + land * .8f));
                 glows[i].sortingOrder = p.sortingOrder + 1;
             }
         }

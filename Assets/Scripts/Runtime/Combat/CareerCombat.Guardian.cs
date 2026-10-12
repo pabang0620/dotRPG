@@ -252,13 +252,13 @@ namespace DotRPG
 
         /// <summary>
         /// 천쇄방패 (v2, 2026-10-12, Docs/PLAN_SKILL_VFX.md): while the guardian leaps, a hex barrier sigil is drawn on the
-        /// ground; on the slam a ring of golden shield walls rises at its edge (monsters inside, bosses too, are held
+        /// ground; on the slam giant shields of light fall from the sky one by one around its edge (monsters inside, bosses too, are held
         /// and taunted, allies shielded), the walls close in for 1.8 s pulling the monsters together, snap shut and
         /// burst into golden glass for the hit.
         /// </summary>
         IEnumerator AegisSlam(Run c)
         {
-            const float Draw = .6f, Rise = .2f, Hold = 1.8f, Close = .15f;
+            const float Draw = .6f, Arrive = .75f, Hold = 1.6f, Close = .15f; // the shields land one by one during Arrive
             Pose(Draw + .1f, 2);
             Vector2 at = owner.Center, feet = owner.Position;
             float r = c.n.radius;
@@ -284,7 +284,7 @@ namespace DotRPG
                 yield return null;
             }
             foreach (var h in hexes) h.Reveal = 1f;
-            // 2) The slam: walls rise at the edge, everything inside is held and taunted, allies are shielded.
+            // 2) The slam: the shields start falling round the edge, everything inside is held and taunted, allies are shielded.
             CareerFx.Slam(feet, r * .7f, GTeal, true);
             SkillFx.Crack(feet, r, 1.8f);
             Feel(2, Vector2.down);
@@ -293,19 +293,18 @@ namespace DotRPG
             var foes = Enemies(at, r);
             foreach (var e in foes)
             {
-                if (c.authority) { e.Stagger(Rise + Hold + Close + .15f); StunStars.Attach(e); }
+                if (c.authority) { e.Stagger(Arrive + Hold + Close + .15f); StunStars.Attach(e); }
                 Taunt(c, e, 4f);
             }
             foreach (var p in Allies(at, r + 1f)) GiveShield(c, p, .25f, c.s.duration);
             var wall = ShieldWallFx.Spawn(feet, r * .95f, 12);
             wall.Tint = GGold;
-            // 3) The walls stand, then close in slowly, brightening; the monsters are drawn toward the middle.
+            // 3) Once the shields have landed they close in slowly, brightening; the monsters are drawn toward the middle.
             float nextPull = 0f;
-            for (float t = 0f; t < Rise + Hold; t += Time.deltaTime)
+            for (float t = 0f; t < Arrive + Hold; t += Time.deltaTime)
             {
                 if (!Live(c)) { KillHexes(); wall.Kill(); yield break; }
-                wall.Rise = Mathf.Clamp01(t / Rise);
-                float k = Mathf.Clamp01((t - Rise) / Hold), ease = k * k * (3f - 2f * k);
+                float k = Mathf.Clamp01((t - Arrive) / Hold), ease = k * k * (3f - 2f * k);
                 wall.Radius = Mathf.Lerp(r * .95f, r * .35f, ease);
                 wall.Brightness = 1f + ease * .9f;
                 foreach (var h in hexes) h.Brightness = 1f + ease * .8f;

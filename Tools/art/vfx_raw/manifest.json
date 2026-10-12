@@ -258,26 +258,6 @@
   "note": "5x2, narrow gutters (>=20px per row, frames 1,5 hug cell edge); Codex RGB 1254x1254 opaque black; collapse, white point, shockwave"
  },
  {
-  "id": "g4_sigil_v2",
-  "file": "g4_sigil_v2.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four hexagon shield-ward sigil designs, gold/white; 1024x1024 (converted from Flow JPEG, 1:1); Flow watermark sparkle may sit bottom-right; some pink/lavender glow tint",
-  "mode": "grid"
- },
- {
-  "id": "g4_sigil_b_v2",
-  "file": "g4_sigil_b_v2.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 four ornate hexagon shield-ward sigil designs; 1024x1024 (converted from Flow JPEG, 1:1); Flow watermark sparkle may sit bottom-right; some pink/lavender glow tint",
-  "mode": "grid"
- },
- {
   "id": "g4_wall_v2",
   "file": "g4_wall_v2.png",
   "background": "magenta",
@@ -295,26 +275,6 @@
   "rows": 2,
   "frames": 4,
   "note": "2x2 four ornate light-shield wall designs (cell 3 holds two plates); 1024x1024 (converted from Flow JPEG, 1:1); Flow watermark sparkle may sit bottom-right; some pink/lavender glow tint",
-  "mode": "grid"
- },
- {
-  "id": "m4_rings_a_v2",
-  "file": "m4_rings_a_v2.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 parts: outer ring, middle ring, inner ring, center emblem (style A); 1024x1024 (converted from Flow JPEG, 1:1); Flow watermark sparkle may sit bottom-right; some pink/lavender glow tint",
-  "mode": "grid"
- },
- {
-  "id": "m4_rings_b_v2",
-  "file": "m4_rings_b_v2.png",
-  "background": "magenta",
-  "cols": 2,
-  "rows": 2,
-  "frames": 4,
-  "note": "2x2 parts: outer ring, middle ring, inner ring, center emblem (style B, angular); 1024x1024 (converted from Flow JPEG, 1:1); Flow watermark sparkle may sit bottom-right; some pink/lavender glow tint",
   "mode": "grid"
  },
  {
