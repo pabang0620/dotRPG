@@ -258,9 +258,9 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천검귀일 (v4, 2026-10-12): a vivid, thin cross (+) cut around the fighter. A horizontal cut, then a vertical
-        /// one (1.3 s), the finished cross trembles harder and harder (1.4 s), its lines tear apart (0.3 s) and it bursts
-        /// for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
+        /// 천검귀일 (v5, 2026-10-12): a cross (+) that splits space around the fighter. A horizontal cut, then a vertical
+        /// one (1.3 s); the cuts crack open into dark slits that tremble (1.4 s), tear wide (0.3 s) and shatter into
+        /// shards of space for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
         /// </summary>
         IEnumerator XSlash(Run c)
         {
@@ -287,15 +287,22 @@ namespace DotRPG
             CutEnd(at + Vector2.down * arm, blue);
             yield return new WaitForSeconds(Draw - Cut - Gap - Cut * .7f);
             if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
-            // 2) The finished cross trembles, sparks crackling along it, harder as the burst nears.
+            // 2) Space cracks along the cut (Docs/PLAN_SKILL_VFX.md "공간 균열"): each line becomes a dark slit with white
+            //    rims, jagged cracks grow out of it and it trembles harder and harder. The world dims so it stands out.
+            first.Kill();
+            second.Kill();
+            var riftH = SpaceRiftFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, order);
+            var riftV = SpaceRiftFx.Spawn(at + Vector2.up * arm, at + Vector2.down * arm, order);
+            DimFx.Show(Shake + Tear + .3f, .35f);
             float nextSpark = 0f;
             for (float t = 0f; t < Shake; t += Time.deltaTime)
             {
-                if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
-                float k = t / Shake;
+                if (!Live(c)) { riftH.Kill(); riftV.Kill(); yield break; }
+                float k = t / Shake, ease = k * k * (3f - 2f * k);
+                riftH.Gap = riftV.Gap = .35f * ease;
+                riftH.Cracks = riftV.Cracks = ease;
                 var jitter = Random.insideUnitCircle * Mathf.Lerp(.03f, .12f, k * k);
-                first.Offset = jitter;
-                second.Offset = jitter;
+                riftH.Offset = riftV.Offset = jitter;
                 if (t >= nextSpark)
                 {
                     nextSpark = t + Mathf.Lerp(.12f, .04f, k);
@@ -304,18 +311,22 @@ namespace DotRPG
                 }
                 yield return null;
             }
-            // 3) The lines tear apart, then burst into splinters of the same thin line, as long as the cross.
-            first.Offset = second.Offset = Vector2.zero;
-            first.Explode();
-            second.Explode();
+            // 3) The rift tears open fast, rims flaring.
             Sound("c_slash");
-            yield return new WaitForSeconds(Tear);
-            if (!Live(c)) yield break;
-            // 4) Burst: the hit lands now (3 s after the cast).
-            StrokeFx.Shatter(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, 26, order);
-            StrokeFx.Shatter(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, 26, order);
-            for (int i = 0; i < 8; i++)
-                SkillVisuals.Sparks(at + (i % 2 == 0 ? Vector2.right : Vector2.up) * Random.Range(-arm, arm), Color.Lerp(blue, Color.white, .5f), 3, 4f, .35f);
+            for (float t = 0f; t < Tear; t += Time.deltaTime)
+            {
+                if (!Live(c)) { riftH.Kill(); riftV.Kill(); yield break; }
+                float e = t / Tear;
+                riftH.Gap = riftV.Gap = .35f + .55f * e * e;
+                riftH.Flare = riftV.Flare = e;
+                riftH.Cracks = riftV.Cracks = 1f;
+                riftH.Offset = riftV.Offset = Random.insideUnitCircle * .14f;
+                yield return null;
+            }
+            // 4) Shatter: the hit lands now (3 s after the cast).
+            riftH.Offset = riftV.Offset = Vector2.zero;
+            riftH.Shatter();
+            riftV.Shatter();
             Sound("c_heavy");
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
