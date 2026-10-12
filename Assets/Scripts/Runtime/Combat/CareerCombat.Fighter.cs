@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -258,36 +258,59 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천검귀일 (v2, 2026-10-12): a gigantic X slash around the fighter. Every monster in the radius (bosses too) is
-        /// staggered at once for 1.3 s; the X lands 0.9 s in for one big hit.
+        /// 천검귀일 (v2, 2026-10-12): a gigantic thin cross (+) cut around the fighter. Drawing the cross takes 1.3 s,
+        /// it trembles for 0.9 s, then bursts for one big hit. Every monster in the radius (bosses too) stays staggered
+        /// from the cast until the burst (2.2 s).
         /// </summary>
         IEnumerator XSlash(Run c)
         {
-            const float Stagger = 1.3f, HitAt = .9f, Mul = 10f, VisualWidth = 12.5f;
+            const float Draw = 1.3f, Shake = .9f, Mul = 10f, Size = 12.5f;
             Vector2 at = owner.Center;
-            Pose(HitAt + .2f, 2);
+            var blue = new Color(.6f, .88f, 1f, .95f);
+            Pose(Draw + Shake + .2f, 2);
             if (c.authority)
-                foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Stagger); StunStars.Attach(e); }
-            // The slash: generated X (f3_xslash) about 7 bodies wide; else two crossing code-drawn arcs.
-            if (VfxLibrary.Has("f3_xslash"))
-                CareerFx.Gen("f3_xslash", null, at, Vector2.zero, VisualWidth, 0f, 24f, VfxLayer.Top, false, null, Stagger, false, 10f / Stagger);
+                foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Draw + Shake); StunStars.Attach(e); }
+            SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .6f), Draw + Shake, SkillFx.GroundOrder + 10)
+                .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
+            bool art = VfxLibrary.Has("f3_cross_draw") && VfxLibrary.Has("f3_cross_hold");
+            // 1) Draw the cross (generated f3_cross_draw; else two thin glowing lines).
+            if (art) CareerFx.Gen("f3_cross_draw", null, at, Vector2.zero, Size, 0f, 24f, VfxLayer.Top, false, null, Draw, false, 8f / Draw);
             else
             {
-                CareerFx.Clip("f_arc", at, CareerFx.Tilt(Vector2.right, 45f), VisualWidth / 2.5f, 20f).FlipY(false);
-                CareerFx.Clip("f_arc", at, CareerFx.Tilt(Vector2.right, -45f), VisualWidth / 2.5f, 20f).FlipY(true);
+                GlowLineFx.Spawn(at + Vector2.up * Size * .45f, at + Vector2.down * Size * .45f, blue, .12f, Draw + Shake, SkillFx.TopOrder + 2);
+                GlowLineFx.Spawn(at + Vector2.left * Size * .45f, at + Vector2.right * Size * .45f, blue, .12f, Draw + Shake, SkillFx.TopOrder + 2);
             }
-            SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .7f), Stagger, SkillFx.GroundOrder + 10)
-                .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
             Sound("c_slash");
-            yield return new WaitForSeconds(HitAt);
+            yield return new WaitForSeconds(Draw);
             if (!Live(c)) yield break;
+            // 2) The finished cross trembles, sparks crackling along it, harder as the burst nears.
+            var hold = art ? CareerFx.Gen("f3_cross_hold", null, at, Vector2.zero, Size, 0f, 24f, VfxLayer.Top, false, null, Shake + .05f, true, 12f) : null;
+            float nextSpark = 0f;
+            for (float t = 0f; t < Shake; t += Time.deltaTime)
+            {
+                if (!Live(c)) { hold?.Stop(); yield break; }
+                float k = .5f + t / Shake;
+                hold?.Place(at + Random.insideUnitCircle * .09f * k);
+                if (t >= nextSpark)
+                {
+                    nextSpark = t + .08f;
+                    bool vertical = Random.value < .5f;
+                    float u = Random.Range(-.45f, .45f) * Size;
+                    SkillVisuals.Sparks(at + (vertical ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 3, 2.5f, .25f);
+                }
+                yield return null;
+            }
+            hold?.Stop();
+            // 3) Burst: the hit lands now.
+            if (VfxLibrary.Has("f3_cross_burst")) CareerFx.Gen("f3_cross_burst", null, at, Vector2.zero, Size * 1.05f, 0f, 24f, VfxLayer.Top, false, null, .6f, false, 8f / .6f);
+            else CareerFx.Clip("f_x", at, Vector2.right, 3f, 24f);
             Sound("c_heavy");
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
             SkillVisuals.Flash(at, new Color(.75f, .92f, 1f, .9f), c.n.radius * 2.2f, .2f);
             foreach (var e in Enemies(at, c.n.radius))
                 if (Strike(c, e, Mathf.RoundToInt(c.n.damage * Mul), at, 10f, 2, "c_heavy"))
-                    CareerFx.Clip("f_x", e.Center, Vector2.right, 1.6f, 28f);
+                    CareerFx.Clip("f_cut", e.Center, Vector2.right, 1.5f, 26f);
         }
 
         /// <summary>A sword of the rain that only shows: smaller, lands, sparks and fades.</summary>
