@@ -293,5 +293,37 @@
   "rows": 2,
   "frames": 8,
   "note": "Codex RGB 1774x887; white flash then blue burst and embers; clean gutters"
+ },
+ {
+  "id": "f3_cross_draw2",
+  "file": "f3_cross_draw_v2.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Flow Nano Banana 2 (converted from JPEG) RGB 1024x1024; cells are 256x256 in the TOP HALF only (4x2 = rows 1-2), bottom half empty black; Flow watermark possible at bottom-right; hairline-thin: frames1-4 vertical stroke top-to-bottom with white tip dot, 5-8 horizontal stroke left-to-right, 8 = thin +; cell content spans ~80% of cell height",
+  "mode": "grid",
+  "crop": [
+   0,
+   0,
+   1024,
+   512
+  ]
+ },
+ {
+  "id": "f3_cross_burst2",
+  "file": "f3_cross_burst_v2.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "Flow Nano Banana 2 (converted from JPEG) RGB 1024x1024; cells are 256x256 in the TOP HALF only (4x2 = rows 1-2), bottom half empty black; Flow watermark possible at bottom-right; 1-2 white flash of thin + (1 is moderately thick), 3-5 line streaks+fragments burst, 6-8 fade (7-8 nearly invisible)",
+  "mode": "grid",
+  "crop": [
+   0,
+   0,
+   1024,
+   512
+  ]
  }
 ]

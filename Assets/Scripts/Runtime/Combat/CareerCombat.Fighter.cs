@@ -265,7 +265,6 @@ namespace DotRPG
         IEnumerator XSlash(Run c)
         {
             const float Draw = 1.3f, Shake = .9f, Mul = 10f;
-            float size = c.n.radius * 2.5f; // the cross reaches the edge of the radius
             Vector2 at = owner.Center;
             var blue = new Color(.6f, .88f, 1f, .95f);
             Pose(Draw + Shake + .2f, 2);
@@ -278,6 +277,8 @@ namespace DotRPG
             string holdId = VfxLibrary.Has("f3_cross_hold2") ? "f3_cross_hold2" : "f3_cross_hold";
             string burstId = VfxLibrary.Has("f3_cross_burst2") ? "f3_cross_burst2" : "f3_cross_burst";
             bool art = VfxLibrary.Has(drawId) && VfxLibrary.Has(holdId);
+            // The cross spans the radius: the v2 cross fills about half its frame, the first set nearly all of it.
+            float size = c.n.radius * (drawId == "f3_cross_draw2" ? 4.3f : 2.5f);
             // 1) Draw the cross (generated f3_cross_draw; else two thin glowing lines).
             if (art) CareerFx.Gen(drawId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, Draw, false, 8f / Draw);
             else
