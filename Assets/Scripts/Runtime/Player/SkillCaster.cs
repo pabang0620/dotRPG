@@ -16,6 +16,8 @@ namespace DotRPG
         readonly float[] readyAt = new float[SkillGems.Slots];
         /// <summary>[DEMO] Career trial build: skills come back almost at once so every skill can be tried in a row.</summary>
         public static bool NoCooldown;
+        /// <summary>[TEST 2026-10-12] Awakening skills have no cooldown while their effects are tuned. Set false to restore.</summary>
+        public const bool AwakeningNoCooldown = true;
         float castEnd;
         readonly Dictionary<string,float> skillReady = new Dictionary<string,float>();
         float ReadyAt(int slot) {var g=Prog.Active(slot);return g!=null&&skillReady.TryGetValue(g.id,out var t)?t:0;}
@@ -110,7 +112,7 @@ namespace DotRPG
                 return;
             }
             if (BeginCharge(slot, careerSkill, n)) return; // [CHARGE] fires on release, cooldown starts then
-            readyAt[slot] = Time.time + (NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
+            readyAt[slot] = Time.time + (gem.IsUltimate && AwakeningNoCooldown ? 0f : NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
             skillReady[gem.id]=readyAt[slot];
             castEnd = Time.time + (gem.IsUltimate ? 0.6f : 0.25f);
             var career=CareerCatalog.Get(gem.id);
