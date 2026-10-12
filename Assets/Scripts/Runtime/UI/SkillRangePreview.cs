@@ -120,7 +120,7 @@ namespace DotRPG
                 case "nebula": Ahead(range, r); Ahead(range, r * 1.8f, .35f); label.Append($"사거리 {range:0.#}m · 반경 {r:0.#}m (최대 모으면 {r * 1.8f:0.#}m)"); break;
                 case "blink": Line(0f, range, .05f, .5f); Self(r); label.Append($"순간이동 {range:0.#}m · 잔상 폭발 반경 {r:0.#}m"); break;
                 case "rift": Ahead(range, r); Ahead(range, r * 1.6f, .35f); label.Append($"사거리 {range:0.#}m · 반경 {r:0.#}m (끌어당김 {r * 1.6f:0.#}m)"); break;
-                case "cataclysm": Self(r); label.Append($"내 주변 붕괴 반경 {r:0.#}m"); break;
+                case "cataclysm": Self(r * .55f); label.Append($"내 주변 {r * .4f:0.#}m에 원소 지대 3곳 · 6초"); break;
                 // Bishop
                 case "heal": case "bloom": case "cleanse": case "sanctuary": case "bless": case "dawn": Self(r); label.Append($"반경 {r:0.#}m"); break;
                 case "light": Line(.4f, range, r); label.Append(LineText(range, r)); break;

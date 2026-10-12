@@ -372,113 +372,90 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천체 붕괴 (v3, 2026-10-12, Docs/PLAN_SKILL_VFX.md): around the mage (centred on the caster) a fire, an ice and a
-        /// lightning meteor fall in turn; each leaves its terrain where it lands, a magma pool, a glacier, a cluster of
-        /// charged crystals. Then the three terrains are dragged into the centre, pulling the monsters with them (held,
-        /// bosses too), crush together and the collapse bursts (150%), throwing elemental shards and rings outward.
+        /// 천체 붕괴 (v4, 2026-10-12, Docs/PLAN_SKILL_VFX.md): around the mage a fire, an ice and a lightning meteor fall in
+        /// turn (300% each); each leaves an elemental zone where it lands that lasts 6 s: the magma pool burns whoever
+        /// stands in it, the glacier chills (damage, a short freeze every 2 s), the charged crystals strike lightning at
+        /// monsters around them. The mage's awakening is damage over time and control by area, not a stagger.
         /// </summary>
         IEnumerator Cataclysm(Run c)
         {
-            const float PerElement = .55f, Fall = .45f, Gather = 1.3f, Press = .2f;
+            const float PerElement = .55f, Fall = .45f, ZoneTime = 6f, Tick = .5f;
             Vector2 center = owner.Position;
             float R = c.n.radius;
-            int order = SkillFx.GroundOrder + 8;
             string[] elements = { "fire", "ice", "storm" };
             Color[] colors = { FireColor, IceColor, new Color(1f, .92f, .4f, .95f) };
+            float[] sizes = { 3.6f, 2.8f, 2.8f };
             var spots = new Vector2[3];
-            var terrain = new ElementTerrainFx[3];
-            void KillAll() { foreach (var t in terrain) if (t != null) t.Kill(); }
+            var zones = new ElementTerrainFx[3];
+            var born = new float[3];
+            void FadeAll() { foreach (var z in zones) if (z != null) z.FadeOut(.5f); }
             Sound("c_arcane", .6f);
-            // 1) Three meteors fall in turn around the mage; each leaves its terrain where it lands.
+            // 1) Three meteors fall in turn around the mage; each leaves its zone where it lands.
             for (int i = 0; i < 3; i++)
             {
-                spots[i] = center + Rotate(c.dir, 90f + i * 120f) * R * .45f;
+                spots[i] = center + Rotate(c.dir, 90f + i * 120f) * R * .4f;
                 StartCoroutine(ElementStar(c, spots[i], elements[i]));
                 for (float t = 0f; t < PerElement; t += Time.deltaTime)
                 {
-                    if (!Live(c)) { KillAll(); yield break; }
-                    if (terrain[i] == null && t >= Fall) terrain[i] = ElementTerrainFx.Spawn(elements[i], spots[i], elements[i] == "fire" ? 3.4f : 2.6f, colors[i]);
+                    if (!Live(c)) { FadeAll(); yield break; }
+                    if (zones[i] == null && t >= Fall) { zones[i] = ElementTerrainFx.Spawn(elements[i], spots[i], sizes[i], colors[i]); born[i] = Time.time; }
                     yield return null;
                 }
-                if (terrain[i] == null) terrain[i] = ElementTerrainFx.Spawn(elements[i], spots[i], elements[i] == "fire" ? 3.4f : 2.6f, colors[i]);
+                if (zones[i] == null) { zones[i] = ElementTerrainFx.Spawn(elements[i], spots[i], sizes[i], colors[i]); born[i] = Time.time; }
             }
-            // 2) The terrains are dragged into the centre, the monsters with them.
-            var foes = Enemies(center, R * 1.15f);
-            if (c.authority) foreach (var e in foes) { e.Stagger(Gather + Press + .2f); StunStars.Attach(e); }
-            Sound("c_arcane", .8f);
-            float nextPull = 0f, nextSpark = 0f;
-            float[] sizes = { terrain[0].Size, terrain[1].Size, terrain[2].Size };
-            for (float t = 0f; t < Gather; t += Time.deltaTime)
+            // 2) The zones work for 6 s each (counted from when each one appeared).
+            int fireHit = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .12f));
+            int iceHit = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .06f));
+            int boltHit = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .2f));
+            var nextTick = new float[3];
+            int[] ticks = new int[3];
+            for (int i = 0; i < 3; i++) nextTick[i] = born[i] + Tick;
+            float end = born[2] + ZoneTime;
+            while (Time.time < end)
             {
-                if (!Live(c)) { KillAll(); yield break; }
-                float k = t / Gather, ease = k * k;
+                if (!Live(c)) { FadeAll(); yield break; }
                 for (int i = 0; i < 3; i++)
                 {
-                    // Spiral in: closer and a little round the centre.
-                    Vector2 from = spots[i] - center;
-                    terrain[i].Position = center + (Vector2)(Quaternion.Euler(0f, 0f, 90f * ease) * from) * (1f - ease * .85f);
-                    terrain[i].Size = sizes[i] * (1f - ease * .55f);
-                    terrain[i].Brightness = 1f + ease * 1.5f;
-                }
-                if (t >= nextSpark)
-                {
-                    nextSpark = t + .06f;
-                    int i = Random.Range(0, 3);
-                    SkillVisuals.Sparks(terrain[i].Position, colors[i], 2, 3f, .25f);
-                }
-                if (c.authority && t >= nextPull)
-                {
-                    nextPull = t + .2f;
-                    foreach (var e in foes) if (e != null && !e.IsDead) e.PullTowards(center, R * .55f, .25f);
+                    if (zones[i] == null || Time.time > born[i] + ZoneTime) { if (zones[i] != null && Time.time > born[i] + ZoneTime) { zones[i].FadeOut(.5f); zones[i] = null; } continue; }
+                    if (Time.time < nextTick[i]) continue;
+                    nextTick[i] += Tick;
+                    ticks[i]++;
+                    float zoneR = sizes[i] * .5f;
+                    var inside = Enemies(spots[i], zoneR);
+                    if (elements[i] == "fire")
+                    {
+                        foreach (var e in inside)
+                        {
+                            if (c.authority) SecondaryHit(e, fireHit);
+                            SkillFx.Spawn("fx_flame", e.Center + Random.insideUnitCircle * .2f, Color.white, .35f, SkillFx.TopOrder + 2).Move(Vector2.up * 1.5f).Scale(1.6f, .4f);
+                        }
+                        SkillVisuals.Sparks(spots[i] + Random.insideUnitCircle * zoneR * .6f, colors[i], 3, 2.5f, .4f);
+                    }
+                    else if (elements[i] == "ice")
+                    {
+                        foreach (var e in inside)
+                        {
+                            if (c.authority) SecondaryHit(e, iceHit);
+                            if (ticks[i] % 4 == 0) Freeze(c, e, .7f); // a short freeze every 2 s
+                        }
+                        SkillVisuals.Sparks(spots[i] + Random.insideUnitCircle * zoneR * .6f, colors[i], 2, 1.5f, .4f);
+                    }
+                    else
+                    {
+                        // The crystals strike the nearest two monsters within reach.
+                        var near = Enemies(spots[i], zoneR * 1.6f);
+                        near.Sort((x, y) => Vector2.Distance(x.Center, spots[i]).CompareTo(Vector2.Distance(y.Center, spots[i])));
+                        for (int k = 0; k < Mathf.Min(2, near.Count); k++)
+                        {
+                            LightningFx.Strike(spots[i] + Vector2.up * 1.2f, near[k].Center, colors[i], new Color(.55f, .85f, 1f, .7f), .22f, .8f);
+                            if (c.authority) SecondaryHit(near[k], boltHit);
+                        }
+                        if (near.Count > 0) Sound("c_thunder", .35f);
+                    }
                 }
                 yield return null;
             }
-            // 3) They crush together at the centre.
-            for (float t = 0f; t < Press; t += Time.deltaTime)
-            {
-                if (!Live(c)) { KillAll(); yield break; }
-                float k = t / Press;
-                for (int i = 0; i < 3; i++)
-                {
-                    terrain[i].Position = Vector2.Lerp(terrain[i].Position, center, k);
-                    terrain[i].Size = Mathf.Lerp(terrain[i].Size, .2f, k);
-                    terrain[i].Brightness = 3f;
-                }
-                yield return null;
-            }
-            KillAll();
-            // 4) The collapse bursts: elemental shards and rings thrown outward.
-            CareerFx.Gen("m2_cataclysm_collapse", "m_collapse", center, Vector2.zero, R * 2.2f, R / 1.4f, 22f, VfxLayer.Top, false);
-            CareerFx.Clip("impact", center, Vector2.zero, R / 1.7f, 22f, VfxLayer.Ground, false, CareerFx.Violet);
-            for (int i = 0; i < 3; i++)
-            {
-                StartCoroutine(FlungRing(center, R, colors[i], order, .08f * i));
-                Vector2 d = Rotate(c.dir, 90f + i * 120f);
-                GlassBurstFx.Burst(center - d * 1.2f, center + d * 1.2f, 12, SkillFx.TopOrder + 3, colors[i]);
-            }
-            SkillVisuals.Flash(center, new Color(.9f, .8f, 1f, .85f), R * .8f, .2f);
-            if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
-            Sound("c_heavy");
-            Sound("c_arcane", .7f);
-            foreach (var e in Enemies(center, R)) Strike(c, e, Mathf.RoundToInt(c.n.damage * 1.5f), center, 12f, 2, "c_arcane");
-        }
-
-        /// <summary>A ring thrown outward from the collapse: it grows past the radius and fades.</summary>
-        IEnumerator FlungRing(Vector2 center, float R, Color color, int order, float delay)
-        {
-            if (delay > 0f) yield return new WaitForSeconds(delay);
-            var ring = RingFx.Spawn(center, R * .1f, color, order);
-            ring.Width = .12f;
-            const float Life = .45f;
-            for (float t = 0f; t < Life; t += Time.deltaTime)
-            {
-                float k = t / Life;
-                ring.Radius = Mathf.Lerp(R * .1f, R * 1.15f, 1f - (1f - k) * (1f - k));
-                ring.Alpha = 1f - k;
-                ring.Brightness = 2f - k;
-                yield return null;
-            }
-            ring.Kill();
+            FadeAll();
         }
 
         IEnumerator ElementStar(Run c, Vector2 ground, string element)

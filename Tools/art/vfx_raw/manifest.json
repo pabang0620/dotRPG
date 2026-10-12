@@ -141,16 +141,6 @@
   "mode": "grid"
  },
  {
-  "id": "m2_cataclysm_collapse",
-  "file": "m2_cataclysm_collapse.png",
-  "background": "black",
-  "cols": 3,
-  "rows": 4,
-  "frames": 11,
-  "note": "asked 5x2/10; got 3 cols x 4 rows, last row 2 frames (11 total); source 1024x1024 (converted from Flow JPEG); Flow watermark sparkle at bottom-right",
-  "mode": "grid"
- },
- {
   "id": "b2_feather",
   "file": "b2_feather.png",
   "background": "magenta",

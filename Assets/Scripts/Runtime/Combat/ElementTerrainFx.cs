@@ -6,8 +6,7 @@ namespace DotRPG
     /// [VFX] 천체 붕괴's terrain (Docs/PLAN_SKILL_VFX.md): what a meteor leaves where it lands, a magma pool (fire), a
     /// glacier of ice crystals (ice) or a cluster of charged crystals (lightning). Generated pictures m5_magma /
     /// m5_glacier / m5_storm when present, else a coloured glow. It grows out of the ground, pulses with its own light
-    /// (magma breathes, lightning flickers), and is moved and shrunk from outside while the circle collapses
-    /// (<see cref="Position"/>, <see cref="Size"/>, <see cref="Brightness"/>).
+    /// (magma breathes, lightning flickers), stays while its zone lasts and sinks away with <see cref="FadeOut"/>.
     /// </summary>
     public class ElementTerrainFx : MonoBehaviour
     {
@@ -52,9 +51,15 @@ namespace DotRPG
 
         public void Kill() => Destroy(gameObject);
 
+        float fadeAt = -1f, fadeTime = .5f;
+
+        /// <summary>The zone is over: it sinks into the ground and fades, then removes itself.</summary>
+        public void FadeOut(float seconds) { if (fadeAt < 0f) { fadeAt = age; fadeTime = Mathf.Max(.05f, seconds); } }
+
         void Update()
         {
             age += Time.deltaTime;
+            if (fadeAt >= 0f && age - fadeAt >= fadeTime) { Destroy(gameObject); return; }
             Refresh();
         }
 
@@ -62,6 +67,7 @@ namespace DotRPG
         {
             float grow = Mathf.Clamp01(age / GrowTime);
             grow = 1f - (1f - grow) * (1f - grow);
+            if (fadeAt >= 0f) grow *= 1f - (age - fadeAt) / fadeTime;
             float s = Size * grow / worldW;
             var b = body.transform;
             // Standing pieces sit on their base, the pool is centred on its spot.
