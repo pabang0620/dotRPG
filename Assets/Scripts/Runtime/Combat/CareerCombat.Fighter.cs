@@ -264,7 +264,7 @@ namespace DotRPG
         /// </summary>
         IEnumerator XSlash(Run c)
         {
-            const float Cut = .55f, Gap = .2f, Draw = 1.3f, Shake = 1.4f, Tear = .3f, Mul = 10f, Width = .1f;
+            const float Cut = .55f, Gap = .2f, Draw = 1.3f, Shake = 1.4f, Tear = .3f, Mul = 10f, Width = .22f; // the line stays readable on screen (0.1 vanished)
             const float Total = Draw + Shake + Tear; // 3 s
             Vector2 at = owner.Center;
             var blue = new Color(.45f, .8f, 1f, 1f);
@@ -277,13 +277,15 @@ namespace DotRPG
             float arm = c.n.radius * .75f;
             int order = SkillFx.TopOrder + 2;
             // 1) Horizontal cut (left to right), then the vertical cut (top to bottom).
-            var first = StrokeFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, Cut, order);
-            Sound("c_slash");
-            yield return new WaitForSeconds(Cut + Gap);
+            var first = Swipe(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, Cut, order);
+            yield return new WaitForSeconds(Cut * .7f);
+            CutEnd(at + Vector2.right * arm, blue);
+            yield return new WaitForSeconds(Cut * .3f + Gap);
             if (!Live(c)) { first.Kill(); yield break; }
-            var second = StrokeFx.Spawn(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, Cut, order);
-            Sound("c_slash");
-            yield return new WaitForSeconds(Draw - Cut - Gap);
+            var second = Swipe(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, Cut, order);
+            yield return new WaitForSeconds(Cut * .7f);
+            CutEnd(at + Vector2.down * arm, blue);
+            yield return new WaitForSeconds(Draw - Cut - Gap - Cut * .7f);
             if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
             // 2) The finished cross trembles, sparks crackling along it, harder as the burst nears.
             float nextSpark = 0f;
@@ -322,6 +324,22 @@ namespace DotRPG
             foreach (var e in Enemies(at, c.n.radius))
                 if (Strike(c, e, Mathf.RoundToInt(c.n.damage * Mul), at, 10f, 2, "c_heavy"))
                     CareerFx.Clip("f_cut", e.Center, Vector2.right, 1.5f, 26f);
+        }
+
+        /// <summary>One 천검귀일 cut: the stroke, a flash where the blade bites in, the swing sound and a light shake.</summary>
+        StrokeFx Swipe(Vector2 from, Vector2 to, Color color, float width, float cut, int order)
+        {
+            SkillVisuals.Flash(from, new Color(.85f, .95f, 1f, .8f), 1.2f, .12f);
+            Sound("c_slash");
+            if (owner.IsLocal) Game.Camera?.Shake(.08f, .12f);
+            return StrokeFx.Spawn(from, to, color, width, cut, order);
+        }
+
+        /// <summary>Where a 천검귀일 cut runs out: sparks fly on along the line.</summary>
+        static void CutEnd(Vector2 at, Color color)
+        {
+            SkillVisuals.Sparks(at, Color.Lerp(color, Color.white, .5f), 6, 4f, .3f);
+            SkillVisuals.Flash(at, new Color(.85f, .95f, 1f, .6f), .8f, .1f);
         }
 
         /// <summary>A sword of the rain that only shows: smaller, lands, sparks and fades.</summary>

@@ -11,7 +11,7 @@ namespace DotRPG
     {
         const float ExplodeTime = .3f;
 
-        LineRenderer inner, edgeA, edgeB;
+        LineRenderer inner, edgeA, edgeB, swoosh;
         SpriteRenderer tip;
         Vector2 from, to, normal;
         Color color;
@@ -39,6 +39,10 @@ namespace DotRPG
             // Needle-thin ends, full width in the middle.
             var taper = new AnimationCurve(new Keyframe(0f, .02f), new Keyframe(.15f, 1f), new Keyframe(.85f, 1f), new Keyframe(1f, .02f));
             foreach (var line in new[] { fx.inner, fx.edgeA, fx.edgeB }) { line.positionCount = 2; line.widthCurve = taper; }
+            // The swoosh: a bright, wide streak right behind the blade tip that thins out along its tail.
+            fx.swoosh = FxMaterials.NewLine(go.transform, FxMaterials.SoftAdditive, order + 2);
+            fx.swoosh.positionCount = 2;
+            fx.swoosh.widthCurve = new AnimationCurve(new Keyframe(0f, .1f), new Keyframe(.8f, 1f), new Keyframe(1f, .6f));
             fx.tip = new GameObject("Tip").AddComponent<SpriteRenderer>();
             fx.tip.transform.SetParent(go.transform, false);
             fx.tip.sprite = Game.Art.Get("fx_glow");
@@ -85,10 +89,17 @@ namespace DotRPG
             var edge = new Color(1f, 1f, 1f, fade);
             edgeA.startColor = edgeA.endColor = edgeB.startColor = edgeB.endColor = edge;
             inner.startColor = inner.endColor = new Color(color.r, color.g, color.b, Mathf.Clamp01(color.a * flare) * fade);
-            // The blade tip: bright while cutting, gone once the cut is complete.
-            float tipA = t < 1f ? 1f : Mathf.Max(0f, 1f - (age - draw) / .12f);
+            // The blade tip and its swoosh: bright while cutting, gone shortly after the cut is complete.
+            float tipA = t < 1f ? 1f : Mathf.Max(0f, 1f - (age - draw) / .15f);
+            Vector2 dir = (to - from).normalized;
+            float tail = Mathf.Min((b - a).magnitude, (to - from).magnitude * .35f);
+            swoosh.SetPosition(0, b - dir * tail);
+            swoosh.SetPosition(1, b);
+            swoosh.widthMultiplier = width * 3.2f;
+            swoosh.startColor = new Color(color.r, color.g, color.b, 0f);
+            swoosh.endColor = new Color(.95f, .99f, 1f, tipA * fade);
             tip.transform.position = b;
-            tip.transform.localScale = Vector3.one * (width * 9f);
+            tip.transform.localScale = Vector3.one * (width * 6f);
             tip.color = new Color(.85f, .95f, 1f, tipA * fade);
         }
     }
