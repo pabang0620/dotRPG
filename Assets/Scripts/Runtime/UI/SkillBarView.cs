@@ -29,6 +29,10 @@ namespace DotRPG
         readonly Text[] costs = new Text[SkillGems.Slots];
         readonly Text[] timers = new Text[SkillGems.Slots];
         readonly Text[] lockTexts = new Text[SkillGems.Slots];
+        // [UI] A toggle skill that is ON (검기 태세): a faint rim plus two bright dashes running clockwise around the slot.
+        readonly Image[][] rims = new Image[SkillGems.Slots][];
+        readonly Image[][] runners = new Image[SkillGems.Slots][];
+        readonly float[] slotSize = new float[SkillGems.Slots];
 
         public static SkillBarView Create(Transform parent)
         {
@@ -81,12 +85,65 @@ namespace DotRPG
                     t.resizeTextMaxSize = t.fontSize;
                     t.verticalOverflow = VerticalWrapMode.Truncate;
                 }
+                v.slotSize[i] = s;
+                v.rims[i] = new Image[4];
+                for (int e = 0; e < 4; e++)
+                {
+                    var r = UIFactory.Image(bg.transform, "Rim" + e, Game.Art.Get("ui_white"), new Color(.55f, .85f, 1f, .55f));
+                    r.preserveAspect = false;
+                    r.raycastTarget = false;
+                    bool horizontal = e % 2 == 0;
+                    r.rectTransform.anchorMin = r.rectTransform.anchorMax = Vector2.zero;
+                    r.rectTransform.pivot = new Vector2(.5f, .5f);
+                    r.rectTransform.sizeDelta = horizontal ? new Vector2(s - 4f, 2f) : new Vector2(2f, s - 4f);
+                    r.rectTransform.anchoredPosition = e == 0 ? new Vector2(s / 2f, s - 2f) : e == 1 ? new Vector2(s - 2f, s / 2f) : e == 2 ? new Vector2(s / 2f, 2f) : new Vector2(2f, s / 2f);
+                    r.enabled = false;
+                    v.rims[i][e] = r;
+                }
+                v.runners[i] = new Image[2];
+                for (int k = 0; k < 2; k++)
+                {
+                    var r = UIFactory.Image(bg.transform, "Runner" + k, Game.Art.Get("ui_white"), new Color(.85f, .97f, 1f, 1f));
+                    r.preserveAspect = false;
+                    r.raycastTarget = false;
+                    r.rectTransform.anchorMin = r.rectTransform.anchorMax = Vector2.zero;
+                    r.rectTransform.pivot = new Vector2(.5f, .5f);
+                    r.enabled = false;
+                    v.runners[i][k] = r;
+                }
                 x += s + Gap;
             }
             // Caption above the awakening slot.
             var caption = UIFactory.Text(root, "UltCaption", "각성", UiTheme.FontMin, new Color32(255, 214, 110, 255), TextAnchor.LowerCenter, true);
             UIFactory.Place(caption.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width - UltSize * 0.5f, UltSize + 1f), new Vector2(UltSize + 20f, 20f));
             return v;
+        }
+
+        /// <summary>Rim + two dashes travelling clockwise (one lap per 1.2 s) while a toggle skill is on.</summary>
+        void ShowToggle(int i, bool on)
+        {
+            if (rims[i] == null) return;
+            foreach (var r in rims[i]) if (r.enabled != on) r.enabled = on;
+            foreach (var r in runners[i]) if (r.enabled != on) r.enabled = on;
+            if (!on) return;
+            float s = slotSize[i], inset = 2f, len = s - inset * 2f;
+            for (int k = 0; k < 2; k++)
+            {
+                float t = Mathf.Repeat(Time.unscaledTime / 1.2f + k * .5f, 1f) * 4f; // 0..4 around the square
+                int side = Mathf.Min(3, (int)t);
+                float f = t - side;
+                Vector2 pos;
+                switch (side)
+                {
+                    case 0: pos = new Vector2(inset + f * len, s - inset); break;      // top, left -> right
+                    case 1: pos = new Vector2(s - inset, s - inset - f * len); break;  // right, top -> bottom
+                    case 2: pos = new Vector2(s - inset - f * len, inset); break;      // bottom, right -> left
+                    default: pos = new Vector2(inset, inset + f * len); break;         // left, bottom -> top
+                }
+                var rt = runners[i][k].rectTransform;
+                rt.anchoredPosition = pos;
+                rt.sizeDelta = side % 2 == 0 ? new Vector2(s * .28f, 4f) : new Vector2(4f, s * .28f);
+            }
         }
 
         void Update()
@@ -97,6 +154,7 @@ namespace DotRPG
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 var gem = prog.Active(i);
+                ShowToggle(i, gem != null && CareerCatalog.Get(gem.id)?.effect == "stance" && CareerCombat.For(player).StanceOn);
                 var shown = gem ?? (i==4 ? prog.IsPromoted ? CareerCatalog.For(prog.Career)[8].Gem : null : SkillGems.ForSlot(player.Class, i));
                 keys[i].text = Game.Input.GetBindingLabel(SkillGems.ActionFor(i));
                 icons[i].enabled = shown != null;

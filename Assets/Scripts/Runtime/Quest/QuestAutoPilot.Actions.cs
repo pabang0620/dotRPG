@@ -116,7 +116,9 @@ namespace DotRPG
             lastProgressAt = Time.time;
             if (Time.time >= nextSkill)
             {
-                nextSkill = Time.time + 1.4f;
+                // [BALANCE] Auto hunt plays a little worse than a person: a skill every 2.4-3.2 s, then a short pause.
+                nextSkill = Time.time + UnityEngine.Random.Range(2.4f, 3.2f);
+                nextAttack = Mathf.Max(nextAttack, Time.time + .5f);
                 // [FIGHTER] 검기 태세 is a toggle: switch it on once and never press it again while it is on.
                 var gem = p.Data.Progression.Active(skillSlot);
                 bool stanceOn = gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn;
@@ -126,7 +128,7 @@ namespace DotRPG
             }
             else if (Time.time >= nextAttack)
             {
-                nextAttack = Time.time + 0.25f;
+                nextAttack = Time.time + UnityEngine.Random.Range(.5f, .7f); // was 0.25 s: auto hunt out-hit real players
                 input.next.attack = true;
             }
         }
