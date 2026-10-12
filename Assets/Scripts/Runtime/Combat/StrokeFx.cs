@@ -110,6 +110,11 @@ namespace DotRPG
         }
 
         /// <summary>The slash's width along the whole line (0..1): needle-thin at both ends, full in the middle.</summary>
-        static float Crescent(float u) => Mathf.Pow(Mathf.Sin(Mathf.Clamp01(u) * Mathf.PI), .6f);
+        static float Crescent(float u)
+        {
+            // Sin(PI) is a tiny negative float; Pow of a negative number is NaN and a NaN width hides the whole line.
+            float sin = Mathf.Max(0f, Mathf.Sin(Mathf.Clamp01(u) * Mathf.PI));
+            return Mathf.Pow(sin, .6f);
+        }
     }
 }
