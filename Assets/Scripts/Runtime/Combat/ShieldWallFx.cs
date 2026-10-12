@@ -16,7 +16,7 @@ namespace DotRPG
 
         SpriteRenderer[] panes, glows;
         float[] angles;
-        float paneWorldH = 1f, pivotY;
+        float paneWorldH = 1f, paneWorldW = 1f, pivotY;
 
         public Vector2 Center;
         public float Radius = 3f;
@@ -33,6 +33,7 @@ namespace DotRPG
             fx.Radius = radius;
             Sprite sprite = VfxLibrary.Has("g4_wall") && VfxLibrary.Get("g4_wall").Length > 0 ? VfxLibrary.Get("g4_wall")[0] : CodePane;
             fx.paneWorldH = Mathf.Max(.01f, sprite.bounds.size.y);
+            fx.paneWorldW = Mathf.Max(.01f, sprite.bounds.size.x);
             fx.pivotY = sprite.pivot.y / Mathf.Max(1f, sprite.rect.height); // generated panes are centred, the code pane stands on its foot
             fx.panes = new SpriteRenderer[count];
             fx.glows = new SpriteRenderer[count];
@@ -108,10 +109,12 @@ namespace DotRPG
                 Vector2 foot = Foot(i);
                 var p = panes[i];
                 p.transform.position = foot + Vector2.up * h * pivotY;
-                // Narrower toward the sides of the ring (seen edge-on), full width at the front and back.
+                // Each pane covers its share of the ring (a closed wall), narrower toward the sides where it is seen
+                // edge-on, full width at the front and back.
                 float facing = Mathf.Lerp(.45f, 1f, Mathf.Abs(Mathf.Sin(angles[i])));
+                float span = Mathf.Clamp(2f * Mathf.PI * Radius / panes.Length * .9f, .35f, 2.6f);
                 float s = h / paneWorldH;
-                p.transform.localScale = new Vector3(PaneHeight / paneWorldH * .55f * facing, s, 1f);
+                p.transform.localScale = new Vector3(span * facing / paneWorldW, s, 1f);
                 p.sortingOrder = SkillFx.At(foot.y, 6);
                 p.color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.85f * Mathf.Min(1f, b)));
                 glows[i].color = new Color(Tint.r, Tint.g, Tint.b, Mathf.Clamp01(.35f * (b - .5f)));
