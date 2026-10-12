@@ -12,7 +12,6 @@ namespace DotRPG
     public class RingFx : MonoBehaviour
     {
         const int Points = 72;
-        const float Squash = .7f; // ground perspective, as the skill range ellipses
 
         LineRenderer glow, core;
         Transform flat, art;
@@ -33,6 +32,8 @@ namespace DotRPG
         public float Corner;
         /// <summary>Picture size relative to the ring's diameter (1 = the picture's width equals the circle's).</summary>
         public float PictureScale = 1f;
+        /// <summary>Ground perspective (.7, as the skill range ellipses); 1 = a true circle, matching a world-space radius.</summary>
+        public float Squash = .7f;
 
         public static RingFx Spawn(Vector2 center, float radius, Color tint, int order, string picture = null)
         {

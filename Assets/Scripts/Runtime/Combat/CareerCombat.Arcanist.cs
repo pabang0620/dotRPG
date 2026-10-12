@@ -372,24 +372,32 @@ namespace DotRPG
 
         /// <summary>
         /// 유성우 (v5, 2026-10-12, Docs/PLAN_SKILL_VFX.md, replaces 천체 붕괴): the world darkens and a storm cloud as wide as the
-        /// area gathers over it (0.8 s); for 4 s 96 fire, ice and lightning comets rain on the area, most aimed at monsters, each
-        /// hitting a small area (15%) and leaving an elemental mark that burns or chills whoever stands on it (damage over
+        /// area gathers over it (0.8 s); for 4 s 192 fire, ice and lightning comets rain on the area, most aimed at monsters, each
+        /// hitting a small area (7.5%) and leaving an elemental mark that burns or chills whoever stands on it (damage over
         /// time, through armour); then three great comets, one of each element, strike together (150% each) and the
         /// cloud fades. The mage's awakening is area damage over time, not a stagger.
         /// </summary>
         IEnumerator Cataclysm(Run c)
         {
             const float Gather = .8f, Rain = 4f, MarkLife = 3f, Tick = .5f;
-            const int Comets = 96;
+            const int Comets = 192;
             Vector2 center = owner.Position;
             float R = c.n.radius;
             int order = SkillFx.TopOrder + 4;
             Color[] colors = { FireColor, IceColor, new Color(1f, .92f, .4f, .95f), new Color(.45f, .7f, 1f, .95f) };
-            int hitDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .15f));
-            int markDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .05f));
+            int hitDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .075f));
+            int markDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .1f));
             var marks = new System.Collections.Generic.List<(Vector2 at, int element, float until, float next)>();
+            // Overlapping marks do not stack: a monster takes the mark damage at most once per tick.
+            var markHitUntil = new System.Collections.Generic.Dictionary<EnemyController, float>();
 
-            // 1) The sky darkens and the storm cloud gathers over the area.
+            // 1) The sky darkens and the storm cloud gathers over the area. The mage faces the viewer (it is a circle
+            //    around the mage, not aimed), and a ring on the ground shows the exact area the comets fall in.
+            owner.FaceTowards(owner.Position + Vector2.down);
+            var range = RingFx.Spawn(center, R, colors[3], SkillFx.GroundOrder + 8);
+            range.Squash = 1f;
+            range.Width = .06f;
+            range.Alpha = 0f;
             DimFx.Show(Gather + Rain + 1.4f, .35f);
             // A storm cloud as wide as the area hangs over it (m6_cloud, alpha blended; else a dark glow).
             var nebula = new GameObject("StormCloud").AddComponent<SpriteRenderer>();
@@ -404,15 +412,21 @@ namespace DotRPG
             void Nebula(float alpha, float t)
             {
                 if (nebula == null) return;
-                // Over the upper half of the area, drifting a little; now and then lit from inside by lightning.
-                nebula.transform.position = center + new Vector2(.25f * Mathf.Sin(t * .7f), R * .45f);
-                float s = R * 1.54f / nebulaW * (1f + .03f * Mathf.Sin(t * 1.1f));
-                nebula.transform.localScale = new Vector3(s, art ? s : s * .55f, 1f);
+                // Right over the mage, as wide as the area (the comets fall under it), drifting a little; now and then
+                // lit from inside by lightning. The picture is wider than tall, so it is stretched toward a round cloud.
+                nebula.transform.position = center + new Vector2(.15f * Mathf.Sin(t * .7f), R * .1f);
+                float s = R * 2.1f / nebulaW * (1f + .03f * Mathf.Sin(t * 1.1f));
+                nebula.transform.localScale = new Vector3(s, art ? s * 1.3f : s * .9f, 1f);
+                if (range != null) range.Alpha = alpha * .9f;
                 if (Time.time > flashUntil && Random.value < .02f) flashUntil = Time.time + .08f;
                 float lit = Time.time < flashUntil ? 1.6f : 1f;
-                nebula.color = new Color(Mathf.Min(1f, nebulaTint.r * lit), Mathf.Min(1f, nebulaTint.g * lit), Mathf.Min(1f, nebulaTint.b * lit), alpha * .8f);
+                nebula.color = new Color(Mathf.Min(1f, nebulaTint.r * lit), Mathf.Min(1f, nebulaTint.g * lit), Mathf.Min(1f, nebulaTint.b * lit), alpha * .45f);
             }
-            void Cleanup() { if (nebula != null) Destroy(nebula.gameObject); }
+            void Cleanup()
+            {
+                if (nebula != null) Destroy(nebula.gameObject);
+                if (range != null) range.Kill();
+            }
             Sound("c_arcane", .7f);
             float clock = 0f;
             for (float t = 0f; t < Gather; t += Time.deltaTime)
@@ -496,7 +510,11 @@ namespace DotRPG
                     m.next += Tick;
                     marks[i] = m;
                     foreach (var e in Enemies(m.at, .9f))
+                    {
+                        if (markHitUntil.TryGetValue(e, out float until) && Time.time < until) continue;
+                        markHitUntil[e] = Time.time + Tick - .01f;
                         if (c.authority) SecondaryHit(e, markDamage, true);
+                    }
                 }
             }
         }

@@ -92,19 +92,35 @@ def career_rates(lv, name):
     return pack / 20.0, single / 20.0
 
 
-def party(lv, humans, ai):
-    names = [ORDER[i % 4] for i in range(humans + ai)]
+def party(lv, humans, ai, names=None):
+    names = names or [ORDER[i % 4] for i in range(humans + ai)]
     pack = single = 0.0
     for i, n in enumerate(names):
         p, s = career_rates(lv, n)
         share = 1.0 if i < humans else AI_SHARE
         pack += p * share
         single += s * share
-    return pack, single, len(names)
+    return pack, single, len(names), names
 
 
-def run(lv, mlv_base, hp_mul, dmg_mul, rooms, boss_id, adds, add_id, humans, ai):
-    pack, single, size = party(lv, humans, ai)
+# [ARMOR 2026-10-12] Monsters of level 15+ keep their armour (direct hits only, tc.DIRECT_SHARE). Only the guardian's
+# awakening breaks it (8 s per cast, then +20% damage taken), so a party with a guardian has it off part of the time.
+BOSS_ARMOR = {"boss_rock_golem": .25, "fboss_canyon": .25, "boss_bargas": .25}
+BREAK_UPTIME = 8.0 / 87.5
+
+
+def armor_mul(armor, L, guardian):
+    """Effective-HP multiplier from armour at level L."""
+    if not tc.ARMOR or L < 15 or armor <= 0:
+        return 1.0
+    up = BREAK_UPTIME if guardian else 0.0
+    dealt = (1 - up) * (1 - armor * tc.DIRECT_SHARE) + up * 1.2
+    return 1.0 / dealt
+
+
+def run(lv, mlv_base, hp_mul, dmg_mul, rooms, boss_id, adds, add_id, humans, ai, names=None):
+    pack, single, size, names = party(lv, humans, ai, names)
+    guardian = "수호자" in names
     hp_mul_p = hp_mul * PARTY_HP[min(size, len(PARTY_HP)) - 1]
     t = 0.0
     worst_survive = 999.0
@@ -113,7 +129,7 @@ def run(lv, mlv_base, hp_mul, dmg_mul, rooms, boss_id, adds, add_id, humans, ai)
         incoming = 0.0
         for mid, count, off in room:
             L = 1 + mlv_base + off
-            hp += count * lvl_hp(tc.MON[mid]["hp"], L, hp_mul_p)
+            hp += count * lvl_hp(tc.MON[mid]["hp"], L, hp_mul_p) * armor_mul(tc.MON[mid].get("armor", 0), L, guardian)
             m = tc.MON[mid]
             cycle = (m["skill"] if m["skill"] > 0 else m["wind"] + m["rec"]) * tc.ATTACK_PACE
             incoming += count * lvl_dmg(m["dmg"], L, dmg_mul) / max(.5, cycle)
@@ -122,9 +138,10 @@ def run(lv, mlv_base, hp_mul, dmg_mul, rooms, boss_id, adds, add_id, humans, ai)
         worst_survive = min(worst_survive, php / (incoming * .9 / size))
     b = BOSS[boss_id]
     bL = 1 + mlv_base + 3
-    boss_hp = lvl_hp(b["hp"], bL, hp_mul_p)
+    boss_hp = lvl_hp(b["hp"], bL, hp_mul_p) * armor_mul(BOSS_ARMOR.get(boss_id, .15), bL, guardian)
     if adds:
-        boss_hp += adds * lvl_hp(tc.MON[add_id]["hp"], 1 + mlv_base, hp_mul_p)
+        aL = 1 + mlv_base
+        boss_hp += adds * lvl_hp(tc.MON[add_id]["hp"], aL, hp_mul_p) * armor_mul(tc.MON[add_id].get("armor", 0), aL, guardian)
     boss_t = boss_hp / (single * BOSS_UPTIME)
     return t + boss_t, boss_t, worst_survive
 
@@ -154,6 +171,42 @@ def raid_table():
         print(f"| {r['name']} | {r['lv']} | {a[0]:.0f} / {a[1]:.0f} | {c[0]:.0f} / {c[1]:.0f} | {c[2]:.0f} |")
 
 
+RAID_PARTIES = [  # (label, humans, ai)
+    ("혼자", 1, 0), ("혼자 + AI 3", 1, 3), ("사람 2", 2, 0), ("사람 2 + AI 2", 2, 2),
+    ("사람 3", 3, 0), ("사람 3 + AI 1", 3, 1), ("사람 4", 4, 0),
+]
+
+
+def raid_party_table():
+    """Each raid by party make-up. Solo is shown per class (min~max over the 4 careers); parties fill careers in ORDER.
+    Boss hit = one boss basic hit as a share of the target's HP (solo mage / party: the guardian tanks, 65% less)."""
+    print("\n## 레이드 인원별 (권장 레벨, 모델 초 = 실제의 약 절반)")
+    print("| 레이드 | 구성 | 인원 보정 | 전체 | 보스 | 한 사람 몫 체력 | 보스 한 방(맞는 사람 HP 대비) |")
+    print("|---|---|---|---|---|---|---|")
+    for r in RAIDS:
+        b = BOSS[r["boss"]]
+        bL = 1 + r["mlv"] + 3
+        hit = lvl_dmg(b["dmg"], bL, r["dmg"])
+        for label, h, a in RAID_PARTIES:
+            size = h + a
+            scale = PARTY_HP[size - 1]
+            if h == 1 and a == 0:
+                res = [run(r["lv"], r["mlv"], r["hp"], r["dmg"], r["rooms"], r["boss"], 0, None, 1, 0, [n]) for n in ORDER]
+                tot = f"{min(x[0] for x in res):.0f}~{max(x[0] for x in res):.0f}"
+                bos = f"{min(x[1] for x in res):.0f}~{max(x[1] for x in res):.0f}"
+                tank = "메이지"
+                dr = 0
+            else:
+                x = run(r["lv"], r["mlv"], r["hp"], r["dmg"], r["rooms"], r["boss"], 0, None, h, a)
+                tot, bos = f"{x[0]:.0f}", f"{x[1]:.0f}"
+                names = [ORDER[i % 4] for i in range(size)]
+                tank = "수호자" if "수호자" in names else names[0]
+                dr = tc.CAREERS[tank]["dr"]
+            hp = tc.player(r["lv"], tc.CAREERS[tank])[1] * (1 + tc.CAREERS[tank]["shield"])
+            share = hit * (1 - dr / 100) / hp
+            print(f"| {r['name']} | {label} | x{scale:.1f} | {tot} | {bos} | {scale / size:.2f} | {share:.0%} ({tank}) |")
+
+
 FIELD_BOSS = {"fboss_forest": "forest_depths", "fboss_canyon": "canyon_ridge", "fboss_winter": "winter_peak"}
 FIELD_BOSS_MUL = float(re.search(r"FieldBossHpMul = ([0-9.]+)f", MDB).group(1)) if "FieldBossHpMul" in MDB and not tc.BEFORE else 1.0
 
@@ -176,4 +229,5 @@ def field_boss_table():
 if __name__ == "__main__":
     dungeon_table()
     raid_table()
+    raid_party_table()
     field_boss_table()

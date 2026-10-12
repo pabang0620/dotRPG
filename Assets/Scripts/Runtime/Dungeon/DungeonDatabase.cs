@@ -144,7 +144,7 @@ namespace DotRPG
         /// <summary>Raid revives (shared by the party).</summary>
         public const int RaidRevives = 3;
         /// <summary>Monster HP multiplier by party size 1..4 (head-count scaling).</summary>
-        public static readonly float[] PartyHpScale = { 1.0f, 1.7f, 2.4f, 3.0f };
+        public static readonly float[] PartyHpScale = { 1.0f, 1.6f, 2.1f, 2.5f };
 
         public const string Raid = "raid_skeleton_king";
         public const string RaidBargas = "raid_bargas";
