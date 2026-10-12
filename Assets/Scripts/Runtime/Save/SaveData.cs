@@ -31,6 +31,7 @@ namespace DotRPG
     {
         /// <summary>See <see cref="QuestStage"/>.</summary>
         public int stage;
+        // Legacy (wood/stone deliveries were removed on 2026-10-12): kept so old saves still load.
         public int woodDelivered;
         public int stoneDelivered;
         public int skeletonsDefeated;

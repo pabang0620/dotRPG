@@ -55,36 +55,3 @@ export async function insertChest(client: PoolClient, characterId: number, chest
   );
   return (r.rowCount ?? 0) > 0;
 }
-
-export async function getDeliveries(db: Queryable, characterId: number, siteId: string): Promise<Map<string, number>> {
-  const r = await db.query<{ item_key: string; delivered: number }>(
-    'SELECT item_key, delivered FROM site_deliveries WHERE character_id = $1 AND site_id = $2',
-    [characterId, siteId],
-  );
-  return new Map(r.rows.map((x) => [x.item_key, x.delivered] as const));
-}
-
-export async function addDelivery(
-  client: PoolClient,
-  characterId: number,
-  siteId: string,
-  itemKey: string,
-  add: number,
-  at: Date,
-): Promise<void> {
-  await client.query(
-    `INSERT INTO site_deliveries (character_id, site_id, item_key, delivered, updated_at) VALUES ($1, $2, $3, $4, $5)
-     ON CONFLICT (character_id, site_id, item_key)
-     DO UPDATE SET delivered = site_deliveries.delivered + EXCLUDED.delivered, updated_at = EXCLUDED.updated_at`,
-    [characterId, siteId, itemKey, add, at],
-  );
-}
-
-export async function claimedAmong(db: Queryable, characterId: number, questIds: string[]): Promise<Set<string>> {
-  if (questIds.length === 0) return new Set();
-  const r = await db.query<{ quest_id: string }>(
-    'SELECT quest_id FROM quest_claims WHERE character_id = $1 AND quest_id = ANY($2::text[])',
-    [characterId, questIds],
-  );
-  return new Set(r.rows.map((x) => x.quest_id));
-}

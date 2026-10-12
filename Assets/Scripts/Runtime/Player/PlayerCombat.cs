@@ -370,8 +370,8 @@ namespace DotRPG
                 if (col == null || col.attachedRigidbody != null && col.attachedRigidbody.gameObject == owner.gameObject) continue;
                 var target = col.GetComponentInParent<IDamageable>();
                 if (target == null || ReferenceEquals(target, owner) || hitThisSwing.Contains(target)) continue;
-                // Party members are never hurt (PlayerController also refuses), and only the local player harvests trees and rocks.
-                if (target is PlayerController || (!owner.IsLocal && target is ResourceNode)) continue;
+                // Party members are never hurt (PlayerController also refuses).
+                if (target is PlayerController) continue;
                 hitThisSwing.Add(target);
                 var info = new DamageInfo(BasicHitDamage, owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
                 bool hitIt = target.TakeDamage(info);

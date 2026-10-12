@@ -4,15 +4,14 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// The unfinished workshop from the reference image. The player delivers wood and stone here;
-    /// once everything is delivered it is built with a short hammer-and-sparkles sequence.
+    /// The unfinished workshop from the reference image. While the workshop quest is active the player helps the
+    /// builder here and it is built with a short hammer-and-sparkles sequence (wood/stone gathering was removed
+    /// on 2026-10-12, Docs/PLAN_REMOVE_GATHERING.md).
     /// Its state is read from / written to the quest progress so it survives save & load.
     /// </summary>
     public class ConstructionSite : Interactable
     {
         SpriteRenderer building;
-        SpriteRenderer woodPile;
-        SpriteRenderer stonePile;
         bool buildingInProgress;
         bool hd;
 
@@ -23,7 +22,7 @@ namespace DotRPG
             get
             {
                 if (Quest.Progress.workshopBuilt) return "살펴보기";
-                return Quest.Stage == QuestStage.Active ? "재료 전달하기" : "살펴보기";
+                return Quest.Stage == QuestStage.Active ? "재건 돕기" : "살펴보기";
             }
         }
 
@@ -38,10 +37,6 @@ namespace DotRPG
             var site = go.AddComponent<ConstructionSite>();
             site.hd = hd;
             site.building = NewRenderer(go.transform, "Building", Vector2.zero, 0);
-            site.woodPile = NewRenderer(go.transform, "WoodPile", new Vector2(-1.9f, -0.2f), 1);
-            site.woodPile.sprite = Game.Art.Get(hd ? "town_pile_0" : "pile_wood");
-            site.stonePile = NewRenderer(go.transform, "StonePile", new Vector2(1.9f, -0.2f), 1);
-            site.stonePile.sprite = Game.Art.Get(hd ? "town_pile_1" : "pile_stone");
 
             var col = go.AddComponent<BoxCollider2D>();
             col.size = new Vector2(2.6f, 1.6f);
@@ -78,8 +73,6 @@ namespace DotRPG
             if (building == null || Quest == null) return;
             var p = Quest.Progress;
             building.sprite = Game.Art.Get(hd ? (p.workshopBuilt ? "town_site_1" : "town_site_0") : p.workshopBuilt ? "site_built" : "site_blueprint");
-            woodPile.enabled = !p.workshopBuilt && p.woodDelivered > 0;
-            stonePile.enabled = !p.workshopBuilt && p.stoneDelivered > 0;
         }
 
         public override void Interact(PlayerController player)
@@ -96,32 +89,8 @@ namespace DotRPG
                 return;
             }
 
-            if (OnlineEconomy.On)
-            {
-                // [SERVER] The server moves what is missing from the bag and keeps the count.
-                OnlineEconomy.Deliver((w, s, complete) =>
-                {
-                    if (w < 0) return;
-                    Quest.SetDeliveredFromServer(w, s);
-                    Game.Audio.PlaySfx("deliver");
-                    GameEvents.RaiseToast($"재료 전달! 목재 {w}/{cfg.requiredWood} · 돌 {s}/{cfg.requiredStone}");
-                    if (complete && !buildingInProgress) StartCoroutine(BuildSequence());
-                });
-                return;
-            }
-            Quest.DeliverMaterials(Game.Session.Inventory, out int wood, out int stone);
-            if (wood + stone > 0)
-            {
-                Game.Audio.PlaySfx("deliver");
-                Fx.Sparkle((Vector2)transform.position + new Vector2(0f, 1f), 2, 1f);
-                GameEvents.RaiseToast($"재료 전달! 목재 {Quest.Progress.woodDelivered}/{cfg.requiredWood} · 돌 {Quest.Progress.stoneDelivered}/{cfg.requiredStone}");
-            }
-            else if (!Quest.MaterialsComplete)
-            {
-                GameEvents.RaiseToast($"재료가 부족합니다. 목재 {Quest.WoodStillNeeded}개, 돌 {Quest.StoneStillNeeded}개가 더 필요합니다.");
-            }
-
-            if (Quest.MaterialsComplete) StartCoroutine(BuildSequence());
+            // The flag goes to the server with the story flags (online) or the save (offline).
+            if (!buildingInProgress) StartCoroutine(BuildSequence());
         }
 
         IEnumerator BuildSequence()

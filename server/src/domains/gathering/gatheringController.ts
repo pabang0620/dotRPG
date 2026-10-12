@@ -4,7 +4,7 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './gatheringService';
-import type { ChestBody, DeliveryBody, GatherBody, NodesParams } from './gatheringValidation';
+import type { ChestBody, GatherBody, NodesParams } from './gatheringValidation';
 
 type P = { uuid: string };
 
@@ -30,15 +30,6 @@ export async function openChest(_req: Request, res: Response, next: NextFunction
   try {
     const { body, params } = getValidated<ChestBody, P>(res);
     sendStored(res, await service.openChest(getAccount(res.locals).id, params.uuid, body));
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function deliver(_req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { body, params } = getValidated<DeliveryBody, P>(res);
-    sendStored(res, await service.deliver(getAccount(res.locals).id, params.uuid, body));
   } catch (err) {
     next(err);
   }

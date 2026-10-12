@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   questId: rebuild_workshop
   title: "\uACF5\uBC29 \uC7AC\uAC74"
-  requiredWood: 6
-  requiredStone: 4
   requiredSkeletonKills: 3
   targetEnemyId: skeleton
   rewardMaxHealth: 20

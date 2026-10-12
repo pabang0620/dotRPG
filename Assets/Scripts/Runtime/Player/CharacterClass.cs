@@ -35,7 +35,7 @@ namespace DotRPG
             id = CharacterClass.Warrior,
             saveId = "warrior",
             displayName = "전사",
-            description = "검을 휘둘러 가까운 적과 나무·바위를 한꺼번에 벤다.\n체력과 근접 공격이 믿음직한 기본 모험가.",
+            description = "검을 휘둘러 가까운 적을 한꺼번에 벤다.\n체력과 근접 공격이 믿음직한 기본 모험가.",
             weaponSprite = "tool_sword",
             ranged = false,
         };

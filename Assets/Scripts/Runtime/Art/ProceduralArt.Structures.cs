@@ -148,30 +148,6 @@ namespace DotRPG
             return c.WithPivot(26, 3.5f);
         }
 
-        static PixelCanvas DrawPile(bool stone)
-        {
-            var c = new PixelCanvas(18, 12);
-            if (stone)
-            {
-                c.Ellipse(5, 8, 4, 3, Stone); c.Ellipse(12, 8, 4.5f, 3, Stone); c.Ellipse(8.5f, 4.5f, 4, 3, Stone);
-                c.PaintEllipse(7.5f, 3.5f, 2, 1.2f, StoneLight);
-                c.PaintEllipse(4, 7, 1.5f, 1, StoneLight);
-            }
-            else
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    int y = 8 - i * 3, x0 = 2 + i * 2, x1 = 15 - i * 2;
-                    c.Rect(x0, y, x1 - x0 + 1, 3, Bark);
-                    c.HLine(x0, x1, y, WoodLight);
-                    c.Rect(x1 - 1, y, 2, 3, WoodLight);
-                    c.Set(x1, y + 1, Wood);
-                }
-            }
-            c.Outline(Outline);
-            return c.WithPivot(9, 1.5f);
-        }
-
         static PixelCanvas DrawCrop(string state)
         {
             var c = new PixelCanvas(16, 16);

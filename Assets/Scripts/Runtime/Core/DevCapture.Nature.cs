@@ -66,25 +66,6 @@ namespace DotRPG
             if (faded.Alpha < .95f) throw new Exception("NATURE FAIL: canopy did not recover");
             Log("PASS canopy recovers when player leaves");
 
-            int chopped = 0, mined = 0;
-            foreach (var node in Game.World.ObjectsRoot.GetComponentsInChildren<ResourceNode>())
-            {
-                var sr = node.GetComponentInChildren<SpriteRenderer>();
-                if (sr.sprite.name == "broadleaf" && chopped == 0)
-                {
-                    node.TakeDamage(new DamageInfo(999, Game.Player.Position, 0, Team.Player));
-                    if (sr.sprite.name != "town_stump") throw new Exception("NATURE FAIL: tree depletion");
-                    chopped++;
-                }
-                else if (sr.sprite.name == "rock" && mined == 0)
-                {
-                    node.TakeDamage(new DamageInfo(999, Game.Player.Position, 0, Team.Player));
-                    if (sr.enabled || node.GetComponent<Collider2D>().enabled) throw new Exception("NATURE FAIL: rock depletion");
-                    mined++;
-                }
-            }
-            if (chopped != 1 || mined != 1) throw new Exception("NATURE FAIL: harvestable art not connected");
-            Log("PASS wood and stone harvesting retain depletion/collision behavior");
             // Rebuild fresh before checking all house routes and capturing the whole village.
             yield return HouseScaleShowcase();
             if (planting != NaturePlantingSignature()) throw new Exception("NATURE FAIL: planting changed on map reload");

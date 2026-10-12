@@ -115,24 +115,5 @@ namespace DotRPG
             return c.WithPivot(16f, 4f);
         }
 
-        /// <summary>Construction-site material piles: 0 = logs, 1 = stones.</summary>
-        static PixelCanvas TownPile(bool stone)
-        {
-            var c = Hd(42, 30);
-            c.Ellipse(22f, 26f, 18f, 3.5f, TShadow);
-            if (stone)
-            {
-                ShadeBlob(c, 12f, 20f, 8f, 6f, TStone); ShadeBlob(c, 26f, 21f, 9f, 6.5f, TStone); ShadeBlob(c, 19f, 13f, 8f, 6f, TStone);
-                ShadeBlob(c, 32f, 15f, 5f, 4f, TStone);
-                c.Outline(TOutlineStone);
-            }
-            else
-            {
-                for (int k = 0; k < 3; k++) { c.Rect(4, 18 - k * 6 + (k % 2), 34, 6, TBark[2 + (k % 2)]); c.HLine(4, 37, 18 - k * 6 + (k % 2), TBark[4]); }
-                for (int k = 0; k < 3; k++) c.Ellipse(38f, 21f - k * 6f + (k % 2), 3f, 3f, PixelCanvas.Hex("#d9ae78"));
-                c.Outline(TOutline);
-            }
-            return c.WithPivot(21f, 4f);
-        }
     }
 }

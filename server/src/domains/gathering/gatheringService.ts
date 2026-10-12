@@ -8,7 +8,7 @@ import type { EconCtx } from '../economy/economyContext';
 import { assertActionPresence } from '../antiabuse/killPresence';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './gatheringRepository';
-import type { ChestBody, DeliveryBody, GatherBody } from './gatheringValidation';
+import type { ChestBody, GatherBody } from './gatheringValidation';
 
 const NOT_FOUND = () => new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
 
@@ -132,56 +132,6 @@ export function openChest(accountId: number, characterUuid: string, body: ChestB
         data: {
           chest_id: body.chest_id,
           granted: { item_key: reward.itemKey, count: reward.count },
-          delta: ctx.delta(),
-        },
-      };
-    },
-  });
-}
-
-// ---------- 공사장 납품 ----------
-
-export function deliver(accountId: number, characterUuid: string, body: DeliveryBody): Promise<StoredResult> {
-  const { request_id: requestId, ...payload } = body;
-  return runEconomy({
-    accountId,
-    characterUuid,
-    endpoint: 'POST /characters/:uuid/deliveries',
-    requestId,
-    payload,
-    handler: async (ctx) => {
-      const site = getGameData().economy.config.deliverySites[body.site_id];
-      if (!site) throw new AppError(422, '알 수 없는 납품처입니다.', 'SITE_UNKNOWN');
-      const claimed = await repo.claimedAmong(ctx.client, ctx.char.id, site.requiresQuestClaimed);
-      if (site.requiresQuestClaimed.some((q) => !claimed.has(q))) {
-        throw new AppError(422, '아직 납품할 수 없습니다.', 'SITE_LOCKED');
-      }
-      const done = await repo.getDeliveries(ctx.client, ctx.char.id, body.site_id);
-      if (site.items.every((i) => (done.get(i.itemKey) ?? 0) >= i.required)) {
-        throw new AppError(409, '이미 완공되었습니다.', 'SITE_COMPLETE');
-      }
-      // C# DeliverMaterials: 재료마다 min(필요량 - 낸 양, 가방 수량)을 옮긴다
-      let movedTotal = 0;
-      for (const i of site.items) {
-        const need = i.required - (done.get(i.itemKey) ?? 0);
-        const move = Math.min(need, await ctx.stackCount('bag', i.itemKey));
-        if (move <= 0) continue;
-        await ctx.removeItem('bag', i.itemKey, move, 'delivery', body.site_id);
-        await repo.addDelivery(ctx.client, ctx.char.id, body.site_id, i.itemKey, move, ctx.now);
-        done.set(i.itemKey, (done.get(i.itemKey) ?? 0) + move);
-        movedTotal += move;
-      }
-      if (movedTotal === 0) throw new AppError(422, '낼 재료가 없습니다.', 'NOTHING_TO_DELIVER');
-      return {
-        status: 200,
-        data: {
-          site_id: body.site_id,
-          items: site.items.map((i) => ({
-            item_key: i.itemKey,
-            delivered: done.get(i.itemKey) ?? 0,
-            required: i.required,
-          })),
-          complete: site.items.every((i) => (done.get(i.itemKey) ?? 0) >= i.required),
           delta: ctx.delta(),
         },
       };

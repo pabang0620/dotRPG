@@ -109,30 +109,6 @@ namespace DotRPG
             }
         }
 
-        public int WoodStillNeeded => Math.Max(0, config.requiredWood - Progress.woodDelivered);
-        public int StoneStillNeeded => Math.Max(0, config.requiredStone - Progress.stoneDelivered);
-        public bool MaterialsComplete => WoodStillNeeded == 0 && StoneStillNeeded == 0;
-
-        /// <summary>Moves as many needed materials as possible from the inventory into the site.</summary>
-        public void DeliverMaterials(Inventory inventory, out int wood, out int stone)
-        {
-            wood = Math.Min(inventory.Count(ItemIds.Wood), WoodStillNeeded);
-            stone = Math.Min(inventory.Count(ItemIds.Stone), StoneStillNeeded);
-            if (wood > 0) inventory.Remove(ItemIds.Wood, wood);
-            if (stone > 0) inventory.Remove(ItemIds.Stone, stone);
-            Progress.woodDelivered += wood;
-            Progress.stoneDelivered += stone;
-            if (wood + stone > 0) Changed?.Invoke();
-        }
-
-        /// <summary>[SERVER] Delivered totals as the server counts them (site_deliveries).</summary>
-        public void SetDeliveredFromServer(int wood, int stone)
-        {
-            Progress.woodDelivered = Math.Max(0, wood);
-            Progress.stoneDelivered = Math.Max(0, stone);
-            Changed?.Invoke();
-        }
-
         public void MarkWorkshopBuilt()
         {
             if (Progress.workshopBuilt) return;

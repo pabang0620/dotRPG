@@ -410,13 +410,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "재료를 모아 공사장에 전달하고, 해골을 쫓아낸다.",
+     "text": "동쪽 공사장에서 공방 재건을 돕고, 해골을 쫓아낸다.",
      "objectives": [
       {
        "type": "flag",
        "target": "workshop_built",
        "count": 1,
-       "text": "공방 재건 (목재·돌을 동쪽 공사장에 전달)",
+       "text": "공방 재건 (동쪽 공사장의 건축가 돕기)",
        "dialogue": "",
        "consume": false,
        "map": ""
@@ -937,7 +937,7 @@
    "kind": "sub",
    "code": "",
    "title": "리아의 약초밭",
-   "summary": "리아가 가꾸던 약초밭의 울타리가 타 버렸다.",
+   "summary": "리아가 가꾸던 약초밭을 해골들이 파헤치고 있다.",
    "requires": [
     "c1_rebuild"
    ],
@@ -950,16 +950,16 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "목재를 모은다.",
+     "text": "약초밭을 파헤치는 해골을 쫓아낸다.",
      "objectives": [
       {
-       "type": "collect",
-       "target": "wood",
-       "count": 5,
-       "text": "목재",
+       "type": "kill",
+       "target": "skeleton",
+       "count": 20,
+       "text": "약초밭의 해골 처치",
        "dialogue": "",
-       "consume": true,
-       "map": ""
+       "consume": false,
+       "map": "forest"
       }
      ],
      "cutscene": "",
@@ -2509,7 +2509,7 @@
    "kind": "sub",
    "code": "",
    "title": "도윤의 그물",
-   "summary": "낚시꾼 도윤의 그물 말뚝이 불길에 타 버렸다. 새 말뚝을 깎을 목재가 필요하다.",
+   "summary": "낚시꾼 도윤의 그물 추가 불길에 녹아 버렸다. 추로 쓸 단단한 뼈 조각이 필요하다.",
    "requires": [
     "c1_rebuild"
    ],
@@ -2522,13 +2522,13 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "목재를 모아 도윤에게 가져간다.",
+     "text": "그물 추로 쓸 뼈 조각을 모아 도윤에게 가져간다.",
      "objectives": [
       {
        "type": "collect",
-       "target": "wood",
-       "count": 8,
-       "text": "목재 모으기",
+       "target": "mat_bone",
+       "count": 12,
+       "text": "뼈 조각 모으기",
        "dialogue": "",
        "consume": true,
        "map": ""
@@ -2618,7 +2618,7 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "해골을 쓰러뜨리고 목재를 모은다.",
+     "text": "나무꾼이 다닐 숲길의 해골을 쓰러뜨린다.",
      "objectives": [
       {
        "type": "kill",
@@ -2628,15 +2628,6 @@
        "dialogue": "",
        "consume": false,
        "map": "forest"
-      },
-      {
-       "type": "collect",
-       "target": "wood",
-       "count": 10,
-       "text": "목재 모으기",
-       "dialogue": "",
-       "consume": true,
-       "map": ""
       }
      ],
      "cutscene": "",
@@ -3150,7 +3141,7 @@
    "kind": "sub",
    "code": "",
    "title": "눈꽃 마을의 장작",
-   "summary": "여관 주인 보라가 겨울을 날 장작이 모자라다고 한다.",
+   "summary": "여관 주인 보라가 겨울을 날 장작을 해 오지 못하고 있다. 숲길을 설산 예티가 막았다.",
    "requires": [
     "c2_trial"
    ],
@@ -3163,16 +3154,16 @@
    "startCutscene": "",
    "steps": [
     {
-     "text": "목재를 모아 보라에게 가져간다.",
+     "text": "장작을 해 올 숲길의 설산 예티를 쫓아낸다.",
      "objectives": [
       {
-       "type": "collect",
-       "target": "wood",
-       "count": 20,
-       "text": "목재 모으기",
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 40,
+       "text": "설산 예티 처치",
        "dialogue": "",
-       "consume": true,
-       "map": ""
+       "consume": false,
+       "map": "winter_edge"
       }
      ],
      "cutscene": "",

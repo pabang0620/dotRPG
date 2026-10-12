@@ -74,7 +74,7 @@ namespace DotRPG
                 var opening = new Bounds(new Vector3(2.5f, 22.5f, 0), new Vector3(6, 4, 100));
                 foreach (var sr in objectsRoot.GetComponentsInChildren<SpriteRenderer>())
                     if ((sr.name == "EdgeTree" || sr.name == "Forest edge understory") && sr.bounds.Intersects(opening)
-                        && sr.GetComponentInParent<ResourceNode>() == null && sr.GetComponentsInChildren<Collider2D>().Length == 0)
+                        && sr.GetComponentsInChildren<Collider2D>().Length == 0)
                         sr.enabled = false;
             }
         }
@@ -89,7 +89,6 @@ namespace DotRPG
                 if (root.name != "EdgeTree" && root.name != "Forest edge understory") continue;
                 var sr = root.GetComponent<SpriteRenderer>();
                 if (sr == null || !sr.enabled || root.GetComponentsInChildren<Collider2D>(true).Length != 0
-                    || root.GetComponentInChildren<ResourceNode>(true) != null
                     || root.GetComponentInChildren<NpcController>(true) != null
                     || root.GetComponentInChildren<ServiceDoor>(true) != null
                     || root.GetComponentInChildren<MapPortal>(true) != null) continue;
@@ -111,7 +110,7 @@ namespace DotRPG
             {
                 if (sr.transform.parent != objectsRoot || sr.name != "Fantasy landmark " + MapId
                     || sr.GetComponentsInChildren<Collider2D>(true).Length != 0
-                    || sr.GetComponent<ResourceNode>() != null || sr.GetComponent<NpcController>() != null
+                    || sr.GetComponent<NpcController>() != null
                     || sr.GetComponent<ServiceDoor>() != null) continue;
                 int x = Mathf.FloorToInt(sr.transform.position.x), y = Mathf.FloorToInt(sr.transform.position.y);
                 if (x < 0 || y < 0 || x >= width || y >= height || !HuntingScenery.Solid(ground[x, y])) continue;

@@ -13,8 +13,6 @@ namespace DotRPG
         public string title = "공방 재건";
 
         [Header("Requirements")]
-        public int requiredWood = 6;
-        public int requiredStone = 4;
         public int requiredSkeletonKills = 3;
         public string targetEnemyId = "skeleton";
 

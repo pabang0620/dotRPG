@@ -228,8 +228,6 @@ namespace DotRPG.EditorTools
             var cfg = Resources.Load<GameConfig>("Data/GameConfig");
             var j = Doc();
             j.Key("nodeKinds").Obj()
-                .Key("tree").Obj().Str("item", ItemIds.Wood).Num("amount", cfg.treeWoodDrop).Num("respawnSeconds", cfg.treeRegrowSeconds).End()
-                .Key("rock").Obj().Str("item", ItemIds.Stone).Num("amount", cfg.rockStoneDrop).Num("respawnSeconds", cfg.rockRespawnSeconds).End()
                 .Key("crop").Obj().Str("item", ItemIds.Carrot).Num("amount", 1).Num("respawnSeconds", cfg.cropRegrowSeconds).End() // CropPlot gives 1
                 .End();
             var usable = ConsumableDatabase.Usable.Select(c => (c.id, c.kind.ToString())).ToList();
@@ -237,14 +235,7 @@ namespace DotRPG.EditorTools
             j.Arr("usableItems", usable, (o, u) => o.Obj().Str("id", u.Item1).Str("kind", u.Item2).End());
             j.Num("storageCapacity", StorageScreen.Capacity);
             j.Key("chestReward").Obj().Str("itemKey", TreasureChest.Reward).Num("count", 1).End();
-            var db = new QuestDatabase(Resources.Load<TextAsset>(QuestDatabase.ResourcePath));
-            var workshop = db.All.FirstOrDefault(q => q.id == QuestManager.WorkshopQuest);
-            var qc = cfg.mainQuest;
-            j.Key("deliverySites").Obj().Key("workshop").Obj().Str("questId", QuestManager.WorkshopQuest);
-            j.Arr("requiresQuestClaimed", workshop != null ? workshop.requires : new List<string>(), (o, v) => o.Val(v));
-            j.Arr("items", new[] { (ItemIds.Wood, qc != null ? qc.requiredWood : 6), (ItemIds.Stone, qc != null ? qc.requiredStone : 4) },
-                (o, it) => o.Obj().Str("itemKey", it.Item1).Num("required", it.Item2).End());
-            j.End().End();
+            j.Key("deliverySites").Obj().End(); // wood/stone deliveries removed (Docs/PLAN_REMOVE_GATHERING.md)
             return j.End().ToString();
         }
 

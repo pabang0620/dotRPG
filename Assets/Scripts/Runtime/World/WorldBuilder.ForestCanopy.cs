@@ -117,7 +117,7 @@ namespace DotRPG
             // A scaled Sprite view adjusts only its picture, never physics or harvest state.
             foreach (Transform child in objectsRoot)
             {
-                if (child.name != "Tree" || child.GetComponent<ResourceNode>() != null) continue;
+                if (child.name != "Tree") continue;
                 var sr = child.GetComponent<SpriteRenderer>();
                 if (sr == null || sr.sprite == null) continue;
                 if (sr.sprite.name.StartsWith("town_dead_", System.StringComparison.Ordinal))

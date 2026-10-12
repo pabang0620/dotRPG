@@ -11,7 +11,6 @@ namespace DotRPG
 {
     public partial class DevCapture
     {
-        readonly HashSet<string> propLifecycleSamples = new HashSet<string>();
         static bool VerifyProps => Array.IndexOf(Environment.GetCommandLineArgs(), "-propsVerify") >= 0;
         static bool VerifyForestFields => Array.IndexOf(Environment.GetCommandLineArgs(), "-forestFields") >= 0;
         static bool ForestFieldMap(string id) => id == "forest" || id == "forest_ruins" || id == "forest_depths" || id == "forest_crossing";
@@ -42,7 +41,6 @@ namespace DotRPG
                     && Quaternion.Angle(t.rotation, record.OriginalRotation) < .001f
                     && Vector3.Distance(t.localScale, record.OriginalScale) < .0001f
                     && sr.GetComponentsInChildren<Collider2D>(true).Length == 0
-                    && sr.GetComponentsInChildren<ResourceNode>(true).Length == 0
                     && sr.GetComponentsInChildren<NpcController>(true).Length == 0
                     && sr.GetComponentsInChildren<ServiceDoor>(true).Length == 0
                     && sr.GetComponentsInChildren<MapPortal>(true).Length == 0;
@@ -96,8 +94,7 @@ namespace DotRPG
                 var owned = new HashSet<UnityEngine.Object>(scene.OwnedResources);
                 bool count = scene.MapId == id && records.Length == scene.AppliedCount
                     && scene.EligibleCount == scene.AppliedCount + scene.SkippedCount && scene.SkippedCount == 0
-                    && scene.ResourceCount == records.Count(r => r.IsResource)
-                    && scene.StaticCount == records.Count(r => !r.IsResource)
+                    && scene.AppliedCount == records.Count()
                     && scene.SpeciesCount == records.Select(r => r.Slot).Distinct().Count();
                 bool transforms = records.All(r => r.Root != null && r.Renderer != null
                     && Vector3.Distance(r.Root.position, r.OriginalRootPosition) < .0001f
@@ -111,7 +108,7 @@ namespace DotRPG
                     && r.Renderer.sortingLayerID == r.OriginalSortingLayer
                     && (r.IsFloorDecoration
                         ? scene.Biome == "sanctum" && r.Root != null && r.Root.name == "rubble"
-                            && !r.IsResource && r.Slot == "rubble" && r.ExpectedSortingOrder == -29500
+                            && r.Slot == "rubble" && r.ExpectedSortingOrder == -29500
                         : r.ExpectedSortingOrder == r.OriginalSortingOrder));
                 // TreeFade may legitimately change alpha while the player walks behind a tree.
                 bool color = records.All(r => r.Renderer != null
@@ -127,13 +124,6 @@ namespace DotRPG
                     && owned.Count == scene.OwnedResourceCount
                     && records.All(r => owned.Contains(r.ReplacementSprite) && !owned.Contains(r.OriginalSprite)
                         && r.OriginalSprite != null && r.OriginalRenderedSprite != null);
-                bool resource = records.Where(r => r.IsResource).All(r =>
-                {
-                    var node = r.Root.GetComponent<ResourceNode>();
-                    return node != null && node.HasVisualOverride && node.Available
-                        && node.VisualRenderer == r.Renderer && node.FullVisualSprite == r.ReplacementSprite
-                        && (node.Kind != ResourceKind.Tree || node.DepletedVisualSprite != null && owned.Contains(node.DepletedVisualSprite));
-                });
                 bool preserved = records.All(r => !excluded.Contains(r.Renderer)
                     && r.Root.GetComponent<MapPortal>() == null && r.Root.GetComponent<NpcController>() == null
                     && r.Root.GetComponent<ServiceDoor>() == null
@@ -144,11 +134,10 @@ namespace DotRPG
                 DCheck(id + " prop colliders preserved", collisions);
                 DCheck(id + " prop sorting follows exact floor-rubble exception and preserves RGB", order && color);
                 DCheck(id + " fitted prop pictures use one owned atlas", pictures && ownership);
-                DCheck(id + " resource full and stump overrides connected", resource);
                 DCheck(id + " background, columns, actors and services excluded", preserved);
                 rows.Add(HRow(("biome", scene.Biome), ("eligible", scene.EligibleCount), ("applied", scene.AppliedCount),
                     ("atlasId", scene.AtlasId), ("atlasSourcePath", scene.AtlasSourcePath), ("atlasSourceSha256", SurfaceFileHash(scene.AtlasSourcePath)),
-                    ("skipped", scene.SkippedCount), ("resources", scene.ResourceCount), ("staticProps", scene.StaticCount),
+                    ("skipped", scene.SkippedCount), ("staticProps", scene.AppliedCount),
                     ("species", scene.SpeciesCount), ("ownedResources", scene.OwnedResourceCount),
                     ("atlasWidth", scene.AtlasTexture == null ? 0 : scene.AtlasTexture.width),
                     ("atlasHeight", scene.AtlasTexture == null ? 0 : scene.AtlasTexture.height),
@@ -158,102 +147,6 @@ namespace DotRPG
                         .Select(g => (object)HRow(("slot", g.Key), ("count", g.Count()))).ToArray())));
             }
             return HRow(("scenes", scenes.Length), ("applied", scenes.Sum(s => s.AppliedCount)), ("details", rows));
-        }
-
-        // Isolated QA only: quiet depletion grants no loot and contacts no server. A short
-        // temporary timer exercises the real respawn coroutine; all touched state is restored.
-        IEnumerator PropResourceExercise(Action<object> report)
-        {
-            var scene = Game.World.GetComponentInChildren<BiomePropScene>();
-            var grounding = Game.World.GetComponentInChildren<SurfacePropGrounding>();
-            var contacts = grounding != null ? grounding.ResourceContacts.ToArray() : Array.Empty<SurfaceResourceContact>();
-            var results = new List<object>();
-            if (scene == null) { report(HRow(("tested", false))); yield break; }
-            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            FieldInfo Field(string name) => typeof(ResourceNode).GetField(name, flags);
-            var timer = Field("respawnSeconds");
-            var health = Field("health");
-            var depleted = Field("depleted");
-            foreach (var kind in new[] { ResourceKind.Tree, ResourceKind.Rock })
-            {
-                string key = scene.AtlasId + ":" + kind;
-                if (propLifecycleSamples.Contains(key)) continue;
-                var record = scene.Records.Where(r => r.IsResource && r.Root != null
-                    && r.Root.GetComponent<ResourceNode>().Kind == kind && r.Root.GetComponent<ResourceNode>().Available
-                    && Vector2.Distance(r.Root.position, Game.Player.Position) > 2)
-                    .OrderByDescending(r => contacts.Any(c => c.Node == r.Root.GetComponent<ResourceNode>())).FirstOrDefault();
-                if (record == null) continue;
-                var node = record.Root.GetComponent<ResourceNode>();
-                var contact = contacts.FirstOrDefault(c => c.Node == node);
-                var sr = node.VisualRenderer;
-                var circle = node.GetComponent<CircleCollider2D>();
-                bool access = timer != null && health != null && depleted != null && circle != null;
-                DCheck(key + " resource lifecycle access", access);
-                if (!access) continue;
-                propLifecycleSamples.Add(key);
-                float originalTimer = (float)timer.GetValue(node);
-                int originalHealth = (int)health.GetValue(node);
-                var originalSprite = sr.sprite; bool originalEnabled = sr.enabled;
-                var originalPosition = sr.transform.localPosition; var originalScale = sr.transform.localScale;
-                bool circleEnabled = circle.enabled; float radius = circle.radius; var offset = circle.offset;
-                var configuration = new[] { "maxHealth", "dropItem", "dropAmount", "fullSpriteKey", "stumpKey", "fxHeight" }
-                    .ToDictionary(n => n, n => Field(n).GetValue(node));
-                bool depletedOk = false, restored = false, unchanged = false;
-                bool depletedContact = false, restoredContact = false;
-                try
-                {
-                    timer.SetValue(node, .08f);
-                    node.StartRegrowing();
-                    depletedOk = !node.Available && (kind == ResourceKind.Tree
-                        ? sr.enabled && sr.sprite == node.DepletedVisualSprite && Mathf.Approximately(circle.radius, .35f)
-                        : !sr.enabled && !circle.enabled);
-                    DCheck(key + " quiet depleted art state", depletedOk);
-                    if (contact != null)
-                    {
-                        contact.SyncVisual();
-                        depletedContact = kind == ResourceKind.Tree
-                            ? contact.Renderer.enabled && contact.DepletedSprite != null && contact.Renderer.sprite == contact.DepletedSprite
-                            : !contact.Renderer.enabled && contact.DepletedSprite == null;
-                        DCheck(key + " depleted contact matches stump or absent rock", depletedContact);
-                    }
-                    float deadline = Time.realtimeSinceStartup + 3f;
-                    while ((!node.Available || Vector3.Distance(sr.transform.localScale, Vector3.one) > .0001f)
-                        && Time.realtimeSinceStartup < deadline) yield return null;
-                    yield return null;
-                    restored = node.Available && sr.enabled && sr.sprite == node.FullVisualSprite
-                        && sr.sprite == record.ReplacementSprite && record.CollidersUnchanged
-                        && Vector3.Distance(sr.transform.localScale, originalScale) < .0001f
-                        && (int)health.GetValue(node) == (int)Field("maxHealth").GetValue(node);
-                    unchanged = configuration.All(p => Equals(Field(p.Key).GetValue(node), p.Value));
-                    DCheck(key + " real respawn restores new full art and collider", restored);
-                    DCheck(key + " yield and health configuration preserved", unchanged);
-                    if (contact != null)
-                    {
-                        contact.SyncVisual();
-                        restoredContact = contact.Renderer.enabled && contact.StandingSprite != null
-                            && contact.Renderer.sprite == contact.StandingSprite
-                            && contact.GetComponentsInChildren<Collider2D>(true).Length == 0;
-                        DCheck(key + " respawn restores standing contact without collider", restoredContact);
-                    }
-                }
-                finally
-                {
-                    // No coroutine is stopped on success; on failure discard this QA probe's
-                    // coroutine before putting the exact original isolated test state back.
-                    if (!restored) node.StopAllCoroutines();
-                    timer.SetValue(node, originalTimer); health.SetValue(node, originalHealth); depleted.SetValue(node, false);
-                    sr.sprite = originalSprite; sr.enabled = originalEnabled;
-                    sr.transform.localPosition = originalPosition; sr.transform.localScale = originalScale;
-                    circle.radius = radius; circle.offset = offset; circle.enabled = circleEnabled;
-                    node.GetComponent<YSort>()?.Refresh(); Physics2D.SyncTransforms();
-                    if (contact != null) contact.SyncVisual();
-                }
-                DCheck(key + " lifecycle probe restores timer and collision", (float)timer.GetValue(node) == originalTimer && record.CollidersUnchanged);
-                results.Add(HRow(("kind", kind.ToString()), ("node", node.NodeId), ("depletedArt", depletedOk),
-                    ("respawnArtAndCollider", restored), ("configurationPreserved", unchanged),
-                    ("contactTested", contact != null), ("depletedContact", depletedContact), ("respawnContact", restoredContact)));
-            }
-            report(HRow(("tested", results.Count > 0), ("biome", scene.Biome), ("atlasId", scene.AtlasId), ("samples", results)));
         }
 
         object PropUndergroundSource(string id, UnderworldCompositionScene scene, object audit)

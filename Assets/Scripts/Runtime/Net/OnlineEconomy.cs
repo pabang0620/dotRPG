@@ -180,11 +180,11 @@ namespace DotRPG
             claimRunning = false;
         }
 
-        // ---------------- gathering, chests, deliveries ----------------
+        // ---------------- crops, chests ----------------
 
         public static string NodeId(Vector2 foot) => $"{Game.Session.MapId}:{Mathf.FloorToInt(foot.x)}:{Mathf.FloorToInt(foot.y)}";
 
-        /// <summary>A tree / rock / crop gave its yield: the server grants it; the pickups shown are only visuals.</summary>
+        /// <summary>A crop gave its yield: the server grants it; the pickups shown are only visuals.</summary>
         public static void Gather(string nodeId, Vector2 at, Transform parent)
         {
             Post("/gathers", Body(("map_id", Game.Session.MapId), ("node_id", nodeId)), r =>
@@ -217,23 +217,6 @@ namespace DotRPG
                     Pickup.Create(MiniJson.Str(g, "item_key"), MiniJson.Int(g, "count", 1), at, parent).ServerGranted = true;
                 }
                 done(r.ok || r.code == "CHEST_ALREADY_OPENED");
-            });
-        }
-
-        /// <summary>Workshop delivery: the server moves what is missing from the bag. done(delivered wood, stone, complete).</summary>
-        public static void Deliver(Action<int, int, bool> done)
-        {
-            Post("/deliveries", Body(("site_id", "workshop")), r =>
-            {
-                if (!r.ok) { done(-1, -1, false); return; }
-                int wood = 0, stone = 0;
-                foreach (var it in MiniJson.Arr(r.data, "items") ?? new List<object>())
-                {
-                    if (MiniJson.Str(it, "item_key") == ItemIds.Wood) wood = MiniJson.Int(it, "delivered");
-                    if (MiniJson.Str(it, "item_key") == ItemIds.Stone) stone = MiniJson.Int(it, "delivered");
-                }
-                bool complete = r.data != null && r.data.TryGetValue("complete", out var c) && c is bool b && b;
-                done(wood, stone, complete);
             });
         }
 
@@ -453,7 +436,6 @@ namespace DotRPG
             LoadCoolingNodes(mapId, cooling =>
             {
                 if (cooling.Count == 0 || Game.World == null || Game.World.MapId != mapId) return;
-                foreach (var n in ResourceNode.Active.ToList()) if (n != null && cooling.Contains(n.NodeId)) n.StartRegrowing();
                 foreach (var c in CropPlot.Active.ToList()) if (c != null && cooling.Contains(c.NodeId)) c.StartRegrowing();
             });
         }

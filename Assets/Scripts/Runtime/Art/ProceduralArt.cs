@@ -92,7 +92,7 @@ namespace DotRPG
             }
             yield return "tile_dock";
             foreach (var k in new[] { "deco_tuft", "deco_flower_0", "deco_flower_1", "deco_pebble" }) yield return k;
-            foreach (var k in new[] { "tree", "tree_fruit", "stump", "rock", "bush", "sign", "crate", "house", "site_blueprint", "site_built", "pile_wood", "pile_stone" }) yield return k;
+            foreach (var k in new[] { "tree", "tree_fruit", "stump", "rock", "bush", "sign", "crate", "house", "site_blueprint", "site_built" }) yield return k;
             for (int mask = 0; mask < 16; mask++) yield return $"fence_{mask}";
             foreach (var k in new[] { "crop_carrot", "crop_sprout", "crop_hole" }) yield return k;
             foreach (var k in new[] { "tool_sword", "tool_axe", "tool_pickaxe", "tool_can", "tool_rod", "tool_hammer", "tool_crate" }) yield return k;
@@ -170,7 +170,6 @@ namespace DotRPG
                     case "box": return DrawCrate(false);
                     case "arrow": return DrawArrow(parts.Length > 1 ? parts[1] : "right");
                     case "site": return parts[1] == "built" ? DrawWorkshop() : DrawBlueprint();
-                    case "pile": return DrawPile(parts[1] == "stone");
                     case "crop": return DrawCrop(parts[1]);
                     case "fx": return DrawFx(parts[1]);
                     case "dgn": return DrawDungeon(parts); // [DUNGEON] gates, room-map skull, reward cards (ProceduralArtDungeon.cs)

@@ -18,28 +18,11 @@ namespace DotRPG
             if (state == null || state.EligibleCount != 0) return;
             forestFields = forestFields && state.AtlasId == "forest_fields";
 
-            foreach (var node in objectsRoot.GetComponentsInChildren<ResourceNode>(true))
-            {
-                var renderer = node.VisualRenderer;
-                if (renderer == null || node.FullVisualSprite == null) continue;
-                state.EligibleCount++;
-                string slot = node.Kind == ResourceKind.Tree ? TreePropSlot(biome, node.FullVisualSprite.name) : RockPropSlot(biome, node.transform.position);
-                if (forestFields) slot = ForestFieldSlot(slot, node.FullVisualSprite.name, node.transform.position);
-                var full = state.View(slot, node.FullVisualSprite);
-                var stump = node.Kind == ResourceKind.Tree ? state.View("stump", node.DepletedVisualSprite) : null;
-                if (full == null || node.Kind == ResourceKind.Tree && stump == null) { state.SkippedCount++; continue; }
-                var record = new BiomePropRecord(renderer, node.transform, node.FullVisualSprite, full, slot, true);
-                node.ConfigureVisualOverride(full, stump);
-                state.Record(record);
-                // Rebind the existing fade's renderer list without changing opacity or RGB.
-                if (node.GetComponent<TreeFade>() != null) TreeFade.Attach(node.gameObject);
-            }
-
             // Select exact existing small-prop names. Large architecture, the descent
             // tree/portal, background sprites, actors and embedded B3 columns never qualify.
             foreach (Transform root in objectsRoot)
             {
-                if (root.GetComponent<ResourceNode>() != null || root.GetComponent<NpcController>() != null
+                if (root.GetComponent<NpcController>() != null
                     || root.GetComponent<ServiceDoor>() != null || root.GetComponent<MapPortal>() != null) continue;
                 var renderer = root.GetComponent<SpriteRenderer>();
                 if (renderer == null || renderer.sprite == null || !renderer.enabled || renderer.forceRenderingOff) continue;
@@ -51,7 +34,7 @@ namespace DotRPG
                 var replacement = state.View(slot, renderer.sprite);
                 if (replacement == null) { state.SkippedCount++; continue; }
                 bool floorDecoration = biome == "sanctum" && root.name == "rubble";
-                var record = new BiomePropRecord(renderer, root, renderer.sprite, replacement, slot, false, floorDecoration);
+                var record = new BiomePropRecord(renderer, root, renderer.sprite, replacement, slot, floorDecoration);
                 renderer.sprite = replacement;
                 // Flat sanctuary fragments belong above the floor but behind terrace
                 // faces; their former Y sort would paste them onto the front of a wall.

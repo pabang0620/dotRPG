@@ -12,7 +12,7 @@ namespace DotRPG
     /// </summary>
     public sealed partial class QuestAutoPilot : MonoBehaviour
     {
-        enum GoalKind { None, Npc, Prop, Hunt, Gather, Map, Site, DungeonGuide, Wait }
+        enum GoalKind { None, Npc, Prop, Hunt, Map, Site, DungeonGuide, Wait }
 
         struct Goal
         {
@@ -215,7 +215,6 @@ namespace DotRPG
                     if (InHuntingGround) { huntMode = true; huntForQuest = true; huntTarget = goal.id; GameEvents.RaiseToast("사냥터에 도착해 자동 사냥을 켰습니다."); }
                     else DoHunt(p, goal);
                     break;
-                case GoalKind.Gather: DoGather(p, goal); break;
                 case GoalKind.DungeonGuide: DoDungeonGuide(p, goal); break;
                 case GoalKind.Map: Stop($"{MapName(goal.map)}에 도착했습니다."); break;
             }
@@ -358,19 +357,10 @@ namespace DotRPG
 
         Goal CollectGoal(string item, string map)
         {
-            if (item == ItemIds.Wood || item == ItemIds.Stone)
-                return new Goal { kind = GoalKind.Gather, id = item, map = string.IsNullOrEmpty(map) ? MapRegistry.Forest : map, label = $"{QuestManager.ItemName(item)} 모으는 중" };
             return new Goal { kind = GoalKind.Hunt, id = "*", map = string.IsNullOrEmpty(map) ? HuntingMap() : map, label = $"{QuestManager.ItemName(item)} 모으는 중" };
         }
 
-        Goal WorkshopGoal()
-        {
-            var q = Game.Quest;
-            var inv = Game.Session.Inventory;
-            if (inv.Count(ItemIds.Wood) < q.WoodStillNeeded) return CollectGoal(ItemIds.Wood, MapRegistry.Forest);
-            if (inv.Count(ItemIds.Stone) < q.StoneStillNeeded) return CollectGoal(ItemIds.Stone, MapRegistry.Forest);
-            return new Goal { kind = GoalKind.Site, map = MapRegistry.Village, label = "공방 터에 재료를 전하러 가는 중" };
-        }
+        Goal WorkshopGoal() => new Goal { kind = GoalKind.Site, map = MapRegistry.Village, label = "공방 터로 재건을 도우러 가는 중" };
 
         /// <summary>The hunting ground recommended for the hero's level (the highest one already open to it).</summary>
         static string HuntingMap()

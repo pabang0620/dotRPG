@@ -312,19 +312,8 @@ namespace DotRPG
             foreach (var o in MiniJson.Arr(c, "opened_chests") ?? new List<object>()) data.openedChests.Add((string)o);
             foreach (var o in MiniJson.Arr(c, "enhance_pity") ?? new List<object>())
                 data.enhancePity.Add(new ItemStack(MiniJson.Str(o, "item_key"), MiniJson.Int(o, "pity")));
-            foreach (var site in MiniJson.Arr(c, "deliveries") ?? new List<object>())
-            {
-                if (MiniJson.Str(site, "site_id") != "workshop") continue;
-                bool done = true;
-                foreach (var it in MiniJson.Arr(site, "items") ?? new List<object>())
-                {
-                    int got = MiniJson.Int(it, "delivered");
-                    if (got < MiniJson.Int(it, "required")) done = false;
-                    if (MiniJson.Str(it, "item_key") == ItemIds.Wood) data.quest.woodDelivered = got;
-                    if (MiniJson.Str(it, "item_key") == ItemIds.Stone) data.quest.stoneDelivered = got;
-                }
-                if (done) data.quest.workshopBuilt = true;
-            }
+            // The rebuilt workshop is a story flag (wood/stone deliveries were removed on 2026-10-12).
+            if (data.storyFlags.Contains(QuestManager.WorkshopBuiltFlag)) data.quest.workshopBuilt = true;
             ClaimedQuests = new HashSet<string>();
             foreach (var o in MiniJson.Arr(c, "claimed_quests") ?? new List<object>()) ClaimedQuests.Add((string)o);
             data.passives = new List<string> { PassiveTree.Start };

@@ -325,7 +325,6 @@ export interface EconomyDetailRows {
   claimedQuests: string[];
   openedChests: string[];
   pity: { item_key: string; pity: number }[];
-  deliveries: { site_id: string; item_key: string; delivered: number }[];
 }
 
 export async function readEconomyDetail(db: Queryable, characterId: number): Promise<EconomyDetailRows> {
@@ -342,15 +341,10 @@ export async function readEconomyDetail(db: Queryable, characterId: number): Pro
     'SELECT item_key, pity FROM character_enhance_pity WHERE character_id = $1 ORDER BY item_key',
     [characterId],
   );
-  const del = await db.query<{ site_id: string; item_key: string; delivered: number }>(
-    'SELECT site_id, item_key, delivered FROM site_deliveries WHERE character_id = $1',
-    [characterId],
-  );
   return {
     bonusMaxHealth: claims.rows.reduce((a, r) => a + Number(r.max_health ?? 0), 0),
     claimedQuests: claims.rows.map((r) => r.quest_id),
     openedChests: chests.rows.map((r) => r.chest_id),
     pity: pity.rows,
-    deliveries: del.rows,
   };
 }

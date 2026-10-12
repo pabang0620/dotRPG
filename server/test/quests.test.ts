@@ -132,16 +132,10 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect(res.body.errors.objective).toMatchObject({ type: 'kill', need: 6, have: 5 });
   });
 
-  it('공방 완공 플래그는 납품 기록으로 직접 확인하고, 최대 체력 보너스가 반영된다', async () => {
+  it('공방 완공 플래그는 검증하지 않고(납품 폐지), 최대 체력 보너스가 반영된다', async () => {
     const h = await newHero(app);
     await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise']);
     await setKills(h, 'skeleton', 6);
-    const notBuilt = await claim(h, 'c1_rebuild');
-    expect(notBuilt.body.errors.objective).toEqual({ type: 'flag', flag: 'workshop_built' });
-    await getPool().query(
-      "INSERT INTO site_deliveries (character_id, site_id, item_key, delivered) VALUES ($1, 'workshop', 'wood', 6), ($1, 'workshop', 'stone', 4)",
-      [h.dbId],
-    );
     const res = await claim(h, 'c1_rebuild');
     expect(res.status).toBe(200);
     expect(res.body.data.bonus_max_health).toBe(20);
@@ -152,16 +146,16 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
 
   it('collect+consume 목표: 청구 시점에 재료를 가져가고, 모자라면 NOT_DONE', async () => {
     const h = await newHero(app);
-    await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild']); // 약초밭은 공방 재건 뒤에 열린다
-    await seedItem(h, 'wood', 4);
-    const no = await claim(h, 'c1s_herbs');
+    await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild']); // 도윤의 그물은 공방 재건 뒤에 열린다
+    await seedItem(h, 'mat_bone', 11);
+    const no = await claim(h, 'c1s_fisher_net');
     expect(no.body.errors.code).toBe('QUEST_NOT_DONE');
-    expect(no.body.errors.objective).toMatchObject({ type: 'collect', item_key: 'wood', need: 5, have: 4 });
-    await seedItem(h, 'wood', 2);
-    const ok = await claim(h, 'c1s_herbs');
+    expect(no.body.errors.objective).toMatchObject({ type: 'collect', item_key: 'mat_bone', need: 12, have: 11 });
+    await seedItem(h, 'mat_bone', 2);
+    const ok = await claim(h, 'c1s_fisher_net');
     expect(ok.status).toBe(200);
-    expect(ok.body.data.consumed).toEqual([{ item_key: 'wood', count: 5 }]);
-    expect(await countOf(h, 'wood')).toBe(1);
+    expect(ok.body.data.consumed).toEqual([{ item_key: 'mat_bone', count: 12 }]);
+    expect(await countOf(h, 'mat_bone')).toBe(1);
     await expectLedgerConsistent(h);
   });
 

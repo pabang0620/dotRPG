@@ -324,7 +324,7 @@ namespace DotRPG
         void ShowToast(string message)
         {
             float now = Time.unscaledTime;
-            // Merge repeated messages ("+1 목재" x3).
+            // Merge repeated messages ("+1 뼈 조각" x3).
             if (toasts.Count > 0)
             {
                 var last = toasts[toasts.Count - 1];

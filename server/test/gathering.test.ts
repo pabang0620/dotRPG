@@ -9,8 +9,6 @@ import {
   get,
   newHero,
   post,
-  seedClaims,
-  seedItem,
 } from './economyHelpers';
 
 const app = buildApp();
@@ -29,23 +27,23 @@ beforeEach(() => {
   setClockOverride(() => fixed);
 });
 
-const rock = { map_id: 'forest', node_id: 'forest:43:13' }; // 바위: 돌 2개, 75초 재생
+const crop = { map_id: 'village', node_id: 'village:6:10' }; // 당근 밭: 당근 1개, 40초 재생 (나무·바위 채집은 2026-10-12 폐지)
 
 describe('POST /characters/:id/gathers', () => {
   it('정상: 서버 데이터대로 지급하고 재생 시각을 알려 준다', async () => {
     const h = await newHero(app);
-    const res = await post(app, h, '/gathers', rock);
+    const res = await post(app, h, '/gathers', crop);
     expect(res.status).toBe(200);
-    expect(res.body.data.granted).toEqual({ item_key: 'stone', count: 2 });
-    expect(res.body.data.ready_at).toBe(new Date(fixed.getTime() + 75_000).toISOString());
-    expect(await countOf(h, 'stone')).toBe(2);
+    expect(res.body.data.granted).toEqual({ item_key: 'carrot', count: 1 });
+    expect(res.body.data.ready_at).toBe(new Date(fixed.getTime() + 40_000).toISOString());
+    expect(await countOf(h, 'carrot')).toBe(1);
     await expectLedgerConsistent(h);
   });
 
   it('입력 오류: 수량을 보내거나 노드 id 형식이 틀리면 400', async () => {
     const h = await newHero(app);
-    expect((await post(app, h, '/gathers', { ...rock, count: 99 })).status).toBe(400);
-    expect((await post(app, h, '/gathers', { ...rock, node_id: 'x' })).status).toBe(400);
+    expect((await post(app, h, '/gathers', { ...crop, count: 99 })).status).toBe(400);
+    expect((await post(app, h, '/gathers', { ...crop, node_id: 'x' })).status).toBe(400);
     expect((await post(app, h, '/gathers', { map_id: 'forest' })).status).toBe(400);
   });
 
@@ -54,42 +52,42 @@ describe('POST /characters/:id/gathers', () => {
     const a = await post(app, h, '/gathers', { map_id: 'forest', node_id: 'forest:1:1' });
     expect(a.status).toBe(422);
     expect(a.body.errors.code).toBe('NODE_UNKNOWN');
-    const b = await post(app, h, '/gathers', { map_id: 'village', node_id: 'forest:43:13' });
+    const b = await post(app, h, '/gathers', { map_id: 'forest', node_id: 'village:6:10' });
     expect(b.body.errors.code).toBe('NODE_UNKNOWN');
     expect(await anomalyKinds(h)).toEqual(['gather_node', 'gather_node']);
-    expect(await countOf(h, 'stone')).toBe(0);
+    expect(await countOf(h, 'carrot')).toBe(0);
   });
 
   it('재생 전 재채집은 409 NODE_NOT_READY(ready_at 포함), 서버 시계로 재생된다', async () => {
     const h = await newHero(app);
-    await post(app, h, '/gathers', rock);
-    const early = await post(app, h, '/gathers', rock);
+    await post(app, h, '/gathers', crop);
+    const early = await post(app, h, '/gathers', crop);
     expect(early.status).toBe(409);
     expect(early.body.errors.code).toBe('NODE_NOT_READY');
-    expect(early.body.errors.ready_at).toBe(new Date(fixed.getTime() + 75_000).toISOString());
+    expect(early.body.errors.ready_at).toBe(new Date(fixed.getTime() + 40_000).toISOString());
     expect(await anomalyKinds(h)).toEqual(['gather_early']);
-    expect(await countOf(h, 'stone')).toBe(2);
+    expect(await countOf(h, 'carrot')).toBe(1);
     // 보고 지연 여유(3초) 안쪽은 허용
-    advance(72);
-    expect((await post(app, h, '/gathers', rock)).status).toBe(200);
-    expect(await countOf(h, 'stone')).toBe(4);
+    advance(37);
+    expect((await post(app, h, '/gathers', crop)).status).toBe(200);
+    expect(await countOf(h, 'carrot')).toBe(2);
   });
 
   it('재전송: 같은 request_id는 한 번만 지급', async () => {
     const h = await newHero(app);
     const rid = randomUUID();
-    const a = await post(app, h, '/gathers', rock, rid);
-    const b = await post(app, h, '/gathers', rock, rid);
+    const a = await post(app, h, '/gathers', crop, rid);
+    const b = await post(app, h, '/gathers', crop, rid);
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(b.body).toEqual(a.body);
-    expect(await countOf(h, 'stone')).toBe(2);
+    expect(await countOf(h, 'carrot')).toBe(1);
   });
 
   it('동시 요청: 같은 노드를 동시에 캐도 한 번만 성공', async () => {
     const h = await newHero(app);
-    const [a, b] = await Promise.all([post(app, h, '/gathers', rock), post(app, h, '/gathers', rock)]);
+    const [a, b] = await Promise.all([post(app, h, '/gathers', crop), post(app, h, '/gathers', crop)]);
     expect([a.status, b.status].sort()).toEqual([200, 409]);
-    expect(await countOf(h, 'stone')).toBe(2);
+    expect(await countOf(h, 'carrot')).toBe(1);
     await expectLedgerConsistent(h);
   });
 });
@@ -103,27 +101,27 @@ describe('채집 분당 상한', () => {
         [h.dbId, `canyon:${i}:0`, 'canyon', new Date(fixed.getTime() - 10_000)],
       );
     }
-    const res = await post(app, h, '/gathers', rock);
+    const res = await post(app, h, '/gathers', crop);
     expect(res.status).toBe(429);
     expect(res.body.errors.code).toBe('GATHER_RATE_LIMITED');
     expect(await anomalyKinds(h)).toEqual(['gather_rate']);
-    expect(await countOf(h, 'stone')).toBe(0);
+    expect(await countOf(h, 'carrot')).toBe(0);
     advance(60);
-    expect((await post(app, h, '/gathers', rock)).status).toBe(200);
+    expect((await post(app, h, '/gathers', crop)).status).toBe(200);
   });
 });
 
 describe('GET /characters/:id/maps/:map_id/nodes', () => {
   it('재생 중인 노드만 돌려준다', async () => {
     const h = await newHero(app);
-    await post(app, h, '/gathers', rock);
-    let res = await get(app, h, '/maps/forest/nodes');
+    await post(app, h, '/gathers', crop);
+    let res = await get(app, h, '/maps/village/nodes');
     expect(res.status).toBe(200);
     expect(res.body.data.cooling).toEqual([
-      { node_id: 'forest:43:13', kind: 'rock', ready_at: new Date(fixed.getTime() + 75_000).toISOString() },
+      { node_id: 'village:6:10', kind: 'crop', ready_at: new Date(fixed.getTime() + 40_000).toISOString() },
     ]);
-    advance(76);
-    res = await get(app, h, '/maps/forest/nodes');
+    advance(41);
+    res = await get(app, h, '/maps/village/nodes');
     expect(res.body.data.cooling).toEqual([]);
   });
 
@@ -179,71 +177,6 @@ describe('POST /characters/:id/chests/open', () => {
     const [c, d] = await Promise.all([post(app, h2, '/chests/open', chest), post(app, h2, '/chests/open', chest)]);
     expect([c.status, d.status].sort()).toEqual([200, 409]);
     expect(await countOf(h2, 'eq_neck_10_r')).toBe(1);
-    await expectLedgerConsistent(h2);
-  });
-});
-
-describe('POST /characters/:id/deliveries', () => {
-  const site = { site_id: 'workshop' };
-
-  it('선행 퀘스트를 청구하지 않았으면 422 SITE_LOCKED', async () => {
-    const h = await newHero(app);
-    await seedItem(h, 'wood', 6);
-    const res = await post(app, h, '/deliveries', site);
-    expect(res.status).toBe(422);
-    expect(res.body.errors.code).toBe('SITE_LOCKED');
-    expect(await countOf(h, 'wood')).toBe(6);
-  });
-
-  it('정상: 가진 만큼 필요량 안에서 옮기고, 다 채우면 complete', async () => {
-    const h = await newHero(app);
-    await seedClaims(h, ['c1_rise']);
-    await seedItem(h, 'wood', 10);
-    await seedItem(h, 'stone', 1);
-    const first = await post(app, h, '/deliveries', site);
-    expect(first.status).toBe(200);
-    expect(first.body.data.complete).toBe(false);
-    expect(first.body.data.items).toEqual([
-      { item_key: 'wood', delivered: 6, required: 6 },
-      { item_key: 'stone', delivered: 1, required: 4 },
-    ]);
-    expect(await countOf(h, 'wood')).toBe(4); // 필요량(6)까지만 가져간다
-    await seedItem(h, 'stone', 5);
-    const second = await post(app, h, '/deliveries', site);
-    expect(second.body.data.complete).toBe(true);
-    expect(await countOf(h, 'stone')).toBe(2);
-    await expectLedgerConsistent(h);
-    const done = await post(app, h, '/deliveries', site);
-    expect(done.status).toBe(409);
-    expect(done.body.errors.code).toBe('SITE_COMPLETE');
-  });
-
-  it('낼 재료가 없으면 422 NOTHING_TO_DELIVER, 입력 오류는 400', async () => {
-    const h = await newHero(app);
-    await seedClaims(h, ['c1_rise']);
-    expect((await post(app, h, '/deliveries', site)).body.errors.code).toBe('NOTHING_TO_DELIVER');
-    expect((await post(app, h, '/deliveries', { ...site, count: 5 })).status).toBe(400);
-    expect((await post(app, h, '/deliveries', { site_id: 'castle' })).body.errors.code).toBe('SITE_UNKNOWN');
-  });
-
-  it('재전송과 동시 요청은 이중으로 가져가지 않는다', async () => {
-    const h = await newHero(app);
-    await seedClaims(h, ['c1_rise']);
-    await seedItem(h, 'wood', 3);
-    const rid = randomUUID();
-    const a = await post(app, h, '/deliveries', site, rid);
-    const b = await post(app, h, '/deliveries', site, rid);
-    expect(b.headers['idempotent-replay']).toBe('true');
-    expect(b.body).toEqual(a.body);
-    expect(await countOf(h, 'wood')).toBe(0);
-
-    const h2 = await newHero(app);
-    await seedClaims(h2, ['c1_rise']);
-    await seedItem(h2, 'wood', 3);
-    const [c, d] = await Promise.all([post(app, h2, '/deliveries', site), post(app, h2, '/deliveries', site)]);
-    expect([c.status, d.status].sort()).toEqual([200, 422]);
-    const del = await getPool().query("SELECT delivered FROM site_deliveries WHERE character_id = $1 AND item_key = 'wood'", [h2.dbId]);
-    expect(del.rows[0].delivered).toBe(3);
     await expectLedgerConsistent(h2);
   });
 });

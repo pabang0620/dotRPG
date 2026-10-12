@@ -27,16 +27,15 @@ namespace DotRPG
                     yield return Wait(2.5f);
                 }
                 Log($"--- map {Game.World.MapId}");
-                int trees = 0, choppable = 0, edge = 0, missing = 0;
+                int trees = 0, edge = 0, missing = 0;
                 foreach (Transform child in Game.World.ObjectsRoot)
                 {
                     if (child.name != "Tree" && child.name != "EdgeTree") continue;
                     trees++;
                     if (child.name == "EdgeTree") edge++;
-                    if (child.GetComponent<ResourceNode>() != null) choppable++;
                     if (child.GetComponent<TreeFade>() == null) missing++;
                 }
-                Report($"every tree on {mapId} can turn see-through: {trees} trees ({choppable} choppable, {edge} along the forest edge), {missing} without it", trees > 0 && missing == 0);
+                Report($"every tree on {mapId} can turn see-through: {trees} trees ({edge} along the forest edge), {missing} without it", trees > 0 && missing == 0);
                 var tree = PickObstacle(new[] { "Tree" });
                 if (tree != null) yield return WalkAround(tree, mapId + "_tree");
                 else Log("no free-standing tree with open space on both sides");

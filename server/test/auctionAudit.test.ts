@@ -312,10 +312,6 @@ describe('3단계 변경: 귀속이 재고 키에 들어간다', () => {
       `INSERT INTO kill_stats (character_id, monster_id, kills) VALUES ($1, 'skeleton', 6)`,
       [h.dbId],
     );
-    await getPool().query(
-      "INSERT INTO site_deliveries (character_id, site_id, item_key, delivered) VALUES ($1, 'workshop', 'wood', 6), ($1, 'workshop', 'stone', 4)",
-      [h.dbId],
-    );
     const q = await post(app, h, '/quests/c1_rebuild/claim', {});
     expect(q.status).toBe(200);
     expect(q.body.data.delta.stacks).toEqual([{ item_key: 'eq_ring_1_r', location: 'bag', bind: 'character', count: 1 }]);

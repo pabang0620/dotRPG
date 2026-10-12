@@ -10,10 +10,8 @@ export const gatherBody = z.strictObject({
   node_id: nodeId,
 });
 export const chestBody = z.strictObject({ request_id: requestId, chest_id: nodeId });
-export const deliveryBody = z.strictObject({ request_id: requestId, site_id: z.string().min(1).max(32) });
 export const nodesParams = z.object({ uuid: z.uuid(), map_id: z.string().min(1).max(32) });
 
 export type GatherBody = z.infer<typeof gatherBody>;
 export type ChestBody = z.infer<typeof chestBody>;
-export type DeliveryBody = z.infer<typeof deliveryBody>;
 export type NodesParams = z.infer<typeof nodesParams>;

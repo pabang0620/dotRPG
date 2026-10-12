@@ -58,12 +58,6 @@ namespace DotRPG
         public Color backgroundColor = new Color(0.16f, 0.30f, 0.18f);
 
         [Header("World resources")]
-        public int treeHealth = 30;
-        public int treeWoodDrop = 2;
-        public float treeRegrowSeconds = 60f;
-        public int rockHealth = 40;
-        public int rockStoneDrop = 2;
-        public float rockRespawnSeconds = 75f;
         public float cropRegrowSeconds = 40f;
 
         [Header("Save")]

@@ -90,7 +90,6 @@ namespace DotRPG
         public Sprite OriginalRenderedSprite { get; }
         public Sprite ReplacementSprite { get; }
         public string Slot { get; }
-        public bool IsResource { get; }
         public bool IsFloorDecoration { get; }
         public Vector3 OriginalRootPosition { get; }
         public Quaternion OriginalRootRotation { get; }
@@ -108,10 +107,10 @@ namespace DotRPG
         readonly string colliderSignature;
         public bool CollidersUnchanged => ColliderSignature(Root.GetComponentsInChildren<Collider2D>(true)) == colliderSignature;
 
-        internal BiomePropRecord(SpriteRenderer renderer, Transform root, Sprite original, Sprite replacement, string slot, bool resource, bool floorDecoration = false)
+        internal BiomePropRecord(SpriteRenderer renderer, Transform root, Sprite original, Sprite replacement, string slot, bool floorDecoration = false)
         {
             Renderer = renderer; Root = root; OriginalSprite = original; OriginalRenderedSprite = renderer.sprite;
-            ReplacementSprite = replacement; Slot = slot; IsResource = resource;
+            ReplacementSprite = replacement; Slot = slot;
             OriginalRootPosition = root.position; OriginalRootRotation = root.rotation; OriginalRootScale = root.localScale;
             OriginalVisualPosition = renderer.transform.localPosition;
             OriginalVisualRotation = renderer.transform.localRotation; OriginalVisualScale = renderer.transform.localScale;
@@ -156,8 +155,6 @@ namespace DotRPG
         public int EligibleCount { get; internal set; }
         public int SkippedCount { get; internal set; }
         public int AppliedCount => records.Count;
-        public int ResourceCount { get; private set; }
-        public int StaticCount => AppliedCount - ResourceCount;
         public int SpeciesCount => species.Count;
         public Texture2D AtlasTexture { get; private set; }
         public IReadOnlyList<BiomePropRecord> Records => records;
@@ -195,7 +192,6 @@ namespace DotRPG
         internal void Record(BiomePropRecord record)
         {
             records.Add(record); species.Add(record.Slot);
-            if (record.IsResource) ResourceCount++;
         }
 
         void OnDestroy()

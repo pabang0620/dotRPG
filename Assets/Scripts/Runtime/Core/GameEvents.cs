@@ -8,7 +8,7 @@ namespace DotRPG
     /// </summary>
     public static class GameEvents
     {
-        /// <summary>Short on-screen message ("+2 목재", "저장했습니다").</summary>
+        /// <summary>Short on-screen message ("+2 뼈 조각", "저장했습니다").</summary>
         public static event Action<string> Toast;
 
         /// <summary>An enemy was defeated. Argument is the enemy kind id (e.g. "skeleton").</summary>

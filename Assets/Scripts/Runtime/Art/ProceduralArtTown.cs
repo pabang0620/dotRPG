@@ -139,7 +139,6 @@ namespace DotRPG
                 case "fruit": return FruitTree(Arg(2));
                 case "pine": return TownPine(Arg(2));
                 case "dead": return DeadTree(Arg(2));
-                case "chop": return TownTree(6);
                 case "stump": return TownStump();
                 case "rock": return TownRock(Arg(2));
                 case "pebbles": return TownPebbles(Arg(2));
@@ -166,7 +165,6 @@ namespace DotRPG
                 case "log": return TownLog();
                 case "shroom": return TownShrooms();
                 case "ruin": return TownRuin();
-                case "pile": return TownPile(Arg(2) == 1);
                 case "house": return TownHouse(Arg(2));
                 case "hall": return TownHall();
                 case "store": return TownStore();

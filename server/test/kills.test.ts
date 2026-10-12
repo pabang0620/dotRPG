@@ -259,11 +259,7 @@ describe('POST /characters/:id/kills', () => {
       enhance_pity: [],
       storage_capacity: 48,
     });
-    expect(c.deliveries[0]).toMatchObject({ site_id: 'workshop' });
-    expect(c.deliveries[0].items).toEqual([
-      { item_key: 'wood', delivered: 0, required: 6 },
-      { item_key: 'stone', delivered: 0, required: 4 },
-    ]);
+    expect(c.deliveries).toBeUndefined(); // 공사장 납품은 2026-10-12 폐지
   });
 });
 

@@ -7,7 +7,7 @@ namespace DotRPG
     {
         // ---------- Trees ----------
 
-        /// <summary>Round broadleaf tree. 0-2 town greens, 3-5 darker forest trees, 6 = the choppable tree.</summary>
+        /// <summary>Round broadleaf tree. 0-2 town greens, 3-5 darker forest trees.</summary>
         static PixelCanvas TownTree(int v)
         {
             bool forest = v >= 3 && v <= 5;
@@ -24,12 +24,6 @@ namespace DotRPG
             ThickLine(c, cx - 1f, cy + ry * 0.62f, cx - 9f, cy + ry * 0.35f, 2.2f, 1.4f, TBark[1]);
             ThickLine(c, cx + 1f, cy + ry * 0.66f, cx + 10f, cy + ry * 0.42f, 2.2f, 1.4f, TBark[0]);
             Canopy(c, cx, cy, rx, ry, leaf, 100 + v * 17, forest ? 16 : 14);
-            if (v == 6)
-            {
-                // The choppable tree: an axe notch on the trunk.
-                c.Rect((int)cx - 2, baseY - 12, 4, 3, TWood[4]);
-                c.HLine((int)cx - 2, (int)cx + 1, baseY - 12, TWood[5]);
-            }
             c.Outline(TOutlineLeaf);
             return c.WithPivot(cx, 6f);
         }

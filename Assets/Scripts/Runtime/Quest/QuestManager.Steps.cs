@@ -178,10 +178,6 @@ namespace DotRPG
             if (string.IsNullOrEmpty(text) || text.IndexOf('{') < 0) return text;
             return text
                 .Replace("{name}", Journal.PlayerName)
-                .Replace("{wood_required}", config.requiredWood.ToString())
-                .Replace("{stone_required}", config.requiredStone.ToString())
-                .Replace("{wood_left}", WoodStillNeeded.ToString())
-                .Replace("{stone_left}", StoneStillNeeded.ToString())
                 .Replace("{attack_key}", Game.Input.GetBindingLabel(GameAction.Attack))
                 .Replace("{interact_key}", Game.Input.GetBindingLabel(GameAction.Interact))
                 .Replace("{item_key}", Game.Input.GetBindingLabel(GameAction.UseItem))

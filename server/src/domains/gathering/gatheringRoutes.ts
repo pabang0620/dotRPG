@@ -4,7 +4,7 @@ import { validate } from '../../middleware/validationMiddleware';
 import { charKey } from '../economy/economyRouting';
 import { charParams } from '../economy/economyValidation';
 import * as controller from './gatheringController';
-import { chestBody, deliveryBody, gatherBody, nodesParams } from './gatheringValidation';
+import { chestBody, gatherBody, nodesParams } from './gatheringValidation';
 
 export function createGatheringRouter(): Router {
   const r = Router();
@@ -25,12 +25,6 @@ export function createGatheringRouter(): Router {
     rateLimit({ name: 'chest', limit: (c) => c.rate.slowPerSec, windowMs: 1000, key: charKey }),
     validate({ params: charParams, body: chestBody }),
     controller.openChest,
-  );
-  r.post(
-    '/characters/:uuid/deliveries',
-    rateLimit({ name: 'delivery', limit: (c) => c.rate.slowPerSec, windowMs: 1000, key: charKey }),
-    validate({ params: charParams, body: deliveryBody }),
-    controller.deliver,
   );
   return r;
 }

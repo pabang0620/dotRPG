@@ -38,7 +38,7 @@ namespace DotRPG
         }
         public static string Resolve(string key)
         {
-            if (key.StartsWith("town_tree_") || key == "town_chop") return Prefix + "broadleaf";
+            if (key.StartsWith("town_tree_")) return Prefix + "broadleaf";
             if (key.StartsWith("town_fruit_")) return Prefix + "fruit";
             if (key.StartsWith("town_pine_")) return Prefix + "pine";
             if (key.StartsWith("town_bush_")) return Prefix + "bush";

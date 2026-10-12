@@ -80,14 +80,6 @@ const gameconfigSchema = z.looseObject({
   usableItems: z.array(z.looseObject({ id: z.string().min(1), kind: z.string() })),
   storageCapacity: z.number().int().positive(),
   chestReward: z.looseObject({ itemKey: z.string().min(1), count: z.number().int().positive() }),
-  deliverySites: z.record(
-    z.string(),
-    z.looseObject({
-      questId: z.string().min(1),
-      requiresQuestClaimed: z.array(z.string()),
-      items: z.array(z.looseObject({ itemKey: z.string().min(1), required: z.number().int().positive() })),
-    }),
-  ),
 });
 
 const equipmentSchema = z.looseObject({
@@ -514,9 +506,6 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
   for (const [kind, n] of Object.entries(config.nodeKinds)) needItem(n.item, `gameconfig.nodeKinds.${kind}`);
   for (const u of config.usableItems) needItem(u.id, 'gameconfig.usableItems');
   needItem(config.chestReward.itemKey, 'gameconfig.chestReward');
-  for (const site of Object.values(config.deliverySites)) {
-    for (const i of site.items) needItem(i.itemKey, 'gameconfig.deliverySites');
-  }
 
   const questMap = uniqueBy(quests.quests, (q) => q.id, '퀘스트');
   for (const q of questMap.values()) {

@@ -92,22 +92,6 @@ namespace DotRPG
         const float HuntNear = 4f, HuntFarWait = 3f;
         float farWaitUntil;
 
-        void DoGather(PlayerController p, Goal g)
-        {
-            ResourceNode best = null;
-            float bestD = float.MaxValue;
-            var kind = g.id == ItemIds.Stone ? ResourceKind.Rock : ResourceKind.Tree;
-            foreach (var n in ResourceNode.Active)
-            {
-                if (n == null || !n.Available || n.Kind != kind) continue;
-                float d = Vector2.Distance(n.transform.position, p.Position);
-                if (d < bestD) { bestD = d; best = n; }
-            }
-            if (best == null) { status = g.label + " · 자원이 다시 자라기를 기다리는 중"; Roam(p); return; }
-            Vector2 pos = best.transform.position;
-            Fight(p, pos, pos + new Vector2(0f, 0.4f), bestD);
-        }
-
         void Fight(PlayerController p, Vector2 pos, Vector2 center, float dist)
         {
             input.next.aim = (center - p.Center).normalized;

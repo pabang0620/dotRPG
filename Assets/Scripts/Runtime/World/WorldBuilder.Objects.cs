@@ -17,9 +17,10 @@ namespace DotRPG
             var foot = new Vector2(x + 0.5f, y + 0.2f);
             switch (c)
             {
-                case 'T': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config); break;
-                case 'O': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config, true); break;
-                case 'R': ResourceNode.Create(ResourceKind.Rock, foot, objectsRoot, config); break;
+                // [2026-10-12] gathering removed: trees and rocks are scenery.
+                case 'T': StaticProp("Tree", "tree", foot, new Vector2(0.7f, 0.35f), new Vector2(0f, 0.15f)); break;
+                case 'O': StaticProp("Tree", "tree_fruit", foot, new Vector2(0.7f, 0.35f), new Vector2(0f, 0.15f)); break;
+                case 'R': StaticProp("Rock", "rock", foot, new Vector2(0.8f, 0.45f), new Vector2(0f, 0.25f)); break;
                 case 'S': StaticProp("Stump", "stump", foot, new Vector2(0.8f, 0.5f), new Vector2(0f, 0.2f)); break;
                 case 'B': StaticProp("Bush", "bush", foot, new Vector2(0.9f, 0.6f), new Vector2(0f, 0.3f)); break;
                 case 'F': StaticProp("Fence", $"fence_{FenceMask(x, y)}", new Vector2(x + 0.5f, y + 0.05f), new Vector2(1f, 0.5f), new Vector2(0f, 0.3f)); break;

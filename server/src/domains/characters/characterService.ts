@@ -73,19 +73,11 @@ async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.Char
       location: i.location,
       slot: i.slot,
     })),
-    // 3단계: 서버가 정본인 상태(퀘스트 청구, 상자, 강화 천장, 납품). required는 서버 데이터
+    // 3단계: 서버가 정본인 상태(퀘스트 청구, 상자, 강화 천장)
     bonus_max_health: econ.bonusMaxHealth,
     claimed_quests: econ.claimedQuests,
     opened_chests: econ.openedChests,
     enhance_pity: econ.pity,
-    deliveries: Object.entries(eco.config.deliverySites).map(([siteId, site]) => ({
-      site_id: siteId,
-      items: site.items.map((i) => ({
-        item_key: i.itemKey,
-        delivered: econ.deliveries.find((d) => d.site_id === siteId && d.item_key === i.itemKey)?.delivered ?? 0,
-        required: i.required,
-      })),
-    })),
     storage_capacity: eco.config.storageCapacity,
     // 4단계: 서버가 레벨·착용 장비로 계산한 전투력(패시브 제외라 캐릭터 카드 값과 다를 수 있다)
     power_estimate: computePower(c.class, c.level, await listWornKeys(db, c.id), econ.bonusMaxHealth),

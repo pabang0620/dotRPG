@@ -112,24 +112,19 @@ namespace DotRPG.EditorTools
                     bool chest = false, handled = false;
                     if (canyon) // SpawnCanyonHdObject
                     {
-                        if (ch == 'R') { kind = "rock"; handled = true; }
-                        else if (ch == '$') { chest = true; handled = true; }
-                        else if (ch == 'T' || ch == 'O' || ch == 't') handled = true;
+                        if (ch == '$') { chest = true; handled = true; }
+                        else if (ch == 'T' || ch == 'O' || ch == 't' || ch == 'R') handled = true; // scenery
                     }
                     if (!handled && winter && ch == 'R') handled = true; // SpawnWinterHdObject: a stone prop, not a node
                     if (!handled && hd) // SpawnTownObject
                     {
-                        if (ch == 't') { kind = "tree"; handled = true; }
-                        else if (ch == 'R') { kind = "rock"; handled = true; }
-                        else if (ch == 'C') { kind = "crop"; handled = true; }
+                        if (ch == 'C') { kind = "crop"; handled = true; }
                         else if (ch == '$') { chest = true; handled = true; }
-                        else if (ch == 'T' || ch == 'O') handled = true;
+                        else if (ch == 'T' || ch == 'O' || ch == 't' || ch == 'R') handled = true; // scenery
                     }
                     if (!handled) // base switch
                     {
-                        if (ch == 'T' || ch == 'O') kind = "tree";
-                        else if (ch == 'R') kind = "rock";
-                        else if (ch == 'C') kind = "crop";
+                        if (ch == 'C') kind = "crop";
                         else if (ch == '$') chest = true;
                         else if (ch == 'k') c.spawnPoints++;
                     }

@@ -187,13 +187,6 @@ namespace DotRPG
                     Noise(b, 0f, 0.04f, 0.3f, 0.7f, 17);
                     return b;
                 }
-                case "tree_fall":
-                {
-                    var b = Buffer(0.45f);
-                    Noise(b, 0f, 0.45f, 0.4f, 0.12f, 19);
-                    Tone(b, 0.05f, 0.35f, 160f, 60f, Wave.Triangle, 0.35f);
-                    return b;
-                }
                 case "rock_break":
                 {
                     var b = Buffer(0.3f);
@@ -233,16 +226,6 @@ namespace DotRPG
                     return Arpeggio(new[] { 660f, 990f }, 0.06f, Wave.Square, 0.16f);
                 case "cancel":
                     return Arpeggio(new[] { 440f, 330f }, 0.06f, Wave.Square, 0.14f);
-                case "deliver":
-                    return Arpeggio(new[] { 392f, 523f, 659f }, 0.07f, Wave.Square, 0.16f);
-                case "hammer":
-                {
-                    var b = Buffer(0.12f);
-                    Tone(b, 0f, 0.08f, 1800f, 1500f, Wave.Triangle, 0.2f);
-                    Tone(b, 0f, 0.1f, 180f, 120f, Wave.Square, 0.18f);
-                    Noise(b, 0f, 0.03f, 0.3f, 0.8f, 31);
-                    return b;
-                }
                 case "build_complete":
                     return Arpeggio(new[] { 523f, 659f, 784f, 1047f, 784f, 1047f }, 0.09f, Wave.Square, 0.18f, 0.3f);
                 // [H3] Enhancement, dungeon door / clear / rank / cards.

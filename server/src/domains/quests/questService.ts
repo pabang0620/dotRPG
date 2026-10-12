@@ -6,7 +6,6 @@ import { clearCounts } from '../dungeons/dungeonRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import { getGrant } from '../characters/careerGrantRepository';
-import { getDeliveries } from '../gathering/gatheringRepository';
 import * as repo from './questRepository';
 import type { ClaimBody } from './questValidation';
 
@@ -54,13 +53,6 @@ function cumulative(
   return out;
 }
 
-async function siteComplete(ctx: EconCtx, eco: EconomyData, siteId: string): Promise<boolean> {
-  const site = eco.config.deliverySites[siteId];
-  if (!site) return false;
-  const done = await getDeliveries(ctx.client, ctx.char.id, siteId);
-  return site.items.every((i) => (done.get(i.itemKey) ?? 0) >= i.required);
-}
-
 async function processClaim(ctx: EconCtx, questId: string) {
   const eco = getGameData().economy;
   const rule = eco.quests.get(questId);
@@ -106,11 +98,7 @@ async function processClaim(ctx: EconCtx, questId: string) {
       if (!(await getGrant(ctx.client, ctx.char.id))) throw notDone({ type: 'flag', flag: f });
       continue;
     }
-    // "<납품처>_built" 플래그는 납품 기록(site_deliveries)으로 직접 확인한다. 그 밖의 플래그는 검증할 수 없다
-    const site = f.endsWith('_built') ? f.slice(0, -'_built'.length) : null;
-    if (site && eco.config.deliverySites[site] && !(await siteComplete(ctx, eco, site))) {
-      throw notDone({ type: 'flag', flag: f });
-    }
+    // 그 밖의 플래그(workshop_built 등)는 서버가 검증할 수 없다(2026-10-12 납품 폐지)
   }
 
   const dungeonNeeds = cumulative(eco, claimed, rule, (q) => q.objectives.dungeonNeeds.map((d) => [d.target, d.count]));

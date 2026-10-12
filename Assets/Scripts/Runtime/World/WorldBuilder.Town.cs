@@ -190,8 +190,8 @@ namespace DotRPG
                 case 'O': HdTree($"town_fruit_{rng.Next(0, 2)}", foot + Jitter(0.2f), 0.6f); return true;
                 case 'Y': HdTree($"town_pine_{rng.Next(0, 2)}", foot + Jitter(0.3f), 0.5f); return true;
                 case 'q': HdTree($"town_dead_{rng.Next(0, 2)}", foot, 0.5f); return true;
-                case 't': ResourceNode.Create(ResourceKind.Tree, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village || HuntingGrounds.Get(MapId) != null); return true;
-                case 'R': ResourceNode.Create(ResourceKind.Rock, foot, objectsRoot, config, false, true, MapId == MapRegistry.Village || HuntingGrounds.Get(MapId) != null); return true;
+                case 't': HdTree(ForestMap ? $"town_tree_{3 + rng.Next(0, 3)}" : $"town_tree_{rng.Next(0, 3)}", foot + Jitter(0.3f), 0.7f); return true; // [2026-10-12] was a choppable tree
+                case 'R': StaticProp("Rock", $"town_rock_{rng.Next(0, 2)}", foot, new Vector2(0.9f, 0.45f), new Vector2(0f, 0.25f)); return true; // [2026-10-12] gathering removed: rocks are scenery
                 case 'S': StaticProp("Stump", "town_stump", foot, new Vector2(0.8f, 0.45f), new Vector2(0f, 0.2f)); return true;
                 case 'B': StaticProp("Bush", $"town_bush_{rng.Next(0, 3)}", foot, new Vector2(0.95f, 0.45f), new Vector2(0f, 0.22f)); return true;
                 case 'r': Decoration($"town_pebbles_{rng.Next(0, 2)}", center + new Vector2(0f, -0.25f)); return true;
