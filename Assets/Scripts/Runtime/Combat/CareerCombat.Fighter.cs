@@ -22,6 +22,7 @@ namespace DotRPG
                 case "iaido": yield return Iaido(c); break;
                 case "execute": yield return Execute(c); break;
                 case "swordrain": yield return SwordRain(c); break;
+                case "xslash": yield return XSlash(c); break;
                 case "stance": Stance(c); break;
             }
         }
@@ -254,6 +255,39 @@ namespace DotRPG
             if (!Live(c)) yield break;
             Pose(.3f, 2);
             yield return FallingSword(c, center, Mathf.RoundToInt(c.n.damage * 3.75f), c.n.radius, 0f, true);
+        }
+
+        /// <summary>
+        /// 천검귀일 (v2, 2026-10-12): a gigantic X slash around the fighter. Every monster in the radius (bosses too) is
+        /// staggered at once for 1.3 s; the X lands 0.9 s in for one big hit.
+        /// </summary>
+        IEnumerator XSlash(Run c)
+        {
+            const float Stagger = 1.3f, HitAt = .9f, Mul = 10f, VisualWidth = 12.5f;
+            Vector2 at = owner.Center;
+            Pose(HitAt + .2f, 2);
+            if (c.authority)
+                foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Stagger); StunStars.Attach(e); }
+            // The slash: generated X (f3_xslash) about 7 bodies wide; else two crossing code-drawn arcs.
+            if (VfxLibrary.Has("f3_xslash"))
+                CareerFx.Gen("f3_xslash", null, at, Vector2.zero, VisualWidth, 0f, 24f, VfxLayer.Top, false, null, Stagger, false, 10f / Stagger);
+            else
+            {
+                CareerFx.Clip("f_arc", at, CareerFx.Tilt(Vector2.right, 45f), VisualWidth / 2.5f, 20f).FlipY(false);
+                CareerFx.Clip("f_arc", at, CareerFx.Tilt(Vector2.right, -45f), VisualWidth / 2.5f, 20f).FlipY(true);
+            }
+            SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .7f), Stagger, SkillFx.GroundOrder + 10)
+                .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
+            Sound("c_slash");
+            yield return new WaitForSeconds(HitAt);
+            if (!Live(c)) yield break;
+            Sound("c_heavy");
+            Feel(2, Vector2.down);
+            if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);
+            SkillVisuals.Flash(at, new Color(.75f, .92f, 1f, .9f), c.n.radius * 2.2f, .2f);
+            foreach (var e in Enemies(at, c.n.radius))
+                if (Strike(c, e, Mathf.RoundToInt(c.n.damage * Mul), at, 10f, 2, "c_heavy"))
+                    CareerFx.Clip("f_x", e.Center, Vector2.right, 1.6f, 28f);
         }
 
         /// <summary>A sword of the rain that only shows: smaller, lands, sparks and fades.</summary>

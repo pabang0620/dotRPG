@@ -272,7 +272,7 @@ namespace DotRPG
             owner.GetComponent<CharacterAnimator>()?.SetCareerFacing(FacingExtensions.FromVector(dir, owner.Facing));
             if (CareerCatalog.Base(s.career) == CharacterClass.Warrior)
             {
-                owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(s.cast + .12f, s.effect == "execute" || s.effect == "swordrain" || s.effect == "aegis" ? 2 : 0, 0, WarriorAttackMotion.Contact);
+                owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(s.cast + .12f, s.effect == "execute" || s.effect == "swordrain" || s.effect == "xslash" || s.effect == "aegis" ? 2 : 0, 0, WarriorAttackMotion.Contact);
                 if (s.cast >= .15f) SkillVisuals.Flash(owner.Center + dir * .3f, color, 1f, s.cast);
             }
             else

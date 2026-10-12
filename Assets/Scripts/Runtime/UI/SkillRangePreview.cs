@@ -105,6 +105,7 @@ namespace DotRPG
                 case "break": Line(.4f, range, r); label.Append(LineText(range, r)); break;
                 case "iaido": Line(.3f, range, r); label.Append(LineText(range, r)); break;
                 case "execute": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append($"사거리 {range:0.#}m · 착지 반경 {r:0.#}m"); break;
+                case "xslash": Self(r); label.Append($"반경 {r:0.#}m · 즉시 경직 1.3초 · 0.9초 뒤 피해"); break;
                 case "swordrain": Self(range + 1f, .45f); Self(r); label.Append($"낙검 반경 {range + 1f:0.#}m · 거대한 검 반경 {r:0.#}m"); break;
                 case "stance": for (int k = -1; k <= 1; k++) Line(.4f, range, r, k == 0 ? 1f : .5f, k * 18f); label.Append($"기본 공격마다 · {LineText(range, r)} (3타 3줄)"); break;
                 // Guardian

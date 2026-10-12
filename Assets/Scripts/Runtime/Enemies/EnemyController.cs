@@ -74,6 +74,15 @@ namespace DotRPG
             desiredVelocity = Vector2.zero;
         }
 
+        /// <summary>[FIGHTER] Stagger (경직): stops anything, bosses included, for the full time (no crowd-control reduction).</summary>
+        public void Stagger(float seconds)
+        {
+            if (state == State.Dead || seconds <= 0f || Puppet) return;
+            stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
+            if (state == State.Windup) EnterState(State.Recover, seconds);
+            desiredVelocity = Vector2.zero;
+        }
+
         /// <summary>Stops the enemy completely (Frost Nova). The body turns icy blue.</summary>
         public void Freeze(float seconds)
         {

@@ -298,7 +298,7 @@ namespace DotRPG
                 case "shieldthrow": return 0.14f;
                 case "rush": return 0.25f;
                 case "execute": return 0.32f;
-                case "swordrain": case "aegis": case "cataclysm": case "dawn": return 0.5f;
+                case "swordrain": case "xslash": case "aegis": case "cataclysm": case "dawn": return 0.5f;
                 default: return 0.15f;
             }
         }
