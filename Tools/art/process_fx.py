@@ -32,6 +32,8 @@ TARGET = {
     "m2_charge_orb": (128, 128, 14), "m2_nebula_burst": (256, 256, 18), "m2_blink": (128, 128, 18),
     "m2_rift": (256, 160, 10), "m2_meteor_fire": (128, 192, 1), "m2_meteor_ice": (128, 192, 1),
     "m2_meteor_storm": (128, 192, 1), "m2_cataclysm_collapse": (384, 384, 16),
+    # 중력 균열 v3 (2026-10-12): floating gravity sphere, inward spiral, implosion.
+    "m3_rift_core": (256, 256, 12), "m3_rift_inflow": (320, 320, 14), "m3_rift_implode": (384, 384, 18),
     # 3.3 bishop, 3.4 fighter, 3.5 guardian
     "b2_feather": (96, 48, 1), "b2_light_spear": (256, 48, 1), "b2_bless_link": (256, 48, 16),
     "b2_dawn_pillar": (128, 384, 14), "f2_break_crescent": (192, 192, 18), "f2_stance_wave": (160, 160, 20),

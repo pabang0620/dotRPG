@@ -229,5 +229,32 @@
   "frames": 1,
   "note": "single chain, 5 links, teal inner glow; Codex RGB 1254x1254 opaque magenta",
   "mode": "grid"
+ },
+ {
+  "id": "m3_rift_core",
+  "file": "m3_rift_core.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "4x2 clean gutters (min ~40px); Codex RGB 1254x1254 opaque black; dark core, violet rim, ring"
+ },
+ {
+  "id": "m3_rift_inflow",
+  "file": "m3_rift_inflow.png",
+  "background": "black",
+  "cols": 4,
+  "rows": 2,
+  "frames": 8,
+  "note": "4x2 clean gutters (min ~30px); Codex RGB 1254x1254 opaque black; inward spiral streaks and rocks"
+ },
+ {
+  "id": "m3_rift_implode",
+  "file": "m3_rift_implode.png",
+  "background": "black",
+  "cols": 5,
+  "rows": 2,
+  "frames": 10,
+  "note": "5x2, narrow gutters (>=20px per row, frames 1,5 hug cell edge); Codex RGB 1254x1254 opaque black; collapse, white point, shockwave"
  }
 ]

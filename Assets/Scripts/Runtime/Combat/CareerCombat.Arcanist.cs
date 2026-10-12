@@ -254,7 +254,19 @@ namespace DotRPG
             Target(c.dir, c.n.range, out Vector2 point);
             bool hole = SkillFx.HasImage("fxi_blackhole");
             float hk = c.n.radius * .9f;
-            if (VfxLibrary.Has("m2_rift"))
+            bool v3 = VfxLibrary.Has("m3_rift_core") && VfxLibrary.Has("m3_rift_inflow");
+            if (v3)
+            {
+                // [VFX v3] A floating gravity sphere over the spot, an inward spiral of energy and rocks covering the whole
+                // pull area under it, and stars streaming in; it implodes at the end (m3_rift_implode).
+                hole = false;
+                float reach = c.n.radius * RiftPullReach;
+                CareerFx.Gen("m3_rift_inflow", null, point, Vector2.zero, reach * 2.1f, 0f, 14f, VfxLayer.Ground, false, new Color(1f, 1f, 1f, .9f), c.s.duration + .2f, true)?.FadeOut(.3f);
+                CareerFx.Gen("m3_rift_core", null, point + Vector2.up * .9f, Vector2.zero, c.n.radius * 1.15f, 0f, 12f, VfxLayer.Top, false, null, c.s.duration + .2f, true)?.FadeOut(.2f);
+                SkillFx.Spawn("fx_glow", point, new Color(.45f, .15f, .85f, .45f), c.s.duration + .2f, SkillFx.GroundOrder + 8).Additive().Scale(new Vector2(reach * .6f, reach * .42f), new Vector2(reach * 1.7f, reach * 1.2f)).Fade(FxFade.InOut);
+                StartCoroutine(StarsInto(point, reach, c.s.duration));
+            }
+            else if (VfxLibrary.Has("m2_rift"))
             {
                 // [VFX] A torn rift in the floor (generated, looping, no spinning disc) with stars falling into it.
                 hole = false;
@@ -304,7 +316,13 @@ namespace DotRPG
             }
             yield return new WaitForSeconds(CutGap);
             if (!Live(c)) yield break;
-            CareerFx.Clip("m_collapse", point, Vector2.zero, c.n.radius / 1.4f, 26f, VfxLayer.Top, false);
+            if (v3 && VfxLibrary.Has("m3_rift_implode"))
+            {
+                CareerFx.Gen("m3_rift_implode", null, point + Vector2.up * .6f, Vector2.zero, c.n.radius * 2.6f, 0f, 18f, VfxLayer.Top, false);
+                SkillVisuals.Flash(point, new Color(.8f, .5f, 1f, .9f), c.n.radius * 2f, .2f);
+                if (owner.IsLocal) Game.Camera?.Shake(.25f, .3f);
+            }
+            else CareerFx.Clip("m_collapse", point, Vector2.zero, c.n.radius / 1.4f, 26f, VfxLayer.Top, false);
             if (hole) SkillFx.Spawn(SkillFx.Pick("fxi_blackhole", "fx_glow"), point, Color.white, .3f, SkillFx.TopOrder + 2).Spin(-720f).Scale(new Vector2(hk, hk * .72f), new Vector2(.05f, .04f)).Fade(FxFade.None);
             Sound("c_heavy");
             foreach (var e in Enemies(point, c.n.radius)) Strike(c, e, c.n.damage * 2, point, 10f, 2, "c_arcane");
