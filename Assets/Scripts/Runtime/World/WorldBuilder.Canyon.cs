@@ -57,8 +57,7 @@ namespace DotRPG
                 case 't': Decoration("deco_tuft", center); return true;
                 case 'F': StaticProp("Railing", $"town_fence_{FenceMask(x, y)}", new Vector2(x + 0.5f, y + 0.05f), new Vector2(1f, 0.45f), new Vector2(0f, 0.28f)); return true;
                 case 'b': StaticProp("Barrel", "town_barrel", foot, new Vector2(0.7f, 0.45f), new Vector2(0f, 0.22f)); return true;
-                case 'x': StaticProp("Box", "town_crate", foot, new Vector2(0.85f, 0.5f), new Vector2(0f, 0.25f)); return true;
-                case 'c': StaticProp("CarrotCrate", "town_ccrate", foot, new Vector2(0.85f, 0.5f), new Vector2(0f, 0.25f)); return true;
+                case 'x': case 'c': return true; // [ART 2026-10-12] mushrooms and wooden crates removed from every map (they did not fit)
                 case 'e': StaticProp("Bench", "town_bench", new Vector2(x + 1f, y + 0.1f), new Vector2(1.8f, 0.35f), new Vector2(0f, 0.22f)); return true;
                 case 'o': StaticProp("Well", "town_well", new Vector2(x + 1f, y + 0.1f), new Vector2(1.7f, 0.9f), new Vector2(0f, 0.5f)); PointsOfInterest.Add(center); return true;
                 case '$': TreasureChest.Create($"{MapId}:{x}:{y}", foot, objectsRoot, true); return true;

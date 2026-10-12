@@ -3,23 +3,21 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// A sword cut that splits the air: a bright blade tip runs from one point to another and the line it leaves opens
-    /// into a slit (two hair-thin edges with light pouring out between them). <see cref="Split"/> sets how wide the slit
-    /// is, <see cref="Offset"/> moves it (trembling), <see cref="Explode"/> blows the two edges apart and fades it out.
+    /// A laser-like sword cut: a bright blade tip with a swoosh tail runs from one point to another and leaves a glowing
+    /// line (white core, blue glow) that stays as an afterimage. <see cref="Charge"/> makes the afterimage swell and
+    /// pulse brighter (before it bursts), <see cref="Offset"/> moves it (trembling), <see cref="Kill"/> removes it.
     /// </summary>
     public class StrokeFx : MonoBehaviour
     {
-        const float ExplodeTime = .3f;
-
         LineRenderer inner, edgeA, edgeB, swoosh;
         SpriteRenderer tip;
         Vector2 from, to, normal;
         Color color;
-        float draw, age, width, explodeAt = -1f;
+        float draw, age, width;
 
         public Vector2 Offset;
-        /// <summary>Slit width in world units (0 = a closed line).</summary>
-        public float Split;
+        /// <summary>0..1: the afterimage charges up (thicker, brighter, pulsing faster).</summary>
+        public float Charge;
 
         public static StrokeFx Spawn(Vector2 from, Vector2 to, Color color, float width, float draw, int order)
         {
@@ -52,8 +50,6 @@ namespace DotRPG
             return fx;
         }
 
-        /// <summary>The slit blows open: the edges fly apart and everything fades over 0.3 s.</summary>
-        public void Explode() { if (explodeAt < 0f) explodeAt = age; }
 
         /// <summary>Removes it at once (the skill was interrupted).</summary>
         public void Kill() => Destroy(gameObject);
@@ -61,7 +57,6 @@ namespace DotRPG
         void Update()
         {
             age += Time.deltaTime;
-            if (explodeAt >= 0f && age - explodeAt >= ExplodeTime) { Destroy(gameObject); return; }
             Refresh();
         }
 
@@ -71,24 +66,20 @@ namespace DotRPG
             float t = Mathf.Clamp01(age / draw);
             float k = 1f - (1f - t) * (1f - t) * (1f - t);
             Vector2 a = from + Offset, b = Vector2.Lerp(from, to, k) + Offset;
-            float split = Split, fade = 1f, flare = 1f;
-            if (explodeAt >= 0f)
-            {
-                float e = (age - explodeAt) / ExplodeTime;
-                split += e * e * 1.6f;          // the halves fly apart
-                fade = 1f - e;
-                flare = 1f + 2f * (1f - e);     // light bursts out of the opening
-            }
-            Vector2 half = normal * (split * .5f);
+            // Charging: up to twice as thick, pulsing faster and brighter as the burst nears.
+            float pulse = Charge > 0f ? .5f + .5f * Mathf.Sin(age * Mathf.Lerp(10f, 40f, Charge)) : 0f;
+            float swell = 1f + Charge * (.6f + .4f * pulse), fade = 1f;
+            Vector2 half = Vector2.zero;
             edgeA.SetPosition(0, a + half); edgeA.SetPosition(1, b + half);
             edgeB.SetPosition(0, a - half); edgeB.SetPosition(1, b - half);
             inner.SetPosition(0, a); inner.SetPosition(1, b);
-            // Vivid from the first frame: a solid white core with a strong blue glow (thin, not faint).
-            edgeA.widthMultiplier = edgeB.widthMultiplier = width * .4f;
-            inner.widthMultiplier = width + split * 1.2f;
+            // Vivid from the first frame: a solid white core with a strong blue glow.
+            edgeA.widthMultiplier = edgeB.widthMultiplier = width * .4f * swell;
+            inner.widthMultiplier = width * swell * (1f + Charge * .8f);
             var edge = new Color(1f, 1f, 1f, fade);
             edgeA.startColor = edgeA.endColor = edgeB.startColor = edgeB.endColor = edge;
-            inner.startColor = inner.endColor = new Color(color.r, color.g, color.b, Mathf.Clamp01(color.a * flare) * fade);
+            var glowColor = Color.Lerp(color, new Color(.85f, .97f, 1f, 1f), Charge * pulse * .7f);
+            inner.startColor = inner.endColor = new Color(glowColor.r, glowColor.g, glowColor.b, color.a * fade);
             // The blade tip and its swoosh: bright while cutting, gone shortly after the cut is complete.
             float tipA = t < 1f ? 1f : Mathf.Max(0f, 1f - (age - draw) / .15f);
             Vector2 dir = (to - from).normalized;

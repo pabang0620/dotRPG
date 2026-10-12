@@ -33,15 +33,6 @@ TARGET = {
     "m2_rift": (256, 160, 10), "m2_meteor_fire": (128, 192, 1), "m2_meteor_ice": (128, 192, 1),
     "m2_meteor_storm": (128, 192, 1), "m2_cataclysm_collapse": (384, 384, 16),
     # 중력 균열 v3 (2026-10-12): floating gravity sphere, inward spiral, implosion.
-    "f3_xslash": (384, 384, 8),  # 파이터 각성 X자 베기 (2026-10-12)
-    "f3_cross_draw": (384, 384, 8),  # 파이터 각성 십자 긋기 (2026-10-12)
-    "f3_cross_hold": (384, 384, 12),  # 파이터 각성 십자 흔들림
-    "f3_cross_burst": (384, 384, 12),  # 파이터 각성 십자 폭발
-    "f3_cross_draw2": (384, 384, 8),  # 십자 긋기 v2(얇게, 슥슥)
-    "f3_cross_burst2": (384, 384, 12),  # 십자 폭발 v2
-    "f3_glass_crack": (384, 384, 8),  # 천검귀일 유리 금(2026-10-12)
-    "f3_glass_crack2": (384, 384, 8),  # 천검귀일 얇은 선 유리 금 v2
-    "f3_glass_shatter": (384, 384, 12),  # 천검귀일 유리 깨짐
     "f3_glass_shards": (256, 256, 8),  # 천검귀일 유리 조각 스프라이트
     "m3_rift_core": (256, 256, 12), "m3_rift_inflow": (320, 320, 14), "m3_rift_implode": (384, 384, 18),
     # 3.3 bishop, 3.4 fighter, 3.5 guardian

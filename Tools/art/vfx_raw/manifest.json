@@ -258,95 +258,6 @@
   "note": "5x2, narrow gutters (>=20px per row, frames 1,5 hug cell edge); Codex RGB 1254x1254 opaque black; collapse, white point, shockwave"
  },
  {
-  "id": "f3_xslash",
-  "file": "f3_xslash.png",
-  "background": "black",
-  "cols": 5,
-  "rows": 2,
-  "frames": 10,
-  "note": "Codex (Flow browser busy) RGBA 1983x793, 5x2 wide-aspect cells; frame 6 burst+ring, frames 7-10 sparks; columns have no clean gutters (frames 2-3, 4-5 close, faint dust between), so grid mode; fading dim embers in gutters",
-  "mode": "grid"
- },
- {
-  "id": "f3_cross_draw",
-  "file": "f3_cross_draw.png",
-  "background": "black",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Codex (Flow browser busy) RGB 1774x887; thin + cross, frames1-4 vertical cut, 5-8 horizontal cut; clean gutters (>=100px)"
- },
- {
-  "id": "f3_cross_hold",
-  "file": "f3_cross_hold.png",
-  "background": "black",
-  "cols": 4,
-  "rows": 1,
-  "frames": 4,
-  "note": "Codex RGBA 2172x724 (check alpha, edge columns have faint 1px specks); complete thin + cross pulsing with sparks; clean gutters"
- },
- {
-  "id": "f3_cross_burst",
-  "file": "f3_cross_burst.png",
-  "background": "black",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Codex RGB 1774x887; white flash then blue burst and embers; clean gutters"
- },
- {
-  "id": "f3_cross_draw2",
-  "file": "f3_cross_draw_v2.png",
-  "background": "black",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Flow Nano Banana 2 (converted from JPEG) RGB 1024x1024; cells are 256x256 in the TOP HALF only (4x2 = rows 1-2), bottom half empty black; Flow watermark possible at bottom-right; hairline-thin: frames1-4 vertical stroke top-to-bottom with white tip dot, 5-8 horizontal stroke left-to-right, 8 = thin +; cell content spans ~80% of cell height",
-  "mode": "grid",
-  "crop": [
-   0,
-   0,
-   1024,
-   512
-  ]
- },
- {
-  "id": "f3_cross_burst2",
-  "file": "f3_cross_burst_v2.png",
-  "background": "black",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Flow Nano Banana 2 (converted from JPEG) RGB 1024x1024; cells are 256x256 in the TOP HALF only (4x2 = rows 1-2), bottom half empty black; Flow watermark possible at bottom-right; 1-2 white flash of thin + (1 is moderately thick), 3-5 line streaks+fragments burst, 6-8 fade (7-8 nearly invisible)",
-  "mode": "grid",
-  "crop": [
-   0,
-   0,
-   1024,
-   512
-  ]
- },
- {
-  "id": "f3_glass_crack",
-  "file": "f3_glass_crack.png",
-  "background": "magenta",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); cells ~344x384 (NOT square), plus ~333x348 centered in each cell (spans ~97% of cell width, gutter ~11px); frames 1-8 progressive cracks along equal-armed plus; light sky-blue/white with some lavender tint in early frames; Flow watermark sparkle possible at bottom-right",
-  "mode": "grid"
- },
- {
-  "id": "f3_glass_shatter",
-  "file": "f3_glass_shatter.png",
-  "background": "magenta",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); same grid as f3_glass_crack, cells ~344x384; frames 1-4 plus bursts into big shards (1 still plus-shaped glow), 5-8 fading sparkles (7-8 nearly empty); blue-violet glow haze around shards blends with magenta, needs g<170 style keying or haze trim; Flow watermark sparkle at bottom-right of cell 8",
-  "mode": "grid"
- },
- {
   "id": "f3_glass_shards",
   "file": "f3_glass_shards.png",
   "background": "magenta",
@@ -354,16 +265,6 @@
   "rows": 2,
   "frames": 8,
   "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); 8 distinct static shard sprites, cells ~344x384, each shard 60-80% of cell, not exactly centered (bbox x40-303/387-645/738-981/1081-1326 y35-348 row1; row2 y415-737); magenta bg has slight darker vignette; watermark sparkle at bottom-right of cell 8",
-  "mode": "grid"
- },
- {
-  "id": "f3_glass_crack2",
-  "file": "f3_glass_crack2.png",
-  "background": "magenta",
-  "cols": 4,
-  "rows": 2,
-  "frames": 8,
-  "note": "Flow Nano Banana 2.1 (converted from JPEG) RGB 1376x768 (16:9); cells 344x384 (not square); thin plus lines with progressive angular cracks (frame 1 few, frame 8 full), pale sky-blue/white, ~10% non-magenta pixels; ref f3_glass_shards.png attached; replaces f3_glass_crack (filled plus block)",
   "mode": "grid"
  }
 ]

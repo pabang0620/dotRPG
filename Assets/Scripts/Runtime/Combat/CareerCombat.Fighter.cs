@@ -257,13 +257,10 @@ namespace DotRPG
             yield return FallingSword(c, center, Mathf.RoundToInt(c.n.damage * 3.75f), c.n.radius, 0f, true);
         }
 
-        /// <summary>How much of a glass sheet cell the cracked cross fills (measured after processing).</summary>
-        const float CrackFill = .87f;
-
         /// <summary>
-        /// 천검귀일 (v6, 2026-10-12): a cross (+) that breaks space like glass. A horizontal cut, then a vertical one
-        /// (1.3 s); glass cracks spread along the cross while it trembles (1.4 s), the cut lines tear (0.3 s) and the
-        /// cross shatters into glass shards for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
+        /// 천검귀일 (v7, 2026-10-12, Docs/PLAN_SKILL_VFX.md): two laser-like cuts, horizontal then vertical (1.3 s); the
+        /// cut lines stay as afterimages and charge up, trembling (1.4 s + 0.3 s at full charge), then the afterimages
+        /// themselves burst into glass shards for one big hit at 3 s. Every monster in the radius (bosses too) stays staggered from the cast until the burst.
         /// </summary>
         IEnumerator XSlash(Run c)
         {
@@ -290,35 +287,31 @@ namespace DotRPG
             CutEnd(at + Vector2.down * arm, blue);
             yield return new WaitForSeconds(Draw - Cut - Gap - Cut * .7f);
             if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
-            // 2) The cut cross cracks like glass (f3_glass_crack2 spreads along the lines) and trembles harder and harder.
-            //    Without the art the drawn lines just tremble.
-            VfxPlayer crack = VfxLibrary.Has("f3_glass_crack2")
-                ? CareerFx.Gen("f3_glass_crack2", null, at, Vector2.zero, arm * 2f / CrackFill, 0f, 24f, VfxLayer.Top, false, null, Shake + Tear + .05f, false, 8f / Shake)
-                : null;
-            DimFx.Show(Shake + Tear + .3f, .25f);
+            // 2) The cut lines stay as afterimages and charge up: thicker, brighter, pulsing faster, trembling harder.
+            DimFx.Show(Shake + Tear + .3f, .2f);
             float nextSpark = 0f;
             for (float t = 0f; t < Shake + Tear; t += Time.deltaTime)
             {
-                if (!Live(c)) { crack?.Stop(); first.Kill(); second.Kill(); yield break; }
-                float k = Mathf.Clamp01(t / Shake), e = Mathf.Clamp01((t - Shake) / Tear);
-                var jitter = Random.insideUnitCircle * (t < Shake ? Mathf.Lerp(.03f, .12f, k * k) : .14f);
-                crack?.Place(at + jitter);
+                if (!Live(c)) { first.Kill(); second.Kill(); yield break; }
+                float k = Mathf.Clamp01(t / Shake);
+                first.Charge = second.Charge = t < Shake ? k * k * (3f - 2f * k) : 1f;
+                // 3) The last 0.3 s: fully charged, shaking hard just before the burst.
+                var jitter = Random.insideUnitCircle * (t < Shake ? Mathf.Lerp(.02f, .1f, k * k) : .16f);
                 first.Offset = second.Offset = jitter;
-                // 3) The last 0.3 s: the cut lines tear apart and the cracked cross swells before it breaks.
-                if (e > 0f) { first.Explode(); second.Explode(); crack?.Resize(arm * 2f / CrackFill * (1f + .08f * e)); }
                 if (t >= nextSpark)
                 {
-                    nextSpark = t + Mathf.Lerp(.12f, .04f, k);
+                    nextSpark = t + Mathf.Lerp(.12f, .03f, k);
                     float u = Random.Range(-.9f, .9f) * arm;
                     SkillVisuals.Sparks(at + (Random.value < .5f ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 2, 2.5f, .25f);
                 }
                 if (t >= Shake && t - Time.deltaTime < Shake) Sound("c_slash");
                 yield return null;
             }
-            // 4) Shatter: the cross breaks into glass shards (f3_glass_shards) and the hit lands now (3 s after the cast).
-            crack?.Stop();
-            SpaceRiftFx.Burst(at + Vector2.left * arm, at + Vector2.right * arm, 24, order + 3);
-            SpaceRiftFx.Burst(at + Vector2.up * arm, at + Vector2.down * arm, 24, order + 3);
+            // 4) The afterimages themselves burst into glass shards; the hit lands now (3 s after the cast).
+            first.Kill();
+            second.Kill();
+            GlassBurstFx.Burst(at + Vector2.left * arm, at + Vector2.right * arm, 24, order + 3);
+            GlassBurstFx.Burst(at + Vector2.up * arm, at + Vector2.down * arm, 24, order + 3);
             Sound("c_heavy");
             Feel(2, Vector2.down);
             if (owner.IsLocal) Game.Camera?.Shake(.35f, .35f);

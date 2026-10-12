@@ -197,8 +197,7 @@ namespace DotRPG
                 case 'r': Decoration($"town_pebbles_{rng.Next(0, 2)}", center + new Vector2(0f, -0.25f)); return true;
                 case 'F': StaticProp("Fence", $"town_fence_{FenceMask(x, y)}", new Vector2(x + 0.5f, y + 0.05f), new Vector2(1f, 0.45f), new Vector2(0f, 0.28f)); return true;
                 case 'b': StaticProp("Barrel", "town_barrel", foot, new Vector2(0.7f, 0.45f), new Vector2(0f, 0.22f)); return true;
-                case 'x': StaticProp("Crate", "town_crate", foot, new Vector2(0.85f, 0.5f), new Vector2(0f, 0.25f)); return true;
-                case 'c': StaticProp("CarrotCrate", "town_ccrate", foot, new Vector2(0.85f, 0.5f), new Vector2(0f, 0.25f)); return true;
+                case 'x': case 'c': return true; // [ART 2026-10-12] mushrooms and wooden crates removed from every map (they did not fit)
                 case 's': StaticProp("Sacks", "town_sacks", foot, new Vector2(0.95f, 0.45f), new Vector2(0f, 0.22f)); return true;
                 case 'h': StaticProp("Hay", "town_hay", foot, new Vector2(1f, 0.5f), new Vector2(0f, 0.25f)); return true;
                 case 'u': StaticProp("FlowerPot", "town_pot", foot, new Vector2(0.55f, 0.35f), new Vector2(0f, 0.17f)); return true;
@@ -236,7 +235,7 @@ namespace DotRPG
                 case 'g': StaticProp("Grave", $"town_grave_{rng.Next(0, 2)}", foot, new Vector2(0.75f, 0.35f), new Vector2(0f, 0.17f)); return true;
                 case 'i': StaticProp("Ruin", "town_ruin", foot, new Vector2(0.7f, 0.4f), new Vector2(0f, 0.2f)); return true;
                 case 'j': Decoration("town_bones", center + new Vector2(0f, -0.2f)); return true;
-                case 'o': Decoration("town_shroom", center + new Vector2(0f, -0.2f)); return true;
+                case 'o': return true; // [ART 2026-10-12] mushrooms and wooden crates removed from every map (they did not fit)
                 case 'l': StaticProp("Log", "town_log", new Vector2(x + 1f, y + 0.1f), new Vector2(1.8f, 0.45f), new Vector2(0f, 0.25f)); return true;
                 case 'H':
                 {

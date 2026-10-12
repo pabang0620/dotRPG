@@ -45,8 +45,7 @@ namespace DotRPG
                 var pos = new Vector2(x + .5f, y + .25f);
                 if (Physics2D.OverlapCircle(pos + Vector2.up * .22f, .7f) != null) continue;
                 int hash = (x * 73856093 ^ y * 19349663) & int.MaxValue;
-                if (hash % 23 == 0) Decoration(VillageNatureArt.Prefix + "grass", pos);
-                else if (hash % 71 == 0) Decoration(VillageNatureArt.Prefix + "mushrooms", pos);
+                if (hash % 23 == 0) Decoration(VillageNatureArt.Prefix + "grass", pos); // [ART 2026-10-12] mushrooms and wooden crates removed from every map (they did not fit)
             }
             // Fallen wood is decorative, so the village's walkable routes remain intact.
             foreach (var pos in new[] { new Vector2(6.5f, 39.5f), new Vector2(40.5f, 46.5f) })

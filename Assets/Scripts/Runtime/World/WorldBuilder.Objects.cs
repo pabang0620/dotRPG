@@ -27,12 +27,7 @@ namespace DotRPG
                 case 'r': Decoration("deco_pebble", center + new Vector2(rng.Next(-3, 4) / 16f, -0.2f)); break;
                 case 't': Decoration("deco_tuft", center); break;
                 case 'C': CropPlot.Create(foot, objectsRoot, config); break;
-                case 'c':
-                    StaticProp("CarrotCrate", "crate", foot, new Vector2(0.9f, 0.6f), new Vector2(0f, 0.3f));
-                    break;
-                case 'x':
-                    StaticProp("Box", "box", foot, new Vector2(0.9f, 0.6f), new Vector2(0f, 0.3f));
-                    break;
+                case 'c': case 'x': break; // [ART 2026-10-12] mushrooms and wooden crates removed from every map (they did not fit)
                 case 'b':
                     StaticProp("Barrel", "barrel", foot, new Vector2(0.7f, 0.5f), new Vector2(0f, 0.25f));
                     break;

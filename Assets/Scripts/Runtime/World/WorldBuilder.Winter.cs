@@ -56,7 +56,7 @@ namespace DotRPG
                 case 'u': StaticProp("FlowerPot", "wnt_pot", foot, new Vector2(0.6f, 0.35f), new Vector2(0f, 0.18f)); return true;
                 case 'z': StaticProp("Woodpile", "wnt_woodpile", new Vector2(x + 1f, y + 0.1f), new Vector2(1.7f, 0.5f), new Vector2(0f, 0.3f)); return true;
                 case 'b': StaticProp("Barrel", "wnt_barrel", foot, new Vector2(0.7f, 0.5f), new Vector2(0f, 0.25f)); return true;
-                case 'x': StaticProp("Crate", "wnt_crate", foot, new Vector2(0.9f, 0.6f), new Vector2(0f, 0.3f)); return true;
+                case 'x': return true; // [ART 2026-10-12] wooden crates removed from every map
                 case 'p':
                 {
                     var lamp = StaticProp("Lamp", "wnt_lamp", foot, new Vector2(0.35f, 0.3f), new Vector2(0f, 0.15f));

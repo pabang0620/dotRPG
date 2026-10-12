@@ -68,7 +68,16 @@ namespace DotRPG
             v.tipText.raycastTarget = false;
             v.tipText.horizontalOverflow = HorizontalWrapMode.Wrap;
             v.tipText.verticalOverflow = VerticalWrapMode.Overflow;
-            UIFactory.Stretch(v.tipText.rectTransform, 10f, 8f, 10f, 8f);
+            v.tipText.resizeTextForBestFit = false;
+            // The box grows with its text through Unity's layout (a hand-measured height came out short).
+            var layout = tipBg.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(10, 10, 8, 10);
+            layout.childControlWidth = layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            var fit = tipBg.gameObject.AddComponent<ContentSizeFitter>();
+            fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             v.tip.gameObject.SetActive(false);
             return v;
         }
@@ -95,10 +104,9 @@ namespace DotRPG
         /// <summary>Sets the box text and grows the background to cover every wrapped line.</summary>
         void SetTip(string text)
         {
-            const float w = 280f;
             tipText.text = text;
-            tip.sizeDelta = new Vector2(w, 100f); // width first: the stretched text wraps at w - 20
-            tip.sizeDelta = new Vector2(w, Mathf.Max(48f, tipText.preferredHeight + 20f));
+            tip.sizeDelta = new Vector2(280f, tip.sizeDelta.y);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(tip); // height follows the wrapped text this frame
         }
 
         void Close()
