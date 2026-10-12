@@ -264,7 +264,8 @@ namespace DotRPG
         /// </summary>
         IEnumerator XSlash(Run c)
         {
-            const float Draw = 1.3f, Shake = .9f, Mul = 10f, Size = 12.5f;
+            const float Draw = 1.3f, Shake = .9f, Mul = 10f;
+            float size = c.n.radius * 2.5f; // the cross reaches the edge of the radius
             Vector2 at = owner.Center;
             var blue = new Color(.6f, .88f, 1f, .95f);
             Pose(Draw + Shake + .2f, 2);
@@ -272,19 +273,23 @@ namespace DotRPG
                 foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Draw + Shake); StunStars.Attach(e); }
             SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .6f), Draw + Shake, SkillFx.GroundOrder + 10)
                 .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
-            bool art = VfxLibrary.Has("f3_cross_draw") && VfxLibrary.Has("f3_cross_hold");
+            // v2 sheets (thinner, smooth strokes) when present, else the first set.
+            string drawId = VfxLibrary.Has("f3_cross_draw2") ? "f3_cross_draw2" : "f3_cross_draw";
+            string holdId = VfxLibrary.Has("f3_cross_hold2") ? "f3_cross_hold2" : "f3_cross_hold";
+            string burstId = VfxLibrary.Has("f3_cross_burst2") ? "f3_cross_burst2" : "f3_cross_burst";
+            bool art = VfxLibrary.Has(drawId) && VfxLibrary.Has(holdId);
             // 1) Draw the cross (generated f3_cross_draw; else two thin glowing lines).
-            if (art) CareerFx.Gen("f3_cross_draw", null, at, Vector2.zero, Size, 0f, 24f, VfxLayer.Top, false, null, Draw, false, 8f / Draw);
+            if (art) CareerFx.Gen(drawId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, Draw, false, 8f / Draw);
             else
             {
-                GlowLineFx.Spawn(at + Vector2.up * Size * .45f, at + Vector2.down * Size * .45f, blue, .12f, Draw + Shake, SkillFx.TopOrder + 2);
-                GlowLineFx.Spawn(at + Vector2.left * Size * .45f, at + Vector2.right * Size * .45f, blue, .12f, Draw + Shake, SkillFx.TopOrder + 2);
+                GlowLineFx.Spawn(at + Vector2.up * size * .45f, at + Vector2.down * size * .45f, blue, .06f, Draw + Shake, SkillFx.TopOrder + 2);
+                GlowLineFx.Spawn(at + Vector2.left * size * .45f, at + Vector2.right * size * .45f, blue, .06f, Draw + Shake, SkillFx.TopOrder + 2);
             }
             Sound("c_slash");
             yield return new WaitForSeconds(Draw);
             if (!Live(c)) yield break;
             // 2) The finished cross trembles, sparks crackling along it, harder as the burst nears.
-            var hold = art ? CareerFx.Gen("f3_cross_hold", null, at, Vector2.zero, Size, 0f, 24f, VfxLayer.Top, false, null, Shake + .05f, true, 12f) : null;
+            var hold = art ? CareerFx.Gen(holdId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, Shake + .05f, true, 12f) : null;
             float nextSpark = 0f;
             for (float t = 0f; t < Shake; t += Time.deltaTime)
             {
@@ -295,14 +300,14 @@ namespace DotRPG
                 {
                     nextSpark = t + .08f;
                     bool vertical = Random.value < .5f;
-                    float u = Random.Range(-.45f, .45f) * Size;
+                    float u = Random.Range(-.45f, .45f) * size;
                     SkillVisuals.Sparks(at + (vertical ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 3, 2.5f, .25f);
                 }
                 yield return null;
             }
             hold?.Stop();
             // 3) Burst: the hit lands now.
-            if (VfxLibrary.Has("f3_cross_burst")) CareerFx.Gen("f3_cross_burst", null, at, Vector2.zero, Size * 1.05f, 0f, 24f, VfxLayer.Top, false, null, .6f, false, 8f / .6f);
+            if (VfxLibrary.Has(burstId)) CareerFx.Gen(burstId, null, at, Vector2.zero, size * 1.05f, 0f, 24f, VfxLayer.Top, false, null, .6f, false, 8f / .6f);
             else CareerFx.Clip("f_x", at, Vector2.right, 3f, 24f);
             Sound("c_heavy");
             Feel(2, Vector2.down);
