@@ -27,6 +27,7 @@ namespace DotRPG
         public bool BlessVisible => Time.time < blessEnd;
         /// <summary>Seconds left of 검귀 해방 (0 = off).</summary>
         public float FrenzyLeft => Mathf.Max(0f, frenzyEnd - Time.time);
+        public int FrenzyPct => frenzy;
         public bool HotVisible => Time.time < hotEnd && hotSource != null && !hotSource.IsDead;
         public bool CounterVisible => counterEnd > Time.time;
         public float OathRadius { get; private set; }

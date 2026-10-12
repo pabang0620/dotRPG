@@ -86,13 +86,19 @@ namespace DotRPG
             if (open == i) { Close(); return; } // a second click on the same chip closes it
             open = i;
             openTitle = titles[i];
-            tipText.text = $"<b>{titles[i]}</b>\n{descs[i]}";
-            const float w = 280f;
-            float h = Mathf.Max(48f, tipText.cachedTextGenerator.GetPreferredHeight(tipText.text, tipText.GetGenerationSettings(new Vector2(w - 20f, 0f))) / tipText.pixelsPerUnit + 18f);
-            tip.sizeDelta = new Vector2(w, h);
+            SetTip($"<b>{titles[i]}</b>\n{descs[i]}");
             tip.anchoredPosition = new Vector2(i * (ChipWidth + Gap), Height + 6f);
             tip.gameObject.SetActive(true);
             tip.SetAsLastSibling();
+        }
+
+        /// <summary>Sets the box text and grows the background to cover every wrapped line.</summary>
+        void SetTip(string text)
+        {
+            const float w = 280f;
+            tipText.text = text;
+            tip.sizeDelta = new Vector2(w, 100f); // width first: the stretched text wraps at w - 20
+            tip.sizeDelta = new Vector2(w, Mathf.Max(48f, tipText.preferredHeight + 20f));
         }
 
         void Close()
@@ -117,7 +123,7 @@ namespace DotRPG
                 if (Game.Cosmetics != null && Game.Cosmetics.LegendSet(p.Class)) Put(ref n, "buff_power", "전설 세트", "전설 세트", $"전설 오라와 유니크 스킨을 함께 입었다. 공격력 +{CosmeticStore.SetDamagePercent}%, 최대 체력 +{CosmeticStore.SetHealthPercent}%.");
                 if (c.InvulnerableLeft > 0f) Put(ref n, "buff_shield", "무적 " + c.InvulnerableLeft.ToString("0.0") + "초", "무적", "모든 피해를 막는다. 강철의 보루, 신의 가호, 응보의 방진이 막은 직후에 생긴다.");
                 if (c.StanceOn) Put(ref n, "buff_focus", "검기 태세 ON", "검기 태세", "기본 공격이 맞을 때마다 초승달 검기가 앞으로 날아가 관통한다(3타째는 3줄). 검기마다 MP를 쓰고, MP가 모자라면 꺼진다. 다시 누르면 끈다.");
-                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft), "검귀 해방", "모든 공격 피해 +30%. 재사용 62초라 한 번 켜 두면 계속 유지할 수 있다.");
+                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft), "검귀 해방", $"모든 공격 피해 +{c.FrenzyPct}%.");
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", $"검기 {c.ComboStacks}/3", "검기 연성", "기본 공격이 맞을 때마다 1개씩 쌓인다(최대 3개, 6초 유지). 3개일 때 쓰는 다음 전직 스킬 피해 +20%, 전부 소모.");
                 if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", (c.ShieldCareer == Career.Arcanist ? "배리어 " : "보호막 ") + Sec(c.ShieldLeft), c.ShieldCareer == Career.Arcanist ? "매직 배리어" : "보호막", $"받는 피해를 체력보다 먼저 흡수한다(체력 바의 청록색 부분). 남은 양 {c.Shield}.");
                 if (c.GuardLeft > 0f) Put(ref n, "buff_guard", "보루 " + Sec(c.GuardLeft), "강철의 보루", "받는 피해 30% 감소. 다른 감소와 합쳐 최대 65%.");
@@ -139,7 +145,7 @@ namespace DotRPG
                 int at = titles.IndexOf(openTitle);
                 if (at < 0 || at >= n) Close();
                 else if (at != open) { open = at; tip.anchoredPosition = new Vector2(at * (ChipWidth + Gap), Height + 6f); }
-                else tipText.text = $"<b>{titles[at]}</b>\n{descs[at]}";
+                else if (tipText.text != $"<b>{titles[at]}</b>\n{descs[at]}") SetTip($"<b>{titles[at]}</b>\n{descs[at]}");
             }
         }
 

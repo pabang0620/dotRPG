@@ -258,7 +258,7 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 천검귀일 (v2, 2026-10-12): a gigantic thin cross (+) cut around the fighter. Drawing the cross takes 1.3 s,
+        /// 천검귀일 (v2, 2026-10-12): a gigantic thin cross (+) cut around the fighter. Drawing the cross takes 1.3 s (two smooth strokes),
         /// it trembles for 0.9 s, then bursts for one big hit. Every monster in the radius (bosses too) stays staggered
         /// from the cast until the burst (2.2 s).
         /// </summary>
@@ -272,41 +272,39 @@ namespace DotRPG
                 foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Draw + Shake); StunStars.Attach(e); }
             SkillFx.Spawn("fx_ring", owner.Position, new Color(.55f, .8f, 1f, .6f), Draw + Shake, SkillFx.GroundOrder + 10)
                 .Scale(new Vector2(c.n.radius, c.n.radius * .7f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
-            // v2 sheets (thinner, smooth strokes) when present, else the first set.
-            string drawId = VfxLibrary.Has("f3_cross_draw2") ? "f3_cross_draw2" : "f3_cross_draw";
-            string holdId = VfxLibrary.Has("f3_cross_hold2") ? "f3_cross_hold2" : "f3_cross_hold";
-            string burstId = VfxLibrary.Has("f3_cross_burst2") ? "f3_cross_burst2" : "f3_cross_burst";
-            bool art = VfxLibrary.Has(drawId) && VfxLibrary.Has(holdId);
-            // The cross spans the radius: the v2 cross fills about half its frame, the first set nearly all of it.
-            float size = c.n.radius * (drawId == "f3_cross_draw2" ? 4.3f : 2.5f);
-            // 1) Draw the cross (generated f3_cross_draw; else two thin glowing lines).
-            if (art) CareerFx.Gen(drawId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, Draw, false, 8f / Draw);
-            else
-            {
-                GlowLineFx.Spawn(at + Vector2.up * size * .45f, at + Vector2.down * size * .45f, blue, .06f, Draw + Shake, SkillFx.TopOrder + 2);
-                GlowLineFx.Spawn(at + Vector2.left * size * .45f, at + Vector2.right * size * .45f, blue, .06f, Draw + Shake, SkillFx.TopOrder + 2);
-            }
+            // 1) Two smooth hair-thin cuts: top to bottom, then left to right (drawn in code, every frame).
+            float arm = c.n.radius * 1.1f;
+            const float Cut = .5f, Gap = .15f, Width = .14f;
+            int order = SkillFx.TopOrder + 2;
+            var vertical = StrokeFx.Spawn(at + Vector2.up * arm, at + Vector2.down * arm, blue, Width, Cut, Draw + Shake + .1f, order);
             Sound("c_slash");
-            yield return new WaitForSeconds(Draw);
-            if (!Live(c)) yield break;
+            yield return new WaitForSeconds(Cut + Gap);
+            if (!Live(c)) { vertical.Burst(); yield break; }
+            var horizontal = StrokeFx.Spawn(at + Vector2.left * arm, at + Vector2.right * arm, blue, Width, Cut, Draw + Shake + .1f - Cut - Gap, order);
+            Sound("c_slash");
+            yield return new WaitForSeconds(Draw - Cut - Gap);
+            if (!Live(c)) { vertical.Burst(); horizontal.Burst(); yield break; }
             // 2) The finished cross trembles, sparks crackling along it, harder as the burst nears.
-            var hold = art ? CareerFx.Gen(holdId, null, at, Vector2.zero, size, 0f, 24f, VfxLayer.Top, false, null, Shake + .05f, true, 12f) : null;
             float nextSpark = 0f;
             for (float t = 0f; t < Shake; t += Time.deltaTime)
             {
-                if (!Live(c)) { hold?.Stop(); yield break; }
+                if (!Live(c)) { vertical.Burst(); horizontal.Burst(); yield break; }
                 float k = .5f + t / Shake;
-                hold?.Place(at + Random.insideUnitCircle * .09f * k);
+                vertical.Offset = Random.insideUnitCircle * .07f * k;
+                horizontal.Offset = Random.insideUnitCircle * .07f * k;
                 if (t >= nextSpark)
                 {
                     nextSpark = t + .08f;
-                    bool vertical = Random.value < .5f;
-                    float u = Random.Range(-.45f, .45f) * size;
-                    SkillVisuals.Sparks(at + (vertical ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 3, 2.5f, .25f);
+                    float u = Random.Range(-.9f, .9f) * arm;
+                    SkillVisuals.Sparks(at + (Random.value < .5f ? new Vector2(0f, u) : new Vector2(u, 0f)), blue, 2, 2.5f, .25f);
                 }
                 yield return null;
             }
-            hold?.Stop();
+            vertical.Burst();
+            horizontal.Burst();
+            // The v2 burst cross fills about half its frame: scale it so its arms match the drawn ones.
+            string burstId = VfxLibrary.Has("f3_cross_burst2") ? "f3_cross_burst2" : "f3_cross_burst";
+            float size = arm * 2f / (burstId == "f3_cross_burst2" ? .51f : .88f);
             // 3) Burst: the hit lands now.
             if (VfxLibrary.Has(burstId)) CareerFx.Gen(burstId, null, at, Vector2.zero, size * 1.05f, 0f, 24f, VfxLayer.Top, false, null, .6f, false, 8f / .6f);
             else CareerFx.Clip("f_x", at, Vector2.right, 3f, 24f);
