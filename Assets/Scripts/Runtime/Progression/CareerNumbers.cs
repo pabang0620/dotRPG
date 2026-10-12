@@ -23,7 +23,7 @@ namespace DotRPG
                 case "break":effect=$"관통 피해 {d} · {n.range:0.#}m · 맞은 적 {s.duration:0.#}초간 받는 피해 +15%";break;
                 case "iaido":effect=$"직선 피해 {d} · 길이 {n.range:0.#}m";break;
                 case "execute":effect=$"피해 {d} · HP 35% 미만 {Mathf.RoundToInt(d*1.6f)} · 반경 {n.radius:0.#}m";break;
-                case "xslash":effect=$"십자 베기 {Mathf.RoundToInt(d*10f)} · 반경 {n.radius:0.#}m · 경직 2.2초(보스 포함)";break;
+                case "xslash":effect=$"십자 베기 {Mathf.RoundToInt(d*10f)} · 반경 {n.radius:0.#}m · 경직 3초(보스 포함)";break;
                 case "swordrain":effect=$"낙검 {d} × 6 · 거대한 검 {Mathf.RoundToInt(d*3.75f)} · 반경 {n.radius:0.#}m";break;
                 case "guard":effect=$"받는 피해 -{Mathf.RoundToInt(30*scale)}% · {s.duration:0.#}초 · 밀쳐내기 피해 {d}";break;
                 case "shieldthrow":effect=$"피해 {d} × 왕복 · 동시 {Mathf.Clamp(2+Mathf.Max(1,data.Progression.Rank("g_wall")),3,5)}개 · {Shield(.18f)}";break;
