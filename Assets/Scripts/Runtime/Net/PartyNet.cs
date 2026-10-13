@@ -142,7 +142,7 @@ namespace DotRPG
             transport = next;
             if (next is RelayTransport relay) relay.HostChanged += OnRelayHostChanged;
             if (host) peerSlot.Clear();
-            else { welcomed = false; helloTimer = 0f; }
+            else Regreet();
         }
 
         /// <summary>[8] Server-led host handover on the relay: a member re-greets the new host, or becomes it.</summary>
@@ -153,7 +153,18 @@ namespace DotRPG
                 if (!host) PromotedToHost?.Invoke();
                 return;
             }
-            if (!host) { welcomed = false; helloTimer = 0f; } // say hello to the new host
+            if (!host) Regreet(); // say hello to the new host
+        }
+
+        /// <summary>
+        /// Member: greet the (new) host again. Its snapshot counter starts over at 1, so the last tick seen from the old
+        /// host is forgotten too (it dropped every snapshot of the new host until the count passed the old one).
+        /// </summary>
+        void Regreet()
+        {
+            welcomed = false;
+            helloTimer = 0f;
+            lastSnapshot = 0;
         }
 
         /// <summary>Stops the sync (run over, title screen). Network members leave the party.</summary>
@@ -205,6 +216,9 @@ namespace DotRPG
                 }
                 catch (EndOfStreamException) { } // truncated packet from another build: skip
                 catch (IOException) { }
+                // A packet for a body or room that just went away (scene change, room load) must not stop the
+                // other packets of this frame or the tick below.
+                catch (Exception e) { Debug.LogWarning($"[PARTY] packet ch{p.channel} from {p.from} skipped: {e.GetType().Name} {e.Message}"); }
             }
             if (host) HostTick();
             else MemberTick();

@@ -35,6 +35,8 @@ namespace DotRPG
         {
             bool connected = transport.IsConnected;
             if (wasConnected && !connected) GameEvents.RaiseToast("방장과의 연결이 끊겼습니다.");
+            // Back after a drop: the host forgot this seat's connection (it ignores our input until a Hello), so greet again.
+            if (!wasConnected && connected && everWelcomed) Regreet();
             wasConnected = connected;
 
             if (!welcomed)

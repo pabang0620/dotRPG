@@ -174,21 +174,24 @@ namespace DotRPG
         sealed class Presenter : MonoBehaviour
         {
             BossBrain brain;
+            bool hadBrain;
             float until;
             int need, lastCount = -1, lastFilled = -1;
 
             public void Begin(BossBrain b, float seconds, int circles)
             {
                 brain = b;
+                hadBrain = b != null;
                 until = Time.time + seconds;
                 need = circles;
             }
 
             void Update()
             {
-                // The boss is gone without an end (room left, run over): drop the circles so nobody walks to them.
-                if (brain == null || Time.time > until + 2f) { Clear(); return; }
-                if (Active == null) return;
+                // The boss is gone without an end (room left, run over): drop the circles so nobody walks to them. A member
+                // PC whose boss puppet was not found keeps them until the time runs out (the host's end message clears them).
+                if ((hadBrain && brain == null) || Time.time > until + 2f) { Clear(); return; }
+                if (Active == null || brain == null) return;
                 int count = Mathf.Max(0, Mathf.CeilToInt(until - Time.time));
                 int filled = Game.Party != null ? Filled(Active, Game.Party.Members) : 0;
                 if (count == lastCount && filled == lastFilled) return;

@@ -268,6 +268,38 @@ describe('로비: 준비, 설정 변경, 나가기, 강퇴, 방장 위임', () =
     expect((closed.rows[0] as { close_reason: string }).close_reason).toBe('idle_timeout');
   });
 
+  it('접속 중인 멤버가 파티를 조회하면 활동으로 보아 30분이 지나도 해산되지 않는다', async () => {
+    // 2026-10-13: 함께 필드 사냥만 하던 파티가 파티 조작이 없다는 이유로 30분 뒤 idle_timeout 해산되어 전원이 빠졌다
+    const host = await newHero(app);
+    const member = await newHero(app);
+    await formParty(app, host, [member]);
+    for (let i = 0; i < 4; i++) {
+      advance(15 * 60);
+      expect((await get(app, member, '/party')).body.data.party).not.toBeNull();
+    }
+    const v = await get(app, host, '/party');
+    expect(v.body.data.party).not.toBeNull();
+    expect(v.body.data.party.members).toHaveLength(2);
+  });
+
+  it('모으는 중 판을 취소하고 forming으로 돌아오면 활동 시각이 갱신되어 바로 해산되지 않는다', async () => {
+    const host = await newHero(app);
+    const member = await newHero(app);
+    await formParty(app, host, [member]);
+    // 출발 직전까지 29분 동안 아무 조작도 조회도 없었다
+    await getPool().query(
+      "UPDATE parties SET last_active_at = $2 WHERE id = (SELECT party_id FROM party_members WHERE character_id = $1 AND left_at IS NULL)",
+      [host.dbId, new Date(fixed.getTime() - 29 * 60_000)],
+    );
+    const st = await post(app, host, '/party/start', { ai_count: 0 });
+    expect(st.status).toBe(201);
+    advance(120);
+    expect((await post(app, host, `/party-runs/${st.body.data.run.id}/leave`, {})).status).toBe(200);
+    const v = await get(app, host, '/party');
+    expect(v.body.data.party).not.toBeNull();
+    expect(v.body.data.party.state).toBe('forming');
+  });
+
   it('재전송: 같은 request_id의 leave와 kick은 같은 응답', async () => {
     const host = await newHero(app);
     const m1 = await newHero(app);

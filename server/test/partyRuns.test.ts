@@ -283,6 +283,27 @@ describe('파티 판 처치와 정산', () => {
     expect((await result(member, memberRun, { outcome: 'failed', stats: stats() })).body.data.result).toBe('failed');
   });
 
+  it('매칭 파티(출발 마감 있음)는 판이 끝난 뒤 마감이 지나도 해산되지 않는다', async () => {
+    // 2026-10-13: 판이 끝나 forming으로 돌아온 파티가 지난 start_by 때문에 start_timeout으로 닫혀 전원이 탈퇴됐다
+    const host = await newHero(app);
+    const member = await newHero(app);
+    await formParty(app, host, [member]);
+    await getPool().query("UPDATE parties SET source = 'match', start_by = $2 WHERE id = (SELECT party_id FROM party_members WHERE character_id = $1 AND left_at IS NULL)", [
+      host.dbId,
+      new Date(fixed.getTime() + 60_000),
+    ]);
+    const { runs } = await startAndBegin(app, host, [member]);
+    expect((await result(host, runs.get(host.id) as string, { outcome: 'failed', stats: stats() })).body.data.result).toBe('failed');
+    expect((await result(member, runs.get(member.id) as string, { outcome: 'failed', stats: stats() })).body.data.result).toBe('failed');
+    advance(300);
+    for (const h of [host, member]) {
+      const pv = await get(app, h, '/party');
+      expect(pv.body.data.party).not.toBeNull();
+      expect(pv.body.data.party.state).toBe('forming');
+      expect(pv.body.data.party.start_by).toBeNull();
+    }
+  });
+
   it('방장이 아닌 멤버의 킬 거절은 차단 카운트(severity 2 이상)에 쌓이지 않는다', async () => {
     const { member, memberRun } = await duo();
     const res = await post(app, member, '/kills', { map_id: 'dgn_canyon_1', monster_id: 'skel_gold', run_id: memberRun, room_index: 2 });

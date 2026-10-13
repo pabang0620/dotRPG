@@ -151,6 +151,8 @@ export async function getMyParty(accountId: number, characterUuid: string, q: Po
         await repo.closeParty(ctx.client, partyId, why, ctx.now);
         party = null;
         partyId = null;
+      } else if (party) {
+        await repo.touchActive(ctx.client, partyId, ctx.now);
       }
     }
     if (party && q.after_version !== undefined && q.after_version === party.version && !ticket) return { changed: false as const };

@@ -19,6 +19,8 @@ namespace DotRPG
     public sealed class ChatSocket
     {
         const int PingMs = 15000;
+        /// <summary>Nothing heard (the server answers every ping with a pong) this long: the socket died without a close. Drop and reconnect.</summary>
+        const float SilenceSeconds = 40f;
         static readonly float[] Backoff = { 1f, 2f, 4f, 8f, 16f, 30f };
 
         readonly string characterId;
@@ -30,7 +32,7 @@ namespace DotRPG
         volatile bool open;
         bool stopped, connecting, ready;
         int attempt, pingN;
-        float retryAt, pingTimer, connectedSince;
+        float retryAt, pingTimer, connectedSince, heardAt;
 
         /// <summary>Last chat seq received (sent as since on reconnect).</summary>
         public long LastSeq;
@@ -95,6 +97,7 @@ namespace DotRPG
             // Frames first: a bye (with its wait) is read before the close it announces.
             while (inbox.TryDequeue(out var text))
             {
+                heardAt = Time.realtimeSinceStartup;
                 Dictionary<string, object> d;
                 try { d = MiniJson.Parse(text) as Dictionary<string, object>; }
                 catch (FormatException) { continue; }
@@ -117,6 +120,13 @@ namespace DotRPG
             if (stopped || StopReason != null) return;
             if (!open && !connecting && Time.realtimeSinceStartup >= retryAt) Connect();
             if (!Ready) return;
+            if (Time.realtimeSinceStartup - heardAt > SilenceSeconds)
+            {
+                // The receive loop reports the close (1006) and the normal backoff reconnects.
+                SetReady(false);
+                try { ws?.Abort(); } catch (Exception) { }
+                return;
+            }
             pingTimer -= dt;
             if (pingTimer <= 0f)
             {

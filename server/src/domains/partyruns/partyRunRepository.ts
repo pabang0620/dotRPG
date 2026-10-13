@@ -164,12 +164,19 @@ export async function cancelRun(
   notifyRunChanged(client, runId);
 }
 
-export async function setPartyState(client: PoolClient, partyId: number, state: 'forming' | 'starting' | 'in_run'): Promise<void> {
-  await client.query('UPDATE parties SET state = $2, version = version + 1 WHERE id = $1 AND state <> $3', [
-    partyId,
-    state,
-    'closed',
-  ]);
+/**
+ * 파티 상태 전환. 판이 시작되면(in_run) 매칭 파티의 출발 마감(start_by)을 지운다. 지우지 않으면 판이 끝나 forming으로
+ * 돌아온 뒤 지난 마감 때문에 start_timeout으로 해산되어 전원이 파티에서 빠졌다(2026-10-13).
+ */
+export async function setPartyState(client: PoolClient, partyId: number, state: 'forming' | 'starting' | 'in_run', now?: Date): Promise<void> {
+  // forming으로 돌아올 때(모으는 중 취소) 활동 시각을 갱신한다. 출발 전 대기가 길었던 파티가 취소 직후 idle_timeout으로 닫히지 않게
+  await client.query(
+    `UPDATE parties SET state = $2, version = version + 1,
+            start_by = CASE WHEN $2 = 'in_run' THEN NULL ELSE start_by END,
+            last_active_at = CASE WHEN $2 = 'forming' AND $4::timestamptz IS NOT NULL THEN $4::timestamptz ELSE last_active_at END
+      WHERE id = $1 AND state <> $3`,
+    [partyId, state, 'closed', now ?? null],
+  );
   notifyPartyChanged(client, partyId);
 }
 
@@ -184,7 +191,7 @@ export async function endRunIfDone(client: PoolClient, run: PartyRunRow, now: Da
   );
   if ((r.rowCount ?? 0) === 0) return false;
   await client.query(
-    "UPDATE parties SET state = 'forming', version = version + 1, last_active_at = $2 WHERE id = $1 AND state = 'in_run'",
+    "UPDATE parties SET state = 'forming', version = version + 1, last_active_at = $2, start_by = NULL WHERE id = $1 AND state = 'in_run'",
     [run.party_id, now],
   );
   notifyRunChanged(client, run.id);

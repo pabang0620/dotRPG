@@ -111,7 +111,7 @@ namespace DotRPG
         }
 
         /// <summary>True when the result screen may offer 다시 도전.</summary>
-        public bool CanRetry => run != null && run.IsOver && !PartyNet.Active && (run.Dungeon.isRaid || Progress.EntriesLeft(ResetClock.Now) > 0);
+        public bool CanRetry => run != null && run.IsOver && !PartyNet.Active && !PartyRunSession.Active && (run.Dungeon.isRaid || Progress.EntriesLeft(ResetClock.Now) > 0);
 
         void SaveBeforeEntering()
         {

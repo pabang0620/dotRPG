@@ -28,8 +28,12 @@ namespace DotRPG
             if (run == null) return;
             run.PartyRevivesUsed = partyUsed;
             if (slot != mySlot) return;
+            bool granted = used > run.RevivesUsed;
             run.RevivesUsed = used;
-            if (Game.Player != null) Game.Player.Data.Mana = Game.Player.MaxMana;
+            // The body stands up through the HP snapshot; MP is this PC's, so it fills here. A refused request
+            // (the seat's or the party's revives ran out meanwhile) answers with the same count.
+            if (granted) { if (Game.Player != null) Game.Player.Data.Mana = Game.Player.MaxMana; }
+            else GameEvents.RaiseToast("남은 부활 횟수가 없어 부활하지 못했습니다.");
         }
 
         void MemberLaunch(System.IO.BinaryReader r)

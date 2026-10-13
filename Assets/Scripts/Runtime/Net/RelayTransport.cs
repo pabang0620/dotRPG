@@ -96,6 +96,8 @@ namespace DotRPG
     public sealed class RelayTransport : ITransport, ITransportHealth, IDisposable
     {
         const float FlushSeconds = 0.02f, PingSeconds = 2f;
+        /// <summary>Nothing heard (no pong, no data) this long: the socket is dead without a close frame (Wi-Fi switch, sleep). Drop and reconnect.</summary>
+        const float SilenceSeconds = 8f;
         static readonly float[] Backoff = { 0.5f, 1f, 2f, 4f, 8f };
 
         readonly Action<Action<RelayTicket, string>> fetchTicket;
@@ -116,7 +118,8 @@ namespace DotRPG
         bool ready, connecting, disposed, resume;
         int seat = -1, hostSeat = -1, failures;
         uint pingNonce;
-        float flushTimer, pingTimer, retryAt, pingSentAt;
+        float flushTimer, pingTimer, retryAt, pingSentAt, heardAt;
+        bool leaving;
 
         public int LocalPeer => seat;
         public string Kind => "relay";
@@ -174,13 +177,20 @@ namespace DotRPG
         public void Tick()
         {
             if (disposed) return;
-            while (controlIn.TryDequeue(out var text)) OnControl(text);
-            while (dataIn.TryDequeue(out var frame)) OnData(frame);
+            while (controlIn.TryDequeue(out var text)) { heardAt = Time.realtimeSinceStartup; OnControl(text); }
+            while (dataIn.TryDequeue(out var frame)) { heardAt = Time.realtimeSinceStartup; OnData(frame); }
             while (closes.TryDequeue(out int code)) OnClosed(code);
             if (ClosedReason != null) return;
             float dt = Time.unscaledDeltaTime;
             if (!open && !connecting && Time.realtimeSinceStartup >= retryAt) Connect();
             if (!ready) return;
+            if (open && Time.realtimeSinceStartup - heardAt > SilenceSeconds)
+            {
+                // The receive loop ends with a close (1006) and the normal backoff reconnects with a fresh ticket.
+                ready = false;
+                try { ws?.Abort(); } catch (Exception) { }
+                return;
+            }
             flushTimer -= dt;
             if (flushTimer <= 0f) { flushTimer = FlushSeconds; Flush(); }
             pingTimer -= dt;
@@ -228,6 +238,11 @@ namespace DotRPG
                     ready = true;
                     failures = 0;
                     resume = true;
+                    heardAt = Time.realtimeSinceStartup;
+                    // Packets queued while the socket was down belong to the old connection (the member greets again,
+                    // the host's snapshots are rebuilt): sending them late only replays stale events.
+                    reliable.Clear();
+                    latest.Clear();
                     seat = MiniJson.Int(d, "seat", seat);
                     hostSeat = MiniJson.Int(d, "host_seat", hostSeat);
                     HostEpoch = MiniJson.Int(d, "host_epoch", HostEpoch);
@@ -377,7 +392,9 @@ namespace DotRPG
         /// <summary>Leaves the room on purpose (seat given back) and closes.</summary>
         public void Leave()
         {
-            if (open) outText.Enqueue("{\"t\":\"leave\"}");
+            if (!open) return;
+            leaving = true;
+            outText.Enqueue("{\"t\":\"leave\"}");
         }
 
         public void Dispose()
@@ -386,13 +403,26 @@ namespace DotRPG
             disposed = true;
             ready = false;
             var socket = ws;
+            var source = cts;
             ws = null;
-            try { cts?.Cancel(); } catch (ObjectDisposedException) { }
+            open = false;
             if (socket != null && socket.State == WebSocketState.Open)
             {
+                // Leave() queued {"t":"leave"} a moment ago: cancelling the send loop right away dropped it, and the server
+                // kept the seat for a reconnect. Send what is queued (briefly), then close.
+                if (leaving) { _ = CloseAfterQueue(socket, source); return; }
+                try { source?.Cancel(); } catch (ObjectDisposedException) { }
                 try { _ = socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None); } catch (Exception) { }
+                return;
             }
-            open = false;
+            try { source?.Cancel(); } catch (ObjectDisposedException) { }
+        }
+
+        async Task CloseAfterQueue(ClientWebSocket socket, CancellationTokenSource source)
+        {
+            for (int i = 0; i < 20 && !outText.IsEmpty; i++) await Task.Delay(10);
+            try { source?.Cancel(); } catch (ObjectDisposedException) { }
+            try { await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None); } catch (Exception) { }
         }
     }
 }

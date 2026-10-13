@@ -18,6 +18,8 @@ namespace DotRPG
 
         public static PartyRunSession Instance { get; private set; }
         public static bool Active => Instance != null;
+        /// <summary>The last run this PC finished (see <see cref="Observe"/>).</summary>
+        static string finishedRunId;
 
         static ApiClient Api => ApiClient.Instance;
         static string Char => "/characters/" + OnlineSession.Current.ActiveCharacter;
@@ -45,10 +47,17 @@ namespace DotRPG
         {
             if (run == null) return;
             string id = MiniJson.Str(run, "id");
+            // A run this PC already finished never starts again: a late party poll (my result still on its way) used to
+            // rebuild the session in the village, re-open the fight connection and send the host back into the dungeon.
+            if (id == finishedRunId) return;
             string st = MiniJson.Str(run, "state");
             var me = MiniJson.Obj(run, "me");
             string mine = MiniJson.Str(me, "state");
-            bool active = (st == "gathering" || st == "playing") && mine != "left" && mine != "done" && mine != null;
+            bool active = (st == "gathering" || st == "playing") && mine != null
+                && mine != "left" && mine != "done" && mine != "no_show" && mine != "dropped"; // not in this run any more
+            // A stale session of an older run that never got past gathering gives way to the party's current run
+            // (it blocked every later departure with "이미 파티가 출발하는 중입니다").
+            if (Instance != null && Instance.runId != id && active && Instance.state != "playing") Instance.Finish(null);
             if (Instance == null)
             {
                 if (!active) return;
@@ -364,6 +373,10 @@ namespace DotRPG
         {
             if (Instance != this) return;
             Instance = null;
+            finishedRunId = runId;
+            // Cancelled while gathering (or over before this PC entered): close the fight connection now. Inside the
+            // dungeon it stays until the result window is left (OnBackInVillage).
+            if (PartyNet.Active && !PartyNet.Current.FieldMode && (Game.Dungeon == null || !Game.Dungeon.InRun)) PartyNet.End();
             EnemyController.Killed -= OnKilled;
             PartyNet.PromotedToHost -= OnPromoted;
             if (!string.IsNullOrEmpty(toast)) GameEvents.RaiseToast(toast);
@@ -373,7 +386,14 @@ namespace DotRPG
         /// <summary>The fight connection closes when this PC is back in the village.</summary>
         public static void OnBackInVillage()
         {
-            if (Instance == null) return; // development party (-dotrpgParty) keeps its connection for the next run
+            if (Instance == null)
+            {
+                // The run already ended on the server while the result window was open: its connection must still close,
+                // or the member's own AI stay hidden and the next run cannot open a connection. The development party
+                // (-dotrpgParty, offline) keeps its connection for the next run.
+                if (OnlineSession.Playing && PartyNet.Active && !PartyNet.Current.FieldMode) PartyNet.End();
+                return;
+            }
             PartyNet.End();
             if (Instance != null && Instance.state != "gathering") Instance.Finish(null);
         }

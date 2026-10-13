@@ -48,6 +48,12 @@ namespace DotRPG
                     Finish(r, done, quiet);
                     return;
                 }
+                // Rate limit or maintenance with Retry-After: wait (at most 10 s) and resend the same body and request_id.
+                if ((r.status == 429 || r.status == 503) && r.retryAfter > 0f && retry < RetryDelays.Length)
+                {
+                    Api.StartCoroutine(After(Mathf.Min(r.retryAfter, 10f), () => Send(full, body, retry + 1, done, quiet)));
+                    return;
+                }
                 // [ANTI-ABUSE] The server has no fresh presence for this map: send it, then repeat with the same request_id.
                 if (r.code == "PRESENCE_REQUIRED")
                 {

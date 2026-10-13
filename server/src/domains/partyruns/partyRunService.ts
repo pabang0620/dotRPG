@@ -155,7 +155,7 @@ async function beginRun(ctx: PartyCtx, run: PartyRunRow): Promise<'begun' | 'can
   const hostStands = standing.some((m) => m.character_id === run.host_character_id);
   if (standing.length === 0 || !hostStands) {
     await repo.cancelRun(ctx.client, run.id, standing.length === 0 ? 'nobody_joined' : 'ineligible', ctx.now);
-    await repo.setPartyState(ctx.client, run.party_id, 'forming');
+    await repo.setPartyState(ctx.client, run.party_id, 'forming', ctx.now);
     return 'cancelled';
   }
 

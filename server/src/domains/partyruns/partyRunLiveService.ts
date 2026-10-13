@@ -217,7 +217,7 @@ export function leaveRun(accountId: number, characterUuid: string, runUuid: stri
         if (run.host_character_id === me.character_id) {
           // 방장이 모으는 중에 나가면 판 취소(입장 횟수 소모 없음, 파티는 forming으로 복귀)
           await repo.cancelRun(ctx.client, run.id, 'host_cancel', ctx.now);
-          await setPartyState(ctx.client, run.party_id, 'forming');
+          await setPartyState(ctx.client, run.party_id, 'forming', ctx.now);
         } else {
           await repo.setMemberState(ctx.client, run.id, me.character_id, 'left', ctx.now, { leftReason: 'left' });
         }

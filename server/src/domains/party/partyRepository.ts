@@ -128,6 +128,17 @@ export async function insertMember(
   );
 }
 
+/**
+ * 접속 중인 멤버의 조회(폴링)는 활동이다: 마지막 활동 시각만 갱신한다(version·알림 없음, 1분에 한 번).
+ * 없으면 함께 필드 사냥만 하는 파티가 30분 뒤 idle_timeout으로 해산되어 전원이 파티에서 빠졌다(2026-10-13).
+ */
+export async function touchActive(client: PoolClient, partyId: number, now: Date): Promise<void> {
+  await client.query("UPDATE parties SET last_active_at = $2 WHERE id = $1 AND state <> 'closed' AND last_active_at < $2::timestamptz - interval '1 minute'", [
+    partyId,
+    now,
+  ]);
+}
+
 /** 구성·상태가 바뀔 때마다 version +1 (같은 트랜잭션) */
 export async function bump(client: PoolClient, partyId: number, now: Date): Promise<void> {
   await client.query('UPDATE parties SET version = version + 1, last_active_at = $2 WHERE id = $1', [partyId, now]);
