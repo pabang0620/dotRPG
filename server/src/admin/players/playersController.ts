@@ -4,7 +4,7 @@ import { successResponse } from '../../utils/response';
 import { getAdmin } from '../common/adminAuth';
 import { sendAction } from '../common/adminResponse';
 import * as service from './playersService';
-import type { DevCreateBody, LedgerQuery, NoteBody } from './playersValidation';
+import type { DevCreateBody, ForceRenameBody, LedgerQuery, NoteBody } from './playersValidation';
 
 type P = { uuid: string };
 
@@ -76,6 +76,15 @@ export async function devReset(req: Request, res: Response, next: NextFunction):
   try {
     const { params, body } = getValidated<{ request_id: string }, P>(res);
     sendAction(res, await service.resetDevPassword(getAdmin(res.locals), req.ip ?? '', params.uuid, body.request_id));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function forceRename(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { params, body } = getValidated<ForceRenameBody, P>(res);
+    sendAction(res, await service.forceRename(getAdmin(res.locals), req.ip ?? '', params.uuid, body));
   } catch (err) {
     next(err);
   }

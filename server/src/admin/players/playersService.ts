@@ -1,4 +1,5 @@
-// PL1~PL8: 계정·캐릭터 조회, 원장 조회, 메모, 접속 끊기, 개발용 계정 발급
+// PL1~PL9: 계정·캐릭터 조회, 원장 조회, 메모, 접속 끊기, 개발용 계정 발급, 이름 변경 요청
+import { randomInt } from 'node:crypto';
 import { getConfig } from '../../config/env';
 import { afterCommit, getPool, isUniqueViolation } from '../../db/pool';
 import { CLOSE } from '../../domains/chat/wsProtocol';
@@ -11,8 +12,9 @@ import { auditView, runAdminAction, type ActionResult } from '../common/audit';
 import type { AdminCtx } from '../common/adminTypes';
 import * as watch from '../watch/watchRepository';
 import * as withdrawalRepo from '../../domains/withdrawal/withdrawalRepository';
+import { applySanction } from '../sanctions/sanctionsService';
 import * as repo from './playersRepository';
-import type { DevCreateBody, LedgerQuery, NoteBody } from './playersValidation';
+import type { DevCreateBody, ForceRenameBody, LedgerQuery, NoteBody } from './playersValidation';
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 const FAR = new Date('9999-01-01T00:00:00Z').getTime();
@@ -265,6 +267,48 @@ export function resetDevPassword(admin: AdminCtx, ip: string, uuid: string, requ
         data: { account: { id: uuid, login_id: dev.subject }, temp_password: temp, note: '비밀번호는 지금 한 번만 표시됩니다.' },
         stored: { account: { id: uuid, login_id: dev.subject } },
       };
+    },
+  });
+}
+
+/**
+ * PL9(0038): 운영정책의 "이름 변경 요청". 이름을 임시 이름("이름변경" + 숫자 4자리)으로 바꾸고 rename_required를 켠다.
+ * 같은 트랜잭션에서 계정에 경고(warning, other)를 남긴다. 플레이어는 다음 접속 때 새 이름을 고른다(POST /characters/:uuid/rename).
+ */
+export function forceRename(admin: AdminCtx, ip: string, characterUuid: string, body: ForceRenameBody): Promise<ActionResult> {
+  return runAdminAction({
+    admin,
+    ip,
+    action: 'character.force_rename',
+    targetType: 'character',
+    targetUuid: characterUuid,
+    requestId: body.request_id,
+    params: { note_length: body.note.length },
+    handler: async (client) => {
+      const r = await client.query<{ id: string; name: string; account_uuid: string }>(
+        `SELECT c.id, c.name, a.uuid AS account_uuid FROM characters c JOIN accounts a ON a.id = c.account_id
+          WHERE c.uuid = $1 AND c.deleted_at IS NULL FOR UPDATE OF c`,
+        [characterUuid],
+      );
+      const c = r.rows[0];
+      if (!c) throw new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
+      let temp: string | null = null;
+      for (let i = 0; i < 30 && temp === null; i++) {
+        const name = `이름변경${String(randomInt(10000)).padStart(4, '0')}`;
+        await client.query('SAVEPOINT force_rename');
+        try {
+          await client.query('UPDATE characters SET name = $2, rename_required = true, rename_note = $3 WHERE id = $1', [c.id, name, body.note]);
+          await client.query('RELEASE SAVEPOINT force_rename');
+          temp = name;
+        } catch (err) {
+          await client.query('ROLLBACK TO SAVEPOINT force_rename');
+          await client.query('RELEASE SAVEPOINT force_rename');
+          if (!isUniqueViolation(err)) throw err;
+        }
+      }
+      if (temp === null) throw new AppError(503, '임시 이름을 만들지 못했습니다. 다시 시도하세요.', 'RENAME_PLACEHOLDER_FULL');
+      const sanction = await applySanction(client, admin, c.account_uuid, { kind: 'warning', reason_code: 'other', note: `부적절한 캐릭터 이름: ${c.name}` });
+      return { status: 200, data: { character_uuid: characterUuid, old_name: c.name, temp_name: temp, sanction: sanction.sanction } };
     },
   });
 }

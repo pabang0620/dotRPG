@@ -1,5 +1,5 @@
 {
-  "note": "운영 예약어. 운영자가 수정하며 서버가 파일 수정 시각으로 다시 읽는다. substring은 이름에 포함되면 금지, token은 짧은 영문 토큰으로 이름이 같거나 토큰으로 시작/끝나면 금지, allow는 오탐 구제(정확히 같은 이름만). 이름 전용(채팅에는 안 쓰임): 운영자 사칭어와, 채팅에서는 일상어와 겹치는 성적 단어.",
+  "note": "운영 예약어. 운영자가 수정하며 서버가 파일 수정 시각으로 다시 읽는다. substring은 이름에 포함되면 금지, token은 짧은 영문 토큰으로 이름이 같거나 토큰으로 시작/끝나면 금지, token_exact는 이름 전체가 그 토큰(숫자 붙임 포함)일 때만 금지, allow는 오탐 구제(정확히 같은 이름만). 운영자 사칭어(이름 전용). 욕설·성적 단어는 banned_words.json(names_only 포함).",
   "substring": [
     "운영자",
     "관리자",
@@ -24,19 +24,58 @@
     "official",
     "dotrpg",
     "닷알피지",
-    "보지",
-    "자지"
+    "運営",
+    "運營",
+    "运营",
+    "管理者",
+    "管理员",
+    "管理員",
+    "客服",
+    "官方",
+    "公式",
+    "スタッフ",
+    "開発者",
+    "开发者",
+    "開發者",
+    "モデレーター",
+    "ゲームマスター",
+    "администратор",
+    "модератор",
+    "админ",
+    "разработчик",
+    "техподдержка",
+    "quản trị",
+    "quan tri",
+    "kiểm duyệt",
+    "nhà phát triển",
+    "administrador",
+    "moderador",
+    "desarrollador",
+    "desenvolvedor",
+    "suporte",
+    "soporte",
+    "modérateur",
+    "moderateur",
+    "développeur",
+    "entwickler",
+    "moderatorin",
+    "pengembang",
+    "quảntrị",
+    "quantri",
+    "kiểmduyệt"
   ],
   "token": [
     "gm",
     "admin",
-    "mod",
     "staff",
-    "cs",
-    "dev",
     "npc",
-    "system",
-    "sys"
+    "system"
   ],
-  "allow": []
+  "allow": [],
+  "token_exact": [
+    "mod",
+    "dev",
+    "cs",
+    "sys"
+  ]
 }

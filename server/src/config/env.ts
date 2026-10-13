@@ -216,6 +216,8 @@ const envSchema = z.object({
   OPS_HEARTBEAT_URL: z.url().optional(),
   SERVER_NAME: z.string().min(1).default('dotrpg'),
   IMAGE_VERSION: z.string().default('dev'),
+  /** 약관·개인정보·만 14세 확인 동의가 없으면 게임 API를 428 CONSENT_REQUIRED로 막는다(운영에서는 true) */
+  POLICY_CONSENT_ENFORCE: boolStr.default(false),
   ...phase8Shape,
   ...antiAbuseShape,
   ...sweepShape,
@@ -419,6 +421,8 @@ export interface AppConfig {
   pay: PayConfig;
   /** 회원 탈퇴(유예, 보관, 파기 스위치). 값은 법무 확인 전 기본값이며 환경변수로 바꾼다 */
   withdraw: WithdrawConfig;
+  /** 정책 동의 강제(POLICY_CONSENT_ENFORCE) */
+  policyConsentEnforce: boolean;
   policy: {
     dropTtlSeconds: number;
     dropOpenPerCharacter: number;
@@ -732,6 +736,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     load: buildLoad(e),
     pay,
     withdraw,
+    policyConsentEnforce: e.POLICY_CONSENT_ENFORCE,
     policy: {
       dropTtlSeconds: e.DROP_TTL_SECONDS,
       dropOpenPerCharacter: e.DROP_OPEN_PER_CHARACTER,

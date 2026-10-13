@@ -4,7 +4,7 @@ import { rateLimit, MINUTE } from '../../middleware/rateLimiter';
 import { validate } from '../../middleware/validationMiddleware';
 import { versionCheck } from '../../middleware/versionCheck';
 import * as controller from './characterController';
-import { characterParams, createCharacterBody, stateBody } from './characterValidation';
+import { characterParams, createCharacterBody, renameCharacterBody, stateBody } from './characterValidation';
 
 export function createCharacterRouter(): Router {
   const r = Router();
@@ -24,6 +24,18 @@ export function createCharacterRouter(): Router {
     controller.create,
   );
   r.get('/characters/:uuid', validate({ params: characterParams }), controller.get);
+  // 0038: 운영자 이름 변경 요청을 받은 캐릭터만(생성과 같은 속도 제한)
+  r.post(
+    '/characters/:uuid/rename',
+    rateLimit({
+      name: 'char-rename',
+      limit: (c) => c.rate.charCreate,
+      windowMs: MINUTE,
+      key: (_req, locals) => String(getAccount(locals).id),
+    }),
+    validate({ params: characterParams, body: renameCharacterBody }),
+    controller.rename,
+  );
   r.delete('/characters/:uuid', validate({ params: characterParams }), controller.remove);
   r.put(
     '/characters/:uuid/state',

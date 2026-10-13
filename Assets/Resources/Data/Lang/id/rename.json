@@ -1,0 +1,10 @@
+{
+ "(이름 변경 필요)": "(Wajib ganti nama)",
+ "<size=18><color=#b8c4d8>사유: {0}</color></size>": "<size=18><color=#b8c4d8>Alasan: {0}</color></size>",
+ "바꾸는 중...": "Mengganti...",
+ "변경": "Ganti",
+ "새 이름": "Nama baru",
+ "운영정책에 따라 캐릭터 이름을 바꿔야 합니다.": "Sesuai Kebijakan Operasional, nama karakter ini harus diganti.",
+ "캐릭터 이름 변경": "Ganti Nama Karakter",
+ "이름을 바꿀 수 있는 상태가 아닙니다.": "Nama tidak bisa diganti saat ini."
+}

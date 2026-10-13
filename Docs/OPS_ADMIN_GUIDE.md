@@ -85,3 +85,37 @@ dotrpg-admin campaign cancel <campaign_uuid> --reason "금액 오류" --revoke  
 | 내용 확인 | `dotrpg-admin holds show <hold_uuid>`, `dotrpg-admin char ledger <character_uuid> --since 7d` |
 | 정상이면 풀기 | `dotrpg-admin holds release <hold_uuid> --note <사유>` |
 | 부정이면 회수 | `dotrpg-admin holds clawback <hold_uuid> --note <사유>` 후 필요하면 `sanction add` |
+
+## 5. 부적절한 캐릭터 이름 처리 (운영정책 제3조·제5조 "이름 변경 요청")
+
+자동 검사(예약어·금칙어)를 피해 만든 부적절한 이름은 운영자가 이름 변경을 요청한다(operator 이상).
+
+```bash
+dotrpg-admin character rename <character_uuid> --note "플레이어에게 보일 사유(200자 이하)"
+```
+
+- 서버가 한 번에 처리하는 것
+  - 이름을 임시 이름 `이름변경0000~9999`로 바꾼다.
+  - `rename_required`를 켠다.
+  - 계정에 경고(warning, 사유 other, 메모 "부적절한 캐릭터 이름: 옛 이름")를 남긴다.
+  - 감사 로그(`character.force_rename`)를 쓴다.
+- 플레이어 쪽: 캐릭터 카드에 "(이름 변경 필요)"가 붙는다. 접속하기를 누르면 이름 변경 창("운영정책에 따라 캐릭터 이름을 바꿔야 합니다." + 사유)이 먼저 뜬다. 새 이름은 생성 때와 같은 규칙(2~8자, 예약어·금칙어·중복 금지)으로 한 번 고르고, 고르면 바로 접속한다.
+- 2차·3차 위반이면 이 명령과 함께 `sanction create`로 정지를 따로 건다(운영정책 제3조 표).
+- 탈퇴 유예 중인 계정에 요청하면, 철회해도 옛 이름은 되살아나지 않고 임시 이름이 남는다.
+
+## 6. 청약철회(구매 취소) 요청 처리 (유료 서비스 정책 제4조)
+1. 요청 확인: 캐릭터 이름과 결제 일시로 주문을 찾는다(PA 결제 조회). 구매 후 7일 이내인지, 그 주문의 유료 별조각이 쓰이지 않았는지 본다. 정기권은 매일 지급분·상자를 하나도 받지 않았는지 본다.
+2. 철회 가능하면 Steamworks 파트너 사이트에서 해당 거래를 환불한다. 서버 감시 작업이 환불을 감지해 남은 유료 별조각을 자동으로 회수한다(쓴 것이 있으면 부채로 남는다).
+3. 영업일 3일 안에 결과를 회신한다. 미성년자 결제 취소(제5조)는 법정대리인 확인 자료를 받은 뒤 같은 절차로 처리한다.
+
+## 7. 정책 문서와 약관 동의
+- 문서 원문: `server/policies/<ko|en>/*.md`, 운영자 정보는 `server/policies/operator.json`(빈 값은 페이지에 "(미정)"으로 보인다). 페이지 주소 `https://<서버>/policies/<ko|en>/<terms|privacy|operation|paid|youth|probability>`. 확률 페이지는 서버 확률표에서 자동으로 만든다.
+- 약관을 바꾸면 `server/src/domains/policies/policyVersions.ts`의 버전을 올린다. 다음 접속 때 모든 이용자에게 동의 화면이 다시 뜬다. 시행 7일 전(불리한 변경은 30일 전)에 공지한다.
+- 확률을 바꾸기 7일 전에 게임 공지와 웹 페이지로 알린다(운영정책 제9조).
+
+## 8. 운영 서버 설정 점검 (정책과 실제 동작을 맞추기)
+| 설정 | 운영 값 | 이유 |
+|---|---|---|
+| `POLICY_CONSENT_ENFORCE` | `true` | 동의 없이 게임 기능을 쓰지 못하게(시험 서버는 동의 화면이 든 새 클라이언트를 배포한 뒤 켠다) |
+| `WITHDRAW_DESTROY_ENABLED` | `true` | 개인정보처리방침의 "탈퇴 후 5년 보관 뒤 파기"를 실제로 하게(기본값은 세기만 함) |
+| `server/policies/operator.json` | 모든 칸 | 운영사명, 대표자, 주소, 사업자번호, 통신판매업 신고번호, 이메일, 개인정보·청소년 보호책임자, 호스팅 국가 |

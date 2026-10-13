@@ -341,7 +341,7 @@ namespace DotRPG
             }
             string what = count == 10 ? L.F("{0}회 + 보너스 1회", times - 1) : L.T("1회");
             string tierNote = banner == "aura" || banner == "skin" ? "" : L.F(" (Lv.{0} 장비)", SelectedTierLevel());
-            Game.UI.Confirm(Current().name + tierNote + "\n" + L.F("{0}로 {1} 뽑습니다.\n뽑으시겠습니까?", StarShopClient.Stars(price), what), () => Pull(count), true);
+            Game.UI.Confirm(Current().name + tierNote + "\n" + L.F("{0}로 {1} 뽑습니다.\n뽑으시겠습니까?", StarShopClient.Stars(price), what) + "\n" + PolicyClient.RefundNotice, () => Pull(count), true);
         }
 
         void Pull(int count)

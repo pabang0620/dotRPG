@@ -178,6 +178,10 @@ def server_strings():
                 if tok.startswith("/") or not HANGUL.search(tok):
                     continue
                 body = tok[1:-1]
+                # Messages shown to players are single-line; a multi-line "template" is a backtick inside code or a regex
+                # that the simple tokenizer mistook for a string (seen in policyRenderer.ts).
+                if tok[0] == "`" and "\n" in body:
+                    continue
                 if tok[0] == "`":
                     n = iter(range(100))
                     body = re.sub(r"\$\{[^}]*\}", lambda _m: "{%d}" % next(n), body)

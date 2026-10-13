@@ -6,7 +6,7 @@ export const NAME_MAX = 8;
 const NAME_CHARS_RE = /^[가-힣A-Za-z0-9]+$/;
 
 // 입력을 NFC로 정규화한 뒤 검사한다. 앞뒤 공백은 잘라 주지 않고 NAME_CHARS로 거절한다.
-const name = z
+export const characterName = z
   .string()
   .transform((s) => s.normalize('NFC'))
   .superRefine((s, ctx) => {
@@ -29,8 +29,14 @@ const name = z
 
 export const createCharacterBody = z.strictObject({
   request_id: z.uuid(),
-  name,
+  name: characterName,
   class: z.enum(['warrior', 'mage']),
+});
+
+/** 0038: 운영자 이름 변경 요청을 받은 캐릭터의 새 이름 */
+export const renameCharacterBody = z.strictObject({
+  request_id: z.uuid(),
+  name: characterName,
 });
 
 export const characterParams = z.object({ uuid: z.uuid() });
@@ -72,5 +78,6 @@ export const stateBody = z.strictObject({
 });
 
 export type CreateCharacterBody = z.infer<typeof createCharacterBody>;
+export type RenameCharacterBody = z.infer<typeof renameCharacterBody>;
 export type CharacterParams = z.infer<typeof characterParams>;
 export type StateBody = z.infer<typeof stateBody>;

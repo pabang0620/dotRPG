@@ -22,6 +22,9 @@ export const noteBody = z.strictObject({
 
 export const requestOnlyBody = z.strictObject({ request_id: requestId });
 
+/** PL9(0038): 부적절한 캐릭터 이름. note는 플레이어에게 보이는 사유 */
+export const forceRenameBody = z.strictObject({ request_id: requestId, note: z.string().min(1).max(200) });
+
 export const devCreateBody = z.strictObject({
   request_id: requestId,
   login_id: z
@@ -33,3 +36,4 @@ export const devCreateBody = z.strictObject({
 export type LedgerQuery = z.infer<typeof ledgerQuery>;
 export type NoteBody = z.infer<typeof noteBody>;
 export type DevCreateBody = z.infer<typeof devCreateBody>;
+export type ForceRenameBody = z.infer<typeof forceRenameBody>;

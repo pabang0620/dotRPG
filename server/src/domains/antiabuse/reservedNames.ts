@@ -3,7 +3,7 @@
 import { getConfig } from '../../config/env';
 import { getReservedNames } from '../../gamedata/antiAbuseData';
 import { AppError } from '../../utils/AppError';
-import { containsBannedWord, hasObfuscatedBannedWord } from '../../utils/bannedWords';
+import { hasObfuscatedBannedWord, nameHasBannedWord } from '../../utils/bannedWords';
 
 /** 혼동 문자 접기: 0->o, 1->i, l->i, |->i, 3->e, 4->a, 5->s, 7->t, 8->b, $->s, @->a */
 const FOLD: Record<string, string> = { '0': 'o', '1': 'i', l: 'i', '|': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', $: 's', '@': 'a' };
@@ -27,10 +27,13 @@ export function forbiddenReason(name: string): 'RESERVED' | 'BANNED' | null {
       if (list.substring.some((w) => w.length > 0 && c.includes(w.normalize('NFKC').toLowerCase()))) return 'RESERVED';
       // 짧은 영문 토큰은 이름이 같거나 토큰으로 시작/끝날 때만(Pigmy 같은 중간 포함은 통과)
       if (list.token.some((w) => w.length > 0 && (c === w || c.startsWith(w) || c.endsWith(w)))) return 'RESERVED';
+      // 짧은 토큰은 이름 전체가 그 토큰일 때만(Devil, Mode, Csaba는 통과)
+      if (list.token_exact.some((w) => w.length > 0 && c === w.normalize('NFKC').toLowerCase())) return 'RESERVED';
     }
   }
   const stripped = digitless(name);
-  if (containsBannedWord(name) || containsBannedWord(stripped) || containsBannedWord(skeletonOf(name)) || hasObfuscatedBannedWord(name)) return 'BANNED';
+  // 혼동 문자 접기(l->i 등)는 단어 단위 목록에 쓰지 않는다: "talk"가 "taik"(인니어 욕)로 바뀌는 것을 실측함
+  if (nameHasBannedWord(name) || nameHasBannedWord(stripped) || nameHasBannedWord(skeletonOf(name), false) || hasObfuscatedBannedWord(name)) return 'BANNED';
   return null;
 }
 

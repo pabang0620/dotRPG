@@ -83,6 +83,8 @@ export const COMMANDS: Command[] = [
     run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/notes`, { kind: 'review_ack', note: c.args.slice(1).join(' ') || '검토 완료' }),
   },
   { path: ['account', 'kick'], usage: 'account kick <account_uuid>', run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/kick`) },
+  // 0038: 부적절한 이름 -> 임시 이름 + 경고, 플레이어가 다음 접속 때 새 이름을 고른다
+  { path: ['character', 'rename'], usage: 'character rename <character_uuid> --note <플레이어에게 보일 사유>', run: (c) => c.post(`/admin/characters/${need(c.args[0], 'uuid')}/force-rename`, { note: mustFlag(c, 'note') }) },
   { path: ['account', 'dev-create'], usage: 'account dev-create <login_id>', run: (c) => c.post('/admin/accounts/dev', { login_id: need(c.args[0], 'login_id') }) },
   { path: ['account', 'dev-reset'], usage: 'account dev-reset <account_uuid>', run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/dev-password`) },
   {

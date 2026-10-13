@@ -25,6 +25,17 @@ dotRPG가 쓰는 외부 구성 요소와 라이선스. 게임 안 크레딧 화�
 
 간접 의존성은 `cd server && npx license-checker --production --summary`로 확인한다.
 
+## 금칙어 목록 (서버 `server/data/banned_words.json`, 원본 `Tools/moderation/sources/`)
+
+| 목록 | 라이선스 | 출처 |
+|---|---|---|
+| List of Dirty, Naughty, Obscene, and Otherwise Bad Words (영어·한국어·일본어·중국어·스페인어·포르투갈어·독일어·프랑스어·러시아어) | CC BY 4.0 | https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words |
+| badwords-ko (yoonheyjung) | MIT | https://github.com/yoonheyjung/badwords-ko |
+| vietnamese-offensive-words (blue-eyes-vn) | MIT | https://github.com/blue-eyes-vn/vietnamese-offensive-words |
+| indonesian-badwords (drizki) | MIT (package.json) | https://github.com/drizki/indonesian-badwords |
+
+목록은 그대로 쓰지 않고 게임 문장 오탐 실측으로 고른 뒤 합쳤다(`Tools/moderation/build_banned_words.py`, `drop.txt`).
+
 ## 생성한 에셋
 
 - 이미지: Google Flow(Nano Banana 2)로 생성한 뒤 직접 잘라 내고 다듬었다.

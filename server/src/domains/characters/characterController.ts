@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { getAccount } from '../../middleware/authMiddleware';
 import { getValidated } from '../../middleware/validationMiddleware';
 import { replayResponse, successResponse } from '../../utils/response';
-import type { CharacterParams, CreateCharacterBody, StateBody } from './characterValidation';
+import type { CharacterParams, CreateCharacterBody, RenameCharacterBody, StateBody } from './characterValidation';
 import * as service from './characterService';
 
 export async function list(_req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -17,6 +17,18 @@ export async function create(_req: Request, res: Response, next: NextFunction): 
   try {
     const { body } = getValidated<CreateCharacterBody>(res);
     const r = await service.createCharacter(getAccount(res.locals).id, body);
+    if (r.replay) replayResponse(res, r.status, r.body);
+    else successResponse(res, r.body.data, r.body.message, r.status);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** 0038: 운영자 이름 변경 요청을 받은 캐릭터의 새 이름 */
+export async function rename(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<RenameCharacterBody, CharacterParams>(res);
+    const r = await service.renameCharacter(getAccount(res.locals).id, params.uuid, body);
     if (r.replay) replayResponse(res, r.status, r.body);
     else successResponse(res, r.body.data, r.body.message, r.status);
   } catch (err) {

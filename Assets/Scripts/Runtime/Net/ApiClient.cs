@@ -255,6 +255,16 @@ namespace DotRPG
                     ClearTokens();
                     SessionReplaced?.Invoke();
                 }
+                // [POLICY] A required document changed since this account agreed: PolicyClient asks again.
+                if (result.code == "CONSENT_REQUIRED")
+                {
+                    result.message = L.T("약관 동의가 필요합니다.");
+                    if (Time.unscaledTime - consentAt > 2f)
+                    {
+                        consentAt = Time.unscaledTime;
+                        ConsentRequired?.Invoke();
+                    }
+                }
                 done(result);
             }
         }
@@ -262,6 +272,10 @@ namespace DotRPG
         /// <summary>[ANTI-ABUSE] The account logged in somewhere else: this session is over (no refresh, no retry).</summary>
         public static event Action SessionReplaced;
         static float replacedAt = -99f;
+
+        /// <summary>[POLICY] The server answered 428 CONSENT_REQUIRED (a required policy needs the player's agreement).</summary>
+        public static event Action ConsentRequired;
+        static float consentAt = -99f;
 
         /// <summary>A new request_id (one per user action; resend the same id on retry).</summary>
         public static string NewRequestId() => Guid.NewGuid().ToString();

@@ -20,7 +20,7 @@ namespace DotRPG
                 return;
             }
             string what = count == 10 ? L.T("10회 + 보너스 1회") : L.T("1회");
-            Game.UI.Confirm(L.F("봉인된 상자\n{0}로 {1} 엽니다.\n열겠습니까?", StarShopClient.Stars(price), what), () => PullSealed(count), true);
+            Game.UI.Confirm(L.F("봉인된 상자\n{0}로 {1} 엽니다.\n열겠습니까?", StarShopClient.Stars(price), what) + "\n" + PolicyClient.RefundNotice, () => PullSealed(count), true);
         }
 
         void PullSealed(int count)

@@ -38,6 +38,8 @@ import { createClientErrorRouter } from '../domains/clienterrors/clientErrorRout
 import { createSealedBoxRouter } from '../domains/sealedbox/sealedBoxRoutes';
 import { createWithdrawalRouter } from '../domains/withdrawal/withdrawalRoutes';
 import { createChestRouter } from '../domains/chests/chestRoutes';
+import { createPolicyRouter } from '../domains/policies/policyRoutes';
+import { consentGate } from '../domains/policies/consentGate';
 
 export function createRouter(): Router {
   const r = Router();
@@ -45,6 +47,9 @@ export function createRouter(): Router {
   r.use(createAuthRouter());
   // 회원 탈퇴 W1~W3(계정 단위라 /characters 앞에 둔다)
   r.use(createWithdrawalRouter());
+  // 정책 문서(공개)와 동의 기록. 그 뒤의 게임 API는 POLICY_CONSENT_ENFORCE면 동의가 있어야 한다(428 CONSENT_REQUIRED)
+  r.use(createPolicyRouter());
+  r.use(consentGate);
   // 버전(426)과 인증은 createCharacterRouter의 /characters 공통 미들웨어가 처리한다.
   // /characters/{uuid}/... 3단계(경제) 라우터는 반드시 그 뒤에 등록한다(res.locals.account를 쓴다).
   r.use(createCharacterRouter());

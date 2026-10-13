@@ -264,7 +264,8 @@ describe('F8 실제 프로세스의 SIGTERM (종료 순서, 종료 코드 0, bye
     child.stderr.on('data', (d: Buffer) => (out += d.toString()));
     const exit = new Promise<number>((res) => child.on('exit', (c) => res(c ?? -1)));
     try {
-      const deadline = Date.now() + 40_000;
+      // tsx가 src를 실시간 변환하며 띄운다. WSL의 /mnt/c에서는 모듈 로드만 약 40초(2026-10-14 실측 39.5초)라 여유를 둔다.
+      const deadline = Date.now() + 100_000;
       let up = false;
       while (!up && Date.now() < deadline) {
         up = await fetch(`http://127.0.0.1:${port}/health/ready`).then((r) => r.ok, () => false);
@@ -286,7 +287,7 @@ describe('F8 실제 프로세스의 SIGTERM (종료 순서, 종료 코드 0, bye
     } finally {
       child.kill('SIGKILL');
     }
-  }, 90_000);
+  }, 150_000);
 });
 
 describe('F11, F13 마이그레이션', () => {

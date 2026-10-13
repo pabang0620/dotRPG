@@ -21,6 +21,9 @@ namespace DotRPG
             public CharacterClass cls;
             public int level;
             public string mapId;
+            /// <summary>[0038] An operator asked for a new name (the character carries a temporary one until then).</summary>
+            public bool renameRequired;
+            public string renameNote;
         }
 
         /// <summary>Null while not logged in.</summary>
@@ -84,7 +87,7 @@ namespace DotRPG
                     Current = new OnlineSession { AccountId = MiniJson.Str(MiniJson.Obj(r.data, "account"), "id"), LoginId = loginId.ToLowerInvariant() };
                     LevelRewardClient.Reset();
                     DailyQuestClient.Reset();
-                    Current.LoadCharacters(done);
+                    Current.AfterLogin(done);
                 }, auth: false);
             }, auth: false);
         }
@@ -143,7 +146,7 @@ namespace DotRPG
                         Current = new OnlineSession { AccountId = MiniJson.Str(MiniJson.Obj(r.data, "account"), "id"), LoginId = "Steam" };
                         LevelRewardClient.Reset();
                         DailyQuestClient.Reset();
-                        Current.LoadCharacters(done);
+                        Current.AfterLogin(done);
                     }, auth: false);
                 });
             }, auth: false);
@@ -159,6 +162,17 @@ namespace DotRPG
             Current = null;
             LevelRewardClient.Reset();
             DailyQuestClient.Reset();
+        }
+
+        /// <summary>[POLICY] Logged in: the required policies must be agreed before the character list (PolicyClient).</summary>
+        void AfterLogin(Action<ApiResult> done)
+        {
+            PolicyClient.EnsureConsent(r =>
+            {
+                if (!r.ok) { done(r); return; }
+                if (Current == this) LoadCharacters(done);
+                else done(new ApiResult { ok = false, code = "CONSENT_DECLINED", message = L.T("약관에 동의해야 온라인 플레이를 할 수 있습니다.") });
+            });
         }
 
         // ---------------- characters ----------------
@@ -185,6 +199,8 @@ namespace DotRPG
             cls = CharacterClassInfo.Parse(MiniJson.Str(o, "class", "warrior")),
             level = MiniJson.Int(o, "level", 1),
             mapId = MiniJson.Str(o, "map_id", MapRegistry.Village),
+            renameRequired = o is Dictionary<string, object> od && od.TryGetValue("rename_required", out var rr) && rr is bool rb && rb,
+            renameNote = MiniJson.Str(o, "rename_note"),
         };
 
         /// <summary>request_id is made once per creation attempt; resending after a lost answer reuses it.</summary>
@@ -197,6 +213,17 @@ namespace DotRPG
                 ["class"] = cls == CharacterClass.Mage ? "mage" : "warrior",
             };
             Api.Post("/characters", body, r =>
+            {
+                if (r.ok) LoadCharacters(_ => done(r));
+                else done(r);
+            });
+        }
+
+        /// <summary>[0038] New name for a character an operator flagged (POST /characters/{id}/rename). Reloads the list on success.</summary>
+        public void RenameCharacter(string id, string name, string requestId, Action<ApiResult> done)
+        {
+            var body = new Dictionary<string, object> { ["request_id"] = requestId, ["name"] = name };
+            Api.Post("/characters/" + id + "/rename", body, r =>
             {
                 if (r.ok) LoadCharacters(_ => done(r));
                 else done(r);

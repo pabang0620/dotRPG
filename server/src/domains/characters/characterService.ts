@@ -22,10 +22,11 @@ import { style3Owned } from '../skillstyles/skillStyleRepository';
 import { getGrant } from './careerGrantRepository';
 import { getConfig } from '../../config/env';
 import { checkReservedName } from '../antiabuse/reservedNames';
-import type { CreateCharacterBody, StateBody } from './characterValidation';
+import type { CreateCharacterBody, RenameCharacterBody, StateBody } from './characterValidation';
 
 const NAME_UNIQUE = 'characters_name_alive';
 const CREATE_ENDPOINT = 'POST /characters';
+const RENAME_ENDPOINT = 'POST /characters/:uuid/rename';
 const NOT_FOUND = () => new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
 
 export interface ApiBody {
@@ -50,6 +51,8 @@ async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.Char
     name: c.name,
     class: c.class,
     created_at: c.created_at.toISOString(),
+    rename_required: c.rename_required,
+    rename_note: c.rename_note,
     level: c.level,
     xp: c.xp,
     gold: c.gold,
@@ -92,6 +95,8 @@ export async function listCharacters(accountId: number) {
       name: r.name,
       class: r.class,
       level: r.level,
+      rename_required: r.rename_required,
+      rename_note: r.rename_note,
       map_id: r.map_id,
       created_at: r.created_at.toISOString(),
       pos: r.pos_x === null || r.pos_y === null ? null : { x: r.pos_x, y: r.pos_y },
@@ -210,6 +215,42 @@ export async function createCharacter(
     }
     throw err;
   }
+}
+
+// ---------- 이름 변경 요청(0038) ----------
+
+/**
+ * 운영자가 이름 변경을 요청한 캐릭터(rename_required)만 새 이름을 고를 수 있다. 생성과 같은 이름 규칙·예약어·중복 검사.
+ * 같은 request_id 재전송은 처음 응답을 돌려준다.
+ */
+export async function renameCharacter(accountId: number, uuid: string, input: RenameCharacterBody): Promise<StoredResult> {
+  const hash = hashRequest({ uuid, name: input.name });
+  checkReservedName(input.name);
+  return withTransaction(async (client) => {
+    await repo.lockAccount(client, accountId);
+    const stored = await findRequest(client, accountId, input.request_id);
+    if (stored) {
+      if (stored.requestHash !== hash || stored.endpoint !== RENAME_ENDPOINT) {
+        throw new AppError(422, '같은 request_id로 다른 요청을 보낼 수 없습니다.', 'IDEMPOTENCY_MISMATCH');
+      }
+      return { status: stored.statusCode, body: stored.response as ApiBody, replay: true };
+    }
+    const c = await repo.lockOwnedAlive(client, accountId, uuid);
+    if (!c) throw NOT_FOUND();
+    if (!c.rename_required) throw new AppError(409, '이름을 바꿀 수 있는 상태가 아닙니다.', 'RENAME_NOT_REQUIRED');
+    await client.query('SAVEPOINT rename_try');
+    try {
+      await repo.applyRename(client, c.id, input.name);
+      await client.query('RELEASE SAVEPOINT rename_try');
+    } catch (err) {
+      await client.query('ROLLBACK TO SAVEPOINT rename_try');
+      if (isUniqueViolation(err, NAME_UNIQUE)) throw new AppError(409, '이미 사용 중인 이름입니다.', 'NAME_TAKEN');
+      throw err;
+    }
+    const body: ApiBody = { success: true, message: '', data: { character: { id: c.uuid, name: input.name, rename_required: false, rename_note: null } } };
+    await saveRequest(client, accountId, input.request_id, RENAME_ENDPOINT, hash, 200, body);
+    return { status: 200, body, replay: false };
+  });
 }
 
 // ---------- 상태 저장 ----------

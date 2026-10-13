@@ -1,0 +1,10 @@
+{
+ "(이름 변경 필요)": "(Umbenennung nötig)",
+ "<size=18><color=#b8c4d8>사유: {0}</color></size>": "<size=18><color=#b8c4d8>Grund: {0}</color></size>",
+ "바꾸는 중...": "Wird umbenannt...",
+ "변경": "Ändern",
+ "새 이름": "Neuer Name",
+ "운영정책에 따라 캐릭터 이름을 바꿔야 합니다.": "Laut Betriebsrichtlinie musst du diesen Charakter umbenennen.",
+ "캐릭터 이름 변경": "Charakter umbenennen",
+ "이름을 바꿀 수 있는 상태가 아닙니다.": "Umbenennen ist derzeit nicht möglich."
+}

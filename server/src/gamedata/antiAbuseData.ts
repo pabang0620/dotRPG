@@ -26,6 +26,8 @@ export type IncomeBand = z.infer<typeof bandSchema>;
 const reservedSchema = z.looseObject({
   substring: z.array(z.string()).default([]),
   token: z.array(z.string()).default([]),
+  /** 짧아서 다른 말의 앞뒤에 흔히 붙는 토큰(mod, dev, cs): 이름이 그 토큰뿐(숫자만 붙음)일 때만 금지 */
+  token_exact: z.array(z.string()).default([]),
   allow: z.array(z.string()).default([]),
 });
 export type ReservedNames = z.infer<typeof reservedSchema>;
@@ -77,7 +79,7 @@ export function getIncomeCaps(): IncomeCaps | null {
 }
 
 export function getReservedNames(): ReservedNames {
-  return readJson<ReservedNames>('reserved_names.json', (raw) => reservedSchema.parse(raw), { substring: [], token: [], allow: [] });
+  return readJson<ReservedNames>('reserved_names.json', (raw) => reservedSchema.parse(raw), { substring: [], token: [], token_exact: [], allow: [] });
 }
 
 /** careers.json의 trials. 항목이 없으면 null(서버는 AWAKEN_TRIAL_MIN_SECONDS와 "필수 노드 검사 건너뜀"으로 동작) */

@@ -33,6 +33,7 @@ export async function resetDb(): Promise<void> {
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
       'raid_shop_purchases',
+      'account_consents', // 0037 정책 동의
       // 탈퇴(0027): 계정을 가리키는 표를 먼저
       'account_destruction_log',
       'withdrawn_identities',

@@ -61,6 +61,9 @@ export async function restoreNames(client: PoolClient, chars: { id: number; uuid
   for (const c of chars) {
     const original = saved[c.uuid];
     if (!original) continue;
+    // 유예 중에 운영자가 이름 변경을 요청했으면(0038) 옛 이름을 되살리지 않는다: 임시 이름을 두고 플레이어가 새로 고른다
+    const flag = await client.query<{ rename_required: boolean }>('SELECT rename_required FROM characters WHERE id = $1', [c.id]);
+    if (flag.rows[0]?.rename_required) continue;
     await client.query('SAVEPOINT restore_try');
     try {
       await repo.renameCharacter(client, c.id, original);

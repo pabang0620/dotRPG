@@ -242,6 +242,7 @@ namespace DotRPG
             menu.AddOption(L.T("색약 보정"), () => s.Data.colorBlind ? L.T("켜기") : L.T("끄기"), d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
             // Loot filter: what is left on the ground (gold and higher gear are always picked up).
             menu.AddButton(L.T("줍기 설정"), () => ui.Push(ui.LootFilter)); // its own screen: the list stays within the screen height
+            menu.AddButton(L.T("약관 및 정책"), () => ui.Push(ui.Policies)); // [POLICY]
             if (!Application.isMobilePlatform) menu.AddButton(L.T("키보드 설정"), () => ui.Push(ui.KeyBind));
             menu.AddButton(L.T("돌아가기"), () => screen.Close());
             menu.OnCancel = screen.Close;

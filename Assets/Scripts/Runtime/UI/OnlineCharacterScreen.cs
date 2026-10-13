@@ -21,6 +21,8 @@ namespace DotRPG
         readonly System.Collections.Generic.List<CharacterPreviewCard> cards = new System.Collections.Generic.List<CharacterPreviewCard>();
         readonly System.Collections.Generic.List<GameObject> empties = new System.Collections.Generic.List<GameObject>();
         float animTimer;
+        /// <summary>[0038] Enter this character once the list has reloaded after its rename.</summary>
+        string pendingEnterId;
 
         protected override bool AnyFieldFocused => false;
 
@@ -53,6 +55,11 @@ namespace DotRPG
                 busy = false;
                 Say(r.ok ? L.F("{0} 계정", OnlineSession.Current?.LoginId) : Explain(r), !r.ok);
                 Rebuild();
+                // [0038] Just renamed: continue into the game with the new name.
+                string id = pendingEnterId;
+                pendingEnterId = null;
+                var renamed = r.ok && id != null ? OnlineSession.Current?.Characters.Find(c => c.id == id) : null;
+                if (renamed != null && !renamed.renameRequired) Enter(renamed);
             });
         }
 
@@ -121,7 +128,9 @@ namespace DotRPG
                 {
                     var ch = session.Characters[i];
                     var card = CharacterPreviewCard.Create(grid, "Card_" + i, pos, new Vector2(CardW, CardH), 104f, 20);
-                    card.Set(ch.cls, ch.name, (ch.cls == CharacterClass.Mage ? L.T("마법사") : L.T("전사")) + $" Lv.{ch.level}");
+                    string sub = (ch.cls == CharacterClass.Mage ? L.T("마법사") : L.T("전사")) + $" Lv.{ch.level}";
+                    if (ch.renameRequired) sub = "<color=#ff9f7a>" + L.T("(이름 변경 필요)") + "</color>"; // [0038] one line: the card is narrow
+                    card.Set(ch.cls, ch.name, sub);
                     card.OnClick(() => OnCard(k));
                     cards.Add(card);
                 }
@@ -202,6 +211,8 @@ namespace DotRPG
         {
             var session = OnlineSession.Current;
             if (busy || session == null) return;
+            // [0038] An operator asked for a new name: pick it first, then enter (after the list reloads).
+            if (c.renameRequired) { ui.OnlineRename.Open(c, () => pendingEnterId = c.id); return; }
             busy = true;
             Say(L.F("{0} 접속 중...", c.name));
             session.EnterCharacter(c.id, (r, data) =>

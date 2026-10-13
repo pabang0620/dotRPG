@@ -118,6 +118,7 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('raid_claims', `character_id ${CHR}`),
   keepOwn('dungeon_runs', `character_id ${CHR}`),
   keepOwn('dungeon_sweeps', `character_id ${CHR}`),
+  keepOwn('account_consents', `account_id ${ACC}`, '정책 동의 기록(0037): 분쟁 근거라 익명화 때 남기고 보관 기한에 계정과 함께 파기'),
   keepOwn('sweep_ticket_ledger', `account_id ${ACC} OR character_id ${CHR}`),
   keepOwn('sweep_ticket_lots', `account_id ${ACC}`),
   keepOwn('revive_log', `character_id ${CHR}`),
@@ -251,7 +252,7 @@ export const DESTROY_ORDER: string[] = [
   'auction_bids', 'auction_listings', 'friendships', 'blocks', 'report_lines', 'reports', 'party_applications', 'party_members',
   'party_invites', 'field_session_members', 'party_run_host_reports', 'party_runs', 'field_sessions', 'parties', 'star_spend_allocs',
   'star_ledger', 'star_paid_lots', 'star_order_events', 'payment_flags', 'star_admin_grants', 'star_orders', 'star_wallets',
-  'payment_profiles',
+  'payment_profiles', 'account_consents',
 ];
 
 /**

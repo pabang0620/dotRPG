@@ -206,11 +206,15 @@ CREATE TABLE characters (
   xp         INT NOT NULL DEFAULT 0 CHECK (xp >= 0),
   gold       BIGINT NOT NULL DEFAULT 0 CHECK (gold >= 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  deleted_at TIMESTAMPTZ
+  deleted_at TIMESTAMPTZ,
+  rename_required BOOLEAN NOT NULL DEFAULT false,
+  rename_note TEXT CHECK (rename_note IS NULL OR char_length(rename_note) <= 200)
 );
 COMMENT ON TABLE  characters IS '온라인 캐릭터. level·xp·gold는 서버 판정(3단계)만 바꾼다';
 COMMENT ON COLUMN characters.name IS '2~8자, 한글 완성형·영문·숫자. 서버가 NFC 정규화 후 저장';
 COMMENT ON COLUMN characters.class IS 'CharacterClass: warrior | mage';
+COMMENT ON COLUMN characters.rename_required IS '운영자 이름 변경 요청(0038). true면 플레이어가 새 이름을 골라야 한다';
+COMMENT ON COLUMN characters.rename_note IS '이름 변경 요청 사유(플레이어에게 보인다, 200자 이하)';
 COMMENT ON COLUMN characters.level IS '2단계에서는 항상 1. 클라이언트 요청으로 바뀌지 않는다';
 COMMENT ON COLUMN characters.xp IS '현재 레벨 내 경험치. 클라이언트 요청으로 바뀌지 않는다';
 COMMENT ON COLUMN characters.gold IS '잔액. 변경은 gold_ledger와 같은 트랜잭션에서만';
@@ -2867,3 +2871,14 @@ ALTER TABLE item_ledger ADD CONSTRAINT item_ledger_reason_check
                     'raid_shop_cost', 'raid_shop_result'));
 COMMENT ON COLUMN gold_ledger.reason IS '변동 사유. raid_gold 레이드 클리어 확정 골드(ref = 던전 판 uuid). 그 밖의 설명은 0002, 0007, 0021 참고';
 COMMENT ON COLUMN item_ledger.reason IS '변동 사유(경로). dungeon_card 카드 지급(레이드는 ref = 판 uuid:카드번호) / raid_shop_cost 레이드 상점 재료 차감 / raid_shop_result 레이드 상점 장비 지급. 그 밖의 설명은 0002, 0007, 0019, 0020, 0026 참고';
+
+-- 0037: 정책 동의 기록(이용약관, 개인정보 수집·이용, 만 14세 이상 확인). 필요한 버전은 src/domains/policies/policyVersions.ts
+CREATE TABLE account_consents (
+  account_id BIGINT NOT NULL REFERENCES accounts(id),
+  doc_id     TEXT NOT NULL CHECK (doc_id IN ('terms', 'privacy', 'age14')),
+  version    TEXT NOT NULL,
+  agreed_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (account_id, doc_id, version)
+);
+COMMENT ON TABLE  account_consents IS '정책 동의 기록(terms 이용약관, privacy 개인정보 수집·이용, age14 만 14세 이상 확인). 계정 껍데기와 함께 보관한다';
+COMMENT ON COLUMN account_consents.version IS '동의한 문서 버전. 필요한 버전은 policyVersions.ts REQUIRED';

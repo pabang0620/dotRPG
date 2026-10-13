@@ -13,6 +13,9 @@ export interface CharacterRow {
   gold: number;
   created_at: Date;
   deleted_at: Date | null;
+  /** 0038: 운영자 이름 변경 요청 */
+  rename_required: boolean;
+  rename_note: string | null;
 }
 
 export interface QuestSave {
@@ -62,7 +65,7 @@ const toChar = (r: RawChar): CharacterRow => ({
   gold: Number(r.gold),
 });
 
-const CHAR_COLS = 'id, uuid, account_id, name, class, level, xp, gold, created_at, deleted_at';
+const CHAR_COLS = 'id, uuid, account_id, name, class, level, xp, gold, created_at, deleted_at, rename_required, rename_note';
 
 export async function lockAccount(client: PoolClient, accountId: number): Promise<void> {
   await client.query('SELECT id FROM accounts WHERE id = $1 FOR UPDATE', [accountId]);
@@ -87,6 +90,21 @@ export async function insertCharacter(
     [accountId, name, cls],
   );
   return toChar(r.rows[0] as RawChar);
+}
+
+/** 0038: 소유·살아 있음을 확인하며 행을 잠근다(이름 변경) */
+export async function lockOwnedAlive(client: PoolClient, accountId: number, uuid: string): Promise<CharacterRow | null> {
+  const r = await client.query<RawChar>(
+    `SELECT ${CHAR_COLS} FROM characters WHERE uuid = $1 AND account_id = $2 AND deleted_at IS NULL FOR UPDATE`,
+    [uuid, accountId],
+  );
+  const row = r.rows[0];
+  return row ? toChar(row) : null;
+}
+
+/** 0038: 플레이어가 고른 새 이름. 이름 변경 요청을 끈다(UNIQUE 위반은 호출 쪽이 NAME_TAKEN으로 바꾼다) */
+export async function applyRename(client: PoolClient, characterId: number, name: string): Promise<void> {
+  await client.query('UPDATE characters SET name = $2, rename_required = false, rename_note = NULL WHERE id = $1', [characterId, name]);
 }
 
 export async function insertInitialState(
@@ -206,7 +224,7 @@ export async function listAlive(
     RawChar & { map_id: string; pos_x: number | null; pos_y: number | null; updated_at: Date }
   >(
     `SELECT c.id, c.uuid, c.account_id, c.name, c.class, c.level, c.xp, c.gold, c.created_at, c.deleted_at,
-            s.map_id, s.pos_x, s.pos_y, s.updated_at
+            c.rename_required, c.rename_note, s.map_id, s.pos_x, s.pos_y, s.updated_at
        FROM characters c JOIN character_state s ON s.character_id = c.id
       WHERE c.account_id = $1 AND c.deleted_at IS NULL
       ORDER BY c.created_at, c.id`,

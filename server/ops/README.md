@@ -180,7 +180,7 @@ GRANT SELECT, DELETE ON
          party_applications, party_members, party_invites, field_session_members,
          party_run_host_reports, party_runs, field_sessions, parties, star_spend_allocs,
          star_ledger, star_paid_lots, star_order_events, payment_flags, star_admin_grants,
-         star_orders, star_wallets, payment_profiles, characters, account_withdrawals, accounts
+         star_orders, star_wallets, payment_profiles, account_consents, characters, account_withdrawals, accounts
   TO dotrpg_purge;
 GRANT INSERT ON account_destruction_log TO dotrpg_purge;               -- 파기 관리대장(추가만)
 GRANT USAGE ON SEQUENCE account_destruction_log_id_seq TO dotrpg_purge;

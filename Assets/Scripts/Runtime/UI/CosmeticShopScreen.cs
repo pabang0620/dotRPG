@@ -231,7 +231,13 @@ namespace DotRPG
                 GameEvents.RaiseToast(L.F("별조각이 모자랍니다. (필요 {0:N0}, 보유 {1:N0})", cost, StarShopClient.Balance));
                 return;
             }
-            Game.UI.Confirm(L.F("{0}\n{1} · 영구 소장\n구매하시겠습니까?", L.T(product.Name), offer.LocalizedPrice), async () => await store.PurchaseAsync(offer), true);
+            // [POLICY] Paid purchase: the withdrawal notice and a way to read the refund policy before buying.
+            Game.UI.Choose(L.F("{0}\n{1} · 영구 소장\n구매하시겠습니까?", L.T(product.Name), offer.LocalizedPrice) + "\n" + PolicyClient.RefundNotice, new (string, System.Action)[]
+            {
+                (L.T("구매"), async () => await store.PurchaseAsync(offer)),
+                (L.T("환불 정책"), () => PolicyClient.Open(PolicyClient.Paid)),
+                (L.T("취소"), () => { }),
+            });
         }
 
         void OpenGacha()

@@ -1,0 +1,10 @@
+{
+ "(이름 변경 필요)": "(Cần đổi tên)",
+ "<size=18><color=#b8c4d8>사유: {0}</color></size>": "<size=18><color=#b8c4d8>Lý do: {0}</color></size>",
+ "바꾸는 중...": "Đang đổi...",
+ "변경": "Đổi",
+ "새 이름": "Tên mới",
+ "운영정책에 따라 캐릭터 이름을 바꿔야 합니다.": "Theo Chính sách vận hành, nhân vật này cần đổi tên.",
+ "캐릭터 이름 변경": "Đổi tên nhân vật",
+ "이름을 바꿀 수 있는 상태가 아닙니다.": "Hiện không thể đổi tên."
+}

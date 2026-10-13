@@ -1,0 +1,10 @@
+{
+ "(이름 변경 필요)": "(Rename required)",
+ "<size=18><color=#b8c4d8>사유: {0}</color></size>": "<size=18><color=#b8c4d8>Reason: {0}</color></size>",
+ "바꾸는 중...": "Renaming...",
+ "변경": "Change",
+ "새 이름": "New name",
+ "운영정책에 따라 캐릭터 이름을 바꿔야 합니다.": "Under the Operation Policy, this character must be renamed.",
+ "캐릭터 이름 변경": "Rename Character",
+ "이름을 바꿀 수 있는 상태가 아닙니다.": "This character cannot be renamed now."
+}

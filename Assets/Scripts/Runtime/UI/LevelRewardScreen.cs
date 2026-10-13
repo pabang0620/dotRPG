@@ -100,7 +100,7 @@ namespace DotRPG
             if (LevelRewardClient.PassOwned || LevelRewardClient.Busy) return;
             int price = LevelRewardClient.PassPrice;
             if (StarShopClient.Balance < price) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(L.F("별조각이 모자랍니다. (필요 {0:N0}, 보유 {1:N0})", price, StarShopClient.Balance)); return; }
-            Game.UI.Confirm(L.F("<b>성장 패스</b>\n별조각 {0:N0}개 · 계정당 한 번 · 기간 없음\n레벨마다 강화권·봉인된 상자 등 패스 보상을 받습니다.\n구매하시겠습니까?", price),
+            Game.UI.Confirm(L.F("<b>성장 패스</b>\n별조각 {0:N0}개 · 계정당 한 번 · 기간 없음\n레벨마다 강화권·봉인된 상자 등 패스 보상을 받습니다.\n구매하시겠습니까?", price) + "\n" + PolicyClient.RefundNotice,
                 () => LevelRewardClient.BuyPass(Answer), true);
         }
 
