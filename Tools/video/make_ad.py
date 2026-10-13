@@ -11,8 +11,10 @@ import sys
 
 ROOT = sys.argv[1]
 LENGTH = sys.argv[2] if len(sys.argv) > 2 else "30"
-OUT = sys.argv[3] if len(sys.argv) > 3 else os.path.join(ROOT, f"dotRPG_ad_{LENGTH}s.mp4")
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+VIDEOS = os.path.join(os.path.dirname(REPO), "dotRPG_videos")  # every finished video goes here (games/dotRPG_videos)
+os.makedirs(VIDEOS, exist_ok=True)
+OUT = sys.argv[3] if len(sys.argv) > 3 else os.path.join(VIDEOS, f"dotRPG_ad_{LENGTH}s.mp4")
 AUDIO = os.path.join(REPO, "Assets", "Resources", "Audio")
 LOGO = os.path.join(REPO, "Assets", "Resources", "Art", "ui_logo.png")
 FONT = "/mnt/c/Windows/Fonts/PretendardGOV-Black.otf"

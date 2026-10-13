@@ -4,8 +4,9 @@
 #   <capture folder>/clips/<scene>/f0000.jpg ... (30 fps) -> 1920x1080 H.264 + AAC, captions in Korean, game music.
 set -euo pipefail
 root="${1:?capture folder}"
-out="${2:-$root/dotRPG_trailer.mp4}"
 repo="$(cd "$(dirname "$0")/../.." && pwd)"
+mkdir -p "$repo/../dotRPG_videos"   # every finished video goes to games/dotRPG_videos
+out="${2:-$repo/../dotRPG_videos/dotRPG_trailer_1min.mp4}"
 font="/usr/share/fonts/truetype/nanum/NanumSquareRoundB.ttf"
 logo="$repo/Assets/Resources/Art/ui_logo.png"
 music="$repo/Assets/Resources/Audio/music_raid_enrage.ogg"
