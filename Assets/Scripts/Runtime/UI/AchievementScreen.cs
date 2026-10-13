@@ -15,7 +15,7 @@ namespace DotRPG
         const int PerColumn = 5;
         const float CellW = 590f, CellH = 64f, ColGap = 20f, Top = -106f;
         static readonly (string id, string name)[] Tabs =
-            { ("growth", "성장"), ("combat", "전투"), ("dungeon", "던전"), ("enhance", "강화"), ("wealth", "재화"), ("cash", "캐시샵") };
+            { ("growth", L.T("성장")), ("combat", L.T("전투")), ("dungeon", L.T("던전")), ("enhance", L.T("강화")), ("wealth", L.T("재화")), ("cash", L.T("캐시샵")) };
 
         Text header;
         Button clearBtn;
@@ -26,10 +26,10 @@ namespace DotRPG
 
         public static AchievementScreen Create(Transform canvas)
         {
-            var w = CreateWindow<AchievementScreen>(canvas, "Achievements", "업적", "menuicon_achievement");
+            var w = CreateWindow<AchievementScreen>(canvas, "Achievements", L.T("업적"), "menuicon_achievement");
             Instance = w;
             w.header = Label(w.content, "Header", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(900f, 40f), TextAnchor.MiddleLeft);
-            w.clearBtn = Button(w.content, "Clear", "칭호 해제", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 40f), () => w.Equip(""), 17);
+            w.clearBtn = Button(w.content, "Clear", L.T("칭호 해제"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 40f), () => w.Equip(""), 17);
             for (int i = 0; i < Tabs.Length; i++)
             {
                 string id = Tabs[i].id;
@@ -46,7 +46,7 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
                 var name = Label(bg.transform, "Name", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -4f), new Vector2(330f, 26f), TextAnchor.MiddleLeft);
                 var info = Label(bg.transform, "Info", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -28f), new Vector2(400f, 24f), TextAnchor.MiddleLeft);
-                var equip = Button(bg.transform, "Equip", "장착", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(110f, 38f), () => w.EquipAt(idx), 16);
+                var equip = Button(bg.transform, "Equip", L.T("장착"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(110f, 38f), () => w.EquipAt(idx), 16);
                 w.cells.Add((bg, name, info, equip, icon));
             }
             AchievementClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
@@ -69,7 +69,7 @@ namespace DotRPG
         {
             Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
             if (!ok) GameEvents.RaiseToast(msg);
-            else GameEvents.RaiseToast(string.IsNullOrEmpty(id) ? "칭호를 내렸습니다." : $"칭호 [{AchievementClient.MyTitle}]을(를) 달았습니다.");
+            else GameEvents.RaiseToast(string.IsNullOrEmpty(id) ? L.T("칭호를 내렸습니다.") : L.F("칭호 [{0}]을(를) 달았습니다.", L.T(AchievementClient.MyTitle)));
         });
 
         protected override void Refresh()
@@ -78,8 +78,8 @@ namespace DotRPG
             int done = 0;
             foreach (var a in list) if (a.achieved) done++;
             header.text = list.Count == 0
-                ? "<color=#8c96a8>업적을 불러오는 중입니다...</color>"
-                : $"달성 {done}/{list.Count}   ·   칭호: " + (string.IsNullOrEmpty(AchievementClient.MyTitle) ? "<color=#8c96a8>없음</color>" : $"<color=#ffd34a>[{AchievementClient.MyTitle}]</color>  <color=#b8c4d8>채팅 이름 앞에 보입니다</color>");
+                ? L.T("<color=#8c96a8>업적을 불러오는 중입니다...</color>")
+                : L.F("달성 {0}/{1}   ·   칭호: ", done, list.Count) + (string.IsNullOrEmpty(AchievementClient.MyTitle) ? L.T("<color=#8c96a8>없음</color>") : L.F("<color=#ffd34a>[{0}]</color>  <color=#b8c4d8>채팅 이름 앞에 보입니다</color>", L.T(AchievementClient.MyTitle)));
             clearBtn.gameObject.SetActive(!string.IsNullOrEmpty(AchievementClient.MyTitleId));
             visible.Clear();
             foreach (var a0 in list) if (a0.category == tab) visible.Add(a0);
@@ -101,11 +101,11 @@ namespace DotRPG
                 c.icon.enabled = mark != null;
                 c.icon.sprite = mark;
                 c.icon.color = a.achieved ? Color.white : new Color(0.45f, 0.45f, 0.5f, 1f);
-                c.name.text = a.achieved ? $"<color=#ffd34a><b>{a.title}</b></color>  <color=#8fe28f>달성</color>" : $"<color=#b8c4d8>{a.title}</color>";
-                c.info.text = a.achieved ? $"<color=#b8c4d8>{a.description}</color>" : $"<color=#8c96a8>{a.description}  ({a.progress:N0}/{a.goal:N0})</color>";
+                c.name.text = a.achieved ? L.F("<color=#ffd34a><b>{0}</b></color>  <color=#8fe28f>달성</color>", L.T(a.title)) : $"<color=#b8c4d8>{L.T(a.title)}</color>";
+                c.info.text = a.achieved ? $"<color=#b8c4d8>{L.T(a.description)}</color>" : $"<color=#8c96a8>{L.T(a.description)}  ({a.progress:N0}/{a.goal:N0})</color>";
                 bool equipped = AchievementClient.MyTitleId == a.id;
                 c.equip.gameObject.SetActive(a.achieved);
-                TextOf(c.equip).text = equipped ? "장착 중" : "장착";
+                TextOf(c.equip).text = equipped ? L.T("장착 중") : L.T("장착");
                 c.equip.interactable = !equipped;
             }
         }

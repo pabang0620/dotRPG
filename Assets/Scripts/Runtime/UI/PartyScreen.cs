@@ -36,10 +36,10 @@ namespace DotRPG
 
         public static PartyScreen Create(Transform canvas)
         {
-            var w = CreateWindow<PartyScreen>(canvas, "Party", "AI 동료 편성", "menuicon_party");
+            var w = CreateWindow<PartyScreen>(canvas, "Party", L.T("AI 동료 편성"), "menuicon_party");
             w.partyTitle = Label(w.content, "PartyTitle", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, 0f), new Vector2(800f, 32f));
             for (int i = 0; i < PartyManager.MaxMembers; i++) w.slots.Add(w.BuildSlot(i));
-            Label(w.content, "MercTitle", "<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>", 22,
+            Label(w.content, "MercTitle", L.T("<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>"), 22,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, -150f), new Vector2(1180f, 30f));
             foreach (var def in MercenaryDatabase.All) w.cards.Add(w.BuildCard(def, w.cards.Count));
             // [UI] Key hint under the cards (top right it ran into the party title once the "자리가 N개라" warning showed).
@@ -92,25 +92,27 @@ namespace DotRPG
         {
             var party = Game.Party;
             if (party == null || def == null) return false;
-            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast("던전 안에서는 파티를 바꿀 수 없습니다."); Game.Audio.PlaySfx("cancel"); return false; } // [DUNGEON]
+            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast(L.T("던전 안에서는 파티를 바꿀 수 없습니다.")); Game.Audio.PlaySfx("cancel"); return false; } // [DUNGEON]
             bool ok;
             if (party.Has(def.id) || Game.Session.PartyRoster.Contains(def.id))
             {
                 ok = party.RemoveCompanion(def.id);
-                if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에서 떠났습니다.");
+                string ga = L.Josa(def.name, "이", "가"); // i18n-ignore particle
+                if (ok) GameEvents.RaiseToast(L.F("{0}{1} 파티에서 떠났습니다.", L.T(def.name), ga));
             }
             else if (Game.Session.PartyRoster.Count >= PartyManager.CompanionLimit)
             {
                 ok = false;
                 int people = PartyManager.PeopleInParty;
                 GameEvents.RaiseToast(people > 1
-                    ? $"파티원 {people}명이 있어 AI 동료는 {PartyManager.CompanionLimit}명까지 넣을 수 있습니다. (최대 {PartyManager.MaxMembers}명)"
-                    : $"파티가 가득 찼습니다. (최대 {PartyManager.MaxMembers}명)");
+                    ? L.F("파티원 {0}명이 있어 AI 동료는 {1}명까지 넣을 수 있습니다. (최대 {2}명)", people, PartyManager.CompanionLimit, PartyManager.MaxMembers)
+                    : L.F("파티가 가득 찼습니다. (최대 {0}명)", PartyManager.MaxMembers));
             }
             else
             {
                 ok = party.AddCompanion(def.id) != null || Game.Session.PartyRoster.Contains(def.id);
-                if (ok) GameEvents.RaiseToast($"{def.name}{PlayerController.Josa(def.name, "이", "가")} 파티에 합류했습니다.");
+                string ga = L.Josa(def.name, "이", "가"); // i18n-ignore particle
+                if (ok) GameEvents.RaiseToast(L.F("{0}{1} 파티에 합류했습니다.", L.T(def.name), ga));
             }
             Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
             Refresh();
@@ -125,8 +127,8 @@ namespace DotRPG
             int level = session.Progression.Level;
             var roster = session.PartyRoster;
             int people = PartyManager.PeopleInParty, limit = PartyManager.CompanionLimit;
-            partyTitle.text = $"<b>현재 파티</b>  <color=#ffe066>사람 {people}명 · AI {Mathf.Min(roster.Count, limit)}명 / {PartyManager.MaxMembers}</color>"
-                + (roster.Count > limit ? $"   <color=#ff9f7a>자리가 {limit}개라 던전에는 앞의 {limit}명만 들어갑니다</color>" : "");
+            partyTitle.text = L.F("<b>현재 파티</b>  <color=#ffe066>사람 {0}명 · AI {1}명 / {2}</color>", people, Mathf.Min(roster.Count, limit), PartyManager.MaxMembers)
+                + (roster.Count > limit ? L.F("   <color=#ff9f7a>자리가 {0}개라 던전에는 앞의 {1}명만 들어갑니다</color>", limit, limit) : "");
 
             // Party slots: me first, then the roster in order.
             for (int i = 0; i < slots.Count; i++)
@@ -140,7 +142,7 @@ namespace DotRPG
                     s.portrait.enabled = true;
                     s.portrait.sprite = Game.Art.GetCharacter(CharacterPreviewCard.LookFor(session.PlayerClass), "down", "idle0");
                     int hp = me != null && me.Health != null ? me.Health.Max : CharacterStats.MaxHp;
-                    s.text.text = $"<size=22><b>나</b></size>  <color=#b8c4d8>{cls.displayName}</color>\nLv.{level}   HP {hp}\n<color=#ffe066>리더</color>";
+                    s.text.text = L.F("<size=22><b>나</b></size>  <color=#b8c4d8>{0}</color>\nLv.{1}   HP {2}\n<color=#ffe066>리더</color>", L.T(cls.displayName), level, hp);
                     continue;
                 }
                 var def = i - 1 < roster.Count ? MercenaryDatabase.Get(roster[i - 1]) : null;
@@ -148,14 +150,14 @@ namespace DotRPG
                 if (def == null)
                 {
                     s.stripe.color = new Color32(60, 70, 90, 255);
-                    s.text.text = "<color=#8c96a8>빈 자리\n아래에서 용병을 편성하자</color>";
+                    s.text.text = L.T("<color=#8c96a8>빈 자리\n아래에서 용병을 편성하자</color>");
                     continue;
                 }
                 var member = party.Find(def.id);
                 s.stripe.color = def.color;
                 s.portrait.sprite = Portrait(def, level);
                 string hpLine = member != null ? $"HP {member.Health.Current} / {member.Health.Max}" : "";
-                s.text.text = $"<size=22><b><color=#{Hex(def.color)}>{def.name}</color></b></size>  <color=#b8c4d8>{def.roleName}</color>\nLv.{level}   {hpLine}";
+                s.text.text = $"<size=22><b><color=#{Hex(def.color)}>{L.T(def.name)}</color></b></size>  <color=#b8c4d8>{L.T(def.roleName)}</color>\nLv.{level}   {hpLine}";
             }
 
             selected = Mathf.Clamp(selected, 0, cards.Count - 1);
@@ -167,16 +169,16 @@ namespace DotRPG
                 var preview = MercenaryDatabase.CreateData(def, level);
                 var st = preview.Stats;
                 c.portrait.sprite = Portrait(def, level);
-                c.title.text = $"<size=26><b><color=#{Hex(def.color)}>{def.name}</color></b></size>\n{def.roleName}\n<color=#b8c4d8>Lv.{level}  HP {st.MaxHp}  공격 {st.AttackDamage(def.cls) * DamageNumber.DisplayScale}</color>";
-                c.body.text = $"{def.description}\n\n<color=#ffe066>주력</color> {SkillLine(def, preview)}\n<color=#b8c4d8>무기</color> {EquipmentDatabase.Get(preview.Equipment[EquipSlot.Weapon])?.name ?? "-"}";
+                c.title.text = L.F("<size=26><b><color=#{0}>{1}</color></b></size>\n{2}\n<color=#b8c4d8>Lv.{3}  HP {4}  공격 {5}</color>", Hex(def.color), L.T(def.name), L.T(def.roleName), level, st.MaxHp, st.AttackDamage(def.cls) * DamageNumber.DisplayScale);
+                c.body.text = L.F("{0}\n\n<color=#ffe066>주력</color> {1}\n<color=#b8c4d8>무기</color> {2}", L.T(def.description), SkillLine(def, preview), L.T(EquipmentDatabase.Get(preview.Equipment[EquipSlot.Weapon])?.name) ?? "-");
                 c.bg.color = inParty ? new Color32(36, 58, 82, 245) : new Color32(24, 36, 54, 235);
                 c.frame.color = i == selected ? (Color)UIColors.Highlight : new Color(1f, 1f, 1f, 0f);
                 bool full = !inParty && roster.Count >= PartyManager.CompanionLimit;
-                c.buttonText.text = inParty ? "해제" : full ? "자리 없음" : "편성";
+                c.buttonText.text = inParty ? L.T("해제") : full ? L.T("자리 없음") : L.T("편성");
                 c.button.image.sprite = Game.Art.Get(inParty ? "ui_btngray" : "ui_btn");
                 c.button.image.color = full ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
             }
-            hint.text = "<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸웁니다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>";
+            hint.text = L.T("<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸웁니다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>");
         }
 
         static Sprite Portrait(MercenaryDef def, int level)
@@ -193,7 +195,7 @@ namespace DotRPG
                 var gem = SkillGems.ForSlot(def.cls, slot);
                 if (gem == null) continue;
                 bool open = data.Progression.IsSlotOpen(slot);
-                names.Add(open ? gem.name : $"<color=#8c96a8>{gem.name}(Lv.{Progression.SlotLevel(slot)})</color>");
+                names.Add(open ? L.T(gem.name) : $"<color=#8c96a8>{L.T(gem.name)}(Lv.{Progression.SlotLevel(slot)})</color>");
                 if (names.Count >= 3) break;
             }
             return string.Join(" · ", names);

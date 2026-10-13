@@ -95,7 +95,7 @@ namespace DotRPG
             frame.shownMember = null;
             frame.shownLevel = -1;
             frame.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(classColor)}>{v.name}</color>";
-            frame.info.text = $"Lv.{v.level} {CharacterClassInfo.Get(v.cls).displayName}";
+            frame.info.text = $"Lv.{v.level} {L.T(CharacterClassInfo.Get(v.cls).displayName)}";
             SetFill(frame.hpFill, 0f);
             SetFill(frame.mpFill, 0f);
             if (!frame.downed.gameObject.activeSelf) frame.downed.gameObject.SetActive(true);
@@ -106,11 +106,11 @@ namespace DotRPG
         /// <summary>Where a party member without a body here is, from the server's presence (map they last reported).</summary>
         public static string WhereText(PartyMemberView v)
         {
-            if (!v.online) return "<color=#8c96a8>접속 안 함</color>";
-            if (string.IsNullOrEmpty(v.mapId)) return "<color=#b8c4d8>위치 확인 중</color>";
-            if (Game.Session != null && v.mapId == Game.Session.MapId) return "<color=#8fe28f>같은 곳에 있음</color>";
+            if (!v.online) return L.T("<color=#8c96a8>접속 안 함</color>");
+            if (string.IsNullOrEmpty(v.mapId)) return L.T("<color=#b8c4d8>위치 확인 중</color>");
+            if (Game.Session != null && v.mapId == Game.Session.MapId) return L.T("<color=#8fe28f>같은 곳에 있음</color>");
             var map = MapRegistry.Get(v.mapId);
-            return $"<color=#b8c4d8>{(map != null ? map.displayName : "다른 곳")}에 있음</color>";
+            return L.F("<color=#b8c4d8>{0}에 있음</color>", (map != null ? L.T(map.displayName) : L.T("다른 곳")));
         }
 
         /// <summary>Number of frames on screen (for automated checks).</summary>
@@ -177,7 +177,7 @@ namespace DotRPG
                     if (reviveSeconds != frame.shownDowned)
                     {
                         frame.shownDowned = reviveSeconds;
-                        frame.downedText.text = reviveRemaining > 0f ? $"쓰러짐  {reviveSeconds}초" : "쓰러짐";
+                        frame.downedText.text = reviveRemaining > 0f ? L.F("쓰러짐  {0}초", reviveSeconds) : L.T("쓰러짐");
                     }
                 }
             }

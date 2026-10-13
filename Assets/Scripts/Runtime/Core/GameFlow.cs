@@ -171,7 +171,7 @@ namespace DotRPG
                 Game.Session.Restore(data, Game.Config);
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
-                GameEvents.RaiseToast("온라인 캐릭터로 접속했습니다.");
+                GameEvents.RaiseToast(L.T("온라인 캐릭터로 접속했습니다."));
                 OnlineEconomy.OnEnteredWorld(); // [SERVER]
                 PartyClient.AttachOnline(); // [PARTY] server party board, lobby and matching
                 OnlineServices.AttachChat(OnlineSession.Current.ActiveCharacter); // [SERVER 5] chat socket
@@ -185,7 +185,7 @@ namespace DotRPG
             var data = Game.Saves.Read();
             if (data == null)
             {
-                GameEvents.RaiseToast(SaveSystem.LastReadNotice ?? "저장 데이터를 불러올 수 없습니다."); // [I] damaged save notice
+                GameEvents.RaiseToast(SaveSystem.LastReadNotice ?? L.T("저장 데이터를 불러올 수 없습니다.")); // [I] damaged save notice
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -194,14 +194,14 @@ namespace DotRPG
                 Game.Session.Restore(data, Game.Config);
                 EnterWorld();
                 Game.State.Set(GameState.Playing);
-                GameEvents.RaiseToast("저장된 지점에서 이어합니다.");
+                GameEvents.RaiseToast(L.T("저장된 지점에서 이어합니다."));
                 if (SaveSystem.LastReadNotice != null) GameEvents.RaiseToast(SaveSystem.LastReadNotice);
                 // [ENH] One-time note for saves converted to per-piece enhancement (v3 → v4).
                 if (data.enhanceCompensation > 0)
                 {
                     // Two toasts: one line is wider than the toast column.
-                    GameEvents.RaiseToast("강화 규칙이 새로 바뀌었습니다.");
-                    GameEvents.RaiseToast($"보상으로 장비 보호권 {data.enhanceCompensation}장을 받았습니다.");
+                    GameEvents.RaiseToast(L.T("강화 규칙이 새로 바뀌었습니다."));
+                    GameEvents.RaiseToast(L.F("보상으로 장비 보호권 {0}장을 받았습니다.", data.enhanceCompensation));
                 }
             }, data.mapId));
         }
@@ -270,13 +270,13 @@ namespace DotRPG
             // [DUNGEON] Dungeons are left through the result screen.
             if (Game.Dungeon != null && Game.Dungeon.InRun)
             {
-                GameEvents.RaiseToast("던전 안에서는 사용할 수 없습니다.");
+                GameEvents.RaiseToast(L.T("던전 안에서는 사용할 수 없습니다."));
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
             if (Game.World.MapId == HuntingGrounds.HomeOf(Game.World.MapId))
             {
-                GameEvents.RaiseToast("이미 마을에 있습니다.");
+                GameEvents.RaiseToast(L.T("이미 마을에 있습니다."));
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -294,7 +294,7 @@ namespace DotRPG
             player.LockMovement(1.15f);
             SkillVisuals.TownPortal(player.Position);
             Game.Audio.PlaySfx("magic");
-            GameEvents.RaiseToast("마을 귀환 주문서를 펼쳤다…");
+            GameEvents.RaiseToast(L.T("마을 귀환 주문서를 펼쳤다…"));
             yield return new WaitForSeconds(1f);
             // Wait out a pause menu or a conversation that started meanwhile.
             while (!Game.IsPlaying || transitioning) yield return null;
@@ -304,19 +304,19 @@ namespace DotRPG
         }
 
         /// <summary>Text shown when saving is refused inside a dungeon.</summary>
-        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없습니다."; // [DUNGEON]
+        public const string DungeonSaveRefused = "던전 안에서는 저장할 수 없습니다."; // i18n-ignore const, wrapped at use [DUNGEON]
 
         public void SaveGame()
         {
             // [DUNGEON] No saving inside a dungeon (the last save continues in the village).
             if (Game.Dungeon != null && Game.Dungeon.InRun)
             {
-                GameEvents.RaiseToast(DungeonSaveRefused);
+                GameEvents.RaiseToast(L.T(DungeonSaveRefused));
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
             bool ok = WriteSave();
-            GameEvents.RaiseToast(ok ? "저장했습니다." : "저장에 실패했습니다.");
+            GameEvents.RaiseToast(ok ? L.T("저장했습니다.") : L.T("저장에 실패했습니다."));
             Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
         }
 
@@ -426,7 +426,7 @@ namespace DotRPG
                 else p.Revive(1f, DungeonDirector.ReviveInvulnerable);
                 p.Data.Mana = p.MaxMana;
                 Game.Audio.PlaySfx("quest");
-                GameEvents.RaiseToast("그 자리에서 다시 일어났습니다.");
+                GameEvents.RaiseToast(L.T("그 자리에서 다시 일어났습니다."));
                 Game.State.Set(GameState.Playing);
             });
         }

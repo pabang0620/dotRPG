@@ -56,21 +56,21 @@ namespace DotRPG
         {
             var c = PartyClient.Instance;
             if (c == null || !c.InParty)
-                return "<color=#8c96a8>파티 없음</color>  ·  눌러서 친구 초대";
+                return L.T("<color=#8c96a8>파티 없음</color>  ·  눌러서 친구 초대");
             var d = DungeonDatabase.Get(c.DungeonId);
-            string target = d == null ? "" : $"{d.name} {PartyFinderRules.ModeName(c.DungeonId, c.Difficulty)}";
-            string role = c.IsLeader ? "<color=#ffd34a>방장</color>" : "파티원";
+            string target = d == null ? "" : $"{L.T(d.name)} {L.T(PartyFinderRules.ModeName(c.DungeonId, c.Difficulty))}";
+            string role = c.IsLeader ? L.T("<color=#ffd34a>방장</color>") : L.T("파티원");
             var run = PartyRunSession.Instance;
             if (run != null)
             {
-                string state = run.State == "gathering" ? "<color=#ffe066>출발 준비 중</color> · 방장에게 연결" : "<color=#8fe28f>던전 진행 중</color>";
-                return $"{role} · {c.Members.Count}명 · {state}";
+                string state = run.State == "gathering" ? L.T("<color=#ffe066>출발 준비 중</color> · 방장에게 연결") : L.T("<color=#8fe28f>던전 진행 중</color>");
+                return L.F("{0} · {1}명 · {2}", role, c.Members.Count, state);
             }
-            string line = $"{role} · 파티 {c.Members.Count}/{c.MaxMembers}명 · {target}";
-            if (FieldSession.Active) line += " · <color=#8fe28f>함께 사냥 중</color>";
-            else if (c.IsLeader) line += " · 요일던전 입장 시 함께 출발";
-            else line += " · 방장이 입장하면 함께 출발";
-            if (c.IsLeader && c.Applications.Count > 0) line += $" · <color=#ff9f7a>신청 {c.Applications.Count}건</color>";
+            string line = L.F("{0} · 파티 {1}/{2}명 · {3}", role, c.Members.Count, c.MaxMembers, target);
+            if (FieldSession.Active) line += L.T(" · <color=#8fe28f>함께 사냥 중</color>");
+            else if (c.IsLeader) line += L.T(" · 요일던전 입장 시 함께 출발");
+            else line += L.T(" · 방장이 입장하면 함께 출발");
+            if (c.IsLeader && c.Applications.Count > 0) line += L.F(" · <color=#ff9f7a>신청 {0}건</color>", c.Applications.Count);
             return line;
         }
     }

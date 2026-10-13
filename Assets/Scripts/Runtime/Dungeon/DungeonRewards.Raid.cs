@@ -75,22 +75,22 @@ namespace DotRPG
             float goldMul = DungeonDatabase.RaidRewardScale(dungeon, tier);
             var slots = new List<(string, string, bool)>
             {
-                (DungeonDatabase.ItemIcon(ConsumableDatabase.Gold), $"확정 골드\n{Mathf.RoundToInt(def.goldMin * goldMul):N0}~{Mathf.RoundToInt(def.goldMax * goldMul):N0}", true),
+                (DungeonDatabase.ItemIcon(ConsumableDatabase.Gold), L.F("확정 골드\n{0:N0}~{1:N0}", Mathf.RoundToInt(def.goldMin * goldMul), Mathf.RoundToInt(def.goldMax * goldMul)), true),
                 (DungeonDatabase.ItemIcon(def.materialItem), DungeonDatabase.ItemName(def.materialItem), true),
-                (GearIcon(cls, ItemRarity.Epic), $"{EquipmentDatabase.RarityName(ItemRarity.Epic)} 이상 장비", true),
+                (GearIcon(cls, ItemRarity.Epic), L.F("{0} 이상 장비", EquipmentDatabase.RarityName(ItemRarity.Epic)), true),
             };
             var seen = new HashSet<string> { def.materialItem, DungeonDatabase.GearReward };
             foreach (var entry in def.cards)
                 if (seen.Add(entry.itemId)) slots.Add((DungeonDatabase.ItemIcon(entry.itemId), DungeonDatabase.ItemName(entry.itemId), false));
             int cores = PromoteRules.CoreGain(dungeon, tier);
-            if (cores > 0) slots.Add((DungeonDatabase.ItemIcon(DungeonDatabase.RaidCore), $"고대의 핵 x{cores}", true));
+            if (cores > 0) slots.Add((DungeonDatabase.ItemIcon(DungeonDatabase.RaidCore), L.F("고대의 핵 x{0}", cores), true));
             return slots;
         }
 
         static string RaidPreview(DungeonDef dungeon)
         {
             var def = dungeon.raidReward;
-            var names = new List<string> { $"확정 골드 {def.goldMin:N0}~{def.goldMax:N0}", DungeonDatabase.ItemName(def.materialItem), "에픽 이상 장비" };
+            var names = new List<string> { L.F("확정 골드 {0:N0}~{1:N0}", def.goldMin, def.goldMax), DungeonDatabase.ItemName(def.materialItem), L.T("에픽 이상 장비") };
             foreach (var entry in def.cards)
             {
                 string name = DungeonDatabase.ItemName(entry.itemId);

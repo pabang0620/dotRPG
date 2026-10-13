@@ -9,10 +9,10 @@ namespace DotRPG
     public class ServiceDoor : Interactable
     {
         NpcService service;
-        string prompt = "들어가기";
+        string prompt = "들어가기"; // i18n-ignore MonoBehaviour field default; translated in Prompt
 
         public NpcService Service => service;
-        public override string Prompt => prompt;
+        public override string Prompt => L.T(prompt);
 
         public static ServiceDoor Attach(GameObject building, NpcService service, string prompt)
         {

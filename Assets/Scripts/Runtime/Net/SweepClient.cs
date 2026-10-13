@@ -173,7 +173,7 @@ namespace DotRPG
                 ReadTickets(MiniJson.Obj(r.data, "tickets"));
                 var shop = MiniJson.Obj(r.data, "shop");
                 if (shop != null) ReadShop(shop);
-                done(true, $"던전 클리어권 {MiniJson.Int(r.data, "count")}장을 샀습니다. (-{(long)MiniJson.Num(r.data, "total"):N0} G)");
+                done(true, L.F("던전 클리어권 {0}장을 샀습니다. (-{1:N0} G)", MiniJson.Int(r.data, "count"), (long)MiniJson.Num(r.data, "total")));
                 Changed?.Invoke();
             });
         }
@@ -186,7 +186,7 @@ namespace DotRPG
                 ReadTickets(MiniJson.Obj(r.data, "tickets"));
                 var weekly = MiniJson.Obj(r.data, "weekly_activity");
                 if (weekly != null) ReadWeekly(weekly);
-                done(true, $"주간 활동 보상: 던전 클리어권 {MiniJson.Int(MiniJson.Obj(r.data, "claimed"), "tickets")}장을 받았습니다.");
+                done(true, L.F("주간 활동 보상: 던전 클리어권 {0}장을 받았습니다.", MiniJson.Int(MiniJson.Obj(r.data, "claimed"), "tickets")));
                 Changed?.Invoke();
             });
         }
@@ -194,8 +194,8 @@ namespace DotRPG
         /// <summary>One request with a fresh request_id; a missing presence is sent first and the same request repeated.</summary>
         static void Send(string path, Dictionary<string, object> body, bool needsPresence, Action<ApiResult> done)
         {
-            if (!OnlineSession.Playing) { done(new ApiResult { ok = false, code = "OFFLINE", message = "온라인 캐릭터로 접속해야 합니다." }); return; }
-            if (Busy) { done(new ApiResult { ok = false, code = "BUSY", message = "이전 요청을 처리하는 중입니다." }); return; }
+            if (!OnlineSession.Playing) { done(new ApiResult { ok = false, code = "OFFLINE", message = L.T("온라인 캐릭터로 접속해야 합니다.") }); return; }
+            if (Busy) { done(new ApiResult { ok = false, code = "BUSY", message = L.T("이전 요청을 처리하는 중입니다.") }); return; }
             Busy = true;
             body["request_id"] = ApiClient.NewRequestId();
             string full = Char + path;
@@ -212,30 +212,30 @@ namespace DotRPG
         {
             switch (r.code)
             {
-                case "SWEEP_NOT_CLEARED": return "직접 한 번 클리어해야 소탕할 수 있습니다.";
-                case "SWEEP_RANK_LOW": return "이 난이도를 B등급 이상으로 클리어해야 합니다.";
-                case "LEVEL_TOO_LOW": return $"권장 레벨 Lv.{MiniJson.Int(r.errors, "need")} 이상이어야 소탕할 수 있습니다.";
-                case "NO_ENTRIES_LEFT": return "오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)";
-                case "NO_TICKET": return "던전 클리어권이 없습니다.";
-                case "DUNGEON_CLOSED_TODAY": return "오늘은 열리지 않는 던전입니다.";
-                case "WEEKLY_LIMIT": return "이번 주 구매 한도를 모두 사용했습니다.";
-                case "NOT_ENOUGH_GOLD": return "골드가 부족합니다.";
-                case "WEEKLY_NOT_READY": return "주간 활동 목표를 아직 채우지 못했습니다.";
-                case "WEEKLY_ALREADY_CLAIMED": return "이번 주 보상을 이미 받았습니다.";
-                case "FEATURE_DISABLED": return "던전 소탕은 아직 준비 중입니다.";
-                case "RUN_ACTIVE": case "IN_PARTY_RUN": return "던전 진행 중에는 소탕할 수 없습니다.";
-                case "NETWORK": return "서버에 연결할 수 없습니다.";
-                default: return string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message;
+                case "SWEEP_NOT_CLEARED": return L.T("직접 한 번 클리어해야 소탕할 수 있습니다.");
+                case "SWEEP_RANK_LOW": return L.T("이 난이도를 B등급 이상으로 클리어해야 합니다.");
+                case "LEVEL_TOO_LOW": return L.F("권장 레벨 Lv.{0} 이상이어야 소탕할 수 있습니다.", MiniJson.Int(r.errors, "need"));
+                case "NO_ENTRIES_LEFT": return L.T("오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)");
+                case "NO_TICKET": return L.T("던전 클리어권이 없습니다.");
+                case "DUNGEON_CLOSED_TODAY": return L.T("오늘은 열리지 않는 던전입니다.");
+                case "WEEKLY_LIMIT": return L.T("이번 주 구매 한도를 모두 사용했습니다.");
+                case "NOT_ENOUGH_GOLD": return L.T("골드가 부족합니다.");
+                case "WEEKLY_NOT_READY": return L.T("주간 활동 목표를 아직 채우지 못했습니다.");
+                case "WEEKLY_ALREADY_CLAIMED": return L.T("이번 주 보상을 이미 받았습니다.");
+                case "FEATURE_DISABLED": return L.T("던전 소탕은 아직 준비 중입니다.");
+                case "RUN_ACTIVE": case "IN_PARTY_RUN": return L.T("던전 진행 중에는 소탕할 수 없습니다.");
+                case "NETWORK": return L.T("서버에 연결할 수 없습니다.");
+                default: return string.IsNullOrEmpty(r.message) ? L.F("요청이 실패했습니다. ({0})", r.status) : r.message;
             }
         }
 
         /// <summary>Text for a dungeon difficulty that cannot be swept (block code from the server).</summary>
         public static string BlockText(string block, SweepSlot s) => block switch
         {
-            "CLOSED_TODAY" => "오늘은 열리지 않는 던전",
-            "NOT_CLEARED" => "직접 한 번 클리어하면 소탕 가능",
-            "RANK_LOW" => "B등급 이상 클리어 필요",
-            "LEVEL_TOO_LOW" => $"Lv.{s?.needLevel} 이상 필요",
+            "CLOSED_TODAY" => L.T("오늘은 열리지 않는 던전"),
+            "NOT_CLEARED" => L.T("직접 한 번 클리어하면 소탕 가능"),
+            "RANK_LOW" => L.T("B등급 이상 클리어 필요"),
+            "LEVEL_TOO_LOW" => L.F("Lv.{0} 이상 필요", s?.needLevel),
             _ => "",
         };
     }

@@ -25,22 +25,22 @@ namespace DotRPG
         {
             switch (a)
             {
-                case GameAction.Attack: return "기본 공격"; case GameAction.Mobility: return "이동기";
-                case GameAction.Interact: return "상호작용"; case GameAction.Inventory: return "가방";
-                case GameAction.Skill1: return "스킬 1"; case GameAction.Skill2: return "스킬 2";
-                case GameAction.Skill3: return "스킬 3"; case GameAction.Skill4: return "스킬 4";
-                case GameAction.Skill5: return "각성 스킬"; case GameAction.UseItem: return "체력 물약";
-                case GameAction.Skill6: return "스킬 5"; case GameAction.Skill7: return "스킬 6"; case GameAction.Skill8: return "스킬 7";
-                case GameAction.UseMana: return "마나 물약"; case GameAction.TownScroll: return "귀환";
-                case GameAction.MoveUp: return "위로 이동"; case GameAction.MoveDown: return "아래 이동";
-                case GameAction.MoveLeft: return "왼쪽 이동"; case GameAction.MoveRight: return "오른쪽 이동";
-                case GameAction.Map: return "지도 (맵)";
-                case GameAction.SkillWindow: return "스킬창"; case GameAction.QuestWindow: return "퀘스트창";
-                case GameAction.WeekdayDungeon: return "요일던전"; case GameAction.RaidWindow: return "레이드";
-                case GameAction.PartyWindow: return "파티창"; case GameAction.PartyFinder: return "파티 찾기";
-                case GameAction.Auction: return "경매장"; case GameAction.Friends: return "친구 목록";
-                case GameAction.Cosmetics: return "외형 상점";
-                case GameAction.AutoQuest: return "자동 진행"; case GameAction.AutoHunt: return "자동 사냥";
+                case GameAction.Attack: return L.T("기본 공격"); case GameAction.Mobility: return L.T("이동기");
+                case GameAction.Interact: return L.T("상호작용"); case GameAction.Inventory: return L.T("가방");
+                case GameAction.Skill1: return L.T("스킬 1"); case GameAction.Skill2: return L.T("스킬 2");
+                case GameAction.Skill3: return L.T("스킬 3"); case GameAction.Skill4: return L.T("스킬 4");
+                case GameAction.Skill5: return L.T("각성 스킬"); case GameAction.UseItem: return L.T("체력 물약");
+                case GameAction.Skill6: return L.T("스킬 5"); case GameAction.Skill7: return L.T("스킬 6"); case GameAction.Skill8: return L.T("스킬 7");
+                case GameAction.UseMana: return L.T("마나 물약"); case GameAction.TownScroll: return L.T("귀환");
+                case GameAction.MoveUp: return L.T("위로 이동"); case GameAction.MoveDown: return L.T("아래 이동");
+                case GameAction.MoveLeft: return L.T("왼쪽 이동"); case GameAction.MoveRight: return L.T("오른쪽 이동");
+                case GameAction.Map: return L.T("지도 (맵)");
+                case GameAction.SkillWindow: return L.T("스킬창"); case GameAction.QuestWindow: return L.T("퀘스트창");
+                case GameAction.WeekdayDungeon: return L.T("요일던전"); case GameAction.RaidWindow: return L.T("레이드");
+                case GameAction.PartyWindow: return L.T("파티창"); case GameAction.PartyFinder: return L.T("파티 찾기");
+                case GameAction.Auction: return L.T("경매장"); case GameAction.Friends: return L.T("친구 목록");
+                case GameAction.Cosmetics: return L.T("외형 상점");
+                case GameAction.AutoQuest: return L.T("자동 진행"); case GameAction.AutoHunt: return L.T("자동 사냥");
                 default: return a.ToString();
             }
         }
@@ -52,14 +52,14 @@ namespace DotRPG
         {
             switch (a)
             {
-                case GameAction.Map: return "지도"; case GameAction.QuestWindow: return "퀘스트";
-                case GameAction.PartyWindow: return "파티"; case GameAction.PartyFinder: return "파티찾기";
-                case GameAction.Friends: return "친구"; case GameAction.Cosmetics: return "외형";
-                case GameAction.Attack: return "공격"; case GameAction.Interact: return "대화";
-                case GameAction.Skill5: return "각성"; case GameAction.UseItem: return "HP"; case GameAction.UseMana: return "MP";
-                case GameAction.MoveUp: return "이동"; case GameAction.MoveDown: return "이동";
-                case GameAction.MoveLeft: return "이동"; case GameAction.MoveRight: return "이동";
-                case GameAction.AutoQuest: return "자동"; case GameAction.AutoHunt: return "사냥";
+                case GameAction.Map: return L.T("지도"); case GameAction.QuestWindow: return L.T("퀘스트");
+                case GameAction.PartyWindow: return L.T("파티"); case GameAction.PartyFinder: return L.T("파티찾기");
+                case GameAction.Friends: return L.T("친구"); case GameAction.Cosmetics: return L.T("외형");
+                case GameAction.Attack: return L.T("공격"); case GameAction.Interact: return L.T("대화");
+                case GameAction.Skill5: return L.T("각성"); case GameAction.UseItem: return "HP"; case GameAction.UseMana: return "MP";
+                case GameAction.MoveUp: return L.T("이동"); case GameAction.MoveDown: return L.T("이동");
+                case GameAction.MoveLeft: return L.T("이동"); case GameAction.MoveRight: return L.T("이동");
+                case GameAction.AutoQuest: return L.T("자동"); case GameAction.AutoHunt: return L.T("사냥");
                 default: return ActionName(a);
             }
         }
@@ -74,7 +74,7 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "KeyBind", true);
             var view = root.gameObject.AddComponent<KeyBindScreen>(); view.ui = ui;
-            view.BuildPanel(root, "키보드 설정", 1200);
+            view.BuildPanel(root, L.T("키보드 설정"), 1200);
             Destroy(view.menu.gameObject); view.menu = null;
             view.panel.sizeDelta = new Vector2(1200, 670);
             view.Build(); return view;
@@ -98,12 +98,12 @@ namespace DotRPG
         }
         void Build()
         {
-            TextAt(panel, "Instructions", "기능이나 배정된 키 선택 → 새 키 입력 / 클릭 → 적용    ·    겹치는 단축키는 서로 교환됩니다.", new Vector2(30, -76), new Vector2(1140, 28), 17, UiTheme.TextSecondary);
-            TextAt(panel, "Categories", "<color=#5eb4ed>■ 이동</color>     <color=#ba7ef1>■ 공격 · 스킬</color>     <color=#71d29e>■ 아이템</color>     <color=#ebbd5f>■ 편의 기능</color>     <color=#8391a7>■ 고정 키</color>", new Vector2(30, -105), new Vector2(1140, 25), 15, Color.white);
+            TextAt(panel, "Instructions", L.T("기능이나 배정된 키 선택 → 새 키 입력 / 클릭 → 적용    ·    겹치는 단축키는 서로 교환됩니다."), new Vector2(30, -76), new Vector2(1140, 28), 17, UiTheme.TextSecondary);
+            TextAt(panel, "Categories", L.T("<color=#5eb4ed>■ 이동</color>     <color=#ba7ef1>■ 공격 · 스킬</color>     <color=#71d29e>■ 아이템</color>     <color=#ebbd5f>■ 편의 기능</color>     <color=#8391a7>■ 고정 키</color>"), new Vector2(30, -105), new Vector2(1140, 25), 15, Color.white);
             var keyboard = Plate(panel, "Keyboard", new Vector2(30, -139), new Vector2(1140, 252), new Color32(10, 17, 28, 255)).rectTransform;
             BuildKeyboard(keyboard);
-            combatTab = MakeTab("CombatTab", "이동 · 전투", 30, false);
-            windowTab = MakeTab("WindowTab", "창 열기 · 닫기", 214, true);
+            combatTab = MakeTab("CombatTab", L.T("이동 · 전투"), 30, false);
+            windowTab = MakeTab("WindowTab", L.T("창 열기 · 닫기"), 214, true);
             for (int i = 0; i < InputReader.Rebindable.Length; i++)
             {
                 var a = InputReader.Rebindable[i]; int col = i / RowsPerColumn, row = i % RowsPerColumn;
@@ -113,10 +113,10 @@ namespace DotRPG
                 actions.Add(new ActionView { action = a, bg = bg, text = label });
             }
             status = TextAt(panel, "Status", "", new Vector2(30, -582), new Vector2(1130, 24), 16, new Color32(170, 211, 240, 255));
-            ButtonAt("ResetKeys", "기본값", 30, 115, ResetDraft, UiTheme.Slate);
+            ButtonAt("ResetKeys", L.T("기본값"), 30, 115, ResetDraft, UiTheme.Slate);
             dirtyLabel = TextAt(panel, "PendingChanges", "", new Vector2(165, -607), new Vector2(615, 38), 15, UiTheme.AccentWarm);
-            ButtonAt("ApplyKeys", "적용", 887, 125, ApplyChanges, UiTheme.SelectBlue);
-            ButtonAt("CloseKeys", "닫기 / 취소", 1022, 148, () => ui.Pop(), UiTheme.Slate);
+            ButtonAt("ApplyKeys", L.T("적용"), 887, 125, ApplyChanges, UiTheme.SelectBlue);
+            ButtonAt("CloseKeys", L.T("닫기 / 취소"), 1022, 148, () => ui.Pop(), UiTheme.Slate);
         }
         Image MakeTab(string name, string label, float x, bool windows)
         {
@@ -191,7 +191,7 @@ namespace DotRPG
             var available = ((RectTransform)transform).rect.size;
             float fit = Mathf.Min(1f, (available.x - 24) / 1200f, (available.y - 20) / 670f);
             panel.localScale = Vector3.one * Mathf.Max(.5f, fit);
-            RefreshKeyboard("변경할 기능이나 색이 있는 키를 선택하세요. ESC·Enter·Backspace는 메뉴 조작용 고정 키입니다.");
+            RefreshKeyboard(L.T("변경할 기능이나 색이 있는 키를 선택하세요. ESC·Enter·Backspace는 메뉴 조작용 고정 키입니다."));
         }
         public override void Hide()
         {
@@ -202,7 +202,7 @@ namespace DotRPG
         {
             SelectTab(InputReader.IsWindowAction(action));
             listening = action; listenFrame = Time.frameCount;
-            RefreshKeyboard(ActionName(action) + "에 사용할 키를 누르거나 키보드 그림에서 클릭하세요. ESC: 선택 취소");
+            RefreshKeyboard(L.F("{0}에 사용할 키를 누르거나 키보드 그림에서 클릭하세요. ESC: 선택 취소", ActionName(action)));
         }
         public void ClickKey(KeyCode key)
         {
@@ -210,30 +210,30 @@ namespace DotRPG
             foreach (var a in InputReader.Rebindable) if (InputReader.KeyboardKey(a) == key) { BeginBinding(a); return; }
             if (key == KeyCode.RightShift && InputReader.KeyboardKey(GameAction.Mobility) == KeyCode.LeftShift) { BeginBinding(GameAction.Mobility); return; }
             if (key == KeyCode.Tab && InputReader.KeyboardKey(GameAction.Inventory) == KeyCode.I) { BeginBinding(GameAction.Inventory); return; }
-            RefreshKeyboard(InputReader.CanBindKeyboardKey(key) ? "미지정 키입니다. 아래에서 변경할 기능을 먼저 선택하세요." : "메뉴·운영체제에서 사용하는 고정 키입니다.");
+            RefreshKeyboard(InputReader.CanBindKeyboardKey(key) ? L.T("미지정 키입니다. 아래에서 변경할 기능을 먼저 선택하세요.") : L.T("메뉴·운영체제에서 사용하는 고정 키입니다."));
         }
         public void AssignKey(KeyCode key)
         {
             if (!listening.HasValue) return;
-            if (!InputReader.CanBindKeyboardKey(key)) { RefreshKeyboard("이 키는 메뉴·운영체제 조작용으로 예약되어 있습니다. 다른 키를 선택하세요."); return; }
+            if (!InputReader.CanBindKeyboardKey(key)) { RefreshKeyboard(L.T("이 키는 메뉴·운영체제 조작용으로 예약되어 있습니다. 다른 키를 선택하세요.")); return; }
             var action = listening.Value; string swap = "";
             foreach (var other in InputReader.Rebindable)
-                if (other != action && InputReader.KeyboardKey(other) == key) swap = " · " + ActionName(other) + "와 키 교환";
+                if (other != action && InputReader.KeyboardKey(other) == key) swap = " · " + L.F("{0}와 키 교환", ActionName(other));
             InputReader.SetKeyboardKey(action, key); listening = null;
             dirty = InputReader.SaveKeyOverrides() != saved;
-            RefreshKeyboard(ActionName(action) + " → " + InputReader.KeyLabel(key) + swap + " (적용 버튼으로 저장)");
+            RefreshKeyboard(ActionName(action) + " → " + InputReader.KeyLabel(key) + swap + L.T(" (적용 버튼으로 저장)"));
             Game.Audio.PlaySfx("select");
         }
-        public void ResetDraft() { InputReader.ResetKeyboardKeys(); listening = null; dirty = InputReader.SaveKeyOverrides() != saved; RefreshKeyboard("기본 배치로 돌아왔습니다. 적용하면 저장됩니다."); }
+        public void ResetDraft() { InputReader.ResetKeyboardKeys(); listening = null; dirty = InputReader.SaveKeyOverrides() != saved; RefreshKeyboard(L.T("기본 배치로 돌아왔습니다. 적용하면 저장됩니다.")); }
         public void ApplyChanges()
         {
             listening = null; saved = InputReader.SaveKeyOverrides(); Game.Settings.Data.keyOverrides = saved;
-            Game.Settings.Save(); dirty = false; RefreshKeyboard("저장했습니다. 게임을 다시 실행해도 이 키 배치가 유지됩니다."); Game.Audio.PlaySfx("confirm");
+            Game.Settings.Save(); dirty = false; RefreshKeyboard(L.T("저장했습니다. 게임을 다시 실행해도 이 키 배치가 유지됩니다.")); Game.Audio.PlaySfx("confirm");
         }
         void RefreshKeyboard(string message)
         {
             status.text = message;
-            dirtyLabel.text = dirty ? "● 저장하지 않은 변경 사항 · 닫으면 취소됩니다" : "저장된 키 배치";
+            dirtyLabel.text = dirty ? L.T("● 저장하지 않은 변경 사항 · 닫으면 취소됩니다") : L.T("저장된 키 배치");
             foreach (var key in keys)
             {
                 GameAction? assigned = null;
@@ -246,13 +246,14 @@ namespace DotRPG
                 bool selected = assigned.HasValue && listening == assigned;
                 key.cap.color = Color.Lerp(UiTheme.PanelDeep, c, selected ? .85f : assigned.HasValue ? .4f : .14f);
                 key.stripe.color = assigned.HasValue ? c : Color.clear;
-                key.action.text = assigned.HasValue ? ShortName(assigned.Value) + (alias ? "*" : "") : key.key == KeyCode.Escape ? "메뉴" : key.key == KeyCode.Return || key.key == KeyCode.KeypadEnter ? "확인" : key.key == KeyCode.Backspace ? "취소" : "";
+                key.action.text = assigned.HasValue ? ShortName(assigned.Value) + (alias ? "*" : "") : key.key == KeyCode.Escape ? L.T("메뉴") : key.key == KeyCode.Return || key.key == KeyCode.KeypadEnter ? L.T("확인") : key.key == KeyCode.Backspace ? L.T("취소") : "";
             }
             foreach (var v in actions)
             {
                 v.bg.color = listening == v.action ? new Color32(47, 82, 112, 255) : UiTheme.RowDark;
                 var c = (Color32)Category(v.action);
-                v.text.text = $"<color=#{c.r:x2}{c.g:x2}{c.b:x2}>●</color> {ActionName(v.action)}    <color=#d6eaff>{(listening == v.action ? "새 키 입력…" : InputReader.KeyLabel(InputReader.KeyboardKey(v.action)))}</color>";
+                string keyText = listening == v.action ? L.T("새 키 입력…") : InputReader.KeyLabel(InputReader.KeyboardKey(v.action));
+                v.text.text = $"<color=#{c.r:x2}{c.g:x2}{c.b:x2}>●</color> {ActionName(v.action)}    <color=#d6eaff>{keyText}</color>";
             }
         }
         void Update()
@@ -260,7 +261,7 @@ namespace DotRPG
             if (Time.frameCount <= shownFrame + 1 || Time.frameCount <= listenFrame + 1) return;
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                if (listening.HasValue) { listening = null; RefreshKeyboard("키 선택을 취소했습니다."); }
+                if (listening.HasValue) { listening = null; RefreshKeyboard(L.T("키 선택을 취소했습니다.")); }
                 else ui.Pop();
                 return;
             }

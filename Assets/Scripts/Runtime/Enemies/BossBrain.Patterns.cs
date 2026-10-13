@@ -45,7 +45,7 @@ namespace DotRPG
         /// </summary>
         IEnumerator Repel(BossPattern p)
         {
-            Announce?.Invoke(this, "파동!", new Color(1f, .6f, .3f));
+            Announce?.Invoke(this, L.T("파동!"), new Color(1f, .6f, .3f));
             SkillFx.Spawn("fx_ring", E.Position, new Color(1f, .55f, .25f, .8f), RepelWindup, SkillFx.GroundOrder + 12)
                 .Scale(new Vector2(1f, .7f), new Vector2(9f * Scale, 6.3f * Scale));
             Game.Audio.PlaySfx("enemy_windup");
@@ -173,7 +173,7 @@ namespace DotRPG
         IEnumerator Guard(BossPattern p)
         {
             Guarding = true;
-            Announce?.Invoke(this, "방패 태세!", new Color(0.75f, 0.85f, 1f));
+            Announce?.Invoke(this, L.T("방패 태세!"), new Color(0.75f, 0.85f, 1f));
             float t = 0f;
             while (t < 2.2f)
             {

@@ -10,7 +10,7 @@ namespace DotRPG
     public class QuestConfig : ScriptableObject
     {
         public string questId = "rebuild_workshop";
-        public string title = "공방 재건";
+        public string title = "공방 재건"; // i18n-ignore Unity-serialized field default (no L.T during deserialization); translated where shown
 
         [Header("Requirements")]
         public int requiredSkeletonKills = 3;

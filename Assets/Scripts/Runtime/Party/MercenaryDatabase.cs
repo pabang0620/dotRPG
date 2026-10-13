@@ -62,8 +62,8 @@ namespace DotRPG
         {
             new MercenaryDef
             {
-                id = "merc_bron", name = "브론", roleName = "전사 · 탱커", cls = CharacterClass.Warrior, role = MercRole.Tank,
-                description = "앞에 서서 전쟁 함성으로 적을 끌어모으고 철벽으로 버티는 방패잡이.\n체력이 높고 몬스터의 공격을 대신 받아 준다.",
+                id = "merc_bron", name = L.T("브론"), roleName = L.T("전사 · 탱커"), cls = CharacterClass.Warrior, role = MercRole.Tank,
+                description = L.T("앞에 서서 전쟁 함성으로 적을 끌어모으고 철벽으로 버티는 방패잡이.\n체력이 높고 몬스터의 공격을 대신 받아 준다."),
                 look = new CharacterLook("merc_bron", HairStyle.Short, C(222, 160, 110), C(70, 44, 30), C(120, 128, 140), C(66, 60, 72), HatKind.Bandana, C(170, 40, 40)),
                 color = C(230, 110, 60), hpScale = 1.5f, threat = TankThreat,
                 // [SKILL v2] slots: 0 single, 1 area, 2 control, 3 defence, 4 awakening
@@ -72,8 +72,8 @@ namespace DotRPG
             },
             new MercenaryDef
             {
-                id = "merc_kai", name = "카이", roleName = "전사 · 딜러", cls = CharacterClass.Warrior, role = MercRole.MeleeDps,
-                description = "쌍검처럼 빠르게 베는 검사. 파쇄 일격으로 강적을 몰아치고\n회전 베기로 몰려든 적을 쓸어 낸다.",
+                id = "merc_kai", name = L.T("카이"), roleName = L.T("전사 · 딜러"), cls = CharacterClass.Warrior, role = MercRole.MeleeDps,
+                description = L.T("쌍검처럼 빠르게 베는 검사. 파쇄 일격으로 강적을 몰아치고\n회전 베기로 몰려든 적을 쓸어 낸다."),
                 look = new CharacterLook("merc_kai", HairStyle.Spiky, C(250, 205, 160), C(40, 40, 52), C(40, 150, 110), C(40, 52, 70)),
                 color = C(255, 196, 70), hpScale = 1.1f, threat = 1f,
                 skillPriority = new[] { 4, 0, 1 },
@@ -81,8 +81,8 @@ namespace DotRPG
             },
             new MercenaryDef
             {
-                id = "merc_elin", name = "엘린", roleName = "마법사 · 빙결 제어", cls = CharacterClass.Mage, role = MercRole.Control,
-                description = "서리 폭발로 다가온 적을 얼리고 빙뢰구로 무리를 터뜨리는 마법사.\n위험하면 마나 보호막을 두른다.",
+                id = "merc_elin", name = L.T("엘린"), roleName = L.T("마법사 · 빙결 제어"), cls = CharacterClass.Mage, role = MercRole.Control,
+                description = L.T("서리 폭발로 다가온 적을 얼리고 빙뢰구로 무리를 터뜨리는 마법사.\n위험하면 마나 보호막을 두른다."),
                 look = new CharacterLook("merc_elin", HairStyle.Bun, C(250, 205, 160), C(150, 210, 240), C(70, 140, 210), C(40, 70, 130), HatKind.Wizard, C(210, 235, 250)) { robe = true },
                 color = C(110, 200, 255), hpScale = 0.95f, threat = 1f,
                 skillPriority = new[] { 2, 3, 1, 0 },
@@ -90,8 +90,8 @@ namespace DotRPG
             },
             new MercenaryDef
             {
-                id = "merc_sera", name = "세라", roleName = "마법사 · 번개 딜러", cls = CharacterClass.Mage, role = MercRole.CasterDps,
-                description = "번개 창으로 강적을 꿰뚫고 빙뢰구로 무리를 터뜨리는 공격 마법사.\n멀리서 싸운다.",
+                id = "merc_sera", name = L.T("세라"), roleName = L.T("마법사 · 번개 딜러"), cls = CharacterClass.Mage, role = MercRole.CasterDps,
+                description = L.T("번개 창으로 강적을 꿰뚫고 빙뢰구로 무리를 터뜨리는 공격 마법사.\n멀리서 싸운다."),
                 look = new CharacterLook("merc_sera", HairStyle.Long, C(222, 160, 110), C(240, 200, 80), C(150, 50, 90), C(80, 30, 60), HatKind.Wizard, C(90, 30, 70)) { robe = true },
                 color = C(255, 120, 200), hpScale = 0.9f, threat = 1f,
                 skillPriority = new[] { 4, 0, 1 },
@@ -104,8 +104,8 @@ namespace DotRPG
         {
             new MercenaryDef
             {
-                id = "story_kael", name = "카엘", roleName = "성전기사", cls = CharacterClass.Warrior, role = MercRole.MeleeDps,
-                description = "습격의 밤에 나타나 스승이 된 떠돌이 성전기사.",
+                id = "story_kael", name = L.T("카엘"), roleName = L.T("성전기사"), cls = CharacterClass.Warrior, role = MercRole.MeleeDps,
+                description = L.T("습격의 밤에 나타나 스승이 된 떠돌이 성전기사."),
                 look = new CharacterLook("kael", HairStyle.Short, C(250, 205, 160), C(196, 196, 204), C(110, 112, 122), C(58, 60, 70)) { armor = ArmorStyle.Plate, armorColor = C(150, 154, 166) },
                 color = C(176, 182, 196), hpScale = 1.4f, threat = 1.5f,
                 skillPriority = new[] { 0, 1, 3, 4 },

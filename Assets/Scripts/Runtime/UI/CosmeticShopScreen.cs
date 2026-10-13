@@ -15,7 +15,7 @@ namespace DotRPG
         static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         const float ListW = 430f, RowH = 72f, TabH = 46f;
         enum Tab { Aura, WarriorSkin, MageSkin }
-        static readonly string[] TabNames = { "오라", "전사 스킨", "마법사 스킨" };
+        static readonly string[] TabNames = { L.T("오라"), L.T("전사 스킨"), L.T("마법사 스킨") };
 
         sealed class Row { public CosmeticProduct product; public RectTransform rt; public Text label; public Image thumb; }
 
@@ -35,7 +35,7 @@ namespace DotRPG
 
         public static CosmeticShopScreen Create(Transform canvas)
         {
-            var s = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", "옷장", "menuicon_cosmetics");
+            var s = CreateWindow<CosmeticShopScreen>(canvas, "CosmeticShop", L.T("옷장"), "menuicon_cosmetics");
             s.store = Game.Cosmetics;
             var viewport = UIFactory.Stretch(UIFactory.Rect(s.content, "Viewport"));
             s.layout = UIFactory.Stretch(UIFactory.Rect(viewport, "Layout"));
@@ -45,7 +45,7 @@ namespace DotRPG
                 var t = (Tab)i;
                 s.tabs.Add(StoreButton(s.layout, "Tab_" + t, TabNames[i], TopLeft, TopLeft, new Vector2(i * 146f, 0f), new Vector2(138f, TabH), () => s.SelectTab(t), 19));
             }
-            s.gacha = StoreButton(s.layout, "Gacha", "캐시샵 (뽑기)", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
+            s.gacha = StoreButton(s.layout, "Gacha", L.T("캐시샵 (뽑기)"), new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
             s.wallet = Label(s.layout, "Wallet", "", 19, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-212f, 0f), new Vector2(400f, TabH), TextAnchor.MiddleRight);
 
             // Left: the list of the current tab, scrolling inside its panel.
@@ -97,10 +97,10 @@ namespace DotRPG
             s.description = Label(detail.transform, "Description", "", 18, TopLeft, TopLeft, new Vector2(300f, -108f), new Vector2(440f, 200f), TextAnchor.UpperLeft);
             s.action = StoreButton(detail.transform, "PurchaseOrEquip", "", TopLeft, TopLeft, new Vector2(300f, -320f), new Vector2(440f, 58f), s.ActivateSelected, 22);
             s.actionLabel = s.action.GetComponentInChildren<Text>();
-            s.restore = StoreButton(detail.transform, "Restore", "보유 외형 다시 불러오기", TopLeft, TopLeft, new Vector2(300f, -386f), new Vector2(440f, 44f), s.Restore, 18);
+            s.restore = StoreButton(detail.transform, "Restore", L.T("보유 외형 다시 불러오기"), TopLeft, TopLeft, new Vector2(300f, -386f), new Vector2(440f, 44f), s.Restore, 18);
             s.restoreLabel = s.restore.GetComponentInChildren<Text>();
             s.status = Label(detail.transform, "Status", "", 17, TopLeft, TopLeft, new Vector2(20f, -330f), new Vector2(260f, 120f), TextAnchor.UpperLeft);
-            s.footer = Label(s.layout, "Footer", "↑↓ 고르기   → 다시 불러오기   Enter / A 실행   ESC / B 닫기", 16,
+            s.footer = Label(s.layout, "Footer", L.T("↑↓ 고르기   → 다시 불러오기   Enter / A 실행   ESC / B 닫기"), 16,
                 new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(900f, 26f), TextAnchor.MiddleLeft);
             s.store.Changed += s.Refresh;
             StarShopClient.Changed += s.Refresh;
@@ -174,16 +174,16 @@ namespace DotRPG
             if (store == null) return;
             for (int i = 0; i < tabs.Count; i++)
                 TextOf(tabs[i]).text = (Tab)i == tab ? $"<color=#ffd34a>{TabNames[i]}</color>" : TabNames[i];
-            wallet.text = store.IsAvailable ? $"{StarPassClient.Badge}보유 <color=#ffd34a>{StarShopClient.Stars(StarShopClient.Balance)}</color>" : "<color=#8c96a8>온라인 전용</color>";
+            wallet.text = store.IsAvailable ? L.F("{0}보유 <color=#ffd34a>{1}</color>", StarPassClient.Badge, StarShopClient.Stars(StarShopClient.Balance)) : L.T("<color=#8c96a8>온라인 전용</color>");
             gacha.interactable = store.IsAvailable;
             var v = Visible();
             for (int i = 0; i < v.Count; i++)
             {
                 var item = v[i].product;
-                string state = Wearing(item) ? "<color=#8fe28f>장착 중</color>" : store.Owns(item.Id) ? "보유" : "<color=#8c96a8>미보유</color>";
-                string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>{CosmeticCatalog.RarityName(item.Rarity)}{(item.IsSkin ? " 스킨" : "")}</color>";
-                string dmg = item.DamagePercent > 0 ? $" · <color=#ffb347>공격력 +{item.DamagePercent}%</color>" : "";
-                v[i].label.text = $"<b>{item.Name}</b>\n<size=16>{grade}{dmg} · {state}</size>";
+                string state = Wearing(item) ? L.T("<color=#8fe28f>장착 중</color>") : store.Owns(item.Id) ? L.T("보유") : L.T("<color=#8c96a8>미보유</color>");
+                string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>" + (item.IsSkin ? L.F("{0} 스킨", L.T(CosmeticCatalog.RarityName(item.Rarity))) : L.T(CosmeticCatalog.RarityName(item.Rarity))) + "</color>";
+                string dmg = item.DamagePercent > 0 ? " · " + L.F("<color=#ffb347>공격력 +{0}%</color>", item.DamagePercent) : "";
+                v[i].label.text = $"<b>{L.T(item.Name)}</b>\n<size=16>{grade}{dmg} · {state}</size>";
                 v[i].label.color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
             }
 
@@ -201,18 +201,18 @@ namespace DotRPG
                 var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
                 previewCharacter.sprite = animator != null ? animator.Renderer.sprite : Game.Art.GetCharacter(CharacterLook.Player, "down", "idle0");
             }
-            title.text = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{product.Name}</color>";
-            bonus.text = product.DamagePercent > 0 ? $"장착 시 <color=#ffb347>공격력 +{product.DamagePercent}%</color>" : "<color=#8c96a8>능력치 없음</color>";
+            title.text = $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{L.T(product.Name)}</color>";
+            bonus.text = product.DamagePercent > 0 ? L.F("장착 시 <color=#ffb347>공격력 +{0}%</color>", product.DamagePercent) : L.T("<color=#8c96a8>능력치 없음</color>");
             // The price is on the buy button; here only what it is (kept short so it never runs under the button).
-            string have = product.IsFree ? "무료" : owned ? "<color=#8fe28f>보유 중</color>" : store.IsAvailable ? "" : "<color=#8c96a8>온라인 전용</color>";
+            string have = product.IsFree ? L.T("무료") : owned ? L.T("<color=#8fe28f>보유 중</color>") : store.IsAvailable ? "" : L.T("<color=#8c96a8>온라인 전용</color>");
             description.text = skin != null
-                ? $"<color={CosmeticCatalog.RarityHex(product.Rarity)}>{CosmeticCatalog.RarityName(product.Rarity)} 스킨</color> · {CharacterClassInfo.Get(skin.cls).displayName} 전용 · 영구 소장\n{skin.blurb}\n<color=#b8c4d8>8방향 모든 동작 전용 그림 · {(skin.afterimage ? "걸으면 잔상과 입자" : "주위에 빛 입자")}</color>\n{have}"
-                : $"{(product.IsFree ? "기본" : CosmeticCatalog.RarityName(product.Rarity))} 등급 발밑 오라 · 영구 소장\n모든 직업 공용\n{have}";
-            actionLabel.text = equipped ? (skin != null ? "벗기" : "장착 중") : owned ? "장착하기" : offer != null ? $"{offer.LocalizedPrice}로 구매"
-                : product.GaugeOnly && store.IsAvailable ? "선택 게이지로만 획득" : "온라인 전용";
+                ? L.F("<color={0}>{1} 스킨</color> · {2} 전용 · 영구 소장", CosmeticCatalog.RarityHex(product.Rarity), L.T(CosmeticCatalog.RarityName(product.Rarity)), L.T(CharacterClassInfo.Get(skin.cls).displayName)) + "\n" + L.T(skin.blurb) + "\n" + L.F("<color=#b8c4d8>8방향 모든 동작 전용 그림 · {0}</color>", skin.afterimage ? L.T("걸으면 잔상과 입자") : L.T("주위에 빛 입자")) + "\n" + have
+                : L.F("{0} 등급 발밑 오라 · 영구 소장\n모든 직업 공용", product.IsFree ? L.T("기본") : L.T(CosmeticCatalog.RarityName(product.Rarity))) + "\n" + have;
+            actionLabel.text = equipped ? (skin != null ? L.T("벗기") : L.T("장착 중")) : owned ? L.T("장착하기") : offer != null ? L.F("{0}로 구매", offer.LocalizedPrice)
+                : product.GaugeOnly && store.IsAvailable ? L.T("선택 게이지로만 획득") : L.T("온라인 전용");
             action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;
-            restoreLabel.text = (restoreFocused ? "▶ " : "") + "보유 외형 다시 불러오기";
+            restoreLabel.text = (restoreFocused ? "▶ " : "") + L.T("보유 외형 다시 불러오기");
             restoreLabel.color = restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
             status.text = store.Status;
         }
@@ -228,10 +228,10 @@ namespace DotRPG
             if (StarShopClient.ExchangePrice.TryGetValue(product.Id, out int cost) && StarShopClient.Balance < cost)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"별조각이 모자랍니다. (필요 {cost:N0}, 보유 {StarShopClient.Balance:N0})");
+                GameEvents.RaiseToast(L.F("별조각이 모자랍니다. (필요 {0:N0}, 보유 {1:N0})", cost, StarShopClient.Balance));
                 return;
             }
-            Game.UI.Confirm($"{product.Name}\n{offer.LocalizedPrice} · 영구 소장\n구매하시겠습니까?", async () => await store.PurchaseAsync(offer), true);
+            Game.UI.Confirm(L.F("{0}\n{1} · 영구 소장\n구매하시겠습니까?", L.T(product.Name), offer.LocalizedPrice), async () => await store.PurchaseAsync(offer), true);
         }
 
         void OpenGacha()

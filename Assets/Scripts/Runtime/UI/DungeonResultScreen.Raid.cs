@@ -71,7 +71,7 @@ namespace DotRPG
                 chips[i] = c;
             }
             raidSummary = Label(cardsPanel, "RaidSummary", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(22f, 8f), new Vector2(520f, 24f), TextAnchor.LowerLeft);
-            flipAllButton = Button(cardsPanel, "FlipAll", "남은 카드 모두 뒤집기", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-16f, 6f), new Vector2(250f, 36f), OnFlipAll, 16);
+            flipAllButton = Button(cardsPanel, "FlipAll", L.T("남은 카드 모두 뒤집기"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-16f, 6f), new Vector2(250f, 36f), OnFlipAll, 16);
             flipAllButton.gameObject.SetActive(false);
         }
 
@@ -183,7 +183,7 @@ namespace DotRPG
             cursor = index;
             var view = raidViews[index];
             yield return view.Flip(reward.Value);
-            view.Who.text = "<color=#8fe28f>획득</color>";
+            view.Who.text = L.T("<color=#8fe28f>획득</color>");
             picking = false;
             AfterRaidFlip(index);
         }
@@ -197,7 +197,7 @@ namespace DotRPG
                 string material = run.Dungeon.raidReward != null ? run.Dungeon.raidReward.materialItem : null;
                 int sum = 0;
                 foreach (var card in run.Cards) if (material != null && card.itemId == material) sum += card.count;
-                raidSummary.text = sum > 0 ? $"<b>{DungeonDatabase.ItemName(material)} +{sum:N0}</b>  <color=#b8c4d8>(보유 {Game.Session.Inventory.Count(material):N0})</color>" : "";
+                raidSummary.text = sum > 0 ? $"<b>{L.T(DungeonDatabase.ItemName(material))} +{sum:N0}</b>  " + L.F("<color=#b8c4d8>(보유 {0:N0})</color>", Game.Session.Inventory.Count(material)) : "";
             }
             else cursor = next;
             RefreshRaidTitle();
@@ -269,8 +269,8 @@ namespace DotRPG
         {
             int taken = 0;
             foreach (var v in raidViews) if (v.Flipped) taken++;
-            cardTitle.text = done ? "<b>보상 카드</b>  <color=#8fe28f>획득 완료</color>"
-                : $"<b>보상 카드</b>  <color=#ffe066>카드를 눌러 뒤집으세요 ({taken}/{raidViews.Count})</color>";
+            cardTitle.text = done ? L.T("<b>보상 카드</b>  <color=#8fe28f>획득 완료</color>")
+                : L.F("<b>보상 카드</b>  <color=#ffe066>카드를 눌러 뒤집으세요 ({0}/{1})</color>", taken, raidViews.Count);
         }
 
         void RefreshRaidCursor()

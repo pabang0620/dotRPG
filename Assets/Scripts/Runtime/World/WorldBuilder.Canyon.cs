@@ -66,7 +66,7 @@ namespace DotRPG
                 {
                     var sign = StaticProp("Sign", "town_sign_0", foot, new Vector2(0.8f, 0.4f), new Vector2(0f, 0.2f));
                     var interact = sign.AddComponent<DialogueInteractable>();
-                    interact.Setup("읽기", SignDialogueFor(x, y));
+                    interact.Setup(L.T("읽기"), SignDialogueFor(x, y));
                     interact.ConfigureShape(new Vector2(0f, 0.2f), 0.1f, new Vector2(0f, 1.5f));
                     return true;
                 }
@@ -76,13 +76,13 @@ namespace DotRPG
                 case 'G':
                 {
                     // 3x3 footprint anchored at its bottom-left cell.
-                    HdBuilding("House", c == 'G' ? "cyn_house_green" : "cyn_house_red", x, y, 3, 3, "문 두드리기", "canyon_house_door");
+                    HdBuilding("House", c == 'G' ? "cyn_house_green" : "cyn_house_red", x, y, 3, 3, L.T("문 두드리기"), "canyon_house_door");
                     return true;
                 }
                 case 'I':
                 {
                     // Inn landmark: 5x4 footprint.
-                    HdBuilding("Inn", "cyn_inn", x, y, 5, 4, "여관 둘러보기", "canyon_inn");
+                    HdBuilding("Inn", "cyn_inn", x, y, 5, 4, L.T("여관 둘러보기"), "canyon_inn");
                     return true;
                 }
                 case 'M':
@@ -96,7 +96,7 @@ namespace DotRPG
                     // North gate: 4 wide, anchored bottom-left; solid, with a "look" interaction.
                     var gate = StaticProp("Gate", "cyn_gate", new Vector2(x + 2f, y + 0.1f), new Vector2(3.9f, 1.3f), new Vector2(0f, 0.65f));
                     var look = gate.AddComponent<DialogueInteractable>();
-                    look.Setup("살펴보기", "canyon_gate");
+                    look.Setup(L.T("살펴보기"), "canyon_gate");
                     look.ConfigureShape(new Vector2(0f, -0.2f), 0.6f, new Vector2(0f, 2.6f));
                     return true;
                 }

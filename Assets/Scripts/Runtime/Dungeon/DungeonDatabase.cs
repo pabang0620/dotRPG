@@ -171,17 +171,17 @@ namespace DotRPG
         // 60 s buffs): 1.2/2.0/2.7 -> 1.9/4.8/6.7. Raids are solved to ~400 s real (Docs/BALANCE_COMBAT_2026-10-11.md).
         static readonly DifficultyDef[] Difficulties =
         {
-            new DifficultyDef { id = DungeonDifficulty.Normal, name = "일반", recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0, jackpotPerMille = 3 },
-            new DifficultyDef { id = DungeonDifficulty.Adventure, name = "모험", recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.9f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
-            new DifficultyDef { id = DungeonDifficulty.King, name = "왕", recommendedLevel = 20, recommendedPower = 4200, hpMul = 4.8f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
-            new DifficultyDef { id = DungeonDifficulty.Hero, name = "영웅", recommendedLevel = 27, recommendedPower = 6000, hpMul = 6.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
+            new DifficultyDef { id = DungeonDifficulty.Normal, name = L.T("일반"), recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0, jackpotPerMille = 3 },
+            new DifficultyDef { id = DungeonDifficulty.Adventure, name = L.T("모험"), recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.9f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
+            new DifficultyDef { id = DungeonDifficulty.King, name = L.T("왕"), recommendedLevel = 20, recommendedPower = 4200, hpMul = 4.8f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
+            new DifficultyDef { id = DungeonDifficulty.Hero, name = L.T("영웅"), recommendedLevel = 27, recommendedPower = 6000, hpMul = 6.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
         };
 
         /// <summary>The raid has one difficulty of its own.</summary>
         public static readonly DifficultyDef RaidDifficulty = new DifficultyDef
         {
             // Tuned for a Lv27 party of 4 (monster HP x3.0 from party size) to clear in 5-10 minutes.
-            id = DungeonDifficulty.Normal, name = "레이드", recommendedLevel = 25, recommendedPower = 5200, hpMul = 3.0f, damageMul = 1.6f, rewardMul = 3.0f,
+            id = DungeonDifficulty.Normal, name = L.T("레이드"), recommendedLevel = 25, recommendedPower = 5200, hpMul = 3.0f, damageMul = 1.6f, rewardMul = 3.0f,
             monsterLevel = 16, revives = RaidRevives, minGearRarity = ItemRarity.Rare, ticketWeight = 8,
         };
 
@@ -201,7 +201,7 @@ namespace DotRPG
         // first clear. Same rooms and boss, x1.8 HP and x1.3 damage, x1.5 sure gold and XP multiplier, one more ancient
         // core (PromoteRules), rewarded once a week apart from the raid's own reward. Server: dungeons.json raidHeroic.
         public const DungeonDifficulty RaidHeroic = DungeonDifficulty.Adventure;
-        public const string RaidHeroicName = "심화 레이드";
+        public const string RaidHeroicName = "심화 레이드"; // i18n-ignore compared raw; shown through L.T
         /// <summary>[G11 2026-10-13] 심화 레이드: twice as hard as the raid (was 1.8 / 1.3), reward 1.5x.</summary>
         public const float RaidHeroicHpMul = 2.4f, RaidHeroicDamageMul = 1.6f, RaidHeroicRewardMul = 1.5f;
         /// <summary>[G11] Boss pattern cooldowns ×, 망자의 심판 cast, 결계 의식 time × and the boss fight's time limit (then a wipe).</summary>
@@ -224,7 +224,7 @@ namespace DotRPG
         /// </summary>
         static DifficultyDef RaidNumbers(int recommendedLevel, int power, float hpMul, float damageMul, int monsterLevel, ItemRarity minGear, int ticketWeight) => new DifficultyDef
         {
-            id = DungeonDifficulty.Normal, name = "레이드", recommendedLevel = recommendedLevel, recommendedPower = power, hpMul = hpMul, damageMul = damageMul,
+            id = DungeonDifficulty.Normal, name = L.T("레이드"), recommendedLevel = recommendedLevel, recommendedPower = power, hpMul = hpMul, damageMul = damageMul,
             rewardMul = RaidDifficulty.rewardMul, monsterLevel = monsterLevel, revives = RaidRevives, minGearRarity = minGear, ticketWeight = ticketWeight,
         };
 
@@ -263,7 +263,7 @@ namespace DotRPG
         {
             new DungeonDef
             {
-                id = "gold_vein", name = "황금 광맥", theme = MapTheme.Canyon, themeName = "협곡 광산",
+                id = "gold_vein", name = L.T("황금 광맥"), theme = MapTheme.Canyon, themeName = L.T("협곡 광산"),
                 openDays = new[] { DayOfWeek.Monday },
                 rooms = Chain(
                     Room(MapRegistry.DgnCanyon1, new SpawnGroup(1, "skel_gold", 3), new SpawnGroup(2, "skel_warrior", 2)),
@@ -279,12 +279,12 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Ore, 1, 2, 10),
                     new RewardEntry(GearReward, 1, 1, 10),
                 },
-                description = "협곡 아래 황금 광맥에 해골 광부들이 몰려들었다.\n황금 해골은 도망치며 금화를 흩뿌린다.",
-                specialty = "골드", featureMonster = "황금 해골 (도망치며 골드를 뿌림)", bossName = "황금 광부장",
+                description = L.T("협곡 아래 황금 광맥에 해골 광부들이 몰려들었다.\n황금 해골은 도망치며 금화를 흩뿌린다."),
+                specialty = L.T("골드"), featureMonster = L.T("황금 해골 (도망치며 골드를 뿌림)"), bossName = L.T("황금 광부장"),
             },
             new DungeonDef
             {
-                id = "smelter", name = "버려진 제련소", theme = MapTheme.Canyon, themeName = "협곡 광산",
+                id = "smelter", name = L.T("버려진 제련소"), theme = MapTheme.Canyon, themeName = L.T("협곡 광산"),
                 openDays = new[] { DayOfWeek.Tuesday },
                 rooms = Chain(
                     Room(MapRegistry.DgnCanyon2, new SpawnGroup(1, "skel_miner", 3), new SpawnGroup(2, "skel_warrior", 2)),
@@ -300,12 +300,12 @@ namespace DotRPG
                     new RewardEntry(ConsumableDatabase.Gold, 150, 300, 19),
                     new RewardEntry(GearReward, 1, 1, 10),
                 },
-                description = "불이 꺼진 제련소에 해골 광부들이 곡괭이를 들고 모여 있다.\n해골 광부는 멀리서 돌진해 온다.",
-                specialty = "강화석", featureMonster = "해골 광부 (돌진)", bossName = "광산 해골대장",
+                description = L.T("불이 꺼진 제련소에 해골 광부들이 곡괭이를 들고 모여 있다.\n해골 광부는 멀리서 돌진해 온다."),
+                specialty = L.T("강화석"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("광산 해골대장"),
             },
             new DungeonDef
             {
-                id = "mana_graveyard", name = "마력의 묘지", theme = MapTheme.Forest, themeName = "숲 묘지",
+                id = "mana_graveyard", name = L.T("마력의 묘지"), theme = MapTheme.Forest, themeName = L.T("숲 묘지"),
                 openDays = new[] { DayOfWeek.Wednesday },
                 rooms = Chain(
                     Room(MapRegistry.DgnForest1, new SpawnGroup(1, "skel_necro", 2), new SpawnGroup(2, "skel_warrior", 3)),
@@ -321,12 +321,12 @@ namespace DotRPG
                     new RewardEntry(ConsumableDatabase.Gold, 150, 300, 22),
                     new RewardEntry(GearReward, 1, 1, 10),
                 },
-                description = "마력이 고인 숲속 묘지. 해골 사령술사가 멀리서 주문을 쏘고\n쓰러진 해골을 다시 일으킨다.",
-                specialty = "마력 정수", featureMonster = "해골 사령술사 (원거리, 해골 소환)", bossName = "묘지기 리치",
+                description = L.T("마력이 고인 숲속 묘지. 해골 사령술사가 멀리서 주문을 쏘고\n쓰러진 해골을 다시 일으킨다."),
+                specialty = L.T("마력 정수"), featureMonster = L.T("해골 사령술사 (원거리, 해골 소환)"), bossName = L.T("묘지기 리치"),
             },
             new DungeonDef
             {
-                id = "training_forest", name = "수련의 숲", theme = MapTheme.Forest, themeName = "숲 묘지",
+                id = "training_forest", name = L.T("수련의 숲"), theme = MapTheme.Forest, themeName = L.T("숲 묘지"),
                 openDays = new[] { DayOfWeek.Thursday },
                 rooms = Chain(
                     Room(MapRegistry.DgnForest3, new SpawnGroup(1, "skel_archer", 3), new SpawnGroup(2, "skel_warrior", 2)),
@@ -342,12 +342,12 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Ore, 1, 3, 9),
                     new RewardEntry(GearReward, 1, 1, 10),
                 },
-                description = "숲의 수련장에 해골 궁수들이 진을 쳤다.\n클리어 경험치가 크게 늘어나는 수련 던전.",
-                specialty = "경험치", featureMonster = "해골 궁수 (원거리)", bossName = "해골 사수장",
+                description = L.T("숲의 수련장에 해골 궁수들이 진을 쳤다.\n클리어 경험치가 크게 늘어나는 수련 던전."),
+                specialty = L.T("경험치"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("해골 사수장"),
             },
             new DungeonDef
             {
-                id = "armory", name = "망자의 무기고", theme = MapTheme.Winter, themeName = "겨울 동굴",
+                id = "armory", name = L.T("망자의 무기고"), theme = MapTheme.Winter, themeName = L.T("겨울 동굴"),
                 openDays = new[] { DayOfWeek.Friday },
                 rooms = Chain(
                     Room(MapRegistry.DgnWinter1, new SpawnGroup(1, "skel_shield", 2), new SpawnGroup(2, "skel_warrior", 3)),
@@ -362,14 +362,14 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Bone, 4, 8, 20),
                     new RewardEntry(ConsumableDatabase.Gold, 200, 400, 20),
                 },
-                description = "얼어붙은 동굴 깊은 곳, 망자들이 지키는 옛 무기고.\n해골 방패병은 정면 공격을 막아 낸다.",
-                specialty = "장비", featureMonster = "해골 방패병 (정면 방어, 슈퍼아머)", bossName = "무기고 수문장",
+                description = L.T("얼어붙은 동굴 깊은 곳, 망자들이 지키는 옛 무기고.\n해골 방패병은 정면 공격을 막아 낸다."),
+                specialty = L.T("장비"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("무기고 수문장"),
             },
         };
 
         static readonly DungeonDef RaidDef = new DungeonDef
         {
-            id = Raid, name = "해골왕", theme = MapTheme.Canyon, themeName = "북쪽 고개 성채", isRaid = true,
+            id = Raid, name = L.T("해골왕"), theme = MapTheme.Canyon, themeName = L.T("북쪽 고개 성채"), isRaid = true,
             // [RAID] Chapter 1 mid raid: three gates a week, a seal key fragment chance on each rewarded clear.
             raidTier = RaidTier.Mid, chapter = 1, unlockQuest = "c1_fortress", keyMin = 20, keyMax = 50,
             raidNumbers = RaidNumbers(20, 4000, 5.7f, 1.4f, 12, ItemRarity.Epic, 0),
@@ -380,14 +380,14 @@ namespace DotRPG
                 Boss(MapRegistry.DgnRaidBoss, "boss_skeleton_king", "skel_knight", 0)),
             bossRoom = 2, referenceSeconds = new[] { 300f, 450f, 300f, 300f }, clearXp = 400,
             rewards = new RewardEntry[0], raidReward = RaidRewards.King, // [RAID] sure gold + 4 cards, see RaidRewards
-            description = "북쪽 고개 너머에서 깨어난 해골왕과 그의 친위대.\n친위대 전초 두 곳을 돌파하고 해골왕을 쓰러뜨리자.",
-            specialty = "확정 골드 · 에픽 이상 장비", featureMonster = "해골 기사단, 해골 사령술사", bossName = "해골왕",
+            description = L.T("북쪽 고개 너머에서 깨어난 해골왕과 그의 친위대.\n친위대 전초 두 곳을 돌파하고 해골왕을 쓰러뜨리자."),
+            specialty = L.T("확정 골드 · 에픽 이상 장비"), featureMonster = L.T("해골 기사단, 해골 사령술사"), bossName = L.T("해골왕"),
         };
 
         /// <summary>[RAID] Chapter 1 final raid: 흑철의 바르가스, Sunday only, costs seal key fragments.</summary>
         static readonly DungeonDef BargasDef = new DungeonDef
         {
-            id = RaidBargas, name = "흑철의 바르가스", theme = MapTheme.Winter, themeName = "흑철 진영", isRaid = true,
+            id = RaidBargas, name = L.T("흑철의 바르가스"), theme = MapTheme.Winter, themeName = L.T("흑철 진영"), isRaid = true,
             raidTier = RaidTier.Final, chapter = 1, unlockQuest = "c1_bargas", keyCost = 60,
             raidNumbers = RaidNumbers(40, 9600, 6.6f, 1.6f, 33, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Sunday },
@@ -403,14 +403,14 @@ namespace DotRPG
                 new RewardEntry(ConsumableDatabase.ProtectTicket, 1, 1, 10),
                 new RewardEntry(ConsumableDatabase.Gold, 2000, 3500, 20),
             },
-            description = "마을을 불태운 마족 강경파 지휘관 바르가스의 진영.\n선봉대와 사령 부대를 뚫고 지휘 천막의 바르가스를 쓰러뜨리자.",
-            specialty = "유니크 · 레전더리 장비, 장비 보호권", featureMonster = "흑철 선봉대, 사령 부대", bossName = "흑철의 바르가스",
+            description = L.T("마을을 불태운 마족 강경파 지휘관 바르가스의 진영.\n선봉대와 사령 부대를 뚫고 지휘 천막의 바르가스를 쓰러뜨리자."),
+            specialty = L.T("유니크 · 레전더리 장비, 장비 보호권"), featureMonster = L.T("흑철 선봉대, 사령 부대"), bossName = L.T("흑철의 바르가스"),
         };
 
         /// <summary>[RAID] Chapter 2 mid raid: the stone-hearted gate keeper of the guardian stone chamber.</summary>
         static readonly DungeonDef GolemDef = new DungeonDef
         {
-            id = RaidGolem, name = "바위 심장", theme = MapTheme.Canyon, themeName = "수호석 외곽 석실", isRaid = true,
+            id = RaidGolem, name = L.T("바위 심장"), theme = MapTheme.Canyon, themeName = L.T("수호석 외곽 석실"), isRaid = true,
             raidTier = RaidTier.Mid, chapter = 2, unlockQuest = "c2_golem", keyMin = 20, keyMax = 50,
             raidNumbers = RaidNumbers(30, 6600, 4.4f, 1.8f, 23, ItemRarity.Epic, 8),
             openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
@@ -426,14 +426,14 @@ namespace DotRPG
                 new RewardEntry(EnhanceRules.Ore, 8, 12, 15),
                 new RewardEntry(ConsumableDatabase.Gold, 2500, 4000, 20),
             },
-            description = "검은 수호석 석실 앞을 지키는 바위 거인.\n광부 해골과 방패 부대를 뚫고 골렘의 심장을 부숴라.",
-            specialty = "유니크 · 레전더리 장비, 봉인 열쇠 조각", featureMonster = "해골 광부대, 방패 부대", bossName = "바위 심장 골렘",
+            description = L.T("검은 수호석 석실 앞을 지키는 바위 거인.\n광부 해골과 방패 부대를 뚫고 골렘의 심장을 부숴라."),
+            specialty = L.T("유니크 · 레전더리 장비, 봉인 열쇠 조각"), featureMonster = L.T("해골 광부대, 방패 부대"), bossName = L.T("바위 심장 골렘"),
         };
 
         /// <summary>[RAID] Chapter 2 final raid: 수호자 그라흐 inside the guardian stone chamber (Sunday).</summary>
         static readonly DungeonDef GrahDef = new DungeonDef
         {
-            id = RaidGrah, name = "수호자 그라흐", theme = MapTheme.Canyon, themeName = "협곡 수호석 석실", isRaid = true,
+            id = RaidGrah, name = L.T("수호자 그라흐"), theme = MapTheme.Canyon, themeName = L.T("협곡 수호석 석실"), isRaid = true,
             raidTier = RaidTier.Final, chapter = 2, unlockQuest = "c2_grah", keyCost = 60,
             raidNumbers = RaidNumbers(40, 10400, 4.6f, 1.7f, 35, ItemRarity.Epic, 0),
             openDays = new[] { DayOfWeek.Sunday },
@@ -442,8 +442,8 @@ namespace DotRPG
                 Boss(MapRegistry.DgnGrahBoss, "boss_grah", "skel_knight", 0)),
             bossRoom = 1, referenceSeconds = new[] { 360f, 540f, 360f, 360f }, clearXp = 1500,
             rewards = new RewardEntry[0], raidReward = RaidRewards.Grah, // [RAID] sure gold + 4 cards, see RaidRewards
-            description = "검은 수호석을 지키는 마족 장수 그라흐.\n석실의 정예를 뚫고 수호자를 쓰러뜨린 뒤, 네 손으로 수호석을 깨라.",
-            specialty = "확정 골드 · 레전더리 장비", featureMonster = "석실 정예 기사, 사령술사", bossName = "수호자 그라흐",
+            description = L.T("검은 수호석을 지키는 마족 장수 그라흐.\n석실의 정예를 뚫고 수호자를 쓰러뜨린 뒤, 네 손으로 수호석을 깨라."),
+            specialty = L.T("확정 골드 · 레전더리 장비"), featureMonster = L.T("석실 정예 기사, 사령술사"), bossName = L.T("수호자 그라흐"),
         };
 
         /// <summary>
@@ -474,29 +474,29 @@ namespace DotRPG
         public static string DayName(DayOfWeek d) => DayNames[(int)d];
 
         /// <summary>One-letter weekday ("월").</summary>
-        public static string DayShort(DayOfWeek d) => DayNames[(int)d].Substring(0, 1);
+        public static string DayShort(DayOfWeek d) => DayNames[(int)d].Substring(0, L.En ? 3 : 1); // [I18N] "Mon"
 
-        static readonly string[] DayNames = { "일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일" };
+        static readonly string[] DayNames = { L.T("일요일"), L.T("월요일"), L.T("화요일"), L.T("수요일"), L.T("목요일"), L.T("금요일"), L.T("토요일") };
 
         /// <summary>"월" / "화" ... for the dungeon's own open days (raid: "매일").</summary>
         public static string OpenDaysLabel(DungeonDef d)
         {
-            if (d.openDays.Length >= 7) return "매일";
+            if (d.openDays.Length >= 7) return L.T("매일");
             var parts = new List<string>();
             foreach (var day in d.openDays) parts.Add(DayShort(day));
-            return d.isRaid ? string.Join("·", parts) : string.Join("·", parts) + "·토·일";
+            return d.isRaid ? string.Join("·", parts) : string.Join("·", parts) + "·" + DayShort(DayOfWeek.Saturday) + "·" + DayShort(DayOfWeek.Sunday);
         }
 
-        /// <summary>Display name of a reward id.</summary>
+        /// <summary>Display name of a reward id, in the player's language.</summary>
         public static string ItemName(string id)
         {
-            if (id == ConsumableDatabase.Gold) return "골드";
-            if (id == GearReward) return "장비";
+            if (id == ConsumableDatabase.Gold) return L.T("골드");
+            if (id == GearReward) return L.T("장비");
             var mat = EquipmentDatabase.GetMaterial(id);
-            if (mat != null) return mat.name;
+            if (mat != null) return L.T(mat.name);
             var c = ConsumableDatabase.Get(id);
-            if (c != null) return c.name;
-            if (EquipmentDatabase.IsEquipment(id)) return EquipmentDatabase.NameOfKey(id);
+            if (c != null) return L.T(c.name);
+            if (EquipmentDatabase.IsEquipment(id)) return L.T(EquipmentDatabase.NameOfKey(id));
             return id;
         }
 

@@ -29,6 +29,7 @@ namespace DotRPG
             Game.State = new GameStateMachine();
             Game.Settings = new SettingsManager();
             Game.Settings.Load();
+            L.Init(Game.Settings.Data.language); // [I18N] before any text is built
 
             Game.Input = gameObject.AddComponent<InputReader>();
             Game.Input.Initialize(Game.Settings.Data.bindingOverridesJson);

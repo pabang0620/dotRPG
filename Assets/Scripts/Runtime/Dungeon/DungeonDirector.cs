@@ -84,24 +84,24 @@ namespace DotRPG
         /// <summary>Why the party cannot enter (null = it can).</summary>
         public string CannotEnterReason(DungeonDef dungeon, DungeonDifficulty difficulty, DateTime now)
         {
-            if (dungeon == null) return "던전을 고르세요.";
-            if (InRun) return "이미 던전 안에 있습니다.";
-            if (busy || (Game.Flow != null && Game.Flow.IsTransitioning)) return "잠시 후에 다시 시도하세요.";
-            if (Game.Player == null || Game.Player.IsDead) return "쓰러진 상태로는 입장할 수 없습니다.";
-            if (!ResetClock.IsOpen(dungeon, now)) return $"오늘({DungeonDatabase.DayName(ResetClock.GameDay(now))})은 열리지 않는 던전입니다.";
+            if (dungeon == null) return L.T("던전을 고르세요.");
+            if (InRun) return L.T("이미 던전 안에 있습니다.");
+            if (busy || (Game.Flow != null && Game.Flow.IsTransitioning)) return L.T("잠시 후에 다시 시도하세요.");
+            if (Game.Player == null || Game.Player.IsDead) return L.T("쓰러진 상태로는 입장할 수 없습니다.");
+            if (!ResetClock.IsOpen(dungeon, now)) return L.F("오늘({0})은 열리지 않는 던전입니다.", DungeonDatabase.DayName(ResetClock.GameDay(now)));
             if (!Progress.IsUnlocked(dungeon, difficulty))
-                return dungeon.isRaid ? $"{dungeon.name} 레이드를 먼저 한 번 클리어해야 합니다." : $"{DungeonDatabase.Difficulty(difficulty - 1).name} 난이도를 먼저 클리어해야 합니다.";
+                return dungeon.isRaid ? L.F("{0} 레이드를 먼저 한 번 클리어해야 합니다.", L.T(dungeon.name)) : L.F("{0} 난이도를 먼저 클리어해야 합니다.", L.T(DungeonDatabase.Difficulty(difficulty - 1).name));
             if (dungeon.isRaid)
             {
                 // [RAID] The story opens each raid; a final raid needs the seal key fragments in the bag.
                 string locked = RaidLockReason(dungeon);
                 if (locked != null) return locked;
                 int need = DungeonDatabase.DifficultyFor(dungeon, difficulty).recommendedLevel;
-                if (Game.Session.Progression.Level < need) return $"Lv.{need}부터 입장할 수 있는 레이드입니다.";
+                if (Game.Session.Progression.Level < need) return L.F("Lv.{0}부터 입장할 수 있는 레이드입니다.", need);
                 // A final raid without the seal keys is still entered, as a practice run (no reward): solo story can finish.
             }
-            if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0) return "오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)";
-            if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return $"최대 {dungeon.maxParty}명까지 입장할 수 있습니다.";
+            if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0) return L.T("오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)");
+            if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return L.F("최대 {0}명까지 입장할 수 있습니다.", dungeon.maxParty);
             return null;
         }
 
@@ -112,7 +112,7 @@ namespace DotRPG
             var st = Game.Quest.StatusOf(raid.unlockQuest);
             if (st == QuestStatus.Active || st == QuestStatus.ReadyToTurnIn || st == QuestStatus.Completed) return null;
             var q = Game.Quest.Database.Get(raid.unlockQuest);
-            return q != null ? $"메인 퀘스트 '{q.DisplayTitle}'를 받으면 열립니다." : "아직 열리지 않았습니다.";
+            return q != null ? L.F("메인 퀘스트 '{0}'를 받으면 열립니다.", q.DisplayTitle) : L.T("아직 열리지 않았습니다.");
         }
 
         /// <summary>

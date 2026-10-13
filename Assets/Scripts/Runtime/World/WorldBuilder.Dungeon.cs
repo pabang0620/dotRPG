@@ -29,10 +29,10 @@ namespace DotRPG
         static NpcDefinition guide;
 
         /// <summary>The 던전 안내원 (opens the dungeon select window).</summary>
-        public static NpcDefinition DungeonGuide => guide ?? (guide = new NpcDefinition("", "dungeon_guide", "던전 안내원 세나",
+        public static NpcDefinition DungeonGuide => guide ?? (guide = new NpcDefinition("", "dungeon_guide", "던전 안내원 세나", // i18n-ignore NPC name stays raw (portraits match it), shown through L.T
             new CharacterLook("dungeon_guide", HairStyle.Short, new Color32(246, 204, 164, 255), new Color32(58, 44, 70, 255),
                 new Color32(120, 60, 150, 255), new Color32(52, 46, 70, 255), HatKind.Cap, new Color32(210, 170, 70, 255)),
-            NpcBehaviour.Idle, NpcTool.None, Facing.Down, "", "", default, NpcService.Dungeon, "오늘 열린 던전을 안내해 드릴게요. 준비되면 말씀하세요!"));
+            NpcBehaviour.Idle, NpcTool.None, Facing.Down, "", "", default, NpcService.Dungeon, L.T("오늘 열린 던전을 안내해 드릴게요. 준비되면 말씀하세요!")));
 
         /// <summary>Where the guide stood when the village was last built (tests).</summary>
         public Vector2? DungeonGuidePosition { get; private set; }
@@ -54,7 +54,8 @@ namespace DotRPG
                         var pos = new Vector2(x + 0.5f, y + 0.5f);
                         if (!IsFree(pos)) continue;
                         NpcController.Create(DungeonGuide, pos, objectsRoot);
-                        var trainer=new NpcDefinition("","career_trainer","전직 안내원",StoryCast.Find("knight_ivy").look,NpcBehaviour.Idle,NpcTool.None,Facing.Down,"");
+                        var trainer=new NpcDefinition("","career_trainer","전직 안내원", // i18n-ignore NPC name stays raw, shown through L.T
+                            StoryCast.Find("knight_ivy").look,NpcBehaviour.Idle,NpcTool.None,Facing.Down,"");
                         if(IsFree(pos+Vector2.left*1.5f)) NpcController.Create(trainer,pos+Vector2.left*1.5f,objectsRoot);
                         PointsOfInterest.Add(pos);
                         DungeonGuidePosition = pos;

@@ -35,7 +35,8 @@ namespace DotRPG
 
         // Gameplay / accessibility
         public bool screenShake = true;
-        public string language = "ko";
+        /// <summary>[I18N] "ko" or "en"; empty on a fresh install = the device language (L.DeviceDefault). Applies on restart.</summary>
+        public string language = "";
 
         // Input System binding overrides (JSON produced by InputActionMap.SaveBindingOverridesAsJson).
         public string bindingOverridesJson = "";
@@ -51,7 +52,7 @@ namespace DotRPG
         public string keyOverrides = "";
 
         /// <summary>[F5] Comma-separated names (sample friends until an account server exists).</summary>
-        public string chatFriends = "검은뿔,달빛마녀";
+        public string chatFriends = "검은뿔,달빛마녀"; // i18n-ignore saved sample friend names
         public string chatBlocked = "";
     }
 }

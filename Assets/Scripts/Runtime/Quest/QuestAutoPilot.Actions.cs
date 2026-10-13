@@ -14,7 +14,7 @@ namespace DotRPG
                 foreach (var it in Interactable.All)
                     if (it is ServiceDoor door && WorldBuilder.ServiceNpc(door.Service)?.npcId == g.id)
                     { ApproachAndUse(p, door); return; }
-            if (npc == null) { Stop($"{Game.Quest.NpcName(g.id)}을(를) 이 지역에서 찾지 못했습니다."); return; }
+            if (npc == null) { Stop(L.F("{0}을(를) 이 지역에서 찾지 못했습니다.", Game.Quest.NpcName(g.id))); return; }
             ApproachAndUse(p, npc);
         }
 
@@ -28,7 +28,7 @@ namespace DotRPG
                 float d = Vector2.Distance(p.Position, it.InteractionPoint);
                 if (d < best) { best = d; target = it; }
             }
-            if (target == null) { Stop("목표 물건이 아직 보이지 않습니다. 이야기를 먼저 진행해 주세요."); return; }
+            if (target == null) { Stop(L.T("목표 물건이 아직 보이지 않습니다. 이야기를 먼저 진행해 주세요.")); return; }
             ApproachAndUse(p, target);
         }
 
@@ -36,7 +36,7 @@ namespace DotRPG
         {
             foreach (var it in Interactable.All)
                 if (it is ConstructionSite && it.CanInteract) { ApproachAndUse(p, it); return; }
-            Stop("공방 터를 찾지 못했습니다.");
+            Stop(L.T("공방 터를 찾지 못했습니다."));
         }
 
         void DoDungeonGuide(PlayerController p, Goal g)
@@ -44,10 +44,10 @@ namespace DotRPG
             foreach (var npc in NpcController.Services)
             {
                 if (npc == null || npc.Definition.service != NpcService.Dungeon) continue;
-                if (ApproachAndUse(p, npc)) Stop("던전 창을 열었습니다. 던전을 골라 들어가 주세요.");
+                if (ApproachAndUse(p, npc)) Stop(L.T("던전 창을 열었습니다. 던전을 골라 들어가 주세요."));
                 return;
             }
-            Stop("던전 안내인을 찾지 못했습니다.");
+            Stop(L.T("던전 안내인을 찾지 못했습니다."));
         }
 
         /// <summary>Walks into reach and uses it; true on the frame it was used.</summary>
@@ -87,12 +87,12 @@ namespace DotRPG
                 lastProgressAt = Time.time;
                 return;
             }
-            if (best == null) { status = g.label + " · 몬스터를 찾는 중"; Roam(p); return; }
+            if (best == null) { status = L.F("{0} · 몬스터를 찾는 중", g.label); Roam(p); return; }
             // [BALANCE] Toned down: when nothing is close, stand a moment (3 s) before walking to a far monster.
             if (bestD > HuntNear)
             {
                 if (farWaitUntil <= 0f) farWaitUntil = Time.time + HuntFarWait;
-                if (Time.time < farWaitUntil) { status = g.label + " · 다음 몬스터를 찾는 중"; lastProgressAt = Time.time; lastPos = p.Position; return; }
+                if (Time.time < farWaitUntil) { status = L.F("{0} · 다음 몬스터를 찾는 중", g.label); lastProgressAt = Time.time; lastPos = p.Position; return; }
             }
             else farWaitUntil = 0f;
             if (best != chaseTarget) { chaseTarget = best; chaseSince = Time.time; }
@@ -263,7 +263,7 @@ namespace DotRPG
             // Stuck on something GridPath does not know (a companion, a moving NPC): sidestep for a moment.
             if (Vector2.Distance(p.Position, lastPos) > 0.6f) { lastPos = p.Position; lastProgressAt = Time.time; }
             float stuck = Time.time - lastProgressAt;
-            if (stuck > GiveUpSeconds) { Stop("길이 막혀 자동 진행을 멈췄습니다."); return; }
+            if (stuck > GiveUpSeconds) { Stop(L.T("길이 막혀 자동 진행을 멈췄습니다.")); return; }
             if (stuck > StuckSeconds) dir = (dir + new Vector2(-dir.y, dir.x) * (((int)(stuck / 1.5f) % 2 == 0) ? 1f : -1f)).normalized;
             input.next.move = dir;
             input.next.aim = dir;
@@ -333,6 +333,6 @@ namespace DotRPG
             return null;
         }
 
-        static string MapName(string id) => MapRegistry.Get(id)?.displayName ?? id;
+        static string MapName(string id) => L.T(MapRegistry.Get(id)?.displayName ?? id);
     }
 }

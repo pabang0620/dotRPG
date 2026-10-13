@@ -19,7 +19,7 @@ namespace DotRPG
         {
             busy = true;
             busyTime = 0f;
-            resultText.text = "<color=#b8c4d8>망치질 중…</color>";
+            resultText.text = L.T("<color=#b8c4d8>망치질 중…</color>");
             Refresh();
             // [SERVER] Online the server rolls; ask now so the answer arrives during the hammer strikes.
             bool online = OnlineEconomy.On, answered = false;
@@ -99,33 +99,33 @@ namespace DotRPG
                     bool great = EquipmentDatabase.LevelOfKey(r.newKey) >= 10;
                     Game.Audio.PlaySfx(great ? "enhance_great" : "enhance_success");
                     EnhanceFx.Burst(bigIcon.rectTransform, great ? 40 : 22, new Color32(255, 230, 120, 255), great);
-                    if (great) GameEvents.RaiseToast($"<color=#ffd84a>[알림]</color> {Game.Session.Journal.PlayerName}님이 {EquipmentDatabase.NameOfKey(r.newKey)} 강화에 성공했습니다!");
-                    resultText.text = $"<color=#8fe28f><b>강화 성공!</b></color>  {EquipmentDatabase.RichName(r.newKey)}";
-                    GameEvents.RaiseToast($"강화 성공! {EquipmentDatabase.RichName(r.newKey)}");
+                    if (great) GameEvents.RaiseToast(L.F("<color=#ffd84a>[알림]</color> {0}님이 {1} 강화에 성공했습니다!", Game.Session.Journal.PlayerName, L.T(EquipmentDatabase.NameOfKey(r.newKey))));
+                    resultText.text = L.F("<color=#8fe28f><b>강화 성공!</b></color>  {0}", EquipmentDatabase.RichName(r.newKey));
+                    GameEvents.RaiseToast(L.F("강화 성공! {0}", EquipmentDatabase.RichName(r.newKey)));
                     break;
                 case EnhanceOutcome.Keep:
                     Game.Audio.PlaySfx("enhance_fail");
                     EnhanceFx.Fail(bigIcon.rectTransform, false);
-                    resultText.text = "<color=#ffb070>강화 실패… 강화 수치는 그대로입니다.</color>";
+                    resultText.text = L.T("<color=#ffb070>강화 실패… 강화 수치는 그대로입니다.</color>");
                     break;
                 case EnhanceOutcome.Drop3:
                     Game.Audio.PlaySfx("enhance_fail");
                     EnhanceFx.Fail(bigIcon.rectTransform, false);
-                    resultText.text = $"<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌습니다.  (+{r.oldLevel} → +{r.newLevel})</color>";
+                    resultText.text = L.F("<color=#ff9f43>강화 실패… 강화 수치가 3 떨어졌습니다.  (+{0} → +{1})</color>", r.oldLevel, r.newLevel);
                     break;
                 case EnhanceOutcome.Destroyed:
                     Game.Audio.PlaySfx("enhance_break");
                     EnhanceFx.Fail(bigIcon.rectTransform, true);
-                    resultText.text = $"<color=#ff5050><b>강화 실패… 장비가 파괴되었습니다!</b></color>\n<color=#ff8080>{EquipmentDatabase.NameOfKey(r.oldKey)}</color>";
-                    GameEvents.RaiseToast($"<color=#ff5050>장비 파괴: {EquipmentDatabase.NameOfKey(r.oldKey)}</color>");
+                    resultText.text = L.F("<color=#ff5050><b>강화 실패… 장비가 파괴되었습니다!</b></color>\n<color=#ff8080>{0}</color>", L.T(EquipmentDatabase.NameOfKey(r.oldKey)));
+                    GameEvents.RaiseToast(L.F("<color=#ff5050>장비 파괴: {0}</color>", L.T(EquipmentDatabase.NameOfKey(r.oldKey))));
                     break;
                 case EnhanceOutcome.Protected:
                     Game.Audio.PlaySfx("confirm");
-                    resultText.text = $"<color=#ffd84a>강화 실패… 장비 보호권이 장비를 지켰습니다.</color>\n<color=#b8c4d8>{EquipmentDatabase.NameOfKey(r.newKey)} (+0으로 초기화)</color>";
+                    resultText.text = L.F("<color=#ffd84a>강화 실패… 장비 보호권이 장비를 지켰습니다.</color>\n<color=#b8c4d8>{0} (+0으로 초기화)</color>", L.T(EquipmentDatabase.NameOfKey(r.newKey)));
                     break;
                 case EnhanceOutcome.NotEnough:
                     Game.Audio.PlaySfx("cancel");
-                    resultText.text = "<color=#ff7070>골드나 재료가 부족합니다.</color>";
+                    resultText.text = L.T("<color=#ff7070>골드나 재료가 부족합니다.</color>");
                     break;
                 default:
                     Game.Audio.PlaySfx("cancel");

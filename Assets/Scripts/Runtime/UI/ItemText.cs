@@ -16,24 +16,24 @@ namespace DotRPG
         public static string Name(string id)
         {
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}>{gear.NameAt(EquipmentDatabase.LevelOfKey(id))}</color>";
+            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}>{L.T(gear.NameAt(EquipmentDatabase.LevelOfKey(id)))}</color>";
             var mat = EquipmentDatabase.GetMaterial(id);
-            if (mat != null) return $"<color={EquipmentDatabase.RarityColor(mat.rarity)}>{mat.name}</color>";
+            if (mat != null) return $"<color={EquipmentDatabase.RarityColor(mat.rarity)}>{L.T(mat.name)}</color>";
             var use = ConsumableDatabase.Get(id);
-            if (use != null && use.grade.HasValue) return $"<color={EquipmentDatabase.RarityColor(use.grade.Value)}>{use.name}</color>";
-            return Game.Config.GetItem(id).displayName;
+            if (use != null && use.grade.HasValue) return $"<color={EquipmentDatabase.RarityColor(use.grade.Value)}>{L.T(use.name)}</color>";
+            return L.T(Game.Config.GetItem(id).displayName);
         }
 
         public static string Kind(string id)
         {
             var gear = EquipmentDatabase.Get(id);
             if (gear != null)
-                return $"[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.CategoryName}" + (gear.classOnly.HasValue ? $" · {CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용" : "");
+                return $"[{L.T(EquipmentDatabase.RarityName(gear.rarity))}] {L.T(gear.CategoryName)}" + (gear.classOnly.HasValue ? " · " + L.F("{0} 전용", L.T(CharacterClassInfo.Get(gear.classOnly.Value).displayName)) : "");
             var mat = EquipmentDatabase.GetMaterial(id);
-            if (mat != null) return $"[{EquipmentDatabase.RarityName(mat.rarity)}] 강화 재료";
-            if (ConsumableDatabase.IsTicket(id)) return $"[{EquipmentDatabase.RarityName(Grade(id) ?? ItemRarity.Common)}] 기타 · 강화 보호";
-            if (ConsumableDatabase.IsUsable(id)) return "소모품";
-            return "재료";
+            if (mat != null) return L.F("[{0}] 강화 재료", L.T(EquipmentDatabase.RarityName(mat.rarity)));
+            if (ConsumableDatabase.IsTicket(id)) return L.F("[{0}] 기타 · 강화 보호", L.T(EquipmentDatabase.RarityName(Grade(id) ?? ItemRarity.Common)));
+            if (ConsumableDatabase.IsUsable(id)) return L.T("소모품");
+            return L.T("재료");
         }
 
         /// <summary>Grade of gear, materials and graded items such as the protection ticket (null for plain items).</summary>
@@ -49,14 +49,14 @@ namespace DotRPG
         public static string Description(string id)
         {
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return $"{gear.StatLine(EquipmentDatabase.LevelOfKey(id))}\n{gear.description}";
+            if (gear != null) return $"{gear.StatLine(EquipmentDatabase.LevelOfKey(id))}\n{L.T(gear.description)}";
             var mat = EquipmentDatabase.GetMaterial(id);
-            if (mat != null) return mat.description;
+            if (mat != null) return L.T(mat.description);
             var use = ConsumableDatabase.Get(id);
             if (use != null)
             {
-                string key = use.hotkey.HasValue ? $"\n<color=#ffe066>빠른 사용: [{Game.Input.GetBindingLabel(use.hotkey.Value)}]</color>" : "";
-                return use.description + key;
+                string key = use.hotkey.HasValue ? "\n" + L.F("<color=#ffe066>빠른 사용: [{0}]</color>", Game.Input.GetBindingLabel(use.hotkey.Value)) : "";
+                return L.T(use.description) + key;
             }
             switch (id)
             {

@@ -43,6 +43,7 @@ namespace DotRPG
             Kind.Robe => "robe", Kind.Skirt => "skirt", Kind.Neck => "neck", _ => "ring",
         };
 
+        // i18n-names-begin (translated once in Build: name = L.T(name))
         // Names: [tier][grade c,u,r,e,un]; Lv.1 has three.
         static readonly string[][] SwordNames =
         {
@@ -144,6 +145,7 @@ namespace DotRPG
             Kind.Neck => new[] { "용의 눈 목걸이", "창세의 별 목걸이" },
             _ => new[] { "용의 심장 반지", "창세의 별 반지" },
         };
+        // i18n-names-end
 
         static string[][] NamesOf(Kind k) => k switch
         {
@@ -248,7 +250,7 @@ namespace DotRPG
             int art = ArtTier(k, t, r);
             return new EquipmentItem
             {
-                id = Id(KindId(k), level, r), name = name, category = CategoryOf(k), rarity = r, classOnly = ClassOf(k),
+                id = Id(KindId(k), level, r), name = L.T(name), category = CategoryOf(k), rarity = r, classOnly = ClassOf(k),
                 attack = atk, maxHealth = hp, block = block, speed = spd, xpBonus = xp, aoeBonus = aoe,
                 iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = OldIcon(k, art), description = Describe(k, level, r),
                 dropWeight = r <= ItemRarity.Rare ? 30 - 8 * (int)r : r == ItemRarity.Epic ? 3 : 0,
@@ -258,8 +260,8 @@ namespace DotRPG
 
         static string Describe(Kind k, int level, ItemRarity r)
         {
-            string who = ClassOf(k) == CharacterClass.Warrior ? "전사 전용" : ClassOf(k) == CharacterClass.Mage ? "마법사 전용" : "모든 직업";
-            return $"Lv.{level} 장비 · {who}";
+            string who = ClassOf(k) == CharacterClass.Warrior ? L.T("전사 전용") : ClassOf(k) == CharacterClass.Mage ? L.T("마법사 전용") : L.T("모든 직업");
+            return L.F("Lv.{0} 장비 · {1}", level, who);
         }
 
         /// <summary>

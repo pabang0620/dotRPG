@@ -37,12 +37,12 @@ namespace DotRPG
 
         public static WorldMapScreen Create(Transform canvas)
         {
-            var w = CreateWindow<WorldMapScreen>(canvas, "WorldMap", "세계 지도", "menuicon_map");
+            var w = CreateWindow<WorldMapScreen>(canvas, "WorldMap", L.T("세계 지도"), "menuicon_map");
             var frame = Panel(w.content, "Frame", TL, TL, Vector2.zero, new Vector2(760, 590), UiTheme.PanelDeep);
             w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(GameFlow.DemoSlots ? 260 : 400, 32));
             w.BuildAtlasButton(frame.transform); // [UI] whole-world route map
             if (GameFlow.DemoSlots) // [DEMO] trial builds jump straight to any region
-                w.travelButton = Button(frame.transform, "DemoTravel", "이 지역으로 이동", "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-324, -10), new Vector2(150, 34), () =>
+                w.travelButton = Button(frame.transform, "DemoTravel", L.T("이 지역으로 이동"), "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-324, -10), new Vector2(150, 34), () =>
                 {
                     var target = w.selectedMap;
                     var info = MapRegistry.Get(target);
@@ -50,7 +50,7 @@ namespace DotRPG
                     w.Close();
                     Game.Flow.TravelTo(target, true);
                 }, 17);
-            Button(frame.transform, "CurrentRegion", "현재 위치", "ui_btngray", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -10), new Vector2(150, 34), () => w.SelectMap(Game.World.MapId), 17);
+            Button(frame.transform, "CurrentRegion", L.T("현재 위치"), "ui_btngray", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -10), new Vector2(150, 34), () => w.SelectMap(Game.World.MapId), 17);
             var viewport = UIFactory.Place(UIFactory.Rect(frame.transform, "MapViewport"), TL, TL, new Vector2(10, -54), new Vector2(740, 416));
             viewport.gameObject.AddComponent<RectMask2D>();
             w.map = new GameObject("Map", typeof(RectTransform)).AddComponent<RawImage>(); w.map.transform.SetParent(viewport, false); w.map.raycastTarget = false;
@@ -62,8 +62,8 @@ namespace DotRPG
             w.tooltipText = Label(tip.transform, "Text", "", 17, C, C, Vector2.zero, new Vector2(326, 31), TextAnchor.MiddleCenter);
             w.tooltip.gameObject.SetActive(false);
             w.legend = Label(frame.transform, "Legend", "", 16, TL, TL, new Vector2(18, -474), new Vector2(718, 26), TextAnchor.MiddleLeft);
-            w.detail = Label(frame.transform, "Selection", "NPC 번호나 이름을 선택하세요.", 17, TL, TL, new Vector2(18, -502), new Vector2(530, 34), TextAnchor.UpperLeft);
-            w.roomButton = Button(frame.transform, "ViewInterior", "실내 보기", "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 12), new Vector2(160, 34), () =>
+            w.detail = Label(frame.transform, "Selection", L.T("NPC 번호나 이름을 선택하세요."), 17, TL, TL, new Vector2(18, -502), new Vector2(530, 34), TextAnchor.UpperLeft);
+            w.roomButton = Button(frame.transform, "ViewInterior", L.T("실내 보기"), "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 12), new Vector2(160, 34), () =>
             { if (w.selectedNpc >= 0 && w.npcs[w.selectedNpc].interior != null) w.SelectMap(w.npcs[w.selectedNpc].interior); }, 17);
             w.roomButton.gameObject.SetActive(false);
             // [FIELD BOSS] The region's boss face next to its schedule line.
@@ -72,9 +72,9 @@ namespace DotRPG
             UIFactory.Place(w.bossIcon.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 14), new Vector2(56, 56));
             w.bossIcon.enabled = false;
             w.side = Panel(w.content, "Side", new Vector2(1, 1), new Vector2(1, 1), Vector2.zero, new Vector2(420, 590), UiTheme.Panel).transform;
-            Label(w.side, "RegionHeading", "월드 선택 · 지역을 눌러 자세히 보기", 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
-            w.surfaceTab = Button(w.side, "WorldSurface", "지상월드", "ui_btn", TL, TL, new Vector2(16, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Surface), 19);
-            w.undergroundTab = Button(w.side, "WorldUnderground", "지하월드", "ui_btngray", TL, TL, new Vector2(214, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Underground), 19);
+            Label(w.side, "RegionHeading", L.T("월드 선택 · 지역을 눌러 자세히 보기"), 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
+            w.surfaceTab = Button(w.side, "WorldSurface", L.T("지상월드"), "ui_btn", TL, TL, new Vector2(16, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Surface), 19);
+            w.undergroundTab = Button(w.side, "WorldUnderground", L.T("지하월드"), "ui_btngray", TL, TL, new Vector2(214, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Underground), 19);
             var regions=Panel(w.side,"RegionsViewport",TL,TL,new Vector2(16,-94),new Vector2(388,244),UiTheme.PanelDeep);
             regions.gameObject.AddComponent<RectMask2D>();
             w.regionsContent=UIFactory.Place(UIFactory.Rect(regions.transform,"RegionsContent"),TL,TL,Vector2.zero,new Vector2(388,244));
@@ -83,12 +83,12 @@ namespace DotRPG
             for (int i = 0; i < MapRegistry.IndoorServices.Length; i++)
             {
                 var service = MapRegistry.IndoorServices[i];
-                var button = Button(w.side, "Room_" + service, service == NpcService.Blacksmith ? "대장간 실내" : MapRegistry.ServiceName(service) + " 실내", "ui_btngray", TL, TL,
+                var button = Button(w.side, "Room_" + service, service == NpcService.Blacksmith ? L.T("대장간 실내") : L.F("{0} 실내", L.T(MapRegistry.ServiceName(service))), "ui_btngray", TL, TL,
                     new Vector2(16 + i * 131, -351), new Vector2(126, 30), () =>
                     { string town = MapRegistry.Get(w.selectedMap)?.exteriorMap ?? w.selectedMap; var id = MapRegistry.InteriorFor(town, service); if (id != null) w.SelectMap(id); }, 16);
                 w.roomTabs.Add(button);
             }
-            Label(w.side, "NpcHeading", "NPC 위치", 20, TL, TL, new Vector2(16, -394), new Vector2(220, 28));
+            Label(w.side, "NpcHeading", L.T("NPC 위치"), 20, TL, TL, new Vector2(16, -394), new Vector2(220, 28));
             Button(w.side, "NpcPrev", "◀", "ui_btngray", TL, TL, new Vector2(264, -391), new Vector2(36, 28), () => w.PageNpcs(-1), 16);
             w.npcPageText = Label(w.side, "NpcPage", "", 16, TL, TL, new Vector2(300, -391), new Vector2(58, 28), TextAnchor.MiddleCenter);
             Button(w.side, "NpcNext", "▶", "ui_btngray", TL, TL, new Vector2(358, -391), new Vector2(36, 28), () => w.PageNpcs(1), 16);
@@ -144,8 +144,8 @@ namespace DotRPG
                 {
                     var info = group[k]; string id = info.id; var zone = HuntingGrounds.Get(id);
                     string badge = selectedWorld == WorldLayer.Underground && !info.displayName.StartsWith("B" + info.depth) ? $"B{info.depth} · " : "";
-                    string tag = zone == null ? (MapRegistry.IsTown(id) ? "<color=#b9dbab>마을</color>" : "<color=#91c9b0>탐험</color>") : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
-                    string label = k == 0 ? $"<b>{badge}{info.displayName}</b>   {tag}" : $"<color=#8c96a8>{(k == group.Count - 1 ? "└" : "├")}</color> {badge}{info.displayName}   {tag}";
+                    string tag = zone == null ? (MapRegistry.IsTown(id) ? L.T("<color=#b9dbab>마을</color>") : L.T("<color=#91c9b0>탐험</color>")) : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
+                    string label = k == 0 ? $"<b>{badge}{L.T(info.displayName)}</b>   {tag}" : $"<color=#8c96a8>{(k == group.Count - 1 ? "└" : "├")}</color> {badge}{L.T(info.displayName)}   {tag}";
                     var button = Button(regionsContent, "Region_" + id, label, k == 0 && zone == null ? "ui_btn" : "ui_btngray", TL, TL,
                         new Vector2(k == 0 ? 0 : 14, -row * rowH), new Vector2(k == 0 ? 388 : 374, rowH - 2), () => SelectMap(id), 16);
                     var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 10, 0, 8, 0);
@@ -198,22 +198,22 @@ namespace DotRPG
             map.texture = current ? Game.World.Minimap : preview.texture;
             mapScale = Mathf.Min(720 / preview.bounds.width, 396 / preview.bounds.height);
             mapRect.sizeDelta = preview.bounds.size * mapScale;
-            caption.text = info.displayName + (current ? " <color=#78dcff>· 현재</color>" : "");
-            legend.text = "<color=#78dcff>●</color> 내 위치   <color=#dab785>①</color> NPC   <color=#bca5ff>◆</color> 출구   · " + (current || preview.rendered ? "실제 지형" : "미방문 지역 약도");
+            caption.text = L.T(info.displayName) + (current ? L.T(" <color=#78dcff>· 현재</color>") : "");
+            legend.text = L.T("<color=#78dcff>●</color> 내 위치   <color=#dab785>①</color> NPC   <color=#bca5ff>◆</color> 출구   · ") + (current || preview.rendered ? L.T("실제 지형") : L.T("미방문 지역 약도"));
             var zone = HuntingGrounds.Get(selectedMap);
             detail.rectTransform.sizeDelta = new Vector2(718, 38);
             detail.fontSize = 16;
             bossIcon.enabled = false;
-            detail.text = current ? "NPC 번호나 이름을 선택하세요." : "NPC 기본 위치 · 지역 선택은 캐릭터를 이동시키지 않습니다.";
+            detail.text = current ? L.T("NPC 번호나 이름을 선택하세요.") : L.T("NPC 기본 위치 · 지역 선택은 캐릭터를 이동시키지 않습니다.");
             if (zone != null)
             {
                 int lv = Game.Session.Progression.Level;
                 detail.rectTransform.sizeDelta = new Vector2(718, 84);
                 detail.text = WorldLayers.IsUnderground(selectedMap)
-                    ? $"지역 등급 Lv.{zone.minLevel}~{zone.maxLevel} · 몬스터 Lv.{zone.monsterLevel} · 귀환: {MapRegistry.Get(zone.village).displayName}\n" +
-                      "Lv.40 만렙 이후 도전 · 강화 장비·파티 권장 <color=#b8c4d8>(캐릭터 상한 Lv.40)</color>"
-                    : $"권장 Lv.{zone.minLevel}~{zone.maxLevel} · 1마리 경험치 {Progression.XpPercent(zone.KillXp, lv)} · 귀환 마을 {MapRegistry.Get(zone.village).displayName}\n" +
-                      $"1시간 사냥 시 경험치 <color=#8fe28f>약 {Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv)}</color> <color=#b8c4d8>(내 레벨 기준 예상치)</color>";
+                    ? L.F("지역 등급 Lv.{0}~{1} · 몬스터 Lv.{2} · 귀환: {3}\n", zone.minLevel, zone.maxLevel, zone.monsterLevel, L.T(MapRegistry.Get(zone.village).displayName)) +
+                      L.T("Lv.40 만렙 이후 도전 · 강화 장비·파티 권장 <color=#b8c4d8>(캐릭터 상한 Lv.40)</color>")
+                    : L.F("권장 Lv.{0}~{1} · 1마리 경험치 {2} · 귀환 마을 {3}\n", zone.minLevel, zone.maxLevel, Progression.XpPercent(zone.KillXp, lv), L.T(MapRegistry.Get(zone.village).displayName)) +
+                      L.F("1시간 사냥 시 경험치 <color=#8fe28f>약 {0}</color> <color=#b8c4d8>(내 레벨 기준 예상치)</color>", Progression.XpPercent((long)zone.KillXp * HuntingGrounds.KillsPerHourEstimate, lv));
                 string boss = FieldBosses.InfoLine(zone.id); // [FIELD BOSS]
                 var face = boss != null ? Game.Art.Optional("fboss_icon_" + zone.id.Split('_')[0]) : null;
                 bossIcon.enabled = face != null;
@@ -260,10 +260,10 @@ namespace DotRPG
                 int index = npcPage * 6 + i; bool exists = index < npcs.Count;
                 npcRows[i].button.gameObject.SetActive(exists);
                 if (!exists) continue;
-                npcRows[i].label.text = $"{index + 1:00}  {npcs[index].name}";
+                npcRows[i].label.text = $"{index + 1:00}  {L.T(npcs[index].name)}";
                 npcRows[i].button.GetComponent<Image>().color = index == selectedNpc ? new Color32(182, 214, 232, 255) : Color.white;
             }
-            if (npcs.Count == 0 && HuntingGrounds.Get(selectedMap) == null) detail.text = "이 지역에 표시할 NPC가 없습니다.";
+            if (npcs.Count == 0 && HuntingGrounds.Get(selectedMap) == null) detail.text = L.T("이 지역에 표시할 NPC가 없습니다.");
         }
         public void SelectNpc(int index)
         {
@@ -271,7 +271,7 @@ namespace DotRPG
             if (index < 0 || index >= npcs.Count) return;
             selectedNpc = index; npcPage = index / 6; RenderNpcRows();
             detail.rectTransform.sizeDelta = new Vector2(530, 38);
-            detail.text = npcs[index].name;
+            detail.text = L.T(npcs[index].name);
             roomButton.gameObject.SetActive(npcs[index].interior != null);
             for (int i = 0; i < npcPins.Count; i++) npcPins[i].pin.localScale = Vector3.one * (i == index ? 1.3f : 1);
             ShowTip(index);
@@ -280,7 +280,7 @@ namespace DotRPG
         {
             var pos = Place(npcs[index].position) + new Vector2(0, 30);
             pos.x = Mathf.Clamp(pos.x, -195, 195); pos.y = Mathf.Clamp(pos.y, -206, 206);
-            tooltip.anchoredPosition = pos; tooltipText.text = npcs[index].name; tooltip.gameObject.SetActive(true); tooltip.SetAsLastSibling();
+            tooltip.anchoredPosition = pos; tooltipText.text = L.T(npcs[index].name); tooltip.gameObject.SetActive(true); tooltip.SetAsLastSibling();
         }
         protected override void Update()
         {

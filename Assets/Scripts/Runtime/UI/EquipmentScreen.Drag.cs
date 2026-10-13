@@ -83,12 +83,12 @@ namespace DotRPG
             menu.anchorMin = menu.anchorMax = new Vector2(0.5f, 0.5f);
             menu.pivot = new Vector2(1f, 1f);
             menu.sizeDelta = new Vector2(170f, 118f);
-            MakeButton(menu, "Equip", "장착", "ui_btn", new Vector2(0f, 1f), new Vector2(10f, -10f), new Vector2(150f, 46f), MenuEquip, 22);
-            MakeButton(menu, "Cancel", "닫기", "ui_btngray", new Vector2(0f, 1f), new Vector2(10f, -62f), new Vector2(150f, 46f), CloseMenu, 22);
+            MakeButton(menu, "Equip", L.T("장착"), "ui_btn", new Vector2(0f, 1f), new Vector2(10f, -10f), new Vector2(150f, 46f), MenuEquip, 22);
+            MakeButton(menu, "Cancel", L.T("닫기"), "ui_btngray", new Vector2(0f, 1f), new Vector2(10f, -62f), new Vector2(150f, 46f), CloseMenu, 22);
             menu.gameObject.SetActive(false);
 
             // Hint above the stat box (empty space under the character).
-            var dragHint = UIFactory.Text(root, "DragHint", TouchUi.Enabled ? "드래그해서 장착 · 터치: 메뉴" : "드래그해서 장착 · 우클릭: 메뉴", UiTheme.FontCaption, new Color(1f, 1f, 1f, 0.82f), TextAnchor.MiddleCenter, true);
+            var dragHint = UIFactory.Text(root, "DragHint", TouchUi.Enabled ? L.T("드래그해서 장착 · 터치: 메뉴") : L.T("드래그해서 장착 · 우클릭: 메뉴"), UiTheme.FontCaption, new Color(1f, 1f, 1f, 0.82f), TextAnchor.MiddleCenter, true);
             UIFactory.Place(dragHint.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(120f, 120f), new Vector2(460f, 24f));
         }
 

@@ -38,7 +38,7 @@ namespace DotRPG
 
         public static DungeonResultScreen Create(Transform canvas)
         {
-            var w = CreateWindow<DungeonResultScreen>(canvas, "DungeonResult", "던전 결과", "menuicon_dungeon");
+            var w = CreateWindow<DungeonResultScreen>(canvas, "DungeonResult", L.T("던전 결과"), "menuicon_dungeon");
             var left = Panel(w.content, "Stamp", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(LeftW, 230f), new Color32(24, 36, 54, 235));
             w.stamp = UIFactory.Text(left.transform, "Rank", "", 120, Color.white, TextAnchor.MiddleCenter, true);
             w.stampRt = w.stamp.rectTransform;
@@ -81,7 +81,7 @@ namespace DotRPG
             w.noCards = Label(cardsPanel.transform, "NoCards", "", 22, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -10f), new Vector2(RightW - 60f, 120f), TextAnchor.MiddleCenter);
 
             var dmg = Panel(w.content, "Damage", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(RightX, -350f), new Vector2(RightW, 164f), new Color32(24, 36, 54, 235));
-            Label(dmg.transform, "Title", "<b>딜 기여도</b>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -10f), new Vector2(300f, 26f));
+            Label(dmg.transform, "Title", L.T("<b>딜 기여도</b>"), 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -10f), new Vector2(300f, 26f));
             for (int i = 0; i < PartyManager.MaxMembers; i++)
             {
                 var track = Panel(dmg.transform, "Track" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(150f, -42f - i * 30f), new Vector2(520f, 20f), new Color32(12, 18, 28, 255));
@@ -94,9 +94,9 @@ namespace DotRPG
                 value.name = "Value";
             }
 
-            w.retryButton = Button(w.content, "Retry", "다시 도전", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-2f * 262f, -524f), new Vector2(250f, 62f), w.OnRetry, 24);
-            w.selectButton = Button(w.content, "Select", "던전 선택", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-262f, -524f), new Vector2(250f, 62f), () => w.Leave(true), 24);
-            w.villageButton = Button(w.content, "Village", "마을로", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -524f), new Vector2(250f, 62f), () => w.Leave(false), 24);
+            w.retryButton = Button(w.content, "Retry", L.T("다시 도전"), "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-2f * 262f, -524f), new Vector2(250f, 62f), w.OnRetry, 24);
+            w.selectButton = Button(w.content, "Select", L.T("던전 선택"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-262f, -524f), new Vector2(250f, 62f), () => w.Leave(true), 24);
+            w.villageButton = Button(w.content, "Village", L.T("마을로"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -524f), new Vector2(250f, 62f), () => w.Leave(false), 24);
             w.hint = Label(cardsPanel.transform, "Hint", "", 16, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(400f, 24f), TextAnchor.LowerRight);
             w.BuildRaid(cardsPanel.transform, total); // [RAID] take-all cards, sure-reward chips (DungeonResultScreen.Raid.cs)
             return w;
@@ -137,13 +137,13 @@ namespace DotRPG
         {
             if (run == null) return;
             bool cleared = run.State == DungeonRunState.Cleared;
-            stamp.text = cleared ? run.Rank.ToString() : "실패";
+            stamp.text = cleared ? run.Rank.ToString() : L.T("실패");
             stamp.color = cleared ? DungeonRanking.Tint(run.Rank) : new Color32(230, 90, 80, 255);
             stamp.fontSize = cleared ? 120 : 96;
-            stampSub.text = $"<b>{run.Dungeon.name}</b> · {run.Numbers.name}\n<color=#b8c4d8>{(cleared ? "던전 클리어" : run.FailReason)}</color>";
+            stampSub.text = $"<b>{L.T(run.Dungeon.name)}</b> · {L.T(run.Numbers.name)}\n<color=#b8c4d8>" + (cleared ? L.T("던전 클리어") : L.T(run.FailReason)) + "</color>";
 
             bool hasCards = run.Cards != null && run.Cards.Count > 0;
-            noCards.text = hasCards ? "" : !cleared ? "<color=#ff9f7a>던전 실패 · 보상 없음</color>" : NoCardsText(run);
+            noCards.text = hasCards ? "" : !cleared ? L.T("<color=#ff9f7a>던전 실패 · 보상 없음</color>") : NoCardsText(run);
             RefreshCardTitle();
             RefreshDamage();
             RefreshButtons();
@@ -153,14 +153,14 @@ namespace DotRPG
         static string NoCardsText(DungeonRun run)
         {
             if (run.NoRewardNote == "held")
-                return "<color=#ffe066>결과를 확인하는 중입니다.</color>\n<color=#b8c4d8>확인되면 보상 카드를 고를 수 있다는 알림이 옵니다.</color>";
+                return L.T("<color=#ffe066>결과를 확인하는 중입니다.</color>\n<color=#b8c4d8>확인되면 보상 카드를 고를 수 있다는 알림이 옵니다.</color>");
             if (run.NoRewardNote == "noanswer")
-                return "<color=#ff9f7a>서버에 결과를 보내지 못했습니다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인합니다.</color>";
+                return L.T("<color=#ff9f7a>서버에 결과를 보내지 못했습니다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인합니다.</color>");
             if (run.Dungeon.isRaid)
                 return run.Dungeon.raidTier == RaidTier.Mid
-                    ? "<color=#ff9f7a>오늘 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>매일 06:00에 초기화됩니다.</color>"
-                    : "<color=#ff9f7a>이번 주 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>목요일 06:00에 초기화됩니다.</color>";
-            return "<color=#ff9f7a>이번 판은 보상이 없는 연습 입장입니다.</color>";
+                    ? L.T("<color=#ff9f7a>오늘 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>매일 06:00에 초기화됩니다.</color>")
+                    : L.T("<color=#ff9f7a>이번 주 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>목요일 06:00에 초기화됩니다.</color>");
+            return L.T("<color=#ff9f7a>이번 판은 보상이 없는 연습 입장입니다.</color>");
         }
 
         string BreakdownText(int lines)
@@ -169,28 +169,28 @@ namespace DotRPG
             bool cleared = run.State == DungeonRunState.Cleared;
             var all = new List<string>
             {
-                $"시간 <color=#ffe066>{DungeonRun.Clock(run.Elapsed)}</color>" + (cleared ? $"   <color=#b8c4d8>{s.time}/{DungeonRanking.TimeMax}</color>" : ""),
-                $"피격 {run.HitsTaken}회" + (cleared ? $"   <color=#b8c4d8>{s.hits}/{DungeonRanking.HitsMax}</color>" : ""),
-                $"처치 {run.Kills}/{run.Monsters}" + (cleared ? $"   <color=#b8c4d8>{s.kills}/{DungeonRanking.KillsMax}</color>" : ""),
-                $"최대 콤보 {run.MaxCombo}" + (cleared ? $"   <color=#b8c4d8>{s.combo}/{DungeonRanking.ComboMax}</color>" : ""),
-                $"부활 {run.RevivesUsed}회" + (cleared && s.revivePenalty > 0 ? $"   <color=#ff9f7a>−{s.revivePenalty}</color>" : ""),
+                L.F("시간 <color=#ffe066>{0}</color>", DungeonRun.Clock(run.Elapsed)) + (cleared ? $"   <color=#b8c4d8>{s.time}/{DungeonRanking.TimeMax}</color>" : ""),
+                L.F("피격 {0}회", run.HitsTaken) + (cleared ? $"   <color=#b8c4d8>{s.hits}/{DungeonRanking.HitsMax}</color>" : ""),
+                L.F("처치 {0}/{1}", run.Kills, run.Monsters) + (cleared ? $"   <color=#b8c4d8>{s.kills}/{DungeonRanking.KillsMax}</color>" : ""),
+                L.F("최대 콤보 {0}", run.MaxCombo) + (cleared ? $"   <color=#b8c4d8>{s.combo}/{DungeonRanking.ComboMax}</color>" : ""),
+                L.F("부활 {0}회", run.RevivesUsed) + (cleared && s.revivePenalty > 0 ? $"   <color=#ff9f7a>−{s.revivePenalty}</color>" : ""),
             };
             if (cleared)
             {
-                all.Add($"\n<size=24><b>합계 {s.Total}점</b></size>   랭크 <color=#{ColorUtility.ToHtmlStringRGB(DungeonRanking.Tint(run.Rank))}>{run.Rank}</color>");
-                all.Add(run.RewardsLocked ? "<color=#b8c4d8>경험치 없음 (연습 입장)</color>"
-                    : $"경험치 <color=#8fe28f>+{Progression.XpPercent(run.XpGained, Game.Session.Progression.Level)}</color>  <color=#b8c4d8>(현재 레벨 기준 · 랭크 보너스 +{DungeonRanking.XpBonusPercent(run.Rank)}%)</color>");
+                all.Add("\n" + L.F("<size=24><b>합계 {0}점</b></size>   랭크 <color=#{1}>{2}</color>", s.Total, ColorUtility.ToHtmlStringRGB(DungeonRanking.Tint(run.Rank)), run.Rank));
+                all.Add(run.RewardsLocked ? L.T("<color=#b8c4d8>경험치 없음 (연습 입장)</color>")
+                    : L.F("경험치 <color=#8fe28f>+{0}</color>  <color=#b8c4d8>(현재 레벨 기준 · 랭크 보너스 +{1}%)</color>", Progression.XpPercent(run.XpGained, Game.Session.Progression.Level), DungeonRanking.XpBonusPercent(run.Rank)));
             }
-            else all.Add("\n<color=#b8c4d8>실패한 던전은 랭크와 경험치가 없습니다.</color>");
+            else all.Add("\n" + L.T("<color=#b8c4d8>실패한 던전은 랭크와 경험치가 없습니다.</color>"));
             return string.Join("\n", all.GetRange(0, Mathf.Clamp(lines, 0, all.Count)));
         }
 
         void RefreshCardTitle()
         {
             bool hasCards = run.Cards != null && run.Cards.Count > 0;
-            if (!hasCards) { cardTitle.text = "<b>보상 카드</b>"; return; }
+            if (!hasCards) { cardTitle.text = L.T("<b>보상 카드</b>"); return; }
             if (RaidMode) { RefreshRaidTitle(); return; }
-            cardTitle.text = !picked ? "<b>보상 카드</b>  <color=#ffe066>카드 한 장을 고르세요</color>" : done ? "<b>보상 카드</b>  <color=#8fe28f>획득 완료</color>" : "<b>보상 카드</b>  파티원이 카드를 고르는 중…";
+            cardTitle.text = !picked ? L.T("<b>보상 카드</b>  <color=#ffe066>카드 한 장을 고르세요</color>") : done ? L.T("<b>보상 카드</b>  <color=#8fe28f>획득 완료</color>") : L.T("<b>보상 카드</b>  파티원이 카드를 고르는 중…");
             for (int i = 0; i < cards.Count; i++)
                 if (!cards[i].flipped) cards[i].frame.color = !picked && i == cursor ? (Color)UIColors.Highlight : new Color(1f, 1f, 1f, 0f);
         }
@@ -207,7 +207,7 @@ namespace DotRPG
                 text.gameObject.SetActive(on);
                 if (!on) continue;
                 var m = run.MemberDamage[i];
-                text.text = m.local ? $"<color=#ffe066>{m.name}</color>" : m.name;
+                text.text = m.local ? $"<color=#ffe066>{L.T(m.name)}</color>" : L.T(m.name);
                 bar.color = m.local ? new Color32(255, 196, 70, 255) : new Color32(110, 170, 240, 255);
                 bar.rectTransform.sizeDelta = new Vector2(520f * m.damage / max, 20f);
                 var value = bar.transform.parent.Find("Value").GetComponent<Text>();
@@ -221,7 +221,7 @@ namespace DotRPG
             bool canRetry = Game.Dungeon != null && Game.Dungeon.CanRetry;
             foreach (var b in new[] { retryButton, selectButton, villageButton }) b.gameObject.SetActive(done);
             retryButton.image.color = canRetry ? Color.white : new Color(1f, 1f, 1f, 0.4f);
-            hint.text = done ? "<color=#b8c4d8>Enter / ESC 마을로</color>" : "<color=#b8c4d8>←/→ 카드   Enter 뒤집기</color>";
+            hint.text = done ? L.T("<color=#b8c4d8>Enter / ESC 마을로</color>") : L.T("<color=#b8c4d8>←/→ 카드   Enter 뒤집기</color>");
             RefreshRaidButtons();
         }
 
@@ -293,9 +293,9 @@ namespace DotRPG
                 if (!reward.HasValue) { picking = false; yield break; }
             }
             else reward = Game.Dungeon.TakeCard(index);
-            yield return Flip(index, "나", true, true);
+            yield return Flip(index, L.T("나"), true, true);
             picked = true;
-            if (reward.HasValue) GameEvents.RaiseToast($"보상 획득: {reward.Value.Label}");
+            if (reward.HasValue) GameEvents.RaiseToast(L.F("보상 획득: {0}", L.T(reward.Value.Label)));
             RefreshCardTitle();
             // Companions each flip one of the cards still face down.
             var party = Game.Party;
@@ -308,7 +308,7 @@ namespace DotRPG
                     yield return new WaitForSecondsRealtime(CompanionGap);
                     int k = DungeonAuthority.Current.CompanionPick(run, m, faceDown);
                     int card = faceDown[Mathf.Clamp(k, 0, faceDown.Count - 1)];
-                    yield return Flip(card, party.Members[m] != null ? party.Members[m].DisplayName : "동료", false, true);
+                    yield return Flip(card, party.Members[m] != null ? party.Members[m].DisplayName : L.T("동료"), false, true);
                 }
             yield return new WaitForSecondsRealtime(CompanionGap);
             for (int i = 0; i < cards.Count; i++) if (!cards[i].flipped) StartCoroutine(Flip(i, "", false, false));
@@ -357,7 +357,7 @@ namespace DotRPG
             c.icon.enabled = true;
             c.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(reward.itemId));
             c.face.text = CardText(reward);
-            c.who.text = taken ? (local ? $"<color=#ffe066><b>{who}</b></color>" : $"<color=#9fd0ff>{who}</color>") : "<color=#8c96a8>미획득</color>";
+            c.who.text = taken ? (local ? $"<color=#ffe066><b>{who}</b></color>" : $"<color=#9fd0ff>{who}</color>") : L.T("<color=#8c96a8>미획득</color>");
             for (float t = 0f; t < FlipHalf; t += Time.unscaledDeltaTime)
             {
                 c.rt.localScale = new Vector3(t / FlipHalf, 1f, 1f);
@@ -368,7 +368,7 @@ namespace DotRPG
             {
                 c.frame.color = glow;
                 if (taken) c.bg.color = Color.Lerp(Color.white, glow, 0.2f);
-                if (local) { Game.Audio.PlaySfx("quest"); GameEvents.RaiseToast($"<color=#ffb347>대박!</color> {CardText(reward).Split('\n')[0]} 획득"); }
+                if (local) { Game.Audio.PlaySfx("quest"); GameEvents.RaiseToast(L.F("<color=#ffb347>대박!</color> {0} 획득", CardText(reward).Split('\n')[0])); }
             }
             if (local) Game.Audio.PlaySfx("pickup");
         }
@@ -384,8 +384,8 @@ namespace DotRPG
         static string CardText(RewardCard r)
         {
             var gear = EquipmentDatabase.Get(r.itemId);
-            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}><b>{gear.name}</b></color>\n<size=16>{EquipmentDatabase.RarityName(gear.rarity)}</size>";
-            string name = DungeonDatabase.ItemName(r.itemId);
+            if (gear != null) return $"<color={EquipmentDatabase.RarityColor(gear.rarity)}><b>{L.T(gear.name)}</b></color>\n<size=16>{L.T(EquipmentDatabase.RarityName(gear.rarity))}</size>";
+            string name = L.T(DungeonDatabase.ItemName(r.itemId));
             return $"<b>{name}</b>\n×{r.count:N0}";
         }
 
@@ -394,7 +394,7 @@ namespace DotRPG
             if (!done || Game.Dungeon == null) return;
             if (!Game.Dungeon.CanRetry)
             {
-                GameEvents.RaiseToast("오늘 입장 횟수를 모두 사용했습니다.");
+                GameEvents.RaiseToast(L.T("오늘 입장 횟수를 모두 사용했습니다."));
                 Game.Audio.PlaySfx("cancel");
                 return;
             }

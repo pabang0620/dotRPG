@@ -62,10 +62,10 @@ namespace DotRPG
 
         public static EnhanceScreen Create(Transform canvas)
         {
-            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", "대장간 · 강화 · 승급", "menuicon_enhance");
+            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", L.T("대장간 · 강화 · 승급"), "menuicon_enhance");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Left", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 590f), new Color32(24, 36, 54, 235));
-            Label(left.transform, "Hint", "강화할 장비를 고르세요 (착용 중 + 가방)", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(500f, 30f));
+            Label(left.transform, "Hint", L.T("강화할 장비를 고르세요 (착용 중 + 가방)"), 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(500f, 30f));
             for (int i = 0; i < PerPage; i++)
             {
                 int index = i;
@@ -112,7 +112,7 @@ namespace DotRPG
             w.chanceText = Label(right.transform, "Chance", "", 20, topLeft, topLeft, new Vector2(24f, -346f), new Vector2(610f, 32f));
             w.failText = Label(right.transform, "Fail", "", 19, topLeft, topLeft, new Vector2(24f, -379f), new Vector2(610f, 30f));
             w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 64f), TextAnchor.MiddleCenter);
-            w.enhanceButton = Button(right.transform, "Go", "강화", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
+            w.enhanceButton = Button(right.transform, "Go", L.T("강화"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
             w.BuildPromote(right.transform);
             w.BuildTicket(right.transform); // [CASH] 강화권
@@ -203,7 +203,7 @@ namespace DotRPG
                 c.level.color = EquipmentDatabase.LevelTint(lv);
                 int n = e.slot.HasValue ? 0 : bag.Count(e.key);
                 c.count.text = n > 1 ? n.ToString() : "";
-                c.worn.text = e.slot.HasValue ? "착용" : "";
+                c.worn.text = e.slot.HasValue ? L.T("착용") : "";
             }
             // The cursor sits on the selected cell of the shown page (never past the 20 cells).
             var at = cells[selected - page * PerPage].bg.rectTransform;
@@ -230,11 +230,11 @@ namespace DotRPG
         {
             bigIcon.enabled = false;
             bigFrame.color = Color.clear;
-            title.text = "강화할 장비가 없습니다.";
+            title.text = L.T("강화할 장비가 없습니다.");
             statsText.text = costTitle.text = chanceText.text = failText.text = "";
             foreach (var t in costCells) t.text = "";
             enhanceButton.interactable = false;
-            enhanceLabel.text = "강화";
+            enhanceLabel.text = L.T("강화");
             RefreshTicket(null); // no gear: the 강화권 button goes too
         }
 
@@ -249,65 +249,65 @@ namespace DotRPG
             bigIcon.enabled = true;
             bigIcon.sprite = Game.Art.Get(gear.iconKey);
             bigFrame.color = EquipmentDatabase.RarityTint(gear.rarity);
-            string where = e.slot.HasValue ? $"{EquipmentDatabase.SlotName(e.slot.Value)} 착용 중" : $"가방 {bag.Count(e.key)}개";
-            title.text = $"<b>{EquipmentDatabase.RichName(e.key)}</b>\n<size=19><color=#b8c4d8>[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.CategoryName} · {where}</color></size>\n" +
-                         (max ? "<color=#ffe066>최대 강화 달성!</color>" : $"{EquipmentDatabase.LevelTag(level)}  →  {EquipmentDatabase.LevelTag(level + 1)}");
+            string where = e.slot.HasValue ? L.F("{0} 착용 중", L.T(EquipmentDatabase.SlotName(e.slot.Value))) : L.F("가방 {0}개", bag.Count(e.key));
+            title.text = $"<b>{EquipmentDatabase.RichName(e.key)}</b>\n<size=19><color=#b8c4d8>[{L.T(EquipmentDatabase.RarityName(gear.rarity))}] {L.T(gear.CategoryName)} · {where}</color></size>\n" +
+                         (max ? L.T("<color=#ffe066>최대 강화 달성!</color>") : $"{EquipmentDatabase.LevelTag(level)}  →  {EquipmentDatabase.LevelTag(level + 1)}");
             var now = gear.StatsAt(level);
             if (max)
             {
-                statsText.text = $"<b>현재 능력치</b>   <color=#b8c4d8>전투력 {now.Score:N0}</color>\n{gear.StatLine(level)}";
+                statsText.text = L.F("<b>현재 능력치</b>   <color=#b8c4d8>전투력 {0:N0}</color>\n{1}", now.Score, gear.StatLine(level));
                 costTitle.text = chanceText.text = failText.text = "";
                 foreach (var t in costCells) t.text = "";
                 enhanceButton.interactable = false;
-                enhanceLabel.text = "최대 강화";
+                enhanceLabel.text = L.T("최대 강화");
                 return;
             }
             var next = gear.StatsAt(level + 1);
             // Low tiers can pay for a level whose bonus still rounds to the same stat: say so instead of "A → A".
             bool flat = next.enhanceAttack == now.enhanceAttack && next.enhanceHealth == now.enhanceHealth;
-            string after = flat ? NoStatChange : $"강화 후  <color=#8fe28f>{gear.StatLine(level + 1)}</color>";
-            statsText.text = $"<b>능력치 변화</b>   <color=#b8c4d8>전투력 {now.Score:N0} → </color><color=#8fe28f>{next.Score:N0} (+{next.Score - now.Score:N0})</color>\n" +
-                             $"현재<color=#00000000> 후</color>  {gear.StatLine(level)}\n{after}";
+            string after = flat ? NoStatChange : L.F("강화 후  <color=#8fe28f>{0}</color>", gear.StatLine(level + 1));
+            statsText.text = L.F("<b>능력치 변화</b>   <color=#b8c4d8>전투력 {0:N0} → </color><color=#8fe28f>{1:N0} (+{2:N0})</color>\n", now.Score, next.Score, next.Score - now.Score) +
+                             L.F("현재<color=#00000000> 후</color>  {0}\n{1}", gear.StatLine(level), after);
 
             var cost = eq.CostFor(e.key);
-            costTitle.text = "<b>필요 재료</b>";
+            costTitle.text = L.T("<b>필요 재료</b>");
             int cell = 0;
-            costCells[cell++].text = Need("골드", Game.Session.Gold, cost.gold);
+            costCells[cell++].text = Need(L.T("골드"), Game.Session.Gold, cost.gold);
             if (cost.bone > 0) costCells[cell++].text = Need(MaterialName(EnhanceRules.Bone), bag.Count(EnhanceRules.Bone), cost.bone);
             if (cost.ore > 0) costCells[cell++].text = Need(MaterialName(EnhanceRules.Ore), bag.Count(EnhanceRules.Ore), cost.ore);
             if (cost.essence > 0) costCells[cell++].text = Need(MaterialName(EnhanceRules.Essence), bag.Count(EnhanceRules.Essence), cost.essence);
             while (cell < costCells.Length) costCells[cell++].text = "";
 
-            string chance = $"성공 확률  <color=#ffe066><b>{cost.successPercent}%</b></color>";
-            if (cost.pityBonus > 0) chance += $"   <color=#b8c4d8>(기본 {cost.basePercent}% + 보정 {cost.pityBonus}%p)</color>";
-            else if (EnhanceRules.HasPity(gear, level)) chance += "   <color=#8c96a8>(실패할 때마다 +1%p 보정)</color>";
+            string chance = L.F("성공 확률  <color=#ffe066><b>{0}%</b></color>", cost.successPercent);
+            if (cost.pityBonus > 0) chance += L.F("   <color=#b8c4d8>(기본 {0}% + 보정 {1}%p)</color>", cost.basePercent, cost.pityBonus);
+            else if (EnhanceRules.HasPity(gear, level)) chance += L.T("   <color=#8c96a8>(실패할 때마다 +1%p 보정)</color>");
             chanceText.text = chance;
             failText.text = FailureLine(cost, bag.Count(ConsumableDatabase.ProtectTicket), gear.starter);
 
             bool can = eq.CanAfford(cost);
             enhanceButton.interactable = can && !busy;
-            enhanceLabel.text = busy ? "강화 중…" : can ? "강화" : Game.Session.Gold < cost.gold ? "골드 부족" : "재료 부족";
+            enhanceLabel.text = busy ? L.T("강화 중…") : can ? L.T("강화") : Game.Session.Gold < cost.gold ? L.T("골드 부족") : L.T("재료 부족");
         }
 
         static string Need(string name, int have, int need) =>
             $"{name}  {(have >= need ? "<color=#8fe28f>" : "<color=#ff7070>")}{have:N0}</color> / {need:N0}";
 
-        static string MaterialName(string id) => EquipmentDatabase.GetMaterial(id)?.name ?? id;
+        static string MaterialName(string id) => L.T(EquipmentDatabase.GetMaterial(id)?.name) ?? id;
 
-        const string NoStatChange = "<color=#8c96a8>이번 단계는 능력치 변화가 없습니다 (높은 단계일수록 크게 오릅니다)</color>";
-        const string PickAgain = "강화할 장비를 다시 골라 주세요.";
+        static string NoStatChange => L.T("<color=#8c96a8>이번 단계는 능력치 변화가 없습니다 (높은 단계일수록 크게 오릅니다)</color>");
+        static string PickAgain => L.T("강화할 장비를 다시 골라 주세요.");
 
         static string FailureLine(EnhanceCost cost, int tickets, bool starter)
         {
             switch (cost.failure)
             {
-                case EnhanceFailure.Keep: return "실패 시: <color=#8fe28f>강화 수치 유지</color>";
-                case EnhanceFailure.Drop3: return $"실패 시: <color=#ff9f43>강화 수치 3 하락 (+{cost.level} → +{cost.DroppedLevel})</color>";
+                case EnhanceFailure.Keep: return L.T("실패 시: <color=#8fe28f>강화 수치 유지</color>");
+                case EnhanceFailure.Drop3: return L.F("실패 시: <color=#ff9f43>강화 수치 3 하락 (+{0} → +{1})</color>", cost.level, cost.DroppedLevel);
                 default:
-                    if (cost.usesTicket) return $"실패 시: <color=#ffd84a>장비 보호권 1장 자동 사용 → +0 초기화 (보유 {tickets}장)</color>";
+                    if (cost.usesTicket) return L.F("실패 시: <color=#ffd84a>장비 보호권 1장 자동 사용 → +0 초기화 (보유 {0}장)</color>", tickets);
                     return starter && tickets > 0
-                        ? "실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않습니다)</color>"
-                        : "실패 시: <color=#ff5050><b>장비 파괴!</b></color>";
+                        ? L.T("실패 시: <color=#ff5050><b>장비 파괴!</b></color>  <color=#8c96a8>(기본 장비에는 보호권을 쓰지 않습니다)</color>")
+                        : L.T("실패 시: <color=#ff5050><b>장비 파괴!</b></color>");
             }
         }
 
@@ -316,16 +316,16 @@ namespace DotRPG
         {
             switch (cost.failure)
             {
-                case EnhanceFailure.Drop3: return $"실패하면 강화 수치가 3 내려갑니다 (+{cost.level} → +{cost.DroppedLevel}).";
+                case EnhanceFailure.Drop3: return L.F("실패하면 강화 수치가 3 내려갑니다 (+{0} → +{1}).", cost.level, cost.DroppedLevel);
                 case EnhanceFailure.Destroy:
-                    return cost.usesTicket ? "실패하면 장비 보호권 1장을 사용해 +0으로 초기화됩니다." : "실패하면 장비가 파괴됩니다.";
+                    return cost.usesTicket ? L.T("실패하면 장비 보호권 1장을 사용해 +0으로 초기화됩니다.") : L.T("실패하면 장비가 파괴됩니다.");
                 default: return null;
             }
         }
 
         /// <summary>The risk confirm: which piece, where it goes, the chance, then the risk.</summary>
         static string ConfirmText(string key, EnhanceCost cost, string risk) =>
-            $"<b>{EquipmentDatabase.NameOfKey(key)}</b> → +{cost.level + 1}  (성공 {cost.successPercent}%)\n{risk} 강화할까요?";
+            L.F("<b>{0}</b> → +{1}  (성공 {2}%)\n{3} 강화할까요?", L.T(EquipmentDatabase.NameOfKey(key)), cost.level + 1, cost.successPercent, risk);
 
         // ---------- Actions ----------
 
@@ -381,8 +381,8 @@ namespace DotRPG
             {
                 Game.Audio.PlaySfx("cancel");
                 resultText.text = Game.Session.Gold < cost.gold
-                    ? "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>"
-                    : "<color=#ff7070>재료가 부족합니다. 해골을 더 쓰러뜨리세요.</color>";
+                    ? L.T("<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>")
+                    : L.T("<color=#ff7070>재료가 부족합니다. 해골을 더 쓰러뜨리세요.</color>");
                 return;
             }
             string warning = RiskWarning(cost);

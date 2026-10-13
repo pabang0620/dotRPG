@@ -154,7 +154,7 @@ namespace DotRPG
                     var fire = StaticProp("Campfire", "snow_fire_0", foot, new Vector2(1.1f, 0.5f), new Vector2(0f, 0.25f));
                     fire.AddComponent<CampfireFx>();
                     var warm = fire.AddComponent<DialogueInteractable>();
-                    warm.Setup("불 쬐기", "winter_fire");
+                    warm.Setup(L.T("불 쬐기"), "winter_fire");
                     warm.ConfigureShape(new Vector2(0f, 0.2f), 0.3f, new Vector2(0f, 1.3f));
                     PointsOfInterest.Add(center);
                     return true;
@@ -166,7 +166,7 @@ namespace DotRPG
                     var house = StaticProp("House", "snow_house", pos, new Vector2(2.8f, 1.9f), new Vector2(0f, 1.2f));
                     var door = new GameObject("Door").AddComponent<DialogueInteractable>();
                     door.transform.SetParent(house.transform, false);
-                    door.Setup("문 두드리기", "winter_house_door");
+                    door.Setup(L.T("문 두드리기"), "winter_house_door");
                     door.ConfigureShape(new Vector2(0f, 0f), 0.2f, new Vector2(0f, 1.4f));
                     PointsOfInterest.Add(pos + Vector2.up);
                     return true;
@@ -178,7 +178,7 @@ namespace DotRPG
                     var barn = StaticProp("Barn", "snow_barn", pos, new Vector2(4.7f, 2.4f), new Vector2(0f, 1.3f));
                     var door = new GameObject("Door").AddComponent<DialogueInteractable>();
                     door.transform.SetParent(barn.transform, false);
-                    door.Setup("살펴보기", "winter_barn");
+                    door.Setup(L.T("살펴보기"), "winter_barn");
                     door.ConfigureShape(new Vector2(0f, 0f), 0.4f, new Vector2(0f, 1.9f));
                     PointsOfInterest.Add(pos + Vector2.up);
                     return true;
@@ -187,7 +187,7 @@ namespace DotRPG
                 {
                     var sign = StaticProp("Sign", "snow_sign", foot, new Vector2(0.8f, 0.4f), new Vector2(0f, 0.2f));
                     var interact = sign.AddComponent<DialogueInteractable>();
-                    interact.Setup("읽기", SignDialogueFor(x, y));
+                    interact.Setup(L.T("읽기"), SignDialogueFor(x, y));
                     interact.ConfigureShape(new Vector2(0f, 0.2f), 0.1f, new Vector2(0f, 1.4f));
                     return true;
                 }
@@ -195,7 +195,7 @@ namespace DotRPG
                 {
                     var gate = StaticProp("Gate", "snow_gate", new Vector2(x + 2f, y + 0.1f), new Vector2(3.9f, 1.3f), new Vector2(0f, 0.65f));
                     var look = gate.AddComponent<DialogueInteractable>();
-                    look.Setup("살펴보기", "winter_gate");
+                    look.Setup(L.T("살펴보기"), "winter_gate");
                     look.ConfigureShape(new Vector2(0f, -0.2f), 0.6f, new Vector2(0f, 3f));
                     return true;
                 }

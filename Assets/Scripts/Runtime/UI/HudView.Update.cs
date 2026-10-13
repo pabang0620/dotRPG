@@ -36,8 +36,8 @@ namespace DotRPG
             {
                 bool auto = QuestAutoPilot.Active;
                 bool hunting = QuestAutoPilot.Hunting;
-                autoLabel.text = auto && !hunting ? "자동 중지" : QuestAutoPilot.Targets.Count > 0 ? $"자동 진행 ({QuestAutoPilot.Targets.Count})" : "자동 진행";
-                if (huntLabel != null) huntLabel.text = hunting ? "사냥 중지" : "자동 사냥";
+                autoLabel.text = auto && !hunting ? L.T("자동 중지") : QuestAutoPilot.Targets.Count > 0 ? L.F("자동 진행 ({0})", QuestAutoPilot.Targets.Count) : L.T("자동 진행");
+                if (huntLabel != null) huntLabel.text = hunting ? L.T("사냥 중지") : L.T("자동 사냥");
                 autoStatus.text = auto ? QuestAutoPilot.Status : "";
                 if (huntBtn != null)
                 {
@@ -106,7 +106,7 @@ namespace DotRPG
                 if (stateKey != mobilityStateShown || !ReferenceEquals(key, mobilityKeyShown) || !ReferenceEquals(mobilityPlayer.MobilityName, mobilityNameShown))
                 {
                     mobilityStateShown = stateKey; mobilityKeyShown = key; mobilityNameShown = mobilityPlayer.MobilityName;
-                    string state = mobilityPlayer.IsDashing ? "이동 중" : remaining > 0f ? $"{remaining:0.0}초" : "준비";
+                    string state = mobilityPlayer.IsDashing ? L.T("이동 중") : remaining > 0f ? L.F("{0:0.0}초", remaining) : L.T("준비");
                     mobilityHint.text = $"[{key}] {mobilityPlayer.MobilityName}  {state}";
                 }
                 mobilityHint.color = remaining > 0f ? new Color(.7f, .74f, .8f) : new Color(.65f, .94f, 1f);

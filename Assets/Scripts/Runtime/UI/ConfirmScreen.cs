@@ -22,9 +22,9 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Confirm", true);
             var screen = root.gameObject.AddComponent<ConfirmScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "확인", 560, "\n", 20);
+            screen.BuildPanel(root, L.T("확인"), 560, "\n", 20);
             screen.message = screen.panel.Find("Body").GetComponent<Text>();
-            screen.menu.AddButton("예", () =>
+            screen.menu.AddButton(L.T("예"), () =>
             {
                 if (screen.closing) return;
                 var action = screen.onYes;
@@ -32,7 +32,7 @@ namespace DotRPG
                 {
                     // Quitting: the dialog stays up (no flash of the game) while the last save goes out.
                     screen.closing = true;
-                    screen.message.text = "게임을 종료하는 중...";
+                    screen.message.text = L.T("게임을 종료하는 중...");
                     action?.Invoke();
                     return;
                 }
@@ -40,7 +40,7 @@ namespace DotRPG
                 screen.ui.Pop();
                 action?.Invoke();
             });
-            screen.menu.AddButton("아니오", screen.AnswerNo);
+            screen.menu.AddButton(L.T("아니오"), screen.AnswerNo);
             screen.menu.OnCancel = screen.AnswerNo;
             screen.FitPanel();
             return screen;
@@ -59,7 +59,7 @@ namespace DotRPG
             defaultYes = nextDefaultYes; onNo = nextOnNo;
             deadline = nextTimeout > 0f ? Time.unscaledTime + nextTimeout : 0f;
             nextDefaultYes = false; nextOnNo = null; nextTimeout = 0f;
-            if (deadline > 0f) message.text = question.Replace("{초}", Mathf.CeilToInt(deadline - Time.unscaledTime).ToString());
+            if (deadline > 0f) message.text = question.Replace("{초}", Mathf.CeilToInt(deadline - Time.unscaledTime).ToString()); // i18n-ignore seconds token
             // Same layout as BuildPanel: title, body under it, then the menu.
             int lines = Mathf.Max(2, (text ?? "").Split('\n').Length);
             float h = lines * BodySize * 1.45f + 8f;
@@ -108,7 +108,7 @@ namespace DotRPG
             if (deadline <= 0f || closing) return;
             float left = deadline - Time.unscaledTime;
             if (left <= 0f) { AnswerNo(); return; }
-            message.text = question.Replace("{초}", Mathf.CeilToInt(left).ToString());
+            message.text = question.Replace("{초}", Mathf.CeilToInt(left).ToString()); // i18n-ignore seconds token
         }
 
         public override void Show()

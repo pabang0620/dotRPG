@@ -125,18 +125,18 @@ namespace DotRPG
 
         static string ErrorText(ApiResult r) => r.code switch
         {
-            "DAILY_LOCKED" => "1-15 '전직의 길'을 마치면 열립니다.",
-            "DAILY_EXPIRED" => "기한이 지난 의뢰입니다.",
-            "DAILY_NOT_DONE" => "아직 목표를 채우지 못했습니다.",
-            "DAILY_ALREADY_CLAIMED" => "이미 보상을 받은 의뢰입니다.",
-            "NETWORK" => "서버에 연결할 수 없습니다.",
-            _ => string.IsNullOrEmpty(r.message) ? "요청이 실패했습니다." : r.message,
+            "DAILY_LOCKED" => L.T("1-15 '전직의 길'을 마치면 열립니다."),
+            "DAILY_EXPIRED" => L.T("기한이 지난 의뢰입니다."),
+            "DAILY_NOT_DONE" => L.T("아직 목표를 채우지 못했습니다."),
+            "DAILY_ALREADY_CLAIMED" => L.T("이미 보상을 받은 의뢰입니다."),
+            "NETWORK" => L.T("서버에 연결할 수 없습니다."),
+            _ => string.IsNullOrEmpty(r.message) ? L.T("요청이 실패했습니다.") : r.message,
         };
 
         static void Post(string path, Slot s, Action<ApiResult> ok, Action<bool, string> done)
         {
-            if (!EnsureContext()) { done(false, "온라인 캐릭터로 접속해야 합니다."); return; }
-            if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
+            if (!EnsureContext()) { done(false, L.T("온라인 캐릭터로 접속해야 합니다.")); return; }
+            if (Busy) { done(false, L.T("이전 요청을 처리하는 중입니다.")); return; }
             Busy = true;
             int context = generation;
             readVersion++; // A GET started before this write cannot restore stale buttons.
@@ -159,17 +159,17 @@ namespace DotRPG
             });
         }
 
-        static string Kind(Slot s) => s.period == "week" ? "주간 의뢰" : "일일 의뢰";
+        static string Kind(Slot s) => s.period == "week" ? L.T("주간 의뢰") : L.T("일일 의뢰");
 
         public static void Accept(Slot s, Action<bool, string> done)
         {
-            if (!CanAccept(s)) { done(false, !Unlocked ? "1-15 '전직의 길'을 마치면 열립니다." : "지금은 수락할 수 없습니다."); return; }
-            Post("/dailies/accept", s, r => { GuideFlags.Mark(GuideFlags.Daily); done(true, $"{Kind(s)} '{s.title}'을(를) 수락했습니다."); }, done);
+            if (!CanAccept(s)) { done(false, !Unlocked ? L.T("1-15 '전직의 길'을 마치면 열립니다.") : L.T("지금은 수락할 수 없습니다.")); return; }
+            Post("/dailies/accept", s, r => { GuideFlags.Mark(GuideFlags.Daily); done(true, L.F("{0} '{1}'을(를) 수락했습니다.", Kind(s), L.T(s.title))); }, done);
         }
 
         public static void Claim(Slot s, Action<bool, string> done)
         {
-            if (!CanClaim(s)) { done(false, "아직 목표를 채우지 못했습니다."); return; }
+            if (!CanClaim(s)) { done(false, L.T("아직 목표를 채우지 못했습니다.")); return; }
             Post("/dailies/claim", s, r =>
             {
                 // Level, XP and gold from the server, the same path as quest rewards (delta when sent, else the top-level values).
@@ -187,9 +187,9 @@ namespace DotRPG
                 var granted = MiniJson.Obj(r.data, "granted");
                 int xp = MiniJson.Int(granted, "xp"), gold = MiniJson.Int(granted, "gold");
                 var parts = new List<string>();
-                if (xp > 0) parts.Add($"경험치 {xp:N0}");
-                if (gold > 0) parts.Add($"골드 {gold:N0}");
-                done(true, $"{Kind(s)} '{s.title}' 완료!" + (parts.Count > 0 ? " " + string.Join(", ", parts) : ""));
+                if (xp > 0) parts.Add(L.F("경험치 {0:N0}", xp));
+                if (gold > 0) parts.Add(L.F("골드 {0:N0}", gold));
+                done(true, L.F("{0} '{1}' 완료!", Kind(s), L.T(s.title)) + (parts.Count > 0 ? " " + string.Join(", ", parts) : ""));
             }, done);
         }
     }

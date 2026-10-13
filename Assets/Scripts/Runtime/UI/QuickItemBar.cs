@@ -37,7 +37,7 @@ namespace DotRPG
                 bar.counts[i] = UIFactory.Text(background.transform, "Count", "", 17, Color.white, TextAnchor.LowerRight, true);
                 UIFactory.Stretch(bar.counts[i].rectTransform, 2f, 6f, 8f, 2f);
             }
-            var caption = UIFactory.Text(root, "Caption", "물약 · 귀환", UiTheme.FontMin, new Color32(200, 214, 236, 255), TextAnchor.LowerCenter, true);
+            var caption = UIFactory.Text(root, "Caption", L.T("물약 · 귀환"), UiTheme.FontMin, new Color32(200, 214, 236, 255), TextAnchor.LowerCenter, true);
             UIFactory.Place(caption.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width * 0.5f, Size + 1f), new Vector2(width + 20f, 20f));
             return bar;
         }

@@ -36,12 +36,12 @@ namespace DotRPG
         /// <summary>The gauge is full: take the chosen piece (bag, account bound like any draw).</summary>
         public static void ClaimGearCeiling(string banner, int tier, string itemId, Action<bool, string> done)
         {
-            if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
+            if (!Available) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다.")); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["banner"] = banner, ["item_id"] = itemId };
             if (tier >= 0) body["tier"] = tier;
             Api.PostIdempotent(Base + "/gear-ceiling", body, r =>
             {
-                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "받지 못했습니다." : r.message); return; }
+                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? L.T("받지 못했습니다.") : r.message); return; }
                 ReadGearCeiling(MiniJson.Obj(r.data, "gear_ceiling"));
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 Game.Flow.Autosave();

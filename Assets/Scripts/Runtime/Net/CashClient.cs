@@ -96,8 +96,8 @@ namespace DotRPG
 
         static void Send(string path, Dictionary<string, object> body, Action<ApiResult> done)
         {
-            if (!OnlineSession.Playing) { done(new ApiResult { ok = false, code = "OFFLINE", message = "온라인으로 접속해야 쓸 수 있습니다." }); return; }
-            if (Busy) { done(new ApiResult { ok = false, code = "BUSY", message = "이전 요청을 처리하는 중입니다." }); return; }
+            if (!OnlineSession.Playing) { done(new ApiResult { ok = false, code = "OFFLINE", message = L.T("온라인으로 접속해야 쓸 수 있습니다.") }); return; }
+            if (Busy) { done(new ApiResult { ok = false, code = "BUSY", message = L.T("이전 요청을 처리하는 중입니다.") }); return; }
             Busy = true;
             body["request_id"] = ApiClient.NewRequestId();
             Api.PostIdempotent(path, body, r => { Busy = false; done(r); });
@@ -105,12 +105,12 @@ namespace DotRPG
 
         static string Explain(ApiResult r) => r.code switch
         {
-            "NOT_ENOUGH_STARS" => "별조각이 모자랍니다.",
-            "ALREADY_HIGHER" => "이미 그 단계 이상인 장비입니다.",
-            "RATES_CHANGED" => "확률표가 바뀌었습니다. 확률을 다시 확인한 뒤 열어 주세요.",
+            "NOT_ENOUGH_STARS" => L.T("별조각이 모자랍니다."),
+            "ALREADY_HIGHER" => L.T("이미 그 단계 이상인 장비입니다."),
+            "RATES_CHANGED" => L.T("확률표가 바뀌었습니다. 확률을 다시 확인한 뒤 열어 주세요."),
             "OFFLINE" or "BUSY" => r.message,
-            "NETWORK" => "서버에 연결할 수 없습니다.",
-            _ => string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message,
+            "NETWORK" => L.T("서버에 연결할 수 없습니다."),
+            _ => string.IsNullOrEmpty(r.message) ? L.F("요청이 실패했습니다. ({0})", r.status) : r.message,
         };
 
         /// <summary>Opens 1 or 11 sealed boxes from the shop.</summary>
@@ -149,10 +149,10 @@ namespace DotRPG
                 {
                     var item = ConsumableDatabase.Get(g.itemKey);
                     if (item != null && item.kind == ConsumableKind.EnhanceTicket) big = true;
-                    parts.Add($"{DungeonDatabase.ItemName(g.itemKey)} x{g.count}{(g.boosted ? " (부스터)" : "")}");
+                    parts.Add(L.F("{0} x{1}{2}", L.T(DungeonDatabase.ItemName(g.itemKey)), g.count, (g.boosted ? L.T(" (부스터)") : "")));
                 }
                 Game.Audio.PlaySfx(big ? "rank_reveal" : "pickup");
-                GameEvents.RaiseToast((big ? "<color=#ffd34a>대박!</color> " : "") + string.Join(", ", parts));
+                GameEvents.RaiseToast((big ? L.T("<color=#ffd34a>대박!</color> ") : "") + string.Join(", ", parts));
             });
         }
 
@@ -161,7 +161,7 @@ namespace DotRPG
         {
             Send(Char + "/starshop/sealed/ceiling", new Dictionary<string, object>(), r =>
             {
-                if (!r.ok) { done(false, r.code == "GAUGE_NOT_FULL" ? "천장 게이지가 아직 다 차지 않았습니다." : Explain(r)); return; }
+                if (!r.ok) { done(false, r.code == "GAUGE_NOT_FULL" ? L.T("천장 게이지가 아직 다 차지 않았습니다.") : Explain(r)); return; }
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 ReadCeiling(MiniJson.Obj(r.data, "ceiling"));
                 Game.Flow.Autosave();
@@ -187,7 +187,7 @@ namespace DotRPG
                 }
                 finally
                 {
-                    done(applied, applied ? null : "강화 결과를 반영하지 못했습니다. 다시 접속하면 반영됩니다.");
+                    done(applied, applied ? null : L.T("강화 결과를 반영하지 못했습니다. 다시 접속하면 반영됩니다."));
                 }
             });
         }

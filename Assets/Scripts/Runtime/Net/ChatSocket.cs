@@ -110,7 +110,7 @@ namespace DotRPG
                 {
                     // [SERVER 7] Maintenance or an operator kick: come back after the server's suggested wait.
                     string reason = MiniJson.Str(d, "reason");
-                    if (reason == "MAINTENANCE") GameEvents.RaiseToast("서버 점검이 시작되었습니다. 점검이 끝나면 다시 연결합니다.");
+                    if (reason == "MAINTENANCE") GameEvents.RaiseToast(L.T("서버 점검이 시작되었습니다. 점검이 끝나면 다시 연결합니다."));
                     float wait = MiniJson.Int(d, "retry_after_ms") / 1000f;
                     if (wait > 0f) retryAt = Time.realtimeSinceStartup + wait;
                 }
@@ -230,17 +230,17 @@ namespace DotRPG
             if (stopped) return;
             switch (code)
             {
-                case 4001: StopReason = StopReason ?? "다른 곳에서 접속했습니다."; break;
-                case 4003: StopReason = StopReason ?? "이용이 정지되었습니다."; break;
-                case 4004: case 4005: case 4010: StopReason = StopReason ?? "채팅 서버 인증에 실패했습니다."; break;
-                case 4426: StopReason = StopReason ?? "게임을 업데이트해 주세요."; break;
+                case 4001: StopReason = StopReason ?? L.T("다른 곳에서 접속했습니다."); break;
+                case 4003: StopReason = StopReason ?? L.T("이용이 정지되었습니다."); break;
+                case 4004: case 4005: case 4010: StopReason = StopReason ?? L.T("채팅 서버 인증에 실패했습니다."); break;
+                case 4426: StopReason = StopReason ?? L.T("게임을 업데이트해 주세요."); break;
                 case 4012: // the account asked to be withdrawn: no reconnect, back to the login screen
-                    StopReason = StopReason ?? "탈퇴 요청이 접수되어 접속이 종료되었습니다.";
+                    StopReason = StopReason ?? L.T("탈퇴 요청이 접수되어 접속이 종료되었습니다.");
                     OnlineSession.EndByWithdrawal(openLogin: true);
                     break;
                 case 4002: // token expired: refresh, then come back right away
                     var api = ApiClient.Instance;
-                    api.StartCoroutine(api.RefreshOnce(ok => { retryAt = 0f; if (!ok) StopReason = "다시 로그인해 주세요."; }));
+                    api.StartCoroutine(api.RefreshOnce(ok => { retryAt = 0f; if (!ok) StopReason = L.T("다시 로그인해 주세요."); }));
                     return;
             }
             if (StopReason != null) { GameEvents.RaiseToast(StopReason); return; }

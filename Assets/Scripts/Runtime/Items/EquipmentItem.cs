@@ -116,13 +116,13 @@ namespace DotRPG
         {
             var s = StatsAt(level);
             var parts = new List<string>();
-            if (s.attack != 0) parts.Add($"공격 +{s.attack * DamageNumber.DisplayScale}");
-            if (s.maxHealth != 0) parts.Add($"체력 +{EquipmentDatabase.Hearts(s.maxHealth)}");
-            if (s.block != 0) parts.Add($"막기 {s.block}%");
-            if (s.speed != 0) parts.Add($"이동 {(s.speed > 0 ? "+" : "")}{s.speed}%");
-            if (xpBonus != 0) parts.Add($"<color=#8fe28f>경험치 +{xpBonus}%</color>");
-            if (aoeBonus != 0) parts.Add($"<color=#8fe28f>스킬 범위 +{aoeBonus}%</color>");
-            return parts.Count > 0 ? string.Join("  ", parts) : "능력치 없음";
+            if (s.attack != 0) parts.Add(L.F("공격 +{0}", s.attack * DamageNumber.DisplayScale));
+            if (s.maxHealth != 0) parts.Add(L.F("체력 +{0}", EquipmentDatabase.Hearts(s.maxHealth)));
+            if (s.block != 0) parts.Add(L.F("막기 {0}%", s.block));
+            if (s.speed != 0) parts.Add(L.F("이동 {0}{1}%", s.speed > 0 ? "+" : "", s.speed));
+            if (xpBonus != 0) parts.Add(L.F("<color=#8fe28f>경험치 +{0}%</color>", xpBonus));
+            if (aoeBonus != 0) parts.Add(L.F("<color=#8fe28f>스킬 범위 +{0}%</color>", aoeBonus));
+            return parts.Count > 0 ? string.Join("  ", parts) : L.T("능력치 없음");
         }
     }
 

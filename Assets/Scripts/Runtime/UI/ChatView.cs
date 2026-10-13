@@ -20,7 +20,7 @@ namespace DotRPG
         const float CompactHeight = 112f, CompactBottom = 90f, CompactBelow = 600f, SkillBarClear = 224f;
         const int ShownLines = 6;
         static readonly KeyCode[] SignalKeys = { KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8 };
-        static readonly string[] Tabs = { "전체", "파티", "귓속말" };
+        static readonly string[] Tabs = { L.T("전체"), L.T("파티"), L.T("귓속말") };
 
         Image bg;
         CanvasGroup group;
@@ -84,7 +84,7 @@ namespace DotRPG
             var text = UIFactory.Text(box.transform, "Text", "", 16, Color.white, TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(text.rectTransform, 98f, 2f, 8f, 2f);
             text.supportRichText = false;
-            var placeholder = UIFactory.Text(box.transform, "Placeholder", "Enter 보내기 · /p /g /w", 16, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
+            var placeholder = UIFactory.Text(box.transform, "Placeholder", L.T("Enter 보내기 · /p /g /w"), 16, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(placeholder.rectTransform, 98f, 2f, 8f, 2f);
             placeholder.resizeTextForBestFit = true; // the narrow box at UI size 1.3 shrinks the hint instead of wrapping it
             placeholder.resizeTextMinSize = 12;
@@ -121,7 +121,7 @@ namespace DotRPG
         // Server-wide notices (+10 enhance etc.) also land in the system channel.
         void OnToast(string message)
         {
-            if (message != null && message.Contains("[알림]")) Service.PostSystem(message.Replace("<color=#ffd84a>[알림]</color> ", "").Replace("[알림] ", ""));
+            if (message != null && message.Contains("[알림]")) Service.PostSystem(message.Replace("<color=#ffd84a>[알림]</color> ", "").Replace("[알림] ", "")); // i18n-ignore toast marker match
         }
 
         IChatService bound;
@@ -220,16 +220,16 @@ namespace DotRPG
                 int sp = text.IndexOf(' ');
                 string cmd = (sp < 0 ? text : text.Substring(0, sp)).ToLowerInvariant();
                 string rest = sp < 0 ? "" : text.Substring(sp + 1);
-                if (cmd == "/p" || cmd == "/파티") target = ChatChannel.Party;
-                else if (cmd == "/g" || cmd == "/일반") target = ChatChannel.General;
-                else if (cmd == "/w" || cmd == "/귓")
+                if (cmd == "/p" || cmd == "/파티") target = ChatChannel.Party; // i18n-ignore command alias
+                else if (cmd == "/g" || cmd == "/일반") target = ChatChannel.General; // i18n-ignore command alias
+                else if (cmd == "/w" || cmd == "/귓") // i18n-ignore command alias
                 {
                     int sp2 = rest.IndexOf(' ');
                     to = sp2 < 0 ? rest : rest.Substring(0, sp2);
                     rest = sp2 < 0 ? "" : rest.Substring(sp2 + 1);
                     target = ChatChannel.Whisper;
                 }
-                else { GameEvents.RaiseToast("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용"); return; }
+                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용")); return; }
                 channel = target;
                 whisperTo = to;
                 channelChosen = true;
@@ -290,7 +290,7 @@ namespace DotRPG
             var sb = new StringBuilder();
             for (int i = 0; i < Tabs.Length; i++)
                 sb.Append(i == tab ? $"<color=#ffd84a>[{Tabs[i]}]</color> " : $"<color=#8a94a8>{Tabs[i]}</color> ");
-            sb.Append("<size=12><color=#8a94a8> Enter 채팅</color></size>");
+            sb.Append(L.T("<size=12><color=#8a94a8> Enter 채팅</color></size>"));
             tabText.text = sb.ToString();
 
             var lines = Service.Lines;
@@ -312,12 +312,12 @@ namespace DotRPG
         public static string Format(ChatLine l)
         {
             string col = ChatRules.ChannelColor(l.channel);
-            if (l.channel == ChatChannel.System) return $"<color={col}>[시스템] {l.text}</color>";
+            if (l.channel == ChatChannel.System) return L.F("<color={0}>[시스템] {1}</color>", col, l.text);
             if (l.channel == ChatChannel.Whisper)
                 return l.mine ? $"<color={col}>▶{Safe(l.to)}: {Safe(l.text)}</color>" : $"<color={col}>{Safe(l.from)}▶: {Safe(l.text)}</color>";
             string who = l.mine ? $"<color=#ffe066>{Safe(l.from)}</color>" : Safe(l.from);
             // [칭호][이름] : 말 (general chat shows no channel tag; party keeps [파티])
-            string title = string.IsNullOrEmpty(l.title) ? "" : $"<color=#ffd34a>[{Safe(l.title)}]</color>";
+            string title = string.IsNullOrEmpty(l.title) ? "" : $"<color=#ffd34a>[{Safe(L.T(l.title))}]</color>";
             string tag = l.channel == ChatChannel.General ? "" : $"<color={col}>[{ChatRules.ChannelName(l.channel)}]</color> ";
             return $"{tag}{title}[{who}] : {Safe(l.text)}";
         }

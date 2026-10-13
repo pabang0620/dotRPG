@@ -30,7 +30,7 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<OnlineCharacterScreen>();
             screen.ui = ui;
             // Twelve empty body lines reserve the two card rows (to -422) and the status line under them.
-            screen.BuildPanel(root, "온라인 캐릭터", 640, new string('\n', 11), 20);
+            screen.BuildPanel(root, L.T("온라인 캐릭터"), 640, new string('\n', 11), 20);
             screen.titleText = screen.panel.Find("Title").GetComponent<Text>();
             screen.panel.Find("Body").GetComponent<Text>().text = "";
             float w = Cols * CardW + (Cols - 1) * GapX;
@@ -47,11 +47,11 @@ namespace DotRPG
             var session = OnlineSession.Current;
             if (session == null) return;
             busy = true;
-            Say("캐릭터 목록을 불러오는 중...");
+            Say(L.T("캐릭터 목록을 불러오는 중..."));
             session.LoadCharacters(r =>
             {
                 busy = false;
-                Say(r.ok ? $"{OnlineSession.Current?.LoginId} 계정" : Explain(r), !r.ok);
+                Say(r.ok ? L.F("{0} 계정", OnlineSession.Current?.LoginId) : Explain(r), !r.ok);
                 Rebuild();
             });
         }
@@ -71,20 +71,20 @@ namespace DotRPG
             int count = session?.Characters.Count ?? 0;
             pick = Mathf.Clamp(pick, 0, Mathf.Max(0, count - 1));
             menu.Clear();
-            titleText.text = deleting ? "삭제할 캐릭터 고르기" : $"온라인 캐릭터  <size=18><color=#b8c4d8>{count}/{session?.CharacterLimit ?? 6}</color></size>";
+            titleText.text = deleting ? L.T("삭제할 캐릭터 고르기") : L.F("온라인 캐릭터  <size=18><color=#b8c4d8>{0}/{1}</color></size>", count, session?.CharacterLimit ?? 6);
             if (!deleting)
             {
-                actionItem = menu.AddButton("접속하기", () => { if (Picked != null) Enter(Picked); }, () => Picked != null);
-                menu.AddButton("새 캐릭터 만들기", () => ui.Push(ui.OnlineCreate), () => session != null && count < session.CharacterLimit);
-                menu.AddButton("캐릭터 삭제", () => { deleting = true; Rebuild(); }, () => count > 0);
-                menu.AddButton("회원 탈퇴", () => ui.Push(ui.Withdrawal)); // [W2]
-                menu.AddButton("로그아웃", () => { OnlineSession.Logout(); ui.Pop(); });
+                actionItem = menu.AddButton(L.T("접속하기"), () => { if (Picked != null) Enter(Picked); }, () => Picked != null);
+                menu.AddButton(L.T("새 캐릭터 만들기"), () => ui.Push(ui.OnlineCreate), () => session != null && count < session.CharacterLimit);
+                menu.AddButton(L.T("캐릭터 삭제"), () => { deleting = true; Rebuild(); }, () => count > 0);
+                menu.AddButton(L.T("회원 탈퇴"), () => ui.Push(ui.Withdrawal)); // [W2]
+                menu.AddButton(L.T("로그아웃"), () => { OnlineSession.Logout(); ui.Pop(); });
                 menu.OnCancel = () => { OnlineSession.Logout(); ui.Pop(); };
             }
             else
             {
-                actionItem = menu.AddButton("삭제하기", () => { if (Picked != null) Delete(Picked); }, () => Picked != null);
-                menu.AddButton("취소", () => { deleting = false; Rebuild(); });
+                actionItem = menu.AddButton(L.T("삭제하기"), () => { if (Picked != null) Delete(Picked); }, () => Picked != null);
+                menu.AddButton(L.T("취소"), () => { deleting = false; Rebuild(); });
                 menu.OnCancel = () => { deleting = false; Rebuild(); };
             }
             FitPanel();
@@ -99,7 +99,7 @@ namespace DotRPG
         void UpdateActionLabel()
         {
             if (actionItem == null || actionItem.labelText == null) return;
-            string verb = deleting ? "삭제하기" : "접속하기";
+            string verb = deleting ? L.T("삭제하기") : L.T("접속하기");
             string text = Picked != null ? $"{verb} · {Picked.name}" : verb;
             actionItem.label = deleting ? $"<color=#ff8f80>{text}</color>" : text;
             menu.Refresh(); // re-draws the row labels (with the selection prefix) from item.label
@@ -121,7 +121,7 @@ namespace DotRPG
                 {
                     var ch = session.Characters[i];
                     var card = CharacterPreviewCard.Create(grid, "Card_" + i, pos, new Vector2(CardW, CardH), 104f, 20);
-                    card.Set(ch.cls, ch.name, $"{(ch.cls == CharacterClass.Mage ? "마법사" : "전사")} Lv.{ch.level}");
+                    card.Set(ch.cls, ch.name, (ch.cls == CharacterClass.Mage ? L.T("마법사") : L.T("전사")) + $" Lv.{ch.level}");
                     card.OnClick(() => OnCard(k));
                     cards.Add(card);
                 }
@@ -137,7 +137,7 @@ namespace DotRPG
             var bg = UIFactory.Panel(rect, "Bg", true);
             UIFactory.Stretch(bg.rectTransform);
             bg.color = new Color(1f, 1f, 1f, create ? .7f : .3f);
-            var label = UIFactory.Text(rect, "Label", create ? "+\n새 캐릭터" : "빈 슬롯", create ? 22 : 17, create ? UIColors.Cream : UIColors.Disabled, TextAnchor.MiddleCenter, true);
+            var label = UIFactory.Text(rect, "Label", create ? L.T("+\n새 캐릭터") : L.T("빈 슬롯"), create ? 22 : 17, create ? UIColors.Cream : UIColors.Disabled, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(label.rectTransform);
             label.raycastTarget = false;
             if (create)
@@ -185,14 +185,14 @@ namespace DotRPG
         {
             var session = OnlineSession.Current;
             if (busy || session == null) return;
-            ui.Confirm($"{c.name} 캐릭터를 삭제할까요?\n<size=18>아이템과 진행이 모두 사라집니다.</size>", () =>
+            ui.Confirm(L.F("{0} 캐릭터를 삭제할까요?\n<size=18>아이템과 진행이 모두 사라집니다.</size>", c.name), () =>
             {
                 busy = true;
                 session.DeleteCharacter(c.id, r =>
                 {
                     busy = false;
                     deleting = false;
-                    Say(r.ok ? $"{c.name} 캐릭터를 삭제했습니다." : Explain(r), !r.ok);
+                    Say(r.ok ? L.F("{0} 캐릭터를 삭제했습니다.", c.name) : Explain(r), !r.ok);
                     Rebuild();
                 });
             }, overlay: true);
@@ -203,7 +203,7 @@ namespace DotRPG
             var session = OnlineSession.Current;
             if (busy || session == null) return;
             busy = true;
-            Say($"{c.name} 접속 중...");
+            Say(L.F("{0} 접속 중...", c.name));
             session.EnterCharacter(c.id, (r, data) =>
             {
                 busy = false;

@@ -57,21 +57,21 @@ namespace DotRPG
             switch (npc.service)
             {
                 case NpcService.Shop:
-                    Shop.SetKeeper(npc.displayName, npc.greeting);
+                    Shop.SetKeeper(L.T(npc.displayName), L.T(npc.greeting));
                     Game.Flow.OpenWindow(Shop);
                     break;
                 case NpcService.Blacksmith:
-                    Enhance.SetKeeper(npc.displayName, npc.greeting);
+                    Enhance.SetKeeper(L.T(npc.displayName), L.T(npc.greeting));
                     Game.Audio.PlaySfx("hammer");
                     Game.Flow.OpenWindow(Enhance);
                     break;
                 case NpcService.Storage:
-                    Storage.SetKeeper(npc.displayName, npc.greeting);
+                    Storage.SetKeeper(L.T(npc.displayName), L.T(npc.greeting));
                     Game.Flow.OpenWindow(Storage);
                     break;
                 // [DUNGEON] 던전 안내원: the dungeon select window.
                 case NpcService.Dungeon:
-                    Dungeon.Open(false, npc.displayName, npc.greeting);
+                    Dungeon.Open(false, L.T(npc.displayName), L.T(npc.greeting));
                     break;
             }
         }

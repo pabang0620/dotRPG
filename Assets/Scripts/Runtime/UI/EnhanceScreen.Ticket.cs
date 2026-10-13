@@ -45,7 +45,7 @@ namespace DotRPG
             ticketButton.interactable = !busy;
             int t = options[ticketPick];
             string keyLabel = Game.Input.GetBindingLabel(GameAction.UseMana);
-            ticketLabel.text = $"<b>+{t} 강화권 ({keyLabel})</b>\n<size=15>{Game.Session.Inventory.Count(ConsumableDatabase.EnhanceTicket(t))}장{(options.Count > 1 ? " · 우클릭: 변경" : "")}</size>";
+            ticketLabel.text = L.F("<b>+{0} 강화권 ({1})</b>", t, keyLabel) + "\n<size=15>" + L.F("{0}장", Game.Session.Inventory.Count(ConsumableDatabase.EnhanceTicket(t))) + (options.Count > 1 ? L.T(" · 우클릭: 변경") : "") + "</size>";
         }
 
         /// <summary>Right click, [ / ] or LB / RB: the next (or previous) owned 강화권 for this gear.</summary>
@@ -64,7 +64,7 @@ namespace DotRPG
         bool ticketPending;
         /// <summary>[UX] Id of the latest 강화권 request: only its answer unlocks the forge.</summary>
         int ticketToken;
-        const string TicketPendingText = "<color=#b8c4d8>처리 중… (닫아도 결과는 알림으로 받습니다)</color>";
+        static string TicketPendingText => L.T("<color=#b8c4d8>처리 중… (닫아도 결과는 알림으로 받습니다)</color>");
 
         void UseTicket()
         {
@@ -75,7 +75,7 @@ namespace DotRPG
             if (options.Count == 0) return;
             int t = options[Mathf.Clamp(ticketPick, 0, options.Count - 1)];
             string key = e.key;
-            Game.UI.Confirm($"<b>{EquipmentDatabase.RichName(key)}</b>\n+{t} 강화권을 써서 바로 +{t}로 올립니다.\n실패하지 않습니다. 사용할까요?", () =>
+            Game.UI.Confirm(L.F("<b>{0}</b>\n+{1} 강화권을 써서 바로 +{1}로 올립니다.\n실패하지 않습니다. 사용할까요?", EquipmentDatabase.RichName(key), t), () =>
             {
                 if (busy || ticketPending) return;
                 busy = true; // locked until the server answers
@@ -85,14 +85,14 @@ namespace DotRPG
                 resultText.text = TicketPendingText;
                 CashClient.UseTicket(ConsumableDatabase.EnhanceTicket(t), key, (ok, msg) =>
                 {
-                    if (token != ticketToken) { if (ok) GameEvents.RaiseToast($"+{t} 강화 성공! (강화권)"); return; } // an older request: leave the lock to the latest one
+                    if (token != ticketToken) { if (ok) GameEvents.RaiseToast(L.F("+{0} 강화 성공! (강화권)", t)); return; } // an older request: leave the lock to the latest one
                     busy = false;
                     ticketPending = false;
                     bigIcon.rectTransform.anchoredPosition = Vector2.zero; // Update shakes the piece while busy
                     resultText.text = "";
                     if (!ok) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); Refresh(); return; }
                     Game.Audio.PlaySfx("rank_reveal");
-                    GameEvents.RaiseToast($"+{t} 강화 성공! (강화권)");
+                    GameEvents.RaiseToast(L.F("+{0} 강화 성공! (강화권)", t));
                     Refresh();
                 });
             }, true);

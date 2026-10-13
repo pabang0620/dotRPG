@@ -37,7 +37,7 @@ namespace DotRPG
             public string[] requires = new string[0];
             public string[] hiddenBy = new string[0];
             public string activeQuest = "";
-            public string interactId = "", prompt = "살펴보기", dialogue = "";
+            public string interactId = "", prompt = "살펴보기", dialogue = ""; // i18n-ignore JSON field default; translated after load
             public bool solid = true, glow, bob;
             public float scale = 1f;
         }
@@ -58,6 +58,7 @@ namespace DotRPG
                 if (cast != null) return cast;
                 cast = new Dictionary<string, NpcDefinition>();
                 void Add(NpcDefinition d) => cast[d.npcId] = d;
+                // i18n-names-begin: speaker portraits match these raw names; shown through L.T (QuestManager.NpcName, nameplates)
                 Add(Def("bram", "브람", new CharacterLook("bram", HairStyle.Short, SkinTan, C(86, 70, 58), C(122, 92, 60), C(70, 56, 46))));
                 Add(Def("hanna", "한나", new CharacterLook("hanna", HairStyle.Bun, SkinLight, C(150, 92, 52), C(196, 116, 92), C(118, 88, 76))));
                 Add(Def("ria", "리아", new CharacterLook("ria", HairStyle.Long, SkinLight, C(214, 132, 70), C(116, 168, 104), C(90, 120, 80))));
@@ -75,6 +76,7 @@ namespace DotRPG
                 Add(Def("winter_elder", "눈꽃 마을 촌장 세라", new CharacterLook("winter_elder", HairStyle.Bun, SkinLight, C(214, 214, 222), C(96, 120, 168), C(70, 76, 96), HatKind.None, C(210, 214, 224)))); // 눈꽃 마을 의뢰
                 Add(Def("winter_innkeeper", "여관 주인 보라", new CharacterLook("winter_innkeeper", HairStyle.Curly, SkinLight, C(140, 70, 50), C(196, 92, 84), C(110, 84, 70)))); // 눈꽃 마을 여관
                 Add(Def("knight", "기사단원", new CharacterLook("knight", HairStyle.Short, SkinTan, C(70, 50, 40), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(170, 176, 190) }));
+                // i18n-names-end
                 return cast;
             }
         }
@@ -100,6 +102,7 @@ namespace DotRPG
                 try { world = asset != null ? JsonUtility.FromJson<WorldFile>(asset.text) : null; }
                 catch (System.Exception e) { Debug.LogError("[dotRPG] StoryWorld.json could not be read: " + e.Message); }
                 if (world == null) world = new WorldFile();
+                foreach (var p in world.props) if (p != null) p.prompt = L.T(p.prompt); // [I18N]
                 return world;
             }
         }
@@ -244,7 +247,7 @@ namespace DotRPG
             {
                 string bench = roster[roster.Count - 1];
                 Game.Party.RemoveCompanion(bench);
-                GameEvents.RaiseToast($"{MercenaryDatabase.Get(bench)?.name}이(가) 잠시 파티에서 빠졌습니다.");
+                GameEvents.RaiseToast(L.F("{0}이(가) 잠시 파티에서 빠졌습니다.", L.T(MercenaryDatabase.Get(bench)?.name)));
             }
             Game.Party.AddCompanion(id);
         }

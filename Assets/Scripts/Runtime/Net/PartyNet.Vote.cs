@@ -73,7 +73,7 @@ namespace DotRPG
                 if (Current != this) return;
                 SendTo(HostPeer, NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.VillageAnswer); w.Write((byte)mySlot); w.Write(yes); }));
             };
-            Game.UI.Confirm("방장이 다 함께 마을로 돌아가자고 합니다.\n동의하면 이번 판은 실패로 끝나고 모두 마을로 돌아갑니다.\n<color=#ffe066>{초}</color>초 안에 답하지 않으면 거절로 처리됩니다.",
+            Game.UI.Confirm(L.T("방장이 다 함께 마을로 돌아가자고 합니다.\n동의하면 이번 판은 실패로 끝나고 모두 마을로 돌아갑니다.\n<color=#ffe066>{초}</color>초 안에 답하지 않으면 거절로 처리됩니다."),
                 () => answer(true), defaultYes: false, onNo: () => answer(false), timeoutSeconds: seconds, overlay: true);
         }
     }

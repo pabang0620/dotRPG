@@ -47,7 +47,7 @@ namespace DotRPG
 
         void BuildAtlasButton(Transform frame)
         {
-            atlasButton = Button(frame, "AtlasToggle", "월드 지도", "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-174, -10), new Vector2(140, 34), ToggleAtlas, 17);
+            atlasButton = Button(frame, "AtlasToggle", L.T("월드 지도"), "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-174, -10), new Vector2(140, 34), ToggleAtlas, 17);
         }
         void ToggleAtlas()
         {
@@ -63,7 +63,7 @@ namespace DotRPG
         void SetAtlasVisible(bool show)
         {
             if (atlasPanel != null) atlasPanel.gameObject.SetActive(show);
-            if (atlasButton != null) atlasButton.GetComponentInChildren<Text>().text = show ? "지역 지도" : "월드 지도";
+            if (atlasButton != null) atlasButton.GetComponentInChildren<Text>().text = show ? L.T("지역 지도") : L.T("월드 지도");
             if (travelButton != null) travelButton.gameObject.SetActive(!show);
         }
 
@@ -92,14 +92,14 @@ namespace DotRPG
                     Road(new Vector2(65, y), new Vector2(675, y), new Color32(63, 76, 81, 110), 1);
                     AtlasLabel("Floor_" + floor, "B" + floor, new Vector2(40, y + 10), new Vector2(45, 30), 22, UiTheme.AccentWarm);
                 }
-                Button(atlasContents, "SurfaceReturn", "↑  뿌리샘 마을 · 지상월드", "ui_btngray", TL, C,
+                Button(atlasContents, "SurfaceReturn", L.T("↑  뿌리샘 마을 · 지상월드"), "ui_btngray", TL, C,
                     At(new Vector2(.5f, .10f)), new Vector2(244, 34), () => SelectWorld(WorldLayer.Surface), 17);
                 Road(At(new Vector2(.50f, .14f)), At(positions["hollow_descent"]), new Color32(190, 151, 96, 220), 3, true);
-                AtlasLabel("Strata", "폐광  /  뿌리 묘실 · 푸른 수로  /  심연의 봉인", new Vector2(370, -390), new Vector2(620, 26), 17, UiTheme.TextSecondary);
+                AtlasLabel("Strata", L.T("폐광  /  뿌리 묘실 · 푸른 수로  /  심연의 봉인"), new Vector2(370, -390), new Vector2(620, 26), 17, UiTheme.TextSecondary);
             }
             else
             {
-                AtlasLabel("ChartTitle", "네 마을의 순환로", new Vector2(135, -12), new Vector2(235, 28), 19, UiTheme.AccentLight);
+                AtlasLabel("ChartTitle", L.T("네 마을의 순환로"), new Vector2(135, -12), new Vector2(235, 28), 19, UiTheme.AccentLight);
                 AtlasLabel("Compass", "N  ↑", new Vector2(693, -12), new Vector2(70, 26), 17, UiTheme.TextSecondary);
             }
             var drawn = new HashSet<string>();
@@ -140,7 +140,7 @@ namespace DotRPG
                 Text label = null;
                 if (town || underground)
                 {
-                    string text = id == MapRegistry.Village ? "작은 마을" : id == MapRegistry.Sanctum ? "고대 성소" : gateway ? "뿌리샘 · 지하 입구" : info.displayName;
+                    string text = id == MapRegistry.Village ? L.T("작은 마을") : id == MapRegistry.Sanctum ? L.T("고대 성소") : gateway ? L.T("뿌리샘 · 지하 입구") : L.T(info.displayName);
                     Vector2 offset = new Vector2(0, -22);
                     float width = underground ? 240 : gateway ? 190 : 166;
                     var plate = UIFactory.Image(atlasContents, "NamePlate_" + id, Game.Art.Get("ui_white"), new Color32(14, 23, 28, 218));
@@ -171,7 +171,7 @@ namespace DotRPG
         }
         static string FieldRegion(string id)
         {
-            string[] names = { "해골 숲", "바위 협곡", "눈꽃 숲", "고대 성소" };
+            string[] names = { L.T("해골 숲"), L.T("바위 협곡"), L.T("눈꽃 숲"), L.T("고대 성소") };
             for (int r = 0; r < WorldRoutes.Regions.Length; r++)
                 for (int stage = 1; stage <= 4; stage++)
                     if (WorldRoutes.Regions[r][stage] == id) return names[r];
@@ -319,8 +319,8 @@ namespace DotRPG
             var info = MapRegistry.Get(id); if (info == null) return;
             var zone = HuntingGrounds.Get(id);
             string stage = FieldIndex(id);
-            string name = stage.Length > 0 ? FieldRegion(id) + " · 사냥터 " + stage + "  " + info.displayName : info.displayName;
-            legend.text = name + (zone != null ? $"   Lv.{zone.minLevel}~{zone.maxLevel}" : "   안전 지역") + (id == MapRegistry.Undergate ? "   ·  클릭하여 지하 던전 지도 열기" : "   ·  클릭하여 지역 지도 보기");
+            string name = stage.Length > 0 ? L.F("{0} · 사냥터 {1}  {2}", FieldRegion(id), stage, L.T(info.displayName)) : L.T(info.displayName);
+            legend.text = name + (zone != null ? $"   Lv.{zone.minLevel}~{zone.maxLevel}" : L.T("   안전 지역")) + (id == MapRegistry.Undergate ? L.T("   ·  클릭하여 지하 던전 지도 열기") : L.T("   ·  클릭하여 지역 지도 보기"));
         }
         void RefreshAtlas()
         {
@@ -338,12 +338,12 @@ namespace DotRPG
                 entry.dot.color = level >= entryLevel ? Color.white : new Color32(223, 152, 145, 255);
                 if (entry.label != null) entry.label.color = current ? UiTheme.AccentBlue : MapRegistry.IsTown(entry.id) ? UiTheme.AccentLight : UiTheme.TextPrimary;
             }
-            caption.text = WorldLayers.Name(selectedWorld) + " <color=#b8c4d8>· 연결 지도</color>";
-            legend.text = "<color=#78c8ff>◎</color> 현재 위치   <color=#ffe066>◆</color> 선택 지역   금색: 사냥터   청록: 마을길   회색 점선: 다음 지역";
+            caption.text = L.F("{0} <color=#b8c4d8>· 연결 지도</color>", L.T(WorldLayers.Name(selectedWorld)));
+            legend.text = L.T("<color=#78c8ff>◎</color> 현재 위치   <color=#ffe066>◆</color> 선택 지역   금색: 사냥터   청록: 마을길   회색 점선: 다음 지역");
             detail.rectTransform.sizeDelta = new Vector2(718, 70); detail.fontSize = 17;
             detail.text = selectedWorld == WorldLayer.Surface
-                ? "작은 마을 → 바위 협곡 → 눈꽃 숲 → 고대 성소 → 작은 마을\n각 지역의 사냥터: 1 → 위 2 / 아래 3 → 4. 숫자에 마우스를 올리면 지역과 이름을 확인합니다."
-                : "뿌리샘 마을의 하행 계단 → B1 → B2 → B3 → B4\n지역을 선택하면 지형과 출구를 확인합니다. 지도를 눌러도 캐릭터는 이동하지 않습니다.";
+                ? L.T("작은 마을 → 바위 협곡 → 눈꽃 숲 → 고대 성소 → 작은 마을\n각 지역의 사냥터: 1 → 위 2 / 아래 3 → 4. 숫자에 마우스를 올리면 지역과 이름을 확인합니다.")
+                : L.T("뿌리샘 마을의 하행 계단 → B1 → B2 → B3 → B4\n지역을 선택하면 지형과 출구를 확인합니다. 지도를 눌러도 캐릭터는 이동하지 않습니다.");
             roomButton.gameObject.SetActive(false); bossIcon.enabled = false;
         }
     }

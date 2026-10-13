@@ -30,7 +30,7 @@ namespace DotRPG
             UIFactory.Place(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(4000f, 76f));
             var back = MakeButton(root, "Back", "◀", "ui_btngray", new Vector2(0f, 1f), new Vector2(22f, -12f), new Vector2(96f, 52f), Close, 24);
             back.GetComponentInChildren<Text>().text = "◀ <size=17>ESC</size>"; // [UI] same back button as every other window
-            var title = UIFactory.Text(root, "Title", "가방", 40, Color.white, TextAnchor.MiddleLeft, true);
+            var title = UIFactory.Text(root, "Title", L.T("가방"), 40, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(132f, -12f), new Vector2(200f, 52f));
             float cxHead = -24f;
             var chipIds = new List<(string id, string icon)> { (ConsumableDatabase.Gold, "icon_gold") };
@@ -117,9 +117,9 @@ namespace DotRPG
             UIFactory.Place(gridIcon.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 40f, 26f), new Vector2(56f, 56f));
             capacity = UIFactory.Text(root, "Capacity", "", 28, Color.white, TextAnchor.MiddleLeft, true);
             UIFactory.Place(capacity.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f - gridW + 250f, 26f), new Vector2(190f, 60f));
-            autoButton = MakeButton(root, "Auto", "자동장착", "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
+            autoButton = MakeButton(root, "Auto", L.T("자동장착"), "ui_btn", new Vector2(1f, 0f), new Vector2(-190f, 26f), new Vector2(168f, 60f), AutoEquip, 26, true);
             autoLabel = autoButton.GetComponentInChildren<Text>();
-            sortButton = MakeButton(root, "Sort", "정렬", "ui_btngray", new Vector2(1f, 0f), new Vector2(-24f, 26f), new Vector2(150f, 60f), ToggleSort, 26, true);
+            sortButton = MakeButton(root, "Sort", L.T("정렬"), "ui_btngray", new Vector2(1f, 0f), new Vector2(-24f, 26f), new Vector2(150f, 60f), ToggleSort, 26, true);
             sortLabel = sortButton.GetComponentInChildren<Text>();
 
             hint = UIFactory.Text(root, "Hint", "", UiTheme.FontCaption, new Color(1f, 1f, 1f, 0.82f), TextAnchor.LowerLeft, true);

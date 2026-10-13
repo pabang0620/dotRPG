@@ -94,7 +94,7 @@ namespace DotRPG
                     id = MiniJson.Str(o, "id"),
                     itemKey = key,
                     count = MiniJson.Int(o, "count", 1),
-                    seller = mineFlag ? "나" : MiniJson.Str(o, "seller_name", ""),
+                    seller = mineFlag ? L.T("나") : MiniJson.Str(o, "seller_name", ""),
                     buyout = (long)MiniJson.Num(o, "buyout"),
                     startBid = start,
                     currentBid = (long)MiniJson.Num(o, "current_bid"),
@@ -189,7 +189,7 @@ namespace DotRPG
                         if (m.gold > 0) m.attachments.Add(new MailAttachment { kind = "gold", count = m.gold });
                         if (!string.IsNullOrEmpty(m.itemKey)) m.attachments.Add(new MailAttachment { kind = "item", itemKey = m.itemKey, count = m.count });
                     }
-                    if (!string.IsNullOrEmpty(m.title)) m.text = m.title + (m.daysLeft > 0 ? $"  <color=#8c96a8>{m.daysLeft}일 남음</color>" : "");
+                    if (!string.IsNullOrEmpty(m.title)) m.text = m.title + (m.daysLeft > 0 ? L.F("  <color=#8c96a8>{0}일 남음</color>", m.daysLeft) : "");
                     mail.Add(m);
                 }
                 unclaimed = mail.Count;
@@ -199,23 +199,23 @@ namespace DotRPG
 
         static string MailText(string kind, string key, int count, int daysLeft, string systemCode = null)
         {
-            string name = string.IsNullOrEmpty(key) ? "" : DungeonDatabase.ItemName(key) + (count > 1 ? $" x{count}" : "");
+            string name = string.IsNullOrEmpty(key) ? "" : L.T(DungeonDatabase.ItemName(key)) + (count > 1 ? $" x{count}" : "");
             string head;
             switch (kind)
             {
-                case "sold": head = $"[판매 대금] {name}"; break;
-                case "bought": head = $"[구매] {name}"; break;
-                case "outbid": head = $"[입찰 반환] {name}"; break;
-                case "expired": head = $"[기간 만료] {name}"; break;
-                case "cancelled": head = $"[등록 취소] {name} (보증금 미반환)"; break;
+                case "sold": head = L.F("[판매 대금] {0}", name); break;
+                case "bought": head = L.F("[구매] {0}", name); break;
+                case "outbid": head = L.F("[입찰 반환] {0}", name); break;
+                case "expired": head = L.F("[기간 만료] {0}", name); break;
+                case "cancelled": head = L.F("[등록 취소] {0} (보증금 미반환)", name); break;
                 case "system":
-                    string tag = systemCode == "compensation" ? "[보상]" : systemCode == "event" ? "[이벤트]" : systemCode == "refund" ? "[환불]"
-                        : systemCode == "maintenance" ? "[점검 보상]" : systemCode == "apology" ? "[사과 보상]" : systemCode == "attendance" ? "[출석]" : "[안내]";
-                    head = string.IsNullOrEmpty(name) ? $"{tag} 운영팀이 보낸 우편" : $"{tag} {name}";
+                    string tag = systemCode == "compensation" ? L.T("[보상]") : systemCode == "event" ? L.T("[이벤트]") : systemCode == "refund" ? L.T("[환불]")
+                        : systemCode == "maintenance" ? L.T("[점검 보상]") : systemCode == "apology" ? L.T("[사과 보상]") : systemCode == "attendance" ? L.T("[출석]") : L.T("[안내]");
+                    head = string.IsNullOrEmpty(name) ? L.F("{0} 운영팀이 보낸 우편", tag) : $"{tag} {name}";
                     break;
                 default: head = name; break;
             }
-            return daysLeft > 0 ? $"{head}  <color=#8c96a8>{daysLeft}일 남음</color>" : head;
+            return daysLeft > 0 ? L.F("{0}  <color=#8c96a8>{1}일 남음</color>", head, daysLeft) : head;
         }
 
         public AuctionPrice Price(string itemKey)
@@ -284,7 +284,7 @@ namespace DotRPG
 
         AuctionResult Act(string path, Dictionary<string, object> body, Func<ApiResult, string> success, bool delete = false)
         {
-            if (busy) return AuctionResult.Fail("이전 요청을 처리하는 중입니다.");
+            if (busy) return AuctionResult.Fail(L.T("이전 요청을 처리하는 중입니다."));
             busy = true;
             Action<ApiResult> done = r =>
             {
@@ -303,7 +303,7 @@ namespace DotRPG
                 body["request_id"] = ApiClient.NewRequestId();
                 Api.PostIdempotent(Char + path, body, done);
             }
-            return AuctionResult.Ok("서버에 요청했습니다...");
+            return AuctionResult.Ok(L.T("서버에 요청했습니다..."));
         }
 
         static string Explain(ApiResult r)
@@ -312,38 +312,38 @@ namespace DotRPG
             {
                 case "BID_TOO_LOW":
                     long min = (long)MiniJson.Num(r.errors, "min_bid");
-                    return min > 0 ? $"그 사이 더 높은 입찰이 있었습니다. 최소 입찰가는 {min:N0}G입니다." : r.message;
+                    return min > 0 ? L.F("그 사이 더 높은 입찰이 있었습니다. 최소 입찰가는 {0:N0}G입니다.", min) : r.message;
                 case "PRICE_OUT_OF_RANGE":
                     long lo = (long)MiniJson.Num(r.errors, "min"), hi = (long)MiniJson.Num(r.errors, "max");
-                    return hi > 0 ? $"가격은 {lo:N0}~{hi:N0}G 사이여야 합니다." : r.message;
-                case "NETWORK": return "서버에 연결할 수 없습니다.";
-                default: return string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message;
+                    return hi > 0 ? L.F("가격은 {0:N0}~{1:N0}G 사이여야 합니다.", lo, hi) : r.message;
+                case "NETWORK": return L.T("서버에 연결할 수 없습니다.");
+                default: return string.IsNullOrEmpty(r.message) ? L.F("요청이 실패했습니다. ({0})", r.status) : r.message;
             }
         }
 
         public AuctionResult Buyout(string listingId) =>
-            Act($"/auction/listings/{listingId}/buyout", null, r => "구매했습니다. 우편함에서 받으세요." + (MiniJson.Str(r.data, "bind") == "account" ? " (계정 귀속)" : ""));
+            Act($"/auction/listings/{listingId}/buyout", null, r => L.T("구매했습니다. 우편함에서 받으세요.") + (MiniJson.Str(r.data, "bind") == "account" ? L.T(" (계정 귀속)") : ""));
 
         public AuctionResult Bid(string listingId, long amount) =>
             Act($"/auction/listings/{listingId}/bids", new Dictionary<string, object> { ["amount"] = amount },
-                r => MiniJson.Str(r.data, "result") == "bought" ? "즉시 구매가 이상이라 바로 구매했습니다. 우편함을 확인하세요." : $"{amount:N0}G로 입찰했습니다. (골드 예치)");
+                r => MiniJson.Str(r.data, "result") == "bought" ? L.T("즉시 구매가 이상이라 바로 구매했습니다. 우편함을 확인하세요.") : L.F("{0:N0}G로 입찰했습니다. (골드 예치)", amount));
 
         public AuctionResult Register(string itemKey, int count, long buyout, long startBid, int hours)
         {
             var body = new Dictionary<string, object> { ["item_key"] = itemKey, ["count"] = Mathf.Max(1, count), ["buyout"] = buyout, ["hours"] = hours };
             if (startBid > 0) body["start_bid"] = startBid;
-            return Act("/auction/listings", body, r => $"{DungeonDatabase.ItemName(itemKey)} 등록 완료 (보증금 {(long)MiniJson.Num(r.data, "deposit"):N0}G)");
+            return Act("/auction/listings", body, r => L.F("{0} 등록 완료 (보증금 {1:N0}G)", L.T(DungeonDatabase.ItemName(itemKey)), (long)MiniJson.Num(r.data, "deposit")));
         }
 
         public AuctionResult Cancel(string listingId) =>
-            Act($"/auction/listings/{listingId}", null, r => "등록을 취소했습니다. 아이템은 우편함으로 돌아갑니다.", delete: true);
+            Act($"/auction/listings/{listingId}", null, r => L.T("등록을 취소했습니다. 아이템은 우편함으로 돌아갑니다."), delete: true);
 
-        public AuctionResult Claim(string mailId) => Act($"/mail/{mailId}/claim", null, r => "우편을 받았습니다.");
+        public AuctionResult Claim(string mailId) => Act($"/mail/{mailId}/claim", null, r => L.T("우편을 받았습니다."));
 
         public AuctionResult ClaimAll() => Act("/mail/claim-all", null, r =>
         {
             int n = MiniJson.Int(r.data, "claimed_count"), left = MiniJson.Int(r.data, "remaining");
-            return left > 0 ? $"우편 {n}통을 받았습니다. 남은 {left}통은 다시 '모두 받기'를 누르세요." : $"우편 {n}통을 받았습니다.";
+            return left > 0 ? L.F("우편 {0}통을 받았습니다. 남은 {1}통은 다시 '모두 받기'를 누르세요.", n, left) : L.F("우편 {0}통을 받았습니다.", n);
         });
 
         // ---------------- mail summary (red dot, new mail toasts) ----------------
@@ -372,7 +372,7 @@ namespace DotRPG
                     foreach (var n in MiniJson.Arr(r.data, "new") ?? new List<object>())
                     {
                         string title = MiniJson.Str(n, "title");
-                        GameEvents.RaiseToast("<color=#ffd84a>[우편]</color> " + (!string.IsNullOrEmpty(title) ? title : MailText(MiniJson.Str(n, "kind"), MiniJson.Str(n, "ref_item_key"), 1, 0)));
+                        GameEvents.RaiseToast(L.T("<color=#ffd84a>[우편]</color> ") + (!string.IsNullOrEmpty(title) ? title : MailText(MiniJson.Str(n, "kind"), MiniJson.Str(n, "ref_item_key"), 1, 0)));
                     }
                 if (unclaimed != before) { mailAt = -99f; Changed?.Invoke(); }
             });

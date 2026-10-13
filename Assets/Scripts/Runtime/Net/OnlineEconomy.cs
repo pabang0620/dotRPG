@@ -27,7 +27,7 @@ namespace DotRPG
         /// <summary>POST with a fresh request_id; a network failure is resent up to 3 times with the same id (no double grant).</summary>
         static void Post(string path, Dictionary<string, object> body, Action<ApiResult> done, bool quiet = false)
         {
-            if (!On) { done?.Invoke(ApiResult.Network("오프라인")); return; }
+            if (!On) { done?.Invoke(ApiResult.Network(L.T("오프라인"))); return; }
             body["request_id"] = ApiClient.NewRequestId();
             Send(Char + path, body, 0, done, quiet);
         }
@@ -44,7 +44,7 @@ namespace DotRPG
                         return;
                     }
                     // The server may have processed it: the answer was lost, not necessarily the action.
-                    r.message = "결과를 확인하는 중 연결이 끊겼습니다. 다시 접속하면 반영됩니다.";
+                    r.message = L.T("결과를 확인하는 중 연결이 끊겼습니다. 다시 접속하면 반영됩니다.");
                     Finish(r, done, quiet);
                     return;
                 }
@@ -67,7 +67,7 @@ namespace DotRPG
         static void Finish(ApiResult r, Action<ApiResult> done, bool quiet)
         {
             if (r.ok) ApplyDelta(MiniJson.Obj(r.data, "delta"));
-            else if (!quiet) GameEvents.RaiseToast(string.IsNullOrEmpty(r.message) ? "서버 처리에 실패했습니다." : r.message);
+            else if (!quiet) GameEvents.RaiseToast(string.IsNullOrEmpty(r.message) ? L.T("서버 처리에 실패했습니다.") : r.message);
             done?.Invoke(r);
         }
 
@@ -148,7 +148,7 @@ namespace DotRPG
                 int xp = MiniJson.Int(r.data, "granted_xp");
                 if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
                 var field = MiniJson.Obj(r.data, "field");
-                if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast("<color=#8c96a8>레벨 차이로 경험치가 줄었습니다.</color>");
+                if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast(L.T("<color=#8c96a8>레벨 차이로 경험치가 줄었습니다.</color>"));
                 if (parent == null) return;
                 foreach (var d in MiniJson.Arr(r.data, "drops") ?? new List<object>())
                 {
@@ -396,7 +396,7 @@ namespace DotRPG
                     {
                         var card = MiniJson.Obj(res.data, "card");
                         if (res.ok && card != null)
-                            GameEvents.RaiseToast($"확정된 던전 보상: {new RewardCard(MiniJson.Str(card, "item_key"), MiniJson.Int(card, "count")).Label}");
+                            GameEvents.RaiseToast(L.F("확정된 던전 보상: {0}", new RewardCard(MiniJson.Str(card, "item_key"), MiniJson.Int(card, "count")).Label));
                     }, quiet: true);
                 }
             });

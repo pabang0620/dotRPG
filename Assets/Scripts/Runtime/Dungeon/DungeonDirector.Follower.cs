@@ -37,7 +37,7 @@ namespace DotRPG
             run.ClearedRooms.Add(run.RoomIndex);
             if (door != null) door.Open();
             Game.Audio.PlaySfx("build_complete");
-            GameEvents.RaiseToast("방을 정리했습니다! 방장이 문으로 이동하면 함께 넘어갑니다.");
+            GameEvents.RaiseToast(L.T("방을 정리했습니다! 방장이 문으로 이동하면 함께 넘어갑니다."));
             RoomChanged?.Invoke();
         }
 
@@ -59,7 +59,7 @@ namespace DotRPG
                 leaving = false;
                 ExitToVillage(false);
             }
-            else Fail(string.IsNullOrEmpty(reason) ? "파티가 던전 공략에 실패했습니다." : reason);
+            else Fail(string.IsNullOrEmpty(reason) ? "파티가 던전 공략에 실패했습니다." : reason); // i18n-ignore raw reason, translated in Fail
         }
     }
 }

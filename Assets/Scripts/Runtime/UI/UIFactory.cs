@@ -20,7 +20,7 @@ namespace DotRPG
             {
                 font = Font.CreateDynamicFontFromOSFont(new[]
                 {
-                    "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "AppleGothic",
+                    "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "AppleGothic", // i18n-ignore font family name
                     "Noto Sans CJK KR", "Noto Sans KR", "NanumGothic", "Arial",
                 }, 32);
             }

@@ -160,17 +160,17 @@ namespace DotRPG
             var st = Journal.Status(q.id);
             if (st == QuestStatus.Available)
             {
-                list.Add(new QuestObjective($"{NpcName(q.giver)}에게 말을 건다", false));
+                list.Add(new QuestObjective(L.F("{0}에게 말을 건다", NpcName(q.giver)), false));
                 return list;
             }
             if (st == QuestStatus.ReadyToTurnIn)
             {
-                list.Add(new QuestObjective($"{NpcName(q.turnIn)}에게 보고한다", false));
+                list.Add(new QuestObjective(L.F("{0}에게 보고한다", NpcName(q.turnIn)), false));
                 return list;
             }
             if (st == QuestStatus.Completed)
             {
-                list.Add(new QuestObjective("완료", true));
+                list.Add(new QuestObjective(L.T("완료"), true));
                 return list;
             }
             var step = CurrentStep(q);
@@ -226,9 +226,9 @@ namespace DotRPG
         {
             if (string.IsNullOrEmpty(npcId)) return "";
             var def = StoryCast.Find(npcId);
-            if (def != null) return def.displayName;
-            foreach (var n in Game.Config.npcs) if (n.npcId == npcId) return n.displayName;
-            foreach (var n in GameConfig.DefaultNpcs()) if (n.npcId == npcId) return n.displayName;
+            if (def != null) return L.T(def.displayName);
+            foreach (var n in Game.Config.npcs) if (n.npcId == npcId) return L.T(n.displayName);
+            foreach (var n in GameConfig.DefaultNpcs()) if (n.npcId == npcId) return L.T(n.displayName);
             return npcId;
         }
 

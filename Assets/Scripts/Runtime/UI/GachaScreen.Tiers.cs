@@ -61,7 +61,7 @@ namespace DotRPG
         void ChooseTier(int index)
         {
             if (busy || Revealing) return;
-            if (index > StarShopClient.MyTier) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast("내 레벨 단계까지만 고를 수 있습니다."); return; }
+            if (index > StarShopClient.MyTier) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(L.T("내 레벨 단계까지만 고를 수 있습니다.")); return; }
             chosenTier[banner] = index;
             Game.Audio.PlaySfx("select");
             Refresh();
@@ -87,7 +87,7 @@ namespace DotRPG
                 b.transform.Find("Lock").gameObject.SetActive(locked);
                 b.interactable = !busy;
             }
-            if (on) tierHint.text = $"<color=#ffd34a>레벨 단계</color> 선택 · 내 직업 Lv.{SelectedTierLevel()} 장비가 나옵니다 <color=#8c96a8>(노란 단계가 내 레벨, 그 위는 잠김)</color>";
+            if (on) tierHint.text = L.F("<color=#ffd34a>레벨 단계</color> 선택 · 내 직업 Lv.{0} 장비가 나옵니다 <color=#8c96a8>(노란 단계가 내 레벨, 그 위는 잠김)</color>", SelectedTierLevel());
         }
     }
 }

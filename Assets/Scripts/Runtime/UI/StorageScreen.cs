@@ -45,7 +45,7 @@ namespace DotRPG
 
         public static StorageScreen Create(Transform canvas)
         {
-            var w = CreateWindow<StorageScreen>(canvas, "Storage", "창고", "menuicon_storage");
+            var w = CreateWindow<StorageScreen>(canvas, "Storage", L.T("창고"), "menuicon_storage");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), UiTheme.Panel);
             var right = Panel(w.content, "Store", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(gridW + 40f, 470f), new Color32(30, 44, 40, 235));
@@ -56,8 +56,8 @@ namespace DotRPG
                 w.bagCells.Add(w.MakeCell(left.transform, i, false));
                 w.storeCells.Add(w.MakeCell(right.transform, i, true));
             }
-            Button(left.transform, "DepositMats", "재료 모두 맡기기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.DepositMaterials, 22);
-            Button(right.transform, "WithdrawAll", "모두 꺼내기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.WithdrawAll, 22);
+            Button(left.transform, "DepositMats", L.T("재료 모두 맡기기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.DepositMaterials, 22);
+            Button(right.transform, "WithdrawAll", L.T("모두 꺼내기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 52f), w.WithdrawAll, 22);
             // Page buttons in the bottom corners, the page number top right.
             w.bagPrev = Button(left.transform, "BagPrev", "◀", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 21f), UiSizes.PageButton, () => w.Page(false, -1), UiSizes.PageFont);
             w.bagNext = Button(left.transform, "BagNext", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 21f), UiSizes.PageButton, () => w.Page(false, 1), UiSizes.PageFont);
@@ -70,7 +70,7 @@ namespace DotRPG
             w.info = Label(bottom.transform, "Text", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -10f), new Vector2(1180f, 64f));
             w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(800f, 26f));
             // [UX] Always-visible controls hint (the info line above turns into the item's details on hover).
-            var hint = Label(bottom.transform, "Hint", "클릭: 1개 이동 · 우클릭: 전부 이동", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(380f, 26f), TextAnchor.MiddleRight);
+            var hint = Label(bottom.transform, "Hint", L.T("클릭: 1개 이동 · 우클릭: 전부 이동"), 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(380f, 26f), TextAnchor.MiddleRight);
             hint.color = UiTheme.TextSecondary;
             w.cursor = Img(w.content, "Cursor", "ui_frame", UiTheme.Accent);
             w.cursor.raycastTarget = false;
@@ -186,8 +186,8 @@ namespace DotRPG
             storePage = Mathf.Clamp(storePage, 0, StorePages - 1);
             Fill(bagCells, bagIds, bag, bagPage);
             Fill(storeCells, storeIds, store, storePage);
-            bagTitle.text = $"<b>가방</b>   <color=#b8c4d8>{bagIds.Count}종</color>      {ItemText.Gold(Game.Session.Gold)}";
-            storeTitle.text = $"<b>창고</b>   <color=#b8c4d8>{storeIds.Count} / {Capacity}칸</color>";
+            bagTitle.text = L.F("<b>가방</b>   <color=#b8c4d8>{0}종</color>      {1}", bagIds.Count, ItemText.Gold(Game.Session.Gold));
+            storeTitle.text = L.F("<b>창고</b>   <color=#b8c4d8>{0} / {1}칸</color>", storeIds.Count, Capacity);
             ShowPaging(bagPrev, bagNext, bagPageText, bagPage, BagPages);
             ShowPaging(storePrev, storeNext, storePageText, storePage, StorePages);
 
@@ -195,11 +195,10 @@ namespace DotRPG
             if (target != null && target.id != null)
             {
                 var from = target.inStorage ? store : bag;
-                info.text = $"<b>{ItemText.Name(target.id)}</b>  <color=#b8c4d8>{ItemText.Kind(target.id)}  ·  {(target.inStorage ? "창고" : "가방")} {from.Count(target.id)}개</color>\n" +
-                            $"<color=#dfe6f2>{ItemText.Description(target.id).Replace('\n', ' ')}</color>";
+                info.text = L.F("<b>{0}</b>  <color=#b8c4d8>{1}  ·  {2} {3}개</color>\n", L.T(ItemText.Name(target.id)), L.T(ItemText.Kind(target.id)), (target.inStorage ? L.T("창고") : L.T("가방")), from.Count(target.id)) +
+                            $"<color=#dfe6f2>{L.T(ItemText.Description(target.id)).Replace('\n', ' ')}</color>";
             }
-            else info.text = "<color=#b8c4d8>클릭: 1개 옮기기   ·   우클릭: 전부 옮기기   ·   방향키로 고르고 " +
-                             $"{Game.Input.GetBindingLabel(GameAction.Submit)} 키로 옮기기</color>\n<color=#8c96a8>창고에 맡긴 물건은 죽거나 다른 지역에 가도 그대로 남습니다.</color>";
+            else info.text = L.F("<color=#b8c4d8>클릭: 1개 옮기기   ·   우클릭: 전부 옮기기   ·   방향키로 고르고 {0} 키로 옮기기</color>\n<color=#8c96a8>창고에 맡긴 물건은 죽거나 다른 지역에 가도 그대로 남습니다.</color>", Game.Input.GetBindingLabel(GameAction.Submit));
 
             var cell = CursorCell();
             var rt = cell.bg.rectTransform;
@@ -251,7 +250,7 @@ namespace DotRPG
             if (!c.inStorage && to.Count(id) == 0 && StorageOrder(to).Count >= Capacity)
             {
                 Game.Audio.PlaySfx("cancel");
-                message.text = "<color=#ff7070>창고가 가득 찼습니다. 다른 물건을 먼저 꺼내세요.</color>";
+                message.text = L.T("<color=#ff7070>창고가 가득 찼습니다. 다른 물건을 먼저 꺼내세요.</color>");
                 dirty = true;
                 return;
             }
@@ -262,8 +261,8 @@ namespace DotRPG
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(new[] { (id, !c.inStorage, n) }, _ => dirty = true);
             if (!c.inStorage) GuideFlags.Mark(GuideFlags.Storage); // [GUIDE] 창고에 맡기기
             Game.Audio.PlaySfx("select");
-            string name = Game.Config.GetItem(id).displayName;
-            message.text = c.inStorage ? $"<color=#8fe28f>{name} {n}개를 꺼냈습니다.</color>" : $"<color=#8fe28f>{name} {n}개를 맡겼습니다.</color>";
+            string name = L.T(Game.Config.GetItem(id).displayName);
+            message.text = c.inStorage ? L.F("<color=#8fe28f>{0} {1}개를 꺼냈습니다.</color>", name, n) : L.F("<color=#8fe28f>{0} {1}개를 맡겼습니다.</color>", name, n);
             dirty = true;
         }
 
@@ -288,7 +287,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
-            message.text = moved > 0 ? $"<color=#8fe28f>재료 {moved}개를 창고에 맡겼습니다.</color>" : "<color=#b8c4d8>맡길 재료가 없습니다.</color>";
+            message.text = moved > 0 ? L.F("<color=#8fe28f>재료 {0}개를 창고에 맡겼습니다.</color>", moved) : L.T("<color=#b8c4d8>맡길 재료가 없습니다.</color>");
             dirty = true;
         }
 
@@ -308,7 +307,7 @@ namespace DotRPG
             }
             if (OnlineEconomy.On) OnlineEconomy.StorageMove(serverMoves, _ => dirty = true); // [SERVER]
             Game.Audio.PlaySfx(moved > 0 ? "confirm" : "cancel");
-            message.text = moved > 0 ? $"<color=#8fe28f>창고의 물건 {moved}개를 모두 꺼냈습니다.</color>" : "<color=#b8c4d8>창고가 비어 있습니다.</color>";
+            message.text = moved > 0 ? L.F("<color=#8fe28f>창고의 물건 {0}개를 모두 꺼냈습니다.</color>", moved) : L.T("<color=#b8c4d8>창고가 비어 있습니다.</color>");
             dirty = true;
         }
 

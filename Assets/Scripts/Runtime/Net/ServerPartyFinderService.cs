@@ -103,7 +103,7 @@ namespace DotRPG
         {
             PartyClient.Ensure().CreateParty(dungeonId, difficulty, maxMembers, minPower, message, (ok, msg) =>
             {
-                GameEvents.RaiseToast(ok ? "모집 글을 올렸습니다." : msg);
+                GameEvents.RaiseToast(ok ? L.T("모집 글을 올렸습니다.") : msg);
                 boardTimer = 0f;
             });
             return null;
@@ -113,7 +113,7 @@ namespace DotRPG
         {
             var c = PartyClient.Instance;
             if (c == null || !c.InParty || c.PartyId != postId) return false;
-            c.Leave((ok, msg) => { GameEvents.RaiseToast(ok ? "모집을 취소했습니다." : msg); boardTimer = 0f; });
+            c.Leave((ok, msg) => { GameEvents.RaiseToast(ok ? L.T("모집을 취소했습니다.") : msg); boardTimer = 0f; });
             return true;
         }
 
@@ -121,14 +121,14 @@ namespace DotRPG
         {
             PartyClient.Ensure().Apply(postId, (ok, msg) =>
             {
-                GameEvents.RaiseToast(ok ? "참가 신청을 보냈습니다. 방장이 수락하면 파티 창이 열립니다." : msg);
+                GameEvents.RaiseToast(ok ? L.T("참가 신청을 보냈습니다. 방장이 수락하면 파티 창이 열립니다.") : msg);
                 var p = posts.FirstOrDefault(x => x.id == postId);
                 if (p != null) p.applied = ok;
                 Changed?.Invoke();
             });
             var post = posts.FirstOrDefault(x => x.id == postId);
             if (post != null) post.applied = true;
-            return "참가 신청을 보내는 중...";
+            return L.T("참가 신청을 보내는 중...");
         }
 
         public void StartQueue(string dungeonId, DungeonDifficulty difficulty)
@@ -155,7 +155,7 @@ namespace DotRPG
             if (!Queue.active) return 0;
             int ai = PartyManager.MaxMembers - Queue.humans;
             Queue.active = false;
-            PartyClient.Ensure().FillAi((ok, msg) => GameEvents.RaiseToast(ok ? "파티를 만들었습니다. 파티 창에서 출발하세요." : msg));
+            PartyClient.Ensure().FillAi((ok, msg) => GameEvents.RaiseToast(ok ? L.T("파티를 만들었습니다. 파티 창에서 출발하세요.") : msg));
             Changed?.Invoke();
             return ai;
         }

@@ -488,7 +488,7 @@ namespace DotRPG
                 if(!armorTipShown && info.AttackerMember!=null && info.AttackerMember.IsLocal)
                 {
                     armorTipShown=true;
-                    GameEvents.RaiseToast($"방패 아이콘 몬스터는 방어력 {Mathf.RoundToInt(Armor*100)}%: 지속 피해(화상·원소 지대)와 방어 붕괴가 잘 통합니다.");
+                    GameEvents.RaiseToast(L.F("방패 아이콘 몬스터는 방어력 {0}%: 지속 피해(화상·원소 지대)와 방어 붕괴가 잘 통합니다.", Mathf.RoundToInt(Armor*100)));
                 }
             }
             if(ArmorBroken) info.amount=Mathf.RoundToInt(info.amount*1.2f);

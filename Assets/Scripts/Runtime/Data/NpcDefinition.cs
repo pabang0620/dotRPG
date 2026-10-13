@@ -48,7 +48,7 @@ namespace DotRPG
         [Tooltip("Single character used in the map text file.")]
         public string mapSymbol = "1";
         public string npcId = "villager";
-        public string displayName = "주민";
+        public string displayName = "주민"; // i18n-ignore Unity-serialized field default (no L.T during deserialization); translated where shown
         public CharacterLook look = new CharacterLook();
         public NpcBehaviour behaviour = NpcBehaviour.Idle;
         public NpcTool tool = NpcTool.None;

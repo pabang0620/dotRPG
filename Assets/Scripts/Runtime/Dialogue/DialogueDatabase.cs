@@ -55,7 +55,13 @@ namespace DotRPG
             {
                 var file = JsonUtility.FromJson<DialogueFile>(source.text);
                 foreach (var d in file.dialogues)
-                    if (!string.IsNullOrEmpty(d.id)) byId[d.id] = d;
+                {
+                    if (string.IsNullOrEmpty(d.id)) continue;
+                    // [I18N] Lines in the player's language; the speaker stays raw (portraits match it) and is
+                    // translated where it is shown.
+                    foreach (var line in d.lines) if (line != null) line.text = L.T(line.text);
+                    byId[d.id] = d;
+                }
             }
             catch (Exception e)
             {
@@ -72,7 +78,7 @@ namespace DotRPG
             return new DialogueData
             {
                 id = id,
-                lines = new List<DialogueLine> { new DialogueLine { speaker = "", text = $"(대사 '{id}' 없음)" } },
+                lines = new List<DialogueLine> { new DialogueLine { speaker = "", text = L.F("(대사 '{0}' 없음)", id) } },
             };
         }
     }

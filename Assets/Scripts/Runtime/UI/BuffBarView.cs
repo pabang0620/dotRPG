@@ -116,7 +116,7 @@ namespace DotRPG
             if (tip != null) tip.gameObject.SetActive(false);
         }
 
-        static string Sec(float s) => Mathf.CeilToInt(s) + "초";
+        static string Sec(float s) => L.F("{0}초", Mathf.CeilToInt(s));
 
         void LateUpdate()
         {
@@ -127,23 +127,23 @@ namespace DotRPG
             if (p != null && !p.IsDead)
             {
                 var c = CareerCombat.For(p);
-                if (p.IsStunned) Put(ref n, "buff_slow", "기절 " + p.StunnedLeft.ToString("0.0") + "초", "기절", "이동·공격·스킬·물약 사용 불가.");
-                if (Game.Cosmetics != null && Game.Cosmetics.LegendSet(p.Class)) Put(ref n, "buff_power", "전설 세트", "전설 세트", $"공격력 +{CosmeticStore.SetDamagePercent}%, 최대 체력 +{CosmeticStore.SetHealthPercent}%.");
-                if (c.InvulnerableLeft > 0f) Put(ref n, "buff_shield", "무적 " + c.InvulnerableLeft.ToString("0.0") + "초", "무적", "받는 피해 0.");
-                if (c.StanceOn) Put(ref n, "buff_focus", "검기 태세 ON", "검기 태세", "기본 공격마다 관통 검기 발사(3타째 3줄). 검기마다 MP 소모.");
-                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", "검귀 " + Sec(c.FrenzyLeft), "검귀 해방", $"모든 공격 피해 +{c.FrenzyPct}%.");
-                if (c.ComboStacks > 0) Put(ref n, "buff_focus", $"검기 {c.ComboStacks}/3", "검기 연성", "3개일 때 다음 전직 스킬 피해 +20%.");
-                if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", (c.ShieldCareer == Career.Arcanist ? "배리어 " : "보호막 ") + Sec(c.ShieldLeft), c.ShieldCareer == Career.Arcanist ? "매직 배리어" : "보호막", $"피해 흡수 {c.Shield} 남음.");
-                if (c.GuardLeft > 0f) Put(ref n, "buff_guard", "보루 " + Sec(c.GuardLeft), "강철의 보루", "받는 피해 -30%.");
-                if (c.CounterLeft > 0f) Put(ref n, "buff_guard", $"방진 {c.CounterCharges}회 " + Sec(c.CounterLeft), "응보의 방진", $"받는 피해 -40%. 방어 {c.CounterCharges}회 남음, 막을 때 반격."); // blocks left + time
-                if (c.OathLeft > 0f) Put(ref n, "buff_guard", "맹세 " + Sec(c.OathLeft), "수호의 맹세", "결계 안 아군 받는 피해 -30%, 저주·둔화 해제.");
-                if (c.RetaliationLeft > 0f) Put(ref n, "buff_power", "응보 " + Sec(c.RetaliationLeft), "수호의 반향", "피격 후 다음 공격 피해 증가.");
-                if (c.SanctumLeft > 0f) Put(ref n, "buff_bless", "성역 +50%", "천상의 행진 성역", "공격 피해 +50%, 지속 회복, 모든 상태 이상 면역.");
-                if (c.BlessLeft > 0f) Put(ref n, "buff_bless", "축복 " + Sec(c.BlessLeft), "축복의 연결", $"공격 피해 +{c.BlessPercent}%.");
-                if (c.HotLeft > 0f) Put(ref n, "buff_regen", "재생 " + Sec(c.HotLeft), "재생", "체력 지속 회복.");
-                if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_power", "투지 " + Mathf.CeilToInt(p.Data.ScrollLeft / 60f) + "분", "투지의 주문서", "공격 피해 +15%."); // [CASH] 투지의 주문서
-                if (c.Cursed) Put(ref n, "buff_curse", "저주", "저주", "정화의 종·수호의 맹세로 해제.");
-                if (Time.time < c.SlowUntil) Put(ref n, "buff_slow", "둔화 " + Sec(c.SlowUntil - Time.time), "둔화", "이동 속도 -40%.");
+                if (p.IsStunned) Put(ref n, "buff_slow", L.F("기절 {0:0.0}초", p.StunnedLeft), L.T("기절"), L.T("이동·공격·스킬·물약 사용 불가."));
+                if (Game.Cosmetics != null && Game.Cosmetics.LegendSet(p.Class)) Put(ref n, "buff_power", L.T("전설 세트"), L.T("전설 세트"), L.F("공격력 +{0}%, 최대 체력 +{1}%.", CosmeticStore.SetDamagePercent, CosmeticStore.SetHealthPercent));
+                if (c.InvulnerableLeft > 0f) Put(ref n, "buff_shield", L.F("무적 {0:0.0}초", c.InvulnerableLeft), L.T("무적"), L.T("받는 피해 0."));
+                if (c.StanceOn) Put(ref n, "buff_focus", L.T("검기 태세 ON"), L.T("검기 태세"), L.T("기본 공격마다 관통 검기 발사(3타째 3줄). 검기마다 MP 소모."));
+                if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", L.F("검귀 {0}", Sec(c.FrenzyLeft)), L.T("검귀 해방"), L.F("모든 공격 피해 +{0}%.", c.FrenzyPct));
+                if (c.ComboStacks > 0) Put(ref n, "buff_focus", L.F("검기 {0}/3", c.ComboStacks), L.T("검기 연성"), L.T("3개일 때 다음 전직 스킬 피해 +20%."));
+                if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", c.ShieldCareer == Career.Arcanist ? L.F("배리어 {0}", Sec(c.ShieldLeft)) : L.F("보호막 {0}", Sec(c.ShieldLeft)), c.ShieldCareer == Career.Arcanist ? L.T("매직 배리어") : L.T("보호막"), L.F("피해 흡수 {0} 남음.", c.Shield));
+                if (c.GuardLeft > 0f) Put(ref n, "buff_guard", L.F("보루 {0}", Sec(c.GuardLeft)), L.T("강철의 보루"), L.T("받는 피해 -30%."));
+                if (c.CounterLeft > 0f) Put(ref n, "buff_guard", L.F("방진 {0}회 {1}", c.CounterCharges, Sec(c.CounterLeft)), L.T("응보의 방진"), L.F("받는 피해 -40%. 방어 {0}회 남음, 막을 때 반격.", c.CounterCharges)); // blocks left + time
+                if (c.OathLeft > 0f) Put(ref n, "buff_guard", L.F("맹세 {0}", Sec(c.OathLeft)), L.T("수호의 맹세"), L.T("결계 안 아군 받는 피해 -30%, 저주·둔화 해제."));
+                if (c.RetaliationLeft > 0f) Put(ref n, "buff_power", L.F("응보 {0}", Sec(c.RetaliationLeft)), L.T("수호의 반향"), L.T("피격 후 다음 공격 피해 증가."));
+                if (c.SanctumLeft > 0f) Put(ref n, "buff_bless", L.T("성역 +50%"), L.T("천상의 행진 성역"), L.T("공격 피해 +50%, 지속 회복, 모든 상태 이상 면역."));
+                if (c.BlessLeft > 0f) Put(ref n, "buff_bless", L.F("축복 {0}", Sec(c.BlessLeft)), L.T("축복의 연결"), L.F("공격 피해 +{0}%.", c.BlessPercent));
+                if (c.HotLeft > 0f) Put(ref n, "buff_regen", L.F("재생 {0}", Sec(c.HotLeft)), L.T("재생"), L.T("체력 지속 회복."));
+                if (p.Data.ScrollLeft > 0f) Put(ref n, "buff_power", L.F("투지 {0}분", Mathf.CeilToInt(p.Data.ScrollLeft / 60f)), L.T("투지의 주문서"), L.T("공격 피해 +15%.")); // [CASH] 투지의 주문서
+                if (c.Cursed) Put(ref n, "buff_curse", L.T("저주"), L.T("저주"), L.T("정화의 종·수호의 맹세로 해제."));
+                if (Time.time < c.SlowUntil) Put(ref n, "buff_slow", L.F("둔화 {0}", Sec(c.SlowUntil - Time.time)), L.T("둔화"), L.T("이동 속도 -40%."));
             }
             for (int i = n; i < slots.Count; i++)
                 if (slots[i].back.gameObject.activeSelf) slots[i].back.gameObject.SetActive(false);

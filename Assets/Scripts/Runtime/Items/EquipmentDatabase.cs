@@ -24,25 +24,25 @@ namespace DotRPG
         {
             var list = new List<EquipmentItem>
             {
-                W("eq_sword_wood", "나무 검", EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Warrior, atk: 0, icon: "eqicon_sword_0", desc: "연습용 나무 검. 처음 받은 장비.", starter: true),
-                W("eq_staff_oak", "참나무 지팡이", EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Mage, atk: 0, icon: "eqicon_staff_0", desc: "견습 마법사의 지팡이. 처음 받은 장비.", starter: true),
+                W("eq_sword_wood", L.T("나무 검"), EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Warrior, atk: 0, icon: "eqicon_sword_0", desc: L.T("연습용 나무 검. 처음 받은 장비."), starter: true),
+                W("eq_staff_oak", L.T("참나무 지팡이"), EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Mage, atk: 0, icon: "eqicon_staff_0", desc: L.T("견습 마법사의 지팡이. 처음 받은 장비."), starter: true),
             };
             list.AddRange(GearCatalog.Build());
             // [FIELD BOSS] Growth accessories: moderate stats plus a growth option, only from field bosses (FieldBosses).
-            list.Add(Boss(W("eq_ring_root", "뿌리 사수의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 9, icon: "eqicon_fboss_0", desc: "검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다."), 10, xp: 5));
-            list.Add(Boss(W("eq_neck_rockheart", "바위 심장 목걸이", EquipCategory.Necklace, ItemRarity.Unique, null, atk: 6, hp: 50, block: 5, icon: "eqicon_fboss_1", desc: "능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다."), 20, aoe: 10));
-            list.Add(Boss(W("eq_ring_frostlich", "서리 리치의 반지", EquipCategory.Ring, ItemRarity.Unique, null, atk: 16, icon: "eqicon_fboss_2", desc: "눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다."), 35, xp: 6, aoe: 5));
+            list.Add(Boss(W("eq_ring_root", L.T("뿌리 사수의 반지"), EquipCategory.Ring, ItemRarity.Unique, null, atk: 9, icon: "eqicon_fboss_0", desc: L.T("검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다.")), 10, xp: 5));
+            list.Add(Boss(W("eq_neck_rockheart", L.T("바위 심장 목걸이"), EquipCategory.Necklace, ItemRarity.Unique, null, atk: 6, hp: 50, block: 5, icon: "eqicon_fboss_1", desc: L.T("능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다.")), 20, aoe: 10));
+            list.Add(Boss(W("eq_ring_frostlich", L.T("서리 리치의 반지"), EquipCategory.Ring, ItemRarity.Unique, null, atk: 16, icon: "eqicon_fboss_2", desc: L.T("눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다.")), 35, xp: 6, aoe: 5));
             return list;
         }
 
         static readonly List<MaterialItem> Materials = new List<MaterialItem>
         {
-            new MaterialItem { id = "mat_bone", name = "뼈 조각", iconKey = "maticon_bone", rarity = ItemRarity.Common, dropChance = 0.75f, minDrop = 1, maxDrop = 3,
-                description = "해골이 떨어뜨린 단단한 뼈. 모든 강화에 쓰인다." },
-            new MaterialItem { id = "mat_ore", name = "강화석", iconKey = "maticon_ore", rarity = ItemRarity.Rare, dropChance = 0.35f,
-                description = "푸르게 빛나는 광석. +5 강화 시도부터 필요하다." },
-            new MaterialItem { id = "mat_essence", name = "마력 정수", iconKey = "maticon_essence", rarity = ItemRarity.Epic, dropChance = 0.08f,
-                description = "해골 속에 남아 있던 마력의 결정. +11 강화 시도부터 필요하다." },
+            new MaterialItem { id = "mat_bone", name = L.T("뼈 조각"), iconKey = "maticon_bone", rarity = ItemRarity.Common, dropChance = 0.75f, minDrop = 1, maxDrop = 3,
+                description = L.T("해골이 떨어뜨린 단단한 뼈. 모든 강화에 쓰인다.") },
+            new MaterialItem { id = "mat_ore", name = L.T("강화석"), iconKey = "maticon_ore", rarity = ItemRarity.Rare, dropChance = 0.35f,
+                description = L.T("푸르게 빛나는 광석. +5 강화 시도부터 필요하다.") },
+            new MaterialItem { id = "mat_essence", name = L.T("마력 정수"), iconKey = "maticon_essence", rarity = ItemRarity.Epic, dropChance = 0.08f,
+                description = L.T("해골 속에 남아 있던 마력의 결정. +11 강화 시도부터 필요하다.") },
         };
 
         /// <summary>A valid instance key: which item and which +level.</summary>
@@ -238,11 +238,11 @@ namespace DotRPG
         {
             switch (c)
             {
-                case EquipCategory.Weapon: return "무기";
-                case EquipCategory.Necklace: return "목걸이";
-                case EquipCategory.Ring: return "반지";
-                case EquipCategory.Top: return "상의";
-                default: return "하의";
+                case EquipCategory.Weapon: return L.T("무기");
+                case EquipCategory.Necklace: return L.T("목걸이");
+                case EquipCategory.Ring: return L.T("반지");
+                case EquipCategory.Top: return L.T("상의");
+                default: return L.T("하의");
             }
         }
 
@@ -250,19 +250,19 @@ namespace DotRPG
         {
             switch (s)
             {
-                case EquipSlot.Weapon: return "무기";
-                case EquipSlot.Necklace: return "목걸이";
-                case EquipSlot.Ring1: return "반지 1";
-                case EquipSlot.Ring2: return "반지 2";
-                case EquipSlot.Top: return "상의";
-                default: return "하의";
+                case EquipSlot.Weapon: return L.T("무기");
+                case EquipSlot.Necklace: return L.T("목걸이");
+                case EquipSlot.Ring1: return L.T("반지 1");
+                case EquipSlot.Ring2: return L.T("반지 2");
+                case EquipSlot.Top: return L.T("상의");
+                default: return L.T("하의");
             }
         }
 
         // ---------- Grades ----------
 
         static readonly string[] RarityHex = { "#d9d9d9", "#6fdc6f", "#5aa9ff", "#b77bff", "#ffd84a", "#ff8a3d" };
-        static readonly string[] RarityNames = { "커먼", "언커먼", "레어", "에픽", "유니크", "레전더리" };
+        static readonly string[] RarityNames = { L.T("커먼"), L.T("언커먼"), L.T("레어"), L.T("에픽"), L.T("유니크"), L.T("레전더리") };
 
         public static string RarityColor(ItemRarity r) => RarityHex[(int)r];
 

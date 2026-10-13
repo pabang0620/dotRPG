@@ -92,7 +92,7 @@ namespace DotRPG
             {
                 s.status = (int)QuestStatus.ReadyToTurnIn;
                 Game.Audio.PlaySfx("quest");
-                GameEvents.RaiseToast($"{NpcName(q.turnIn)}에게 보고하세요.");
+                GameEvents.RaiseToast(L.F("{0}에게 보고하세요.", NpcName(q.turnIn)));
             }
         }
 
@@ -155,14 +155,14 @@ namespace DotRPG
         {
             switch (o.type)
             {
-                case ObjectiveTypes.Talk: return $"{Game.Quest.NpcName(o.target)}와(과) 이야기한다";
-                case ObjectiveTypes.Kill: return o.target == "*" ? "몬스터 처치" : $"{MonsterName(o.target)} 처치";
-                case ObjectiveTypes.Collect: return $"{ItemName(o.target)} 모으기";
-                case ObjectiveTypes.Reach: return $"{(MapRegistry.Get(o.target)?.displayName ?? o.target)}(으)로 간다";
-                case ObjectiveTypes.Dungeon: return "던전 클리어";
-                case ObjectiveTypes.Raid: return "레이드 클리어";
-                case ObjectiveTypes.Level: return $"레벨 {o.count} 달성";
-                case ObjectiveTypes.Quests: return "부탁 해결";
+                case ObjectiveTypes.Talk: return L.F("{0}와(과) 이야기한다", Game.Quest.NpcName(o.target));
+                case ObjectiveTypes.Kill: return o.target == "*" ? L.T("몬스터 처치") : L.F("{0} 처치", MonsterName(o.target));
+                case ObjectiveTypes.Collect: return L.F("{0} 모으기", L.T(ItemName(o.target)));
+                case ObjectiveTypes.Reach: return L.F("{0}(으)로 간다", L.T(MapRegistry.Get(o.target)?.displayName ?? o.target));
+                case ObjectiveTypes.Dungeon: return L.T("던전 클리어");
+                case ObjectiveTypes.Raid: return L.T("레이드 클리어");
+                case ObjectiveTypes.Level: return L.F("레벨 {0} 달성", o.count);
+                case ObjectiveTypes.Quests: return L.T("부탁 해결");
                 default: return o.target;
             }
         }
@@ -170,7 +170,7 @@ namespace DotRPG
         static string MonsterName(string id)
         {
             var def = MonsterDatabase.Get(id);
-            return def != null ? def.name : id;
+            return def != null ? L.T(def.name) : id;
         }
 
         public string FormatTokens(string text)

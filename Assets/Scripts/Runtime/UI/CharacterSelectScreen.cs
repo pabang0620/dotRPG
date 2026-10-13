@@ -24,7 +24,7 @@ namespace DotRPG
             var root = CreateRoot(canvas, "CharacterSelect", true);
             var screen = root.gameObject.AddComponent<CharacterSelectScreen>();
             // Ten empty body lines reserve room for the cards and the description.
-            screen.BuildPanel(root, "캐릭터 선택", 760, new string('\n', 9), 20);
+            screen.BuildPanel(root, L.T("캐릭터 선택"), 760, new string('\n', 9), 20);
             var body = screen.panel.Find("Body").GetComponent<Text>();
             body.text = "";
 
@@ -58,9 +58,9 @@ namespace DotRPG
             foreach (var cls in Classes)
             {
                 var info = CharacterClassInfo.Get(cls);
-                screen.menu.AddButton($"{info.displayName}로 시작", () => Game.Flow.NewGame(info.id, screen.nameField.text));
+                screen.menu.AddButton(L.F("{0}로 시작", L.T(info.displayName)), () => Game.Flow.NewGame(info.id, screen.nameField.text));
             }
-            screen.menu.AddButton("돌아가기", () => ui.Pop());
+            screen.menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
             screen.FitPanel();
 
@@ -77,7 +77,7 @@ namespace DotRPG
         /// <summary>Name box under the cards: click (or Tab) to type, Enter / Esc to leave it.</summary>
         static InputField BuildNameField(RectTransform panel)
         {
-            var label = UIFactory.Text(panel, "NameLabel", "이름", 20, UIColors.Cream, TextAnchor.MiddleRight, true);
+            var label = UIFactory.Text(panel, "NameLabel", L.T("이름"), 20, UIColors.Cream, TextAnchor.MiddleRight, true);
             UIFactory.Place(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-170f, -302f), new Vector2(80f, 40f));
             var bg = UIFactory.Panel(panel, "NameBox", true);
             UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(20f, -302f), new Vector2(280f, 40f));
@@ -121,7 +121,7 @@ namespace DotRPG
             {
                 shownIndex = selected;
                 var info = CharacterClassInfo.Get(Classes[selected]);
-                description.text = info.description;
+                description.text = L.T(info.description);
                 for (int i = 0; i < Classes.Length; i++)
                 {
                     bool on = i == selected;

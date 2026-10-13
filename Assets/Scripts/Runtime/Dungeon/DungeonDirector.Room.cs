@@ -53,7 +53,7 @@ namespace DotRPG
             Game.Camera.SetTarget(local.transform, true);
             Game.UI.Hud.RefreshAll();
             Game.Audio.PlayMusic(Game.World.Map.music);
-            if (room.isBoss) GameEvents.RaiseToast($"보스 방 · {run.Dungeon.bossName}");
+            if (room.isBoss) GameEvents.RaiseToast(L.F("보스 방 · {0}", L.T(run.Dungeon.bossName)));
             roomReady = true;
             if (NetHost) PartyNet.Current.HostRoomLoaded(index);
             RoomChanged?.Invoke();
@@ -135,7 +135,7 @@ namespace DotRPG
             run.ClearedRooms.Add(run.RoomIndex);
             if (door != null) door.Open();
             Game.Audio.PlaySfx("build_complete");
-            GameEvents.RaiseToast("방을 정리했습니다! 문이 열렸습니다.");
+            GameEvents.RaiseToast(L.T("방을 정리했습니다! 문이 열렸습니다."));
             RoomChanged?.Invoke();
         }
 

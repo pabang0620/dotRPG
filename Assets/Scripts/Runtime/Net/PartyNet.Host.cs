@@ -247,7 +247,7 @@ namespace DotRPG
             string token = r.ReadString();
             int wire = r.ReadInt32();
             var card = MemberCard.Read(r);
-            if (wire != WireVersion) { GameEvents.RaiseToast("파티원과 게임 버전이 다릅니다."); return; }
+            if (wire != WireVersion) { GameEvents.RaiseToast(L.T("파티원과 게임 버전이 다릅니다.")); return; }
             if (run != runId || slot == mySlot || slot >= humans) return;
             // Entry token: only someone the server put in this seat can take it (no server call needed).
             // On the relay the server already stamped the sender's seat, so the token is not needed.
@@ -282,7 +282,7 @@ namespace DotRPG
             {
                 Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.MemberJoined); card.Write(w); }), peer);
                 MemberConnected?.Invoke(slot);
-                GameEvents.RaiseToast($"{card.name}님이 파티에 연결되었습니다.");
+                GameEvents.RaiseToast(L.F("{0}님이 파티에 연결되었습니다.", L.T(card.name)));
             }
         }
 
@@ -336,8 +336,8 @@ namespace DotRPG
                     fieldHumanSeats.Remove(slot);
                     ApplyFieldSeats(); // [AI] an AI takes the seat back
                 }
-                string who = humanCards.TryGetValue(slot, out var c) ? c.name : "파티원";
-                GameEvents.RaiseToast($"{who}님 연결 끊김");
+                string who = humanCards.TryGetValue(slot, out var c) ? c.name : L.T("파티원");
+                GameEvents.RaiseToast(L.F("{0}님 연결 끊김", who));
                 Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.MemberLeft); w.Write((byte)slot); }));
             }
 

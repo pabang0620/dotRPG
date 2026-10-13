@@ -55,7 +55,7 @@ namespace DotRPG
             var bg = root.gameObject.AddComponent<Image>();
             bg.color = new Color(0.04f, 0.05f, 0.08f, 1f);
             bg.raycastTarget = true; // the title underneath takes no clicks until ready
-            label = UIFactory.Text(root, "Label", "게임 리소스를 준비하는 중...", 22, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true);
+            label = UIFactory.Text(root, "Label", L.T("게임 리소스를 준비하는 중..."), 22, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true);
             UIFactory.Place(label.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 30f), new Vector2(700f, 40f));
             var track = UIFactory.Image(root, "Track", Game.Art.Get("ui_white"), new Color(1f, 1f, 1f, 0.12f));
             UIFactory.Place(track.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -14f), new Vector2(520f, 12f));
@@ -89,7 +89,7 @@ namespace DotRPG
                 }
                 float t = done / (float)jobs.Count;
                 fill.sizeDelta = new Vector2(520f * t, 0f);
-                label.text = $"게임 리소스를 준비하는 중... {Mathf.RoundToInt(t * 100f)}%";
+                label.text = L.F("게임 리소스를 준비하는 중... {0}%", Mathf.RoundToInt(t * 100f));
                 yield return null;
             }
             UnityEngine.Debug.Log($"[dotRPG] warmup: {jobs.Count} effects ready in {Time.realtimeSinceStartup:0.0} s since start");

@@ -24,7 +24,7 @@ namespace DotRPG
 
         public static LevelRewardScreen Create(Transform canvas)
         {
-            var w = CreateWindow<LevelRewardScreen>(canvas, "LevelRewards", "레벨 보상", "menuicon_levelreward");
+            var w = CreateWindow<LevelRewardScreen>(canvas, "LevelRewards", L.T("레벨 보상"), "menuicon_levelreward");
             Instance = w;
             w.header = Label(w.content, "Header", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(860f, 44f), TextAnchor.MiddleLeft);
             w.buyPass = Button(w.content, "BuyPass", "", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(330f, 50f), w.BuyPass, 18);
@@ -32,9 +32,9 @@ namespace DotRPG
             passIcon.preserveAspect = true; passIcon.raycastTarget = false;
             UIFactory.Place(passIcon.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(8f, 0f), new Vector2(44f, 36f));
             UIFactory.Stretch(TextOf(w.buyPass).rectTransform, 50f, 0f, 8f, 0f);
-            Label(w.content, "ColLevel", "<b>달성 레벨</b>", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -60f), new Vector2(140f, 30f), TextAnchor.MiddleLeft);
-            Label(w.content, "ColFree", "<b>무료 보상</b> <color=#8c96a8>(별조각)</color>", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, -60f), new Vector2(380f, 30f), TextAnchor.MiddleLeft);
-            Label(w.content, "ColPass", "<b><color=#ffd34a>성장 패스 보상</color></b>", 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(560f, -60f), new Vector2(600f, 30f), TextAnchor.MiddleLeft);
+            Label(w.content, "ColLevel", L.T("<b>달성 레벨</b>"), 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -60f), new Vector2(140f, 30f), TextAnchor.MiddleLeft);
+            Label(w.content, "ColFree", L.T("<b>무료 보상</b> <color=#8c96a8>(별조각)</color>"), 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, -60f), new Vector2(380f, 30f), TextAnchor.MiddleLeft);
+            Label(w.content, "ColPass", L.T("<b><color=#ffd34a>성장 패스 보상</color></b>"), 17, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(560f, -60f), new Vector2(600f, 30f), TextAnchor.MiddleLeft);
             for (int i = 0; i < Rows; i++)
             {
                 int idx = i;
@@ -42,9 +42,9 @@ namespace DotRPG
                 r.bg = Panel(w.content, "Row" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, Top - i * RowH), new Vector2(1200f, RowH - 4f), i % 2 == 0 ? RowA : RowB);
                 r.level = Label(r.bg.transform, "Level", "", 20, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(12f, 0f), new Vector2(140f, 40f), TextAnchor.MiddleLeft);
                 r.free = Label(r.bg.transform, "Free", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(160f, 0f), new Vector2(250f, 40f), TextAnchor.MiddleLeft);
-                r.freeBtn = Button(r.bg.transform, "FreeClaim", "받기", "ui_btn", new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(410f, 0f), UiSizes.ClaimButton, () => w.ClaimFree(idx), UiSizes.ClaimFont);
+                r.freeBtn = Button(r.bg.transform, "FreeClaim", L.T("받기"), "ui_btn", new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(410f, 0f), UiSizes.ClaimButton, () => w.ClaimFree(idx), UiSizes.ClaimFont);
                 r.pass = Label(r.bg.transform, "Pass", "", 16, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(560f, 0f), new Vector2(480f, 44f), TextAnchor.MiddleLeft);
-                r.passBtn = Button(r.bg.transform, "PassClaim", "받기", "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), UiSizes.ClaimButton, () => w.ClaimPass(idx), UiSizes.ClaimFont);
+                r.passBtn = Button(r.bg.transform, "PassClaim", L.T("받기"), "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), UiSizes.ClaimButton, () => w.ClaimPass(idx), UiSizes.ClaimFont);
                 w.rows.Add(r);
             }
             // Paging under the rows: only shown when there are more levels than rows.
@@ -99,8 +99,8 @@ namespace DotRPG
         {
             if (LevelRewardClient.PassOwned || LevelRewardClient.Busy) return;
             int price = LevelRewardClient.PassPrice;
-            if (StarShopClient.Balance < price) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast($"별조각이 모자랍니다. (필요 {price:N0}, 보유 {StarShopClient.Balance:N0})"); return; }
-            Game.UI.Confirm($"<b>성장 패스</b>\n별조각 {price:N0}개 · 계정당 한 번 · 기간 없음\n레벨마다 강화권·봉인된 상자 등 패스 보상을 받습니다.\n구매하시겠습니까?",
+            if (StarShopClient.Balance < price) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(L.F("별조각이 모자랍니다. (필요 {0:N0}, 보유 {1:N0})", price, StarShopClient.Balance)); return; }
+            Game.UI.Confirm(L.F("<b>성장 패스</b>\n별조각 {0:N0}개 · 계정당 한 번 · 기간 없음\n레벨마다 강화권·봉인된 상자 등 패스 보상을 받습니다.\n구매하시겠습니까?", price),
                 () => LevelRewardClient.BuyPass(Answer), true);
         }
 
@@ -113,18 +113,18 @@ namespace DotRPG
         static string Rewards(LevelRewardClient.PassTier t)
         {
             var parts = new List<string>();
-            foreach (var (key, count) in t.rewards) parts.Add(DungeonDatabase.ItemName(key) + (count > 1 ? $" x{count}" : ""));
+            foreach (var (key, count) in t.rewards) parts.Add(L.T(DungeonDatabase.ItemName(key)) + (count > 1 ? $" x{count}" : ""));
             return string.Join(" · ", parts);
         }
 
         protected override void Refresh()
         {
             bool online = OnlineSession.Playing;
-            header.text = !online ? "<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>"
-                : !LevelRewardClient.Loaded ? "<color=#8c96a8>불러오는 중입니다...</color>"
-                : $"현재 캐릭터 <color=#ffd34a>Lv.{LevelRewardClient.CharacterLevel}</color>  ·  <color=#b8c4d8>달성 레벨부터 수령 · 계정당 한 번</color>";
+            header.text = !online ? L.T("<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>")
+                : !LevelRewardClient.Loaded ? L.T("<color=#8c96a8>불러오는 중입니다...</color>")
+                : L.F("현재 캐릭터 <color=#ffd34a>Lv.{0}</color>  ·  <color=#b8c4d8>달성 레벨부터 수령 · 계정당 한 번</color>", LevelRewardClient.CharacterLevel);
             buyPass.gameObject.SetActive(online && LevelRewardClient.Loaded);
-            TextOf(buyPass).text = LevelRewardClient.PassOwned ? "<color=#8fe28f>성장 패스 보유 중</color>" : $"성장 패스 구매 · 별조각 {LevelRewardClient.PassPrice:N0}";
+            TextOf(buyPass).text = LevelRewardClient.PassOwned ? L.T("<color=#8fe28f>성장 패스 보유 중</color>") : L.F("성장 패스 구매 · 별조각 {0:N0}", LevelRewardClient.PassPrice);
             buyPass.interactable = !LevelRewardClient.PassOwned && !LevelRewardClient.Busy;
 
             levels.Clear();
@@ -148,17 +148,17 @@ namespace DotRPG
                 if (!used) continue;
                 int lv = levels[i];
                 bool max = i == levels.Count - 1;
-                r.level.text = $"<b>Lv.{lv}</b>{(max ? " <size=14><color=#ffb347>만렙</color></size>" : "")}";
+                r.level.text = $"<b>Lv.{lv}</b>" + (max ? L.T(" <size=14><color=#ffb347>만렙</color></size>") : "");
                 var f = FreeAt(lv);
-                r.free.text = f == null ? "<color=#5a6478>-</color>" : $"별조각 <color=#ffd34a>{f.stars:N0}</color>" + (f.claimed ? "  <color=#8fe28f>계정 수령</color>" : "");
+                r.free.text = f == null ? "<color=#5a6478>-</color>" : L.F("별조각 <color=#ffd34a>{0:N0}</color>", f.stars) + (f.claimed ? L.T("  <color=#8fe28f>계정 수령</color>") : "");
                 r.freeBtn.gameObject.SetActive(f != null && !f.claimed);
                 r.freeBtn.interactable = LevelRewardClient.CanClaim(f);
-                if (f != null) TextOf(r.freeBtn).text = !LevelRewardClient.Loaded ? "확인 중" : LevelRewardClient.CanClaim(f) ? "받기" : "미달성";
+                if (f != null) TextOf(r.freeBtn).text = !LevelRewardClient.Loaded ? L.T("확인 중") : LevelRewardClient.CanClaim(f) ? L.T("받기") : L.T("미달성");
                 var p = PassAt(lv);
-                r.pass.text = p == null ? "<color=#5a6478>-</color>" : (LevelRewardClient.PassOwned ? "" : "<color=#8c96a8>[패스] </color>") + Rewards(p) + (p.claimed ? "  <color=#8fe28f>계정 수령</color>" : "");
+                r.pass.text = p == null ? "<color=#5a6478>-</color>" : (LevelRewardClient.PassOwned ? "" : L.T("<color=#8c96a8>[패스] </color>")) + Rewards(p) + (p.claimed ? L.T("  <color=#8fe28f>계정 수령</color>") : "");
                 r.passBtn.gameObject.SetActive(p != null && !p.claimed);
                 r.passBtn.interactable = LevelRewardClient.CanClaim(p);
-                if (p != null) TextOf(r.passBtn).text = !LevelRewardClient.Loaded ? "확인 중" : !LevelRewardClient.PassOwned ? "패스 필요" : LevelRewardClient.CanClaim(p) ? "받기" : "미달성";
+                if (p != null) TextOf(r.passBtn).text = !LevelRewardClient.Loaded ? L.T("확인 중") : !LevelRewardClient.PassOwned ? L.T("패스 필요") : LevelRewardClient.CanClaim(p) ? L.T("받기") : L.T("미달성");
             }
         }
     }

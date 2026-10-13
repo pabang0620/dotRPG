@@ -38,7 +38,7 @@ namespace DotRPG
 
         void BuildKeyBar(Transform side, Progression p, CareerSkill chosen)
         {
-            CareerText(side, "KeyBarTitle", "<b>장착 슬롯</b>  <size=14><color=#b8c4d8>우클릭: 해제</color></size>\n<size=14><color=#b8c4d8>스킬을 끌어다 놓거나, 스킬을 고른 뒤 칸을 누르세요</color></size>", 16, 18, 422, 390, 40);
+            CareerText(side, "KeyBarTitle", L.T("<b>장착 슬롯</b>  <size=14><color=#b8c4d8>우클릭: 해제</color></size>\n<size=14><color=#b8c4d8>스킬을 끌어다 놓거나, 스킬을 고른 뒤 칸을 누르세요</color></size>"), 16, 18, 422, 390, 40);
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 int slot = i;
@@ -120,7 +120,7 @@ namespace DotRPG
             var s = CareerCatalog.Get(id);
             if (!p.EquipSkill(slot, id))
             {
-                GameEvents.RaiseToast(s != null && !p.CareerUnlocked(s) ? "먼저 이 스킬을 배워야 합니다." : slot == 4 ? "T 칸에는 각성 기술만 넣을 수 있습니다." : "이 칸에는 넣을 수 없습니다.");
+                GameEvents.RaiseToast(s != null && !p.CareerUnlocked(s) ? L.T("먼저 이 스킬을 배워야 합니다.") : slot == 4 ? L.T("T 칸에는 각성 기술만 넣을 수 있습니다.") : L.T("이 칸에는 넣을 수 없습니다."));
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -171,19 +171,19 @@ namespace DotRPG
             if (p.Awakened) p.EquipSkill(4, skills[8].id);
             GuideFlags.Mark(GuideFlags.Recommend); // [GUIDE]
             Game.Flow.Autosave();
-            GameEvents.RaiseToast(learned > 0 ? $"추천 배치: {learned}단계를 배우고 스킬 {placed}개를 장착했습니다." : $"추천 배치: 스킬 {placed}개를 장착했습니다. (남은 포인트로 더 배울 기술 없음)");
+            GameEvents.RaiseToast(learned > 0 ? L.F("추천 배치: {0}단계를 배우고 스킬 {1}개를 장착했습니다.", learned, placed) : L.F("추천 배치: 스킬 {0}개를 장착했습니다. (남은 포인트로 더 배울 기술 없음)", placed));
             Game.Audio.PlaySfx("quest");
             Refresh();
         }
 
         void RecommendedButton(Progression p)
         {
-            CareerButton("Recommended", "추천 배치", 290, 75, 240, 40, () =>
+            CareerButton("Recommended", L.T("추천 배치"), 290, 75, 240, 40, () =>
             {
                 var (_, keys) = Recommended(p.Career);
                 var skills = CareerCatalog.For(p.Career);
-                var names = string.Join(" · ", System.Array.ConvertAll(keys, k => skills[k].name));
-                Game.UI.Confirm($"<b>{CareerCatalog.Name(p.Career)} 추천 배치</b>\n<size=18>남은 포인트로 정석 기술을 배우고\nQ W E R (A S D)에 {names}를 넣습니다.\n이미 배운 기술은 그대로 둡니다.</size>", () => ApplyRecommended(p), true);
+                var names = string.Join(" · ", System.Array.ConvertAll(keys, k => L.T(skills[k].name)));
+                Game.UI.Confirm(L.F("<b>{0} 추천 배치</b>\n<size=18>남은 포인트로 정석 기술을 배우고\nQ W E R (A S D)에 {1}를 넣습니다.\n이미 배운 기술은 그대로 둡니다.</size>", L.T(CareerCatalog.Name(p.Career)), names), () => ApplyRecommended(p), true);
             });
         }
     }

@@ -146,7 +146,7 @@ namespace DotRPG
         {
             if (cutIn)
             {
-                Awaken("천검 강림", SkillVisuals.UltGold);
+                Awaken(L.T("천검 강림"), SkillVisuals.UltGold);
                 yield return new WaitForSeconds(0.35f);
             }
             const float fall = 0.14f;
@@ -291,7 +291,7 @@ namespace DotRPG
         {
             if (cutIn)
             {
-                Awaken("메테오", SkillVisuals.FireOrange);
+                Awaken(L.T("메테오"), SkillVisuals.FireOrange);
                 yield return new WaitForSeconds(0.35f);
             }
             const float fall = 0.38f;

@@ -15,7 +15,7 @@ namespace DotRPG
         /// <summary>What every chest gives (also exported for the server, GameDataExport).</summary>
         public const string Reward = "eq_neck_10_r"; // shared by both classes (GearCatalog)
 
-        public override string Prompt => "상자 열기";
+        public override string Prompt => L.T("상자 열기");
 
         public override bool CanInteract => !Game.Session.OpenedChests.Contains(chestId);
 
@@ -51,7 +51,7 @@ namespace DotRPG
             else Pickup.Create(Reward, 1, at, transform.parent);
             Game.Audio.PlaySfx("quest");
             Fx.Sparkle((Vector2)transform.position + Vector2.up * 0.5f, 5, 0.6f);
-            GameEvents.RaiseToast("보물상자를 열었습니다!");
+            GameEvents.RaiseToast(L.T("보물상자를 열었습니다!"));
             Game.Flow.Autosave();
         }
     }

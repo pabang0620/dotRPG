@@ -121,7 +121,7 @@ namespace DotRPG
                 x += s + Gap;
             }
             // Caption above the awakening slot.
-            var caption = UIFactory.Text(root, "UltCaption", "각성", UiTheme.FontMin, new Color32(255, 214, 110, 255), TextAnchor.LowerCenter, true);
+            var caption = UIFactory.Text(root, "UltCaption", L.T("각성"), UiTheme.FontMin, new Color32(255, 214, 110, 255), TextAnchor.LowerCenter, true);
             UIFactory.Place(caption.rectTransform, Vector2.zero, new Vector2(0.5f, 0f), new Vector2(width - UltSize * 0.5f, UltSize + 1f), new Vector2(UltSize + 20f, 20f));
             // Above the buff row (which sits right over the bar).
             v.rangeLabel = UIFactory.Text(root, "RangeLabel", "", 16, new Color32(255, 240, 200, 255), TextAnchor.LowerCenter, true);
@@ -198,7 +198,7 @@ namespace DotRPG
                 }
                 if (!open)
                 {
-                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = i==4 ? "각성 시련" : $"Lv.{lockShown[i]}"; }
+                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = i==4 ? L.T("각성 시련") : $"Lv.{lockShown[i]}"; }
                     icons[i].color = new Color(0.45f, 0.45f, 0.52f, 1f);
                     cooldowns[i].fillAmount = 0f;
                     costs[i].text = "";
@@ -253,7 +253,7 @@ namespace DotRPG
             b.lineBottom = UIFactory.Image(root, "LineBottom", Game.Art.Get("ui_white"), Color.white);
             b.lineBottom.preserveAspect = false;
             UIFactory.Place(b.lineBottom.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(UiTheme.HudBannerWidth, 3f));
-            b.caption = UIFactory.Text(root, "Caption", "· 각 성 ·", 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
+            b.caption = UIFactory.Text(root, "Caption", L.T("· 각 성 ·"), 20, new Color32(255, 236, 180, 255), TextAnchor.UpperCenter, true);
             UIFactory.Place(b.caption.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(UiTheme.HudBannerWidth - 20f, 28f));
             b.title = UIFactory.Text(root, "Title", "", 46, Color.white, TextAnchor.MiddleCenter, true);
             var outline = b.title.gameObject.AddComponent<Outline>();
@@ -269,7 +269,7 @@ namespace DotRPG
 
         void Show(string skillName, Color themeColor)
         {
-            title.text = skillName;
+            title.text = L.T(skillName);
             color = themeColor;
             shownAt = Time.unscaledTime;
         }

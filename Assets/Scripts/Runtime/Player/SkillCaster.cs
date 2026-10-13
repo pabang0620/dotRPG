@@ -87,8 +87,8 @@ namespace DotRPG
                 if (!owner.IsLocal) return;
                 var locked = SkillGems.ForSlot(owner.Class, slot);
                 GameEvents.RaiseToast(slot == SkillGems.UltimateSlot
-                    ? "전직 후 자신의 각성 퀘스트를 완료해야 사용할 수 있습니다."
-                    : $"아직 잠긴 스킬입니다: {locked?.name} (Lv.{Progression.SlotLevel(slot)}에 해금)");
+                    ? L.T("전직 후 자신의 각성 퀘스트를 완료해야 사용할 수 있습니다.")
+                    : L.F("아직 잠긴 스킬입니다: {0} (Lv.{1}에 해금)", L.T(locked?.name), Progression.SlotLevel(slot)));
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -107,7 +107,7 @@ namespace DotRPG
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
                 if (!owner.IsLocal) return;
-                GameEvents.RaiseToast(n.usesLife ? "HP가 부족합니다." : "MP가 부족합니다.");
+                GameEvents.RaiseToast(n.usesLife ? L.T("HP가 부족합니다.") : L.T("MP가 부족합니다."));
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
@@ -149,7 +149,7 @@ namespace DotRPG
             var n = owner.Data.Stats.Skill(owner.Class, 1, s.Gem, System.Array.Empty<SkillGem>());
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
-                if (owner.IsLocal) { GameEvents.RaiseToast("MP가 부족합니다."); Game.Audio.PlaySfx("cancel"); }
+                if (owner.IsLocal) { GameEvents.RaiseToast(L.T("MP가 부족합니다.")); Game.Audio.PlaySfx("cancel"); }
                 return false;
             }
             // On Shift it keeps the plain dash's rhythm: the dash cooldown + 0.2 s (not the skill's own cooldown).

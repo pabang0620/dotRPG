@@ -23,11 +23,14 @@ namespace DotRPG
         public static bool Free => Game.Session == null || Game.Session.Progression.Level <= FreeUntilLevel;
 
         /// <summary>Button text in the field (always free).</summary>
-        public static string FieldLabel => "그 자리에서 부활 (무료)";
+        public static string FieldLabel => L.T("그 자리에서 부활 (무료)");
 
         /// <summary>Button text in a dungeon: free up to Lv.10, else the coin cost with what is left.</summary>
-        public static string Label(string verb = "그 자리에서 부활")
-            => Free ? $"{verb} (Lv.{FreeUntilLevel}까지 무료)" : $"{verb} (부활 코인 1 · 보유 {Coins}/{Max})";
+        public static string Label(string verb = null)
+        {
+            verb ??= L.T("그 자리에서 부활");
+            return Free ? L.F("{0} (Lv.{1}까지 무료)", verb, FreeUntilLevel) : L.F("{0} (부활 코인 1 · 보유 {1}/{2})", verb, Coins, Max);
+        }
 
         public static bool CanUse => Free || Coins > 0;
 
@@ -55,7 +58,7 @@ namespace DotRPG
         /// <summary>Spends a revive (or confirms a free one). done(ok, message for the player when not ok).</summary>
         public static void Use(string context, Action<bool, string> done)
         {
-            if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
+            if (Busy) { done(false, L.T("이전 요청을 처리하는 중입니다.")); return; }
             if (OnlineSession.Playing)
             {
                 Busy = true;
@@ -66,8 +69,8 @@ namespace DotRPG
                     Busy = false;
                     if (!r.ok)
                     {
-                        done(false, r.code == "NO_REVIVE_COIN" ? "부활 코인이 없습니다. (매일 06:00에 1개 지급)"
-                            : r.code == "NETWORK" ? "서버에 연결할 수 없습니다." : string.IsNullOrEmpty(r.message) ? "부활하지 못했습니다." : r.message);
+                        done(false, r.code == "NO_REVIVE_COIN" ? L.T("부활 코인이 없습니다. (매일 06:00에 1개 지급)")
+                            : r.code == "NETWORK" ? L.T("서버에 연결할 수 없습니다.") : string.IsNullOrEmpty(r.message) ? L.T("부활하지 못했습니다.") : r.message);
                         Refresh();
                         return;
                     }
@@ -80,7 +83,7 @@ namespace DotRPG
             LoadLocal();
             if (!Free && context != "field")
             {
-                if (Coins <= 0) { done(false, "부활 코인이 없습니다. (매일 06:00에 1개 지급)"); return; }
+                if (Coins <= 0) { done(false, L.T("부활 코인이 없습니다. (매일 06:00에 1개 지급)")); return; }
                 Coins--;
                 SaveLocal();
             }

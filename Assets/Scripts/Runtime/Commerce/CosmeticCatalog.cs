@@ -67,31 +67,31 @@ namespace DotRPG
     {
         public static IReadOnlyList<CosmeticProduct> All { get; } = System.Array.AsReadOnly(new[]
         {
-            new CosmeticProduct("aura_none", "기본 모습", Color.clear, true),
-            new CosmeticProduct("aura_sky", "하늘빛 오라", new Color32(120, 200, 255, 190), true),
-            new CosmeticProduct("aura_dew", "이슬빛 오라", new Color32(130, 240, 200, 190), false, CosmeticRarity.Common),
-            new CosmeticProduct("aura_maple", "단풍빛 오라", new Color32(240, 110, 70, 190), false, CosmeticRarity.Common),
-            new CosmeticProduct("aura_blossom", "꽃잎빛 오라", new Color32(255, 160, 210, 190), false, CosmeticRarity.Common),
-            new CosmeticProduct("aura_forest", "숲빛 오라", new Color32(110, 200, 90, 190), false, CosmeticRarity.Common),
-            new CosmeticProduct("aura_ash", "잿빛 오라", new Color32(210, 210, 220, 180), false, CosmeticRarity.Common),
-            new CosmeticProduct("aura_sunset", "노을빛 오라", new Color32(255, 180, 100, 190)),
-            new CosmeticProduct("aura_violet", "별빛 오라", new Color32(190, 145, 255, 190)),
-            new CosmeticProduct("aura_frost", "서리별 오라", new Color32(170, 230, 255, 200)),
-            new CosmeticProduct("aura_rose", "장미별 오라", new Color32(255, 110, 140, 200)),
-            new CosmeticProduct("aura_jade", "비취별 오라", new Color32(90, 220, 170, 200)),
-            new CosmeticProduct("aura_rainbow", "무지개 오라", new Color32(255, 255, 255, 220), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
-            new CosmeticProduct("aura_gold", "황금 오라", new Color32(255, 210, 80, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
-            new CosmeticProduct("aura_abyss", "심연 오라", new Color32(120, 80, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_none", L.T("기본 모습"), Color.clear, true),
+            new CosmeticProduct("aura_sky", L.T("하늘빛 오라"), new Color32(120, 200, 255, 190), true),
+            new CosmeticProduct("aura_dew", L.T("이슬빛 오라"), new Color32(130, 240, 200, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_maple", L.T("단풍빛 오라"), new Color32(240, 110, 70, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_blossom", L.T("꽃잎빛 오라"), new Color32(255, 160, 210, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_forest", L.T("숲빛 오라"), new Color32(110, 200, 90, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_ash", L.T("잿빛 오라"), new Color32(210, 210, 220, 180), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_sunset", L.T("노을빛 오라"), new Color32(255, 180, 100, 190)),
+            new CosmeticProduct("aura_violet", L.T("별빛 오라"), new Color32(190, 145, 255, 190)),
+            new CosmeticProduct("aura_frost", L.T("서리별 오라"), new Color32(170, 230, 255, 200)),
+            new CosmeticProduct("aura_rose", L.T("장미별 오라"), new Color32(255, 110, 140, 200)),
+            new CosmeticProduct("aura_jade", L.T("비취별 오라"), new Color32(90, 220, 170, 200)),
+            new CosmeticProduct("aura_rainbow", L.T("무지개 오라"), new Color32(255, 255, 255, 220), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
+            new CosmeticProduct("aura_gold", L.T("황금 오라"), new Color32(255, 210, 80, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_abyss", L.T("심연 오라"), new Color32(120, 80, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
             // Costume skins (SkinCatalog): epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
-            new CosmeticProduct("skin_maple", "단풍 무사", Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_obsidian", "흑요 기사", Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_noir", "칠흑의 검희", Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_forest", "숲의 정령", Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_ice", "얼음 여왕", Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_lion", "황금 사자 기사", Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_moon", "월광 검귀", Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_starnight", "성야의 마녀", Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_crimson", "홍염의 마녀", Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_maple", L.T("단풍 무사"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_obsidian", L.T("흑요 기사"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_noir", L.T("칠흑의 검희"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_forest", L.T("숲의 정령"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_ice", L.T("얼음 여왕"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_lion", L.T("황금 사자 기사"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_moon", L.T("월광 검귀"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_starnight", L.T("성야의 마녀"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_crimson", L.T("홍염의 마녀"), Color.white, false, CosmeticRarity.Unique),
         });
 
         public static CosmeticProduct Find(string id)
@@ -102,7 +102,7 @@ namespace DotRPG
         }
 
         public static string RarityName(CosmeticRarity r) =>
-            r == CosmeticRarity.Legend ? "전설" : r == CosmeticRarity.Unique ? "유니크" : r == CosmeticRarity.Epic ? "에픽" : r == CosmeticRarity.Rare ? "희귀" : r == CosmeticRarity.Common ? "일반" : "무료";
+            r == CosmeticRarity.Legend ? L.T("전설") : r == CosmeticRarity.Unique ? L.T("유니크") : r == CosmeticRarity.Epic ? L.T("에픽") : r == CosmeticRarity.Rare ? L.T("희귀") : r == CosmeticRarity.Common ? L.T("일반") : L.T("무료");
 
         public static string RarityHex(CosmeticRarity r) =>
             r == CosmeticRarity.Legend ? "#7dffb0" : r == CosmeticRarity.Unique ? "#ffb347" : r == CosmeticRarity.Epic ? "#c58cff" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";

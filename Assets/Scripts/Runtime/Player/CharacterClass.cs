@@ -34,8 +34,8 @@ namespace DotRPG
         {
             id = CharacterClass.Warrior,
             saveId = "warrior",
-            displayName = "전사",
-            description = "검을 휘둘러 가까운 적을 한꺼번에 벤다.\n체력과 근접 공격이 믿음직한 기본 모험가.",
+            displayName = L.T("전사"),
+            description = L.T("검을 휘둘러 가까운 적을 한꺼번에 벤다.\n체력과 근접 공격이 믿음직한 기본 모험가."),
             weaponSprite = "tool_sword",
             ranged = false,
         };
@@ -44,8 +44,8 @@ namespace DotRPG
         {
             id = CharacterClass.Mage,
             saveId = "mage",
-            displayName = "마법사",
-            description = "지팡이로 마법 구슬을 쏘아 멀리 있는 적을 맞힌다.\n해골의 공격 범위 밖에서 싸울 수 있지만 연사는 느리다.",
+            displayName = L.T("마법사"),
+            description = L.T("지팡이로 마법 구슬을 쏘아 멀리 있는 적을 맞힌다.\n해골의 공격 범위 밖에서 싸울 수 있지만 연사는 느리다."),
             weaponSprite = "tool_staff",
             ranged = true,
         };

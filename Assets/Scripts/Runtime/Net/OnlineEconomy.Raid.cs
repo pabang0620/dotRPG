@@ -50,7 +50,7 @@ namespace DotRPG
                     done?.Invoke(card, false);
                     return;
                 }
-                if (!quiet) GameEvents.RaiseToast(string.IsNullOrEmpty(r.message) ? "카드를 받지 못했습니다." : r.message);
+                if (!quiet) GameEvents.RaiseToast(string.IsNullOrEmpty(r.message) ? L.T("카드를 받지 못했습니다.") : r.message);
                 done?.Invoke(null, false);
             });
         }
@@ -63,7 +63,7 @@ namespace DotRPG
                 if (got.Count == 0) return;
                 var labels = new List<string>();
                 foreach (var c in got) labels.Add(c.Label);
-                GameEvents.RaiseToast($"확정된 레이드 보상: {string.Join(", ", labels)}");
+                GameEvents.RaiseToast(L.F("확정된 레이드 보상: {0}", string.Join(", ", labels)));
                 return;
             }
             FlipRaid(run, index, ApiClient.NewRequestId(), true, (card, fresh) =>
@@ -123,7 +123,7 @@ namespace DotRPG
             {
                 if (!r.ok)
                 {
-                    GameEvents.RaiseToast(string.IsNullOrEmpty(r.message) ? "구매하지 못했습니다." : r.message);
+                    GameEvents.RaiseToast(string.IsNullOrEmpty(r.message) ? L.T("구매하지 못했습니다.") : r.message);
                     done?.Invoke(null, null);
                     return;
                 }

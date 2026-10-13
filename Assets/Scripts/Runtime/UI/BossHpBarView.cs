@@ -124,7 +124,7 @@ namespace DotRPG
             markers = UIFactory.Stretch(UIFactory.Rect(strip, "Markers"));
 
             // Groggy gauge.
-            groggyLabel = UIFactory.Text(root, "GroggyLabel", "무력화", UiTheme.FontMin, new Color32(214, 196, 255, 255), TextAnchor.MiddleLeft, true);
+            groggyLabel = UIFactory.Text(root, "GroggyLabel", L.T("무력화"), UiTheme.FontMin, new Color32(214, 196, 255, 255), TextAnchor.MiddleLeft, true);
             UIFactory.Place(groggyLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -66f), new Vector2(64f, 22f));
             var gRt = UIFactory.Place(UIFactory.Rect(root, "Groggy"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(36f, -73f), new Vector2(Width - 72f, 9f));
             var gBg = Solid(gRt, "Bg", new Color32(28, 20, 40, 255));
@@ -184,7 +184,7 @@ namespace DotRPG
             string level = boss.Level > 1 ? $"  <size=16><color=#d8c8a8>Lv.{boss.Level}</color></size>" : "";
             nameText.text = boss.DisplayName + level;
             bannerTitle.text = boss.DisplayName;
-            bannerSub.text = boss.Def != null && boss.Def.raid ? "· 레이드 보스 ·" : "· 던전 보스 ·";
+            bannerSub.text = boss.Def != null && boss.Def.raid ? L.T("· 레이드 보스 ·") : L.T("· 던전 보스 ·");
             introAt = Time.unscaledTime;
             banner.gameObject.SetActive(true);
             Game.Camera?.Shake(0.25f, 0.4f);
@@ -341,7 +341,7 @@ namespace DotRPG
             {
                 groggyFill.fillAmount = hasGauge ? boss.Groggy / boss.GroggyMax : 0f;
                 groggyFill.color = brain != null && brain.CastingJudgment ? Color.Lerp(GroggyColor, new Color(1f, 0.3f, 0.3f), Mathf.PingPong(Time.unscaledTime * 3f, 1f)) : GroggyColor;
-                groggyText.text = brain != null && brain.CastingJudgment ? $"<color=#ff7a6a>무력화하라!  <size=20>{(1f - brain.JudgmentProgress) * brain.JudgmentCastNow:0.0}</size></color>" : "";
+                groggyText.text = brain != null && brain.CastingJudgment ? L.F("<color=#ff7a6a>무력화하라!  <size=20>{0:0.0}</size></color>", (1f - brain.JudgmentProgress) * brain.JudgmentCastNow) : "";
                 groggyText.rectTransform.localScale = Vector3.one;
             }
 

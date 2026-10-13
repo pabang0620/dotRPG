@@ -20,8 +20,8 @@ namespace DotRPG
         int page;
         readonly AuctionQuery query = new AuctionQuery();
         int enhBand, priceBand;
-        static readonly (int min, int max, string name)[] EnhBands = { (0, 20, "전체"), (0, 0, "+0"), (1, 6, "+1~6"), (7, 9, "+7~9"), (10, 12, "+10~12"), (13, 20, "+13 이상") };
-        static readonly (long min, long max, string name)[] PriceBands = { (0, long.MaxValue, "전체"), (0, 999, "1천 미만"), (1000, 9999, "1천~1만"), (10000, long.MaxValue, "1만 이상") };
+        static readonly (int min, int max, string name)[] EnhBands = { (0, 20, L.T("전체")), (0, 0, "+0"), (1, 6, "+1~6"), (7, 9, "+7~9"), (10, 12, "+10~12"), (13, 20, L.T("+13 이상")) };
+        static readonly (long min, long max, string name)[] PriceBands = { (0, long.MaxValue, L.T("전체")), (0, 999, L.T("1천 미만")), (1000, 9999, L.T("1천~1만")), (10000, long.MaxValue, L.T("1만 이상")) };
 
         readonly Dictionary<Tab, Button> tabs = new Dictionary<Tab, Button>();
         RectTransform tableRoot, filterRoot, registerRoot;
@@ -43,10 +43,10 @@ namespace DotRPG
 
         public static AuctionScreen Create(Transform canvas)
         {
-            var w = CreateWindow<AuctionScreen>(canvas, "Auction", "경매장", "menuicon_auction");
+            var w = CreateWindow<AuctionScreen>(canvas, "Auction", L.T("경매장"), "menuicon_auction");
             Instance = w;
             w.PreviewBanner();
-            string[] names = { "검색", "내 등록", "등록하기", "우편함" };
+            string[] names = { L.T("검색"), L.T("내 등록"), L.T("등록하기"), L.T("우편함") };
             for (int i = 0; i < 4; i++)
             {
                 var t = (Tab)i;
@@ -56,7 +56,7 @@ namespace DotRPG
 
             // ----- search filters -----
             w.filterRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Filters"));
-            w.search = w.Field(w.filterRoot, "Search", "아이템 이름 검색", new Vector2(0f, -54f), new Vector2(250f, 40f));
+            w.search = w.Field(w.filterRoot, "Search", L.T("아이템 이름 검색"), new Vector2(0f, -54f), new Vector2(250f, 40f));
             w.focusField = w.search;
             w.search.onEndEdit.AddListener(_ => { w.page = 0; w.Refresh(); });
             float x = 260f;
@@ -66,7 +66,7 @@ namespace DotRPG
             w.enhBtn = Filter("Enh", () => w.enhBand = (w.enhBand + 1) % EnhBands.Length, 150f);
             w.priceBtn = Filter("Price", () => w.priceBand = (w.priceBand + 1) % PriceBands.Length, 160f);
             w.sortBtn = Filter("Sort", () => w.query.sort = (AuctionSort)(((int)w.query.sort + 1) % 5), 190f);
-            Button(w.filterRoot, "Go", "검색", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(x, -54f), new Vector2(TableW - x, 40f), () => { w.page = 0; w.Refresh(); }, 19);
+            Button(w.filterRoot, "Go", L.T("검색"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(x, -54f), new Vector2(TableW - x, 40f), () => { w.page = 0; w.Refresh(); }, 19);
 
             // ----- table (search / mine / mail) -----
             w.tableRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Table"));
@@ -82,15 +82,15 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
                 GearTooltip.Hook(icon, () => w.TableKey(idx));
-                var a = Button(r, "A", "즉시 구매", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-82f, 0f), new Vector2(104f, 34f), () => w.RowAction(idx, true), 16);
-                var b = Button(r, "B", "입찰", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(72f, 34f), () => w.RowAction(idx, false), 16);
+                var a = Button(r, "A", L.T("즉시 구매"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-82f, 0f), new Vector2(104f, 34f), () => w.RowAction(idx, true), 16);
+                var b = Button(r, "B", L.T("입찰"), "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(72f, 34f), () => w.RowAction(idx, false), 16);
                 w.rows.Add((r, icon, Cell(r, "Name", 50f, 330f), Cell(r, "Grade", 385f, 95f, 17), Cell(r, "Price", 485f, 140f, 18, TextAnchor.MiddleRight),
                     Cell(r, "Bid", 635f, 125f, 17, TextAnchor.MiddleRight), Cell(r, "Seller", 780f, 120f, 17), Cell(r, "Time", 905f, 120f, 16), a, b));
             }
             w.emptyText = Label(w.tableRoot, "Empty", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, TableTop - 10f), new Vector2(TableW, 40f), TextAnchor.MiddleCenter);
             w.emptyText.color = new Color32(184, 196, 216, 255);
             // 모두 받기 shows on the mail tab only, where the table sits 50 higher: the bottom-left corner is free (status line is below it).
-            w.claimAllBtn = Button(w.tableRoot, "ClaimAll", "모두 받기", "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), UiSizes.ClaimAllButton, () => w.Report(w.Service.ClaimAll()), UiSizes.ClaimAllFont);
+            w.claimAllBtn = Button(w.tableRoot, "ClaimAll", L.T("모두 받기"), "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), UiSizes.ClaimAllButton, () => w.Report(w.Service.ClaimAll()), UiSizes.ClaimAllFont);
             Button(w.tableRoot, "Prev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-140f, 0f), UiSizes.PageButton, () => { w.page = Math.Max(0, w.page - 1); w.Refresh(); }, UiSizes.PageFont);
             w.pageText = Label(w.tableRoot, "Page", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-54f, 0f), new Vector2(80f, 34f), TextAnchor.MiddleCenter);
             Button(w.tableRoot, "Next", "▶", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), UiSizes.PageButton, () => { w.page++; w.Refresh(); }, UiSizes.PageFont);
@@ -98,7 +98,7 @@ namespace DotRPG
             // ----- register -----
             w.registerRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Register"));
             var left = Panel(w.registerRoot, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -54f), new Vector2(620f, 470f), new Color32(24, 36, 54, 235));
-            Label(left.transform, "Title", "<b>가방</b>  <color=#8c96a8>(거래 가능한 아이템만 등록할 수 있습니다)</color>", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -8f), new Vector2(600f, 30f));
+            Label(left.transform, "Title", L.T("<b>가방</b>  <color=#8c96a8>(거래 가능한 아이템만 등록할 수 있습니다)</color>"), 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -8f), new Vector2(600f, 30f));
             for (int i = 0; i < 8; i++)
             {
                 var r = Row(left.transform, i, -44f, 46f, 600f);
@@ -107,10 +107,10 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
                 GearTooltip.Hook(icon, () => { int at = w.regPage * 8 + idx; return at < w.bagKeys.Count ? w.bagKeys[at] : null; });
-                var pick = Button(r, "Pick", "선택", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(80f, 36f), () => { w.regSel = w.regPage * 8 + idx; w.regPrice = 0; w.Refresh(); }, 16);
+                var pick = Button(r, "Pick", L.T("선택"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(80f, 36f), () => { w.regSel = w.regPage * 8 + idx; w.regPrice = 0; w.Refresh(); }, 16);
                 w.regRows.Add((r, icon, Cell(r, "Name", 50f, 340f), Cell(r, "Bind", 395f, 110f, 16), pick));
             }
-            w.regEmptyText = Label(left.transform, "Empty", "가방에 등록할 수 있는 아이템이 없습니다.", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -60f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
+            w.regEmptyText = Label(left.transform, "Empty", L.T("가방에 등록할 수 있는 아이템이 없습니다."), 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -60f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
             w.regEmptyText.color = new Color32(184, 196, 216, 255);
             Button(left.transform, "RPrev", "◀", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-140f, 8f), UiSizes.PageButton, () => { w.regPage = Math.Max(0, w.regPage - 1); w.Refresh(); }, UiSizes.PageFont);
             w.regPageText = Label(left.transform, "RPage", "", 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-64f, 8f), new Vector2(70f, 34f), TextAnchor.MiddleCenter);
@@ -126,9 +126,9 @@ namespace DotRPG
             for (int i = 0; i < AuctionRules.Durations.Length; i++)
             {
                 int k = i;
-                Button(right.transform, "H" + i, AuctionRules.Durations[i] + "시간", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f + i * 112f, 90f), new Vector2(104f, 40f), () => { w.regHoursIdx = k; w.Refresh(); }, 17);
+                Button(right.transform, "H" + i, L.F("{0}시간", AuctionRules.Durations[i]), "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f + i * 112f, 90f), new Vector2(104f, 40f), () => { w.regHoursIdx = k; w.Refresh(); }, 17);
             }
-            Button(right.transform, "Submit", "등록", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(240f, 52f), w.SubmitRegister, 22);
+            Button(right.transform, "Submit", L.T("등록"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(240f, 52f), w.SubmitRegister, 22);
             return w;
         }
 
@@ -163,22 +163,22 @@ namespace DotRPG
             if (primary)
             {
                 int pct = price.avg7d > 0 ? (int)Math.Round((l.buyout / (double)(price.avg7d * l.count) - 1) * 100) : 0;
-                string cmp = pct >= 100 ? $"<color=#ff7a7a>평균보다 +{pct}%</color>" : pct >= 0 ? $"평균 대비 +{pct}%" : $"평균 대비 {pct}%";
-                Game.UI.Confirm($"{RichKey(l.itemKey)} x{l.count}\n{l.buyout:N0}G에 즉시 구매할까요?\n<size=18>최근 7일 평균 {price.avg7d * l.count:N0}G ({cmp})</size>", () => Report(Service.Buyout(l.id)), overlay: true);
+                string cmp = pct >= 100 ? L.F("<color=#ff7a7a>평균보다 +{0}%</color>", pct) : pct >= 0 ? L.F("평균 대비 +{0}%", pct) : L.F("평균 대비 {0}%", pct);
+                Game.UI.Confirm(L.F("{0} x{1}\n{2:N0}G에 즉시 구매할까요?\n<size=18>최근 7일 평균 {3:N0}G ({4})</size>", RichKey(l.itemKey), l.count, l.buyout, price.avg7d * l.count, cmp), () => Report(Service.Buyout(l.id)), overlay: true);
             }
             else
             {
-                if (!l.Biddable) { SetStatus("즉시 구매만 가능한 물건입니다.", false); return; }
+                if (!l.Biddable) { SetStatus(L.T("즉시 구매만 가능한 물건입니다."), false); return; }
                 long bid = AuctionRules.MinBid(l);
-                Game.UI.Confirm($"{RichKey(l.itemKey)} x{l.count}\n최소 입찰가 {bid:N0}G로 입찰할까요?\n<size=18>입찰 골드는 예치되고, 더 높은 입찰이 오면 우편으로 돌아옵니다.</size>", () => Report(Service.Bid(l.id, bid)), overlay: true);
+                Game.UI.Confirm(L.F("{0} x{1}\n최소 입찰가 {2:N0}G로 입찰할까요?\n<size=18>입찰 골드는 예치되고, 더 높은 입찰이 오면 우편으로 돌아옵니다.</size>", RichKey(l.itemKey), l.count, bid), () => Report(Service.Bid(l.id, bid)), overlay: true);
             }
         }
 
-        static string RichKey(string key) => EquipmentDatabase.IsEquipment(key) ? EquipmentDatabase.RichName(key) : DungeonDatabase.ItemName(key);
+        static string RichKey(string key) => EquipmentDatabase.IsEquipment(key) ? EquipmentDatabase.RichName(key) : L.T(DungeonDatabase.ItemName(key));
 
         void SubmitRegister()
         {
-            if (regSel < 0 || regSel >= bagKeys.Count) { SetStatus("등록할 아이템을 고르세요.", false); return; }
+            if (regSel < 0 || regSel >= bagKeys.Count) { SetStatus(L.T("등록할 아이템을 고르세요."), false); return; }
             string key = bagKeys[regSel];
             int count = Service.MaxCount(key); // [SERVER 6] equipment 1, stacks up to the listing maximum
             var r = Service.Register(key, count, regPrice, 0, AuctionRules.Durations[regHoursIdx]);
@@ -207,7 +207,7 @@ namespace DotRPG
             if (Service is ServerAuctionService server) server.Tick(true);
             foreach (var kv in tabs) kv.Value.image.sprite = UiTheme.Tab(kv.Key == tab);
             int mailN = Service.UnclaimedMail;
-            TextOf(tabs[Tab.Mail]).text = mailN > 0 ? $"우편함 <color=#ff6b6b>●{mailN}</color>" : "우편함";
+            TextOf(tabs[Tab.Mail]).text = mailN > 0 ? L.F("우편함 <color=#ff6b6b>●{0}</color>", mailN) : L.T("우편함");
             goldText.text = $"<color=#ffd34a>{Game.Session?.Gold ?? 0:N0} G</color>";
             filterRoot.gameObject.SetActive(tab == Tab.Search);
             tableRoot.gameObject.SetActive(tab != Tab.Register);
@@ -217,11 +217,11 @@ namespace DotRPG
 
             // Search / mine tables start right under the tabs when there is no filter row.
             tableRoot.anchoredPosition = tab == Tab.Search ? Vector2.zero : new Vector2(0f, 50f);
-            TextOf(catBtn).text = "분류: " + AuctionRules.CategoryName(query.category);
-            TextOf(rarBtn).text = "등급: " + (query.rarity < 0 ? "전체" : EquipmentDatabase.RarityName((ItemRarity)query.rarity));
-            TextOf(enhBtn).text = "강화: " + EnhBands[enhBand].name;
-            TextOf(priceBtn).text = "가격: " + PriceBands[priceBand].name;
-            TextOf(sortBtn).text = "정렬: " + AuctionRules.SortName(query.sort);
+            TextOf(catBtn).text = L.F("분류: {0}", L.T(AuctionRules.CategoryName(query.category)));
+            TextOf(rarBtn).text = L.F("등급: {0}", query.rarity < 0 ? L.T("전체") : L.T(EquipmentDatabase.RarityName((ItemRarity)query.rarity)));
+            TextOf(enhBtn).text = L.F("강화: {0}", EnhBands[enhBand].name);
+            TextOf(priceBtn).text = L.F("가격: {0}", PriceBands[priceBand].name);
+            TextOf(sortBtn).text = L.F("정렬: {0}", L.T(AuctionRules.SortName(query.sort)));
             query.text = search.text;
             query.enhMin = EnhBands[enhBand].min;
             query.enhMax = EnhBands[enhBand].max;
@@ -233,21 +233,21 @@ namespace DotRPG
             {
                 mails = Service.Mailbox().ToList();
                 total = mails.Count;
-                SetHead("내용", "", "", "", "", "보관 30일");
+                SetHead(L.T("내용"), "", "", "", "", L.T("보관 30일"));
             }
             else
             {
                 listings = (tab == Tab.Search ? Service.Search(query) : Service.MyListings()).ToList();
                 total = listings.Count;
-                SetHead("아이템", "등급", "즉시 구매가", "입찰가", "판매자", "남은 시간");
+                SetHead(L.T("아이템"), L.T("등급"), L.T("즉시 구매가"), L.T("입찰가"), L.T("판매자"), L.T("남은 시간"));
             }
             int pages = Math.Max(1, (total + PageSize - 1) / PageSize);
             page = Mathf.Clamp(page, 0, pages - 1);
             pageText.text = $"{page + 1} / {pages}";
             emptyText.gameObject.SetActive(total == 0);
-            emptyText.text = tab == Tab.Mail ? "받을 우편이 없습니다."
-                : tab == Tab.Mine ? "등록한 물건이 없습니다. 등록하기 탭에서 가방의 아이템을 올릴 수 있습니다."
-                : "조건에 맞는 물건이 없습니다.";
+            emptyText.text = tab == Tab.Mail ? L.T("받을 우편이 없습니다.")
+                : tab == Tab.Mine ? L.T("등록한 물건이 없습니다. 등록하기 탭에서 가방의 아이템을 올릴 수 있습니다.")
+                : L.T("조건에 맞는 물건이 없습니다.");
             if (tab == Tab.Mail) claimAllBtn.interactable = total > 0;
             for (int r = 0; r < rows.Count; r++)
             {
@@ -261,11 +261,11 @@ namespace DotRPG
                     var m = mails[i];
                     string key = m.itemKey ?? ConsumableDatabase.Gold;
                     row.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(key));
-                    row.name.text = m.text;
+                    row.name.text = L.T(m.text);
                     row.grade.text = "";
                     row.price.text = m.gold > 0 ? $"<color=#ffd34a>{m.gold:N0}G</color>" : "";
                     row.bid.text = row.seller.text = row.time.text = "";
-                    TextOf(row.a).text = "받기";
+                    TextOf(row.a).text = L.T("받기");
                     row.a.interactable = true;
                     row.b.gameObject.SetActive(false);
                     continue;
@@ -274,20 +274,20 @@ namespace DotRPG
                 row.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(l.itemKey));
                 row.name.text = RichKey(l.itemKey) + (l.count > 1 ? $" x{l.count}" : "");
                 bool gear = EquipmentDatabase.IsEquipment(l.itemKey);
-                row.grade.text = gear ? $"<color={EquipmentDatabase.RarityColor(l.rarity)}>{EquipmentDatabase.RarityName(l.rarity)}</color>" : $"<color=#8c96a8>{AuctionRules.CategoryName(l.category)}</color>";
+                row.grade.text = gear ? $"<color={EquipmentDatabase.RarityColor(l.rarity)}>{L.T(EquipmentDatabase.RarityName(l.rarity))}</color>" : $"<color=#8c96a8>{L.T(AuctionRules.CategoryName(l.category))}</color>";
                 row.price.text = $"<color=#ffd34a>{l.buyout:N0}G</color>";
                 row.bid.text = !l.Biddable ? "<color=#8c96a8>-</color>" : l.hasBid ? (l.myBid ? $"<color=#8fe28f>{l.currentBid:N0}G</color>" : $"{l.currentBid:N0}G") : $"<color=#b8c4d8>{l.startBid:N0}G~</color>";
                 row.seller.text = l.seller;
-                row.time.text = AuctionRules.TimeBand(l.hoursLeft);
+                row.time.text = L.T(AuctionRules.TimeBand(l.hoursLeft));
                 if (tab == Tab.Mine)
                 {
-                    TextOf(row.a).text = "등록 취소";
+                    TextOf(row.a).text = L.T("등록 취소");
                     row.a.interactable = !l.hasBid;
                     row.b.gameObject.SetActive(false);
                 }
                 else
                 {
-                    TextOf(row.a).text = "즉시 구매";
+                    TextOf(row.a).text = L.T("즉시 구매");
                     row.a.interactable = true;
                     row.b.gameObject.SetActive(true);
                     row.b.interactable = l.Biddable;
@@ -326,7 +326,7 @@ namespace DotRPG
             }
             if (regSel < 0 || regSel >= bagKeys.Count)
             {
-                regInfo.text = "<b>등록하기</b>\n\n왼쪽 가방에서 팔 아이템을 고르세요.\n\n· 보증금: 즉시 구매가의 1% (최소 10G, 판매 시 반환)\n· 수수료: 장비 5%, 재료·소모품 3% (판매 시)\n· 기간: 12 / 24 / 48시간\n· 장비 보호권·퀘스트 보상은 귀속이라 팔 수 없습니다.";
+                regInfo.text = L.T("<b>등록하기</b>\n\n왼쪽 가방에서 팔 아이템을 고르세요.\n\n· 보증금: 즉시 구매가의 1% (최소 10G, 판매 시 반환)\n· 수수료: 장비 5%, 재료·소모품 3% (판매 시)\n· 기간: 12 / 24 / 48시간\n· 장비 보호권·퀘스트 보상은 귀속이라 팔 수 없습니다.");
                 return;
             }
             string k = bagKeys[regSel];
@@ -335,13 +335,13 @@ namespace DotRPG
             if (regPrice <= 0) regPrice = Math.Max(10, price.avg7d * count / 10 * 10);
             long deposit = AuctionRules.Deposit(regPrice), fee = AuctionRules.Fee(k, regPrice);
             regInfo.text = $"<b>{RichKey(k)}</b> x{count}\n" +
-                           $"<color=#b8c4d8>최근 7일 평균 {price.avg7d * count:N0}G  (최저 {price.min * count:N0} · 최고 {price.max * count:N0})</color>\n\n" +
-                           $"즉시 구매가  <color=#ffd34a>{regPrice:N0}G</color>\n" +
-                           (price.limitMax > 0 ? $"<color=#8c96a8>등록 가능 {price.limitMin * count:N0}~{price.limitMax * count:N0}G</color>\n" : "") +
-                           $"기간  {AuctionRules.Durations[regHoursIdx]}시간\n" +
-                           $"보증금  {deposit:N0}G <color=#8c96a8>(판매되면 반환)</color>\n" +
-                           $"수수료  {fee:N0}G ({AuctionRules.FeePct(k)}%)\n" +
-                           $"예상 수령액  <color=#8fe28f>{AuctionRules.Payout(k, regPrice) + deposit:N0}G</color>";
+                           L.F("<color=#b8c4d8>최근 7일 평균 {0:N0}G  (최저 {1:N0} · 최고 {2:N0})</color>", price.avg7d * count, price.min * count, price.max * count) + "\n\n" +
+                           L.F("즉시 구매가  <color=#ffd34a>{0:N0}G</color>", regPrice) + "\n" +
+                           (price.limitMax > 0 ? L.F("<color=#8c96a8>등록 가능 {0:N0}~{1:N0}G</color>", price.limitMin * count, price.limitMax * count) + "\n" : "") +
+                           L.F("기간  {0}시간", AuctionRules.Durations[regHoursIdx]) + "\n" +
+                           L.F("보증금  {0:N0}G <color=#8c96a8>(판매되면 반환)</color>", deposit) + "\n" +
+                           L.F("수수료  {0:N0}G ({1}%)", fee, AuctionRules.FeePct(k)) + "\n" +
+                           L.F("예상 수령액  <color=#8fe28f>{0:N0}G</color>", AuctionRules.Payout(k, regPrice) + deposit);
         }
 
         // ---------- dev hooks ----------

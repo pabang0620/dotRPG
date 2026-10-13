@@ -24,14 +24,14 @@ namespace DotRPG
             Sound("c_heavy", .7f);
             SkillVisuals.Flash(owner.Center, CareerFx.Steel, 1.6f, .2f);
             SkillVisuals.Sparks(owner.Center, CareerFx.Steel, 10, 4f, .3f);
-            if (owner.IsLocal) GameEvents.RaiseToast("검기 태세 ON · 기본 공격이 검기 베기로 바뀝니다");
+            if (owner.IsLocal) GameEvents.RaiseToast(L.T("검기 태세 ON · 기본 공격이 검기 베기로 바뀝니다"));
         }
 
         public void StopStance(bool announce)
         {
             if (!stanceOn) return;
             stanceOn = false;
-            if (announce && owner != null && owner.IsLocal) GameEvents.RaiseToast("검기 태세 OFF");
+            if (announce && owner != null && owner.IsLocal) GameEvents.RaiseToast(L.T("검기 태세 OFF"));
         }
 
         void StanceTick()
@@ -50,7 +50,7 @@ namespace DotRPG
             if (!owner.NetPuppet && !owner.TrySpend(n.manaCost, n.usesLife))
             {
                 StopStance(false);
-                if (owner.IsLocal) GameEvents.RaiseToast("MP가 부족해 검기 태세가 풀렸습니다.");
+                if (owner.IsLocal) GameEvents.RaiseToast(L.T("MP가 부족해 검기 태세가 풀렸습니다."));
                 return;
             }
             var run = new Run { s = stanceSkill, n = n, dir = dir, map = Game.Session.MapId, version = castVersion, authority = !PartyNet.IsMember };

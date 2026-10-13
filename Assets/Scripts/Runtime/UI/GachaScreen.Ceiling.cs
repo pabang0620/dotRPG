@@ -30,7 +30,7 @@ namespace DotRPG
             ceilingFill.preserveAspect = false; ceilingFill.raycastTarget = false;
             UIFactory.Place(ceilingFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 10f));
             ceilingText = Label(box, "CeilingText", "", 17, tl, tl, new Vector2(30f, -324f), new Vector2(GaugeW + 160f, 26f), TextAnchor.MiddleLeft);
-            ceilingBtn = Button(box, "CeilingBtn", "천장 받기", "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(150f, 40f), UseCeiling, 18);
+            ceilingBtn = Button(box, "CeilingBtn", L.T("천장 받기"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(150f, 40f), UseCeiling, 18);
         }
 
         void RefreshCeiling(bool online)
@@ -44,11 +44,11 @@ namespace DotRPG
             bool ready = gauge >= max;
             ceilingFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * Mathf.Clamp01(gauge / (float)max), 10f);
             string reward = Sealed
-                ? $"{DungeonDatabase.ItemName(CashClient.CeilingReward)}{(CashClient.CeilingRewardCount > 1 ? $" x{CashClient.CeilingRewardCount}" : "")}"
-                : "유니크 장비 1개 선택";
+                ? $"{L.T(DungeonDatabase.ItemName(CashClient.CeilingReward))}{(CashClient.CeilingRewardCount > 1 ? $" x{CashClient.CeilingRewardCount}" : "")}"
+                : L.T("유니크 장비 1개 선택");
             ceilingText.text = ready
-                ? $"<color=#ffb347><b>천장 {gauge}/{max} 가득!</b></color> {reward}{(Sealed ? "와" : "를")} 바꿀 수 있습니다"
-                : $"천장 {gauge}/{max} · {(Sealed ? "상자를 열 때마다" : "장비를 뽑을 때마다")} 1칸, 가득 차면 {reward}";
+                ? (Sealed ? L.F("<color=#ffb347><b>천장 {0}/{1} 가득!</b></color> {2}와 바꿀 수 있습니다", gauge, max, reward) : L.F("<color=#ffb347><b>천장 {0}/{1} 가득!</b></color> {2}를 바꿀 수 있습니다", gauge, max, reward))
+                : (Sealed ? L.F("천장 {0}/{1} · 상자를 열 때마다 1칸, 가득 차면 {2}", gauge, max, reward) : L.F("천장 {0}/{1} · 장비를 뽑을 때마다 1칸, 가득 차면 {2}", gauge, max, reward));
             ceilingBtn.gameObject.SetActive(ready);
             ceilingBtn.interactable = !busy;
         }
@@ -62,8 +62,8 @@ namespace DotRPG
 
         void AskSealedCeiling()
         {
-            string reward = DungeonDatabase.ItemName(CashClient.CeilingReward);
-            Game.UI.Confirm($"봉인된 상자 천장\n게이지 {CashClient.CeilingMax}칸을 써서 {reward}{(CashClient.CeilingRewardCount > 1 ? $" x{CashClient.CeilingRewardCount}" : "")}을(를) 받습니다.", () =>
+            string reward = L.T(DungeonDatabase.ItemName(CashClient.CeilingReward));
+            Game.UI.Confirm(L.F("봉인된 상자 천장\n게이지 {0}칸을 써서 {1}을(를) 받습니다.", CashClient.CeilingMax, reward + (CashClient.CeilingRewardCount > 1 ? $" x{CashClient.CeilingRewardCount}" : "")), () =>
             {
                 busy = true;
                 Refresh();
@@ -86,7 +86,7 @@ namespace DotRPG
         void OpenGearChoices()
         {
             var ids = StarShopClient.GearCeilingChoices(CurrentRates());
-            if (ids.Count == 0) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast("이 단계에서 고를 수 있는 장비가 없습니다."); return; }
+            if (ids.Count == 0) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(L.T("이 단계에서 고를 수 있는 장비가 없습니다.")); return; }
             gearPick = ids;
             for (int i = 0; i < choiceRows.Count; i++)
             {
@@ -97,8 +97,8 @@ namespace DotRPG
                 var g = EquipmentDatabase.Get(ids[i]);
                 row.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(ids[i]));
                 row.icon.color = Color.white;
-                string grade = g != null ? EquipmentDatabase.RarityName(g.rarity) : "";
-                row.label.text = $"<color=#ffb347>{(g != null ? g.name : ids[i])}</color>  <size=15>{grade} · Lv.{SelectedTierLevel()}</size>";
+                string grade = g != null ? L.T(EquipmentDatabase.RarityName(g.rarity)) : "";
+                row.label.text = $"<color=#ffb347>{L.T(g != null ? g.name : ids[i])}</color>  <size=15>{grade} · Lv.{SelectedTierLevel()}</size>";
                 row.btn.interactable = true;
             }
             choiceModal.gameObject.SetActive(true);
@@ -113,7 +113,7 @@ namespace DotRPG
             string bannerId = banner;
             int tier = SelectedTier();
             var g = EquipmentDatabase.Get(id);
-            Game.UI.Confirm($"{(g != null ? g.name : id)}\n천장 게이지 {StarShopClient.GearCeilingMax}칸을 써서 이 장비를 받습니다.", () =>
+            Game.UI.Confirm(L.T(g != null ? g.name : id) + "\n" + L.F("천장 게이지 {0}칸을 써서 이 장비를 받습니다.", StarShopClient.GearCeilingMax), () =>
             {
                 busy = true;
                 StarShopClient.ClaimGearCeiling(bannerId, tier, id, (ok, msg) =>

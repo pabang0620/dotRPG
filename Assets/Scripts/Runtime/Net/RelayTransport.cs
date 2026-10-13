@@ -288,7 +288,7 @@ namespace DotRPG
                 case 4011: ClosedReason = "removed"; TransportChanged?.Invoke(null); return;
                 case 4012: ClosedReason = "room"; TransportChanged?.Invoke(null); return;
                 case 4014: ClosedReason = "transport"; TransportChanged?.Invoke(null); return;
-                case 4015: ClosedReason = "wire"; GameEvents.RaiseToast("파티원과 게임 버전이 다릅니다."); return;
+                case 4015: ClosedReason = "wire"; GameEvents.RaiseToast(L.T("파티원과 게임 버전이 다릅니다.")); return;
                 case 4003: case 4426: ClosedReason = "account"; return;
             }
             if (++failures >= 3) Failed = true;

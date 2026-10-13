@@ -60,53 +60,53 @@ namespace DotRPG
 
         static readonly List<ConsumableItem> Items = new List<ConsumableItem>
         {
-            new ConsumableItem { id = Gold, name = "골드", iconKey = "icon_gold", kind = ConsumableKind.Currency,
-                description = "마을 상점에서 쓰는 돈. 해골을 쓰러뜨리거나 물건을 팔아서 모은다." },
-            new ConsumableItem { id = HpPotion, name = "체력 물약", iconKey = "icon_potion_hp", kind = ConsumableKind.HealHp, power = 40, hotkey = GameAction.UseItem,
-                description = "붉은 약초를 달인 물약. 마시면 최대 HP의 40%를 회복한다." },
-            new ConsumableItem { id = MpPotion, name = "마나 물약", iconKey = "icon_potion_mp", kind = ConsumableKind.HealMp, power = 50, hotkey = GameAction.UseMana,
-                description = "푸른 샘물로 만든 물약. 마시면 최대 MP의 50%를 회복한다." },
-            new ConsumableItem { id = TownScroll, name = "마을 귀환 주문서", iconKey = "icon_scroll", kind = ConsumableKind.TownScroll, hotkey = GameAction.TownScroll,
-                description = "펼치면 빛에 감싸여 작은 마을 광장으로 돌아간다. 사냥터에서 쓰면 편리하다." },
-            new ConsumableItem { id = ProtectTicket, name = "장비 보호권", iconKey = "icon_ticket", kind = ConsumableKind.Protection, grade = ItemRarity.Unique,
-                description = "강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다." },
-            new ConsumableItem { id = DungeonDatabase.SealKey, name = "봉인 열쇠 조각", iconKey = "icon_key", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
-                description = "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)" },
-            new ConsumableItem { id = DungeonDatabase.RaidCore, name = "고대의 핵", iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
-                description = "레이드 보스에게서만 얻는 고대 마력의 핵. 대장간에서 장비를 한 등급 위 장비로 승급할 때 쓴다. (강화 수치 유지)" },
+            new ConsumableItem { id = Gold, name = L.T("골드"), iconKey = "icon_gold", kind = ConsumableKind.Currency,
+                description = L.T("마을 상점에서 쓰는 돈. 해골을 쓰러뜨리거나 물건을 팔아서 모은다.") },
+            new ConsumableItem { id = HpPotion, name = L.T("체력 물약"), iconKey = "icon_potion_hp", kind = ConsumableKind.HealHp, power = 40, hotkey = GameAction.UseItem,
+                description = L.T("붉은 약초를 달인 물약. 마시면 최대 HP의 40%를 회복한다.") },
+            new ConsumableItem { id = MpPotion, name = L.T("마나 물약"), iconKey = "icon_potion_mp", kind = ConsumableKind.HealMp, power = 50, hotkey = GameAction.UseMana,
+                description = L.T("푸른 샘물로 만든 물약. 마시면 최대 MP의 50%를 회복한다.") },
+            new ConsumableItem { id = TownScroll, name = L.T("마을 귀환 주문서"), iconKey = "icon_scroll", kind = ConsumableKind.TownScroll, hotkey = GameAction.TownScroll,
+                description = L.T("펼치면 빛에 감싸여 작은 마을 광장으로 돌아간다. 사냥터에서 쓰면 편리하다.") },
+            new ConsumableItem { id = ProtectTicket, name = L.T("장비 보호권"), iconKey = "icon_ticket", kind = ConsumableKind.Protection, grade = ItemRarity.Unique,
+                description = L.T("강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다.") },
+            new ConsumableItem { id = DungeonDatabase.SealKey, name = L.T("봉인 열쇠 조각"), iconKey = "icon_key", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+                description = L.T("중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)") },
+            new ConsumableItem { id = DungeonDatabase.RaidCore, name = L.T("고대의 핵"), iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+                description = L.T("레이드 보스에게서만 얻는 고대 마력의 핵. 대장간에서 장비를 한 등급 위 장비로 승급할 때 쓴다. (강화 수치 유지)") },
             // [RAID] Raid-only materials (Docs/server/phase13_raid_rewards.md §4): paid for weapon boxes in the raid shop.
-            new ConsumableItem { id = RaidRewards.RaidMatKing, name = "해골왕의 왕관 조각", iconKey = "maticon_bone", kind = ConsumableKind.Key, grade = ItemRarity.Unique,
-                description = "해골왕이 쓰고 있던 왕관의 파편. 해골왕 레이드 보상 카드로만 얻고, 레이드 상점에서 해골왕 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다." },
-            new ConsumableItem { id = RaidRewards.RaidMatGrah, name = "수호석 파편", iconKey = "maticon_ore", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
-                description = "수호자 그라흐가 지키던 수호석의 파편. 그라흐 레이드 보상 카드로만 얻고, 레이드 상점에서 그라흐 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다." },
-            new ConsumableItem { id = DungeonSweep.TicketItem, name = "던전 클리어권", iconKey = "icon_sweep", kind = ConsumableKind.Sweep, grade = ItemRarity.Epic,
-                description = "직접 B등급 이상으로 깬 요일 던전을 전투 없이 한 번 끝낸다. 입장 횟수 1회를 함께 쓰고, 보상은 기본 경험치와 카드 1장이다. (계정 공용)" },
-            new ConsumableItem { id = DungeonSweep.EventTicketItem, name = "이벤트 클리어권", iconKey = "icon_sweep_event", kind = ConsumableKind.Sweep, grade = ItemRarity.Unique,
-                description = "던전 클리어권과 같지만 받은 날부터 14일 안에 써야 한다. 기한이 가까운 것부터 먼저 쓰인다. (계정 공용)" },
+            new ConsumableItem { id = RaidRewards.RaidMatKing, name = L.T("해골왕의 왕관 조각"), iconKey = "maticon_bone", kind = ConsumableKind.Key, grade = ItemRarity.Unique,
+                description = L.T("해골왕이 쓰고 있던 왕관의 파편. 해골왕 레이드 보상 카드로만 얻고, 레이드 상점에서 해골왕 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다.") },
+            new ConsumableItem { id = RaidRewards.RaidMatGrah, name = L.T("수호석 파편"), iconKey = "maticon_ore", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+                description = L.T("수호자 그라흐가 지키던 수호석의 파편. 그라흐 레이드 보상 카드로만 얻고, 레이드 상점에서 그라흐 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다.") },
+            new ConsumableItem { id = DungeonSweep.TicketItem, name = L.T("던전 클리어권"), iconKey = "icon_sweep", kind = ConsumableKind.Sweep, grade = ItemRarity.Epic,
+                description = L.T("직접 B등급 이상으로 깬 요일 던전을 전투 없이 한 번 끝낸다. 입장 횟수 1회를 함께 쓰고, 보상은 기본 경험치와 카드 1장이다. (계정 공용)") },
+            new ConsumableItem { id = DungeonSweep.EventTicketItem, name = L.T("이벤트 클리어권"), iconKey = "icon_sweep_event", kind = ConsumableKind.Sweep, grade = ItemRarity.Unique,
+                description = L.T("던전 클리어권과 같지만 받은 날부터 14일 안에 써야 한다. 기한이 가까운 것부터 먼저 쓰인다. (계정 공용)") },
             // [CASH] Sealed box rewards and their luck boxes (Docs/PLAN_CASH_BOX_PASS.md).
-            new ConsumableItem { id = HpPotionHi, name = "상급 체력 물약", iconKey = "icon_potion_hp_hi", kind = ConsumableKind.HealHp, power = 70, grade = ItemRarity.Rare,
-                description = "진하게 달인 물약. 마시면 최대 HP의 70%를 회복한다. 물약 단축키는 이것부터 쓴다." },
-            new ConsumableItem { id = MpPotionHi, name = "상급 마나 물약", iconKey = "icon_potion_mp_hi", kind = ConsumableKind.HealMp, power = 70, grade = ItemRarity.Rare,
-                description = "진하게 달인 마나 물약. 마시면 최대 MP의 70%를 회복한다. 마나 단축키는 이것부터 쓴다." },
-            new ConsumableItem { id = PowerScroll, name = "투지의 주문서", iconKey = "icon_scroll_power", kind = ConsumableKind.Buff, power = 15, minutes = 30, grade = ItemRarity.Epic,
-                description = "펼치면 30분 동안 공격 피해가 15% 늘어난다. 다시 쓰면 남은 시간이 30분으로 갱신된다." },
+            new ConsumableItem { id = HpPotionHi, name = L.T("상급 체력 물약"), iconKey = "icon_potion_hp_hi", kind = ConsumableKind.HealHp, power = 70, grade = ItemRarity.Rare,
+                description = L.T("진하게 달인 물약. 마시면 최대 HP의 70%를 회복한다. 물약 단축키는 이것부터 쓴다.") },
+            new ConsumableItem { id = MpPotionHi, name = L.T("상급 마나 물약"), iconKey = "icon_potion_mp_hi", kind = ConsumableKind.HealMp, power = 70, grade = ItemRarity.Rare,
+                description = L.T("진하게 달인 마나 물약. 마시면 최대 MP의 70%를 회복한다. 마나 단축키는 이것부터 쓴다.") },
+            new ConsumableItem { id = PowerScroll, name = L.T("투지의 주문서"), iconKey = "icon_scroll_power", kind = ConsumableKind.Buff, power = 15, minutes = 30, grade = ItemRarity.Epic,
+                description = L.T("펼치면 30분 동안 공격 피해가 15% 늘어난다. 다시 쓰면 남은 시간이 30분으로 갱신된다.") },
             Ticket(10, ItemRarity.Epic), Ticket(12, ItemRarity.Unique), Ticket(13, ItemRarity.Legendary), Ticket(15, ItemRarity.Legendary),
             Luck(10, 30, ItemRarity.Rare), Luck(12, 10, ItemRarity.Epic), Luck(12, 50, ItemRarity.Unique), Luck(15, 50, ItemRarity.Legendary),
-            new ConsumableItem { id = SealedBox, name = "봉인된 상자", iconKey = "icon_box_sealed", kind = ConsumableKind.SealedBox, grade = ItemRarity.Epic,
-                description = "캐시샵의 봉인된 상자와 같은 상자. 열면 확률표에 따라 보상 하나가 나온다. 봉인 해제 게이지도 함께 찬다." },
+            new ConsumableItem { id = SealedBox, name = L.T("봉인된 상자"), iconKey = "icon_box_sealed", kind = ConsumableKind.SealedBox, grade = ItemRarity.Epic,
+                description = L.T("캐시샵의 봉인된 상자와 같은 상자. 열면 확률표에 따라 보상 하나가 나온다. 봉인 해제 게이지도 함께 찬다.") },
         };
 
         static ConsumableItem Ticket(int level, ItemRarity grade) => new ConsumableItem
         {
-            id = EnhanceTicket(level), name = $"+{level} 강화권", iconKey = "icon_ticket_enh" + level, kind = ConsumableKind.EnhanceTicket, power = level, grade = grade,
-            description = $"대장간에서 장비 하나의 강화 단계를 +{level}로 바로 올린다. 실패하지 않는다. 이미 +{level} 이상인 장비에는 쓸 수 없다.",
+            id = EnhanceTicket(level), name = L.F("+{0} 강화권", level), iconKey = "icon_ticket_enh" + level, kind = ConsumableKind.EnhanceTicket, power = level, grade = grade,
+            description = L.F("대장간에서 장비 하나의 강화 단계를 +{0}로 바로 올린다. 실패하지 않는다. 이미 +{0} 이상인 장비에는 쓸 수 없다.", level),
         };
 
         static ConsumableItem Luck(int level, int chance, ItemRarity grade) => new ConsumableItem
         {
-            id = LuckBox(level, chance), name = $"+{level} 강화권 상자 ({chance}%)", iconKey = level >= 15 ? "icon_box_enh_gold" : "icon_box_enh", kind = ConsumableKind.LuckBox,
+            id = LuckBox(level, chance), name = L.F("+{0} 강화권 상자 ({1}%)", level, chance), iconKey = level >= 15 ? "icon_box_enh_gold" : "icon_box_enh", kind = ConsumableKind.LuckBox,
             power = level, chance = chance, grade = grade,
-            description = $"열면 {chance}% 확률로 +{level} 강화권이 나온다. 아니면 마력 정수 20개.",
+            description = L.F("열면 {0}% 확률로 +{1} 강화권이 나온다. 아니면 마력 정수 20개.", chance, level),
         };
 
         /// <summary>[CASH] The sealed-box family: high potions, the buff scroll, enhancement tickets and boxes.</summary>

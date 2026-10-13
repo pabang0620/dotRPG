@@ -52,13 +52,13 @@ namespace DotRPG
         public const int ReportLines = 20;
         public const int Keep = 120;
 
-        public static readonly string[] QuickSignals = { "모여!", "부활해 줘!", "기믹 위치 여기!", "준비 완료!", "고마워!" };
-        public static readonly string[] ReportReasons = { "욕설·비하", "도배", "광고·사기", "불법 프로그램 의심", "기타" };
+        public static readonly string[] QuickSignals = { L.T("모여!"), L.T("부활해 줘!"), L.T("기믹 위치 여기!"), L.T("준비 완료!"), L.T("고마워!") };
+        public static readonly string[] ReportReasons = { L.T("욕설·비하"), L.T("도배"), L.T("광고·사기"), L.T("불법 프로그램 의심"), L.T("기타") };
         /// <summary>[SERVER] Codes the server stores for <see cref="ReportReasons"/> (same order).</summary>
         public static readonly string[] ReportReasonCodes = { "abuse", "spam", "scam_ad", "cheat", "other" };
 
         // Client-side preview only; the server makes the final call (PLAN_ONLINE §2.3).
-        static readonly string[] Banned = { "시발", "씨발", "병신", "개새", "좆", "꺼져" };
+        static readonly string[] Banned = { "시발", "씨발", "병신", "개새", "좆", "꺼져" }; // i18n-ignore filter words match raw chat text
 
         public static string Filter(string text)
         {
@@ -68,7 +68,7 @@ namespace DotRPG
         }
 
         public static string ChannelName(ChatChannel c) =>
-            c == ChatChannel.General ? "일반" : c == ChatChannel.Party ? "파티" : c == ChatChannel.Whisper ? "귓속말" : "시스템";
+            c == ChatChannel.General ? L.T("일반") : c == ChatChannel.Party ? L.T("파티") : c == ChatChannel.Whisper ? L.T("귓속말") : L.T("시스템");
 
         public static string ChannelColor(ChatChannel c) =>
             c == ChatChannel.General ? "#f0f0f0" : c == ChatChannel.Party ? "#78dcff" : c == ChatChannel.Whisper ? "#ff9ee0" : "#ffd84a";
@@ -110,11 +110,11 @@ namespace DotRPG
     /// <summary>[ONLINE] In-memory chat: own lines, a few generated village voices, system notices. Nothing leaves this PC.</summary>
     public sealed class MockChatService : IChatService
     {
-        static readonly string[] Voices = { "검은뿔", "달빛마녀", "모리촌장팬", "카타나장인", "해골사냥꾼", "눈꽃여우" };
+        static readonly string[] Voices = { L.T("검은뿔"), L.T("달빛마녀"), L.T("모리촌장팬"), L.T("카타나장인"), L.T("해골사냥꾼"), L.T("눈꽃여우") };
         static readonly string[] Chatter =
         {
-            "해골 왕 수요일에 같이 가실 분?", "강화 +10 드디어 성공했다", "협곡 쪽 몬스터 너무 세요", "철광석 시세 얼마예요?",
-            "파티 찾기에 글 올렸어요", "보호권 아끼세요 진짜로", "겨울 마을 가는 길 어디예요?", "카엘 수상하지 않아요?",
+            L.T("해골 왕 수요일에 같이 가실 분?"), L.T("강화 +10 드디어 성공했다"), L.T("협곡 쪽 몬스터 너무 세요"), L.T("철광석 시세 얼마예요?"),
+            L.T("파티 찾기에 글 올렸어요"), L.T("보호권 아끼세요 진짜로"), L.T("겨울 마을 가는 길 어디예요?"), L.T("카엘 수상하지 않아요?"),
         };
 
         readonly List<ChatLine> lines = new List<ChatLine>();
@@ -141,7 +141,7 @@ namespace DotRPG
         {
             foreach (var n in Split(savedFriends)) friends.Add(new ChatFriend { name = n });
             foreach (var n in Split(savedBlocked)) blocked.Add(n);
-            for (int i = 0; i < friends.Count; i++) { friends[i].online = i % 2 == 0; friends[i].where = friends[i].online ? "해골 숲 옆 작은 마을" : ""; }
+            for (int i = 0; i < friends.Count; i++) { friends[i].online = i % 2 == 0; friends[i].where = friends[i].online ? L.T("해골 숲 옆 작은 마을") : ""; }
         }
 
         static IEnumerable<string> Split(string s) => string.IsNullOrEmpty(s) ? Enumerable.Empty<string>() : s.Split(',').Where(x => x.Length > 0);
@@ -152,14 +152,14 @@ namespace DotRPG
         {
             text = (text ?? "").Trim();
             if (text.Length == 0) return "";
-            if (channel == ChatChannel.System) return "시스템 채널에는 쓸 수 없습니다.";
+            if (channel == ChatChannel.System) return L.T("시스템 채널에는 쓸 수 없습니다.");
             if (text.Length > ChatRules.MaxLength) text = text.Substring(0, ChatRules.MaxLength);
-            if (clock < mutedUntil) return $"같은 말을 반복해 {Math.Ceiling(mutedUntil - clock)}초 동안 채팅이 막혔습니다.";
-            if (clock - lastSent < ChatRules.MinInterval) return "채팅은 1초에 한 번만 보낼 수 있습니다.";
+            if (clock < mutedUntil) return L.F("같은 말을 반복해 {0}초 동안 채팅이 막혔습니다.", Math.Ceiling(mutedUntil - clock));
+            if (clock - lastSent < ChatRules.MinInterval) return L.T("채팅은 1초에 한 번만 보낼 수 있습니다.");
             if (channel == ChatChannel.Whisper)
             {
-                if (string.IsNullOrEmpty(whisperTo)) return "귓속말 상대를 적어 주세요. (/w 이름 내용)";
-                if (blocked.Contains(whisperTo)) return $"{whisperTo}님은 차단 중입니다.";
+                if (string.IsNullOrEmpty(whisperTo)) return L.T("귓속말 상대를 적어 주세요. (/w 이름 내용)");
+                if (blocked.Contains(whisperTo)) return L.F("{0}님은 차단 중입니다.", whisperTo);
             }
             repeats = text == lastText ? repeats + 1 : 1;
             lastText = text;
@@ -192,7 +192,7 @@ namespace DotRPG
         public void AddFriend(string name)
         {
             if (string.IsNullOrEmpty(name) || IsFriend(name)) return;
-            friends.Add(new ChatFriend { name = name, online = true, where = "해골 숲 옆 작은 마을" });
+            friends.Add(new ChatFriend { name = name, online = true, where = L.T("해골 숲 옆 작은 마을") });
             SocialChanged?.Invoke();
         }
 
@@ -232,7 +232,7 @@ namespace DotRPG
             var log = lines.Skip(Math.Max(0, lines.Count - ChatRules.ReportLines))
                 .Select(l => $"[{ChatRules.ChannelName(l.channel)}] {l.from}: {l.text}").ToList();
             Reports.Add(new ChatReport { target = name, reason = reason, log = log });
-            return $"{name}님을 '{reason}'(으)로 신고했습니다. 최근 대화 {log.Count}줄을 첨부했습니다. (오프라인 모드)";
+            return L.F("{0}님을 '{1}'(으)로 신고했습니다. 최근 대화 {2}줄을 첨부했습니다. (오프라인 모드)", name, reason, log.Count);
         }
 
         public void Tick(float dt)

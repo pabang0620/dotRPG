@@ -26,9 +26,10 @@ namespace DotRPG
             string species = zone.theme == MapTheme.Canyon ? Rock : zone.theme == MapTheme.Winter ? Yeti : zone.theme == MapTheme.SanctumField ? Sanctum : null;
             if (species == null) return;
             def.look = new CharacterLook { id = LookFor(species,def.kind), body = BodyKind.Monster, hairStyle = HairStyle.Bald };
-            string role = def.kind == MonsterKind.Archer ? " 투척병" : def.kind == MonsterKind.Charger ? " 돌격병" :
-                def.kind == MonsterKind.ShieldGuard ? " 수호병" : def.kind == MonsterKind.Knight ? " 전사" : "";
-            def.name = (species == Rock ? "암석 골렘" : species == Yeti ? "설산 예티" : "성소 석상") + role;
+            string role = def.kind == MonsterKind.Archer ? L.T("투척병") : def.kind == MonsterKind.Charger ? L.T("돌격병") :
+                def.kind == MonsterKind.ShieldGuard ? L.T("수호병") : def.kind == MonsterKind.Knight ? L.T("전사") : "";
+            string speciesName = species == Rock ? L.T("암석 골렘") : species == Yeti ? L.T("설산 예티") : L.T("성소 석상");
+            def.name = role.Length > 0 ? speciesName + " " + role : speciesName;
         }
 
         public static Sprite Get(string id, string direction, string frame)

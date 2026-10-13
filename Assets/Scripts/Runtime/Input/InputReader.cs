@@ -246,7 +246,7 @@ namespace DotRPG
             if (!gamepad && System.Array.IndexOf(Rebindable, action) >= 0) return KeyLabel(KeyboardKey(action));
             switch (action)
             {
-                case GameAction.Move: return gamepad ? "L스틱" : "방향키";
+                case GameAction.Move: return gamepad ? L.T("L스틱") : L.T("방향키");
                 case GameAction.Mobility: return gamepad ? "B" : "Shift";
                 case GameAction.Attack: return gamepad ? "X" : "X";
                 case GameAction.Interact: return gamepad ? "A" : "F";

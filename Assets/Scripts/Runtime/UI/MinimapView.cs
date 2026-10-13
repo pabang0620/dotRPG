@@ -172,7 +172,7 @@ namespace DotRPG
             var face = Game.Art.Optional("fboss_icon_" + mapId.Split('_')[0]);
             bossIcon.enabled = face != null;
             bossIcon.sprite = face;
-            bossText.text = FieldBosses.DefeatedThisWindow(mapId) ? $"필드 보스 <color=#ffd34a>{left / 60:00}:{left % 60:00}</color> 후" : "<color=#ff9f43>필드 보스 출현 중</color>";
+            bossText.text = FieldBosses.DefeatedThisWindow(mapId) ? L.F("필드 보스 <color=#ffd34a>{0:00}:{1:00}</color> 후", left / 60, left % 60) : L.T("<color=#ff9f43>필드 보스 출현 중</color>");
         }
 
         void LateUpdate()

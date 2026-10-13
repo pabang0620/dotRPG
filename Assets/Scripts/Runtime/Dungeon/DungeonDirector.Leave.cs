@@ -9,7 +9,7 @@ namespace DotRPG
     {
         bool leaving, handingOver;
         /// <summary>[LEAVE] The run's end reason when the party agreed to go home together (members follow straight home).</summary>
-        public const string TogetherReason = "파티가 함께 마을로 돌아갔습니다.";
+        public const string TogetherReason = "파티가 함께 마을로 돌아갔습니다."; // i18n-ignore compared raw; shown through L.T
 
         public bool RunOver => run != null && run.IsOver;
 
@@ -21,7 +21,7 @@ namespace DotRPG
             {
                 leaving = true;
                 ReviveOpen = false;
-                Fail("던전에서 나왔습니다.");
+                Fail("던전에서 나왔습니다."); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
                 if (!run.IsOver) { leaving = false; return; } // could not end it right now (clearing)
                 // [LEAVE] A member going home alone tells the server now (the run goes on for the others).
                 if (Follower && PartyRunSession.Active) PartyRunSession.Instance.Leave();
@@ -42,7 +42,7 @@ namespace DotRPG
                 leaving = true;
                 handingOver = true;
                 ReviveOpen = false;
-                Fail("방장을 넘기고 파티를 떠났습니다.");
+                Fail("방장을 넘기고 파티를 떠났습니다."); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
                 handingOver = false;
                 if (!run.IsOver) { leaving = false; return; }
             }
@@ -71,7 +71,7 @@ namespace DotRPG
         {
             if (!ReviveOpen) return;
             ReviveOpen = false;
-            Fail("던전 공략을 포기했습니다.");
+            Fail("던전 공략을 포기했습니다."); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
         }
 
         IEnumerator FailLater(string reason)
@@ -89,7 +89,7 @@ namespace DotRPG
                 PartyRunSession.Instance?.SendHostReport(false, run.Elapsed);
             }
             run.State = DungeonRunState.Failed;
-            run.FailReason = reason;
+            run.FailReason = L.T(reason); // [I18N] the raw Korean reason is what travels to party members
             SnapshotDamage();
             run.Rank = DungeonRank.F;
             if (OnlineEconomy.On) OnlineEconomy.FinishDungeon(false, run.Elapsed, run.HitsTaken, run.MaxCombo, run.RevivesUsed, null); // [SERVER]

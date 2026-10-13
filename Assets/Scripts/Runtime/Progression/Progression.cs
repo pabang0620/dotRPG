@@ -44,7 +44,7 @@ namespace DotRPG
         /// <summary>An XP amount as a share of a level's bar ("12.3%"), the way players read progress. Max level: "만렙".</summary>
         public static string XpPercent(long xp, int level)
         {
-            if (level >= MaxLevel) return "만렙";
+            if (level >= MaxLevel) return L.T("만렙");
             double pct = xp * 100.0 / Math.Max(1, XpToNext(level));
             return pct >= 10 ? $"{pct:0}%" : pct >= 1 ? $"{pct:0.#}%" : $"{pct:0.##}%";
         }

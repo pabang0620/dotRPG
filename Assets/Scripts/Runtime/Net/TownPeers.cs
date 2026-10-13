@@ -111,7 +111,7 @@ namespace DotRPG
             }
             if (p == null)
             {
-                p = self.Make(id, MiniJson.Str(d, "name", "모험가"), MiniJson.Int(d, "level", 1), (CharacterClass)cls, career, skin, weapon, at, facing);
+                p = self.Make(id, MiniJson.Str(d, "name", L.T("모험가")), MiniJson.Int(d, "level", 1), (CharacterClass)cls, career, skin, weapon, at, facing);
                 if (p == null) return;
                 p.map = map;
                 self.peers[id] = p;

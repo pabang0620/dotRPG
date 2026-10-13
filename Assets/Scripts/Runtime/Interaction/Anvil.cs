@@ -5,7 +5,7 @@ namespace DotRPG
     /// <summary>Blacksmith anvil ('&amp;' on the map): interact to open the equipment enhancement window.</summary>
     public class Anvil : Interactable
     {
-        public override string Prompt => "장비 강화";
+        public override string Prompt => L.T("장비 강화");
 
         public static Anvil Create(Vector2 position, Transform parent, string sprite = "anvil")
         {

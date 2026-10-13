@@ -53,7 +53,7 @@ namespace DotRPG
 
         public static SkillScreen Create(Transform canvas)
         {
-            var w = CreateWindow<SkillScreen>(canvas, "Skills", "스킬", "menuicon_skill");
+            var w = CreateWindow<SkillScreen>(canvas, "Skills", L.T("스킬"), "menuicon_skill");
             w.BuildTabs();
             w.BuildCareer();
             w.BuildGems();
@@ -64,7 +64,7 @@ namespace DotRPG
 
         void BuildTabs()
         {
-            string[] names = { "전직 · 스킬 노드", "기본 · 장착 스킬" };
+            string[] names = { L.T("전직 · 스킬 노드"), L.T("기본 · 장착 스킬") };
             for (int i = 0; i < 2; i++)
             {
                 int index = i;
@@ -103,7 +103,7 @@ namespace DotRPG
                     bg.raycastTarget = true;
                     var icon = UIFactory.SharpIcon(bg.transform, "Icon", Color.white);
                     UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.7f, size * 0.7f));
-                    var label = UIFactory.Text(bg.transform, "Label", k == 0 ? "스킬" : "보조", UiTheme.FontMin, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
+                    var label = UIFactory.Text(bg.transform, "Label", k == 0 ? L.T("스킬") : L.T("보조"), UiTheme.FontMin, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
                     UIFactory.Stretch(label.rectTransform);
                     var view = new SocketView { slot = s, socket = k, bg = bg, icon = icon, label = label };
                     int index = sockets.Count;
@@ -132,7 +132,7 @@ namespace DotRPG
             if (!prog.IsSlotOpen(v.slot))
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"이 슬롯은 Lv.{Progression.SlotLevel(v.slot)}에 열립니다.");
+                GameEvents.RaiseToast(L.F("이 슬롯은 Lv.{0}에 열립니다.", Progression.SlotLevel(v.slot)));
                 return;
             }
 
@@ -142,7 +142,7 @@ namespace DotRPG
             if (options.Count <= 1)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast(v.socket == 0 ? "이 칸에 넣을 수 있는 다른 스킬이 없습니다." : "사용할 수 있는 보조 젬이 없습니다. (Lv.3부터 해금)");
+                GameEvents.RaiseToast(v.socket == 0 ? L.T("이 칸에 넣을 수 있는 다른 스킬이 없습니다.") : L.T("사용할 수 있는 보조 젬이 없습니다. (Lv.3부터 해금)"));
                 return;
             }
             prog.SetGem(v.slot, v.socket, options[(i + dir + options.Count) % options.Count]);
@@ -160,10 +160,10 @@ namespace DotRPG
             int area = CharacterStats.SlotStat(PassiveStat.SkillArea, slot);
             int cd = CharacterStats.SlotStat(PassiveStat.SkillCooldown, slot);
             int rep = CharacterStats.SlotStat(PassiveStat.SkillRepeat, slot);
-            if (dmg > 0) parts.Add($"피해 +{dmg}%");
-            if (area > 0) parts.Add($"범위 +{area}%");
-            if (cd > 0) parts.Add($"재사용 -{cd}%");
-            if (rep > 0) parts.Add($"추가 발동 +{rep}");
+            if (dmg > 0) parts.Add(L.F("피해 +{0}%", dmg));
+            if (area > 0) parts.Add(L.F("범위 +{0}%", area));
+            if (cd > 0) parts.Add(L.F("재사용 -{0}%", cd));
+            if (rep > 0) parts.Add(L.F("추가 발동 +{0}", rep));
             return string.Join(" · ", parts);
         }
 
@@ -187,42 +187,42 @@ namespace DotRPG
                 var gem = prog.Active(s);
                 string key = Game.Input.GetBindingLabel(SkillGems.ActionFor(s));
                 int number = System.Array.IndexOf(SkillGems.BarOrder, s) + 1; // [SKILL 8] numbered in key order
-                slotTitle[s].text = (ult ? "<color=#ffd66e><b>각성</b></color>" : $"<b>스킬 {number}</b>") + $"\n<color=#ffe066><size=20>{key}</size></color>";
+                slotTitle[s].text = (ult ? L.T("<color=#ffd66e><b>각성</b></color>") : L.F("<b>스킬 {0}</b>", number)) + $"\n<color=#ffe066><size=20>{key}</size></color>";
                 slotLock[s].enabled = !open;
                 slotLockText[s].enabled = !open;
-                slotLockText[s].text = s==4 ? "전직 후 각성 시련을 완료하세요" : $"Lv.{Progression.SlotLevel(s)}에 슬롯 개방";
+                slotLockText[s].text = s==4 ? L.T("전직 후 각성 시련을 완료하세요") : L.F("Lv.{0}에 슬롯 개방", Progression.SlotLevel(s));
                 if (gem == null)
                 {
                     // [SKILL 8] An open A/S/D key with nothing on it says how to fill it.
-                    slotInfo[s].text = open && !ult ? "<color=#8c96a8>빈 칸: 전직 스킬 창에서 스킬을 이 키로 끌어다 놓거나, 스킬 칸을 클릭해 고르세요.</color>" : "";
+                    slotInfo[s].text = open && !ult ? L.T("<color=#8c96a8>빈 칸: 전직 스킬 창에서 스킬을 이 키로 끌어다 놓거나, 스킬 칸을 클릭해 고르세요.</color>") : "";
                     continue;
                 }
                 var n = CharacterStats.Skill(cls, s, gem, prog.Supports(s));
                 var career=CareerCatalog.Get(gem.id);
-                if(career!=null){slotInfo[s].text=$"<b>{gem.name}</b>  <color=#ff9f43>전직 기술</color>\n{CareerNumbers.Summary(career,CharacterData.Session,n)}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>";continue;}
-                var sb = new StringBuilder($"<b>{gem.name}</b>{(ult ? "  <color=#ffd66e>[각성 기술]</color>" : "")}\n");
+                if(career!=null){slotInfo[s].text=L.F("<b>{0}</b>  <color=#ff9f43>전직 기술</color>\n{1}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>", L.T(gem.name), L.T(CareerNumbers.Summary(career,CharacterData.Session,n)));continue;}
+                var sb = new StringBuilder(L.F("<b>{0}</b>{1}\n", L.T(gem.name), (ult ? L.T("  <color=#ffd66e>[각성 기술]</color>") : "")));
                 // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
                 bool single = gem.id == "crush" || gem.id == "lance";
-                if (n.guardPct > 0) sb.Append($"받는 피해 <color=#ffe066>-{n.guardPct}%</color> ({n.guardTime:0}초)   {(n.usesLife ? "HP" : "MP")} 소모 {n.manaCost}   재사용 {n.cooldown:0.##}초");
-                else sb.Append($"피해 <color=#ffe066>{n.damage}</color>{(n.hits > 1 ? $" × {n.hits}회" : "")}   {(n.usesLife ? "HP" : "MP")} 소모 {n.manaCost}   재사용 {n.cooldown:0.##}초" + (single ? "   단일 대상" : $"   범위 {n.radius:0.#}"));
-                if (n.chains > 0) sb.Append($"   연쇄 {n.chains}");
-                if (n.repeats > 0) sb.Append($"   반복 +{n.repeats}");
-                if (n.freeze > 0) sb.Append($"   빙결 {n.freeze:0.#}초");
-                if (n.stun > 0) sb.Append($"   기절 {n.stun:0.#}초");
-                if (n.buffPct > 0) sb.Append($"   피해 +{n.buffPct}% ({n.buffTime:0}초)");
-                if (n.leechPct > 0) sb.Append($"   흡혈 {n.leechPct}%");
-                if (n.bossPct > 0) sb.Append($"   보스 피해 +{n.bossPct}%");
+                if (n.guardPct > 0) sb.Append(L.F("받는 피해 <color=#ffe066>-{0}%</color> ({1:0}초)   {2} 소모 {3}   재사용 {4:0.##}초", n.guardPct, n.guardTime, (n.usesLife ? "HP" : "MP"), n.manaCost, n.cooldown));
+                else sb.Append(L.F("피해 <color=#ffe066>{0}</color>{1}   {2} 소모 {3}   재사용 {4:0.##}초", n.damage, (n.hits > 1 ? L.F(" × {0}회", n.hits) : ""), (n.usesLife ? "HP" : "MP"), n.manaCost, n.cooldown) + (single ? L.T("   단일 대상") : L.F("   범위 {0:0.#}", n.radius)));
+                if (n.chains > 0) sb.Append(L.F("   연쇄 {0}", n.chains));
+                if (n.repeats > 0) sb.Append(L.F("   반복 +{0}", n.repeats));
+                if (n.freeze > 0) sb.Append(L.F("   빙결 {0:0.#}초", n.freeze));
+                if (n.stun > 0) sb.Append(L.F("   기절 {0:0.#}초", n.stun));
+                if (n.buffPct > 0) sb.Append(L.F("   피해 +{0}% ({1:0}초)", n.buffPct, n.buffTime));
+                if (n.leechPct > 0) sb.Append(L.F("   흡혈 {0}%", n.leechPct));
+                if (n.bossPct > 0) sb.Append(L.F("   보스 피해 +{0}%", n.bossPct));
                 var sup = new List<string>();
-                foreach (var g in prog.Supports(s)) sup.Add(g.name);
+                foreach (var g in prog.Supports(s)) sup.Add(L.T(g.name));
                 string bonus = TreeBonus(s);
                 sb.Append("\n");
-                sb.Append(sup.Count > 0 ? $"<color=#8fe28f>보조: {string.Join(", ", sup)}</color>" : "<color=#8c96a8>보조 칸이 비었다. 클릭해서 보조 젬을 끼우자.</color>");
-                if (bonus.Length > 0) sb.Append($"   <color=#ffcf70>트리: {bonus}</color>");
+                sb.Append(sup.Count > 0 ? L.F("<color=#8fe28f>보조: {0}</color>", string.Join(", ", sup)) : L.T("<color=#8c96a8>보조 칸이 비었다. 클릭해서 보조 젬을 끼우자.</color>"));
+                if (bonus.Length > 0) sb.Append(L.F("   <color=#ffcf70>트리: {0}</color>", bonus));
                 slotInfo[s].text = sb.ToString();
             }
             int unlocked = 0, total = 0;
             foreach (var g in SkillGems.All) if (g.kind == GemKind.Support) { total++; if (prog.IsUnlocked(g)) unlocked++; }
-            gemListText.text = $"<b>보조 젬 {unlocked}/{total} 해금</b>   <color=#8c96a8>보조 칸 클릭: 다음 젬 · 우클릭: 이전 젬 · 칸에 마우스를 올리면 자세한 설명</color>";
+            gemListText.text = L.F("<b>보조 젬 {0}/{1} 해금</b>   <color=#8c96a8>보조 칸 클릭: 다음 젬 · 우클릭: 이전 젬 · 칸에 마우스를 올리면 자세한 설명</color>", unlocked, total);
             RefreshGemGuide();
         }
 
@@ -266,7 +266,7 @@ namespace DotRPG
             base.Update();
             if (!gameObject.activeSelf) return;
             var input = Game.Input;
-            tabKeyHint.text = "<color=#8c96a8>Tab / LB · RB : 탭 전환</color>";
+            tabKeyHint.text = L.T("<color=#8c96a8>Tab / LB · RB : 탭 전환</color>");
             if (TakesInput) // [UX] not under a confirm (전직 기술 초기화, 추천 배치, 전직 선택) drawn over this window
             {
                 // [UX] Tab (or the shoulder buttons) switches pages; the skill keys stay free in this window.
@@ -316,24 +316,24 @@ namespace DotRPG
             if (v.socket == 0)
             {
                 var skill = prog.Active(v.slot);
-                if (skill == null) { SetTooltip("빈 슬롯"); return; }
-                string state = prog.IsSlotOpen(v.slot) ? "<color=#8fe28f>사용 가능</color>" : $"<color=#ff9f43>Lv.{Progression.SlotLevel(v.slot)}에 열림</color>";
+                if (skill == null) { SetTooltip(L.T("빈 슬롯")); return; }
+                string state = prog.IsSlotOpen(v.slot) ? L.T("<color=#8fe28f>사용 가능</color>") : L.F("<color=#ff9f43>Lv.{0}에 열림</color>", Progression.SlotLevel(v.slot));
                 var sup = new List<string>();
-                foreach (var g in prog.Supports(v.slot)) sup.Add($"{g.name} ({GemEffect(g)})");
-                SetTooltip($"<b>{skill.name}</b>  {(skill.IsUltimate ? "<color=#ffd66e>각성 기술</color>" : "<color=#ff9f43>스킬 젬</color>")}\n\n{skill.description}\n\n" +
-                           $"기본 피해 배율 {skill.damageMult * 100:0}%{(skill.hits > 1 ? $" × {skill.hits}회" : "")}   MP {skill.manaCost}   재사용 {skill.cooldown:0.#}초\n" +
-                           (sup.Count > 0 ? $"\n<color=#8fe28f>연결된 보조 젬</color>\n{string.Join("\n", sup)}\n" : "") +
-                           $"\n{state}\n<color=#8c96a8>클릭: 이 칸에 넣을 수 있는 다른 스킬로 바꾸기</color>");
+                foreach (var g in prog.Supports(v.slot)) sup.Add($"{L.T(g.name)} ({GemEffect(g)})");
+                SetTooltip(L.F("<b>{0}</b>  {1}\n\n{2}\n\n", L.T(skill.name), (skill.IsUltimate ? L.T("<color=#ffd66e>각성 기술</color>") : L.T("<color=#ff9f43>스킬 젬</color>")), L.T(skill.description)) +
+                           L.F("기본 피해 배율 {0:0}%{1}   MP {2}   재사용 {3:0.#}초\n", skill.damageMult * 100, (skill.hits > 1 ? L.F(" × {0}회", skill.hits) : ""), skill.manaCost, skill.cooldown) +
+                           (sup.Count > 0 ? L.F("\n<color=#8fe28f>연결된 보조 젬</color>\n{0}\n", string.Join("\n", sup)) : "") +
+                           L.F("\n{0}\n<color=#8c96a8>클릭: 이 칸에 넣을 수 있는 다른 스킬로 바꾸기</color>", state));
                 return;
             }
             var gem = SkillGems.Get(prog.SlotGem(v.slot, v.socket));
             if (gem == null)
             {
-                SetTooltip($"<b>빈 보조 칸</b>\n\n보조 젬을 끼우면 왼쪽 스킬이 바뀐다(피해·범위·연속 발동·흡혈 등).\n클릭: 다음 젬 · 우클릭: 이전 젬\n\n<color=#8c96a8>어떤 젬이 있는지는 오른쪽 '젬 안내'에서 볼 수 있다. 첫 보조 젬은 Lv.3에 해금.</color>");
+                SetTooltip(L.T("<b>빈 보조 칸</b>\n\n보조 젬을 끼우면 왼쪽 스킬이 바뀐다(피해·범위·연속 발동·흡혈 등).\n클릭: 다음 젬 · 우클릭: 이전 젬\n\n<color=#8c96a8>어떤 젬이 있는지는 오른쪽 '젬 안내'에서 볼 수 있다. 첫 보조 젬은 Lv.3에 해금.</color>"));
                 return;
             }
-            SetTooltip($"<b>{gem.name}</b>  <color=#8fe28f>보조 젬</color>\n\n{gem.description}\n\n<color=#ffe066>효과</color>  {GemEffect(gem)}\n" +
-                       (string.IsNullOrEmpty(gem.tip) ? "" : $"<color=#ffe066>추천</color>  {gem.tip}\n") + "\n<color=#8c96a8>클릭: 다음 젬 · 우클릭: 이전 젬</color>");
+            SetTooltip(L.F("<b>{0}</b>  <color=#8fe28f>보조 젬</color>\n\n{1}\n\n<color=#ffe066>효과</color>  {2}\n", L.T(gem.name), L.T(gem.description), GemEffect(gem)) +
+                       (string.IsNullOrEmpty(gem.tip) ? "" : L.F("<color=#ffe066>추천</color>  {0}\n", L.T(gem.tip))) + L.T("\n<color=#8c96a8>클릭: 다음 젬 · 우클릭: 이전 젬</color>"));
         }
 
         void SetTooltip(string text)

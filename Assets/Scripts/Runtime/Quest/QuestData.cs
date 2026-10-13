@@ -171,6 +171,7 @@ namespace DotRPG
                 return;
             }
             if (file == null) return;
+            Translate(file);
             chapters.AddRange(file.chapters);
             foreach (var q in file.quests)
             {
@@ -181,6 +182,22 @@ namespace DotRPG
                 }
                 quests.Add(q);
                 byId[q.id] = q;
+            }
+        }
+
+        /// <summary>[I18N] Titles, summaries and objective lines in the player's language (ids and codes stay raw).</summary>
+        static void Translate(QuestFile file)
+        {
+            foreach (var c in file.chapters) { c.title = L.T(c.title); c.summary = L.T(c.summary); }
+            foreach (var q in file.quests)
+            {
+                q.title = L.T(q.title);
+                q.summary = L.T(q.summary);
+                foreach (var step in q.steps)
+                {
+                    step.text = L.T(step.text);
+                    foreach (var o in step.objectives) o.text = L.T(o.text);
+                }
             }
         }
 

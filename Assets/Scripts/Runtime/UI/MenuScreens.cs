@@ -125,7 +125,7 @@ namespace DotRPG
                 logoOutline.effectDistance = new Vector2(4, -4);
                 UIFactory.Place(logo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -70), new Vector2(900, 120));
             }
-            var sub = UIFactory.Text(root, "Subtitle", "해골 숲 옆 작은 마을", 30, UIColors.Highlight, TextAnchor.MiddleCenter, true);
+            var sub = UIFactory.Text(root, "Subtitle", L.T("해골 숲 옆 작은 마을"), 30, UIColors.Highlight, TextAnchor.MiddleCenter, true);
             UIFactory.Place(sub.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -186), new Vector2(900, 44));
 
             screen.panel = UIFactory.Place(UIFactory.Rect(root, "Panel"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 70), new Vector2(380, 300));
@@ -139,17 +139,17 @@ namespace DotRPG
 
             // [I] Both go through the save-slot picker (3 slots).
             // Online RPG: the only way in is the online login (offline new game / continue are not offered).
-            screen.menu.AddButton("게임 시작", () =>
+            screen.menu.AddButton(L.T("게임 시작"), () =>
             {
                 if (GameFlow.DemoSlots) { ui.Slots.Open(true); return; } // [DEMO] trial characters are local slots
                 ui.Push(OnlineSession.Current != null ? (MenuScreen)ui.OnlineCharacters : ui.OnlineLogin);
             });
-            screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
-            if (!Application.isMobilePlatform) screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
-            screen.menu.AddButton("게임 종료", () => Game.Flow.QuitGame());
+            screen.menu.AddButton(L.T("설정"), () => ui.Push(ui.Settings));
+            if (!Application.isMobilePlatform) screen.menu.AddButton(L.T("키보드 설정"), () => ui.Push(ui.KeyBind));
+            screen.menu.AddButton(L.T("게임 종료"), () => Game.Flow.QuitGame());
             screen.panel.sizeDelta = new Vector2(380, screen.menu.Height + 48);
 
-            var footer = UIFactory.Text(root, "Footer", $"버전 {Application.version}", UiTheme.FontMin, // [UI] no "prototype" disclaimer on the title screen
+            var footer = UIFactory.Text(root, "Footer", L.F("버전 {0}", Application.version), UiTheme.FontMin, // [UI] no "prototype" disclaimer on the title screen
                 new Color(1, 1, 1, 0.7f), TextAnchor.LowerRight, true);
             UIFactory.Place(footer.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 10), new Vector2(900, 26));
             return screen;
@@ -163,7 +163,7 @@ namespace DotRPG
         public override void Show()
         {
             base.Show();
-            panel.Find("Title").GetComponent<Text>().text = Game.IsOnlineWorld ? "메뉴 · 온라인 진행 중" : "일시정지";
+            panel.Find("Title").GetComponent<Text>().text = Game.IsOnlineWorld ? L.T("메뉴 · 온라인 진행 중") : L.T("일시정지");
         }
 
         public static PauseScreen Create(Transform canvas, UIRoot ui)
@@ -171,16 +171,16 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Pause", true);
             var screen = root.gameObject.AddComponent<PauseScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "일시정지", 420);
-            screen.menu.AddButton("계속하기", () => Game.Flow.Resume());
-            screen.menu.AddButton("가방 · 장비", () => Game.Flow.OpenWindow(null));
-            screen.menu.AddButton("설정", () => ui.Push(ui.Settings));
-            if (!Application.isMobilePlatform) screen.menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
-            screen.menu.AddButton("도움말", () => ui.Push(ui.Help)); // [E5]
+            screen.BuildPanel(root, L.T("일시정지"), 420);
+            screen.menu.AddButton(L.T("계속하기"), () => Game.Flow.Resume());
+            screen.menu.AddButton(L.T("가방 · 장비"), () => Game.Flow.OpenWindow(null));
+            screen.menu.AddButton(L.T("설정"), () => ui.Push(ui.Settings));
+            if (!Application.isMobilePlatform) screen.menu.AddButton(L.T("키보드 설정"), () => ui.Push(ui.KeyBind));
+            screen.menu.AddButton(L.T("도움말"), () => ui.Push(ui.Help)); // [E5]
             if (GameFlow.DemoSlots) // [DEMO] the flag is set from the command line before the UI is built
-                screen.menu.AddButton("캐릭터 변경", () => ui.Confirm("다른 체험 캐릭터로 바꿀까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.SwitchCharacter()));
-            screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.ReturnToTitle()));
-            screen.menu.AddButton("게임 종료", () => ui.Confirm("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다.", () => Game.Flow.QuitGame(), keepOpenOnYes: true));
+                screen.menu.AddButton(L.T("캐릭터 변경"), () => ui.Confirm(L.T("다른 체험 캐릭터로 바꿀까요?\n진행 상황은 자동으로 저장됩니다."), () => Game.Flow.SwitchCharacter()));
+            screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다."), () => Game.Flow.ReturnToTitle()));
+            screen.menu.AddButton(L.T("게임 종료"), () => ui.Confirm(L.T("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다."), () => Game.Flow.QuitGame(), keepOpenOnYes: true));
             screen.menu.OnCancel = () => Game.Flow.Resume();
             screen.FitPanel();
             return screen;
@@ -205,38 +205,45 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Settings", true);
             var screen = root.gameObject.AddComponent<SettingsScreen>();
             screen.ui = ui;
-            string note = Application.isEditor ? "에디터에서는 해상도/화면 모드가 빌드에서만 적용됩니다." : "변경 사항은 즉시 적용되고 자동 저장됩니다.";
-            screen.BuildPanel(root, "설정", 640, note, 16);
+            string note = Application.isEditor ? L.T("에디터에서는 해상도/화면 모드가 빌드에서만 적용됩니다.") : L.T("변경 사항은 즉시 적용되고 자동 저장됩니다.");
+            screen.BuildPanel(root, L.T("설정"), 640, note, 16);
             var s = Game.Settings;
             var menu = screen.menu;
 
-            menu.AddOption("전체 음량", () => Percent(s.Data.masterVolume), d => { s.Data.masterVolume = Step(s.Data.masterVolume, d); s.Apply(); });
-            menu.AddOption("배경음", () => Percent(s.Data.musicVolume), d => { s.Data.musicVolume = Step(s.Data.musicVolume, d); s.Apply(); });
-            menu.AddOption("효과음", () => Percent(s.Data.sfxVolume), d => { s.Data.sfxVolume = Step(s.Data.sfxVolume, d); s.Apply(); });
+            menu.AddOption(L.T("전체 음량"), () => Percent(s.Data.masterVolume), d => { s.Data.masterVolume = Step(s.Data.masterVolume, d); s.Apply(); });
+            menu.AddOption(L.T("배경음"), () => Percent(s.Data.musicVolume), d => { s.Data.musicVolume = Step(s.Data.musicVolume, d); s.Apply(); });
+            menu.AddOption(L.T("효과음"), () => Percent(s.Data.sfxVolume), d => { s.Data.sfxVolume = Step(s.Data.sfxVolume, d); s.Apply(); });
             if (!SettingsManager.HideDisplayOptions)
             {
-                menu.AddOption("해상도", () => SettingsManager.ResolutionLabel(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight)), d =>
+                menu.AddOption(L.T("해상도"), () => SettingsManager.ResolutionLabel(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight)), d =>
                 {
                     screen.resolutions ??= SettingsManager.GetResolutionOptions();
                     int current = screen.resolutions.IndexOf(new Vector2Int(s.Data.resolutionWidth, s.Data.resolutionHeight));
                     int next = ((Mathf.Max(0, current) + d) % screen.resolutions.Count + screen.resolutions.Count) % screen.resolutions.Count;
                     screen.ChangeDisplay(() => { s.Data.resolutionWidth = screen.resolutions[next].x; s.Data.resolutionHeight = screen.resolutions[next].y; });
                 });
-                menu.AddOption("화면 모드", () => SettingsManager.WindowModeLabel(s.Data.windowMode), d =>
+                menu.AddOption(L.T("화면 모드"), () => SettingsManager.WindowModeLabel(s.Data.windowMode), d =>
                 {
                     int count = Enum.GetValues(typeof(WindowMode)).Length;
                     screen.ChangeDisplay(() => s.Data.windowMode = (WindowMode)((((int)s.Data.windowMode + d) % count + count) % count));
                 });
-                menu.AddOption("수직 동기화", () => s.Data.vSync ? "켜기" : "끄기", d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
+                menu.AddOption(L.T("수직 동기화"), () => s.Data.vSync ? L.T("켜기") : L.T("끄기"), d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
             }
-            menu.AddOption("화면 흔들림", () => s.Data.screenShake ? "켜기" : "끄기", d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
+            // [I18N] Bilingual label so a player in the wrong language can still find it. Applies on restart.
+            menu.AddOption("언어 / Language", () => s.Data.language == L.English ? "English" : "한국어", d => // i18n-ignore bilingual on purpose
+            {
+                s.Data.language = s.Data.language == L.English ? L.Korean : L.English;
+                s.Save();
+                GameEvents.RaiseToast(s.Data.language == L.English ? "Restart the game to apply. / 다시 시작하면 적용됩니다." : "다시 시작하면 적용됩니다. / Restart the game to apply."); // i18n-ignore bilingual on purpose
+            });
+            menu.AddOption(L.T("화면 흔들림"), () => s.Data.screenShake ? L.T("켜기") : L.T("끄기"), d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
             // [I] Accessibility and keys.
-            menu.AddOption("글자·UI 크기", () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
-            menu.AddOption("색약 보정", () => s.Data.colorBlind ? "켜기" : "끄기", d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
+            menu.AddOption(L.T("글자·UI 크기"), () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
+            menu.AddOption(L.T("색약 보정"), () => s.Data.colorBlind ? L.T("켜기") : L.T("끄기"), d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });
             // Loot filter: what is left on the ground (gold and higher gear are always picked up).
-            menu.AddButton("줍기 설정", () => ui.Push(ui.LootFilter)); // its own screen: the list stays within the screen height
-            if (!Application.isMobilePlatform) menu.AddButton("키보드 설정", () => ui.Push(ui.KeyBind));
-            menu.AddButton("돌아가기", () => screen.Close());
+            menu.AddButton(L.T("줍기 설정"), () => ui.Push(ui.LootFilter)); // its own screen: the list stays within the screen height
+            if (!Application.isMobilePlatform) menu.AddButton(L.T("키보드 설정"), () => ui.Push(ui.KeyBind));
+            menu.AddButton(L.T("돌아가기"), () => screen.Close());
             menu.OnCancel = screen.Close;
             screen.FitPanel();
             return screen;
@@ -257,7 +264,7 @@ namespace DotRPG
             Game.Settings.Apply();
             // Not an overlay: this screen's menu list would still read the keys under the dialog.
             keepRow = menu.Selected;
-            ui.Confirm("이 설정을 유지할까요? ({초}초 후 되돌림)", () => Game.Settings.Save(), defaultYes: false, onNo: () =>
+            ui.Confirm(L.T("이 설정을 유지할까요? ({초}초 후 되돌림)"), () => Game.Settings.Save(), defaultYes: false, onNo: () =>
             {
                 d.resolutionWidth = oldW; d.resolutionHeight = oldH; d.windowMode = oldMode;
                 Game.Settings.Apply();
@@ -286,8 +293,8 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "Controls", true);
             var screen = root.gameObject.AddComponent<ControlsScreen>();
-            screen.BuildPanel(root, "조작 안내", 700, BuildBody(), 20);
-            screen.menu.AddButton("돌아가기", () => ui.Pop());
+            screen.BuildPanel(root, L.T("조작 안내"), 700, BuildBody(), 20);
+            screen.menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
             screen.FitPanel();
             return screen;
@@ -297,26 +304,26 @@ namespace DotRPG
         {
             var input = Game.Input;
             string Row(string name, GameAction action) =>
-                $"{name}   키보드 <b>{input.GetBindingLabel(action, false)}</b>   ·   게임패드 <b>{input.GetBindingLabel(action, true)}</b>";
+                L.F("{0}   키보드 <b>{1}</b>   ·   게임패드 <b>{2}</b>", name, input.GetBindingLabel(action, false), input.GetBindingLabel(action, true));
             string Pair(string name, GameAction a, GameAction b) =>
-                $"{name}   키보드 <b>{input.GetBindingLabel(a, false)} / {input.GetBindingLabel(b, false)}</b>   ·   게임패드 <b>{input.GetBindingLabel(a, true)} / {input.GetBindingLabel(b, true)}</b>";
+                L.F("{0}   키보드 <b>{1} / {2}</b>   ·   게임패드 <b>{3} / {4}</b>", name, input.GetBindingLabel(a, false), input.GetBindingLabel(b, false), input.GetBindingLabel(a, true), input.GetBindingLabel(b, true));
             return string.Join("\n", new[]
             {
-                Row("이동", GameAction.Move),
-                Row("공격", GameAction.Attack),
-                Row("이동기 (대시 / 텔레포트)", GameAction.Mobility),
-                Row("대화 / 상호작용", GameAction.Interact),
-                Row("체력 물약 (없으면 당근)", GameAction.UseItem),
-                Row("마나 물약", GameAction.UseMana),
-                Row("마을 귀환 주문서", GameAction.TownScroll),
-                Row("가방 · 장비", GameAction.Inventory),
-                Pair("스킬 1 / 2", GameAction.Skill1, GameAction.Skill2),
-                Pair("스킬 3 / 4", GameAction.Skill3, GameAction.Skill4),
-                Pair("스킬 5 / 6", GameAction.Skill6, GameAction.Skill7),
-                Row("스킬 7", GameAction.Skill8),
-                Row("각성 기술", GameAction.Skill5),
-                Row("메뉴 / 일시정지", GameAction.Pause),
-                "단축키는 메뉴의 키보드 설정에서 변경할 수 있습니다.",
+                Row(L.T("이동"), GameAction.Move),
+                Row(L.T("공격"), GameAction.Attack),
+                Row(L.T("이동기 (대시 / 텔레포트)"), GameAction.Mobility),
+                Row(L.T("대화 / 상호작용"), GameAction.Interact),
+                Row(L.T("체력 물약 (없으면 당근)"), GameAction.UseItem),
+                Row(L.T("마나 물약"), GameAction.UseMana),
+                Row(L.T("마을 귀환 주문서"), GameAction.TownScroll),
+                Row(L.T("가방 · 장비"), GameAction.Inventory),
+                Pair(L.T("스킬 1 / 2"), GameAction.Skill1, GameAction.Skill2),
+                Pair(L.T("스킬 3 / 4"), GameAction.Skill3, GameAction.Skill4),
+                Pair(L.T("스킬 5 / 6"), GameAction.Skill6, GameAction.Skill7),
+                Row(L.T("스킬 7"), GameAction.Skill8),
+                Row(L.T("각성 기술"), GameAction.Skill5),
+                Row(L.T("메뉴 / 일시정지"), GameAction.Pause),
+                L.T("단축키는 메뉴의 키보드 설정에서 변경할 수 있습니다."),
             });
         }
     }
@@ -329,14 +336,14 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "GameOver", true);
             var screen = root.gameObject.AddComponent<GameOverScreen>();
-            screen.BuildPanel(root, "쓰러졌습니다...", 520, "그 자리에서 일어나거나, 마을에서 다시 시작할 수 있습니다.\n가진 물건과 의뢰 진행은 그대로입니다.", 18);
+            screen.BuildPanel(root, L.T("쓰러졌습니다..."), 520, L.T("그 자리에서 일어나거나, 마을에서 다시 시작할 수 있습니다.\n가진 물건과 의뢰 진행은 그대로입니다."), 18);
             // [REVIVE] Where you fell: free up to Lv.10, then one revive coin (one a day).
             screen.reviveHere = screen.menu.AddButton(ReviveCoins.FieldLabel, () => Game.Flow.ReviveHere(), () => !ReviveCoins.Busy); // [REVIVE] fields: always free
             ReviveCoins.Changed += screen.RefreshRevive;
-            screen.menu.AddButton("마을에서 다시 일어나기", () => Game.Flow.RespawnInVillage());
+            screen.menu.AddButton(L.T("마을에서 다시 일어나기"), () => Game.Flow.RespawnInVillage());
             // [UX] Both drop the progress since the last save: ask first.
-            screen.menu.AddButton("마지막 저장 불러오기", () => ui.Confirm("마지막 저장을 불러올까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>", () => Game.Flow.ContinueGame()), () => Game.Saves.HasSave());
-            screen.menu.AddButton("타이틀로", () => ui.Confirm("타이틀로 돌아갈까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>", () => Game.Flow.ReturnToTitle()));
+            screen.menu.AddButton(L.T("마지막 저장 불러오기"), () => ui.Confirm(L.T("마지막 저장을 불러올까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ContinueGame()), () => Game.Saves.HasSave());
+            screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ReturnToTitle()));
             screen.FitPanel();
             return screen;
         }
@@ -364,10 +371,10 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "Ending", true);
             var screen = root.gameObject.AddComponent<EndingScreen>();
-            screen.BuildPanel(root, "의뢰 완료!", 620, "\n\n\n", 20);
+            screen.BuildPanel(root, L.T("의뢰 완료!"), 620, "\n\n\n", 20);
             screen.statsText = screen.panel.Find("Body").GetComponent<Text>();
-            screen.menu.AddButton("계속 탐험하기", () => Game.Flow.Resume());
-            screen.menu.AddButton("타이틀로", () => Game.Flow.ReturnToTitle());
+            screen.menu.AddButton(L.T("계속 탐험하기"), () => Game.Flow.Resume());
+            screen.menu.AddButton(L.T("타이틀로"), () => Game.Flow.ReturnToTitle());
             screen.FitPanel();
             return screen;
         }
@@ -378,10 +385,10 @@ namespace DotRPG
             var p = Game.Session.Quest;
             int seconds = Mathf.FloorToInt(Game.Session.PlayTimeSeconds);
             statsText.text =
-                $"새 공방이 세워지고 마을에 활기가 돌아왔습니다.\n" +
-                $"플레이 시간 {seconds / 60:00}:{seconds % 60:00}   ·   해골 퇴치 {p.skeletonsDefeated}\n" +
-                $"보상: 최대 HP +{Game.Quest.Config.rewardMaxHealth}\n" +
-                "세로 슬라이스를 플레이해 주셔서 감사합니다!";
+                L.T("새 공방이 세워지고 마을에 활기가 돌아왔습니다.") + "\n" +
+                L.F("플레이 시간 {0:00}:{1:00}   ·   해골 퇴치 {2}", seconds / 60, seconds % 60, p.skeletonsDefeated) + "\n" +
+                L.F("보상: 최대 HP +{0}", Game.Quest.Config.rewardMaxHealth) + "\n" +
+                L.T("세로 슬라이스를 플레이해 주셔서 감사합니다!");
         }
     }
 

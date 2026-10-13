@@ -109,7 +109,7 @@ namespace DotRPG
                 {
                     int limit = MiniJson.Int(r.errors, "limit", 2);
                     p.character = null;
-                    done(false, $"이 PC에서는 동시에 {limit}개까지 접속할 수 있습니다.");
+                    done(false, L.F("이 PC에서는 동시에 {0}개까지 접속할 수 있습니다.", limit));
                     return;
                 }
                 // Anything else (older server, network) does not keep the player out: the server is in log mode first.
@@ -158,7 +158,7 @@ namespace DotRPG
                 }
                 else if (r.code == "DEVICE_LIMIT" && OnlineSession.Playing && who == OnlineSession.Current?.ActiveCharacter)
                 {
-                    GameEvents.RaiseToast("이 PC에서 동시에 접속할 수 있는 수를 넘었습니다.");
+                    GameEvents.RaiseToast(L.T("이 PC에서 동시에 접속할 수 있는 수를 넘었습니다."));
                     Game.Flow.ReturnToTitle();
                 }
                 done?.Invoke(r);

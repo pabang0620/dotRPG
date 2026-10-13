@@ -143,7 +143,7 @@ namespace DotRPG
         }
 
         public static string BindLabel(ItemBind b) =>
-            b == ItemBind.Tradable ? "<color=#8fe28f>거래 가능</color>" : b == ItemBind.AccountBound ? "<color=#78dcff>계정 귀속</color>" : "<color=#ff9f43>캐릭터 귀속</color>";
+            b == ItemBind.Tradable ? L.T("<color=#8fe28f>거래 가능</color>") : b == ItemBind.AccountBound ? L.T("<color=#78dcff>계정 귀속</color>") : L.T("<color=#ff9f43>캐릭터 귀속</color>");
 
         public static AuctionCategory CategoryOf(string key)
         {
@@ -162,16 +162,16 @@ namespace DotRPG
         }
 
         public static string CategoryName(AuctionCategory c) =>
-            c == AuctionCategory.All ? "전체" : c == AuctionCategory.Weapon ? "무기" : c == AuctionCategory.Armor ? "방어구"
-            : c == AuctionCategory.Accessory ? "장신구" : c == AuctionCategory.Material ? "강화 재료" : "소모품";
+            c == AuctionCategory.All ? L.T("전체") : c == AuctionCategory.Weapon ? L.T("무기") : c == AuctionCategory.Armor ? L.T("방어구")
+            : c == AuctionCategory.Accessory ? L.T("장신구") : c == AuctionCategory.Material ? L.T("강화 재료") : L.T("소모품");
 
         public static string SortName(AuctionSort s) =>
-            s == AuctionSort.PriceAsc ? "가격 낮은 순" : s == AuctionSort.PriceDesc ? "가격 높은 순" : s == AuctionSort.TimeLeft ? "남은 시간 순"
-            : s == AuctionSort.EnhanceDesc ? "강화 높은 순" : "최근 등록 순";
+            s == AuctionSort.PriceAsc ? L.T("가격 낮은 순") : s == AuctionSort.PriceDesc ? L.T("가격 높은 순") : s == AuctionSort.TimeLeft ? L.T("남은 시간 순")
+            : s == AuctionSort.EnhanceDesc ? L.T("강화 높은 순") : L.T("최근 등록 순");
 
         /// <summary>Remaining time as a band (exact seconds are hidden, §4).</summary>
         public static string TimeBand(double hours) =>
-            hours < 1 ? "1시간 미만" : hours < 6 ? "6시간 미만" : hours < 12 ? "12시간 미만" : hours < 24 ? "24시간 미만" : "48시간 미만";
+            hours < 1 ? L.T("1시간 미만") : hours < 6 ? L.T("6시간 미만") : hours < 12 ? L.T("12시간 미만") : hours < 24 ? L.T("24시간 미만") : L.T("48시간 미만");
 
         /// <summary>Reference price of an item key (mock market value; the server uses real history).</summary>
         public static long BasePrice(string key)
@@ -217,7 +217,7 @@ namespace DotRPG
     /// </summary>
     public sealed class MockAuctionService : IAuctionService
     {
-        static readonly string[] Sellers = { "검은뿔", "달빛마녀", "광산왕", "눈꽃여우", "카타나장인", "해골사냥꾼", "모험가A", "은빛기사" };
+        static readonly string[] Sellers = { L.T("검은뿔"), L.T("달빛마녀"), L.T("광산왕"), L.T("눈꽃여우"), L.T("카타나장인"), L.T("해골사냥꾼"), L.T("모험가A"), L.T("은빛기사") };
 
         readonly List<AuctionListing> listings = new List<AuctionListing>();
         readonly List<AuctionMail> mails = new List<AuctionMail>();
@@ -305,92 +305,92 @@ namespace DotRPG
         public AuctionResult Buyout(string listingId)
         {
             var l = Find(listingId);
-            if (l == null) return AuctionResult.Fail("이미 팔렸거나 기간이 끝난 물건입니다.");
-            if (l.mine) return AuctionResult.Fail("내가 등록한 물건은 살 수 없습니다.");
+            if (l == null) return AuctionResult.Fail(L.T("이미 팔렸거나 기간이 끝난 물건입니다."));
+            if (l.mine) return AuctionResult.Fail(L.T("내가 등록한 물건은 살 수 없습니다."));
             var bag = Bag;
-            if (bag == null || bag.Count(ConsumableDatabase.Gold) < l.buyout) return AuctionResult.Fail("골드가 부족합니다.");
+            if (bag == null || bag.Count(ConsumableDatabase.Gold) < l.buyout) return AuctionResult.Fail(L.T("골드가 부족합니다."));
             bag.Remove(ConsumableDatabase.Gold, (int)Authority.Current.ApplyGold("auction_buy", (int)l.buyout));
             listings.Remove(l);
-            Mail($"[구매] {l.Name} x{l.count}", l.itemKey, l.count, 0);
+            Mail(L.F("[구매] {0} x{1}", L.T(l.Name), l.count), l.itemKey, l.count, 0);
             Changed?.Invoke();
-            return AuctionResult.Ok($"{l.Name}을(를) {l.buyout:N0}G에 샀습니다. 우편함에서 받으세요.");
+            return AuctionResult.Ok(L.F("{0}을(를) {1:N0}G에 샀습니다. 우편함에서 받으세요.", L.T(l.Name), l.buyout));
         }
 
         public AuctionResult Bid(string listingId, long amount)
         {
             var l = Find(listingId);
-            if (l == null) return AuctionResult.Fail("이미 팔렸거나 기간이 끝난 물건입니다.");
-            if (l.mine) return AuctionResult.Fail("내 물건에는 입찰할 수 없습니다.");
-            if (!l.Biddable) return AuctionResult.Fail("즉시 구매만 가능한 물건입니다.");
+            if (l == null) return AuctionResult.Fail(L.T("이미 팔렸거나 기간이 끝난 물건입니다."));
+            if (l.mine) return AuctionResult.Fail(L.T("내 물건에는 입찰할 수 없습니다."));
+            if (!l.Biddable) return AuctionResult.Fail(L.T("즉시 구매만 가능한 물건입니다."));
             if (amount >= l.buyout) return Buyout(listingId);
-            if (amount < AuctionRules.MinBid(l)) return AuctionResult.Fail($"최소 입찰가는 {AuctionRules.MinBid(l):N0}G입니다.");
+            if (amount < AuctionRules.MinBid(l)) return AuctionResult.Fail(L.F("최소 입찰가는 {0:N0}G입니다.", AuctionRules.MinBid(l)));
             var bag = Bag;
-            if (bag == null || bag.Count(ConsumableDatabase.Gold) < amount) return AuctionResult.Fail("골드가 부족합니다.");
+            if (bag == null || bag.Count(ConsumableDatabase.Gold) < amount) return AuctionResult.Fail(L.T("골드가 부족합니다."));
             bag.Remove(ConsumableDatabase.Gold, (int)amount); // escrow
             l.currentBid = amount;
             l.hasBid = true;
             l.myBid = true;
             if (l.hoursLeft < 5.0 / 60.0) l.hoursLeft += 5.0 / 60.0;
             Changed?.Invoke();
-            return AuctionResult.Ok($"{amount:N0}G로 입찰했습니다. (골드 예치)");
+            return AuctionResult.Ok(L.F("{0:N0}G로 입찰했습니다. (골드 예치)", amount));
         }
 
         public AuctionResult Register(string itemKey, int count, long buyout, long startBid, int hours)
         {
             var bag = Bag;
-            if (bag == null) return AuctionResult.Fail("가방이 없습니다.");
-            if (AuctionRules.BindOf(itemKey) != ItemBind.Tradable) return AuctionResult.Fail("귀속 아이템은 등록할 수 없습니다.");
-            if (count < 1 || bag.Count(itemKey) < count) return AuctionResult.Fail("가방에 아이템이 부족합니다.");
-            if (Array.IndexOf(AuctionRules.Durations, hours) < 0) return AuctionResult.Fail("기간은 12/24/48시간입니다.");
-            if (listings.Count(l => l.mine) >= AuctionRules.MaxListings) return AuctionResult.Fail("동시 등록은 20건까지입니다.");
+            if (bag == null) return AuctionResult.Fail(L.T("가방이 없습니다."));
+            if (AuctionRules.BindOf(itemKey) != ItemBind.Tradable) return AuctionResult.Fail(L.T("귀속 아이템은 등록할 수 없습니다."));
+            if (count < 1 || bag.Count(itemKey) < count) return AuctionResult.Fail(L.T("가방에 아이템이 부족합니다."));
+            if (Array.IndexOf(AuctionRules.Durations, hours) < 0) return AuctionResult.Fail(L.T("기간은 12/24/48시간입니다."));
+            if (listings.Count(l => l.mine) >= AuctionRules.MaxListings) return AuctionResult.Fail(L.T("동시 등록은 20건까지입니다."));
             long avg = AuctionRules.BasePrice(itemKey) * count;
             if (buyout < avg * AuctionRules.PriceFloor || buyout > avg * AuctionRules.PriceCeil)
-                return AuctionResult.Fail($"가격은 {(long)(avg * AuctionRules.PriceFloor):N0}~{(long)(avg * AuctionRules.PriceCeil):N0}G 사이여야 합니다.");
-            if (startBid > 0 && startBid >= buyout) return AuctionResult.Fail("입찰 시작가는 즉시 구매가보다 낮아야 합니다.");
+                return AuctionResult.Fail(L.F("가격은 {0:N0}~{1:N0}G 사이여야 합니다.", (long)(avg * AuctionRules.PriceFloor), (long)(avg * AuctionRules.PriceCeil)));
+            if (startBid > 0 && startBid >= buyout) return AuctionResult.Fail(L.T("입찰 시작가는 즉시 구매가보다 낮아야 합니다."));
             long deposit = AuctionRules.Deposit(buyout);
-            if (bag.Count(ConsumableDatabase.Gold) < deposit) return AuctionResult.Fail($"보증금 {deposit:N0}G가 부족합니다.");
+            if (bag.Count(ConsumableDatabase.Gold) < deposit) return AuctionResult.Fail(L.F("보증금 {0:N0}G가 부족합니다.", deposit));
             bag.Remove(ConsumableDatabase.Gold, (int)deposit);
             bag.Remove(itemKey, count);
             var l = new AuctionListing
             {
-                id = "A" + nextId++, itemKey = itemKey, count = count, seller = "나", buyout = buyout, startBid = startBid,
+                id = "A" + nextId++, itemKey = itemKey, count = count, seller = L.T("나"), buyout = buyout, startBid = startBid,
                 deposit = deposit, hoursLeft = hours, order = order++, mine = true,
                 category = AuctionRules.CategoryOf(itemKey), rarity = EquipmentDatabase.Get(itemKey)?.rarity ?? ItemRarity.Common,
                 enhance = EquipmentDatabase.LevelOfKey(itemKey),
             };
             listings.Add(l);
             Changed?.Invoke();
-            return AuctionResult.Ok($"{l.Name} 등록 완료 (보증금 {deposit:N0}G)");
+            return AuctionResult.Ok(L.F("{0} 등록 완료 (보증금 {1:N0}G)", L.T(l.Name), deposit));
         }
 
         public AuctionResult Cancel(string listingId)
         {
             var l = Find(listingId);
-            if (l == null || !l.mine) return AuctionResult.Fail("취소할 수 없습니다.");
-            if (l.hasBid) return AuctionResult.Fail("입찰자가 있어 취소할 수 없습니다.");
+            if (l == null || !l.mine) return AuctionResult.Fail(L.T("취소할 수 없습니다."));
+            if (l.hasBid) return AuctionResult.Fail(L.T("입찰자가 있어 취소할 수 없습니다."));
             listings.Remove(l);
-            Mail($"[등록 취소] {l.Name} x{l.count} (보증금 미반환)", l.itemKey, l.count, 0);
+            Mail(L.F("[등록 취소] {0} x{1} (보증금 미반환)", L.T(l.Name), l.count), l.itemKey, l.count, 0);
             Changed?.Invoke();
-            return AuctionResult.Ok("등록을 취소했습니다. 아이템은 우편함으로 돌아갑니다.");
+            return AuctionResult.Ok(L.T("등록을 취소했습니다. 아이템은 우편함으로 돌아갑니다."));
         }
 
         public AuctionResult Claim(string mailId)
         {
             var m = mails.FirstOrDefault(x => x.id == mailId && !x.claimed);
             var bag = Bag;
-            if (m == null || bag == null) return AuctionResult.Fail("받을 우편이 없습니다.");
+            if (m == null || bag == null) return AuctionResult.Fail(L.T("받을 우편이 없습니다."));
             if (!string.IsNullOrEmpty(m.itemKey) && m.count > 0) bag.Add(m.itemKey, m.count);
             if (m.gold > 0) bag.Add(ConsumableDatabase.Gold, (int)m.gold);
             m.claimed = true;
             Changed?.Invoke();
-            return AuctionResult.Ok("우편을 받았습니다.");
+            return AuctionResult.Ok(L.T("우편을 받았습니다."));
         }
 
         public AuctionResult ClaimAll()
         {
             int n = 0;
             foreach (var m in mails.Where(x => !x.claimed).ToList()) if (Claim(m.id).ok) n++;
-            return n > 0 ? AuctionResult.Ok($"우편 {n}통을 받았습니다.") : AuctionResult.Fail("받을 우편이 없습니다.");
+            return n > 0 ? AuctionResult.Ok(L.F("우편 {0}통을 받았습니다.", n)) : AuctionResult.Fail(L.T("받을 우편이 없습니다."));
         }
 
         /// <summary>Dev: someone buys my listing (seller side settlement: price − fee + deposit by mail).</summary>
@@ -400,7 +400,7 @@ namespace DotRPG
             if (l == null || !l.mine) return false;
             listings.Remove(l);
             long payout = AuctionRules.Payout(l.itemKey, l.buyout) + l.deposit;
-            Mail($"[판매 대금] {l.Name} x{l.count}", null, 0, payout);
+            Mail(L.F("[판매 대금] {0} x{1}", L.T(l.Name), l.count), null, 0, payout);
             Changed?.Invoke();
             return true;
         }

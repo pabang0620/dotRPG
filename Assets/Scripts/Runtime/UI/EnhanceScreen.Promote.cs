@@ -14,7 +14,7 @@ namespace DotRPG
 
         void BuildPromote(Transform right)
         {
-            promoteButton = Button(right, "Promote", "승급", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-16f, 12f), new Vector2(140f, 64f), OnPromotePressed, 22);
+            promoteButton = Button(right, "Promote", L.T("승급"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-16f, 12f), new Vector2(140f, 64f), OnPromotePressed, 22);
             promoteLabel = promoteButton.GetComponentInChildren<Text>();
         }
 
@@ -27,8 +27,8 @@ namespace DotRPG
             var (cores, _) = PromoteRules.CostInto(next.rarity);
             int have = Game.Session.Inventory.Count(PromoteRules.CoreItem);
             promoteButton.interactable = !busy;
-            string head = $"승급 <size=17>({Game.Input.GetBindingLabel(GameAction.UseItem)})</size>";
-            promoteLabel.text = have >= cores ? head : $"{head}\n<size=15>핵 {have}/{cores}</size>";
+            string head = L.F("승급 <size=17>({0})</size>", Game.Input.GetBindingLabel(GameAction.UseItem));
+            promoteLabel.text = have >= cores ? head : head + "\n" + L.F("<size=15>핵 {0}/{1}</size>", have, cores);
         }
 
         void OnPromotePressed()
@@ -41,21 +41,21 @@ namespace DotRPG
             var (cores, gold) = PromoteRules.CostInto(next.rarity);
             int have = Game.Session.Inventory.Count(PromoteRules.CoreItem);
             int level = EquipmentDatabase.LevelOfKey(e.key);
-            if (!OnlineEconomy.On) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast("승급은 온라인에서만 할 수 있습니다."); return; }
+            if (!OnlineEconomy.On) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(L.T("승급은 온라인에서만 할 수 있습니다.")); return; }
             if (have < cores || Game.Session.Gold < gold)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"고대의 핵 {have}/{cores}, 골드 {Game.Session.Gold:N0}/{gold:N0}. 고대의 핵은 레이드 클리어 보상으로 얻습니다.");
+                GameEvents.RaiseToast(L.F("고대의 핵 {0}/{1}, 골드 {2:N0}/{3:N0}. 고대의 핵은 레이드 클리어 보상으로 얻습니다.", have, cores, Game.Session.Gold, gold));
                 return;
             }
             string from = EquipmentDatabase.RichName(e.key);
             string to = EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(next.id, level));
             Game.Audio.PlaySfx("select");
-            Game.UI.Confirm($"<b>장비 승급</b>\n{from}  →  {to}\n<color=#b8c4d8>강화 수치 +{level} 그대로 · 고대의 핵 {cores}개 · 골드 {gold:N0}</color>\n승급할까요?", () =>
+            Game.UI.Confirm(L.F("<b>장비 승급</b>\n{0}  →  {1}\n<color=#b8c4d8>강화 수치 +{2} 그대로 · 고대의 핵 {3}개 · 골드 {4:N0}</color>\n승급할까요?", from, to, level, cores, gold), () =>
             {
                 if (busy || ticketPending) return;
                 busy = true;
-                resultText.text = "<color=#b8c4d8>승급하는 중…</color>";
+                resultText.text = L.T("<color=#b8c4d8>승급하는 중…</color>");
                 OnlineEconomy.Promote(e.slot.HasValue ? (int)e.slot.Value : (int?)null, e.slot.HasValue ? null : e.key, d =>
                 {
                     busy = false;
@@ -63,7 +63,7 @@ namespace DotRPG
                     string newKey = MiniJson.Str(d, "new_key");
                     Game.Audio.PlaySfx("quest");
                     EnhanceFx.Sparks(bigIcon.rectTransform, 24, new Color32(255, 214, 90, 255));
-                    resultText.text = $"<color=#ffd34a><b>승급 성공!</b></color>  {EquipmentDatabase.RichName(newKey)}";
+                    resultText.text = L.F("<color=#ffd34a><b>승급 성공!</b></color>  {0}", EquipmentDatabase.RichName(newKey));
                     // Keep the cursor on the promoted piece.
                     BuildEntries();
                     for (int i = 0; i < entries.Count; i++)

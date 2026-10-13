@@ -167,7 +167,7 @@ namespace DotRPG
             if(plaza)Put(root,"Signed world passage",passage,at,2.5f,-27000);
             else Put(root,down?"Descent stair marker":"Passage arrow",Game.Art.Get(down?"arrow_up":at.x<2?"arrow_left":at.x>48?"arrow_right":at.y<2?"arrow_down":"arrow_up"),at,.7f,-26000);
             var label=new GameObject("Destination "+destination);label.transform.SetParent(root,false);label.transform.position=at+Vector2.up*(plaza?1.1f:.9f);
-            var tm=label.AddComponent<TextMesh>();tm.text=(down?"지하 1층 · ":"")+destination;tm.fontSize=32;tm.characterSize=.08f;tm.anchor=TextAnchor.LowerCenter;tm.color=new Color(.82f,.92f,.79f);
+            var tm=label.AddComponent<TextMesh>();tm.text=down?L.F("지하 1층 · {0}", destination):destination;tm.fontSize=32;tm.characterSize=.08f;tm.anchor=TextAnchor.LowerCenter;tm.color=new Color(.82f,.92f,.79f);
             // Use the same Korean font as the UI; labels remain below combat feedback.
             tm.font=UIFont.Get();
             var renderer=label.GetComponent<MeshRenderer>();renderer.sharedMaterial=tm.font.material;renderer.sortingOrder=19000;

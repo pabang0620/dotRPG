@@ -116,7 +116,7 @@ namespace DotRPG
             s.step = 0;
             s.counts.Clear();
             Game.Audio.PlaySfx("quest");
-            GameEvents.RaiseToast(q.Kind == QuestKind.Main ? $"메인 퀘스트: {q.DisplayTitle}" : $"새 퀘스트: {q.title}");
+            GameEvents.RaiseToast(q.Kind == QuestKind.Main ? L.F("메인 퀘스트: {0}", q.DisplayTitle) : L.F("새 퀘스트: {0}", L.T(q.title)));
             if (q.Kind == QuestKind.Sub && string.IsNullOrEmpty(Journal.Tracked)) Journal.Tracked = q.id;
             if (!string.IsNullOrEmpty(q.startCutscene)) PlayCutscene(q.startCutscene, null);
             GameEvents.RaiseQuestAccepted(q.id);
@@ -132,7 +132,7 @@ namespace DotRPG
             GiveReward(q.reward);
             if (OnlineEconomy.On) OnlineEconomy.ClaimQuest(q.id, (ok, bonus) => { }); // [SERVER] XP, gold and items come from the claim
             Game.Audio.PlaySfx("quest");
-            GameEvents.RaiseToast($"퀘스트 완료: {q.title}");
+            GameEvents.RaiseToast(L.F("퀘스트 완료: {0}", L.T(q.title)));
             GameEvents.RaiseQuestCompleted(q.id);
             Game.Flow.Autosave();
         }
@@ -146,12 +146,12 @@ namespace DotRPG
             {
                 int xp = Progression.QuestXp(r.xp); // scaled with the level curve (the server pays the same exported value)
                 if (!online) Game.Session.Progression.AddXp(xp);
-                parts.Add($"경험치 {xp:N0}");
+                parts.Add(L.F("경험치 {0:N0}", xp));
             }
             if (r.gold > 0)
             {
                 if (!online) Game.Session.Inventory.Add(ConsumableDatabase.Gold, r.gold);
-                parts.Add($"골드 {r.gold:N0}");
+                parts.Add(L.F("골드 {0:N0}", r.gold));
             }
             if (r.items != null)
                 foreach (var it in r.items)
@@ -163,10 +163,10 @@ namespace DotRPG
             if (r.maxHealth > 0 && Game.Player != null)
             {
                 Game.Player.AddMaxHealth(r.maxHealth);
-                parts.Add($"최대 체력 +{EquipmentDatabase.Hearts(r.maxHealth)}");
+                parts.Add(L.F("최대 체력 +{0}", EquipmentDatabase.Hearts(r.maxHealth)));
             }
             if (r.setFlags != null) foreach (var f in r.setFlags) Journal.Flags.Add(f);
-            if (parts.Count > 0) GameEvents.RaiseToast("보상: " + string.Join(", ", parts));
+            if (parts.Count > 0) GameEvents.RaiseToast(L.F("보상: {0}", string.Join(", ", parts)));
         }
 
         public static string ItemName(string id)
@@ -175,9 +175,9 @@ namespace DotRPG
             {
             }
             var eq = EquipmentDatabase.Get(EquipmentDatabase.BaseId(id));
-            if (eq != null) return eq.name;
+            if (eq != null) return L.T(eq.name);
             var c = ConsumableDatabase.Get(id);
-            return c != null ? c.name : id;
+            return c != null ? L.T(c.name) : id;
         }
     }
 }

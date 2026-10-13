@@ -127,14 +127,14 @@ namespace DotRPG
         public static void SteamTicket(Action<string, string> done)
         {
             var steam = SteamBridge.Current;
-            if (steam == null || !steam.Ready) { done(null, "Steam을 켠 뒤 다시 시도해 주세요."); return; }
+            if (steam == null || !steam.Ready) { done(null, L.T("Steam을 켠 뒤 다시 시도해 주세요.")); return; }
             Api.Get("/meta", meta =>
             {
-                if (!meta.ok) { done(null, string.IsNullOrEmpty(meta.message) ? "서버에 연결할 수 없습니다." : meta.message); return; }
+                if (!meta.ok) { done(null, string.IsNullOrEmpty(meta.message) ? L.T("서버에 연결할 수 없습니다.") : meta.message); return; }
                 string identity = MiniJson.Str(MiniJson.Obj(meta.data, "steam"), "identity");
-                if (string.IsNullOrEmpty(identity)) { done(null, "이 서버는 Steam 확인을 받지 않습니다."); return; }
+                if (string.IsNullOrEmpty(identity)) { done(null, L.T("이 서버는 Steam 확인을 받지 않습니다.")); return; }
                 steam.GetAuthTicket(identity, ticket =>
-                    done(string.IsNullOrEmpty(ticket) ? null : ticket, string.IsNullOrEmpty(ticket) ? "Steam 인증 티켓을 받지 못했습니다." : null));
+                    done(string.IsNullOrEmpty(ticket) ? null : ticket, string.IsNullOrEmpty(ticket) ? L.T("Steam 인증 티켓을 받지 못했습니다.") : null));
             }, auth: false);
         }
 
@@ -143,19 +143,19 @@ namespace DotRPG
         {
             switch (r.code)
             {
-                case "REAUTH_FAILED": return "본인 확인에 실패했습니다.";
-                case "CONFIRM_MISMATCH": return "확인 문구가 일치하지 않습니다.";
-                case "ACK_REQUIRED": return "유료 별조각 소멸에 동의해야 합니다.";
-                case "WITHDRAW_BLOCKED": return "결제 처리 중이라 지금은 탈퇴할 수 없습니다.";
-                case "WITHDRAW_LIMIT": return "30일 안에 요청할 수 있는 횟수를 넘었습니다.";
-                case "WITHDRAWAL_ALREADY_REQUESTED": return "이미 탈퇴를 요청한 계정입니다.";
-                case "FEATURE_DISABLED": return "지금은 탈퇴 기능을 쓸 수 없습니다.";
-                case "CANCEL_NOT_ALLOWED": return "운영자가 처리한 탈퇴입니다. 고객 지원에 문의하세요.";
-                case "WITHDRAWAL_DUE": return "철회 기한이 지났습니다.";
-                case "NO_PENDING_WITHDRAWAL": return "철회할 탈퇴 요청이 없습니다.";
-                case "NETWORK": return "서버에 연결할 수 없습니다.";
+                case "REAUTH_FAILED": return L.T("본인 확인에 실패했습니다.");
+                case "CONFIRM_MISMATCH": return L.T("확인 문구가 일치하지 않습니다.");
+                case "ACK_REQUIRED": return L.T("유료 별조각 소멸에 동의해야 합니다.");
+                case "WITHDRAW_BLOCKED": return L.T("결제 처리 중이라 지금은 탈퇴할 수 없습니다.");
+                case "WITHDRAW_LIMIT": return L.T("30일 안에 요청할 수 있는 횟수를 넘었습니다.");
+                case "WITHDRAWAL_ALREADY_REQUESTED": return L.T("이미 탈퇴를 요청한 계정입니다.");
+                case "FEATURE_DISABLED": return L.T("지금은 탈퇴 기능을 쓸 수 없습니다.");
+                case "CANCEL_NOT_ALLOWED": return L.T("운영자가 처리한 탈퇴입니다. 고객 지원에 문의하세요.");
+                case "WITHDRAWAL_DUE": return L.T("철회 기한이 지났습니다.");
+                case "NO_PENDING_WITHDRAWAL": return L.T("철회할 탈퇴 요청이 없습니다.");
+                case "NETWORK": return L.T("서버에 연결할 수 없습니다.");
                 case "REAUTH_UNAVAILABLE": return r.message;
-                default: return string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message;
+                default: return string.IsNullOrEmpty(r.message) ? L.F("요청이 실패했습니다. ({0})", r.status) : r.message;
             }
         }
 

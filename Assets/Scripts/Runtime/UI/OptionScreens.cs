@@ -16,7 +16,7 @@ namespace DotRPG
             var root = CreateRoot(canvas, "SaveSlots", true);
             var screen = root.gameObject.AddComponent<SaveSlotScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "저장 슬롯", 820);
+            screen.BuildPanel(root, L.T("저장 슬롯"), 820);
             screen.titleText = screen.panel.Find("Title").GetComponent<UnityEngine.UI.Text>();
             return screen;
         }
@@ -24,9 +24,9 @@ namespace DotRPG
         public void Open(bool load)
         {
             loading = load;
-            titleText.text = load ? "이어하기 · 슬롯 선택" : "새 게임 · 슬롯 선택";
+            titleText.text = load ? L.T("이어하기 · 슬롯 선택") : L.T("새 게임 · 슬롯 선택");
             if (load && SaveSystem.SlotCount == 4 && SaveSystem.DirectoryOverride != null)
-                titleText.text = "전직 체험 · 캐릭터 선택";
+                titleText.text = L.T("전직 체험 · 캐릭터 선택");
             menu.Clear();
             for (int i = 0; i < SaveSystem.SlotCount; i++)
             {
@@ -37,7 +37,7 @@ namespace DotRPG
                 row.labelText.resizeTextMinSize = 14;
                 row.labelText.resizeTextMaxSize = row.labelText.fontSize;
             }
-            menu.AddButton("돌아가기", () => ui.Pop());
+            menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             menu.OnCancel = () => ui.Pop();
             FitPanel();
             ui.Push(this);
@@ -56,20 +56,20 @@ namespace DotRPG
                 SaveSystem.ActiveSlot = slot;
                 ui.Push(ui.CharacterSelect);
             }
-            if (Game.Saves.HasSave(slot)) ui.Confirm($"슬롯 {slot + 1}의 저장을 지우고 새로 시작할까요?\n다음 저장 때 덮어씁니다.", Start);
+            if (Game.Saves.HasSave(slot)) ui.Confirm(L.F("슬롯 {0}의 저장을 지우고 새로 시작할까요?\n다음 저장 때 덮어씁니다.", slot + 1), Start);
             else Start();
         }
 
         static string Summary(int slot)
         {
-            if (!Game.Saves.HasSave(slot)) return $"슬롯 {slot + 1}   <color=#8a94a8>비어 있음</color>";
+            if (!Game.Saves.HasSave(slot)) return L.F("슬롯 {0}   <color=#8a94a8>비어 있음</color>", slot + 1);
             var d = Game.Saves.Read(slot);
-            if (d == null) return $"슬롯 {slot + 1}   <color=#ff8080>손상된 저장</color>";
-            string cls = d.playerClass == "mage" ? "마법사" : "전사";
+            if (d == null) return L.F("슬롯 {0}   <color=#ff8080>손상된 저장</color>", slot + 1);
+            string cls = d.playerClass == "mage" ? L.T("마법사") : L.T("전사");
             if (d.career != null && d.career.career != Career.None && d.level >= 15)
-                cls = CareerCatalog.Name(d.career.career);
+                cls = L.T(CareerCatalog.Name(d.career.career));
             if (SaveSystem.SlotCount == 4 && SaveSystem.DirectoryOverride != null)
-                return $"{slot + 1}. {cls} Lv.{d.level} · {(d.career != null && d.career.awakened ? "각성 완료" : "각성 미완료")}";
+                return $"{slot + 1}. {cls} Lv.{d.level} · " + (d.career != null && d.career.awakened ? L.T("각성 완료") : L.T("각성 미완료"));
             string name = string.IsNullOrEmpty(d.playerName) ? QuestJournal.DefaultName : d.playerName;
             string story = "";
             if (Game.Quest != null && d.quests != null)
@@ -77,11 +77,11 @@ namespace DotRPG
                 {
                     if (q.Kind != QuestKind.Main) continue;
                     var st = d.quests.Find(x => x.id == q.id);
-                    if (st != null && (st.status == (int)QuestStatus.Active || st.status == (int)QuestStatus.ReadyToTurnIn)) { story = q.DisplayTitle; break; }
+                    if (st != null && (st.status == (int)QuestStatus.Active || st.status == (int)QuestStatus.ReadyToTurnIn)) { story = L.T(q.DisplayTitle); break; }
                 }
             var t = TimeSpan.FromSeconds(d.playTimeSeconds);
             string date = DateTime.TryParse(d.savedAtUtc, out var at) ? at.ToLocalTime().ToString("MM-dd HH:mm") : "";
-            return $"슬롯 {slot + 1}  {name} · {cls} Lv.{d.level}  <color=#b8c4d8>{story}  {(int)t.TotalHours}시간 {t.Minutes}분  {date}</color>";
+            return L.F("슬롯 {0}  {1} · {2} Lv.{3}  <color=#b8c4d8>{4}  {5}시간 {6}분  {7}</color>", slot + 1, name, cls, d.level, story, (int)t.TotalHours, t.Minutes, date);
         }
     }
 
@@ -92,8 +92,8 @@ namespace DotRPG
         {
             var root = CreateRoot(canvas, "Help", true);
             var screen = root.gameObject.AddComponent<HelpScreen>();
-            screen.BuildPanel(root, "도움말", 900, Body(), 18);
-            screen.menu.AddButton("돌아가기", () => ui.Pop());
+            screen.BuildPanel(root, L.T("도움말"), 900, Body(), 18);
+            screen.menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
             screen.FitPanel();
             return screen;
@@ -111,14 +111,14 @@ namespace DotRPG
         static string Body()
         {
             var sb = new StringBuilder();
-            sb.Append($"<color=#ffd84a>퀘스트</color>  머리 위 <color=#ffd640>!</color>는 새 퀘스트, <color=#ffd640>?</color>는 진행·보고. 오른쪽 위 알리미를 따라가세요.\n");
-            sb.Append($"<color=#ffd84a>전투</color>  공격 [{Key(GameAction.Attack)}]  이동기 [{Key(GameAction.Mobility)}]  스킬 [{Key(GameAction.Skill1)}][{Key(GameAction.Skill2)}][{Key(GameAction.Skill3)}][{Key(GameAction.Skill4)}][{Key(GameAction.Skill6)}][{Key(GameAction.Skill7)}][{Key(GameAction.Skill8)}]  각성 [{Key(GameAction.Skill5)}]\n");
-            sb.Append($"<color=#ffd84a>회복</color>  체력 물약 [{Key(GameAction.UseItem)}]  마나 물약 [{Key(GameAction.UseMana)}]  귀환 주문서 [{Key(GameAction.TownScroll)}]\n");
-            sb.Append("<color=#ffd84a>요일 던전</color>  광장의 던전 안내원. 요일마다 열리는 던전이 다르고 주말엔 전부 열립니다. 하루 3회.\n");
-            sb.Append("<color=#ffd84a>레이드</color>  중간 레이드는 수·토·일, 하루 1회 보상과 봉인 열쇠 조각. 일요일 최종 레이드는 조각 60개로 보상, 모자라면 연습 입장.\n");
-            sb.Append("<color=#ffd84a>강화</color>  대장간. +10부터 실패하면 장비가 파괴될 수 있으니 장비 보호권을 챙기세요.\n");
-            sb.Append("<color=#ffd84a>성장</color>  레벨마다 패시브 포인트 1. 메뉴 → 스킬에서 트리와 보조 젬을 고르세요.\n");
-            sb.Append("<color=#ffd84a>파티</color>  메뉴 → 파티에서 용병을 고용합니다. 스토리 동료는 마을 밖에서 자동으로 합류합니다.");
+            sb.Append(L.T("<color=#ffd84a>퀘스트</color>  머리 위 <color=#ffd640>!</color>는 새 퀘스트, <color=#ffd640>?</color>는 진행·보고. 오른쪽 위 알리미를 따라가세요.") + "\n");
+            sb.Append(L.F("<color=#ffd84a>전투</color>  공격 [{0}]  이동기 [{1}]  스킬 [{2}][{3}][{4}][{5}][{6}][{7}][{8}]  각성 [{9}]", Key(GameAction.Attack), Key(GameAction.Mobility), Key(GameAction.Skill1), Key(GameAction.Skill2), Key(GameAction.Skill3), Key(GameAction.Skill4), Key(GameAction.Skill6), Key(GameAction.Skill7), Key(GameAction.Skill8), Key(GameAction.Skill5)) + "\n");
+            sb.Append(L.F("<color=#ffd84a>회복</color>  체력 물약 [{0}]  마나 물약 [{1}]  귀환 주문서 [{2}]", Key(GameAction.UseItem), Key(GameAction.UseMana), Key(GameAction.TownScroll)) + "\n");
+            sb.Append(L.T("<color=#ffd84a>요일 던전</color>  광장의 던전 안내원. 요일마다 열리는 던전이 다르고 주말엔 전부 열립니다. 하루 3회.") + "\n");
+            sb.Append(L.T("<color=#ffd84a>레이드</color>  중간 레이드는 수·토·일, 하루 1회 보상과 봉인 열쇠 조각. 일요일 최종 레이드는 조각 60개로 보상, 모자라면 연습 입장.") + "\n");
+            sb.Append(L.T("<color=#ffd84a>강화</color>  대장간. +10부터 실패하면 장비가 파괴될 수 있으니 장비 보호권을 챙기세요.") + "\n");
+            sb.Append(L.T("<color=#ffd84a>성장</color>  레벨마다 패시브 포인트 1. 메뉴 → 스킬에서 트리와 보조 젬을 고르세요.") + "\n");
+            sb.Append(L.T("<color=#ffd84a>파티</color>  메뉴 → 파티에서 용병을 고용합니다. 스토리 동료는 마을 밖에서 자동으로 합류합니다."));
             return sb.ToString();
         }
     }

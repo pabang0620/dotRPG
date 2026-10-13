@@ -124,7 +124,7 @@ namespace DotRPG
             autoBtn.targetGraphic = autoImg;
             autoBtn.onClick.AddListener(QuestAutoPilot.Toggle);
             UiButton.Attach(autoBtn);
-            autoLabel = UIFactory.Text(autoImg.transform, "Text", "자동 진행", 17, Color.white, TextAnchor.MiddleCenter, true);
+            autoLabel = UIFactory.Text(autoImg.transform, "Text", L.T("자동 진행"), 17, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(autoLabel.rectTransform, 36f, 2f, 32f, 2f);
             FitLabel(autoLabel);
             autoKey = KeyBadge(autoImg.transform);
@@ -137,7 +137,7 @@ namespace DotRPG
             huntBtn.targetGraphic = huntImg;
             huntBtn.onClick.AddListener(QuestAutoPilot.ToggleHunt);
             UiButton.Attach(huntBtn);
-            huntLabel = UIFactory.Text(huntImg.transform, "Text", "자동 사냥", 17, Color.white, TextAnchor.MiddleCenter, true);
+            huntLabel = UIFactory.Text(huntImg.transform, "Text", L.T("자동 사냥"), 17, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(huntLabel.rectTransform, 36f, 2f, 32f, 2f);
             FitLabel(huntLabel);
             huntKey = KeyBadge(huntImg.transform);
@@ -243,8 +243,11 @@ namespace DotRPG
         static string CountText(string id, long count)
         {
             if (id != ConsumableDatabase.Gold || count < 1000000L) return count.ToString("N0");
-            if (count < 100000000L) return (System.Math.Floor(count / 1000.0) / 10.0).ToString("#,0.#") + "만";
-            return (System.Math.Floor(count / 1000000.0) / 100.0).ToString("#,0.##") + "억";
+            if (L.En) // [I18N] English uses M / B (millions, billions) instead of 만 / 억
+                return count < 1000000000L ? (System.Math.Floor(count / 10000.0) / 100.0).ToString("#,0.##") + "M"
+                    : (System.Math.Floor(count / 10000000.0) / 100.0).ToString("#,0.##") + "B";
+            if (count < 100000000L) return (System.Math.Floor(count / 1000.0) / 10.0).ToString("#,0.#") + "만"; // i18n-ignore Korean unit
+            return (System.Math.Floor(count / 1000000.0) / 100.0).ToString("#,0.##") + "억"; // i18n-ignore Korean unit
         }
 
         void RefreshQuest()
@@ -256,14 +259,14 @@ namespace DotRPG
             int lines = 0;
             if (main != null)
             {
-                questTitle.text = "메인 · " + main.DisplayTitle;
+                questTitle.text = L.F("메인 · {0}", L.T(main.DisplayTitle));
                 foreach (var o in Game.Quest.ObjectivesOf(main)) { AppendObjective(sb, o); lines++; }
             }
-            else questTitle.text = "진행할 메인 퀘스트 없음";
+            else questTitle.text = L.T("진행할 메인 퀘스트 없음");
             var sub = Game.Quest.Database.Get(Game.Session.Journal.Tracked);
             if (sub != null && Game.Quest.StatusOf(sub.id) != QuestStatus.Completed)
             {
-                sb.Append($"<color=#78d6ff>서브 · {sub.title}</color>\n");
+                sb.Append(L.F("<color=#78d6ff>서브 · {0}</color>", L.T(sub.title)) + "\n");
                 lines++;
                 foreach (var o in Game.Quest.ObjectivesOf(sub)) { AppendObjective(sb, o); lines++; }
             }
@@ -306,9 +309,9 @@ namespace DotRPG
             if (!force && input.UsingGamepad == lastGamepad) return;
             lastGamepad = input.UsingGamepad;
             controlsHint.text =
-                $"이동 {input.GetBindingLabel(GameAction.Move)}   공격 {input.GetBindingLabel(GameAction.Attack)}   " +
-                $"상호작용 {input.GetBindingLabel(GameAction.Interact)}   물약 {input.GetBindingLabel(GameAction.UseItem)}/{input.GetBindingLabel(GameAction.UseMana)}   " +
-                $"가방 {input.GetBindingLabel(GameAction.Inventory)}   지도 {input.GetBindingLabel(GameAction.Map)}   메뉴 {input.GetBindingLabel(GameAction.Pause)}";
+                L.F("이동 {0}   공격 {1}   ", input.GetBindingLabel(GameAction.Move), input.GetBindingLabel(GameAction.Attack)) +
+                L.F("상호작용 {0}   물약 {1}/{2}   ", input.GetBindingLabel(GameAction.Interact), input.GetBindingLabel(GameAction.UseItem), input.GetBindingLabel(GameAction.UseMana)) +
+                L.F("가방 {0}   지도 {1}   메뉴 {2}", input.GetBindingLabel(GameAction.Inventory), input.GetBindingLabel(GameAction.Map), input.GetBindingLabel(GameAction.Pause));
             // [UI] Size the text box (and its plate) to the text.
             controlsHint.rectTransform.sizeDelta = new Vector2(Mathf.Min(900f, controlsHint.preferredWidth + 4f), 26f);
             if (controlsPlate != null)

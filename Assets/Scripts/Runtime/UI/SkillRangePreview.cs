@@ -99,48 +99,48 @@ namespace DotRPG
             switch (career != null ? career.effect : id)
             {
                 // Fighter
-                case "cross": Fan(range, 120f); label.Append($"부채꼴 120° · 사거리 {range:0.#}m"); break;
-                case "flurry": Fan(range + .3f, 150f); label.Append($"부채꼴 150° · 사거리 {range + .3f:0.#}m"); break;
+                case "cross": Fan(range, 120f); label.Append(L.F("부채꼴 120° · 사거리 {0:0.#}m", range)); break;
+                case "flurry": Fan(range + .3f, 150f); label.Append(L.F("부채꼴 150° · 사거리 {0:0.#}m", range + .3f)); break;
                 case "rush": Line(0f, range, r); label.Append(LineText(range, r)); break;
                 case "break": Line(.4f, range, r); label.Append(LineText(range, r)); break;
                 case "iaido": Line(.3f, range, r); label.Append(LineText(range, r)); break;
-                case "execute": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append($"사거리 {range:0.#}m · 착지 반경 {r:0.#}m"); break;
-                case "xslash": Self(r); label.Append($"반경 {r:0.#}m · 경직 3초 · 3초 뒤 피해"); break;
-                case "swordrain": Self(range + 1f, .45f); Self(r); label.Append($"낙검 반경 {range + 1f:0.#}m · 거대한 검 반경 {r:0.#}m"); break;
-                case "stance": for (int k = -1; k <= 1; k++) Line(.4f, range, r, k == 0 ? 1f : .5f, k * 18f); label.Append($"기본 공격마다 · {LineText(range, r)} (3타 3줄)"); break;
+                case "execute": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append(L.F("사거리 {0:0.#}m · 착지 반경 {1:0.#}m", range, r)); break;
+                case "xslash": Self(r); label.Append(L.F("반경 {0:0.#}m · 경직 3초 · 3초 뒤 피해", r)); break;
+                case "swordrain": Self(range + 1f, .45f); Self(r); label.Append(L.F("낙검 반경 {0:0.#}m · 거대한 검 반경 {1:0.#}m", range + 1f, r)); break;
+                case "stance": for (int k = -1; k <= 1; k++) Line(.4f, range, r, k == 0 ? 1f : .5f, k * 18f); label.Append(L.F("기본 공격마다 · {0} (3타 3줄)", LineText(range, r))); break;
                 // Guardian
-                case "guard": case "oath": case "taunt": case "counter": case "aegis": Self(r); label.Append($"반경 {r:0.#}m"); break;
+                case "guard": case "oath": case "taunt": case "counter": case "aegis": Self(r); label.Append(L.F("반경 {0:0.#}m", r)); break;
                 case "shieldthrow": Line(0f, range, .75f); label.Append(LineText(range, .75f)); break;
-                case "bash": Fan(range, 110f); label.Append($"부채꼴 110° · 사거리 {range:0.#}m"); break;
+                case "bash": Fan(range, 110f); label.Append(L.F("부채꼴 110° · 사거리 {0:0.#}m", range)); break;
                 // Mage
-                case "fire": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append($"사거리 {range:0.#}m · 폭발 반경 {r:0.#}m"); break;
-                case "ice": for (int k = -1; k <= 1; k++) Line(0f, range, r, k == 0 ? 1f : .7f, k * 20f); label.Append($"3갈래 20° · {LineText(range, r)}"); break;
-                case "storm": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append($"사거리 {range:0.#}m · 연쇄 반경 {r:0.#}m"); break;
-                case "orbit": Fan(range, 150f); label.Append($"부채꼴 150° · 사거리 {range:0.#}m"); break;
-                case "nebula": Ahead(range, r); Ahead(range, r * 1.8f, .35f); label.Append($"사거리 {range:0.#}m · 반경 {r:0.#}m (최대 모으면 {r * 1.8f:0.#}m)"); break;
-                case "blink": Line(0f, range, .05f, .5f); Self(r); label.Append($"순간이동 {range:0.#}m · 잔상 폭발 반경 {r:0.#}m"); break;
-                case "rift": Ahead(range, r); Ahead(range, r * 1.6f, .35f); label.Append($"사거리 {range:0.#}m · 반경 {r:0.#}m (끌어당김 {r * 1.6f:0.#}m)"); break;
-                case "cataclysm": Self(r); label.Append($"내 주변 반경 {r:0.#}m에 혜성 4초"); break;
+                case "fire": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append(L.F("사거리 {0:0.#}m · 폭발 반경 {1:0.#}m", range, r)); break;
+                case "ice": for (int k = -1; k <= 1; k++) Line(0f, range, r, k == 0 ? 1f : .7f, k * 20f); label.Append(L.F("3갈래 20° · {0}", LineText(range, r))); break;
+                case "storm": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append(L.F("사거리 {0:0.#}m · 연쇄 반경 {1:0.#}m", range, r)); break;
+                case "orbit": Fan(range, 150f); label.Append(L.F("부채꼴 150° · 사거리 {0:0.#}m", range)); break;
+                case "nebula": Ahead(range, r); Ahead(range, r * 1.8f, .35f); label.Append(L.F("사거리 {0:0.#}m · 반경 {1:0.#}m (최대 모으면 {2:0.#}m)", range, r, r * 1.8f)); break;
+                case "blink": Line(0f, range, .05f, .5f); Self(r); label.Append(L.F("순간이동 {0:0.#}m · 잔상 폭발 반경 {1:0.#}m", range, r)); break;
+                case "rift": Ahead(range, r); Ahead(range, r * 1.6f, .35f); label.Append(L.F("사거리 {0:0.#}m · 반경 {1:0.#}m (끌어당김 {2:0.#}m)", range, r, r * 1.6f)); break;
+                case "cataclysm": Self(r); label.Append(L.F("내 주변 반경 {0:0.#}m에 혜성 4초", r)); break;
                 // Bishop
-                case "heal": case "bloom": case "cleanse": case "sanctuary": case "bless": case "dawn": Self(r); label.Append($"반경 {r:0.#}m"); break;
+                case "heal": case "bloom": case "cleanse": case "sanctuary": case "bless": case "dawn": Self(r); label.Append(L.F("반경 {0:0.#}m", r)); break;
                 case "light": Line(.4f, range, r); label.Append(LineText(range, r)); break;
                 // Self buffs
-                case "frenzy": case "barrier": Self(.7f); label.Append("자신에게 거는 버프"); break;
+                case "frenzy": case "barrier": Self(.7f); label.Append(L.T("자신에게 거는 버프")); break;
                 // Base class skills (SkillCaster.Skills)
-                case "crush": Ahead(Mathf.Min(1.1f, range), r); label.Append($"앞 {Mathf.Min(1.1f, range):0.#}m · 반경 {r:0.#}m"); break;
-                case "lance": Self(range, .5f); label.Append($"사거리 {range:0.#}m 안 가장 가까운 적"); break;
-                case "charge": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append($"돌진 {range:0.#}m · 반경 {r:0.#}m"); break;
-                case "firefield": Ahead(Mathf.Min(4f, range), r); label.Append($"앞 {Mathf.Min(4f, range):0.#}m · 반경 {r:0.#}m"); break;
-                case "whirl": case "cry": case "nova": Self(r); label.Append($"반경 {r:0.#}m"); break;
-                case "frostorb": Line(0f, range, r); Ahead(range, r); label.Append($"{LineText(range, r)} · 폭발 반경 {r:0.#}m"); break;
-                case "blades": case "meteor": Self(range, .6f); label.Append($"반경 {range:0.#}m 안의 적에게 낙하 · 한 발 반경 {r:0.#}m"); break;
-                default: if (r > 0f) { Self(r); label.Append($"반경 {r:0.#}m"); } break; // passives draw nothing
+                case "crush": Ahead(Mathf.Min(1.1f, range), r); label.Append(L.F("앞 {0:0.#}m · 반경 {1:0.#}m", Mathf.Min(1.1f, range), r)); break;
+                case "lance": Self(range, .5f); label.Append(L.F("사거리 {0:0.#}m 안 가장 가까운 적", range)); break;
+                case "charge": Line(0f, range, .05f, .5f); Ahead(range, r); label.Append(L.F("돌진 {0:0.#}m · 반경 {1:0.#}m", range, r)); break;
+                case "firefield": Ahead(Mathf.Min(4f, range), r); label.Append(L.F("앞 {0:0.#}m · 반경 {1:0.#}m", Mathf.Min(4f, range), r)); break;
+                case "whirl": case "cry": case "nova": Self(r); label.Append(L.F("반경 {0:0.#}m", r)); break;
+                case "frostorb": Line(0f, range, r); Ahead(range, r); label.Append(L.F("{0} · 폭발 반경 {1:0.#}m", LineText(range, r), r)); break;
+                case "blades": case "meteor": Self(range, .6f); label.Append(L.F("반경 {0:0.#}m 안의 적에게 낙하 · 한 발 반경 {1:0.#}m", range, r)); break;
+                default: if (r > 0f) { Self(r); label.Append(L.F("반경 {0:0.#}m", r)); } break; // passives draw nothing
             }
             Label = label.ToString();
             if (shapes.Count == 0) Label = "";
         }
 
-        static string LineText(float length, float halfWidth) => $"사거리 {length:0.#}m · 폭 {halfWidth * 2f:0.#}m";
+        static string LineText(float length, float halfWidth) => L.F("사거리 {0:0.#}m · 폭 {1:0.#}m", length, halfWidth * 2f);
 
         void Self(float r, float alpha = 1f) => shapes.Add(new Shape { kind = Kind.SelfCircle, a = r, alpha = alpha });
         void Ahead(float dist, float r, float alpha = 1f) => shapes.Add(new Shape { kind = Kind.AheadCircle, a = dist, b = r, alpha = alpha });

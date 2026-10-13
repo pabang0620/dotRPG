@@ -19,9 +19,9 @@ namespace DotRPG
             {
                 // [REVIVE] No revive left: a member waits for the next room; the host stays down in the boss room while
                 // another person fights on (elsewhere only the host can lead through the door, so the run ends).
-                if (Follower) { GameEvents.RaiseToast(run.InBossRoom ? "부활할 수 없습니다. 파티원을 응원하세요." : "부활할 수 없습니다. 다음 방에서 다시 일어납니다."); return true; }
-                if (HostWaits) { GameEvents.RaiseToast("부활할 수 없습니다. 파티원을 응원하세요."); return true; }
-                StartCoroutine(FailLater("부활 횟수를 모두 사용했습니다."));
+                if (Follower) { GameEvents.RaiseToast(run.InBossRoom ? L.T("부활할 수 없습니다. 파티원을 응원하세요.") : L.T("부활할 수 없습니다. 다음 방에서 다시 일어납니다.")); return true; }
+                if (HostWaits) { GameEvents.RaiseToast(L.T("부활할 수 없습니다. 파티원을 응원하세요.")); return true; }
+                StartCoroutine(FailLater("부활 횟수를 모두 사용했습니다.")); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
                 return true;
             }
             ReviveOpen = true;
@@ -43,7 +43,7 @@ namespace DotRPG
             if (NetHost && Game.IsWorldRunning)
             {
                 allDownFor = PartyNet.Current.AnyHumanUp || ReviveOpen ? 0f : allDownFor + Time.deltaTime;
-                if (allDownFor > ReviveSeconds + 2f) { allDownFor = 0f; Fail("파티원이 모두 쓰러졌습니다."); return; }
+                if (allDownFor > ReviveSeconds + 2f) { allDownFor = 0f; Fail("파티원이 모두 쓰러졌습니다."); return; } // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
             }
             if (Game.Player != null && !Game.Player.IsDead) { ReviveOpen = false; return; }
             if (!Game.IsWorldRunning) return;
@@ -58,8 +58,8 @@ namespace DotRPG
             if (reviveClock >= reviveUntil)
             {
                 ReviveOpen = false;
-                if (Follower || HostWaits) { GameEvents.RaiseToast("부활하지 않았습니다."); return; }
-                Fail("부활하지 않았습니다. (시간 초과)");
+                if (Follower || HostWaits) { GameEvents.RaiseToast(L.T("부활하지 않았습니다.")); return; }
+                Fail("부활하지 않았습니다. (시간 초과)"); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
             }
         }
 
@@ -71,7 +71,7 @@ namespace DotRPG
         {
             var local = Game.Player;
             if (!ReviveOpen || run == null || local == null || !local.IsDead || run.RevivesLeft <= 0 || ReviveCoins.Busy) return false;
-            if (!ReviveCoins.CanUse) { GameEvents.RaiseToast("부활 코인이 없습니다. (매일 06:00에 1개 지급)"); Game.Audio.PlaySfx("cancel"); return false; }
+            if (!ReviveCoins.CanUse) { GameEvents.RaiseToast(L.T("부활 코인이 없습니다. (매일 06:00에 1개 지급)")); Game.Audio.PlaySfx("cancel"); return false; }
             ReviveCoins.Use("dungeon", (ok, why) =>
             {
                 if (!ok) { GameEvents.RaiseToast(why); Game.Audio.PlaySfx("cancel"); return; }
@@ -106,7 +106,7 @@ namespace DotRPG
             else local.Revive(1f, ReviveInvulnerable);
             local.Data.Mana = local.MaxMana;
             Game.Audio.PlaySfx("quest");
-            GameEvents.RaiseToast(ReviveCoins.Free ? $"부활했습니다! (남은 부활 {run.RevivesLeft})" : $"부활했습니다! (남은 부활 {run.RevivesLeft} · 부활 코인 {ReviveCoins.Coins})");
+            GameEvents.RaiseToast(ReviveCoins.Free ? L.F("부활했습니다! (남은 부활 {0})", run.RevivesLeft) : L.F("부활했습니다! (남은 부활 {0} · 부활 코인 {1})", run.RevivesLeft, ReviveCoins.Coins));
             RoomChanged?.Invoke();
         }
     }

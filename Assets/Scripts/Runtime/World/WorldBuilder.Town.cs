@@ -216,7 +216,7 @@ namespace DotRPG
                 {
                     var sign = StaticProp("Sign", "town_sign_0", foot, new Vector2(0.8f, 0.4f), new Vector2(0f, 0.2f));
                     var interact = sign.AddComponent<DialogueInteractable>();
-                    interact.Setup("읽기", SignDialogueFor(x, y));
+                    interact.Setup(L.T("읽기"), SignDialogueFor(x, y));
                     interact.ConfigureShape(new Vector2(0f, 0.2f), 0.1f, new Vector2(0f, 1.5f));
                     return true;
                 }
@@ -224,7 +224,7 @@ namespace DotRPG
                 {
                     var board = StaticProp("NoticeBoard", "town_board", new Vector2(x + 1f, y + 0.1f), new Vector2(1.8f, 0.4f), new Vector2(0f, 0.2f));
                     var interact = board.AddComponent<DialogueInteractable>();
-                    interact.Setup("게시판 읽기", "town_board");
+                    interact.Setup(L.T("게시판 읽기"), "town_board");
                     interact.ConfigureShape(new Vector2(0f, 0.2f), 0.5f, new Vector2(0f, 2.1f));
                     PointsOfInterest.Add(center);
                     return true;
@@ -240,20 +240,20 @@ namespace DotRPG
                 case 'H':
                 {
                     int style = x < 20 ? 0 : y > 30 ? 1 : 2;
-                    HdBuilding("House", $"town_house_{style}", x, y, 10, 8, "문 두드리기", "town_house_door");
+                    HdBuilding("House", $"town_house_{style}", x, y, 10, 8, L.T("문 두드리기"), "town_house_door");
                     return true;
                 }
-                case 'I': HdBuilding("ChiefHall", "town_hall", x, y, 10, 8, "문 두드리기", "town_hall_door"); return true;
-                case 'M': HdBuilding("GeneralStore", "town_store", x, y, 10, 8, "잡화점 들어가기", null, NpcService.Shop); return true;
-                case 'A': HdBuilding("Smithy", "town_smithy", x, y, 10, 8, "대장간 들어가기", null, NpcService.Blacksmith); return true;
-                case 'Z': HdBuilding("Warehouse", "town_warehouse", x, y, 10, 8, "창고 들어가기", null, NpcService.Storage); return true;
+                case 'I': HdBuilding("ChiefHall", "town_hall", x, y, 10, 8, L.T("문 두드리기"), "town_hall_door"); return true;
+                case 'M': HdBuilding("GeneralStore", "town_store", x, y, 10, 8, L.T("잡화점 들어가기"), null, NpcService.Shop); return true;
+                case 'A': HdBuilding("Smithy", "town_smithy", x, y, 10, 8, L.T("대장간 들어가기"), null, NpcService.Blacksmith); return true;
+                case 'Z': HdBuilding("Warehouse", "town_warehouse", x, y, 10, 8, L.T("창고 들어가기"), null, NpcService.Storage); return true;
                 case 'L':
                 {
                     // [STORY] 브람의 마굿간; burned from the attack night on.
                     bool burned = Game.Session != null && Game.Session.Journal.HasFlag("stable_burned");
                     string key = burned ? "town_stable_burned" : "town_stable";
                     if (Resources.Load<Sprite>(VillageBuildingArt.Find(key).ResourcePath) == null) key = "town_warehouse"; // until the art is in
-                    HdBuilding("Stable", key, x, y, 10, 8, "살펴보기", burned ? "stable_burned_look" : "stable_look");
+                    HdBuilding("Stable", key, x, y, 10, 8, L.T("살펴보기"), burned ? "stable_burned_look" : "stable_look");
                     return true;
                 }
                 case 'X':
@@ -269,7 +269,7 @@ namespace DotRPG
                     var fountain = StaticProp("Fountain", "town_fountain_0", pos, new Vector2(2.8f, 1.1f), new Vector2(0f, 0.65f));
                     fountain.AddComponent<FountainWater>().Setup();
                     var look = fountain.AddComponent<DialogueInteractable>();
-                    look.Setup("살펴보기", "town_fountain");
+                    look.Setup(L.T("살펴보기"), "town_fountain");
                     look.ConfigureShape(new Vector2(0f, -0.1f), 0.9f, new Vector2(0f, 2.9f));
                     PointsOfInterest.Add(pos + Vector2.up);
                     return true;

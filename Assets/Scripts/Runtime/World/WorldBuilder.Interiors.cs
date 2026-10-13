@@ -26,7 +26,7 @@ namespace DotRPG
                     var old = building.GetComponentInChildren<DialogueInteractable>();
                     Vector3 doorPos = old != null ? old.transform.localPosition : Vector3.zero;
                     if (old != null) { old.gameObject.SetActive(false); Destroy(old.gameObject); }
-                    ServiceDoor.Attach(building.gameObject, service, MapRegistry.ServiceName(service) + " 들어가기").transform.localPosition = doorPos;
+                    ServiceDoor.Attach(building.gameObject, service, L.F("{0} 들어가기", MapRegistry.ServiceName(service))).transform.localPosition = doorPos;
                 }
             }
             foreach (var door in objectsRoot.GetComponentsInChildren<ServiceDoor>())

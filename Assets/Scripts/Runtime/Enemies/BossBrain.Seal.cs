@@ -40,7 +40,7 @@ namespace DotRPG
         IEnumerator Seal()
         {
             sealRunning = true;
-            string line = RaidSeal.Line;
+            string line = L.T(RaidSeal.Line);
             RaidSeal.ShowLine(E, line);
             RaidSeal.RaiseLine(E, line);
             var aura = SkillFx.Spawn("fx_glow", E.Center, new Color(.7f, .4f, 1f, .5f), RaidSeal.LineLead + RaidSeal.WindowMax, SkillFx.At(E.Position.y, -1))

@@ -63,7 +63,7 @@ namespace DotRPG
                     var d=VillageBuildingArt.Find(keys[i]);
                     var house=StaticProp("House",keys[i],feet[i],d.ColliderSize,d.ColliderOffset);
                     var sr=house.GetComponent<SpriteRenderer>();sr.color=new Color(.82f,.91f,.80f);
-                    var door=ServiceDoor.Attach(house,MapRegistry.IndoorServices[i],MapRegistry.ServiceName(MapRegistry.IndoorServices[i])+" 들어가기");
+                    var door=ServiceDoor.Attach(house,MapRegistry.IndoorServices[i],L.F("{0} 들어가기", MapRegistry.ServiceName(MapRegistry.IndoorServices[i])));
                     door.transform.localPosition=d.Entrance;
                     TreeFade.Attach(house);
                 }

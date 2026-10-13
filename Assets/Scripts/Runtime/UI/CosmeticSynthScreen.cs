@@ -36,15 +36,15 @@ namespace DotRPG
 
         public static CosmeticSynthScreen Create(Transform canvas)
         {
-            var w = CreateWindow<CosmeticSynthScreen>(canvas, "CosmeticSynth", "합성 · 컬렉션", "menuicon_synth");
+            var w = CreateWindow<CosmeticSynthScreen>(canvas, "CosmeticSynth", L.T("합성 · 컬렉션"), "menuicon_synth");
             Instance = w;
             var tl = new Vector2(0f, 1f);
-            w.synthTabBtn = Button(w.content, "TabSynth", "합성", "ui_btn", tl, tl, Vector2.zero, new Vector2(200f, 52f), () => w.ShowTab(false), 20);
-            w.collectionTabBtn = Button(w.content, "TabCollection", "컬렉션", "ui_btngray", tl, tl, new Vector2(212f, 0f), new Vector2(200f, 52f), () => w.ShowTab(true), 20);
+            w.synthTabBtn = Button(w.content, "TabSynth", L.T("합성"), "ui_btn", tl, tl, Vector2.zero, new Vector2(200f, 52f), () => w.ShowTab(false), 20);
+            w.collectionTabBtn = Button(w.content, "TabCollection", L.T("컬렉션"), "ui_btngray", tl, tl, new Vector2(212f, 0f), new Vector2(200f, 52f), () => w.ShowTab(true), 20);
 
             // ---------- 합성 ----------
             w.synthTab = UIFactory.Place(UIFactory.Rect(w.content, "Synth"), tl, tl, new Vector2(0f, -66f), new Vector2(1220f, 528f));
-            Label(w.synthTab, "Help", "같은 외형이 또 나오면 <color=#ffd34a>여분</color>으로 쌓입니다. 같은 등급 여분 4개로 한 등급 위 외형에 도전하거나, 여분을 별조각으로 분해할 수 있습니다.", 18,
+            Label(w.synthTab, "Help", L.T("같은 외형이 또 나오면 <color=#ffd34a>여분</color>으로 쌓입니다. 같은 등급 여분 4개로 한 등급 위 외형에 도전하거나, 여분을 별조각으로 분해할 수 있습니다."), 18,
                 tl, tl, Vector2.zero, new Vector2(1220f, 30f), TextAnchor.MiddleLeft);
             string[] froms = { "common", "rare", "epic" };
             for (int i = 0; i < froms.Length; i++)
@@ -61,8 +61,8 @@ namespace DotRPG
                 v.bar.preserveAspect = false; v.bar.raycastTarget = false;
                 UIFactory.Place(v.bar.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 12f));
                 v.pity = Label(card.transform, "Pity", "", 16, tl, tl, new Vector2(20f, -118f), new Vector2(280f, 24f));
-                v.one = Button(card.transform, "One", "1회 합성", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-154f, 10f), new Vector2(130f, 46f), () => w.DoSynth(from, false), 18);
-                v.all = Button(card.transform, "All", "모두 합성", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-14f, 10f), new Vector2(130f, 46f), () => w.DoSynth(from, true), 18);
+                v.one = Button(card.transform, "One", L.T("1회 합성"), "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-154f, 10f), new Vector2(130f, 46f), () => w.DoSynth(from, false), 18);
+                v.all = Button(card.transform, "All", L.T("모두 합성"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-14f, 10f), new Vector2(130f, 46f), () => w.DoSynth(from, true), 18);
                 w.rules.Add(v);
             }
             w.resultText = Label(w.synthTab, "Result", "", 19, tl, tl, new Vector2(SpareX, -40f - (40f + SpareRows * SpareH + 16f) - 8f), new Vector2(SpareW, 48f));
@@ -79,7 +79,7 @@ namespace DotRPG
                 v.name = Cell(v.row, "Name", 60f, 232f);
                 var view = v;
                 v.dismantle = Button(v.row, "Dismantle", "", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(200f, 44f), () => w.AskDismantle(view.id, false), 16);
-                v.dismantleOne = Button(v.row, "DismantleOne", "1개 분해", "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-218f, 0f), new Vector2(90f, 44f), () => w.AskDismantle(view.id, true), 16);
+                v.dismantleOne = Button(v.row, "DismantleOne", L.T("1개 분해"), "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-218f, 0f), new Vector2(90f, 44f), () => w.AskDismantle(view.id, true), 16);
                 w.spares.Add(v);
             }
 
@@ -123,12 +123,12 @@ namespace DotRPG
             rarity == "unique" ? "#ffb347" : rarity == "epic" ? "#c58cff" : rarity == "rare" ? "#9fc4ff" : "#cfd6e2";
 
         static string Grade(string rarity) =>
-            rarity == "unique" ? "유니크" : rarity == "epic" ? "에픽" : rarity == "rare" ? "희귀" : "일반";
+            rarity == "unique" ? L.T("유니크") : rarity == "epic" ? L.T("에픽") : rarity == "rare" ? L.T("희귀") : L.T("일반");
 
         protected override void Refresh()
         {
-            if (!StarShopClient.Loaded) { SetStatus(StarShopClient.Available ? "불러오는 중..." : "온라인 캐릭터로 접속하면 이용할 수 있습니다.", false); }
-            else SetStatus($"보유 {StarShopClient.Stars(StarShopClient.Balance)}");
+            if (!StarShopClient.Loaded) { SetStatus(StarShopClient.Available ? L.T("불러오는 중...") : L.T("온라인 캐릭터로 접속하면 이용할 수 있습니다."), false); }
+            else SetStatus(L.F("보유 {0}", StarShopClient.Stars(StarShopClient.Balance)));
             if (showCollections) RefreshCollections(); else RefreshSynth();
         }
 
@@ -140,15 +140,15 @@ namespace DotRPG
                 var r = i < StarShopClient.Synth.Count ? StarShopClient.Synth[i] : null;
                 if (r == null) { v.title.text = ""; v.info.text = ""; v.pity.text = ""; v.one.interactable = v.all.interactable = false; continue; }
                 int have = StarShopClient.SparesOf(r.from);
-                string target = r.to == "unique" ? "내 직업 유니크 스킨" : r.to == "epic" ? "에픽 오라·내 직업 에픽 스킨" : "희귀 오라";
-                v.title.text = $"<color={Hex(r.from)}>{Grade(r.from)}</color> 여분 {r.count}개  →  <color={Hex(r.to)}><b>{Grade(r.to)}</b></color> 1개";
-                v.info.text = $"성공 <color=#ffd34a>{r.rate:0.#}%</color> · 결과: {target} (아직 없는 것부터)\n실패하면 넣은 여분 중 1개를 돌려받습니다.   <color=#b8c4d8>보유 여분 {have}개</color>";
+                string target = r.to == "unique" ? L.T("내 직업 유니크 스킨") : r.to == "epic" ? L.T("에픽 오라·내 직업 에픽 스킨") : L.T("희귀 오라");
+                v.title.text = L.F("<color={0}>{1}</color> 여분 {2}개  →  <color={3}><b>{4}</b></color> 1개", Hex(r.from), Grade(r.from), r.count, Hex(r.to), Grade(r.to));
+                v.info.text = L.F("성공 <color=#ffd34a>{0:0.#}%</color> · 결과: {1} (아직 없는 것부터)\n실패하면 넣은 여분 중 1개를 돌려받습니다.   <color=#b8c4d8>보유 여분 {2}개</color>", r.rate, target, have);
                 bool hasPity = r.pity > 0;
                 v.bar.transform.parent.gameObject.SetActive(hasPity);
                 if (hasPity)
                 {
                     v.bar.rectTransform.sizeDelta = new Vector2(276f * Mathf.Clamp01(r.fails / (float)r.pity), 12f);
-                    v.pity.text = r.fails >= r.pity ? "<color=#ffd34a><b>다음 합성은 성공 확정!</b></color>" : $"연속 실패 {r.fails}/{r.pity} · {r.pity}번 실패하면 다음은 확정";
+                    v.pity.text = r.fails >= r.pity ? L.T("<color=#ffd34a><b>다음 합성은 성공 확정!</b></color>") : L.F("연속 실패 {0}/{1} · {1}번 실패하면 다음은 확정", r.fails, r.pity);
                 }
                 else v.pity.text = "";
                 bool can = !busy && StarShopClient.Loaded && have >= r.count;
@@ -165,7 +165,7 @@ namespace DotRPG
             list.Sort((a, b) => b.p.Rarity != a.p.Rarity ? b.p.Rarity.CompareTo(a.p.Rarity) : b.n.CompareTo(a.n));
             int total = 0;
             foreach (var x in list) total += x.n;
-            spareHead.text = list.Count == 0 ? "<b>여분</b>   <color=#8c96a8>아직 여분이 없습니다. 이미 가진 외형이 다시 나오면 여기에 쌓입니다.</color>" : $"<b>여분</b> {total}개   <color=#b8c4d8>분해하면 별조각으로 돌려받습니다.</color>";
+            spareHead.text = list.Count == 0 ? L.T("<b>여분</b>   <color=#8c96a8>아직 여분이 없습니다. 이미 가진 외형이 다시 나오면 여기에 쌓입니다.</color>") : L.F("<b>여분</b> {0}개   <color=#b8c4d8>분해하면 별조각으로 돌려받습니다.</color>", total);
             int sparePages = Mathf.Max(1, (list.Count + SpareRows - 1) / SpareRows);
             sparePage = Mathf.Clamp(sparePage, 0, sparePages - 1);
             SetPager(sparePager, sparePage, sparePages);
@@ -183,8 +183,8 @@ namespace DotRPG
                 string key = StarShopClient.RarityKey(p.Rarity);
                 StarShopClient.Dismantle.TryGetValue(key, out int each);
                 v.id = p.Id;
-                v.name.text = $"<color={Hex(key)}>[{Grade(key)}]</color> {p.Name}{(p.IsSkin ? " (스킨)" : "")}   여분 <b>{n}</b>";
-                TextOf(v.dismantle).text = $"모두 분해 · 별조각 {each * n:N0}";
+                v.name.text = $"<color={Hex(key)}>[{Grade(key)}]</color> {L.T(p.Name)}" + (p.IsSkin ? L.T(" (스킨)") : "") + L.F("   여분 <b>{0}</b>", n);
+                TextOf(v.dismantle).text = L.F("모두 분해 · 별조각 {0:N0}", each * n);
                 v.dismantle.interactable = !busy;
                 v.dismantleOne.gameObject.SetActive(n > 1);
                 v.dismantleOne.interactable = !busy;
@@ -215,7 +215,7 @@ namespace DotRPG
 
         void RefreshCollections()
         {
-            bonusText.text = $"<b>컬렉션 효과</b>   공격력 <color=#ffb347>+{StarShopClient.CollectionAttack}%</color>   최대 체력 <color=#8fe28f>+{StarShopClient.CollectionHealth}%</color>   <color=#b8c4d8>(계정 전체 · 외형은 소모되지 않음)</color>";
+            bonusText.text = L.F("<b>컬렉션 효과</b>   공격력 <color=#ffb347>+{0}%</color>   최대 체력 <color=#8fe28f>+{1}%</color>   <color=#b8c4d8>(계정 전체 · 외형은 소모되지 않음)</color>", StarShopClient.CollectionAttack, StarShopClient.CollectionHealth);
             var all = StarShopClient.Collections;
             int setPages = Mathf.Max(1, (all.Count + SetRows - 1) / SetRows);
             setPage = Mathf.Clamp(setPage, 0, setPages - 1);
@@ -230,9 +230,9 @@ namespace DotRPG
                 var c = all[at];
                 v.id = c.id;
                 var reward = new List<string>();
-                if (c.attack > 0) reward.Add($"공격력 +{c.attack}%");
-                if (c.health > 0) reward.Add($"최대 체력 +{c.health}%");
-                v.title.text = $"<b>{c.name}</b>   <color=#ffd34a>{string.Join(" · ", reward)}</color>{(c.registered ? "   <color=#8fe28f>등록 완료</color>" : "")}";
+                if (c.attack > 0) reward.Add(L.F("공격력 +{0}%", c.attack));
+                if (c.health > 0) reward.Add(L.F("최대 체력 +{0}%", c.health));
+                v.title.text = $"<b>{L.T(c.name)}</b>   <color=#ffd34a>{string.Join(" · ", reward)}</color>" + (c.registered ? L.T("   <color=#8fe28f>등록 완료</color>") : "");
                 var parts = new List<string>();
                 int have = 0, need = 0;
                 foreach (var m in c.members)
@@ -240,18 +240,18 @@ namespace DotRPG
                     var p = CosmeticCatalog.Find(m);
                     bool owned = StarShopClient.Owned.Contains(m);
                     need++; if (owned) have++;
-                    parts.Add(owned ? $"<color=#8fe28f>{p?.Name ?? m}</color>" : $"<color=#6c7486>{p?.Name ?? m}</color>");
+                    parts.Add(owned ? $"<color=#8fe28f>{L.T(p?.Name ?? m)}</color>" : $"<color=#6c7486>{L.T(p?.Name ?? m)}</color>");
                 }
                 foreach (var s in c.requires)
                 {
                     var other = all.Find(x => x.id == s);
                     bool done = other != null && other.registered;
                     need++; if (done) have++;
-                    parts.Add(done ? $"<color=#8fe28f>{other?.name ?? s}</color>" : $"<color=#6c7486>{other?.name ?? s}</color>");
+                    parts.Add(done ? $"<color=#8fe28f>{L.T(other?.name ?? s)}</color>" : $"<color=#6c7486>{L.T(other?.name ?? s)}</color>");
                 }
                 v.members.text = $"{have}/{need}   " + string.Join(" · ", parts);
                 bool can = StarShopClient.CanRegister(c);
-                TextOf(v.register).text = c.registered ? "등록됨" : can ? "등록하기" : $"모으는 중 {have}/{need}";
+                TextOf(v.register).text = c.registered ? L.T("등록됨") : can ? L.T("등록하기") : L.F("모으는 중 {0}/{1}", have, need);
                 v.register.interactable = can && !busy;
             }
         }
@@ -266,7 +266,7 @@ namespace DotRPG
             if (times < 1) { Game.Audio.PlaySfx("cancel"); return; }
             if (all)
             {
-                Game.UI.Confirm($"여분 {times * rule.count}개로 {times}번 합성합니다.\n<size=18>실패할 때마다 넣은 여분 중 1개만 돌아옵니다.</size>\n합성할까요?", () => Synth(from, times), true);
+                Game.UI.Confirm(L.F("여분 {0}개로 {1}번 합성합니다.\n<size=18>실패할 때마다 넣은 여분 중 1개만 돌아옵니다.</size>\n합성할까요?", times * rule.count, times), () => Synth(from, times), true);
                 return;
             }
             Synth(from, times);
@@ -276,7 +276,7 @@ namespace DotRPG
         {
             if (busy) return;
             busy = true;
-            resultText.text = "<color=#b8c4d8>합성하는 중...</color>";
+            resultText.text = L.T("<color=#b8c4d8>합성하는 중...</color>");
             Refresh();
             StarShopClient.DoSynth(from, times, (ok, msg, list) =>
             {
@@ -289,15 +289,15 @@ namespace DotRPG
                     if (!r.success) continue;
                     wins++;
                     var p = CosmeticCatalog.Find(r.itemId);
-                    got.Add($"<color={Hex(r.rarity)}>{p?.Name ?? r.itemId}</color>{(r.byPity ? " (확정)" : "")}");
+                    got.Add($"<color={Hex(r.rarity)}>{L.T(p?.Name ?? r.itemId)}</color>" + (r.byPity ? L.T(" (확정)") : ""));
                 }
                 if (wins > 0)
                 {
                     Game.Audio.PlaySfx("quest");
-                    GameEvents.RaiseToast($"<color=#ffd34a>합성 성공!</color> {string.Join(", ", got)}");
+                    GameEvents.RaiseToast(L.F("<color=#ffd34a>합성 성공!</color> {0}", string.Join(", ", got)));
                 }
                 else Game.Audio.PlaySfx("select");
-                resultText.text = $"합성 {list.Count}회 · 성공 <color=#ffd34a>{wins}</color>회" + (got.Count > 0 ? $"\n획득: {string.Join(", ", got)}" : "\n<color=#b8c4d8>실패한 만큼 여분 1개씩 돌려받았고, 연속 실패가 쌓였습니다.</color>");
+                resultText.text = L.F("합성 {0}회 · 성공 <color=#ffd34a>{1}</color>회", list.Count, wins) + "\n" + (got.Count > 0 ? L.F("획득: {0}", string.Join(", ", got)) : L.T("<color=#b8c4d8>실패한 만큼 여분 1개씩 돌려받았고, 연속 실패가 쌓였습니다.</color>"));
                 Refresh();
             });
         }
@@ -310,14 +310,14 @@ namespace DotRPG
             if (one) n = Mathf.Min(1, n);
             if (p == null || n <= 0) return;
             StarShopClient.Dismantle.TryGetValue(StarShopClient.RarityKey(p.Rarity), out int each);
-            Game.UI.Confirm($"{p.Name} 여분 {n}개를 분해합니다.\n별조각 {each * n:N0}개를 받습니다. (착용 중인 외형은 그대로)", () =>
+            Game.UI.Confirm(L.F("{0} 여분 {1}개를 분해합니다.\n별조각 {2:N0}개를 받습니다. (착용 중인 외형은 그대로)", L.T(p.Name), n, each * n), () =>
             {
                 busy = true;
                 StarShopClient.DoDismantle(id, n, (ok, msg, stars) =>
                 {
                     busy = false;
                     if (!ok) { GameEvents.RaiseToast(msg); Game.Audio.PlaySfx("cancel"); }
-                    else { GameEvents.RaiseToast($"분해 완료 · 별조각 +{stars:N0}"); Game.Audio.PlaySfx("confirm"); }
+                    else { GameEvents.RaiseToast(L.F("분해 완료 · 별조각 +{0:N0}", stars)); Game.Audio.PlaySfx("confirm"); }
                     Refresh();
                 });
             }, true);
@@ -335,7 +335,7 @@ namespace DotRPG
                 else
                 {
                     Game.Audio.PlaySfx("quest");
-                    GameEvents.RaiseToast($"<color=#ffd34a>컬렉션 완성!</color> {c?.name}");
+                    GameEvents.RaiseToast(L.F("<color=#ffd34a>컬렉션 완성!</color> {0}", L.T(c?.name)));
                 }
                 Refresh();
             });

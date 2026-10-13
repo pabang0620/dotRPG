@@ -42,11 +42,11 @@ namespace DotRPG
             {
                 switch (def.service)
                 {
-                    case NpcService.Shop: return "상점 열기";
-                    case NpcService.Blacksmith: return "장비 강화";
-                    case NpcService.Storage: return "창고 열기";
-                    case NpcService.Dungeon: return "던전 입장"; // [DUNGEON]
-                    default: return "대화하기";
+                    case NpcService.Shop: return L.T("상점 열기");
+                    case NpcService.Blacksmith: return L.T("장비 강화");
+                    case NpcService.Storage: return L.T("창고 열기");
+                    case NpcService.Dungeon: return L.T("던전 입장"); // [DUNGEON]
+                    default: return L.T("대화하기");
                 }
             }
         }

@@ -39,7 +39,7 @@ namespace DotRPG
                     var inn = StaticProp("Inn", "inn", pos, new Vector2(4.6f, 2.3f), new Vector2(0f, 1.3f));
                     var door = new GameObject("Door").AddComponent<DialogueInteractable>();
                     door.transform.SetParent(inn.transform, false);
-                    door.Setup("여관 둘러보기", "canyon_inn");
+                    door.Setup(L.T("여관 둘러보기"), "canyon_inn");
                     door.ConfigureShape(new Vector2(0f, 0f), 0.3f, new Vector2(0f, 1.6f));
                     PointsOfInterest.Add(pos + Vector2.up * 1.5f);
                     break;
@@ -64,7 +64,7 @@ namespace DotRPG
                 {
                     var gate = StaticProp("Gate", "gate", new Vector2(x + 2f, y + 0.1f), new Vector2(3.9f, 1.3f), new Vector2(0f, 0.65f));
                     var look = gate.AddComponent<DialogueInteractable>();
-                    look.Setup("살펴보기", "canyon_gate");
+                    look.Setup(L.T("살펴보기"), "canyon_gate");
                     look.ConfigureShape(new Vector2(0f, -0.2f), 0.6f, new Vector2(0f, 2.6f));
                     break;
                 }
@@ -72,7 +72,7 @@ namespace DotRPG
                 {
                     var sign = StaticProp("Sign", "sign", foot, new Vector2(0.8f, 0.4f), new Vector2(0f, 0.2f));
                     var interact = sign.AddComponent<DialogueInteractable>();
-                    interact.Setup("읽기", SignDialogueFor(x, y));
+                    interact.Setup(L.T("읽기"), SignDialogueFor(x, y));
                     interact.ConfigureShape(new Vector2(0f, 0.2f), 0.1f, new Vector2(0f, 1.4f));
                     break;
                 }
@@ -85,7 +85,7 @@ namespace DotRPG
                     var house = StaticProp("House", sprite, pos, new Vector2(2.8f, 1.9f), new Vector2(0f, 1.2f));
                     var door = new GameObject("Door").AddComponent<DialogueInteractable>();
                     door.transform.SetParent(house.transform, false);
-                    door.Setup("문 두드리기", Canyon ? "canyon_house_door" : "house_door");
+                    door.Setup(L.T("문 두드리기"), Canyon ? "canyon_house_door" : "house_door");
                     door.ConfigureShape(new Vector2(0f, 0f), 0.2f, new Vector2(0f, 1.4f));
                     PointsOfInterest.Add(pos + Vector2.up);
                     break;

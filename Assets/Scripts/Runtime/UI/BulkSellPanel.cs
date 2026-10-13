@@ -16,9 +16,9 @@ namespace DotRPG
 
         static readonly (Kind kind, string label)[] Options =
         {
-            (Kind.Common, "커먼 장비"), (Kind.Uncommon, "언커먼 장비"), (Kind.Rare, "레어 장비"),
-            (Kind.Consumable, "소비 아이템 (물약 · 주문서)"), (Kind.Material, "재료"),
-            (Kind.LowTierOnly, "장비는 내 레벨 단계보다 낮은 것만"),
+            (Kind.Common, L.T("커먼 장비")), (Kind.Uncommon, L.T("언커먼 장비")), (Kind.Rare, L.T("레어 장비")),
+            (Kind.Consumable, L.T("소비 아이템 (물약 · 주문서)")), (Kind.Material, L.T("재료")),
+            (Kind.LowTierOnly, L.T("장비는 내 레벨 단계보다 낮은 것만")),
         };
         const string PrefKey = "dotrpg.bulkSell";
 
@@ -35,7 +35,7 @@ namespace DotRPG
             UIFactory.Place(bg.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 540f)); // [UI] 540: the summary line sat on the note at 520
             var p = bg.gameObject.AddComponent<BulkSellPanel>();
             p.changed = onSold;
-            var title = UIFactory.Text(bg.transform, "Title", "일괄 판매", 28, UIColors.Highlight, TextAnchor.UpperCenter, true);
+            var title = UIFactory.Text(bg.transform, "Title", L.T("일괄 판매"), 28, UIColors.Highlight, TextAnchor.UpperCenter, true);
             UIFactory.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -16f), new Vector2(520f, 40f));
             for (int i = 0; i < Options.Length; i++)
             {
@@ -48,12 +48,12 @@ namespace DotRPG
                 UIFactory.Stretch(t.rectTransform, 16f, 0f, 10f, 0f);
                 p.boxes.Add(t);
             }
-            var note = UIFactory.Text(bg.transform, "Note", "<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>", 16, Color.white, TextAnchor.UpperCenter, true);
+            var note = UIFactory.Text(bg.transform, "Note", L.T("<color=#8c96a8>강화된 장비(+1 이상), 보호권, 봉인 열쇠는 팔지 않습니다. 착용 중인 장비는 가방에 없어 제외됩니다.</color>"), 16, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -386f), new Vector2(500f, 44f));
             p.summary = UIFactory.Text(bg.transform, "Summary", "", 20, UIColors.Cream, TextAnchor.MiddleCenter, true);
             UIFactory.Place(p.summary.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 76f), new Vector2(520f, 30f));
-            MakeButton(bg.transform, "판매", "ui_btn", new Vector2(-6f, 16f), new Vector2(1f, 0f), p.AskSell);
-            MakeButton(bg.transform, "닫기", "ui_btngray", new Vector2(6f, 16f), new Vector2(0f, 0f), () => p.gameObject.SetActive(false));
+            MakeButton(bg.transform, L.T("판매"), "ui_btn", new Vector2(-6f, 16f), new Vector2(1f, 0f), p.AskSell);
+            MakeButton(bg.transform, L.T("닫기"), "ui_btngray", new Vector2(6f, 16f), new Vector2(0f, 0f), () => p.gameObject.SetActive(false));
             p.Load();
             bg.gameObject.SetActive(false);
             return p;
@@ -150,7 +150,7 @@ namespace DotRPG
             var list = Picked(out long total);
             int items = 0;
             foreach (var e in list) items += e.count;
-            summary.text = busy ? "판매 중..." : list.Count == 0 ? "<color=#8c96a8>팔 아이템이 없습니다.</color>" : $"{list.Count}종 {items}개  ·  <color=#ffd84a>{total:N0} G</color>";
+            summary.text = busy ? L.T("판매 중...") : list.Count == 0 ? L.T("<color=#8c96a8>팔 아이템이 없습니다.</color>") : L.F("{0}종 {1}개  ·  <color=#ffd84a>{2:N0} G</color>", list.Count, items, total);
         }
 
         void AskSell()
@@ -165,8 +165,8 @@ namespace DotRPG
                 var g = EquipmentDatabase.Get(id);
                 if (g != null && (g.rarity >= ItemRarity.Rare || EquipmentDatabase.LevelOfKey(id) > 0)) valuable += count;
             }
-            string warn = valuable > 0 ? $"\n<size=18><color=#ffb060>레어 이상 또는 강화된 장비 {valuable}개가 포함되어 있습니다.</color></size>" : "";
-            Game.UI.Confirm($"{list.Count}종의 아이템을 {total:N0} G에 모두 판매할까요?{warn}", () => Sell(list), true);
+            string warn = valuable > 0 ? "\n" + L.F("<size=18><color=#ffb060>레어 이상 또는 강화된 장비 {0}개가 포함되어 있습니다.</color></size>", valuable) : "";
+            Game.UI.Confirm(L.F("{0}종의 아이템을 {1:N0} G에 모두 판매할까요?", list.Count, total) + warn, () => Sell(list), true);
         }
 
         void Sell(List<(string id, int count)> list)
@@ -201,7 +201,7 @@ namespace DotRPG
         {
             busy = false;
             Game.Audio.PlaySfx(ok > 0 ? "pickup" : "cancel");
-            GameEvents.RaiseToast(ok == all ? $"{ok}종의 아이템을 팔았습니다." : $"{all}종 중 {ok}종을 팔았습니다.");
+            GameEvents.RaiseToast(ok == all ? L.F("{0}종의 아이템을 팔았습니다.", ok) : L.F("{0}종 중 {1}종을 팔았습니다.", all, ok));
             changed?.Invoke();
             if (this != null && gameObject.activeSelf) Refresh();
         }

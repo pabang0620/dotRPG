@@ -211,7 +211,7 @@ namespace DotRPG
         public static EnemyController SpawnField(string id, Vector2 pos, Transform parent, int level, int xp)
         {
             var def = (Get(id == "skeleton" ? Warrior : id) ?? Get(Warrior)).Clone();
-            if (id == "skeleton") { def.id = "skeleton"; def.name = "해골"; }
+            if (id == "skeleton") { def.id = "skeleton"; def.name = L.T("해골"); }
             RegionalMonsterArt.ApplyFieldLook(def, Game.World != null ? Game.World.MapId : null);
             bool ordinary = !def.boss && !def.raid && def.kind != MonsterKind.GoldRunner; // field bosses and the gold runner (gold per hit) keep their own tuning
             var zone = Game.World != null ? HuntingGrounds.Get(Game.World.MapId) : null;
@@ -318,47 +318,47 @@ namespace DotRPG
             // ----- Field / dungeon monsters -----
             Add(new MonsterDef
             {
-                id = Warrior, name = "해골 전사", look = CharacterLook.Skeleton, kind = MonsterKind.Melee,
+                id = Warrior, name = L.T("해골 전사"), look = CharacterLook.Skeleton, kind = MonsterKind.Melee,
                 hp = 30, damage = 10, xp = 20,
             });
             Add(new MonsterDef
             {
-                id = "skel_gold", name = "황금 해골", look = Look("skel_gold", C(236, 196, 84)), kind = MonsterKind.GoldRunner,
+                id = "skel_gold", name = L.T("황금 해골"), look = Look("skel_gold", C(236, 196, 84)), kind = MonsterKind.GoldRunner,
                 hp = 40, damage = 0, xp = 30, chaseSpeed = 3.1f, wanderSpeed = 1.4f, keepDistance = 5.5f,
                 goldMin = 60, goldMax = 100, goldPerHitMin = 3, goldPerHitMax = 6, knockbackSpeed = 7f,
             });
             Add(new MonsterDef
             {
-                id = "skel_miner", name = "해골 광부", look = Look("skel_miner", C(226, 214, 190)), kind = MonsterKind.Charger,
+                id = "skel_miner", name = L.T("해골 광부"), look = Look("skel_miner", C(226, 214, 190)), kind = MonsterKind.Charger,
                 hp = 45, damage = 13, xp = 28, chaseSpeed = 2.0f, attackRange = 1.0f,
                 skillInterval = 3.5f, projectileSpeed = 11f, // dash speed
             });
             Add(new MonsterDef
             {
-                id = "skel_necro", name = "해골 사령술사", look = Look("skel_necro", C(222, 226, 206)), kind = MonsterKind.Necro,
+                id = "skel_necro", name = L.T("해골 사령술사"), look = Look("skel_necro", C(222, 226, 206)), kind = MonsterKind.Necro,
                 hp = 35, damage = 12, xp = 35, chaseSpeed = 1.9f, keepDistance = 4.5f,
                 skillInterval = 2.8f, projectileSpeed = 3.2f, summonInterval = 10f, maxMinions = 2, minionId = Warrior,
             });
             Add(new MonsterDef
             {
-                id = "skel_archer", name = "해골 궁수", look = Look("skel_archer", Bone), kind = MonsterKind.Archer,
+                id = "skel_archer", name = L.T("해골 궁수"), look = Look("skel_archer", Bone), kind = MonsterKind.Archer,
                 hp = 28, damage = 11, xp = 26, chaseSpeed = 2.2f, keepDistance = 5f,
                 skillInterval = 2.4f, projectileSpeed = 10f, detect = 7.5f, loseInterest = 11f,
             });
             Add(new MonsterDef
             {
-                id = "skel_shield", name = "해골 방패병", look = Look("skel_shield", C(228, 220, 200)), kind = MonsterKind.ShieldGuard,
+                id = "skel_shield", name = L.T("해골 방패병"), look = Look("skel_shield", C(228, 220, 200)), kind = MonsterKind.ShieldGuard,
                 hp = 60, damage = 12, xp = 32, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f, armor = .35f,
             });
             Add(new MonsterDef
             {
-                id = "skel_knight", name = "해골 기사", look = Look("skel_knight", C(214, 208, 196)), kind = MonsterKind.Knight,
+                id = "skel_knight", name = L.T("해골 기사"), look = Look("skel_knight", C(214, 208, 196)), kind = MonsterKind.Knight,
                 hp = 90, damage = 16, xp = 45, chaseSpeed = 2.3f, attackRange = 1.3f, windup = 0.45f, recover = 0.8f,
                 knockbackSpeed = 4f, armor = .25f,
             });
             Add(new MonsterDef
             {
-                id = Totem, name = "사령 토템", look = Look(Totem, Bone), kind = MonsterKind.Totem,
+                id = Totem, name = L.T("사령 토템"), look = Look(Totem, Bone), kind = MonsterKind.Totem,
                 hp = 120, damage = 0, xp = 0, noLoot = true, superArmor = true, chaseSpeed = 0f, wanderSpeed = 0f,
                 knockbackSpeed = 0f, detect = 0f,
             });
@@ -368,51 +368,51 @@ namespace DotRPG
             // Existing surface/dungeon definitions and the global readable attack pacing are unchanged.
             Add(new MonsterDef
             {
-                id = "hollow_scarab", name = "흑갑 굴파괴충", look = Look("hollow_scarab", C(52, 48, 68)), kind = MonsterKind.Charger,
+                id = "hollow_scarab", name = L.T("흑갑 굴파괴충"), look = Look("hollow_scarab", C(52, 48, 68)), kind = MonsterKind.Charger,
                 hp = 63, damage = 16, xp = 35, chaseSpeed = 2.0f, attackRange = 1.0f,
                 skillInterval = 3.5f, projectileSpeed = 11f, armor = .3f,
             });
             Add(new MonsterDef
             {
-                id = "hollow_guard", name = "심연의 방패 파수꾼", look = Look("hollow_guard", C(45, 52, 68)), kind = MonsterKind.ShieldGuard,
+                id = "hollow_guard", name = L.T("심연의 방패 파수꾼"), look = Look("hollow_guard", C(45, 52, 68)), kind = MonsterKind.ShieldGuard,
                 hp = 84, damage = 15, xp = 40, chaseSpeed = 1.5f, attackRange = 1.1f, windup = 0.55f, recover = 0.9f, armor = .35f,
             });
             Add(new MonsterDef
             {
-                id = "hollow_hexer", name = "공허의 주술사", look = Look("hollow_hexer", C(64, 37, 76)), kind = MonsterKind.Archer,
+                id = "hollow_hexer", name = L.T("공허의 주술사"), look = Look("hollow_hexer", C(64, 37, 76)), kind = MonsterKind.Archer,
                 hp = 40, damage = 14, xp = 33, chaseSpeed = 2.2f, keepDistance = 5f,
                 skillInterval = 2.4f, projectileSpeed = 10f, detect = 7.5f, loseInterest = 11f,
             });
 
             // ----- Weekday bosses (§6.1) -----
-            Add(Boss("boss_gold_foreman", "황금 광부장", Bone, hp: 900, dmg: 20, lines: 18, speed: 2.1f,
+            Add(Boss("boss_gold_foreman", L.T("황금 광부장"), Bone, hp: 900, dmg: 20, lines: 18, speed: 2.1f,
                 new BossPattern(PatternKind.Slash3, 5f, 1f, 3, maxRange: 3.2f, weight: 1.4f),
                 new BossPattern(PatternKind.Charge, 7f, 1.3f),
                 new BossPattern(PatternKind.GoldRain, 9f, 1.1f, 5),
                 new BossPattern(PatternKind.Slam, 8f, 1.4f, maxRange: 3.5f)));
-            Add(Boss("boss_mine_captain", "광산 해골대장", C(216, 204, 176), hp: 950, dmg: 22, lines: 18, speed: 2.0f,
+            Add(Boss("boss_mine_captain", L.T("광산 해골대장"), C(216, 204, 176), hp: 950, dmg: 22, lines: 18, speed: 2.0f,
                 new BossPattern(PatternKind.Charge, 5.5f, 1.3f, weight: 1.5f),
                 new BossPattern(PatternKind.Slam, 7f, 1.5f, maxRange: 3.5f),
                 new BossPattern(PatternKind.Slash3, 5f, 1f, 3, maxRange: 3.2f),
                 new BossPattern(PatternKind.Fields, 10f, 1.1f, 4)));
-            Add(Boss("boss_lich", "묘지기 리치", C(226, 234, 210), hp: 850, dmg: 20, lines: 16, speed: 1.7f,
+            Add(Boss("boss_lich", L.T("묘지기 리치"), C(226, 234, 210), hp: 850, dmg: 20, lines: 16, speed: 1.7f,
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 10, weight: 1.3f),
                 new BossPattern(PatternKind.Summon, 12f, 1f, 2),
                 new BossPattern(PatternKind.Fields, 8f, 1.2f, 5),
                 new BossPattern(PatternKind.Donut, 11f, 1.4f)));
-            Add(Boss("boss_archer_chief", "해골 사수장", Bone, hp: 850, dmg: 20, lines: 16, speed: 2.3f,
+            Add(Boss("boss_archer_chief", L.T("해골 사수장"), Bone, hp: 850, dmg: 20, lines: 16, speed: 2.3f,
                 new BossPattern(PatternKind.ArrowVolley, 4.5f, 1f, 5, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 8f, 1.2f),
                 new BossPattern(PatternKind.Fields, 9f, 1.1f, 4),
                 new BossPattern(PatternKind.Slash3, 6f, 0.9f, 3, maxRange: 3f)));
-            Add(Boss("boss_armory_warden", "무기고 수문장", C(222, 214, 196), hp: 1100, dmg: 22, lines: 20, speed: 1.7f,
+            Add(Boss("boss_armory_warden", L.T("무기고 수문장"), C(222, 214, 196), hp: 1100, dmg: 22, lines: 20, speed: 1.7f,
                 new BossPattern(PatternKind.Guard, 9f, 1.5f, weight: 1.2f),
                 new BossPattern(PatternKind.Slash3, 5f, 1.1f, 3, maxRange: 3.2f, weight: 1.3f),
                 new BossPattern(PatternKind.Charge, 7f, 1.3f),
                 new BossPattern(PatternKind.Donut, 12f, 1.4f)));
 
             // ----- Raid boss (§6.2) -----
-            var king = Boss("boss_skeleton_king", "해골왕", C(244, 238, 222), hp: 3200, dmg: 25, lines: 40, speed: 2.2f,
+            var king = Boss("boss_skeleton_king", L.T("해골왕"), C(244, 238, 222), hp: 3200, dmg: 25, lines: 40, speed: 2.2f,
                 new BossPattern(PatternKind.Slash3, 4.5f, 1f, 3, maxRange: 3.6f, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 6f, 1.4f),
                 new BossPattern(PatternKind.Slam, 8f, 1.4f, maxRange: 3.8f, minPhase: 1, maxPhase: 1),
@@ -427,7 +427,7 @@ namespace DotRPG
             Add(king);
 
             // [RAID] Chapter 1 final raid boss: the black-iron commander who burned the village.
-            var bargas = Boss("boss_bargas", "흑철의 바르가스", C(58, 56, 70), hp: 4200, dmg: 30, lines: 48, speed: 2.4f,
+            var bargas = Boss("boss_bargas", L.T("흑철의 바르가스"), C(58, 56, 70), hp: 4200, dmg: 30, lines: 48, speed: 2.4f,
                 new BossPattern(PatternKind.Slash3, 4f, 0.9f, 3, maxRange: 3.6f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 5.5f, 1.2f, weight: 1.2f),
                 new BossPattern(PatternKind.Guard, 9f, 1.4f, minPhase: 1),
@@ -444,7 +444,7 @@ namespace DotRPG
             Add(bargas);
 
             // [RAID] Chapter 2 raid bosses (existing bodies recoloured until their own art).
-            var golem = Boss("boss_rock_golem", "바위 심장 골렘", C(150, 132, 112), hp: 5200, dmg: 32, lines: 52, speed: 1.6f,
+            var golem = Boss("boss_rock_golem", L.T("바위 심장 골렘"), C(150, 132, 112), hp: 5200, dmg: 32, lines: 52, speed: 1.6f,
                 new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 7f, 1.5f),
                 new BossPattern(PatternKind.GoldRain, 9f, 1.2f, 6, minPhase: 1),
@@ -457,7 +457,7 @@ namespace DotRPG
             golem.groggyMax = 700f;
             golem.phases = new[] { 0.6f, 0.3f };
             Add(golem);
-            var grah = Boss("boss_grah", "수호자 그라흐", C(124, 98, 150), hp: 6400, dmg: 34, lines: 60, speed: 2.3f,
+            var grah = Boss("boss_grah", L.T("수호자 그라흐"), C(124, 98, 150), hp: 6400, dmg: 34, lines: 60, speed: 2.3f,
                 new BossPattern(PatternKind.Slash3, 4f, 0.9f, 3, maxRange: 3.6f, weight: 1.5f),
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 12, minPhase: 1),
                 new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),
@@ -476,14 +476,14 @@ namespace DotRPG
 
             // [FIELD BOSS] One per region, every 15 minutes on its map (FieldBosses). Existing boss bodies; HP for a solo
             // player of the zone's level (about 25 pack kills of work), its accessory at 3% per kill.
-            var fbForest = Boss("fboss_forest", "검은 뿌리 수호자", C(150, 172, 120), hp: 1100, dmg: 15, lines: 14, speed: 2.3f,
+            var fbForest = Boss("fboss_forest", L.T("검은 뿌리 수호자"), C(150, 172, 120), hp: 1100, dmg: 15, lines: 14, speed: 2.3f,
                 new BossPattern(PatternKind.ArrowVolley, 4.5f, 1f, 5, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 8f, 1.2f),
                 new BossPattern(PatternKind.Fields, 9f, 1.1f, 4));
             fbForest.look = Look("boss_archer_chief", C(150, 172, 120));
             fbForest.minionId = "skel_archer";
             Field(fbForest, "eq_ring_root");
-            var fbCanyon = Boss("fboss_canyon", "능선의 바위 심장", C(150, 132, 112), hp: 1900, dmg: 20, lines: 22, speed: 1.6f,
+            var fbCanyon = Boss("fboss_canyon", L.T("능선의 바위 심장"), C(150, 132, 112), hp: 1900, dmg: 20, lines: 22, speed: 1.6f,
                 new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 7f, 1.5f),
                 new BossPattern(PatternKind.Fields, 8f, 1.2f, 5, minPhase: 1));
@@ -492,7 +492,7 @@ namespace DotRPG
             fbCanyon.artScale = 1.0f;
             fbCanyon.phases = new[] { 0.5f };
             Field(fbCanyon, "eq_neck_rockheart");
-            var fbWinter = Boss("fboss_winter", "눈보라 리치", C(196, 226, 255), hp: 2500, dmg: 24, lines: 26, speed: 2.1f,
+            var fbWinter = Boss("fboss_winter", L.T("눈보라 리치"), C(196, 226, 255), hp: 2500, dmg: 24, lines: 26, speed: 2.1f,
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 10, weight: 1.4f),
                 new BossPattern(PatternKind.Fields, 7f, 1.1f, 6),
                 new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),

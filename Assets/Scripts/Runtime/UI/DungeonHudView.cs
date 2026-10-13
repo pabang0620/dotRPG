@@ -79,7 +79,7 @@ namespace DotRPG
             bannerBg = UIFactory.Image(banner, "Bg", Game.Art.Get("ui_white"), new Color(0f, 0f, 0f, 0.45f));
             bannerBg.preserveAspect = false;
             UIFactory.Stretch(bannerBg.rectTransform);
-            bannerText = UIFactory.Text(banner, "Text", "클리어!", 84, new Color32(255, 222, 90, 255), TextAnchor.MiddleCenter, true);
+            bannerText = UIFactory.Text(banner, "Text", L.T("클리어!"), 84, new Color32(255, 222, 90, 255), TextAnchor.MiddleCenter, true);
             UIFactory.Stretch(bannerText.rectTransform);
             var outline = bannerText.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.35f, 0.15f, 0.02f, 1f);
@@ -93,12 +93,12 @@ namespace DotRPG
             var coin = UIFactory.Image(revive, "Coin", Game.Art.Get("icon_revive_coin"), Color.white); // [ART] revive coin
             coin.preserveAspect = true; coin.raycastTarget = false;
             UIFactory.Place(coin.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -12f), new Vector2(48f, 48f));
-            reviveTitle = UIFactory.Text(revive, "Title", "부활하시겠습니까?", 30, Color.white, TextAnchor.UpperCenter, true);
+            reviveTitle = UIFactory.Text(revive, "Title", L.T("부활하시겠습니까?"), 30, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(reviveTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -18f), new Vector2(480f, 40f));
             reviveBody = UIFactory.Text(revive, "Body", "", 20, UIColors.Cream, TextAnchor.UpperCenter, true);
             UIFactory.Place(reviveBody.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -66f), new Vector2(480f, 56f));
-            MakeButton(revive, "부활", "ui_btn", new Vector2(-110f, 22f), () => Game.Dungeon?.AcceptRevive());
-            MakeButton(revive, "포기", "ui_btngray", new Vector2(110f, 22f), () => Game.Dungeon?.GiveUp());
+            MakeButton(revive, L.T("부활"), "ui_btn", new Vector2(-110f, 22f), () => Game.Dungeon?.AcceptRevive());
+            MakeButton(revive, L.T("포기"), "ui_btngray", new Vector2(110f, 22f), () => Game.Dungeon?.GiveUp());
             revive.gameObject.SetActive(false);
 
             // [DUNGEON] 마을로: leave the dungeon at any time (under the room map, shown with it).
@@ -110,7 +110,7 @@ namespace DotRPG
             lb.targetGraphic = leave;
             lb.onClick.AddListener(AskLeave);
             UiButton.Attach(lb);
-            var lt = UIFactory.Text(leave.transform, "Text", "마을로", 20, Color.white, TextAnchor.MiddleCenter, true);
+            var lt = UIFactory.Text(leave.transform, "Text", L.T("마을로"), 20, Color.white, TextAnchor.MiddleCenter, true);
             UIFactory.FitInFrame(lt);
 
             clock.gameObject.SetActive(false);
@@ -125,29 +125,28 @@ namespace DotRPG
             // [LEAVE] The host of a party run with people in it chooses: go alone (the host role passes on) or all together (a vote).
             if (PartyNet.IsHost && PartyNet.Current.OtherHumans > 0)
             {
-                Game.UI.Choose("마을로 어떻게 돌아갈까요?\n\n<b>혼자 나가기</b>: 방장을 파티원에게 넘기고 나만 나갑니다. 파티원은 계속 진행합니다.\n" +
-                               "<b>다 함께 마을로</b>: 파티원 전원이 " + PartyNet.VillageVoteSeconds.ToString("0") + "초 안에 동의하면 이번 판을 실패로 끝내고 함께 돌아갑니다.",
+                Game.UI.Choose(L.F("마을로 어떻게 돌아갈까요?\n\n<b>혼자 나가기</b>: 방장을 파티원에게 넘기고 나만 나갑니다. 파티원은 계속 진행합니다.\n<b>다 함께 마을로</b>: 파티원 전원이 {0:0}초 안에 동의하면 이번 판을 실패로 끝내고 함께 돌아갑니다.", PartyNet.VillageVoteSeconds),
                     new (string, System.Action)[]
                     {
-                        ("혼자 나가기", () => Game.UI.Confirm("방장을 넘기고 나갈까요?\n이번 판의 내 보상은 없습니다.", () => d.LeaveHandingOver(), true)),
-                        ("다 함께 마을로", () => AskTogether(d)),
-                        ("취소", null),
+                        (L.T("혼자 나가기"), () => Game.UI.Confirm(L.T("방장을 넘기고 나갈까요?\n이번 판의 내 보상은 없습니다."), () => d.LeaveHandingOver(), true)),
+                        (L.T("다 함께 마을로"), () => AskTogether(d)),
+                        (L.T("취소"), null),
                     });
                 return;
             }
-            Game.UI.Confirm("마을로 돌아갈까요?\n진행 중인 이번 판은 실패로 끝납니다.", () => d.LeaveToVillage(), true);
+            Game.UI.Confirm(L.T("마을로 돌아갈까요?\n진행 중인 이번 판은 실패로 끝납니다."), () => d.LeaveToVillage(), true);
         }
 
         /// <summary>[LEAVE] Asks every member; all agree in time = the party goes home together.</summary>
         static void AskTogether(DungeonDirector d)
         {
             if (!PartyNet.IsHost) return;
-            GameEvents.RaiseToast("파티원에게 함께 돌아갈지 묻는 중입니다... (" + PartyNet.VillageVoteSeconds.ToString("0") + "초)");
+            GameEvents.RaiseToast(L.F("파티원에게 함께 돌아갈지 묻는 중입니다... ({0:0}초)", PartyNet.VillageVoteSeconds));
             PartyNet.Current.HostAskVillage(agreed =>
             {
                 if (d == null || !d.InRun || d.RunOver) return;
                 if (agreed) d.LeaveTogether();
-                else GameEvents.RaiseToast("모든 파티원이 동의하지 않아 계속 진행합니다.");
+                else GameEvents.RaiseToast(L.T("모든 파티원이 동의하지 않아 계속 진행합니다."));
             });
         }
 
@@ -189,7 +188,7 @@ namespace DotRPG
                 shownCombo = combo;
                 comboPopAt = Time.unscaledTime;
                 string color = combo >= 50 ? "#ff9f43" : combo >= 20 ? "#ffd34a" : "#ffffff";
-                comboText.text = $"<color={color}><b>{combo}</b></color> <size=18><color=#b8c4d8>콤보</color></size>";
+                comboText.text = L.F("<color={0}><b>{1}</b></color> <size=18><color=#b8c4d8>콤보</color></size>", color, combo);
             }
             float pop = Mathf.Clamp01((Time.unscaledTime - comboPopAt) / .12f);
             comboText.rectTransform.localScale = Vector3.one * Mathf.Lerp(1.25f, 1f, pop);
@@ -222,16 +221,16 @@ namespace DotRPG
 
             // [P5] Re-format only when the second, room or revive count changes.
             int sec = Mathf.FloorToInt(run.Elapsed);
-            if (sec != shownSecond) { shownSecond = sec; clockText.text = $"<size=18><color=#b8c4d8>시간</color></size>  {DungeonRun.Clock(run.Elapsed)}"; }
+            if (sec != shownSecond) { shownSecond = sec; clockText.text = L.F("<size=18><color=#b8c4d8>시간</color></size>  {0}", DungeonRun.Clock(run.Elapsed)); }
             int roomKey = ((run.RoomIndex * 100 + run.RoomCount) * 100 + run.RevivesLeft) * 100 + run.PartyRevivesLeft;
             if (roomKey != shownRoom)
             {
                 shownRoom = roomKey;
                 // [REVIVE] Coins: my own revives, and with people the party's shared pool.
                 int mine = Mathf.Max(0, run.Numbers.revives - run.RevivesUsed);
-                string revivesTag = (mine > 0 ? $"내 부활 {mine}/{run.Numbers.revives}" : $"<color=#ff8a7a>내 부활 0/{run.Numbers.revives}</color>") +
-                                    (run.Humans > 1 ? $"  파티 부활 {run.PartyRevivesLeft}/{run.PartyRevives}" : "");
-                roomText.text = $"방 <color=#ffe066>{run.RoomIndex + 1}</color>/{run.RoomCount}    {revivesTag}";
+                string revivesTag = (mine > 0 ? L.F("내 부활 {0}/{1}", mine, run.Numbers.revives) : L.F("<color=#ff8a7a>내 부활 0/{0}</color>", run.Numbers.revives)) +
+                                    (run.Humans > 1 ? L.F("  파티 부활 {0}/{1}", run.PartyRevivesLeft, run.PartyRevives) : "");
+                roomText.text = L.F("방 <color=#ffe066>{0}</color>/{1}    {2}", run.RoomIndex + 1, run.RoomCount, revivesTag);
             }
             RefreshRoomMap(run);
 
@@ -251,12 +250,12 @@ namespace DotRPG
             if (reviveShown)
             {
                 int left = Mathf.CeilToInt(director.ReviveRemaining);
-                reviveTitle.text = $"부활하시겠습니까?  <color=#ffe066>{left}</color>";
+                reviveTitle.text = L.F("부활하시겠습니까?  <color=#ffe066>{0}</color>", left);
                 var input = Game.Input;
-                string coin = ReviveCoins.Free ? $"Lv.{ReviveCoins.FreeUntilLevel}까지 무료" : ReviveCoins.Coins > 0 ? $"부활 코인 1 사용 (보유 {ReviveCoins.Coins})" : "<color=#ff8a7a>부활 코인 없음</color>";
-                string pool = run.Humans > 1 ? $" (파티 {run.PartyRevivesLeft}회)" : "";
-                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회{pool} · {coin} · 완전 회복 + 3초 무적\n" +
-                                  $"<color=#b8c4d8>[Enter / {input.GetBindingLabel(GameAction.Attack)}] 부활    [ESC] 포기</color>";
+                string coin = ReviveCoins.Free ? L.F("Lv.{0}까지 무료", ReviveCoins.FreeUntilLevel) : ReviveCoins.Coins > 0 ? L.F("부활 코인 1 사용 (보유 {0})", ReviveCoins.Coins) : L.T("<color=#ff8a7a>부활 코인 없음</color>");
+                string pool = run.Humans > 1 ? L.F(" (파티 {0}회)", run.PartyRevivesLeft) : "";
+                reviveBody.text = L.F("남은 부활 <color=#ffe066>{0}</color>회{1} · {2} · 완전 회복 + 3초 무적", run.RevivesLeft, pool, coin) + "\n" +
+                                  L.F("<color=#b8c4d8>[Enter / {0}] 부활    [ESC] 포기</color>", input.GetBindingLabel(GameAction.Attack));
             }
         }
 
@@ -291,7 +290,7 @@ namespace DotRPG
                 int boss = Mathf.Clamp(run.Dungeon.bossRoom, 0, n - 1);
                 skull = UIFactory.Image(cells[boss].transform, "Skull", Game.Art.Get("dgn_skull"), Color.white);
                 UIFactory.Place(skull.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(24f, 24f));
-                mapTitle.text = $"{run.Dungeon.name} · {run.Numbers.name}";
+                mapTitle.text = $"{L.T(run.Dungeon.name)} · {L.T(run.Numbers.name)}";
             }
             for (int i = 0; i < cells.Count; i++)
             {

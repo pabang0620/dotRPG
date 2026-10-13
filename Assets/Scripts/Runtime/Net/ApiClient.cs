@@ -166,7 +166,7 @@ namespace DotRPG
                 if (wait < 0f)
                 {
                     // The server may have processed it: the answer was lost, not necessarily the action.
-                    if (keyed && result.code == "NETWORK") result.message = "결과를 확인하는 중 연결이 끊겼습니다. 다시 접속하면 반영됩니다.";
+                    if (keyed && result.code == "NETWORK") result.message = L.T("결과를 확인하는 중 연결이 끊겼습니다. 다시 접속하면 반영됩니다.");
                     done?.Invoke(result);
                     yield break;
                 }
@@ -229,12 +229,13 @@ namespace DotRPG
                 req.timeout = TimeoutSeconds;
                 req.SetRequestHeader("X-Client-Version", ClientVersion);
                 req.SetRequestHeader("X-Data-Version", DataVersion);
+                req.SetRequestHeader("X-Lang", L.Lang); // [I18N] the server answers error messages in this language
                 if (auth && !string.IsNullOrEmpty(AccessToken)) req.SetRequestHeader("Authorization", "Bearer " + AccessToken);
                 yield return req.SendWebRequest();
 
                 if (req.result == UnityWebRequest.Result.ConnectionError || req.result == UnityWebRequest.Result.DataProcessingError)
                 {
-                    done(ApiResult.Network("서버에 연결할 수 없습니다."));
+                    done(ApiResult.Network(L.T("서버에 연결할 수 없습니다.")));
                     yield break;
                 }
                 var result = new ApiResult { status = req.responseCode };
@@ -246,7 +247,7 @@ namespace DotRPG
                 result.errors = MiniJson.Obj(json, "errors");
                 result.code = MiniJson.Str(result.errors, "code");
                 if (float.TryParse(req.GetResponseHeader("Retry-After"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float after) && after > 0f) result.retryAfter = after;
-                result.message = MiniJson.Str(json, "message") ?? (result.ok ? "" : $"서버 오류 ({req.responseCode})");
+                result.message = MiniJson.Str(json, "message") ?? (result.ok ? "" : L.F("서버 오류 ({0})", req.responseCode));
                 if (!result.ok && result.status == 426) result.code = result.code ?? "CLIENT_OUTDATED";
                 if (result.code == "SESSION_REPLACED" && Time.unscaledTime - replacedAt > 5f)
                 {

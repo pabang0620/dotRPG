@@ -11,17 +11,17 @@ namespace DotRPG
         // The 11 hotkey windows (InputReader.WindowActions) with the icon and label the side menu uses.
         static readonly (GameAction action, string icon, string label)[] MenuEntries =
         {
-            (GameAction.Inventory, "menuicon_bag", "가방"),
-            (GameAction.Map, "menuicon_map", "지도"),
-            (GameAction.SkillWindow, "menuicon_skill", "스킬"),
-            (GameAction.QuestWindow, "menuicon_quest", "퀘스트"),
-            (GameAction.WeekdayDungeon, "menuicon_dungeon", "요일던전"),
-            (GameAction.RaidWindow, "menuicon_raid", "레이드"),
-            (GameAction.PartyWindow, "menuicon_party", "파티"),
-            (GameAction.PartyFinder, "menuicon_finder", "파티 찾기"),
-            (GameAction.Auction, "menuicon_auction", "경매장"),
-            (GameAction.Friends, "menuicon_friend", "친구"),
-            (GameAction.Cosmetics, "menuicon_cosmetics", "옷장"),
+            (GameAction.Inventory, "menuicon_bag", L.T("가방")),
+            (GameAction.Map, "menuicon_map", L.T("지도")),
+            (GameAction.SkillWindow, "menuicon_skill", L.T("스킬")),
+            (GameAction.QuestWindow, "menuicon_quest", L.T("퀘스트")),
+            (GameAction.WeekdayDungeon, "menuicon_dungeon", L.T("요일던전")),
+            (GameAction.RaidWindow, "menuicon_raid", L.T("레이드")),
+            (GameAction.PartyWindow, "menuicon_party", L.T("파티")),
+            (GameAction.PartyFinder, "menuicon_finder", L.T("파티 찾기")),
+            (GameAction.Auction, "menuicon_auction", L.T("경매장")),
+            (GameAction.Friends, "menuicon_friend", L.T("친구")),
+            (GameAction.Cosmetics, "menuicon_cosmetics", L.T("옷장")),
         };
 
         RectTransform menuLayer;
@@ -48,7 +48,7 @@ namespace DotRPG
         void BuildTop()
         {
             float menuX = 20f + MinimapView.Diameter + 12f + TopButton * 0.5f;
-            var menu = TopButtonAt("MenuButton", "메뉴", menuX);
+            var menu = TopButtonAt("MenuButton", L.T("메뉴"), menuX);
             menu.onClick.AddListener(() => { if (Game.IsPlaying) SetMenu(menuLayer == null || !menuLayer.gameObject.activeSelf); });
             var pause = TopButtonAt("PauseButton", "II", menuX + TopButton + 8f);
             pause.onClick.AddListener(() => { if (Game.IsPlaying) Game.Flow.Pause(); });

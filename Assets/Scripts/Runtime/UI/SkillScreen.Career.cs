@@ -12,22 +12,22 @@ namespace DotRPG
         /// <summary>[STYLE] 스타일 1·2·3 (Docs/PLAN_SKILL_STYLES.md): saved builds of career nodes, skill keys and passives.</summary>
         void StyleButtons(Progression p)
         {
-            string[] shortName={"1 파티","2 솔로","3 자유"};
+            string[] shortName={L.T("1 파티"),L.T("2 솔로"),L.T("3 자유")};
             for(int i=0;i<Progression.StyleCount;i++)
             {
                 int k=i;bool on=p.ActiveStyle==i,open=Progression.StyleOpen(i);
-                string label=on?$"<b><color=#9fe8ff>{shortName[i]}</color></b>":open?shortName[i]:$"<color=#8c96a8>3 잠김</color>";
+                string label=on?$"<b><color=#9fe8ff>{shortName[i]}</color></b>":open?shortName[i]:L.T("<color=#8c96a8>3 잠김</color>");
                 CareerButton("Style"+i,label,10+i*92,75,88,40,()=>
                 {
                     if(!Progression.StyleOpen(k))
                     {
-                        Game.UI.Confirm($"<b>스타일 3</b>을 열까요?\n<size=18>별조각 {SkillStyleClient.Price:N0} · 계정의 모든 캐릭터가 세 번째 빌드를 저장할 수 있습니다.</size>",()=>SkillStyleClient.Buy((ok,msg)=>{GameEvents.RaiseToast(msg);Refresh();}),true);
+                        Game.UI.Confirm(L.F("<b>스타일 3</b>을 열까요?\n<size=18>별조각 {0:N0} · 계정의 모든 캐릭터가 세 번째 빌드를 저장할 수 있습니다.</size>", SkillStyleClient.Price),()=>SkillStyleClient.Buy((ok,msg)=>{GameEvents.RaiseToast(msg);Refresh();}),true);
                         return;
                     }
                     if(p.ActiveStyle==k)return;
                     string why=p.SwitchStyle(k);
                     if(why!=null){GameEvents.RaiseToast(why);Game.Audio.PlaySfx("cancel");return;}
-                    GameEvents.RaiseToast(Progression.StyleName(k)+"로 바꿨습니다."+(p.StyleUsed(k)?"":" 처음 쓰는 스타일이라 빈 배분에서 시작합니다."));
+                    GameEvents.RaiseToast(L.F("{0}로 바꿨습니다.", L.T(Progression.StyleName(k)))+(p.StyleUsed(k)?"":L.T(" 처음 쓰는 스타일이라 빈 배분에서 시작합니다.")));
                     Game.Flow.Autosave();Refresh();
                 });
             }
@@ -53,8 +53,8 @@ namespace DotRPG
             var p=Game.Session.Progression;
             if(p.IsPromoted)browsing=p.Career;
             else if(browsing==Career.None||CareerCatalog.Base(browsing)!=Game.Session.PlayerClass)browsing=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist;
-            CareerText(careerRoot,"CareerTitle",$"<b>{p.ClassLabel}</b>  Lv.{p.Level}  ·  전직 포인트 <color=#ffe0a0>{p.CareerPoints}</color>{(p.IsPromoted?$"  ·  <color=#9fe8ff>{Progression.StyleName(p.ActiveStyle)}</color>":"")}",24,12,4,780,32);
-            CareerText(careerRoot,"PointRule",p.IsPromoted?$"전직 시 4포인트 + 이후 레벨당 1포인트 · 단계별 비용 1/2/3포인트 · 돌려받은 포인트 {p.RefundedPoints}":"15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능",16,12,40,780,28);
+            CareerText(careerRoot,"CareerTitle",L.F("<b>{0}</b>  Lv.{1}  ·  전직 포인트 <color=#ffe0a0>{2}</color>{3}", L.T(p.ClassLabel), p.Level, p.CareerPoints, (p.IsPromoted?$"  ·  <color=#9fe8ff>{L.T(Progression.StyleName(p.ActiveStyle))}</color>":"")),24,12,4,780,32);
+            CareerText(careerRoot,"PointRule",p.IsPromoted?L.F("전직 시 4포인트 + 이후 레벨당 1포인트 · 단계별 비용 1/2/3포인트 · 돌려받은 포인트 {0}", p.RefundedPoints):L.T("15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능"),16,12,40,780,28);
             if(!p.IsPromoted)
             {
                 Career a=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist,b=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Guardian:Career.Bishop;
@@ -65,7 +65,7 @@ namespace DotRPG
             {
                 StyleButtons(p);
                 RecommendedButton(p);
-                CareerButton("ResetCareer","전직 기술 초기화",540,75,240,40,()=>Game.UI.Confirm("배운 전직 기술을 모두 초기화합니다.\n<size=18>쓴 포인트는 전부 돌아오고, 장착한 직업 스킬은 해제됩니다.</size>\n초기화할까요?",()=>{p.ResetCareerNodes();Game.Flow.Autosave();Refresh();},true));
+                CareerButton("ResetCareer",L.T("전직 기술 초기화"),540,75,240,40,()=>Game.UI.Confirm(L.T("배운 전직 기술을 모두 초기화합니다.\n<size=18>쓴 포인트는 전부 돌아오고, 장착한 직업 스킬은 해제됩니다.</size>\n초기화할까요?"),()=>{p.ResetCareerNodes();Game.Flow.Autosave();Refresh();},true));
             }
             var branch=CareerCatalog.Branches(browsing);var skills=CareerCatalog.For(browsing);
             for(int b=0;b<2;b++)
@@ -81,9 +81,9 @@ namespace DotRPG
             }
             // [FIGHTER] A node outside the 2x4 tree (검기 태세) sits at the bottom right; the awakening row makes room for it.
             bool extra=skills.Length>CareerSkill.ExtraIndex;
-            CareerText(careerRoot,"Awakening",$"<color=#ffe0a0><b>별도 각성 영역 · {skills[8].name}</b></color>\n{(p.Awakened?"각성 완료 · T 슬롯에서 사용":"포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성")}",18,16,436,extra?570:740,50);
-            CareerButton("AwakeningInfo","각성 이야기 · 진행",16,492,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
-            CareerButton("BaseSkillTab","기본 스킬 · 장착 / 보조 젬",325,492,extra?255:340,42,()=>{tab=TabId.Gems;Refresh();});
+            CareerText(careerRoot,"Awakening",L.F("<color=#ffe0a0><b>별도 각성 영역 · {0}</b></color>\n{1}", L.T(skills[8].name), (p.Awakened?L.T("각성 완료 · T 슬롯에서 사용"):L.T("포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성"))),18,16,436,extra?570:740,50);
+            CareerButton("AwakeningInfo",L.T("각성 이야기 · 진행"),16,492,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
+            CareerButton("BaseSkillTab",L.T("기본 스킬 · 장착 / 보조 젬"),325,492,extra?255:340,42,()=>{tab=TabId.Gems;Refresh();});
             if(extra)
             {
                 var s=skills[CareerSkill.ExtraIndex];
@@ -100,48 +100,50 @@ namespace DotRPG
                 {
                     var img=UIFactory.SharpIcon(side.transform,"Card",Color.white);img.sprite=card;img.raycastTarget=false;
                     UIFactory.Place(img.rectTransform,new Vector2(0,1),new Vector2(0,1),new Vector2(18,-18),new Vector2(128,192));
-                    CareerText(side.transform,"Head",$"<b>{CareerCatalog.Name(browsing)}</b>\n{CareerCatalog.Role(browsing)}\n\n대표 기술\n{skills[1].name}\n{skills[5].name}\n\n각성: {skills[8].name}",19,160,20,236,192);
-                    CareerText(side.transform,"Compare",$"{skills[1].description}\n\n{skills[5].description}\n\n<color=#ff9f7a>전직은 되돌릴 수 없습니다.</color>",17,20,222,374,226);
+                    CareerText(side.transform,"Head",L.F("<b>{0}</b>\n{1}\n\n대표 기술\n{2}\n{3}\n\n각성: {4}", L.T(CareerCatalog.Name(browsing)), L.T(CareerCatalog.Role(browsing)), L.T(skills[1].name), L.T(skills[5].name), L.T(skills[8].name)),19,160,20,236,192);
+                    CareerText(side.transform,"Compare",L.F("{0}\n\n{1}\n\n<color=#ff9f7a>전직은 되돌릴 수 없습니다.</color>", L.T(skills[1].description), L.T(skills[5].description)),17,20,222,374,226);
                 }
-                else CareerText(side.transform,"Compare",$"<b>{CareerCatalog.Name(browsing)}</b>\n{CareerCatalog.Role(browsing)}\n\n대표: {skills[1].name} / {skills[5].name}\n각성: {skills[8].name}\n\n{skills[1].description}\n\n{skills[5].description}\n\n전직은 되돌릴 수 없습니다.\n전직 선택을 누르면 한 번 더 확인합니다.",21,20,20,374,420);
-                CareerButton("Promote","전직 선택",824,467,365,52,()=>{if(!p.CanPromote(browsing)){GameEvents.RaiseToast("15레벨 이상, 자신의 기본 직업 계열만 전직할 수 있습니다.");return;}var pick=browsing;Game.UI.Confirm($"<b>{CareerCatalog.Name(pick)}</b>{Ro(CareerCatalog.Name(pick))} 전직합니다.\n<size=18>전직은 되돌릴 수 없습니다.</size>\n전직할까요?",()=>CareerClient.Promote(pick,(ok,msg)=>{if(!ok){GameEvents.RaiseToast(msg);return;}p.Promote(pick);Game.Quest.SetFlag(NpcController.CareerFlag);GameEvents.RaiseToast(CareerCatalog.Name(pick)+" 전직 완료 · 전직 포인트 4");Game.Flow.Autosave();Refresh();}),true);});
+                else CareerText(side.transform,"Compare",L.F("<b>{0}</b>\n{1}\n\n대표: {2} / {3}\n각성: {4}\n\n{5}\n\n{6}\n\n전직은 되돌릴 수 없습니다.\n전직 선택을 누르면 한 번 더 확인합니다.", L.T(CareerCatalog.Name(browsing)), L.T(CareerCatalog.Role(browsing)), L.T(skills[1].name), L.T(skills[5].name), L.T(skills[8].name), L.T(skills[1].description), L.T(skills[5].description)),21,20,20,374,420);
+                CareerButton("Promote",L.T("전직 선택"),824,467,365,52,()=>{if(!p.CanPromote(browsing)){GameEvents.RaiseToast(L.T("15레벨 이상, 자신의 기본 직업 계열만 전직할 수 있습니다."));return;}var pick=browsing;Game.UI.Confirm(L.F("<b>{0}</b>{1} 전직합니다.\n<size=18>전직은 되돌릴 수 없습니다.</size>\n전직할까요?", L.T(CareerCatalog.Name(pick)), Ro(CareerCatalog.Name(pick))),()=>CareerClient.Promote(pick,(ok,msg)=>{if(!ok){GameEvents.RaiseToast(msg);return;}p.Promote(pick);Game.Quest.SetFlag(NpcController.CareerFlag);GameEvents.RaiseToast(L.F("{0} 전직 완료 · 전직 포인트 4", L.T(CareerCatalog.Name(pick))));Game.Flow.Autosave();Refresh();}),true);});
             }
             else if(chosen.kind==CareerSkillKind.Awakening)
             {
-                CareerText(side.transform,"Story",$"<b>{CareerTrials.Title(p.Career)}</b>\n마을 광장 · 전직 안내원\n{CareerTrials.Mentor(p.Career)}의 시련 기록\n\n{CareerTrials.Story(p.Career,p.AwakeningStage)}\n\n{CareerTrials.Status}",19,20,20,374,390);
-                CareerButton("QuestAction",p.AwakeningStage==2?"시련 시작 / 재도전":p.Awakened?"각성 완료":"대화 계속",824,445,365,48,()=>{if(p.AwakeningStage==2){string reason=CareerTrials.Begin();if(reason!="")GameEvents.RaiseToast(reason);}else if(!p.Awakened){if(!MapRegistry.IsTown(Game.Session.MapId)){GameEvents.RaiseToast("마을 광장의 전직 안내원에게 돌아가세요.");return;}int from=p.AwakeningStage;CareerClient.Advance(from,(ok,msg,stage)=>{if(ok)p.AdvanceAwakening(from);else{GameEvents.RaiseToast(msg);p.SyncAwakening(stage);}Game.Flow.Autosave();Refresh();});return;}Game.Flow.Autosave();Refresh();});
+                CareerText(side.transform,"Story",L.F("<b>{0}</b>\n마을 광장 · 전직 안내원\n{1}의 시련 기록\n\n{2}\n\n{3}", L.T(CareerTrials.Title(p.Career)), L.T(CareerTrials.Mentor(p.Career)), L.T(CareerTrials.Story(p.Career,p.AwakeningStage)), L.T(CareerTrials.Status)),19,20,20,374,390);
+                CareerButton("QuestAction",p.AwakeningStage==2?L.T("시련 시작 / 재도전"):p.Awakened?L.T("각성 완료"):L.T("대화 계속"),824,445,365,48,()=>{if(p.AwakeningStage==2){string reason=CareerTrials.Begin();if(reason!="")GameEvents.RaiseToast(L.T(reason));}else if(!p.Awakened){if(!MapRegistry.IsTown(Game.Session.MapId)){GameEvents.RaiseToast(L.T("마을 광장의 전직 안내원에게 돌아가세요."));return;}int from=p.AwakeningStage;CareerClient.Advance(from,(ok,msg,stage)=>{if(ok)p.AdvanceAwakening(from);else{GameEvents.RaiseToast(msg);p.SyncAwakening(stage);}Game.Flow.Autosave();Refresh();});return;}Game.Flow.Autosave();Refresh();});
             }
             else
             {
                 CareerText(side.transform,"SkillDetail",DescribeCareer(chosen,p),17,20,20,374,350);
                 string why=p.NodeLock(chosen);
-                CareerButton("Learn",why==""?$"습득 / 강화 ({p.Rank(chosen.id)+1}P)":why,824,380,365,42,()=>{if(!p.Learn(chosen.id))GameEvents.RaiseToast(p.NodeLock(chosen));Game.Flow.Autosave();Refresh();});
+                CareerButton("Learn",why==""?L.F("습득 / 강화 ({0}P)", p.Rank(chosen.id)+1):L.T(why),824,380,365,42,()=>{if(!p.Learn(chosen.id))GameEvents.RaiseToast(L.T(p.NodeLock(chosen)));Game.Flow.Autosave();Refresh();});
                 BuildKeyBar(side.transform,p,chosen); // [UX] drag-and-drop key bar instead of four "Q 장착" buttons
             }
         }
         /// <summary>"로" after a vowel or ㄹ, "으로" after any other final consonant.</summary>
         static string Ro(string word)
         {
+            if(L.En)return ""; // [I18N] Korean particle only
             char c=string.IsNullOrEmpty(word)?'a':word[word.Length-1];
-            if(c<0xAC00||c>0xD7A3)return "로";
+            if(c<0xAC00||c>0xD7A3)return "로"; // i18n-ignore particle
             int jong=(c-0xAC00)%28;
-            return jong==0||jong==8?"로":"으로";
+            return jong==0||jong==8?"로":"으로"; // i18n-ignore particle
         }
         /// <summary>One short line under a node: what it takes to learn it, or that it is learned.</summary>
         string NodeState(CareerSkill s,Progression p)
         {
-            if(p.Career==browsing&&p.Rank(s.id)>0)return p.Rank(s.id)>=3?"<color=#ffe0a0>최대 단계</color>":"<color=#8fe28f>습득</color> · 눌러서 강화";
-            if(p.Career!=browsing)return "<color=#b8c4d8>전직 후 배울 수 있음</color>";
-            if(p.Level<s.level)return $"<color=#ff9f7a>Lv.{s.level} 필요</color>";
+            if(p.Career==browsing&&p.Rank(s.id)>0)return p.Rank(s.id)>=3?L.T("<color=#ffe0a0>최대 단계</color>"):L.T("<color=#8fe28f>습득</color> · 눌러서 강화");
+            if(p.Career!=browsing)return L.T("<color=#b8c4d8>전직 후 배울 수 있음</color>");
+            if(p.Level<s.level)return L.F("<color=#ff9f7a>Lv.{0} 필요</color>", s.level);
             var pre=s.Prerequisite==null?null:CareerCatalog.Get(s.Prerequisite);
-            if(pre!=null&&p.Rank(pre.id)==0)return $"<color=#ff9f7a>{pre.name} 먼저</color>";
-            return "<color=#ffe066>배울 수 있음</color>";
+            if(pre!=null&&p.Rank(pre.id)==0)return L.F("<color=#ff9f7a>{0} 먼저</color>", L.T(pre.name));
+            return L.T("<color=#ffe066>배울 수 있음</color>");
         }
         static string DescribeCareer(CareerSkill s,Progression p)
         {
-            if(s.kind==CareerSkillKind.Passive)return $"<b>{s.name}</b> · 패시브\n\n{s.description}\n{CareerNumbers.Passive(s,p.Rank(s.id))}\n\n단계 {p.Rank(s.id)}/3 · {CareerCatalog.Branches(s.career)[s.branch]}\n\n조건: 전직 + Lv.{s.level}\n선행: {(s.Prerequisite==null?"없음":CareerCatalog.Get(s.Prerequisite).name)}";
+            if(s.kind==CareerSkillKind.Passive)return L.F("<b>{0}</b> · 패시브\n\n{1}\n{2}\n\n단계 {3}/3 · {4}\n\n조건: 전직 + Lv.{5}\n선행: {6}", L.T(s.name), L.T(s.description), L.T(CareerNumbers.Passive(s,p.Rank(s.id))), p.Rank(s.id), L.T(CareerCatalog.Branches(s.career)[s.branch]), s.level, (s.Prerequisite==null?L.T("없음"):L.T(CareerCatalog.Get(s.Prerequisite).name)));
             var n=CharacterData.Session.Stats.Skill(Game.Session.PlayerClass,0,s.Gem,new SkillGem[0]);
-            return $"<b>{s.name}</b> · 액티브\n\n{s.description}\n\n{CareerNumbers.Summary(s,CharacterData.Session,n)}\n사거리 {s.range:0.#} · 반경 {n.radius:0.#}\n지속 {s.duration:0.#}초 · 최대 {s.hits}회\n{(s.synergy=="해당 없음"?"":s.synergy+"\n")}조건: Lv.{s.level} · 선행: {(s.Prerequisite==null?"없음":CareerCatalog.Get(s.Prerequisite).name)}";
+            string synergy=s.synergy=="해당 없음"?"":L.T(s.synergy)+"\n"; // i18n-ignore data key compare
+            return L.F("<b>{0}</b> · 액티브\n\n{1}\n\n{2}\n사거리 {3:0.#} · 반경 {4:0.#}\n지속 {5:0.#}초 · 최대 {6}회\n{7}조건: Lv.{8} · 선행: {9}", L.T(s.name), L.T(s.description), L.T(CareerNumbers.Summary(s,CharacterData.Session,n)), s.range, n.radius, s.duration, s.hits, synergy, s.level, (s.Prerequisite==null?L.T("없음"):L.T(CareerCatalog.Get(s.Prerequisite).name)));
         }
     }
 }

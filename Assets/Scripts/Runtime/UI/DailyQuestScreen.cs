@@ -24,12 +24,12 @@ namespace DotRPG
 
         public static DailyQuestScreen Create(Transform canvas)
         {
-            var w = CreateWindow<DailyQuestScreen>(canvas, "DailyQuests", "일일 의뢰", "menuicon_quest");
+            var w = CreateWindow<DailyQuestScreen>(canvas, "DailyQuests", L.T("일일 의뢰"), "menuicon_quest");
             Instance = w;
-            w.tabDaily = Button(w.content, "TabDaily", "일일 의뢰", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(170f, 44f), () => w.SetTab(false), 20);
-            w.tabWeekly = Button(w.content, "TabWeekly", "주간 의뢰", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(true), 20);
+            w.tabDaily = Button(w.content, "TabDaily", L.T("일일 의뢰"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(170f, 44f), () => w.SetTab(false), 20);
+            w.tabWeekly = Button(w.content, "TabWeekly", L.T("주간 의뢰"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(true), 20);
             w.header = Label(w.content, "Header", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -50f), new Vector2(1040f, 44f), TextAnchor.MiddleLeft);
-            w.refresh = Button(w.content, "Refresh", "새로고침", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 44f), () => { Game.Audio.PlaySfx("select", 0.5f); DailyQuestClient.Refresh(); }, 17);
+            w.refresh = Button(w.content, "Refresh", L.T("새로고침"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 44f), () => { Game.Audio.PlaySfx("select", 0.5f); DailyQuestClient.Refresh(); }, 17);
             for (int i = 0; i < Rows; i++)
             {
                 int idx = i;
@@ -39,7 +39,7 @@ namespace DotRPG
                 r.text = Label(r.bg.transform, "Text", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -38f), new Vector2(620f, 44f), TextAnchor.UpperLeft);
                 r.progress = Label(r.bg.transform, "Progress", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(650f, 12f), new Vector2(360f, 30f), TextAnchor.MiddleLeft);
                 r.reward = Label(r.bg.transform, "Reward", "", 15, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(650f, -18f), new Vector2(380f, 30f), TextAnchor.MiddleLeft);
-                r.action = Button(r.bg.transform, "Action", "수락", "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), UiSizes.ClaimButton, () => w.Act(idx), UiSizes.ClaimFont);
+                r.action = Button(r.bg.transform, "Action", L.T("수락"), "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), UiSizes.ClaimButton, () => w.Act(idx), UiSizes.ClaimFont);
                 w.rows.Add(r);
             }
             DailyQuestClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
@@ -83,9 +83,9 @@ namespace DotRPG
             int n = Mathf.Min(s.progress, s.count);
             string what = s.type switch
             {
-                "dungeon" => "요일 던전 클리어",
-                "raid" => string.IsNullOrEmpty(s.label) ? "해골왕 레이드 클리어" : s.label,
-                "daily" => "일일 의뢰 완료",
+                "dungeon" => L.T("요일 던전 클리어"),
+                "raid" => string.IsNullOrEmpty(s.label) ? L.T("해골왕 레이드 클리어") : L.T(s.label),
+                "daily" => L.T("일일 의뢰 완료"),
                 _ => s.label,
             };
             string color = n >= s.count ? "#8fe28f" : "#ffd34a";
@@ -95,8 +95,8 @@ namespace DotRPG
         static string Reward(DailyQuestClient.Slot s)
         {
             var parts = new List<string>();
-            if (s.xp > 0) parts.Add($"경험치 {s.xp:N0} <color=#8c96a8>(막대의 {(s.period == "week" ? 15 : 5)}%)</color>");
-            if (s.gold > 0) parts.Add($"골드 {s.gold:N0}");
+            if (s.xp > 0) parts.Add(L.F("경험치 {0:N0} <color=#8c96a8>(막대의 {1}%)</color>", s.xp, s.period == "week" ? 15 : 5));
+            if (s.gold > 0) parts.Add(L.F("골드 {0:N0}", s.gold));
             return parts.Count == 0 ? "" : string.Join(" / ", parts);
         }
 
@@ -106,11 +106,11 @@ namespace DotRPG
             tabDaily.image.sprite = UiTheme.Tab(!weekly);
             tabWeekly.image.sprite = UiTheme.Tab(weekly);
             var next = weekly ? DailyQuestClient.NextWeeklyReset : DailyQuestClient.NextReset;
-            string reset = next.HasValue ? $"다음 초기화 {next.Value:MM/dd HH:mm}" : weekly ? "매주 목요일 06:00 초기화" : "매일 06:00 초기화";
-            string rule = weekly ? "주 3개 · 목요일 06:00 초기화 · 이월 없음" : "하루 3개 · 못 한 의뢰는 다음 날까지";
-            header.text = !online ? "<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>"
-                : !DailyQuestClient.Loaded ? "<color=#8c96a8>불러오는 중입니다...</color>"
-                : !DailyQuestClient.Unlocked ? "<color=#8c96a8>1-15 '전직의 길'을 마치면 열립니다.</color>"
+            string reset = next.HasValue ? L.F("다음 초기화 {0:MM/dd HH:mm}", next.Value) : weekly ? L.T("매주 목요일 06:00 초기화") : L.T("매일 06:00 초기화");
+            string rule = weekly ? L.T("주 3개 · 목요일 06:00 초기화 · 이월 없음") : L.T("하루 3개 · 못 한 의뢰는 다음 날까지");
+            header.text = !online ? L.T("<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>")
+                : !DailyQuestClient.Loaded ? L.T("<color=#8c96a8>불러오는 중입니다...</color>")
+                : !DailyQuestClient.Unlocked ? L.T("<color=#8c96a8>1-15 '전직의 길'을 마치면 열립니다.</color>")
                 : $"{(string.IsNullOrEmpty(DailyQuestClient.Giver) ? "" : DailyQuestClient.Giver + "  ·  ")}<color=#b8c4d8>{rule}</color>  ·  <color=#8c96a8>{reset}</color>";
             refresh.gameObject.SetActive(online);
             refresh.interactable = !DailyQuestClient.Busy;
@@ -124,13 +124,13 @@ namespace DotRPG
                 r.bg.gameObject.SetActive(s != null);
                 if (s == null) continue;
                 bool carried = !weekly && s.day != today;
-                r.title.text = $"<b>{s.title}</b>" + (carried ? "  <size=14><color=#ffb347>어제 의뢰</color></size>" : "");
+                r.title.text = $"<b>{L.T(s.title)}</b>" + (carried ? L.T("  <size=14><color=#ffb347>어제 의뢰</color></size>") : "");
                 r.text.text = $"<color=#b8c4d8>{s.text}</color>";
                 r.progress.text = Progress(s);
                 r.reward.text = Reward(s);
                 r.action.gameObject.SetActive(true);
                 r.action.interactable = DailyQuestClient.CanClaim(s) || DailyQuestClient.CanAccept(s);
-                TextOf(r.action).text = s.Claimed ? "완료됨" : s.Ready ? "보상 받기" : s.Offered ? "수락" : "진행 중";
+                TextOf(r.action).text = s.Claimed ? L.T("완료됨") : s.Ready ? L.T("보상 받기") : s.Offered ? L.T("수락") : L.T("진행 중");
             }
         }
     }

@@ -51,7 +51,7 @@ namespace DotRPG
         {
             if (owner == null || Time.time - blockedShownAt < .25f) return;
             blockedShownAt = Time.time;
-            WorldPopupText.Show(owner.transform, "방어!", new Color(.6f, 1f, .95f), .7f);
+            WorldPopupText.Show(owner.transform, L.T("방어!"), new Color(.6f, 1f, .95f), .7f);
         }
         public float BlessLeft => Mathf.Max(0f, blessEnd - Time.time);
         public float HotLeft => HotVisible ? Mathf.Max(0f, hotEnd - Time.time) : 0f;

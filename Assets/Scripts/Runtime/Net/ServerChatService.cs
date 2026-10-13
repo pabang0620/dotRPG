@@ -59,14 +59,14 @@ namespace DotRPG
         {
             text = (text ?? "").Trim();
             if (text.Length == 0) return "";
-            if (channel == ChatChannel.System) return "시스템 채널에는 쓸 수 없습니다.";
-            if (!socket.Ready) return socket.StopReason ?? "채팅 서버에 다시 연결하는 중입니다.";
+            if (channel == ChatChannel.System) return L.T("시스템 채널에는 쓸 수 없습니다.");
+            if (!socket.Ready) return socket.StopReason ?? L.T("채팅 서버에 다시 연결하는 중입니다.");
             if (text.Length > ChatRules.MaxLength) text = text.Substring(0, ChatRules.MaxLength);
-            if (clock - lastSent < ChatRules.MinInterval) return "채팅은 1초에 한 번만 보낼 수 있습니다.";
+            if (clock - lastSent < ChatRules.MinInterval) return L.T("채팅은 1초에 한 번만 보낼 수 있습니다.");
             if (channel == ChatChannel.Whisper)
             {
-                if (string.IsNullOrEmpty(whisperTo)) return "귓속말 상대를 적어 주세요. (/w 이름 내용)";
-                if (blocked.Contains(whisperTo)) return $"{whisperTo}님은 차단 중입니다.";
+                if (string.IsNullOrEmpty(whisperTo)) return L.T("귓속말 상대를 적어 주세요. (/w 이름 내용)");
+                if (blocked.Contains(whisperTo)) return L.F("{0}님은 차단 중입니다.", whisperTo);
             }
             lastSent = clock;
             string cid = ApiClient.NewRequestId();
@@ -114,7 +114,7 @@ namespace DotRPG
             switch (t)
             {
                 case "backlog":
-                    if (d.TryGetValue("gap", out var g) && g is bool gap && gap) PostSystem("일부 메시지를 놓쳤습니다.");
+                    if (d.TryGetValue("gap", out var g) && g is bool gap && gap) PostSystem(L.T("일부 메시지를 놓쳤습니다."));
                     foreach (var o in MiniJson.Arr(d, "lines") ?? new List<object>()) OnMessage(o as Dictionary<string, object>);
                     long cursor = (long)MiniJson.Num(d, "cursor", socket.LastSeq);
                     if (cursor > socket.LastSeq) socket.LastSeq = cursor;
@@ -144,7 +144,7 @@ namespace DotRPG
                         lines.Remove(p.line);
                         Received?.Invoke(null);
                     }
-                    GameEvents.RaiseToast(MiniJson.Str(d, "message", "채팅을 보낼 수 없습니다."));
+                    GameEvents.RaiseToast(MiniJson.Str(d, "message", L.T("채팅을 보낼 수 없습니다.")));
                     break;
                 }
                 case "chat.sys":
@@ -155,8 +155,8 @@ namespace DotRPG
                     SocialChanged?.Invoke();
                     break;
                 case "friends.changed":
-                    if (MiniJson.Str(d, "reason") == "request") GameEvents.RaiseToast("친구 요청이 왔습니다. (친구 창)");
-                    if (MiniJson.Str(d, "reason") == "accepted") GameEvents.RaiseToast("친구 요청이 수락되었습니다.");
+                    if (MiniJson.Str(d, "reason") == "request") GameEvents.RaiseToast(L.T("친구 요청이 왔습니다. (친구 창)"));
+                    if (MiniJson.Str(d, "reason") == "accepted") GameEvents.RaiseToast(L.T("친구 요청이 수락되었습니다."));
                     Refresh();
                     break;
                 case "party.changed":
@@ -179,7 +179,7 @@ namespace DotRPG
                     PartyClient.Instance?.PollNow();
                     break;
                 case "sanction":
-                    GameEvents.RaiseToast(MiniJson.Str(d, "message", "운영 정책에 따른 조치가 적용되었습니다."));
+                    GameEvents.RaiseToast(MiniJson.Str(d, "message", L.T("운영 정책에 따른 조치가 적용되었습니다.")));
                     break;
                 case "error":
                     UnityEngine.Debug.LogWarning("[CHAT] " + MiniJson.Str(d, "code") + " " + MiniJson.Str(d, "message"));
@@ -230,8 +230,8 @@ namespace DotRPG
         {
             if (w == null) return "";
             string activity = MiniJson.Str(w, "activity");
-            if (activity == "dungeon") return "던전 공략 중";
-            if (activity == "raid") return "레이드 중";
+            if (activity == "dungeon") return L.T("던전 공략 중");
+            if (activity == "raid") return L.T("레이드 중");
             var map = MapRegistry.Get(MiniJson.Str(w, "map_id"));
             return map != null ? map.displayName : "";
         }
@@ -283,12 +283,12 @@ namespace DotRPG
         public void AddFriend(string name)
         {
             string id = IdOf(name);
-            if (id == null) { GameEvents.RaiseToast($"{name}님을 찾을 수 없습니다. 채팅에서 만난 모험가만 추가할 수 있습니다."); return; }
+            if (id == null) { GameEvents.RaiseToast(L.F("{0}님을 찾을 수 없습니다. 채팅에서 만난 모험가만 추가할 수 있습니다.", name)); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["character_id"] = characterId, ["target"] = id };
             Api.Post("/friends/requests", body, r =>
             {
                 if (!r.ok) { GameEvents.RaiseToast(r.message); return; }
-                GameEvents.RaiseToast(MiniJson.Str(r.data, "status") == "accepted" ? $"{name}님과 친구가 되었습니다." : $"{name}님에게 친구 요청을 보냈습니다.");
+                GameEvents.RaiseToast(MiniJson.Str(r.data, "status") == "accepted" ? L.F("{0}님과 친구가 되었습니다.", name) : L.F("{0}님에게 친구 요청을 보냈습니다.", name));
                 Refresh();
             });
         }
@@ -298,7 +298,7 @@ namespace DotRPG
             if (!friendIds.TryGetValue(name, out var fid)) return;
             Api.Delete($"/friends/{fid}", r =>
             {
-                GameEvents.RaiseToast(r.ok ? $"{name}님을 친구에서 삭제했습니다." : r.message);
+                GameEvents.RaiseToast(r.ok ? L.F("{0}님을 친구에서 삭제했습니다.", name) : r.message);
                 Refresh();
             });
         }
@@ -308,7 +308,7 @@ namespace DotRPG
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["accept"] = accept };
             Api.Post($"/friends/requests/{requestId}/respond", body, r =>
             {
-                GameEvents.RaiseToast(!r.ok ? r.message : accept ? "친구 요청을 수락했습니다." : "친구 요청을 거절했습니다.");
+                GameEvents.RaiseToast(!r.ok ? r.message : accept ? L.T("친구 요청을 수락했습니다.") : L.T("친구 요청을 거절했습니다."));
                 Refresh();
             });
         }
@@ -318,7 +318,7 @@ namespace DotRPG
         public void Block(string name)
         {
             string id = IdOf(name);
-            if (id == null) { GameEvents.RaiseToast($"{name}님을 찾을 수 없습니다."); return; }
+            if (id == null) { GameEvents.RaiseToast(L.F("{0}님을 찾을 수 없습니다.", name)); return; }
             blocked.Add(name); // hide at once; the server confirms
             Api.Put($"/blocks/{id}", new Dictionary<string, object>(), r =>
             {
@@ -333,7 +333,7 @@ namespace DotRPG
             if (!blockIds.TryGetValue(name, out var bid)) { blocked.Remove(name); SocialChanged?.Invoke(); return; }
             Api.Delete($"/blocks/{bid}", r =>
             {
-                GameEvents.RaiseToast(r.ok ? $"{name}님의 차단을 풀었습니다." : r.message);
+                GameEvents.RaiseToast(r.ok ? L.F("{0}님의 차단을 풀었습니다.", name) : r.message);
                 Refresh();
             });
         }
@@ -353,18 +353,18 @@ namespace DotRPG
         public string Report(string name, string reason)
         {
             string id = IdOf(name);
-            if (id == null) return $"{name}님을 찾을 수 없습니다.";
+            if (id == null) return L.F("{0}님을 찾을 수 없습니다.", name);
             int index = Array.IndexOf(ChatRules.ReportReasons, reason);
             string code = index >= 0 ? ChatRules.ReportReasonCodes[index] : "other";
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["character_id"] = characterId, ["target"] = id, ["reason"] = code };
             Api.Post("/reports", body, r =>
             {
                 if (!r.ok) { GameEvents.RaiseToast(r.message); return; }
-                if (r.data.TryGetValue("duplicate", out var dup) && dup is bool isDup && isDup) { GameEvents.RaiseToast("이미 같은 사유로 신고한 모험가입니다."); return; }
+                if (r.data.TryGetValue("duplicate", out var dup) && dup is bool isDup && isDup) { GameEvents.RaiseToast(L.T("이미 같은 사유로 신고한 모험가입니다.")); return; }
                 int n = MiniJson.Int(MiniJson.Obj(r.data, "report"), "line_count");
-                GameEvents.RaiseToast($"{name}님을 '{reason}'(으)로 신고했습니다. 최근 대화 {n}줄을 첨부했습니다.");
+                GameEvents.RaiseToast(L.F("{0}님을 '{1}'(으)로 신고했습니다. 최근 대화 {2}줄을 첨부했습니다.", name, reason, n));
             });
-            return $"{name}님 신고를 접수하는 중입니다.";
+            return L.F("{0}님 신고를 접수하는 중입니다.", name);
         }
 
         public void Tick(float dt)
@@ -392,7 +392,7 @@ namespace DotRPG
                 pending.Remove(kv.Key);
                 lines.Remove(kv.Value.line);
                 Received?.Invoke(null);
-                GameEvents.RaiseToast("채팅을 보내지 못했습니다.");
+                GameEvents.RaiseToast(L.T("채팅을 보내지 못했습니다."));
             }
         }
     }

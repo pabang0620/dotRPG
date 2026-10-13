@@ -40,20 +40,20 @@ namespace DotRPG
             var d = DungeonDatabase.Get(dungeonId);
             if (d == null) return "";
             var n = DungeonDatabase.DifficultyFor(d, d.isRaid ? DungeonDifficulty.Normal : difficulty);
-            return compact ? $"권장 Lv{n.recommendedLevel}" : $"권장 Lv.{n.recommendedLevel} · 전투력 {n.recommendedPower:N0}";
+            return compact ? L.F("권장 Lv{0}", n.recommendedLevel) : L.F("권장 Lv.{0} · 전투력 {1:N0}", n.recommendedLevel, n.recommendedPower);
         }
 
         /// <summary>Difficulty label, "레이드" for raids.</summary>
         public static string ModeName(string dungeonId, DungeonDifficulty difficulty)
         {
             var d = DungeonDatabase.Get(dungeonId);
-            return d != null && d.isRaid ? "레이드" : DifficultyName(difficulty);
+            return d != null && d.isRaid ? L.T("레이드") : DifficultyName(difficulty);
         }
 
         /// <summary>Queue time before the party departs with AI in the empty slots.</summary>
         public const float QueueSeconds = 60f;
         public const int MaxMessage = 30;
-        public static readonly string[] PresetMessages = { "빠르게 돌아요", "초보 환영합니다", "숙련자만 와 주세요", "보스 패턴 아시는 분", "카드 보상 노려요" };
+        public static readonly string[] PresetMessages = { L.T("빠르게 돌아요"), L.T("초보 환영합니다"), L.T("숙련자만 와 주세요"), L.T("보스 패턴 아시는 분"), L.T("카드 보상 노려요") };
         public static string DifficultyName(DungeonDifficulty d) => DungeonDatabase.Difficulty(d).name;
         public static string DifficultyColor(DungeonDifficulty d) =>
             d == DungeonDifficulty.Normal ? "#c8d2e0" : d == DungeonDifficulty.Adventure ? "#78dcff" : d == DungeonDifficulty.King ? "#ffd34a" : "#ff7a7a";
@@ -82,7 +82,7 @@ namespace DotRPG
     /// <summary>[ONLINE] In-memory 파티 찾기 with generated posts. Nothing leaves this PC.</summary>
     public sealed class MockPartyFinderService : IPartyFinderService
     {
-        static readonly string[] Leaders = { "검은뿔", "달빛마녀", "모리촌장팬", "카타나장인", "해골사냥꾼", "눈꽃여우", "광산왕", "불꽃베기" };
+        static readonly string[] Leaders = { L.T("검은뿔"), L.T("달빛마녀"), L.T("모리촌장팬"), L.T("카타나장인"), L.T("해골사냥꾼"), L.T("눈꽃여우"), L.T("광산왕"), L.T("불꽃베기") };
         /// <summary>Mock: one more human "joins" the queue at these seconds.</summary>
         static readonly float[] QueueJoins = { 18f, 41f };
 
@@ -138,7 +138,7 @@ namespace DotRPG
                 maxMembers = Math.Max(2, Math.Min(4, maxMembers)),
                 members = 1,
                 minPower = Math.Max(0, minPower),
-                leaderName = "나",
+                leaderName = L.T("나"),
                 leaderClass = cls,
                 leaderLevel = Game.Session != null ? Game.Session.Progression.Level : 1,
                 message = message != null && message.Length > PartyFinderRules.MaxMessage ? message.Substring(0, PartyFinderRules.MaxMessage) : message ?? "",
@@ -159,13 +159,13 @@ namespace DotRPG
         public string Apply(string postId, int myPower)
         {
             var p = posts.FirstOrDefault(x => x.id == postId);
-            if (p == null) return "모집이 끝난 글입니다.";
-            if (p.mine) return "내 모집 글입니다.";
-            if (p.Full) return "모집 완료된 파티입니다.";
-            if (myPower < p.minPower) return $"전투력이 부족합니다 (최소 {p.minPower:N0}).";
+            if (p == null) return L.T("모집이 끝난 글입니다.");
+            if (p.mine) return L.T("내 모집 글입니다.");
+            if (p.Full) return L.T("모집 완료된 파티입니다.");
+            if (myPower < p.minPower) return L.F("전투력이 부족합니다 (최소 {0:N0}).", p.minPower);
             p.applied = true;
             Changed?.Invoke();
-            return $"{p.leaderName}님의 파티에 참가 신청했습니다. (오프라인 모드: 다른 모험가가 없습니다)";
+            return L.F("{0}님의 파티에 참가 신청했습니다. (오프라인 모드: 다른 모험가가 없습니다)", p.leaderName);
         }
 
         public void StartQueue(string dungeonId, DungeonDifficulty difficulty)

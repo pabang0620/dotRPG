@@ -34,7 +34,7 @@ namespace DotRPG
         void MemberTick()
         {
             bool connected = transport.IsConnected;
-            if (wasConnected && !connected) GameEvents.RaiseToast("방장과의 연결이 끊겼습니다.");
+            if (wasConnected && !connected) GameEvents.RaiseToast(L.T("방장과의 연결이 끊겼습니다."));
             // Back after a drop: the host forgot this seat's connection (it ignores our input until a Hello), so greet again.
             if (!wasConnected && connected && everWelcomed) Regreet();
             wasConnected = connected;
@@ -124,7 +124,7 @@ namespace DotRPG
             Game.Party?.SetRosterHidden(true);
             if (again) { foreach (var c in cards) AddPuppet(c); return; }
             foreach (var c in cards) AddPuppet(c);
-            GameEvents.RaiseToast("방장에게 연결되었습니다.");
+            GameEvents.RaiseToast(L.T("방장에게 연결되었습니다."));
             if (field) { FieldMode = true; FieldMap = fieldMap; expectedRoom = 0; return; }
             if (inRun) StartFollowing(dungeonId, difficulty, room);
         }
@@ -292,7 +292,7 @@ namespace DotRPG
                     {
                         int slot = r.ReadByte();
                         var body = MemberAt(slot);
-                        if (body != null) GameEvents.RaiseToast($"{body.DisplayName}님 연결 끊김");
+                        if (body != null) GameEvents.RaiseToast(L.F("{0}님 연결 끊김", body.DisplayName));
                         break;
                     }
                 }

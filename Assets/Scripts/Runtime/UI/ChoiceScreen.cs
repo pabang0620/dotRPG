@@ -24,7 +24,7 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Choice", true);
             var screen = root.gameObject.AddComponent<ChoiceScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, "선택", Width, "\n", BodySize);
+            screen.BuildPanel(root, L.T("선택"), Width, "\n", BodySize);
             screen.message = screen.panel.Find("Body").GetComponent<Text>();
             screen.menu.OnCancel = screen.Cancel;
             screen.FitPanel();
@@ -36,7 +36,7 @@ namespace DotRPG
             question = text;
             onCancel = cancel;
             deadline = timeoutSeconds > 0f ? Time.unscaledTime + timeoutSeconds : 0f;
-            message.text = deadline > 0f ? question.Replace("{초}", Mathf.CeilToInt(timeoutSeconds).ToString()) : question;
+            message.text = deadline > 0f ? question.Replace("{초}", Mathf.CeilToInt(timeoutSeconds).ToString()) : question; // i18n-ignore seconds token
             menu.Clear();
             foreach (var o in options)
             {
@@ -76,7 +76,7 @@ namespace DotRPG
             if (deadline <= 0f) return;
             float left = deadline - Time.unscaledTime;
             if (left <= 0f) { Cancel(); return; }
-            message.text = question.Replace("{초}", Mathf.CeilToInt(left).ToString());
+            message.text = question.Replace("{초}", Mathf.CeilToInt(left).ToString()); // i18n-ignore seconds token
         }
 
         /// <summary>The question shown and an answer by index (automated checks).</summary>

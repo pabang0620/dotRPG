@@ -47,7 +47,7 @@ namespace DotRPG
             {
                 if (r.ok) { done(true, null, MiniJson.Int(r.data, "stage", -1)); return; }
                 int stage = r.errors != null && r.errors.ContainsKey("stage") ? MiniJson.Int(r.errors, "stage", -1) : -1;
-                done(false, string.IsNullOrEmpty(r.message) ? "서버가 요청을 받지 못했습니다." : r.message, stage);
+                done(false, string.IsNullOrEmpty(r.message) ? L.T("서버가 요청을 받지 못했습니다.") : r.message, stage);
             });
             if (needsPresence) PresenceClient.Ping(Send); else Send();
         }

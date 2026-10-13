@@ -94,8 +94,8 @@ namespace DotRPG
                 if (skippable) transform.SetAsLastSibling(); // above the fader during black narration
             }
             if (skippable)
-                skipHint.text = TouchUi.Enabled ? (inScene ? "장면 건너뛰기" : "대화 건너뛰기")
-                    : $"<color=#ffd34a><b>ESC</b></color>  {(inScene ? "장면 건너뛰기" : "대화 건너뛰기")}";
+                skipHint.text = TouchUi.Enabled ? (inScene ? L.T("장면 건너뛰기") : L.T("대화 건너뛰기"))
+                    : "<color=#ffd34a><b>ESC</b></color>  " + (inScene ? L.T("장면 건너뛰기") : L.T("대화 건너뛰기"));
             if (box.gameObject.activeSelf != show)
             {
                 box.gameObject.SetActive(show);
@@ -124,7 +124,7 @@ namespace DotRPG
             namePlate.gameObject.SetActive(hasName);
             if (hasName)
             {
-                nameText.text = dialogue.Speaker;
+                nameText.text = L.T(dialogue.Speaker);
                 namePlate.sizeDelta = new Vector2(Mathf.Max(140f, nameText.preferredWidth + 40f), 44f);
             }
 

@@ -173,24 +173,24 @@ namespace DotRPG
         void OnLevelUp(int level)
         {
             RefreshStats();
-            if (level == 15 && IsLocal) GameEvents.RaiseToast("<color=#ffd34a>전직 가능!</color> 마을 광장의 전직 안내원에게 가면 '전직의 길' 퀘스트를 받을 수 있습니다.");
+            if (level == 15 && IsLocal) GameEvents.RaiseToast(L.T("<color=#ffd34a>전직 가능!</color> 마을 광장의 전직 안내원에게 가면 '전직의 길' 퀘스트를 받을 수 있습니다."));
             health.Heal(health.Max);
             Data.Mana = Data.Stats.MaxMp;
             Game.Audio.PlaySfx("quest");
             Fx.Sparkle(Center + Vector2.up * 0.3f, 8, 0.9f);
             Game.Camera?.Shake(0.05f, 0.15f);
-            GameEvents.RaiseToast($"레벨 업!  Lv.{level}   패시브 포인트 +1  (메뉴 → 스킬)");
+            GameEvents.RaiseToast(L.F("레벨 업!  Lv.{0}   패시브 포인트 +1  (메뉴 → 스킬)", level));
             for (int s = 0; s < SkillGems.Slots; s++)
             {
                 if (Progression.SlotLevel(s) != level) continue;
                 var gem = SkillGems.ForSlot(Class, s);
                 string key = Game.Input.GetBindingLabel(SkillGems.ActionFor(s));
-                GameEvents.RaiseToast(s == SkillGems.UltimateSlot ? $"각성 기술 해금!  {gem?.name}  [{key}]"
-                    : gem == null ? $"스킬 키 [{key}] 열림: 전직 스킬을 하나 더 올릴 수 있습니다 (메뉴 → 스킬)" // [SKILL 8] A S D have no basic skill
-                    : $"스킬 {s + 1} 해금: {gem.name}  [{key}]");
+                GameEvents.RaiseToast(s == SkillGems.UltimateSlot ? L.F("각성 기술 해금!  {0}  [{1}]", L.T(gem?.name), key)
+                    : gem == null ? L.F("스킬 키 [{0}] 열림: 전직 스킬을 하나 더 올릴 수 있습니다 (메뉴 → 스킬)", key) // [SKILL 8] A S D have no basic skill
+                    : L.F("스킬 {0} 해금: {1}  [{2}]", s + 1, L.T(gem.name), key));
             }
             foreach (var g in SkillGems.All)
-                if (g.kind == GemKind.Support && g.unlockLevel == level) GameEvents.RaiseToast($"새 보조 젬: {g.name}  (메뉴 → 스킬 → 스킬 젬)");
+                if (g.kind == GemKind.Support && g.unlockLevel == level) GameEvents.RaiseToast(L.F("새 보조 젬: {0}  (메뉴 → 스킬 → 스킬 젬)", L.T(g.name)));
         }
 
         void OnDisable()

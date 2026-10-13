@@ -33,21 +33,21 @@ namespace DotRPG
 
         public static QuestScreen Create(Transform canvas)
         {
-            var w = CreateWindow<QuestScreen>(canvas, "QuestLog", "퀘스트", "menuicon_quest");
+            var w = CreateWindow<QuestScreen>(canvas, "QuestLog", L.T("퀘스트"), "menuicon_quest");
             var list = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListWidth, 590f), new Color32(18, 26, 40, 240));
             w.listRoot = list.rectTransform;
             SwipeSteps.Add(list.gameObject, RowHeight, w.ScrollRows); // touch: swipe instead of the mouse wheel
             w.moreUp = Label(list.transform, "MoreUp", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -2f), new Vector2(160f, 20f), TextAnchor.UpperRight);
             w.moreDown = Label(list.transform, "MoreDown", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -8f - VisibleRows * RowHeight), new Vector2(160f, 20f), TextAnchor.UpperRight);
-            w.empty = Label(list.transform, "Empty", "진행 중인 퀘스트가 없습니다.", 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
+            w.empty = Label(list.transform, "Empty", L.T("진행 중인 퀘스트가 없습니다."), 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
             var side = Panel(w.content, "Detail", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(ListWidth + 20f, 0f), new Vector2(760f, 590f), new Color32(24, 36, 54, 235));
             w.detail = Label(side.transform, "Body", "", 21, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -22f), new Vector2(704f, 500f));
             w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 16f), new Vector2(704f, 30f));
             w.hint.color = new Color32(184, 196, 216, 255);
             // Check this quest for auto-progress (nothing checked: the main quest first, then the pinned side quest).
-            w.autoBtn = Button(side.transform, "AutoTarget", "자동 진행에 체크", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(280f, 44f), w.ToggleAutoTarget, 18);
-            w.pinBtn = Button(side.transform, "Pin", "알리미에 추적", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-310f, 52f), new Vector2(250f, 44f), w.TogglePin, 18);
-            Button(list.transform,"CareerQuest","전직 · 각성 이야기 보기", "ui_btngray",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(390,48),()=>Game.UI.Skills.ShowAwakening(),20);
+            w.autoBtn = Button(side.transform, "AutoTarget", L.T("자동 진행에 체크"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(280f, 44f), w.ToggleAutoTarget, 18);
+            w.pinBtn = Button(side.transform, "Pin", L.T("알리미에 추적"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-310f, 52f), new Vector2(250f, 44f), w.TogglePin, 18);
+            Button(list.transform,"CareerQuest",L.T("전직 · 각성 이야기 보기"), "ui_btngray",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(390,48),()=>Game.UI.Skills.ShowAwakening(),20);
             if (Game.Quest != null) Game.Quest.Changed += w.OnQuestChanged;
             return w;
         }
@@ -95,9 +95,9 @@ namespace DotRPG
             rows.Clear();
             top = Mathf.Clamp(top, 0, Mathf.Max(0, quests.Count - VisibleRows));
             for (int i = top; i < quests.Count && i < top + VisibleRows; i++) rows.Add(BuildRow(quests[i], i, i - top));
-            moreUp.text = top > 0 ? $"<color=#b8c4d8>▲ 위로 {top}개</color>" : "";
+            moreUp.text = top > 0 ? L.F("<color=#b8c4d8>▲ 위로 {0}개</color>", top) : "";
             int below = quests.Count - (top + rows.Count);
-            moreDown.text = below > 0 ? $"<color=#b8c4d8>▼ 아래로 {below}개</color>" : "";
+            moreDown.text = below > 0 ? L.F("<color=#b8c4d8>▼ 아래로 {0}개</color>", below) : "";
         }
 
         Row BuildRow(QuestDef q, int index, int line)
@@ -107,11 +107,11 @@ namespace DotRPG
             row.bg.raycastTarget = true;
             UIFactory.Place(row.bg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(8f, -14f - line * RowHeight), new Vector2(ListWidth - 16f, RowHeight - 4f));
             var st = Game.Quest.StatusOf(q.id);
-            string tag = q.Kind == QuestKind.Main ? "<color=#ffd640>메인</color>" : "<color=#78d6ff>서브</color>";
-            string state = st == QuestStatus.Completed ? "<color=#8fe28f>완료</color>"
-                : st == QuestStatus.ReadyToTurnIn ? "<color=#ffd640>보고</color>"
-                : st == QuestStatus.Available ? "<color=#ff9f43>수락 전</color>" : "";
-            string pin = Game.Session.Journal.Tracked == q.id ? " <color=#78d6ff>[추적]</color>" : "";
+            string tag = q.Kind == QuestKind.Main ? L.T("<color=#ffd640>메인</color>") : L.T("<color=#78d6ff>서브</color>");
+            string state = st == QuestStatus.Completed ? L.T("<color=#8fe28f>완료</color>")
+                : st == QuestStatus.ReadyToTurnIn ? L.T("<color=#ffd640>보고</color>")
+                : st == QuestStatus.Available ? L.T("<color=#ff9f43>수락 전</color>") : "";
+            string pin = Game.Session.Journal.Tracked == q.id ? L.T(" <color=#78d6ff>[추적]</color>") : "";
             row.text = UIFactory.Text(row.bg.rectTransform, "Text", $"{tag}  {q.DisplayTitle}{pin}  {state}", 20,
                 st == QuestStatus.Completed ? new Color32(150, 160, 176, 255) : new Color32(246, 231, 200, 255), TextAnchor.MiddleLeft, true);
             UIFactory.Stretch(row.text.rectTransform, 50f, 8f, 0f, 0f);
@@ -182,7 +182,7 @@ namespace DotRPG
             var st = mgr.StatusOf(q.id);
             var sb = new StringBuilder();
             var chapter = mgr.Database.Chapter(q.chapter);
-            if (chapter != null) sb.Append($"<color=#b8c4d8>챕터 {chapter.number} · {chapter.title}</color>\n");
+            if (chapter != null) sb.Append(L.F("<color=#b8c4d8>챕터 {0} · {1}</color>\n", chapter.number, L.T(chapter.title)));
             sb.Append($"<size=30><b>{q.DisplayTitle}</b></size>\n\n");
             if (!string.IsNullOrEmpty(q.summary)) sb.Append(mgr.FormatTokens(q.summary)).Append("\n\n");
             if (st != QuestStatus.Completed)
@@ -190,35 +190,35 @@ namespace DotRPG
                 var step = mgr.CurrentStep(q);
                 if (st == QuestStatus.Active && step != null && !string.IsNullOrEmpty(step.text))
                     sb.Append($"<color=#ffe066>{mgr.FormatTokens(step.text)}</color>\n");
-                sb.Append("<b>목표</b>\n");
+                sb.Append(L.T("<b>목표</b>\n"));
                 foreach (var o in mgr.ObjectivesOf(q)) sb.Append(o.done ? $"<color=#8fe28f>● {o.text}</color>\n" : $"○ {o.text}\n");
-                if (!string.IsNullOrEmpty(q.giver) && st == QuestStatus.Available) sb.Append($"\n<color=#b8c4d8>의뢰인: {mgr.NpcName(q.giver)}</color>\n");
+                if (!string.IsNullOrEmpty(q.giver) && st == QuestStatus.Available) sb.Append(L.F("\n<color=#b8c4d8>의뢰인: {0}</color>\n", L.T(mgr.NpcName(q.giver))));
             }
-            else sb.Append("<color=#8fe28f>완료한 퀘스트</color>\n");
+            else sb.Append(L.T("<color=#8fe28f>완료한 퀘스트</color>\n"));
             string reward = RewardText(q.reward);
-            if (reward.Length > 0) sb.Append($"\n<b>보상</b>\n{reward}");
+            if (reward.Length > 0) sb.Append(L.F("\n<b>보상</b>\n{0}", reward));
             detail.text = sb.ToString();
             bool canAuto = st != QuestStatus.Completed && st != QuestStatus.Locked;
             autoBtn.gameObject.SetActive(canAuto);
             string autoKey = Game.Input.GetBindingLabel(GameAction.Interact);
-            if (canAuto) TextOf(autoBtn).text = (QuestAutoPilot.IsTarget(q.id) ? "자동 진행 체크 해제" : "자동 진행에 체크") + $" [{autoKey}]";
+            if (canAuto) TextOf(autoBtn).text = (QuestAutoPilot.IsTarget(q.id) ? L.T("자동 진행 체크 해제") : L.T("자동 진행에 체크")) + $" [{autoKey}]";
             bool canPin = q.Kind == QuestKind.Sub && st != QuestStatus.Completed;
             pinBtn.gameObject.SetActive(canPin);
-            if (canPin) TextOf(pinBtn).text = (Game.Session.Journal.Tracked == q.id ? "알리미 추적 해제" : "알리미에 추적") + $" [{Game.Input.GetBindingLabel(GameAction.Submit)}]";
-            string autoHint = QuestAutoPilot.Targets.Count > 0 ? $"자동 진행: 체크한 {QuestAutoPilot.Targets.Count}개를 번호 순서대로" : "왼쪽 칸을 체크하면 그 퀘스트만 자동 진행";
-            hint.text = $"↑↓ 선택   ·   {autoHint}";
+            if (canPin) TextOf(pinBtn).text = (Game.Session.Journal.Tracked == q.id ? L.T("알리미 추적 해제") : L.T("알리미에 추적")) + $" [{Game.Input.GetBindingLabel(GameAction.Submit)}]";
+            string autoHint = QuestAutoPilot.Targets.Count > 0 ? L.F("자동 진행: 체크한 {0}개를 번호 순서대로", QuestAutoPilot.Targets.Count) : L.T("왼쪽 칸을 체크하면 그 퀘스트만 자동 진행");
+            hint.text = L.F("↑↓ 선택   ·   {0}", autoHint);
         }
 
         static string RewardText(QuestRewardDef r)
         {
             if (r == null) return "";
             var parts = new List<string>();
-            if (r.xp > 0) parts.Add($"경험치 {Progression.QuestXp(r.xp):N0}");
-            if (r.gold > 0) parts.Add($"골드 {r.gold:N0}");
-            if (r.maxHealth > 0) parts.Add($"최대 체력 +{EquipmentDatabase.Hearts(r.maxHealth)}");
+            if (r.xp > 0) parts.Add(L.F("경험치 {0:N0}", Progression.QuestXp(r.xp)));
+            if (r.gold > 0) parts.Add(L.F("골드 {0:N0}", r.gold));
+            if (r.maxHealth > 0) parts.Add(L.F("최대 체력 +{0}", EquipmentDatabase.Hearts(r.maxHealth)));
             if (r.items != null)
                 foreach (var it in r.items)
-                    if (!string.IsNullOrEmpty(it.id)) parts.Add(it.count > 1 ? $"{QuestManager.ItemName(it.id)} x{it.count}" : QuestManager.ItemName(it.id));
+                    if (!string.IsNullOrEmpty(it.id)) parts.Add(it.count > 1 ? $"{L.T(QuestManager.ItemName(it.id))} x{it.count}" : L.T(QuestManager.ItemName(it.id)));
             return string.Join("   ·   ", parts);
         }
 
@@ -239,8 +239,8 @@ namespace DotRPG
             QuestAutoPilot.ToggleTarget(questId);
             selectedId = questId;
             Game.Audio.PlaySfx("confirm");
-            GameEvents.RaiseToast(QuestAutoPilot.IsTarget(questId) ? $"자동 진행에 '{q.title}'을(를) 체크했습니다."
-                : QuestAutoPilot.Targets.Count > 0 ? $"'{q.title}' 체크를 풀었습니다." : "체크한 퀘스트가 없어 메인 퀘스트부터 자동 진행합니다.");
+            GameEvents.RaiseToast(QuestAutoPilot.IsTarget(questId) ? L.F("자동 진행에 '{0}'을(를) 체크했습니다.", L.T(q.title))
+                : QuestAutoPilot.Targets.Count > 0 ? L.F("'{0}' 체크를 풀었습니다.", L.T(q.title)) : L.T("체크한 퀘스트가 없어 메인 퀘스트부터 자동 진행합니다."));
             Refresh();
         }
 

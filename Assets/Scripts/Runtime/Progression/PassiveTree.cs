@@ -116,10 +116,10 @@ namespace DotRPG
             string f = prev;
             Small(p + "a1", areaSmall); Small(p + "d1", dmgSmall); Small(p + "c1", cdSmall);
             Small(p + "x1", bridgeA); Small(p + "x2", bridgeC);
-            N(p + "A", "범위 확장", No, area.x, area.y, slot, (PassiveStat.SkillArea, 25)).skillSlot = slot;
-            N(p + "D", "위력 강화", No, dmg.x, dmg.y, slot, (PassiveStat.SkillDamage, 30)).skillSlot = slot;
-            N(p + "C", "재사용 단축", No, cd.x, cd.y, slot, (PassiveStat.SkillCooldown, 20)).skillSlot = slot;
-            N(p + "M", "스킬 숙련", PassiveKind.Mastery, mastery.x, mastery.y, slot, (PassiveStat.SkillRepeat, 1), (PassiveStat.SkillDamage, 10)).skillSlot = slot;
+            N(p + "A", L.T("범위 확장"), No, area.x, area.y, slot, (PassiveStat.SkillArea, 25)).skillSlot = slot;
+            N(p + "D", L.T("위력 강화"), No, dmg.x, dmg.y, slot, (PassiveStat.SkillDamage, 30)).skillSlot = slot;
+            N(p + "C", L.T("재사용 단축"), No, cd.x, cd.y, slot, (PassiveStat.SkillCooldown, 20)).skillSlot = slot;
+            N(p + "M", L.T("스킬 숙련"), PassiveKind.Mastery, mastery.x, mastery.y, slot, (PassiveStat.SkillRepeat, 1), (PassiveStat.SkillDamage, 10)).skillSlot = slot;
             Link(f, p + "a1"); Link(p + "a1", p + "A");
             Link(f, p + "d1"); Link(p + "d1", p + "D");
             Link(f, p + "c1"); Link(p + "c1", p + "C");
@@ -130,45 +130,45 @@ namespace DotRPG
 
         static PassiveTree()
         {
-            N(Start, "시작점", PassiveKind.Start, 0, 0, 4);
+            N(Start, L.T("시작점"), PassiveKind.Start, 0, 0, 4);
             // Left: skill 1. Strength flavoured small nodes.
             Arm("L", 0, Vector2.left, Vector2.up, false, new[]
             {
-                ("힘", (PassiveStat.FlatHp, 10)), ("무기 숙련", (PassiveStat.IncDamage, 5)),
-                ("넓은 시야", (PassiveStat.Aoe, 5)), ("전투 감각", (PassiveStat.IncDamage, 6)), ("날렵함", (PassiveStat.AttackSpeed, 5)),
-                ("체력 단련", (PassiveStat.FlatHp, 15)), ("민첩", (PassiveStat.Speed, 5)),
+                (L.T("힘"), (PassiveStat.FlatHp, 10)), (L.T("무기 숙련"), (PassiveStat.IncDamage, 5)),
+                (L.T("넓은 시야"), (PassiveStat.Aoe, 5)), (L.T("전투 감각"), (PassiveStat.IncDamage, 6)), (L.T("날렵함"), (PassiveStat.AttackSpeed, 5)),
+                (L.T("체력 단련"), (PassiveStat.FlatHp, 15)), (L.T("민첩"), (PassiveStat.Speed, 5)),
             });
             // Right: skill 2. Intelligence flavoured.
             Arm("R", 1, Vector2.right, Vector2.up, false, new[]
             {
-                ("지능", (PassiveStat.FlatMp, 10)), ("주문 숙련", (PassiveStat.IncDamage, 5)),
-                ("넓은 파장", (PassiveStat.Aoe, 5)), ("마나 순환", (PassiveStat.ManaRegen, 15)), ("절약", (PassiveStat.ManaCost, 5)),
-                ("명상", (PassiveStat.ManaRegen, 20)), ("지능", (PassiveStat.FlatMp, 15)),
+                (L.T("지능"), (PassiveStat.FlatMp, 10)), (L.T("주문 숙련"), (PassiveStat.IncDamage, 5)),
+                (L.T("넓은 파장"), (PassiveStat.Aoe, 5)), (L.T("마나 순환"), (PassiveStat.ManaRegen, 15)), (L.T("절약"), (PassiveStat.ManaCost, 5)),
+                (L.T("명상"), (PassiveStat.ManaRegen, 20)), (L.T("지능"), (PassiveStat.FlatMp, 15)),
             });
             // Down: skill 3. Hunter flavoured.
             Arm("D", 2, Vector2.down, Vector2.left, true, new[]
             {
-                ("민첩", (PassiveStat.Speed, 5)),
-                ("사냥의 기쁨", (PassiveStat.LifeOnKill, 5)), ("전투 감각", (PassiveStat.IncDamage, 6)), ("날렵함", (PassiveStat.AttackSpeed, 5)),
-                ("체력 단련", (PassiveStat.FlatHp, 15)), ("마나 흡수", (PassiveStat.ManaOnKill, 4)),
+                (L.T("민첩"), (PassiveStat.Speed, 5)),
+                (L.T("사냥의 기쁨"), (PassiveStat.LifeOnKill, 5)), (L.T("전투 감각"), (PassiveStat.IncDamage, 6)), (L.T("날렵함"), (PassiveStat.AttackSpeed, 5)),
+                (L.T("체력 단련"), (PassiveStat.FlatHp, 15)), (L.T("마나 흡수"), (PassiveStat.ManaOnKill, 4)),
             });
             // Up: skill 4. Guardian flavoured.
             Arm("U", 3, Vector2.up, Vector2.left, true, new[]
             {
-                ("방패술", (PassiveStat.Block, 3)),
-                ("균형", (PassiveStat.FlatMp, 10)), ("무기 숙련", (PassiveStat.IncDamage, 6)), ("마나 순환", (PassiveStat.ManaRegen, 15)),
-                ("방패술", (PassiveStat.Block, 4)), ("민첩", (PassiveStat.Speed, 5)),
+                (L.T("방패술"), (PassiveStat.Block, 3)),
+                (L.T("균형"), (PassiveStat.FlatMp, 10)), (L.T("무기 숙련"), (PassiveStat.IncDamage, 6)), (L.T("마나 순환"), (PassiveStat.ManaRegen, 15)),
+                (L.T("방패술"), (PassiveStat.Block, 4)), (L.T("민첩"), (PassiveStat.Speed, 5)),
             });
 
             // Keystones in the corners, each joining two arms.
             const PassiveKind K = PassiveKind.Keystone;
-            var k1 = N("K1", "불굴", K, -290, 205, 4);
-            k1.keystone = Keystone.Unwavering; k1.keystoneText = "막기 확률 +15%\n이동 속도 10% 감소";
-            var k2 = N("K2", "유리 대포", K, 290, 205, 4);
-            k2.keystone = Keystone.GlassCannon; k2.keystoneText = "피해 40% 증가\n최대 HP 25% 감소";
-            var k3 = N("K3", "피의 마법", K, -290, -205, 4);
-            k3.keystone = Keystone.BloodMagic; k3.keystoneText = "스킬이 MP 대신 HP를 소모한다\n최대 MP 없음\n최대 HP 30% 증가";
-            var k4 = N("K4", "각성", K, 290, -205, 4, (PassiveStat.SkillDamage, 40), (PassiveStat.SkillCooldown, 30));
+            var k1 = N("K1", L.T("불굴"), K, -290, 205, 4);
+            k1.keystone = Keystone.Unwavering; k1.keystoneText = L.T("막기 확률 +15%\n이동 속도 10% 감소");
+            var k2 = N("K2", L.T("유리 대포"), K, 290, 205, 4);
+            k2.keystone = Keystone.GlassCannon; k2.keystoneText = L.T("피해 40% 증가\n최대 HP 25% 감소");
+            var k3 = N("K3", L.T("피의 마법"), K, -290, -205, 4);
+            k3.keystone = Keystone.BloodMagic; k3.keystoneText = L.T("스킬이 MP 대신 HP를 소모한다\n최대 MP 없음\n최대 HP 30% 증가");
+            var k4 = N("K4", L.T("각성"), K, 290, -205, 4, (PassiveStat.SkillDamage, 40), (PassiveStat.SkillCooldown, 30));
             k4.keystone = Keystone.Awakening; k4.skillSlot = SkillGems.UltimateSlot;
             Link("K1", "LA"); Link("K1", "UA");
             Link("K2", "RA"); Link("K2", "UC");
@@ -182,33 +182,33 @@ namespace DotRPG
             var cls = Game.Player != null ? Game.Player.Class : Game.Session != null ? Game.Session.PlayerClass : CharacterClass.Warrior;
             var gem = SkillGems.ForSlot(cls, slot);
             string name = gem != null ? gem.name : "?";
-            return slot == SkillGems.UltimateSlot ? $"각성 기술({name})" : $"{slot + 1}번 스킬({name})";
+            return slot == SkillGems.UltimateSlot ? L.F("각성 기술({0})", name) : L.F("{0}번 스킬({1})", slot + 1, name);
         }
 
         public static string Describe(PassiveStat stat, int v, int slot = -1)
         {
             switch (stat)
             {
-                case PassiveStat.IncDamage: return $"피해 {v}% 증가";
-                case PassiveStat.FlatHp: return $"최대 HP +{v}";
-                case PassiveStat.IncHp: return $"최대 HP {v}% 증가";
-                case PassiveStat.FlatMp: return $"최대 MP +{v}";
-                case PassiveStat.ManaRegen: return $"MP 재생 {v}% 증가";
-                case PassiveStat.Block: return $"막기 확률 +{v}%";
-                case PassiveStat.Speed: return $"이동 속도 {v}% 증가";
-                case PassiveStat.AttackSpeed: return $"공격·스킬 속도 {v}% 증가";
-                case PassiveStat.Aoe: return $"스킬 범위 {v}% 증가";
-                case PassiveStat.ManaCost: return $"MP 소모 {v}% 감소";
-                case PassiveStat.LifeOnKill: return $"처치 시 HP +{v}";
-                case PassiveStat.ManaOnKill: return $"처치 시 MP +{v}";
+                case PassiveStat.IncDamage: return L.F("피해 {0}% 증가", v);
+                case PassiveStat.FlatHp: return L.F("최대 HP +{0}", v);
+                case PassiveStat.IncHp: return L.F("최대 HP {0}% 증가", v);
+                case PassiveStat.FlatMp: return L.F("최대 MP +{0}", v);
+                case PassiveStat.ManaRegen: return L.F("MP 재생 {0}% 증가", v);
+                case PassiveStat.Block: return L.F("막기 확률 +{0}%", v);
+                case PassiveStat.Speed: return L.F("이동 속도 {0}% 증가", v);
+                case PassiveStat.AttackSpeed: return L.F("공격·스킬 속도 {0}% 증가", v);
+                case PassiveStat.Aoe: return L.F("스킬 범위 {0}% 증가", v);
+                case PassiveStat.ManaCost: return L.F("MP 소모 {0}% 감소", v);
+                case PassiveStat.LifeOnKill: return L.F("처치 시 HP +{0}", v);
+                case PassiveStat.ManaOnKill: return L.F("처치 시 MP +{0}", v);
                 // [SKILL v2] slot 4 is the defence skill (철벽 / 마나 보호막): see CharacterStatsCalc.Skill.
-                case PassiveStat.SkillDamage when slot == 3: return $"{SlotLabel(slot)} 받는 피해 감소 +{Mathf.RoundToInt(v / 4f)}%";
-                case PassiveStat.SkillArea when slot == 3: return $"{SlotLabel(slot)} 지속시간 {v}% 증가";
-                case PassiveStat.SkillRepeat when slot == 3: return $"{SlotLabel(slot)} (방어 스킬은 추가 발동 없음)";
-                case PassiveStat.SkillDamage: return $"{SlotLabel(slot)} 피해 {v}% 증가";
-                case PassiveStat.SkillArea: return $"{SlotLabel(slot)} 범위 {v}% 증가";
-                case PassiveStat.SkillCooldown: return $"{SlotLabel(slot)} 재사용 대기시간 {v}% 감소";
-                default: return $"{SlotLabel(slot)} 추가 발동 +{v}회";
+                case PassiveStat.SkillDamage when slot == 3: return L.F("{0} 받는 피해 감소 +{1}%", SlotLabel(slot), Mathf.RoundToInt(v / 4f));
+                case PassiveStat.SkillArea when slot == 3: return L.F("{0} 지속시간 {1}% 증가", SlotLabel(slot), v);
+                case PassiveStat.SkillRepeat when slot == 3: return L.F("{0} (방어 스킬은 추가 발동 없음)", SlotLabel(slot));
+                case PassiveStat.SkillDamage: return L.F("{0} 피해 {1}% 증가", SlotLabel(slot), v);
+                case PassiveStat.SkillArea: return L.F("{0} 범위 {1}% 증가", SlotLabel(slot), v);
+                case PassiveStat.SkillCooldown: return L.F("{0} 재사용 대기시간 {1}% 감소", SlotLabel(slot), v);
+                default: return L.F("{0} 추가 발동 +{1}회", SlotLabel(slot), v);
             }
         }
     }

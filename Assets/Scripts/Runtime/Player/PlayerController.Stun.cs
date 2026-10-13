@@ -26,7 +26,7 @@ namespace DotRPG
             combat.Cancel();
             desiredVelocity = Vector2.zero;
             if (body != null) body.SetVelocity(Vector2.zero);
-            if (fresh) WorldPopupText.Show(transform, "기절", new Color(1f, .85f, .35f), seconds);
+            if (fresh) WorldPopupText.Show(transform, L.T("기절"), new Color(1f, .85f, .35f), seconds);
             if (IsLocal) Game.Camera?.Shake(.15f, .25f);
         }
 

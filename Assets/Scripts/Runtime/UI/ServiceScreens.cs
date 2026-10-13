@@ -43,7 +43,7 @@ namespace DotRPG
 
         public static ShopScreen Create(Transform canvas)
         {
-            var w = CreateWindow<ShopScreen>(canvas, "Shop", "잡화점", "menuicon_shop");
+            var w = CreateWindow<ShopScreen>(canvas, "Shop", L.T("잡화점"), "menuicon_shop");
             var left = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListW + 40f, 594f), UiTheme.Panel);
             for (int i = 0; i < 2; i++)
             {
@@ -52,7 +52,7 @@ namespace DotRPG
                 tb.raycastTarget = true;
                 UIFactory.Place(tb.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f + i * 170f, -12f), new Vector2(160f, 50f));
                 tb.gameObject.AddComponent<PointerRelay>().onClick = _ => w.SetMode(index == 1);
-                var tt = UIFactory.Text(tb.transform, "Text", i == 0 ? "구매" : "판매", 26, Color.white, TextAnchor.MiddleCenter, true);
+                var tt = UIFactory.Text(tb.transform, "Text", i == 0 ? L.T("구매") : L.T("판매"), 26, Color.white, TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(tt.rectTransform);
                 w.tabBg[i] = tb;
                 w.tabText[i] = tt;
@@ -108,15 +108,15 @@ namespace DotRPG
             w.bigDesc = Label(right.transform, "Desc", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -212f), new Vector2(452f, 170f));
             w.bigPrice = Label(right.transform, "PriceLine", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -392f), new Vector2(452f, 34f));
             w.result = Label(right.transform, "Result", "", 20, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(460f, 30f), TextAnchor.MiddleCenter);
-            w.buyOne = Button(right.transform, "One", "1개 구매", "ui_btn", new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-6f, 18f), new Vector2(214f, 62f), () => w.Trade(1), 26);
-            w.buyMany = Button(right.transform, "Many", "10개 구매", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(6f, 18f), new Vector2(214f, 62f), () => w.Trade(w.selling ? int.MaxValue : 10), 26);
+            w.buyOne = Button(right.transform, "One", L.T("1개 구매"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-6f, 18f), new Vector2(214f, 62f), () => w.Trade(1), 26);
+            w.buyMany = Button(right.transform, "Many", L.T("10개 구매"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(6f, 18f), new Vector2(214f, 62f), () => w.Trade(w.selling ? int.MaxValue : 10), 26);
             // [UX] 최대: as many as the gold buys (buy tab only; the sell tab keeps its two buttons).
-            w.buyMax = Button(right.transform, "Max", "최대", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(84f, 18f), new Vector2(140f, 62f), () => w.Trade(MaxBuyCount), 26);
+            w.buyMax = Button(right.transform, "Max", L.T("최대"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(84f, 18f), new Vector2(140f, 62f), () => w.Trade(MaxBuyCount), 26);
             w.LayoutTradeButtons(false);
             w.buyOneLabel = w.buyOne.GetComponentInChildren<Text>();
             w.buyManyLabel = w.buyMany.GetComponentInChildren<Text>();
             // 일괄 판매 (sell tab): kinds ticked once are remembered.
-            w.bulkBtn = Button(left.transform, "Bulk", "일괄 판매", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(360f, -12f), new Vector2(170f, 50f), () => w.bulk.Open(), 22);
+            w.bulkBtn = Button(left.transform, "Bulk", L.T("일괄 판매"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(360f, -12f), new Vector2(170f, 50f), () => w.bulk.Open(), 22);
             w.bulk = BulkSellPanel.Create(w.content, () => w.dirty = true);
             w.bulkBtn.gameObject.SetActive(false);
             return w;
@@ -252,16 +252,16 @@ namespace DotRPG
                 r.bg.color = sel ? UiTheme.Line : UiTheme.Background;
                 r.icon.sprite = ItemText.Icon(r.id);
                 r.frame.color = ItemText.Frame(r.id);
-                r.name.text = ItemText.Name(r.id);
+                r.name.text = L.T(ItemText.Name(r.id));
                 int have = bag.Count(r.id);
                 if (selling)
                 {
-                    r.sub.text = $"{ItemText.Kind(r.id)}  ·  보유 {have}개";
+                    r.sub.text = L.F("{0}  ·  보유 {1}개", L.T(ItemText.Kind(r.id)), have);
                     r.price.text = ItemText.Gold(ItemPrices.SellPrice(r.id));
                 }
                 else
                 {
-                    r.sub.text = $"{ItemText.Kind(r.id)}  ·  보유 {have}개";
+                    r.sub.text = L.F("{0}  ·  보유 {1}개", L.T(ItemText.Kind(r.id)), have);
                     int price = ItemPrices.BuyPrice(r.id);
                     r.price.text = price <= gold ? ItemText.Gold(price) : $"<color=#ff7070>{price:N0} G</color>";
                 }
@@ -276,35 +276,35 @@ namespace DotRPG
             if (cur == null)
             {
                 bigFrame.color = Color.clear;
-                bigName.text = selling ? "팔 물건이 없습니다." : "";
+                bigName.text = selling ? L.T("팔 물건이 없습니다.") : "";
                 bigKind.text = bigDesc.text = bigPrice.text = "";
                 buyOne.interactable = buyMany.interactable = buyMax.interactable = false;
-                buyOneLabel.text = selling ? "1개 판매" : "1개 구매";
-                buyManyLabel.text = (selling ? "모두 판매" : "10개 구매") + KeyTag(GameAction.UseItem);
+                buyOneLabel.text = selling ? L.T("1개 판매") : L.T("1개 구매");
+                buyManyLabel.text = (selling ? L.T("모두 판매") : L.T("10개 구매")) + KeyTag(GameAction.UseItem);
                 RefreshKeyTags();
                 dirty = false;
                 return;
             }
             bigIcon.sprite = ItemText.Icon(cur);
             bigFrame.color = ItemText.Frame(cur);
-            bigName.text = $"<b>{ItemText.Name(cur)}</b>";
-            bigKind.text = ItemText.Kind(cur);
-            bigDesc.text = ItemText.Description(cur);
+            bigName.text = $"<b>{L.T(ItemText.Name(cur))}</b>";
+            bigKind.text = L.T(ItemText.Kind(cur));
+            bigDesc.text = L.T(ItemText.Description(cur));
             int owned = bag.Count(cur);
             if (selling)
             {
                 int each = ItemPrices.SellPrice(cur);
-                bigPrice.text = $"판매가 {ItemText.Gold(each)}   ·   보유 {owned}개";
-                buyOneLabel.text = "1개 판매";
-                buyManyLabel.text = (owned > 1 ? $"모두 판매 ({owned})" : "모두 판매") + KeyTag(GameAction.UseItem);
+                bigPrice.text = L.F("판매가 {0}   ·   보유 {1}개", ItemText.Gold(each), owned);
+                buyOneLabel.text = L.T("1개 판매");
+                buyManyLabel.text = (owned > 1 ? L.F("모두 판매 ({0})", owned) : L.T("모두 판매")) + KeyTag(GameAction.UseItem);
                 buyOne.interactable = buyMany.interactable = owned > 0;
             }
             else
             {
                 int each = ItemPrices.BuyPrice(cur);
-                bigPrice.text = $"가격 {ItemText.Gold(each)}   ·   보유 {owned}개";
-                buyOneLabel.text = "1개 구매";
-                buyManyLabel.text = "10개 구매" + KeyTag(GameAction.UseItem);
+                bigPrice.text = L.F("가격 {0}   ·   보유 {1}개", ItemText.Gold(each), owned);
+                buyOneLabel.text = L.T("1개 구매");
+                buyManyLabel.text = L.T("10개 구매") + KeyTag(GameAction.UseItem);
                 buyOne.interactable = gold >= each;
                 buyMany.interactable = gold >= each;
                 buyMax.interactable = gold >= each;
@@ -316,8 +316,8 @@ namespace DotRPG
         /// <summary>Key labels follow the device in use (keyboard 2 / gamepad L3).</summary>
         void RefreshKeyTags()
         {
-            TextOf(buyMax).text = "최대" + KeyTag(GameAction.UseMana);
-            TextOf(bulkBtn).text = "일괄 판매" + KeyTag(GameAction.UseMana);
+            TextOf(buyMax).text = L.T("최대") + KeyTag(GameAction.UseMana);
+            TextOf(bulkBtn).text = L.T("일괄 판매") + KeyTag(GameAction.UseMana);
         }
 
         static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
@@ -331,7 +331,7 @@ namespace DotRPG
             if (selected >= entries.Count) return;
             string id = entries[selected];
             var bag = Game.Session.Inventory;
-            string name = Game.Config.GetItem(id).displayName;
+            string name = L.T(Game.Config.GetItem(id).displayName);
             if (selling)
             {
                 int n = Mathf.Min(count, bag.Count(id));
@@ -340,9 +340,9 @@ namespace DotRPG
                 if (NeedsSellConfirm(id) || fromKey)
                 {
                     // Enhanced gear, rare-or-higher gear and any sale by the 1 / Y key are never sold on one press: ask first, drawn over the shop.
-                    string what = n > 1 ? $"{name} {n}개를" : $"{name} 을(를)";
+                    string ask = n > 1 ? L.F("{0} {1}개를 {2:N0} G에 판매할까요?", name, n, each * n) : L.F("{0} 을(를) {1:N0} G에 판매할까요?", name, each * n);
                     Game.Audio.PlaySfx("select");
-                    Game.UI.Confirm($"{what} {each * n:N0} G에 판매할까요?", () => Sell(id, n), true);
+                    Game.UI.Confirm(ask, () => Sell(id, n), true);
                     return;
                 }
                 Sell(id, n);
@@ -354,7 +354,7 @@ namespace DotRPG
                 if (n <= 0)
                 {
                     Game.Audio.PlaySfx("cancel");
-                    result.text = "<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>";
+                    result.text = L.T("<color=#ff7070>골드가 부족합니다. 해골을 쓰러뜨리거나 물건을 팔아 모으세요.</color>");
                     return;
                 }
                 if (count == MaxBuyCount && n > 10)
@@ -362,7 +362,7 @@ namespace DotRPG
                     // [UX] 최대 can spend most of the gold at once: ask first (purchases default to "아니오").
                     int many = n;
                     Game.Audio.PlaySfx("select");
-                    Game.UI.Confirm($"{name} {many}개를 {each * many:N0} G에 살까요?", () => Buy(id, many, many), true);
+                    Game.UI.Confirm(L.F("{0} {1}개를 {2:N0} G에 살까요?", name, many, each * many), () => Buy(id, many, many), true);
                     return;
                 }
                 Buy(id, n, count == MaxBuyCount ? n : count);
@@ -381,7 +381,7 @@ namespace DotRPG
         void Buy(string id, int n, int count)
         {
             var bag = Game.Session.Inventory;
-            string name = Game.Config.GetItem(id).displayName;
+            string name = L.T(Game.Config.GetItem(id).displayName);
             int each = ItemPrices.BuyPrice(id);
             n = each > 0 ? Mathf.Min(n, Game.Session.Gold / each) : 0; // re-checked: gold may have changed while a confirm was open
             if (n <= 0) { Game.Audio.PlaySfx("cancel"); dirty = true; return; }
@@ -392,7 +392,7 @@ namespace DotRPG
                 OnlineEconomy.ShopBuy(id, bought, ok =>
                 {
                     Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
-                    if (ok) result.text = $"<color=#8fe28f>{name} {bought}개를 샀습니다.  -{each * bought:N0} G</color>";
+                    if (ok) result.text = L.F("<color=#8fe28f>{0} {1}개를 샀습니다.  -{2:N0} G</color>", name, bought, each * bought);
                     dirty = true;
                 });
                 return;
@@ -401,8 +401,8 @@ namespace DotRPG
             bag.Add(id, n);
             Game.Audio.PlaySfx("confirm");
             result.text = n < count && count > 1
-                ? $"<color=#ffe066>골드가 모자라 {name} {n}개만 샀습니다.  -{each * n:N0} G</color>"
-                : $"<color=#8fe28f>{name} {n}개를 샀습니다.  -{each * n:N0} G</color>";
+                ? L.F("<color=#ffe066>골드가 모자라 {0} {1}개만 샀습니다.  -{2:N0} G</color>", name, n, each * n)
+                : L.F("<color=#8fe28f>{0} {1}개를 샀습니다.  -{2:N0} G</color>", name, n, each * n);
             dirty = true;
         }
 
@@ -420,7 +420,7 @@ namespace DotRPG
                 OnlineEconomy.ShopSell(id, n, ok =>
                 {
                     Game.Audio.PlaySfx(ok ? "pickup" : "cancel");
-                    if (ok) result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았습니다.  +{each * n:N0} G</color>";
+                    if (ok) result.text = L.F("<color=#8fe28f>{0} {1}개를 팔았습니다.  +{2:N0} G</color>", L.T(Game.Config.GetItem(id).displayName), n, each * n);
                     dirty = true;
                 });
                 return;
@@ -428,7 +428,7 @@ namespace DotRPG
             if (!bag.Remove(id, n)) { Game.Audio.PlaySfx("cancel"); return; }
             bag.Add(ConsumableDatabase.Gold, each * n);
             Game.Audio.PlaySfx("pickup");
-            result.text = $"<color=#8fe28f>{Game.Config.GetItem(id).displayName} {n}개를 팔았습니다.  +{each * n:N0} G</color>";
+            result.text = L.F("<color=#8fe28f>{0} {1}개를 팔았습니다.  +{2:N0} G</color>", L.T(Game.Config.GetItem(id).displayName), n, each * n);
             dirty = true;
         }
 

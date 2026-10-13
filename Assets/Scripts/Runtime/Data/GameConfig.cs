@@ -122,6 +122,7 @@ namespace DotRPG
             return asset != null ? asset : CreateInstance<T>();
         }
 
+        // i18n-names-begin: runs while the asset deserializes (no L.T here); names and greetings are translated where shown
         public static List<NpcDefinition> DefaultNpcs() => new List<NpcDefinition>
         {
             new NpcDefinition("1", "chief", "촌장 모리", CharacterLook.Chief, NpcBehaviour.Idle, NpcTool.None, Facing.Down, "chief_intro"),
@@ -142,5 +143,6 @@ namespace DotRPG
             new NpcDefinition("K", "keeper", "창고지기 보람", new CharacterLook("keeper", HairStyle.Curly, new Color32(250, 205, 160, 255), new Color32(168, 84, 44, 255), new Color32(62, 92, 150, 255), new Color32(84, 84, 96, 255), HatKind.Cap, new Color32(52, 78, 132, 255)),
                 NpcBehaviour.Idle, NpcTool.None, Facing.Down, "", "", default, NpcService.Storage, "맡겨 두신 물건은 제가 안전하게 지켜 드려요."),
         };
+        // i18n-names-end
     }
 }

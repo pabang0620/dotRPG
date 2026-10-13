@@ -34,30 +34,30 @@ namespace DotRPG
         {
             var root = UIFactory.Place(UIFactory.Rect(parent, "SideMenu"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(Left, Top), new Vector2(Size, Size));
             var view = root.gameObject.AddComponent<SideMenuView>();
-            view.MakeIcon(root, "menuicon_menu", "메뉴", view.Toggle, false);
+            view.MakeIcon(root, "menuicon_menu", L.T("메뉴"), view.Toggle, false);
 
             view.column = UIFactory.Place(UIFactory.Rect(root, "Column"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(-(StepX - Size) * 0.5f - Pad, -Size - 12f), new Vector2(Size, 600f));
             // A plate behind the grid so the cells read as one tidy panel.
             view.gridBg = UIFactory.Image(view.column, "Plate", Game.Art.Get("ui_white"), UiTheme.HudPlate);
             view.gridBg.preserveAspect = false;
             view.gridBg.raycastTarget = true; // clicks between icons don't fall through to the world
-            view.Add("menuicon_bag", "가방", () => Game.Flow.OpenWindow(null));
-            view.Add("menuicon_skill", "스킬", () => Game.Flow.OpenWindow(Game.UI.Skills));
-            view.Add("menuicon_map", "지도", () => Game.Flow.OpenWindow(Game.UI.WorldMap));
-            view.Add("menuicon_quest", "퀘스트", () => Game.Flow.OpenWindow(Game.UI.QuestLog));
-            view.Add("menuicon_dungeon", "요일던전", () => Game.UI.Dungeon.Open(false)); // [DUNGEON] 던전 선택 window
-            view.Add("menuicon_raid", "레이드", () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
+            view.Add("menuicon_bag", L.T("가방"), () => Game.Flow.OpenWindow(null));
+            view.Add("menuicon_skill", L.T("스킬"), () => Game.Flow.OpenWindow(Game.UI.Skills));
+            view.Add("menuicon_map", L.T("지도"), () => Game.Flow.OpenWindow(Game.UI.WorldMap));
+            view.Add("menuicon_quest", L.T("퀘스트"), () => Game.Flow.OpenWindow(Game.UI.QuestLog));
+            view.Add("menuicon_dungeon", L.T("요일던전"), () => Game.UI.Dungeon.Open(false)); // [DUNGEON] 던전 선택 window
+            view.Add("menuicon_raid", L.T("레이드"), () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
             // [PARTY] Online with a server party: the lobby; otherwise the mercenary party window.
             // [AI] Online the party window is one place: people, the AI who fill free seats, invites and the AI roster button.
-            view.Add("menuicon_party", "파티", () => Game.Flow.OpenWindow(OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (WindowScreen)PartyLobbyScreen.Instance : Game.UI.Party));
-            view.Add("menuicon_finder", "파티 찾기", () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", "경매장", () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
-            view.Add("menuicon_friend", "친구", () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
-            view.mailEntry = view.Add("menuicon_mail", "우편", () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
-            view.Add("menuicon_achievement", "업적", () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
-            view.rewardEntry = view.Add("menuicon_levelreward", "레벨 보상", () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]
-            view.dailyEntry = view.Add("menuicon_quest", "일일 의뢰", () => Game.Flow.OpenWindow(DailyQuestScreen.Instance)); // [DAILY 14]
-            view.Add("menuicon_cashshop", "캐시샵", () => Game.Flow.OpenWindow(GachaScreen.Instance)); // 뽑기
-            view.Add("menuicon_cosmetics", "옷장", () => Game.Flow.OpenWindow(Game.UI.Cosmetics));     // 오라·스킨 착용, 확정 구매
+            view.Add("menuicon_party", L.T("파티"), () => Game.Flow.OpenWindow(OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (WindowScreen)PartyLobbyScreen.Instance : Game.UI.Party));
+            view.Add("menuicon_finder", L.T("파티 찾기"), () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", L.T("경매장"), () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
+            view.Add("menuicon_friend", L.T("친구"), () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
+            view.mailEntry = view.Add("menuicon_mail", L.T("우편"), () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
+            view.Add("menuicon_achievement", L.T("업적"), () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
+            view.rewardEntry = view.Add("menuicon_levelreward", L.T("레벨 보상"), () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]
+            view.dailyEntry = view.Add("menuicon_quest", L.T("일일 의뢰"), () => Game.Flow.OpenWindow(DailyQuestScreen.Instance)); // [DAILY 14]
+            view.Add("menuicon_cashshop", L.T("캐시샵"), () => Game.Flow.OpenWindow(GachaScreen.Instance)); // 뽑기
+            view.Add("menuicon_cosmetics", L.T("옷장"), () => Game.Flow.OpenWindow(Game.UI.Cosmetics));     // 오라·스킨 착용, 확정 구매
             int rows = (view.entries.Count + Columns - 1) / Columns;
             UIFactory.Place(view.gridBg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(Pad * 2f + Columns * StepX, Pad * 2f + rows * StepY - 8f));
             view.column.gameObject.SetActive(false);
@@ -99,7 +99,7 @@ namespace DotRPG
             bool dailyOpen = DailyQuestScreen.Instance != null && DailyQuestScreen.Instance.gameObject.activeInHierarchy;
             if (OnlineSession.Playing && Time.unscaledTime >= nextDailyCheck) { nextDailyCheck = Time.unscaledTime + (dailyOpen ? 120f : 300f); DailyQuestClient.Refresh(); }
             bool reward = OnlineSession.Playing && LevelRewardClient.AnyClaimable;
-            if (reward && !rewardShown) GameEvents.RaiseToast("레벨 달성 보상을 받을 수 있습니다! (메뉴 > 레벨 보상)");
+            if (reward && !rewardShown) GameEvents.RaiseToast(L.T("레벨 달성 보상을 받을 수 있습니다! (메뉴 > 레벨 보상)"));
             rewardShown = reward;
             if (rewardDot != null) rewardDot.enabled = reward;
             bool daily = OnlineSession.Playing && DailyQuestClient.AnyActionable; // [DAILY 14] a job to take or a reward to collect

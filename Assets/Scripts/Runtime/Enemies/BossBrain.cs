@@ -233,7 +233,7 @@ namespace DotRPG
             CastingJudgment = true;
             JudgmentProgress = 0f;
             E.BeginJudgmentGauge(); // [G2] a burst check: 3.2% of max HP in 6 s
-            Announce?.Invoke(this, "망자의 심판", new Color(1f, 0.35f, 0.3f));
+            Announce?.Invoke(this, L.T("망자의 심판"), new Color(1f, 0.35f, 0.3f));
             float cast = JudgmentCastNow;
             var tele = Track(Telegraph.Circle(E, E.Position, JudgmentVisualRadius, cast, 0));
             // It hits everyone wherever they stand: not a ground warning to run from (AI and the measure bot fled it instead of bursting).
@@ -278,7 +278,7 @@ namespace DotRPG
             bool wasCasting = CastingJudgment;
             Interrupt();
             if (!wasCasting) return EnemyController.GroggySeconds;
-            Announce?.Invoke(this, "심판 저지! 그로기", new Color(1f, 0.9f, 0.35f));
+            Announce?.Invoke(this, L.T("심판 저지! 그로기"), new Color(1f, 0.9f, 0.35f));
             JudgmentEnded?.Invoke(this, true);
             return JudgmentGroggy;
         }
@@ -317,13 +317,13 @@ namespace DotRPG
             }
             if (phase == 2)
             {
-                Announce?.Invoke(this, "사령 토템을 동시에 파괴하라!", SoulGlow);
+                Announce?.Invoke(this, L.T("사령 토템을 동시에 파괴하라!"), SoulGlow);
                 SpawnTotems();
                 nextSummonAt = Time.time + 1f;
             }
             else if (phase == 3)
             {
-                Announce?.Invoke(this, "해골왕이 광폭해집니다!", new Color(1f, 0.3f, 0.25f));
+                Announce?.Invoke(this, L.T("해골왕이 광폭해집니다!"), new Color(1f, 0.3f, 0.25f));
                 Game.Audio?.PlayMusic(MapRegistry.MusicRaidEnrage); // [BGM] enrage track until the room / result changes it
                 nextJudgmentAt = Time.time + JudgmentFirstDelay;
             }
@@ -368,7 +368,7 @@ namespace DotRPG
                 TotemsCleared = true;
                 CompanionBrain.PriorityTarget = null;
                 CompanionBrain.PriorityTargetAlt = null;
-                Announce?.Invoke(this, "사령 토템 파괴!", SoulGlow);
+                Announce?.Invoke(this, L.T("사령 토템 파괴!"), SoulGlow);
                 return;
             }
             // Too slow: a broken totem rises again.
@@ -377,7 +377,7 @@ namespace DotRPG
                 if (s.live != null || Time.time - s.diedAt < TotemWindow) continue;
                 RaiseTotem(s);
                 TotemRevives++;
-                Announce?.Invoke(this, "사령 토템 부활", SoulGlow);
+                Announce?.Invoke(this, L.T("사령 토템 부활"), SoulGlow);
             }
             // Companions go for a standing totem first.
             // [P1] Two standing totems: the party splits so both break inside the window.

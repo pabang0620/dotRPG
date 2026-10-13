@@ -21,31 +21,31 @@ namespace DotRPG
                 tooltipIcon.sprite = Game.Art.Get(def.iconKey);
                 if (mat != null)
                 {
-                    sb.Append($"<b><color={EquipmentDatabase.RarityColor(mat.rarity)}>{mat.name}</color></b>\n<color=#b8c4d8>{EquipmentDatabase.RarityName(mat.rarity)} · 강화 재료</color>\n\n");
-                    sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
-                    sb.Append($"<i>{mat.description}</i>\n\n<color=#b8c4d8>마을 대장장이(또는 모루)에서 장비 강화에 사용</color>");
+                    sb.Append($"<b><color={EquipmentDatabase.RarityColor(mat.rarity)}>{L.T(mat.name)}</color></b>\n" + L.F("<color=#b8c4d8>{0} · 강화 재료</color>", L.T(EquipmentDatabase.RarityName(mat.rarity))) + "\n\n");
+                    sb.Append(L.F("보유 {0}개", Game.Session.Inventory.Count(s.itemId)) + "\n");
+                    sb.Append($"<i>{L.T(mat.description)}</i>\n\n" + L.T("<color=#b8c4d8>마을 대장장이(또는 모루)에서 장비 강화에 사용</color>"));
                 }
                 else if (ConsumableDatabase.IsTicket(s.itemId))
                 {
                     var ticket = ConsumableDatabase.Get(s.itemId);
-                    sb.Append($"<b>{ItemText.Name(s.itemId)}</b>\n<color=#b8c4d8>{ItemText.Kind(s.itemId)}</color>\n\n");
-                    sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
-                    sb.Append($"<i>{ticket.description}</i>\n\n<color=#b8c4d8>가방에 있으면 장비가 파괴될 때 1장이 자동으로 사용됩니다.</color>");
+                    sb.Append($"<b>{L.T(ItemText.Name(s.itemId))}</b>\n<color=#b8c4d8>{L.T(ItemText.Kind(s.itemId))}</color>\n\n");
+                    sb.Append(L.F("보유 {0}개", Game.Session.Inventory.Count(s.itemId)) + "\n");
+                    sb.Append($"<i>{L.T(ticket.description)}</i>\n\n" + L.T("<color=#b8c4d8>가방에 있으면 장비가 파괴될 때 1장이 자동으로 사용됩니다.</color>"));
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId))
                 {
                     var use = ConsumableDatabase.Get(s.itemId);
-                    sb.Append($"<b>{use.name}</b>\n<color=#b8c4d8>소모품</color>\n\n");
-                    sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
-                    sb.Append($"<i>{use.description}</i>\n\n");
-                    if (use.hotkey.HasValue) sb.Append($"<color=#b8c4d8>빠른 사용 키: [{Game.Input.GetBindingLabel(use.hotkey.Value)}]</color>\n");
-                    sb.Append("<color=#ffe066>클릭: 사용</color>");
+                    sb.Append($"<b>{L.T(use.name)}</b>\n" + L.T("<color=#b8c4d8>소모품</color>") + "\n\n");
+                    sb.Append(L.F("보유 {0}개", Game.Session.Inventory.Count(s.itemId)) + "\n");
+                    sb.Append($"<i>{L.T(use.description)}</i>\n\n");
+                    if (use.hotkey.HasValue) sb.Append(L.F("<color=#b8c4d8>빠른 사용 키: [{0}]</color>", Game.Input.GetBindingLabel(use.hotkey.Value)) + "\n");
+                    sb.Append(L.T("<color=#ffe066>클릭: 사용</color>"));
                 }
                 else
                 {
-                    sb.Append($"<b>{def.displayName}</b>\n<color=#b8c4d8>소모품 · 재료</color>\n\n");
-                    sb.Append($"보유 {Game.Session.Inventory.Count(s.itemId)}개\n");
-                    sb.Append("제작에 쓰이는 재료.");
+                    sb.Append($"<b>{L.T(def.displayName)}</b>\n" + L.T("<color=#b8c4d8>소모품 · 재료</color>") + "\n\n");
+                    sb.Append(L.F("보유 {0}개", Game.Session.Inventory.Count(s.itemId)) + "\n");
+                    sb.Append(L.T("제작에 쓰이는 재료."));
                 }
             }
             else
@@ -53,11 +53,11 @@ namespace DotRPG
                 tooltipIcon.sprite = Game.Art.Get(gear.iconKey);
                 GearTooltip.Append(sb, s.itemId, s.worn.HasValue, out string wornKey);
                 sb.Append('\n');
-                if (s.worn.HasValue) sb.Append("<color=#ffe066>클릭: 장비 해제</color>");
+                if (s.worn.HasValue) sb.Append(L.T("<color=#ffe066>클릭: 장비 해제</color>"));
                 else if (!gear.UsableBy(Class)) { }
-                else if (!Game.Session.Equipment.CanWear(gear, Class)) sb.Append($"<color=#ff8080>Lv.{gear.reqLevel}부터 장착할 수 있습니다.</color>");
-                else if (wornKey != null) sb.Append("<color=#ffe066>클릭: 교체 장착</color>");
-                else sb.Append("<color=#ffe066>클릭: 장착</color>");
+                else if (!Game.Session.Equipment.CanWear(gear, Class)) sb.Append(L.F("<color=#ff8080>Lv.{0}부터 장착할 수 있습니다.</color>", gear.reqLevel));
+                else if (wornKey != null) sb.Append(L.T("<color=#ffe066>클릭: 교체 장착</color>"));
+                else sb.Append(L.T("<color=#ffe066>클릭: 장착</color>"));
             }
             // Trade rule (PLAN_AUCTION §6): shown on every item so the auction house never surprises.
             sb.Append('\n');

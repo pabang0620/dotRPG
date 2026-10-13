@@ -41,6 +41,7 @@ namespace DotRPG
             Data.masterVolume = Mathf.Clamp01(Data.masterVolume);
             Data.musicVolume = Mathf.Clamp01(Data.musicVolume);
             Data.sfxVolume = Mathf.Clamp01(Data.sfxVolume);
+            if (Data.language != L.Korean && Data.language != L.English) Data.language = L.DeviceDefault();
             Data.version = SettingsData.CurrentVersion;
         }
 
@@ -123,9 +124,9 @@ namespace DotRPG
         {
             switch (mode)
             {
-                case WindowMode.ExclusiveFullscreen: return "전체 화면";
-                case WindowMode.Windowed: return "창 모드";
-                default: return "테두리 없는 창";
+                case WindowMode.ExclusiveFullscreen: return L.T("전체 화면");
+                case WindowMode.Windowed: return L.T("창 모드");
+                default: return L.T("테두리 없는 창");
             }
         }
 
@@ -150,6 +151,6 @@ namespace DotRPG
             return list;
         }
 
-        public static string ResolutionLabel(Vector2Int size) => size == Vector2Int.zero ? "기본(모니터)" : $"{size.x} x {size.y}";
+        public static string ResolutionLabel(Vector2Int size) => size == Vector2Int.zero ? L.T("기본(모니터)") : $"{size.x} x {size.y}";
     }
 }

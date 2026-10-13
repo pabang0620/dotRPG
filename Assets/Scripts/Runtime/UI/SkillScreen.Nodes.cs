@@ -47,8 +47,8 @@ namespace DotRPG
             icon.preserveAspect = true;
             UIFactory.Place(icon.rectTransform, new Vector2(0, 1), new Vector2(.5f, .5f), new Vector2(42, -46), Vector2.one * 60);
             // Name, kind and requirement.
-            string kind = s.kind == CareerSkillKind.Passive ? "<color=#b8a0ff>패시브</color>" : "<color=#9fd0ff>액티브</color>";
-            CareerText(bg.transform, "Name", $"<b>{s.name}</b>\n<size=13>{kind} · Lv.{s.level}</size>", 16, 82, 12, 98, 50);
+            string kind = s.kind == CareerSkillKind.Passive ? L.T("<color=#b8a0ff>패시브</color>") : L.T("<color=#9fd0ff>액티브</color>");
+            CareerText(bg.transform, "Name", $"<b>{L.T(s.name)}</b>\n<size=13>{kind} · Lv.{s.level}</size>", 16, 82, 12, 98, 50);
             // Rank pips.
             for (int i = 0; i < 3; i++)
             {

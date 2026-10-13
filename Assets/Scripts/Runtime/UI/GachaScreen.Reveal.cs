@@ -101,8 +101,8 @@ namespace DotRPG
                 Burst(cell, new Color(1f, .82f, .35f), 26);
                 Game.Audio.PlaySfx("quest");
                 Game.Camera?.Shake(0.14f, 0.3f);
-                string grade = r.rarity == "legendary" ? "레전더리" : "유니크";
-                GameEvents.RaiseToast($"<color=#ffb347>{grade}!</color> {NameOf(r)}" + (r.duplicate ? "" : " 획득"));
+                string grade = r.rarity == "legendary" ? L.T("레전더리") : L.T("유니크");
+                GameEvents.RaiseToast($"<color=#ffb347>{grade}!</color> {NameOf(r)}" + (r.duplicate ? "" : L.T(" 획득")));
             }
             else if (IsEpic(r))
             {
@@ -111,7 +111,7 @@ namespace DotRPG
                 Burst(cell, new Color(.78f, .55f, 1f), 20);
                 Game.Audio.PlaySfx("quest");
                 Game.Camera?.Shake(0.08f, 0.25f);
-                GameEvents.RaiseToast($"<color=#c58cff>에픽!</color> {NameOf(r)}" + (r.duplicate ? "" : " 획득"));
+                GameEvents.RaiseToast(L.F("<color=#c58cff>에픽!</color> {0}", NameOf(r)) + (r.duplicate ? "" : L.T(" 획득")));
             }
             else if (IsGood(r)) { Burst(cell, new Color(.5f, .7f, 1f), 12); Game.Audio.PlaySfx("confirm"); }
             else Game.Audio.PlaySfx("select");
@@ -190,13 +190,13 @@ namespace DotRPG
 
         static string NameOf(StarPullResult r)
         {
-            if (r.cash) return DungeonDatabase.ItemName(r.itemId) + (r.count > 1 ? $" x{r.count}" : "");
+            if (r.cash) return L.T(DungeonDatabase.ItemName(r.itemId)) + (r.count > 1 ? $" x{r.count}" : "");
             if (r.gear)
             {
                 var g = EquipmentDatabase.Get(r.itemId);
-                return g != null ? g.name : DungeonDatabase.ItemName(r.itemId);
+                return L.T(g != null ? g.name : DungeonDatabase.ItemName(r.itemId));
             }
-            return CosmeticCatalog.Find(r.itemId)?.Name ?? r.itemId;
+            return L.T(CosmeticCatalog.Find(r.itemId)?.Name ?? r.itemId);
         }
 
         static string GradeHex(string r) =>
@@ -232,7 +232,7 @@ namespace DotRPG
                     c.icon.sprite = Game.Art.Get(item != null ? item.iconKey : DungeonDatabase.ItemIcon(r.itemId));
                     c.icon.color = Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
-                    c.note.text = r.boosted ? "<color=#ffd34a><b>부스터 x2</b></color>" : "";
+                    c.note.text = r.boosted ? L.T("<color=#ffd34a><b>부스터 x2</b></color>") : "";
                 }
                 else if (r.gear)
                 {
@@ -250,8 +250,8 @@ namespace DotRPG
                     c.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
                     c.icon.color = card != null || look != null ? Color.white : p != null ? p.Color : Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
-                    c.note.text = r.duplicate ? "<color=#b8c4d8>여분 +1</color>"
-                        : r.byPity ? "<color=#ffd34a>선택 · NEW</color>" : "<color=#8fe28f>NEW</color>";
+                    c.note.text = r.duplicate ? L.T("<color=#b8c4d8>여분 +1</color>")
+                        : r.byPity ? L.T("<color=#ffd34a>선택 · NEW</color>") : "<color=#8fe28f>NEW</color>";
                 }
             }
         }

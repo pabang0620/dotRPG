@@ -72,12 +72,12 @@ namespace DotRPG
             if (tooNew)
             {
                 // Written by a newer build: do not load it (or its older backup), a save from this build would overwrite it.
-                LastReadNotice = "더 새로운 버전의 게임으로 저장된 파일입니다. 게임을 최신 버전으로 업데이트해 주세요.";
+                LastReadNotice = L.T("더 새로운 버전의 게임으로 저장된 파일입니다. 게임을 최신 버전으로 업데이트해 주세요.");
                 return null;
             }
             data = TryRead(path + ".bak");
-            if (data != null && File.Exists(path)) LastReadNotice = "저장 파일이 손상되어 직전 백업에서 불러왔습니다.";
-            else if (data == null && (File.Exists(path) || File.Exists(path + ".bak"))) LastReadNotice = "저장 파일이 손상되어 불러올 수 없습니다. 다른 슬롯을 사용해 주세요.";
+            if (data != null && File.Exists(path)) LastReadNotice = L.T("저장 파일이 손상되어 직전 백업에서 불러왔습니다.");
+            else if (data == null && (File.Exists(path) || File.Exists(path + ".bak"))) LastReadNotice = L.T("저장 파일이 손상되어 불러올 수 없습니다. 다른 슬롯을 사용해 주세요.");
             return data;
         }
 

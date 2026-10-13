@@ -118,10 +118,10 @@ namespace DotRPG
 
         public static readonly RaidShopProduct[] Products =
         {
-            new RaidShopProduct { id = "king_epic_weapon", name = "해골왕 에픽+ 무기 상자", raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 90, rarityWeights = EpicPlus },
-            new RaidShopProduct { id = "king_legend_weapon", name = "해골왕 레전더리 무기 상자", raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 320, rarityWeights = LegendOnly },
-            new RaidShopProduct { id = "grah_epic_weapon", name = "그라흐 에픽+ 무기 상자", raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 30, rarityWeights = EpicPlus },
-            new RaidShopProduct { id = "grah_legend_weapon", name = "그라흐 레전더리 무기 상자", raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 100, rarityWeights = LegendOnly },
+            new RaidShopProduct { id = "king_epic_weapon", name = L.T("해골왕 에픽+ 무기 상자"), raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 90, rarityWeights = EpicPlus },
+            new RaidShopProduct { id = "king_legend_weapon", name = L.T("해골왕 레전더리 무기 상자"), raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 320, rarityWeights = LegendOnly },
+            new RaidShopProduct { id = "grah_epic_weapon", name = L.T("그라흐 에픽+ 무기 상자"), raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 30, rarityWeights = EpicPlus },
+            new RaidShopProduct { id = "grah_legend_weapon", name = L.T("그라흐 레전더리 무기 상자"), raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 100, rarityWeights = LegendOnly },
         };
 
         public static RaidShopProduct Get(string id)
@@ -150,7 +150,7 @@ namespace DotRPG
         /// <summary>"에픽 88% / 유니크 12%" or "레전더리 확정".</summary>
         public static string RatesText(RaidShopProduct product)
         {
-            if (product.IsLegendary) return EquipmentDatabase.RarityName(product.rarityWeights[0].rarity) + " 확정";
+            if (product.IsLegendary) return L.F("{0} 확정", EquipmentDatabase.RarityName(product.rarityWeights[0].rarity));
             var parts = new List<string>();
             int total = product.TotalWeight;
             foreach (var w in product.rarityWeights) parts.Add($"{EquipmentDatabase.RarityName(w.rarity)} {w.weight * 100 / total}%");

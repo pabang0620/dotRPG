@@ -59,7 +59,7 @@ namespace DotRPG
         static string Base => "/characters/" + OnlineSession.Current.ActiveCharacter + "/starshop";
         public static bool Available => OnlineSession.Playing && Api != null;
 
-        public static string Stars(long n) => $"별조각 {n:N0}";
+        public static string Stars(long n) => L.F("별조각 {0:N0}", n);
 
         public static Task<bool> RefreshAsync()
         {
@@ -76,7 +76,7 @@ namespace DotRPG
         /// <summary>1회(count 1) or the 10+1 bundle (count 10). The server takes the 별조각 and rolls.</summary>
         public static void Pull(string banner, int count, Action<bool, string, List<StarPullResult>> done, int tier = -1)
         {
-            if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다.", null); return; }
+            if (!Available) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다."), null); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["count"] = count, ["banner"] = banner };
             if (tier >= 0 && banner != "aura" && banner != "skin") body["tier"] = tier; // gear: the chosen level tier
             // [PAY 11] The rates the player was shown: the server refuses the pull if they changed meanwhile.
@@ -87,15 +87,15 @@ namespace DotRPG
                 {
                     // New rates: reload them so the window shows the current table, then ask again.
                     _ = RefreshAsync();
-                    done?.Invoke(false, "확률표가 바뀌었습니다. 새 확률을 확인한 뒤 다시 뽑아 주세요.", null);
+                    done?.Invoke(false, L.T("확률표가 바뀌었습니다. 새 확률을 확인한 뒤 다시 뽑아 주세요."), null);
                     return;
                 }
                 if (!r.ok && r.code == "STAR_DEBT")
                 {
-                    done?.Invoke(false, "환불된 결제로 갚아야 할 별조각이 있어 지금은 뽑을 수 없습니다.", null);
+                    done?.Invoke(false, L.T("환불된 결제로 갚아야 할 별조각이 있어 지금은 뽑을 수 없습니다."), null);
                     return;
                 }
-                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "뽑기에 실패했습니다." : r.message, null); return; }
+                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? L.T("뽑기에 실패했습니다.") : r.message, null); return; }
                 var results = new List<StarPullResult>();
                 foreach (var o in MiniJson.Arr(r.data, "results") ?? new List<object>())
                     results.Add(ReadPull(o as Dictionary<string, object>));
@@ -115,11 +115,11 @@ namespace DotRPG
         /// <summary>The gauge is full: take the chosen top item of that banner.</summary>
         public static void Claim(string banner, string itemId, Action<bool, string> done)
         {
-            if (!Available) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
+            if (!Available) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다.")); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["banner"] = banner, ["item_id"] = itemId };
             Api.PostIdempotent(Base + "/claim", body, r =>
             {
-                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "선택하지 못했습니다." : r.message); return; }
+                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? L.T("선택하지 못했습니다.") : r.message); return; }
                 if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity); else Pity = MiniJson.Int(r.data, "pity", Pity);
                 Owned.Add(itemId);
                 Changed?.Invoke();

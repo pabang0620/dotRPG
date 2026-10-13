@@ -24,12 +24,12 @@ namespace DotRPG
 
         static readonly (string id, string name, string sub)[] Banners =
         {
-            ("skin", "스킨 뽑기", "에픽 스킨 1% · 게이지로 유니크 스킨"),
-            ("aura", "오라 뽑기", "에픽 오라 1% · 공격력 보너스"),
-            ("weapon", "무기 뽑기", "레전더리 무기 0.05%"),
-            ("armor", "방어구 뽑기", "상의 · 하의"),
-            ("accessory", "장신구 뽑기", "목걸이 · 반지"),
-            ("sealed", "봉인된 상자", "강화권 · 10회마다 부스터"), // [CASH] Docs/PLAN_CASH_BOX_PASS.md
+            ("skin", L.T("스킨 뽑기"), L.T("에픽 스킨 1% · 게이지로 유니크 스킨")),
+            ("aura", L.T("오라 뽑기"), L.T("에픽 오라 1% · 공격력 보너스")),
+            ("weapon", L.T("무기 뽑기"), L.T("레전더리 무기 0.05%")),
+            ("armor", L.T("방어구 뽑기"), L.T("상의 · 하의")),
+            ("accessory", L.T("장신구 뽑기"), L.T("목걸이 · 반지")),
+            ("sealed", L.T("봉인된 상자"), L.T("강화권 · 10회마다 부스터")), // [CASH] Docs/PLAN_CASH_BOX_PASS.md
         };
         bool Sealed => banner == "sealed";
 
@@ -63,7 +63,7 @@ namespace DotRPG
 
         public static GachaScreen Create(Transform canvas)
         {
-            var w = CreateWindow<GachaScreen>(canvas, "Gacha", "캐시샵", "menuicon_cashshop");
+            var w = CreateWindow<GachaScreen>(canvas, "Gacha", L.T("캐시샵"), "menuicon_cashshop");
             Instance = w;
             var tl = new Vector2(0f, 1f);
             // [UI] The shop is laid out at a fixed size and shrunk to fit the window (1280x720 or a bigger UI scale
@@ -120,7 +120,7 @@ namespace DotRPG
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
             w.BuildTierPicker(bigBox.transform);
             w.BuildCeiling(bigBox.transform); // [CEILING]
-            w.chooseBtn = Button(bigBox.transform, "Choose", "선택하기", "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), w.OpenChoices, 18);
+            w.chooseBtn = Button(bigBox.transform, "Choose", L.T("선택하기"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), w.OpenChoices, 18);
             var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
             shard.preserveAspect = true; shard.raycastTarget = false;
             UIFactory.Place(shard.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 14f), new Vector2(38f, 38f));
@@ -130,10 +130,10 @@ namespace DotRPG
             // The five buttons share the banner's width (940 = 230 + 270 + 130 + 110 + 152 + 4 gaps of 12).
             w.one = Button(w.main, "One", "", "ui_btn", tl, tl, new Vector2(bx, by), new Vector2(230f, 58f), () => w.Ask(1), 17);
             w.ten = Button(w.main, "Ten", "", "ui_btn", tl, tl, new Vector2(bx + 242f, by), new Vector2(270f, 58f), () => w.Ask(10), 17);
-            w.rateBtn = Button(w.main, "Rates", "확률 보기", "ui_btngray", tl, tl, new Vector2(bx + 524f, by), new Vector2(130f, 58f), w.OpenRates, 17);
-            w.wardrobeBtn = Button(w.main, "Wardrobe", "옷장", "ui_btngray", tl, tl, new Vector2(bx + 666f, by), new Vector2(110f, 58f), w.OpenWardrobe, 17);
+            w.rateBtn = Button(w.main, "Rates", L.T("확률 보기"), "ui_btngray", tl, tl, new Vector2(bx + 524f, by), new Vector2(130f, 58f), w.OpenRates, 17);
+            w.wardrobeBtn = Button(w.main, "Wardrobe", L.T("옷장"), "ui_btngray", tl, tl, new Vector2(bx + 666f, by), new Vector2(110f, 58f), w.OpenWardrobe, 17);
             // Spares (a cosmetic drawn again): synthesis, dismantling and collections.
-            Button(w.main, "Synth", "합성 · 컬렉션", "ui_btngray", tl, tl, new Vector2(bx + 788f, by), new Vector2(152f, 58f),
+            Button(w.main, "Synth", L.T("합성 · 컬렉션"), "ui_btngray", tl, tl, new Vector2(bx + 788f, by), new Vector2(152f, 58f),
                 () => { if (CosmeticSynthScreen.Instance != null) Game.Flow.OpenWindow(CosmeticSynthScreen.Instance); }, 17);
             // keep the price text off the button edges
             foreach (var b in new[] { w.one, w.ten }) UIFactory.Stretch(TextOf(b).rectTransform, 10f, 0f, 10f, 0f);
@@ -144,9 +144,9 @@ namespace DotRPG
             w.resultPage = page.rectTransform;
             UIFactory.Stretch(w.resultPage, -20f, -20f, -20f, -20f);
             w.resultTitle = Label(page.transform, "Title", "", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(900f, 44f), TextAnchor.MiddleCenter);
-            w.skipBtn = Button(page.transform, "Skip", "모두 열기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-260f, 24f), new Vector2(220f, 56f), w.RevealAll, 19);
-            w.againBtn = Button(page.transform, "Again", "한 번 더", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 56f), () => w.Ask(w.lastCount), 19);
-            w.okBtn = Button(page.transform, "Ok", "확인", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(260f, 24f), new Vector2(220f, 56f), w.CloseResults, 19);
+            w.skipBtn = Button(page.transform, "Skip", L.T("모두 열기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-260f, 24f), new Vector2(220f, 56f), w.RevealAll, 19);
+            w.againBtn = Button(page.transform, "Again", L.T("한 번 더"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 56f), () => w.Ask(w.lastCount), 19);
+            w.okBtn = Button(page.transform, "Ok", L.T("확인"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(260f, 24f), new Vector2(220f, 56f), w.CloseResults, 19);
 
             // Results: ten cards, a gap, then the bonus card.
             w.cellRoot = UIFactory.Place(UIFactory.Rect(page.transform, "Results"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(1000f, 420f));
@@ -177,7 +177,7 @@ namespace DotRPG
                 c.note.rectTransform.offsetMin = c.note.rectTransform.offsetMax = Vector2.zero;
                 w.cells.Add(c);
             }
-            w.bonusLabel = Label(w.cellRoot, "BonusLabel", "<color=#ffd34a><b>+1 보너스</b></color>", 18, tl, tl, Vector2.zero, new Vector2(BonusW, 26f), TextAnchor.MiddleCenter);
+            w.bonusLabel = Label(w.cellRoot, "BonusLabel", L.T("<color=#ffd34a><b>+1 보너스</b></color>"), 18, tl, tl, Vector2.zero, new Vector2(BonusW, 26f), TextAnchor.MiddleCenter);
             page.gameObject.SetActive(false);
 
             w.flash = UIFactory.Image(w.content, "Flash", Game.Art.Get("ui_white"), Color.clear);
@@ -189,7 +189,7 @@ namespace DotRPG
             var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), UiTheme.Overlay);
             cm.raycastTarget = true;
             w.choiceModal = cm.rectTransform;
-            Label(cm.transform, "Title", "<b>원하는 것을 하나 고르세요</b>", 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
+            Label(cm.transform, "Title", L.T("<b>원하는 것을 하나 고르세요</b>"), 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
             for (int i = 0; i < 4; i++)
             {
                 int idx = i;
@@ -202,7 +202,7 @@ namespace DotRPG
                 lb.alignment = TextAnchor.MiddleLeft;
                 w.choiceRows.Add((b, ic, lb));
             }
-            Button(cm.transform, "Cancel", "닫기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 16f), new Vector2(180f, 48f), () => w.choiceModal.gameObject.SetActive(false), 18);
+            Button(cm.transform, "Cancel", L.T("닫기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 16f), new Vector2(180f, 48f), () => w.choiceModal.gameObject.SetActive(false), 18);
             cm.gameObject.SetActive(false);
 
             // 확률 보기 window (over everything in the shop).
@@ -217,7 +217,7 @@ namespace DotRPG
             var scroll = vp.gameObject.AddComponent<ScrollRect>();
             scroll.viewport = vp; scroll.content = w.rateText.rectTransform; scroll.horizontal = false;
             scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 30f;
-            Button(modal.transform, "Close", "닫기", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 18f), new Vector2(200f, 50f), w.CloseRates, 18);
+            Button(modal.transform, "Close", L.T("닫기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 18f), new Vector2(200f, 50f), w.CloseRates, 18);
             modal.gameObject.SetActive(false);
 
             StarShopClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
@@ -282,7 +282,7 @@ namespace DotRPG
                 var card = CosmeticAura.Card(p);
                 row.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
                 row.icon.color = card != null || look != null ? Color.white : p.Color;
-                row.label.text = owned ? $"<color=#8c96a8>{p.Name} · 보유 중</color>" : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{p.Name}</color>  <size=15>공격력 +{p.DamagePercent}%</size>";
+                row.label.text = owned ? L.F("<color=#8c96a8>{0} · 보유 중</color>", L.T(p.Name)) : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{L.T(p.Name)}</color>  " + L.F("<size=15>공격력 +{0}%</size>", p.DamagePercent);
                 row.btn.interactable = !owned;
             }
             choiceModal.gameObject.SetActive(true);
@@ -295,7 +295,7 @@ namespace DotRPG
             if (gearPick != null) { ChooseGear(i); return; } // [CEILING] picking gear with the gear ceiling
             if (i >= choices.Count) return;
             var p = choices[i];
-            Game.UI.Confirm($"{p.Name}\n선택 게이지를 사용해 이것을 받습니다.", () =>
+            Game.UI.Confirm(L.T(p.Name) + "\n" + L.T("선택 게이지를 사용해 이것을 받습니다."), () =>
             {
                 busy = true;
                 StarShopClient.Claim(banner, p.Id, (ok, msg) =>
@@ -336,12 +336,12 @@ namespace DotRPG
             if (StarShopClient.Balance < price)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"별조각이 모자랍니다. (필요 {price:N0}, 보유 {StarShopClient.Balance:N0})");
+                GameEvents.RaiseToast(L.F("별조각이 모자랍니다. (필요 {0:N0}, 보유 {1:N0})", price, StarShopClient.Balance));
                 return;
             }
-            string what = count == 10 ? $"{times - 1}회 + 보너스 1회" : "1회";
-            string tierNote = banner == "aura" || banner == "skin" ? "" : $" (Lv.{SelectedTierLevel()} 장비)";
-            Game.UI.Confirm($"{Current().name}{tierNote}\n{StarShopClient.Stars(price)}로 {what} 뽑습니다.\n뽑으시겠습니까?", () => Pull(count), true);
+            string what = count == 10 ? L.F("{0}회 + 보너스 1회", times - 1) : L.T("1회");
+            string tierNote = banner == "aura" || banner == "skin" ? "" : L.F(" (Lv.{0} 장비)", SelectedTierLevel());
+            Game.UI.Confirm(Current().name + tierNote + "\n" + L.F("{0}로 {1} 뽑습니다.\n뽑으시겠습니까?", StarShopClient.Stars(price), what), () => Pull(count), true);
         }
 
         void Pull(int count)
@@ -370,7 +370,7 @@ namespace DotRPG
 
         void OpenResults()
         {
-            resultTitle.text = $"<b>{Current().name} 결과</b>";
+            resultTitle.text = L.F("<b>{0} 결과</b>", Current().name);
             LayoutCells(shown.Count);
             resultPage.gameObject.SetActive(true);
             resultPage.SetAsLastSibling();

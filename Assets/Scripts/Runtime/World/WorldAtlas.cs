@@ -58,7 +58,7 @@ namespace DotRPG
             foreach (var door in world.ObjectsRoot.GetComponentsInChildren<ServiceDoor>())
             {
                 var def = WorldBuilder.ServiceNpc(door.Service);
-                yield return new Marker { id = def.npcId, name = def.displayName + " · " + MapRegistry.ServiceName(door.Service) + " (실내)",
+                yield return new Marker { id = def.npcId, name = L.F("{0} · {1} (실내)", L.T(def.displayName), MapRegistry.ServiceName(door.Service)),
                     service = door.Service, interior = MapRegistry.InteriorFor(world.MapId, door.Service), position = door.transform.position };
             }
         }
@@ -156,13 +156,13 @@ namespace DotRPG
             {
                 foreach (var npc in NpcController.All)
                     if (npc != null && npc.isActiveAndEnabled)
-                        list.Add(new Marker { id = npc.Definition.npcId, name = npc.Definition.displayName, service = npc.Definition.service, position = npc.transform.position });
+                        list.Add(new Marker { id = npc.Definition.npcId, name = L.T(npc.Definition.displayName), service = npc.Definition.service, position = npc.transform.position });
                 list.AddRange(Doors(Game.World)); return list;
             }
             if (info.IsInterior)
             {
                 var def = WorldBuilder.ServiceNpc(info.interiorService);
-                list.Add(new Marker { id = def.npcId, name = def.displayName, service = def.service, position = new Vector2(2.5f, 3.35f) }); return list;
+                list.Add(new Marker { id = def.npcId, name = L.T(def.displayName), service = def.service, position = new Vector2(2.5f, 3.35f) }); return list;
             }
             var rows = Rows(info); int h = rows.Length; Vector2 spawn = Vector2.zero;
             var buildings = new List<Vector2>(); Vector2? barn = null;
@@ -183,7 +183,7 @@ namespace DotRPG
                 if (!(ch >= '1' && ch <= '9') && ch != 'J' && ch != 'D' && ch != 'K') continue;
                 var def = Game.Config.GetNpcBySymbol(ch) ?? fallback.FirstOrDefault(n => n.mapSymbol == ch.ToString());
                 if (def == null || (MapRegistry.IsTown(id) && MapRegistry.IsIndoorService(def.service)) || (id == MapRegistry.Village && StoryCast.VillagersHidden)) continue;
-                list.Add(new Marker { id = def.npcId, name = def.displayName, service = def.service, position = pos });
+                list.Add(new Marker { id = def.npcId, name = L.T(def.displayName), service = def.service, position = pos });
             }
             if (MapRegistry.IsTown(id) && id != MapRegistry.Sanctum)
             {
@@ -213,19 +213,19 @@ namespace DotRPG
                         if (open) { guidePos = new Vector2(cx + .5f, cy + .5f); found = true; }
                     }
                 }
-                list.Add(new Marker { id = "dungeon_guide", name = WorldBuilder.DungeonGuide.displayName + " · 요일던전", service = NpcService.Dungeon, position = guidePos });
+                list.Add(new Marker { id = "dungeon_guide", name = L.F("{0} · 요일던전", L.T(WorldBuilder.DungeonGuide.displayName)), service = NpcService.Dungeon, position = guidePos });
             }
             foreach (var p in StoryCast.Placements)
                 if (p.map == id && StoryCast.Visible(p))
                 {
                     var def = StoryCast.Find(p.npcId); if (def == null) continue;
-                    list.Add(new Marker { id = def.npcId, name = def.displayName, position = CutscenePlayer.CellToWorld(Get(id).bounds, p.col, p.row) });
+                    list.Add(new Marker { id = def.npcId, name = L.T(def.displayName), position = CutscenePlayer.CellToWorld(Get(id).bounds, p.col, p.row) });
                 }
             return list;
             void AddDoor(NpcService service, Vector2 position)
             {
                 var def = WorldBuilder.ServiceNpc(service);
-                list.Add(new Marker { id = def.npcId, name = def.displayName + " · " + MapRegistry.ServiceName(service) + " (실내)", service = service,
+                list.Add(new Marker { id = def.npcId, name = L.F("{0} · {1} (실내)", L.T(def.displayName), MapRegistry.ServiceName(service)), service = service,
                     interior = MapRegistry.InteriorFor(id, service), position = position });
             }
         }

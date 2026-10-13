@@ -119,11 +119,11 @@ namespace DotRPG
         {
             var attack = Round(root, "Attack", AttackPos, AttackSize, AttackTint);
             AddButton(attack, GameAction.Attack).repeat = true;
-            FittedLabel(attack.transform, "공격", 26);
+            FittedLabel(attack.transform, L.T("공격"), 26);
 
             dodgeBg = Round(root, "Dodge", DodgePos, DodgeSize, Dark);
             AddButton(dodgeBg, GameAction.Mobility);
-            FittedLabel(dodgeBg.transform, "회피", 22);
+            FittedLabel(dodgeBg.transform, L.T("회피"), 22);
             dodgeTimer = UIFactory.Text(dodgeBg.transform, "Timer", "", 22, Color.white, TextAnchor.LowerCenter, true);
             UIFactory.Stretch(dodgeTimer.rectTransform, 0f, 2f, 0f, 0f);
 
@@ -151,7 +151,7 @@ namespace DotRPG
 
             var interact = Round(root, "Interact", InteractPos, InteractSize, new Color(0.25f, 0.6f, 0.35f, 0.65f));
             AddButton(interact, GameAction.Interact);
-            FittedLabel(interact.transform, "상호작용", 22);
+            FittedLabel(interact.transform, L.T("상호작용"), 22);
             interactButton = interact.gameObject;
             interactButton.SetActive(false);
 

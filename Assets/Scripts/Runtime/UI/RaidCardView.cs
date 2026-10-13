@@ -156,7 +156,7 @@ namespace DotRPG
 
         static string FrontKey(Kind k) => k == Kind.Ticket ? "raid_front_ticket" : k == Kind.Epic ? "raid_front_epic" : k == Kind.Unique ? "raid_front_unique" : k == Kind.Legendary ? "raid_front_legend" : "raid_front_mat";
 
-        static string BandText(Kind k) => k == Kind.Ticket ? "보호권" : k == Kind.Epic ? "에픽" : k == Kind.Unique ? "유니크" : k == Kind.Legendary ? "레전더리" : "재료";
+        static string BandText(Kind k) => k == Kind.Ticket ? L.T("보호권") : k == Kind.Epic ? L.T("에픽") : k == Kind.Unique ? L.T("유니크") : k == Kind.Legendary ? L.T("레전더리") : L.T("재료");
 
         static void SetAlpha(Graphic g, float a) { var c = g.color; c.a = a; g.color = c; }
 
@@ -371,15 +371,15 @@ namespace DotRPG
             int small = Mathf.RoundToInt(16 * scale);
             var gear = EquipmentDatabase.Get(reward.itemId);
             if (gear != null)
-                face.text = $"<color={EquipmentDatabase.RarityColor(gear.rarity)}><b>{gear.name}</b></color>\n<size={small}>{EquipmentDatabase.RarityName(gear.rarity)} · {gear.CategoryName}</size>";
+                face.text = $"<color={EquipmentDatabase.RarityColor(gear.rarity)}><b>{L.T(gear.name)}</b></color>\n<size={small}>{L.T(EquipmentDatabase.RarityName(gear.rarity))} · {L.T(gear.CategoryName)}</size>";
             else
-                face.text = $"<b>{DungeonDatabase.ItemName(reward.itemId)}</b>\n×{reward.count:N0}";
+                face.text = $"<b>{L.T(DungeonDatabase.ItemName(reward.itemId))}</b>\n×{reward.count:N0}";
             face.rectTransform.localScale = popT > 0f ? new Vector3(0.2f, 0.2f, 1f) : Vector3.one;
         }
 
         void PostFlip(RewardCard reward)
         {
-            string gearName = EquipmentDatabase.Get(reward.itemId)?.name ?? DungeonDatabase.ItemName(reward.itemId);
+            string gearName = L.T(EquipmentDatabase.Get(reward.itemId)?.name ?? DungeonDatabase.ItemName(reward.itemId));
             FrameRt.anchoredPosition = basePos;
             switch (CardKind)
             {
@@ -391,7 +391,7 @@ namespace DotRPG
                     StartLinger(UniqueColor, 0.25f, 0.5f);
                     ringT = 0.4f;
                     Game.Audio.PlaySfx("quest");
-                    GameEvents.RaiseToast($"<color=#ffe15a>유니크 획득:</color> {gearName}");
+                    GameEvents.RaiseToast(L.F("<color=#ffe15a>유니크 획득:</color> {0}", gearName));
                     break;
                 case Kind.Legendary:
                     raysSpin = false;
@@ -403,7 +403,7 @@ namespace DotRPG
                     legendText.enabled = true;
                     SetAlpha(legendText, 1f);
                     Game.Audio.PlaySfx("quest");
-                    GameEvents.RaiseToast($"<color=#ff8a3d>레전더리 획득:</color> {gearName}");
+                    GameEvents.RaiseToast(L.F("<color=#ff8a3d>레전더리 획득:</color> {0}", gearName));
                     break;
                 default:
                     Game.Audio.PlaySfx("pickup");
@@ -431,7 +431,7 @@ namespace DotRPG
                 s.enabled = false;
                 sparks[i] = s;
             }
-            legendText = UIFactory.Text(FrameRt, "LegendText", "레전더리!", Mathf.RoundToInt(28 * scale), LegendColor, TextAnchor.MiddleCenter);
+            legendText = UIFactory.Text(FrameRt, "LegendText", L.T("레전더리!"), Mathf.RoundToInt(28 * scale), LegendColor, TextAnchor.MiddleCenter);
             var ol = legendText.gameObject.AddComponent<Outline>();
             ol.effectColor = new Color32(42, 22, 8, 255);
             ol.effectDistance = new Vector2(2f, -2f);

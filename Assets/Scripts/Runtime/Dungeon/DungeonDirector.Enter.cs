@@ -42,17 +42,17 @@ namespace DotRPG
         {
             if (!pc.IsLeader)
             {
-                GameEvents.RaiseToast("파티 중에는 방장이 입장하면 함께 들어갑니다.");
+                GameEvents.RaiseToast(L.T("파티 중에는 방장이 입장하면 함께 들어갑니다."));
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
-            if (PartyRunSession.Active) { GameEvents.RaiseToast("이미 파티가 출발하는 중입니다."); return false; }
+            if (PartyRunSession.Active) { GameEvents.RaiseToast(L.T("이미 파티가 출발하는 중입니다.")); return false; }
             var diff = dungeon.isRaid && difficulty != DungeonDatabase.RaidHeroic ? DungeonDifficulty.Normal : difficulty;
             int ai = Mathf.Min(Game.Session.PartyRoster.Count, PartyManager.CompanionLimit);
             void Depart() => pc.StartRun(ai, (ok, msg) =>
             {
                 Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
-                GameEvents.RaiseToast(ok ? "파티원과 함께 출발합니다. 파티원이 연결되는 중..." : msg);
+                GameEvents.RaiseToast(ok ? L.T("파티원과 함께 출발합니다. 파티원이 연결되는 중...") : msg);
             });
             if (pc.DungeonId == dungeon.id && pc.Difficulty == diff) Depart();
             else pc.SetTarget(dungeon.id, diff, (ok, msg) => { if (ok) Depart(); else { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); } });
@@ -66,11 +66,11 @@ namespace DotRPG
         {
             switch (reason)
             {
-                case "TOO_FEW_HUMANS": return "레이드 보상은 2명 이상의 파티만 받습니다. (연습 입장)";
-                case "LOW_CONTRIBUTION": return "전투 기여가 부족해 클리어 보상이 없습니다.";
-                case "ALREADY_CLAIMED": return "이번 기간 레이드 보상을 이미 받았습니다. (연습 입장)";
-                case "KEYS_MISSING": return "봉인 열쇠 조각이 모자라 연습 입장입니다. 클리어하면 이야기는 이어지지만 보상은 없습니다.";
-                default: return "레이드 보상이 없는 연습 입장입니다.";
+                case "TOO_FEW_HUMANS": return L.T("레이드 보상은 2명 이상의 파티만 받습니다. (연습 입장)");
+                case "LOW_CONTRIBUTION": return L.T("전투 기여가 부족해 클리어 보상이 없습니다.");
+                case "ALREADY_CLAIMED": return L.T("이번 기간 레이드 보상을 이미 받았습니다. (연습 입장)");
+                case "KEYS_MISSING": return L.T("봉인 열쇠 조각이 모자라 연습 입장입니다. 클리어하면 이야기는 이어지지만 보상은 없습니다.");
+                default: return L.T("레이드 보상이 없는 연습 입장입니다.");
             }
         }
 
@@ -99,7 +99,7 @@ namespace DotRPG
             var now = ResetClock.Now;
             if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0)
             {
-                GameEvents.RaiseToast("오늘 입장 횟수를 모두 사용했습니다.");
+                GameEvents.RaiseToast(L.T("오늘 입장 횟수를 모두 사용했습니다."));
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }

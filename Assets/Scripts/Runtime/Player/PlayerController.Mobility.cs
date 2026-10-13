@@ -15,7 +15,7 @@ namespace DotRPG
 
         public bool IsDashing => dashRemaining > 0f;
         public float MobilityCooldownRemaining => Mathf.Max(0f, mobilityReadyAt - Time.time);
-        public string MobilityName => Class == CharacterClass.Mage ? "텔레포트" : skills != null && skills.RushOnMobility ? "섬광보" : "대시";
+        public string MobilityName => Class == CharacterClass.Mage ? L.T("텔레포트") : skills != null && skills.RushOnMobility ? L.T("섬광보") : L.T("대시");
 
         /// <summary>One key-down, current movement or last facing, without MP cost or invulnerability.</summary>
         public bool TryMobility(Vector2 movement)

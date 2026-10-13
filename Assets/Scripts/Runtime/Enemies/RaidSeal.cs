@@ -36,7 +36,7 @@ namespace DotRPG
         public static bool UsedBy(string bossId) => bossId == "boss_grah";
 
         /// <summary>The line the boss speaks before the ritual (the trigger players learn).</summary>
-        public const string Line = "수호의 진이여, 침입자를 시험하라!";
+        public const string Line = "수호의 진이여, 침입자를 시험하라!"; // i18n-ignore const, wrapped at use
 
         /// <summary>Circles of the ritual running on this PC (null when none). Members read it to find their spot.</summary>
         public static Vector2[] Active { get; private set; }
@@ -157,7 +157,7 @@ namespace DotRPG
         {
             Clear();
             var b = boss != null ? boss.GetComponent<BossBrain>() : null;
-            if (b != null) BossBrain.RaiseAnnounce(b, broken ? "결계 파훼! 그로기" : "결계가 폭발했다!", broken ? new Color(1f, .9f, .35f) : new Color(1f, .3f, .25f));
+            if (b != null) BossBrain.RaiseAnnounce(b, broken ? L.T("결계 파훼! 그로기") : L.T("결계가 폭발했다!"), broken ? new Color(1f, .9f, .35f) : new Color(1f, .3f, .25f));
             if (!broken && boss != null) SkillVisuals.Flash(boss.Center, new Color(.75f, .4f, 1f, .9f), 14f, .4f);
         }
 
@@ -197,7 +197,7 @@ namespace DotRPG
                 if (count == lastCount && filled == lastFilled) return;
                 lastCount = count;
                 lastFilled = filled;
-                BossBrain.RaiseAnnounce(brain, $"마법진에 한 명씩 올라서라! {filled}/{need}  {count}", Violet);
+                BossBrain.RaiseAnnounce(brain, L.F("마법진에 한 명씩 올라서라! {0}/{1}  {2}", filled, need, count), Violet);
             }
         }
     }

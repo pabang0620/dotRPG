@@ -59,9 +59,9 @@ namespace DotRPG
     public static class CareerCatalog
     {
         public static CharacterClass Base(Career c) => c == Career.Fighter || c == Career.Guardian ? CharacterClass.Warrior : CharacterClass.Mage;
-        public static string Name(Career c) => c == Career.Fighter ? "파이터" : c == Career.Guardian ? "수호자" : c == Career.Arcanist ? "메이지" : c == Career.Bishop ? "비숍" : "기본 직업";
-        public static string Role(Career c) => c == Career.Fighter ? "검기·기동·연계 / 검술 딜러" : c == Career.Guardian ? "도발·방벽 / 보호 탱커" : c == Career.Arcanist ? "원소 연계·광역 / 마법 딜러" : "회복·정화·축복 / 지원 힐러";
-        public static string[] Branches(Career c) => c == Career.Fighter ? new[] { "검기의 흐름", "검의 현현" } : c == Career.Guardian ? new[] { "철벽과 보호", "도발과 반격" } : c == Career.Arcanist ? new[] { "원소의 공명", "마력 운용" } : new[] { "회복과 유지", "축복과 보호" };
+        public static string Name(Career c) => c == Career.Fighter ? L.T("파이터") : c == Career.Guardian ? L.T("수호자") : c == Career.Arcanist ? L.T("메이지") : c == Career.Bishop ? L.T("비숍") : L.T("기본 직업");
+        public static string Role(Career c) => c == Career.Fighter ? L.T("검기·기동·연계 / 검술 딜러") : c == Career.Guardian ? L.T("도발·방벽 / 보호 탱커") : c == Career.Arcanist ? L.T("원소 연계·광역 / 마법 딜러") : L.T("회복·정화·축복 / 지원 힐러");
+        public static string[] Branches(Career c) => c == Career.Fighter ? new[] { L.T("검기의 흐름"), L.T("검의 현현") } : c == Career.Guardian ? new[] { L.T("철벽과 보호"), L.T("도발과 반격") } : c == Career.Arcanist ? new[] { L.T("원소의 공명"), L.T("마력 운용") } : new[] { L.T("회복과 유지"), L.T("축복과 보호") };
         public static Color Color(Career c) => c == Career.Fighter ? new Color32(103, 179, 255, 255) : c == Career.Guardian ? new Color32(73, 205, 211, 255) : c == Career.Arcanist ? new Color32(174, 128, 250, 255) : new Color32(244, 215, 132, 255);
         /// <summary>
         /// [BALANCE 2026-10-06] Skills are used more often and reach wider: actives cost 0.65x mana, recharge in 0.7x
@@ -77,9 +77,14 @@ namespace DotRPG
         static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter", "barrier" };
         /// <summary>Cooldown of every lasting buff (and 검귀 해방), seconds.</summary>
         public const float BuffCooldown = 62f;
-        static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음")
+        static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음") // i18n-ignore compared in SkillScreen.Career; never shown (no skill sets a synergy)
         {
             bool passive = i == 0 || i == 4, awaken = i == 8;
+            // [I18N] Name and description translate here (rows below are the Korean keys). The number rewrites below run
+            // on the Korean and, when translated, on the English ("radius 2.3m", "30s"), so both follow the new values.
+            name = L.T(name);
+            string en = L.T(desc);
+            bool translated = en != desc;
             if (!passive)
             {
                 float radiusK = awaken ? 1.3f : 1.5f;
@@ -87,8 +92,11 @@ namespace DotRPG
                 {
                     float before = radius;
                     radius = Mathf.Round(radius * radiusK * 10f) / 10f;
-                    desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(반경|주변) (\d+(?:\.\d+)?)m", m =>
+                    desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(반경|주변) (\d+(?:\.\d+)?)m", m => // i18n-ignore Korean number rewrite (English below)
                         Mathf.Abs(float.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) - before) < 0.05f ? $"{m.Groups[1].Value} {radius:0.#}m" : m.Value);
+                    if (translated)
+                        en = System.Text.RegularExpressions.Regex.Replace(en, @"(radius|within|around) (\d+(?:\.\d+)?) ?m\b", m =>
+                            Mathf.Abs(float.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) - before) < 0.05f ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1:0.#}m", m.Groups[1].Value, radius) : m.Value);
                 }
                 mp = Mathf.Max(1, Mathf.RoundToInt(mp * (awaken ? 0.75f : 0.65f)));
                 // The awakening is the big moment: it comes back more slowly but lasts longer and lands more often.
@@ -102,8 +110,11 @@ namespace DotRPG
                 {
                     float was = duration;
                     duration *= 2f;
-                    desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(\d+(?:\.\d+)?)초", m =>
-                        Mathf.Abs(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - was) < 0.05f ? $"{duration:0.#}초" : m.Value);
+                    desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(\d+(?:\.\d+)?)초", m => // i18n-ignore Korean number rewrite
+                        Mathf.Abs(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - was) < 0.05f ? $"{duration:0.#}초" : m.Value); // i18n-ignore Korean number rewrite
+                    if (translated)
+                        en = System.Text.RegularExpressions.Regex.Replace(en, @"(\d+(?:\.\d+)?)( ?)(s|sec|seconds?)\b", m =>
+                            Mathf.Abs(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - was) < 0.05f ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.#}{1}{2}", duration, m.Groups[2].Value, m.Groups[3].Value) : m.Value);
                 }
                 if (awaken)
                 {
@@ -120,7 +131,7 @@ namespace DotRPG
                     if (cd > 0f) power *= Mathf.Min(2.0f, 1f + .10f * cd);
                 }
             }
-            return Make(c, i, id, name, desc, effect, power, mp, cd, range, radius, cast, duration, hits, synergy);
+            return Make(c, i, id, name, translated ? en : desc, effect, power, mp, cd, range, radius, cast, duration, hits, synergy);
         }
 
         static CareerSkill Make(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration, int hits, string synergy) => new CareerSkill {
@@ -133,6 +144,7 @@ namespace DotRPG
             var f=Career.Fighter; var g=Career.Guardian; var m=Career.Arcanist; var b=Career.Bishop;
             return new[] {
                 // Stable save keys and slot order (server careerRules.ts); designs: Docs/PLAN_CAREER_SKILLS.md.
+                // i18n-names-begin (name and description translate in S)
                 S(f,0,"f_rhythm","검기 연성","기본 공격 적중마다 검기 1개를 모은다. 최대 3개, 6초 유지. 3개일 때 다음 전직 스킬 피해 +20%, 전부 소모.","swordflow",20,0,0,0,0,0,6),
                 S(f,1,"f_cross","십자참","전방 120도, 2.3m를 X자로 두 번 벤다. 두 번째 베기가 적을 밀어낸다.","cross",1.7f,10,3,2.3f,0,.08f,0,2),
                 S(f,2,"f_rush","섬광보","전방 4m를 섬광처럼 돌진하며 경로의 적을 벤다. 벽 앞에서 멈춘다. 배우면 이동기(Shift)로 나가고 재사용 대기시간은 대쉬 +0.2초(1.6초).","rush",2.8f,14,6,4,.75f,.06f),
@@ -172,6 +184,7 @@ namespace DotRPG
                 S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 60초.","bless",18,28,20,0,5,.3f,60),
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 12m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%와 모든 상태 이상 면역, 성역 안의 적은 약화(주는 피해 -30%).","dawn",4.5f,60,70,0,12,.7f,8,8,"비숍의 회복과 보호를 한 번에"),
             };
+            // i18n-names-end
         }
         public static CareerSkill Get(string id) { foreach(var s in All) if(s.id==id) return s; return null; }
         public static CareerSkill[] For(Career c) => Array.FindAll(All,s=>s.career==c);

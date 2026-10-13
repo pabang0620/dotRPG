@@ -25,15 +25,15 @@ namespace DotRPG
         public int Rank(string id) { foreach(var n in careerState.nodes) if(n.id==id) return n.rank; return 0; }
         public string NodeLock(CareerSkill s)
         {
-            if(s==null) return "없는 스킬";
-            if(!IsPromoted) return "15레벨 전직 후 이용 가능";
-            if(s.career!=Career) return "다른 전직 직업의 스킬";
-            if(Level<s.level) return $"Lv.{s.level} 필요";
-            if(s.kind==CareerSkillKind.Awakening) return Awakened ? "각성 퀘스트 완료" : "각성 퀘스트 완료 시 개방";
+            if(s==null) return L.T("없는 스킬");
+            if(!IsPromoted) return L.T("15레벨 전직 후 이용 가능");
+            if(s.career!=Career) return L.T("다른 전직 직업의 스킬");
+            if(Level<s.level) return L.F("Lv.{0} 필요", s.level);
+            if(s.kind==CareerSkillKind.Awakening) return Awakened ? L.T("각성 퀘스트 완료") : L.T("각성 퀘스트 완료 시 개방");
             int rank=Rank(s.id);
-            if(rank>=3) return "최대 강화 3/3";
-            if(s.Prerequisite!=null && Rank(s.Prerequisite)==0) return $"선행: {CareerCatalog.Get(s.Prerequisite).name}";
-            if(CareerPoints<rank+1) return $"포인트 {rank+1} 필요";
+            if(rank>=3) return L.T("최대 강화 3/3");
+            if(s.Prerequisite!=null && Rank(s.Prerequisite)==0) return L.F("선행: {0}", CareerCatalog.Get(s.Prerequisite).name);
+            if(CareerPoints<rank+1) return L.F("포인트 {0} 필요", rank+1);
             return "";
         }
         public bool Learn(string id)
@@ -57,7 +57,7 @@ namespace DotRPG
             var gem=SkillGems.Get(id); var s=CareerCatalog.Get(id);
             if(gem==null || gem.kind!=GemKind.Active || !IsUnlocked(gem) || (s!=null && s.kind==CareerSkillKind.Passive) || (slot==4)!=gem.IsUltimate) return false;
             // [FIGHTER] 섬광보 lives on the mobility key (Shift) once learned, so it never takes a skill key.
-            if(id==SkillCaster.RushId) { GameEvents.RaiseToast("섬광보는 배우면 이동기(Shift)로 나갑니다."); return false; }
+            if(id==SkillCaster.RushId) { GameEvents.RaiseToast(L.T("섬광보는 배우면 이동기(Shift)로 나갑니다.")); return false; }
             // [UX] Already on another key: the two keys swap skills instead of refusing.
             for(int i=0;i<SkillGems.Slots;i++) if(i!=slot && Active(i)?.id==id) { slots[i,0]=slots[slot,0]; break; }
             slots[slot,0]=id; Changed?.Invoke(); return true;

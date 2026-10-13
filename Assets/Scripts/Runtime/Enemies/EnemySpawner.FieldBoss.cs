@@ -27,9 +27,9 @@ namespace DotRPG
             {
                 FieldBosses.MarkDefeated(mapId);
                 if (fieldBoss == e) fieldBoss = null;
-                GameEvents.RaiseToast($"<color=#ff9f43>필드 보스</color> {e.Stats.displayName} 처치! 다음 출현까지 {FieldBosses.SecondsToNext / 60 + 1}분");
+                GameEvents.RaiseToast(L.F("<color=#ff9f43>필드 보스</color> {0} 처치! 다음 출현까지 {1}분", L.T(e.Stats.displayName), FieldBosses.SecondsToNext / 60 + 1));
             };
-            GameEvents.RaiseToast($"<color=#ff9f43>필드 보스</color> {MonsterDatabase.Get(def.monsterId)?.name}이(가) 나타났습니다!");
+            GameEvents.RaiseToast(L.F("<color=#ff9f43>필드 보스</color> {0}이(가) 나타났습니다!", L.T(MonsterDatabase.Get(def.monsterId)?.name)));
             Game.Audio?.PlaySfx("rank_reveal");
         }
     }

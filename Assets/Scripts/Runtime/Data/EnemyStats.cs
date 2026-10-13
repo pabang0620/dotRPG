@@ -7,7 +7,7 @@ namespace DotRPG
     public class EnemyStats : ScriptableObject
     {
         public string enemyId = "skeleton";
-        public string displayName = "해골";
+        public string displayName = "해골"; // i18n-ignore Unity-serialized field default (no L.T during deserialization); translated where shown
 
         [Header("Health")]
         public int maxHealth = 30;

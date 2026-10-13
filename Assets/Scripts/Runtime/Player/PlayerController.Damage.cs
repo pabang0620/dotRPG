@@ -34,7 +34,7 @@ namespace DotRPG
             {
                 Fx.Sparkle(Center + Vector2.up * 0.3f, 3, 0.35f);
                 Game.Audio.PlaySfx("mine", IsLocal ? 1f : 0.5f);
-                if (IsLocal) GameEvents.RaiseToast("막았습니다!");
+                if (IsLocal) GameEvents.RaiseToast(L.T("막았습니다!"));
                 return false;
             }
             int guard = Data.GuardReduction; // class passive (was 철벽 / 마나 보호막)

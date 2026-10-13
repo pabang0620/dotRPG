@@ -51,10 +51,10 @@ namespace DotRPG
         {
             switch (r.code)
             {
-                case "NETWORK": return "서버에 연결할 수 없습니다. 서버가 켜져 있는지 확인하세요.";
+                case "NETWORK": return L.T("서버에 연결할 수 없습니다. 서버가 켜져 있는지 확인하세요.");
                 case "CLIENT_OUTDATED":
-                case "DATA_OUTDATED": return "게임을 업데이트해 주세요. (서버와 버전이 다릅니다)";
-                default: return string.IsNullOrEmpty(r.message) ? $"요청이 실패했습니다. ({r.status})" : r.message;
+                case "DATA_OUTDATED": return L.T("게임을 업데이트해 주세요. (서버와 버전이 다릅니다)");
+                default: return string.IsNullOrEmpty(r.message) ? L.F("요청이 실패했습니다. ({0})", r.status) : r.message;
             }
         }
 
@@ -98,13 +98,13 @@ namespace DotRPG
 #else
             bool serverRow = false;
 #endif
-            screen.BuildPanel(root, "온라인 접속", 640, serverRow ? "\n\n\n\n\n\n" : "\n\n\n\n\n", 20);
-            screen.idField = screen.Field("아이디", -100f, "영문 소문자·숫자 4~20자", 20, false);
-            screen.pwField = screen.Field("비밀번호", -150f, "8자 이상", 64, true);
+            screen.BuildPanel(root, L.T("온라인 접속"), 640, serverRow ? "\n\n\n\n\n\n" : "\n\n\n\n\n", 20);
+            screen.idField = screen.Field(L.T("아이디"), -100f, L.T("영문 소문자·숫자 4~20자"), 20, false);
+            screen.pwField = screen.Field(L.T("비밀번호"), -150f, L.T("8자 이상"), 64, true);
 #if !DOTRPG_RELEASE
             if (serverRow)
             {
-                screen.serverField = screen.Field("서버 주소", -200f, "http://192.168.0.10:3000", 120, false);
+                screen.serverField = screen.Field(L.T("서버 주소"), -200f, "http://192.168.0.10:3000", 120, false);
                 screen.serverField.onEndEdit.AddListener(_ => screen.ApplyServer());
             }
 #endif
@@ -127,12 +127,12 @@ namespace DotRPG
         {
             menu.Clear();
             // [PARTY 8] Steam players log in with their Steam account (shown only while Steam is running).
-            menu.AddButton("Steam으로 접속", () => SubmitSteam(), () => SteamBridge.Current != null && SteamBridge.Current.Ready);
-            menu.AddButton("로그인", () => Submit(false));
-            menu.AddButton("새 계정 만들기", () => Submit(true));
+            menu.AddButton(L.T("Steam으로 접속"), () => SubmitSteam(), () => SteamBridge.Current != null && SteamBridge.Current.Ready);
+            menu.AddButton(L.T("로그인"), () => Submit(false));
+            menu.AddButton(L.T("새 계정 만들기"), () => Submit(true));
             if (cancelOffered)
-                menu.AddButton("탈퇴 철회", () => ui.Confirm("탈퇴 요청을 철회할까요?\n<size=18>철회하면 계정과 캐릭터가 그대로 돌아옵니다.</size>", CancelWithdrawal, overlay: true));
-            menu.AddButton("돌아가기", () => ui.Pop());
+                menu.AddButton(L.T("탈퇴 철회"), () => ui.Confirm(L.T("탈퇴 요청을 철회할까요?\n<size=18>철회하면 계정과 캐릭터가 그대로 돌아옵니다.</size>"), CancelWithdrawal, overlay: true));
+            menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             menu.OnCancel = () => ui.Pop();
             FitPanel();
             menu.Refresh();
@@ -144,24 +144,24 @@ namespace DotRPG
             bool allowed = r.errors != null && r.errors.TryGetValue("cancel_allowed", out var a) && a is bool b && b;
             if (!allowed)
             {
-                Say("탈퇴 처리 중인 계정입니다. 고객 지원에 문의하세요.", true);
+                Say(L.T("탈퇴 처리 중인 계정입니다. 고객 지원에 문의하세요."), true);
                 return;
             }
             cancelOffered = true;
             cancelSteam = steam;
             BuildMenu();
-            Say("탈퇴 대기 중인 계정입니다.", true);
+            Say(L.T("탈퇴 대기 중인 계정입니다."), true);
             string due = WithdrawalClient.LocalTime(MiniJson.Str(r.errors, "due_at"));
-            ui.Confirm($"탈퇴 대기 중인 계정입니다.\n{(due.Length > 0 ? due + "까지 철회할 수 있습니다." : "기한 안에는 철회할 수 있습니다.")}\n\n지금 탈퇴를 철회할까요?", CancelWithdrawal, overlay: true);
+            ui.Confirm(L.F("탈퇴 대기 중인 계정입니다.\n{0}\n\n지금 탈퇴를 철회할까요?", (due.Length > 0 ? L.F("{0}까지 철회할 수 있습니다.", due) : L.T("기한 안에는 철회할 수 있습니다."))), CancelWithdrawal, overlay: true);
         }
 
         void CancelWithdrawal()
         {
             if (busy) return;
             string id = idField.text.Trim().ToLowerInvariant(), pw = pwField.text;
-            if (!cancelSteam && (id.Length < 4 || pw.Length < 8)) { Say("아이디와 비밀번호를 입력해 주세요.", true); return; }
+            if (!cancelSteam && (id.Length < 4 || pw.Length < 8)) { Say(L.T("아이디와 비밀번호를 입력해 주세요."), true); return; }
             busy = true;
-            Say("탈퇴를 철회하는 중...");
+            Say(L.T("탈퇴를 철회하는 중..."));
             WithdrawalClient.Cancel(cancelSteam ? null : id, cancelSteam ? null : pw, r =>
             {
                 busy = false;
@@ -174,7 +174,7 @@ namespace DotRPG
                 }
                 cancelOffered = false;
                 BuildMenu();
-                Say("탈퇴를 철회했습니다. 접속하는 중...");
+                Say(L.T("탈퇴를 철회했습니다. 접속하는 중..."));
                 if (cancelSteam) SubmitSteam(); else Submit(false); // the cancel used the ticket / password up: log in again
             });
         }
@@ -188,7 +188,7 @@ namespace DotRPG
 #endif
             if (cancelOffered) { cancelOffered = false; BuildMenu(); }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Say($"서버: {ApiClient.Instance.BaseUrl}");
+            Say(L.F("서버: {0}", ApiClient.Instance.BaseUrl));
 #else
             Say("");
 #endif
@@ -212,7 +212,7 @@ namespace DotRPG
         {
             if (busy) return;
             busy = true;
-            Say("Steam 계정으로 접속하는 중...");
+            Say(L.T("Steam 계정으로 접속하는 중..."));
             OnlineSession.LoginSteam(r =>
             {
                 busy = false;
@@ -233,9 +233,9 @@ namespace DotRPG
             if (busy) return;
             ApplyServer();
             string id = idField.text.Trim().ToLowerInvariant(), pw = pwField.text;
-            if (id.Length < 4 || pw.Length < 8) { Say("아이디는 4자 이상, 비밀번호는 8자 이상이어야 합니다.", true); return; }
+            if (id.Length < 4 || pw.Length < 8) { Say(L.T("아이디는 4자 이상, 비밀번호는 8자 이상이어야 합니다."), true); return; }
             busy = true;
-            Say(register ? "계정을 만드는 중..." : "접속하는 중...");
+            Say(register ? L.T("계정을 만드는 중...") : L.T("접속하는 중..."));
             OnlineSession.Login(id, pw, register, r =>
             {
                 busy = false;
@@ -271,7 +271,7 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<OnlineCreateScreen>();
             screen.ui = ui;
             // Ten empty body lines reserve room for the cards (to -292), the name box and the status line (to -384).
-            screen.BuildPanel(root, "새 온라인 캐릭터", 640, new string('\n', 9), 20);
+            screen.BuildPanel(root, L.T("새 온라인 캐릭터"), 640, new string('\n', 9), 20);
             screen.panel.Find("Body").GetComponent<Text>().text = "";
             for (int i = 0; i < Classes.Length; i++)
             {
@@ -281,12 +281,12 @@ namespace DotRPG
                 card.OnClick(() => { if (screen.cls != c) Game.Audio.PlaySfx("select"); screen.PickClass(c); });
                 screen.cards[i] = card;
             }
-            screen.nameField = screen.Field("이름", -302f, "한글·영문·숫자 2~8자", 8, false);
+            screen.nameField = screen.Field(L.T("이름"), -302f, L.T("한글·영문·숫자 2~8자"), 8, false);
             screen.Status(-350f);
-            screen.menu.AddOption("직업", () => screen.cls == CharacterClass.Mage ? "마법사" : "전사",
+            screen.menu.AddOption(L.T("직업"), () => screen.cls == CharacterClass.Mage ? L.T("마법사") : L.T("전사"),
                 d => screen.PickClass(screen.cls == CharacterClass.Mage ? CharacterClass.Warrior : CharacterClass.Mage));
-            screen.menu.AddButton("만들기", () => screen.Submit());
-            screen.menu.AddButton("돌아가기", () => ui.Pop());
+            screen.menu.AddButton(L.T("만들기"), () => screen.Submit());
+            screen.menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();
             screen.FitPanel();
             return screen;
@@ -303,7 +303,7 @@ namespace DotRPG
                 cards[i].Set(Classes[i], info.displayName, "");
             }
             animTimer = 0f;
-            Say("이름은 다른 모험가와 겹칠 수 없습니다.");
+            Say(L.T("이름은 다른 모험가와 겹칠 수 없습니다."));
         }
 
         void PickClass(CharacterClass c)
@@ -330,12 +330,12 @@ namespace DotRPG
         {
             if (busy || OnlineSession.Current == null) return;
             string name = nameField.text;
-            if (name.Length < 2) { Say("이름은 2자 이상이어야 합니다.", true); return; }
+            if (name.Length < 2) { Say(L.T("이름은 2자 이상이어야 합니다."), true); return; }
             // Same request_id while retrying the same name and class (a lost answer must not create twice).
             string body = name + "|" + cls;
             if (requestId == null || requestFor != body) { requestId = ApiClient.NewRequestId(); requestFor = body; }
             busy = true;
-            Say("만드는 중...");
+            Say(L.T("만드는 중..."));
             OnlineSession.Current.CreateCharacter(name, cls, requestId, r =>
             {
                 busy = false;

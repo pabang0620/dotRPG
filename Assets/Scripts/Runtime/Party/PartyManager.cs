@@ -63,7 +63,7 @@ namespace DotRPG
             party.root = parent;
             party.Local = local;
             party.members.Add(local);
-            CharacterData.Session.DisplayName = "나";
+            CharacterData.Session.DisplayName = L.T("나");
             EnemyController.Killed += party.OnEnemyKilled;
             Game.Session.Progression.Changed += party.SyncCompanionLevels;
             Application.quitting += () => quitting = true;

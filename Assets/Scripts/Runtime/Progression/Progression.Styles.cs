@@ -15,7 +15,7 @@ namespace DotRPG
 
         public int ActiveStyle => careerState.activeStyle;
 
-        public static string StyleName(int i) => i == 0 ? "스타일 1 · 파티" : i == 1 ? "스타일 2 · 솔로" : "스타일 3 · 자유";
+        public static string StyleName(int i) => i == 0 ? L.T("스타일 1 · 파티") : i == 1 ? L.T("스타일 2 · 솔로") : L.T("스타일 3 · 자유");
 
         /// <summary>Set from the server (GET /skill-styles); offline play always has it.</summary>
         public static bool Style3Owned = true;
@@ -100,10 +100,10 @@ namespace DotRPG
         /// </summary>
         public string SwitchStyle(int i)
         {
-            if (i < 0 || i >= StyleCount) return "없는 스타일입니다.";
+            if (i < 0 || i >= StyleCount) return L.T("없는 스타일입니다.");
             if (i == careerState.activeStyle) return null;
-            if (!StyleOpen(i)) return "스타일 3은 별조각으로 열 수 있습니다.";
-            if (Game.Dungeon != null && Game.Dungeon.InRun) return "던전·레이드 중에는 스타일을 바꿀 수 없습니다.";
+            if (!StyleOpen(i)) return L.T("스타일 3은 별조각으로 열 수 있습니다.");
+            if (Game.Dungeon != null && Game.Dungeon.InRun) return L.T("던전·레이드 중에는 스타일을 바꿀 수 없습니다.");
             while (careerState.styles.Count < StyleCount) careerState.styles.Add(new CareerStyle());
             careerState.styles[careerState.activeStyle] = CaptureStyle();
             careerState.activeStyle = i;

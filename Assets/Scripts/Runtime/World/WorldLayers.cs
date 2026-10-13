@@ -10,7 +10,7 @@ namespace DotRPG
         public static WorldLayer Of(string id) => MapRegistry.Get(id)?.worldLayer ?? WorldLayer.Surface;
         public static bool IsUnderground(string id) => Of(id) == WorldLayer.Underground;
         public static int Depth(string id) => MapRegistry.Get(id)?.depth ?? 0;
-        public static string Name(WorldLayer layer) => layer == WorldLayer.Underground ? "지하월드" : "지상월드";
+        public static string Name(WorldLayer layer) => layer == WorldLayer.Underground ? L.T("지하월드") : L.T("지상월드");
 
         public static IEnumerable<MapInfo> Maps(WorldLayer layer)
         {

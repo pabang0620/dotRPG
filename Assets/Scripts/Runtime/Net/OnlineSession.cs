@@ -48,14 +48,14 @@ namespace DotRPG
                 LevelRewardClient.Reset();
                 DailyQuestClient.Reset();
                 if (playing && Game.Flow != null) Game.Flow.ReturnToTitle();
-                GameEvents.RaiseToast("다른 곳에서 로그인하여 이 접속이 종료되었습니다.");
+                GameEvents.RaiseToast(L.T("다른 곳에서 로그인하여 이 접속이 종료되었습니다."));
             };
         }
 
         /// <summary>Kept for the older automated check: offline unless someone logged in.</summary>
         public static bool TryConnect(out string error)
         {
-            error = Current == null ? "로그인하지 않았습니다." : null;
+            error = Current == null ? L.T("로그인하지 않았습니다.") : null;
             return Current != null;
         }
 
@@ -73,7 +73,7 @@ namespace DotRPG
                 string serverData = MiniJson.Str(meta.data, "data_version");
                 if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
                 {
-                    done(new ApiResult { code = "DATA_OUTDATED", status = 426, message = "게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요." });
+                    done(new ApiResult { code = "DATA_OUTDATED", status = 426, message = L.T("게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요.") });
                     return;
                 }
                 var body = new Dictionary<string, object> { ["login_id"] = loginId, ["password"] = password, ["device"] = DeviceIdentity.Body() };
@@ -95,7 +95,7 @@ namespace DotRPG
             if (m == null) return null;
             string ends = LocalTime(MiniJson.Str(m, "ends_at")), starts = LocalTime(MiniJson.Str(m, "starts_at"));
             string notice = MiniJson.Str(m, "notice", "");
-            string head = MiniJson.Str(m, "phase") == "active" ? $"서버 점검 중입니다. ({ends} 종료 예정)" : $"서버 점검 예정: {starts} ~ {ends}";
+            string head = MiniJson.Str(m, "phase") == "active" ? L.F("서버 점검 중입니다. ({0} 종료 예정)", ends) : L.F("서버 점검 예정: {0} ~ {1}", starts, ends);
             return string.IsNullOrEmpty(notice) ? head : head + "\n" + notice;
         }
 
@@ -116,7 +116,7 @@ namespace DotRPG
         public static void LoginSteam(Action<ApiResult> done)
         {
             var steam = SteamBridge.Current;
-            if (steam == null || !steam.Ready) { done(new ApiResult { code = "STEAM_OFF", message = "Steam이 실행 중이 아닙니다." }); return; }
+            if (steam == null || !steam.Ready) { done(new ApiResult { code = "STEAM_OFF", message = L.T("Steam이 실행 중이 아닙니다.") }); return; }
             Api.Get("/meta", meta =>
             {
                 if (!meta.ok) { done(meta); return; }
@@ -125,17 +125,17 @@ namespace DotRPG
                 var info = MiniJson.Obj(meta.data, "steam");
                 string identity = MiniJson.Str(info, "identity");
                 uint appId = (uint)MiniJson.Num(info, "app_id");
-                if (info == null || string.IsNullOrEmpty(identity)) { done(new ApiResult { code = "STEAM_OFF", message = "이 서버는 Steam 로그인을 받지 않습니다." }); return; }
-                if (appId != 0 && appId != steam.AppId) { done(new ApiResult { code = "STEAM_APP_MISMATCH", message = "이 게임 빌드는 이 서버에 접속할 수 없습니다. (Steam 앱 ID 불일치)" }); return; }
+                if (info == null || string.IsNullOrEmpty(identity)) { done(new ApiResult { code = "STEAM_OFF", message = L.T("이 서버는 Steam 로그인을 받지 않습니다.") }); return; }
+                if (appId != 0 && appId != steam.AppId) { done(new ApiResult { code = "STEAM_APP_MISMATCH", message = L.T("이 게임 빌드는 이 서버에 접속할 수 없습니다. (Steam 앱 ID 불일치)") }); return; }
                 string serverData = MiniJson.Str(meta.data, "data_version");
                 if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
                 {
-                    done(new ApiResult { code = "DATA_OUTDATED", status = 426, message = "게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요." });
+                    done(new ApiResult { code = "DATA_OUTDATED", status = 426, message = L.T("게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요.") });
                     return;
                 }
                 steam.GetAuthTicket(identity, ticket =>
                 {
-                    if (string.IsNullOrEmpty(ticket)) { done(new ApiResult { code = "STEAM_TICKET", message = "Steam 인증 티켓을 받지 못했습니다." }); return; }
+                    if (string.IsNullOrEmpty(ticket)) { done(new ApiResult { code = "STEAM_TICKET", message = L.T("Steam 인증 티켓을 받지 못했습니다.") }); return; }
                     Api.Post("/auth/steam", new Dictionary<string, object> { ["ticket"] = ticket, ["device"] = DeviceIdentity.Body() }, r =>
                     {
                         if (!r.ok) { done(r); return; }

@@ -117,7 +117,7 @@ namespace DotRPG
             // [F4] PLAN_ONLINE §2.2: a player who drops is played by AI until the run ends.
             bool now = transport.IsConnected;
             if (now != wasConnected && !string.IsNullOrEmpty(RemoteName))
-                GameEvents.RaiseToast(now ? $"{RemoteName}님이 연결되었습니다." : $"{RemoteName}님 연결 끊김 - AI가 대신 싸우는 중");
+                GameEvents.RaiseToast(now ? L.F("{0}님이 연결되었습니다.", RemoteName) : L.F("{0}님 연결 끊김 - AI가 대신 싸우는 중", RemoteName));
             wasConnected = now;
         }
 

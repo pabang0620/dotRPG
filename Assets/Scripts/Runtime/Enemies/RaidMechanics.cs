@@ -27,7 +27,7 @@ namespace DotRPG
         /// <summary>Safe circles: how many, their radius (drawn at exactly this size) and how far from the boss.</summary>
         public const int SafeCircles = 3;
         public const float SafeRadius = 1.8f, SafeSpread = 8f;
-        public const string RoarLine = "이대론 죽을 수 없다!";
+        public const string RoarLine = "이대론 죽을 수 없다!"; // i18n-ignore const, wrapped at use
 
         static readonly Color Gold = new Color(1f, .85f, .3f, .95f);
         static readonly Color Red = new Color(1f, .3f, .25f);
@@ -51,7 +51,7 @@ namespace DotRPG
         public static void ShowRoar(EnemyController boss, float cast, Vector2[] circles)
         {
             if (boss != null)
-                WorldPopupText.Show(boss.transform, RoarLine, Red, cast, 1.4f + 1.1f * boss.Size);
+                WorldPopupText.Show(boss.transform, L.T(RoarLine), Red, cast, 1.4f + 1.1f * boss.Size);
             foreach (var c in circles)
             {
                 SkillFx.Spawn("fx_ring", c, Gold, cast + .2f, SkillFx.GroundOrder + 14)
@@ -105,7 +105,7 @@ namespace DotRPG
                 if (count != lastCount && t < cast)
                 {
                     lastCount = count;
-                    if (brain != null) BossBrain.RaiseAnnounce(brain, $"{RoarLine}  안전지대로! {count}", Red);
+                    if (brain != null) BossBrain.RaiseAnnounce(brain, L.F("{0}  안전지대로! {1}", L.T(RoarLine), count), Red);
                 }
                 float a = (.25f + .25f * Mathf.Sin(t * 12f)) * Mathf.Clamp01((cast + .25f - t) / .25f);
                 foreach (var e in edges) e.color = new Color(1f, .1f, .08f, a);

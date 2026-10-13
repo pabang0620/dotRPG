@@ -20,7 +20,7 @@ namespace DotRPG
             if (!IsLocal) return;
             if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotionHi) > 0) UseConsumable(ConsumableDatabase.HpPotionHi); // [CASH] the strong one first
             else if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
-            else GameEvents.RaiseToast("체력 물약이 없습니다. 마을 잡화상인에게서 물약을 사세요.");
+            else GameEvents.RaiseToast(L.T("체력 물약이 없습니다. 마을 잡화상인에게서 물약을 사세요."));
         }
 
         /// <summary>Uses one potion or scroll from the bag (local player only). Returns true when it was used up.</summary>
@@ -31,7 +31,8 @@ namespace DotRPG
             var bag = Game.Session.Inventory;
             if (bag.Count(id) <= 0)
             {
-                GameEvents.RaiseToast($"{item.name}{Josa(item.name, "이", "가")} 없습니다. 마을 잡화상인에게서 살 수 있습니다.");
+                string josa = L.Josa(item.name, "이", "가"); // i18n-ignore Korean particle (empty in English)
+                GameEvents.RaiseToast(L.F("{0}{1} 없습니다. 마을 잡화상인에게서 살 수 있습니다.", L.T(item.name), josa));
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
@@ -39,7 +40,7 @@ namespace DotRPG
             {
                 case ConsumableKind.HealHp:
                 {
-                    if (health.Current >= health.Max) { GameEvents.RaiseToast("체력이 가득 차 있습니다."); return false; }
+                    if (health.Current >= health.Max) { GameEvents.RaiseToast(L.T("체력이 가득 차 있습니다.")); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
@@ -55,7 +56,7 @@ namespace DotRPG
                 case ConsumableKind.HealMp:
                 {
                     int maxMp = Data.Stats.MaxMp;
-                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast("MP가 가득 차 있습니다."); return false; }
+                    if (Data.Mana >= maxMp - 0.5f) { GameEvents.RaiseToast(L.T("MP가 가득 차 있습니다.")); return false; }
                     if (!PotionReady(id)) return false;
                     bag.Remove(id, 1);
                     if (OnlineEconomy.On) OnlineEconomy.UseItem(id); // [SERVER]
@@ -81,7 +82,7 @@ namespace DotRPG
                     RefreshStats();
                     Game.Audio.PlaySfx("magic");
                     SkillVisuals.Flash(Center, new Color(1f, .55f, .25f, .6f), 1.8f, .35f);
-                    GameEvents.RaiseToast($"{item.name}: {item.minutes}분 동안 공격 피해 +{item.power}%");
+                    GameEvents.RaiseToast(L.F("{0}: {1}분 동안 공격 피해 +{2}%", L.T(item.name), item.minutes, item.power));
                     return true;
                 }
                 case ConsumableKind.LuckBox:

@@ -21,8 +21,8 @@ namespace DotRPG
         {
             get
             {
-                if (Quest.Progress.workshopBuilt) return "살펴보기";
-                return Quest.Stage == QuestStage.Active ? "재건 돕기" : "살펴보기";
+                if (Quest.Progress.workshopBuilt) return L.T("살펴보기");
+                return Quest.Stage == QuestStage.Active ? L.T("재건 돕기") : L.T("살펴보기");
             }
         }
 
@@ -111,7 +111,7 @@ namespace DotRPG
             Quest.MarkWorkshopBuilt();
             RefreshVisuals();
             buildingInProgress = false;
-            GameEvents.RaiseToast("공방이 완성되었습니다!");
+            GameEvents.RaiseToast(L.T("공방이 완성되었습니다!"));
         }
     }
 }

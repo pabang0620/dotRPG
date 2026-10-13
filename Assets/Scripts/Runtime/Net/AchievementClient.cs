@@ -65,7 +65,7 @@ namespace DotRPG
                     var a = All.Find(x => x.id == o as string);
                     if (a == null) continue;
                     Game.Audio.PlaySfx("quest");
-                    GameEvents.RaiseToast($"<color=#ffd34a>업적 달성!</color> {a.title}  ·  칭호를 얻었습니다 (메뉴 > 업적)");
+                    GameEvents.RaiseToast(L.F("<color=#ffd34a>업적 달성!</color> {0}  ·  칭호를 얻었습니다 (메뉴 > 업적)", L.T(a.title)));
                 }
             });
         }
@@ -78,13 +78,13 @@ namespace DotRPG
 
         public static void Equip(string achievementId, Action<bool, string> done)
         {
-            if (!OnlineSession.Playing || Api == null) { done?.Invoke(false, "온라인 캐릭터로 접속해야 합니다."); return; }
+            if (!OnlineSession.Playing || Api == null) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다.")); return; }
             var body = new Dictionary<string, object> { ["achievement_id"] = string.IsNullOrEmpty(achievementId) ? null : achievementId };
             Api.Post(Char + "/title", body, r =>
             {
                 if (r.ok) ReadTitle(MiniJson.Obj(r.data, "title"));
                 Changed?.Invoke();
-                done?.Invoke(r.ok, r.ok ? "" : (string.IsNullOrEmpty(r.message) ? "칭호를 바꾸지 못했습니다." : r.message));
+                done?.Invoke(r.ok, r.ok ? "" : (string.IsNullOrEmpty(r.message) ? L.T("칭호를 바꾸지 못했습니다.") : r.message));
             });
         }
 

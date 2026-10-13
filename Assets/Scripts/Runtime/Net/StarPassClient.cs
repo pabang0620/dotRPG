@@ -97,13 +97,13 @@ namespace DotRPG
                 if (r.data != null && r.data.TryGetValue("granted", out var g) && g is bool granted && granted)
                 {
                     _ = StarShopClient.RefreshAsync();
-                    GameEvents.RaiseToast($"별빛 정기권: 별조각 {DailyStars}개를 받았고, 봉인된 상자 1개를 우편으로 보냈습니다. (남은 {DaysLeft}일)");
+                    GameEvents.RaiseToast(L.F("별빛 정기권: 별조각 {0}개를 받았고, 봉인된 상자 1개를 우편으로 보냈습니다. (남은 {1}일)", DailyStars, DaysLeft));
                 }
                 Changed?.Invoke();
             });
         }
 
         /// <summary>Short status for the star shop header ("" when the pass is not running or not loaded).</summary>
-        public static string Badge => Loaded && Active ? $"<color=#9fd4ff>별빛 정기권 {DaysLeft}일</color>   " : "";
+        public static string Badge => Loaded && Active ? L.F("<color=#9fd4ff>별빛 정기권 {0}일</color>   ", DaysLeft) : "";
     }
 }

@@ -158,15 +158,15 @@ namespace DotRPG
                 if (!seen.Add(entry.itemId)) continue;
                 if (entry.itemId == DungeonDatabase.GearReward)
                 {
-                    slots.Add((GearIcon(cls, diff.minGearRarity), $"{EquipmentDatabase.RarityName(diff.minGearRarity)}+ 장비", false));
+                    slots.Add((GearIcon(cls, diff.minGearRarity), L.F("{0}+ 장비", EquipmentDatabase.RarityName(diff.minGearRarity)), false));
                     continue;
                 }
                 slots.Add((DungeonDatabase.ItemIcon(entry.itemId), DungeonDatabase.ItemName(entry.itemId), false));
             }
             if (diff.ticketWeight > 0 && seen.Add(ConsumableDatabase.ProtectTicket)) slots.Add((DungeonDatabase.ItemIcon(ConsumableDatabase.ProtectTicket), DungeonDatabase.ItemName(ConsumableDatabase.ProtectTicket), true));
-            if (diff.jackpotPerMille > 0) slots.Add((GearIcon(cls, ItemRarity.Legendary), "유니크·레전더리", true));
+            if (diff.jackpotPerMille > 0) slots.Add((GearIcon(cls, ItemRarity.Legendary), L.T("유니크·레전더리"), true));
             int cores = PromoteRules.CoreGain(dungeon, diff.id);
-            if (cores > 0) slots.Add((DungeonDatabase.ItemIcon(DungeonDatabase.RaidCore), $"고대의 핵 x{cores}", true));
+            if (cores > 0) slots.Add((DungeonDatabase.ItemIcon(DungeonDatabase.RaidCore), L.F("고대의 핵 x{0}", cores), true));
             return slots;
         }
 
@@ -191,7 +191,7 @@ namespace DotRPG
                 string name = DungeonDatabase.ItemName(entry.itemId);
                 if (!names.Contains(name)) names.Add(name);
             }
-            if (diff.ticketWeight > 0) names.Add("장비 보호권");
+            if (diff.ticketWeight > 0) names.Add(L.T("장비 보호권"));
             return string.Join(", ", names);
         }
     }

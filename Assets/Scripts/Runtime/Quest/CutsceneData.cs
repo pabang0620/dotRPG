@@ -64,7 +64,14 @@ namespace DotRPG
             try
             {
                 var file = JsonUtility.FromJson<CutsceneFile>(source.text);
-                if (file != null) foreach (var c in file.cutscenes) if (!string.IsNullOrEmpty(c.id)) byId[c.id] = c;
+                if (file != null)
+                    foreach (var c in file.cutscenes)
+                    {
+                        if (string.IsNullOrEmpty(c.id)) continue;
+                        // [I18N] Spoken and title text in the player's language; speakers stay raw (portraits match them).
+                        foreach (var cmd in c.cmds) if (cmd != null) cmd.text = L.T(cmd.text);
+                        byId[c.id] = c;
+                    }
             }
             catch (Exception e) { Debug.LogError("[dotRPG] Cutscenes.json could not be read: " + e.Message); }
         }

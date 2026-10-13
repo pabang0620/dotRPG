@@ -12,7 +12,7 @@ namespace DotRPG
         public static SocialScreen Instance { get; private set; }
 
         enum View { Friends, Recent, Blocked, Person, Report }
-        static readonly string[] ListNames = { "친구", "최근 대화", "차단 목록" };
+        static readonly string[] ListNames = { L.T("친구"), L.T("최근 대화"), L.T("차단 목록") };
 
         View view = View.Friends;
         View listView = View.Friends;
@@ -26,7 +26,7 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Social", true);
             var screen = root.gameObject.AddComponent<SocialScreen>();
             Instance = screen;
-            screen.BuildPanel(root, "친구 · 차단 · 신고", 640);
+            screen.BuildPanel(root, L.T("친구 · 차단 · 신고"), 640);
             screen.titleText = screen.panel.Find("Title").GetComponent<UnityEngine.UI.Text>();
             return screen;
         }
@@ -65,8 +65,8 @@ namespace DotRPG
 
         void BuildList()
         {
-            titleText.text = "친구 · 차단 · 신고";
-            menu.AddOption("보기", () => ListNames[(int)view], d =>
+            titleText.text = L.T("친구 · 차단 · 신고");
+            menu.AddOption(L.T("보기"), () => ListNames[(int)view], d =>
             {
                 view = (View)(((int)view + d + 3) % 3);
                 listView = view;
@@ -78,16 +78,16 @@ namespace DotRPG
                 foreach (var q in Service.Requests)
                 {
                     var req = q;
-                    menu.AddButton($"<color=#ffe066>친구 요청</color> {req.name} - 수락", () => Service.RespondRequest(req.id, true));
-                    menu.AddButton($"<color=#8c96a8>친구 요청</color> {req.name} - 거절", () => Service.RespondRequest(req.id, false));
+                    menu.AddButton(L.F("<color=#ffe066>친구 요청</color> {0} - 수락", req.name), () => Service.RespondRequest(req.id, true));
+                    menu.AddButton(L.F("<color=#8c96a8>친구 요청</color> {0} - 거절", req.name), () => Service.RespondRequest(req.id, false));
                 }
                 foreach (var f in Service.Friends)
                 {
                     var friend = f;
-                    string state = friend.online ? $"<color=#8fe28f>● 접속 중</color> <color=#b8c4d8>{friend.where}</color>" : "<color=#8a94a8>○ 접속 안 함</color>";
+                    string state = friend.online ? L.F("<color=#8fe28f>● 접속 중</color> <color=#b8c4d8>{0}</color>", L.T(friend.where)) : L.T("<color=#8a94a8>○ 접속 안 함</color>");
                     menu.AddButton($"{friend.name}   {state}", () => OpenPerson(friend.name));
                 }
-                if (Service.Friends.Count == 0) menu.AddButton("<color=#8a94a8>친구가 없습니다. 최근 대화에서 추가하세요.</color>", () => { }, () => false);
+                if (Service.Friends.Count == 0) menu.AddButton(L.T("<color=#8a94a8>친구가 없습니다. 최근 대화에서 추가하세요.</color>"), () => { }, () => false);
             }
             else if (view == View.Recent)
             {
@@ -95,21 +95,21 @@ namespace DotRPG
                 foreach (var n in names)
                 {
                     string name = n;
-                    string tag = Service.IsFriend(name) ? " <color=#8fe28f>(친구)</color>" : "";
+                    string tag = Service.IsFriend(name) ? L.T(" <color=#8fe28f>(친구)</color>") : "";
                     menu.AddButton(name + tag, () => OpenPerson(name));
                 }
-                if (names.Count == 0) menu.AddButton("<color=#8a94a8>아직 대화한 모험가가 없습니다.</color>", () => { }, () => false);
+                if (names.Count == 0) menu.AddButton(L.T("<color=#8a94a8>아직 대화한 모험가가 없습니다.</color>"), () => { }, () => false);
             }
             else
             {
                 foreach (var n in Service.Blocked.ToList())
                 {
                     string name = n;
-                    menu.AddButton($"{name}  <color=#ff9f43>차단 중</color>", () => OpenPerson(name));
+                    menu.AddButton(L.F("{0}  <color=#ff9f43>차단 중</color>", name), () => OpenPerson(name));
                 }
-                if (Service.Blocked.Count == 0) menu.AddButton("<color=#8a94a8>차단한 모험가가 없습니다.</color>", () => { }, () => false);
+                if (Service.Blocked.Count == 0) menu.AddButton(L.T("<color=#8a94a8>차단한 모험가가 없습니다.</color>"), () => { }, () => false);
             }
-            menu.AddButton("닫기", Close);
+            menu.AddButton(L.T("닫기"), Close);
             menu.OnCancel = Close;
         }
 
@@ -126,55 +126,55 @@ namespace DotRPG
             bool friend = Service.IsFriend(person), blocked = Service.IsBlocked(person);
             if (!blocked)
             {
-                menu.AddButton("귓속말", () => { Close(); ChatView.Instance?.Open($"/w {person} "); });
-                menu.AddButton("파티 초대", () =>
+                menu.AddButton(L.T("귓속말"), () => { Close(); ChatView.Instance?.Open($"/w {person} "); });
+                menu.AddButton(L.T("파티 초대"), () =>
                 {
                     string id = Service.IdOf(person);
                     if (!Service.IsOnline || id == null || PartyClient.Instance == null)
                     {
-                        GameEvents.RaiseToast(Service.IsOnline ? $"{person}님을 찾을 수 없습니다." : $"{person}님에게 파티 초대를 보냈습니다. (오프라인 모드: 응답 없음)");
+                        GameEvents.RaiseToast(Service.IsOnline ? L.F("{0}님을 찾을 수 없습니다.", person) : L.F("{0}님에게 파티 초대를 보냈습니다. (오프라인 모드: 응답 없음)", person));
                         return;
                     }
-                    PartyClient.Instance.Invite(id, (ok, msg) => GameEvents.RaiseToast(ok ? $"{person}님에게 파티 초대를 보냈습니다." : msg));
+                    PartyClient.Instance.Invite(id, (ok, msg) => GameEvents.RaiseToast(ok ? L.F("{0}님에게 파티 초대를 보냈습니다.", person) : msg));
                 });
-                menu.AddButton(friend ? "친구 삭제" : "친구 추가", () =>
+                menu.AddButton(friend ? L.T("친구 삭제") : L.T("친구 추가"), () =>
                 {
                     if (friend) Service.RemoveFriend(person); else Service.AddFriend(person);
-                    if (!Service.IsOnline) GameEvents.RaiseToast(friend ? $"{person}님을 친구에서 삭제했습니다." : $"{person}님을 친구로 추가했습니다."); // online: the server's answer toasts
+                    if (!Service.IsOnline) GameEvents.RaiseToast(friend ? L.F("{0}님을 친구에서 삭제했습니다.", person) : L.F("{0}님을 친구로 추가했습니다.", person)); // online: the server's answer toasts
                     OnlineServices.SaveSocial();
                     Rebuild();
                 });
             }
-            menu.AddButton(blocked ? "차단 해제" : "차단", () =>
+            menu.AddButton(blocked ? L.T("차단 해제") : L.T("차단"), () =>
             {
                 if (blocked) { Service.Unblock(person); OnlineServices.SaveSocial(); Rebuild(); return; }
-                Game.UI.Confirm($"{person}님을 차단할까요?\n<size=18>채팅·귓속말·초대를 받지 않고 친구에서도 빠집니다.</size>", () =>
+                Game.UI.Confirm(L.F("{0}님을 차단할까요?\n<size=18>채팅·귓속말·초대를 받지 않고 친구에서도 빠집니다.</size>", person), () =>
                 {
                     Service.Block(person);
                     OnlineServices.SaveSocial();
-                    if (!Service.IsOnline) GameEvents.RaiseToast($"{person}님을 차단했습니다.");
+                    if (!Service.IsOnline) GameEvents.RaiseToast(L.F("{0}님을 차단했습니다.", person));
                     Rebuild();
                 }, overlay: true);
             });
-            menu.AddButton("신고", () => { view = View.Report; Rebuild(); });
-            menu.AddButton("돌아가기", Back);
+            menu.AddButton(L.T("신고"), () => { view = View.Report; Rebuild(); });
+            menu.AddButton(L.T("돌아가기"), Back);
             menu.OnCancel = Back;
         }
 
         void BuildReport()
         {
-            titleText.text = $"{person} 신고 · 사유 선택";
+            titleText.text = L.F("{0} 신고 · 사유 선택", person);
             foreach (var r in ChatRules.ReportReasons)
             {
                 string reason = r;
-                menu.AddButton(reason, () => Game.UI.Confirm($"{person}님을 '{reason}'(으)로 신고할까요?\n<size=18>최근 대화 {ChatRules.ReportLines}줄이 함께 전달됩니다.</size>", () =>
+                menu.AddButton(L.T(reason), () => Game.UI.Confirm(L.F("{0}님을 '{1}'(으)로 신고할까요?\n<size=18>최근 대화 {2}줄이 함께 전달됩니다.</size>", person, L.T(reason), ChatRules.ReportLines), () =>
                 {
                     GameEvents.RaiseToast(Service.Report(person, reason));
                     view = View.Person;
                     Rebuild();
                 }, overlay: true));
             }
-            menu.AddButton("돌아가기", () => { view = View.Person; Rebuild(); });
+            menu.AddButton(L.T("돌아가기"), () => { view = View.Person; Rebuild(); });
             menu.OnCancel = () => { view = View.Person; Rebuild(); };
         }
 

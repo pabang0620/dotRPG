@@ -105,7 +105,7 @@ namespace DotRPG
 
         /// <summary>[CASH] Buys the growth pass with star shards (once per account).</summary>
         public static void BuyPass(Action<bool, string> done) => Post("/level-rewards/pass/buy", new Dictionary<string, object>(), r =>
-            done(true, "성장 패스를 샀습니다! 현재 캐릭터가 달성한 레벨의 패스 보상을 받을 수 있습니다."), done);
+            done(true, L.T("성장 패스를 샀습니다! 현재 캐릭터가 달성한 레벨의 패스 보상을 받을 수 있습니다.")), done);
 
         /// <summary>[CASH] Takes the pass reward of a level into the active character's bag.</summary>
         public static void ClaimPass(int level, Action<bool, string> done)
@@ -115,27 +115,27 @@ namespace DotRPG
             {
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 Game.Flow.Autosave();
-                done(true, $"Lv.{level} 패스 보상을 가방에 넣었습니다.");
+                done(true, L.F("Lv.{0} 패스 보상을 가방에 넣었습니다.", level));
             }, done);
         }
 
         static bool CheckClaim(int level, bool pass, Action<bool, string> done)
         {
-            if (!EnsureContext()) { done(false, "온라인 캐릭터로 접속해야 받을 수 있습니다."); return false; }
-            if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return false; }
+            if (!EnsureContext()) { done(false, L.T("온라인 캐릭터로 접속해야 받을 수 있습니다.")); return false; }
+            if (Busy) { done(false, L.T("이전 요청을 처리하는 중입니다.")); return false; }
             bool allowed = pass ? CanClaim(PassTiers.Find(t => t.level == level)) : CanClaim(Tiers.Find(t => t.level == level));
             if (allowed) return true;
-            done(false, !Loaded ? "보상 정보를 확인하는 중입니다. 잠시 후 다시 시도해 주세요."
-                : CharacterLevel < level ? $"현재 캐릭터가 Lv.{level}에 도달해야 합니다."
-                : "이미 받았거나 수령 조건을 충족하지 않은 보상입니다.");
+            done(false, !Loaded ? L.T("보상 정보를 확인하는 중입니다. 잠시 후 다시 시도해 주세요.")
+                : CharacterLevel < level ? L.F("현재 캐릭터가 Lv.{0}에 도달해야 합니다.", level)
+                : L.T("이미 받았거나 수령 조건을 충족하지 않은 보상입니다."));
             Refresh();
             return false;
         }
 
         static void Post(string path, Dictionary<string, object> body, Action<ApiResult> ok, Action<bool, string> done)
         {
-            if (!EnsureContext()) { done(false, "온라인 캐릭터로 접속해야 합니다."); return; }
-            if (Busy) { done(false, "이전 요청을 처리하는 중입니다."); return; }
+            if (!EnsureContext()) { done(false, L.T("온라인 캐릭터로 접속해야 합니다.")); return; }
+            if (Busy) { done(false, L.T("이전 요청을 처리하는 중입니다.")); return; }
             Busy = true;
             loaded = false;
             int context = generation;
@@ -150,13 +150,13 @@ namespace DotRPG
                 {
                     done(false, r.code switch
                     {
-                        "NOT_ENOUGH_STARS" => $"별조각이 모자랍니다. (필요 {PassPrice:N0})",
-                        "ALREADY_OWNED" => "이미 성장 패스를 가지고 있습니다.",
-                        "PASS_REQUIRED" => "성장 패스가 있어야 받을 수 있습니다.",
-                        "LEVEL_NOT_REACHED" => "현재 캐릭터가 해당 레벨에 도달해야 합니다.",
-                        "ALREADY_CLAIMED" => "이미 받은 보상입니다.",
-                        "NETWORK" => "서버에 연결할 수 없습니다.",
-                        _ => string.IsNullOrEmpty(r.message) ? "요청이 실패했습니다." : r.message,
+                        "NOT_ENOUGH_STARS" => L.F("별조각이 모자랍니다. (필요 {0:N0})", PassPrice),
+                        "ALREADY_OWNED" => L.T("이미 성장 패스를 가지고 있습니다."),
+                        "PASS_REQUIRED" => L.T("성장 패스가 있어야 받을 수 있습니다."),
+                        "LEVEL_NOT_REACHED" => L.T("현재 캐릭터가 해당 레벨에 도달해야 합니다."),
+                        "ALREADY_CLAIMED" => L.T("이미 받은 보상입니다."),
+                        "NETWORK" => L.T("서버에 연결할 수 없습니다."),
+                        _ => string.IsNullOrEmpty(r.message) ? L.T("요청이 실패했습니다.") : r.message,
                     });
                     Refresh();
                     Changed?.Invoke();
@@ -175,7 +175,7 @@ namespace DotRPG
             if (!CheckClaim(level, false, done)) return;
             Post("/characters/" + character + "/level-rewards/claim", new Dictionary<string, object> { ["level"] = level }, r =>
             {
-                done(true, $"Lv.{level} 달성 보상: 별조각 {MiniJson.Int(r.data, "stars"):N0}개를 받았습니다.");
+                done(true, L.F("Lv.{0} 달성 보상: 별조각 {1:N0}개를 받았습니다.", level, MiniJson.Int(r.data, "stars")));
             }, done);
         }
     }

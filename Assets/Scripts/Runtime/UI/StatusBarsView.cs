@@ -108,7 +108,7 @@ namespace DotRPG
             int maxMp = player.MaxMana;
             SetFill(mpFill, maxMp > 0 ? Game.Session.PlayerMana / maxMp : 0f);
             int mpNow = player.Mana;
-            if (mpNow != shownMp || maxMp != shownMpMax) { shownMp = mpNow; shownMpMax = maxMp; mpText.text = maxMp > 0 ? $"MP {mpNow} / {maxMp}" : "MP 없음 (피의 마법)"; }
+            if (mpNow != shownMp || maxMp != shownMpMax) { shownMp = mpNow; shownMpMax = maxMp; mpText.text = maxMp > 0 ? $"MP {mpNow} / {maxMp}" : L.T("MP 없음 (피의 마법)"); }
 
             var prog = Game.Session.Progression;
             if (prog.Level != shownLevel) { shownLevel = prog.Level; levelText.text = prog.Level.ToString(); }

@@ -20,7 +20,7 @@ namespace DotRPG
         const float Cell = 94f, Gap = 8f;
 
         enum Tab { All, Weapon, Armor, Accessory, Consumable, Etc }
-        static readonly string[] TabNames = { "전체", "무기", "방어구", "장신구", "소모품", "기타" };
+        static readonly string[] TabNames = { L.T("전체"), L.T("무기"), L.T("방어구"), L.T("장신구"), L.T("소모품"), L.T("기타") };
         static readonly EquipSlot[] LeftSlots = { EquipSlot.Weapon, EquipSlot.Top, EquipSlot.Bottom };
         static readonly EquipSlot[] RightSlots = { EquipSlot.Necklace, EquipSlot.Ring1, EquipSlot.Ring2 };
 
@@ -215,22 +215,22 @@ namespace DotRPG
             var info = CharacterClassInfo.Get(cls);
             int atk = CharacterStats.AttackDamage(cls);
             int hp = CharacterStats.MaxHp;
-            className.text = $"Lv.{Game.Session.Progression.Level}  {Game.Session.Progression.ClassLabel}";
-            power.text = $"전투력 <color=#ffe066>{CharacterStats.Power(cls):N0}</color>";
-            statCells[0].text = $"공격력 {atk}{Bonus(eq.AttackBonus)}";
+            className.text = $"Lv.{Game.Session.Progression.Level}  {L.T(Game.Session.Progression.ClassLabel)}";
+            power.text = L.F("전투력 <color=#ffe066>{0:N0}</color>", CharacterStats.Power(cls));
+            statCells[0].text = L.F("공격력 {0}", atk) + Bonus(eq.AttackBonus);
             statCells[1].text = $"HP {hp}";
             statCells[2].text = $"MP {CharacterStats.MaxMp}";
-            statCells[3].text = $"막기 {CharacterStats.Block}%";
-            statCells[4].text = $"이동 {(CharacterStats.SpeedBonus >= 0 ? "+" : "")}{CharacterStats.SpeedBonus}%";
-            statCells[5].text = $"장비 {WornCount(eq)}/{Equipment.SlotCount}";
+            statCells[3].text = L.F("막기 {0}%", CharacterStats.Block);
+            statCells[4].text = L.F("이동 {0}{1}%", CharacterStats.SpeedBonus >= 0 ? "+" : "", CharacterStats.SpeedBonus);
+            statCells[5].text = L.F("장비 {0}/{1}", WornCount(eq), Equipment.SlotCount);
             // Real count (the grid pages, so nothing is hidden): this tab / whole bag.
-            capacity.text = tab == Tab.All ? $"{all.Count}종" : $"{shown.Count} / {all.Count}종";
+            capacity.text = tab == Tab.All ? L.F("{0}종", all.Count) : L.F("{0} / {1}종", shown.Count, all.Count);
             foreach (var pair in currencies) pair.Value.text = bag.Count(pair.Key).ToString("N0");
             var input = Game.Input;
             // [UX] Key of each bottom button (1 / Y 자동장착, 2 / L3 정렬), as small text after the label.
-            sortLabel.text = (sortByRarity ? "등급순" : "정렬") + $" <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
-            autoLabel.text = $"자동장착 <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseItem)}]</color></size>";
-            hint.text = $"아이콘에 마우스를 올리면 설명 · 클릭: 장착/해제    방향키 이동  {input.GetBindingLabel(GameAction.Submit)} 선택  {input.GetBindingLabel(GameAction.Inventory)}/{input.GetBindingLabel(GameAction.Cancel)} 닫기";
+            sortLabel.text = (sortByRarity ? L.T("등급순") : L.T("정렬")) + $" <size=18><color=#b8c4d8>[{input.GetBindingLabel(GameAction.UseMana)}]</color></size>";
+            autoLabel.text = L.F("자동장착 <size=18><color=#b8c4d8>[{0}]</color></size>", input.GetBindingLabel(GameAction.UseItem));
+            hint.text = L.F("아이콘에 마우스를 올리면 설명 · 클릭: 장착/해제    방향키 이동  {0} 선택  {1}/{2} 닫기", input.GetBindingLabel(GameAction.Submit), input.GetBindingLabel(GameAction.Inventory), input.GetBindingLabel(GameAction.Cancel));
             dirty = false;
         }
 
@@ -273,7 +273,7 @@ namespace DotRPG
                 {
                     // [SERVER] A mage always holds a staff (FixSlots); online the server refuses an empty weapon slot.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast("마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.");
+                    GameEvents.RaiseToast(L.T("마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다."));
                     return;
                 }
                 var wornBefore = OnlineEconomy.WornSnapshot();
@@ -281,7 +281,7 @@ namespace DotRPG
                 {
                     OnlineEconomy.SyncWorn(wornBefore); // [SERVER]
                     Game.Audio.PlaySfx("select");
-                    GameEvents.RaiseToast($"{EquipmentDatabase.SlotName(s.worn.Value)} 해제");
+                    GameEvents.RaiseToast(L.F("{0} 해제", L.T(EquipmentDatabase.SlotName(s.worn.Value))));
                 }
                 return;
             }
@@ -292,7 +292,7 @@ namespace DotRPG
                 {
                     // The protection ticket only works on its own, from the enhancement window.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast("강화 실패로 장비가 파괴될 때 자동으로 사용됩니다.");
+                    GameEvents.RaiseToast(L.T("강화 실패로 장비가 파괴될 때 자동으로 사용됩니다."));
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
                 else Game.Audio.PlaySfx("cancel");
@@ -313,19 +313,19 @@ namespace DotRPG
             if (!gear.UsableBy(Class))
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"{CharacterClassInfo.Get(gear.classOnly.Value).displayName} 전용 장비입니다.");
+                GameEvents.RaiseToast(L.F("{0} 전용 장비입니다.", L.T(CharacterClassInfo.Get(gear.classOnly.Value).displayName)));
                 return;
             }
             if (gear.reqLevel > Game.Session.Progression.Level)
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast($"레벨 {gear.reqLevel}부터 착용할 수 있습니다. (지금 Lv.{Game.Session.Progression.Level})");
+                GameEvents.RaiseToast(L.F("레벨 {0}부터 착용할 수 있습니다. (지금 Lv.{1})", gear.reqLevel, Game.Session.Progression.Level));
                 return;
             }
             var before = OnlineEconomy.WornSnapshot();
             bool ok = into.HasValue && gear.category == EquipCategory.Ring ? EquipRingInto(key, into.Value) : eq.Equip(key, Class);
             OnlineEconomy.SyncWorn(before); // [SERVER] (no-op when nothing changed)
-            if (ok) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast($"{EquipmentDatabase.NameOfKey(key)} 장착!"); }
+            if (ok) { Game.Audio.PlaySfx("confirm"); GameEvents.RaiseToast(L.F("{0} 장착!", L.T(EquipmentDatabase.NameOfKey(key)))); }
         }
 
         void AutoEquip()
@@ -333,7 +333,7 @@ namespace DotRPG
             var before = OnlineEconomy.WornSnapshot();
             int n = Game.Session.Equipment.AutoEquip(Class);
             if (n > 0) OnlineEconomy.SyncWorn(before); // [SERVER]
-            GameEvents.RaiseToast(n > 0 ? $"더 좋은 장비 {n}개를 장착했습니다." : "이미 가장 좋은 장비를 착용 중입니다.");
+            GameEvents.RaiseToast(n > 0 ? L.F("더 좋은 장비 {0}개를 장착했습니다.", n) : L.T("이미 가장 좋은 장비를 착용 중입니다."));
         }
 
         void ToggleSort()

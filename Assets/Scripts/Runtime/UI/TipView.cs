@@ -58,24 +58,24 @@ namespace DotRPG
             var map = MapRegistry.Get(mapId);
             if (map == null) return;
             if (mapId == MapRegistry.Forest)
-                Show("forest", "사냥터", $"해골이 몸을 떨며 <color=#ffd84a>!</color>가 뜨면 곧 공격합니다. [{K(GameAction.Mobility)}] 이동기로 피한 뒤 반격하세요.\n위험하면 [{K(GameAction.UseItem)}] 물약, [{K(GameAction.TownScroll)}] 귀환 주문서.");
+                Show("forest", L.T("사냥터"), L.F("해골이 몸을 떨며 <color=#ffd84a>!</color>가 뜨면 곧 공격합니다. [{0}] 이동기로 피한 뒤 반격하세요.\n위험하면 [{1}] 물약, [{2}] 귀환 주문서.", K(GameAction.Mobility), K(GameAction.UseItem), K(GameAction.TownScroll)));
             else if (map.instanced && Game.Dungeon != null && Game.Dungeon.InRun)
             {
                 if (Game.Dungeon.Run.Dungeon.isRaid)
-                    Show("raid", "레이드", "부활은 파티 공용 3회. 바닥의 붉은 장판(예고)을 피하고, 보스의 기믹(토템 등)은 동료와 나눠 처리하세요.");
+                    Show("raid", L.T("레이드"), L.T("부활은 파티 공용 3회. 바닥의 붉은 장판(예고)을 피하고, 보스의 기믹(토템 등)은 동료와 나눠 처리하세요."));
                 else
-                    Show("dungeon", "던전", "방의 적을 모두 쓰러뜨리면 문이 열립니다. 빨리, 덜 맞고, 많이 쓰러뜨릴수록 랭크가 오르고 보상 카드가 좋아집니다.");
+                    Show("dungeon", L.T("던전"), L.T("방의 적을 모두 쓰러뜨리면 문이 열립니다. 빨리, 덜 맞고, 많이 쓰러뜨릴수록 랭크가 오르고 보상 카드가 좋아집니다."));
             }
             else if (mapId == MapRegistry.Canyon)
-                Show("canyon", "바위 협곡 마을", "협곡의 대장간·상점도 마을과 같습니다. 북쪽 문 너머는 눈꽃 숲 마을입니다.");
+                Show("canyon", L.T("바위 협곡 마을"), L.T("협곡의 대장간·상점도 마을과 같습니다. 북쪽 문 너머는 눈꽃 숲 마을입니다."));
         }
 
         void OnQuest(string questId)
         {
             if (questId == "c1_stronger")
-                Show("raid_schedule", "레이드 일정", "중간 레이드는 수·토·일에 열리고 하루 1회 보상과 <color=#ffd84a>봉인 열쇠 조각</color>을 줍니다.\n최종 레이드는 일요일에 열립니다. 조각 60개가 있으면 주 1회 보상을 받고, 모자라도 연습으로 들어가 이야기를 이어갈 수 있습니다.");
+                Show("raid_schedule", L.T("레이드 일정"), L.T("중간 레이드는 수·토·일에 열리고 하루 1회 보상과 <color=#ffd84a>봉인 열쇠 조각</color>을 줍니다.\n최종 레이드는 일요일에 열립니다. 조각 60개가 있으면 주 1회 보상을 받고, 모자라도 연습으로 들어가 이야기를 이어갈 수 있습니다."));
             else if (questId == "c1_rise")
-                Show("menu", "메뉴", $"왼쪽 위 메뉴 버튼(또는 [{K(GameAction.Pause)}])에서 가방·스킬·지도·퀘스트를 엽니다.\n레벨이 오르면 스킬 창에서 패시브 포인트를 쓰세요.");
+                Show("menu", L.T("메뉴"), L.F("왼쪽 위 메뉴 버튼(또는 [{0}])에서 가방·스킬·지도·퀘스트를 엽니다.\n레벨이 오르면 스킬 창에서 패시브 포인트를 쓰세요.", K(GameAction.Pause)));
         }
 
         public void Show(string id, string heading, string text)

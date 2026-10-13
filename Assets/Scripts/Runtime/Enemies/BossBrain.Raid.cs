@@ -29,7 +29,7 @@ namespace DotRPG
             {
                 enrageAnnounced = true;
                 // 해골왕 already said "해골왕이 광폭해집니다!" when its phase 3 started.
-                if (!(IsKing && Phase >= 3)) Announce?.Invoke(this, "광폭화!", new Color(1f, .3f, .25f));
+                if (!(IsKing && Phase >= 3)) Announce?.Invoke(this, L.T("광폭화!"), new Color(1f, .3f, .25f));
                 Game.Camera?.Shake(.3f, .35f);
                 nextRoarAt = Time.time + RaidMechanics.RoarFirstDelay;
             }
@@ -66,12 +66,12 @@ namespace DotRPG
             float left = DungeonDatabase.RaidHeroicTimeLimit - (Time.time - fightStart);
             if (clockStep < ClockWarn.Length && left <= ClockWarn[clockStep])
             {
-                Announce?.Invoke(this, ClockWarn[clockStep] >= 60f ? $"전멸까지 {ClockWarn[clockStep] / 60f:0}분" : $"전멸까지 {ClockWarn[clockStep]:0}초", new Color(1f, .3f, .25f));
+                Announce?.Invoke(this, ClockWarn[clockStep] >= 60f ? L.F("전멸까지 {0:0}분", ClockWarn[clockStep] / 60f) : L.F("전멸까지 {0:0}초", ClockWarn[clockStep]), new Color(1f, .3f, .25f));
                 clockStep++;
             }
             if (left > 0f || Time.time < nextWipeAt) return;
             nextWipeAt = Time.time + 3f;
-            Announce?.Invoke(this, "시간 초과: 전멸", new Color(1f, .2f, .2f));
+            Announce?.Invoke(this, L.T("시간 초과: 전멸"), new Color(1f, .2f, .2f));
             SkillVisuals.Flash(E.Center, new Color(1f, .2f, .2f, .9f), 16f, .4f);
             foreach (var m in MonsterHits.All())
                 if (m != null && !m.IsDead) MonsterHits.Apply(new[] { m }, Mathf.Max(1, m.Health.Max * 10), E.Position, 4f, true, E.gameObject);

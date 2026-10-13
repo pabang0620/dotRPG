@@ -86,7 +86,7 @@ namespace DotRPG
             int n = 0;
             foreach (var p in Active.ToArray())
                 if (p != null && !p.Skipped) { p.Collect(true); n++; }
-            if (n > 0) GameEvents.RaiseToast($"바닥에 남은 아이템 {n}개를 챙겼습니다.");
+            if (n > 0) GameEvents.RaiseToast(L.F("바닥에 남은 아이템 {0}개를 챙겼습니다.", n));
         }
 
         void Update()
@@ -132,14 +132,14 @@ namespace DotRPG
             Game.Audio.PlaySfx("pickup");
             var gear = EquipmentDatabase.Get(itemId);
             if (itemId == ConsumableDatabase.Gold)
-                GameEvents.RaiseToast($"<color=#ffd84a>+{amount} 골드</color>");
+                GameEvents.RaiseToast(L.F("<color=#ffd84a>+{0} 골드</color>", amount));
             else if (gear != null)
             {
                 int level = EquipmentDatabase.LevelOfKey(itemId);
-                GameEvents.RaiseToast($"장비 획득: <color={EquipmentDatabase.RarityColor(gear.rarity)}>[{EquipmentDatabase.RarityName(gear.rarity)}] {gear.NameAt(level)}</color>  ({gear.StatLine(level)})  [{Game.Input.GetBindingLabel(GameAction.Inventory)}] 가방");
+                GameEvents.RaiseToast(L.F("장비 획득: <color={0}>[{1}] {2}</color>  ({3})  [{4}] 가방", EquipmentDatabase.RarityColor(gear.rarity), EquipmentDatabase.RarityName(gear.rarity), L.T(gear.NameAt(level)), gear.StatLine(level), Game.Input.GetBindingLabel(GameAction.Inventory)));
             }
             else
-                GameEvents.RaiseToast($"+{amount} {Game.Config.GetItem(itemId).displayName}");
+                GameEvents.RaiseToast($"+{amount} {L.T(Game.Config.GetItem(itemId).displayName)}");
             Destroy(gameObject);
         }
 

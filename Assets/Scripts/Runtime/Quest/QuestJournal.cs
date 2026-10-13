@@ -9,7 +9,7 @@ namespace DotRPG
     /// </summary>
     public sealed class QuestJournal
     {
-        public const string DefaultName = "아린";
+        public const string DefaultName = "아린"; // i18n-ignore saved player name
 
         readonly Dictionary<string, QuestSave> states = new Dictionary<string, QuestSave>();
         public readonly HashSet<string> Flags = new HashSet<string>();

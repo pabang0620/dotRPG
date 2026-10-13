@@ -90,7 +90,7 @@ namespace DotRPG
             Dictionary<string, object> data = null;
             OnlineEconomy.FinishDungeon(true, run.Elapsed, run.HitsTaken, run.MaxCombo, run.RevivesUsed, d => { data = d; answered = true; });
             float waited = 0f, limit = PartyNet.Active ? OnlineEconomy.PartyResultWaitSeconds + 15f : 15f;
-            if (PartyNet.Active) GameEvents.RaiseToast("다른 파티원의 결과를 확인하는 중...");
+            if (PartyNet.Active) GameEvents.RaiseToast(L.T("다른 파티원의 결과를 확인하는 중..."));
             while (!answered && waited < limit) { waited += Time.unscaledDeltaTime; yield return null; }
             busy = false;
             string result = MiniJson.Str(data, "result");
@@ -123,7 +123,7 @@ namespace DotRPG
                     run.RaidKeyGain = MiniJson.Int(raid, "key_gain");
                     // A missing card_mode counts as the old pick-one raid (a run closed before the server change).
                     run.CardsTakeAll = MiniJson.Str(raid, "card_mode", "pick_one") == "take_all" && run.Cards != null;
-                    if (!run.CardsTakeAll && run.RaidCoreGain > 0) GameEvents.RaiseToast($"고대의 핵 +{run.RaidCoreGain} (대장간에서 장비 승급에 씁니다)");
+                    if (!run.CardsTakeAll && run.RaidCoreGain > 0) GameEvents.RaiseToast(L.F("고대의 핵 +{0} (대장간에서 장비 승급에 씁니다)", run.RaidCoreGain));
                 }
             }
             else
@@ -132,7 +132,7 @@ namespace DotRPG
                 run.XpGained = 0;
                 run.Cards = null;
                 run.NoRewardNote = result == "held" ? "held" : "noanswer";
-                GameEvents.RaiseToast(result == "held" ? "결과를 확인하는 중입니다. 보상은 확인 후 지급됩니다." : "서버에 결과를 보내지 못했습니다.");
+                GameEvents.RaiseToast(result == "held" ? L.T("결과를 확인하는 중입니다. 보상은 확인 후 지급됩니다.") : L.T("서버에 결과를 보내지 못했습니다."));
             }
             EndRunState();
             RunEnded?.Invoke(run);
@@ -174,20 +174,20 @@ namespace DotRPG
             if (raid.keyCost > 0)
             {
                 bag.Remove(DungeonDatabase.SealKey, Mathf.Min(raid.keyCost, bag.Count(DungeonDatabase.SealKey)));
-                GameEvents.RaiseToast($"봉인 열쇠 조각 {raid.keyCost}개가 빛을 잃었습니다.");
+                GameEvents.RaiseToast(L.F("봉인 열쇠 조각 {0}개가 빛을 잃었습니다.", raid.keyCost));
             }
             if (raid.keyMax > 0)
             {
                 int keys = UnityEngine.Random.Range(raid.keyMin, raid.keyMax + 1);
                 bag.Add(DungeonDatabase.SealKey, keys);
                 if (run != null) run.RaidKeyGain = keys;
-                if (run == null || !run.CardsTakeAll) GameEvents.RaiseToast($"봉인 열쇠 조각 +{keys} (보유 {bag.Count(DungeonDatabase.SealKey)})");
+                if (run == null || !run.CardsTakeAll) GameEvents.RaiseToast(L.F("봉인 열쇠 조각 +{0} (보유 {1})", keys, bag.Count(DungeonDatabase.SealKey)));
             }
             int cores = PromoteRules.CoreGain(raid, run != null ? run.Difficulty : DungeonDifficulty.Normal);
             if (cores > 0)
             {
                 bag.Add(DungeonDatabase.RaidCore, cores);
-                if (run == null || !run.CardsTakeAll) GameEvents.RaiseToast($"고대의 핵 +{cores} (대장간에서 장비 승급에 씁니다)");
+                if (run == null || !run.CardsTakeAll) GameEvents.RaiseToast(L.F("고대의 핵 +{0} (대장간에서 장비 승급에 씁니다)", cores));
             }
             if (run != null) run.RaidCoreGain = cores;
         }

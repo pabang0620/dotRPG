@@ -9,7 +9,7 @@ namespace DotRPG
     /// <summary>[ONLINE] Shared helpers of the online preview windows (party finder, auction house).</summary>
     public abstract class OnlineWindow : WindowScreen
     {
-        public const string PreviewTag = "오프라인 모드 (다른 모험가와 연결되지 않음)";
+        public const string PreviewTag = "오프라인 모드 (다른 모험가와 연결되지 않음)"; // i18n-ignore const, wrapped at use
         protected Text status;
         protected InputField focusField;
 
@@ -20,7 +20,7 @@ namespace DotRPG
         protected void PreviewBanner()
         {
             var banner = Panel(content, "Preview", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(330f, 40f), new Color32(120, 70, 20, 230));
-            Label(banner.transform, "Text", "⚠ " + PreviewTag, 17, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(320f, 36f), TextAnchor.MiddleCenter);
+            Label(banner.transform, "Text", "⚠ " + L.T(PreviewTag), 17, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(320f, 36f), TextAnchor.MiddleCenter);
             status = Label(content, "Status", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(900f, 30f), TextAnchor.MiddleLeft);
         }
 
@@ -88,29 +88,29 @@ namespace DotRPG
 
         public static PartyFinderScreen Create(Transform canvas)
         {
-            var w = CreateWindow<PartyFinderScreen>(canvas, "PartyFinder", "파티 찾기", "menuicon_finder");
+            var w = CreateWindow<PartyFinderScreen>(canvas, "PartyFinder", L.T("파티 찾기"), "menuicon_finder");
             Instance = w;
             w.PreviewBanner();
-            w.tabList = Button(w.content, "TabList", "모집 목록", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(150f, 42f), () => { w.createTab = false; w.Refresh(); }, 20);
-            w.tabCreate = Button(w.content, "TabCreate", "모집 글 등록", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, 0f), new Vector2(150f, 42f), () => { w.createTab = true; w.Refresh(); }, 20);
+            w.tabList = Button(w.content, "TabList", L.T("모집 목록"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(150f, 42f), () => { w.createTab = false; w.Refresh(); }, 20);
+            w.tabCreate = Button(w.content, "TabCreate", L.T("모집 글 등록"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, 0f), new Vector2(150f, 42f), () => { w.createTab = true; w.Refresh(); }, 20);
             // Auto-match panel (top right, left of the preview banner).
-            w.queueBtn = Button(w.content, "Queue", "자동 매칭", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(330f, 0f), new Vector2(130f, 42f), w.ToggleQueue, 20);
+            w.queueBtn = Button(w.content, "Queue", L.T("자동 매칭"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(330f, 0f), new Vector2(130f, 42f), w.ToggleQueue, 20);
             w.queueText = Label(w.content, "QueueText", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(470f, 0f), new Vector2(240f, 42f), TextAnchor.MiddleLeft);
-            w.aiBtn = Button(w.content, "FillAi", "AI로 채워 출발", "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(715f, 0f), new Vector2(160f, 42f), w.DepartWithAi, 18);
+            w.aiBtn = Button(w.content, "FillAi", L.T("AI로 채워 출발"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(715f, 0f), new Vector2(160f, 42f), w.DepartWithAi, 18);
 
             // ----- list tab -----
             w.listRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "List"));
-            w.filterBtn = Button(w.listRoot, "Filter", "던전: 전체", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -52f), new Vector2(260f, 38f), w.CycleFilter, 18);
-            Button(w.listRoot, "Refresh", "새로고침", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -52f), new Vector2(120f, 38f), () => { w.SetStatus("목록을 새로 불러왔습니다."); w.Refresh(); }, 18);
+            w.filterBtn = Button(w.listRoot, "Filter", L.T("던전: 전체"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -52f), new Vector2(260f, 38f), w.CycleFilter, 18);
+            Button(w.listRoot, "Refresh", L.T("새로고침"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -52f), new Vector2(120f, 38f), () => { w.SetStatus(L.T("목록을 새로 불러왔습니다.")); w.Refresh(); }, 18);
             var head = Panel(w.listRoot, "Head", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, ListTop + 8f), new Vector2(TableW, 30f), HeadRow);
-            string[] heads = { "던전", "난이도", "인원", "최소 전투력", "방장", "메시지" };
+            string[] heads = { L.T("던전"), L.T("난이도"), L.T("인원"), L.T("최소 전투력"), L.T("방장"), L.T("메시지") };
             float[] hx = { 12f, 232f, 342f, 422f, 572f, 792f };
             for (int i = 0; i < heads.Length; i++) Label(head.transform, "H" + i, heads[i], 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(hx[i], 0f), new Vector2(200f, 28f), TextAnchor.MiddleLeft).color = new Color32(184, 196, 216, 255);
             for (int i = 0; i < PageSize; i++)
             {
                 var r = Row(w.listRoot, i, ListTop - 24f, RowH, TableW);
                 int idx = i;
-                var apply = Button(r, "Apply", "참가 신청", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(120f, 36f), () => w.ApplyRow(idx), 17);
+                var apply = Button(r, "Apply", L.T("참가 신청"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(120f, 36f), () => w.ApplyRow(idx), 17);
                 w.rows.Add((r, Cell(r, "Dungeon", 12f, 215f), Cell(r, "Diff", 232f, 105f), Cell(r, "Members", 342f, 75f), Cell(r, "Power", 422f, 145f),
                     Cell(r, "Leader", 572f, 215f, 17), Cell(r, "Msg", 792f, 290f, 17), apply));
             }
@@ -123,7 +123,7 @@ namespace DotRPG
             // ----- create tab -----
             w.createRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Create"));
             var panel = Panel(w.createRoot, "Panel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -56f), new Vector2(760f, 460f), new Color32(24, 36, 54, 235));
-            string[] labels = { "던전", "난이도", "모집 인원", "최소 전투력", "메시지" };
+            string[] labels = { L.T("던전"), L.T("난이도"), L.T("모집 인원"), L.T("최소 전투력"), L.T("메시지") };
             Action[] cycles = { () => w.cDungeon++, () => w.cDiff++, () => w.cMembers = w.cMembers >= 4 ? 2 : w.cMembers + 1, () => w.cPowerPct = w.cPowerPct >= 100 ? 50 : w.cPowerPct + 10, () => w.cMsg++ };
             for (int i = 0; i < labels.Length; i++)
             {
@@ -136,10 +136,10 @@ namespace DotRPG
                 w.createValues[i].verticalOverflow = VerticalWrapMode.Truncate;
                 Label(panel.transform, "L" + i, labels[i], 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -24f - i * 62f), new Vector2(160f, 44f), TextAnchor.MiddleLeft);
                 int k = i;
-                Button(panel.transform, "C" + i, "바꾸기 ▶", "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(560f, -24f - i * 62f), new Vector2(160f, 44f), () => { cycles[k](); w.Refresh(); }, 18);
+                Button(panel.transform, "C" + i, L.T("바꾸기 ▶"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(560f, -24f - i * 62f), new Vector2(160f, 44f), () => { cycles[k](); w.Refresh(); }, 18);
             }
-            Button(panel.transform, "Post", "모집 글 등록", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-110f, 24f), new Vector2(200f, 50f), w.Post, 21);
-            Button(panel.transform, "CancelPost", "모집 취소", "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(110f, 24f), new Vector2(200f, 50f), w.CancelPost, 21);
+            Button(panel.transform, "Post", L.T("모집 글 등록"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-110f, 24f), new Vector2(200f, 50f), w.Post, 21);
+            Button(panel.transform, "CancelPost", L.T("모집 취소"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(110f, 24f), new Vector2(200f, 50f), w.CancelPost, 21);
             var help = Panel(w.createRoot, "Help", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, -56f), new Vector2(440f, 460f), new Color32(24, 36, 54, 235));
             // Recommended level / power of the picked dungeon, per difficulty, against my character (refreshed with the picks).
             w.levelGuide = Label(help.transform, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -20f), new Vector2(392f, 420f));
@@ -149,7 +149,7 @@ namespace DotRPG
 
         int MyPower => Game.Player != null ? CharacterStats.Power(Game.Player.Class) : 0;
 
-        static readonly string[] DayNames = { "일", "월", "화", "수", "목", "금", "토" };
+        static readonly string[] DayNames = { L.T("일"), L.T("월"), L.T("화"), L.T("수"), L.T("목"), L.T("금"), L.T("토") };
 
         /// <summary>
         /// The picked dungeon's recommended level and power for every difficulty (weekday dungeons share them; raids have
@@ -163,20 +163,20 @@ namespace DotRPG
                 string lv = myLevel >= n.recommendedLevel ? "#8fe28f" : "#ff9f7a";
                 string pw = myPower >= n.recommendedPower ? "#8fe28f" : "#ff9f7a";
                 string head = sel ? $"<b>▶ {name}</b>" : $"   {name}";
-                return $"{head}   <color={lv}>Lv.{n.recommendedLevel}</color> · <color={pw}>전투력 {n.recommendedPower:N0}</color>\n";
+                return L.F("{0}   <color={1}>Lv.{2}</color> · <color={3}>전투력 {4:N0}</color>", head, lv, n.recommendedLevel, pw, n.recommendedPower) + "\n";
             }
-            var sb = new System.Text.StringBuilder($"<b>{d.name}</b> 권장 레벨\n<color=#b8c4d8>내 캐릭터 Lv.{myLevel} · 전투력 {myPower:N0}</color>\n\n");
-            if (d.isRaid) sb.Append(Row("레이드", DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal), true));
+            var sb = new System.Text.StringBuilder(L.F("<b>{0}</b> 권장 레벨\n<color=#b8c4d8>내 캐릭터 Lv.{1} · 전투력 {2:N0}</color>", L.T(d.name), myLevel, myPower) + "\n\n");
+            if (d.isRaid) sb.Append(Row(L.T("레이드"), DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal), true));
             else
                 for (int i = 0; i < DungeonDatabase.DifficultyCount; i++)
                 {
                     var diff = (DungeonDifficulty)i;
-                    sb.Append(Row(PartyFinderRules.DifficultyName(diff), DungeonDatabase.DifficultyFor(d, diff), diff == picked));
+                    sb.Append(Row(L.T(PartyFinderRules.DifficultyName(diff)), DungeonDatabase.DifficultyFor(d, diff), diff == picked));
                 }
-            var days = d.openDays != null && d.openDays.Length > 0 ? string.Join("·", System.Array.ConvertAll(d.openDays, x => DayNames[(int)x])) + "요일" : "매일";
+            var days = d.openDays != null && d.openDays.Length > 0 ? string.Join("·", System.Array.ConvertAll(d.openDays, x => DayNames[(int)x])) + L.T("요일") : L.T("매일");
             bool open = ResetClock.IsOpen(d, ResetClock.Now);
-            sb.Append($"\n열리는 날: {days}{(d.isRaid ? "" : " (주말엔 모든 요일던전)")}\n오늘: {(open ? "<color=#8fe28f>열림</color>" : "<color=#ff9f7a>닫힘</color>")}");
-            sb.Append("\n\n<color=#8c96a8>초록 = 내 캐릭터가 권장을 넘음. 빈자리는 방장의 AI 동료가 채웁니다. 모집 글은 10분 뒤 내려갑니다.</color>");
+            sb.Append(L.F("\n열리는 날: {0}{1}\n오늘: {2}", days, (d.isRaid ? "" : L.T(" (주말엔 모든 요일던전)")), (open ? L.T("<color=#8fe28f>열림</color>") : L.T("<color=#ff9f7a>닫힘</color>"))));
+            sb.Append(L.T("\n\n<color=#8c96a8>초록 = 내 캐릭터가 권장을 넘음. 빈자리는 방장의 AI 동료가 채웁니다. 모집 글은 10분 뒤 내려갑니다.</color>"));
             return sb.ToString();
         }
 
@@ -191,22 +191,22 @@ namespace DotRPG
         void ToggleQueue()
         {
             var q = Service.Queue;
-            if (q.active) { Service.CancelQueue(); SetStatus("자동 매칭을 취소했습니다."); }
+            if (q.active) { Service.CancelQueue(); SetStatus(L.T("자동 매칭을 취소했습니다.")); }
             else
             {
                 var d = Dungeons[Mod(cDungeon, Dungeons.Count)];
                 Service.StartQueue(d.id, d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount));
-                SetStatus($"{d.name} 자동 매칭을 시작했습니다.");
+                SetStatus(L.F("{0} 자동 매칭을 시작했습니다.", L.T(d.name)));
             }
             Refresh();
         }
 
         void DepartWithAi()
         {
-            if (!Service.Queue.active) { SetStatus("매칭 대기 중이 아닙니다.", false); return; }
+            if (!Service.Queue.active) { SetStatus(L.T("매칭 대기 중이 아닙니다."), false); return; }
             int humans = Service.Queue.humans;
             int ai = Service.DepartWithAi();
-            SetStatus($"사람 {humans}명 + AI 용병 {ai}명으로 출발합니다.");
+            SetStatus(L.F("사람 {0}명 + AI 용병 {1}명으로 출발합니다.", humans, ai));
             Refresh();
         }
 
@@ -224,7 +224,7 @@ namespace DotRPG
             var d = Dungeons[Mod(cDungeon, Dungeons.Count)];
             var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
             Service.Create(d.id, diff, cMembers, MyPower * cPowerPct / 100, PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]);
-            SetStatus("모집 글을 등록했습니다. 목록 맨 위에 표시됩니다.");
+            SetStatus(L.T("모집 글을 등록했습니다. 목록 맨 위에 표시됩니다."));
             createTab = false;
             page = 0;
             Refresh();
@@ -233,7 +233,7 @@ namespace DotRPG
         void CancelPost()
         {
             var mine = Service.List(null).FirstOrDefault(p => p.mine);
-            SetStatus(mine != null && Service.Cancel(mine.id) ? "모집을 취소했습니다." : "등록한 모집 글이 없습니다.", mine != null);
+            SetStatus(mine != null && Service.Cancel(mine.id) ? L.T("모집을 취소했습니다.") : L.T("등록한 모집 글이 없습니다."), mine != null);
             Refresh();
         }
 
@@ -253,10 +253,10 @@ namespace DotRPG
             if (q.active)
             {
                 int s = Mathf.FloorToInt(q.elapsed);
-                queueText.text = $"<color=#ffe066>매칭 중 {s / 60:00}:{s % 60:00} / 01:00</color>  {q.humans}/4명";
+                queueText.text = L.F("<color=#ffe066>매칭 중 {0:00}:{1:00} / 01:00</color>  {2}/4명", s / 60, s % 60, q.humans);
             }
-            else queueText.text = "<color=#8c96a8>매칭 대기 없음</color>";
-            TextOf(queueBtn).text = q.active ? "매칭 취소" : "자동 매칭";
+            else queueText.text = L.T("<color=#8c96a8>매칭 대기 없음</color>");
+            TextOf(queueBtn).text = q.active ? L.T("매칭 취소") : L.T("자동 매칭");
             aiBtn.interactable = q.active;
         }
 
@@ -270,13 +270,13 @@ namespace DotRPG
             tabCreate.image.sprite = UiTheme.Tab(createTab);
             RefreshQueue();
             var ds = Dungeons;
-            TextOf(filterBtn).text = filter < 0 ? "던전: 전체" : "던전: " + ds[filter].name;
+            TextOf(filterBtn).text = filter < 0 ? L.T("던전: 전체") : L.F("던전: {0}", L.T(ds[filter].name));
             shown = Service.List(filter < 0 ? null : ds[filter].id).ToList();
             int pages = Math.Max(1, (shown.Count + PageSize - 1) / PageSize);
             page = Mathf.Clamp(page, 0, pages - 1);
             pageText.text = $"{page + 1} / {pages}";
             emptyText.gameObject.SetActive(shown.Count == 0);
-            emptyText.text = filter < 0 ? "등록된 모집 글이 없습니다. 모집 글을 등록하거나 자동 매칭을 써 보세요." : "이 던전의 모집 글이 없습니다.";
+            emptyText.text = filter < 0 ? L.T("등록된 모집 글이 없습니다. 모집 글을 등록하거나 자동 매칭을 써 보세요.") : L.T("이 던전의 모집 글이 없습니다.");
             int power = MyPower;
             for (int r = 0; r < rows.Count; r++)
             {
@@ -285,25 +285,26 @@ namespace DotRPG
                 row.row.gameObject.SetActive(i < shown.Count);
                 if (i >= shown.Count) continue;
                 var p = shown[i];
-                row.dungeon.text = (p.mine ? "<color=#ffe066>★</color> " : "") + p.dungeonName;
-                row.diff.text = $"<color={PartyFinderRules.DifficultyColor(p.difficulty)}>{PartyFinderRules.ModeName(p.dungeonId, p.difficulty)}</color>\n<size=14><color=#b8c4d8>{PartyFinderRules.Recommended(p.dungeonId, p.difficulty, true)}</color></size>";
+                row.dungeon.text = (p.mine ? "<color=#ffe066>★</color> " : "") + L.T(p.dungeonName);
+                row.diff.text = $"<color={PartyFinderRules.DifficultyColor(p.difficulty)}>{L.T(PartyFinderRules.ModeName(p.dungeonId, p.difficulty))}</color>\n<size=14><color=#b8c4d8>{PartyFinderRules.Recommended(p.dungeonId, p.difficulty, true)}</color></size>";
                 row.members.text = p.Full ? $"<color=#8c96a8>{p.members}/{p.maxMembers}</color>" : $"{p.members}/{p.maxMembers}";
                 row.power.text = power >= p.minPower ? $"{p.minPower:N0}" : $"<color=#ff9f7a>{p.minPower:N0}</color>";
-                row.leader.text = $"{p.leaderName} Lv{p.leaderLevel} {CharacterClassInfo.Get(p.leaderClass).displayName}";
+                row.leader.text = $"{p.leaderName} Lv{p.leaderLevel} {L.T(CharacterClassInfo.Get(p.leaderClass).displayName)}";
                 row.msg.text = p.message;
-                string label = p.mine ? "내 모집 글" : p.applied ? "신청 중…" : p.Full ? "모집 완료" : power < p.minPower ? "전투력 부족" : "참가 신청";
+                string label = p.mine ? L.T("내 모집 글") : p.applied ? L.T("신청 중…") : p.Full ? L.T("모집 완료") : power < p.minPower ? L.T("전투력 부족") : L.T("참가 신청");
                 TextOf(row.apply).text = label;
-                bool can = label == "참가 신청";
+                bool can = label == L.T("참가 신청");
                 row.apply.interactable = can;
                 row.apply.image.sprite = Game.Art.Get(can ? "ui_btn" : "ui_btngray");
             }
             var d = ds[Mod(cDungeon, ds.Count)];
             var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
             levelGuide.text = LevelGuide(d, diff);
-            createValues[0].text = d.name;
-            createValues[1].text = $"<color={PartyFinderRules.DifficultyColor(diff)}>{(d.isRaid ? "레이드" : PartyFinderRules.DifficultyName(diff))}</color>   <size=16><color=#b8c4d8>{PartyFinderRules.Recommended(d.id, diff, true)}</color></size>";
-            createValues[2].text = $"{cMembers}명";
-            createValues[3].text = $"{power * cPowerPct / 100:N0} <color=#b8c4d8>(내 전투력의 {cPowerPct}%)</color>";
+            createValues[0].text = L.T(d.name);
+            string modeName = d.isRaid ? L.T("레이드") : L.T(PartyFinderRules.DifficultyName(diff));
+            createValues[1].text = $"<color={PartyFinderRules.DifficultyColor(diff)}>{modeName}</color>   <size=16><color=#b8c4d8>{PartyFinderRules.Recommended(d.id, diff, true)}</color></size>";
+            createValues[2].text = L.F("{0}명", cMembers);
+            createValues[3].text = L.F("{0:N0} <color=#b8c4d8>(내 전투력의 {1}%)</color>", power * cPowerPct / 100, cPowerPct);
             createValues[4].text = $"“{PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]}”";
         }
 
@@ -352,8 +353,8 @@ namespace DotRPG
         {
             var def = DungeonDatabase.Get(q.dungeonId);
             if (def == null || Game.Dungeon == null) return;
-            if (Game.Dungeon.InRun) { GameEvents.RaiseToast("이미 던전 안에 있어 매칭 출발을 취소했습니다."); return; }
-            GameEvents.RaiseToast($"매칭 완료: 사람 {q.humans}명 + AI 용병 {ai}명. {def.name}에 입장합니다.");
+            if (Game.Dungeon.InRun) { GameEvents.RaiseToast(L.T("이미 던전 안에 있어 매칭 출발을 취소했습니다.")); return; }
+            GameEvents.RaiseToast(L.F("매칭 완료: 사람 {0}명 + AI 용병 {1}명. {2}에 입장합니다.", q.humans, ai, L.T(def.name)));
             Game.Dungeon.Enter(def, q.difficulty);
         }
 
@@ -366,7 +367,7 @@ namespace DotRPG
             if (bar.activeSelf != show) bar.SetActive(show);
             if (!show) return;
             int s = Mathf.FloorToInt(q.elapsed);
-            text.text = $"<color=#ffe066>매칭 대기 중</color> {s / 60:00}:{s % 60:00} / 01:00 · {q.humans}/4명";
+            text.text = L.F("<color=#ffe066>매칭 대기 중</color> {0:00}:{1:00} / 01:00 · {2}/4명", s / 60, s % 60, q.humans);
         }
     }
 }

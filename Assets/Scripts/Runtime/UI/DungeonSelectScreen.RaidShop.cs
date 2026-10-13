@@ -40,7 +40,7 @@ namespace DotRPG
 
         void BuildRaidShop(Transform d)
         {
-            raidShopButton = Button(d, "RaidShop", "레이드 상점", "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-276f, 20f), new Vector2(180f, 62f), OpenRaidShop, 22);
+            raidShopButton = Button(d, "RaidShop", L.T("레이드 상점"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-276f, 20f), new Vector2(180f, 62f), OpenRaidShop, 22);
 
             var panel = Panel(d, "RaidShopPanel", new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, Vector2.zero, new Color32(18, 26, 40, 250));
             raidShopPanel = panel.rectTransform;
@@ -48,9 +48,9 @@ namespace DotRPG
             panel.raycastTarget = true; // blocks the detail underneath
             var t = raidShopPanel.transform;
             var tl = new Vector2(0f, 1f);
-            Label(t, "Head", "<b>레이드 상점</b>", 26, tl, tl, new Vector2(24f, -14f), new Vector2(400f, 38f));
-            Label(t, "Sub", "<color=#b8c4d8>레이드 재료로 무기 상자를 삽니다. 산 즉시 열려 내 직업 무기가 가방에 들어옵니다.</color>", 16, tl, tl, new Vector2(24f, -52f), new Vector2(700f, 26f));
-            Button(t, "Close", "닫기", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(110f, 40f), CloseRaidShop, 18);
+            Label(t, "Head", L.T("<b>레이드 상점</b>"), 26, tl, tl, new Vector2(24f, -14f), new Vector2(400f, 38f));
+            Label(t, "Sub", L.T("<color=#b8c4d8>레이드 재료로 무기 상자를 삽니다. 산 즉시 열려 내 직업 무기가 가방에 들어옵니다.</color>"), 16, tl, tl, new Vector2(24f, -52f), new Vector2(700f, 26f));
+            Button(t, "Close", L.T("닫기"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(110f, 40f), CloseRaidShop, 18);
 
             for (int col = 0; col < 2; col++)
             {
@@ -81,7 +81,7 @@ namespace DotRPG
                     var capture = cell;
                     GearTooltip.Hook(cell.gear, () => capture.gear.enabled ? RaidShop.ResultKey(capture.product, RaidClass(), ItemRarity.Legendary) : null);
                 }
-                cell.buy = Button(ct, "Buy", "구매", "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-14f, 12f), new Vector2(140f, 42f), () => RequestBuy(product), 20);
+                cell.buy = Button(ct, "Buy", L.T("구매"), "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-14f, 12f), new Vector2(140f, 42f), () => RequestBuy(product), 20);
                 rsCells.Add(cell);
             }
 
@@ -92,7 +92,7 @@ namespace DotRPG
             dim.raycastTarget = true;
             rsPopupTitle = Label(rsPopup, "Title", "", 24, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(640f, 36f), TextAnchor.UpperCenter);
             rsCard = RaidCardView.Create(rsPopup, "BoxCard", new Vector2(0.5f, 0.5f), new Vector2(0f, -6f), 1.5f, null, () => rsCard != null && rsCard.Flipped ? rsCard.Content.itemId : null);
-            rsPopupOk = Button(rsPopup, "Ok", "확인", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(200f, 46f), CloseBoxPopup, 22);
+            rsPopupOk = Button(rsPopup, "Ok", L.T("확인"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(200f, 46f), CloseBoxPopup, 22);
             rsPopup.gameObject.SetActive(false);
             raidShopPanel.gameObject.SetActive(false);
         }
@@ -147,12 +147,12 @@ namespace DotRPG
             if (raidShopButton == null) return;
             bool on = raidTab && Selected != null && Selected.isRaid;
             raidShopButton.gameObject.SetActive(on);
-            TextOf(raidShopButton).text = $"레이드 상점 <size=15><color=#b8c4d8>[{Game.Input.GetBindingLabel(GameAction.UseItem)}]</color></size>";
+            TextOf(raidShopButton).text = L.F("레이드 상점 <size=15><color=#b8c4d8>[{0}]</color></size>", Game.Input.GetBindingLabel(GameAction.UseItem));
             if (!on && RaidShopOpen) CloseRaidShopQuiet();
             else if (RaidShopOpen) RefreshRaidShop();
         }
 
-        string RaidShopKeyHint() => raidShopButton != null && raidShopButton.gameObject.activeSelf ? $"   {Game.Input.GetBindingLabel(GameAction.UseItem)} 레이드 상점" : "";
+        string RaidShopKeyHint() => raidShopButton != null && raidShopButton.gameObject.activeSelf ? L.F("   {0} 레이드 상점", Game.Input.GetBindingLabel(GameAction.UseItem)) : "";
 
         /// <summary>Update() hook while the panel is open: Esc closes the popup (once the card is open) or the panel.</summary>
         void RaidShopInput()
@@ -180,12 +180,12 @@ namespace DotRPG
         string RatesOf(RaidShopProduct p)
         {
             var offer = OfferOf(p.id);
-            if (offer == null || offer.outcomes.Count == 0) return RaidShop.RatesText(p);
+            if (offer == null || offer.outcomes.Count == 0) return L.T(RaidShop.RatesText(p));
             var parts = new List<string>();
             foreach (var o in offer.outcomes)
             {
-                string name = System.Enum.TryParse(o.rarity, out ItemRarity r) ? EquipmentDatabase.RarityName(r) : o.rarity;
-                parts.Add(offer.outcomes.Count == 1 && o.percent >= 100 ? $"{name} 확정" : $"{name} {o.percent}%");
+                string name = System.Enum.TryParse(o.rarity, out ItemRarity r) ? L.T(EquipmentDatabase.RarityName(r)) : o.rarity;
+                parts.Add(offer.outcomes.Count == 1 && o.percent >= 100 ? L.F("{0} 확정", name) : $"{name} {o.percent}%");
             }
             return string.Join(" / ", parts);
         }
@@ -202,7 +202,7 @@ namespace DotRPG
                 string material = RaidShop.Products[col * 2].materialItem;
                 int lv = GearCatalog.TierLevels[RaidShop.Products[col * 2].Tier];
                 rsColIcon[col].sprite = Game.Art.Get(DungeonDatabase.ItemIcon(material));
-                rsColHead[col].text = $"<b>{raid.name} (Lv.{lv})</b>\n<color=#b8c4d8>{DungeonDatabase.ItemName(material)}</color> <color=#ffe066>보유 {bag.Count(material):N0}</color>";
+                rsColHead[col].text = $"<b>{L.T(raid.name)} (Lv.{lv})</b>\n<color=#b8c4d8>{L.T(DungeonDatabase.ItemName(material))}</color> " + L.F("<color=#ffe066>보유 {0:N0}</color>", bag.Count(material));
             }
             foreach (var cell in rsCells)
             {
@@ -210,8 +210,8 @@ namespace DotRPG
                 var offer = OfferOf(p.id);
                 int price = offer != null && offer.price > 0 ? offer.price : p.price;
                 bool afford = bag.Count(p.materialItem) >= price;
-                cell.cost.text = $"재료 <color={(afford ? "#ffffff" : "#ff9f7a")}>{price:N0}개</color>";
-                cell.result.text = $"내 직업 무기 · {RatesOf(p)}";
+                cell.cost.text = L.F("재료 <color={0}>{1:N0}개</color>", afford ? "#ffffff" : "#ff9f7a", price);
+                cell.result.text = L.F("내 직업 무기 · {0}", RatesOf(p));
                 cell.buy.interactable = !rsBusy;
                 cell.buy.image.color = afford ? Color.white : new Color(1f, 1f, 1f, 0.5f);
                 if (cell.gear == null) continue;
@@ -231,11 +231,11 @@ namespace DotRPG
             int price = offer != null && offer.price > 0 ? offer.price : p.price;
             if (Game.Session.Inventory.Count(p.materialItem) < price)
             {
-                GameEvents.RaiseToast($"{DungeonDatabase.ItemName(p.materialItem)}이(가) 모자랍니다. ({Game.Session.Inventory.Count(p.materialItem):N0}/{price:N0})");
+                GameEvents.RaiseToast(L.F("{0}이(가) 모자랍니다. ({1:N0}/{2:N0})", L.T(DungeonDatabase.ItemName(p.materialItem)), Game.Session.Inventory.Count(p.materialItem), price));
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
-            Game.UI.Confirm($"재료 {price:N0}개를 써서 {p.name}을 엽니다.\n<size=18>내 직업 무기 · {RatesOf(p)}</size>", () => DoBuy(p, price), defaultYes: true, overlay: true);
+            Game.UI.Confirm(L.F("재료 {0:N0}개를 써서 {1}을 엽니다.\n<size=18>내 직업 무기 · {2}</size>", price, L.T(p.name), RatesOf(p)), () => DoBuy(p, price), defaultYes: true, overlay: true);
         }
 
         void DoBuy(RaidShopProduct p, int price)
@@ -261,7 +261,7 @@ namespace DotRPG
             if (key2 == null)
             {
                 bag.Add(p.materialItem, price); // nothing to hand out: give the material back
-                GameEvents.RaiseToast("지급할 장비를 찾지 못했습니다.");
+                GameEvents.RaiseToast(L.T("지급할 장비를 찾지 못했습니다."));
                 RefreshRaidShop();
                 return;
             }
@@ -276,7 +276,7 @@ namespace DotRPG
             rsPopup.gameObject.SetActive(true);
             rsPopup.SetAsLastSibling();
             rsPopupOk.gameObject.SetActive(false);
-            rsPopupTitle.text = $"<b>{p.name}</b>";
+            rsPopupTitle.text = $"<b>{L.T(p.name)}</b>";
             rsCard.SetActive(true);
             rsCard.ResetBack();
             RefreshRaidShop();
@@ -288,7 +288,7 @@ namespace DotRPG
             yield return rsCard.Appear(0f);
             yield return new WaitForSecondsRealtime(0.4f);
             yield return rsCard.Flip(new RewardCard(key, 1));
-            rsCard.Who.text = "<color=#8fe28f>획득</color>";
+            rsCard.Who.text = L.T("<color=#8fe28f>획득</color>");
             rsPopupOk.gameObject.SetActive(true);
             rsPopupDone = true;
         }
