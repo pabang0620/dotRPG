@@ -1,0 +1,9 @@
+{
+ "day|일": "Sun",
+ "day|월": "Mon",
+ "day|화": "Tue",
+ "day|수": "Wed",
+ "day|목": "Thu",
+ "day|금": "Fri",
+ "day|토": "Sat"
+}

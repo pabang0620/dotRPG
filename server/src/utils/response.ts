@@ -38,7 +38,7 @@ export function errorResponse(
 
 /** 검증 실패 항목(fields[].message)도 같은 표로 바꾼다. */
 function translateFields(lang: string | undefined, errors: Record<string, unknown>): Record<string, unknown> {
-  if (lang !== 'en' || !Array.isArray(errors.fields)) return errors;
+  if (!lang || !Array.isArray(errors.fields)) return errors;
   const fields = (errors.fields as unknown[]).map((f) =>
     f && typeof f === 'object' && typeof (f as { message?: unknown }).message === 'string'
       ? { ...(f as Record<string, unknown>), message: translate(lang, (f as { message: string }).message) }

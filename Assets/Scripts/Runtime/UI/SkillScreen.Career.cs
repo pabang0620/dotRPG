@@ -122,7 +122,7 @@ namespace DotRPG
         /// <summary>"로" after a vowel or ㄹ, "으로" after any other final consonant.</summary>
         static string Ro(string word)
         {
-            if(L.En)return ""; // [I18N] Korean particle only
+            if(!L.Ko)return ""; // [I18N] Korean particle only
             char c=string.IsNullOrEmpty(word)?'a':word[word.Length-1];
             if(c<0xAC00||c>0xD7A3)return "로"; // i18n-ignore particle
             int jong=(c-0xAC00)%28;

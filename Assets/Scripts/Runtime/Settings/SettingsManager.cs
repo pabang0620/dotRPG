@@ -41,7 +41,7 @@ namespace DotRPG
             Data.masterVolume = Mathf.Clamp01(Data.masterVolume);
             Data.musicVolume = Mathf.Clamp01(Data.musicVolume);
             Data.sfxVolume = Mathf.Clamp01(Data.sfxVolume);
-            if (Data.language != L.Korean && Data.language != L.English) Data.language = L.DeviceDefault();
+            if (!L.IsSupported(Data.language)) Data.language = L.DeviceDefault();
             Data.version = SettingsData.CurrentVersion;
         }
 

@@ -473,8 +473,10 @@ namespace DotRPG
         /// <summary>Korean weekday name ("월요일").</summary>
         public static string DayName(DayOfWeek d) => DayNames[(int)d];
 
-        /// <summary>One-letter weekday ("월").</summary>
-        public static string DayShort(DayOfWeek d) => DayNames[(int)d].Substring(0, L.En ? 3 : 1); // [I18N] "Mon"
+        /// <summary>Short weekday ("월", "Mon", "月"): its own table entry "day|월" per language.</summary>
+        public static string DayShort(DayOfWeek d) => L.T(DayShortKo[(int)d], "day");
+
+        static readonly string[] DayShortKo = { "일", "월", "화", "수", "목", "금", "토" }; // i18n-ignore translated with context "day"
 
         static readonly string[] DayNames = { L.T("일요일"), L.T("월요일"), L.T("화요일"), L.T("수요일"), L.T("목요일"), L.T("금요일"), L.T("토요일") };
 

@@ -230,11 +230,11 @@ namespace DotRPG
                 menu.AddOption(L.T("수직 동기화"), () => s.Data.vSync ? L.T("켜기") : L.T("끄기"), d => { s.Data.vSync = !s.Data.vSync; s.Apply(); });
             }
             // [I18N] Bilingual label so a player in the wrong language can still find it. Applies on restart.
-            menu.AddOption("언어 / Language", () => s.Data.language == L.English ? "English" : "한국어", d => // i18n-ignore bilingual on purpose
+            menu.AddOption("언어 / Language", () => L.NativeName(s.Data.language), d => // i18n-ignore bilingual on purpose
             {
-                s.Data.language = s.Data.language == L.English ? L.Korean : L.English;
+                s.Data.language = L.Next(s.Data.language, d < 0 ? -1 : 1);
                 s.Save();
-                GameEvents.RaiseToast(s.Data.language == L.English ? "Restart the game to apply. / 다시 시작하면 적용됩니다." : "다시 시작하면 적용됩니다. / Restart the game to apply."); // i18n-ignore bilingual on purpose
+                GameEvents.RaiseToast(s.Data.language == L.Korean ? "다시 시작하면 적용됩니다. / Restart the game to apply." : "Restart the game to apply. / 다시 시작하면 적용됩니다."); // i18n-ignore bilingual on purpose
             });
             menu.AddOption(L.T("화면 흔들림"), () => s.Data.screenShake ? L.T("켜기") : L.T("끄기"), d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
             // [I] Accessibility and keys.

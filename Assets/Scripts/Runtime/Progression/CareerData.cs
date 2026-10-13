@@ -77,11 +77,31 @@ namespace DotRPG
         static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter", "barrier" };
         /// <summary>Cooldown of every lasting buff (and 검귀 해방), seconds.</summary>
         public const float BuffCooldown = 62f;
+        /// <summary>[I18N] Distance and time units the translations use after a number (longest first).</summary>
+        const string RadiusUnits = "メートル|米|м|m";
+        const string SecondUnits = "seconds|second|secondes|seconde|segundos|segundo|Sekunden|Sek\\.|секунд[аы]?|сек\\.?|giây|detik|sec|seg|秒|с|s"; // i18n-ignore unit words
+
+        /// <summary>
+        /// [I18N] In a translated description, a number equal to <paramref name="old"/> followed by one of
+        /// <paramref name="units"/> becomes <paramref name="now"/>. Keeps the translation's decimal mark ("2,3 m").
+        /// </summary>
+        static string RewriteNumber(string text, float old, float now, string units) =>
+            System.Text.RegularExpressions.Regex.Replace(text, @"(\d+(?:[.,]\d+)?)(\s?)(" + units + @")(?![A-Za-zА-Яа-я])", m =>
+            {
+                string n = m.Groups[1].Value;
+                bool comma = n.Contains(",");
+                if (!float.TryParse(n.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float v)
+                    || Mathf.Abs(v - old) >= 0.05f) return m.Value;
+                string shown = now.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+                return (comma ? shown.Replace('.', ',') : shown) + m.Groups[2].Value + m.Groups[3].Value;
+            });
+
         static CareerSkill S(Career c, int i, string id, string name, string desc, string effect, float power, int mp, float cd, float range, float radius, float cast, float duration = 0, int hits = 1, string synergy = "해당 없음") // i18n-ignore compared in SkillScreen.Career; never shown (no skill sets a synergy)
         {
             bool passive = i == 0 || i == 4, awaken = i == 8;
             // [I18N] Name and description translate here (rows below are the Korean keys). The number rewrites below run
-            // on the Korean and, when translated, on the English ("radius 2.3m", "30s"), so both follow the new values.
+            // on the Korean and, when translated, on the translation (RewriteNumber: "2.3m", "2,3 m", "30s", "30秒"), so
+            // every language follows the new values.
             name = L.T(name);
             string en = L.T(desc);
             bool translated = en != desc;
@@ -94,9 +114,7 @@ namespace DotRPG
                     radius = Mathf.Round(radius * radiusK * 10f) / 10f;
                     desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(반경|주변) (\d+(?:\.\d+)?)m", m => // i18n-ignore Korean number rewrite (English below)
                         Mathf.Abs(float.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) - before) < 0.05f ? $"{m.Groups[1].Value} {radius:0.#}m" : m.Value);
-                    if (translated)
-                        en = System.Text.RegularExpressions.Regex.Replace(en, @"(radius|within|around) (\d+(?:\.\d+)?) ?m\b", m =>
-                            Mathf.Abs(float.Parse(m.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) - before) < 0.05f ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1:0.#}m", m.Groups[1].Value, radius) : m.Value);
+                    if (translated) en = RewriteNumber(en, before, radius, RadiusUnits);
                 }
                 mp = Mathf.Max(1, Mathf.RoundToInt(mp * (awaken ? 0.75f : 0.65f)));
                 // The awakening is the big moment: it comes back more slowly but lasts longer and lands more often.
@@ -112,9 +130,7 @@ namespace DotRPG
                     duration *= 2f;
                     desc = System.Text.RegularExpressions.Regex.Replace(desc, @"(\d+(?:\.\d+)?)초", m => // i18n-ignore Korean number rewrite
                         Mathf.Abs(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - was) < 0.05f ? $"{duration:0.#}초" : m.Value); // i18n-ignore Korean number rewrite
-                    if (translated)
-                        en = System.Text.RegularExpressions.Regex.Replace(en, @"(\d+(?:\.\d+)?)( ?)(s|sec|seconds?)\b", m =>
-                            Mathf.Abs(float.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) - was) < 0.05f ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.#}{1}{2}", duration, m.Groups[2].Value, m.Groups[3].Value) : m.Value);
+                    if (translated) en = RewriteNumber(en, was, duration, SecondUnits);
                 }
                 if (awaken)
                 {

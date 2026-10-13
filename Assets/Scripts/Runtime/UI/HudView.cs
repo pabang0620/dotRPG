@@ -243,11 +243,11 @@ namespace DotRPG
         static string CountText(string id, long count)
         {
             if (id != ConsumableDatabase.Gold || count < 1000000L) return count.ToString("N0");
-            if (L.En) // [I18N] English uses M / B (millions, billions) instead of 만 / 억
+            if (!L.CjkNumbers) // [I18N] other languages use M / B (millions, billions) instead of 만 / 억
                 return count < 1000000000L ? (System.Math.Floor(count / 10000.0) / 100.0).ToString("#,0.##") + "M"
                     : (System.Math.Floor(count / 10000000.0) / 100.0).ToString("#,0.##") + "B";
-            if (count < 100000000L) return (System.Math.Floor(count / 1000.0) / 10.0).ToString("#,0.#") + "만"; // i18n-ignore Korean unit
-            return (System.Math.Floor(count / 1000000.0) / 100.0).ToString("#,0.##") + "억"; // i18n-ignore Korean unit
+            if (count < 100000000L) return (System.Math.Floor(count / 1000.0) / 10.0).ToString("#,0.#") + L.T("만", "unit"); // i18n-ignore 万 in ja / zh
+            return (System.Math.Floor(count / 1000000.0) / 100.0).ToString("#,0.##") + L.T("억", "unit"); // i18n-ignore 億 / 亿 in ja / zh
         }
 
         void RefreshQuest()

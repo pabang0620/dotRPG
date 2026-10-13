@@ -8,6 +8,7 @@ import { getPool, withTransaction } from '../../db/pool';
 import { consumeOrThrow, getRateLimitStore, HOUR, MINUTE } from '../../middleware/rateLimiter';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
+import { LANGUAGES, translate } from '../../utils/i18n';
 import { metrics } from '../../ops/metrics';
 import type { ApiBody, StoredResult } from '../economy/economyService';
 import { verifyTicket } from '../auth/steamProvider';
@@ -76,7 +77,7 @@ async function reauthSelf(accountId: number, reauth: WithdrawBody['reauth']): Pr
 
 // ---------- W1 GET /me/withdrawal ----------
 
-export async function getInfo(accountId: number) {
+export async function getInfo(accountId: number, lang?: string) {
   assertEnabled();
   const cfg = getConfig().withdraw;
   consumeOrThrow(`withdraw-info:${accountId}`, cfg.rate.infoPerMin, MINUTE);
@@ -87,7 +88,7 @@ export async function getInfo(accountId: number) {
   if (losses.paid_stars > 0) notices.unshift('paid_stars_forfeited');
   return {
     enabled: true,
-    confirm_phrase: cfg.confirmPhrase,
+    confirm_phrase: translate(lang, cfg.confirmPhrase), // [I18N] 영어 화면은 영어 문구를 입력한다
     grace_days: cfg.graceDays,
     due_at_if_now: new Date(getNow().getTime() + cfg.graceDays * DAY_MS).toISOString(),
     reauth: steam ? 'steam' : 'dev',
@@ -105,7 +106,9 @@ export async function requestWithdrawal(accountId: number, ip: string, body: Wit
   const cfg = getConfig().withdraw;
   consumeOrThrow(`withdraw-ip:${ip}`, cfg.rate.ipPerHour, HOUR);
   consumeOrThrow(`withdraw-acct:${accountId}`, cfg.rate.perHour, HOUR);
-  if (normalizePhrase(body.confirm) !== normalizePhrase(cfg.confirmPhrase)) {
+  // [I18N] 한국어 문구와 각 언어의 번역 문구를 모두 받는다(정보 화면이 요청 언어로 보여 준 문구)
+  const accepted = [cfg.confirmPhrase, ...LANGUAGES.map((l) => translate(l, cfg.confirmPhrase))].map(normalizePhrase);
+  if (!accepted.includes(normalizePhrase(body.confirm))) {
     throw new AppError(422, '확인 문구가 일치하지 않습니다.', 'CONFIRM_MISMATCH');
   }
   const hash = hashRequest({ endpoint: WITHDRAW_ENDPOINT, payload: { confirm: normalizePhrase(body.confirm), ack_paid_loss: body.ack_paid_loss === true } });

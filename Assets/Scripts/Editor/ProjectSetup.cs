@@ -92,6 +92,7 @@ namespace DotRPG.EditorTools
             EditorUserBuildSettings.buildAppBundle = !development;
 
             ArtImportSettings.ApplyAndroidToExisting();
+            ApplyAndroidIcons();
             AssetDatabase.SaveAssets();
             return () =>
             {
@@ -108,6 +109,50 @@ namespace DotRPG.EditorTools
 
         /// <summary>Game icon for the exe, taskbar and window title bar (instead of the Unity logo).</summary>
         public const string AppIcon = "Assets/Art/AppIcon/app_icon_1024.png";
+
+        /// <summary>
+        /// [ANDROID] Launcher icons. Android does not fall back to the default icon above (the apk showed the Unity
+        /// logo): adaptive (navy background + sword and shield foreground), round and legacy are set explicitly.
+        /// The layers come from Tools/art/make_android_icons.py.
+        /// </summary>
+        const string IconDir = "Assets/Art/AppIcon/";
+
+        static Texture2D IconTexture(string file)
+        {
+            string path = IconDir + file;
+            if (!File.Exists(path)) return null;
+            AssetDatabase.ImportAsset(path);
+            if (AssetImporter.GetAtPath(path) is TextureImporter importer
+                && (importer.textureCompression != TextureImporterCompression.Uncompressed || importer.mipmapEnabled || !importer.alphaIsTransparency))
+            {
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.mipmapEnabled = false;
+                importer.alphaIsTransparency = true;
+                importer.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        static void ApplyAndroidIcons()
+        {
+            Texture2D bg = IconTexture("android_bg.png"), fg = IconTexture("android_fg.png");
+            Texture2D round = IconTexture("android_round.png"), legacy = IconTexture("android_legacy.png");
+            if (bg == null || fg == null || round == null || legacy == null)
+            {
+                Debug.LogWarning("[dotRPG] Android icon layers missing: run Tools/art/make_android_icons.py");
+                return;
+            }
+            SetAndroidIcons(UnityEditor.Android.AndroidPlatformIconKind.Adaptive, bg, fg);
+            SetAndroidIcons(UnityEditor.Android.AndroidPlatformIconKind.Round, round);
+            SetAndroidIcons(UnityEditor.Android.AndroidPlatformIconKind.Legacy, legacy);
+        }
+
+        static void SetAndroidIcons(PlatformIconKind kind, params Texture2D[] layers)
+        {
+            var icons = PlayerSettings.GetPlatformIcons(NamedBuildTarget.Android, kind);
+            foreach (var icon in icons) icon.SetTextures(layers);
+            PlayerSettings.SetPlatformIcons(NamedBuildTarget.Android, kind, icons);
+        }
 
         static void ApplyAppIcon()
         {

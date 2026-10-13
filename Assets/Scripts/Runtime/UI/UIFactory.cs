@@ -15,6 +15,12 @@ namespace DotRPG
         public static Font Get()
         {
             if (font != null) return font;
+            // [I18N] Chinese needs hanzi the pixel font lacks: use the device's CJK font (pixel look is lost there).
+            if (L.NeedsOsFont)
+                font = Font.CreateDynamicFontFromOSFont(L.Lang == "zh-Hant"
+                    ? new[] { "Noto Sans CJK TC", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Droid Sans Fallback", "Arial" }
+                    : new[] { "Noto Sans CJK SC", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Droid Sans Fallback", "Arial" }, 32);
+            if (font != null) return font;
             font = Resources.Load<Font>("Fonts/UIFont");
             if (font == null)
             {

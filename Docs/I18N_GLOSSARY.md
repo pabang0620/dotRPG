@@ -64,6 +64,16 @@
 | 화상 | Burn |
 | 무적 | Invulnerable |
 | 그로기 | Groggy |
+| 강화석 | Enhancement Stone |
+| 대장간 | Forge |
+| 부활 코인 | Revive Coin |
+| 연습 입장 | Practice entry |
+| 확정 골드 | Guaranteed Gold |
+| 검기 | Sword Aura |
+| 결계 | Ward |
+| 방어 붕괴 | Guard break |
+| 외형 | Look |
+| 오라 | Aura |
 
 ## 등급
 | 한국어 | English |
@@ -110,6 +120,47 @@
 | 수련의 숲 | Training Grove |
 | 흑철 진영 | Blackiron Camp |
 | 눈꽃 마을 | Snowflower Village |
+| 검은 뿌리 숲 | Blackroot Forest |
+| 바람칼 능선 | Windblade Ridge |
+| 버려진 채석장 | Abandoned Quarry |
+| 붉은 돌 고개 | Redrock Pass |
+| 서리 소나무 숲 | Frostpine Forest |
+| 서리솔 | Frostpine |
+| 쌍벽 관문 | Twin Wall Gate |
+| 이끼 낀 유적 | Mossy Ruins |
+| 침수된 회랑 | Flooded Corridor |
+| 해빙된 성소 입구 | Thawed Sanctum Entrance |
+| 침수된 고대 성소 | Sunken Ancient Sanctum |
+| 뿌리샘 마을 | Rootspring Village |
+| 뿌리샘 길 | Rootspring Road |
+| 눈꽃 숲 마을 | Snowflower Woods Village |
+| 눈보라 봉우리 | Blizzard Peak |
+| 지하세계 | Underworld |
+| 협곡 | Canyon |
+| 설원 | Snowfield |
+| 설산 | Snow Peak |
+| 적석 | Redstone |
+| 별철 | Stariron |
+| 북극성 | Polaris |
+| 창세의 별 | Genesis Star |
+| 얼음 여제 | Ice Empress |
+| 묘지기 | Gravekeeper |
+| 망령 | Wraith |
+| 붉은 거인 | Red Giant |
+| 해골 궁수 | Skeleton Archer |
+| 해골 방패병 | Skeleton Shieldbearer |
+| 해골 사령술사 | Skeleton Necromancer |
+| 해골 광부 | Skeleton Miner |
+| 황금 해골 | Golden Skeleton |
+| 사령 토템 | Necro Totem |
+| 암석 골렘 | Rock Golem |
+| 설산 예티 | Snow Peak Yeti |
+| 성소 석상 | Sanctum Statue |
+| 돌격병 | Charger |
+| 투척병 | Thrower |
+| 수호병 | Warder |
+| 리치 | Lich |
+| 필드 보스 | Field Boss |
 | 수호석 | Wardstone |
 | 해골왕 | Skeleton King |
 | 그라흐 | Grah |
@@ -147,3 +198,18 @@
 | 대사제 | High Priest |
 | 기사단장 | Knight Commander |
 | 전직 안내원 | Advancement Guide |
+| 세나 | Sena |
+| 던전 안내원 | Dungeon Guide |
+
+## 번역 중 정한 이름 (2026-10-13)
+| 한국어 | English |
+|---|---|
+| 성전기사 | Paladin |
+| 요일 던전 | Weekday Dungeon |
+| 바위 협곡 | Rock Canyon |
+| 고대 성소 | Ancient Sanctum |
+| 결계석 | barrier stone |
+| 밤톨 | Chestnut |
+| 오르 | Orr |
+| 마족 | demon |
+| 마왕 | Demon King |

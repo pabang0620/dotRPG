@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { getAccount } from '../../middleware/authMiddleware';
 import { getValidated } from '../../middleware/validationMiddleware';
+import { langOf } from '../../utils/i18n';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './withdrawalService';
@@ -8,7 +9,7 @@ import type { CancelBody, WithdrawBody } from './withdrawalValidation';
 
 export async function info(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    successResponse(res, await service.getInfo(getAccount(res.locals).id));
+    successResponse(res, await service.getInfo(getAccount(res.locals).id, langOf(res)));
   } catch (err) {
     next(err);
   }

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """English support tooling (Docs/PLAN_I18N.md).
 
-  python3 Tools/i18n/i18n.py check            # progress report, exit 1 while anything is left
-  python3 Tools/i18n/i18n.py extract [out]    # untranslated Korean -> JSON (default Temp/i18n/missing_en.json)
-  python3 Tools/i18n/i18n.py unwrapped [dir]  # list Korean literals not yet wrapped in L.T / L.F / L.N
-  python3 Tools/i18n/i18n.py sync-server      # write server/data/lang/en.json (server-side keys of the merged table)
+  python3 Tools/i18n/i18n.py check [lang]           # progress report (default: every language folder), exit 1 while anything is left
+  python3 Tools/i18n/i18n.py extract <lang> [out]    # untranslated Korean -> JSON (default Temp/i18n/missing_<lang>.json)
+  python3 Tools/i18n/i18n.py unwrapped [dir]         # list Korean literals not yet wrapped in L.T / L.F / L.N
+  python3 Tools/i18n/i18n.py sync-server             # write server/data/lang.<lang>.json for every language
 
 Keys are the Korean source sentences. Sources: every Korean string literal in Assets/Scripts (except DevCapture*,
 Editor, logs, [Tooltip], lines ending in // i18n-ignore) and the display fields of Resources/Data/*.json.
 Interpolated $"..." strings with Korean are not keys: they must first become L.F("...{0}...", x).
 Server: Korean literals in server/src (not admin, db, ops) and display fields of server/data/*.json are keys too.
 Their English goes to server.json (client shows mail titles, daily quests, names from the server) and is copied to
-server/data/lang/en.json, which the server uses to answer X-Lang: en requests. Template holes ${x} become {0}, {1}.
+server/data/lang.<lang>.json, which the server uses to answer X-Lang requests. Template holes ${x} become {0}, {1}.
 """
 import json
 import os
@@ -22,7 +22,7 @@ from collections import defaultdict
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCRIPTS = os.path.join(ROOT, "Assets", "Scripts")
 DATA = os.path.join(ROOT, "Assets", "Resources", "Data")
-LANG_EN = os.path.join(DATA, "Lang", "en")
+LANG_ROOT = os.path.join(DATA, "Lang")
 GLOSSARY = os.path.join(ROOT, "Docs", "I18N_GLOSSARY.md")
 SERVER = os.path.join(ROOT, "server")
 SERVER_SRC = os.path.join(SERVER, "src")
@@ -30,7 +30,7 @@ SERVER_SKIP = ("admin", "db", "ops")
 SERVER_DATA_FIELDS = {"name", "description", "synergy", "label", "giver", "title", "text"}
 SERVER_DATA_FILES = ["careers.json", "chat.json", "daily_quests.json", "dungeons.json", "items.json",
                      "monsters.json", "star_products.json"]
-SERVER_OUT = os.path.join(SERVER, "data", "lang", "en.json")
+SERVER_DATA = os.path.join(SERVER, "data")
 
 HANGUL = re.compile(r"[가-힣]")
 DATA_FIELDS = {"text", "speaker", "title", "summary", "prompt"}
@@ -200,12 +200,16 @@ def server_strings():
             yield "server/data/" + f, s
 
 
-def load_table():
-    table = {}
-    if os.path.isdir(LANG_EN):
-        for f in sorted(os.listdir(LANG_EN)):
+def languages():
+    return sorted(d for d in os.listdir(LANG_ROOT) if os.path.isdir(os.path.join(LANG_ROOT, d))) if os.path.isdir(LANG_ROOT) else []
+
+
+def load_table(lang):
+    table, folder = {}, os.path.join(LANG_ROOT, lang)
+    if os.path.isdir(folder):
+        for f in sorted(os.listdir(folder)):
             if f.endswith(".json"):
-                table.update(json.load(open(os.path.join(LANG_EN, f), encoding="utf-8")))
+                table.update(json.load(open(os.path.join(folder, f), encoding="utf-8")))
     return table
 
 
@@ -223,11 +227,13 @@ def wanted_keys():
 
 
 def cmd_sync_server():
-    table = load_table()
-    out = {k: table[k] for k in sorted({k for _l, k in server_strings()}) if table.get(k)}
-    os.makedirs(os.path.dirname(SERVER_OUT), exist_ok=True)
-    json.dump(out, open(SERVER_OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print(f"{len(out)} server messages -> {SERVER_OUT}")
+    keys = sorted({k for _l, k in server_strings()})
+    for lang in languages():
+        table = load_table(lang)
+        out = {k: table[k] for k in keys if table.get(k)}
+        path = os.path.join(SERVER_DATA, f"lang.{lang}.json")
+        json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        print(f"{lang}: {len(out)} server messages -> {path}")
 
 
 # ---------------- checks ----------------
@@ -254,30 +260,32 @@ def glossary():
     return terms
 
 
-def cmd_check():
+def cmd_check(only=None):
     unwrapped = interp = 0
     for _p, _l, kind, _v, wrapped, in_names in cs_literals():
         if kind == "interp" and not wrapped: interp += 1
         elif not wrapped and not in_names: unwrapped += 1
     keys = wanted_keys()
-    table = load_table()
-    missing = [k for k in keys if not table.get(k)]
-    shape = [(k, why) for k, v in table.items() if v and (why := bad_shape(k, v))]
-    terms = glossary()
-    off_glossary = [(k, ko, en) for k, v in table.items() if v for ko, en in terms if ko in k and en.lower() not in v.lower()]
     print(f"Korean $\"...\" interpolations left: {interp}")
     print(f"Korean literals not wrapped in L.T/L.F/L.N: {unwrapped}")
-    print(f"Untranslated keys: {len(missing)} / {len(keys)}")
-    print(f"Placeholder or tag mismatches: {len(shape)}")
-    for k, why in shape[:20]: print(f"  [{why}] {k}")
-    print(f"Glossary misses: {len(off_glossary)}")
-    for k, ko, en in off_glossary[:20]: print(f"  {ko} -> {en}: {k}")
-    return 1 if (interp or unwrapped or missing or shape) else 0
+    failed = bool(interp or unwrapped)
+    for lang in ([only] if only else languages()):
+        table = load_table(lang)
+        missing = [k for k in keys if not table.get(k)]
+        shape = [(k, why) for k, v in table.items() if v and (why := bad_shape(k, v))]
+        print(f"[{lang}] untranslated {len(missing)} / {len(keys)}, placeholder or tag mismatches {len(shape)}")
+        for k, why in shape[:10]: print(f"  [{why}] {k}")
+        if lang == "en":  # the glossary is English
+            terms = glossary()
+            off = [(k, ko, en) for k, v in table.items() if v for ko, en in terms if ko in k and en.lower() not in v.lower()]
+            print(f"[en] glossary misses (hints, often substring noise): {len(off)}")
+        failed = failed or bool(missing or shape)
+    return 1 if failed else 0
 
 
-def cmd_extract(out):
+def cmd_extract(lang, out):
     keys = wanted_keys()
-    table = load_table()
+    table = load_table(lang)
     missing = {k: "" for k in sorted(keys, key=lambda k: (sorted(keys[k])[0], k)) if not table.get(k)}
     groups = defaultdict(dict)
     for k in missing:
@@ -301,9 +309,10 @@ def cmd_unwrapped(sub):
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
-        sys.exit(cmd_check())
+        sys.exit(cmd_check(sys.argv[2] if len(sys.argv) > 2 else None))
     if cmd == "extract":
-        cmd_extract(sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "Temp", "i18n", "missing_en.json"))
+        lang = sys.argv[2] if len(sys.argv) > 2 else "en"
+        cmd_extract(lang, sys.argv[3] if len(sys.argv) > 3 else os.path.join(ROOT, "Temp", "i18n", f"missing_{lang}.json"))
     elif cmd == "sync-server":
         cmd_sync_server()
     elif cmd == "unwrapped":

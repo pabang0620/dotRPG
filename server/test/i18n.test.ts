@@ -24,6 +24,11 @@ describe('[I18N] 서버 메시지 번역', () => {
     expect(translate('en', '1,200골드가 부족합니다 (3).')).toBe('Not enough Gold: 1,200 (3).');
   });
 
+  it('목록에 없는 언어 코드(경로 문자 포함)는 한국어 그대로', () => {
+    expect(translate('../../etc/passwd', '정지된 계정입니다.')).toBe('정지된 계정입니다.');
+    expect(translate('EN', '정지된 계정입니다.')).toBe('정지된 계정입니다.');
+  });
+
   it('표에 없으면 한국어 그대로', () => {
     expect(translate('en', '처음 보는 문장입니다.')).toBe('처음 보는 문장입니다.');
   });

@@ -121,7 +121,9 @@ namespace DotRPG
         // Server-wide notices (+10 enhance etc.) also land in the system channel.
         void OnToast(string message)
         {
-            if (message != null && message.Contains("[알림]")) Service.PostSystem(message.Replace("<color=#ffd84a>[알림]</color> ", "").Replace("[알림] ", "")); // i18n-ignore toast marker match
+            if (message == null) return;
+            string tag = message.Contains("[알림]") ? "[알림]" : !L.Ko && message.Contains(L.T("[알림]")) ? L.T("[알림]") : null; // i18n-ignore toast marker match
+            if (tag != null) Service.PostSystem(message.Replace("<color=#ffd84a>" + tag + "</color> ", "").Replace(tag + " ", ""));
         }
 
         IChatService bound;
