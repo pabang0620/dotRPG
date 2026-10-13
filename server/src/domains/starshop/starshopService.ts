@@ -123,7 +123,7 @@ export async function summary(accountId: number, characterUuid: string) {
   const registered = await repo.collectionsOf(db, accountId);
   return {
     balance: wallet.balance,
-    // 11단계: 유료·무료 구분, 부채, 일일 소비 상한, 결제 기능 표시(기존 필드는 그대로)
+    // 11단계: 유료·무료 구분, 부채, 결제 기능 표시(기존 필드는 그대로)
     paid_balance: wallet.paidBalance,
     free_balance: wallet.balance - wallet.paidBalance,
     debt: wallet.debt,

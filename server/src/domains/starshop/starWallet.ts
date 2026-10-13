@@ -67,15 +67,6 @@ export function assertNoStarDebt(w: Wallet): void {
   }
 }
 
-/** 오늘(since 이후) gacha·exchange·sealed_pull·pass_buy·skill_style_buy 로 쓴 별조각 합계. 지갑 행을 잠근 상태에서 읽어 경쟁이 없다 */
-export async function spentSince(db: Queryable, accountId: number, since: Date): Promise<number> {
-  const r = await db.query<{ s: string }>(
-    "SELECT coalesce(-sum(delta), 0) AS s FROM star_ledger WHERE account_id = $1 AND reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy', 'skill_style_buy') AND created_at >= $2",
-    [accountId, since],
-  );
-  return Number(r.rows[0]?.s ?? 0);
-}
-
 // ---------------- 원장 한 줄 + 지갑 갱신 ----------------
 
 interface Line {

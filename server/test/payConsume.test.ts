@@ -1,4 +1,4 @@
-// 11단계 결제: 별조각 소비 경로 강화(설계 18절 E). 무료분 먼저·유료 FIFO, 동시 소비, 일일 소비 상한, 확률표 버전 확인
+// 11단계 결제: 별조각 소비 경로 강화(설계 18절 E). 무료분 먼저·유료 FIFO, 동시 소비, 소비 한도 없음, 확률표 버전 확인
 import { randomUUID } from 'node:crypto';
 import { getPool, withTransaction } from '../src/db/pool';
 import { setClockOverride } from '../src/utils/clock';

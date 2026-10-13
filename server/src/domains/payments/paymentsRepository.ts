@@ -313,11 +313,6 @@ export async function lastOrderAt(db: Queryable, accountId: number): Promise<Dat
   return r.rows[0]?.t ?? null;
 }
 
-export async function ordersSince(db: Queryable, accountId: number, since: Date): Promise<number> {
-  const r = await db.query<{ n: string }>('SELECT count(*) AS n FROM star_orders WHERE account_id = $1 AND created_at > $2', [accountId, since]);
-  return Number(r.rows[0]?.n ?? 0);
-}
-
 export async function failedSince(db: Queryable, accountId: number, since: Date): Promise<{ n: number; oldest: Date | null }> {
   const r = await db.query<{ n: string; t: Date | null }>(
     "SELECT count(*) AS n, min(created_at) AS t FROM star_orders WHERE account_id = $1 AND state IN ('failed', 'expired') AND created_at > $2",
@@ -375,7 +370,7 @@ export async function linkedChargebackAccounts(db: Queryable, accountIds: number
 // ---------------- 플래그(검토 큐) ----------------
 
 export type FlagKind =
-  | 'rapid_orders' | 'limit_exceeded' | 'fail_burst' | 'country_changed' | 'shared_device' | 'linked_chargeback' | 'refund_after_spend' | 'chargeback'
+  | 'rapid_orders' | 'fail_burst' | 'country_changed' | 'shared_device' | 'linked_chargeback' | 'refund_after_spend' | 'chargeback'
   | 'partial_refund' | 'amount_mismatch' | 'steamid_mismatch' | 'appid_mismatch' | 'unknown_steam_order' | 'stuck_order' | 'report_gap' | 'unknown_steam_status';
 
 export async function insertFlag(
@@ -430,11 +425,6 @@ export async function dueOrders(db: Queryable, states: OrderState[], now: Date, 
     [states, now, limit],
   );
   return r.rows.map((x) => ({ id: Number(x.id), account_id: Number(x.account_id) }));
-}
-
-export async function oldestOrderSince(db: Queryable, accountId: number, since: Date): Promise<Date | null> {
-  const r = await db.query<{ t: Date | null }>('SELECT min(created_at) AS t FROM star_orders WHERE account_id = $1 AND created_at > $2', [accountId, since]);
-  return r.rows[0]?.t ?? null;
 }
 
 export interface NewOrder {

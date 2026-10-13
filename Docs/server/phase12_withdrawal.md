@@ -521,7 +521,7 @@ SELECT id, account_id FROM account_withdrawals
 |---|---|
 | 유예 중 | 새 계정을 만들지 못한다. 로그인은 `403 ACCOUNT_WITHDRAWAL_PENDING`(철회하거나 기다리거나) |
 | 익명화 직후 | **새 계정으로 가입할 수 있다.** `auth_identities`의 `UNIQUE(provider, subject)`가 풀려 `steamLogin`이 평소처럼 계정을 만든다. 옛 계정의 캐릭터·재화·우편·별조각은 복구되지 않는다 |
-| 재가입 쿨다운 | 기본 0일(`WITHDRAW_REJOIN_COOLDOWN_DAYS`). 요청부터 익명화까지 이미 30일이라 별도 대기를 두지 않는다. 신규 계정에 이미 걸려 있는 제한(신규 결제 한도 `tier=new`, 신규 경매 자격)이 일회성 이득을 막는다 |
+| 재가입 쿨다운 | 기본 0일(`WITHDRAW_REJOIN_COOLDOWN_DAYS`). 요청부터 익명화까지 이미 30일이라 별도 대기를 두지 않는다. 신규 계정에 이미 걸려 있는 제한(신규 경매 자격)이 일회성 이득을 막는다(결제 한도는 2026-10-13 제거) |
 | 이월 사유가 있을 때 | 9.3 |
 
 ### 9.2 제재 중 계정의 탈퇴 (제재 회피 방지)

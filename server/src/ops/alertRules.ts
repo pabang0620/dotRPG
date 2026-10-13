@@ -48,8 +48,6 @@ export const THRESHOLDS = {
   payFailRate: 0.3,
   payRefund24h: 5,
   payRefundRatio: 0.2,
-  payLimitHitsPerAccount1h: 3,
-  payLimitHitsTotal1h: 20,
   payReviewAgeS: 24 * 3600,
   starGrantPendingAgeS: 12 * 3600,
 } as const;
@@ -155,9 +153,6 @@ export function evaluate(i: RuleInput, now: Date = new Date()): Alert[] {
     }
     if (p.refunds_24h >= T.payRefund24h || (p.granted_24h > 0 && p.refunds_24h / p.granted_24h >= T.payRefundRatio)) {
       add('payment_refund_spike', 'warning', '환불 급증', `최근 24시간 환불 ${p.refunds_24h}건(지급 ${p.granted_24h}건)입니다.`);
-    }
-    if (p.limit_hits_1h_max_account >= T.payLimitHitsPerAccount1h || p.limit_hits_1h_total >= T.payLimitHitsTotal1h) {
-      add('payment_limit_hits', 'warning', '결제 한도 초과 반복', `최근 1시간 ${p.limit_hits_1h_total}회(한 계정 최대 ${p.limit_hits_1h_max_account}회)입니다.`);
     }
     if (p.steam_breaker_open) add('payment_steam_breaker', 'warning', 'Steam 결제 회로 차단', 'Steam 결제 호출이 연속 실패해 잠시 차단되었습니다.');
     if (p.review_oldest_age_s !== null && p.review_oldest_age_s > T.payReviewAgeS) add('payment_review_age', 'warning', '결제 검토 지연', '가장 오래된 열린 검토 항목이 24시간을 넘었습니다.');

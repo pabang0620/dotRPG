@@ -3,6 +3,7 @@
 -- + 0004_gather_rate(이상 기록 kind, 위 anomaly_log 정의에 이미 포함) + 0005_party(4단계) + 0006_chat_social(5단계, 이 파일 아래쪽) + 0007_auction(6단계, 0006 구역 바로 앞)
 -- + 0008_ops(7단계, 이 파일 아래쪽) + 0009_relay_field(8단계) + 0020_anti_abuse(9단계, 이 파일 아래쪽. 0010~0019는 이 파일에 합치지 않았다)
 -- + 0021_sweep_and_mail(10단계, 이 파일 아래쪽) + 0023_payments(11단계, 이 파일 맨 아래. 0022는 accounts.prev_login_at 한 열이라 합치지 않았다).
+-- 0036_remove_pay_limits(결제 한도 제거: 소비 상한 인덱스 삭제, 결제 주석 갱신)는 해당 구역에 반영했다.
 -- + 0028_raid_rewards(13단계 레이드 보상, 이 파일 맨 아래 끝).
 -- + 0027_withdrawal(회원 탈퇴, 이 파일 맨 아래. 0024~0026은 합치지 않았다. ledger_block_mutation()은 0027에서 교체된다: 맨 위 정의는 0001의 옛 모양이고 맨 아래 CREATE OR REPLACE가 최종이다).
 -- (0006의 accounts.last_character_id는 아래 accounts 정의에 합치지 않고 0006 구역의 ALTER로 둔다: 정본 순서를 그대로 보이기 위해서다.)
@@ -2367,10 +2368,10 @@ CREATE TABLE payment_profiles (
   CONSTRAINT payment_profiles_block_chk CHECK ((status = 'blocked') = (block_reason IS NOT NULL AND blocked_at IS NOT NULL)),
   CONSTRAINT payment_profiles_floor_chk CHECK (tier_floor = 'none' OR tier_floor_until IS NOT NULL)
 );
-COMMENT ON TABLE  payment_profiles IS '계정의 결제 상태. 행이 없으면 정상(active, 제한 없음). 결제 정지와 제한 단계 하한만 담고 한도 사용량은 star_orders에서 계산한다(파생 값을 따로 저장하지 않는다)';
+COMMENT ON TABLE  payment_profiles IS '계정의 결제 상태. 행이 없으면 정상(active, 제한 없음). 결제 정지와 제한 단계 하한만 담는다(결제 금액 한도는 없다)';
 COMMENT ON COLUMN payment_profiles.status IS 'blocked면 새 주문을 만들 수 없다(B1, B2가 PAYMENT_BLOCKED). 해제는 owner';
 COMMENT ON COLUMN payment_profiles.blocked_by IS '"system" 또는 관리자 login_id(표시용). 정본 기록은 admin_audit_log';
-COMMENT ON COLUMN payment_profiles.tier_floor IS 'restricted면 tier_floor_until 전까지 제한 단계(낮은 한도) 적용. 자동(환불 반복, 국가 변경 등)과 수동이 올린다';
+COMMENT ON COLUMN payment_profiles.tier_floor IS 'restricted면 tier_floor_until 전까지 제한 단계로 기록한다(결제를 막지 않는다. 이상 신호·관리자 조회용). 자동(환불 반복, 국가 변경 등)과 수동이 올린다';
 COMMENT ON COLUMN payment_profiles.last_country IS '마지막 주문에서 Steam이 알려 준 국가. 국가 변경 감지용';
 
 -- 3. 주문
@@ -2438,7 +2439,7 @@ COMMENT ON COLUMN star_orders.catalog_version IS '주문 시점 star_products.js
 COMMENT ON COLUMN star_orders.amount_minor IS '통화 최소 단위 정수. 서버 상품표 값';
 COMMENT ON COLUMN star_orders.steam_amount_minor IS 'QueryTxn이 돌려준 항목 금액(검증 후 기록). amount_minor와 같아야 지급한다';
 COMMENT ON COLUMN star_orders.steam_status IS '마지막 QueryTxn 상태 문자열(표시·감사용, 로직은 state)';
-COMMENT ON COLUMN star_orders.tier IS '주문 시점 적용한 한도 단계';
+COMMENT ON COLUMN star_orders.tier IS '주문 시점의 단계(new/standard/restricted). 결제 한도는 없고 기록·조회용';
 COMMENT ON COLUMN star_orders.state IS 'pending_init InitTxn 결과 미확정 / created 승인 대기 / authorized Steam 승인됨(확정 전) / finalized 확정·성공 확인(지급 대기) / granted 지급 완료 / failed 청구 없이 종료 / expired 만료 / refunded 환불 / chargeback 지불 거절';
 COMMENT ON COLUMN star_orders.needs_review IS '청구되었을 수 있는데 검증이 어긋난 주문 등 사람이 봐야 하는 주문. 상태와 별개로 대사 일정을 유지한다';
 COMMENT ON COLUMN star_orders.ip IS '개인정보 성격. 보관 기간(PAY_IP_RETENTION_DAYS) 뒤 NULL로 지운다';
@@ -2583,7 +2584,7 @@ CREATE TABLE payment_flags (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT payment_flags_review_chk CHECK ((state = 'open') = (reviewed_at IS NULL))
 );
-COMMENT ON TABLE  payment_flags IS '결제 이상 신호와 검토 큐. 막지 않고 기록하는 신호(한도 반복, 국가 변경 등)와 반드시 사람이 보는 신호(차지백, 금액 불일치, 미지 주문)를 함께 둔다. 검토 필드만 바뀐다';
+COMMENT ON TABLE  payment_flags IS '결제 이상 신호와 검토 큐. 막지 않고 기록하는 신호(빠른 재주문, 국가 변경 등)와 반드시 사람이 보는 신호(차지백, 금액 불일치, 미지 주문)를 함께 둔다. 검토 필드만 바뀐다';
 COMMENT ON COLUMN payment_flags.account_id IS '신호의 대상 계정. 미지 주문처럼 계정을 특정하지 못하는 신호는 이 표에 넣지 않고 job_runs.detail과 경보로만 남긴다(unknown_steam_order는 Steam ID로 우리 계정을 찾은 경우에만 이 표에 들어간다)';
 -- 검토 큐(열린 것, 심각도 높은 순, 오래된 순)
 CREATE INDEX payment_flags_open ON payment_flags (severity DESC, created_at) WHERE state = 'open';
@@ -2628,8 +2629,7 @@ ALTER TABLE star_ledger ADD CONSTRAINT star_ledger_sign_chk CHECK (
 CREATE UNIQUE INDEX star_ledger_purchase_uq ON star_ledger (ref) WHERE reason = 'purchase';
 CREATE UNIQUE INDEX star_ledger_revoke_uq   ON star_ledger (ref) WHERE reason IN ('refund_revoke', 'chargeback_revoke');
 CREATE UNIQUE INDEX star_ledger_admin_uq    ON star_ledger (ref) WHERE reason IN ('admin_grant', 'debt_forgive');
--- 일일 소비 상한: 계정의 오늘 gacha·exchange 합계(지갑 행을 잠근 상태에서 읽는다)
-CREATE INDEX star_ledger_spend_time ON star_ledger (account_id, created_at) WHERE reason IN ('gacha', 'exchange');
+-- (0036에서 일일 소비 상한과 함께 star_ledger_spend_time 인덱스를 지웠다)
 
 -- 원장을 추가 전용으로(0013 이후 처음)
 CREATE TRIGGER star_ledger_append_only BEFORE UPDATE OR DELETE ON star_ledger

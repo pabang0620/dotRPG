@@ -88,8 +88,6 @@ export interface Snapshot {
     holds_payment_active: number;
     debt_accounts: number;
     unknown_orders_open: number;
-    limit_hits_1h_total: number;
-    limit_hits_1h_max_account: number;
     grants_pending_oldest_age_s: number | null;
     steam_breaker_open: boolean;
     key_rejected_recent: boolean;
@@ -236,8 +234,6 @@ export async function collectSnapshot(): Promise<Snapshot> {
     holds_payment_active: 0,
     debt_accounts: 0,
     unknown_orders_open: 0,
-    limit_hits_1h_total: 0,
-    limit_hits_1h_max_account: 0,
     grants_pending_oldest_age_s: null,
     steam_breaker_open: partner.breaker_open,
     key_rejected_recent: partner.key_rejected_recent,
@@ -263,8 +259,6 @@ export async function collectSnapshot(): Promise<Snapshot> {
               (SELECT count(*) FROM star_wallets WHERE debt > 0) AS debt_accounts,
               ((SELECT count(*) FROM payment_flags WHERE kind = 'unknown_steam_order' AND state = 'open')
                + coalesce((SELECT (detail->>'unknown_orders')::int FROM job_runs WHERE job = 'payment-report' AND status = 'ok' ORDER BY started_at DESC LIMIT 1), 0)) AS unknown_open,
-              (SELECT count(*) FROM payment_flags WHERE kind = 'limit_exceeded' AND created_at > now() - interval '1 hour') AS limit_total,
-              (SELECT coalesce(max(c), 0) FROM (SELECT count(*) AS c FROM payment_flags WHERE kind = 'limit_exceeded' AND created_at > now() - interval '1 hour' GROUP BY account_id) t) AS limit_max,
               (SELECT extract(epoch FROM now() - min(created_at)) FROM star_admin_grants WHERE state = 'pending') AS grant_oldest`,
     );
     const x = q.rows[0] as Record<string, string | null>;
@@ -286,8 +280,6 @@ export async function collectSnapshot(): Promise<Snapshot> {
       holds_payment_active: n(x.holds_payment),
       debt_accounts: n(x.debt_accounts),
       unknown_orders_open: n(x.unknown_open),
-      limit_hits_1h_total: n(x.limit_total),
-      limit_hits_1h_max_account: n(x.limit_max),
       grants_pending_oldest_age_s: x.grant_oldest === null ? null : Math.round(n(x.grant_oldest)),
     };
   } catch {

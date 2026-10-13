@@ -17,9 +17,9 @@
 | 5 | FinalizeTxn 직후 서버가 죽거나 응답이 사라져 돈만 나가고 지급이 안 된다 | `finalized` 상태가 남고 대사 작업이 다시 지급한다. InitTxn 직후 죽어도 `pending_init`을 QueryTxn으로 대사 | 7.4 |
 | 6 | 결제 중 클라이언트가 꺼지거나 응답을 못 받는다 | 서버 작업이 열린 주문을 주기적으로 조회. 상점을 열 때(B1)와 복원(B6)이 새 견적 발행 전에 열린 주문을 먼저 대사 | 7.4, 15 |
 | 7 | Web API 키가 유출된다 | 환경변수만, 인증용 키와 분리한 퍼블리셔 키, 키가 든 URL·응답 원문을 로그·오류에 남기지 않음, 거절(401/403) 즉시 critical 경보, Steam 일일 리포트에 우리 기록에 없는 주문이 있으면 키 유출 의심 경보 | 7.6 |
-| 8 | 사서 뽑고 환불한다 | 환불·차지백 감지 시 남은 유료분 회수 + 이미 소비한 분은 부채(소비 차단, 모든 입금이 먼저 상환) + 반복 패턴은 한도 강화·결제 정지 | 9 |
+| 8 | 사서 뽑고 환불한다 | 환불·차지백 감지 시 남은 유료분 회수 + 이미 소비한 분은 부채(소비 차단, 모든 입금이 먼저 상환) + 반복 패턴은 제한 단계 기록·결제 정지 | 9 |
 | 9 | 지불 거절(차지백) | 결제 정지 + 경제 정지(9단계 holds, `kind='payment'`) + 검토 큐 + critical 경보. 얻은 것의 회수는 owner 승인 도구로만 | 9 |
-| 10 | 도용 카드로 대량 구매 | 계정별 일·월 한도(신규·제한 단계는 더 낮게), 시간당 건수·최소 간격, 열린 주문 1개, 실패 급증 쿨다운. **한도 초과는 주문 생성 단계에서 거절** | 10 |
+| 10 | 도용 카드로 대량 구매 | 최소 간격, 열린 주문 1개, 실패 급증 쿨다운, 분당 요청 속도, 차지백 시 결제 정지·부채. **결제 금액 한도는 두지 않는다**(2026-10-13 결정, 10.1). 카드 도용 판정 자체는 Steam 결제가 맡는다 | 10 |
 | 11 | 여러 계정이 같은 기기·묶음으로 구매(차지백 농장, 세탁) | 같은 기기·연결 계정에 차지백 이력이 있거나 구매 계정이 여럿이면 제한(restricted) 단계 + 검토 큐. 결제 수단은 Steam만 알아서 서버는 모른다(한계) | 10.5 |
 | 12 | Steam 지갑 국가·통화를 바꿔 싼 지역 가격으로 구매 | 매 주문에 Steam이 알려 준 국가·통화를 기록, 허용 통화는 상품표에 있는 것만, 90일 안에 국가가 바뀐 횟수가 기준을 넘으면 restricted | 10.4 |
 | 13 | 서버 코드 버그·삽입된 악성 코드가 임의로 별조각을 만든다 | 지급·소비 경로는 `starWallet` 모듈 하나(구조 테스트가 다른 파일의 `INSERT INTO star_ledger`를 금지). DB 제약 트리거가 **근거 행이 없는 양수 원장**을 거절(결제 주문, 승인된 운영 지급, 시험 스위치). 원장은 추가 전용 | 4 |
@@ -27,15 +27,15 @@
 | 15 | 시험용 지급 스크립트가 운영에서 실행된다 | 스테이지 가드 + DB 세션 설정이 없으면 `test_grant` 원장 INSERT가 트리거에서 거절 | 4 |
 | 16 | 동시 소비로 별조각 복사·음수 | 계정 지갑 행 잠금 -> 유료 로트 잠금 -> CHECK, 소비는 원장 1줄 + 배분 줄을 한 트랜잭션에 | 8, 11 |
 | 17 | 뽑기 결과·확률 조작, 표시와 다른 확률 | 판정은 이미 서버. 확률표를 버전별 내용 해시로 스냅샷(`star_rates_snapshots`)하고 같은 버전에 다른 내용이면 기동 거부. 뽑기마다 버전을 기록하고 클라이언트가 본 버전과 다르면 거절 | 11.4 |
-| 18 | 탈취한 토큰·악성 코드가 지갑을 비운다 | 일일 별조각 소비 상한, 계정당 소비 속도 제한, 단일 세션(9단계), 부채 중 소비 차단. 결제 자체는 이용자의 Steam 오버레이 승인이 있어야 성립한다 | 11 |
+| 18 | 탈취한 토큰·악성 코드가 지갑을 비운다 | 계정당 소비 속도 제한, 단일 세션(9단계), 부채 중 소비 차단. 결제 자체는 이용자의 Steam 오버레이 승인이 있어야 성립한다 | 11 |
 | 19 | 시험 앱(480) 주문이 운영에 반영된다 | 주문에 `app_id` 저장·대조, 운영에서 480 거부(기존 기동 검사), 모드 `mock`은 운영에서 기동 거부 | 16 |
 | 20 | Steam 장애·지연으로 이중 청구나 지급 누락 | InitTxn·FinalizeTxn은 맹목적으로 재시도하지 않고 QueryTxn으로 상태를 판별. 결제 전용 회로 차단(인증과 분리). 주문 생성 실패는 청구 없음 | 7.7 |
-| 21 | 날짜 경계 조작으로 한도 초기화 | 일일 경계는 `resetBoundaries()` 하나(서버 시각), 월 한도는 롤링 30일(새 경계 함수 없음) | 3 |
+| 21 | 날짜 경계 조작 | 일일 경계는 `resetBoundaries()` 하나(서버 시각), 30일·90일 창은 롤링(새 경계 함수 없음). 결제 한도는 없어 초기화할 대상도 없다 | 3 |
 | 22 | 응답·로그로 부정 탐지 기준이 샌다 | 플레이어 응답에 Steam 원문·정지 사유·내부 점수 없음. 실패는 4개 코드(`DECLINED`, `EXPIRED`, `NOT_COMPLETED`, `UNDER_REVIEW`)만 | 13 |
 | 23 | 환불된 별조각으로 얻은 외형을 합성·분해해 세탁한다 | 모든 입금(분해 포함)이 부채를 먼저 갚고, 부채 중 뽑기·교환·선택·합성 차단, 차지백은 경제 정지로 분해·경매·판매·강화까지 차단 | 9.4 |
-| 24 | 한도 검사와 주문 생성 사이 경쟁(동시 주문으로 한도 우회) | `accounts` 행 잠금 + "계정당 열린 주문 1개" 부분 유일 인덱스 | 10.1 |
+| 24 | 속도 검사와 주문 생성 사이 경쟁(동시 주문으로 속도 제한 우회) | `accounts` 행 잠금 + "계정당 열린 주문 1개" 부분 유일 인덱스 | 10.1 |
 
-남는 위험(숨기지 않는다): 차지백·환불은 보통 며칠~몇 주 뒤에 도착하므로 그 사이 소비된 별조각의 **경제적 손실은 막을 수 없다**. 이 설계는 (a) 계정별 한도로 손실 상한을 두고(상한 = 기간 한도 x 별조각 단가), (b) 소비분을 부채로 남겨 재발을 막고, (c) 반복 패턴은 결제 정지로 끊고, (d) 회수 도구로 되돌릴 길을 연다.
+남는 위험(숨기지 않는다): 차지백·환불은 보통 며칠~몇 주 뒤에 도착하므로 그 사이 소비된 별조각의 **경제적 손실은 막을 수 없다**. 이 설계는 (a) 소비분을 부채로 남겨 재발을 막고, (b) 반복 패턴은 결제 정지로 끊고, (c) 회수 도구로 되돌릴 길을 연다. 결제 금액 한도는 두지 않으므로(10.1) 한 계정의 손실 상한도 없다.
 
 ## 2. 핵심 설계와 달라진 점
 
@@ -69,7 +69,7 @@
 - 모바일 스토어(Apple/Google) 결제: PLAN_MONETIZATION 3절의 후속. 이 단계는 Steam만. 주문 표의 `platform` 열은 두지 않고 모바일은 별도 마이그레이션으로 확장한다(Steam 전용 열 `steam_*`가 많아 억지로 일반화하면 검증이 약해진다).
 - 외형·구독·패스의 직접 현금 판매, 선물하기, 별조각 계정 간 이전: 하지 않는다(경로가 늘수록 방어면이 는다).
 - 뽑기 장비의 NPC 판매 경로(별조각 -> 장비 -> 골드): 스택 단위 재고에 출처가 없어 서버만으로 구분할 수 없다. 결정 대기 D17, 측정 후 판단.
-- 미성년자 결제 한도, 지역별 확률 공개 법령 적용 범위: Steam 지갑 정책과 법무 확인 사항이며 서버가 판정하지 않는다. 서버는 확률표를 버전별로 보존·내보내기만 한다(11.4).
+- 결제 한도는 두지 않는다(미성년자 포함, 2026-10-13 결정). 미성년자 결제 취소 요청은 Steam 환불과 9절 환불 처리로 대응한다. 지역별 확률 공개 법령 적용 범위는 법무 확인 사항이며 서버가 판정하지 않는다. 서버는 확률표를 버전별로 보존·내보내기만 한다(11.4).
 - 자동 차지백 분쟁 대응 서류 제출: 운영 절차(Steamworks 파트너 사이트)다.
 
 ## 3. 공통 규칙
@@ -84,7 +84,7 @@
   - 관리자 변경 요청은 `runAdminAction`의 `(admin_id, request_id)`.
 - **락 순서**(9·10단계 위에 이어 붙인다): ① 캐릭터 행(소비 경로만) ② `accounts` 행(주문 생성, 운영 지급 승인) ③ `star_orders` 또는 `star_admin_grants` 행(한 요청에서 둘을 같이 잠그지 않는다) ④ `star_wallets` 행 ⑤ `star_paid_lots` 행(`created_at, order_id` 오름차순) ⑥ `economy_holds`, `payment_profiles`. 소비는 ① -> ④ -> ⑤, 지급·회수는 ③ -> ④ -> ⑤라 순환이 없다. 소비 경로는 주문 행을 잠그지 않는다.
 - **외부 호출은 DB 트랜잭션 밖에서 한다.** Steam 호출(최대 8초)을 행 잠금을 쥔 채 기다리지 않는다. 대신 주문 행의 **임대**(`lease_until`, `lease_token`, 30초)로 한 작업자만 주문을 진행하게 하고, 이후 쓰기는 `WHERE lease_token = $token AND state = $기대상태`로 펜싱한다(6.4).
-- **날짜 경계**: 일일(06:00 KST)은 `utils/resetBoundaries.ts`의 `resetBoundaries(now).dailyStartAt`/`nextDailyAt` 하나만 쓴다. 이 단계의 사용처: 일일 결제 한도, 일일 별조각 소비 상한. 월 한도·시간당 건수·환불 90일·국가 변경 90일은 **롤링 창**이라 새 경계 함수를 만들지 않는다(9단계 1절과 같은 방식). KST를 직접 계산하는 코드를 새로 쓰지 않는다.
+- **날짜 경계**: 일일(06:00 KST)은 `utils/resetBoundaries.ts`의 `resetBoundaries(now).dailyStartAt`/`nextDailyAt` 하나만 쓴다. 이 단계의 사용처: 관리자 조회의 오늘 구매 합계(PA4). 30일 구매 합계·환불 90일·국가 변경 90일은 **롤링 창**이라 새 경계 함수를 만들지 않는다(9단계 1절과 같은 방식). KST를 직접 계산하는 코드를 새로 쓰지 않는다.
 - **새 에러 코드**(403 권한·정지 / 404 없음 / 409 상태 충돌 / 410 만료 / 422 규칙 위반 / 429 속도 / 503 꺼짐·Steam 불가):
 
 | 코드 | 상태 | 어디서 | 뜻 |
@@ -101,9 +101,7 @@
 | `CURRENCY_UNSUPPORTED` | 422 | B1, B2 | Steam 지갑 통화가 상품표에 없음 |
 | `ORDER_IN_PROGRESS` | 409 | B2 | 이 계정에 열린 주문이 있다(`errors:{ order_id }`로 sync 안내) |
 | `ORDER_TOO_FAST` | 429 | B2 | 최소 간격·시간당 건수·실패 쿨다운(`errors:{ retry_after_sec }`) |
-| `PAY_LIMIT_EXCEEDED` | 422 | B2 | 일·월 한도 초과(`errors:{ scope:'daily'|'monthly', limit, used, resets_at }`, 본인 수치라 노출한다) |
 | `STAR_DEBT` | 403 | 뽑기·교환·선택·합성 | 환불된 결제분이 있어 별조각 사용이 막혀 있다(`errors:{ debt }`) |
-| `STAR_SPEND_CAP` | 422 | 뽑기·교환 | 일일 소비 상한 초과(`errors:{ limit, used, resets_at }`) |
 | `RATES_CHANGED` | 409 | 뽑기 | 클라이언트가 본 확률표 버전과 서버 현재 버전이 다름(`errors:{ rates_version }`) |
 | `GRANT_STATE` | 409 | PA10~PA12 | 이 상태에서는 할 수 없는 동작 |
 | `GRANT_SELF_APPROVAL` | 403 | PA11 | 작성자는 승인할 수 없다 |
@@ -167,7 +165,7 @@ quote_id = "v1." + base64url(JSON{ a: 계정 uuid, p: 상품 id, c: 통화, m: �
 
 - B1이 발급(유효 `PAYMENT_QUOTE_TTL_SECONDS`, 기본 600). B2가 검증: 상수 시간 비교(`timingSafeEqual`), 계정 일치, 만료(`QUOTE_EXPIRED`), **서버가 지금 상품표와 Steam 통화로 다시 계산한 값과 토큰 값이 같은지**(`QUOTE_CHANGED`).
 - 견적은 비밀이 아니라 **무결성 참조**다. 클라이언트가 값을 바꿔도 서명이 깨지고, 서명이 맞아도 서버는 토큰 안의 가격을 쓰지 않고 상품표에서 다시 읽는다(토큰은 "화면에 보여 준 것과 지금 서버가 계산한 것이 같은가"를 확인하는 용도).
-- 한 견적으로 여러 번 주문할 수 있다(일회용이 아님). 주문 수는 열린 주문 1개 규칙·한도·속도 제한이 막는다.
+- 한 견적으로 여러 번 주문할 수 있다(일회용이 아님). 주문 수는 열린 주문 1개 규칙·속도 제한이 막는다.
 
 ## 6. 주문 상태 기계
 
@@ -213,8 +211,8 @@ finalized, authorized, created에서도 Steam이 환불·차지백이라 하면 
 | | **트랜잭션 1 시작, `accounts` 행 `FOR UPDATE`** | |
 | 9 | 같은 `request_id` 재확인(동시 요청) | 0과 같음 |
 | 10 | 열린 주문 없음 | `409 ORDER_IN_PROGRESS` |
-| 11 | 속도: 마지막 주문 생성 후 `PAY_MIN_ORDER_GAP_SECONDS`, 최근 1시간 주문 수 `<= PAY_MAX_ORDERS_PER_HOUR`, 실패·만료 주문 1시간 `< PAY_FAIL_COOLDOWN_THRESHOLD` | `429 ORDER_TOO_FAST` |
-| 12 | 단계(tier) 계산(10.2) + 일·월 한도(10.1) | `422 PAY_LIMIT_EXCEEDED` |
+| 11 | 속도: 마지막 주문 생성 후 `PAY_MIN_ORDER_GAP_SECONDS`, 실패·만료 주문 1시간 `< PAY_FAIL_COOLDOWN_THRESHOLD`(시간당 주문 건수 상한은 없다) | `429 ORDER_TOO_FAST` |
+| 12 | 단계(tier) 계산(10.2). 기록만 하고 막지 않는다(결제 금액 한도 없음, 10.1) | - |
 | 13 | 주문 행 INSERT(`pending_init`, 상품·가격·통화·별조각·Steam ID·appid 스냅샷, `steam_order_id = nextval('star_order_no_seq')`, 만료 = 지금 + `PAY_ORDER_EXPIRE_MINUTES`) + 이벤트 `created`. **커밋** | |
 | 14 | (트랜잭션 밖) InitTxn 호출 | 결과별 6.3 |
 | 15 | 트랜잭션 2: 결과 반영(`created` 또는 `failed`) + 이벤트 | |
@@ -339,7 +337,7 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 | `star_wallets.debt`(신규) | 환불된 결제분 중 이미 소비된 별조각 | `>= 0` |
 | 무료분 | `balance - paid_balance` | 파생값 |
 
-클라이언트가 읽는 `balance`는 그대로다. 요약(`GET starshop`)에 `paid_balance`, `free_balance`, `debt`, `spend_cap`을 **응답으로** 더한다(13.2).
+클라이언트가 읽는 `balance`는 그대로다. 요약(`GET starshop`)에 `paid_balance`, `free_balance`, `debt`를 **응답으로** 더한다(13.2).
 
 ### 8.2 지급 `grantOrder` (주문당 정확히 1회, 한 트랜잭션)
 
@@ -454,11 +452,11 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 | 구매 직후 소진 후 환불 | 주문 지급 후 `PAY_BURN_MINUTES`(10) 안에 로트 90% 이상 소비되고 환불 | severity +1 |
 | 연결 계정 | 같은 기기(공용 기기 제외)·같은 Steam 소유자의 다른 계정에 차지백/결제 정지가 있음 | restricted + 큐(`linked_chargeback`) |
 
-## 10. 한도와 사기 결제 방지
+## 10. 사기 결제 방지
 
 ### 10.1 결제 한도 없음 (2026-10-13 변경)
 
-- **일·월 결제 한도와 별조각 일일 소비 상한은 두지 않는다**(사용자 결정). `PAY_LIMIT_*`, `PAY_MAX_ORDERS_PER_HOUR`, `STAR_SPEND_DAILY_CAP` 환경변수와 `PAY_LIMIT_EXCEEDED`, `STAR_SPEND_CAP` 오류, 상품 목록의 `limits`·`LIMIT_DAILY|LIMIT_MONTHLY`, 상점 요약의 `spend_cap`을 모두 없앴다. 이 문서의 다른 절에 남은 한도 서술은 이 결정 이전 기록이다.
+- **일·월 결제 한도와 별조각 일일 소비 상한은 두지 않는다**(사용자 결정). `PAY_LIMIT_*`, `PAY_MAX_ORDERS_PER_HOUR`, `STAR_SPEND_DAILY_CAP` 환경변수와 `PAY_LIMIT_EXCEEDED`, `STAR_SPEND_CAP` 오류, 상품 목록의 `limits`·`LIMIT_DAILY|LIMIT_MONTHLY`, 상점 요약의 `spend_cap`을 모두 없앴다. 14절 마이그레이션 초안(0023 원문)만 이전 기록으로 남겼다.
 - 사기 방지는 금액 상한이 아니라 아래 장치로 한다: 열린 주문 1개, 최소 간격, 실패 쿨다운, 분당 요청 속도(10.3), 환불·차지백 차단(9절), 연결 계정·국가 변경 신호 기록(10.2).
 - 동시성: 주문 생성 트랜잭션이 `accounts` 행을 잠그므로 같은 계정의 동시 주문은 직렬화된다. "열린 주문 1개" 부분 유일 인덱스가 이중으로 막는다.
 
@@ -502,9 +500,9 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 
 | 엔드포인트 | 기존 | 이 단계에서 추가 |
 |---|---|---|
-| `GET /characters/{uuid}/starshop` | 지갑·확률표·가격 | `paid_balance`, `free_balance`, `debt`, `spend_cap`, `payments.enabled` 응답 필드 |
-| `POST .../pull` | 서버 RNG, 행 잠금, `assertNoHold` | `STAR_DEBT`, 일일 소비 상한, 확률표 버전 확인, 소비 함수 교체(8.3), 계정당 분당 소비 속도 제한 |
-| `POST .../exchange` | 같음 | `STAR_DEBT`, 일일 소비 상한, 소비 함수 교체 |
+| `GET /characters/{uuid}/starshop` | 지갑·확률표·가격 | `paid_balance`, `free_balance`, `debt`, `payments.enabled` 응답 필드 |
+| `POST .../pull` | 서버 RNG, 행 잠금, `assertNoHold` | `STAR_DEBT`, 확률표 버전 확인, 소비 함수 교체(8.3), 계정당 분당 소비 속도 제한 |
+| `POST .../exchange` | 같음 | `STAR_DEBT`, 소비 함수 교체 |
 | `POST .../claim` | 게이지(별조각 소비 없음) | `STAR_DEBT`(부채 중 선택 차단). 경제 정지는 기존 |
 | `POST .../synth` | 여분 소비 | `STAR_DEBT` |
 | `POST .../dismantle` | 여분 -> 별조각 | 입금 함수 교체(부채 상환). 경제 정지는 기존 |
@@ -589,7 +587,6 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 | `payment_finalized_ungranted` | critical | `finalized`가 5분 넘게 `granted`가 되지 않음 |
 | `payment_fail_rate` | warning | 최근 1시간 주문 >= 10건이고 실패·만료 비율 >= 30% |
 | `payment_refund_spike` | warning | 최근 24시간 환불 >= 5건 또는 지급 대비 >= 20% |
-| `payment_limit_hits` | warning | 최근 1시간 `PAY_LIMIT_EXCEEDED` 반복(한 계정 >= 3회, 또는 전체 >= 20회) |
 | `payment_steam_breaker` | warning | 결제 회로 차단 중 |
 | `payment_review_age` | warning | 열린 검토 큐 항목이 24시간 넘음 |
 | `star_grant_pending_age` | warning | 승인 대기 운영 지급이 12시간 넘음 |
@@ -615,7 +612,7 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 
 | # | 메서드 | 경로 | 인증 | 하는 일 |
 |---|---|---|---|---|
-| B1 | GET | `/payments/products` | 액세스 | 판매 상품·견적·내 한도·열린 주문(열린 주문을 먼저 대사) |
+| B1 | GET | `/payments/products` | 액세스 | 판매 상품·견적·열린 주문(열린 주문을 먼저 대사) |
 | B2 | POST | `/payments/orders` | 액세스 | 주문 생성(InitTxn). Steam 오버레이가 이어서 뜬다 |
 | B3 | POST | `/payments/orders/{uuid}/sync` | 액세스 | 이 주문을 Steam에 다시 확인하고 진행(콜백 직후, 대기 중 반복) |
 | B4 | GET | `/payments/orders/{uuid}` | 액세스 | 내 주문 한 건 |
@@ -647,7 +644,7 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 
 #### B1 `GET /payments/products`
 
-- 처리: Steam 신원 확인 -> 열린 주문이 있으면 `advanceOrder` -> 국가·통화(GetUserInfo, 계정별 10분 메모리 캐시) -> 단계·한도 계산 -> 상품 목록.
+- 처리: Steam 신원 확인 -> 열린 주문이 있으면 `advanceOrder` -> 국가·통화(GetUserInfo, 계정별 10분 메모리 캐시) -> 단계 계산 -> 상품 목록.
 - 응답 `200` `data`:
 
 ```json
@@ -656,10 +653,6 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
   "tier": "new | standard | restricted",
   "country": "KR", "currency": "KRW",
   "open_order": null,
-  "limits": {
-    "daily":   { "limit": 0, "used": 0, "left": 0, "resets_at": "..." },
-    "monthly": { "limit": 0, "used": 0, "left": 0 }
-  },
   "offers": [
     { "product_id": "...", "name": "...", "stars": 0, "display_price": "...", "currency": "KRW",
       "quote_id": "v1....", "quote_expires_at": "...", "purchasable": true, "block": null }
@@ -667,7 +660,7 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 }
 ```
 
-- `block`: `null | 'OPEN_ORDER' | 'LIMIT_DAILY' | 'LIMIT_MONTHLY'`. 열린 주문이 있으면 `offers`는 비어 있고 `open_order`가 채워진다(`CosmeticStore`의 "이전 결제 확인 중" 흐름).
+- `block`: `null | 'PASS_TOO_LONG'`(정기권 남은 기간 + 30일이 60일 초과). 결제 금액 한도로 막는 값은 없다. 열린 주문이 있으면 `offers`는 비어 있고 `open_order`가 채워진다(`CosmeticStore`의 "이전 결제 확인 중" 흐름).
 - 에러: `401`, `403 NOT_STEAM_ACCOUNT | PAYMENT_BLOCKED | ACCOUNT_BANNED`, `422 CURRENCY_UNSUPPORTED`, `429`, `503 FEATURE_DISABLED | STEAM_UNAVAILABLE`.
 - 멱등성: 읽기(열린 주문 대사는 멱등). 속도 제한: 계정당 분당 `RATE_PAY_READ_PER_MIN`(30).
 
@@ -686,7 +679,7 @@ z.strictObject({
 받지 않는 값: 금액, 수량, 통화, 별조각 수, Steam ID, 주문 번호, 시각.
 - 처리: 6.2절.
 - 응답 `201` `data`: `{ order: OrderView, next: 'wait_steam_authorization' | 'sync' }`. InitTxn이 성공하면 `order.state='created'`, `next='wait_steam_authorization'`(Steam 오버레이가 뜬다). 결과가 불명확하면 `state='pending_init'`, `next='sync'`. 같은 `request_id` 재전송은 같은 주문의 **현재** 상태로 `200`.
-- 에러: `400`, `401`, `403 ACCOUNT_BANNED | NOT_STEAM_ACCOUNT | PAYMENT_BLOCKED | ECONOMY_HOLD`, `404 PRODUCT_NOT_FOUND`, `409 ORDER_IN_PROGRESS | QUOTE_CHANGED`, `410 QUOTE_EXPIRED`, `422 CURRENCY_UNSUPPORTED | PAY_LIMIT_EXCEEDED | IDEMPOTENCY_MISMATCH`, `429 RATE_LIMITED | ORDER_TOO_FAST`, `503 FEATURE_DISABLED | STEAM_UNAVAILABLE`.
+- 에러: `400`, `401`, `403 ACCOUNT_BANNED | NOT_STEAM_ACCOUNT | PAYMENT_BLOCKED | ECONOMY_HOLD`, `404 PRODUCT_NOT_FOUND`, `409 ORDER_IN_PROGRESS | QUOTE_CHANGED`, `410 QUOTE_EXPIRED`, `422 CURRENCY_UNSUPPORTED | IDEMPOTENCY_MISMATCH`, `429 RATE_LIMITED | ORDER_TOO_FAST`, `503 FEATURE_DISABLED | STEAM_UNAVAILABLE`.
 - 멱등성: `request_id` + `UNIQUE (account_id, request_id)`.
 - 속도 제한: 계정당 분당 `RATE_PAY_ORDER_PER_MIN`(3), IP당 분당 `RATE_PAY_ORDER_IP_PER_MIN`(10), 그리고 6.2의 11번.
 
@@ -712,8 +705,8 @@ z.strictObject({
 
 | # | 대상 | 변경 | 절 |
 |---|---|---|---|
-| E1 | `GET /characters/{uuid}/starshop` | 응답에 `paid_balance`, `free_balance`, `debt`, `spend_cap: { limit, used, left, resets_at }`, `payments: { enabled }` | 8.1, 11.3 |
-| E2 | `POST .../pull`, `.../exchange` | `STAR_DEBT`, `STAR_SPEND_CAP`, 계정당 소비 속도 제한, 소비 함수 `starWallet.debit`로 교체. 뽑기 본문에 `rates_version`(`STAR_RATES_ACK_REQUIRED` 때 필수), 불일치 `409 RATES_CHANGED` | 11 |
+| E1 | `GET /characters/{uuid}/starshop` | 응답에 `paid_balance`, `free_balance`, `debt`, `payments: { enabled }` | 8.1, 11.3 |
+| E2 | `POST .../pull`, `.../exchange` | `STAR_DEBT`, 계정당 소비 속도 제한, 소비 함수 `starWallet.debit`로 교체. 뽑기 본문에 `rates_version`(`STAR_RATES_ACK_REQUIRED` 때 필수), 불일치 `409 RATES_CHANGED` | 11 |
 | E3 | `POST .../claim`, `.../synth` | `STAR_DEBT` | 11.2 |
 | E4 | `POST .../dismantle` | 입금 함수 `starWallet.creditFree`로 교체(부채 상환) | 8.5 |
 | E5 | `starshopRepository.changeBalance` | 삭제. 모든 지갑 변경은 `starWallet.ts`로 | 4 |
@@ -734,7 +727,7 @@ z.strictObject({
 | PA1 | GET | `/admin/payments/orders` | viewer | 주문 목록(필터: 상태, 계정, 기간, 검토 필요) |
 | PA2 | GET | `/admin/payments/orders/{uuid}` | viewer | 주문 상세(스냅샷, 이벤트, 배분, 플래그, 회수 결과) |
 | PA3 | POST | `/admin/payments/orders/{uuid}/recheck` | operator | Steam에 다시 조회해 진행(`advanceOrder`) |
-| PA4 | GET | `/admin/payments/accounts/{uuid}` | viewer | 계정의 결제 프로필(단계, 한도 사용량, 정지, 부채, 이력, 연결 계정) |
+| PA4 | GET | `/admin/payments/accounts/{uuid}` | viewer | 계정의 결제 프로필(단계, 구매 합계 `spent`(오늘·30일), 정지, 부채, 이력, 연결 계정) |
 | PA5 | POST | `/admin/payments/accounts/{uuid}/block` | operator | 결제 정지(수동) |
 | PA6 | POST | `/admin/payments/accounts/{uuid}/unblock` | owner | 결제 정지 해제 |
 | PA7 | GET | `/admin/payments/flags` | viewer | 검토 큐(열린 플래그, 심각도순) |
@@ -786,6 +779,8 @@ z.strictObject({
 관리자 공통 규칙: 요청 본문 `.strict()`, 변경은 `runAdminAction`(멱등, 감사 행 같은 트랜잭션), 조회 중 민감한 것(PA2, PA4)은 조회 기록을 남긴다. 목록은 커서 기반 `meta:{ next_cursor }`. 관리자가 입력하는 금액은 PA9의 `stars`뿐이고 2인 승인과 상한 아래에 있다.
 
 ## 14. 마이그레이션 0023 초안
+
+> 0023 적용 당시 기록이다. 2026-10-13 `0036_remove_pay_limits`가 `star_ledger_spend_time` 인덱스를 지우고 한도를 전제로 한 주석을 고쳤다. `payment_flags.kind`의 `limit_exceeded`는 예전 행 때문에 CHECK에 남겨 두지만 새로 쓰지 않는다.
 
 `server/migrations/0023_payments.sql`(정본은 구현 때). UP/DOWN 마커는 0001~0022와 같다. 선행: 0013, 0016, 0018(별조각), 0020(`economy_holds`, `ledger_block_mutation`), 0021.
 
@@ -1204,7 +1199,7 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 | 인덱스·제약 | 조회 패턴과 이유 |
 |---|---|
 | `star_orders_one_open` (부분 유일) | B2 동시 요청 직렬화의 DB 보장, 열린 주문 1개 계약, 한도 우회 방지. 열린 주문 조회(B1, 로그인 직후)도 이 인덱스 |
-| `star_orders_account_time` | 한도 합산(계정의 오늘·최근 30일), 시간당 주문 수, 마지막 주문 시각, 내 이력(B5), 90일 환불 수. 모두 `account_id` + 최신순 범위 |
+| `star_orders_account_time` | 관리자 조회 구매 합계(오늘·최근 30일), 마지막 주문 시각, 실패·만료 수, 내 이력(B5), 90일 환불 수. 모두 `account_id` + 최신순 범위 |
 | `star_orders_due` (부분) | 대사·감시 작업이 `next_check_at <= now`인 주문만 읽는다. 종결 주문과 감시 종료 주문은 인덱스에 없다 |
 | `star_orders_review` (부분) | 검토 필요 주문 목록(PA1 필터), 경보 `payment_review_age` |
 | `star_orders_state_time` | PA1 상태별 최신순 목록, 지표(최근 1시간 상태별 수) |
@@ -1215,7 +1210,6 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 | `star_paid_lots_open` (부분) | 소비가 남은 로트를 오래된 순으로 잠그며 읽는다(`remaining > 0`만) |
 | `star_spend_allocs_order` | 환불·차지백 분석(그 주문의 별조각이 어디에 쓰였나) |
 | `star_ledger_purchase_uq` 등 부분 유일 | 주문당 지급 1줄, 주문당 회수 1줄, 운영 지급당 1줄 |
-| `star_ledger_spend_time` (부분) | 일일 소비 상한: 계정의 오늘 `gacha`·`exchange` 합계 |
 | `star_admin_grants_creator_time` (부분) | 관리자별 일일 지급 합계(상한 검사) |
 | `star_admin_grants_pending` (부분) | 승인 대기 목록, 만료 작업, 경보 |
 | `payment_flags_open` (부분) | 검토 큐(열린 것, 심각도·오래된 순) |
@@ -1226,8 +1220,8 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 | 기능 | 읽기 | 쓰기 |
 |---|---|---|
-| 상품 조회 B1 (11단계) | auth_identities, payment_profiles, star_orders(열린 주문·한도 합산), account_devices, economy_holds, accounts | (열린 주문 대사 시 아래 행) |
-| 주문 생성 B2 (11단계) | accounts(행 잠금), auth_identities, payment_profiles, star_orders(한도·속도), account_devices, economy_holds | star_orders, star_order_events, payment_profiles(last_country), payment_flags |
+| 상품 조회 B1 (11단계) | auth_identities, payment_profiles, star_orders(열린 주문), account_devices, economy_holds, accounts | (열린 주문 대사 시 아래 행) |
+| 주문 생성 B2 (11단계) | accounts(행 잠금), auth_identities, payment_profiles, star_orders(속도), account_devices, economy_holds | star_orders, star_order_events, payment_profiles(last_country), payment_flags |
 | 주문 확인 B3·B6, 대사 작업 (11단계) | star_orders(행 잠금·임대), payment_profiles, auth_identities | star_orders, star_order_events, payment_flags |
 | 지급 (11단계) | star_orders(행 잠금), star_wallets(행 잠금), star_paid_lots | star_wallets, star_ledger(purchase, debt_settle), star_paid_lots, star_spend_allocs, star_order_events, star_orders |
 | 환불·차지백 회수 (11단계) | star_orders(행 잠금), star_wallets(행 잠금), star_paid_lots, star_spend_allocs, account_devices, economy_holds | star_wallets, star_ledger(refund_revoke, chargeback_revoke), star_paid_lots, star_spend_allocs, star_orders, star_order_events, payment_profiles, payment_flags, economy_holds(kind=payment) |
@@ -1259,7 +1253,7 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 ### 15.2 구매 흐름 (클라이언트 시점)
 
-1. 상점 화면 열기: `FetchAsync` -> `GET /payments/products`. `limits.daily.left`로 "오늘 구매 가능" 표시, `block`으로 버튼 상태.
+1. 상점 화면 열기: `FetchAsync` -> `GET /payments/products`. `block`으로 버튼 상태(결제 금액 한도 표시는 없다).
 2. 확인 창: 서버가 준 `display_price`와 `stars`(구매 총액·획득 수량)를 보여 주고 확인받는다(`Game.UI.Confirm`).
 3. `POST /payments/orders { request_id, product_id, quote_id }` (`request_id`는 이 구매 시도마다 새 UUID, 재시도에는 같은 값).
 4. 응답 `order.state='created'`면 Steam 오버레이가 자동으로 뜬다. `MicroTxnAuthorizationResponse` 콜백을 `order.steam_order_id`와 맞춰 기다린다(콜백의 승인 여부는 서버에 보내지 않는다).
@@ -1272,13 +1266,11 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 | 코드 | 클라이언트 처리 |
 |---|---|
-| `PAY_LIMIT_EXCEEDED` | "구매 한도를 넘었습니다"(`errors.scope`, `resets_at`로 시점 안내) |
 | `ORDER_IN_PROGRESS` | 열린 주문을 `sync`하고 "이전 결제 확인 중" |
 | `ORDER_TOO_FAST`, `429` | `retry_after_sec` 안내 |
 | `PAYMENT_BLOCKED`, `ECONOMY_HOLD` | "결제 이용이 제한되었습니다. 문의해 주세요"(사유 표시 없음) |
 | `NOT_STEAM_ACCOUNT` | 결제 UI 숨김 |
 | `STAR_DEBT` | "환불된 결제분이 있어 별조각을 사용할 수 없습니다"(`errors.debt` 표시) |
-| `STAR_SPEND_CAP` | "오늘 사용 한도를 넘었습니다"(`resets_at`) |
 | `RATES_CHANGED` | 확률표를 다시 불러와 표시하고 다시 확인받는다 |
 | `STEAM_UNAVAILABLE`, `FEATURE_DISABLED` | "지금은 결제할 수 없습니다" |
 
@@ -1302,15 +1294,10 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 | `PAY_STEAM_MAX_CALLS_PER_MIN` | `60` | 작업이 Steam을 부르는 속도 상한 |
 | `PAY_WATCH_DAYS` | `180` | 환불·차지백 감시 기간 |
 | `PAY_REPORT_DAYS` | `7` | 일일 리포트 교차 점검 범위 |
-| `PAY_LIMIT_DAILY_STARS` / `PAY_LIMIT_MONTHLY_STARS` | `10000` / `50000` | standard 한도(별조각, 시작값) |
-| `PAY_LIMIT_NEW_DAILY_STARS` / `PAY_LIMIT_NEW_MONTHLY_STARS` | `3000` / `10000` | new 한도 |
-| `PAY_LIMIT_RESTRICTED_DAILY_STARS` / `PAY_LIMIT_RESTRICTED_MONTHLY_STARS` | `1000` / `3000` | restricted 한도 |
 | `PAY_NEW_ACCOUNT_DAYS` | `14` | 신규 계정 기준 |
-| `PAY_MAX_ORDERS_PER_HOUR` / `PAY_MIN_ORDER_GAP_SECONDS` / `PAY_FAIL_COOLDOWN_THRESHOLD` | `3` / `60` / `5` | 속도 제한 |
 | `PAY_SHARED_DEVICE_ACCOUNTS` / `PAY_COUNTRY_CHANGE_MAX` | `3` / `1` | 다계정·국가 변경 기준 |
 | `PAY_REFUND_SPEND_RATIO` / `PAY_REFUND_RESTRICT_COUNT` / `PAY_REFUND_BLOCK_COUNT` / `PAY_BURN_MINUTES` | `0.5` / `2` / `3` / `10` | 환불 패턴 |
 | `PAY_IP_RETENTION_DAYS` | `180` | 주문 IP 보관 |
-| `STAR_SPEND_DAILY_CAP` | `30000` | 일일 별조각 소비 상한(0 = 끔) |
 | `STAR_RATES_ACK_REQUIRED` | `false` | 뽑기 본문의 `rates_version` 필수(결제를 켜면 `true` 필수) |
 | `RATE_PAY_READ_PER_MIN` / `RATE_PAY_ORDER_PER_MIN` / `RATE_PAY_ORDER_IP_PER_MIN` / `RATE_PAY_SYNC_PER_MIN` | `30` / `3` / `10` / `30` | 속도 제한 |
 | `RATE_STARSHOP_SPEND_PER_MIN` | `30` | 계정당 소비 속도 |
@@ -1320,9 +1307,9 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 1. `PAYMENTS_ENABLED=true` -> `PAYMENTS_STEAM_MODE`는 `sandbox|live`, `STEAM_AUTH_MODE=web_api`, `STEAM_PUBLISHER_API_KEY`·`PAYMENT_QUOTE_SECRET`(32자 이상) 필수, `STAR_RATES_ACK_REQUIRED=true`.
 2. `NODE_ENV=production`에서 `PAYMENTS_STEAM_MODE=mock` 금지. `DEPLOY_STAGE=live`이면 `PAYMENTS_STEAM_MODE=live`이고 `STEAM_APP_ID != 480`(기존 검사 재사용). `DEPLOY_STAGE=test`는 `sandbox`.
-3. 한도 환경변수는 `restricted <= new <= standard`(일·월 각각)이고 일일 <= 월.
+3. (삭제) 결제 한도 환경변수 검사는 2026-10-13 한도 제거와 함께 없앴다.
 4. `star_products.json` 검증(5.1). 확률표 스냅샷 충돌(11.4).
-5. 경고(기동은 진행): 판매 상품 중 `stars`가 `PAY_LIMIT_NEW_DAILY_STARS`보다 큰 것, 활성 owner 2명 미만.
+5. 경고(기동은 진행): 활성 owner 2명 미만.
 
 **켜는 순서**
 
@@ -1330,7 +1317,7 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 2. `PAYMENTS_STEAM_MODE=sandbox`(시험 앱), `PAYMENTS_ENABLED=true`로 Steam 샌드박스 시나리오 전체(18절 H) 확인: 승인, 거절, 만료, 환불, 차지백, 금액·통화 불일치, 응답 유실, 키 거절.
 3. 클라이언트 배포(`SteamStarPackProvider`, 확률표 버전 전송).
 4. 운영 owner 2명 계정 확인, 경보 웹훅 확인.
-5. 운영 `PAYMENTS_STEAM_MODE=live`, 실제 앱 ID, `STAR_RATES_ACK_REQUIRED=true`, 한도 확정 뒤 `PAYMENTS_ENABLED=true`. 처음에는 한도를 낮게 시작해 이상 신호를 보며 올린다.
+5. 운영 `PAYMENTS_STEAM_MODE=live`, 실제 앱 ID, `STAR_RATES_ACK_REQUIRED=true`, 가격 확정 뒤 `PAYMENTS_ENABLED=true`. 결제 한도는 두지 않는다(10.1).
 
 ## 17. 구현 체크리스트 (dotrpg-backend-coder가 이 순서대로)
 
@@ -1340,9 +1327,9 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 4. **지갑 모듈** `starshop/starWallet.ts`(8절): `lock`, `creditPaid`, `creditFree`, `debit`, `reversePaid`, `forgiveDebt`, 부채 상환, 배분 줄. 기존 `starshopRepository.changeBalance` 호출처를 모두 교체하고 삭제. 구조 테스트(`starWalletOnly`). `scripts/test-stars.ts`에 `SET LOCAL`. 옛 `gacha_refund` 호출 제거.
 5. **Steam 클라이언트** `payments/steamPartner.ts`: 인터페이스(`getUserInfo`, `initTxn`, `queryTxn`, `finalizeTxn`, `getReport`), `mock`(시나리오 주입: 승인, 거절, 지연, 환불, 차지백, 금액·통화·steamid 불일치, 시간 초과, 5xx, 401), 실제 구현(키 마스킹 래퍼, 결제 전용 회로 차단, 재시도 규칙, 속도 제한). 7.8 확인 항목은 샌드박스에서 실측해 이 모듈 주석과 이 문서의 구현 기록에 반영.
 6. **주문 상태 기계**: `orderService.ts`(`createOrder`), `advanceOrder`(임대·펜싱·검증·전이), `grantOrder`, `applyReversal`, 플래그 기록, 이벤트 기록.
-7. **한도·단계**: `payTier.ts`(10절 순수 함수 + 쿼리), 계정 행 잠금 경로. 순수 함수 테스트(경계: 06:00 KST, 30일 롤링).
+7. **단계·속도**: `payTier.ts`(10절 단계 계산, 속도 제한, 관리자용 구매 합계), 계정 행 잠금 경로.
 8. **플레이어 API** B1~B6 + 검증·라우트·속도 제한·플래그. `/payments` 라우터를 `routes/index.ts`에 등록(버전 검사, 데이터 버전은 검사하지 않음).
-9. **소비 강화**(11절): `STAR_DEBT`, 일일 소비 상한, 계정당 소비 속도 제한, 확률표 스냅샷 기동 검사, 뽑기 `rates_version`, 요약 응답 필드(E1~E4). 경제 정지 `kind='payment'`(E7).
+9. **소비 강화**(11절): `STAR_DEBT`, 계정당 소비 속도 제한, 확률표 스냅샷 기동 검사, 뽑기 `rates_version`, 요약 응답 필드(E1~E4). 경제 정지 `kind='payment'`(E7).
 10. **작업·경보·지표**: `payment-reconcile`, `payment-watch`, `payment-report`, `star-grant-expire`, `purge` 한 줄(주문 IP), `integrity.ts` I6, `alertRules.ts`, `snapshot.ts`, `LOG_REDACT`.
 11. **관리자 API** PA1~PA14 + CLI + 감사 + H3 규칙 변경(payment 정지는 owner). 운영 지급 2인 승인·상한.
 12. **환경변수·기동 검사**(16절), `/meta`의 `payments.enabled`, `/auth/steam/link` 가드(E11).
@@ -1392,12 +1379,11 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 9. 환불 감시: `payment-watch`가 나이별 간격만 호출하는지(30일 지난 주문은 24시간 간격, 감시 기간 지난 주문은 호출 없음), Steam 호출 속도 상한을 지키는지.
 10. PA13: 미리보기 해시와 다른 해시로 적용 -> 거절. 적용 시 외형·여분·장비 회수가 원장(`admin_clawback`)과 일치하고 `shortfall`을 보고한다. 일반 환불 주문에도 적용 가능하되 owner만. 자동 회수는 일어나지 않는다(환불만으로 외형이 사라지지 않는다).
 
-**D. 한도·사기 결제**
+**D. 사기 결제**
 
-1. 일일 한도 경계: 06:00 KST 직전 합산과 직후 초기화, 월 롤링 30일, 환불된 주문은 합산에 포함, `failed`·`expired`는 제외.
-2. 한도 초과는 B2에서 `PAY_LIMIT_EXCEEDED`이고 **주문 행·Steam 호출이 생기지 않는다**(mock 호출 0회).
-3. 동시 주문: 같은 계정이 서로 다른 `request_id`로 20개 동시 B2 -> 정확히 1개 성공, 나머지 `ORDER_IN_PROGRESS`(또는 속도 제한). 한도가 한 주문만 남은 상태에서 두 요청 -> 한 개만 통과.
-4. 단계: 가입 14일 미만 `new`, 환불 반복·국가 변경·연결 계정 차지백·공유 기기 계정 3개 이상 -> `restricted`(가장 낮은 한도). 공용 기기(계정 7개 이상이 쓴 기기)는 연결 신호에서 제외.
+1. 결제 금액 한도는 없다: 새 계정도 큰 묶음을 연달아 살 수 있고, 상품 목록에 `limits` 필드가 없다.
+3. 동시 주문: 같은 계정이 서로 다른 `request_id`로 20개 동시 B2 -> 정확히 1개 성공, 나머지 `ORDER_IN_PROGRESS`(또는 속도 제한).
+4. 단계: 가입 14일 미만 `new`, 환불 반복·국가 변경·연결 계정 차지백·공유 기기 계정 3개 이상 -> `restricted`(기록·조회용, 결제는 막지 않는다). 공용 기기(계정 7개 이상이 쓴 기기)는 연결 신호에서 제외.
 5. 속도: 60초 안 재주문, 1시간 3건 초과, 1시간 실패·만료 5건 -> `ORDER_TOO_FAST`.
 6. 통화: 상품표에 없는 통화 -> `CURRENCY_UNSUPPORTED`, 90일 안 국가 변경 2번 -> `country_changed` + restricted.
 7. 개발용 로그인 계정 -> `NOT_STEAM_ACCOUNT`, 경제 정지 계정 -> `ECONOMY_HOLD`, 결제 정지 계정 -> `PAYMENT_BLOCKED`(응답에 사유 없음).
@@ -1406,7 +1392,7 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 1. 무료분 먼저 소비, 유료분 FIFO: 배분 줄 합 = `-paid_delta`, 로트 `remaining` 합 = `paid_balance`.
 2. 동시 소비: 잔액 1,000으로 10+1 뽑기 20개 동시 -> 정확히 1개 성공, 잔액 음수 없음, 배분 줄 중복 없음.
-3. 일일 소비 상한: 상한 직전까지 성공, 초과 `STAR_SPEND_CAP`(06:00 KST 경계), 상한 0 = 끔. 계정당 분당 소비 속도.
+3. 소비 한도 없음: 하루에 많이 써도 막지 않고 요약에 상한 필드가 없다. 계정당 분당 소비 속도.
 4. 확률표: 같은 `RATES_VERSION`에 다른 내용 -> 기동 실패. 클라이언트 버전 불일치 `RATES_CHANGED`. 뽑기 행에 버전 기록.
 5. 부채 중 뽑기·교환·선택·합성 `STAR_DEBT`, 경제 정지 중 분해 거절.
 6. 뽑기 장비 계정 귀속(`ITEM_BOUND`), 외형은 경매·우편으로 이전 불가.
@@ -1438,9 +1424,9 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 ## 19. 결정 대기 (선택지와 권장)
 
-> **확정(2026-10-06, 사용자 대리 결정)**: D1~D19 전부 아래 권장안으로 확정하고 구현했다. 가격·묶음(`server/data/star_products.json`)과 한도·속도 제한 숫자(환경변수 기본값)는 시작값이며 **운영 전 확정**이다.
+> **확정(2026-10-06, 사용자 대리 결정)**: D1~D19 전부 아래 권장안으로 확정하고 구현했다. 가격·묶음(`server/data/star_products.json`)과 속도 제한 숫자(환경변수 기본값)는 시작값이며 **운영 전 확정**이다. 2026-10-13 사용자 결정으로 D5·D6은 (a) 없음으로 바뀌었다.
 
-사용자가 "알아서 해 달라"고 해서 권장안이 그대로 채택될 수 있도록 **보수적·안전한 쪽**을 권장으로 했다. 값(한도, 가격)은 가격표가 정해진 뒤 환경변수로 조정한다.
+사용자가 "알아서 해 달라"고 해서 권장안이 그대로 채택될 수 있도록 **보수적·안전한 쪽**을 권장으로 했다. 값(가격, 속도 제한)은 가격표가 정해진 뒤 조정한다.
 
 | # | 항목 | 선택지 | 권장 | 이유 |
 |---|---|---|---|---|
@@ -1448,13 +1434,13 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 | D2 | 소비 순서 | (a) 유료분 먼저 / (b) 무료분 먼저, 유료는 오래된 로트부터 | **(b)** | 환불 대상인 유료분이 오래 남아 회수가 쉽고 정직한 환불 요청자의 미사용분이 보존된다. 무료분은 환불 대상이 아니라 먼저 써도 불리하지 않다 |
 | D3 | 환불·차지백 후 얻은 것 | (a) 자동 회수 / (b) 유지 + 부채 + 정지, 확정 부정만 owner가 PA13으로 회수 / (c) 전부 유지 | **(b)** | 정직한 환불자의 계정 물건을 자동으로 빼앗으면 오탐 피해가 크고 되돌리기 어렵다. 부채·반복 정지·경제 정지·owner 회수로 막는다. 남는 손실 상한 = 기간 한도 x 별조각 단가 |
 | D4 | 부채 상환 방식 | (a) 모든 입금이 먼저 상환 / (b) 구매 입금만 / (c) 운영 탕감만 | **(a)** | 분해 입금으로 세탁하는 길을 막고 규칙이 하나다. 보상을 주려면 먼저 탕감(2인 승인) |
-| D5 | 한도 단위·값 | 별조각 수량 / 금액. 시작값(10.2 표) | **별조각 수량, 표의 시작값** | 통화가 여럿이라 환산이 필요 없다. 가격표가 정해지면 금액 상한으로 환산해 재조정 |
-| D6 | 일일 별조각 소비 상한 | (a) 없음 / (b) 켠다(기본 30,000) | **(b)** | 탈취한 토큰·악성 코드가 지갑을 하루에 비우는 것을 막는다. 정직한 큰 소비(게이지 채우기)는 결제 한도보다 크게 잡아 막지 않는다 |
-| D7 | 하루 뽑기 횟수 상한 | (a) 두지 않음 / (b) 횟수 상한 | **(a)** | 소비 상한이 이미 묶고, 횟수 상한은 정직한 10+1 반복만 불편하게 한다 |
+| D5 | 결제 금액 한도 | (a) 없음 / (b) 별조각 수량으로 일·월 한도 | **(a) 확정(2026-10-13 사용자 결정)** | 결제 한도는 두지 않는다. 처음엔 (b)로 구현했다가 제거했다 |
+| D6 | 일일 별조각 소비 상한 | (a) 없음 / (b) 켠다 | **(a) 확정(2026-10-13 사용자 결정)** | 소비 상한도 두지 않는다. 탈취 대응은 단일 세션, 계정당 분당 소비 속도 제한으로 한다 |
+| D7 | 하루 뽑기 횟수 상한 | (a) 두지 않음 / (b) 횟수 상한 | **(a)** | 횟수 상한은 정직한 10+1 반복만 불편하게 한다 |
 | D8 | 차지백 전파 | (a) 연결 계정에 경제 정지 전파 / (b) 연결 계정은 제한 단계 + 검토만 | **(b)** | 같은 기기 오탐으로 무고한 계정의 경제 전체를 막지 않는다. 결제 주체는 Steam ID라 패밀리 공유 소유자에게는 전파하지 않는다 |
 | D9 | 결제 정지·payment 경제 정지 해제 권한 | operator / owner | **owner** | 돈 문제는 더 높은 권한. 해제 후 14일 restricted |
 | D10 | 운영 별조각 지급 | (a) 만들지 않음 / (b) 2인 승인 + 상한 | **(b)** | 보상 사고에 필요할 수 있으나 가장 좁게(대상 1계정, 상한, 사유, 감사, 무료분) |
-| D11 | 상품 구성 | 큰 묶음 위주 / 소액 묶음 위주, 보너스 별조각 | **소액 묶음 위주, 보너스 없음** | 신규·제한 단계 한도 안에서 살 수 있고, 보너스가 없으면 한 주문이 유료 로트 하나에 정확히 대응한다. 가격·묶음 자체는 사용자 결정 |
+| D11 | 상품 구성 | 큰 묶음 위주 / 소액 묶음 위주, 보너스 별조각 | **소액 묶음 위주, 보너스 없음** | 보너스가 없으면 한 주문이 유료 로트 하나에 정확히 대응한다. 가격·묶음 자체는 사용자 결정 |
 | D12 | 지원 통화·국가 | 출시 국가를 정할 때까지 | **상품표 `prices`에 있는 통화만, 출시 국가 확정 전에는 KRW 단일부터** | 지역 가격 자동 변환 가능 여부는 Steamworks 확인(7.8) 뒤 결정 |
 | D13 | 환불·차지백 감시 기간 | 90 / 180일 | **180일** | 차지백은 늦게 도착할 수 있다. 간격을 늘려 호출량은 작다 |
 | D14 | 결제 기록 보관·IP 보관 | 법정 보관 기간 | **주문·이벤트는 지우지 않음, IP는 180일 뒤 NULL** | 법정 보관 기간과 개인정보 처리방침은 법무 확인 필요(출시 전) |
@@ -1508,8 +1494,8 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 
 ### 20.3 클라이언트 계약 요약
 
-15절 그대로다. 구현으로 확정된 응답 형태: B2 신규 주문 `201`(`state` `created`면 `next=wait_steam_authorization`, 그 외 `sync`), 같은 `request_id` 재전송 `200`. B3 `data = { order, wallet }`(`granted`일 때만 `wallet`, 필드 `balance`·`paid_balance`·`free_balance`·`debt`). 뽑기 본문에 `rates_version`(선택, `STAR_RATES_ACK_REQUIRED=true`면 필수). 새 에러 코드 목록은 3절 표 그대로(`STAR_DEBT`는 `errors.debt`, `STAR_SPEND_CAP`은 `limit·used·resets_at`, `RATES_CHANGED`는 `rates_version`). `GET /meta`에 `payments.enabled`, `GET /characters/{uuid}/starshop`에 `paid_balance`·`free_balance`·`debt`·`spend_cap`·`payments.enabled`가 추가된다(기존 필드는 그대로).
+15절 그대로다. 구현으로 확정된 응답 형태: B2 신규 주문 `201`(`state` `created`면 `next=wait_steam_authorization`, 그 외 `sync`), 같은 `request_id` 재전송 `200`. B3 `data = { order, wallet }`(`granted`일 때만 `wallet`, 필드 `balance`·`paid_balance`·`free_balance`·`debt`). 뽑기 본문에 `rates_version`(선택, `STAR_RATES_ACK_REQUIRED=true`면 필수). 새 에러 코드 목록은 3절 표 그대로(`STAR_DEBT`는 `errors.debt`, `RATES_CHANGED`는 `rates_version`). `GET /meta`에 `payments.enabled`, `GET /characters/{uuid}/starshop`에 `paid_balance`·`free_balance`·`debt`·`payments.enabled`가 추가된다(기존 필드는 그대로).
 
 ### 20.4 운영 전 확정 목록
 
-가격·묶음(`star_products.json`), 한도(`PAY_LIMIT_*`)·속도 제한(`PAY_*`, `RATE_PAY_*`)·소비 상한(`STAR_SPEND_DAILY_CAP`) 숫자, 운영 지급 상한(`PAY_ADMIN_GRANT_*`), Steam 호스트·파라미터(20.1), 활성 owner 2명 확보, 옛 뽑기 장비 스택(귀속 없음) 정리 점검(체크리스트 14번).
+가격·묶음(`star_products.json`), 속도 제한(`PAY_*`, `RATE_PAY_*`) 숫자, 운영 지급 상한(`PAY_ADMIN_GRANT_*`), Steam 호스트·파라미터(20.1), 활성 owner 2명 확보, 옛 뽑기 장비 스택(귀속 없음) 정리 점검(체크리스트 14번).
