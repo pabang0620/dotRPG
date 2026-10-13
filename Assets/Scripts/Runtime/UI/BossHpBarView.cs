@@ -341,7 +341,7 @@ namespace DotRPG
             {
                 groggyFill.fillAmount = hasGauge ? boss.Groggy / boss.GroggyMax : 0f;
                 groggyFill.color = brain != null && brain.CastingJudgment ? Color.Lerp(GroggyColor, new Color(1f, 0.3f, 0.3f), Mathf.PingPong(Time.unscaledTime * 3f, 1f)) : GroggyColor;
-                groggyText.text = brain != null && brain.CastingJudgment ? $"<color=#ff7a6a>무력화하라!  <size=20>{(1f - brain.JudgmentProgress) * BossBrain.JudgmentCast:0.0}</size></color>" : "";
+                groggyText.text = brain != null && brain.CastingJudgment ? $"<color=#ff7a6a>무력화하라!  <size=20>{(1f - brain.JudgmentProgress) * brain.JudgmentCastNow:0.0}</size></color>" : "";
                 groggyText.rectTransform.localScale = Vector3.one;
             }
 

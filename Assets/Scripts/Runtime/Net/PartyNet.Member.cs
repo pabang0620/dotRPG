@@ -206,6 +206,37 @@ namespace DotRPG
                         RaidMechanics.ShowRoar(boss, cast, circles);
                         break;
                     }
+                    case PartyMsg.RaidSealLine:
+                    {
+                        int id = r.ReadInt32();
+                        string line = r.ReadString();
+                        FlushSpawns();
+                        puppets.TryGetValue(id, out var boss);
+                        RaidSeal.ShowLine(boss, line);
+                        break;
+                    }
+                    case PartyMsg.RaidSealOpen:
+                    {
+                        int id = r.ReadInt32();
+                        float seconds = r.ReadSingle();
+                        var circles = new Vector2[r.ReadByte()];
+                        for (int i = 0; i < circles.Length; i++) circles[i] = PartyWire.ReadVec(r);
+                        FlushSpawns();
+                        puppets.TryGetValue(id, out var boss);
+                        RaidSeal.ShowOpened(boss, seconds, circles);
+                        break;
+                    }
+                    case PartyMsg.RaidSealEnd:
+                    {
+                        int id = r.ReadInt32();
+                        bool broken = r.ReadBoolean();
+                        puppets.TryGetValue(id, out var boss);
+                        RaidSeal.ShowEnded(boss, broken);
+                        break;
+                    }
+                    case PartyMsg.RaidLaunch: MemberLaunch(r); break;
+                    case PartyMsg.RaidDrain: MemberDrain(r); break;
+                    case PartyMsg.ReviveState: MemberReviveState(r); break;
                     case PartyMsg.RaidStun:
                     {
                         int slot = r.ReadByte();

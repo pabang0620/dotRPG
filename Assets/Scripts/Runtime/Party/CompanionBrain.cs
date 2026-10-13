@@ -70,6 +70,14 @@ namespace DotRPG
             if (leader == null || leader == self) return cmd;
             Vector2 me = self.Position;
 
+            // 0. [RAID] 결계 의식: stand on a free magic circle (before catching up: the circles can be far from the leader).
+            if (RaidSeal.SpotFor(self, out Vector2 seal))
+            {
+                if (Vector2.Distance(me, seal) > RaidSeal.Radius * .5f) cmd.move = GridPath.Steer(me, seal);
+                TrackStuck(self, cmd.move, party);
+                return cmd;
+            }
+
             // 1. Catch up: too far from the leader, or stuck against something for a while.
             if (!leader.IsDead && Vector2.Distance(me, leader.Position) > TeleportDistance)
             {
@@ -130,7 +138,7 @@ namespace DotRPG
             if (stuckTime > StuckSeconds && party != null && party.Leader != null && !party.Leader.IsDead) TeleportToLeader(self, party);
         }
 
-        static bool EscapeDanger(Vector2 me, out Vector2 away)
+        internal static bool EscapeDanger(Vector2 me, out Vector2 away)
         {
             away = Vector2.zero;
             float now = Time.time;

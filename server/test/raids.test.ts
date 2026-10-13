@@ -303,7 +303,7 @@ describe('영웅 레이드(난이도 1)', () => {
     const solo = await post(app, host, '/dungeon-runs', { dungeon_id: 'raid_skeleton_king', difficulty: 1 });
     expect(solo.body.errors.code).toBe('DIFFICULTY_LOCKED');
     const before = (await get(app, host, '/raids')).body.data.raids.find((r: { id: string }) => r.id === 'raid_skeleton_king');
-    expect(before.heroic).toMatchObject({ name: '영웅 레이드', unlocked: false, period_kind: 'weekly', hp_mul: 1.8, reward_mul: 1.5 });
+    expect(before.heroic).toMatchObject({ name: '심화 레이드', unlocked: false, period_kind: 'weekly', hp_mul: 2.4, reward_mul: 1.5 });
 
     // 일반 레이드 클리어(보상 청구 daily 1건)
     const first = await raidParty('raid_skeleton_king', [host, member], 20, 300);

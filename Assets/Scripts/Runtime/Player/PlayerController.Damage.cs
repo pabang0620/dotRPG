@@ -7,6 +7,16 @@ namespace DotRPG
         /// <summary>[GUARDIAN] A guardian takes no damage from monsters this many levels (or more) below.</summary>
         public const int GuardianImmuneGap = 25;
 
+        /// <summary>[RAID] Thrown across the room (보스 파동): moves at <paramref name="velocity"/> for <paramref name="seconds"/>, walls stop it.</summary>
+        public void Launch(Vector2 velocity, float seconds)
+        {
+            if (IsDead || seconds <= 0f) return;
+            CancelMobility();
+            knockbackVelocity = velocity;
+            knockbackUntil = Time.time + seconds;
+            combat.Cancel();
+        }
+
         public bool TakeDamage(DamageInfo info)
         {
             if (IsDead || info.team == Team.Player) return false;

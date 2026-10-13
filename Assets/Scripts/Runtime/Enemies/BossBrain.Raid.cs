@@ -33,6 +33,8 @@ namespace DotRPG
                 Game.Camera?.Shake(.3f, .35f);
                 nextRoarAt = Time.time + RaidMechanics.RoarFirstDelay;
             }
+            HeroicClock();
+            if (SealTick()) return true; // [RAID] 결계 의식 (BossBrain.Seal.cs)
             if (roaring)
             {
                 E.MonsterHalt();
@@ -40,13 +42,39 @@ namespace DotRPG
                 return true;
             }
             // Start between actions (never cut 망자의 심판 or a running pattern).
-            if (Enraged && Time.time >= nextRoarAt && !Busy && !CastingJudgment)
+            if (Enraged && Time.time >= nextRoarAt && !Busy && !CastingJudgment && !Sealed)
             {
                 nextRoarAt = Time.time + RaidMechanics.RoarEvery;
                 StartCoroutine(Roar());
                 return true;
             }
             return false;
+        }
+
+        float fightStart = -1f, nextWipeAt;
+        int clockStep;
+        static readonly float[] ClockWarn = { 120f, 60f, 30f, 10f };
+
+        /// <summary>
+        /// [G11] 심화 레이드 time limit: warnings at 2 min / 1 min / 30 s / 10 s left, then a wipe blow every 3 s
+        /// (unblockable, 999% of max HP) until the fight ends. Counts from the boss's first frame.
+        /// </summary>
+        void HeroicClock()
+        {
+            if (!Heroic) return;
+            if (fightStart < 0f) fightStart = Time.time;
+            float left = DungeonDatabase.RaidHeroicTimeLimit - (Time.time - fightStart);
+            if (clockStep < ClockWarn.Length && left <= ClockWarn[clockStep])
+            {
+                Announce?.Invoke(this, ClockWarn[clockStep] >= 60f ? $"전멸까지 {ClockWarn[clockStep] / 60f:0}분" : $"전멸까지 {ClockWarn[clockStep]:0}초", new Color(1f, .3f, .25f));
+                clockStep++;
+            }
+            if (left > 0f || Time.time < nextWipeAt) return;
+            nextWipeAt = Time.time + 3f;
+            Announce?.Invoke(this, "시간 초과: 전멸", new Color(1f, .2f, .2f));
+            SkillVisuals.Flash(E.Center, new Color(1f, .2f, .2f, .9f), 16f, .4f);
+            foreach (var m in MonsterHits.All())
+                if (m != null && !m.IsDead) MonsterHits.Apply(new[] { m }, Mathf.Max(1, m.Health.Max * 10), E.Position, 4f, true, E.gameObject);
         }
 
         /// <summary>Enraged bosses hit harder (all their patterns go through MonsterDamage).</summary>

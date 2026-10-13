@@ -103,7 +103,7 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
   if (claimed < minClearSeconds(run)) reasons.push('TOO_FAST');
 
   const kills = await killsOfRun(ctx.client, run.id);
-  const hpMul = diff.hpMul * partyHpScaleOf(eco, run.humans, run.ai_count);
+  const hpMul = diff.hpMul * partyHpScaleOf(eco, run.humans, run.ai_count, dungeon.isRaid);
   const hpList = kills.map((k) => {
     const def = eco.monsters.get(k.monster_id);
     return def ? effectiveHp(eco, def, k.monster_level, hpMul) : 0;

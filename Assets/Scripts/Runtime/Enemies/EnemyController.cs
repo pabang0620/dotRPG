@@ -68,9 +68,10 @@ namespace DotRPG
         public void Stun(float seconds)
         {
             if (state == State.Dead || seconds <= 0f || Puppet) return;
-            seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3
+            seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3 (then 8 s immune)
+            if (seconds <= 0f) return;
             stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
-            if (state == State.Windup) EnterState(State.Recover, seconds);
+            if (state == State.Windup && !IsBoss) EnterState(State.Recover, seconds); // [G3] a boss's wind-up goes on
             desiredVelocity = Vector2.zero;
         }
 
@@ -124,9 +125,10 @@ namespace DotRPG
         public void Freeze(float seconds)
         {
             if (state == State.Dead || seconds <= 0f || Puppet) return;
-            seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3
+            seconds = MonsterCrowdControl(seconds); // [MONSTER] groggy damage, bosses ×0.3 (then 8 s immune)
+            if (seconds <= 0f) return;
             frozenUntil = Mathf.Max(frozenUntil, Time.time + seconds);
-            if (state == State.Windup) EnterState(State.Recover, seconds);
+            if (state == State.Windup && !IsBoss) EnterState(State.Recover, seconds); // [G3]
             desiredVelocity = Vector2.zero;
         }
 

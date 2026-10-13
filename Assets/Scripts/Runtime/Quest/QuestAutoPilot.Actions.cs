@@ -79,6 +79,14 @@ namespace DotRPG
                 if (d < bestD) { bestD = d; best = e; }
             }
             Heal(p);
+            // [RAID] 결계 의식: the circles are plain to see, so 자동 사냥 (and the measure bot) runs to a free one first
+            // (before the "next monster is far, wait 3 s" rule, which stopped it halfway to a far circle).
+            if (RaidSeal.SpotFor(p, out Vector2 seal))
+            {
+                WalkTo(p, seal, RaidSeal.Radius * .5f);
+                lastProgressAt = Time.time;
+                return;
+            }
             if (best == null) { status = g.label + " · 몬스터를 찾는 중"; Roam(p); return; }
             // [BALANCE] Toned down: when nothing is close, stand a moment (3 s) before walking to a far monster.
             if (bestD > HuntNear)
@@ -113,6 +121,15 @@ namespace DotRPG
 
         void Fight(PlayerController p, Vector2 pos, Vector2 center, float dist)
         {
+            // [MEASURE] A person steps out of a ground warning (the AI companions' rule): the measure bot does too, else
+            // squishy careers died to every telegraph and the raid failure rates were overstated (2026-10-13).
+            if (MeasureSkilled && CompanionBrain.EscapeDanger(p.Position, out Vector2 away))
+            {
+                input.next.move = away;
+                input.next.aim = away;
+                lastProgressAt = Time.time;
+                return;
+            }
             input.next.aim = (center - p.Center).normalized;
             input.next.faceAim = true;
             int spam = SpamSlot(p);
@@ -187,9 +204,18 @@ namespace DotRPG
         void SkilledTurn(PlayerController p, int spam)
         {
             if (p.Skills == null || p.Skills.IsCasting) return;
-            if (Time.time >= nextSkill)
+            // [MEASURE] A player who knows the raid saves the cooldown skills for 망자의 심판 and bursts the cast.
+            bool burst = false, hold = false;
+            if (MeasureAware)
+                foreach (var e in EnemyController.Active)
+                    if (e != null && !e.IsDead && e.Behaviour is BossBrain bb && e.Def != null && e.Def.raid)
+                    {
+                        if (bb.CastingJudgment) burst = true;
+                        else if (bb.JudgmentIn < 9f) hold = true;
+                    }
+            if (!hold && Time.time >= nextSkill)
             {
-                nextSkill = Time.time + .3f;
+                nextSkill = Time.time + (burst ? .05f : .3f);
                 for (int i = 0; i < SkillKeys.Length; i++)
                 {
                     int slot = SkillKeys[(skillSlot + i) % SkillKeys.Length];

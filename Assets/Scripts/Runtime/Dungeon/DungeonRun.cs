@@ -40,6 +40,8 @@ namespace DotRPG
         public int HitsTaken;
         public int Combo, MaxCombo;
         public int RevivesUsed;
+        /// <summary>[REVIVE] Revives used by every person in the party together (the host counts; members mirror it).</summary>
+        public int PartyRevivesUsed;
         public string FailReason;
         /// <summary>Raid only: this week's reward was already taken, so the run gives none.</summary>
         public bool RewardsLocked;
@@ -74,11 +76,17 @@ namespace DotRPG
         public int RoomCount => Dungeon.RoomCount;
         public RoomDef Room => Dungeon.rooms[Mathf.Clamp(RoomIndex, 0, Dungeon.rooms.Length - 1)];
         public bool InBossRoom => RoomIndex == Dungeon.bossRoom;
-        public int RevivesLeft => Mathf.Max(0, Numbers.revives - RevivesUsed);
+        /// <summary>People in the run (AI seats excluded).</summary>
+        public int Humans => Mathf.Max(1, PartySize - AiCount);
+        /// <summary>[REVIVE] The party's shared pool (only with two or more people).</summary>
+        public int PartyRevives => Numbers.revives + DungeonDatabase.PartyReviveBonus;
+        public int PartyRevivesLeft => Mathf.Max(0, PartyRevives - PartyRevivesUsed);
+        /// <summary>Revives this person can still use: their own limit, and with people the party's pool too.</summary>
+        public int RevivesLeft => Mathf.Max(0, Humans > 1 ? Mathf.Min(Numbers.revives - RevivesUsed, PartyRevivesLeft) : Numbers.revives - RevivesUsed);
         public bool IsOver => State == DungeonRunState.Cleared || State == DungeonRunState.Failed;
 
         /// <summary>Monster HP multiplier: difficulty × party size.</summary>
-        public float HpMul => Numbers.hpMul * DungeonDatabase.PartyScale(PartySize - AiCount, AiCount);
+        public float HpMul => Numbers.hpMul * DungeonDatabase.PartyScale(PartySize - AiCount, AiCount, Dungeon != null && Dungeon.isRaid);
         public float DamageMul => Numbers.damageMul;
 
         /// <summary>A hit by the local player at <paramref name="time"/>: continues the combo if the last one was at most 1.5 s ago.</summary>

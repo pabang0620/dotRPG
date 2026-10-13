@@ -22,6 +22,13 @@ namespace DotRPG
         public const float WarCryOverTop = 1.5f;
         /// <summary>Members this close count a little extra (근접 보정).</summary>
         public const float CloseRange = 1.6f, CloseBonus = 3f;
+        /// <summary>
+        /// A boss turns on AI companions only this share of the time (in windows of <see cref="BossAiCycle"/> seconds);
+        /// the rest it goes for the people in the party, so AI make a raid only a little safer than going alone (2026-10-13).
+        /// </summary>
+        public const float BossAiShare = 0.25f, BossAiCycle = 8f;
+        /// <summary>Other monsters in a dungeon / raid run turn on AI this share of the time (AI tanks made runs 0.3x as dangerous).</summary>
+        public const float MobAiShare = 0.5f;
 
         readonly Dictionary<PlayerController, float> threat = new Dictionary<PlayerController, float>();
         readonly List<PlayerController> drop = new List<PlayerController>();
@@ -30,6 +37,7 @@ namespace DotRPG
         /// <summary>The member this monster is after (null = nobody alive).</summary>
         public PlayerController Current { get; private set; }
         PlayerController forced; float forcedUntil;
+        float aiPhase = -1f;
         public PlayerController Forced => Time.time<forcedUntil && Alive(forced) ? forced : null;
         public void Force(PlayerController target,float duration) { forced=target;forcedUntil=Time.time+duration;AddWarCry(target);Current=target; }
         /// <summary>The party member that hit this monster last (kill credit).</summary>
@@ -101,6 +109,20 @@ namespace DotRPG
         }
 
         static bool Alive(PlayerController m) => m != null && !m.IsDead && m.isActiveAndEnabled;
+        static bool IsAi(PlayerController m) => m != null && m.Data != null && MercenaryDatabase.Get(m.Data.MercenaryId) != null;
+
+        /// <summary>False while a boss (or a dungeon monster) ignores AI companions (and a person in the party is still up).</summary>
+        bool AiTargetable(PartyManager party)
+        {
+            if (enemy == null) return true;
+            float share = enemy.IsBoss ? BossAiShare : Game.Dungeon != null && Game.Dungeon.InRun ? MobAiShare : 1f;
+            if (share >= 1f) return true;
+            bool human = false;
+            foreach (var m in party.Members) if (Alive(m) && !IsAi(m)) { human = true; break; }
+            if (!human) return true;
+            if (aiPhase < 0f) aiPhase = Random.value * BossAiCycle;
+            return (Time.time + aiPhase) % BossAiCycle < BossAiCycle * share;
+        }
 
         float Effective(PlayerController m, Vector2 from) =>
             ThreatOf(m) + (Vector2.Distance(m.Position, from) <= CloseRange ? CloseBonus : 0f);
@@ -122,15 +144,16 @@ namespace DotRPG
                 Current = party.NearestAlive(from);
                 return Current;
             }
+            bool aiOk = AiTargetable(party);
             PlayerController top = null;
             float topValue = -1f;
             foreach (var m in party.Members)
             {
-                if (!Alive(m)) continue;
+                if (!Alive(m) || (!aiOk && IsAi(m))) continue;
                 float v = Effective(m, from);
                 if (v > topValue) { topValue = v; top = m; }
             }
-            if (Current == null) Current = top;
+            if (Current == null || (!aiOk && IsAi(Current))) Current = top;
             else if (top != null && top != Current && topValue >= Effective(Current, from) * SwitchRatio) Current = top;
             return Current;
         }

@@ -17,7 +17,14 @@ namespace DotRPG
             CardUpdate = 13, // [8] a member's level / gear / passives changed (member -> host, host -> others)
             SeatFreed = 14, // [AI] host -> members: this seat's AI is gone (a person took the seat). Body: seat byte
             RaidRoar = 15, // [RAID] host -> members: boss net id, boss pos, cast seconds, safe circle count + centres
-            RaidStun = 16; // [RAID] host -> members: seat byte, stun seconds
+            RaidStun = 16, // [RAID] host -> members: seat byte, stun seconds
+            RaidSealLine = 17, // [RAID] host -> members: boss net id, the 결계 의식 line
+            RaidSealOpen = 18, // [RAID] host -> members: boss net id, seconds, circle count + centres
+            RaidSealEnd = 19, // [RAID] host -> members: boss net id, broken
+            RaidLaunch = 20, // [RAID] host -> members: seat byte, velocity, seconds (그라흐 파동 throws that member's own body)
+            RaidDrain = 21, // [RAID] host -> members: seat byte, share of max MP lost (결계 의식 failed)
+            ReviveRequest = 22, // [REVIVE] member -> host: seat byte (the coin is already paid)
+            ReviveState = 23; // [REVIVE] host -> members: party revives used, seat byte, that seat's revives used
     }
 
     /// <summary>

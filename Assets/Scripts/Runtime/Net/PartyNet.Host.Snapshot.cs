@@ -108,6 +108,32 @@ namespace DotRPG
             }));
         }
 
+        /// <summary>[RAID] 결계 의식 on the host: members show the line, the circles and the result.</summary>
+        void OnSealLine(EnemyController boss, string line)
+        {
+            if (!host || boss == null) return;
+            Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.RaidSealLine); w.Write(boss.NetId); w.Write(line ?? ""); }));
+        }
+
+        void OnSealOpen(EnemyController boss, float seconds, Vector2[] circles)
+        {
+            if (!host || boss == null) return;
+            Broadcast(NetChannel.Event, PartyWire.Build(w =>
+            {
+                w.Write(PartyMsg.RaidSealOpen);
+                w.Write(boss.NetId);
+                w.Write(seconds);
+                w.Write((byte)circles.Length);
+                foreach (var c in circles) PartyWire.WriteVec(w, c);
+            }));
+        }
+
+        void OnSealEnd(EnemyController boss, bool broken)
+        {
+            if (!host || boss == null) return;
+            Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.RaidSealEnd); w.Write(boss.NetId); w.Write(broken); }));
+        }
+
         /// <summary>[RAID] A member was stunned on the host: that seat's PC (and everyone's copy) stuns too.</summary>
         void OnRaidStun(PlayerController m, float seconds)
         {

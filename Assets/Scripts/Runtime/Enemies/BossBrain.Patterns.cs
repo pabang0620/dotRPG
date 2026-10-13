@@ -36,6 +36,37 @@ namespace DotRPG
             yield return Charge(dir, 9f, 1.8f * Scale, Enraged ? 0.8f : 1.0f, 14f, 1.1f * Scale, p.damageMul, 10f, 0.7f);
         }
 
+        /// <summary>[RAID] 파동 throw speed and time (about 11 tiles: the walls of a raid room stop it).</summary>
+        public const float RepelSpeed = 20f, RepelTime = .55f, RepelWindup = 1.4f;
+
+        /// <summary>
+        /// [RAID] 수호자 그라흐's 파동: the boss gathers force (a room-wide warning), then everyone takes a hit and is thrown straight away
+        /// from it to the walls. A dash through the burst (invulnerable) avoids both.
+        /// </summary>
+        IEnumerator Repel(BossPattern p)
+        {
+            Announce?.Invoke(this, "파동!", new Color(1f, .6f, .3f));
+            SkillFx.Spawn("fx_ring", E.Position, new Color(1f, .55f, .25f, .8f), RepelWindup, SkillFx.GroundOrder + 12)
+                .Scale(new Vector2(1f, .7f), new Vector2(9f * Scale, 6.3f * Scale));
+            Game.Audio.PlaySfx("enemy_windup");
+            yield return Hold(RepelWindup, CharacterAnim.Attack, true);
+            Game.Audio.PlaySfx("rock_break");
+            Game.Camera?.Shake(.35f, .4f);
+            SkillVisuals.Flash(E.Center, new Color(1f, .6f, .3f, .8f), 10f, .3f);
+            int damage = E.MonsterDamage(p.damageMul);
+            foreach (var m in MonsterHits.All())
+            {
+                if (m == null || m.IsDead || m.Health.IsInvulnerable || CareerCombat.For(m).InvulnerableLeft > 0f) continue;
+                Vector2 away = m.Position - E.Position;
+                if (away.sqrMagnitude < .0001f) away = Vector2.down;
+                MonsterHits.Apply(new[] { m }, damage, E.Position, 0f, true, E.gameObject);
+                if (m.IsDead) continue;
+                m.Launch(away.normalized * RepelSpeed, RepelTime);
+                RaidSeal.RaiseLaunch(m, away.normalized * RepelSpeed, RepelTime);
+            }
+            yield return Hold(.6f, CharacterAnim.Attack);
+        }
+
         IEnumerator Slam(BossPattern p, float radius)
         {
             Track(Telegraph.Circle(E, E.Position, radius * Scale, 1.0f, E.MonsterDamage(p.damageMul), 9f));

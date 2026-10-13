@@ -259,6 +259,7 @@ const dungeonsSchema = z.looseObject({
     .length(4),
   partyHpScale: z.array(z.number().positive()).min(1),
   aiHpWeight: z.number().min(0).max(1).default(1),
+  raidAiHpWeight: z.number().min(0).max(1).default(1),
   dailyEntries: z.number().int().positive(),
   weekendOpensAll: z.boolean(),
   cards: z.looseObject({ count: z.number().int().positive(), gearRareWeight: z.number().int().positive(), gearDropTries: z.number().int().positive() }),
@@ -389,6 +390,8 @@ export interface EconomyData {
     partyHpScale: number[];
     /** AI 동료 1명을 사람 몇 명으로 셀지(인원 보정). DungeonDatabase.AiHpWeight */
     aiHpWeight: number;
+    /** 레이드에서 AI 동료 1명을 사람 몇 명으로 셀지. DungeonDatabase.RaidAiHpWeight */
+    raidAiHpWeight: number;
     dailyEntries: number;
     weekendOpensAll: boolean;
     cards: { count: number; gearRareWeight: number; gearDropTries: number };
@@ -603,6 +606,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       difficulties: dng.difficulties,
       partyHpScale: dng.partyHpScale,
       aiHpWeight: dng.aiHpWeight,
+      raidAiHpWeight: dng.raidAiHpWeight,
       dailyEntries: dng.dailyEntries,
       weekendOpensAll: dng.weekendOpensAll,
       cards: dng.cards,

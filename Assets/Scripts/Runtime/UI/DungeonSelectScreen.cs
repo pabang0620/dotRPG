@@ -220,7 +220,7 @@ namespace DotRPG
             title.text = $"<b>{def.name}</b>  <size=20><color=#b8c4d8>{def.themeName}</color></size>";
             desc.text = def.description;
             info.text = $"<color=#ffe066>보스</color> {def.bossName}    <color=#ffe066>특징 몬스터</color> {def.featureMonster}\n" +
-                        $"<color=#b8c4d8>방 {def.RoomCount}개 (보스 포함) · 최대 {def.maxParty}인 · 부활 {numbers.revives}회</color>";
+                        $"<color=#b8c4d8>방 {def.RoomCount}개 (보스 포함) · 최대 {def.maxParty}인 · 부활 1인 {numbers.revives}회 (파티 {numbers.revives + DungeonDatabase.PartyReviveBonus}회)</color>";
 
             for (int i = 0; i < diffButtons.Length; i++)
             {
@@ -255,7 +255,7 @@ namespace DotRPG
             if (party != null)
                 for (int i = 1; i < party.Members.Count; i++) if (party.Members[i] != null) names.Add(party.Members[i].DisplayName);
             int size = names.Count, ai = party != null ? party.AiCount : 0;
-            partyText.text = $"<b>파티</b> <color=#ffe066>{size}/{def.maxParty}</color> · 체력 ×{DungeonDatabase.PartyScale(size - ai, ai):0.0#}\n<size=15>{string.Join(" · ", names)}</size>";
+            partyText.text = $"<b>파티</b> <color=#ffe066>{size}/{def.maxParty}</color> · 체력 ×{DungeonDatabase.PartyScale(size - ai, ai, def.isRaid):0.0#}\n<size=15>{string.Join(" · ", names)}</size>";
 
             // Raid: its own schedule and reward status on one line where the difficulty buttons would be.
             raidLine.gameObject.SetActive(def.isRaid);
@@ -266,8 +266,8 @@ namespace DotRPG
                 // [RAID] 영웅 레이드: harder numbers, its own weekly reward.
                 string keys = def.raidTier == RaidTier.Final ? $" · 봉인 열쇠 조각 {def.keyCost}개 필요" : "";
                 raidLine.text = progress.RaidRewardAvailable(def, now, difficulty)
-                    ? $"<color=#ffd34a>영웅 레이드</color>  체력 x{DungeonDatabase.RaidHeroicHpMul:0.0} · 피해 x{DungeonDatabase.RaidHeroicDamageMul:0.0} · 확정 골드 x{DungeonDatabase.RaidHeroicRewardMul:0.0} · 고대의 핵 +1\n<color=#b8c4d8>보상은 주 1회(목 06:00 초기화), 레이드 보상과 따로 받습니다{keys}.</color>"
-                    : "<color=#ff9f7a>이번 주 영웅 레이드 보상을 받았습니다 · 지금은 연습 입장</color>\n<color=#b8c4d8>보상은 매주 목요일 06:00에 다시 열립니다.</color>";
+                    ? $"<color=#ffd34a>{DungeonDatabase.RaidHeroicName}</color>  체력 x{DungeonDatabase.RaidHeroicHpMul:0.0} · 피해 x{DungeonDatabase.RaidHeroicDamageMul:0.0} · 패턴 빨라짐 · 보스전 {DungeonDatabase.RaidHeroicTimeLimit / 60f:0}분 제한 · 확정 골드 x{DungeonDatabase.RaidHeroicRewardMul:0.0} · 고대의 핵 +1\n<color=#b8c4d8>보상은 주 1회(목 06:00 초기화), 레이드 보상과 따로 받습니다{keys}.</color>"
+                    : "<color=#ff9f7a>이번 주 심화 레이드 보상을 받았습니다 · 지금은 연습 입장</color>\n<color=#b8c4d8>보상은 매주 목요일 06:00에 다시 열립니다.</color>";
             }
             else if (def.isRaid)
             {
@@ -336,7 +336,7 @@ namespace DotRPG
             if (def == null || (def.isRaid && d > DungeonDatabase.RaidHeroic)) return;
             if (!Game.Session.Dungeons.IsUnlocked(def, d))
             {
-                GameEvents.RaiseToast(def.isRaid ? $"{def.name} 레이드를 먼저 한 번 클리어하면 영웅 레이드가 열립니다." : $"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 합니다.");
+                GameEvents.RaiseToast(def.isRaid ? $"{def.name} 레이드를 먼저 한 번 클리어하면 심화 레이드가 열립니다." : $"{DungeonDatabase.Difficulty(d - 1).name} 난이도를 먼저 클리어해야 합니다.");
                 Game.Audio.PlaySfx("cancel");
                 return;
             }

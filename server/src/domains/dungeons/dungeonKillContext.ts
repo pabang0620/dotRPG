@@ -75,7 +75,7 @@ export async function resolveDungeonTarget(
 
   const diff = diffOf(eco, dungeon as NonNullable<typeof dungeon>, run.difficulty);
   if (!diff) throw rejected('kill_target', 3, { ...base, why: 'difficulty' });
-  const partyScale = partyHpScaleOf(eco, run.humans, run.ai_count);
+  const partyScale = partyHpScaleOf(eco, run.humans, run.ai_count, dungeon.isRaid);
   const elapsedSec = (ctx.now.getTime() - run.started_at.getTime()) / 1000;
   const newKills = { ...run.room_kills, [key]: soFar + 1 };
 

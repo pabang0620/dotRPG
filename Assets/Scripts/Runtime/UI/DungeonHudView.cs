@@ -197,11 +197,14 @@ namespace DotRPG
             // [P5] Re-format only when the second, room or revive count changes.
             int sec = Mathf.FloorToInt(run.Elapsed);
             if (sec != shownSecond) { shownSecond = sec; clockText.text = $"<size=18><color=#b8c4d8>시간</color></size>  {DungeonRun.Clock(run.Elapsed)}"; }
-            int roomKey = (run.RoomIndex * 100 + run.RoomCount) * 100 + run.RevivesLeft;
+            int roomKey = ((run.RoomIndex * 100 + run.RoomCount) * 100 + run.RevivesLeft) * 100 + run.PartyRevivesLeft;
             if (roomKey != shownRoom)
             {
                 shownRoom = roomKey;
-                string revivesTag = run.RevivesLeft > 0 ? $"부활 {run.RevivesLeft}" : "<color=#ff8a7a>부활 0</color>";
+                // [REVIVE] Coins: my own revives, and with people the party's shared pool.
+                int mine = Mathf.Max(0, run.Numbers.revives - run.RevivesUsed);
+                string revivesTag = (mine > 0 ? $"내 부활 {mine}/{run.Numbers.revives}" : $"<color=#ff8a7a>내 부활 0/{run.Numbers.revives}</color>") +
+                                    (run.Humans > 1 ? $"  파티 부활 {run.PartyRevivesLeft}/{run.PartyRevives}" : "");
                 roomText.text = $"방 <color=#ffe066>{run.RoomIndex + 1}</color>/{run.RoomCount}    {revivesTag}";
             }
             RefreshRoomMap(run);
@@ -225,7 +228,8 @@ namespace DotRPG
                 reviveTitle.text = $"부활하시겠습니까?  <color=#ffe066>{left}</color>";
                 var input = Game.Input;
                 string coin = ReviveCoins.Free ? $"Lv.{ReviveCoins.FreeUntilLevel}까지 무료" : ReviveCoins.Coins > 0 ? $"부활 코인 1 사용 (보유 {ReviveCoins.Coins})" : "<color=#ff8a7a>부활 코인 없음</color>";
-                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회 · {coin} · 완전 회복 + 3초 무적\n" +
+                string pool = run.Humans > 1 ? $" (파티 {run.PartyRevivesLeft}회)" : "";
+                reviveBody.text = $"남은 부활 <color=#ffe066>{run.RevivesLeft}</color>회{pool} · {coin} · 완전 회복 + 3초 무적\n" +
                                   $"<color=#b8c4d8>[Enter / {input.GetBindingLabel(GameAction.Attack)}] 부활    [ESC] 포기</color>";
             }
         }

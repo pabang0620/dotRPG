@@ -51,6 +51,8 @@ namespace DotRPG
         GoldRain,
         /// <summary>망자의 심판: long cast, break the groggy gauge or everyone takes huge damage.</summary>
         Judgment,
+        /// <summary>[RAID] 파동: gathers force, then throws everyone in the room to the walls (Docs/PLAN_BOSS_DIFFICULTY_2026-10-13.md G7).</summary>
+        Repel,
     }
 
     [System.Serializable]
@@ -460,6 +462,7 @@ namespace DotRPG
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 12, minPhase: 1),
                 new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),
                 new BossPattern(PatternKind.Fields, 7f, 1.1f, 7, minPhase: 2),
+                new BossPattern(PatternKind.Repel, 16f, 0.8f, minPhase: 2),
                 new BossPattern(PatternKind.Donut, 10f, 1.4f, minPhase: 2),
                 new BossPattern(PatternKind.Judgment, 35f, 8f, minPhase: 3, weight: 0f));
             grah.look = Look("grah", C(124, 98, 150)); // generated frames Art/char_grah_* (same as the cutscene actor)

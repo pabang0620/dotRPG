@@ -15,14 +15,12 @@ namespace DotRPG
         {
             if (run == null) return false;
             if (run.State != DungeonRunState.Playing) return true;
-            if (Follower)
-            {
-                // [PARTY NET] Downed members get up at the next room (the host's rule for every member).
-                GameEvents.RaiseToast("쓰러졌습니다. 다음 방에서 다시 일어납니다.");
-                return true;
-            }
             if (run.RevivesLeft <= 0)
             {
+                // [REVIVE] No revive left: a member waits for the next room; the host stays down in the boss room while
+                // another person fights on (elsewhere only the host can lead through the door, so the run ends).
+                if (Follower) { GameEvents.RaiseToast(run.InBossRoom ? "부활할 수 없습니다. 파티원을 응원하세요." : "부활할 수 없습니다. 다음 방에서 다시 일어납니다."); return true; }
+                if (HostWaits) { GameEvents.RaiseToast("부활할 수 없습니다. 파티원을 응원하세요."); return true; }
                 StartCoroutine(FailLater("부활 횟수를 모두 사용했습니다."));
                 return true;
             }
@@ -34,9 +32,19 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>[REVIVE] The host is down in the boss room and another person is still up: the run goes on.</summary>
+        bool HostWaits => NetHost && run != null && run.InBossRoom && PartyNet.Current.AnyHumanUp;
+        float allDownFor;
+
         void UpdateRevive()
         {
             if (run == null || run.State != DungeonRunState.Playing) { ReviveOpen = false; return; }
+            // [REVIVE] Party run: it fails once every person is down and nobody revived for a while (AI cannot finish it).
+            if (NetHost && Game.IsWorldRunning)
+            {
+                allDownFor = PartyNet.Current.AnyHumanUp || ReviveOpen ? 0f : allDownFor + Time.deltaTime;
+                if (allDownFor > ReviveSeconds + 2f) { allDownFor = 0f; Fail("파티원이 모두 쓰러졌습니다."); return; }
+            }
             if (Game.Player != null && !Game.Player.IsDead) { ReviveOpen = false; return; }
             if (!Game.IsWorldRunning) return;
             if (ReviveCoins.Busy) return; // [REVIVE] the countdown waits for the coin answer (a paid coin must not time out)
@@ -45,9 +53,14 @@ namespace DotRPG
             if (Game.IsPlaying && !Game.State.ChangedThisFrame && input != null)
             {
                 if (input.SubmitPressed || input.InteractPressed || input.AttackPressed) { AcceptRevive(); return; }
-                if (input.CancelPressed) { GiveUp(); return; }
+                if (input.CancelPressed) { if (Follower || HostWaits) { ReviveOpen = false; return; } GiveUp(); return; }
             }
-            if (reviveClock >= reviveUntil) { ReviveOpen = false; Fail("부활하지 않았습니다. (시간 초과)"); }
+            if (reviveClock >= reviveUntil)
+            {
+                ReviveOpen = false;
+                if (Follower || HostWaits) { GameEvents.RaiseToast("부활하지 않았습니다."); return; }
+                Fail("부활하지 않았습니다. (시간 초과)");
+            }
         }
 
         /// <summary>
@@ -76,8 +89,19 @@ namespace DotRPG
             // The coin is already paid here: revive whenever the run is still going and the player is still down.
             if (run == null || run.State != DungeonRunState.Playing || local == null || !local.IsDead || run.RevivesLeft <= 0) return;
             ReviveOpen = false;
+            if (Follower)
+            {
+                // [REVIVE] The host checks the seat's and the party's revives and stands the body up (HP snapshot).
+                PartyNet.Current.MemberRequestRevive();
+                return;
+            }
             run.RevivesUsed++;
-            if (NetHost) PartyNet.Current.HostRevived(local);
+            run.PartyRevivesUsed++;
+            if (NetHost)
+            {
+                PartyNet.Current.HostRevived(local);
+                PartyNet.Current.HostSendReviveState(PartyNet.Current.MySlot);
+            }
             if (Game.Party != null) Game.Party.ReviveMember(local, 1f, ReviveInvulnerable);
             else local.Revive(1f, ReviveInvulnerable);
             local.Data.Mana = local.MaxMana;

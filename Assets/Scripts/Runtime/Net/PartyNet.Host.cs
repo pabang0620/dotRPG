@@ -203,6 +203,7 @@ namespace DotRPG
                             Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.CardUpdate); card.Write(w); }), p.from);
                             break;
                         }
+                        if (kind == PartyMsg.ReviveRequest) { HostReviveRequest(p.from, r); break; } // [REVIVE]
                         if (kind != PartyMsg.Heal) break;
                         int slot = r.ReadByte();
                         int amount = r.ReadInt32();

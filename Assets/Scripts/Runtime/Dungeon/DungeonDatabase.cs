@@ -143,11 +143,19 @@ namespace DotRPG
         public const int DailyEntries = 3;
         /// <summary>Raid revives (shared by the party).</summary>
         public const int RaidRevives = 3;
+        /// <summary>
+        /// [REVIVE 2026-10-13] A party with two or more people also shares a pool: each person may revive up to the
+        /// difficulty's revives, and the whole party this many more than that in total (raid: 3 each, 5 together).
+        /// </summary>
+        public const int PartyReviveBonus = 2;
         /// <summary>Monster HP multiplier by party size 1..4 (head-count scaling).</summary>
         public static readonly float[] PartyHpScale = { 1.0f, 1.6f, 2.1f, 2.5f };
         /// <summary>[MEASURE] An AI companion counts as this much of a person in <see cref="PartyHpScale"/> (it deals about
-        /// <see cref="MercenaryDatabase.DamageScale"/> of a player's damage; counted whole, raids with AI took 2.3-3.5x longer than solo).</summary>
-        public const float AiHpWeight = 0.4f;
+        /// <see cref="MercenaryDatabase.DamageScale"/> of a player's damage; counted whole, raids with AI took 2.3-3.5x longer than solo; measured 2026-10-13: three AI add only ~20% of a player's damage, so 0.1 keeps AI runs at ~0.9x solo time).</summary>
+        public const float AiHpWeight = 0.35f;
+        /// <summary>[MEASURE 2026-10-13] Raids: AI add no boss HP. The boss goes for the people (ThreatTable.BossAiShare), so even at 0.1
+        /// a party with three AI was as slow as going alone; at 0 it is about 0.9x. Dungeons 0.35 (0.1 made AI runs 0.5x the time, 0.45 about 0.96x).</summary>
+        public const float RaidAiHpWeight = 0f;
 
         public const string Raid = "raid_skeleton_king";
         public const string RaidBargas = "raid_bargas";
@@ -193,8 +201,11 @@ namespace DotRPG
         // first clear. Same rooms and boss, x1.8 HP and x1.3 damage, x1.5 sure gold and XP multiplier, one more ancient
         // core (PromoteRules), rewarded once a week apart from the raid's own reward. Server: dungeons.json raidHeroic.
         public const DungeonDifficulty RaidHeroic = DungeonDifficulty.Adventure;
-        public const string RaidHeroicName = "영웅 레이드";
-        public const float RaidHeroicHpMul = 1.8f, RaidHeroicDamageMul = 1.3f, RaidHeroicRewardMul = 1.5f;
+        public const string RaidHeroicName = "심화 레이드";
+        /// <summary>[G11 2026-10-13] 심화 레이드: twice as hard as the raid (was 1.8 / 1.3), reward 1.5x.</summary>
+        public const float RaidHeroicHpMul = 2.4f, RaidHeroicDamageMul = 1.6f, RaidHeroicRewardMul = 1.5f;
+        /// <summary>[G11] Boss pattern cooldowns ×, 망자의 심판 cast, 결계 의식 time × and the boss fight's time limit (then a wipe).</summary>
+        public const float RaidHeroicPatternSpeed = .75f, RaidHeroicJudgmentCast = 5f, RaidHeroicSealScale = .85f, RaidHeroicTimeLimit = 480f;
 
         /// <summary>Heroic numbers from a raid's own (id stays Normal so the clear XP floor is the raid's).</summary>
         static DifficultyDef Heroic(DifficultyDef raid) => new DifficultyDef
@@ -221,9 +232,9 @@ namespace DotRPG
 
         /// <summary>Head-count scaling for <paramref name="humans"/> people and <paramref name="ai"/> AI companions: AI count as
         /// <see cref="AiHpWeight"/> of a person, between two table rows the value is interpolated. Same formula on the server.</summary>
-        public static float PartyScale(int humans, int ai)
+        public static float PartyScale(int humans, int ai, bool raid = false)
         {
-            float n = Mathf.Clamp(Mathf.Max(1, humans) + AiHpWeight * Mathf.Max(0, ai), 1f, PartyHpScale.Length);
+            float n = Mathf.Clamp(Mathf.Max(1, humans) + (raid ? RaidAiHpWeight : AiHpWeight) * Mathf.Max(0, ai), 1f, PartyHpScale.Length);
             int lo = Mathf.FloorToInt(n);
             if (lo >= PartyHpScale.Length) return PartyHpScale[PartyHpScale.Length - 1];
             return Mathf.Lerp(PartyHpScale[lo - 1], PartyHpScale[lo], n - lo);

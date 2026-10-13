@@ -317,7 +317,7 @@ async function validateHostReport(
   if (h.outcome === 'cleared' && h.elapsed_ms / 1000 < minClearSeconds(mine)) reasons.push('TOO_FAST');
   // 3. 화력 일관성
   const kills = await killsOfRun(ctx.client, mine.id);
-  const hpMul = diff.hpMul * partyHpScaleOf(eco, mine.humans, mine.ai_count);
+  const hpMul = diff.hpMul * partyHpScaleOf(eco, mine.humans, mine.ai_count, dungeon.isRaid);
   const hpSum = kills.reduce((a, k) => {
     const def = eco.monsters.get(k.monster_id);
     return a + (def ? effectiveHp(eco, def, k.monster_level, hpMul) : 0);

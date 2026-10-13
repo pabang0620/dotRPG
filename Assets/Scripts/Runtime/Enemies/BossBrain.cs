@@ -52,6 +52,10 @@ namespace DotRPG
         /// <summary>(boss, broken): the cast ended - broken by groggy, or resolved on the party.</summary>
         public event Action<BossBrain, bool> JudgmentEnded;
         public int JudgmentHits { get; private set; }
+        /// <summary>Share of the judgment gauge still standing when the last cast landed (measure log).</summary>
+        public float LastJudgmentLeft { get; private set; }
+        /// <summary>Seconds until the next 망자의 심판 (raid bosses; huge when none is due). For the measure bot.</summary>
+        public float JudgmentIn => nextJudgmentAt - Time.time;
 
         /// <summary>Guard pattern active (frontal hits −80%).</summary>
         public bool Guarding { get; private set; }
@@ -78,7 +82,11 @@ namespace DotRPG
             get { foreach (var t in totems) if (t.live != null && !t.live.IsDead) yield return t.live; }
         }
 
-        float Mul => Enraged ? EnrageCooldown : 1f;
+        float Mul => (Enraged ? EnrageCooldown : 1f) * (Heroic ? DungeonDatabase.RaidHeroicPatternSpeed : 1f);
+        /// <summary>[G11] This boss is fought in a 심화 레이드 (faster patterns, shorter mechanic windows, a time limit).</summary>
+        public bool Heroic => Def.raid && Game.Dungeon != null && Game.Dungeon.Run != null && Game.Dungeon.Run.Difficulty == DungeonDatabase.RaidHeroic;
+        /// <summary>망자의 심판 cast time in this fight.</summary>
+        public float JudgmentCastNow => Heroic ? DungeonDatabase.RaidHeroicJudgmentCast : JudgmentCast;
         float Scale => Def.size / 2f;
 
         protected override void OnInit()
@@ -180,6 +188,7 @@ namespace DotRPG
             switch (p.kind)
             {
                 case PatternKind.Slash3: yield return Slash3(p); break;
+                case PatternKind.Repel: yield return Repel(p); break;
                 case PatternKind.Charge: yield return BossCharge(p); break;
                 case PatternKind.Slam: yield return Slam(p, 3.2f); break;
                 case PatternKind.Fields: yield return Fields(p, false); break;
@@ -208,6 +217,7 @@ namespace DotRPG
 
         public override bool BeforeDamage(ref DamageInfo info)
         {
+            if (Sealed) return false; // [RAID] 결계 의식: invulnerable until the circles are filled or the time runs out
             if (!Guarding) return true;
             Vector2 to = info.sourcePosition - E.Position;
             if (to.sqrMagnitude > 0.0001f && Vector2.Angle(E.MonsterFacing.ToVector(), to) <= ShieldGuardBehaviour.FrontalHalfAngle)
@@ -222,15 +232,19 @@ namespace DotRPG
         {
             CastingJudgment = true;
             JudgmentProgress = 0f;
+            E.BeginJudgmentGauge(); // [G2] a burst check: 3.2% of max HP in 6 s
             Announce?.Invoke(this, "망자의 심판", new Color(1f, 0.35f, 0.3f));
-            var tele = Track(Telegraph.Circle(E, E.Position, JudgmentVisualRadius, JudgmentCast, 0));
+            float cast = JudgmentCastNow;
+            var tele = Track(Telegraph.Circle(E, E.Position, JudgmentVisualRadius, cast, 0));
+            // It hits everyone wherever they stand: not a ground warning to run from (AI and the measure bot fled it instead of bursting).
+            CompanionBrain.DangerZones.RemoveAll(z => z.radius >= JudgmentVisualRadius - .01f);
             Game.Audio.PlaySfx("magic");
             float t = 0f;
-            while (t < JudgmentCast)
+            while (t < cast)
             {
                 // The cast only stops for groggy (which interrupts this coroutine) or pause.
                 if (Game.IsWorldRunning) t += Time.deltaTime;
-                JudgmentProgress = t / JudgmentCast;
+                JudgmentProgress = t / cast;
                 E.MonsterHalt();
                 E.MonsterAnim(CharacterAnim.Attack, true);
                 if (Time.frameCount % 12 == 0)
@@ -238,6 +252,8 @@ namespace DotRPG
                 yield return null;
             }
             if (tele != null && !tele.Cancelled) tele.ResolveNow();
+            LastJudgmentLeft = E.GroggyMax > 0f ? E.Groggy / E.GroggyMax : 0f;
+            E.EndJudgmentGauge();
             // Everyone, wherever they stand.
             JudgmentHits = MonsterHits.Apply(MonsterHits.All(), E.MonsterDamage(JudgmentMul), E.Position, 12f, true, E.gameObject);
             CastingJudgment = false;

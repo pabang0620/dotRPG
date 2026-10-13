@@ -20,6 +20,18 @@ namespace DotRPG
         public const float GroggyPerCcSecond = 45f;
         /// <summary>Groggy damage per point of HP damage.</summary>
         public const float GroggyPerDamage = 1f;
+        /// <summary>
+        /// [DIFFICULTY 2026-10-13] A boss's gauge is this share of its real max HP (party size, difficulty and level
+        /// included; the fixed def.groggyMax let a raid boss lie groggy ~70% of the fight), and every groggy makes the
+        /// next gauge <see cref="GroggyGrowth"/> bigger. Docs/PLAN_BOSS_DIFFICULTY_2026-10-13.md G1.
+        /// </summary>
+        public const float RaidGroggyShare = .14f, BossGroggyShare = .22f, GroggyGrowth = .25f;
+        /// <summary>[G2] While a raid boss casts 망자의 심판 the gauge is this share of its max HP (a burst check; 3.2% was never broken even bursting, 2026-10-13).</summary>
+        public const float JudgmentGaugeShare = .024f;
+        /// <summary>[G3] After a stun / freeze a boss ignores further crowd control this long (awakening stagger excepted).</summary>
+        public const float BossCcImmunity = 8f;
+        /// <summary>[G4] A monster flinches (hurt state, interrupt, knockback) from a hit at most this often.</summary>
+        public const float FlinchEvery = 1f;
         const float DefaultAcceleration = 30f;
         const float SuperArmorFxGap = 0.25f;
 
@@ -58,6 +70,8 @@ namespace DotRPG
 
         MonsterBehaviour behaviour;
         float visualScale = 1f;
+        float groggyBase; int groggyCount; bool judgmentGauge, keepGauge;
+        float bossCcFreeUntil, nextFlinchAt;
         float groggyUntil;
         bool groggyActive;
         bool hitArmored;
@@ -112,7 +126,11 @@ namespace DotRPG
                 alertIcon.transform.localPosition = new Vector3(0f, 2.15f, 0f);
             }
 
-            GroggyMax = def.groggyMax;
+            groggyBase = def.boss && stats != null
+                ? Mathf.Max(def.groggyMax, stats.maxHealth * (def.raid ? RaidGroggyShare : BossGroggyShare))
+                : def.groggyMax;
+            groggyCount = 0;
+            GroggyMax = groggyBase;
             Groggy = GroggyMax;
             behaviour = MonsterBehaviour.Attach(this, def);
             if (def.boss) BossSpawned?.Invoke(this);
@@ -148,7 +166,12 @@ namespace DotRPG
             if (Def == null) return seconds;
             if (Def.kind == MonsterKind.Totem) return 0f;
             AddGroggy(seconds * GroggyPerCcSecond);
-            if (Def.boss) return seconds * BossCrowdControlScale;
+            if (Def.boss)
+            {
+                if (Time.time < bossCcFreeUntil) return 0f;
+                bossCcFreeUntil = Time.time + BossCcImmunity;
+                return seconds * BossCrowdControlScale;
+            }
             // [SKILL v2] Diminishing returns: each stun / freeze within CcChainWindow of the last one lasts half as
             // long (1, 1/2, 1/4 ...), so two control skills can no longer keep a monster locked.
             if (Time.time > ccChainUntil) ccChain = 0;
@@ -199,6 +222,9 @@ namespace DotRPG
                 SuperArmorHit?.Invoke(this);
                 return true;
             }
+            // [G4] Multi-hit can't lock a monster: one flinch per FlinchEvery, the hits in between only deal damage.
+            if (Time.time < nextFlinchAt) { knockbackVelocity = Vector2.zero; return true; }
+            nextFlinchAt = Time.time + FlinchEvery;
             behaviour?.Interrupt();
             return false;
         }
@@ -246,11 +272,55 @@ namespace DotRPG
             GroggyStarted?.Invoke(this);
         }
 
+        /// <summary>
+        /// [RAID] A groggy that leaves the gauge as it was (결계 파훼): the boss collapses for <paramref name="seconds"/>,
+        /// then goes on with the same gauge value and size.
+        /// </summary>
+        public void ForceGroggy(float seconds)
+        {
+            if (IsGroggy || state == State.Dead || seconds <= 0f) return;
+            keepGauge = true;
+            GroggyDuration = seconds;
+            groggyActive = true;
+            groggyUntil = Time.time + seconds;
+            desiredVelocity = Vector2.zero;
+            behaviour?.Interrupt();
+            Game.Audio?.PlaySfx("rock_break");
+            Game.Camera?.Shake(0.2f, 0.25f);
+            Fx.Burst("fx_dust", Position + new Vector2(0f, 0.2f), 8, 3f, 0.6f);
+            GroggyStarted?.Invoke(this);
+        }
+
         void EndGroggy()
         {
             groggyActive = false;
+            if (keepGauge)
+            {
+                keepGauge = false;
+                GroggyEnded?.Invoke(this);
+                return;
+            }
+            judgmentGauge = false;
+            groggyCount++;
+            GroggyMax = groggyBase * (1f + GroggyGrowth * groggyCount);
             Groggy = GroggyMax;
             GroggyEnded?.Invoke(this);
+        }
+
+        /// <summary>[G2] 망자의 심판 started: the gauge becomes a small burst check (<see cref="JudgmentGaugeShare"/> of max HP).</summary>
+        public void BeginJudgmentGauge()
+        {
+            if (GroggyMax <= 0f || IsGroggy) return;
+            judgmentGauge = true;
+            GroggyMax = Groggy = Mathf.Max(1f, health.Max * JudgmentGaugeShare);
+        }
+
+        /// <summary>[G2] The judgment landed (not broken): back to the normal gauge, full.</summary>
+        public void EndJudgmentGauge()
+        {
+            if (!judgmentGauge || IsGroggy) return;
+            judgmentGauge = false;
+            GroggyMax = Groggy = groggyBase * (1f + GroggyGrowth * groggyCount);
         }
 
         /// <summary>Test / script hook: ends a running groggy now.</summary>

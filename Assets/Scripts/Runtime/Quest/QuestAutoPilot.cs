@@ -43,6 +43,8 @@ namespace DotRPG
         /// <summary>[MEASURE] Dev-only: fight like a practised player (spam the main hunting skill, cast skills as they come
         /// ready) instead of auto hunt's deliberately slower pace, to time manual play.</summary>
         internal static bool MeasureSkilled;
+        /// <summary>[MEASURE] Knows the raid: holds cooldown skills when 망자의 심판 is near and dumps them into the cast.</summary>
+        internal static bool MeasureAware;
         /// <summary>[AUTO] For the HUD button state: 자동 사냥 can start on this map.</summary>
         public static bool CanHuntHere => InHuntingGround;
 
