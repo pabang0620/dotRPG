@@ -21,6 +21,8 @@ namespace DotRPG
         // =====================================================================================================
 
         const int TrailerFps = 30;
+        /// <summary>-clean 1: the HUD stays hidden while recording (ad shots; the captions come from the edit).</summary>
+        static bool trailerClean;
         static readonly string[] TrailerMercs = { "merc_bron", "merc_kai", "merc_elin" };
 
         IEnumerator TrailerRun()
@@ -30,6 +32,7 @@ namespace DotRPG
             Game.Config.autosave = false;
             AudioListener.volume = 0f;
             QuestAutoPilot.MeasureAnywhere = true; // 자동 사냥 inside dungeon / raid runs too (as the measure mode does)
+            trailerClean = MeasureArg("-clean", "0") == "1";
             string value = MeasureArg("-scene", "hunt,awaken,dungeon,grah,king");
             foreach (var scene in value.Split(',').Select(s => s.Trim()))
             {
@@ -76,6 +79,7 @@ namespace DotRPG
             Time.captureFramerate = TrailerFps;
             for (int f = 0; f < frames; f++)
             {
+                if (trailerClean && Game.UI.Hud != null && Game.UI.Hud.gameObject.activeSelf) Game.UI.Hud.gameObject.SetActive(false);
                 onFrame?.Invoke(f);
                 TrailerKeepAlive();
                 yield return new WaitForEndOfFrame();
@@ -86,6 +90,7 @@ namespace DotRPG
             }
             Time.captureFramerate = 0;
             Destroy(frame);
+            if (trailerClean && Game.UI.Hud != null) Game.UI.Hud.gameObject.SetActive(true);
             Log($"clip {clip}: {frames} frames");
         }
 
@@ -134,7 +139,7 @@ namespace DotRPG
 
         IEnumerator TrailerAwaken()
         {
-            foreach (var career in new[] { Career.Fighter, Career.Arcanist })
+            foreach (var career in new[] { Career.Fighter, Career.Guardian, Career.Arcanist, Career.Bishop })
             {
                 yield return TrailerHero(career);
                 Game.Flow.TravelTo(TrailerZone(36), true);
@@ -146,7 +151,7 @@ namespace DotRPG
                 var s = CareerCatalog.For(career).First(k => k.kind == CareerSkillKind.Awakening);
                 var numbers = player.Data.Stats.Skill(player.Class, 4, s.Gem, new SkillGem[0]);
                 QuestAutoPilot.Stop("");
-                yield return TrailerRecord("awaken_" + career.ToString().ToLowerInvariant(), career == Career.Arcanist ? 8.5f : 5f,
+                yield return TrailerRecord("awaken_" + career.ToString().ToLowerInvariant(), career == Career.Arcanist ? 8.5f : 5.5f,
                     f => { if (f == 8) StartCoroutine(CareerCombat.For(player).Cast(s, numbers)); });
             }
         }
