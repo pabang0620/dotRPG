@@ -7,7 +7,9 @@ namespace DotRPG
 {
     public sealed partial class DungeonDirector
     {
-        bool leaving;
+        bool leaving, handingOver;
+        /// <summary>[LEAVE] The run's end reason when the party agreed to go home together (members follow straight home).</summary>
+        public const string TogetherReason = "파티가 함께 마을로 돌아갔습니다.";
 
         public bool RunOver => run != null && run.IsOver;
 
@@ -21,6 +23,44 @@ namespace DotRPG
                 ReviveOpen = false;
                 Fail("던전에서 나왔습니다.");
                 if (!run.IsOver) { leaving = false; return; } // could not end it right now (clearing)
+                // [LEAVE] A member going home alone tells the server now (the run goes on for the others).
+                if (Follower && PartyRunSession.Active) PartyRunSession.Instance.Leave();
+            }
+            leaving = false;
+            ExitToVillage(false);
+        }
+
+        /// <summary>
+        /// [LEAVE] Host goes home alone: this PC's run fails without ending it for the party; leaving the run and the fight
+        /// connection hands the host role to a member (server-led on the relay, or the members' host claim), who carries on.
+        /// </summary>
+        public void LeaveHandingOver()
+        {
+            if (run == null || busy) return;
+            if (!run.IsOver)
+            {
+                leaving = true;
+                handingOver = true;
+                ReviveOpen = false;
+                Fail("방장을 넘기고 파티를 떠났습니다.");
+                handingOver = false;
+                if (!run.IsOver) { leaving = false; return; }
+            }
+            leaving = false;
+            if (PartyRunSession.Active) PartyRunSession.Instance.Leave();
+            ExitToVillage(false);
+        }
+
+        /// <summary>[LEAVE] Host, after every member agreed: the whole party fails the run and goes home together.</summary>
+        public void LeaveTogether()
+        {
+            if (run == null || busy) return;
+            if (!run.IsOver)
+            {
+                leaving = true;
+                ReviveOpen = false;
+                Fail(TogetherReason);
+                if (!run.IsOver) { leaving = false; return; }
             }
             leaving = false;
             ExitToVillage(false);
@@ -43,7 +83,7 @@ namespace DotRPG
         void Fail(string reason)
         {
             if (run == null || run.IsOver || run.State == DungeonRunState.Clearing) return;
-            if (NetHost)
+            if (NetHost && !handingOver) // [LEAVE] handing over: the party's run goes on under the new host
             {
                 PartyNet.Current.HostRunEnded(false, reason, run.Elapsed);
                 PartyRunSession.Instance?.SendHostReport(false, run.Elapsed);

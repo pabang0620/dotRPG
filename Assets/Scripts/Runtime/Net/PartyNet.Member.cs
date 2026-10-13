@@ -239,6 +239,7 @@ namespace DotRPG
                     case PartyMsg.RaidLaunch: MemberLaunch(r); break;
                     case PartyMsg.RaidDrain: MemberDrain(r); break;
                     case PartyMsg.ReviveState: MemberReviveState(r); break;
+                    case PartyMsg.VillageVote: MemberVillageVote(r); break;
                     case PartyMsg.RaidStun:
                     {
                         int slot = r.ReadByte();

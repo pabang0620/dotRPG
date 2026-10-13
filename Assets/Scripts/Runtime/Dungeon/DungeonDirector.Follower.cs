@@ -51,6 +51,14 @@ namespace DotRPG
             run.MaxCombo = mine.maxCombo;
             run.RevivesUsed = mine.revives;
             if (cleared) StartCoroutine(ClearRoutine());
+            else if (reason == TogetherReason)
+            {
+                // [LEAVE] Everyone agreed to go home: straight to the village, no result window.
+                leaving = true;
+                Fail(reason);
+                leaving = false;
+                ExitToVillage(false);
+            }
             else Fail(string.IsNullOrEmpty(reason) ? "파티가 던전 공략에 실패했습니다." : reason);
         }
     }

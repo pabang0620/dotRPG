@@ -83,6 +83,7 @@ namespace DotRPG
             Push(window != null ? window : Equipment);
         }
         ConfirmScreen confirm;
+        ChoiceScreen choice;
 
         readonly List<MenuScreen> stack = new List<MenuScreen>();
 
@@ -150,6 +151,7 @@ namespace DotRPG
             PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); DailyQuestScreen.Create(t); MailScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             ui.confirm = ConfirmScreen.Create(t, ui);
+            ui.choice = ChoiceScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);
 
             Game.State.Changed += ui.OnStateChanged;
@@ -241,7 +243,7 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Withdrawal, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm })
+            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, Withdrawal, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm, choice })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
             if (Cosmetics != null) Cosmetics.Hide();
@@ -260,6 +262,19 @@ namespace DotRPG
             if (overlay) PushOverlay(confirm);
             else Push(confirm);
         }
+
+        /// <summary>
+        /// A question with several answers, drawn over the current screen. Esc and the time limit (if any, "{초}" shows
+        /// the seconds left) run <paramref name="onCancel"/>.
+        /// </summary>
+        public void Choose(string message, IList<(string label, Action act)> options, Action onCancel = null, float timeoutSeconds = 0f)
+        {
+            choice.Setup(message, options, onCancel, timeoutSeconds);
+            PushOverlay(choice);
+        }
+
+        /// <summary>The several-answer dialog (for automated checks).</summary>
+        public ChoiceScreen ChoiceDialog => choice;
 
         /// <summary>The yes/no dialog (for automated checks).</summary>
         public ConfirmScreen ConfirmDialog => confirm;

@@ -204,6 +204,7 @@ namespace DotRPG
                             break;
                         }
                         if (kind == PartyMsg.ReviveRequest) { HostReviveRequest(p.from, r); break; } // [REVIVE]
+                        if (kind == PartyMsg.VillageAnswer) { HostVillageAnswer(p.from, r); break; } // [LEAVE]
                         if (kind != PartyMsg.Heal) break;
                         int slot = r.ReadByte();
                         int amount = r.ReadInt32();

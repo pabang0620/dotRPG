@@ -122,7 +122,33 @@ namespace DotRPG
             var d = Game.Dungeon;
             if (d == null || !d.InRun || d.IsBusy) return;
             if (d.RunOver) { d.LeaveToVillage(); return; }
+            // [LEAVE] The host of a party run with people in it chooses: go alone (the host role passes on) or all together (a vote).
+            if (PartyNet.IsHost && PartyNet.Current.OtherHumans > 0)
+            {
+                Game.UI.Choose("마을로 어떻게 돌아갈까요?\n\n<b>혼자 나가기</b>: 방장을 파티원에게 넘기고 나만 나갑니다. 파티원은 계속 진행합니다.\n" +
+                               "<b>다 함께 마을로</b>: 파티원 전원이 " + PartyNet.VillageVoteSeconds.ToString("0") + "초 안에 동의하면 이번 판을 실패로 끝내고 함께 돌아갑니다.",
+                    new (string, System.Action)[]
+                    {
+                        ("혼자 나가기", () => Game.UI.Confirm("방장을 넘기고 나갈까요?\n이번 판의 내 보상은 없습니다.", () => d.LeaveHandingOver(), true)),
+                        ("다 함께 마을로", () => AskTogether(d)),
+                        ("취소", null),
+                    });
+                return;
+            }
             Game.UI.Confirm("마을로 돌아갈까요?\n진행 중인 이번 판은 실패로 끝납니다.", () => d.LeaveToVillage(), true);
+        }
+
+        /// <summary>[LEAVE] Asks every member; all agree in time = the party goes home together.</summary>
+        static void AskTogether(DungeonDirector d)
+        {
+            if (!PartyNet.IsHost) return;
+            GameEvents.RaiseToast("파티원에게 함께 돌아갈지 묻는 중입니다... (" + PartyNet.VillageVoteSeconds.ToString("0") + "초)");
+            PartyNet.Current.HostAskVillage(agreed =>
+            {
+                if (d == null || !d.InRun || d.RunOver) return;
+                if (agreed) d.LeaveTogether();
+                else GameEvents.RaiseToast("모든 파티원이 동의하지 않아 계속 진행합니다.");
+            });
         }
 
         static void MakeButton(RectTransform parent, string label, string sprite, Vector2 pos, System.Action onClick)
