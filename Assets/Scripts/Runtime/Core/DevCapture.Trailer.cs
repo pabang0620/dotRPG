@@ -123,7 +123,47 @@ namespace DotRPG
             Time.timeScale = 1f;
         }
 
-        static string TrailerZone(int level) => HuntingGrounds.All.OrderBy(z => Mathf.Abs(z.monsterLevel - level)).First().id;
+        static string TrailerZone(int level) => TrailerZoneOf(level).id;
+        static HuntingZone TrailerZoneOf(int level) => HuntingGrounds.All.OrderBy(z => Mathf.Abs(z.monsterLevel - level)).First();
+
+        /// <summary>The most open free spot of the map, near its middle (the camera stays centred; at the map edge it was clamped).</summary>
+        static Vector2 TrailerOpenSpot()
+        {
+            var world = Game.World;
+            Rect r = world.Bounds;
+            Vector2 best = Game.Player.Position;
+            float bestScore = float.MinValue;
+            for (float x = r.xMin + 6f; x <= r.xMax - 6f; x += 1.5f)
+                for (float y = r.yMin + 5f; y <= r.yMax - 5f; y += 1.5f)
+                {
+                    var p = new Vector2(x, y);
+                    if (!world.IsFree(p)) continue;
+                    int open = 0;
+                    for (int k = 0; k < 24; k++)
+                    {
+                        float a = k * Mathf.PI / 12f;
+                        foreach (float d in new[] { 2.5f, 4.5f })
+                            if (world.IsFree(p + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * .7f) * d)) open++;
+                    }
+                    float score = open * 4f - Vector2.Distance(p, r.center);
+                    if (score > bestScore) { bestScore = score; best = p; }
+                }
+            return best;
+        }
+
+        /// <summary>A pack of the zone's monsters in rings around <paramref name="at"/> (the awakenings and hunting shots hit many at once).</summary>
+        static void TrailerPack(HuntingZone zone, Vector2 at, int count)
+        {
+            var world = Game.World;
+            for (int i = 0; i < count; i++)
+            {
+                float a = i * 2.39996f; // golden angle: even spread
+                float d = 1.8f + (i % 4) * .9f;
+                var p = at + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * .7f) * d;
+                if (!world.IsFree(p)) continue;
+                MonsterDatabase.SpawnField(zone.monsters[i % zone.monsters.Length], p, world.ObjectsRoot, zone.monsterLevel, 0);
+            }
+        }
 
         // ---------------------------------------------------------------- scenes
 
@@ -133,8 +173,10 @@ namespace DotRPG
             Game.Flow.TravelTo(TrailerZone(30), true);
             yield return Wait(.3f);
             while (Game.Flow.IsTransitioning) yield return null;
-            yield return TrailerPlay(8f);
-            yield return TrailerRecord("hunt", 10f);
+            Game.Player.Place(TrailerOpenSpot(), Facing.Down);
+            TrailerPack(TrailerZoneOf(30), Game.Player.Position, 12);
+            yield return TrailerPlay(1.5f, 1f);
+            yield return TrailerRecord("hunt", 10f, f => { if (f == 150) TrailerPack(TrailerZoneOf(30), Game.Player.Position, 10); });
         }
 
         IEnumerator TrailerAwaken()
@@ -145,9 +187,15 @@ namespace DotRPG
                 Game.Flow.TravelTo(TrailerZone(36), true);
                 yield return Wait(.3f);
                 while (Game.Flow.IsTransitioning) yield return null;
-                // Walk in until a pack is around the hero, then the awakening.
-                yield return TrailerPlay(20f, 2f, () => EnemyController.Active.Count(e => e != null && !e.IsDead && Vector2.Distance(e.Position, Game.Player.Position) < 4.5f) >= 4);
+                // The middle of an open field, a big pack closing in, then the awakening.
                 var player = Game.Player;
+                QuestAutoPilot.Stop("");
+                player.Place(TrailerOpenSpot(), Facing.Down);
+                var party = Game.Party;
+                for (int m = 1; party != null && m < party.Members.Count; m++) party.Members[m]?.Place(party.SpotFor(m - 1), Facing.Down);
+                TrailerPack(TrailerZoneOf(36), player.Position, 16);
+                yield return TrailerPlay(.8f, 1f);
+                QuestAutoPilot.Stop("");
                 var s = CareerCatalog.For(career).First(k => k.kind == CareerSkillKind.Awakening);
                 var numbers = player.Data.Stats.Skill(player.Class, 4, s.Gem, new SkillGem[0]);
                 QuestAutoPilot.Stop("");
@@ -260,15 +308,47 @@ namespace DotRPG
             QuestAutoPilot.MeasureAware = true;
             yield return TrailerPlay(12f, 1f, () => brain != null && brain.CastingJudgment);
             yield return TrailerRecord("king_judgment", 11f);
-            // The kill, the slow motion and the raid reward cards.
+            // The kill, the slow motion and the raid reward cards (dealt high: the reveal shows the unique / legendary effects).
+            var authority = DungeonAuthority.Current;
+            DungeonAuthority.Current = new TrailerAuthority(authority);
             if (!boss.IsDead) TrailerSetHp(boss, .02f);
             var dir = Game.Dungeon;
             yield return TrailerPlay(20f, 1f, () => boss == null || boss.IsDead);
             yield return TrailerRecord("king_kill", 4f);
             yield return TrailerPlay(30f, 1f, () => Game.UI.Top != null || dir.Run == null || dir.Run.IsOver);
             // The result window, then every raid card flips (as the "모두 뒤집기" button does).
-            yield return TrailerRecord("king_reward", 8f, f => { if (f == 60) Game.UI.DungeonResult?.DevFlipAll(); });
+            yield return TrailerRecord("king_reward", 10f, f => { if (f == 30) Game.UI.DungeonResult?.DevFlipAll(); });
+            DungeonAuthority.Current = authority;
             yield return TrailerLeaveRun();
+        }
+    }
+
+    /// <summary>
+    /// [TRAILER] The offline authority with the raid cards dealt high for the promotion video: the raid material, two
+    /// unique pieces and a legendary weapon last (the jackpot glow, rays and ring of RaidCardView). Everything else is
+    /// the normal local roll. Only the -dotrpgTrailer capture installs it.
+    /// </summary>
+    sealed class TrailerAuthority : IDungeonAuthority
+    {
+        readonly IDungeonAuthority inner;
+        public TrailerAuthority(IDungeonAuthority inner) => this.inner = inner;
+        public RankScore ScoreRun(DungeonRun run) => inner.ScoreRun(run);
+        public int ClearXp(DungeonRun run, DungeonRank rank) => inner.ClearXp(run, rank);
+        public int RaidGold(DungeonRun run) => inner.RaidGold(run);
+        public int CompanionPick(DungeonRun run, int memberIndex, IReadOnlyList<int> faceDown) => inner.CompanionPick(run, memberIndex, faceDown);
+
+        public List<RewardCard> DealCards(DungeonRun run, CharacterClass cls)
+        {
+            var def = run.Dungeon.raidReward;
+            if (def == null) return inner.DealCards(run, cls);
+            int tier = GearCatalog.TierOfLevel(DungeonDatabase.DifficultyFor(run.Dungeon, DungeonDifficulty.Normal).recommendedLevel);
+            var cards = new List<RewardCard> { new RewardCard(def.materialItem, 8) };
+            foreach (var (cat, rarity) in new[] { (EquipCategory.Top, ItemRarity.Unique), (EquipCategory.Ring, ItemRarity.Unique), (EquipCategory.Weapon, ItemRarity.Legendary) })
+            {
+                string key = DungeonRewards.FindRaidGear(cls, tier, cat, rarity);
+                cards.Add(key != null ? new RewardCard(key, 1) : new RewardCard(def.materialItem, 4));
+            }
+            return cards;
         }
     }
 }
