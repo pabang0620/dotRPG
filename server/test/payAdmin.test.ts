@@ -452,7 +452,6 @@ describe('환경변수·기동 검사(16절)와 비밀 노출', () => {
       loadConfig({ ...base, PAYMENTS_ENABLED: 'true', PAYMENTS_STEAM_MODE: 'sandbox', STEAM_PUBLISHER_API_KEY: 'k', PAYMENT_QUOTE_SECRET: 'q'.repeat(40), STEAM_AUTH_MODE: 'web_api', STEAM_APP_ID: '1', STEAM_WEB_API_KEY: 'w' }),
     ).toThrow(/STAR_RATES_ACK_REQUIRED/);
     expect(() => loadConfig({ ...base, PAYMENTS_STEAM_MODE: 'mock', NODE_ENV: 'production', DEPLOY_STAGE: 'live' })).toThrow();
-    expect(() => loadConfig({ ...base, PAY_LIMIT_NEW_DAILY_STARS: '20000' })).toThrow(/restricted <= new <= standard/);
   });
 
   it('PAYMENTS_ENABLED=false 이면 대사·감시 작업은 계속 돈다(이미 생긴 주문을 놓치지 않는다)', async () => {

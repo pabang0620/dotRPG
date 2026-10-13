@@ -383,56 +383,18 @@ describe('로그인·Steam 연결', () => {
   });
 });
 
-describe('D. 한도·사기 결제', () => {
-  it('2. 한도 초과는 B2에서 PAY_LIMIT_EXCEEDED 이고 주문 행·Steam 호출이 생기지 않는다', async () => {
-    const small = payApp({ PAY_LIMIT_NEW_DAILY_STARS: '400', PAY_LIMIT_NEW_MONTHLY_STARS: '10000', PAY_LIMIT_RESTRICTED_DAILY_STARS: '100', PAY_LIMIT_RESTRICTED_MONTHLY_STARS: '1000', PAY_LIMIT_DAILY_STARS: '400', PAY_LIMIT_MONTHLY_STARS: '10000' });
-    const p = await newPayer(small);
-    const list = await products(small, p);
+describe('D. 사기 결제', () => {
+  it('2. 결제 금액 한도는 없다: 새 계정도 큰 묶음을 연달아 살 수 있다', async () => {
+    const p = await newPayer(app);
+    const list = await products(app, p);
+    expect(list.body.data.limits).toBeUndefined();
     const big = list.body.data.offers.find((x: { product_id: string }) => x.product_id === 'stars_1000');
-    expect(big).toMatchObject({ purchasable: false, block: 'LIMIT_DAILY' });
-    const before = mock.calls.initTxn;
-    const res = await order(small, p, { request_id: randomUUID(), product_id: 'stars_1000', quote_id: big.quote_id });
-    expect(res.status).toBe(422);
-    expect(res.body.errors).toMatchObject({ code: 'PAY_LIMIT_EXCEEDED', scope: 'daily', limit: 400, used: 0 });
-    expect(mock.calls.initTxn).toBe(before);
-    expect((await getPool().query('SELECT count(*) AS n FROM star_orders WHERE account_id = $1', [p.accountId])).rows[0]).toMatchObject({ n: '0' });
-    payApp();
-  });
-
-  it('1. 한도 합산: 환불된 주문도 센다, failed·expired 는 뺀다, 06:00 KST 경계에서 일일이 초기화되고 월은 롤링 30일', async () => {
-    const small = payApp({ PAY_LIMIT_RESTRICTED_DAILY_STARS: '100', PAY_LIMIT_RESTRICTED_MONTHLY_STARS: '200', PAY_LIMIT_NEW_DAILY_STARS: '500', PAY_LIMIT_NEW_MONTHLY_STARS: '700', PAY_LIMIT_DAILY_STARS: '500', PAY_LIMIT_MONTHLY_STARS: '700', PAY_NEW_ACCOUNT_DAYS: '0' });
-    const p = await newPayer(small);
-    const db = getPool();
-    const ins = (state: string, stars: number, at: string): Promise<unknown> =>
-      db.query(
-        `INSERT INTO star_orders (account_id, request_id, request_hash, steam_id, app_id, product_id, steam_item_id, catalog_version, stars, currency, amount_minor, tier, state, expires_at, created_at,
-                                  granted_at, reversed_at, fail_reason)
-         VALUES ($1, gen_random_uuid(), 'h', $2, 480, 'stars_300', 1001, 'v', $3, 'KRW', 1100, 'standard', $4, $5::timestamptz + interval '1 hour', $5::timestamptz,
-                 CASE WHEN $4 IN ('granted', 'refunded') THEN $5::timestamptz END, CASE WHEN $4 = 'refunded' THEN $5::timestamptz END, CASE WHEN $4 = 'failed' THEN 'init_rejected' END)`,
-        [p.accountId, p.steamId, stars, state, at],
-      );
-    // 06:00 KST 직전(2026-10-06 05:59:00 KST = 2026-10-05T20:59:00Z)
-    const before = new Date('2026-10-05T20:59:00Z');
-    setClockOverride(() => new Date(before.getTime() + 120_000)); // 지금 = 06:01 KST
-    try {
-      await ins('refunded', 200, '2026-10-05T20:58:00Z'); // 06:00 이전: 일일에는 안 세고 월에는 센다
-      await ins('failed', 300, '2026-10-05T21:00:30Z'); // 실패는 안 센다
-      await ins('expired', 300, '2026-10-05T21:00:40Z');
-      await ins('refunded', 250, '2026-10-05T21:00:50Z'); // 06:00 이후 환불: 일일에 센다
-      const list = await products(small, p);
-      expect(list.status).toBe(200);
-      expect(list.body.data.limits.daily).toMatchObject({ limit: 500, used: 250, left: 250 });
-      expect(list.body.data.limits.monthly).toMatchObject({ limit: 700, used: 450, left: 250 });
-      // 300 별조각은 일일(250 남음)을 넘는다, 월(250 남음)도 넘는다
-      const offer = list.body.data.offers.find((x: { product_id: string }) => x.product_id === 'stars_300');
-      expect(offer).toMatchObject({ purchasable: false });
-      // 31일 뒤: 월 롤링 창에서 빠진다
-      setClockOverride(() => new Date(before.getTime() + 120_000 + 31 * 86_400_000));
-      const later = await products(small, p);
-      expect(later.body.data.limits.monthly.used).toBe(0);
-    } finally {
-      setClockOverride(null);
-      payApp();
+    expect(big).toMatchObject({ purchasable: true, block: null });
+    for (let i = 0; i < 3; i++) {
+      const o = await offerOf(app, p, 'stars_1000');
+      const res = await order(app, p, { request_id: randomUUID(), product_id: 'stars_1000', quote_id: o.quote_id });
+      expect(res.status).toBe(201);
+      await getPool().query("UPDATE star_orders SET state = 'granted', granted_at = now(), closed_at = now(), next_check_at = NULL WHERE uuid = $1", [res.body.data.order.id]);
     }
   });
 
@@ -447,15 +409,6 @@ describe('D. 한도·사기 결제', () => {
     }
     expect((await getPool().query('SELECT count(*) AS n FROM star_orders WHERE account_id = $1', [p.accountId])).rows[0]).toMatchObject({ n: '1' });
     expect(mock.calls.initTxn).toBe(1);
-  });
-
-  it('3. 한도가 한 주문만 남은 상태에서 두 요청(열린 주문이 없어도 순차화)은 한 개만 통과한다', async () => {
-    const small = payApp({ PAY_LIMIT_RESTRICTED_DAILY_STARS: '100', PAY_LIMIT_RESTRICTED_MONTHLY_STARS: '100', PAY_LIMIT_NEW_DAILY_STARS: '300', PAY_LIMIT_NEW_MONTHLY_STARS: '300', PAY_LIMIT_DAILY_STARS: '300', PAY_LIMIT_MONTHLY_STARS: '300' });
-    const p = await newPayer(small);
-    const o = await offerOf(small, p);
-    const rs = await Promise.all([1, 2].map(() => order(small, p, { request_id: randomUUID(), product_id: 'stars_300', quote_id: o.quote_id })));
-    expect(rs.filter((r) => r.status === 201).length).toBe(1);
-    payApp();
   });
 
   it('4. 단계: 가입 14일 미만 new, 연결 계정 차지백/국가 변경/공유 기기 구매 계정 3개 이상 restricted(공용 기기는 제외)', async () => {
@@ -497,7 +450,7 @@ describe('D. 한도·사기 결제', () => {
     expect((await products(app, main)).body.data.tier).toBe('standard');
   });
 
-  it('5. 속도: 60초 안 재주문, 1시간 3건 초과, 1시간 실패·만료 5건 -> ORDER_TOO_FAST(retry_after_sec)', async () => {
+  it('5. 속도: 60초 안 재주문, 1시간 실패·만료 5건 -> ORDER_TOO_FAST(retry_after_sec)', async () => {
     const fast = payApp({ PAY_MIN_ORDER_GAP_SECONDS: '60' });
     const p = await newPayer(fast);
     const first = await buy(fast, p);
@@ -507,16 +460,7 @@ describe('D. 한도·사기 결제', () => {
     expect(second.status).toBe(429);
     expect(second.body.errors.code).toBe('ORDER_TOO_FAST');
     expect(second.body.errors.retry_after_sec).toBeGreaterThan(0);
-    const hourly = payApp({ PAY_MIN_ORDER_GAP_SECONDS: '0', PAY_MAX_ORDERS_PER_HOUR: '2', PAY_FAIL_COOLDOWN_THRESHOLD: '1000' });
-    const q = await newPayer(hourly);
-    for (let i = 0; i < 2; i++) {
-      const r = await buy(hourly, q);
-      expect(r.status).toBe(201);
-      await getPool().query("UPDATE star_orders SET state = 'expired', closed_at = now(), next_check_at = NULL WHERE uuid = $1", [r.body.data.order.id]);
-    }
-    const third = await buy(hourly, q);
-    expect(third.status).toBe(429);
-    const burst = payApp({ PAY_MIN_ORDER_GAP_SECONDS: '0', PAY_MAX_ORDERS_PER_HOUR: '100', PAY_FAIL_COOLDOWN_THRESHOLD: '2' });
+    const burst = payApp({ PAY_MIN_ORDER_GAP_SECONDS: '0', PAY_FAIL_COOLDOWN_THRESHOLD: '2' });
     const w = await newPayer(burst);
     for (let i = 0; i < 2; i++) {
       const r = await buy(burst, w);

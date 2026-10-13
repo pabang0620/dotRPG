@@ -11,8 +11,6 @@ export async function initPayments(): Promise<void> {
   const catalog = loadStarCatalog();
   const snap = await ensureRatesSnapshot(getPool());
   logger.info({ rates_version: snap.version, snapshot_created: snap.created, products: catalog.products.length, catalog_version: catalog.version, payments_enabled: cfg.pay.enabled }, 'payments.init');
-  const biggest = catalog.products.filter((p) => p.enabled).reduce((a, p) => Math.max(a, p.stars), 0);
-  if (biggest > cfg.pay.limits.new.daily) logger.warn({ biggest, new_daily_limit: cfg.pay.limits.new.daily }, 'payments.product_exceeds_new_daily_limit');
   if (cfg.pay.enabled) {
     const owners = await getPool().query<{ n: string }>("SELECT count(*) AS n FROM admin_users WHERE role = 'owner' AND disabled_at IS NULL");
     if (Number(owners.rows[0]?.n ?? 0) < 2) logger.warn('payments.fewer_than_two_active_owners');

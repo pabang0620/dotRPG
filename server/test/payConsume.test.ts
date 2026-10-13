@@ -5,7 +5,7 @@ import { setClockOverride } from '../src/utils/clock';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 import { debit } from '../src/domains/starshop/starWallet';
 import * as starshop from '../src/domains/starshop/starshopService';
-import { exchangePriceOf, RATES_VERSION, STAR_COSMETIC_BY_ID } from '../src/domains/starshop/starshopDefs';
+import { RATES_VERSION } from '../src/domains/starshop/starshopDefs';
 import { adminApp } from './opsHelpers';
 import { post } from './economyHelpers';
 import { resetDb, shutdown } from './helpers';
@@ -56,41 +56,16 @@ describe('E. 소비 강화', () => {
     await expectWalletConsistent(p.accountId);
   });
 
-  it('3. 일일 소비 상한: 상한 직전까지 성공, 초과 STAR_SPEND_CAP(limit/used/resets_at), 06:00 KST 경계에서 초기화, 0 = 끔', async () => {
-    app = payApp({ STAR_SPEND_DAILY_CAP: '300' });
+  it('3. 별조각 소비 한도는 없다: 하루에 많이 써도 막지 않고 요약에 상한 필드가 없다', async () => {
     const p = await newPayer(app);
     const hero = await heroOf(app, p);
-    await seedStars(p.accountId, 5000);
-    for (let i = 0; i < 3; i++) {
+    await seedStars(p.accountId, 50_000);
+    for (let i = 0; i < 4; i++) {
       getRateLimitStore().clear();
-      expect((await post(app, hero, '/starshop/pull', { count: 1 })).status).toBe(200);
+      expect((await post(app, hero, '/starshop/pull', { count: 10 })).status).toBe(200);
     }
-    getRateLimitStore().clear();
-    const over = await post(app, hero, '/starshop/pull', { count: 1 });
-    expect(over.status).toBe(422);
-    expect(over.body.errors).toMatchObject({ code: 'STAR_SPEND_CAP', limit: 300, used: 300 });
-    expect(Date.parse(over.body.errors.resets_at)).not.toBeNaN();
-    getRateLimitStore().clear();
-    // 뽑기로 이미 얻은 외형이면 소유 검사(409)가 먼저라서, 가지지 않은 교환 가능 외형을 고른다
-    const ownedRows = await getPool().query<{ item_id: string }>('SELECT item_id FROM account_cosmetics WHERE account_id = $1', [p.accountId]);
-    const owned = new Set(ownedRows.rows.map((r) => r.item_id));
-    const target = [...STAR_COSMETIC_BY_ID.values()].find((c) => !owned.has(c.id) && exchangePriceOf(c) > 0)!;
-    expect((await post(app, hero, '/starshop/exchange', { item_id: target.id })).status).toBe(422);
-    // 요약에 상한이 보인다
     const sum = await (await import('supertest')).default(app).get(`/characters/${hero.id}/starshop`).set((await import('./payHelpers')).authP(p));
-    expect(sum.body.data.spend_cap).toMatchObject({ limit: 300, used: 300, left: 0 });
-    // 다음 06:00 KST 이후에는 새 하루
-    setClockOverride(() => new Date(Date.now() + 25 * 3_600_000));
-    getRateLimitStore().clear();
-    expect((await post(app, hero, '/starshop/pull', { count: 1 })).status).toBe(200);
-    setClockOverride(null);
-    // 상한 0 = 끔
-    app = payApp({ STAR_SPEND_DAILY_CAP: '0' });
-    for (let i = 0; i < 5; i++) {
-      getRateLimitStore().clear();
-      expect((await post(app, hero, '/starshop/pull', { count: 1 })).status).toBe(200);
-    }
-    app = payApp();
+    expect(sum.body.data.spend_cap).toBeUndefined();
   });
 
   it('3. 계정당 분당 소비 속도 제한(RATE_STARSHOP_SPEND_PER_MIN)', async () => {

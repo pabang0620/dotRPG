@@ -1,5 +1,5 @@
 // 11단계(별조각 Steam 결제) 환경변수. 값의 뜻은 Docs/server/phase11_payments.md 16절.
-// [운영 전 확정] 한도·가격·묶음·속도 제한 숫자는 모두 시작값이다(문서 10.2, 16절). 상품 가격표가 정해지면 환경변수로 조정한다.
+// [운영 전 확정] 가격·묶음·속도 제한 숫자는 모두 시작값이다(문서 10.3, 16절). 결제 금액·별조각 소비에는 일·월 한도를 두지 않는다.
 // 결제 기능 플래그(PAYMENTS_ENABLED)는 기본 꺼짐이다.
 import { z } from 'zod';
 
@@ -24,14 +24,7 @@ export const payShape = {
   PAY_STEAM_MAX_CALLS_PER_MIN: posInt(60),
   PAY_WATCH_DAYS: posInt(180),
   PAY_REPORT_DAYS: posInt(7),
-  PAY_LIMIT_DAILY_STARS: posInt(10_000),
-  PAY_LIMIT_MONTHLY_STARS: posInt(50_000),
-  PAY_LIMIT_NEW_DAILY_STARS: posInt(3_000),
-  PAY_LIMIT_NEW_MONTHLY_STARS: posInt(10_000),
-  PAY_LIMIT_RESTRICTED_DAILY_STARS: posInt(1_000),
-  PAY_LIMIT_RESTRICTED_MONTHLY_STARS: posInt(3_000),
   PAY_NEW_ACCOUNT_DAYS: nonNegInt(14),
-  PAY_MAX_ORDERS_PER_HOUR: posInt(3),
   PAY_MIN_ORDER_GAP_SECONDS: nonNegInt(60),
   PAY_FAIL_COOLDOWN_THRESHOLD: posInt(5),
   PAY_SHARED_DEVICE_ACCOUNTS: posInt(3),
@@ -41,7 +34,6 @@ export const payShape = {
   PAY_REFUND_BLOCK_COUNT: posInt(3),
   PAY_BURN_MINUTES: posInt(10),
   PAY_IP_RETENTION_DAYS: posInt(180),
-  STAR_SPEND_DAILY_CAP: nonNegInt(30_000),
   STAR_RATES_ACK_REQUIRED: boolStr.default(false),
   RATE_PAY_READ_PER_MIN: posInt(30),
   RATE_PAY_ORDER_PER_MIN: posInt(3),
@@ -55,11 +47,6 @@ export const payShape = {
 };
 
 export type PayRaw = z.output<z.ZodObject<typeof payShape>>;
-
-export interface TierLimits {
-  daily: number;
-  monthly: number;
-}
 
 export interface PayConfig {
   enabled: boolean;
@@ -76,9 +63,7 @@ export interface PayConfig {
   steamMaxCallsPerMin: number;
   watchDays: number;
   reportDays: number;
-  limits: { standard: TierLimits; new: TierLimits; restricted: TierLimits };
   newAccountDays: number;
-  maxOrdersPerHour: number;
   minOrderGapSeconds: number;
   failCooldownThreshold: number;
   sharedDeviceAccounts: number;
@@ -88,7 +73,6 @@ export interface PayConfig {
   refundBlockCount: number;
   burnMinutes: number;
   ipRetentionDays: number;
-  spendDailyCap: number;
   ratesAckRequired: boolean;
   rate: { readPerMin: number; orderPerMin: number; orderIpPerMin: number; syncPerMin: number; spendPerMin: number };
   adminGrant: { maxStars: number; dailyPerAdmin: number; dailyTotal: number; pendingHours: number };
@@ -125,13 +109,6 @@ export function buildPay(e: PayRaw, ctx: PayCtx): PayConfig {
       if (ctx.deployStage === 'test' && e.PAYMENTS_STEAM_MODE !== 'sandbox') fail('DEPLOY_STAGE=test 에서는 PAYMENTS_STEAM_MODE=sandbox 여야 합니다');
     }
   }
-  const std = { daily: e.PAY_LIMIT_DAILY_STARS, monthly: e.PAY_LIMIT_MONTHLY_STARS };
-  const nw = { daily: e.PAY_LIMIT_NEW_DAILY_STARS, monthly: e.PAY_LIMIT_NEW_MONTHLY_STARS };
-  const rs = { daily: e.PAY_LIMIT_RESTRICTED_DAILY_STARS, monthly: e.PAY_LIMIT_RESTRICTED_MONTHLY_STARS };
-  if (!(rs.daily <= nw.daily && nw.daily <= std.daily && rs.monthly <= nw.monthly && nw.monthly <= std.monthly)) {
-    fail('결제 한도는 restricted <= new <= standard 여야 합니다(일·월 각각)');
-  }
-  if (!(rs.daily <= rs.monthly && nw.daily <= nw.monthly && std.daily <= std.monthly)) fail('결제 일일 한도는 월 한도 이하여야 합니다');
   if (e.PAYMENTS_ENABLED && ctx.prod && e.PAY_ADMIN_GRANT_MAX_STARS > e.PAY_ADMIN_GRANT_DAILY_MAX_STARS_PER_ADMIN) {
     ctx.warn('PAY_ADMIN_GRANT_MAX_STARS 가 관리자별 일일 상한보다 큽니다');
   }
@@ -150,9 +127,7 @@ export function buildPay(e: PayRaw, ctx: PayCtx): PayConfig {
     steamMaxCallsPerMin: e.PAY_STEAM_MAX_CALLS_PER_MIN,
     watchDays: e.PAY_WATCH_DAYS,
     reportDays: e.PAY_REPORT_DAYS,
-    limits: { standard: std, new: nw, restricted: rs },
     newAccountDays: e.PAY_NEW_ACCOUNT_DAYS,
-    maxOrdersPerHour: e.PAY_MAX_ORDERS_PER_HOUR,
     minOrderGapSeconds: e.PAY_MIN_ORDER_GAP_SECONDS,
     failCooldownThreshold: e.PAY_FAIL_COOLDOWN_THRESHOLD,
     sharedDeviceAccounts: e.PAY_SHARED_DEVICE_ACCOUNTS,
@@ -162,7 +137,6 @@ export function buildPay(e: PayRaw, ctx: PayCtx): PayConfig {
     refundBlockCount: e.PAY_REFUND_BLOCK_COUNT,
     burnMinutes: e.PAY_BURN_MINUTES,
     ipRetentionDays: e.PAY_IP_RETENTION_DAYS,
-    spendDailyCap: e.STAR_SPEND_DAILY_CAP,
     ratesAckRequired: e.STAR_RATES_ACK_REQUIRED,
     rate: {
       readPerMin: e.RATE_PAY_READ_PER_MIN,

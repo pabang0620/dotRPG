@@ -11,7 +11,6 @@ import { assertNoHold } from '../antiabuse/holds';
 import * as ceilings from '../ceilings/ceilingRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
-import { assertSpendAllowed } from '../starshop/starSpend';
 import * as wallets from '../starshop/starWallet';
 import * as tickets from '../sweep/ticketWallet';
 import { grantItems, type ItemCount } from './sealedBoxGrant';
@@ -128,7 +127,6 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       const wallet = await wallets.lockWallet(db, accountId);
       wallets.assertNoStarDebt(wallet);
       if (wallet.balance < price) throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
-      await assertSpendAllowed(db, accountId, price, ctx.now);
       const paid = await wallets.debit(db, { accountId, reason: 'sealed_pull', price, ref: `sealed_${body.count}`, requestId });
 
       const state = await repo.lockState(db, accountId);

@@ -18,7 +18,6 @@ export const PAY_ENV: Record<string, string> = {
   PAYMENT_QUOTE_SECRET: 'quote-secret-quote-secret-quote-secret-0123',
   STAR_RATES_ACK_REQUIRED: 'false',
   PAY_MIN_ORDER_GAP_SECONDS: '0',
-  PAY_MAX_ORDERS_PER_HOUR: '1000',
   PAY_SYNC_MIN_INTERVAL_SECONDS: '0',
   PAY_FAIL_COOLDOWN_THRESHOLD: '1000',
   STEAM_APP_ID: '480',

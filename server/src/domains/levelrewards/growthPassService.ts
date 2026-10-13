@@ -3,11 +3,9 @@
 import { getPool, isUniqueViolation, withTransaction } from '../../db/pool';
 import { getGrowthPass } from '../../gamedata/levelRewards';
 import { AppError } from '../../utils/AppError';
-import { getNow } from '../../utils/clock';
 import { assertNoHold } from '../antiabuse/holds';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import { grantItems } from '../sealedbox/sealedBoxGrant';
-import { assertSpendAllowed } from '../starshop/starSpend';
 import * as wallets from '../starshop/starWallet';
 import * as tickets from '../sweep/ticketWallet';
 import * as repo from './levelRewardsRepository';
@@ -40,7 +38,6 @@ export async function buy(accountId: number, body: PassBuyBody): Promise<PassBuy
       const wallet = await wallets.lockWallet(db, accountId);
       wallets.assertNoStarDebt(wallet);
       if (wallet.balance < price) throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
-      await assertSpendAllowed(db, accountId, price, getNow());
       const paid = await wallets.debit(db, { accountId, reason: 'pass_buy', price, ref: 'growth_pass', requestId: body.request_id });
       await repo.insertPass(db, { accountId, stars: price, requestId: body.request_id });
       return { pass_owned: true as const, pass_price: price, balance: paid.balance };

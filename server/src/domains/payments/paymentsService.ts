@@ -15,7 +15,7 @@ import { advanceOrder } from './orderMachine';
 import { formatPrice, orderView, type OrderView } from './orderView';
 import * as repo from './paymentsRepository';
 import type { OrderRow } from './paymentsRepository';
-import { assertSpeed, assertWithinLimits, computeTier, FailBurst, limitsFor, RESTRICT_DAYS, type LimitView } from './payTier';
+import { assertSpeed, computeTier, FailBurst, RESTRICT_DAYS } from './payTier';
 import { readQuote, signQuote } from './quote';
 import { getSteamPartner, PartnerCallError, payBreakerRemainingSec, type UserInfo } from './steamPartner';
 
@@ -113,7 +113,6 @@ export async function listProducts(accountId: number, accountUuid: string) {
   const products = pricedProducts(info.currency);
   if (products.length === 0) throw new AppError(422, '이 지역의 결제 통화는 지원하지 않습니다.', 'CURRENCY_UNSUPPORTED');
   const t = await computeTier(db, accountId, now, info.country);
-  const limits: LimitView = await limitsFor(db, accountId, t.tier, now);
   const exp = Math.floor(now.getTime() / 1000) + cfg.quoteTtlSeconds;
   const passBlocks = new Map<string, 'PASS_TOO_LONG' | null>();
   for (const p of products) if (p.pass_days !== undefined) passBlocks.set(p.id, await passBlock(db, accountId, p, now));
@@ -121,8 +120,7 @@ export async function listProducts(accountId: number, accountUuid: string) {
     ? []
     : products.map((p) => {
         const price = p.prices[info.currency] as number;
-        const block =
-          limits.daily.used + p.stars > limits.daily.limit ? 'LIMIT_DAILY' : limits.monthly.used + p.stars > limits.monthly.limit ? 'LIMIT_MONTHLY' : (passBlocks.get(p.id) ?? null);
+        const block = passBlocks.get(p.id) ?? null;
         return {
           product_id: p.id,
           name: p.name,
@@ -142,10 +140,6 @@ export async function listProducts(accountId: number, accountUuid: string) {
     country: info.country,
     currency: info.currency,
     open_order: open ? orderView(open) : null,
-    limits: {
-      daily: { limit: limits.daily.limit, used: limits.daily.used, left: limits.daily.left, resets_at: limits.daily.resets_at },
-      monthly: { limit: limits.monthly.limit, used: limits.monthly.used, left: limits.monthly.left },
-    },
     offers,
   };
 }
@@ -203,7 +197,7 @@ export async function createOrder(accountId: number, accountUuid: string, body: 
   if (q.p !== product.id || q.c !== info.currency || q.m !== price || q.s !== product.stars || q.v !== getStarCatalog().version) {
     throw new AppError(409, '견적이 바뀌었습니다. 다시 확인해 주세요.', 'QUOTE_CHANGED');
   }
-  // 트랜잭션 1: accounts 행 잠금(동시 주문 직렬화) -> 열린 주문·속도·한도 -> pending_init 주문 커밋
+  // 트랜잭션 1: accounts 행 잠금(동시 주문 직렬화) -> 열린 주문·속도 -> pending_init 주문 커밋
   let created: OrderRow;
   try {
     created = await withTransaction(async (client) => {
@@ -214,8 +208,6 @@ export async function createOrder(accountId: number, accountUuid: string, body: 
       if (open) throw new AppError(409, '이전 결제를 확인하는 중입니다.', 'ORDER_IN_PROGRESS', { order_id: open.uuid });
       await assertSpeed(client, accountId, now);
       const t = await computeTier(client, accountId, now, info.country);
-      const limits = await limitsFor(client, accountId, t.tier, now);
-      assertWithinLimits(limits, product.stars);
       await assertPassPurchasable(client, accountId, product, now); // 정기권: 남은 기간 + 30일이 60일을 넘으면 409
       for (const s of t.signals) {
         await repo.insertFlag(client, { accountId, orderId: null, kind: s.kind, severity: s.severity, detail: s.detail, dedupeMinutes: 1440 });
@@ -275,8 +267,6 @@ async function noteRejection(accountId: number, err: AppError): Promise<void> {
       await repo.insertFlag(getPool(), { accountId, orderId: null, kind: 'fail_burst', severity: 2, detail: {}, dedupeMinutes: 60 });
     } else if (err.code === 'ORDER_TOO_FAST') {
       await repo.insertFlag(getPool(), { accountId, orderId: null, kind: 'rapid_orders', severity: 1, detail: {}, dedupeMinutes: 10 });
-    } else if (err.code === 'PAY_LIMIT_EXCEEDED') {
-      await repo.insertFlag(getPool(), { accountId, orderId: null, kind: 'limit_exceeded', severity: 1, detail: { scope: err.extra?.scope ?? null }, dedupeMinutes: 0 });
     }
   } catch {
     // 신호 기록 실패가 원래 오류 응답을 가리지 않는다

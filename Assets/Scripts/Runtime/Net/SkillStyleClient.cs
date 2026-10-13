@@ -42,7 +42,6 @@ namespace DotRPG
                     done(false, r.code switch
                     {
                         "NOT_ENOUGH_STARS" => $"별조각이 모자랍니다. (필요 {Price:N0})",
-                        "STAR_SPEND_CAP" => "오늘 별조각 사용 한도를 넘었습니다.",
                         "NETWORK" => "서버에 연결할 수 없습니다.",
                         _ => string.IsNullOrEmpty(r.message) ? "요청이 실패했습니다." : r.message,
                     });

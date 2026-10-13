@@ -5,7 +5,6 @@ import { TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
 import { getGameData } from '../../gamedata/loader';
 import { keyAt } from '../../utils/itemKey';
 import { AppError } from '../../utils/AppError';
-import { getNow } from '../../utils/clock';
 import { getRng } from '../../utils/rng';
 import * as charRepo from '../characters/characterRepository';
 import * as ceilings from '../ceilings/ceilingRepository';
@@ -44,7 +43,6 @@ import {
 } from './starshopDefs';
 import * as repo from './starshopRepository';
 import * as wallets from './starWallet';
-import { assertSpendAllowed, spendCapView } from './starSpend';
 import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 
 const RARITIES: Rarity[] = ['unique', 'epic', 'rare', 'common'];
@@ -129,7 +127,6 @@ export async function summary(accountId: number, characterUuid: string) {
     paid_balance: wallet.paidBalance,
     free_balance: wallet.balance - wallet.paidBalance,
     debt: wallet.debt,
-    spend_cap: await spendCapView(db, accountId, getNow()),
     payments: { enabled: getConfig().pay.enabled },
     pity: wallet.pity,
     skin_pity: wallet.skinPity,
@@ -232,7 +229,6 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       if (wallet.balance < price) {
         throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
       }
-      await assertSpendAllowed(db, accountId, price, ctx.now);
       let balance = (await wallets.debit(db, { accountId, reason: 'gacha', price, ref: `${banner}_${body.count}`, requestId })).balance;
       const rows: repo.PullRow[] = [];
       let gearCeiling: number | null = null;
@@ -339,7 +335,6 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
       if (wallet.balance < price) {
         throw new AppError(422, '별조각이 모자랍니다.', 'NOT_ENOUGH_STARS', { need: price, have: wallet.balance });
       }
-      await assertSpendAllowed(db, accountId, price, ctx.now);
       const balance = (await wallets.debit(db, { accountId, reason: 'exchange', price, ref: def.id, requestId })).balance;
       await repo.addCosmetic(db, accountId, def.id, 'exchange');
       return { status: 200, data: { item_id: def.id, price, balance } };

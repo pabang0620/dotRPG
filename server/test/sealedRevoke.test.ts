@@ -10,7 +10,7 @@ import { auth, resetDb, shutdown } from './helpers';
 import { heroOf, mock, newPayer, payApp, purchase, resetPay, sync } from './payHelpers';
 import { rollOf, scriptRng } from './sealedBoxHelpers';
 
-const app = payApp({ PAY_LIMIT_NEW_DAILY_STARS: '20000', PAY_LIMIT_NEW_MONTHLY_STARS: '50000', PAY_LIMIT_DAILY_STARS: '30000', PAY_LIMIT_MONTHLY_STARS: '90000' });
+const app = payApp();
 const admin = adminApp();
 beforeAll(resetDb);
 beforeEach(() => {

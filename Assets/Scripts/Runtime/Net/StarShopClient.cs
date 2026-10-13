@@ -90,9 +90,9 @@ namespace DotRPG
                     done?.Invoke(false, "확률표가 바뀌었습니다. 새 확률을 확인한 뒤 다시 뽑아 주세요.", null);
                     return;
                 }
-                if (!r.ok && (r.code == "STAR_DEBT" || r.code == "STAR_SPEND_CAP"))
+                if (!r.ok && r.code == "STAR_DEBT")
                 {
-                    done?.Invoke(false, r.code == "STAR_DEBT" ? "환불된 결제로 갚아야 할 별조각이 있어 지금은 뽑을 수 없습니다." : "오늘 쓸 수 있는 별조각 한도를 넘었습니다. (06:00 초기화)", null);
+                    done?.Invoke(false, "환불된 결제로 갚아야 할 별조각이 있어 지금은 뽑을 수 없습니다.", null);
                     return;
                 }
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? "뽑기에 실패했습니다." : r.message, null); return; }

@@ -5,7 +5,7 @@ import { getPool } from '../../db/pool';
 import * as holdsRepo from '../../domains/antiabuse/holdsRepository';
 import { advanceOrder } from '../../domains/payments/orderMachine';
 import * as payRepo from '../../domains/payments/paymentsRepository';
-import { computeTier, limitsFor } from '../../domains/payments/payTier';
+import { computeTier, spentFor } from '../../domains/payments/payTier';
 import { readWallet } from '../../domains/starshop/starWallet';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
@@ -136,7 +136,7 @@ export async function accountPayments(admin: AdminCtx, ip: string, uuid: string)
   const now = getNow();
   const profile = await payRepo.profileOf(db, accountId);
   const t = await computeTier(db, accountId, now, profile?.last_country ?? null);
-  const limits = await limitsFor(db, accountId, t.tier, now);
+  const spent = await spentFor(db, accountId, now);
   const wallet = await readWallet(db, accountId);
   const hold = getConfig().aa.hold;
   const since = new Date(now.getTime() - hold.linkDeviceDays * DAY_MS);
@@ -159,7 +159,7 @@ export async function accountPayments(admin: AdminCtx, ip: string, uuid: string)
       : { status: 'active', block_reason: null, blocked_at: null, blocked_by: null, tier_floor: 'none', tier_floor_until: null, last_country: null, last_currency: null, note: null },
     tier: t.tier,
     tier_reasons: t.reasons,
-    limits,
+    spent,
     wallet: { balance: wallet.balance, paid_balance: wallet.paidBalance, free_balance: wallet.balance - wallet.paidBalance, debt: wallet.debt },
     recent_orders: (await repo.recentOrdersOfAccount(db, accountId, 20)).map(adminOrderView),
     flags: (await repo.flagsOfAccount(db, accountId, 20)).map(flagView),

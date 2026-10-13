@@ -456,24 +456,21 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 
 ## 10. 한도와 사기 결제 방지
 
-### 10.1 일·월 한도 (주문 생성 단계에서 거절)
+### 10.1 결제 한도 없음 (2026-10-13 변경)
 
-- 한도의 단위는 **별조각 수량**이다(통화가 여럿이라 금액으로 하면 환산이 필요하다). 상품 가격이 정해지면 별조각 단가로 금액 상한이 정해진다.
-- 합산 대상: 이 계정의 주문 중 **`failed`·`expired`를 뺀 모든 주문**(진행 중·지급·환불·차지백 포함)의 `stars`. 환불된 주문도 센다("사서 환불하고 다시 사기" 반복이 한도를 우회하지 못하게).
-- 창: 일일 = `resetBoundaries(now).dailyStartAt`부터 지금까지(06:00 KST 경계), 월 = 최근 30일 롤링. 검사 쿼리는 `star_orders_account_time (account_id, created_at DESC)`를 쓴다. 한도 + 지금 주문 별조각이 상한을 넘으면 `PAY_LIMIT_EXCEEDED`.
-- 동시성: 주문 생성 트랜잭션이 `accounts` 행을 잠그고 합산하므로 같은 계정의 동시 주문은 직렬화된다. "열린 주문 1개" 부분 유일 인덱스가 이중으로 막는다.
+- **일·월 결제 한도와 별조각 일일 소비 상한은 두지 않는다**(사용자 결정). `PAY_LIMIT_*`, `PAY_MAX_ORDERS_PER_HOUR`, `STAR_SPEND_DAILY_CAP` 환경변수와 `PAY_LIMIT_EXCEEDED`, `STAR_SPEND_CAP` 오류, 상품 목록의 `limits`·`LIMIT_DAILY|LIMIT_MONTHLY`, 상점 요약의 `spend_cap`을 모두 없앴다. 이 문서의 다른 절에 남은 한도 서술은 이 결정 이전 기록이다.
+- 사기 방지는 금액 상한이 아니라 아래 장치로 한다: 열린 주문 1개, 최소 간격, 실패 쿨다운, 분당 요청 속도(10.3), 환불·차지백 차단(9절), 연결 계정·국가 변경 신호 기록(10.2).
+- 동시성: 주문 생성 트랜잭션이 `accounts` 행을 잠그므로 같은 계정의 동시 주문은 직렬화된다. "열린 주문 1개" 부분 유일 인덱스가 이중으로 막는다.
 
-### 10.2 단계(tier)와 시작값
+### 10.2 단계(tier)
 
-주문마다 단계를 계산해 `star_orders.tier`에 기록한다. 제한이 겹치면 낮은 한도를 쓴다(restricted < new < standard).
+주문마다 단계를 계산해 `star_orders.tier`에 기록한다. 단계는 결제를 막지 않고, 이상 신호 기록(`payment_flags`, 제한 단계 하한 30일)과 관리자 조회에만 쓴다. 관리자 계정 조회(PA4)는 한도 대신 `spent: { daily: { used, resets_at }, monthly: { used } }`(failed·expired 제외 주문 별조각 합계)를 돌려준다.
 
-| 단계 | 조건 | 일일(별조각) | 월(별조각) | 환경변수 |
-|---|---|---|---|---|
-| `restricted` | `payment_profiles.tier_floor='restricted'`이고 기간 안, 또는 90일 환불 소비 반복, 또는 국가 변경 초과, 또는 연결 계정 차지백, 또는 공용 아님 기기 공유 구매 계정 수 초과 | 1,000 | 3,000 | `PAY_LIMIT_RESTRICTED_DAILY_STARS`, `..._MONTHLY_STARS` |
-| `new` | 계정 나이 < `PAY_NEW_ACCOUNT_DAYS`(14) | 3,000 | 10,000 | `PAY_LIMIT_NEW_DAILY_STARS`, `..._MONTHLY_STARS` |
-| `standard` | 그 외 | 10,000 | 50,000 | `PAY_LIMIT_DAILY_STARS`, `..._MONTHLY_STARS` |
-
-위 숫자는 **상품 가격표 확정 전 시작값(운영 전 확정)**이다. 기동 검사: 판매 중인 가장 큰 상품의 `stars`가 `new` 일일 한도보다 크면 경고(신규 계정이 그 상품을 살 수 없다). 소액 구매 위주로 상품을 구성하는 것을 권장한다(D11).
+| 단계 | 조건 |
+|---|---|
+| `restricted` | `payment_profiles.tier_floor='restricted'`이고 기간 안, 또는 90일 환불 소비 반복, 또는 국가 변경 초과, 또는 연결 계정 차지백, 또는 공용 아님 기기 공유 구매 계정 수 초과 |
+| `new` | 계정 나이 < `PAY_NEW_ACCOUNT_DAYS`(14) |
+| `standard` | 그 외 |
 
 ### 10.3 속도 제한
 
@@ -481,7 +478,6 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 |---|---|---|
 | 열린 주문 | 계정당 1개 | `ORDER_IN_PROGRESS` |
 | 최소 간격 | `PAY_MIN_ORDER_GAP_SECONDS`(60) | `ORDER_TOO_FAST` |
-| 시간당 건수 | `PAY_MAX_ORDERS_PER_HOUR`(3) | `ORDER_TOO_FAST` |
 | 실패 쿨다운 | 1시간에 실패·만료 `PAY_FAIL_COOLDOWN_THRESHOLD`(5)건 | 1시간 `ORDER_TOO_FAST` + 플래그 `fail_burst` |
 | 요청 속도 | B2 계정당 분당 `RATE_PAY_ORDER_PER_MIN`(3) + IP당 `RATE_PAY_ORDER_IP_PER_MIN`(10) | `429 RATE_LIMITED` |
 
@@ -518,12 +514,11 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 
 `assertNoStarDebt(client, accountId)`: 지갑 행을 이미 잠근 상태에서 `debt > 0`이면 `403 STAR_DEBT`. 호출 위치는 각 핸들러의 `assertNoHold` 바로 뒤.
 
-### 11.3 일일 소비 상한과 속도 제한
+### 11.3 소비 속도 제한
 
-- **일일 소비 상한**(`STAR_SPEND_DAILY_CAP`, 기본 30,000, 0이면 끔): 이 계정의 오늘(`dailyStartAt`부터) `gacha`·`exchange` 원장 `-delta` 합계 + 이번 소비액이 상한을 넘으면 `422 STAR_SPEND_CAP`(`errors:{ limit, used, resets_at }`). 지갑 행을 이미 잠가 경쟁이 없다. 인덱스: `star_ledger_spend_time (account_id, created_at) WHERE reason IN ('gacha','exchange')`.
-- **목적**: 탈취한 토큰이나 악성 코드가 지갑을 하루에 전부 비우지 못하게 하고, 한 번에 큰 소비를 한 이용자의 실수·충동 피해도 줄인다. 상한이 정직한 큰 소비(게이지 채우기)를 막지 않도록 기본값은 일일 결제 한도보다 크게 잡았다(D6).
+- **일일 소비 상한은 두지 않는다**(2026-10-13 사용자 결정, 10.1).
 - **속도 제한**: 기존 캐릭터당 초당 3회에 더해 **계정당 분당** `RATE_STARSHOP_SPEND_PER_MIN`(30)을 소비 경로(pull, exchange)에 건다(매크로 대량 소비 방지).
-- **하루 뽑기 횟수 상한은 두지 않는다**(D7 권장). 횟수는 소비 상한으로 충분히 묶이고, 횟수 상한은 정직한 이용자의 10+1 반복만 불편하게 한다.
+- **하루 뽑기 횟수 상한도 두지 않는다**(D7).
 
 ### 11.4 확률표 버전 고정과 공개
 
