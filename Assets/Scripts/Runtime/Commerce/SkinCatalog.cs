@@ -98,6 +98,29 @@ namespace DotRPG
             return null;
         }
 
+        /// <summary>
+        /// [CAREER 2026-10-13] The base body of a promoted character with no skin on: the class body recoloured per career,
+        /// shape unchanged (Tools/art/career_recolor.py). Warrior careers: SilverWarrior/Skins/career_&lt;career&gt;; mage
+        /// careers: Art/char_career_&lt;career&gt;_&lt;dir&gt;_&lt;frame&gt;. Null before the career change.
+        /// </summary>
+        public static CharacterLook CareerLook(CharacterClass cls, Career career)
+        {
+            if (career == Career.None || CareerCatalog.Base(career) != cls) return null;
+            string id = "career_" + career.ToString().ToLowerInvariant();
+            if (cls == CharacterClass.Warrior)
+            {
+                var l = CharacterLook.Player.Clone();
+                l.id = "player_" + id; // the silver warrior renderer handles every "player_*" look
+                l.skinSheet = id;
+                l.armor = ArmorStyle.None;
+                l.bottomTier = -1;
+                return l;
+            }
+            var m = CharacterLook.Mage.Clone();
+            m.id = id;
+            return m;
+        }
+
         /// <summary>The body look of a class wearing a skin (null when the skin doesn't fit the class).</summary>
         public static CharacterLook LookFor(CharacterClass cls, string skinId)
         {

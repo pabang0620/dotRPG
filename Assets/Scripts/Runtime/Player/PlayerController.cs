@@ -53,6 +53,7 @@ namespace DotRPG
             Game.Session.Equipment.Changed += player.RefreshStats;
             Game.Session.Equipment.Changed += player.ApplyGear;
             Game.Session.Progression.Changed += player.RefreshStats;
+            Game.Session.Progression.Changed += player.OnProgressionLook;
             Game.Session.Progression.LeveledUp += player.OnLevelUp;
             return player;
         }
@@ -64,6 +65,7 @@ namespace DotRPG
             data.Equipment.Changed += member.RefreshStats;
             data.Equipment.Changed += member.ApplyGear;
             data.Progression.Changed += member.RefreshStats;
+            data.Progression.Changed += member.OnProgressionLook;
             member.interactor.enabled = false;
             member.SetClass(data.Class);
             data.Mana = data.Stats.MaxMp;
@@ -205,12 +207,14 @@ namespace DotRPG
                 Data.Equipment.Changed -= RefreshStats;
                 Data.Equipment.Changed -= ApplyGear;
                 Data.Progression.Changed -= RefreshStats;
+                Data.Progression.Changed -= OnProgressionLook;
             }
             else if (Game.Session != null)
             {
                 Game.Session.Equipment.Changed -= RefreshStats;
                 Game.Session.Equipment.Changed -= ApplyGear;
                 Game.Session.Progression.Changed -= RefreshStats;
+                Game.Session.Progression.Changed -= OnProgressionLook;
                 Game.Session.Progression.LeveledUp -= OnLevelUp;
             }
         }
@@ -258,14 +262,26 @@ namespace DotRPG
                 RefreshStats();
             }
             var skinLook = string.IsNullOrEmpty(Data.SkinId) ? null : SkinCatalog.LookFor(Class, Data.SkinId);
+            // [CAREER] No skin: a promoted character wears its career's base look (AI companions keep their own look).
+            lookCareer = Data.Progression.IsPromoted ? Data.Progression.Career : Career.None;
+            var careerLook = IsLocal || Data.Look == null ? SkinCatalog.CareerLook(Class, lookCareer) : null;
             // [ART] Worn armour no longer changes the body: only the weapon in hand shows the gear (skins still apply).
-            animator.SetLook(skinLook ?? BaseLook(CharacterClassInfo.Get(Class)));
+            animator.SetLook(skinLook ?? careerLook ?? BaseLook(CharacterClassInfo.Get(Class)));
             SkinTrail.Set(this, animator.Renderer, skinLook != null ? SkinCatalog.Find(Data.SkinId) : null);
             combat.RefreshWeapon();
         }
 
         /// <summary>Re-applies the body look (a costume skin was put on or taken off).</summary>
         public void RefreshLook() => ApplyGear();
+
+        Career lookCareer;
+
+        /// <summary>[CAREER] The career changed (promotion, a new character loaded): the base look follows it.</summary>
+        void OnProgressionLook()
+        {
+            var now = Data != null && Data.Progression.IsPromoted ? Data.Progression.Career : Career.None;
+            if (now != lookCareer) ApplyGear();
+        }
 
         public void Spawn(Vector2 position, Facing facing, int currentHealth, int maxHealth)
         {

@@ -5,8 +5,8 @@ namespace DotRPG
 {
     /// <summary>
     /// Awakening cut-in, anime style: when the local player fires an awakening skill the screen flashes, speed lines
-    /// sweep across a band in the skill's colour, the career illustration (Art/cutin_&lt;career&gt;, else the class one
-    /// Art/cutin_warrior / cutin_mage) slides in from the bottom-left and the skill name slams in beside it.
+    /// sweep across a band in the skill's colour, the illustration (Art/cutin_&lt;skin id&gt; for a costume skin, else
+    /// Art/cutin_&lt;career&gt;, else the class one Art/cutin_warrior / cutin_mage) slides in from the bottom-left and the skill name slams in beside it.
     /// Runs on unscaled time (the hit freeze-frames must not stall it). No illustration file: nothing shows.
     /// </summary>
     public class AwakeningCutIn : MonoBehaviour
@@ -78,7 +78,9 @@ namespace DotRPG
         {
             var career = player.Data.Progression.Career;
             Sprite s = null;
-            if (career != Career.None) s = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "cutin_" + career.ToString().ToLowerInvariant());
+            // A costume skin has its own illustration (Art/cutin_<skin id>), drawn in that outfit.
+            if (!string.IsNullOrEmpty(player.Data.SkinId)) s = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "cutin_" + player.Data.SkinId);
+            if (s == null && career != Career.None) s = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "cutin_" + career.ToString().ToLowerInvariant());
             return s != null ? s : Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + (player.Class == CharacterClass.Mage ? "cutin_mage" : "cutin_warrior"));
         }
 
