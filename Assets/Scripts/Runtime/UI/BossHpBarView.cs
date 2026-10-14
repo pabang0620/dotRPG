@@ -21,6 +21,9 @@ namespace DotRPG
         const float Bottom = 166f, Width = 376f, BarHeight = 22f;
         const float BarBlockHeight = 92f, WarningWidth = 480f, GroggyLineHeight = 36f;
         const float WarningBottom = Bottom + BarBlockHeight + 4f; // 262
+        // [2026-10-14] The bar sits at the top centre now (at the bottom the boss's patterns hid it): Top from the top edge,
+        // the GROGGY line and the warning hang below it.
+        const float Top = 14f, WarningTop = Top + BarBlockHeight + 4f;
         const float LagHold = 0.35f, LagSpeed = 0.9f;
         const float IntroTime = 2.6f, WarningTime = 2.2f;
         // [UI] "In the fight": the player within this range of the boss, or the boss lost HP this recently (a field boss
@@ -93,7 +96,7 @@ namespace DotRPG
 
         void Build(RectTransform canvasRoot)
         {
-            root = UIFactory.Place(UIFactory.Rect(canvasRoot, "Bar"), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, Bottom), new Vector2(Width + 24f, BarBlockHeight));
+            root = UIFactory.Place(UIFactory.Rect(canvasRoot, "Bar"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -Top), new Vector2(Width + 24f, BarBlockHeight));
             frameGlow = Solid(root, "Glow", new Color(1f, 0.85f, 0.35f, 0f));
             UIFactory.Stretch(frameGlow.rectTransform, -4, -4, -4, -4);
             var bg = UIFactory.Panel(root, "Bg", true);
@@ -134,7 +137,7 @@ namespace DotRPG
             var go = groggyText.gameObject.AddComponent<Outline>();
             go.effectColor = new Color(0.15f, 0.05f, 0.1f, 1f);
             go.effectDistance = new Vector2(2f, -2f);
-            UIFactory.Place(groggyText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, 4f), new Vector2(Width + 24f, GroggyLineHeight)); // above the bar
+            UIFactory.Place(groggyText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(Width + 24f, GroggyLineHeight)); // under the bar
 
             // Intro banner (screen centre-top) and warnings (under the bar).
             banner = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossBanner"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 60f), new Vector2(UiTheme.HudBannerWidth, 120f)); // [UI] centre column only: clear of party frames / quest tracker
@@ -154,7 +157,7 @@ namespace DotRPG
             banner.gameObject.SetActive(false);
 
             // [CONTENT] Right above the bar, inside the same centre column (clear of party frames and quest panel).
-            warning = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossWarning"), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, WarningBottom), new Vector2(WarningWidth, 40f));
+            warning = UIFactory.Place(UIFactory.Rect(canvasRoot, "BossWarning"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -WarningTop), new Vector2(WarningWidth, 40f));
             warningText = UIFactory.Text(warning, "Text", "", 28, Color.white, TextAnchor.MiddleCenter, true);
             var wo = warningText.gameObject.AddComponent<Outline>();
             wo.effectColor = new Color(0.1f, 0.02f, 0.02f, 1f);
@@ -276,7 +279,7 @@ namespace DotRPG
             if (warning.gameObject.activeSelf)
             {
                 // Above the GROGGY / 무력화하라 line while it shows, else right on the bar.
-                float wy = groggyText.text.Length > 0 && root.gameObject.activeSelf ? WarningBottom + GroggyLineHeight + 2f : WarningBottom;
+                float wy = -(groggyText.text.Length > 0 && root.gameObject.activeSelf ? WarningTop + GroggyLineHeight + 2f : WarningTop);
                 if (!Mathf.Approximately(warning.anchoredPosition.y, wy)) warning.anchoredPosition = new Vector2(0f, wy);
                 float t = (now - warningAt) / WarningTime;
                 if (t >= 1f) warning.gameObject.SetActive(false);
@@ -370,9 +373,8 @@ namespace DotRPG
         {
             get
             {
-                if (!DevVisible) return 0f;
-                if (warning.gameObject.activeSelf) return warning.anchoredPosition.y + warning.sizeDelta.y;
-                return groggyText.text.Length > 0 ? WarningBottom + GroggyLineHeight : Bottom + BarBlockHeight;
+                // The bar block is at the top of the screen now: nothing at the bottom has to make room for it.
+                return 0f;
             }
         }
 
