@@ -78,9 +78,13 @@ namespace DotRPG
             {
                 var bodyText = UIFactory.Text(panel, "Body", body, UiTheme.Size(bodySize), UiTheme.TextSecondary, TextAnchor.UpperCenter, true);
                 bodyText.lineSpacing = 1.2f;
-                // preferredHeight needs a layout pass; estimate from the line count instead.
+                // preferredHeight needs a layout pass; estimate from the line count, and measure the wrapped height too so a
+                // long line that wraps (the consent summary) does not run into the menu below.
                 int lines = body.Split('\n').Length;
                 float h = lines * bodySize * 1.45f + 8f;
+                var settings = bodyText.GetGenerationSettings(new Vector2(width - 70, 0f));
+                float wrapped = bodyText.cachedTextGeneratorForLayout.GetPreferredHeight(body, settings) / Mathf.Max(0.01f, bodyText.pixelsPerUnit);
+                h = Mathf.Max(h, wrapped + 8f);
                 UIFactory.Place(bodyText.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(width - 70, h));
                 y -= h + 10f;
             }

@@ -285,6 +285,12 @@ namespace DotRPG
         {
             string name = channel == ChatChannel.Whisper && !string.IsNullOrEmpty(whisperTo) ? $"▶{whisperTo}" : ChatRules.ChannelName(channel);
             channelText.text = $"<color={ChatRules.ChannelColor(channel)}>[{name}]</color>";
+            // The typed text starts right after the channel tag ("[일반]" is short, "▶name" long), not at a fixed 98 px.
+            float w = Mathf.Ceil(channelText.preferredWidth);
+            channelText.rectTransform.sizeDelta = new Vector2(w, InputH);
+            float left = 8f + w + 6f;
+            field.textComponent.rectTransform.offsetMin = new Vector2(left, field.textComponent.rectTransform.offsetMin.y);
+            ((Graphic)field.placeholder).rectTransform.offsetMin = new Vector2(left, ((Graphic)field.placeholder).rectTransform.offsetMin.y);
         }
 
         void Redraw()
