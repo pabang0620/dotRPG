@@ -13,7 +13,15 @@ namespace DotRPG
                 case "heal": yield return Feathers(c, false); break;
                 case "bloom": StartCoroutine(Bloom(c)); break;
                 case "cleanse": Bell(c); break;
-                case "light": yield return LightSpear(c); break;
+                case "light":
+                {
+                    // [2026-10-14] Two spears fanned left and right of the aim (user: two branches).
+                    var other = new Run { s = c.s, n = c.n, dir = Rotate(c.dir, -SpearFan), map = c.map, version = c.version, authority = c.authority };
+                    c.dir = Rotate(c.dir, SpearFan);
+                    StartCoroutine(LightSpear(other));
+                    yield return LightSpear(c);
+                    break;
+                }
                 case "wings": yield return Feathers(c, true); break;
                 case "sanctuary": DivineGuard(c); break;
                 case "bless": yield return BlessChain(c); break;
@@ -61,7 +69,7 @@ namespace DotRPG
                 Wings(target.Center + Vector2.up * .15f, target.Position.y, .75f, .7f);
                 GiveShield(c, target, c.s.power, c.s.duration);
             }
-            else Heal(c, target, c.n.damage);
+            else Heal(c, target, c.n.damage + Mathf.RoundToInt(target.Health.Max * HealMaxHpShare)); // [2026-10-14] + 30% of max HP
         }
 
         /// <summary>생명의 파문: a circle that sends out a healing ripple every second.</summary>
@@ -156,6 +164,8 @@ namespace DotRPG
         }
 
         /// <summary>심판의 광창: a spear of light that pierces along the aim.</summary>
+        const float SpearFan = 12f, HealMaxHpShare = .3f;
+
         IEnumerator LightSpear(Run c)
         {
             const float speed = 20f;
