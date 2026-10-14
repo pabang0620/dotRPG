@@ -82,6 +82,14 @@ namespace DotRPG
             var weekly = MiniJson.Obj(d, "weekly_activity");
             if (weekly != null) ReadWeekly(weekly);
             slots.Clear();
+            // Every clear on the server (raids and normal dungeons too): unlocks the next difficulty and the heroic raid
+            // even when the clear never reached this PC (party runs, settled later, another PC).
+            foreach (var cl in MiniJson.Arr(d, "clears") ?? new List<object>())
+            {
+                string cid = MiniJson.Str(cl, "dungeon_id");
+                if (string.IsNullOrEmpty(cid) || !MiniJson.Has(cl, "best_rank")) continue;
+                Game.Session?.Dungeons?.RecordClear(cid, (DungeonDifficulty)MiniJson.Int(cl, "difficulty"), (DungeonRank)MiniJson.Int(cl, "best_rank"));
+            }
             foreach (var dun in MiniJson.Arr(d, "dungeons") ?? new List<object>())
             {
                 string id = MiniJson.Str(dun, "id");

@@ -82,7 +82,7 @@ export async function sweepStatus(accountId: number, characterUuid: string) {
   const now = getNow();
   const b = resetBoundaries(now);
   const weekStart = weekly.weekStartOf(now);
-  const [used, best, lots, buyUsed, directClears, claimedRow, maxLevel, hold] = await Promise.all([
+  const [used, best, lots, buyUsed, directClears, claimedRow, maxLevel, hold, clears] = await Promise.all([
     dungeonRepo.countEntries(db, c.id, new Date(b.dailyStartAt)),
     repo.bestRanks(db, c.id),
     wallet.readLive(db, accountId, now),
@@ -91,6 +91,7 @@ export async function sweepStatus(accountId: number, characterUuid: string) {
     weekly.readUsed(db, accountId, weekStart, 'activity_claim'),
     repo.accountMaxLevel(db, accountId),
     holdsRepo.findBlocking(db, accountId, c.id),
+    dungeonRepo.clearSummary(db, c.id),
   ]);
   const limit = eco.dungeons.dailyEntries;
   return {
@@ -101,6 +102,8 @@ export async function sweepStatus(accountId: number, characterUuid: string) {
     shop: shopView(sweep, buyUsed, ticketUnitPrice(sweep, maxLevel)),
     weekly_activity: weeklyActivityView(sweep, directClears, claimedRow > 0),
     hold: hold !== null,
+    // 모든 던전·레이드의 클리어 기록(다음 난이도·영웅 레이드 해금을 클라이언트가 서버 기록으로 맞춘다)
+    clears: clears.map((r) => ({ dungeon_id: r.dungeon_id, difficulty: r.difficulty, best_rank: Number(r.best_rank) })),
     dungeons: [...eco.dungeons.byId.values()]
       .filter((d) => !d.isRaid && !d.always)
       .map((d) => ({
