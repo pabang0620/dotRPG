@@ -18,8 +18,8 @@ namespace DotRPG
                     // [2026-10-14] Two spears fanned left and right of the aim (user: two branches).
                     var other = new Run { s = c.s, n = c.n, dir = Rotate(c.dir, -SpearFan), map = c.map, version = c.version, authority = c.authority };
                     c.dir = Rotate(c.dir, SpearFan);
-                    StartCoroutine(LightSpear(other));
-                    yield return LightSpear(c);
+                    StartCoroutine(LightSpear(other, false));
+                    yield return LightSpear(c, true);
                     break;
                 }
                 case "wings": yield return Feathers(c, true); break;
@@ -166,12 +166,12 @@ namespace DotRPG
         /// <summary>심판의 광창: a spear of light that pierces along the aim.</summary>
         const float SpearFan = 12f, HealMaxHpShare = .3f;
 
-        IEnumerator LightSpear(Run c)
+        IEnumerator LightSpear(Run c, bool castSound = true)
         {
             const float speed = 20f;
             Vector2 at = owner.Center + c.dir * .4f;
             var fx = CareerFx.Gen("b2_light_spear", "b_spear", at, c.dir, 1.7f, 1f, 20f, VfxLayer.Top, true, null, 10f, true);
-            Sound("c_holy", .6f);
+            if (castSound) Sound("magic", .3f); // [2026-10-14] softer and quieter (user: c_holy was loud and harsh), once for both spears
             var hit = new System.Collections.Generic.HashSet<EnemyController>();
             float travelled = 0f;
             while (travelled < c.n.range)
@@ -182,7 +182,7 @@ namespace DotRPG
                 fx?.Place(next);
                 GlowLineFx.Spawn(at, next, new Color(1f, .9f, .55f, .7f), .3f, .2f, SkillFx.TopOrder);
                 foreach (var e in Corridor(at, next, c.n.radius))
-                    if (hit.Add(e)) Strike(c, e, c.n.damage, at, 5f, 1, "c_holy");
+                    if (hit.Add(e)) Strike(c, e, c.n.damage, at, 5f, 1, "hit");
                 at = next;
                 travelled += step;
                 yield return null;
