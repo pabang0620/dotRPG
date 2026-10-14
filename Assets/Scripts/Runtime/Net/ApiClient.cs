@@ -26,14 +26,15 @@ namespace DotRPG
     /// [SERVER] HTTP client for the game server (Docs/server/phase1_2_api.md). Adds X-Client-Version and
     /// X-Data-Version to every request, keeps the access token in memory and the refresh token in PlayerPrefs (encrypted with DPAPI on Windows, see TokenVault),
     /// and refreshes once (one refresh at a time) when the server answers TOKEN_EXPIRED.
-    /// Server address: -dotrpgServer &lt;url&gt; on the command line, else PlayerPrefs "dotrpg.server", else localhost (phones: the test server).
+    /// Server address: -dotrpgServer &lt;url&gt; on the command line, else PlayerPrefs "dotrpg.server", else the online server (the editor: localhost).
     /// </summary>
     public class ApiClient : MonoBehaviour
     {
         public const string PcDevServer = "http://127.0.0.1:3000";
         /// <summary>[ANDROID] The test server on Google Cloud (Supabase DB, DEPLOY_STAGE=test). Phones have no local server.</summary>
         public const string MobileTestServer = "https://35-216-2-121.sslip.io";
-        public static string DefaultServer => Application.isMobilePlatform ? MobileTestServer : PcDevServer;
+        /// <summary>Built players (PC and phones) go to the online server; only the editor uses the local dev server.</summary>
+        public static string DefaultServer => Application.isEditor ? PcDevServer : MobileTestServer;
         /// <summary>
         /// [RELEASE] The live server (https). A release build (BuildScript.BuildWindowsRelease, define DOTRPG_RELEASE)
         /// always uses it and ignores -dotrpgServer / PlayerPrefs; that build fails while this is not an https address.
