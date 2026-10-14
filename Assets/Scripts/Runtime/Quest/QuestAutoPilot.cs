@@ -20,9 +20,10 @@ namespace DotRPG
             public string id;     // npc id, interact id, enemy id ("*" any), item id
             public string map;    // map the goal is on ("" = here)
             public string label;  // what the HUD says
+            public bool soft;     // Wait only: the story moves on by itself (a scene, the next quest unlocking), so hold instead of stopping
         }
 
-        const float TalkReach = 1.25f, AttackReach = 1.05f, StuckSeconds = 3f, GiveUpSeconds = 25f;
+        const float TalkReach = 1.25f, AttackReach = 1.05f, StuckSeconds = 3f, GiveUpSeconds = 25f, SoftWaitSeconds = 8f;
 
         public static QuestAutoPilot Instance { get; private set; }
         public static bool Active => Instance != null && Instance.on;
@@ -123,7 +124,10 @@ namespace DotRPG
             lastPos = p.Position;
             lastProgressAt = Time.time;
             if (huntMode) { GameEvents.RaiseToast(L.T("자동 사냥을 시작합니다. 아무 키나 누르면 멈춥니다.")); return; }
-            GameEvents.RaiseToast(Targets.Count > 0 ? L.F("체크한 퀘스트 {0}개를 자동 진행합니다. 아무 키나 누르면 멈춥니다.", Targets.Count)
+            followTargets = Targets.Count > 0;
+            chapter = Game.Quest?.CurrentMain()?.chapter ?? 0;
+            GameEvents.RaiseToast(followTargets ? L.F("체크한 퀘스트 {0}개를 자동 진행합니다. 아무 키나 누르면 멈춥니다.", Targets.Count)
+                : chapter > 0 ? L.F("{0}장 퀘스트를 끝까지 자동 진행합니다. 아무 키나 누르면 멈춥니다.", chapter)
                 : L.T("퀘스트 자동 진행을 시작합니다. 퀘스트 창에서 진행할 퀘스트를 체크할 수 있습니다."));
         }
 
@@ -139,6 +143,7 @@ namespace DotRPG
 
         void Release()
         {
+            RestoreNpcs(null);
             if (driven != null && driven.Input == input) driven.Input = previous ?? new LocalInput();
             driven = null;
             previous = null;
@@ -146,22 +151,38 @@ namespace DotRPG
 
         void OnDestroy() { Release(); if (Instance == this) Instance = null; }
 
-        // Auto-progress is a helper, not an idle mode: it stops at every quest boundary and the player presses
-        // [자동 진행] again to carry on with the next one.
-        void OnEnable()
+        // Auto-progress runs a whole chapter (1-1 to 1-끝) without stopping at each quest; it stops at the end of the
+        // chapter, at steps the player must do by hand (dungeons, raids, the career choice) and on any key.
+        // With quests checked in the quest log it runs until those are done instead.
+        int chapter;
+        bool followTargets;
+
+        void OnEnable() { GameEvents.QuestCompleted += OnQuestCompleted; }
+        void OnDisable() { GameEvents.QuestCompleted -= OnQuestCompleted; }
+
+        void OnQuestCompleted(string id)
         {
-            GameEvents.QuestCompleted += OnQuestCompleted;
-            GameEvents.QuestAccepted += OnQuestAccepted;
+            if (!on || (huntMode && !huntForQuest)) return;
+            var q = Game.Quest;
+            if (followTargets)
+            {
+                if (!Targets.Exists(t => q.StatusOf(t) != QuestStatus.Completed)) Stop(L.T("체크한 퀘스트를 모두 마쳤습니다."));
+                return;
+            }
+            var def = q.Database.Get(id);
+            if (def == null || def.Kind != QuestKind.Main) return;
+            if (chapter == 0) chapter = def.chapter;
+            if (def.chapter == chapter && !ChapterLeft(chapter))
+                Stop(L.F("{0}장 퀘스트를 모두 마쳤습니다. 다음 장은 [자동 진행]을 다시 누르세요.", chapter));
         }
 
-        void OnDisable()
+        static bool ChapterLeft(int number)
         {
-            GameEvents.QuestCompleted -= OnQuestCompleted;
-            GameEvents.QuestAccepted -= OnQuestAccepted;
+            var q = Game.Quest;
+            foreach (var d in q.Database.All)
+                if (d.Kind == QuestKind.Main && d.chapter == number && q.StatusOf(d.id) != QuestStatus.Completed) return true;
+            return false;
         }
-
-        void OnQuestCompleted(string id) { if (on && !(huntMode && !huntForQuest)) Stop(L.T("퀘스트 완료! 다음 퀘스트도 진행하려면 [자동 진행]을 다시 누르세요.")); }
-        void OnQuestAccepted(string id) { if (on && !(huntMode && !huntForQuest)) Stop(L.T("새 퀘스트를 받았습니다. 이어서 하려면 [자동 진행]을 다시 누르세요.")); }
 
         void Update()
         {
@@ -171,6 +192,7 @@ namespace DotRPG
             if (p.IsDead) { Stop(L.T("쓰러져서 자동 진행을 멈췄습니다.")); return; }
             if (Game.Dungeon != null && Game.Dungeon.InRun && !MeasureAnywhere) { Stop(""); return; }
             if (driven != p) Acquire(p); // the map was rebuilt with a new player body
+            if (ghosted.Count > 0) RestoreNpcs(p);
             input.next = ActorCommand.None;
             // Conversations, windows and map changes pause the walk; it carries on afterwards.
             if (!Game.IsPlaying || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
@@ -198,7 +220,9 @@ namespace DotRPG
             switch (goal.kind)
             {
                 case GoalKind.None: Stop(L.T("따라갈 퀘스트가 없습니다.")); return;
-                case GoalKind.Wait: Stop(goal.label); return;
+                case GoalKind.Wait:
+                    if (goal.soft && Time.time - lastProgressAt < SoftWaitSeconds) return;
+                    Stop(goal.label); return;
             }
 
             // Another map first: walk to the portal on the way there.
@@ -223,7 +247,10 @@ namespace DotRPG
                     else DoHunt(p, goal);
                     break;
                 case GoalKind.DungeonGuide: DoDungeonGuide(p, goal); break;
-                case GoalKind.Map: Stop(L.F("{0}에 도착했습니다.", MapName(goal.map))); break;
+                case GoalKind.Map:
+                    // Arrived: the step (or the scene waiting here) usually finishes on its own a moment later.
+                    if (Time.time - lastProgressAt >= SoftWaitSeconds) Stop(L.F("{0}에 도착했습니다.", MapName(goal.map)));
+                    break;
             }
         }
 
@@ -263,7 +290,7 @@ namespace DotRPG
             if (Targets.Count > 0) return waiting.kind != GoalKind.None ? waiting : Wait(L.T("체크한 퀘스트에 지금 할 일이 없습니다."));
             var main = q.CurrentMain();
             var g = main != null ? GoalFor(main) : default;
-            if (g.kind == GoalKind.None || g.kind == GoalKind.Wait)
+            if (g.kind == GoalKind.None || (g.kind == GoalKind.Wait && !g.soft)) // a soft wait is the story moving on: stay
             {
                 var sub = q.Database.Get(Game.Session.Journal.Tracked);
                 if (sub != null && q.StatusOf(sub.id) != QuestStatus.Completed && q.StatusOf(sub.id) != QuestStatus.Locked)
@@ -272,7 +299,26 @@ namespace DotRPG
                     if (sg.kind != GoalKind.None && sg.kind != GoalKind.Wait) return sg;
                 }
             }
+            if (g.kind == GoalKind.None) return LevelGate();
             return g;
+        }
+
+        /// <summary>
+        /// The next main quest of the chapter waits only on the hero's level (1-8 needs Lv 2, 1-9 Lv 5 ...): hunt up to it
+        /// in the recommended ground. The level-up unlocks the quest and auto-progress walks to its giver.
+        /// </summary>
+        Goal LevelGate()
+        {
+            var q = Game.Quest;
+            var j = Game.Session.Journal;
+            foreach (var d in q.Database.All)
+            {
+                if (d.Kind != QuestKind.Main || (chapter > 0 && d.chapter != chapter) || q.StatusOf(d.id) != QuestStatus.Locked) continue;
+                if (!d.requires.TrueForAll(j.IsCompleted) || !d.requiresFlags.TrueForAll(j.HasFlag)) continue;
+                if (Game.Session.Progression.Level >= d.minLevel) continue;
+                return new Goal { kind = GoalKind.Hunt, id = "*", map = HuntingMap(), label = L.F("레벨 {0}까지 사냥 중 (다음 퀘스트 {1})", d.minLevel, d.code) };
+            }
+            return default;
         }
 
         Goal GoalFor(QuestDef def)
@@ -280,9 +326,9 @@ namespace DotRPG
             var q = Game.Quest;
             var st = q.StatusOf(def.id);
             if (st == QuestStatus.Available)
-                return string.IsNullOrEmpty(def.giver) ? Wait(L.T("퀘스트가 시작되기를 기다립니다.")) : NpcGoal(def.giver, L.T("{0}에게 퀘스트 받으러 가는 중"));
+                return string.IsNullOrEmpty(def.giver) ? Wait(L.T("퀘스트가 시작되기를 기다립니다."), true) : NpcGoal(def.giver, L.T("{0}에게 퀘스트 받으러 가는 중"));
             if (st == QuestStatus.ReadyToTurnIn)
-                return string.IsNullOrEmpty(def.turnIn) ? Wait("") : NpcGoal(def.turnIn, L.T("{0}에게 보고하러 가는 중"));
+                return string.IsNullOrEmpty(def.turnIn) ? Wait("", true) : NpcGoal(def.turnIn, L.T("{0}에게 보고하러 가는 중"));
             if (st != QuestStatus.Active) return default;
             var step = q.CurrentStep(def);
             if (step == null) return default;
@@ -323,15 +369,15 @@ namespace DotRPG
                     case ObjectiveTypes.Cutscene:
                         if (!string.IsNullOrEmpty(o.map) && o.map != Game.World.MapId)
                             return new Goal { kind = GoalKind.Map, map = o.map, label = L.T("이야기가 이어지는 곳으로 이동 중") };
-                        return Wait(L.T("이야기가 이어지기를 기다립니다."));
+                        return Wait(L.T("이야기가 이어지기를 기다립니다."), true);
                 }
             }
             if (outOfEntries)
                 return new Goal { kind = GoalKind.Hunt, id = "*", map = HuntingMap(), label = L.T("오늘 던전 횟수를 다 써서 레벨에 맞는 사냥터에서 사냥 중") };
-            return Wait("");
+            return Wait("", true); // every objective done: the step finishes this frame
         }
 
-        static Goal Wait(string why) => new Goal { kind = GoalKind.Wait, label = why };
+        static Goal Wait(string why, bool soft = false) => new Goal { kind = GoalKind.Wait, label = why, soft = soft };
 
         Goal NpcGoal(string npcId, string what)
         {
