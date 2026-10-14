@@ -243,8 +243,13 @@ namespace DotRPG
         Vector2 guardDir = Vector2.down;
         bool bashing;
 
+        /// <summary>[2026-10-14] The shield also drops while it recovers after a bash, and for RestTime every RestEvery seconds.</summary>
+        const float RestEvery = 3.5f, RestTime = 1.5f;
+        float restClock = -1f; // started at a random point so a pack does not lower its shields together
+
         public Vector2 GuardDirection => guardDir;
-        public bool Guarding => !bashing;
+        bool Resting => restClock > RestEvery;
+        public bool Guarding => !bashing && !Resting;
         public override bool SuperArmorNow => false;
 
         public bool IsFrontal(DamageInfo info)
@@ -267,6 +272,9 @@ namespace DotRPG
 
         public override bool Tick(bool engaged)
         {
+            if (restClock < 0f) restClock = Random.Range(0f, RestEvery);
+            restClock += Time.deltaTime;
+            if (restClock > RestEvery + RestTime) restClock = 0f;
             var target = E.MonsterTarget;
             if (target != null && !bashing)
             {
@@ -293,8 +301,8 @@ namespace DotRPG
         {
             bashing = true;
             yield return Swing(target, Def.windup, Def.attackRange * 0.9f + 0.35f, 1f, 0.2f);
+            yield return Hold(Def.recover - 0.2f); // the shield stays down while it recovers (an opening)
             bashing = false;
-            yield return Hold(Def.recover - 0.2f);
         }
 
         protected override void OnInterrupted() => bashing = false;
