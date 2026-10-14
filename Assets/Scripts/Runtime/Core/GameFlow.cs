@@ -42,6 +42,7 @@ namespace DotRPG
             if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
             // Preserve conversation skipping and the complete rebindable window dispatcher.
             if (state == GameState.Dialogue && Game.Input.PausePressed && Game.Dialogue.IsOpen) Game.Dialogue.Close();
+            else if (state == GameState.Playing && Game.Input.PausePressed && MinimapView.Expanded) MinimapView.SetExpanded(false); // Esc closes the big minimap first
             else if ((state == GameState.Playing || state == GameState.Dialogue) && Game.Input.PausePressed) Pause();
             else ProcessWindowShortcuts(Game.Input.WindowPressed);
         }
@@ -60,6 +61,14 @@ namespace DotRPG
                 if (!pressed(action)) continue;
                 // [UX] Tab switches the pages of the dungeon / skill windows: it neither closes them nor opens the bag.
                 if (action == GameAction.Inventory && Game.UI.Top is WindowScreen tabbed && tabbed.TabSwallowsInventory) continue;
+                // [UX] M while playing: first the big minimap, M again opens the world map.
+                if (action == GameAction.Map && state == GameState.Playing && !MinimapView.Expanded && MinimapView.Instance != null)
+                {
+                    MinimapView.SetExpanded(true);
+                    Game.Audio.PlaySfx("select");
+                    return true;
+                }
+                if (action == GameAction.Map) MinimapView.SetExpanded(false);
                 var target = WindowFor(action);
                 if (target == null) return false;
                 bool sameTab = target != Game.UI.Dungeon || Game.UI.Dungeon.IsRaidTab == (action == GameAction.RaidWindow);

@@ -34,10 +34,38 @@ namespace DotRPG
         static readonly Color EnemyColor = new Color32(255, 80, 80, 255);
         static readonly Color PlayerColor = new Color32(120, 220, 255, 255);
 
+        /// <summary>[UX] M once: this minimap blown up in the middle of the screen (a wider area); M again: the world map.</summary>
+        public static MinimapView Instance { get; private set; }
+        public static bool Expanded { get; private set; }
+        const float ExpandedScale = 3f, ExpandedZoom = 0.6f; // 528 px circle showing ~1.7x the area
+        RectTransform root;
+
+        public static void SetExpanded(bool on)
+        {
+            Expanded = on;
+            if (Instance == null || Instance.root == null) return;
+            var r = Instance.root;
+            if (on)
+            {
+                r.anchorMin = r.anchorMax = r.pivot = new Vector2(0.5f, 0.5f);
+                r.anchoredPosition = new Vector2(0f, 20f);
+                r.localScale = Vector3.one * ExpandedScale;
+                r.SetAsLastSibling();
+            }
+            else
+            {
+                r.anchorMin = r.anchorMax = r.pivot = new Vector2(1f, 1f);
+                r.anchoredPosition = new Vector2(-20f, -16f);
+                r.localScale = Vector3.one;
+            }
+        }
+
         public static MinimapView Create(Transform parent)
         {
             var root = UIFactory.Place(UIFactory.Rect(parent, "Minimap"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -16), new Vector2(Diameter, Diameter));
             var view = root.gameObject.AddComponent<MinimapView>();
+            view.root = root;
+            Instance = view;
             PortalTooltip.Create(parent);
 
             // Circular mask; the mask graphic itself is the dark background outside the map edges.
@@ -180,7 +208,9 @@ namespace DotRPG
         {
             var world = Game.World;
             var player = Game.Player;
-            float pixelsPerTile = world != null && world.Map.IsInterior ? 28f : PixelsPerTile;
+            float pixelsPerTile = (world != null && world.Map.IsInterior ? 28f : PixelsPerTile) * (Expanded ? ExpandedZoom : 1f);
+            // Esc, a window or a conversation closes the big minimap.
+            if (Expanded && (Game.State == null || Game.State.Current != GameState.Playing || (Game.Input != null && Game.Input.CancelPressed))) SetExpanded(false);
             if (world == null || world.Minimap == null || player == null) return;
             UpdateBossTimer(world.MapId);
 

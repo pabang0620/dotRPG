@@ -92,6 +92,12 @@ namespace DotRPG
         AutoInput input;
         IActorInput previous;
         PlayerController driven;
+
+        /// <summary>A window (not the pause menu, not a conversation) is open while the online world keeps running.</summary>
+        public static bool WindowOpenInRunningWorld => Game.State != null && Game.State.Current == GameState.Inventory && Game.IsWorldRunning;
+
+        /// <summary>True while auto-progress / auto-hunting is steering this character (its commands are not menu input).</summary>
+        public static bool Drives(PlayerController p) => Instance != null && Instance.on && Instance.driven == p && p != null;
         Vector2 lastPos;
         float lastProgressAt, nextAttack, nextSkill, nextHeal, interactCooldown;
         int skillSlot;
@@ -207,8 +213,9 @@ namespace DotRPG
             if (driven != p) Acquire(p); // the map was rebuilt with a new player body
             if (ghosted.Count > 0) RestoreNpcs(p);
             input.next = ActorCommand.None;
-            // Conversations, windows and map changes pause the walk; it carries on afterwards.
-            if (!Game.IsPlaying || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
+            // Conversations, the pause menu and map changes pause the walk; it carries on afterwards. An open window (quests,
+            // shop, bag...) does not: online the world keeps running behind it, so auto-progress and auto-hunting go on.
+            if (!(Game.IsPlaying || WindowOpenInRunningWorld) || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
 
             // [AUTO] 자동 사냥: stays in this hunting ground; a quest hunt hands back to the story once its step is done.
             if (huntMode)
