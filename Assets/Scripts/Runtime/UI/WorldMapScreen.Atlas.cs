@@ -300,6 +300,7 @@ namespace DotRPG
                 ? L.T("마을 → 사냥터 1 → 위쪽 2 / 아래쪽 3 → 사냥터 4 → 다음 마을\n숲 → 바위 협곡 → 눈꽃 숲 → 고대 성소 → 숲 순서로 섬을 순환합니다.")
                 : L.T("뿌리샘 마을의 하행 계단 → B1 → B2 → B3 → B4\n지역을 선택하면 지형과 출구를 확인합니다. 지도를 눌러도 캐릭터는 이동하지 않습니다.");
             roomButton.gameObject.SetActive(false); bossIcon.enabled = false;
+            RefreshAtlasQuestPin(); // [UI] quest destination
         }
     }
 }

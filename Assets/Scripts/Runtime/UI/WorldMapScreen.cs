@@ -254,6 +254,7 @@ namespace DotRPG
             for (int i = 0; i < roomTabs.Count; i++) roomTabs[i].interactable = town;
             RenderNpcRows();
             RefreshWorldTabs();
+            RefreshQuestPin(); // [UI] quest destination
             RefreshAtlas();
         }
         Vector2 Place(Vector2 pos) => (pos - preview.bounds.center) * mapScale;
@@ -291,6 +292,7 @@ namespace DotRPG
         protected override void Update()
         {
             base.Update();
+            UpdateQuestPins(); // [UI] quest destination
             if (AtlasVisible || selectedMap != Game.World.MapId || preview == null) return;
             playerDot.anchoredPosition = Place(Game.Player.Position);
             foreach (var entry in npcPins)

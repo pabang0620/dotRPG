@@ -16,7 +16,7 @@ namespace DotRPG
         sealed class Print { public SpriteRenderer r, glow; public float age, life; public Color color; }
 
         static Sprite foot;
-        CosmeticStore store;
+        System.Func<CosmeticProduct> worn;
         PlayerController player;
         readonly Print[] prints = new Print[Pool];
         int next;
@@ -24,10 +24,11 @@ namespace DotRPG
         float walked;
         bool left;
 
-        public static void Attach(PlayerController player, CosmeticStore store)
+        /// <summary>Footprints for <paramref name="player"/>; <paramref name="worn"/> tells the aura it wears now (local store or network).</summary>
+        public static void Attach(PlayerController player, System.Func<CosmeticProduct> worn)
         {
             var f = player.gameObject.AddComponent<AuraFootprints>();
-            f.store = store;
+            f.worn = worn;
             f.player = player;
             f.last = player.transform.position;
         }
@@ -72,17 +73,18 @@ namespace DotRPG
         void Update()
         {
             Fade();
-            if (player == null || store == null) return;
+            if (player == null || worn == null) return;
             Vector2 now = player.transform.position;
             Vector2 step = now - last;
             last = now;
             if (step.sqrMagnitude > Teleport * Teleport || player.IsDead) { walked = 0f; return; } // portals, respawns
-            int grade = Grade(store.Equipped);
+            var product = worn();
+            int grade = Grade(product);
             if (grade == 0) { walked = 0f; return; }
             walked += step.magnitude;
             if (walked < Stride || step.sqrMagnitude < 1e-6f) return;
             walked = 0f;
-            Stamp(now, step.normalized, grade, store.Equipped);
+            Stamp(now, step.normalized, grade, product);
         }
 
         void Stamp(Vector2 at, Vector2 dir, int grade, CosmeticProduct product)

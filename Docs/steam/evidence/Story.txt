@@ -1,0 +1,71 @@
+[2.80] capture started
+[5.09] verification audio volume: 0
+STORY quest data loaded: 88 quests, chapter 1 '잿더미의 마굿간' PASS
+STORY new game opens 1-1 (Active) and plays the intro (c1_intro) PASS
+STORY bram, hanna, ria stand in the village before the attack PASS
+STORY stable built (True), horse and trough props (1/1) PASS
+STORY intro done -> step 2 (state Playing) PASS
+[7.92] talk hanna -> c1_hanna_breakfast
+[7.92] talk ria -> c1_ria_promise
+STORY 1-1 complete (Completed), 1-2 offered by hanna (Available), mark=Available PASS
+STORY festival flag puts up the lanterns after a rebuild PASS
+[8.22] talk hanna -> c1_hanna_errand
+STORY 1-2 accepted (Active) PASS
+[8.23] talk merchant -> c1_errand_merchant
+[8.23] talk farmer -> c1_errand_farmer
+[8.23] talk chief -> c1_errand_chief
+[8.23] talk hanna -> c1_hanna_errand_done
+[8.23] talk ria -> c1_ria_ribbon
+STORY 1-2 complete, 1-3 runs (Active) PASS
+STORY attack night: flag=True skeletons in the plaza=5 PASS
+STORY after the stable scene: 1-3 Completed, flags attack_done=True stable_burned=True PASS
+STORY 1-4 runs (Active), graves=2, kael=True, bram gone=True PASS
+STORY villagers back after the night: chief=True PASS
+STORY 1-4 complete (Completed), 1-5 offered by kael (Available) PASS
+[11.74] talk kael -> c1_kael_training_offer
+[11.75] talk kael -> c1_kael_training_done
+STORY 1-5 complete (Completed), chief offers 1-6 (Available) with 'chief_intro' PASS
+STORY kael joins outside town (False) and leaves in the village (True), npc there=True FAIL
+[17.66] talk chief -> chief_intro
+STORY 1-6 ready to report (ReadyToTurnIn) PASS
+[17.97] talk chief -> chief_report
+STORY 1-6 complete, guardian ring in the bag (1) PASS
+STORY raids locked by the story: '메인 퀘스트 '1-20 북쪽 고개 성채'를 받으면 열립니다.' PASS
+[17.98] talk kael -> c1_kael_trail_offer
+[17.98] talk kael -> c1_kael_trail_report
+STORY 1-7 complete (Completed) PASS
+[17.98] talk kael -> kael_idle
+[18.30] talk kael -> kael_idle
+STORY 1-8 complete (Locked) at level 19 FAIL
+[18.30] talk kael -> kael_idle
+STORY mid raid opened by 1-9: lock='메인 퀘스트 '1-20 북쪽 고개 성채'를 받으면 열립니다.' FAIL
+[18.60] talk kael -> kael_idle
+[18.60] talk kael -> kael_idle
+[18.90] talk chief -> c1s_errands_offer
+STORY chapter 1 done: 1-10 Locked, 1-end Locked, flag=False FAIL
+STORY 2-1 runs (Locked) FAIL
+STORY canyon: leona=False knights=False kael=False FAIL
+[22.00] talk leona -> leona_idle
+[22.00] talk leona -> leona_idle
+[22.60] talk knight_dorn -> knight_dorn_idle
+[22.60] talk knight_ivy -> knight_ivy_idle
+[22.60] talk knight_mo -> knight_mo_idle
+[22.90] talk leona -> leona_idle
+STORY 2-2 complete (Locked), 2-3 played (Locked), orban offers 2-4 (Locked) FAIL
+[23.20] talk orban -> orban_idle
+[23.50] talk kael -> kael_idle
+STORY 2-4 Locked, 2-5 Locked FAIL
+[23.80] talk leona -> leona_idle
+[24.10] talk leona -> leona_idle
+[24.10] talk orban -> orban_idle
+STORY betrayal: flag=False 2-7 Locked 2-end Locked chapter2_done=False FAIL
+STORY kael no longer joins after the betrayal (True) PASS
+STORY mid raid opens Wed/Sat/Sun: wed=True thu=False sat=True PASS
+STORY final raid only on Sunday: sun=False sat=False FAIL
+STORY mid raid pays once a day: same day=False saturday=True this week=0 PASS
+STORY final raid pays once a week: next day=False next thursday=False FAIL
+STORY save v6 keeps quests (88) and flags (11) PASS
+STORY v4 save migrates: prologue done, workshop active (6 quests) PASS
+STORY no errors logged during the run (0) PASS
+STORY summary: 25 passed, 11 failed
+[29.01] capture finished

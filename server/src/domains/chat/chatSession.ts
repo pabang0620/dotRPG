@@ -12,6 +12,7 @@ export interface TownLook {
   cls: number;
   career: number;
   skin: string;
+  aura: string;
   weapon: string;
   level: number;
 }

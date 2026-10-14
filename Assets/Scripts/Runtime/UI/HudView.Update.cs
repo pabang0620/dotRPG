@@ -36,7 +36,7 @@ namespace DotRPG
             {
                 bool auto = QuestAutoPilot.Active;
                 bool hunting = QuestAutoPilot.Hunting;
-                autoLabel.text = auto && !hunting ? L.T("자동 중지") : QuestAutoPilot.Targets.Count > 0 ? L.F("자동 진행 ({0})", QuestAutoPilot.Targets.Count) : L.T("자동 진행");
+                autoLabel.text = auto && !hunting ? L.T("자동 중지") : QuestAutoPilot.Targets.Count > 0 ? L.F("자동 진행 ({0})", QuestAutoPilot.Targets.Count) : QuestAutoPilot.MainStoryDone ? L.T("서브퀘스트 자동진행") : L.T("자동 진행");
                 if (huntLabel != null) huntLabel.text = hunting ? L.T("사냥 중지") : L.T("자동 사냥");
                 autoStatus.text = auto ? QuestAutoPilot.Status : "";
                 if (huntBtn != null)

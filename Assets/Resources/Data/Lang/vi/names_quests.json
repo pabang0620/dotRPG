@@ -825,7 +825,7 @@
  "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)": "Mảnh phong ấn do boss raid trung gian canh giữ. Gom đủ sẽ mở cổng raid cuối của chương. (Tiêu hao khi hoàn thành raid cuối)",
  "중력 균열": "Khe Nứt Trọng Lực",
  "중첩당 공격 속도 +{0}% (최대 5, 4초)": "Tốc độ đánh +{0}% mỗi tầng (tối đa 5, 4s)",
- "지금 출현 중 (15분마다)": "Đang xuất hiện (mỗi 15 phút)",
+ "지금 출현 중 (30분마다)": "Đang xuất hiện (mỗi 30 phút)",
  "지능": "Trí Lực",
  "지상 제4마을 · 북쪽 단상: 성소 사냥터 · 뿌리샘 길: 중앙 마을\n물·절벽은 통행 불가 · 남쪽 귀환 표식: 해빙된 성소 입구": "Làng mặt đất số 4 · Bục phía bắc: Bãi săn Thánh Điện · Đường Suối Rễ: làng trung tâm\nNước và vách đá không thể đi qua · Dấu hồi thành phía nam: Cửa Thánh Điện Tan Băng",
  "지상 중앙 마을 · 네 마을을 잇는 뿌리길\n중앙 계단: Lv.40+ 지하세계 B1 · 몬스터 Lv.42부터": "Làng trung tâm mặt đất · Con đường rễ nối bốn ngôi làng\nCầu thang giữa: Địa Giới B1 Lv.40+ · Quái từ Lv.42",
@@ -1510,6 +1510,8 @@
  "완료": "Hoàn thành",
  "{0}이(가) 잠시 파티에서 빠졌습니다.": "{0} tạm thời rời khỏi nhóm.",
  "기사단원": "Kỵ Sĩ Đoàn Viên",
+ "1장은 자동으로 진행됩니다. 아무 키나 누르면 직접 조작하고, 손을 떼면 다시 이어집니다.": "Chương 1 tự động tiến hành. Nhấn phím bất kỳ để tự điều khiển; thả tay ra thì sẽ tiếp tục.",
+ "직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.": "Bạn đang tự điều khiển. Thả phím ra thì tự động tiến hành chương 1 sẽ tiếp tục.",
  "모래빛 여행복": "Áo lữ khách màu cát",
  "숲지기 옷": "Áo người giữ rừng",
  "적갈 견습복": "Áo học việc nâu đỏ",
@@ -1535,5 +1537,9 @@
  "에메랄드빛 로브와 모자. 주위에 초록 빛망울이 맴돈다.": "Áo choàng và mũ ngọc lục bảo. Những quả cầu sáng xanh xoay quanh.",
  "노을빛 로브와 모자. 주위에 주황 빛망울이 맴돈다.": "Áo choàng và mũ màu hoàng hôn. Những quả cầu sáng cam xoay quanh.",
  "<color=#b8c4d8>8방향 모든 동작 전용 그림</color>": "<color=#b8c4d8>Hình vẽ riêng cho mọi động tác ở 8 hướng</color>",
- "희귀 오라·내 직업 희귀 스킨": "Hào quang hiếm · trang phục hiếm của nghề mình"
+ "희귀 오라·내 직업 희귀 스킨": "Hào quang hiếm · trang phục hiếm của nghề mình",
+ "진행할 서브퀘스트가 없습니다.": "Không có nhiệm vụ phụ nào để làm.",
+ "서브퀘스트 자동진행: 서브퀘스트 {0}개를 모두 받아서 진행합니다. 아무 키나 누르면 멈춥니다.": "Tự động làm nhiệm vụ phụ: nhận và làm cả {0} nhiệm vụ phụ. Nhấn phím bất kỳ để dừng.",
+ "서브퀘스트를 모두 마쳤습니다.": "Đã hoàn thành mọi nhiệm vụ phụ.",
+ "서브퀘스트 자동진행": "Tự làm nhiệm vụ phụ"
 }

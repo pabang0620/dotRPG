@@ -302,6 +302,7 @@ namespace DotRPG
             int sealOk = 0, sealFail = 0; // counted from the event: a dead boss's counters are gone with it
             Action<EnemyController, bool> onSeal = (_, broken) => { if (broken) sealOk++; else sealFail++; };
             RaidSeal.Ended += onSeal;
+            bool wasDead = false;
             while (!run.IsOver && run.Elapsed < limit)
             {
                 tally.Track();
@@ -320,10 +321,14 @@ namespace DotRPG
                 if (run.InBossRoom && bossAt < 0f) bossAt = run.Elapsed;
                 if (p != null && p.IsDead)
                 {
-                    if (dir.ReviveOpen && run.RevivesLeft > 0) { tally.deaths++; dir.DevRevive(); }
+                    // Count each fall once, also the last one with no revive left (the run then fails).
+                    if (!wasDead) tally.deaths++;
+                    wasDead = true;
+                    if (dir.ReviveOpen && run.RevivesLeft > 0) dir.DevRevive();
                 }
                 else if (!Game.Flow.IsTransitioning)
                 {
+                    wasDead = false;
                     if (!EnemyController.Active.Any(e => e != null && !e.IsDead && e.isActiveAndEnabled)) dir.DevEnterDoor();
                     MeasureEnsureHunting();
                 }
@@ -369,14 +374,18 @@ namespace DotRPG
         {
             DateTime clock = new DateTime(2026, 10, 17, 12, 0, 0); // a Saturday: every weekday dungeon is open
             ResetClock.NowOverride = () => clock;
-            int n = 0;
+            int dungeonIndex = 0;
             foreach (var def in DungeonDatabase.Weekday)
-                for (int d = 0; d < DungeonDatabase.DifficultyCount; d++, n++)
+            {
+                for (int d = 0; d < DungeonDatabase.DifficultyCount; d++)
                 {
                     var diff = (DungeonDifficulty)d;
                     int lv = DungeonDatabase.Difficulty(diff).recommendedLevel;
-                    var career = lv >= 15 ? MeasureCareers[n % 4] : Career.None;
-                    var cls = career != Career.None ? CareerCatalog.Base(career) : (n % 2 == 0 ? CharacterClass.Warrior : CharacterClass.Mage);
+                    // Career rotates with the dungeon, not the difficulty: each difficulty sees every career across the five
+                    // dungeons (before, 왕 was always the arcanist and 영웅 always the bishop).
+                    int pick = dungeonIndex + d;
+                    var career = lv >= 15 ? MeasureCareers[pick % 4] : Career.None;
+                    var cls = career != Career.None ? CareerCatalog.Base(career) : (pick % 2 == 0 ? CharacterClass.Warrior : CharacterClass.Mage);
                     // Same hero alone and with three AI, so the two rows compare (2026-10-13).
                     foreach (int companions in new[] { 0, 3 })
                     {
@@ -389,6 +398,8 @@ namespace DotRPG
                         clock = clock.AddDays(7);
                     }
                 }
+                dungeonIndex++;
+            }
             ResetClock.NowOverride = null;
         }
 

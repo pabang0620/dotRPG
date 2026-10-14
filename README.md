@@ -184,12 +184,20 @@ dotRPG.exe -dotrpgSoak [분, 기본 60] [-soakOut <절대경로>]
 ## 8. 아직 하지 않은 것
 
 - 정식 운영 서버(업체·도메인 미정). 시험 서버는 구글 클라우드(`https://35-216-2-121.sslip.io`, DB는 Supabase)에서 돌고 있고, 정식 배포 절차는 `server/ops/README.md`에 준비되어 있음
-- Steamworks 연결(로그인·P2P 전송·도전과제·클라우드). 서버의 Steam 인증은 mock까지, 클라이언트 P2P 전송은 시험 앱 ID 확보 후
+- Steamworks 정식 앱 검증: 로그인 Web API·클라이언트 P2P는 구현되어 있고 시험 App ID 480 경로가 있다. 정식 App ID·운영 설정 및 두 PC 실검증은 남았다. 도전과제·Cloud는 출시 제공 여부와 설정을 별도로 확정한다
 - 창 2개 협동 실제 플레이 확인(코드·서버 흐름만 검증됨)
 - 클라이언트 결제(별조각 구매) 화면. 서버 결제는 구현돼 있고 기본 꺼짐
 - 번역 원어민 감수, 약관 법률 검토. 서버 설정 `POLICY_CONSENT_ENFORCE`(약관 미동의 차단)와 `WITHDRAW_DESTROY_ENABLED`(5년 실삭제)는 아직 켜지 않았다
 - 랭킹
 - 챕터 3~5
+
+### Steam 출시 준비 (2026-10-14, 결제 제외)
+
+- 제출 자료와 남은 외부 작업: `Docs/steam/SUBMISSION.md`
+- 업로드 도구·Auto-Cloud 설정 초안: `Tools/steam/README.md`
+- `python Tools/steam/preflight.py`는 출시 빌드·서버 주소·이미지 규격을 점검한다. 미완료 항목은 종료 코드 1이다.
+- `BuildWindowsQA`는 자동 검사 용도다. `BuildWindowsReleaseCheck`는 출시 정의의 컴파일 검사용이며 업로드할 수 없다.
+- 설정 → 약관 및 정책 → Credits / Licenses에서 인터넷 없이 폰트·Steamworks.NET 라이선스를 읽을 수 있다.
 
 ## 9. 저장 데이터 위치
 

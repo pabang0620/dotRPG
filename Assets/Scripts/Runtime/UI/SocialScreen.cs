@@ -127,6 +127,7 @@ namespace DotRPG
             if (!blocked)
             {
                 menu.AddButton(L.T("귓속말"), () => { Close(); ChatView.Instance?.Open($"/w {person} "); });
+                menu.AddButton(L.T("교환 신청"), () => { Close(); TradeScreen.RequestAndOpen(person); }); // [TRADE]
                 menu.AddButton(L.T("파티 초대"), () =>
                 {
                     string id = Service.IdOf(person);

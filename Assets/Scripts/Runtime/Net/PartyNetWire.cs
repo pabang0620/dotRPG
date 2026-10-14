@@ -50,6 +50,8 @@ namespace DotRPG
         public CareerSave career;
         /// <summary>Worn costume skin id (empty = none).</summary>
         public string skin = "";
+        /// <summary>[COSMETIC] Worn aura id (empty = none): ring and footprints on the other screens.</summary>
+        public string aura = "";
 
         public bool IsAi => !string.IsNullOrEmpty(mercId);
 
@@ -74,6 +76,7 @@ namespace DotRPG
             card.gemSlots = save.gemSlots ?? new List<string>();
             card.career=save.career;
             card.skin = d.SkinId ?? "";
+            card.aura = d.IsLocal ? Game.Cosmetics?.Equipped?.Id ?? "" : d.AuraId ?? "";
             return card;
         }
 
@@ -93,7 +96,12 @@ namespace DotRPG
                 string key = string.IsNullOrEmpty(gear[i]) ? null : gear[i];
                 if (d.Equipment[(EquipSlot)i] != key) d.Equipment.Set((EquipSlot)i, key);
             }
-            if ((d.SkinId ?? "") != (skin ?? "")) { d.SkinId = skin ?? ""; body.RefreshLook(); }
+            if ((d.SkinId ?? "") != (skin ?? "") || (d.AuraId ?? "") != (aura ?? ""))
+            {
+                d.SkinId = skin ?? "";
+                d.AuraId = aura ?? "";
+                body.RefreshLook();
+            }
             body.RefreshStats();
         }
 
@@ -108,6 +116,7 @@ namespace DotRPG
                 if (!string.IsNullOrEmpty(gear[i])) data.Equipment.Set((EquipSlot)i, gear[i]);
             data.DisplayName = name;
             data.SkinId = skin ?? "";
+            data.AuraId = aura ?? "";
             return data;
         }
 
@@ -125,6 +134,7 @@ namespace DotRPG
             WriteList(w, gemSlots);
             w.Write(JsonUtility.ToJson(career??new CareerSave()));
             w.Write(skin ?? "");
+            w.Write(aura ?? "");
         }
 
         public static MemberCard Read(BinaryReader r)
@@ -144,6 +154,7 @@ namespace DotRPG
             c.gemSlots = ReadList(r);
             c.career=JsonUtility.FromJson<CareerSave>(r.ReadString());
             c.skin = r.ReadString();
+            c.aura = r.ReadString();
             return c;
         }
 

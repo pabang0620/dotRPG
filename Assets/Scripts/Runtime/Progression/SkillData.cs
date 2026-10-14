@@ -80,7 +80,7 @@ namespace DotRPG
             Active("charge", L.T("돌진 베기"), CharacterClass.Warrior, 3, L.T("겨눈 방향으로 돌진하며 길목의 적을 모두 베고 밀어낸다. 무리 속으로 파고들 때 쓴다.")).With(g => { g.damageMult = 2.5f; g.cooldown = 4.5f; g.range = 5f; g.radius = 1.6f; g.manaCost = 9; }),
             Active("blades", L.T("천검 강림"), CharacterClass.Warrior, 4, L.T("하늘에서 거대한 검을 떨어뜨려 주변의 적을 꿰뚫는다.")).With(g => { g.damageMult = 2.4f; g.cooldown = 24f; g.radius = 2f; g.range = 6f; g.hits = 12; g.manaCost = 30; }),
             // Mage.
-            Active("lance", L.T("번개 창"), CharacterClass.Mage, 0, L.T("가장 가까운 적 하나에게 굵은 번개를 내리꽂는다. 맞은 자리 주변에도 전기가 튄다. 보스와 강적을 상대하는 주력기.")).With(g => { g.damageMult = 2.5f; g.cooldown = 1.6f; g.range = 8f; g.radius = 1.3f; g.manaCost = 4; }),
+            Active("lance", L.T("번개 창"), CharacterClass.Mage, 0, L.T("가장 가까운 적 하나에게 굵은 번개를 내리꽂는다. 맞은 자리 주변에도 전기가 튄다. 보스와 강적을 상대하는 주력기.")).With(g => { g.damageMult = 2.5f; g.cooldown = 1.6f; g.range = 8f; g.radius = 2f; g.manaCost = 4; }),
             Active("frostorb", L.T("빙뢰구"), CharacterClass.Mage, 1, L.T("얼음 구체를 날려 부딪힌 자리의 적들을 얼음 파편으로 터뜨린다. 적이 셋 이상 몰렸을 때 쓴다.")).With(g => { g.damageMult = 1.6f; g.cooldown = 3f; g.radius = 3.1f; g.range = 8f; g.manaCost = 8; }),
             Active("nova", L.T("서리 폭발"), CharacterClass.Mage, 2, L.T("주변에 냉기를 터뜨려 다가온 적을 1.4초 동안 얼린다.")).With(g => { g.damageMult = 0.5f; g.cooldown = 10f; g.radius = 4.1f; g.freeze = 1.4f; g.manaCost = 12; }),
             Active("firefield", L.T("화염 장판"), CharacterClass.Mage, 3, L.T("적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.")).With(g => { g.damageMult = 0.4f; g.cooldown = 6f; g.range = 7.5f; g.radius = 3.2f; g.hits = 6; g.manaCost = 10; }),

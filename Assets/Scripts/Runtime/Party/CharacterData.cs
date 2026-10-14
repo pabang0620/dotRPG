@@ -24,6 +24,8 @@ namespace DotRPG
         public CharacterLook Look;
         /// <summary>Worn costume skin (SkinCatalog id) of a person; empty = the class's own look.</summary>
         public string SkinId = "";
+        /// <summary>[COSMETIC] Worn aura (CosmeticCatalog id) of another person, from the network; empty = none. The local player's comes from the store.</summary>
+        public string AuraId = "";
         /// <summary>Attack bonus (%) from the worn aura and costume skin (local player).</summary>
         public int CosmeticDamage;
         /// <summary>Max HP % from registered cosmetic collections (local player only, account-wide).</summary>

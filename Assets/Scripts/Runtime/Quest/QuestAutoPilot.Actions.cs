@@ -234,6 +234,7 @@ namespace DotRPG
         void Heal(PlayerController p)
         {
             var h = p.Health;
+            if (AutoPotion.On) return; // [AUTO] the auto-potion setting drinks for everyone, manual play and auto-progress alike
             if (h == null || h.Max <= 0 || Time.time < nextHeal) return;
             if (h.Current < h.Max * 0.4f) { input.next.useHealing = true; nextHeal = Time.time + 3f; }
             // MP runs dry in long hunts: drink a mana potion below 20% like a player would.

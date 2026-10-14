@@ -67,6 +67,14 @@ namespace DotRPG
             CareerFx.Clip("m_spark", target.Center, Vector2.zero, 1.3f, 30f, VfxLayer.Top, false);
             CareerFx.Clip("impact", target.Position, Vector2.zero, 0.55f, 26f, VfxLayer.Ground, false, CareerFx.Violet);
             Hit(target, n, from, 4f);
+            // Splash: the bolt's electricity hits every monster around the impact point too, at full damage.
+            Vector2 at = target.Center;
+            foreach (var e in EnemiesInRadius(at, n.radius))
+            {
+                if (e == target) continue;
+                SkillVisuals.ArcBolt(at, e.Center, false);
+                Hit(e, n, at, 3f);
+            }
             Shake(0.06f, 0.12f);
         }
 

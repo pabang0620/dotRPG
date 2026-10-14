@@ -37,6 +37,10 @@ namespace DotRPG
             if (!Game.IsPlaying || Game.Flow == null || Game.Flow.IsTransitioning || leader == null) return;
             if (other.attachedRigidbody == null || other.attachedRigidbody.gameObject != leader.gameObject) return;
             if (leader.IsDead) return;
+            // Only the character's own walking takes it through: a monster's knockback (or standing in the doorway after
+            // one) does not throw it into the next map.
+            if (leader.KnockedBack) return;
+            if (Vector2.Dot(leader.MoveIntent, (Vector2)transform.position - leader.Position) <= 0f) return;
             Game.Flow.TravelTo(TargetMap);
         }
     }

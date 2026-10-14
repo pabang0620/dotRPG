@@ -480,5 +480,11 @@
  "{0}에게 보고한다": "Report to {0}",
  "완료": "Complete",
  "{0}이(가) 잠시 파티에서 빠졌습니다.": "{0} has left the party for a while.",
- "기사단원": "Knight"
+ "기사단원": "Knight",
+ "1장은 자동으로 진행됩니다. 아무 키나 누르면 직접 조작하고, 손을 떼면 다시 이어집니다.": "Chapter 1 plays automatically. Press any key to take control; let go and it carries on.",
+ "직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.": "You are in control. Let go of the keys and Chapter 1 auto-progress picks up again.",
+ "진행할 서브퀘스트가 없습니다.": "No side quests to run.",
+ "서브퀘스트 자동진행: 서브퀘스트 {0}개를 모두 받아서 진행합니다. 아무 키나 누르면 멈춥니다.": "Side quest auto-progress: taking and running all {0} side quests. Press any key to stop.",
+ "서브퀘스트를 모두 마쳤습니다.": "All side quests are done.",
+ "서브퀘스트 자동진행": "Side Quest Auto"
 }

@@ -121,6 +121,13 @@ namespace DotRPG
             log = new StreamWriter(Path.Combine(folder, "report.txt")) { AutoFlush = true };
             Application.logMessageReceived += OnLog;
             Log("capture started");
+            float readyDeadline = Time.realtimeSinceStartup + 120f;
+            while (ResourceWarmup.Busy && Time.realtimeSinceStartup < readyDeadline) yield return null;
+            if (ResourceWarmup.Busy)
+            {
+                Log("FAIL resource warmup timed out");
+                log.Close(); log = null; Application.Quit(1); yield break;
+            }
             bool interactiveDemo = mode == "-dotrpgCareerDemo" || mode == "-dotrpgMonsterDemo";
             bool automatedDemo = interactiveDemo && Array.IndexOf(Environment.GetCommandLineArgs(), "-batchmode") >= 0;
             if (!interactiveDemo || automatedDemo) { AudioListener.volume = 0f; Game.Audio?.SetVolumes(0f, 0f); Log("verification audio volume: 0"); }

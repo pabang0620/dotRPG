@@ -825,7 +825,7 @@
  "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)": "Um fragmento do selo guardado por um chefe de raid intermediário. Reúna-os para abrir o raid final do capítulo. (Consumido ao concluir o raid final)",
  "중력 균열": "Fenda Gravitacional",
  "중첩당 공격 속도 +{0}% (최대 5, 4초)": "Velocidade de ataque +{0}% por acúmulo (máx. 5, 4s)",
- "지금 출현 중 (15분마다)": "Em campo agora (a cada 15 min)",
+ "지금 출현 중 (30분마다)": "Em campo agora (a cada 30 min)",
  "지능": "Intelecto",
  "지상 제4마을 · 북쪽 단상: 성소 사냥터 · 뿌리샘 길: 중앙 마을\n물·절벽은 통행 불가 · 남쪽 귀환 표식: 해빙된 성소 입구": "Vila 4 da superfície · Plataforma norte: Área de Caça do Santuário · Estrada da Nascente da Raiz: vila central\nÁgua e penhascos são intransitáveis · Marco de retorno sul: Entrada do Santuário Degelado",
  "지상 중앙 마을 · 네 마을을 잇는 뿌리길\n중앙 계단: Lv.40+ 지하세계 B1 · 몬스터 Lv.42부터": "Vila central da superfície · A estrada de raízes que liga as quatro vilas\nEscadas centrais: Submundo B1 Lv.40+ · Monstros a partir do Lv.42",
@@ -1510,6 +1510,8 @@
  "완료": "Concluir",
  "{0}이(가) 잠시 파티에서 빠졌습니다.": "{0} saiu do grupo por um momento.",
  "기사단원": "Cavaleiro da Ordem",
+ "1장은 자동으로 진행됩니다. 아무 키나 누르면 직접 조작하고, 손을 떼면 다시 이어집니다.": "O capítulo 1 avança sozinho. Aperte qualquer tecla para assumir o controle; solte e ele continua.",
+ "직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.": "Você está no controle. Solte as teclas e o avanço automático do capítulo 1 continua.",
  "모래빛 여행복": "Traje de viajante areia",
  "숲지기 옷": "Traje de guarda-florestal",
  "적갈 견습복": "Traje de aprendiz castanho",
@@ -1535,5 +1537,9 @@
  "에메랄드빛 로브와 모자. 주위에 초록 빛망울이 맴돈다.": "Manto e chapéu esmeralda. Orbes de luz verde giram ao redor.",
  "노을빛 로브와 모자. 주위에 주황 빛망울이 맴돈다.": "Manto e chapéu cor do pôr do sol. Orbes de luz laranja giram ao redor.",
  "<color=#b8c4d8>8방향 모든 동작 전용 그림</color>": "<color=#b8c4d8>Arte própria para cada movimento em 8 direções</color>",
- "희귀 오라·내 직업 희귀 스킨": "Aura rara · visual raro da minha classe"
+ "희귀 오라·내 직업 희귀 스킨": "Aura rara · visual raro da minha classe",
+ "진행할 서브퀘스트가 없습니다.": "Não há missões secundárias para fazer.",
+ "서브퀘스트 자동진행: 서브퀘스트 {0}개를 모두 받아서 진행합니다. 아무 키나 누르면 멈춥니다.": "Avanço automático de secundárias: aceitando e fazendo as {0} missões secundárias. Aperte qualquer tecla para parar.",
+ "서브퀘스트를 모두 마쳤습니다.": "Todas as missões secundárias foram concluídas.",
+ "서브퀘스트 자동진행": "Secundárias auto"
 }

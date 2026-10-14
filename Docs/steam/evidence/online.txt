@@ -1,0 +1,61 @@
+[12.36] capture started
+[12.37] verification audio volume: 0
+ONLINE ActorCommand round trip: 4 cases [1111] size=9B worstMove=0.0035 worstAim=0.65deg PASS
+ONLINE NetworkInput tick order: first=(0.00, 1.00) second=(-1.00, 0.00) lateDropped=True lastTick=5 PASS
+ONLINE LoopbackTransport latency 2 ticks: early=False delivered=True from=1 data=7 PASS
+ONLINE enhance rolls identical (seed 4242, 200 rolls): True first=[30,23,42,64,32,66] PASS
+ONLINE monster drops identical (seed 4242, 300 kills): True gearDrops=133 sample='16|-' PASS
+ONLINE Authority.Current is LocalAuthority: True remote=False dungeon=True xp=37 gold=-12 PASS
+ONLINE OnlineSession offline: connect=False current=null (로그인하지 않았습니다.) PASS
+ONLINE remote warning shape Circle PASS
+ONLINE remote warning never deals damage Circle PASS
+ONLINE remote warning shape Rect PASS
+ONLINE remote warning never deals damage Rect PASS
+ONLINE remote warning shape Cone PASS
+ONLINE remote warning never deals damage Cone PASS
+ONLINE remote warning shape Donut PASS
+ONLINE remote warning never deals damage Donut PASS
+ONLINE remote projectile is visual only and at host position PASS
+ONLINE ActorId: local=ai#0 bron=ai#1 slot=1 find=True PASS
+ONLINE loopback moves member: dx=5.60 dy=0.04 sent=1198 routed=1198 applied=1198 localStill=0.2 PASS
+[23.34] shot online_01_loopback_member (render texture)
+ONLINE loopback attacks: presses=437 damageDealt=21 skeletonDead=False PASS
+ONLINE party finder open: state=Inventory active=True rows=9 row0='해골왕 | 3/4 | 참가 신청' PASS
+ONLINE party finder apply: '<color=#8fe28f>카타나장인님의 파티에 참가 신청했습니다. (오프라인 모드: 다른 모험가가 없습니다)</color>' PASS
+ONLINE party finder post on top: row0='<color=#ffe066>★</color> 황금 광맥 | 1/4 | 내 모집 글' PASS
+ONLINE auto-match queue running: '<color=#ffe066>매칭 중 00:01 / 01:00</color>  1/4명' active=True PASS
+[26.12] shot online_02_party_finder (render texture)
+ONLINE AI로 채워 출발 → 입장: humans=2 status='<color=#8fe28f>사람 2명 + AI 용병 2명으로 출발합니다.</color>' active=False inRun=True map=village queued=gold_vein state=Playing PASS
+[28.82] shot online_02b_matched_dungeon (render texture)
+ONLINE queue times out after 60s and departs: active=False inRun=True PASS
+ONLINE back in the village: map=village inRun=False PASS
+ONLINE auction open: active=True rows=9 row0='마력 정수 x7' PASS
+[37.28] shot online_03_auction_search (render texture)
+[38.03] shot online_04_auction_confirm (render texture)
+ONLINE buyout: confirm overlay=True price=240 gold 60100->59860 mail=1 gone=True PASS
+ONLINE mail claim: 우편 1통을 받았습니다. item mat_essence 0->7 mail=0 PASS
+[39.09] shot online_05_auction_register (render texture)
+ONLINE register: status='<color=#8fe28f>뼈손잡이 장검 +7 등록 완료 (보증금 22G)</color>' mine=1 key=eq_sword_10_u+7 deposit=22/22 bag=0 PASS
+ONLINE protection ticket bound: ok=False '귀속 아이템은 등록할 수 없습니다.' bind=CharacterBound enhancedSword=Tradable PASS
+ONLINE price floor enforced: ok=False '가방에 아이템이 부족합니다.' PASS
+ONLINE 내 등록 tab: rows=1 row0='<color=#6fdc6f>뼈손잡이 장검</color> <color=#ffe066>+7</color>' PASS
+[40.07] shot online_06_auction_mine (render texture)
+[40.65] shot online_07_auction_mail (render texture)
+ONLINE sale settlement: sold=True fee=109 received=2093 expected=2093 PASS
+ONLINE search '철': rows=2 row0='<color=#6fdc6f>강철 테 지팡이</color>' PASS
+ONLINE chat rate limit: first=sent second='채팅은 1초에 한 번만 보낼 수 있습니다.' PASS
+ONLINE same line 3x mutes 10s: '같은 말을 반복해 9초 동안 채팅이 막혔습니다.' PASS
+ONLINE word filter preview: '이 ** 보스' channel=Party PASS
+[41.79] shot online_08_chat_typing (render texture)
+ONLINE chat input blocks game keys while open: gate=True closed=True PASS
+ONLINE quick signal 4~8: sent=True line='준비 완료!' channel=Party PASS
+[42.44] shot online_09_quick_signal (render texture)
+ONLINE village chatter arrives: speaker=눈꽃여우 lines=9 PASS
+ONLINE blocked player is silenced: blocked=True leaked=False whisper='눈꽃여우님은 차단 중입니다.' PASS
+ONLINE report attaches the last 20 lines: n=1 lines=20 '눈꽃여우님을 '도배'(으)로 신고했습니다. 최근 대화 20줄을 첨부했습니다. (오프라인 모드)' PASS
+ONLINE +10 notice reaches the system channel: '아린님이 뼈손잡이 장검 강화에 성공했습니다!' PASS
+[43.26] shot online_10_friends (render texture)
+[43.83] shot online_11_friend_actions (render texture)
+ONLINE friends window: open=True title='검은뿔' friends=2 PASS
+ONLINE summary: 45 passed, 0 failed
+[44.23] capture finished

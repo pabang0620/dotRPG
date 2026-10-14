@@ -130,6 +130,8 @@ namespace DotRPG
             {
                 var hit = mobilityHits[i];
                 if (hit.collider == null || hit.rigidbody == body || Physics2D.GetIgnoreCollision(BodyCollider, hit.collider)) continue;
+                // Dash, teleport and the dash skills of every class go through monsters, players and NPCs; only walls stop them.
+                if (IsActor(hit.collider)) continue;
                 // A touching surface only blocks motion into it, allowing escape or travel along it.
                 if (Vector2.Dot(direction, hit.normal) >= -.001f) continue;
                 safe = Mathf.Min(safe, Mathf.Max(0f, hit.distance - MobilitySkin));
@@ -137,9 +139,79 @@ namespace DotRPG
             return safe;
         }
 
+        static bool IsActor(Collider2D c) =>
+            c.GetComponentInParent<EnemyController>() != null || c.GetComponentInParent<PlayerController>() != null || c.GetComponentInParent<NpcController>() != null;
+
+        readonly List<Collider2D> passedThrough = new List<Collider2D>(8);
+        readonly List<RaycastHit2D> passHits = new List<RaycastHit2D>(16);
+
+        // Stop colliding with the actors in the next dash step so the body slides through them instead of shoving them.
+        void PassThroughActors(Vector2 direction, float distance)
+        {
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
+            int count = BodyCollider.Cast(direction, filter, passHits, distance + .3f);
+            for (int i = 0; i < count; i++)
+            {
+                var c = passHits[i].collider;
+                if (c == null || passHits[i].rigidbody == body || !IsActor(c) || Physics2D.GetIgnoreCollision(BodyCollider, c)) continue;
+                Physics2D.IgnoreCollision(BodyCollider, c, true);
+                passedThrough.Add(c);
+            }
+            if (passedThrough.Count > 0 && restoreRoutine == null) restoreRoutine = StartCoroutine(RestoreAfterPass());
+        }
+
+        Coroutine restoreRoutine;
+
+        // Collide with them again once the dash is over and the bodies no longer overlap (at most 2 s later).
+        System.Collections.IEnumerator RestoreAfterPass()
+        {
+            float giveUp = Time.time + 2f;
+            while (passedThrough.Count > 0)
+            {
+                yield return new WaitForFixedUpdate();
+                if (IsDashing) continue;
+                for (int i = passedThrough.Count - 1; i >= 0; i--)
+                {
+                    var c = passedThrough[i];
+                    if (c == null || !c.enabled || BodyCollider == null) { passedThrough.RemoveAt(i); continue; }
+                    if (Time.time < giveUp && Physics2D.Distance(BodyCollider, c).isOverlapped) continue;
+                    Physics2D.IgnoreCollision(BodyCollider, c, false);
+                    passedThrough.RemoveAt(i);
+                }
+            }
+            restoreRoutine = null;
+        }
+
+        /// <summary>Largest monster size a walking character can push aside.</summary>
+        const float ShoveMaxSize = 1.3f;
+        readonly List<RaycastHit2D> shoveHits = new List<RaycastHit2D>(8);
+
+        // Walking into a regular monster pushes it along instead of being body-blocked by it. Bosses, super armor and
+        // big monsters hold their ground. A party member PC leaves the monsters to the host (they are the host's).
+        void ShoveMonsters(Vector2 velocity)
+        {
+            if (PartyNet.IsMember || BodyCollider == null) return;
+            Vector2 dir = velocity.normalized;
+            float step = velocity.magnitude * Time.fixedDeltaTime;
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
+            int count = BodyCollider.Cast(dir, filter, shoveHits, step + .06f);
+            for (int i = 0; i < count; i++)
+            {
+                var hit = shoveHits[i];
+                if (hit.collider == null || hit.rigidbody == null || hit.rigidbody == body) continue;
+                var enemy = hit.collider.GetComponentInParent<EnemyController>();
+                if (enemy == null || enemy.IsDead || enemy.IsBoss || enemy.SuperArmorActive) continue;
+                if (enemy.Def != null && enemy.Def.size > ShoveMaxSize) continue;
+                hit.rigidbody.position += dir * step;
+            }
+        }
+
         void StepDash()
         {
             float requested = Mathf.Min(dashRemaining, DashDistance / DashDuration * Time.fixedDeltaTime);
+            PassThroughActors(dashDirection, requested);
             float step = MobilityClearance(dashDirection, requested);
             body.SetVelocity(Vector2.zero);
             body.MovePosition(Position + dashDirection * step);
@@ -151,6 +223,15 @@ namespace DotRPG
                 nextDashDust = Time.time + .045f;
             }
             if (step < requested - .001f || dashRemaining < .001f) CancelMobility();
+        }
+
+        /// <summary>Collide again with everything a dash went through (OnDisable stops the restore coroutine).</summary>
+        void RestorePassThrough()
+        {
+            foreach (var c in passedThrough)
+                if (c != null && BodyCollider != null) Physics2D.IgnoreCollision(BodyCollider, c, false);
+            passedThrough.Clear();
+            restoreRoutine = null;
         }
 
         void CancelMobility()

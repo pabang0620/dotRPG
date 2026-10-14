@@ -89,8 +89,11 @@ describe('A2 rollSweepCard', () => {
       if (isGear(rollCards({ ...eco, dungeons: { ...eco.dungeons, cards: { ...eco.dungeons.cards, count: 1 } } }, d, diff, 'warrior', r1)[0] as Card)) direct++;
       if (isGear(rollSweepCard(eco, d, diff, 'warrior', r2, { gearKeepPercent: 70 }))) sw++;
     }
-    expect(direct / N).toBeGreaterThan(0.09);
-    expect(direct / N).toBeLessThan(0.103);
+    // 기대 비율은 데이터에서 계산한다(장비 가중치 / 전체 가중치)
+    const total = d.rewards.reduce((a, e) => a + e.weight, 0);
+    const gearShare = d.rewards.filter((e) => e.itemId === 'gear').reduce((a, e) => a + e.weight, 0) / total;
+    expect(direct / N).toBeGreaterThan(gearShare - 0.01);
+    expect(direct / N).toBeLessThan(gearShare + 0.01);
     expect(sw / direct).toBeGreaterThan(0.66);
     expect(sw / direct).toBeLessThan(0.74);
     // 대박 확률 1000/1000이어도 소탕은 굴리지 않는다: 장비 비율이 그대로
@@ -98,7 +101,7 @@ describe('A2 rollSweepCard', () => {
     let swJack = 0;
     const r3 = seeded(33);
     for (let i = 0; i < N; i++) if (isGear(rollSweepCard(eco, d, forced, 'warrior', r3, { gearKeepPercent: 70 }))) swJack++;
-    expect(swJack / N).toBeLessThan(0.08);
+    expect(swJack / N).toBeLessThan(sw / N + 0.01); // 대박 확률을 올려도 소탕 장비 비율은 그대로
     // 영웅(보호권 가중 6)
     const hero = diffOf(eco, d, 3) as DiffNumbers;
     const r4 = seeded(44);

@@ -1,0 +1,61 @@
+[3.48] capture started
+[6.40] verification audio volume: 0
+DGN daily reset: 05:59 -> 03-04 06:00 day=Tuesday, 06:00 -> 03-05 06:00 day=Wednesday PASS
+DGN daily expiry: stamp(05:59) expired at 05:59=False at 06:00=True PASS
+DGN weekly reset (Thu 06:00): thu05:59->02-27 thu06:00->03-06 sun->03-06 nextWed->03-06 next=03-13 PASS
+DGN week wrap: 2025-12-31 -> 2025-12-25 2026-01-01 07:00 -> 2026-01-01 PASS
+DGN raid lock: claimed Wed -> available Thu05:59=False Thu06:00=True PASS
+DGN rank table: all boundaries xp SSS+50 B+10 C+0 PASS
+DGN rank score: perfect=100SSS 2 revives=80S slow/hit=14F (t0 h0 c4) PASS
+DGN combo rule (1.5 s window): max=4 current=2 PASS
+DGN weekday rotation: Mon:1 Tue:1 Wed:1 Thu:1 Fri:1 Sat:5 Sun:5 (mid raid Wed/Sat/Sun, Tue 05:00 = Monday) PASS
+DGN dungeon table: 5 weekday x (3 rooms + boss), raid 2 + boss, revives 5/4/3/2 raid 3, rec Lv 5/12/20/27, party HP 1/1.6/2.1/2.5, rooms=23 PASS
+DGN save fields: entries=2 best=SS raidAvail=False | old save: entries=0 best=none raid=True PASS
+DGN authority: seeded deals match=False cards=[강화석 ×14, 서리꽃 로브, 서리 바람 반지, 강화석 ×14] FAIL
+DGN raid rewards raid_skeleton_king: gold=3700 cards=[기사단장의 각반, 해골왕의 왕관 조각, 해골왕의 왕관 조각 ×8, 해골왕의 왕관 조각 ×2] PASS
+DGN raid rewards raid_grah: gold=14800 cards=[북극성의 각반, 수호석 파편, 수호석 파편 ×8, 수호석 파편 ×2] PASS
+DGN setup: Lv15 power=5122 members=1 weapon=eq_sword_15_un FAIL
+DGN village guide: exists=True at=(33.50, 19.50) prompt='던전 입장' free=True PASS
+[11.23] shot dgn_00_guide (render texture)
+DGN select window open: state=Inventory top=DungeonSelect raidTab=False PASS
+DGN weekday rows on Monday: gold=오늘 개방 smelter=닫힘 day='오늘 월요일   남은 입장 3/3   초기화 06:00' FAIL
+[12.40] shot dgn_01_select (render texture)
+DGN locked difficulty + closed dungeon refused: adventure='오늘(월요일)은 열리지 않는 던전입니다.' True smelterClosed=True PASS
+[12.94] shot dgn_02_raid_tab (render texture)
+DGN raid tab: raidTab=True day='오늘 월요일   봉인 열쇠 조각 0 (중간 레이드 보상)   초기화 매일 06:00 · 주간 목 06:00' FAIL
+DGN entered: ok=True inRun=True map=dgn_canyon_1 state=Playing entriesLeft=2 monsters=4/5 partySize=4 hpMul=1.6 FAIL
+DGN party at the entry: local=(18.50, 3.50) spawn=(18.50, 3.50) dist=[0.0,1.2,1.2,1.2] autoRevive=False PASS
+DGN dungeon HUD: clock=True roomMap=True minimapHidden=True text='방 1/4    내 부활 5/5' door=True PASS
+[15.55] shot dgn_03_room1 (render texture)
+DGN no saving in a dungeon: fileChanged=False scrollUsed=False inRun=True PASS
+DGN room 1 cleared: door open=True cleared=[0] kills=5 combo=0 hits=0 FAIL
+[16.78] shot dgn_04_door_open (render texture)
+DGN companion down stays down, rejoins next room: downAfter9s=True room=1 map=dgn_canyon_2 kaiAlive=True hp=0.50 nearAtEntry=0.6 PASS
+DGN walked through the gate: local at entry=0.0 hud='방 2/4    내 부활 5/5' PASS
+[30.43] shot dgn_05_revive (render texture)
+DGN coin revive: prompt=True remaining=9.5 accepted=True alive=True hp=546/546 mp=164/164 invuln=True used=1 left=4 state=Playing PASS
+DGN boss room: map=dgn_canyon_boss index=3 door=False enemies=2 boss=True PASS
+[33.85] shot dgn_06_boss (render texture)
+[34.38] shot dgn_07_clear (render texture)
+DGN boss down: slowmo=0.25 state=Clearing addsBefore=1 addsAfter=0 timeScale=1.00 PASS
+DGN result: state=Inventory top=DungeonResult runState=Cleared rank=A score=72 (t40 h27 k10 c5 -10) kills=19/19 time=15.9s xp=1322 stamp=A PASS
+DGN damage meters: 나=27737, 브론=217, 카이=367, 엘린=548 PASS
+[38.13] shot dgn_08_result (render texture)
+[38.48] shot dgn_09_card_pick (render texture)
+DGN cards: flipped=True done=True all=True who=[카이,나,엘린,브론] card=골드 ×894 bag 699->1593 PASS
+[42.10] shot dgn_10_cards_done (render texture)
+DGN progress: cleared=True best=A adventureUnlocked=True kingLocked=True entries=2/3 PASS
+DGN back in the village: map=village inRun=False state=Playing autoRevive=True minimap=False near=True FAIL
+[44.09] shot dgn_11_village (render texture)
+DGN failed via death + 포기: prompt=True state=Failed reason='던전 공략을 포기했습니다.' top=DungeonResult stamp=실패 cards=0 done=True autoRevive=True PASS
+[47.83] shot dgn_12_failed (render texture)
+DGN retry: entries 1->0 new run=True room=0 alive=True hp=546/546 map=dgn_canyon_1 PASS
+DGN no revives left -> failed: noPrompt=True state=Failed reason='부활 횟수를 모두 사용했습니다.' top=DungeonResult PASS
+[51.48] shot dgn_13_failed_no_revive (render texture)
+DGN no entries left: refused=True status='오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)' left=0 PASS
+[53.85] shot dgn_14_no_entries (render texture)
+DGN save/continue keeps dungeon progress: entriesUsed=3 cleared=True best=A==A PASS
+DGN continue: companions spawn next to the player: members=1 dist=[0.0] FAIL
+DGN raid entry: ok=False map=village size= locked= save map=village pos=(29,18) entriesUsed=3 FAIL
+[65.40] shot dgn_15_raid_boss (render texture)
+[78.35] Exception: NullReferenceException: Object reference not set to an instance of an object

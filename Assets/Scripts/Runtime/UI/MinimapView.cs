@@ -8,7 +8,7 @@ namespace DotRPG
     /// Round minimap in the top-right corner. The map picture (the map itself rendered from above by
     /// <see cref="WorldBuilder"/>) scrolls under a circular mask so the player stays in the centre;
     /// monsters are red dots, map exits small portal swirls, quest NPCs "!"/"?" and town services small icons, the last two
-    /// pinned to the rim when they are off the minimap.
+    /// pinned to the rim when they are off the minimap. A pulsing "▼" marks where the followed quest goes (<see cref="QuestDestination"/>).
     /// </summary>
     public class MinimapView : MonoBehaviour
     {
@@ -27,6 +27,7 @@ namespace DotRPG
         readonly List<Image> exitDots = new List<Image>();
         readonly List<Image> serviceIcons = new List<Image>();
         readonly List<Text> questMarks = new List<Text>();
+        Text destinationMark; // [UI] where the followed quest goes: the goal here, or the exit toward its map
         static Sprite portalSprite;
         List<WorldAtlas.PortalMarker> portalMarkers = new List<WorldAtlas.PortalMarker>();
 
@@ -292,6 +293,22 @@ namespace DotRPG
                         if (id != null) QuestIcon(Game.Quest.MarkFor(id), Game.Quest.MarkIsMain(id), door.transform.position);
                     }
             for (int i = q; i < questMarks.Count; i++) questMarks[i].gameObject.SetActive(false);
+
+            // [UI] Quest destination: a pulsing arrow on the goal (or on the exit toward the goal's map), pinned to the rim.
+            var dest = QuestDestination.Current;
+            if (dest != null && QuestDestination.PointHere(dest, out var goal, out bool viaExit))
+            {
+                if (destinationMark == null) destinationMark = QuestDestination.CreateMark(markers, "QuestDestination", 22);
+                Vector2 offset = (goal - p) * pixelsPerTile;
+                if (offset.magnitude > Radius - 14f) offset = offset.normalized * (Radius - 14f);
+                destinationMark.text = "▼";
+                destinationMark.color = viaExit ? new Color32(255, 170, 60, 255) : new Color32(255, 214, 64, 255);
+                destinationMark.rectTransform.anchoredPosition = offset + new Vector2(0f, 14f);
+                QuestDestination.Pulse(destinationMark.transform);
+                destinationMark.gameObject.SetActive(true);
+                destinationMark.transform.SetAsLastSibling();
+            }
+            else if (destinationMark != null) destinationMark.gameObject.SetActive(false);
 
             playerDot.transform.SetAsLastSibling();
         }

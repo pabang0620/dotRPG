@@ -231,7 +231,12 @@ namespace DotRPG
                     rest = sp2 < 0 ? "" : rest.Substring(sp2 + 1);
                     target = ChatChannel.Whisper;
                 }
-                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용")); return; }
+                else if (cmd == "/trade" || cmd == "/교환") // i18n-ignore command alias
+                {
+                    TradeScreen.RequestAndOpen(rest.Trim()); // [TRADE] 1:1 교환
+                    return;
+                }
+                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용 · /교환 이름")); return; }
                 channel = target;
                 whisperTo = to;
                 channelChosen = true;

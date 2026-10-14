@@ -1,0 +1,13 @@
+"AppBuild"
+{
+	"AppID" "__APPID__"
+	"Desc" "__BUILDDESC__"
+	"ContentRoot" "__CONTENTROOT__"
+	"BuildOutput" "buildoutput"
+	"SetLive" "__SETLIVE__"
+	"Preview" "0"
+	"Depots"
+	{
+		"__DEPOTID__" "depot_build_windows.vdf"
+	}
+}

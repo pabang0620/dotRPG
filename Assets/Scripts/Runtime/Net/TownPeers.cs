@@ -17,7 +17,7 @@ namespace DotRPG
         {
             public PlayerController body;
             public TextMesh label, shadow;
-            public string map, skin, weapon;
+            public string map, skin, weapon, aura;
             public int cls = -1, career;
             public float seenAt;
         }
@@ -73,6 +73,7 @@ namespace DotRPG
                 ["cls"] = (int)cls,
                 ["career"] = (int)Game.Session.Progression.Career,
                 ["skin"] = Game.Cosmetics?.SkinFor(cls) ?? "",
+                ["aura"] = Game.Cosmetics?.Equipped?.Id ?? "",
                 ["weapon"] = Game.Session.Equipment[EquipSlot.Weapon] ?? "",
                 ["level"] = Game.Session.Progression.Level,
             };
@@ -100,6 +101,7 @@ namespace DotRPG
             int career = MiniJson.Int(d, "career");
             string skin = MiniJson.Str(d, "skin", "");
             string weapon = MiniJson.Str(d, "weapon", "");
+            string aura = MiniJson.Str(d, "aura", "");
             var at = new Vector2((float)MiniJson.Num(d, "x"), (float)MiniJson.Num(d, "y"));
             var facing = (Facing)Mathf.Clamp(MiniJson.Int(d, "f"), 0, 7);
             self.peers.TryGetValue(id, out var p);
@@ -115,6 +117,13 @@ namespace DotRPG
                 if (p == null) return;
                 p.map = map;
                 self.peers[id] = p;
+            }
+            // [COSMETIC] The worn aura changes in place (ring and footprints), no rebuild.
+            if (p.aura != aura)
+            {
+                p.aura = aura;
+                p.body.Data.AuraId = aura;
+                p.body.RefreshLook();
             }
             p.seenAt = Time.unscaledTime;
             p.body.NetMoveTo(at, facing);

@@ -195,6 +195,19 @@ export const POLICY: PolicyEntry[] = [
     destroyWhere: `(seller_account_id ${ACC} OR current_bidder_account_id ${ACC}) AND ${inA('seller_account_id')} AND (current_bidder_account_id IS NULL OR ${inA('current_bidder_account_id')})`,
   },
   forever('auction_price_daily', '시세 집계(계정 무관)'),
+  // 1:1 교환(0041): 두 계정이 함께 가진 행. 양쪽이 모두 파기 대상일 때만 파기
+  {
+    table: 'trade_items',
+    t1: 'keep',
+    t2: 'destroy_shared',
+    destroyWhere: `trade_id IN (SELECT id FROM trades WHERE (requester_account_id ${ACC} OR target_account_id ${ACC}) AND ${inA('requester_account_id')} AND ${inA('target_account_id')})`,
+  },
+  {
+    table: 'trades',
+    t1: 'keep',
+    t2: 'destroy_shared',
+    destroyWhere: `(requester_account_id ${ACC} OR target_account_id ${ACC}) AND ${inA('requester_account_id')} AND ${inA('target_account_id')}`,
+  },
   // ---------- 소셜·파티 ----------
   {
     table: 'friendships',
@@ -249,6 +262,7 @@ export const DESTROY_ORDER: string[] = [
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'star_pass_daily', 'star_pass_grants', 'account_star_pass', 'account_pass_claims',
   'sealed_pulls', 'raid_shop_purchases', 'gacha_pulls', 'star_synth_log', 'account_collections', 'account_cosmetics', 'account_growth_pass', 'skill_style_unlocks',
   'account_sealed_state', 'ceiling_claims', 'account_ceilings', 'account_week_counters', 'economy_holds', 'account_sanctions', 'admin_account_notes', 'admin_grants',
+  'trade_items', 'trades',
   'auction_flags', 'auction_sinks', 'mail_attachments', 'mail_campaign_deliveries', 'mails', 'auction_trade_flags', 'auction_trades',
   'auction_bids', 'auction_listings', 'friendships', 'blocks', 'report_lines', 'reports', 'party_applications', 'party_members',
   'party_invites', 'field_session_members', 'party_run_host_reports', 'party_runs', 'field_sessions', 'parties', 'star_spend_allocs',

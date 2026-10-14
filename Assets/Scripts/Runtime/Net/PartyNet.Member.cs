@@ -160,6 +160,7 @@ namespace DotRPG
                         break;
                     }
                     case PartyMsg.RoomLoad:
+                        ClearWarnings();
                         expectedRoom = r.ReadByte();
                         puppets.Clear();
                         pendingSpawns.Clear();
@@ -381,6 +382,8 @@ namespace DotRPG
                 bool frozen = r.ReadBoolean();
                 if (puppets.TryGetValue(id, out var e) && e != null) e.ApplyNet(pos, facing, anim, hp, max, frozen);
             }
+            ReadWarnings(r);
+            ReadProjectiles(r);
         }
     }
 }

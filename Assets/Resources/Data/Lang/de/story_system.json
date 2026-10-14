@@ -1682,5 +1682,21 @@
  "운영에서는 난수를 바꿀 수 없습니다": "Im Betrieb kann der Zufallsgenerator nicht geändert werden",
  "semver 형식이 아닙니다": "Kein semver-String",
  "확률표 지문": "Fingerabdruck der Droprate-Tabelle",
- "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Veröffentlichungsprotokoll der Droprate-Tabellen (0040, nicht kontobezogen). Nutzungsbedingungen Art. 14-2 Abs. 3"
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Veröffentlichungsprotokoll der Droprate-Tabellen (0040, nicht kontobezogen). Nutzungsbedingungen Art. 14-2 Abs. 3",
+ "제안한 내용이 달라져 교환이 취소되었습니다.": "Der Tausch wurde abgebrochen, weil sich das Angebot geändert hat.",
+ "거래 상대를 찾을 수 없습니다.": "Der Tauschpartner wurde nicht gefunden.",
+ "같은 아이템을 두 번 올릴 수 없습니다.": "Du kannst denselben Gegenstand nicht zweimal anbieten.",
+ "교환 내용이 바뀌었습니다. 다시 확인하세요.": "Der Tausch hat sich geändert. Bitte prüfe ihn erneut.",
+ "교환 시간이 지났습니다.": "Der Tausch ist abgelaufen.",
+ "교환을 찾을 수 없습니다.": "Der Tausch wurde nicht gefunden.",
+ "교환할 골드나 아이템을 올려 주세요.": "Biete etwas Gold oder Gegenstände zum Tauschen an.",
+ "귀속된 아이템은 교환할 수 없습니다.": "Gebundene Gegenstände können nicht getauscht werden.",
+ "상대가 다른 교환 중입니다.": "Dieser Spieler befindet sich in einem anderen Tausch.",
+ "상대가 아직 수락하지 않았습니다.": "Der andere Spieler hat noch nicht angenommen.",
+ "아이템을 찾을 수 없습니다.": "Der Gegenstand wurde nicht gefunden.",
+ "양쪽이 잠근 뒤에 확정할 수 있습니다.": "Du kannst erst bestätigen, wenn beide Seiten gesperrt haben.",
+ "요청을 받은 사람만 할 수 있습니다.": "Das kann nur der Spieler tun, der die Anfrage erhalten hat.",
+ "이미 끝난 교환입니다.": "Dieser Tausch ist bereits beendet.",
+ "이미 진행 중인 교환이 있습니다.": "Du hast bereits einen laufenden Tausch.",
+ "받았습니다: {0}": "Erhalten: {0}"
 }

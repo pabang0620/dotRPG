@@ -14,14 +14,31 @@ namespace DotRPG
             lockedUntil = Time.time + seconds;
         }
 
-        /// <summary>Q: a health potion (the strong one first).</summary>
+        /// <summary>The potion key: the plain potion first, the greater one (cash) only once the plain ones run out.</summary>
         public void UseHealing()
         {
             if (!IsLocal) return;
-            if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotionHi) > 0) UseConsumable(ConsumableDatabase.HpPotionHi); // [CASH] the strong one first
-            else if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
+            if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotion) > 0) UseConsumable(ConsumableDatabase.HpPotion);
+            else if (Game.Session.Inventory.Count(ConsumableDatabase.HpPotionHi) > 0) UseConsumable(ConsumableDatabase.HpPotionHi);
             else GameEvents.RaiseToast(L.T("체력 물약이 없습니다. 마을 잡화상인에게서 물약을 사세요."));
         }
+
+        /// <summary>[AUTO] Auto-potion: the plain potion first, then the greater one; false (silently) when the bag has none.</summary>
+        public bool AutoDrink(bool mana)
+        {
+            if (!IsLocal || IsDead || Game.Session == null) return false;
+            var bag = Game.Session.Inventory;
+            string plain = mana ? ConsumableDatabase.MpPotion : ConsumableDatabase.HpPotion;
+            string greater = mana ? ConsumableDatabase.MpPotionHi : ConsumableDatabase.HpPotionHi;
+            string id = bag.Count(plain) > 0 ? plain : bag.Count(greater) > 0 ? greater : null;
+            return id != null && UseConsumable(id);
+        }
+
+        /// <summary>[PORTAL] True while a hit is shoving the character (knockback), not its own walking.</summary>
+        public bool KnockedBack => Time.time < knockbackUntil;
+
+        /// <summary>[PORTAL] Where the character itself is trying to walk (zero while standing still).</summary>
+        public Vector2 MoveIntent => desiredVelocity;
 
         /// <summary>Uses one potion or scroll from the bag (local player only). Returns true when it was used up.</summary>
         public bool UseConsumable(string id)

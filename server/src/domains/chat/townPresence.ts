@@ -10,6 +10,8 @@ import type { Frame, TownPosFrame } from './wsProtocol';
 
 /** 한 사람의 위치 프레임을 받는 최소 간격(ms). 클라이언트는 약 5회/초 이하로 보낸다 */
 const MIN_GAP_MS = 150;
+/** 누구나 가진 무료 오라(account_cosmetics에 없다). 클라이언트 CosmeticCatalog의 isFree 오라와 같다 */
+const FREE_AURAS = new Set(['aura_sky']);
 
 function isTown(mapId: string): boolean {
   const m = getGameData().maps.get(mapId);
@@ -29,6 +31,7 @@ function frameOf(s: ChatSession, t: TownLook): Frame {
     cls: t.cls,
     career: t.career,
     skin: t.skin,
+    aura: t.aura,
     weapon: t.weapon,
     level: t.level,
   };
@@ -102,6 +105,7 @@ export async function handleTownPos(s: ChatSession, f: TownPosFrame): Promise<vo
     cls: profile.cls,
     career: profile.career,
     skin: f.skin !== undefined && profile.ownedSkins.has(f.skin) ? f.skin : '',
+    aura: f.aura !== undefined && (profile.ownedSkins.has(f.aura) || FREE_AURAS.has(f.aura)) ? f.aura : '',
     weapon: profile.weapon,
     level: profile.level,
   };

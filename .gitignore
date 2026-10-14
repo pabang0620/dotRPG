@@ -46,3 +46,4 @@ __pycache__/
 
 # Steam test app id for running in the editor (480); release builds never ship it
 steam_appid.txt
+/Tools/steam/output/

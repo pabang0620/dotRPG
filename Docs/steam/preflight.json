@@ -1,0 +1,61 @@
+{
+  "project": "dotRPG",
+  "scope": "Payments excluded; external Steam review and production validation are not certified by this check",
+  "checks": [
+    {
+      "name": "release executable",
+      "status": "BLOCKED",
+      "detail": "Builds\\WindowsRelease\\dotRPG.exe"
+    },
+    {
+      "name": "no test App ID file",
+      "status": "PASS",
+      "detail": "steam_appid.txt must not ship"
+    },
+    {
+      "name": "Steam native library",
+      "status": "BLOCKED",
+      "detail": "steam_api64.dll required for advertised Steam features"
+    },
+    {
+      "name": "release server",
+      "status": "BLOCKED",
+      "detail": "approved HTTPS endpoint must be configured"
+    },
+    {
+      "name": "release provenance",
+      "status": "BLOCKED",
+      "detail": "successful BuildWindowsRelease manifest and executable hash"
+    },
+    {
+      "name": "art header.png",
+      "status": "BLOCKED",
+      "detail": "required 920x430; actual missing"
+    },
+    {
+      "name": "art small.png",
+      "status": "BLOCKED",
+      "detail": "required 462x174; actual missing"
+    },
+    {
+      "name": "art main.png",
+      "status": "BLOCKED",
+      "detail": "required 1232x706; actual missing"
+    },
+    {
+      "name": "art vertical.png",
+      "status": "BLOCKED",
+      "detail": "required 748x896; actual missing"
+    },
+    {
+      "name": "art library.png",
+      "status": "BLOCKED",
+      "detail": "required 600x900; actual missing"
+    },
+    {
+      "name": "art hero.png",
+      "status": "BLOCKED",
+      "detail": "required 3840x1240; actual missing"
+    }
+  ]
+}

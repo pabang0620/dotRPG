@@ -60,7 +60,13 @@ namespace DotRPG
             int slot = r.ReadByte();
             var run = Game.Dungeon != null ? Game.Dungeon.Run : null;
             var body = OwnsSlot(peer, slot) ? MemberAt(slot) : null;
-            if (run == null || run.State != DungeonRunState.Playing || body == null || !body.IsDead) return;
+            if (run == null)
+            {
+                // Field hunting: the member paid its coin on its own PC; no run counts to check.
+                if (body != null && body.IsDead) Game.Party?.ReviveMember(body, 1f, DungeonDirector.ReviveInvulnerable);
+                return;
+            }
+            if (run.State != DungeonRunState.Playing || body == null || !body.IsDead) return;
             var s = Stats(slot);
             if (s.revives >= run.Numbers.revives || run.PartyRevivesLeft <= 0) { HostSendReviveState(slot); return; }
             s.revives++;

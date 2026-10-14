@@ -825,7 +825,7 @@
  "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)": "Ein Splitter des Siegels, das ein Mittel-Raid-Boss bewachte. Sammle sie, um den letzten Raid des Kapitels zu öffnen. (Wird beim Abschluss des letzten Raids verbraucht)",
  "중력 균열": "Gravitationsriss",
  "중첩당 공격 속도 +{0}% (최대 5, 4초)": "Angriffstempo +{0}% pro Stapel (max. 5, 4s)",
- "지금 출현 중 (15분마다)": "Gerade erschienen (alle 15 Min.)",
+ "지금 출현 중 (30분마다)": "Gerade erschienen (alle 30 Min.)",
  "지능": "Intelligenz",
  "지상 제4마을 · 북쪽 단상: 성소 사냥터 · 뿌리샘 길: 중앙 마을\n물·절벽은 통행 불가 · 남쪽 귀환 표식: 해빙된 성소 입구": "Oberfläche, Dorf 4 · Nördliches Podest: Heiligtums-Jagdgebiet · Wurzelquellweg: Zentraldorf\nWasser und Klippen sind unpassierbar · Südliche Rückkehrmarkierung: Aufgetauter Heiligtumseingang",
  "지상 중앙 마을 · 네 마을을 잇는 뿌리길\n중앙 계단: Lv.40+ 지하세계 B1 · 몬스터 Lv.42부터": "Zentrales Oberflächendorf · Der Wurzelpfad, der vier Dörfer verbindet\nZentrale Treppe: Lv.40+ Unterwelt B1 · Monster ab Lv.42",
@@ -1510,6 +1510,8 @@
  "완료": "Abgeschlossen",
  "{0}이(가) 잠시 파티에서 빠졌습니다.": "{0} hat die Gruppe vorübergehend verlassen.",
  "기사단원": "Ordensritter",
+ "1장은 자동으로 진행됩니다. 아무 키나 누르면 직접 조작하고, 손을 떼면 다시 이어집니다.": "Kapitel 1 läuft automatisch. Drücke eine beliebige Taste, um selbst zu steuern; lässt du los, geht es weiter.",
+ "직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.": "Du steuerst selbst. Lass die Tasten los, dann läuft Kapitel 1 automatisch weiter.",
  "모래빛 여행복": "Sandfarbene Reisekleidung",
  "숲지기 옷": "Waldhüter-Kleidung",
  "적갈 견습복": "Rotbraune Lehrlingskleidung",
@@ -1535,5 +1537,9 @@
  "에메랄드빛 로브와 모자. 주위에 초록 빛망울이 맴돈다.": "Smaragdgrüne Robe und Hut. Grüne Lichtkugeln kreisen umher.",
  "노을빛 로브와 모자. 주위에 주황 빛망울이 맴돈다.": "Abendrote Robe und Hut. Orange Lichtkugeln kreisen umher.",
  "<color=#b8c4d8>8방향 모든 동작 전용 그림</color>": "<color=#b8c4d8>Eigene Grafik für jede Bewegung in 8 Richtungen</color>",
- "희귀 오라·내 직업 희귀 스킨": "Seltene Aura · seltener Skin meiner Klasse"
+ "희귀 오라·내 직업 희귀 스킨": "Seltene Aura · seltener Skin meiner Klasse",
+ "진행할 서브퀘스트가 없습니다.": "Keine Nebenquests zum Erledigen.",
+ "서브퀘스트 자동진행: 서브퀘스트 {0}개를 모두 받아서 진행합니다. 아무 키나 누르면 멈춥니다.": "Nebenquest-Autofortschritt: Alle {0} Nebenquests werden angenommen und erledigt. Beliebige Taste zum Stoppen.",
+ "서브퀘스트를 모두 마쳤습니다.": "Alle Nebenquests sind erledigt.",
+ "서브퀘스트 자동진행": "Nebenquests auto"
 }

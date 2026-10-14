@@ -825,7 +825,7 @@
  "중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)": "Pecahan segel yang dijaga bos raid menengah. Kumpulkan untuk membuka raid terakhir bab ini. (Habis terpakai saat raid terakhir diselesaikan)",
  "중력 균열": "Retakan Gravitasi",
  "중첩당 공격 속도 +{0}% (최대 5, 4초)": "Kecepatan serangan +{0}% per tumpukan (maks 5, 4s)",
- "지금 출현 중 (15분마다)": "Sedang muncul (setiap 15 mnt)",
+ "지금 출현 중 (30분마다)": "Sedang muncul (setiap 30 mnt)",
  "지능": "Intelek",
  "지상 제4마을 · 북쪽 단상: 성소 사냥터 · 뿌리샘 길: 중앙 마을\n물·절벽은 통행 불가 · 남쪽 귀환 표식: 해빙된 성소 입구": "Desa Permukaan 4 · Panggung utara: Area Berburu Tempat Suci · Jalan Mata Air Akar: desa pusat\nAir dan tebing tidak bisa dilewati · Penanda kembali selatan: Pintu Masuk Tempat Suci Mencair",
  "지상 중앙 마을 · 네 마을을 잇는 뿌리길\n중앙 계단: Lv.40+ 지하세계 B1 · 몬스터 Lv.42부터": "Desa pusat permukaan · Jalan akar yang menghubungkan empat desa\nTangga pusat: Dunia Bawah B1 Lv.40+ · Monster mulai Lv.42",
@@ -1510,6 +1510,8 @@
  "완료": "Selesai",
  "{0}이(가) 잠시 파티에서 빠졌습니다.": "{0} sementara keluar dari party.",
  "기사단원": "Anggota Ordo Ksatria",
+ "1장은 자동으로 진행됩니다. 아무 키나 누르면 직접 조작하고, 손을 떼면 다시 이어집니다.": "Bab 1 berjalan otomatis. Tekan tombol apa saja untuk mengambil alih; lepaskan dan akan berlanjut.",
+ "직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.": "Kamu sedang mengendalikan. Lepaskan tombol dan progres otomatis Bab 1 akan berlanjut.",
  "모래빛 여행복": "Pakaian Pengelana Pasir",
  "숲지기 옷": "Pakaian Penjaga Hutan",
  "적갈 견습복": "Pakaian Murid Cokelat Kemerahan",
@@ -1535,5 +1537,9 @@
  "에메랄드빛 로브와 모자. 주위에 초록 빛망울이 맴돈다.": "Jubah dan topi zamrud. Bola cahaya hijau berputar di sekitarnya.",
  "노을빛 로브와 모자. 주위에 주황 빛망울이 맴돈다.": "Jubah dan topi warna senja. Bola cahaya jingga berputar di sekitarnya.",
  "<color=#b8c4d8>8방향 모든 동작 전용 그림</color>": "<color=#b8c4d8>Gambar khusus untuk semua gerakan di 8 arah</color>",
- "희귀 오라·내 직업 희귀 스킨": "Aura langka · skin langka kelasku"
+ "희귀 오라·내 직업 희귀 스킨": "Aura langka · skin langka kelasku",
+ "진행할 서브퀘스트가 없습니다.": "Tidak ada misi sampingan untuk dijalankan.",
+ "서브퀘스트 자동진행: 서브퀘스트 {0}개를 모두 받아서 진행합니다. 아무 키나 누르면 멈춥니다.": "Progres otomatis misi sampingan: mengambil dan menjalankan semua {0} misi sampingan. Tekan tombol apa saja untuk berhenti.",
+ "서브퀘스트를 모두 마쳤습니다.": "Semua misi sampingan selesai.",
+ "서브퀘스트 자동진행": "Misi sampingan otomatis"
 }

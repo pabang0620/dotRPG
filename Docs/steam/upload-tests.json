@@ -1,0 +1,32 @@
+[
+  {
+    "name": "valid dry run",
+    "passed": true,
+    "exit": 0
+  },
+  {
+    "name": "zero app rejected",
+    "passed": true,
+    "exit": 1
+  },
+  {
+    "name": "480 rejected",
+    "passed": true,
+    "exit": 1
+  },
+  {
+    "name": "default branch rejected",
+    "passed": true,
+    "exit": 1
+  },
+  {
+    "name": "test App ID file rejected",
+    "passed": true,
+    "exit": 1
+  },
+  {
+    "name": "changed executable rejected",
+    "passed": true,
+    "exit": 1
+  }
+]

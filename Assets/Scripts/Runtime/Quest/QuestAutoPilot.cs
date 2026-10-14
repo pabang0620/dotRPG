@@ -37,6 +37,8 @@ namespace DotRPG
         public static bool Hunting => Active && Instance.huntMode;
         bool huntMode, huntForQuest;
         string huntTarget = "*";
+        /// <summary>The hunting ground 자동 사냥 belongs to: a knockback through a portal walks it back there.</summary>
+        string huntMap;
 
         static bool InHuntingGround => MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
         /// <summary>[MEASURE] Dev-only (-dotrpgMeasure): 자동 사냥 also fights in dungeons and raids, to time them.</summary>
@@ -55,7 +57,8 @@ namespace DotRPG
             if (!InHuntingGround) { GameEvents.RaiseToast(L.T("자동 사냥은 사냥터에서만 켤 수 있습니다. (던전·요일던전·레이드는 직접 플레이)")); Game.Audio.PlaySfx("cancel"); return; }
             if (Active) Stop("");
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
-            Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*";
+            Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*"; Instance.huntMap = Game.World != null ? Game.World.MapId : null;
+            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false;
             GuideFlags.Mark(GuideFlags.AutoHunt); // [GUIDE]
             Instance.Begin();
         }
@@ -72,7 +75,8 @@ namespace DotRPG
                     || mine.useHealing || mine.useMana || mine.townScroll;
                 if (touched)
                 {
-                    Stop(L.T("직접 조작으로 자동 진행을 멈췄습니다."));
+                    NotePlayerTookOver();
+                    Stop(Instance != null && Instance.autoStarted ? L.T("직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.") : L.T("직접 조작으로 자동 진행을 멈췄습니다."));
                     return mine;
                 }
                 var cmd = next;
@@ -99,6 +103,8 @@ namespace DotRPG
             if (Active) { Stop(Hunting ? L.T("자동 사냥을 멈췄습니다.") : L.T("자동 진행을 멈췄습니다.")); return; }
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
             Instance.huntMode = false;
+            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false;
+            if (MainStoryDone && !StartSubQuests()) return; // [AUTO] 서브퀘스트 자동진행
             GuideFlags.Mark(GuideFlags.AutoQuest); // [GUIDE]
             Instance.Begin();
         }
@@ -108,7 +114,10 @@ namespace DotRPG
             if (Instance == null || !Instance.on) return;
             Instance.on = false;
             Instance.huntMode = false;
+            if (Instance.subMode) { Instance.subMode = false; Targets.Clear(); }
             Instance.status = "";
+            Instance.lastStopAt = Time.unscaledTime;
+            Instance.stopKey = InChapterOne() && Game.Session != null ? ChapterOneProgressKey() : null;
             Instance.Release();
             if (!string.IsNullOrEmpty(why)) GameEvents.RaiseToast(why);
         }
@@ -126,6 +135,9 @@ namespace DotRPG
             if (huntMode) { GameEvents.RaiseToast(L.T("자동 사냥을 시작합니다. 아무 키나 누르면 멈춥니다.")); return; }
             followTargets = Targets.Count > 0;
             chapter = Game.Quest?.CurrentMain()?.chapter ?? 0;
+            bool quiet = quietStart;
+            quietStart = false;
+            if (quiet) return;
             GameEvents.RaiseToast(followTargets ? L.F("체크한 퀘스트 {0}개를 자동 진행합니다. 아무 키나 누르면 멈춥니다.", Targets.Count)
                 : chapter > 0 ? L.F("{0}장 퀘스트를 끝까지 자동 진행합니다. 아무 키나 누르면 멈춥니다.", chapter)
                 : L.T("퀘스트 자동 진행을 시작합니다. 퀘스트 창에서 진행할 퀘스트를 체크할 수 있습니다."));
@@ -164,6 +176,7 @@ namespace DotRPG
         {
             if (!on || (huntMode && !huntForQuest)) return;
             var q = Game.Quest;
+            if (subMode) { SubQuestCompleted(); return; }
             if (followTargets)
             {
                 if (!Targets.Exists(t => q.StatusOf(t) != QuestStatus.Completed)) Stop(L.T("체크한 퀘스트를 모두 마쳤습니다."));
@@ -200,7 +213,18 @@ namespace DotRPG
             // [AUTO] 자동 사냥: stays in this hunting ground; a quest hunt hands back to the story once its step is done.
             if (huntMode)
             {
-                if (!InHuntingGround) { Stop(L.T("사냥터를 벗어나 자동 사냥을 멈췄습니다.")); return; }
+                // Pushed out of the hunting ground (a monster's knockback through a portal): a quest hunt hands back to the
+                // story, which walks to the quest's map again; plain 자동 사냥 walks back to its own hunting ground.
+                string hereMap = Game.World.MapId;
+                if (!InHuntingGround || (!MeasureAnywhere && !string.IsNullOrEmpty(huntMap) && hereMap != huntMap))
+                {
+                    if (huntForQuest) { huntMode = false; return; }
+                    string back = string.IsNullOrEmpty(huntMap) || huntMap == hereMap ? null : NextMapTowards(hereMap, huntMap);
+                    if (back == null || !Game.World.PortalTowards(back, out var way)) { Stop(L.T("사냥터를 벗어나 자동 사냥을 멈췄습니다.")); return; }
+                    status = L.F("{0}(으)로 돌아가는 중", MapName(huntMap));
+                    WalkTo(p, way, 0f);
+                    return;
+                }
                 if (huntForQuest)
                 {
                     var q = Resolve();
@@ -243,7 +267,7 @@ namespace DotRPG
                 case GoalKind.Site: DoSite(p, goal); break;
                 case GoalKind.Hunt:
                     // [AUTO] At the hunting ground: the fighting is done by 자동 사냥 (fields only).
-                    if (InHuntingGround) { huntMode = true; huntForQuest = true; huntTarget = goal.id; GameEvents.RaiseToast(L.T("사냥터에 도착해 자동 사냥을 켰습니다.")); }
+                    if (InHuntingGround) { huntMode = true; huntForQuest = true; huntTarget = goal.id; huntMap = here; GameEvents.RaiseToast(L.T("사냥터에 도착해 자동 사냥을 켰습니다.")); }
                     else DoHunt(p, goal);
                     break;
                 case GoalKind.DungeonGuide: DoDungeonGuide(p, goal); break;
@@ -267,6 +291,17 @@ namespace DotRPG
         public static void ToggleTarget(string questId)
         {
             if (!Targets.Remove(questId)) Targets.Add(questId);
+        }
+
+        /// <summary>[MAP] Where the quests send the player next (the same pick as auto-progress), for the map markers.</summary>
+        public bool PeekGoal(out string kind, out string id, out string map, out string label)
+        {
+            var g = Resolve();
+            kind = g.kind.ToString();
+            id = g.id ?? "";
+            map = g.map ?? "";
+            label = g.label ?? "";
+            return g.kind != GoalKind.None && g.kind != GoalKind.Wait;
         }
 
         Goal Resolve()

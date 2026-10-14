@@ -1682,5 +1682,21 @@
  "운영에서는 난수를 바꿀 수 없습니다": "O RNG não pode ser alterado em produção",
  "semver 형식이 아닙니다": "Não é uma string semver",
  "확률표 지문": "Impressão digital da tabela de chances",
- "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Registro de publicação das tabelas de chances (0040, não vinculado a contas). Termos de Uso art. 14-2, §3"
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Registro de publicação das tabelas de chances (0040, não vinculado a contas). Termos de Uso art. 14-2, §3",
+ "제안한 내용이 달라져 교환이 취소되었습니다.": "A troca foi cancelada porque a oferta mudou.",
+ "거래 상대를 찾을 수 없습니다.": "O parceiro de troca não foi encontrado.",
+ "같은 아이템을 두 번 올릴 수 없습니다.": "Você não pode oferecer o mesmo item duas vezes.",
+ "교환 내용이 바뀌었습니다. 다시 확인하세요.": "A troca mudou. Confira de novo.",
+ "교환 시간이 지났습니다.": "O tempo da troca acabou.",
+ "교환을 찾을 수 없습니다.": "A troca não foi encontrada.",
+ "교환할 골드나 아이템을 올려 주세요.": "Ofereça ouro ou itens para trocar.",
+ "귀속된 아이템은 교환할 수 없습니다.": "Itens vinculados não podem ser trocados.",
+ "상대가 다른 교환 중입니다.": "Esse jogador está em outra troca.",
+ "상대가 아직 수락하지 않았습니다.": "O outro jogador ainda não aceitou.",
+ "아이템을 찾을 수 없습니다.": "O item não foi encontrado.",
+ "양쪽이 잠근 뒤에 확정할 수 있습니다.": "Você só pode confirmar depois que os dois lados travarem.",
+ "요청을 받은 사람만 할 수 있습니다.": "Só o jogador que recebeu o pedido pode fazer isso.",
+ "이미 끝난 교환입니다.": "Esta troca já terminou.",
+ "이미 진행 중인 교환이 있습니다.": "Você já tem uma troca em andamento.",
+ "받았습니다: {0}": "Recebido: {0}"
 }
