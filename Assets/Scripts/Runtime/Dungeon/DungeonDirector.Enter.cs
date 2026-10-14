@@ -23,7 +23,7 @@ namespace DotRPG
                 enteringOnline = false;
                 if (serverRun == null) { Game.Audio.PlaySfx("cancel"); return; }
                 var now = ResetClock.Now;
-                if (!dungeon.isRaid) Progress.UseEntry(now); // the local counter follows the server's
+                if (DungeonDatabase.CountsEntry(dungeon)) Progress.UseEntry(now); // the local counter follows the server's
                 if (retry) EndRunState();
                 else SaveBeforeEntering();
                 StartRun(dungeon, difficulty, now);
@@ -85,7 +85,7 @@ namespace DotRPG
             if (run != null && !run.IsOver) return;
             if (run != null) EndRunState();
             var now = ResetClock.Now;
-            if (!dungeon.isRaid) Progress.UseEntry(now);
+            if (DungeonDatabase.CountsEntry(dungeon)) Progress.UseEntry(now);
             SaveBeforeEntering();
             StartRun(dungeon, difficulty, now);
         }
@@ -97,21 +97,21 @@ namespace DotRPG
             var dungeon = run.Dungeon;
             var difficulty = run.Difficulty;
             var now = ResetClock.Now;
-            if (!dungeon.isRaid && Progress.EntriesLeft(now) <= 0)
+            if (DungeonDatabase.CountsEntry(dungeon) && Progress.EntriesLeft(now) <= 0)
             {
                 GameEvents.RaiseToast(L.T("오늘 입장 횟수를 모두 사용했습니다."));
                 Game.Audio.PlaySfx("cancel");
                 return false;
             }
             if (OnlineEconomy.On) return EnterOnline(dungeon, difficulty, true);
-            if (!dungeon.isRaid) Progress.UseEntry(now);
+            if (DungeonDatabase.CountsEntry(dungeon)) Progress.UseEntry(now);
             EndRunState();
             StartRun(dungeon, difficulty, now);
             return true;
         }
 
         /// <summary>True when the result screen may offer 다시 도전.</summary>
-        public bool CanRetry => run != null && run.IsOver && !PartyNet.Active && !PartyRunSession.Active && (run.Dungeon.isRaid || Progress.EntriesLeft(ResetClock.Now) > 0);
+        public bool CanRetry => run != null && run.IsOver && !PartyNet.Active && !PartyRunSession.Active && (!DungeonDatabase.CountsEntry(run.Dungeon) || Progress.EntriesLeft(ResetClock.Now) > 0);
 
         void SaveBeforeEntering()
         {

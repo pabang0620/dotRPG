@@ -88,12 +88,8 @@ export async function checkEntry(
     if (difficulty !== 0 && (difficulty !== RAID_HEROIC || !(await heroicUnlocked(db, c.id, d)))) {
       throw new AppError(422, '아직 입장할 수 없는 난이도입니다.', 'DIFFICULTY_LOCKED');
     }
-  } else if (difficulty > 0) {
-    const clears = await repo.clearSummary(db, c.id);
-    if (!clears.some((r) => r.dungeon_id === d.id && r.difficulty === difficulty - 1)) {
-      throw new AppError(422, '아직 입장할 수 없는 난이도입니다.', 'DIFFICULTY_LOCKED');
-    }
   }
+  // 요일·일반 던전은 앞 난이도 클리어 없이 모든 난이도를 연다(2026-10-14 사용자 결정). 레벨 조건은 아래에서 그대로 본다
   const diff = diffOf(eco, d, difficulty);
   if (!diff) throw new AppError(422, '알 수 없는 난이도입니다.', 'DUNGEON_UNKNOWN');
   // 레이드는 권장 레벨이 곧 입장 레벨이다(해골왕 20, 골렘 30, 최종 레이드 40). 요일던전만 여유를 준다
@@ -103,12 +99,14 @@ export async function checkEntry(
   const resetDay = new Date(resetBoundaries(now).dailyStartAt);
   const limit = eco.dungeons.dailyEntries;
   let used = 0;
-  if (!d.isRaid) {
+  // 일반 던전(always)은 하루 입장 횟수를 쓰지 않는다
+  const counts = !d.isRaid && !d.always;
+  if (counts) {
     used = await repo.countEntries(db, c.id, resetDay);
     if (used >= limit) throw new AppError(422, '오늘 입장 횟수를 모두 사용했습니다.', 'NO_ENTRIES_LEFT');
   }
   // 최종 레이드 열쇠가 모자라도 입장은 된다. 보상 없는 연습판(KEYS_MISSING)이 되어 혼자서도 스토리를 끝낼 수 있다
-  return { dungeon: d, diff, resetDay, countsEntry: !d.isRaid, used, limit };
+  return { dungeon: d, diff, resetDay, countsEntry: counts, used, limit };
 }
 
 /** 레이드 보상 잠금(입장 시점): 이미 받았거나 사람이 모자라면 연습 입장 */

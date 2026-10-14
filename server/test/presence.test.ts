@@ -7,7 +7,7 @@ import { sendPresence } from '../src/domains/antiabuse/presenceService';
 import { hmacDevice } from '../src/domains/antiabuse/deviceRecords';
 import { sweepPresence } from '../src/domains/antiabuse/presenceService';
 import { advance, HOUR, MIN, resetClock, setNowAt } from './auctionHelpers';
-import { anomalyKinds, post, type Hero } from './economyHelpers';
+import { anomalyKinds, get, post, type Hero } from './economyHelpers';
 import { auth, buildApp, createChar, randomLoginId, randomName, resetDb, shutdown, ver, type Session } from './helpers';
 
 interface Player {
@@ -269,6 +269,26 @@ describe('처치 보고의 프레즌스 확인 (4.5)', () => {
     advance(2_000);
     await beat(strict, p, { map_id: 'forest_depths' });
     expect((await kill(strict, p, 'forest_depths', 'fboss_forest')).status).toBe(200);
+  });
+
+  it('필드 보스: 처치 후 30분(서버 시각) 안의 재처치는 거절, 지나면 인정, 다음 출현 시각을 알려 준다', async () => {
+    const p = await player(app, device());
+    await beat(app, p, { map_id: 'forest_depths' });
+    advance(40_000);
+    await beat(app, p, { map_id: 'forest_depths' });
+    expect((await kill(app, p, 'forest_depths', 'fboss_forest')).status).toBe(200);
+    const st = await get(app, hero(p), '/field-bosses');
+    expect(st.status).toBe(200);
+    const row = st.body.data.bosses.find((b: { map_id: string }) => b.map_id === 'forest_depths');
+    expect(row.interval_seconds).toBe(1800);
+    expect(new Date(row.next_at).getTime() - new Date(row.last_killed_at).getTime()).toBe(1800_000);
+    // 시계 창(:30 경계)을 넘어도 30분이 안 지났으면 거절
+    advance(29 * MIN);
+    await beat(app, p, { map_id: 'forest_depths' });
+    expect((await kill(app, p, 'forest_depths', 'fboss_forest')).status).toBe(422);
+    advance(MIN + 1_000);
+    await beat(app, p, { map_id: 'forest_depths' });
+    expect((await kill(app, p, 'forest_depths', 'fboss_forest')).status).toBe(200);
   });
 
   it('log 모드(기본)는 어느 경우에도 거절하지 않고 기록만 한다', async () => {

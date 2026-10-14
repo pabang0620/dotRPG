@@ -30,6 +30,8 @@ namespace DotRPG
         LuckBox,
         /// <summary>[CASH] 봉인된 상자 kept in the bag (pass rewards): opened by the server with the shop table.</summary>
         SealedBox,
+        /// <summary>[DUNGEON 2026-10-14] 요일 던전 초기화권: today's weekday dungeon entries back to the full count (the server records it).</summary>
+        DungeonReset,
     }
 
     /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
@@ -54,6 +56,8 @@ namespace DotRPG
         public const string TownScroll = "scroll_town";
         public const string ProtectTicket = "ticket_protect";
         // [CASH] Docs/PLAN_CASH_BOX_PASS.md
+        /// <summary>[DUNGEON 2026-10-14] 요일 던전 초기화권 (account-bound, from mail or events).</summary>
+        public const string DungeonResetTicket = "ticket_dungeon_reset";
         public const string HpPotionHi = "potion_hp_hi", MpPotionHi = "potion_mp_hi", PowerScroll = "scroll_power", SealedBox = "box_sealed";
         public static string EnhanceTicket(int level) => "ticket_enh" + level;
         public static string LuckBox(int level, int chance) => $"box_enh{level}_{chance}";
@@ -85,13 +89,15 @@ namespace DotRPG
                 description = L.T("던전 클리어권과 같지만 받은 날부터 14일 안에 써야 한다. 기한이 가까운 것부터 먼저 쓰인다. (계정 공용)") },
             // [CASH] Sealed box rewards and their luck boxes (Docs/PLAN_CASH_BOX_PASS.md).
             new ConsumableItem { id = HpPotionHi, name = L.T("상급 체력 물약"), iconKey = "icon_potion_hp_hi", kind = ConsumableKind.HealHp, power = 70, grade = ItemRarity.Rare,
-                description = L.T("진하게 달인 물약. 마시면 최대 HP의 70%를 회복한다. 물약 단축키는 이것부터 쓴다.") },
+                description = L.T("진하게 달인 물약. 마시면 최대 HP의 70%를 회복한다. 물약 단축키는 일반 물약을 다 쓴 뒤에 이것을 쓴다.") },
             new ConsumableItem { id = MpPotionHi, name = L.T("상급 마나 물약"), iconKey = "icon_potion_mp_hi", kind = ConsumableKind.HealMp, power = 70, grade = ItemRarity.Rare,
-                description = L.T("진하게 달인 마나 물약. 마시면 최대 MP의 70%를 회복한다. 마나 단축키는 이것부터 쓴다.") },
+                description = L.T("진하게 달인 마나 물약. 마시면 최대 MP의 70%를 회복한다. 마나 단축키는 일반 마나 물약을 다 쓴 뒤에 이것을 쓴다.") },
             new ConsumableItem { id = PowerScroll, name = L.T("투지의 주문서"), iconKey = "icon_scroll_power", kind = ConsumableKind.Buff, power = 15, minutes = 30, grade = ItemRarity.Epic,
                 description = L.T("펼치면 30분 동안 공격 피해가 15% 늘어난다. 다시 쓰면 남은 시간이 30분으로 갱신된다.") },
             Ticket(10, ItemRarity.Epic), Ticket(12, ItemRarity.Unique), Ticket(13, ItemRarity.Legendary), Ticket(15, ItemRarity.Legendary),
             Luck(10, 30, ItemRarity.Rare), Luck(12, 10, ItemRarity.Epic), Luck(12, 50, ItemRarity.Unique), Luck(15, 50, ItemRarity.Legendary),
+            new ConsumableItem { id = DungeonResetTicket, name = L.T("요일 던전 초기화권"), iconKey = "icon_ticket", kind = ConsumableKind.DungeonReset, grade = ItemRarity.Epic,
+                description = L.T("쓰면 오늘 요일 던전 입장 횟수가 처음(3회)으로 돌아간다. 입장 횟수를 하나도 쓰지 않았으면 쓸 수 없다. (계정 공용)") },
             new ConsumableItem { id = SealedBox, name = L.T("봉인된 상자"), iconKey = "icon_box_sealed", kind = ConsumableKind.SealedBox, grade = ItemRarity.Epic,
                 description = L.T("캐시샵의 봉인된 상자와 같은 상자. 열면 확률표에 따라 보상 하나가 나온다. 봉인 해제 게이지도 함께 찬다.") },
         };
@@ -112,7 +118,7 @@ namespace DotRPG
         /// <summary>[CASH] The sealed-box family: high potions, the buff scroll, enhancement tickets and boxes.</summary>
         public static IEnumerable<ConsumableItem> Cash
         {
-            get { foreach (var i in Items) if (i.kind == ConsumableKind.Buff || i.kind == ConsumableKind.EnhanceTicket || i.kind == ConsumableKind.LuckBox || i.kind == ConsumableKind.SealedBox || i.id == HpPotionHi || i.id == MpPotionHi) yield return i; }
+            get { foreach (var i in Items) if (i.kind == ConsumableKind.Buff || i.kind == ConsumableKind.EnhanceTicket || i.kind == ConsumableKind.LuckBox || i.kind == ConsumableKind.SealedBox || i.kind == ConsumableKind.DungeonReset || i.id == HpPotionHi || i.id == MpPotionHi) yield return i; }
         }
 
         /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>

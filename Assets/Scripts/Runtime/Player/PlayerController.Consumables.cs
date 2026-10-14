@@ -106,6 +106,23 @@ namespace DotRPG
                 case ConsumableKind.SealedBox:
                     CashClient.OpenItem(id); // [CASH] the server opens boxes
                     return false;
+                case ConsumableKind.DungeonReset:
+                {
+                    // [DUNGEON] 요일 던전 초기화권: only when an entry was used today (the server checks the same).
+                    var progress = Game.Session.Dungeons;
+                    if (progress.EntriesUsed(ResetClock.Now) <= 0)
+                    {
+                        GameEvents.RaiseToast(L.T("오늘 요일 던전 입장 횟수가 그대로 남아 있습니다."));
+                        Game.Audio.PlaySfx("cancel");
+                        return false;
+                    }
+                    bag.Remove(id, 1);
+                    if (OnlineEconomy.On) OnlineEconomy.UseItem(id);
+                    progress.ResetEntries(ResetClock.Now);
+                    Game.Audio.PlaySfx("confirm");
+                    GameEvents.RaiseToast(L.F("{0}: 오늘 요일 던전 입장 횟수가 {1}회로 돌아왔습니다.", L.T(item.name), DungeonDatabase.DailyEntries));
+                    return true;
+                }
             }
             return false;
         }

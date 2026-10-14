@@ -312,6 +312,18 @@ const dungeonsSchema = z.looseObject({
       xpMul: z.number().positive(),
       bossRoom: nonNegInt,
       openDays: z.array(z.string()),
+      // 일반 던전(2026-10-14): 매일 개방, 하루 입장 횟수에 들어가지 않는다
+      always: z.boolean().default(false),
+      // 클리어 확정 보상(레이드 제외): 재료 1장 + 골드 1장, 이어서 운 카드(rewards 표)
+      sure: z
+        .looseObject({
+          material: z.string().min(1),
+          materialMin: z.number().int().positive(),
+          materialMax: z.number().int().positive(),
+          goldMin: z.number().int().positive(),
+          goldMax: z.number().int().positive(),
+        })
+        .optional(),
       referenceSeconds: z.array(z.number().positive()).length(4),
       rewards: z.array(
         z.looseObject({ itemId: z.string().min(1), min: z.number().int().positive(), max: z.number().int().positive(), weight: nonNegInt }),

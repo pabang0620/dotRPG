@@ -59,7 +59,7 @@ namespace DotRPG
         void OpenSweep()
         {
             var def = Selected;
-            if (def == null || def.isRaid) return;
+            if (def == null || def.isRaid || def.always) return;
             if (!OnlineSession.Playing) { GameEvents.RaiseToast(L.T("던전 소탕은 온라인 캐릭터로 접속했을 때 쓸 수 있습니다.")); return; }
             if (!sweepHooked) { SweepClient.Changed += () => { if (this != null && SweepOpen) RefreshSweep(); }; sweepHooked = true; }
             sweepResult.text = "";
@@ -81,7 +81,7 @@ namespace DotRPG
         {
             if (sweepButton == null) return;
             var def = Selected;
-            bool daily = def != null && !def.isRaid;
+            bool daily = def != null && !def.isRaid && !def.always; // 일반 던전 has no entry count, so no sweep
             sweepButton.gameObject.SetActive(daily && OnlineSession.Playing);
             TextOf(sweepButton).text = L.F("소탕 <size=18><color=#b8c4d8>[{0}]</color></size>", Game.Input.GetBindingLabel(GameAction.UseItem));
             if (!SweepOpen) return;

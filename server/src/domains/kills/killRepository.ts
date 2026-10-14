@@ -145,3 +145,21 @@ export async function fieldRefExists(db: Queryable, sessionId: number, character
   const r = await db.query('SELECT 1 FROM kill_log WHERE field_session_id = $1 AND character_id = $2 AND monster_ref = $3', [sessionId, characterId, monsterRef]);
   return r.rows.length > 0;
 }
+
+/** 필드 보스 맵별 이 캐릭터의 마지막 처치 시각(없으면 행 없음) */
+export async function lastFieldBossKills(
+  db: Queryable,
+  characterId: number,
+  pairs: { mapId: string; monsterId: string }[],
+): Promise<Map<string, Date>> {
+  const out = new Map<string, Date>();
+  if (pairs.length === 0) return out;
+  const r = await db.query<{ map_id: string; last_at: Date }>(
+    `SELECT map_id, max(created_at) AS last_at FROM kill_log
+      WHERE character_id = $1 AND context = 'field' AND (map_id, monster_id) IN (SELECT * FROM unnest($2::text[], $3::text[]))
+      GROUP BY map_id`,
+    [characterId, pairs.map((p) => p.mapId), pairs.map((p) => p.monsterId)],
+  );
+  for (const row of r.rows) out.set(row.map_id, row.last_at);
+  return out;
+}

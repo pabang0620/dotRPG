@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace DotRPG
@@ -23,7 +24,7 @@ namespace DotRPG
         public static List<string> Validate()
         {
             errors = new List<string>();
-            var all = new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
+            var all = new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
             foreach (var d in all)
                 for (int r = 0; r < d.RoomCount; r++)
                 {

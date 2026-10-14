@@ -104,6 +104,9 @@ namespace DotRPG
         void OnReadyChanged(bool ready)
         {
             if (!ready) return;
+            // (Re)connected: the server sends everyone's presence again; re-read the party too so its online/map
+            // view does not wait for the next poll (it was stale after a reconnect or a character switch).
+            PartyClient.Instance?.PollNow();
             // Lines sent just before a drop: same cid again (the server answers a replay, never twice).
             foreach (var p in pending.Values.ToList())
                 if (clock - p.at < 30f) socket.Send("chat.send", p.frame);
@@ -225,6 +228,15 @@ namespace DotRPG
                 f = new ChatFriend { name = MiniJson.Str(c, "name", "") };
                 friends.Add(f);
                 friendIds[f.name] = fid;
+            }
+            // The friendship id is the key; the shown character follows the friend (they may log in with another one),
+            // so the name in the list, the party frames and the minimap all name the same character.
+            string shown = c != null ? MiniJson.Str(c, "name", "") : "";
+            if (shown.Length > 0 && shown != f.name)
+            {
+                friendIds.Remove(f.name);
+                f.name = shown;
+                friendIds[shown] = fid;
             }
             f.online = p.TryGetValue("online", out var on) && on is bool b && b;
             f.where = Where(MiniJson.Obj(p, "where"));

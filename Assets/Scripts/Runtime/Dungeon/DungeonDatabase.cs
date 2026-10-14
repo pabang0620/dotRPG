@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace DotRPG
@@ -83,6 +84,22 @@ namespace DotRPG
         }
     }
 
+    /// <summary>[REWARD 2026-10-14] The sure part of a dungeon clear: a material (min..max) and gold (min..max), times the difficulty reward multiplier.</summary>
+    public sealed class SureReward
+    {
+        public string material;
+        public int materialMin, materialMax, goldMin, goldMax;
+
+        public SureReward(string material, int materialMin, int materialMax, int goldMin, int goldMax)
+        {
+            this.material = material;
+            this.materialMin = materialMin;
+            this.materialMax = materialMax;
+            this.goldMin = goldMin;
+            this.goldMax = goldMax;
+        }
+    }
+
     /// <summary>[RAID] Chapter raids: a mid raid (주 3회, 수·토·일) and a final raid (일요일, needs seal key fragments).</summary>
     public enum RaidTier
     {
@@ -127,6 +144,13 @@ namespace DotRPG
         public DifficultyDef raidNumbers;
         /// <summary>[RAID] Sure gold, own material and the 4 cards that are all taken (null = the old 4-cards-pick-one table in <see cref="rewards"/>).</summary>
         public RaidRewardDef raidReward;
+        /// <summary>[NORMAL 2026-10-14] 일반 던전: open every day, no daily entry count (the weekday dungeons keep theirs).</summary>
+        public bool always;
+        /// <summary>
+        /// [REWARD 2026-10-14] Clear reward of a dungeon (not raids): a sure material card and a sure gold card, then
+        /// <see cref="DungeonDatabase.LuckCards"/> luck cards from <see cref="rewards"/> (gear, more materials, jackpot); all are taken.
+        /// </summary>
+        public SureReward sure;
 
         public int RoomCount => rooms.Length;
     }
@@ -141,6 +165,10 @@ namespace DotRPG
         public const string GearReward = "gear";
         /// <summary>Weekday dungeon entries per day (shared by all of them).</summary>
         public const int DailyEntries = 3;
+        /// <summary>[REWARD 2026-10-14] Luck cards rolled from a dungeon's reward table after the sure material and gold cards.</summary>
+        public const int LuckCards = 2;
+        /// <summary>True when entering uses one of today's weekday dungeon entries (not raids, not 일반 던전).</summary>
+        public static bool CountsEntry(DungeonDef d) => d != null && !d.isRaid && !d.always;
         /// <summary>Raid revives (shared by the party).</summary>
         public const int RaidRevives = 3;
         /// <summary>
@@ -152,7 +180,7 @@ namespace DotRPG
         public static readonly float[] PartyHpScale = { 1.0f, 1.6f, 2.1f, 2.5f };
         /// <summary>[MEASURE] An AI companion counts as this much of a person in <see cref="PartyHpScale"/> (it deals about
         /// <see cref="MercenaryDatabase.DamageScale"/> of a player's damage; counted whole, raids with AI took 2.3-3.5x longer than solo; measured 2026-10-13: three AI add only ~20% of a player's damage, so 0.1 keeps AI runs at ~0.9x solo time).</summary>
-        public const float AiHpWeight = 0.35f;
+        public const float AiHpWeight = 0.15f; // [BALANCE 2026-10-14] measured AI help is 0.1-0.3 of a person (was 0.35)
         /// <summary>[MEASURE 2026-10-13] Raids: AI add no boss HP. The boss goes for the people (ThreatTable.BossAiShare), so even at 0.1
         /// a party with three AI was as slow as going alone; at 0 it is about 0.9x. Dungeons 0.35 (0.1 made AI runs 0.5x the time, 0.45 about 0.96x).</summary>
         public const float RaidAiHpWeight = 0f;
@@ -279,6 +307,7 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Ore, 1, 2, 10),
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
+                sure = new SureReward(EnhanceRules.Bone, 4, 8, 600, 1000),
                 description = L.T("협곡 아래 황금 광맥에 해골 광부들이 몰려들었다.\n황금 해골은 도망치며 금화를 흩뿌린다."),
                 specialty = L.T("골드"), featureMonster = L.T("황금 해골 (도망치며 골드를 뿌림)"), bossName = L.T("황금 광부장"),
             },
@@ -300,6 +329,7 @@ namespace DotRPG
                     new RewardEntry(ConsumableDatabase.Gold, 150, 300, 19),
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
+                sure = new SureReward(EnhanceRules.Ore, 3, 6, 200, 350),
                 description = L.T("불이 꺼진 제련소에 해골 광부들이 곡괭이를 들고 모여 있다.\n해골 광부는 멀리서 돌진해 온다."),
                 specialty = L.T("강화석"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("광산 해골대장"),
             },
@@ -321,6 +351,7 @@ namespace DotRPG
                     new RewardEntry(ConsumableDatabase.Gold, 150, 300, 22),
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
+                sure = new SureReward(EnhanceRules.Essence, 1, 3, 200, 350),
                 description = L.T("마력이 고인 숲속 묘지. 해골 사령술사가 멀리서 주문을 쏘고\n쓰러진 해골을 다시 일으킨다."),
                 specialty = L.T("마력 정수"), featureMonster = L.T("해골 사령술사 (원거리, 해골 소환)"), bossName = L.T("묘지기 리치"),
             },
@@ -342,6 +373,7 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Ore, 1, 3, 9),
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
+                sure = new SureReward(EnhanceRules.Bone, 5, 10, 250, 450),
                 description = L.T("숲의 수련장에 해골 궁수들이 진을 쳤다.\n클리어 경험치가 크게 늘어나는 수련 던전."),
                 specialty = L.T("경험치"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("해골 사수장"),
             },
@@ -362,8 +394,85 @@ namespace DotRPG
                     new RewardEntry(EnhanceRules.Bone, 4, 8, 20),
                     new RewardEntry(ConsumableDatabase.Gold, 200, 400, 20),
                 },
+                sure = new SureReward(EnhanceRules.Ore, 2, 4, 250, 450),
                 description = L.T("얼어붙은 동굴 깊은 곳, 망자들이 지키는 옛 무기고.\n해골 방패병은 정면 공격을 막아 낸다."),
                 specialty = L.T("장비"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("무기고 수문장"),
+            },
+        };
+
+        static readonly DayOfWeek[] EveryDay =
+            { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday };
+
+        /// <summary>
+        /// [NORMAL 2026-10-14] 일반 던전: open every day without an entry count, the steady growth source next to the
+        /// quests and the hunting grounds (user request). Same rooms and bosses as the weekday dungeons of their theme,
+        /// XP and gear per minute match hunting at the recommended level (HuntingGrounds.DungeonClearFloor without the weekday
+        /// bonus; a luck card is gear about half the time to make up the fewer kills than a field). The four difficulties cover Lv5 to Lv27+.
+        /// </summary>
+        static readonly DungeonDef[] NormalDefs =
+        {
+            new DungeonDef
+            {
+                id = "normal_canyon", name = L.T("해골 광산 소굴"), theme = MapTheme.Canyon, themeName = L.T("협곡 광산"), always = true,
+                openDays = EveryDay,
+                rooms = Chain(
+                    Room(MapRegistry.DgnCanyon1, new SpawnGroup(1, "skel_warrior", 3), new SpawnGroup(2, "skel_miner", 2)),
+                    Room(MapRegistry.DgnCanyon2, new SpawnGroup(1, "skel_miner", 3), new SpawnGroup(2, "skel_warrior", 2, 1)),
+                    Room(MapRegistry.DgnCanyon3, new SpawnGroup(1, "skel_warrior", 3), new SpawnGroup(2, "skel_shield", 1, 1)),
+                    Boss(MapRegistry.DgnCanyonBoss, "boss_mine_captain", "skel_warrior", 2)),
+                bossRoom = 3, referenceSeconds = new[] { 150f, 170f, 190f, 210f }, clearXp = 20,
+                rewards = new[]
+                {
+                    new RewardEntry(ConsumableDatabase.Gold, 150, 300, 40),
+                    new RewardEntry(EnhanceRules.Bone, 3, 6, 30),
+                    new RewardEntry(EnhanceRules.Ore, 1, 3, 20),
+                    new RewardEntry(GearReward, 1, 1, 90),
+                },
+                sure = new SureReward(EnhanceRules.Bone, 3, 6, 150, 300),
+                description = L.T("협곡 광산 깊은 곳에 늘 해골이 들끓는 소굴.\n매일 들어갈 수 있고 입장 횟수 제한이 없다."),
+                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("광산 해골대장"),
+            },
+            new DungeonDef
+            {
+                id = "normal_forest", name = L.T("안개 낀 묘지"), theme = MapTheme.Forest, themeName = L.T("숲 묘지"), always = true,
+                openDays = EveryDay,
+                rooms = Chain(
+                    Room(MapRegistry.DgnForest1, new SpawnGroup(1, "skel_warrior", 3), new SpawnGroup(2, "skel_archer", 2)),
+                    Room(MapRegistry.DgnForest2, new SpawnGroup(1, "skel_archer", 2, 1), new SpawnGroup(2, "skel_warrior", 3)),
+                    Room(MapRegistry.DgnForest3, new SpawnGroup(1, "skel_necro", 2, 1), new SpawnGroup(2, "skel_warrior", 2)),
+                    Boss(MapRegistry.DgnForestBoss, "boss_lich", "skel_warrior", 2)),
+                bossRoom = 3, referenceSeconds = new[] { 160f, 180f, 200f, 220f }, clearXp = 20,
+                rewards = new[]
+                {
+                    new RewardEntry(ConsumableDatabase.Gold, 150, 300, 40),
+                    new RewardEntry(EnhanceRules.Essence, 1, 2, 25),
+                    new RewardEntry(EnhanceRules.Bone, 3, 6, 25),
+                    new RewardEntry(GearReward, 1, 1, 90),
+                },
+                sure = new SureReward(EnhanceRules.Bone, 3, 6, 150, 300),
+                description = L.T("안개가 걷히지 않는 숲속 묘지. 해골 궁수와 사령술사가 지킨다.\n매일 들어갈 수 있고 입장 횟수 제한이 없다."),
+                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("묘지기 리치"),
+            },
+            new DungeonDef
+            {
+                id = "normal_winter", name = L.T("얼어붙은 회랑"), theme = MapTheme.Winter, themeName = L.T("겨울 동굴"), always = true,
+                openDays = EveryDay,
+                rooms = Chain(
+                    Room(MapRegistry.DgnWinter1, new SpawnGroup(1, "skel_warrior", 3), new SpawnGroup(2, "skel_shield", 2)),
+                    Room(MapRegistry.DgnWinter2, new SpawnGroup(1, "skel_shield", 2, 1), new SpawnGroup(2, "skel_warrior", 3)),
+                    Room(MapRegistry.DgnWinter3, new SpawnGroup(1, "skel_knight", 2, 1), new SpawnGroup(2, "skel_warrior", 2)),
+                    Boss(MapRegistry.DgnWinterBoss, "boss_armory_warden", "skel_warrior", 2)),
+                bossRoom = 3, referenceSeconds = new[] { 170f, 190f, 210f, 230f }, clearXp = 20,
+                rewards = new[]
+                {
+                    new RewardEntry(ConsumableDatabase.Gold, 150, 300, 40),
+                    new RewardEntry(EnhanceRules.Ore, 1, 3, 25),
+                    new RewardEntry(EnhanceRules.Bone, 3, 6, 25),
+                    new RewardEntry(GearReward, 1, 1, 90),
+                },
+                sure = new SureReward(EnhanceRules.Ore, 1, 3, 150, 300),
+                description = L.T("얼음에 갇힌 옛 회랑에 해골 방패병과 기사가 서성인다.\n매일 들어갈 수 있고 입장 횟수 제한이 없다."),
+                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("무기고 수문장"),
             },
         };
 
@@ -458,6 +567,12 @@ namespace DotRPG
         /// <summary>The five weekday dungeons (Monday first).</summary>
         public static IReadOnlyList<DungeonDef> Weekday => Dungeons;
 
+        /// <summary>[NORMAL] 일반 던전 (every day, no entry count).</summary>
+        public static IReadOnlyList<DungeonDef> Normal => NormalDefs;
+
+        /// <summary>Weekday and normal dungeons (everything that is not a raid).</summary>
+        public static IEnumerable<DungeonDef> NonRaid => Dungeons.Concat(NormalDefs);
+
         /// <summary>[RAID] Story raids in chapter order (mid, final).</summary>
         public static IReadOnlyList<DungeonDef> Raids => RaidDefs;
 
@@ -467,6 +582,7 @@ namespace DotRPG
         {
             foreach (var r in RaidDefs) if (r.id == id) return r;
             foreach (var d in Dungeons) if (d.id == id) return d;
+            foreach (var d in NormalDefs) if (d.id == id) return d;
             return null;
         }
 

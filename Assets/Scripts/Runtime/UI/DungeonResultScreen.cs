@@ -153,7 +153,7 @@ namespace DotRPG
         static string NoCardsText(DungeonRun run)
         {
             if (run.NoRewardNote == "held")
-                return L.T("<color=#ffe066>결과를 확인하는 중입니다.</color>\n<color=#b8c4d8>확인되면 보상 카드를 고를 수 있다는 알림이 옵니다.</color>");
+                return L.T("<color=#ffe066>클리어 기록이 평소와 달라(너무 빠른 클리어 등) 운영자가 확인하고 있습니다.</color>\n<color=#b8c4d8>정상으로 확인되면 다음 접속 때 보상 카드를 받습니다.</color>");
             if (run.NoRewardNote == "noanswer")
                 return L.T("<color=#ff9f7a>서버에 결과를 보내지 못했습니다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인합니다.</color>");
             if (run.Dungeon.isRaid)

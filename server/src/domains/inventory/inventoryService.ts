@@ -5,6 +5,8 @@ import { getGameData } from '../../gamedata/loader';
 import { getRateLimitStore } from '../../middleware/rateLimiter';
 import { AppError } from '../../utils/AppError';
 import { parseItemKey } from '../../utils/itemKey';
+import { resetBoundaries } from '../../utils/resetBoundaries';
+import * as dungeonRepo from '../dungeons/dungeonRepository';
 import type { EconCtx } from '../economy/economyContext';
 import type { Consumed } from '../economy/economyRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
@@ -40,9 +42,20 @@ export function useItem(accountId: number, characterUuid: string, body: UseBody)
       if (gap > 0 && store.count(gapKey, gap).count >= 1) {
         throw new AppError(429, '같은 아이템을 너무 빨리 사용했습니다.', 'ITEM_COOLDOWN', { retry_after_sec: 1 });
       }
+      // 요일 던전 초기화권(0042): 오늘 입장 횟수를 하나라도 썼을 때만. 쓴 시각 뒤의 판·소탕만 센다
+      let entriesLeft: number | undefined;
+      if (use === 'DungeonReset') {
+        const resetDay = new Date(resetBoundaries(ctx.now).dailyStartAt);
+        const used = await dungeonRepo.countEntries(ctx.client, ctx.char.id, resetDay);
+        if (used < 1) throw new AppError(422, '오늘 요일 던전 입장 횟수가 그대로 남아 있습니다.', 'NOTHING_TO_RESET');
+      }
       await ctx.removeItem('bag', body.item_id, 1, 'use_item', body.item_id);
+      if (use === 'DungeonReset') {
+        await dungeonRepo.insertEntryReset(ctx.client, ctx.char.id, ctx.now);
+        entriesLeft = getGameData().economy.dungeons.dailyEntries;
+      }
       if (gap > 0) store.add(gapKey, gap);
-      return { status: 200, data: { item_id: body.item_id, delta: ctx.delta() } };
+      return { status: 200, data: { item_id: body.item_id, ...(entriesLeft !== undefined ? { entries_left: entriesLeft } : {}), delta: ctx.delta() } };
     },
   });
 }

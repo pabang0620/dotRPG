@@ -77,8 +77,12 @@ export async function findPlayingRun(db: Queryable, characterId: number): Promis
 /** 하루 입장 횟수: 직접 입장 + 소탕(10단계 E1). 직접 입장·파티 시작·목록·소탕이 모두 이 함수를 쓴다 */
 export async function countEntries(db: Queryable, characterId: number, resetDay: Date): Promise<number> {
   const r = await db.query<{ n: string }>(
-    `SELECT (SELECT count(*) FROM dungeon_runs WHERE character_id = $1 AND reset_day = $2 AND counts_entry)
-          + (SELECT count(*) FROM dungeon_sweeps WHERE character_id = $1 AND reset_day = $2) AS n`,
+    // 요일 던전 초기화권(0042): 오늘 마지막 초기화 뒤에 시작한 판·소탕만 센다
+    `WITH r AS (SELECT max(reset_at) AS at FROM dungeon_entry_resets WHERE character_id = $1 AND reset_at >= $2)
+     SELECT (SELECT count(*) FROM dungeon_runs, r WHERE character_id = $1 AND reset_day = $2 AND counts_entry
+               AND (r.at IS NULL OR started_at > r.at))
+          + (SELECT count(*) FROM dungeon_sweeps, r WHERE character_id = $1 AND reset_day = $2
+               AND (r.at IS NULL OR created_at > r.at)) AS n`,
     [characterId, resetDay],
   );
   return Number((r.rows[0] as { n: string }).n);
@@ -321,4 +325,9 @@ export async function pendingCardRuns(
     [cutoff, limit],
   );
   return r.rows;
+}
+
+/** 요일 던전 초기화권 사용 기록(0042) */
+export async function insertEntryReset(db: Queryable, characterId: number, at: Date): Promise<void> {
+  await db.query('INSERT INTO dungeon_entry_resets (character_id, reset_at) VALUES ($1, $2)', [characterId, at]);
 }

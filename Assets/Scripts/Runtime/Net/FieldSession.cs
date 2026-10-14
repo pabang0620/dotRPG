@@ -81,7 +81,8 @@ namespace DotRPG
             var party = PartyClient.Instance;
             bool shareable = party != null && party.InParty && party.Members.Count >= 2;
             if (!shareable && sessionId != null) { Leave(); GoSolo(); }
-            // A new partner joined while I hunt: the next map entry shares (monsters here are already mine).
+            // A partner joined or came online while I hunt here: share now (Update retries every few seconds too).
+            if (shareable && sessionId == null) joinRetryAt = 0f;
         }
 
         void Enter(string map)
@@ -100,8 +101,9 @@ namespace DotRPG
                     spawner?.SetMode(EnemySpawner.SpawnerMode.Local); // alone or no party: solo field
                     return;
                 }
-                // Answer came after the wait: this PC already spawned its own monsters; share from the next map.
-                if (spawner == null || spawner.Mode != EnemySpawner.SpawnerMode.Pending)
+                // The answer may come after this PC already spawned its own monsters (late answer, or joining mid-map):
+                // Begin still shares - as host the local monsters become the shared ones, as follower they make way for the host's.
+                if (spawner == null)
                 {
                     sessionId = MiniJson.Str(s, "id");
                     Leave();
@@ -120,7 +122,7 @@ namespace DotRPG
             transportInfo.amHost = amHost;
             transportInfo.hostKey = PartyNet.FromBase64Url(hostKey);
             var t = CombatTransportFactory.Create(transportInfo);
-            if (t == null) { GameEvents.RaiseToast(L.T("파티원과 연결할 수 없어 혼자 사냥합니다.")); Leave(); EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Local); return; }
+            if (t == null) { GameEvents.RaiseToast(L.T("파티원과 연결할 수 없어 혼자 사냥합니다.")); Leave(); EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Local); joinRetryAt = Time.unscaledTime + 60f; return; }
             OnlineEconomy.FieldSessionId = sessionId;
             // [AI] The host's companions fill the seats people leave free; members show those, not their own.
             Game.Party?.SetRosterHidden(!amHost);
@@ -176,8 +178,28 @@ namespace DotRPG
 
         // ---------------- running ----------------
 
+        const float JoinRetrySeconds = 5f;
+        float joinRetryAt;
+
+        /// <summary>A party member is online on the hunting map I am on (the server's presence, GET /party).</summary>
+        static bool PartnerHere(string map)
+        {
+            var party = PartyClient.Instance;
+            if (party == null) return false;
+            foreach (var m in party.Members) if (!m.me && m.online && m.mapId == map) return true;
+            return false;
+        }
+
         void Update()
         {
+            // Hunting alone while a party member is on the same field (I logged in or entered before the party list
+            // loaded, or they arrived while I was here): share it now instead of waiting for someone's next map change.
+            if (sessionId == null && !entering && OnlineSession.Playing && Game.Session != null && Time.unscaledTime >= joinRetryAt)
+            {
+                joinRetryAt = Time.unscaledTime + JoinRetrySeconds;
+                string here = Game.Session.MapId;
+                if (IsHuntingMap(here) && MayShare() && PartnerHere(here)) Enter(here);
+            }
             if (sessionId == null || !OnlineSession.Playing) return;
             heartbeatTimer -= Time.unscaledDeltaTime;
             if (heartbeatTimer <= 0f && Time.unscaledTime - lastHeartbeatAt >= HeartbeatMinGap) { heartbeatTimer = HeartbeatSeconds; Heartbeat(); }

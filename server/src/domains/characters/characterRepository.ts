@@ -51,6 +51,7 @@ export interface ItemRow {
   count: number;
   location: string;
   slot: number | null;
+  bind: string;
 }
 
 interface RawChar extends Omit<CharacterRow, 'id' | 'account_id' | 'gold'> {
@@ -255,7 +256,7 @@ export async function getStateForUpdate(client: PoolClient, characterId: number)
 
 export async function getItems(db: Queryable, characterId: number): Promise<ItemRow[]> {
   const r = await db.query<ItemRow>(
-    `SELECT uuid, item_key, count, location, slot FROM character_items
+    `SELECT uuid, item_key, count, location, slot, bind FROM character_items
       WHERE character_id = $1 ORDER BY location, slot NULLS LAST, id`,
     [characterId],
   );

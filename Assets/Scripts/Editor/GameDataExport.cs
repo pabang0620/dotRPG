@@ -357,8 +357,10 @@ namespace DotRPG.EditorTools
             j.Arr("thresholds", DungeonRanking.Thresholds, (o, v) => o.Val(v));
             j.Arr("xpBonus", DungeonRanking.XpBonus, (o, v) => o.Val(v));
             j.End();
-            // Measured fastest normal clears 87 s (theory_balance.py); the server takes 60% of these as the floor.
-            j.Arr("minClearSeconds", new[] { 87, 0, 0, 0 }, (o, v) => o.Val(v));
+            // [2026-10-14] The server holds a clear faster than 60% of these (any difficulty uses the largest value up to it).
+            // Was 87 s (hold under 52 s): after the early-game damage cut and the doubled weapon enhancement a legit
+            // two-player Normal clear took 30.5 s and was held. 20 s holds only clearly impossible runs (under 12 s).
+            j.Arr("minClearSeconds", new[] { 20, 0, 0, 0 }, (o, v) => o.Val(v));
             // [SERVER 4] Raids: no measured floor yet (the server falls back to 0.5 x referenceSeconds), key item, AI mercenaries.
             j.Key("raidMinClearSeconds").Obj().End();
             // [RAID] 영웅 레이드: multipliers on each raid's raidNumbers (server diffOf, difficulty 1).
@@ -366,11 +368,15 @@ namespace DotRPG.EditorTools
                 .Num("damageMul", DungeonDatabase.RaidHeroicDamageMul).Num("rewardMul", DungeonDatabase.RaidHeroicRewardMul).End();
             j.Str("keyItem", DungeonDatabase.SealKey);
             j.Key("mercenary").Obj().Num("damageScale", MercenaryDatabase.DamageScale).Num("maxCompanions", PartyManager.MaxCompanions).End();
-            j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Raids), (o, d) =>
+            j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal).Concat(DungeonDatabase.Raids), (o, d) =>
             {
                 o.Obj().Str("id", d.id).Str("name", d.name).Bool("isRaid", d.isRaid).Str("raidTier", d.raidTier.ToString())
                     .Num("chapter", d.chapter).Str("unlockQuest", d.unlockQuest).Num("keyCost", d.keyCost).Num("clearXp", d.clearXp).Num("xpMul", d.xpMul)
-                    .Num("bossRoom", d.bossRoom).Num("maxParty", d.maxParty);
+                    .Num("bossRoom", d.bossRoom).Num("maxParty", d.maxParty).Bool("always", d.always);
+                // [REWARD 2026-10-14] sure material + gold cards before the luck cards (server rollClearRewards)
+                if (d.sure != null)
+                    o.Key("sure").Obj().Str("material", d.sure.material).Num("materialMin", d.sure.materialMin).Num("materialMax", d.sure.materialMax)
+                        .Num("goldMin", d.sure.goldMin).Num("goldMax", d.sure.goldMax).End();
                 o.Arr("openDays", d.openDays ?? new DayOfWeek[0], (x, day) => x.Val(day.ToString()));
                 o.Arr("referenceSeconds", d.referenceSeconds ?? new float[0], (x, s) => x.Val(s));
                 o.Arr("clearXpFloor", Enumerable.Range(0, 4), (x, i) => x.Val(HuntingGrounds.DungeonClearFloor(d, DungeonDatabase.DifficultyFor(d, (DungeonDifficulty)i))));

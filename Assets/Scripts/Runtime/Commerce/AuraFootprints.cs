@@ -94,7 +94,9 @@ namespace DotRPG
             Vector2 pos = at + side + new Vector2(0f, .02f);
             Color c = product.Effect != CosmeticEffect.None ? product.ColorAt(Time.time) : product.Color;
             c.a = 1f;
-            var p = prints[next] ?? (prints[next] = Make());
+            var p = prints[next];
+            // The pooled renderers live under Fx.Root, which a map change destroys; the local player outlives it.
+            if (p == null || p.r == null || p.glow == null) p = prints[next] = Make();
             next = (next + 1) % Pool;
             p.age = 0f;
             p.life = grade >= 4 ? 2f : grade == 3 ? 1.6f : grade == 2 ? 1.3f : .9f;
@@ -132,7 +134,7 @@ namespace DotRPG
         {
             foreach (var p in prints)
             {
-                if (p == null || p.r == null || !p.r.gameObject.activeSelf) continue;
+                if (p == null || p.r == null || p.glow == null || !p.r.gameObject.activeSelf) continue;
                 p.age += Time.deltaTime;
                 if (p.age >= p.life) { p.r.gameObject.SetActive(false); p.glow.gameObject.SetActive(false); continue; }
                 float a = 1f - p.age / p.life;

@@ -19,6 +19,7 @@ import {
   RANK_NAMES,
   rankOf,
   rollCards,
+  rollClearRewards,
   rollRaidCards,
   rollRaidGold,
   roomKillCount,
@@ -265,7 +266,8 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
       raidGold = ctx.gold - before; // 골드 상한에 걸리면 실제로 들어간 만큼만
       cards = rollRaidCards(eco, dungeon, ctx.char.class, getRng());
     } else {
-      cards = rollCards(eco, dungeon, diff, ctx.char.class, getRng());
+      // 2026-10-14: 확정 재료 + 확정 골드 + 운 카드를 모두 받는다(take_all). sure가 없는 옛 데이터만 4장 중 1장
+      cards = rollClearRewards(eco, dungeon, diff, ctx.char.class, getRng()) ?? rollCards(eco, dungeon, diff, ctx.char.class, getRng());
     }
     if (dungeon.isRaid) {
       if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0) {
@@ -298,10 +300,11 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     rewardLocked: locked,
     lockReason: reason,
     ...(dungeon.isRaid && cards ? { cardsMode: 'take_all' as const, raidGold } : {}),
+    ...(!dungeon.isRaid && cards && dungeon.sure ? { cardsMode: 'take_all' as const } : {}),
     contribution: contrib ? { share: contrib.share, hits: contrib.hits, source: contrib.source, met: contrib.met } : null,
   });
   // 10단계 E3: 보상이 잠기지 않은 요일 던전 직접 클리어는 계정 주간 활동에 +1(그 요청의 마지막 쓰기)
-  if (!dungeon.isRaid && !locked) await bumpDirectClear(ctx.client, ctx.char.accountId, inp.at);
+  if (!dungeon.isRaid && !dungeon.always && !locked) await bumpDirectClear(ctx.client, ctx.char.accountId, inp.at);
   const data: Record<string, unknown> = {
     result: 'cleared',
     rank: RANK_NAMES[rank] ?? 'F',
@@ -309,6 +312,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     granted_xp: granted,
     leveled_up: leveledUp,
     card_count: cards ? cards.length : 0,
+    card_mode: cards && (dungeon.isRaid || dungeon.sure) ? 'take_all' : 'pick_one',
     delta: ctx.delta(),
   };
   // 9단계: 파티 던전(레이드 아님)의 기여 잠금은 data.reward_locked / reward_lock_reason 으로 알린다

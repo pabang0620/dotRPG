@@ -3,7 +3,7 @@ import { getPool } from '../src/db/pool';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { buildApp, resetDb, shutdown } from './helpers';
-import { countOf, expectLedgerConsistent, fakeRng, get, goldOf, newHero, post, type Hero } from './economyHelpers';
+import { countOf, expectLedgerConsistent, fakeRng, get, goldOf, newHero, post, seedItem, type Hero } from './economyHelpers';
 
 const app = buildApp();
 const MONDAY = '2026-10-05T03:00:00Z'; // 월요일 12:00 KST
@@ -106,7 +106,8 @@ describe('POST /characters/:id/dungeon-runs', () => {
     // 4단계: 레이드 입장이 열렸다. 월요일에는 최종 레이드(일요일만)가 닫혀 있다
     expect((await enter(h, { dungeon_id: 'raid_grah' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
     expect((await enter(h, { dungeon_id: 'smelter' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
-    expect((await enter(h, { difficulty: 1 })).body.errors.code).toBe('DIFFICULTY_LOCKED');
+    // 2026-10-14: 요일·일반 던전은 앞 난이도 클리어 없이 열린다(레벨 조건만 본다)
+    expect((await enter(h, { difficulty: 1 })).body.errors?.code).not.toBe('DIFFICULTY_LOCKED');
   });
 
   it('주말에는 요일 던전이 전부 열리고, 06:00 전에는 전날 요일이다', async () => {
@@ -134,6 +135,52 @@ describe('POST /characters/:id/dungeon-runs', () => {
     // 다음 월요일 06:00 KST 이후에는 다시 3번
     fixed = new Date('2026-10-12T00:00:00Z');
     expect((await enter(h)).status).toBe(201);
+  });
+
+  it('2026-10-14 일반 던전: 매일 열리고 하루 입장 횟수를 쓰지 않는다(요일 던전 횟수가 0이어도 들어간다)', async () => {
+    const h = await newHero(app);
+    for (let i = 0; i < 3; i++) {
+      const run = await enter(h);
+      await result(h, run.body.data.run.id, { outcome: 'failed', stats: stats() });
+    }
+    expect((await enter(h)).body.errors.code).toBe('NO_ENTRIES_LEFT');
+    for (const id of ['normal_canyon', 'normal_forest', 'normal_winter', 'normal_canyon']) {
+      const run = await enter(h, { dungeon_id: id });
+      expect(run.status).toBe(201);
+      await result(h, run.body.data.run.id, { outcome: 'failed', stats: stats() });
+    }
+    // 소탕은 일반 던전에 쓸 수 없다(입장 횟수가 없으므로)
+    const sweep = await post(app, h, '/sweep/run', { dungeon_id: 'normal_canyon', difficulty: 0 });
+    expect(sweep.status).not.toBe(200);
+  });
+
+  it('2026-10-14 요일 던전 초기화권: 다 쓴 입장 횟수를 되돌리고, 쓴 횟수가 없으면 소모 없이 거절', async () => {
+    const h = await newHero(app);
+    await seedItem(h, 'ticket_dungeon_reset', 2, 'bag', 'account');
+    const use = () => post(app, h, '/items/use', { item_id: 'ticket_dungeon_reset' });
+    const none = await use();
+    expect(none.status).toBe(422);
+    expect(none.body.errors.code).toBe('NOTHING_TO_RESET');
+    expect(await countOf(h, 'ticket_dungeon_reset')).toBe(2);
+    for (let i = 0; i < 3; i++) {
+      const run = await enter(h);
+      await result(h, run.body.data.run.id, { outcome: 'failed', stats: stats() });
+    }
+    expect((await enter(h)).body.errors.code).toBe('NO_ENTRIES_LEFT');
+    fixed = new Date(fixed.getTime() + 1000);
+    const ok = await use();
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.entries_left).toBe(3);
+    expect(await countOf(h, 'ticket_dungeon_reset')).toBe(1);
+    fixed = new Date(fixed.getTime() + 1000);
+    for (let i = 0; i < 3; i++) {
+      const run = await enter(h);
+      expect(run.status).toBe(201);
+      await result(h, run.body.data.run.id, { outcome: 'failed', stats: stats() });
+      fixed = new Date(fixed.getTime() + 1000);
+    }
+    expect((await enter(h)).body.errors.code).toBe('NO_ENTRIES_LEFT');
+    await expectLedgerConsistent(h);
   });
 
   it('진행 중인 판이 있으면 409 RUN_ACTIVE, 오래 방치되면 닫고 입장(횟수는 이미 소진)', async () => {
@@ -306,10 +353,10 @@ describe('POST /characters/:id/dungeon-runs/:run_id/result', () => {
     const anomaly = await getPool().query("SELECT kind FROM anomaly_log WHERE character_id = $1", [a.dbId]);
     expect(anomaly.rows).toEqual([{ kind: 'dungeon_result' }]);
 
-    // 2) 정상 진행 후 보고 시간이 너무 짧음(최소 클리어 시간 미만)
+    // 2) 정상 진행 후 보고 시간이 너무 짧음(최소 클리어 시간 미만: 2026-10-14 기준 20초의 60% = 12초)
     const b = await newHero(app);
     const idB = await playFullRun(b);
-    await result(b, idB, { outcome: 'cleared', stats: stats({ elapsed_ms: 20_000 }) });
+    await result(b, idB, { outcome: 'cleared', stats: stats({ elapsed_ms: 8_000 }) });
     expect(await reasons(b, idB)).toContain('TOO_FAST');
 
     // 3) 서버가 잰 경과 시간보다 길게 보고
@@ -374,12 +421,21 @@ describe('POST /characters/:id/dungeon-runs/:run_id/cards/pick', () => {
     await expectLedgerConsistent(h);
   });
 
-  it('두 번째 선택은 409 CARD_ALREADY_PICKED(다른 request_id여도), 지급은 한 번', async () => {
+  it('2026-10-14 다중 보상: 확정 재료·확정 골드·운 카드 2장을 모두 받는다. 같은 카드는 한 번만', async () => {
     const { h, id } = await cleared();
-    await pick(h, id, 0);
+    const first = await pick(h, id, 0);
+    expect(first.status).toBe(200);
+    expect((first.body.data.card as { item_key: string }).item_key).toBe('mat_bone'); // 황금 광맥 확정 재료
+    const gold = await pick(h, id, 1);
+    expect((gold.body.data.card as { item_key: string; count: number }).item_key).toBe('gold');
+    expect(await goldOf(h)).toBeGreaterThanOrEqual(100 + (gold.body.data.card as { count: number }).count);
+    expect((await pick(h, id, 2)).status).toBe(200);
+    const last = await pick(h, id, 3);
+    expect(last.status).toBe(200);
+    expect(last.body.data.remaining).toBe(0);
     const again = await pick(h, id, 1);
     expect(again.status).toBe(409);
-    expect(again.body.errors.code).toBe('CARD_ALREADY_PICKED');
+    expect(again.body.errors.code).toBe('CARD_ALREADY_FLIPPED');
     await expectLedgerConsistent(h);
   });
 
@@ -410,8 +466,9 @@ describe('POST /characters/:id/dungeon-runs/:run_id/cards/pick', () => {
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(b.body).toEqual(a.body);
 
+    // 같은 카드를 동시에 두 번 뒤집어도 한 번만 받는다
     const c = await cleared();
-    const [x, y] = await Promise.all([pick(c.h, c.id, 0), pick(c.h, c.id, 1)]);
+    const [x, y] = await Promise.all([pick(c.h, c.id, 0), pick(c.h, c.id, 0)]);
     expect([x.status, y.status].sort()).toEqual([200, 409]);
     await expectLedgerConsistent(c.h);
   });

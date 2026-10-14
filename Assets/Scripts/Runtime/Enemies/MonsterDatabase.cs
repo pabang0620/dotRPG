@@ -166,7 +166,20 @@ namespace DotRPG
         public const float FieldBossHpMul = 1.5f;
         /// <summary>Field monster damage x1.0 at Lv1 rising to x1.6 at Lv15 (new characters before the career stay safe).</summary>
         public static float FieldDamageMul(int level) => 1f + (FieldDamageMax - 1f) * Mathf.Clamp01((level - 1) / 14f);
-        public static float FieldHpMul(int level) => FieldHpBase * (1f + FieldHpSlope * (Mathf.Max(1, level) - 1)) / (1f + HpPerLevel * (Mathf.Max(1, level) - 1));
+        public static float FieldHpMul(int level)
+        {
+            int l = Mathf.Max(1, level);
+            float full = FieldHpBase * (1f + FieldHpSlope * (l - 1)) / (1f + HpPerLevel * (l - 1));
+            return Mathf.Lerp(PreCareerFieldHpMul, full, Mathf.Clamp01((l - EasyFieldUpTo) / (float)(FullFieldFrom - EasyFieldUpTo)));
+        }
+        /// <summary>
+        /// [BALANCE 2026-10-14] Before the Lv15 career the player has no career skills, yet the field HP above (tuned for career
+        /// rotations) made a Lv10 pack ~16x a monster's base HP: an at-level pack took ~12 s with +0 gear. Field monsters up to
+        /// Lv10 now have x3.5 the dungeon-formula HP, rising smoothly to the full field HP at Lv18 (no cliff at the career).
+        /// With the level damage bonus (Stats.LevelDamageMul) an at-level pack takes ~4-5 s at Lv1-10 with +0 gear, ~2 s with +15.
+        /// </summary>
+        public const int EasyFieldUpTo = 10, FullFieldFrom = 18;
+        public const float PreCareerFieldHpMul = 3.5f;
         public const float XpPerLevel = 0.1f;
 
         public const string Warrior = "skel_warrior";

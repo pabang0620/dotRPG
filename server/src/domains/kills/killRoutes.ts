@@ -16,5 +16,12 @@ export function createKillRouter(): Router {
     validate({ params: charParams, body: killBody }),
     controller.report,
   );
+  // 필드 보스 다음 출현 시각(서버 시각 기준). 맵에 들어갈 때 한 번 읽는다
+  r.get(
+    '/characters/:uuid/field-bosses',
+    rateLimit({ name: 'field-boss-min', limit: () => 60, windowMs: 60_000, key: charKey }),
+    validate({ params: charParams }),
+    controller.fieldBosses,
+  );
   return r;
 }

@@ -1323,5 +1323,6 @@
  "자동 체력 물약 기준": "Poção de vida automática em",
  "자동 마나 물약 기준": "Poção de mana automática em",
  "HP {0}% 아래": "HP abaixo de {0}%",
- "MP {0}% 아래": "MP abaixo de {0}%"
+ "MP {0}% 아래": "MP abaixo de {0}%",
+ "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ mais {0} ({1} abertas · {2} concluídas)</color>"
 }

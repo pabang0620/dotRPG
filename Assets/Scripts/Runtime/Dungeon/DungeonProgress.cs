@@ -45,6 +45,13 @@ namespace DotRPG
             return entriesUsed;
         }
 
+        /// <summary>[DUNGEON 2026-10-14] 요일 던전 초기화권: today's weekday dungeon entries back to the full count.</summary>
+        public void ResetEntries(DateTime now)
+        {
+            Roll(now);
+            entriesUsed = 0;
+        }
+
         /// <summary>[CONTENT] Automated checks only: today's entry count back to 0 (ranks and raid claim kept).</summary>
         public void DevClearEntries()
         {
@@ -106,7 +113,7 @@ namespace DotRPG
             if (d == DungeonDifficulty.Normal) return true;
             // [RAID] 영웅 레이드 opens after the raid's first clear; raids have no other difficulty.
             if (dungeon.isRaid) return d == DungeonDatabase.RaidHeroic && IsCleared(dungeon.id, DungeonDifficulty.Normal);
-            return IsCleared(dungeon.id, d - 1);
+            return true; // [2026-10-14] weekday and normal dungeons: every difficulty open (the level requirement still applies)
         }
 
         /// <summary>Best rank so far (null = never cleared).</summary>

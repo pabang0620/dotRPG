@@ -118,6 +118,7 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('raid_claims', `character_id ${CHR}`),
   keepOwn('dungeon_runs', `character_id ${CHR}`),
   keepOwn('dungeon_sweeps', `character_id ${CHR}`),
+  keepOwn('dungeon_entry_resets', `character_id ${CHR}`),
   keepOwn('account_consents', `account_id ${ACC}`, '정책 동의 기록(0037): 분쟁 근거라 익명화 때 남기고 보관 기한에 계정과 함께 파기'),
   keepOwn('sweep_ticket_ledger', `account_id ${ACC} OR character_id ${CHR}`),
   keepOwn('sweep_ticket_lots', `account_id ${ACC}`),
@@ -256,7 +257,7 @@ export const POLICY: PolicyEntry[] = [
 
 /** 파기 순서(자식 -> 부모, FK 기준). destroyWhere 가 있는 모든 표가 여기 한 번씩 있어야 한다(테스트가 확인) */
 export const DESTROY_ORDER: string[] = [
-  'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'sweep_ticket_ledger',
+  'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'dungeon_entry_resets', 'sweep_ticket_ledger',
   'sweep_ticket_lots', 'dungeon_runs', 'revive_log', 'character_achievements', 'character_career', 'character_career_trials',
   'character_chests', 'character_enhance_pity', 'character_state', 'quest_claims', 'daily_quests',
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'star_pass_daily', 'star_pass_grants', 'account_star_pass', 'account_pass_claims',

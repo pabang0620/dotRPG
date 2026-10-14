@@ -91,9 +91,11 @@ namespace DotRPG
         public static int DungeonClearFloor(DungeonDef dungeon, DifficultyDef diff)
         {
             int tier = Mathf.Clamp((int)diff.id, 0, 3);
-            int benchmarkLevel = dungeon.isRaid ? diff.recommendedLevel : new[] { 10, 18, 26, 36 }[tier];
+            // [NORMAL 2026-10-14] 일반 던전 = hunting at the recommended level for the same time (user: "사냥하는거랑 비슷하게"),
+            // the weekday dungeons keep their 1.8x bonus at the higher benchmark levels.
+            int benchmarkLevel = dungeon.isRaid || dungeon.always ? diff.recommendedLevel : new[] { 10, 18, 26, 36 }[tier];
             float seconds = dungeon.referenceSeconds[tier];
-            int target = Mathf.CeilToInt(XpAt(benchmarkLevel) * KillsPerMinute * seconds / 60f * DungeonEfficiency);
+            int target = Mathf.CeilToInt(XpAt(benchmarkLevel) * KillsPerMinute * seconds / 60f * (dungeon.always ? 1f : DungeonEfficiency));
             int kills = 0;
             foreach (var room in dungeon.rooms)
                 foreach (var group in room.groups)

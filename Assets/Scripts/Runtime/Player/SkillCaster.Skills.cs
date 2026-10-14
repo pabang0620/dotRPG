@@ -147,6 +147,21 @@ namespace DotRPG
             }
             // The shout pulls every monster around onto the caster (its old damage buff is the warrior's passive now).
             ThreatTable.WarCry(owner, c, n.radius);
+            // [SKILL 2026-10-14] Follow-up: an aftershock hits the same area once more (Lv12 skills of every class).
+            StartCoroutine(After(FollowUpDelay, () => FollowUp(owner.Center, n, "rock_break", SkillVisuals.UltGold)));
+        }
+
+        const float FollowUpDelay = 0.4f;
+
+        /// <summary>[SKILL] The Lv12 skills' second hit: the same damage again to every monster still in the area, no crowd control.</summary>
+        void FollowUp(Vector2 c, SkillNumbers n, string sfx, Color color)
+        {
+            if (owner == null || owner.IsDead) return;
+            Game.Audio.PlaySfx(sfx, 0.7f);
+            SkillVisuals.CastCircle(owner.Position, color);
+            CareerFx.Clip("impact", owner.Position, Vector2.zero, n.radius / 2.4f, 26f, VfxLayer.Ground, false);
+            Shake(0.06f, 0.12f);
+            foreach (var e in EnemiesInRadius(c, n.radius)) Hit(e, n, c, 3f);
         }
 
         /// <summary>천검 강림 (awakening): giant swords rain down on the monsters around the player.</summary>
@@ -197,6 +212,8 @@ namespace DotRPG
                 e.Freeze(n.freeze);
                 if (!e.IsDead && e.IsFrozen) IceEncase.Attach(e);
             }
+            // [SKILL 2026-10-14] Follow-up: the frost bursts once more (Lv12 skills of every class).
+            StartCoroutine(After(FollowUpDelay, () => FollowUp(owner.Center, n, "magic", SkillVisuals.FrostBlue)));
         }
 
         /// <summary>

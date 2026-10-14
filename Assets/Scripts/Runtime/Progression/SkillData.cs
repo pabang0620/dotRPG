@@ -82,7 +82,7 @@ namespace DotRPG
             // Mage.
             Active("lance", L.T("번개 창"), CharacterClass.Mage, 0, L.T("가장 가까운 적 하나에게 굵은 번개를 내리꽂는다. 맞은 자리 주변에도 전기가 튄다. 보스와 강적을 상대하는 주력기.")).With(g => { g.damageMult = 2.5f; g.cooldown = 1.6f; g.range = 8f; g.radius = 2f; g.manaCost = 4; }),
             Active("frostorb", L.T("빙뢰구"), CharacterClass.Mage, 1, L.T("얼음 구체를 날려 부딪힌 자리의 적들을 얼음 파편으로 터뜨린다. 적이 셋 이상 몰렸을 때 쓴다.")).With(g => { g.damageMult = 1.6f; g.cooldown = 3f; g.radius = 3.1f; g.range = 8f; g.manaCost = 8; }),
-            Active("nova", L.T("서리 폭발"), CharacterClass.Mage, 2, L.T("주변에 냉기를 터뜨려 다가온 적을 1.4초 동안 얼린다.")).With(g => { g.damageMult = 0.5f; g.cooldown = 10f; g.radius = 4.1f; g.freeze = 1.4f; g.manaCost = 12; }),
+            Active("nova", L.T("서리 폭발"), CharacterClass.Mage, 2, L.T("주변에 냉기를 터뜨려 다가온 적을 2.8초 동안 얼린다.")).With(g => { g.damageMult = 0.5f; g.cooldown = 10f; g.radius = 4.1f; g.freeze = 2.8f; g.manaCost = 12; }),
             Active("firefield", L.T("화염 장판"), CharacterClass.Mage, 3, L.T("적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.")).With(g => { g.damageMult = 0.4f; g.cooldown = 6f; g.range = 7.5f; g.radius = 3.2f; g.hits = 6; g.manaCost = 10; }),
             Active("meteor", L.T("메테오"), CharacterClass.Mage, 4, L.T("거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.")).With(g => { g.damageMult = 2.8f; g.cooldown = 24f; g.radius = 2.8f; g.range = 7f; g.hits = 8; g.manaCost = 32; }),
 
@@ -221,7 +221,14 @@ namespace DotRPG
         }
 
         /// <summary>Class base damage + weapon/gear attack, then % increased damage.</summary>
-        public int AttackDamage(CharacterClass cls) => Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + IncDamage / 100f)));
+        public int AttackDamage(CharacterClass cls) => Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + IncDamage / 100f) * LevelDamageMul));
+
+        /// <summary>[BALANCE 2026-10-14] Levels themselves hit harder: +4% damage per level up to Lv15 (x1.56, kept after),
+        /// so a player who levels without enhancing still hunts comfortably at level. The server's kill power cap (11%/level)
+        /// stays above it.</summary>
+        public const float LevelDamagePerLevel = 0.04f;
+        public const int LevelDamageCap = 15;
+        public float LevelDamageMul => 1f + LevelDamagePerLevel * (Mathf.Clamp(Level, 1, LevelDamageCap) - 1);
 
         public int Block => Mathf.Clamp(Eq.BlockChance + Sum(PassiveStat.Block) + (Has(Keystone.Unwavering) ? 15 : 0), 0, 75);
         public int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0);
@@ -262,7 +269,7 @@ namespace DotRPG
             float rankScale=career==null?1:1+.12f*Mathf.Max(0,Prog.Rank(active.id)-1);
             float inc = IncDamage + (career==null?SlotStat(PassiveStat.SkillDamage, slot):0);
             float area = (1f + (Aoe + SlotStat(PassiveStat.SkillArea, slot)) / 100f) * moreAoe;
-            n.damage = Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + inc / 100f) * active.damageMult * more * rankScale));
+            n.damage = Mathf.Max(1, Mathf.RoundToInt(BaseAttack(cls) * (1f + inc / 100f) * active.damageMult * more * rankScale * LevelDamageMul));
             // [SKILL v2] Area bonuses grow the AREA (radius by the square root); v1 multiplied the radius,
             // which squared every bonus (+35% and +25% made a 2.85x area).
             float grow = Mathf.Sqrt(area);

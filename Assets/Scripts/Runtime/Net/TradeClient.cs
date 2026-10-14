@@ -251,6 +251,7 @@ namespace DotRPG
                     foreach (var o in MiniJson.Arr(MiniJson.Obj(r.data, "character"), "items") ?? new List<object>())
                     {
                         if (MiniJson.Str(o, "location") != "bag") continue;
+                        if (MiniJson.Str(o, "bind", "none") != "none") continue; // bound items cannot be traded: not listed at all
                         string key = MiniJson.Str(o, "item_key");
                         if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold) continue;
                         list.Add(new Item { uuid = MiniJson.Str(o, "id"), key = key, count = MiniJson.Int(o, "count") });

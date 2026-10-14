@@ -264,7 +264,9 @@ async function grantRaidCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: numbe
   if (!(await dungeonRepo.takeCard(ctx.client, run.id, 1 << index, ctx.now))) {
     throw new AppError(409, '이미 받은 카드입니다.', 'CARD_ALREADY_FLIPPED', { index, card });
   }
-  await ctx.addItem('bag', card.item_key, card.count, 'dungeon_card', `${run.uuid}:${index}`);
+  // 일반·요일 던전의 확정 골드 카드는 골드로 넣는다(레이드 카드에는 골드가 없다)
+  if (card.item_key === 'gold') await ctx.changeGold(card.count, 'dungeon_card', `${run.uuid}:${index}`);
+  else await ctx.addItem('bag', card.item_key, card.count, 'dungeon_card', `${run.uuid}:${index}`);
 }
 
 async function grantCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {

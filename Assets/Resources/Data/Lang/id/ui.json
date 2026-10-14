@@ -1323,5 +1323,6 @@
  "자동 체력 물약 기준": "Batas ramuan darah otomatis",
  "자동 마나 물약 기준": "Batas ramuan mana otomatis",
  "HP {0}% 아래": "HP di bawah {0}%",
- "MP {0}% 아래": "MP di bawah {0}%"
+ "MP {0}% 아래": "MP di bawah {0}%",
+ "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ {0} lagi ({1} terbuka · {2} selesai)</color>"
 }

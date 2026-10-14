@@ -224,6 +224,9 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
       s.flush(cursor);
       await refreshAccount(account.id);
       pushMyPresence(account.id).catch((e: unknown) => logger.error({ err: e }, 'presence push failed'));
+      // 접속 상태의 원본은 이 접속 목록(registry)이다. 친구만이 아니라 파티원에게도 접속 사실을 바로 알린다
+      // (전에는 맵 이동 때만 알려서 파티 창이 다음 폴링까지 '접속 안 함'으로 남았다)
+      notifyPartyMatesOfMove(s.characterId).catch((e: unknown) => logger.error({ err: e }, 'party presence notify failed'));
     }
 
     async function handle(f: ClientFrame): Promise<void> {
@@ -340,6 +343,9 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
         leaveTown(s);
         s.closed = true;
         if (registry.remove(s)) pushMyPresence(s.accountId).catch(() => undefined);
+        // 이 캐릭터의 접속이 더는 없으면(로그아웃, 끊김, 다른 캐릭터로 교체) 파티원에게 바로 알린다
+        // (전에는 알리지 않아 로그아웃한 사람이 다음 폴링까지 '같은 곳에 있음'으로 보였다)
+        if (!registry.ofCharacter(s.characterId)) notifyPartyMatesOfMove(s.characterId).catch(() => undefined);
       }
     });
   }

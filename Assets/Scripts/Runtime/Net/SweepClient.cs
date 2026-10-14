@@ -86,7 +86,8 @@ namespace DotRPG
             {
                 string id = MiniJson.Str(dun, "id");
                 foreach (var diff in MiniJson.Arr(dun, "difficulties") ?? new List<object>())
-                    slots[id + ":" + MiniJson.Int(diff, "difficulty")] = new SweepSlot
+                {
+                    var slot = slots[id + ":" + MiniJson.Int(diff, "difficulty")] = new SweepSlot
                     {
                         canSweep = Flag(diff, "can_sweep"),
                         block = MiniJson.Str(diff, "block"),
@@ -94,6 +95,9 @@ namespace DotRPG
                         needLevel = MiniJson.Int(diff, "need_level"),
                         xp = (long)MiniJson.Num(diff, "xp"),
                     };
+                    // The server's clears unlock the next difficulty too (party runs, held runs released later, other PCs).
+                    if (slot.bestRank >= 0) Game.Session?.Dungeons?.RecordClear(id, (DungeonDifficulty)MiniJson.Int(diff, "difficulty"), (DungeonRank)slot.bestRank);
+                }
             }
         }
 

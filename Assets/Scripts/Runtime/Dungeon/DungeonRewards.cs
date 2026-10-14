@@ -33,7 +33,15 @@ namespace DotRPG
             int totalWeight = 0;
             foreach (var entry in table) totalWeight += Mathf.Max(0, entry.weight);
             var cards = new List<RewardCard>();
-            for (int i = 0; i < CardCount; i++)
+            // [REWARD 2026-10-14] Sure material + sure gold, then the luck cards; all of them are taken (server: rollClearRewards).
+            int luck = CardCount;
+            if (dungeon.sure != null)
+            {
+                cards.Add(new RewardCard(dungeon.sure.material, Mathf.Max(1, Mathf.RoundToInt(rng.Next(dungeon.sure.materialMin, dungeon.sure.materialMax + 1) * diff.rewardMul))));
+                cards.Add(new RewardCard(ConsumableDatabase.Gold, Mathf.Max(1, Mathf.RoundToInt(rng.Next(dungeon.sure.goldMin, dungeon.sure.goldMax + 1) * diff.rewardMul))));
+                luck = DungeonDatabase.LuckCards;
+            }
+            for (int i = 0; i < luck; i++)
             {
                 int roll = rng.Next(0, Mathf.Max(1, totalWeight));
                 RewardEntry selectedReward = table[0];
@@ -153,6 +161,14 @@ namespace DotRPG
             if (dungeon.raidReward != null) return RaidSlots(dungeon, cls, diff != null && diff.name == DungeonDatabase.RaidHeroicName);
             var slots = new List<(string, string, bool)>();
             var seen = new HashSet<string>();
+            // [REWARD] The sure material and gold come first, marked as sure.
+            if (dungeon.sure != null)
+            {
+                slots.Add((DungeonDatabase.ItemIcon(dungeon.sure.material), L.F("{0} (확정)", DungeonDatabase.ItemName(dungeon.sure.material)), true));
+                slots.Add((DungeonDatabase.ItemIcon(ConsumableDatabase.Gold), L.T("골드 (확정)"), true));
+                seen.Add(dungeon.sure.material);
+                seen.Add(ConsumableDatabase.Gold);
+            }
             foreach (var entry in dungeon.rewards)
             {
                 if (!seen.Add(entry.itemId)) continue;

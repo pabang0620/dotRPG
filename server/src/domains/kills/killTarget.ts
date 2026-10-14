@@ -64,11 +64,10 @@ export async function resolveFieldTarget(
   if (!map || !extra || map.instanced) throw rejected('kill_target', 3, { ...detailBase, why: 'map' });
 
   const burst = getConfig().policy.killBurstField;
-  // 필드 보스: 15분 창(시계 기준 :00 :15 :30 :45)마다 캐릭터당 1회만 인정한다
+  // 필드 보스: 마지막 처치(서버 시각) 후 intervalSeconds(30분)가 지나야 다시 인정한다. 시계 창이 아니라 처치 시각 기준
   const boss = extra.fieldBoss;
   if (boss && boss.monsterId === monsterId) {
-    const windowMs = boss.intervalSeconds * 1000;
-    const since = new Date(Math.floor(now.getTime() / windowMs) * windowMs);
+    const since = new Date(now.getTime() - boss.intervalSeconds * 1000);
     const n = await countFieldKillsSince(client, characterId, mapId, monsterId, since);
     if (n >= 1) throw rejected('kill_supply', opts.nonHost ? 1 : 2, { ...detailBase, count: n, limit: 1, field_boss: true });
     return {

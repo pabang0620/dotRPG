@@ -2968,3 +2968,12 @@ ALTER TABLE item_ledger ADD CONSTRAINT item_ledger_reason_check
                     'raid_shop_cost', 'raid_shop_result', 'trade_out', 'trade_in'));
 COMMENT ON COLUMN gold_ledger.reason IS '변동 사유. trade_out 교환으로 준 골드(-) / trade_in 교환으로 받은 골드(+), ref = trades.uuid. daily_quest 일일·주간 의뢰 보상(ref = 의뢰 id), raid_gold 레이드 클리어 확정 골드(ref = 던전 판 uuid). 그 밖의 설명은 0002, 0007, 0021 참고';
 COMMENT ON COLUMN item_ledger.reason IS '변동 사유(경로). trade_out·trade_in 교환으로 준·받은 아이템(ref = trades.uuid). dungeon_card 카드 지급(레이드는 ref = 판 uuid:카드번호) / raid_shop_cost 레이드 상점 재료 차감 / raid_shop_result 레이드 상점 장비 지급. 그 밖의 설명은 0002, 0007, 0019, 0020, 0026 참고';
+
+-- 0042_dungeon_entry_resets: 요일 던전 초기화권(2026-10-14). 입장 횟수는 max(오늘 06:00, 마지막 초기화) 뒤부터 센다
+CREATE TABLE dungeon_entry_resets (
+  id           BIGSERIAL PRIMARY KEY,
+  character_id BIGINT NOT NULL REFERENCES characters(id),
+  reset_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE dungeon_entry_resets IS '요일 던전 초기화권 사용 기록(0042). 입장 횟수는 마지막 초기화 뒤부터 센다';
+CREATE INDEX dungeon_entry_resets_char_idx ON dungeon_entry_resets (character_id, reset_at DESC);

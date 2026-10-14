@@ -228,6 +228,82 @@ export function rollCards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cl
   return cards;
 }
 
+/** 클리어 운 카드 수(확정 재료·골드 2장 뒤). DungeonDatabase.LuckCards와 같다 */
+export const LUCK_CARDS = 2;
+
+/**
+ * 2026-10-14 클리어 보상(레이드 제외, DungeonRewards.RollCards와 같은 구성): 확정 재료 1장 + 확정 골드 1장 +
+ * 운 카드 LUCK_CARDS장(rollOneCard: 장비·재료·대박). 모두 받는다(take_all). sure가 없는 옛 데이터는 null
+ */
+export function rollClearRewards(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cls: string, rng: Rng): Card[] | null {
+  const sure = d.sure;
+  if (!sure) return null;
+  const mat = Math.max(1, roundHalfEven(f32(rng.int(sure.materialMin, sure.materialMax + 1) * diff.rewardMul)));
+  const gold = Math.max(1, roundHalfEven(f32(rng.int(sure.goldMin, sure.goldMax + 1) * diff.rewardMul)));
+  const cards: Card[] = [
+    { item_key: sure.material, count: mat },
+    { item_key: 'gold', count: gold },
+  ];
+  for (let i = 0; i < LUCK_CARDS; i++) cards.push(rollOneCard(eco, d, diff, cls, rng));
+  return cards;
+}
+
+export interface RareChance {
+  /** 카드 한 장이 그 등급 장비일 확률 */
+  card: number;
+  /** 한 번 클리어해서 그 등급 장비를 한 장 이상 받을 확률 */
+  clear: number;
+}
+
+/**
+ * 2026-10-14 유니크·레전더리 장비 확률(선택 화면 표시용, 서버 굴림 규칙 그대로 계산). 운이 들어가는 카드 수:
+ * 레이드 4장, 확정 보상이 있는 던전 LUCK_CARDS장, 옛 4장 중 1장은 1장. DungeonRewards.RareChances와 같은 식
+ */
+export function rareChances(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, cls: string): { unique: RareChance; legendary: RareChance; cards: number } {
+  const per = (p: number, n: number): RareChance => ({ card: p, clear: 1 - Math.pow(1 - p, n) });
+  const rr = d.raidReward;
+  if (d.isRaid && rr) {
+    const total = rr.cards.reduce((a, e) => a + e.weight, 0);
+    const gear = rr.cards.filter((e) => e.itemId === 'gear').reduce((a, e) => a + e.weight, 0) / Math.max(1, total);
+    const ws = rr.gearRarityWeights as Record<string, number>;
+    const sum = (ws.Epic ?? 0) + (ws.Unique ?? 0) + (ws.Legendary ?? 0);
+    const n = eco.dungeons.cards.count;
+    return { unique: per((gear * (ws.Unique ?? 0)) / Math.max(1, sum), n), legendary: per((gear * (ws.Legendary ?? 0)) / Math.max(1, sum), n), cards: n };
+  }
+  const tier = tierOfLevel(diff.recommendedLevel);
+  const table = cardTable(eco, d, diff);
+  const total = table.reduce((a, e) => a + Math.max(0, e.weight), 0);
+  const gearCard = table.filter((e) => e.itemId === 'gear').reduce((a, e) => a + e.weight, 0) / Math.max(1, total);
+  // rollGear: 절반은 드롭표 시도(최대 gearDropTries번, 최소 등급 이상이면 그 장비), 나머지와 실패분은 가중 풀
+  const usable = eco.shop.equipmentList.filter(
+    (e) => !e.bossOnly && e.levelTier === tier && e.rarity !== 'Legendary' && (e.classOnly === null || e.classOnly === cls),
+  );
+  const min = rarityIdx(diff.minGearRarity);
+  const dropPool = usable.filter((e) => e.dropWeight > 0);
+  const dropTotal = dropPool.reduce((a, e) => a + e.dropWeight, 0);
+  const tries = eco.dungeons.cards.gearDropTries;
+  let qOk = 0;
+  let qUnique = 0;
+  for (const e of dropPool) {
+    if (rarityIdx(e.rarity) < min) continue;
+    qOk += e.dropWeight / dropTotal;
+    if (e.rarity === 'Unique') qUnique += e.dropWeight / dropTotal;
+  }
+  const dropHitAll = dropTotal > 0 && qOk > 0 ? 1 - Math.pow(1 - qOk, tries) : 0;
+  const fromDrop = qOk > 0 ? (qUnique / qOk) * dropHitAll : 0;
+  const pool = usable.filter((e) => !e.starter && rarityIdx(e.rarity) >= min).map((e) => ({ r: e.rarity, w: e.dropWeight > 0 ? e.dropWeight : eco.dungeons.cards.gearRareWeight }));
+  const poolTotal = pool.reduce((a, p) => a + p.w, 0);
+  const fromPool = poolTotal > 0 ? pool.filter((p) => p.r === 'Unique').reduce((a, p) => a + p.w, 0) / poolTotal : 0;
+  const uniqueOfGear = 0.5 * fromDrop + (0.5 + 0.5 * (1 - dropHitAll)) * fromPool;
+  // 대박: 같은 단계 유니크 풀이 있을 때만 카드가 바뀐다(레전더리는 레이드에서만)
+  const jackpotPool = eco.shop.equipmentList.some(
+    (e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && (e.classOnly === null || e.classOnly === cls),
+  );
+  const pj = jackpotPool ? (diff.jackpotPerMille ?? 0) / 1000 : 0;
+  const n = d.sure ? LUCK_CARDS : 1;
+  return { unique: per(pj + (1 - pj) * gearCard * uniqueOfGear, n), legendary: per(0, n), cards: n };
+}
+
 /** 유니크 3 : 레전더리 1 가중치로, 직업이 쓸 수 있는 에픽 위 장비 하나(+0). 없으면 null */
 export function rollJackpot(eco: EconomyData, cls: string, rng: Rng, tier = 0): string | null {
   // 대박 카드: 같은 단계의 유니크(레전더리는 레이드에서만)
@@ -285,6 +361,7 @@ export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumb
 export function isOpenToday(eco: EconomyData, d: DungeonDef, now: Date): boolean {
   const day = gameWeekday(now);
   if (d.isRaid) return d.openDays.includes(day);
+  if (d.always) return true;
   if (eco.dungeons.weekendOpensAll && (day === 'Saturday' || day === 'Sunday')) return true;
   return d.openDays.includes(day);
 }

@@ -64,6 +64,7 @@ namespace DotRPG
                     run.CardsTakeAll = true;
                 }
                 run.Cards = auth.DealCards(run, Game.Player.Class);
+                if (run.Dungeon.sure != null) run.CardsTakeAll = true; // [REWARD] sure material + gold + luck cards, all taken
                 if (run.Dungeon.isRaid)
                 {
                     Progress.ClaimRaid(run.Dungeon, now, run.Difficulty);
@@ -112,6 +113,8 @@ namespace DotRPG
                 // [ANTI-ABUSE] A party daily dungeon pays nothing to a member who barely fought.
                 if (data.TryGetValue("reward_locked", out var pl) && pl is bool partyLocked && partyLocked)
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(data, "reward_lock_reason")));
+                // [REWARD 2026-10-14] A dungeon clear (not a raid) takes all its cards: sure material, sure gold, luck cards.
+                if (!run.Dungeon.isRaid) run.CardsTakeAll = MiniJson.Str(data, "card_mode", "pick_one") == "take_all" && run.Cards != null;
                 var raid = MiniJson.Obj(data, "raid");
                 if (raid != null && raid.TryGetValue("reward_locked", out var rl) && rl is bool locked && locked)
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));
@@ -132,7 +135,7 @@ namespace DotRPG
                 run.XpGained = 0;
                 run.Cards = null;
                 run.NoRewardNote = result == "held" ? "held" : "noanswer";
-                GameEvents.RaiseToast(result == "held" ? L.T("결과를 확인하는 중입니다. 보상은 확인 후 지급됩니다.") : L.T("서버에 결과를 보내지 못했습니다."));
+                GameEvents.RaiseToast(result == "held" ? L.T("클리어 기록이 평소와 달라(너무 빠른 클리어 등) 운영자 확인이 필요합니다. 정상으로 확인되면 다음 접속 때 보상 카드를 받습니다.") : L.T("서버에 결과를 보내지 못했습니다."));
             }
             EndRunState();
             RunEnded?.Invoke(run);

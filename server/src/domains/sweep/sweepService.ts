@@ -102,7 +102,7 @@ export async function sweepStatus(accountId: number, characterUuid: string) {
     weekly_activity: weeklyActivityView(sweep, directClears, claimedRow > 0),
     hold: hold !== null,
     dungeons: [...eco.dungeons.byId.values()]
-      .filter((d) => !d.isRaid)
+      .filter((d) => !d.isRaid && !d.always)
       .map((d) => ({
         id: d.id,
         open_today: isOpenToday(eco, d, now),
@@ -156,7 +156,7 @@ async function processSweep(ctx: EconCtx, body: SweepRunBody, all: boolean): Pro
 
   const d = eco.dungeons.byId.get(body.dungeon_id);
   if (!d) throw new AppError(422, '알 수 없는 던전입니다.', 'DUNGEON_UNKNOWN');
-  if (d.isRaid) throw DENIED('SWEEP_NOT_ALLOWED', '소탕할 수 없는 던전입니다.', { dungeon_id: d.id });
+  if (d.isRaid || d.always) throw DENIED('SWEEP_NOT_ALLOWED', '소탕할 수 없는 던전입니다.', { dungeon_id: d.id });
   const diff = diffOf(eco, d, body.difficulty);
   if (!diff) throw new AppError(422, '알 수 없는 난이도입니다.', 'DUNGEON_UNKNOWN');
   const best = await repo.bestRanks(ctx.client, ctx.char.id);

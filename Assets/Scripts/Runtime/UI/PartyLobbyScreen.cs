@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,7 +56,7 @@ namespace DotRPG
             w.inviteField.characterLimit = 16;
             w.inviteField.onEndEdit.AddListener(_ => { if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) w.InviteTyped(); });
             w.focusField = w.inviteField;
-            w.rosterBtn = Button(w.content, "Roster", L.T("AI 동료 편성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(150f, 38f), () => Game.Flow.OpenWindow(Game.UI.Party), 17);
+            w.rosterBtn = Button(w.content, "Roster", L.T("AI 동료 편성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(150f, 38f), () => { PartyScreen.ReturnTo = w; Game.Flow.OpenWindow(Game.UI.Party); }, 17);
             Label(w.content, "MembersHead", L.T("<color=#b8c4d8>파티원</color>"), 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -48f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < PartyManager.MaxMembers; i++)
             {
@@ -150,7 +151,7 @@ namespace DotRPG
             Client.InviteByName(name, (ok, msg) => { if (ok) inviteField.text = ""; Done(ok, msg, L.F("{0}님에게 파티 초대를 보냈습니다.", name)); });
         }
 
-        static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
+        static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
 
         // [PARTY] Leader's destination picker: every dungeon / raid as a button, and the difficulty below (not raids).
         RectTransform picker;

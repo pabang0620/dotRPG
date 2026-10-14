@@ -427,7 +427,17 @@ describe('친구 접속 상태, 파티 알림과 초대', () => {
     // 가입 전 대화는 따라잡기에 없다
     M1.c.close();
     await until(() => registry.size() === 2);
+    // 접속 종료도 파티원에게 바로 알린다(맵 이동 때만 알리던 것: 로그아웃한 사람이 '같은 곳에 있음'으로 남았다)
+    const memberOf = async (): Promise<{ online: boolean }> => {
+      const r = await request(app).get(`/characters/${H.id}/party`).set(auth(H.s));
+      return (r.body.data.party.members as { character_id: string; online: boolean }[]).find((x) => x.character_id === M.id) as { online: boolean };
+    };
+    expect((await H1.c.waitT('party.changed')).scope).toBe('party');
+    expect((await memberOf()).online).toBe(false);
     const rejoin = await join(M, { since: 0 });
+    // 다시 접속하면 맵을 옮기기 전에도 바로 알린다
+    expect((await H1.c.waitT('party.changed')).scope).toBe('party');
+    expect((await memberOf()).online).toBe(true);
     expect((rejoin.backlog.lines as { text: string }[]).map((l) => l.text)).not.toContain('파티 시작');
     // 이미 파티에 있는 사람은 초대할 수 없다(TARGET_BUSY)
     const busy = await rest.post(H, `/characters/${H.id}/party/invites`, { request_id: randomUUID(), target: M.id });

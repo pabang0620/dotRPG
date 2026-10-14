@@ -449,19 +449,19 @@ describe('호스트 인계와 방장 보고, 이탈', () => {
     const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE character_id = $1 AND reason = 'dungeon_clear'", [member.dbId]);
     expect(Number((xp.rows[0] as { n: string }).n)).toBe(1);
 
-    // 카드 자동 지급: 마감 전에는 그대로, 지난 뒤 한 장만 지급(두 번 돌아도 한 장)
+    // 카드 자동 지급(2026-10-14 다중 보상, take_all): 마감 전에는 그대로, 지난 뒤 4장 모두(두 번 돌아도 4장)
     await runCardAutoPickTick();
-    expect((await getPool().query('SELECT card_picked FROM dungeon_runs WHERE uuid = $1', [memberRun])).rows[0]).toMatchObject({ card_picked: null });
+    expect((await getPool().query('SELECT cards_taken FROM dungeon_runs WHERE uuid = $1', [memberRun])).rows[0]).toMatchObject({ cards_taken: 0 });
     advance(11 * 60);
     await runCardAutoPickTick();
     await runCardAutoPickTick();
-    const picked = await getPool().query('SELECT card_picked FROM dungeon_runs WHERE uuid = $1', [memberRun]);
-    expect((picked.rows[0] as { card_picked: number | null }).card_picked).not.toBeNull();
+    const picked = await getPool().query('SELECT cards_mode, cards_taken FROM dungeon_runs WHERE uuid = $1', [memberRun]);
+    expect(picked.rows[0]).toMatchObject({ cards_mode: 'take_all', cards_taken: 15 });
     const cardGrants = await getPool().query(
       "SELECT (SELECT count(*) FROM item_ledger WHERE character_id = $1 AND reason = 'dungeon_card') + (SELECT count(*) FROM gold_ledger WHERE character_id = $1 AND reason = 'dungeon_card') AS n",
       [member.dbId],
     );
-    expect(Number((cardGrants.rows[0] as { n: string }).n)).toBe(1);
+    expect(Number((cardGrants.rows[0] as { n: string }).n)).toBe(4);
     await expectLedgerConsistent(member);
     await expectLedgerConsistent(host);
   });

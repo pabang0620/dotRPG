@@ -43,7 +43,7 @@ namespace DotRPG
             {
                 int index = i;
                 var view = RaidCardView.Create(cardsPanel, "RaidCard" + i, new Vector2(0.5f, 1f), new Vector2(-total * 0.5f + CardW * 0.5f + i * (CardW + CardGap), -46f), 1f,
-                    () => { cursor = index; RaidPick(index); },
+                    () => { cursor = index; if (!ShowRareCardChance(index)) RaidPick(index); },
                     () => run?.Cards != null && index < run.Cards.Count ? run.Cards[index].itemId : null);
                 view.DimOthers = k => { foreach (var other in raidViews) if (other != view) other.SetDim(k); };
                 view.SetActive(false);
@@ -194,7 +194,7 @@ namespace DotRPG
             if (next < 0)
             {
                 done = true;
-                string material = run.Dungeon.raidReward != null ? run.Dungeon.raidReward.materialItem : null;
+                string material = run.Dungeon.raidReward != null ? run.Dungeon.raidReward.materialItem : run.Dungeon.sure?.material;
                 int sum = 0;
                 foreach (var card in run.Cards) if (material != null && card.itemId == material) sum += card.count;
                 raidSummary.text = sum > 0 ? $"<b>{L.T(DungeonDatabase.ItemName(material))} +{sum:N0}</b>  " + L.F("<color=#b8c4d8>(보유 {0:N0})</color>", Game.Session.Inventory.Count(material)) : "";
@@ -203,6 +203,23 @@ namespace DotRPG
             RefreshRaidTitle();
             RefreshRaidCursor();
             RefreshButtons();
+        }
+
+        /// <summary>[REWARD 2026-10-14] A flipped Unique / Legendary card: a click shows how likely it was. False otherwise.</summary>
+        bool ShowRareCardChance(int index)
+        {
+            if (run == null || run.Cards == null || index < 0 || index >= run.Cards.Count || index >= raidViews.Count || !raidViews[index].Flipped) return false;
+            if (!DungeonRewards.IsJackpot(run.Cards[index]) && !IsLegendary(run.Cards[index].itemId)) return false;
+            var cls = Game.Player != null ? Game.Player.Class : CharacterClass.Warrior;
+            GameEvents.RaiseToast(DungeonRewards.RareChanceText(run.Dungeon, DungeonDatabase.DifficultyFor(run.Dungeon, run.Difficulty), cls));
+            return true;
+        }
+
+        static bool IsLegendary(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return false;
+            var item = EquipmentDatabase.Get(key) ?? EquipmentDatabase.Get(EquipmentDatabase.BaseId(key));
+            return item != null && item.rarity >= ItemRarity.Legendary;
         }
 
         /// <summary>The nearest face-down card from <paramref name="from"/> going in <paramref name="dir"/> (wraps), or -1 if none is left.</summary>

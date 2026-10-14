@@ -38,10 +38,15 @@ namespace DotRPG
             w.listRoot = list.rectTransform;
             SwipeSteps.Add(list.gameObject, RowHeight, w.ScrollRows); // touch: swipe instead of the mouse wheel
             w.moreUp = Label(list.transform, "MoreUp", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -2f), new Vector2(160f, 20f), TextAnchor.UpperRight);
-            w.moreDown = Label(list.transform, "MoreDown", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -8f - VisibleRows * RowHeight), new Vector2(160f, 20f), TextAnchor.UpperRight);
+            w.moreDown = Label(list.transform, "MoreDown", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -8f - VisibleRows * RowHeight), new Vector2(ListWidth - 20f, 20f), TextAnchor.UpperRight);
             w.empty = Label(list.transform, "Empty", L.T("진행 중인 퀘스트가 없습니다."), 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
             var side = Panel(w.content, "Detail", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(ListWidth + 20f, 0f), new Vector2(760f, 590f), new Color32(24, 36, 54, 235));
-            w.detail = Label(side.transform, "Body", "", 21, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -22f), new Vector2(704f, 500f));
+            // The body ends above the two buttons (bottom 52-96) and the hint line; a long quest text shrinks instead of being cut.
+            w.detail = Label(side.transform, "Body", "", 21, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -22f), new Vector2(704f, 460f));
+            w.detail.resizeTextForBestFit = true;
+            w.detail.resizeTextMinSize = 14;
+            w.detail.resizeTextMaxSize = 21;
+            w.detail.verticalOverflow = VerticalWrapMode.Truncate;
             w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 16f), new Vector2(704f, 30f));
             w.hint.color = new Color32(184, 196, 216, 255);
             // Check this quest for auto-progress (nothing checked: the main quest first, then the pinned side quest).
@@ -97,7 +102,12 @@ namespace DotRPG
             for (int i = top; i < quests.Count && i < top + VisibleRows; i++) rows.Add(BuildRow(quests[i], i, i - top));
             moreUp.text = top > 0 ? L.F("<color=#b8c4d8>▲ 위로 {0}개</color>", top) : "";
             int below = quests.Count - (top + rows.Count);
-            moreDown.text = below > 0 ? L.F("<color=#b8c4d8>▼ 아래로 {0}개</color>", below) : "";
+            // The rows below include finished quests (listed last): say how many are still open so "22" is not read as 22 to take.
+            int belowDone = 0;
+            for (int i = top + rows.Count; i < quests.Count; i++) if (Game.Quest.StatusOf(quests[i].id) == QuestStatus.Completed) belowDone++;
+            moreDown.text = below <= 0 ? "" : belowDone > 0
+                ? L.F("<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>", below, below - belowDone, belowDone)
+                : L.F("<color=#b8c4d8>▼ 아래로 {0}개</color>", below);
         }
 
         Row BuildRow(QuestDef q, int index, int line)

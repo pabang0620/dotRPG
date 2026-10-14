@@ -315,6 +315,16 @@ namespace DotRPG
         };
 
         /// <summary>
+        /// [BALANCE 2026-10-14] Weapons only: +13 and up hit much harder (they are rare to reach). +13 = the old +15 (56.11)
+        /// x1.1, then +14 72, +15 85 and on up to +20 120. Armor keeps <see cref="EnhanceCoef"/> (max HP).
+        /// </summary>
+        static readonly float[] WeaponEnhanceCoef =
+        {
+            0f, 1.1f, 2.2f, 3.3f, 4.5f, 5.7f, 7.0f, 8.3f, 11.11f, 14.7f, 18.9f,
+            27.25f, 37.13f, 61.7f, 72f, 85f, 92f, 99f, 106f, 113f, 120f,
+        };
+
+        /// <summary>
         /// Growth per coefficient point: the item's own <see cref="EquipmentItem.enhanceSeed"/>, or the default
         /// for its category and tier t: weapon 0.135 × (t + 1) (≈ +50% of base + weapon attack at +12),
         /// top / bottom 0.5 + 0.25 t, necklace / ring 0.3 + 0.15 t.
@@ -341,7 +351,7 @@ namespace DotRPG
             var s = new GearStats { attack = item.attack, maxHealth = item.maxHealth, block = item.block, speed = item.speed };
             level = Mathf.Clamp(level, 0, MaxEnhance);
             if (level == 0) return s;
-            float exact = EnhanceSeedOf(item) * EnhanceCoef[level];
+            float exact = EnhanceSeedOf(item) * (item.category == EquipCategory.Weapon ? WeaponEnhanceCoef[level] : EnhanceCoef[level]);
             int bonus = Mathf.FloorToInt(exact + 0.5f);
             if (item.category == EquipCategory.Weapon)
             {

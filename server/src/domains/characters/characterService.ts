@@ -75,6 +75,7 @@ async function buildDetail(db: Parameters<typeof repo.getState>[0], c: repo.Char
       count: i.count,
       location: i.location,
       slot: i.slot,
+      bind: i.bind, // 교환 창이 귀속 아이템을 목록에서 뺀다
     })),
     // 3단계: 서버가 정본인 상태(퀘스트 청구, 상자, 강화 천장)
     bonus_max_health: econ.bonusMaxHealth,

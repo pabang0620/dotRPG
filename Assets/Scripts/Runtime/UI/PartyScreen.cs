@@ -11,6 +11,17 @@ namespace DotRPG
     /// </summary>
     public class PartyScreen : WindowScreen
     {
+        /// <summary>[UX] The window that opened this one (party lobby, dungeon select): Esc goes back there instead of to the game.</summary>
+        public static WindowScreen ReturnTo;
+
+        public override void Close()
+        {
+            var back = ReturnTo;
+            ReturnTo = null;
+            if (back != null && back != this) Game.UI.ShowWindow(back);
+            else base.Close();
+        }
+
         const float SlotW = 290f, SlotH = 104f, CardW = 290f, CardH = 372f, Step = 300f;
 
         sealed class Slot
