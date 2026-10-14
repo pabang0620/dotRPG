@@ -85,6 +85,8 @@ namespace DotRPG
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = 0.3f;
             col.offset = new Vector2(0f, 0.22f);
+            // Players walk through NPCs; talking is range-based (Interactable.FindBest), not contact-based.
+            col.isTrigger = true;
 
             var visual = new GameObject("Visual").transform;
             visual.SetParent(go.transform, false);
