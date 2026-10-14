@@ -131,44 +131,11 @@ namespace DotRPG
 
         // ---------- 추천 배치 ----------
 
-        /// <summary>The standard build per career: (skill index, target rank) in learning order, then the skills for
-        /// Q W E R and [SKILL 8] A S D in that order (<see cref="KeySlot"/>).</summary>
-        /// <summary>[SKILL 8] The k-th recommended key: Q W E R are slots 0-3, then A S D are slots 5-7 (T, slot 4, is the awakening).</summary>
-        static int KeySlot(int k) => k < 4 ? k : k + 1;
-
-        static (int[,] ranks, int[] keys) Recommended(Career c)
-        {
-            switch (c)
-            {
-                // 섬광보 (2) goes out on Shift once learned, so W takes 검기 태세 (9).
-                case Career.Fighter: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 9, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 3, 3 }, { 1, 2 }, { 0, 3 }, { 4, 3 }, { 2, 2 }, { 1, 3 }, { 2, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 9, 5, 3, 6, 7 });
-                case Career.Guardian: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 3 }, { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 5, 2 }, { 6, 2 }, { 7, 2 } }, new[] { 2, 5, 6, 7, 1, 3 });
-                // [2026-10-11] Q W E R all at rank 1 first (성운 폭발 used to wait behind 홍련구 3 and leave R empty), then the
-                // spammable 연쇄전격 and the charge shot.
-                // 매직 배리어 (9) right after 마력 순환 (4) and on D.
-                case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 9, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5, 7, 6, 9 });
-                case Career.Bishop: return (new[,] { { 0, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 6, 2 }, { 0, 3 }, { 1, 3 }, { 7, 1 }, { 4, 2 } }, new[] { 5, 1, 2, 6, 7, 3 });
-                default: return (new int[0, 2], new int[0]);
-            }
-        }
+        static (int[,] ranks, int[] keys) Recommended(Career c) => SkillRecommend.Plan(c);
 
         void ApplyRecommended(Progression p)
         {
-            var (ranks, keys) = Recommended(p.Career);
-            var skills = CareerCatalog.For(p.Career);
-            int learned = 0;
-            for (int r = 0; r < ranks.GetLength(0); r++)
-            {
-                var s = skills[ranks[r, 0]];
-                while (p.Rank(s.id) < ranks[r, 1] && p.NodeLock(s) == "" && p.Learn(s.id)) learned++;
-            }
-            int placed = 0;
-            for (int k = 0; k < keys.Length; k++)
-            {
-                var s = skills[keys[k]];
-                if (p.CareerUnlocked(s) && p.IsSlotOpen(KeySlot(k)) && p.EquipSkill(KeySlot(k), s.id)) placed++;
-            }
-            if (p.Awakened) p.EquipSkill(4, skills[8].id);
+            var (learned, placed) = SkillRecommend.Apply(p);
             GuideFlags.Mark(GuideFlags.Recommend); // [GUIDE]
             Game.Flow.Autosave();
             GameEvents.RaiseToast(learned > 0 ? L.F("추천 배치: {0}단계를 배우고 스킬 {1}개를 장착했습니다.", learned, placed) : L.F("추천 배치: 스킬 {0}개를 장착했습니다. (남은 포인트로 더 배울 기술 없음)", placed));

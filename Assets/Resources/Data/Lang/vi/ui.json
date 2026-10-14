@@ -1324,5 +1324,7 @@
  "자동 마나 물약 기준": "Ngưỡng tự dùng thuốc mana",
  "HP {0}% 아래": "HP dưới {0}%",
  "MP {0}% 아래": "MP dưới {0}%",
- "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ còn {0} (đang mở {1} · đã xong {2})</color>"
+ "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ còn {0} (đang mở {1} · đã xong {2})</color>",
+ "새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)": "Mọi kỹ năng nghề mở hết ở Lv.22 · sau đó: nâng bậc (1 điểm mỗi cấp) và ô phím (Lv.25 S · Lv.30 D)",
+ "전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림": "4 điểm khi chuyển nghề + 1 mỗi cấp · chi phí bậc 1/2/3 · đã hoàn {0} · kỹ năng mới ở Lv.15/18/22"
 }

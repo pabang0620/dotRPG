@@ -635,5 +635,7 @@
  "자동 마나 물약 기준": "Auto mana potion at",
  "HP {0}% 아래": "HP below {0}%",
  "MP {0}% 아래": "MP below {0}%",
- "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ {0} more ({1} open · {2} done)</color>"
+ "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ {0} more ({1} open · {2} done)</color>",
+ "새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)": "All career skills are open by Lv.22 · after that: rank-ups (1 point per level) and key slots (Lv.25 S · Lv.30 D)",
+ "전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림": "4 points on promotion + 1 per level · rank cost 1/2/3 · refunded {0} · new skills at Lv.15/18/22"
 }

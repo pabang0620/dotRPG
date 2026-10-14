@@ -1324,5 +1324,7 @@
  "자동 마나 물약 기준": "Poção de mana automática em",
  "HP {0}% 아래": "HP abaixo de {0}%",
  "MP {0}% 아래": "MP abaixo de {0}%",
- "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ mais {0} ({1} abertas · {2} concluídas)</color>"
+ "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ mais {0} ({1} abertas · {2} concluídas)</color>",
+ "새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)": "Todas as habilidades de carreira abrem até o Nv.22 · depois: subir graus (1 ponto por nível) e espaços de tecla (Nv.25 S · Nv.30 D)",
+ "전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림": "4 pontos na promoção + 1 por nível · custo por grau 1/2/3 · devolvidos {0} · novas habilidades nos Nv.15/18/22"
 }

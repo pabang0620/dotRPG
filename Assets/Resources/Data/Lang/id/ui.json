@@ -1324,5 +1324,7 @@
  "자동 마나 물약 기준": "Batas ramuan mana otomatis",
  "HP {0}% 아래": "HP di bawah {0}%",
  "MP {0}% 아래": "MP di bawah {0}%",
- "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ {0} lagi ({1} terbuka · {2} selesai)</color>"
+ "<color=#b8c4d8>▼ 아래로 {0}개 (진행 가능 {1} · 완료 {2})</color>": "<color=#b8c4d8>▼ {0} lagi ({1} terbuka · {2} selesai)</color>",
+ "새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)": "Semua skill karier terbuka di Lv.22 · setelah itu: naik tingkat (1 poin per level) dan slot tombol (Lv.25 S · Lv.30 D)",
+ "전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림": "4 poin saat promosi + 1 per level · biaya tingkat 1/2/3 · dikembalikan {0} · skill baru di Lv.15/18/22"
 }
