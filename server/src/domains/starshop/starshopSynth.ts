@@ -10,11 +10,11 @@ import * as wallets from './starWallet';
 import { poolOf } from './starshopService';
 import type { CollectionBody, DismantleBody, SynthBody } from './starshopValidation';
 
-/** 합성 결과로 나올 수 있는 외형: 희귀·에픽은 오라(에픽은 내 직업 에픽 스킨 포함), 유니크는 내 직업 유니크 스킨 */
+/** 합성 결과로 나올 수 있는 외형: 희귀·에픽은 오라와 내 직업 같은 등급 스킨, 유니크는 내 직업 유니크 스킨 */
 function synthPool(to: Rarity, cls: string) {
   if (to === 'unique') return poolOf('skin', 'unique', cls);
   if (to === 'epic') return [...poolOf('aura', 'epic', cls), ...poolOf('skin', 'epic', cls)];
-  return poolOf('aura', to, cls);
+  return [...poolOf('aura', to, cls), ...poolOf('skin', to, cls)];
 }
 
 /** 그 등급의 여분(재료로 쓸 수 있는 것): 외형 id별 개수 */

@@ -357,6 +357,14 @@ namespace DotRPG
             Summary();
         }
 
+        /// <summary>The realtime channel said a mail arrived: poll the summary and reload the mailbox now.</summary>
+        public void PollNow()
+        {
+            mailAt = -99f;
+            Summary();
+            Changed?.Invoke();
+        }
+
         void Summary()
         {
             summaryAt = Now;

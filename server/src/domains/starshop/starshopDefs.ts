@@ -4,11 +4,12 @@
 // 등급: 일반 < 희귀 < 에픽 < 유니크 (< 전설: 추후 추가 자리). 설계 원칙(Docs/PLAN_MONETIZATION.md):
 //   - 최상위(유니크 스킨)는 확률로는 거의 나오지 않고(0.02%) 선택 게이지가 주 획득 경로다.
 //   - 한 단계 아래(에픽)는 1%로 "뽑는 맛"을 맡는다. 일반·희귀는 중복 방지와 별조각 환급으로 손해감을 줄인다.
+//   - 스킨 뽑기는 모든 등급이 내 직업 스킨이다(일반·희귀 스킨은 기본 몸체 색 바꾸기, 2026-10-14).
 //   - 10+1의 보너스 1회: 오라·스킨 뽑기는 희귀 이상, 장비 뽑기는 일반 1회와 같은 확률.
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'unique';
 
-export const RATES_VERSION = '2026-10-05.7';
+export const RATES_VERSION = '2026-10-14.1';
 
 /** 확률 단위: 십만분율(0.001% 단위) */
 export const RATE_SCALE = 100_000;
@@ -21,7 +22,7 @@ export type CosmeticBanner = 'aura' | 'skin';
 export const BANNER_WEIGHT: Record<CosmeticBanner, Record<Rarity, number>> = {
   // 오라: 에픽 오라 1%, 희귀 18%, 일반 81%
   aura: { unique: 0, epic: 1_000, rare: 18_000, common: 81_000 },
-  // 스킨: 유니크 스킨 0.02%, 에픽 스킨 1%, 희귀 오라 18%, 일반 오라 80.98%
+  // 스킨: 유니크 스킨 0.02%, 에픽 스킨 1%, 희귀 스킨 18%, 일반 스킨 80.98%(전부 내 직업 스킨)
   skin: { unique: 20, epic: 1_000, rare: 18_000, common: 80_980 },
 };
 
@@ -77,7 +78,7 @@ export const DISMANTLE_STARS = DUPLICATE_REFUND;
 /**
  * 합성: 같은 등급 여분 4개 -> 일정 확률로 한 등급 위 외형 하나. 실패하면 넣은 것 중 1개를 돌려준다.
  * 연속 실패가 pity번 쌓이면 다음 합성은 성공한다(0 = 천장 없음). 확률은 천분율.
- *   일반 -> 희귀 오라 40%, 희귀 -> 에픽(오라 또는 내 직업 에픽 스킨) 10%(15회 실패 뒤 확정),
+ *   일반 -> 희귀(오라 또는 내 직업 희귀 스킨) 40%, 희귀 -> 에픽(오라 또는 내 직업 에픽 스킨) 10%(15회 실패 뒤 확정),
  *   에픽 -> 내 직업 유니크 스킨 3%(10회 실패 뒤 확정)
  */
 export const SYNTH_COUNT = 4;
@@ -113,6 +114,8 @@ export const COLLECTION_ATTACK_MAX = COLLECTIONS.reduce((a, c) => a + c.attack, 
 /** 원하는 외형을 바로 얻는 확정 교환 가격. 0 = 교환 불가(유니크 스킨은 선택 게이지로만) */
 export const EXCHANGE_PRICE: Record<Rarity, number> = { common: 300, rare: 1000, epic: 3000, unique: 0 };
 export const EPIC_SKIN_PRICE = 4000;
+/** 일반·희귀 스킨 확정 교환 가격(오라와 같은 값) */
+export const LOW_SKIN_PRICE: Record<'common' | 'rare', number> = { common: EXCHANGE_PRICE.common, rare: EXCHANGE_PRICE.rare };
 
 export interface CosmeticDef {
   id: string;
@@ -136,6 +139,18 @@ export const STAR_COSMETICS: readonly CosmeticDef[] = [
   { id: 'aura_rainbow', name: '무지개 오라', rarity: 'epic' },
   { id: 'aura_gold', name: '황금 오라', rarity: 'epic' },
   { id: 'aura_abyss', name: '심연 오라', rarity: 'epic' },
+  { id: 'skin_w_sand', name: '모래빛 여행복', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_moss', name: '숲지기 옷', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_rust', name: '적갈 견습복', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_m_ash', name: '잿빛 견습 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_pilgrim', name: '순례자의 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_sprout', name: '새싹 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_w_crimson', name: '진홍 용병복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_amethyst', name: '자수정 기사복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_brass', name: '황동 경비복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_m_rose', name: '장밋빛 로브', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_emerald', name: '에메랄드 로브', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_sunset', name: '노을 로브', rarity: 'rare', skin: 'mage' },
   { id: 'skin_maple', name: '단풍 무사', rarity: 'epic', skin: 'warrior' },
   { id: 'skin_obsidian', name: '흑요 기사', rarity: 'epic', skin: 'warrior' },
   { id: 'skin_noir', name: '칠흑의 검희', rarity: 'epic', skin: 'warrior' },
@@ -156,6 +171,6 @@ export function cosmeticsOf(rarity: Rarity): CosmeticDef[] {
 
 /** 확정 교환 가격(0 = 교환 불가) */
 export function exchangePriceOf(c: CosmeticDef): number {
-  if (c.skin) return c.rarity === 'epic' ? EPIC_SKIN_PRICE : 0;
+  if (c.skin) return c.rarity === 'epic' ? EPIC_SKIN_PRICE : c.rarity === 'unique' ? 0 : LOW_SKIN_PRICE[c.rarity];
   return EXCHANGE_PRICE[c.rarity];
 }

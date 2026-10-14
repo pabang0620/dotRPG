@@ -4,7 +4,7 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>The motes a costume skin leaves around its wearer (purely visual).</summary>
-    public enum SkinTrailKind { GoldSparks, MoonMotes, Stars, Embers }
+    public enum SkinTrailKind { GoldSparks, MoonMotes, Stars, Embers, None }
 
     /// <summary>
     /// One costume skin: a full repaint of a class's body in every direction and frame. Warrior skins swap the
@@ -26,8 +26,35 @@ namespace DotRPG
     {
         static Color32 C(string hex) => PixelCanvas.Hex(hex);
 
+        /// <summary>Common skin: the class body recoloured (Tools/art/skin_recolor.py), no motes.</summary>
+        static SkinDef Plain(string id, string name, CharacterClass cls, string blurb) => new SkinDef
+        {
+            id = id, name = name, cls = cls, blurb = blurb, trail = SkinTrailKind.None,
+            sheet = cls == CharacterClass.Warrior ? id.Substring("skin_".Length) : null,
+        };
+
+        /// <summary>Rare skin: a recoloured class body with a light mote trail.</summary>
+        static SkinDef Tinted(string id, string name, CharacterClass cls, string blurb, Color a, Color b)
+        {
+            var s = Plain(id, name, cls, blurb);
+            s.trail = SkinTrailKind.MoonMotes; s.trailA = a; s.trailB = b;
+            return s;
+        }
+
         public static readonly IReadOnlyList<SkinDef> All = new[]
         {
+            Plain("skin_w_sand", L.T("모래빛 여행복"), CharacterClass.Warrior, L.T("먼 길을 걸어 온 모래빛 조끼와 바지.")),
+            Plain("skin_w_moss", L.T("숲지기 옷"), CharacterClass.Warrior, L.T("숲을 지키는 이의 초록 조끼와 바지.")),
+            Plain("skin_w_rust", L.T("적갈 견습복"), CharacterClass.Warrior, L.T("훈련장에서 닳은 적갈색 견습복.")),
+            Plain("skin_m_ash", L.T("잿빛 견습 로브"), CharacterClass.Mage, L.T("마탑 견습생이 입는 잿빛 로브와 모자.")),
+            Plain("skin_m_pilgrim", L.T("순례자의 로브"), CharacterClass.Mage, L.T("먼 길을 떠나는 순례자의 갈색 로브와 모자.")),
+            Plain("skin_m_sprout", L.T("새싹 로브"), CharacterClass.Mage, L.T("봄 새싹 빛깔의 연둣빛 로브와 모자.")),
+            Tinted("skin_w_crimson", L.T("진홍 용병복"), CharacterClass.Warrior, L.T("이름난 용병단의 진홍 조끼. 곁에 붉은 빛 조각이 떠오른다."), new Color(1f, .4f, .4f), new Color(1f, .85f, .8f)),
+            Tinted("skin_w_amethyst", L.T("자수정 기사복"), CharacterClass.Warrior, L.T("자수정빛 기사 견습복. 곁에 보랏빛 빛 조각이 떠오른다."), new Color(.75f, .5f, 1f), new Color(.95f, .9f, 1f)),
+            Tinted("skin_w_brass", L.T("황동 경비복"), CharacterClass.Warrior, L.T("성문 경비대의 황동빛 조끼. 곁에 금빛 빛 조각이 떠오른다."), new Color(1f, .8f, .4f), new Color(1f, .95f, .8f)),
+            Tinted("skin_m_rose", L.T("장밋빛 로브"), CharacterClass.Mage, L.T("장밋빛 로브와 모자. 주위에 분홍 빛망울이 맴돈다."), new Color(1f, .55f, .75f), new Color(1f, .9f, .95f)),
+            Tinted("skin_m_emerald", L.T("에메랄드 로브"), CharacterClass.Mage, L.T("에메랄드빛 로브와 모자. 주위에 초록 빛망울이 맴돈다."), new Color(.4f, 1f, .7f), new Color(.9f, 1f, .95f)),
+            Tinted("skin_m_sunset", L.T("노을 로브"), CharacterClass.Mage, L.T("노을빛 로브와 모자. 주위에 주황 빛망울이 맴돈다."), new Color(1f, .6f, .3f), new Color(1f, .9f, .75f)),
             new SkinDef
             {
                 id = "skin_lion", name = L.T("황금 사자 기사"), cls = CharacterClass.Warrior, sheet = "lion",

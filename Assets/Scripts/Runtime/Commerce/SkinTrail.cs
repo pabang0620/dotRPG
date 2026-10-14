@@ -43,7 +43,7 @@ namespace DotRPG
         public static void Set(PlayerController who, SpriteRenderer body, SkinDef skin)
         {
             var t = who.GetComponent<SkinTrail>();
-            if (skin == null) { if (t != null) t.Clear(); return; }
+            if (skin == null || skin.trail == SkinTrailKind.None) { if (t != null) t.Clear(); return; }
             if (t == null) t = who.gameObject.AddComponent<SkinTrail>();
             t.skin = skin;
             t.body = body;

@@ -148,8 +148,13 @@ namespace DotRPG
                     break;
                 }
                 case "chat.sys":
-                    PostSystem(MiniJson.Str(d, "text", ""));
+                {
+                    string sys = MiniJson.Str(d, "text", "");
+                    PostSystem(sys);
+                    // [MAIL] System lines are mostly mail/auction notices (a new mail row): refresh the mailbox at once, not on the next poll.
+                    (OnlineServices.Auction as ServerAuctionService)?.PollNow();
                     break;
+                }
                 case "friends.presence":
                     foreach (var o in MiniJson.Arr(d, "list") ?? new List<object>()) ApplyPresence(o as Dictionary<string, object>);
                     SocialChanged?.Invoke();

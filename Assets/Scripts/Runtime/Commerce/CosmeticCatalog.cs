@@ -33,9 +33,9 @@ namespace DotRPG
         public SkinDef Skin => SkinCatalog.Find(Id);
         public bool IsSkin => Skin != null;
 
-        /// <summary>Attack bonus (%) while worn: auras common 1, rare 2, epic 3; skins epic 4, unique 5 (server: starshopDefs).</summary>
+        /// <summary>Attack bonus (%) while worn: auras common 1, rare 2, epic 3; skins common/rare 0, epic 4, unique 5 (server: starshopDefs).</summary>
         public int DamagePercent => IsSkin
-            ? (Rarity == CosmeticRarity.Epic ? 4 : 5)
+            ? (Rarity == CosmeticRarity.Epic ? 4 : Rarity >= CosmeticRarity.Unique ? 5 : 0)
             : Rarity >= CosmeticRarity.Epic ? 3 : Rarity == CosmeticRarity.Rare ? 2 : Rarity == CosmeticRarity.Common ? 1 : 0;
 
         /// <summary>Unique skins come only from the selection gauge; everything else can also be exchanged.</summary>
@@ -82,7 +82,20 @@ namespace DotRPG
             new CosmeticProduct("aura_rainbow", L.T("무지개 오라"), new Color32(255, 255, 255, 220), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
             new CosmeticProduct("aura_gold", L.T("황금 오라"), new Color32(255, 210, 80, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
             new CosmeticProduct("aura_abyss", L.T("심연 오라"), new Color32(120, 80, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
-            // Costume skins (SkinCatalog): epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
+            // Costume skins (SkinCatalog): common/rare skins (recoloured class body) fill the skin draw's lower tiers,
+            // epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
+            new CosmeticProduct("skin_w_sand", L.T("모래빛 여행복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_moss", L.T("숲지기 옷"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_rust", L.T("적갈 견습복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_ash", L.T("잿빛 견습 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_pilgrim", L.T("순례자의 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_sprout", L.T("새싹 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_crimson", L.T("진홍 용병복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_amethyst", L.T("자수정 기사복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_brass", L.T("황동 경비복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_rose", L.T("장밋빛 로브"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_emerald", L.T("에메랄드 로브"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_sunset", L.T("노을 로브"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_maple", L.T("단풍 무사"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_obsidian", L.T("흑요 기사"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_noir", L.T("칠흑의 검희"), Color.white, false, CosmeticRarity.Epic),

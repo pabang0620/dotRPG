@@ -78,9 +78,15 @@ namespace DotRPG
             }
             w.attNote = Label(d, "AttNote", "", 16, tl, tl, new Vector2(24f, -450f), new Vector2(DetailW - 48f, 44f));
             w.claimBtn = Button(d, "Claim", L.T("받기"), "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 14f), UiSizes.ClaimButton, w.ClaimSelected, UiSizes.ClaimFont);
-            w.Service.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
         }
+
+        // The window is built before login (mock service) and OnlineServices.AttachAuction swaps in a new server
+        // service on every online entry, so bind to whichever service is current each time the window opens.
+        IAuctionService bound;
+        void OnEnable() { bound = Service; bound.Changed += OnServiceChanged; }
+        void OnDisable() { if (bound != null) bound.Changed -= OnServiceChanged; bound = null; }
+        void OnServiceChanged() { if (gameObject.activeInHierarchy) Refresh(); }
 
         public override void Show()
         {
