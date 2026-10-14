@@ -1680,5 +1680,7 @@
  "X-Data-Version 헤더가 없거나 형식이 올바르지 않습니다.": "L'en-tête X-Data-Version est absent ou mal formé.",
  "운영에서는 시계를 바꿀 수 없습니다": "L'horloge ne peut pas être modifiée en production",
  "운영에서는 난수를 바꿀 수 없습니다": "Le générateur aléatoire ne peut pas être modifié en production",
- "semver 형식이 아닙니다": "Ce n'est pas une chaîne semver"
+ "semver 형식이 아닙니다": "Ce n'est pas une chaîne semver",
+ "확률표 지문": "Empreinte de la table des taux",
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Journal de publication des tables de taux (0040, non lié aux comptes). Conditions d'utilisation art. 14-2, al. 3"
 }

@@ -961,8 +961,8 @@
  "환불된 결제로 갚아야 할 별조각이 있어 지금은 뽑을 수 없습니다.": "Du schuldest Sternsplitter aus einer erstatteten Zahlung, daher kannst du gerade nicht ziehen.",
  "B등급 이상 클리어 필요": "Abschluss mit mindestens Rang B nötig",
  "Lv.{0} 이상 필요": "Benötigt Lv.{0}+",
- "권장 레벨 Lv.{0} 이상이어야 소탕할 수 있습니다.": "Zum Säubern musst du mindestens das empfohlene Lv.{0} haben.",
- "던전 소탕은 아직 준비 중입니다.": "Dungeon-Säuberung ist noch nicht verfügbar.",
+ "권장 레벨 Lv.{0} 이상이어야 소탕할 수 있습니다.": "Für den Auto-Abschluss musst du mindestens das empfohlene Lv.{0} haben.",
+ "던전 소탕은 아직 준비 중입니다.": "Dungeon-Auto-Abschluss ist noch nicht verfügbar.",
  "던전 진행 중에는 소탕할 수 없습니다.": "Während eines Dungeons kannst du nicht säubern.",
  "던전 클리어권 {0}장을 샀습니다. (-{1:N0} G)": "{0} Dungeon-Abschlussschein(e) gekauft. (-{1:N0} G)",
  "던전 클리어권이 없습니다.": "Du hast keine Dungeon-Abschlussscheine.",
@@ -973,7 +973,7 @@
  "이번 주 보상을 이미 받았습니다.": "Du hast die Belohnung dieser Woche bereits abgeholt.",
  "주간 활동 목표를 아직 채우지 못했습니다.": "Das wöchentliche Aktivitätsziel ist noch nicht erreicht.",
  "주간 활동 보상: 던전 클리어권 {0}장을 받았습니다.": "Wöchentliche Aktivitätsbelohnung: {0} Dungeon-Abschlussschein(e) erhalten.",
- "직접 한 번 클리어하면 소탕 가능": "Einmal selbst abschließen, um Säubern freizuschalten",
+ "직접 한 번 클리어하면 소탕 가능": "Einmal selbst abschließen, um den Auto-Abschluss freizuschalten",
  "직접 한 번 클리어해야 소탕할 수 있습니다.": "Du musst ihn einmal selbst abschließen, bevor du säubern kannst.",
  "모험가": "Abenteurer",
  "30일 안에 요청할 수 있는 횟수를 넘었습니다.": "Die Zahl der in 30 Tagen erlaubten Anfragen wurde überschritten.",
@@ -1680,5 +1680,7 @@
  "X-Data-Version 헤더가 없거나 형식이 올바르지 않습니다.": "Der Header X-Data-Version fehlt oder hat ein ungültiges Format.",
  "운영에서는 시계를 바꿀 수 없습니다": "Im Betrieb kann die Uhr nicht geändert werden",
  "운영에서는 난수를 바꿀 수 없습니다": "Im Betrieb kann der Zufallsgenerator nicht geändert werden",
- "semver 형식이 아닙니다": "Kein semver-String"
+ "semver 형식이 아닙니다": "Kein semver-String",
+ "확률표 지문": "Fingerabdruck der Droprate-Tabelle",
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Veröffentlichungsprotokoll der Droprate-Tabellen (0040, nicht kontobezogen). Nutzungsbedingungen Art. 14-2 Abs. 3"
 }

@@ -13,6 +13,7 @@ import { maintPhase, maintRetryAfterMs } from '../../ops/maintenanceState';
 import { metrics } from '../../ops/metrics';
 import { getRateLimitStore } from '../../middleware/rateLimiter';
 import { AppError } from '../../utils/AppError';
+import { isOpen } from '../auth/playWindow';
 import { logger } from '../../utils/logger';
 import { compareSemver } from '../../utils/semver';
 import { buildBacklog } from './backlogService';
@@ -141,7 +142,7 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
       } catch (e) {
         if (e instanceof AppError && e.code === 'ACCOUNT_BANNED') {
           return closeWith(CLOSE.BANNED, 'BANNED', false, {
-            t: 'sanction', kind: 'ban', ends_at: e.extra?.banned_until, reason_code: 'other', message: '이용이 정지된 계정입니다.',
+            t: 'sanction', kind: 'ban', ends_at: e.extra?.banned_until, reason_code: (e.extra?.reason_code as string | undefined) ?? 'other', message: '이용이 정지된 계정입니다.',
           });
         }
         if (e instanceof AppError && e.code === 'TOKEN_EXPIRED') return closeWith(CLOSE.TOKEN_EXPIRED, 'TOKEN_EXPIRED', true);
@@ -150,6 +151,13 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
         throw e;
       }
       const account = verified.account;
+      // 게임시간 선택제: 시간대 밖이면 다시 붙지 못하게 재접속 없이 끊는다(로그인·토큰 갱신도 막힌다)
+      const pw = await getPool().query<{ play_window_start: number | null; play_window_end: number | null }>(
+        'SELECT play_window_start, play_window_end FROM accounts WHERE id = $1',
+        [account.id],
+      );
+      const w = pw.rows[0];
+      if (w && !isOpen({ start: w.play_window_start, end: w.play_window_end })) return closeWith(CLOSE.KICKED, 'PLAY_WINDOW_CLOSED', false);
       const ch = await getPool().query<{ id: string; uuid: string; name: string }>(
         'SELECT id, uuid, name FROM characters WHERE uuid = $1 AND account_id = $2 AND deleted_at IS NULL',
         [f.character_id, account.id],

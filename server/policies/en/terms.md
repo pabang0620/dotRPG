@@ -64,6 +64,8 @@ The Company may refuse registration, or later terminate the agreement, if:
 ### Article 9 (Changes to the Service)
 1. The Company may change the content of the Service (game content, balance, probabilities and so on) for operational or technical reasons.
 2. Changes to the probabilities of probability-based items are announced in-game and on the web page at least 7 days in advance.
+3. During a period the Company has announced as a test service (beta), game data (characters, items, free currency and so on) may be reset after notice. Paid Star Shards bought during a test service are refunded under the Paid Service Policy or granted again in the same amount.
+4. Adjustments to game content other than probability-based items, such as balance, stats, drop rates and rewards, are made to improve the Service. The Company has no obligation to compensate for resulting changes in the performance or value of game items a user holds.
 
 ### Article 10 (Termination of the Service)
 1. If the Company ends the Service, it announces this in-game and on the web page at least 30 days before the end date.
@@ -98,6 +100,18 @@ Users must not:
 ### Article 14 (Paid Services)
 The purchase, use, withdrawal of purchase and refund of Paid Star Shards follow the Paid Service Policy.
 
+### Article 14-2 (Probability-Based Items)
+1. The probabilities of products whose results are decided by chance, such as draws, Sealed Chests, cosmetic synthesis and gear enhancement ("probability-based items"), are shown in the in-game probability view and on the web page (probability disclosure). The tables shown are generated automatically from the rate tables the server actually uses.
+2. Each attempt at a probability-based item is independent. A displayed probability is the ratio expected over a very large number of attempts; it does not guarantee any particular result in one or a few attempts. A desired result may not appear even after many attempts at the same rate. Where a product has a pity rule (a guaranteed result after a set number of attempts), that rule is shown as well.
+3. The Company records the result and time of every attempt at a probability-based item, together with the rate table in effect at each time (its version and a fingerprint of its content), and keeps these records for the same period as payment records. A user may request the records of their own account at {{email}}.
+4. If a difference between a displayed probability and the probability actually applied is confirmed, the Company corrects it immediately and announces the fact and the affected period. Users who used the affected probability-based item during that period are compensated in a way the Company decides and announces, such as returning the Star Shards spent on that product during the period or granting new attempts at the correct rate. This compensation does not limit a user's right to claim damages under applicable law.
+5. A user who disputes a probability disclosure is asked to report the time and details of the attempt to {{email}}. The Company checks the stored attempt records and rate tables and replies.
+
+### Article 14-3 (Currency and Items Granted in Error)
+1. Currency, game items or experience granted in excess or in error because of a system error, an operator's mistake or the exploitation of a bug may be recovered or corrected by the Company after checking. If they have already been used and cannot be recovered as they are, the Company may recover the items obtained with them or currency of equal value.
+2. If a user did not receive something they should have because of an error by the Company, the Company grants it after checking.
+3. Recovery or granting is based on server records, and the Company notifies the user concerned.
+
 ## Chapter 6. Termination
 
 ### Article 15 (Account Withdrawal)
@@ -110,18 +124,34 @@ The purchase, use, withdrawal of purchase and refund of Paid Star Shards follow 
 ## Chapter 7. Damages and Disputes
 
 ### Article 16 (Damages)
-If the Company or a user breaches these Terms and causes damage to the other, the breaching party compensates the damage, except where there is no intent or negligence.
+1. If the Company or a user breaches these Terms and causes damage to the other, the breaching party compensates the damage, except where there is no intent or negligence.
+2. Unless the Company acted with intent or gross negligence, damages compensated by the Company are limited to ordinary damages, and damages relating to paid services are limited to the amount the user paid with the account during the 3 months before the damage occurred.
+3. Paragraph 2 does not apply where a law separately sets the Company's liability (such as damages relating to the display of probability information under the Game Industry Promotion Act); that law applies instead.
+4. A user who causes damage to the Company through conduct prohibited by Article 11 (payment fraud, refund abuse, attacks on servers, tampering with the program and so on) must compensate that damage.
 
 ### Article 17 (Disclaimers)
 1. The Company is not liable when it cannot provide the Service for reasons beyond its control, such as natural disasters, war, power outages or failures of telecommunications carriers.
 2. The Company is not liable for disruption caused by the user's own fault.
 3. The Company has no obligation to intervene in disputes between users, or between users and third parties, arising through the Service, and is not liable for resulting damage, except in cases of the Company's intent or gross negligence.
 4. Unless applicable law provides otherwise, the Company is not liable in connection with services provided free of charge.
+5. Unless the Company acted with intent or gross negligence, it is not liable for damage caused by failures or policies of services provided by third parties, such as Steam (Valve Corporation), payment processors, telecommunications carriers and cloud providers.
+6. Unless the Company acted with intent or gross negligence, it is not liable for a user's failure to obtain expected benefits from the Service, for damage caused by material obtained from the Service, or for changes in in-game rankings or in the value of game items.
+7. The Company is not liable for problems caused by the user's device, operating system or network environment, or for damage caused by the user's failure to manage their account information.
 
 ### Article 18 (Governing Law and Jurisdiction)
 1. Disputes between the Company and users are governed by the laws of the Republic of Korea.
-2. Lawsuits are brought before the court having jurisdiction under the Korean Civil Procedure Act.
-3. Users may apply for mediation to dispute mediation bodies such as the Korea Content Dispute Resolution Committee.
+2. When a dispute arises, the Company and the user first try in good faith to settle it by consultation. If a user raises an objection at {{email}}, the Company replies within 7 business days of receipt; if it cannot, it gives the reason and the date it will reply.
+3. If consultation does not settle the dispute, the user may apply for mediation to dispute mediation bodies such as the Korea Content Dispute Resolution Committee.
+4. Lawsuits are brought before the court having jurisdiction under the Korean Civil Procedure Act.
+
+### Article 19 (Effect of Records)
+In disputes over use of the Service, facts are determined on the basis of the access, payment, currency and item change, and probability-based item attempt records kept on the Company's servers. A user may nevertheless contest those records by submitting material showing they are inaccurate.
+
+### Article 20 (Notices)
+Matters for all users are announced by in-game notice or on the web page. Matters for a particular user are sent by in-game mail or notification.
+
+### Article 21 (Severability)
+If any provision of these Terms is held invalid under applicable law, the remaining provisions remain in effect.
 
 ## Addendum
 These Terms take effect on {{effective_date}}.

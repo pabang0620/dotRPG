@@ -15,7 +15,7 @@ export const REQUIRED: readonly RequiredConsent[] = [
 ];
 
 /** 공개 정책 문서(GET /policies/:lang/:doc). probability는 서버 확률표로 만든다 */
-export const DOCS = ['terms', 'privacy', 'operation', 'paid', 'youth', 'probability'] as const;
+export const DOCS = ['terms', 'privacy', 'operation', 'paid', 'youth', 'account-deletion', 'probability'] as const;
 export type PolicyDoc = (typeof DOCS)[number];
 
 export const LANGUAGES = ['ko', 'en'] as const;

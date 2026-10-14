@@ -229,6 +229,7 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('star_wallets', `account_id ${ACC}`),
   keepOwn('payment_profiles', `account_id ${ACC}`),
   forever('star_rates_snapshots', '확률표 스냅샷(계정 무관)'),
+  forever('rates_publications', '확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항'),
   forever('mail_campaigns', '운영 캠페인(계정 무관)'),
   forever('mail_campaign_attachments', '운영 캠페인(계정 무관)'),
   // ---------- 이 기능의 표 ----------

@@ -142,13 +142,26 @@ namespace DotRPG.EditorTools
                 Debug.LogWarning("[dotRPG] Android icon layers missing: run Tools/art/make_android_icons.py");
                 return;
             }
-            SetAndroidIcons(UnityEditor.Android.AndroidPlatformIconKind.Adaptive, bg, fg);
-            SetAndroidIcons(UnityEditor.Android.AndroidPlatformIconKind.Round, round);
-            SetAndroidIcons(UnityEditor.Android.AndroidPlatformIconKind.Legacy, legacy);
+            // Looked up by name: referencing AndroidPlatformIconKind breaks compilation in an editor without the Android module.
+            SetAndroidIcons(AndroidIconKind("Adaptive"), bg, fg);
+            SetAndroidIcons(AndroidIconKind("Round"), round);
+            SetAndroidIcons(AndroidIconKind("Legacy"), legacy);
+        }
+
+        static PlatformIconKind AndroidIconKind(string name)
+        {
+            foreach (var kind in PlayerSettings.GetSupportedIconKinds(NamedBuildTarget.Android))
+                if (kind.ToString().IndexOf(name, System.StringComparison.OrdinalIgnoreCase) >= 0) return kind;
+            return null;
         }
 
         static void SetAndroidIcons(PlatformIconKind kind, params Texture2D[] layers)
         {
+            if (kind == null)
+            {
+                Debug.LogWarning("[dotRPG] Android icon kind not found (Android module not installed?)");
+                return;
+            }
             var icons = PlayerSettings.GetPlatformIcons(NamedBuildTarget.Android, kind);
             foreach (var icon in icons) icon.SetTextures(layers);
             PlayerSettings.SetPlatformIcons(NamedBuildTarget.Android, kind, icons);

@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import argon2 from 'argon2';
 import { getConfig } from '../../config/env';
-import { isUniqueViolation, withTransaction } from '../../db/pool';
+import { getPool, isUniqueViolation, withTransaction } from '../../db/pool';
 import { ACCESS_EXPIRES_IN_SEC, signAccessToken } from '../../middleware/authMiddleware';
 import { validationError } from '../../middleware/validationMiddleware';
 import { accessSignal, recordLogin, recordRefreshIfChanged, type AccessSignal, type DeviceInput } from '../antiabuse/deviceRecords';
@@ -20,6 +20,7 @@ import { verifyTicket } from './steamProvider';
 import { reconcileOpenOrderQuietly } from '../payments/paymentsService';
 import { applyCarry, checkRejoin } from '../withdrawal/withdrawalIdentity';
 import { pendingWithdrawalError } from '../withdrawal/withdrawalLogin';
+import { assertOpen, fmtMinutes, isOpen } from './playWindow';
 
 const REFRESH_DAYS = 14;
 const ARGON_OPTS = { type: argon2.argon2id } as const;
@@ -144,8 +145,10 @@ export async function login(loginId: string, password: string, ip: string, meta:
   if (identity.banned_until && identity.banned_until.getTime() > Date.now()) {
     throw new AppError(403, '정지된 계정입니다.', 'ACCOUNT_BANNED', {
       banned_until: identity.banned_until.toISOString(),
+      reason_code: await repo.activeBanReason(getPool(), identity.id),
     });
   }
+  assertOpen({ start: identity.play_window_start, end: identity.play_window_end });
   store.reset(failKey);
 
   return withTransaction(async (client) => {
@@ -169,7 +172,8 @@ type RefreshOutcome =
   | { kind: 'reused' }
   | { kind: 'replaced' }
   | { kind: 'expired' }
-  | { kind: 'banned'; until: Date };
+  | { kind: 'banned'; until: Date; reasonCode: string | null }
+  | { kind: 'window'; opensAt: string };
 
 export async function refresh(refreshToken: string, meta: AccessMeta = {}, ip = ''): Promise<TokenPair> {
   requireDevice(meta.device);
@@ -196,7 +200,10 @@ export async function refresh(refreshToken: string, meta: AccessMeta = {}, ip = 
     const account = await repo.findAccountById(client, row.account_id);
     if (!account || account.deleted_at) return { kind: 'invalid' };
     if (account.banned_until && account.banned_until.getTime() > Date.now()) {
-      return { kind: 'banned', until: account.banned_until };
+      return { kind: 'banned', until: account.banned_until, reasonCode: await repo.activeBanReason(client, account.id) };
+    }
+    if (!isOpen({ start: account.play_window_start, end: account.play_window_end })) {
+      return { kind: 'window', opensAt: fmtMinutes(account.play_window_start as number) };
     }
     // 리프레시 기기 바인딩(3.3): 가족을 만든 로그인의 기기와 다르면 log 는 기록만, enforce 는 도용 의심으로 가족 폐기
     const flags: string[] = [];
@@ -229,7 +236,10 @@ export async function refresh(refreshToken: string, meta: AccessMeta = {}, ip = 
     case 'banned':
       throw new AppError(403, '정지된 계정입니다.', 'ACCOUNT_BANNED', {
         banned_until: outcome.until.toISOString(),
+        reason_code: outcome.reasonCode,
       });
+    case 'window':
+      throw new AppError(403, '설정된 이용 시간대가 아닙니다.', 'PLAY_WINDOW_CLOSED', { opens_at: outcome.opensAt });
     default:
       throw new AppError(401, '토큰이 올바르지 않습니다.', 'REFRESH_INVALID');
   }
@@ -299,8 +309,12 @@ export async function steamLogin(ticket: string, meta: AccessMeta = {}, ip = '')
   }
   if (!account || account.deleted_at) throw new AppError(401, 'Steam 티켓이 올바르지 않습니다.', 'STEAM_TICKET_INVALID');
   if (account.banned_until && account.banned_until.getTime() > Date.now()) {
-    throw new AppError(403, '정지된 계정입니다.', 'ACCOUNT_BANNED', { banned_until: account.banned_until.toISOString() });
+    throw new AppError(403, '정지된 계정입니다.', 'ACCOUNT_BANNED', {
+      banned_until: account.banned_until.toISOString(),
+      reason_code: await repo.activeBanReason(getPool(), account.id),
+    });
   }
+  assertOpen({ start: account.play_window_start, end: account.play_window_end });
   const acc = account;
   const result = await withTransaction(async (client) => {
     const lastLogin = await repo.touchLastLogin(client, acc.id);

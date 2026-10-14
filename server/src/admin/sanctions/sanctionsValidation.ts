@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const sanctionKind = z.enum(['warning', 'chat_mute', 'ban']);
-export const reasonCode = z.enum(['abuse', 'spam', 'scam_ad', 'cheat', 'other']);
+export const reasonCode = z.enum(['abuse', 'spam', 'scam_ad', 'cheat', 'other', 'sexual', 'hate', 'impersonation', 'rmt', 'exploit', 'name']);
 export const duration = z.enum(['1h', '1d', '7d', '30d', 'permanent']);
 
 export const createSanctionBody = z.strictObject({

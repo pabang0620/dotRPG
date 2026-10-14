@@ -402,7 +402,7 @@
  "추가 피해, 범위 확대, 마력 효율 같은 젬을 끼우면 같은 스킬도 성격이 달라지지. 대신 마나를 더 쓰는 젬도 있으니 젬 안내를 꼭 읽어 보게.": "Gắn các ngọc như Sát Thương Cộng Thêm, Mở Rộng Phạm Vi hay Hiệu Suất Ma Lực thì cùng một kỹ năng cũng đổi tính chất. Có ngọc tốn thêm mana nên nhớ đọc hướng dẫn ngọc.",
  "스킬 창(K)을 열고 젬 탭에서 빈 칸을 눌러 보게.": "Mở cửa sổ kỹ năng (K), bấm vào ô trống ở tab Ngọc.",
  "좋아, 손에 익은 스킬이 한결 날카로워졌군.": "Tốt, kỹ năng quen thuộc đã sắc bén hơn hẳn.",
- "제 가게에 없는 물건은 경매장(U)에서 구해 보세요. 다른 모험가들이 올린 장비랑 재료가 있어요.": "Thứ nào tiệm tôi không có thì tìm ở Nhà Đấu Giá (U). Có trang bị và nguyên liệu các nhà phiêu lưu khác đăng bán.",
+ "제 가게에 없는 물건은 경매장(U)에서 구해 보세요. 다른 모험가들이 올린 장비랑 재료가 있어요.": "Thứ nào tiệm tôi không có thì tìm ở Sàn Đấu Giá (U). Có trang bị và nguyên liệu các nhà phiêu lưu khác đăng bán.",
  "다른 직업 장비가 나오면 거기 올려서 팔면 상점보다 비싸게 받을 수도 있고요.": "Có trang bị chức nghiệp khác thì đăng lên đó bán, có thể được giá hơn tiệm.",
  "구경 잘 하셨어요? 거래할 때 쓰시라고 골드 조금 보태 드릴게요.": "Xem đã mắt chưa? Tôi góp thêm chút Vàng cho bạn giao dịch.",
  "던전이 버겁거든 혼자 가지 말게. 파티 찾기(O)에서 같이 갈 모험가를 찾을 수 있다네.": "Hầm ngục khó thì đừng đi một mình. Tìm Nhóm (O) giúp tìm nhà phiêu lưu đi cùng.",
@@ -1680,5 +1680,7 @@
  "X-Data-Version 헤더가 없거나 형식이 올바르지 않습니다.": "Thiếu header X-Data-Version hoặc sai định dạng.",
  "운영에서는 시계를 바꿀 수 없습니다": "Không thể đổi đồng hồ khi vận hành",
  "운영에서는 난수를 바꿀 수 없습니다": "Không thể đổi số ngẫu nhiên khi vận hành",
- "semver 형식이 아닙니다": "Không phải chuỗi semver"
+ "semver 형식이 아닙니다": "Không phải chuỗi semver",
+ "확률표 지문": "Dấu vân tay bảng tỉ lệ",
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Nhật ký công bố bảng tỉ lệ (0040, không gắn với tài khoản). Điều khoản dịch vụ Điều 14-2 khoản 3"
 }

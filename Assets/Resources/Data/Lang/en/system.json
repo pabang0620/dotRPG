@@ -1031,5 +1031,7 @@
  "X-Data-Version 헤더가 없거나 형식이 올바르지 않습니다.": "The X-Data-Version header is missing or malformed.",
  "운영에서는 시계를 바꿀 수 없습니다": "The clock can't be changed in production",
  "운영에서는 난수를 바꿀 수 없습니다": "The RNG can't be changed in production",
- "semver 형식이 아닙니다": "Not a semver string"
+ "semver 형식이 아닙니다": "Not a semver string",
+ "확률표 지문": "Rate table fingerprint",
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Rate table publication log (0040, not account-bound). Terms of Service Art. 14-2(3)"
 }

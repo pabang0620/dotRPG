@@ -1680,5 +1680,7 @@
  "X-Data-Version 헤더가 없거나 형식이 올바르지 않습니다.": "O cabeçalho X-Data-Version está ausente ou malformado.",
  "운영에서는 시계를 바꿀 수 없습니다": "O relógio não pode ser alterado em produção",
  "운영에서는 난수를 바꿀 수 없습니다": "O RNG não pode ser alterado em produção",
- "semver 형식이 아닙니다": "Não é uma string semver"
+ "semver 형식이 아닙니다": "Não é uma string semver",
+ "확률표 지문": "Impressão digital da tabela de chances",
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Registro de publicação das tabelas de chances (0040, não vinculado a contas). Termos de Uso art. 14-2, §3"
 }

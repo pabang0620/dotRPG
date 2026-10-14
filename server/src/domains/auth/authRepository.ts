@@ -10,6 +10,9 @@ export interface AccountRow {
   deleted_at: Date | null;
   /** 9단계: 현재 유효한 세션(리프레시 가족). 한 번도 로그인하지 않은 옛 계정은 null */
   active_family_id?: string | null;
+  /** 0039 게임시간 선택제(KST 분). 둘 다 null이면 제한 없음 */
+  play_window_start?: number | null;
+  play_window_end?: number | null;
 }
 
 export interface DevIdentityRow extends AccountRow {
@@ -35,7 +38,7 @@ const toAccount = (r: RawAccount): AccountRow => ({ ...r, id: Number(r.id) });
 export async function insertAccount(client: PoolClient): Promise<AccountRow> {
   const r = await client.query<RawAccount>(
     `INSERT INTO accounts DEFAULT VALUES
-     RETURNING id, uuid, created_at, last_login_at, banned_until, deleted_at`,
+     RETURNING id, uuid, created_at, last_login_at, banned_until, deleted_at, play_window_start, play_window_end`,
   );
   return toAccount(r.rows[0] as RawAccount);
 }
@@ -55,7 +58,7 @@ export async function insertDevIdentity(
 
 export async function findDevIdentity(loginId: string): Promise<DevIdentityRow | null> {
   const r = await query<RawAccount & { secret_hash: string }>(
-    `SELECT a.id, a.uuid, a.created_at, a.last_login_at, a.banned_until, a.deleted_at, i.secret_hash
+    `SELECT a.id, a.uuid, a.created_at, a.last_login_at, a.banned_until, a.deleted_at, a.play_window_start, a.play_window_end, i.secret_hash
        FROM auth_identities i JOIN accounts a ON a.id = i.account_id
       WHERE i.provider = 'dev' AND i.subject = $1`,
     [loginId],
@@ -149,7 +152,7 @@ export async function findFamilyByHash(client: PoolClient, tokenHash: string): P
 
 export async function findAccountById(client: PoolClient, id: number): Promise<AccountRow | null> {
   const r = await client.query<RawAccount>(
-    'SELECT id, uuid, created_at, last_login_at, banned_until, deleted_at, active_family_id FROM accounts WHERE id = $1',
+    'SELECT id, uuid, created_at, last_login_at, banned_until, deleted_at, active_family_id, play_window_start, play_window_end FROM accounts WHERE id = $1',
     [id],
   );
   const row = r.rows[0];
@@ -187,7 +190,7 @@ export async function findMe(accountId: number): Promise<MeRow | null> {
 
 export async function findAccountBySteam(steamId: string): Promise<AccountRow | null> {
   const r = await query<RawAccount>(
-    `SELECT a.id, a.uuid, a.created_at, a.last_login_at, a.banned_until, a.deleted_at
+    `SELECT a.id, a.uuid, a.created_at, a.last_login_at, a.banned_until, a.deleted_at, a.play_window_start, a.play_window_end
        FROM auth_identities i JOIN accounts a ON a.id = i.account_id
       WHERE i.provider = 'steam' AND i.subject = $1`,
     [steamId],
@@ -212,4 +215,15 @@ export async function adoptFamilyIfNone(client: Queryable, accountId: number, fa
 export async function hasSteam(accountId: number): Promise<boolean> {
   const r = await query("SELECT 1 FROM auth_identities WHERE account_id = $1 AND provider = 'steam'", [accountId]);
   return r.rows.length > 0;
+}
+
+/** 지금 효력이 있는 정지(ban)의 사유 코드. 로그인 거절 응답에 싣는다(운영정책: 통지에 사유 포함). 없으면 null */
+export async function activeBanReason(db: Queryable, accountId: number): Promise<string | null> {
+  const r = await db.query<{ reason_code: string }>(
+    `SELECT reason_code FROM account_sanctions
+      WHERE account_id = $1 AND kind = 'ban' AND revoked_at IS NULL AND (ends_at IS NULL OR ends_at > now())
+      ORDER BY id DESC LIMIT 1`,
+    [accountId],
+  );
+  return r.rows[0]?.reason_code ?? null;
 }

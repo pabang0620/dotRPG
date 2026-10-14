@@ -1680,5 +1680,7 @@
  "X-Data-Version 헤더가 없거나 형식이 올바르지 않습니다.": "Falta el encabezado X-Data-Version o tiene un formato incorrecto.",
  "운영에서는 시계를 바꿀 수 없습니다": "En producción no se puede cambiar el reloj",
  "운영에서는 난수를 바꿀 수 없습니다": "En producción no se puede cambiar el generador de números aleatorios",
- "semver 형식이 아닙니다": "No es una cadena semver"
+ "semver 형식이 아닙니다": "No es una cadena semver",
+ "확률표 지문": "Huella de la tabla de probabilidades",
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Registro de publicación de tablas de probabilidades (0040, no ligado a cuentas). Términos de servicio art. 14-2, apdo. 3"
 }

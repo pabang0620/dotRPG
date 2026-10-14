@@ -5,7 +5,7 @@ import path from 'node:path';
 import { getConfig } from '../../config/env';
 import { fillPlaceholders, renderMarkdown, renderPage } from './policyRenderer';
 import { LANGUAGES, type PolicyDoc, type PolicyLang } from './policyVersions';
-import { buildRatesMarkdown } from './ratesDisclosure';
+import { buildRatesMarkdown, buildRatesPublication } from './ratesDisclosure';
 
 let rootOverride: string | null = null;
 
@@ -48,7 +48,11 @@ export function policyPageHtml(lang: PolicyLang, doc: PolicyDoc): string | null 
     const hit = cache.get(key);
     const slot = String(Math.floor(Date.now() / RATES_TTL_MS));
     if (hit && hit.stamp === slot) return hit.html;
-    const md = buildRatesMarkdown(getConfig().gameDataDir, lang);
+    const dataDir = getConfig().gameDataDir;
+    // 확률표 지문(공개 기록과 같은 값, 앞 12자리)을 문서 맨 위 한 줄로 보여 준다
+    const fp = buildRatesPublication(dataDir).fingerprint.slice(0, 12);
+    const label = lang === 'ko' ? '확률표 지문' : 'Rate table fingerprint';
+    const md = buildRatesMarkdown(dataDir, lang).replace(/^(# .+)$/m, (title) => `${title}\n\n${label}: ${fp}`);
     const html = renderPage(titleOf(md, doc), renderMarkdown(md), lang, 'dotRPG');
     cache.set(key, { stamp: slot, html });
     return html;

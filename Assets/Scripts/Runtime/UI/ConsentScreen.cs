@@ -23,7 +23,7 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Consent", true);
             var screen = root.gameObject.AddComponent<ConsentScreen>();
             screen.ui = ui;
-            screen.BuildPanel(root, L.T("약관 동의"), 700, L.T("온라인 플레이를 시작하려면 아래 항목에 모두 동의해 주세요.\n항목을 바꾸려면 ◀ ▶ 또는 클릭, 내용은 '보기'로 확인합니다."), 18);
+            screen.BuildPanel(root, L.T("약관 동의"), 700, L.T("온라인 플레이를 시작하려면 아래 항목에 모두 동의해 주세요.\n항목을 바꾸려면 ◀ ▶ 또는 클릭, 내용은 '보기'로 확인합니다.") + "\n" + PrivacySummary, 18);
             var menu = screen.menu;
             menu.AddOption(L.T("모두 동의"), () => screen.All ? L.T("동의함") : L.T("동의 안 함"), d =>
             {
@@ -44,6 +44,10 @@ namespace DotRPG
             UIFactory.Place(screen.status.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(640f, 24f));
             return screen;
         }
+
+        // The four things a consent request must state (개인정보 보호법 제15조 제2항): purpose, items, retention, the right to refuse.
+        static string PrivacySummary =>
+            L.T("<size=15><color=#9aa4b5>개인정보 수집·이용: 목적은 계정 관리, 게임 진행, 부정 이용 방지, 결제입니다. 항목은 Steam ID, 기기 식별값(해시), 접속 IP, 게임 기록입니다. 탈퇴 후 30일이 지나면 파기하며, 법으로 보관해야 하는 결제 기록은 5년 보관합니다. 동의하지 않을 수 있으나 그러면 온라인 플레이를 할 수 없습니다.</color></size>");
 
         static string Mark(bool on) => on ? L.T("동의함") : L.T("동의 안 함");
 

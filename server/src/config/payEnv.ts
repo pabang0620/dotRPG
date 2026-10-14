@@ -25,7 +25,7 @@ export const payShape = {
   PAY_WATCH_DAYS: posInt(180),
   PAY_REPORT_DAYS: posInt(7),
   PAY_NEW_ACCOUNT_DAYS: nonNegInt(14),
-  PAY_MIN_ORDER_GAP_SECONDS: nonNegInt(60),
+  PAY_MIN_ORDER_GAP_SECONDS: nonNegInt(0),
   PAY_FAIL_COOLDOWN_THRESHOLD: posInt(5),
   PAY_SHARED_DEVICE_ACCOUNTS: posInt(3),
   PAY_COUNTRY_CHANGE_MAX: nonNegInt(1),

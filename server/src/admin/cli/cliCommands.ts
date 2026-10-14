@@ -83,13 +83,24 @@ export const COMMANDS: Command[] = [
     run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/notes`, { kind: 'review_ack', note: c.args.slice(1).join(' ') || '검토 완료' }),
   },
   { path: ['account', 'kick'], usage: 'account kick <account_uuid>', run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/kick`) },
+  // 0039: 게임시간 선택제(청소년 보호 정책 제4조). 예: account play-window <uuid> 22:00-07:00 --note "법정대리인 요청", 해제는 off
+  {
+    path: ['account', 'play-window'],
+    usage: 'account play-window <account_uuid> <HH:MM-HH:MM|off> --note <사유>',
+    run: (c) => {
+      const spec = need(c.args[1], 'HH:MM-HH:MM|off');
+      const m = /^(\d{2}:\d{2})-(\d{2}:\d{2})$/.exec(spec);
+      if (spec !== 'off' && !m) throw new Error('시간대는 HH:MM-HH:MM 또는 off 입니다');
+      return c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/play-window`, { start: m ? m[1] : null, end: m ? m[2] : null, note: mustFlag(c, 'note') });
+    },
+  },
   // 0038: 부적절한 이름 -> 임시 이름 + 경고, 플레이어가 다음 접속 때 새 이름을 고른다
   { path: ['character', 'rename'], usage: 'character rename <character_uuid> --note <플레이어에게 보일 사유>', run: (c) => c.post(`/admin/characters/${need(c.args[0], 'uuid')}/force-rename`, { note: mustFlag(c, 'note') }) },
   { path: ['account', 'dev-create'], usage: 'account dev-create <login_id>', run: (c) => c.post('/admin/accounts/dev', { login_id: need(c.args[0], 'login_id') }) },
   { path: ['account', 'dev-reset'], usage: 'account dev-reset <account_uuid>', run: (c) => c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/dev-password`) },
   {
     path: ['sanction', 'add'],
-    usage: 'sanction add <account_uuid> --kind warning|chat_mute|ban --reason abuse|spam|scam_ad|cheat|other [--for 1h|1d|7d|30d|permanent] [--report <uuid>] --note <사유>',
+    usage: 'sanction add <account_uuid> --kind warning|chat_mute|ban --reason abuse|spam|scam_ad|cheat|sexual|hate|impersonation|rmt|exploit|name|other [--for 1h|1d|7d|30d|permanent] [--report <uuid>] --note <사유>',
     run: (c) =>
       c.post(`/admin/accounts/${need(c.args[0], 'uuid')}/sanctions`, {
         kind: mustFlag(c, 'kind'),
@@ -254,6 +265,8 @@ export const COMMANDS: Command[] = [
   },
   { path: ['tombstone', 'find'], usage: 'tombstone find --steam <steam_id64>', run: (c) => c.get('/admin/tombstones', { steam: mustFlag(c, 'steam') }) },
   { path: ['tombstone', 'release'], usage: 'tombstone release <uuid> --note <사유>   (owner)', run: (c) => c.post(`/admin/tombstones/${need(c.args[0], 'uuid')}/release`, { note: mustFlag(c, 'note') }) },
+  { path: ['rates', 'publications'], usage: 'rates publications [--limit N] [--before ID]', run: (c) => c.get('/admin/rates/publications', q(c, ['limit', 'before'])) },
+  { path: ['rates', 'show'], usage: 'rates show <id>', run: (c) => c.get(`/admin/rates/publications/${need(c.args[0], 'id')}`) },
   { path: ['ops', 'status'], usage: 'ops status', run: (c) => c.get('/admin/ops/status') },
   { path: ['ops', 'jobs'], usage: 'ops jobs', run: (c) => c.get('/admin/ops/jobs') },
   { path: ['ops', 'run'], usage: 'ops run <purge-hourly|purge-daily|stale-runs|integrity-nightly|payment-report|withdrawal-anonymize|withdrawal-destroy|...> [--full]', run: (c) => c.post(`/admin/ops/jobs/${need(c.args[0], 'job')}/run`, c.flags.full ? { full: true } : {}) },

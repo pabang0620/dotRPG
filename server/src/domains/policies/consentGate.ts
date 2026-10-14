@@ -19,6 +19,8 @@ export function clearConsentCache(accountUuid?: string): void {
 }
 
 const EXEMPT = /^\/(me\/consents|me\/withdrawal|auth\/|policies|health|system\/|meta)/;
+// 약관 버전이 바뀐 뒤 거부해도 마지막 진행분 저장(PUT /characters/:uuid/state)은 되도록 둔다
+const STATE_SAVE = /^\/characters\/[0-9a-f-]{36}\/state\/?$/i;
 
 async function needsConsent(accountUuid: string): Promise<boolean> {
   const hit = cache.get(accountUuid);
@@ -31,7 +33,7 @@ async function needsConsent(accountUuid: string): Promise<boolean> {
 
 export const consentGate: RequestHandler = async (req, _res, next) => {
   try {
-    if (!getConfig().policyConsentEnforce || EXEMPT.test(req.path)) return next();
+    if (!getConfig().policyConsentEnforce || EXEMPT.test(req.path) || (req.method === 'PUT' && STATE_SAVE.test(req.path))) return next();
     const m = /^Bearer\s+(\S+)$/i.exec(req.header('authorization') ?? '');
     if (!m) return next();
     const decoded = jwt.decode(m[1] as string);

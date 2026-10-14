@@ -20,6 +20,7 @@ namespace DotRPG
             menu.AddButton(L.T("유료 서비스·환불 정책"), () => PolicyClient.Open(PolicyClient.Paid));
             menu.AddButton(L.T("청소년 보호 정책"), () => PolicyClient.Open(PolicyClient.Youth));
             menu.AddButton(L.T("확률 정보"), () => PolicyClient.Open(PolicyClient.Probability));
+            menu.AddButton(L.T("계정 삭제 안내"), () => PolicyClient.Open(PolicyClient.AccountDeletion));
             menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             menu.OnCancel = () => ui.Pop();
             screen.FitPanel();

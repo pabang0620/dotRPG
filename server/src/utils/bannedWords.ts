@@ -133,6 +133,16 @@ const joinSpacedLetters = (s: string): string =>
 const stripInWord = (s: string): string =>
   s.replace(/['’]/gu, ' ').replace(/[^\p{L}\p{N}\s\u0000]/gu, '').replace(/(?<=[\uac00-\ud7a3])\p{N}+(?=[\uac00-\ud7a3])/gu, ''); // "시1발": 한글 사이 숫자도
 
+/** 라틴 글자와 섞어 쓴 키릴 닮은꼴("fuсk"의 с)과 숫자·기호 대체("sh1t", "f@ck")를 라틴 글자로 되돌린다. 라틴 글자가 든 덩어리에만 쓴다. */
+const LOOKALIKE: Record<string, string> = {
+  а: 'a', в: 'b', с: 'c', е: 'e', ё: 'e', н: 'h', і: 'i', ј: 'j', к: 'k', м: 'm', о: 'o', р: 'p', ѕ: 's', т: 't', у: 'y', х: 'x',
+  '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '@': 'a', $: 's', '!': 'i',
+};
+const unLookalike = (s: string): string =>
+  s.replace(/\S+/gu, (tok) => (/[a-z]/u.test(tok) ? Array.from(tok, (ch) => LOOKALIKE[ch] ?? ch).join('') : tok));
+/** "시 1 발"처럼 한 글자씩 띄운 사이에 끼운 숫자 덩어리를 지운다 */
+const dropSpacedDigits = (s: string): string => s.replace(/(?<=(?:^|\s)\p{L})\s+\p{N}+(?=\s+\p{L}(?:\s|$))/gu, '');
+
 /**
  * 숨기려는 변형이면 true(채팅은 거절, 이름은 금지). 원문 그대로의 금칙어를 섞어 빠져나가지 못하게 횟수로 비교한다.
  * - 단어 안에 기호를 끼웠다("씨.발", "f.u.c.k").
@@ -151,6 +161,9 @@ export function hasObfuscatedBannedWord(text: string): boolean {
   // 한 글자씩 띄운 것은 강한 욕만 본다
   const spaced = joinSpacedLetters(inWord);
   if (l.strong.some((w) => countOf(spaced, w) > countOf(inWord, w))) return true;
+  // 닮은꼴·숫자 대체·띄운 글자 사이 숫자도 강한 욕만 본다
+  const disguised = joinSpacedLetters(stripInWord(dropSpacedDigits(unLookalike(plain))));
+  if (l.strong.some((w) => countOf(disguised, w) > countOf(spaced, w))) return true;
   if (l.hangul.length === 0) return false;
   const jamo = blankAllowed(l, composeLooseJamo(text.normalize('NFC')).toLowerCase());
   return l.hangul.some((w) => countOf(jamo, w) > countOf(plain, w));

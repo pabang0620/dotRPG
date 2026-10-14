@@ -108,6 +108,14 @@ export function purgeDaily(ctx: JobCtx): Promise<JobResult> {
       del('party_applications', `state <> 'pending' AND coalesce(responded_at, expires_at) < ${days(p.partyRecordDays)}`),
     ],
     ['party_members', del('party_members', `left_at IS NOT NULL AND left_at < ${days(p.partyRecordDays)}`)],
+    // 파티 판 멤버의 기기 정보는 그 판의 결과 판정에만 쓴다. 판이 끝나고 PARTY_RECORD_RETENTION_DAYS가 지나면 지운다(행은 남긴다)
+    [
+      'party_run_members_device',
+      `UPDATE party_run_members SET device_hash = NULL, steam_key = NULL, install_id = NULL WHERE (party_run_id, character_id) IN (
+         SELECT m.party_run_id, m.character_id FROM party_run_members m JOIN party_runs r ON r.id = m.party_run_id
+          WHERE r.ended_at < ${days(p.partyRecordDays)} AND (m.device_hash IS NOT NULL OR m.steam_key IS NOT NULL OR m.install_id IS NOT NULL)
+          LIMIT $1)`,
+    ],
     [
       'refresh_tokens',
       del('refresh_tokens', `expires_at < ${days(p.refreshTokenDays)} OR revoked_at < ${days(p.refreshTokenDays)}`),

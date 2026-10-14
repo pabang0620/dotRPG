@@ -84,8 +84,7 @@ async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
   for (const [itemKey, need] of mats) {
     if (need > 0) await ctx.removeItem('bag', itemKey, need, 'enhance_cost', logId);
   }
-  const roll = getRng().int(0, en.rollRange);
-  const success = roll < successPercent;
+  const { roll, success } = rollEnhance(en.rollRange, successPercent);
 
   // 6. 결과 적용
   let outcome: 'success' | 'keep' | 'drop3' | 'destroyed' | 'protected';
@@ -251,4 +250,10 @@ async function processTicket(ctx: EconCtx, body: TicketBody) {
     createdAt: ctx.now,
   });
   return { status: 200, data: { gear_key_before: body.gear_key, gear_key_after: newKey, delta: ctx.delta() } };
+}
+
+/** 강화 성공 판정: [0, rollRange) 정수를 굴려 roll < successPercent 이면 성공 */
+export function rollEnhance(rollRange: number, successPercent: number): { roll: number; success: boolean } {
+  const roll = getRng().int(0, rollRange);
+  return { roll, success: roll < successPercent };
 }

@@ -12,7 +12,7 @@ namespace DotRPG
     /// </summary>
     public static class PolicyClient
     {
-        public const string Terms = "terms", Privacy = "privacy", Operation = "operation", Paid = "paid", Youth = "youth", Probability = "probability";
+        public const string Terms = "terms", Privacy = "privacy", Operation = "operation", Paid = "paid", Youth = "youth", AccountDeletion = "account-deletion", Probability = "probability";
 
         static ApiClient Api => ApiClient.Instance;
 
@@ -41,7 +41,8 @@ namespace DotRPG
                 if (OnlineSession.Current == null || Asking) return;
                 EnsureConsent(r =>
                 {
-                    if (r.ok) return;
+                    // A network error leaves things as they are: the next 428 asks again.
+                    if (r.ok || r.code == "NETWORK") return;
                     bool playing = OnlineSession.Playing;
                     if (playing && Game.Flow != null) Game.Flow.ReturnToTitle();
                 });

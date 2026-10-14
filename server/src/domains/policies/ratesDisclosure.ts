@@ -1,6 +1,7 @@
 // 확률형 아이템 정보 공개(게임산업법 제33조 제2항). 서버가 실제로 쓰는 확률표에서 바로 만든다:
 // 외형 뽑기·장비 뽑기·외형 합성(starshopDefs.ts), 봉인된 상자·부스터·천장(sealed_box.json), 강화권 상자(items.json box_enh*),
-// 레이드 상점(raid_shop.json). 웹 페이지(GET /policies/:lang/probability)와 scripts/export-rates.ts가 같은 함수를 쓴다.
+// 장비 강화(enhance.json), 레이드 상점(raid_shop.json). 웹 페이지(GET /policies/:lang/probability)와 scripts/export-rates.ts가 같은 함수를 쓴다.
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sealedTable, type SealedData } from '../../gamedata/sealedBox';
@@ -35,6 +36,21 @@ interface ItemRow {
   power?: number;
   chance?: number;
 }
+
+interface EnhanceLevel {
+  from: number;
+  successPercent: number;
+  failure: string;
+  pity: boolean;
+}
+interface EnhanceData {
+  pityPerFailure: number;
+  drop3Levels: number;
+  ticketItem: string;
+  steps: { id: string; levels: EnhanceLevel[] }[];
+}
+const GEAR_KIND_KO: Record<string, string> = { sword: '검', staff: '지팡이', plate: '전사 상의', robe: '마법사 상의', greaves: '전사 하의', skirt: '마법사 하의', ring: '반지', neck: '목걸이' };
+const GEAR_KIND_EN: Record<string, string> = { sword: 'Swords', staff: 'Staves', plate: 'Warrior tops', robe: 'Mage tops', greaves: 'Warrior bottoms', skirt: 'Mage bottoms', ring: 'Rings', neck: 'Necklaces' };
 
 const readJson = <T>(dir: string, file: string): T | null => {
   const p = path.join(dir, file);
@@ -155,6 +171,39 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
     }
   }
 
+  // ---- 장비 강화 ----
+  const enh = readJson<EnhanceData>(dataDir, 'enhance.json');
+  if (enh) {
+    out.push(ko ? '## 장비 강화' : '## Gear Enhancement');
+    out.push(
+      ko
+        ? `강화 비용(골드와 재료)은 시도할 때 소모되며 결과와 관계없이 돌아오지 않습니다. 천장 표시가 있는 단계는 실패할 때마다 그 장비의 다음 시도 성공 확률이 ${enh.pityPerFailure}%p씩 올라가고(최대 100%), 성공하면 초기화됩니다. 실패 시 "파괴" 단계에서 가방에 ${itemName(enh.ticketItem)}이 있으면 1개를 써서 파괴 대신 +0으로 남깁니다(시작 장비 제외).`
+        : `Enhancement costs (gold and materials) are consumed on each attempt regardless of the result. On steps marked with pity, each failure raises that item's next success chance by ${enh.pityPerFailure}%p (up to 100%), reset on success. On "Destroyed" steps, if you carry ${itemName(enh.ticketItem)}, one is used and the item stays at +0 instead (starter gear excluded).`,
+    );
+    const failText = (f: string): string => {
+      if (f === 'Keep') return ko ? '단계 유지' : 'Level kept';
+      if (f === 'Drop3') return ko ? `${enh.drop3Levels}단계 하락` : `Drops ${enh.drop3Levels} levels`;
+      return ko ? '파괴' : 'Destroyed';
+    };
+    const kind = (id: string): string => id.replace(/^eq_/, '').replace(/_.*/, '');
+    const groups = new Map<string, { kinds: Set<string>; levels: EnhanceLevel[] }>();
+    for (const st of enh.steps) {
+      const sig = st.levels.map((l) => `${l.from}:${l.successPercent}:${l.failure}:${l.pity}`).join('|');
+      const g = groups.get(sig) ?? { kinds: new Set<string>(), levels: st.levels };
+      g.kinds.add(kind(st.id));
+      groups.set(sig, g);
+    }
+    for (const g of groups.values()) {
+      const names = [...g.kinds].map((k) => (ko ? (GEAR_KIND_KO[k] ?? k) : (GEAR_KIND_EN[k] ?? k))).join(', ');
+      out.push(`### ${names}`);
+      out.push(ko ? '| 단계 | 성공 확률 | 실패 시 | 천장 |' : '| Step | Success rate | On failure | Pity |');
+      out.push('|---|---|---|---|');
+      for (const l of g.levels) {
+        out.push(`| +${l.from} → +${l.from + 1} | ${pct(l.successPercent)} | ${failText(l.failure)} | ${l.pity ? (ko ? '있음' : 'Yes') : '-'} |`);
+      }
+    }
+  }
+
   // ---- 레이드 상점 ----
   const raid = readJson<{ ratesVersion: string; products: { id: string; price: number; materialItem: string; category: string; rarityWeights: Record<string, number> }[] }>(dataDir, 'raid_shop.json');
   if (raid) {
@@ -168,4 +217,26 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
     }
   }
   return out.join('\n\n').replace(/\n\n(\|)/g, '\n$1');
+}
+
+
+// ---- 공개 기록(이용약관 제14조의2 3항): 생성 시각을 뺀 한국어판 전문의 sha256 지문 ----
+const FIXED_NOW = new Date(0);
+const STAMP_RE = /생성 시각: 1970-01-01T00:00:00\.000Z\. /;
+
+export interface RatesPublicationDoc {
+  fingerprint: string;
+  versions: Record<string, string>;
+  content: string;
+}
+
+/** 지금 공개 중인 확률 문서(한국어판, 생성 시각 제외)와 지문, 각 표의 버전 */
+export function buildRatesPublication(dataDir: string): RatesPublicationDoc {
+  const content = buildRatesMarkdown(dataDir, 'ko', FIXED_NOW).replace(STAMP_RE, '');
+  const sealed = readJson<{ ratesVersion: string }>(dataDir, 'sealed_box.json');
+  const raid = readJson<{ ratesVersion: string }>(dataDir, 'raid_shop.json');
+  const versions: Record<string, string> = { cosmetic: RATES_VERSION };
+  if (sealed) versions.sealed = sealed.ratesVersion;
+  if (raid) versions.raid = raid.ratesVersion;
+  return { fingerprint: createHash('sha256').update(content, 'utf8').digest('hex'), versions, content };
 }

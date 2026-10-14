@@ -25,6 +25,13 @@ export const requestOnlyBody = z.strictObject({ request_id: requestId });
 /** PL9(0038): 부적절한 캐릭터 이름. note는 플레이어에게 보이는 사유 */
 export const forceRenameBody = z.strictObject({ request_id: requestId, note: z.string().min(1).max(200) });
 
+/** 0039 게임시간 선택제: start/end 둘 다 "HH:MM"(KST) 또는 둘 다 null(해제). 같은 시각은 구간이 아니다 */
+const hm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:MM 형식입니다');
+export const playWindowBody = z
+  .strictObject({ request_id: requestId, start: hm.nullable(), end: hm.nullable(), note: z.string().min(1).max(200) })
+  .refine((b) => (b.start === null) === (b.end === null), { message: 'start와 end는 함께 지정하거나 함께 null이어야 합니다', path: ['end'] })
+  .refine((b) => b.start === null || b.start !== b.end, { message: 'start와 end가 같을 수 없습니다', path: ['end'] });
+
 export const devCreateBody = z.strictObject({
   request_id: requestId,
   login_id: z
@@ -36,4 +43,5 @@ export const devCreateBody = z.strictObject({
 export type LedgerQuery = z.infer<typeof ledgerQuery>;
 export type NoteBody = z.infer<typeof noteBody>;
 export type DevCreateBody = z.infer<typeof devCreateBody>;
+export type PlayWindowBody = z.infer<typeof playWindowBody>;
 export type ForceRenameBody = z.infer<typeof forceRenameBody>;

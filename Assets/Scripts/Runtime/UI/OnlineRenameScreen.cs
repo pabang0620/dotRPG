@@ -73,7 +73,9 @@ namespace DotRPG
             OnlineSession.Current.RenameCharacter(target.id, name, requestId, r =>
             {
                 busy = false;
-                if (!r.ok)
+                // Already renamed on another device: treat it as done so the list is fetched again.
+                bool alreadyDone = !r.ok && r.code == "RENAME_NOT_REQUIRED";
+                if (!r.ok && !alreadyDone)
                 {
                     if (r.code != "NETWORK") requestId = null; // a refused name can be retried with a new id
                     Say(Explain(r), true);

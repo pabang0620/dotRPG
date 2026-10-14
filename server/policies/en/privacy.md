@@ -17,6 +17,10 @@ The Company processes only the minimum personal information needed for the follo
 | Restrictions on use | Sanction records, economy hold records |
 | Payments | Steam ID, order amount and currency, Steam country, IP and device identifier (hashed) at payment, payment status |
 | Error diagnosis | Client version, platform, error message (up to 500 characters), error location data (up to 2,000 characters) |
+| Server operation and security | Web server access logs (connection IP, request time and path, response code, client information), server system logs |
+| Records of consent to terms | Documents and versions agreed to, time of consent |
+| Party dungeon result checks | Device identifier (hashed) and install ID of members in the same run |
+| Play time selection | Allowed play hours, material confirming the relationship between the requester and the user (when sent by email) |
 
 The Company does not collect names, dates of birth, phone numbers, addresses or email addresses. If a user sends an email for an inquiry or appeal, the Company processes the email address and its content only as needed to handle it.
 
@@ -37,11 +41,15 @@ The Company destroys personal information without delay when the following perio
 | Block lists | 90 days after unblocking |
 | Friend relations | 90 days after the relation ends |
 | Error reports | 14 days |
+| Web server access logs | 14 days |
+| Server system logs | Up to 30 days |
+| Device identifier and install ID of party run members | 30 days after the run ends |
 | Fraud detection records | 30 days (180 days for severe records) |
 | Request replay records | 7 days (24 hours for some requests) |
 | IP and device identifier at payment | 180 days |
 | Payment records, currency and item ledgers | While the account exists; after withdrawal, 5 years from the last record (Korean Act on Consumer Protection in Electronic Commerce) |
-| Sanction and report records | While the account exists; after withdrawal, kept for the same 5-year period |
+| Sanction records, report records, records of consent to terms | While the account exists; after withdrawal, kept for the same 5-year period |
+| Play time selection settings | Until removed or until withdrawal |
 
 ## Article 3 (Processing on Withdrawal)
 1. On a withdrawal request, all login tokens are revoked and the user is disconnected immediately. Character names are changed to values other users cannot recognise.
@@ -69,10 +77,10 @@ To provide the Service, the Company entrusts processing to, or transfers data ov
 | Recipient | Country | Purpose | Items | Timing and method |
 |---|---|---|---|---|
 | Valve Corporation (Steam) | United States | Login authentication, payment processing | Steam ID, payment data | Sent over the network at login and payment |
-| Server hosting provider | {{hosting}} | Running the game servers | All items in Article 1 | Continuously while the Service is used |
-| Supabase Inc. (database) | {{hosting}} | Data storage | All items in Article 1 | Continuously while the Service is used |
+| Google LLC (Google Cloud, server hosting) | Stored in Korea (Seoul region) | Running the game servers | All items in Article 1 | Continuously while the Service is used |
+| Supabase Inc. (database, AWS Seoul region) | Stored in Korea (Seoul region) | Data storage | All items in Article 1 | Continuously while the Service is used |
 
-The regions of the production servers and database will be updated in this table once decided. Retention periods are as in Article 2. If a user refuses overseas transfer, login and payment are not possible and the Service cannot be used.
+The servers and database are processed by these contractors with data stored in Korea (Seoul region); the only overseas transfer is to Valve Corporation. If the storage location changes, this table will be updated. Retention periods are as in Article 2. If a user refuses overseas transfer, Steam login and payment are not possible and the Service cannot be used.
 
 ## Article 7 (Information Stored on the User's Device)
 The game stores the following on the user's device. No cookies are used.

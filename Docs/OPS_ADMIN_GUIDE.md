@@ -103,13 +103,41 @@ dotrpg-admin character rename <character_uuid> --note "플레이어에게 보일
 - 2차·3차 위반이면 이 명령과 함께 `sanction create`로 정지를 따로 건다(운영정책 제3조 표).
 - 탈퇴 유예 중인 계정에 요청하면, 철회해도 옛 이름은 되살아나지 않고 임시 이름이 남는다.
 
+### 제재 사유 코드 (`sanction add --reason`, `report resolve --reason`)
+
+| 코드 | 뜻 | 코드 | 뜻 |
+|---|---|---|---|
+| `abuse` | 욕설·비하 | `impersonation` | 운영자·타인 사칭 |
+| `spam` | 도배 | `rmt` | 현금 거래 |
+| `scam_ad` | 광고·사기 | `exploit` | 버그 악용 |
+| `cheat` | 불법 프로그램 | `name` | 부적절한 이름 |
+| `sexual` | 성적 표현 | `hate` | 혐오·차별 |
+| `other` | 기타 | | |
+
+정지 계정의 로그인 거절 응답 `details`에 `reason_code`가 함께 나간다(운영정책의 "통지에 사유 포함").
+
+### 게임시간 선택제 (청소년 보호 정책 제4조)
+
+법정대리인이 요청하면 계정별 이용 가능 시간대(KST)를 정한다(operator 이상).
+
+```bash
+dotrpg-admin account play-window <account_uuid> 22:00-07:00 --note "법정대리인 요청: 접수번호"   # 자정을 넘는 구간 가능
+dotrpg-admin account play-window <account_uuid> off --note "해제 요청"
+```
+
+- 구간 밖의 로그인·토큰 갱신은 403 `PLAY_WINDOW_CLOSED`(`details.opens_at` = 다음 시작 시각).
+- 설정한 순간 구간 밖이면 접속 중인 사람을 끊고, 그 뒤에도 `play-window-sweep` 작업이 매분 구간을 넘긴 접속자를 끊는다.
+- 시작과 끝이 같은 값은 받지 않는다. 감사 로그 `account.play_window`.
+
 ## 6. 청약철회(구매 취소) 요청 처리 (유료 서비스 정책 제4조)
 1. 요청 확인: 캐릭터 이름과 결제 일시로 주문을 찾는다(PA 결제 조회). 구매 후 7일 이내인지, 그 주문의 유료 별조각이 쓰이지 않았는지 본다. 정기권은 매일 지급분·상자를 하나도 받지 않았는지 본다.
 2. 철회 가능하면 Steamworks 파트너 사이트에서 해당 거래를 환불한다. 서버 감시 작업이 환불을 감지해 남은 유료 별조각을 자동으로 회수한다(쓴 것이 있으면 부채로 남는다).
 3. 영업일 3일 안에 결과를 회신한다. 미성년자 결제 취소(제5조)는 법정대리인 확인 자료를 받은 뒤 같은 절차로 처리한다.
 
 ## 7. 정책 문서와 약관 동의
-- 문서 원문: `server/policies/<ko|en>/*.md`, 운영자 정보는 `server/policies/operator.json`(빈 값은 페이지에 "(미정)"으로 보인다). 페이지 주소 `https://<서버>/policies/<ko|en>/<terms|privacy|operation|paid|youth|probability>`. 확률 페이지는 서버 확률표에서 자동으로 만든다.
+- 문서 원문: `server/policies/<ko|en>/*.md`, 운영자 정보는 `server/policies/operator.json`(값이 빈 항목만 있는 표 줄은 페이지에서 빠지고, 그 밖의 빈 값은 "(미정)"). 페이지 주소 `https://<서버>/policies/<ko|en>/<terms|privacy|operation|paid|youth|account-deletion|probability>`. 확률 페이지는 서버 확률표에서 자동으로 만든다.
+- 공개 사본(스토어·광고에 적는 주소): https://pabang0620.github.io/dotrpg-policy/ (GitHub 저장소 pabang0620/dotrpg-policy). 서버가 꺼져도 열린다. 문서나 확률표를 바꾸면 `cd server && npx tsx scripts/export-policy-site.ts <폴더>`로 다시 만들고 그 저장소에 커밋·푸시한다. 커밋 이력이 "언제 무엇을 고지했는지"의 증거가 되므로 강제 푸시나 이력 삭제를 하지 않는다.
+- 스토어 등록용 주소: 개인정보처리방침 `.../ko/privacy.html`, 계정 삭제 `.../ko/account-deletion.html`, 확률 공개 `.../ko/probability.html`(영문은 `en/`).
 - 약관을 바꾸면 `server/src/domains/policies/policyVersions.ts`의 버전을 올린다. 다음 접속 때 모든 이용자에게 동의 화면이 다시 뜬다. 시행 7일 전(불리한 변경은 30일 전)에 공지한다.
 - 확률을 바꾸기 7일 전에 게임 공지와 웹 페이지로 알린다(운영정책 제9조).
 

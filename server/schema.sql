@@ -150,8 +150,15 @@ CREATE TABLE accounts (
   last_login_at TIMESTAMPTZ,
   prev_login_at TIMESTAMPTZ,
   banned_until  TIMESTAMPTZ,
-  deleted_at    TIMESTAMPTZ
+  deleted_at    TIMESTAMPTZ,
+  play_window_start SMALLINT,
+  play_window_end   SMALLINT,
+  CONSTRAINT accounts_play_window_chk CHECK (
+    (play_window_start IS NULL AND play_window_end IS NULL)
+    OR (play_window_start BETWEEN 0 AND 1439 AND play_window_end BETWEEN 0 AND 1439 AND play_window_start <> play_window_end))
 );
+COMMENT ON COLUMN accounts.play_window_start IS '게임시간 선택제(0039): 이용 가능 시작, KST 자정부터의 분(0~1439). NULL이면 제한 없음';
+COMMENT ON COLUMN accounts.play_window_end IS '게임시간 선택제(0039): 이용 가능 끝(이 분은 제외), KST 분. start > end 이면 자정을 넘는 구간';
 COMMENT ON TABLE  accounts IS '게임 계정. 로그인 수단은 auth_identities에 따로 둔다';
 COMMENT ON COLUMN accounts.id IS '내부 키. API에 노출하지 않는다';
 COMMENT ON COLUMN accounts.uuid IS '외부 노출용 id. JWT sub, 응답의 account id';
@@ -1303,7 +1310,7 @@ CREATE TABLE account_sanctions (
   account_id  BIGINT NOT NULL REFERENCES accounts(id),
   kind        TEXT NOT NULL CHECK (kind IN ('warning', 'chat_mute', 'ban')),
   source      TEXT NOT NULL CHECK (source IN ('auto_filter', 'auto_spam', 'auto_report', 'admin')),
-  reason_code TEXT NOT NULL CHECK (reason_code IN ('abuse', 'spam', 'scam_ad', 'cheat', 'other', 'filter_strikes', 'repeat_spam')),
+  reason_code TEXT NOT NULL CHECK (reason_code IN ('abuse', 'spam', 'scam_ad', 'cheat', 'other', 'filter_strikes', 'repeat_spam', 'sexual', 'hate', 'impersonation', 'rmt', 'exploit', 'name')),
   report_id   BIGINT REFERENCES reports(id),
   starts_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   ends_at     TIMESTAMPTZ,
@@ -2882,3 +2889,17 @@ CREATE TABLE account_consents (
 );
 COMMENT ON TABLE  account_consents IS '정책 동의 기록(terms 이용약관, privacy 개인정보 수집·이용, age14 만 14세 이상 확인). 계정 껍데기와 함께 보관한다';
 COMMENT ON COLUMN account_consents.version IS '동의한 문서 버전. 필요한 버전은 policyVersions.ts REQUIRED';
+
+-- 0040: 확률표 공개 기록(이용약관 제14조의2 3항). 지문별 최초·최근 공개 확인 시각. 지우지 않는다
+CREATE TABLE rates_publications (
+  id            BIGSERIAL PRIMARY KEY,
+  fingerprint   TEXT NOT NULL UNIQUE CHECK (fingerprint ~ '^[0-9a-f]{64}$'),
+  versions      JSONB NOT NULL CHECK (jsonb_typeof(versions) = 'object'),
+  content       TEXT NOT NULL,
+  first_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_seen_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE  rates_publications IS '확률표 공개 기록(0040). 지문(fingerprint)별로 처음·마지막으로 공개 중이던 시각을 남긴다. 지우지 않는다';
+COMMENT ON COLUMN rates_publications.fingerprint IS '공개 문서(생성 시각 줄 제외) 내용의 sha256 hex';
+COMMENT ON COLUMN rates_publications.versions IS '각 표의 버전: cosmetic(외형·장비 뽑기 RATES_VERSION), sealed(봉인된 상자), raid(레이드 상점)';
+COMMENT ON COLUMN rates_publications.content IS '공개 Markdown 한국어판 전문(생성 시각 줄 제외)';

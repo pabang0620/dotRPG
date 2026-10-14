@@ -14,6 +14,7 @@ import { createMaintenanceAdminRouter } from './maintenance/maintenanceAdminRout
 import { createOpsRouter } from './ops/opsRoutes';
 import { createPaymentsAdminRouter } from './payments/paymentsAdminRoutes';
 import { createPlayersRouter } from './players/playersRoutes';
+import { createRatesAdminRouter } from './rates/ratesAdminRoutes';
 import { createReportsAdminRouter } from './reports/reportsRoutes';
 import { createSanctionsRouter } from './sanctions/sanctionsRoutes';
 import { createWatchRouter } from './watch/watchRoutes';
@@ -37,6 +38,7 @@ export function createAdminApp(): Express {
   app.use(createReportsAdminRouter());
   app.use(createHeldRunsRouter());
   app.use(createWatchRouter());
+  app.use(createRatesAdminRouter());
   app.use(createEconomyAdminRouter());
   app.use(createEconomyHoldsRouter());
   app.use(createMailCampaignsRouter());

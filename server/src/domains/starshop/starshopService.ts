@@ -190,7 +190,7 @@ export function gearCeilingView(gauge: number) {
 }
 
 /** 등급 굴림. rareOrBetter: 10+1의 보너스 1회(일반 제외, 나머지는 같은 비율) */
-function rollRarity(banner: CosmeticBanner, rareOrBetter = false): Rarity {
+export function rollRarity(banner: CosmeticBanner, rareOrBetter = false): Rarity {
   const w = BANNER_WEIGHT[banner];
   const order = RARITIES.filter((r) => w[r] > 0 && !(rareOrBetter && r === 'common'));
   const total = order.reduce((a, r) => a + w[r], 0);
@@ -292,20 +292,24 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
   return { pity, refund };
 }
 
+/** 장비 뽑기 등급 굴림(누적 permille). 마지막 칸이 나머지를 받는다 */
+export function pickGearTier<T extends { permille: number }>(pool: T[]): T {
+  const total = pool.reduce((a, t) => a + t.permille, 0);
+  let roll = getRng().int(0, total);
+  for (const t of pool) {
+    if (roll < t.permille) return t;
+    roll -= t.permille;
+  }
+  return pool[pool.length - 1]!;
+}
+
 async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: repo.PullRow[], count: number, tier: number) {
   const table = gearTable(banner, ctx.char.class, tier);
   if (table.length === 0) throw new AppError(422, '뽑을 수 있는 장비가 없습니다.', 'NO_GEAR');
   for (let i = 0; i < times; i++) {
     // 장비 뽑기는 10+1의 보너스 1회도 같은 확률로 굴린다. 뽑기마다 등급이 2~3개뿐이라 "최하 등급 제외"를 하면
     // 장신구는 유니크, 방어구는 에픽이 확정되어 버린다(외형 뽑기의 보너스만 희귀 이상)
-    const pool = table;
-    const total = pool.reduce((a, t) => a + t.permille, 0);
-    let roll = getRng().int(0, total);
-    let tier = pool[pool.length - 1]!;
-    for (const t of pool) {
-      if (roll < t.permille) { tier = t; break; }
-      roll -= t.permille;
-    }
+    const tier = pickGearTier(table);
     const item = tier.items[getRng().int(0, tier.items.length)]!;
     await ctx.addItem('bag', item.id, 1, 'gacha', `${banner}_${count}`);
     rows.push({ seq: i, rarity: tier.rarity, itemId: item.id, pityBefore: 0, pityAfter: 0, byPity: false, duplicate: false, refund: 0, kind: 'gear' });

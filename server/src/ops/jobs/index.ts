@@ -3,6 +3,8 @@ import { holdSweepJob, incomeReconcileJob, presenceSweepJob } from '../../domain
 import { registerJob } from '../jobRunner';
 import { integrityJob } from './integrity';
 import { maintenanceCloseJob } from './maintenanceClose';
+import { playWindowSweepJob } from './playWindowSweep';
+import { ratesPublicationJob } from './ratesPublication';
 import { purgeDaily, purgeHourly } from './purge';
 import { staleRunsJob } from './staleRuns';
 import { paymentReconcileJob, paymentReportJob, paymentWatchJob, starGrantExpireJob } from './paymentJobs';
@@ -10,7 +12,7 @@ import { withdrawalAnonymizeJob, withdrawalDestroyJob } from './withdrawalJobs';
 import { campaignRevokeJob, campaignSweepJob, sweepTicketExpireJob } from './sweepJobs';
 
 /** 관리자 OP3가 수동 실행할 수 있는 작업(허용 목록) */
-export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy'] as const;
+export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy', 'play-window-sweep', 'rates-publication'] as const;
 
 let done = false;
 
@@ -38,5 +40,9 @@ export function registerAllJobs(): void {
   // 회원 탈퇴: 익명화(10분), 5년 파기(매일 KST 04:55, payment-report 04:50 뒤. 기본 dry-run)
   registerJob({ name: 'withdrawal-anonymize', schedule: { kind: 'every', minutes: 10 }, run: withdrawalAnonymizeJob });
   registerJob({ name: 'withdrawal-destroy', schedule: { kind: 'daily_kst', hour: 4, minute: 55 }, run: withdrawalDestroyJob });
+  // 청소년 보호 정책 제4조: 게임시간 선택제 구간을 넘긴 접속 중 계정 끊기(60초)
+  registerJob({ name: 'play-window-sweep', schedule: { kind: 'every', minutes: 1 }, run: playWindowSweepJob });
+  // 이용약관 제14조의2 3항: 공개 중인 확률표 지문 기록(1시간)
+  registerJob({ name: 'rates-publication', schedule: { kind: 'every', minutes: 60 }, run: ratesPublicationJob });
   registerJob({ name: 'maintenance-close', schedule: { kind: 'every', minutes: 1 }, run: maintenanceCloseJob });
 }

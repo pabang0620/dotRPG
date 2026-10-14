@@ -53,7 +53,7 @@ For repeated refund abuse or payment fraud (refunding after spending the Star Sh
 If the Service ends, the Company announces this at least 30 days in advance and refunds unused Paid Star Shards remaining at the end. How and when to apply is set out in the end-of-service notice.
 
 ## Article 9 (Probability Disclosure)
-The probabilities of probability-based products, such as draws, Sealed Chests and cosmetic synthesis, can be checked at any time in the in-game probability view and on the web page (/policies/en/probability). Changes are announced at least 7 days in advance.
+The probabilities of probability-based products, such as draws, Sealed Chests, cosmetic synthesis and gear enhancement, can be checked at any time in the in-game probability view and on the web page ([probability disclosure](/policies/en/probability)). Changes are announced at least 7 days in advance. The independence of attempts, the keeping of attempt records, and the correction of and compensation for probability display errors follow Article 14-2 of the Terms of Service.
 
 ## Article 10 (Seller Information)
 

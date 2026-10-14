@@ -5,10 +5,18 @@ import type { PolicyLang } from './policyVersions';
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-/** {{key}}를 운영 정보로 바꾼다. 빈 값은 (미정)/(TBD) */
+/** {{key}}를 운영 정보로 바꾼다. 값이 빈 항목만 있는 표 줄("| 대표자 | {{ceo}} |")은 빼고, 그 밖의 빈 값은 (미정)/(TBD) */
 export function fillPlaceholders(md: string, values: Record<string, string>, lang: PolicyLang): string {
   const empty = lang === 'ko' ? '(미정)' : '(TBD)';
-  return md.replace(/\{\{\s*([a-z0-9_]+)\s*\}\}/gi, (_m, key: string) => {
+  const filled = (key: string): boolean => typeof values[key] === 'string' && values[key]!.trim() !== '';
+  const kept = md
+    .split('\n')
+    .filter((line) => {
+      const m = /^\|[^|]*\|\s*\{\{\s*([a-z0-9_]+)\s*\}\}\s*\|\s*$/i.exec(line);
+      return !m || filled(m[1]!);
+    })
+    .join('\n');
+  return kept.replace(/\{\{\s*([a-z0-9_]+)\s*\}\}/gi, (_m, key: string) => {
     const v = values[key];
     return typeof v === 'string' && v.trim() ? v.trim() : empty;
   });

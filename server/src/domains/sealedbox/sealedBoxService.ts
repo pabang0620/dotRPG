@@ -40,6 +40,11 @@ export function boosterView(gauge: number, d: SealedData = getSealedBox()): { ga
   return { gauge, next_boosted: gauge >= d.boosterEvery };
 }
 
+/** 강화권 상자 판정: chance는 정수 %, 0 이상 100 미만 정수가 chance 미만이면 성공 */
+export function luckBoxHit(chance: number): boolean {
+  return getRng().int(0, 100) < chance;
+}
+
 /** 표 한 줄을 고른다(누적 확률). 마지막 줄은 부동소수 오차를 받는다 */
 export function pickRow(table: RatedRow[]): RatedRow {
   const roll = (getRng().int(0, ROLL_SCALE) / ROLL_SCALE) * 100;
@@ -175,7 +180,7 @@ export function openItem(accountId: number, characterUuid: string, body: OpenBod
         const ticketKey = `ticket_enh${info.power}`;
         if (!items.has(ticketKey)) throw new Error(`확률 상자 ${body.item_key} 의 강화권 ${ticketKey} 이 items.json에 없습니다`);
         // chance는 정수 %(30, 10, 50). 0 이상 chance 미만이면 성공
-        const hit = getRng().int(0, 100) < info.chance;
+        const hit = luckBoxHit(info.chance);
         const reward: ItemCount = hit ? { item_key: ticketKey, count: 1 } : d.luckBoxFallback;
         await grantItems(ctx, [reward], 'box_open', body.item_key);
         const result: OpenResult = { item_key: reward.item_key, count: reward.count, boosted: false, tier: hit ? 'rare' : 'common', rewards: [reward], row_id: body.item_key, grade: hit ? 'rare' : 'normal' };

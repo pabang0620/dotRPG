@@ -14,7 +14,8 @@ import * as watch from '../watch/watchRepository';
 import * as withdrawalRepo from '../../domains/withdrawal/withdrawalRepository';
 import { applySanction } from '../sanctions/sanctionsService';
 import * as repo from './playersRepository';
-import type { DevCreateBody, ForceRenameBody, LedgerQuery, NoteBody } from './playersValidation';
+import { fmtMinutes, isOpen, parseHm } from '../../domains/auth/playWindow';
+import type { DevCreateBody, ForceRenameBody, LedgerQuery, NoteBody, PlayWindowBody } from './playersValidation';
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 const FAR = new Date('9999-01-01T00:00:00Z').getTime();
@@ -272,6 +273,36 @@ export function resetDevPassword(admin: AdminCtx, ip: string, uuid: string, requ
 }
 
 /**
+ * PL10(0039): 게임시간 선택제(청소년 보호 정책 제4조). 법정대리인 요청으로 계정별 이용 가능 시간대(KST)를 정한다.
+ * start/end가 null이면 해제. 설정 직후 접속 중이고 구간 밖이면 끊는다(다음 로그인부터는 인증이 막는다).
+ */
+export function setPlayWindow(admin: AdminCtx, ip: string, uuid: string, body: PlayWindowBody): Promise<ActionResult> {
+  const start = body.start === null ? null : (parseHm(body.start) as number);
+  const end = body.end === null ? null : (parseHm(body.end) as number);
+  return runAdminAction({
+    admin,
+    ip,
+    action: 'account.play_window',
+    targetType: 'account',
+    targetUuid: uuid,
+    requestId: body.request_id,
+    params: { start: body.start, end: body.end, note_length: body.note.length },
+    handler: async (client) => {
+      const a = await repo.accountByUuidForUpdate(client, uuid);
+      if (!a) throw new AppError(404, '계정을 찾을 수 없습니다.', 'ACCOUNT_NOT_FOUND');
+      await client.query('UPDATE accounts SET play_window_start = $2, play_window_end = $3 WHERE id = $1', [a.id, start, end]);
+      const closedNow = start !== null && end !== null && !isOpen({ start, end });
+      if (closedNow) {
+        if (registry.ofAccount(a.id) !== undefined) afterCommit(client, () => void kickAccount(a.id, CLOSE.KICKED, 'KICKED'));
+        afterCommit(client, () => void relayHub().kickAccount(a.id, CLOSE.KICKED, 'KICKED'));
+      }
+      const window = start === null || end === null ? null : { start: fmtMinutes(start), end: fmtMinutes(end) };
+      return { status: 200, data: { account_id: uuid, play_window: window, closed_now: closedNow } };
+    },
+  });
+}
+
+/**
  * PL9(0038): 운영정책의 "이름 변경 요청". 이름을 임시 이름("이름변경" + 숫자 4자리)으로 바꾸고 rename_required를 켠다.
  * 같은 트랜잭션에서 계정에 경고(warning, other)를 남긴다. 플레이어는 다음 접속 때 새 이름을 고른다(POST /characters/:uuid/rename).
  */
@@ -285,8 +316,8 @@ export function forceRename(admin: AdminCtx, ip: string, characterUuid: string, 
     requestId: body.request_id,
     params: { note_length: body.note.length },
     handler: async (client) => {
-      const r = await client.query<{ id: string; name: string; account_uuid: string }>(
-        `SELECT c.id, c.name, a.uuid AS account_uuid FROM characters c JOIN accounts a ON a.id = c.account_id
+      const r = await client.query<{ id: string; name: string; account_id: number; account_uuid: string }>(
+        `SELECT c.id, c.name, a.id AS account_id, a.uuid AS account_uuid FROM characters c JOIN accounts a ON a.id = c.account_id
           WHERE c.uuid = $1 AND c.deleted_at IS NULL FOR UPDATE OF c`,
         [characterUuid],
       );
@@ -308,6 +339,10 @@ export function forceRename(admin: AdminCtx, ip: string, characterUuid: string, 
       }
       if (temp === null) throw new AppError(503, '임시 이름을 만들지 못했습니다. 다시 시도하세요.', 'RENAME_PLACEHOLDER_FULL');
       const sanction = await applySanction(client, admin, c.account_uuid, { kind: 'warning', reason_code: 'other', note: `부적절한 캐릭터 이름: ${c.name}` });
+      // 채팅·마을 접속은 접속할 때 이름을 기억하므로, 끊어서 다시 접속하게 해야 옛 이름이 남지 않는다
+      const accountId = Number(c.account_id);
+      if (registry.ofAccount(accountId) !== undefined) afterCommit(client, () => void kickAccount(accountId, CLOSE.KICKED, 'KICKED'));
+      afterCommit(client, () => void relayHub().kickAccount(accountId, CLOSE.KICKED, 'KICKED'));
       return { status: 200, data: { character_uuid: characterUuid, old_name: c.name, temp_name: temp, sanction: sanction.sanction } };
     },
   });

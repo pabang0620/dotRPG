@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
+import * as realtime from '../src/domains/chat/realtimeNotifier';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 import { auth, buildApp, createChar, randomName, registerAccount, resetDb, shutdown, type Session } from './helpers';
 import { adminApp, adminPost, auditRows, makeAdmin, type TestAdmin } from './opsHelpers';
@@ -15,6 +16,9 @@ beforeEach(async () => {
   await resetDb();
   getRateLimitStore().clear();
   [operator, viewer] = [await makeAdmin('operator'), await makeAdmin('viewer')];
+});
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 afterAll(async () => {
   await shutdown();
@@ -45,6 +49,16 @@ describe('[0038] 이름 변경 요청', () => {
     expect(warn).toEqual([{ kind: 'warning', reason_code: 'other' }]);
     expect((await auditRows("action = 'character.force_rename' AND result = 'ok'")).length).toBe(1);
     expect((await adminPost(app, operator, `/admin/characters/${randomUUID()}/force-rename`, { note: 'x' })).status).toBe(404);
+  });
+
+  it('접속 중이면 이름을 바꾼 뒤 그 계정을 끊어 옛 이름이 남지 않게 한다', async () => {
+    const h = await hero();
+    const id = Number((await getPool().query('SELECT id FROM accounts WHERE uuid = $1', [h.s.accountId])).rows[0].id);
+    const kick = jest.spyOn(realtime, 'kickAccount').mockReturnValue(true);
+    jest.spyOn(realtime.registry, 'ofAccount').mockReturnValue({ accountId: id } as never);
+    expect((await adminPost(app, operator, `/admin/characters/${h.id}/force-rename`, { note: '사유' })).status).toBe(200);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(kick).toHaveBeenCalledWith(id, 4011, 'KICKED');
   });
 
   it('목록과 상세에 표시되고, 규칙에 맞는 새 이름으로 바꾸면 표시가 꺼진다', async () => {

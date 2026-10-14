@@ -475,7 +475,7 @@ B3(sync), 대사 작업, 관리자 재확인(PA3), B1·B6의 열린 주문 대�
 | 항목 | 기본 | 효과 |
 |---|---|---|
 | 열린 주문 | 계정당 1개 | `ORDER_IN_PROGRESS` |
-| 최소 간격 | `PAY_MIN_ORDER_GAP_SECONDS`(60) | `ORDER_TOO_FAST` |
+| 최소 간격 | `PAY_MIN_ORDER_GAP_SECONDS`(0, 대기 없음. 2026-10-14 결제 대기 금지 지시) | `ORDER_TOO_FAST` |
 | 실패 쿨다운 | 1시간에 실패·만료 `PAY_FAIL_COOLDOWN_THRESHOLD`(5)건 | 1시간 `ORDER_TOO_FAST` + 플래그 `fail_burst` |
 | 요청 속도 | B2 계정당 분당 `RATE_PAY_ORDER_PER_MIN`(3) + IP당 `RATE_PAY_ORDER_IP_PER_MIN`(10) | `429 RATE_LIMITED` |
 

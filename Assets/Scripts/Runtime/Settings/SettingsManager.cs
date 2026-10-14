@@ -25,6 +25,7 @@ namespace DotRPG
 
         public void Load()
         {
+            bool existed = File.Exists(FilePath);
             try
             {
                 if (File.Exists(FilePath))
@@ -41,7 +42,8 @@ namespace DotRPG
             Data.masterVolume = Mathf.Clamp01(Data.masterVolume);
             Data.musicVolume = Mathf.Clamp01(Data.musicVolume);
             Data.sfxVolume = Mathf.Clamp01(Data.sfxVolume);
-            if (!L.IsSupported(Data.language)) Data.language = L.DeviceDefault();
+            // A settings file from before the language option belongs to a Korean player; only a fresh install follows the device language.
+            if (!L.IsSupported(Data.language)) Data.language = existed ? "ko" : L.DeviceDefault();
             Data.version = SettingsData.CurrentVersion;
         }
 

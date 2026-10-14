@@ -133,6 +133,8 @@ BACKUP_DEST=/tmp/b BACKUP_ALLOW_PLAINTEXT=1 PG_DUMP_CMD='...' ./backup.sh test  
 |---|---|
 | 계정 찾기·상세 | `account find <uuid \| name:이름 \| steam:ID \| dev:아이디>`, `account show <uuid>`, `char show`, `char ledger <uuid> --kind gold --since 24h` |
 | 제재 | `sanction add <계정 uuid> --kind chat_mute --for 1d --reason abuse --note ...` (operator 정지 최대 30일, 영구는 owner), `sanction revoke` |
+| 제재 사유 코드 | `abuse` 욕설·비하 / `spam` 도배 / `scam_ad` 광고·사기 / `cheat` 불법 프로그램 / `sexual` 성적 표현 / `hate` 혐오·차별 / `impersonation` 운영자·타인 사칭 / `rmt` 현금 거래 / `exploit` 버그 악용 / `name` 부적절한 이름 / `other` 기타. 정지 거절 응답 `details.reason_code`로 사유가 나간다 |
+| 게임시간 선택제 | `account play-window <계정 uuid> 22:00-07:00 --note "법정대리인 요청"` (KST, 자정을 넘어도 됨, 해제는 `off`). 구간 밖 로그인·토큰 갱신은 403 `PLAY_WINDOW_CLOSED`(`details.opens_at`), 접속 중이면 설정 직후와 매분(`play-window-sweep`) 끊는다 |
 | 신고 | `report list`, `report show` (증거 줄), `report take`, `report resolve --dismiss` 또는 `--sanction --kind ... --reason ...` |
 | 보류 던전 판 | `held list`, `held show`, `held release <uuid> --note ...`(보상 확정, 한 판에 한 번), `held reject` |
 | 이상 기록 | `watch list`(의심 계정 순위), `anomalies`, `flags`, 검토 뒤 `account ack <uuid>` |
