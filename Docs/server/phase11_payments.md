@@ -100,7 +100,7 @@
 | `QUOTE_CHANGED` | 409 | B2 | 견적 서명 불일치, 계정·상품·통화·가격·상품표 버전이 달라짐 |
 | `CURRENCY_UNSUPPORTED` | 422 | B1, B2 | Steam 지갑 통화가 상품표에 없음 |
 | `ORDER_IN_PROGRESS` | 409 | B2 | 이 계정에 열린 주문이 있다(`errors:{ order_id }`로 sync 안내) |
-| `ORDER_TOO_FAST` | 429 | B2 | 최소 간격·시간당 건수·실패 쿨다운(`errors:{ retry_after_sec }`) |
+| `ORDER_TOO_FAST` | 429 | B2 | 최소 간격(기본 0)·실패 쿨다운(`errors:{ retry_after_sec }`) |
 | `STAR_DEBT` | 403 | 뽑기·교환·선택·합성 | 환불된 결제분이 있어 별조각 사용이 막혀 있다(`errors:{ debt }`) |
 | `RATES_CHANGED` | 409 | 뽑기 | 클라이언트가 본 확률표 버전과 서버 현재 버전이 다름(`errors:{ rates_version }`) |
 | `GRANT_STATE` | 409 | PA10~PA12 | 이 상태에서는 할 수 없는 동작 |
@@ -1295,6 +1295,8 @@ DROP TABLE IF EXISTS star_rates_snapshots;
 | `PAY_WATCH_DAYS` | `180` | 환불·차지백 감시 기간 |
 | `PAY_REPORT_DAYS` | `7` | 일일 리포트 교차 점검 범위 |
 | `PAY_NEW_ACCOUNT_DAYS` | `14` | 신규 계정 기준 |
+| `PAY_MIN_ORDER_GAP_SECONDS` | `0` | 마지막 주문 생성 뒤 최소 간격. 0이면 결제 대기가 없다 |
+| `PAY_FAIL_COOLDOWN_THRESHOLD` | `5` | 1시간 안에 실패·만료 주문이 이 건수면 1시간 동안 새 주문 거절 |
 | `PAY_SHARED_DEVICE_ACCOUNTS` / `PAY_COUNTRY_CHANGE_MAX` | `3` / `1` | 다계정·국가 변경 기준 |
 | `PAY_REFUND_SPEND_RATIO` / `PAY_REFUND_RESTRICT_COUNT` / `PAY_REFUND_BLOCK_COUNT` / `PAY_BURN_MINUTES` | `0.5` / `2` / `3` / `10` | 환불 패턴 |
 | `PAY_IP_RETENTION_DAYS` | `180` | 주문 IP 보관 |

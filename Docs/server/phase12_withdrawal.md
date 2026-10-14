@@ -596,7 +596,7 @@ SELECT id, account_id FROM account_withdrawals
 | `blocks` | `blocked_name` | 유지 | 내가 건 행 **삭제**, 나를 차단한 행 `blocked_name` **익명화** | 해제 행은 기존 일정(90일) |
 | `party_invites` | - | 대기 건 `cancelled` | 보관 | 기존 일정(7일) |
 | `parties`, `party_members`, `party_applications`, `party_runs`, `party_run_host_reports` | - | 이탈·취소 | 보관 | 나간 행은 기존 일정(30일), 나머지 5년 파기 |
-| `party_run_members` | `device_hash`, `steam_key`, `install_id` | 이탈 | 세 열 **NULL**(익명화) | 5년 파기 |
+| `party_run_members` | `device_hash`, `steam_key`, `install_id` | 이탈 | 세 열 **NULL**(익명화) | 5년 파기. 탈퇴와 별개로 판이 끝난 뒤 `PARTY_RECORD_RETENTION_DAYS`(30일)가 지나면 `purge` 작업(`party_run_members_device`)이 행은 남기고 이 세 열을 NULL로 만든다 |
 | `field_sessions`, `field_session_members`, `relay_room_stats` | - | 이탈 | 보관 | 기존 일정 |
 | `reports` | `target_name` | - | 대상이 이 계정인 행 `target_name` **익명화**. 열린 신고가 있으면 T1 자체를 보류 | 보관, 5년 파기(상대 계정 규칙 8.2) |
 | `report_lines` | 닉네임, 채팅 본문 | - | **변경 없음**(UPDATE 금지 트리거) | 신고 종결 후 180일(기존 일정, 탈퇴가 앞당기지 않는다) |
@@ -611,6 +611,13 @@ SELECT id, account_id FROM account_withdrawals
 | `auction_listings`, `auction_bids` | 건드리지 않음(정상 마감) | 보관 | 8.2의 공유 기록 규칙 |
 | `auction_trades`, `auction_sinks`, `auction_flags`, `auction_trade_flags`, `auction_price_daily` | - | 보관 | 8.2 (시세 표는 계정 무관, 영구) |
 | `mails`, `mail_attachments`, `mail_campaign_deliveries` | 건드리지 않음 | 보관(미수령은 기한 폐기) | 8.2 |
+
+### 10.6 정책 기록 (구현 후 추가: 0037, 0040)
+
+| 표 | 식별 정보 | T1 | T2 |
+|---|---|---|---|
+| `account_consents` | 계정, 동의한 약관 버전 | **보관**(분쟁 근거) | 계정과 함께 5년 파기(`withdrawalPolicy.ts`의 `keepOwn`) |
+| `rates_publications` | 없음(계정 무관) | 해당 없음 | **영구 보관**(`forever`, 이용약관 제14조의2 3항) |
 
 ## 11. 기존 코드에 닿는 지점
 

@@ -35,7 +35,7 @@ namespace DotRPG
 
         // Gameplay / accessibility
         public bool screenShake = true;
-        /// <summary>[I18N] "ko" or "en"; empty on a fresh install = the device language (L.DeviceDefault). Applies on restart.</summary>
+        /// <summary>[I18N] Language code ("ko", "en", "ja", ... see L); empty on a fresh install = the device language (L.DeviceDefault). Applies on restart.</summary>
         public string language = "";
 
         // Input System binding overrides (JSON produced by InputActionMap.SaveBindingOverridesAsJson).

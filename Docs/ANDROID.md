@@ -13,6 +13,8 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
    - 배치 모드: `Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.BuildScript.BuildAndroidDev`
 2. 결과: `Builds/Android/dotRPG-dev.apk` (Development 빌드, http 서버 허용)
    - 큰 에셋을 옮기거나 지운 뒤에는 명령줄에 `-dotrpgCleanBuild`를 붙인다. Gradle이 이전 APK를 고쳐 쓰면서 빠진 파일 자리를 빈 공간으로 남기기 때문이다(2026-10-11: 파일 869MB, 내용물 375MB).
+   - 빌드 전용 복사본: Unity를 열어 둔 작업 폴더와 겹치지 않게 `C:\Users\admin\Desktop\games\dotRPG_apkbuild`에서 빌드한다. 먼저 `Assets`를 `robocopy /MIR`(.meta 제외)로 작업 폴더와 맞춘 뒤 `BuildAndroidDev`(`Builds/Android/dotRPG-dev.apk`)를 돌린다. PC 시험 빌드도 같은 복사본에서 `BuildWindowsSteamTest`(`Builds/WindowsSteamTest/dotRPG.exe`)로 만든다.
+   - 휴대폰으로 보낼 때는 `games/dotRPG_mobile_<날짜>.zip`으로 묶는다.
 3. 설치: `adb install -r Builds/Android/dotRPG-dev.apk`
 4. 서버: 폰은 시험 서버 `https://35-216-2-121.sslip.io`(구글 클라우드, DB는 Supabase, `ApiClient.MobileTestServer`)에 자동으로 붙는다. 로그인 화면에 서버 주소 칸은 없다.
    - PC 서버로 폰을 시험하려면 `OnlineScreens.cs`의 `serverRow`를 `Application.isMobilePlatform`으로 되돌려 주소 칸을 다시 연다(예: `http://192.168.0.10:3000`, 같은 네트워크, PC 방화벽에서 포트 허용). 값은 PlayerPrefs `dotrpg.server`에 저장된다.
@@ -32,13 +34,13 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
 3. 메뉴 `dotRPG > Build > Android release (aab)` -> `Builds/Android/dotRPG.aab` (`DOTRPG_RELEASE` 정의, 개발/캡처 경로 제외, 서버 주소 고정)
 4. Play Console 등록: 내부 테스트 트랙에 먼저 올리고 확인한다.
 
-개발용과 출시용 차이: APK vs AAB, Development 플래그, http 허용 여부, 서버 주소 입력 칸(개발 빌드 모바일에서만), 서명 키스토어.
+개발용과 출시용 차이: APK vs AAB, Development 플래그, http 허용 여부, 서버 주소(개발 빌드 모바일은 시험 서버에 자동 연결, 출시는 고정 주소), 서명 키스토어.
 
 ## 3. 기기에서 확인할 핵심 흐름 (미확인: 아직 기기에서 돌려 보지 않았다)
 
 - [ ] 앱이 켜지고 가로 화면으로 고정된다 (좌우 회전 모두)
 - [ ] 아트가 보인다: 지역 몬스터(바위·예티·성소), 가라앉은 성소, 사냥터 소품, 겨울 마을 (StreamingAssets를 jar에서 읽는 경로)
-- [ ] 로그인 화면에 "서버 주소" 칸이 보이고, 입력 후 로그인된다
+- [ ] 로그인 화면에서 서버 주소 칸 없이 시험 서버로 로그인된다
 - [ ] 캐릭터 선택 -> 마을 진입 -> 이동/전투 (터치 입력은 별도 작업)
 - [ ] 홈 버튼으로 나갔다가 다시 들어와도 진행이 유지된다 (백그라운드 진입 시 로컬 세이브 + 대기 중인 서버 업로드)
 - [ ] 던전 안에서 백그라운드로 가도 저장하지 않는다 (마을 저장본으로 이어하기)
@@ -66,9 +68,9 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
 ## 6. 스토어 출시 전 남은 일
 
 - 터치 입력/HUD (별도 작업), 설정 창 모바일 항목 정리
-- 개인정보처리방침 URL, Play Console의 데이터 보안(Data safety) 양식 작성: 계정 ID, 비밀번호/토큰, 기기 식별자, 채팅 내용, 결제 기록 등 수집 항목과 서버 전송/삭제 방법(계정 탈퇴 기능은 있음)을 정확히 신고
+- 개인정보처리방침 URL(`https://pabang0620.github.io/dotrpg-policy/ko/privacy.html`)과 계정 삭제 안내 URL(`.../ko/account-deletion.html`)은 있다. Play Console의 데이터 보안(Data safety) 양식 작성: 계정 ID, 비밀번호/토큰, 기기 식별자, 채팅 내용, 결제 기록 등 수집 항목과 서버 전송/삭제 방법(계정 탈퇴 기능은 있음)을 정확히 신고
 - 콘텐츠 등급 설문, 타깃 연령, 광고 포함 여부
 - 결제(Play Billing) 연동과 서버 영수증 검증 (현재 클라이언트에 없음, 미확인)
 - 저사양 기기 성능/메모리 측정, 용량 기준(AAB 150MB 한도) 확인
 - 크래시 수집, 16KB 페이지 정렬 호환 확인(targetSdk 35 이상 권장 사항)
-- 앱 아이콘/적응형 아이콘, 스토어 스크린샷과 소개문
+- 스토어 스크린샷과 소개문. 앱 아이콘은 적응형·둥근·기존 3종을 지정했다(`ProjectSetup.ApplyAndroidIcons`, 원본 `Assets/Art/AppIcon/android_*.png`)

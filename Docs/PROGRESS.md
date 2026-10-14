@@ -24,6 +24,10 @@
 | 게임 서버 4단계 | 파티 모집·매칭·로비, 협동 던전(방장 계산 + 스냅샷), 방장 인계, 결과 대조, 레이드 | b172263 |
 | 게임 서버 5·6단계 | WebSocket 채팅·친구·차단·신고·초대, 경매장·우편·시세 | 58beda7 |
 | 게임 서버 7단계 | 관리자 CLI, 정리 작업, 백업·점검·배포 파일, 출시 전 수정 13건 | 9b38dc7 |
+| 다국어 | `L` 번역 함수, 언어 설정, 서버 `X-Lang` 메시지 번역, 11개 언어 번역표(영어·일본어·중국어 간체/번체·스페인어·포르투갈어·독일어·프랑스어·러시아어·베트남어·인도네시아어) | d5a8f691, 1e97917a |
+| 정책·동의 | 서버 정책 문서 6종(한국어/영어)과 자동 생성 확률 페이지, 약관 동의 화면, 설정의 약관 및 정책 메뉴, 이름 변경 제재, 다국어 금칙어 | b4f0ff36, a89ce253 |
+| 정책 방어 보강 | 확률표 공개 기록(0040)과 30만 회 통계 시험, 이용 시간대 제한(0039), 제재 사유 코드 6종 추가, 약관 14조의2·14조의3 등 | 88e38921 |
+| 결제 한도 제거 | 결제 일·월 한도, 시간당 주문 상한, 별조각 일일 소비 상한 제거(0036). 사기 방지 장치만 유지 | cbcbb1ac, cc387a7f |
 
 ## 사용자 결정 기록
 
@@ -52,7 +56,7 @@
 2. Steam 연동 (시험 앱 ID 480: SteamAuth·SteamP2PTransport, 서버 Web API 키)
 3. 실제 배포 (업체·도메인·오프사이트 백업·웹훅 결정 후 `server/ops/README.md`)
 4. 결정 대기 2건: 파티 저레벨 처치 경험치 감쇠, 강화 직후 판매 차익
-5. 출시 전 운영 항목: 금칙어 목록 보강, 개인정보 처리방침
+5. 출시 전 운영 항목: 법률 검토(약관·개인정보처리방침), 번역 원어민 감수, `POLICY_CONSENT_ENFORCE`·`WITHDRAW_DESTROY_ENABLED` 켜기, 클라이언트 결제 구매 화면, 랭킹(미구현)
 6. 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md)
 
 ## 현재 상태 스냅샷 (2026-10-08 기준)
@@ -62,7 +66,9 @@
 | 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개이고 모두 원격에 있다 |
 | 워크트리 | 쓰지 않는다(`wt/*` 체계 폐기). 작업 폴더 하나에서 브랜치로 나뉜다 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
-| 게임 서버 | `server/`(Node·TypeScript·PostgreSQL). 단계별 진행 현황은 `PLAN_SERVER.md` 표와 `Docs/server/` |
+| 게임 서버 | `server/`(Node·TypeScript·PostgreSQL). 단계별 진행 현황은 `PLAN_SERVER.md` 표와 `Docs/server/`. 마이그레이션 0001~0040, 서버 테스트 108개 파일 1232개 |
+| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase. 0039·0040까지 적용. 배포 절차는 `server/ops/README.md` 10절 |
+| 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
 | 검증 | 컴파일과 서버 자동 테스트는 작업 묶음 끝에 확인한다. 게임 실행 자동 테스트는 요청이 있을 때만 돌린다 |
 
 ### 체크리스트 진행률 요약
@@ -84,7 +90,8 @@
 
 ## 개발·검증 방법
 
-- 작업 방식: 에이전트마다 별도 git worktree(`C:\Users\admin\Desktop\games\dotRPG-wt\<이름>`) → 각자 컴파일·검증 → 커밋 → `feature/dungeon-raid`에 병합·푸시
+- 작업 방식: 브랜치는 `main`·`jaein`·`wonho` 3개뿐이고 사용자는 `wonho`에서만 작업한다. 에이전트는 파일 소유를 나눠 같은 브랜치에서 일하고, 컴파일·테스트·커밋은 묶음 끝에 메인이 한다
+- 빌드: 빌드 전용 복사본 `C:\Users\admin\Desktop\games\dotRPG_apkbuild`에 `Assets`를 `robocopy /MIR`(.meta 제외)로 맞춘 뒤 `BuildAndroidDev`(`Builds/Android/dotRPG-dev.apk`), `BuildWindowsSteamTest`(`Builds/WindowsSteamTest/dotRPG.exe`). 휴대폰 전달용 zip은 `games/dotRPG_mobile_<날짜>.zip`
 - 컴파일: `Unity.exe -batchmode -nographics -quit -projectPath <경로> -logFile <로그>`
 - 빌드: 위에 `-executeMethod DotRPG.EditorTools.BuildScript.BuildWindows`
 - 자동 테스트: `Builds\Windows\dotRPG.exe <모드> <결과폴더>` → `report.txt`의 `summary` 줄

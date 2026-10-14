@@ -9,7 +9,8 @@
 - 스토리: [`Docs/STORY.md`](Docs/STORY.md) · 진행 체크리스트: [`Docs/MASTER_CHECKLIST.md`](Docs/MASTER_CHECKLIST.md)
 - 던전·레이드: [`Docs/PLAN_DUNGEON_RAID.md`](Docs/PLAN_DUNGEON_RAID.md) · 온라인 구조: [`Docs/PLAN_ONLINE.md`](Docs/PLAN_ONLINE.md) · 경매장: [`Docs/PLAN_AUCTION.md`](Docs/PLAN_AUCTION.md)
 - 게임 서버: [`Docs/PLAN_SERVER.md`](Docs/PLAN_SERVER.md) · 단계별 명세 [`Docs/server/`](Docs/server/) · 서버 운영 런북 [`server/ops/README.md`](server/ops/README.md)
-- 스토어 소개 문구: [`Docs/STORE.md`](Docs/STORE.md)
+- 스토어 소개 문구: [`Docs/STORE.md`](Docs/STORE.md) · 다국어: [`Docs/PLAN_I18N.md`](Docs/PLAN_I18N.md) · 안드로이드: [`Docs/ANDROID.md`](Docs/ANDROID.md)
+- 약관·정책 공개 페이지: https://pabang0620.github.io/dotrpg-policy/ (원문은 `server/policies/`, 운영 방법은 [`Docs/OPS_ADMIN_GUIDE.md`](Docs/OPS_ADMIN_GUIDE.md) 7절)
 
 ---
 
@@ -145,7 +146,9 @@ Docs/             설계 문서, 에셋 가이드, 미리보기 이미지
 - **성장·경제**: 레벨·장비·강화(+10부터 파괴 위험, 보호권, 망치 세 번 연출과 결과 효과음), 상점·창고, 재료, 귀속 규칙 표시(거래 가능·계정 귀속·캐릭터 귀속)
 - **파티**: 용병 고용 최대 4인, 역할별 AI(탱커·딜러·힐러), 레이드 토템 분담
 - **온라인(서버 연결)**: 개발용 로그인, 온라인 캐릭터, 서버 판정 경제(처치·드롭·채집·퀘스트 보상·상점·강화·창고·장착·던전 보상), 파티 모집·자동 매칭·로비와 협동 던전(방장 PC 계산 + 스냅샷 동기화, 방장 인계), 레이드 보상 판정, 실시간 채팅·친구·차단·신고·파티 초대, 경매장·우편·시세. 서버가 없거나 오프라인 캐릭터면 같은 창들이 미리보기로 동작
-- **게임 서버(`server/`)**: Node 22 + TypeScript + Express 5 + PostgreSQL, WebSocket 채팅, 마이그레이션 0001~0008, 자동 테스트 442개, 관리자 CLI(2단계 인증·감사 로그), 정리 작업·백업·점검 공지, Docker·Caddy 배포 파일
+- **게임 서버(`server/`)**: Node 22 + TypeScript + Express 5 + PostgreSQL, WebSocket 채팅, 마이그레이션 0001~0040, 자동 테스트 108개 파일 1232개(확률표 통계 검증 포함), 관리자 CLI(2단계 인증·감사 로그), 정리 작업·백업·점검 공지, Docker·Caddy 배포 파일, 별조각 결제(기본 꺼짐), 회원 탈퇴, 부정 행위 방지, 약관·정책 문서와 확률표 공개 기록, 이용 시간대 제한(게임시간 선택제)
+- **다국어**: 한국어 원문에 영어·일본어·중국어 간체/번체·스페인어·포르투갈어(브라질)·독일어·프랑스어·러시아어·베트남어·인도네시아어 11개 언어(`ko` 포함 12개 표시 언어). 번역표는 `Assets/Resources/Data/Lang/<코드>/*.json`, 점검·서버 표 생성은 `python3 Tools/i18n/i18n.py check|extract|sync-server`. 설정에서 언어를 고르면 다시 시작할 때 적용된다. 설정 파일에 언어가 없는 기존 사용자는 `ko`
+- **정책·동의**: 첫 접속 때 약관 동의 화면(요약 줄 포함), 설정의 약관 및 정책 메뉴(계정 삭제 안내 포함). 이용약관·개인정보처리방침·운영정책·유료 서비스 정책·청소년 보호 정책·계정 삭제 안내와 확률 공개 페이지는 서버에서 서비스한다
 - **편의**: 저장 슬롯 3개, 저장 손상 안내, 키 변경, 글자·UI 크기 4단계, 색약 보정, 화면 흔들림 끄기, 첫 방문 안내 팁, 도움말
 - **아트**: 생성 도트 캐릭터(64px, 머리:몸 1:1), 마을·협곡·겨울 소품, 아이콘·로고·던전 배너, 9-slice 창 프레임
 
@@ -180,9 +183,12 @@ dotRPG.exe -dotrpgSoak [분, 기본 60] [-soakOut <절대경로>]
 
 ## 8. 아직 하지 않은 것
 
-- 서버 실제 배포(업체·도메인 미정). 배포 절차는 `server/ops/README.md`에 준비되어 있음
+- 정식 운영 서버(업체·도메인 미정). 시험 서버는 구글 클라우드(`https://35-216-2-121.sslip.io`, DB는 Supabase)에서 돌고 있고, 정식 배포 절차는 `server/ops/README.md`에 준비되어 있음
 - Steamworks 연결(로그인·P2P 전송·도전과제·클라우드). 서버의 Steam 인증은 mock까지, 클라이언트 P2P 전송은 시험 앱 ID 확보 후
-- 창 2개 협동 실제 플레이 확인(코드·서버 흐름만 검증됨), 현지화(영어)
+- 창 2개 협동 실제 플레이 확인(코드·서버 흐름만 검증됨)
+- 클라이언트 결제(별조각 구매) 화면. 서버 결제는 구현돼 있고 기본 꺼짐
+- 번역 원어민 감수, 약관 법률 검토. 서버 설정 `POLICY_CONSENT_ENFORCE`(약관 미동의 차단)와 `WITHDRAW_DESTROY_ENABLED`(5년 실삭제)는 아직 켜지 않았다
+- 랭킹
 - 챕터 3~5
 
 ## 9. 저장 데이터 위치

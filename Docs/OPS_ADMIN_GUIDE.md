@@ -99,9 +99,16 @@ dotrpg-admin character rename <character_uuid> --note "플레이어에게 보일
   - `rename_required`를 켠다.
   - 계정에 경고(warning, 사유 other, 메모 "부적절한 캐릭터 이름: 옛 이름")를 남긴다.
   - 감사 로그(`character.force_rename`)를 쓴다.
+  - 그 계정이 접속 중이면 접속을 끊는다(다시 접속하면 위 이름 변경 창이 뜬다).
 - 플레이어 쪽: 캐릭터 카드에 "(이름 변경 필요)"가 붙는다. 접속하기를 누르면 이름 변경 창("운영정책에 따라 캐릭터 이름을 바꿔야 합니다." + 사유)이 먼저 뜬다. 새 이름은 생성 때와 같은 규칙(2~8자, 예약어·금칙어·중복 금지)으로 한 번 고르고, 고르면 바로 접속한다.
 - 2차·3차 위반이면 이 명령과 함께 `sanction create`로 정지를 따로 건다(운영정책 제3조 표).
 - 탈퇴 유예 중인 계정에 요청하면, 철회해도 옛 이름은 되살아나지 않고 임시 이름이 남는다.
+
+### 금칙어 목록 고치기
+
+- 서버가 읽는 파일은 `server/data/banned_words.json`이다. 직접 고치지 않고 `Tools/moderation/`의 `manual.json`(손으로 쓴 목록)과 `drop.txt`(쓰지 않을 낱말), 공개 목록(`sources/`)을 고친 뒤 `python3 Tools/moderation/build_banned_words.py`로 다시 만든다. `must_catch.json`은 반드시 걸려야 하는 표현 모음이다.
+- 로마자로 쓴 한국어 욕설과 비슷한 문자(키릴 문자, 숫자·기호 치환)를 같은 글자로 바꿔 보는 처리는 강한(strong) 목록에만 적용한다. 일반 낱말이 잘못 걸리는 것을 막기 위해서다.
+- 확인 스크립트(서버를 `npm run build` 한 뒤 실행): `node Tools/moderation/corpus_check.js`(게임 번역문이 잘못 걸리는지), `detect_check.js`(걸려야 할 표현을 놓치는지), `names_check.js`(게임 속 이름이 이름 필터에 걸리는지). 정식 시험은 서버 `bannedWordsCorpus.test.ts`다.
 
 ### 제재 사유 코드 (`sanction add --reason`, `report resolve --reason`)
 
@@ -126,7 +133,7 @@ dotrpg-admin account play-window <account_uuid> off --note "해제 요청"
 ```
 
 - 구간 밖의 로그인·토큰 갱신은 403 `PLAY_WINDOW_CLOSED`(`details.opens_at` = 다음 시작 시각).
-- 설정한 순간 구간 밖이면 접속 중인 사람을 끊고, 그 뒤에도 `play-window-sweep` 작업이 매분 구간을 넘긴 접속자를 끊는다.
+- 설정한 순간 구간 밖이면 접속 중인 사람을 끊고, 그 뒤에도 `play-window-sweep` 작업이 매분 구간을 넘긴 접속자를 끊는다. 실시간 연결(WebSocket)은 `KICKED`(4011)로 끊기며 자동 재접속을 하지 않는다.
 - 시작과 끝이 같은 값은 받지 않는다. 감사 로그 `account.play_window`.
 
 ## 6. 청약철회(구매 취소) 요청 처리 (유료 서비스 정책 제4조)
@@ -140,6 +147,9 @@ dotrpg-admin account play-window <account_uuid> off --note "해제 요청"
 - 스토어 등록용 주소: 개인정보처리방침 `.../ko/privacy.html`, 계정 삭제 `.../ko/account-deletion.html`, 확률 공개 `.../ko/probability.html`(영문은 `en/`).
 - 약관을 바꾸면 `server/src/domains/policies/policyVersions.ts`의 버전을 올린다. 다음 접속 때 모든 이용자에게 동의 화면이 다시 뜬다. 시행 7일 전(불리한 변경은 30일 전)에 공지한다.
 - 확률을 바꾸기 7일 전에 게임 공지와 웹 페이지로 알린다(운영정책 제9조).
+- 확률 페이지 맨 위에는 "확률표 지문"(12자리)이 찍힌다. 서버는 기동 때와 `rates-publication` 작업(60분마다)에 지금 공개 중인 확률표의 지문과 전문을 `rates_publications`에 기록하고 계정과 무관하게 영구 보관한다(이용약관 제14조의2). 분쟁이 나면 `dotrpg-admin rates publications`로 목록, `rates show <id>`로 그때의 전문을 본다(viewer 이상).
+- 약관의 주요 조항: 제14조의2 확률형 아이템(뽑기마다 독립 시행, 기록·지문 보관, 오류 시 정정·보상), 제14조의3 잘못 지급된 재화 회수, 제16조 책임 한도(고의·중과실 제외, 최근 3개월 결제액), 제18조 분쟁 절차, 제19조 기록의 효력, 제21조 일부 무효.
+- 공개 확률표와 실제 굴림 함수가 같은지는 서버 시험 `ratesStatistical.test.ts`가 표마다 30만 회 굴려 비교한다. 확률이나 굴림 코드를 바꾸면 이 시험을 먼저 돌린다.
 
 ## 8. 운영 서버 설정 점검 (정책과 실제 동작을 맞추기)
 | 설정 | 운영 값 | 이유 |

@@ -1,7 +1,7 @@
 # dotRPG 서버 운영 런북
 
 설계 원본은 `Docs/server/phase7_ops.md`다. 이 문서는 서버 호스트에서 실제로 치는 명령만 모았다.
-서버 업체와 도메인은 아직 정하지 않았다: 업체에 묶이는 값(도메인, 오프사이트 저장소 자격 증명, 웹훅 URL)은 모두 `.env` 자리표시이고, 이 저장소에는 값이 없다.
+정식 운영 서버의 업체와 도메인은 아직 정하지 않았다(지금 도는 곳은 10절의 시험 서버): 업체에 묶이는 값(도메인, 오프사이트 저장소 자격 증명, 웹훅 URL)은 모두 `.env` 자리표시이고, 이 저장소에는 값이 없다.
 
 ## 0. 구성과 파일
 
@@ -135,12 +135,13 @@ BACKUP_DEST=/tmp/b BACKUP_ALLOW_PLAINTEXT=1 PG_DUMP_CMD='...' ./backup.sh test  
 | 제재 | `sanction add <계정 uuid> --kind chat_mute --for 1d --reason abuse --note ...` (operator 정지 최대 30일, 영구는 owner), `sanction revoke` |
 | 제재 사유 코드 | `abuse` 욕설·비하 / `spam` 도배 / `scam_ad` 광고·사기 / `cheat` 불법 프로그램 / `sexual` 성적 표현 / `hate` 혐오·차별 / `impersonation` 운영자·타인 사칭 / `rmt` 현금 거래 / `exploit` 버그 악용 / `name` 부적절한 이름 / `other` 기타. 정지 거절 응답 `details.reason_code`로 사유가 나간다 |
 | 게임시간 선택제 | `account play-window <계정 uuid> 22:00-07:00 --note "법정대리인 요청"` (KST, 자정을 넘어도 됨, 해제는 `off`). 구간 밖 로그인·토큰 갱신은 403 `PLAY_WINDOW_CLOSED`(`details.opens_at`), 접속 중이면 설정 직후와 매분(`play-window-sweep`) 끊는다 |
+| 확률표 공개 기록 | `rates publications [--limit N] [--before ID]`(공개했던 확률표 지문 목록), `rates show <id>`(그때의 전문). 서버 기동 때와 작업 `rates-publication`(60분마다)이 지금 공개 중인 확률표 지문을 기록하고, 계정이 지워져도 영구 보관한다(이용약관 제14조의2) |
 | 신고 | `report list`, `report show` (증거 줄), `report take`, `report resolve --dismiss` 또는 `--sanction --kind ... --reason ...` |
 | 보류 던전 판 | `held list`, `held show`, `held release <uuid> --note ...`(보상 확정, 한 판에 한 번), `held reject` |
 | 이상 기록 | `watch list`(의심 계정 순위), `anomalies`, `flags`, 검토 뒤 `account ack <uuid>` |
 | 운영 지급 | `grant add <캐릭터 uuid> --code compensation --gold 5000 --memo "문의 #123"` (system 우편으로만, 한도는 `ADMIN_GRANT_*`). 회수 기능은 없다: 사고는 정지 + 개별 대응 |
 | 점검·방송 | `maint status/schedule/cancel/extend/end/drain`, `broadcast "문구"` |
-| 작업 | `ops jobs`, `ops run purge-hourly \| purge-daily \| stale-runs \| integrity-nightly [--full]` |
+| 작업 | `ops jobs`, `ops run purge-hourly \| purge-daily \| stale-runs \| integrity-nightly [--full] \| play-window-sweep \| rates-publication` |
 | 회원 탈퇴 | `withdraw list [--state requested\|completed\|cancelled] [--deferred]`, `withdraw show <계정 uuid>`, `withdraw start <계정 uuid> --note ...`(정보주체 요청 대행, 정지 계정 포함. `--no-cancel` 은 owner), `withdraw cancel <탈퇴 uuid> --note ...`, `withdraw hold <탈퇴 uuid> --on\|--off --note ...`, `withdraw anonymize-now <탈퇴 uuid> --note ... [--override-deferral]`(owner), `tombstone find --steam <ID>`, `tombstone release <id> --note ...`(owner). 작업 `ops run withdrawal-anonymize \| withdrawal-destroy`. 메모에 Steam ID·실명을 쓰지 않는다 |
 | 관리자 계정(owner) | `admins list/add/role/disable/enable/reset-2fa/unlock/reset-password`, `audit` |
 
@@ -189,3 +190,16 @@ GRANT USAGE ON SEQUENCE account_destruction_log_id_seq TO dotrpg_purge;
 ```
 
 접속 문자열은 `PURGE_DATABASE_URL`(비밀값)에 둔다. 추가 전용 원장 트리거(`ledger_block_mutation`)는 `session_user = dotrpg_purge` 의 DELETE 만 허용 표(13개 + 계정 한 곳에 속한 4개)에서 통과시키고 UPDATE, TRUNCATE, 감사 로그 삭제는 이 역할도 거절한다. 외래 키로 막히는 행(상대가 아직 활동 중인 친구·경매 기록 등)은 지우지 않고 계정 껍데기(개인 정보 없음)를 남기며, 다음 실행에서 다시 시도한다.
+
+## 10. 시험 서버 (지금 운영 중, Docker 없음)
+
+구글 클라우드 한 대(35.216.2.121, `https://35-216-2-121.sslip.io`)에서 API만 돌린다. DB는 Supabase라서 서버에 PostgreSQL을 설치하지 않는다. 마이그레이션 0039·0040까지 적용돼 있다. 모바일 시험 빌드가 이 주소로 붙는다(`ApiClient.MobileTestServer`).
+
+배포 순서(개발 PC의 `server/`에서 시작):
+1. `npm run build`
+2. `tar`로 `dist data migrations scripts policies package.json package-lock.json`을 묶는다(`policies`가 빠지면 약관 등 정책 문서 페이지가 비고, `data`가 바뀌면 `data_version`이 바뀌어 옛 클라이언트는 426이 된다).
+3. 서버로 올린 뒤 `/opt/dotrpg/app`을 먼저 백업하고 풀어 덮는다. 백업은 최근 것만 남기고 지운다.
+4. 서버에서 `npm ci --omit=dev`, 이어서 `/opt/dotrpg/.env`를 읽은 셸에서 `node dist/db/migrate.js up`(`sudo bash -c "set -a; . /opt/dotrpg/.env; set +a; node dist/db/migrate.js up"`).
+5. `systemctl restart dotrpg-api`, 이어서 `curl https://35-216-2-121.sslip.io/health`로 확인한다.
+
+시험 서버의 약관 동의 강제(`POLICY_CONSENT_ENFORCE`)와 5년 실삭제(`WITHDRAW_DESTROY_ENABLED`)는 켜지 않았다. 동의 화면이 든 클라이언트를 배포한 뒤 켠다.
