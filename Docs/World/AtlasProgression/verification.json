@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-10",
+  "branch": "jaein",
+  "progression": [
+    "forest_crossing -> canyon -> canyon_pass",
+    "canyon_gate -> winter -> winter_edge",
+    "winter_reach -> sunken_sanctum -> sanctum_hall",
+    "sanctum_court -> village -> forest"
+  ],
+  "changes": [
+    "Clockwise regional stage placement with upper2/lower3 branches",
+    "Each next town is directly after the previous field4",
+    "Four short gold progression arrows with unchanged bidirectional gameplay portals",
+    "Moved forest town nameplate to keep incoming route visible"
+  ],
+  "resolutions": [
+    "1280x720",
+    "1920x1080",
+    "2560x1440"
+  ],
+  "checksPerResolution": {
+    "passed": 340,
+    "failed": 0
+  },
+  "audioVolume": 0,
+  "verification": [
+    "16 field labels and matching sidebar targets",
+    "Clockwise stage progression and town adjacency",
+    "Rendered transfer line endpoints exactly match field4 and next town",
+    "Transfer arrows point forward and remain visible",
+    "Existing cardinal geography, surface graph and underground graph preserved",
+    "All native UI click, legend and bounds checks pass"
+  ],
+  "captureFix": "Temporarily preserve overlay UI above scene-rendered destination labels during RenderTexture capture, including independently sorted child canvases; restore all original orders in finally.",
+  "runtime": "Bundled Roslyn compile and runtime DLL deployment to existing local native Unity player; no fresh Unity Editor build.",
+  "limitations": [
+    "UI pointer tests use raycast-resolved synthetic handlers, not physical OS input.",
+    "No gameplay topology or walking routes changed this turn; previous four-way hub walking checks retained as prior evidence."
+  ],
+  "runtimeSha256": "d59512ef315b45f6ec20566bcd516a642ae3e61ec53ac580c07f65f52e5cdf28"
+}

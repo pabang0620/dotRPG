@@ -1,0 +1,346 @@
+[3.06] capture started
+[3.06] verification audio volume: 0
+DGN atlas requested screen width 1280 PASS
+DGN atlas requested screen height 720 PASS
+[6.85] ATLAS FIELD resolution: 1280x720
+DGN surface chart is HD and visible PASS
+DGN surface field chart exists PASS
+DGN atlas compass has the central undergate node PASS
+DGN undergate remains near the center of the atlas PASS
+DGN village town is west of undergate PASS
+DGN forest stays in the west biome PASS
+DGN forest_ruins stays in the west biome PASS
+DGN forest_depths stays in the west biome PASS
+DGN forest_crossing stays in the west biome PASS
+DGN village field cluster is west of undergate PASS
+DGN canyon town is north of undergate PASS
+DGN canyon_pass stays in the north biome PASS
+DGN canyon_mine stays in the north biome PASS
+DGN canyon_ridge stays in the north biome PASS
+DGN canyon_gate stays in the north biome PASS
+DGN canyon field cluster is north of undergate PASS
+DGN winter town is east of undergate PASS
+DGN winter_edge stays in the east biome PASS
+DGN winter_lake stays in the east biome PASS
+DGN winter_peak stays in the east biome PASS
+DGN winter_reach stays in the east biome PASS
+DGN winter field cluster is east of undergate PASS
+DGN sunken_sanctum town is south of undergate PASS
+DGN sanctum_hall stays in the south biome PASS
+DGN sanctum_archive stays in the south biome PASS
+DGN sanctum_roots stays in the south biome PASS
+DGN sanctum_court stays in the south biome PASS
+DGN sunken_sanctum field cluster is south of undergate PASS
+DGN surface chart has all sixteen distinct field labels PASS
+DGN surface chart has all sixteen distinct field nodes PASS
+DGN surface chart is inside the screen PASS
+DGN forest atlas node has an active clickable button PASS
+DGN forest atlas label is exactly 숲 1 PASS
+DGN forest full atlas label fits its text box PASS
+DGN forest sidebar number and name match the atlas PASS
+DGN forest atlas stage label is centered PASS
+DGN forest atlas node and label keep eight-pixel chart margin PASS
+DGN forest atlas node clears town icons, nameplates and title PASS
+DGN forest_ruins atlas node has an active clickable button PASS
+DGN forest_ruins atlas label is exactly 숲 2 PASS
+DGN forest_ruins full atlas label fits its text box PASS
+DGN forest_ruins sidebar number and name match the atlas PASS
+DGN forest_ruins atlas stage label is centered PASS
+DGN forest_ruins atlas node and label keep eight-pixel chart margin PASS
+DGN forest_ruins atlas node clears town icons, nameplates and title PASS
+DGN forest_depths atlas node has an active clickable button PASS
+DGN forest_depths atlas label is exactly 숲 3 PASS
+DGN forest_depths full atlas label fits its text box PASS
+DGN forest_depths sidebar number and name match the atlas PASS
+DGN forest_depths atlas stage label is centered PASS
+DGN forest_depths atlas node and label keep eight-pixel chart margin PASS
+DGN forest_depths atlas node clears town icons, nameplates and title PASS
+DGN forest_crossing atlas node has an active clickable button PASS
+DGN forest_crossing atlas label is exactly 숲 4 PASS
+DGN forest_crossing full atlas label fits its text box PASS
+DGN forest_crossing sidebar number and name match the atlas PASS
+DGN forest_crossing atlas stage label is centered PASS
+DGN forest_crossing atlas node and label keep eight-pixel chart margin PASS
+DGN forest_crossing atlas node clears town icons, nameplates and title PASS
+DGN village atlas stage 2 is above stage 3 PASS
+DGN village atlas stage 4 follows stage 1 clockwise PASS
+DGN village atlas branches follow stage 1 clockwise PASS
+DGN village atlas stage 4 follows its branches clockwise PASS
+DGN village town is close to its own stage 1 PASS
+DGN forest_crossing is immediately followed by nearby canyon PASS
+DGN canyon_pass atlas node has an active clickable button PASS
+DGN canyon_pass atlas label is exactly 협곡 1 PASS
+DGN canyon_pass full atlas label fits its text box PASS
+DGN canyon_pass sidebar number and name match the atlas PASS
+DGN canyon_pass atlas stage label is centered PASS
+DGN canyon_pass atlas node and label keep eight-pixel chart margin PASS
+DGN canyon_pass atlas node clears town icons, nameplates and title PASS
+DGN canyon_mine atlas node has an active clickable button PASS
+DGN canyon_mine atlas label is exactly 협곡 2 PASS
+DGN canyon_mine full atlas label fits its text box PASS
+DGN canyon_mine sidebar number and name match the atlas PASS
+DGN canyon_mine atlas stage label is centered PASS
+DGN canyon_mine atlas node and label keep eight-pixel chart margin PASS
+DGN canyon_mine atlas node clears town icons, nameplates and title PASS
+DGN canyon_ridge atlas node has an active clickable button PASS
+DGN canyon_ridge atlas label is exactly 협곡 3 PASS
+DGN canyon_ridge full atlas label fits its text box PASS
+DGN canyon_ridge sidebar number and name match the atlas PASS
+DGN canyon_ridge atlas stage label is centered PASS
+DGN canyon_ridge atlas node and label keep eight-pixel chart margin PASS
+DGN canyon_ridge atlas node clears town icons, nameplates and title PASS
+DGN canyon_gate atlas node has an active clickable button PASS
+DGN canyon_gate atlas label is exactly 협곡 4 PASS
+DGN canyon_gate full atlas label fits its text box PASS
+DGN canyon_gate sidebar number and name match the atlas PASS
+DGN canyon_gate atlas stage label is centered PASS
+DGN canyon_gate atlas node and label keep eight-pixel chart margin PASS
+DGN canyon_gate atlas node clears town icons, nameplates and title PASS
+DGN canyon atlas stage 2 is above stage 3 PASS
+DGN canyon atlas stage 4 follows stage 1 clockwise PASS
+DGN canyon atlas branches follow stage 1 clockwise PASS
+DGN canyon atlas stage 4 follows its branches clockwise PASS
+DGN canyon town is close to its own stage 1 PASS
+DGN canyon_gate is immediately followed by nearby winter PASS
+DGN winter_edge atlas node has an active clickable button PASS
+DGN winter_edge atlas label is exactly 설원 1 PASS
+DGN winter_edge full atlas label fits its text box PASS
+DGN winter_edge sidebar number and name match the atlas PASS
+DGN winter_edge atlas stage label is centered PASS
+DGN winter_edge atlas node and label keep eight-pixel chart margin PASS
+DGN winter_edge atlas node clears town icons, nameplates and title PASS
+DGN winter_lake atlas node has an active clickable button PASS
+DGN winter_lake atlas label is exactly 설원 2 PASS
+DGN winter_lake full atlas label fits its text box PASS
+DGN winter_lake sidebar number and name match the atlas PASS
+DGN winter_lake atlas stage label is centered PASS
+DGN winter_lake atlas node and label keep eight-pixel chart margin PASS
+DGN winter_lake atlas node clears town icons, nameplates and title PASS
+DGN winter_peak atlas node has an active clickable button PASS
+DGN winter_peak atlas label is exactly 설원 3 PASS
+DGN winter_peak full atlas label fits its text box PASS
+DGN winter_peak sidebar number and name match the atlas PASS
+DGN winter_peak atlas stage label is centered PASS
+DGN winter_peak atlas node and label keep eight-pixel chart margin PASS
+DGN winter_peak atlas node clears town icons, nameplates and title PASS
+DGN winter_reach atlas node has an active clickable button PASS
+DGN winter_reach atlas label is exactly 설원 4 PASS
+DGN winter_reach full atlas label fits its text box PASS
+DGN winter_reach sidebar number and name match the atlas PASS
+DGN winter_reach atlas stage label is centered PASS
+DGN winter_reach atlas node and label keep eight-pixel chart margin PASS
+DGN winter_reach atlas node clears town icons, nameplates and title PASS
+DGN winter atlas stage 2 is above stage 3 PASS
+DGN winter atlas stage 4 follows stage 1 clockwise PASS
+DGN winter atlas branches follow stage 1 clockwise PASS
+DGN winter atlas stage 4 follows its branches clockwise PASS
+DGN winter town is close to its own stage 1 PASS
+DGN winter_reach is immediately followed by nearby sunken_sanctum PASS
+DGN sanctum_hall atlas node has an active clickable button PASS
+DGN sanctum_hall atlas label is exactly 성소 1 PASS
+DGN sanctum_hall full atlas label fits its text box PASS
+DGN sanctum_hall sidebar number and name match the atlas PASS
+DGN sanctum_hall atlas stage label is centered PASS
+DGN sanctum_hall atlas node and label keep eight-pixel chart margin PASS
+DGN sanctum_hall atlas node clears town icons, nameplates and title PASS
+DGN sanctum_archive atlas node has an active clickable button PASS
+DGN sanctum_archive atlas label is exactly 성소 2 PASS
+DGN sanctum_archive full atlas label fits its text box PASS
+DGN sanctum_archive sidebar number and name match the atlas PASS
+DGN sanctum_archive atlas stage label is centered PASS
+DGN sanctum_archive atlas node and label keep eight-pixel chart margin PASS
+DGN sanctum_archive atlas node clears town icons, nameplates and title PASS
+DGN sanctum_roots atlas node has an active clickable button PASS
+DGN sanctum_roots atlas label is exactly 성소 3 PASS
+DGN sanctum_roots full atlas label fits its text box PASS
+DGN sanctum_roots sidebar number and name match the atlas PASS
+DGN sanctum_roots atlas stage label is centered PASS
+DGN sanctum_roots atlas node and label keep eight-pixel chart margin PASS
+DGN sanctum_roots atlas node clears town icons, nameplates and title PASS
+DGN sanctum_court atlas node has an active clickable button PASS
+DGN sanctum_court atlas label is exactly 성소 4 PASS
+DGN sanctum_court full atlas label fits its text box PASS
+DGN sanctum_court sidebar number and name match the atlas PASS
+DGN sanctum_court atlas stage label is centered PASS
+DGN sanctum_court atlas node and label keep eight-pixel chart margin PASS
+DGN sanctum_court atlas node clears town icons, nameplates and title PASS
+DGN sunken_sanctum atlas stage 2 is above stage 3 PASS
+DGN sunken_sanctum atlas stage 4 follows stage 1 clockwise PASS
+DGN sunken_sanctum atlas branches follow stage 1 clockwise PASS
+DGN sunken_sanctum atlas stage 4 follows its branches clockwise PASS
+DGN sunken_sanctum town is close to its own stage 1 PASS
+DGN sanctum_court is immediately followed by nearby village PASS
+DGN surface atlas has exactly four directed region transfers PASS
+DGN forest_crossing has one directed visual transfer to canyon PASS
+DGN forest_crossing rendered transfer connects directly to canyon without detours PASS
+DGN forest_crossing transfer has one visible nonblocking arrow PASS
+DGN forest_crossing transfer arrow points from stage 4 toward canyon PASS
+DGN forest_crossing transfer arrow is inside the chart and clear of nameplates and other nodes PASS
+DGN canyon_gate has one directed visual transfer to winter PASS
+DGN canyon_gate rendered transfer connects directly to winter without detours PASS
+DGN canyon_gate transfer has one visible nonblocking arrow PASS
+DGN canyon_gate transfer arrow points from stage 4 toward winter PASS
+DGN canyon_gate transfer arrow is inside the chart and clear of nameplates and other nodes PASS
+DGN winter_reach has one directed visual transfer to sunken_sanctum PASS
+DGN winter_reach rendered transfer connects directly to sunken_sanctum without detours PASS
+DGN winter_reach transfer has one visible nonblocking arrow PASS
+DGN winter_reach transfer arrow points from stage 4 toward sunken_sanctum PASS
+DGN winter_reach transfer arrow is inside the chart and clear of nameplates and other nodes PASS
+DGN sanctum_court has one directed visual transfer to village PASS
+DGN sanctum_court rendered transfer connects directly to village without detours PASS
+DGN sanctum_court transfer has one visible nonblocking arrow PASS
+DGN sanctum_court transfer arrow points from stage 4 toward village PASS
+DGN sanctum_court transfer arrow is inside the chart and clear of nameplates and other nodes PASS
+DGN forest atlas node does not overlap another field PASS
+DGN forest_ruins atlas node does not overlap another field PASS
+DGN forest_depths atlas node does not overlap another field PASS
+DGN forest_crossing atlas node does not overlap another field PASS
+DGN canyon_pass atlas node does not overlap another field PASS
+DGN canyon_mine atlas node does not overlap another field PASS
+DGN canyon_ridge atlas node does not overlap another field PASS
+DGN canyon_gate atlas node does not overlap another field PASS
+DGN winter_edge atlas node does not overlap another field PASS
+DGN winter_lake atlas node does not overlap another field PASS
+DGN winter_peak atlas node does not overlap another field PASS
+DGN winter_reach atlas node does not overlap another field PASS
+DGN sanctum_hall atlas node does not overlap another field PASS
+DGN sanctum_archive atlas node does not overlap another field PASS
+DGN sanctum_roots atlas node does not overlap another field PASS
+DGN sanctum_court atlas node does not overlap another field PASS
+DGN surface atlas click audit has an event system PASS
+[7.24] ATLAS FIELD pointer mode: synthetic raycast-resolved pointer handlers; physical OS hover is not asserted by the synthetic mode.
+[7.24] ATLAS FIELD input diagnostics: applicationFocused=True; eventSystemFocused=True; module=StandaloneInputModule; mouseEnabled=True; mouseCanRunInBackground=False; backgroundBehavior=ResetAndDisableNonBackgroundDevices
+DGN forest atlas label receives the pointer click PASS
+DGN forest pointer hover shows exact region, number and field name PASS
+DGN forest pointer exit restores the atlas legend PASS
+DGN forest atlas click selects the exact field PASS
+DGN forest atlas click preserves the active world and player PASS
+DGN forest surface atlas reopens after selection PASS
+DGN forest_ruins atlas label receives the pointer click PASS
+DGN forest_ruins pointer hover shows exact region, number and field name PASS
+DGN forest_ruins pointer exit restores the atlas legend PASS
+DGN forest_ruins atlas click selects the exact field PASS
+DGN forest_ruins atlas click preserves the active world and player PASS
+DGN forest_ruins surface atlas reopens after selection PASS
+DGN forest_depths atlas label receives the pointer click PASS
+DGN forest_depths pointer hover shows exact region, number and field name PASS
+DGN forest_depths pointer exit restores the atlas legend PASS
+DGN forest_depths atlas click selects the exact field PASS
+DGN forest_depths atlas click preserves the active world and player PASS
+DGN forest_depths surface atlas reopens after selection PASS
+DGN forest_crossing atlas label receives the pointer click PASS
+DGN forest_crossing pointer hover shows exact region, number and field name PASS
+DGN forest_crossing pointer exit restores the atlas legend PASS
+DGN forest_crossing atlas click selects the exact field PASS
+DGN forest_crossing atlas click preserves the active world and player PASS
+DGN forest_crossing surface atlas reopens after selection PASS
+DGN canyon_pass atlas label receives the pointer click PASS
+DGN canyon_pass pointer hover shows exact region, number and field name PASS
+DGN canyon_pass pointer exit restores the atlas legend PASS
+DGN canyon_pass atlas click selects the exact field PASS
+DGN canyon_pass atlas click preserves the active world and player PASS
+DGN canyon_pass surface atlas reopens after selection PASS
+DGN canyon_mine atlas label receives the pointer click PASS
+DGN canyon_mine pointer hover shows exact region, number and field name PASS
+DGN canyon_mine pointer exit restores the atlas legend PASS
+DGN canyon_mine atlas click selects the exact field PASS
+DGN canyon_mine atlas click preserves the active world and player PASS
+DGN canyon_mine surface atlas reopens after selection PASS
+DGN canyon_ridge atlas label receives the pointer click PASS
+DGN canyon_ridge pointer hover shows exact region, number and field name PASS
+DGN canyon_ridge pointer exit restores the atlas legend PASS
+DGN canyon_ridge atlas click selects the exact field PASS
+DGN canyon_ridge atlas click preserves the active world and player PASS
+DGN canyon_ridge surface atlas reopens after selection PASS
+DGN canyon_gate atlas label receives the pointer click PASS
+DGN canyon_gate pointer hover shows exact region, number and field name PASS
+DGN canyon_gate pointer exit restores the atlas legend PASS
+DGN canyon_gate atlas click selects the exact field PASS
+DGN canyon_gate atlas click preserves the active world and player PASS
+DGN canyon_gate surface atlas reopens after selection PASS
+DGN winter_edge atlas label receives the pointer click PASS
+DGN winter_edge pointer hover shows exact region, number and field name PASS
+DGN winter_edge pointer exit restores the atlas legend PASS
+DGN winter_edge atlas click selects the exact field PASS
+DGN winter_edge atlas click preserves the active world and player PASS
+DGN winter_edge surface atlas reopens after selection PASS
+DGN winter_lake atlas label receives the pointer click PASS
+DGN winter_lake pointer hover shows exact region, number and field name PASS
+DGN winter_lake pointer exit restores the atlas legend PASS
+DGN winter_lake atlas click selects the exact field PASS
+DGN winter_lake atlas click preserves the active world and player PASS
+DGN winter_lake surface atlas reopens after selection PASS
+DGN winter_peak atlas label receives the pointer click PASS
+DGN winter_peak pointer hover shows exact region, number and field name PASS
+DGN winter_peak pointer exit restores the atlas legend PASS
+DGN winter_peak atlas click selects the exact field PASS
+DGN winter_peak atlas click preserves the active world and player PASS
+DGN winter_peak surface atlas reopens after selection PASS
+DGN winter_reach atlas label receives the pointer click PASS
+DGN winter_reach pointer hover shows exact region, number and field name PASS
+DGN winter_reach pointer exit restores the atlas legend PASS
+DGN winter_reach atlas click selects the exact field PASS
+DGN winter_reach atlas click preserves the active world and player PASS
+DGN winter_reach surface atlas reopens after selection PASS
+DGN sanctum_hall atlas label receives the pointer click PASS
+DGN sanctum_hall pointer hover shows exact region, number and field name PASS
+DGN sanctum_hall pointer exit restores the atlas legend PASS
+DGN sanctum_hall atlas click selects the exact field PASS
+DGN sanctum_hall atlas click preserves the active world and player PASS
+DGN sanctum_hall surface atlas reopens after selection PASS
+DGN sanctum_archive atlas label receives the pointer click PASS
+DGN sanctum_archive pointer hover shows exact region, number and field name PASS
+DGN sanctum_archive pointer exit restores the atlas legend PASS
+DGN sanctum_archive atlas click selects the exact field PASS
+DGN sanctum_archive atlas click preserves the active world and player PASS
+DGN sanctum_archive surface atlas reopens after selection PASS
+DGN sanctum_roots atlas label receives the pointer click PASS
+DGN sanctum_roots pointer hover shows exact region, number and field name PASS
+DGN sanctum_roots pointer exit restores the atlas legend PASS
+DGN sanctum_roots atlas click selects the exact field PASS
+DGN sanctum_roots atlas click preserves the active world and player PASS
+DGN sanctum_roots surface atlas reopens after selection PASS
+DGN sanctum_court atlas label receives the pointer click PASS
+DGN sanctum_court pointer hover shows exact region, number and field name PASS
+DGN sanctum_court pointer exit restores the atlas legend PASS
+DGN sanctum_court atlas click selects the exact field PASS
+DGN sanctum_court atlas click preserves the active world and player PASS
+DGN sanctum_court surface atlas reopens after selection PASS
+DGN NamePlate_undergate receives the pointer click PASS
+DGN NamePlate_undergate opens the underground chart PASS
+DGN underground chart retains four floor nodes PASS
+DGN Node_undergate receives the pointer click PASS
+DGN Node_undergate opens the underground chart PASS
+DGN underground chart retains four floor nodes PASS
+DGN village retains field stage order PASS
+DGN forest retains exact split connections PASS
+DGN forest_ruins retains exact merge connections PASS
+DGN forest_depths retains exact merge connections PASS
+DGN forest_crossing retains next-region connections PASS
+DGN village retains town, field and hub routes PASS
+DGN canyon retains field stage order PASS
+DGN canyon_pass retains exact split connections PASS
+DGN canyon_mine retains exact merge connections PASS
+DGN canyon_ridge retains exact merge connections PASS
+DGN canyon_gate retains next-region connections PASS
+DGN canyon retains town, field and hub routes PASS
+DGN winter retains field stage order PASS
+DGN winter_edge retains exact split connections PASS
+DGN winter_lake retains exact merge connections PASS
+DGN winter_peak retains exact merge connections PASS
+DGN winter_reach retains next-region connections PASS
+DGN winter retains town, field and hub routes PASS
+DGN sunken_sanctum retains field stage order PASS
+DGN sanctum_hall retains exact split connections PASS
+DGN sanctum_archive retains exact merge connections PASS
+DGN sanctum_roots retains exact merge connections PASS
+DGN sanctum_court retains next-region connections PASS
+DGN sunken_sanctum retains town, field and hub routes PASS
+DGN undergate retains all towns and underground entrance PASS
+DGN hollow_descent retains exact linear connections PASS
+DGN hollow_roots retains exact linear connections PASS
+DGN hollow_fungal retains exact linear connections PASS
+DGN hollow_depths retains exact linear connections PASS
+DGN atlas audit preserves active world and player PASS
+DGN atlas field verification muted PASS
+[7.78] ATLAS FIELD RESULTS: 340 passed, 0 failed

@@ -1,0 +1,94 @@
+[3.09] capture started
+[3.09] verification audio volume: 0
+DGN hub compass test controls the party leader PASS
+DGN hub compass surface chart exists PASS
+DGN atlas compass has the central undergate node PASS
+DGN undergate remains near the center of the atlas PASS
+DGN village town is west of undergate PASS
+DGN forest stays in the west biome PASS
+DGN forest_ruins stays in the west biome PASS
+DGN forest_depths stays in the west biome PASS
+DGN forest_crossing stays in the west biome PASS
+DGN village field cluster is west of undergate PASS
+DGN canyon town is north of undergate PASS
+DGN canyon_pass stays in the north biome PASS
+DGN canyon_mine stays in the north biome PASS
+DGN canyon_ridge stays in the north biome PASS
+DGN canyon_gate stays in the north biome PASS
+DGN canyon field cluster is north of undergate PASS
+DGN winter town is east of undergate PASS
+DGN winter_edge stays in the east biome PASS
+DGN winter_lake stays in the east biome PASS
+DGN winter_peak stays in the east biome PASS
+DGN winter_reach stays in the east biome PASS
+DGN winter field cluster is east of undergate PASS
+DGN sunken_sanctum town is south of undergate PASS
+DGN sanctum_hall stays in the south biome PASS
+DGN sanctum_archive stays in the south biome PASS
+DGN sanctum_roots stays in the south biome PASS
+DGN sanctum_court stays in the south biome PASS
+DGN sunken_sanctum field cluster is south of undergate PASS
+DGN hub compass setup reaches undergate PASS
+[9.52] HUB COMPASS input: ScriptedInput movement through live physics triggers; direct travel only for test setup.
+DGN undergate west to village has the exact authored portal center PASS
+DGN undergate west to village has three live triggers across its opening PASS
+DGN undergate west to village has a safe inward arrival PASS
+DGN undergate west to village approach is walkable PASS
+DGN undergate west to village walking reaches a live portal trigger PASS
+DGN undergate west to village walking selects the exact destination PASS
+[13.02] undergate west to village walking distance=2.531997 arrival=village (2.90, 22.50)
+DGN village arrival matches its reciprocal safe point PASS
+DGN village arrival stays outside the return trigger PASS
+DGN village arrival does not bounce PASS
+DGN village reciprocal return walking reaches a live portal trigger PASS
+DGN village reciprocal return walking selects the exact destination PASS
+[16.29] village reciprocal return walking distance=1.691999 arrival=undergate (2.70, 22.50)
+DGN village return arrives at the correct hub side PASS
+DGN village return does not bounce PASS
+DGN undergate north to canyon has the exact authored portal center PASS
+DGN undergate north to canyon has three live triggers across its opening PASS
+DGN undergate north to canyon has a safe inward arrival PASS
+DGN undergate north to canyon approach is walkable PASS
+DGN undergate north to canyon walking reaches a live portal trigger PASS
+DGN undergate north to canyon walking selects the exact destination PASS
+[20.62] undergate north to canyon walking distance=2.279991 arrival=canyon (11.50, 57.10)
+DGN canyon arrival matches its reciprocal safe point PASS
+DGN canyon arrival stays outside the return trigger PASS
+DGN canyon arrival does not bounce PASS
+DGN canyon reciprocal return walking reaches a live portal trigger PASS
+DGN canyon reciprocal return walking selects the exact destination PASS
+[23.57] canyon reciprocal return walking distance=1.523994 arrival=undergate (26.50, 41.30)
+DGN canyon return arrives at the correct hub side PASS
+DGN canyon return does not bounce PASS
+DGN undergate east to winter has the exact authored portal center PASS
+DGN undergate east to winter has three live triggers across its opening PASS
+DGN undergate east to winter has a safe inward arrival PASS
+DGN undergate east to winter approach is walkable PASS
+DGN undergate east to winter walking reaches a live portal trigger PASS
+DGN undergate east to winter walking selects the exact destination PASS
+[27.56] undergate east to winter walking distance=2.53199 arrival=winter (2.90, 25.50)
+DGN winter arrival matches its reciprocal safe point PASS
+DGN winter arrival stays outside the return trigger PASS
+DGN winter arrival does not bounce PASS
+DGN winter reciprocal return walking reaches a live portal trigger PASS
+DGN winter reciprocal return walking selects the exact destination PASS
+[30.64] winter reciprocal return walking distance=1.691999 arrival=undergate (49.30, 22.50)
+DGN winter return arrives at the correct hub side PASS
+DGN winter return does not bounce PASS
+DGN undergate south to sunken_sanctum has the exact authored portal center PASS
+DGN undergate south to sunken_sanctum has three live triggers across its opening PASS
+DGN undergate south to sunken_sanctum has a safe inward arrival PASS
+DGN undergate south to sunken_sanctum approach is walkable PASS
+DGN undergate south to sunken_sanctum walking reaches a live portal trigger PASS
+DGN undergate south to sunken_sanctum walking selects the exact destination PASS
+[39.18] undergate south to sunken_sanctum walking distance=2.699997 arrival=sunken_sanctum (2.90, 53.50)
+DGN sunken_sanctum arrival matches its reciprocal safe point PASS
+DGN sunken_sanctum arrival stays outside the return trigger PASS
+DGN sunken_sanctum arrival does not bounce PASS
+DGN sunken_sanctum reciprocal return walking reaches a live portal trigger PASS
+DGN sunken_sanctum reciprocal return walking selects the exact destination PASS
+[42.18] sunken_sanctum reciprocal return walking distance=1.691999 arrival=undergate (26.50, 2.70)
+DGN sunken_sanctum return arrives at the correct hub side PASS
+DGN sunken_sanctum return does not bounce PASS
+DGN hub compass verification stays muted PASS
+[42.93] HUB COMPASS RESULTS: 82 passed, 0 failed

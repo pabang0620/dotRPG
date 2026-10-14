@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-10",
+  "branch": "jaein",
+  "baselineCommit": "01d4f0024d76681f2c2484e2edb971d20b1feeb9",
+  "changes": [
+    "Biome-prefixed numbered field badges",
+    "Matching 1-4 sidebar order and detail titles",
+    "Stage 2 above / stage 3 below / stage 4 at merge",
+    "Readable road beads and town approach roads clear of branch labels"
+  ],
+  "audioVolume": 0,
+  "verification": [
+    {
+      "resolution": "1280x720",
+      "passed": 285,
+      "failed": 0
+    },
+    {
+      "resolution": "1920x1080",
+      "passed": 285,
+      "failed": 0
+    },
+    {
+      "resolution": "2560x1440",
+      "passed": 285,
+      "failed": 0
+    }
+  ],
+  "method": "Runtime C# compiled with bundled Roslyn and deployed into the existing native Unity test player. Native camera/canvas screenshots; real UI raycasts with synthetic pointer enter, exit and click handlers.",
+  "verified": [
+    "16 biome/stage labels and matching sidebar labels",
+    "Label bounds and marker spacing",
+    "Exact selection for all 16 fields",
+    "Exact hover legend and reset",
+    "Central village opens underground chart",
+    "Actual surface branching and underground linear graph unchanged",
+    "Active world/player unchanged by map clicks",
+    "Muted execution"
+  ],
+  "limitations": [
+    "Physical OS mouse hover was not tested",
+    "No fresh Unity Editor player build; runtime assembly compile succeeded with existing obsolete/unused warnings"
+  ],
+  "screenshots": [
+    "world-map-1280.png",
+    "world-map-2560.png"
+  ],
+  "baselineScreenshot": "../PortalRoadRefinement/world-atlas-surface-hd.png"
+}
