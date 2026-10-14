@@ -33,6 +33,8 @@ namespace DotRPG
 
         public void Detach() => PartyClient.Changed -= OnClientChanged;
 
+        float quietUntil = -1f; // after login, party reads only record the state for a few seconds
+
         void OnClientChanged()
         {
             var c = PartyClient.Instance;
@@ -44,8 +46,12 @@ namespace DotRPG
                 Queue.elapsed = (float)(DateTime.UtcNow - c.QueuedAt).TotalSeconds;
                 Queue.humans = c.HumansWaiting;
             }
-            // Became a party member (my post, an accepted application, a match): show the lobby.
-            if (c.InParty && !wasInParty && PartyLobbyScreen.Instance != null && Game.Flow != null && Game.State.Current == GameState.Playing)
+            // Became a party member (my post, an accepted application, a match): show the lobby. The first read after login
+            // (already in a party from before) only records the state: logging in must not pop the lobby open.
+            if (!OnlineSession.Playing) quietUntil = -1f;
+            else if (quietUntil < 0f) quietUntil = UnityEngine.Time.unscaledTime + 8f;
+            bool primed = quietUntil >= 0f && UnityEngine.Time.unscaledTime >= quietUntil;
+            if (primed && c.InParty && !wasInParty && PartyLobbyScreen.Instance != null && Game.Flow != null && Game.State.Current == GameState.Playing)
                 Game.Flow.OpenWindow(PartyLobbyScreen.Instance);
             wasInParty = c.InParty;
             foreach (var p in posts) p.applied = c.MyApplications.ContainsKey(p.id);

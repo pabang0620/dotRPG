@@ -229,6 +229,10 @@ namespace DotRPG
             if (def != null) return L.T(def.displayName);
             foreach (var n in Game.Config.npcs) if (n.npcId == npcId) return L.T(n.displayName);
             foreach (var n in GameConfig.DefaultNpcs()) if (n.npcId == npcId) return L.T(n.displayName);
+            // NPCs placed by the world builder (career guide, dungeon guide) are not in the tables above.
+            foreach (var c in NpcController.All) if (c != null && c.Definition != null && c.Definition.npcId == npcId) return L.T(c.Definition.displayName);
+            if (npcId == WorldBuilder.DungeonGuide.npcId) return L.T(WorldBuilder.DungeonGuide.displayName);
+            if (npcId == "career_trainer") return L.T("전직 안내원");
             return npcId;
         }
 

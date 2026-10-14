@@ -216,12 +216,9 @@ namespace DotRPG
         {
             if (Game.Party == null || Game.Session == null) return;
             bool has = Game.Party.Has(MercIdFor("kael"));
-            if (KaelWanted(outsideTown) && !has)
-            {
-                // Only an empty seat: a party the player put together (mercenaries) is never broken up for him.
-                if (Game.Session.PartyRoster.Count < PartyManager.MaxCompanions) Game.Party.AddCompanion(MercIdFor("kael"));
-            }
-            else if (!KaelWanted(outsideTown) && has)
+            // [2026-10-14] 카엘 no longer joins on his own (user: he kept being forced into the party); one already in the
+            // party (older saves) is taken out. He still stands in town and gives his quests.
+            if (has)
             {
                 Game.Party.RemoveCompanion(MercIdFor("kael"));
                 if (!string.IsNullOrEmpty(benched) && !Game.Session.PartyRoster.Contains(benched)) Game.Party.AddCompanion(benched);
@@ -236,9 +233,8 @@ namespace DotRPG
             if (Game.Party == null) return;
             string id = MercIdFor(actor);
             if (MercenaryDatabase.Get(id) == null || Game.Party.Has(id)) return;
-            // Only an empty seat: the mercenaries the player chose keep theirs.
-            if (Game.Session.PartyRoster.Count >= PartyManager.MaxCompanions) return;
-            Game.Party.AddCompanion(id);
+            // [2026-10-14] Story companions no longer join the party by themselves (the scene plays without it).
+            return;
         }
 
         public static void Leave(string actor)
