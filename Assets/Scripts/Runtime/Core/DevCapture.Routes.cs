@@ -11,6 +11,8 @@ namespace DotRPG
     {
         IEnumerator RoutesRun()
         {
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-hubCompassCheck") >= 0) { yield return HubCompassRun(); yield break; }
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-atlasFieldCheck") >= 0) { yield return AtlasFieldRun(); yield break; }
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "-portalCheck") >= 0) { yield return PortalDestinationRun(); yield break; }
             yield return Wait(1);Game.Config.autosave=false;
             Game.Flow.NewGame(CharacterClass.Warrior,"동선 검증");yield return Wait(1.5f);

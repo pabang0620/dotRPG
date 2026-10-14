@@ -108,16 +108,23 @@ namespace DotRPG
         {
             var cam=Game.Camera.Camera;var target=cam.targetTexture;var active=RenderTexture.active;
             var canvases=UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Where(c=>c.isRootCanvas&&c.renderMode==RenderMode.ScreenSpaceOverlay).Select(c=>(canvas:c,camera:c.worldCamera,plane:c.planeDistance)).ToArray();
+            // Overlay UI normally renders after every world renderer. Preserve that relationship
+            // when rendering it through the camera, including independently sorted toast canvases.
+            var uiOrders=canvases.SelectMany(item=>item.canvas.GetComponentsInChildren<Canvas>(true))
+                .Where(c=>c.isRootCanvas||c.overrideSorting).Distinct().Select(c=>(canvas:c,order:c.sortingOrder)).ToArray();
+            var orderLevels=uiOrders.Select(item=>item.order).Distinct().OrderBy(order=>order).ToArray();
             var rt=new RenderTexture(Screen.width,Screen.height,24){filterMode=FilterMode.Point};
             var tex=new Texture2D(Screen.width,Screen.height,TextureFormat.RGB24,false);
             try{
                 cam.targetTexture=rt;
                 foreach(var item in canvases){item.canvas.renderMode=RenderMode.ScreenSpaceCamera;item.canvas.worldCamera=cam;item.canvas.planeDistance=1;}
+                foreach(var item in uiOrders)item.canvas.sortingOrder=30000+System.Array.IndexOf(orderLevels,item.order);
                 Canvas.ForceUpdateCanvases();cam.Render();RenderTexture.active=rt;
                 tex.ReadPixels(new Rect(0,0,Screen.width,Screen.height),0,0);tex.Apply();
                 File.WriteAllBytes(Path.Combine(folder,name+".png"),tex.EncodeToPNG());
             }finally{
                 foreach(var item in canvases){item.canvas.renderMode=RenderMode.ScreenSpaceOverlay;item.canvas.worldCamera=item.camera;item.canvas.planeDistance=item.plane;}
+                foreach(var item in uiOrders)item.canvas.sortingOrder=item.order;
                 cam.targetTexture=target;RenderTexture.active=active;Destroy(tex);rt.Release();Destroy(rt);
             }
         }

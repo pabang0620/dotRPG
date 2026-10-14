@@ -1,0 +1,25 @@
+{
+  "generator": "Built-in image_gen",
+  "date": "2026-10-10",
+  "mode": "edit",
+  "prompt": "Edit target: the attached existing dotRPG island world atlas. Replace only the NORTH snowy region and EAST ochre canyon region by exchanging their biome concepts, redrawing naturally, not rotating or mirroring the island. OUTPUT final landscape 2560x1440, preserve 16:9 full island composition, HD crisp richly detailed miniature fantasy cartography with sharp clustered painterly pixel-inspired details. NO UI, NO text, NO letters/numbers, NO labels/markers/paths dotted in artwork. Preserve WEST lush forest and dark tiled village around (22%,48%), SOUTH submerged ancient sanctuary arches and broken round altar around (53%,80%), and CENTER giant ancient root tree, luminous spring and root village around (50%,47%), preserve coastline, ocean and connected land. NORTH now must be warm ochre-gray ROCKY CANYON: layered rugged cliffs, rock spires, quarry ruins, stone aqueduct, warm-tiled cliff village around (54%,23.5%). Its terrain spans x32%-64%, y2%-34% and must have NO snow. EAST now must be SNOWY ALPINE region: grand white mountains, blue glacial lake, snow firs, cool-blue tiled snow village around (79%,48%). Its terrain spans x67%-94%, y12%-68%, snow coats the mountain peaks along the east island. Blend both redrawn areas smoothly with the unchanged central green landscape, without rectangular edges or pasted panels. North cliff scale and east snowy mountain perspective must match existing forest, central tree and southern ruins, top-down oblique illustration. Keep a small quiet area at town landmarks for runtime markers. All existing western/southern landmarks and overall island orientation remain fixed. No extra islands as new game regions, no portals or icons baked into image. Deliver only the full polished edited map artwork.",
+  "output": "Assets/StreamingAssets/WorldAtlas/surface.png",
+  "source": "Docs/World/AtlasSources/surface.png",
+  "nativeSize": [
+    1672,
+    941
+  ],
+  "requestedSize": [
+    2560,
+    1440
+  ],
+  "registration": "Original generated pixels retained without interpolation; Point sampling in the atlas. The generator returned 1672x941 rather than the requested dimensions.",
+  "geography": {
+    "west": "forest",
+    "north": "canyon",
+    "east": "winter",
+    "south": "sunken_sanctum",
+    "center": "undergate"
+  },
+  "notes": "Navigation labels, routes and hit areas remain separate runtime UI. West forest, southern sanctuary and central root village composition preserved; north and east biomes redrawn."
+}

@@ -123,7 +123,9 @@ namespace DotRPG
             foreach (var g in groups)
             {
                 var head = g[0];
-                var rest = g.Skip(1).OrderBy(m => HuntingGrounds.Get(m.id)?.minLevel ?? 0).ToList();
+                var rest = g.Skip(1).OrderBy(m => selectedWorld == WorldLayer.Surface
+                    ? (int.TryParse(FieldIndex(m.id), out int stage) ? stage : int.MaxValue)
+                    : HuntingGrounds.Get(m.id)?.minLevel ?? 0).ToList();
                 g.Clear(); g.Add(head); g.AddRange(rest);
             }
             return groups;
@@ -143,9 +145,12 @@ namespace DotRPG
                 for (int k = 0; k < group.Count; k++)
                 {
                     var info = group[k]; string id = info.id; var zone = HuntingGrounds.Get(id);
+                    string stage = selectedWorld == WorldLayer.Surface ? FieldIndex(id) : "";
                     string badge = selectedWorld == WorldLayer.Underground && !info.displayName.StartsWith("B" + info.depth) ? $"B{info.depth} · " : "";
                     string tag = zone == null ? (MapRegistry.IsTown(id) ? L.T("<color=#b9dbab>마을</color>") : L.T("<color=#91c9b0>탐험</color>")) : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
                     string label = k == 0 ? $"<b>{badge}{L.T(info.displayName)}</b>   {tag}" : $"<color=#8c96a8>{(k == group.Count - 1 ? "└" : "├")}</color> {badge}{L.T(info.displayName)}   {tag}";
+                    if (stage.Length > 0)
+                        label = $"<color=#ebbd5f><b>[{stage}]</b></color> {L.T(info.displayName)}   <size=13>{tag}</size>";
                     var button = Button(regionsContent, "Region_" + id, label, k == 0 && zone == null ? "ui_btn" : "ui_btngray", TL, TL,
                         new Vector2(k == 0 ? 0 : 14, -row * rowH), new Vector2(k == 0 ? 388 : 374, rowH - 2), () => SelectMap(id), 16);
                     var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 10, 0, 8, 0);
@@ -198,7 +203,8 @@ namespace DotRPG
             map.texture = current ? Game.World.Minimap : preview.texture;
             mapScale = Mathf.Min(720 / preview.bounds.width, 396 / preview.bounds.height);
             mapRect.sizeDelta = preview.bounds.size * mapScale;
-            caption.text = L.T(info.displayName) + (current ? L.T(" <color=#78dcff>· 현재</color>") : "");
+            string stage = selectedWorld == WorldLayer.Surface ? FieldIndex(selectedMap) : "";
+            caption.text = (stage.Length > 0 ? L.F("사냥터 {0}", stage) + " · " : "") + L.T(info.displayName) + (current ? L.T(" <color=#78dcff>· 현재</color>") : "");
             legend.text = L.T("<color=#78dcff>●</color> 내 위치   <color=#dab785>①</color> NPC   <color=#bca5ff>◆</color> 출구   · ") + (current || preview.rendered ? L.T("실제 지형") : L.T("미방문 지역 약도"));
             var zone = HuntingGrounds.Get(selectedMap);
             detail.rectTransform.sizeDelta = new Vector2(718, 38);

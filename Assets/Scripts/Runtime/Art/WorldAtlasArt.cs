@@ -48,28 +48,29 @@ namespace DotRPG
                 string color = shore > 1.09f ? "162c33" : shore > 1.04f ? "214048" : shore > 1 ? "355356" : "415347";
                 if (shore < 1)
                 {
-                    // Four geographically distinct districts meet around the central root spring.
-                    if (x > 190 && y < 112) color = shore > .94f ? "486454" : "4c6551";
-                    if (x > 190 && y >= 112) color = shore > .94f ? "725f49" : "655742";
-                    if (x <= 190 && y > 112) color = shore > .94f ? "708381" : "607773";
-                    if (x <= 190 && y <= 112) color = shore > .94f ? "496b62" : "38584e";
+                    // Same compass as the illustrated asset and the root village's real exits:
+                    // west forest, north canyon, east snow, south sanctuary (canvas y points down).
+                    color = shore > .94f ? "486454" : "4c6551";
+                    if (y < 72 && x > 120 && x < 245) color = shore > .94f ? "9b8b68" : "827151";
+                    else if (x > 246 && y < 148) color = shore > .94f ? "a6babd" : "d2dedb";
+                    else if (y > 144) color = shore > .94f ? "496b62" : "38584e";
                     float contour = Mathf.Sin(x * .06f + Mathf.Sin(y * .08f) * 2) + Mathf.Cos(y * .12f + x * .018f);
                     if (contour > 1.45f) c.Set(x, y, PixelCanvas.Shade(C(color), 1.07f));
                     else c.Set(x, y, C(color));
                 }
                 else c.Set(x, y, C(color));
             }
-            // Engraver's contours, a winding watercourse, and a reed-filled western ruin lake.
+            // Engraver's contours and rivers converge at the southern sanctuary pool.
             for (int ring = 0; ring < 3; ring++) Ring(c, 185, 105, 174 + ring * 10, 91 + ring * 7, C("2a4147"), 2);
             var stream = new[] { new Vector2(166, 18), new Vector2(174, 56), new Vector2(183, 88), new Vector2(178, 112), new Vector2(196, 143), new Vector2(190, 190) };
             Stroke(c, stream, 5, C("2b4d53")); Stroke(c, stream, 2, C("456a6b"));
-            c.Ellipse(88, 57, 37, 24, C("2e4648")); c.Ellipse(88, 55, 31, 21, C("3b615b"));
-            for (int n = 0; n < 7; n++) { int x = 63 + n * 8, y = 50 + (n % 3) * 7; c.HLine(x, x + 6, y, C("53796e")); }
-            for (int n = 0; n < 13; n++) Tree(c, 230 + (n * 19) % 87, 36 + (n * 13) % 60, false);
-            for (int n = 0; n < 7; n++) Mountain(c, 280 + (n * 19) % 52, 131 + (n * 13) % 42, false);
-            for (int n = 0; n < 7; n++) Mountain(c, 85 + (n * 23) % 86, 137 + (n * 13) % 33, true);
-            for (int n = 0; n < 6; n++) Tree(c, 49 + n * 17, 127 + (n % 2) * 13, true);
-            Ruin(c, 75, 47); Ruin(c, 114, 68); Ruin(c, 47, 83);
+            c.Ellipse(188, 170, 40, 24, C("2e4648")); c.Ellipse(188, 168, 35, 21, C("3b615b"));
+            for (int n = 0; n < 7; n++) { int x = 159 + n * 8, y = 161 + (n % 3) * 7; c.HLine(x, x + 6, y, C("53796e")); }
+            for (int n = 0; n < 16; n++) Tree(c, 42 + (n * 19) % 85, 49 + (n * 13) % 91, false);
+            for (int n = 0; n < 7; n++) Mountain(c, 137 + (n * 19) % 97, 31 + (n * 13) % 36, false);
+            for (int n = 0; n < 7; n++) Mountain(c, 266 + (n * 23) % 62, 46 + (n * 13) % 83, true);
+            for (int n = 0; n < 6; n++) Tree(c, 263 + (n * 17) % 64, 97 + (n % 3) * 16, true);
+            Ruin(c, 159, 160); Ruin(c, 208, 164); Ruin(c, 183, 185);
             // Central great tree and root well remain understated beneath the gateway symbol.
             c.Ellipse(185, 104, 36, 26, C("31443d")); c.Ellipse(183, 103, 29, 21, C("53664c"));
             c.Ellipse(185, 103, 17, 10, C("244043")); c.Ellipse(185, 102, 11, 6, C("648b7a"));
@@ -383,6 +384,41 @@ namespace DotRPG
         public static Sprite Marker(string kind)
         {
             if (sprites.TryGetValue(kind, out var ready)) return ready;
+            if (kind == "routearrow")
+            {
+                var arrow = new PixelCanvas(16, 16);
+                for (int y = 1; y < 15; y++)
+                {
+                    int tip = 14 - Mathf.Abs(y - 8);
+                    arrow.HLine(Mathf.Max(1, tip - 7), tip, y, C("18252a"));
+                    if (y >= 3 && y <= 12) arrow.HLine(Mathf.Max(3, tip - 5), tip - 2, y, C("ffdd8c"));
+                }
+                return Store(kind, arrow);
+            }
+            if (kind == "fieldbadge" || kind == "fieldhalo")
+            {
+                var badge = new PixelCanvas(64, 30);
+                badge.Rect(2, 0, 60, 30, C(kind == "fieldhalo" ? "ffffff" : "101c22"));
+                badge.Rect(0, 2, 64, 26, C(kind == "fieldhalo" ? "ffffff" : "101c22"));
+                if (kind == "fieldhalo")
+                {
+                    badge.Rect(3, 3, 58, 24, new Color32(0, 0, 0, 0));
+                }
+                else
+                {
+                    badge.Rect(2, 2, 60, 26, C("ccb681"));
+                    badge.Rect(3, 3, 58, 24, C("192b33"));
+                    badge.HLine(5, 58, 3, C("587071"));
+                }
+                return Store(kind, badge);
+            }
+            if (kind == "trail")
+            {
+                var bead = new PixelCanvas(8, 8);
+                bead.Circle(4, 4, 3, C("152329"));
+                bead.Circle(4, 3, 2, C("ffffff"));
+                return Store(kind, bead);
+            }
             var c = new PixelCanvas(24, 24);
             if (kind == "halo")
             {

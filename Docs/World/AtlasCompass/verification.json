@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-10",
+  "branch": "jaein",
+  "geography": {
+    "west": "forest",
+    "north": "canyon",
+    "east": "winter",
+    "south": "sunken_sanctum",
+    "center": "undergate"
+  },
+  "actualHubPortals": [
+    {
+      "center": [
+        0.5,
+        22.5
+      ],
+      "target": "village",
+      "direction": "west"
+    },
+    {
+      "center": [
+        26.5,
+        43.5
+      ],
+      "target": "canyon",
+      "direction": "north"
+    },
+    {
+      "center": [
+        51.5,
+        22.5
+      ],
+      "target": "winter",
+      "direction": "east"
+    },
+    {
+      "center": [
+        26.5,
+        0.5
+      ],
+      "target": "sunken_sanctum",
+      "direction": "south"
+    }
+  ],
+  "atlasRuns": [
+    {
+      "resolution": "1280x720",
+      "failed": 0,
+      "passed": 311
+    },
+    {
+      "resolution": "1920x1080",
+      "failed": 0,
+      "passed": 311
+    },
+    {
+      "resolution": "2560x1440",
+      "failed": 0,
+      "passed": 311
+    }
+  ],
+  "portalRun": {
+    "resolution": "1920x1080",
+    "failed": 0,
+    "method": "Scripted walking through real physics portal triggers from nearby safe approaches, both outbound and reciprocal return; arrival safety and no bounce verified.",
+    "passed": 82
+  },
+  "compile": "Runtime assembly compiled with bundled Roslyn and deployed into existing local Unity player with updated surface artwork. Pre-existing obsolete/unused warnings only.",
+  "audioVolume": 0,
+  "notes": [
+    "Actual hub mapping was already correct; no gameplay topology changed. World atlas biome image, field/town placement and roads now agree with it.",
+    "Code-rendered fallback atlas also uses the same cardinal biome layout.",
+    "Surface artwork is the native 1672x941 generated edit, Point sampled."
+  ],
+  "limitations": [
+    "Atlas pointer checks use native UI raycasts and synthetic pointer handlers, not physical OS hover.",
+    "Hub test approaches each exit from nearby safe ground; it does not validate pathfinding from the central plaza.",
+    "No new Unity Editor player build."
+  ],
+  "artManifest": "../atlas-compass-generation.json",
+  "runtimeSha256": "b0427e82b16edecb6536ee0cc7a49303d378b16b10f96f9ba2fa8293a62adcbb"
+}
