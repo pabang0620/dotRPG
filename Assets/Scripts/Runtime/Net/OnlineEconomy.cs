@@ -207,6 +207,9 @@ namespace DotRPG
 
         // ---------------- quests ----------------
 
+        /// <summary>Failed claims this session per quest (a quest the server keeps refusing is not resent forever).</summary>
+        static readonly Dictionary<string, int> claimFailures = new Dictionary<string, int>();
+
         /// <summary>Quest reward claim. done(ok, bonus max health total). Already-claimed counts as done.</summary>
         public static void ClaimQuest(string questId, Action<bool, int> done, bool quiet = false)
         {
@@ -214,6 +217,9 @@ namespace DotRPG
             Post($"/quests/{questId}/claim", new Dictionary<string, object>(), r =>
             {
                 bool ok = r.ok || r.code == "QUEST_ALREADY_CLAIMED";
+                // [AUDIT 2026-10-14] A failed claim is not "claimed": it is sent again on the next map entry instead of
+                // waiting for the next login (the reward used to be silently skipped for the whole session).
+                if (!ok) { OnlineSession.ClaimedQuests.Remove(questId); claimFailures[questId] = (claimFailures.TryGetValue(questId, out int n) ? n : 0) + 1; }
                 done?.Invoke(ok, MiniJson.Int(r.data, "bonus_max_health", -1));
             }, quiet);
         }
@@ -411,6 +417,10 @@ namespace DotRPG
         static void OnMapEntered(string mapId)
         {
             if (!On || (Game.Dungeon != null && Game.Dungeon.InRun)) return;
+            // Quests finished here whose claim failed earlier: send them again.
+            if (Game.Quest != null)
+                foreach (var q in Game.Quest.WithStatus(QuestStatus.Completed))
+                    if (!OnlineSession.ClaimedQuests.Contains(q.id) && (!claimFailures.TryGetValue(q.id, out int fails) || fails < 3)) ClaimQuest(q.id, null, quiet: true);
             // Back from a party dungeon the server may have settled this character's clear later (left right after the
             // clear, dropped before the result window): flip the waiting card here instead of only at the next login.
             if (UnityEngine.Time.unscaledTime >= nextCardCheck)

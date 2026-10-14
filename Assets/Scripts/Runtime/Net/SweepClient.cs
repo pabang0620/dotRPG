@@ -126,6 +126,9 @@ namespace DotRPG
             if (e == null) return;
             EntriesLeft = MiniJson.Int(e, "left");
             EntriesLimit = MiniJson.Int(e, "limit");
+            // [AUDIT 2026-10-14] The entry button reads the local count: keep it equal to the server's (an entry reset done
+            // on the server, a sweep, another PC). It used to stay at "0 left" until the save happened to match.
+            if (MiniJson.Has(e, "used")) Game.Session?.Dungeons?.SyncEntriesUsed(ResetClock.Now, MiniJson.Int(e, "used"));
         }
 
         static void ReadShop(Dictionary<string, object> s)

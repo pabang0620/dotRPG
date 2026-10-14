@@ -96,6 +96,60 @@ namespace DotRPG
             else if (pendingId != id) parked[id] = parked.TryGetValue(id, out var newer) ? newer : data;
         }
 
+        /// <summary>
+        /// Merges the server's character state into <paramref name="data"/>: per quest the further one (status, then step;
+        /// a quest the server paid is complete), the union of story flags, and the career stage / awakening never below the
+        /// server's. Applies quests and flags that moved ahead to the running journal when it is this character.
+        /// </summary>
+        void MergeServerState(string id, SaveData data, Dictionary<string, object> state)
+        {
+            bool live = id == ActiveCharacter && Game.Session != null && Game.Session.Journal != null;
+            data.quests = data.quests ?? new List<QuestSave>();
+            foreach (var q in MiniJson.Arr(state, "quests") ?? new List<object>())
+            {
+                string qid = MiniJson.Str(q, "id");
+                if (string.IsNullOrEmpty(qid)) continue;
+                int status = MiniJson.Int(q, "status"), step = MiniJson.Int(q, "step");
+                if (ClaimedQuests.Contains(qid)) status = Math.Max(status, (int)QuestStatus.Completed);
+                var mine = data.quests.Find(x => x.id == qid);
+                bool ahead = mine == null || status > mine.status || (status == mine.status && step > mine.step);
+                if (!ahead) continue;
+                var counts = new List<int>();
+                foreach (var n in MiniJson.Arr(q, "counts") ?? new List<object>()) counts.Add((int)Math.Round(Convert.ToDouble(n)));
+                if (mine == null) data.quests.Add(mine = new QuestSave { id = qid });
+                mine.status = status; mine.step = step; mine.counts = counts;
+                if (live)
+                {
+                    var js = Game.Session.Journal.State(qid);
+                    if (js.status < status || (js.status == status && js.step < step)) { js.status = status; js.step = step; js.counts = new List<int>(counts); }
+                }
+            }
+            data.storyFlags = data.storyFlags ?? new List<string>();
+            foreach (var f in MiniJson.Arr(state, "story_flags") ?? new List<object>())
+            {
+                string flag = f as string;
+                if (string.IsNullOrEmpty(flag)) continue;
+                if (!data.storyFlags.Contains(flag)) data.storyFlags.Add(flag);
+                if (live) Game.Session.Journal.Flags.Add(flag);
+            }
+            // Career: the server records grants and quest stages; the build (nodes, styles) stays the client's.
+            if (MiniJson.Obj(state, "career") is Dictionary<string, object> cj)
+            {
+                var server = JsonUtility.FromJson<CareerSave>(MiniJson.Write(cj));
+                if (server != null)
+                {
+                    if (data.career == null) data.career = server;
+                    else
+                    {
+                        if ((int)data.career.career == 0) data.career.career = server.career;
+                        data.career.questStage = Math.Max(data.career.questStage, server.questStage);
+                        data.career.awakened |= server.awakened;
+                    }
+                }
+            }
+            if (live) Game.Quest?.NotifyChanged();
+        }
+
         void SendNext(bool retriedConflict)
         {
             if (pendingUpload == null && parked.Count > 0)
@@ -121,10 +175,22 @@ namespace DotRPG
                 }
                 else if (r.code == "VERSION_CONFLICT" && !retriedConflict)
                 {
-                    // Another session saved in between: this client's snapshot wins (non-economy state only).
-                    stateVersions[id] = MiniJson.Int(r.errors, "current_version", version);
-                    Requeue(id, data);
-                    SendNext(retriedConflict: true);
+                    // [AUDIT 2026-10-14] Something else changed the state on the server (another session, an operator, a
+                    // server grant). The snapshot no longer simply wins: read the server's state, merge (a quest never goes
+                    // back, story flags add up, the career stage keeps the server's progress) and send the merged one with
+                    // the server's version. Quests the server pulls ahead are applied to the running game too.
+                    Api.Get($"/characters/{id}", g =>
+                    {
+                        var state = g.ok ? MiniJson.Obj(MiniJson.Obj(g.data, "character"), "state") : null;
+                        if (state != null)
+                        {
+                            MergeServerState(id, data, state);
+                            stateVersions[id] = MiniJson.Int(state, "version", MiniJson.Int(r.errors, "current_version", version));
+                        }
+                        else stateVersions[id] = MiniJson.Int(r.errors, "current_version", version);
+                        Requeue(id, data);
+                        SendNext(retriedConflict: true);
+                    });
                     return;
                 }
                 else

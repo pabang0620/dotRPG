@@ -343,6 +343,15 @@ namespace DotRPG
             if (data.storyFlags.Contains(QuestManager.WorkshopBuiltFlag)) data.quest.workshopBuilt = true;
             ClaimedQuests = new HashSet<string>();
             foreach (var o in MiniJson.Arr(c, "claimed_quests") ?? new List<object>()) ClaimedQuests.Add((string)o);
+            // [AUDIT 2026-10-14] A quest the server paid out is done, whatever the uploaded save says (an old snapshot can
+            // carry it as locked/active): gates that read the journal (raid unlocks, next quests) follow the server.
+            foreach (var id in ClaimedQuests)
+            {
+                if (string.IsNullOrEmpty(id)) continue;
+                var saved = data.quests.Find(x => x.id == id);
+                if (saved == null) data.quests.Add(new QuestSave { id = id, status = (int)QuestStatus.Completed, counts = new List<int>() });
+                else if (saved.status < (int)QuestStatus.Completed) saved.status = (int)QuestStatus.Completed;
+            }
             data.passives = new List<string> { PassiveTree.Start };
             foreach (var p in MiniJson.Arr(state, "passives") ?? new List<object>()) data.passives.Add((string)p);
 

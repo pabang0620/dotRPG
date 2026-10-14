@@ -52,6 +52,13 @@ namespace DotRPG
             entriesUsed = 0;
         }
 
+        /// <summary>[AUDIT 2026-10-14] Online: today's used entries follow the server (resets, sweeps, other PCs).</summary>
+        public void SyncEntriesUsed(DateTime now, int used)
+        {
+            Roll(now);
+            entriesUsed = Math.Max(0, used);
+        }
+
         /// <summary>[CONTENT] Automated checks only: today's entry count back to 0 (ranks and raid claim kept).</summary>
         public void DevClearEntries()
         {
