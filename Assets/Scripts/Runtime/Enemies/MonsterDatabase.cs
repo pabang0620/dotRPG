@@ -434,7 +434,7 @@ namespace DotRPG
                 new BossPattern(PatternKind.Donut, 12f, 1.4f)));
 
             // ----- Raid boss (§6.2) -----
-            var king = Boss("boss_skeleton_king", L.T("해골왕"), C(244, 238, 222), hp: 3200, dmg: 25, lines: 40, speed: 2.2f,
+            var king = Boss("boss_skeleton_king", L.T("해골왕"), C(244, 238, 222), hp: 3200, dmg: 62, /* [2026-10-14] x2.5: a hit takes ~45% of a Lv20 mage with enrage */ lines: 40, speed: 2.2f,
                 new BossPattern(PatternKind.Slash3, 4.5f, 1f, 3, maxRange: 3.6f, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 6f, 1.4f),
                 new BossPattern(PatternKind.Slam, 8f, 1.4f, maxRange: 3.8f, minPhase: 1, maxPhase: 1),

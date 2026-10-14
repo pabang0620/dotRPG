@@ -43,7 +43,9 @@ namespace DotRPG
         public event Action<BossBrain, int> PhaseChanged;
         public BossPattern CurrentPattern { get; private set; }
         /// <summary>Raid enrage: phase 3 (해골왕) or HP at / under RaidMechanics.EnrageAt, whichever comes first (BossBrain.Raid.cs).</summary>
-        public bool Enraged => Def.raid && (Phase >= 3 || lowEnraged);
+        public bool Enraged => Def.raid && (EnragedFromStart || Phase >= 3 || lowEnraged);
+        /// <summary>[2026-10-14] 해골왕 fights enraged from the first second (the Lv20 raid was far too easy).</summary>
+        bool EnragedFromStart => Def.id == "boss_skeleton_king";
         public bool IsKing => Def.id == "boss_skeleton_king";
         public EnemyController Controller => E;
 
