@@ -32,6 +32,9 @@ export async function resetDb(): Promise<void> {
     // 원장 트리거와 FK를 이 트랜잭션에서만 끈다 (테스트 정리 전용)
     await c.query('SET LOCAL session_replication_role = replica');
     for (const t of [
+      'mini_dungeon_kills',
+      'mini_dungeon_runs',
+      'mini_dungeon_days',
       'raid_shop_purchases',
       'account_consents', // 0037 정책 동의
       // 탈퇴(0027): 계정을 가리키는 표를 먼저

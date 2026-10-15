@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "verifiedUtc": "2026-10-14T12:16:18.2183672Z",
+  "build": {
+    "kind": "Fresh serialized Unity Windows player; isolated cached project",
+    "unity": "6000.5.9f1",
+    "compileExitCode": 0,
+    "compileRuntimeSources": 515,
+    "unityBuildExitCode": 0,
+    "pathRelativeToWorkspace": "work/mini-dungeon-validation/project/Builds/Windows/dotRPG.exe",
+    "syncedCSharpSources": 539,
+    "sourceHashMismatches": 0
+  },
+  "auraFullRun": {
+    "grades": [
+      0,
+      6,
+      7,
+      10,
+      11,
+      12,
+      13,
+      15,
+      20
+    ],
+    "classification": "Test harness error, not production behavior. The test ran before the 1.2s GameOver transition and counted Unity Buttons instead of custom MenuList rows.",
+    "originalFailure": "Death menu contains only three current actions",
+    "newAuraFrames": 8,
+    "report": "aura-full-report-original.txt",
+    "classes": [
+      "Warrior",
+      "Mage"
+    ],
+    "preservedOriginalReport": true,
+    "passed": 442,
+    "failed": 1,
+    "directions": 8
+  },
+  "focusedDeathFinal": {
+    "actionLabels": [
+      "그 자리에서 부활 (무료)",
+      "마을에서 다시 일어나기",
+      "타이틀로"
+    ],
+    "stateAndPanelVisible": true,
+    "image": "death-screen-current-actions.png",
+    "lastSaveActionPresent": false,
+    "report": "death-final-report.txt",
+    "menuRows": 3,
+    "navigationFourthRow": false,
+    "passed": 8,
+    "failed": 0,
+    "metadata": "death-final.json"
+  },
+  "featureChecks": [
+    "Grades below +13 retain original enhancement tier, mask pixels and behavior.",
+    "+13/+15/+20 use a larger 8-frame cyan/silver weapon aura with unchanged source artwork.",
+    "Actual weapon pivot, PPU, sorting, mirror and all eight walk/attack directions remain aligned.",
+    "Atlas frames stay transparent over the blade and are point-filtered, shared and cached.",
+    "Damage power is unchanged by effect animation; recurring equipping creates no new warmed cache entries.",
+    "Tier drop, component disable, unequip and actual player death clean up enhancement layers.",
+    "Warrior and mage visual captures cover village and hollow-depths environments."
+  ],
+  "remainingFeatureFailures": 0,
+  "audioVolumeBeforeSceneLoadAndDuringRun": 0,
+  "privateSaveDirectories": true,
+  "userOnlineGameUntouched": true,
+  "comparison": "weapon-aura-plus12-vs13.png",
+  "comparisonCrop": {
+    "alteredArtwork": false,
+    "source": [
+      170,
+      300,
+      400,
+      320
+    ],
+    "scaling": "none"
+  },
+  "sourceHashes": [
+    {
+      "path": "Assets/Scripts/Runtime/Player/WeaponEnhanceVfx.cs",
+      "sha256": "B2138DFB1F79229E96553984FEE3B39D1DF31AA07A3F4F7DE260280E04B63521"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/WeaponEnhanceVfx.Crown.cs",
+      "sha256": "E279FE419FC26A66B89D0753AA2ACA55C8FCAC8E49C2D4E6DD954EFA24DEA24C"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MenuScreens.cs",
+      "sha256": "B7A23AC49A073FBFC768AD6A32BF988FB72DDE051EF7C9D553A81703377D8491"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.cs",
+      "sha256": "725BCFD4DE37A5C4AC74B04D08F34050EE0ED68BC5146F8F0C21603FD90CE154"
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.EnhanceAura.cs",
+      "sha256": "684B519826759F89E74BC8F123E27EB87D9488FB470121AC37FAA66D39191A4C"
+    }
+  ]
+}

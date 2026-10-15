@@ -40,9 +40,9 @@ namespace DotRPG
         /// <summary>Re-evaluate when an online session starts or ends while a menu is open.</summary>
         public void RefreshTimeScale()
         {
-            bool onlineMenu = Game.IsOnlineWorld &&
+            bool runningMenu = (Game.IsOnlineWorld || Game.MiniDungeon?.Active == true) &&
                 (Current is GameState.Paused or GameState.Inventory or GameState.Dialogue);
-            Time.timeScale = onlineMenu || (Current is GameState.Playing or GameState.Title or GameState.Cutscene) ? 1f : 0f;
+            Time.timeScale = runningMenu || (Current is GameState.Playing or GameState.Title or GameState.Cutscene) ? 1f : 0f;
         }
 
         public void Set(GameState next)

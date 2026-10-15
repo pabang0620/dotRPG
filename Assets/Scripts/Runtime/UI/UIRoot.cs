@@ -45,6 +45,7 @@ namespace DotRPG
         // [DUNGEON] 던전 선택 (weekday + raid tabs; Raid is the same window) and the result screen.
         public DungeonSelectScreen Dungeon { get; private set; }
         public DungeonSelectScreen Raid => Dungeon;
+        public MiniDungeonScreen MiniDungeon { get; private set; }
         public DungeonResultScreen DungeonResult { get; private set; }
         public ShopScreen Shop { get; private set; }
         public CosmeticShopScreen Cosmetics { get; private set; }
@@ -150,6 +151,7 @@ namespace DotRPG
             ui.QuestLog = QuestScreen.Create(t);
             ui.Dungeon = DungeonSelectScreen.Create(t); // [DUNGEON] replaces the 미니던전 / 레이드 info windows
             ui.DungeonResult = DungeonResultScreen.Create(t); // [DUNGEON]
+            ui.MiniDungeon = MiniDungeonScreen.Create(t);
             ui.Shop = ShopScreen.Create(t);
             ui.Cosmetics = CosmeticShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);

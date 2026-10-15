@@ -1,0 +1,41 @@
+{
+  "temporaryArtwork": false,
+  "changedRow": 3,
+  "skin": "skin_lion",
+  "sourceSha256": "FFFF9FEE36A7F47B8332A5ABEB22F7FE56969C562EEA43DB0A76E698A30E2F48",
+  "generatedSha256": "EBD4E7D93E679ACFE9BAFC751EA923065F9361AE39C6434E45FA6731D2DBFD7D",
+  "filter": "Point",
+  "changedColumns": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "appliedSha256": "49423DC66FF31602E9FA1BBBC1A3D9EA48D0F0B2D67041E403145810F00BA88C",
+  "runtimeAsset": "Assets/Resources/SilverWarrior/Skins/lion/body.png",
+  "registration": "Cape colors and bordering gold/dark pixels extracted from generated art; aligned to each cell, quantized to the original full-back cape palette, hem fitted above original feet. Original opaque hair, hands and boots protected. No edits to other rows or attack/hurt cells.",
+  "generator": "Built-in image_gen",
+  "pivot": [
+    32,
+    6
+  ],
+  "generatedSize": [
+    1586,
+    992
+  ],
+  "canvas": [
+    64,
+    64
+  ],
+  "date": "2026-10-14",
+  "registeredSize": [
+    512,
+    320
+  ],
+  "facings": [
+    "UpLeft",
+    "UpRight"
+  ]
+}

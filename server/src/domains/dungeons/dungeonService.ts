@@ -20,6 +20,7 @@ import * as econRepo from '../economy/economyRepository';
 import { settleResult } from './dungeonResult';
 import { reportPartyResult } from '../partyruns/partySettle';
 import type { EnterBody, PickBody, ResultBody } from './dungeonValidation';
+import { assertNotActive as assertNoMiniDungeon } from '../minidungeon/miniDungeonRepository';
 
 const ONE_PLAYING = 'dungeon_runs_one_playing';
 
@@ -89,6 +90,7 @@ export function enter(accountId: number, characterUuid: string, body: EnterBody)
 }
 
 async function processEnter(ctx: EconCtx, body: EnterBody) {
+  await assertNoMiniDungeon(ctx.client, ctx.char.id, ctx.now);
   const eco = getGameData().economy;
   const pol = getConfig().policy;
   const stale = pol.runStaleSeconds;

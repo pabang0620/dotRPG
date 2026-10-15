@@ -18,6 +18,7 @@ import { getQueueStore, type QueueTicket } from './queueStore';
 import type { QueueBody, RequestOnlyBody } from './matchValidation';
 import { logger } from '../../utils/logger';
 import { notifyPartyChanged } from '../chat/partyNotify';
+import { assertNotActive as assertNoMiniDungeon } from '../minidungeon/miniDungeonRepository';
 
 const running = new Set<string>();
 
@@ -47,6 +48,7 @@ export async function enqueue(accountId: number, characterUuid: string, body: Qu
     requestId,
     payload,
     handler: async (ctx) => {
+      await assertNoMiniDungeon(ctx.client, ctx.char.id, ctx.now);
       const store = getQueueStore();
       const partyId = await partyRepo.findPartyIdOf(ctx.client, ctx.char.id);
       if (partyId !== null) {

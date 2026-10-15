@@ -1,0 +1,218 @@
+[4.20] capture started
+[4.20] verification audio volume: 0
+[6.62] LION PASS original sheet geometry
+[6.62] LION PASS preview cannot equip lion on mage
+[6.62] LION PASS idle0 64 canvas, fixed feet pivot and density
+[6.62] LION PASS idle0 nearest-neighbor sampling
+[6.62] LION PASS idle0 NW is exactly one NE pixel mirror
+[6.62] LION PASS idle0 upward-diagonal art was updated
+[6.63] LION PASS NE idle0 visible continuous cape from shoulder to lower back
+[6.63] NE idle0 cape red pixels=114 largest connected area=91 span=40..53
+[6.63] LION PASS NW idle0 visible continuous cape from shoulder to lower back
+[6.63] NW idle0 cape red pixels=114 largest connected area=91 span=40..53
+[6.63] LION PASS idle1 64 canvas, fixed feet pivot and density
+[6.63] LION PASS idle1 nearest-neighbor sampling
+[6.63] LION PASS idle1 NW is exactly one NE pixel mirror
+[6.63] LION PASS idle1 upward-diagonal art was updated
+[6.63] LION PASS NE idle1 visible continuous cape from shoulder to lower back
+[6.63] NE idle1 cape red pixels=140 largest connected area=100 span=40..53
+[6.63] LION PASS NW idle1 visible continuous cape from shoulder to lower back
+[6.63] NW idle1 cape red pixels=140 largest connected area=100 span=40..53
+[6.63] LION PASS walk0 64 canvas, fixed feet pivot and density
+[6.63] LION PASS walk0 nearest-neighbor sampling
+[6.63] LION PASS walk0 NW is exactly one NE pixel mirror
+[6.63] LION PASS walk0 upward-diagonal art was updated
+[6.63] LION PASS NE walk0 visible continuous cape from shoulder to lower back
+[6.63] NE walk0 cape red pixels=134 largest connected area=116 span=39..53
+[6.63] LION PASS NW walk0 visible continuous cape from shoulder to lower back
+[6.63] NW walk0 cape red pixels=134 largest connected area=116 span=39..53
+[6.64] LION PASS walk1 64 canvas, fixed feet pivot and density
+[6.64] LION PASS walk1 nearest-neighbor sampling
+[6.64] LION PASS walk1 NW is exactly one NE pixel mirror
+[6.64] LION PASS walk1 upward-diagonal art was updated
+[6.64] LION PASS NE walk1 visible continuous cape from shoulder to lower back
+[6.64] NE walk1 cape red pixels=134 largest connected area=116 span=39..53
+[6.64] LION PASS NW walk1 visible continuous cape from shoulder to lower back
+[6.64] NW walk1 cape red pixels=134 largest connected area=116 span=39..53
+[6.64] LION PASS walk2 64 canvas, fixed feet pivot and density
+[6.64] LION PASS walk2 nearest-neighbor sampling
+[6.64] LION PASS walk2 NW is exactly one NE pixel mirror
+[6.64] LION PASS walk2 upward-diagonal art was updated
+[6.64] LION PASS NE walk2 visible continuous cape from shoulder to lower back
+[6.64] NE walk2 cape red pixels=132 largest connected area=115 span=39..53
+[6.64] LION PASS NW walk2 visible continuous cape from shoulder to lower back
+[6.64] NW walk2 cape red pixels=132 largest connected area=115 span=39..53
+[6.64] LION PASS walk3 64 canvas, fixed feet pivot and density
+[6.64] LION PASS walk3 nearest-neighbor sampling
+[6.64] LION PASS walk3 NW is exactly one NE pixel mirror
+[6.64] LION PASS walk3 upward-diagonal art was updated
+[6.64] LION PASS NE walk3 visible continuous cape from shoulder to lower back
+[6.64] NE walk3 cape red pixels=132 largest connected area=115 span=39..53
+[6.64] LION PASS NW walk3 visible continuous cape from shoulder to lower back
+[6.64] NW walk3 cape red pixels=132 largest connected area=115 span=39..53
+[6.65] LION PASS walk4 64 canvas, fixed feet pivot and density
+[6.65] LION PASS walk4 nearest-neighbor sampling
+[6.65] LION PASS walk4 NW is exactly one NE pixel mirror
+[6.65] LION PASS walk4 upward-diagonal art was updated
+[6.65] LION PASS NE walk4 visible continuous cape from shoulder to lower back
+[6.65] NE walk4 cape red pixels=135 largest connected area=122 span=40..53
+[6.65] LION PASS NW walk4 visible continuous cape from shoulder to lower back
+[6.65] NW walk4 cape red pixels=135 largest connected area=122 span=40..53
+[6.65] LION PASS walk5 64 canvas, fixed feet pivot and density
+[6.65] LION PASS walk5 nearest-neighbor sampling
+[6.65] LION PASS walk5 NW is exactly one NE pixel mirror
+[6.65] LION PASS walk5 upward-diagonal art was updated
+[6.65] LION PASS NE walk5 visible continuous cape from shoulder to lower back
+[6.65] NE walk5 cape red pixels=135 largest connected area=122 span=40..53
+[6.65] LION PASS NW walk5 visible continuous cape from shoulder to lower back
+[6.65] NW walk5 cape red pixels=135 largest connected area=122 span=40..53
+[6.65] LION PASS walk6 64 canvas, fixed feet pivot and density
+[6.65] LION PASS walk6 nearest-neighbor sampling
+[6.65] LION PASS walk6 NW is exactly one NE pixel mirror
+[6.66] LION PASS walk6 upward-diagonal art was updated
+[6.66] LION PASS NE walk6 visible continuous cape from shoulder to lower back
+[6.66] NE walk6 cape red pixels=124 largest connected area=105 span=39..53
+[6.66] LION PASS NW walk6 visible continuous cape from shoulder to lower back
+[6.66] NW walk6 cape red pixels=124 largest connected area=105 span=39..53
+[6.66] LION PASS walk7 64 canvas, fixed feet pivot and density
+[6.66] LION PASS walk7 nearest-neighbor sampling
+[6.66] LION PASS walk7 NW is exactly one NE pixel mirror
+[6.66] LION PASS walk7 upward-diagonal art was updated
+[6.66] LION PASS NE walk7 visible continuous cape from shoulder to lower back
+[6.66] NE walk7 cape red pixels=124 largest connected area=105 span=39..53
+[6.66] LION PASS NW walk7 visible continuous cape from shoulder to lower back
+[6.66] NW walk7 cape red pixels=124 largest connected area=105 span=39..53
+[6.67] LION PASS Down idle0 other view pixels unchanged
+[6.67] LION PASS Down idle1 other view pixels unchanged
+[6.67] LION PASS Down walk0 other view pixels unchanged
+[6.67] LION PASS Down walk1 other view pixels unchanged
+[6.67] LION PASS Down walk2 other view pixels unchanged
+[6.67] LION PASS Down walk3 other view pixels unchanged
+[6.67] LION PASS Down walk4 other view pixels unchanged
+[6.68] LION PASS Down walk5 other view pixels unchanged
+[6.68] LION PASS Down walk6 other view pixels unchanged
+[6.68] LION PASS Down walk7 other view pixels unchanged
+[6.68] LION PASS DownLeft idle0 other view pixels unchanged
+[6.68] LION PASS DownLeft idle1 other view pixels unchanged
+[6.68] LION PASS DownLeft walk0 other view pixels unchanged
+[6.68] LION PASS DownLeft walk1 other view pixels unchanged
+[6.68] LION PASS DownLeft walk2 other view pixels unchanged
+[6.68] LION PASS DownLeft walk3 other view pixels unchanged
+[6.68] LION PASS DownLeft walk4 other view pixels unchanged
+[6.68] LION PASS DownLeft walk5 other view pixels unchanged
+[6.68] LION PASS DownLeft walk6 other view pixels unchanged
+[6.69] LION PASS DownLeft walk7 other view pixels unchanged
+[6.69] LION PASS DownRight idle0 other view pixels unchanged
+[6.69] LION PASS DownRight idle1 other view pixels unchanged
+[6.69] LION PASS DownRight walk0 other view pixels unchanged
+[6.69] LION PASS DownRight walk1 other view pixels unchanged
+[6.69] LION PASS DownRight walk2 other view pixels unchanged
+[6.69] LION PASS DownRight walk3 other view pixels unchanged
+[6.69] LION PASS DownRight walk4 other view pixels unchanged
+[6.69] LION PASS DownRight walk5 other view pixels unchanged
+[6.69] LION PASS DownRight walk6 other view pixels unchanged
+[6.70] LION PASS DownRight walk7 other view pixels unchanged
+[6.70] LION PASS Left idle0 other view pixels unchanged
+[6.70] LION PASS Left idle1 other view pixels unchanged
+[6.70] LION PASS Left walk0 other view pixels unchanged
+[6.70] LION PASS Left walk1 other view pixels unchanged
+[6.70] LION PASS Left walk2 other view pixels unchanged
+[6.70] LION PASS Left walk3 other view pixels unchanged
+[6.70] LION PASS Left walk4 other view pixels unchanged
+[6.70] LION PASS Left walk5 other view pixels unchanged
+[6.70] LION PASS Left walk6 other view pixels unchanged
+[6.70] LION PASS Left walk7 other view pixels unchanged
+[6.70] LION PASS Right idle0 other view pixels unchanged
+[6.70] LION PASS Right idle1 other view pixels unchanged
+[6.70] LION PASS Right walk0 other view pixels unchanged
+[6.71] LION PASS Right walk1 other view pixels unchanged
+[6.71] LION PASS Right walk2 other view pixels unchanged
+[6.71] LION PASS Right walk3 other view pixels unchanged
+[6.71] LION PASS Right walk4 other view pixels unchanged
+[6.71] LION PASS Right walk5 other view pixels unchanged
+[6.71] LION PASS Right walk6 other view pixels unchanged
+[6.71] LION PASS Right walk7 other view pixels unchanged
+[6.71] LION PASS Up idle0 other view pixels unchanged
+[6.71] LION PASS Up idle1 other view pixels unchanged
+[6.71] LION PASS Up walk0 other view pixels unchanged
+[6.72] LION PASS Up walk1 other view pixels unchanged
+[6.72] LION PASS Up walk2 other view pixels unchanged
+[6.72] LION PASS Up walk3 other view pixels unchanged
+[6.72] LION PASS Up walk4 other view pixels unchanged
+[6.72] LION PASS Up walk5 other view pixels unchanged
+[6.72] LION PASS Up walk6 other view pixels unchanged
+[6.72] LION PASS Up walk7 other view pixels unchanged
+[6.73] LION PASS UpRight walk0 actual facing and skin
+[6.73] LION PASS UpRight walk0 no second renderer flip
+[6.73] LION PASS UpRight walk0 weapon stays on drawn right hand
+[6.73] LION PASS UpRight walk0 grip and blade rule preserved
+[6.79] LION PASS UpRight walk1 actual facing and skin
+[6.79] LION PASS UpRight walk1 no second renderer flip
+[6.79] LION PASS UpRight walk1 weapon stays on drawn right hand
+[6.79] LION PASS UpRight walk1 grip and blade rule preserved
+[6.83] LION PASS UpRight walk2 actual facing and skin
+[6.83] LION PASS UpRight walk2 no second renderer flip
+[6.83] LION PASS UpRight walk2 weapon stays on drawn right hand
+[6.83] LION PASS UpRight walk2 grip and blade rule preserved
+[6.85] LION PASS UpRight walk3 actual facing and skin
+[6.85] LION PASS UpRight walk3 no second renderer flip
+[6.85] LION PASS UpRight walk3 weapon stays on drawn right hand
+[6.85] LION PASS UpRight walk3 grip and blade rule preserved
+[6.87] LION PASS UpRight walk4 actual facing and skin
+[6.87] LION PASS UpRight walk4 no second renderer flip
+[6.87] LION PASS UpRight walk4 weapon stays on drawn right hand
+[6.87] LION PASS UpRight walk4 grip and blade rule preserved
+[6.89] LION PASS UpRight walk5 actual facing and skin
+[6.89] LION PASS UpRight walk5 no second renderer flip
+[6.89] LION PASS UpRight walk5 weapon stays on drawn right hand
+[6.89] LION PASS UpRight walk5 grip and blade rule preserved
+[6.92] LION PASS UpRight walk6 actual facing and skin
+[6.92] LION PASS UpRight walk6 no second renderer flip
+[6.92] LION PASS UpRight walk6 weapon stays on drawn right hand
+[6.92] LION PASS UpRight walk6 grip and blade rule preserved
+[6.95] LION PASS UpRight walk7 actual facing and skin
+[6.95] LION PASS UpRight walk7 no second renderer flip
+[6.95] LION PASS UpRight walk7 weapon stays on drawn right hand
+[6.95] LION PASS UpRight walk7 grip and blade rule preserved
+[6.96] LION PASS UpRight all eight natural locomotion phases captured
+[6.96] LION PASS UpRight real movement occurred
+[7.17] shot lion-cape-play-UpRight
+[7.18] LION PASS UpLeft walk0 actual facing and skin
+[7.18] LION PASS UpLeft walk0 no second renderer flip
+[7.18] LION PASS UpLeft walk0 weapon stays on drawn right hand
+[7.18] LION PASS UpLeft walk0 grip and blade rule preserved
+[7.23] LION PASS UpLeft walk1 actual facing and skin
+[7.23] LION PASS UpLeft walk1 no second renderer flip
+[7.23] LION PASS UpLeft walk1 weapon stays on drawn right hand
+[7.23] LION PASS UpLeft walk1 grip and blade rule preserved
+[7.27] LION PASS UpLeft walk2 actual facing and skin
+[7.27] LION PASS UpLeft walk2 no second renderer flip
+[7.27] LION PASS UpLeft walk2 weapon stays on drawn right hand
+[7.27] LION PASS UpLeft walk2 grip and blade rule preserved
+[7.30] LION PASS UpLeft walk3 actual facing and skin
+[7.30] LION PASS UpLeft walk3 no second renderer flip
+[7.30] LION PASS UpLeft walk3 weapon stays on drawn right hand
+[7.30] LION PASS UpLeft walk3 grip and blade rule preserved
+[7.31] LION PASS UpLeft walk4 actual facing and skin
+[7.31] LION PASS UpLeft walk4 no second renderer flip
+[7.31] LION PASS UpLeft walk4 weapon stays on drawn right hand
+[7.31] LION PASS UpLeft walk4 grip and blade rule preserved
+[7.33] LION PASS UpLeft walk5 actual facing and skin
+[7.33] LION PASS UpLeft walk5 no second renderer flip
+[7.33] LION PASS UpLeft walk5 weapon stays on drawn right hand
+[7.33] LION PASS UpLeft walk5 grip and blade rule preserved
+[7.35] LION PASS UpLeft walk6 actual facing and skin
+[7.35] LION PASS UpLeft walk6 no second renderer flip
+[7.35] LION PASS UpLeft walk6 weapon stays on drawn right hand
+[7.35] LION PASS UpLeft walk6 grip and blade rule preserved
+[7.39] LION PASS UpLeft walk7 actual facing and skin
+[7.39] LION PASS UpLeft walk7 no second renderer flip
+[7.39] LION PASS UpLeft walk7 weapon stays on drawn right hand
+[7.39] LION PASS UpLeft walk7 grip and blade rule preserved
+[7.40] LION PASS UpLeft all eight natural locomotion phases captured
+[7.40] LION PASS UpLeft real movement occurred
+[7.61] shot lion-cape-play-UpLeft
+[7.61] LION PASS normal warrior sprite cache unchanged
+[7.61] LION PASS mage sprite cache unchanged
+[7.61] LION PASS muted before and throughout capture
+[7.62] LION RESULTS: 193 passed, 0 failed

@@ -59,6 +59,7 @@ namespace DotRPG
             Game.Player.gameObject.SetActive(false);
             Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
             Game.Dungeon = DungeonDirector.Create(gameplayRoot); // [DUNGEON]
+            Game.MiniDungeon = MiniDungeonDirector.Create(gameplayRoot);
             Game.Cutscenes = CutscenePlayer.Create(transform, new CutsceneDatabase(Resources.Load<TextAsset>(CutsceneDatabase.ResourcePath))); // [STORY]
             Game.Quest.Bind();
 

@@ -305,6 +305,7 @@ namespace DotRPG
 
         void OnMapEntered(string mapId)
         {
+            if (MiniDungeonCatalog.IsMap(mapId)) return; // private training does not change story companions or map objectives
             var map = MapRegistry.Get(mapId);
             StoryCompanions.Refresh(map != null && !map.safe);
             Signal(ObjectiveTypes.Reach, mapId, 1);

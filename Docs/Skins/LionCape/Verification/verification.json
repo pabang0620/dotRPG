@@ -1,0 +1,79 @@
+{
+  "capturedAtUtc": "2026-10-14T11:27:33.0793768Z",
+  "skin": "skin_lion",
+  "runtimePassed": 193,
+  "runtimeFailed": 0,
+  "runtimeSources": 513,
+  "roslynCompilerExitCode": 0,
+  "unityBuildExitCode": 0,
+  "freshSerializedPlayerBuild": true,
+  "source": "Assets/Resources/SilverWarrior/Skins/lion/body.png",
+  "beforeSource": "C:\\Users\\darac\\Documents\\Codex\\2026-09-30\\new-chat-2\\work\\lion-cape-fix\\before-body.png",
+  "beforeSha256": "FFFF9FEE36A7F47B8332A5ABEB22F7FE56969C562EEA43DB0A76E698A30E2F48",
+  "afterSha256": "49423DC66FF31602E9FA1BBBC1A3D9EA48D0F0B2D67041E403145810F00BA88C",
+  "actualGameplayCaptures": true,
+  "temporaryArtwork": false,
+  "audioListenerVolume": 0,
+  "musicVolume": 0,
+  "sfxVolume": 0,
+  "testSaves": "private capture folder",
+  "playerPreferencesModified": false,
+  "correctedDirections": [
+    "NE",
+    "NW"
+  ],
+  "motionPhasesCapturedPerDirection": 8,
+  "frameCanvas": [
+    64,
+    64
+  ],
+  "pivot": [
+    32,
+    6
+  ],
+  "pixelsPerUnit": 36,
+  "otherResolvedDirectionsCompared": 6,
+  "otherResolvedDirectionsSpriteComparisons": 60,
+  "otherDirectionsUnchanged": true,
+  "normalWarriorAndMageSpritesUnchanged": true,
+  "mirror": "NW exactly mirrors NE once in composed sprite pixels; body SpriteRenderer.flipX remains false",
+  "weaponAnchors": "Right-hand and grip attachment equal SilverWarriorArt.Hand for every captured frame; blade rule unchanged",
+  "contactSheet": {
+    "path": "lion-cape-before-after-contact-sheet.png",
+    "size": [
+      640,
+      256
+    ],
+    "rows": [
+      "before NE",
+      "before NW",
+      "after NE",
+      "after NW"
+    ],
+    "columns": [
+      "idle0",
+      "idle1",
+      "walk0",
+      "walk1",
+      "walk2",
+      "walk3",
+      "walk4",
+      "walk5",
+      "walk6",
+      "walk7"
+    ]
+  },
+  "capeSource": "New generated cape art registered into the existing source frames by root; test contacts use actual composed runtime sprites.",
+  "liveExamples": [
+    "live-UpRight-walk4.png",
+    "live-UpLeft-walk4.png"
+  ],
+  "fullPlayExamples": [
+    "lion-cape-play-UpRight.png",
+    "lion-cape-play-UpLeft.png"
+  ],
+  "report": "report.txt",
+  "userRunningGame": "Existing external online game process was left running; only the private test player was launched and exited.",
+  "buildPathFromWorkspace": "work/mini-dungeon-validation/project/Builds/Windows/dotRPG.exe",
+  "buildPath": "C:/Users/darac/Documents/Codex/2026-09-30/new-chat-2/work/mini-dungeon-validation/project/Builds/Windows/dotRPG.exe"
+}

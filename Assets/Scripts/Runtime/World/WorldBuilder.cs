@@ -85,6 +85,8 @@ namespace DotRPG
 
         string LoadText(MapInfo info)
         {
+            var training = MiniDungeonCatalog.Layout(info.id);
+            if (training != null) return training;
             if (info.id == MapRegistry.Sanctum) return SunkenSanctumArt.Layout();
             if (info.IsInterior) return ".....\n.....\n.....\n..P..\n..<..";
             if (info.id == MapRegistry.Village && config.worldMap != null) return config.worldMap.text;

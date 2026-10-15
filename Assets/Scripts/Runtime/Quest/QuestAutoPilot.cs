@@ -37,7 +37,7 @@ namespace DotRPG
         bool huntMode, huntForQuest;
         string huntTarget = "*";
 
-        static bool InHuntingGround => MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
+        static bool InHuntingGround => Game.MiniDungeon?.Active == true || MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
         /// <summary>[MEASURE] Dev-only (-dotrpgMeasure): 자동 사냥 also fights in dungeons and raids, to time them.</summary>
         internal static bool MeasureAnywhere;
         /// <summary>[MEASURE] Dev-only: fight like a practised player (spam the main hunting skill, cast skills as they come
@@ -47,6 +47,15 @@ namespace DotRPG
         internal static bool MeasureAware;
         /// <summary>[AUTO] For the HUD button state: 자동 사냥 can start on this map.</summary>
         public static bool CanHuntHere => InHuntingGround;
+
+        public static void StartMiniDungeonHunt()
+        {
+            if (Game.MiniDungeon?.Active != true) return;
+            Stop("");
+            if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
+            Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*";
+            Instance.Begin();
+        }
 
         public static void ToggleHunt()
         {
@@ -63,10 +72,11 @@ namespace DotRPG
         {
             public ActorCommand next = ActorCommand.None;
             readonly LocalInput local = new LocalInput();
+            public IActorInput Manual;
 
             public ActorCommand Read(PlayerController self)
             {
-                var mine = local.Read(self);
+                var mine = Game.MiniDungeon?.Active == true && !Game.IsPlaying ? ActorCommand.None : (Manual ?? local).Read(self);
                 bool touched = mine.move.sqrMagnitude > 0.04f || mine.attack || mine.mobility || mine.interact || mine.skillSlot >= 0
                     || mine.useHealing || mine.useMana || mine.townScroll;
                 if (touched)
@@ -78,6 +88,7 @@ namespace DotRPG
                 next.attack = false;
                 next.skillSlot = -1;
                 next.useHealing = false;
+                next.useMana = false;
                 return cmd;
             }
         }
@@ -131,8 +142,8 @@ namespace DotRPG
         {
             if (driven == p && p.Input == input) return;
             Release();
-            input = new AutoInput();
             previous = p.Input;
+            input = new AutoInput { Manual = previous };
             driven = p;
             p.Input = input;
         }
@@ -173,7 +184,8 @@ namespace DotRPG
             if (driven != p) Acquire(p); // the map was rebuilt with a new player body
             input.next = ActorCommand.None;
             // Conversations, windows and map changes pause the walk; it carries on afterwards.
-            if (!Game.IsPlaying || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
+            bool miniHunt = huntMode && Game.MiniDungeon?.Active == true;
+            if ((!Game.IsPlaying && !(miniHunt && Game.IsWorldRunning)) || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
 
             // [AUTO] 자동 사냥: stays in this hunting ground; a quest hunt hands back to the story once its step is done.
             if (huntMode)

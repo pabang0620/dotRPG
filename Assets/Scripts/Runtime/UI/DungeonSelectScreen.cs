@@ -53,7 +53,8 @@ namespace DotRPG
             var w = CreateWindow<DungeonSelectScreen>(canvas, "DungeonSelect", L.T("던전"), "menuicon_dungeon");
             w.tabWeekday = Button(w.content, "TabWeekday", L.T("요일던전"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(170f, 44f), () => w.SetTab(false), 22);
             w.tabRaid = Button(w.content, "TabRaid", L.T("레이드"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(true), 22);
-            w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(DetailW, 44f), TextAnchor.MiddleRight);
+            Button(w.content, "TabMiniDungeon", L.T("미니던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(360f, 0f), new Vector2(170f, 44f), () => Game.UI.MiniDungeon.Open(), 22);
+            w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(660f, 44f), TextAnchor.MiddleRight);
 
             w.listRoot = UIFactory.Place(UIFactory.Rect(w.content, "List"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, PanelTop), new Vector2(ListW, PanelH));
 

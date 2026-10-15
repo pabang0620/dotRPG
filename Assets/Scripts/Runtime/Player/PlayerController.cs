@@ -362,7 +362,8 @@ namespace DotRPG
 
             var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
             // Consume/discard menu input so one-shot actions cannot leak out on resume.
-            if (IsLocal && (!Game.IsPlaying || Game.State.ChangedThisFrame)) cmd = ActorCommand.None;
+            bool miniAuto = Game.MiniDungeon?.Active == true && QuestAutoPilot.Hunting;
+            if (IsLocal && ((!Game.IsPlaying && !miniAuto) || Game.State.ChangedThisFrame)) cmd = ActorCommand.None;
             // [RAID] Stunned: every key is ignored (the host's copy of a member too, so its commands do nothing).
             if (IsStunned)
             {

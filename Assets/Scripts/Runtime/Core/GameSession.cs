@@ -49,6 +49,7 @@ namespace DotRPG
         public readonly System.Collections.Generic.List<string> PartyRoster = new System.Collections.Generic.List<string>();
         // [DUNGEON] Daily entries, weekly raid lock, best ranks, cleared difficulties (saved).
         public readonly DungeonProgress Dungeons = new DungeonProgress();
+        public readonly MiniDungeonProgress MiniDungeonProgress = new MiniDungeonProgress();
 
         public void ResetForNewGame(GameConfig config, CharacterClass playerClass = CharacterClass.Warrior)
         {
@@ -73,6 +74,7 @@ namespace DotRPG
             StartFacing = Facing.Down;
             PartyRoster.Clear(); // [PARTY]
             Dungeons.Reset(); // [DUNGEON]
+            MiniDungeonProgress.Reset();
         }
 
         public SaveData Capture(Vector2 playerPosition, Facing facing)
@@ -100,6 +102,16 @@ namespace DotRPG
             Journal.Capture(data); // [STORY]
             data.partyMercs = new System.Collections.Generic.List<string>(PartyRoster); // [PARTY]
             Dungeons.Capture(data); // [DUNGEON]
+            data.miniDungeon = MiniDungeonProgress.Capture(MiniDungeonDirector.Now);
+            // Experience training can checkpoint safely, but continuing never loads a live instance.
+            if (MiniDungeonCatalog.IsMap(MapId))
+            {
+                data.mapId = OnlineSession.Playing && Game.MiniDungeon != null ? Game.MiniDungeon.ReturnMapForSave : MiniDungeonProgress.ReturnMap;
+                var at = OnlineSession.Playing && Game.MiniDungeon != null ? Game.MiniDungeon.ReturnPositionForSave : MiniDungeonProgress.ReturnPosition;
+                data.playerX = at.x; data.playerY = at.y;
+                data.playerFacing = OnlineSession.Playing && Game.MiniDungeon != null ? (int)Game.MiniDungeon.ReturnFacingForSave : (int)MiniDungeonProgress.ReturnFacing;
+                data.playerHealth = Mathf.Max(1, data.playerHealth);
+            }
             return data;
         }
 
@@ -125,6 +137,7 @@ namespace DotRPG
             PlayerHealth = Mathf.Clamp(data.playerHealth, 1, CharacterStats.MaxHp);
             PlayerMana = CharacterStats.MaxMp;
             Dungeons.Restore(data); // [DUNGEON]
+            MiniDungeonProgress.Restore(data.miniDungeon, MiniDungeonDirector.Now);
             // [DUNGEON] A dungeon room is never a place to continue from (saves are blocked there anyway).
             if (MapRegistry.Exists(data.mapId) && !MapRegistry.Get(data.mapId).instanced)
             {

@@ -15,6 +15,7 @@ import { attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops } from '.
 import { rejected, resolveFieldTarget, type KillTarget } from './killTarget';
 import { assertKillPresence } from '../antiabuse/killPresence';
 import type { KillBody } from './killValidation';
+import { assertNotActive as assertNoMiniDungeon } from '../minidungeon/miniDungeonRepository';
 
 const ENDPOINT = 'POST /characters/:uuid/kills';
 /** 황금 해골 타격 골드 횟수의 절대 상한(3.1.2) */
@@ -49,6 +50,7 @@ async function resolveTarget(ctx: EconCtx, body: KillBody): Promise<KillTarget> 
 }
 
 async function processKill(ctx: EconCtx, body: KillBody) {
+  await assertNoMiniDungeon(ctx.client, ctx.char.id, ctx.now);
   const eco = getGameData().economy;
   const pol = getConfig().policy;
 

@@ -8,6 +8,7 @@ import { loadEconomyData, type EconomyData } from './economyData';
 import { getConfig } from '../config/env';
 import { loadSweepData, type SweepData } from './sweepData';
 import { loadRaidShop, type RaidShopData } from './raidShop';
+import { MINI_TIERS, miniMapId } from '../domains/minidungeon/miniDungeonRules';
 
 // 알 수 없는 필드는 무시(looseObject)해서 데이터에 필드가 늘어도 기동이 깨지지 않는다.
 const schemaVer = z.literal(1);
@@ -196,6 +197,8 @@ export function loadGameData(dir: string): GameData {
   const enums = readJson(dir, 'enums.json', enumsSchema);
 
   const mapById = uniqueMap(maps.maps, '맵');
+  // Dedicated mini instances are session-owned, never persistent save locations or shared fields.
+  for (const tier of MINI_TIERS) mapById.set(miniMapId(tier), { id: miniMapId(tier), instanced: true, safe: false, bounds: { minX: 0, minY: 0, maxX: 36, maxY: 28 } });
   const startInfo = mapById.get(starter.startMap);
   if (!startInfo || startInfo.instanced) {
     throw new Error(`게임 데이터 검증 실패: startMap ${starter.startMap} 이 유효한 비-던전 맵이 아닙니다`);

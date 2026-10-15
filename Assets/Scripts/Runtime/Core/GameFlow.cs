@@ -153,6 +153,7 @@ namespace DotRPG
 
         public void NewGame(CharacterClass playerClass = CharacterClass.Warrior, string heroName = null)
         {
+            Game.MiniDungeon?.Abort();
             OnlineSession.Current?.LeaveCharacter(); // [SERVER] offline play saves to files
             StartCoroutine(Transition(() =>
             {
@@ -166,6 +167,7 @@ namespace DotRPG
         /// <summary>[SERVER] Plays an online character: the server detail as SaveData through the normal restore.</summary>
         public void EnterOnline(SaveData data)
         {
+            Game.MiniDungeon?.Abort();
             StartCoroutine(Transition(() =>
             {
                 Game.Session.Restore(data, Game.Config);
@@ -181,6 +183,7 @@ namespace DotRPG
 
         public void ContinueGame()
         {
+            Game.MiniDungeon?.Abort();
             OnlineSession.Current?.LeaveCharacter(); // [SERVER] offline play saves to files
             var data = Game.Saves.Read();
             if (data == null)
@@ -235,6 +238,7 @@ namespace DotRPG
         /// </summary>
         public void TravelTo(string mapId, bool arriveAtSpawn)
         {
+            if (Game.MiniDungeon?.Active == true) { Game.MiniDungeon.Leave(); return; }
             if (transitioning || !Game.IsPlaying || !MapRegistry.Exists(mapId) || mapId == Game.World.MapId) return;
             string from = Game.World.MapId;
             StartCoroutine(Transition(() =>
@@ -266,6 +270,7 @@ namespace DotRPG
         /// </summary>
         public bool UseTownScroll()
         {
+            if (Game.MiniDungeon?.Active == true) { Game.MiniDungeon.Leave(); return false; }
             if (transitioning || readingScroll || Game.Player == null || Game.Player.IsDead) return false;
             // [DUNGEON] Dungeons are left through the result screen.
             if (Game.Dungeon != null && Game.Dungeon.InRun)
@@ -354,6 +359,7 @@ namespace DotRPG
 
         public void ReturnToTitle()
         {
+            Game.MiniDungeon?.Abort();
             // [SERVER] Online: send the last position before leaving (the upload finishes in the background).
             // Progress is saved on the way out (offline file / online upload), so nothing is lost.
             WriteSave();
@@ -372,6 +378,7 @@ namespace DotRPG
 
         public void QuitGame()
         {
+            Game.MiniDungeon?.Abort();
             Game.Settings.Save();
             if (Game.IsPlaying || Game.State.Current == GameState.Paused) WriteSave(); // saved on the way out
             if (OnlineSession.Playing)
@@ -401,6 +408,7 @@ namespace DotRPG
 
         public void OnPlayerDied()
         {
+            if (Game.MiniDungeon != null && Game.MiniDungeon.HandleLocalDeath()) return;
             // [DUNGEON] In a dungeon: coin countdown / failed result instead of game over.
             if (Game.Dungeon != null && Game.Dungeon.HandleLocalDeath()) return;
             StartCoroutine(GameOverRoutine());

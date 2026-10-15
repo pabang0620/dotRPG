@@ -1,0 +1,8 @@
+[4.16] capture started
+[4.16] verification audio volume: 0
+[6.02] created and verified mini preview slot 0: Lv.10 숲 수련 None
+[6.71] created and verified mini preview slot 1: Lv.20 석실 수련 Fighter
+[7.48] created and verified mini preview slot 2: Lv.30 서리 수련 Arcanist
+[8.26] created and verified mini preview slot 3: Lv.39 서리 수련 Bishop
+[9.46] shot 00-mini-preview-character-select
+[9.46] mini preview ready: four separate characters, normal cooldowns and real daily allowance

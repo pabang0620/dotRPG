@@ -30,6 +30,7 @@ namespace DotRPG
         public static PartyManager Party;
         // [DUNGEON] Dungeon runs (rooms, revive, clear, result). Created right after the party.
         public static DungeonDirector Dungeon;
+        public static MiniDungeonDirector MiniDungeon;
 
         /// <summary>True while the player has control of the character.</summary>
         public static bool IsPlaying => State != null && State.Current == GameState.Playing;
@@ -37,8 +38,8 @@ namespace DotRPG
         /// <summary>Online sessions cannot pause a shared world from a local menu.</summary>
         public static bool IsOnlineWorld => OnlineSession.Playing || PartyNet.Active || NetPresence.Instance != null;
 
-        /// <summary>Simulation continues behind online menus; local input still uses IsPlaying.</summary>
-        public static bool IsWorldRunning => State != null && (IsPlaying || (IsOnlineWorld &&
+        /// <summary>Online worlds and timed mini-dungeon training continue behind menus; manual input still uses IsPlaying.</summary>
+        public static bool IsWorldRunning => State != null && (IsPlaying || ((IsOnlineWorld || MiniDungeon?.Active == true) &&
             (State.Current is GameState.Paused or GameState.Inventory or GameState.Dialogue)));
     }
 }

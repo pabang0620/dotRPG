@@ -342,8 +342,7 @@ namespace DotRPG
             screen.reviveHere = screen.menu.AddButton(ReviveCoins.FieldLabel, () => Game.Flow.ReviveHere(), () => !ReviveCoins.Busy); // [REVIVE] fields: always free
             ReviveCoins.Changed += screen.RefreshRevive;
             screen.menu.AddButton(L.T("마을에서 다시 일어나기"), () => Game.Flow.RespawnInVillage());
-            // [UX] Both drop the progress since the last save: ask first.
-            screen.menu.AddButton(L.T("마지막 저장 불러오기"), () => ui.Confirm(L.T("마지막 저장을 불러올까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ContinueGame()), () => Game.Saves.HasSave());
+            // [UX] Returning to the title drops progress since the last save: ask first.
             screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ReturnToTitle()));
             screen.FitPanel();
             return screen;

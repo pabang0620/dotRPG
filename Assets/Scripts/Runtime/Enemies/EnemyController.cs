@@ -521,7 +521,7 @@ namespace DotRPG
             Game.Audio.PlaySfx("enemy_die");
             Fx.Burst("fx_bone", Position + new Vector2(0f, 0.4f), 6, 3.5f, 0.9f);
             Fx.Burst("fx_dust", Position + new Vector2(0f, 0.2f), 4, 1.5f, 0.5f);
-            GameEvents.RaiseEnemyKilled(stats.enemyId);
+            if (GetComponent<MiniDungeonEnemy>() == null) GameEvents.RaiseEnemyKilled(stats.enemyId);
             Died?.Invoke(this);
             Killed?.Invoke(this, stats.xpReward);
             DropLoot();
@@ -533,6 +533,7 @@ namespace DotRPG
 
         void DropLoot()
         {
+            if (GetComponent<MiniDungeonEnemy>() != null) return; // independent XP-only reward route
             if (Game.Player == null || transform.parent == null) return;
             if (OnlineEconomy.On)
             {

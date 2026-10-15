@@ -1,0 +1,250 @@
+{
+  "capturedAtUtc": "2026-10-14T10:48:26.2298514Z",
+  "kind": "actual-gameplay-and-UI-captures",
+  "generatedArtwork": false,
+  "temporaryArtwork": false,
+  "unityVersion": "6000.5.9f1",
+  "freshSerializedPlayerBuild": true,
+  "buildOutput": "workspace/work/mini-dungeon-validation/project/Builds/Windows/dotRPG.exe",
+  "runtimeSourceCount": 512,
+  "roslynCompilerExitCode": 0,
+  "unityBuildExitCode": 0,
+  "runtime": {
+    "passed": 97,
+    "failed": 0,
+    "resolution": [
+      1280,
+      720
+    ],
+    "uiScaleTested": [
+      1.0,
+      1.3
+    ],
+    "audioListenerVolume": 0,
+    "musicVolume": 0,
+    "sfxVolume": 0,
+    "dailyBudgetClock": "controlled UTC clock, no real 30-minute wait",
+    "naturalAutoCombat": [
+      "warrior",
+      "mage"
+    ],
+    "privateSaves": true,
+    "report": "runtime-acceptance-report.txt"
+  },
+  "demo": {
+    "verified": true,
+    "exitCode": 0,
+    "normalCooldowns": true,
+    "resetFreshProfilesOnly": true,
+    "privateSaves": true,
+    "profiles": [
+      {
+        "slot": "slot_0",
+        "level": 10,
+        "playerClass": "warrior",
+        "career": 0,
+        "usedSeconds": 0.0,
+        "active": false
+      },
+      {
+        "slot": "slot_1",
+        "level": 20,
+        "playerClass": "warrior",
+        "career": 1,
+        "usedSeconds": 0.0,
+        "active": false
+      },
+      {
+        "slot": "slot_2",
+        "level": 30,
+        "playerClass": "mage",
+        "career": 3,
+        "usedSeconds": 0.0,
+        "active": false
+      },
+      {
+        "slot": "slot_3",
+        "level": 39,
+        "playerClass": "mage",
+        "career": 4,
+        "usedSeconds": 0.0,
+        "active": false
+      }
+    ],
+    "report": "demo-verification-report.txt",
+    "image": "00-mini-preview-character-select.png"
+  },
+  "notVerified": [
+    "A complete real-time 30-minute soak was not run.",
+    "Client-to-live-server mini-dungeon gameplay was not run; server integration tests were run separately by the server implementation agent."
+  ],
+  "sourceHashes": [
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.cs",
+      "sha256": "D5D83D92138E9D284F529B22F3614FEBB0FDD05447B4DCEFA5380022523EBDBE",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/DevCapture.MiniDungeon.cs",
+      "sha256": "2D8E20B01BE485E151699C1E0F501CF65158A218D73DAF379C10B4B41520820C",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/Game.cs",
+      "sha256": "59578800940A0602C377CB159E3A5188A3F584F86D4D3FC7F85BB5588F0590B6",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameBootstrap.cs",
+      "sha256": "41C403BFC56E1932C5074BFA9B9928EEA30063775CD243D008ED4AE051597E92",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameFlow.cs",
+      "sha256": "2BBC80B2C2F64BD57EC3C426C3AD36841264D2AB64F6B1F9B1ADB62703DC43B6",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameSession.cs",
+      "sha256": "574AE58C02791588CB9F51136BAB2AE86F5AF82578D91C0A8D758FEF1E447218",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Core/GameState.cs",
+      "sha256": "96AB227FF47F3AB79225A01EA80F97D42BAC26DEC5D49C4BA9F0284B9CABD437",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Dungeon/DungeonDirector.cs",
+      "sha256": "33A6AEDA0CA7178FAAAAB0E99A458D1523D3773AECBC511F76AFD873D6E32A3B",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Enemies/EnemyController.cs",
+      "sha256": "3491384CF1AFA1BF69B484EC87FBA5C84A4526F930A2D10CEC0B0E0B0569965B",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/MiniDungeon/MiniDungeonCatalog.cs",
+      "sha256": "8820D428B10C14E143763B94B38EBC35997E39ECA1D6DA15DD34CCDCB67EC2B6",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/MiniDungeon/MiniDungeonDirector.cs",
+      "sha256": "086E79B86B36306CA3285CA8318BEBD3BEE576E3094375478E68C0A296586639",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/MiniDungeon/MiniDungeonDirector.Net.cs",
+      "sha256": "4B39EA2E9F67952902DF5E2BD877C8491F2BD2C045AF69D6994E3D8C6690F0EE",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/MiniDungeon/MiniDungeonProgress.cs",
+      "sha256": "48165FF0F2CAD15C76F83E53D4EAD6F6E4640F6E59F282F6F60D5757340816D1",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Party/PartyManager.cs",
+      "sha256": "DFB04C3A83BA7C08A434B62D4D76AD75FE065ACEE06AF4EE3CBB85C912A852AB",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Player/PlayerController.cs",
+      "sha256": "B83B2D3F79BD29C80DECD045E0854274C8CDF1FC289C9B513EA3A640C283DCE2",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestAutoPilot.Actions.cs",
+      "sha256": "FD5B123FB93B0EAA7696233F8A87BFAF94B929CDB5B18B3CB98CE77388099DF2",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestAutoPilot.cs",
+      "sha256": "E5ADA6D9BEE53F27980C4F66CBE854863DE53097D112395F0E4489CC2F34E404",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestManager.cs",
+      "sha256": "290E15F4EECDF0AF0E0B5AA54AE71EA2FE26849BFBB9175C4F0B3F2BFE68E150",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/QuestManager.Steps.cs",
+      "sha256": "A7A2B95F9E89FABB1737B9B6AB4C221FC466A82E48C87CB509DC61DD882612D3",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Quest/StoryRespawn.cs",
+      "sha256": "AFF7249C0263E7907C465C7121A0DCBA92CF25B38EA29C362360BE377061278A",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Save/SaveData.cs",
+      "sha256": "BF7435C1CD0E6974BB6C75F60DC925EEE840C1B869BDD3B6D2C5E116BC72974E",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/Save/SaveSystem.cs",
+      "sha256": "1DEDFCE63B658AD5BDC21C4F3F81420822B95C1CDBE3D79C05CED4494A13AAD8",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/DungeonSelectScreen.cs",
+      "sha256": "DA71A91CB58C8835723CA852A1612F776FB82B520170E77523F043109A5C1F21",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/HudView.cs",
+      "sha256": "3C51F69BDB02D92F41EC2FCCEEECB3244FD0B6238FEC1BDC570D17139C1D6663",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/HudView.Update.cs",
+      "sha256": "8DFF998838398B2A4AFD051E67CD436F89A0801466159A56B9B04917B00BC3D5",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MiniDungeonHudView.cs",
+      "sha256": "9B2881C4CAA40BA5BEAA16060C7485B25DF66379A5D5B847853A23C957CCAEB5",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/MiniDungeonScreen.cs",
+      "sha256": "295C195E540103DDD07FC328EAF18301E0279A93FCA816B73A3E823860B1CE3C",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/SideMenuView.cs",
+      "sha256": "81CBA2E1A4A7F93F523F67FB0AFF5CF29EB46FAEF898C78543E85154690F75EF",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/UI/UIRoot.cs",
+      "sha256": "2224A8EC1EA21662670F511C35328854EAC7BD49D430FC3C2E0441C4BE4CC5BA",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/MapRegistry.cs",
+      "sha256": "5A768FC7A7703A41A9390AB072FE643481AC333DD09935C29DCF757BDD6D5E23",
+      "matchesBuildCopy": true
+    },
+    {
+      "path": "Assets/Scripts/Runtime/World/WorldBuilder.cs",
+      "sha256": "D469C853547BCA6245B20E5EEED10AF5C0D4CAF0D37A810B11DE99EC8D789162",
+      "matchesBuildCopy": true
+    }
+  ],
+  "server": {
+    "typescriptCompile": "passed",
+    "relatedSuites": 7,
+    "passed": 125,
+    "failed": 0,
+    "miniDungeonFinalRerun": {
+      "passed": 32,
+      "failed": 0
+    },
+    "deploymentPerformed": false,
+    "migrationRequired": "server/migrations/0041_mini_dungeon.sql"
+  }
+}
