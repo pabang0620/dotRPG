@@ -52,3 +52,21 @@ export type CollectionBody = z.infer<typeof collectionBody>;
 
 export type PullBody = z.infer<typeof pullBody>;
 export type ExchangeBody = z.infer<typeof exchangeBody>;
+
+// ---------------- 0044 별빛 교환소·뽑기 장비 분해·장비 도감 ----------------
+export const gearDismantleBody = z.strictObject({
+  request_id: requestId,
+  items: z
+    .array(z.strictObject({ item_key: z.string().regex(/^eq_[a-z0-9_]{1,36}(\+[1-9][0-9]?)?$/), count: z.number().int().min(1).max(999) }))
+    .min(1)
+    .max(40),
+});
+export const exchangeBuyBody = z.strictObject({
+  request_id: requestId,
+  good_id: z.string().regex(/^[a-z0-9_]{1,40}$/),
+  item_id: itemIdSchema.optional(),
+});
+export const codexBody = z.strictObject({ request_id: requestId });
+export type GearDismantleBodyT = z.infer<typeof gearDismantleBody>;
+export type ExchangeBuyBodyT = z.infer<typeof exchangeBuyBody>;
+export type CodexBodyT = z.infer<typeof codexBody>;

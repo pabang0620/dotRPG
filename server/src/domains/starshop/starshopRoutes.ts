@@ -5,7 +5,7 @@ import { charKey } from '../economy/economyRouting';
 import { getAccount } from '../../middleware/authMiddleware';
 import { charParams } from '../economy/economyValidation';
 import * as controller from './starshopController';
-import { claimBody, collectionBody, dismantleBody, exchangeBody, gearCeilingBody, pullBody, synthBody } from './starshopValidation';
+import { claimBody, codexBody, collectionBody, dismantleBody, exchangeBody, exchangeBuyBody, gearCeilingBody, gearDismantleBody, pullBody, synthBody } from './starshopValidation';
 
 /** 캐시샵(별조각): 지갑·확률표 조회, 뽑기, 확정 교환, 합성·분해·컬렉션. 인증·버전 검사는 /characters 공통 미들웨어가 한다 */
 export function createStarshopRouter(): Router {
@@ -24,5 +24,10 @@ export function createStarshopRouter(): Router {
   r.post('/characters/:uuid/starshop/synth', limit, validate({ params: charParams, body: synthBody }), controller.synth);
   r.post('/characters/:uuid/starshop/dismantle', limit, validate({ params: charParams, body: dismantleBody }), controller.dismantle);
   r.post('/characters/:uuid/starshop/collection', limit, validate({ params: charParams, body: collectionBody }), controller.collection);
+  // 0044 별빛 교환소(별의 결정), 뽑기 장비 분해, 장비 도감
+  r.get('/characters/:uuid/starshop/exchange-shop', limit, validate({ params: charParams }), controller.exchangeShop);
+  r.post('/characters/:uuid/starshop/exchange-shop/buy', limit, validate({ params: charParams, body: exchangeBuyBody }), controller.exchangeBuy);
+  r.post('/characters/:uuid/starshop/gear-dismantle', limit, validate({ params: charParams, body: gearDismantleBody }), controller.gearDismantle);
+  r.post('/characters/:uuid/starshop/codex', limit, validate({ params: charParams, body: codexBody }), controller.codex);
   return r;
 }

@@ -373,7 +373,8 @@ namespace DotRPG
                 // Party members are never hurt (PlayerController also refuses).
                 if (target is PlayerController) continue;
                 hitThisSwing.Add(target);
-                var info = new DamageInfo(BasicHitDamage, owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
+                int basic = target is EnemyController boss && boss.IsBoss ? Mathf.RoundToInt(BasicHitDamage * owner.Data.Stats.BossMul) : BasicHitDamage; // [LEGEND] 토벌형
+                var info = new DamageInfo(basic, owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
                 bool hitIt = target.TakeDamage(info);
                 landed |= hitIt;
                 // Hit feel: sparks where the blow lands.

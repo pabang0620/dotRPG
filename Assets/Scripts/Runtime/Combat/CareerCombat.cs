@@ -339,6 +339,7 @@ namespace DotRPG
             {
                 string previous = currentSkill;
                 currentSkill = c.s.id;
+                if (e.IsBoss) damage = Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
                 try { landed = e.TakeDamage(new DamageInfo(damage, from, knockback, Team.Player, owner.gameObject)); }
                 finally { currentSkill = previous; }
             }

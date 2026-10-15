@@ -38,6 +38,8 @@ namespace DotRPG
         /// <summary>[AUTO] Auto-potion: drink a potion (plain first, then greater) when HP / MP drops below these percents.</summary>
         public bool autoPotion = true;
         public int autoPotionHpPercent = 40, autoPotionMpPercent = 25;
+        /// <summary>[AUTO] Empty support gem sockets fill themselves (never moves a gem the player placed).</summary>
+        public bool autoGem = true;
         /// <summary>[I18N] Language code ("ko", "en", "ja", ... see L); empty on a fresh install = the device language (L.DeviceDefault). Applies on restart.</summary>
         public string language = "";
 

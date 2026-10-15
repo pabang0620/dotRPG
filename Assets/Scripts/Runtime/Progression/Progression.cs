@@ -33,9 +33,17 @@ namespace DotRPG
         public const double EarlyScale = 4, LateScale = 36;
         const int EarlyUntil = 10, LateFrom = 26;
         public static double CurveScaleAt(int level) =>
-            level <= EarlyUntil ? EarlyScale
+            (level <= EarlyUntil ? EarlyScale
             : level >= LateFrom ? LateScale
-            : EarlyScale + (LateScale - EarlyScale) * (level - EarlyUntil) / (LateFrom - EarlyUntil);
+            : EarlyScale + (LateScale - EarlyScale) * (level - EarlyUntil) / (LateFrom - EarlyUntil)) * MidTrim(level);
+
+        /// <summary>
+        /// [BALANCE 2026-10-14] Lv16+ bars x0.8 (eased in over Lv16-17): 36 kill-heavy side quests now fill the quest gaps from
+        /// Lv13 to Lv38, and they add play time, so the bars come down a little to keep Lv40 at about 42 hours (target: 40 h or
+        /// more, Tools/balance/theory_progress.py). Lv1-15 is unchanged (the user confirmed its pace). Docs/PLAN_QUEST_GAPS.md.
+        /// </summary>
+        public const double MidTrimLate = 0.8;
+        static double MidTrim(int level) => level <= 15 ? 1.0 : level >= 18 ? MidTrimLate : 1.0 - (1.0 - MidTrimLate) * (level - 15) / 3.0;
         /// <summary>Quest rewards: data XP x this. Kept apart from the curve so quests stay a share of the growth, not most of it.</summary>
         public const float QuestScale = 6f;
         public static int BaseXpToNext(int level) => 40 + (level - 1) * 30 + (level - 1) * (level - 1) * 5;

@@ -680,7 +680,7 @@
     "c1_quarry"
    ],
    "requiresFlags": [],
-   "minLevel": 18,
+   "minLevel": 17,
    "giver": "trader",
    "offerDialogue": "c1_scout_offer",
    "turnIn": "trader",
@@ -1719,7 +1719,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 23,
+   "minLevel": 22,
    "giver": "knight_mo",
    "offerDialogue": "c2s_letter_offer",
    "turnIn": "knight_mo",
@@ -2120,7 +2120,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 23,
+   "minLevel": 22,
    "giver": "knight_ivy",
    "offerDialogue": "c2s_quarry_offer",
    "turnIn": "knight_ivy",
@@ -2177,7 +2177,7 @@
     "c2_mine"
    ],
    "requiresFlags": [],
-   "minLevel": 24,
+   "minLevel": 23,
    "giver": "leona",
    "offerDialogue": "c2s_ridge_offer",
    "turnIn": "leona",
@@ -2234,7 +2234,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 27,
+   "minLevel": 26,
    "giver": "knight_mo",
    "offerDialogue": "c2s_errands_offer",
    "turnIn": "knight_mo",
@@ -2325,7 +2325,7 @@
     "c2_north"
    ],
    "requiresFlags": [],
-   "minLevel": 27,
+   "minLevel": 26,
    "giver": "winter_hunter",
    "offerDialogue": "w_edge_offer",
    "turnIn": "winter_hunter",
@@ -2430,7 +2430,7 @@
     "w_edge"
    ],
    "requiresFlags": [],
-   "minLevel": 29,
+   "minLevel": 28,
    "giver": "winter_hunter",
    "offerDialogue": "w_lakeroad_offer",
    "turnIn": "winter_hunter",
@@ -2535,7 +2535,7 @@
     "w_lakeroad"
    ],
    "requiresFlags": [],
-   "minLevel": 31,
+   "minLevel": 30,
    "giver": "winter_hunter",
    "offerDialogue": "w_lake_offer",
    "turnIn": "winter_hunter",
@@ -2640,7 +2640,7 @@
     "w_lake"
    ],
    "requiresFlags": [],
-   "minLevel": 33,
+   "minLevel": 32,
    "giver": "winter_elder",
    "offerDialogue": "w_lakelight_offer",
    "turnIn": "winter_elder",
@@ -2745,7 +2745,7 @@
     "w_lakelight"
    ],
    "requiresFlags": [],
-   "minLevel": 35,
+   "minLevel": 34,
    "giver": "winter_hunter",
    "offerDialogue": "w_peakpass_offer",
    "turnIn": "winter_hunter",
@@ -3286,7 +3286,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 23,
+   "minLevel": 22,
    "giver": "knight_dorn",
    "offerDialogue": "c2s_dorn_drill_offer",
    "turnIn": "knight_dorn",
@@ -3334,7 +3334,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 23,
+   "minLevel": 22,
    "giver": "leona",
    "offerDialogue": "c2s_leona_drill_offer",
    "turnIn": "leona",
@@ -3478,7 +3478,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 24,
+   "minLevel": 23,
    "giver": "knight_mo",
    "offerDialogue": "c2s_mo_scout_offer",
    "turnIn": "knight_mo",
@@ -3578,7 +3578,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 27,
+   "minLevel": 26,
    "giver": "winter_innkeeper",
    "offerDialogue": "w_firewood_offer",
    "turnIn": "winter_innkeeper",
@@ -3722,7 +3722,7 @@
     "c2_trial"
    ],
    "requiresFlags": [],
-   "minLevel": 33,
+   "minLevel": 32,
    "giver": "winter_elder",
    "offerDialogue": "w_essence_offer",
    "turnIn": "winter_elder",
@@ -4675,6 +4675,1878 @@
     "items": [
      {
       "id": "mat_ore",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_pass_patrol",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "붉은 돌 고개 순찰",
+   "summary": "기사 돈이 붉은 돌 고개를 지나는 상단을 위협하는 암석 골렘을 정리해 달라고 한다.",
+   "requires": [
+    "c2s_trader"
+   ],
+   "requiresFlags": [],
+   "minLevel": 13,
+   "giver": "knight_dorn",
+   "offerDialogue": "c2s_pass_patrol_offer",
+   "turnIn": "knight_dorn",
+   "turnInDialogue": "c2s_pass_patrol_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "기사 돈이 붉은 돌 고개를 지나는 상단을 위협하는 암석 골렘을 정리해 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 150,
+       "text": "암석 골렘 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_pass"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 224,
+    "gold": 2600,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_pass_archers",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "고개 위의 투척병",
+   "summary": "기사 돈이 고개 위에서 돌을 던지는 골렘 투척병을 몰아내자고 한다.",
+   "requires": [
+    "c2s_trader"
+   ],
+   "requiresFlags": [],
+   "minLevel": 14,
+   "giver": "knight_dorn",
+   "offerDialogue": "c2s_pass_archers_offer",
+   "turnIn": "knight_dorn",
+   "turnInDialogue": "c2s_pass_archers_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "기사 돈이 고개 위에서 돌을 던지는 골렘 투척병을 몰아내자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 150,
+       "text": "암석 골렘 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_pass"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 306,
+    "gold": 2800,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_mine_tools",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "채석장의 잃어버린 연장",
+   "summary": "협곡 상인 누리가 채석장에 두고 온 연장을 되찾으려면 골렘 돌격병을 치워야 한다고 한다.",
+   "requires": [
+    "c1_quarry"
+   ],
+   "requiresFlags": [],
+   "minLevel": 16,
+   "giver": "trader",
+   "offerDialogue": "c1s_mine_tools_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c1s_mine_tools_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 상인 누리가 채석장에 두고 온 연장을 되찾으려면 골렘 돌격병을 치워야 한다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 150,
+       "text": "암석 골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 482,
+    "gold": 3200,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_mine_shields",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "채석장 입구의 방패벽",
+   "summary": "협곡 상인 누리가 채석장 입구를 막은 골렘 수호병들을 걱정한다.",
+   "requires": [
+    "c1_quarry"
+   ],
+   "requiresFlags": [],
+   "minLevel": 17,
+   "giver": "trader",
+   "offerDialogue": "c1s_mine_shields_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c1s_mine_shields_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 상인 누리가 채석장 입구를 막은 골렘 수호병들을 걱정한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 150,
+       "text": "암석 골렘 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 562,
+    "gold": 3400,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_mine_banner",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "흑철 깃발 아래",
+   "summary": "카엘이 채석장 안쪽 흑철 깃발을 지키는 수호병을 꺾자고 한다.",
+   "requires": [
+    "c1_scout"
+   ],
+   "requiresFlags": [],
+   "minLevel": 18,
+   "giver": "kael",
+   "offerDialogue": "c1s_mine_banner_offer",
+   "turnIn": "kael",
+   "turnInDialogue": "c1s_mine_banner_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "카엘이 채석장 안쪽 흑철 깃발을 지키는 수호병을 꺾자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 150,
+       "text": "암석 골렘 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 638,
+    "gold": 3600,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_mine_depth",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "채석장 깊은 곳",
+   "summary": "카엘이 채석장 깊은 곳에서 쏟아져 나오는 돌격병을 막자고 한다.",
+   "requires": [
+    "c1_scout"
+   ],
+   "requiresFlags": [],
+   "minLevel": 19,
+   "giver": "kael",
+   "offerDialogue": "c1s_mine_depth_offer",
+   "turnIn": "kael",
+   "turnInDialogue": "c1s_mine_depth_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "카엘이 채석장 깊은 곳에서 쏟아져 나오는 돌격병을 막자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 150,
+       "text": "암석 골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 774,
+    "gold": 3800,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_ridge_watch",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "능선 감시",
+   "summary": "기사단장 레오나가 바람칼 능선의 골렘 투척병 때문에 순찰이 막혔다고 한다.",
+   "requires": [
+    "c2_mine"
+   ],
+   "requiresFlags": [],
+   "minLevel": 22,
+   "giver": "leona",
+   "offerDialogue": "c2s_ridge_watch_offer",
+   "turnIn": "leona",
+   "turnInDialogue": "c2s_ridge_watch_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "기사단장 레오나가 바람칼 능선의 골렘 투척병 때문에 순찰이 막혔다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 200,
+       "text": "암석 골렘 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_ridge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1288,
+    "gold": 4400,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_ridge_knights",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "능선의 골렘 전사",
+   "summary": "기사단장 레오나가 능선을 지키는 골렘 전사를 시험 삼아 상대해 보라고 한다.",
+   "requires": [
+    "c2_mine"
+   ],
+   "requiresFlags": [],
+   "minLevel": 23,
+   "giver": "leona",
+   "offerDialogue": "c2s_ridge_knights_offer",
+   "turnIn": "leona",
+   "turnInDialogue": "c2s_ridge_knights_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "기사단장 레오나가 능선을 지키는 골렘 전사를 시험 삼아 상대해 보라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 200,
+       "text": "암석 골렘 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_ridge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1498,
+    "gold": 4600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge_tracks",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "눈 위의 발자국",
+   "summary": "설원 사냥꾼 하람이 마을 근처까지 내려온 설산 예티의 발자국을 쫓자고 한다.",
+   "requires": [
+    "c2_north"
+   ],
+   "requiresFlags": [],
+   "minLevel": 25,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_edge_tracks_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_edge_tracks_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 마을 근처까지 내려온 설산 예티의 발자국을 쫓자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 200,
+       "text": "설산 예티 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1980,
+    "gold": 5000,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge_traps",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "덫 놓을 자리",
+   "summary": "여관 주인 보라가 사냥꾼 덫을 망가뜨리는 예티 투척병을 걱정한다.",
+   "requires": [
+    "c2_north"
+   ],
+   "requiresFlags": [],
+   "minLevel": 26,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_edge_traps_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_edge_traps_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 사냥꾼 덫을 망가뜨리는 예티 투척병을 걱정한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 200,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2255,
+    "gold": 5200,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge_shields",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "소나무 숲의 방패",
+   "summary": "눈꽃 마을 촌장 세라가 소나무 숲을 점령한 예티 수호병을 몰아내 달라고 한다.",
+   "requires": [
+    "c2_north"
+   ],
+   "requiresFlags": [],
+   "minLevel": 27,
+   "giver": "winter_elder",
+   "offerDialogue": "w_edge_shields_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_edge_shields_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 소나무 숲을 점령한 예티 수호병을 몰아내 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 200,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2419,
+    "gold": 5400,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge_supply",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "여관의 장작",
+   "summary": "여관 주인 보라가 장작을 구하러 가는 길을 예티가 막고 있다고 한다.",
+   "requires": [
+    "w_edge"
+   ],
+   "requiresFlags": [],
+   "minLevel": 28,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_edge_supply_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_edge_supply_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 장작을 구하러 가는 길을 예티가 막고 있다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 200,
+       "text": "설산 예티 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2589,
+    "gold": 5600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_road_watch",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호숫길 감시",
+   "summary": "설원 사냥꾼 하람이 호수로 가는 길목의 예티 투척병을 미리 정리하자고 한다.",
+   "requires": [
+    "w_edge"
+   ],
+   "requiresFlags": [],
+   "minLevel": 28,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_road_watch_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_road_watch_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 호수로 가는 길목의 예티 투척병을 미리 정리하자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 200,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2589,
+    "gold": 5600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_ice",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "얼음 위의 수호병",
+   "summary": "설원 사냥꾼 하람이 얼어붙은 호숫가를 지키는 예티 수호병을 쓰러뜨리자고 한다.",
+   "requires": [
+    "w_lakeroad"
+   ],
+   "requiresFlags": [],
+   "minLevel": 29,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_lake_ice_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_lake_ice_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 얼어붙은 호숫가를 지키는 예티 수호병을 쓰러뜨리자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 200,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2765,
+    "gold": 5800,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_archers",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호숫가의 투척병",
+   "summary": "눈꽃 마을 촌장 세라가 호숫가에서 얼음덩이를 던지는 투척병을 걱정한다.",
+   "requires": [
+    "w_lakeroad"
+   ],
+   "requiresFlags": [],
+   "minLevel": 30,
+   "giver": "winter_elder",
+   "offerDialogue": "w_lake_archers_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_lake_archers_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 호숫가에서 얼음덩이를 던지는 투척병을 걱정한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 250,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2946,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_knights",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호숫가 예티 전사",
+   "summary": "여관 주인 보라가 호숫가 예티 전사 때문에 손님이 끊겼다고 한다.",
+   "requires": [
+    "w_lakeroad"
+   ],
+   "requiresFlags": [],
+   "minLevel": 30,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_lake_knights_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_lake_knights_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 호숫가 예티 전사 때문에 손님이 끊겼다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 250,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2946,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_patrol",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호수 순찰",
+   "summary": "설원 사냥꾼 하람이 호수 주변을 도는 예티 전사를 정리하자고 한다.",
+   "requires": [
+    "w_lake"
+   ],
+   "requiresFlags": [],
+   "minLevel": 32,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_lake_patrol_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_lake_patrol_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 호수 주변을 도는 예티 전사를 정리하자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 250,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3326,
+    "gold": 6400,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_lights",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "얼음 아래 불빛",
+   "summary": "눈꽃 마을 촌장 세라가 호수 불빛 근처의 투척병을 치우고 살펴보자고 한다.",
+   "requires": [
+    "w_lake"
+   ],
+   "requiresFlags": [],
+   "minLevel": 32,
+   "giver": "winter_elder",
+   "offerDialogue": "w_lake_lights_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_lake_lights_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 호수 불빛 근처의 투척병을 치우고 살펴보자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 250,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3326,
+    "gold": 6400,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak_scouts",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "봉우리 정찰",
+   "summary": "설원 사냥꾼 하람이 봉우리로 가기 전에 호숫가 수호병을 정리하자고 한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 33,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_peak_scouts_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_peak_scouts_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 봉우리로 가기 전에 호숫가 수호병을 정리하자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 250,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3525,
+    "gold": 6600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak_cold",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "혹한 대비",
+   "summary": "여관 주인 보라가 봉우리 원정을 위해 호숫가 예티 전사를 정리해 달라고 한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 34,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_peak_cold_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_peak_cold_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 봉우리 원정을 위해 호숫가 예티 전사를 정리해 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 250,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3730,
+    "gold": 6800,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak_watch",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "봉화 자리",
+   "summary": "눈꽃 마을 촌장 세라가 봉화를 올릴 자리를 차지한 투척병을 몰아내자고 한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 34,
+   "giver": "winter_elder",
+   "offerDialogue": "w_peak_watch_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_peak_watch_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 봉화를 올릴 자리를 차지한 투척병을 몰아내자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 250,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3730,
+    "gold": 6800,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak_guard",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "봉우리의 파수꾼",
+   "summary": "설원 사냥꾼 하람이 눈보라 봉우리를 지키는 예티 전사를 꺾자고 한다.",
+   "requires": [
+    "w_peakpass"
+   ],
+   "requiresFlags": [],
+   "minLevel": 35,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_peak_guard_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_peak_guard_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 눈보라 봉우리를 지키는 예티 전사를 꺾자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 250,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_peak"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3940,
+    "gold": 7000,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_reach_watch",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "눈보라 속 투척병",
+   "summary": "눈꽃 마을 촌장 세라가 눈보라 속에서 원정대를 노리는 투척병을 걱정한다.",
+   "requires": [
+    "w_peak"
+   ],
+   "requiresFlags": [],
+   "minLevel": 36,
+   "giver": "winter_elder",
+   "offerDialogue": "w_reach_watch_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_reach_watch_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 눈보라 속에서 원정대를 노리는 투척병을 걱정한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 250,
+       "text": "설산 예티 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_peak"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4156,
+    "gold": 7200,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_reach_ice",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "성소로 가는 얼음길",
+   "summary": "여관 주인 보라가 성소로 가는 얼음길의 수호병을 치워 달라고 한다.",
+   "requires": [
+    "w_peak"
+   ],
+   "requiresFlags": [],
+   "minLevel": 37,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_reach_ice_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_reach_ice_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 성소로 가는 얼음길의 수호병을 치워 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 250,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_reach"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4378,
+    "gold": 7400,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "s_hall_watch",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "성소 앞 경계",
+   "summary": "설원 사냥꾼 하람이 성소에 들어가기 전에 주변 예티를 정리하자고 한다.",
+   "requires": [
+    "w_reach"
+   ],
+   "requiresFlags": [],
+   "minLevel": 38,
+   "giver": "winter_hunter",
+   "offerDialogue": "s_hall_watch_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "s_hall_watch_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 성소에 들어가기 전에 주변 예티를 정리하자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 250,
+       "text": "설산 예티 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_reach"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4605,
+    "gold": 7600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "s_hall_relics",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "석상 투척병",
+   "summary": "눈꽃 마을 촌장 세라가 성소 회랑에서 돌을 던지는 석상 투척병을 쓰러뜨려 달라고 한다.",
+   "requires": [
+    "s_hall"
+   ],
+   "requiresFlags": [],
+   "minLevel": 38,
+   "giver": "winter_elder",
+   "offerDialogue": "s_hall_relics_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "s_hall_relics_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 성소 회랑에서 돌을 던지는 석상 투척병을 쓰러뜨려 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_archer",
+       "count": 250,
+       "text": "성소 석상 투척병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "sanctum_hall"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4605,
+    "gold": 7600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_mine_rescue",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "갇힌 광부들",
+   "summary": "협곡 상인 누리가 채석장 안쪽에 갇힌 광부들을 구하려면 수호병을 쓰러뜨려야 한다고 한다.",
+   "requires": [
+    "c1_scout"
+   ],
+   "requiresFlags": [],
+   "minLevel": 19,
+   "giver": "trader",
+   "offerDialogue": "c1s_mine_rescue_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c1s_mine_rescue_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 상인 누리가 채석장 안쪽에 갇힌 광부들을 구하려면 수호병을 쓰러뜨려야 한다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 150,
+       "text": "암석 골렘 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 774,
+    "gold": 3800,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_ridge_supply",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "능선 보급로",
+   "summary": "기사 모가 능선 보급로를 끊어 놓은 골렘 돌격병을 치워 달라고 한다.",
+   "requires": [
+    "c2_mine"
+   ],
+   "requiresFlags": [],
+   "minLevel": 23,
+   "giver": "knight_mo",
+   "offerDialogue": "c2s_ridge_supply_offer",
+   "turnIn": "knight_mo",
+   "turnInDialogue": "c2s_ridge_supply_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "기사 모가 능선 보급로를 끊어 놓은 골렘 돌격병을 치워 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 200,
+       "text": "암석 골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_ridge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 1498,
+    "gold": 4600,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge_wolves",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "숲길의 수호병",
+   "summary": "설원 사냥꾼 하람이 숲길을 막아선 예티 수호병을 치우자고 한다.",
+   "requires": [
+    "c2_north"
+   ],
+   "requiresFlags": [],
+   "minLevel": 26,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_edge_wolves_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_edge_wolves_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 숲길을 막아선 예티 수호병을 치우자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 200,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2255,
+    "gold": 5200,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_edge_lost",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "길 잃은 사냥꾼",
+   "summary": "눈꽃 마을 촌장 세라가 숲에서 돌아오지 않은 사냥꾼을 찾으려면 예티를 쫓아내야 한다고 한다.",
+   "requires": [
+    "c2_north"
+   ],
+   "requiresFlags": [],
+   "minLevel": 26,
+   "giver": "winter_elder",
+   "offerDialogue": "w_edge_lost_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_edge_lost_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 숲에서 돌아오지 않은 사냥꾼을 찾으려면 예티를 쫓아내야 한다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_warrior",
+       "count": 200,
+       "text": "설산 예티 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_edge"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2255,
+    "gold": 5200,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_fishers",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "얼음 낚시터",
+   "summary": "여관 주인 보라가 얼음 낚시터를 차지한 예티 수호병을 쫓아 달라고 한다.",
+   "requires": [
+    "w_lakeroad"
+   ],
+   "requiresFlags": [],
+   "minLevel": 30,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_lake_fishers_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_lake_fishers_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 얼음 낚시터를 차지한 예티 수호병을 쫓아 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 250,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 2946,
+    "gold": 6000,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_lake_relics",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "호수의 옛 유물",
+   "summary": "여관 주인 보라가 호숫가에 흩어진 옛 유물을 줍는 길을 수호병이 막고 있다고 한다.",
+   "requires": [
+    "w_lake"
+   ],
+   "requiresFlags": [],
+   "minLevel": 32,
+   "giver": "winter_innkeeper",
+   "offerDialogue": "w_lake_relics_offer",
+   "turnIn": "winter_innkeeper",
+   "turnInDialogue": "w_lake_relics_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "여관 주인 보라가 호숫가에 흩어진 옛 유물을 줍는 길을 수호병이 막고 있다고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 250,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3326,
+    "gold": 6400,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak_supply",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "원정 보급",
+   "summary": "설원 사냥꾼 하람이 원정 보급품을 옮기는 길의 수호병을 치우자고 한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 34,
+   "giver": "winter_hunter",
+   "offerDialogue": "w_peak_supply_offer",
+   "turnIn": "winter_hunter",
+   "turnInDialogue": "w_peak_supply_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "설원 사냥꾼 하람이 원정 보급품을 옮기는 길의 수호병을 치우자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_shield",
+       "count": 250,
+       "text": "설산 예티 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3730,
+    "gold": 6800,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "w_peak_signal",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "신호의 언덕",
+   "summary": "눈꽃 마을 촌장 세라가 신호 언덕을 지키는 예티 전사를 쫓아 달라고 한다.",
+   "requires": [
+    "w_lakelight"
+   ],
+   "requiresFlags": [],
+   "minLevel": 34,
+   "giver": "winter_elder",
+   "offerDialogue": "w_peak_signal_offer",
+   "turnIn": "winter_elder",
+   "turnInDialogue": "w_peak_signal_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "눈꽃 마을 촌장 세라가 신호 언덕을 지키는 예티 전사를 쫓아 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_knight",
+       "count": 250,
+       "text": "설산 예티 전사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "winter_lake"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3730,
+    "gold": 6800,
+    "items": [
+     {
+      "id": "potion_hp_hi",
+      "count": 10
+     },
+     {
+      "id": "potion_mp_hi",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c2s_pass_caravan",
+   "chapter": 2,
+   "kind": "sub",
+   "code": "",
+   "title": "누리의 두 번째 짐 수레",
+   "summary": "협곡 상인 누리가 고개에서 멈춰 선 짐 수레 주변의 골렘 돌격병을 치워 달라고 한다.",
+   "requires": [
+    "c2s_trader"
+   ],
+   "requiresFlags": [],
+   "minLevel": 14,
+   "giver": "trader",
+   "offerDialogue": "c2s_pass_caravan_offer",
+   "turnIn": "trader",
+   "turnInDialogue": "c2s_pass_caravan_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 상인 누리가 고개에서 멈춰 선 짐 수레 주변의 골렘 돌격병을 치워 달라고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 150,
+       "text": "암석 골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_pass"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 306,
+    "gold": 2800,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c1s_mine_lastwatch",
+   "chapter": 1,
+   "kind": "sub",
+   "code": "",
+   "title": "마지막 경계",
+   "summary": "카엘이 성채로 떠나기 전에 채석장 돌격병을 한 번 더 정리하자고 한다.",
+   "requires": [
+    "c1_scout"
+   ],
+   "requiresFlags": [],
+   "minLevel": 19,
+   "giver": "kael",
+   "offerDialogue": "c1s_mine_lastwatch_offer",
+   "turnIn": "kael",
+   "turnInDialogue": "c1s_mine_lastwatch_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "카엘이 성채로 떠나기 전에 채석장 돌격병을 한 번 더 정리하자고 한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "skel_miner",
+       "count": 150,
+       "text": "암석 골렘 돌격병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "canyon_mine"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 774,
+    "gold": 3800,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     },
+     {
+      "id": "potion_mp",
       "count": 10
      }
     ],

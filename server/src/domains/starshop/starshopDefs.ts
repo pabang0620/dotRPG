@@ -9,7 +9,7 @@
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'unique';
 
-export const RATES_VERSION = '2026-10-14.1';
+export const RATES_VERSION = '2026-10-14.3'; // .3: 컬렉션 세트 9종 추가, 교환소 전용 외형은 뽑기에서 제외(0044)
 
 /** 확률 단위: 십만분율(0.001% 단위) */
 export const RATE_SCALE = 100_000;
@@ -108,9 +108,69 @@ export const COLLECTIONS: readonly CollectionDef[] = [
   { id: 'col_sword', name: '검사의 의상실', members: ['skin_maple', 'skin_obsidian', 'skin_lion', 'skin_moon'], attack: 1, health: 2 },
   { id: 'col_magic', name: '마법사의 의상실', members: ['skin_forest', 'skin_ice', 'skin_starnight', 'skin_crimson'], attack: 1, health: 2 },
   { id: 'col_master', name: '옷장의 주인', members: [], requires: ['col_dawn', 'col_starlight', 'col_legend', 'col_sword', 'col_magic'], attack: 0, health: 3 },
+  // 0044 확장 세트: 늘어난 외형을 5~6개씩 묶는다. 전체 상한 공격 +8%, 체력 +20%(COLLECTION_*_MAX)
+  { id: 'col_mist', name: '물안개 오라', members: ['aura_mint', 'aura_peach', 'aura_lemon', 'aura_lilac', 'aura_sea'], attack: 0, health: 2 },
+  { id: 'col_meadow', name: '들판 오라', members: ['aura_sand', 'aura_berry', 'aura_moss', 'aura_cloud', 'aura_coral'], attack: 0, health: 1 },
+  { id: 'col_twilight', name: '별자리 오라', members: ['aura_comet', 'aura_aurora', 'aura_amber', 'aura_sapphire', 'aura_ruby'], attack: 1, health: 0 },
+  { id: 'col_jewel', name: '보석빛 오라', members: ['aura_pearl', 'aura_lavender', 'aura_ember', 'aura_lagoon', 'aura_dusk'], attack: 0, health: 2 },
+  { id: 'col_celestial', name: '천상의 오라', members: ['aura_prism', 'aura_starfall', 'aura_sakura', 'aura_thunder', 'aura_deepsea', 'aura_spectrum'], attack: 1, health: 0 },
+  { id: 'col_knight', name: '기사단 의상실', members: ['skin_w_violet', 'skin_w_jade', 'skin_w_scarlet', 'skin_w_frost', 'skin_w_sunguard'], attack: 0, health: 2 },
+  { id: 'col_witch', name: '마녀의 옷장', members: ['skin_m_sky', 'skin_m_cherry', 'skin_m_mint', 'skin_m_amber', 'skin_m_ocean'], attack: 0, health: 2 },
+  { id: 'col_valor', name: '용맹의 갑주', members: ['skin_w_valkyrie', 'skin_w_snowblade', 'skin_w_dragonscale', 'skin_w_roseknight'], attack: 1, health: 0 },
+  { id: 'col_arcana', name: '비전의 로브', members: ['skin_m_moonshrine', 'skin_m_storm', 'skin_m_sakura', 'skin_m_frostprincess'], attack: 1, health: 0 },
 ];
 export const COLLECTION_BY_ID = new Map(COLLECTIONS.map((c) => [c.id, c] as const));
 export const COLLECTION_ATTACK_MAX = COLLECTIONS.reduce((a, c) => a + c.attack, 0);
+export const COLLECTION_HEALTH_MAX = COLLECTIONS.reduce((a, c) => a + c.health, 0);
+
+// ---------------- 0044 캐시 아이템 가치(별의 결정, 별빛 교환소, 장비 도감) ----------------
+
+/** 외형 여분 분해 시 별조각(DISMANTLE_STARS)에 더해 주는 별의 결정 */
+export const DISMANTLE_CRYSTALS: Record<Rarity, number> = { common: 4, rare: 12, epic: 60, unique: 300 };
+/** 컬렉션에 등록한 세트의 외형 여분은 결정 +20% */
+export const COLLECTION_DUP_BONUS = 0.2;
+/** 뽑기 장비 분해(등급: 장비 데이터의 rarity). 결정 + 강화 재료. 강화 단계마다 결정 +5% */
+export const GEAR_DISMANTLE: Record<string, { crystals: number; items: [string, number][] }> = {
+  Common: { crystals: 2, items: [['mat_bone', 1]] },
+  Uncommon: { crystals: 3, items: [['mat_bone', 2]] },
+  Rare: { crystals: 8, items: [['mat_essence', 1]] },
+  Epic: { crystals: 30, items: [['mat_essence', 3]] },
+  Unique: { crystals: 150, items: [] },
+  Legendary: { crystals: 600, items: [] },
+};
+export const GEAR_DISMANTLE_ENHANCE_BONUS = 0.05;
+
+/** 별빛 교환소 품목. weekly = 주간 재고(0 = 제한 없음). pick = 고르는 외형의 조건 */
+export interface ExchangeGood {
+  id: string;
+  name: string;
+  price: number;
+  weekly: number;
+  kind: 'cosmetic' | 'skin_gauge' | 'gear_gauge' | 'item';
+  pick?: { rarity: Rarity; skin: boolean | null };
+  itemId?: string;
+  count?: number;
+}
+export const EXCHANGE_GOODS: readonly ExchangeGood[] = [
+  { id: 'pick_rare', name: '원하는 희귀 오라·스킨', price: 150, weekly: 0, kind: 'cosmetic', pick: { rarity: 'rare', skin: null } },
+  { id: 'pick_epic_aura', name: '원하는 에픽 오라', price: 500, weekly: 0, kind: 'cosmetic', pick: { rarity: 'epic', skin: false } },
+  { id: 'pick_epic_skin', name: '원하는 에픽 스킨', price: 700, weekly: 0, kind: 'cosmetic', pick: { rarity: 'epic', skin: true } },
+  { id: 'skin_gauge10', name: '스킨 선택 게이지 +10칸', price: 120, weekly: 1, kind: 'skin_gauge', count: 10 },
+  { id: 'gear_gauge10', name: '장비 뽑기 천장 +10칸', price: 100, weekly: 3, kind: 'gear_gauge', count: 10 },
+  { id: 'protect_ticket', name: '강화 보호권', price: 80, weekly: 5, kind: 'item', itemId: 'ticket_protect', count: 1 },
+  { id: 'dungeon_reset', name: '요일 던전 초기화권', price: 60, weekly: 2, kind: 'item', itemId: 'ticket_dungeon_reset', count: 1 },
+  { id: 'essence10', name: '정수 10개', price: 40, weekly: 10, kind: 'item', itemId: 'mat_essence', count: 10 },
+  { id: 'ex_aura_crystal', name: '결정빛 오라(교환소 전용)', price: 400, weekly: 0, kind: 'cosmetic', itemId: 'aura_crystal' },
+  { id: 'ex_aura_nova', name: '신성 폭발 오라(교환소 전용)', price: 600, weekly: 0, kind: 'cosmetic', itemId: 'aura_nova' },
+  { id: 'ex_skin_starwarden', name: '별빛 수호 기사(교환소 전용)', price: 900, weekly: 0, kind: 'cosmetic', itemId: 'skin_w_starwarden' },
+  { id: 'ex_skin_starsage', name: '별의 현자(교환소 전용)', price: 900, weekly: 0, kind: 'cosmetic', itemId: 'skin_m_starsage' },
+];
+export const EXCHANGE_GOOD_BY_ID = new Map(EXCHANGE_GOODS.map((g) => [g.id, g] as const));
+
+/** 장비 도감: 처음 얻은 유니크·레전더리 기본 id 하나마다 계정 체력 +0.5%, 상한 +10% */
+export const CODEX_RARITIES = ['Unique', 'Legendary'] as const;
+export const CODEX_HEALTH_PER = 0.5;
+export const CODEX_HEALTH_MAX = 10;
 /** 원하는 외형을 바로 얻는 확정 교환 가격. 0 = 교환 불가(유니크 스킨은 선택 게이지로만) */
 export const EXCHANGE_PRICE: Record<Rarity, number> = { common: 300, rare: 1000, epic: 3000, unique: 0 };
 export const EPIC_SKIN_PRICE = 4000;
@@ -123,6 +183,8 @@ export interface CosmeticDef {
   rarity: Rarity;
   /** 코스튬 스킨(직업별 전신 외형) */
   skin?: 'warrior' | 'mage';
+  /** 별빛 교환소에서만 얻는 외형(뽑기·합성·확정 교환에 나오지 않는다, 0044) */
+  exchangeOnly?: boolean;
 }
 
 export const STAR_COSMETICS: readonly CosmeticDef[] = [
@@ -160,17 +222,95 @@ export const STAR_COSMETICS: readonly CosmeticDef[] = [
   { id: 'skin_moon', name: '월광 검귀', rarity: 'unique', skin: 'warrior' },
   { id: 'skin_starnight', name: '성야의 마녀', rarity: 'unique', skin: 'mage' },
   { id: 'skin_crimson', name: '홍염의 마녀', rarity: 'unique', skin: 'mage' },
+  // 2026-10-14 추가: 오라 26종, 생성 여성 스킨 42종
+  { id: 'aura_mint', name: '민트빛 오라', rarity: 'common' },
+  { id: 'aura_peach', name: '복숭아빛 오라', rarity: 'common' },
+  { id: 'aura_lemon', name: '레몬빛 오라', rarity: 'common' },
+  { id: 'aura_lilac', name: '라일락빛 오라', rarity: 'common' },
+  { id: 'aura_sea', name: '바닷빛 오라', rarity: 'common' },
+  { id: 'aura_sand', name: '모래빛 오라', rarity: 'common' },
+  { id: 'aura_berry', name: '산딸기빛 오라', rarity: 'common' },
+  { id: 'aura_moss', name: '이끼빛 오라', rarity: 'common' },
+  { id: 'aura_cloud', name: '구름빛 오라', rarity: 'common' },
+  { id: 'aura_coral', name: '산호빛 오라', rarity: 'common' },
+  { id: 'aura_comet', name: '혜성별 오라', rarity: 'rare' },
+  { id: 'aura_aurora', name: '극광별 오라', rarity: 'rare' },
+  { id: 'aura_amber', name: '호박별 오라', rarity: 'rare' },
+  { id: 'aura_sapphire', name: '사파이어별 오라', rarity: 'rare' },
+  { id: 'aura_ruby', name: '루비별 오라', rarity: 'rare' },
+  { id: 'aura_pearl', name: '진주별 오라', rarity: 'rare' },
+  { id: 'aura_lavender', name: '라벤더별 오라', rarity: 'rare' },
+  { id: 'aura_ember', name: '불씨별 오라', rarity: 'rare' },
+  { id: 'aura_lagoon', name: '석호별 오라', rarity: 'rare' },
+  { id: 'aura_dusk', name: '황혼별 오라', rarity: 'rare' },
+  { id: 'aura_prism', name: '프리즘 오라', rarity: 'epic' },
+  { id: 'aura_starfall', name: '유성우 오라', rarity: 'epic' },
+  { id: 'aura_sakura', name: '벚꽃 오라', rarity: 'epic' },
+  { id: 'aura_thunder', name: '천둥 오라', rarity: 'epic' },
+  { id: 'aura_deepsea', name: '심해 오라', rarity: 'epic' },
+  { id: 'aura_spectrum', name: '스펙트럼 오라', rarity: 'epic' },
+  { id: 'skin_w_ranger', name: '숲 순찰대복', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_sailor', name: '견습 선원복', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_farmer', name: '들녘 일꾼복', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_scout', name: '정찰병 가죽옷', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_miner', name: '광산 작업복', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_smith', name: '대장간 앞치마', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_wanderer', name: '방랑 검객 망토', rarity: 'common', skin: 'warrior' },
+  { id: 'skin_w_bluecoat', name: '청기사 견습복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_violet', name: '보랏빛 결투복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_jade', name: '비취 근위복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_scarlet', name: '진홍 검무복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_frost', name: '설원 순찰복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_sunguard', name: '태양 기사단복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_shade', name: '그림자 자객복', rarity: 'rare', skin: 'warrior' },
+  { id: 'skin_w_valkyrie', name: '발키리 갑주', rarity: 'epic', skin: 'warrior' },
+  { id: 'skin_w_snowblade', name: '백설 무사', rarity: 'epic', skin: 'warrior' },
+  { id: 'skin_w_dragonscale', name: '용비늘 갑주', rarity: 'epic', skin: 'warrior' },
+  { id: 'skin_w_roseknight', name: '장미 기사', rarity: 'epic', skin: 'warrior' },
+  { id: 'skin_w_phoenix', name: '불사조 성기사', rarity: 'unique', skin: 'warrior' },
+  { id: 'skin_w_aurora', name: '오로라 여제', rarity: 'unique', skin: 'warrior' },
+  { id: 'skin_w_voidblade', name: '심연의 검성', rarity: 'unique', skin: 'warrior' },
+  { id: 'skin_m_lavender', name: '라벤더 후드 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_student', name: '마법학교 교복', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_herbalist', name: '약초꾼 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_tea', name: '찻잎 견습 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_snowcloak', name: '눈송이 망토', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_autumn', name: '가을 낙엽 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_dusk', name: '밤하늘 견습 로브', rarity: 'common', skin: 'mage' },
+  { id: 'skin_m_sky', name: '하늘빛 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_cherry', name: '벚꽃 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_mint', name: '민트 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_amber', name: '호박빛 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_ocean', name: '바다 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_lilac', name: '라일락 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_candy', name: '사탕 마녀', rarity: 'rare', skin: 'mage' },
+  { id: 'skin_m_moonshrine', name: '달빛 무녀', rarity: 'epic', skin: 'mage' },
+  { id: 'skin_m_storm', name: '뇌운의 마녀', rarity: 'epic', skin: 'mage' },
+  { id: 'skin_m_sakura', name: '벚꽃 무녀', rarity: 'epic', skin: 'mage' },
+  { id: 'skin_m_frostprincess', name: '서리 공주', rarity: 'epic', skin: 'mage' },
+  { id: 'skin_m_celestial', name: '천공의 대마녀', rarity: 'unique', skin: 'mage' },
+  { id: 'skin_m_flameempress', name: '화염 여제', rarity: 'unique', skin: 'mage' },
+  { id: 'skin_m_dream', name: '몽환의 마녀', rarity: 'unique', skin: 'mage' },
+  // 0044 별빛 교환소 전용(시즌 1): 별의 결정으로만 얻는다
+  { id: 'aura_crystal', name: '결정빛 오라', rarity: 'epic', exchangeOnly: true },
+  { id: 'aura_nova', name: '신성 폭발 오라', rarity: 'epic', exchangeOnly: true },
+  { id: 'skin_w_starwarden', name: '별빛 수호 기사', rarity: 'epic', skin: 'warrior', exchangeOnly: true },
+  { id: 'skin_m_starsage', name: '별의 현자', rarity: 'epic', skin: 'mage', exchangeOnly: true },
 ];
 
 export const STAR_COSMETIC_BY_ID = new Map(STAR_COSMETICS.map((c) => [c.id, c] as const));
 
 /** 오라(스킨 제외) 중 한 등급 */
 export function cosmeticsOf(rarity: Rarity): CosmeticDef[] {
-  return STAR_COSMETICS.filter((c) => c.rarity === rarity && !c.skin);
+  return STAR_COSMETICS.filter((c) => c.rarity === rarity && !c.skin && !c.exchangeOnly);
 }
+
+/** 뽑기·합성·확정 교환에 나오는 외형(교환소 전용 제외) */
+export const GACHA_COSMETICS: readonly CosmeticDef[] = STAR_COSMETICS.filter((c) => !c.exchangeOnly);
 
 /** 확정 교환 가격(0 = 교환 불가) */
 export function exchangePriceOf(c: CosmeticDef): number {
+  if (c.exchangeOnly) return 0;
   if (c.skin) return c.rarity === 'epic' ? EPIC_SKIN_PRICE : c.rarity === 'unique' ? 0 : LOW_SKIN_PRICE[c.rarity];
   return EXCHANGE_PRICE[c.rarity];
 }

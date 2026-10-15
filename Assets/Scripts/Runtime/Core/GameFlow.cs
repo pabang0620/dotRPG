@@ -55,7 +55,8 @@ namespace DotRPG
                 (state != GameState.Playing && state != GameState.Inventory)) return false;
             var selected = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
             if (selected != null && selected.GetComponent<UnityEngine.UI.InputField>() is UnityEngine.UI.InputField field && field.isFocused) return false;
-            if (state == GameState.Inventory && !Array.Exists(InputReader.WindowActions, a => WindowFor(a) == Game.UI.Top)) return false;
+            // Any page of the party hub counts as a shortcut window too (online the AI tab maps to no action of its own).
+            if (state == GameState.Inventory && !PartyHub.IsHubPage(Game.UI.Top) && !Array.Exists(InputReader.WindowActions, a => WindowFor(a) == Game.UI.Top)) return false;
             foreach (var action in InputReader.WindowActions)
             {
                 if (!pressed(action)) continue;
@@ -72,9 +73,16 @@ namespace DotRPG
                 var target = WindowFor(action);
                 if (target == null) return false;
                 bool sameTab = target != Game.UI.Dungeon || Game.UI.Dungeon.IsRaidTab == (action == GameAction.RaidWindow);
-                if (state == GameState.Inventory && Game.UI.Top == target && sameTab) CloseInventory();
+                // [UX] The party key closes the party hub from any of its pages.
+                bool hubOpen = action == GameAction.PartyWindow && PartyHub.IsHubPage(Game.UI.Top);
+                if (state == GameState.Inventory && (Game.UI.Top == target || hubOpen) && sameTab) { PartyHub.ReturnTo = null; CloseInventory(); }
                 else if (action == GameAction.WeekdayDungeon || action == GameAction.RaidWindow) Game.UI.Dungeon.Open(action == GameAction.RaidWindow);
-                else OpenWindow(target);
+                else
+                {
+                    // Opened by its key from the game or another window: the hub has no window to go back to.
+                    if (action == GameAction.PartyWindow || action == GameAction.PartyFinder) PartyHub.ReturnTo = null;
+                    OpenWindow(target);
+                }
                 return true;
             }
             return false;
@@ -88,8 +96,9 @@ namespace DotRPG
                 case GameAction.SkillWindow: return Game.UI.Skills;
                 case GameAction.QuestWindow: return Game.UI.QuestLog;
                 case GameAction.WeekdayDungeon: case GameAction.RaidWindow: return Game.UI.Dungeon;
-                case GameAction.PartyWindow: return OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (MenuScreen)PartyLobbyScreen.Instance : Game.UI.Party;
-                case GameAction.PartyFinder: return PartyFinderScreen.Instance;
+                // [UX] The party hub (opened from the game: no window to go back to).
+                case GameAction.PartyWindow: return PartyHub.WindowOf(PartyHub.DefaultPage);
+                case GameAction.PartyFinder: return PartyHub.WindowOf(PartyHub.Page.Finder);
                 case GameAction.Auction: return AuctionScreen.Instance;
                 case GameAction.Friends: return SocialScreen.Instance;
                 case GameAction.Cosmetics: return Game.UI.Cosmetics;
@@ -112,6 +121,7 @@ namespace DotRPG
 
         public void CloseInventory()
         {
+            if (PartyHub.IsHubPage(Game.UI.Top)) PartyHub.ReturnTo = null; // closing the hub (P key, bag key) forgets where it came from
             if (Game.State.Current == GameState.Inventory) Game.State.Set(GameState.Playing);
         }
 

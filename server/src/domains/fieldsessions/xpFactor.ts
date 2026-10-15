@@ -25,3 +25,8 @@ export function xpFactor(monsterLevel: number, memberLevel: number, p: CarryPoli
 export function isHardGap(monsterLevel: number, memberLevel: number, p: CarryPolicy): boolean {
   return p.carryHardGap !== undefined && monsterLevel - memberLevel >= p.carryHardGap;
 }
+
+/** 2026-10-14 사용자 결정: 함께 사냥하는 사람 수에 따른 경험치 보너스(2인 +15%, 3인 +30%, 4인 +50%). AI 동료는 세지 않는다 */
+export function partySizeXpBonus(humans: number): number {
+  return humans >= 4 ? 1.5 : humans === 3 ? 1.3 : humans === 2 ? 1.15 : 1;
+}

@@ -59,6 +59,8 @@ namespace DotRPG
 
         Vector2 lastPos;
         float stuckTime, nextSkillAt, strafeSign = 1f, strafeFlipAt;
+        /// <summary>[RAID] The 섬멸 cast this tank already planted a 거대 방패 for.</summary>
+        int wallFor;
 
         public CompanionBrain(MercenaryDef def) => Def = def;
 
@@ -76,6 +78,25 @@ namespace DotRPG
                 if (Vector2.Distance(me, seal) > RaidSeal.Radius * .5f) cmd.move = GridPath.Steer(me, seal);
                 TrackStuck(self, cmd.move, party);
                 return cmd;
+            }
+
+            // 0b. [RAID] 섬멸: a tank plants a 거대 방패 toward the boss once per cast, then everyone hides behind a shield or in a safe circle.
+            if (SafeCover.Annihilating && !self.IsDead)
+            {
+                Vector2 source = SafeCover.AnnihilateSource;
+                if (Def.role == MercRole.Tank && wallFor != SafeCover.AnnihilateId)
+                {
+                    wallFor = SafeCover.AnnihilateId;
+                    Vector2 face = source - me;
+                    face = face.sqrMagnitude > .0001f ? face.normalized : Vector2.down;
+                    SafeCover.AddWall(me + face * .9f, face);
+                }
+                if (SafeCover.SuggestSpot(me, source, out Vector2 cover))
+                {
+                    if (Vector2.Distance(me, cover) > .35f) cmd.move = GridPath.Steer(me, cover);
+                    TrackStuck(self, cmd.move, party);
+                    return cmd;
+                }
             }
 
             // 1. Catch up: too far from the leader, or stuck against something for a while.

@@ -41,6 +41,7 @@ namespace DotRPG
         {
             var w = CreateWindow<PartyLobbyScreen>(canvas, "PartyLobby", L.T("파티"), "menuicon_party");
             Instance = w;
+            PartyHub.Attach(w, w.content, PartyHub.Page.MyParty); // [UX] one party window: 내 파티 | 파티 찾기 | AI 동료
             w.header = Label(w.content, "Header", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(Width - 340f, 40f), TextAnchor.MiddleLeft);
             // [PARTY] Leader: change the party's dungeon / difficulty after it was made.
             w.diffBtn = Button(w.content, "Diff", L.T("난이도 ▼"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(150f, 40f), w.TogglePicker, 17);
@@ -56,7 +57,7 @@ namespace DotRPG
             w.inviteField.characterLimit = 16;
             w.inviteField.onEndEdit.AddListener(_ => { if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) w.InviteTyped(); });
             w.focusField = w.inviteField;
-            w.rosterBtn = Button(w.content, "Roster", L.T("AI 동료 편성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(150f, 38f), () => { PartyScreen.ReturnTo = w; Game.Flow.OpenWindow(Game.UI.Party); }, 17);
+            w.rosterBtn = Button(w.content, "Roster", L.T("AI 동료 편성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-550f, -44f), new Vector2(150f, 38f), () => PartyHub.Switch(PartyHub.Page.Companions), 17);
             Label(w.content, "MembersHead", L.T("<color=#b8c4d8>파티원</color>"), 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -48f), new Vector2(300f, 28f), TextAnchor.MiddleLeft);
             for (int i = 0; i < PartyManager.MaxMembers; i++)
             {
@@ -97,6 +98,11 @@ namespace DotRPG
             w.status = Label(w.content, "Status", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 100f), new Vector2(Width, 30f), TextAnchor.MiddleLeft);
             PartyClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
+        }
+
+        public override void Close()
+        {
+            if (!PartyHub.CloseToOrigin()) base.Close();
         }
 
         void Done(bool ok, string msg, string success)

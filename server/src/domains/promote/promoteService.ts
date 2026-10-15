@@ -8,6 +8,7 @@ import { keyAt, parseItemKey } from '../../utils/itemKey';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import type { PromoteBody } from './promoteValidation';
+import { moveGachaCredit } from '../starshop/cashValueService';
 
 export function promote(accountId: number, characterUuid: string, body: PromoteBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;
@@ -50,12 +51,22 @@ async function processPromote(ctx: EconCtx, body: PromoteBody) {
   if (row.gold > 0) await ctx.changeGold(-row.gold, 'promote_cost', logId);
   await ctx.removeItem('bag', table.coreItem, row.cores, 'promote_cost', logId);
   const newKey = keyAt(row.to, parsed.level);
-  if (wornSlot !== null) await ctx.wornReplace(wornSlot, key, newKey, 'promote_result', logId);
-  else {
+  let promotedBind: string | null = null;
+  if (wornSlot !== null) {
+    const w = await ctx.client.query<{ bind: string }>(
+      "SELECT bind FROM character_items WHERE character_id = $1 AND location = 'worn' AND slot = $2",
+      [ctx.char.id, wornSlot],
+    );
+    promotedBind = w.rows[0]?.bind ?? null;
+    await ctx.wornReplace(wornSlot, key, newKey, 'promote_result', logId);
+  } else {
     // 귀속은 소모한 행 그대로(강화와 같다)
     const consumed = await ctx.removeItem('bag', key, 1, 'promote_result', logId);
     if (consumed !== null) await ctx.addConsumed('bag', newKey, consumed, 'promote_result', logId);
+    promotedBind = consumed?.[0]?.bind ?? null;
   }
+  // 0044: 뽑기 사본(계정 귀속)을 승급하면 뽑기 몫도 새 기본 id로 옮긴다(상점 판매 금지·분해 허용이 따라간다)
+  if (promotedBind === 'account') await moveGachaCredit(ctx.client, ctx.char.id, parsed.base, row.to, 1);
 
   return {
     status: 200,

@@ -5,6 +5,7 @@ import { afterCommit } from '../../db/pool';
 import { getNotifier } from '../../domains/chat/realtimeNotifier';
 import { finalizeCleared, minClearSeconds, runContext } from '../../domains/dungeons/dungeonResult';
 import * as dungeonRepo from '../../domains/dungeons/dungeonRepository';
+import { mailUnclaimedCards } from '../../domains/dungeons/dungeonService';
 import { EconCtx } from '../../domains/economy/economyContext';
 import { lockCharacters } from '../../domains/economy/economyRepository';
 import { AppError } from '../../utils/AppError';
@@ -122,8 +123,11 @@ export function release(admin: AdminCtx, ip: string, uuid: string, body: ReviewB
         stats: stats as Record<string, unknown>,
         at: now,
       });
+      // 2026-10-14: 풀어 준 판의 카드는 결과 화면이 없으니 바로 우편으로 보낸다
+      const closed = (await dungeonRepo.findRunById(client, cur.id)) as dungeonRepo.RunRow;
+      await mailUnclaimedCards(ctx, closed);
       afterCommit(client, () => {
-        getNotifier().systemLine(cur.character_uuid, '보류되었던 던전 보상이 확정되었습니다. 카드를 선택해 주세요.');
+        getNotifier().systemLine(cur.character_uuid, '보류되었던 던전 보상이 확정되었습니다. 보상은 우편함으로 보냈습니다.');
       });
       const d = res.data as { rank: string; granted_xp: number; card_count: number; raid?: { reward_locked: boolean; lock_reason?: string } };
       return {

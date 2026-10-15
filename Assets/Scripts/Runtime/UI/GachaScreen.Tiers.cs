@@ -5,8 +5,9 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// Gear banners: pick the level tier to draw from (Lv.1, 10, 15 ... up to my level). Only my class's gear comes out,
-    /// the rate table and the draw follow the chosen tier, and the default is the tier of my level.
+    /// Gear banners: pick the level tier to draw from (Lv.1, 10, 15 ... 40, above my level too: the piece waits in the bag
+    /// until I can wear it). Only my class's gear comes out, the rate table and the draw follow the chosen tier, and the
+    /// default is the tier of my level.
     /// </summary>
     public partial class GachaScreen
     {
@@ -24,7 +25,7 @@ namespace DotRPG
             {
                 int index = i;
                 var b = Button(box, "Tier" + i, "", "ui_btngray", tl, tl, new Vector2(30f + i * 72f, -244f), new Vector2(66f, 40f), () => ChooseTier(index), 16);
-                // [UI] Tiers above my level carry a lock.
+                // [UI] Tiers above my level carry a small marker (they can be drawn; the gear is worn later).
                 var lockImg = UIFactory.Image(b.transform, "Lock", Game.Art.Get("ui_lock"), Color.white);
                 lockImg.raycastTarget = false;
                 UIFactory.Place(lockImg.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(4f, 6f), new Vector2(18f, 18f));
@@ -61,7 +62,6 @@ namespace DotRPG
         void ChooseTier(int index)
         {
             if (busy || Revealing) return;
-            if (index > StarShopClient.MyTier) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(L.T("내 레벨 단계까지만 고를 수 있습니다.")); return; }
             chosenTier[banner] = index;
             Game.Audio.PlaySfx("select");
             Refresh();
@@ -79,15 +79,15 @@ namespace DotRPG
                 bool has = on && i < tiers.Count;
                 b.gameObject.SetActive(has);
                 if (!has) continue;
-                bool sel = i == selected, locked = i > StarShopClient.MyTier, mine = i == StarShopClient.MyTier;
+                bool sel = i == selected, above = i > StarShopClient.MyTier, mine = i == StarShopClient.MyTier;
                 b.image.sprite = Game.Art.Get(sel ? "ui_btn" : "ui_btngray");
-                b.image.color = locked ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
+                b.image.color = Color.white;
                 string lv = $"Lv.{tiers[i].level}";
-                TextOf(b).text = sel ? $"<b>{lv}</b>" : mine ? $"<color=#ffd34a>{lv}</color>" : locked ? $"<color=#8c96a8>{lv}</color>" : lv;
-                b.transform.Find("Lock").gameObject.SetActive(locked);
+                TextOf(b).text = sel ? $"<b>{lv}</b>" : mine ? $"<color=#ffd34a>{lv}</color>" : above ? $"<color=#b8c4d8>{lv}</color>" : lv;
+                b.transform.Find("Lock").gameObject.SetActive(false);
                 b.interactable = !busy;
             }
-            if (on) tierHint.text = L.F("<color=#ffd34a>레벨 단계</color> 선택 · 내 직업 Lv.{0} 장비가 나옵니다 <color=#8c96a8>(노란 단계가 내 레벨, 그 위는 잠김)</color>", SelectedTierLevel());
+            if (on) tierHint.text = L.F("<color=#ffd34a>레벨 단계</color> 선택 · 내 직업 Lv.{0} 장비가 나옵니다 <color=#8c96a8>(노란 단계가 내 레벨, 높은 단계는 레벨이 되면 착용)</color>", SelectedTierLevel());
         }
     }
 }

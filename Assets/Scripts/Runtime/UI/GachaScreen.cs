@@ -268,6 +268,7 @@ namespace DotRPG
             choices = new List<CosmeticProduct>();
             foreach (var p in CosmeticCatalog.All)
             {
+                if (p.ExchangeOnly) continue; // Starlight Exchange only, never in a draw gauge
                 if (banner == "skin" ? (p.IsSkin && p.Skin.cls == cls && p.Rarity == CosmeticRarity.Unique) : (!p.IsSkin && p.Rarity == CosmeticRarity.Epic)) choices.Add(p);
             }
             for (int i = 0; i < choiceRows.Count; i++)

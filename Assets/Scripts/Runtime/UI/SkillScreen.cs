@@ -339,7 +339,10 @@ namespace DotRPG
         void SetTooltip(string text)
         {
             tooltipText.text = text;
-            tooltip.sizeDelta = new Vector2(360f, Mathf.Max(80f, tooltipText.preferredHeight + 28f));
+            // [UI 2026-10-14] The text box grows with the text (it was a fixed 300 px and long gem notes were cut off).
+            float h = Mathf.Max(52f, tooltipText.preferredHeight + 4f);
+            tooltipText.rectTransform.sizeDelta = new Vector2(tooltipText.rectTransform.sizeDelta.x, h);
+            tooltip.sizeDelta = new Vector2(360f, h + 24f);
         }
     }
 }

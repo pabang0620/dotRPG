@@ -67,7 +67,12 @@ namespace DotRPG
                 return L.F("{0} · {1}명 · {2}", role, c.Members.Count, state);
             }
             string line = L.F("{0} · 파티 {1}/{2}명 · {3}", role, c.Members.Count, c.MaxMembers, target);
-            if (FieldSession.Active) line += L.T(" · <color=#8fe28f>함께 사냥 중</color>");
+            if (FieldSession.Active)
+            {
+                line += L.T(" · <color=#8fe28f>함께 사냥 중</color>");
+                // [PARTY XP] 2 / 3 / 4 hunting together: +15 / 30 / 50% XP (the server's figure from the last kill).
+                if (OnlineEconomy.PartyXpBonus > 1.001f) line += L.F(" · <color=#8fe28f>파티 경험치 +{0}%</color>", Mathf.RoundToInt((OnlineEconomy.PartyXpBonus - 1f) * 100f));
+            }
             else if (c.IsLeader) line += L.T(" · 요일던전 입장 시 함께 출발");
             else line += L.T(" · 방장이 입장하면 함께 출발");
             if (c.IsLeader && c.Applications.Count > 0) line += L.F(" · <color=#ff9f7a>신청 {0}건</color>", c.Applications.Count);

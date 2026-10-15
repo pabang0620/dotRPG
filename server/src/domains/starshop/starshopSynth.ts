@@ -7,6 +7,8 @@ import { runEconomy, type StoredResult } from '../economy/economyService';
 import { COLLECTION_BY_ID, DISMANTLE_STARS, STAR_COSMETICS, STAR_COSMETIC_BY_ID, SYNTH, SYNTH_COUNT, type Rarity, type SynthFrom } from './starshopDefs';
 import * as repo from './starshopRepository';
 import * as wallets from './starWallet';
+import * as crystals from './crystalWallet';
+import { cosmeticCrystals } from './cashValueService';
 import { poolOf } from './starshopService';
 import type { CollectionBody, DismantleBody, SynthBody } from './starshopValidation';
 
@@ -133,7 +135,10 @@ export function dismantle(accountId: number, characterUuid: string, body: Disman
       const stars = DISMANTLE_STARS[def.rarity] * body.count;
       // 입금 함수가 부채를 먼저 갚는다(11단계 8.5). balance는 입금 직후(상환 반영) 값이다
       const balance = (await wallets.creditFree(db, { accountId, reason: 'dismantle', amount: stars, ref: def.id, requestId })).balance;
-      return { status: 200, data: { item_id: def.id, count: body.count, stars, balance } };
+      // 0044: 별의 결정도 준다(등록한 컬렉션의 외형이면 +20%). 유료 별조각으로 뽑은 몫은 주문별로 나눠 둔다
+      const gems = cosmeticCrystals(def, body.count, await repo.collectionsOf(db, accountId));
+      const cw = await crystals.creditCrystals(db, { accountId, amount: gems, reason: 'dismantle_cosmetic', ref: def.id, requestId });
+      return { status: 200, data: { item_id: def.id, count: body.count, stars, balance, crystals: gems, crystal_balance: cw.balance } };
     },
   });
 }

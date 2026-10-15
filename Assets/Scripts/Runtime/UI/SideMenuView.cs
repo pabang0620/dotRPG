@@ -49,8 +49,8 @@ namespace DotRPG
             view.Add("menuicon_raid", L.T("레이드"), () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
             // [PARTY] Online with a server party: the lobby; otherwise the mercenary party window.
             // [AI] Online the party window is one place: people, the AI who fill free seats, invites and the AI roster button.
-            view.Add("menuicon_party", L.T("파티"), () => Game.Flow.OpenWindow(OnlineSession.Playing && PartyLobbyScreen.Instance != null ? (WindowScreen)PartyLobbyScreen.Instance : Game.UI.Party));
-            view.Add("menuicon_finder", L.T("파티 찾기"), () => Game.Flow.OpenWindow(PartyFinderScreen.Instance)); view.Add("menuicon_auction", L.T("경매장"), () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
+            view.Add("menuicon_party", L.T("파티"), () => PartyHub.Open()); // [UX] the party hub on its default page
+            view.Add("menuicon_finder", L.T("파티 찾기"), () => PartyHub.Open(PartyHub.Page.Finder)); view.Add("menuicon_auction", L.T("경매장"), () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", L.T("친구"), () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
             view.mailEntry = view.Add("menuicon_mail", L.T("우편"), () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
             view.Add("menuicon_achievement", L.T("업적"), () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호

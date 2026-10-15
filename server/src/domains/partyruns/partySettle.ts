@@ -7,7 +7,7 @@ import { logger } from '../../utils/logger';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import * as dungeonRepo from '../dungeons/dungeonRepository';
-import { finalizeCleared, holdRun, minClearSeconds, runContext, ELAPSED_SLACK_SECONDS, validateClear, type ClearContribution } from '../dungeons/dungeonResult';
+import { finalizeCleared, logSoftReasons, rejectClear, runContext, ELAPSED_SLACK_SECONDS, validateClear, type ClearContribution } from '../dungeons/dungeonResult';
 import { contributionsOf, hitsCap, isDisputed, type MemberDamage } from '../antiabuse/contribution';
 import { RANK_NAMES } from '../dungeons/dungeonRules';
 import { partyHpScaleOf } from '../dungeons/partyScale';
@@ -71,10 +71,11 @@ export async function reportPartyResult(ctx: EconCtx, run: dungeonRepo.RunRow, b
     // 먼저 자기 검증(구조, 시간, 화력, 값 범위)
     const check = await validateClear(ctx, run, stats, ctx.now);
     if (check.reasons.length > 0) {
-      await holdRun(ctx, run, { ...stats, server_elapsed_s: check.serverElapsed }, check.reasons, ctx.now);
+      // 2026-10-14: 파티 화력으로도 불가능한 클리어만 보상 없이 닫는다(운영자 보류 없음)
+      result = await rejectClear(ctx, run, { ...stats, server_elapsed_s: check.serverElapsed }, check.reasons, ctx.now, 'party_result');
       await repo.setMemberState(ctx.client, pr.id, ctx.char.id, 'done', ctx.now);
-      result = { status: 200, data: { result: 'held' } };
     } else {
+      await logSoftReasons(ctx, run, check.soft, 'party_result');
       await dungeonRepo.markReported(ctx.client, run.id, 'cleared', stats, ctx.now);
       await repo.setMemberState(ctx.client, pr.id, ctx.char.id, 'done', ctx.now);
       await repo.setFirstReport(ctx.client, pr.id, ctx.now);
@@ -197,10 +198,9 @@ async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconRes
     await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'party_host', 3, { run_id: run.uuid, reasons: hostEval });
   }
   if (decision.kind === 'held') {
-    await holdRun(ctx, run, (run.stats ?? {}) as Record<string, unknown>, [decision.reason], ctx.now, 'party_result');
-    return { status: 200, data: { result: 'held' } };
-  }
-  if (decision.hostOutlier) {
+    // 2026-10-14: 보고가 서로 어긋나도 보류하지 않는다. 기록만 남기고 내 보고(서버가 받은 처치 기록과 화력 검사를 통과한 값)로 정산한다
+    await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'party_result', 2, { run_id: run.uuid, reasons: [decision.reason], settled: true });
+  } else if (decision.hostOutlier) {
     // 다른 멤버의 보고가 내 보고와 맞고 방장 보고만 어긋났다: 방장이 이상치
     const host = members.find((m) => m.character_id === pr.host_character_id);
     if (host) {
@@ -258,17 +258,10 @@ async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconRes
         { ratio: aa.disputeRatio, minShare, minHits },
       );
       if (disputed) {
-        if (aa.mode === 'enforce') {
-          await holdRun(ctx, run, (run.stats ?? {}) as Record<string, unknown>, ['CONTRIBUTION_DISPUTE'], ctx.now, 'party_result');
-          return { status: 200, data: { result: 'held' } };
-        }
+        // 2026-10-14: 기여 다툼은 기록만 한다(보류 없음)
         await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 2, { run_id: run.uuid, why: 'dispute_log', claimed_damage: st.damage_dealt ?? null, claimed_hits: st.hits_landed ?? null });
       }
       contribution = { share: mine2.share, hits: mine2.hits, source: 'host', met: mine2.met, metByCharacter: metBy };
-    } else if (dungeon.isRaid && aa.mode === 'enforce') {
-      // 호스트 보고를 무효로 해 기여 판정을 피하는 짝을 막는다: 그 멤버 정산을 보류하고 관리자가 검토한다
-      await holdRun(ctx, run, (run.stats ?? {}) as Record<string, unknown>, ['CONTRIBUTION_UNKNOWN'], ctx.now, 'party_result');
-      return { status: 200, data: { result: 'held' } };
     } else {
       // 파티 던전(레이드 아님)은 잠그지 않는다: 판단 불가만 기록
       await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 1, { run_id: run.uuid, why: 'host_report_unusable', raid: dungeon.isRaid });
@@ -314,7 +307,7 @@ async function validateHostReport(
   // 2. 시간: 보고 시각 기준 서버 경과 + 5초 이하, 최소 클리어 시간 이상
   const serverElapsed = ((h.created_at.getTime() - (pr.begun_at as Date).getTime()) / 1000);
   if (h.elapsed_ms / 1000 > serverElapsed + ELAPSED_SLACK_SECONDS) reasons.push('TIME_OVER_SERVER');
-  if (h.outcome === 'cleared' && h.elapsed_ms / 1000 < minClearSeconds(mine)) reasons.push('TOO_FAST');
+  // 2026-10-14: 빠른 클리어(쩔)는 방장 보고를 무효로 만들지 않는다. 불가능한 속도는 아래 화력 상한이 잡는다
   // 3. 화력 일관성
   const kills = await killsOfRun(ctx.client, mine.id);
   const hpMul = diff.hpMul * partyHpScaleOf(eco, mine.humans, mine.ai_count, dungeon.isRaid);
@@ -354,19 +347,77 @@ async function validateHostReport(
   return [...new Set(reasons)];
 }
 
+// ---------- 2026-10-14: 방장이 클리어를 보고했는데 결과를 안 보낸 멤버(끊김·창 닫힘)는 방장 관찰로 대신 접수한다 ----------
+
+/** 방장의 클리어 보고 뒤 이만큼 지나도 멤버가 보고하지 않으면 서버가 대신 접수한다 */
+const MEMBER_AUTO_REPORT_SECONDS = 15;
+
+async function autoReportSilentMembers(now: Date): Promise<void> {
+  const r = await getPool().query<{ uuid: string; account_id: string; char_uuid: string; party_run_id: string }>(
+    `SELECT d.uuid, c.account_id, c.uuid AS char_uuid, d.party_run_id
+       FROM dungeon_runs d
+       JOIN party_run_members m ON m.dungeon_run_id = d.id
+       JOIN characters c ON c.id = d.character_id
+      WHERE d.state = 'playing' AND m.state IN ('playing', 'disconnected')
+        AND EXISTS (SELECT 1 FROM party_run_host_reports h
+                     WHERE h.party_run_id = d.party_run_id AND h.outcome = 'cleared'
+                       AND h.created_at + ($1::int * interval '1 second') <= $2)
+      LIMIT 50`,
+    [MEMBER_AUTO_REPORT_SECONDS, now],
+  );
+  for (const row of r.rows) {
+    try {
+      await runEconomy({
+        accountId: Number(row.account_id),
+        characterUuid: row.char_uuid,
+        endpoint: 'TICK member auto report',
+        requestId: randomUUID(),
+        payload: { run_id: row.uuid },
+        handler: async (ctx) => {
+          const run = await dungeonRepo.findRunByUuid(ctx.client, ctx.char.id, row.uuid);
+          if (!run || run.state !== 'playing') return { status: 200, data: { result: 'none' } };
+          const h = (await repo.hostReports(ctx.client, Number(row.party_run_id)))[0];
+          if (!h || h.outcome !== 'cleared') return { status: 200, data: { result: 'none' } };
+          const hm = h.members.find((m) => m.character_id === ctx.char.uuid);
+          const body: ResultBody = {
+            request_id: randomUUID(),
+            outcome: 'cleared',
+            stats: {
+              elapsed_ms: h.elapsed_ms,
+              hits_taken: Math.min(999, hm?.hits_taken ?? 0),
+              max_combo: Math.min(9999, hm?.max_combo ?? 0),
+              revives_used: Math.min(9, hm?.revives_used ?? 0),
+              ...(hm ? { damage_dealt: hm.damage_dealt } : {}),
+              ...(hm?.hits_landed !== undefined ? { hits_landed: hm.hits_landed } : {}),
+            },
+          };
+          return reportPartyResult(ctx, run, body);
+        },
+      });
+    } catch (err) {
+      logger.error({ err }, 'member auto report failed');
+    }
+  }
+}
+
 // ---------- 서버 틱: 클라이언트가 정산을 부르지 않아 멈춘 reported 행 ----------
 
 /** 대기 마감(first_report_at + 대기 시간)이 지난 reported 행을 정산하거나 보류한다. 서버가 1초마다 부른다 */
 export async function runSettleTick(): Promise<void> {
   const pol = getConfig().policy;
   const now = getNow();
+  await autoReportSilentMembers(now);
   const r = await getPool().query<{ uuid: string; account_id: string; char_uuid: string }>(
     `SELECT d.uuid, c.account_id, c.uuid AS char_uuid
        FROM dungeon_runs d
        JOIN party_runs p ON p.id = d.party_run_id
        JOIN characters c ON c.id = d.character_id
-      WHERE d.state = 'reported' AND p.first_report_at IS NOT NULL
-        AND p.first_report_at + ($1::int * interval '1 second') <= $2
+      WHERE d.state = 'reported' AND (
+              (p.first_report_at IS NOT NULL AND p.first_report_at + ($1::int * interval '1 second') <= $2)
+              -- 2026-10-14: 방장이 판 결과를 보고했고 방장 자신의 판도 닫혔으면 기다리지 않고 바로 정산한다
+              OR EXISTS (SELECT 1 FROM party_run_host_reports h
+                           JOIN dungeon_runs hd ON hd.party_run_id = h.party_run_id AND hd.character_id = h.host_character_id
+                          WHERE h.party_run_id = p.id AND hd.state <> 'playing'))
       LIMIT 50`,
     [pol.partyResultWaitSeconds, now],
   );

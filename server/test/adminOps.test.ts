@@ -242,7 +242,7 @@ describe('보류 판 검토(HR1~HR4)', () => {
     return (r.rows[0] as { uuid: string }).uuid;
   }
 
-  it('대기 목록, 상세(사유 설명), 해제: finalizeCleared 재사용으로 경험치·카드가 확정되고 접속 때 카드 미선택 판으로 보인다', async () => {
+  it('대기 목록, 상세(사유 설명), 해제: finalizeCleared 재사용으로 경험치·카드가 확정되고 카드는 우편으로 간다(2026-10-14)', async () => {
     const h = await newHero(pub);
     const run = await heldRun(h);
     const list = await adminGet(app, viewer, '/admin/held-runs');
@@ -267,9 +267,11 @@ describe('보류 판 검토(HR1~HR4)', () => {
     expect(again.headers['idempotent-replay']).toBe('true');
     expect((await adminPost(app, operator, `/admin/held-runs/${run}/release`, { note: '또' })).body.errors.code).toBe('RUN_NOT_HELD');
     expect((await adminGet(app, viewer, '/admin/held-runs')).body.data.runs).toHaveLength(0);
-    // 접속 때 카드 창을 띄울 판 목록(D5)
+    // 풀린 판에는 결과 화면이 없으니 카드는 바로 우편으로 보낸다(카드 창 목록에는 남지 않는다)
     const dungeons = await get(pub, h, '/dungeons');
-    expect(dungeons.body.data.unpicked_runs.map((u: { run_id: string }) => u.run_id)).toContain(run);
+    expect(dungeons.body.data.unpicked_runs.map((u: { run_id: string }) => u.run_id)).not.toContain(run);
+    const mails = await dbOne<{ n: string }>("SELECT count(*) AS n FROM mails WHERE character_id = $1 AND kind = 'system' AND system_code = 'compensation'", [h.dbId]);
+    expect(Number(mails.n)).toBeGreaterThan(0);
   });
 
   it('동시 두 번 해제하면 정확히 한 번만 확정된다', async () => {

@@ -6,7 +6,8 @@ import { sendStored } from '../economy/economyController';
 import * as service from './starshopService';
 import { claimGearCeiling } from './gearCeiling';
 import * as synthService from './starshopSynth';
-import type { ClaimBody, CollectionBody, DismantleBody, ExchangeBody, GearCeilingBody, PullBody, SynthBody } from './starshopValidation';
+import * as cashValue from './cashValueService';
+import type { ClaimBody, CodexBodyT, CollectionBody, DismantleBody, ExchangeBody, ExchangeBuyBodyT, GearCeilingBody, GearDismantleBodyT, PullBody, SynthBody } from './starshopValidation';
 
 type P = { uuid: string };
 const acc = (res: Response) => getAccount(res.locals).id;
@@ -78,6 +79,43 @@ export async function gearCeiling(_req: Request, res: Response, next: NextFuncti
   try {
     const { body, params } = getValidated<GearCeilingBody, P>(res);
     sendStored(res, await claimGearCeiling(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** 0044 GET /characters/:uuid/starshop/exchange-shop */
+export async function exchangeShop(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { params } = getValidated<unknown, P>(res);
+    successResponse(res, await cashValue.exchangeShopView(acc(res), params.uuid));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function exchangeBuy(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<ExchangeBuyBodyT, P>(res);
+    sendStored(res, await cashValue.buyExchangeGood(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function gearDismantle(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<GearDismantleBodyT, P>(res);
+    sendStored(res, await cashValue.dismantleGear(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function codex(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<CodexBodyT, P>(res);
+    sendStored(res, await cashValue.registerCodex(acc(res), params.uuid, body));
   } catch (err) {
     next(err);
   }

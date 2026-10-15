@@ -15,7 +15,7 @@ import {
   PULL_PRICE,
   RATES_VERSION,
   RATE_SCALE,
-  STAR_COSMETICS,
+  GACHA_COSMETICS,
   SYNTH,
   SYNTH_COUNT,
   TEN_COUNT,
@@ -47,7 +47,7 @@ export function buildRatesContent(): Record<string, unknown> {
     synth: { count: SYNTH_COUNT, rules: SYNTH },
     exchange: { price: EXCHANGE_PRICE, epic_skin: EPIC_SKIN_PRICE },
     gear_rarity: { scale: GEAR_RATE_SCALE, permille: GEAR_RARITY_PERMILLE },
-    cosmetics: STAR_COSMETICS.map((c) => ({ id: c.id, rarity: c.rarity, skin: c.skin ?? null })),
+    cosmetics: GACHA_COSMETICS.map((c) => ({ id: c.id, rarity: c.rarity, skin: c.skin ?? null })),
     collections: COLLECTIONS,
     gear,
   };

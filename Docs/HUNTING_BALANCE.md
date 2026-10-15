@@ -49,7 +49,7 @@
 - 런타임 및 에디터 C# 컴파일 통과 (기존 경고만 존재).
 - `-dotrpgHunting <출력폴더>`: 125개 검사. 12개 맵의 충돌/입구/사냥 구역 접근성, 처치 XP, 재생성, 던전 비교 수치, 눈꽃 아트 확인.
 - `-dotrpgOnlinePause <출력폴더>`: 20개 검사. 루프백 파티 전송을 사용한 호스트/멤버 메뉴 동작 및 오프라인 복귀 확인. 실제 원격 서버의 장시간 접속 시험은 별도다.
-- 서버: `node scripts/test.mjs --runTestsByPath test/hunting.test.ts test/kills.test.ts test/dungeons.test.ts test/raids.test.ts test/partyRuns.test.ts` — 임시 PostgreSQL에서 110개 통과.
+- 서버: `node scripts/test.mjs --runTestsByPath test/hunting.test.ts test/kills.test.ts test/dungeons.test.ts test/raids.test.ts test/partyRuns.test.ts` - 임시 PostgreSQL에서 110개 통과.
 - `tsc -p server/tsconfig.build.json` 통과.
 
 현재 PC의 Unity 에디터 라이선스가 유효하지 않아 정식 Unity 전체 빌드는 불가능했다. 검증 실행본은 기존 Windows 플레이어의 별도 복사본에 컴파일한 런타임과 새 StreamingAssets를 반영했다. 기존 사용자 실행본과 저장 데이터는 수정하지 않았다. 정식 배포 전 라이선스 복구 후 전체 빌드를 권장한다.

@@ -66,6 +66,7 @@ namespace DotRPG
             var view = root.gameObject.AddComponent<MinimapView>();
             view.root = root;
             Instance = view;
+            Expanded = false; // a rebuilt HUD starts with the small minimap
             PortalTooltip.Create(parent);
 
             // Circular mask; the mask graphic itself is the dark background outside the map edges.

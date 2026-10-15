@@ -201,11 +201,13 @@ export function rollRaidGear(eco: EconomyData, d: DungeonDef, cls: string, rng: 
     }
     roll -= x.w;
   }
-  const found = eco.shop.equipmentList.find(
+  // 전설 무기는 단계마다 두 갈래(광역형·토벌형): 등급이 정해진 뒤 같은 확률로 하나를 고른다(C# FindRaidGear와 같다)
+  const found = eco.shop.equipmentList.filter(
     (e) => !e.bossOnly && e.levelTier === tier && e.category === category && e.rarity === rarity && (e.classOnly === null || e.classOnly === cls),
   );
-  if (!found) throw new Error(`레이드 장비를 찾을 수 없습니다: ${d.id} ${cls} ${category} ${rarity}`);
-  return keyAt(found.id, 0);
+  if (found.length === 0) throw new Error(`레이드 장비를 찾을 수 없습니다: ${d.id} ${cls} ${category} ${rarity}`);
+  const pick = found.length > 1 ? (found[rng.int(0, found.length)] as (typeof found)[number]) : (found[0] as (typeof found)[number]);
+  return keyAt(pick.id, 0);
 }
 
 /** 13단계: 레이드 카드 4장(각각 독립 추첨, 수량은 표 그대로). 골드 카드는 없다 */
@@ -246,6 +248,57 @@ export function rollClearRewards(eco: EconomyData, d: DungeonDef, diff: DiffNumb
   ];
   for (let i = 0; i < LUCK_CARDS; i++) cards.push(rollOneCard(eco, d, diff, cls, rng));
   return cards;
+}
+
+/**
+ * 2026-10-14 요일 던전 유니크 보너스: 하루 3판을 하면 3일에 약 2개(판당 22%). 불운 보정으로 유니크 없이 7판이 지나면
+ * 8판째는 반드시 나온다. 나올 때는 그 단계에서 아직 유니크가 없는 부위를 먼저 고른다(모으는 데 끝없이 걸리지 않게).
+ * 운 카드 한 장(마지막)을 그 유니크로 바꾼다. 일반 던전·레이드·소탕에는 적용하지 않는다
+ */
+export const UNIQUE_BONUS = { chancePct: 22, pityRuns: 8 } as const;
+
+/** 이 던전·난이도가 유니크 보너스 대상인가(요일 던전, 그 단계에 유니크 장비가 있을 때) */
+export function uniqueBonusApplies(d: DungeonDef): boolean {
+  return !d.isRaid && !d.always && !!d.sure;
+}
+
+/**
+ * 유니크 보너스 굴림. misses = 지금까지 유니크 없이 지난 판 수. ownedUniqueCategories = 그 단계에서 이미 가진 유니크의 부위.
+ * 반환: 유니크 키(안 나오면 null)와 다음 misses. 난수 순서: 확률 1회 -> (나오면) 부위 1회 -> 같은 부위 안 장비 1회
+ */
+export function rollUniqueBonus(
+  eco: EconomyData,
+  diff: DiffNumbers,
+  cls: string,
+  rng: Rng,
+  misses: number,
+  ownedUniqueCategories: ReadonlySet<string>,
+): { key: string | null; misses: number } {
+  const hit = rng.int(0, 100) < UNIQUE_BONUS.chancePct || misses + 1 >= UNIQUE_BONUS.pityRuns;
+  if (!hit) return { key: null, misses: misses + 1 };
+  const tier = tierOfLevel(diff.recommendedLevel);
+  const pool = eco.shop.equipmentList.filter(
+    (e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && (e.classOnly === null || e.classOnly === cls),
+  );
+  if (pool.length === 0) return { key: null, misses: misses + 1 };
+  const categories = [...new Set(pool.map((e) => e.category))].sort();
+  const missing = categories.filter((c) => !ownedUniqueCategories.has(c));
+  const from = missing.length > 0 ? missing : categories;
+  const category = from[rng.int(0, from.length)] as string;
+  const items = pool.filter((e) => e.category === category);
+  const item = items[rng.int(0, items.length)] as (typeof items)[number];
+  return { key: keyAt(item.id, 0), misses: 0 };
+}
+
+/** 그 단계 유니크의 부위(가진 아이템 키 목록에서). 강화 단계(+n)는 떼고 본다 */
+export function uniqueCategoriesOwned(eco: EconomyData, tier: number, itemKeys: readonly string[]): Set<string> {
+  const byId = new Map(eco.shop.equipmentList.map((e) => [e.id, e] as const));
+  const out = new Set<string>();
+  for (const k of itemKeys) {
+    const e = byId.get(k.split('+')[0] as string);
+    if (e && e.rarity === 'Unique' && e.levelTier === tier) out.add(e.category);
+  }
+  return out;
 }
 
 export interface RareChance {

@@ -131,11 +131,14 @@ namespace DotRPG
             }
             else
             {
-                // Held for review or not answered: no reward on this screen.
+                // Rejected (impossible clear), an old held run, or not answered: no reward on this screen.
+                // [2026-10-14] No new holds: "noanswer" rewards are settled by the server and unclaimed cards come by mail.
                 run.XpGained = 0;
                 run.Cards = null;
-                run.NoRewardNote = result == "held" ? "held" : "noanswer";
-                GameEvents.RaiseToast(result == "held" ? L.T("클리어 기록이 평소와 달라(너무 빠른 클리어 등) 운영자 확인이 필요합니다. 정상으로 확인되면 다음 접속 때 보상 카드를 받습니다.") : L.T("서버에 결과를 보내지 못했습니다."));
+                run.NoRewardNote = result == "held" ? "held" : result == "rejected" ? "rejected" : "noanswer";
+                GameEvents.RaiseToast(result == "held" ? L.T("클리어 기록이 평소와 달라(너무 빠른 클리어 등) 운영자 확인이 필요합니다. 정상으로 확인되면 다음 접속 때 보상 카드를 받습니다.")
+                    : result == "rejected" ? L.T("파티 전투력으로는 불가능한 클리어 기록이라 보상이 지급되지 않았습니다.")
+                    : L.T("결과 확인이 늦어지고 있습니다. 보상은 서버가 정산하고, 받지 못한 카드는 우편으로 보내 드립니다."));
             }
             EndRunState();
             RunEnded?.Invoke(run);

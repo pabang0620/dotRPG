@@ -24,6 +24,13 @@ The Starlight Pass can be bought again as long as the remaining period does not 
 2. When Star Shards are spent, Free Star Shards are used first, and Paid Star Shards are used in order of purchase, oldest first.
 3. Star Shards and Game Items obtained with them are bound to the account and cannot be moved to another account.
 
+## Article 3-2 (Star Crystals)
+1. Star Crystals are exchange points obtained by dismantling spare cosmetics or gear received from draws or the pity ceiling, and can be used only at the Starlight Exchange. Star Crystals are not a paid currency and are not sold.
+2. Star Crystals cannot be converted into Star Shards or gold, and cannot be given or traded to other users.
+3. Gear received from draws or the pity ceiling cannot be sold to the shop for gold; it can only be dismantled.
+4. Star Crystals obtained by dismantling items bought with Paid Star Shards are recorded against that payment order. If the order is refunded or the payment is cancelled, the remaining share is recovered and any share already spent remains as a debt. While a debt remains, the Starlight Exchange cannot be used, and Star Crystals received later repay the debt first.
+5. Star Crystals are not refunded when the Service ends.
+
 ## Article 4 (Withdrawal of Purchase)
 1. A user may withdraw a purchase (cancel it) within 7 days of buying Paid Star Shards. Only unused Paid Star Shards can be withdrawn.
 2. The Starlight Pass can be withdrawn only if no daily reward or Sealed Chest has been received and the Star Shards granted at once have not been used.

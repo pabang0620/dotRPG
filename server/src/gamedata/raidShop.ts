@@ -36,8 +36,8 @@ export interface RaidShopProduct {
   tierLevel: number;
   tier: number;
   rarityWeights: { rarity: ShopRarity; weight: number }[];
-  /** 직업 -> 등급 -> 결과 장비 +0 id */
-  results: Record<string, Partial<Record<ShopRarity, string>>>;
+  /** 직업 -> 등급 -> 결과 장비 +0 id 목록(전설 무기는 광역형·토벌형 두 개, 같은 확률로 하나) */
+  results: Record<string, Partial<Record<ShopRarity, string[]>>>;
 }
 export interface RaidShopData {
   ratesVersion: string;
@@ -72,8 +72,8 @@ export function loadRaidShop(dir: string, eco: EconomyData): RaidShopData | null
         const found = eco.shop.equipmentList.filter(
           (e) => !e.bossOnly && e.levelTier === tier && e.category === p.category && e.rarity === w.rarity && (e.classOnly === null || e.classOnly === cls),
         );
-        if (found.length !== 1) fail(`직업 ${cls} ${w.rarity} ${p.category} 장비가 정확히 하나가 아닙니다(${found.length}개)`);
-        (results[cls] as Record<string, string>)[w.rarity] = (found[0] as { id: string }).id;
+        if (found.length === 0) fail(`직업 ${cls} ${w.rarity} ${p.category} 장비가 없습니다`);
+        (results[cls] as Record<string, string[]>)[w.rarity] = found.map((e) => e.id);
       }
     }
     products.set(p.id, {

@@ -44,10 +44,10 @@ namespace DotRPG
         };
 
         // i18n-names-begin (translated once in Build: name = L.T(name))
-        // Names: [tier][grade c,u,r,e,un]; Lv.1 has three.
+        // Names: [tier][grade c,u,r,e,un]; Lv.1 has four (no unique).
         static readonly string[][] SwordNames =
         {
-            new[] { "무딘 철검", "견습 기사의 검", "마을 수비대 장검" },
+            new[] { "무딘 철검", "견습 기사의 검", "마을 수비대 장검", "수비대장의 명검" },
             new[] { "녹슨 사냥검", "뼈손잡이 장검", "해골 숲 사냥검", "망령 베기", "묘지기의 처형검" },
             new[] { "적석 단검", "붉은 돌 장검", "고개지기 대검", "협곡 파쇄검", "붉은 거인의 송곳니" },
             new[] { "기사단 연습검", "강철 장검", "기사단 정예검", "해골왕 토벌검", "기사단장의 대검" },
@@ -58,7 +58,7 @@ namespace DotRPG
         };
         static readonly string[][] StaffNames =
         {
-            new[] { "견습 지팡이", "자작나무 지팡이", "마을 현자의 지팡이" },
+            new[] { "견습 지팡이", "자작나무 지팡이", "마을 현자의 지팡이", "촌장의 비전 지팡이" },
             new[] { "마른 가지 지팡이", "뼈 장식 지팡이", "해골 숲 주술봉", "망령 부르는 지팡이", "묘지기의 영혼 지팡이" },
             new[] { "적석 지팡이", "붉은 수정 지팡이", "고개 현자의 지팡이", "용암 맥동 지팡이", "붉은 거인의 심장봉" },
             new[] { "기사단 견습 지팡이", "강철 테 지팡이", "기사단 사제 지팡이", "해골왕 봉인봉", "대사제의 성광 지팡이" },
@@ -69,7 +69,7 @@ namespace DotRPG
         };
         static readonly string[][] PlateNames =
         {
-            new[] { "누빔 조끼", "가죽 흉갑", "수비대 사슬 갑옷" },
+            new[] { "누빔 조끼", "가죽 흉갑", "수비대 사슬 갑옷", "수비대장의 판금 갑옷" },
             new[] { "뼈 비늘 조끼", "뼈판 흉갑", "해골 숲 사냥꾼 갑옷", "망령 수호 갑옷", "묘지기의 판금 갑옷" },
             new[] { "적석 가죽 갑옷", "붉은 돌 흉갑", "고개지기 판금 갑옷", "협곡 파수 갑옷", "붉은 거인의 갑주" },
             new[] { "기사단 훈련복", "강철 흉갑", "기사단 정예 갑옷", "해골왕 토벌 갑주", "기사단장의 판금 갑옷" },
@@ -80,7 +80,7 @@ namespace DotRPG
         };
         static readonly string[][] GreavesNames =
         {
-            new[] { "천 각반", "가죽 각반", "수비대 사슬 각반" },
+            new[] { "천 각반", "가죽 각반", "수비대 사슬 각반", "수비대장의 강철 각반" },
             new[] { "뼈 비늘 각반", "뼈판 각반", "해골 숲 사냥꾼 각반", "망령 수호 각반", "묘지기의 판금 각반" },
             new[] { "적석 가죽 각반", "붉은 돌 각반", "고개지기 판금 각반", "협곡 파수 각반", "붉은 거인의 각반" },
             new[] { "기사단 훈련 각반", "강철 각반", "기사단 정예 각반", "해골왕 토벌 각반", "기사단장의 각반" },
@@ -91,7 +91,7 @@ namespace DotRPG
         };
         static readonly string[][] RobeNames =
         {
-            new[] { "견습생 로브", "자작나무 수 로브", "마을 현자의 로브" },
+            new[] { "견습생 로브", "자작나무 수 로브", "마을 현자의 로브", "촌장의 비전 로브" },
             new[] { "잿빛 로브", "뼈 장식 로브", "해골 숲 주술사 로브", "망령 부르는 로브", "묘지기의 영혼 법의" },
             new[] { "적석 로브", "붉은 수정 로브", "고개 현자의 로브", "용암 맥동 로브", "붉은 거인의 법의" },
             new[] { "기사단 견습 법의", "강철 실 로브", "기사단 사제 로브", "해골왕 봉인 법의", "대사제의 성광 법의" },
@@ -102,7 +102,7 @@ namespace DotRPG
         };
         static readonly string[][] SkirtNames =
         {
-            new[] { "견습생 치마", "자작나무 수 치마", "마을 현자의 치마" },
+            new[] { "견습생 치마", "자작나무 수 치마", "마을 현자의 치마", "촌장의 비전 치마" },
             new[] { "잿빛 치마", "뼈 장식 치마", "해골 숲 주술사 치마", "망령 부르는 치마", "묘지기의 영혼 치마" },
             new[] { "적석 치마", "붉은 수정 치마", "고개 현자의 치마", "용암 맥동 치마", "붉은 거인의 치마" },
             new[] { "기사단 견습 치마", "강철 실 치마", "기사단 사제 치마", "해골왕 봉인 치마", "대사제의 성광 치마" },
@@ -113,7 +113,7 @@ namespace DotRPG
         };
         static readonly string[][] NeckNames =
         {
-            new[] { "끈 목걸이", "조개 목걸이", "마을 수호 부적" },
+            new[] { "끈 목걸이", "조개 목걸이", "마을 수호 부적", "축제의 수호 목걸이" },
             new[] { "뼈 구슬 목걸이", "해골 이빨 목걸이", "해골 숲 부적", "망령 결속 목걸이", "묘지기의 목걸이" },
             new[] { "적석 목걸이", "붉은 수정 목걸이", "고개지기 부적", "용암 심장 목걸이", "붉은 거인의 목걸이" },
             new[] { "기사단 인식표", "강철 사슬 목걸이", "기사단 문장 목걸이", "해골왕 봉인 부적", "해골왕의 목걸이" },
@@ -124,7 +124,7 @@ namespace DotRPG
         };
         static readonly string[][] RingNames =
         {
-            new[] { "구리 반지", "은 반지", "마을 수호 반지" },
+            new[] { "구리 반지", "은 반지", "마을 수호 반지", "축제의 별빛 반지" },
             new[] { "뼈 반지", "해골 이빨 반지", "해골 숲 사냥 반지", "망령 결속 반지", "묘지기의 반지" },
             new[] { "적석 반지", "붉은 수정 반지", "고개지기 반지", "용암 심장 반지", "붉은 거인의 루비 반지" },
             new[] { "기사단 반지", "강철 반지", "기사단 문장 반지", "해골왕 봉인 반지", "기사단장의 반지" },
@@ -146,6 +146,29 @@ namespace DotRPG
             _ => new[] { "용의 심장 반지", "창세의 별 반지" },
         };
         // i18n-names-end
+
+        // i18n-names-begin
+        /// <summary>[LEGEND] Names of the 토벌형 (boss hunter) legendary weapons: [Lv.20, Lv.40].</summary>
+        static string[] HunterNames(Kind k) => k == Kind.Sword ? new[] { "용아 처형검", "종말의 별가름검" } : new[] { "유성 낙인 지팡이", "종말의 심판봉" };
+        // i18n-names-end
+
+        /// <summary>
+        /// [LEGEND] 광역형 (sweep): skill area +30%, damage +8%. 토벌형 (hunter): damage +12%, boss damage +15%, area +6%.
+        /// Value with 1% damage = 1, 1% area = 0.5 (radius grows by the square root), 1% boss damage = 0.5 (bosses are about
+        /// half the fighting): 23 vs 22.5, so neither is simply better; the choice is mobs or bosses.
+        /// </summary>
+        static void Archetype(EquipmentItem item, bool sweep, Kind k)
+        {
+            item.aoeBonus = sweep ? 30 : 6;
+            item.damageBonus = sweep ? 8 : 12;
+            item.bossBonus = sweep ? 0 : 15;
+            string kind = sweep ? L.T("광역형") : L.T("토벌형");
+            string flavor = k == Kind.Sword
+                ? (sweep ? L.T("한 번 휘두르면 무리가 통째로 쓸려 나간다.") : L.T("단 하나의 목을 노리는 칼날. 거대한 적일수록 깊이 박힌다."))
+                : (sweep ? L.T("별빛이 넓게 퍼져 무리를 한꺼번에 태운다.") : L.T("떨어지는 별 하나를 한 점에 모은다. 우두머리를 무너뜨리는 지팡이."));
+            item.flavor = $"<color=#ffb347>{kind}</color> · {flavor}";
+            item.description = item.description + "\n" + item.flavor;
+        }
 
         static string[][] NamesOf(Kind k) => k switch
         {
@@ -212,10 +235,24 @@ namespace DotRPG
                 var names = NamesOf(k);
                 for (int t = 0; t < TierLevels.Length; t++)
                 {
-                    int grades = t == 0 ? 3 : 5;
+                    int grades = t == 0 ? 4 : 5; // [2026-10-14] Lv.1 has an epic too (before: common, uncommon, rare only)
                     for (int g = 0; g < grades; g++) list.Add(Make(k, t, (ItemRarity)g, names[t][g]));
                     if (TierLevels[t] == 20 || TierLevels[t] == 40)
-                        list.Add(Make(k, t, ItemRarity.Legendary, LegendNames(k)[TierLevels[t] == 20 ? 0 : 1]));
+                    {
+                        int which = TierLevels[t] == 20 ? 0 : 1;
+                        var legend = Make(k, t, ItemRarity.Legendary, LegendNames(k)[which]);
+                        list.Add(legend);
+                        // [LEGEND 2026-10-14] Weapons come in two archetypes (Docs/PLAN_GEAR_RENEWAL.md "전설 무기 두 갈래").
+                        if (k == Kind.Sword || k == Kind.Staff)
+                        {
+                            Archetype(legend, sweep: true, k);
+                            var hunter = Make(k, t, ItemRarity.Legendary, HunterNames(k)[which]);
+                            hunter.id = Id(KindId(k), TierLevels[t], ItemRarity.Legendary) + "b";
+                            hunter.iconKey = "gear:" + hunter.id;
+                            Archetype(hunter, sweep: false, k);
+                            list.Add(hunter);
+                        }
+                    }
                 }
             }
             return list;
@@ -253,7 +290,8 @@ namespace DotRPG
                 id = Id(KindId(k), level, r), name = L.T(name), category = CategoryOf(k), rarity = r, classOnly = ClassOf(k),
                 attack = atk, maxHealth = hp, block = block, speed = spd, xpBonus = xp, aoeBonus = aoe,
                 iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = OldIcon(k, art), description = Describe(k, level, r),
-                dropWeight = r <= ItemRarity.Rare ? 30 - 8 * (int)r : r == ItemRarity.Epic ? 3 : 0,
+                // [2026-10-14] Before Lv.15 (tiers Lv.1 and Lv.10) epics drop more often: weight 5 instead of 3.
+                dropWeight = r <= ItemRarity.Rare ? 30 - 8 * (int)r : r == ItemRarity.Epic ? (t <= 1 ? 5 : 3) : 0,
                 reqLevel = level, levelTier = t, Tier = art,
             };
         }

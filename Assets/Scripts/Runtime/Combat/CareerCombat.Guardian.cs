@@ -76,6 +76,10 @@ namespace DotRPG
             foreach (var e in Enemies(owner.Center, c.n.radius)) Strike(c, e, c.n.damage, owner.Center, 10f, 1, "c_shield");
             // [GUARDIAN] A clear one-second invulnerability, then the damage reduction (the old slow is gone).
             if (c.authority) { AddInvulnerable(1f); AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); }
+            // [RAID] The 거대 방패 stays planted in front toward the aim for 7 s; the ground behind it is cover from 섬멸.
+            // Every PC plants it (the host's copy decides the damage, a member's copy is the picture).
+            Vector2 face = c.dir.sqrMagnitude > .0001f ? c.dir.normalized : Vector2.down;
+            SafeCover.AddWall(feet + face * .9f, face);
             if (owner.IsLocal) SkillVisuals.Flash(owner.Center, new Color(.6f, 1f, .95f, .8f), 1.8f, .25f);
         }
 

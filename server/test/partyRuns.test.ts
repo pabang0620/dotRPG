@@ -219,13 +219,13 @@ describe('파티 판 처치와 정산', () => {
     const { member, memberRun } = await duo();
     expect((await result(member, memberRun, { outcome: 'win', stats: stats() })).status).toBe(400);
     expect((await settle(member, memberRun)).body.errors.code).toBe('RUN_NOT_REPORTED');
-    // 처치 없이 클리어 보고: 자기 검증에서 보류
-    const held = await result(member, memberRun, { outcome: 'cleared', stats: stats() });
-    expect(held.body.data.result).toBe('held');
+    // 처치 없이 클리어 보고: 자기 검증에서 보상 없이 닫힌다(2026-10-14: 운영자 보류 없음)
+    const rejected = await result(member, memberRun, { outcome: 'cleared', stats: stats() });
+    expect(rejected.body.data.result).toBe('rejected');
     expect((await result(member, memberRun, { outcome: 'failed', stats: stats() })).body.errors.code).toBe('RUN_NOT_PLAYING');
   });
 
-  it('방장 보고와 멤버 보고가 어긋나면 보류(held): 경과 시간 불일치', async () => {
+  it('방장 보고와 멤버 보고가 어긋나도 보류하지 않는다(2026-10-14): 기록만 남기고 둘 다 정산', async () => {
     const { host, member, runId, hostRun, memberRun } = await duo();
     await clearAll(app, host, hostRun, advance);
     fixed = new Date(MONDAY);
@@ -237,12 +237,13 @@ describe('파티 판 처치와 정산', () => {
     const m = await result(member, memberRun, { outcome: 'cleared', stats: stats() });
     expect(m.body.data.result).toBe('pending');
     const h = await result(host, hostRun, { outcome: 'cleared', stats: stats({ elapsed_ms: 60_000 }) });
-    // 방장 쪽 증인(멤버)의 보고가 방장 관찰과 어긋나므로 방장도 멤버도 보류
-    expect(h.body.data.result).toBe('held');
-    expect((await settle(member, memberRun)).body.data).toEqual({ result: 'held' });
+    // 어긋남은 이상 기록으로만 남고 방장·멤버 모두 정산된다
+    expect(h.body.data.result).toBe('cleared');
+    expect((await settle(member, memberRun)).body.data.result).toBe('cleared');
     expect(await anomalyKinds(member)).toContain('party_result');
     const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE reason = 'dungeon_clear' AND character_id = ANY($1::bigint[])", [[host.dbId, member.dbId]]);
-    expect(Number((xp.rows[0] as { n: string }).n)).toBe(0);
+    expect(Number((xp.rows[0] as { n: string }).n)).toBe(2);
+    expect((await getPool().query("SELECT count(*)::int AS n FROM dungeon_runs WHERE state = 'held'")).rows[0].n).toBe(0);
   });
 
   it('멤버끼리 일치하고 방장만 어긋나면 멤버는 정산되고 방장은 이상치로 기록된다', async () => {
@@ -425,7 +426,7 @@ describe('호스트 인계와 방장 보고, 이탈', () => {
     expect(claim.status).toBe(200);
   });
 
-  it('클리어 보고 뒤 이탈: 멤버 결과를 방장 보고로 대신 접수해 정산하고, 고르지 않은 카드는 서버가 지급한다', async () => {
+  it('클리어 보고 뒤 이탈: 멤버 결과를 방장 보고로 대신 접수해 정산하고, 받지 않은 카드는 우편으로 보낸다', async () => {
     const { host, member, runId, hostRun, memberRun } = await duo();
     await clearAll(app, host, hostRun, advance);
     fixed = new Date(MONDAY);
@@ -449,7 +450,7 @@ describe('호스트 인계와 방장 보고, 이탈', () => {
     const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE character_id = $1 AND reason = 'dungeon_clear'", [member.dbId]);
     expect(Number((xp.rows[0] as { n: string }).n)).toBe(1);
 
-    // 카드 자동 지급(2026-10-14 다중 보상, take_all): 마감 전에는 그대로, 지난 뒤 4장 모두(두 번 돌아도 4장)
+    // 받지 않은 카드(2026-10-14 다중 보상, take_all): 마감 전에는 그대로, 지난 뒤 4장 모두 우편으로(두 번 돌아도 4통)
     await runCardAutoPickTick();
     expect((await getPool().query('SELECT cards_taken FROM dungeon_runs WHERE uuid = $1', [memberRun])).rows[0]).toMatchObject({ cards_taken: 0 });
     advance(11 * 60);
@@ -457,11 +458,32 @@ describe('호스트 인계와 방장 보고, 이탈', () => {
     await runCardAutoPickTick();
     const picked = await getPool().query('SELECT cards_mode, cards_taken FROM dungeon_runs WHERE uuid = $1', [memberRun]);
     expect(picked.rows[0]).toMatchObject({ cards_mode: 'take_all', cards_taken: 15 });
-    const cardGrants = await getPool().query(
-      "SELECT (SELECT count(*) FROM item_ledger WHERE character_id = $1 AND reason = 'dungeon_card') + (SELECT count(*) FROM gold_ledger WHERE character_id = $1 AND reason = 'dungeon_card') AS n",
-      [member.dbId],
-    );
-    expect(Number((cardGrants.rows[0] as { n: string }).n)).toBe(4);
+    const mails = await getPool().query("SELECT count(*)::int AS n FROM mails WHERE character_id = $1 AND kind = 'system' AND system_code = 'compensation'", [member.dbId]);
+    expect(mails.rows[0].n).toBe(4);
+    await expectLedgerConsistent(member);
+    await expectLedgerConsistent(host);
+  });
+
+  it('2026-10-14: 결과를 보내지 않은 멤버도 방장의 클리어 보고 15초 뒤 서버가 대신 접수해 바로 정산한다', async () => {
+    const { host, member, runId, hostRun, memberRun } = await duo();
+    await clearAll(app, host, hostRun, advance);
+    fixed = new Date(MONDAY);
+    advance(1);
+    await clearAll(app, member, memberRun, advance);
+    advance(40);
+    await post(app, host, `/party-runs/${runId}/host-report`, await honestHostReport(hostRun, [host, member]));
+    // 방장은 멤버(증인) 보고를 기다린다
+    expect(['pending', 'cleared']).toContain((await result(host, hostRun, { outcome: 'cleared', stats: stats() })).body.data.result);
+    // 멤버는 아무것도 보내지 않았다(창 닫힘·끊김). 15초 전에는 그대로
+    await runSettleTick();
+    expect((await getPool().query('SELECT state FROM dungeon_runs WHERE uuid = $1', [memberRun])).rows[0].state).toBe('playing');
+    advance(16);
+    await runSettleTick();
+    const row = await getPool().query('SELECT state, xp_granted FROM dungeon_runs WHERE uuid = $1', [memberRun]);
+    expect(row.rows[0].state).toBe('cleared');
+    expect(Number(row.rows[0].xp_granted)).toBeGreaterThan(0);
+    // 같은 틱에서 방장도 정산된다(대기 마감 90초를 기다리지 않는다)
+    expect((await getPool().query('SELECT state FROM dungeon_runs WHERE uuid = $1', [hostRun])).rows[0].state).toBe('cleared');
     await expectLedgerConsistent(member);
     await expectLedgerConsistent(host);
   });

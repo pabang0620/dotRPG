@@ -190,8 +190,8 @@
  "서버 처리에 실패했습니다.": "Server processing failed.",
  "오프라인": "Offline",
  "확정된 던전 보상: {0}": "Confirmed dungeon reward: {0}",
- "서버 저장에 실패했습니다. ({0})": "Server save failed. ({0})",
- "서버에 연결할 수 없어 저장하지 못했습니다. 연결되면 다시 저장합니다.": "Couldn't reach the server to save. It will save again once connected.",
+ "진행 상황을 서버에 보내지 못했습니다. ({0})": "Could not send your progress to the server. ({0})",
+ "서버에 연결할 수 없습니다. 연결되면 진행 상황을 다시 보냅니다.": "Can't reach the server. Your progress will be sent once connected.",
  "Steam 인증 티켓을 받지 못했습니다.": "Couldn't get a Steam auth ticket.",
  "Steam이 실행 중이 아닙니다.": "Steam is not running.",
  "게임 데이터가 서버와 다릅니다. 게임을 업데이트해 주세요.": "Your game data differs from the server. Please update the game.",
@@ -1049,5 +1049,8 @@
  "요청을 받은 사람만 할 수 있습니다.": "Only the player who received the request can do this.",
  "이미 끝난 교환입니다.": "This trade has already ended.",
  "이미 진행 중인 교환이 있습니다.": "You already have a trade in progress.",
- "받았습니다: {0}": "Received: {0}"
+ "받았습니다: {0}": "Received: {0}",
+ "[파티] {0}: {1}{2} 획득!": "[Party] {0}: got {1}{2}!",
+ "직업 {0} {1} {2} 장비가 없습니다": "No gear for class {0} {1} {2}",
+ "수량이 바뀌었습니다. 다시 시도해 주세요.": "The quantity changed. Please try again."
 }

@@ -11,15 +11,12 @@ namespace DotRPG
     /// </summary>
     public class PartyScreen : WindowScreen
     {
-        /// <summary>[UX] The window that opened this one (party lobby, dungeon select): Esc goes back there instead of to the game.</summary>
-        public static WindowScreen ReturnTo;
+        /// <summary>[UX] Kept for callers: the party hub's "opened from" window (Esc goes back there).</summary>
+        public static WindowScreen ReturnTo { get => PartyHub.ReturnTo; set => PartyHub.ReturnTo = value; }
 
         public override void Close()
         {
-            var back = ReturnTo;
-            ReturnTo = null;
-            if (back != null && back != this) Game.UI.ShowWindow(back);
-            else base.Close();
+            if (!PartyHub.CloseToOrigin()) base.Close();
         }
 
         const float SlotW = 290f, SlotH = 104f, CardW = 290f, CardH = 372f, Step = 300f;
@@ -48,6 +45,7 @@ namespace DotRPG
         public static PartyScreen Create(Transform canvas)
         {
             var w = CreateWindow<PartyScreen>(canvas, "Party", L.T("AI 동료 편성"), "menuicon_party");
+            PartyHub.Attach(w, w.content, PartyHub.Page.Companions); // [UX] one party window: 내 파티 | 파티 찾기 | AI 동료
             w.partyTitle = Label(w.content, "PartyTitle", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, 0f), new Vector2(800f, 32f));
             for (int i = 0; i < PartyManager.MaxMembers; i++) w.slots.Add(w.BuildSlot(i));
             Label(w.content, "MercTitle", L.T("<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>"), 22,

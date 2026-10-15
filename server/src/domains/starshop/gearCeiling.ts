@@ -8,6 +8,7 @@ import * as ceilings from '../ceilings/ceilingRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import { GEAR_CEILING } from './starshopDefs';
 import * as wallets from './starWallet';
+import { noteGachaGear } from './cashValueService';
 import { gearCeilingView, gearTable } from './starshopService';
 import type { GearCeilingBody } from './starshopValidation';
 
@@ -29,11 +30,8 @@ export function claimGearCeiling(accountId: number, characterUuid: string, body:
     payload,
     handler: async (ctx) => {
       await assertNoHold(ctx.client, accountId, ctx.char.id);
-      const myTier = tierOfLevel(ctx.char.level);
-      const tier = body.tier ?? myTier;
-      if (tier > myTier) {
-        throw new AppError(422, '아직 열리지 않은 레벨 단계입니다.', 'GACHA_TIER_LOCKED', { need: TIER_LEVELS[tier], have: ctx.char.level });
-      }
+      // 천장도 모든 단계에서 고를 수 있다(2026-10-14)
+      const tier = body.tier ?? tierOfLevel(ctx.char.level);
       if (!gearCeilingChoices(body.banner, ctx.char.class, tier).includes(body.item_id)) {
         throw new AppError(422, '고를 수 없는 항목입니다.', 'CLAIM_NOT_ALLOWED');
       }
@@ -48,6 +46,7 @@ export function claimGearCeiling(accountId: number, characterUuid: string, body:
       await ceilings.setGauge(ctx.client, accountId, 'gear', after);
       // 원장: item_ledger reason gacha(뽑기와 같은 귀속), ref ceiling_<뽑기>
       await ctx.addItem('bag', body.item_id, 1, 'gacha', `ceiling_${body.banner}`);
+      await noteGachaGear(ctx.client, ctx.char.id, accountId, body.item_id, 1); // 0044
       await ceilings.insertClaim(ctx.client, {
         accountId, characterId: ctx.char.id, requestId, kind: 'gear', itemKey: body.item_id, count: 1, before, after,
       });

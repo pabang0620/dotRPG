@@ -154,8 +154,10 @@ namespace DotRPG
         {
             if (run.NoRewardNote == "held")
                 return L.T("<color=#ffe066>클리어 기록이 평소와 달라(너무 빠른 클리어 등) 운영자가 확인하고 있습니다.</color>\n<color=#b8c4d8>정상으로 확인되면 다음 접속 때 보상 카드를 받습니다.</color>");
+            if (run.NoRewardNote == "rejected")
+                return L.T("<color=#ff9f7a>파티 전투력으로는 불가능한 클리어 기록입니다.</color>\n<color=#b8c4d8>이번 판은 보상이 지급되지 않았습니다.</color>");
             if (run.NoRewardNote == "noanswer")
-                return L.T("<color=#ff9f7a>서버에 결과를 보내지 못했습니다.</color>\n<color=#b8c4d8>다시 접속하면 결과를 다시 확인합니다.</color>");
+                return L.T("<color=#ff9f7a>결과 확인이 늦어지고 있습니다.</color>\n<color=#b8c4d8>보상은 서버가 정산하고, 받지 못한 카드는 우편으로 보내 드립니다.</color>");
             if (run.Dungeon.isRaid)
                 return run.Dungeon.raidTier == RaidTier.Mid
                     ? L.T("<color=#ff9f7a>오늘 이 레이드 보상을 이미 받았습니다.</color>\n<color=#b8c4d8>매일 06:00에 초기화됩니다.</color>")

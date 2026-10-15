@@ -140,6 +140,9 @@ namespace DotRPG
         /// <summary>[PARTY 8] The field session this character hunts in (null = solo field).</summary>
         public static string FieldSessionId;
 
+        /// <summary>[PARTY XP] The last shared-hunting kill's party size bonus from the server (1.15 / 1.3 / 1.5, 1 = none).</summary>
+        public static float PartyXpBonus = 1f;
+
         public static void ReportKill(string monsterId, int hits, Vector2 at, Transform parent, long monsterRef = -1)
         {
             // The loaded map (in a dungeon Session.MapId is the village the run returns to).
@@ -152,6 +155,7 @@ namespace DotRPG
                 int xp = MiniJson.Int(r.data, "granted_xp");
                 if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
                 var field = MiniJson.Obj(r.data, "field");
+                PartyXpBonus = field != null ? Mathf.Max(1f, (float)MiniJson.Num(field, "party_bonus", 1)) : 1f;
                 if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast(L.T("<color=#8c96a8>레벨 차이로 경험치가 줄었습니다.</color>"));
                 if (parent == null) return;
                 foreach (var d in MiniJson.Arr(r.data, "drops") ?? new List<object>())

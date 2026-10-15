@@ -66,6 +66,11 @@ namespace DotRPG
     public class PartyFinderScreen : OnlineWindow
     {
         public static PartyFinderScreen Instance { get; private set; }
+
+        public override void Close()
+        {
+            if (!PartyHub.CloseToOrigin()) base.Close();
+        }
         protected override bool PadNavigation => focusField == null || !focusField.isFocused;
         const int PageSize = 9;
         const float RowH = 44f, TableW = 1220f, ListTop = -104f;
@@ -90,6 +95,7 @@ namespace DotRPG
         {
             var w = CreateWindow<PartyFinderScreen>(canvas, "PartyFinder", L.T("파티 찾기"), "menuicon_finder");
             Instance = w;
+            PartyHub.Attach(w, w.content, PartyHub.Page.Finder); // [UX] one party window: 내 파티 | 파티 찾기 | AI 동료
             w.PreviewBanner();
             w.tabList = Button(w.content, "TabList", L.T("모집 목록"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(150f, 42f), () => { w.createTab = false; w.Refresh(); }, 20);
             w.tabCreate = Button(w.content, "TabCreate", L.T("모집 글 등록"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, 0f), new Vector2(150f, 42f), () => { w.createTab = true; w.Refresh(); }, 20);

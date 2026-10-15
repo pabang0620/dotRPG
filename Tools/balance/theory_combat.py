@@ -104,7 +104,7 @@ def mon_dps(mid, lv):
 
 # ---------------- zones ----------------
 ZONES = []
-for z in re.finditer(r'new HuntingZone\("(\w+)", "([^"]+)", [^,]+, MapTheme\.(\w+), (\d+), (\d+), (\d+), \d+, ([^)]*)\)', read(RT, "World", "HuntingGrounds.cs")):
+for z in re.finditer(r'new HuntingZone\("(\w+)", (?:L\.T\()?"([^"]+)"\)?, [^,]+, MapTheme\.(\w+), (\d+), (\d+), (\d+), \d+, ([^)]*)\)', read(RT, "World", "HuntingGrounds.cs")):
     ZONES.append(dict(id=z.group(1), name=z.group(2), theme=z.group(3), lo=int(z.group(4)), hi=int(z.group(5)), mlv=int(z.group(6)),
                       mons=[x.strip().strip('"') for x in z.group(7).split(",")]))
 

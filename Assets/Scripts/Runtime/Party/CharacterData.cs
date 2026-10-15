@@ -30,6 +30,8 @@ namespace DotRPG
         public int CosmeticDamage;
         /// <summary>Max HP % from registered cosmetic collections (local player only, account-wide).</summary>
         public int CollectionHealth;
+        /// <summary>Max HP % from the account gear codex (0.5 per Unique / Legendary kind, local player only).</summary>
+        public float CodexHealth;
 
         readonly CharacterClass cls;
         readonly Progression progression;

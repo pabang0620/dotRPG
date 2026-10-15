@@ -6,7 +6,7 @@
  "[필수] 만 14세 이상입니다": "[Obligatoire] J'ai 14 ans ou plus",
  "[필수] 이용약관 동의": "[Obligatoire] J'accepte les Conditions d'utilisation",
  "개인정보처리방침 보기": "Voir la Politique de confidentialité",
- "동의 내용을 저장하는 중...": "Enregistrement de votre consentement...",
+ "동의 내용을 보내는 중...": "Envoi de votre consentement...",
  "동의 안 함": "Refuser",
  "동의하고 시작": "Accepter et commencer",
  "동의하지 않음": "Non accepté",
@@ -15,7 +15,7 @@
  "약관 동의": "Acceptation des conditions",
  "온라인 플레이를 시작하려면 아래 항목에 모두 동의해 주세요.\n항목을 바꾸려면 ◀ ▶ 또는 클릭, 내용은 '보기'로 확인합니다.": "Pour commencer à jouer en ligne, veuillez accepter tous les éléments ci-dessous.\nChangez d'élément avec ◀ ▶ ou en cliquant ; consultez le contenu via « Voir ».",
  "이용약관 보기": "Voir les Conditions d'utilisation",
- "저장하지 못했습니다. 다시 시도해 주세요.": "Échec de l'enregistrement. Veuillez réessayer.",
+ "보내지 못했습니다. 다시 시도해 주세요.": "Envoi impossible. Veuillez réessayer.",
  "환불 정책": "Politique de remboursement",
  "약관 및 정책": "Conditions et politiques",
  "개인정보처리방침": "Politique de confidentialité",
@@ -75,5 +75,7 @@
  "운영자·타인 사칭으로 제재되었습니다.": "Sanctionné pour usurpation d'identité du personnel ou d'autrui.",
  "현금 거래로 제재되었습니다.": "Sanctionné pour échange d'argent réel.",
  "혐오·차별 표현으로 제재되었습니다.": "Sanctionné pour propos haineux ou discriminatoires.",
- "계정 삭제 안내": "Supprimer ton compte"
+ "계정 삭제 안내": "Supprimer ton compte",
+ "## 요일 던전 유니크 보너스 (유료 재화 아님)": "## Bonus unique des donjons du jour (pas une monnaie payante)",
+ "요일 던전을 클리어할 때마다 {0}% 확률로 운 카드 한 장이 그 난이도 단계의 유니크 장비가 됩니다. 유니크 없이 {1}판이 지나면 {2}판째에는 반드시 나오고, 나오면 다시 처음부터 셉니다. 유니크가 나올 때는 그 단계에서 아직 유니크를 가지지 않은 부위(무기·상의·하의·목걸이·반지 중 내 직업이 쓸 수 있는 것)를 같은 확률로 먼저 고르고, 모두 가졌으면 전체에서 같은 확률로 고릅니다. 같은 부위 안에서는 장비마다 같은 확률입니다. 일반 던전·레이드·소탕에는 적용하지 않습니다.": "Chaque victoire dans un donjon du jour a {0}% de chances de transformer une carte de chance en pièce unique du palier d'équipement de cette difficulté. Après {1} victoires sans unique, la victoire n°{2} en donne toujours une et le compte repart à zéro. L'emplacement est choisi uniformément parmi ceux (arme, haut, bas, collier, anneau utilisables par ta classe) où tu n'as pas encore d'unique de ce palier, ou parmi tous si tu les as tous ; dans un emplacement, chaque pièce a la même chance. Les donjons normaux, les raids et les balayages n'ont pas ce bonus."
 }

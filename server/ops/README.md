@@ -179,9 +179,9 @@ GRANT SELECT, DELETE ON
          account_week_counters,
          economy_holds, account_sanctions, admin_account_notes, admin_grants, auction_flags,
          auction_sinks, mail_attachments, mail_campaign_deliveries, mails, auction_trade_flags,
-         auction_trades, auction_bids, auction_listings, trade_items, trades, dungeon_entry_resets, friendships, blocks, report_lines, reports,
+         auction_trades, auction_bids, auction_listings, trade_items, trades, dungeon_entry_resets, dungeon_unique_pity, gacha_gear_credits, exchange_purchases, gear_codex, friendships, blocks, report_lines, reports,
          party_applications, party_members, party_invites, field_session_members,
-         party_run_host_reports, party_runs, field_sessions, parties, star_spend_allocs,
+         party_run_host_reports, party_runs, field_sessions, parties, crystal_spend_allocs, crystal_ledger, crystal_paid_lots, crystal_wallets, star_spend_allocs,
          star_ledger, star_paid_lots, star_order_events, payment_flags, star_admin_grants,
          star_orders, star_wallets, payment_profiles, account_consents, characters, account_withdrawals, accounts
   TO dotrpg_purge;

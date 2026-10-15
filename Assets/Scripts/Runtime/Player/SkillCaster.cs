@@ -195,6 +195,7 @@ namespace DotRPG
         {
             if (enemy == null || enemy.IsDead) return;
             int damage = n.bossPct > 0 && enemy.IsBoss ? Mathf.RoundToInt(n.damage * (1f + n.bossPct / 100f)) : n.damage; // [SKILL v2] 보스 사냥
+            if (enemy.IsBoss) damage = Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
             // Hit feel: a harder shove, sparks and a tiny freeze-frame on the local player's hits.
             bool landed = enemy.TakeDamage(new DamageInfo(damage, from, knockback * 1.2f, Team.Player, owner.gameObject));
             if (landed) HitFeel(enemy, knockback >= 8f);

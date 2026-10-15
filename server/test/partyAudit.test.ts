@@ -62,7 +62,7 @@ const stateOf = async (runUuid: string): Promise<string> =>
   ((await getPool().query('SELECT state FROM dungeon_runs WHERE uuid = $1', [runUuid])).rows[0] as { state: string }).state;
 
 describe('감사 1: 방장 보고(H)는 방장 자신의 결과 보고와 같아야 한다', () => {
-  it('방장은 failed, H는 cleared: 멤버는 보상을 받지 못하고(pending 후 held) 방장은 기록된다', async () => {
+  it('방장은 failed, H는 cleared: 멤버는 마감 뒤 자기 보고로 정산되고(2026-10-14: 보류 없음) 방장은 기록된다', async () => {
     const { host, member, runId, hostRun, memberRun } = await playedDuo();
     expect((await post(app, host, `/party-runs/${runId}/host-report`, await honestHostReport(hostRun, [host, member]))).status).toBe(200);
     expect((await result(host, hostRun, { outcome: 'failed', stats: stats() })).body.data.result).toBe('failed');
@@ -70,10 +70,10 @@ describe('감사 1: 방장 보고(H)는 방장 자신의 결과 보고와 같아
     expect(m.body.data.result).toBe('pending');
     advance(91);
     const s = await settle(member, memberRun);
-    expect(s.body.data).toEqual({ result: 'held' });
+    expect(s.body.data.result).toBe('cleared');
     expect(await reasonsOf(host, 'party_host')).toContain('HOST_SELF_MISMATCH');
     const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE reason = 'dungeon_clear' AND character_id = $1", [member.dbId]);
-    expect(Number((xp.rows[0] as { n: string }).n)).toBe(0);
+    expect(Number((xp.rows[0] as { n: string }).n)).toBe(1);
   });
 });
 
@@ -129,18 +129,20 @@ describe('감사 3: 방장 보고 멤버 목록과 극단값', () => {
 });
 
 describe('감사 4: 정산을 부르지 않아 멈춘 reported 행은 서버 틱이 닫는다', () => {
-  it('대기 마감 전에는 건드리지 않고, 마감 뒤에는 정산할 수 없으면 held로 닫는다', async () => {
+  it('대기 마감 전에는 건드리지 않고, 마감 뒤에는 방장 보고가 없어도 자기 보고로 정산한다(2026-10-14: 보류 없음)', async () => {
     const { member, memberRun } = await playedDuo();
     expect((await result(member, memberRun, { outcome: 'cleared', stats: stats() })).body.data.result).toBe('pending');
     await runSettleTick();
     expect(await stateOf(memberRun)).toBe('reported');
     advance(91);
     await runSettleTick();
-    expect(await stateOf(memberRun)).toBe('held');
+    expect(await stateOf(memberRun)).toBe('cleared');
     expect(await anomalyKinds(member)).toContain('party_result');
-    // 이미 닫힌 행은 다시 건드리지 않는다
+    // 이미 닫힌 행은 다시 건드리지 않는다(경험치 한 번)
     await runSettleTick();
-    expect(await stateOf(memberRun)).toBe('held');
+    expect(await stateOf(memberRun)).toBe('cleared');
+    const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE reason = 'dungeon_clear' AND character_id = $1", [member.dbId]);
+    expect(Number((xp.rows[0] as { n: string }).n)).toBe(1);
   });
 
   it('마감 뒤 방장 보고와 멤버 보고가 맞으면 틱이 정산(보상 한 번)한다', async () => {

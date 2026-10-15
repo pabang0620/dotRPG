@@ -169,15 +169,18 @@ describe('6. raid_shop.json 정합', () => {
       expect(eco().shop.sellPrices.get(p.materialItem) ?? 0).toBe(0);
       for (const cls of ['warrior', 'mage']) {
         for (const w of p.rarityWeights) {
-          const key = p.results[cls]?.[w.rarity] as string;
-          const e = equipOf(key) as NonNullable<ReturnType<typeof equipOf>>;
-          expect([e.levelTier, e.category, e.rarity]).toEqual([p.tier, 'Weapon', w.rarity]);
+          const keys = p.results[cls]?.[w.rarity] ?? [];
+          expect(keys.length).toBeGreaterThan(0);
+          for (const key of keys) {
+            const e = equipOf(key) as NonNullable<ReturnType<typeof equipOf>>;
+            expect([e.levelTier, e.category, e.rarity]).toEqual([p.tier, 'Weapon', w.rarity]);
+          }
         }
       }
     }
-    // 레전더리 상자는 전사 검, 마법사 지팡이
-    expect(shop.products.get('king_legend_weapon')?.results.warrior?.Legendary).toBe('eq_sword_20_l');
-    expect(shop.products.get('grah_legend_weapon')?.results.mage?.Legendary).toBe('eq_staff_40_l');
+    // 레전더리 상자는 전사 검, 마법사 지팡이(광역형·토벌형 두 갈래)
+    expect(shop.products.get('king_legend_weapon')?.results.warrior?.Legendary).toEqual(['eq_sword_20_l', 'eq_sword_20_lb']);
+    expect(shop.products.get('grah_legend_weapon')?.results.mage?.Legendary).toEqual(['eq_staff_40_l', 'eq_staff_40_lb']);
     const ver = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'data_version.json'), 'utf8')) as { files: Record<string, string> };
     expect(Object.keys(ver.files)).toContain('raid_shop.json');
   });

@@ -71,6 +71,9 @@ namespace DotRPG
         /// <summary>[FIELD BOSS] Growth options of the worn accessories (%).</summary>
         public int XpBonus => SumItem(e => e.xpBonus);
         public int AoeBonus => SumItem(e => e.aoeBonus);
+        /// <summary>[LEGEND] % more damage and % more damage to bosses from the worn gear (legendary weapons).</summary>
+        public int DamageBonus => SumItem(e => e.damageBonus);
+        public int BossBonus => SumItem(e => e.bossBonus);
 
         int SumItem(Func<EquipmentItem, int> pick)
         {

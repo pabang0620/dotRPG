@@ -133,63 +133,44 @@ async function finishRaid(heroes: Hero[], runs: Map<string, string>) {
 }
 
 describe('레이드: 같은 기기 부계정과 기여', () => {
-  it('본캐 + 친구 + 같은 기기의 서 있는 부계정: 본캐·친구는 보상, 부계정만 LOW_CONTRIBUTION', async () => {
+  it('2026-10-14 기여는 기록만: 본캐 + 친구 + 같은 기기의 서 있는 부계정 모두 보상, 부계정은 contribution 이상 기록', async () => {
     const d = hashOf();
     const host = await heroOn(app, d, 20, ['c1_fortress']);
     const alt = await heroOn(app, d, 20, ['c1_fortress']);
     const friend = await heroOn(app, hashOf(), 20, ['c1_fortress']);
     const { runs } = await raidRun([host, alt, friend], [10, 0, 10]);
     const out = await finishRaid([host, alt, friend], runs);
-    expect((out.get(alt.id)?.raid as Record<string, unknown>)).toEqual({ reward_locked: true, lock_reason: 'LOW_CONTRIBUTION' });
-    expect(out.get(host.id)?.granted_xp).toBeGreaterThan(0);
-    expect(out.get(friend.id)?.granted_xp).toBeGreaterThan(0);
-    expect(await claims(host)).toBe(1);
-    expect(await claims(friend)).toBe(1);
-    expect(await claims(alt)).toBe(0);
-    expect(await runRow(runs.get(alt.id) as string)).toMatchObject({ reward_locked: true, lock_reason: 'LOW_CONTRIBUTION', contribution: { source: 'host', met: false, share: 0 } });
+    for (const x of [host, alt, friend]) expect((out.get(x.id)?.raid as Record<string, unknown>).reward_locked).toBe(false);
+    expect(await claims(alt)).toBe(1);
+    expect(await runRow(runs.get(alt.id) as string)).toMatchObject({ reward_locked: false, contribution: { source: 'host', met: false, share: 0 } });
+    const log = await getPool().query("SELECT detail->>'why' AS why FROM anomaly_log WHERE kind = 'contribution' AND character_id = $1", [alt.dbId]);
+    expect(log.rows.map((r) => r.why)).toContain('low_contribution_log');
   });
 
-  it('본캐 + 같은 기기 부계정(서 있음): 둘 다 보상 없음(부계정 LOW_CONTRIBUTION, 본캐 TOO_FEW_HUMANS), 청구 없음', async () => {
+  it('본캐 + 같은 기기 부계정: 같은 기기는 한 사람이라 둘 다 TOO_FEW_HUMANS, 청구 없음', async () => {
     const d = hashOf();
     const host = await heroOn(app, d, 20, ['c1_fortress']);
     const alt = await heroOn(app, d, 20, ['c1_fortress']);
     const { runs } = await raidRun([host, alt], [1, 0]);
     const out = await finishRaid([host, alt], runs);
-    expect(out.get(alt.id)?.raid).toEqual({ reward_locked: true, lock_reason: 'LOW_CONTRIBUTION' });
+    expect(out.get(alt.id)?.raid).toEqual({ reward_locked: true, lock_reason: 'TOO_FEW_HUMANS' });
     expect(out.get(host.id)?.raid).toEqual({ reward_locked: true, lock_reason: 'TOO_FEW_HUMANS' });
     expect(await claims(host)).toBe(0);
     expect(await claims(alt)).toBe(0);
   });
 
-  it('지분 5.0%는 통과, 지분 1%+적중 39회는 잠금(청구 미소진), 적중 40회(치유형)는 통과', async () => {
-    const a = await heroOn(app, hashOf(), 20, ['c1_fortress']);
-    const b = await heroOn(app, hashOf(), 20, ['c1_fortress']);
-    const ok = await raidRun([a, b], [19, 1]);
-    const outOk = await finishRaid([a, b], ok.runs);
-    expect((outOk.get(b.id)?.raid as Record<string, unknown>).reward_locked).toBe(false);
-    expect(await claims(b)).toBe(1);
-
-    await resetDb();
+  it('지분이 낮은 멤버(힐러 등)도 보상을 받는다: 지분 1%+적중 39회도 통과, 사람 수는 파티 명단으로 센다', async () => {
     const c = await heroOn(app, hashOf(), 20, ['c1_fortress']);
     const d = await heroOn(app, hashOf(), 20, ['c1_fortress']);
     const low = await raidRun([c, d], [99, 1], [undefined, 39]);
     const outLow = await finishRaid([c, d], low.runs);
-    expect(outLow.get(d.id)?.raid).toEqual({ reward_locked: true, lock_reason: 'LOW_CONTRIBUTION' });
-    // 잠긴 멤버의 주간·일일 청구는 소진되지 않는다(다음 기회에 청구할 수 있다)
-    expect(await claims(d)).toBe(0);
-    // 남은 한 사람만 보상을 받는 판은 사람 수 미달이다
-    expect(outLow.get(c.id)?.raid).toEqual({ reward_locked: true, lock_reason: 'TOO_FEW_HUMANS' });
-
-    await resetDb();
-    const e = await heroOn(app, hashOf(), 20, ['c1_fortress']);
-    const f = await heroOn(app, hashOf(), 20, ['c1_fortress']);
-    const heal = await raidRun([e, f], [99, 1], [undefined, 40]);
-    const outHeal = await finishRaid([e, f], heal.runs);
-    expect((outHeal.get(f.id)?.raid as Record<string, unknown>).reward_locked).toBe(false);
-    expect(await claims(f)).toBe(1);
+    expect((outLow.get(d.id)?.raid as Record<string, unknown>).reward_locked).toBe(false);
+    expect((outLow.get(c.id)?.raid as Record<string, unknown>).reward_locked).toBe(false);
+    expect(await claims(c)).toBe(1);
+    expect(await claims(d)).toBe(1);
   });
 
-  it('호스트 보고가 무효인 레이드(enforce): 기여를 알 수 없어 그 멤버 정산이 held(CONTRIBUTION_UNKNOWN)', async () => {
+  it('호스트 보고가 무효인 레이드: 보류하지 않고 정산한다(2026-10-14)', async () => {
     const [a, b, c] = [await heroOn(app, hashOf(), 20, ['c1_fortress']), await heroOn(app, hashOf(), 20, ['c1_fortress']), await heroOn(app, hashOf(), 20, ['c1_fortress'])];
     // ai_count 0인데 AI 항목이 있으면 방장 보고가 무효
     const { runs } = await raidRun([a, b, c], [1, 1, 1], [], { ai: [{ slot: 3, damage_dealt: 1 }] });
@@ -197,9 +178,9 @@ describe('레이드: 같은 기기 부계정과 기여', () => {
     await result(c, runs.get(c.id) as string, resultBody());
     advance(95);
     const s1 = await settle(b, runs.get(b.id) as string);
-    expect(s1.body.data).toEqual({ result: 'held' });
-    expect((await runRow(runs.get(b.id) as string)).hold_reason).toBe('CONTRIBUTION_UNKNOWN');
-    expect(await claims(b)).toBe(0);
+    expect(s1.body.data.result).toBe('cleared');
+    expect((await runRow(runs.get(b.id) as string)).state).toBe('cleared');
+    expect((await getPool().query("SELECT count(*)::int AS n FROM dungeon_runs WHERE state = 'held'")).rows[0].n).toBe(0);
   });
 
   it('호스트 보고에 적중 수 물리 상한을 넘는 값이 있으면 보고가 무효(HITS_OVER_CAP)', async () => {
@@ -240,26 +221,17 @@ async function duoDungeon(app2: Express, weights: number[], hits: (number | unde
 }
 
 describe('파티 요일 던전의 기여', () => {
-  it('기여 없는 멤버: 클리어 경험치·카드 없음(LOW_CONTRIBUTION), 입장 횟수는 소모된 채, 방장은 정상 보상', async () => {
+  it('기여 없는 멤버도 보상을 받고(2026-10-14) contribution 이상 기록만 남는다, 방장도 정상 보상', async () => {
     const { host, member, hostRun, memberRun } = await duoDungeon(app, [99, 1], [undefined, 39]);
     expect((await result(host, hostRun, { outcome: 'cleared', stats: stats() })).body.data.result).toBe('pending');
     const m = await result(member, memberRun, { outcome: 'cleared', stats: stats() });
-    expect(m.body.data).toMatchObject({ result: 'cleared', granted_xp: 0, card_count: 0, reward_locked: true, reward_lock_reason: 'LOW_CONTRIBUTION' });
-    expect(m.body.data.raid).toBeUndefined();
+    expect(m.body.data.result).toBe('cleared');
+    expect(m.body.data.granted_xp).toBeGreaterThan(0);
+    expect(m.body.data.reward_locked).toBeUndefined();
     const h = await settle(host, hostRun);
     expect(h.body.data.granted_xp).toBeGreaterThan(0);
-    expect(h.body.data.reward_locked).toBeUndefined();
-    // 10단계 E3: 보상이 잠긴 판은 계정 주간 활동(direct_clear)에 세지 않고, 정상 보상을 받은 방장의 클리어는 센다
-    const weekly = async (x: Hero): Promise<number> =>
-      Number(((await getPool().query("SELECT coalesce(sum(used), 0) AS n FROM account_week_counters WHERE kind = 'direct_clear' AND account_id = (SELECT account_id FROM characters WHERE id = $1)", [x.dbId])).rows[0] as { n: string }).n);
-    expect(await weekly(member)).toBe(0);
-    expect(await weekly(host)).toBe(1);
-    expect(await runRow(memberRun)).toMatchObject({ reward_locked: true, lock_reason: 'LOW_CONTRIBUTION', contribution: { source: 'host', met: false, hits: 39 } });
-    expect((await get(app, member, '/dungeons')).body.data.entries.used).toBe(1);
-    const xp = await getPool().query("SELECT count(*) AS n FROM xp_ledger WHERE reason = 'dungeon_clear' AND character_id = $1", [member.dbId]);
-    expect(Number((xp.rows[0] as { n: string }).n)).toBe(0);
-    // 같은 응답을 다시 정산해도 잠금 정보가 그대로다(재생)
-    expect((await settle(member, memberRun)).body.data).toMatchObject({ reward_locked: true, reward_lock_reason: 'LOW_CONTRIBUTION' });
+    expect(await runRow(memberRun)).toMatchObject({ reward_locked: false, contribution: { source: 'host', met: false, hits: 39 } });
+    expect(await anomalyKinds(member)).toContain('contribution');
   });
 
   it('지분 5%는 통과하고, 적중 40회는 지분이 낮아도 통과한다', async () => {
@@ -282,13 +254,14 @@ describe('파티 요일 던전의 기여', () => {
     expect(await runRow(a.memberRun)).toMatchObject({ reward_locked: false, contribution: { met: false } });
   });
 
-  it('멤버 주장 damage_dealt가 호스트 관찰의 2배 이상이고 주장 기준으로 충족하면 보류(CONTRIBUTION_DISPUTE)', async () => {
+  it('멤버 주장 damage_dealt가 호스트 관찰의 2배 이상이어도 보류하지 않고 기록만 남긴다(2026-10-14)', async () => {
     const { host, member, hostRun, memberRun } = await duoDungeon(app, [99, 1]);
     await result(host, hostRun, { outcome: 'cleared', stats: stats() });
     const total = Number(((await getPool().query("SELECT members FROM party_run_host_reports ORDER BY id DESC LIMIT 1")).rows[0] as { members: { damage_dealt: number }[] }).members.reduce((a: number, m) => a + m.damage_dealt, 0));
     const m = await result(member, memberRun, { outcome: 'cleared', stats: stats({ damage_dealt: total }) });
-    expect(m.body.data).toEqual({ result: 'held' });
-    expect((await runRow(memberRun)).hold_reason).toBe('CONTRIBUTION_DISPUTE');
+    expect(m.body.data.result).toBe('cleared');
+    const log = await getPool().query("SELECT detail->>'why' AS why FROM anomaly_log WHERE kind = 'contribution' AND character_id = $1", [member.dbId]);
+    expect(log.rows.map((r) => r.why)).toContain('dispute_log');
   });
 
   it('호스트 보고가 무효인 파티 던전(레이드 아님)은 잠그지 않고 contribution 이상 기록만 남긴다', async () => {

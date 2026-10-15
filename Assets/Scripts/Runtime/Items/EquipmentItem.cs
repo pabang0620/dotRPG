@@ -82,6 +82,10 @@ namespace DotRPG
         public float enhanceSeed;
         /// <summary>[FIELD BOSS] Growth options (not raised by enhancing): % more XP from monsters, % larger skill area.</summary>
         public int xpBonus, aoeBonus;
+        /// <summary>[LEGEND 2026-10-14] Legendary weapon archetypes: % more damage (all hits) and % more damage to bosses.</summary>
+        public int damageBonus, bossBonus;
+        /// <summary>[LEGEND] One line of flavour under the stats (legendary weapons), or empty.</summary>
+        public string flavor = "";
         /// <summary>[FIELD BOSS] Dropped only by a field boss: never in drops, cards, the cash shop or promotion.</summary>
         public bool bossOnly;
         /// <summary>Character level needed to put it on (the tier level: 1, 10, 15 ... 40). Owning and trading need none.</summary>
@@ -122,6 +126,8 @@ namespace DotRPG
             if (s.speed != 0) parts.Add(L.F("이동 {0}{1}%", s.speed > 0 ? "+" : "", s.speed));
             if (xpBonus != 0) parts.Add(L.F("<color=#8fe28f>경험치 +{0}%</color>", xpBonus));
             if (aoeBonus != 0) parts.Add(L.F("<color=#8fe28f>스킬 범위 +{0}%</color>", aoeBonus));
+            if (damageBonus != 0) parts.Add(L.F("<color=#8fe28f>피해 +{0}%</color>", damageBonus));
+            if (bossBonus != 0) parts.Add(L.F("<color=#8fe28f>보스 피해 +{0}%</color>", bossBonus));
             return parts.Count > 0 ? string.Join("  ", parts) : L.T("능력치 없음");
         }
     }

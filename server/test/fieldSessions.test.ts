@@ -7,7 +7,7 @@ import { getConfig } from '../src/config/env';
 import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { monsterXp, rollKillDrops } from '../src/domains/kills/killRules';
-import { xpFactor } from '../src/domains/fieldsessions/xpFactor';
+import { partySizeXpBonus, xpFactor } from '../src/domains/fieldsessions/xpFactor';
 import { electHost, electionWinner, type Candidate } from '../src/domains/fieldsessions/hostElection';
 import { sweepStale } from '../src/ops/jobs/staleRuns';
 import { setClockOverride } from '../src/utils/clock';
@@ -291,7 +291,8 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     const b = await kill(m, sid, 7);
     expect(a.status).toBe(200);
     expect(b.status).toBe(200);
-    expect(a.body.data).toMatchObject({ granted_xp: 7, leveled_up: false, field: { shared: true, xp_factor: 1 } });
+    // 2인 함께 사냥: 경험치 +15%(7 -> 8). xp_factor는 레벨 격차 감쇠만 담는다
+    expect(a.body.data).toMatchObject({ granted_xp: 8, leveled_up: false, field: { shared: true, xp_factor: 1, party_bonus: 1.15 } });
     expect(a.body.data.drops).toHaveLength(1);
     const dup = await kill(L, sid, 7, {}, randomUUID());
     expect(dup.status).toBe(409);
@@ -332,7 +333,7 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
     expect(b.body).toEqual(a.body);
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(Number((await getPool().query('SELECT count(*) AS n FROM kill_log WHERE character_id = $1', [m.dbId])).rows[0].n)).toBe(1);
-    expect(Number((await getPool().query('SELECT xp FROM characters WHERE id = $1', [m.dbId])).rows[0].xp)).toBe(7);
+    expect(Number((await getPool().query('SELECT xp FROM characters WHERE id = $1', [m.dbId])).rows[0].xp)).toBe(8); // 2인 보너스 +15%
   });
 
   it('동시 요청: 두 멤버의 동시 보고가 모두 받아들여지고, 같은 멤버의 같은 monster_ref 동시 보고는 하나만 통과한다', async () => {
@@ -428,6 +429,15 @@ describe('처치 보고(E1): 멤버마다 각자 판정', () => {
   });
 });
 
+describe('함께 사냥 인원 경험치 보너스(2026-10-14)', () => {
+  it('2인 +15%, 3인 +30%, 4인 +50%, 혼자는 보너스 없음', () => {
+    expect(partySizeXpBonus(1)).toBe(1);
+    expect(partySizeXpBonus(2)).toBe(1.15);
+    expect(partySizeXpBonus(3)).toBe(1.3);
+    expect(partySizeXpBonus(4)).toBe(1.5);
+  });
+});
+
 describe('레벨 격차 감쇠(6.7)', () => {
   const policy = { carrySlack: 5, carryStep: 0.12, carryMin: 0.2 };
 
@@ -475,7 +485,7 @@ describe('레벨 격차 감쇠(6.7)', () => {
     expect(ka.body.data.granted_xp).toBe(1);
     // d = 20 - 12 = 8: 1 - 0.15 x (8 - 5) = 0.55
     expect(kb.body.data.field.xp_factor).toBe(0.55);
-    expect(kb.body.data.granted_xp).toBe(Math.round(base * 0.55));
+    expect(kb.body.data.granted_xp).toBe(Math.round(Math.round(base * 0.55) * 1.15)); // 2인 보너스는 감쇠 뒤에 곱한다
     expect(Number((await getPool().query('SELECT xp_factor FROM kill_log WHERE character_id = $1', [a.dbId])).rows[0].xp_factor)).toBe(0.02);
     const solo = await newHero(high);
     const ks = await post(high, solo, '/kills', { map_id: 'forest', monster_id: 'skeleton' });

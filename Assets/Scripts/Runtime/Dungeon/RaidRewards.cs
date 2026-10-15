@@ -131,8 +131,8 @@ namespace DotRPG
         }
 
         /// <summary>The class's weapon of the raid's tier at a grade (+0 key), or null if the catalog has none.</summary>
-        public static string ResultKey(RaidShopProduct product, CharacterClass cls, ItemRarity rarity) =>
-            DungeonRewards.FindRaidGear(cls, product.Tier, product.category, rarity);
+        public static string ResultKey(RaidShopProduct product, CharacterClass cls, ItemRarity rarity, System.Random rng = null) =>
+            DungeonRewards.FindRaidGear(cls, product.Tier, product.category, rarity, rng); // [LEGEND] two legendary weapons: even pick
 
         /// <summary>Offline purchase roll: the grade by the product's weights, then the class's piece of that grade.</summary>
         public static (ItemRarity rarity, string key) Roll(RaidShopProduct product, CharacterClass cls, System.Random rng)
@@ -144,7 +144,7 @@ namespace DotRPG
                 if (roll < w.weight) { rarity = w.rarity; break; }
                 roll -= w.weight;
             }
-            return (rarity, ResultKey(product, cls, rarity));
+            return (rarity, ResultKey(product, cls, rarity, rng));
         }
 
         /// <summary>"에픽 88% / 유니크 12%" or "레전더리 확정".</summary>

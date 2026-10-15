@@ -41,6 +41,9 @@ namespace DotRPG
             var tl = new Vector2(0f, 1f);
             w.synthTabBtn = Button(w.content, "TabSynth", L.T("합성"), "ui_btn", tl, tl, Vector2.zero, new Vector2(200f, 52f), () => w.ShowTab(false), 20);
             w.collectionTabBtn = Button(w.content, "TabCollection", L.T("컬렉션"), "ui_btngray", tl, tl, new Vector2(212f, 0f), new Vector2(200f, 52f), () => w.ShowTab(true), 20);
+            // 0044: spares and gacha gear become Star Crystals, spent at the Starlight Exchange.
+            Button(w.content, "Exchange", L.T("별빛 교환소"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, 52f),
+                () => { if (ExchangeShopScreen.Instance != null) Game.Flow.OpenWindow(ExchangeShopScreen.Instance); }, 20);
 
             // ---------- 합성 ----------
             w.synthTab = UIFactory.Place(UIFactory.Rect(w.content, "Synth"), tl, tl, new Vector2(0f, -66f), new Vector2(1220f, 528f));
@@ -128,7 +131,7 @@ namespace DotRPG
         protected override void Refresh()
         {
             if (!StarShopClient.Loaded) { SetStatus(StarShopClient.Available ? L.T("불러오는 중...") : L.T("온라인 캐릭터로 접속하면 이용할 수 있습니다."), false); }
-            else SetStatus(L.F("보유 {0}", StarShopClient.Stars(StarShopClient.Balance)));
+            else SetStatus(L.F("보유 {0} · {1}", StarShopClient.Stars(StarShopClient.Balance), StarShopClient.CrystalText(StarShopClient.Crystals)));
             if (showCollections) RefreshCollections(); else RefreshSynth();
         }
 
@@ -165,7 +168,7 @@ namespace DotRPG
             list.Sort((a, b) => b.p.Rarity != a.p.Rarity ? b.p.Rarity.CompareTo(a.p.Rarity) : b.n.CompareTo(a.n));
             int total = 0;
             foreach (var x in list) total += x.n;
-            spareHead.text = list.Count == 0 ? L.T("<b>여분</b>   <color=#8c96a8>아직 여분이 없습니다. 이미 가진 외형이 다시 나오면 여기에 쌓입니다.</color>") : L.F("<b>여분</b> {0}개   <color=#b8c4d8>분해하면 별조각으로 돌려받습니다.</color>", total);
+            spareHead.text = list.Count == 0 ? L.T("<b>여분</b>   <color=#8c96a8>아직 여분이 없습니다. 이미 가진 외형이 다시 나오면 여기에 쌓입니다.</color>") : L.F("<b>여분</b> {0}개   <color=#b8c4d8>분해하면 별조각과 별의 결정을 받습니다.</color>", total);
             int sparePages = Mathf.Max(1, (list.Count + SpareRows - 1) / SpareRows);
             sparePage = Mathf.Clamp(sparePage, 0, sparePages - 1);
             SetPager(sparePager, sparePage, sparePages);
@@ -184,7 +187,8 @@ namespace DotRPG
                 StarShopClient.Dismantle.TryGetValue(key, out int each);
                 v.id = p.Id;
                 v.name.text = $"<color={Hex(key)}>[{Grade(key)}]</color> {L.T(p.Name)}" + (p.IsSkin ? L.T(" (스킨)") : "") + L.F("   여분 <b>{0}</b>", n);
-                TextOf(v.dismantle).text = L.F("모두 분해 · 별조각 {0:N0}", each * n);
+                StarShopClient.DismantleCrystals.TryGetValue(key, out int gems);
+                TextOf(v.dismantle).text = gems > 0 ? L.F("모두 분해 · 별조각 {0:N0} · 결정 {1:N0}", each * n, gems * n) : L.F("모두 분해 · 별조각 {0:N0}", each * n);
                 v.dismantle.interactable = !busy;
                 v.dismantleOne.gameObject.SetActive(n > 1);
                 v.dismantleOne.interactable = !busy;
@@ -310,14 +314,16 @@ namespace DotRPG
             if (one) n = Mathf.Min(1, n);
             if (p == null || n <= 0) return;
             StarShopClient.Dismantle.TryGetValue(StarShopClient.RarityKey(p.Rarity), out int each);
-            Game.UI.Confirm(L.F("{0} 여분 {1}개를 분해합니다.\n별조각 {2:N0}개를 받습니다. (착용 중인 외형은 그대로)", L.T(p.Name), n, each * n), () =>
+            StarShopClient.DismantleCrystals.TryGetValue(StarShopClient.RarityKey(p.Rarity), out int gems);
+            // Registered-set cosmetics give 20% more crystals; the server's figure is what arrives.
+            Game.UI.Confirm(L.F("{0} 여분 {1}개를 분해합니다.\n별조각 {2:N0}개와 별의 결정 {3:N0}개 이상을 받습니다. (착용 중인 외형은 그대로)", L.T(p.Name), n, each * n, gems * n), () =>
             {
                 busy = true;
-                StarShopClient.DoDismantle(id, n, (ok, msg, stars) =>
+                StarShopClient.DoDismantle(id, n, (ok, msg, stars, crystals) =>
                 {
                     busy = false;
                     if (!ok) { GameEvents.RaiseToast(msg); Game.Audio.PlaySfx("cancel"); }
-                    else { GameEvents.RaiseToast(L.F("분해 완료 · 별조각 +{0:N0}", stars)); Game.Audio.PlaySfx("confirm"); }
+                    else { GameEvents.RaiseToast(L.F("분해 완료 · 별조각 +{0:N0} · 별의 결정 +{1:N0}", stars, crystals)); Game.Audio.PlaySfx("confirm"); }
                     Refresh();
                 });
             }, true);

@@ -183,7 +183,7 @@ namespace DotRPG
             {
                 bool warrior = data.Class == CharacterClass.Warrior;
                 float flat = data.BaseMaxHp + (warrior ? WarriorHpBonus : 0) + (Level - 1) * (HpPerLevel + (warrior ? WarriorHpPerLevel : 0)) + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
-                float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0) + data.CollectionHealth;
+                float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0) + data.CollectionHealth + data.CodexHealth;
                 return Mathf.Max(1, Mathf.RoundToInt(flat * (1f + inc / 100f) * CareerHp(Prog.Career)));
             }
         }
@@ -210,7 +210,9 @@ namespace DotRPG
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>
         public float ManaRegen => MaxMp * 0.05f * (1f + Sum(PassiveStat.ManaRegen) / 100f);
 
-        public int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + data.BuffDamage + data.CosmeticDamage;
+        public int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + data.BuffDamage + data.CosmeticDamage + Eq.DamageBonus;
+        /// <summary>[LEGEND] Damage multiplier against a boss from the worn gear (토벌형 legendary weapons).</summary>
+        public float BossMul => 1f + Eq.BossBonus / 100f;
 
         /// <summary>Class base damage + weapon/gear attack, before % increases (scaled for companions).</summary>
         float BaseAttack(CharacterClass cls)

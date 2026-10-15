@@ -5,9 +5,11 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sealedTable, type SealedData } from '../../gamedata/sealedBox';
+import { UNIQUE_BONUS } from '../dungeons/dungeonRules';
 import { translate } from '../../utils/i18n';
 import {
   BANNER_WEIGHT,
+  EXCHANGE_GOOD_BY_ID,
   GAUGE,
   GEAR_CEILING,
   GEAR_RARITY_NAME,
@@ -129,10 +131,11 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
   out.push(ko ? '| 등급 | 확률 |' : '| Grade | Rate |');
   out.push('|---|---|');
   for (const [r, w] of GEAR_RARITY_PERMILLE) out.push(`| ${gearRarity(r)} | ${pct((w * 100) / GEAR_RATE_SCALE)} |`);
+  const gearGauge = EXCHANGE_GOOD_BY_ID.get('gear_gauge10') as { count: number; price: number; weekly: number };
   out.push(
     ko
-      ? `${TEN_COUNT}회 묶음의 보너스 1회도 같은 확률입니다. 내 직업이 쓸 수 있는 +0 장비가 나옵니다. 그 뽑기에 없는 등급의 몫은 있는 등급 중 가장 낮은 등급이 가지며(레전더리가 없으면 유니크), 같은 등급 안에서는 장비마다 같은 확률입니다. 천장: 세 장비 뽑기를 합쳐 ${GEAR_CEILING.max}회마다 ${gearRarity('Unique')} 장비 하나를 고릅니다(그 단계에 유니크가 없으면 가장 높은 등급).`
-      : `The bonus draw of the ${TEN_COUNT}-pack uses the same rates. Draws +0 gear your class can use. A grade missing from a draw passes its share to the lowest grade present (Unique when there is no Legendary); items within a grade share equally. Pity: every ${GEAR_CEILING.max} gear draws (all three combined) you pick one Unique item (the highest grade if that tier has no Unique).`,
+      ? `${TEN_COUNT}회 묶음의 보너스 1회도 같은 확률입니다. 내 직업이 쓸 수 있는 +0 장비가 나옵니다. 그 뽑기에 없는 등급의 몫은 있는 등급 중 가장 낮은 등급이 가지며(레전더리가 없으면 유니크), 같은 등급 안에서는 장비마다 같은 확률입니다. 천장: 세 장비 뽑기를 합쳐 ${GEAR_CEILING.max}회마다 ${gearRarity('Unique')} 장비 하나를 고릅니다(그 단계에 유니크가 없으면 가장 높은 등급). 별빛 교환소의 "장비 뽑기 천장 +${gearGauge.count}칸"(별의 결정 ${gearGauge.price}개, 주 ${gearGauge.weekly}회)은 이 천장 칸만 채우며 확률은 바꾸지 않습니다.`
+      : `The bonus draw of the ${TEN_COUNT}-pack uses the same rates. Draws +0 gear your class can use. A grade missing from a draw passes its share to the lowest grade present (Unique when there is no Legendary); items within a grade share equally. Pity: every ${GEAR_CEILING.max} gear draws (all three combined) you pick one Unique item (the highest grade if that tier has no Unique). The Starlight Exchange item "Gear pity +${gearGauge.count}" (${gearGauge.price} Star Crystals, ${gearGauge.weekly} per week) only fills this pity count and does not change any rate.`,
   );
 
   // ---- 봉인된 상자 ----
@@ -216,6 +219,13 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
       out.push(`| ${p.id} | ${itemName(p.materialItem)} x${p.price} | ${rates} |`);
     }
   }
+  // ---- 요일 던전 유니크 보너스(0043) ----
+  out.push(ko ? '## 요일 던전 유니크 보너스 (유료 재화 아님)' : '## Weekday Dungeon Unique Bonus (not paid currency)');
+  out.push(
+    ko
+      ? `요일 던전을 클리어할 때마다 ${UNIQUE_BONUS.chancePct}% 확률로 운 카드 한 장이 그 난이도 단계의 유니크 장비가 됩니다. 유니크 없이 ${UNIQUE_BONUS.pityRuns - 1}판이 지나면 ${UNIQUE_BONUS.pityRuns}판째에는 반드시 나오고, 나오면 다시 처음부터 셉니다. 유니크가 나올 때는 그 단계에서 아직 유니크를 가지지 않은 부위(무기·상의·하의·목걸이·반지 중 내 직업이 쓸 수 있는 것)를 같은 확률로 먼저 고르고, 모두 가졌으면 전체에서 같은 확률로 고릅니다. 같은 부위 안에서는 장비마다 같은 확률입니다. 일반 던전·레이드·소탕에는 적용하지 않습니다.`
+      : `Each weekday dungeon clear has a ${UNIQUE_BONUS.chancePct}% chance to turn one luck card into a Unique piece of that difficulty's gear tier. After ${UNIQUE_BONUS.pityRuns - 1} clears without one, the ${UNIQUE_BONUS.pityRuns}th clear always gives one, and the count starts over. The slot is picked evenly among the slots (weapon, top, bottom, necklace, ring usable by your class) where you have no Unique of that tier yet, or evenly among all of them if you have every slot; within a slot each piece is equally likely. Normal dungeons, raids and sweeps do not have this bonus.`,
+  );
   return out.join('\n\n').replace(/\n\n(\|)/g, '\n$1');
 }
 

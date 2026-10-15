@@ -47,9 +47,18 @@ namespace DotRPG
                 e.bg.raycastTarget = true;
                 e.icon = UIFactory.SharpIcon(e.bg.transform, "Icon", Color.white);
                 UIFactory.Place(e.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(42f, 42f));
-                e.title = Label(e.bg.transform, "Title", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -3f), new Vector2(GuideWidth - 84f, 20f));
-                e.body = Label(e.bg.transform, "Body", "", 13, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -22f), new Vector2(GuideWidth - 84f, 34f));
+                e.title = Label(e.bg.transform, "Title", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -3f), new Vector2(GuideWidth - 64f, 20f));
+                e.body = Label(e.bg.transform, "Body", "", 13, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -22f), new Vector2(GuideWidth - 64f, EntryHeight - 24f));
                 e.body.lineSpacing = 1f;
+                // [UI 2026-10-14] One line each: a long name or effect shrinks to fit instead of running into the next row.
+                foreach (var t in new[] { e.title, e.body })
+                {
+                    t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    t.verticalOverflow = VerticalWrapMode.Truncate;
+                    t.resizeTextForBestFit = true;
+                    t.resizeTextMinSize = 10;
+                    t.resizeTextMaxSize = t.fontSize;
+                }
                 var view = e;
                 var relay = e.bg.gameObject.AddComponent<PointerRelay>();
                 relay.onEnter = () => { hovered = view; mouse = true; };
@@ -74,6 +83,19 @@ namespace DotRPG
                 parts.Add(pct > 0 ? L.F("<color=#ff9f7a>MP 소모 +{0}%</color>", pct) : L.F("<color=#8fe28f>MP 소모 {0}%</color>", pct));
             }
             return string.Join(" · ", parts);
+        }
+
+        /// <summary>[UI] The equipped skills this support gem can go next to ("Q 회전 베기, W 파쇄 일격"), or empty.</summary>
+        static string FitsOn(Progression prog, SkillGem g)
+        {
+            var list = new List<string>();
+            for (int s = 0; s < SkillGems.Slots; s++)
+            {
+                var active = prog.IsSlotOpen(s) ? prog.Active(s) : null;
+                if (active == null) continue;
+                if (prog.OptionsFor(s, 1).Contains(g.id)) list.Add($"{Game.Input.GetBindingLabel(SkillGems.ActionFor(s))} {L.T(active.name)}");
+            }
+            return string.Join(", ", list);
         }
 
         /// <summary>The key a gem sits in right now ("Q 회전 베기"), or empty.</summary>
@@ -125,7 +147,7 @@ namespace DotRPG
                 string key = g.kind == GemKind.Active ? (g.IsUltimate ? L.T("각성") : L.F("{0}번", g.slot + 1)) + " · " : "";
                 e.title.text = $"<b>{L.T(g.name)}</b>  <size=13>{key}{state}</size>";
                 e.body.text = g.kind == GemKind.Support
-                    ? $"{GemEffect(g)}\n<color=#8c96a8>{L.T(g.tip)}</color>"
+                    ? $"{GemEffect(g)}\n<color=#8c96a8>{Short(L.T(g.tip), 40)}</color>"
                     : $"<color=#b8c4d8>{Short(L.T(g.description), 46)}</color>";
             }
         }
@@ -142,6 +164,8 @@ namespace DotRPG
             {
                 sb.Append(L.F("<b>{0}</b>  <color=#8fe28f>보조 젬</color>\n\n{1}\n\n<color=#ffe066>효과</color>  {2}\n", L.T(g.name), L.T(g.description), GemEffect(g)));
                 if (!string.IsNullOrEmpty(g.tip)) sb.Append(L.F("<color=#ffe066>추천</color>  {0}\n", L.T(g.tip)));
+                string fits = FitsOn(prog, g);
+                if (fits.Length > 0) sb.Append(L.F("<color=#ffe066>끼울 수 있는 스킬</color>  {0}\n", fits));
                 sb.Append(prog.IsUnlocked(g) ? L.T("\n<color=#8fe28f>사용 가능</color> · 스킬 옆 보조 칸을 클릭해 끼운다.") : L.F("\n<color=#ff9f43>Lv.{0}에 해금</color>", g.unlockLevel));
             }
             else

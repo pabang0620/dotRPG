@@ -10,6 +10,7 @@ import { getNow } from '../../utils/clock';
 import { logger } from '../../utils/logger';
 import * as holdsRepo from '../antiabuse/holdsRepository';
 import { creditPaid, reversePaid } from '../starshop/starWallet';
+import { reverseCrystalsForOrder } from '../starshop/crystalWallet';
 import { grantPassForOrder, revokePassForOrder } from '../starpass/starPassService';
 import * as repo from './paymentsRepository';
 import type { EventKind, FlagKind, OrderRow, OrderState } from './paymentsRepository';
@@ -401,6 +402,8 @@ async function reverseOrder(o: OrderRow, ctx: Ctx, kind: Reversal): Promise<void
         const rv = await reversePaid(client, { accountId: cur.account_id, orderId: cur.id, orderUuid: cur.uuid, kind: kind === 'chargeback' ? 'chargeback' : 'refund' });
         taken = rv.taken;
         owed = rv.owed;
+        // 0044: 그 주문의 별조각으로 뽑은 외형·장비를 분해해 받은 별의 결정도 걷는다(이미 쓴 몫은 결정 부채)
+        await reverseCrystalsForOrder(client, { accountId: cur.account_id, orderId: cur.id, orderUuid: cur.uuid, kind: kind === 'chargeback' ? 'chargeback' : 'refund' });
         await revokePassForOrder(client, cur, now); // 정기권이면 그 주문이 더한 기간을 뺀다
       }
       const partial = kind === 'partial';

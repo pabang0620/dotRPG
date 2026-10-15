@@ -113,7 +113,10 @@ namespace DotRPG
                 var target = col.GetComponentInParent<IDamageable>();
                 if (target != null && !(target is PlayerController))
                 {
-                    var info = new DamageInfo(damage, (Vector2)transform.position - direction, knockback, Team.Player, owner);
+                    int dealt = damage;
+                    if (target is EnemyController boss && boss.IsBoss && owner != null && owner.TryGetComponent<PlayerController>(out var caster) && caster.Data != null)
+                        dealt = Mathf.RoundToInt(damage * caster.Data.Stats.BossMul); // [LEGEND] 토벌형
+                    var info = new DamageInfo(dealt, (Vector2)transform.position - direction, knockback, Team.Player, owner);
                     bool landed = target.TakeDamage(info);
                     // Only the local player's hits shake the screen.
                     if (landed && owner != null && Game.Player != null && owner == Game.Player.gameObject) Game.Camera?.Shake(0.05f, 0.08f);

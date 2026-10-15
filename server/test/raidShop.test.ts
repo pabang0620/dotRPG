@@ -122,11 +122,14 @@ describe('22. 결과 규칙', () => {
     const m = await newHero(app, 'mage');
     await seedItem(w, 'mat_raid_king', 320, 'bag', 'character');
     await seedItem(m, 'mat_raid_grah', 100, 'bag', 'character');
+    // 2026-10-14 전설 무기 두 갈래(광역형 _l, 토벌형 _lb) 중 하나
     const a = await buy(w, 'king_legend_weapon');
-    expect(a.body.data).toMatchObject({ item_key: 'eq_sword_20_l', rarity: 'Legendary', material_left: 0 });
+    expect(a.body.data).toMatchObject({ rarity: 'Legendary', material_left: 0 });
+    expect(['eq_sword_20_l', 'eq_sword_20_lb']).toContain(a.body.data.item_key);
     const b = await buy(m, 'grah_legend_weapon');
-    expect(b.body.data).toMatchObject({ item_key: 'eq_staff_40_l', rarity: 'Legendary' });
-    expect(await countOf(m, 'eq_staff_40_l')).toBe(1);
+    expect(b.body.data).toMatchObject({ rarity: 'Legendary' });
+    expect(['eq_staff_40_l', 'eq_staff_40_lb']).toContain(b.body.data.item_key);
+    expect(await countOf(m, b.body.data.item_key)).toBe(1);
   });
 
   it('에픽+ 상품은 10만 회 표본에서 유니크 12% +-1%p이고 레전더리가 나오지 않는다', () => {

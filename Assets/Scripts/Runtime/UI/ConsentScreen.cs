@@ -66,7 +66,7 @@ namespace DotRPG
         {
             if (!All || busy) return;
             busy = true;
-            status.text = L.T("동의 내용을 저장하는 중...");
+            status.text = L.T("동의 내용을 보내는 중...");
             menu.Refresh();
             onAgree?.Invoke(r =>
             {
@@ -74,7 +74,7 @@ namespace DotRPG
                 if (!r.ok)
                 {
                     Game.Audio.PlaySfx("cancel");
-                    status.text = string.IsNullOrEmpty(r.message) ? L.T("저장하지 못했습니다. 다시 시도해 주세요.") : r.message;
+                    status.text = string.IsNullOrEmpty(r.message) ? L.T("보내지 못했습니다. 다시 시도해 주세요.") : r.message;
                     menu.Refresh();
                     return;
                 }

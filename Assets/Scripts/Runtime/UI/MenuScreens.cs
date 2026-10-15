@@ -182,9 +182,9 @@ namespace DotRPG
             if (!Application.isMobilePlatform) screen.menu.AddButton(L.T("키보드 설정"), () => ui.Push(ui.KeyBind));
             screen.menu.AddButton(L.T("도움말"), () => ui.Push(ui.Help)); // [E5]
             if (GameFlow.DemoSlots) // [DEMO] the flag is set from the command line before the UI is built
-                screen.menu.AddButton(L.T("캐릭터 변경"), () => ui.Confirm(L.T("다른 체험 캐릭터로 바꿀까요?\n진행 상황은 자동으로 저장됩니다."), () => Game.Flow.SwitchCharacter()));
-            screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?\n진행 상황은 자동으로 저장됩니다."), () => Game.Flow.ReturnToTitle()));
-            screen.menu.AddButton(L.T("게임 종료"), () => ui.Confirm(L.T("게임을 종료할까요?\n진행 상황은 자동으로 저장됩니다."), () => Game.Flow.QuitGame(), keepOpenOnYes: true));
+                screen.menu.AddButton(L.T("캐릭터 변경"), () => ui.Confirm(L.T("다른 체험 캐릭터로 바꿀까요?"), () => Game.Flow.SwitchCharacter()));
+            screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?"), () => Game.Flow.ReturnToTitle()));
+            screen.menu.AddButton(L.T("게임 종료"), () => ui.Confirm(L.T("게임을 종료할까요?"), () => Game.Flow.QuitGame(), keepOpenOnYes: true));
             screen.menu.OnCancel = () => Game.Flow.Resume();
             screen.FitPanel();
             return screen;
@@ -209,7 +209,7 @@ namespace DotRPG
             var root = CreateRoot(canvas, "Settings", true);
             var screen = root.gameObject.AddComponent<SettingsScreen>();
             screen.ui = ui;
-            string note = Application.isEditor ? L.T("에디터에서는 해상도/화면 모드가 빌드에서만 적용됩니다.") : L.T("변경 사항은 즉시 적용되고 자동 저장됩니다.");
+            string note = Application.isEditor ? L.T("에디터에서는 해상도/화면 모드가 빌드에서만 적용됩니다.") : L.T("변경 사항은 바로 적용됩니다.");
             screen.BuildPanel(root, L.T("설정"), 640, note, 16);
             var s = Game.Settings;
             var menu = screen.menu;
@@ -244,6 +244,7 @@ namespace DotRPG
             // [AUTO] 물약 자동 사용 and its thresholds (plain potions first, then greater ones).
             menu.AddOption(L.T("물약 자동 사용"), () => s.Data.autoPotion ? L.T("켜기") : L.T("끄기"), d => { s.Data.autoPotion = !s.Data.autoPotion; s.Apply(); });
             menu.AddOption(L.T("자동 체력 물약 기준"), () => L.F("HP {0}% 아래", s.Data.autoPotionHpPercent), d => { s.Data.autoPotionHpPercent = Mathf.Clamp(s.Data.autoPotionHpPercent + d * 5, 10, 90); s.Apply(); });
+            menu.AddOption(L.T("보조 젬 자동 장착"), () => s.Data.autoGem ? L.T("켜기") : L.T("끄기"), d => { s.Data.autoGem = !s.Data.autoGem; s.Apply(); });
             menu.AddOption(L.T("자동 마나 물약 기준"), () => L.F("MP {0}% 아래", s.Data.autoPotionMpPercent), d => { s.Data.autoPotionMpPercent = Mathf.Clamp(s.Data.autoPotionMpPercent + d * 5, 5, 90); s.Apply(); });
             // [I] Accessibility and keys.
             menu.AddOption(L.T("글자·UI 크기"), () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
@@ -350,9 +351,11 @@ namespace DotRPG
             screen.reviveHere = screen.menu.AddButton(ReviveCoins.FieldLabel, () => Game.Flow.ReviveHere(), () => !ReviveCoins.Busy); // [REVIVE] fields: always free
             ReviveCoins.Changed += screen.RefreshRevive;
             screen.menu.AddButton(L.T("마을에서 다시 일어나기"), () => Game.Flow.RespawnInVillage());
-            // [UX] Both drop the progress since the last save: ask first.
-            screen.menu.AddButton(L.T("마지막 저장 불러오기"), () => ui.Confirm(L.T("마지막 저장을 불러올까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ContinueGame()), () => Game.Saves.HasSave());
-            screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ReturnToTitle()));
+            // [2026-10-14] No "save" for the player any more (the server keeps everything): the local-save reload stays only
+            // for the dev trial slots, and going to the title loses nothing.
+            if (GameFlow.DemoSlots)
+                screen.menu.AddButton(L.T("마지막 저장 불러오기"), () => ui.Confirm(L.T("마지막 저장을 불러올까요?\n<size=18>마지막 저장 이후 진행은 사라집니다.</size>"), () => Game.Flow.ContinueGame()), () => Game.Saves.HasSave());
+            screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?"), () => Game.Flow.ReturnToTitle()));
             screen.FitPanel();
             return screen;
         }

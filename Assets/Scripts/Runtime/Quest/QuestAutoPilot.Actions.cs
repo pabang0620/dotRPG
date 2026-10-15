@@ -60,6 +60,8 @@ namespace DotRPG
                 return false;
             }
             if (Time.time < interactCooldown) return false;
+            // Behind an open window only walking and fighting go on: the talk (or use) waits until the window closes.
+            if (!Game.IsPlaying) { lastProgressAt = Time.time; return false; }
             interactCooldown = Time.time + 1.2f;
             input.next.aim = (point - p.Position).normalized;
             target.Interact(p);

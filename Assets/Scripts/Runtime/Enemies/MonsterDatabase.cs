@@ -53,6 +53,8 @@ namespace DotRPG
         Judgment,
         /// <summary>[RAID] 파동: gathers force, then throws everyone in the room to the walls (Docs/PLAN_BOSS_DIFFICULTY_2026-10-13.md G7).</summary>
         Repel,
+        /// <summary>[RAID] 섬멸: a room-wide blast; only cover behind a guardian's 거대 방패 or in the boss's safe circles helps.</summary>
+        Annihilate,
     }
 
     [System.Serializable]
@@ -151,6 +153,15 @@ namespace DotRPG
         /// <summary>[BALANCE 2026-10-14] Early game: monsters up to this level deal x0.25 damage and have x0.5 armor.</summary>
         public const int EarlyLevelMax = 20, EarlyDungeonLevelMax = 15;
         public const float EarlyDamageMul = 0.25f, EarlyArmorMul = 0.5f;
+        /// <summary>[BALANCE 2026-10-14] Share of the early cut (1 = full x0.25 damage / x0.5 armor). Dungeons: full up to
+        /// EarlyDungeonLevelMax, none above. Hunting grounds: full up to Lv15, then fading out over Lv16-20 (x0.40, 0.55, 0.70,
+        /// 0.85, 1.00 damage) so Lv16-20 grounds threaten again (at Lv18 a pack barely scratched a fighter and heals were idle).</summary>
+        public static float EarlyWeight(int level, bool inDungeon)
+        {
+            if (inDungeon) return level <= EarlyDungeonLevelMax ? 1f : 0f;
+            if (level <= EarlyDungeonLevelMax) return 1f;
+            return Mathf.Clamp01((EarlyLevelMax - level) / (float)(EarlyLevelMax - EarlyDungeonLevelMax));
+        }
 
         /// <summary>
         /// [BALANCE 2026-10-11] Hunting-ground monsters only (not dungeons, raids or field bosses): HP becomes
@@ -265,9 +276,10 @@ namespace DotRPG
             // half the armor, so a new character is not walled by the first hunting grounds and dungeons (user request).
             // [2026-10-14] In dungeons the weakening stops after EarlyDungeonLevelMax (healers have something to do there).
             bool inDungeon = Game.Dungeon != null && Game.Dungeon.InRun;
-            bool early = level <= (inDungeon ? EarlyDungeonLevelMax : EarlyLevelMax) && !def.raid;
-            if (early) def.armor *= EarlyArmorMul;
-            stats.attackDamage = Mathf.Max(def.damage > 0 ? 1 : 0, Mathf.RoundToInt(def.damage * dmgMul * (1f + DamagePerLevel * (level - 1)) * (early ? EarlyDamageMul : 1f)));
+            float earlyK = def.raid ? 0f : EarlyWeight(level, inDungeon); // 1 = the full early cut, 0 = none
+            bool early = earlyK > 0f;
+            if (early) def.armor *= Mathf.Lerp(1f, EarlyArmorMul, earlyK);
+            stats.attackDamage = Mathf.Max(def.damage > 0 ? 1 : 0, Mathf.RoundToInt(def.damage * dmgMul * (1f + DamagePerLevel * (level - 1)) * (early ? Mathf.Lerp(1f, EarlyDamageMul, earlyK) : 1f)));
             stats.hurtStunTime = def.hurtTime;
             stats.invulnerableTime = def.invulnerable;
             stats.knockbackSpeed = def.knockbackSpeed;
@@ -442,6 +454,8 @@ namespace DotRPG
                 new BossPattern(PatternKind.Donut, 12f, 1.5f, minPhase: 3),
                 new BossPattern(PatternKind.Judgment, 35f, 8f, minPhase: 3, weight: 0f));
             king.raid = true;
+            // [RAID] 섬멸 from phase 2: ~90% (2.6 x a 35% hit) of a mage of the raid's level when not in cover (enrage does not raise it).
+            king.patterns.Add(new BossPattern(PatternKind.Annihilate, 22f, 2.6f, minPhase: 2));
             king.size = 2.4f;
             king.groggyMax = 500f;
             king.phases = new[] { 0.7f, 0.35f };
@@ -449,7 +463,7 @@ namespace DotRPG
             Add(king);
 
             // [RAID] Chapter 1 final raid boss: the black-iron commander who burned the village.
-            var bargas = Boss("boss_bargas", L.T("흑철의 바르가스"), C(58, 56, 70), hp: 4200, dmg: 30, lines: 48, speed: 2.4f,
+            var bargas = Boss("boss_bargas", L.T("흑철의 바르가스"), C(58, 56, 70), hp: 4200, dmg: 45, /* [2026-10-14] x1.5: ~35-45% of a mage per hit */ lines: 48, speed: 2.4f,
                 new BossPattern(PatternKind.Slash3, 4f, 0.9f, 3, maxRange: 3.6f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 5.5f, 1.2f, weight: 1.2f),
                 new BossPattern(PatternKind.Guard, 9f, 1.4f, minPhase: 1),
@@ -459,6 +473,8 @@ namespace DotRPG
             bargas.look = Look("bargas", C(58, 56, 70)); // generated frames Art/char_bargas_* (same as the cutscene actor)
             bargas.artScale = 1.4f;
             bargas.raid = true;
+            // [RAID] 섬멸 from phase 2: ~90% of a mage of the raid's level when not in cover (enrage does not raise it).
+            bargas.patterns.Add(new BossPattern(PatternKind.Annihilate, 22f, 2.6f, minPhase: 2));
             bargas.size = 2.3f;
             bargas.groggyMax = 560f;
             bargas.phases = new[] { 0.66f, 0.33f };
@@ -466,7 +482,7 @@ namespace DotRPG
             Add(bargas);
 
             // [RAID] Chapter 2 raid bosses (existing bodies recoloured until their own art).
-            var golem = Boss("boss_rock_golem", L.T("바위 심장 골렘"), C(150, 132, 112), hp: 5200, dmg: 32, lines: 52, speed: 1.6f,
+            var golem = Boss("boss_rock_golem", L.T("바위 심장 골렘"), C(150, 132, 112), hp: 5200, dmg: 48, /* [2026-10-14] x1.5 */ lines: 52, speed: 1.6f,
                 new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 7f, 1.5f),
                 new BossPattern(PatternKind.GoldRain, 9f, 1.2f, 6, minPhase: 1),
@@ -475,11 +491,13 @@ namespace DotRPG
             golem.look = Look("boss_rock_golem", C(150, 132, 112)); // generated frames Art/char_boss_rock_golem_*
             golem.artScale = 1.0f;
             golem.raid = true;
+            // [RAID] 섬멸 from phase 2: ~90% of a mage of the raid's level when not in cover (enrage does not raise it).
+            golem.patterns.Add(new BossPattern(PatternKind.Annihilate, 22f, 2.1f, minPhase: 2));
             golem.size = 2.6f;
             golem.groggyMax = 700f;
             golem.phases = new[] { 0.6f, 0.3f };
             Add(golem);
-            var grah = Boss("boss_grah", L.T("수호자 그라흐"), C(124, 98, 150), hp: 6400, dmg: 34, lines: 60, speed: 2.3f,
+            var grah = Boss("boss_grah", L.T("수호자 그라흐"), C(124, 98, 150), hp: 6400, dmg: 51, /* [2026-10-14] x1.5 */ lines: 60, speed: 2.3f,
                 new BossPattern(PatternKind.Slash3, 4f, 0.9f, 3, maxRange: 3.6f, weight: 1.5f),
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 12, minPhase: 1),
                 new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),
@@ -490,6 +508,8 @@ namespace DotRPG
             grah.look = Look("grah", C(124, 98, 150)); // generated frames Art/char_grah_* (same as the cutscene actor)
             grah.artScale = 1.4f;
             grah.raid = true;
+            // [RAID] 섬멸 from phase 2: ~90% of a mage of the raid's level when not in cover (enrage does not raise it).
+            grah.patterns.Add(new BossPattern(PatternKind.Annihilate, 22f, 2.2f, minPhase: 2));
             grah.size = 2.4f;
             grah.groggyMax = 720f;
             grah.phases = new[] { 0.7f, 0.4f, 0.15f };

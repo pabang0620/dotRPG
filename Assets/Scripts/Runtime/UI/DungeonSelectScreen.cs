@@ -18,6 +18,7 @@ namespace DotRPG
     {
         const float ListW = 380f, RowH = 96f, RowGap = 8f, DetailX = 392f, DetailW = 828f, PanelTop = -52f, PanelH = 540f;
         const float DiffW = 150f, DiffH = 46f, DiffGap = 12f;
+        const float TabW = 200f;
         const float RaidDiffX = 520f, RaidDiffW = 110f; // [RAID] 레이드 / 영웅 buttons on the schedule line
 
         sealed class Row
@@ -54,10 +55,15 @@ namespace DotRPG
         public static DungeonSelectScreen Create(Transform canvas)
         {
             var w = CreateWindow<DungeonSelectScreen>(canvas, "DungeonSelect", L.T("던전"), "menuicon_dungeon");
-            w.tabWeekday = Button(w.content, "TabWeekday", L.T("요일던전"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(170f, 44f), () => w.SetTab(TabWeekday), 22);
-            w.tabNormal = Button(w.content, "TabNormal", L.T("일반 던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(TabNormal), 22);
-            w.tabRaid = Button(w.content, "TabRaid", L.T("레이드"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(360f, 0f), new Vector2(170f, 44f), () => w.SetTab(TabRaid), 22);
-            w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(DetailW, 44f), TextAnchor.MiddleRight);
+            // [UX 2026-10-14] Three kinds, told apart at a glance: the tab says what the kind is (요일 = today's dungeon with
+            // daily entries, 일반 = every day without limit, 레이드), the rows and the detail title carry the same badge.
+            w.tabWeekday = Button(w.content, "TabWeekday", L.T("요일 던전"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(TabW, 44f), () => w.SetTab(TabWeekday), 20);
+            w.tabNormal = Button(w.content, "TabNormal", L.T("일반 던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(TabW + 10f, 0f), new Vector2(TabW, 44f), () => w.SetTab(TabNormal), 20);
+            w.tabRaid = Button(w.content, "TabRaid", L.T("레이드"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(2f * (TabW + 10f), 0f), new Vector2(TabW - 40f, 44f), () => w.SetTab(TabRaid), 20);
+            w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(ContentSize.x - (3f * TabW - 10f) - 16f, 44f), TextAnchor.MiddleRight);
+            w.dayText.resizeTextForBestFit = true;
+            w.dayText.resizeTextMinSize = 12;
+            w.dayText.resizeTextMaxSize = 18;
 
             w.listRoot = UIFactory.Place(UIFactory.Rect(w.content, "List"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, PanelTop), new Vector2(ListW, PanelH));
 
@@ -81,8 +87,13 @@ namespace DotRPG
             w.recommend = Label(d, "Recommend", "", 17, tl, tl, new Vector2(24f, -246f), new Vector2(380f, 46f));
             w.partyText = Label(d, "Party", "", 17, tl, tl, new Vector2(420f, -246f), new Vector2(220f, 46f));
             w.partyButton = Button(d, "PartyButton", L.T("파티 편성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -246f), new Vector2(150f, 44f),
-                () => { PartyScreen.ReturnTo = w; Game.Flow.OpenWindow(Game.UI.Party); }, 18);
+                () => PartyHub.Open(null, w), 18);
             w.rewards = Label(d, "Rewards", "", 17, tl, tl, new Vector2(24f, -300f), new Vector2(780f, 26f));
+            w.rewards.resizeTextForBestFit = true; // [UNIQUE] one line: the unique bonus shrinks it instead of running into the slots
+            w.rewards.resizeTextMinSize = 11;
+            w.rewards.resizeTextMaxSize = 17;
+            w.rewards.horizontalOverflow = HorizontalWrapMode.Wrap;
+            w.rewards.verticalOverflow = VerticalWrapMode.Truncate;
             for (int i = 0; i < SlotCount; i++)
             {
                 var frame = Panel(d, "Slot" + i, tl, tl, new Vector2(24f + i * SlotW, -330f), new Vector2(SlotIcon + 8f, SlotIcon + 8f), new Color32(14, 20, 32, 255));
@@ -156,6 +167,12 @@ namespace DotRPG
             }
         }
 
+        /// <summary>[UX] The kind of a dungeon as a small coloured tag: 요일 던전 (orange), 일반 던전 (green), 레이드 (red).</summary>
+        static string KindBadge(DungeonDef d) =>
+            d.isRaid ? L.T("<size=16><color=#ff7a6b>[레이드]</color></size>")
+            : d.always ? L.T("<size=16><color=#8fe28f>[일반 던전]</color></size>")
+            : L.T("<size=16><color=#ffb347>[요일 던전]</color></size>");
+
         void BuildRows()
         {
             foreach (var r in rows) Destroy(r.bg.gameObject);
@@ -180,7 +197,7 @@ namespace DotRPG
                 r.text.resizeTextMaxSize = r.text.fontSize;
                 r.text.verticalOverflow = VerticalWrapMode.Truncate;
                 r.text.rectTransform.sizeDelta = new Vector2(ListW - 30f - 96f, r.text.rectTransform.sizeDelta.y); // clear of the tag (top-right)
-                r.tag = Label(r.bg.transform, "Tag", "", 17, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-12f, -10f), new Vector2(110f, 28f), TextAnchor.UpperRight);
+                r.tag = Label(r.bg.transform, "Tag", "", 17, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-12f, -10f), new Vector2(110f, 56f), TextAnchor.UpperRight);
                 rows.Add(r);
             }
         }
@@ -202,10 +219,12 @@ namespace DotRPG
             tabWeekday.image.sprite = UiTheme.Tab(tab == TabWeekday);
             tabNormal.image.sprite = UiTheme.Tab(tab == TabNormal);
             tabRaid.image.sprite = UiTheme.Tab(raidTab);
+            TextOf(tabWeekday).text = L.F("요일 던전 <size=15><color=#ffe066>{0}/{1}</color></size>", progress.EntriesLeft(now), DungeonDatabase.DailyEntries);
+            TextOf(tabNormal).text = L.T("일반 던전 <size=15><color=#8fe28f>무제한</color></size>");
             var day = ResetClock.GameDay(now);
             string weekend = day == DayOfWeek.Saturday || day == DayOfWeek.Sunday ? L.T("  <color=#8fe28f>주말: 모든 요일던전 개방</color>") : "";
             dayText.text = tab == TabNormal
-                ? L.T("<color=#8fe28f>매일 개방</color>   <color=#b8c4d8>입장 횟수 제한 없음 · 퀘스트와 사냥터 사이 성장용</color>")
+                ? L.T("<color=#8fe28f>일반 던전: 매일 개방 · 입장 횟수 제한 없음</color>   <color=#b8c4d8>사냥 대신 도는 성장용</color>")
                 : raidTab
                 ? L.F("오늘 <color=#ffe066>{0}</color>   봉인 열쇠 조각 <color=#ffe066>{1}</color> <color=#b8c4d8>(중간 레이드 보상)</color>   <color=#b8c4d8>초기화 매일 06:00 · 주간 목 06:00</color>", L.T(DungeonDatabase.DayName(day)), Game.Session.Inventory.Count(DungeonDatabase.SealKey))
                 : L.F("오늘 <color=#ffe066>{0}</color>{1}   남은 입장 <color=#ffe066>{2}/{3}</color>   <color=#b8c4d8>초기화 06:00</color>", L.T(DungeonDatabase.DayName(day)), weekend, progress.EntriesLeft(now), DungeonDatabase.DailyEntries);
@@ -222,7 +241,7 @@ namespace DotRPG
                 string lv = r.def.isRaid ? $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel} · "
                     : $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel}~{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Hero).recommendedLevel} · ";
                 r.text.text = $"<size=24><b><color={nameColor}>{L.T(r.def.name)}</color></b></size>\n<color=#b8c4d8>{lv}{L.T(r.def.themeName)} · {L.T(DungeonDatabase.OpenDaysLabel(r.def))}</color>\n<size=15><color=#ffe066>{L.T(r.def.specialty)}</color></size>";
-                r.tag.text = r.def.always ? L.T("<color=#8fe28f><b>매일</b></color>") : open ? L.T("<color=#8fe28f><b>오늘 개방</b></color>") : L.T("<color=#8c96a8>닫힘</color>");
+                r.tag.text = KindBadge(r.def) + "\n" + (r.def.always ? L.T("<color=#8fe28f><b>매일</b></color>") : open ? L.T("<color=#8fe28f><b>오늘 개방</b></color>") : L.T("<color=#8c96a8>닫힘</color>"));
                 // Open today: a warm glow on the row so it reads as the one to play.
                 if (open && !sel) r.bg.color = new Color32(34, 58, 52, 245);
             }
@@ -234,7 +253,7 @@ namespace DotRPG
             var numbers = DungeonDatabase.DifficultyFor(def, difficulty);
             banner.sprite = Game.Art.Get("banner_" + def.id);
             banner.enabled = banner.sprite != null;
-            title.text = $"<b>{L.T(def.name)}</b>  <size=20><color=#b8c4d8>{L.T(def.themeName)}</color></size>";
+            title.text = $"{KindBadge(def)}  <b>{L.T(def.name)}</b>  <size=20><color=#b8c4d8>{L.T(def.themeName)}</color></size>";
             desc.text = L.T(def.description);
             info.text = L.F("<color=#ffe066>보스</color> {0}    <color=#ffe066>특징 몬스터</color> {1}", L.T(def.bossName), L.T(def.featureMonster)) + "\n" +
                         L.F("<color=#b8c4d8>방 {0}개 (보스 포함) · 최대 {1}인 · 부활 1인 {2}회 (파티 {3}회)</color>", def.RoomCount, def.maxParty, numbers.revives, numbers.revives + DungeonDatabase.PartyReviveBonus);
@@ -310,6 +329,9 @@ namespace DotRPG
             }
             string cardRule = def.raidReward != null ? L.T("확정 골드 + 카드 4장 모두") : def.sure != null ? L.T("확정 재료 + 확정 골드 + 행운 카드 2장 모두") : L.T("카드 4장 중 1장");
             rewards.text = L.F("<color=#ffe066>보상</color>  {0}   <color=#b8c4d8>클리어 경험치 {1} (내 레벨 기준) + 랭크 보너스(SSS +50%)</color>", cardRule, Progression.XpPercent(DungeonRewards.ClearXp(def, numbers, DungeonRank.C), level));
+            // [UNIQUE 0043] Weekday dungeons: the unique bonus and how many clears until one is guaranteed.
+            if (!def.isRaid && !def.always && def.sure != null && SweepClient.UniqueChancePct > 0)
+                rewards.text += "   " + L.F("<color=#ffb347>유니크 보너스</color>  클리어마다 {0}% · <color=#ffe066>유니크 보장까지 {1}판</color>", SweepClient.UniqueChancePct, SweepClient.UniquePityLeft);
             var list2 = DungeonRewards.Slots(def, numbers, cls);
             for (int i = 0; i < slots.Count; i++)
             {
@@ -430,7 +452,7 @@ namespace DotRPG
             // [UX] The mouse-only buttons get keys too: 1 / Y 소탕 (weekday dungeons online), 2 / L3 파티 편성.
             else if (input.UseItemPressed && sweepButton != null && sweepButton.gameObject.activeInHierarchy) OpenSweep();
             else if (input.UseItemPressed && raidShopButton != null && raidShopButton.gameObject.activeInHierarchy) OpenRaidShop();
-            else if (input.UseManaPressed) { Game.Audio.PlaySfx("select"); PartyScreen.ReturnTo = this; Game.Flow.OpenWindow(Game.UI.Party); }
+            else if (input.UseManaPressed) { Game.Audio.PlaySfx("select"); PartyHub.Open(null, this); }
         }
 
         void ShowRareChances()

@@ -119,6 +119,10 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('dungeon_runs', `character_id ${CHR}`),
   keepOwn('dungeon_sweeps', `character_id ${CHR}`),
   keepOwn('dungeon_entry_resets', `character_id ${CHR}`),
+  keepOwn('dungeon_unique_pity', `character_id ${CHR}`),
+  keepOwn('gacha_gear_credits', `character_id ${CHR}`),
+  keepOwn('exchange_purchases', `account_id ${ACC}`),
+  keepOwn('gear_codex', `account_id ${ACC}`),
   keepOwn('account_consents', `account_id ${ACC}`, '정책 동의 기록(0037): 분쟁 근거라 익명화 때 남기고 보관 기한에 계정과 함께 파기'),
   keepOwn('sweep_ticket_ledger', `account_id ${ACC} OR character_id ${CHR}`),
   keepOwn('sweep_ticket_lots', `account_id ${ACC}`),
@@ -233,6 +237,10 @@ export const POLICY: PolicyEntry[] = [
   { table: 'parties', t1: 'keep', t2: 'destroy_shared', destroyWhere: `leader_character_id ${CHR}` },
   sched('relay_room_stats', '계정 무관(방 단위 집계). 기존 90일 일정'),
   // ---------- 10.3 결제 (자식 -> 부모) ----------
+  keepOwn('crystal_spend_allocs', `ledger_id IN (SELECT id FROM crystal_ledger WHERE account_id ${ACC}) OR order_id IN (SELECT id FROM star_orders WHERE account_id ${ACC})`),
+  keepOwn('crystal_ledger', `account_id ${ACC}`),
+  keepOwn('crystal_paid_lots', `account_id ${ACC}`),
+  keepOwn('crystal_wallets', `account_id ${ACC}`),
   keepOwn('star_spend_allocs', `ledger_id IN (SELECT id FROM star_ledger WHERE account_id ${ACC}) OR order_id IN (SELECT id FROM star_orders WHERE account_id ${ACC})`),
   keepOwn('star_ledger', `account_id ${ACC}`),
   keepOwn('star_paid_lots', `account_id ${ACC}`),
@@ -257,7 +265,7 @@ export const POLICY: PolicyEntry[] = [
 
 /** 파기 순서(자식 -> 부모, FK 기준). destroyWhere 가 있는 모든 표가 여기 한 번씩 있어야 한다(테스트가 확인) */
 export const DESTROY_ORDER: string[] = [
-  'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'dungeon_entry_resets', 'sweep_ticket_ledger',
+  'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'dungeon_entry_resets', 'dungeon_unique_pity', 'gacha_gear_credits', 'exchange_purchases', 'gear_codex', 'sweep_ticket_ledger',
   'sweep_ticket_lots', 'dungeon_runs', 'revive_log', 'character_achievements', 'character_career', 'character_career_trials',
   'character_chests', 'character_enhance_pity', 'character_state', 'quest_claims', 'daily_quests',
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'star_pass_daily', 'star_pass_grants', 'account_star_pass', 'account_pass_claims',
@@ -266,7 +274,7 @@ export const DESTROY_ORDER: string[] = [
   'trade_items', 'trades',
   'auction_flags', 'auction_sinks', 'mail_attachments', 'mail_campaign_deliveries', 'mails', 'auction_trade_flags', 'auction_trades',
   'auction_bids', 'auction_listings', 'friendships', 'blocks', 'report_lines', 'reports', 'party_applications', 'party_members',
-  'party_invites', 'field_session_members', 'party_run_host_reports', 'party_runs', 'field_sessions', 'parties', 'star_spend_allocs',
+  'party_invites', 'field_session_members', 'party_run_host_reports', 'party_runs', 'field_sessions', 'parties', 'crystal_spend_allocs', 'crystal_ledger', 'crystal_paid_lots', 'crystal_wallets', 'star_spend_allocs',
   'star_ledger', 'star_paid_lots', 'star_order_events', 'payment_flags', 'star_admin_grants', 'star_orders', 'star_wallets',
   'payment_profiles', 'account_consents',
 ];

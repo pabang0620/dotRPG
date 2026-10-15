@@ -41,6 +41,9 @@ namespace DotRPG
         /// <summary>The server has sweeping switched off (503 FEATURE_DISABLED) or is older than phase 10.</summary>
         public static bool Unavailable { get; private set; }
         public static int TicketsTotal { get; private set; }
+        /// <summary>[UNIQUE 0043] Weekday dungeon unique bonus: chance per clear and clears until one is guaranteed (0 = unknown).</summary>
+        public static int UniqueChancePct { get; private set; }
+        public static int UniquePityLeft { get; private set; }
         public static int TicketsNormal { get; private set; }
         public static readonly List<(int count, string expiresAt)> EventTickets = new List<(int, string)>();
         public static int EntriesLeft { get; private set; }
@@ -81,6 +84,8 @@ namespace DotRPG
             if (shop != null) ReadShop(shop);
             var weekly = MiniJson.Obj(d, "weekly_activity");
             if (weekly != null) ReadWeekly(weekly);
+            var pity = MiniJson.Obj(d, "unique_pity");
+            if (pity != null) { UniqueChancePct = MiniJson.Int(pity, "chance_pct"); UniquePityLeft = MiniJson.Int(pity, "left"); }
             slots.Clear();
             // Every clear on the server (raids and normal dungeons too): unlocks the next difficulty and the heroic raid
             // even when the clear never reached this PC (party runs, settled later, another PC).

@@ -67,6 +67,44 @@ namespace DotRPG
             yield return Hold(.6f, CharacterAnim.Attack);
         }
 
+        public const float AnnihilateCast = 3.5f, AnnihilateSafeRadius = 1.4f;
+
+        /// <summary>
+        /// [RAID] 섬멸: a long cast that hits the whole room for most of a mage's HP. Cover is a guardian's 거대 방패 (강철의 보루:
+        /// the boss's line of fire is cut by the shield) or one of the two teal safe circles the boss leaves open, so a party
+        /// without a guardian still has a way out. Invulnerability (dash, 1 s guard) also avoids it.
+        /// </summary>
+        IEnumerator Annihilate(BossPattern p)
+        {
+            float cast = AnnihilateCast * (Enraged ? .9f : 1f);
+            string line = L.T("섬멸! 방패 뒤나 빛의 원 안으로 숨으세요!");
+            RaidSeal.ShowLine(E, line);
+            RaidSeal.RaiseLine(E, line);
+            Track(Telegraph.Warning(E, E.Position, 13f * Scale, cast));
+            float first = NextFloat(0f, Mathf.PI * 2f);
+            for (int i = 0; i < 2; i++)
+            {
+                float a = first + i * Mathf.PI * NextFloat(.7f, 1.3f), r = NextFloat(3.5f, 5.5f) * Scale;
+                Track(Telegraph.SafeCircle(E, FreeNear(E.Position + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r), AnnihilateSafeRadius, cast + .3f));
+            }
+            SafeCover.BeginAnnihilate(E.Position, cast + .3f);
+            Game.Audio.PlaySfx("enemy_windup");
+            yield return Hold(cast, CharacterAnim.Attack, true);
+            Game.Audio.PlaySfx("rock_break");
+            Game.Camera?.Shake(.4f, .45f);
+            SkillVisuals.Flash(E.Center, new Color(1f, .45f, .3f, .85f), 14f, .35f);
+            // The same blast in every phase: enrage only makes it come sooner, not hit harder (numbers in MonsterDatabase).
+            int damage = E.MonsterDamage(p.damageMul / DamageMul);
+            foreach (var m in MonsterHits.All())
+            {
+                if (m == null || m.IsDead || m.Health.IsInvulnerable || CareerCombat.For(m).InvulnerableLeft > 0f) continue;
+                if (SafeCover.Shelters(E.Position, m)) continue;
+                MonsterHits.Apply(new[] { m }, damage, E.Position, 9f, true, E.gameObject);
+            }
+            SafeCover.EndAnnihilate();
+            yield return Hold(.6f, CharacterAnim.Attack);
+        }
+
         IEnumerator Slam(BossPattern p, float radius)
         {
             Track(Telegraph.Circle(E, E.Position, radius * Scale, 1.0f, E.MonsterDamage(p.damageMul), 9f));

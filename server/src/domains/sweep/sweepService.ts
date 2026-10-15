@@ -17,7 +17,8 @@ import * as holdsRepo from '../antiabuse/holdsRepository';
 import { assertActionPresence } from '../antiabuse/killPresence';
 import * as charRepo from '../characters/characterRepository';
 import * as dungeonRepo from '../dungeons/dungeonRepository';
-import { diffOf, isOpenToday, RANK_NAMES, type DiffNumbers } from '../dungeons/dungeonRules';
+import { pityLeft, readMisses } from '../dungeons/uniquePity';
+import { diffOf, isOpenToday, RANK_NAMES, UNIQUE_BONUS, type DiffNumbers } from '../dungeons/dungeonRules';
 import type { EconCtx } from '../economy/economyContext';
 import { AnomalyError, runEconomy, type EconResult, type StoredResult } from '../economy/economyService';
 import * as repo from './sweepRepository';
@@ -104,6 +105,8 @@ export async function sweepStatus(accountId: number, characterUuid: string) {
     hold: hold !== null,
     // 모든 던전·레이드의 클리어 기록(다음 난이도·영웅 레이드 해금을 클라이언트가 서버 기록으로 맞춘다)
     clears: clears.map((r) => ({ dungeon_id: r.dungeon_id, difficulty: r.difficulty, best_rank: Number(r.best_rank) })),
+    // 요일 던전 유니크 보너스(0043): 판당 확률과 보장까지 남은 판 수
+    unique_pity: { chance_pct: UNIQUE_BONUS.chancePct, guarantee_runs: UNIQUE_BONUS.pityRuns, left: pityLeft(await readMisses(db, c.id)) },
     dungeons: [...eco.dungeons.byId.values()]
       .filter((d) => !d.isRaid && !d.always)
       .map((d) => ({

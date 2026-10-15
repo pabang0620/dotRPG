@@ -18,6 +18,10 @@ import { AnomalyError } from '../economy/economyService';
 import { attackCap } from '../kills/killRules';
 import * as econRepo from '../economy/economyRepository';
 import { settleResult } from './dungeonResult';
+import { createSystemMail } from '../mail/mailRepository';
+import { afterCommit } from '../../db/pool';
+import { getNotifier } from '../chat/realtimeNotifier';
+import { parseItemKey } from '../../utils/itemKey';
 import { reportPartyResult } from '../partyruns/partySettle';
 import type { EnterBody, PickBody, ResultBody } from './dungeonValidation';
 
@@ -244,6 +248,7 @@ async function flipCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
     throw new AppError(409, '이미 받은 카드입니다.', 'CARD_ALREADY_FLIPPED', { index, card, taken: takenIndexes(run) });
   }
   await grantRaidCard(ctx, run, index);
+  await announceRareDrop(ctx, run, card);
   const taken = takenIndexes({ ...run, cards_taken: run.cards_taken | bit });
   return {
     status: 200,
@@ -256,6 +261,27 @@ async function flipCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
       delta: ctx.delta(),
     },
   };
+}
+
+/** 2026-10-14: 파티 판에서 유니크·레전더리 장비 카드를 뒤집으면 다른 파티원 화면에도 한 줄 알린다 */
+async function announceRareDrop(ctx: EconCtx, run: dungeonRepo.RunRow, card: { item_key: string; count: number }): Promise<void> {
+  if (run.party_run_id === null) return;
+  const parsed = parseItemKey(card.item_key);
+  const eco = getGameData().economy;
+  const gear = parsed ? eco.shop.equipmentList.find((e) => e.id === parsed.base) : undefined;
+  if (!gear || (gear.rarity !== 'Unique' && gear.rarity !== 'Legendary')) return;
+  const name = eco.items.get(gear.id)?.name ?? gear.id;
+  const r = await ctx.client.query<{ uuid: string; me: boolean; name: string }>(
+    `SELECT c.uuid, c.id = $2 AS me, c.name FROM party_run_members m JOIN characters c ON c.id = m.character_id
+      WHERE m.party_run_id = $1`,
+    [run.party_run_id, ctx.char.id],
+  );
+  const who = r.rows.find((x) => x.me)?.name ?? '';
+  const lvl = parsed && parsed.level > 0 ? ` +${parsed.level}` : '';
+  const text = `[파티] ${who}: ${name}${lvl} 획득!`;
+  afterCommit(ctx.client, () => {
+    for (const row of r.rows) if (!row.me) getNotifier().systemLine(row.uuid, text);
+  });
 }
 
 /** take_all 카드 한 장 지급 + 받음 표시(원장 ref = 판 uuid:카드번호) */
@@ -278,6 +304,56 @@ async function grantCard(ctx: EconCtx, run: dungeonRepo.RunRow, index: number) {
   return card;
 }
 
+// ---------- 받지 않은 카드는 우편으로 (2026-10-14) ----------
+
+const REWARD_MAIL_DAYS = 30;
+
+/** 카드 한 장을 시스템 우편(보상)으로 보낸다. 골드 카드는 골드 우편 */
+async function sendCardMail(ctx: EconCtx, card: { item_key: string; count: number }): Promise<void> {
+  const now = ctx.now;
+  const expiresAt = new Date(now.getTime() + REWARD_MAIL_DAYS * 86_400_000);
+  if (card.item_key === 'gold') {
+    await createSystemMail(ctx.client, { characterId: ctx.char.id, systemCode: 'compensation', gold: card.count, item: null, now, expiresAt, requestId: randomUUID() });
+    return;
+  }
+  const base = card.item_key.split('+')[0] as string;
+  const bind = getGameData().economy.items.get(base)?.bind ?? 'none';
+  await createSystemMail(ctx.client, {
+    characterId: ctx.char.id,
+    systemCode: 'compensation',
+    gold: 0,
+    item: { itemKey: card.item_key, count: card.count, bind },
+    now,
+    expiresAt,
+    requestId: randomUUID(),
+  });
+}
+
+/**
+ * 클리어 판에서 아직 받지 않은 카드를 우편으로 보낸다(take_all은 남은 전부, pick_one은 무작위 한 장). 보낸 카드 번호를 돌려준다.
+ * 받음 표시를 먼저 해서(조건부 UPDATE) 같은 카드가 두 번 나가지 않는다
+ */
+export async function mailUnclaimedCards(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<number[]> {
+  const cards = run.cards ?? [];
+  const sent: number[] = [];
+  if (run.state !== 'cleared' || cards.length === 0) return sent;
+  if (run.cards_mode === 'take_all') {
+    for (let i = 0; i < cards.length; i++) {
+      if ((run.cards_taken & (1 << i)) !== 0) continue;
+      if (!(await dungeonRepo.takeCard(ctx.client, run.id, 1 << i, ctx.now))) continue;
+      await sendCardMail(ctx, cards[i] as { item_key: string; count: number });
+      sent.push(i);
+    }
+    return sent;
+  }
+  if (run.card_picked !== null) return sent;
+  const i = getRng().int(0, cards.length);
+  await dungeonRepo.setCardPicked(ctx.client, run.id, i, ctx.now);
+  await sendCardMail(ctx, cards[i] as { item_key: string; count: number });
+  sent.push(i);
+  return sent;
+}
+
 // ---------- 서버 틱: 고르지 않은 카드 ----------
 
 /**
@@ -298,18 +374,8 @@ export async function runCardAutoPickTick(): Promise<void> {
       handler: async (ctx) => {
         const run = await dungeonRepo.findRunByUuid(ctx.client, ctx.char.id, row.uuid);
         if (!run || run.state !== 'cleared' || !run.cards || run.cards.length === 0) return { status: 200, data: { result: 'none' } };
-        if (run.cards_mode === 'take_all') {
-          const granted: number[] = [];
-          for (let i = 0; i < run.cards.length; i++) {
-            if ((run.cards_taken & (1 << i)) !== 0) continue;
-            await grantRaidCard(ctx, run, i);
-            granted.push(i);
-          }
-          return { status: 200, data: { granted } };
-        }
-        if (run.card_picked !== null) return { status: 200, data: { result: 'none' } };
-        const card = await grantCard(ctx, run, getRng().int(0, run.cards.length));
-        return { status: 200, data: { card } };
+        // 2026-10-14: 가방에 몰래 넣지 않고 우편으로 보내 플레이어가 받은 것을 알 수 있게 한다
+        return { status: 200, data: { mailed: await mailUnclaimedCards(ctx, run) } };
       },
     });
   }

@@ -20,7 +20,7 @@ namespace DotRPG
     {
         public const float SnapshotInterval = 0.1f, StateInterval = 0.05f, HelloInterval = 0.5f;
         /// <summary>[8] Byte layout version of these messages; both sides of a room must match (relay hello, Hello).</summary>
-        public const int WireVersion = 9; // 9: worn aura on the member card // 8: host telegraph and monster projectile visuals in snapshots
+        public const int WireVersion = 10; // 10: telegraph flags (safe zones) // 9: worn aura on the member card // 8: host telegraph and monster projectile visuals in snapshots
 
         /// <summary>[8] The relay server made this PC the host (the session takes over the fight).</summary>
         public static event Action PromotedToHost;

@@ -23,7 +23,20 @@ namespace DotRPG
         const float WarningBottom = Bottom + BarBlockHeight + 4f; // 262
         // [2026-10-14] The bar sits at the top centre now (at the bottom the boss's patterns hid it): Top from the top edge,
         // the GROGGY line and the warning hang below it.
-        const float Top = 14f, WarningTop = Top + BarBlockHeight + 4f;
+        const float Top = 14f;
+        // At large UI sizes the canvas is narrow (985 wide at 1.3) and a top-centre bar would reach the top-left HUD blocks
+        // (party status / currency, right edge HudLeftReach, bottom HudLeftBottom): then the bar drops below them.
+        const float HudLeftReach = 396f, HudLeftBottom = 214f;
+        float barTop = Top;
+        float WarningTop => barTop + BarBlockHeight + 4f;
+
+        /// <summary>The bar's distance from the top edge for the current canvas width.</summary>
+        float BarTopFor(RectTransform canvas)
+        {
+            float width = canvas != null ? canvas.rect.width : 1280f;
+            float left = width * 0.5f - (Width + 24f) * 0.5f;
+            return left < HudLeftReach ? HudLeftBottom : Top;
+        }
         const float LagHold = 0.35f, LagSpeed = 0.9f;
         const float IntroTime = 2.6f, WarningTime = 2.2f;
         // [UI] "In the fight": the player within this range of the boss, or the boss lost HP this recently (a field boss
@@ -237,6 +250,13 @@ namespace DotRPG
         void Update()
         {
             float now = Time.unscaledTime;
+            float want = BarTopFor(root.parent as RectTransform);
+            if (!Mathf.Approximately(want, barTop))
+            {
+                barTop = want;
+                root.anchoredPosition = new Vector2(0f, -barTop);
+                if (!warning.gameObject.activeSelf) warning.anchoredPosition = new Vector2(0f, -WarningTop);
+            }
             UpdateBanners(now);
             if (Current == null)
             {

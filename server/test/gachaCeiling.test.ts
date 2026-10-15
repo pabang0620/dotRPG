@@ -92,7 +92,7 @@ describe('장비 뽑기 천장', () => {
     expect(s.body.data.gear_ceiling).toMatchObject({ gauge: 1, max: 300 });
   });
 
-  it('가득 차면 고른 유니크 장비 1개, 표에 없는 장비·잠긴 단계는 거절', async () => {
+  it('가득 차면 고른 유니크 장비 1개, 표에 없는 장비는 거절, 내 레벨 위 단계도 고를 수 있다', async () => {
     const pl = await newPlayer(app);
     const choices = gearCeilingChoices('weapon', 'warrior', 0);
     expect(choices.length).toBeGreaterThan(0);
@@ -103,8 +103,9 @@ describe('장비 뽑기 천장', () => {
     const wrong = await gearCeiling(pl, { banner: 'weapon', item_id: 'potion_hp_hi' });
     expect(wrong.body.errors.code).toBe('CLAIM_NOT_ALLOWED');
     getRateLimitStore().clear();
-    const locked = await gearCeiling(pl, { banner: 'weapon', item_id: choices[0], tier: 7 });
-    expect(locked.body.errors.code).toBe('GACHA_TIER_LOCKED');
+    // 2026-10-14: 단계 잠금이 없다. Lv1 캐릭터가 Lv40 단계를 골라도 잠김이 아니라 그 단계 표로 판정한다(다른 단계 장비라 거절)
+    const otherTier = await gearCeiling(pl, { banner: 'weapon', item_id: choices[0], tier: 7 });
+    expect(otherTier.body.errors.code).toBe('CLAIM_NOT_ALLOWED');
     getRateLimitStore().clear();
     const ok = await gearCeiling(pl, { banner: 'weapon', item_id: choices[0] });
     expect(ok.status).toBe(200);

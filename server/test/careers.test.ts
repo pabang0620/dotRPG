@@ -50,7 +50,7 @@ describe('career invariants',()=>{
   expect(skill('g_taunt').radius).toBeCloseTo(10.5,5);
   expect(skill('g_bash').range).toBeCloseTo(2.2);
   expect(skill('m_storm').hits).toBe(5);expect(skill('m_storm').radius).toBeCloseTo(4.5,5);
-  expect(skill('b_heal').radius).toBeCloseTo(7.5,5);
+  expect(skill('b_heal').radius).toBeCloseTo(3,5); // 2026-10-14: 가까운 아군만(7.5 -> 3)
   expect(skill('b_bloom')).toMatchObject({duration:6,hits:6});
   expect(skill('b_awake')).toMatchObject({duration:12,hits:12});
   const active=skills.filter((s:{kind:number})=>s.kind!==0);

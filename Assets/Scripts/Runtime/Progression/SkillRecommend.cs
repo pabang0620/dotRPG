@@ -81,9 +81,39 @@ namespace DotRPG
             return (learned, placed);
         }
 
-        /// <summary>Empty support sockets of open keys: 피해 증가 first, then 범위 확대 (효율 if that is not open yet).</summary>
-        static void FillSupports(Progression p)
+        // ---------- [2026-10-14] Auto-socket support gems ----------
+        static Progression watched;
+        static bool filling;
+
+        /// <summary>
+        /// Watches the local character: whenever a support gem or a socket becomes available (level up, new key), empty
+        /// sockets of the equipped skills get the best fitting support gem. Gems the player placed are never moved.
+        /// </summary>
+        public static void Watch(Progression p)
         {
+            if (p == null || p == watched) return;
+            if (watched != null) watched.Changed -= OnChanged;
+            watched = p;
+            p.Changed += OnChanged;
+            OnChanged();
+        }
+
+        static void OnChanged()
+        {
+            if (filling || watched == null || Game.Settings == null || !Game.Settings.Data.autoGem) return;
+            filling = true;
+            try
+            {
+                int n = FillSupports(watched);
+                if (n > 0) GameEvents.RaiseToast(L.F("보조 젬 {0}개를 빈 칸에 자동으로 끼웠습니다.", n));
+            }
+            finally { filling = false; }
+        }
+
+        /// <summary>Empty support sockets of open keys: 피해 증가 first, then 범위 확대 (효율 if that is not open yet). Returns how many it placed.</summary>
+        static int FillSupports(Progression p)
+        {
+            int placed = 0;
             string[] prefer = { "sup_dmg", "sup_aoe", "sup_eff" };
             for (int slot = 0; slot < SkillGems.Slots; slot++)
             {
@@ -93,9 +123,10 @@ namespace DotRPG
                     if (p.SlotGem(slot, socket) != null) continue;
                     var options = p.OptionsFor(slot, socket);
                     foreach (var id in prefer)
-                        if (options.Contains(id)) { p.SetGem(slot, socket, id); break; }
+                        if (options.Contains(id)) { p.SetGem(slot, socket, id); placed++; break; }
                 }
             }
+            return placed;
         }
 
         /// <summary>[DEV] Problems of the build at a level: points left while something is learnable, open keys left empty.</summary>

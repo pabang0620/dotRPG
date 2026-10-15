@@ -221,19 +221,19 @@ namespace DotRPG
                 if (other != action && InputReader.KeyboardKey(other) == key) swap = " · " + L.F("{0}와 키 교환", ActionName(other));
             InputReader.SetKeyboardKey(action, key); listening = null;
             dirty = InputReader.SaveKeyOverrides() != saved;
-            RefreshKeyboard(ActionName(action) + " → " + InputReader.KeyLabel(key) + swap + L.T(" (적용 버튼으로 저장)"));
+            RefreshKeyboard(ActionName(action) + " → " + InputReader.KeyLabel(key) + swap + L.T(" (적용 버튼으로 반영)"));
             Game.Audio.PlaySfx("select");
         }
-        public void ResetDraft() { InputReader.ResetKeyboardKeys(); listening = null; dirty = InputReader.SaveKeyOverrides() != saved; RefreshKeyboard(L.T("기본 배치로 돌아왔습니다. 적용하면 저장됩니다.")); }
+        public void ResetDraft() { InputReader.ResetKeyboardKeys(); listening = null; dirty = InputReader.SaveKeyOverrides() != saved; RefreshKeyboard(L.T("기본 배치로 돌아왔습니다. 적용하면 반영됩니다.")); }
         public void ApplyChanges()
         {
             listening = null; saved = InputReader.SaveKeyOverrides(); Game.Settings.Data.keyOverrides = saved;
-            Game.Settings.Save(); dirty = false; RefreshKeyboard(L.T("저장했습니다. 게임을 다시 실행해도 이 키 배치가 유지됩니다.")); Game.Audio.PlaySfx("confirm");
+            Game.Settings.Save(); dirty = false; RefreshKeyboard(L.T("적용했습니다. 게임을 다시 실행해도 이 키 배치가 유지됩니다.")); Game.Audio.PlaySfx("confirm");
         }
         void RefreshKeyboard(string message)
         {
             status.text = message;
-            dirtyLabel.text = dirty ? L.T("● 저장하지 않은 변경 사항 · 닫으면 취소됩니다") : L.T("저장된 키 배치");
+            dirtyLabel.text = dirty ? L.T("● 적용하지 않은 변경 사항 · 닫으면 취소됩니다") : L.T("적용된 키 배치");
             foreach (var key in keys)
             {
                 GameAction? assigned = null;

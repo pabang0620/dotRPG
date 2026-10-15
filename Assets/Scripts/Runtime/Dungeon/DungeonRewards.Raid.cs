@@ -54,16 +54,23 @@ namespace DotRPG
                 if (roll < w.weight) { rarity = w.rarity; break; }
                 roll -= w.weight;
             }
-            return FindRaidGear(cls, tier, category, rarity);
+            return FindRaidGear(cls, tier, category, rarity, rng);
         }
 
         /// <summary>The one piece of (tier, slot, class, grade) as a +0 key; a lower grade (down to Epic) if that one does not exist, else null.</summary>
-        public static string FindRaidGear(CharacterClass cls, int tier, EquipCategory category, ItemRarity rarity)
+        public static string FindRaidGear(CharacterClass cls, int tier, EquipCategory category, ItemRarity rarity, System.Random rng = null)
         {
             for (var r = rarity; r >= ItemRarity.Epic; r--)
+            {
+                // [LEGEND] Two legendary weapons per tier (광역형 / 토벌형): an even pick between them (same as the server).
+                var found = new List<EquipmentItem>();
                 foreach (var item in EquipmentDatabase.All)
                     if (!item.starter && !item.bossOnly && item.levelTier == tier && item.category == category && item.rarity == r && item.UsableBy(cls))
-                        return EquipmentDatabase.KeyFor(item.id, 0);
+                        found.Add(item);
+                if (found.Count == 0) continue;
+                var pick = found.Count > 1 && rng != null ? found[rng.Next(0, found.Count)] : found[0];
+                return EquipmentDatabase.KeyFor(pick.id, 0);
+            }
             return null;
         }
 

@@ -41,6 +41,9 @@ namespace DotRPG
         /// <summary>Unique skins come only from the selection gauge; everything else can also be exchanged.</summary>
         public bool GaugeOnly => IsSkin && Rarity == CosmeticRarity.Unique;
 
+        /// <summary>Starlight Exchange only: bought with Star Crystals, never drawn, synthesized or exchanged for Star Shards.</summary>
+        public bool ExchangeOnly => StarShopClient.ExchangeOnly.Contains(Id) || System.Array.IndexOf(CosmeticCatalog.ExchangeOnlyIds, Id) >= 0;
+
         /// <summary>The colour at a moment (legend auras animate; the rest stay still).</summary>
         public Color ColorAt(float time)
         {
@@ -82,6 +85,36 @@ namespace DotRPG
             new CosmeticProduct("aura_rainbow", L.T("무지개 오라"), new Color32(255, 255, 255, 220), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
             new CosmeticProduct("aura_gold", L.T("황금 오라"), new Color32(255, 210, 80, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
             new CosmeticProduct("aura_abyss", L.T("심연 오라"), new Color32(120, 80, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            // [2026-10-14] More auras (common 10, rare 10, epic 6).
+            new CosmeticProduct("aura_mint", L.T("민트빛 오라"), new Color32(150, 245, 210, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_peach", L.T("복숭아빛 오라"), new Color32(255, 190, 160, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_lemon", L.T("레몬빛 오라"), new Color32(250, 240, 120, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_lilac", L.T("라일락빛 오라"), new Color32(205, 170, 250, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_sea", L.T("바닷빛 오라"), new Color32(80, 170, 230, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_sand", L.T("모래빛 오라"), new Color32(225, 200, 150, 185), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_berry", L.T("산딸기빛 오라"), new Color32(230, 70, 120, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_moss", L.T("이끼빛 오라"), new Color32(140, 170, 80, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_cloud", L.T("구름빛 오라"), new Color32(235, 240, 255, 185), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_coral", L.T("산호빛 오라"), new Color32(255, 130, 110, 190), false, CosmeticRarity.Common),
+            new CosmeticProduct("aura_comet", L.T("혜성별 오라"), new Color32(160, 220, 255, 205)),
+            new CosmeticProduct("aura_aurora", L.T("극광별 오라"), new Color32(110, 255, 200, 205)),
+            new CosmeticProduct("aura_amber", L.T("호박별 오라"), new Color32(255, 175, 60, 205)),
+            new CosmeticProduct("aura_sapphire", L.T("사파이어별 오라"), new Color32(70, 110, 255, 205)),
+            new CosmeticProduct("aura_ruby", L.T("루비별 오라"), new Color32(230, 40, 70, 205)),
+            new CosmeticProduct("aura_pearl", L.T("진주별 오라"), new Color32(245, 235, 250, 205)),
+            new CosmeticProduct("aura_lavender", L.T("라벤더별 오라"), new Color32(180, 150, 255, 205)),
+            new CosmeticProduct("aura_ember", L.T("불씨별 오라"), new Color32(255, 110, 40, 205)),
+            new CosmeticProduct("aura_lagoon", L.T("석호별 오라"), new Color32(40, 200, 210, 205)),
+            new CosmeticProduct("aura_dusk", L.T("황혼별 오라"), new Color32(200, 110, 170, 205)),
+            new CosmeticProduct("aura_prism", L.T("프리즘 오라"), new Color32(255, 255, 255, 225), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
+            new CosmeticProduct("aura_starfall", L.T("유성우 오라"), new Color32(190, 210, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_sakura", L.T("벚꽃 오라"), new Color32(255, 160, 200, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_thunder", L.T("천둥 오라"), new Color32(255, 235, 90, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_deepsea", L.T("심해 오라"), new Color32(30, 120, 220, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_spectrum", L.T("스펙트럼 오라"), new Color32(255, 240, 250, 225), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
+            // Starlight Exchange only (Star Crystals).
+            new CosmeticProduct("aura_crystal", L.T("결정빛 오라"), new Color32(210, 180, 255, 230), false, CosmeticRarity.Epic, CosmeticEffect.Pulse),
+            new CosmeticProduct("aura_nova", L.T("신성 폭발 오라"), new Color32(255, 250, 230, 230), false, CosmeticRarity.Epic, CosmeticEffect.Rainbow),
             // Costume skins (SkinCatalog): common/rare skins (recoloured class body) fill the skin draw's lower tiers,
             // epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
             new CosmeticProduct("skin_w_sand", L.T("모래빛 여행복"), Color.white, false, CosmeticRarity.Common),
@@ -105,7 +138,54 @@ namespace DotRPG
             new CosmeticProduct("skin_moon", L.T("월광 검귀"), Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_starnight", L.T("성야의 마녀"), Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_crimson", L.T("홍염의 마녀"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_w_ranger", L.T("숲 순찰대복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_sailor", L.T("견습 선원복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_farmer", L.T("들녘 일꾼복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_scout", L.T("정찰병 가죽옷"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_miner", L.T("광산 작업복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_smith", L.T("대장간 앞치마"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_wanderer", L.T("방랑 검객 망토"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_bluecoat", L.T("청기사 견습복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_violet", L.T("보랏빛 결투복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_jade", L.T("비취 근위복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_scarlet", L.T("진홍 검무복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_frost", L.T("설원 순찰복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_sunguard", L.T("태양 기사단복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_shade", L.T("그림자 자객복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_valkyrie", L.T("발키리 갑주"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_w_snowblade", L.T("백설 무사"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_w_dragonscale", L.T("용비늘 갑주"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_w_roseknight", L.T("장미 기사"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_w_phoenix", L.T("불사조 성기사"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_w_aurora", L.T("오로라 여제"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_w_voidblade", L.T("심연의 검성"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_m_lavender", L.T("라벤더 후드 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_student", L.T("마법학교 교복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_herbalist", L.T("약초꾼 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_tea", L.T("찻잎 견습 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_snowcloak", L.T("눈송이 망토"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_autumn", L.T("가을 낙엽 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_dusk", L.T("밤하늘 견습 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_sky", L.T("하늘빛 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_cherry", L.T("벚꽃 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_mint", L.T("민트 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_amber", L.T("호박빛 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_ocean", L.T("바다 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_lilac", L.T("라일락 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_candy", L.T("사탕 마녀"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_m_moonshrine", L.T("달빛 무녀"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_storm", L.T("뇌운의 마녀"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_sakura", L.T("벚꽃 무녀"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_frostprincess", L.T("서리 공주"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_celestial", L.T("천공의 대마녀"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_m_flameempress", L.T("화염 여제"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_m_dream", L.T("몽환의 마녀"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_w_starwarden", L.T("별빛 수호 기사"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_starsage", L.T("별의 현자"), Color.white, false, CosmeticRarity.Epic),
         });
+
+        /// <summary>Exchange-only cosmetics (server starshopDefs exchangeOnly), known before the server answers.</summary>
+        public static readonly string[] ExchangeOnlyIds = { "aura_crystal", "aura_nova", "skin_w_starwarden", "skin_m_starsage" };
 
         public static CosmeticProduct Find(string id)
         {

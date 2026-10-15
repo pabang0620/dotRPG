@@ -92,6 +92,10 @@ namespace DotRPG
         static Color EdgeColor => UiTheme.ColorBlind ? new Color(1f, 1f, 1f, 0.95f) : new Color(1f, 0.32f, 0.26f, 0.95f);
         static Color FillColor => UiTheme.ColorBlind ? new Color(0.62f, 0.2f, 0.95f, 0.4f) : new Color(0.95f, 0.08f, 0.05f, 0.34f);
         static Color FlashColor => UiTheme.ColorBlind ? new Color(0.85f, 0.7f, 1f, 0.85f) : new Color(1f, 0.75f, 0.45f, 0.85f);
+        // [RAID] Safe zones (섬멸 cover) are teal so they never read as danger.
+        static readonly Color SafeEdge = new Color(0.45f, 1f, 0.9f, 0.95f), SafeFill = new Color(0.2f, 0.95f, 0.8f, 0.26f);
+        Color Edge => Safe ? SafeEdge : EdgeColor;
+        Color FillC => Safe ? SafeFill : FillColor;
         /// <summary>Telegraph textures are 64px = 4 world units across (rect: 16px = 1 unit, 9-sliced).</summary>
         const float TextureUnits = 4f;
         const float FlashTime = 0.22f;
@@ -116,6 +120,12 @@ namespace DotRPG
         public bool Resolved { get; private set; }
         public bool Cancelled { get; private set; }
         public EnemyController Owner { get; private set; }
+        /// <summary>[RAID] A safe zone (teal, never hits, companions are not told to leave it).</summary>
+        public bool Safe { get; private set; }
+        /// <summary>[RAID] The guide drawn behind a 거대 방패: only a picture, the wall's line of fire decides the cover.</summary>
+        public bool ShelterGuide { get; private set; }
+        /// <summary>[RAID] Not registered as a danger area (a whole-room blast where hiding, not stepping out, is the answer).</summary>
+        public bool NoDanger { get; private set; }
 
         public int damage;
         public float knockback = 7f;
@@ -132,6 +142,7 @@ namespace DotRPG
         internal void WriteVisual(System.IO.BinaryWriter w)
         {
             w.Write(visualId); w.Write((byte)Shape);
+            w.Write((byte)((Safe ? 1 : 0) | (ShelterGuide ? 2 : 0) | (NoDanger ? 4 : 0)));
             PartyWire.WriteVec(w, Origin); PartyWire.WriteVec(w, Direction);
             w.Write(Radius); w.Write(Inner); w.Write(Length); w.Write(Width); w.Write(Angle);
             w.Write(Windup); w.Write(Age);
@@ -140,6 +151,7 @@ namespace DotRPG
         internal static Telegraph ReadVisual(System.IO.BinaryReader r, Telegraph existing)
         {
             var shape = (TelegraphShape)r.ReadByte();
+            byte flags = r.ReadByte();
             var origin = PartyWire.ReadVec(r); var dir = PartyWire.ReadVec(r);
             float radius = r.ReadSingle(), inner = r.ReadSingle(), length = r.ReadSingle(), width = r.ReadSingle();
             float angle = r.ReadSingle(), windup = r.ReadSingle(), age = r.ReadSingle();
@@ -148,6 +160,7 @@ namespace DotRPG
             {
                 t = Create(null, shape, origin, dir, windup, 0, 0);
                 t.visualOnly = true;
+                t.Safe = (flags & 1) != 0; t.ShelterGuide = (flags & 2) != 0; t.NoDanger = (flags & 4) != 0;
                 t.Radius = radius; t.Inner = inner; t.Length = length; t.Width = width; t.Angle = angle;
                 t.Build();
                 Active.Remove(t); // remote warnings never influence host simulation or AI
@@ -196,6 +209,38 @@ namespace DotRPG
             return t;
         }
 
+        /// <summary>[RAID] A circle that only warns (the caller resolves the hit itself) and does not send companions away.</summary>
+        public static Telegraph Warning(EnemyController owner, Vector2 center, float radius, float windup)
+        {
+            var t = Create(owner, TelegraphShape.Circle, center, Vector2.right, windup, 0, 0f);
+            t.NoDanger = true;
+            t.Radius = radius;
+            t.Build();
+            return t;
+        }
+
+        /// <summary>[RAID] A teal safe circle that lasts <paramref name="seconds"/> (섬멸 cover when no guardian is there).</summary>
+        public static Telegraph SafeCircle(EnemyController owner, Vector2 center, float radius, float seconds)
+        {
+            var t = Create(owner, TelegraphShape.Circle, center, Vector2.right, seconds, 0, 0f);
+            t.Safe = true;
+            t.Radius = radius;
+            t.Build();
+            return t;
+        }
+
+        /// <summary>[RAID] The teal shelter guide behind a 거대 방패 (a picture only, see <see cref="ShelterGuide"/>).</summary>
+        public static Telegraph SafeRect(Vector2 origin, Vector2 dir, float length, float width, float seconds)
+        {
+            var t = Create(null, TelegraphShape.Rect, origin, dir, seconds, 0, 0f);
+            t.Safe = true;
+            t.ShelterGuide = true;
+            t.Length = length;
+            t.Width = width;
+            t.Build();
+            return t;
+        }
+
         static Telegraph Create(EnemyController owner, TelegraphShape shape, Vector2 origin, Vector2 dir, float windup, int damage, float knockback)
         {
             var go = new GameObject("Telegraph_" + shape);
@@ -225,8 +270,8 @@ namespace DotRPG
                     edgeKey = $"mon_tele_donut_{pct}"; fillKey = $"mon_tele_donutfill_{pct}"; break;
                 default: edgeKey = "mon_tele_ring"; fillKey = "mon_tele_disc"; break;
             }
-            fill = Part("Fill", fillKey, FillColor, Order);
-            edge = Part("Edge", edgeKey, EdgeColor, Order + 1);
+            fill = Part("Fill", fillKey, FillC, Order);
+            edge = Part("Edge", edgeKey, Edge, Order + 1);
             float rot = Mathf.Atan2(Direction.y, Direction.x) * Mathf.Rad2Deg;
             if (Shape == TelegraphShape.Rect)
             {
@@ -247,7 +292,7 @@ namespace DotRPG
                     fill.transform.rotation = edge.transform.rotation;
                 }
             }
-            if (!visualOnly) RegisterDanger();
+            if (!visualOnly && !Safe && !NoDanger) RegisterDanger();
             Apply();
         }
 
@@ -338,7 +383,7 @@ namespace DotRPG
             Active.Remove(this);
             // Drop the matching danger circles early.
             float now = Time.time;
-            CompanionBrain.DangerZones.RemoveAll(z => z.expiresAt <= now + Windup - Age + 0.2f && Contains(z.center));
+            if (!Safe && !NoDanger) CompanionBrain.DangerZones.RemoveAll(z => z.expiresAt <= now + Windup - Age + 0.2f && Contains(z.center));
             Destroy(gameObject);
         }
 
@@ -354,10 +399,10 @@ namespace DotRPG
             {
                 flashAge += Time.deltaTime;
                 float k = Mathf.Clamp01(flashAge / FlashTime);
-                var c = FlashColor;
+                var c = Safe ? SafeFill : FlashColor;
                 c.a *= 1f - k;
                 fill.color = c;
-                var e = EdgeColor;
+                var e = Edge;
                 e.a *= 1f - k;
                 edge.color = e;
                 if (k >= 1f) Destroy(gameObject);
@@ -376,6 +421,24 @@ namespace DotRPG
         void Apply()
         {
             float t = Progress;
+            if (Safe)
+            {
+                // A safe zone is shown whole from the start and breathes gently (no filling countdown).
+                float pulse = 0.8f + 0.2f * Mathf.Sin(Time.time * 4f);
+                if (Shape == TelegraphShape.Rect)
+                {
+                    fill.size = new Vector2(Length, Width);
+                    fill.transform.localPosition = (Vector3)(Direction * Length * 0.5f);
+                }
+                else
+                {
+                    float full = Radius * 2f / TextureUnits;
+                    fill.transform.localScale = new Vector3(full, full, 1f);
+                }
+                var sf = SafeFill; sf.a *= pulse; fill.color = sf;
+                var se = SafeEdge; se.a *= pulse; edge.color = se;
+                return;
+            }
             // Grows with an ease-out so the last moment is readable; the edge brightens as it fills.
             float g = 1f - (1f - t) * (1f - t);
             switch (Shape)
@@ -400,7 +463,7 @@ namespace DotRPG
                     break;
                 }
             }
-            var ec = Color.Lerp(EdgeColor, new Color(1f, 0.85f, 0.7f, 1f), t > 0.8f ? (Mathf.Sin(Time.time * 40f) * 0.5f + 0.5f) * 0.6f : 0f);
+            var ec = Color.Lerp(Edge, new Color(1f, 0.85f, 0.7f, 1f), t > 0.8f ? (Mathf.Sin(Time.time * 40f) * 0.5f + 0.5f) * 0.6f : 0f);
             edge.color = ec;
         }
 

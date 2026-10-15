@@ -55,7 +55,7 @@ const envSchema = z.object({
   RUN_STALE_SECONDS: posInt(3600),
   DUNGEON_ROOM_CLEAR_RATIO: z.coerce.number().gt(0).max(1).default(0.8),
   DUNGEON_CARD_TTL_HOURS: posInt(24),
-  DUNGEON_CARD_AUTO_PICK_MINUTES: posInt(10),
+  DUNGEON_CARD_AUTO_PICK_MINUTES: posInt(3), // 2026-10-14: 받지 않은 카드는 3분 뒤 우편으로
   // 4단계(파티) 속도 제한
   RATE_PARTY_LIST_PER_SEC: posInt(1),
   RATE_PARTY_POLL_PER_SEC: posInt(2),

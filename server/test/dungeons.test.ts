@@ -336,41 +336,53 @@ describe('POST /characters/:id/dungeon-runs/:run_id/result', () => {
     expect(again.body.errors.code).toBe('RUN_NOT_PLAYING');
   });
 
-  it('불가능한 결과는 held: 보스 방에 못 갔다, 너무 빠르다, 서버 경과보다 길다, 부활 초과', async () => {
-    const reasons = async (h: Hero, run: string): Promise<string> => {
-      const r = await getPool().query('SELECT state, hold_reason FROM dungeon_runs WHERE uuid = $1', [run]);
-      expect(r.rows[0].state).toBe('held');
-      return r.rows[0].hold_reason;
-    };
-    // 1) 방을 돌지 않고 클리어 보고
+  it('2026-10-14: 운영자 보류는 없다. 구조 위반·불가능한 화력만 보상 없이 닫고(rejected), 빠른 클리어·값 이상은 기록만 하고 정산한다', async () => {
+    const closed = async (run: string) =>
+      (await getPool().query('SELECT state, hold_reason, xp_granted FROM dungeon_runs WHERE uuid = $1', [run])).rows[0];
+    // 1) 방을 돌지 않고 클리어 보고: 보상 없이 닫힌다(held 아님)
     const a = await newHero(app);
     const idA = (await enter(a)).body.data.run.id as string;
     advance(100);
     const resA = await result(a, idA, { outcome: 'cleared', stats: stats() });
-    expect(resA.body.data).toEqual({ result: 'held' }); // 사유는 알리지 않는다
-    expect(await reasons(a, idA)).toContain('BOSS_ROOM_NOT_REACHED');
-    expect((await getPool().query('SELECT count(*)::int AS n FROM xp_ledger WHERE character_id = $1', [a.dbId])).rows[0].n).toBe(0);
-    const anomaly = await getPool().query("SELECT kind FROM anomaly_log WHERE character_id = $1", [a.dbId]);
-    expect(anomaly.rows).toEqual([{ kind: 'dungeon_result' }]);
+    expect(resA.body.data.result).toBe('rejected');
+    expect((await closed(idA)).state).toBe('failed');
+    expect((await closed(idA)).hold_reason).toContain('BOSS_ROOM_NOT_REACHED');
+    expect((await getPool().query("SELECT count(*)::int AS n FROM xp_ledger WHERE character_id = $1 AND reason = 'dungeon_clear'", [a.dbId])).rows[0].n).toBe(0);
+    expect((await getPool().query("SELECT kind FROM anomaly_log WHERE character_id = $1 AND kind = 'dungeon_result'", [a.dbId])).rows).toHaveLength(1);
 
-    // 2) 정상 진행 후 보고 시간이 너무 짧음(최소 클리어 시간 미만: 2026-10-14 기준 20초의 60% = 12초)
+    // 2) 정상 진행 후 아주 빠른 보고(쩔·고레벨): 정산된다, 기록만 남는다
     const b = await newHero(app);
     const idB = await playFullRun(b);
-    await result(b, idB, { outcome: 'cleared', stats: stats({ elapsed_ms: 8_000 }) });
-    expect(await reasons(b, idB)).toContain('TOO_FAST');
+    const resB = await result(b, idB, { outcome: 'cleared', stats: stats({ elapsed_ms: 8_000 }) });
+    expect(resB.body.data.result).toBe('cleared');
+    expect((await closed(idB)).state).toBe('cleared');
+    const soft = await getPool().query("SELECT detail FROM anomaly_log WHERE character_id = $1 AND kind = 'dungeon_result'", [b.dbId]);
+    expect(JSON.stringify(soft.rows)).toContain('TOO_FAST');
 
-    // 3) 서버가 잰 경과 시간보다 길게 보고
+    // 3) 서버 경과보다 길게 보고: 정산된다(시간 점수는 서버 기준)
     const c = await newHero(app);
     const idC = await playFullRun(c);
-    await result(c, idC, { outcome: 'cleared', stats: stats({ elapsed_ms: 900_000 }) });
-    expect(await reasons(c, idC)).toContain('TIME_OVER_SERVER');
+    expect((await result(c, idC, { outcome: 'cleared', stats: stats({ elapsed_ms: 900_000 }) })).body.data.result).toBe('cleared');
 
-    // 4) 난이도가 허용하는 부활 횟수 초과
+    // 4) 부활 초과: 정산하되 난이도 한도로 자른다
     const d = await newHero(app);
     const idD = await playFullRun(d);
-    await result(d, idD, { outcome: 'cleared', stats: stats({ revives_used: 6 }) });
-    expect(await reasons(d, idD)).toContain('REVIVES_OVER');
-    expect(await goldOf(d)).toBe(100);
+    expect((await result(d, idD, { outcome: 'cleared', stats: stats({ revives_used: 6 }) })).body.data.result).toBe('cleared');
+
+    // 5) 파티 화력 상한으로 불가능한 속도: 보상 없이 닫고 보류 목록에는 넣지 않는다
+    const e = await newHero(app);
+    const idE = await playFullRun(e);
+    await getPool().query('UPDATE dungeon_runs SET power_cap = 0.001 WHERE uuid = $1', [idE]);
+    const resE = await result(e, idE, { outcome: 'cleared', stats: stats() });
+    expect(resE.body.data.result).toBe('rejected');
+    expect((await closed(idE)).hold_reason).toContain('POWER');
+    expect((await getPool().query("SELECT count(*)::int AS n FROM dungeon_runs WHERE state = 'held'")).rows[0].n).toBe(0);
+
+    // 6) 쩔(화력이 큰 파티 상한)으로 아주 빠른 클리어: 통과
+    const f = await newHero(app);
+    const idF = await playFullRun(f);
+    await getPool().query('UPDATE dungeon_runs SET power_cap = 1000000 WHERE uuid = $1', [idF]);
+    expect((await result(f, idF, { outcome: 'cleared', stats: stats({ elapsed_ms: 5_000 }) })).body.data.result).toBe('cleared');
   });
 
   it('재전송: 같은 request_id는 같은 응답이고 경험치는 한 번만', async () => {

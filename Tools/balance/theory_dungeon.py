@@ -33,13 +33,13 @@ MDB = tc.MDB
 
 PARTY_HP = [float(x) for x in re.search(r"PartyHpScale = \{ ([^}]*) \}", DDB).group(1).replace("f", "").split(",")]
 DIFFS = []
-for m in re.finditer(r'id = DungeonDifficulty\.\w+, name = "([^"]+)", recommendedLevel = (\d+),.*?hpMul = ([0-9.]+)f, damageMul = ([0-9.]+)f,.*?monsterLevel = (\d+)', DDB):
+for m in re.finditer(r'id = DungeonDifficulty\.\w+, name = (?:L\.T\()?"([^"]+)"\)?, recommendedLevel = (\d+),.*?hpMul = ([0-9.]+)f, damageMul = ([0-9.]+)f,.*?monsterLevel = (\d+)', DDB):
     if m.group(1) == "레이드":
         continue
     DIFFS.append(dict(name=m.group(1), lv=int(m.group(2)), hp=float(m.group(3)), dmg=float(m.group(4)), mlv=int(m.group(5))))
 
 BOSS = {}
-for m in re.finditer(r'Boss\("(\w+)", "([^"]+)", [^,]+(?:\([^)]*\))?, hp: (\d+), dmg: (\d+)', MDB):
+for m in re.finditer(r'Boss\("(\w+)", (?:L\.T\()?"([^"]+)"\)?, [^,]+(?:\([^)]*\))?, hp: (\d+), dmg: (\d+)', MDB):
     BOSS[m.group(1)] = dict(name=m.group(2), hp=int(m.group(3)), dmg=int(m.group(4)))
 
 
@@ -48,7 +48,7 @@ def groups(text):
 
 
 DUNGEONS = []
-for d in re.finditer(r'new DungeonDef\s*\{\s*id = "(\w+)", name = "([^"]+)"(.*?)\n            \},', DDB, re.S):
+for d in re.finditer(r'new DungeonDef\s*\{\s*id = "(\w+)", name = (?:L\.T\()?"([^"]+)"\)?(.*?)\n            \},', DDB, re.S):
     body = d.group(3)
     rooms = [groups(r.group(1)) for r in re.finditer(r"Room\([^,]+,(.*?)\)\),?\n|Room\([^,]+,(.*?)\)\)", body)]
     rooms = [groups(r) for r in re.findall(r"Room\(MapRegistry\.\w+,((?:\s*new SpawnGroup\([^)]*\),?)+)\)", body)]
@@ -63,7 +63,7 @@ for d in re.finditer(r'static readonly DungeonDef (\w+) = new DungeonDef\s*\{(.*
         continue
     rooms = [groups(r) for r in re.findall(r"Room\(MapRegistry\.\w+,((?:\s*new SpawnGroup\([^)]*\),?)+)\)", body)]
     boss = re.search(r'Boss\(MapRegistry\.\w+, "(\w+)", "(\w+)", (\d+)\)', body)
-    RAIDS.append(dict(name=re.search(r'name = "([^"]+)"', body).group(1), lv=int(rn.group(1)), hp=float(rn.group(2)),
+    RAIDS.append(dict(name=re.search(r'name = (?:L\.T\()?"([^"]+)"', body).group(1), lv=int(rn.group(1)), hp=float(rn.group(2)),
                       dmg=float(rn.group(3)), mlv=int(rn.group(4)), rooms=rooms, boss=boss.group(1)))
 
 ORDER = ["파이터", "비숍", "메이지", "수호자"]

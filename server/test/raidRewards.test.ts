@@ -237,7 +237,7 @@ describe('10~13. 카드 뒤집기', () => {
 });
 
 describe('14. 자동 지급 틱', () => {
-  it('아무것도 안 받은 판은 4장 모두, 1번만 받은 판은 나머지 3장만, 두 번 돌려도 추가 지급이 없고, 이후 뒤집기는 409', async () => {
+  it('아무것도 안 받은 판은 4장 모두, 1번만 받은 판은 나머지 3장만 우편으로, 두 번 돌려도 추가 지급이 없고, 이후 뒤집기는 409', async () => {
     setClockOverride(() => new Date()); // 판 시각을 DB의 now()로 넣으므로 시계도 실제 시각으로 맞춘다
     const a = await raidHero();
     const b = await raidHero();
@@ -247,17 +247,21 @@ describe('14. 자동 지급 틱', () => {
     const runFresh = await clearedRun(fresh, { endedAgo: '1 minute' });
     expect((await pick(b, runB, 1)).status).toBe(200);
 
+    // 2026-10-14: 받지 않은 카드는 가방이 아니라 우편으로 간다(받은 카드를 플레이어가 알 수 있게)
+    const mailsOf = async (x: { dbId: number }) =>
+      Number(((await getPool().query("SELECT count(*) AS n FROM mails WHERE character_id = $1 AND kind = 'system' AND system_code = 'compensation'", [x.dbId])).rows[0] as { n: string }).n);
     await runCardAutoPickTick();
-    expect((await cardLedger(a)).map((x) => x.ref)).toEqual([0, 1, 2, 3].map((i) => `${runA}:${i}`));
-    expect((await cardLedger(b)).map((x) => x.ref)).toEqual([1, 0, 2, 3].map((i) => `${runB}:${i}`)); // 1번은 두 번 안 준다
+    expect((await cardLedger(a)).length).toBe(0);
+    expect((await cardLedger(b)).map((x) => x.ref)).toEqual([`${runB}:1`]); // 직접 뒤집은 1번만 가방으로
+    expect(await mailsOf(a)).toBe(4);
+    expect(await mailsOf(b)).toBe(3); // 1번은 두 번 안 준다
     expect(await runRow(runA)).toMatchObject({ cards_taken: 15 });
     expect(await runRow(runB)).toMatchObject({ cards_taken: 15 });
-    expect(await runRow(runFresh)).toMatchObject({ cards_taken: 0 }); // 10분이 안 지난 판은 그대로
+    expect(await runRow(runFresh)).toMatchObject({ cards_taken: 0 }); // 3분이 안 지난 판은 그대로
 
     await runCardAutoPickTick();
-    expect((await cardLedger(a)).length).toBe(4);
-    expect((await cardLedger(b)).length).toBe(4);
-    expect(await countOf(a, 'mat_raid_king')).toBe(6);
+    expect(await mailsOf(a)).toBe(4);
+    expect(await mailsOf(b)).toBe(3);
 
     const late = await pick(a, runA, 0);
     expect(late.status).toBe(409);
@@ -268,7 +272,7 @@ describe('14. 자동 지급 틱', () => {
 });
 
 describe('16. 보류 해제', () => {
-  it('해제된 레이드 판은 골드가 나가고 unpicked_runs에 take_all, remaining=4로 보인다', async () => {
+  it('해제된 레이드 판은 골드가 나가고 카드 4장은 우편으로 간다(2026-10-14)', async () => {
     const operator: TestAdmin = await makeAdmin('operator');
     const h = await raidHero();
     const held = await getPool().query<{ uuid: string }>(
@@ -284,11 +288,13 @@ describe('16. 보류 해제', () => {
     expect(rel.status).toBe(200);
     expect(rel.body.data).toMatchObject({ result: 'cleared', card_count: 4 });
     const row = await runRow(run);
-    expect(row).toMatchObject({ cards_mode: 'take_all', cards_taken: 0, state: 'cleared' });
+    expect(row).toMatchObject({ cards_mode: 'take_all', cards_taken: 15, state: 'cleared' });
     expect(row.raid_gold).toBeGreaterThanOrEqual((king().raidReward as { goldMin: number }).goldMin);
     expect(await goldOf(h)).toBeGreaterThanOrEqual(row.raid_gold);
     const list = await get(app, h, '/dungeons');
-    expect(list.body.data.unpicked_runs).toEqual([expect.objectContaining({ run_id: run, card_mode: 'take_all', remaining: 4 })]);
+    expect(list.body.data.unpicked_runs).toEqual([]);
+    const mails = await getPool().query("SELECT count(*)::int AS n FROM mails WHERE character_id = $1 AND kind = 'system' AND system_code = 'compensation'", [h.dbId]);
+    expect(mails.rows[0].n).toBe(4);
   });
 });
 

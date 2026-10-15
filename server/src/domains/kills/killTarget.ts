@@ -17,6 +17,8 @@ export interface FieldKillInfo {
   dropMul: number;
   /** 9단계: 하드 격차(몬스터 레벨 - 멤버 레벨 >= FIELD_CARRY_HARD_GAP): 경험치는 정확히 1, 기본 골드도 1 */
   hardXp: boolean;
+  /** 함께 사냥하는 사람 수 보너스(1.15 / 1.3 / 1.5, 없으면 1). 처치 경험치에 xpFactor와 따로 곱한다 */
+  partyBonus?: number;
 }
 
 export interface KillTarget {

@@ -6,7 +6,7 @@ import type { EconCtx } from '../economy/economyContext';
 import { fieldRefExists } from '../kills/killRepository';
 import { rejected, resolveFieldTarget, type KillTarget } from '../kills/killTarget';
 import * as repo from './fieldRepository';
-import { carryReferenceLevel, isHardGap, xpFactor } from './xpFactor';
+import { carryReferenceLevel, isHardGap, partySizeXpBonus, xpFactor } from './xpFactor';
 
 const invalid = () => new AppError(409, '필드 세션이 유효하지 않습니다.', 'FIELD_SESSION_INVALID');
 
@@ -59,6 +59,7 @@ export async function resolveSessionTarget(
   let factor: number | null = null;
   let dropMul = 1;
   let hardXp = false;
+  let partyBonus = 1;
   if (n >= 2) {
     factor = Math.round(xpFactor(carryLevel, ctx.level, fc) * fc.partyXpFactor * 1000) / 1000;
     // 호스트 관찰이 오래 끊긴 세션(고장 난 호스트 클라이언트가 게이트를 영구히 끄는 것을 막는다): 경험치 배율을 낮추고 한 번 기록한다
@@ -73,6 +74,8 @@ export async function resolveSessionTarget(
       hardXp = true;
       dropMul = fc.carryHardDropMul;
     }
+    // 인원 보너스는 경험치에만 따로 곱한다(xp_factor는 레벨 격차 감쇠만 담는다: kill_log CHECK <= 1). 관찰이 끊긴 세션과 하드 격차에는 주지 않는다
+    if (!hardXp && !lapsed) partyBonus = partySizeXpBonus(n);
   }
   // 4. 속도: 1초 창 한도를 세션 인원에 맞춘다
   const burst = cfg.policy.killBurstField + fc.killBurstPerExtra * Math.max(0, n - 1);
@@ -81,7 +84,7 @@ export async function resolveSessionTarget(
     burst,
     powerCap,
     nonHost,
-    field: { sessionId: session.id, monsterRef: monsterRef ?? null, xpFactor: factor, dropMul, hardXp },
+    field: { sessionId: session.id, monsterRef: monsterRef ?? null, xpFactor: factor, dropMul, hardXp, partyBonus },
     commit: async (c) => {
       await repo.addAccepted(c, session.id, ctx.char.id);
       await repo.touchSession(c, session.id, ctx.now);

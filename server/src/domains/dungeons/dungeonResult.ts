@@ -4,6 +4,7 @@ import { getConfig } from '../../config/env';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { getRng } from '../../utils/rng';
+import { applyUniqueBonus } from './uniquePity';
 import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
 import { effectiveHp, attackCap, powerAllows } from '../kills/killRules';
@@ -69,11 +70,16 @@ export async function runAttackCap(ctx: EconCtx, run: repo.RunRow): Promise<numb
   const eco = getGameData().economy;
   const pol = getConfig().policy;
   if (run.power_cap !== null) return run.power_cap * pol.partyPowerSlack;
-  return attackCap(eco, pol, ctx.level, await econRepo.listWornKeys(ctx.client, ctx.char.id));
+  // 스냅샷이 없는 판(옛 기록 등)도 AI 동료가 있으면 그 몫을 더한다(입장 때 스냅샷과 같은 식)
+  const own = attackCap(eco, pol, ctx.level, await econRepo.listWornKeys(ctx.client, ctx.char.id));
+  return run.ai_count > 0 ? own * (1 + run.ai_count * eco.dungeons.mercenary.damageScale) : own;
 }
 
 export interface ClearCheck {
+  /** 보상을 줄 수 없는 사유(구조 위반, 파티 화력으로 불가능한 속도). 비면 정상 정산 */
   reasons: string[];
+  /** 2026-10-14: 기록만 남기는 사유(빠른 클리어, 시간·콤보·부활 값 이상). 정산은 그대로 한다 */
+  soft: string[];
   /** 입장부터 보고까지 서버 경과(초) */
   serverElapsed: number;
   claimed: number;
@@ -87,21 +93,33 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
   const claimed = stats.elapsed_ms / 1000;
   const reasons: string[] = [];
 
+  // 2026-10-14: 파티 판은 파티 전원의 처치 기록을 합쳐 본다(한 사람의 PC가 처치 보고를 놓쳐도 클리어로 인정)
+  let roomIndex = run.room_index;
+  let roomKills = run.room_kills;
+  if (run.party_run_id !== null) {
+    roomKills = { ...run.room_kills };
+    for (const other of await repo.runsOfPartyRun(ctx.client, run.party_run_id)) {
+      roomIndex = Math.max(roomIndex, other.room_index);
+      for (const [k, v] of Object.entries(other.room_kills)) roomKills[k] = Math.max(roomKills[k] ?? 0, v);
+    }
+  }
   const bossRoom = dungeon.rooms[dungeon.bossRoom];
-  if (run.room_index !== dungeon.bossRoom || !bossRoom) reasons.push('BOSS_ROOM_NOT_REACHED');
+  if (roomIndex !== dungeon.bossRoom || !bossRoom) reasons.push('BOSS_ROOM_NOT_REACHED');
   else {
     for (const g of bossRoom.groups) {
-      if (g.isBoss && (run.room_kills[`${dungeon.bossRoom}:${g.monsterId}`] ?? 0) < g.count) reasons.push('BOSS_NOT_KILLED');
+      if (g.isBoss && (roomKills[`${dungeon.bossRoom}:${g.monsterId}`] ?? 0) < g.count) reasons.push('BOSS_NOT_KILLED');
     }
   }
   for (let i = 0; i < dungeon.bossRoom; i++) {
-    if (roomKillCount(run.room_kills, i) < roomTotal(dungeon, i) * pol.dungeonRoomClearRatio) {
+    if (roomKillCount(roomKills, i) < roomTotal(dungeon, i) * pol.dungeonRoomClearRatio) {
       reasons.push('ROOMS_NOT_CLEARED');
       break;
     }
   }
-  if (claimed > serverElapsed + ELAPSED_SLACK_SECONDS) reasons.push('TIME_OVER_SERVER');
-  if (claimed < minClearSeconds(run)) reasons.push('TOO_FAST');
+  // 2026-10-14 사용자 결정: 빠른 클리어(쩔 포함)는 운영자 확인 대기에 넣지 않는다. 판정은 아래 화력 검사 하나로 한다
+  const soft: string[] = [];
+  if (claimed > serverElapsed + ELAPSED_SLACK_SECONDS) soft.push('TIME_OVER_SERVER');
+  if (claimed < minClearSeconds(run)) soft.push('TOO_FAST');
 
   const kills = await killsOfRun(ctx.client, run.id);
   const hpMul = diff.hpMul * partyHpScaleOf(eco, run.humans, run.ai_count, dungeon.isRaid);
@@ -109,12 +127,49 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
     const def = eco.monsters.get(k.monster_id);
     return def ? effectiveHp(eco, def, k.monster_level, hpMul) : 0;
   });
-  if (!powerAllows(eco, pol, await runAttackCap(ctx, run), serverElapsed + ELAPSED_SLACK_SECONDS, hpList)) {
+  // 파티 전원의 화력 상한(판 스냅샷: 사람 상한 합 + AI 몫)으로 이 시간 안에 몬스터 체력 합을 깎을 수 있는지 본다.
+  // 여유 IMPLAUSIBLE_TOLERANCE배를 줘서 고레벨 쩔은 통과하고 명백히 불가능한 속도만 걸린다
+  if (!powerAllows(eco, pol, (await runAttackCap(ctx, run)) * IMPLAUSIBLE_TOLERANCE, serverElapsed + ELAPSED_SLACK_SECONDS, hpList)) {
     reasons.push('POWER');
   }
-  if (stats.revives_used > diff.revives) reasons.push('REVIVES_OVER');
-  if (stats.max_combo > claimed / eco.player.attackCooldown) reasons.push('COMBO_OVER');
-  return { reasons, serverElapsed, claimed };
+  if (stats.revives_used > diff.revives) soft.push('REVIVES_OVER');
+  if (stats.max_combo > claimed / eco.player.attackCooldown) soft.push('COMBO_OVER');
+  return { reasons, soft, serverElapsed, claimed };
+}
+
+/** 필요한 화력이 파티 상한의 이 배수를 넘어야 "불가능"으로 본다 */
+export const IMPLAUSIBLE_TOLERANCE = 1.5;
+
+/**
+ * 2026-10-14: 불가능한 클리어는 보류(운영자 확인 대기) 대신 보상 없이 바로 닫는다. 이상 기록만 남기고 관리자 대기열에는 넣지 않는다.
+ * 상태는 failed, 사유는 hold_reason 칸에 남긴다(held가 아니라서 관리자 보류 목록에 뜨지 않는다)
+ */
+export async function rejectClear(
+  ctx: EconCtx,
+  run: repo.RunRow,
+  stats: Record<string, unknown>,
+  reasons: string[],
+  at: Date,
+  anomalyKind: 'dungeon_result' | 'party_result' = 'dungeon_result',
+): Promise<{ status: number; data: Record<string, unknown> }> {
+  await repo.closeRun(ctx.client, run.id, {
+    state: 'failed',
+    endedAt: at,
+    stats,
+    rank: null,
+    score: null,
+    xpGranted: null,
+    holdReason: reasons.join(','),
+    cards: null,
+  });
+  await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, anomalyKind, 3, { run_id: run.uuid, reasons, rejected: true });
+  return { status: 200, data: { result: 'rejected', reasons } };
+}
+
+/** 기록만 남기는 사유가 있으면 이상 기록 한 줄(정산은 계속한다) */
+export async function logSoftReasons(ctx: EconCtx, run: repo.RunRow, soft: string[], anomalyKind: 'dungeon_result' | 'party_result' = 'dungeon_result'): Promise<void> {
+  if (soft.length === 0) return;
+  await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, anomalyKind, 1, { run_id: run.uuid, reasons: soft, settled: true });
 }
 
 /** 보류: 보상을 주지 않고 닫는다. 사유는 클라이언트에 알리지 않는다(관리자 도구 7단계가 검토한다) */
@@ -148,17 +203,19 @@ export async function holdRun(
  * 9단계: 사람 수는 같은 기기·같은 Steam 소유자를 한 사람으로 센 연결 요소 수이고, metBy가 주어지면(CONTRIBUTION_MODE=enforce)
  * 기여 충족 멤버가 한 명 이상 있는 요소만 센다(서 있기만 하는 부계정은 "다른 사람"이 아니다).
  */
-async function humansStanding(ctx: EconCtx, run: repo.RunRow, metBy: Map<number, boolean> | null): Promise<number> {
+async function humansStanding(ctx: EconCtx, run: repo.RunRow): Promise<number> {
   if (run.party_run_id === null) return run.humans;
+  // 2026-10-14: 판에 함께 들어가 실패·포기하지 않은 사람을 센다. 보고·정산 순서나 보류(held) 여부와 무관하다
+  // (먼저 정산하거나 보류에서 풀린 사람이 혼자로 세지던 문제). 바로 실패해 빠진 사람은 여전히 세지 않는다
   const r = await ctx.client.query<{ character_id: string; device_hash: string | null; steam_key: string | null; install_id: string | null }>(
-    `SELECT m.character_id, m.device_hash, m.steam_key, m.install_id FROM dungeon_runs d
-       JOIN party_run_members m ON m.dungeon_run_id = d.id
-      WHERE d.party_run_id = $1 AND d.state IN ('playing', 'reported', 'cleared')`,
+    `SELECT m.character_id, m.device_hash, m.steam_key, m.install_id FROM party_run_members m
+       JOIN dungeon_runs d ON d.id = m.dungeon_run_id
+      WHERE m.party_run_id = $1 AND m.state NOT IN ('invited', 'left', 'no_show', 'dropped')
+        AND d.state NOT IN ('failed', 'abandoned')`,
     [run.party_run_id],
   );
   const members = r.rows.map((x) => ({ characterId: Number(x.character_id), deviceHash: x.device_hash, steamKey: x.steam_key, installId: x.install_id }));
-  const groups = humanGroups(members);
-  return metBy ? groups.filter((g) => g.some((m) => metBy.get(m.characterId) === true)).length : groups.length;
+  return humanGroups(members).length;
 }
 
 /** 9단계: 파티 정산이 호스트 관찰로 계산한 이 멤버의 기여(5.3). metByCharacter는 같은 판 모든 멤버의 충족 여부(사람 수 판정용) */
@@ -213,19 +270,15 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   }
   // 판정 순서: ALREADY_CLAIMED(입장 때 미리 잠금) -> LOW_CONTRIBUTION -> TOO_FEW_HUMANS -> KEYS_MISSING -> 청구 INSERT.
   // 잠그면 기간당 1회 청구(raid_claims)가 소진되지 않는다
+  // 2026-10-14: 기여 부족은 기록만 한다(힐러·탱커가 딜이 적어도 보상을 받는다)
   if (contrib && !contrib.met && run.party_run_id !== null && reason !== 'ALREADY_CLAIMED') {
-    if (aa.mode === 'enforce') {
-      locked = true;
-      reason = 'LOW_CONTRIBUTION';
-    } else {
-      await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 1, { run_id: run.uuid, why: 'low_contribution_log', share: contrib.share, hits: contrib.hits });
-    }
+    await econRepo.insertAnomaly(ctx.client, ctx.char.accountId, ctx.char.id, 'contribution', 1, { run_id: run.uuid, why: 'low_contribution_log', share: contrib.share, hits: contrib.hits });
   }
   let keyGain = 0;
   let keyCost = 0;
   let coreGain = 0;
   if (dungeon.isRaid && !locked) {
-    if ((await humansStanding(ctx, run, aa.mode === 'enforce' ? (contrib?.metByCharacter ?? null) : null)) < pol.raidRewardMinHumans) {
+    if ((await humansStanding(ctx, run)) < pol.raidRewardMinHumans) {
       locked = true;
       reason = 'TOO_FEW_HUMANS';
     } else if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0 && (await ctx.stackCount('bag', eco.dungeons.keyItem)) < dungeon.keyCost) {
@@ -268,6 +321,8 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     } else {
       // 2026-10-14: 확정 재료 + 확정 골드 + 운 카드를 모두 받는다(take_all). sure가 없는 옛 데이터만 4장 중 1장
       cards = rollClearRewards(eco, dungeon, diff, ctx.char.class, getRng()) ?? rollCards(eco, dungeon, diff, ctx.char.class, getRng());
+      // 요일 던전 유니크 보너스(판당 22%, 7판 연속 실패 뒤 보장, 없는 부위 우선). 적용 대상이 아니면 그대로 돌려준다
+      cards = (await applyUniqueBonus(ctx.client, ctx.char.id, eco, dungeon, diff, ctx.char.class, cards, getRng())).cards;
     }
     if (dungeon.isRaid) {
       if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0) {
@@ -357,10 +412,12 @@ export async function settleResult(ctx: EconCtx, runUuid: string, body: ResultBo
   }
 
   const check = await validateClear(ctx, run, stats, ctx.now);
-  if (check.reasons.length > 0) {
-    await holdRun(ctx, run, { ...stats, server_elapsed_s: check.serverElapsed }, check.reasons, ctx.now);
-    return { status: 200, data: { result: 'held' } };
-  }
+  if (check.reasons.length > 0) return rejectClear(ctx, run, { ...stats, server_elapsed_s: check.serverElapsed }, check.reasons, ctx.now);
+  await logSoftReasons(ctx, run, check.soft);
+  // 값 이상은 정산 범위로 자른다(부활은 난이도 한도, 콤보는 시간당 최대)
+  const { eco: eco2, diff: diff2 } = runContext(run);
+  stats.revives_used = Math.min(stats.revives_used, diff2.revives);
+  stats.max_combo = Math.min(stats.max_combo, Math.floor(check.claimed / eco2.player.attackCooldown));
   // 시간 점수는 서버 시계 기준: 클라이언트 경과 시간이 서버 경과(로딩·연출 여유를 뺀 값)보다 짧으면 서버 값을 쓴다
   const scoredSeconds = Math.max(check.claimed, check.serverElapsed - getConfig().policy.dungeonTimeOverheadSeconds);
   return finalizeCleared(ctx, run, {

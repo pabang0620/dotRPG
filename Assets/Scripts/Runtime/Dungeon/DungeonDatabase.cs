@@ -201,8 +201,8 @@ namespace DotRPG
         {
             new DifficultyDef { id = DungeonDifficulty.Normal, name = L.T("일반"), recommendedLevel = 5, recommendedPower = 1500, hpMul = 1.0f, damageMul = 1.0f, rewardMul = 1.0f, monsterLevel = 0, revives = 5, minGearRarity = ItemRarity.Common, ticketWeight = 0, jackpotPerMille = 3 },
             new DifficultyDef { id = DungeonDifficulty.Adventure, name = L.T("모험"), recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.9f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
-            new DifficultyDef { id = DungeonDifficulty.King, name = L.T("왕"), recommendedLevel = 20, recommendedPower = 4200, hpMul = 4.8f, damageMul = 1.25f, rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
-            new DifficultyDef { id = DungeonDifficulty.Hero, name = L.T("영웅"), recommendedLevel = 27, recommendedPower = 6000, hpMul = 6.7f, damageMul = 1.6f, rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
+            new DifficultyDef { id = DungeonDifficulty.King, name = L.T("왕"), recommendedLevel = 20, recommendedPower = 4200, hpMul = 4.8f, damageMul = 2.0f, /* [2026-10-14] was 1.25: healers/potions must matter */ rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
+            new DifficultyDef { id = DungeonDifficulty.Hero, name = L.T("영웅"), recommendedLevel = 27, recommendedPower = 6000, hpMul = 6.7f, damageMul = 2.6f, /* [2026-10-14] was 1.6 */ rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
         };
 
         /// <summary>The raid has one difficulty of its own.</summary>

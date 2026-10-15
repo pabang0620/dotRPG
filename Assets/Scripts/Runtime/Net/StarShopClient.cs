@@ -154,6 +154,10 @@ namespace DotRPG
             Copies.Clear();
             Collections.Clear();
             CollectionAttack = CollectionHealth = 0;
+            Crystals = CrystalDebt = 0;
+            CodexCount = 0;
+            CodexHealth = 0f;
+            ExchangeLoaded = false;
             Changed?.Invoke();
         }
 
@@ -223,6 +227,7 @@ namespace DotRPG
                 ExchangePrice[id] = MiniJson.Int(o, "exchange_price");
             }
             ReadSynth(d);
+            ReadCrystal(d); // 0044: Star Crystals, exchange-only cosmetics, gear codex
             Loaded = true;
             Changed?.Invoke();
         }

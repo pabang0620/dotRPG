@@ -123,16 +123,16 @@ namespace DotRPG
             });
         }
 
-        /// <summary>Turns <paramref name="count"/> spares of one cosmetic into 별조각.</summary>
-        public static void DoDismantle(string itemId, int count, Action<bool, string, int> done)
+        /// <summary>Turns <paramref name="count"/> spares of one cosmetic into 별조각 and Star Crystals. done(ok, message, stars, crystals).</summary>
+        public static void DoDismantle(string itemId, int count, Action<bool, string, int, int> done)
         {
-            if (!Available) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다."), 0); return; }
+            if (!Available) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다."), 0, 0); return; }
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["item_id"] = itemId, ["count"] = count };
             Api.PostIdempotent(Base + "/dismantle", body, r =>
             {
-                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? L.T("분해하지 못했습니다.") : r.message, 0); return; }
-                int stars = MiniJson.Int(r.data, "stars");
-                _ = RefreshAfter(() => done?.Invoke(true, "", stars));
+                if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? L.T("분해하지 못했습니다.") : r.message, 0, 0); return; }
+                int stars = MiniJson.Int(r.data, "stars"), crystals = MiniJson.Int(r.data, "crystals");
+                _ = RefreshAfter(() => done?.Invoke(true, "", stars, crystals));
             });
         }
 

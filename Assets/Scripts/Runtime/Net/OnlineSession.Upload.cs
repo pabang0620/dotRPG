@@ -196,13 +196,13 @@ namespace DotRPG
                 else
                 {
                     Debug.LogWarning($"[Online] state save failed: {r.status} {r.code} {r.message}");
-                    if (r.code != null && r.code.StartsWith("INVALID_")) GameEvents.RaiseToast(L.F("서버 저장에 실패했습니다. ({0})", r.message));
+                    if (r.code != null && r.code.StartsWith("INVALID_")) GameEvents.RaiseToast(L.F("진행 상황을 서버에 보내지 못했습니다. ({0})", r.message));
                     else if (r.code == "NETWORK" || r.status >= 500)
                     {
                         // [J3] Keep this snapshot unless a newer one already waits (an old state never overwrites a new one).
                         // A server error (5xx: restart, DB hiccup) is retried the same way; it used to drop the snapshot.
                         Requeue(id, data);
-                        if (networkFailures++ == 0) GameEvents.RaiseToast(L.T("서버에 연결할 수 없어 저장하지 못했습니다. 연결되면 다시 저장합니다."));
+                        if (networkFailures++ == 0) GameEvents.RaiseToast(L.T("서버에 연결할 수 없습니다. 연결되면 진행 상황을 다시 보냅니다."));
                         uploading = false;
                         ScheduleUploadRetry();
                         return;

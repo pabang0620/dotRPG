@@ -191,6 +191,7 @@ namespace DotRPG
             {
                 case PatternKind.Slash3: yield return Slash3(p); break;
                 case PatternKind.Repel: yield return Repel(p); break;
+                case PatternKind.Annihilate: yield return Annihilate(p); break;
                 case PatternKind.Charge: yield return BossCharge(p); break;
                 case PatternKind.Slam: yield return Slam(p, 3.2f); break;
                 case PatternKind.Fields: yield return Fields(p, false); break;
@@ -287,6 +288,7 @@ namespace DotRPG
 
         protected override void OnInterrupted()
         {
+            if (CurrentPattern != null && CurrentPattern.kind == PatternKind.Annihilate) SafeCover.EndAnnihilate();
             CastingJudgment = false;
             Guarding = false;
             CurrentPattern = null;

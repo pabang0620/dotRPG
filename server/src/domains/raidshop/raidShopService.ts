@@ -32,9 +32,11 @@ export function rollShopRarity(p: RaidShopProduct, rng: Rng): ShopRarity {
   return (p.rarityWeights[0] as { rarity: ShopRarity }).rarity;
 }
 
-const resultOf = (p: RaidShopProduct, cls: string, rarity: ShopRarity): string => {
-  const id = p.results[cls]?.[rarity];
-  if (!id) throw new Error(`레이드 상점 결과 장비가 없습니다: ${p.id} ${cls} ${rarity}`);
+/** 등급의 결과 장비. 여럿이면(전설 무기 두 갈래) rng로 같은 확률로 하나, rng가 없으면(목록 표시) 첫 번째 */
+const resultOf = (p: RaidShopProduct, cls: string, rarity: ShopRarity, rng?: Rng): string => {
+  const ids = p.results[cls]?.[rarity];
+  if (!ids || ids.length === 0) throw new Error(`레이드 상점 결과 장비가 없습니다: ${p.id} ${cls} ${rarity}`);
+  const id = ids.length > 1 && rng ? (ids[rng.int(0, ids.length)] as string) : (ids[0] as string);
   return keyAt(id, 0);
 };
 
@@ -93,8 +95,9 @@ async function processBuy(ctx: EconCtx, body: BuyBody) {
   const spent = await ctx.removeItem('bag', p.materialItem, p.price, 'raid_shop_cost', logId);
   if (spent === null) throw new AppError(422, '재료가 모자랍니다.', 'NOT_ENOUGH_MATERIAL', { need: p.price, have });
 
-  const rarity = rollShopRarity(p, getRng());
-  const resultKey = resultOf(p, ctx.char.class, rarity);
+  const rng = getRng();
+  const rarity = rollShopRarity(p, rng);
+  const resultKey = resultOf(p, ctx.char.class, rarity, rng);
   // 재료를 거래 불가로 막았으므로 결과 장비도 캐릭터 귀속(간접 거래 차단)
   await ctx.addItem('bag', resultKey, 1, 'raid_shop_result', logId, 'character');
   await repo.insertPurchase(ctx.client, {

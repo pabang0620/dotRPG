@@ -31,6 +31,7 @@ import {
   TEN_COUNT,
   TEN_PRICE,
   COLLECTIONS,
+  DISMANTLE_CRYSTALS,
   DISMANTLE_STARS,
   SYNTH,
   SYNTH_COUNT,
@@ -42,6 +43,8 @@ import {
   type Rarity,
 } from './starshopDefs';
 import * as repo from './starshopRepository';
+import { codexHealth, codexOf, noteGachaGear } from './cashValueService';
+import { readCrystals } from './crystalWallet';
 import * as wallets from './starWallet';
 import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 
@@ -50,7 +53,7 @@ type GearBanner = Exclude<Banner, CosmeticBanner>;
 
 /** 등급별 뽑기 풀: 오라 뽑기는 오라만, 스킨 뽑기는 모든 등급이 내 직업 스킨 */
 function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string) {
-  if (banner === 'skin') return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity);
+  if (banner === 'skin') return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity && !c.exchangeOnly);
   return cosmeticsOf(rarity);
 }
 
@@ -121,8 +124,16 @@ export async function summary(accountId: number, characterUuid: string) {
   const owned = await repo.ownedOf(db, accountId);
   const copies = await repo.copiesOf(db, accountId);
   const registered = await repo.collectionsOf(db, accountId);
+  const crystalWallet = await readCrystals(db, accountId);
+  const codex = await codexOf(db, accountId);
   return {
     balance: wallet.balance,
+    // 0044: 별의 결정(교환소 포인트)과 장비 도감 체력(%)
+    crystals: crystalWallet.balance,
+    crystal_debt: crystalWallet.debt,
+    codex_health: codexHealth(codex.length),
+    codex_count: codex.length,
+    dismantle_crystals: DISMANTLE_CRYSTALS,
     // 11단계: 유료·무료 구분, 부채, 결제 기능 표시(기존 필드는 그대로)
     paid_balance: wallet.paidBalance,
     free_balance: wallet.balance - wallet.paidBalance,
@@ -159,14 +170,14 @@ export async function summary(accountId: number, characterUuid: string) {
     })),
     rates: auraTable('aura', ch.class),
     skin_rates: auraTable('skin', ch.class),
-    // 장비 뽑기는 레벨 단계를 골라 뽑는다: 내 레벨까지 열린 단계마다 확률표(기본 선택은 my_tier)
+    // 장비 뽑기는 레벨 단계를 골라 뽑는다: 모든 단계를 고를 수 있다(2026-10-14, 내 레벨 위 단계도). 기본 선택은 my_tier
     my_tier: tierOfLevel(ch.level),
     tier_levels: TIER_LEVELS,
     banners: (Object.keys(GEAR_BANNERS) as GearBanner[]).map((b) => ({
       id: b,
       name: GEAR_BANNERS[b].name,
       rates: gearTable(b, ch.class, tierOfLevel(ch.level)).map(({ permille: _p, ...t }) => t),
-      tiers: Array.from({ length: tierOfLevel(ch.level) + 1 }, (_, t) => ({
+      tiers: Array.from({ length: TIER_LEVELS.length }, (_, t) => ({
         tier: t,
         level: TIER_LEVELS[t],
         rates: gearTable(b, ch.class, t).map(({ permille: _p, ...x }) => x),
@@ -180,6 +191,7 @@ export async function summary(accountId: number, characterUuid: string) {
       copies: copies.get(c.id) ?? 0,
       exchange_price: exchangePriceOf(c),
       skin: c.skin ?? null,
+      exchange_only: c.exchangeOnly === true,
     })),
   };
 }
@@ -239,10 +251,8 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
         await wallets.setPity(db, accountId, pity, banner === 'skin');
         // 중복 환급은 하지 않는다(refund는 항상 0, 여분으로 쌓인다). gacha_refund 원장은 새로 쓰지 않는다
       } else {
+        // 내 레벨 위 단계도 뽑을 수 있다. 장비는 가방에 두고 착용 레벨이 되면 낀다
         const tier = body.tier ?? tierOfLevel(ctx.char.level);
-        if (tier > tierOfLevel(ctx.char.level)) {
-          throw new AppError(422, '아직 열리지 않은 레벨 단계입니다.', 'GACHA_TIER_LOCKED', { need: TIER_LEVELS[tier], have: ctx.char.level });
-        }
         await rollGear(ctx, banner, times, rows, body.count, tier);
         // 천장 게이지(장비 뽑기 세 종류 합산). 락 순서상 마지막
         gearCeiling = await ceilings.addGauge(db, accountId, 'gear', times);
@@ -312,6 +322,7 @@ async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: r
     const tier = pickGearTier(table);
     const item = tier.items[getRng().int(0, tier.items.length)]!;
     await ctx.addItem('bag', item.id, 1, 'gacha', `${banner}_${count}`);
+    await noteGachaGear(ctx.client, ctx.char.id, ctx.char.accountId, item.id, 1); // 0044: 상점 판매 금지·분해 몫, 도감
     rows.push({ seq: i, rarity: tier.rarity, itemId: item.id, pityBefore: 0, pityAfter: 0, byPity: false, duplicate: false, refund: 0, kind: 'gear' });
   }
 }
