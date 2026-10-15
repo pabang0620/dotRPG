@@ -1,0 +1,33 @@
+[3.38] capture started
+[6.14] verification audio volume: 0
+[7.63] shot 01_title (render texture)
+[8.16] shot 01b_credits (render texture)
+[9.01] shot 02_character_select (render texture)
+[11.23] setup: Lv=7 points=6 gold=100099 weapon=eq_staff_oak
+[11.46] shot 03_hud (render texture)
+[12.14] shot 04_bag_equipment (render texture)
+[12.45] tooltip: wornFound=True visible=True
+[12.56] shot 05_tooltip (render texture)
+[12.99] shot 06_bag_materials (render texture)
+[13.98] window 스킬: button=True top=Skills
+[14.15] shot 07_skill_tree (render texture)
+[14.57] shot 08_skill_gems (render texture)
+[15.72] window 지도: button=True top=WorldMap
+[15.90] shot 09_map (render texture)
+[16.76] window 퀘스트: button=True top=QuestLog
+[16.89] shot 10_quest (render texture)
+[17.74] window 미니던전: button=False top=-
+[17.96] shot 11_dungeon (render texture)
+[18.86] window 레이드: button=True top=DungeonSelect
+[18.96] shot 12_raid (render texture)
+[19.78] shot 13_side_menu (render texture)
+[20.69] shot 14_shop (render texture)
+[21.51] shot 15_storage (render texture)
+[22.32] shot 16_enhance (render texture)
+[23.22] dialogue: open=True boxVisible=True speaker=촌장 모리
+[23.45] shot 17_dialogue (render texture)
+[24.03] shot 18_fader (render texture)
+[24.23] screen=1920x1080
+[24.29] icon sheet saved
+[24.34] frame/slot/button crops saved
+[24.34] capture finished

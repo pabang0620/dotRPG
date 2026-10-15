@@ -325,7 +325,7 @@ namespace DotRPG
             int t = Mathf.Max(0, item.levelTier); // 0 = Lv.1 ... 7 = Lv.40
             switch (item.category)
             {
-                case EquipCategory.Weapon: return 0.135f * (1f + 0.5f * t);
+                case EquipCategory.Weapon: return 0.27f * (1f + 0.5f * t); // [BALANCE 2026-10-14] x2: +15 felt weak (user)
                 case EquipCategory.Top:
                 case EquipCategory.Bottom: return 0.5f + 0.15f * t;
                 default: return 0.3f + 0.08f * t;

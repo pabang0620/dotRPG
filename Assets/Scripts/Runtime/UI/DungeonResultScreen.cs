@@ -302,6 +302,9 @@ namespace DotRPG
             if (party != null)
                 for (int m = 1; m < party.Members.Count; m++)
                 {
+                    // Another player's PC picks its own cards from its own run on the server: flipping one here for it
+                    // showed a made-up reward (it got something else), so only AI companions flip on this screen.
+                    if (party.IsNetMember(party.Members[m])) continue;
                     var faceDown = new List<int>();
                     for (int i = 0; i < cards.Count; i++) if (!cards[i].flipped) faceDown.Add(i);
                     if (faceDown.Count == 0) break;

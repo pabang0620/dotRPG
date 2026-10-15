@@ -10,7 +10,7 @@ namespace DotRPG
     /// </summary>
     public static class FieldBosses
     {
-        public const int IntervalSeconds = 900;
+        public const int IntervalSeconds = 1800; // [BALANCE 2026-10-14] every 30 minutes (was 15)
 
         public sealed class Def
         {
@@ -56,7 +56,7 @@ namespace DotRPG
             if (d == null) return null;
             var m = MonsterDatabase.Get(d.monsterId);
             var gear = m != null ? EquipmentDatabase.Get(m.bossGear) : null;
-            string when = DefeatedThisWindow(mapId) ? L.F("다음 출현 {0}분 후", SecondsToNext / 60 + 1) : L.T("지금 출현 중 (15분마다)");
+            string when = DefeatedThisWindow(mapId) ? L.F("다음 출현 {0}분 후", SecondsToNext / 60 + 1) : L.T("지금 출현 중 (30분마다)");
             return L.F("<color=#ff9f43>필드 보스</color> {0} Lv.{1} · {2}", L.T(m?.name), LevelOf(d), when) + (gear != null ? L.F(" · 보스 장비 <color=#ffb347>{0}</color>", L.T(gear.name)) : "");
         }
     }

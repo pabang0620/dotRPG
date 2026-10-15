@@ -338,11 +338,35 @@ namespace DotRPG
         public AuctionResult Cancel(string listingId) =>
             Act($"/auction/listings/{listingId}", null, r => L.T("등록을 취소했습니다. 아이템은 우편함으로 돌아갑니다."), delete: true);
 
-        public AuctionResult Claim(string mailId) => Act($"/mail/{mailId}/claim", null, r => L.T("우편을 받았습니다."));
+        public AuctionResult Claim(string mailId) => Act($"/mail/{mailId}/claim", null, r =>
+        {
+            // The claimed mail leaves the list at once (not on the next reload), and the toast says what came in.
+            var got = mail.Find(m => m.id == mailId);
+            mail.RemoveAll(m => m.id == mailId);
+            unclaimed = mail.Count;
+            string what = got != null ? Received(got) : "";
+            return what.Length > 0 ? L.F("받았습니다: {0}", what) : L.T("우편을 받았습니다.");
+        });
+
+        static string Received(AuctionMail m)
+        {
+            var parts = new List<string>();
+            foreach (var a in m.attachments)
+            {
+                if (a.kind == "gold") parts.Add(L.F("골드 {0:N0}", a.count));
+                else if (!string.IsNullOrEmpty(a.itemKey))
+                {
+                    string name = EquipmentDatabase.IsEquipment(a.itemKey) ? EquipmentDatabase.RichName(a.itemKey) : L.T(DungeonDatabase.ItemName(a.itemKey));
+                    parts.Add(a.count > 1 ? $"{name} x{a.count:N0}" : name);
+                }
+            }
+            return string.Join(", ", parts);
+        }
 
         public AuctionResult ClaimAll() => Act("/mail/claim-all", null, r =>
         {
             int n = MiniJson.Int(r.data, "claimed_count"), left = MiniJson.Int(r.data, "remaining");
+            if (left == 0) { mail.Clear(); unclaimed = 0; } // everything was taken: the list empties at once
             return left > 0 ? L.F("우편 {0}통을 받았습니다. 남은 {1}통은 다시 '모두 받기'를 누르세요.", n, left) : L.F("우편 {0}통을 받았습니다.", n);
         });
 
@@ -355,6 +379,14 @@ namespace DotRPG
         {
             if (Now - summaryAt < (windowOpen ? SummaryOpenSeconds : SummaryClosedSeconds)) return;
             Summary();
+        }
+
+        /// <summary>The realtime channel said a mail arrived: poll the summary and reload the mailbox now.</summary>
+        public void PollNow()
+        {
+            mailAt = -99f;
+            Summary();
+            Changed?.Invoke();
         }
 
         void Summary()

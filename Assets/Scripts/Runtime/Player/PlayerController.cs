@@ -45,6 +45,7 @@ namespace DotRPG
         public bool IsLocal => Data != null && Data.IsLocal;
         public string DisplayName => Data != null ? Data.DisplayName : name;
         public Collider2D BodyCollider { get; private set; }
+        static readonly System.Collections.Generic.List<Collider2D> BodyColliders = new System.Collections.Generic.List<Collider2D>();
 
         /// <summary>Builds the local player GameObject. Visual children can be replaced with a prefab later.</summary>
         public static PlayerController Create(GameConfig config, Transform parent)
@@ -100,6 +101,11 @@ namespace DotRPG
             player.Data = data;
             player.Input = input;
             player.BodyCollider = col;
+            // Characters (the player, companions, town peers, party members) walk through each other like NPCs do;
+            // only walls and monsters block a character.
+            BodyColliders.RemoveAll(c => c == null);
+            foreach (var other in BodyColliders) Physics2D.IgnoreCollision(col, other, true);
+            BodyColliders.Add(col);
             player.stats = config.playerStats;
             player.body = body;
             player.visual = visual;
@@ -196,6 +202,7 @@ namespace DotRPG
         void OnDisable()
         {
             CancelMobility();
+            RestorePassThrough();
             // The local player leaving the world (title screen) takes the companions with it.
             if (IsLocal && Game.Party != null) Game.Party.OnLocalHidden();
         }
@@ -268,6 +275,7 @@ namespace DotRPG
             // [ART] Worn armour no longer changes the body: only the weapon in hand shows the gear (skins still apply).
             animator.SetLook(skinLook ?? careerLook ?? BaseLook(CharacterClassInfo.Get(Class)));
             SkinTrail.Set(this, animator.Renderer, skinLook != null ? SkinCatalog.Find(Data.SkinId) : null);
+            if (!IsLocal) CosmeticAura.ShowWorn(this, Data.AuraId); // [COSMETIC] another person's aura ring and footprints
             combat.RefreshWeapon();
         }
 
@@ -409,7 +417,7 @@ namespace DotRPG
                 if (IsLocal)
                 {
                     if (cmd.useHealing) UseHealing();
-                    if (cmd.useMana) UseConsumable(Game.Session.Inventory.Count(ConsumableDatabase.MpPotionHi) > 0 ? ConsumableDatabase.MpPotionHi : ConsumableDatabase.MpPotion);
+                    if (cmd.useMana) UseConsumable(Game.Session.Inventory.Count(ConsumableDatabase.MpPotion) > 0 ? ConsumableDatabase.MpPotion : ConsumableDatabase.MpPotionHi);
                     if (cmd.townScroll) UseConsumable(ConsumableDatabase.TownScroll);
                 }
                 if (cmd.skillSlot >= 0 && cmd.skillSlot < SkillGems.Slots) skills.TryCast(cmd.skillSlot);
@@ -454,6 +462,7 @@ namespace DotRPG
             if (IsDashing) { StepDash(); return; }
             Vector2 v = Vector2.MoveTowards(body.GetVelocity(), desiredVelocity, stats.acceleration * Time.fixedDeltaTime);
             body.SetVelocity(v);
+            if (desiredVelocity.sqrMagnitude > .01f) ShoveMonsters(desiredVelocity);
         }
     }
 }

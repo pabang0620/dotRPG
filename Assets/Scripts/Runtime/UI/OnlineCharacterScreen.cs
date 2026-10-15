@@ -32,7 +32,7 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<OnlineCharacterScreen>();
             screen.ui = ui;
             // Twelve empty body lines reserve the two card rows (to -422) and the status line under them.
-            screen.BuildPanel(root, L.T("온라인 캐릭터"), 640, new string('\n', 11), 20);
+            screen.BuildPanel(root, "", 640, new string('\n', 11), 20);
             screen.titleText = screen.panel.Find("Title").GetComponent<Text>();
             screen.panel.Find("Body").GetComponent<Text>().text = "";
             float w = Cols * CardW + (Cols - 1) * GapX;
@@ -53,7 +53,7 @@ namespace DotRPG
             session.LoadCharacters(r =>
             {
                 busy = false;
-                Say(r.ok ? L.F("{0} 계정", OnlineSession.Current?.LoginId) : Explain(r), !r.ok);
+                Say(r.ok ? "" : Explain(r), !r.ok);
                 Rebuild();
                 // [0038] Just renamed: continue into the game with the new name.
                 string id = pendingEnterId;
@@ -78,7 +78,7 @@ namespace DotRPG
             int count = session?.Characters.Count ?? 0;
             pick = Mathf.Clamp(pick, 0, Mathf.Max(0, count - 1));
             menu.Clear();
-            titleText.text = deleting ? L.T("삭제할 캐릭터 고르기") : L.F("온라인 캐릭터  <size=18><color=#b8c4d8>{0}/{1}</color></size>", count, session?.CharacterLimit ?? 6);
+            titleText.text = deleting ? L.T("삭제할 캐릭터 고르기") : L.F("{0}  <size=18><color=#b8c4d8>{1}/{2}</color></size>", session?.LoginId ?? "", count, session?.CharacterLimit ?? 6);
             if (!deleting)
             {
                 actionItem = menu.AddButton(L.T("접속하기"), () => { if (Picked != null) Enter(Picked); }, () => Picked != null);

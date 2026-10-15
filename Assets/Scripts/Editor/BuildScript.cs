@@ -23,6 +23,15 @@ namespace DotRPG.EditorTools
         [MenuItem("dotRPG/Build/Windows Steam test (app 480)", priority = 23)]
         public static void BuildWindowsSteamTest() => Build(BuildTarget.StandaloneWindows64, "WindowsSteamTest", ProjectSetup.ProductName + ".exe", steamTest: true);
 
+        /// <summary>The same test build into Builds/WindowsOnline: the shared copy, buildable while WindowsSteamTest is running.</summary>
+        public static void BuildWindowsOnline() => Build(BuildTarget.StandaloneWindows64, "WindowsOnline", ProjectSetup.ProductName + ".exe", steamTest: true);
+
+        [MenuItem("dotRPG/Build/Windows QA", priority = 26)]
+        public static void BuildWindowsQA() => Build(BuildTarget.StandaloneWindows64, "WindowsQA", ProjectSetup.ProductName + ".exe");
+
+        /// <summary>Compile the shipping defines without a live endpoint; NEVER an uploadable artifact.</summary>
+        public static void BuildWindowsReleaseCheck() => Build(BuildTarget.StandaloneWindows64, "WindowsReleaseCheck", ProjectSetup.ProductName + ".exe", release: true, releaseCheck: true);
+
         /// <summary>
         /// [RELEASE] The build that ships: define DOTRPG_RELEASE (no capture / dev network modes, server address fixed to
         /// ApiClient.ReleaseServer). Refuses to build while that address is not https.
@@ -94,9 +103,9 @@ namespace DotRPG.EditorTools
             if (Application.isBatchMode) EditorApplication.Exit(1);
         }
 
-        static void Build(BuildTarget target, string folder, string executable, bool steamTest = false, bool release = false)
+        static void Build(BuildTarget target, string folder, string executable, bool steamTest = false, bool release = false, bool releaseCheck = false)
         {
-            if (release && !ApiClient.ReleaseServer.StartsWith("https://", StringComparison.Ordinal))
+            if (release && !releaseCheck && !IsReleaseEndpoint(ApiClient.ReleaseServer))
             {
                 Debug.LogError("[dotRPG] Release build needs the live server address: set ApiClient.ReleaseServer (https://...).");
                 if (Application.isBatchMode) EditorApplication.Exit(1);
@@ -104,6 +113,8 @@ namespace DotRPG.EditorTools
             }
             ProjectSetup.Apply();
             string output = Path.Combine("Builds", folder, executable);
+            string manifest = Path.Combine("Builds", folder, "release-manifest.json");
+            if (File.Exists(manifest)) File.Delete(manifest); // failed rebuilds must never retain an old release seal
             var options = new BuildPlayerOptions
             {
                 scenes = new[] { ProjectSetup.MainScene },
@@ -124,6 +135,20 @@ namespace DotRPG.EditorTools
                 {
                     Debug.LogError("[dotRPG] steam_appid.txt must not ship in a release build: " + appIdFile);
                     if (Application.isBatchMode) EditorApplication.Exit(1);
+                    return;
+                }
+                if (release && !releaseCheck)
+                {
+                    using (var sha = System.Security.Cryptography.SHA256.Create())
+                    using (var stream = File.OpenRead(output))
+                    {
+                        var seal = new ReleaseManifest { release = true, server = ApiClient.ReleaseServer,
+                            version = Application.version, wireVersion = PartyNet.WireVersion,
+                            builtAtUtc = DateTime.UtcNow.ToString("O"),
+                            executableSha256 = BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant() };
+                        File.WriteAllText(manifest, JsonUtility.ToJson(seal, true));
+                    }
+                    File.Copy("THIRD_PARTY_NOTICES.md", Path.Combine("Builds", folder, "THIRD_PARTY_NOTICES.md"), true);
                 }
             }
             else
@@ -131,6 +156,22 @@ namespace DotRPG.EditorTools
                 Debug.LogError($"[dotRPG] Build {summary.result}: {summary.totalErrors} error(s).");
                 if (Application.isBatchMode) EditorApplication.Exit(1);
             }
+        }
+
+        [Serializable]
+        sealed class ReleaseManifest
+        {
+            public bool release;
+            public string server, version, builtAtUtc, executableSha256;
+            public int wireVersion;
+        }
+
+        public static bool IsReleaseEndpoint(string address)
+        {
+            return Uri.TryCreate(address, UriKind.Absolute, out var uri) && uri.Scheme == "https" &&
+                !uri.IsLoopback && !string.IsNullOrEmpty(uri.Host) && string.IsNullOrEmpty(uri.UserInfo) &&
+                string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment) &&
+                uri.Host != "api.example.com" && uri.Host != "example.com" && address != ApiClient.MobileTestServer;
         }
     }
 }

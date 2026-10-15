@@ -20,7 +20,7 @@ namespace DotRPG
     {
         public const float SnapshotInterval = 0.1f, StateInterval = 0.05f, HelloInterval = 0.5f;
         /// <summary>[8] Byte layout version of these messages; both sides of a room must match (relay hello, Hello).</summary>
-        public const int WireVersion = 7; // 7: costume skin on the member card // 5: SeatFreed + host AI seats in the field
+        public const int WireVersion = 9; // 9: worn aura on the member card // 8: host telegraph and monster projectile visuals in snapshots
 
         /// <summary>[8] The relay server made this PC the host (the session takes over the fight).</summary>
         public static event Action PromotedToHost;
@@ -192,12 +192,21 @@ namespace DotRPG
                 if (Game.Cosmetics != null) Game.Cosmetics.Changed -= net.MarkCardDirty;
             }
             net.UnhookEnemies();
+            net.ClearWarnings();
             if (!keepTransport)
             {
                 Game.Party?.SetRosterHidden(false);
                 Game.Party?.SetCompanionCap(-1); // [AI] the whole roster again
                 if (net.transport is RelayTransport r) r.Leave();
                 if (net.transport is IDisposable d) d.Dispose();
+                // The other PCs' bodies go with the sync: left behind they stay frozen (or lying dead) on this map and,
+                // once a new sync draws the same people again, show as a second copy.
+                if (Game.Party != null)
+                {
+                    var bodies = new List<PlayerController>();
+                    foreach (var m in Game.Party.Members) if (m != null && Game.Party.IsNetMember(m)) bodies.Add(m);
+                    foreach (var b in bodies) Game.Party.RemoveNetMember(b);
+                }
             }
             Destroy(net.gameObject);
         }

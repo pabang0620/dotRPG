@@ -20,7 +20,7 @@ namespace DotRPG
                 // [REVIVE] No revive left: a member waits for the next room; the host stays down in the boss room while
                 // another person fights on (elsewhere only the host can lead through the door, so the run ends).
                 if (Follower) { GameEvents.RaiseToast(run.InBossRoom ? L.T("부활할 수 없습니다. 파티원을 응원하세요.") : L.T("부활할 수 없습니다. 다음 방에서 다시 일어납니다.")); return true; }
-                if (HostWaits) { GameEvents.RaiseToast(L.T("부활할 수 없습니다. 파티원을 응원하세요.")); return true; }
+                if (HostWaits) { GameEvents.RaiseToast(run.InBossRoom ? L.T("부활할 수 없습니다. 파티원을 응원하세요.") : L.T("부활할 수 없습니다. 다음 방에서 다시 일어납니다.")); return true; }
                 StartCoroutine(FailLater("부활 횟수를 모두 사용했습니다.")); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
                 return true;
             }
@@ -32,8 +32,11 @@ namespace DotRPG
             return true;
         }
 
-        /// <summary>[REVIVE] The host is down in the boss room and another person is still up: the run goes on.</summary>
-        bool HostWaits => NetHost && run != null && run.InBossRoom && PartyNet.Current.AnyHumanUp;
+        /// <summary>
+        /// [REVIVE] The host is down and another person is still up: the run goes on (any room; the living member walks
+        /// the party through the door and the host rises in the next room like a member does).
+        /// </summary>
+        bool HostWaits => NetHost && run != null && PartyNet.Current.AnyHumanUp;
         float allDownFor;
 
         void UpdateRevive()

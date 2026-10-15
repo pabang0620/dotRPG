@@ -35,6 +35,13 @@ namespace DotRPG
                 else local.Revive(1f);
                 local.Data.Mana = local.MaxMana;
             }
+            else if (local.IsDead && NetHost)
+            {
+                // [REVIVE] The host went down and a member led the way: back up in the new room, like the members.
+                ReviveOpen = false;
+                if (party != null) party.ReviveMember(local, CompanionRejoinHp);
+                else local.Revive(CompanionRejoinHp);
+            }
             local.Place(entry, Facing.Up);
             if (party != null)
                 for (int i = 1; i < party.Members.Count; i++)

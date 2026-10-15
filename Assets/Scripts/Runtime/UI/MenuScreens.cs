@@ -78,9 +78,13 @@ namespace DotRPG
             {
                 var bodyText = UIFactory.Text(panel, "Body", body, UiTheme.Size(bodySize), UiTheme.TextSecondary, TextAnchor.UpperCenter, true);
                 bodyText.lineSpacing = 1.2f;
-                // preferredHeight needs a layout pass; estimate from the line count instead.
+                // preferredHeight needs a layout pass; estimate from the line count, and measure the wrapped height too so a
+                // long line that wraps (the consent summary) does not run into the menu below.
                 int lines = body.Split('\n').Length;
                 float h = lines * bodySize * 1.45f + 8f;
+                var settings = bodyText.GetGenerationSettings(new Vector2(width - 70, 0f));
+                float wrapped = bodyText.cachedTextGeneratorForLayout.GetPreferredHeight(body, settings) / Mathf.Max(0.01f, bodyText.pixelsPerUnit);
+                h = Mathf.Max(h, wrapped + 8f);
                 UIFactory.Place(bodyText.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(width - 70, h));
                 y -= h + 10f;
             }
@@ -237,6 +241,10 @@ namespace DotRPG
                 GameEvents.RaiseToast(s.Data.language == L.Korean ? "다시 시작하면 적용됩니다. / Restart the game to apply." : "Restart the game to apply. / 다시 시작하면 적용됩니다."); // i18n-ignore bilingual on purpose
             });
             menu.AddOption(L.T("화면 흔들림"), () => s.Data.screenShake ? L.T("켜기") : L.T("끄기"), d => { s.Data.screenShake = !s.Data.screenShake; s.Apply(); });
+            // [AUTO] 물약 자동 사용 and its thresholds (plain potions first, then greater ones).
+            menu.AddOption(L.T("물약 자동 사용"), () => s.Data.autoPotion ? L.T("켜기") : L.T("끄기"), d => { s.Data.autoPotion = !s.Data.autoPotion; s.Apply(); });
+            menu.AddOption(L.T("자동 체력 물약 기준"), () => L.F("HP {0}% 아래", s.Data.autoPotionHpPercent), d => { s.Data.autoPotionHpPercent = Mathf.Clamp(s.Data.autoPotionHpPercent + d * 5, 10, 90); s.Apply(); });
+            menu.AddOption(L.T("자동 마나 물약 기준"), () => L.F("MP {0}% 아래", s.Data.autoPotionMpPercent), d => { s.Data.autoPotionMpPercent = Mathf.Clamp(s.Data.autoPotionMpPercent + d * 5, 5, 90); s.Apply(); });
             // [I] Accessibility and keys.
             menu.AddOption(L.T("글자·UI 크기"), () => UiTheme.UiScaleNames[Mathf.Clamp(s.Data.uiScale, 0, 3)], d => { s.Data.uiScale = Mathf.Clamp(s.Data.uiScale + d, 0, 3); s.Apply(); screen.FitToScreen(); });
             menu.AddOption(L.T("색약 보정"), () => s.Data.colorBlind ? L.T("켜기") : L.T("끄기"), d => { s.Data.colorBlind = !s.Data.colorBlind; s.Apply(); });

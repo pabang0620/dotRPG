@@ -16,6 +16,7 @@ import { activeSessionIdOf } from '../fieldsessions/fieldRepository';
 import { attackCap, effectiveHp, powerAllows } from '../kills/killRules';
 import { getQueueStore } from '../match/queueStore';
 import { findPartyIdOf } from '../party/partyRepository';
+import * as tradeRepo from '../trade/tradeRepository';
 import * as repo from './miniDungeonRepository';
 import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_HP_MUL, MINI_TIERS, killCredit, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
 import type { EnterBody, KillBody, LeaveBody, RequestBody } from './miniDungeonValidation';
@@ -68,6 +69,10 @@ export function status(accountId: number, uuid: string) {
 }
 
 async function assertSolo(ctx: EconCtx): Promise<void> {
+  await tradeRepo.expireDue(ctx.client, [ctx.char.id], ctx.now);
+  if (await tradeRepo.openOfCharacter(ctx.client, ctx.char.id)) {
+    throw new AppError(409, '교환을 마치거나 취소한 뒤 입장해 주세요.', 'TRADE_ALREADY_OPEN');
+  }
   if (await findPartyIdOf(ctx.client, ctx.char.id) !== null || getQueueStore().get(ctx.char.id)) {
     throw new AppError(409, '미니던전은 혼자 입장합니다. 파티와 매칭을 종료해 주세요.', 'MINI_SOLO_ONLY');
   }

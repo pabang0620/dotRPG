@@ -140,7 +140,7 @@ namespace DotRPG
                 var r = i < StarShopClient.Synth.Count ? StarShopClient.Synth[i] : null;
                 if (r == null) { v.title.text = ""; v.info.text = ""; v.pity.text = ""; v.one.interactable = v.all.interactable = false; continue; }
                 int have = StarShopClient.SparesOf(r.from);
-                string target = r.to == "unique" ? L.T("내 직업 유니크 스킨") : r.to == "epic" ? L.T("에픽 오라·내 직업 에픽 스킨") : L.T("희귀 오라");
+                string target = r.to == "unique" ? L.T("내 직업 유니크 스킨") : r.to == "epic" ? L.T("에픽 오라·내 직업 에픽 스킨") : L.T("희귀 오라·내 직업 희귀 스킨");
                 v.title.text = L.F("<color={0}>{1}</color> 여분 {2}개  →  <color={3}><b>{4}</b></color> 1개", Hex(r.from), Grade(r.from), r.count, Hex(r.to), Grade(r.to));
                 v.info.text = L.F("성공 <color=#ffd34a>{0:0.#}%</color> · 결과: {1} (아직 없는 것부터)\n실패하면 넣은 여분 중 1개를 돌려받습니다.   <color=#b8c4d8>보유 여분 {2}개</color>", r.rate, target, have);
                 bool hasPity = r.pity > 0;

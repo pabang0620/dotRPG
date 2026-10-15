@@ -12,7 +12,7 @@ import { formParty, newHero, post, startAndBegin, type Hero } from './partyHelpe
 import { joinRoom, RelayClient, ticketFor } from './relayHelpers';
 import { sleep, startServer, until, type TestServer } from './wsHelpers';
 
-const OVERRIDES = { RELAY_MEMBER_PKT_PER_SEC: '10', RELAY_STRIKES_PER_MIN: '6', RELAY_HOST_GRACE_MS: '300' };
+const OVERRIDES = { RELAY_MEMBER_PKT_PER_SEC: '10', RELAY_STRIKES_PER_MIN: '6', RELAY_HOST_GRACE_MS: '300', RELAY_RUN_END_GRACE_MS: '700' };
 let app = buildApp(OVERRIDES);
 let srv: TestServer;
 
@@ -296,6 +296,8 @@ describe('판 변화가 중계 방에 반영된다', () => {
     expect(await host.waitText((f) => f.t === 'peer.left' && f.reason === 'removed')).toMatchObject({ seat: 1 });
     await getPool().query("UPDATE party_runs SET state = 'ended', ended_at = now() WHERE uuid = $1", [r.runId]);
     relayHub().resync('run', r.runId);
+    // 끝난 판의 방은 결과 창 동안(RELAY_RUN_END_GRACE_MS) 바로 닫지 않는다: 그 사이 새 티켓은 이미 거절된다
+    expect((await ticketFor(app, r.heroes[0] as Hero, 'run', r.runId)).body.errors?.code).toBe('ROOM_CLOSED');
     expect(await host.waitT('room.closed')).toBeTruthy();
     expect(await host.waitClose()).toBe(4012);
     expect((await ticketFor(app, r.heroes[0] as Hero, 'run', r.runId)).body.errors?.code).toBe('ROOM_CLOSED');

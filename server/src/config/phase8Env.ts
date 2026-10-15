@@ -37,6 +37,7 @@ export const phase8Shape = {
   RELAY_STRIKES_PER_MIN: posInt(20),
   RELAY_HOST_GRACE_MS: z.coerce.number().int().min(0).default(3000),
   RELAY_ROOM_EMPTY_GRACE_SECONDS: posInt(30),
+  RELAY_RUN_END_GRACE_MS: z.coerce.number().int().min(0).default(120000),
   RELAY_EGRESS_DAILY_BUDGET_GB: z.coerce.number().positive().optional(),
   COMBAT_TRANSPORT_ORDER: z.string().optional(),
   STEAM_P2P_ENABLED: boolStr.default(true),
@@ -115,6 +116,8 @@ export interface RelayConfig {
   strikesPerMin: number;
   hostGraceMs: number;
   roomEmptyGraceSeconds: number;
+  /** 끝난 파티 런의 방을 닫기 전까지 기다리는 시간(결과 창 동안 연결 유지). 0이면 바로 닫는다 */
+  runEndGraceMs: number;
   egressDailyBudgetGb: number | null;
   retentionDays: number;
 }
@@ -255,6 +258,7 @@ export function buildPhase8(
       strikesPerMin: e.RELAY_STRIKES_PER_MIN,
       hostGraceMs: e.RELAY_HOST_GRACE_MS,
       roomEmptyGraceSeconds: e.RELAY_ROOM_EMPTY_GRACE_SECONDS,
+      runEndGraceMs: e.RELAY_RUN_END_GRACE_MS,
       egressDailyBudgetGb: e.RELAY_EGRESS_DAILY_BUDGET_GB ?? null,
       retentionDays: e.RELAY_STATS_RETENTION_DAYS,
     },

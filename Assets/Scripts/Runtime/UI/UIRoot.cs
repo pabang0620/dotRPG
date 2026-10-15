@@ -31,6 +31,7 @@ namespace DotRPG
         public WithdrawalScreen Withdrawal { get; private set; }         // [W2]
         public ConsentScreen Consent { get; private set; }               // [POLICY]
         public PolicyMenuScreen Policies { get; private set; }           // [POLICY]
+        public CreditsScreen Credits { get; private set; }
         public SaveSlotScreen Slots { get; private set; }
         public HelpScreen Help { get; private set; }
         public ControlsScreen Controls { get; private set; }
@@ -140,6 +141,7 @@ namespace DotRPG
             ui.Withdrawal = WithdrawalScreen.Create(t, ui); // [W2]
             ui.Consent = ConsentScreen.Create(t, ui); // [POLICY]
             ui.Policies = PolicyMenuScreen.Create(t, ui);
+            ui.Credits = CreditsScreen.Create(t, ui);
             ui.Slots = SaveSlotScreen.Create(t, ui); // [I]
             ui.Help = HelpScreen.Create(t, ui); // [E5]
             ui.Controls = ControlsScreen.Create(t, ui);
@@ -156,7 +158,7 @@ namespace DotRPG
             ui.Cosmetics = CosmeticShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
-            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); DailyQuestScreen.Create(t); MailScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
+            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); DailyQuestScreen.Create(t); MailScreen.Create(t); TradeScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.choice = ChoiceScreen.Create(t, ui);

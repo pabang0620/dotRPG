@@ -165,7 +165,7 @@ namespace DotRPG
             sessionId = null;
             OnlineEconomy.FieldSessionId = null;
             if (amHost) SendObserve(id); // last credits before handing the monsters over
-            if (PartyNet.Active && PartyNet.Current.FieldMode) PartyNet.End();
+            if (PartyNet.Active && PartyNet.Current.FieldMode) EndNet(false);
             amHost = false;
             if (OnlineSession.Playing && !leaving)
             {
@@ -249,11 +249,7 @@ namespace DotRPG
             amHost = true;
             var old = PartyNet.Current;
             var keep = old != null && old.Transport.Kind == "relay" ? old.Transport : null;
-            var bodies = new List<PlayerController>();
-            if (Game.Party != null)
-                foreach (var m in Game.Party.Members) if (m != null && Game.Party.IsNetMember(m)) bodies.Add(m);
-            PartyNet.End(keepTransport: keep != null);
-            foreach (var b in bodies) Game.Party?.RemoveNetMember(b);
+            EndNet(keep != null);
             var released = new List<EnemyController>();
             foreach (var e in new List<EnemyController>(EnemyController.Active))
                 if (e != null && e.Puppet) { e.ReleasePuppet(); released.Add(e); }
@@ -270,7 +266,7 @@ namespace DotRPG
             amHost = false;
             var old = PartyNet.Current;
             var keep = old != null && old.Transport.Kind == "relay" ? old.Transport : null;
-            PartyNet.End(keepTransport: keep != null);
+            EndNet(keep != null); // the new member sync draws everyone again as puppets
             transportInfo.amHost = false;
             EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Follower);
             Game.Party?.SetRosterHidden(true);
@@ -282,10 +278,24 @@ namespace DotRPG
         {
             sessionId = null;
             OnlineEconomy.FieldSessionId = null;
-            if (PartyNet.Active && PartyNet.Current.FieldMode) PartyNet.End();
+            if (PartyNet.Active && PartyNet.Current.FieldMode) EndNet(false);
             amHost = false;
             GoSolo();
             GameEvents.RaiseToast(L.T("함께 사냥이 끝났습니다. 이제 혼자 사냥합니다."));
+        }
+
+        /// <summary>
+        /// Stops the field sync and removes the other members' bodies with it. PartyNet.End leaves them in the party
+        /// (OnLocalSpawned keeps net members), so without this a partner stayed behind as a frozen copy after leaving the
+        /// field, next to the same person drawn again by TownPeers or a new sync.
+        /// </summary>
+        static void EndNet(bool keepTransport)
+        {
+            var bodies = new List<PlayerController>();
+            if (Game.Party != null)
+                foreach (var m in Game.Party.Members) if (m != null && Game.Party.IsNetMember(m)) bodies.Add(m);
+            PartyNet.End(keepTransport);
+            foreach (var b in bodies) Game.Party?.RemoveNetMember(b);
         }
 
         /// <summary>Host's monsters disappear from this screen and the local spawner fills the field again.</summary>

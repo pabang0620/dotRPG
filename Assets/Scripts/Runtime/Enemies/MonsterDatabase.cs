@@ -148,6 +148,9 @@ namespace DotRPG
         // ---------- Level scaling (per level above 1) ----------
         public const float HpPerLevel = 0.12f;
         public const float DamagePerLevel = 0.08f;
+        /// <summary>[BALANCE 2026-10-14] Early game: monsters up to this level deal x0.25 damage and have x0.5 armor.</summary>
+        public const int EarlyLevelMax = 20;
+        public const float EarlyDamageMul = 0.25f, EarlyArmorMul = 0.5f;
 
         /// <summary>
         /// [BALANCE 2026-10-11] Hunting-ground monsters only (not dungeons, raids or field bosses): HP becomes
@@ -245,7 +248,11 @@ namespace DotRPG
             stats.enemyId = def.id;
             stats.displayName = def.name;
             stats.maxHealth = Mathf.Max(1, Mathf.RoundToInt(def.hp * hpMul * (1f + HpPerLevel * (level - 1))));
-            stats.attackDamage = Mathf.Max(def.damage > 0 ? 1 : 0, Mathf.RoundToInt(def.damage * dmgMul * (1f + DamagePerLevel * (level - 1))));
+            // [BALANCE 2026-10-14] Early game (monster level up to EarlyLevelMax, raids excepted): a quarter of the damage and
+            // half the armor, so a new character is not walled by the first hunting grounds and dungeons (user request).
+            bool early = level <= EarlyLevelMax && !def.raid;
+            if (early) def.armor *= EarlyArmorMul;
+            stats.attackDamage = Mathf.Max(def.damage > 0 ? 1 : 0, Mathf.RoundToInt(def.damage * dmgMul * (1f + DamagePerLevel * (level - 1)) * (early ? EarlyDamageMul : 1f)));
             stats.hurtStunTime = def.hurtTime;
             stats.invulnerableTime = def.invulnerable;
             stats.knockbackSpeed = def.knockbackSpeed;

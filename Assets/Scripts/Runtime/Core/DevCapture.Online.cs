@@ -36,6 +36,7 @@ namespace DotRPG
             yield return Wait(1.5f);
             Game.Flow.NewGame(CharacterClass.Warrior);
             yield return Wait(1.6f);
+            OnlineVisualChecks();
             yield return OnlineLoopback();
             yield return OnlinePartyFinder();
             yield return OnlineAuction();
@@ -46,6 +47,44 @@ namespace DotRPG
         }
 
         // ---------- NetCommand ----------
+        void OnlineVisualChecks()
+        {
+            int hp = Game.Player.Health.Current;
+            var origin = Game.Player.Position;
+            var samples = new[] {
+                Telegraph.Circle(null, origin, 3f, 1f, 999),
+                Telegraph.Rect(null, origin, Vector2.right, 5f, 2f, 1f, 999),
+                Telegraph.Cone(null, origin, Vector2.up, 4f, 90f, 1f, 999),
+                Telegraph.Donut(null, origin, 2f, 5f, 1f, 999)
+            };
+            foreach (var source in samples)
+            {
+                byte[] bytes = PartyWire.Build(w => source.WriteVisual(w));
+                using (var r = PartyWire.Reader(bytes))
+                {
+                    r.ReadInt32();
+                    var copy = Telegraph.ReadVisual(r, null);
+                    OCheck("remote warning shape " + source.Shape,
+                        copy.Shape == source.Shape && copy.Origin == source.Origin &&
+                        copy.Radius == source.Radius && copy.Length == source.Length && !Telegraph.Active.Contains(copy));
+                    copy.ResolveNow();
+                    OCheck("remote warning never deals damage " + source.Shape, Game.Player.Health.Current == hp);
+                    Destroy(copy.gameObject);
+                }
+                source.Cancel();
+            }
+            var shot = MonsterProjectile.Fire(null, "mon_bolt", origin, Vector2.right, 3f, 5f, 1f, 999, 5f, Color.red);
+            using (var r = PartyWire.Reader(PartyWire.Build(w => shot.WriteVisual(w))))
+            {
+                r.ReadInt32();
+                var copy = MonsterProjectile.ReadVisual(r, null, new Dictionary<int, EnemyController>());
+                OCheck("remote projectile is visual only and at host position",
+                    !MonsterProjectile.Active.Contains(copy) && copy.transform.position == shot.transform.position);
+                Destroy(copy.gameObject);
+            }
+            Destroy(shot.gameObject);
+        }
+
         void OnlineCodecChecks()
         {
             var cases = new[]
@@ -149,6 +188,9 @@ namespace DotRPG
             var bron = party.AddCompanion("merc_bron");
             Game.Flow.TravelTo(MapRegistry.Forest);
             yield return Wait(2.6f);
+            // This is an input-routing fixture; mercenaries now normally appear only inside dungeons.
+            party.SetDungeonCompanions(true);
+            yield return Wait(0.2f);
             bron = party.Find("merc_bron");
             if (bron == null) { OCheck("loopback: companion missing after travel", false); yield break; }
             // Clear the field so only the staged skeleton matters.
@@ -200,6 +242,7 @@ namespace DotRPG
             OCheck($"loopback attacks: presses={presses} damageDealt={dealt} skeletonDead={(skel == null || skel.IsDead)}", dealt > 0);
             bron.Input = oldInput;
             party.RemoveCompanion("merc_bron");
+            party.SetDungeonCompanions(false);
             yield return Wait(0.3f);
         }
 

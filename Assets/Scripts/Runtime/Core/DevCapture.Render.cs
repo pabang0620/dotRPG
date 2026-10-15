@@ -322,6 +322,12 @@ namespace DotRPG
 
         IEnumerator Shot(string name)
         {
+            if (Application.isBatchMode)
+            {
+                yield return PresentationShot(name);
+                Log("shot " + name + " (render texture)");
+                yield break;
+            }
             yield return new WaitForEndOfFrame();
             // ScreenCapture lives in an optional module this project does not include; read the back buffer instead.
             var tex = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);

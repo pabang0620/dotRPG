@@ -218,13 +218,8 @@ namespace DotRPG
             bool has = Game.Party.Has(MercIdFor("kael"));
             if (KaelWanted(outsideTown) && !has)
             {
-                var roster = Game.Session.PartyRoster;
-                if (roster.Count >= PartyManager.MaxCompanions)
-                {
-                    benched = roster[roster.Count - 1];
-                    Game.Party.RemoveCompanion(benched);
-                }
-                Game.Party.AddCompanion(MercIdFor("kael"));
+                // Only an empty seat: a party the player put together (mercenaries) is never broken up for him.
+                if (Game.Session.PartyRoster.Count < PartyManager.MaxCompanions) Game.Party.AddCompanion(MercIdFor("kael"));
             }
             else if (!KaelWanted(outsideTown) && has)
             {
@@ -241,14 +236,8 @@ namespace DotRPG
             if (Game.Party == null) return;
             string id = MercIdFor(actor);
             if (MercenaryDatabase.Get(id) == null || Game.Party.Has(id)) return;
-            var roster = Game.Session.PartyRoster;
-            // A story companion always gets a seat: the last hired mercenary steps out.
-            if (roster.Count >= PartyManager.MaxCompanions)
-            {
-                string bench = roster[roster.Count - 1];
-                Game.Party.RemoveCompanion(bench);
-                GameEvents.RaiseToast(L.F("{0}이(가) 잠시 파티에서 빠졌습니다.", L.T(MercenaryDatabase.Get(bench)?.name)));
-            }
+            // Only an empty seat: the mercenaries the player chose keep theirs.
+            if (Game.Session.PartyRoster.Count >= PartyManager.MaxCompanions) return;
             Game.Party.AddCompanion(id);
         }
 

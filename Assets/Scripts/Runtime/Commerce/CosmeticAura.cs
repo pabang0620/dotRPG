@@ -11,6 +11,7 @@ namespace DotRPG
         // front of it (one renderer behind would let a robe hem hide the near arc and the ring looks displaced).
         SpriteRenderer aura, auraFront;
         CosmeticStore store;
+        CosmeticProduct worn;
         static readonly System.Collections.Generic.Dictionary<(Sprite, bool), Sprite> halves =
             new System.Collections.Generic.Dictionary<(Sprite, bool), Sprite>();
 
@@ -72,8 +73,36 @@ namespace DotRPG
 
         public static void Attach(PlayerController player, CosmeticStore store)
         {
-            var view = player.gameObject.AddComponent<CosmeticAura>();
+            var view = Create(player);
             view.store = store;
+            store.Changed += view.Refresh;
+            view.Refresh();
+            AuraFootprints.Attach(player, () => store.Equipped); // [COSMETIC] footprints graded by the aura's rarity
+        }
+
+        /// <summary>
+        /// [COSMETIC] Another person's worn aura (town neighbour, party member) from the network: the same ring and
+        /// footprints as on their own screen. An empty or unknown id takes it off.
+        /// </summary>
+        public static void ShowWorn(PlayerController player, string auraId)
+        {
+            var product = string.IsNullOrEmpty(auraId) ? null : CosmeticCatalog.Find(auraId);
+            if (product != null && product.IsSkin) product = null;
+            var view = player.GetComponent<CosmeticAura>();
+            if (view == null)
+            {
+                if (product == null) return;
+                view = Create(player);
+                AuraFootprints.Attach(player, () => view != null ? view.worn : null);
+            }
+            if (view.store != null) return; // the local player's aura follows its own store
+            view.worn = product;
+            view.Refresh();
+        }
+
+        static CosmeticAura Create(PlayerController player)
+        {
+            var view = player.gameObject.AddComponent<CosmeticAura>();
             view.aura = new GameObject("CosmeticAura").AddComponent<SpriteRenderer>();
             view.aura.transform.SetParent(player.transform, false);
             view.aura.transform.localPosition = new Vector3(0f, 0.08f, 0f);
@@ -86,14 +115,16 @@ namespace DotRPG
             view.auraFront.sortingOrder = 1;
             HdMaterial.Apply(view.auraFront);
             player.GetComponent<YSort>().Refresh();
-            store.Changed += view.Refresh;
-            view.Refresh();
-            AuraFootprints.Attach(player, store); // [COSMETIC] footprints graded by the aura's rarity
+            return view;
         }
+
+        /// <summary>What is worn: the local store's choice, or the aura another person reported.</summary>
+        CosmeticProduct Product => store != null ? store.Equipped : worn;
 
         void Refresh()
         {
-            var product = store.Equipped;
+            var product = Product;
+            if (product == null) { aura.enabled = auraFront.enabled = false; return; }
             var full = ForProduct(product);
             aura.sprite = Half(full, false);
             auraFront.sprite = Half(full, true);
@@ -103,7 +134,7 @@ namespace DotRPG
 
         void Update()
         {
-            var product = store?.Equipped;
+            var product = Product;
             if (product != null && product.Effect != CosmeticEffect.None && aura.enabled) aura.color = auraFront.color = product.ColorAt(Time.time);
         }
 

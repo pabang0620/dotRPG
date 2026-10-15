@@ -125,6 +125,38 @@ namespace DotRPG
 
         SpriteRenderer edge, fill;
         float flashAge = -1f;
+        bool visualOnly;
+        static int nextVisualId;
+        readonly int visualId = ++nextVisualId;
+
+        internal void WriteVisual(System.IO.BinaryWriter w)
+        {
+            w.Write(visualId); w.Write((byte)Shape);
+            PartyWire.WriteVec(w, Origin); PartyWire.WriteVec(w, Direction);
+            w.Write(Radius); w.Write(Inner); w.Write(Length); w.Write(Width); w.Write(Angle);
+            w.Write(Windup); w.Write(Age);
+        }
+
+        internal static Telegraph ReadVisual(System.IO.BinaryReader r, Telegraph existing)
+        {
+            var shape = (TelegraphShape)r.ReadByte();
+            var origin = PartyWire.ReadVec(r); var dir = PartyWire.ReadVec(r);
+            float radius = r.ReadSingle(), inner = r.ReadSingle(), length = r.ReadSingle(), width = r.ReadSingle();
+            float angle = r.ReadSingle(), windup = r.ReadSingle(), age = r.ReadSingle();
+            var t = existing;
+            if (t == null)
+            {
+                t = Create(null, shape, origin, dir, windup, 0, 0);
+                t.visualOnly = true;
+                t.Radius = radius; t.Inner = inner; t.Length = length; t.Width = width; t.Angle = angle;
+                t.Build();
+                Active.Remove(t); // remote warnings never influence host simulation or AI
+            }
+            t.Age = age;
+            t.Origin = origin;
+            t.transform.position = origin;
+            return t;
+        }
 
         // =============================== Factories ===============================
 
@@ -215,7 +247,7 @@ namespace DotRPG
                     fill.transform.rotation = edge.transform.rotation;
                 }
             }
-            RegisterDanger();
+            if (!visualOnly) RegisterDanger();
             Apply();
         }
 
@@ -376,10 +408,13 @@ namespace DotRPG
         {
             Resolved = true;
             Active.Remove(this);
-            var inside = MembersInside();
-            GameObject attacker = Owner != null ? Owner.gameObject : null;
-            MonsterHits.Apply(inside, damage, Origin, knockback, unblockable, attacker);
-            OnResolve?.Invoke(this, inside);
+            if (!visualOnly)
+            {
+                var inside = MembersInside();
+                GameObject attacker = Owner != null ? Owner.gameObject : null;
+                MonsterHits.Apply(inside, damage, Origin, knockback, unblockable, attacker);
+                OnResolve?.Invoke(this, inside);
+            }
             flashAge = 0f;
             if (Shape != TelegraphShape.Donut && Shape != TelegraphShape.Rect)
             {

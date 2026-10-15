@@ -206,7 +206,7 @@ namespace DotRPG
             // The price is on the buy button; here only what it is (kept short so it never runs under the button).
             string have = product.IsFree ? L.T("무료") : owned ? L.T("<color=#8fe28f>보유 중</color>") : store.IsAvailable ? "" : L.T("<color=#8c96a8>온라인 전용</color>");
             description.text = skin != null
-                ? L.F("<color={0}>{1} 스킨</color> · {2} 전용 · 영구 소장", CosmeticCatalog.RarityHex(product.Rarity), L.T(CosmeticCatalog.RarityName(product.Rarity)), L.T(CharacterClassInfo.Get(skin.cls).displayName)) + "\n" + L.T(skin.blurb) + "\n" + L.F("<color=#b8c4d8>8방향 모든 동작 전용 그림 · {0}</color>", skin.afterimage ? L.T("걸으면 잔상과 입자") : L.T("주위에 빛 입자")) + "\n" + have
+                ? L.F("<color={0}>{1} 스킨</color> · {2} 전용 · 영구 소장", CosmeticCatalog.RarityHex(product.Rarity), L.T(CosmeticCatalog.RarityName(product.Rarity)), L.T(CharacterClassInfo.Get(skin.cls).displayName)) + "\n" + L.T(skin.blurb) + "\n" + (skin.trail == SkinTrailKind.None ? L.T("<color=#b8c4d8>8방향 모든 동작 전용 그림</color>") : L.F("<color=#b8c4d8>8방향 모든 동작 전용 그림 · {0}</color>", skin.afterimage ? L.T("걸으면 잔상과 입자") : L.T("주위에 빛 입자"))) + "\n" + have
                 : L.F("{0} 등급 발밑 오라 · 영구 소장\n모든 직업 공용", product.IsFree ? L.T("기본") : L.T(CosmeticCatalog.RarityName(product.Rarity))) + "\n" + have;
             actionLabel.text = equipped ? (skin != null ? L.T("벗기") : L.T("장착 중")) : owned ? L.T("장착하기") : offer != null ? L.F("{0}로 구매", offer.LocalizedPrice)
                 : product.GaugeOnly && store.IsAvailable ? L.T("선택 게이지로만 획득") : L.T("온라인 전용");

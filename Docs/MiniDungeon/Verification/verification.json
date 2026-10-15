@@ -245,6 +245,6 @@
       "failed": 0
     },
     "deploymentPerformed": false,
-    "migrationRequired": "server/migrations/0041_mini_dungeon.sql"
+    "migrationRequired": "server/migrations/0042_mini_dungeon.sql"
   }
 }

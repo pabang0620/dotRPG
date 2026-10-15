@@ -1682,5 +1682,21 @@
  "운영에서는 난수를 바꿀 수 없습니다": "Không thể đổi số ngẫu nhiên khi vận hành",
  "semver 형식이 아닙니다": "Không phải chuỗi semver",
  "확률표 지문": "Dấu vân tay bảng tỉ lệ",
- "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Nhật ký công bố bảng tỉ lệ (0040, không gắn với tài khoản). Điều khoản dịch vụ Điều 14-2 khoản 3"
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Nhật ký công bố bảng tỉ lệ (0040, không gắn với tài khoản). Điều khoản dịch vụ Điều 14-2 khoản 3",
+ "제안한 내용이 달라져 교환이 취소되었습니다.": "Giao dịch đã bị hủy vì đề nghị đã thay đổi.",
+ "거래 상대를 찾을 수 없습니다.": "Không tìm thấy đối tác giao dịch.",
+ "같은 아이템을 두 번 올릴 수 없습니다.": "Không thể đưa cùng một vật phẩm hai lần.",
+ "교환 내용이 바뀌었습니다. 다시 확인하세요.": "Giao dịch đã thay đổi. Hãy kiểm tra lại.",
+ "교환 시간이 지났습니다.": "Giao dịch đã hết thời gian.",
+ "교환을 찾을 수 없습니다.": "Không tìm thấy giao dịch.",
+ "교환할 골드나 아이템을 올려 주세요.": "Hãy đưa vàng hoặc vật phẩm để trao đổi.",
+ "귀속된 아이템은 교환할 수 없습니다.": "Vật phẩm đã khóa không thể trao đổi.",
+ "상대가 다른 교환 중입니다.": "Người chơi đó đang trong một giao dịch khác.",
+ "상대가 아직 수락하지 않았습니다.": "Người chơi kia chưa chấp nhận.",
+ "아이템을 찾을 수 없습니다.": "Không tìm thấy vật phẩm.",
+ "양쪽이 잠근 뒤에 확정할 수 있습니다.": "Chỉ có thể xác nhận sau khi cả hai bên đã khóa.",
+ "요청을 받은 사람만 할 수 있습니다.": "Chỉ người nhận được yêu cầu mới có thể làm việc này.",
+ "이미 끝난 교환입니다.": "Giao dịch này đã kết thúc.",
+ "이미 진행 중인 교환이 있습니다.": "Bạn đang có một giao dịch chưa xong.",
+ "받았습니다: {0}": "Đã nhận: {0}"
 }

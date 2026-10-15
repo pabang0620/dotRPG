@@ -1682,5 +1682,21 @@
  "운영에서는 난수를 바꿀 수 없습니다": "RNG tidak bisa diubah di produksi",
  "semver 형식이 아닙니다": "Bukan string semver",
  "확률표 지문": "Sidik tabel peluang",
- "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Catatan publikasi tabel peluang (0040, tidak terkait akun). Ketentuan Layanan Pasal 14-2 ayat 3"
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Catatan publikasi tabel peluang (0040, tidak terkait akun). Ketentuan Layanan Pasal 14-2 ayat 3",
+ "제안한 내용이 달라져 교환이 취소되었습니다.": "Pertukaran dibatalkan karena penawaran berubah.",
+ "거래 상대를 찾을 수 없습니다.": "Mitra pertukaran tidak ditemukan.",
+ "같은 아이템을 두 번 올릴 수 없습니다.": "Kamu tidak bisa menawarkan item yang sama dua kali.",
+ "교환 내용이 바뀌었습니다. 다시 확인하세요.": "Pertukaran berubah. Periksa lagi.",
+ "교환 시간이 지났습니다.": "Waktu pertukaran habis.",
+ "교환을 찾을 수 없습니다.": "Pertukaran tidak ditemukan.",
+ "교환할 골드나 아이템을 올려 주세요.": "Tawarkan emas atau item untuk ditukar.",
+ "귀속된 아이템은 교환할 수 없습니다.": "Item terikat tidak bisa ditukar.",
+ "상대가 다른 교환 중입니다.": "Pemain itu sedang dalam pertukaran lain.",
+ "상대가 아직 수락하지 않았습니다.": "Pemain lain belum menerima.",
+ "아이템을 찾을 수 없습니다.": "Item tidak ditemukan.",
+ "양쪽이 잠근 뒤에 확정할 수 있습니다.": "Kamu baru bisa mengonfirmasi setelah kedua pihak mengunci.",
+ "요청을 받은 사람만 할 수 있습니다.": "Hanya pemain yang menerima permintaan yang bisa melakukannya.",
+ "이미 끝난 교환입니다.": "Pertukaran ini sudah berakhir.",
+ "이미 진행 중인 교환이 있습니다.": "Kamu sudah punya pertukaran yang sedang berlangsung.",
+ "받았습니다: {0}": "Diterima: {0}"
 }

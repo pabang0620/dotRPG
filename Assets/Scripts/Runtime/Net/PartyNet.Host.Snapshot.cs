@@ -10,9 +10,12 @@ namespace DotRPG
         {
             foreach (var e in EnemyController.Active)
             {
-                if (e == null || e.NetId != 0 || e.IsDead) continue;
+                if (e == null || e.IsDead || e.Puppet) continue;
+                // [8] Monsters inherited at a host handover keep their numbers but were never registered here: without
+                // this, members who (re)join after the handover never get them (invisible monsters that still hit).
+                if (e.NetId != 0 && enemies.ContainsKey(e.NetId)) continue;
                 if (FieldMode && !e.Shared) continue; // [8] quest and story spawns stay on this PC
-                int id = nextEnemyId++;
+                int id = e.NetId != 0 ? e.NetId : nextEnemyId++;
                 e.NetId = id;
                 if (e.RefEpoch <= 0) e.RefEpoch = Mathf.Max(1, FieldSession.HostEpoch); // [8] fixed for the monster's life
                 enemies[id] = e;
@@ -85,6 +88,8 @@ namespace DotRPG
                 w.Write(e.Health.Max);
                 w.Write(e.NetFrozen);
             }
+            WriteWarnings(w);
+            WriteProjectiles(w);
         });
 
         // ---------------- actions (puppets on member PCs replay them) ----------------

@@ -454,6 +454,10 @@
  "체크한 퀘스트 {0}개를 자동 진행합니다. 아무 키나 누르면 멈춥니다.": "Auto-progressing {0} checked quests. Press any key to stop.",
  "체크한 퀘스트에 지금 할 일이 없습니다.": "Nothing to do right now for the checked quests.",
  "퀘스트 완료! 다음 퀘스트도 진행하려면 [자동 진행]을 다시 누르세요.": "Quest complete! Press [Auto Progress] again to continue with the next quest.",
+ "{0}장 퀘스트를 끝까지 자동 진행합니다. 아무 키나 누르면 멈춥니다.": "Auto-progressing all of Chapter {0}. Press any key to stop.",
+ "{0}장 퀘스트를 모두 마쳤습니다. 다음 장은 [자동 진행]을 다시 누르세요.": "Chapter {0} quests complete! Press [Auto Progress] again for the next chapter.",
+ "레벨 {0}까지 사냥 중 (다음 퀘스트 {1})": "Hunting until Lv.{0} (next quest {1})",
+ "체크한 퀘스트를 모두 마쳤습니다.": "All checked quests are complete.",
  "퀘스트 자동 진행을 시작합니다. 퀘스트 창에서 진행할 퀘스트를 체크할 수 있습니다.": "Quest Auto Progress started. You can check which quests to run in the Quest window.",
  "퀘스트가 시작되기를 기다립니다.": "Waiting for the quest to start.",
  "아린": "Arin",
@@ -476,5 +480,11 @@
  "{0}에게 보고한다": "Report to {0}",
  "완료": "Complete",
  "{0}이(가) 잠시 파티에서 빠졌습니다.": "{0} has left the party for a while.",
- "기사단원": "Knight"
+ "기사단원": "Knight",
+ "1장은 자동으로 진행됩니다. 아무 키나 누르면 직접 조작하고, 손을 떼면 다시 이어집니다.": "Chapter 1 plays automatically. Press any key to take control; let go and it carries on.",
+ "직접 조작 중입니다. 손을 떼면 1장 자동 진행이 다시 이어집니다.": "You are in control. Let go of the keys and Chapter 1 auto-progress picks up again.",
+ "진행할 서브퀘스트가 없습니다.": "No side quests to run.",
+ "서브퀘스트 자동진행: 서브퀘스트 {0}개를 모두 받아서 진행합니다. 아무 키나 누르면 멈춥니다.": "Side quest auto-progress: taking and running all {0} side quests. Press any key to stop.",
+ "서브퀘스트를 모두 마쳤습니다.": "All side quests are done.",
+ "서브퀘스트 자동진행": "Side Quest Auto"
 }

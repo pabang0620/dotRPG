@@ -99,8 +99,22 @@ export async function attachRelay(server: Server): Promise<RelayHandle> {
     await room.finish();
   }
 
+  // 끝난 파티 런의 방은 바로 닫지 않는다: 보스를 잡은 뒤 결과 창(카드 고르기)에 있는 동안 연결이 끊겼다고 뜨지 않게
+  // 각자 마을로 돌아가며 나갈 때까지(최대 RELAY_RUN_END_GRACE_MS) 그대로 둔다. 새 입장은 티켓 단계에서 이미 막힌다.
+  const endingRooms = new Set<string>();
+
   function applySnapshot(room: RelayRoom, snap: RoomSnapshot | null): void {
     if (room.closed) return;
+    if (snap && snap.closed && snap.kind === 'run' && room.conns.size > 0 && cfg.runEndGraceMs > 0) {
+      if (endingRooms.has(room.key)) return;
+      endingRooms.add(room.key);
+      const t = setTimeout(() => {
+        endingRooms.delete(room.key);
+        if (!room.closed) applySnapshot(room, null);
+      }, cfg.runEndGraceMs);
+      t.unref();
+      return;
+    }
     if (!snap || snap.closed) {
       room.broadcastText({ t: 'room.closed', reason: 'closed' });
       for (const s of room.conns.values()) {

@@ -1,0 +1,37 @@
+[3.27] capture started
+[5.52] verification audio volume: 0
+PARTY solo start: members=1 local==Game.Player=True leader==local=True PASS
+PARTY party window open: state=Inventory active=True PASS
+[9.89] shot party_01_window_empty (render texture)
+PARTY hire 3 (4th refused): bron=True kai=True elin=True sera=False members=4 roster=[merc_bron,merc_kai,merc_elin] seraButton='자리 없음' PASS
+[10.55] shot party_02_window_full (render texture)
+PARTY dismiss + rehire kai: removed=True count=3 readded=True count=4 kaiObject=True PASS
+PARTY companions spawned beside the player: dist=[1.2,0.6,1.0] levels=[6,6,6] local Lv6 PASS
+PARTY distinct looks=3 classes=[Warrior,Warrior,Mage] weapons=[eq_sword_1_r,eq_sword_1_r,eq_staff_1_r] PASS
+PARTY companion damage scale=0.41 elin atk=9 vs same-gear player 22 (40%) local atk=10 FAIL
+PARTY skill slots by level: bron open=11000 supports=sup_dmg FAIL
+PARTY static CharacterStats = local member: maxHp 100==100 mp 115==115 session mana mirrors=True PASS
+PARTY 4 members follow across travel: map=forest dist=[1.2,1.2,1.2] PASS
+PARTY party frames shown: 3 PASS
+PARTY members refuse member hits: False/False/False hp 100->100 248->248 PASS
+PARTY local-only pickups: companion on it -> gold 100->100 dropExists=True; local walks over -> 107 PASS
+[23.22] shot party_03_fight (render texture)
+[34.23] shot party_04_fight (render texture)
+[45.22] shot party_05_fight (render texture)
+PARTY companions deal damage: 나=30, 엘린=825, 브론=200, 카이=89 PASS
+PARTY companions used skills: True mp spent=[0,0,0] PASS
+PARTY enemies targeted a companion: True PASS
+PARTY xp once per kill: kills=10 gained=70 expected=70 Lv6 PASS
+PARTY companion downed -> auto revive: downed=True revived=True hp=0.50 after=8.0s alive=True PASS
+PARTY no friendly damage during the fight: memberHits=0 local alive=True PASS
+PARTY hurt monster targets its attacker: 나 threat local=39 PASS
+PARTY war cry takes aggro: target=나 threat bron=0 local=39 buff=5% localBuff=0% FAIL
+PARTY switch only at >=1.2x: 1.1x local=39 bron=0 -> 나; 1.3x local=39 -> 나 FAIL
+PARTY title removes companions: members=1 companionObjects=0 state=Title PASS
+PARTY continue restores roster: [merc_bron,merc_elin,merc_kai] (was [merc_bron,merc_elin,merc_kai]) members=4 near=True map=forest PASS
+[63.91] shot party_06_continued (render texture)
+PARTY solo again: members=1 roster=0 frames=0 PASS
+PARTY solo: every monster targets the local player (39 monsters) PASS
+PARTY solo kill xp: gained=7 expected=7 PASS
+PARTY summary: 23 passed, 4 failed
+[65.41] capture finished

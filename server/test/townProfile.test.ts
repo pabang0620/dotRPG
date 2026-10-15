@@ -5,6 +5,8 @@ import { newHero, seedLevel, seedWorn, type Hero } from './economyHelpers';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { connect, startServer, until, type TestServer, type WsClient } from './wsHelpers';
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 let srv: TestServer;
 const open: WsClient[] = [];
 beforeAll(async () => {
@@ -59,5 +61,19 @@ describe('town.pos 서버 값', () => {
     ca.send(pos('village', { skin: 'skin_owned' }));
     const f = await seenFrom(cb, a.id);
     expect(f).toMatchObject({ map_id: 'village', skin: 'skin_owned', level: 7, career: 1, cls: 0, weapon: 'eq_sword_1_c' });
+  });
+
+  it('오라는 소유한 것과 무료 오라만 중계하고 나머지는 빈 문자열', async () => {
+    const { a, ca, cb } = await pairInTown();
+    await getPool().query("INSERT INTO account_cosmetics (account_id, item_id, source) VALUES ((SELECT account_id FROM characters WHERE id = $1), 'aura_owned', 'gacha')", [a.dbId]);
+    const seenAura = (aura: string) => cb.waitFor((f) => f.t === 'town.pos' && f.id === a.id && f.aura === aura);
+    ca.send(pos('village', { aura: 'aura_unowned' }));
+    expect(await seenAura('')).toBeTruthy();
+    await sleep(200); // 같은 마을 위치 프레임 최소 간격(150ms)
+    ca.send(pos('village', { aura: 'aura_owned', x: 2 }));
+    expect(await seenAura('aura_owned')).toBeTruthy();
+    await sleep(200);
+    ca.send(pos('village', { aura: 'aura_sky', x: 3 }));
+    expect(await seenAura('aura_sky')).toBeTruthy();
   });
 });

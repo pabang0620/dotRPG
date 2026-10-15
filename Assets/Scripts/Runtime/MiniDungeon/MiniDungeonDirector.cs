@@ -73,6 +73,7 @@ namespace DotRPG
             else if (Game.Session.Progression.Level < d.MinLevel || Game.Session.Progression.Level > d.MaxLevel) reason = L.F("이 구간은 Lv.{0}~{1} 캐릭터만 입장할 수 있습니다.", d.MinLevel, d.MaxLevel);
             else if (Game.Dungeon != null && Game.Dungeon.InRun || Game.World?.Map.instanced == true) reason = L.T("현재 던전에서 나간 뒤 입장하세요.");
             else if (PartyNet.Active || PartyRunSession.Active || FieldSession.Active || PartyClient.Instance?.InParty == true) reason = L.T("미니던전은 1인 콘텐츠입니다. 파티를 나간 뒤 입장하세요.");
+            else if (TradeClient.Current != null || TradeClient.Busy) reason = L.T("교환을 마치거나 취소한 뒤 입장하세요.");
             else if (!Ready) reason = L.T("서버에서 오늘의 이용 시간을 확인하고 있습니다.");
             else if (RemainingSeconds <= 0f) reason = L.T("오늘의 미니던전 30분을 모두 사용했습니다. 오전 6시에 초기화됩니다.");
             else if (Game.State.Current != GameState.Playing && Game.State.Current != GameState.Inventory && Game.State.Current != GameState.Paused) reason = L.T("대화나 연출을 마친 뒤 입장하세요.");

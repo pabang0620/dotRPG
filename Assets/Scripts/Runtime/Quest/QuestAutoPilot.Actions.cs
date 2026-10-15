@@ -235,6 +235,7 @@ namespace DotRPG
         {
             if (Game.MiniDungeon?.Active == true) return; // training recovery never consumes bag potions
             var h = p.Health;
+            if (AutoPotion.On) return; // [AUTO] the auto-potion setting drinks for everyone, manual play and auto-progress alike
             if (h == null || h.Max <= 0 || Time.time < nextHeal) return;
             if (h.Current < h.Max * 0.4f) { input.next.useHealing = true; nextHeal = Time.time + 3f; }
             // MP runs dry in long hunts: drink a mana potion below 20% like a player would.
@@ -260,14 +261,78 @@ namespace DotRPG
         void WalkTo(PlayerController p, Vector2 to, float stopAt)
         {
             if (Vector2.Distance(p.Position, to) <= stopAt) return;
-            var dir = GridPath.Steer(p.Position, to);
+            var dir = AvoidNpcs(p, GridPath.Steer(p.Position, to), to);
             // Stuck on something GridPath does not know (a companion, a moving NPC): sidestep for a moment.
             if (Vector2.Distance(p.Position, lastPos) > 0.6f) { lastPos = p.Position; lastProgressAt = Time.time; }
             float stuck = Time.time - lastProgressAt;
             if (stuck > GiveUpSeconds) { Stop(L.T("길이 막혀 자동 진행을 멈췄습니다.")); return; }
+            if (stuck > NpcStuckSeconds) PassThroughNpcs(p);
             if (stuck > StuckSeconds) dir = (dir + new Vector2(-dir.y, dir.x) * (((int)(stuck / 1.5f) % 2 == 0) ? 1f : -1f)).normalized;
             input.next.move = dir;
             input.next.aim = dir;
+        }
+
+        // =============================== NPCs in the way ===============================
+        // GridPath leaves NPCs out (they walk about), so the hero walked into one and pushed against it until the
+        // 3 s sidestep, often stopping with "길이 막혀" in the crowded village. Now it bends round an NPC ahead, and
+        // when still pinned against one for a second it walks through that NPC (collision back on once apart).
+
+        const float AvoidLook = 1.5f, AvoidWidth = 0.7f, NpcStuckSeconds = 1f, NpcTouch = 0.9f, NpcRelease = 1.3f;
+        NpcController avoiding;
+        float avoidSign;
+        readonly List<Collider2D> ghosted = new List<Collider2D>();
+        Collider2D ghostBody;
+
+        Vector2 AvoidNpcs(PlayerController p, Vector2 dir, Vector2 to)
+        {
+            if (dir.sqrMagnitude < 0.0001f) return dir;
+            Vector2 me = p.Position, left = new Vector2(-dir.y, dir.x);
+            NpcController block = null;
+            float nearest = AvoidLook, across = 0f;
+            foreach (var n in NpcController.All)
+            {
+                if (n == null || !n.isActiveAndEnabled) continue;
+                Vector2 at = n.transform.position;
+                if (Vector2.Distance(at, to) < TalkReach) continue; // the one being walked to
+                Vector2 rel = at - me;
+                float ahead = Vector2.Dot(rel, dir), side = Vector2.Dot(rel, left);
+                if (ahead <= 0f || ahead >= nearest || Mathf.Abs(side) >= AvoidWidth) continue;
+                if (ghosted.Count > 0 && ghosted.Contains(n.GetComponent<Collider2D>())) continue; // already walking through it
+                nearest = ahead; across = side; block = n;
+            }
+            if (block == null) { avoiding = null; return dir; }
+            // Keep the side picked for this NPC so a head-on approach does not flip left / right every frame.
+            if (block != avoiding) { avoiding = block; avoidSign = across >= 0f ? -1f : 1f; }
+            float bend = 0.6f + (1f - nearest / AvoidLook);
+            return (dir + left * avoidSign * bend).normalized;
+        }
+
+        void PassThroughNpcs(PlayerController p)
+        {
+            var body = p.BodyCollider;
+            if (body == null) return;
+            if (ghostBody != body) RestoreNpcs(null);
+            ghostBody = body;
+            foreach (var n in NpcController.All)
+            {
+                if (n == null || !n.isActiveAndEnabled || Vector2.Distance(n.transform.position, p.Position) > NpcTouch) continue;
+                var c = n.GetComponent<Collider2D>();
+                if (c == null || ghosted.Contains(c)) continue;
+                Physics2D.IgnoreCollision(body, c, true);
+                ghosted.Add(c);
+            }
+        }
+
+        /// <summary>Collision back on for NPCs the hero has left behind (all of them with <paramref name="p"/> null).</summary>
+        void RestoreNpcs(PlayerController p)
+        {
+            for (int i = ghosted.Count - 1; i >= 0; i--)
+            {
+                var c = ghosted[i];
+                if (c != null && p != null && ghostBody == p.BodyCollider && Vector2.Distance(c.transform.position, p.Position) < NpcRelease) continue;
+                if (c != null && ghostBody != null) Physics2D.IgnoreCollision(ghostBody, c, false);
+                ghosted.RemoveAt(i);
+            }
         }
 
         // =============================== Lookups ===============================

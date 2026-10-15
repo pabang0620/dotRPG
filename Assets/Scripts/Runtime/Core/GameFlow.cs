@@ -30,6 +30,12 @@ namespace DotRPG
             AchievementClient.Tick(); // kills add up: the server re-judges achievements once a minute
             StarPassClient.Tick(); // [CASH] 별빛 정기권: once a game day, the daily stars and sealed box
             if (transitioning || Game.State.ChangedThisFrame) return;
+            // [PARTY NET] Revived by the host meanwhile (its snapshot, the field auto revive): the "revive?" prompt goes away.
+            if (Game.State.Current == GameState.GameOver && Game.IsOnlineWorld && Game.Player != null && !Game.Player.IsDead)
+            {
+                Game.State.Set(GameState.Playing);
+                return;
+            }
             if (Game.Dungeon != null && Game.Dungeon.ReviveOpen) return; // [DUNGEON] Esc answers the coin countdown (포기)
             Game.Quest.Tick();
             var state = Game.State.Current;
@@ -430,6 +436,16 @@ namespace DotRPG
                 if (!ok) { GameEvents.RaiseToast(why); Game.Audio.PlaySfx("cancel"); return; }
                 if (Game.Player == null || !Game.Player.IsDead) return;
                 var p = Game.Player;
+                if (PartyNet.IsMember)
+                {
+                    // [PARTY NET] The host owns this body's HP: rising here alone would be undone by its next snapshot
+                    // (back to 0 HP, dead again). The host stands it up and the snapshot brings it back.
+                    PartyNet.Current.MemberRequestRevive();
+                    p.Data.Mana = p.MaxMana;
+                    Game.Audio.PlaySfx("quest");
+                    Game.State.Set(GameState.Playing);
+                    return;
+                }
                 if (Game.Party != null) Game.Party.ReviveMember(p, 1f, DungeonDirector.ReviveInvulnerable);
                 else p.Revive(1f, DungeonDirector.ReviveInvulnerable);
                 p.Data.Mana = p.MaxMana;

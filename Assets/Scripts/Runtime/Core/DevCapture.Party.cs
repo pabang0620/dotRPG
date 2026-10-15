@@ -80,6 +80,8 @@ namespace DotRPG
                 party.Count == 1 && party.Local == Game.Player && party.Leader == local && !party.HasCompanions);
             prog.AddXp(2600); // Lv10: all skill slots open, band-2 mercenary gear
             yield return Wait(0.5f);
+            // Controlled AI fixture. Normal field play no longer summons hired mercenaries.
+            party.SetDungeonCompanions(true);
 
             // ---------- 파티 window ----------
             Game.Flow.OpenWindow(Game.UI.Party);
@@ -246,6 +248,7 @@ namespace DotRPG
                 party.Count == 1 && companionObjects == 0 && Game.State.Current == GameState.Title);
             Game.Flow.ContinueGame();
             yield return Wait(2.2f);
+            party.SetDungeonCompanions(true);
             local = Game.Player;
             PCheck($"continue restores roster: [{string.Join(",", Game.Session.PartyRoster)}] (was [{rosterBefore}]) members={party.Count} near={party.Members.All(m => Vector2.Distance(m.Position, local.Position) < 4f)} map={Game.World.MapId}",
                 string.Join(",", Game.Session.PartyRoster) == rosterBefore && party.Count == 4 && party.Members.All(m => Vector2.Distance(m.Position, local.Position) < 4f));

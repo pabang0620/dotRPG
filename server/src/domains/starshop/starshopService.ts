@@ -48,9 +48,9 @@ import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 const RARITIES: Rarity[] = ['unique', 'epic', 'rare', 'common'];
 type GearBanner = Exclude<Banner, CosmeticBanner>;
 
-/** 등급별 뽑기 풀: 오라 뽑기는 오라만, 스킨 뽑기는 에픽·유니크 자리에 내 직업 스킨 */
+/** 등급별 뽑기 풀: 오라 뽑기는 오라만, 스킨 뽑기는 모든 등급이 내 직업 스킨 */
 function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string) {
-  if (banner === 'skin' && (rarity === 'epic' || rarity === 'unique')) return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity);
+  if (banner === 'skin') return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity);
   return cosmeticsOf(rarity);
 }
 

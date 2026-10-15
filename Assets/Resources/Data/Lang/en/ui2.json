@@ -619,5 +619,20 @@
  "지상월드": "Surface World",
  "지역 등급 Lv.{0}~{1} · 몬스터 Lv.{2} · 귀환: {3}\n": "Area Lv.{0}~{1} · Monster Lv.{2} · Return: {3}\n",
  "지하월드": "Underworld",
- "현재 위치": "Current Location"
+ "현재 위치": "Current Location",
+ "<color=#78c8ff>◎</color> 현재 위치   <color=#ffe066>◆</color> 선택 지역   금색: 사냥터   청록: 마을길   화살표: 다음 마을": "<color=#78c8ff>◎</color> Current location   <color=#ffe066>◆</color> Selected region   Gold: hunting grounds   Teal: town roads   Arrows: next town",
+ "마을 → 사냥터 1 → 위쪽 2 / 아래쪽 3 → 사냥터 4 → 다음 마을\n숲 → 바위 협곡 → 눈꽃 숲 → 고대 성소 → 숲 순서로 섬을 순환합니다.": "Town → Hunting Ground 1 → upper 2 / lower 3 → Hunting Ground 4 → next town\nThe island loops Forest → Rock Canyon → Snowflower Woods → Ancient Sanctum → Forest.",
+ "숲": "Forest",
+ "협곡": "Canyon",
+ "설원": "Snowfield",
+ "성소": "Sanctum",
+ "▼ 퀘스트 목적지: {0}": "▼ Quest destination: {0}",
+ "자동 물약: 체력 물약이 없습니다.": "Auto potion: no health potions left.",
+ "자동 물약: 마나 물약이 없습니다.": "Auto potion: no mana potions left.",
+ "{0}(으)로 돌아가는 중": "Heading back to {0}",
+ "물약 자동 사용": "Auto potion",
+ "자동 체력 물약 기준": "Auto health potion at",
+ "자동 마나 물약 기준": "Auto mana potion at",
+ "HP {0}% 아래": "HP below {0}%",
+ "MP {0}% 아래": "MP below {0}%"
 }

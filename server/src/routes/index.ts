@@ -25,6 +25,7 @@ import { createRaidRouter } from '../domains/raids/raidRoutes';
 import { createQuestRouter } from '../domains/quests/questRoutes';
 import { createShopRouter } from '../domains/shop/shopRoutes';
 import { createStarshopRouter } from '../domains/starshop/starshopRoutes';
+import { createTradeRouter } from '../domains/trade/tradeRoutes';
 import { createSystemRouter } from '../domains/system/systemRoutes';
 import { createPresenceRouter } from '../domains/antiabuse/presenceRoutes';
 import { createCareerGrantRouter } from '../domains/characters/careerGrantRoutes';
@@ -80,6 +81,7 @@ export function createRouter(): Router {
   // 6단계: 경매·우편(캐릭터 경로 아래, 데이터 버전까지 검사)
   r.use(createAuctionRouter());
   r.use(createMailRouter());
+  r.use(createTradeRouter()); // 1:1 교환(캐릭터 경로 아래, 데이터 버전까지 검사)
   // 8단계: 전투 중계 입장 티켓·전송 전환, 필드 파티 세션(캐릭터 경로 아래, 데이터 버전까지 검사)
   r.use(createRelayRouter());
   r.use(createFieldRouter());

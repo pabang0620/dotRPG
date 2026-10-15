@@ -83,6 +83,10 @@ namespace DotRPG
         /// <summary>[SERVER 6] Forget the row counts (another character entered).</summary>
         public static void ClearStackRows() => stackRows.Clear();
 
+        /// <summary>[TRADE] One stored server row (0 when unknown).</summary>
+        public static int StackRow(string location, string key, string bind) =>
+            stackRows.TryGetValue(location + "|" + key + "|" + (bind ?? "none"), out int n) ? n : 0;
+
         /// <summary>Stores one server row and returns the key's total at that location over every binding.</summary>
         public static int SetStackRow(string location, string key, string bind, int count)
         {

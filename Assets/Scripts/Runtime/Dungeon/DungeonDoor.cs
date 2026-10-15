@@ -67,9 +67,14 @@ namespace DotRPG
         {
             if (!IsOpen || fired || !Game.IsPlaying) return;
             var p = Game.Player;
-            if (p == null || p.IsDead) return;
+            if (p == null) return;
             var r = new Rect(area.xMin - EnterMargin * 0.5f, area.yMin - EnterMargin, area.width + EnterMargin, area.height + EnterMargin);
-            if (!r.Contains(p.Position)) return;
+            bool someoneIn = !p.IsDead && r.Contains(p.Position);
+            // [PARTY NET] A downed host does not hold the party back: another person's body in the gate leads the way.
+            if (!someoneIn && p.IsDead && PartyNet.IsHost && Game.Party != null)
+                foreach (var m in Game.Party.Members)
+                    if (m != null && m != p && !m.IsDead && Game.Party.IsNetMember(m) && r.Contains(m.Position)) { someoneIn = true; break; }
+            if (!someoneIn) return;
             fired = true;
             Entered?.Invoke();
         }

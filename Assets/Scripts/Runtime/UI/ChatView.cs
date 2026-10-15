@@ -231,7 +231,12 @@ namespace DotRPG
                     rest = sp2 < 0 ? "" : rest.Substring(sp2 + 1);
                     target = ChatChannel.Whisper;
                 }
-                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용")); return; }
+                else if (cmd == "/trade" || cmd == "/교환") // i18n-ignore command alias
+                {
+                    TradeScreen.RequestAndOpen(rest.Trim()); // [TRADE] 1:1 교환
+                    return;
+                }
+                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용 · /교환 이름")); return; }
                 channel = target;
                 whisperTo = to;
                 channelChosen = true;
@@ -285,6 +290,12 @@ namespace DotRPG
         {
             string name = channel == ChatChannel.Whisper && !string.IsNullOrEmpty(whisperTo) ? $"▶{whisperTo}" : ChatRules.ChannelName(channel);
             channelText.text = $"<color={ChatRules.ChannelColor(channel)}>[{name}]</color>";
+            // The typed text starts right after the channel tag ("[일반]" is short, "▶name" long), not at a fixed 98 px.
+            float w = Mathf.Ceil(channelText.preferredWidth);
+            channelText.rectTransform.sizeDelta = new Vector2(w, InputH);
+            float left = 8f + w + 6f;
+            field.textComponent.rectTransform.offsetMin = new Vector2(left, field.textComponent.rectTransform.offsetMin.y);
+            ((Graphic)field.placeholder).rectTransform.offsetMin = new Vector2(left, ((Graphic)field.placeholder).rectTransform.offsetMin.y);
         }
 
         void Redraw()

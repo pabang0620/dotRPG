@@ -19,6 +19,14 @@ const enter = (h: Hero, tier = 10, requestId?: string) => post(app, h, '/mini-du
 const kill = (h: Hero, id: string, monsterRef = randomUUID(), requestId?: string) => post(app, h, `/mini-dungeon/runs/${id}/kills`, { monster_ref: monsterRef }, requestId);
 const leave = (h: Hero, id: string, reason = 'left', requestId?: string) => post(app, h, `/mini-dungeon/runs/${id}/leave`, { reason }, requestId);
 async function hero(level = 10): Promise<Hero> { const h = await newHero(app); await seedLevel(h, level); return h; }
+async function tradePair() {
+  const a = await hero(); const b = await hero();
+  const named = await getPool().query<{ id: string; name: string }>('SELECT id, name FROM characters WHERE id = ANY($1::bigint[])', [[a.dbId, b.dbId]]);
+  for (const h of [a, b])
+    await getPool().query(`INSERT INTO online_sessions (account_id, character_id, family_id, map_id, map_since, map_changed_at, last_seen_at)
+      VALUES ((SELECT account_id FROM characters WHERE id = $1), $1, $2, 'village', $3, $3, $3)`, [h.dbId, randomUUID(), now]);
+  return { a, b, bName: named.rows.find((c) => Number(c.id) === b.dbId)!.name };
+}
 async function entered(level = 10) {
   const h = await hero(level);
   const res = await enter(h, Math.floor(level / 10) * 10);
@@ -244,6 +252,62 @@ describe('daily XP-only mini dungeon HTTP', () => {
     const a = await entered(); const b = await hero();
     expect((await kill(b, a.run.id)).status).toBe(404);
     expect((await leave(b, a.run.id)).status).toBe(404);
+  });
+  test.each(['pending', 'active'])('an open %s trade blocks both participants from entering mini', async (state) => {
+    const { a, b, bName } = await tradePair();
+    const opened = await post(app, a, '/trades', { target_name: bName });
+    expect(opened.status).toBe(201);
+    const id = opened.body.data.trade.id as string;
+    if (state === 'active') expect((await post(app, b, `/trades/${id}/accept`, {})).status).toBe(200);
+    expect((await enter(a)).body.errors.code).toBe('TRADE_ALREADY_OPEN');
+    expect((await enter(b)).body.errors.code).toBe('TRADE_ALREADY_OPEN');
+    expect((await post(app, a, `/trades/${id}/cancel`, {})).status).toBe(200);
+    expect((await enter(a)).status).toBe(201);
+  });
+  test.each(['requester', 'target'])('mini blocks trade creation when the %s is training', async (role) => {
+    const { a, b, bName } = await tradePair();
+    const trainer = role === 'requester' ? a : b;
+    const started = await enter(trainer);
+    expect(started.status).toBe(201);
+    const blocked = await post(app, a, '/trades', { target_name: bName });
+    expect(blocked.status).toBe(409);
+    expect(blocked.body.errors.code).toBe('MINI_DUNGEON_ACTIVE');
+    expect((await leave(trainer, started.body.data.active_run.id)).status).toBe(200);
+    expect((await post(app, a, '/trades', { target_name: bName })).status).toBe(201);
+  });
+  test.each(['requester', 'target'])('racing mini entry against trade creation keeps the %s in only one mode', async (role) => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { a, b, bName } = await tradePair();
+      const trainer = role === 'requester' ? a : b;
+      const results = await Promise.all([enter(trainer), post(app, a, '/trades', { target_name: bName })]);
+      expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+      const states = await getPool().query<{ mini: number; trade: number }>(`SELECT
+        (SELECT count(*)::int FROM mini_dungeon_runs WHERE character_id = $1 AND state = 'playing') AS mini,
+        (SELECT count(*)::int FROM trades WHERE (requester_character_id = $1 OR target_character_id = $1) AND state IN ('pending','active')) AS trade`, [trainer.dbId]);
+      expect(states.rows[0]!.mini + states.rows[0]!.trade).toBe(1);
+      expect(states.rows[0]!.mini * states.rows[0]!.trade).toBe(0);
+    }
+  });
+  test.each(['requester', 'target'])('an older pending invitation cannot be accepted while its %s is training', async (role) => {
+    const { a, b } = await tradePair();
+    expect((await enter(role === 'requester' ? a : b)).status).toBe(201);
+    // Simulate a pending invitation retained by an older server, before the mutual-entry guard existed.
+    const pending = await getPool().query<{ uuid: string }>(`INSERT INTO trades
+      (requester_character_id, target_character_id, requester_account_id, target_account_id, expires_at)
+      SELECT a.id, b.id, a.account_id, b.account_id, $3 FROM characters a, characters b
+      WHERE a.id = $1 AND b.id = $2 RETURNING uuid`, [a.dbId, b.dbId, new Date(now.getTime() + 60_000)]);
+    const id = pending.rows[0]!.uuid;
+    const rejected = await post(app, b, `/trades/${id}/accept`, {});
+    expect(rejected.status).toBe(409);
+    expect(rejected.body.errors.code).toBe('MINI_DUNGEON_ACTIVE');
+    // Cleanup remains available while training.
+    expect((await post(app, b, `/trades/${id}/decline`, {})).status).toBe(200);
+  });
+  test('an expired trade invitation does not block mini entry', async () => {
+    const { a, bName } = await tradePair();
+    expect((await post(app, a, '/trades', { target_name: bName })).status).toBe(201);
+    advance(61);
+    expect((await enter(a)).status).toBe(201);
   });
   test('enforced presence must be fresh and on this mini map', async () => {
     buildApp({ PRESENCE_KILL_MODE: 'enforce' });

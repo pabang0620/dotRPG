@@ -1682,5 +1682,21 @@
  "운영에서는 난수를 바꿀 수 없습니다": "Le générateur aléatoire ne peut pas être modifié en production",
  "semver 형식이 아닙니다": "Ce n'est pas une chaîne semver",
  "확률표 지문": "Empreinte de la table des taux",
- "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Journal de publication des tables de taux (0040, non lié aux comptes). Conditions d'utilisation art. 14-2, al. 3"
+ "확률표 공개 기록(0040, 계정 무관). 이용약관 제14조의2 3항": "Journal de publication des tables de taux (0040, non lié aux comptes). Conditions d'utilisation art. 14-2, al. 3",
+ "제안한 내용이 달라져 교환이 취소되었습니다.": "L'échange a été annulé car l'offre a changé.",
+ "거래 상대를 찾을 수 없습니다.": "Le partenaire d'échange est introuvable.",
+ "같은 아이템을 두 번 올릴 수 없습니다.": "Tu ne peux pas proposer deux fois le même objet.",
+ "교환 내용이 바뀌었습니다. 다시 확인하세요.": "L'échange a changé. Vérifie-le à nouveau.",
+ "교환 시간이 지났습니다.": "L'échange a expiré.",
+ "교환을 찾을 수 없습니다.": "L'échange est introuvable.",
+ "교환할 골드나 아이템을 올려 주세요.": "Propose de l'or ou des objets à échanger.",
+ "귀속된 아이템은 교환할 수 없습니다.": "Les objets liés ne peuvent pas être échangés.",
+ "상대가 다른 교환 중입니다.": "Ce joueur est dans un autre échange.",
+ "상대가 아직 수락하지 않았습니다.": "L'autre joueur n'a pas encore accepté.",
+ "아이템을 찾을 수 없습니다.": "L'objet est introuvable.",
+ "양쪽이 잠근 뒤에 확정할 수 있습니다.": "Tu ne peux confirmer qu'une fois que les deux côtés ont verrouillé.",
+ "요청을 받은 사람만 할 수 있습니다.": "Seul le joueur qui a reçu la demande peut le faire.",
+ "이미 끝난 교환입니다.": "Cet échange est déjà terminé.",
+ "이미 진행 중인 교환이 있습니다.": "Tu as déjà un échange en cours.",
+ "받았습니다: {0}": "Reçu : {0}"
 }

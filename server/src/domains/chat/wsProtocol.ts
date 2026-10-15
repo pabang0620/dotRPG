@@ -68,6 +68,8 @@ export const townPosFrame = z.strictObject({
   cls: z.number().int().min(0).max(15),
   career: z.number().int().min(0).max(31).optional(),
   skin: z.string().max(40).optional(),
+  /** 착용 오라(고리·발자국 표시용). 소유한 것만 중계한다 */
+  aura: z.string().max(40).optional(),
   weapon: z.string().max(60).optional(),
   level: z.number().int().min(1).max(999).optional(),
 });

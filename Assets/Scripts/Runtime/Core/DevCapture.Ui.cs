@@ -20,6 +20,10 @@ namespace DotRPG
 
             // ---- Title + character select ----
             yield return Shot("01_title");
+            Game.UI.Push(Game.UI.Credits);
+            yield return Wait(0.3f);
+            yield return Shot("01b_credits");
+            Game.UI.Pop();
             Game.UI.Push(Game.UI.CharacterSelect);
             yield return Wait(0.6f);
             yield return Shot("02_character_select");
