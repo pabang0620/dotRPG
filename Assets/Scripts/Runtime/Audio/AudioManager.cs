@@ -61,6 +61,17 @@ namespace DotRPG
             return manager;
         }
 
+        /// <summary>[TRAILER] Volume a boss trailer plays at: the louder of the two settings.</summary>
+        public float TrailerVolume => Mathf.Max(musicVolume, sfxVolume);
+
+        /// <summary>[TRAILER] Silences the music while a boss trailer plays (the track keeps its place).</summary>
+        public bool MusicMuted
+        {
+            get => musicMuted;
+            set { musicMuted = value; ApplyMusicVolumes(); }
+        }
+        bool musicMuted;
+
         public void SetVolumes(float musicVol, float sfxVol)
         {
             musicVolume = musicVol;
@@ -138,7 +149,7 @@ namespace DotRPG
             {
                 var src = musicSources[i];
                 if (src == null) continue;
-                src.volume = Mathf.Sin(musicFade[i] * Mathf.PI * 0.5f) * musicVolume * MusicHeadroom;
+                src.volume = musicMuted ? 0f : Mathf.Sin(musicFade[i] * Mathf.PI * 0.5f) * musicVolume * MusicHeadroom;
             }
         }
 

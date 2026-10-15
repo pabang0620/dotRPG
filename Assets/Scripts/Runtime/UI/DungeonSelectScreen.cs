@@ -33,6 +33,7 @@ namespace DotRPG
         readonly Text[] diffLabels = new Text[4];
         Button tabWeekday, tabNormal, tabRaid, enterButton, partyButton, resetButton;
         Image banner;
+        GameObject trailerBadge;
         Text diffTitle;
         Text dayText, title, desc, info, recommend, partyText, rewards, raidLine, status, hint;
         const int SlotCount = 8;
@@ -76,6 +77,19 @@ namespace DotRPG
             w.banner = UIFactory.Image(d, "Banner", null, Color.white);
             w.banner.preserveAspect = true;
             UIFactory.Place(w.banner.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-18f, -14f), new Vector2(240f, 80f));
+            // [TRAILER] A raid banner with a boss trailer plays it on click (the 보스 영상 tag says so).
+            var bannerClick = w.banner.gameObject.AddComponent<Button>();
+            bannerClick.targetGraphic = w.banner;
+            bannerClick.transition = Selectable.Transition.None;
+            bannerClick.onClick.AddListener(() => { if (w.Selected != null && BossTrailer.Play(w.Selected)) Game.Audio.PlaySfx("select"); });
+            var badge = Panel(w.banner.transform, "TrailerBadge", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-4f, 4f), new Vector2(104f, 26f), new Color32(10, 12, 20, 215));
+            badge.raycastTarget = false;
+            var badgeText = Label(badge.transform, "Text", L.T("보스 영상 보기"), 15, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(104f, 26f), TextAnchor.MiddleCenter);
+            badgeText.color = UIColors.Highlight;
+            badgeText.resizeTextForBestFit = true; // [TOUCH] the phone font floor would spill out of the tag
+            badgeText.resizeTextMinSize = 10;
+            badgeText.resizeTextMaxSize = badgeText.fontSize;
+            w.trailerBadge = badge.gameObject;
             w.info = Label(d, "Info", "", 17, tl, tl, new Vector2(24f, -106f), new Vector2(780f, 46f));
             w.diffTitle = Label(d, "DiffTitle", L.T("<b>난이도</b>"), 19, tl, tl, new Vector2(24f, -160f), new Vector2(780f, 26f));
             for (int i = 0; i < 4; i++)
@@ -267,6 +281,9 @@ namespace DotRPG
             var numbers = DungeonDatabase.DifficultyFor(def, difficulty);
             banner.sprite = Game.Art.Get("banner_" + def.id);
             banner.enabled = banner.sprite != null;
+            bool trailer = banner.enabled && BossTrailer.Has(def);
+            banner.raycastTarget = trailer;
+            trailerBadge.SetActive(trailer);
             title.text = $"{KindBadge(def)}  <b>{L.T(def.name)}</b>  <size=20><color=#b8c4d8>{L.T(def.themeName)}</color></size>";
             desc.text = L.T(def.description);
             info.text = L.F("<color=#ffe066>보스</color> {0}    <color=#ffe066>특징 몬스터</color> {1}", L.T(def.bossName), L.T(def.featureMonster)) + "\n" +
@@ -417,6 +434,8 @@ namespace DotRPG
         {
             var def = Selected;
             if (def == null || Game.Dungeon == null) return false;
+            // [TRAILER] The first 입장 of each raid on this device shows its boss trailer, then enters.
+            if (Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null && BossTrailer.PlayOnce(def, () => TryEnter())) return false;
             string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, ResetClock.Now) : null;
             if (practice != null)
             {
@@ -434,6 +453,7 @@ namespace DotRPG
         protected override void Update()
         {
             if (TouchUi.Enabled) FitTouch(); // [TOUCH] DungeonSelectScreen.Mobile.cs
+            if (BossTrailer.Blocking) return; // [TRAILER] keys skip the trailer, they do not reach the window
             // [SWEEP] The sweep panel takes Esc (closes itself, not the window) and blocks the list keys under it.
             if (SweepOpen)
             {

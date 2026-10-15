@@ -40,6 +40,7 @@ namespace DotRPG
             Game.Quest.Tick();
             var state = Game.State.Current;
             if (Game.Cutscenes != null && Game.Cutscenes.IsPlaying) return; // Esc skips the scene instead
+            if (BossTrailer.Blocking) return; // [TRAILER] any key skips the boss trailer, no window opens under it
             // Preserve conversation skipping and the complete rebindable window dispatcher.
             if (state == GameState.Dialogue && Game.Input.PausePressed && Game.Dialogue.IsOpen) Game.Dialogue.Close();
             else if (state == GameState.Playing && Game.Input.PausePressed && MinimapView.Expanded) MinimapView.SetExpanded(false); // Esc closes the big minimap first
