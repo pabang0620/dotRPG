@@ -58,7 +58,14 @@ namespace DotRPG
         {
             var q = Game.Quest;
             Targets.RemoveAll(id => q.Database.Get(id) == null || q.StatusOf(id) == QuestStatus.Completed);
-            if (FillSubTargets() == 0) Stop(L.T("서브퀘스트를 모두 마쳤습니다."));
+            if (FillSubTargets() > 0) return;
+            GrowthGuide.Invalidate();
+            if (!GrowthGuide.Active) { Stop(L.T("서브퀘스트를 모두 마쳤습니다.")); return; }
+            // [GROWTH] Nothing left to take: hunt for the 성장 추천 until the next quest opens.
+            subMode = false;
+            growth = true;
+            goalKey = "";
+            GameEvents.RaiseToast(L.T("서브퀘스트를 모두 마쳐 성장 추천 사냥터에서 사냥합니다."));
         }
     }
 }

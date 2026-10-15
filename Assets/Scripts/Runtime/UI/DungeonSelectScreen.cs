@@ -137,6 +137,20 @@ namespace DotRPG
             Game.Flow.OpenWindow(this);
         }
 
+        /// <summary>[GROWTH] Opens the window on <paramref name="dungeonId"/>'s tab with that dungeon and difficulty chosen.</summary>
+        public void OpenOn(string dungeonId, DungeonDifficulty d)
+        {
+            var def = DungeonDatabase.Get(dungeonId);
+            if (def == null) { Open(false); return; }
+            SetKeeper(null, null);
+            tab = def.isRaid ? TabRaid : def.always ? TabNormal : TabWeekday;
+            var list = Listed;
+            selected = -1;
+            for (int i = 0; i < list.Count; i++) if (list[i].id == dungeonId) selected = i;
+            difficulty = d;
+            Game.Flow.OpenWindow(this);
+        }
+
         void SetTab(int t)
         {
             if (tab == t) return;

@@ -258,7 +258,18 @@ namespace DotRPG
             var main = Game.Quest.CurrentMain();
             var sb = new StringBuilder();
             int lines = 0;
-            if (main != null)
+            // [GROWTH] No quest to work on (the next one needs a higher level): the tracker becomes the 성장 추천 card.
+            GrowthGuide.Invalidate();
+            growthShown = GrowthGuide.Active;
+            growthLevel = Game.Session.Progression.Level;
+            growthRefreshAt = Time.unscaledTime + GrowthRefreshSeconds;
+            if (growthShown)
+            {
+                questTitle.text = GrowthGuide.HudTitle(TouchUi.Enabled);
+                sb.Append(GrowthGuide.HudBody(GrowthGuide.Build())).Append('\n');
+                lines += 2;
+            }
+            else if (main != null)
             {
                 questTitle.text = L.F("메인 · {0}", L.T(main.DisplayTitle));
                 foreach (var o in Game.Quest.ObjectivesOf(main)) { AppendObjective(sb, o); lines++; }
@@ -297,6 +308,11 @@ namespace DotRPG
         /// <summary>[TOUCH] Tracker position on a phone: below the side menu button, left of the menu / pause buttons.</summary>
         const float MobileQuestRight = 360f, MobileQuestTop = 72f;
         float questFitHeight, questFitWidth;
+        /// <summary>[GROWTH] The tracker shows the 성장 추천 card; redrawn after a level-up and every few seconds (entries left).</summary>
+        bool growthShown;
+        int growthLevel;
+        float growthRefreshAt;
+        const float GrowthRefreshSeconds = 5f;
 
         static void AppendObjective(StringBuilder sb, QuestObjective o)
         {

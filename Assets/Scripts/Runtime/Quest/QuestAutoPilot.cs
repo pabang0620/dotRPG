@@ -58,7 +58,7 @@ namespace DotRPG
             if (Active) Stop("");
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
             Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*"; Instance.huntMap = Game.World != null ? Game.World.MapId : null;
-            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false;
+            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false; Instance.growth = false;
             GuideFlags.Mark(GuideFlags.AutoHunt); // [GUIDE]
             Instance.Begin();
         }
@@ -109,8 +109,10 @@ namespace DotRPG
             if (Active) { Stop(Hunting ? L.T("자동 사냥을 멈췄습니다.") : L.T("자동 진행을 멈췄습니다.")); return; }
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
             Instance.huntMode = false;
-            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false;
-            if (MainStoryDone && !StartSubQuests()) return; // [AUTO] 서브퀘스트 자동진행
+            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false; Instance.growth = false;
+            GrowthGuide.Invalidate();
+            if (GrowthGuide.Active) Instance.growth = true; // [GROWTH] no quest to take yet: hunt for the 성장 추천
+            else if (MainStoryDone && !StartSubQuests()) return; // [AUTO] 서브퀘스트 자동진행
             GuideFlags.Mark(GuideFlags.AutoQuest); // [GUIDE]
             Instance.Begin();
         }
@@ -120,6 +122,7 @@ namespace DotRPG
             if (Instance == null || !Instance.on) return;
             Instance.on = false;
             Instance.huntMode = false;
+            Instance.growth = false;
             if (Instance.subMode) { Instance.subMode = false; Targets.Clear(); }
             Instance.status = "";
             Instance.lastStopAt = Time.unscaledTime;
@@ -139,6 +142,7 @@ namespace DotRPG
             lastPos = p.Position;
             lastProgressAt = Time.time;
             if (huntMode) { GameEvents.RaiseToast(L.T("자동 사냥을 시작합니다. 아무 키나 누르면 멈춥니다.")); return; }
+            if (growth) { GameEvents.RaiseToast(L.T("성장 추천 사냥터로 갑니다. 퀘스트를 받을 수 있게 되면 퀘스트로 돌아갑니다.")); return; }
             followTargets = Targets.Count > 0;
             chapter = Game.Quest?.CurrentMain()?.chapter ?? 0;
             bool quiet = quietStart;
@@ -232,6 +236,7 @@ namespace DotRPG
                     WalkTo(p, way, 0f);
                     return;
                 }
+                if (GrowthHuntLeaves(true)) return; // [GROWTH]
                 if (huntForQuest)
                 {
                     var q = Resolve();
@@ -244,7 +249,9 @@ namespace DotRPG
                 return;
             }
 
-            var goal = Resolve();
+            var goal = growth ? GrowthGoal() : Resolve(); // [GROWTH] 성장 추천 사냥 (QuestAutoPilot.Growth.cs)
+            if (growth && GrowthHuntLeaves(false)) return;
+            if (goal.kind == GoalKind.None && !growth) goal = NoQuestGoal();
             string key = goal.kind + ":" + goal.id + ":" + goal.map;
             if (key != goalKey) { goalKey = key; lastProgressAt = Time.time; lastPos = p.Position; }
             status = goal.label;
@@ -274,7 +281,7 @@ namespace DotRPG
                 case GoalKind.Site: DoSite(p, goal); break;
                 case GoalKind.Hunt:
                     // [AUTO] At the hunting ground: the fighting is done by 자동 사냥 (fields only).
-                    if (InHuntingGround) { huntMode = true; huntForQuest = true; huntTarget = goal.id; huntMap = here; GameEvents.RaiseToast(L.T("사냥터에 도착해 자동 사냥을 켰습니다.")); }
+                    if (InHuntingGround) { huntMode = true; huntForQuest = !growth; huntTarget = goal.id; huntMap = here; GameEvents.RaiseToast(L.T("사냥터에 도착해 자동 사냥을 켰습니다.")); }
                     else DoHunt(p, goal);
                     break;
                 case GoalKind.DungeonGuide: DoDungeonGuide(p, goal); break;
@@ -458,14 +465,7 @@ namespace DotRPG
         Goal WorkshopGoal() => new Goal { kind = GoalKind.Site, map = MapRegistry.Village, label = L.T("공방 터로 재건을 도우러 가는 중") };
 
         /// <summary>The hunting ground recommended for the hero's level (the highest one already open to it).</summary>
-        static string HuntingMap()
-        {
-            int level = Game.Session.Progression.Level;
-            HuntingZone best = null;
-            foreach (var z in HuntingGrounds.All)
-                if (z.minLevel <= level && (best == null || z.minLevel > best.minLevel)) best = z;
-            return best != null ? best.id : MapRegistry.Forest;
-        }
+        static string HuntingMap() => GrowthGuide.BestZone(Game.Session.Progression.Level)?.id ?? MapRegistry.Forest;
 
         /// <summary>A hunting ground where <paramref name="monsterId"/> lives, the closest to the hero's level; null if none (dungeon monsters).</summary>
         static string ZoneWith(string monsterId)

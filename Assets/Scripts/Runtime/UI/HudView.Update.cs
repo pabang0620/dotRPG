@@ -25,6 +25,7 @@ namespace DotRPG
             float questWidth = TouchUi.Enabled || (bossShown && hudRect.width < 1160f) ? QuestNarrowWidth : QuestWidth;
             if (!Mathf.Approximately(questPanel.sizeDelta.x, questWidth)) questPanel.sizeDelta = new Vector2(questWidth, questPanel.sizeDelta.y);
             if (showQuest && (!Mathf.Approximately(questWidth, questFitWidth) || !Mathf.Approximately(hudRect.height, questFitHeight))) RefreshQuest(); // UI size / width changed
+            else if (showQuest && Game.Session != null && (Game.Session.Progression.Level != growthLevel || (growthShown && Time.unscaledTime >= growthRefreshAt))) RefreshQuest(); // [GROWTH]
             // [AUTO] Hotkeys for 자동 진행 / 자동 사냥 (rebindable, default F6 / F7), only in normal play with no window open.
             var keys = Game.Input;
             if (keys != null && Game.IsPlaying && (!inRun || QuestAutoPilot.Active))
@@ -36,7 +37,7 @@ namespace DotRPG
             {
                 bool auto = QuestAutoPilot.Active;
                 bool hunting = QuestAutoPilot.Hunting;
-                autoLabel.text = auto && !hunting ? L.T("자동 중지") : QuestAutoPilot.Targets.Count > 0 ? L.F("자동 진행 ({0})", QuestAutoPilot.Targets.Count) : QuestAutoPilot.MainStoryDone ? L.T("서브퀘스트 자동진행") : L.T("자동 진행");
+                autoLabel.text = auto && !hunting ? L.T("자동 중지") : QuestAutoPilot.Targets.Count > 0 ? L.F("자동 진행 ({0})", QuestAutoPilot.Targets.Count) : growthShown ? L.T("추천 사냥") : QuestAutoPilot.MainStoryDone ? L.T("서브퀘스트 자동진행") : L.T("자동 진행");
                 if (huntLabel != null) huntLabel.text = hunting ? L.T("사냥 중지") : L.T("자동 사냥");
                 autoStatus.text = auto ? QuestAutoPilot.Status : "";
                 if (huntBtn != null)

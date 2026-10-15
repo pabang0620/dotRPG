@@ -11,7 +11,7 @@ namespace DotRPG
     /// quest to the HUD tracker (the main quest is always shown there). The box at the left of each open quest
     /// checks it for auto-progress (several at once, done in the order they were checked).
     /// </summary>
-    public class QuestScreen : WindowScreen
+    public partial class QuestScreen : WindowScreen
     {
         const float RowHeight = 54f, ListWidth = 420f;
 
@@ -53,6 +53,7 @@ namespace DotRPG
             w.autoBtn = Button(side.transform, "AutoTarget", L.T("자동 진행에 체크"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(280f, 44f), w.ToggleAutoTarget, 18);
             w.pinBtn = Button(side.transform, "Pin", L.T("알리미에 추적"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-310f, 52f), new Vector2(250f, 44f), w.TogglePin, 18);
             Button(list.transform,"CareerQuest",L.T("전직 · 각성 이야기 보기"), "ui_btngray",new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(390,48),()=>Game.UI.Skills.ShowAwakening(),20);
+            w.BuildGrowth(side.transform); // [GROWTH] 성장 추천 (QuestScreen.Growth.cs)
             if (Game.Quest != null) Game.Quest.Changed += w.OnQuestChanged;
             return w;
         }
@@ -158,7 +159,8 @@ namespace DotRPG
             button.onClick.AddListener(() =>
             {
                 // A click only selects (pinning is the Enter key or the button, so a second click does nothing hidden).
-                if (captured == selected) return;
+                if (captured == selected && !growthMode) return;
+                growthMode = false;
                 Game.Audio.PlaySfx("select", 0.5f);
                 Select(captured);
             });
@@ -174,6 +176,7 @@ namespace DotRPG
                 hint.text = "";
                 autoBtn.gameObject.SetActive(false);
                 pinBtn.gameObject.SetActive(false);
+                ShowGrowth();
                 return;
             }
             selected = Mathf.Clamp(index, 0, quests.Count - 1);
@@ -184,6 +187,7 @@ namespace DotRPG
             for (int i = 0; i < rows.Count; i++)
                 rows[i].bg.color = i + top == selected ? new Color(UiTheme.Accent.r, UiTheme.Accent.g, UiTheme.Accent.b, 0.28f) : new Color(1f, 1f, 1f, 0.04f);
             ShowDetail(quests[selected]);
+            ShowGrowth();
         }
 
         void ShowDetail(QuestDef q)
@@ -286,6 +290,7 @@ namespace DotRPG
             if (dy != 0 && quests.Count > 0)
             {
                 Game.Audio.PlaySfx("select", 0.5f);
+                growthMode = false;
                 Select((selected - dy + quests.Count) % quests.Count);
             }
             // Mouse wheel over the list scrolls it without changing the selection.
@@ -305,6 +310,7 @@ namespace DotRPG
                     }
                 }
             }
+            if (growthMode) return; // the quest keys act on the hidden quest detail
             if (input.SubmitPressed) TogglePin();
             if (input.InteractPressed) ToggleAutoTarget();
         }
