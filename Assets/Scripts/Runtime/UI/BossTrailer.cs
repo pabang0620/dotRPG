@@ -104,9 +104,18 @@ namespace DotRPG
             outline.effectColor = new Color(0f, 0f, 0f, 0.8f);
             outline.effectDistance = new Vector2(2f, -2f);
 
-            var skip = UIFactory.Text(transform, "Skip", TouchUi.Enabled ? L.T("터치하면 건너뜁니다") : L.T("아무 키나 누르면 건너뜁니다"), 16,
-                new Color(1f, 1f, 1f, 0.7f), TextAnchor.UpperRight, true);
-            UIFactory.Place(skip.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -20f), new Vector2(420f, 26f));
+            // Skip plate, top right like the cutscene one: click / tap it (or press any key) to skip at once.
+            var plate = UIFactory.Place(UIFactory.Rect(transform, "SkipPlate"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f),
+                TouchUi.Enabled ? new Vector2(230f, 60f) : new Vector2(250f, 46f));
+            var plateBg = UIFactory.Panel(plate, "Bg", true);
+            UIFactory.Stretch(plateBg.rectTransform);
+            plateBg.raycastTarget = true;
+            var skipButton = plate.gameObject.AddComponent<Button>();
+            skipButton.targetGraphic = plateBg;
+            skipButton.onClick.AddListener(Finish);
+            var skip = UIFactory.Text(plate, "Text", TouchUi.Enabled ? L.T("장면 건너뛰기") : "<color=#ffd34a><b>ESC</b></color>  " + L.T("장면 건너뛰기"),
+                20, UIColors.Cream, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(skip.rectTransform, 8, 0, 8, 0);
 
             player = gameObject.AddComponent<VideoPlayer>();
             player.playOnAwake = false;
@@ -129,7 +138,7 @@ namespace DotRPG
             if (finished) return;
             float t = Time.unscaledTime - startTime;
             if (caption != null) caption.alpha = Mathf.Clamp01((t - CaptionAt) / CaptionFade);
-            if (t < SkipDelay) return;
+            if (t < SkipDelay) return; // a stray key from 입장 does not skip; the plate works from the first frame
             if (UnityEngine.Input.anyKeyDown || UnityEngine.Input.touchCount > 0 && UnityEngine.Input.GetTouch(0).phase == TouchPhase.Began) Finish();
         }
 
