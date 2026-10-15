@@ -80,6 +80,14 @@ namespace DotRPG
                 return cmd;
             }
 
+            // 0a. [RAID] 운명의 낙인: stand in the circle the boss named for this companion.
+            if (!self.IsDead && RaidDoom.SpotFor(self, out Vector2 fate))
+            {
+                if (Vector2.Distance(me, fate) > BossBrain.FateRadius * .4f) cmd.move = GridPath.Steer(me, fate);
+                TrackStuck(self, cmd.move, party);
+                return cmd;
+            }
+
             // 0b. [RAID] 섬멸: a tank plants a 거대 방패 toward the boss once per cast, then everyone hides behind a shield or in a safe circle.
             if (SafeCover.Annihilating && !self.IsDead)
             {

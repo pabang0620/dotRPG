@@ -36,7 +36,7 @@ namespace DotRPG
 
         public bool TryDamage(DamageInfo info)
         {
-            if (IsDead || IsInvulnerable || info.amount <= 0) return false;
+            if (IsDead || (IsInvulnerable && !info.lethal) || info.amount <= 0) return false;
             current = Mathf.Max(0, current - info.amount);
             if (!info.noHitInvulnerability) invulnerableUntil = Time.time + invulnerableTime;
             Damaged?.Invoke(info);

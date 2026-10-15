@@ -256,6 +256,7 @@ namespace DotRPG
             menu.AddButton(L.T("돌아가기"), () => screen.Close());
             menu.OnCancel = screen.Close;
             screen.FitPanel();
+            if (TouchUi.Enabled) MobileSettings.TwoColumns(menu, screen.panel); // [TOUCH] UI/Mobile/MobileSettings.cs
             return screen;
         }
 

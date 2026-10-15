@@ -10,7 +10,7 @@ namespace DotRPG
     /// click a bag row to offer it (the 개수 box, empty = the whole row), click an offered row to take it back,
     /// 골드 넣기 sets the gold. Any change unlocks both sides; 잠금 then 확정 on both sides makes the swap.
     /// </summary>
-    public class TradeScreen : OnlineWindow
+    public partial class TradeScreen : OnlineWindow
     {
         public static TradeScreen Instance { get; private set; }
         const int Rows = 8;
@@ -68,6 +68,7 @@ namespace DotRPG
             w.confirmBtn = Button(w.content, "Confirm", L.T("확정"), "ui_btn", bl, bl, new Vector2(172f, 10f), new Vector2(160f, 44f), TradeClient.Confirm, 18);
             w.cancelBtn = Button(w.content, "Cancel", L.T("교환 취소"), "ui_btngray", br, br, new Vector2(0f, 10f), new Vector2(180f, 44f), TradeClient.Cancel, 18);
             w.status = Label(w.content, "Status", "", 17, bl, bl, new Vector2(520f, 14f), new Vector2(500f, 36f), TextAnchor.MiddleLeft);
+            if (TouchUi.Enabled) FitTouch(w); // [TOUCH] TradeScreen.Mobile.cs
             return w;
         }
 

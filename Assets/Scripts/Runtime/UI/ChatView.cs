@@ -9,7 +9,7 @@ namespace DotRPG
     /// Esc closes. "/p" party, "/g" general, "/w 이름" whisper. Keys 4~8 send the quick signals
     /// (PLAN_ONLINE §2.3) to the party with a speech bubble over the hero.
     /// </summary>
-    public class ChatView : MonoBehaviour
+    public partial class ChatView : MonoBehaviour
     {
         public static ChatView Instance { get; private set; }
 
@@ -70,6 +70,7 @@ namespace DotRPG
             v.bound = Service;
             OnlineServices.ChatChanged += v.Rebind; // [SERVER 5] online / offline swaps the service
             v.Redraw();
+            if (TouchUi.Enabled) v.BindTouchKeyboard(); // [TOUCH] ChatView.Mobile.cs
             return v;
         }
 

@@ -419,6 +419,7 @@ namespace DotRPG
 
         protected override void Update()
         {
+            if (TouchUi.Enabled) FitTouch(); // [TOUCH] DungeonSelectScreen.Mobile.cs
             // [SWEEP] The sweep panel takes Esc (closes itself, not the window) and blocks the list keys under it.
             if (SweepOpen)
             {

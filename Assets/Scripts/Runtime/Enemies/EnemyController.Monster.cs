@@ -20,6 +20,8 @@ namespace DotRPG
         public const float GroggyPerCcSecond = 45f;
         /// <summary>Groggy damage per point of HP damage.</summary>
         public const float GroggyPerDamage = 1f;
+        /// <summary>[2026-10-14] Extra groggy per landed hit, as a share of the current gauge (0.5%: 200 hits fill it on their own).</summary>
+        public const float GroggyPerHitShare = .005f;
         /// <summary>
         /// [DIFFICULTY 2026-10-13] A boss's gauge is this share of its real max HP (party size, difficulty and level
         /// included; the fixed def.groggyMax let a raid boss lie groggy ~70% of the fight), and every groggy makes the
@@ -208,7 +210,9 @@ namespace DotRPG
         bool MonsterAfterHit(DamageInfo info)
         {
             if (Def == null) return false;
-            AddGroggy(info.amount * GroggyPerDamage);
+            // [2026-10-14] Every hit also chips a fixed share of the gauge, so multi-hit skills break 무력화 faster than one big
+            // hit of the same damage (the gauge still grows with the party through the boss's HP).
+            AddGroggy(info.amount * GroggyPerDamage + GroggyMax * GroggyPerHitShare);
             behaviour?.OnHit(info);
             if (hitArmored || IsGroggy)
             {

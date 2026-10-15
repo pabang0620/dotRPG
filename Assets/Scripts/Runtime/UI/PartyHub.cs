@@ -123,6 +123,7 @@ namespace DotRPG
             status.resizeTextForBestFit = true;
             status.resizeTextMinSize = 12;
             status.resizeTextMaxSize = 18;
+            if (TouchUi.Enabled) foreach (var b in tabs) MobileTouch.GrowHeight((RectTransform)b.transform, MobileTouch.WindowTapHeight, MobileTouch.Grow.Up); // [TOUCH] into the header
             Paint();
         }
 

@@ -180,6 +180,7 @@ namespace DotRPG
                 CloseMenu();
                 return;
             }
+            UpdateMenuDots();
             UpdateSkills(player);
             UpdateDodge(player);
             UpdateQuick();

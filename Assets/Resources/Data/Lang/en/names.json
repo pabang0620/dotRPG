@@ -1214,5 +1214,12 @@
  "결과 확인이 늦어지고 있습니다. 보상은 서버가 정산하고, 받지 못한 카드는 우편으로 보내 드립니다.": "The result is taking a while. The server settles your reward, and any cards you did not get arrive by mail.",
  "파티 전투력으로는 불가능한 클리어 기록이라 보상이 지급되지 않았습니다.": "This clear is impossible for your party's power, so no reward was given.",
  "<color=#ff9f7a>결과 확인이 늦어지고 있습니다.</color>\n<color=#b8c4d8>보상은 서버가 정산하고, 받지 못한 카드는 우편으로 보내 드립니다.</color>": "<color=#ff9f7a>The result is taking a while.</color>\n<color=#b8c4d8>Your rewards are settled by the server; cards you did not get arrive by mail.</color>",
- "<color=#ff9f7a>파티 전투력으로는 불가능한 클리어 기록입니다.</color>\n<color=#b8c4d8>이번 판은 보상이 지급되지 않았습니다.</color>": "<color=#ff9f7a>This clear is impossible for your party's power.</color>\n<color=#b8c4d8>No reward was given for this run.</color>"
+ "<color=#ff9f7a>파티 전투력으로는 불가능한 클리어 기록입니다.</color>\n<color=#b8c4d8>이번 판은 보상이 지급되지 않았습니다.</color>": "<color=#ff9f7a>This clear is impossible for your party's power.</color>\n<color=#b8c4d8>No reward was given for this run.</color>",
+ "파멸의 의식! 토템 3개를 모두 부수세요!": "Ritual of Ruin! Break all 3 totems!",
+ "운명의 낙인!": "Mark of Fate!",
+ "왼쪽 원": "left circle",
+ "오른쪽 원": "right circle",
+ "의식 붕괴! 그로기": "Ritual broken! Groggy",
+ "파멸!": "Ruin!",
+ "낙인 폭발!": "The mark bursts!"
 }

@@ -26,6 +26,8 @@ namespace DotRPG
         public bool noHitInvulnerability;
         /// <summary>[ARMOR] Damage over time (burns, the mage's zones): it goes through a monster's armour.</summary>
         public bool dot;
+        /// <summary>[RAID] Instant-death gimmick (파멸의 의식, 운명의 낙인): goes through invulnerability and shields.</summary>
+        public bool lethal;
 
         public DamageInfo(int amount, Vector2 sourcePosition, float knockback, Team team)
             : this(amount, sourcePosition, knockback, team, null) { }
@@ -40,6 +42,7 @@ namespace DotRPG
             unblockable = false; // [MONSTER]
             noHitInvulnerability = false;
             dot = false; // [ARMOR]
+            lethal = false; // [RAID]
         }
 
         /// <summary>The party member that dealt the hit, or null.</summary>

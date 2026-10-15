@@ -10,7 +10,7 @@ namespace DotRPG
     /// (groggy) gauge with "GROGGY!" while the boss is down. Super armor hits flash the frame. Binding a boss
     /// plays the intro banner and a screen shake. Binds itself to <see cref="EnemyController.BossSpawned"/>.
     /// </summary>
-    public sealed class BossHpBarView : MonoBehaviour
+    public sealed partial class BossHpBarView : MonoBehaviour
     {
         // ---------- Layout (reference 1280x720) ----------
         // [UI] Bottom centre, 400 wide (bar 376), y 166..258 from the bottom: above the skill bar (top 156) and clear of the
@@ -33,6 +33,7 @@ namespace DotRPG
         /// <summary>The bar's distance from the top edge for the current canvas width.</summary>
         float BarTopFor(RectTransform canvas)
         {
+            if (TouchUi.Enabled) return MobileBarTop(canvas); // [TOUCH] BossHpBarView.Mobile.cs
             float width = canvas != null ? canvas.rect.width : 1280f;
             float left = width * 0.5f - (Width + 24f) * 0.5f;
             return left < HudLeftReach ? HudLeftBottom : Top;

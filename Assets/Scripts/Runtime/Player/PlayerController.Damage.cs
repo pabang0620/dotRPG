@@ -39,8 +39,8 @@ namespace DotRPG
             }
             int guard = Data.GuardReduction; // class passive (was 철벽 / 마나 보호막)
             if (guard > 0) info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * (1f - guard / 100f)));
-            if(health.IsInvulnerable) return false;
-            info.amount = CareerCombat.For(this).Absorb(info.amount);
+            if(health.IsInvulnerable && !info.lethal) return false;
+            if (!info.lethal) info.amount = CareerCombat.For(this).Absorb(info.amount);
             if(info.amount<=0) return true;
             if (!health.TryDamage(info)) return false;
             CancelMobility();

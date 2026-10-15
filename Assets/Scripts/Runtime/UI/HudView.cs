@@ -186,6 +186,7 @@ namespace DotRPG
                 controlsHint.gameObject.SetActive(false);
                 controlsPlate.gameObject.SetActive(false);
                 TouchControls.Create(root);
+                BuildMobile(root); // [TOUCH] folding HUD (HudView.Mobile.cs)
             }
         }
 
@@ -286,6 +287,7 @@ namespace DotRPG
             float height = Mathf.Min(wanted, Mathf.Max(30f + titleH + 22f, room));
             questBody.verticalOverflow = height < wanted ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
             questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, height);
+            if (TouchUi.Enabled) FitQuestMobile(); // [TOUCH] folded tracker
         }
 
         /// <summary>Top of the quest tracker under the minimap (TipView uses the same column on narrow canvases).</summary>

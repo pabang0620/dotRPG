@@ -12,7 +12,7 @@ namespace DotRPG
     /// Unique / Legendary of each kind stays in the gear codex for account max HP even after it is dismantled.
     /// The server decides everything; this shows its state and sends the requests.
     /// </summary>
-    public class ExchangeShopScreen : OnlineWindow
+    public partial class ExchangeShopScreen : OnlineWindow
     {
         const int GoodRows = 6, GearRows = 6, PickRows = 8;
         const float GoodW = 602f, GoodH = 70f, GearH = 60f, BodyTop = -128f;
@@ -109,6 +109,7 @@ namespace DotRPG
             w.status = Label(w.content, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(1200f, 30f), TextAnchor.MiddleLeft);
             StarShopClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             w.ShowTab(false);
+            if (TouchUi.Enabled) FitTouch(w); // [TOUCH] ExchangeShopScreen.Mobile.cs
             return w;
         }
 

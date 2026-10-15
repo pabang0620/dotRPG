@@ -55,6 +55,10 @@ namespace DotRPG
         Repel,
         /// <summary>[RAID] 섬멸: a room-wide blast; only cover behind a guardian's 거대 방패 or in the boss's safe circles helps.</summary>
         Annihilate,
+        /// <summary>[RAID] 파멸의 의식: three totems rise; break them all before the cast ends or everyone dies (BossBrain.Doom.cs).</summary>
+        RuinRitual,
+        /// <summary>[RAID] 운명의 낙인: each member is told one of two circles; anyone outside their own circle dies (BossBrain.Doom.cs).</summary>
+        MarkOfFate,
     }
 
     [System.Serializable]
@@ -475,6 +479,9 @@ namespace DotRPG
             bargas.raid = true;
             // [RAID] 섬멸 from phase 2: ~90% of a mage of the raid's level when not in cover (enrage does not raise it).
             bargas.patterns.Add(new BossPattern(PatternKind.Annihilate, 22f, 2.6f, minPhase: 2));
+            // [RAID] Lv40 instant-death gimmicks from phase 2 (BossBrain.Doom.cs): long cooldowns so each comes about once a phase.
+            bargas.patterns.Add(new BossPattern(PatternKind.RuinRitual, 48f, minPhase: 2, weight: .8f));
+            bargas.patterns.Add(new BossPattern(PatternKind.MarkOfFate, 40f, minPhase: 2, weight: .8f));
             bargas.size = 2.3f;
             bargas.groggyMax = 560f;
             bargas.phases = new[] { 0.66f, 0.33f };
@@ -510,6 +517,9 @@ namespace DotRPG
             grah.raid = true;
             // [RAID] 섬멸 from phase 2: ~90% of a mage of the raid's level when not in cover (enrage does not raise it).
             grah.patterns.Add(new BossPattern(PatternKind.Annihilate, 22f, 2.2f, minPhase: 2));
+            // [RAID] Lv40 instant-death gimmicks from phase 2 (BossBrain.Doom.cs).
+            grah.patterns.Add(new BossPattern(PatternKind.RuinRitual, 48f, minPhase: 2, weight: .8f));
+            grah.patterns.Add(new BossPattern(PatternKind.MarkOfFate, 40f, minPhase: 2, weight: .8f));
             grah.size = 2.4f;
             grah.groggyMax = 720f;
             grah.phases = new[] { 0.7f, 0.4f, 0.15f };

@@ -641,5 +641,7 @@
  "보조 젬 {0}개를 빈 칸에 자동으로 끼웠습니다.": "Auto-socketed {0} support gem(s) into empty sockets.",
  "보조 젬 자동 장착": "Auto-socket support gems",
  "<color=#ffe066>끼울 수 있는 스킬</color>  {0}\n": "<color=#ffe066>Fits</color>  {0}\n",
- " · <color=#8fe28f>파티 경험치 +{0}%</color>": " · <color=#8fe28f>Party EXP +{0}%</color>"
+ " · <color=#8fe28f>파티 경험치 +{0}%</color>": " · <color=#8fe28f>Party EXP +{0}%</color>",
+ "채팅": "Chat",
+ "입력": "Type"
 }

@@ -1344,5 +1344,7 @@
  "{0}과(와) 파티 (방장: {1})": "Grupo com {0} (líder: {1})",
  "내 파티": "Meu grupo",
  "파티 (아직 나 혼자)": "Grupo (só eu por enquanto)",
- "혼자": "Sozinho"
+ "혼자": "Sozinho",
+ "채팅": "Chat",
+ "입력": "Digitar"
 }

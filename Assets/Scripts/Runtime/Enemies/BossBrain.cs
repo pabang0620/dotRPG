@@ -105,6 +105,7 @@ namespace DotRPG
             UpdateTotems();
             if (RaidTick()) return true; // [RAID] 40% enrage and the "이대론 죽을 수 없다!" roar
             if (Busy) return true;
+            if (DoomTick()) return true; // [RAID] 파멸의 의식 / 운명의 낙인 (BossBrain.Doom.cs)
             if (!engaged) return false;
             var target = E.MonsterTarget;
             float now = Time.time;
@@ -161,6 +162,8 @@ namespace DotRPG
         public BossPattern ChoosePattern()
         {
             if (PatternAuthority != null) return PatternAuthority(this);
+            var forced = HpThresholdPattern();
+            if (forced != null) return forced;
             var target = E.MonsterTarget;
             float dist = target != null ? Vector2.Distance(E.Position, target.Position) : 0f;
             float now = Time.time, total = 0f;
@@ -183,6 +186,32 @@ namespace DotRPG
             return options[options.Count - 1];
         }
 
+        /// <summary>
+        /// [2026-10-14] The instant-death gimmicks also fire once at fixed HP marks (besides their cooldowns), so every fight
+        /// sees them at predictable moments: 파멸의 의식 at 60% / 25%, 운명의 낙인 at 80% / 45% / 15%.
+        /// </summary>
+        static readonly float[] RuinMarks = { .6f, .25f }, FateMarks = { .8f, .45f, .15f };
+        readonly HashSet<string> firedMarks = new HashSet<string>();
+
+        BossPattern HpThresholdPattern()
+        {
+            if (E.Health == null || E.Health.Max <= 0 || RuinActive || FateActive) return null;
+            float hp = (float)E.Health.Current / E.Health.Max;
+            foreach (var p in Def.patterns)
+            {
+                var marks = p.kind == PatternKind.RuinRitual ? RuinMarks : p.kind == PatternKind.MarkOfFate ? FateMarks : null;
+                if (marks == null) continue;
+                foreach (float m in marks)
+                {
+                    string key = p.kind + ":" + m;
+                    if (hp > m || firedMarks.Contains(key)) continue;
+                    firedMarks.Add(key);
+                    return p;
+                }
+            }
+            return null;
+        }
+
         IEnumerator Play(BossPattern p)
         {
             CurrentPattern = p;
@@ -202,6 +231,8 @@ namespace DotRPG
                 case PatternKind.Summon: yield return Summon(p.count); break;
                 case PatternKind.Guard: yield return Guard(p); break;
                 case PatternKind.Judgment: yield return Judgment(); break;
+                case PatternKind.RuinRitual: yield return RuinRitual(p); break;
+                case PatternKind.MarkOfFate: yield return MarkOfFate(p); break;
             }
             CurrentPattern = null;
             nextPatternAt = Time.time + NextFloat(GapMin, GapMax) * Mul;
@@ -395,6 +426,7 @@ namespace DotRPG
         protected override void OnDied(EnemyController e)
         {
             base.OnDied(e);
+            EndDoom();
             if (CompanionBrain.PriorityTarget != null && CompanionBrain.PriorityTarget.Summoner == E) CompanionBrain.PriorityTarget = null;
             // Everything it raised falls with it.
             foreach (var m in new List<EnemyController>(EnemyController.Active))
