@@ -31,8 +31,9 @@ const denied = (code: string, message: string, questId: string, extra: Record<st
   new AnomalyError(status, message, code, { kind: 'quest_denied', severity: 1, detail: { quest_id: questId, code, ...extra } }, extra);
 
 /**
- * 목표 수치: 이 퀘스트가 요구하는 목표(몬스터·던전)마다, 이미 청구한 퀘스트들과 이 퀘스트의 같은 목표 합.
- * (C#은 퀘스트마다 0부터 세므로 같거나 약한 검사)
+ * 목표 수치: 이 퀘스트가 요구하는 목표(몬스터·던전)마다, 이미 청구한 선행 퀘스트(선행의 선행 포함)들과 이 퀘스트의 같은 목표 합.
+ * 선행 퀘스트는 이 퀘스트를 받기 전에 끝나므로 처치가 겹치지 않는다(C#은 퀘스트마다 받은 뒤 0부터 센다).
+ * 선행 관계가 없는 퀘스트는 동시에 진행되고 처치 한 번이 함께 올라가므로 더하지 않는다(2026-10-15)
  */
 function cumulative(
   eco: EconomyData,
@@ -45,12 +46,26 @@ function cumulative(
   const add = (q: QuestRule) => {
     for (const [k, n] of pick(q)) if (own.has(k)) out.set(k, (out.get(k) ?? 0) + n);
   };
-  for (const id of claimed) {
+  for (const id of ancestorsOf(eco, rule)) {
     const q = eco.quests.get(id);
-    if (q) add(q);
+    if (q && claimed.has(id)) add(q);
   }
   add(rule);
   return out;
+}
+
+/** requires를 거슬러 올라간 모든 선행 퀘스트 id */
+function ancestorsOf(eco: EconomyData, rule: QuestRule): Set<string> {
+  const seen = new Set<string>();
+  const stack = [...rule.requires];
+  while (stack.length > 0) {
+    const id = stack.pop() as string;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const q = eco.quests.get(id);
+    if (q) stack.push(...q.requires);
+  }
+  return seen;
 }
 
 async function processClaim(ctx: EconCtx, questId: string) {

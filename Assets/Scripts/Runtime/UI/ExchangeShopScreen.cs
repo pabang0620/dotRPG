@@ -271,6 +271,17 @@ namespace DotRPG
             RefreshPick();
         }
 
+        protected override void Update()
+        {
+            // The choice panel takes Esc (closes itself, not the exchange), as the shop's bulk sell panel does.
+            if (picking != null && pickPage != null && pickPage.gameObject.activeSelf)
+            {
+                if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) { Game.Audio.PlaySfx("cancel"); ClosePick(); }
+                return;
+            }
+            base.Update();
+        }
+
         void ClosePick()
         {
             picking = null;

@@ -195,7 +195,8 @@ namespace DotRPG
 
         BossPattern HpThresholdPattern()
         {
-            if (E.Health == null || E.Health.Max <= 0 || RuinActive || FateActive) return null;
+            // Not during the seal: the gimmick would end at once and its mark would be spent (it fires once the seal is over).
+            if (E.Health == null || E.Health.Max <= 0 || Sealed || RuinActive || FateActive) return null;
             float hp = (float)E.Health.Current / E.Health.Max;
             foreach (var p in Def.patterns)
             {

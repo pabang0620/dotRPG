@@ -6,6 +6,7 @@ import type { EconCtx } from '../economy/economyContext';
 import { rejected as rejectedBase, type KillTarget } from '../kills/killTarget';
 import * as repo from './dungeonRepository';
 import { partyHpScaleOf } from './partyScale';
+import { partySizeXpBonus } from '../fieldsessions/xpFactor';
 import { diffOf, roomKillCount, roomTotal } from './dungeonRules';
 
 const notPlaying = () => new AppError(409, '진행 중인 던전이 아닙니다.', 'RUN_NOT_PLAYING');
@@ -92,6 +93,8 @@ export async function resolveDungeonTarget(
     powerWindowSeconds: Math.max(0, elapsedSec) + 5,
     run: { id: run.id, roomIndex },
     field: null,
+    // 2026-10-15 사용자 결정: 던전도 사냥터와 같은 사람 수 보너스(AI 동료는 세지 않는다). 연습판은 경험치가 없어 무관
+    partyBonus: partySizeXpBonus(run.humans),
     commit: (client) => repo.updateRunProgress(client, run.id, Math.max(run.room_index, roomIndex), newKills),
   };
 }

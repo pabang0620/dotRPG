@@ -25,7 +25,7 @@ namespace DotRPG
 
         string sessionId, mapId, hostCharacterId;
         int seat, epoch = 1;
-        bool amHost, entering, leaving;
+        bool amHost, entering;
         float heartbeatTimer, observeTimer, lastObserveAt, lastHeartbeatAt = -10f;
         /// <summary>The server takes one heartbeat per 2 s per character (RATE_HEARTBEAT_PER_2SEC); pushes that ask for one sooner wait.</summary>
         const float HeartbeatMinGap = 2.1f;
@@ -136,7 +136,8 @@ namespace DotRPG
                 EnemySpawner.Current?.SetMode(EnemySpawner.SpawnerMode.Follower);
                 PartyNet.BeginFieldMember(t, sessionId, seat, OnlineSession.Current?.ActiveCharacter, mapId);
             }
-            GameEvents.RaiseToast(L.T("파티원과 같은 사냥터에 있습니다. 몬스터를 함께 잡습니다."));
+            // Only when someone else is here: a party alone on the map still gets a session (others may come later).
+            if (transportInfo.seats.Count >= 2) GameEvents.RaiseToast(L.T("파티원과 같은 사냥터에 있습니다. 몬스터를 함께 잡습니다."));
             heartbeatTimer = HeartbeatSeconds;
             observeTimer = ObserveSeconds;
         }
@@ -169,11 +170,9 @@ namespace DotRPG
             if (amHost) SendObserve(id); // last credits before handing the monsters over
             if (PartyNet.Active && PartyNet.Current.FieldMode) EndNet(false);
             amHost = false;
-            if (OnlineSession.Playing && !leaving)
-            {
-                leaving = true;
-                Api.Post($"{Char}/field-sessions/{id}/leave", new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId() }, _ => leaving = false);
-            }
+            // sessionId is cleared above, so each session is left once; a slow earlier leave must not swallow this one.
+            if (OnlineSession.Playing)
+                Api.Post($"{Char}/field-sessions/{id}/leave", new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId() }, _ => { });
         }
 
         // ---------------- running ----------------

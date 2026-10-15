@@ -120,7 +120,7 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   // 하드 격차의 경험치는 정확히 1이다(장신구 보너스로 늘리지 않는다)
   const withGear = !hardXp && xpBonus > 0 && shared > 0 ? Math.round(shared * (1 + xpBonus / 100)) : shared;
   // 2026-10-14: 함께 사냥하는 사람 수 보너스(2인 +15%, 3인 +30%, 4인 +50%). 하드 격차(1)에는 붙지 않는다
-  const partyBonus = target.field?.partyBonus ?? 1;
+  const partyBonus = target.field?.partyBonus ?? target.partyBonus ?? 1;
   const xp = !hardXp && partyBonus > 1 && withGear > 0 ? Math.round(withGear * partyBonus) : withGear;
   // 연습판(레이드 보상 잠금)은 처치를 받아들이되 경험치·드롭을 주지 않는다(무한 입장 파밍 방지)
   const { granted, leveledUp } = target.rewardLocked
@@ -166,5 +166,6 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const data: Record<string, unknown> = { granted_xp: granted, leveled_up: leveledUp, drops, delta: ctx.delta() };
   if (target.rewardLocked) data.reward_locked = true;
   if (target.field) data.field = { shared: true, xp_factor: xpf ?? 1, party_bonus: target.field.partyBonus ?? 1 };
+  else if (target.partyBonus !== undefined && target.partyBonus > 1) data.party_bonus = target.partyBonus;
   return { status: 200, data };
 }

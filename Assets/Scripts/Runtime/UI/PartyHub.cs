@@ -37,6 +37,7 @@ namespace DotRPG
         public static void Open(Page? page = null, WindowScreen from = null)
         {
             ReturnTo = from;
+            Trail.Clear();
             Game.Flow.OpenWindow(WindowOf(page ?? DefaultPage));
         }
 
@@ -45,9 +46,44 @@ namespace DotRPG
         {
             var target = WindowOf(page);
             if (target == null || Game.UI.Top == target) return;
+            // Esc walks back the pages in the order they were visited (a page visited again cuts the trail back to it).
+            var from = PageOf(Game.UI.Top);
+            if (!stepping && from.HasValue)
+            {
+                int at = Trail.IndexOf(page);
+                if (at >= 0) Trail.RemoveRange(at, Trail.Count - at);
+                else Trail.Add(from.Value);
+            }
             Game.Audio.PlaySfx("select");
             if (Game.State.Current == GameState.Inventory) Game.UI.ShowWindow(target);
             else Game.Flow.OpenWindow(target);
+        }
+
+        /// <summary>Pages visited before the current one, oldest first (Esc goes back through them, then to ReturnTo).</summary>
+        static readonly System.Collections.Generic.List<Page> Trail = new System.Collections.Generic.List<Page>();
+        static bool stepping;
+
+        static Page? PageOf(MenuScreen m) =>
+            m is PartyLobbyScreen ? Page.MyParty : m is PartyFinderScreen ? Page.Finder : m is PartyScreen ? Page.Companions : (Page?)null;
+
+        /// <summary>Leaving the hub for good (left the party, departed): the next Esc does not walk back through pages.</summary>
+        public static void ForgetTrail() => Trail.Clear();
+
+        /// <summary>Esc on a hub page: back to the page visited before it. False = no earlier page (close to the origin).</summary>
+        public static bool BackOnePage()
+        {
+            while (Trail.Count > 0)
+            {
+                var back = Trail[Trail.Count - 1];
+                Trail.RemoveAt(Trail.Count - 1);
+                if (WindowOf(back) == Game.UI.Top) continue;
+                if (back != Page.Companions && !OnlineReady) continue; // offline only the AI page works
+                stepping = true;
+                Switch(back);
+                stepping = false;
+                return true;
+            }
+            return false;
         }
 
         public static bool IsHubPage(MenuScreen m) => m is PartyLobbyScreen || m is PartyFinderScreen || m is PartyScreen;

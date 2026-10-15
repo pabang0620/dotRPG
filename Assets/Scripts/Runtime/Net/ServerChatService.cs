@@ -106,7 +106,7 @@ namespace DotRPG
             if (!ready) return;
             // (Re)connected: the server sends everyone's presence again; re-read the party too so its online/map
             // view does not wait for the next poll (it was stale after a reconnect or a character switch).
-            PartyClient.Instance?.PollNow();
+            PartyClient.Instance?.PollNow(full: true);
             // Lines sent just before a drop: same cid again (the server answers a replay, never twice).
             foreach (var p in pending.Values.ToList())
                 if (clock - p.at < 30f) socket.Send("chat.send", p.frame);
@@ -169,7 +169,7 @@ namespace DotRPG
                     break;
                 case "party.changed":
                     if (MiniJson.Str(d, "scope") == "run") PartyRunSession.Instance?.FetchNow();
-                    else PartyClient.Instance?.PollNow();
+                    else PartyClient.Instance?.PollNow(full: true); // also sent when a member logs in/out or moves (not versioned)
                     break;
                 case "town.pos":
                     TownPeers.Apply(d);

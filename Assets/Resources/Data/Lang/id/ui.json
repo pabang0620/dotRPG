@@ -1378,5 +1378,9 @@
  "자동 진행 버튼도 퀘스트가 없을 때는 추천 사냥터로 가서 사냥하고, 퀘스트를 받을 수 있게 되면 퀘스트로 돌아갑니다.": "Saat tidak ada misi, tombol Maju Otomatis juga berburu di area rekomendasi, lalu kembali ke misi begitu ada misi.",
  "퀘스트 보기": "Lihat misi",
  "레이드 · {0}": "Raid · {0}",
- "보스 영상 보기": "Trailer Bos"
+ "보스 영상 보기": "Trailer Bos",
+ "<color=#ffe066>파티 중입니다. 방장이 입장하면 함께 들어갑니다.</color>": "<color=#ffe066>Kamu sedang dalam party. Kamu masuk bersama saat ketua masuk.</color>",
+ "방장 대기": "Tunggu ketua",
+ "목적지를 먼저 고르세요. [던전 변경]": "Pilih tujuan dulu. [Ganti dungeon]",
+ " · 던전 입장 시 함께 출발": " · Berangkat bersama saat masuk dungeon"
 }

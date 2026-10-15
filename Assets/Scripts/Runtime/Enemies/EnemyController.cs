@@ -521,7 +521,8 @@ namespace DotRPG
             Game.Audio.PlaySfx("enemy_die");
             Fx.Burst("fx_bone", Position + new Vector2(0f, 0.4f), 6, 3.5f, 0.9f);
             Fx.Burst("fx_dust", Position + new Vector2(0f, 0.2f), 4, 1.5f, 0.5f);
-            GameEvents.RaiseEnemyKilled(stats.enemyId);
+            // Quest kill counts follow the server's kill record: a party kill the host did not credit to me is not mine.
+            if (!OnlineEconomy.On || ReportsKill) GameEvents.RaiseEnemyKilled(stats.enemyId);
             Died?.Invoke(this);
             Killed?.Invoke(this, stats.xpReward);
             DropLoot();

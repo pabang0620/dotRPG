@@ -284,6 +284,10 @@ namespace DotRPG
             bool trailer = banner.enabled && BossTrailer.Has(def);
             banner.raycastTarget = trailer;
             trailerBadge.SetActive(trailer);
+            // [TRAILER] The first time a raid is picked here once it can be entered, its boss trailer plays (leader or member
+            // alike, and never in the way of a departure). The banner plays it again.
+            if (trailer && gameObject.activeInHierarchy && Game.Dungeon != null && Game.Dungeon.CannotEnterReason(def, difficulty, now) == null)
+                BossTrailer.PlayOnce(def, null);
             title.text = $"{KindBadge(def)}  <b>{L.T(def.name)}</b>  <size=20><color=#b8c4d8>{L.T(def.themeName)}</color></size>";
             desc.text = L.T(def.description);
             info.text = L.F("<color=#ffe066>보스</color> {0}    <color=#ffe066>특징 몬스터</color> {1}", L.T(def.bossName), L.T(def.featureMonster)) + "\n" +
@@ -317,11 +321,26 @@ namespace DotRPG
             recommend.text = L.F("<color=#b8c4d8>{0}</color>  Lv.{1} · 전투력 {2:N0}", def.isRaid ? L.T("입장") : L.T("권장"), numbers.recommendedLevel, numbers.recommendedPower) + "\n" +
                              L.F("<color=#b8c4d8>내 캐릭터</color>  <color={0}>Lv.{1}</color> · <color={2}>전투력 {3:N0}</color>", lvColor, level, pwColor, power);
 
-            var party = Game.Party;
+            // [UX] Who actually goes in: online party people first, then the AI 동료 that fill the free seats
+            // (the same count DungeonDirector.EnterAsParty sends), so this line and the entry always agree.
             var names = new List<string> { L.T("나") };
-            if (party != null)
-                for (int i = 1; i < party.Members.Count; i++) if (party.Members[i] != null) names.Add(party.Members[i].DisplayName);
-            int size = names.Count, ai = party != null ? party.AiCount : 0;
+            int ai;
+            var pc = PartyClient.Instance;
+            if (OnlineSession.Playing && pc != null && pc.InParty && pc.Members.Count >= 2)
+            {
+                foreach (var m in pc.Members) if (!m.me) names.Add(m.name);
+                var roster = Game.Session.PartyRoster;
+                ai = pc.IsLeader ? Mathf.Min(roster.Count, Mathf.Max(0, PartyManager.MaxMembers - pc.Members.Count)) : 0;
+                for (int i = 0; i < ai; i++) { var merc = MercenaryDatabase.Get(roster[i]); names.Add(merc != null ? L.T(merc.name) : "AI"); }
+            }
+            else
+            {
+                var party = Game.Party;
+                if (party != null)
+                    for (int i = 1; i < party.Members.Count; i++) if (party.Members[i] != null) names.Add(party.Members[i].DisplayName);
+                ai = party != null ? party.AiCount : 0;
+            }
+            int size = names.Count;
             partyText.text = L.F("<b>파티</b> <color=#ffe066>{0}/{1}</color> · 체력 ×{2:0.0#}", size, def.maxParty, DungeonDatabase.PartyScale(size - ai, ai, def.isRaid)) + $"\n<size=15>{string.Join(" · ", names)}</size>";
 
             // Raid: its own schedule and reward status on one line where the difficulty buttons would be.
@@ -383,6 +402,13 @@ namespace DotRPG
             enterButton.image.color = reason == null ? Color.white : new Color(1f, 1f, 1f, 0.45f);
             enterButton.image.sprite = Game.Art.Get(practice != null ? "ui_btngray" : "ui_btn");
             TextOf(enterButton).text = practice != null ? L.T("연습 입장") : L.T("입장");
+            // [UX] A party member does not enter by itself: say so before the button is pressed.
+            if (OnlineSession.Playing && pc != null && pc.InParty && pc.Members.Count >= 2 && !pc.IsLeader)
+            {
+                status.text = L.T("<color=#ffe066>파티 중입니다. 방장이 입장하면 함께 들어갑니다.</color>");
+                enterButton.image.color = new Color(1f, 1f, 1f, 0.45f);
+                TextOf(enterButton).text = L.T("방장 대기");
+            }
             int resetTickets = Game.Session.Inventory.Count(ConsumableDatabase.DungeonResetTicket);
             resetButton.gameObject.SetActive(DungeonDatabase.CountsEntry(def) && progress.EntriesLeft(now) <= 0 && resetTickets > 0);
             TextOf(resetButton).text = L.F("초기화권 사용 ({0})", resetTickets);
@@ -421,7 +447,9 @@ namespace DotRPG
         static Text TextOf(Button b) => b.GetComponentInChildren<Text>();
 
         /// <summary>Why a raid entry would give no reward (null = it gives the reward). Daily dungeons always reward.</summary>
-        string PracticeReason(DungeonDef def, DateTime now)
+        string PracticeReason(DungeonDef def, DateTime now) => PracticeReason(def, difficulty, now);
+
+        static string PracticeReason(DungeonDef def, DungeonDifficulty difficulty, DateTime now)
         {
             if (def == null || !def.isRaid) return null;
             if (!Game.Session.Dungeons.RaidRewardAvailable(def, now, difficulty))
@@ -430,20 +458,23 @@ namespace DotRPG
             return null;
         }
 
-        bool TryEnter()
+        bool TryEnter() => Enter(Selected, difficulty, Refresh);
+
+        /// <summary>
+        /// [UX] The one way into a dungeon, from this window or the party window's 출발: the practice-entry question, then DungeonDirector.Enter (with a party it takes everyone, the free seats get the
+        /// AI companions). <paramref name="refresh"/> runs when the entry was refused.
+        /// </summary>
+        public static bool Enter(DungeonDef def, DungeonDifficulty difficulty, System.Action refresh = null)
         {
-            var def = Selected;
             if (def == null || Game.Dungeon == null) return false;
-            // [TRAILER] The first 입장 of each raid on this device shows its boss trailer, then enters.
-            if (Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null && BossTrailer.PlayOnce(def, () => TryEnter())) return false;
-            string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, ResetClock.Now) : null;
+            string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, difficulty, ResetClock.Now) : null;
             if (practice != null)
             {
-                Game.UI.Confirm(practice + "\n" + L.T("<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?"), () => { if (!Game.Dungeon.Enter(def, difficulty)) Refresh(); }, defaultYes: true, overlay: true); // [UX] nothing is lost: cursor on 예
+                Game.UI.Confirm(practice + "\n" + L.T("<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?"), () => { if (!Game.Dungeon.Enter(def, difficulty)) refresh?.Invoke(); }, defaultYes: true, overlay: true); // [UX] nothing is lost: cursor on 예
                 return false;
             }
             bool ok = Game.Dungeon.Enter(def, difficulty);
-            if (!ok) Refresh();
+            if (!ok) refresh?.Invoke();
             return ok;
         }
 

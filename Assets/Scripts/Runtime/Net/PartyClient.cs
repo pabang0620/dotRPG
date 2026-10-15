@@ -40,7 +40,7 @@ namespace DotRPG
         static string Char => "/characters/" + OnlineSession.Current.ActiveCharacter;
 
         float pollTimer;
-        bool polling;
+        bool polling, pollFull;
         int version = -1;
         string lastNoticeAt;
 
@@ -126,12 +126,18 @@ namespace DotRPG
             Poll();
         }
 
-        public void PollNow() => pollTimer = 0f;
+        /// <summary>Poll on the next frame. full: skip the version check (online / map of members are not versioned).</summary>
+        public void PollNow(bool full = false)
+        {
+            pollTimer = 0f;
+            if (full) pollFull = true;
+        }
 
         void Poll()
         {
             polling = true;
-            string q = version >= 0 && !Queued ? $"?after_version={version}" : "";
+            string q = version >= 0 && !Queued && !pollFull ? $"?after_version={version}" : "";
+            pollFull = false;
             Api.Get(Char + "/party" + q, r =>
             {
                 polling = false;

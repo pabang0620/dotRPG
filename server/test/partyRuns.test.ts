@@ -399,6 +399,14 @@ describe('호스트 인계와 방장 보고, 이탈', () => {
     expect((run.rows[0] as { host_epoch: number }).host_epoch).toBe(2);
   });
 
+  it('2026-10-15: 2인 파티 던전 처치에도 사람 수 경험치 보너스(+15%)가 붙는다', async () => {
+    const { host, hostRun } = await duo();
+    const k = await post(app, host, '/kills', { map_id: 'dgn_canyon_1', monster_id: 'skel_gold', run_id: hostRun, room_index: 0 });
+    expect(k.status).toBe(200);
+    expect(k.body.data.party_bonus).toBe(1.15);
+    expect(k.body.data.field).toBeUndefined();
+  });
+
   it('방장 보고 입력 오류: 경험치 같은 지급 값은 받지 않는다(400)', async () => {
     const { host, runId, hostRun, member } = await duo();
     const body = await honestHostReport(hostRun, [host, member]);

@@ -238,6 +238,8 @@ namespace DotRPG
         }
 
         bool OwnsSlot(int peer, int slot) => peerSlot.TryGetValue(peer, out int s) && s == slot;
+        /// <summary>Host: this seat is me or a member whose connection is still up.</summary>
+        bool Connected(int slot) => slot == mySlot || peerSlot.ContainsValue(slot);
 
         void OnHello(int peer, System.IO.BinaryReader r)
         {

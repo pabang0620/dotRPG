@@ -16,6 +16,7 @@ namespace DotRPG
 
         public override void Close()
         {
+            if (PartyHub.BackOnePage()) return;
             if (!PartyHub.CloseToOrigin()) base.Close();
         }
 

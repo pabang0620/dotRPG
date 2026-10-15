@@ -1378,5 +1378,9 @@
  "자동 진행 버튼도 퀘스트가 없을 때는 추천 사냥터로 가서 사냥하고, 퀘스트를 받을 수 있게 되면 퀘스트로 돌아갑니다.": "Sans quête, le bouton Quête auto chasse aussi sur le terrain conseillé, puis revient aux quêtes dès qu'une s'ouvre.",
  "퀘스트 보기": "Voir les quêtes",
  "레이드 · {0}": "Raid · {0}",
- "보스 영상 보기": "Bande-annonce"
+ "보스 영상 보기": "Bande-annonce",
+ "<color=#ffe066>파티 중입니다. 방장이 입장하면 함께 들어갑니다.</color>": "<color=#ffe066>Vous êtes dans un groupe. Vous entrez avec le chef quand il entre.</color>",
+ "방장 대기": "Attendre le chef",
+ "목적지를 먼저 고르세요. [던전 변경]": "Choisissez d'abord une destination. [Changer de donjon]",
+ " · 던전 입장 시 함께 출발": " · Départ commun à l'entrée d'un donjon"
 }

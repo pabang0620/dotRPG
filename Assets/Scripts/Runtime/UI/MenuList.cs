@@ -175,7 +175,8 @@ namespace DotRPG
 
         void Update()
         {
-            if (items.Count == 0 || Time.frameCount == openedFrame || Game.State.ChangedThisFrame) return;
+            // A boss trailer covers every window: its skip key must not answer a confirm hidden under it.
+            if (items.Count == 0 || Time.frameCount == openedFrame || Game.State.ChangedThisFrame || BossTrailer.Blocking) return;
             var input = Game.Input;
             var nav = input.NavigateStep;
 

@@ -123,6 +123,14 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     expect((await claim(h, 'c1_burning')).status).toBe(200);
   });
 
+  it('처치 목표: 같은 몬스터를 요구하는 다른 퀘스트를 이미 받았어도 이 퀘스트 요구량만 본다(동시 진행)', async () => {
+    const h = await newHero(app);
+    // c1s_ruins도 해골 전사를 요구한다. 클라이언트는 처치 한 번으로 동시에 진행 중인 퀘스트를 함께 올린다
+    await seedClaims(h, ['c1_morning', 'c1_festival', 'c1s_ruins']);
+    await setKills(h, 'skel_warrior', 5);
+    expect((await claim(h, 'c1_burning')).status).toBe(200);
+  });
+
   it('처치 목표는 이미 청구한 퀘스트의 같은 몬스터 목표와 합산한다', async () => {
     const h = await newHero(app);
     await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise']);

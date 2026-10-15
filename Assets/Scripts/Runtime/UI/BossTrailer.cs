@@ -8,7 +8,8 @@ namespace DotRPG
 {
     /// <summary>
     /// [TRAILER] 10-second raid boss trailer (Resources/Video/trailer_&lt;dungeon id&gt;), full screen over every UI.
-    /// Plays once on the first 입장 of each raid on this device, and again from the banner in the 던전 window.
+    /// Plays once the first time each raid is picked in the 던전 window (once it can be entered) on this device, and again
+    /// from the raid banner there.
     /// Any key, click or touch skips it. Real-time clock, so it runs while an offline menu has frozen the world.
     /// </summary>
     public sealed class BossTrailer : MonoBehaviour
@@ -37,9 +38,10 @@ namespace DotRPG
         {
             if (def == null || !def.isRaid || !Has(def) || PlayerPrefs.GetInt(SeenKey + def.id, 0) == 1) return false;
             if (FindAnyObjectByType<DevCapture>() != null) return false; // automated runs enter straight away
+            if (!Play(def, onDone)) return false; // another trailer is on: try again next time
             PlayerPrefs.SetInt(SeenKey + def.id, 1);
             PlayerPrefs.Save();
-            return Play(def, onDone);
+            return true;
         }
 
         public static bool Play(DungeonDef def, Action onDone = null)
@@ -138,7 +140,7 @@ namespace DotRPG
             if (finished) return;
             float t = Time.unscaledTime - startTime;
             if (caption != null) caption.alpha = Mathf.Clamp01((t - CaptionAt) / CaptionFade);
-            if (t < SkipDelay) return; // a stray key from 입장 does not skip; the plate works from the first frame
+            if (t < SkipDelay) return; // a stray key (the one that picked the raid) does not skip; the plate works from the first frame
             if (UnityEngine.Input.anyKeyDown || UnityEngine.Input.touchCount > 0 && UnityEngine.Input.GetTouch(0).phase == TouchPhase.Began) Finish();
         }
 

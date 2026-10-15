@@ -264,8 +264,9 @@ namespace DotRPG
                     for (int k = 0; k < near.Count && k < n.chains; k++) // v2: no zaps in flight (chains 0)
                     {
                         SkillVisuals.FrostOrbZap(pos, near[k].Center);
-                        if (near[k].TakeDamage(new DamageInfo(zapDamage, pos, 1.5f, Team.Player, owner.gameObject)) && n.leechPct > 0)
-                            owner.Heal(Mathf.Max(1, zapDamage * n.leechPct / 100));
+                        int zapHit = BossScaled(near[k], n, zapDamage); // same boss bonuses as every other skill hit
+                        if (near[k].TakeDamage(new DamageInfo(zapHit, pos, 1.5f, Team.Player, owner.gameObject)) && n.leechPct > 0)
+                            owner.Heal(Mathf.Max(1, zapHit * n.leechPct / 100));
                     }
                     if (near.Count == 0) SkillVisuals.FrostOrbSpark(pos);
                 }

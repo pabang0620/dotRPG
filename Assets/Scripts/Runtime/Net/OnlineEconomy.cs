@@ -155,7 +155,8 @@ namespace DotRPG
                 int xp = MiniJson.Int(r.data, "granted_xp");
                 if (xp > 0) GameEvents.RaiseToast($"+{xp} EXP");
                 var field = MiniJson.Obj(r.data, "field");
-                PartyXpBonus = field != null ? Mathf.Max(1f, (float)MiniJson.Num(field, "party_bonus", 1)) : 1f;
+                // Field sessions report it inside "field", party dungeon runs at the top level.
+                PartyXpBonus = Mathf.Max(1f, (float)(field != null ? MiniJson.Num(field, "party_bonus", 1) : MiniJson.Num(r.data, "party_bonus", 1)));
                 if (field != null && MiniJson.Num(field, "xp_factor", 1) < 0.999) GameEvents.RaiseToast(L.T("<color=#8c96a8>레벨 차이로 경험치가 줄었습니다.</color>"));
                 if (parent == null) return;
                 foreach (var d in MiniJson.Arr(r.data, "drops") ?? new List<object>())

@@ -171,7 +171,8 @@ namespace DotRPG
                 else if (Time.frameCount > openedFrame && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))) SendTyped();
                 else if (!field.isFocused) field.ActivateInputField();
             }
-            else if (PlayingNow)
+            // Not on the frame a window / trailer closed: the Enter that confirmed it must not also open the chat line.
+            else if (PlayingNow && !Game.State.ChangedThisFrame && !BossTrailer.Blocking)
             {
                 if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) Open(null);
                 else

@@ -70,7 +70,7 @@ export async function listDungeons(accountId: number, characterUuid: string) {
         open_today: isOpenToday(eco, d, now),
         difficulties: eco.dungeons.difficulties.map((_x, i) => ({
           difficulty: i,
-          unlocked: i === 0 || best.has(`${d.id}:${i - 1}`),
+          unlocked: true, // 2026-10-14: 요일·일반 던전은 모든 난이도를 연다(entryRules.checkEntry와 같은 규칙)
           cleared: best.has(`${d.id}:${i}`),
           best_rank: best.get(`${d.id}:${i}`) ?? null,
         })),

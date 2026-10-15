@@ -80,7 +80,7 @@ describe('GET /characters/:id/dungeons', () => {
     const gold = d.dungeons.find((x: { id: string }) => x.id === 'gold_vein');
     expect(gold.open_today).toBe(true);
     expect(gold.difficulties[0]).toMatchObject({ difficulty: 0, unlocked: true, cleared: false });
-    expect(gold.difficulties[1]).toMatchObject({ unlocked: false });
+    expect(gold.difficulties[1]).toMatchObject({ unlocked: true, cleared: false }); // 2026-10-14: 모든 난이도 개방
     expect(d.dungeons.find((x: { id: string }) => x.id === 'smelter').open_today).toBe(false);
     expect(d.dungeons.some((x: { id: string }) => x.id.startsWith('raid_'))).toBe(false);
   });

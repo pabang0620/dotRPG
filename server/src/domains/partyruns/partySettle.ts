@@ -106,9 +106,14 @@ export function settleRun(accountId: number, characterUuid: string, runUuid: str
   });
 }
 
-function storedResult(run: dungeonRepo.RunRow): EconResult {
+/**
+ * 이미 정산된 판(서버 틱이 먼저 정산했거나 재요청)의 결과. 처음 정산 응답과 같은 모양으로 돌려준다:
+ * card_mode가 빠지면 클라이언트가 pick_one으로 보고 한 장만 고르게 하고, delta가 빠지면 오른 경험치·레벨이 늦게 보인다
+ */
+async function storedResult(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconResult> {
   if (run.state === 'held') return { status: 200, data: { result: 'held' } };
-  if (run.state === 'failed') return { status: 200, data: { result: 'failed' } };
+  // 불가능한 클리어로 거절된 판은 hold_reason이 남는다: 보상이 없으니 '우편으로 확인' 문구가 아니라 거절로 알린다
+  if (run.state === 'failed') return { status: 200, data: run.hold_reason ? { result: 'rejected', reasons: run.hold_reason.split(',') } : { result: 'failed' } };
   const dungeon = getGameData().economy.dungeons.byId.get(run.dungeon_id);
   const data: Record<string, unknown> = {
     result: 'cleared',
@@ -116,11 +121,16 @@ function storedResult(run: dungeonRepo.RunRow): EconResult {
     score: run.score,
     granted_xp: run.xp_granted ?? 0,
     card_count: run.cards ? run.cards.length : 0,
+    card_mode: run.cards ? run.cards_mode : 'pick_one',
+    delta: { gold: ctx.gold, level: ctx.level, xp: ctx.xp },
   };
   if (dungeon?.isRaid) {
+    const gains = await raidGainsOf(ctx, run.uuid);
     data.raid = {
       reward_locked: run.reward_locked,
       ...(run.lock_reason ? { lock_reason: run.lock_reason } : {}),
+      ...(gains.key > 0 ? { key_gain: gains.key } : {}),
+      ...(gains.core > 0 ? { core_gain: gains.core } : {}),
       ...(!run.reward_locked && run.cards_mode === 'take_all' ? { gold_gain: run.raid_gold, card_mode: run.cards_mode } : {}),
     };
   }
@@ -131,9 +141,21 @@ function storedResult(run: dungeonRepo.RunRow): EconResult {
   return { status: 200, data };
 }
 
+/** 그 판에서 받은 레이드 열쇠·고대의 핵(원장 기록 기준) */
+async function raidGainsOf(ctx: EconCtx, runUuid: string): Promise<{ key: number; core: number }> {
+  const r = await ctx.client.query<{ reason: string; n: string }>(
+    `SELECT reason, COALESCE(SUM(delta), 0) AS n FROM item_ledger
+      WHERE character_id = $1 AND ref = $2 AND reason IN ('raid_key', 'raid_core') AND delta > 0
+      GROUP BY reason`,
+    [ctx.char.id, runUuid],
+  );
+  const of = (reason: string) => Number(r.rows.find((x) => x.reason === reason)?.n ?? 0);
+  return { key: of('raid_key'), core: of('raid_core') };
+}
+
 /** 내 행 하나만 정산한다 */
 async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconResult> {
-  if (run.state !== 'reported') return storedResult(run);
+  if (run.state !== 'reported') return storedResult(ctx, run);
   const pol = getConfig().policy;
   const { eco, dungeon } = runContext(run);
   const pr = (await repo.getRunById(ctx.client, run.party_run_id as number)) as NonNullable<Awaited<ReturnType<typeof repo.getRunById>>>;

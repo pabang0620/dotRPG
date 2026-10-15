@@ -43,6 +43,8 @@ export interface KillTarget {
   nonHost: boolean;
   /** 8단계: 필드 파티 세션 처치(session_id가 있을 때) */
   field: FieldKillInfo | null;
+  /** 2026-10-15: 파티 던전 판의 사람 수 보너스(1.15 / 1.3 / 1.5). 필드는 field.partyBonus를 쓴다 */
+  partyBonus?: number;
   /** 받아들인 뒤(kill_log 기록 직전) 던전 진행을 갱신한다 */
   commit: (client: PoolClient) => Promise<void>;
 }

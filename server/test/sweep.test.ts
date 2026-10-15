@@ -319,8 +319,7 @@ describe('B8 소탕은 해금·최고 랭크·업적·주간 활동에 반영되
     expect(after.dungeons).toEqual(before);
     expect(after.entries.used).toBe(2); // 입장 횟수는 공유한다
     const gold = after.dungeons.find((x: { id: string }) => x.id === 'gold_vein');
-    expect(gold.difficulties[1].unlocked).toBe(true); // 시드한 직접 클리어(일반)로 이미 열려 있다
-    expect(gold.difficulties[2].unlocked).toBe(false); // 소탕이 모험을 클리어한 것으로 치지 않는다
+    expect(gold.difficulties[1].cleared).toBe(false); // 소탕이 모험을 클리어한 것으로 치지 않는다
     expect(await count("SELECT count(*) AS n FROM dungeon_runs WHERE character_id = $1 AND state = 'cleared'", [h.dbId])).toBe(1);
     expect(await count('SELECT count(*) AS n FROM account_week_counters')).toBe(0);
   });

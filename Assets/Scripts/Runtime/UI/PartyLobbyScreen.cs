@@ -30,10 +30,9 @@ namespace DotRPG
         static PartyClient Client => PartyClient.Instance;
 
         Text header, runText;
-        int aiCount = -1;
         readonly List<(RectTransform row, Text who, Text info, Button lead, Button kick)> memberRows = new List<(RectTransform, Text, Text, Button, Button)>();
         readonly List<(RectTransform row, Text who, Button yes, Button no)> appRows = new List<(RectTransform, Text, Button, Button)>();
-        Button readyBtn, startBtn, aiBtn, listBtn, leaveBtn, beginBtn;
+        Button readyBtn, startBtn, listBtn, leaveBtn, beginBtn;
         Button dungeonBtn, diffBtn, inviteBtn, friendsBtn, rosterBtn;
         InputField inviteField;
 
@@ -89,7 +88,6 @@ namespace DotRPG
             }
             Button Main(string name, string label, System.Action a) =>
                 Button(w.content, name, label, "ui_btn", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-206f, 8f), new Vector2(240f, 56f), a, 22);
-            w.aiBtn = Side("Ai", L.T("AI 용병"), w.CycleAi);
             w.listBtn = Side("List", L.T("모집 공개"), w.ToggleListed);
             w.startBtn = Main("Start", L.T("출발"), w.Depart);
             w.beginBtn = Main("Begin", L.T("지금 출발"), () => PartyRunSession.Instance?.BeginNow());
@@ -102,6 +100,7 @@ namespace DotRPG
 
         public override void Close()
         {
+            if (PartyHub.BackOnePage()) return; // [UX] Esc: the hub page visited before this one
             if (!PartyHub.CloseToOrigin()) base.Close();
         }
 
@@ -140,14 +139,6 @@ namespace DotRPG
         }
 
         int FreeSeats => Client != null ? Mathf.Max(0, PartyManager.MaxMembers - Client.Members.Count) : 0;
-
-        void CycleAi()
-        {
-            int max = AiAvailable;
-            if (max == 0) { SetStatus(L.T("편성된 AI 동료가 없습니다. [AI 편성]에서 동료를 넣으세요."), false); return; }
-            aiCount = AiShown >= max ? 0 : AiShown + 1;
-            Refresh();
-        }
 
         void InviteTyped()
         {
@@ -241,23 +232,25 @@ namespace DotRPG
             Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, L.F("난이도를 {0}{1} 바꿨습니다.", L.T(PartyFinderRules.DifficultyName(next)), Ro(PartyFinderRules.DifficultyName(next)))); RefreshPicker(); });
         }
 
-        /// <summary>[AI] The leader's own roster fills the free seats: at most the hired mercenaries that fit.</summary>
-        int AiAvailable => Mathf.Min(FreeSeats, Game.Session != null ? Game.Session.PartyRoster.Count : 0);
-        int AiShown => aiCount < 0 ? AiAvailable : Mathf.Min(aiCount, AiAvailable);
+        /// <summary>[AI] The leader's AI 동료 (the AI tab's roster) fill the free seats, as DungeonDirector.EnterAsParty does.</summary>
+        int AiShown => Mathf.Min(FreeSeats, Game.Session != null ? Game.Session.PartyRoster.Count : 0);
 
         void ToggleListed() => Client?.SetListed(!Client.Listed, (ok, msg) => Done(ok, msg, Client.Listed ? L.T("모집 글을 다시 올렸습니다.") : L.T("모집 글을 내렸습니다.")));
 
+        // [UX] Same way in as the dungeon window's 입장 (trailer, practice question, everyone + AI seats).
         void Depart()
         {
-            if (Client == null) return;
-            int ai = AiShown;
-            Client.StartRun(ai, (ok, msg) => Done(ok, msg, L.T("출발! 파티원이 방장에게 연결되는 중입니다.")));
+            if (Client == null || !Client.InParty) return;
+            var target = DungeonDatabase.Get(Client.DungeonId);
+            if (target == null) { SetStatus(L.T("목적지를 먼저 고르세요. [던전 변경]"), false); return; }
+            PartyHub.ForgetTrail();
+            DungeonSelectScreen.Enter(target, Client.Difficulty, Refresh);
         }
 
         void LeaveParty()
         {
             if (PartyRunSession.Active) { SetStatus(L.T("던전 진행 중에는 파티를 나갈 수 없습니다."), false); return; }
-            Game.UI.Confirm(L.T("파티에서 나갈까요?"), () => Client?.Leave((ok, msg) => { Done(ok, msg, L.T("파티에서 나왔습니다.")); if (ok) Close(); }), true);
+            Game.UI.Confirm(L.T("파티에서 나갈까요?"), () => Client?.Leave((ok, msg) => { Done(ok, msg, L.T("파티에서 나왔습니다.")); if (ok) { PartyHub.ForgetTrail(); Close(); } }), true);
         }
 
         float refreshAcc;
@@ -329,7 +322,6 @@ namespace DotRPG
                 : session.State == "gathering"
                 ? (session.AmHost ? L.T("<color=#ffe066>파티원이 연결되는 중... 모두 들어오면 자동으로 출발합니다.</color>") : L.T("<color=#ffe066>방장에게 연결하는 중...</color>"))
                 : L.T("<color=#8fe28f>던전 진행 중</color>");
-            int ai = AiShown;
             bool idle = inParty && session == null;
             dungeonBtn.gameObject.SetActive(leader && idle);
             if (picker != null && picker.gameObject.activeSelf && !(leader && idle)) picker.gameObject.SetActive(false);
@@ -345,8 +337,6 @@ namespace DotRPG
             beginBtn.gameObject.SetActive(session != null && session.AmHost && session.State == "gathering");
             readyBtn.gameObject.SetActive(inParty && !leader && idle);
             if (inParty && c.Me != null) TextOf(readyBtn).text = c.Me.ready ? L.T("준비 취소") : L.T("준비");
-            aiBtn.gameObject.SetActive(leader && idle);
-            TextOf(aiBtn).text = L.F("AI 동료 {0}명", ai);
             listBtn.gameObject.SetActive(leader && idle && c.Source == "board");
             if (inParty) TextOf(listBtn).text = c.Listed ? L.T("모집 내리기") : L.T("모집 공개");
             leaveBtn.gameObject.SetActive(inParty && session == null);

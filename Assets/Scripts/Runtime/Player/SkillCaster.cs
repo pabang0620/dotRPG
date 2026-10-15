@@ -191,11 +191,18 @@ namespace DotRPG
 
         // ---------- Hits ----------
 
+        /// <summary>Skill damage against this target: the skill's boss bonus and the 토벌형 weapon's boss multiplier.</summary>
+        int BossScaled(EnemyController enemy, SkillNumbers n, int damage)
+        {
+            if (!enemy.IsBoss) return damage;
+            if (n.bossPct > 0) damage = Mathf.RoundToInt(damage * (1f + n.bossPct / 100f)); // [SKILL v2] 보스 사냥
+            return Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
+        }
+
         void Hit(EnemyController enemy, SkillNumbers n, Vector2 from, float knockback)
         {
             if (enemy == null || enemy.IsDead) return;
-            int damage = n.bossPct > 0 && enemy.IsBoss ? Mathf.RoundToInt(n.damage * (1f + n.bossPct / 100f)) : n.damage; // [SKILL v2] 보스 사냥
-            if (enemy.IsBoss) damage = Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
+            int damage = BossScaled(enemy, n, n.damage);
             // Hit feel: a harder shove, sparks and a tiny freeze-frame on the local player's hits.
             bool landed = enemy.TakeDamage(new DamageInfo(damage, from, knockback * 1.2f, Team.Player, owner.gameObject));
             if (landed) HitFeel(enemy, knockback >= 8f);

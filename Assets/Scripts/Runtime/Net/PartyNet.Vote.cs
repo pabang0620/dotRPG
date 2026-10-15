@@ -32,7 +32,7 @@ namespace DotRPG
         {
             if (!host || voteDone != null) return;
             votePending.Clear();
-            foreach (var kv in bySlot) if (kv.Key < humans && kv.Key != mySlot && kv.Value != null) votePending.Add(kv.Key);
+            foreach (var kv in bySlot) if (kv.Key < humans && kv.Key != mySlot && Connected(kv.Key) && kv.Value != null) votePending.Add(kv.Key); // a dropped member cannot answer
             if (votePending.Count == 0) { done?.Invoke(true); return; }
             voteDone = done;
             Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.VillageVote); w.Write(VillageVoteSeconds); }));

@@ -91,12 +91,12 @@ namespace DotRPG
             }));
         }
 
-        /// <summary>Host: true while any person's body in the run is up (AI seats do not count).</summary>
+        /// <summary>Host: true while any connected person's body in the run is up (AI seats and dropped members do not count).</summary>
         public bool AnyHumanUp
         {
             get
             {
-                foreach (var kv in bySlot) if (kv.Key < humans && kv.Value != null && !kv.Value.IsDead) return true;
+                foreach (var kv in bySlot) if (kv.Key < humans && Connected(kv.Key) && kv.Value != null && !kv.Value.IsDead) return true;
                 return false;
             }
         }

@@ -38,6 +38,8 @@ export interface RunRow {
   stats: { elapsed_ms?: number; hits_taken?: number; max_combo?: number; revives_used?: number; damage_dealt?: number; hits_landed?: number } | null;
   xp_granted: number | null;
   score: Record<string, number> | null;
+  /** 불가능한 클리어로 거절된 판(failed)의 사유, 쉼표로 이어 붙임 */
+  hold_reason: string | null;
 }
 
 interface RawRun extends Omit<RunRow, 'id' | 'character_id' | 'party_run_id' | 'power_cap'> {
@@ -49,7 +51,7 @@ interface RawRun extends Omit<RunRow, 'id' | 'character_id' | 'party_run_id' | '
 const COLS = `id, uuid, character_id, dungeon_id, difficulty, party_size, state, reset_day, started_at, ended_at,
               room_index, room_kills, rank, cards, card_picked, cards_mode, cards_taken, raid_gold, party_run_id, slot, humans, ai_count,
               counts_entry, reward_locked, lock_reason, power_cap, reported_outcome, reported_at, stats,
-              xp_granted, score`;
+              xp_granted, score, hold_reason`;
 const toRun = (r: RawRun): RunRow => ({
   ...r,
   id: Number(r.id),

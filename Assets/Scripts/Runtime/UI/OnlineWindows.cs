@@ -69,6 +69,7 @@ namespace DotRPG
 
         public override void Close()
         {
+            if (PartyHub.BackOnePage()) return; // [UX] Esc: the hub page visited before this one
             if (!PartyHub.CloseToOrigin()) base.Close();
         }
         protected override bool PadNavigation => focusField == null || !focusField.isFocused;

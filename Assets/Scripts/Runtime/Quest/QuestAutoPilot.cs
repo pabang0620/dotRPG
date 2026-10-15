@@ -70,7 +70,9 @@ namespace DotRPG
 
             public ActorCommand Read(PlayerController self)
             {
-                var mine = local.Read(self);
+                // Keys pressed inside a window (online, the world keeps running) or on the frame one closes are menu input,
+                // not the player taking over.
+                var mine = Game.IsPlaying && !Game.State.ChangedThisFrame && !BossTrailer.Blocking ? local.Read(self) : ActorCommand.None;
                 bool touched = mine.move.sqrMagnitude > 0.04f || mine.attack || mine.mobility || mine.interact || mine.skillSlot >= 0
                     || mine.useHealing || mine.useMana || mine.townScroll;
                 if (touched)

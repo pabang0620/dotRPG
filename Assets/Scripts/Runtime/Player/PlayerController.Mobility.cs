@@ -188,10 +188,12 @@ namespace DotRPG
         readonly List<RaycastHit2D> shoveHits = new List<RaycastHit2D>(8);
 
         // Walking into a regular monster pushes it along instead of being body-blocked by it. Bosses, super armor and
-        // big monsters hold their ground. A party member PC leaves the monsters to the host (they are the host's).
+        // big monsters hold their ground. A party member PC cannot move the host's monsters, so it walks through the
+        // same ones instead of being body-blocked (collision comes back once they no longer overlap).
         void ShoveMonsters(Vector2 velocity)
         {
-            if (PartyNet.IsMember || BodyCollider == null) return;
+            if (BodyCollider == null) return;
+            bool member = PartyNet.IsMember;
             Vector2 dir = velocity.normalized;
             float step = velocity.magnitude * Time.fixedDeltaTime;
             var filter = new ContactFilter2D { useTriggers = false };
@@ -204,8 +206,12 @@ namespace DotRPG
                 var enemy = hit.collider.GetComponentInParent<EnemyController>();
                 if (enemy == null || enemy.IsDead || enemy.IsBoss || enemy.SuperArmorActive) continue;
                 if (enemy.Def != null && enemy.Def.size > ShoveMaxSize) continue;
-                hit.rigidbody.position += dir * step;
+                if (!member) { hit.rigidbody.position += dir * step; continue; }
+                if (passedThrough.Contains(hit.collider)) continue;
+                Physics2D.IgnoreCollision(BodyCollider, hit.collider, true);
+                passedThrough.Add(hit.collider);
             }
+            if (member && passedThrough.Count > 0 && restoreRoutine == null) restoreRoutine = StartCoroutine(RestoreAfterPass());
         }
 
         void StepDash()

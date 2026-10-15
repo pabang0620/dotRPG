@@ -294,6 +294,12 @@ namespace DotRPG
                         int slot = r.ReadByte();
                         var body = MemberAt(slot);
                         if (body != null) GameEvents.RaiseToast(L.F("{0}님 연결 끊김", body.DisplayName));
+                        // [8] In the field the host drops the body of someone who left; do the same here (a dungeon keeps it).
+                        if (FieldMode && slot != mySlot && body is PlayerController gone)
+                        {
+                            Game.Party?.RemoveNetMember(gone);
+                            bySlot.Remove(slot);
+                        }
                         break;
                     }
                 }
