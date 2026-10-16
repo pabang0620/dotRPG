@@ -24,16 +24,20 @@ namespace DotRPG
             return i >= 0 && i < table.Length ? table[i] : 0;
         }
 
-        /// <summary>Cores and gold to promote INTO a grade.</summary>
+        /// <summary>
+        /// Cores and gold to promote INTO a grade. [BALANCE 2026-10-16] Unique and legendary cost a lot more: the raids hand
+        /// out 1~2 cores per reward, so 12 cores made a legendary a sure thing in about a month. A legendary should be luck
+        /// (raid card 1%) or a long, expensive project (24 cores = 8 weeks of skeleton king, 400,000 gold).
+        /// </summary>
         public static (int cores, int gold) CostInto(ItemRarity to)
         {
             switch (to)
             {
-                case ItemRarity.Uncommon: return (1, 2000);
-                case ItemRarity.Rare: return (2, 5000);
-                case ItemRarity.Epic: return (3, 10000);
-                case ItemRarity.Unique: return (6, 30000);
-                case ItemRarity.Legendary: return (12, 80000);
+                case ItemRarity.Uncommon: return (1, 3000);
+                case ItemRarity.Rare: return (2, 8000);
+                case ItemRarity.Epic: return (4, 30000);
+                case ItemRarity.Unique: return (10, 120000);
+                case ItemRarity.Legendary: return (24, 400000);
                 default: return (1, 1000);
             }
         }

@@ -59,8 +59,8 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     await setKills(h, 'skeleton', 3);
     const res = await claim(h, 'c1_rise');
     expect(res.status).toBe(200);
-    expect(res.body.data.reward).toMatchObject({ xp: questXp('c1_rise'), gold: 300, items: [{ item_key: 'potion_hp', count: 5 }] });
-    expect(await goldOf(h)).toBe(400);
+    expect(res.body.data.reward).toMatchObject({ xp: questXp('c1_rise'), gold: 150, items: [{ item_key: 'potion_hp', count: 5 }] }); // 2026-10-16 퀘스트 골드 x0.5
+    expect(await goldOf(h)).toBe(250);
     expect(await countOf(h, 'potion_hp')).toBe(starterCount('potion_hp') + 5);
     const gl = await getPool().query("SELECT ref FROM gold_ledger WHERE character_id = $1 AND reason = 'quest_reward'", [h.dbId]);
     expect(gl.rows).toEqual([{ ref: 'c1_rise' }]);
@@ -185,7 +185,7 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     }
     const ok = await claim(h, 'c1_stronger');
     expect(ok.status).toBe(200);
-    expect(await goldOf(h)).toBe(3100);
+    expect(await goldOf(h)).toBe(1600); // 2026-10-16 퀘스트 골드 x0.5 (3000 -> 1500) + 시작 100
   });
 
   it('레이드 목표: 해당 레이드를 깬 판이 있어야 하고, 보상 잠긴 연습 클리어도 인정', async () => {

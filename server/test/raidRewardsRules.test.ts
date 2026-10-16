@@ -148,12 +148,13 @@ describe('5. 데이터 정합(가격 목표)', () => {
       for (const p of shop.products.values()) {
         if (p.raidId !== d.id) continue;
         const weeks = p.price / m / (perWeek[d.id] as number);
+        // 2026-10-16: 다음 콘텐츠 창(약 8주)에 맞춰 레전더리 3.5~6주, 에픽+ 1~2.5주 (Docs/BALANCE_GOLD_2026-10-16.md 5절)
         if (p.rarityWeights.length === 1 && p.rarityWeights[0]?.rarity === 'Legendary') {
-          expect(weeks).toBeGreaterThanOrEqual(8);
-          expect(weeks).toBeLessThanOrEqual(12);
+          expect(weeks).toBeGreaterThanOrEqual(3.5);
+          expect(weeks).toBeLessThanOrEqual(6);
         } else {
-          expect(weeks).toBeGreaterThanOrEqual(2);
-          expect(weeks).toBeLessThanOrEqual(4);
+          expect(weeks).toBeGreaterThanOrEqual(1);
+          expect(weeks).toBeLessThanOrEqual(2.5);
         }
       }
     }

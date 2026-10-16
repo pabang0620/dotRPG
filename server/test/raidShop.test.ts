@@ -36,13 +36,13 @@ describe('19. 조회', () => {
     expect(rw.body.data.rates_version).toBe('raidshop-1');
     expect(rw.body.data.products.map((p: { id: string }) => p.id).sort()).toEqual(['grah_epic_weapon', 'grah_legend_weapon', 'king_epic_weapon', 'king_legend_weapon']);
     const kingEpic = rw.body.data.products.find((p: { id: string }) => p.id === 'king_epic_weapon');
-    expect(kingEpic).toMatchObject({ raid_id: 'raid_skeleton_king', tier_level: 20, affordable: true, material: { item_key: 'mat_raid_king', price: 90, have: 95 } });
+    expect(kingEpic).toMatchObject({ raid_id: 'raid_skeleton_king', tier_level: 20, affordable: true, material: { item_key: 'mat_raid_king', price: 45, have: 95 } });
     expect(kingEpic.outcomes).toEqual([
       { rarity: 'Epic', percent: 88, item_key: 'eq_sword_20_e' },
       { rarity: 'Unique', percent: 12, item_key: 'eq_sword_20_un' },
     ]);
     const grahLegend = rw.body.data.products.find((p: { id: string }) => p.id === 'grah_legend_weapon');
-    expect(grahLegend).toMatchObject({ tier_level: 40, affordable: false, material: { have: 0, price: 100 }, outcomes: [{ rarity: 'Legendary', percent: 100, item_key: 'eq_sword_40_l' }] });
+    expect(grahLegend).toMatchObject({ tier_level: 40, affordable: false, material: { have: 0, price: 60 }, outcomes: [{ rarity: 'Legendary', percent: 100, item_key: 'eq_sword_40_l' }] });
     const rm = await get(app, m, '/raid-shop');
     expect(rm.body.data.products.find((p: { id: string }) => p.id === 'king_legend_weapon').outcomes[0].item_key).toBe('eq_staff_20_l');
     expect((await request(app).get(`/characters/${w.id}/raid-shop`).set(ver())).status).toBe(401);
@@ -54,11 +54,11 @@ describe('19. 조회', () => {
 describe('20. 구매', () => {
   it('재료 부족이면 422 NOT_ENOUGH_MATERIAL(need, have)이고 아무것도 안 바뀐다', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'mat_raid_king', 89, 'bag', 'character');
+    await seedItem(h, 'mat_raid_king', 44, 'bag', 'character');
     const r = await buy(h, 'king_epic_weapon');
     expect(r.status).toBe(422);
-    expect(r.body.errors).toMatchObject({ code: 'NOT_ENOUGH_MATERIAL', need: 90, have: 89 });
-    expect(await countOf(h, 'mat_raid_king')).toBe(89);
+    expect(r.body.errors).toMatchObject({ code: 'NOT_ENOUGH_MATERIAL', need: 45, have: 44 });
+    expect(await countOf(h, 'mat_raid_king')).toBe(44);
     expect(await ledger(h, 'raid_shop_cost')).toEqual([]);
     expect(await purchases(h)).toEqual([]);
     // 다른 레이드의 재료로는 살 수 없다
@@ -74,17 +74,17 @@ describe('20. 구매', () => {
     expect(a.status).toBe(200);
     const { item_key: key, rarity } = a.body.data as { item_key: string; rarity: string };
     expect(['eq_sword_20_e', 'eq_sword_20_un']).toContain(key);
-    expect(a.body.data).toMatchObject({ product_id: 'king_epic_weapon', cost: { item_key: 'mat_raid_king', count: 90 }, material_left: 10 });
+    expect(a.body.data).toMatchObject({ product_id: 'king_epic_weapon', cost: { item_key: 'mat_raid_king', count: 45 }, material_left: 55 });
     expect(a.body.data.delta.stacks).toEqual(expect.arrayContaining([expect.objectContaining({ item_key: key, bind: 'character', count: 1 })]));
-    expect(await countOf(h, 'mat_raid_king')).toBe(10);
+    expect(await countOf(h, 'mat_raid_king')).toBe(55);
     expect(await countOf(h, key)).toBe(1);
     const bind = await getPool().query("SELECT bind FROM character_items WHERE character_id = $1 AND item_key = $2", [h.dbId, key]);
     expect(bind.rows).toEqual([{ bind: 'character' }]);
-    expect(await ledger(h, 'raid_shop_cost')).toEqual([{ delta: -90, item_key: 'mat_raid_king', request_id: r }]);
+    expect(await ledger(h, 'raid_shop_cost')).toEqual([{ delta: -45, item_key: 'mat_raid_king', request_id: r }]);
     expect(await ledger(h, 'raid_shop_result')).toEqual([{ delta: 1, item_key: key, request_id: r }]);
     const p = await purchases(h);
     expect(p).toHaveLength(1);
-    expect(p[0]).toMatchObject({ product_id: 'king_epic_weapon', material_key: 'mat_raid_king', material_cost: 90, result_key: key, result_rarity: rarity, rates_version: 'raidshop-1' });
+    expect(p[0]).toMatchObject({ product_id: 'king_epic_weapon', material_key: 'mat_raid_king', material_cost: 45, result_key: key, result_rarity: rarity, rates_version: 'raidshop-1' });
 
     // 속도 감시: raid_shop_* 는 집계 버킷에 잡히지 않는다(재료 공급이 상한이라 이중 계산이 된다)
     const meter = await getPool().query("SELECT coalesce(sum(item_value), 0) AS v, coalesce(sum(epic_plus), 0) AS e, coalesce(sum(unique_plus), 0) AS u FROM income_hourly WHERE character_id = $1", [h.dbId]);
@@ -93,7 +93,7 @@ describe('20. 구매', () => {
     const replay = await buy(h, 'king_epic_weapon', r);
     expect(replay.status).toBe(200);
     expect(replay.body).toEqual(a.body);
-    expect(await countOf(h, 'mat_raid_king')).toBe(10);
+    expect(await countOf(h, 'mat_raid_king')).toBe(55);
     expect(await ledger(h, 'raid_shop_cost')).toHaveLength(1);
     expect(await purchases(h)).toHaveLength(1);
     // 같은 request_id에 다른 상품은 재사용 오류
@@ -105,7 +105,7 @@ describe('20. 구매', () => {
 describe('21. 동시성', () => {
   it('재료가 한 번 살 만큼만 있을 때 서로 다른 request_id로 동시에 두 번 사면 하나만 성공', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'mat_raid_grah', 30, 'bag', 'character');
+    await seedItem(h, 'mat_raid_grah', 20, 'bag', 'character');
     const rs = await Promise.all([buy(h, 'grah_epic_weapon'), buy(h, 'grah_epic_weapon')]);
     expect(rs.map((x) => x.status).sort()).toEqual([200, 422]);
     expect(rs.find((x) => x.status === 422)?.body.errors.code).toBe('NOT_ENOUGH_MATERIAL');
@@ -120,8 +120,8 @@ describe('22. 결과 규칙', () => {
   it('레전더리 상품은 항상 caller 직업의 해당 단계 레전더리 무기(전사 검, 마법사 지팡이)', async () => {
     const w = await newHero(app, 'warrior');
     const m = await newHero(app, 'mage');
-    await seedItem(w, 'mat_raid_king', 320, 'bag', 'character');
-    await seedItem(m, 'mat_raid_grah', 100, 'bag', 'character');
+    await seedItem(w, 'mat_raid_king', 120, 'bag', 'character');
+    await seedItem(m, 'mat_raid_grah', 60, 'bag', 'character');
     // 2026-10-14 전설 무기 두 갈래(광역형 _l, 토벌형 _lb) 중 하나
     const a = await buy(w, 'king_legend_weapon');
     expect(a.body.data).toMatchObject({ rarity: 'Legendary', material_left: 0 });
@@ -147,7 +147,7 @@ describe('22. 결과 규칙', () => {
 
   it('난수 주입: 굴림 값이 유니크 구간이면 유니크 장비를 받는다', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'mat_raid_king', 90, 'bag', 'character');
+    await seedItem(h, 'mat_raid_king', 45, 'bag', 'character');
     setRng(fakeRng({ int: (_min, max) => max - 1 }));
     const r = await buy(h, 'king_epic_weapon');
     expect(r.body.data).toMatchObject({ item_key: 'eq_sword_20_un', rarity: 'Unique' });
@@ -186,7 +186,7 @@ describe('23. 입력 검증과 정지', () => {
 describe('24. 귀속', () => {
   it('상점으로 산 장비와 전용 재료는 경매에 등록할 수 없다', async () => {
     const h = await newHero(app);
-    await seedItem(h, 'mat_raid_king', 90, 'bag', 'character');
+    await seedItem(h, 'mat_raid_king', 45, 'bag', 'character');
     const r = await buy(h, 'king_epic_weapon');
     const key = r.body.data.item_key as string;
     const gear = await listReq(app, h, { item_key: key, count: 1, buyout: 1000, hours: 12 });

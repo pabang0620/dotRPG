@@ -228,7 +228,7 @@ namespace DotRPG
             if (r == null) return "";
             var parts = new List<string>();
             if (r.xp > 0) parts.Add(L.F("경험치 {0:N0}", Progression.QuestXp(r.xp)));
-            if (r.gold > 0) parts.Add(L.F("골드 {0:N0}", r.gold));
+            if (r.gold > 0) parts.Add(L.F("골드 {0:N0}", Progression.QuestGold(r.gold)));
             if (r.maxHealth > 0) parts.Add(L.F("최대 체력 +{0}", EquipmentDatabase.Hearts(r.maxHealth)));
             if (r.items != null)
                 foreach (var it in r.items)

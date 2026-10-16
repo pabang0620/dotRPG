@@ -58,6 +58,12 @@ namespace DotRPG
         }
         /// <summary>Quest XP rewards: data value x <see cref="QuestScale"/>.</summary>
         public static int QuestXp(int dataXp) => (int)Math.Round(dataXp * QuestScale);
+        /// <summary>
+        /// [BALANCE 2026-10-16] Quest gold rewards: data value x this. The quest line alone paid about 680,000 gold to Lv.40,
+        /// twice what the clear kit costs, so a no-spend player never ran short (Docs/BALANCE_GOLD_2026-10-16.md).
+        /// </summary>
+        public const float QuestGoldScale = 0.5f;
+        public static int QuestGold(int dataGold) => (int)Math.Round(dataGold * QuestGoldScale);
         public int XpNeeded => Level >= MaxLevel ? 0 : XpToNext(Level);
 
         /// <summary>Passive points earned minus spent (the start node is free).</summary>

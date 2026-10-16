@@ -150,8 +150,9 @@ namespace DotRPG
             }
             if (r.gold > 0)
             {
-                if (!online) Game.Session.Inventory.Add(ConsumableDatabase.Gold, r.gold);
-                parts.Add(L.F("골드 {0:N0}", r.gold));
+                int gold = Progression.QuestGold(r.gold); // scaled like the XP (the server pays the same exported value)
+                if (!online) Game.Session.Inventory.Add(ConsumableDatabase.Gold, gold);
+                parts.Add(L.F("골드 {0:N0}", gold));
             }
             if (r.items != null)
                 foreach (var it in r.items)

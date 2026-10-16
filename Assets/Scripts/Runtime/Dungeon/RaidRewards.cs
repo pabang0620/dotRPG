@@ -118,10 +118,12 @@ namespace DotRPG
 
         public static readonly RaidShopProduct[] Products =
         {
-            new RaidShopProduct { id = "king_epic_weapon", name = L.T("해골왕 에픽+ 무기 상자"), raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 90, rarityWeights = EpicPlus },
-            new RaidShopProduct { id = "king_legend_weapon", name = L.T("해골왕 레전더리 무기 상자"), raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 320, rarityWeights = LegendOnly },
-            new RaidShopProduct { id = "grah_epic_weapon", name = L.T("그라흐 에픽+ 무기 상자"), raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 30, rarityWeights = EpicPlus },
-            new RaidShopProduct { id = "grah_legend_weapon", name = L.T("그라흐 레전더리 무기 상자"), raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 100, rarityWeights = LegendOnly },
+            // [BALANCE 2026-10-16] Prices follow the content window (next content about 8 weeks after launch): the epic+ box
+            // in 1.5~2 weeks of rewards, the guaranteed legendary in about 5~6 weeks, after the luck path (raid card 1%).
+            new RaidShopProduct { id = "king_epic_weapon", name = L.T("해골왕 에픽+ 무기 상자"), raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 45, rarityWeights = EpicPlus },
+            new RaidShopProduct { id = "king_legend_weapon", name = L.T("해골왕 레전더리 무기 상자"), raidId = DungeonDatabase.Raid, materialItem = RaidRewards.RaidMatKing, price = 120, rarityWeights = LegendOnly },
+            new RaidShopProduct { id = "grah_epic_weapon", name = L.T("그라흐 에픽+ 무기 상자"), raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 20, rarityWeights = EpicPlus },
+            new RaidShopProduct { id = "grah_legend_weapon", name = L.T("그라흐 레전더리 무기 상자"), raidId = DungeonDatabase.RaidGrah, materialItem = RaidRewards.RaidMatGrah, price = 60, rarityWeights = LegendOnly },
         };
 
         public static RaidShopProduct Get(string id)

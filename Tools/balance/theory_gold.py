@@ -9,7 +9,7 @@ Lv1~40 동안 무자본으로 버는 골드와 비교한다. 수입이 필요 �
 - 요일 던전 하루 3판(Lv5부터): 확정 골드 x rewardMul + 운 카드 2장의 골드 기대값. 난이도는 레벨 >= 권장 - 2 중 가장 높은 것.
 - 일일 의뢰 하루 3개(Lv15부터), 주간 3개: daily_quests.json bands 골드.
 - 레이드: 해골왕 주 3회(Lv20부터, 보상 하루 1회), 그라흐 Lv40 뒤 1회. raidReward 골드 평균.
-- 시작 골드 100.
+- 퀘스트 보상 골드(quest_index.json reward.gold, 스토리·서브 합계 약 42만). 시작 골드 100.
 
 지출 (클리어에 "필요한" 한 벌, 레전더리·유니크 운은 없다고 본다)
 - 강화: 아래 KIT 목표까지 기대 골드(실패 포함 마르코프 기대값. +10·+11 무기 실패는 -3, 방어구 +10 위는 파괴라 목표에 넣지 않는다).
@@ -110,6 +110,7 @@ def enhance_cost(item_id, target, gold_scale=1.0):
 
 GEAR_SELL_SCALE = 1.0
 MAT_SELL_SCALE = 1.0
+QUEST_GOLD_SCALE = 1.0
 ENH_SCALE_BY_TIER = [1.0] * 8
 
 
@@ -196,7 +197,11 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
     # 필드 보스: 15분 창마다 가능하지만 보통 한 시간에 한 번 잡는다고 본다(처치 골드 400~700 평균)
     fb = [m for m in MONSTERS["monsters"] if m["id"].startswith("fboss_")]
     fboss = hours * FIELD_BOSS_PER_HOUR * sum((m["goldMin"] + m["goldMax"]) / 2 for m in fb) / len(fb)
-    inc.update({"요일 던전": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "필드 보스": fboss})
+    # 퀘스트 보상 골드(quest_index.json reward.gold): 청구한 퀘스트의 합. Lv40 도달 전에 받은 것만 체크포인트에 넣는다
+    qgold = {q["id"]: q["reward"]["gold"] for q in tp.QUESTS}
+    quest_gold_t = [(h, qgold.get(qid, 0) * QUEST_GOLD_SCALE) for h, _, _, qid, _, _ in events]
+    quest = sum(g for _, g in quest_gold_t)
+    inc.update({"요일 던전": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "필드 보스": fboss, "퀘스트 골드": quest})
 
     # ---- 지출 ----
     enh_gold, need = 0.0, {"bone": 0.0, "ore": 0.0, "essence": 0.0}
@@ -240,7 +245,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
             # 그 시각까지의 처치 수(사냥 + 퀘스트 처치, 시뮬레이션 시각 기준)
             k_ck = sum(n for t, _, n in st["kills_t"] if t <= h)
             k_frac = min(1.0, k_ck / total_kills)
-            ci = STARTER["gold"] + (inc["처치 골드"] + inc["장비 판매"] + inc["재료 판매(남는 것)"]) * k_frac + (dng + dly + wk + fboss) * frac + (raid * frac if ck >= 20 else 0)
+            ci = STARTER["gold"] + (inc["처치 골드"] + inc["장비 판매"] + inc["재료 판매(남는 것)"]) * k_frac + (dng + dly + wk + fboss) * frac + (raid * frac if ck >= 20 else 0) + sum(g for t, g in quest_gold_t if t <= h)
             cs = sum(g for lv, _, _, g, _, _ in rows if lv <= ck) + (potions + scrolls) * k_frac
             print(f"| Lv{ck} | {h:.1f}h | {ci:,.0f} | {cs:,.0f} | {ci / cs:.2f} |")
         print("\n| 단계 | 장비 | 목표 | 기대 골드 | 기대 시도 | 뼈/강화석/정수 |\n|---|---|---|---|---|---|")

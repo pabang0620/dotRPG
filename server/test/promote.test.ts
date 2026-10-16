@@ -38,13 +38,13 @@ describe('POST /characters/:id/promote', () => {
     await seedItem(h, 'eq_sword_1_c+3', 1);
     const res = await promote(h, bag('eq_sword_1_c+3'));
     expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject({ old_key: 'eq_sword_1_c+3', new_key: 'eq_sword_1_u+3', cost: { cores: 1, gold: 2000 } });
+    expect(res.body.data).toMatchObject({ old_key: 'eq_sword_1_c+3', new_key: 'eq_sword_1_u+3', cost: { cores: 1, gold: 3000 } });
     expect(await countOf(h, 'eq_sword_1_c+3')).toBe(0);
     expect(await countOf(h, 'eq_sword_1_u+3')).toBe(1);
     expect(await countOf(h, 'mat_core')).toBe(4);
-    expect(await goldOf(h)).toBe(8000);
+    expect(await goldOf(h)).toBe(7000);
     const g = await getPool().query("SELECT delta FROM gold_ledger WHERE character_id = $1 AND reason = 'promote_cost'", [h.dbId]);
-    expect(g.rows.map((r) => Number(r.delta))).toEqual([-2000]);
+    expect(g.rows.map((r) => Number(r.delta))).toEqual([-3000]);
     await expectLedgerConsistent(h);
   });
 
@@ -53,7 +53,7 @@ describe('POST /characters/:id/promote', () => {
     await seedWorn(h, 0, 'eq_sword_1_u+1');
     const res = await promote(h, { target: { worn_slot: 0 } });
     expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject({ old_key: 'eq_sword_1_u+1', new_key: 'eq_sword_1_r+1', cost: { cores: 2, gold: 5000 } });
+    expect(res.body.data).toMatchObject({ old_key: 'eq_sword_1_u+1', new_key: 'eq_sword_1_r+1', cost: { cores: 2, gold: 8000 } });
     expect(await wornOf(h, 0)).toBe('eq_sword_1_r+1');
     expect(await countOf(h, 'mat_core')).toBe(3);
     await expectLedgerConsistent(h);
@@ -65,7 +65,7 @@ describe('POST /characters/:id/promote', () => {
     const res = await promote(h, bag('eq_sword_1_u'));
     expect(res.status).toBe(422);
     expect(res.body.errors.code).toBe('PROMOTE_NOT_ENOUGH');
-    expect(res.body.errors.need).toEqual({ cores: 2, gold: 5000 });
+    expect(res.body.errors.need).toEqual({ cores: 2, gold: 8000 });
     expect(res.body.errors.have).toEqual({ cores: 1, gold: 10_000 });
     expect(await countOf(h, 'eq_sword_1_u')).toBe(1);
     expect(await countOf(h, 'mat_core')).toBe(1);
@@ -101,7 +101,7 @@ describe('POST /characters/:id/promote', () => {
     expect(b.body).toEqual(a.body);
     expect(await countOf(h, 'eq_sword_1_u')).toBe(1);
     expect(await countOf(h, 'mat_core')).toBe(4);
-    expect(await goldOf(h)).toBe(8000);
+    expect(await goldOf(h)).toBe(7000);
     await expectLedgerConsistent(h);
   });
 
@@ -123,7 +123,7 @@ describe('POST /characters/:id/promote', () => {
     expect([a.status, b.status].sort()).toEqual([200, 422]);
     expect(await countOf(h, 'eq_sword_1_u')).toBe(1);
     expect(await countOf(h, 'mat_core')).toBe(4);
-    expect(await goldOf(h)).toBe(8000);
+    expect(await goldOf(h)).toBe(7000);
     await expectLedgerConsistent(h);
   });
 
@@ -136,7 +136,7 @@ describe('POST /characters/:id/promote', () => {
     expect(b.status).toBe(200);
     expect(await countOf(h, 'eq_sword_1_u')).toBe(1);
     expect(await countOf(h, 'eq_sword_1_c')).toBe(1);
-    expect(await goldOf(h)).toBe(8000);
+    expect(await goldOf(h)).toBe(7000);
     await expectLedgerConsistent(h);
   });
 
