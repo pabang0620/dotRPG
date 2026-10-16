@@ -77,7 +77,8 @@ namespace DotRPG
             foreach (var m in members)
             {
                 if (!Alive(m)) continue;
-                int i = CircleAt(m.Position, circles);
+                // Remote members count where their PC last reported them (the host copy walks there a little later).
+                int i = CircleAt(m.NetTarget, circles);
                 if (i >= 0 && !held[i]) { held[i] = true; n++; }
             }
             return n;

@@ -202,13 +202,16 @@ namespace DotRPG
             {
                 var marks = p.kind == PatternKind.RuinRitual ? RuinMarks : p.kind == PatternKind.MarkOfFate ? FateMarks : null;
                 if (marks == null) continue;
+                // A burst that drops the boss past two marks at once spends both: the gimmick fires once, not twice in a row.
+                bool fire = false;
                 foreach (float m in marks)
                 {
                     string key = p.kind + ":" + m;
                     if (hp > m || firedMarks.Contains(key)) continue;
                     firedMarks.Add(key);
-                    return p;
+                    fire = true;
                 }
+                if (fire) return p;
             }
             return null;
         }

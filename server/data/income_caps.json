@@ -13,7 +13,7 @@
       "dungeonDifficulty": 0,
       "perHour": {
         "xp": 16200,
-        "goldEq": 83964,
+        "goldEq": 69117,
         "ore": 630.0,
         "essence": 144.0,
         "epicPlus": 10.14
@@ -38,7 +38,7 @@
       "dungeonDifficulty": 0,
       "perHour": {
         "xp": 21600,
-        "goldEq": 90174,
+        "goldEq": 71614,
         "ore": 630.0,
         "essence": 144.0,
         "epicPlus": 10.14
@@ -63,7 +63,7 @@
       "dungeonDifficulty": 1,
       "perHour": {
         "xp": 31800,
-        "goldEq": 93439,
+        "goldEq": 74703,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 10.14
@@ -88,7 +88,7 @@
       "dungeonDifficulty": 1,
       "perHour": {
         "xp": 42600,
-        "goldEq": 96004,
+        "goldEq": 75707,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 6.26
@@ -113,7 +113,7 @@
       "dungeonDifficulty": 2,
       "perHour": {
         "xp": 55200,
-        "goldEq": 101610,
+        "goldEq": 77963,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 6.26
@@ -138,7 +138,7 @@
       "dungeonDifficulty": 2,
       "perHour": {
         "xp": 73200,
-        "goldEq": 107254,
+        "goldEq": 80217,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 6.26
@@ -163,7 +163,7 @@
       "dungeonDifficulty": 3,
       "perHour": {
         "xp": 73200,
-        "goldEq": 107254,
+        "goldEq": 80217,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 6.26
@@ -188,7 +188,7 @@
       "dungeonDifficulty": 3,
       "perHour": {
         "xp": 96600,
-        "goldEq": 112860,
+        "goldEq": 82473,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 6.26
@@ -213,7 +213,7 @@
       "dungeonDifficulty": 3,
       "perHour": {
         "xp": 202900,
-        "goldEq": 124220,
+        "goldEq": 87008,
         "ore": 646.0,
         "essence": 148.0,
         "epicPlus": 6.26

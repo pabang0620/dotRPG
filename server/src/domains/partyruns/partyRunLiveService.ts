@@ -81,10 +81,14 @@ export function heartbeat(accountId: number, characterUuid: string, runUuid: str
     const mine = members.find((m) => m.character_id === ctx.char.id);
     // 호스트가 멤버 카드를 믿어도 되는지 대조하는 서버 기준값(level, gear_hash)
     const hashes = await gearHashes(ctx.client, members.map((m) => m.character_id));
+    // 이번 세대 방장 보고의 결과(cleared/failed). 방장의 종료 메시지(RunEnd)를 중계에서 놓친 파티원이 던전에 남지 않도록
+    // 클라이언트가 이 값으로 판을 끝낸다(실패는 서버 대신 접수가 없어 me.state만으로는 알 수 없다)
+    const hostOutcome = (await repo.hostReports(ctx.client, run.id)).find((r) => r.host_epoch === run.host_epoch)?.outcome ?? null;
     return {
       state: run.state,
       host: await hostInfo(ctx.client, run, members),
       host_changed: body.seen_epoch !== run.host_epoch,
+      host_outcome: hostOutcome,
       transport: transportView(run),
       me: { state: mine?.state ?? 'left' },
       members: members.map((m) => ({ character_id: m.character_uuid, slot: m.slot, state: m.state, level: m.level, gear_hash: hashes.get(m.character_id) ?? '' })),

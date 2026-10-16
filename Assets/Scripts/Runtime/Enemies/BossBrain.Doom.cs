@@ -16,6 +16,8 @@ namespace DotRPG
     {
         public const float RuinCast = 14f, RuinGroggy = 6f, RuinTotemHpShare = .01f, RuinTotemDistance = 4.5f;
         public const float FateTime = 7f, FateRadius = 1.6f, FateOffset = 3.6f;
+        /// <summary>Extra radius a remote member gets at the mark (one 20 Hz report plus relay latency at walking speed).</summary>
+        public const float FateNetGrace = .3f;
         const int RuinTotems = 3;
 
         static readonly Color DoomRed = new Color(1f, .25f, .3f);
@@ -84,6 +86,19 @@ namespace DotRPG
             yield return Hold(.4f, CharacterAnim.Attack, true);
         }
 
+        /// <summary>
+        /// A gimmick clock does not stop for the boss's own groggy, stun or freeze (Tick is skipped then): resolve it on time
+        /// from here, otherwise the mark lands late, after the circles are gone and the party has walked off them.
+        /// </summary>
+        void Update()
+        {
+            if (E == null || E.Puppet || E.IsDead || !Game.IsWorldRunning || E.CanAct) return;
+            // Only the resolution (the channel look stays off while the boss is reeling).
+            bool ruinDue = RuinActive && (Time.time >= ruinUntil || !ruinTotems.Exists(t => t != null && !t.IsDead));
+            bool fateDue = FateActive && Time.time >= fateUntil;
+            if (ruinDue || fateDue) DoomTick();
+        }
+
         /// <summary>Channels a running gimmick and resolves it when its time is up. True = the boss does nothing else this frame.</summary>
         bool DoomTick()
         {
@@ -117,8 +132,10 @@ namespace DotRPG
                 if (Time.time >= fateUntil)
                 {
                     var marked = new List<PlayerController>();
+                    // A remote member is judged where its PC last reported it (NetTarget), not where the lagging host copy has
+                    // walked to, plus a small allowance for the report in flight: nobody dies to latency on the circle's edge.
                     foreach (var m in MonsterHits.All())
-                        if (RaidDoom.SpotFor(m, out Vector2 spot, true) && Vector2.Distance(m.Position, spot) > FateRadius) marked.Add(m);
+                        if (RaidDoom.SpotFor(m, out Vector2 spot, true) && Vector2.Distance(m.NetTarget, spot) > FateRadius + (m.NetDriven ? FateNetGrace : 0f)) marked.Add(m);
                     fateUntil = -1f;
                     RaidDoom.End();
                     if (marked.Count > 0) Announce?.Invoke(this, L.T("낙인 폭발!"), DoomRed);

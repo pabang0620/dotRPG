@@ -217,6 +217,16 @@ namespace DotRPG
 
         readonly Dictionary<int, float> moveBudget = new Dictionary<int, float>();
         readonly Dictionary<int, float> moveAt = new Dictionary<int, float>();
+        /// <summary>[RAID] Distance a member was thrown by a boss (RaidLaunch) and may still report, with the time it expires.</summary>
+        readonly Dictionary<int, (float left, float until)> launchBank = new Dictionary<int, (float, float)>();
+
+        /// <summary>Host threw this seat (파동): its next reports may jump that far on top of the usual budget.</summary>
+        void CreditLaunch(int slot, Vector2 velocity, float seconds)
+        {
+            float distance = velocity.magnitude * seconds;
+            float left = launchBank.TryGetValue(slot, out var bank) && bank.until > Time.unscaledTime ? bank.left : 0f;
+            launchBank[slot] = (left + distance, Time.unscaledTime + seconds + 2f);
+        }
 
         /// <summary>
         /// [ANTI-ABUSE] A member's reported position may move at most 1.5 x its top speed per second (phase9 19.6). A
@@ -230,10 +240,14 @@ namespace DotRPG
             moveAt[slot] = now;
             float speed = copy.TopSpeed * 1.5f;
             float budget = Mathf.Min(Burst + speed * .5f, (moveBudget.TryGetValue(slot, out float b) ? b : Burst) + speed * dt);
+            // A launch the host itself ordered is spent first; it never refills the normal budget.
+            float extra = launchBank.TryGetValue(slot, out var bank) && bank.until > now ? bank.left : 0f;
             Vector2 delta = pos - copy.NetTarget;
             float step = delta.magnitude;
-            if (step > budget) { pos = copy.NetTarget + delta / step * budget; step = budget; }
-            moveBudget[slot] = budget - step;
+            if (step > budget + extra) { pos = copy.NetTarget + delta / step * (budget + extra); step = budget + extra; }
+            float fromExtra = Mathf.Min(step, extra);
+            if (extra > 0f) launchBank[slot] = (extra - fromExtra, bank.until);
+            moveBudget[slot] = budget - (step - fromExtra);
             return pos;
         }
 

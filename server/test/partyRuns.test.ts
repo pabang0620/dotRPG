@@ -246,6 +246,30 @@ describe('파티 판 처치와 정산', () => {
     expect((await getPool().query("SELECT count(*)::int AS n FROM dungeon_runs WHERE state = 'held'")).rows[0].n).toBe(0);
   });
 
+  it('방장 보고가 무효여도 방장이 정산된 뒤에는 멤버가 마감(90초)까지 기다리지 않고 바로 정산된다', async () => {
+    const { host, member, runId, hostRun, memberRun } = await duo();
+    await clearAll(app, host, hostRun, advance);
+    fixed = new Date(MONDAY);
+    advance(1);
+    await clearAll(app, member, memberRun, advance);
+    advance(40);
+    // 방 구성을 넘는 처치 수: 방장 보고는 무효(KILLS_OVER_ROOM)가 되어 증인으로 쓰이지 않는다
+    const bad = await honestHostReport(hostRun, [host, member]);
+    const rooms = bad.rooms as { room_index: number; kills: { monster_id: string; count: number }[] }[];
+    (rooms[0] as (typeof rooms)[number]).kills[0]!.count = 99;
+    expect((await post(app, host, `/party-runs/${runId}/host-report`, bad)).status).toBe(200);
+    const m = await result(member, memberRun, { outcome: 'cleared', stats: stats() });
+    expect(m.body.data.result).toBe('pending');
+    // 방장은 멤버 보고와 일치해 정산된다. 방장의 판이 닫혔으니 멤버는 더 올 보고가 없다: 마감 전이라도 지금 판정한다
+    expect((await result(host, hostRun, { outcome: 'cleared', stats: stats() })).body.data.result).toBe('cleared');
+    advance(2);
+    const s = await settle(member, memberRun);
+    expect(s.body.data.result).toBe('cleared');
+    expect(s.body.data.card_count).toBe(4);
+    expect(await anomalyKinds(host)).toContain('party_host');
+    await expectLedgerConsistent(member);
+  });
+
   it('멤버끼리 일치하고 방장만 어긋나면 멤버는 정산되고 방장은 이상치로 기록된다', async () => {
     const host = await newHero(app);
     const m1 = await newHero(app);

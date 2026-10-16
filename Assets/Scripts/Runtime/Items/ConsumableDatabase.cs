@@ -205,7 +205,9 @@ namespace DotRPG
             }
         }
 
-        static readonly int[] GearSell = { 50, 125, 300, 750, 1500, 3000 }; // [BALANCE 2026-10-11] x5 with the field drop chance 0.4 -> 0.08 (same gold per kill)
+        // [BALANCE 2026-10-11] x5 with the field drop chance 0.4 -> 0.08 (same gold per kill).
+        // [BALANCE 2026-10-16] x0.4: vendor gear sales were a third of all gold; the auction is where drops are worth money (theory_gold.py).
+        static readonly int[] GearSell = { 20, 50, 120, 300, 600, 1200 };
 
         /// <summary>Selling price gained from enhancing is capped at this share of the gold spent on the successful path up to that level.</summary>
         public const double EnhancedSellGoldRatio = 0.5;

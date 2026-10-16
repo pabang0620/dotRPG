@@ -106,6 +106,7 @@ namespace DotRPG
             if (!host || m == null) return;
             int slot = SlotOf(m);
             if (slot < 0 || slot == mySlot) return;
+            CreditLaunch(slot, velocity, seconds); // the member's reported jump must not be cut by ClampMove
             Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.RaidLaunch); w.Write((byte)slot); PartyWire.WriteVec(w, velocity); w.Write(seconds); }));
         }
 

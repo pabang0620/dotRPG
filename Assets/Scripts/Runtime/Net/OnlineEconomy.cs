@@ -318,10 +318,29 @@ namespace DotRPG
             Post($"/dungeon-runs/{run}/result", Body(("outcome", cleared ? "cleared" : "failed"), ("stats", stats)), r =>
             {
                 var data = r.ok ? r.data : null;
+                // [PARTY] The server already closed my row (it reported for me 15 s after the host's clear report, or when I
+                // dropped out): the result it stored is the real one, so fetch it instead of showing "no answer" and mailing cards.
+                if (!r.ok && r.code == "RUN_NOT_PLAYING") { Api.StartCoroutine(Settle(run, Pending(0.5f), done)); return; }
+                if (!r.ok && !string.IsNullOrEmpty(r.message)) GameEvents.RaiseToast(r.message);
                 // A party run waits for the other reports: settle again until it is decided.
                 if (MiniJson.Str(data, "result") == "pending") Api.StartCoroutine(Settle(run, data, done));
                 else done?.Invoke(data);
-            });
+            }, quiet: true);
+        }
+
+        /// <summary>A "pending" answer that makes <see cref="Settle"/> ask the server after <paramref name="afterSeconds"/>.</summary>
+        static Dictionary<string, object> Pending(float afterSeconds) =>
+            new Dictionary<string, object> { ["result"] = "pending", ["settle_after_ms"] = Mathf.RoundToInt(afterSeconds * 1000f) };
+
+        /// <summary>
+        /// [PARTY] The server says this run is over for me while I still play it (the host's end message never reached this
+        /// PC): the stored result decides how my run ends. done(result data: cleared / failed / rejected / pending, or null).
+        /// </summary>
+        public static void FetchStoredResult(Action<Dictionary<string, object>> done)
+        {
+            if (RunId == null) { done?.Invoke(null); return; }
+            runReported = true;
+            Post($"/dungeon-runs/{RunId}/settle", new Dictionary<string, object>(), r => done?.Invoke(r.ok ? r.data : null), quiet: true);
         }
 
         static IEnumerator Settle(string run, Dictionary<string, object> first, Action<Dictionary<string, object>> done)

@@ -91,14 +91,16 @@ namespace DotRPG
     /// packet and only lets members talk to the host. Reliable channels go in order; snapshot-like channels
     /// keep only the newest packet per (peer, channel). Everything is flushed as one BATCH every 20 ms.
     /// A background task reads frames into a queue that <see cref="Tick"/> empties on the main thread.
-    /// Reconnects with a fresh ticket (0.5-8 s backoff); after three failed tries in a row <see cref="Failed"/>.
+    /// Reconnects with a fresh ticket (1.5-8 s backoff); after three failed tries in a row <see cref="Failed"/>.
     /// </summary>
     public sealed class RelayTransport : ITransport, ITransportHealth, IDisposable
     {
         const float FlushSeconds = 0.02f, PingSeconds = 2f;
         /// <summary>Nothing heard (no pong, no data) this long: the socket is dead without a close frame (Wi-Fi switch, sleep). Drop and reconnect.</summary>
         const float SilenceSeconds = 8f;
-        static readonly float[] Backoff = { 0.5f, 1f, 2f, 4f, 8f };
+        // Spaced so that at most three ticket requests fall in any 10 s (RATE_RELAY_TICKET_PER_10S = 3): a tighter retry only
+        // earned 429s that counted as failures and pushed a member off the fight for longer.
+        static readonly float[] Backoff = { 1.5f, 3f, 6f, 8f, 8f };
 
         readonly Action<Action<RelayTicket, string>> fetchTicket;
         readonly int wire;

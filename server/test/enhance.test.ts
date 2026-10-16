@@ -48,7 +48,7 @@ async function pityOf(h: Hero, key: string): Promise<number | null> {
 }
 
 describe('POST /characters/:id/enhance', () => {
-  it('성공: 키가 +1, 비용은 표대로(10레벨 고급검 +4: 골드 60, 뼈 5, 강화석 1), 로그와 원장', async () => {
+  it('성공: 키가 +1, 비용은 표대로(10레벨 고급검 +4: 골드 360, 뼈 5, 강화석 1), 로그와 원장', async () => {
     const h = await rich();
     await seedItem(h, 'eq_sword_10_u+4', 1);
     roll(0);
@@ -60,15 +60,15 @@ describe('POST /characters/:id/enhance', () => {
       new_key: 'eq_sword_10_u+5',
       roll: 0,
       success_percent: 80,
-      cost: { gold: 60, bone: 5, ore: 1, essence: 0, ticket_used: false },
+      cost: { gold: 360, bone: 5, ore: 1, essence: 0, ticket_used: false },
     });
     expect(await countOf(h, 'eq_sword_10_u+4')).toBe(0);
     expect(await countOf(h, 'eq_sword_10_u+5')).toBe(1);
-    expect(await goldOf(h)).toBe(100_100 - 60);
+    expect(await goldOf(h)).toBe(100_100 - 360);
     expect(await countOf(h, 'mat_bone')).toBe(495);
     expect(await countOf(h, 'mat_ore')).toBe(499);
     const log = await getPool().query('SELECT outcome, roll, success_percent, gold FROM enhance_log WHERE character_id = $1', [h.dbId]);
-    expect(log.rows).toEqual([{ outcome: 'success', roll: 0, success_percent: 80, gold: 60 }]);
+    expect(log.rows).toEqual([{ outcome: 'success', roll: 0, success_percent: 80, gold: 360 }]);
     await expectLedgerConsistent(h);
   });
 
@@ -90,7 +90,7 @@ describe('POST /characters/:id/enhance', () => {
     roll(99);
     const res = await enhance(h, bag('eq_sword_10_u+5'));
     expect(res.body.data).toMatchObject({ outcome: 'keep', new_key: 'eq_sword_10_u+5', pity: 0 });
-    expect(await goldOf(h)).toBe(100_100 - 66);
+    expect(await goldOf(h)).toBe(100_100 - 396);
     expect(await pityOf(h, 'eq_sword_10_u+5')).toBeNull();
   });
 
@@ -207,7 +207,7 @@ describe('POST /characters/:id/enhance', () => {
     expect(res.status).toBe(422);
     expect(res.body.errors).toMatchObject({
       code: 'ENHANCE_NOT_ENOUGH',
-      need: { gold: 60, bone: 5, ore: 1, essence: 0 },
+      need: { gold: 360, bone: 5, ore: 1, essence: 0 },
       have: { gold: 100, bone: 0, ore: 0, essence: 0 },
     });
     expect(await goldOf(h)).toBe(100);
@@ -230,7 +230,7 @@ describe('POST /characters/:id/enhance', () => {
     expect(b.body).toEqual(a.body);
     const n = await getPool().query('SELECT count(*)::int AS n FROM enhance_log WHERE character_id = $1', [h.dbId]);
     expect(n.rows[0].n).toBe(1);
-    expect(await goldOf(h)).toBe(100_100 - 60);
+    expect(await goldOf(h)).toBe(100_100 - 360);
   });
 
   it('동시 요청: 같은 장비 한 개를 동시에 강화해도 한 번만 처리된다', async () => {
@@ -240,7 +240,7 @@ describe('POST /characters/:id/enhance', () => {
     const [a, b] = await Promise.all([enhance(h, bag('eq_sword_10_u+4')), enhance(h, bag('eq_sword_10_u+4'))]);
     expect([a.status, b.status].sort()).toEqual([200, 422]);
     expect(await countOf(h, 'eq_sword_10_u+5')).toBe(1);
-    expect(await goldOf(h)).toBe(100_100 - 60);
+    expect(await goldOf(h)).toBe(100_100 - 360);
     await expectLedgerConsistent(h);
   });
 });

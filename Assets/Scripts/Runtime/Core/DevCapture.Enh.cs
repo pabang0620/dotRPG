@@ -238,7 +238,8 @@ namespace DotRPG
             Check($"worn iron +12: AttackBonus {eq.AttackBonus} (expect 16)", eq.AttackBonus == 16);
 
             // Prices: gear sells for more with its level; the ticket is shop-only.
-            Check($"sell iron +0 {ItemPrices.SellPrice(iron)} G / +12 {ItemPrices.SellPrice(iron12)} G (expect 31 / 124)", ItemPrices.SellPrice(iron) == 31 && ItemPrices.SellPrice(iron12) == 124);
+            // [BALANCE 2026-10-16] Uncommon Lv.10 sells 50 x 1.25 = 63; +12 is x4 (the enhancement refund cap is far above that now).
+            Check($"sell iron +0 {ItemPrices.SellPrice(iron)} G / +12 {ItemPrices.SellPrice(iron12)} G (expect 63 / 252)", ItemPrices.SellPrice(iron) == 63 && ItemPrices.SellPrice(iron12) == 252);
             Check($"ticket: buy {ItemPrices.BuyPrice(ticket)} G, sell {ItemPrices.SellPrice(ticket)} G, last on the shelf, not usable by hand",
                 ItemPrices.BuyPrice(ticket) == 3000 && ItemPrices.SellPrice(ticket) == 0 && Array.IndexOf(ItemPrices.ShopStock, ticket) == ItemPrices.ShopStock.Length - 1
                 && !ConsumableDatabase.IsUsable(ticket) && ConsumableDatabase.IsTicket(ticket));

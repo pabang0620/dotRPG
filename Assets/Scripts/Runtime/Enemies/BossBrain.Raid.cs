@@ -41,8 +41,9 @@ namespace DotRPG
                 E.MonsterAnim(CharacterAnim.Attack, true);
                 return true;
             }
-            // Start between actions (never cut 망자의 심판 or a running pattern).
-            if (Enraged && Time.time >= nextRoarAt && !Busy && !CastingJudgment && !Sealed)
+            // Start between actions (never cut 망자의 심판, a running pattern or an instant-death gimmick: the roar would
+            // send everyone to safe circles while the totems / marks demand the opposite, and it stalls DoomTick).
+            if (Enraged && Time.time >= nextRoarAt && !Busy && !CastingJudgment && !Sealed && !RuinActive && !FateActive)
             {
                 nextRoarAt = Time.time + RaidMechanics.RoarEvery;
                 StartCoroutine(Roar());
@@ -100,7 +101,7 @@ namespace DotRPG
             foreach (var m in MonsterHits.All())
             {
                 if (m == null || m.IsDead) continue;
-                if (RaidMechanics.InSafeCircle(m.Position, circles)) continue;
+                if (RaidMechanics.InSafeCircle(m.NetTarget, circles)) continue; // remote members: where their PC last reported them
                 if (m.Health.IsInvulnerable) continue;
                 var career = CareerCombat.For(m);
                 if (career.InvulnerableLeft > 0f) continue;

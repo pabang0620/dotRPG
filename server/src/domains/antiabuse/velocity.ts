@@ -43,7 +43,14 @@ export function bandOf(caps: IncomeCaps, level: number): IncomeBand {
 }
 
 /**
- * cap(metric, window) = Σ_버킷 rate(대역(버킷 레벨)) x 활동시간/3600 + 일 단위 덩어리(최고 레벨 대역) x days_touched + 레이드 덩어리
+ * 시간당 경험치 상한에 곱하는 파티 계수. income_caps.json의 시간당 경험치는 혼자 사냥하는 숙련자 기준인데, 파티 사냥·파티 던전은
+ * 사람 수 보너스(xpFactor.partySizeXpBonus, 4인 +50%)가 붙고 14칸 안의 처치는 전원에게 인정되므로 정상 파티가 혼자 기준 상한을 넘는다.
+ * 보너스 최대치(1.5)만 곱한다(처치 수 자체는 공급 상한이 따로 막는다)
+ */
+export const PARTY_XP_CAP_MUL = 1.5;
+
+/**
+ * cap(metric, window) = Σ_버킷 rate(대역(버킷 레벨)) x 활동시간/3600 (경험치는 x PARTY_XP_CAP_MUL) + 일 단위 덩어리(최고 레벨 대역) x days_touched + 레이드 덩어리
  * 프레즌스가 없는 시간은 활동 시간 0이라 덩어리 상한만 허용된다(HTTP 봇을 그대로 잡는다).
  */
 export function capsFor(caps: IncomeCaps, window: WindowKind, buckets: Bucket[], maxLevel: number): MetricValues {
@@ -53,7 +60,7 @@ export function capsFor(caps: IncomeCaps, window: WindowKind, buckets: Bucket[],
     const band = bandOf(caps, b.levelMax ?? maxLevel);
     const h = b.activeSeconds / 3600;
     activeHours += h;
-    out.xp += band.perHour.xp * h;
+    out.xp += band.perHour.xp * h * PARTY_XP_CAP_MUL;
     out.goldEq += band.perHour.goldEq * h;
     out.ore += band.perHour.ore * h;
     out.essence += band.perHour.essence * h;

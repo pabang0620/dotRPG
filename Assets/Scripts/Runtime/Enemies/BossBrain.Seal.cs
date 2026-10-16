@@ -31,7 +31,9 @@ namespace DotRPG
             }
             if (!RaidSeal.UsedBy(Def.id) || sealIndex >= RaidSeal.At.Length || E.Health.Max <= 0) return false;
             if ((float)E.Health.Current / E.Health.Max > RaidSeal.At[sealIndex]) return false;
-            if (Busy || CastingJudgment || Roaring || E.IsGroggy) return false;
+            // Not over a running gimmick: the seal would freeze DoomTick while the ritual / mark clock keeps running, so the
+            // party would be wiped the moment the seal ends (it starts once the gimmick is resolved).
+            if (Busy || CastingJudgment || Roaring || E.IsGroggy || RuinActive || FateActive) return false;
             sealIndex++;
             StartCoroutine(Seal());
             return true;

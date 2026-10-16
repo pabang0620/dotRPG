@@ -76,7 +76,8 @@ namespace DotRPG
 
         /// <summary>Protected from a blast fired from <paramref name="source"/>: behind a wall or in a safe circle.</summary>
         public static bool Shelters(Vector2 source, PlayerController m) =>
-            m != null && (InSafeZone(m.Position) || BehindWall(source, m.Center));
+            // A remote member is judged where its PC last reported it (the host copy lags a step behind).
+            m != null && (InSafeZone(m.NetTarget) || BehindWall(source, m.NetTarget + (m.Center - m.Position)));
 
         /// <summary>The nearest place to hide from <paramref name="source"/>: just behind a wall, else the centre of a safe circle.</summary>
         public static bool SuggestSpot(Vector2 from, Vector2 source, out Vector2 spot)

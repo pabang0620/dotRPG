@@ -247,7 +247,38 @@ namespace DotRPG
                     amHost = hostCharacterId == OnlineSession.Current?.ActiveCharacter;
                     if (wasHost && !amHost) GameEvents.RaiseToast(L.T("방장 권한이 다른 파티원에게 넘어갔습니다."));
                 }
+                // The server closed my run (it reported for me after the host's clear report) while this PC still plays it:
+                // the host's end message never arrived (relay hiccup at the boss kill). End the run here from the stored result
+                // so the result window opens instead of the cards going to the mail.
+                if (!amHost && myState == "done" && !endChecking && Game.Dungeon != null && Game.Dungeon.InRun && !Game.Dungeon.RunOver) EndFromServer();
+                // The host gave up (reported "failed") and its end message never arrived: a failed run is not closed for
+                // members by the server, so end it here from the host's report instead of staying in the dungeon.
+                if (!amHost && MiniJson.Str(r.data, "host_outcome") == "failed" && Game.Dungeon != null && Game.Dungeon.InRun && !Game.Dungeon.RunOver && Game.Dungeon.Run != null)
+                {
+                    var run = Game.Dungeon.Run;
+                    var mine = new MemberRunStats { slot = mySlot, hitsTaken = run.HitsTaken, maxCombo = run.MaxCombo, revives = run.RevivesUsed };
+                    Game.Dungeon.FollowEnd(false, null, run.Elapsed, mine);
+                }
                 if (state == "ended" || myState == "left") Finish(null);
+            });
+        }
+
+        bool endChecking;
+
+        /// <summary>Member: asks the server how my run ended and replays it as the host's end message.</summary>
+        void EndFromServer()
+        {
+            endChecking = true;
+            OnlineEconomy.FetchStoredResult(data =>
+            {
+                endChecking = false;
+                var dungeon = Game.Dungeon;
+                if (dungeon == null || !dungeon.InRun || dungeon.RunOver || dungeon.Run == null) return;
+                string result = MiniJson.Str(data, "result");
+                if (result != "cleared" && result != "failed" && result != "rejected") return; // pending or no answer: the next heartbeat asks again
+                var run = dungeon.Run;
+                var mine = new MemberRunStats { slot = mySlot, hitsTaken = run.HitsTaken, maxCombo = run.MaxCombo, revives = run.RevivesUsed };
+                dungeon.FollowEnd(result == "cleared", null, run.Elapsed, mine);
             });
         }
 

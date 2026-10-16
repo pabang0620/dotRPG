@@ -9,7 +9,7 @@ import * as holdsRepo from '../src/domains/antiabuse/holdsRepository';
 import { hourStart, HOUR_MS } from '../src/domains/antiabuse/incomeMeter';
 import { runHoldCheck } from '../src/domains/antiabuse/holdSweep';
 import { reconcileIncome } from '../src/domains/antiabuse/incomeReconcile';
-import { auctionViolation, capsFor, evaluateBuckets, type Bucket } from '../src/domains/antiabuse/velocity';
+import { auctionViolation, capsFor, evaluateBuckets, PARTY_XP_CAP_MUL, type Bucket } from '../src/domains/antiabuse/velocity';
 import { getIncomeCaps } from '../src/gamedata/antiAbuseData';
 import { setRng } from '../src/utils/rng';
 import { auth, buildApp, createChar, randomName, resetDb, shutdown } from './helpers';
@@ -132,19 +132,19 @@ describe('상한 식 (12.2) 순수 함수', () => {
     hourStart: new Date(), levelMax: 18, activeSeconds: 3600, xp: 0, goldAcq: 0, itemValue: 0, ore: 0, essence: 0, epicPlus: 0, uniquePlus: 0, auctionIn: 0, auctionInW: 0, auctionOut: 0, ...o,
   });
 
-  it('문서 예: 대역 5, 활동 4시간, 24시간 창의 XP 상한 3 x (55,200 x 4 + 2 x 43,477 + 2 x 10,092) = 983,814', () => {
+  it('문서 예: 대역 5, 활동 4시간, 24시간 창의 XP 상한 3 x (55,200 x 1.5(파티 계수) x 4 + 2 x 43,477 + 2 x 10,092) = 1,315,014', () => {
     const buckets = [0, 1, 2, 3].map(() => bucket());
     const cap = capsFor(caps(), '24h', buckets, 18);
-    expect(cap.xp).toBe(55_200 * 4 + 2 * 43_477 + 2 * 10_092);
-    expect(3 * cap.xp).toBe(983_814);
-    expect(evaluateBuckets(caps(), '24h', buckets.map((b, i) => (i === 0 ? { ...b, xp: 983_815 } : b)), 18, 3).over).toEqual(['xp']);
-    expect(evaluateBuckets(caps(), '24h', buckets.map((b, i) => (i === 0 ? { ...b, xp: 983_814 } : b)), 18, 3).over).toEqual([]);
+    expect(cap.xp).toBe(55_200 * PARTY_XP_CAP_MUL * 4 + 2 * 43_477 + 2 * 10_092);
+    expect(3 * cap.xp).toBe(1_315_014);
+    expect(evaluateBuckets(caps(), '24h', buckets.map((b, i) => (i === 0 ? { ...b, xp: 1_315_015 } : b)), 18, 3).over).toEqual(['xp']);
+    expect(evaluateBuckets(caps(), '24h', buckets.map((b, i) => (i === 0 ? { ...b, xp: 1_315_014 } : b)), 18, 3).over).toEqual([]);
   });
 
   it('창 중간에 레벨이 올라도 버킷마다 그 시간의 대역을 쓴다. 일 단위 덩어리는 days_touched만큼', () => {
     const buckets = [bucket({ levelMax: 4 }), bucket({ levelMax: 18 })];
     const cap = capsFor(caps(), '1h', buckets, 18);
-    expect(cap.xp).toBe(16_200 + 55_200 + 2 * 43_477 + 2 * 10_092);
+    expect(cap.xp).toBe((16_200 + 55_200) * PARTY_XP_CAP_MUL + 2 * 43_477 + 2 * 10_092);
     // 활동 시간 0이면 덩어리만 허용된다(HTTP 봇)
     expect(capsFor(caps(), '24h', [bucket({ activeSeconds: 0 })], 18).xp).toBe(2 * 43_477 + 2 * 10_092);
     expect(capsFor(caps(), '7d', [], 40).goldEq).toBe(8 * 12_240 + 3 * 4_500 + 2 * 18_000);

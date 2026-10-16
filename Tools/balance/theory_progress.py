@@ -134,7 +134,7 @@ def dungeon_run(day, level, done_counts):
             xp = base * XP_MUL.get(d["id"], d["xpMul"]) * 1.2  # A등급 보너스 20%
             secs = d["referenceSeconds"][tier] + 60
             if best is None or xp / secs > best[0] / best[1]:
-                best = (xp, secs)
+                best = (xp, secs, d["id"], tier)
     return best
 
 
@@ -143,7 +143,9 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
     claimed, dungeon_clears, raid_clears, keys = set(), 0, {}, 0
     sk_claim_day, grah_claim_week = -1, -1
     events, reached, done_raid = [], {}, {}
-    stats = {"quest_xp": 0, "quest_kill_min": 0.0, "dungeon_xp": 0, "dungeon_min": 0.0, "raid_xp": 0, "hunt_xp": 0, "hunt_min": 0.0, "daily_xp": 0}
+    stats = {"quest_xp": 0, "quest_kill_min": 0.0, "dungeon_xp": 0, "dungeon_min": 0.0, "raid_xp": 0, "hunt_xp": 0, "hunt_min": 0.0, "daily_xp": 0,
+             # 골드 계산용(theory_gold.py): 몬스터 레벨별 처치 수, 던전 판(id, 난이도), 보상 받은 레이드(id), 일일·주간 의뢰 청구(레벨)
+             "kills": {}, "kills_t": [], "dungeon_runs": [], "raid_rewards": [], "daily_claims": [], "weekly_claims": []}
 
     def gain(amount):
         nonlocal level, xp
@@ -163,6 +165,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
             if friend:
                 gain(6728 * 1.2)
                 stats["raid_xp"] += 6728 * 1.2
+                stats["raid_rewards"].append("raid_skeleton_king")
                 keys += 35
             try_quests()
         if level >= 40 and "c2_north" in claimed and weekday == "Sunday" and done_raid.get("grah") != day // 7:
@@ -173,6 +176,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
             if friend and keys >= 60:
                 keys -= 60
                 gain(27900 * 1.2)
+                stats["raid_rewards"].append("raid_grah")
             try_quests()
 
     def try_quests():
@@ -205,6 +209,9 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     minutes, xp_gain = kill_cost(mid, count, level, eff)
                     total_min += minutes
                     stats["quest_kill_min"] += minutes
+                    ml = monster_zone_level(mid)
+                    stats["kills"][ml] = stats["kills"].get(ml, 0) + count
+                    stats["kills_t"].append((total_min / 60, ml, count))
                     gain(xp_gain)
                 stats["quest_xp"] += q["reward"]["xp"] * QUEST_SCALE
                 gain(q["reward"]["xp"] * QUEST_SCALE)
@@ -222,6 +229,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
             for _ in range(DAILY["perDay"]):
                 total_min += 2
                 stats["daily_xp"] += DAILY["xpShare"] * PROG[level - 1]
+                stats["daily_claims"].append(level)
                 gain(DAILY["xpShare"] * PROG[level - 1])
             try_quests()
             # 주간 의뢰: 한 주 동안 나눠 하지만 계산은 주 첫날(목요일)에 한 번에 받는다고 본다
@@ -230,6 +238,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 for _ in range(DAILY["weekly"]["perWeek"]):
                     total_min += 3
                     stats["daily_xp"] += DAILY["weekly"]["xpShare"] * PROG[level - 1]
+                    stats["weekly_claims"].append(level)
                     gain(DAILY["weekly"]["xpShare"] * PROG[level - 1])
                 try_quests()
         # 요일 던전 3회
@@ -239,6 +248,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 break
             total_min += run[1] / 60
             dungeon_clears += 1
+            stats["dungeon_runs"].append((run[2], run[3]))
             if level < 40:
                 stats["dungeon_xp"] += run[0]
                 stats["dungeon_min"] += run[1] / 60
@@ -253,6 +263,8 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 break
             total_min += step
             gain(zone[1] * step * 0.8)
+            stats["kills"][zone[3]] = stats["kills"].get(zone[3], 0) + zone[2] * step * 0.8
+            stats["kills_t"].append((total_min / 60, zone[3], zone[2] * step * 0.8))
             if level < 40:
                 stats["hunt_xp"] += zone[1] * step * 0.8
                 stats["hunt_min"] += step

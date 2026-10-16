@@ -168,7 +168,11 @@ async function settleOne(ctx: EconCtx, run: dungeonRepo.RunRow): Promise<EconRes
 
   const hostEval = h ? await validateHostReport(ctx, run, pr, members, h) : null;
   const deadline = pr.first_report_at ? pr.first_report_at.getTime() + pol.partyResultWaitSeconds * 1000 : Number.POSITIVE_INFINITY;
-  const pastDeadline = ctx.now.getTime() >= deadline;
+  // 방장의 판이 이미 닫혔으면(정산·거절·실패) 방장 보고가 더 오지 않는다: 멤버는 마감(90초)까지 기다리지 않고 지금 있는 것으로 판정한다
+  // (방장 보고가 무효일 때 2인 파티의 멤버가 결과 창을 90초 동안 못 보던 원인). 방장 자신의 정산에는 영향이 없다
+  const hostRow = all.find((r) => r.character_id === pr.host_character_id);
+  const hostClosed = !iAmHost && !!hostRow && !['playing', 'reported'].includes(hostRow.state);
+  const pastDeadline = ctx.now.getTime() >= deadline || hostClosed;
   // 방장 보고(H)는 방장 자신의 결과 보고와 같아야 한다. 방장이 아직 보고 전이면 마감까지 기다린다
   if (h && hostEval) {
     const hostRun = all.find((r) => r.character_id === h.host_character_id);
