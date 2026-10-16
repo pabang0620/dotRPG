@@ -70,7 +70,7 @@ namespace DotRPG
             b.onClick.AddListener(() => onClick());
             UiButton.Attach(b);
             var t = UIFactory.Text(img.transform, "Text", label, UiTheme.ButtonFont, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(t.rectTransform);
+            UIFactory.FitInFrame(t); // [UI] inside the rim, shrunk to fit, never wrapped out of the button
         }
 
         public void Open()

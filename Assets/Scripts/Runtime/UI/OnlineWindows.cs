@@ -50,8 +50,9 @@ namespace DotRPG
             return bg.rectTransform;
         }
 
+        // [UI] One line per cell: a grade name or a price never breaks inside a word (it may run a little past a narrow column).
         protected static Text Cell(Transform row, string name, float x, float w, int size = 18, TextAnchor align = TextAnchor.MiddleLeft) =>
-            Label(row, name, "", size, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(x, 0f), new Vector2(w, 34f), align);
+            UIFactory.OneLine(Label(row, name, "", size, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(x, 0f), new Vector2(w, 34f), align));
 
         protected override void Update()
         {

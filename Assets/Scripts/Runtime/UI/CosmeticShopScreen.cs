@@ -293,7 +293,7 @@ namespace DotRPG
             button.onClick.AddListener(() => onClick());
             UiButton.Attach(button);
             var text = UIFactory.Text(image.transform, "Text", label, UiTheme.Size(font), Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(text.rectTransform);
+            UIFactory.FitInFrame(text); // [UI] inside the rim, shrunk to fit, never wrapped out of the button
             return button;
         }
 

@@ -182,7 +182,7 @@ namespace DotRPG
             button.targetGraphic = img;
             button.onClick.AddListener(() => { Game.Audio.PlaySfx("confirm"); onClick(); });
             var text = UIFactory.Text(img.transform, "Text", label, font, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(text.rectTransform);
+            UIFactory.FitInFrame(text, size.x < 70f ? 6f : UIFactory.FrameRim - 2f); // [UI] inside the rim, shrunk to fit, never wrapped out of the button
             return button;
         }
 

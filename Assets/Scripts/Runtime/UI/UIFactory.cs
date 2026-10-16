@@ -166,7 +166,28 @@ namespace DotRPG
                 s.effectColor = UIColors.Shadow;
                 s.effectDistance = new Vector2(2f, -2f);
             }
+            UIWordWrap.Attach(text); // [UI] breaks at spaces only, never inside a Korean word; one-line boxes never wrap
             return text;
+        }
+
+        /// <summary>
+        /// [UI] A label that must stay on one line whatever its box (grade names, numbers with units, column cells):
+        /// it overflows sideways instead of wrapping. With <paramref name="shrink"/> it is shrunk to its box first
+        /// (down to 70% of its size, at least 11) so dense table cells do not run into their neighbours.
+        /// </summary>
+        public static Text OneLine(Text t, bool shrink = false)
+        {
+            if (shrink)
+            {
+                t.resizeTextForBestFit = true;
+                t.resizeTextMaxSize = t.fontSize;
+                t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(11, Mathf.RoundToInt(t.fontSize * .7f)));
+                t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                t.verticalOverflow = VerticalWrapMode.Truncate;
+                return t;
+            }
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            return t;
         }
 
         /// <summary>On-screen thickness of the ui_btn / ui_btngray rim (8 px border sliced at this canvas scale).</summary>
