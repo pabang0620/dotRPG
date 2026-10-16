@@ -64,8 +64,14 @@ async function connectListener(): Promise<void> {
 }
 
 export async function startSessionListener(): Promise<void> {
+  if (!stopped) return; // 이미 켜져 있다: 두 번 켜면 앞 연결이 닫히지 않고 남는다
   stopped = false;
-  await connectListener();
+  try {
+    await connectListener();
+  } catch (err) {
+    stopped = true;
+    throw err;
+  }
 }
 
 export async function stopSessionListener(): Promise<void> {

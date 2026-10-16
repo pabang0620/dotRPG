@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { runAuctionTick } from '../src/domains/auction/auctionTicker';
-import { countOf, expectLedgerConsistent, get, post, seedClaims, seedItem, type Hero } from './economyHelpers';
+import { countOf, expectLedgerConsistent, get, post, seedClaims, seedGold, seedItem, type Hero } from './economyHelpers';
 import {
   advance,
   bidReq,
@@ -108,6 +108,7 @@ describe('감사 보강: 쌍 한도(입찰 포함), 시세 일일 상승 상한,
     const seller = await mk(app);
     const bidder = await mk(app);
     const alt = await secondChar(app, bidder);
+    await seedGold(alt, 10_000); // 시작 골드(100)로는 한 번만 입찰해 처리 순서에 따라 PAIR_LIMIT 대신 골드 부족이 난다
     const ids: string[] = [];
     for (let i = 0; i < 4; i++) ids.push(await listIron(app, seller, { buyout: 1000, start_bid: 100, hours: 48 }));
     // 순차(같은 캐릭터)

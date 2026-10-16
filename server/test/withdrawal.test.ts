@@ -2,7 +2,6 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
-import { startSessionListener, stopSessionListener } from '../src/domains/antiabuse/sessionListener';
 import { relayHub } from '../src/domains/relay/relayHub';
 import { requestWithdrawal as requestService } from '../src/domains/withdrawal/withdrawalService';
 import { activeCampaign, deliverTo, twoOwners } from './campaignHelpers';
@@ -132,11 +131,9 @@ describe('W2 요청: 재인증, 확인 문구, 확인 체크, 결제 (T-W1 ~ T-W
 describe('W2 효과: 즉시 차단, 토큰 폐기, 소켓 종료 (T-W5, T-W6)', () => {
   let srv: TestServer;
   beforeAll(async () => {
-    srv = await startServer(app);
-    await startSessionListener();
+    srv = await startServer(app); // 세션 리스너도 여기서 켜진다
   });
   afterAll(async () => {
-    await stopSessionListener();
     await srv.stop();
   });
 
