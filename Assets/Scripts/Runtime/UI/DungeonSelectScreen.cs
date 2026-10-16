@@ -468,7 +468,8 @@ namespace DotRPG
         {
             if (def == null || Game.Dungeon == null) return false;
             string practice = Game.Dungeon.CannotEnterReason(def, difficulty, ResetClock.Now) == null ? PracticeReason(def, difficulty, ResetClock.Now) : null;
-            if (practice != null)
+            // Automated runs (-dotrpgMeasure, captures) have nobody to answer the practice confirm: they enter straight away.
+            if (practice != null && FindAnyObjectByType<DevCapture>() == null)
             {
                 Game.UI.Confirm(practice + "\n" + L.T("<size=18>클리어해도 보상은 없고, 이야기 진행만 이어집니다.</size>\n연습으로 입장할까요?"), () => { if (!Game.Dungeon.Enter(def, difficulty)) refresh?.Invoke(); }, defaultYes: true, overlay: true); // [UX] nothing is lost: cursor on 예
                 return false;

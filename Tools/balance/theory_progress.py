@@ -77,6 +77,26 @@ QUEST_SCALE = 1.0
 MIN_LEVEL = {}
 XP_MUL = {}
 FIXED_KPM = None
+# 실측 속도(2026-10-16, Builds/WindowsQA -dotrpgMeasure, 자동 사냥 드라이버): 레벨 5구간별 분당 처치 중앙값. Lv1~15는 설계값 15 유지.
+# `python3 theory_progress.py --measured` 또는 MEASURED_KPM = measured_kpm() 로 켠다. 파일이 없으면 None.
+MEASURED_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "..", "analysis", "player-sim", "data", "dotrpg-measured.json")
+MEASURED_KPM = None
+
+
+def measured_kpm(path=None):
+    """{레벨: 분당 처치}: 실측 사냥 행(driver auto, 몬스터 Lv40 이하)을 5레벨 구간 중앙값으로 묶고, Lv1~15는 15로 둔다."""
+    path = path or MEASURED_FILE
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as f:
+        rows = json.load(f).get("hunting", [])
+    bands = {}
+    for r in rows:
+        if r.get("kills_per_min", 0) <= 0 or r.get("driver") != "auto" or r.get("mlv", 0) > 40:
+            continue
+        bands.setdefault(min(8, (r["level"] - 1) // 5), []).append(r["kills_per_min"])
+    med = {k: sorted(v)[len(v) // 2] for k, v in bands.items()}
+    return {lv: 15.0 if lv <= 15 else med.get(min(8, (lv - 1) // 5), 15.0) for lv in range(1, 41)}
 
 
 def zone_xp_per_min(zone, level, eff):
@@ -88,7 +108,7 @@ def zone_xp_per_min(zone, level, eff):
     ehp = hp * (1 + 0.12 * (mlevel - 1)) * field_hp_mul(mlevel)
     dps = player_attack(level) * pack_rate(level) * eff
     seconds = 3 * ehp / dps + TRAVEL
-    kills_per_min = FIXED_KPM or 3 * 60 / seconds
+    kills_per_min = (MEASURED_KPM[level] if MEASURED_KPM else None) or FIXED_KPM or 3 * 60 / seconds
     return kills_per_min * xp, kills_per_min, mlevel
 
 
@@ -314,6 +334,11 @@ if __name__ == "__main__":
         z = best_zone(lv, 0.35)
         print(f"| {lv} | {z[0]}({z[3]}) | {player_attack(lv):.0f} | {z[2]:.1f} | {z[1] * 60:,.0f} | {PROG[lv - 1] / (z[1] * 0.8):.0f}분 |")
     import sys
+    if "--measured" in sys.argv:
+        MEASURED_KPM = measured_kpm()
+        print("\n# 실측 속도 (자동 사냥, 2026-10-16): " + ", ".join(f"Lv{lv} {MEASURED_KPM[lv]:.0f}" for lv in (16, 21, 26, 31, 36)))
+        report(0.35, 2.0, True, True)
+        sys.exit(0)
     scenarios = [("설계 기준: 분당 15마리 고정", 0.35, 4.0, 15, True),
                  ("코드 계산 보수: EFF 0.2, 이동 6초", 0.2, 6.0, None, True),
                  ("코드 계산 기본: EFF 0.35, 이동 4초", 0.35, 4.0, None, True),

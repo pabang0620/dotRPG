@@ -106,11 +106,12 @@ namespace DotRPG
         static readonly double[] GoldMul = { 1, 1, 1, 1, 2, 2.2, 2.4, 2.6, 2.8, 3, 3, 5, 16, 24, 34, 46, 60, 64, 68, 72 };
         /// <summary>
         /// Base gold per attempt by level tier (Lv.1, 10, 15 ... 40; weapons, other gear pays 80%).
-        /// [BALANCE 2026-10-16] x5 at Lv.1 up to x35 at Lv.40 (was 20..120): enhancement is the gold sink. With quest gold
-        /// halved, a no-spend player reaching Lv.40 has about 86% of what the clear kit (Lv.40 weapon +11, armour +10,
-        /// accessories +8) costs, so gold stays a little short the way it is in Dungeon Fighter (Tools/balance/theory_gold.py).
+        /// [BALANCE 2026-10-16] x5 at Lv.1 up to x47 at Lv.40 (was 20..120): enhancement is the gold sink. With quest gold
+        /// halved and the measured hunting pace (20~25 kills a minute from Lv16, Docs/BALANCE_MEASURE_2026-10-16.md), a no-spend
+        /// player reaching Lv.40 has about 88% of what the clear kit (Lv.40 weapon +11, armour +10, accessories +8) costs,
+        /// so gold stays a little short the way it is in Dungeon Fighter (Tools/balance/theory_gold.py).
         /// </summary>
-        static readonly int[] GoldByTier = { 100, 180, 320, 660, 1200, 1900, 2800, 4200 };
+        static readonly int[] GoldByTier = { 100, 180, 320, 880, 1600, 2530, 3720, 5600 };
 
         static int Clamp(int level) => Math.Max(0, Math.Min(EquipmentDatabase.MaxEnhance - 1, level));
 

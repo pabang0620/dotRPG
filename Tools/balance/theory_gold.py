@@ -3,7 +3,7 @@ dotRPG 무자본 골드 수지 (2026-10-16). 게임을 돌리지 않는 이론 �
 "무자본은 돈이 조금 모자라야 한다"(사용자, 던전앤파이터식): 만렙·레이드 클리어 장비(강화 목표 한 벌)에 드는 골드와 재료를
 Lv1~40 동안 무자본으로 버는 골드와 비교한다. 수입이 필요 지출의 85~90%가 되게 상수를 잡는다(딱 맞지 않고 조금 부족).
 
-수입 (theory_progress.py 설계 기준 시나리오: 분당 15마리, 하루 2시간, 친구와 레이드)
+수입 (theory_progress.py: 실측 처치 속도(2026-10-16 자동 사냥, Lv1~15는 설계값 15), 하루 2시간, 친구와 레이드)
 - 처치: 몬스터 레벨별 처치 수(사냥 + 퀘스트 처치) x 기본 골드 더미 평균. 재료(뼈·강화석·정수)는 강화에 먼저 쓰고 남는 것만 판다.
   장비 드롭(equipmentDropChance)은 그 단계 드롭 풀의 가중 평균 판매가로 판다(쓸 것은 한 벌뿐이라 대부분 판다).
 - 요일 던전 하루 3판(Lv5부터): 확정 골드 x rewardMul + 운 카드 2장의 골드 기대값. 난이도는 레벨 >= 권장 - 2 중 가장 높은 것.
@@ -162,7 +162,9 @@ def raid_gold(rid):
 
 
 def budget(gold_scale=1.0, potion_price=None, verbose=True):
+    # 2026-10-16: 실측 속도(자동 사냥, Lv16+ 분당 20~25)가 있으면 그것으로, 없으면 설계값 15
     tp.TRAVEL, tp.FIXED_KPM = 4.0, 15
+    tp.MEASURED_KPM = tp.measured_kpm()
     reached, events, claimed, days, st = tp.simulate(0.35, HOURS_PER_DAY, True, True)
     hours = reached[40]
     potion_price = BUY["potion_hp"] if potion_price is None else potion_price
