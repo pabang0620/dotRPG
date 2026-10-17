@@ -13,8 +13,8 @@ PC(Steam) 동작과 빌드는 그대로이고, Android 분기는 `Application.is
    - 배치 모드: `Unity -batchmode -quit -projectPath . -executeMethod DotRPG.EditorTools.BuildScript.BuildAndroidDev`
 2. 결과: `Builds/Android/dotRPG-dev.apk` (Development 빌드, http 서버 허용)
    - 큰 에셋을 옮기거나 지운 뒤에는 명령줄에 `-dotrpgCleanBuild`를 붙인다. Gradle이 이전 APK를 고쳐 쓰면서 빠진 파일 자리를 빈 공간으로 남기기 때문이다(2026-10-11: 파일 869MB, 내용물 375MB).
-   - 빌드 전용 복사본: Unity를 열어 둔 작업 폴더와 겹치지 않게 `C:\Users\admin\Desktop\games\dotRPG_apkbuild`에서 빌드한다. 먼저 `Assets`를 `robocopy /MIR`(.meta 제외)로 작업 폴더와 맞춘 뒤 `BuildAndroidDev`(`Builds/Android/dotRPG-dev.apk`)를 돌린다. PC 시험 빌드도 같은 복사본에서 `BuildWindowsSteamTest`(`Builds/WindowsSteamTest/dotRPG.exe`)로 만든다.
-   - 휴대폰으로 보낼 때는 `games/dotRPG_mobile_<날짜>.zip`으로 묶는다.
+   - 빌드 전용 복사본: Unity를 열어 둔 작업 폴더와 겹치지 않게 `C:\Users\admin\Desktop\games\dotRPG_apkbuild`에서 빌드한다. 먼저 `Assets`를 `robocopy /MIR`(.meta 제외)로 작업 폴더와 맞춘 뒤 `BuildAndroidDev`(`Builds/Android/dotRPG-dev.apk`)를 돌린다. PC 공유 빌드도 같은 복사본에서 `BuildWindowsOnline`(`Builds/WindowsOnline/dotRPG.exe`, 시험 서버 주소 기본값)으로 만든다. `Packages`·`ProjectSettings`도 같이 맞춘다.
+   - 친구에게 보낼 때는 `games/dotRPG_mobile_<날짜>.zip`(APK)과 `games/dotRPG_online_<날짜>.zip`(PC)으로 묶고, 지난 날짜 묶음은 지운다.
 3. 설치: `adb install -r Builds/Android/dotRPG-dev.apk`
 4. 서버: 폰은 시험 서버 `https://35-216-2-121.sslip.io`(구글 클라우드, DB는 Supabase, `ApiClient.MobileTestServer`)에 자동으로 붙는다. 로그인 화면에 서버 주소 칸은 없다.
    - PC 서버로 폰을 시험하려면 `OnlineScreens.cs`의 `serverRow`를 `Application.isMobilePlatform`으로 되돌려 주소 칸을 다시 연다(예: `http://192.168.0.10:3000`, 같은 네트워크, PC 방화벽에서 포트 허용). 값은 PlayerPrefs `dotrpg.server`에 저장된다.
