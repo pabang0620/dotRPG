@@ -109,7 +109,7 @@ export async function checkEntry(
   return { dungeon: d, diff, resetDay, countsEntry: counts, used, limit };
 }
 
-/** 레이드 보상 잠금(입장 시점): 이미 받았거나 사람이 모자라면 연습 입장 */
+/** 레이드 보상 잠금(입장 시점): 이미 받았거나, 사람이 RAID_REWARD_MIN_HUMANS(기본 1, 혼자도 보상) 미만이거나, 열쇠가 모자라면 연습 입장 */
 export async function lockAtEntry(
   db: Queryable,
   characterId: number,

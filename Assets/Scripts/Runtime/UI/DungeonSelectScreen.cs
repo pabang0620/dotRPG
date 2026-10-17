@@ -145,6 +145,8 @@ namespace DotRPG
         /// <summary>Opens the window on the weekday tab or the raid tab.</summary>
         public void Open(bool raid, string keeperName = null, string keeperLine = null)
         {
+            // [UNLOCK] The dungeon window opens with 1-9 (weekday dungeons), its raid tab with 1-20.
+            if (!ContentUnlocks.Check(raid ? ContentUnlocks.Feature.Raid : ContentUnlocks.Feature.WeekdayDungeon)) return;
             SetKeeper(keeperName, keeperLine);
             tab = raid ? TabRaid : TabWeekday;
             selected = -1;
@@ -156,6 +158,7 @@ namespace DotRPG
         {
             var def = DungeonDatabase.Get(dungeonId);
             if (def == null) { Open(false); return; }
+            if (!ContentUnlocks.Check(def.isRaid ? ContentUnlocks.Feature.Raid : def.always ? ContentUnlocks.Feature.NormalDungeon : ContentUnlocks.Feature.WeekdayDungeon)) return; // [UNLOCK]
             SetKeeper(null, null);
             tab = def.isRaid ? TabRaid : def.always ? TabNormal : TabWeekday;
             var list = Listed;
@@ -168,6 +171,8 @@ namespace DotRPG
         void SetTab(int t)
         {
             if (tab == t) return;
+            // [UNLOCK] A tab the main quest has not opened yet stays shut (the toast says which quest opens it).
+            if (!ContentUnlocks.Check(t == TabRaid ? ContentUnlocks.Feature.Raid : t == TabNormal ? ContentUnlocks.Feature.NormalDungeon : ContentUnlocks.Feature.WeekdayDungeon)) return;
             tab = t;
             selected = -1;
             Game.Audio.PlaySfx("select");
@@ -247,6 +252,9 @@ namespace DotRPG
             tabWeekday.image.sprite = UiTheme.Tab(tab == TabWeekday);
             tabNormal.image.sprite = UiTheme.Tab(tab == TabNormal);
             tabRaid.image.sprite = UiTheme.Tab(raidTab);
+            // [UNLOCK] Locked tabs read dimmed.
+            tabNormal.image.color = ContentUnlocks.IsOpen(ContentUnlocks.Feature.NormalDungeon) ? Color.white : new Color(1f, 1f, 1f, .45f);
+            tabRaid.image.color = ContentUnlocks.IsOpen(ContentUnlocks.Feature.Raid) ? Color.white : new Color(1f, 1f, 1f, .45f);
             TextOf(tabWeekday).text = L.F("요일 던전 <size=15><color=#ffe066>{0}/{1}</color></size>", progress.EntriesLeft(now), DungeonDatabase.DailyEntries);
             TextOf(tabNormal).text = L.T("일반 던전 <size=15><color=#8fe28f>무제한</color></size>");
             var day = ResetClock.GameDay(now);

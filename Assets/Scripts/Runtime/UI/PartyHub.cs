@@ -46,6 +46,7 @@ namespace DotRPG
         {
             var target = WindowOf(page);
             if (target == null || Game.UI.Top == target) return;
+            if (page == Page.Finder && !ContentUnlocks.Check(ContentUnlocks.Feature.PartyFinder)) return; // [UNLOCK]
             // Esc walks back the pages in the order they were visited (a page visited again cuts the trail back to it).
             var from = PageOf(Game.UI.Top);
             if (!stepping && from.HasValue)

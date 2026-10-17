@@ -103,6 +103,7 @@ namespace DotRPG
                 case GameAction.Auction: return AuctionScreen.Instance;
                 case GameAction.Friends: return SocialScreen.Instance;
                 case GameAction.Cosmetics: return Game.UI.Cosmetics;
+                case GameAction.Today: return TodayScreen.Instance; // [TODAY]
                 default: return null;
             }
         }
@@ -114,6 +115,8 @@ namespace DotRPG
         {
             var state = Game.State.Current;
             if (transitioning || (state != GameState.Playing && state != GameState.Paused && state != GameState.Inventory)) return;
+            // [UNLOCK] Content the main quest has not opened yet: say which quest opens it instead of showing the window.
+            if (window != null && ContentUnlocks.FeatureOf(window) is ContentUnlocks.Feature locked && !ContentUnlocks.Check(locked)) return;
             Game.UI.PendingWindow = window;
             if (state == GameState.Inventory) Game.UI.ShowWindow(window);
             else Game.State.Set(GameState.Inventory);
@@ -123,6 +126,7 @@ namespace DotRPG
         public void CloseInventory()
         {
             if (PartyHub.IsHubPage(Game.UI.Top)) PartyHub.ReturnTo = null; // closing the hub (P key, bag key) forgets where it came from
+            if (Game.State.Current == GameState.Inventory && TodayScreen.BackFrom(Game.UI.Top)) return; // [TODAY] Esc in a window opened from 할 일 goes back to the list
             if (Game.State.Current == GameState.Inventory) Game.State.Set(GameState.Playing);
         }
 

@@ -19,6 +19,7 @@ namespace DotRPG
                 string label=on?$"<b><color=#9fe8ff>{shortName[i]}</color></b>":open?shortName[i]:L.T("<color=#8c96a8>3 잠김</color>");
                 CareerButton("Style"+i,label,10+i*92,75,88,40,()=>
                 {
+                    if(!ContentUnlocks.Check(ContentUnlocks.Feature.SkillStyle))return; // [UNLOCK]
                     if(!Progression.StyleOpen(k))
                     {
                         Game.UI.Confirm(L.F("<b>스타일 3</b>을 열까요?\n<size=18>별조각 {0:N0} · 계정의 모든 캐릭터가 세 번째 빌드를 쓸 수 있습니다.</size>", SkillStyleClient.Price) + "\n" + PolicyClient.RefundNotice,()=>SkillStyleClient.Buy((ok,msg)=>{GameEvents.RaiseToast(msg);Refresh();}),true);

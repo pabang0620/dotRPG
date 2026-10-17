@@ -452,7 +452,7 @@ C# `DungeonDirector.RaidLockReason`은 해금 퀘스트를 "받았거나 완료"
 | `lock_reason` | 조건 |
 |---|---|
 | `ALREADY_CLAIMED` | 이번 기간의 `raid_claims`가 이미 있다. 기간은 **중간 레이드: 일일(`dailyStartAt`), 최종 레이드: 주간(`weeklyStartAt`)**(`resetBoundaries` 한 함수) |
-| `TOO_FEW_HUMANS` | 판을 만들 때 사람 수가 `RAID_REWARD_MIN_HUMANS`(기본 2) 미만(솔로 AI 레이드는 연습, 결정 대기 2). **정산 때도 다시 본다**: 이탈하지 않은 사람(`left`·`no_show`·`dropped`가 아닌 멤버)이 최소 인원 미만이면 잠근다(친구가 들어왔다가 바로 나가 대조를 피하는 것을 막는다) |
+| `TOO_FEW_HUMANS` | 판을 만들 때 사람 수가 `RAID_REWARD_MIN_HUMANS`(기본 1, 2026-10-18부터 혼자도 보상) 미만. **정산 때도 다시 본다**: 이탈하지 않은 사람(`left`·`no_show`·`dropped`가 아닌 멤버)이 최소 인원 미만이면 잠근다(친구가 들어왔다가 바로 나가 대조를 피하는 것을 막는다) |
 | `KEYS_MISSING` | 판을 만들 때 또는 **정산 때** 최종 레이드의 봉인 열쇠가 `keyCost`보다 적다. 입장은 막지 않는다(2026-10-06): 연습판이 되고 클리어는 퀘스트에 인정되어 혼자서도 스토리를 끝낼 수 있다 |
 
 잠긴 판은 "연습 입장"이다: 클리어 경험치·카드·열쇠·`raid_claims`가 없다. 처치 경험치·드롭은 `RAID_PRACTICE_PAYS_KILLS`에 따른다(7.2). 클리어 기록(`cleared`, 해금·최고 랭크)은 남는다(C# `RecordClear`는 잠금과 무관).
@@ -471,13 +471,13 @@ C# `DungeonDirector.RaidLockReason`은 해금 퀘스트를 "받았거나 완료"
   "raids": [ { "id": "raid_...", "tier": "mid" | "final", "unlocked": true, "open_today": true,
                "reward_available": true, "period_kind": "daily" | "weekly", "clears_this_period": 1,
                "key": { "item": "key_seal", "have": 120, "cost": 100, "drop_min": 0, "drop_max": 0 },
-               "min_humans_for_reward": 2 } ] }
+               "min_humans_for_reward": 1 } ] }
 ```
 `reward_available`은 `open_today && 이번 기간 청구 없음 && (최종이면 열쇠 >= 비용)`. 열쇠 숫자는 서버 데이터에서 읽는다. 클라이언트는 입장 창과 `DungeonDirector.CannotEnterReason`의 레이드 분기를 이 응답으로 대체한다.
 
 ## 11. 빈자리 AI 용병: 권장안
 
-**권장: 허용한다. 던전 안에서만, 시작할 때 고정, 보상은 사람과 같다. 단 레이드 보상은 사람이 2명 이상일 때만(결정 대기 2).**
+**권장: 허용한다. 던전 안에서만, 시작할 때 고정, 보상은 사람과 같다. 레이드 보상도 혼자(AI 동반)여도 나온다(2026-10-18 결정 2 확정: (b) 1명).**
 
 근거:
 1. **사용자 의도(U7)와 PLAN_ONLINE §3.3이 이미 이것이다.** 사람이 모자란 자리를 AI가 채운다.
@@ -553,7 +553,7 @@ C# `DungeonDirector.RaidLockReason`은 해금 퀘스트를 "받았거나 완료"
 | `PARTY_KILL_SLACK_RATIO` | 0.2 | 방별 처치 수 일치 허용 비율 |
 | `PARTY_POWER_SLACK` | 1.15 | 파티 화력 상한 여유 |
 | `PARTY_DAMAGE_MIN_RATIO` | 0.8 | 방장 보고의 딜 합이 처치 HP 합의 이 비율 이상 |
-| `RAID_REWARD_MIN_HUMANS` | 2 | 레이드 보상 최소 사람 수(결정 대기 2) |
+| `RAID_REWARD_MIN_HUMANS` | 1 | 레이드 보상 최소 사람 수(2026-10-18 결정: 혼자도 보상. 2 이상으로 두면 그 미만은 연습판) |
 | `RAID_PRACTICE_PAYS_KILLS` | false | 연습판 처치 경험치·드롭 지급(결정 대기 3) |
 | `STEAM_AUTH_MODE`, `STEAM_APP_ID`, `STEAM_WEB_API_KEY`, `STEAM_IDENTITY`, `PARTY_TRANSPORT` | 3.1 | Steam 인증·전송 설정 |
 

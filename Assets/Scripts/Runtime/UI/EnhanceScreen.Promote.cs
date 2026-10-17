@@ -34,6 +34,7 @@ namespace DotRPG
         void OnPromotePressed()
         {
             if (busy || ticketPending || entries.Count == 0 || !IsTop) return;
+            if (!ContentUnlocks.Check(ContentUnlocks.Feature.Promote)) return; // [UNLOCK]
             var e = entries[selected];
             var gear = EquipmentDatabase.Get(e.key);
             var next = PromoteRules.NextOf(gear);

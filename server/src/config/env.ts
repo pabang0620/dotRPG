@@ -82,7 +82,8 @@ const envSchema = z.object({
   PARTY_KILL_SLACK_RATIO: z.coerce.number().min(0).max(1).default(0.2),
   PARTY_POWER_SLACK: z.coerce.number().min(1).default(1.15),
   PARTY_DAMAGE_MIN_RATIO: z.coerce.number().min(0).max(1).default(0.8),
-  RAID_REWARD_MIN_HUMANS: posInt(2),
+  // 2026-10-18: 혼자(AI 동료 포함)도 레이드 보상을 받는다(사용자 결정). 2 이상으로 두면 그 인원 미만은 연습판(TOO_FEW_HUMANS)
+  RAID_REWARD_MIN_HUMANS: posInt(1),
   RAID_PRACTICE_PAYS_KILLS: boolStr.default(false),
   // Steam 인증(값이 틀리면 기동하지 않는다)
   STEAM_AUTH_MODE: z.enum(['off', 'mock', 'web_api']).default('off'),

@@ -74,6 +74,7 @@ namespace DotRPG
             Game.Session.Inventory.Changed += OnInventoryChanged;
             Game.Session.Progression.LeveledUp += OnLeveledUp;
             if (Game.Dungeon != null) Game.Dungeon.RunEnded += OnRunEnded;
+            ContentUnlocks.Bind(); // [UNLOCK]
         }
 
         public void Dispose()
@@ -81,6 +82,7 @@ namespace DotRPG
             GameEvents.EnemyKilled -= OnEnemyKilled;
             GameEvents.Interacted -= OnInteracted;
             GameEvents.MapEntered -= OnMapEntered;
+            ContentUnlocks.ClearPending(); // [UNLOCK] the static hooks stay (Bind is idempotent), queued news does not
             if (!bound || Game.Session == null) return;
             Game.Session.Inventory.Changed -= OnInventoryChanged;
             Game.Session.Progression.LeveledUp -= OnLeveledUp;

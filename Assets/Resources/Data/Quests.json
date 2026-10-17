@@ -4193,10 +4193,10 @@
    "title": "첫 담금질",
    "summary": "무쇠가 강화석으로 장비를 단단하게 만드는 법을 보여 주겠다고 한다.",
    "requires": [
-    "g_equip"
+    "c1_trail"
    ],
    "requiresFlags": [],
-   "minLevel": 4,
+   "minLevel": 0,
    "giver": "smith",
    "offerDialogue": "g_enhance_offer",
    "turnIn": "smith",
@@ -4394,10 +4394,10 @@
    "title": "사냥의 요령",
    "summary": "촌장 모리가 사냥터에서 손을 덜어 주는 자동 사냥을 일러 준다.",
    "requires": [
-    "g_map"
+    "c1s_patrol"
    ],
    "requiresFlags": [],
-   "minLevel": 6,
+   "minLevel": 0,
    "giver": "chief",
    "offerDialogue": "g_autohunt_offer",
    "turnIn": "chief",
@@ -4442,10 +4442,10 @@
    "title": "스킬 다듬기",
    "summary": "촌장 모리가 스킬에 보조 젬을 끼워 힘을 바꾸는 법을 알려 준다.",
    "requires": [
-    "c1_rebuild"
+    "c1s_patrol"
    ],
    "requiresFlags": [],
-   "minLevel": 5,
+   "minLevel": 0,
    "giver": "chief",
    "offerDialogue": "g_gem_offer",
    "turnIn": "chief",
@@ -4490,10 +4490,10 @@
    "title": "경매장 구경",
    "summary": "잡화상인 미르가 다른 모험가와 물건을 사고파는 경매장을 소개한다.",
    "requires": [
-    "c1_rebuild"
+    "c1s_depths"
    ],
    "requiresFlags": [],
-   "minLevel": 10,
+   "minLevel": 0,
    "giver": "merchant",
    "offerDialogue": "g_auction_offer",
    "turnIn": "merchant",
@@ -4536,7 +4536,7 @@
     "c1s_firstdungeon"
    ],
    "requiresFlags": [],
-   "minLevel": 10,
+   "minLevel": 0,
    "giver": "chief",
    "offerDialogue": "g_party_offer",
    "turnIn": "chief",

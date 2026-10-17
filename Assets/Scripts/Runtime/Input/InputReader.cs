@@ -32,6 +32,8 @@ namespace DotRPG
         AutoQuest, AutoHunt,
         /// <summary>[SKILL 8] Skill keys 6-8 (slots 5-7, default A S D). Appended at the end: touch arrays index by value.</summary>
         Skill6, Skill7, Skill8,
+        /// <summary>[TODAY] The 할 일 window (default N). Appended last: touch arrays index by value.</summary>
+        Today,
     }
 
     /// <summary>

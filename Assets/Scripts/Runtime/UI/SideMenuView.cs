@@ -69,7 +69,17 @@ namespace DotRPG
             var rt = MakeIcon(column, icon, label, () => { Toggle(); onClick(); }, true);
             UIFactory.Place(rt, new Vector2(0f, 1f), new Vector2(0f, 1f), SlotPos(entries.Count), new Vector2(Size, Size));
             entries.Add(rt);
+            // [UNLOCK] Content the main quest has not opened reads dimmed (a press still says which quest opens it).
+            var feature = ContentUnlocks.FeatureOfMenu(icon, label == L.T("일일 의뢰"));
+            if (feature.HasValue) locks.Add((rt.gameObject.AddComponent<CanvasGroup>(), feature.Value));
             return rt;
+        }
+
+        readonly List<(CanvasGroup group, ContentUnlocks.Feature feature)> locks = new List<(CanvasGroup, ContentUnlocks.Feature)>();
+
+        void RefreshLocks()
+        {
+            foreach (var (group, feature) in locks) if (group != null) group.alpha = ContentUnlocks.IsOpen(feature) ? 1f : .4f;
         }
 
         // [MAIL 10] Red dot on the menu button and on 우편 while mail waits (summary polled slowly in the background).
@@ -149,6 +159,7 @@ namespace DotRPG
             open = !open;
             IsOpen = open;
             column.gameObject.SetActive(open);
+            if (open) RefreshLocks();
             // [UI] Above the HUD built after it: at UI size 1.3 the quest tracker reaches the grid's third column.
             if (open) transform.SetAsLastSibling();
             anim = 0f;

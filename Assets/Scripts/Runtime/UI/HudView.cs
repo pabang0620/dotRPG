@@ -19,6 +19,8 @@ namespace DotRPG
         Text autoLabel, autoStatus, huntLabel; // [QUEST] auto-progress toggle under the tracker
         Text autoKey, huntKey; // [AUTO] hotkey badges (InputReader AutoQuest / AutoHunt)
         string autoKeyShown, huntKeyShown;
+        Text todayKey; // [TODAY] 할 일 button's hotkey badge (InputReader Today)
+        string todayKeyShown;
         Button huntBtn;
         RectTransform questPanel;
         // [CONTENT] for capture checks
@@ -142,6 +144,21 @@ namespace DotRPG
             FitLabel(huntLabel);
             huntKey = KeyBadge(huntImg.transform);
             ButtonIcon(huntImg.transform, "menuicon_autohunt"); // [ART]
+            // [TODAY] 할 일 (what to do now), left of 자동 사냥 on the same row. PC only: the phone has it in the menu sheet.
+            if (!TouchUi.Enabled)
+            {
+                var todayImg = UIFactory.Image(questPanel, "Today", Game.Art.Get("ui_btn"), Color.white);
+                todayImg.raycastTarget = true;
+                UIFactory.Place(todayImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-2f * (AutoButtonW + 6f), -4f), new Vector2(TodayButtonW, 36f));
+                var todayBtn = todayImg.gameObject.AddComponent<Button>();
+                todayBtn.targetGraphic = todayImg;
+                todayBtn.onClick.AddListener(() => { if (Game.IsPlaying) TodayScreen.Open(); });
+                UiButton.Attach(todayBtn);
+                var todayLabel = UIFactory.Text(todayImg.transform, "Text", L.T("할 일"), 17, Color.white, TextAnchor.MiddleCenter, true);
+                UIFactory.Stretch(todayLabel.rectTransform, UIFactory.FrameRim, 2f, 30f, 2f);
+                FitLabel(todayLabel);
+                todayKey = KeyBadge(todayImg.transform);
+            }
             // [UI] As wide as the two buttons above it (W-292..W-20): clear of the skill bar and the bottom-centre boss bar.
             autoStatus = UIFactory.Text(questPanel, "AutoStatus", "", 16, new Color32(143, 226, 143, 255), TextAnchor.UpperRight, true);
             UIFactory.Place(autoStatus.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -44f), new Vector2(272f, 44f));
@@ -267,7 +284,10 @@ namespace DotRPG
             {
                 questTitle.text = GrowthGuide.HudTitle(TouchUi.Enabled);
                 sb.Append(GrowthGuide.HudBody(GrowthGuide.Build())).Append('\n');
-                lines += 2;
+                // [TODAY] Nothing to work on in the quest line: point at the full list of what can be done now.
+                string key = Game.Input != null && !TouchUi.Enabled && !Game.Input.UsingGamepad ? Game.Input.GetBindingLabel(GameAction.Today) : "";
+                sb.Append(string.IsNullOrEmpty(key) || key == "?" ? L.T("<color=#ffe066>할 일 보기: 메뉴 > 할 일</color>") : L.F("<color=#ffe066>할 일 보기 ({0})</color>", key)).Append('\n');
+                lines += 3;
             }
             else if (main != null)
             {
@@ -391,6 +411,8 @@ namespace DotRPG
         /// <summary>[UI] Long labels ("자동 진행 (3)") shrink to fit next to the key badge instead of wrapping.</summary>
         /// <summary>[UI] 자동 진행 / 자동 사냥 buttons: wide enough for "자동 진행 (12)" between the icon and the key badge.</summary>
         const float AutoButtonW = 140f;
+        /// <summary>[TODAY] 할 일 button left of 자동 사냥 (no icon: label + key badge).</summary>
+        const float TodayButtonW = 110f;
 
         static void FitLabel(Text t)
         {

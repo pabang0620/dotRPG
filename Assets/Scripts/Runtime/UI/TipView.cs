@@ -41,6 +41,7 @@ namespace DotRPG
             root.gameObject.SetActive(false);
             GameEvents.MapEntered += v.OnMap;
             GameEvents.QuestCompleted += v.OnQuest;
+            ContentUnlocks.Opened += v.OnUnlocked;
             return v;
         }
 
@@ -49,6 +50,31 @@ namespace DotRPG
             InQuestColumn = false;
             GameEvents.MapEntered -= OnMap;
             GameEvents.QuestCompleted -= OnQuest;
+            ContentUnlocks.Opened -= OnUnlocked;
+        }
+
+        // [UNLOCK] Features that opened together (one quest can open two) share one tip, shown on the next frame.
+        readonly System.Collections.Generic.List<ContentUnlocks.Feature> unlocked = new System.Collections.Generic.List<ContentUnlocks.Feature>();
+
+        void OnUnlocked(ContentUnlocks.Feature f)
+        {
+            if (!unlocked.Contains(f)) unlocked.Add(f);
+        }
+
+        void ShowUnlocked()
+        {
+            if (unlocked.Count == 0) return;
+            var names = new System.Collections.Generic.List<string>();
+            var lines = new System.Collections.Generic.List<string>();
+            string id = "unlock";
+            foreach (var f in unlocked)
+            {
+                names.Add(ContentUnlocks.NameOf(f));
+                lines.Add(ContentUnlocks.DescriptionOf(f));
+                id += "_" + f;
+            }
+            unlocked.Clear();
+            Show(id, L.F("새 콘텐츠: {0}", string.Join(" · ", names)), string.Join("\n", lines));
         }
 
         static string K(GameAction a) => Game.Input.GetBindingLabel(a);
@@ -128,6 +154,7 @@ namespace DotRPG
 
         void Update()
         {
+            ShowUnlocked(); // [UNLOCK]
             if (shown) Layout(); // UI size or boss bar changed while showing
             // [UI] In the quest column (UI size 1.15 / 1.3) the tip would sit on the bottom-centre boss bar and its warning
             // line: it waits out the boss fight (its 9 s start again where they stopped).

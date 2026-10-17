@@ -66,7 +66,8 @@ namespace DotRPG
         {
             switch (reason)
             {
-                case "TOO_FEW_HUMANS": return L.T("레이드 보상은 2명 이상의 파티만 받습니다. (연습 입장)");
+                // [RAID 2026-10-18] Solo raids (with AI companions) pay out by default; the server only says this when it is set to need more people.
+                case "TOO_FEW_HUMANS": return L.T("이 서버는 레이드 보상에 함께할 사람이 더 필요합니다. (연습 입장)");
                 case "LOW_CONTRIBUTION": return L.T("전투 기여가 부족해 클리어 보상이 없습니다.");
                 case "ALREADY_CLAIMED": return L.T("이번 기간 레이드 보상을 이미 받았습니다. (연습 입장)");
                 case "KEYS_MISSING": return L.T("봉인 열쇠 조각이 모자라 연습 입장입니다. 클리어하면 이야기는 이어지지만 보상은 없습니다.");

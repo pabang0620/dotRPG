@@ -216,6 +216,7 @@ namespace DotRPG
 
         public static void Request(string targetName, Action<bool> done = null)
         {
+            if (!ContentUnlocks.Check(ContentUnlocks.Feature.Trade)) { done?.Invoke(false); return; } // [UNLOCK]
             targetName = (targetName ?? "").Trim();
             if (targetName.Length == 0) { GameEvents.RaiseToast(L.T("교환할 상대의 이름을 입력하세요.")); done?.Invoke(false); return; }
             Act("POST", "", new Dictionary<string, object> { ["target_name"] = targetName }, ok =>

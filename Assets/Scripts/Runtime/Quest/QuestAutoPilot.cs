@@ -54,6 +54,7 @@ namespace DotRPG
         public static void ToggleHunt()
         {
             if (Hunting) { Stop(L.T("자동 사냥을 멈췄습니다.")); return; }
+            if (!ContentUnlocks.Check(ContentUnlocks.Feature.AutoHunt)) return; // [UNLOCK] the player's own switch; quest hunting is not blocked
             if (!InHuntingGround) { GameEvents.RaiseToast(L.T("자동 사냥은 사냥터에서만 켤 수 있습니다. (던전·요일던전·레이드는 직접 플레이)")); Game.Audio.PlaySfx("cancel"); return; }
             if (Active) Stop("");
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();

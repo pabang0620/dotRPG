@@ -39,7 +39,7 @@ namespace DotRPG
                 case GameAction.WeekdayDungeon: return L.T("요일던전"); case GameAction.RaidWindow: return L.T("레이드");
                 case GameAction.PartyWindow: return L.T("파티창"); case GameAction.PartyFinder: return L.T("파티 찾기");
                 case GameAction.Auction: return L.T("경매장"); case GameAction.Friends: return L.T("친구 목록");
-                case GameAction.Cosmetics: return L.T("외형 상점");
+                case GameAction.Cosmetics: return L.T("외형 상점"); case GameAction.Today: return L.T("할 일");
                 case GameAction.AutoQuest: return L.T("자동 진행"); case GameAction.AutoHunt: return L.T("자동 사냥");
                 default: return a.ToString();
             }

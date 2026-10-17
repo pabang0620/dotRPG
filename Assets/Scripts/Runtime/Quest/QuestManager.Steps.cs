@@ -43,6 +43,7 @@ namespace DotRPG
                 }
             }
             finally { evaluating = false; }
+            ContentUnlocks.ProcessPending(this); // [UNLOCK] announce what opened, take its guide quest
             Changed?.Invoke();
             TryAutoCutscenes();
         }

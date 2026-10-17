@@ -6,7 +6,8 @@ import { buildApp, resetDb, shutdown } from './helpers';
 import { anomalyKinds, countOf, expectLedgerConsistent, fakeRng, seedClaims, seedItem, seedLevel } from './economyHelpers';
 import { clearAll, formParty, get, honestHostReport, newHero, patch, post, raw, roomsOf, stats, startAndBegin, type Hero } from './partyHelpers';
 
-const app = buildApp();
+// 2026-10-18: 기본은 혼자도 레이드 보상(RAID_REWARD_MIN_HUMANS 1). 2로 두는 테스트는 app을 바꾸고 beforeEach가 되돌린다
+let app = buildApp();
 const WED = '2026-10-07T03:00:00Z'; // 수요일 12:00 KST: 해골왕·바위 심장 열림
 const SAT = '2026-10-10T03:00:00Z';
 const SUN = '2026-10-11T03:00:00Z';
@@ -20,6 +21,7 @@ const advance = (sec: number) => {
 
 beforeEach(async () => {
   await resetDb();
+  app = buildApp();
   at(WED);
   setClockOverride(() => fixed);
   setRng(fakeRng({ unit: 1 }));
@@ -59,7 +61,7 @@ describe('GET /raids', () => {
       unlocked: true,
       reward_available: true,
       clears_this_period: 0,
-      min_humans_for_reward: 2,
+      min_humans_for_reward: 1,
       key: { item: 'key_seal', have: 0, drop_min: 20, drop_max: 50 },
     });
   });
@@ -80,15 +82,16 @@ describe('레이드 입장(솔로, AI 동반)', () => {
   const enter = (h: Hero, over: Record<string, unknown> = {}, rid?: string) =>
     post(app, h, '/dungeon-runs', { dungeon_id: 'raid_skeleton_king', difficulty: 0, ...over }, rid);
 
-  it('정상: 입장 횟수를 쓰지 않고, 사람이 1명이면 연습 입장(보상 잠금)이다', async () => {
+  it('정상: 입장 횟수를 쓰지 않고, 사람이 1명(AI 3명)이어도 보상 판이다(2026-10-18)', async () => {
     const h = await raidHero(20, ['c1_fortress']);
     const res = await enter(h, { ai_count: 3 });
     expect(res.status).toBe(201);
-    expect(res.body.data.run).toMatchObject({ party_size: 4, humans: 1, ai_count: 3, reward_locked: true, lock_reason: 'TOO_FEW_HUMANS' });
+    expect(res.body.data.run).toMatchObject({ party_size: 4, humans: 1, ai_count: 3, reward_locked: false });
+    expect(res.body.data.run.lock_reason ?? null).toBeNull();
     expect(res.body.data.entries_left).toBe(3);
     expect((await get(app, h, '/dungeons')).body.data.entries.used).toBe(0);
     const run = await get(app, h, `/dungeon-runs/${res.body.data.run.id}`);
-    expect(run.body.data.run).toMatchObject({ state: 'playing', ai_count: 3, reward_locked: true });
+    expect(run.body.data.run).toMatchObject({ state: 'playing', ai_count: 3, reward_locked: false });
   });
 
   it('입력 오류와 규칙 오류: ai_count, 해금, 레벨, 요일, 난이도', async () => {
@@ -134,7 +137,8 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     expect(await anomalyKinds(h)).not.toContain('raid_enter');
   });
 
-  it('연습판(사람 1명): 처치 경험치·드롭이 없고, 클리어해도 카드·청구·열쇠가 없다. 레이드 몬스터는 필드에서 받지 않는다', async () => {
+  it('RAID_REWARD_MIN_HUMANS=2이면 혼자는 연습판: 처치 경험치·드롭이 없고, 클리어해도 카드·청구·열쇠가 없다. 레이드 몬스터는 필드에서 받지 않는다', async () => {
+    app = buildApp({ RAID_REWARD_MIN_HUMANS: '2' });
     const h = await raidHero(20, ['c1_fortress']);
     const run = await enter(h, { ai_count: 3 });
     const runId = run.body.data.run.id as string;
@@ -169,6 +173,41 @@ describe('레이드 입장(솔로, AI 동반)', () => {
     const claims = await getPool().query('SELECT count(*) AS n FROM raid_claims WHERE character_id = $1', [h.dbId]);
     expect(Number((claims.rows[0] as { n: string }).n)).toBe(0);
     expect(await countOf(h, 'key_seal')).toBe(0);
+    await expectLedgerConsistent(h);
+  });
+
+  it('혼자(AI 3명): 처치 경험치가 들어오고, 클리어하면 보상 청구·열쇠·카드를 받는다(2026-10-18)', async () => {
+    const h = await raidHero(20, ['c1_fortress']);
+    const run = await enter(h, { ai_count: 3 });
+    const runId = run.body.data.run.id as string;
+    const t0 = fixed.getTime();
+    advance(20);
+    const k = await raidKill(h, runId, 'dgn_raid_1', 'skel_knight', 0);
+    expect(k.status).toBe(200);
+    expect(k.body.data.reward_locked ?? false).toBe(false);
+    expect(k.body.data.granted_xp).toBeGreaterThan(0);
+    let skip = 1;
+    for (const [room, def] of roomsOf('raid_skeleton_king').entries()) {
+      for (const [monster, n] of def.kills) {
+        for (let i = 0; i < n; i++) {
+          if (skip > 0 && room === 0 && monster === 'skel_knight') {
+            skip--;
+            continue;
+          }
+          advance(20);
+          expect((await raidKill(h, runId, def.map, monster, room)).status).toBe(200);
+        }
+      }
+    }
+    at(new Date(t0 + 300_000).toISOString());
+    const res = await result(h, runId, { outcome: 'cleared', stats: stats({ elapsed_ms: 300_000, max_combo: 300 }) });
+    expect(res.status).toBe(200);
+    expect(res.body.data.result).toBe('cleared');
+    expect(res.body.data.card_count).toBeGreaterThan(0);
+    expect(res.body.data.raid).toMatchObject({ reward_locked: false });
+    const claims = await getPool().query('SELECT count(*) AS n FROM raid_claims WHERE character_id = $1', [h.dbId]);
+    expect(Number((claims.rows[0] as { n: string }).n)).toBe(1);
+    expect(await countOf(h, 'key_seal')).toBeGreaterThan(0);
     await expectLedgerConsistent(h);
   });
 });
@@ -274,7 +313,8 @@ describe('레이드 파티 정산', () => {
     expect(practice.body.data.run.reward_locked).toBe(true);
   });
 
-  it('레이드 보상 최소 인원: 정산 때 이탈하지 않은 사람이 2명 미만이면 잠긴다', async () => {
+  it('레이드 보상 최소 인원(RAID_REWARD_MIN_HUMANS=2): 정산 때 이탈하지 않은 사람이 2명 미만이면 잠긴다', async () => {
+    app = buildApp({ RAID_REWARD_MIN_HUMANS: '2' });
     const host = await raidHero(20, ['c1_fortress']);
     const member = await raidHero(20, ['c1_fortress']);
     await formParty(app, host, [member], { dungeon_id: 'raid_skeleton_king', difficulty: 0 });

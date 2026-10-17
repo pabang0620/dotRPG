@@ -9,7 +9,7 @@ import { buildApp, resetDb, shutdown } from './helpers';
 import { anomalyKinds, fakeRng, seedClaims, seedLevel } from './economyHelpers';
 import { clearAll, createParty, formParty, get, honestHostReport, newHero, post, raidEntryLevel, roomsOf, stats, startAndBegin, type Hero } from './partyHelpers';
 
-const app = buildApp();
+let app = buildApp();
 const MONDAY = '2026-10-05T03:00:00Z';
 let fixed = new Date(MONDAY);
 const at = (ms: number) => {
@@ -21,6 +21,7 @@ const advance = (sec: number) => {
 
 beforeEach(async () => {
   await resetDb();
+  app = buildApp();
   fixed = new Date(MONDAY);
   setClockOverride(() => fixed);
   setRng(fakeRng({ unit: 1 }));
@@ -62,13 +63,13 @@ const stateOf = async (runUuid: string): Promise<string> =>
   ((await getPool().query('SELECT state FROM dungeon_runs WHERE uuid = $1', [runUuid])).rows[0] as { state: string }).state;
 
 describe('감사 1: 방장 보고(H)는 방장 자신의 결과 보고와 같아야 한다', () => {
-  it('방장은 failed, H는 cleared: 멤버는 마감 뒤 자기 보고로 정산되고(2026-10-14: 보류 없음) 방장은 기록된다', async () => {
+  it('방장은 failed, H는 cleared: 방장 판이 이미 닫혔으니 멤버는 기다리지 않고 자기 보고로 바로 정산되고(2026-10-16) 방장은 기록된다', async () => {
     const { host, member, runId, hostRun, memberRun } = await playedDuo();
     expect((await post(app, host, `/party-runs/${runId}/host-report`, await honestHostReport(hostRun, [host, member]))).status).toBe(200);
     expect((await result(host, hostRun, { outcome: 'failed', stats: stats() })).body.data.result).toBe('failed');
+    // 2026-10-16(partySettle): 방장의 판이 닫혔으면 보고가 더 오지 않으므로 90초 마감을 기다리지 않는다
     const m = await result(member, memberRun, { outcome: 'cleared', stats: stats() });
-    expect(m.body.data.result).toBe('pending');
-    advance(91);
+    expect(m.body.data.result).toBe('cleared');
     const s = await settle(member, memberRun);
     expect(s.body.data.result).toBe('cleared');
     expect(await reasonsOf(host, 'party_host')).toContain('HOST_SELF_MISMATCH');
@@ -78,7 +79,8 @@ describe('감사 1: 방장 보고(H)는 방장 자신의 결과 보고와 같아
 });
 
 describe('감사 2: 레이드 최소 인원은 클리어를 유지한 사람만 센다', () => {
-  it('2명 레이드에서 한 명이 바로 실패하면 남은 사람도 보상을 받지 못한다', async () => {
+  it('RAID_REWARD_MIN_HUMANS=2이면 2명 레이드에서 한 명이 바로 실패할 때 남은 사람도 보상을 받지 못한다', async () => {
+    app = buildApp({ RAID_REWARD_MIN_HUMANS: '2' }); // 기본(1)은 혼자 남아도 보상: 대조 회피 방어는 2명 이상 설정에서 본다
     fixed = new Date('2026-10-07T03:00:00Z');
     const mk = async () => {
       const h = await newHero(app);

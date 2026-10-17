@@ -20,6 +20,7 @@ namespace DotRPG
         // The PC side menu's entries (SideMenuView.Create) with the same targets.
         static readonly (string icon, string label, Dot dot, Action open)[] MenuEntries =
         {
+            ("menuicon_quest", L.T("할 일"), Dot.None, TodayScreen.Open), // [TODAY]
             ("menuicon_bag", L.T("가방"), Dot.None, () => Game.Flow.OpenWindow(null)),
             ("menuicon_skill", L.T("스킬"), Dot.None, () => Game.Flow.OpenWindow(Game.UI.Skills)),
             ("menuicon_map", L.T("지도"), Dot.None, () => Game.Flow.OpenWindow(Game.UI.WorldMap)),
@@ -39,6 +40,7 @@ namespace DotRPG
         };
 
         RectTransform menuLayer;
+        readonly List<(CanvasGroup group, ContentUnlocks.Feature feature)> menuLocks = new List<(CanvasGroup, ContentUnlocks.Feature)>();
         Image menuButtonDot;
         readonly List<(Dot kind, Image image)> entryDots = new List<(Dot, Image)>();
         readonly List<(string id, Text text)> currencyTexts = new List<(string, Text)>();
@@ -119,6 +121,9 @@ namespace DotRPG
                 var open = entry.open;
                 button.onClick.AddListener(() => OpenEntry(open));
                 if (entry.dot != Dot.None) entryDots.Add((entry.dot, RedDot(img.rectTransform)));
+                // [UNLOCK] Content the main quest has not opened reads dimmed (a tap still says which quest opens it).
+                var feature = ContentUnlocks.FeatureOfMenu(entry.icon, entry.dot == Dot.Daily);
+                if (feature.HasValue) menuLocks.Add((img.gameObject.AddComponent<CanvasGroup>(), feature.Value));
             }
             menuLayer.gameObject.SetActive(false);
         }
@@ -179,6 +184,7 @@ namespace DotRPG
             {
                 menuLayer.SetAsLastSibling();
                 RefreshCurrency();
+                foreach (var (group, feature) in menuLocks) if (group != null) group.alpha = ContentUnlocks.IsOpen(feature) ? 1f : .4f;
             }
             menuLayer.gameObject.SetActive(open);
         }

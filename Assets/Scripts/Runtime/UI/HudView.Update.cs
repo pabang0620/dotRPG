@@ -44,9 +44,13 @@ namespace DotRPG
                 {
                     bool canHunt = hunting || QuestAutoPilot.CanHuntHere;
                     if (huntBtn.interactable != canHunt) huntBtn.interactable = canHunt;
+                    // [UNLOCK] Locked until its main quest: greyed, but still clickable so ToggleHunt can say why.
+                    var huntColor = hunting || ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? Color.white : new Color(0.55f, 0.55f, 0.55f);
+                    if (huntLabel != null && huntLabel.color != huntColor) huntLabel.color = huntColor;
                 }
                 ShowKey(autoKey, GameAction.AutoQuest, ref autoKeyShown);
                 ShowKey(huntKey, GameAction.AutoHunt, ref huntKeyShown);
+                if (todayKey != null) ShowKey(todayKey, GameAction.Today, ref todayKeyShown);
             }
             // [UI] Toasts move up over the dialogue name plate and over the boss bar.
             var dialogue = Game.Dialogue;

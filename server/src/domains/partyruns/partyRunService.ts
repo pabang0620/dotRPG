@@ -160,7 +160,7 @@ async function beginRun(ctx: PartyCtx, run: PartyRunRow): Promise<'begun' | 'can
   }
 
   // 9단계 5.1: 판 시작 때 각 멤버 세션의 기기·Steam 소유자를 스냅샷으로 남기고, 같은 기기·같은 Steam 소유자는 한 사람으로 센다.
-  // 파티 크기(AI 채우기·몬스터 체력 배율)는 실제 머릿수 그대로이고, 보상 최소 인원(TOO_FEW_HUMANS) 판정에만 "사람 수"를 쓴다
+  // 파티 크기(AI 채우기·몬스터 체력 배율)는 실제 머릿수 그대로이고, 보상 최소 인원(TOO_FEW_HUMANS, RAID_REWARD_MIN_HUMANS 기본 1) 판정에만 "사람 수"를 쓴다
   const humanKeys = await snapshotRunHumans(ctx.client, run.id, standing.map((m) => ({ characterId: m.character_id, accountId: m.account_id })));
   const humanCount = humanGroups(standing.map((m) => humanKeys.get(m.character_id) ?? { deviceHash: null, steamKey: null, installId: null })).length;
 

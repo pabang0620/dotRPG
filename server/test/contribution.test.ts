@@ -147,7 +147,8 @@ describe('레이드: 같은 기기 부계정과 기여', () => {
     expect(log.rows.map((r) => r.why)).toContain('low_contribution_log');
   });
 
-  it('본캐 + 같은 기기 부계정: 같은 기기는 한 사람이라 둘 다 TOO_FEW_HUMANS, 청구 없음', async () => {
+  it('RAID_REWARD_MIN_HUMANS=2이면 본캐 + 같은 기기 부계정: 같은 기기는 한 사람이라 둘 다 TOO_FEW_HUMANS, 청구 없음', async () => {
+    app = buildApp({ RAID_REWARD_MIN_HUMANS: '2' }); // 기본(1)은 혼자도 보상이라 사람 수 세기는 2명 이상 설정에서만 의미가 있다
     const d = hashOf();
     const host = await heroOn(app, d, 20, ['c1_fortress']);
     const alt = await heroOn(app, d, 20, ['c1_fortress']);

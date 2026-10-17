@@ -123,6 +123,19 @@ namespace DotRPG
             Game.Flow.Autosave();
         }
 
+        /// <summary>
+        /// [UNLOCK] Takes an available quest without its giver's offer talk and pins it on the HUD (a guide quest the moment its
+        /// content opens, ContentUnlocks). The report talk stays with the giver. False when it is not available.
+        /// </summary>
+        public bool AcceptNow(string questId)
+        {
+            var q = db.Get(questId);
+            if (q == null || Journal.Status(questId) != QuestStatus.Available) return false;
+            Accept(q);
+            if (q.Kind == QuestKind.Sub) Journal.Tracked = q.id;
+            return true;
+        }
+
         void Complete(QuestDef q)
         {
             var s = Journal.State(q.id);

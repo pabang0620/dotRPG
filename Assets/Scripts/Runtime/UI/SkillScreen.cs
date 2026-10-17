@@ -136,6 +136,7 @@ namespace DotRPG
                 return;
             }
 
+            if (v.socket > 0 && !ContentUnlocks.Check(ContentUnlocks.Feature.Gem)) return; // [UNLOCK] support gems (the skill socket stays open)
             var options = prog.OptionsFor(v.slot, v.socket);
             int i = options.IndexOf(prog.SlotGem(v.slot, v.socket));
             if (i < 0) i = 0;

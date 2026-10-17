@@ -130,7 +130,8 @@ namespace DotRPG
 
             // 1. Weekday dungeons open today with entries left (the region's own first).
             int left = Game.Session.Dungeons.EntriesLeft(now);
-            if (diff != null && left > 0)
+            // [UNLOCK] Content the main quest has not opened yet is never recommended.
+            if (diff != null && left > 0 && ContentUnlocks.IsOpen(ContentUnlocks.Feature.WeekdayDungeon))
             {
                 DungeonDef pick = null;
                 foreach (var d in DungeonDatabase.Weekday)
@@ -153,7 +154,7 @@ namespace DotRPG
             }
 
             // 2. The region's normal dungeon (every day, no entry count).
-            if (diff != null)
+            if (diff != null && ContentUnlocks.IsOpen(ContentUnlocks.Feature.NormalDungeon))
             {
                 DungeonDef normal = null;
                 foreach (var d in DungeonDatabase.Normal)
@@ -181,13 +182,14 @@ namespace DotRPG
                     order = OrderHunt,
                     shortText = L.F("{0} 사냥터", L.T(zone.name)),
                     text = L.F("사냥터 <color=#78d6ff>{0}</color> (Lv{1}~{2}) · 분당 경험치 약 {3:N0}", L.T(zone.name), zone.minLevel, zone.maxLevel, XpPerMinute(zone)),
-                    button = L.T("추천 사냥터로 자동 사냥"),
-                    action = () => { QuestAutoPilot.StartGrowth(); if (Game.Flow != null) Game.Flow.CloseInventory(); },
+                    // Before 자동 사냥 opens the line is a hint only (the player walks there).
+                    button = ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? L.T("추천 사냥터로 자동 사냥") : null,
+                    action = ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? () => { QuestAutoPilot.StartGrowth(); if (Game.Flow != null) Game.Flow.CloseInventory(); } : (Action)null,
                 });
             }
 
             // 4. Daily / weekly requests still to take or hand in (online, once unlocked).
-            if (DailyQuestClient.Loaded && DailyQuestClient.Unlocked)
+            if (DailyQuestClient.Loaded && DailyQuestClient.Unlocked && ContentUnlocks.IsOpen(ContentUnlocks.Feature.Daily))
             {
                 int day = 0, week = 0;
                 foreach (var s in DailyQuestClient.Slots) if (!s.Claimed) day++;
@@ -204,7 +206,7 @@ namespace DotRPG
             }
 
             // 5. Party hunting bonus (shared kills online).
-            if (OnlineSession.Playing)
+            if (OnlineSession.Playing && ContentUnlocks.IsOpen(ContentUnlocks.Feature.PartyFinder))
                 list.Add(new Entry
                 {
                     order = OrderParty,

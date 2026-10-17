@@ -108,6 +108,6 @@ describe('4단계 환경변수 검증', () => {
     expect(() => loadConfig({ ...prod, STEAM_APP_ID: '480' })).toThrow(/480/);
     expect(loadConfig({ ...prod, STEAM_APP_ID: '2800000' }).partyTransport).toBe('steam');
     const c = loadConfig(base);
-    expect(c.policy).toMatchObject({ raidRewardMinHumans: 2, raidPracticePaysKills: false, partyMinLevelSlack: 5 });
+    expect(c.policy).toMatchObject({ raidRewardMinHumans: 1, raidPracticePaysKills: false, partyMinLevelSlack: 5 });
   });
 });

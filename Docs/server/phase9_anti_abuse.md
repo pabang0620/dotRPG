@@ -390,7 +390,7 @@ z.strictObject({
 | `DUNGEON_UNDERLEVEL_STEP` | `0.05` | 격차 1 증가당 감소 |
 | `DUNGEON_UNDERLEVEL_MIN` | `0.05` | 하한 |
 
-(기존 `RAID_REWARD_MIN_HUMANS=2`는 그대로, 의미만 "연결 요소 수"로 바뀐다.)
+(`RAID_REWARD_MIN_HUMANS`의 의미가 "연결 요소 수"로 바뀐다. 2026-10-18부터 기본값 1이라 혼자도 보상을 받고, 이 사람 수 세기는 2 이상으로 설정했을 때만 작동한다.)
 
 ### 5.7 테스트 (`raids.test.ts`, `partyRuns.test.ts`, 신규 `contribution.test.ts`)
 
