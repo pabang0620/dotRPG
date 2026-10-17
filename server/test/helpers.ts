@@ -128,6 +128,7 @@ export async function resetDb(): Promise<void> {
       'character_items',
       'character_state',
       'characters',
+      'oauth_sessions', // 0045
       'refresh_tokens',
       'auth_identities',
       'accounts',

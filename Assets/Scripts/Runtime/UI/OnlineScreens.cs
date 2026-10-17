@@ -81,6 +81,8 @@ namespace DotRPG
         InputField idField, pwField, serverField; // serverField: development builds on a phone only
         // [W3] The last login was refused because the account waits for withdrawal: offer the cancel button.
         bool cancelOffered, cancelSteam;
+        // [0045] Kakao / Google: the browser step is running, the menu shows only the cancel row
+        OnlineSession.OauthFlow oauthFlow;
 
         protected override bool AnyFieldFocused => idField.isFocused || pwField.isFocused || (serverField != null && serverField.isFocused);
 
@@ -126,6 +128,17 @@ namespace DotRPG
         void BuildMenu()
         {
             menu.Clear();
+            if (oauthFlow != null)
+            {
+                menu.AddButton(L.T("취소"), CancelOauth);
+                menu.OnCancel = CancelOauth;
+                FitPanel();
+                menu.Refresh();
+                return;
+            }
+            // [0045] Kakao / Google login, shown only when the server has the provider switched on
+            menu.AddButton(L.T("카카오로 로그인"), () => SubmitOauth("kakao"), () => OnlineSession.KakaoOn);
+            menu.AddButton(L.T("Google로 로그인"), () => SubmitOauth("google"), () => OnlineSession.GoogleOn);
             // [PARTY 8] Steam players log in with their Steam account (shown only while Steam is running).
             menu.AddButton(L.T("Steam으로 접속"), () => SubmitSteam(), () => SteamBridge.Current != null && SteamBridge.Current.Ready);
             menu.AddButton(L.T("로그인"), () => Submit(false));
@@ -187,6 +200,8 @@ namespace DotRPG
             if (serverField != null) serverField.text = ApiClient.Instance.BaseUrl == ApiClient.DefaultServer ? "" : ApiClient.Instance.BaseUrl;
 #endif
             if (cancelOffered) { cancelOffered = false; BuildMenu(); }
+            if (oauthFlow != null) { oauthFlow.Cancel(); oauthFlow = null; BuildMenu(); }
+            OnlineSession.FetchOauthProviders(() => { if (gameObject.activeInHierarchy && oauthFlow == null) BuildMenu(); });
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Say(L.F("서버: {0}", ApiClient.Instance.BaseUrl));
 #else
@@ -206,6 +221,40 @@ namespace DotRPG
             if (!AnyFieldFocused) return;
             if (Input.GetKeyDown(KeyCode.Tab)) (idField.isFocused ? pwField : idField).ActivateInputField();
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) Submit(false);
+        }
+
+        /// <summary>[0045] Opens the provider's login page in the browser and waits (polling) for the result.</summary>
+        void SubmitOauth(string provider)
+        {
+            if (busy || oauthFlow != null) return;
+            Say(L.F("{0} 로그인을 여는 중...", OnlineSession.ProviderName(provider)));
+            OnlineSession.OauthFlow flow = null;
+            flow = OnlineSession.LoginOauth(provider, line => { if (oauthFlow == flow) Say(line); }, r =>
+            {
+                if (oauthFlow != flow) { if (r.ok) OnlineSession.Logout(); return; } // cancelled after the server already logged in
+                oauthFlow = null;
+                BuildMenu();
+                if (!r.ok)
+                {
+                    Game.Audio.PlaySfx("cancel");
+                    if (r.code == "ACCOUNT_WITHDRAWAL_PENDING") Say(L.T("탈퇴 대기 중인 계정입니다. 고객 지원에 문의하세요."), true); else Say(Explain(r), true);
+                    return;
+                }
+                Game.Audio.PlaySfx("confirm");
+                ui.Pop();
+                ui.Push(ui.OnlineCharacters);
+            });
+            oauthFlow = flow;
+            BuildMenu();
+        }
+
+        void CancelOauth()
+        {
+            if (oauthFlow == null) return;
+            oauthFlow.Cancel();
+            oauthFlow = null;
+            BuildMenu();
+            Say(L.T("로그인을 취소했습니다."));
         }
 
         void SubmitSteam()

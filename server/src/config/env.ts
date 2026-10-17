@@ -89,6 +89,14 @@ const envSchema = z.object({
   STEAM_APP_ID: z.coerce.number().int().positive().optional(),
   STEAM_WEB_API_KEY: z.string().min(1).optional(),
   STEAM_IDENTITY: z.string().min(1).default('dotrpg-server'),
+  // 카카오·Google 로그인(0045). 공급자별로 ID와 비밀이 둘 다 있어야 켜진다. 콜백 주소 = OAUTH_PUBLIC_BASE + /auth/oauth/callback/<공급자>
+  OAUTH_PUBLIC_BASE: z.url().optional(),
+  KAKAO_CLIENT_ID: z.string().min(1).optional(),
+  KAKAO_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  RATE_OAUTH_START_IP_MAX: posInt(20),
+  RATE_OAUTH_POLL_IP_MAX: posInt(120),
   // 폐기(8단계): COMBAT_TRANSPORT_ORDER 가 대체한다. 값이 있으면 옛 설정으로 보고 순서를 파생한다
   PARTY_TRANSPORT: z.enum(['dev', 'steam']).optional(),
   // 5단계(채팅·친구) 속도 제한과 정책 상수. 값은 phase5_api.md 11절
@@ -310,6 +318,8 @@ export interface AppConfig {
     heartbeatPer2Sec: number;
     steamIp: number;
     steamLink: number;
+    oauthStartIp: number;
+    oauthPollIp: number;
     socialIp: number;
     socialListPerSec: number;
     socialRequestPerMin: number;
@@ -403,6 +413,12 @@ export interface AppConfig {
     retries: number;
     breakerFailures: number;
     breakerOpenSeconds: number;
+  };
+  /** 카카오·Google 로그인(0045). 공급자 값이 null이면 꺼짐 */
+  oauth: {
+    publicBase: string | null;
+    kakao: { clientId: string; clientSecret: string } | null;
+    google: { clientId: string; clientSecret: string } | null;
   };
   /** 폐기된 PARTY_TRANSPORT(옛 설정 호환용, 없으면 'dev') */
   partyTransport: 'dev' | 'steam';
@@ -637,6 +653,8 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       heartbeatPer2Sec: e.RATE_HEARTBEAT_PER_2SEC,
       steamIp: e.RATE_STEAM_IP_MAX,
       steamLink: e.RATE_STEAM_LINK_MAX,
+      oauthStartIp: e.RATE_OAUTH_START_IP_MAX,
+      oauthPollIp: e.RATE_OAUTH_POLL_IP_MAX,
       socialIp: e.RATE_SOCIAL_IP_MAX,
       socialListPerSec: e.RATE_SOCIAL_LIST_PER_SEC,
       socialRequestPerMin: e.RATE_SOCIAL_REQUEST_PER_MIN,
@@ -726,6 +744,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       identity: e.STEAM_IDENTITY,
       ...p8.steamExtra,
     },
+    oauth: buildOauth(e, prod),
     partyTransport: e.PARTY_TRANSPORT ?? 'dev',
     deployStage: p8.deployStage,
     relay: p8.relay,
@@ -777,6 +796,16 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
 }
 
 let current: AppConfig | null = null;
+
+/** 0045: 공급자는 ID·비밀·공개 주소가 모두 있을 때만 켠다. 운영 공개 주소는 https 여야 한다(콜백에 인가 코드가 실린다) */
+function buildOauth(e: z.infer<typeof envSchema>, prod: boolean): AppConfig['oauth'] {
+  const base = e.OAUTH_PUBLIC_BASE ? e.OAUTH_PUBLIC_BASE.replace(/\/+$/, '') : null;
+  if (base && prod && !base.startsWith('https://')) {
+    throw new Error('환경변수 검증 실패: 운영에서는 OAUTH_PUBLIC_BASE 가 https 주소여야 합니다');
+  }
+  const pair = (id?: string, secret?: string) => (base && id && secret ? { clientId: id, clientSecret: secret } : null);
+  return { publicBase: base, kakao: pair(e.KAKAO_CLIENT_ID, e.KAKAO_CLIENT_SECRET), google: pair(e.GOOGLE_CLIENT_ID, e.GOOGLE_CLIENT_SECRET) };
+}
 
 /** 서버 기동(또는 테스트 setup)에서 한 번 호출한다. 이후 어디서든 getConfig()로 읽는다. */
 export function initConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {

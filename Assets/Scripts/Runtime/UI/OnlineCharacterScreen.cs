@@ -16,6 +16,8 @@ namespace DotRPG
 
         Text titleText;
         bool deleting;
+        // [0045] Kakao / Google linking in the browser: the menu shows only the cancel row meanwhile
+        OnlineSession.OauthFlow linkFlow;
         int pick;
         RectTransform grid;
         readonly System.Collections.Generic.List<CharacterPreviewCard> cards = new System.Collections.Generic.List<CharacterPreviewCard>();
@@ -45,9 +47,12 @@ namespace DotRPG
         {
             base.Show();
             deleting = false;
+            if (linkFlow != null) { linkFlow.Cancel(); linkFlow = null; }
             Rebuild();
             var session = OnlineSession.Current;
             if (session == null) return;
+            // [0045] Link buttons need the server's providers and the account's linked logins
+            OnlineSession.FetchOauthProviders(() => session.LoadProviders(() => { if (gameObject.activeInHierarchy && !deleting && linkFlow == null && OnlineSession.Current == session) Rebuild(); }));
             busy = true;
             Say(L.T("캐릭터 목록을 불러오는 중..."));
             session.LoadCharacters(r =>
@@ -79,11 +84,19 @@ namespace DotRPG
             pick = Mathf.Clamp(pick, 0, Mathf.Max(0, count - 1));
             menu.Clear();
             titleText.text = deleting ? L.T("삭제할 캐릭터 고르기") : L.F("{0}  <size=18><color=#b8c4d8>{1}/{2}</color></size>", session?.LoginId ?? "", count, session?.CharacterLimit ?? 6);
-            if (!deleting)
+            if (linkFlow != null)
+            {
+                actionItem = null;
+                menu.AddButton(L.T("연동 취소"), CancelLink);
+                menu.OnCancel = CancelLink;
+            }
+            else if (!deleting)
             {
                 actionItem = menu.AddButton(L.T("접속하기"), () => { if (Picked != null) Enter(Picked); }, () => Picked != null);
                 menu.AddButton(L.T("새 캐릭터 만들기"), () => ui.Push(ui.OnlineCreate), () => session != null && count < session.CharacterLimit);
                 menu.AddButton(L.T("캐릭터 삭제"), () => { deleting = true; Rebuild(); }, () => count > 0);
+                menu.AddButton(L.T("카카오 계정 연동"), () => Link("kakao"), () => OnlineSession.KakaoOn && session != null && !session.Providers.Contains("kakao"));
+                menu.AddButton(L.T("Google 계정 연동"), () => Link("google"), () => OnlineSession.GoogleOn && session != null && !session.Providers.Contains("google"));
                 menu.AddButton(L.T("회원 탈퇴"), () => ui.Push(ui.Withdrawal)); // [W2]
                 menu.AddButton(L.T("로그아웃"), () => { OnlineSession.Logout(); ui.Pop(); });
                 menu.OnCancel = () => { OnlineSession.Logout(); ui.Pop(); };
@@ -101,6 +114,35 @@ namespace DotRPG
         }
 
         MenuList.Item actionItem;
+
+        /// <summary>[0045] Attach Kakao / Google so this account can log in with it next time.</summary>
+        void Link(string provider)
+        {
+            var session = OnlineSession.Current;
+            if (busy || linkFlow != null || session == null) return;
+            Say(L.F("{0} 로그인을 여는 중...", OnlineSession.ProviderName(provider)));
+            OnlineSession.OauthFlow flow = null;
+            flow = session.LinkOauth(provider, line => { if (linkFlow == flow) Say(line); }, r =>
+            {
+                if (linkFlow != flow) return;
+                linkFlow = null;
+                Rebuild();
+                if (!r.ok) { Game.Audio.PlaySfx("cancel"); Say(Explain(r), true); return; }
+                Game.Audio.PlaySfx("confirm");
+                Say(L.F("{0} 계정을 연동했습니다. 다음부터 {0}로 로그인할 수 있습니다.", OnlineSession.ProviderName(provider)));
+            });
+            linkFlow = flow;
+            Rebuild();
+        }
+
+        void CancelLink()
+        {
+            if (linkFlow == null) return;
+            linkFlow.Cancel();
+            linkFlow = null;
+            Rebuild();
+            Say(L.T("연동을 취소했습니다."));
+        }
 
         /// <summary>The first row names the picked character: 접속하기 · 이름 (or 삭제하기 · 이름 in delete mode).</summary>
         void UpdateActionLabel()

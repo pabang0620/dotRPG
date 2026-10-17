@@ -212,6 +212,12 @@ export async function steamSubjectOf(db: Queryable, accountId: number): Promise<
   return r.rows[0]?.subject ?? null;
 }
 
+/** 0045: 카카오·Google 신원의 이월 표시 키('<공급자>:<번호>') */
+export async function oauthKeysOf(db: Queryable, accountId: number): Promise<string[]> {
+  const r = await db.query<{ k: string }>("SELECT provider || ':' || subject AS k FROM auth_identities WHERE account_id = $1 AND provider IN ('kakao', 'google') ORDER BY id", [accountId]);
+  return r.rows.map((x) => x.k);
+}
+
 export async function devIdentityOf(db: Queryable, accountId: number): Promise<{ subject: string; secret_hash: string } | null> {
   const r = await db.query<{ subject: string; secret_hash: string }>("SELECT subject, secret_hash FROM auth_identities WHERE account_id = $1 AND provider = 'dev'", [accountId]);
   return r.rows[0] ?? null;

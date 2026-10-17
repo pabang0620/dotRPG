@@ -48,7 +48,7 @@ function requireDevice(device: DeviceInput | undefined): void {
   }
 }
 
-async function issueTokens(
+export async function issueTokens(
   client: Parameters<typeof repo.insertRefreshToken>[0],
   accountId: number,
   accountUuid: string,
@@ -266,6 +266,8 @@ export async function getMe(accountId: number) {
     character_count: me.character_count,
     character_limit: CHARACTER_LIMIT,
     steam_linked: await repo.hasSteam(accountId),
+    // 0045: 연결된 로그인 수단 전부(dev, steam, kakao, google). 연동 버튼을 숨기는 데 쓴다
+    providers: await repo.providersOf(accountId),
     // 탈퇴 유예 중에는 토큰이 없어 이 API를 부를 수 없다: 활동 계정은 항상 null(안내용 자리)
     withdrawal: null,
   };

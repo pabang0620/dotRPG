@@ -227,3 +227,74 @@ export async function activeBanReason(db: Queryable, accountId: number): Promise
   );
   return r.rows[0]?.reason_code ?? null;
 }
+
+// ---------- 카카오·Google (0045) ----------
+
+export async function findAccountByIdentity(provider: 'kakao' | 'google', subject: string): Promise<AccountRow | null> {
+  const r = await query<RawAccount>(
+    `SELECT a.id, a.uuid, a.created_at, a.last_login_at, a.banned_until, a.deleted_at, a.play_window_start, a.play_window_end
+       FROM auth_identities i JOIN accounts a ON a.id = i.account_id
+      WHERE i.provider = $1 AND i.subject = $2`,
+    [provider, subject],
+  );
+  return r.rows[0] ? toAccount(r.rows[0]) : null;
+}
+
+export async function insertOauthIdentity(client: Queryable, accountId: number, provider: 'kakao' | 'google', subject: string): Promise<void> {
+  await client.query('INSERT INTO auth_identities (account_id, provider, subject) VALUES ($1, $2, $3)', [accountId, provider, subject]);
+}
+
+/** /me 의 연결된 로그인 수단 목록 */
+export async function providersOf(accountId: number): Promise<string[]> {
+  const r = await query<{ provider: string }>('SELECT provider FROM auth_identities WHERE account_id = $1 ORDER BY id', [accountId]);
+  return r.rows.map((x) => x.provider);
+}
+
+export interface OauthSessionRow {
+  id: number;
+  provider: 'kakao' | 'google';
+  mode: 'login' | 'link';
+  account_id: number | null;
+  status: 'pending' | 'ready' | 'error' | 'done';
+  poll_secret_hash: string;
+  subject: string | null;
+  error_code: string | null;
+  expires_at: Date;
+}
+type RawOauthSession = Omit<OauthSessionRow, 'id' | 'account_id'> & { id: string; account_id: string | null };
+const toOauth = (r: RawOauthSession): OauthSessionRow => ({ ...r, id: Number(r.id), account_id: r.account_id === null ? null : Number(r.account_id) });
+const OAUTH_COLS = 'id, provider, mode, account_id, status, poll_secret_hash, subject, error_code, expires_at';
+
+export async function insertOauthSession(
+  db: Queryable,
+  s: { state: string; pollSecretHash: string; provider: 'kakao' | 'google'; mode: 'login' | 'link'; accountId: number | null; expiresAt: Date },
+): Promise<void> {
+  await db.query(
+    `INSERT INTO oauth_sessions (state, poll_secret_hash, provider, mode, account_id, expires_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+    [s.state, s.pollSecretHash, s.provider, s.mode, s.accountId, s.expiresAt],
+  );
+}
+
+export async function findOauthSession(db: Queryable, state: string, forUpdate = false): Promise<OauthSessionRow | null> {
+  const r = await db.query<RawOauthSession>(`SELECT ${OAUTH_COLS} FROM oauth_sessions WHERE state = $1${forUpdate ? ' FOR UPDATE' : ''}`, [state]);
+  return r.rows[0] ? toOauth(r.rows[0]) : null;
+}
+
+/** 콜백 결과 기록: pending 일 때만 바꾼다(같은 콜백이 두 번 와도 첫 결과가 남는다) */
+export async function settleOauthSession(db: Queryable, id: number, result: { subject: string } | { error: string }): Promise<boolean> {
+  const r = 'subject' in result
+    ? await db.query("UPDATE oauth_sessions SET status = 'ready', subject = $2, completed_at = now() WHERE id = $1 AND status = 'pending'", [id, result.subject])
+    : await db.query("UPDATE oauth_sessions SET status = 'error', error_code = $2, completed_at = now() WHERE id = $1 AND status = 'pending'", [id, result.error]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** 게임이 결과를 가져갈 때 한 번만: ready -> done */
+export async function consumeOauthSession(db: Queryable, id: number): Promise<boolean> {
+  const r = await db.query("UPDATE oauth_sessions SET status = 'done' WHERE id = $1 AND status = 'ready'", [id]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** 하루 지난 기록은 지운다(시작 때 가볍게 정리) */
+export async function purgeOauthSessions(db: Queryable): Promise<void> {
+  await db.query("DELETE FROM oauth_sessions WHERE expires_at < now() - interval '1 day'");
+}

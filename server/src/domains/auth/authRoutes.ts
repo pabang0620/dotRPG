@@ -5,7 +5,7 @@ import { ipKey, MINUTE, rateLimit } from '../../middleware/rateLimiter';
 import { validate } from '../../middleware/validationMiddleware';
 import { versionCheck } from '../../middleware/versionCheck';
 import * as controller from './authController';
-import { credentialsBody, refreshBody, steamBody } from './authValidation';
+import { credentialsBody, oauthPollBody, oauthProviderParams, oauthStartBody, refreshBody, steamBody } from './authValidation';
 
 const clientOnly = versionCheck({ data: false });
 
@@ -38,6 +38,24 @@ export function createAuthRouter(): Router {
       controller.steamLink,
     );
   }
+  // 카카오·Google(0045): 꺼진 공급자는 providers 에 false, start 는 404. 콜백은 브라우저가 오므로 버전 검사를 하지 않는다
+  r.get('/auth/oauth/providers', clientOnly, controller.oauthProviders);
+  r.post(
+    '/auth/oauth/start',
+    clientOnly,
+    rateLimit({ name: 'oauth-start-ip', limit: (c) => c.rate.oauthStartIp, windowMs: MINUTE, key: ipKey }),
+    (req, res, next) => ((req.body as { mode?: unknown } | undefined)?.mode === 'link' ? requireAuth(req, res, next) : next()),
+    validate({ body: oauthStartBody }),
+    controller.oauthStart,
+  );
+  r.get('/auth/oauth/callback/:provider', validate({ params: oauthProviderParams }), controller.oauthCallback);
+  r.post(
+    '/auth/oauth/poll',
+    clientOnly,
+    rateLimit({ name: 'oauth-poll-ip', limit: (c) => c.rate.oauthPollIp, windowMs: MINUTE, key: ipKey }),
+    validate({ body: oauthPollBody }),
+    controller.oauthPoll,
+  );
   r.post('/auth/refresh', clientOnly, validate({ body: refreshBody }), controller.refresh);
   // 로그아웃은 버전과 무관하게 항상 가능해야 한다
   r.post('/auth/logout', validate({ body: refreshBody }), controller.logout);

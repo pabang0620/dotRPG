@@ -54,6 +54,7 @@ curl -s https://도메인/health/ready    # 200 {"status":"ok"}
 | `POSTGRES_PASSWORD` | 난수 32바이트 hex |
 | `ADMIN_SECRET_KEY` | `openssl rand -base64 32`. **오프라인 사본을 따로 보관**(잃으면 모든 관리자 2FA 재등록) |
 | `STEAM_AUTH_MODE` / `PARTY_TRANSPORT` | `web_api` / `steam` (`STEAM_APP_ID`, `STEAM_WEB_API_KEY`, `STEAM_IDENTITY` 필요, 480 거부) |
+| `OAUTH_PUBLIC_BASE`, `KAKAO_CLIENT_ID`/`KAKAO_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` | 카카오·Google 로그인(0045). 공개 주소는 https, 공급자는 ID와 비밀이 둘 다 있을 때만 켜진다. 콘솔 설정은 `Docs/server/OAUTH_LOGIN.md` |
 | `MIN_CLIENT_VERSION` | 출시 클라이언트 버전(배포마다 확인) |
 | `ALERT_WEBHOOK_URL`, `OPS_HEARTBEAT_URL`, `BACKUP_*` | 자리표시. 업체·서비스가 정해지면 채운다(비면 해당 기능만 꺼지고 경고 로그) |
 
@@ -155,6 +156,7 @@ BACKUP_DEST=/tmp/b BACKUP_ALLOW_PLAINTEXT=1 PG_DUMP_CMD='...' ./backup.sh test  
 | `POSTGRES_PASSWORD` | `ALTER ROLE` + `.env` + api 재시작(짧은 점검) |
 | `ADMIN_SECRET_KEY` | 모든 관리자의 TOTP 를 다시 등록해야 한다 |
 | `STEAM_WEB_API_KEY` | Steamworks 에서 재발급 후 `.env` 교체, api 재시작(접속자는 재연결) |
+| `KAKAO_CLIENT_SECRET` / `GOOGLE_CLIENT_SECRET` | 카카오 개발자 콘솔(REST API 키의 클라이언트 시크릿 재발급) / Google Cloud(OAuth 클라이언트 보안 비밀 추가) 후 `.env` 교체, api 재시작. 이미 로그인한 사람은 영향 없음 |
 | 웹훅·하트비트 URL | URL 자체가 비밀이다. 새로 만들어 교체 |
 
 `.env` 와 `docker compose config`, `env` 출력을 채팅·이슈에 붙이지 않는다(값이 펼쳐진다).

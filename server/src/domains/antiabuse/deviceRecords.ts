@@ -25,7 +25,7 @@ export interface AccessSignal {
   clientVersion: string | null;
 }
 
-export type LoginKind = 'register' | 'login' | 'steam_login' | 'refresh' | 'enter';
+export type LoginKind = 'register' | 'login' | 'steam_login' | 'oauth_login' | 'refresh' | 'enter';
 
 /** SHA-256 hex(클라이언트) -> HMAC-SHA256 hex(서버 저장값). DB가 유출돼도 다른 서비스의 같은 지문과 대조되지 않는다 */
 export function hmacDevice(clientHash: string): string {

@@ -33,3 +33,17 @@ export const steamBody = z.strictObject({
   device: deviceBody.optional(),
 });
 export type SteamBody = z.infer<typeof steamBody>;
+
+/** 0045 카카오·Google: 시작(연동은 Bearer 필요)과 결과 폴링 */
+export const oauthStartBody = z.strictObject({
+  provider: z.enum(['kakao', 'google']),
+  mode: z.enum(['login', 'link']).default('login'),
+});
+export const oauthPollBody = z.strictObject({
+  state: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  poll_secret: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  device: deviceBody.optional(),
+});
+export const oauthProviderParams = z.strictObject({ provider: z.enum(['kakao', 'google']) });
+export type OauthStartBody = z.infer<typeof oauthStartBody>;
+export type OauthPollBody = z.infer<typeof oauthPollBody>;

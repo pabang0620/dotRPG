@@ -134,11 +134,13 @@ export async function anonymizeOne(client: PoolClient, withdrawalId: number, o: 
   }
   // 2. 이월 표시(Steam 신원이 있고 이월할 사유가 있을 때만. 만들 필요가 없으면 아무것도 남기지 않는다)
   let tombstone = false;
+  // 0045: 카카오·Google 신원도 같은 이월 표시를 남긴다(키 = '<공급자>:<번호>', oauthService.oauthIdentityKey)
   const steam = await repo.steamSubjectOf(client, accountId);
-  if (steam) {
+  const keys = [...(steam ? [steam] : []), ...(await repo.oauthKeysOf(client, accountId))];
+  if (keys.length > 0) {
     const carry = await computeCarry(client, accountId, o.now);
     if (carry) {
-      await upsertTombstone(client, identityHash(steam), accountId, carry, o.now);
+      for (const k of keys) await upsertTombstone(client, identityHash(k), accountId, carry, o.now);
       tombstone = true;
     }
   }

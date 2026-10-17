@@ -59,6 +59,7 @@ export const POLICY: PolicyEntry[] = [
   // ---------- 10.1 계정·인증·접속: 익명화 때 지운다 ----------
   delT1('auth_identities', `DELETE FROM auth_identities WHERE account_id ${ACC}`),
   delT1('refresh_tokens', `DELETE FROM refresh_tokens WHERE account_id ${ACC}`),
+  delT1('oauth_sessions', `DELETE FROM oauth_sessions WHERE account_id ${ACC}`), // 0045 카카오·Google 연동 요청
   delT1('login_events', `DELETE FROM login_events WHERE account_id ${ACC}`),
   delT1('client_errors', `DELETE FROM client_errors WHERE account_id ${ACC}`),
   delT1('account_devices', `DELETE FROM account_devices WHERE account_id ${ACC}`),
