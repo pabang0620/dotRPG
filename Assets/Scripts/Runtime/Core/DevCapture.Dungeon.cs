@@ -131,11 +131,15 @@ namespace DotRPG
             yield return Wait(0.4f);
             yield return Shot("dgn_04_door_open");
 
-            // A companion goes down: no field revive inside the room…
+            // A companion goes down: it gets up by itself after the first wait (4 s, no coin)…
             var kai = party.Find("merc_kai");
             yield return KillMember(kai);
-            yield return Wait(PartyManager.FieldReviveSeconds + 1f);
+            yield return Wait(PartyManager.ReviveDelay(1) * .5f);
             bool stillDown = kai.IsDead;
+            yield return Wait(PartyManager.ReviveDelay(1) * .5f + 1f);
+            bool upAgain = !kai.IsDead;
+            DCheck($"companion revives in the run: down at {PartyManager.ReviveDelay(1) * .5f:0.0}s={stillDown} up after {PartyManager.ReviveDelay(1) + 1f:0}s={upAgain} revivesUsed={run.RevivesUsed}", stillDown && upAgain && run.RevivesUsed == 0);
+            yield return KillMember(kai); // second fall (8 s): it is still down at the gate and rejoins at the next room's entry
             // …then rejoins at the next room's entry with half HP.
             float kaiHp = -1f, kaiNear = -1f;
             Action snap = () => { kaiHp = kai.Health.Current / (float)kai.Health.Max; kaiNear = Vector2.Distance(kai.Position, Game.Player.Position); };
@@ -143,8 +147,8 @@ namespace DotRPG
             local.Place(dir.Door.Threshold, Facing.Up);
             yield return Wait(1.6f);
             dir.RoomChanged -= snap;
-            DCheck($"companion down stays down, rejoins next room: downAfter{PartyManager.FieldReviveSeconds + 1f:0}s={stillDown} room={run.RoomIndex} map={Game.World.MapId} kaiAlive={!kai.IsDead} hp={kaiHp:0.00} nearAtEntry={kaiNear:0.0}",
-                stillDown && run.RoomIndex == 1 && Game.World.MapId == MapRegistry.DgnCanyon2 && !kai.IsDead && Mathf.Abs(kaiHp - DungeonDirector.CompanionRejoinHp) < 0.05f && kaiNear >= 0f && kaiNear < 3f);
+            DCheck($"downed companion rejoins next room: room={run.RoomIndex} map={Game.World.MapId} kaiAlive={!kai.IsDead} hp={kaiHp:0.00} nearAtEntry={kaiNear:0.0}",
+                run.RoomIndex == 1 && Game.World.MapId == MapRegistry.DgnCanyon2 && !kai.IsDead && Mathf.Abs(kaiHp - DungeonDirector.CompanionRejoinHp) < 0.05f && kaiNear >= 0f && kaiNear < 3f);
             DCheck($"walked through the gate: local at entry={Vector2.Distance(local.Position, Game.World.PlayerSpawn):0.0} hud='{Strip(hud.DevRoomText)}'",
                 Vector2.Distance(local.Position, Game.World.PlayerSpawn) < 0.6f && Strip(hud.DevRoomText).StartsWith("방 2/4"));
 

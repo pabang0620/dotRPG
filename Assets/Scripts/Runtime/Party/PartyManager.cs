@@ -17,8 +17,18 @@ namespace DotRPG
     {
         // ---------- Tuning ----------
         public const int MaxMembers = 4, MaxCompanions = MaxMembers - 1;
-        /// <summary>Field rule: a downed companion gets up after this many seconds with <see cref="FieldReviveHp"/> of its HP.</summary>
-        public const float FieldReviveSeconds = 8f, FieldReviveHp = 0.5f;
+        /// <summary>
+        /// [REVIVE 2026-10-17] A downed AI companion gets up by itself with <see cref="FieldReviveHp"/> of its HP, everywhere
+        /// (field, dungeons, raids, boss rooms included) and without using a revive coin. The wait doubles with each fall in
+        /// the same place: 4, 8, 16, 32 s and then <see cref="ReviveMaxSeconds"/>. The count starts over when a dungeon run
+        /// starts or ends and on every field map change.
+        /// </summary>
+        public const float ReviveFirstSeconds = 4f, ReviveMaxSeconds = 64f, FieldReviveHp = 0.5f;
+        /// <summary>Wait after the first fall (kept for older checks).</summary>
+        public const float FieldReviveSeconds = ReviveFirstSeconds;
+
+        /// <summary>Seconds a companion stays down after its <paramref name="fall"/>-th fall (1 = first): 4, 8, 16, 32, 64, 64...</summary>
+        public static float ReviveDelay(int fall) => Mathf.Min(ReviveMaxSeconds, ReviveFirstSeconds * Mathf.Pow(2f, Mathf.Max(0, fall - 1)));
         /// <summary>Formation spots around the leader (companion 1, 2, 3), in world units.</summary>
         static readonly Vector2[] Formation = { new Vector2(-1.1f, 0.5f), new Vector2(1.1f, 0.5f), new Vector2(0f, 1.2f) };
 
@@ -26,6 +36,8 @@ namespace DotRPG
         readonly Dictionary<string, int> damageDealt = new Dictionary<string, int>();
         readonly Dictionary<PlayerController, Coroutine> reviving = new Dictionary<PlayerController, Coroutine>();
         readonly Dictionary<PlayerController, float> reviveAt = new Dictionary<PlayerController, float>();
+        /// <summary>Falls per companion since the count last started over (<see cref="ResetCompanionFalls"/>).</summary>
+        readonly Dictionary<PlayerController, int> falls = new Dictionary<PlayerController, int>();
         Transform root;
         bool autoRevive = true;
         static bool quitting;
@@ -66,6 +78,7 @@ namespace DotRPG
             CharacterData.Session.DisplayName = L.T("나");
             EnemyController.Killed += party.OnEnemyKilled;
             Game.Session.Progression.Changed += party.SyncCompanionLevels;
+            GameEvents.MapEntered += party.OnMapEntered;
             Application.quitting += () => quitting = true;
             return party;
         }
@@ -74,7 +87,17 @@ namespace DotRPG
         {
             EnemyController.Killed -= OnEnemyKilled;
             if (Game.Session != null) Game.Session.Progression.Changed -= SyncCompanionLevels;
+            GameEvents.MapEntered -= OnMapEntered;
         }
+
+        /// <summary>A new field map: the revive waits start over (dungeon rooms are map loads too, but a run keeps its count).</summary>
+        void OnMapEntered(string map)
+        {
+            if (Game.Dungeon == null || !Game.Dungeon.InRun) ResetCompanionFalls();
+        }
+
+        /// <summary>The next fall of every companion waits <see cref="ReviveFirstSeconds"/> again.</summary>
+        public void ResetCompanionFalls() => falls.Clear();
 
         // =============================== Roster ===============================
 
@@ -400,7 +423,7 @@ namespace DotRPG
 
         // =============================== Down / revive ===============================
 
-        /// <summary>Field rule on/off: downed companions get up by themselves after <see cref="FieldReviveSeconds"/>.</summary>
+        /// <summary>Auto revive on/off: downed companions get up by themselves after <see cref="ReviveDelay"/>.</summary>
         public void SetCompanionAutoRevive(bool enabled)
         {
             autoRevive = enabled;
@@ -417,17 +440,21 @@ namespace DotRPG
         internal void NotifyDowned(PlayerController member)
         {
             MemberDowned?.Invoke(member);
-            if (member != Local && autoRevive && Contains(member))
+            // A puppet (an online member's view of the host's companion) is raised by the host's snapshot, not here.
+            if (member != Local && autoRevive && Contains(member) && !member.NetPuppet)
             {
                 StopRevive(member);
-                reviveAt[member] = Time.time + FieldReviveSeconds;
-                reviving[member] = StartCoroutine(ReviveLater(member));
+                int fall = (falls.TryGetValue(member, out int n) ? n : 0) + 1;
+                falls[member] = fall;
+                float wait = ReviveDelay(fall);
+                reviveAt[member] = Time.time + wait;
+                reviving[member] = StartCoroutine(ReviveLater(member, wait));
             }
         }
 
-        IEnumerator ReviveLater(PlayerController member)
+        IEnumerator ReviveLater(PlayerController member, float wait)
         {
-            yield return new WaitForSeconds(FieldReviveSeconds);
+            yield return new WaitForSeconds(wait);
             reviving.Remove(member);
             reviveAt.Remove(member);
             if (member != null && member.IsDead && Contains(member)) ReviveMember(member, FieldReviveHp);

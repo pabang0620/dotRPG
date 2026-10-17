@@ -228,7 +228,7 @@ namespace DotRPG
             PCheck($"xp once per kill: kills={kills} gained={gained} expected={expectedXp} Lv{prog.Level}", kills > 0 && gained == expectedXp);
             bool kaiRevived = revived.TryGetValue(kai, out var kr);
             PCheck($"companion downed -> auto revive: downed={downed.Contains(kai)} revived={kaiRevived} hp={(kaiRevived ? kr.hp : 0f):0.00} after={(kaiRevived ? kr.at - kaiDownAt : 0f):0.0}s alive={!kai.IsDead}",
-                downed.Contains(kai) && kaiRevived && Mathf.Abs(kr.hp - PartyManager.FieldReviveHp) < 0.06f && Mathf.Abs(kr.at - kaiDownAt - PartyManager.FieldReviveSeconds) < 1f);
+                downed.Contains(kai) && kaiRevived && Mathf.Abs(kr.hp - PartyManager.FieldReviveHp) < 0.06f && Mathf.Abs(kr.at - kaiDownAt - PartyManager.ReviveDelay(1)) < 1f);
             PCheck($"no friendly damage during the fight: memberHits={friendly} local alive={!local.IsDead}", friendly == 0 && !local.IsDead);
 
             // ---------- War cry threat switch ----------

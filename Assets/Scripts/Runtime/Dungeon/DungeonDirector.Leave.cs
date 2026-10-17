@@ -192,6 +192,7 @@ namespace DotRPG
             roomReady = false;
             if (door != null) door.Entered -= OnDoorEntered;
             Game.Party?.SetCompanionAutoRevive(true);
+            Game.Party?.ResetCompanionFalls();
             HookLocal(null);
         }
 

@@ -142,7 +142,9 @@ namespace DotRPG
             }
             if (party != null)
             {
-                party.SetCompanionAutoRevive(false);
+                // [REVIVE 2026-10-17] AI companions get up by themselves in runs too (4, 8, 16, 32 s, no coin): the count starts over.
+                party.SetCompanionAutoRevive(true);
+                party.ResetCompanionFalls();
                 party.ResetMeters();
             }
             HookLocal(Game.Player);
