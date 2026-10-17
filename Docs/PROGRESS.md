@@ -54,6 +54,7 @@
 - 출시 전 운영: 법률 검토(약관·개인정보처리방침), 번역 원어민 감수, `POLICY_CONSENT_ENFORCE`·`WITHDRAW_DESTROY_ENABLED` 켜기, 클라이언트 결제 구매 화면, 랭킹(미구현)
 - 바르가스·바위 심장 레이드 개방(데이터만 있고 닫혀 있음), jaein 미니 던전 병합 후 성장 추천에 연결
 - 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), 전체 체크리스트: [MASTER_CHECKLIST.md](MASTER_CHECKLIST.md)
+- 지금까지 돌린 테스트(실측·시뮬레이션·실플레이·서버 테스트)와 결과: [TEST_LOG.md](TEST_LOG.md)
 
 ## 현재 상태 (2026-10-18)
 
