@@ -5,9 +5,9 @@ namespace DotRPG
 {
     /// <summary>Weapon-local light, after the eight-way hand pose and depth sort have been applied.</summary>
     [DefaultExecutionOrder(100)]
-    public sealed class WeaponEnhanceVfx : MonoBehaviour
+    public sealed partial class WeaponEnhanceVfx : MonoBehaviour
     {
-        struct Masks { public Sprite edge, aura; }
+        sealed class Masks { public Sprite edge, aura; public Vector2[] anchors; public CrownFrames crown; }
         static readonly Dictionary<Sprite, Masks> cache = new Dictionary<Sprite, Masks>();
         PlayerController owner;
         SpriteRenderer source, edge, aura;
@@ -17,12 +17,13 @@ namespace DotRPG
         public int Tier { get; private set; }
         public bool LightVisible => edge != null && edge.enabled;
         public bool AuraVisible => aura != null && aura.enabled;
-        public static int TierFor(int level) => level < 7 ? 0 : level < 11 ? 1 : 2;
+        public static int TierFor(int level) => level < 7 ? 0 : level < 11 ? 1 : level < 13 ? 2 : 3;
 
         public void Setup(PlayerController player, SpriteRenderer weapon)
         {
             owner = player; source = weapon;
             edge = Layer("WeaponBlueLight"); aura = Layer("WeaponBlueAura");
+            SetupCrown();
             for (int i = 0; i < motes.Length; i++)
             {
                 motes[i] = Layer("WeaponAuraSpark" + i);
@@ -41,20 +42,24 @@ namespace DotRPG
             if (source == null || owner == null || owner.Data == null) return;
             Tier = TierFor(EquipmentDatabase.LevelOfKey(owner.Data.Equipment[EquipSlot.Weapon]));
             bool show = Tier > 0 && source.enabled && source.sprite != null && !owner.IsDead;
-            edge.enabled = show; aura.enabled = show && Tier == 2;
-            foreach (var p in motes) p.enabled = show && Tier == 2;
-            if (!show) return;
+            edge.enabled = show; aura.enabled = show && Tier >= 2;
+            foreach (var p in motes) p.enabled = show && Tier >= 2;
+            bool high = show && Tier == 3;
+            crown.enabled = high; stream.enabled = high;
+            if (!show) { AuraFrame = -1; return; }
             if (lastSprite != source.sprite)
             {
                 lastSprite = source.sprite;
                 var masks = GetMasks(source.sprite, out points);
                 edge.sprite = masks.edge; aura.sprite = masks.aura;
+                currentMasks = masks;
             }
             float t = Time.time;
             float pulse = .82f + .18f * Mathf.Sin(t * 2.4f);
             Follow(edge); Follow(aura);
-            edge.color = new Color(.12f, .55f, 1f, (Tier == 2 ? .9f : .64f) * pulse * source.color.a);
+            edge.color = new Color(.12f, .55f, 1f, (Tier >= 2 ? .9f : .64f) * pulse * source.color.a);
             aura.color = new Color(.06f, .38f, 1f, .75f * pulse * source.color.a);
+            UpdateCrown(high, t, source.color.a);
             // Silhouette stays fixed to the blade. Only the small lights flow along its opaque pixels.
             for (int i = 0; i < motes.Length; i++)
             {
@@ -76,6 +81,7 @@ namespace DotRPG
         }
         static Masks GetMasks(Sprite sprite, out Vector2[] anchors)
         {
+            if (cache.TryGetValue(sprite, out var ready)) { anchors = ready.anchors; return ready; }
             // All game weapon sheets are readable (also used by the hit-flash silhouette system).
             const int pad = 7;
             int w = (int)sprite.rect.width, h = (int)sprite.rect.height, tw = w + pad * 2, th = h + pad * 2;
@@ -92,7 +98,6 @@ namespace DotRPG
                 }
             if (path.Count == 0) path.Add(Vector2.zero);
             anchors = path.ToArray();
-            if (cache.TryGetValue(sprite, out var ready)) return ready;
             var rim = new Color32[tw * th]; var haze = new Color32[tw * th];
             for (int y = 0; y < th; y++) for (int x = 0; x < tw; x++)
             {
@@ -114,7 +119,7 @@ namespace DotRPG
                 var pivot = new Vector2((sprite.pivot.x + pad) / tw, (sprite.pivot.y + pad) / th);
                 return Sprite.Create(texture, new Rect(0, 0, tw, th), pivot, sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect);
             }
-            ready = new Masks { edge = Make(rim, "weapon_blue_rim"), aura = Make(haze, "weapon_blue_aura") };
+            ready = new Masks { edge = Make(rim, "weapon_blue_rim"), aura = Make(haze, "weapon_blue_aura"), anchors = anchors };
             cache[sprite] = ready; return ready;
         }
     }

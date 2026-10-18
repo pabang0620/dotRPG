@@ -61,7 +61,9 @@ namespace DotRPG
             w.tabWeekday = Button(w.content, "TabWeekday", L.T("요일 던전"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(TabW, 44f), () => w.SetTab(TabWeekday), 20);
             w.tabNormal = Button(w.content, "TabNormal", L.T("일반 던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(TabW + 10f, 0f), new Vector2(TabW, 44f), () => w.SetTab(TabNormal), 20);
             w.tabRaid = Button(w.content, "TabRaid", L.T("레이드"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(2f * (TabW + 10f), 0f), new Vector2(TabW - 40f, 44f), () => w.SetTab(TabRaid), 20);
-            w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(ContentSize.x - (3f * TabW - 10f) - 16f, 44f), TextAnchor.MiddleRight);
+            // [MINI] 미니던전 (jaein): its own window, opened from here like the side menu does.
+            Button(w.content, "TabMiniDungeon", L.T("미니던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(3f * (TabW + 10f) - 40f, 0f), new Vector2(TabW - 40f, 44f), () => Game.UI.MiniDungeon.Open(), 20);
+            w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(ContentSize.x - (4f * TabW - 30f) - 16f, 44f), TextAnchor.MiddleRight);
             w.dayText.resizeTextForBestFit = true;
             w.dayText.resizeTextMinSize = 12;
             w.dayText.resizeTextMaxSize = 18;

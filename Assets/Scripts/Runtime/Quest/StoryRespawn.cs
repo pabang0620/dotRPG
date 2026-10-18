@@ -15,6 +15,7 @@ namespace DotRPG
 
         public static void Tick(QuestManager quests)
         {
+            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true) return;
             if (Time.unscaledTime < nextCheck) return;
             nextCheck = Time.unscaledTime + 2f;
             if (!Game.IsPlaying || Game.World == null || (Game.Dungeon != null && Game.Dungeon.InRun) || Game.Cutscenes == null || Game.Cutscenes.IsPlaying) return;

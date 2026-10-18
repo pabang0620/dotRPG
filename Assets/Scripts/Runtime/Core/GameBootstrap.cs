@@ -59,6 +59,8 @@ namespace DotRPG
             Game.Player.gameObject.SetActive(false);
             Game.Party = PartyManager.Create(gameplayRoot, Game.Player); // [PARTY]
             Game.Dungeon = DungeonDirector.Create(gameplayRoot); // [DUNGEON]
+            Game.MiniDungeon = MiniDungeonDirector.Create(gameplayRoot);
+            MiniDungeonGrowth.Register(); // [GROWTH] mini dungeons in 성장 추천 / 할 일
             Game.Cutscenes = CutscenePlayer.Create(transform, new CutsceneDatabase(Resources.Load<TextAsset>(CutsceneDatabase.ResourcePath))); // [STORY]
             Game.Quest.Bind();
 

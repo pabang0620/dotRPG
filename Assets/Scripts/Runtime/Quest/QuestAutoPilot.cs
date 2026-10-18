@@ -40,7 +40,7 @@ namespace DotRPG
         /// <summary>The hunting ground 자동 사냥 belongs to: a knockback through a portal walks it back there.</summary>
         string huntMap;
 
-        static bool InHuntingGround => MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
+        static bool InHuntingGround => Game.MiniDungeon?.Active == true || MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
         /// <summary>[MEASURE] Dev-only (-dotrpgMeasure): 자동 사냥 also fights in dungeons and raids, to time them.</summary>
         internal static bool MeasureAnywhere;
         /// <summary>[MEASURE] Dev-only: fight like a practised player (spam the main hunting skill, cast skills as they come
@@ -50,6 +50,17 @@ namespace DotRPG
         internal static bool MeasureAware;
         /// <summary>[AUTO] For the HUD button state: 자동 사냥 can start on this map.</summary>
         public static bool CanHuntHere => InHuntingGround;
+
+        public static void StartMiniDungeonHunt()
+        {
+            if (Game.MiniDungeon?.Active != true) return;
+            Stop("");
+            if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
+            Instance.huntMode = true; Instance.huntForQuest = false; Instance.huntTarget = "*";
+            Instance.huntMap = Game.World != null ? Game.World.MapId : null;
+            Instance.autoStarted = false; Instance.quietStart = false; Instance.subMode = false;
+            Instance.Begin();
+        }
 
         public static void ToggleHunt()
         {
@@ -68,12 +79,14 @@ namespace DotRPG
         {
             public ActorCommand next = ActorCommand.None;
             readonly LocalInput local = new LocalInput();
+            public IActorInput Manual;
 
             public ActorCommand Read(PlayerController self)
             {
                 // Keys pressed inside a window (online, the world keeps running) or on the frame one closes are menu input,
-                // not the player taking over.
-                var mine = Game.IsPlaying && !Game.State.ChangedThisFrame && !BossTrailer.Blocking ? local.Read(self) : ActorCommand.None;
+                // not the player taking over. A mini dungeon reads its own manual input (Manual) while it plays.
+                var mine = Game.MiniDungeon?.Active == true && !Game.IsPlaying ? ActorCommand.None
+                    : Game.IsPlaying && !Game.State.ChangedThisFrame && !BossTrailer.Blocking ? (Manual ?? local).Read(self) : ActorCommand.None;
                 bool touched = mine.move.sqrMagnitude > 0.04f || mine.attack || mine.mobility || mine.interact || mine.skillSlot >= 0
                     || mine.useHealing || mine.useMana || mine.townScroll;
                 if (touched)
@@ -86,6 +99,7 @@ namespace DotRPG
                 next.attack = false;
                 next.skillSlot = -1;
                 next.useHealing = false;
+                next.useMana = false;
                 return cmd;
             }
         }
@@ -109,6 +123,8 @@ namespace DotRPG
 
         public static void Toggle()
         {
+            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true)
+            { GameEvents.RaiseToast(L.T("미니던전에서는 자동 사냥 버튼을 이용하세요.")); return; }
             if (Active) { Stop(Hunting ? L.T("자동 사냥을 멈췄습니다.") : L.T("자동 진행을 멈췄습니다.")); return; }
             if (Instance == null) Instance = new GameObject("QuestAutoPilot").AddComponent<QuestAutoPilot>();
             Instance.huntMode = false;
@@ -138,6 +154,7 @@ namespace DotRPG
         {
             var p = Game.Player;
             if (p == null || p.IsDead) return;
+            if ((Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true) && !huntMode) return;
             if (Game.Dungeon != null && Game.Dungeon.InRun && !MeasureAnywhere) { GameEvents.RaiseToast(L.T("던전 안에서는 자동 진행을 쓸 수 없습니다.")); return; }
             on = true;
             goalKey = "";
@@ -160,8 +177,8 @@ namespace DotRPG
         {
             if (driven == p && p.Input == input) return;
             Release();
-            input = new AutoInput();
             previous = p.Input;
+            input = new AutoInput { Manual = previous };
             driven = p;
             p.Input = input;
         }
@@ -222,7 +239,9 @@ namespace DotRPG
             input.next = ActorCommand.None;
             // Conversations, the pause menu and map changes pause the walk; it carries on afterwards. An open window (quests,
             // shop, bag...) does not: online the world keeps running behind it, so auto-progress and auto-hunting go on.
-            if (!(Game.IsPlaying || WindowOpenInRunningWorld) || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
+            // Hunting in a mini dungeon also goes on while its own panel is up.
+            bool miniHunt = huntMode && Game.MiniDungeon?.Active == true;
+            if (!(Game.IsPlaying || WindowOpenInRunningWorld || (miniHunt && Game.IsWorldRunning)) || (Game.Flow != null && Game.Flow.IsTransitioning)) { lastProgressAt = Time.time; return; }
 
             // [AUTO] 자동 사냥: stays in this hunting ground; a quest hunt hands back to the story once its step is done.
             if (huntMode)

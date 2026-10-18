@@ -1,0 +1,457 @@
+[4.24] capture started
+[4.24] verification audio volume: 0
+[6.70] AURA PASS Warrior equips +0
+[6.75] AURA PASS Warrior +0 threshold and layers
+[6.75] AURA PASS Warrior +0 visual effect leaves combat power alone
+[6.75] AURA PASS Warrior equips +6
+[6.80] AURA PASS Warrior +6 threshold and layers
+[6.81] AURA PASS Warrior +6 visual effect leaves combat power alone
+[6.81] AURA PASS Warrior equips +7
+[6.86] AURA PASS Warrior +7 threshold and layers
+[6.86] AURA PASS Warrior +7 visual effect leaves combat power alone
+[6.86] AURA PASS Warrior equips +10
+[6.92] AURA PASS Warrior +10 threshold and layers
+[6.92] AURA PASS Warrior +10 visual effect leaves combat power alone
+[6.92] AURA PASS Warrior equips +11
+[6.97] AURA PASS Warrior +11 threshold and layers
+[6.97] AURA PASS Warrior +11 visual effect leaves combat power alone
+[6.97] AURA PASS Warrior equips +12
+[7.03] AURA PASS Warrior +12 threshold and layers
+[7.03] AURA PASS Warrior +12 visual effect leaves combat power alone
+[7.04] AURA PASS weapon_blue_rim GPU readback
+[7.05] AURA PASS weapon_blue_aura GPU readback
+[7.06] AURA PASS Warrior <=12 legacy blue rim pixels preserved
+[7.06] AURA PASS Warrior <=12 legacy blue aura pixels preserved
+[7.25] shot Warrior-plus12-play
+[7.25] AURA PASS Warrior equips +13
+[7.30] AURA PASS Warrior +13 threshold and layers
+[7.30] AURA PASS Warrior +13 visual effect leaves combat power alone
+[7.30] AURA PASS Warrior +13 crown source-local transform
+[7.30] AURA PASS Warrior +13 crown same depth, mirror and mask
+[7.30] AURA PASS Warrior +13 crown source pivot and pixel density
+[7.30] AURA PASS Warrior +13 crown nearest-neighbor sampling
+[7.30] AURA PASS Warrior +13 flow source-local transform
+[7.30] AURA PASS Warrior +13 flow same depth, mirror and mask
+[7.30] AURA PASS Warrior +13 flow source pivot and pixel density
+[7.30] AURA PASS Warrior +13 flow nearest-neighbor sampling
+[7.30] AURA PASS Warrior +13 larger crown bounds
+[7.31] AURA PASS weapon_ascendant_aura_8frames GPU readback
+[7.31] AURA PASS Warrior new aura does not paint over blade pixels
+[7.31] AURA PASS Warrior eight distinct moving aura drawings
+[7.31] AURA PASS Warrior two effects share one cached atlas
+[7.50] shot Warrior-plus13-play
+[7.50] AURA PASS Warrior equips +15
+[7.55] AURA PASS Warrior +15 threshold and layers
+[7.55] AURA PASS Warrior +15 visual effect leaves combat power alone
+[7.55] AURA PASS Warrior +15 crown source-local transform
+[7.55] AURA PASS Warrior +15 crown same depth, mirror and mask
+[7.55] AURA PASS Warrior +15 crown source pivot and pixel density
+[7.55] AURA PASS Warrior +15 crown nearest-neighbor sampling
+[7.55] AURA PASS Warrior +15 flow source-local transform
+[7.55] AURA PASS Warrior +15 flow same depth, mirror and mask
+[7.55] AURA PASS Warrior +15 flow source pivot and pixel density
+[7.55] AURA PASS Warrior +15 flow nearest-neighbor sampling
+[7.55] AURA PASS Warrior +15 larger crown bounds
+[7.55] AURA PASS Warrior equips +20
+[7.61] AURA PASS Warrior +20 threshold and layers
+[7.61] AURA PASS Warrior +20 visual effect leaves combat power alone
+[7.61] AURA PASS Warrior +20 crown source-local transform
+[7.61] AURA PASS Warrior +20 crown same depth, mirror and mask
+[7.61] AURA PASS Warrior +20 crown source pivot and pixel density
+[7.61] AURA PASS Warrior +20 crown nearest-neighbor sampling
+[7.61] AURA PASS Warrior +20 flow source-local transform
+[7.61] AURA PASS Warrior +20 flow same depth, mirror and mask
+[7.61] AURA PASS Warrior +20 flow source pivot and pixel density
+[7.61] AURA PASS Warrior +20 flow nearest-neighbor sampling
+[7.61] AURA PASS Warrior +20 larger crown bounds
+[7.80] shot Warrior-plus20-play
+[7.80] AURA PASS Warrior weapon source artwork identical at every grade
+[9.20] AURA PASS Warrior animation cycles through every frame
+[9.20] AURA PASS Warrior cycling allocates no new weapon cache entries
+[9.20] AURA PASS Warrior animation does not modify damage power
+[9.30] AURA PASS Warrior Down natural walk
+[9.30] AURA PASS Warrior Down walk crown source-local transform
+[9.30] AURA PASS Warrior Down walk crown same depth, mirror and mask
+[9.30] AURA PASS Warrior Down walk crown source pivot and pixel density
+[9.30] AURA PASS Warrior Down walk crown nearest-neighbor sampling
+[9.30] AURA PASS Warrior Down walk flow source-local transform
+[9.30] AURA PASS Warrior Down walk flow same depth, mirror and mask
+[9.30] AURA PASS Warrior Down walk flow source pivot and pixel density
+[9.30] AURA PASS Warrior Down walk flow nearest-neighbor sampling
+[9.30] AURA PASS Down warrior grip preserved
+[9.40] AURA PASS Warrior Down actual attack
+[9.40] AURA PASS Warrior Down attack crown source-local transform
+[9.40] AURA PASS Warrior Down attack crown same depth, mirror and mask
+[9.40] AURA PASS Warrior Down attack crown source pivot and pixel density
+[9.40] AURA PASS Warrior Down attack crown nearest-neighbor sampling
+[9.40] AURA PASS Warrior Down attack flow source-local transform
+[9.40] AURA PASS Warrior Down attack flow same depth, mirror and mask
+[9.40] AURA PASS Warrior Down attack flow source pivot and pixel density
+[9.40] AURA PASS Warrior Down attack flow nearest-neighbor sampling
+[10.10] AURA PASS Warrior Up natural walk
+[10.10] AURA PASS Warrior Up walk crown source-local transform
+[10.10] AURA PASS Warrior Up walk crown same depth, mirror and mask
+[10.10] AURA PASS Warrior Up walk crown source pivot and pixel density
+[10.10] AURA PASS Warrior Up walk crown nearest-neighbor sampling
+[10.10] AURA PASS Warrior Up walk flow source-local transform
+[10.10] AURA PASS Warrior Up walk flow same depth, mirror and mask
+[10.10] AURA PASS Warrior Up walk flow source pivot and pixel density
+[10.10] AURA PASS Warrior Up walk flow nearest-neighbor sampling
+[10.10] AURA PASS Up warrior grip preserved
+[10.19] AURA PASS Warrior Up actual attack
+[10.19] AURA PASS Warrior Up attack crown source-local transform
+[10.19] AURA PASS Warrior Up attack crown same depth, mirror and mask
+[10.19] AURA PASS Warrior Up attack crown source pivot and pixel density
+[10.19] AURA PASS Warrior Up attack crown nearest-neighbor sampling
+[10.19] AURA PASS Warrior Up attack flow source-local transform
+[10.19] AURA PASS Warrior Up attack flow same depth, mirror and mask
+[10.19] AURA PASS Warrior Up attack flow source pivot and pixel density
+[10.19] AURA PASS Warrior Up attack flow nearest-neighbor sampling
+[10.88] AURA PASS Warrior Left natural walk
+[10.88] AURA PASS Warrior Left walk crown source-local transform
+[10.88] AURA PASS Warrior Left walk crown same depth, mirror and mask
+[10.88] AURA PASS Warrior Left walk crown source pivot and pixel density
+[10.88] AURA PASS Warrior Left walk crown nearest-neighbor sampling
+[10.88] AURA PASS Warrior Left walk flow source-local transform
+[10.88] AURA PASS Warrior Left walk flow same depth, mirror and mask
+[10.88] AURA PASS Warrior Left walk flow source pivot and pixel density
+[10.88] AURA PASS Warrior Left walk flow nearest-neighbor sampling
+[10.88] AURA PASS Left warrior grip preserved
+[10.98] AURA PASS Warrior Left actual attack
+[10.98] AURA PASS Warrior Left attack crown source-local transform
+[10.98] AURA PASS Warrior Left attack crown same depth, mirror and mask
+[10.98] AURA PASS Warrior Left attack crown source pivot and pixel density
+[10.98] AURA PASS Warrior Left attack crown nearest-neighbor sampling
+[10.98] AURA PASS Warrior Left attack flow source-local transform
+[10.98] AURA PASS Warrior Left attack flow same depth, mirror and mask
+[10.98] AURA PASS Warrior Left attack flow source pivot and pixel density
+[10.98] AURA PASS Warrior Left attack flow nearest-neighbor sampling
+[11.67] AURA PASS Warrior Right natural walk
+[11.67] AURA PASS Warrior Right walk crown source-local transform
+[11.67] AURA PASS Warrior Right walk crown same depth, mirror and mask
+[11.67] AURA PASS Warrior Right walk crown source pivot and pixel density
+[11.67] AURA PASS Warrior Right walk crown nearest-neighbor sampling
+[11.67] AURA PASS Warrior Right walk flow source-local transform
+[11.67] AURA PASS Warrior Right walk flow same depth, mirror and mask
+[11.67] AURA PASS Warrior Right walk flow source pivot and pixel density
+[11.67] AURA PASS Warrior Right walk flow nearest-neighbor sampling
+[11.67] AURA PASS Right warrior grip preserved
+[11.76] AURA PASS Warrior Right actual attack
+[11.76] AURA PASS Warrior Right attack crown source-local transform
+[11.76] AURA PASS Warrior Right attack crown same depth, mirror and mask
+[11.76] AURA PASS Warrior Right attack crown source pivot and pixel density
+[11.76] AURA PASS Warrior Right attack crown nearest-neighbor sampling
+[11.76] AURA PASS Warrior Right attack flow source-local transform
+[11.76] AURA PASS Warrior Right attack flow same depth, mirror and mask
+[11.76] AURA PASS Warrior Right attack flow source pivot and pixel density
+[11.76] AURA PASS Warrior Right attack flow nearest-neighbor sampling
+[12.46] AURA PASS Warrior DownLeft natural walk
+[12.46] AURA PASS Warrior DownLeft walk crown source-local transform
+[12.46] AURA PASS Warrior DownLeft walk crown same depth, mirror and mask
+[12.46] AURA PASS Warrior DownLeft walk crown source pivot and pixel density
+[12.46] AURA PASS Warrior DownLeft walk crown nearest-neighbor sampling
+[12.46] AURA PASS Warrior DownLeft walk flow source-local transform
+[12.46] AURA PASS Warrior DownLeft walk flow same depth, mirror and mask
+[12.46] AURA PASS Warrior DownLeft walk flow source pivot and pixel density
+[12.46] AURA PASS Warrior DownLeft walk flow nearest-neighbor sampling
+[12.46] AURA PASS DownLeft warrior grip preserved
+[12.55] AURA PASS Warrior DownLeft actual attack
+[12.55] AURA PASS Warrior DownLeft attack crown source-local transform
+[12.55] AURA PASS Warrior DownLeft attack crown same depth, mirror and mask
+[12.55] AURA PASS Warrior DownLeft attack crown source pivot and pixel density
+[12.55] AURA PASS Warrior DownLeft attack crown nearest-neighbor sampling
+[12.55] AURA PASS Warrior DownLeft attack flow source-local transform
+[12.55] AURA PASS Warrior DownLeft attack flow same depth, mirror and mask
+[12.55] AURA PASS Warrior DownLeft attack flow source pivot and pixel density
+[12.55] AURA PASS Warrior DownLeft attack flow nearest-neighbor sampling
+[13.24] AURA PASS Warrior DownRight natural walk
+[13.24] AURA PASS Warrior DownRight walk crown source-local transform
+[13.24] AURA PASS Warrior DownRight walk crown same depth, mirror and mask
+[13.24] AURA PASS Warrior DownRight walk crown source pivot and pixel density
+[13.24] AURA PASS Warrior DownRight walk crown nearest-neighbor sampling
+[13.24] AURA PASS Warrior DownRight walk flow source-local transform
+[13.24] AURA PASS Warrior DownRight walk flow same depth, mirror and mask
+[13.24] AURA PASS Warrior DownRight walk flow source pivot and pixel density
+[13.24] AURA PASS Warrior DownRight walk flow nearest-neighbor sampling
+[13.24] AURA PASS DownRight warrior grip preserved
+[13.34] AURA PASS Warrior DownRight actual attack
+[13.34] AURA PASS Warrior DownRight attack crown source-local transform
+[13.34] AURA PASS Warrior DownRight attack crown same depth, mirror and mask
+[13.34] AURA PASS Warrior DownRight attack crown source pivot and pixel density
+[13.34] AURA PASS Warrior DownRight attack crown nearest-neighbor sampling
+[13.34] AURA PASS Warrior DownRight attack flow source-local transform
+[13.34] AURA PASS Warrior DownRight attack flow same depth, mirror and mask
+[13.34] AURA PASS Warrior DownRight attack flow source pivot and pixel density
+[13.34] AURA PASS Warrior DownRight attack flow nearest-neighbor sampling
+[14.03] AURA PASS Warrior UpLeft natural walk
+[14.03] AURA PASS Warrior UpLeft walk crown source-local transform
+[14.03] AURA PASS Warrior UpLeft walk crown same depth, mirror and mask
+[14.03] AURA PASS Warrior UpLeft walk crown source pivot and pixel density
+[14.03] AURA PASS Warrior UpLeft walk crown nearest-neighbor sampling
+[14.03] AURA PASS Warrior UpLeft walk flow source-local transform
+[14.03] AURA PASS Warrior UpLeft walk flow same depth, mirror and mask
+[14.03] AURA PASS Warrior UpLeft walk flow source pivot and pixel density
+[14.03] AURA PASS Warrior UpLeft walk flow nearest-neighbor sampling
+[14.03] AURA PASS UpLeft warrior grip preserved
+[14.13] AURA PASS Warrior UpLeft actual attack
+[14.13] AURA PASS Warrior UpLeft attack crown source-local transform
+[14.13] AURA PASS Warrior UpLeft attack crown same depth, mirror and mask
+[14.13] AURA PASS Warrior UpLeft attack crown source pivot and pixel density
+[14.13] AURA PASS Warrior UpLeft attack crown nearest-neighbor sampling
+[14.13] AURA PASS Warrior UpLeft attack flow source-local transform
+[14.13] AURA PASS Warrior UpLeft attack flow same depth, mirror and mask
+[14.13] AURA PASS Warrior UpLeft attack flow source pivot and pixel density
+[14.13] AURA PASS Warrior UpLeft attack flow nearest-neighbor sampling
+[14.85] AURA PASS Warrior UpRight natural walk
+[14.85] AURA PASS Warrior UpRight walk crown source-local transform
+[14.85] AURA PASS Warrior UpRight walk crown same depth, mirror and mask
+[14.85] AURA PASS Warrior UpRight walk crown source pivot and pixel density
+[14.85] AURA PASS Warrior UpRight walk crown nearest-neighbor sampling
+[14.85] AURA PASS Warrior UpRight walk flow source-local transform
+[14.85] AURA PASS Warrior UpRight walk flow same depth, mirror and mask
+[14.85] AURA PASS Warrior UpRight walk flow source pivot and pixel density
+[14.85] AURA PASS Warrior UpRight walk flow nearest-neighbor sampling
+[14.85] AURA PASS UpRight warrior grip preserved
+[14.94] AURA PASS Warrior UpRight actual attack
+[14.94] AURA PASS Warrior UpRight attack crown source-local transform
+[14.94] AURA PASS Warrior UpRight attack crown same depth, mirror and mask
+[14.94] AURA PASS Warrior UpRight attack crown source pivot and pixel density
+[14.94] AURA PASS Warrior UpRight attack crown nearest-neighbor sampling
+[14.94] AURA PASS Warrior UpRight attack flow source-local transform
+[14.94] AURA PASS Warrior UpRight attack flow same depth, mirror and mask
+[14.94] AURA PASS Warrior UpRight attack flow source pivot and pixel density
+[14.94] AURA PASS Warrior UpRight attack flow nearest-neighbor sampling
+[15.70] AURA PASS Warrior repeated equip reuses cached masks and atlases
+[15.80] AURA PASS Warrior 13 to 12 removes new crown only
+[15.92] AURA PASS Warrior disabling component clears all layers
+[16.02] AURA PASS Warrior re-enable restores the equipped crown
+[16.12] AURA PASS Warrior unequip clears every effect
+[40.31] shot Warrior-plus12-dark-play
+[40.48] shot Warrior-plus13-dark-play
+[41.17] AURA PASS Mage equips +0
+[41.22] AURA PASS Mage +0 threshold and layers
+[41.22] AURA PASS Mage +0 visual effect leaves combat power alone
+[41.22] AURA PASS Mage equips +6
+[41.28] AURA PASS Mage +6 threshold and layers
+[41.28] AURA PASS Mage +6 visual effect leaves combat power alone
+[41.28] AURA PASS Mage equips +7
+[41.33] AURA PASS Mage +7 threshold and layers
+[41.33] AURA PASS Mage +7 visual effect leaves combat power alone
+[41.33] AURA PASS Mage equips +10
+[41.39] AURA PASS Mage +10 threshold and layers
+[41.39] AURA PASS Mage +10 visual effect leaves combat power alone
+[41.39] AURA PASS Mage equips +11
+[41.44] AURA PASS Mage +11 threshold and layers
+[41.44] AURA PASS Mage +11 visual effect leaves combat power alone
+[41.44] AURA PASS Mage equips +12
+[41.50] AURA PASS Mage +12 threshold and layers
+[41.50] AURA PASS Mage +12 visual effect leaves combat power alone
+[41.51] AURA PASS weapon_blue_rim GPU readback
+[41.53] AURA PASS weapon_blue_aura GPU readback
+[41.53] AURA PASS Mage <=12 legacy blue rim pixels preserved
+[41.53] AURA PASS Mage <=12 legacy blue aura pixels preserved
+[41.72] shot Mage-plus12-play
+[41.72] AURA PASS Mage equips +13
+[41.77] AURA PASS Mage +13 threshold and layers
+[41.77] AURA PASS Mage +13 visual effect leaves combat power alone
+[41.77] AURA PASS Mage +13 crown source-local transform
+[41.77] AURA PASS Mage +13 crown same depth, mirror and mask
+[41.77] AURA PASS Mage +13 crown source pivot and pixel density
+[41.77] AURA PASS Mage +13 crown nearest-neighbor sampling
+[41.77] AURA PASS Mage +13 flow source-local transform
+[41.77] AURA PASS Mage +13 flow same depth, mirror and mask
+[41.77] AURA PASS Mage +13 flow source pivot and pixel density
+[41.77] AURA PASS Mage +13 flow nearest-neighbor sampling
+[41.77] AURA PASS Mage +13 larger crown bounds
+[41.78] AURA PASS weapon_ascendant_aura_8frames GPU readback
+[41.79] AURA PASS Mage new aura does not paint over blade pixels
+[41.79] AURA PASS Mage eight distinct moving aura drawings
+[41.79] AURA PASS Mage two effects share one cached atlas
+[41.98] shot Mage-plus13-play
+[41.98] AURA PASS Mage equips +15
+[42.03] AURA PASS Mage +15 threshold and layers
+[42.03] AURA PASS Mage +15 visual effect leaves combat power alone
+[42.03] AURA PASS Mage +15 crown source-local transform
+[42.03] AURA PASS Mage +15 crown same depth, mirror and mask
+[42.03] AURA PASS Mage +15 crown source pivot and pixel density
+[42.03] AURA PASS Mage +15 crown nearest-neighbor sampling
+[42.03] AURA PASS Mage +15 flow source-local transform
+[42.03] AURA PASS Mage +15 flow same depth, mirror and mask
+[42.03] AURA PASS Mage +15 flow source pivot and pixel density
+[42.03] AURA PASS Mage +15 flow nearest-neighbor sampling
+[42.03] AURA PASS Mage +15 larger crown bounds
+[42.04] AURA PASS Mage equips +20
+[42.09] AURA PASS Mage +20 threshold and layers
+[42.09] AURA PASS Mage +20 visual effect leaves combat power alone
+[42.09] AURA PASS Mage +20 crown source-local transform
+[42.09] AURA PASS Mage +20 crown same depth, mirror and mask
+[42.09] AURA PASS Mage +20 crown source pivot and pixel density
+[42.09] AURA PASS Mage +20 crown nearest-neighbor sampling
+[42.09] AURA PASS Mage +20 flow source-local transform
+[42.09] AURA PASS Mage +20 flow same depth, mirror and mask
+[42.09] AURA PASS Mage +20 flow source pivot and pixel density
+[42.09] AURA PASS Mage +20 flow nearest-neighbor sampling
+[42.09] AURA PASS Mage +20 larger crown bounds
+[42.29] shot Mage-plus20-play
+[42.29] AURA PASS Mage weapon source artwork identical at every grade
+[43.69] AURA PASS Mage animation cycles through every frame
+[43.69] AURA PASS Mage cycling allocates no new weapon cache entries
+[43.69] AURA PASS Mage animation does not modify damage power
+[43.79] AURA PASS Mage Down natural walk
+[43.79] AURA PASS Mage Down walk crown source-local transform
+[43.79] AURA PASS Mage Down walk crown same depth, mirror and mask
+[43.79] AURA PASS Mage Down walk crown source pivot and pixel density
+[43.79] AURA PASS Mage Down walk crown nearest-neighbor sampling
+[43.79] AURA PASS Mage Down walk flow source-local transform
+[43.79] AURA PASS Mage Down walk flow same depth, mirror and mask
+[43.79] AURA PASS Mage Down walk flow source pivot and pixel density
+[43.79] AURA PASS Mage Down walk flow nearest-neighbor sampling
+[43.89] AURA PASS Mage Down actual attack
+[43.89] AURA PASS Mage Down attack crown source-local transform
+[43.89] AURA PASS Mage Down attack crown same depth, mirror and mask
+[43.89] AURA PASS Mage Down attack crown source pivot and pixel density
+[43.89] AURA PASS Mage Down attack crown nearest-neighbor sampling
+[43.89] AURA PASS Mage Down attack flow source-local transform
+[43.89] AURA PASS Mage Down attack flow same depth, mirror and mask
+[43.89] AURA PASS Mage Down attack flow source pivot and pixel density
+[43.89] AURA PASS Mage Down attack flow nearest-neighbor sampling
+[44.58] AURA PASS Mage Up natural walk
+[44.58] AURA PASS Mage Up walk crown source-local transform
+[44.58] AURA PASS Mage Up walk crown same depth, mirror and mask
+[44.58] AURA PASS Mage Up walk crown source pivot and pixel density
+[44.58] AURA PASS Mage Up walk crown nearest-neighbor sampling
+[44.58] AURA PASS Mage Up walk flow source-local transform
+[44.58] AURA PASS Mage Up walk flow same depth, mirror and mask
+[44.58] AURA PASS Mage Up walk flow source pivot and pixel density
+[44.58] AURA PASS Mage Up walk flow nearest-neighbor sampling
+[44.68] AURA PASS Mage Up actual attack
+[44.68] AURA PASS Mage Up attack crown source-local transform
+[44.68] AURA PASS Mage Up attack crown same depth, mirror and mask
+[44.68] AURA PASS Mage Up attack crown source pivot and pixel density
+[44.68] AURA PASS Mage Up attack crown nearest-neighbor sampling
+[44.68] AURA PASS Mage Up attack flow source-local transform
+[44.68] AURA PASS Mage Up attack flow same depth, mirror and mask
+[44.68] AURA PASS Mage Up attack flow source pivot and pixel density
+[44.68] AURA PASS Mage Up attack flow nearest-neighbor sampling
+[45.37] AURA PASS Mage Left natural walk
+[45.37] AURA PASS Mage Left walk crown source-local transform
+[45.37] AURA PASS Mage Left walk crown same depth, mirror and mask
+[45.37] AURA PASS Mage Left walk crown source pivot and pixel density
+[45.38] AURA PASS Mage Left walk crown nearest-neighbor sampling
+[45.38] AURA PASS Mage Left walk flow source-local transform
+[45.38] AURA PASS Mage Left walk flow same depth, mirror and mask
+[45.38] AURA PASS Mage Left walk flow source pivot and pixel density
+[45.38] AURA PASS Mage Left walk flow nearest-neighbor sampling
+[45.47] AURA PASS Mage Left actual attack
+[45.47] AURA PASS Mage Left attack crown source-local transform
+[45.47] AURA PASS Mage Left attack crown same depth, mirror and mask
+[45.47] AURA PASS Mage Left attack crown source pivot and pixel density
+[45.47] AURA PASS Mage Left attack crown nearest-neighbor sampling
+[45.47] AURA PASS Mage Left attack flow source-local transform
+[45.47] AURA PASS Mage Left attack flow same depth, mirror and mask
+[45.47] AURA PASS Mage Left attack flow source pivot and pixel density
+[45.47] AURA PASS Mage Left attack flow nearest-neighbor sampling
+[46.17] AURA PASS Mage Right natural walk
+[46.17] AURA PASS Mage Right walk crown source-local transform
+[46.17] AURA PASS Mage Right walk crown same depth, mirror and mask
+[46.17] AURA PASS Mage Right walk crown source pivot and pixel density
+[46.17] AURA PASS Mage Right walk crown nearest-neighbor sampling
+[46.17] AURA PASS Mage Right walk flow source-local transform
+[46.17] AURA PASS Mage Right walk flow same depth, mirror and mask
+[46.17] AURA PASS Mage Right walk flow source pivot and pixel density
+[46.17] AURA PASS Mage Right walk flow nearest-neighbor sampling
+[46.26] AURA PASS Mage Right actual attack
+[46.26] AURA PASS Mage Right attack crown source-local transform
+[46.26] AURA PASS Mage Right attack crown same depth, mirror and mask
+[46.26] AURA PASS Mage Right attack crown source pivot and pixel density
+[46.26] AURA PASS Mage Right attack crown nearest-neighbor sampling
+[46.26] AURA PASS Mage Right attack flow source-local transform
+[46.26] AURA PASS Mage Right attack flow same depth, mirror and mask
+[46.26] AURA PASS Mage Right attack flow source pivot and pixel density
+[46.26] AURA PASS Mage Right attack flow nearest-neighbor sampling
+[46.96] AURA PASS Mage DownLeft natural walk
+[46.96] AURA PASS Mage DownLeft walk crown source-local transform
+[46.96] AURA PASS Mage DownLeft walk crown same depth, mirror and mask
+[46.96] AURA PASS Mage DownLeft walk crown source pivot and pixel density
+[46.96] AURA PASS Mage DownLeft walk crown nearest-neighbor sampling
+[46.96] AURA PASS Mage DownLeft walk flow source-local transform
+[46.96] AURA PASS Mage DownLeft walk flow same depth, mirror and mask
+[46.96] AURA PASS Mage DownLeft walk flow source pivot and pixel density
+[46.96] AURA PASS Mage DownLeft walk flow nearest-neighbor sampling
+[47.06] AURA PASS Mage DownLeft actual attack
+[47.06] AURA PASS Mage DownLeft attack crown source-local transform
+[47.06] AURA PASS Mage DownLeft attack crown same depth, mirror and mask
+[47.06] AURA PASS Mage DownLeft attack crown source pivot and pixel density
+[47.06] AURA PASS Mage DownLeft attack crown nearest-neighbor sampling
+[47.06] AURA PASS Mage DownLeft attack flow source-local transform
+[47.06] AURA PASS Mage DownLeft attack flow same depth, mirror and mask
+[47.06] AURA PASS Mage DownLeft attack flow source pivot and pixel density
+[47.06] AURA PASS Mage DownLeft attack flow nearest-neighbor sampling
+[47.75] AURA PASS Mage DownRight natural walk
+[47.75] AURA PASS Mage DownRight walk crown source-local transform
+[47.75] AURA PASS Mage DownRight walk crown same depth, mirror and mask
+[47.75] AURA PASS Mage DownRight walk crown source pivot and pixel density
+[47.75] AURA PASS Mage DownRight walk crown nearest-neighbor sampling
+[47.75] AURA PASS Mage DownRight walk flow source-local transform
+[47.75] AURA PASS Mage DownRight walk flow same depth, mirror and mask
+[47.75] AURA PASS Mage DownRight walk flow source pivot and pixel density
+[47.75] AURA PASS Mage DownRight walk flow nearest-neighbor sampling
+[47.85] AURA PASS Mage DownRight actual attack
+[47.85] AURA PASS Mage DownRight attack crown source-local transform
+[47.85] AURA PASS Mage DownRight attack crown same depth, mirror and mask
+[47.85] AURA PASS Mage DownRight attack crown source pivot and pixel density
+[47.85] AURA PASS Mage DownRight attack crown nearest-neighbor sampling
+[47.85] AURA PASS Mage DownRight attack flow source-local transform
+[47.85] AURA PASS Mage DownRight attack flow same depth, mirror and mask
+[47.85] AURA PASS Mage DownRight attack flow source pivot and pixel density
+[47.85] AURA PASS Mage DownRight attack flow nearest-neighbor sampling
+[48.54] AURA PASS Mage UpLeft natural walk
+[48.54] AURA PASS Mage UpLeft walk crown source-local transform
+[48.54] AURA PASS Mage UpLeft walk crown same depth, mirror and mask
+[48.54] AURA PASS Mage UpLeft walk crown source pivot and pixel density
+[48.54] AURA PASS Mage UpLeft walk crown nearest-neighbor sampling
+[48.54] AURA PASS Mage UpLeft walk flow source-local transform
+[48.54] AURA PASS Mage UpLeft walk flow same depth, mirror and mask
+[48.54] AURA PASS Mage UpLeft walk flow source pivot and pixel density
+[48.54] AURA PASS Mage UpLeft walk flow nearest-neighbor sampling
+[48.64] AURA PASS Mage UpLeft actual attack
+[48.64] AURA PASS Mage UpLeft attack crown source-local transform
+[48.64] AURA PASS Mage UpLeft attack crown same depth, mirror and mask
+[48.64] AURA PASS Mage UpLeft attack crown source pivot and pixel density
+[48.64] AURA PASS Mage UpLeft attack crown nearest-neighbor sampling
+[48.64] AURA PASS Mage UpLeft attack flow source-local transform
+[48.64] AURA PASS Mage UpLeft attack flow same depth, mirror and mask
+[48.64] AURA PASS Mage UpLeft attack flow source pivot and pixel density
+[48.64] AURA PASS Mage UpLeft attack flow nearest-neighbor sampling
+[49.36] AURA PASS Mage UpRight natural walk
+[49.36] AURA PASS Mage UpRight walk crown source-local transform
+[49.36] AURA PASS Mage UpRight walk crown same depth, mirror and mask
+[49.36] AURA PASS Mage UpRight walk crown source pivot and pixel density
+[49.36] AURA PASS Mage UpRight walk crown nearest-neighbor sampling
+[49.36] AURA PASS Mage UpRight walk flow source-local transform
+[49.36] AURA PASS Mage UpRight walk flow same depth, mirror and mask
+[49.36] AURA PASS Mage UpRight walk flow source pivot and pixel density
+[49.36] AURA PASS Mage UpRight walk flow nearest-neighbor sampling
+[49.46] AURA PASS Mage UpRight actual attack
+[49.46] AURA PASS Mage UpRight attack crown source-local transform
+[49.46] AURA PASS Mage UpRight attack crown same depth, mirror and mask
+[49.46] AURA PASS Mage UpRight attack crown source pivot and pixel density
+[49.46] AURA PASS Mage UpRight attack crown nearest-neighbor sampling
+[49.46] AURA PASS Mage UpRight attack flow source-local transform
+[49.46] AURA PASS Mage UpRight attack flow same depth, mirror and mask
+[49.46] AURA PASS Mage UpRight attack flow source pivot and pixel density
+[49.46] AURA PASS Mage UpRight attack flow nearest-neighbor sampling
+[50.21] AURA PASS Mage repeated equip reuses cached masks and atlases
+[50.32] AURA PASS Mage 13 to 12 removes new crown only
+[50.43] AURA PASS Mage disabling component clears all layers
+[50.53] AURA PASS Mage re-enable restores the equipped crown
+[50.64] AURA PASS Mage unequip clears every effect
+[74.31] shot Mage-plus12-dark-play
+[74.49] shot Mage-plus13-dark-play
+[75.23] AURA PASS lethal hit follows the actual player damage pipeline
+[75.33] AURA PASS character death clears all enhancement layers
+[76.24] AURA FAIL death menu contains only three current actions
+[76.24] AURA PASS removed last-save action is absent
+[76.29] shot death-screen-current-actions
+[76.29] AURA PASS verification stays silent
+[76.30] AURA RESULTS: 442 passed, 1 failed

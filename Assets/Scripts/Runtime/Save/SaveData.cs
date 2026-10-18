@@ -42,8 +42,9 @@ namespace DotRPG
     [Serializable]
     public class SaveData
     {
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
         public CareerSave career;
+        public MiniDungeonSave miniDungeon;
 
         public int version = CurrentVersion;
         public string savedAtUtc;

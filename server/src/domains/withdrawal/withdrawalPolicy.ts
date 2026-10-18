@@ -136,6 +136,9 @@ export const POLICY: PolicyEntry[] = [
   keepOwn('character_state', `character_id ${CHR}`),
   keepOwn('quest_claims', `character_id ${CHR}`),
   keepOwn('daily_quests', `character_id ${CHR}`),
+  keepOwn('mini_dungeon_kills', `run_id IN (SELECT id FROM mini_dungeon_runs WHERE character_id ${CHR})`),
+  keepOwn('mini_dungeon_runs', `character_id ${CHR}`),
+  keepOwn('mini_dungeon_days', `character_id ${CHR}`),
   keepOwn('character_items', `character_id ${CHR}`, '원장 보존식 I2 때문에 원장과 함께 파기'),
   keepOwn('gold_ledger', `character_id ${CHR}`),
   keepOwn('item_ledger', `character_id ${CHR}`),
@@ -268,7 +271,7 @@ export const POLICY: PolicyEntry[] = [
 export const DESTROY_ORDER: string[] = [
   'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'dungeon_entry_resets', 'dungeon_unique_pity', 'gacha_gear_credits', 'exchange_purchases', 'gear_codex', 'sweep_ticket_ledger',
   'sweep_ticket_lots', 'dungeon_runs', 'revive_log', 'character_achievements', 'character_career', 'character_career_trials',
-  'character_chests', 'character_enhance_pity', 'character_state', 'quest_claims', 'daily_quests',
+  'character_chests', 'character_enhance_pity', 'character_state', 'quest_claims', 'daily_quests', 'mini_dungeon_kills', 'mini_dungeon_runs', 'mini_dungeon_days',
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'star_pass_daily', 'star_pass_grants', 'account_star_pass', 'account_pass_claims',
   'sealed_pulls', 'raid_shop_purchases', 'gacha_pulls', 'star_synth_log', 'account_collections', 'account_cosmetics', 'account_growth_pass', 'skill_style_unlocks',
   'account_sealed_state', 'ceiling_claims', 'account_ceilings', 'account_week_counters', 'economy_holds', 'account_sanctions', 'admin_account_notes', 'admin_grants',

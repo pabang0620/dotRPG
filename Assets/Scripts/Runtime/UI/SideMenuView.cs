@@ -46,6 +46,7 @@ namespace DotRPG
             view.Add("menuicon_map", L.T("지도"), () => Game.Flow.OpenWindow(Game.UI.WorldMap));
             view.Add("menuicon_quest", L.T("퀘스트"), () => Game.Flow.OpenWindow(Game.UI.QuestLog));
             view.Add("menuicon_dungeon", L.T("요일던전"), () => Game.UI.Dungeon.Open(false)); // [DUNGEON] 던전 선택 window
+            view.Add("menuicon_dungeon", L.T("미니던전"), () => Game.UI.MiniDungeon.Open());
             view.Add("menuicon_raid", L.T("레이드"), () => Game.UI.Dungeon.Open(true)); // [DUNGEON] its raid tab
             // [PARTY] Online with a server party: the lobby; otherwise the mercenary party window.
             // [AI] Online the party window is one place: people, the AI who fill free seats, invites and the AI roster button.

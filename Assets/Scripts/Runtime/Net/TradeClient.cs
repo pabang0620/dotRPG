@@ -121,7 +121,7 @@ namespace DotRPG
         {
             Game.Audio?.PlaySfx("select");
             // Open the window right away when nothing else is going on; inside a dungeon or another window, a toast.
-            bool calm = Game.State != null && Game.State.Current == GameState.Playing && (Game.Dungeon == null || !Game.Dungeon.InRun);
+            bool calm = Game.MiniDungeon?.Active != true && Game.MiniDungeon?.Busy != true && Game.State != null && Game.State.Current == GameState.Playing && (Game.Dungeon == null || !Game.Dungeon.InRun);
             if (calm && TradeScreen.Instance != null) Game.Flow.OpenWindow(TradeScreen.Instance);
             else GameEvents.RaiseToast(L.F("{0}님이 교환을 신청했습니다. 채팅에 /교환 을 입력하면 창이 열립니다.", t.other.name));
         }
@@ -171,6 +171,8 @@ namespace DotRPG
         static void Act(string method, string path, Dictionary<string, object> body, Action<bool> done = null)
         {
             if (!OnlineSession.Playing || Api == null) { GameEvents.RaiseToast(L.T("온라인 캐릭터로 접속해야 합니다.")); done?.Invoke(false); return; }
+            if ((Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true) && !path.EndsWith("/decline") && !path.EndsWith("/cancel"))
+            { GameEvents.RaiseToast(L.T("미니던전에서 나온 뒤 교환해 주세요.")); done?.Invoke(false); return; }
             if (Busy) { done?.Invoke(false); return; }
             Busy = true;
             body = body ?? new Dictionary<string, object>();

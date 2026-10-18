@@ -7,6 +7,7 @@ import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import { parseItemKey } from '../../utils/itemKey';
 import { ownedChar } from '../auction/auctionSearchRepository';
+import { assertNotActive as assertNotInMiniDungeon } from '../minidungeon/miniDungeonRepository';
 import type { EconResult, StoredResult } from '../economy/economyService';
 import { executeTrade } from './tradeExecute';
 import * as repo from './tradeRepository';
@@ -109,6 +110,8 @@ export async function createTrade(accountId: number, characterUuid: string, body
     lockIds: [me.id, target.id],
     handler: async (ctx) => {
       const c = ctx.client;
+      await assertNotInMiniDungeon(c, me.id, ctx.now);
+      await assertNotInMiniDungeon(c, target.id, ctx.now);
       await repo.expireDue(c, [me.id, target.id], ctx.now);
       const mine = await repo.openOfCharacter(c, me.id);
       if (mine) {
@@ -145,6 +148,8 @@ export function acceptTrade(accountId: number, characterUuid: string, tradeUuid:
       if (t.targetCharacterId !== ctx.me.id) throw new AppError(403, '요청을 받은 사람만 할 수 있습니다.', 'NOT_TARGET');
       if (t.state === 'active') return viewOf(ctx, t);
       if (t.state !== 'pending') throw CLOSED(t.state);
+      await assertNotInMiniDungeon(ctx.client, t.requesterCharacterId, ctx.now);
+      await assertNotInMiniDungeon(ctx.client, t.targetCharacterId, ctx.now);
       await repo.setActive(ctx.client, t.id, ctx.now, plus(ctx.now, ACTIVE_SECONDS));
       return viewOf(ctx, t);
     },

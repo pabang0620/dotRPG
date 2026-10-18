@@ -1,0 +1,103 @@
+{
+  "content": "XP-only mini dungeon",
+  "dailySeconds": 1800,
+  "reset": "06:00 Asia/Seoul",
+  "scope": "One character, shared across all three tiers",
+  "bands": [
+    [
+      10,
+      19
+    ],
+    [
+      20,
+      29
+    ],
+    [
+      30,
+      39
+    ]
+  ],
+  "entryFee": 0,
+  "xpFormula": "ceil(Progression.XpToNext(entryLevel) / 2000)",
+  "xpFormulaNote": "2026-10-18: 240 -> 2000 (total play time to Lv40 must stay 42h or more; with 240 a daily 30-minute run cut it to 30~36h). modelXp values below are from the 240 design.",
+  "entryLevelFrozen": true,
+  "onlyReward": "XP",
+  "autoHunt": "Starts on entry; manual movement/attack stops it; HUD restarts it",
+  "timer": "Wall-clock while entered; explicit leave/death preserves unused time; no offline XP",
+  "maxLevel": 40,
+  "ordinaryDungeonEntriesAffected": false,
+  "online": "Server-authorized timer, idempotent run/kill reports, bounded kill credits, dedicated XP ledger, no field loot or quest-kill credit",
+  "models": [
+    {
+      "entryLevel": 10,
+      "xpPerKill": 12,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 4320,
+      "endingLevelFromEmptyBar": 11,
+      "endingXp": 1460,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 4320
+    },
+    {
+      "entryLevel": 15,
+      "xpPerKill": 84,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 30240,
+      "endingLevelFromEmptyBar": 16,
+      "endingXp": 10080,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 30240
+    },
+    {
+      "entryLevel": 20,
+      "xpPerKill": 242,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 87120,
+      "endingLevelFromEmptyBar": 21,
+      "endingXp": 29160,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 87120
+    },
+    {
+      "entryLevel": 25,
+      "xpPerKill": 516,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 185760,
+      "endingLevelFromEmptyBar": 26,
+      "endingXp": 62000,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 185760
+    },
+    {
+      "entryLevel": 30,
+      "xpPerKill": 768,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 276480,
+      "endingLevelFromEmptyBar": 31,
+      "endingXp": 92340,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 276480
+    },
+    {
+      "entryLevel": 35,
+      "xpPerKill": 1026,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 369360,
+      "endingLevelFromEmptyBar": 36,
+      "endingXp": 123120,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 369360
+    },
+    {
+      "entryLevel": 39,
+      "xpPerKill": 1260,
+      "modelKillsIn30Minutes": 360,
+      "modelXp": 302400,
+      "endingLevelFromEmptyBar": 40,
+      "endingXp": 0,
+      "note": "Model only; actual XP is paid for real kills and capped at Lv.40.",
+      "potentialXp": 453600
+    }
+  ],
+  "verification": "See verification outputs; model results are not measured guaranteed rewards."
+}

@@ -1,0 +1,105 @@
+[4.21] capture started
+[4.21] verification audio volume: 0
+[5.68] MINI PASS three ten-level entry bands
+[5.68] MINI PASS one shared 1800-second daily allowance
+[5.68] MINI PASS spent time subtracts from allowance
+[5.68] MINI PASS invalid duration cannot increase allowance
+[5.68] MINI PASS usage survives capture and restore
+[5.68] MINI PASS reentry uses remaining daily time
+[5.68] MINI PASS entry cannot be duplicated
+[5.68] MINI PASS active wall-clock consumption
+[5.68] MINI PASS return map, position and facing retained
+[5.68] MINI PASS interrupted session accounts for elapsed time and ends
+[5.68] MINI PASS budget cannot become negative
+[5.68] MINI PASS exhausted allowance blocks reentry
+[5.68] MINI PASS invalid entry allowance is rejected
+[5.68] MINI PASS earlier clock cannot reset spent allowance
+[5.68] MINI PASS Korea 06:00 reset is UTC 21:00
+[5.68] MINI PASS one second before reset remains exhausted
+[5.68] MINI PASS daily reset replenishes allowance
+[5.68] MINI PASS near-reset entry starts
+[5.68] MINI PASS run ends at daily reset boundary
+[5.68] MINI PASS old-day run ends and new-day time remains available
+[5.68] MINI PASS mini_dungeon_10 is a separate instance
+[5.68] MINI PASS mini_dungeon_10 six spawn courts
+[5.68] MINI PASS mini_dungeon_10 high-value XP curve
+[5.68] MINI PASS mini_dungeon_20 is a separate instance
+[5.68] MINI PASS mini_dungeon_20 six spawn courts
+[5.68] MINI PASS mini_dungeon_20 high-value XP curve
+[5.68] MINI PASS mini_dungeon_30 is a separate instance
+[5.68] MINI PASS mini_dungeon_30 six spawn courts
+[5.68] MINI PASS mini_dungeon_30 high-value XP curve
+[7.18] MINI PASS verification is silent before entering
+[7.18] MINI PASS local allowance ready
+[7.19] MINI PASS Lv.1 tier 10 gate
+[7.19] MINI PASS Lv.1 tier 20 gate
+[7.19] MINI PASS Lv.1 tier 30 gate
+[7.19] MINI PASS Lv.9 tier 10 gate
+[7.19] MINI PASS Lv.9 tier 20 gate
+[7.19] MINI PASS Lv.9 tier 30 gate
+[7.19] MINI PASS Lv.10 tier 10 gate
+[7.19] MINI PASS Lv.10 tier 20 gate
+[7.19] MINI PASS Lv.10 tier 30 gate
+[7.19] MINI PASS Lv.19 tier 10 gate
+[7.19] MINI PASS Lv.19 tier 20 gate
+[7.19] MINI PASS Lv.19 tier 30 gate
+[7.19] MINI PASS Lv.20 tier 10 gate
+[7.19] MINI PASS Lv.20 tier 20 gate
+[7.19] MINI PASS Lv.20 tier 30 gate
+[7.20] MINI PASS Lv.29 tier 10 gate
+[7.20] MINI PASS Lv.29 tier 20 gate
+[7.20] MINI PASS Lv.29 tier 30 gate
+[7.20] MINI PASS Lv.30 tier 10 gate
+[7.20] MINI PASS Lv.30 tier 20 gate
+[7.20] MINI PASS Lv.30 tier 30 gate
+[7.20] MINI PASS Lv.39 tier 10 gate
+[7.20] MINI PASS Lv.39 tier 20 gate
+[7.20] MINI PASS Lv.39 tier 30 gate
+[7.20] MINI PASS Lv.40 tier 10 gate
+[7.20] MINI PASS Lv.40 tier 20 gate
+[7.20] MINI PASS Lv.40 tier 30 gate
+[7.43] shot 01-mini-dungeon-entry
+[7.64] MINI PASS entry controls remain inside the screen at 130 percent UI scale
+[7.66] shot 01-mini-dungeon-entry-ui130
+[7.87] MINI PASS entry starts tier 10
+[8.67] MINI PASS entry closes the selection menu
+[8.67] MINI PASS private training map loaded
+[8.67] MINI PASS automatic hunting starts on entry
+[10.17] MINI PASS training monsters spawn without an entry server
+[10.17] MINI PASS spawn and every enemy court are walkable
+[10.48] MINI PASS real kill grants the entry-level XP amount
+[10.48] MINI PASS kill counter and XP recap update
+[10.48] MINI PASS XP-only kill creates no pickups
+[10.48] MINI PASS one monster cannot grant XP twice
+[10.49] MINI PASS crossing a level band does not reset the active run
+[10.87] MINI PASS warrior auto input moves and defeats another monster
+[10.90] shot 02-mini-dungeon-warrior
+[11.09] shot 02-mini-dungeon-warrior-ui130
+[11.48] MINI PASS open menu keeps world simulation running
+[12.98] MINI PASS automatic combat continues behind menu
+[13.08] MINI PASS menu does not freeze daily timer
+[13.43] MINI PASS manual movement stops automatic hunting
+[13.64] MINI PASS HUD command can restart automatic hunting
+[14.44] MINI PASS leave restores original map
+[14.44] MINI PASS leave restores exact safe location and facing
+[14.44] MINI PASS leave restores previous input
+[14.44] MINI PASS no currency or item rewards across auto combat
+[14.44] MINI PASS partial session preserves remaining time
+[14.45] MINI PASS save retains spent daily allowance
+[14.45] MINI PASS reentry succeeds without another 30-minute allowance
+[15.05] MINI PASS reentry retains already spent time
+[15.86] MINI PASS expiry automatically exits
+[15.86] MINI PASS exhausted daily allowance blocks entry
+[15.86] MINI PASS next day unlocks the full allowance
+[15.86] MINI PASS tier 20 starts
+[18.46] MINI PASS tier 20 themed map exists and is walkable
+[19.10] MINI PASS tier 30 starts
+[21.71] MINI PASS tier 30 themed map exists and is walkable
+[23.35] MINI PASS mage entry starts
+[27.18] MINI PASS mage auto input defeats a monster
+[27.19] MINI PASS mage also receives XP without loot
+[27.22] shot 03-mini-dungeon-mage
+[27.82] MINI PASS exit cleans training enemies
+[27.82] MINI PASS exit releases per-spawn stats
+[27.82] MINI PASS verification remains silent
+[27.82] MINI RESULTS: 97 passed, 0 failed

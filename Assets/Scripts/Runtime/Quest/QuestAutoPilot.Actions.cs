@@ -91,7 +91,7 @@ namespace DotRPG
             }
             if (best == null) { status = L.F("{0} · 몬스터를 찾는 중", g.label); Roam(p); return; }
             // [BALANCE] Toned down: when nothing is close, stand a moment (3 s) before walking to a far monster.
-            if (bestD > HuntNear)
+            if (bestD > HuntNear && Game.MiniDungeon?.Active != true)
             {
                 if (farWaitUntil <= 0f) farWaitUntil = Time.time + HuntFarWait;
                 if (Time.time < farWaitUntil) { status = L.F("{0} · 다음 몬스터를 찾는 중", g.label); lastProgressAt = Time.time; lastPos = p.Position; return; }
@@ -235,6 +235,7 @@ namespace DotRPG
 
         void Heal(PlayerController p)
         {
+            if (Game.MiniDungeon?.Active == true) return; // training recovery never consumes bag potions
             var h = p.Health;
             if (AutoPotion.On) return; // [AUTO] the auto-potion setting drinks for everyone, manual play and auto-progress alike
             if (h == null || h.Max <= 0 || Time.time < nextHeal) return;

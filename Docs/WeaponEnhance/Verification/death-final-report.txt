@@ -1,0 +1,12 @@
+[4.45] capture started
+[4.45] verification audio volume: 0
+[6.91] AURA PASS lethal hit follows the actual player damage pipeline
+[7.02] AURA PASS character death clears all enhancement layers
+[8.23] AURA PASS actual death menu is visible after death transition
+[8.23] AURA PASS death menu contains only three current actions
+[8.23] AURA PASS death menu exact action labels
+[8.23] AURA PASS death navigation has no hidden fourth action
+[8.23] AURA PASS removed last-save action is absent
+[8.28] shot death-screen-current-actions
+[8.28] AURA PASS verification stays silent
+[8.28] AURA RESULTS: 8 passed, 0 failed

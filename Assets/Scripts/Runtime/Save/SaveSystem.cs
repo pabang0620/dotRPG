@@ -145,6 +145,8 @@ namespace DotRPG
             if (data.storyFlags == null) data.storyFlags = new List<string>();
             // v6 added SaveData.career; older saves must reach Progression.RestoreCareer as null (legacy path), never as a blank CareerSave.
             if (data.version < 6) data.career = null;
+            // v7: the mini-dungeon allowance starts unused on existing characters.
+            if (data.version < 7) data.miniDungeon = null;
             data.version = SaveData.CurrentVersion;
             return data;
         }

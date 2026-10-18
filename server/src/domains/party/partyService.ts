@@ -10,6 +10,7 @@ import * as charRepo from '../characters/characterRepository';
 import * as dungeonRepo from '../dungeons/dungeonRepository';
 import { checkEntry } from '../dungeons/entryRules';
 import type { StoredResult } from '../economy/economyService';
+import { assertNotActive as assertNoMiniDungeon } from '../minidungeon/miniDungeonRepository';
 import { getQueueStore } from '../match/queueStore';
 import * as runRepo from '../partyruns/partyRunRepository';
 import { ensureGatherResolved } from '../partyruns/partyRunService';
@@ -30,6 +31,7 @@ const BUSY = () => new AppError(409, '지금은 바꿀 수 없습니다.', 'PART
 type BaseCtx = Omit<PartyCtx, 'requestId'>;
 
 export async function ensureFree(ctx: BaseCtx): Promise<void> {
+  await assertNoMiniDungeon(ctx.client, ctx.char.id, ctx.now);
   const partyId = await repo.findPartyIdOf(ctx.client, ctx.char.id);
   if (partyId !== null) {
     const p = await repo.getParty(ctx.client, partyId);

@@ -28,6 +28,7 @@ namespace DotRPG
             if (Time.time < nextCheck) return;
             nextCheck = Time.time + CheckEvery;
             if (!On || !Game.IsWorldRunning || !(Game.IsPlaying || QuestAutoPilot.WindowOpenInRunningWorld)) return; // drinks behind an open window too (online)
+            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true) return; // mini dungeons: no auto potions
             var p = Game.Player;
             if (p == null || !p.IsLocal || p.IsDead || p.Health == null || p.Health.Max <= 0) return;
             var data = Game.Settings != null ? Game.Settings.Data : null;

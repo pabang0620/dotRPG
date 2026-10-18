@@ -33,6 +33,8 @@
 | Lv20 이후·레이드 점검 | 레이드 정산 결과 창 누락 경로 3건(방장 보고 무효 시 90초 대기, 서버 대신 접수 뒤 409, RunEnd 유실·방장 포기 시 잔류), 즉사 기믹 3건(그로기 중 판정 지연·결계·포효 겹침·파티원 지연 위치), 체력 구간 패턴 중복 발동, 파티 경험치 상한, 중계 재접속 간격, 날리기 이동 제한 | f6474cb9 |
 | UI 줄바꿈 | 한글 라벨이 글자 중간에서 꺾이지 않게(UIWordWrap: 짧은 라벨은 한 줄, 긴 글은 어절 단위), 경매·파티 찾기 열 한 줄, 버튼 글자 테두리 안 | 6b396a3e |
 | AI 동료 부활 | 필드·던전·레이드 어디서든 4·8·16·32초(이후 64초) 뒤 스스로 일어남, 부활 코인 안 씀 | 43286cdd |
+| 약한 점 개선 (2026-10-18) | 레이드 보상 혼자서도(최소 인원 1), 메인 퀘스트로 콘텐츠 해금 + 열릴 때 안내 의뢰 자동 수락(`ContentUnlocks`), "할 일" 바로가기 창(N, `TodayScreen`) (`PLAN_WEAKNESS_2026-10-18.md`) | 837a0cbd |
+| 미니 던전 병합 (jaein) | 경험치 전용 1인 미니 던전 3구간(Lv10~39, 하루 30분, 자동 사냥). 마이그레이션 번호 겹침으로 0042 -> 0046, 성장 추천·할 일 창에 연결(`MiniDungeonGrowth`), 던전 창에 미니던전 탭. 처치당 경험치 막대 1/240 -> 1/2,000, Lv16+ 경험치 x1.9 -> x2.1(Lv40 42시간 이상 유지) | (이번 커밋) |
 | 공유 빌드 (2026-10-17) | `games/dotRPG_online_20261017.zip`, `games/dotRPG_mobile_20261017.zip`, 시험 서버 데이터 버전 6a32ba45ef2c9b69 (10-16 배포) | - |
 
 ## 사용자 결정 기록
@@ -52,7 +54,7 @@
 - 레이드 측정: 측정 드라이버(자동 사냥)가 보스 장판·낙인을 피하지 못해 10-14 보스 강화 이후 레이드를 잴 수 없다. 회피를 넣으면 다시 잰다(`Docs/BALANCE_MEASURE_2026-10-16.md`)
 - Steam 연동(시험 앱 ID 480: SteamAuth·SteamP2PTransport, 서버 Web API 키), 실제 출시 서버 배포(`server/ops/README.md`)
 - 출시 전 운영: 법률 검토(약관·개인정보처리방침), 번역 원어민 감수, `POLICY_CONSENT_ENFORCE`·`WITHDRAW_DESTROY_ENABLED` 켜기, 클라이언트 결제 구매 화면, 랭킹(미구현)
-- 바르가스·바위 심장 레이드 개방(데이터만 있고 닫혀 있음), jaein 미니 던전 병합 후 성장 추천에 연결
+- 바르가스·바위 심장 레이드 개방(데이터만 있고 닫혀 있음), 랭킹, 지하 사냥터 목표 (끝판 할 거리, `PLAN_WEAKNESS_2026-10-18.md` 4번)
 - 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), 전체 체크리스트: [MASTER_CHECKLIST.md](MASTER_CHECKLIST.md)
 - 지금까지 돌린 테스트(실측·시뮬레이션·실플레이·서버 테스트)와 결과: [TEST_LOG.md](TEST_LOG.md)
 
@@ -65,7 +67,7 @@
 | 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0044, 서버 테스트 112개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
 | 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0044까지 적용, 데이터 버전 6a32ba45ef2c9b69(2026-10-16 배포). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
-| 밸런스 기준 | 총 플레이 Lv40 약 42시간(`Tools/balance/theory_progress.py --measured`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
+| 밸런스 기준 | 총 플레이 Lv40 약 46시간, 미니 던전을 매일 하면 42~44시간(`Tools/balance/theory_progress.py --measured`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
 | 검증 | 컴파일과 관련 서버 테스트는 작업 묶음 끝에 확인한다. 게임 실행·빌드·배포는 요청이 있을 때만 |
 
 ## 개발·검증 방법

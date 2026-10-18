@@ -6,6 +6,7 @@ import { createAchievementRouter } from '../domains/achievements/achievementRout
 import { createCharacterRouter } from '../domains/characters/characterRoutes';
 import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
+import { createMiniDungeonRouter } from '../domains/minidungeon/miniDungeonRoutes';
 import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
 import { createPromoteRouter } from '../domains/promote/promoteRoutes';
 import { createRaidShopRouter } from '../domains/raidshop/raidShopRoutes';
@@ -65,6 +66,7 @@ export function createRouter(): Router {
   r.use(createRaidShopRouter()); // 13단계: 레이드 상점
   r.use(createInventoryRouter());
   r.use(createDungeonRouter());
+  r.use(createMiniDungeonRouter());
   // 4단계: 파티 협동, 자동 매칭, 파티 판, 레이드 (모두 /characters/{uuid}/... 아래)
   r.use(createPartyRouter());
   r.use(createMatchRouter());

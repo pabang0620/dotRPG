@@ -522,7 +522,8 @@ namespace DotRPG
             Fx.Burst("fx_bone", Position + new Vector2(0f, 0.4f), 6, 3.5f, 0.9f);
             Fx.Burst("fx_dust", Position + new Vector2(0f, 0.2f), 4, 1.5f, 0.5f);
             // Quest kill counts follow the server's kill record: a party kill the host did not credit to me is not mine.
-            if (!OnlineEconomy.On || ReportsKill) GameEvents.RaiseEnemyKilled(stats.enemyId);
+            // Mini dungeon kills give XP only (no quest progress).
+            if (GetComponent<MiniDungeonEnemy>() == null && (!OnlineEconomy.On || ReportsKill)) GameEvents.RaiseEnemyKilled(stats.enemyId);
             Died?.Invoke(this);
             Killed?.Invoke(this, stats.xpReward);
             DropLoot();
@@ -534,6 +535,7 @@ namespace DotRPG
 
         void DropLoot()
         {
+            if (GetComponent<MiniDungeonEnemy>() != null) return; // independent XP-only reward route
             if (Game.Player == null || transform.parent == null) return;
             if (OnlineEconomy.On)
             {

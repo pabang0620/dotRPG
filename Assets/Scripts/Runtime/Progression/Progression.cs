@@ -40,10 +40,10 @@ namespace DotRPG
         /// <summary>
         /// [BALANCE 2026-10-16] Measured pace (Builds/WindowsQA -dotrpgMeasure, 2026-10-16): 자동 사냥 kills 20~25 a minute from
         /// Lv16 on, not the 15 the curve was priced for (weapon enhancement x2, follow-up hits and the 2026-10-14 monster pass
-        /// made hunting faster). At that pace Lv40 came at about 33 hours; Lv16+ bars x1.9 (eased in over Lv16-20) put it back
+        /// made hunting faster). At that pace Lv40 came at about 33 hours; Lv16+ bars x1.9 (2026-10-18: x2.1 for the mini dungeons, eased in over Lv16-20) put it back
         /// at about 42 (Tools/balance/theory_progress.py --measured). Lv1-15 is unchanged (the user confirmed its pace).
         /// </summary>
-        public const double PaceLate = 1.9;
+        public const double PaceLate = 2.1; // [BALANCE 2026-10-18] 1.9 -> 2.1 with the mini dungeons (daily 30 min of extra XP)
         static double Pace(int level) => level <= 15 ? 1.0 : level >= 20 ? PaceLate : 1.0 + (PaceLate - 1.0) * (level - 15) / 5.0;
 
         /// <summary>

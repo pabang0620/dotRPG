@@ -1,0 +1,11 @@
+import { z } from 'zod';
+import { charParams, requestId } from '../economy/economyValidation';
+export const runParams = charParams.extend({ run_id: z.uuid() });
+export const enterBody = z.strictObject({ request_id: requestId, tier: z.union([z.literal(10), z.literal(20), z.literal(30)]) });
+export const requestBody = z.strictObject({ request_id: requestId });
+export const killBody = requestBody.extend({ monster_ref: z.uuid() });
+export const leaveBody = requestBody.extend({ reason: z.enum(['left', 'death', 'disconnected']).default('left') });
+export type EnterBody = z.infer<typeof enterBody>;
+export type RequestBody = z.infer<typeof requestBody>;
+export type KillBody = z.infer<typeof killBody>;
+export type LeaveBody = z.infer<typeof leaveBody>;

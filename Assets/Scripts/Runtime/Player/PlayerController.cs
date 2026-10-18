@@ -372,9 +372,10 @@ namespace DotRPG
 
             var cmd = Input != null ? Input.Read(this) : ActorCommand.None;
             // Consume/discard menu input so one-shot actions cannot leak out on resume.
-            // Auto-progress keeps steering behind an open window (online, the world runs on).
+            // Auto-progress keeps steering behind an open window (online, the world runs on), and auto-hunting in a mini dungeon.
             bool autoBehindWindow = QuestAutoPilot.Drives(this) && QuestAutoPilot.WindowOpenInRunningWorld;
-            if (IsLocal && !autoBehindWindow && (!Game.IsPlaying || Game.State.ChangedThisFrame)) cmd = ActorCommand.None;
+            bool miniAuto = Game.MiniDungeon?.Active == true && QuestAutoPilot.Hunting;
+            if (IsLocal && !autoBehindWindow && ((!Game.IsPlaying && !miniAuto) || Game.State.ChangedThisFrame)) cmd = ActorCommand.None;
             // [RAID] Stunned: every key is ignored (the host's copy of a member too, so its commands do nothing).
             if (IsStunned)
             {

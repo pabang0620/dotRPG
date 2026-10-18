@@ -408,6 +408,15 @@ namespace DotRPG
 
         void OnEnemyKilled(EnemyController enemy, int xp)
         {
+            var training = enemy != null ? enemy.GetComponent<MiniDungeonEnemy>() : null;
+            if (training != null)
+            {
+                training.Owner?.CreditKill(enemy);
+                var trainingTable = enemy.GetComponent<ThreatTable>();
+                var trainingKiller = trainingTable != null && Contains(trainingTable.LastAttacker) ? trainingTable.LastAttacker : Local;
+                trainingKiller?.OnKillingBlow();
+                return;
+            }
             // XP goes into the local progression exactly once per kill (companions follow its level).
             var prog = Game.Session.Progression;
             if (!OnlineEconomy.On) // [SERVER] online XP comes with the kill report's answer
