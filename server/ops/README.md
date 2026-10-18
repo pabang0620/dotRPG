@@ -195,7 +195,7 @@ GRANT USAGE ON SEQUENCE account_destruction_log_id_seq TO dotrpg_purge;
 
 ## 10. 시험 서버 (지금 운영 중, Docker 없음)
 
-구글 클라우드 한 대(35.216.2.121, `https://35-216-2-121.sslip.io`)에서 API만 돌린다. DB는 Supabase라서 서버에 PostgreSQL을 설치하지 않는다. 마이그레이션 0039·0040까지 적용돼 있다. 모바일 시험 빌드가 이 주소로 붙는다(`ApiClient.MobileTestServer`).
+구글 클라우드 한 대(35.216.2.121, `https://35-216-2-121.sslip.io`)에서 API만 돌린다. DB는 Supabase라서 서버에 PostgreSQL을 설치하지 않는다. 마이그레이션 0046까지 적용돼 있다(2026-10-18). 모바일 시험 빌드가 이 주소로 붙는다(`ApiClient.MobileTestServer`).
 
 배포 순서(개발 PC의 `server/`에서 시작):
 1. `npm run build`
