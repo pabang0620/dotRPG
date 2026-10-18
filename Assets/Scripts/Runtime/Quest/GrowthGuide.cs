@@ -27,6 +27,8 @@ namespace DotRPG
             public Action action;
         }
 
+        /// <summary>Mini dungeon catch-up (the next main quest waits on level): right after the main quest line.</summary>
+        public const int OrderCatchUp = 50;
         public const int OrderWeekday = 100, OrderNormal = 200, OrderHunt = 300, OrderDaily = 400, OrderParty = 500, OrderExtra = 600;
 
         /// <summary>Registered sources: each returns an entry for the given level, or null when it has nothing to offer.</summary>

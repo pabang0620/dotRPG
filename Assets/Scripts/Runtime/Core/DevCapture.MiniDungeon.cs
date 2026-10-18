@@ -133,7 +133,7 @@ namespace DotRPG
                 string layout = MiniDungeonCatalog.Layout(d.MapId);
                 MiniCheck(d.MapId + " is a separate instance", MapRegistry.Get(d.MapId)?.instanced == true && !WorldRoutes.Neighbors(d.MapId).Any());
                 MiniCheck(d.MapId + " six spawn courts", layout != null && layout.Count(c => c >= '1' && c <= '6') == MiniDungeonCatalog.SpawnCount);
-                MiniCheck(d.MapId + " high-value XP curve", MiniDungeonCatalog.XpPerKill(d.MinLevel) >= (int)Math.Ceiling(Progression.XpToNext(d.MinLevel) / 240.0));
+                MiniCheck(d.MapId + " catch-up XP is ten times the normal rate", MiniDungeonCatalog.XpPerKill(d.MinLevel, true) >= MiniDungeonCatalog.XpPerKill(d.MinLevel) * (MiniDungeonCatalog.CatchUpMultiplier - 1));
             }
         }
 
@@ -197,8 +197,9 @@ namespace DotRPG
                 var victim = MiniEnemies().OrderByDescending(e => Vector2.Distance(e.Position, Game.Player.Position)).FirstOrDefault();
                 if (victim != null) victim.TakeDamage(new DamageInfo(999999, victim.Position, 0, Team.Player, Game.Player.gameObject));
                 yield return Wait(.3f);
-                MiniCheck("real kill grants the entry-level XP amount", TotalXp() - xp == MiniDungeonCatalog.XpPerKill(10));
-                MiniCheck("kill counter and XP recap update", director.Kills == kills + 1 && director.EarnedXp >= MiniDungeonCatalog.XpPerKill(10));
+                int expected = MiniDungeonCatalog.XpPerKill(10, director.CatchingUp);
+                MiniCheck("real kill grants the entry-level XP amount (catch-up aware)", TotalXp() - xp == expected);
+                MiniCheck("kill counter and XP recap update", director.Kills == kills + 1 && director.EarnedXp >= expected);
                 MiniCheck("XP-only kill creates no pickups", FindObjectsByType<Pickup>(FindObjectsSortMode.None).Length == 0 && inventory == MiniInventorySnapshot());
                 kills = director.Kills; xp = TotalXp();
                 director.CreditKill(victim); director.CreditKill(victim);

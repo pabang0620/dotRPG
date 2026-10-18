@@ -66,5 +66,13 @@
  "진행 중인 던전을 먼저 종료해 주세요.": "Finish the dungeon in progress first.",
  "현재 레벨에 맞는 구간을 선택해 주세요.": "Pick the tier that fits your current level.",
  "화력에 비해 처치 보고가 너무 빠릅니다.": "Kill reports are too fast for your damage.",
- "내 레벨 Lv.{0} · 입장 시 처치당 {1:N0} EXP\n실제 처치 수만큼 지급하며, 수련 중 레벨이 올라도 입장 당시 보상 기준을 유지합니다.": "My level Lv.{0} · {1:N0} EXP per kill at entry\nPaid per actual kill; the entry reward rate stays even if you level up while training."
+ "내 레벨 Lv.{0} · 입장 시 처치당 {1:N0} EXP\n실제 처치 수만큼 지급하며, 수련 중 레벨이 올라도 입장 당시 보상 기준을 유지합니다.": "My level Lv.{0} · {1:N0} EXP per kill at entry\nPaid per actual kill; the entry reward rate stays even if you level up while training.",
+ "따라잡기 x{0} · 다음 메인 퀘스트 Lv.{1}까지 미니던전 {2} · 오늘 {3}분 남음": "Catch-up x{0} · mini dungeon {2} until main quest Lv.{1} · {3} min left today",
+ "Lv.10부터 혼자 들어가는 경험치 수련장이에요(하루 30분). 다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 10배예요.": "A solo XP training ground from Lv.10 (30 min a day). Come when the next main quest is blocked by level and XP is 10x.",
+ "따라잡기 x{0}": "Catch-up x{0}",
+ "성장의 틈": "Growth Gap",
+ "자동 수련": "Auto Training",
+ "직접 조작 중": "Manual control",
+ "내 레벨 Lv.{0} · <color=#ffe066>따라잡기 x{1}</color> · 처치당 {2:N0} EXP\n다음 메인 퀘스트가 Lv.{3}을 요구하는 동안만 적용되고, 그 레벨이 되면 평소({4:N0} EXP)로 돌아갑니다.": "My level Lv.{0} · <color=#ffe066>Catch-up x{1}</color> · {2:N0} EXP per kill\nApplies only while the next main quest requires Lv.{3}; at that level it returns to normal ({4:N0} EXP).",
+ "내 레벨 Lv.{0} · 처치당 {1:N0} EXP\n다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 {2}배(따라잡기)입니다.": "My level Lv.{0} · {1:N0} EXP per kill\nCome when the next main quest is blocked by level and XP is {2}x (catch-up)."
 }

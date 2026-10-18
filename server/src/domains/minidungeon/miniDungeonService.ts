@@ -16,9 +16,10 @@ import { activeSessionIdOf } from '../fieldsessions/fieldRepository';
 import { attackCap, effectiveHp, powerAllows } from '../kills/killRules';
 import { getQueueStore } from '../match/queueStore';
 import { findPartyIdOf } from '../party/partyRepository';
+import * as questRepo from '../quests/questRepository';
 import * as tradeRepo from '../trade/tradeRepository';
 import * as repo from './miniDungeonRepository';
-import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_HP_MUL, MINI_TIERS, killCredit, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
+import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_HP_MUL, MINI_TIERS, killCredit, mainQuestLevelGate, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
 import type { EnterBody, KillBody, LeaveBody, RequestBody } from './miniDungeonValidation';
 
 const MONSTER_ID = 'skel_warrior';
@@ -32,9 +33,17 @@ async function settle(client: PoolClient, run: repo.MiniRun, now: Date): Promise
   if (charge.expired) await repo.close(client, run, 'expired', run.ends_at);
 }
 
+/** 처치마다 지금 레벨로 다시 판정한다. 막혔으면 막힌 메인 퀘스트가 요구하는 레벨. */
+async function questGate(ctx: EconCtx): Promise<number | null> {
+  const claimed = await questRepo.allClaimed(ctx.client, ctx.char.id);
+  const flags = await questRepo.storyFlags(ctx.client, ctx.char.id);
+  return mainQuestLevelGate(getGameData().economy.quests, claimed, flags, ctx.level);
+}
+
 const runView = (run: repo.MiniRun) => ({
   id: run.uuid, tier: run.tier, map_id: miniMapId(run.tier), monster_id: MONSTER_ID,
   entry_level: run.entry_level, monster_level: run.entry_level, xp_per_kill: run.xp_per_kill,
+  catch_up_xp_per_kill: xpPerKill(getGameData().economy.progression.xpToNext, run.entry_level, true),
   started_at: run.started_at.toISOString(), ends_at: run.ends_at.toISOString(),
   kills: run.kills, xp_granted: run.xp_granted,
   state: run.state, ended_at: run.ended_at?.toISOString() ?? null,
@@ -52,6 +61,8 @@ async function snapshot(ctx: EconCtx, endedRun?: repo.MiniRun) {
     remaining_seconds: Math.max(0, DAILY_LIMIT_MS - used) / 1000,
     server_time: ctx.now.toISOString(),
     reset: { daily_start_at: reset.dailyStartAt, next_daily_at: reset.nextDailyAt },
+    // 따라잡기: 다음 메인 퀘스트가 이 레벨을 요구해 막혀 있으면 처치 경험치 10배
+    catch_up: { level_gate: await questGate(ctx) },
     tiers: MINI_TIERS.map((tier) => ({ tier, min_level: tier, max_level: tier + 9, map_id: miniMapId(tier), monster_id: MONSTER_ID })),
     active_run: run?.state === 'playing' ? runView(run) : null,
     completed_run: ended ? runView(ended) : null,
@@ -150,11 +161,13 @@ export function kill(accountId: number, uuid: string, runUuid: string, body: Kil
       // General combat/quest grantXp semantics remain unchanged.
       const p = eco.progression;
       const xpToCap = p.xpToNext.slice(ctx.level - 1, p.maxLevel - 1).reduce((sum, xp) => sum + xp, 0) - ctx.xp;
-      const reward = await ctx.grantXp(Math.min(run.xp_per_kill, Math.max(0, xpToCap)), 'mini_dungeon', `${run.uuid}:${body.monster_ref}`);
+      const stuck = await questGate(ctx) !== null;
+      const each = stuck ? xpPerKill(p.xpToNext, run.entry_level, true) : run.xp_per_kill;
+      const reward = await ctx.grantXp(Math.min(each, Math.max(0, xpToCap)), 'mini_dungeon', `${run.uuid}:${body.monster_ref}`);
       await repo.recordKill(ctx.client, run, body.monster_ref, ctx.requestId, reward.granted, credits - KILL_INTERVAL_MS, ctx.now);
       if (ctx.level >= eco.progression.maxLevel) await repo.close(ctx.client, run, 'level_cap', ctx.now);
       // No normal kill_log, kill_stats, drops, items, gold, quest progress or dungeon clear record.
-      return { status: 200, data: { ...await snapshot(ctx, run), accepted: true, granted_xp: reward.granted, leveled_up: reward.leveledUp } };
+      return { status: 200, data: { ...await snapshot(ctx, run), accepted: true, granted_xp: reward.granted, catch_up_applied: stuck, leveled_up: reward.leveledUp } };
     } });
 }
 

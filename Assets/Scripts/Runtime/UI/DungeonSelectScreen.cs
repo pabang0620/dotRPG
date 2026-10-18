@@ -31,7 +31,7 @@ namespace DotRPG
         readonly List<Row> rows = new List<Row>();
         readonly Button[] diffButtons = new Button[4];
         readonly Text[] diffLabels = new Text[4];
-        Button tabWeekday, tabNormal, tabRaid, enterButton, partyButton, resetButton;
+        Button tabWeekday, tabNormal, tabRaid, tabMini, enterButton, partyButton, resetButton;
         Image banner;
         GameObject trailerBadge;
         Text diffTitle;
@@ -62,7 +62,7 @@ namespace DotRPG
             w.tabNormal = Button(w.content, "TabNormal", L.T("일반 던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(TabW + 10f, 0f), new Vector2(TabW, 44f), () => w.SetTab(TabNormal), 20);
             w.tabRaid = Button(w.content, "TabRaid", L.T("레이드"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(2f * (TabW + 10f), 0f), new Vector2(TabW - 40f, 44f), () => w.SetTab(TabRaid), 20);
             // [MINI] 미니던전 (jaein): its own window, opened from here like the side menu does.
-            Button(w.content, "TabMiniDungeon", L.T("미니던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(3f * (TabW + 10f) - 40f, 0f), new Vector2(TabW - 40f, 44f), () => Game.UI.MiniDungeon.Open(), 20);
+            w.tabMini = Button(w.content, "TabMiniDungeon", L.T("미니던전"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(3f * (TabW + 10f) - 40f, 0f), new Vector2(TabW - 40f, 44f), () => Game.UI.MiniDungeon.Open(), 20);
             w.dayText = Label(w.content, "Day", "", 18, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(ContentSize.x - (4f * TabW - 30f) - 16f, 44f), TextAnchor.MiddleRight);
             w.dayText.resizeTextForBestFit = true;
             w.dayText.resizeTextMinSize = 12;
@@ -257,6 +257,7 @@ namespace DotRPG
             // [UNLOCK] Locked tabs read dimmed.
             tabNormal.image.color = ContentUnlocks.IsOpen(ContentUnlocks.Feature.NormalDungeon) ? Color.white : new Color(1f, 1f, 1f, .45f);
             tabRaid.image.color = ContentUnlocks.IsOpen(ContentUnlocks.Feature.Raid) ? Color.white : new Color(1f, 1f, 1f, .45f);
+            tabMini.image.color = ContentUnlocks.IsOpen(ContentUnlocks.Feature.MiniDungeon) ? Color.white : new Color(1f, 1f, 1f, .45f);
             TextOf(tabWeekday).text = L.F("요일 던전 <size=15><color=#ffe066>{0}/{1}</color></size>", progress.EntriesLeft(now), DungeonDatabase.DailyEntries);
             TextOf(tabNormal).text = L.T("일반 던전 <size=15><color=#8fe28f>무제한</color></size>");
             var day = ResetClock.GameDay(now);

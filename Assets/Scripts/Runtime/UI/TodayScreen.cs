@@ -193,6 +193,8 @@ namespace DotRPG
             // 1. The main quest: go on with it (auto-progress), or, while it waits for a level, where to grow.
             var main = Game.Quest.CurrentMain();
             GrowthGuide.Invalidate();
+            // 성장 추천 lines (catch-up, weekday / normal dungeon, hunting ground, requests, party): placed by kind below.
+            var growth = GrowthGuide.Build();
             if (GrowthGuide.Active)
             {
                 int next = GrowthGuide.NextQuestLevel();
@@ -204,6 +206,9 @@ namespace DotRPG
                     if (!QuestAutoPilot.Active) QuestAutoPilot.Toggle();
                     Game.Flow.CloseInventory();
                 });
+
+            // 1b. Mini dungeon catch-up: the fastest way to the level the main quest waits on.
+            foreach (var e in growth) if (e.order == GrowthGuide.OrderCatchUp && e.action != null) Add(list, e.text, e.button, Wrap(e.action, true));
 
             // 2. Content that just opened (the main quest that unlocks it was just finished).
             foreach (var f in ContentUnlocks.RecentlyOpened)
@@ -219,9 +224,6 @@ namespace DotRPG
                 if (mail > 0 && MailScreen.Instance != null) Add(list, L.F("받을 우편 <color=#ffd34a>{0}</color>통", mail), L.T("우편함 열기"), () => OpenWindowFrom(MailScreen.Instance));
                 if (LevelRewardClient.AnyClaimable && LevelRewardScreen.Instance != null) Add(list, L.T("레벨 달성 보상을 받을 수 있습니다"), L.T("보상 받기"), () => OpenWindowFrom(LevelRewardScreen.Instance));
             }
-
-            // 성장 추천 lines (weekday / normal dungeon, hunting ground, requests, party): placed by kind below.
-            var growth = GrowthGuide.Build();
 
             // 4. Weekday dungeons left today.
             foreach (var e in growth) if (e.order == GrowthGuide.OrderWeekday && e.action != null) Add(list, e.text, e.button, Wrap(e.action, true));
@@ -258,10 +260,10 @@ namespace DotRPG
                 if (ready > 0) Add(list, L.F("지금 강화할 수 있는 장비 <color=#ffd34a>{0}</color>개 (골드·재료 충분)", ready), L.T("대장간으로"), GoToForge);
             }
 
-            // 8. The other 성장 추천 lines (normal dungeon, hunting ground, party bonus, mini dungeons).
+            // 8. The other 성장 추천 lines (normal dungeon, hunting ground, party bonus).
             foreach (var e in growth)
             {
-                if (e.order == GrowthGuide.OrderWeekday || e.order == GrowthGuide.OrderDaily) continue;
+                if (e.order == GrowthGuide.OrderCatchUp || e.order == GrowthGuide.OrderWeekday || e.order == GrowthGuide.OrderDaily) continue;
                 bool window = e.order == GrowthGuide.OrderNormal;
                 Add(list, e.text, e.action != null ? e.button : null, e.action != null ? Wrap(e.action, window) : null);
             }

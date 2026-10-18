@@ -27,6 +27,12 @@ namespace DotRPG
         public int Kills { get; private set; }
         public int EarnedXp { get; private set; }
         public int XpPerKill { get; private set; }
+        /// <summary>XP per kill while the next main quest waits on level (<see cref="MiniDungeonCatalog.KillsPerBarStuck"/>).</summary>
+        public int CatchUpXpPerKill { get; private set; }
+        /// <summary>Level the next main quest waits on (0 = none, normal XP). Online: the server's last answer.</summary>
+        public int CatchUpGate => OnlineSession.Playing && onlineReady ? onlineGate :
+            MiniDungeonCatalog.CatchUpGate(Game.Session != null ? Game.Session.Progression.Level : 0);
+        public bool CatchingUp => CatchUpGate > 0;
         public float RemainingSeconds => Active ? Mathf.Max(0f, (float)(deadlineUtc - Now).TotalSeconds) :
             OnlineSession.Playing ? onlineRemaining : Game.Session != null ? Game.Session.MiniDungeonProgress.RemainingSeconds(Now) : MiniDungeonCatalog.DailySeconds;
         public event Action Changed;
@@ -69,6 +75,7 @@ namespace DotRPG
             if (d == null) reason = L.T("존재하지 않는 미니던전입니다.");
             else if (Active || Busy || Game.Flow != null && Game.Flow.IsTransitioning) reason = L.T("이미 입장 중이거나 미니던전을 이용하고 있습니다.");
             else if (Game.Player == null || !Game.Player.gameObject.activeInHierarchy || Game.Player.IsDead) reason = L.T("캐릭터로 접속한 뒤 입장하세요.");
+            else if (ContentUnlocks.LockedReason(ContentUnlocks.Feature.MiniDungeon) is string locked) reason = locked; // [UNLOCK]
             else if (Game.Session.Progression.Level >= Progression.MaxLevel) reason = L.T("만렙 캐릭터는 경험치 미니던전에 입장할 수 없습니다.");
             else if (Game.Session.Progression.Level < d.MinLevel || Game.Session.Progression.Level > d.MaxLevel) reason = L.F("이 구간은 Lv.{0}~{1} 캐릭터만 입장할 수 있습니다.", d.MinLevel, d.MaxLevel);
             else if (Game.Dungeon != null && Game.Dungeon.InRun || Game.World?.Map.instanced == true) reason = L.T("현재 던전에서 나간 뒤 입장하세요.");
@@ -91,6 +98,7 @@ namespace DotRPG
             entryLevel = Game.Session.Progression.Level;
             Kills = EarnedXp = 0;
             XpPerKill = MiniDungeonCatalog.XpPerKill(entryLevel);
+            CatchUpXpPerKill = MiniDungeonCatalog.XpPerKill(entryLevel, true);
             Busy = true;
             generation++;
             QuestAutoPilot.Stop("");
@@ -200,7 +208,9 @@ namespace DotRPG
                 var progress = Game.Session.Progression;
                 int room = -progress.Xp;
                 for (int level = progress.Level; level < Progression.MaxLevel; level++) room += Progression.XpToNext(level);
-                int before = Mathf.Clamp(room, 0, XpPerKill);
+                // Catch-up is judged again on every kill: it stops the moment the waiting main quest's level is reached.
+                int each = MiniDungeonCatalog.CatchUpGate(progress.Level) > 0 ? CatchUpXpPerKill : XpPerKill;
+                int before = Mathf.Clamp(room, 0, each);
                 Game.Session.Progression.AddXp(before);
                 EarnedXp += before;
                 nextSave = Mathf.Min(nextSave, Time.unscaledTime + .75f); // one checkpoint for an AoE burst

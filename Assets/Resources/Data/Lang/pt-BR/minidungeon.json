@@ -66,5 +66,13 @@
  "진행 중인 던전을 먼저 종료해 주세요.": "Termine primeiro a masmorra em andamento.",
  "현재 레벨에 맞는 구간을 선택해 주세요.": "Escolha a faixa adequada ao seu nível atual.",
  "화력에 비해 처치 보고가 너무 빠릅니다.": "Os relatos de abate estão rápidos demais para o seu dano.",
- "내 레벨 Lv.{0} · 입장 시 처치당 {1:N0} EXP\n실제 처치 수만큼 지급하며, 수련 중 레벨이 올라도 입장 당시 보상 기준을 유지합니다.": "Meu nível Lv.{0} · {1:N0} EXP por abate na entrada\nPago por abate real; a taxa de recompensa da entrada se mantém mesmo se você subir de nível treinando."
+ "내 레벨 Lv.{0} · 입장 시 처치당 {1:N0} EXP\n실제 처치 수만큼 지급하며, 수련 중 레벨이 올라도 입장 당시 보상 기준을 유지합니다.": "Meu nível Lv.{0} · {1:N0} EXP por abate na entrada\nPago por abate real; a taxa de recompensa da entrada se mantém mesmo se você subir de nível treinando.",
+ "따라잡기 x{0} · 다음 메인 퀘스트 Lv.{1}까지 미니던전 {2} · 오늘 {3}분 남음": "Recuperação x{0} · minimasmorra {2} até a missão principal Nv.{1} · {3} min restantes hoje",
+ "Lv.10부터 혼자 들어가는 경험치 수련장이에요(하루 30분). 다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 10배예요.": "Um campo de treino de EXP solo a partir do Nv.10 (30 min por dia). Venha quando a próxima missão principal estiver bloqueada por nível: a EXP fica 10x.",
+ "따라잡기 x{0}": "Recuperação x{0}",
+ "성장의 틈": "Lacuna de crescimento",
+ "자동 수련": "Treino automático",
+ "직접 조작 중": "Controle manual",
+ "내 레벨 Lv.{0} · <color=#ffe066>따라잡기 x{1}</color> · 처치당 {2:N0} EXP\n다음 메인 퀘스트가 Lv.{3}을 요구하는 동안만 적용되고, 그 레벨이 되면 평소({4:N0} EXP)로 돌아갑니다.": "Meu nível Nv.{0} · <color=#ffe066>Recuperação x{1}</color> · {2:N0} EXP por abate\nVale só enquanto a próxima missão principal exigir Nv.{3}; ao chegar nele volta ao normal ({4:N0} EXP).",
+ "내 레벨 Lv.{0} · 처치당 {1:N0} EXP\n다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 {2}배(따라잡기)입니다.": "Meu nível Nv.{0} · {1:N0} EXP por abate\nVenha quando a próxima missão principal estiver bloqueada por nível: a EXP fica {2}x (recuperação)."
 }

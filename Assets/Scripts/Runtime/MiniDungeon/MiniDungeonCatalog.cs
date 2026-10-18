@@ -29,12 +29,41 @@ namespace DotRPG
         public static MiniDungeonDef ForMap(string map) => Array.Find(All, d => d.MapId == map);
         public static bool IsMap(string map) => ForMap(map) != null;
         /// <summary>
-        /// [BALANCE 2026-10-18] One level bar per <see cref="KillsPerBar"/> kills (was 240): at 240 a 30-minute run was about 9x
-        /// hunting and Lv40 came at 30~36 hours instead of 42+. At 2,000 (with the Lv16+ curve x2.1) Lv40 stays at 42 hours or
-        /// more even with a mini dungeon every day at the kill-rate cap (Docs/MiniDungeon/design.json, theory_progress.py).
+        /// [BALANCE 2026-10-18 catch-up] The mini dungeon is where a hero fills the level the next main quest waits on, not a
+        /// second hunting ground. Normally one entry-level bar per <see cref="KillsPerBar"/> kills (about 0.5x hunting at Lv20);
+        /// while every open main quest needs a higher level, one bar per <see cref="KillsPerBarStuck"/> (x10, about 5x at Lv20).
+        /// The check runs again on every kill, so the bonus stops the moment the level is reached. With the Lv16+ curve x2.2,
+        /// Lv40 stays at 42 hours or more even with a mini dungeon every day at the kill-rate cap
+        /// (Tools/balance/theory_progress.py --measured --mini, Docs/MiniDungeon/design.json). Server: miniDungeonRules.ts.
         /// </summary>
-        public const int KillsPerBar = 2000;
-        public static int XpPerKill(int entryLevel) => Math.Max(1, (int)Math.Ceiling(Progression.XpToNext(entryLevel) / (double)KillsPerBar));
+        public const int KillsPerBar = 8000, KillsPerBarStuck = 800, CatchUpMultiplier = KillsPerBar / KillsPerBarStuck;
+        public static int XpPerKill(int entryLevel, bool stuck = false) =>
+            Math.Max(1, (int)Math.Ceiling(Progression.XpToNext(entryLevel) / (double)(stuck ? KillsPerBarStuck : KillsPerBar)));
+
+        /// <summary>
+        /// The level the next main quest waits on, or 0 when none does: at least one open main quest (requirements and flags
+        /// met, not completed) and every one of them needs a level above the hero's (its minLevel or a level objective).
+        /// Main quests blocked by anything but level are ignored. Same rule as the server's mainQuestLevelGate.
+        /// </summary>
+        public static int CatchUpGate(int level)
+        {
+            var q = Game.Quest;
+            if (q == null || Game.Session == null) return 0;
+            var j = Game.Session.Journal;
+            int gate = 0;
+            foreach (var d in q.Database.All)
+            {
+                if (d.Kind != QuestKind.Main || j.IsCompleted(d.id)) continue;
+                if (!d.requires.TrueForAll(j.IsCompleted) || !d.requiresFlags.TrueForAll(j.HasFlag)) continue;
+                int need = d.minLevel;
+                foreach (var st in d.steps)
+                    foreach (var o in st.objectives)
+                        if (o.type == ObjectiveTypes.Level) need = Math.Max(need, o.count);
+                if (need <= level) return 0;
+                gate = gate == 0 ? need : Math.Min(gate, need);
+            }
+            return gate;
+        }
 
         /// <summary>Small open arena: six connected spawn courts, decorative water stays beyond the combat floor.</summary>
         public static string Layout(string map)

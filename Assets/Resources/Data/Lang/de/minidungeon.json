@@ -66,5 +66,13 @@
  "진행 중인 던전을 먼저 종료해 주세요.": "Beende zuerst den laufenden Dungeon.",
  "현재 레벨에 맞는 구간을 선택해 주세요.": "Wähle die Stufe, die zu deiner aktuellen Stufe passt.",
  "화력에 비해 처치 보고가 너무 빠릅니다.": "Die Kill-Meldungen sind für deinen Schaden zu schnell.",
- "내 레벨 Lv.{0} · 입장 시 처치당 {1:N0} EXP\n실제 처치 수만큼 지급하며, 수련 중 레벨이 올라도 입장 당시 보상 기준을 유지합니다.": "Meine Stufe Lv.{0} · {1:N0} EP pro Kill beim Eintritt\nBezahlt pro echtem Kill; die Belohnungsrate vom Eintritt bleibt, auch wenn du beim Training aufsteigst."
+ "내 레벨 Lv.{0} · 입장 시 처치당 {1:N0} EXP\n실제 처치 수만큼 지급하며, 수련 중 레벨이 올라도 입장 당시 보상 기준을 유지합니다.": "Meine Stufe Lv.{0} · {1:N0} EP pro Kill beim Eintritt\nBezahlt pro echtem Kill; die Belohnungsrate vom Eintritt bleibt, auch wenn du beim Training aufsteigst.",
+ "따라잡기 x{0} · 다음 메인 퀘스트 Lv.{1}까지 미니던전 {2} · 오늘 {3}분 남음": "Aufholen x{0} · Mini-Dungeon {2} bis Hauptquest Lv.{1} · heute noch {3} Min.",
+ "Lv.10부터 혼자 들어가는 경험치 수련장이에요(하루 30분). 다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 10배예요.": "Ein EP-Trainingsgelände für Solospieler ab Lv.10 (30 Min. pro Tag). Komm, wenn die nächste Hauptquest durch dein Level blockiert ist: dann gibt es 10-fache EP.",
+ "따라잡기 x{0}": "Aufholen x{0}",
+ "성장의 틈": "Wachstumslücke",
+ "자동 수련": "Auto-Training",
+ "직접 조작 중": "Manuelle Steuerung",
+ "내 레벨 Lv.{0} · <color=#ffe066>따라잡기 x{1}</color> · 처치당 {2:N0} EXP\n다음 메인 퀘스트가 Lv.{3}을 요구하는 동안만 적용되고, 그 레벨이 되면 평소({4:N0} EXP)로 돌아갑니다.": "Mein Level Lv.{0} · <color=#ffe066>Aufholen x{1}</color> · {2:N0} EP pro Kill\nGilt nur, solange die nächste Hauptquest Lv.{3} verlangt; ab diesem Level wieder normal ({4:N0} EP).",
+ "내 레벨 Lv.{0} · 처치당 {1:N0} EXP\n다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 {2}배(따라잡기)입니다.": "Mein Level Lv.{0} · {1:N0} EP pro Kill\nKomm, wenn die nächste Hauptquest durch dein Level blockiert ist: dann gibt es {2}-fache EP (Aufholen)."
 }

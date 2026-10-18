@@ -9,10 +9,32 @@ export const miniMapId = (tier: MiniTier): string => `mini_dungeon_${tier}`;
 export const isMiniMap = (id: string): boolean => MINI_TIERS.some((tier) => miniMapId(tier) === id);
 export const tierOf = (level: number, maxLevel: number): MiniTier | null =>
   level >= 10 && level < maxLevel && level < 40 ? (Math.floor(level / 10) * 10) as MiniTier : null;
-// 2026-10-18: 처치 2,000마리 = 입장 레벨 막대 한 칸(240에서 변경). 240이면 30분이 사냥의 약 9배라 Lv40이 30~36시간으로 줄었다
-export const KILLS_PER_BAR = 2000;
-export const xpPerKill = (xpToNext: readonly number[], entryLevel: number): number =>
-  Math.max(1, Math.ceil((xpToNext[entryLevel - 1] ?? 0) / KILLS_PER_BAR));
+// 2026-10-18 따라잡기: 평소에는 처치 8,000마리 = 입장 레벨 막대 한 칸(Lv20 기준 사냥의 약 0.5배), 다음 메인 퀘스트가 레벨 때문에
+// 막혔을 때만 800마리 = 한 칸(x10, Lv20 기준 사냥의 약 5배). 일반 사냥·던전·파티와 다른 점은 "막힌 레벨을 메우는 곳"이라는 것이다.
+// 매일 30분을 상한 속도로 해도 Lv40이 42시간 아래로 내려가지 않는다(Tools/balance/theory_progress.py --measured --mini)
+export const KILLS_PER_BAR = 8000;
+export const KILLS_PER_BAR_STUCK = 800;
+export const xpPerKill = (xpToNext: readonly number[], entryLevel: number, stuck = false): number =>
+  Math.max(1, Math.ceil((xpToNext[entryLevel - 1] ?? 0) / (stuck ? KILLS_PER_BAR_STUCK : KILLS_PER_BAR)));
+
+type MainQuest = { kind: string; minLevel: number; requires: readonly string[]; requiresFlags: readonly string[]; objectives: { levelNeed: number } };
+
+/**
+ * 다음 메인 퀘스트가 레벨 때문에 막혔으면 그 레벨, 아니면 null.
+ * 받을 수 있는 메인 퀘스트(선행·플래그 충족, 미완료)가 하나 이상 있고 그 전부가 지금 레벨보다 높은 레벨을 요구할 때만 막힌 것으로 본다.
+ * 레벨 말고 다른 이유로 못 받는 메인 퀘스트는 세지 않는다.
+ */
+export function mainQuestLevelGate(quests: Iterable<[string, MainQuest]>, claimed: ReadonlySet<string>, flags: ReadonlySet<string>, level: number): number | null {
+  let gate: number | null = null;
+  for (const [id, q] of quests) {
+    if (q.kind !== 'main' || claimed.has(id)) continue;
+    if (q.requires.some((r) => !claimed.has(r)) || q.requiresFlags.some((f) => !flags.has(f))) continue;
+    const need = Math.max(q.minLevel, q.objectives.levelNeed);
+    if (need <= level) return null;
+    gate = gate === null ? need : Math.min(gate, need);
+  }
+  return gate;
+}
 
 /** Server time only; repeated settlement and clock rollback cannot debit twice. */
 export function timeCharge(chargedUntil: Date, endsAt: Date, now: Date): { ms: number; until: Date; expired: boolean } {

@@ -14,7 +14,7 @@ namespace DotRPG
     /// </summary>
     public static class ContentUnlocks
     {
-        public enum Feature { Enhance, Gem, AutoHunt, WeekdayDungeon, NormalDungeon, PartyFinder, Auction, Trade, Daily, SkillStyle, Raid, Promote }
+        public enum Feature { Enhance, Gem, AutoHunt, WeekdayDungeon, NormalDungeon, PartyFinder, Auction, Trade, Daily, SkillStyle, Raid, Promote, MiniDungeon }
 
         sealed class Rule
         {
@@ -35,6 +35,7 @@ namespace DotRPG
             [Feature.PartyFinder] = new Rule { quest = "c1s_firstdungeon", guide = "g_party" },
             [Feature.Auction] = new Rule { quest = "c1s_depths", guide = "g_auction" },
             [Feature.Trade] = new Rule { quest = "c1s_depths", guide = "g_auction" },
+            [Feature.MiniDungeon] = new Rule { quest = "c1s_depths", guide = null }, // Lv.10 band opens right after (c1s_depths needs Lv.9)
             [Feature.Daily] = new Rule { quest = "career_path", guide = "g_daily" },
             [Feature.SkillStyle] = new Rule { quest = "career_path", guide = "g_style" },
             [Feature.Raid] = new Rule { quest = "c1_fortress", onAccept = true, guide = "c1_fortress" }, // same quest as the skeleton king raid's unlockQuest (RaidLockReason)
@@ -101,6 +102,7 @@ namespace DotRPG
             AuctionScreen _ => Feature.Auction,
             PartyFinderScreen _ => Feature.PartyFinder,
             DailyQuestScreen _ => Feature.Daily,
+            MiniDungeonScreen _ => Feature.MiniDungeon,
             _ => (Feature?)null,
         };
 
@@ -142,6 +144,7 @@ namespace DotRPG
             Feature.Daily => L.T("일일·주간 의뢰"),
             Feature.SkillStyle => L.T("스킬 스타일"),
             Feature.Raid => L.T("레이드"),
+            Feature.MiniDungeon => L.T("미니던전"),
             _ => L.T("승급"),
         };
 
@@ -159,6 +162,7 @@ namespace DotRPG
             Feature.Daily => L.T("매일 3개, 매주 3개 의뢰를 받아 경험치와 골드를 모아요."),
             Feature.SkillStyle => L.T("스킬 창 전직 탭에서 스킬 배분을 두 벌 만들어 바꿔 쓸 수 있어요."),
             Feature.Raid => L.T("해골왕 레이드가 열렸어요. 수·토·일에 열리고 혼자서도 보상을 받아요."),
+            Feature.MiniDungeon => L.T("Lv.10부터 혼자 들어가는 경험치 수련장이에요(하루 30분). 다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 10배예요."),
             _ => L.T("대장장이 창의 승급으로 장비 등급을 올려요. 레이드에서 얻는 고대의 핵과 골드가 들어요."),
         };
 

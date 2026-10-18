@@ -3,9 +3,9 @@ import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { setClockOverride } from '../src/utils/clock';
-import { CREDIT_CAP_MS, killCredit, tierOf, timeCharge, xpPerKill } from '../src/domains/minidungeon/miniDungeonRules';
+import { CREDIT_CAP_MS, killCredit, mainQuestLevelGate, tierOf, timeCharge, xpPerKill } from '../src/domains/minidungeon/miniDungeonRules';
 import { auth, buildApp, resetDb, shutdown } from './helpers';
-import { get, goldOf, newHero, post, seedLevel, type Hero } from './economyHelpers';
+import { get, goldOf, newHero, post, seedClaims, seedLevel, type Hero } from './economyHelpers';
 
 const app = buildApp({ PRESENCE_KILL_MODE: 'off' });
 const START = '2026-10-14T03:00:00Z';
@@ -39,9 +39,10 @@ describe('mini dungeon rules', () => {
     expect(tierOf(level as number, 40)).toBe(tier);
   });
   test('XP follows the actual progression table and time cannot be counted twice', () => {
-    expect(xpPerKill(getGameData().economy.progression.xpToNext, 10)).toBe(2);
-    expect(xpPerKill(getGameData().economy.progression.xpToNext, 20)).toBe(49); // 2026-10-18: 레벨 막대 / 2000 (곡선 Lv16+ x2.1)
-    expect(xpPerKill(getGameData().economy.progression.xpToNext, 30)).toBe(155);
+    const bars = getGameData().economy.progression.xpToNext;
+    // 2026-10-18 따라잡기: 평소 레벨 막대 / 8000, 메인 퀘스트가 레벨로 막혔을 때 / 800 (곡선 Lv16+ x2.2)
+    expect([10, 20, 30].map((l) => xpPerKill(bars, l))).toEqual([1, 13, 41]);
+    expect([10, 20, 30].map((l) => xpPerKill(bars, l, true))).toEqual([4, 128, 406]);
     const end = new Date(now.getTime() + 10_000);
     advance(11);
     const first = timeCharge(new Date(START), end, now);
@@ -52,6 +53,18 @@ describe('mini dungeon rules', () => {
     expect(killCredit(0, new Date(START), now)).toBe(11_000);
     advance(1000);
     expect(killCredit(0, new Date(START), now)).toBe(CREDIT_CAP_MS);
+  });
+  test('catch-up applies only when every open main quest needs a higher level', () => {
+    const q = (minLevel: number, levelNeed = 0, requires: string[] = [], requiresFlags: string[] = []) =>
+      ({ kind: 'main', minLevel, requires, requiresFlags, objectives: { levelNeed } });
+    const quests: [string, ReturnType<typeof q>][] = [['a', q(0)], ['b', q(12, 0, ['a'])], ['c', q(0, 15, ['a'])], ['d', q(0, 0, ['a'], ['flag'])]];
+    const none = new Set<string>();
+    expect(mainQuestLevelGate(quests, none, none, 1)).toBeNull(); // a is open
+    expect(mainQuestLevelGate(quests, new Set(['a']), none, 11)).toBe(12); // d waits on a flag, not level -> ignored
+    expect(mainQuestLevelGate(quests, new Set(['a']), new Set(['flag']), 11)).toBeNull(); // d is open
+    expect(mainQuestLevelGate(quests.slice(0, 3), new Set(['a']), none, 11)).toBe(12);
+    expect(mainQuestLevelGate(quests.slice(0, 3), new Set(['a']), none, 12)).toBeNull();
+    expect(mainQuestLevelGate([['s', { ...q(30), kind: 'sub' }]], none, none, 1)).toBeNull();
   });
 });
 
@@ -109,7 +122,7 @@ describe('daily XP-only mini dungeon HTTP', () => {
     const results = await Promise.all([kill(h, run.id, ref), kill(h, run.id, ref)]);
     expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
     const xp = await getPool().query('SELECT count(*)::int AS n, sum(delta)::int AS xp FROM xp_ledger WHERE character_id = $1', [h.dbId]);
-    expect(xp.rows[0]).toEqual({ n: 1, xp: 2 });
+    expect(xp.rows[0]).toEqual({ n: 1, xp: 1 });
   });
   test('an active party rejects solo entry', async () => {
     const h = await hero();
@@ -169,8 +182,8 @@ describe('daily XP-only mini dungeon HTTP', () => {
     advance(5);
     const r = await kill(h, run.id);
     expect(r.status).toBe(200);
-    expect(r.body.data).toMatchObject({ accepted: true, granted_xp: 49, delta: { level: 20, xp: 49 } });
-    expect(r.body.data.active_run).toMatchObject({ kills: 1, xp_granted: 49 });
+    expect(r.body.data).toMatchObject({ accepted: true, granted_xp: 13, catch_up_applied: false, delta: { level: 20, xp: 13 } });
+    expect(r.body.data.active_run).toMatchObject({ kills: 1, xp_granted: 13 });
     expect(r.body.data.delta.gold).toBeUndefined();
     expect(r.body.data.delta.stacks).toBeUndefined();
     expect(await goldOf(h)).toBe(oldGold);
@@ -178,7 +191,7 @@ describe('daily XP-only mini dungeon HTTP', () => {
     for (const table of ['drops', 'kill_stats', 'kill_log', 'dungeon_runs', 'quest_claims']) {
       expect((await getPool().query(`SELECT count(*)::int AS n FROM ${table} WHERE character_id = $1`, [h.dbId])).rows[0].n).toBe(0);
     }
-    expect((await getPool().query('SELECT reason, delta FROM xp_ledger WHERE character_id = $1', [h.dbId])).rows).toEqual([{ reason: 'mini_dungeon', delta: 49 }]);
+    expect((await getPool().query('SELECT reason, delta FROM xp_ledger WHERE character_id = $1', [h.dbId])).rows).toEqual([{ reason: 'mini_dungeon', delta: 13 }]);
     expect((await getPool().query('SELECT count(*)::int AS n FROM income_hourly WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
   });
   test('kill UUID and request replay prevent duplicate credit, mismatched replay is rejected', async () => {
@@ -201,10 +214,10 @@ describe('daily XP-only mini dungeon HTTP', () => {
       advance(4.99);
       const r = await kill(h, run.id);
       expect(r.status).toBe(200);
-      expect(r.body.data.granted_xp).toBe(155);
+      expect(r.body.data.granted_xp).toBe(41);
     }
     const sum = await getPool().query('SELECT reason, count(*)::int AS n, sum(delta)::int AS xp FROM xp_ledger WHERE character_id = $1 GROUP BY reason', [h.dbId]);
-    expect(sum.rows).toEqual([{ reason: 'mini_dungeon', n: 360, xp: 55800 }]);
+    expect(sum.rows).toEqual([{ reason: 'mini_dungeon', n: 360, xp: 360 * 41 }]);
     expect((await getPool().query('SELECT count(*)::int AS n FROM income_hourly WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
     expect((await getPool().query('SELECT count(*)::int AS n FROM economy_holds WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
     advance(4);
@@ -237,6 +250,28 @@ describe('daily XP-only mini dungeon HTTP', () => {
     expect(cap.body.data.active_run).toBeNull();
     expect(cap.body.data.completed_run).toMatchObject({ id: last.body.data.active_run.id, state: 'level_cap', kills: 1, xp_granted: cap.body.data.granted_xp });
     expect((await enter(h, 30)).body.errors.code).toBe('MINI_LEVEL_LOCKED');
+  });
+  test('catch-up: while the next main quest waits on level, kills give 10x and stop once the level is reached', async () => {
+    const h = await hero(19);
+    // c1_stronger(레벨 20 조건)만 남은 상태
+    await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail', 'c1s_patrol', 'c1s_ruins',
+      'c1s_firstdungeon', 'c1s_depths', 'c1_crossing', 'c2s_trader', 'c2s_trader_guard', 'c2s_trader_ore', 'c1_quarry', 'c1_scout', 'career_path']);
+    const entry = await enter(h, 10);
+    expect(entry.body.data.catch_up).toEqual({ level_gate: 20 });
+    const run = entry.body.data.active_run;
+    const bars = getGameData().economy.progression.xpToNext;
+    expect(run).toMatchObject({ xp_per_kill: xpPerKill(bars, 19), catch_up_xp_per_kill: xpPerKill(bars, 19, true) });
+    advance(5);
+    const stuck = await kill(h, run.id);
+    expect(stuck.body.data).toMatchObject({ accepted: true, catch_up_applied: true, granted_xp: xpPerKill(bars, 19, true) });
+    await getPool().query('UPDATE characters SET xp = $2 WHERE id = $1', [h.dbId, bars[18]! - 1]);
+    advance(2);
+    const up = await kill(h, run.id);
+    expect(up.body.data.delta.level).toBe(20);
+    expect(up.body.data.catch_up).toEqual({ level_gate: null });
+    advance(2);
+    const after = await kill(h, run.id);
+    expect(after.body.data).toMatchObject({ accepted: true, catch_up_applied: false, granted_xp: xpPerKill(bars, 19) });
   });
   test('regular reward reports and dungeon entry cannot bypass the XP-only mode', async () => {
     const { h } = await entered();

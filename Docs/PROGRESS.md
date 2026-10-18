@@ -35,6 +35,7 @@
 | AI 동료 부활 | 필드·던전·레이드 어디서든 4·8·16·32초(이후 64초) 뒤 스스로 일어남, 부활 코인 안 씀 | 43286cdd |
 | 약한 점 개선 (2026-10-18) | 레이드 보상 혼자서도(최소 인원 1), 메인 퀘스트로 콘텐츠 해금 + 열릴 때 안내 의뢰 자동 수락(`ContentUnlocks`), "할 일" 바로가기 창(N, `TodayScreen`) (`PLAN_WEAKNESS_2026-10-18.md`) | 837a0cbd |
 | 미니 던전 병합 (jaein) | 경험치 전용 1인 미니 던전 3구간(Lv10~39, 하루 30분, 자동 사냥). 마이그레이션 번호 겹침으로 0042 -> 0046, 성장 추천·할 일 창에 연결(`MiniDungeonGrowth`), 던전 창에 미니던전 탭. 처치당 경험치 막대 1/240 -> 1/2,000, Lv16+ 경험치 x1.9 -> x2.1(Lv40 42시간 이상 유지) | bfe4c2b5 |
+| 미니 던전 따라잡기 | 다음 메인 퀘스트가 레벨 때문에 막혔을 때만 처치 경험치 x10(막대 1/800, 평소 1/8,000), 서버가 처치마다 판정. 메인 1-11로 열림, 따라잡기 때만 성장 추천·할 일 맨 위. Lv16+ 경험치 x2.2 | (이번 커밋) |
 | 공유 빌드 (2026-10-18) | `games/dotRPG_online_20261018.zip`, `games/dotRPG_mobile_20261018.zip`, 시험 서버 데이터 버전 d83a33d68af2b834 (10-18 배포) | - |
 
 ## 사용자 결정 기록
@@ -67,7 +68,7 @@
 | 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0046, 서버 테스트 114개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
 | 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0046까지 적용, 데이터 버전 d83a33d68af2b834(2026-10-18 배포). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
-| 밸런스 기준 | 총 플레이 Lv40 약 46시간, 미니 던전을 매일 하면 42~44시간(`Tools/balance/theory_progress.py --measured`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
+| 밸런스 기준 | 총 플레이 Lv40 약 48시간, 미니 던전을 매일 하면 42.8~43.6시간(`Tools/balance/theory_progress.py --measured --mini`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
 | 검증 | 컴파일과 관련 서버 테스트는 작업 묶음 끝에 확인한다. 게임 실행·빌드·배포는 요청이 있을 때만 |
 
 ## 개발·검증 방법

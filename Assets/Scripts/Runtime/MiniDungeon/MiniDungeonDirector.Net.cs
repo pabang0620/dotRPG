@@ -13,6 +13,7 @@ namespace DotRPG
         string onlineCharacter, onlineRun;
         bool onlineReady, networkBusy;
         float onlineRemaining, nextPulse, nextKill;
+        int onlineGate;
         string CharacterPath(string character) => "/characters/" + character + "/mini-dungeon";
 
         bool SameOnline(string character, int version) => this != null && generation == version &&
@@ -48,6 +49,8 @@ namespace DotRPG
 
         void ApplyOnlineStatus(Dictionary<string, object> data)
         {
+            var catchUp = MiniJson.Obj(data, "catch_up");
+            onlineGate = catchUp != null ? MiniJson.Int(catchUp, "level_gate", 0) : 0;
             onlineRemaining = Mathf.Clamp(Number(data, "remaining_seconds"), 0f, MiniDungeonCatalog.DailySeconds);
             OnlineEconomy.ApplyDelta(MiniJson.Obj(data, "delta"));
             var run = MiniJson.Obj(data, "active_run");
@@ -63,6 +66,7 @@ namespace DotRPG
             }
             onlineRun = MiniJson.Str(run, "id");
             XpPerKill = MiniJson.Int(run, "xp_per_kill", XpPerKill);
+            CatchUpXpPerKill = MiniJson.Int(run, "catch_up_xp_per_kill", CatchUpXpPerKill);
             Kills = MiniJson.Int(run, "kills", Kills);
             EarnedXp = MiniJson.Int(run, "xp_granted", EarnedXp);
             if (DateTime.TryParse(MiniJson.Str(run, "ends_at"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var end) &&

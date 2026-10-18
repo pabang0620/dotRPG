@@ -18,8 +18,16 @@
     ]
   ],
   "entryFee": 0,
-  "xpFormula": "ceil(Progression.XpToNext(entryLevel) / 2000)",
-  "xpFormulaNote": "2026-10-18: 240 -> 2000 (total play time to Lv40 must stay 42h or more; with 240 a daily 30-minute run cut it to 30~36h). modelXp values below are from the 240 design.",
+  "xpFormula": "ceil(Progression.XpToNext(entryLevel) / 8000); catch-up: ceil(XpToNext(entryLevel) / 800) while every open main quest needs a higher level",
+  "xpFormulaNote": "2026-10-18: 240 -> 2000 -> catch-up 8000 / 800 with Lv16+ curve x2.2. Total play time to Lv40 must stay 42h or more (Tools/balance/theory_progress.py --measured --mini: 42.8~43.6h at 20~30 kills/min every day, 48.1h without). modelXp values below are from the 240 design.",
+  "catchUp": {
+    "rule": "Next main quest waits on level: at least one open main quest (requirements and story flags met, not claimed) and every one needs minLevel or a level objective above the hero's level",
+    "judged": "Server, on every kill, with the current level (miniDungeonRules.mainQuestLevelGate); the client mirrors it for display (MiniDungeonCatalog.CatchUpGate)",
+    "multiplier": 10,
+    "difference": "Hunting grounds, dungeons and party hunting pay the same whatever the quest state; the mini dungeon is the place to fill the level the main quest waits on",
+    "unlock": "Main quest 1-11 c1s_depths (ContentUnlocks.Feature.MiniDungeon)",
+    "guide": "성장 추천 and 할 일 show it only while catching up, right after the main quest line"
+  },
   "entryLevelFrozen": true,
   "onlyReward": "XP",
   "autoHunt": "Starts on entry; manual movement/attack stops it; HUD restarts it",

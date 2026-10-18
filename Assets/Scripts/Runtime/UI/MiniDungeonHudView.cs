@@ -61,7 +61,10 @@ namespace DotRPG
             if (!active) { lastSecond = -1; return; }
             toggle.interactable = !run.Busy;
             bool hunting = QuestAutoPilot.Hunting;
-            mode.text = hunting ? L.T("성장의 틈 · 자동 수련") : L.T("성장의 틈 · 직접 조작 중");
+            // Catch-up (x10 while the next main quest waits on level) is the mini dungeon's own rule, so it heads the card.
+            bool catchUp = run.CatchingUp;
+            mode.text = (catchUp ? L.F("따라잡기 x{0}", MiniDungeonCatalog.CatchUpMultiplier) : L.T("성장의 틈")) + " · " + (hunting ? L.T("자동 수련") : L.T("직접 조작 중"));
+            mode.color = catchUp ? UiTheme.Accent : UiTheme.AccentBlue;
             toggleText.text = hunting ? L.T("사냥 중지") : L.T("자동사냥 시작");
             int second = Mathf.CeilToInt(run.RemainingSeconds);
             if (lastSecond == second && lastKills == run.Kills && lastXp == run.EarnedXp) return;

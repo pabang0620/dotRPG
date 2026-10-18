@@ -182,6 +182,7 @@ const itemsSchema = z.looseObject({
 
 const questSchema = z.looseObject({
   id: z.string().min(1),
+  kind: z.string(),
   minLevel: nonNegInt,
   requires: z.array(z.string()),
   requiresFlags: z.array(z.string()),

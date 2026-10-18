@@ -15,7 +15,10 @@ dotRPG 진행 시뮬레이션 (게임을 돌리지 않는 이론 계산).
 - 사냥 시간의 80%가 실제 사냥(나머지 마을·정비)
 - 무리 사이 이동 3초, 퀘스트 처리 메인 5분·서브 3분, 던전 1판 = 기준 시간 + 1분
 
-사용: python3 Tools/balance/theory_progress.py
+- 미니 던전(--mini): 하루 30분, 메인 1-11(c1s_depths) 완료 후 Lv10~39. 처치당 입장 레벨 막대 / 8000, 다음 메인 퀘스트가
+  레벨 때문에 막혔으면 / 800(따라잡기 x10). 막힘은 처치마다 다시 판정한다(서버 miniDungeonRules.ts와 같은 규칙)
+
+사용: python3 Tools/balance/theory_progress.py [--measured] [--mini [분당 처치, 기본 20]] [--pace Lv16+ 배율]
 """
 import json
 import math
@@ -74,6 +77,8 @@ def field_hp_mul(level):
     return FIELD_HP_BASE * (1 + FIELD_HP_SLOPE * (level - 1)) / (1 + 0.12 * (level - 1))
 # 조정 시험용 덮어쓰기 (데이터에 반영한 뒤에는 비워 둔다)
 QUEST_SCALE = 1.0
+MINI_KPM = 0  # 미니 던전 분당 처치(0 = 안 함). 서버 상한은 2초에 1마리 = 분당 30
+MINI_MINUTES, MINI_BASE, MINI_STUCK, MINI_UNLOCK = 30, 8000, 800, "c1s_depths"
 MIN_LEVEL = {}
 XP_MUL = {}
 FIXED_KPM = None
@@ -158,6 +163,29 @@ def dungeon_run(day, level, done_counts):
     return best
 
 
+def rebuild_prog(pace_late):
+    """Progression.XpToNext를 Lv16+ 배율만 바꿔 다시 계산한다(Unity 내보내기 전에 배율을 시험할 때)."""
+    def scale(lv):
+        early = 4 if lv <= 10 else 36 if lv >= 26 else 4 + 32 * (lv - 10) / 16
+        trim = 1 if lv <= 15 else 0.8 if lv >= 18 else 1 - 0.2 * (lv - 15) / 3
+        pace = 1 if lv <= 15 else pace_late if lv >= 20 else 1 + (pace_late - 1) * (lv - 15) / 5
+        return early * trim * pace
+    return [round((40 + (lv - 1) * 30 + (lv - 1) ** 2 * 5) * scale(lv)) for lv in range(1, len(PROG) + 1)]
+
+
+def main_level_gate(level, claimed):
+    """다음 메인 퀘스트가 레벨 때문에 막혔으면 그 레벨, 아니면 0 (서버 mainQuestLevelGate와 같은 규칙)."""
+    gate = 0
+    for q in QUESTS:
+        if q["kind"] != "main" or q["id"] in claimed or any(r not in claimed for r in q["requires"]):
+            continue
+        need = max(MIN_LEVEL.get(q["id"], q["minLevel"]), q["objectives"]["levelNeed"])
+        if need <= level:
+            return 0
+        gate = need if gate == 0 else min(gate, need)
+    return gate
+
+
 def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
     level, xp, total_min, day = 1, 0, 0.0, 0
     claimed, dungeon_clears, raid_clears, keys = set(), 0, {}, 0
@@ -165,7 +193,8 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
     events, reached, done_raid = [], {}, {}
     stats = {"quest_xp": 0, "quest_kill_min": 0.0, "dungeon_xp": 0, "dungeon_min": 0.0, "raid_xp": 0, "hunt_xp": 0, "hunt_min": 0.0, "daily_xp": 0,
              # 골드 계산용(theory_gold.py): 몬스터 레벨별 처치 수, 던전 판(id, 난이도), 보상 받은 레이드(id), 일일·주간 의뢰 청구(레벨)
-             "kills": {}, "kills_t": [], "dungeon_runs": [], "raid_rewards": [], "daily_claims": [], "weekly_claims": []}
+             "kills": {}, "kills_t": [], "dungeon_runs": [], "raid_rewards": [], "daily_claims": [], "weekly_claims": [],
+             "mini_xp": 0, "mini_days": 0, "mini_stuck_days": 0, "mini_stuck_kills": 0, "mini_kills": 0}
 
     def gain(amount):
         nonlocal level, xp
@@ -261,6 +290,25 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     stats["weekly_claims"].append(level)
                     gain(DAILY["weekly"]["xpShare"] * PROG[level - 1])
                 try_quests()
+        # 미니 던전 하루 30분 (입장 1분 포함). 처치마다 막힘을 다시 본다
+        if MINI_KPM > 0 and MINI_UNLOCK in claimed and 10 <= level < 40:
+            entry, stuck_today = level, False
+            total_min += 1
+            for _ in range(int(MINI_KPM * MINI_MINUTES)):
+                if level >= 40:
+                    break
+                stuck = main_level_gate(level, claimed) > 0
+                amount = math.ceil(PROG[entry - 1] / (MINI_STUCK if stuck else MINI_BASE))
+                stats["mini_xp"] += amount
+                stats["mini_kills"] += 1
+                stats["mini_stuck_kills"] += stuck
+                stuck_today = stuck_today or stuck
+                gain(amount)
+            total_min += MINI_MINUTES
+            stats["mini_days"] += 1
+            stats["mini_stuck_days"] += stuck_today
+            try_quests()
+            raids()
         # 요일 던전 3회
         for _ in range(DNG["dailyEntries"]):
             run = dungeon_run(weekday, level, dungeon_clears)
@@ -312,6 +360,8 @@ def report(eff, hours, friend, quests=True):
     for h, d, lv, qid, x, kind in events:
         if qid in ("c1_stronger", "c1_fortress", "c1_road", "c2_trial", "c2_growth", "c2_golem", "c2_north", "c2_grah", "c2_end"):
             print(f"- {qid}: {h:.1f}시간 ({DAYS[d % 7]}), Lv{lv}")
+    if st["mini_days"]:
+        print(f"미니 던전: {st['mini_days']}일, 따라잡기 받은 날 {st['mini_stuck_days']}일, 처치 {st['mini_kills']:,}마리 중 따라잡기 {st['mini_stuck_kills']:,}마리, 경험치 {st['mini_xp']:,.0f}")
     print(f"XP 출처(Lv40까지 대략): 퀘스트 {st['quest_xp']:,.0f} / 사냥 {st['hunt_xp']:,.0f} ({st['hunt_min'] / 60:.1f}시간) / 퀘스트 처치 {st['quest_kill_min'] / 60:.1f}시간 / 던전 {st['dungeon_xp']:,.0f} ({st['dungeon_min'] / 60:.1f}시간) / 레이드 {st['raid_xp']:,.0f} / 일일·주간 의뢰 {st['daily_xp']:,.0f}")
     gaps = []
     for (h0, _, lv0, q0, *_), (h1, _, lv1, q1, *_) in zip(events, events[1:]):
@@ -324,6 +374,12 @@ def report(eff, hours, friend, quests=True):
 
 
 if __name__ == "__main__":
+    import sys
+    if "--pace" in sys.argv:
+        PROG[:] = rebuild_prog(float(sys.argv[sys.argv.index("--pace") + 1]))
+    if "--mini" in sys.argv:
+        i = sys.argv.index("--mini")
+        MINI_KPM = float(sys.argv[i + 1]) if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--") else 20
     total = sum(PROG[:39])
     quest_xp = sum(q["reward"]["xp"] for q in QUESTS)
     print(f"Lv1->40 필요 XP {total:,}, 퀘스트 XP 합 {quest_xp:,} ({quest_xp / total:.0%})")
@@ -333,7 +389,6 @@ if __name__ == "__main__":
     for lv in (1, 5, 10, 15, 20, 25, 30, 35, 39):
         z = best_zone(lv, 0.35)
         print(f"| {lv} | {z[0]}({z[3]}) | {player_attack(lv):.0f} | {z[2]:.1f} | {z[1] * 60:,.0f} | {PROG[lv - 1] / (z[1] * 0.8):.0f}분 |")
-    import sys
     if "--measured" in sys.argv:
         MEASURED_KPM = measured_kpm()
         print("\n# 실측 속도 (자동 사냥, 2026-10-16): " + ", ".join(f"Lv{lv} {MEASURED_KPM[lv]:.0f}" for lv in (16, 21, 26, 31, 36)))
