@@ -15,7 +15,7 @@ namespace DotRPG
         // companions (same hero). The hero is driven by 자동 사냥 (QuestAutoPilot, allowed in runs by MeasureAnywhere) at the
         // recommended level with rare +5 gear (epic for raids); damage, potions and deaths are real. Offline.
         // Options: -measureOnly hunting|dungeons|raids, -measureZones a,b (hunting grounds), -measureMinutes N (hunting minutes per row, game time),
-        // -measureRaid id, -measureCareers fighter,bishop (raids), -measureAware 1 (bursts 망자의 심판), -measureScale N (time scale), -measureOut <file.json>.
+        // -measureRaid id, -measureCareers fighter,bishop (raids), -measureAware 1 (bursts 망자의 심판), -measureDodge 0 (old bot: instant step out only), -measureScale N (time scale), -measureOut <file.json>.
         // =====================================================================================================
 
         const string MeasureDefaultOut = @"C:\Users\admin\Desktop\games\analysis\player-sim\data\dotrpg-measured.json";
@@ -66,7 +66,7 @@ namespace DotRPG
             QuestAutoPilot.MeasureAnywhere = false;
             var meta = HRow(("build", Application.version), ("timeScale", fast ? "fixed 1/30" : (object)scale), ("huntMinutes", minutes), ("only", only),
                 ("measuredAt", DateTime.Now.ToString("s")), ("wallSeconds", Mathf.RoundToInt(Time.realtimeSinceStartup - started)),
-                ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 2.4-3.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled. Potions under 40% HP / 20% MP"));
+                ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 2.4-3.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled; -measureDodge 1 (default): 0.25 s late steps out of ground warnings, stands in its 낙인 circle, hides from 섬멸, hits gimmick totems first. Potions under 40% HP / 20% MP"));
             var root = HRow(("meta", meta), ("hunting", hunting), ("dungeons", dungeons), ("raids", raids));
             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
             File.WriteAllText(outPath, MiniJson.Write(root));
@@ -290,7 +290,15 @@ namespace DotRPG
             }
             QuestAutoPilot.MeasureSkilled = true; // runs are played by hand: time a practised player
             QuestAutoPilot.MeasureAware = MeasureArg("-measureAware", "") == "1"; // knows the raid (bursts 망자의 심판)
+            QuestAutoPilot.MeasureDodge = MeasureArg("-measureDodge", "1") != "0"; // answers 낙인 / 섬멸 / ground warnings (QuestAutoPilot.Dodge.cs)
+            QuestAutoPilot.MeasureDodges = QuestAutoPilot.MeasureCoverMoves = 0;
             row["play"] = QuestAutoPilot.MeasureAware ? "aware" : "skilled";
+            row["dodge"] = QuestAutoPilot.MeasureDodge;
+            // Ground hits on the hero (warnings that resolved with the hero inside) and 섬멸 blasts sat out in cover or not.
+            int groundHits = 0, coverOk = 0, coverMiss = 0;
+            bool annihilating = false, coveredLast = false;
+            Action<Telegraph, List<PlayerController>> onResolve = (t, inside) => { if (t.damage > 0 && Game.Player != null && inside.Contains(Game.Player)) groundHits++; };
+            Telegraph.AnyResolved += onResolve;
             var tally = new MeasureTally();
             Time.timeScale = scale;
             float bossAt = -1f, limit = def.isRaid ? 1800f : 900f;
@@ -318,6 +326,8 @@ namespace DotRPG
                     }
                 MeasureScale(scale);
                 var p = Game.Player;
+                if (SafeCover.Annihilating) { annihilating = true; coveredLast = p != null && SafeCover.Shelters(SafeCover.AnnihilateSource, p); }
+                else if (annihilating) { annihilating = false; if (coveredLast) coverOk++; else coverMiss++; }
                 if (run.InBossRoom && bossAt < 0f) bossAt = run.Elapsed;
                 if (p != null && p.IsDead)
                 {
@@ -338,6 +348,8 @@ namespace DotRPG
             QuestAutoPilot.Stop("");
             QuestAutoPilot.MeasureSkilled = false;
             QuestAutoPilot.MeasureAware = false;
+            QuestAutoPilot.MeasureDodge = false;
+            Telegraph.AnyResolved -= onResolve;
             tally.Close();
             string result = run.State == DungeonRunState.Cleared ? "clear" : run.State == DungeonRunState.Failed ? "fail" : "timeout";
             row["result"] = result;
@@ -355,6 +367,11 @@ namespace DotRPG
             RaidSeal.Ended -= onSeal;
             row["seal_broken"] = sealOk;
             row["seal_failed"] = sealFail;
+            row["ground_hits"] = groundHits;
+            row["dodges"] = QuestAutoPilot.MeasureDodges;
+            row["cover_moves"] = QuestAutoPilot.MeasureCoverMoves;
+            row["annihilate_covered"] = coverOk;
+            row["annihilate_hit"] = coverMiss;
             if (result == "timeout") dir.GiveUp();
             yield return Wait(DungeonDirector.SlowMotionSeconds + DungeonDirector.ClearHoldSeconds + 1f);
             // The reward cards do not matter here: straight back to the village (the result screen waits on its flips).
@@ -367,7 +384,7 @@ namespace DotRPG
             if (Game.UI.Top != null) Game.Flow.CloseInventory();
             if (dir.InRun) Log($"run {def.id} {diff}: still in the run after leaving");
             party.ClearCompanions();
-            Log($"run {def.id} {diff} x{companions}: {result} {run.Elapsed:0}s boss {(bossAt >= 0 ? run.Elapsed - bossAt : 0):0}s deaths {tally.deaths} potions {tally.potions} groggy {groggies} judgment {judgBroken}/{judgBroken + judgLanded} left {(judgLanded > 0 ? 100f * judgLeft / judgLanded : 0f):0}% seal {sealOk}/{sealOk + sealFail}");
+            Log($"run {def.id} {diff} x{companions}: {result} {run.Elapsed:0}s boss {(bossAt >= 0 ? run.Elapsed - bossAt : 0):0}s deaths {tally.deaths} potions {tally.potions} groggy {groggies} judgment {judgBroken}/{judgBroken + judgLanded} left {(judgLanded > 0 ? 100f * judgLeft / judgLanded : 0f):0}% seal {sealOk}/{sealOk + sealFail} ground hits {groundHits} dodges {QuestAutoPilot.MeasureDodges} annihilate {coverOk}/{coverOk + coverMiss}");
         }
 
         IEnumerator MeasureDungeons(List<object> rows, float scale)

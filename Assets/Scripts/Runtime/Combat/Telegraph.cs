@@ -132,6 +132,7 @@ namespace DotRPG
         public bool unblockable = true;
         /// <summary>Called on resolve with the members inside (even when <see cref="damage"/> is 0).</summary>
         public event Action<Telegraph, List<PlayerController>> OnResolve;
+        public static event Action<Telegraph, List<PlayerController>> AnyResolved; // [MEASURE] every simulated resolve (ground hits)
 
         SpriteRenderer edge, fill;
         float flashAge = -1f;
@@ -477,6 +478,7 @@ namespace DotRPG
                 GameObject attacker = Owner != null ? Owner.gameObject : null;
                 MonsterHits.Apply(inside, damage, Origin, knockback, unblockable, attacker);
                 OnResolve?.Invoke(this, inside);
+                AnyResolved?.Invoke(this, inside);
             }
             flashAge = 0f;
             if (Shape != TelegraphShape.Donut && Shape != TelegraphShape.Rect)

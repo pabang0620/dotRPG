@@ -58,6 +58,14 @@ namespace DotRPG
             return dir.sqrMagnitude > 0.0001f ? dir.normalized : straight;
         }
 
+        /// <summary>Is the tile under <paramref name="p"/> (feet) walkable on the loaded map? Off the grid counts as blocked.</summary>
+        public static bool Walkable(Vector2 p)
+        {
+            if (!Ensure()) return true;
+            int c = Cell(p);
+            return c >= 0 && free[c];
+        }
+
         static bool Ensure()
         {
             var world = Game.World;

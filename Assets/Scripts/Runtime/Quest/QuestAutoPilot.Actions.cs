@@ -89,9 +89,17 @@ namespace DotRPG
                 lastProgressAt = Time.time;
                 return;
             }
+            // [MEASURE] -measureDodge: gimmick totems first, then 낙인 / 섬멸 / ground warnings like a person (QuestAutoPilot.Dodge.cs).
+            bool focused = false;
+            if (MeasureDodge)
+            {
+                var focus = MeasurePriority(p);
+                if (focus != null) { best = focus; bestD = Vector2.Distance(focus.Position, p.Position); focused = true; }
+                if (MeasureDodgeTurn(p, best)) return;
+            }
             if (best == null) { status = L.F("{0} · 몬스터를 찾는 중", g.label); Roam(p); return; }
             // [BALANCE] Toned down: when nothing is close, stand a moment (3 s) before walking to a far monster.
-            if (bestD > HuntNear && Game.MiniDungeon?.Active != true)
+            if (bestD > HuntNear && Game.MiniDungeon?.Active != true && !focused)
             {
                 if (farWaitUntil <= 0f) farWaitUntil = Time.time + HuntFarWait;
                 if (Time.time < farWaitUntil) { status = L.F("{0} · 다음 몬스터를 찾는 중", g.label); lastProgressAt = Time.time; lastPos = p.Position; return; }
@@ -125,7 +133,7 @@ namespace DotRPG
         {
             // [MEASURE] A person steps out of a ground warning (the AI companions' rule): the measure bot does too, else
             // squishy careers died to every telegraph and the raid failure rates were overstated (2026-10-13).
-            if (MeasureSkilled && CompanionBrain.EscapeDanger(p.Position, out Vector2 away))
+            if (MeasureSkilled && !MeasureDodge && CompanionBrain.EscapeDanger(p.Position, out Vector2 away))
             {
                 input.next.move = away;
                 input.next.aim = away;

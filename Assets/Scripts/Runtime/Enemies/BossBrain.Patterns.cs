@@ -41,7 +41,7 @@ namespace DotRPG
 
         /// <summary>
         /// [RAID] 수호자 그라흐's 파동: the boss gathers force (a room-wide warning), then everyone takes a hit and is thrown straight away
-        /// from it to the walls. A dash through the burst (invulnerable) avoids both.
+        /// from it to the walls. Only career invulnerability avoids it (the dash has none).
         /// </summary>
         IEnumerator Repel(BossPattern p)
         {
@@ -72,7 +72,7 @@ namespace DotRPG
         /// <summary>
         /// [RAID] 섬멸: a long cast that hits the whole room for most of a mage's HP. Cover is a guardian's 거대 방패 (강철의 보루:
         /// the boss's line of fire is cut by the shield) or one of the two teal safe circles the boss leaves open, so a party
-        /// without a guardian still has a way out. Invulnerability (dash, 1 s guard) also avoids it.
+        /// without a guardian still has a way out. Career invulnerability (1 s guard) also avoids it; the dash does not.
         /// </summary>
         IEnumerator Annihilate(BossPattern p)
         {
