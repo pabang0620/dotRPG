@@ -23,6 +23,8 @@ namespace DotRPG
         /// <summary>Equipped title's name ("" = none).</summary>
         public static string MyTitle { get; private set; } = "";
         public static string MyTitleId { get; private set; } = "";
+        /// <summary>Category of the ranking titles in <see cref="All"/> (not achievements: left out of the achieved count).</summary>
+        public const string RankCategory = "rank";
         public static event Action Changed;
 
         static ApiClient Api => ApiClient.Instance;
@@ -99,6 +101,17 @@ namespace DotRPG
                     id = MiniJson.Str(a, "id"), title = MiniJson.Str(a, "title", ""), description = MiniJson.Str(a, "description", ""), category = MiniJson.Str(a, "category", "growth"),
                     goal = MiniJson.Int(a, "goal", 1), progress = MiniJson.Int(a, "progress"),
                     achieved = !string.IsNullOrEmpty(MiniJson.Str(a, "achieved_at")),
+                });
+            }
+            // Ranking titles (world / guild boss weekly results): owned until they expire, equipped like any title.
+            foreach (var o in MiniJson.Arr(data, "rank_titles") ?? new List<object>())
+            {
+                var t = o as Dictionary<string, object>;
+                DateTime.TryParse(MiniJson.Str(t, "expires_at", ""), null, System.Globalization.DateTimeStyles.RoundtripKind, out var until);
+                All.Add(new AchievementView
+                {
+                    id = MiniJson.Str(t, "id"), title = MiniJson.Str(t, "title", ""), category = RankCategory, goal = 1, progress = 1, achieved = true,
+                    description = until > DateTime.MinValue ? L.F("랭킹 칭호 · {0:M/d HH:mm}까지", until.ToLocalTime()) : L.T("랭킹 칭호"),
                 });
             }
             ReadTitle(MiniJson.Obj(data, "title"));

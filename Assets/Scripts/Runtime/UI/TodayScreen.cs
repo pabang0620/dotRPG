@@ -82,7 +82,7 @@ namespace DotRPG
         public override void Show()
         {
             base.Show();
-            if (OnlineSession.Playing) DailyQuestClient.Refresh();
+            if (OnlineSession.Playing) { DailyQuestClient.Refresh(); BossRushClient.Refresh(); }
             page = 0;
             Refresh();
         }
@@ -242,6 +242,17 @@ namespace DotRPG
                     }
                 }
 
+            // 5b. [BOSS 2026-10-20] World / guild boss tries left today (Lv.40, online).
+            if (online && level >= BossRushClient.EntryLevel && BossRushClient.Loaded)
+            {
+                var wb = BossRushClient.WorldBoss;
+                if (wb != null && wb.attemptsLeft > 0)
+                    Add(list, L.F("<color=#c9a2ff>월드보스</color> · 오늘 남은 도전 {0} / {1}", wb.attemptsLeft, wb.attemptsPerDay), L.T("보스 창 열기"), () => OpenWindowFrom(OpenBoss(BossRushClient.World)));
+                var gb = BossRushClient.GuildBoss;
+                if (gb != null && gb.attemptsLeft > 0 && !gb.Waiting)
+                    Add(list, L.F("<color=#c9a2ff>길드보스</color> {0}단계 · 오늘 남은 도전 {1} / {2}", System.Math.Max(1, gb.stage), gb.attemptsLeft, gb.attemptsPerDay), L.T("보스 창 열기"), () => OpenWindowFrom(OpenBoss(BossRushClient.Guild)));
+            }
+
             // 6. Daily / weekly requests.
             foreach (var e in growth) if (e.order == GrowthGuide.OrderDaily && e.action != null) Add(list, e.text, e.button, Wrap(e.action, true));
 
@@ -269,6 +280,13 @@ namespace DotRPG
             }
         }
 
+        /// <summary>The boss window on <paramref name="kind"/>'s tab (opened by the caller).</summary>
+        static MenuScreen OpenBoss(string kind)
+        {
+            BossRushScreen.SetTab(kind);
+            return BossRushScreen.Instance;
+        }
+
         /// <summary>A 성장 추천 action; <paramref name="window"/>: it opens a window, so Esc there comes back to this list.</summary>
         static Action Wrap(Action action, bool window) => () =>
         {
@@ -293,6 +311,7 @@ namespace DotRPG
                 case ContentUnlocks.Feature.Auction: return (L.T("경매장"), () => OpenWindowFrom(AuctionScreen.Instance));
                 case ContentUnlocks.Feature.Trade: return (L.T("1:1 교환 (친구 창)"), () => OpenWindowFrom(SocialScreen.Instance));
                 case ContentUnlocks.Feature.Daily: return (L.T("일일·주간 의뢰"), () => OpenWindowFrom(DailyQuestScreen.Instance));
+                case ContentUnlocks.Feature.Guild: return (L.T("길드"), () => OpenWindowFrom(GuildScreen.Instance));
                 default: return (f.ToString(), null);
             }
         }

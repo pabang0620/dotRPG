@@ -104,6 +104,9 @@ namespace DotRPG
                 case GameAction.Friends: return SocialScreen.Instance;
                 case GameAction.Cosmetics: return Game.UI.Cosmetics;
                 case GameAction.Today: return TodayScreen.Instance; // [TODAY]
+                case GameAction.Guild: return GuildScreen.Instance; // [GUILD]
+                case GameAction.Bosses: return BossRushScreen.Instance; // [BOSS]
+                case GameAction.Ranking: return RankingScreen.Instance; // [RANK]
                 default: return null;
             }
         }
@@ -184,6 +187,7 @@ namespace DotRPG
         public void NewGame(CharacterClass playerClass = CharacterClass.Warrior, string heroName = null)
         {
             Game.MiniDungeon?.Abort();
+            Game.BossRush?.Abort();
             OnlineSession.Current?.LeaveCharacter(); // [SERVER] offline play saves to files
             StartCoroutine(Transition(() =>
             {
@@ -198,6 +202,7 @@ namespace DotRPG
         public void EnterOnline(SaveData data)
         {
             Game.MiniDungeon?.Abort();
+            Game.BossRush?.Abort();
             StartCoroutine(Transition(() =>
             {
                 Game.Session.Restore(data, Game.Config);
@@ -214,6 +219,7 @@ namespace DotRPG
         public void ContinueGame()
         {
             Game.MiniDungeon?.Abort();
+            Game.BossRush?.Abort();
             OnlineSession.Current?.LeaveCharacter(); // [SERVER] offline play saves to files
             var data = Game.Saves.Read();
             if (data == null)
@@ -269,6 +275,7 @@ namespace DotRPG
         public void TravelTo(string mapId, bool arriveAtSpawn)
         {
             if (Game.MiniDungeon?.Active == true) { Game.MiniDungeon.Leave(); return; }
+            if (Game.BossRush?.Active == true) { Game.BossRush.Leave(); return; }
             if (transitioning || !Game.IsPlaying || !MapRegistry.Exists(mapId) || mapId == Game.World.MapId) return;
             string from = Game.World.MapId;
             StartCoroutine(Transition(() =>
@@ -301,6 +308,7 @@ namespace DotRPG
         public bool UseTownScroll()
         {
             if (Game.MiniDungeon?.Active == true) { Game.MiniDungeon.Leave(); return false; }
+            if (Game.BossRush?.Active == true) { Game.BossRush.Leave(); return false; }
             if (transitioning || readingScroll || Game.Player == null || Game.Player.IsDead) return false;
             // [DUNGEON] Dungeons are left through the result screen.
             if (Game.Dungeon != null && Game.Dungeon.InRun)
@@ -390,6 +398,7 @@ namespace DotRPG
         public void ReturnToTitle()
         {
             Game.MiniDungeon?.Abort();
+            Game.BossRush?.Abort();
             // [SERVER] Online: send the last position before leaving (the upload finishes in the background).
             // Progress is saved on the way out (offline file / online upload), so nothing is lost.
             WriteSave();
@@ -409,6 +418,7 @@ namespace DotRPG
         public void QuitGame()
         {
             Game.MiniDungeon?.Abort();
+            Game.BossRush?.Abort();
             Game.Settings.Save();
             if (Game.IsPlaying || Game.State.Current == GameState.Paused) WriteSave(); // saved on the way out
             if (OnlineSession.Playing)
@@ -439,6 +449,7 @@ namespace DotRPG
         public void OnPlayerDied()
         {
             if (Game.MiniDungeon != null && Game.MiniDungeon.HandleLocalDeath()) return;
+            if (Game.BossRush != null && Game.BossRush.HandleLocalDeath()) return; // [BOSS] the attempt ends, no game over
             // [DUNGEON] In a dungeon: coin countdown / failed result instead of game over.
             if (Game.Dungeon != null && Game.Dungeon.HandleLocalDeath()) return;
             StartCoroutine(GameOverRoutine());

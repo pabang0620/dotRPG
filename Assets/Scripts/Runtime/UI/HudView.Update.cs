@@ -11,7 +11,7 @@ namespace DotRPG
         {
             if (!built) return;
             // [CONTENT] The quest tracker is hidden inside dungeons (room map + boss bar own that space).
-            bool inRun = (Game.Dungeon != null && Game.Dungeon.InRun) || Game.MiniDungeon?.Active == true;
+            bool inRun = (Game.Dungeon != null && Game.Dungeon.InRun) || Game.MiniDungeon?.Active == true || Game.BossRush?.Active == true;
             var hudRect = ((RectTransform)transform).rect;
             var bossBar = BossHpBarView.Instance;
             bool bossShown = bossBar != null && bossBar.DevVisible;

@@ -12,7 +12,7 @@ namespace DotRPG
         /// </summary>
         public void Refresh()
         {
-            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true)
+            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true || BossRushDirector.InArena)
             { Changed?.Invoke(); return; } // finish level objectives and story rewards after returning to the world
             if (evaluating || Game.Session == null || !StoryEnabled)
             {
@@ -125,7 +125,7 @@ namespace DotRPG
         /// <summary>Starts cutscene objectives of the current steps whose map is the one the player is on.</summary>
         void TryAutoCutscenes()
         {
-            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true) return;
+            if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true || BossRushDirector.InArena) return;
             if (cutscenePlaying || Game.Cutscenes == null || Game.Cutscenes.IsPlaying || !Game.IsPlaying) return;
             // Story scenes wait until the party is back on the map (not in the raid boss room before the results).
             if (Game.Dungeon != null && Game.Dungeon.InRun) return;

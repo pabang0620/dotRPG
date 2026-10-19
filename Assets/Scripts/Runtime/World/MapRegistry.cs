@@ -104,7 +104,7 @@ namespace DotRPG
             foreach (var map in Interiors)
                 if (map.id == id) return map;
             // [DUNGEON] Instanced dungeon rooms (MapRegistry.Dungeon.cs).
-            return GetRoom(id) ?? GetMiniDungeon(id);
+            return GetRoom(id) ?? GetMiniDungeon(id) ?? GetBossArena(id); // [BOSS] 월드·길드보스 arena (BossRushCatalog.cs)
         }
 
         public static bool Exists(string id) => Get(id) != null;

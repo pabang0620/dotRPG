@@ -31,6 +31,7 @@ export type ChatErrCode =
   | 'MESSAGE_BLOCKED'
   | 'CHANNEL_INVALID'
   | 'NOT_IN_PARTY'
+  | 'NOT_IN_GUILD'
   | 'TARGET_REQUIRED'
   | 'TARGET_NOT_FOUND'
   | 'TARGET_OFFLINE'

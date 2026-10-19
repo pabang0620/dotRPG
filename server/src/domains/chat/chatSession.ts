@@ -24,6 +24,10 @@ export interface ServerProfile {
   weapon: string;
   /** 이 계정이 소유한 외형 id(없으면 빈 집합) */
   ownedSkins: Set<string>;
+  /** 0047: 길드 이름·길드 이름 색·캐릭터 이름 색(랭킹 꾸미기). 없으면 null */
+  guildName?: string | null;
+  guildColor?: string | null;
+  nameColor?: string | null;
 }
 
 const MAX_BUFFERED_BYTES = 1024 * 1024;

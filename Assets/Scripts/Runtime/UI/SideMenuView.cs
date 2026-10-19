@@ -14,7 +14,7 @@ namespace DotRPG
         // Grid cell: icon button centred at the top, its label centred under it inside the same width (labels like
         // "파티 찾기" / "외형 상점" used to spill into the next cell at 72 px).
         const float Size = 50f, StepX = 88f, StepY = 86f, Pad = 10f;
-        const int Columns = 3;
+        const int Columns = 4; // [GUILD / BOSS / RANK 2026-10-20] 21 entries: four across keeps it six rows tall (was 3 x 6)
         /// <summary>Right of the status bars (StatusBarsView: 18 + 76 + 296) with a small gap.</summary>
         const float Left = 404f, Top = -16f;
 
@@ -53,6 +53,9 @@ namespace DotRPG
             view.Add("menuicon_party", L.T("파티"), () => PartyHub.Open()); // [UX] the party hub on its default page
             view.Add("menuicon_finder", L.T("파티 찾기"), () => PartyHub.Open(PartyHub.Page.Finder)); view.Add("menuicon_auction", L.T("경매장"), () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", L.T("친구"), () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
+            view.Add("menuicon_party", L.T("길드"), GuildScreen.Open); // [GUILD]
+            view.Add("menuicon_raid", L.T("월드·길드보스"), () => BossRushScreen.Open()); // [BOSS]
+            view.Add("menuicon_achievement", L.T("랭킹"), () => RankingScreen.OpenBoard(RankingClient.WorldBoard)); // [RANK]
             view.mailEntry = view.Add("menuicon_mail", L.T("우편"), () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
             view.Add("menuicon_achievement", L.T("업적"), () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
             view.rewardEntry = view.Add("menuicon_levelreward", L.T("레벨 보상"), () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]
@@ -71,7 +74,7 @@ namespace DotRPG
             UIFactory.Place(rt, new Vector2(0f, 1f), new Vector2(0f, 1f), SlotPos(entries.Count), new Vector2(Size, Size));
             entries.Add(rt);
             // [UNLOCK] Content the main quest has not opened reads dimmed (a press still says which quest opens it).
-            var feature = ContentUnlocks.FeatureOfMenu(icon, label == L.T("일일 의뢰"));
+            var feature = ContentUnlocks.FeatureOfMenu(icon, label == L.T("일일 의뢰"), label);
             if (feature.HasValue) locks.Add((rt.gameObject.AddComponent<CanvasGroup>(), feature.Value));
             return rt;
         }

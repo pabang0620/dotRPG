@@ -7,6 +7,9 @@ import { createCharacterRouter } from '../domains/characters/characterRoutes';
 import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
 import { createMiniDungeonRouter } from '../domains/minidungeon/miniDungeonRoutes';
+import { createGuildRouter } from '../domains/guilds/guildRoutes';
+import { createBossRushRouter } from '../domains/bossrush/bossRushRoutes';
+import { createRankingRouter } from '../domains/rankings/rankingRoutes';
 import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
 import { createPromoteRouter } from '../domains/promote/promoteRoutes';
 import { createRaidShopRouter } from '../domains/raidshop/raidShopRoutes';
@@ -67,6 +70,10 @@ export function createRouter(): Router {
   r.use(createInventoryRouter());
   r.use(createDungeonRouter());
   r.use(createMiniDungeonRouter());
+  // 길드·월드보스·길드보스·주간 랭킹(Docs/PLAN_GUILD_WORLDBOSS_2026-10-20.md)
+  r.use(createGuildRouter());
+  r.use(createBossRushRouter());
+  r.use(createRankingRouter());
   // 4단계: 파티 협동, 자동 매칭, 파티 판, 레이드 (모두 /characters/{uuid}/... 아래)
   r.use(createPartyRouter());
   r.use(createMatchRouter());

@@ -4,7 +4,7 @@ import { query } from '../../db/pool';
 
 export interface StoredLine {
   id: number;
-  channel: 'general' | 'party' | 'whisper';
+  channel: 'general' | 'party' | 'whisper' | 'guild';
   sender_account_id: number;
   sender_character_uuid: string;
   sender_name: string;
@@ -31,9 +31,11 @@ const LINE_SELECT = `SELECT m.id, m.channel, m.sender_account_id, sc.uuid AS sen
 export interface NewMessage {
   /** 장착한 칭호 이름(없으면 null) */
   senderTitle?: string | null;
-  channel: 'general' | 'party' | 'whisper';
+  channel: 'general' | 'party' | 'whisper' | 'guild';
   shard: number | null;
   partyId: number | null;
+  /** 길드 채널: 보낼 때의 길드(0047) */
+  guildId?: number | null;
   senderAccountId: number;
   senderCharacterId: number;
   senderName: string;
@@ -49,12 +51,12 @@ export interface NewMessage {
 export async function insertMessage(m: NewMessage): Promise<{ id: number; createdAt: Date } | null> {
   const r = await query<{ id: string; created_at: Date }>(
     `INSERT INTO chat_messages (channel, shard, party_id, sender_account_id, sender_character_id, sender_name,
-                                recipient_account_id, recipient_character_id, recipient_name, text, filtered, client_msg_id, sender_title)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                                recipient_account_id, recipient_character_id, recipient_name, text, filtered, client_msg_id, sender_title, guild_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      ON CONFLICT ON CONSTRAINT chat_messages_client_uq DO NOTHING
      RETURNING id, created_at`,
     [m.channel, m.shard, m.partyId, m.senderAccountId, m.senderCharacterId, m.senderName, m.recipientAccountId,
-      m.recipientCharacterId, m.recipientName, m.text, m.filtered, m.clientMsgId, m.senderTitle ?? null],
+      m.recipientCharacterId, m.recipientName, m.text, m.filtered, m.clientMsgId, m.senderTitle ?? null, m.guildId ?? null],
   );
   const row = r.rows[0];
   return row ? { id: Number(row.id), createdAt: row.created_at } : null;

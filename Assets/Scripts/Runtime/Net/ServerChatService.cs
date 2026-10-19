@@ -61,6 +61,7 @@ namespace DotRPG
             if (text.Length == 0) return "";
             if (channel == ChatChannel.System) return L.T("시스템 채널에는 쓸 수 없습니다.");
             if (!socket.Ready) return socket.StopReason ?? L.T("채팅 서버에 다시 연결하는 중입니다.");
+            if (channel == ChatChannel.Guild && GuildClient.Loaded && !GuildClient.InGuild) return L.T("길드에 들어가 있지 않습니다."); // [GUILD]
             if (text.Length > ChatRules.MaxLength) text = text.Substring(0, ChatRules.MaxLength);
             if (clock - lastSent < ChatRules.MinInterval) return L.T("채팅은 1초에 한 번만 보낼 수 있습니다.");
             if (channel == ChatChannel.Whisper)
@@ -83,9 +84,9 @@ namespace DotRPG
             return null;
         }
 
-        static string ChannelCode(ChatChannel c) => c == ChatChannel.Party ? "party" : c == ChatChannel.Whisper ? "whisper" : "general";
+        static string ChannelCode(ChatChannel c) => c == ChatChannel.Party ? "party" : c == ChatChannel.Whisper ? "whisper" : c == ChatChannel.Guild ? "guild" : "general";
 
-        static ChatChannel ChannelOf(string code) => code == "party" ? ChatChannel.Party : code == "whisper" ? ChatChannel.Whisper : ChatChannel.General;
+        static ChatChannel ChannelOf(string code) => code == "party" ? ChatChannel.Party : code == "whisper" ? ChatChannel.Whisper : code == "guild" ? ChatChannel.Guild : ChatChannel.General;
 
         public void PostSystem(string text) => Add(new ChatLine { channel = ChatChannel.System, from = "", text = text, time = clock });
 
@@ -206,7 +207,7 @@ namespace DotRPG
             string fromName = MiniJson.Str(from, "name", "");
             Remember(fromName, MiniJson.Str(from, "id"));
             Remember(MiniJson.Str(to, "name"), MiniJson.Str(to, "id"));
-            Add(new ChatLine { channel = ChannelOf(MiniJson.Str(m, "channel")), from = fromName, to = MiniJson.Str(to, "name"), text = MiniJson.Str(m, "text", ""), time = clock, title = MiniJson.Str(from, "title", "") });
+            Add(new ChatLine { channel = ChannelOf(MiniJson.Str(m, "channel")), from = fromName, to = MiniJson.Str(to, "name"), text = MiniJson.Str(m, "text", ""), time = clock, title = MiniJson.Str(from, "title", ""), nameColor = MiniJson.Str(from, "name_color") ?? MiniJson.Str(m, "name_color") });
         }
 
         void Remember(string name, string id)

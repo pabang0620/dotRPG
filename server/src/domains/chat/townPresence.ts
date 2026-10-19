@@ -4,6 +4,7 @@ import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { parseItemKey } from '../../utils/itemKey';
+import { nameplateOf } from '../rankings/nameplate';
 import type { ChatSession, ServerProfile, TownLook } from './chatSession';
 import { registry } from './realtimeNotifier';
 import type { Frame, TownPosFrame } from './wsProtocol';
@@ -34,6 +35,9 @@ function frameOf(s: ChatSession, t: TownLook): Frame {
     aura: t.aura,
     weapon: t.weapon,
     level: t.level,
+    ...(s.profile?.guildName ? { guild_name: s.profile.guildName } : {}),
+    ...(s.profile?.guildColor ? { guild_color: s.profile.guildColor } : {}),
+    ...(s.profile?.nameColor ? { name_color: s.profile.nameColor } : {}),
   };
 }
 
@@ -74,6 +78,10 @@ export async function loadProfile(s: ChatSession): Promise<void> {
     weapon: row.weapon ? (parseItemKey(row.weapon)?.base ?? '') : '',
     ownedSkins: new Set(row.skins ?? []),
   };
+  const plate = await nameplateOf(getPool(), s.characterId, new Date());
+  profile.guildName = plate.guild_name;
+  profile.guildColor = plate.guild_color;
+  profile.nameColor = plate.name_color;
   s.profile = profile;
   s.profileAt = Date.now();
 }

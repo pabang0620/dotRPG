@@ -85,6 +85,8 @@ const envSchema = z.object({
   // 2026-10-18: 혼자(AI 동료 포함)도 레이드 보상을 받는다(사용자 결정). 2 이상으로 두면 그 인원 미만은 연습판(TOO_FEW_HUMANS)
   RAID_REWARD_MIN_HUMANS: posInt(1),
   RAID_PRACTICE_PAYS_KILLS: boolStr.default(false),
+  // 월드보스 주간 공유 체력(bossRushRules.WORLD_BOSS_HP_DEFAULT 근거). 새 주의 시즌을 만들 때만 읽는다
+  WORLD_BOSS_HP: posInt(16_000_000),
   // Steam 인증(값이 틀리면 기동하지 않는다)
   STEAM_AUTH_MODE: z.enum(['off', 'mock', 'web_api']).default('off'),
   STEAM_APP_ID: z.coerce.number().int().positive().optional(),
@@ -476,6 +478,7 @@ export interface AppConfig {
     partyDamageMinRatio: number;
     raidRewardMinHumans: number;
     raidPracticePaysKills: boolean;
+    worldBossHp: number;
   };
 }
 
@@ -792,6 +795,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       partyDamageMinRatio: e.PARTY_DAMAGE_MIN_RATIO,
       raidRewardMinHumans: e.RAID_REWARD_MIN_HUMANS,
       raidPracticePaysKills: e.RAID_PRACTICE_PAYS_KILLS,
+      worldBossHp: e.WORLD_BOSS_HP,
     },
   };
 }

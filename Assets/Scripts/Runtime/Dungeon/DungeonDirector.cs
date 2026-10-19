@@ -126,6 +126,7 @@ namespace DotRPG
         {
             if (Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true)
             { GameEvents.RaiseToast(L.T("미니던전에서 나간 뒤 입장하세요.")); return false; }
+            if (BossRushDirector.InArena) { GameEvents.RaiseToast(L.T("보스 도전을 마친 뒤 입장하세요.")); return false; } // [BOSS]
             // One party: with other people in my online party, entering takes all of them (and AI for the free seats).
             var pc = PartyClient.Instance;
             if (OnlineEconomy.On && pc != null && pc.InParty && pc.Members.Count >= 2) return EnterAsParty(pc, dungeon, difficulty);

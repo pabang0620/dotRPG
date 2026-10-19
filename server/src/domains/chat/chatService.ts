@@ -14,6 +14,8 @@ import { activeMuteUntil, createAutoMute } from './sanctionService';
 import type { ChatErrCode, ChatSendFrame, Frame } from './wsProtocol';
 import { titleOf } from '../achievements/achievementRepository';
 import { titleName } from '../achievements/achievementService';
+import * as guildRepo from '../guilds/guildRepository';
+import { nameplateOf } from '../rankings/nameplate';
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 
@@ -59,7 +61,7 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
     s.send(ackFrom(f.cid, dup, true));
     return;
   }
-  if (f.channel !== 'general' && f.channel !== 'party' && f.channel !== 'whisper') {
+  if (f.channel !== 'general' && f.channel !== 'party' && f.channel !== 'whisper' && f.channel !== 'guild') {
     fail(s, f.cid, 'CHANNEL_INVALID', '알 수 없는 채널입니다.');
     return;
   }
@@ -106,6 +108,8 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
   // 7. 채널별 검사
   let partyId: number | null = null;
   let partyMembers: number[] = [];
+  let guildId: number | null = null;
+  let guildMembers: number[] = [];
   let target: repo.TargetCharacter | null = null;
   let targetBlockedMe = false;
   if (channel === 'party') {
@@ -116,6 +120,14 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
     }
     partyId = p.partyId;
     partyMembers = p.memberIds;
+  } else if (channel === 'guild') {
+    const m = await guildRepo.membershipOf(getPool(), s.characterId);
+    if (!m) {
+      fail(s, f.cid, 'NOT_IN_GUILD', '길드에 속해 있지 않습니다.');
+      return;
+    }
+    guildId = m.guild_id;
+    guildMembers = await guildRepo.memberIds(getPool(), m.guild_id);
   } else if (channel === 'whisper') {
     if (f.to === undefined && f.to_name === undefined) {
       fail(s, f.cid, 'TARGET_REQUIRED', '귓속말 상대를 적어 주세요. (/w 이름 내용)');
@@ -174,6 +186,8 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
   }
   // 칭호: 보낼 때 장착한 것의 이름(바꾸면 다음 말부터 바뀐다)
   const senderTitle = titleName(await titleOf(getPool(), s.characterId));
+  // 길드 이름·이름 색(랭킹 꾸미기). 표시용이라 보낼 때의 값을 그대로 싣는다
+  const plate = await nameplateOf(getPool(), s.characterId, new Date(now));
   try {
     await getChatWriter().run(async () => {
       const saved = await repo.insertMessage({
@@ -181,6 +195,7 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
         channel,
         shard: channel === 'general' ? s.shard : null,
         partyId,
+        guildId,
         senderAccountId: s.accountId,
         senderCharacterId: s.characterId,
         senderName: s.characterName,
@@ -201,7 +216,11 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
         t: 'chat.msg',
         seq: saved.id,
         channel,
-        from: { id: s.characterUuid, name: s.characterName, ...(senderTitle ? { title: senderTitle } : {}) },
+        from: {
+          id: s.characterUuid, name: s.characterName, ...(senderTitle ? { title: senderTitle } : {}),
+          ...(plate.guild_name ? { guild_name: plate.guild_name } : {}), ...(plate.guild_color ? { guild_color: plate.guild_color } : {}),
+          ...(plate.name_color ? { name_color: plate.name_color } : {}),
+        },
         text: masked.text,
         at: saved.createdAt.toISOString(),
       };
@@ -209,8 +228,8 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
       const receivers: ChatSession[] =
         channel === 'general'
           ? registry.inShard(s.shard)
-          : channel === 'party'
-            ? partyMembers.map((id) => registry.ofCharacter(id)).filter((x): x is ChatSession => x !== undefined)
+          : channel === 'party' || channel === 'guild'
+            ? (channel === 'party' ? partyMembers : guildMembers).map((id) => registry.ofCharacter(id)).filter((x): x is ChatSession => x !== undefined)
             : [registry.ofCharacter((target as repo.TargetCharacter).id)].filter((x): x is ChatSession => x !== undefined);
       for (const r of receivers) {
         if (r === s || r.blocks.has(s.accountId)) continue;

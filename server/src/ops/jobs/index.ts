@@ -10,9 +10,10 @@ import { staleRunsJob } from './staleRuns';
 import { paymentReconcileJob, paymentReportJob, paymentWatchJob, starGrantExpireJob } from './paymentJobs';
 import { withdrawalAnonymizeJob, withdrawalDestroyJob } from './withdrawalJobs';
 import { campaignRevokeJob, campaignSweepJob, sweepTicketExpireJob } from './sweepJobs';
+import { settleDueSeasons } from '../../domains/bossrush/bossRushSettle';
 
 /** 관리자 OP3가 수동 실행할 수 있는 작업(허용 목록) */
-export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy', 'play-window-sweep', 'rates-publication'] as const;
+export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy', 'play-window-sweep', 'rates-publication', 'boss-settle'] as const;
 
 let done = false;
 
@@ -45,4 +46,10 @@ export function registerAllJobs(): void {
   // 이용약관 제14조의2 3항: 공개 중인 확률표 지문 기록(1시간)
   registerJob({ name: 'rates-publication', schedule: { kind: 'every', minutes: 60 }, run: ratesPublicationJob });
   registerJob({ name: 'maintenance-close', schedule: { kind: 'every', minutes: 1 }, run: maintenanceCloseJob });
+  // 월드보스·길드보스 주간 정산: 목요일 06:00 KST에 끝난 시즌을 정산한다. 10분마다 "끝났는데 정산 안 한 시즌"을 찾으므로
+  // 경계 직후 서버가 꺼져 있었어도 다시 켜지면 정산된다(시즌 행 잠금 + settled_at으로 한 번만)
+  registerJob({ name: 'boss-settle', schedule: { kind: 'every', minutes: 10 }, run: async () => {
+    const r = await settleDueSeasons();
+    return { rows: r.people, detail: r };
+  } });
 }

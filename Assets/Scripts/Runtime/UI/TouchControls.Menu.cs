@@ -31,6 +31,9 @@ namespace DotRPG
             ("menuicon_finder", L.T("파티 찾기"), Dot.None, () => PartyHub.Open(PartyHub.Page.Finder)),
             ("menuicon_auction", L.T("경매장"), Dot.None, () => Game.Flow.OpenWindow(AuctionScreen.Instance)),
             ("menuicon_friend", L.T("친구"), Dot.None, () => Game.Flow.OpenWindow(SocialScreen.Instance)),
+            ("menuicon_party", L.T("길드"), Dot.None, GuildScreen.Open), // [GUILD]
+            ("menuicon_raid", L.T("월드·길드보스"), Dot.None, () => BossRushScreen.Open()), // [BOSS]
+            ("menuicon_achievement", L.T("랭킹"), Dot.None, () => RankingScreen.OpenBoard(RankingClient.WorldBoard)), // [RANK]
             ("menuicon_mail", L.T("우편"), Dot.Mail, () => Game.Flow.OpenWindow(MailScreen.Instance)),
             ("menuicon_achievement", L.T("업적"), Dot.None, () => Game.Flow.OpenWindow(AchievementScreen.Instance)),
             ("menuicon_levelreward", L.T("레벨 보상"), Dot.Reward, () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)),
@@ -122,7 +125,7 @@ namespace DotRPG
                 button.onClick.AddListener(() => OpenEntry(open));
                 if (entry.dot != Dot.None) entryDots.Add((entry.dot, RedDot(img.rectTransform)));
                 // [UNLOCK] Content the main quest has not opened reads dimmed (a tap still says which quest opens it).
-                var feature = ContentUnlocks.FeatureOfMenu(entry.icon, entry.dot == Dot.Daily);
+                var feature = ContentUnlocks.FeatureOfMenu(entry.icon, entry.dot == Dot.Daily, entry.label);
                 if (feature.HasValue) menuLocks.Add((img.gameObject.AddComponent<CanvasGroup>(), feature.Value));
             }
             menuLayer.gameObject.SetActive(false);

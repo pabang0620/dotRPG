@@ -34,6 +34,8 @@ namespace DotRPG
         Skill6, Skill7, Skill8,
         /// <summary>[TODAY] The 할 일 window (default N). Appended last: touch arrays index by value.</summary>
         Today,
+        /// <summary>[GUILD / BOSS / RANK 2026-10-20] 길드 (B), 월드·길드보스 (V), 랭킹 (Y). Appended last: touch arrays index by value.</summary>
+        Guild, Bosses, Ranking,
     }
 
     /// <summary>

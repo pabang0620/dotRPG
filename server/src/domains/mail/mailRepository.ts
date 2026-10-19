@@ -5,7 +5,7 @@ import type { Bind } from '../economy/economyRepository';
 import { announceMail, type MailKind } from './mailNotify';
 import { insertItemLedger } from '../economy/economyRepository';
 
-export type SystemCode = 'compensation' | 'event' | 'refund' | 'notice' | 'maintenance' | 'apology' | 'attendance' | 'other';
+export type SystemCode = 'compensation' | 'event' | 'refund' | 'notice' | 'maintenance' | 'apology' | 'attendance' | 'other' | 'world_boss' | 'guild_boss';
 
 export interface NewMail {
   characterId: number;

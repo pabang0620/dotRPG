@@ -210,7 +210,7 @@ namespace DotRPG
                 case "cancelled": head = L.F("[등록 취소] {0} (보증금 미반환)", name); break;
                 case "system":
                     string tag = systemCode == "compensation" ? L.T("[보상]") : systemCode == "event" ? L.T("[이벤트]") : systemCode == "refund" ? L.T("[환불]")
-                        : systemCode == "maintenance" ? L.T("[점검 보상]") : systemCode == "apology" ? L.T("[사과 보상]") : systemCode == "attendance" ? L.T("[출석]") : L.T("[안내]");
+                        : systemCode == "maintenance" ? L.T("[점검 보상]") : systemCode == "apology" ? L.T("[사과 보상]") : systemCode == "attendance" ? L.T("[출석]") : systemCode == "world_boss" ? L.T("[월드보스]") : systemCode == "guild_boss" ? L.T("[길드보스]") : L.T("[안내]");
                     head = string.IsNullOrEmpty(name) ? L.F("{0} 운영팀이 보낸 우편", tag) : $"{tag} {name}";
                     break;
                 default: head = name; break;

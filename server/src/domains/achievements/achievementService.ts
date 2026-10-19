@@ -4,6 +4,8 @@ import { getNow } from '../../utils/clock';
 import * as charRepo from '../characters/characterRepository';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from './achievementDefs';
 import * as repo from './achievementRepository';
+import { activeTitles } from '../bossrush/bossRushRepository';
+import { RANK_TITLE_NAMES, isRankTitle } from '../bossrush/bossRushRules';
 
 async function myCharacter(accountId: number, characterUuid: string) {
   const c = await charRepo.findOwnedAlive(getPool(), accountId, characterUuid);
@@ -13,7 +15,10 @@ async function myCharacter(accountId: number, characterUuid: string) {
 
 /** 칭호 이름(장착한 업적 id -> 업적 이름). 없으면 null */
 export function titleName(achievementId: string | null): string | null {
-  return achievementId ? (ACHIEVEMENT_BY_ID.get(achievementId)?.title ?? null) : null;
+  if (!achievementId) return null;
+  // 0047: 주간 랭킹 칭호(rank_*)도 같은 자리에 장착한다. 만료되면 주간 정산이 떼어 낸다
+  if (isRankTitle(achievementId)) return RANK_TITLE_NAMES[achievementId];
+  return ACHIEVEMENT_BY_ID.get(achievementId)?.title ?? null;
 }
 
 /**
@@ -33,8 +38,11 @@ export async function listAchievements(accountId: number, characterUuid: string)
     for (const id of newly) done.set(id, now);
   }
   const title = await repo.titleOf(db, c.id);
+  const ranks = await activeTitles(db, c.id, now);
   return {
     title: title ? { id: title, name: titleName(title) } : null,
+    // 지금 장착할 수 있는 랭킹 칭호(이름 색은 장착과 무관하게 유효 기간 동안 적용된다)
+    rank_titles: ranks.map((t) => ({ id: t.title_id, title: titleName(t.title_id), name_color: t.name_color, expires_at: t.expires_at.toISOString() })),
     newly,
     achievements: ACHIEVEMENTS.map((a) => ({
       id: a.id,
@@ -52,7 +60,10 @@ export async function listAchievements(accountId: number, characterUuid: string)
 export async function equipTitle(accountId: number, characterUuid: string, achievementId: string | null) {
   const c = await myCharacter(accountId, characterUuid);
   const db = getPool();
-  if (achievementId !== null) {
+  if (achievementId !== null && isRankTitle(achievementId)) {
+    const ranks = await activeTitles(db, c.id, getNow());
+    if (!ranks.some((t) => t.title_id === achievementId)) throw new AppError(409, '지금 가진 랭킹 칭호가 아닙니다.', 'ACHIEVEMENT_NOT_DONE');
+  } else if (achievementId !== null) {
     if (!ACHIEVEMENT_BY_ID.has(achievementId)) throw new AppError(404, '알 수 없는 업적입니다.', 'ACHIEVEMENT_UNKNOWN');
     const done = await repo.achievedOf(db, c.id);
     if (!done.has(achievementId)) throw new AppError(409, '아직 달성하지 않은 업적입니다.', 'ACHIEVEMENT_NOT_DONE');

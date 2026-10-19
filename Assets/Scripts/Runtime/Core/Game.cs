@@ -31,6 +31,8 @@ namespace DotRPG
         // [DUNGEON] Dungeon runs (rooms, revive, clear, result). Created right after the party.
         public static DungeonDirector Dungeon;
         public static MiniDungeonDirector MiniDungeon;
+        /// <summary>[BOSS 2026-10-20] 월드보스 / 길드보스 3-minute attempts.</summary>
+        public static BossRushDirector BossRush;
 
         /// <summary>True while the player has control of the character.</summary>
         public static bool IsPlaying => State != null && State.Current == GameState.Playing;

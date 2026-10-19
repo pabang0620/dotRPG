@@ -40,6 +40,7 @@ namespace DotRPG
                 case GameAction.PartyWindow: return L.T("파티창"); case GameAction.PartyFinder: return L.T("파티 찾기");
                 case GameAction.Auction: return L.T("경매장"); case GameAction.Friends: return L.T("친구 목록");
                 case GameAction.Cosmetics: return L.T("외형 상점"); case GameAction.Today: return L.T("할 일");
+                case GameAction.Guild: return L.T("길드"); case GameAction.Bosses: return L.T("월드·길드보스"); case GameAction.Ranking: return L.T("랭킹");
                 case GameAction.AutoQuest: return L.T("자동 진행"); case GameAction.AutoHunt: return L.T("자동 사냥");
                 default: return a.ToString();
             }
@@ -60,6 +61,7 @@ namespace DotRPG
                 case GameAction.MoveUp: return L.T("이동"); case GameAction.MoveDown: return L.T("이동");
                 case GameAction.MoveLeft: return L.T("이동"); case GameAction.MoveRight: return L.T("이동");
                 case GameAction.AutoQuest: return L.T("자동"); case GameAction.AutoHunt: return L.T("사냥");
+                case GameAction.Bosses: return L.T("보스");
                 default: return ActionName(a);
             }
         }

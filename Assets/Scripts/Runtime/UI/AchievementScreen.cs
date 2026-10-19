@@ -15,7 +15,7 @@ namespace DotRPG
         const int PerColumn = 5;
         const float CellW = 590f, CellH = 64f, ColGap = 20f, Top = -106f;
         static readonly (string id, string name)[] Tabs =
-            { ("growth", L.T("성장")), ("combat", L.T("전투")), ("dungeon", L.T("던전")), ("enhance", L.T("강화")), ("wealth", L.T("재화")), ("cash", L.T("캐시샵")) };
+            { ("growth", L.T("성장")), ("combat", L.T("전투")), ("dungeon", L.T("던전")), ("enhance", L.T("강화")), ("wealth", L.T("재화")), ("cash", L.T("캐시샵")), (AchievementClient.RankCategory, L.T("랭킹")) };
 
         Text header;
         Button clearBtn;
@@ -75,11 +75,11 @@ namespace DotRPG
         protected override void Refresh()
         {
             var list = AchievementClient.All;
-            int done = 0;
-            foreach (var a in list) if (a.achieved) done++;
+            int done = 0, total = 0;
+            foreach (var a in list) if (a.category != AchievementClient.RankCategory) { total++; if (a.achieved) done++; }
             header.text = list.Count == 0
                 ? L.T("<color=#8c96a8>업적을 불러오는 중입니다...</color>")
-                : L.F("달성 {0}/{1}   ·   칭호: ", done, list.Count) + (string.IsNullOrEmpty(AchievementClient.MyTitle) ? L.T("<color=#8c96a8>없음</color>") : L.F("<color=#ffd34a>[{0}]</color>  <color=#b8c4d8>채팅 이름 앞에 보입니다</color>", L.T(AchievementClient.MyTitle)));
+                : L.F("달성 {0}/{1}   ·   칭호: ", done, total) + (string.IsNullOrEmpty(AchievementClient.MyTitle) ? L.T("<color=#8c96a8>없음</color>") : L.F("<color=#ffd34a>[{0}]</color>  <color=#b8c4d8>채팅 이름 앞에 보입니다</color>", L.T(AchievementClient.MyTitle)));
             clearBtn.gameObject.SetActive(!string.IsNullOrEmpty(AchievementClient.MyTitleId));
             visible.Clear();
             foreach (var a0 in list) if (a0.category == tab) visible.Add(a0);

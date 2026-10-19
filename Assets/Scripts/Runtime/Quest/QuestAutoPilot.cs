@@ -40,7 +40,7 @@ namespace DotRPG
         /// <summary>The hunting ground 자동 사냥 belongs to: a knockback through a portal walks it back there.</summary>
         string huntMap;
 
-        static bool InHuntingGround => Game.MiniDungeon?.Active == true || MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
+        static bool InHuntingGround => Game.MiniDungeon?.Active == true || Game.BossRush?.Active == true || MeasureAnywhere || (Game.World != null && HuntingGrounds.Get(Game.World.MapId) != null && (Game.Dungeon == null || !Game.Dungeon.InRun));
         /// <summary>[MEASURE] Dev-only (-dotrpgMeasure): 자동 사냥 also fights in dungeons and raids, to time them.</summary>
         internal static bool MeasureAnywhere;
         /// <summary>[MEASURE] Dev-only: fight like a practised player (spam the main hunting skill, cast skills as they come
@@ -154,7 +154,7 @@ namespace DotRPG
         {
             var p = Game.Player;
             if (p == null || p.IsDead) return;
-            if ((Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true) && !huntMode) return;
+            if ((Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true || BossRushDirector.InArena) && !huntMode) return; // [BOSS] auto progress would walk out of the attempt
             if (Game.Dungeon != null && Game.Dungeon.InRun && !MeasureAnywhere) { GameEvents.RaiseToast(L.T("던전 안에서는 자동 진행을 쓸 수 없습니다.")); return; }
             on = true;
             goalKey = "";

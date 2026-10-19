@@ -103,6 +103,7 @@ namespace DotRPG
             MinimapView.Create(root);
             DungeonHudView.Create(root); // [DUNGEON] clock, room map, CLEAR banner, coin countdown
             MiniDungeonHudView.Create(root);
+            BossRushHudView.Create(root); // [BOSS] 3-minute clock and my damage
             TipView.Create(root); // [E5] first-time tips
             ChatView.Create(root); // [F5] chat box + quick signals
             questPanel = UIFactory.Place(UIFactory.Rect(root, "Quest"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -QuestTop), new Vector2(QuestWidth, 130));

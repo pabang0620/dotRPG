@@ -112,6 +112,14 @@ namespace DotRPG
                 data.playerFacing = OnlineSession.Playing && Game.MiniDungeon != null ? (int)Game.MiniDungeon.ReturnFacingForSave : (int)MiniDungeonProgress.ReturnFacing;
                 data.playerHealth = Mathf.Max(1, data.playerHealth);
             }
+            // [BOSS] The boss arena is never saved as the place to continue from: where the attempt started.
+            if (MapId == BossRushCatalog.ArenaMap && Game.BossRush != null)
+            {
+                data.mapId = Game.BossRush.ReturnMapForSave;
+                data.playerX = Game.BossRush.ReturnPositionForSave.x; data.playerY = Game.BossRush.ReturnPositionForSave.y;
+                data.playerFacing = (int)Game.BossRush.ReturnFacingForSave;
+                data.playerHealth = Mathf.Max(1, data.playerHealth);
+            }
             return data;
         }
 

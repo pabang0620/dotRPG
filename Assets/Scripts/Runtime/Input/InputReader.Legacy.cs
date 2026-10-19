@@ -36,6 +36,7 @@ namespace DotRPG
             GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight, GameAction.Map,
             GameAction.SkillWindow, GameAction.QuestWindow, GameAction.WeekdayDungeon, GameAction.RaidWindow,
             GameAction.PartyWindow, GameAction.PartyFinder, GameAction.Auction, GameAction.Friends, GameAction.Cosmetics, GameAction.Today,
+            GameAction.Guild, GameAction.Bosses, GameAction.Ranking,
             GameAction.AutoQuest, GameAction.AutoHunt,
         };
 
@@ -44,6 +45,7 @@ namespace DotRPG
             GameAction.Inventory, GameAction.Map, GameAction.SkillWindow, GameAction.QuestWindow,
             GameAction.WeekdayDungeon, GameAction.RaidWindow, GameAction.PartyWindow, GameAction.PartyFinder,
             GameAction.Auction, GameAction.Friends, GameAction.Cosmetics, GameAction.Today,
+            GameAction.Guild, GameAction.Bosses, GameAction.Ranking,
         };
         public static bool IsWindowAction(GameAction action) => System.Array.IndexOf(WindowActions, action) >= 0;
         /// <summary>[AUTO] A rebindable keyboard hotkey that is not a window (자동 진행 / 자동 사냥).</summary>
@@ -88,6 +90,9 @@ namespace DotRPG
                 case GameAction.AutoQuest: return KeyCode.F6;
                 case GameAction.AutoHunt: return KeyCode.F7;
                 case GameAction.Today: return KeyCode.N;
+                case GameAction.Guild: return KeyCode.B; // [GUILD]
+                case GameAction.Bosses: return KeyCode.V; // [BOSS]
+                case GameAction.Ranking: return KeyCode.Y; // [RANK]
                 default: return KeyCode.None;
             }
         }

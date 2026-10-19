@@ -161,6 +161,7 @@ namespace DotRPG
             PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); DailyQuestScreen.Create(t); MailScreen.Create(t); TradeScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); ExchangeShopScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             TodayScreen.Create(t); // [TODAY] 할 일 (HUD button / N)
+            GuildScreen.Create(t); BossRushScreen.Create(t); RankingScreen.Create(t); // [GUILD / BOSS / RANK 2026-10-20] B / V / Y
             ui.confirm = ConfirmScreen.Create(t, ui);
             ui.choice = ChoiceScreen.Create(t, ui);
             ui.Fader = ScreenFader.Create(t);

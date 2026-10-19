@@ -526,6 +526,29 @@ namespace DotRPG
             grah.maxMinions = 4;
             Add(grah);
 
+            // [BOSS 2026-10-20] 심연의 거신: the 월드보스 / 길드보스 of the 3-minute attempts (BossRushDirector). The golem's
+            // generated frames, larger and violet. Not a raid boss (no 망자의 심판 / 결계 that need a dungeon run), no minions.
+            // Phases come early (95 / 88% left) because nobody empties its pool in one attempt: strong heroes see more patterns.
+            var titan = Boss(BossRushCatalog.BossId, L.T("심연의 거신"), C(112, 84, 168), hp: 6400, dmg: 50, lines: 99, speed: 1.8f,
+                new BossPattern(PatternKind.Slam, 5f, 1.4f, maxRange: 4.2f, weight: 1.5f),
+                new BossPattern(PatternKind.Slash3, 4.5f, 1f, 3, maxRange: 3.8f, weight: 1.2f),
+                new BossPattern(PatternKind.Charge, 7f, 1.3f),
+                new BossPattern(PatternKind.Fields, 8f, 1.1f, 6, minPhase: 2),
+                new BossPattern(PatternKind.BoltRing, 7f, 1f, 12, minPhase: 2),
+                new BossPattern(PatternKind.Donut, 11f, 1.4f, minPhase: 3),
+                new BossPattern(PatternKind.Annihilate, 24f, 2.2f, minPhase: 3));
+            titan.look = Look("boss_rock_golem", C(112, 84, 168));
+            titan.artScale = 1.25f;
+            titan.size = 3f;
+            titan.armor = .2f;
+            titan.groggyMax = 900f;
+            titan.phases = new[] { 0.95f, 0.88f };
+            titan.maxMinions = 0;
+            titan.noLoot = true;
+            titan.xp = 0;
+            titan.goldMin = titan.goldMax = 0;
+            Add(titan);
+
             // [FIELD BOSS] One per region, every 15 minutes on its map (FieldBosses). Existing boss bodies; HP for a solo
             // player of the zone's level (about 25 pack kills of work), its accessory at 3% per kill.
             var fbForest = Boss("fboss_forest", L.T("검은 뿌리 수호자"), C(150, 172, 120), hp: 1100, dmg: 15, lines: 14, speed: 2.3f,

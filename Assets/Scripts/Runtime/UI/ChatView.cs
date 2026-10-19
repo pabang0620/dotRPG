@@ -20,7 +20,7 @@ namespace DotRPG
         const float CompactHeight = 112f, CompactBottom = 90f, CompactBelow = 600f, SkillBarClear = 224f;
         const int ShownLines = 6;
         static readonly KeyCode[] SignalKeys = { KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8 };
-        static readonly string[] Tabs = { L.T("전체"), L.T("파티"), L.T("귓속말") };
+        static readonly string[] Tabs = { L.T("전체"), L.T("파티"), L.T("길드"), L.T("귓속말") };
 
         Image bg;
         CanvasGroup group;
@@ -226,6 +226,7 @@ namespace DotRPG
                 string rest = sp < 0 ? "" : text.Substring(sp + 1);
                 if (cmd == "/p" || cmd == "/파티") target = ChatChannel.Party; // i18n-ignore command alias
                 else if (cmd == "/g" || cmd == "/일반") target = ChatChannel.General; // i18n-ignore command alias
+                else if (cmd == "/gu" || cmd == "/길드") target = ChatChannel.Guild; // i18n-ignore command alias [GUILD]
                 else if (cmd == "/w" || cmd == "/귓") // i18n-ignore command alias
                 {
                     int sp2 = rest.IndexOf(' ');
@@ -238,7 +239,7 @@ namespace DotRPG
                     TradeScreen.RequestAndOpen(rest.Trim()); // [TRADE] 1:1 교환
                     return;
                 }
-                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /w 이름 내용 · /교환 이름")); return; }
+                else { GameEvents.RaiseToast(L.T("모르는 명령입니다. /p 파티 · /g 일반 · /gu 길드 · /w 이름 내용 · /교환 이름")); return; }
                 channel = target;
                 whisperTo = to;
                 channelChosen = true;
@@ -314,7 +315,8 @@ namespace DotRPG
             {
                 var l = lines[i];
                 if (tab == 1 && l.channel != ChatChannel.Party) continue;
-                if (tab == 2 && l.channel != ChatChannel.Whisper) continue;
+                if (tab == 2 && l.channel != ChatChannel.Guild) continue;
+                if (tab == 3 && l.channel != ChatChannel.Whisper) continue;
                 picked.Add(Format(l));
             }
             picked.Reverse();
@@ -330,10 +332,12 @@ namespace DotRPG
             if (l.channel == ChatChannel.System) return L.F("<color={0}>[시스템] {1}</color>", col, l.text);
             if (l.channel == ChatChannel.Whisper)
                 return l.mine ? $"<color={col}>▶{Safe(l.to)}: {Safe(l.text)}</color>" : $"<color={col}>{Safe(l.from)}▶: {Safe(l.text)}</color>";
-            string who = l.mine ? $"<color=#ffe066>{Safe(l.from)}</color>" : Safe(l.from);
+            // [RANK] A ranking name colour (gold / orange / silver) shows on others; my own name stays yellow.
+            string ranked = RankingClient.ColorHex(l.nameColor);
+            string who = l.mine ? $"<color=#ffe066>{Safe(l.from)}</color>" : ranked != null ? $"<color={ranked}>{Safe(l.from)}</color>" : Safe(l.from);
             // [칭호][이름] : 말 (general chat shows no channel tag; party keeps [파티])
             string title = string.IsNullOrEmpty(l.title) ? "" : $"<color=#ffd34a>[{Safe(L.T(l.title))}]</color>";
-            string tag = l.channel == ChatChannel.General ? "" : $"<color={col}>[{ChatRules.ChannelName(l.channel)}]</color> ";
+            string tag = l.channel == ChatChannel.General ? "" : $"<color={col}>[{ChatRules.ChannelName(l.channel)}]</color> "; // 파티 / 길드
             return $"{tag}{title}[{who}] : {Safe(l.text)}";
         }
     }

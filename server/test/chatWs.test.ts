@@ -561,3 +561,28 @@ describe('보안 보강', () => {
     expect(lines.rows).toEqual([{ text: '접속 후 대화' }]);
   });
 });
+
+describe('길드 채널 (0047)', () => {
+  test('길드원에게만 가고, 이름 옆에 길드 이름이 붙는다', async () => {
+    const leader = await newHero(app);
+    const member = await newHero(app);
+    const outsider = await newHero(app);
+    await getPool().query('UPDATE characters SET level = 20, gold = gold + 100000 WHERE id = $1', [leader.dbId]);
+    await getPool().query("INSERT INTO gold_ledger (character_id, delta, balance_after, reason, ref) SELECT id, 100000, gold, 'drop_claim', $2 FROM characters WHERE id = $1", [leader.dbId, randomUUID()]);
+    const name = `채팅${randomUUID().slice(0, 4)}`;
+    const g = await request(app).post(`/characters/${leader.id}/guild`).set(auth(leader.s)).send({ request_id: randomUUID(), name, join_mode: 'open' });
+    expect(g.status).toBe(201);
+    const j = await request(app).post(`/characters/${member.id}/guild/apply`).set(auth(member.s)).send({ request_id: randomUUID(), guild_id: g.body.data.guild.id });
+    expect(j.body.data.joined).toBe(true);
+    const L = await join(leader);
+    const M = await join(member);
+    const O = await join(outsider);
+    L.c.send(chat('guild', '길드 모여요'));
+    const got = await M.c.waitFor((f) => f.t === 'chat.msg' && f.text === '길드 모여요');
+    expect(got.channel).toBe('guild');
+    expect((got.from as { guild_name?: string }).guild_name).toBe(name);
+    await O.c.expectNone((f) => f.t === 'chat.msg' && f.text === '길드 모여요');
+    O.c.send(chat('guild', '나도'));
+    expect((await O.c.waitT('chat.err')).code).toBe('NOT_IN_GUILD');
+  });
+});

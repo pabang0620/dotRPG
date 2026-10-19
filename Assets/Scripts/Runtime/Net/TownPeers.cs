@@ -16,8 +16,8 @@ namespace DotRPG
         sealed class Peer
         {
             public PlayerController body;
-            public TextMesh label, shadow;
-            public string map, skin, weapon, aura;
+            public TextMesh label, shadow, guild;
+            public string map, skin, weapon, aura, name, guildName, nameColor, guildColor;
             public int cls = -1, career;
             public float seenAt;
         }
@@ -125,6 +125,10 @@ namespace DotRPG
                 p.body.Data.AuraId = aura;
                 p.body.RefreshLook();
             }
+            // [GUILD / RANK] The server stamps the guild and the ranking name colour: drawn under / on the name, changed in place.
+            string guildName = MiniJson.Str(d, "guild_name", "") ?? "";
+            string nameColor = MiniJson.Str(d, "name_color"), guildColor = MiniJson.Str(d, "guild_color");
+            if (p.guildName != guildName || p.nameColor != nameColor || p.guildColor != guildColor) self.Decorate(id, p, guildName, nameColor, guildColor);
             p.seenAt = Time.unscaledTime;
             p.body.NetMoveTo(at, facing);
         }
@@ -143,10 +147,39 @@ namespace DotRPG
             if (body.BodyCollider != null) body.BodyCollider.enabled = false; // walk through everyone
             body.Spawn(at, facing, int.MaxValue, 0);
             body.SetNetDriven(true, true);
-            var p = new Peer { body = body, cls = (int)cls, career = career, skin = skin ?? "", weapon = weapon ?? "" };
+            var p = new Peer { body = body, cls = (int)cls, career = career, skin = skin ?? "", weapon = weapon ?? "", name = name, guildName = "" };
             p.shadow = Label(body.transform, name, new Color32(20, 16, 24, 220), new Vector3(0.03f, 1.47f, 0f), 40);
             p.label = Label(body.transform, name, InMyParty(id) ? new Color32(140, 240, 150, 255) : new Color32(240, 244, 255, 255), new Vector3(0f, 1.5f, 0f), 41);
             return p;
+        }
+
+        /// <summary>[GUILD / RANK] "&lt;길드&gt;" under the name tag and the ranking colour of the name (party green wins).</summary>
+        void Decorate(string id, Peer p, string guildName, string nameColor, string guildColor)
+        {
+            p.guildName = guildName;
+            p.nameColor = nameColor;
+            p.guildColor = guildColor;
+            if (!InMyParty(id) && p.label != null)
+                p.label.color = ColorUtility.TryParseHtmlString(RankingClient.ColorHex(nameColor) ?? "#f0f4ff", out var c) ? c : (Color)new Color32(240, 244, 255, 255);
+            // The guild line takes the name's old place; the name moves up one line.
+            bool has = !string.IsNullOrEmpty(guildName);
+            float lift = has ? 0.14f : 0f;
+            if (p.label != null) p.label.transform.localPosition = new Vector3(0f, 1.5f + lift, 0f);
+            if (p.shadow != null) p.shadow.transform.localPosition = new Vector3(0.03f, 1.47f + lift, 0f);
+            if (!has)
+            {
+                if (p.guild != null) { Destroy(p.guild.gameObject); p.guild = null; }
+                return;
+            }
+            if (p.guild == null)
+            {
+                p.guild = Label(p.body.transform, "", new Color32(143, 226, 143, 255), new Vector3(0f, 1.5f, 0f), 41);
+                p.guild.characterSize = 0.036f;
+                p.guild.richText = false; // a guild name is player text
+            }
+            p.guild.text = "<" + guildName + ">";
+            // The weekly guild-boss top guilds (gold / silver), else the guild green.
+            p.guild.color = ColorUtility.TryParseHtmlString(RankingClient.ColorHex(guildColor) ?? "#8fe28f", out var gc) ? gc : (Color)new Color32(143, 226, 143, 255);
         }
 
         static bool InMyParty(string characterId)

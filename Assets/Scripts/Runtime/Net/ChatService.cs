@@ -5,7 +5,7 @@ using System.Linq;
 namespace DotRPG
 {
     /// <summary>[ONLINE] Chat channels (PLAN_ONLINE §2.3).</summary>
-    public enum ChatChannel { General, Party, Whisper, System }
+    public enum ChatChannel { General, Party, Whisper, System, Guild }
 
     public sealed class ChatLine
     {
@@ -18,6 +18,8 @@ namespace DotRPG
         public bool mine;
         /// <summary>Sender's title ("" = none): shown as [칭호][이름].</summary>
         public string title = "";
+        /// <summary>[RANK] Ranking name colour of the sender ('gold' | 'orange' | 'silver', null = none).</summary>
+        public string nameColor;
     }
 
     public sealed class ChatFriend
@@ -68,10 +70,10 @@ namespace DotRPG
         }
 
         public static string ChannelName(ChatChannel c) =>
-            c == ChatChannel.General ? L.T("일반") : c == ChatChannel.Party ? L.T("파티") : c == ChatChannel.Whisper ? L.T("귓속말") : L.T("시스템");
+            c == ChatChannel.General ? L.T("일반") : c == ChatChannel.Party ? L.T("파티") : c == ChatChannel.Whisper ? L.T("귓속말") : c == ChatChannel.Guild ? L.T("길드") : L.T("시스템");
 
         public static string ChannelColor(ChatChannel c) =>
-            c == ChatChannel.General ? "#f0f0f0" : c == ChatChannel.Party ? "#78dcff" : c == ChatChannel.Whisper ? "#ff9ee0" : "#ffd84a";
+            c == ChatChannel.General ? "#f0f0f0" : c == ChatChannel.Party ? "#78dcff" : c == ChatChannel.Whisper ? "#ff9ee0" : c == ChatChannel.Guild ? "#8fe28f" : "#ffd84a";
     }
 
     /// <summary>[ONLINE] 채팅·친구·차단·신고. Server-backed later; <see cref="MockChatService"/> offline.</summary>
@@ -153,6 +155,7 @@ namespace DotRPG
             text = (text ?? "").Trim();
             if (text.Length == 0) return "";
             if (channel == ChatChannel.System) return L.T("시스템 채널에는 쓸 수 없습니다.");
+            if (channel == ChatChannel.Guild) return L.T("길드 채팅은 온라인에서 쓸 수 있습니다."); // [GUILD] no guilds offline
             if (text.Length > ChatRules.MaxLength) text = text.Substring(0, ChatRules.MaxLength);
             if (clock < mutedUntil) return L.F("같은 말을 반복해 {0}초 동안 채팅이 막혔습니다.", Math.Ceiling(mutedUntil - clock));
             if (clock - lastSent < ChatRules.MinInterval) return L.T("채팅은 1초에 한 번만 보낼 수 있습니다.");
