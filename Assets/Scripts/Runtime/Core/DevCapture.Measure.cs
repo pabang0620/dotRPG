@@ -276,8 +276,13 @@ namespace DotRPG
             yield return Wait(.3f);
             bool picked = select.DevSelect(def.id, diff);
             bool entered = picked && select.DevEnter();
+            Log($"run {def.id} {diff}: picked {picked} entered {entered} '{select.DevStatus}'");
             yield return Wait(1f);
             while (Game.Flow.IsTransitioning) yield return null;
+            // The select window can come back over the room (seen on the 해골왕 raid, 2026-10-20): nobody closes it here,
+            // and an open window keeps the world (and the run clock) paused.
+            if (Game.UI.Top == select) { Log($"run {def.id}: select window still open after entering, closing it"); select.Close(); }
+            if (Game.UI.Top != null) Game.Flow.CloseInventory();
             var dir = Game.Dungeon;
             var run = dir.Run;
             if (!entered || run == null)
@@ -311,9 +316,18 @@ namespace DotRPG
             Action<EnemyController, bool> onSeal = (_, broken) => { if (broken) sealOk++; else sealFail++; };
             RaidSeal.Ended += onSeal;
             bool wasDead = false;
+            float nextTrace = Time.realtimeSinceStartup + 60f;
             while (!run.IsOver && run.Elapsed < limit)
             {
                 tally.Track();
+                if (Time.realtimeSinceStartup >= nextTrace)
+                {
+                    // A trace a real minute: a run that never ends (or a paused world) shows where it stands.
+                    nextTrace += 60f;
+                    Log($"  state={Game.State?.Current} world={Game.IsWorldRunning} top={(Game.UI?.Top != null ? Game.UI.Top.name : "-")} scale={Time.timeScale} run={run.State}");
+                    int alive = EnemyController.Active.Count(e => e != null && !e.IsDead && e.isActiveAndEnabled);
+                    Log($"  t={run.Elapsed:0}s room boss={run.InBossRoom} enemies={alive} dead={Game.Player?.IsDead} transit={Game.Flow.IsTransitioning} pos={Game.Player?.Position} auto='{QuestAutoPilot.Status}'");
+                }
                 foreach (var e in EnemyController.Active)
                     if (e != null && e.IsBoss && hooked.Add(e))
                     {
@@ -436,7 +450,9 @@ namespace DotRPG
                         var numbers = DungeonDatabase.DifficultyFor(def, diff);
                         int lv = numbers.recommendedLevel;
                         var cls = CareerCatalog.Base(career);
+                        Log($"raid {def.id} {diff} {career} x{companions}: hero Lv{lv}");
                         yield return MeasureHero(cls, career, lv, "e");
+                        Log("  hero ready");
                         if (!string.IsNullOrEmpty(def.unlockQuest)) Game.Session.Journal.State(def.unlockQuest).status = (int)QuestStatus.Active;
                         if (diff != DungeonDifficulty.Normal) Game.Session.Dungeons.RecordClear(def.id, DungeonDifficulty.Normal, DungeonRank.A);
                         if (def.keyCost > 0) Game.Session.Inventory.Add(DungeonDatabase.SealKey, def.keyCost); // a final raid without keys asks to confirm a practice run
