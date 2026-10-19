@@ -54,8 +54,8 @@
 
 - 레이드 측정: 측정 드라이버(자동 사냥)가 보스 장판·낙인을 피하지 못해 10-14 보스 강화 이후 레이드를 잴 수 없다. 회피를 넣으면 다시 잰다(`Docs/BALANCE_MEASURE_2026-10-16.md`)
 - Steam 연동(시험 앱 ID 480: SteamAuth·SteamP2PTransport, 서버 Web API 키), 실제 출시 서버 배포(`server/ops/README.md`)
-- 다음 업데이트(출시 약 2달 뒤): 만렙 확장과 신규 레이드. 지금 끝판 할 거리를 따로 늘리지 않는다(`PLAN_WEAKNESS_2026-10-18.md` 4번)
-- 바르가스·바위 심장 레이드 개방(데이터만 있고 닫혀 있음), 랭킹, 지하 사냥터 목표 (끝판 할 거리, `PLAN_WEAKNESS_2026-10-18.md` 4번)
+- 출시 전 운영: 법률 검토(약관·개인정보처리방침), 번역 원어민 감수, `POLICY_CONSENT_ENFORCE`·`WITHDRAW_DESTROY_ENABLED` 켜기, 클라이언트 결제 구매 화면, 랭킹(미구현)
+- 다음 업데이트(출시 약 2달 뒤): 만렙 확장과 신규 레이드(바르가스·바위 심장은 데이터만 있고 닫혀 있음). 지금 끝판 할 거리를 따로 늘리지 않는다(`PLAN_WEAKNESS_2026-10-18.md` 4번)
 - 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), 전체 체크리스트: [MASTER_CHECKLIST.md](MASTER_CHECKLIST.md)
 - 지금까지 돌린 테스트(실측·시뮬레이션·실플레이·서버 테스트)와 결과: [TEST_LOG.md](TEST_LOG.md)
 
