@@ -28,7 +28,8 @@ namespace DotRPG
             {
                 if (sk.cls != cls) continue;
                 var sp = CosmeticCatalog.Find(sk.id);
-                (sp != null && sp.Rarity == CosmeticRarity.Epic ? epics : uniques).Add(L.T(sk.name));
+                if (sp != null && sp.Rarity == CosmeticRarity.Unique) uniques.Add(L.T(sk.name));
+                else if (sp != null && sp.Rarity == CosmeticRarity.Epic) epics.Add(L.T(sk.name));
             }
             badgeBg.gameObject.SetActive(banner == "skin");
             badge.text = L.F("<b>유니크 {0} · 에픽 {1}</b>", uniques.Count, epics.Count);
@@ -56,7 +57,7 @@ namespace DotRPG
             }
             bigSub.text = $"{cur.sub}\n" +
                           (hasPity ? "" : Sealed ? L.T("나온 아이템은 바로 가방으로") + "\n" : L.T("뽑은 장비는 바로 가방으로") + "\n") +
-                          (banner == "skin" ? L.F("<color=#ffb347>유니크 {0} (+5%)</color>\n<color=#c58cff>에픽 {1} (+4%)</color>", string.Join(" · ", uniques), string.Join(" · ", epics)) : banner == "aura" ? L.T("<color=#ffb347>오라 공격력 +1~3%</color>") : "");
+                          (banner == "skin" ? L.F("<color=#ffb347>유니크 {0}종 (+5%)</color>\n<color=#c58cff>에픽 {1}종 (+4%)</color>", uniques.Count, epics.Count) : banner == "aura" ? L.T("<color=#ffb347>오라 공격력 +1~3%</color>") : "");
             wallet.text = online
                 ? (StarShopClient.Loaded ? L.F("보유 <color=#ffd34a>{0}</color>", StarShopClient.Stars(StarShopClient.Balance)) : L.T("<color=#8c96a8>불러오는 중...</color>"))
                 : L.T("<color=#8c96a8>온라인 캐릭터로 접속하면 이용할 수 있습니다.</color>");

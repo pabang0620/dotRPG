@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Career base looks (2026-10-13): the class body recoloured per career, shape unchanged.
 
-Warrior careers recolour the novice's grey vest and olive cloth (hair, skin, leather and outlines stay):
-  Resources/SilverWarrior/{body,attack}.png -> Resources/SilverWarrior/Skins/career_<fighter|guardian>/
+Warrior careers use FemaleWarriorPalette at runtime with the approved FemaleWarrior atlas.
+This tool only exports mage career frames; it must not recreate obsolete warrior sheets.
 Mage careers recolour the navy robe and hat (white hair, gold trim, outlines stay):
   Resources/Art/char_mage_<dir>_<frame>.png -> Resources/Art/char_career_<arcanist|bishop>_<dir>_<frame>.png
 Usage: python3 Tools/art/career_recolor.py [repo root]
@@ -35,23 +35,6 @@ def recolor(img, rule):
     return img
 
 
-# ---------------- warrior: grey vest (low saturation, mid value) and olive cloth (hue 60-110)
-
-def warrior_rule(vest_hue, vest_sat, cloth_hue, cloth_sat, vest_gain=1.0):
-    def rule(h, s, v):
-        if s < 0.16 and 0.18 < v < 0.72:          # grey vest / plates
-            return vest_hue, vest_sat, v * vest_gain
-        if 55 <= h <= 115 and s > 0.15 and v > 0.12:  # olive cloth
-            return cloth_hue, cloth_sat, v * 1.1
-        return None
-    return rule
-
-
-WARRIOR = {
-    "career_fighter": warrior_rule(215, 0.38, 222, 0.55, 1.05),   # steel blue vest, navy cloth
-    "career_guardian": warrior_rule(172, 0.42, 168, 0.55, 1.0),   # teal plates, deep teal cloth
-}
-
 # ---------------- mage: navy robe and hat (hue 205-245, saturated)
 
 def arcanist(h, s, v):
@@ -70,12 +53,7 @@ MAGE = {"career_arcanist": arcanist, "career_bishop": bishop}
 
 
 def main():
-    for name, rule in WARRIOR.items():
-        out = os.path.join(RES, "SilverWarrior", "Skins", name)
-        os.makedirs(out, exist_ok=True)
-        for sheet in ("body", "attack"):
-            recolor(Image.open(os.path.join(RES, "SilverWarrior", sheet + ".png")), rule).save(os.path.join(out, sheet + ".png"))
-        print(name, "->", out)
+    print("Warrior careers: approved FemaleWarrior body + runtime palette (no legacy export).")
     frames = sorted(glob.glob(os.path.join(RES, "Art", "char_mage_*.png")))
     for name, rule in MAGE.items():
         for f in frames:

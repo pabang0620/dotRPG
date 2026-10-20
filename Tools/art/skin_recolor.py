@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Common and rare costume skins (2026-10-14): the class body recoloured, shape unchanged (same method as the careers).
 
-Warrior skins recolour the novice's grey vest and olive cloth:
-  Resources/SilverWarrior/{body,attack}.png -> Resources/SilverWarrior/Skins/<sheet>/
+Warrior common/rare skins use FemaleWarriorPalette at runtime; no old body export.
 Mage skins recolour the navy robe and hat:
   Resources/Art/char_mage_<dir>_<frame>.png -> Resources/Art/char_<skin id>_<dir>_<frame>.png
 Each new png gets a .meta copied from the career sheet it mirrors (same import settings, deterministic new GUID).
@@ -16,7 +15,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from career_recolor import RES, recolor, warrior_rule  # noqa: E402
+from career_recolor import RES, recolor  # noqa: E402
 
 # sheet -> (vest hue, vest sat, cloth hue, cloth sat, vest gain). Careers already use steel blue and teal.
 WARRIOR = {
@@ -66,18 +65,7 @@ def write_folder_meta(folder):
 
 
 def main():
-    skins = os.path.join(RES, "SilverWarrior", "Skins")
-    for name, (vh, vs, ch, cs, gain) in WARRIOR.items():
-        out = os.path.join(skins, name)
-        os.makedirs(out, exist_ok=True)
-        if not os.path.exists(out + ".meta"):
-            write_folder_meta(out)
-        for sheet in ("body", "attack"):
-            dst = os.path.join(out, sheet + ".png")
-            recolor(Image_open(os.path.join(RES, "SilverWarrior", sheet + ".png")), warrior_rule(vh, vs, ch, cs, gain)).save(dst)
-            if not os.path.exists(dst + ".meta"):
-                write_meta(dst, os.path.join(skins, "career_fighter", sheet + ".png.meta"))
-        print(name, "->", out)
+    print("Warrior skins: approved FemaleWarrior body + runtime palette (no legacy export).")
     frames = sorted(glob.glob(os.path.join(RES, "Art", "char_mage_*.png")))
     for name, rule in MAGE.items():
         for f in frames:

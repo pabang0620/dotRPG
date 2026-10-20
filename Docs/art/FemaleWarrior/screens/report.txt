@@ -1,0 +1,9 @@
+[2.93] capture started
+[5.18] verification audio volume: 0
+[7.06] shot 01-approved-warrior-equipment (render texture)
+[7.94] shot 02-warrior-skin-shop (render texture)
+[8.66] shot 03-skin-draw-banner (render texture)
+[9.47] shot 04-fighter-card (render texture)
+[9.75] shot 05-guardian-card (render texture)
+[9.75] PASS: equipment, wardrobe, skin draw and both warrior career screens captured; no purchases or draws.
+[9.75] capture finished

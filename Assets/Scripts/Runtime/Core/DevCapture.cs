@@ -26,7 +26,7 @@ namespace DotRPG
         /// -dotrpgCanyon / -dotrpgWinter / -dotrpgChars / -dotrpgUi: 32px canyon, winter village, characters
         /// and monsters, and window/HUD showcases (DevCapture.*.cs).
         /// </summary>
-        static readonly string[] Modes = { "-dotrpgSurface", "-surfaceWorldExport", "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
+        static readonly string[] Modes = { "-dotrpgArtReview", "-dotrpgSurface", "-surfaceWorldExport", "-dotrpgCapture", "-dotrpgFx", "-dotrpgMap", "-dotrpgTown", "-dotrpgCanyon", "-dotrpgWinter", "-dotrpgChars", "-dotrpgUi", "-dotrpgDepth", "-dotrpgStairs", "-dotrpgSilver",
             "-dotrpgParty", "-dotrpgDungeon", "-dotrpgMonster", "-dotrpgBalance", "-dotrpgOnline", "-dotrpgHouse", "-dotrpgMobility", "-dotrpgNature", "-dotrpgWater", "-dotrpgStory", "-dotrpgVillageArt", "-dotrpgNetPair", "-dotrpgOnlinePause", "-dotrpgPresentation", "-dotrpgHunting", "-dotrpgPerf", "-dotrpgCareer", "-dotrpgCareerDemo", "-dotrpgMonsterDemo", "-dotrpgSanctum", "-dotrpgRoutes", "-dotrpgSanctumFields", "-dotrpgWorldLayers", "-dotrpgWeaponAppearance", "-dotrpgSkillClip", "-dotrpgMeasure", "-dotrpgTrailer", "-dotrpgMiniDungeon", "-dotrpgMiniDemo", "-dotrpgLionCape", "-dotrpgEnhanceAura" }; // [PARTY] [DUNGEON] [MONSTER] [CONTENT]
 
         /// <summary>Test runs keep their saves next to their report, so the player's own save slot is never overwritten.</summary>
@@ -100,6 +100,7 @@ namespace DotRPG
         {
             switch (mode)
             {
+                case "-dotrpgArtReview": return ArtReviewShowcase();
                 case "-dotrpgCanyon": return CanyonHdShowcase();
                 case "-dotrpgWinter": return WinterHdShowcase();
                 case "-dotrpgChars": return CharsShowcase();

@@ -48,7 +48,7 @@ namespace DotRPG
         {
             if (Class == CharacterClass.Warrior)
             {
-                SilverWarriorPresentation.Preview(character, weaponPreview, Game.Session.Equipment[EquipSlot.Weapon], Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1");
+                SilverWarriorPresentation.Preview(character, weaponPreview, Game.Session.Equipment[EquipSlot.Weapon], Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1", CharacterPreviewCard.LookFor(Class).skinSheet);
                 return;
             }
             var body = character.sprite;

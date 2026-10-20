@@ -1,0 +1,2 @@
+PASS: 70 base frames, 104 runtime-facing/animation samples, 864 combo/recovery samples, transparent borders and valid anchors.
+PASS: 640 palette silhouette/grip checks, 65 shop/draw/equipped sprite identities.

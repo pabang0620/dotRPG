@@ -1,0 +1,293 @@
+{
+  "reason": "Retired male base/palette sheets, disconnected illustration cards, rejected drafts and obsolete baker validation; runtime palettes and live skin thumbnails replace them.",
+  "removed": [
+    {
+      "path": "Assets/Resources/SilverWarrior/body.png",
+      "sha256": "689a9091bfa7b245d66679fd688c39b35b1fbf18a3cc70b3879752837bb8c83c"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/attack.png",
+      "sha256": "0844ba3900a5987560251be089b669fa141ff60987de9bab43232408f30c3511"
+    },
+    {
+      "path": "Assets/ArtSources/SilverWarrior/body.png",
+      "sha256": "1778f0db56df89670f0ddc17faceb04596cd9a9319a9af65fafd93151a49b3ce"
+    },
+    {
+      "path": "Assets/ArtSources/SilverWarrior/attack.png",
+      "sha256": "f56cbfa2b71b34e4aae89bb092c372ae57d36fe603e9c6777337b77b22f61a90"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_fighter/body.png",
+      "sha256": "a33ac55714874dacb49eaab352b6fd458f405d6f7f6fd19dfc5d4232542a3fde"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_fighter/attack.png",
+      "sha256": "2ac6b165abc9a6389047d23469778066618175ff08b4d8fbe83f442b71c6a074"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_guardian/body.png",
+      "sha256": "bf99d8f8839997178f284e03831b74654419783d9d344d11c0c681fb1ec48c11"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_guardian/attack.png",
+      "sha256": "5cd41e663057bf8e66c91aa3e9e9c3a01e6f375937598291a7c01414a63082fd"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_sand/body.png",
+      "sha256": "b6214aabb8d9251561f6b747176720f22de54e6afd96617771695d95fe634b62"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_sand/attack.png",
+      "sha256": "2ec0212331900040249a803feaf2447b3fdd2c560fd820405b80a1b69b44140c"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_moss/body.png",
+      "sha256": "420ba5d51fcb43acc934ec8ed9b40501f34750646f19a12816859aa364a988d4"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_moss/attack.png",
+      "sha256": "068770afa856166d20815a3ac8ced6f20c658e90976ebcfd1e928b3e55fd4183"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_rust/body.png",
+      "sha256": "044f1deaa52f6bfb29cecd0c1f489ea807de08474de65edc9009334de357097d"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_rust/attack.png",
+      "sha256": "9aeefd6a9120f1beeb8e9031ac64b35d670095b90ca36e607ed3e7c2afde9ded"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_crimson/body.png",
+      "sha256": "b09ac6744526220aafdae7c04f46396991a5f6597250246c6116022f0cbdbf21"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_crimson/attack.png",
+      "sha256": "ca15f574b28980748c5b0a9c38a2c6838385ff02de8dc92caefc21410f5070b5"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_amethyst/body.png",
+      "sha256": "bddfab05ed87af809abff124d794394ba79a4cf6629d40cc0b36f33990bd8ec9"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_amethyst/attack.png",
+      "sha256": "10abb164840413f5c54c3aac95b540264fdbc3e050fd047c03e8c74c9c2b4212"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_brass/body.png",
+      "sha256": "6e81388117867547f55e1bdbc63b2e2faf94ae4154ccf993a1c80281a48e9415"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_brass/attack.png",
+      "sha256": "e7c5b4f9ee77991d1bcacc8a4c95e9db1fd75aa489ddba5bbbd430ad7d45a828"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_crimson.png",
+      "sha256": "5da6d0fb22a99734329a436ca9821999f9c0dda97a7395713a08c685b43212ae"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_forest.png",
+      "sha256": "37f1f08ba16d03f04cb81de112d45caf8144ae2e120a276419ece4b0f25da615"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_ice.png",
+      "sha256": "66d8da8a1b66b78831a3b3485862aab8bd35e87cdc5718c3d1e3b62e13d511dc"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_lion.png",
+      "sha256": "920c199a98f84a0d7543d1db6423cf267a65e7fd5f5fa17c6cd5806e43a28739"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_maple.png",
+      "sha256": "bcf57173df9cec7ded1137f4f9b50f1add081c6d5cbf5204c1e5b4d38bf24a13"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_moon.png",
+      "sha256": "c626fc5d9c3929f5272eadbacb67a36c431ce65ab5d9354fcb39bdb5722795de"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_noir.png",
+      "sha256": "7ee619f17cb70c7bb8bebd48dfb32d83ec21f2bb618c96bb64e6681d4b756603"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_obsidian.png",
+      "sha256": "6c985055f07700284aef18290cebcf9f8ce2b7ab48ba0e15489cee17759642f5"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_starnight.png",
+      "sha256": "86b9514ec108250253af3413adf7ff71886cdb901e2581f1401e361bf02226ad"
+    },
+    {
+      "path": "Assets/Scripts/Editor/SilverWarriorBaker.Validate.cs",
+      "sha256": "4e1e4dee3fb07c6b6296e1fa3f203595647a29c75b4ab02b7b3f9190ce13d8e5"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/body.png.meta",
+      "sha256": "162d36628a91dffbce6fc206bc81fe80ee7db264bc94c06ac757d625f2b86182"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/attack.png.meta",
+      "sha256": "03be6bc688eafddb99be20f6f3f8bc8afca9f24eed7f444a2374c1873c2de63c"
+    },
+    {
+      "path": "Assets/ArtSources/SilverWarrior/body.png.meta",
+      "sha256": "4e2305206fbab874f2f2dd0e634d68cbf07c1c3d76d6c2cbefb0e0026397ea10"
+    },
+    {
+      "path": "Assets/ArtSources/SilverWarrior/attack.png.meta",
+      "sha256": "8a54f0e775634b1949b7989c73420a2b14c9aa1d83263437bdef1f993c2994b0"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_fighter/body.png.meta",
+      "sha256": "d25b9bcb19e9e995447a3d5328aca49ac75aa5fc0b02f409481459984b74d359"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_fighter/attack.png.meta",
+      "sha256": "57f89a77d52f8fd03d8eaf0099f8b6f7995e06b0a7bbd8e374d001a912b24624"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_guardian/body.png.meta",
+      "sha256": "c064ac082abea064830b17ed33a215097c835f31863b32bea06b9f3d4f0fada5"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_guardian/attack.png.meta",
+      "sha256": "8f78a9dc61331302b4377bd7aed5d4546892f4ee9aad91dfad85f48d8d2e30f7"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_sand/body.png.meta",
+      "sha256": "de3fe2f4bbe5ec9a816755222380356d32edcb1ce6fc5a127d638e2c8bd0afa5"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_sand/attack.png.meta",
+      "sha256": "40316a28815225b9c9a93a7afb4f707ca673980e847c1399acdd5c4197a6182b"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_moss/body.png.meta",
+      "sha256": "86695973c281b16995683fc05ad6446d2e2a269fd0c75c2e8b61970210edffff"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_moss/attack.png.meta",
+      "sha256": "59dc07bb76a2d7a11909589b521f403468c5e3e9274fc67e0a14840d0440936c"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_rust/body.png.meta",
+      "sha256": "30d7895c5c17d9518f30c656c024e255642e82b69cb94430bba777465b65dd39"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_rust/attack.png.meta",
+      "sha256": "7e21bf991ddd9de0102d43778b61231358e13e0b82285ae8d737c8323f149237"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_crimson/body.png.meta",
+      "sha256": "cd2f04acff126672b2a408de0c6aa04b71484ff117cac6936588800cb7e987f8"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_crimson/attack.png.meta",
+      "sha256": "3d25534ec8066975e982d7f002da9720a293b4a2f9e41afb7ad27074dfe60720"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_amethyst/body.png.meta",
+      "sha256": "f765bfbba8cb3ef14e221317a568788ce23e1160eb11966844f82556ea9c1cf7"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_amethyst/attack.png.meta",
+      "sha256": "e63e5ebd5c00a5f0c149e5fa280dd9af353ff43098a0affca3fe70325209943a"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_brass/body.png.meta",
+      "sha256": "02f1060e085ad2215847e8118297890f8c3dfc9cf66885bbf3f93523891cf580"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_brass/attack.png.meta",
+      "sha256": "0491646865eb1f649eb6844d16dd6bb0200a5e71c70268ee58e2ef600b502df4"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_crimson.png.meta",
+      "sha256": "6b1b5233a59683a6d0936e790a67b3d206f6b756dcecc9fcf3db5a8aa379ca90"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_forest.png.meta",
+      "sha256": "2d8c2ede001ce7d38b397cd7ace4183bf38a49ce40c14b7ad4818526a3f3fdf4"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_ice.png.meta",
+      "sha256": "2dfefba3d24c106417c0e443df475259ee498d03f2030238c0e842c096ff7317"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_lion.png.meta",
+      "sha256": "36799f85478487abd026e6a2759d78182eb56c7938dcfc91cd543e5a09d12070"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_maple.png.meta",
+      "sha256": "68883006fe20c4384a86c2c8e717f2f3817a7195d9dd1ace12132f368a711684"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_moon.png.meta",
+      "sha256": "77cd1e5588abc6979d1ce91564ce55bd5de0f492314f46c571823bb21a852494"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_noir.png.meta",
+      "sha256": "1248b05afabfa097e92b89698222af5ce9578ee765f5dd65a26f74cc426c7377"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_obsidian.png.meta",
+      "sha256": "01a6177b9c84725bd2e3fc10113612c17957bbc8cc41b0866e43b442c3d87f6a"
+    },
+    {
+      "path": "Assets/Resources/Art/Cosmetics/skin_starnight.png.meta",
+      "sha256": "1c95c174c2b6f51d1c7a86a1dffd9e8c5f49ff2f442c11105f6440e629560ba0"
+    },
+    {
+      "path": "Assets/Scripts/Editor/SilverWarriorBaker.Validate.cs.meta",
+      "sha256": "12fffe02bd13f0c3ffc40d1aea043e29e067ce5e9b564cc473651ced1072e84a"
+    },
+    {
+      "path": "Docs/art/FemaleWarrior/illustration-attack-rejected.png",
+      "sha256": "7abb00e1daf972ae2612553365d8443d64d4f5e247df3281349df4dd4d76786c"
+    },
+    {
+      "path": "Docs/art/FemaleWarrior/illustration-body-rejected.png",
+      "sha256": "9be190165f9f73e23498c59ad2971e49d3455b0ef1ac7431bf17a32864ffdfc9"
+    },
+    {
+      "path": "Docs/art/FemaleWarrior/style-comparison.png",
+      "sha256": "09d4a23e480adee5381ceb45908990ff94311e95dc8e009e59af1d95de9515ad"
+    },
+    {
+      "path": "Docs/art/FemaleWarrior/legacy-audit.png",
+      "sha256": "41f4bc46e88ddede5aebdade7d6b8a203f24efb04eaecb00ebd4a178990e99ea"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_fighter.meta",
+      "sha256": "1a180256ee4c5d4af644a870c9a250519ec8236070baf8e4e8c77cd33205ff0e"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/career_guardian.meta",
+      "sha256": "91702f4ecb862e7c33cc43b8b94549adda87612f8c57c2f0d98656e876352d41"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_sand.meta",
+      "sha256": "12a0f544cc93a6b3db907634064f04f189aa29018d12b8bfab893246033363da"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_moss.meta",
+      "sha256": "2c67f7fb15841f4232ac2e39a06c3618d746128cda72978ae4c82b477802426d"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_rust.meta",
+      "sha256": "6d60c43dc666d93ecdf4defd602da2f608322da398d3e67ad0ae303ef8b2a893"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_crimson.meta",
+      "sha256": "28da4f1fbb6b17a6a0c897858bf0d4459a2de209e4705223868dcf663dfdd9f0"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_amethyst.meta",
+      "sha256": "e264881c7a6f15ea5b95d4c21167905efc1120757ca1dc685fb7edb856455a14"
+    },
+    {
+      "path": "Assets/Resources/SilverWarrior/Skins/w_brass.meta",
+      "sha256": "4346c1a6006f38cf26aadb2b43e89889c07022f302ac10f5280215c6d882a242"
+    }
+  ]
+}

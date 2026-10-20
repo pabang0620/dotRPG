@@ -1,0 +1,985 @@
+{
+  "frameCount": 70,
+  "frames": [
+    {
+      "clip": "idle0",
+      "direction": "down",
+      "bounds": [
+        17,
+        14,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle1",
+      "direction": "down",
+      "bounds": [
+        17,
+        14,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk0",
+      "direction": "down",
+      "bounds": [
+        17,
+        13,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk1",
+      "direction": "down",
+      "bounds": [
+        18,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 25,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk2",
+      "direction": "down",
+      "bounds": [
+        17,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk3",
+      "direction": "down",
+      "bounds": [
+        17,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack",
+      "direction": "down",
+      "bounds": [
+        17,
+        14,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 46
+      }
+    },
+    {
+      "clip": "hurt",
+      "direction": "down",
+      "bounds": [
+        17,
+        14,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle0",
+      "direction": "downside",
+      "bounds": [
+        17,
+        13,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 46
+      }
+    },
+    {
+      "clip": "idle1",
+      "direction": "downside",
+      "bounds": [
+        16,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk0",
+      "direction": "downside",
+      "bounds": [
+        17,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk1",
+      "direction": "downside",
+      "bounds": [
+        17,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk2",
+      "direction": "downside",
+      "bounds": [
+        17,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk3",
+      "direction": "downside",
+      "bounds": [
+        17,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack",
+      "direction": "downside",
+      "bounds": [
+        17,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "hurt",
+      "direction": "downside",
+      "bounds": [
+        17,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle0",
+      "direction": "side",
+      "bounds": [
+        17,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle1",
+      "direction": "side",
+      "bounds": [
+        17,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk0",
+      "direction": "side",
+      "bounds": [
+        16,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk1",
+      "direction": "side",
+      "bounds": [
+        17,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk2",
+      "direction": "side",
+      "bounds": [
+        17,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk3",
+      "direction": "side",
+      "bounds": [
+        16,
+        14,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack",
+      "direction": "side",
+      "bounds": [
+        17,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 46
+      }
+    },
+    {
+      "clip": "hurt",
+      "direction": "side",
+      "bounds": [
+        16,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle0",
+      "direction": "upside",
+      "bounds": [
+        17,
+        13,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle1",
+      "direction": "upside",
+      "bounds": [
+        17,
+        13,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk0",
+      "direction": "upside",
+      "bounds": [
+        17,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk1",
+      "direction": "upside",
+      "bounds": [
+        17,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk2",
+      "direction": "upside",
+      "bounds": [
+        17,
+        12,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "walk3",
+      "direction": "upside",
+      "bounds": [
+        17,
+        13,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack",
+      "direction": "upside",
+      "bounds": [
+        17,
+        13,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 44
+      }
+    },
+    {
+      "clip": "hurt",
+      "direction": "upside",
+      "bounds": [
+        17,
+        14,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 40,
+        "y": 45
+      }
+    },
+    {
+      "clip": "idle0",
+      "direction": "up",
+      "bounds": [
+        18,
+        14,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 46
+      }
+    },
+    {
+      "clip": "idle1",
+      "direction": "up",
+      "bounds": [
+        18,
+        14,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 46
+      }
+    },
+    {
+      "clip": "walk0",
+      "direction": "up",
+      "bounds": [
+        18,
+        14,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 38,
+        "y": 47
+      }
+    },
+    {
+      "clip": "walk1",
+      "direction": "up",
+      "bounds": [
+        18,
+        13,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 38,
+        "y": 46
+      }
+    },
+    {
+      "clip": "walk2",
+      "direction": "up",
+      "bounds": [
+        18,
+        13,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 38,
+        "y": 47
+      }
+    },
+    {
+      "clip": "walk3",
+      "direction": "up",
+      "bounds": [
+        18,
+        13,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 46
+      }
+    },
+    {
+      "clip": "attack",
+      "direction": "up",
+      "bounds": [
+        18,
+        15,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 47
+      }
+    },
+    {
+      "clip": "hurt",
+      "direction": "up",
+      "bounds": [
+        18,
+        14,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 47
+      }
+    },
+    {
+      "clip": "attack0",
+      "direction": "down",
+      "bounds": [
+        16,
+        12,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 20,
+        "y": 27
+      }
+    },
+    {
+      "clip": "attack1",
+      "direction": "down",
+      "bounds": [
+        17,
+        11,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 37
+      }
+    },
+    {
+      "clip": "attack2",
+      "direction": "down",
+      "bounds": [
+        16,
+        13,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 21,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack3",
+      "direction": "down",
+      "bounds": [
+        15,
+        13,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 45,
+        "y": 38
+      }
+    },
+    {
+      "clip": "attack4",
+      "direction": "down",
+      "bounds": [
+        16,
+        13,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 45,
+        "y": 39
+      }
+    },
+    {
+      "clip": "attack5",
+      "direction": "down",
+      "bounds": [
+        17,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 24,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack0",
+      "direction": "downside",
+      "bounds": [
+        16,
+        10,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 21,
+        "y": 24
+      }
+    },
+    {
+      "clip": "attack1",
+      "direction": "downside",
+      "bounds": [
+        16,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 38
+      }
+    },
+    {
+      "clip": "attack2",
+      "direction": "downside",
+      "bounds": [
+        16,
+        12,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 23,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack3",
+      "direction": "downside",
+      "bounds": [
+        15,
+        12,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 17,
+        "y": 39
+      }
+    },
+    {
+      "clip": "attack4",
+      "direction": "downside",
+      "bounds": [
+        14,
+        12,
+        49,
+        57
+      ],
+      "hand": {
+        "x": 16,
+        "y": 39
+      }
+    },
+    {
+      "clip": "attack5",
+      "direction": "downside",
+      "bounds": [
+        16,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 22,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack0",
+      "direction": "side",
+      "bounds": [
+        16,
+        12,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 31,
+        "y": 22
+      }
+    },
+    {
+      "clip": "attack1",
+      "direction": "side",
+      "bounds": [
+        16,
+        12,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 33,
+        "y": 37
+      }
+    },
+    {
+      "clip": "attack2",
+      "direction": "side",
+      "bounds": [
+        14,
+        12,
+        50,
+        57
+      ],
+      "hand": {
+        "x": 47,
+        "y": 34
+      }
+    },
+    {
+      "clip": "attack3",
+      "direction": "side",
+      "bounds": [
+        12,
+        13,
+        51,
+        57
+      ],
+      "hand": {
+        "x": 48,
+        "y": 36
+      }
+    },
+    {
+      "clip": "attack4",
+      "direction": "side",
+      "bounds": [
+        14,
+        12,
+        49,
+        57
+      ],
+      "hand": {
+        "x": 46,
+        "y": 38
+      }
+    },
+    {
+      "clip": "attack5",
+      "direction": "side",
+      "bounds": [
+        16,
+        12,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 41,
+        "y": 44
+      }
+    },
+    {
+      "clip": "attack0",
+      "direction": "upside",
+      "bounds": [
+        15,
+        13,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 17,
+        "y": 27
+      }
+    },
+    {
+      "clip": "attack1",
+      "direction": "upside",
+      "bounds": [
+        16,
+        13,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 40,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack2",
+      "direction": "upside",
+      "bounds": [
+        15,
+        14,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 42,
+        "y": 41
+      }
+    },
+    {
+      "clip": "attack3",
+      "direction": "upside",
+      "bounds": [
+        15,
+        14,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 17,
+        "y": 40
+      }
+    },
+    {
+      "clip": "attack4",
+      "direction": "upside",
+      "bounds": [
+        14,
+        14,
+        49,
+        57
+      ],
+      "hand": {
+        "x": 16,
+        "y": 43
+      }
+    },
+    {
+      "clip": "attack5",
+      "direction": "upside",
+      "bounds": [
+        16,
+        14,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 38,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack0",
+      "direction": "up",
+      "bounds": [
+        16,
+        15,
+        47,
+        57
+      ],
+      "hand": {
+        "x": 43,
+        "y": 25
+      }
+    },
+    {
+      "clip": "attack1",
+      "direction": "up",
+      "bounds": [
+        18,
+        15,
+        46,
+        57
+      ],
+      "hand": {
+        "x": 37,
+        "y": 43
+      }
+    },
+    {
+      "clip": "attack2",
+      "direction": "up",
+      "bounds": [
+        16,
+        15,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 45,
+        "y": 38
+      }
+    },
+    {
+      "clip": "attack3",
+      "direction": "up",
+      "bounds": [
+        15,
+        16,
+        49,
+        57
+      ],
+      "hand": {
+        "x": 46,
+        "y": 39
+      }
+    },
+    {
+      "clip": "attack4",
+      "direction": "up",
+      "bounds": [
+        16,
+        16,
+        48,
+        57
+      ],
+      "hand": {
+        "x": 45,
+        "y": 45
+      }
+    },
+    {
+      "clip": "attack5",
+      "direction": "up",
+      "bounds": [
+        18,
+        16,
+        45,
+        57
+      ],
+      "hand": {
+        "x": 39,
+        "y": 47
+      }
+    }
+  ]
+}

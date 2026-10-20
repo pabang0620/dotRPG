@@ -1,0 +1,24 @@
+[
+  {
+    "key": "fighter",
+    "refs": [
+      "C:/Users/admin/Desktop/games/sites/dotrpg-home/public/assets/skins/skin_lion.png"
+    ],
+    "prompt": "Use the attached game's approved adult swordswoman illustration as the character and art-style reference. Create a new vertical 2:3 fighter career card. Preserve her mature curvy adult build, face and established proportions faithfully, not a childlike or slender redesign. Change hair to chestnut brown high ponytail, costume palette to royal blue/ivory/gold while keeping the reference's elegant fantasy armored dress tailoring and silhouette. She performs a confident sword slash, face and sword both visible. Medium-full action composition from head to upper boots, flowing blue cape, silver gold shoulder armor, dark thigh-high boots. Painterly polished anime RPG illustration with the SAME level of detail and shading as reference, navy background with golden sword sigil, thin gold decorative card border. No words or logos. Non-explicit, opaque costume, heroic action emphasis."
+  },
+  {
+    "key": "guardian",
+    "refs": [
+      "C:/Users/admin/Desktop/games/sites/dotrpg-home/public/assets/skins/skin_lion.png"
+    ],
+    "prompt": "Use attached approved adult swordswoman illustration as exact style and adult character build reference. Create a new vertical 2:3 guardian career card. Preserve her mature curvy figure, face and proportions faithfully rather than making a slender or childlike character. Chestnut brown high ponytail, amber eyes, no helmet. Teal/ivory/gold version of reference's elegant fantasy armored dress with same silhouette, silver gold shoulder armor, dark thigh-high boots. Holds a tall shield to her SIDE so full costume silhouette remains readable and a sword in other hand. Composed protective heroic stance, teal tower rune and crystalline barrier background, subtle thin gold decorative border. Match reference's polished anime rendering quality, rich texture, lighting and mature proportions. No text or logos. Non-explicit, opaque costume. Head to boots framing."
+  },
+  {
+    "key": "skinbanner",
+    "refs": [
+      "C:/Users/admin/Desktop/games/sites/dotrpg-home/public/assets/skins/skin_lion.png",
+      "C:/Users/admin/Desktop/games/sites/dotrpg-home/public/assets/skins/skin_starnight.png"
+    ],
+    "prompt": "Create a horizontal 16:9 RPG costume collection banner featuring BOTH attached approved adult female characters. Faithfully preserve their faces, mature curvy adult proportions, costumes and highly detailed anime illustration style. Left character is silver-haired star witch in the exact navy/gold star dress and moon hat of reference2, with crystal staff. Right character is golden-haired lion swordswoman in the exact ivory/gold armored dress and crimson cape of reference1, holding her sword. Equal visual prominence, confident heroic poses, head-to-thigh framing, tasteful polished fantasy game art. Moonlit royal wardrobe hall with gold light and constellation sparks, controlled uncluttered background, readable silhouettes at small size. No text, no letters, no labels, no UI. Do not change body proportions into a slender or chibi redesign. Opaque costumes, non-explicit heroic scene."
+  }
+]

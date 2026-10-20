@@ -26,7 +26,7 @@ namespace DotRPG
         public const float WeaponScale = 0.92f;
         public static readonly string[] Directions = { "down", "downside", "side", "upside", "up" };
         public static readonly string[] BaseFrames = { "idle0", "idle1", "walk0", "walk1", "walk2", "walk3", "attack", "hurt" };
-        static SilverAtlas data;
+        static SilverAtlas data, femaleData;
         static Texture2D bodySheet, attackSheet;
         public static bool Supports(string id) => id == "player" || (id != null && id.StartsWith("player_", StringComparison.Ordinal));
         public static SilverAtlas Data
@@ -38,19 +38,24 @@ namespace DotRPG
                     var json = Resources.Load<TextAsset>("SilverWarrior/frames");
                     if (json == null) throw new InvalidOperationException("Silver warrior sheets have not been baked.");
                     data = JsonUtility.FromJson<SilverAtlas>(json.text);
-                    bodySheet = Resources.Load<Texture2D>("SilverWarrior/body");
-                    attackSheet = Resources.Load<Texture2D>("SilverWarrior/attack");
+                    var femaleJson = Resources.Load<TextAsset>("FemaleWarrior/frames");
+                    if (femaleJson == null) throw new InvalidOperationException("Female warrior atlas metadata is missing.");
+                    femaleData = JsonUtility.FromJson<SilverAtlas>(femaleJson.text);
+                    bodySheet = Resources.Load<Texture2D>("FemaleWarrior/body");
+                    attackSheet = Resources.Load<Texture2D>("FemaleWarrior/attack");
+                    if (bodySheet == null || attackSheet == null)
+                        throw new InvalidOperationException("Female warrior animation sheets are missing.");
                 }
                 return data;
             }
         }
-        public static void ResetCache() { data = null; bodySheet = attackSheet = null; skinSheets.Clear(); }
+        public static void ResetCache() { data = femaleData = null; bodySheet = attackSheet = null; skinSheets.Clear(); }
         static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> skinSheets =
             new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
         /// <summary>A costume skin's sheets (same layout as the shipped ones); null when the skin has none.</summary>
         static (Texture2D body, Texture2D attack)? SkinSheets(string skin)
         {
-            if (string.IsNullOrEmpty(skin)) return null;
+            if (string.IsNullOrEmpty(skin) || FemaleWarriorPalette.UsesApprovedBody(skin)) return null;
             if (!skinSheets.TryGetValue(skin, out var s))
             {
                 s = (Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/body"), Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/attack"));
@@ -78,10 +83,15 @@ namespace DotRPG
             foreach (var f in Data.frames) if (f.direction == direction && f.clip == frame) return f;
             throw new ArgumentException("Unknown silver warrior frame: " + direction + "/" + frame);
         }
-        public static Vector2 Hand(string direction, string frame)
+        public static Vector2 Hand(string direction, string frame, string skin = null)
         {
             // The drawing's own hand (same pixel space as the rig: x from the left, y from the top).
             var f = SheetFrame(direction, frame);
+            // Costume sheets keep their original grip coordinates. Only the new
+            // default body uses the anchors reviewed against its own drawings.
+            if (!SkinSheets(skin).HasValue)
+                foreach (var candidate in femaleData.frames)
+                    if (candidate.direction == f.direction && candidate.clip == f.clip) { f = candidate; break; }
             float x = Mirror(FacingOf(direction)) ? Size - 1 - f.hand.x : f.hand.x;
             return new Vector2(x - 32, 58 - f.hand.y) / Ppu;
         }
@@ -171,7 +181,7 @@ namespace DotRPG
             for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
             {
                 var p = src[y * Size + (flip ? Size - 1 - x : x)];
-                if (p.a > 0) oriented.Set(x, y, p);
+                if (p.a > 0) oriented.Set(x, y, FemaleWarriorPalette.Apply(p, look.skinSheet));
             }
             return oriented;
         }

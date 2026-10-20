@@ -103,6 +103,9 @@ namespace DotRPG
             w.big = UIFactory.Image(bigBox.transform, "Art", null, Color.white);
             w.big.preserveAspect = false;
             UIFactory.Place(w.big.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(940f, 940f * 9f / 16f));
+            var infoShade = UIFactory.Image(bigBox.transform, "InfoShade", Game.Art.Get("ui_white"), new Color32(10, 14, 24, 212));
+            infoShade.preserveAspect = false; infoShade.raycastTarget = false;
+            UIFactory.Place(infoShade.rectTransform, tl, tl, Vector2.zero, new Vector2(500f, BigH));
             w.bigTitle = Label(bigBox.transform, "Title", "", 40, tl, tl, new Vector2(28f, -28f), new Vector2(520f, 56f), TextAnchor.MiddleLeft);
             w.bigSub = Label(bigBox.transform, "Sub", "", 19, tl, tl, new Vector2(30f, -90f), new Vector2(460f, 150f), TextAnchor.UpperLeft);
             // "출시 스킨 N종" ribbon on the skin banner (top right).

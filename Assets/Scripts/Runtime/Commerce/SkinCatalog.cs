@@ -8,7 +8,7 @@ namespace DotRPG
 
     /// <summary>
     /// One costume skin: a full repaint of a class's body in every direction and frame. Warrior skins swap the
-    /// silver warrior sheets (SilverWarrior/Skins/&lt;sheet&gt;) and recolour the limbs the warrior draws in code;
+    /// approved female body palette or dedicated sheets (SilverWarrior/Skins/&lt;sheet&gt;);
     /// mage skins are their own frame set (Art/char_&lt;id&gt;_&lt;dir&gt;_&lt;frame&gt;). No stats, no hitbox change.
     /// </summary>
     public sealed class SkinDef
@@ -26,7 +26,7 @@ namespace DotRPG
     {
         static Color32 C(string hex) => PixelCanvas.Hex(hex);
 
-        /// <summary>Common skin: the class body recoloured (Tools/art/skin_recolor.py), no motes.</summary>
+        /// <summary>Common skin: approved warrior runtime palette or mage frames, no motes.</summary>
         static SkinDef Plain(string id, string name, CharacterClass cls, string blurb) => new SkinDef
         {
             id = id, name = name, cls = cls, blurb = blurb, trail = SkinTrailKind.None,
@@ -173,7 +173,7 @@ namespace DotRPG
 
         /// <summary>
         /// [CAREER 2026-10-13] The base body of a promoted character with no skin on: the class body recoloured per career,
-        /// shape unchanged (Tools/art/career_recolor.py). Warrior careers: SilverWarrior/Skins/career_&lt;career&gt;; mage
+        /// shape unchanged. Warrior careers: FemaleWarriorPalette on the approved body; mage
         /// careers: Art/char_career_&lt;career&gt;_&lt;dir&gt;_&lt;frame&gt;. Null before the career change.
         /// </summary>
         public static CharacterLook CareerLook(CharacterClass cls, Career career)

@@ -38,7 +38,7 @@ namespace DotRPG
             hand.enabled = false; // [ART] the body drawing has its own hand; no code-drawn grip over the hilt
             if (!weapon.enabled || animator == null) return;
             string direction = SilverWarriorArt.ViewKey(facing), frame = animator.FrameKey;
-            var anchor = SilverWarriorArt.Hand(direction, frame);
+            var anchor = SilverWarriorArt.Hand(direction, frame, animator.Look?.skinSheet);
             float angle = SilverWarriorArt.Angle(direction, frame);
             weapon.transform.localPosition = anchor;
             weapon.transform.localRotation = Quaternion.Euler(0, 0, angle - 90);
@@ -51,7 +51,7 @@ namespace DotRPG
             weapon.sortingOrder = animator.Renderer.sortingOrder + order;
             hand.sortingOrder = animator.Renderer.sortingOrder + (order < 0 ? -1 : 2);
         }
-        public static void Preview(Image character, Image weapon, string item, string frame)
+        public static void Preview(Image character, Image weapon, string item, string frame, string skin = null)
         {
             var body = character.sprite;
             var sword = Game.Art.GetWarriorWeapon(item);
@@ -62,7 +62,7 @@ namespace DotRPG
             float scale = Mathf.Min(box.x / body.rect.width, box.y / body.rect.height);
             var center = character.rectTransform.anchoredPosition + new Vector2(0, -box.y * .5f);
             float feet = center.y - body.rect.height * scale * .5f + body.pivot.y * scale;
-            var hand = SilverWarriorArt.Hand("down", frame);
+            var hand = SilverWarriorArt.Hand("down", frame, skin);
             var rt = weapon.rectTransform;
             rt.anchorMin = rt.anchorMax = character.rectTransform.anchorMin;
             rt.pivot = new Vector2(sword.pivot.x / sword.rect.width, sword.pivot.y / sword.rect.height);

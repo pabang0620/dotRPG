@@ -30,11 +30,19 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// [UI] The card picture of an aura or skin for shop, draw and wardrobe lists (Art/Cosmetics/&lt;id&gt;, e.g.
-        /// aura_sky or skin_moon), or null when none is drawn and the caller keeps its old thumbnail. Not used in the world.
+        /// Skin cards use the exact equipped sprite in shop, draws, exchange and wardrobe.
+        /// Aura cards retain their dedicated artwork.
         /// </summary>
-        public static Sprite Card(CosmeticProduct product) =>
-            product == null || Game.Art == null ? null : Game.Art.Optional("Cosmetics/" + product.Id);
+        public static Sprite Card(CosmeticProduct product)
+        {
+            if (product == null || Game.Art == null) return null;
+            if (product.IsSkin)
+            {
+                var look = SkinCatalog.LookFor(product.Skin.cls, product.Id);
+                return look == null ? null : Game.Art.GetCharacter(look, "down", "idle0");
+            }
+            return Game.Art.Optional("Cosmetics/" + product.Id);
+        }
 
         /// <summary>The same artwork is used by the wardrobe preview and the world renderer.</summary>
         public static Sprite ForProduct(CosmeticProduct product)
