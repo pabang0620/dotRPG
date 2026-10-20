@@ -29,7 +29,7 @@ namespace DotRPG
 
         public static RankingScreen Create(Transform canvas)
         {
-            var w = CreateWindow<RankingScreen>(canvas, "Ranking", L.T("랭킹"), "menuicon_achievement");
+            var w = CreateWindow<RankingScreen>(canvas, "Ranking", L.T("랭킹"), "menuicon_ranking");
             Instance = w;
             string[] names = { L.T("월드보스"), L.T("길드보스"), L.T("전투력") };
             for (int i = 0; i < 3; i++)

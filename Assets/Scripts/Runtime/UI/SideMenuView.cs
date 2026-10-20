@@ -53,9 +53,9 @@ namespace DotRPG
             view.Add("menuicon_party", L.T("파티"), () => PartyHub.Open()); // [UX] the party hub on its default page
             view.Add("menuicon_finder", L.T("파티 찾기"), () => PartyHub.Open(PartyHub.Page.Finder)); view.Add("menuicon_auction", L.T("경매장"), () => Game.Flow.OpenWindow(AuctionScreen.Instance)); // [ONLINE]
             view.Add("menuicon_friend", L.T("친구"), () => Game.Flow.OpenWindow(SocialScreen.Instance)); // [F5]
-            view.Add("menuicon_party", L.T("길드"), GuildScreen.Open); // [GUILD]
-            view.Add("menuicon_raid", L.T("월드·길드보스"), () => BossRushScreen.Open()); // [BOSS]
-            view.Add("menuicon_achievement", L.T("랭킹"), () => RankingScreen.OpenBoard(RankingClient.WorldBoard)); // [RANK]
+            view.Add("menuicon_guild", L.T("길드"), GuildScreen.Open); // [GUILD]
+            view.Add("menuicon_worldboss", L.T("월드·길드보스"), () => BossRushScreen.Open()); // [BOSS]
+            view.Add("menuicon_ranking", L.T("랭킹"), () => RankingScreen.OpenBoard(RankingClient.WorldBoard)); // [RANK]
             view.mailEntry = view.Add("menuicon_mail", L.T("우편"), () => Game.Flow.OpenWindow(MailScreen.Instance)); // [MAIL 10]
             view.Add("menuicon_achievement", L.T("업적"), () => Game.Flow.OpenWindow(AchievementScreen.Instance)); // 업적·칭호
             view.rewardEntry = view.Add("menuicon_levelreward", L.T("레벨 보상"), () => Game.Flow.OpenWindow(LevelRewardScreen.Instance)); // [LEVEL 13]

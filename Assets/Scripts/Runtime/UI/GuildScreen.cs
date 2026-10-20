@@ -43,7 +43,7 @@ namespace DotRPG
 
         public static GuildScreen Create(Transform canvas)
         {
-            var w = CreateWindow<GuildScreen>(canvas, "Guild", L.T("길드"), "menuicon_party");
+            var w = CreateWindow<GuildScreen>(canvas, "Guild", L.T("길드"), "menuicon_guild");
             Instance = w;
             w.BuildMine();
             w.BuildFind();

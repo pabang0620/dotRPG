@@ -22,7 +22,7 @@ namespace DotRPG
 
         public static BossRushScreen Create(Transform canvas)
         {
-            var w = CreateWindow<BossRushScreen>(canvas, "BossRush", L.T("월드보스 · 길드보스"), "menuicon_raid");
+            var w = CreateWindow<BossRushScreen>(canvas, "BossRush", L.T("월드보스 · 길드보스"), "menuicon_worldboss");
             Instance = w;
             w.tabWorld = Button(w.content, "TabWorld", L.T("월드보스"), "ui_btn", TL, TL, Vector2.zero, new Vector2(170f, 42f), () => w.Pick(BossRushClient.World), 20);
             w.tabGuild = Button(w.content, "TabGuild", L.T("길드보스"), "ui_btngray", TL, TL, new Vector2(180f, 0f), new Vector2(170f, 42f), () => w.Pick(BossRushClient.Guild), 20);
