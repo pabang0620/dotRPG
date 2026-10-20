@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// [RANK 2026-10-20] 랭킹 window (key Y, side menu): 월드보스 (people, best single attempt), 길드보스 (guilds, stage),
+    /// [RANK 2026-10-20] 랭킹 window (key Y, side menu): 월드보스 (people, best single attempt), 길드보스 (guilds, this week's score),
     /// 전투력 (people, no reward); this week or last week, the top 100 ten rows a page and my own place under them.
     /// </summary>
     public sealed class RankingScreen : OnlineWindow
@@ -123,8 +123,8 @@ namespace DotRPG
             heads[0].text = L.T("순위");
             heads[1].text = guild ? L.T("길드") : L.T("이름");
             heads[2].text = guild ? "" : L.T("길드");
-            heads[3].text = guild ? L.T("도달 단계") : L.T("레벨 · 직업");
-            heads[4].text = board == RankingClient.WorldBoard ? L.T("최고 1회 피해") : guild ? L.T("기록") : L.T("전투력");
+            heads[3].text = guild ? "" : L.T("레벨 · 직업");
+            heads[4].text = board == RankingClient.WorldBoard ? L.T("최고 1회 피해") : guild ? L.T("이번 주 점수") : L.T("전투력");
 
             if (!OnlineSession.Playing)
             {
@@ -155,7 +155,7 @@ namespace DotRPG
                 {
                     r.name.text = RankingClient.Colored(e.guildName, e.nameColor);
                     r.guild.text = "";
-                    r.level.text = L.F("{0}단계", Math.Max(1, e.stage));
+                    r.level.text = "";
                     r.value.text = $"{e.value:N0}";
                 }
                 else

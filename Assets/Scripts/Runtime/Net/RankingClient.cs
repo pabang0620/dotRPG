@@ -13,7 +13,7 @@ namespace DotRPG
 
         public sealed class Entry
         {
-            public int rank, level, stage;
+            public int rank, level;
             public string name, guildName, career, nameColor;
             public long value;
         }
@@ -69,7 +69,7 @@ namespace DotRPG
                     b.entries.Add(new Entry
                     {
                         rank = MiniJson.Int(o, "rank"), name = MiniJson.Str(o, "name", ""), guildName = MiniJson.Str(o, "guild_name", ""),
-                        level = MiniJson.Int(o, "level"), career = MiniJson.Str(o, "career", ""), stage = MiniJson.Int(o, "stage"),
+                        level = MiniJson.Int(o, "level"), career = MiniJson.Str(o, "career", ""),
                         value = (long)MiniJson.Num(o, "value"), nameColor = MiniJson.Str(o, "name_color"),
                     });
                 var me = MiniJson.Obj(r.data, "me");

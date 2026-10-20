@@ -22,7 +22,11 @@ namespace DotRPG
         {
             if (!high) { AuraFrame = -1; return; }
             // The cached atlas is only made for a +13 weapon, never for an ordinary sword.
-            if (currentMasks.crown == null) currentMasks.crown = MakeCrown(source.sprite);
+            if (currentMasks.crown == null)
+            {
+                if (!Readable(lastSprite)) { AuraFrame = -1; return; } // only the flash copy seen so far: wait for the weapon
+                currentMasks.crown = MakeCrown(lastSprite);
+            }
             AuraFrame = Mathf.FloorToInt(time * 10f) % CrownFrameCount;
             crown.sprite = currentMasks.crown.shell[AuraFrame];
             stream.sprite = currentMasks.crown.flow[AuraFrame];

@@ -2,8 +2,8 @@ namespace DotRPG
 {
     /// <summary>
     /// [BOSS 2026-10-20] Numbers of the 3-minute boss attempts (월드보스 / 길드보스, Docs/PLAN_GUILD_WORLDBOSS_2026-10-20.md 2-3).
-    /// One arena (the raid throne room layout) and one boss, 심연의 거신, for both kinds; the server's hp_mul / damage_mul
-    /// (guild boss stages) multiply the base numbers here.
+    /// One arena (the raid throne room layout) and one boss, 심연의 거신, for both kinds at the same strength (the guild boss
+    /// is a weekly score, not a kill); the server's hp_mul / damage_mul (1 today) multiply the base numbers here.
     /// </summary>
     public static class BossRushCatalog
     {
@@ -14,8 +14,11 @@ namespace DotRPG
         /// in three minutes, so nobody fells it inside one attempt and the ranking measures damage, not kills.
         /// </summary>
         public const float BaseHpMul = 46f;
-        /// <summary>Hits like the 그라흐 raid (x1.7): a mistake costs a third of a mage, standing in every warning ends the try.</summary>
-        public const float BaseDamageMul = 1.7f;
+        /// <summary>
+        /// [BALANCE 2026-10-20] x1.0 (was x1.7 like the 그라흐 raid): measured in the arena, an arcanist in the clear kit fell in
+        /// 9-42 s while the other careers lasted the three minutes, so one career could not compete in a damage ranking.
+        /// </summary>
+        public const float BaseDamageMul = 1f;
         public const int DefaultLevel = 40;
         /// <summary>Waits before the boss wakes up (the hero gets into place, the HUD clock starts with the boss).</summary>
         public const float WakeSeconds = 2f;

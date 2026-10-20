@@ -35,7 +35,7 @@ export async function resetDb(): Promise<void> {
       // 0047 길드·보스·랭킹 칭호
       'rank_titles',
       'boss_attempts',
-      'guild_boss_progress',
+      'guild_boss_scores',
       'boss_seasons',
       'guild_cooldowns',
       'guild_applications',

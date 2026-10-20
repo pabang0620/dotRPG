@@ -152,5 +152,11 @@
  "최고 1회 피해": "Sát thương cao nhất một lượt",
  "<color=#c9a2ff>길드보스</color> {0}단계 · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Boss Bang Hội</color> màn {0} · Lượt còn lại hôm nay {1} / {2}",
  "<color=#c9a2ff>월드보스</color> · 오늘 남은 도전 {0} / {1}": "<color=#c9a2ff>Boss Thế Giới</color> · Lượt còn lại hôm nay {0} / {1}",
- "보스 창 열기": "Mở cửa sổ Boss"
+ "보스 창 열기": "Mở cửa sổ Boss",
+ "{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}": "{0} Điểm bang hội +<color=#ffe066>{1:N0}</color>{2} · Điểm bang hội {3:N0} · Đóng góp của tôi {4:N0} · Bang hội {5}",
+ "{0} 내 피해 {1:N0}": "{0} Sát thương của tôi {1:N0}",
+ "<b>길드보스</b>\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 이번 주 도전한 길드원 20,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Boss bang hội</b>\nBoss này không cần hạ gục mà để tích điểm. Sát thương bạn gây ra trong 3 phút được cộng vào điểm bang hội tuần này (không tính sát thương của đồng đội AI).\nMỗi thành viên 2 lần mỗi ngày, mỗi lần 3 phút · sau 24 giờ kể từ khi gia nhập · Lv.40\nXếp hạng: tổng điểm bang hội tuần này → nếu bằng nhau, bang hội đạt trước xếp trên\nPhần thưởng (tính lúc 06:00 thứ Năm, qua thư): 20.000 vàng cho thành viên đã tham gia tuần này\nHạng 1: danh hiệu 'Bang hội mạnh nhất' cho mọi thành viên + tên bang hội màu vàng, hạng 2~10: tên màu bạc",
+ "이번 주 길드 점수 <color=#ffe066>{0:N0}</color>   ·   내 기여 {1:N0} ({2:0.0}%)": "Điểm bang hội tuần này <color=#ffe066>{0:N0}</color>   ·   Đóng góp của tôi {1:N0} ({2:0.0}%)",
+ "이번 주 점수": "Điểm tuần này",
+ "<color=#c9a2ff>길드보스</color> · 길드 점수 {0:N0} · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Boss bang hội</color> · Điểm bang hội {0:N0} · Lượt còn hôm nay {1} / {2}"
 }

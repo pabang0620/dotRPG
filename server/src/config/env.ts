@@ -86,7 +86,7 @@ const envSchema = z.object({
   RAID_REWARD_MIN_HUMANS: posInt(1),
   RAID_PRACTICE_PAYS_KILLS: boolStr.default(false),
   // 월드보스 주간 공유 체력(bossRushRules.WORLD_BOSS_HP_DEFAULT 근거). 새 주의 시즌을 만들 때만 읽는다
-  WORLD_BOSS_HP: posInt(16_000_000),
+  WORLD_BOSS_HP: posInt(160_000_000),
   // Steam 인증(값이 틀리면 기동하지 않는다)
   STEAM_AUTH_MODE: z.enum(['off', 'mock', 'web_api']).default('off'),
   STEAM_APP_ID: z.coerce.number().int().positive().optional(),

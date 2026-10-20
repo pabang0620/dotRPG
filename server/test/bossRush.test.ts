@@ -3,7 +3,7 @@ import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { setClockOverride } from '../src/utils/clock';
 import {
-  GUILD_STAGE1_HP, WORLD_DEFEAT_GOLD, WORLD_JOIN_GOLD, applyGuildDamage, attemptDamageCap, stageHp,
+  GUILD_JOIN_GOLD, WORLD_DEFEAT_GOLD, WORLD_JOIN_GOLD, attemptDamageCap, DAMAGE_SLACK,
 } from '../src/domains/bossrush/bossRushRules';
 import { settleDueSeasons } from '../src/domains/bossrush/bossRushSettle';
 import { clearRankingCache } from '../src/domains/rankings/rankingService';
@@ -38,13 +38,8 @@ async function fight(h: Hero, damage: number, kind = 'world') {
 }
 
 describe('boss rules', () => {
-  test('guild damage carries over into the next stage and stops at stage 10', () => {
-    expect(applyGuildDamage(1, 100, 50)).toMatchObject({ stage: 1, hpLeft: 50, advanced: false });
-    const over = applyGuildDamage(1, 100, 100 + 10);
-    expect(over).toMatchObject({ stage: 2, hpLeft: stageHp(2) - 10, advanced: true });
-    expect(applyGuildDamage(10, 5, 1_000_000)).toMatchObject({ stage: 10, hpLeft: 0 });
-    expect(stageHp(1)).toBe(GUILD_STAGE1_HP);
-    expect(attemptDamageCap(100, 500)).toBe(100 * 180 * 1.5);
+  test('damage cap is per second x at most 3 minutes x slack', () => {
+    expect(attemptDamageCap(100, 500)).toBe(100 * 180 * DAMAGE_SLACK);
   });
 });
 
@@ -53,7 +48,7 @@ describe('world boss attempts', () => {
     const h = await hero();
     const r = await get(app, h, '/bosses');
     expect(r.status).toBe(200);
-    expect(r.body.data.world).toMatchObject({ boss_id: 'boss_abyss_titan', max_hp: 16_000_000, hp_left: 16_000_000, attempts_left: 3, my_best: 0, my_rank: null });
+    expect(r.body.data.world).toMatchObject({ boss_id: 'boss_abyss_titan', max_hp: 160_000_000, hp_left: 160_000_000, attempts_left: 3, my_best: 0, my_rank: null });
     expect(r.body.data.guild).toBeNull();
     expect(r.body.data.week_ends_at).toBe('2026-10-21T21:00:00.000Z');
   });
@@ -76,7 +71,7 @@ describe('world boss attempts', () => {
     const rid = randomUUID();
     const f1 = await finish(h, s.body.data.attempt_id, 12_000, 'world', rid);
     expect(f1.status).toBe(200);
-    expect(f1.body.data).toMatchObject({ accepted_damage: 12_000, capped: false, best: 12_000, hp_left: 16_000_000 - 12_000, rank: 1, defeated: false });
+    expect(f1.body.data).toMatchObject({ accepted_damage: 12_000, capped: false, best: 12_000, hp_left: 160_000_000 - 12_000, rank: 1, defeated: false });
     const replay = await finish(h, s.body.data.attempt_id, 12_000, 'world', rid);
     expect(replay.body).toEqual(f1.body);
     const twice = await finish(h, s.body.data.attempt_id, 12_000);
@@ -133,7 +128,7 @@ async function inGuild(): Promise<{ leader: Hero; guildId: string }> {
 }
 
 describe('guild boss attempts', () => {
-  test('needs a guild and 24 hours in it, stages advance', async () => {
+  test('needs a guild and 24 hours in it, accepted damage adds up as the guild score', async () => {
     const solo = await hero();
     expect((await start(solo, 'guild')).body.errors.code).toBe('NOT_IN_GUILD');
     const { leader } = await inGuild();
@@ -142,12 +137,20 @@ describe('guild boss attempts', () => {
     expect(early.body.errors.code).toBe('GUILD_BOSS_NOT_YET');
     advance(24 * 3600);
     const st = await get(app, leader, '/bosses');
-    expect(st.body.data.guild).toMatchObject({ stage: 1, max_hp: GUILD_STAGE1_HP, hp_left: GUILD_STAGE1_HP, attempts_left: 2 });
-    await getPool().query('UPDATE guild_boss_progress SET hp_left = 1000');
+    expect(st.body.data.guild).toMatchObject({ score: 0, my_contribution: 0, attempts_left: 2, guild_rank: null });
+    expect(st.body.data.guild.stage).toBeUndefined();
     const d = await fight(leader, 3000, 'guild');
-    expect(d).toMatchObject({ accepted_damage: 3000, stage: 2, hp_left: stageHp(2) - 2000, defeated: true, rank: 1 });
+    expect(d).toMatchObject({ accepted_damage: 3000, score: 3000, my_contribution: 3000, rank: 1 });
+    expect(d.defeated).toBeUndefined();
     const s2 = await start(leader, 'guild');
-    expect(s2.body.data).toMatchObject({ stage: 2, damage_mul: 1.15 });
+    expect(s2.body.data).toMatchObject({ damage_mul: 1 });
+    expect(s2.body.data.stage).toBeUndefined();
+    advance(180);
+    const d2 = (await finish(leader, s2.body.data.attempt_id, 2000, 'guild')).body.data;
+    expect(d2).toMatchObject({ accepted_damage: 2000, score: 5000, my_contribution: 5000 });
+    clearRankingCache(); // 상태의 순위는 1분 캐시(끝 보고 응답의 rank는 바로 계산)
+    const st2 = await get(app, leader, '/bosses');
+    expect(st2.body.data.guild).toMatchObject({ score: 5000, my_contribution: 5000, attempts_left: 0, guild_rank: 1 });
   });
 });
 
@@ -194,17 +197,16 @@ describe('weekly settlement', () => {
     expect(t.rows[0]?.title_achievement).toBeNull();
   });
 
-  test('guild: stage gold for participants, top guild title and gold name', async () => {
+  test('guild: join gold for participants once, top guild title and gold name', async () => {
     const { leader, guildId } = await inGuild();
     const m = await hero();
     await post(app, m, '/guild/apply', { guild_id: guildId });
     advance(24 * 3600);
-    await get(app, leader, '/bosses'); // 이번 주 길드 진행 행을 만든다
-    await getPool().query('UPDATE guild_boss_progress SET hp_left = 100');
     await fight(leader, 500, 'guild');
+    await fight(leader, 700, 'guild');
     now = new Date('2026-10-21T21:05:00Z');
     await settleDueSeasons();
-    expect(await mails(leader, 'guild_boss')).toEqual([{ gold: 2 * 10_000, item: null, count: null }]);
+    expect(await mails(leader, 'guild_boss')).toEqual([{ gold: GUILD_JOIN_GOLD, item: null, count: null }]);
     expect(await mails(m, 'guild_boss')).toEqual([]); // 도전하지 않은 길드원
     const g = await getPool().query("SELECT honor_color FROM guilds WHERE uuid = $1", [guildId]);
     expect(g.rows[0]?.honor_color).toBe('gold');

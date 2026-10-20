@@ -152,5 +152,11 @@
  "최고 1회 피해": "Höchster Einzelschaden",
  "<color=#c9a2ff>길드보스</color> {0}단계 · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Gildenboss</color> Stufe {0} · Heute verbleibende Versuche {1} / {2}",
  "<color=#c9a2ff>월드보스</color> · 오늘 남은 도전 {0} / {1}": "<color=#c9a2ff>Weltboss</color> · Heute verbleibende Versuche {0} / {1}",
- "보스 창 열기": "Bossfenster öffnen"
+ "보스 창 열기": "Bossfenster öffnen",
+ "{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}": "{0} Gildenpunkte +<color=#ffe066>{1:N0}</color>{2} · Gildenpunkte {3:N0} · Mein Anteil {4:N0} · Gilde {5}",
+ "{0} 내 피해 {1:N0}": "{0} Mein Schaden {1:N0}",
+ "<b>길드보스</b>\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 이번 주 도전한 길드원 20,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Gildenboss</b>\nDiesen Boss besiegt man nicht, man sammelt Punkte. Dein Schaden in 3 Minuten zählt zu den Gildenpunkten dieser Woche (Schaden von KI-Gefährten ausgenommen).\n2 Versuche pro Tag und Mitglied, je 3 Min. · ab 24 Stunden nach dem Beitritt · Lv.40\nRangliste: Gildenpunkte dieser Woche → bei Gleichstand die Gilde, die sie zuerst erreicht hat\nBelohnung (Abrechnung Donnerstag 06:00, per Post): 20.000 Gold für Mitglieder, die diese Woche angetreten sind\nPlatz 1: Titel 'Stärkste Gilde' für alle + goldener Gildenname, Platz 2~10: silberner Gildenname",
+ "이번 주 길드 점수 <color=#ffe066>{0:N0}</color>   ·   내 기여 {1:N0} ({2:0.0}%)": "Gildenpunkte diese Woche <color=#ffe066>{0:N0}</color>   ·   Mein Anteil {1:N0} ({2:0.0}%)",
+ "이번 주 점수": "Punkte diese Woche",
+ "<color=#c9a2ff>길드보스</color> · 길드 점수 {0:N0} · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Gildenboss</color> · Gildenpunkte {0:N0} · Heute übrig {1} / {2}"
 }

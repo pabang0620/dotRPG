@@ -109,7 +109,7 @@ namespace DotRPG
             tabGuild.GetComponent<Image>().sprite = Game.Art.Get(guild ? "ui_btn" : "ui_btngray");
             result.text = string.IsNullOrEmpty(BossRushDirector.LastResultText) ? "" : L.T("<color=#8fe28f>지난 도전</color> · ") + BossRushDirector.LastResultText;
             rules.text = guild
-                ? L.T("<b>길드보스</b>\n길드마다 따로 체력이 있고, 다 깎으면 다음 단계(체력 x1.5, 피해 x1.15)로 넘어갑니다.\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 도달 단계 → 그 단계를 깎은 비율 → 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 참가한 길드원 도달 단계 x 10,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색")
+                ? L.T("<b>길드보스</b>\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 이번 주 도전한 길드원 20,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색")
                 : L.T("<b>월드보스</b>\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 주 가장 높은 1회 피해량\n보상(목요일 06:00 정산, 우편): 참가 30,000 골드 + 강화석, 격파한 주 30,000 골드 추가\n1위 칭호 '세계를 꺾은 자' + 이름 금색, 2~10위 '거신 사냥꾼' + 이름 주황색, 11~100위 '거신에 맞선 자'");
 
             if (!OnlineSession.Playing)
@@ -124,8 +124,15 @@ namespace DotRPG
             }
             var b = BossRushClient.Of(kind);
             string name = b != null && !string.IsNullOrEmpty(b.name) ? L.T(b.name) : L.T("심연의 거신");
-            bossName.text = guild && b != null ? L.F("{0} <color=#ffd34a>{1}단계</color>", name, Math.Max(1, b.stage)) : name;
-            if (b != null && b.maxHp > 0)
+            bossName.text = name;
+            if (guild && b != null)
+            {
+                // Score, not HP: the bar shows my share of the guild's score this week.
+                float share = b.score > 0 ? Mathf.Clamp01((float)b.myContribution / b.score) : 0f;
+                hpFill.rectTransform.anchorMax = new Vector2(share, 1f);
+                hpText.text = L.F("이번 주 길드 점수 <color=#ffe066>{0:N0}</color>   ·   내 기여 {1:N0} ({2:0.0}%)", b.score, b.myContribution, share * 100f);
+            }
+            else if (b != null && b.maxHp > 0)
             {
                 hpFill.rectTransform.anchorMax = new Vector2(b.HpShare, 1f);
                 hpText.text = b.Defeated && !guild ? L.T("격파! 이번 주 도전은 계속 랭킹에 기록됩니다")

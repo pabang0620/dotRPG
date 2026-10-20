@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
-import { getPool } from '../src/db/pool';
 import { setClockOverride } from '../src/utils/clock';
 import { clearRankingCache } from '../src/domains/rankings/rankingService';
 import { GUILD_CREATE_GOLD } from '../src/domains/guilds/guildRules';
@@ -47,7 +46,7 @@ describe('rankings', () => {
     expect(prev.body.data.entries).toEqual([]);
   });
 
-  test('guild boss: stage first, then how much of it is cleared', async () => {
+  test('guild boss: score first, then who reached it first', async () => {
     const guilds: { leader: Hero; id: string; name: string }[] = [];
     for (let i = 0; i < 3; i++) {
       const leader = await hero();
@@ -61,15 +60,13 @@ describe('rankings', () => {
     await fight(guilds[0]!.leader, 1000, 'guild');
     await fight(guilds[1]!.leader, 2000, 'guild');
     await fight(guilds[2]!.leader, 500, 'guild');
-    // 2번째 길드를 2단계로 올린다
-    await getPool().query(
-      'UPDATE guild_boss_progress p SET stage = 2 FROM guilds g WHERE g.id = p.guild_id AND g.uuid = $1', [guilds[2]!.id]);
+    await fight(guilds[2]!.leader, 500, 'guild'); // 1000점에 0번 길드보다 늦게 도달
     clearRankingCache();
     const r = await board(guilds[0]!.leader, 'guild_boss');
-    expect(r.body.data.entries.map((e: { guild_name: string; stage: number }) => [e.guild_name, e.stage])).toEqual([
-      [guilds[2]!.name, 2], [guilds[1]!.name, 1], [guilds[0]!.name, 1],
+    expect(r.body.data.entries.map((e: { guild_name: string; value: number }) => [e.guild_name, e.value])).toEqual([
+      [guilds[1]!.name, 2000], [guilds[0]!.name, 1000], [guilds[2]!.name, 1000],
     ]);
-    expect(r.body.data.me.rank).toBe(3);
+    expect(r.body.data.me).toEqual({ rank: 2, value: 1000 });
   });
 
   test('power board is computed from worn gear, cached for a minute', async () => {

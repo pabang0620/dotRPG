@@ -250,7 +250,7 @@ namespace DotRPG
                     Add(list, L.F("<color=#c9a2ff>월드보스</color> · 오늘 남은 도전 {0} / {1}", wb.attemptsLeft, wb.attemptsPerDay), L.T("보스 창 열기"), () => OpenWindowFrom(OpenBoss(BossRushClient.World)));
                 var gb = BossRushClient.GuildBoss;
                 if (gb != null && gb.attemptsLeft > 0 && !gb.Waiting)
-                    Add(list, L.F("<color=#c9a2ff>길드보스</color> {0}단계 · 오늘 남은 도전 {1} / {2}", System.Math.Max(1, gb.stage), gb.attemptsLeft, gb.attemptsPerDay), L.T("보스 창 열기"), () => OpenWindowFrom(OpenBoss(BossRushClient.Guild)));
+                    Add(list, L.F("<color=#c9a2ff>길드보스</color> · 길드 점수 {0:N0} · 오늘 남은 도전 {1} / {2}", gb.score, gb.attemptsLeft, gb.attemptsPerDay), L.T("보스 창 열기"), () => OpenWindowFrom(OpenBoss(BossRushClient.Guild)));
             }
 
             // 6. Daily / weekly requests.

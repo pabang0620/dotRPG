@@ -17,8 +17,9 @@ namespace DotRPG
         {
             public string kind, seasonId, bossId, name;
             public double maxHp, hpLeft;
-            public int attemptsLeft, attemptsPerDay, stage, myRank, guildRank;
-            public long myBest;
+            public int attemptsLeft, attemptsPerDay, myRank, guildRank;
+            /// <summary>World: my best single attempt. Guild: this week's guild score and my share of it (no HP, no stages).</summary>
+            public long myBest, score, myContribution;
             public DateTime? defeatedAt, eligibleAt;
             public bool Defeated => defeatedAt.HasValue || maxHp > 0 && hpLeft <= 0;
             public float HpShare => maxHp > 0 ? (float)Math.Max(0, Math.Min(1, hpLeft / maxHp)) : 0f;
@@ -30,15 +31,15 @@ namespace DotRPG
         public sealed class Attempt
         {
             public string kind, id, bossId;
-            public int level, stage;
+            public int level;
             public float hpMul = 1f, damageMul = 1f;
             public DateTime startedAt, endsAt;
         }
 
         public sealed class Result
         {
-            public long accepted, best;
-            public int rank, stage;
+            public long accepted, best, score, myContribution;
+            public int rank;
             public bool capped, defeated;
             public double hpLeft;
         }
@@ -116,7 +117,7 @@ namespace DotRPG
                 name = MiniJson.Str(o, "name", ""), maxHp = MiniJson.Num(o, "max_hp"), hpLeft = MiniJson.Num(o, "hp_left"),
                 attemptsLeft = MiniJson.Int(o, "attempts_left"),
                 attemptsPerDay = MiniJson.Int(o, "attempts_per_day", kind == Guild ? GuildAttemptsPerDay : WorldAttemptsPerDay),
-                stage = MiniJson.Int(o, "stage", 1), myBest = (long)MiniJson.Num(o, "my_best"),
+                myBest = (long)MiniJson.Num(o, "my_best"), score = (long)MiniJson.Num(o, "score"), myContribution = (long)MiniJson.Num(o, "my_contribution"),
                 myRank = MiniJson.Int(o, "my_rank"), guildRank = MiniJson.Int(o, "guild_rank"),
                 defeatedAt = GuildClient.ParseTime(MiniJson.Str(o, "defeated_at")), eligibleAt = GuildClient.ParseTime(MiniJson.Str(o, "eligible_at")),
             };
@@ -168,7 +169,7 @@ namespace DotRPG
                 var a = new Attempt
                 {
                     kind = kind, id = MiniJson.Str(d, "attempt_id"), bossId = MiniJson.Str(d, "boss_id", BossRushCatalog.BossId),
-                    level = Math.Max(1, MiniJson.Int(d, "level", EntryLevel)), stage = MiniJson.Int(d, "stage", 1),
+                    level = Math.Max(1, MiniJson.Int(d, "level", EntryLevel)),
                     hpMul = (float)Math.Max(0.01, MiniJson.Num(d, "hp_mul", 1)), damageMul = (float)Math.Max(0.01, MiniJson.Num(d, "damage_mul", 1)),
                     startedAt = started, endsAt = GuildClient.ParseTime(MiniJson.Str(d, "ends_at")) ?? started.AddSeconds(AttemptSeconds),
                 };
@@ -198,15 +199,25 @@ namespace DotRPG
                 {
                     accepted = (long)MiniJson.Num(d, "accepted_damage"), capped = MiniJson.Has(d, "capped") && d["capped"] is bool c && c,
                     best = (long)MiniJson.Num(d, "best"), rank = MiniJson.Int(d, "rank"), hpLeft = MiniJson.Num(d, "hp_left"),
-                    stage = MiniJson.Int(d, "stage"), defeated = MiniJson.Has(d, "defeated") && d["defeated"] is bool f && f,
+                    score = (long)MiniJson.Num(d, "score"), myContribution = (long)MiniJson.Num(d, "my_contribution"),
+                    defeated = MiniJson.Has(d, "defeated") && d["defeated"] is bool f && f,
                 };
                 var b = Of(a.kind);
                 if (b != null)
                 {
-                    b.hpLeft = res.hpLeft;
                     b.myBest = Math.Max(b.myBest, res.best);
-                    if (res.rank > 0) b.myRank = res.rank;
-                    if (res.stage > 0) b.stage = res.stage;
+                    if (a.kind == Guild)
+                    {
+                        // The guild boss answers with the guild's score and rank (the rank is the guild's, not mine).
+                        b.score = res.score;
+                        b.myContribution = res.myContribution;
+                        if (res.rank > 0) b.guildRank = res.rank;
+                    }
+                    else
+                    {
+                        b.hpLeft = res.hpLeft;
+                        if (res.rank > 0) b.myRank = res.rank;
+                    }
                 }
                 done?.Invoke(res, null);
                 Refresh();

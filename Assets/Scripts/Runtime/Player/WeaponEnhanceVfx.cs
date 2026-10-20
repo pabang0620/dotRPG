@@ -47,13 +47,16 @@ namespace DotRPG
             bool high = show && Tier == 3;
             crown.enabled = high; stream.enabled = high;
             if (!show) { AuraFrame = -1; return; }
-            if (lastSprite != source.sprite)
+            // The hit flash swaps in a white copy that is not CPU-readable: keep the masks of the real weapon meanwhile
+            // (reading it threw every flash on +11 and higher weapons, 2026-10-20 boss arena measure).
+            if (lastSprite != source.sprite && Readable(source.sprite))
             {
                 lastSprite = source.sprite;
                 var masks = GetMasks(source.sprite, out points);
                 edge.sprite = masks.edge; aura.sprite = masks.aura;
                 currentMasks = masks;
             }
+            if (currentMasks == null) { edge.enabled = aura.enabled = crown.enabled = stream.enabled = false; AuraFrame = -1; return; }
             float t = Time.time;
             float pulse = .82f + .18f * Mathf.Sin(t * 2.4f);
             Follow(edge); Follow(aura);
@@ -79,6 +82,8 @@ namespace DotRPG
             sr.flipX = source.flipX; sr.flipY = source.flipY;
             sr.maskInteraction = source.maskInteraction;
         }
+        static bool Readable(Sprite sprite) => sprite != null && sprite.texture != null && sprite.texture.isReadable;
+
         static Masks GetMasks(Sprite sprite, out Vector2[] anchors)
         {
             if (cache.TryGetValue(sprite, out var ready)) { anchors = ready.anchors; return ready; }

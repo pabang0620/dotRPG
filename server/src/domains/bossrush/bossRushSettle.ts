@@ -1,5 +1,5 @@
 // 주간 정산(boss-settle 작업): 끝난 주의 시즌을 한 번만 정산한다. 시즌 행 잠금(SKIP LOCKED) + settled_at.
-// 월드보스: 참가 보상(골드·강화석), 격파 보상, 1~100위 칭호·이름 색. 길드보스: 참가자 단계 x 골드, 1위 길드 칭호, 1~10위 길드 이름 색.
+// 월드보스: 참가 보상(골드·강화석), 격파 보상, 1~100위 칭호·이름 색. 길드보스: 참가 골드, 1위 길드 칭호, 1~10위 길드 이름 색.
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { withTransaction } from '../../db/pool';
@@ -10,7 +10,7 @@ import * as guildRepo from '../guilds/guildRepository';
 import { clearRankingCache, ranked } from '../rankings/rankingService';
 import * as repo from './bossRushRepository';
 import {
-  GUILD_GOLD_PER_STAGE, ORE_ITEM, WORLD_DEFEAT_GOLD, WORLD_JOIN_GOLD, WORLD_JOIN_ORE, guildRankColor, worldRankReward,
+  GUILD_JOIN_GOLD, ORE_ITEM, WORLD_DEFEAT_GOLD, WORLD_JOIN_GOLD, WORLD_JOIN_ORE, guildRankColor, worldRankReward,
 } from './bossRushRules';
 
 const MAIL_DAYS = 30;
@@ -45,12 +45,9 @@ async function settleWorld(client: PoolClient, s: repo.Season, now: Date): Promi
 
 async function settleGuild(client: PoolClient, s: repo.Season, now: Date): Promise<number> {
   const until = new Date(s.week_end.getTime() + WEEK_MS + HONOR_EXTRA_MS);
-  const progress = new Map((await repo.progressOf(client, s.id)).map((p) => [p.guild_id, p]));
-  const people = await repo.participants(client, s.id);
-  for (const p of people) {
-    const g = p.guild_id === null ? undefined : progress.get(p.guild_id);
-    if (g) await mailGold(client, p.character_id, 'guild_boss', g.stage * GUILD_GOLD_PER_STAGE, now);
-  }
+  // 그 주에 길드를 옮겨 두 길드에서 도전했어도 참가 보상은 한 번
+  const people = [...new Set((await repo.participants(client, s.id)).map((p) => p.character_id))];
+  for (const id of people) await mailGold(client, id, 'guild_boss', GUILD_JOIN_GOLD, now);
   const rows = (await ranked('guild_boss', s.week_start, { fresh: true, db: client })).rows;
   for (let i = 0; i < rows.length && i < 10; i++) {
     const guildId = (rows[i] as { key: number }).key;

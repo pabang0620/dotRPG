@@ -54,27 +54,25 @@ CREATE TABLE boss_seasons (
   week_start  TIMESTAMPTZ NOT NULL,
   week_end    TIMESTAMPTZ NOT NULL,
   boss_id     TEXT NOT NULL,
-  max_hp      BIGINT NOT NULL CHECK (max_hp > 0),
+  max_hp      BIGINT NOT NULL CHECK (max_hp >= 0),
   hp_left     BIGINT NOT NULL CHECK (hp_left >= 0),
   defeated_at TIMESTAMPTZ,
   settled_at  TIMESTAMPTZ,
   UNIQUE (kind, week_start),
   CHECK (week_end > week_start)
 );
-COMMENT ON TABLE boss_seasons IS '주(목요일 06:00 KST 경계)마다 종류별 한 행. world는 서버 전체 공유 체력, guild는 1단계 체력 기준값(길드별 진행은 guild_boss_progress)';
+COMMENT ON TABLE boss_seasons IS '주(목요일 06:00 KST 경계)마다 종류별 한 행. world는 서버 전체 공유 체력, guild는 체력 없음(max_hp 0, 길드별 점수는 guild_boss_scores)';
 COMMENT ON COLUMN boss_seasons.settled_at IS '주간 정산(우편·칭호)을 마친 시각. 행 잠금 + 이 값으로 한 번만 정산한다';
 
-CREATE TABLE guild_boss_progress (
-  season_id        BIGINT NOT NULL REFERENCES boss_seasons(id),
-  guild_id         BIGINT NOT NULL REFERENCES guilds(id),
-  stage            INT NOT NULL DEFAULT 1 CHECK (stage BETWEEN 1 AND 10),
-  stage_hp         BIGINT NOT NULL CHECK (stage_hp > 0),
-  hp_left          BIGINT NOT NULL CHECK (hp_left >= 0),
-  total_damage     BIGINT NOT NULL DEFAULT 0 CHECK (total_damage >= 0),
-  stage_reached_at TIMESTAMPTZ NOT NULL,
+CREATE TABLE guild_boss_scores (
+  season_id BIGINT NOT NULL REFERENCES boss_seasons(id),
+  guild_id  BIGINT NOT NULL REFERENCES guilds(id),
+  score     BIGINT NOT NULL DEFAULT 0 CHECK (score >= 0),
+  scored_at TIMESTAMPTZ NOT NULL,
   PRIMARY KEY (season_id, guild_id)
 );
-COMMENT ON TABLE guild_boss_progress IS '길드별 이번 주 길드보스. 단계 체력을 다 깎으면 다음 단계(체력 x1.5). 10단계가 끝';
+COMMENT ON TABLE guild_boss_scores IS '길드별 이번 주 길드보스 점수. 길드원 도전의 인정 피해를 더한다(보스를 죽이는 구조가 아니다)';
+COMMENT ON COLUMN guild_boss_scores.scored_at IS '점수가 마지막으로 오른 시각. 같은 점수면 먼저 도달한 길드가 위';
 
 CREATE TABLE boss_attempts (
   id              BIGSERIAL PRIMARY KEY,
@@ -187,7 +185,7 @@ ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
                     'raid_gold', 'daily_quest', 'trade_out', 'trade_in'));
 DROP TABLE rank_titles;
 DROP TABLE boss_attempts;
-DROP TABLE guild_boss_progress;
+DROP TABLE guild_boss_scores;
 DROP TABLE boss_seasons;
 DROP TABLE guild_cooldowns;
 DROP TABLE guild_applications;

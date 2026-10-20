@@ -47,6 +47,13 @@ namespace DotRPG
         Vector2 returnPosition;
         Facing returnFacing;
         int generation;
+        // [MEASURE] -measureOnly bossrush: an offline attempt without the server, timed in game seconds (the measure runs fast).
+        bool devRun;
+        float devStartedAt, devDeadline;
+
+        /// <summary>[MEASURE] Last offline attempt: why it ended and the game seconds the clock ran.</summary>
+        public string DevEndReason { get; private set; }
+        public float DevFightSeconds { get; private set; }
 
         public static BossRushDirector Create(Transform parent)
         {
@@ -95,6 +102,34 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>
+        /// [MEASURE] Offline attempt for DevCapture: no server, no online lock, the server's room numbers (level 40,
+        /// hp_mul 1, damage_mul 1), a 3-minute clock in game time. The result stays here (<see cref="DevEndReason"/>).
+        /// </summary>
+        internal bool DevEnter(string kind)
+        {
+            if (Active || Busy || Game.Player == null) return false;
+            Busy = true;
+            devRun = true;
+            int gen = ++generation;
+            QuestAutoPilot.Stop("");
+            attempt = new BossRushClient.Attempt
+            {
+                kind = kind, id = "dev", bossId = BossRushCatalog.BossId, level = BossRushCatalog.DefaultLevel,
+                startedAt = DateTime.Now, endsAt = DateTime.Now.AddSeconds(AttemptSeconds),
+            };
+            returnMap = Game.World.MapId;
+            returnPosition = Game.Player.Position;
+            returnFacing = Game.Player.Facing;
+            MyDamage = 0;
+            Hits = 0;
+            DevEndReason = null;
+            DevFightSeconds = 0f;
+            finishing = false;
+            StartCoroutine(EnterArena(gen));
+            return true;
+        }
+
         IEnumerator EnterArena(int gen)
         {
             if (Game.State.Current != GameState.Playing) Game.State.Set(GameState.Playing);
@@ -127,9 +162,12 @@ namespace DotRPG
             Busy = false;
             GameEvents.RaiseToast(L.F("{0} · {1}초 동안 준 피해가 기록됩니다", BossRushClient.KindName(attempt.kind), Mathf.RoundToInt(AttemptSeconds)));
             Changed?.Invoke();
-            yield return new WaitForSecondsRealtime(BossRushCatalog.WakeSeconds);
+            if (devRun) yield return new WaitForSeconds(BossRushCatalog.WakeSeconds);
+            else yield return new WaitForSecondsRealtime(BossRushCatalog.WakeSeconds);
             if (gen != generation || !Active) yield break;
             startedAt = Time.unscaledTime;
+            devStartedAt = Time.time;
+            devDeadline = Time.time + AttemptSeconds;
             // The server's end time when it is sooner than the local count (a slow entry still ends on time).
             var localEnd = DateTime.UtcNow.AddSeconds(AttemptSeconds);
             var serverEnd = attempt.endsAt.ToUniversalTime();
@@ -166,7 +204,7 @@ namespace DotRPG
             if (Game.World == null || Game.World.MapId != BossRushCatalog.ArenaMap) { Abort(); return; }
             if (Game.Player == null || Game.Player.IsDead) { Finish("death"); return; }
             if (boss == null || boss.IsDead) { Finish("defeated"); return; }
-            if (clockRunning && RemainingSeconds <= 0f) Finish("time");
+            if (clockRunning && (devRun ? Time.time >= devDeadline : RemainingSeconds <= 0f)) Finish("time");
         }
 
         /// <summary>The player leaves early (HUD button, Esc route, town scroll): the damage so far is recorded.</summary>
@@ -186,6 +224,7 @@ namespace DotRPG
             Busy = true;
             QuestAutoPilot.Stop("");
             float seconds = clockRunning ? Mathf.Min(AttemptSeconds, Time.unscaledTime - startedAt) : 0f;
+            float clockRunningGame = clockRunning ? Mathf.Min(AttemptSeconds, Time.time - devStartedAt) : 0f;
             clockRunning = false;
             var a = attempt;
             LastKind = a?.kind;
@@ -194,12 +233,24 @@ namespace DotRPG
             int gen = generation;
             Changed?.Invoke();
             string head = reason == "death" ? L.T("쓰러졌습니다.") : reason == "defeated" ? L.T("보스를 쓰러뜨렸습니다!") : reason == "left" ? L.T("도전을 마쳤습니다.") : L.T("시간이 끝났습니다.");
+            if (devRun)
+            {
+                // [MEASURE] Nothing is sent: the measure reads the damage and the reason from here.
+                DevEndReason = reason;
+                DevFightSeconds = clockRunningGame;
+                LastResultText = L.F("{0} 내 피해 {1:N0}", head, damage);
+                StartCoroutine(ReturnRoom(reason, gen));
+                return;
+            }
             LastResultText = L.F("{0} 내 피해 {1:N0} · 기록 확인 중...", head, damage);
             BossRushClient.Finish(a, damage, hits, seconds, (res, error) =>
             {
                 LastResultText = res == null ? L.F("{0} 내 피해 {1:N0} · {2}", head, damage, error)
-                    : L.F("{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 주 최고 {3:N0} · {4}", head, res.accepted,
-                        res.capped ? L.T(" (상한 적용)") : "", res.best, res.rank > 0 ? L.F("{0}위", res.rank) : L.T("순위 집계 중"));
+                    : a?.kind == BossRushClient.Guild
+                        ? L.F("{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}", head, res.accepted,
+                            res.capped ? L.T(" (상한 적용)") : "", res.score, res.myContribution, res.rank > 0 ? L.F("{0}위", res.rank) : L.T("순위 집계 중"))
+                        : L.F("{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 주 최고 {3:N0} · {4}", head, res.accepted,
+                            res.capped ? L.T(" (상한 적용)") : "", res.best, res.rank > 0 ? L.F("{0}위", res.rank) : L.T("순위 집계 중"));
                 if (gen == generation) Changed?.Invoke();
                 BossRushScreen.Instance?.Redraw();
             });
@@ -232,6 +283,7 @@ namespace DotRPG
             attempt = null;
             Game.Quest?.NotifyChanged();
             Changed?.Invoke();
+            if (devRun) { devRun = false; yield break; } // [MEASURE] no window: an open window would pause the next run
             // The result in the boss window (Esc goes back to the game).
             BossRushScreen.Instance?.OpenResult();
         }
@@ -240,13 +292,13 @@ namespace DotRPG
         public void Abort()
         {
             if (!Active && !Busy) return;
-            if (attempt != null && !finishing && clockRunning)
+            if (attempt != null && !finishing && clockRunning && !devRun)
                 BossRushClient.Finish(attempt, MyDamage, Hits, Mathf.Min(AttemptSeconds, Time.unscaledTime - startedAt), (_, __) => { });
             generation++;
             StopAllCoroutines();
             ClearBoss();
             Game.Party?.SetDungeonCompanions(false);
-            Active = Busy = finishing = clockRunning = false;
+            Active = Busy = finishing = clockRunning = devRun = false;
             attempt = null;
             Game.State?.RefreshTimeScale();
             Changed?.Invoke();

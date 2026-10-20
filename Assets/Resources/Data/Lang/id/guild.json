@@ -152,5 +152,11 @@
  "최고 1회 피해": "Damage Tertinggi per Percobaan",
  "<color=#c9a2ff>길드보스</color> {0}단계 · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Bos Guild</color> Tahap {0} · Sisa kesempatan hari ini {1} / {2}",
  "<color=#c9a2ff>월드보스</color> · 오늘 남은 도전 {0} / {1}": "<color=#c9a2ff>Bos Dunia</color> · Sisa kesempatan hari ini {0} / {1}",
- "보스 창 열기": "Buka Jendela Bos"
+ "보스 창 열기": "Buka Jendela Bos",
+ "{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}": "{0} Skor guild +<color=#ffe066>{1:N0}</color>{2} · Skor guild {3:N0} · Kontribusiku {4:N0} · Guild {5}",
+ "{0} 내 피해 {1:N0}": "{0} Damage-ku {1:N0}",
+ "<b>길드보스</b>\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 이번 주 도전한 길드원 20,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Boss Guild</b>\nBoss ini tidak dikalahkan, tapi untuk mengumpulkan skor. Damage-mu selama 3 menit ditambahkan ke skor guild minggu ini (damage rekan AI tidak dihitung).\n2 kali sehari per anggota, 3 menit tiap kali · mulai 24 jam setelah bergabung · Lv.40\nPeringkat: total skor guild minggu ini → jika sama, guild yang lebih dulu mencapainya\nHadiah (dihitung Kamis 06:00, lewat surat): 20.000 gold untuk anggota yang ikut minggu ini\nPeringkat 1: gelar 'Guild Terkuat' untuk semua + nama guild emas, peringkat 2~10: nama guild perak",
+ "이번 주 길드 점수 <color=#ffe066>{0:N0}</color>   ·   내 기여 {1:N0} ({2:0.0}%)": "Skor guild minggu ini <color=#ffe066>{0:N0}</color>   ·   Kontribusiku {1:N0} ({2:0.0}%)",
+ "이번 주 점수": "Skor minggu ini",
+ "<color=#c9a2ff>길드보스</color> · 길드 점수 {0:N0} · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Boss Guild</color> · Skor guild {0:N0} · Sisa hari ini {1} / {2}"
 }

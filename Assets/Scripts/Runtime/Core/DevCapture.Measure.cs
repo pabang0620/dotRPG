@@ -14,7 +14,7 @@ namespace DotRPG
         // M1 hunting (20 grounds), M2 weekday dungeons and M3 raids (normal + heroic), each alone and with three AI
         // companions (same hero). The hero is driven by 자동 사냥 (QuestAutoPilot, allowed in runs by MeasureAnywhere) at the
         // recommended level with rare +5 gear (epic for raids); damage, potions and deaths are real. Offline.
-        // Options: -measureOnly hunting|dungeons|raids, -measureZones a,b (hunting grounds), -measureMinutes N (hunting minutes per row, game time),
+        // Options: -measureOnly hunting|dungeons|raids|bossrush (-measureSets raid,clear), -measureZones a,b (hunting grounds), -measureMinutes N (hunting minutes per row, game time),
         // -measureRaid id, -measureCareers fighter,bishop (raids), -measureAware 1 (bursts 망자의 심판), -measureDodge 0 (old bot: instant step out only), -measureScale N (time scale), -measureOut <file.json>.
         // =====================================================================================================
 
@@ -56,21 +56,23 @@ namespace DotRPG
             var hunting = new List<object>();
             var dungeons = new List<object>();
             var raids = new List<object>();
+            var bossrush = new List<object>();
             float started = Time.realtimeSinceStartup;
             Log($"measure start: only={only} minutes={minutes} scale={scale} out={outPath}");
             if (only == "all" || only == "hunting") yield return MeasureHunting(hunting, minutes, scale);
             if (only == "all" || only == "dungeons") yield return MeasureDungeons(dungeons, scale);
             if (only == "all" || only == "raids") yield return MeasureRaids(raids, scale);
+            if (only == "bossrush") yield return MeasureBossRush(bossrush, scale); // [BOSS] DevCapture.Measure.BossRush.cs, not part of "all"
             Time.timeScale = 1f;
             Time.captureFramerate = 0;
             QuestAutoPilot.MeasureAnywhere = false;
             var meta = HRow(("build", Application.version), ("timeScale", fast ? "fixed 1/30" : (object)scale), ("huntMinutes", minutes), ("only", only),
                 ("measuredAt", DateTime.Now.ToString("s")), ("wallSeconds", Mathf.RoundToInt(Time.realtimeSinceStartup - started)),
                 ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 2.4-3.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled; -measureDodge 1 (default): 0.25 s late steps out of ground warnings, stands in its 낙인 circle, hides from 섬멸, hits gimmick totems first. Potions under 40% HP / 20% MP"));
-            var root = HRow(("meta", meta), ("hunting", hunting), ("dungeons", dungeons), ("raids", raids));
+            var root = HRow(("meta", meta), ("hunting", hunting), ("dungeons", dungeons), ("raids", raids), ("bossrush", bossrush));
             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
             File.WriteAllText(outPath, MiniJson.Write(root));
-            Log($"measure done: hunting={hunting.Count} dungeons={dungeons.Count} raids={raids.Count} -> {outPath}");
+            Log($"measure done: hunting={hunting.Count} dungeons={dungeons.Count} raids={raids.Count} bossrush={bossrush.Count} -> {outPath}");
         }
 
         // ---------------------------------------------------------------- hero setup

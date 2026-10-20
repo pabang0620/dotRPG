@@ -16,7 +16,7 @@ const POWER_MIN_LEVEL = 20;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** 정렬된 전체 순서. key는 캐릭터 id(world_boss·power) 또는 길드 id(guild_boss) */
-interface Ranked { key: number; value: number; stage?: number; cleared?: number }
+interface Ranked { key: number; value: number }
 const cache = new Map<string, { at: number; rows: Ranked[]; updatedAt: Date }>();
 
 /** 테스트·정산 직후: 캐시를 비운다 */
@@ -42,11 +42,11 @@ async function compute(db: Queryable, board: Board, weekStart: Date): Promise<Ra
   if (kind === 'world') return (await bossRepo.worldBoard(db, season.id)).map((e) => ({ key: e.character_id, value: e.best }));
   const alive = await db.query<{ id: string }>('SELECT id FROM guilds WHERE disbanded_at IS NULL');
   const aliveIds = new Set(alive.rows.map((x) => Number(x.id)));
-  return (await bossRepo.progressOf(db, season.id))
-    .filter((p) => aliveIds.has(p.guild_id) && p.total_damage > 0)
-    .map((p) => ({ p, cleared: (p.stage_hp - p.hp_left) / p.stage_hp }))
-    .sort((a, b) => b.p.stage - a.p.stage || b.cleared - a.cleared || a.p.stage_reached_at.getTime() - b.p.stage_reached_at.getTime() || a.p.guild_id - b.p.guild_id)
-    .map(({ p, cleared }) => ({ key: p.guild_id, value: p.total_damage, stage: p.stage, cleared: Math.round(cleared * 1000) / 1000 }));
+  // 길드보스: 이번 주 점수 합, 같으면 그 점수에 먼저 도달한 길드
+  return (await bossRepo.scoresOf(db, season.id))
+    .filter((g) => aliveIds.has(g.guild_id) && g.score > 0)
+    .sort((a, b) => b.score - a.score || a.scored_at.getTime() - b.scored_at.getTime() || a.guild_id - b.guild_id)
+    .map((g) => ({ key: g.guild_id, value: g.score }));
 }
 
 /** 정렬된 전체 순서(캐시). fresh면 캐시를 쓰지 않는다(정산) */
@@ -76,7 +76,7 @@ export async function board(board: Board, week: Week, me: { characterId: number;
   let mine: { rank: number; value: number } | null = null;
   if (board === 'guild_boss') {
     const names = await repo.guildNames(db, top.map((r) => r.key));
-    entries = top.map((r, i) => ({ rank: i + 1, guild_name: names.get(r.key) ?? '', stage: r.stage, cleared_ratio: r.cleared, value: r.value }));
+    entries = top.map((r, i) => ({ rank: i + 1, guild_name: names.get(r.key) ?? '', value: r.value }));
     if (me?.guildId) {
       const rank = rankOf(rows, me.guildId);
       if (rank) mine = { rank, value: (rows[rank - 1] as Ranked).value };

@@ -6,7 +6,7 @@
 
 - 전투는 파티(최대 4명) 호스트 PC가 돌린다. 여러 파티가 같은 몬스터를 실시간으로 공유하는 구조는 없다.
 - 그래서 월드보스·길드보스는 "각자 자기 방에서 3분 동안 같은 보스를 때리고, 서버가 피해량을 모아 공유 체력에서 깎는" 방식이다. 방 안 전투는 레이드와 같다(혼자 + AI 동료. 사람 파티는 받지 않는다: 랭킹이 개인 기록이고, 파티 동기화 없이 각자 방이라 공정하다).
-- 피해량은 호스트가 멤버별로 보고하고(기존 레이드 기여도 `damage_dealt`), 서버가 상한으로 자른다: 3분 x 그 캐릭터의 공격 상한(`killRules.attackCap`) x 여유 배율. 상한을 넘은 보고는 상한까지만 인정하고 이상 기록을 남긴다.
+- 피해량은 호스트가 멤버별로 보고하고(기존 레이드 기여도 `damage_dealt`), 서버가 상한으로 자른다: 3분 x 그 캐릭터의 공격 상한(`killRules.attackCap`) x 배율 0.6(실측 최고 피해가 상한의 약 40%). 상한을 넘은 보고는 상한까지만 인정하고 이상 기록을 남긴다.
 - 주간 경계는 기존 기준(목요일 06:00 KST, `resetBoundaries`), 정산은 `daily_kst` 작업이 목요일에 돈다. 보상은 시스템 우편.
 
 ## 1. 길드
@@ -49,12 +49,13 @@
 | 항목 | 값 |
 |---|---|
 | 대상 | 길드원 Lv40, 가입 24시간 뒤부터 |
-| 보스 | 길드마다 따로 체력. 1단계부터 시작, 체력을 다 깎으면 다음 단계(체력 x1.5, 피해 x1.15) |
-| 도전 | 길드원마다 하루 2회, 회당 3분 |
-| 랭킹 기준 | 이번 주 도달 단계, 같으면 그 단계 깎은 비율, 같으면 먼저 도달한 길드 |
+| 보스 | 죽이는 보스가 아니라 점수를 쌓는다(사용자 결정 2026-10-20). 체력·단계 없음, 보스 세기는 고정 |
+| 도전 | 길드원마다 하루 2회, 회당 3분, 혼자 + AI 동료 |
+| 점수 | 도전마다 서버가 인정한 피해(상한 적용 뒤)가 이번 주 길드 점수에 더해진다 |
+| 랭킹 기준 | 이번 주 길드 점수 합, 같으면 그 점수에 먼저 도달한 길드 |
 
 보상(주간 정산, 우편):
-- 참가한 길드원: 도달 단계 x 골드 10,000(최대 10단계)
+- 이번 주 1회 이상 도전한 길드원: 골드 20,000(그 주에 길드를 옮겼어도 한 번)
 - 길드 1위: 길드원 전원 칭호 "최강 길드" + 길드 이름 금색(다음 주까지)
 - 길드 2~10위: 길드 이름 은색
 
@@ -66,7 +67,7 @@
 
 ## 5. 서버
 
-- 마이그레이션 0047: `guilds`, `guild_members`, `guild_applications`, `guild_cooldowns`(탈퇴 24시간), `boss_seasons`(주·종류·보스·체력·격파 시각), `boss_attempts`(캐릭터·시즌·피해·요청 ID·인정 피해·이상 플래그), `guild_boss_progress`(길드·시즌·단계·남은 체력), `rank_titles`(캐릭터·칭호·이름 색·만료), 우편 코드 `world_boss`, `guild_boss`, 채팅 채널 `guild`.
+- 마이그레이션 0047: `guilds`, `guild_members`, `guild_applications`, `guild_cooldowns`(탈퇴 24시간), `boss_seasons`(주·종류·보스·체력·격파 시각), `boss_attempts`(캐릭터·시즌·피해·요청 ID·인정 피해·이상 플래그), `guild_boss_scores`(길드·시즌·점수·마지막으로 점수가 오른 시각), `rank_titles`(캐릭터·칭호·이름 색·만료), 우편 코드 `world_boss`, `guild_boss`, 채팅 채널 `guild`.
 - 도메인: `guilds`(만들기·검색·신청·승인·탈퇴·추방·직위·공지·해체), `bossrush`(월드·길드보스 시즌 조회, 도전 시작·끝 보고, 랭킹), 주간 정산 작업.
 - 도전은 시작 시 서버가 attempt를 만들고(횟수 차감, 멱등), 끝 보고에서 피해를 인정한다. 시작 없이 온 보고, 3분 + 여유를 넘긴 보고, 두 번째 보고는 받지 않는다.
 - 정산은 시즌 행 잠금 + 정산 완료 표시로 한 번만 돈다.
@@ -74,7 +75,7 @@
 ## 6. 클라이언트
 
 - 길드 창(단축키 G): 내 길드(멤버·직위·공지·신청 목록), 길드 찾기(검색·신청·만들기).
-- 보스 창: 월드보스·길드보스 탭, 공유 체력 막대, 오늘 남은 도전, 들어가기. 전투 방은 레이드 방 구성을 쓰고 위에 3분 타이머와 내 피해량.
+- 보스 창: 월드보스 탭(공유 체력 막대), 길드보스 탭(이번 주 길드 점수·내 기여·길드 순위), 오늘 남은 도전, 들어가기. 전투 방은 레이드 방 구성을 쓰고 위에 3분 타이머와 내 피해량.
 - 랭킹 창(단축키 R가 비어 있으면 R).
 - 이름표 아래 길드 이름, 랭킹 이름 색, 채팅 길드 탭.
 - 오프라인(서버 없이)에서는 길드·랭킹이 잠기고 "온라인에서 열려요"로 안내한다.
@@ -95,12 +96,12 @@
 - 캐릭터 id는 외부용 uuid. 에러 코드: GUILD_NAME_TAKEN, GUILD_FULL, GUILD_COOLDOWN, GUILD_FORBIDDEN, ALREADY_IN_GUILD, NOT_IN_GUILD, LEVEL_TOO_LOW, GOLD_SHORT.
 
 보스(kind = 'world' | 'guild')
-- `GET /characters/:uuid/bosses` -> `{ world: { season_id, boss_id, name, max_hp, hp_left, defeated_at, attempts_left, attempts_per_day: 3, my_best, my_rank }, guild: null | { season_id, boss_id, stage, max_hp, hp_left, attempts_left, attempts_per_day: 2, eligible_at, guild_rank }, week_ends_at, attempt_seconds: 180 }`
-- `POST /characters/:uuid/bosses/:kind/attempts` `{ request_id, party_member_uuids?: [] }` -> `{ attempt_id, boss_id, level, hp_mul, damage_mul, stage?, started_at, ends_at }` (횟수 차감)
-- `POST /characters/:uuid/bosses/:kind/attempts/:attemptId/finish` `{ request_id, damage_dealt, hits_landed, duration_s }` -> `{ accepted_damage, capped: boolean, best, rank, hp_left, stage?, defeated: boolean }`. 혼자 + AI 동료만이라 호스트 대리 보고는 없다.
+- `GET /characters/:uuid/bosses` -> `{ world: { season_id, boss_id, name, max_hp, hp_left, defeated_at, attempts_left, attempts_per_day: 3, my_best, my_rank }, guild: null | { season_id, boss_id, name, score, my_contribution, attempts_left, attempts_per_day: 2, eligible_at, guild_rank }, week_ends_at, attempt_seconds: 180 }`
+- `POST /characters/:uuid/bosses/:kind/attempts` `{ request_id, party_member_uuids?: [] }` -> `{ attempt_id, boss_id, level, hp_mul, damage_mul, started_at, ends_at }` (횟수 차감, damage_mul은 늘 1)
+- `POST /characters/:uuid/bosses/:kind/attempts/:attemptId/finish` `{ request_id, damage_dealt, hits_landed, duration_s }` -> 월드보스 `{ accepted_damage, capped, expired, best, rank, hp_left, defeated }`, 길드보스 `{ accepted_damage, capped, expired, best, rank, score, my_contribution }`(score = 이번 주 길드 점수, my_contribution = 이번 주 내 기여 합). 혼자 + AI 동료만이라 호스트 대리 보고는 없다.
 
 랭킹
-- `GET /rankings/:board?week=current|previous` board = `world_boss` | `guild_boss` | `power` -> `{ entries: [{ rank, name, guild_name, level, career, value, name_color }], me: { rank, value } | null, updated_at }` (guild_boss는 `{ rank, guild_name, stage, value }`)
+- `GET /rankings/:board?week=current|previous` board = `world_boss` | `guild_boss` | `power` -> `{ entries: [{ rank, name, guild_name, level, career, value, name_color }], me: { rank, value } | null, updated_at }` (guild_boss는 `{ rank, guild_name, value }`, value = 이번 주 길드 점수)
 
 꾸미기
 - 채팅 송신 프레임과 town.pos 프레임에 `guild_name`, `name_color`('gold'|'orange'|'silver'|null)를 더한다. 랭킹 칭호는 `rank_titles`에 있고 기존 칭호 선택 목록에 같이 보인다.
@@ -108,12 +109,26 @@
 ### 7.1 서버 구현에서 정해진 것 (위 약속에 더한 점)
 
 - `GET /characters/:uuid/bosses`: world·guild에 `name`(심연의 거신 / 길드의 거상), 최상위에 `min_level`(40). `season_id`는 시즌 uuid.
-- 도전 시작 응답의 `hp_mul`은 방 안 보스 체력 배율(1000, 3분 안에 쓰러지지 않게), `level`은 40. 길드보스는 `stage`와 `damage_mul`(1.15^(단계-1)).
+- 도전 시작 응답의 `hp_mul`은 방 안 보스 체력 배율(1, 클라이언트 기본 배율에 곱한다), `level`은 40, `damage_mul`은 1(길드보스도 고정 세기).
 - 열린 도전이 있으면 시작이 409 `BOSS_ATTEMPT_OPEN`이고 `errors.attempt_id`로 그 도전을 알려 준다(끝 보고 기한 3분 + 60초가 지나면 다음 시작 때 자동으로 닫힌다). 하루 횟수를 다 쓰면 409 `BOSS_NO_ATTEMPTS`, 길드 가입 24시간 전이면 409 `GUILD_BOSS_NOT_YET`(`errors.eligible_at`).
-- 끝 보고 응답에 `expired`(기한이 지나 피해 0으로 닫힘)가 더 있다. 길드보스의 `defeated`는 "이번 보고로 단계를 넘겼다"는 뜻이다. `hits_landed`가 0이면 피해를 받지 않는다. 피해 상한은 서버가 잰 경과 시간(최대 180초) x 착용 장비 화력 상한(초당) x 1.5.
-- 랭킹: `GET /rankings/:board?week=&character_id=<내 캐릭터 uuid>`(character_id를 줘야 `me`가 온다). 응답에 `board`, `week`. 길드보스 줄은 `{ rank, guild_name, stage, cleared_ratio, value }`(value = 이번 주 누적 피해). 전투력은 Lv20 이상.
+- 끝 보고 응답에 `expired`(기한이 지나 피해 0으로 닫힘)가 더 있다. 길드보스 응답은 `score`·`my_contribution`이다(단계·체력·defeated 없음). `hits_landed`가 0이면 피해를 받지 않는다. 피해 상한은 서버가 잰 경과 시간(최대 180초) x 착용 장비 화력 상한(초당) x 1.5.
+- 랭킹: `GET /rankings/:board?week=&character_id=<내 캐릭터 uuid>`(character_id를 줘야 `me`가 온다). 응답에 `board`, `week`. 길드보스 줄은 `{ rank, guild_name, value }`(value = 이번 주 길드 점수). 상태 응답의 순위는 1분 캐시라 끝 보고 직후에는 끝 보고 응답의 `rank`를 쓴다. 전투력은 Lv20 이상.
 - 길드 상태의 `guild`에 `honor_color`('gold'|'silver'|null). 길드 에러 코드 추가: GUILD_NOT_FOUND, GUILD_APPLY_LIMIT, GUILD_NAME_BLOCKED, GUILD_NOT_EMPTY, GUILD_LEADER_MUST_TRANSFER, GUILD_OFFICER_LIMIT, GUILD_ROLE_INVALID, GUILD_MEMBER_NOT_FOUND, GUILD_SELF, GUILD_APPLICATION_NOT_FOUND.
 - 꾸미기: `chat.msg`의 `from`과 `town.pos`에 `guild_name`, `guild_color`('gold'|'silver'), `name_color`('gold'|'orange')가 값이 있을 때만 붙는다(서버 값, 클라이언트가 보내지 않는다). 길드 채팅은 `channel: 'guild'`, 길드가 없으면 `chat.err` `NOT_IN_GUILD`. 놓친 길드 채팅 따라잡기는 없다.
 - 칭호: 업적 목록 응답에 `rank_titles: [{ id, title, name_color, expires_at }]`, 칭호 장착(`POST /characters/:uuid/title`)에 `rank_world_1`·`rank_world_10`·`rank_world_100`·`rank_guild_1`을 그대로 쓴다.
-- 우편 `system_code`: `world_boss`, `guild_boss`(참가·격파·단계 골드, 강화석 5개는 따로 한 통).
-- 정산은 10분마다 "끝났는데 정산 안 한 시즌"을 찾는 작업(`boss-settle`)이라 경계 직후 서버가 꺼져 있어도 켜지면 정산된다. 월드보스 체력은 env `WORLD_BOSS_HP`(기본 16,000,000).
+- 우편 `system_code`: `world_boss`, `guild_boss`(월드보스 참가·격파 골드와 강화석 5개는 따로 한 통, 길드보스 참가 골드 20,000).
+- 정산은 10분마다 "끝났는데 정산 안 한 시즌"을 찾는 작업(`boss-settle`)이라 경계 직후 서버가 꺼져 있어도 켜지면 정산된다. 월드보스 체력은 env `WORLD_BOSS_HP`(기본 160,000,000: 1회 150,000 x 하루 3회 x 7일 x 100명 x 참여율 0.5).
+
+## 8. 보스 방 실측 (2026-10-20)
+
+`-measureOnly bossrush`, 측정 봇(숙련 + 장판 회피), Lv40, 직업 4종 x 혼자/AI 3명 x 장비 2벌(레이드 에픽 무기 +5, 클리어 한 벌 에픽 +10~11). 원본 `analysis/player-sim/data/measure_run5/bossrush*/`.
+
+| | 1차(보스 공격력 x1.7) | 2차(x1.0) |
+|---|---|---|
+| 3분 피해 | 6만~34만, 아르카니스트는 9~42초에 사망 | 5.4만~27만, 16판 모두 3분 버팀 |
+| 서버 상한 대비 | 3~19%(상한 배율 1.5) | 9~42%(상한 배율 0.6) |
+
+- 처음 1회 추정 15,000은 사냥터 몬스터 기준이라 10배 낮았다. 월드보스 체력을 1,600만에서 1억 6,000만으로 올렸다.
+- 보스 공격력을 x1.7에서 x1.0으로 내렸다. 피해 랭킹에서 한 직업만 3분을 못 버티면 경쟁이 안 된다.
+- 비숍(치유)은 6~7만으로 가장 낮다. 개인 피해 랭킹의 성격상 남는 차이다(길드보스 점수에는 그대로 기여).
+- 같은 측정에서 +11 이상 무기의 강화 빛이 맞을 때마다 오류를 내던 결함을 찾아 고쳤다(`WeaponEnhanceVfx`, 실제 플레이에도 해당).

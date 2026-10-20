@@ -152,5 +152,11 @@
  "최고 1회 피해": "Meilleurs dégâts en une tentative",
  "<color=#c9a2ff>길드보스</color> {0}단계 · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Boss de guilde</color> Étape {0} · Tentatives restantes aujourd'hui {1} / {2}",
  "<color=#c9a2ff>월드보스</color> · 오늘 남은 도전 {0} / {1}": "<color=#c9a2ff>Boss mondial</color> · Tentatives restantes aujourd'hui {0} / {1}",
- "보스 창 열기": "Ouvrir la fenêtre des boss"
+ "보스 창 열기": "Ouvrir la fenêtre des boss",
+ "{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}": "{0} Score de guilde +<color=#ffe066>{1:N0}</color>{2} · Score de guilde {3:N0} · Ma part {4:N0} · Guilde {5}",
+ "{0} 내 피해 {1:N0}": "{0} Mes dégâts {1:N0}",
+ "<b>길드보스</b>\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 이번 주 도전한 길드원 20,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Boss de guilde</b>\nCe boss ne se bat pas : on accumule des points. Les dégâts infligés en 3 minutes s'ajoutent au score de guilde de la semaine (dégâts des compagnons IA exclus).\n2 essais par jour et par membre, 3 min chacun · 24 heures après l'adhésion · Nv.40\nClassement : score de guilde de la semaine → à égalité, la guilde arrivée la première\nRécompenses (calcul jeudi 06:00, par courrier) : 20 000 or aux membres ayant participé cette semaine\n1re : titre 'Guilde suprême' pour tous + nom de guilde doré, 2e~10e : nom argenté",
+ "이번 주 길드 점수 <color=#ffe066>{0:N0}</color>   ·   내 기여 {1:N0} ({2:0.0}%)": "Score de guilde cette semaine <color=#ffe066>{0:N0}</color>   ·   Ma part {1:N0} ({2:0.0}%)",
+ "이번 주 점수": "Score de la semaine",
+ "<color=#c9a2ff>길드보스</color> · 길드 점수 {0:N0} · 오늘 남은 도전 {1} / {2}": "<color=#c9a2ff>Boss de guilde</color> · Score de guilde {0:N0} · Essais restants {1} / {2}"
 }

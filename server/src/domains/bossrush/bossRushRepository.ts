@@ -50,49 +50,45 @@ export async function hitWorld(client: PoolClient, seasonId: number, damage: num
   return toSeason(r.rows[0] as RawSeason);
 }
 
-// ---------- 길드보스 진행 ----------
+// ---------- 길드보스 점수 ----------
 
-export interface Progress {
+export interface GuildScore {
   season_id: number;
   guild_id: number;
-  stage: number;
-  stage_hp: number;
-  hp_left: number;
-  total_damage: number;
-  stage_reached_at: Date;
+  score: number;
+  scored_at: Date;
 }
-type RawProgress = { season_id: string; guild_id: string; stage: number; stage_hp: string; hp_left: string; total_damage: string; stage_reached_at: Date };
-const toProgress = (r: RawProgress): Progress => ({
-  season_id: Number(r.season_id), guild_id: Number(r.guild_id), stage: r.stage, stage_hp: Number(r.stage_hp),
-  hp_left: Number(r.hp_left), total_damage: Number(r.total_damage), stage_reached_at: r.stage_reached_at,
-});
+type RawScore = { season_id: string; guild_id: string; score: string; scored_at: Date };
+const toScore = (r: RawScore): GuildScore => ({ season_id: Number(r.season_id), guild_id: Number(r.guild_id), score: Number(r.score), scored_at: r.scored_at });
 
-export async function ensureProgress(db: Queryable, seasonId: number, guildId: number, stage1Hp: number, now: Date): Promise<Progress> {
-  await db.query(
-    `INSERT INTO guild_boss_progress (season_id, guild_id, stage, stage_hp, hp_left, stage_reached_at)
-     VALUES ($1, $2, 1, $3, $3, $4) ON CONFLICT (season_id, guild_id) DO NOTHING`,
-    [seasonId, guildId, stage1Hp, now],
+/** 길드 점수에 더한다(원자적 UPSERT). 0보다 클 때만 부른다 */
+export async function addGuildScore(client: PoolClient, seasonId: number, guildId: number, add: number, now: Date): Promise<GuildScore> {
+  const r = await client.query<RawScore>(
+    `INSERT INTO guild_boss_scores (season_id, guild_id, score, scored_at) VALUES ($1, $2, $3, $4)
+     ON CONFLICT (season_id, guild_id) DO UPDATE SET score = guild_boss_scores.score + EXCLUDED.score, scored_at = EXCLUDED.scored_at
+     RETURNING *`,
+    [seasonId, guildId, add, now],
   );
-  const r = await db.query<RawProgress>('SELECT * FROM guild_boss_progress WHERE season_id = $1 AND guild_id = $2', [seasonId, guildId]);
-  return toProgress(r.rows[0] as RawProgress);
+  return toScore(r.rows[0] as RawScore);
 }
 
-export async function lockProgress(client: PoolClient, seasonId: number, guildId: number): Promise<Progress | null> {
-  const r = await client.query<RawProgress>('SELECT * FROM guild_boss_progress WHERE season_id = $1 AND guild_id = $2 FOR UPDATE', [seasonId, guildId]);
-  return r.rows[0] ? toProgress(r.rows[0]) : null;
+export async function guildScore(db: Queryable, seasonId: number, guildId: number): Promise<number> {
+  const r = await db.query<{ score: string }>('SELECT score FROM guild_boss_scores WHERE season_id = $1 AND guild_id = $2', [seasonId, guildId]);
+  return r.rows[0] ? Number(r.rows[0].score) : 0;
 }
 
-export async function saveProgress(client: PoolClient, p: Progress): Promise<void> {
-  await client.query(
-    `UPDATE guild_boss_progress SET stage = $3, stage_hp = $4, hp_left = $5, total_damage = $6, stage_reached_at = $7
-      WHERE season_id = $1 AND guild_id = $2`,
-    [p.season_id, p.guild_id, p.stage, p.stage_hp, p.hp_left, p.total_damage, p.stage_reached_at],
+export async function scoresOf(db: Queryable, seasonId: number): Promise<GuildScore[]> {
+  const r = await db.query<RawScore>('SELECT * FROM guild_boss_scores WHERE season_id = $1', [seasonId]);
+  return r.rows.map(toScore);
+}
+
+/** 이번 주 이 캐릭터가 이 길드 점수에 보탠 인정 피해 합 */
+export async function contributionOf(db: Queryable, seasonId: number, characterId: number, guildId: number): Promise<number> {
+  const r = await db.query<{ total: string | null }>(
+    `SELECT sum(damage_accepted) AS total FROM boss_attempts WHERE season_id = $1 AND character_id = $2 AND guild_id = $3 AND state = 'finished'`,
+    [seasonId, characterId, guildId],
   );
-}
-
-export async function progressOf(db: Queryable, seasonId: number): Promise<Progress[]> {
-  const r = await db.query<RawProgress>('SELECT * FROM guild_boss_progress WHERE season_id = $1', [seasonId]);
-  return r.rows.map(toProgress);
+  return Number(r.rows[0]?.total ?? 0);
 }
 
 // ---------- 도전 ----------
