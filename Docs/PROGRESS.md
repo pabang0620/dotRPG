@@ -59,15 +59,16 @@
 - 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), 전체 체크리스트: [MASTER_CHECKLIST.md](MASTER_CHECKLIST.md)
 - 지금까지 돌린 테스트(실측·시뮬레이션·실플레이·서버 테스트)와 결과: [TEST_LOG.md](TEST_LOG.md)
 
-## 현재 상태 (2026-10-18)
+## 현재 상태 (2026-10-20)
 
 | 항목 | 내용 |
 |---|---|
 | 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개, 푸시는 `wonho`와 `main`에 같이 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
-| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0046, 서버 테스트 114개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
-| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0046까지 적용, 데이터 버전 d83a33d68af2b834(2026-10-18 배포). 절차는 `server/ops/README.md` 10절 |
+| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0047, 서버 테스트 약 130개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
+| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0047(길드·보스)까지 적용, 데이터 버전 abf5257bb1ef274e(2026-10-20 배포). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
+| 홈페이지 | 로컬 `C:\Users\admin\Desktop\games\sites\dotrpg-home`(저장소 pabang0620/dotrpg-home, 비공개). OpenAI Sites 프로젝트(Next/vinext + Cloudflare), 게임 소개·스크린샷·캐릭터·스킨 화면과 로그인·가입·캐릭터 화면. 계정·OAuth 실제 연결은 아직 꺼져 있다(미설정 API는 503). 그림은 `public/assets/`(로고·배경·캐릭터·스킨·게임 캡처), 생성 기록 `docs/GENERATED_ASSETS.md`, 연결 방법 `docs/DELIVERY.md` |
 | 밸런스 기준 | 총 플레이 Lv40 약 48시간, 미니 던전을 매일 하면 42.8~43.6시간(`Tools/balance/theory_progress.py --measured --mini`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
 | 검증 | 컴파일과 관련 서버 테스트는 작업 묶음 끝에 확인한다. 게임 실행·빌드·배포는 요청이 있을 때만 |
 
