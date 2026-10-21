@@ -56,6 +56,7 @@ curl -s https://도메인/health/ready    # 200 {"status":"ok"}
 | `STEAM_AUTH_MODE` / `PARTY_TRANSPORT` | `web_api` / `steam` (`STEAM_APP_ID`, `STEAM_WEB_API_KEY`, `STEAM_IDENTITY` 필요, 480 거부) |
 | `OAUTH_PUBLIC_BASE`, `KAKAO_CLIENT_ID`/`KAKAO_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` | 카카오·Google 로그인(0045). 공개 주소는 https, 공급자는 ID와 비밀이 둘 다 있을 때만 켜진다. 콘솔 설정은 `Docs/server/OAUTH_LOGIN.md` |
 | `MIN_CLIENT_VERSION` | 출시 클라이언트 버전(배포마다 확인) |
+| `WORLD_BOSS_HP` | 선택. 월드보스 주간 공유 체력, 기본 40,000,000(실측 1회 110,000 x 하루 3회 x 7일 x 참여율 0.5 = 한 사람당 주 115만, 35명이면 1주 격파. 참가자 100명 수준이면 160,000,000). 새 주의 시즌을 만들 때만 읽으므로 바꿔도 진행 중인 주에는 영향 없음 |
 | `ALERT_WEBHOOK_URL`, `OPS_HEARTBEAT_URL`, `BACKUP_*` | 자리표시. 업체·서비스가 정해지면 채운다(비면 해당 기능만 꺼지고 경고 로그) |
 
 Steam 연동 전 외부 시험(운영자가 발급한 개발용 계정만): `STEAM_AUTH_MODE=off`, `PARTY_TRANSPORT=dev`, `AUTH_DEV_ENABLED=true`, `ALLOW_DEV_AUTH_IN_PRODUCTION=true`, `AUTH_DEV_REGISTER_ENABLED=false`. 계정은 `dotrpg-admin account dev-create <아이디>` 로 발급한다(공개 가입 없음).
@@ -195,7 +196,7 @@ GRANT USAGE ON SEQUENCE account_destruction_log_id_seq TO dotrpg_purge;
 
 ## 10. 시험 서버 (지금 운영 중, Docker 없음)
 
-구글 클라우드 한 대(35.216.2.121, `https://35-216-2-121.sslip.io`)에서 API만 돌린다. DB는 Supabase라서 서버에 PostgreSQL을 설치하지 않는다. 마이그레이션 0046까지 적용돼 있다(2026-10-18). 모바일 시험 빌드가 이 주소로 붙는다(`ApiClient.MobileTestServer`).
+구글 클라우드 한 대(35.216.2.121, `https://35-216-2-121.sslip.io`)에서 API만 돌린다. DB는 Supabase라서 서버에 PostgreSQL을 설치하지 않는다. 마이그레이션 0047(길드·보스)까지 적용돼 있다(2026-10-20). 모바일 시험 빌드가 이 주소로 붙는다(`ApiClient.MobileTestServer`).
 
 배포 순서(개발 PC의 `server/`에서 시작):
 1. `npm run build`

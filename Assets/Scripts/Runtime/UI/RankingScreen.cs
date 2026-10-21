@@ -153,7 +153,7 @@ namespace DotRPG
                 r.rank.text = $"<color={medal}><b>{e.rank}</b></color>";
                 if (guild)
                 {
-                    r.name.text = RankingClient.Colored(e.guildName, e.nameColor);
+                    r.name.text = RankingClient.Colored(e.guildName, e.guildColor); // gold 1st, silver 2nd~10th (the server's guild_color)
                     r.guild.text = "";
                     r.level.text = "";
                     r.value.text = $"{e.value:N0}";

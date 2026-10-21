@@ -10,7 +10,9 @@ namespace DotRPG
     /// </summary>
     public static class GuildClient
     {
-        public const int MaxMembers = 30, CreateLevel = 20, CreateGold = 100000, NameMin = 2, NameMax = 12, NoticeMax = 60;
+        public const int MaxMembers = 30, CreateLevel = 20, CreateGold = 30000, NameMin = 2, NameMax = 12, NoticeMax = 60;
+        /// <summary>Guilds per search page as the server sends them (guildRules GUILD_PAGE_SIZE); the window shows them in smaller slices.</summary>
+        public const int SearchPageSize = 20;
 
         public sealed class Member
         {
@@ -206,6 +208,17 @@ namespace DotRPG
         public static string ErrorText(ApiResult r) => r.code switch
         {
             "GUILD_NAME_TAKEN" => L.T("이미 쓰고 있는 길드 이름입니다."),
+            "GUILD_NAME_BLOCKED" => L.T("쓸 수 없는 낱말이 들어 있습니다."),
+            "GUILD_APPLY_LIMIT" => L.T("가입 신청은 동시에 3곳까지 할 수 있습니다."),
+            "GUILD_OFFICER_LIMIT" => L.T("부길드장은 3명까지입니다."),
+            "GUILD_LEADER_MUST_TRANSFER" => L.T("길드장을 위임하거나 길드를 해체한 뒤 할 수 있어요."),
+            "GUILD_NOT_EMPTY" => L.T("길드원이 모두 나간 뒤에 해체할 수 있습니다."),
+            "GUILD_SELF" => L.T("자기 자신에게는 할 수 없습니다."),
+            "GUILD_ROLE_INVALID" => L.T("그 직위에는 할 수 없는 일입니다."),
+            "GUILD_NOT_FOUND" => L.T("길드를 찾을 수 없습니다."),
+            "GUILD_MEMBER_NOT_FOUND" => L.T("길드원을 찾을 수 없습니다."),
+            "GUILD_APPLICATION_NOT_FOUND" => L.T("가입 신청을 찾을 수 없습니다."),
+            "CHARACTER_NOT_FOUND" => L.T("캐릭터를 찾을 수 없습니다."),
             "GUILD_FULL" => L.F("길드 인원이 가득 찼습니다 (최대 {0}명).", MaxMembers),
             "GUILD_COOLDOWN" => L.T("길드를 나온 뒤 24시간 동안은 다른 길드에 들어갈 수 없습니다."),
             "GUILD_FORBIDDEN" => L.T("이 일은 길드장이나 부길드장만 할 수 있습니다."),

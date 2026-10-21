@@ -7,7 +7,6 @@
  "{0}레벨부터 도전할 수 있습니다.": "Vous pouvez le défier à partir du niveau {0}.",
  "길드에 들어온 뒤 24시간이 지나야 길드보스에 도전할 수 있습니다.": "Vous ne pouvez affronter le boss de guilde que 24 heures après avoir rejoint une guilde.",
  "길드에 속해 있지 않습니다.": "Vous n'appartenez à aucune guilde.",
- "길드의 거상": "Colosse de la guilde",
  "끝나지 않은 도전이 있습니다.": "Un défi est encore en cours.",
  "도전 기록을 찾을 수 없습니다.": "Record du défi introuvable.",
  "오늘 도전 횟수를 모두 썼습니다.": "Vous avez utilisé toutes vos tentatives du jour.",
@@ -32,5 +31,7 @@
  "이미 있는 길드 이름입니다.": "Ce nom de guilde existe déjà.",
  "공지는 {0}자까지입니다": "Les annonces sont limitées à {0} caractères",
  "길드 이름은 {0}~{1}자여야 합니다": "Les noms de guilde doivent comporter {0} à {1} caractères",
- "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Les noms de guilde ne peuvent contenir que des syllabes coréennes, des lettres anglaises et des chiffres"
+ "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Les noms de guilde ne peuvent contenir que des syllabes coréennes, des lettres anglaises et des chiffres",
+ "파티를 나간 뒤 도전하세요.": "Quittez le groupe, puis réessayez.",
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transférez la direction de la guilde ou dissolvez-la avant de supprimer ce personnage."
 }

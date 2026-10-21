@@ -478,6 +478,9 @@ namespace DotRPG
             if(health.IsInvulnerable) return false;
             var careerActor=info.AttackerMember!=null?CareerCombat.For(info.AttackerMember):null;
             if(careerActor!=null) info.amount=careerActor.ModifyDamage(this,info.amount);
+            // [BOSS 2026-10-21] The arena boss takes the hero's career multiplier (BossRushCatalog): the damage ranking compares careers.
+            if(info.AttackerMember!=null && info.AttackerMember==Game.Player && Def!=null && Def.boss && BossRushDirector.InArena)
+                info.amount=Mathf.Max(1,Mathf.RoundToInt(info.amount*BossRushCatalog.CareerDamageMul(info.AttackerMember.Data.Progression.Career)));
             // [BALANCE 2026-10-11] A much stronger character cuts through old monsters (bosses excluded).
             if(info.AttackerMember!=null && !(Def!=null && Def.boss)) info.amount=Mathf.Max(1,Mathf.RoundToInt(info.amount*LevelGapMul(info.AttackerMember.Data.Progression.Level-Level)));
             // [ARMOR] Armour cuts direct hits; damage over time goes through; a broken guard takes 20% more.

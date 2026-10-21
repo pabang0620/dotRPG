@@ -127,6 +127,17 @@ export async function memberIds(db: Queryable, guildId: number): Promise<number[
   return r.rows.map((x) => Number(x.character_id));
 }
 
+/** 길드장이 사라질 때 넘겨받을 사람: 가장 오래된 부길드장, 없으면 가장 오래된 길드원(살아 있는 캐릭터만) */
+export async function successorOf(db: Queryable, guildId: number, exceptCharacterId: number): Promise<number | null> {
+  const r = await db.query<{ character_id: string }>(
+    `SELECT m.character_id FROM guild_members m JOIN characters c ON c.id = m.character_id AND c.deleted_at IS NULL
+      WHERE m.guild_id = $1 AND m.character_id <> $2
+      ORDER BY CASE m.role WHEN 'officer' THEN 0 ELSE 1 END, m.joined_at, m.character_id LIMIT 1`,
+    [guildId, exceptCharacterId],
+  );
+  return r.rows[0] ? Number(r.rows[0].character_id) : null;
+}
+
 export async function memberByUuid(db: Queryable, guildId: number, characterUuid: string): Promise<{ id: number; role: GuildRole } | null> {
   const r = await db.query<{ id: string; role: GuildRole }>(
     `SELECT c.id, m.role FROM guild_members m JOIN characters c ON c.id = m.character_id

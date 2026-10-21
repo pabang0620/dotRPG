@@ -228,6 +228,40 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 stats["raid_rewards"].append("raid_grah")
             try_quests()
 
+    # 퀘스트 처치 목표의 남은 수. 처치는 하루 예산 안에서만 하고 모자라면 다음 날 이어 잡는다
+    # (2026-10-21: 전에는 하루에 다 잡아 날짜가 실제의 절반으로 잡혔고, 그만큼 미니 던전·의뢰 같은 하루 단위 수입이 적게 계산됐다)
+    kill_left = {}
+    day_start = 0.0
+    day_budget = hours_per_day * 60
+
+    def quest_kills(q):
+        """오늘 남은 예산 안에서 이 퀘스트의 처치 목표를 잡는다. 다 잡았으면 True."""
+        nonlocal total_min
+        for mid, count in q["objectives"]["killNeeds"].items():
+            left = kill_left.get((q["id"], mid), count)
+            if left <= 0:
+                continue
+            remaining = day_budget - (total_min - day_start)
+            if remaining <= 0.01:
+                return False
+            minutes, xp_gain = kill_cost(mid, left, level, eff)
+            n = left
+            if minutes > remaining:
+                n = int(left * remaining / minutes)
+                if n <= 0:
+                    return False
+                minutes, xp_gain = kill_cost(mid, n, level, eff)
+            total_min += minutes
+            stats["quest_kill_min"] += minutes
+            ml = monster_zone_level(mid)
+            stats["kills"][ml] = stats["kills"].get(ml, 0) + n
+            stats["kills_t"].append((total_min / 60, ml, n))
+            gain(xp_gain)
+            kill_left[(q["id"], mid)] = left - n
+            if left - n > 0:
+                return False
+        return True
+
     def try_quests():
         nonlocal total_min
         progress = True
@@ -252,16 +286,10 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     continue
                 if "career_promoted" in o["flagNeeds"] and level < 15:
                     continue
+                if not quest_kills(q):
+                    continue
                 claimed.add(q["id"])
                 total_min += 5 if q["kind"] == "main" else 3
-                for mid, count in o["killNeeds"].items():
-                    minutes, xp_gain = kill_cost(mid, count, level, eff)
-                    total_min += minutes
-                    stats["quest_kill_min"] += minutes
-                    ml = monster_zone_level(mid)
-                    stats["kills"][ml] = stats["kills"].get(ml, 0) + count
-                    stats["kills_t"].append((total_min / 60, ml, count))
-                    gain(xp_gain)
                 stats["quest_xp"] += q["reward"]["xp"] * QUEST_SCALE
                 gain(q["reward"]["xp"] * QUEST_SCALE)
                 events.append((total_min / 60, day, level, q["id"], q["reward"]["xp"], q["kind"]))
@@ -269,8 +297,8 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
 
     while day < 400 and not ("c2_end" in claimed and level >= 40):
         weekday = DAYS[day % 7]
-        budget = hours_per_day * 60
-        start = total_min
+        budget = day_budget
+        day_start = start = total_min
         try_quests()
         raids()
         # 일일·주간 의뢰: 처치 목표는 지금 사냥터 사냥과 겹치므로 수락·보고 시간만 더하고, 보상은 레벨 막대 x xpShare

@@ -694,5 +694,6 @@
  "{0}과(와) 파티 (방장: {1})": "Party with {0} (leader: {1})",
  "내 파티": "My party",
  "파티 (아직 나 혼자)": "Party (just me so far)",
- "혼자": "Solo"
+ "혼자": "Solo",
+ "<color=#ffb347>유니크 {0}종 (+5%)</color>\n<color=#c58cff>에픽 {1}종 (+4%)</color>": "<color=#ffb347>Unique: {0} kinds (+5%)</color>\n<color=#c58cff>Epic: {1} kinds (+4%)</color>"
 }

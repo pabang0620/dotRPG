@@ -3,7 +3,7 @@
 This Policy is a translation of the Korean original. If the two differ, the Korean version prevails.
 
 ## Article 1 (Purpose and Scope)
-Under Article 12 of the Terms of Service, this Policy sets out conduct prohibited in dotRPG, the standards for restrictions (sanctions), and the notice and appeal procedures. It applies to all in-game chat, character names, party recruitment posts, trades (auction house, mail) and payments.
+Under Article 12 of the Terms of Service, this Policy sets out conduct prohibited in dotRPG, the standards for restrictions (sanctions), and the notice and appeal procedures. It applies to all in-game chat (including guild chat), character names, guild names and notices, party recruitment posts, trades (auction house, mail) and payments.
 
 ## Article 2 (Types of Sanctions)
 
@@ -15,6 +15,8 @@ Under Article 12 of the Terms of Service, this Policy sets out conduct prohibite
 | Economy hold | Features that move currency (auction house, mail, trades) are blocked | Until the investigation ends |
 | Payment hold | Paid Star Shards cannot be bought | Until the investigation ends |
 | Name change request | The user is asked to change an inappropriate character name | Until changed |
+| Guild name or notice change | The guild is asked to change an inappropriate guild name or notice, or an operator replaces the name with a temporary one and clears the notice | Until changed |
+| Guild disbandment | The guild is disbanded. Its members cannot join another guild for 24 hours | None |
 
 Permanent suspension is imposed only with the approval of the operations owner.
 
@@ -29,6 +31,7 @@ A repeated breach of the same type receives the next step. Serious breaches, or 
 | Advertising, fraud, promoting real-money trading | Suspension 7 days | Suspension 30 days | Permanent suspension |
 | Impersonating operators | Suspension 7 days | Suspension 30 days | Permanent suspension |
 | Inappropriate character name | Name change request | Suspension 1 day and name change request | Suspension 7 days and name change request |
+| Inappropriate guild name or notice | Warning and guild name or notice change request | Operator changes the guild name or notice and suspends the guild leader for 1 day | Guild disbandment and suspension of the guild leader for 7 days |
 | Real-money trading (RMT) | Suspension 30 days and recovery of unfair gains | Permanent suspension | |
 | Selling, lending or sharing accounts | Suspension 30 days | Permanent suspension | |
 | Illegal programs, macros | Suspension 30 days and recovery of unfair gains | Permanent suspension | |
@@ -53,6 +56,11 @@ The game applies the following automatic sanctions. Accounts are never suspended
 2. A name already used by another user cannot be used (case-insensitive).
 3. Names impersonating the operators or the Company (operator, administrator, GM, admin, official and their variants) and names containing abuse, sexual or hateful expressions cannot be created.
 4. Inappropriate names created by evading the automatic check receive a name change request or a sanction under Article 3.
+
+## Article 5-2 (Guild Name and Notice Rules)
+1. Guild names are 2 to 12 characters, and a name already used by another guild cannot be used (case-insensitive). Notices are up to 60 characters.
+2. The impersonation, abuse, sexual and hateful expression standards of Article 5(3) and the banned-word check apply equally to guild names and notices.
+3. Reports and sanctions concerning a guild name or notice follow Articles 3 and 6; notice of the sanction and appeals are handled with the guild leader under Articles 7 and 8.
 
 ## Article 6 (Reports)
 1. Users can report other users from the chat window. Report reasons are: abuse or demeaning language, spam, advertising or fraud, suspected illegal program, and other.
@@ -79,3 +87,6 @@ Changes to the probabilities of probability-based items are announced in-game an
 Changes to this Policy are announced in-game and on the web page at least 7 days before they take effect.
 
 This Policy takes effect on {{effective_date}}.
+
+## Revision History
+- 2026-10-21: Added guild chat and guild names and notices to the scope. Added guild name or notice change and guild disbandment to Article 2, step-by-step sanctions for inappropriate guild names or notices to Article 3, and Article 5-2 (Guild Name and Notice Rules).

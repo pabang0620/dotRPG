@@ -61,6 +61,9 @@ export async function ranked(board: Board, weekStart: Date, opts: { fresh?: bool
   return entry;
 }
 
+/** 길드보스 순위 색: 1위 gold, 2~10위 silver, 그 밖은 null */
+export const guildColorOf = (rank: number): 'gold' | 'silver' | null => (rank === 1 ? 'gold' : rank <= 10 ? 'silver' : null);
+
 /** 순위(1부터). 없으면 null */
 export const rankOf = (rows: Ranked[], key: number): number | null => {
   const i = rows.findIndex((r) => r.key === key);
@@ -76,7 +79,8 @@ export async function board(board: Board, week: Week, me: { characterId: number;
   let mine: { rank: number; value: number } | null = null;
   if (board === 'guild_boss') {
     const names = await repo.guildNames(db, top.map((r) => r.key));
-    entries = top.map((r, i) => ({ rank: i + 1, guild_name: names.get(r.key) ?? '', value: r.value }));
+    // guild_color: 1위 금색, 2~10위 은색(설계 3절). 순위 그대로라 지난주 보드도 그 주의 순위 색이다
+    entries = top.map((r, i) => ({ rank: i + 1, guild_name: names.get(r.key) ?? '', value: r.value, guild_color: guildColorOf(i + 1) }));
     if (me?.guildId) {
       const rank = rankOf(rows, me.guildId);
       if (rank) mine = { rank, value: (rows[rank - 1] as Ranked).value };

@@ -7,7 +7,6 @@
  "{0}레벨부터 도전할 수 있습니다.": "You can challenge this from level {0}.",
  "길드에 들어온 뒤 24시간이 지나야 길드보스에 도전할 수 있습니다.": "You can challenge the Guild Boss only after 24 hours in a guild.",
  "길드에 속해 있지 않습니다.": "You don't belong to a guild.",
- "길드의 거상": "Guild Colossus",
  "끝나지 않은 도전이 있습니다.": "You have a challenge in progress.",
  "도전 기록을 찾을 수 없습니다.": "Challenge record not found.",
  "오늘 도전 횟수를 모두 썼습니다.": "You've used all of today's attempts.",
@@ -32,5 +31,7 @@
  "이미 있는 길드 이름입니다.": "That guild name already exists.",
  "공지는 {0}자까지입니다": "Notices can be up to {0} characters",
  "길드 이름은 {0}~{1}자여야 합니다": "Guild names must be {0}-{1} characters long",
- "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Guild names can only use Korean syllables, English letters and numbers"
+ "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Guild names can only use Korean syllables, English letters and numbers",
+ "파티를 나간 뒤 도전하세요.": "Leave your party, then try again.",
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfer guild leadership or disband the guild before deleting this character."
 }

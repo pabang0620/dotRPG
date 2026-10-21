@@ -6,7 +6,6 @@ import { withTransaction } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import { getNow } from '../../utils/clock';
 import { createSystemMail } from '../mail/mailRepository';
-import * as guildRepo from '../guilds/guildRepository';
 import { clearRankingCache, ranked } from '../rankings/rankingService';
 import * as repo from './bossRushRepository';
 import {
@@ -46,16 +45,27 @@ async function settleWorld(client: PoolClient, s: repo.Season, now: Date): Promi
 async function settleGuild(client: PoolClient, s: repo.Season, now: Date): Promise<number> {
   const until = new Date(s.week_end.getTime() + WEEK_MS + HONOR_EXTRA_MS);
   // 그 주에 길드를 옮겨 두 길드에서 도전했어도 참가 보상은 한 번
-  const people = [...new Set((await repo.participants(client, s.id)).map((p) => p.character_id))];
+  const attempts = await repo.participants(client, s.id);
+  const people = [...new Set(attempts.map((p) => p.character_id))];
   for (const id of people) await mailGold(client, id, 'guild_boss', GUILD_JOIN_GOLD, now);
   const rows = (await ranked('guild_boss', s.week_start, { fresh: true, db: client })).rows;
   for (let i = 0; i < rows.length && i < 10; i++) {
     const guildId = (rows[i] as { key: number }).key;
     const color = guildRankColor(i + 1);
     if (color) await repo.setGuildHonor(client, guildId, color, until);
-    if (i === 0) for (const id of await guildRepo.memberIds(client, guildId)) await repo.grantTitle(client, id, s.id, 'rank_guild_1', null, until);
+    // 1위 칭호는 정산 시각의 길드원이 아니라 그 주에 그 길드 소속으로 도전을 끝낸 사람에게 준다
+    // (주가 끝난 뒤 들어온 사람은 못 받고, 기여하고 떠난 사람은 받는다)
+    if (i === 0) {
+      const winners = new Set(attempts.filter((p) => p.guild_id === guildId).map((p) => p.character_id));
+      for (const id of winners) await repo.grantTitle(client, id, s.id, 'rank_guild_1', null, until);
+    }
   }
   return people.length;
+}
+
+/** 만료된 랭킹 칭호를 장착한 캐릭터에서 뗀다(매일 작업 rank-title-expire. 정산 때도 한 번 더 돈다) */
+export async function unequipExpiredRankTitles(): Promise<number> {
+  return withTransaction((client) => repo.unequipExpiredTitles(client, getNow()));
 }
 
 /** 정산할 시즌이 없을 때까지 하나씩(시즌마다 트랜잭션 하나) */

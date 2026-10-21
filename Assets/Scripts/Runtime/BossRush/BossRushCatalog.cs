@@ -20,6 +20,20 @@ namespace DotRPG
         /// </summary>
         public const float BaseDamageMul = 1f;
         public const int DefaultLevel = 40;
+
+        /// <summary>
+        /// [BALANCE 2026-10-21] Career multiplier on the hero's own hits to the arena boss, so every career can compete in a
+        /// damage ranking. Measured 3-minute damage (Docs/PLAN_GUILD_WORLDBOSS_2026-10-20.md 8): fighter 205k, guardian 112k,
+        /// arcanist 131k, bishop 65k. With these the others land at 70~85% of a fighter (157k / 170k / 143k); the server's
+        /// damage cap (attackCap x 0.6, 500k+ at Lv40) still sits far above. Arena only: AI companions and other content unchanged.
+        /// </summary>
+        public static float CareerDamageMul(Career career) => career switch
+        {
+            Career.Guardian => 1.4f,
+            Career.Arcanist => 1.3f,
+            Career.Bishop => 2.2f,
+            _ => 1f,
+        };
         /// <summary>Waits before the boss wakes up (the hero gets into place, the HUD clock starts with the boss).</summary>
         public const float WakeSeconds = 2f;
     }

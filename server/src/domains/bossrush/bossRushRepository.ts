@@ -39,15 +39,16 @@ export async function seasonById(db: Queryable, id: number): Promise<Season | nu
   return r.rows[0] ? toSeason(r.rows[0]) : null;
 }
 
-/** 월드보스 공유 체력에서 깎는다. 처음 0이 되는 순간 격파 시각을 남긴다 */
+/** 월드보스 공유 체력에서 깎는다. 처음 0이 되는 순간 격파 시각을 남긴다. 정산이 끝난 시즌은 건드리지 않고 그대로 돌려준다 */
 export async function hitWorld(client: PoolClient, seasonId: number, damage: number, now: Date): Promise<Season> {
   const r = await client.query<RawSeason>(
     `UPDATE boss_seasons SET hp_left = GREATEST(0, hp_left - $2),
             defeated_at = CASE WHEN defeated_at IS NULL AND hp_left - $2 <= 0 THEN $3 ELSE defeated_at END
-      WHERE id = $1 RETURNING *`,
+      WHERE id = $1 AND settled_at IS NULL RETURNING *`,
     [seasonId, damage, now],
   );
-  return toSeason(r.rows[0] as RawSeason);
+  if (r.rows[0]) return toSeason(r.rows[0]);
+  return await seasonById(client, seasonId) as Season;
 }
 
 // ---------- 길드보스 점수 ----------
@@ -149,6 +150,11 @@ export async function insertAttempt(client: PoolClient, a: {
 export async function lockAttempt(client: PoolClient, characterId: number, kind: BossKind, uuid: string): Promise<Attempt | null> {
   const r = await client.query<RawAttempt>('SELECT * FROM boss_attempts WHERE character_id = $1 AND kind = $2 AND uuid = $3 FOR UPDATE', [characterId, kind, uuid]);
   return r.rows[0] ? toAttempt(r.rows[0]) : null;
+}
+
+/** 시작 뒤 길드를 떠난 도전: 어느 길드 점수에도 들어가지 않게 길드를 뗀다(기록·참가 보상은 남는다) */
+export async function detachAttemptGuild(client: PoolClient, id: number): Promise<void> {
+  await client.query('UPDATE boss_attempts SET guild_id = NULL WHERE id = $1', [id]);
 }
 
 export async function closeAttempt(client: PoolClient, id: number, state: 'finished' | 'expired', reported: number, accepted: number, capped: boolean, now: Date): Promise<void> {

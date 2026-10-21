@@ -5,6 +5,7 @@ import { getConfig } from '../../config/env';
 import { getPool, withTransaction } from '../../db/pool';
 import { getNow } from '../../utils/clock';
 import { logger } from '../../utils/logger';
+import { detachCharacter as detachFromGuild } from '../guilds/guildService';
 import { placeholderOf } from './withdrawalCleanup';
 import { FOREVER, identityHash, upsertTombstone, type Carry, type PaymentBlock } from './withdrawalIdentity';
 import * as repo from './withdrawalRepository';
@@ -126,6 +127,8 @@ export async function anonymizeOne(client: PoolClient, withdrawalId: number, o: 
   await repo.setDefer(client, w.id, reasons, o.now);
 
   const ids = chars.map((c) => c.id);
+  // 0048: 길드에서 빼낸다(길드장은 부길드장·길드원에게 넘기고, 혼자면 해체). 삭제 표시보다 먼저
+  for (const c of chars) await detachFromGuild(client, c.id, o.now, 'auto');
   // 1. 캐릭터: 모두 삭제 표시 + 자리표시 이름(이미 삭제된 것의 원래 이름도 가린다). 이름 스냅샷 익명화보다 먼저
   await client.query('UPDATE characters SET deleted_at = coalesce(deleted_at, $2) WHERE account_id = $1', [accountId, o.now]);
   for (const c of chars) {

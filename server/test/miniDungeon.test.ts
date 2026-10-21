@@ -175,24 +175,26 @@ describe('daily XP-only mini dungeon HTTP', () => {
     expect((await enter(h)).status).toBe(201);
     expect((await kill(h, run.id)).body.data.accepted).toBe(false);
   });
-  test('one combat kill grants only XP, with no quest stats, item/gold/drop or dungeon progress', async () => {
+  test('one combat kill grants XP and the fixed kill gold, with no quest stats, item/drop or dungeon progress', async () => {
     const { h, run } = await entered(20);
     const oldGold = await goldOf(h);
     const oldItems = await getPool().query('SELECT item_key, count, location FROM character_items WHERE character_id = $1 ORDER BY id', [h.dbId]);
     advance(5);
     const r = await kill(h, run.id);
     expect(r.status).toBe(200);
-    expect(r.body.data).toMatchObject({ accepted: true, granted_xp: 13, catch_up_applied: false, delta: { level: 20, xp: 13 } });
+    expect(r.body.data).toMatchObject({ accepted: true, granted_xp: 13, granted_gold: 36, catch_up_applied: false, delta: { level: 20, xp: 13, gold: oldGold + 36 } });
     expect(r.body.data.active_run).toMatchObject({ kills: 1, xp_granted: 13 });
-    expect(r.body.data.delta.gold).toBeUndefined();
     expect(r.body.data.delta.stacks).toBeUndefined();
-    expect(await goldOf(h)).toBe(oldGold);
+    expect(await goldOf(h)).toBe(oldGold + 36);
+    const ledger = await getPool().query("SELECT reason, delta FROM gold_ledger WHERE character_id = $1 AND ref LIKE 'mini:%'", [h.dbId]);
+    expect(ledger.rows).toEqual([{ reason: 'drop_claim', delta: '36' }]);
     expect((await getPool().query('SELECT item_key, count, location FROM character_items WHERE character_id = $1 ORDER BY id', [h.dbId])).rows).toEqual(oldItems.rows);
     for (const table of ['drops', 'kill_stats', 'kill_log', 'dungeon_runs', 'quest_claims']) {
       expect((await getPool().query(`SELECT count(*)::int AS n FROM ${table} WHERE character_id = $1`, [h.dbId])).rows[0].n).toBe(0);
     }
     expect((await getPool().query('SELECT reason, delta FROM xp_ledger WHERE character_id = $1', [h.dbId])).rows).toEqual([{ reason: 'mini_dungeon', delta: 13 }]);
-    expect((await getPool().query('SELECT count(*)::int AS n FROM income_hourly WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
+    // 처치 골드는 사냥터 골드 더미처럼 시간당 수입 계량에 들어가지만(drop_claim), 보류 기준(시간당 상한 x3)에는 한참 못 미친다
+    expect((await getPool().query('SELECT count(*)::int AS n FROM economy_holds WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
   });
   test('kill UUID and request replay prevent duplicate credit, mismatched replay is rejected', async () => {
     const { h, run } = await entered(); const ref = randomUUID(); const rid = randomUUID();
@@ -218,7 +220,8 @@ describe('daily XP-only mini dungeon HTTP', () => {
     }
     const sum = await getPool().query('SELECT reason, count(*)::int AS n, sum(delta)::int AS xp FROM xp_ledger WHERE character_id = $1 GROUP BY reason', [h.dbId]);
     expect(sum.rows).toEqual([{ reason: 'mini_dungeon', n: 360, xp: 360 * 41 }]);
-    expect((await getPool().query('SELECT count(*)::int AS n FROM income_hourly WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
+    // 한 시간에 다 잡아도 처치 골드 360 x 36 = 12,960: 시간당 상한(8만 안팎) x3인 보류 기준에 닿지 않는다
+    expect((await getPool().query("SELECT coalesce(sum(delta), 0)::int AS g FROM gold_ledger WHERE character_id = $1 AND ref LIKE 'mini:%'", [h.dbId])).rows[0].g).toBe(360 * 36);
     expect((await getPool().query('SELECT count(*)::int AS n FROM economy_holds WHERE character_id = $1', [h.dbId])).rows[0].n).toBe(0);
     advance(4);
     expect((await get(app, h, '/mini-dungeon')).body.data.remaining_seconds).toBe(0);
@@ -245,7 +248,8 @@ describe('daily XP-only mini dungeon HTTP', () => {
     await getPool().query('UPDATE characters SET xp = $2 WHERE id = $1', [h.dbId, getGameData().economy.progression.xpToNext[38]! - 1]);
     advance(5);
     const cap = await kill(h, last.body.data.active_run.id);
-    expect(cap.body.data.delta).toEqual({ level: 40, xp: 0 });
+    expect(cap.body.data.delta).toMatchObject({ level: 40, xp: 0 });
+    expect(cap.body.data.delta.gold).toBeGreaterThan(0); // the kill gold is paid even on the capping kill
     expect(cap.body.data.granted_xp).toBe(1);
     expect(cap.body.data.active_run).toBeNull();
     expect(cap.body.data.completed_run).toMatchObject({ id: last.body.data.active_run.id, state: 'level_cap', kills: 1, xp_granted: cap.body.data.granted_xp });

@@ -9,8 +9,8 @@ export interface RequiredConsent {
 
 /** 게임을 이용하려면 모두 동의해야 한다. age14는 "만 14세 이상입니다" 확인 */
 export const REQUIRED: readonly RequiredConsent[] = [
-  { id: 'terms', version: '2026-10-14' },
-  { id: 'privacy', version: '2026-10-14' },
+  { id: 'terms', version: '2026-10-21' },
+  { id: 'privacy', version: '2026-10-21' },
   { id: 'age14', version: '1' },
 ];
 

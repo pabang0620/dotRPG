@@ -185,7 +185,7 @@ namespace DotRPG
         }
         static string FieldBadge(string id)
         {
-            string[] prefixes = { "숲", "협곡", "설원", "성소" };
+            string[] prefixes = { "숲", "협곡", "설원", "성소" }; // i18n-ignore
             for (int r = 0; r < WorldRoutes.Regions.Length; r++)
                 for (int stage = 1; stage <= 4; stage++)
                     if (WorldRoutes.Regions[r][stage] == id) return L.T(prefixes[r]) + " " + stage;

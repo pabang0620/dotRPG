@@ -290,7 +290,8 @@ export type AnomalyKind =
   // 10단계(0021)
   | 'sweep_denied'
   // 0047: 월드·길드보스 피해 보고가 화력 상한을 넘었다(상한까지만 인정)
-  | 'boss_damage';
+  | 'boss_damage'
+  | 'boss_damage_high';
 
 /** 롤백되는 트랜잭션 밖에서도 남기려고 풀에서 직접 쓴다(호출 쪽이 선택) */
 export async function insertAnomaly(

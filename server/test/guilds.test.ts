@@ -4,6 +4,8 @@ import { getPool } from '../src/db/pool';
 import { setClockOverride } from '../src/utils/clock';
 import { GUILD_CREATE_GOLD, GUILD_MAX_MEMBERS } from '../src/domains/guilds/guildRules';
 import { auth, buildApp, resetDb, shutdown } from './helpers';
+import { withTransaction } from '../src/db/pool';
+import { detachCharacter } from '../src/domains/guilds/guildService';
 import { expectLedgerConsistent, get, goldOf, newHero, post, seedGold, seedLevel, type Hero } from './economyHelpers';
 
 const app = buildApp();
@@ -186,5 +188,55 @@ describe('guild membership', () => {
     const p = await request(app).patch(`/characters/${leader.id}/guild`).set(auth(leader.s)).send({ request_id: randomUUID(), notice: '매주 목요일 길드보스', join_mode: 'approval' });
     expect(p.status).toBe(200);
     expect(p.body.data.guild).toMatchObject({ notice: '매주 목요일 길드보스', join_mode: 'approval' });
+  });
+});
+
+describe('guild and character removal', () => {
+  const del = (h: Hero) => request(app).delete(`/characters/${h.id}`).set(auth(h.s));
+  const countOf = async (guildId: string) => Number((await getPool().query<{ n: string }>('SELECT member_count AS n FROM guilds WHERE uuid = $1', [guildId])).rows[0]?.n);
+
+  test('a leader cannot delete the character before transferring; a member leaves on delete', async () => {
+    const leader = await hero();
+    const g = await guildOf(leader);
+    const m = await hero(1, 0);
+    await apply(m, g.id);
+    const other = await guildOf(await hero(), 'approval');
+    await apply(m, other.id); // 대기 신청도 같이 지워진다
+    expect(await countOf(g.id)).toBe(2);
+    const refused = await del(leader);
+    expect(refused.status).toBe(409);
+    expect(refused.body.errors.code).toBe('GUILD_LEADER_MUST_TRANSFER');
+    expect((await status(leader)).body.data.guild.my_role).toBe('leader');
+    const ok = await del(m);
+    expect(ok.status).toBe(200);
+    expect(await countOf(g.id)).toBe(1);
+    const left = await getPool().query('SELECT 1 FROM guild_members WHERE character_id = $1', [m.dbId]);
+    expect(left.rows).toEqual([]);
+    const apps = await getPool().query('SELECT 1 FROM guild_applications WHERE character_id = $1', [m.dbId]);
+    expect(apps.rows).toEqual([]);
+    // 이제 혼자라 해체할 수 있고, 그 뒤 삭제된다
+    expect((await post(app, leader, '/guild/disband', {})).status).toBe(200);
+    expect((await del(leader)).status).toBe(200);
+  });
+
+  test('withdrawal mode hands the guild to the oldest officer, then member, and disbands when alone', async () => {
+    const leader = await hero();
+    const g = await guildOf(leader);
+    const officer = await hero(1, 0);
+    const member = await hero(1, 0);
+    await apply(officer, g.id);
+    advance(10);
+    await apply(member, g.id);
+    expect((await post(app, leader, `/guild/members/${officer.id}/promote`, {})).status).toBe(200);
+    await withTransaction((c) => detachCharacter(c, leader.dbId, now, 'auto'));
+    expect(await countOf(g.id)).toBe(2);
+    expect((await status(officer)).body.data.guild.my_role).toBe('leader');
+    await withTransaction((c) => detachCharacter(c, officer.dbId, now, 'auto'));
+    expect((await status(member)).body.data.guild.my_role).toBe('leader');
+    expect(await countOf(g.id)).toBe(1);
+    await withTransaction((c) => detachCharacter(c, member.dbId, now, 'auto'));
+    const row = await getPool().query<{ disbanded_at: Date | null; member_count: number }>('SELECT disbanded_at, member_count FROM guilds WHERE uuid = $1', [g.id]);
+    expect(row.rows[0]?.disbanded_at).not.toBeNull();
+    expect((await status(member)).body.data.guild).toBeNull();
   });
 });

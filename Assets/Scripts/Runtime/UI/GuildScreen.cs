@@ -29,6 +29,8 @@ namespace DotRPG
         Text guildTitle, guildNotice, guildMeta;
         Button membersTab, appsTab, noticeBtn, modeBtn, leaveBtn, bossBtn;
         InputField noticeField;
+        /// <summary>The server notice last put into the field: the field follows the server only while the player has not changed it.</summary>
+        string noticeApplied;
         // find
         InputField searchField;
         Text findInfo;
@@ -172,7 +174,8 @@ namespace DotRPG
         void SaveNotice()
         {
             if (!GuildClient.IsStaff) return;
-            GuildClient.UpdateSettings(noticeField.text, null, (ok, msg) => Report(this, ok, msg));
+            string sent = noticeField.text;
+            GuildClient.UpdateSettings(sent, null, (ok, msg) => { if (ok) noticeApplied = sent.Trim(); Report(this, ok, msg); });
         }
 
         void ToggleMode()
@@ -252,7 +255,13 @@ namespace DotRPG
             appsTab.GetComponent<Image>().sprite = Game.Art.Get(showApplications ? "ui_btn" : "ui_btngray");
             noticeField.gameObject.SetActive(staff);
             noticeBtn.gameObject.SetActive(staff);
-            if (staff && !noticeField.isFocused && string.IsNullOrEmpty(noticeField.text)) noticeField.text = g.notice ?? "";
+            // Follow the server notice only while the field still holds what we last put there (an edit in progress,
+            // including one that emptied the field, is kept).
+            if (staff && !noticeField.isFocused && noticeField.text == (noticeApplied ?? "") && (g.notice ?? "") != (noticeApplied ?? ""))
+            {
+                noticeField.text = g.notice ?? "";
+                noticeApplied = g.notice ?? "";
+            }
             modeBtn.gameObject.SetActive(leader);
             TextOf(modeBtn).text = g.Open ? L.T("바로 가입 ▶ 승인제로") : L.T("승인 후 가입 ▶ 바로로");
             TextOf(leaveBtn).text = leader ? L.T("해체") : L.T("나가기");

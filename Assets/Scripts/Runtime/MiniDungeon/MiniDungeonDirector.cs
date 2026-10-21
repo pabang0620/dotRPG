@@ -26,6 +26,8 @@ namespace DotRPG
         public int Tier => definition != null ? definition.Tier : 0;
         public int Kills { get; private set; }
         public int EarnedXp { get; private set; }
+        /// <summary>Kill gold so far: a fixed amount per kill on both sides, so the count is exact (the HUD's counter).</summary>
+        public int EarnedGold => Kills * MiniDungeonCatalog.GoldPerKill;
         public int XpPerKill { get; private set; }
         /// <summary>XP per kill while the next main quest waits on level (<see cref="MiniDungeonCatalog.KillsPerBarStuck"/>).</summary>
         public int CatchUpXpPerKill { get; private set; }
@@ -213,6 +215,7 @@ namespace DotRPG
                 int before = Mathf.Clamp(room, 0, each);
                 Game.Session.Progression.AddXp(before);
                 EarnedXp += before;
+                Game.Session.Inventory.Add(ConsumableDatabase.Gold, MiniDungeonCatalog.GoldPerKill); // kill gold, no drops (online: the server's delta)
                 nextSave = Mathf.Min(nextSave, Time.unscaledTime + .75f); // one checkpoint for an AoE burst
                 Changed?.Invoke();
             }

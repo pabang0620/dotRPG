@@ -14,6 +14,9 @@ export const tierOf = (level: number, maxLevel: number): MiniTier | null =>
 // 매일 30분을 상한 속도로 해도 Lv40이 42시간 아래로 내려가지 않는다(Tools/balance/theory_progress.py --measured --mini)
 export const KILLS_PER_BAR = 8000;
 export const KILLS_PER_BAR_STUCK = 800;
+// 2026-10-21 처치 골드: 드롭·재료 없이 처치마다 고정 골드(사냥터 골드 더미 8~17의 3배). 미니 던전으로 사냥 시간을 대신하는 사람이
+// 강화 골드가 모자라지 않게 한다(Tools/balance/theory_gold.py --mini: 두 경로 모두 Lv40에서 클리어 한 벌의 81~88%). 클라 MiniDungeonCatalog.GoldPerKill
+export const MINI_GOLD_PER_KILL = 36;
 export const xpPerKill = (xpToNext: readonly number[], entryLevel: number, stuck = false): number =>
   Math.max(1, Math.ceil((xpToNext[entryLevel - 1] ?? 0) / (stuck ? KILLS_PER_BAR_STUCK : KILLS_PER_BAR)));
 

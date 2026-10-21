@@ -1,5 +1,7 @@
 {
-  "content": "XP-only mini dungeon",
+  "content": "XP mini dungeon with fixed kill gold (no drops, no materials)",
+  "goldPerKill": 36,
+  "goldNote": "2026-10-21: three times a hunting ground's gold pile (8~17). A player who spends the daily 30 minutes here instead of hunting lost the drop and material income; with this and the Lv40 enhance cost x1.35 both paths reach Lv40 with 82~88% of the clear kit (Tools/balance/theory_gold.py [--mini], BALANCE_MEASURE_2026-10-16.md 7). Ledger reason drop_claim, ref mini:<run>:<monster>.",
   "dailySeconds": 1800,
   "reset": "06:00 Asia/Seoul",
   "scope": "One character, shared across all three tiers",
@@ -19,7 +21,7 @@
   ],
   "entryFee": 0,
   "xpFormula": "ceil(Progression.XpToNext(entryLevel) / 8000); catch-up: ceil(XpToNext(entryLevel) / 800) while every open main quest needs a higher level",
-  "xpFormulaNote": "2026-10-18: 240 -> 2000 -> catch-up 8000 / 800 with Lv16+ curve x2.2. Total play time to Lv40 must stay 42h or more (Tools/balance/theory_progress.py --measured --mini: 42.8~43.6h at 20~30 kills/min every day, 48.1h without). modelXp values below are from the 240 design.",
+  "xpFormulaNote": "2026-10-18: 240 -> 2000 -> catch-up 8000 / 800 with Lv16+ curve x2.2. Total play time to Lv40 must stay 42h or more. 2026-10-21 day model fixed (quest kills inside the 2-hour day): 46.0h without, 44.9h at 20 kills/min every day, 43.7h at 30 (Tools/balance/theory_progress.py --measured [--mini N]). modelXp values below are from the 240 design.",
   "catchUp": {
     "rule": "Next main quest waits on level: at least one open main quest (requirements and story flags met, not claimed) and every one needs minLevel or a level objective above the hero's level",
     "judged": "Server, on every kill, with the current level (miniDungeonRules.mainQuestLevelGate); the client mirrors it for display (MiniDungeonCatalog.CatchUpGate)",
@@ -29,7 +31,7 @@
     "guide": "성장 추천 and 할 일 show it only while catching up, right after the main quest line"
   },
   "entryLevelFrozen": true,
-  "onlyReward": "XP",
+  "onlyReward": "XP and fixed kill gold (goldPerKill)",
   "autoHunt": "Starts on entry; manual movement/attack stops it; HUD restarts it",
   "timer": "Wall-clock while entered; explicit leave/death preserves unused time; no offline XP",
   "maxLevel": 40,

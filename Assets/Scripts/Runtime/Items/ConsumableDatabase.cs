@@ -231,9 +231,11 @@ namespace DotRPG
             }
             switch (id)
             {
-                case "mat_bone": return 5;
-                case "mat_ore": return 20;
-                case "mat_essence": return 80;
+                // [BALANCE 2026-10-21] Materials sell at 70% of before (5 / 20 / 80): leftover materials were a third of a
+                // no-spend hunter's income (Tools/balance/theory_gold.py, BALANCE_MEASURE 7). Buy prices are unchanged.
+                case "mat_bone": return 4;
+                case "mat_ore": return 14;
+                case "mat_essence": return 56;
                 case ConsumableDatabase.HpPotion: return 12;
                 case ConsumableDatabase.MpPotion: return 12;
                 case ConsumableDatabase.TownScroll: return 25;

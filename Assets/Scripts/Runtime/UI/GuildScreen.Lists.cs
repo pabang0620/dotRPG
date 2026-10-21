@@ -68,16 +68,30 @@ namespace DotRPG
             nextBtn.interactable = listPage < pages - 1;
         }
 
+        // The server answers 20 guilds a page; the table shows 9, so each server page is sliced into
+        // SlicesPerServerPage local pages (9, 9, 2) and the local page number maps back to the server page.
+        const int SlicesPerServerPage = (GuildClient.SearchPageSize + PageSize - 1) / PageSize;
+        static int ServerPageOf(int localPage) => localPage / SlicesPerServerPage + 1;
+
+        int SearchPages()
+        {
+            int total = GuildClient.FoundTotal;
+            if (total <= 0) return 1;
+            int serverPages = (total + GuildClient.SearchPageSize - 1) / GuildClient.SearchPageSize;
+            int last = total - (serverPages - 1) * GuildClient.SearchPageSize;
+            return (serverPages - 1) * SlicesPerServerPage + (last + PageSize - 1) / PageSize;
+        }
+
         void TurnList(int delta)
         {
             if (page == Page.Find)
             {
-                // The search is paged by the server (its page numbers start at 1).
-                int pages = Math.Max(1, (GuildClient.FoundTotal + PageSize - 1) / PageSize);
-                int to = Mathf.Clamp(listPage + delta, 0, pages - 1);
+                int to = Mathf.Clamp(listPage + delta, 0, SearchPages() - 1);
                 if (to == listPage) return;
                 listPage = to;
-                Search(to + 1);
+                // Another server page: ask for it (the answer redraws); the same one: just another slice.
+                if (ServerPageOf(to) != GuildClient.FoundPage) Search(ServerPageOf(to));
+                else Refresh();
                 return;
             }
             listPage = Math.Max(0, listPage + delta);
@@ -105,13 +119,17 @@ namespace DotRPG
         {
             PlaceRows(-56f);
             var list = GuildClient.Found;
-            int pages = Math.Max(1, (GuildClient.FoundTotal + PageSize - 1) / PageSize);
-            listPage = Mathf.Clamp(GuildClient.FoundPage - 1, 0, pages - 1);
+            int pages = SearchPages();
+            listPage = Mathf.Clamp(listPage, 0, pages - 1);
+            // The loaded server page decides which local pages can be drawn right now.
+            if (ServerPageOf(listPage) != GuildClient.FoundPage) listPage = Mathf.Clamp((GuildClient.FoundPage - 1) * SlicesPerServerPage, 0, pages - 1);
+            int offset = listPage % SlicesPerServerPage * PageSize;
             for (int i = 0; i < table.Count; i++)
             {
                 var r = table[i];
-                if (i >= list.Count) { r.root.gameObject.SetActive(false); continue; }
-                var g = list[i];
+                int idx = offset + i;
+                if (idx >= list.Count) { r.root.gameObject.SetActive(false); continue; }
+                var g = list[idx];
                 bool applied = GuildClient.MyApplications.Exists(a => a.guildId == g.id);
                 bool can = !g.Full && !applied && !GuildClient.CoolingDown && GuildClient.MyApplications.Count < 3;
                 string label = applied ? L.T("신청함") : g.Full ? L.T("인원 가득") : g.Open ? L.T("가입") : L.T("가입 신청");

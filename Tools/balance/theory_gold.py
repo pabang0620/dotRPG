@@ -18,6 +18,7 @@ Lv1~40 동안 무자본으로 버는 골드와 비교한다. 수입이 필요 �
 - 승급·보호권·경매 수수료는 선택 지출이라 넣지 않는다(있으면 더 부족해진다).
 
 사용: python3 Tools/balance/theory_gold.py            현재 데이터로 수지표
+      python3 Tools/balance/theory_gold.py --mini [분당 처치]   미니 던전을 매일 30분 하는 경로(기본 20마리)
       python3 Tools/balance/theory_gold.py --search   강화 골드 배율 후보를 훑어 목표 비율에 맞는 값을 찾는다
 """
 import json
@@ -111,7 +112,46 @@ def enhance_cost(item_id, target, gold_scale=1.0):
 GEAR_SELL_SCALE = 1.0
 MAT_SELL_SCALE = 1.0
 QUEST_GOLD_SCALE = 1.0
-ENH_SCALE_BY_TIER = [1.0] * 8
+# 미니 던전 처치 골드(2026-10-21): 처치마다 고정 골드, 드롭·재료 없음(사냥 처치 더미 평균 12의 3배: 드롭·재료 판매가 없는 대신).
+# 클라 MiniDungeonCatalog.GoldPerKill, 서버 miniDungeonRules.MINI_GOLD_PER_KILL과 같은 값
+MINI_GOLD_PER_KILL = 36
+SRC = os.path.join(os.path.dirname(__file__), "..", "..", "Assets", "Scripts", "Runtime", "Items")
+
+
+def enh_scale_by_tier():
+    """EnhanceRules.cs의 GoldByTier가 아직 enhance.json(내보내기 산출물)에 반영되지 않았으면 그 차이만큼 배율을 둔다.
+    내보내기 뒤에는 1.0이 된다(소스와 데이터가 같아짐)."""
+    import re
+    try:
+        with open(os.path.join(SRC, "EnhanceRules.cs"), encoding="utf-8") as f:
+            text = f.read()
+        tiers = [float(x) for x in re.search(r"GoldByTier\s*=\s*\{([^}]*)\}", text).group(1).split(",")]
+        mul0 = float(re.search(r"GoldMul\s*=\s*\{\s*([^,]*),", text).group(1))
+    except (OSError, AttributeError, ValueError):
+        return [1.0] * 8
+    scale = []
+    for i, lv in enumerate(TIERS):
+        step = next((s for s in ENH["steps"] if s["id"] == f"eq_sword_{lv}_r"), None)
+        data = step["levels"][0]["gold"] if step else 0
+        scale.append(tiers[i] * mul0 / data if data else 1.0)
+    return scale
+
+
+def mat_sell_scale():
+    """ConsumableDatabase.SellPrice의 재료 판매가가 shop.json(내보내기 산출물)과 다르면 그 차이(재료별). 내보낸 뒤에는 1.0."""
+    import re
+    try:
+        with open(os.path.join(SRC, "ConsumableDatabase.cs"), encoding="utf-8") as f:
+            text = f.read()
+        body = text[text.index("public static int SellPrice"):]
+        prices = {m: int(g) for m, g in re.findall(r'case "(mat_\w+)": return (\d+);', body)}
+    except (OSError, ValueError):
+        return {}
+    return {m: prices[m] / SELL[m] for m in MAT if m in prices and SELL.get(m)}
+
+
+ENH_SCALE_BY_TIER = enh_scale_by_tier()
+MAT_SELL_SCALE_BY_MAT = mat_sell_scale()
 
 
 def gold_per_kill_gear(tier):
@@ -203,7 +243,8 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
     qgold = {q["id"]: q["reward"]["gold"] for q in tp.QUESTS}
     quest_gold_t = [(h, qgold.get(qid, 0) * QUEST_GOLD_SCALE) for h, _, _, qid, _, _ in events]
     quest = sum(g for _, g in quest_gold_t)
-    inc.update({"요일 던전": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "필드 보스": fboss, "퀘스트 골드": quest})
+    inc.update({"요일 던전": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "필드 보스": fboss, "퀘스트 골드": quest,
+                "미니 던전 처치 골드": st["mini_kills"] * MINI_GOLD_PER_KILL})
 
     # ---- 지출 ----
     enh_gold, need = 0.0, {"bone": 0.0, "ore": 0.0, "essence": 0.0}
@@ -223,7 +264,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
         if short > 0:
             mat_buy += short * BUY[m]
         else:
-            mat_sell += -short * SELL[m] * MAT_SELL_SCALE
+            mat_sell += -short * SELL[m] * MAT_SELL_SCALE * MAT_SELL_SCALE_BY_MAT.get(m, 1.0)
     inc["재료 판매(남는 것)"] = mat_sell
     spend = {"강화 골드": enh_gold, "재료 구매(모자란 것)": mat_buy, "물약": potions, "귀환 주문서": scrolls}
     ti, ts = sum(inc.values()), sum(spend.values())
@@ -247,7 +288,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
             # 그 시각까지의 처치 수(사냥 + 퀘스트 처치, 시뮬레이션 시각 기준)
             k_ck = sum(n for t, _, n in st["kills_t"] if t <= h)
             k_frac = min(1.0, k_ck / total_kills)
-            ci = STARTER["gold"] + (inc["처치 골드"] + inc["장비 판매"] + inc["재료 판매(남는 것)"]) * k_frac + (dng + dly + wk + fboss) * frac + (raid * frac if ck >= 20 else 0) + sum(g for t, g in quest_gold_t if t <= h)
+            ci = STARTER["gold"] + (inc["처치 골드"] + inc["장비 판매"] + inc["재료 판매(남는 것)"]) * k_frac + (dng + dly + wk + fboss + inc["미니 던전 처치 골드"]) * frac + (raid * frac if ck >= 20 else 0) + sum(g for t, g in quest_gold_t if t <= h)
             cs = sum(g for lv, _, _, g, _, _ in rows if lv <= ck) + (potions + scrolls) * k_frac
             print(f"| Lv{ck} | {h:.1f}h | {ci:,.0f} | {cs:,.0f} | {ci / cs:.2f} |")
         print("\n| 단계 | 장비 | 목표 | 기대 골드 | 기대 시도 | 뼈/강화석/정수 |\n|---|---|---|---|---|---|")
@@ -257,6 +298,9 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
 
 
 if __name__ == "__main__":
+    if "--mini" in sys.argv:
+        i = sys.argv.index("--mini")
+        tp.MINI_KPM = float(sys.argv[i + 1]) if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--") else 20
     if "--search" in sys.argv:
         import itertools
         for gs, ms, es in itertools.product((1.0, 0.5, 0.3), (1.0, 0.5), (8, 10, 12, 15)):

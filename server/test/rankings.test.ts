@@ -66,6 +66,8 @@ describe('rankings', () => {
     expect(r.body.data.entries.map((e: { guild_name: string; value: number }) => [e.guild_name, e.value])).toEqual([
       [guilds[1]!.name, 2000], [guilds[0]!.name, 1000], [guilds[2]!.name, 1000],
     ]);
+    // 1위 금색, 2~10위 은색
+    expect(r.body.data.entries.map((e: { guild_color: string | null }) => e.guild_color)).toEqual(['gold', 'silver', 'silver']);
     expect(r.body.data.me).toEqual({ rank: 2, value: 1000 });
   });
 

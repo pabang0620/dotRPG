@@ -62,6 +62,9 @@ namespace DotRPG
             Game.Flow.OpenWindow(Instance);
         }
 
+        /// <summary>A window opened from here moved on to something else (a boss attempt): Esc there no longer comes back.</summary>
+        public static void ForgetReturn() => returnFrom = null;
+
         /// <summary>
         /// Called by <see cref="GameFlow.CloseInventory"/>: the window being closed was opened from this list and the player
         /// backed out of it (Esc, the bag key or its back button), so the list comes back. Any other close (entering a

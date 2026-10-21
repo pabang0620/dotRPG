@@ -8,7 +8,9 @@ import {
 import { settleDueSeasons } from '../src/domains/bossrush/bossRushSettle';
 import { clearRankingCache } from '../src/domains/rankings/rankingService';
 import { GUILD_CREATE_GOLD } from '../src/domains/guilds/guildRules';
-import { auth, buildApp, resetDb, shutdown } from './helpers';
+import { auth, buildApp, openDungeonToday, resetDb, shutdown } from './helpers';
+import { formParty } from './partyHelpers';
+import { unequipExpiredRankTitles } from '../src/domains/bossrush/bossRushSettle';
 import { anomalyKinds, get, newHero, post, seedGold, seedLevel, type Hero } from './economyHelpers';
 
 const app = buildApp();
@@ -48,7 +50,7 @@ describe('world boss attempts', () => {
     const h = await hero();
     const r = await get(app, h, '/bosses');
     expect(r.status).toBe(200);
-    expect(r.body.data.world).toMatchObject({ boss_id: 'boss_abyss_titan', max_hp: 160_000_000, hp_left: 160_000_000, attempts_left: 3, my_best: 0, my_rank: null });
+    expect(r.body.data.world).toMatchObject({ boss_id: 'boss_abyss_titan', max_hp: 40_000_000, hp_left: 40_000_000, attempts_left: 3, my_best: 0, my_rank: null });
     expect(r.body.data.guild).toBeNull();
     expect(r.body.data.week_ends_at).toBe('2026-10-21T21:00:00.000Z');
   });
@@ -71,7 +73,7 @@ describe('world boss attempts', () => {
     const rid = randomUUID();
     const f1 = await finish(h, s.body.data.attempt_id, 12_000, 'world', rid);
     expect(f1.status).toBe(200);
-    expect(f1.body.data).toMatchObject({ accepted_damage: 12_000, capped: false, best: 12_000, hp_left: 160_000_000 - 12_000, rank: 1, defeated: false });
+    expect(f1.body.data).toMatchObject({ accepted_damage: 12_000, capped: false, best: 12_000, hp_left: 40_000_000 - 12_000, rank: 1, defeated: false });
     const replay = await finish(h, s.body.data.attempt_id, 12_000, 'world', rid);
     expect(replay.body).toEqual(f1.body);
     const twice = await finish(h, s.body.data.attempt_id, 12_000);
@@ -101,6 +103,43 @@ describe('world boss attempts', () => {
     advance(180);
     const z = await post(app, h, `/bosses/world/attempts/${s.body.data.attempt_id}/finish`, { damage_dealt: 5000, hits_landed: 0, duration_s: 180 });
     expect(z.body.data.accepted_damage).toBe(0);
+  });
+
+  test('a human party cannot start (solo + AI only)', async () => {
+    const a = await hero();
+    const b = await hero();
+    await formParty(app, a, [b], { dungeon_id: openDungeonToday() });
+    const r = await start(a);
+    expect(r.status).toBe(409);
+    expect(r.body.errors.code).toBe('BOSS_PARTY_NOT_ALLOWED');
+    expect((await start(b)).body.errors.code).toBe('BOSS_PARTY_NOT_ALLOWED');
+  });
+
+  test('a report at 80% of the cap is accepted but logged', async () => {
+    const h = await hero();
+    const s = await start(h);
+    advance(180);
+    // 상한을 알기 위해 먼저 한 번 넘겨 본다(그 보고는 잘린다)
+    const over = (await finish(h, s.body.data.attempt_id, 900_000_000)).body.data;
+    const cap = over.accepted_damage as number;
+    const s2 = await start(h);
+    advance(180);
+    const d = (await finish(h, s2.body.data.attempt_id, Math.floor(cap * 0.9))).body.data;
+    expect(d.capped).toBe(false);
+    expect(d.accepted_damage).toBe(Math.floor(cap * 0.9));
+    expect(await anomalyKinds(h)).toEqual(expect.arrayContaining(['boss_damage', 'boss_damage_high']));
+  });
+
+  test('a finish after the season was settled keeps hp_left', async () => {
+    const h = await hero();
+    const s = await start(h);
+    await getPool().query("UPDATE boss_seasons SET settled_at = now() WHERE kind = 'world'");
+    advance(180);
+    const d = (await finish(h, s.body.data.attempt_id, 7000)).body.data;
+    expect(d.accepted_damage).toBe(7000);
+    const hp = await getPool().query<{ hp_left: string; max_hp: string }>("SELECT hp_left, max_hp FROM boss_seasons WHERE kind = 'world'");
+    expect(hp.rows[0]?.hp_left).toBe(hp.rows[0]?.max_hp);
+    expect(d.hp_left).toBe(Number(hp.rows[0]?.max_hp));
   });
 
   test('a late report closes the attempt with no damage', async () => {
@@ -151,6 +190,28 @@ describe('guild boss attempts', () => {
     clearRankingCache(); // 상태의 순위는 1분 캐시(끝 보고 응답의 rank는 바로 계산)
     const st2 = await get(app, leader, '/bosses');
     expect(st2.body.data.guild).toMatchObject({ score: 5000, my_contribution: 5000, attempts_left: 0, guild_rank: 1 });
+  });
+});
+
+describe('guild boss and leaving the guild', () => {
+  test('a finish after leaving the guild adds to no guild score', async () => {
+    const { leader, guildId } = await inGuild();
+    const m = await hero();
+    await post(app, m, '/guild/apply', { guild_id: guildId });
+    advance(24 * 3600);
+    const s = await start(m, 'guild');
+    expect(s.status).toBe(201);
+    expect((await post(app, m, '/guild/leave', {})).status).toBe(200);
+    advance(180);
+    const d = (await finish(m, s.body.data.attempt_id, 4000, 'guild')).body.data;
+    expect(d).toMatchObject({ accepted_damage: 4000, score: 0, my_contribution: 0, guild_changed: true, rank: null });
+    const sc = await getPool().query<{ score: string }>('SELECT score FROM guild_boss_scores');
+    expect(sc.rows).toEqual([]);
+    const row = await getPool().query<{ guild_id: string | null }>('SELECT guild_id FROM boss_attempts WHERE uuid = $1', [s.body.data.attempt_id]);
+    expect(row.rows[0]?.guild_id).toBeNull();
+    // 길드장의 기록은 그대로
+    const d2 = await fight(leader, 1000, 'guild');
+    expect(d2).toMatchObject({ score: 1000, my_contribution: 1000, rank: 1 });
   });
 });
 
@@ -210,9 +271,50 @@ describe('weekly settlement', () => {
     expect(await mails(m, 'guild_boss')).toEqual([]); // 도전하지 않은 길드원
     const g = await getPool().query("SELECT honor_color FROM guilds WHERE uuid = $1", [guildId]);
     expect(g.rows[0]?.honor_color).toBe('gold');
-    const t = await getPool().query("SELECT count(*)::int AS n FROM rank_titles WHERE title_id = 'rank_guild_1'");
-    expect(t.rows[0]?.n).toBe(2);
+    // 1위 칭호는 그 주에 그 길드로 도전한 사람만: 도전 안 한 길드원 m은 못 받는다
+    const t = await getPool().query<{ character_id: string }>("SELECT character_id FROM rank_titles WHERE title_id = 'rank_guild_1'");
+    expect(t.rows.map((x) => Number(x.character_id))).toEqual([leader.dbId]);
     const view = await get(app, m, '/guild');
     expect(view.body.data.guild.honor_color).toBe('gold');
+  });
+
+  test('guild: top title goes to the week\'s fighters, not to who joined after the week', async () => {
+    const { leader, guildId } = await inGuild();
+    const fighter = await hero();
+    await post(app, fighter, '/guild/apply', { guild_id: guildId });
+    advance(24 * 3600);
+    await fight(leader, 500, 'guild');
+    await fight(fighter, 800, 'guild');
+    // 기여한 뒤 떠난 사람도 받는다
+    expect((await post(app, fighter, '/guild/leave', {})).status).toBe(200);
+    now = new Date('2026-10-21T21:02:00Z'); // 주가 끝난 뒤, 정산 전
+    const late = await hero();
+    expect((await post(app, late, '/guild/apply', { guild_id: guildId })).body.data.joined).toBe(true);
+    await settleDueSeasons();
+    const t = await getPool().query<{ character_id: string }>("SELECT character_id FROM rank_titles WHERE title_id = 'rank_guild_1' ORDER BY character_id");
+    expect(t.rows.map((x) => Number(x.character_id)).sort((a, b) => a - b)).toEqual([leader.dbId, fighter.dbId].sort((a, b) => a - b));
+  });
+
+  test('an expired rank title is unequipped by the daily job and hidden by the achievements view', async () => {
+    const a = await hero();
+    await fight(a, 20_000);
+    now = new Date('2026-10-21T21:05:00Z');
+    await settleDueSeasons();
+    expect((await request(app).post(`/characters/${a.id}/title`).set(auth(a.s)).send({ achievement_id: 'rank_world_1' })).status).toBe(200);
+    // 만료(week_end + 7일 + 1시간) 하루 뒤, 다음 정산은 아직
+    now = new Date('2026-10-29T23:00:00Z');
+    const before = await getPool().query('SELECT title_achievement FROM characters WHERE id = $1', [a.dbId]);
+    expect(before.rows[0]?.title_achievement).toBe('rank_world_1');
+    expect(await unequipExpiredRankTitles()).toBe(1);
+    const after = await getPool().query('SELECT title_achievement FROM characters WHERE id = $1', [a.dbId]);
+    expect(after.rows[0]?.title_achievement).toBeNull();
+    // 작업 전이라도 업적 조회는 만료 칭호를 비워서 보여 주고 뗀다
+    await getPool().query("UPDATE characters SET title_achievement = 'rank_world_1' WHERE id = $1", [a.dbId]);
+    const list = await request(app).get(`/characters/${a.id}/achievements`).set(auth(a.s));
+    expect(list.status).toBe(200);
+    expect(list.body.data.title).toBeNull();
+    expect(list.body.data.rank_titles).toEqual([]);
+    const again = await getPool().query('SELECT title_achievement FROM characters WHERE id = $1', [a.dbId]);
+    expect(again.rows[0]?.title_achievement).toBeNull();
   });
 });

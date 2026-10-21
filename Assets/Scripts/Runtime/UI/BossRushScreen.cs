@@ -108,9 +108,9 @@ namespace DotRPG
             tabWorld.GetComponent<Image>().sprite = Game.Art.Get(guild ? "ui_btngray" : "ui_btn");
             tabGuild.GetComponent<Image>().sprite = Game.Art.Get(guild ? "ui_btn" : "ui_btngray");
             result.text = string.IsNullOrEmpty(BossRushDirector.LastResultText) ? "" : L.T("<color=#8fe28f>지난 도전</color> · ") + BossRushDirector.LastResultText;
-            rules.text = guild
+            rules.text = L.T("보스 방에서는 직업 간 피해가 비슷해지도록 보정됩니다.") + "\n" + (guild
                 ? L.T("<b>길드보스</b>\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(목요일 06:00 정산, 우편): 이번 주 도전한 길드원 20,000 골드\n1위 길드원 전원 칭호 '최강 길드' + 길드 이름 금색, 2~10위 길드 이름 은색")
-                : L.T("<b>월드보스</b>\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 주 가장 높은 1회 피해량\n보상(목요일 06:00 정산, 우편): 참가 30,000 골드 + 강화석, 격파한 주 30,000 골드 추가\n1위 칭호 '세계를 꺾은 자' + 이름 금색, 2~10위 '거신 사냥꾼' + 이름 주황색, 11~100위 '거신에 맞선 자'");
+                : L.T("<b>월드보스</b>\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 주 가장 높은 1회 피해량\n보상(목요일 06:00 정산, 우편): 참가 30,000 골드 + 강화석, 격파한 주 30,000 골드 추가\n1위 칭호 '세계를 꺾은 자' + 이름 금색, 2~10위 '거신 사냥꾼' + 이름 주황색, 11~100위 '거신에 맞선 자'"));
 
             if (!OnlineSession.Playing)
             {

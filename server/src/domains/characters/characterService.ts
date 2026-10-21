@@ -13,6 +13,8 @@ import { CHARACTER_LIMIT } from '../auth/authService';
 import { hasActiveAuction } from '../auction/auctionSearchRepository';
 import { lockCharacter, readEconomyDetail } from '../economy/economyRepository';
 import { hasOpenMail } from '../mail/mailRepository';
+import { detachCharacter as detachFromGuild } from '../guilds/guildService';
+import { getNow } from '../../utils/clock';
 import { computePower } from './powerEstimate';
 import { listWornKeys } from '../economy/economyRepository';
 import * as repo from './characterRepository';
@@ -121,6 +123,8 @@ export async function deleteCharacter(accountId: number, uuid: string) {
     if (c && ((await hasActiveAuction(client, c.id)) || (await hasOpenMail(client, c.id)))) {
       throw new AppError(409, '진행 중인 경매나 받지 않은 우편이 있어 삭제할 수 없습니다.', 'CHARACTER_HAS_AUCTION');
     }
+    // 0048: 길드장은 위임·해체 뒤에 삭제할 수 있고, 길드원은 같은 트랜잭션에서 탈퇴 처리한다(인원 수·신청 정리)
+    if (c) await detachFromGuild(client, c.id, getNow(), 'refuse_leader');
     return repo.softDelete(accountId, uuid, client);
   });
   if (r === 'missing') throw NOT_FOUND();

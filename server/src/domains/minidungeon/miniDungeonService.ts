@@ -19,7 +19,7 @@ import { findPartyIdOf } from '../party/partyRepository';
 import * as questRepo from '../quests/questRepository';
 import * as tradeRepo from '../trade/tradeRepository';
 import * as repo from './miniDungeonRepository';
-import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_HP_MUL, MINI_TIERS, killCredit, mainQuestLevelGate, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
+import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_GOLD_PER_KILL, MINI_HP_MUL, MINI_TIERS, killCredit, mainQuestLevelGate, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
 import type { EnterBody, KillBody, LeaveBody, RequestBody } from './miniDungeonValidation';
 
 const MONSTER_ID = 'skel_warrior';
@@ -165,9 +165,11 @@ export function kill(accountId: number, uuid: string, runUuid: string, body: Kil
       const each = stuck ? xpPerKill(p.xpToNext, run.entry_level, true) : run.xp_per_kill;
       const reward = await ctx.grantXp(Math.min(each, Math.max(0, xpToCap)), 'mini_dungeon', `${run.uuid}:${body.monster_ref}`);
       await repo.recordKill(ctx.client, run, body.monster_ref, ctx.requestId, reward.granted, credits - KILL_INTERVAL_MS, ctx.now);
+      // 처치 골드: 사냥터의 골드 더미처럼 원장 사유 drop_claim, 드롭·재료는 없다(2026-10-21)
+      await ctx.changeGold(MINI_GOLD_PER_KILL, 'drop_claim', `mini:${run.uuid}:${body.monster_ref}`);
       if (ctx.level >= eco.progression.maxLevel) await repo.close(ctx.client, run, 'level_cap', ctx.now);
-      // No normal kill_log, kill_stats, drops, items, gold, quest progress or dungeon clear record.
-      return { status: 200, data: { ...await snapshot(ctx, run), accepted: true, granted_xp: reward.granted, catch_up_applied: stuck, leveled_up: reward.leveledUp } };
+      // No normal kill_log, kill_stats, drops, items, quest progress or dungeon clear record.
+      return { status: 200, data: { ...await snapshot(ctx, run), accepted: true, granted_xp: reward.granted, granted_gold: MINI_GOLD_PER_KILL, catch_up_applied: stuck, leveled_up: reward.leveledUp } };
     } });
 }
 

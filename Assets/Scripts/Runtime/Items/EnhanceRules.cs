@@ -110,8 +110,11 @@ namespace DotRPG
         /// halved and the measured hunting pace (20~25 kills a minute from Lv16, Docs/BALANCE_MEASURE_2026-10-16.md), a no-spend
         /// player reaching Lv.40 has about 88% of what the clear kit (Lv.40 weapon +11, armour +10, accessories +8) costs,
         /// so gold stays a little short the way it is in Dungeon Fighter (Tools/balance/theory_gold.py).
+        /// [BALANCE 2026-10-21] Lv.40 tier 5600 -> 7560 (x1.35): with the day model fixed (quest kills inside the 2-hour day)
+        /// a player who never enters the mini dungeon hunts 25,000 monsters by Lv40 and had 123% of the kit; with the mini
+        /// dungeon paying kill gold and material sell prices at 70% both paths land at 81~88% (BALANCE_MEASURE 7).
         /// </summary>
-        static readonly int[] GoldByTier = { 100, 180, 320, 880, 1600, 2530, 3720, 5600 };
+        static readonly int[] GoldByTier = { 100, 180, 320, 880, 1600, 2530, 3720, 7560 };
 
         static int Clamp(int level) => Math.Max(0, Math.Min(EquipmentDatabase.MaxEnhance - 1, level));
 

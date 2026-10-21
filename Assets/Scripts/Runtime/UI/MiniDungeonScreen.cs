@@ -9,7 +9,7 @@ namespace DotRPG
     {
         static readonly Vector2 TL = new Vector2(0, 1);
         static readonly Color[] Accents = { new Color32(126, 214, 159, 255), new Color32(240, 188, 113, 255), new Color32(137, 197, 255, 255) };
-        static readonly string[] Descriptions = { "이끼 낀 유적에서 검술과 마법을 연마합니다.", "고대 광맥의 수련장에서 실력을 다집니다.", "서리 감옥의 강적을 상대하며 성장합니다." };
+        static readonly string[] Descriptions = { "이끼 낀 유적에서 검술과 마법을 연마합니다.", "고대 광맥의 수련장에서 실력을 다집니다.", "서리 감옥의 강적을 상대하며 성장합니다." }; // i18n-ignore
         readonly Button[] enters = new Button[3];
         readonly Text[] gates = new Text[3];
         Text remaining, status, recap;

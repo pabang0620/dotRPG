@@ -7,7 +7,6 @@
  "{0}레벨부터 도전할 수 있습니다.": "Puedes desafiarlo a partir del nivel {0}.",
  "길드에 들어온 뒤 24시간이 지나야 길드보스에 도전할 수 있습니다.": "Solo puedes desafiar al jefe de gremio 24 horas después de unirte a un gremio.",
  "길드에 속해 있지 않습니다.": "No perteneces a ningún gremio.",
- "길드의 거상": "Coloso del gremio",
  "끝나지 않은 도전이 있습니다.": "Tienes un desafío sin terminar.",
  "도전 기록을 찾을 수 없습니다.": "No se encontró el registro del desafío.",
  "오늘 도전 횟수를 모두 썼습니다.": "Has usado todos los intentos de hoy.",
@@ -32,5 +31,7 @@
  "이미 있는 길드 이름입니다.": "Ese nombre de gremio ya existe.",
  "공지는 {0}자까지입니다": "Los anuncios pueden tener hasta {0} caracteres",
  "길드 이름은 {0}~{1}자여야 합니다": "Los nombres de gremio deben tener entre {0} y {1} caracteres",
- "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Los nombres de gremio solo pueden usar sílabas coreanas, letras inglesas y números"
+ "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Los nombres de gremio solo pueden usar sílabas coreanas, letras inglesas y números",
+ "파티를 나간 뒤 도전하세요.": "Sal del grupo y vuelve a intentarlo.",
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Cede el liderazgo del gremio o disuélvelo antes de eliminar este personaje."
 }

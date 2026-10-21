@@ -20,9 +20,9 @@ namespace DotRPG
         public const float RespawnSeconds = 5f;
         public static readonly MiniDungeonDef[] All =
         {
-            new MiniDungeonDef { Tier = 10, MinLevel = 10, MaxLevel = 19, Name = "이끼빛 수련의 숲", MapId = "mini_dungeon_10", MonsterId = "skel_warrior", Theme = MapTheme.Forest, Music = MapRegistry.MusicDgnForest },
-            new MiniDungeonDef { Tier = 20, MinLevel = 20, MaxLevel = 29, Name = "수정빛 수련의 석실", MapId = "mini_dungeon_20", MonsterId = "skel_warrior", Theme = MapTheme.Canyon, Music = MapRegistry.MusicDgnCanyon },
-            new MiniDungeonDef { Tier = 30, MinLevel = 30, MaxLevel = 39, Name = "서리빛 수련의 동굴", MapId = "mini_dungeon_30", MonsterId = "skel_warrior", Theme = MapTheme.Winter, Music = MapRegistry.MusicDgnWinter },
+            new MiniDungeonDef { Tier = 10, MinLevel = 10, MaxLevel = 19, Name = "이끼빛 수련의 숲", MapId = "mini_dungeon_10", MonsterId = "skel_warrior", Theme = MapTheme.Forest, Music = MapRegistry.MusicDgnForest }, // i18n-ignore
+            new MiniDungeonDef { Tier = 20, MinLevel = 20, MaxLevel = 29, Name = "수정빛 수련의 석실", MapId = "mini_dungeon_20", MonsterId = "skel_warrior", Theme = MapTheme.Canyon, Music = MapRegistry.MusicDgnCanyon }, // i18n-ignore
+            new MiniDungeonDef { Tier = 30, MinLevel = 30, MaxLevel = 39, Name = "서리빛 수련의 동굴", MapId = "mini_dungeon_30", MonsterId = "skel_warrior", Theme = MapTheme.Winter, Music = MapRegistry.MusicDgnWinter }, // i18n-ignore
         };
 
         public static MiniDungeonDef Get(int tier) => Array.Find(All, d => d.Tier == tier);
@@ -37,6 +37,13 @@ namespace DotRPG
         /// (Tools/balance/theory_progress.py --measured --mini, Docs/MiniDungeon/design.json). Server: miniDungeonRules.ts.
         /// </summary>
         public const int KillsPerBar = 8000, KillsPerBarStuck = 800, CatchUpMultiplier = KillsPerBar / KillsPerBarStuck;
+        /// <summary>
+        /// [BALANCE 2026-10-21] Gold per kill (no drops, no materials): three times a hunting ground's gold pile (8~17), so a
+        /// player who spends the daily 30 minutes here instead of hunting is not left without gold for enhancement. With the
+        /// day model fixed in Tools/balance/theory_gold.py (--mini), both paths reach Lv40 with 81~88% of the clear kit.
+        /// Server: miniDungeonRules.MINI_GOLD_PER_KILL.
+        /// </summary>
+        public const int GoldPerKill = 36;
         public static int XpPerKill(int entryLevel, bool stuck = false) =>
             Math.Max(1, (int)Math.Ceiling(Progression.XpToNext(entryLevel) / (double)(stuck ? KillsPerBarStuck : KillsPerBar)));
 

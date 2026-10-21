@@ -1,4 +1,5 @@
 // 길드 만들기·가입·직위·탈퇴·해체. 쓰기는 runEconomy(행동하는 캐릭터 잠금 + request_id 멱등) 안에서 길드 행을 잠근다.
+import type { PoolClient } from 'pg';
 import { getPool, isUniqueViolation, type Queryable } from '../../db/pool';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
@@ -227,4 +228,29 @@ export function patch(accountId: number, uuid: string, body: PatchBody): Promise
       await repo.updateSettings(ctx.client, g.id, cleanNotice(body.notice), body.join_mode);
       return done(ctx);
     } });
+}
+
+/**
+ * 캐릭터가 사라질 때(삭제·회원 탈퇴 익명화) 길드에서 빼낸다. 호출 쪽 트랜잭션 안에서, 캐릭터 행을 잠근 뒤 부른다.
+ * - 'refuse_leader'(캐릭터 삭제): 길드장이면 거부한다(위임이나 해체를 먼저 하게).
+ * - 'auto'(회원 탈퇴): 길드장이면 가장 오래된 부길드장, 없으면 가장 오래된 길드원에게 넘기고, 혼자면 해체한다.
+ * 어느 쪽이든 멤버 행·대기 신청을 지우고 member_count를 맞춘다.
+ */
+export async function detachCharacter(client: PoolClient, characterId: number, now: Date, mode: 'refuse_leader' | 'auto'): Promise<void> {
+  await repo.deleteApplicationsOf(client, characterId);
+  const m = await repo.membershipOf(client, characterId);
+  if (!m) return;
+  const g = await repo.lockAlive(client, m.guild_id);
+  if (!g) { await repo.deleteMember(client, characterId); return; }
+  if (m.role === 'leader') {
+    if (mode === 'refuse_leader') throw new AppError(409, '길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.', 'GUILD_LEADER_MUST_TRANSFER');
+    const next = await repo.successorOf(client, g.id, characterId);
+    await repo.deleteMember(client, characterId);
+    if (!next) { await repo.disband(client, g.id, now); return; }
+    await repo.setRole(client, next, 'leader');
+    await repo.setLeader(client, g.id, next);
+  } else {
+    await repo.deleteMember(client, characterId);
+  }
+  await repo.addCount(client, g.id, -1);
 }

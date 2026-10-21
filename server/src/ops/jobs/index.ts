@@ -10,10 +10,10 @@ import { staleRunsJob } from './staleRuns';
 import { paymentReconcileJob, paymentReportJob, paymentWatchJob, starGrantExpireJob } from './paymentJobs';
 import { withdrawalAnonymizeJob, withdrawalDestroyJob } from './withdrawalJobs';
 import { campaignRevokeJob, campaignSweepJob, sweepTicketExpireJob } from './sweepJobs';
-import { settleDueSeasons } from '../../domains/bossrush/bossRushSettle';
+import { settleDueSeasons, unequipExpiredRankTitles } from '../../domains/bossrush/bossRushSettle';
 
 /** 관리자 OP3가 수동 실행할 수 있는 작업(허용 목록) */
-export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy', 'play-window-sweep', 'rates-publication', 'boss-settle'] as const;
+export const MANUAL_JOBS = ['purge-hourly', 'purge-daily', 'stale-runs', 'integrity-nightly', 'presence-sweep', 'economy-hold-sweep', 'income-reconcile', 'sweep-ticket-expire', 'campaign-sweep', 'campaign-revoke', 'payment-reconcile', 'payment-watch', 'payment-report', 'star-grant-expire', 'withdrawal-anonymize', 'withdrawal-destroy', 'play-window-sweep', 'rates-publication', 'boss-settle', 'rank-title-expire'] as const;
 
 let done = false;
 
@@ -52,4 +52,6 @@ export function registerAllJobs(): void {
     const r = await settleDueSeasons();
     return { rows: r.people, detail: r };
   } });
+  // 랭킹 칭호 만료(week_end + 7일 + 1시간)는 정산 사이에 오므로, 매일 KST 06:05에 장착한 만료 칭호를 뗀다
+  registerJob({ name: 'rank-title-expire', schedule: { kind: 'daily_kst', hour: 6, minute: 5 }, run: async () => { const n = await unequipExpiredRankTitles(); return { rows: n, detail: { unequipped: n } }; } });
 }

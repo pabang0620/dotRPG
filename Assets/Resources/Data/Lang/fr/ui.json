@@ -1382,5 +1382,6 @@
  "<color=#ffe066>파티 중입니다. 방장이 입장하면 함께 들어갑니다.</color>": "<color=#ffe066>Vous êtes dans un groupe. Vous entrez avec le chef quand il entre.</color>",
  "방장 대기": "Attendre le chef",
  "목적지를 먼저 고르세요. [던전 변경]": "Choisissez d'abord une destination. [Changer de donjon]",
- " · 던전 입장 시 함께 출발": " · Départ commun à l'entrée d'un donjon"
+ " · 던전 입장 시 함께 출발": " · Départ commun à l'entrée d'un donjon",
+ "<color=#ffb347>유니크 {0}종 (+5%)</color>\n<color=#c58cff>에픽 {1}종 (+4%)</color>": "<color=#ffb347>Unique : {0} types (+5%)</color>\n<color=#c58cff>Épique : {1} types (+4%)</color>"
 }

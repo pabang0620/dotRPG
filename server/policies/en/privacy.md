@@ -21,8 +21,12 @@ The Company processes only the minimum personal information needed for the follo
 | Records of consent to terms | Documents and versions agreed to, time of consent |
 | Party dungeon result checks | Device identifier (hashed) and install ID of members in the same run |
 | Play time selection | Allowed play hours, material confirming the relationship between the requester and the user (when sent by email) |
+| Guilds | Records of joining, leaving and being removed from a guild, join applications, rank, guild name and notice |
+| World boss, guild boss and weekly rankings | Attempt start and end times, reported and accepted damage, weekly rank, titles and name colours granted as ranking rewards |
 
 The Company does not collect names, dates of birth, phone numbers, addresses or email addresses. If a user sends an email for an inquiry or appeal, the Company processes the email address and its content only as needed to handle it.
+
+The following information is visible to other users: character name, level, career, guild name, equipped title and ranking-reward name colour. It is shown in the rankings (top 100 and last week's records), the guild search and member lists, town name tags, chat and party finder. Boss attempt damage is disclosed only as the value listed in the rankings.
 
 Device identifiers are never stored as-is. The value hashed once on the user's device is hashed again by the server with a secret key before storage.
 
@@ -50,6 +54,10 @@ The Company destroys personal information without delay when the following perio
 | Payment records, currency and item ledgers | While the account exists; after withdrawal, 5 years from the last record (Korean Act on Consumer Protection in Electronic Commerce) |
 | Sanction records, report records, records of consent to terms | While the account exists; after withdrawal, kept for the same 5-year period |
 | Play time selection settings | Until removed or until withdrawal |
+| Guild join applications | 30 days after acceptance, rejection or cancellation |
+| Guild join, leave and removal records | 90 days after leaving the guild |
+| Boss attempt records (time, damage) | 90 days after the end of the week of the attempt (for operations and fraud checks). Rankings are public only up to last week |
+| Ranking-reward titles and name colours | 30 days after the reward expires |
 
 ## Article 3 (Processing on Withdrawal)
 1. On a withdrawal request, all login tokens are revoked and the user is disconnected immediately. Character names are changed to values other users cannot recognise.
@@ -61,7 +69,7 @@ The Company destroys personal information without delay when the following perio
 After 30 days, the following processing takes place.
 
 - **Deleted**: login data such as the Steam ID, login tokens, login records, error reports, device and IP aggregates, session state, play aggregates, request records, chat sent or received, and blocks the user placed
-- **Anonymised**: the user's name in other users' block lists and in reports, device data in party records, and access times of the account and characters
+- **Anonymised**: the user's name in other users' block lists and in reports, device data in party records, access times of the account and characters, and the user's name in guild member and application records and in boss attempt, ranking and title records
 
 ## Article 4 (Destruction Procedure and Method)
 1. Information whose retention period has ended is destroyed automatically at a set time each day.
@@ -127,3 +135,6 @@ For reports or consultations about privacy infringement, users may contact:
 Changes to this Policy are announced in-game and on the web page at least 7 days before they take effect, and at least 30 days in advance for changes important to users' rights.
 
 This Policy takes effect on {{effective_date}}.
+
+## Revision History
+- 2026-10-21: Added guild and world boss, guild boss and weekly ranking items and the information visible to other users to Article 1. Added retention periods for guild applications and membership records, boss attempt records and ranking-reward titles to Article 2. Added guild, ranking and title records to the anonymisation list in Article 3.

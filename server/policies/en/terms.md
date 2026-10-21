@@ -71,6 +71,14 @@ The Company may refuse registration, or later terminate the agreement, if:
 1. If the Company ends the Service, it announces this in-game and on the web page at least 30 days before the end date.
 2. Remaining Paid Star Shards are refunded under the Paid Service Policy. Free Star Shards, Free Currency and Game Items are not refunded.
 
+### Article 10-2 (Guilds)
+1. A user may create or join a guild with a character. The prohibited conduct in Article 11 and the banned-word rules of the Operation Policy apply to guild names and notices.
+2. The guild leader may appoint and dismiss vice masters, accept and reject applications, remove members, change the notice and the join mode, transfer leadership and disband the guild. Vice masters may accept and reject applications and remove members.
+3. A character that leaves or is removed from a guild, or whose guild is disbanded, cannot join another guild for 24 hours.
+4. A character that is a guild leader cannot be deleted until leadership is transferred or the guild is disbanded.
+5. Weekly world boss and guild boss rankings and rewards are based on the records at the fixed weekly settlement time. Changes to guild membership or records after settlement are not reflected in that week's rankings or rewards. Ranking-reward titles and name colours expire after the stated period.
+6. The Company may require an inappropriate guild name or notice to be changed, or disband the guild, under the Operation Policy.
+
 ## Chapter 4. User Obligations
 
 ### Article 11 (Prohibited Conduct)
@@ -81,7 +89,7 @@ Users must not:
 3. use or distribute programs not permitted by the Company (hacks, macros, automated input tools, memory editors and the like);
 4. exploit bugs or errors for gain, or keep using a known bug without reporting it;
 5. impersonate Company staff or game operators;
-6. use abusive, demeaning, hateful or sexual language, spam, advertise or defraud;
+6. use abusive, demeaning, hateful or sexual language, spam, advertise or defraud (including in chat, whispers, guild chat, character names, guild names and notices, and party recruitment posts);
 7. misuse another person's personal information or account;
 8. hack the servers, tamper with communications or disrupt the Service;
 9. make fraudulent payments or abuse the refund system;
@@ -155,3 +163,6 @@ If any provision of these Terms is held invalid under applicable law, the remain
 
 ## Addendum
 These Terms take effect on {{effective_date}}.
+
+## Revision History
+- 2026-10-21: Added Article 10-2 (Guilds) and stated in Article 11(6) that guild chat and guild names and notices are included.

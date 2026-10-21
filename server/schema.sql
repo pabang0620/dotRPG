@@ -3286,3 +3286,24 @@ ALTER TABLE chat_messages ADD CONSTRAINT chat_messages_shape_chk CHECK (
 );
 ALTER TABLE report_lines DROP CONSTRAINT report_lines_channel_check;
 ALTER TABLE report_lines ADD CONSTRAINT report_lines_channel_check CHECK (channel IN ('general', 'party', 'whisper', 'guild'));
+
+-- 0048_boss_damage_high: 보스 도전 피해가 상한의 80% 이상이면 이상 기록(인정은 그대로) (2026-10-21)
+ALTER TABLE anomaly_log DROP CONSTRAINT anomaly_log_kind_check;
+ALTER TABLE anomaly_log ADD CONSTRAINT anomaly_log_kind_check
+  CHECK (kind IN ('kill_target', 'kill_rate', 'kill_supply', 'kill_power',
+                  'gather_node', 'gather_early', 'gather_rate', 'drop_foreign', 'quest_denied', 'chest_unknown',
+                  'dungeon_enter', 'dungeon_result',
+                  'party_result', 'party_host', 'raid_enter',
+                  'field_uncredited', 'field_host', 'relay_abuse',
+                  'kill_presence', 'device_limit', 'ip_cluster', 'member_card', 'career_state', 'contribution',
+                  'sweep_denied', 'boss_damage', 'boss_damage_high'));
+COMMENT ON COLUMN anomaly_log.kind IS '0047의 값 + boss_damage_high: 보스 도전 피해가 상한의 80% 이상(인정은 그대로, 조작 의심 후보)';
+DO $$
+DECLARE c TEXT;
+BEGIN
+  SELECT conname INTO c FROM pg_constraint
+   WHERE conrelid = 'boss_attempts'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%guild_id IS NOT NULL%';
+  IF c IS NOT NULL THEN EXECUTE format('ALTER TABLE boss_attempts DROP CONSTRAINT %I', c); END IF;
+END $$;
+ALTER TABLE boss_attempts ADD CONSTRAINT boss_attempts_guild_kind_chk CHECK (kind = 'guild' OR guild_id IS NULL);
+COMMENT ON COLUMN boss_attempts.guild_id IS '길드보스 도전의 길드. 시작 뒤 길드를 떠났으면 끝 보고 때 NULL(점수·기여에 안 들어감, 참가 보상은 남음)';

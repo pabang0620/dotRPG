@@ -91,6 +91,7 @@ namespace DotRPG
                 if (gen != generation) return;
                 if (a == null) { Busy = false; GameEvents.RaiseToast(error); Game.Audio?.PlaySfx("cancel"); Changed?.Invoke(); return; }
                 attempt = a;
+                TodayScreen.ForgetReturn(); // the result window after the fight is a new step, not the 할 일 list's child
                 returnMap = Game.World.MapId;
                 returnPosition = Game.Player.Position;
                 returnFacing = Game.Player.Facing;
@@ -246,6 +247,7 @@ namespace DotRPG
             BossRushClient.Finish(a, damage, hits, seconds, (res, error) =>
             {
                 LastResultText = res == null ? L.F("{0} 내 피해 {1:N0} · {2}", head, damage, error)
+                    : res.expired ? L.F("{0} 내 피해 {1:N0} · {2}", head, damage, L.T("기한이 지나 인정되지 않았어요"))
                     : a?.kind == BossRushClient.Guild
                         ? L.F("{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}", head, res.accepted,
                             res.capped ? L.T(" (상한 적용)") : "", res.score, res.myContribution, res.rank > 0 ? L.F("{0}위", res.rank) : L.T("순위 집계 중"))

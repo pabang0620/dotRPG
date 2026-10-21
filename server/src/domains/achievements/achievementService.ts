@@ -16,7 +16,7 @@ async function myCharacter(accountId: number, characterUuid: string) {
 /** 칭호 이름(장착한 업적 id -> 업적 이름). 없으면 null */
 export function titleName(achievementId: string | null): string | null {
   if (!achievementId) return null;
-  // 0047: 주간 랭킹 칭호(rank_*)도 같은 자리에 장착한다. 만료되면 주간 정산이 떼어 낸다
+  // 0047: 주간 랭킹 칭호(rank_*)도 같은 자리에 장착한다. 만료되면 매일 작업과 업적 조회가 떼어 낸다
   if (isRankTitle(achievementId)) return RANK_TITLE_NAMES[achievementId];
   return ACHIEVEMENT_BY_ID.get(achievementId)?.title ?? null;
 }
@@ -37,8 +37,13 @@ export async function listAchievements(accountId: number, characterUuid: string)
     await repo.insertAchieved(db, c.id, newly, now);
     for (const id of newly) done.set(id, now);
   }
-  const title = await repo.titleOf(db, c.id);
+  let title = await repo.titleOf(db, c.id);
   const ranks = await activeTitles(db, c.id, now);
+  // 만료된 랭킹 칭호가 아직 장착돼 있으면(매일 작업이 떼기 전) 빈 것으로 보여 주고 바로 뗀다
+  if (title && isRankTitle(title) && !ranks.some((t) => t.title_id === title)) {
+    await repo.setTitle(db, c.id, null);
+    title = null;
+  }
   return {
     title: title ? { id: title, name: titleName(title) } : null,
     // 지금 장착할 수 있는 랭킹 칭호(이름 색은 장착과 무관하게 유효 기간 동안 적용된다)
