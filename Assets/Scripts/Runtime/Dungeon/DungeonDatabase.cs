@@ -308,8 +308,8 @@ namespace DotRPG
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
                 sure = new SureReward(EnhanceRules.Bone, 4, 8, 600, 1000),
-                description = L.T("협곡 아래 황금 광맥에 해골 광부들이 몰려들었다.\n황금 해골은 도망치며 금화를 흩뿌린다."),
-                specialty = L.T("골드"), featureMonster = L.T("황금 해골 (도망치며 골드를 뿌림)"), bossName = L.T("황금 광부장"),
+                description = L.T("협곡 아래 황금 광맥에 해골 광부들이 몰려들었다.\n황금 해골은 도망치며 금화를 흩뿌린다.\n옛 노래가 말하는 다섯 집 가운데 재규어의 집이라고도 한다."),
+                specialty = L.T("골드"), featureMonster = L.T("황금 해골 (도망치며 골드를 뿌림)"), bossName = L.T("황금 광부장 타킨"),
             },
             new DungeonDef
             {
@@ -330,8 +330,8 @@ namespace DotRPG
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
                 sure = new SureReward(EnhanceRules.Ore, 3, 6, 200, 350),
-                description = L.T("불이 꺼진 제련소에 해골 광부들이 곡괭이를 들고 모여 있다.\n해골 광부는 멀리서 돌진해 온다."),
-                specialty = L.T("강화석"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("광산 해골대장"),
+                description = L.T("불이 꺼진 제련소에 해골 광부들이 곡괭이를 들고 모여 있다.\n해골 광부는 멀리서 돌진해 온다.\n옛 노래가 말하는 다섯 집 가운데 불의 집이라고도 한다."),
+                specialty = L.T("강화석"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("해골대장 첸"),
             },
             new DungeonDef
             {
@@ -352,8 +352,8 @@ namespace DotRPG
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
                 sure = new SureReward(EnhanceRules.Essence, 1, 3, 200, 350),
-                description = L.T("마력이 고인 숲속 묘지. 해골 사령술사가 멀리서 주문을 쏘고\n쓰러진 해골을 다시 일으킨다."),
-                specialty = L.T("마력 정수"), featureMonster = L.T("해골 사령술사 (원거리, 해골 소환)"), bossName = L.T("묘지기 리치"),
+                description = L.T("마력이 고인 숲속 묘지. 해골 사령술사가 멀리서 주문을 쏘고\n쓰러진 해골을 다시 일으킨다.\n옛 노래가 말하는 다섯 집 가운데 어둠의 집이라고도 한다."),
+                specialty = L.T("마력 정수"), featureMonster = L.T("해골 사령술사 (원거리, 해골 소환)"), bossName = L.T("묘지기 리치 무크"),
             },
             new DungeonDef
             {
@@ -374,8 +374,8 @@ namespace DotRPG
                     new RewardEntry(GearReward, 1, 1, 50),
                 },
                 sure = new SureReward(EnhanceRules.Bone, 5, 10, 250, 450),
-                description = L.T("숲의 수련장에 해골 궁수들이 진을 쳤다.\n클리어 경험치가 크게 늘어나는 수련 던전."),
-                specialty = L.T("경험치"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("해골 사수장"),
+                description = L.T("숲의 수련장에 해골 궁수들이 진을 쳤다.\n클리어 경험치가 크게 늘어나는 수련 던전.\n옛 노래가 말하는 다섯 집 가운데 칼의 집이라고도 한다."),
+                specialty = L.T("경험치"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("해골 사수장 훌란"),
             },
             new DungeonDef
             {
@@ -395,8 +395,8 @@ namespace DotRPG
                     new RewardEntry(ConsumableDatabase.Gold, 200, 400, 20),
                 },
                 sure = new SureReward(EnhanceRules.Ore, 2, 4, 250, 450),
-                description = L.T("얼어붙은 동굴 깊은 곳, 망자들이 지키는 옛 무기고.\n해골 방패병은 정면 공격을 막아 낸다."),
-                specialty = L.T("장비"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("무기고 수문장"),
+                description = L.T("얼어붙은 동굴 깊은 곳, 망자들이 지키는 옛 무기고.\n해골 방패병은 정면 공격을 막아 낸다.\n옛 노래가 말하는 다섯 집 가운데 추위의 집이라고도 한다."),
+                specialty = L.T("장비"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("수문장 파칼"),
             },
         };
 
@@ -430,7 +430,7 @@ namespace DotRPG
                 },
                 sure = new SureReward(EnhanceRules.Bone, 3, 6, 150, 300),
                 description = L.T("협곡 광산 깊은 곳에 늘 해골이 들끓는 소굴.\n매일 들어갈 수 있고 입장 횟수 제한이 없다."),
-                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("광산 해골대장"),
+                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 광부 (돌진)"), bossName = L.T("해골대장 첸"),
             },
             new DungeonDef
             {
@@ -451,7 +451,7 @@ namespace DotRPG
                 },
                 sure = new SureReward(EnhanceRules.Bone, 3, 6, 150, 300),
                 description = L.T("안개가 걷히지 않는 숲속 묘지. 해골 궁수와 사령술사가 지킨다.\n매일 들어갈 수 있고 입장 횟수 제한이 없다."),
-                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("묘지기 리치"),
+                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 궁수 (원거리)"), bossName = L.T("묘지기 리치 무크"),
             },
             new DungeonDef
             {
@@ -472,7 +472,7 @@ namespace DotRPG
                 },
                 sure = new SureReward(EnhanceRules.Ore, 1, 3, 150, 300),
                 description = L.T("얼음에 갇힌 옛 회랑에 해골 방패병과 기사가 서성인다.\n매일 들어갈 수 있고 입장 횟수 제한이 없다."),
-                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("무기고 수문장"),
+                specialty = L.T("매일 · 경험치·재료"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("수문장 파칼"),
             },
         };
 
@@ -489,8 +489,8 @@ namespace DotRPG
                 Boss(MapRegistry.DgnRaidBoss, "boss_skeleton_king", "skel_knight", 0)),
             bossRoom = 2, referenceSeconds = new[] { 300f, 450f, 300f, 300f }, clearXp = 400,
             rewards = new RewardEntry[0], raidReward = RaidRewards.King, // [RAID] sure gold + 4 cards, see RaidRewards
-            description = L.T("북쪽 고개 너머에서 깨어난 해골왕과 그의 친위대.\n친위대 전초 두 곳을 돌파하고 해골왕을 쓰러뜨리자."),
-            specialty = L.T("확정 골드 · 에픽 이상 장비"), featureMonster = L.T("해골 기사단, 해골 사령술사"), bossName = L.T("해골왕"),
+            description = L.T("북쪽 고개 너머에서 깨어난 해골왕 에칸과 그의 친위대.\n친위대 전초 두 곳을 돌파하고 에칸을 쓰러뜨리자."),
+            specialty = L.T("확정 골드 · 에픽 이상 장비"), featureMonster = L.T("해골 기사단, 해골 사령술사"), bossName = L.T("해골왕 에칸"),
         };
 
         /// <summary>[RAID] Chapter 1 final raid: 흑철의 바르가스, Sunday only, costs seal key fragments.</summary>
@@ -535,8 +535,8 @@ namespace DotRPG
                 new RewardEntry(EnhanceRules.Ore, 8, 12, 15),
                 new RewardEntry(ConsumableDatabase.Gold, 2500, 4000, 20),
             },
-            description = L.T("검은 수호석 석실 앞을 지키는 바위 거인.\n광부 해골과 방패 부대를 뚫고 골렘의 심장을 부숴라."),
-            specialty = L.T("유니크 · 레전더리 장비, 봉인 열쇠 조각"), featureMonster = L.T("해골 광부대, 방패 부대"), bossName = L.T("바위 심장 골렘"),
+            description = L.T("검은 수호석 석실 앞을 지키는 바위 거인 카브란.\n광부 해골과 방패 부대를 뚫고 카브란의 심장을 부숴라."),
+            specialty = L.T("유니크 · 레전더리 장비, 봉인 열쇠 조각"), featureMonster = L.T("해골 광부대, 방패 부대"), bossName = L.T("바위 심장 카브란"),
         };
 
         /// <summary>[RAID] Chapter 2 final raid: 수호자 그라흐 inside the guardian stone chamber (Sunday).</summary>

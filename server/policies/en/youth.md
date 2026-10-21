@@ -5,7 +5,7 @@ This Policy is a translation of the Korean original. If the two differ, the Kore
 {{name}} (the "Company") sets out this Youth Protection Policy so that young people are not exposed to harmful content and can enjoy the game in a healthy way.
 
 ## Article 1 (Minimum Age)
-Only persons aged 14 or older may register for dotRPG. If the Company learns that a child under 14 has registered, it stops the account's use and destroys its personal information.
+Only persons aged 14 or older may register for Bolon. If the Company learns that a child under 14 has registered, it stops the account's use and destroys its personal information.
 
 ## Article 2 (Blocking Harmful Content)
 1. A banned-word filter keeps abuse, sexual and hateful expressions out of chat, character names and party recruitment posts. Banned words in chat are masked; they cannot be used in names at all.
@@ -13,7 +13,7 @@ Only persons aged 14 or older may register for dotRPG. If the Company learns tha
 3. Users who repeatedly post content harmful to young people are sanctioned under the Operation Policy.
 
 ## Article 3 (Game Rating)
-dotRPG will apply for a rating from the Game Rating and Administration Committee of Korea. Once rated, the rating and content descriptors will be shown on the start screen, the store page and in this Policy.
+Bolon will apply for a rating from the Game Rating and Administration Committee of Korea. Once rated, the rating and content descriptors will be shown on the start screen, the store page and in this Policy.
 
 ## Article 4 (Game Time Selection)
 1. A user under 18, or the user's legal guardian, may request that the user's play time be limited.
@@ -36,3 +36,6 @@ If a minor pays without the consent of a legal guardian, the minor or the guardi
 | Email | {{email}} |
 
 This Policy takes effect on {{effective_date}}.
+
+## Revision History
+- 2026-10-21: Game name changed from dotRPG to Bolon (no change to the service)

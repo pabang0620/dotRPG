@@ -58,7 +58,7 @@ namespace DotRPG
             if (second == lastSecond && run.MyDamage == lastDamage) return;
             lastSecond = second;
             lastDamage = run.MyDamage;
-            title.text = BossRushClient.KindName(run.Kind) + " · " + L.T("심연의 거신");
+            title.text = BossRushClient.KindName(run.Kind) + " · " + L.T("심연의 거신 지파크");
             time.text = MiniDungeonScreen.TimeText(run.RemainingSeconds);
             time.color = second <= 30 ? new Color32(255, 165, 128, 255) : UiTheme.AccentLight;
             damage.text = L.F("내 피해\n<color=#ffe066>{0:N0}</color>", run.MyDamage);

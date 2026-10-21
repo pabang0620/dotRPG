@@ -114,23 +114,29 @@ namespace DotRPG
             var shade = UIFactory.Overlay(root, "Shade", new Color(0.05f, 0.08f, 0.05f, 0.35f));
             shade.raycastTarget = true;
 
-            // [E4] Generated pixel logo (Art/ui_logo); the text logo stays as a fallback.
-            var logoSprite = Game.Art.Get("ui_logo");
+            // [E4] Generated pixel logo; the text logo stays as a fallback. [2026-10-21] The game is BOLON (볼론): one English
+            // logo for every language (Art/ui_logo_bolon), the old ui_logo while it is missing.
+            var logoSprite = Game.Art.Optional("ui_logo_bolon") ?? Game.Art.Get("ui_logo");
+            float subY = -186f; // the tagline sits under the logo
             if (logoSprite != null && logoSprite.texture != null && logoSprite.texture.width > 100)
             {
+                // Sized from the sprite's own aspect (the BOLON logo is 400x255, the old wordmark 640x161): never stretched.
+                float logoH = logoSprite.rect.height > logoSprite.rect.width * 0.5f ? 200f : 141f;
+                float logoW = logoH * logoSprite.rect.width / logoSprite.rect.height;
                 var logoImg = UIFactory.Image(root, "Logo", logoSprite, Color.white);
-                UIFactory.Place(logoImg.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -40), new Vector2(560, 141));
+                UIFactory.Place(logoImg.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -28), new Vector2(logoW, logoH));
+                subY = -(28f + logoH + 14f);
             }
             else
             {
-                var logo = UIFactory.Text(root, "Logo", "dotRPG", 96, UIColors.Cream, TextAnchor.MiddleCenter, true);
+                var logo = UIFactory.Text(root, "Logo", "BOLON", 96, UIColors.Cream, TextAnchor.MiddleCenter, true); // i18n-ignore the logo wordmark
                 var logoOutline = logo.gameObject.AddComponent<Outline>();
                 logoOutline.effectColor = new Color32(62, 39, 26, 255);
                 logoOutline.effectDistance = new Vector2(4, -4);
                 UIFactory.Place(logo.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -70), new Vector2(900, 120));
             }
-            var sub = UIFactory.Text(root, "Subtitle", L.T("해골 숲 옆 작은 마을"), 30, UIColors.Highlight, TextAnchor.MiddleCenter, true);
-            UIFactory.Place(sub.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -186), new Vector2(900, 44));
+            var sub = UIFactory.Text(root, "Subtitle", L.T("코바 마을"), 30, UIColors.Highlight, TextAnchor.MiddleCenter, true);
+            UIFactory.Place(sub.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, subY), new Vector2(900, 44));
 
             screen.panel = UIFactory.Place(UIFactory.Rect(root, "Panel"), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 70), new Vector2(380, 300));
             var fill = UIFactory.Image(screen.panel, "Fill", Game.Art.Get("ui_white"), UiTheme.PanelDeep);

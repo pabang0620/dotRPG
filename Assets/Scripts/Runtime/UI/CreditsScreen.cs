@@ -16,7 +16,7 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<CreditsScreen>();
             screen.ui = ui;
             var text = Resources.Load<TextAsset>("ThirdPartyNotices");
-            screen.lines = (text != null ? text.text : "dotRPG Team").Replace("\r", "").Split('\n');
+            screen.lines = (text != null ? text.text : L.T("볼론")).Replace("\r", "").Split('\n');
             screen.Rebuild();
             return screen;
         }

@@ -234,7 +234,7 @@ namespace DotRPG
             // NPCs placed by the world builder (career guide, dungeon guide) are not in the tables above.
             foreach (var c in NpcController.All) if (c != null && c.Definition != null && c.Definition.npcId == npcId) return L.T(c.Definition.displayName);
             if (npcId == WorldBuilder.DungeonGuide.npcId) return L.T(WorldBuilder.DungeonGuide.displayName);
-            if (npcId == "career_trainer") return L.T("전직 안내원");
+            if (npcId == "career_trainer") return L.T("전직 안내원 이츠나");
             return npcId;
         }
 

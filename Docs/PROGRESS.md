@@ -68,6 +68,7 @@
 |---|---|
 | 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개, 푸시는 `wonho`와 `main`에 같이 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
+| 표기 이름 | **볼론**(Bolon, 2026-10-21 사용자 결정, 마왕 이름). 타이틀 로고는 영문 "BOLON" 하나(`Art/ui_logo_bolon`, 모든 언어 공통), 화면·문서·정책·홈페이지만 바꾼다. Unity productName·세이브 경로·레포·서버 이름은 dotRPG 유지(세이브 유실 방지). 고유 이름·떡밥은 `STORY.md` 7절 |
 | 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0047, 서버 테스트 117개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
 | 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0047(길드·보스)까지 적용, 데이터 버전 abf5257bb1ef274e(2026-10-20 배포). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |

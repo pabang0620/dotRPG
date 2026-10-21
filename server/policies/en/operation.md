@@ -3,7 +3,7 @@
 This Policy is a translation of the Korean original. If the two differ, the Korean version prevails.
 
 ## Article 1 (Purpose and Scope)
-Under Article 12 of the Terms of Service, this Policy sets out conduct prohibited in dotRPG, the standards for restrictions (sanctions), and the notice and appeal procedures. It applies to all in-game chat (including guild chat), character names, guild names and notices, party recruitment posts, trades (auction house, mail) and payments.
+Under Article 12 of the Terms of Service, this Policy sets out conduct prohibited in Bolon, the standards for restrictions (sanctions), and the notice and appeal procedures. It applies to all in-game chat (including guild chat), character names, guild names and notices, party recruitment posts, trades (auction house, mail) and payments.
 
 ## Article 2 (Types of Sanctions)
 
@@ -90,3 +90,4 @@ This Policy takes effect on {{effective_date}}.
 
 ## Revision History
 - 2026-10-21: Added guild chat and guild names and notices to the scope. Added guild name or notice change and guild disbandment to Article 2, step-by-step sanctions for inappropriate guild names or notices to Article 3, and Article 5-2 (Guild Name and Notice Rules).
+- 2026-10-21: Game name changed from dotRPG to Bolon (no change to the service)

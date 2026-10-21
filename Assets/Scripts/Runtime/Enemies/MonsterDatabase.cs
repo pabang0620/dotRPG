@@ -423,34 +423,34 @@ namespace DotRPG
             });
 
             // ----- Weekday bosses (§6.1) -----
-            Add(Boss("boss_gold_foreman", L.T("황금 광부장"), Bone, hp: 900, dmg: 20, lines: 18, speed: 2.1f,
+            Add(Boss("boss_gold_foreman", L.T("황금 광부장 타킨"), Bone, hp: 900, dmg: 20, lines: 18, speed: 2.1f,
                 new BossPattern(PatternKind.Slash3, 5f, 1f, 3, maxRange: 3.2f, weight: 1.4f),
                 new BossPattern(PatternKind.Charge, 7f, 1.3f),
                 new BossPattern(PatternKind.GoldRain, 9f, 1.1f, 5),
                 new BossPattern(PatternKind.Slam, 8f, 1.4f, maxRange: 3.5f)));
-            Add(Boss("boss_mine_captain", L.T("광산 해골대장"), C(216, 204, 176), hp: 950, dmg: 22, lines: 18, speed: 2.0f,
+            Add(Boss("boss_mine_captain", L.T("해골대장 첸"), C(216, 204, 176), hp: 950, dmg: 22, lines: 18, speed: 2.0f,
                 new BossPattern(PatternKind.Charge, 5.5f, 1.3f, weight: 1.5f),
                 new BossPattern(PatternKind.Slam, 7f, 1.5f, maxRange: 3.5f),
                 new BossPattern(PatternKind.Slash3, 5f, 1f, 3, maxRange: 3.2f),
                 new BossPattern(PatternKind.Fields, 10f, 1.1f, 4)));
-            Add(Boss("boss_lich", L.T("묘지기 리치"), C(226, 234, 210), hp: 850, dmg: 20, lines: 16, speed: 1.7f,
+            Add(Boss("boss_lich", L.T("묘지기 리치 무크"), C(226, 234, 210), hp: 850, dmg: 20, lines: 16, speed: 1.7f,
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 10, weight: 1.3f),
                 new BossPattern(PatternKind.Summon, 12f, 1f, 2),
                 new BossPattern(PatternKind.Fields, 8f, 1.2f, 5),
                 new BossPattern(PatternKind.Donut, 11f, 1.4f)));
-            Add(Boss("boss_archer_chief", L.T("해골 사수장"), Bone, hp: 850, dmg: 20, lines: 16, speed: 2.3f,
+            Add(Boss("boss_archer_chief", L.T("해골 사수장 훌란"), Bone, hp: 850, dmg: 20, lines: 16, speed: 2.3f,
                 new BossPattern(PatternKind.ArrowVolley, 4.5f, 1f, 5, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 8f, 1.2f),
                 new BossPattern(PatternKind.Fields, 9f, 1.1f, 4),
                 new BossPattern(PatternKind.Slash3, 6f, 0.9f, 3, maxRange: 3f)));
-            Add(Boss("boss_armory_warden", L.T("무기고 수문장"), C(222, 214, 196), hp: 1100, dmg: 22, lines: 20, speed: 1.7f,
+            Add(Boss("boss_armory_warden", L.T("수문장 파칼"), C(222, 214, 196), hp: 1100, dmg: 22, lines: 20, speed: 1.7f,
                 new BossPattern(PatternKind.Guard, 9f, 1.5f, weight: 1.2f),
                 new BossPattern(PatternKind.Slash3, 5f, 1.1f, 3, maxRange: 3.2f, weight: 1.3f),
                 new BossPattern(PatternKind.Charge, 7f, 1.3f),
                 new BossPattern(PatternKind.Donut, 12f, 1.4f)));
 
             // ----- Raid boss (§6.2) -----
-            var king = Boss("boss_skeleton_king", L.T("해골왕"), C(244, 238, 222), hp: 3200, dmg: 62, /* [2026-10-14] x2.5: a hit takes ~45% of a Lv20 mage with enrage */ lines: 40, speed: 2.2f,
+            var king = Boss("boss_skeleton_king", L.T("해골왕 에칸"), C(244, 238, 222), hp: 3200, dmg: 62, /* [2026-10-14] x2.5: a hit takes ~45% of a Lv20 mage with enrage */ lines: 40, speed: 2.2f,
                 new BossPattern(PatternKind.Slash3, 4.5f, 1f, 3, maxRange: 3.6f, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 6f, 1.4f),
                 new BossPattern(PatternKind.Slam, 8f, 1.4f, maxRange: 3.8f, minPhase: 1, maxPhase: 1),
@@ -489,7 +489,7 @@ namespace DotRPG
             Add(bargas);
 
             // [RAID] Chapter 2 raid bosses (existing bodies recoloured until their own art).
-            var golem = Boss("boss_rock_golem", L.T("바위 심장 골렘"), C(150, 132, 112), hp: 5200, dmg: 48, /* [2026-10-14] x1.5 */ lines: 52, speed: 1.6f,
+            var golem = Boss("boss_rock_golem", L.T("바위 심장 카브란"), C(150, 132, 112), hp: 5200, dmg: 48, /* [2026-10-14] x1.5 */ lines: 52, speed: 1.6f,
                 new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 7f, 1.5f),
                 new BossPattern(PatternKind.GoldRain, 9f, 1.2f, 6, minPhase: 1),
@@ -529,7 +529,7 @@ namespace DotRPG
             // [BOSS 2026-10-20] 심연의 거신: the 월드보스 / 길드보스 of the 3-minute attempts (BossRushDirector). Its own generated
             // frames (Art/char_boss_abyss_titan_*, 2026-10-20), drawn larger than the golem. Not a raid boss (no 망자의 심판 / 결계 that need a dungeon run), no minions.
             // Phases come early (95 / 88% left) because nobody empties its pool in one attempt: strong heroes see more patterns.
-            var titan = Boss(BossRushCatalog.BossId, L.T("심연의 거신"), C(112, 84, 168), hp: 6400, dmg: 50, lines: 99, speed: 1.8f,
+            var titan = Boss(BossRushCatalog.BossId, L.T("심연의 거신 지파크"), C(112, 84, 168), hp: 6400, dmg: 50, lines: 99, speed: 1.8f,
                 new BossPattern(PatternKind.Slam, 5f, 1.4f, maxRange: 4.2f, weight: 1.5f),
                 new BossPattern(PatternKind.Slash3, 4.5f, 1f, 3, maxRange: 3.8f, weight: 1.2f),
                 new BossPattern(PatternKind.Charge, 7f, 1.3f),
@@ -550,14 +550,14 @@ namespace DotRPG
 
             // [FIELD BOSS] One per region, every 15 minutes on its map (FieldBosses). Existing boss bodies; HP for a solo
             // player of the zone's level (about 25 pack kills of work), its accessory at 3% per kill.
-            var fbForest = Boss("fboss_forest", L.T("검은 뿌리 수호자"), C(150, 172, 120), hp: 1100, dmg: 15, lines: 14, speed: 2.3f,
+            var fbForest = Boss("fboss_forest", L.T("검은 뿌리 수호자 유카"), C(150, 172, 120), hp: 1100, dmg: 15, lines: 14, speed: 2.3f,
                 new BossPattern(PatternKind.ArrowVolley, 4.5f, 1f, 5, weight: 1.5f),
                 new BossPattern(PatternKind.Charge, 8f, 1.2f),
                 new BossPattern(PatternKind.Fields, 9f, 1.1f, 4));
             fbForest.look = Look("boss_archer_chief", C(150, 172, 120));
             fbForest.minionId = "skel_archer";
             Field(fbForest, "eq_ring_root");
-            var fbCanyon = Boss("fboss_canyon", L.T("능선의 바위 심장"), C(150, 132, 112), hp: 1900, dmg: 20, lines: 22, speed: 1.6f,
+            var fbCanyon = Boss("fboss_canyon", L.T("능선의 바위 심장 툰"), C(150, 132, 112), hp: 1900, dmg: 20, lines: 22, speed: 1.6f,
                 new BossPattern(PatternKind.Slam, 5f, 1.5f, maxRange: 4f, weight: 1.6f),
                 new BossPattern(PatternKind.Charge, 7f, 1.5f),
                 new BossPattern(PatternKind.Fields, 8f, 1.2f, 5, minPhase: 1));
@@ -566,7 +566,7 @@ namespace DotRPG
             fbCanyon.artScale = 1.0f;
             fbCanyon.phases = new[] { 0.5f };
             Field(fbCanyon, "eq_neck_rockheart");
-            var fbWinter = Boss("fboss_winter", L.T("눈보라 리치"), C(196, 226, 255), hp: 2500, dmg: 24, lines: 26, speed: 2.1f,
+            var fbWinter = Boss("fboss_winter", L.T("눈보라 리치 사크"), C(196, 226, 255), hp: 2500, dmg: 24, lines: 26, speed: 2.1f,
                 new BossPattern(PatternKind.BoltRing, 6f, 1f, 10, weight: 1.4f),
                 new BossPattern(PatternKind.Fields, 7f, 1.1f, 6),
                 new BossPattern(PatternKind.Summon, 14f, 1f, 2, minPhase: 1),

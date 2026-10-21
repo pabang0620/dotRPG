@@ -1383,5 +1383,6 @@
  "방장 대기": "Tunggu ketua",
  "목적지를 먼저 고르세요. [던전 변경]": "Pilih tujuan dulu. [Ganti dungeon]",
  " · 던전 입장 시 함께 출발": " · Berangkat bersama saat masuk dungeon",
- "<color=#ffb347>유니크 {0}종 (+5%)</color>\n<color=#c58cff>에픽 {1}종 (+4%)</color>": "<color=#ffb347>Unik: {0} jenis (+5%)</color>\n<color=#c58cff>Epik: {1} jenis (+4%)</color>"
+ "<color=#ffb347>유니크 {0}종 (+5%)</color>\n<color=#c58cff>에픽 {1}종 (+4%)</color>": "<color=#ffb347>Unik: {0} jenis (+5%)</color>\n<color=#c58cff>Epik: {1} jenis (+4%)</color>",
+ "코바 마을": "Desa Koba"
 }

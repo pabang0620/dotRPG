@@ -75,7 +75,7 @@ namespace DotRPG
                         resource = z.id == Forest ? "Maps/Forest" : null, music = theme == MapTheme.Town ? "music_forest" : music,
                         hint = L.F("권장 Lv.{0}~{1} · 몬스터 Lv.{2}\n처치 경험치 {3} · 재생성 {4:0}초\n던전 클리어·입장권 없이 반복 사냥 가능.\n귀환 주문서: {5}\n서쪽: 이전 지역 / 동쪽: 다음 지역", z.minLevel, z.maxLevel, z.monsterLevel, z.KillXp, HuntingGrounds.RespawnSeconds, name) });
             }
-            Town(Village, L.T("해골 숲 옆 작은 마을"), "Maps/Village", MapTheme.Town, "music_village");
+            Town(Village, L.T("코바 마을"), "Maps/Village", MapTheme.Town, "music_village");
             Town(Canyon, L.T("바위 협곡 마을"), "Maps/Canyon", MapTheme.Canyon, "music_canyon");
             Town(Winter, L.T("눈꽃 숲 마을"), "Maps/Winter", MapTheme.Winter, "music_winter");
             maps.Add(new MapInfo { id = Sanctum, displayName = L.T("침수된 고대 성소"), resource = "Maps/SunkenSanctum",

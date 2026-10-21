@@ -5,7 +5,7 @@ These Terms are a translation of the Korean original. If the two differ, the Kor
 ## Chapter 1. General Provisions
 
 ### Article 1 (Purpose)
-These Terms set out the conditions and procedures for using the game dotRPG and related services (the "Service") provided by {{name}} (the "Company"), and the rights, obligations and responsibilities of the Company and users.
+These Terms set out the conditions and procedures for using the game Bolon and related services (the "Service") provided by {{name}} (the "Company"), and the rights, obligations and responsibilities of the Company and users.
 
 ### Article 2 (Definitions)
 1. **User**: a person who agrees to these Terms and uses the Service.
@@ -166,3 +166,4 @@ These Terms take effect on {{effective_date}}.
 
 ## Revision History
 - 2026-10-21: Added Article 10-2 (Guilds) and stated in Article 11(6) that guild chat and guild names and notices are included.
+- 2026-10-21: Game name changed from dotRPG to Bolon (no change to the service)

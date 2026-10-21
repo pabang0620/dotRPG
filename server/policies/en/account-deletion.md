@@ -1,6 +1,6 @@
 # Deleting Your Account
 
-This page explains how to delete your dotRPG account and data, operated by {{name}}.
+This page explains how to delete your Bolon account and data, operated by {{name}}.
 
 ## 1. Deleting in the game
 1. Start the game and log in online.
@@ -23,3 +23,6 @@ You can request deletion at {{email}}. To confirm your identity, include your ch
 2. Withdrawal cannot be requested while a payment is in progress.
 
 Details follow Article 3 of the Privacy Policy.
+
+## Revision History
+- 2026-10-21: Game name changed from dotRPG to Bolon (no change to the service)

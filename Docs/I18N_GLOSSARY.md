@@ -163,6 +163,7 @@
 | 필드 보스 | Field Boss |
 | 수호석 | Wardstone |
 | 해골왕 | Skeleton King |
+| 해골왕 에칸 | Skeleton King Ekan |
 | 그라흐 | Grah |
 | 바르가스 | Vargas |
 
@@ -213,3 +214,30 @@
 | 오르 | Orr |
 | 마족 | demon |
 | 마왕 | Demon King |
+| 마왕 볼론 | Demon King Bolon |
+
+## 고유 이름 (2026-10-21, 마야 모티프 - `STORY.md` 7절)
+| 한국어 | English | 비고 |
+|---|---|---|
+| 볼론 | Bolon | 게임 표기 이름. 일본어 ボロン, 그 외 언어는 Bolon |
+| 훈 | Hun | 옛 용사 |
+| 아푸크 | Apuch | 공허의 왕 |
+| 쿠칸 왕국 | Kingdom of Kukan | |
+| 코바 마을 | Koba Village | 옛 "해골 숲 옆 작은 마을" |
+| 에칸 | Ekan | 해골왕 |
+| 카브란 | Kabran | 바위 심장 |
+| 지파크 | Zipak | 심연의 거신 |
+| 타킨 | Takin | 황금 광부장 |
+| 첸 | Chen | 해골대장 |
+| 무크 | Muk | 묘지기 리치 |
+| 훌란 | Hulan | 해골 사수장 |
+| 파칼 | Pakal | 수문장 |
+| 유카 | Yuka | 검은 뿌리 수호자 |
+| 툰 | Tun | 능선의 바위 심장 |
+| 사크 | Sak | 눈보라 리치 |
+| 이츠나 | Itzna | 전직 안내원 |
+| 익시 | Ixi | 마족 온건파 지도자 |
+| 봉인 축제 | Festival of the Seal | 옛 "등불 축제" |
+| 다섯 집 | the Five Houses | 요일 던전 설명 |
+| 대사제의 빛 | Light of the High Priest | 오르반 신도의 호칭 |
+

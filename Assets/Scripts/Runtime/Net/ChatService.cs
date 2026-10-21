@@ -143,7 +143,7 @@ namespace DotRPG
         {
             foreach (var n in Split(savedFriends)) friends.Add(new ChatFriend { name = n });
             foreach (var n in Split(savedBlocked)) blocked.Add(n);
-            for (int i = 0; i < friends.Count; i++) { friends[i].online = i % 2 == 0; friends[i].where = friends[i].online ? L.T("해골 숲 옆 작은 마을") : ""; }
+            for (int i = 0; i < friends.Count; i++) { friends[i].online = i % 2 == 0; friends[i].where = friends[i].online ? L.T("코바 마을") : ""; }
         }
 
         static IEnumerable<string> Split(string s) => string.IsNullOrEmpty(s) ? Enumerable.Empty<string>() : s.Split(',').Where(x => x.Length > 0);
@@ -195,7 +195,7 @@ namespace DotRPG
         public void AddFriend(string name)
         {
             if (string.IsNullOrEmpty(name) || IsFriend(name)) return;
-            friends.Add(new ChatFriend { name = name, online = true, where = L.T("해골 숲 옆 작은 마을") });
+            friends.Add(new ChatFriend { name = name, online = true, where = L.T("코바 마을") });
             SocialChanged?.Invoke();
         }
 

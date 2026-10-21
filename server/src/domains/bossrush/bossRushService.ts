@@ -21,8 +21,8 @@ import {
 } from './bossRushRules';
 import type { FinishBody, StartBody } from './bossRushValidation';
 
-const WORLD_NAME = '심연의 거신';
-const GUILD_NAME = '심연의 거신'; // 길드보스도 같은 보스(GUILD_BOSS_ID): 창 라벨과 전투 중 이름을 하나로
+const WORLD_NAME = '심연의 거신 지파크';
+const GUILD_NAME = '심연의 거신 지파크'; // 길드보스도 같은 보스(GUILD_BOSS_ID): 창 라벨과 전투 중 이름을 하나로
 
 /** 이번 주 시즌(없으면 만든다) */
 export async function currentSeason(db: Queryable, kind: BossKind, now: Date): Promise<repo.Season> {

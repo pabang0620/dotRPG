@@ -114,7 +114,7 @@ namespace DotRPG
 
             if (!OnlineSession.Playing)
             {
-                bossName.text = L.T("심연의 거신");
+                bossName.text = L.T("심연의 거신 지파크");
                 hpFill.rectTransform.anchorMax = new Vector2(1f, 1f);
                 hpText.text = "";
                 info.text = L.T("온라인에서 열려요.");
@@ -123,7 +123,7 @@ namespace DotRPG
                 return;
             }
             var b = BossRushClient.Of(kind);
-            string name = b != null && !string.IsNullOrEmpty(b.name) ? L.T(b.name) : L.T("심연의 거신");
+            string name = b != null && !string.IsNullOrEmpty(b.name) ? L.T(b.name) : L.T("심연의 거신 지파크");
             bossName.text = name;
             if (guild && b != null)
             {
