@@ -79,5 +79,15 @@
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "游戏数据验证失败：enhance.promote.inherit {0} -> {1} 不在 shop.equipment 中",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "游戏数据验证失败：enhance.promote.inherit {0} 重复",
  "게임 데이터 검증 실패: skill_specs {0} 중복": "游戏数据验证失败：skill_specs {0} 重复",
- "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "游戏数据验证失败：{0}的lordSure数量范围颠倒了"
+ "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "游戏数据验证失败：{0}的lordSure数量范围颠倒了",
+ "더 이상 계승할 수 없는 장비입니다.": "该装备无法再继承。",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "穿戴中的装备需达到新装备的等级才能继承。",
+ "keepPercent 길이가 {0} 이 아닙니다": "keepPercent 长度不是 {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} 不在 shop.equipment 中",
+ "{0} gold 길이가 {1} 이 아닙니다": "{0} gold 长度不是 {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} 初始装备不继承",
+ "{0} 중복": "{0} 重复",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "游戏数据校验失败：enhance.inheritTiers {0}",
+ "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} 的等级或部位不同",
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "有需要材料的行，但缺少 coreItem、shardItem 或 sealItem"
 }

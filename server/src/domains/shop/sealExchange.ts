@@ -21,8 +21,8 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
     payload,
     handler: async (ctx) => {
       await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
-      const inherit = getGameData().economy.enhance.inherit;
-      if (!inherit) throw new AppError(503, '교환을 준비 중입니다.', 'EXCHANGE_UNAVAILABLE');
+      const inherit = getGameData().economy.enhance.inheritTiers;
+      if (!inherit?.sealItem) throw new AppError(503, '교환을 준비 중입니다.', 'EXCHANGE_UNAVAILABLE');
       assertOpen('item', inherit.sealItem);
       const x = SEAL_EXCHANGE;
       const shards = await ctx.stackCount('bag', inherit.shardItem);

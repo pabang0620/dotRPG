@@ -31,7 +31,7 @@ namespace DotRPG
     public static class RaidRewards
     {
         public const string RaidMatKing = "mat_raid_king", RaidMatGrah = "mat_raid_grah";
-        /// <summary>[CH3] 침식 결정 (시바크) and 잿빛 인장 (카마츠): chapter 3 raid materials, also paid for 계승 (PromoteRules.InheritCost).</summary>
+        /// <summary>[CH3] 침식 결정 (시바크) and 잿빛 인장 (카마츠): chapter 3 raid materials, also paid for the Lv.40 -> 50 계승 (InheritRules.MaterialCost).</summary>
         public const string RaidMatXibak = "mat_raid_xibak", RaidMatKamatz = "mat_raid_kamatz";
 
         static readonly EquipCategory[] GearCategories =

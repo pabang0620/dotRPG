@@ -70,8 +70,8 @@
  "특화 포인트를 처음 쓴다": "Dépensez un point de spécialisation pour la première fois",
  "특화의 길": "Voie de la spécialisation",
  "계승 재료나 골드가 모자랍니다.": "Il manque des matériaux de transmission ou de l'or.",
- "계승을 준비 중입니다.": "La transmission est en préparation.",
- "계승할 수 없는 장비입니다.": "Cet équipement ne peut pas être transmis.",
+ "계승을 준비 중입니다.": "L'héritage n'est pas encore disponible.",
+ "계승할 수 없는 장비입니다.": "Cet équipement ne peut pas être hérité.",
  "교환을 준비 중입니다.": "L'échange est en préparation.",
  "이번 주 교환은 {0}번까지입니다.": "Vous pouvez échanger jusqu'à {0} fois cette semaine.",
  "침식 결정이나 골드가 모자랍니다.": "Il manque des éclats d'érosion ou de l'or.",
@@ -79,5 +79,15 @@
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "Échec de la validation des données du jeu : enhance.promote.inherit {0} -> {1} est absent de shop.equipment",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "Échec de la validation des données du jeu : enhance.promote.inherit {0} est en double",
  "게임 데이터 검증 실패: skill_specs {0} 중복": "Échec de la validation des données du jeu : skill_specs {0} en double",
- "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Échec de la validation des données du jeu : la plage de quantité de lordSure de {0} est inversée"
+ "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Échec de la validation des données du jeu : la plage de quantité de lordSure de {0} est inversée",
+ "더 이상 계승할 수 없는 장비입니다.": "Cet équipement ne peut plus être hérité.",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "Un équipement porté ne peut être hérité qu'une fois le niveau du nouvel équipement atteint.",
+ "keepPercent 길이가 {0} 이 아닙니다": "keepPercent n'a pas la longueur {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} n'est pas dans shop.equipment",
+ "{0} gold 길이가 {1} 이 아닙니다": "{0} gold n'a pas la longueur {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} l'équipement de départ n'est pas hérité",
+ "{0} 중복": "{0} en double",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Échec de la validation des données du jeu : enhance.inheritTiers {0}",
+ "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} n'ont pas la même rareté ou le même emplacement",
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Des lignes demandent des matériaux mais coreItem, shardItem ou sealItem manque"
 }

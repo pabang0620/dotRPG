@@ -118,6 +118,12 @@ namespace DotRPG
 
         static int Clamp(int level) => Math.Max(0, Math.Min(EquipmentDatabase.MaxEnhance - 1, level));
 
+        /// <summary>Gold multiplier of an attempt from +level (InheritRules sums it into the cost units).</summary>
+        public static double GoldMulAt(int level) => GoldMul[Clamp(level)];
+
+        /// <summary>Weapon base gold per attempt of a level tier (other gear pays 80%).</summary>
+        public static int TierGold(int tier) => GoldByTier[Math.Max(0, Math.Min(GoldByTier.Length - 1, tier))];
+
         /// <summary>Table chance in % to go from +level to +level+1 (0 at or past the max level).</summary>
         public static int SuccessPercent(int level) => level >= 0 && level < Chance.Length ? Chance[level] : 0;
 

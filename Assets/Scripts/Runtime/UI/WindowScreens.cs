@@ -62,7 +62,7 @@ namespace DotRPG
 
         public static EnhanceScreen Create(Transform canvas)
         {
-            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", L.T("대장간 · 강화 · 승급"), "menuicon_enhance");
+            var w = CreateWindow<EnhanceScreen>(canvas, "Enhance", L.T("대장간 · 강화 · 승급 · 계승"), "menuicon_enhance");
             float gridW = Cols * Cell + (Cols - 1) * Gap;
             var left = Panel(w.content, "Left", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(gridW + 40f, 590f), new Color32(24, 36, 54, 235));
             Label(left.transform, "Hint", L.T("강화할 장비를 고르세요 (착용 중 + 가방)"), 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -12f), new Vector2(500f, 30f));
@@ -104,7 +104,7 @@ namespace DotRPG
             w.bigFrame = Img(iconBg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(w.bigFrame.rectTransform);
             var topLeft = new Vector2(0f, 1f);
-            w.title = Label(right.transform, "Title", "", 26, topLeft, topLeft, new Vector2(172f, -24f), new Vector2(470f, 128f));
+            w.title = Label(right.transform, "Title", "", 26, topLeft, topLeft, new Vector2(172f, -24f), new Vector2(340f, 128f)); // [INHERIT] the 계승 tab sits top right
             w.statsText = Label(right.transform, "Stats", "", 19, topLeft, topLeft, new Vector2(24f, -158f), new Vector2(610f, 92f));
             w.costTitle = Label(right.transform, "CostTitle", "", 19, topLeft, topLeft, new Vector2(24f, -252f), new Vector2(610f, 30f));
             for (int i = 0; i < w.costCells.Length; i++)
@@ -116,6 +116,7 @@ namespace DotRPG
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
             w.BuildPromote(right.transform);
             w.BuildTicket(right.transform); // [CASH] 강화권
+            w.BuildInherit(right.transform); // [INHERIT] 계승 tab
             return w;
         }
 
@@ -139,6 +140,7 @@ namespace DotRPG
             // Always open on the first page, first entry (the bag may have changed since the last visit).
             selected = 0;
             pickRequired = false;
+            inheritMode = false; // [INHERIT] always opens on the 강화 tab
             resultText.text = "";
             bigIcon.rectTransform.anchoredPosition = Vector2.zero;
             if (ticketPending)
@@ -221,8 +223,10 @@ namespace DotRPG
             pageNext.interactable = !busy && page < pages - 1;
 
             if (entries.Count == 0) ShowNothing();
+            else if (inheritMode) ShowInheritDetails(entries[selected]);
             else ShowDetails(entries[selected]);
             RefreshPromote(entries.Count == 0 ? null : entries[selected].key);
+            RefreshInheritTab();
             dirty = false;
         }
 
@@ -362,6 +366,7 @@ namespace DotRPG
         void OnEnhancePressed()
         {
             if (busy || ticketPending || entries.Count == 0 || !IsTop) return;
+            if (inheritMode) { OnInheritPressed(); return; }
             if (pickRequired)
             {
                 // After a destroy the cursor sits on a piece the player never chose.

@@ -167,6 +167,7 @@ namespace DotRPG
                 if (dirty) Refresh();
                 return;
             }
+            if (InheritInput()) { if (dirty) Refresh(); return; } // [INHERIT] Tab switches 강화 / 계승, Esc leaves 계승 first
             base.Update();
             if (!gameObject.activeSelf) return;
             if (TakesInput)
@@ -182,6 +183,7 @@ namespace DotRPG
                 if (Game.Input.SubmitPressed) OnEnhancePressed();
                 // [UX] Keys for the side buttons: UseMana = 강화권, UseItem = 승급, [ / ] or LB / RB = switch 강화권.
                 // (Interact shares F / A with Submit, which already presses 강화.)
+                else if (inheritMode) { }
                 else if (Game.Input.UseManaPressed) UseTicket();
                 else if (Game.Input.UseItemPressed) OnPromotePressed();
                 else if (UnityEngine.Input.GetKeyDown(KeyCode.RightBracket) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) SwitchTicket(1);

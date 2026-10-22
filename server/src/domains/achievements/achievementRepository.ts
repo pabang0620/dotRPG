@@ -7,7 +7,7 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
   const raids = [...getGameData().economy.dungeons.byId.values()].filter((d) => d.isRaid).map((d) => d.id);
   const r = await db.query<Record<string, unknown>>(
     `SELECT
-       (SELECT coalesce(max(CASE WHEN position('+' in to_key) > 0 THEN split_part(to_key, '+', 2)::int ELSE 0 END), 0)
+       (SELECT coalesce(max(CASE WHEN position('+' in to_key) > 0 THEN split_part(split_part(to_key, '+', 2), '^', 1)::int ELSE 0 END), 0)
           FROM enhance_log WHERE character_id = $1 AND outcome = 'success' AND to_key IS NOT NULL) AS enhance_best,
        (SELECT count(*) FROM enhance_log WHERE character_id = $1) AS enhance_tries,
        (SELECT coalesce(sum(gold), 0) FROM enhance_log WHERE character_id = $1) AS enhance_gold,

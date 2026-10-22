@@ -70,7 +70,7 @@
  "특화 포인트를 처음 쓴다": "Spend a Specialization Point for the first time",
  "특화의 길": "Path of Specialization",
  "계승 재료나 골드가 모자랍니다.": "Not enough Inheritance materials or Gold.",
- "계승을 준비 중입니다.": "Inheritance is being prepared.",
+ "계승을 준비 중입니다.": "Inheritance isn't available yet.",
  "계승할 수 없는 장비입니다.": "This gear can't be inherited.",
  "교환을 준비 중입니다.": "Exchange is being prepared.",
  "이번 주 교환은 {0}번까지입니다.": "You can exchange up to {0} times this week.",
@@ -79,5 +79,15 @@
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "Game data validation failed: enhance.promote.inherit {0} -> {1} is not in shop.equipment",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "Game data validation failed: enhance.promote.inherit {0} is duplicated",
  "게임 데이터 검증 실패: skill_specs {0} 중복": "Game data validation failed: duplicate skill_specs {0}",
- "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Game data validation failed: {0} lordSure quantity range is reversed"
+ "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Game data validation failed: {0} lordSure quantity range is reversed",
+ "더 이상 계승할 수 없는 장비입니다.": "This gear can't be inherited any further.",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "Equipped gear can only be inherited once you reach the new gear's level.",
+ "keepPercent 길이가 {0} 이 아닙니다": "keepPercent length is not {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} is not in shop.equipment",
+ "{0} gold 길이가 {1} 이 아닙니다": "{0} gold length is not {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} starter gear is not inherited",
+ "{0} 중복": "{0} duplicate",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Game data validation failed: enhance.inheritTiers {0}",
+ "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} differ in grade or slot",
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Rows ask for materials but coreItem, shardItem or sealItem is missing"
 }

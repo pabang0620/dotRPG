@@ -57,7 +57,7 @@ export type ExchangeBody = z.infer<typeof exchangeBody>;
 export const gearDismantleBody = z.strictObject({
   request_id: requestId,
   items: z
-    .array(z.strictObject({ item_key: z.string().regex(/^eq_[a-z0-9_]{1,36}(\+[1-9][0-9]?)?$/), count: z.number().int().min(1).max(999) }))
+    .array(z.strictObject({ item_key: z.string().regex(/^eq_[a-z0-9_]{1,36}(?:\+[1-9][0-9]?|\+(?:0|[1-9][0-9]?)\^[1-9])?$/), count: z.number().int().min(1).max(999) }))
     .min(1)
     .max(40),
 });

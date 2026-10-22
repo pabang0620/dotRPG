@@ -3308,15 +3308,51 @@ END $$;
 ALTER TABLE boss_attempts ADD CONSTRAINT boss_attempts_guild_kind_chk CHECK (kind = 'guild' OR guild_id IS NULL);
 COMMENT ON COLUMN boss_attempts.guild_id IS '길드보스 도전의 길드. 시작 뒤 길드를 떠났으면 끝 보고 때 NULL(점수·기여에 안 들어감, 참가 보상은 남음)';
 
--- 0049_chapter3_inherit: 챕터 3 장비 계승(inherit)·아카브 교환(seal_exchange) 골드 사유, 주간 카운터 seal_exchange (2026-10-22)
-ALTER TABLE gold_ledger DROP CONSTRAINT gold_ledger_reason_check;
+-- 0049_gear_inherit: 장비 계승(출시용, Docs/PLAN_GEAR_INHERIT_2026-10-22.md). 골드·아이템 원장 사유 inherit, 경매 키에 계승 횟수("id+N^k") (2026-10-22)
+ALTER TABLE gold_ledger DROP CONSTRAINT IF EXISTS gold_ledger_reason_check;
+ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'quest_reward', 'shop_buy', 'shop_sell', 'enhance_cost', 'dungeon_card',
+                    'auction_deposit', 'auction_bid', 'auction_buyout', 'mail_claim',
+                    'promote_cost', 'admin_clawback', 'sweep_ticket_buy',
+                    'raid_gold', 'daily_quest', 'trade_out', 'trade_in', 'guild_create',
+                    'inherit'));
+COMMENT ON COLUMN gold_ledger.reason IS '0047의 값 + inherit(장비 계승 비용)';
+
+ALTER TABLE item_ledger DROP CONSTRAINT IF EXISTS item_ledger_reason_check;
+ALTER TABLE item_ledger ADD CONSTRAINT item_ledger_reason_check
+  CHECK (reason IN ('starter', 'drop_claim', 'gather', 'chest', 'quest_reward', 'quest_consume', 'delivery',
+                    'shop_buy', 'shop_sell', 'enhance_cost', 'enhance_result',
+                    'equip', 'unequip', 'storage_move', 'use_item', 'dungeon_card',
+                    'raid_key', 'raid_key_cost',
+                    'auction_list', 'auction_return', 'auction_sold', 'auction_buy', 'mail_claim', 'mail_expire',
+                    'admin_grant', 'test_boost', 'gacha',
+                    'raid_core', 'promote_cost', 'promote_result', 'gear_renewal', 'admin_clawback',
+                    'sealed_box', 'box_open', 'enhance_ticket', 'pass_reward',
+                    'raid_shop_cost', 'raid_shop_result', 'trade_out', 'trade_in',
+                    'gear_dismantle', 'dismantle_bonus', 'exchange_buy',
+                    'inherit'));
+COMMENT ON COLUMN item_ledger.reason IS '0044의 값 + inherit(장비 계승: 옛 장비 -1, 새 장비 +1)';
+
+DO $$
+DECLARE c TEXT;
+BEGIN
+  SELECT conname INTO c FROM pg_constraint
+   WHERE conrelid = 'auction_listings'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%item_key ~%';
+  IF c IS NOT NULL THEN EXECUTE format('ALTER TABLE auction_listings DROP CONSTRAINT %I', c); END IF;
+END $$;
+ALTER TABLE auction_listings ADD CONSTRAINT auction_listings_item_key_check
+  CHECK (item_key ~ '^[a-z][a-z0-9_]{0,39}(\+[1-9][0-9]?|\+(0|[1-9][0-9]?)\^[1-9])?$' AND item_key <> 'gold');
+COMMENT ON COLUMN auction_listings.item_key IS '아이템 키: id, id+강화, 계승한 장비는 id+강화^계승횟수';
+
+-- 0050_chapter3_seal_exchange: 챕터 3 아카브 교환 골드 사유 seal_exchange, 주간 카운터 seal_exchange (2026-10-22)
+ALTER TABLE gold_ledger DROP CONSTRAINT IF EXISTS gold_ledger_reason_check;
 ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
   CHECK (reason IN ('starter', 'drop_claim', 'quest_reward', 'shop_buy', 'shop_sell', 'enhance_cost', 'dungeon_card',
                     'auction_deposit', 'auction_bid', 'auction_buyout', 'mail_claim',
                     'promote_cost', 'admin_clawback', 'sweep_ticket_buy',
                     'raid_gold', 'daily_quest', 'trade_out', 'trade_in', 'guild_create',
                     'inherit', 'seal_exchange'));
-COMMENT ON COLUMN gold_ledger.reason IS '0047의 값 + inherit(챕터 3 장비 계승 비용), seal_exchange(아카브 교환: 침식 결정 -> 잿빛 인장)';
+COMMENT ON COLUMN gold_ledger.reason IS '0049의 값 + seal_exchange(아카브 교환: 침식 결정 -> 잿빛 인장)';
 DO $$
 DECLARE c TEXT;
 BEGIN
@@ -3328,4 +3364,4 @@ ALTER TABLE account_week_counters ADD CONSTRAINT account_week_counters_kind_chec
   CHECK (kind IN ('sweep_buy', 'direct_clear', 'activity_claim', 'seal_exchange'));
 COMMENT ON COLUMN account_week_counters.kind IS 'sweep_buy, direct_clear, activity_claim + seal_exchange(아카브 교환 횟수, 주 2회)';
 
--- 0050_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)
+-- 0051_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)

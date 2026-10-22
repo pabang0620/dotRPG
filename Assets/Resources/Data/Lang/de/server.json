@@ -70,8 +70,8 @@
  "특화 포인트를 처음 쓴다": "Gib zum ersten Mal einen Spezialisierungspunkt aus",
  "특화의 길": "Pfad der Spezialisierung",
  "계승 재료나 골드가 모자랍니다.": "Es fehlen Übertragungsmaterialien oder Gold.",
- "계승을 준비 중입니다.": "Die Übertragung wird vorbereitet.",
- "계승할 수 없는 장비입니다.": "Diese Ausrüstung kann nicht übertragen werden.",
+ "계승을 준비 중입니다.": "Vererben ist noch nicht verfügbar.",
+ "계승할 수 없는 장비입니다.": "Diese Ausrüstung kann nicht vererbt werden.",
  "교환을 준비 중입니다.": "Der Tausch wird vorbereitet.",
  "이번 주 교환은 {0}번까지입니다.": "Diese Woche sind höchstens {0} Tausche möglich.",
  "침식 결정이나 골드가 모자랍니다.": "Es fehlen Erosionssplitter oder Gold.",
@@ -79,5 +79,15 @@
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "Spieldaten-Validierung fehlgeschlagen: enhance.promote.inherit {0} -> {1} fehlt in shop.equipment",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "Spieldaten-Validierung fehlgeschlagen: enhance.promote.inherit {0} ist doppelt vorhanden",
  "게임 데이터 검증 실패: skill_specs {0} 중복": "Spieldaten-Validierung fehlgeschlagen: skill_specs {0} doppelt",
- "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Spieldatenprüfung fehlgeschlagen: Der Mengenbereich von lordSure bei {0} ist umgekehrt"
+ "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Spieldatenprüfung fehlgeschlagen: Der Mengenbereich von lordSure bei {0} ist umgekehrt",
+ "더 이상 계승할 수 없는 장비입니다.": "Diese Ausrüstung kann nicht weiter vererbt werden.",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "Angelegte Ausrüstung kann erst ab dem Level der neuen Ausrüstung vererbt werden.",
+ "keepPercent 길이가 {0} 이 아닙니다": "keepPercent hat nicht die Länge {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} ist nicht in shop.equipment",
+ "{0} gold 길이가 {1} 이 아닙니다": "{0} gold hat nicht die Länge {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} Startausrüstung wird nicht vererbt",
+ "{0} 중복": "{0} doppelt",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Spieldaten-Prüfung fehlgeschlagen: enhance.inheritTiers {0}",
+ "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} unterscheiden sich in Seltenheit oder Platz",
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Zeilen verlangen Material, aber coreItem, shardItem oder sealItem fehlt"
 }

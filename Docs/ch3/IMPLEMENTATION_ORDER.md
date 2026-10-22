@@ -1,6 +1,6 @@
 # 챕터 3 구현 순서 (2026-10-21, 검토 반영판)
 
-의존 순서대로 8단계. 단계 안에서는 파일 소유를 나눠 병렬로 할 수 있다. 각 단계는 완료 기준을 통과해야 다음 단계로 간다. 기간 견적은 쓰지 않는다. 서버 DB 마이그레이션은 0049(1단계 계승)·0050(3단계 군주 난이도 CHECK)·0051(5단계 보스 시즌 레벨) 세 개다. 커밋은 단계마다 한 번, 브랜치 wonho. 출시 빌드는 3장을 포함한 빌드이고 잠금 회귀 테스트는 매 빌드 항목이다.
+의존 순서대로 8단계. 단계 안에서는 파일 소유를 나눠 병렬로 할 수 있다. 각 단계는 완료 기준을 통과해야 다음 단계로 간다. 기간 견적은 쓰지 않는다. 서버 DB 마이그레이션 번호: 0049_gear_inherit(출시용 장비 계승, wonho에서 옴. 40→50 계승도 같은 원장 사유를 쓴다)·0050_chapter3_seal_exchange(1단계 아카브 교환)·0051_lord_difficulty(3단계 군주 난이도 CHECK)·0052(5단계 보스 시즌 레벨, 계획). 출시 서버에는 0049부터 아직 적용 전이다. 커밋은 단계마다 한 번, 브랜치 ch3. 출시 빌드는 3장을 포함한 빌드이고 잠금 회귀 테스트는 매 빌드 항목이다.
 
 ## 0단계: 만렙 SSOT·잠금 뼈대
 
@@ -22,14 +22,14 @@
 | 곡선 | `progression.json` xpToNext 49칸, `monsters.json` xpByLevel 50칸, `GameDataExport` 단언 |
 | 장비 | `GearCatalog` TierLevels 45·50, WeaponBase·HealthBase·BlockBase, 이름 80개, 레전더리 Lv50, 아이콘 밴드 8~9 |
 | 강화 | `EnhanceRules.GoldByTier` 8,690·10,000. `GearSell`은 공식 자동 |
-| 계승 | `PromoteRules.InheritCost`(유니크·레전더리, 핵·침식 결정·잿빛 인장·골드), 결과 키 `eq_{kind}_50_{grade}` 새 행·원본 소비·스택 합산 금지·`enhancePity` 이전·경매 가격 키 분리. 서버 `promote` `inherit`(트랜잭션·행 잠금·request_id·원장 `inherit`) |
+| 계승 | 출시용 `InheritRules` 경로표에 40→50 한 칸(유니크·레전더리만, 공통 공식 골드 + 핵·침식 결정·잿빛 인장, `MaterialCost`), 결과 키 `eq_{kind}_50_{grade}+N^k`·원본 소비·`enhancePity` 이전·경매 가격 키 분리. 서버 `inherit` 도메인(`POST /characters/:uuid/inherit`, `assertOpen`, 원장 `inherit`). 옛 `PromoteRules.InheritCost`·`/promote/inherit`는 2026-10-22 wonho 병합 때 없앴다 |
 | 아카브 교환 | 상점 데이터에 교환 품목(침식 결정 5 + 20,000 → 잿빛 인장 1, 주 2회) |
 | 밴드·보상 | `income_caps.json`(theory_income.py), `daily_quests.json` 두 밴드 + 리아의 약초밭 템플릿, `level_rewards.json` 45·50, `achievementDefs.ts` level_40 문구·level_50·spec_first·spec_all |
 | 태그 | `economyData`에 chapter:3 태그(장비·재료·상점·레이드 id·맵 id·몬스터 id·특화) |
-| 마이그레이션 | 0049: `gold_ledger` 사유 CHECK에 `inherit`, `anomaly_log` kind에 `inherit` |
+| 마이그레이션 | 0049_gear_inherit(출시용): `gold_ledger`·`item_ledger` 사유 `inherit`, 경매 키 `^k`. 0050_chapter3_seal_exchange: `gold_ledger` 사유 `seal_exchange`, 주간 카운터 `seal_exchange` |
 | 세이브 | 클라 세이브 버전 8(옛 빌드 거부, `specs` 누락 null 안전) |
-| 소유 | 클라 장비·규칙·세이브 1명, 서버 promote·데이터·태그 1명 |
-| 테스트 | `enhance.test.ts`·`promote.test.ts` 티어 9·10, `inherit.test.ts`(등급별 비용·재료, 강화·보호권 이력 유지, 커먼~에픽 거부, 닫힌 상태 거부, 멱등, 결과 키), `shop.test.ts` 교환 상한 |
+| 소유 | 클라 장비·규칙·세이브 1명, 서버 inherit·데이터·태그 1명 |
+| 테스트 | `enhance.test.ts`·`promote.test.ts` 티어 9·10, `inherit.test.ts`(출시용 경로 + 40→50 재료·공통 골드, 유지·실패, 커먼~에픽·Lv45·Lv50 거부, 닫힌 상태 거부, 멱등, 결과 키), `shop.test.ts` 교환 상한 |
 | 완료 기준 | 내보내기 단언 통과, `theory_gold.py --to 50 --mini 20`이 5절 표대로 0.85~0.90, 테스트 통과 |
 
 ## 2단계: 특화
@@ -62,7 +62,7 @@
 | 완료 기준 | 측정 `-measureOnly hunting`이 dry_* 3곳에서 분당 15~20, 군주 던전 혼자 + AI 3명 120~300초. DevCapture 3장 체크가 3-1~3-끝을 끝까지 진행 |
 
 - 방어전·동료 약속(이야기 포크가 퀘스트 데이터에 쓰는 값): 3-7 `c3_defense`의 방어 단계 목표는 `{"type":"flag","target":"c3_defense_won","map":"dry_floor"}`. 그 단계가 현재이고 주인공이 dry_floor에 있으면 `StoryDefense`가 웨이브 4회(grey_ranger·grey_priest)를 서쪽에서 보내고 쿠크(`story_kukum`)·카나(`story_kana`)가 게스트로 함께 싸운다. 마지막 웨이브를 막으면 플래그가 서고 단계가 끝난다. 쓰러지거나 맵을 떠나면 다음 방문에 다시. 쿠크는 3-3 완료부터 3-끝 전까지 AI 동료 창에서 고를 수 있고(강제 편성 없음), 3-6 완료 전 `raid_xibak` 1·2번 방에는 게스트로 들어왔다가 보스 방에서 빠진다(`StoryCompanions.ForcedSlot`). 발체는 3-3~3-5 피하고, 3-7~3-11 사라지고, 3-11 뒤 사얍에서 주인공 옆을 따른다(`BalcheMood`, npc id `balche`).
-- 군주 난이도는 `DungeonDifficulty.Lord = 4`라 난이도 CHECK를 넓히는 마이그레이션 0050(`0050_lord_difficulty.sql`)이 3단계에 들어갔다. 5단계 보스 시즌 레벨은 0051이다.
+- 군주 난이도는 `DungeonDifficulty.Lord = 4`라 난이도 CHECK를 넓히는 마이그레이션 0051(`0051_lord_difficulty.sql`, 처음 0050이던 것을 wonho 병합 때 옮겼다)이 3단계에 들어갔다. 5단계 보스 시즌 레벨은 0052다.
 
 ## 4단계: 레이드
 
@@ -81,7 +81,7 @@
 | 항목 | 내용 |
 |---|---|
 | 미니 던전 | 티어 40 정의·맵, 티어별 `DailySeconds`(40은 600), 서버 MINI_TIERS·티어별 상한 |
-| 월드·길드보스 | 입장 40 고정, 보스 레벨 = levelCap, 시즌 `boss_level`(마이그레이션 0051: `boss_seasons.boss_level INT NOT NULL DEFAULT 40`), 월드보스 체력 x2.0 |
+| 월드·길드보스 | 입장 40 고정, 보스 레벨 = levelCap, 시즌 `boss_level`(마이그레이션 0052: `boss_seasons.boss_level INT NOT NULL DEFAULT 40`), 월드보스 체력 x2.0 |
 | 의뢰 | 주간 템플릿 2개 |
 | 해금·안내 | `ContentUnlocks` Chapter3·Specialization, 할 일 줄 3개, 성장 추천 |
 | 소유 | 서버 1명, 클라 1명 |

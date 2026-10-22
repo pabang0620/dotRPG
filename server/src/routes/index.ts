@@ -12,6 +12,7 @@ import { createBossRushRouter } from '../domains/bossrush/bossRushRoutes';
 import { createRankingRouter } from '../domains/rankings/rankingRoutes';
 import { createEnhanceRouter } from '../domains/enhance/enhanceRoutes';
 import { createPromoteRouter } from '../domains/promote/promoteRoutes';
+import { createInheritRouter } from '../domains/inherit/inheritRoutes';
 import { createRaidShopRouter } from '../domains/raidshop/raidShopRoutes';
 import { createFriendsRouter } from '../domains/friends/friendsRoutes';
 import { createFieldRouter } from '../domains/fieldsessions/fieldRoutes';
@@ -66,6 +67,7 @@ export function createRouter(): Router {
   r.use(createStarshopRouter()); // 캐시샵(별조각 뽑기·교환)
   r.use(createEnhanceRouter());
   r.use(createPromoteRouter());
+  r.use(createInheritRouter()); // 장비 계승(40->50 포함 단일 경로)
   r.use(createRaidShopRouter()); // 13단계: 레이드 상점
   r.use(createInventoryRouter());
   r.use(createDungeonRouter());

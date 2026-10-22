@@ -97,7 +97,7 @@ async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
   if (success) {
     outcome = 'success';
     newLevel = level + 1;
-    newKey = keyAt(parsed.base, newLevel);
+    newKey = keyAt(parsed.base, newLevel, parsed.inherit);
     if (row.pity) await repo.clearPity(ctx.client, ctx.char.id, key);
     pityAfter = 0;
   } else {
@@ -110,12 +110,12 @@ async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
     } else if (row.failure === 'Drop3') {
       outcome = 'drop3';
       newLevel = Math.max(0, level - en.drop3Levels);
-      newKey = keyAt(parsed.base, newLevel);
+      newKey = keyAt(parsed.base, newLevel, parsed.inherit);
     } else {
       newLevel = 0;
       ticketUsed = usesTicket && (await ctx.removeItem('bag', en.ticketItem, 1, 'enhance_cost', logId)) !== null;
       outcome = ticketUsed ? 'protected' : 'destroyed';
-      newKey = ticketUsed ? parsed.base : null;
+      newKey = ticketUsed ? keyAt(parsed.base, 0, parsed.inherit) : null; // 계승 횟수는 그대로
     }
   }
 
@@ -224,7 +224,7 @@ async function processTicket(ctx: EconCtx, body: TicketBody) {
   if (haveTicket < 1) throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have: haveTicket });
 
   const logId = randomUUID();
-  const newKey = keyAt(parsed.base, target);
+  const newKey = keyAt(parsed.base, target, parsed.inherit);
   if ((await ctx.removeItem('bag', body.ticket_key, 1, 'enhance_ticket', logId)) === null) {
     throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have: 0 });
   }

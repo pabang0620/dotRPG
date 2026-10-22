@@ -70,8 +70,8 @@
  "특화 포인트를 처음 쓴다": "Gunakan Poin Spesialisasi untuk pertama kalinya",
  "특화의 길": "Jalan Spesialisasi",
  "계승 재료나 골드가 모자랍니다.": "Bahan pewarisan atau Gold tidak cukup.",
- "계승을 준비 중입니다.": "Pewarisan sedang disiapkan.",
- "계승할 수 없는 장비입니다.": "Perlengkapan ini tidak bisa diwariskan.",
+ "계승을 준비 중입니다.": "Pewarisan belum tersedia.",
+ "계승할 수 없는 장비입니다.": "Perlengkapan ini tidak bisa diwarisi.",
  "교환을 준비 중입니다.": "Penukaran sedang disiapkan.",
  "이번 주 교환은 {0}번까지입니다.": "Minggu ini kamu bisa menukar hingga {0} kali.",
  "침식 결정이나 골드가 모자랍니다.": "Pecahan Erosi atau Gold tidak cukup.",
@@ -79,5 +79,15 @@
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "Validasi data game gagal: enhance.promote.inherit {0} -> {1} tidak ada di shop.equipment",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "Validasi data game gagal: enhance.promote.inherit {0} duplikat",
  "게임 데이터 검증 실패: skill_specs {0} 중복": "Validasi data game gagal: skill_specs {0} duplikat",
- "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Validasi data game gagal: rentang jumlah lordSure pada {0} terbalik"
+ "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Validasi data game gagal: rentang jumlah lordSure pada {0} terbalik",
+ "더 이상 계승할 수 없는 장비입니다.": "Perlengkapan ini tidak bisa diwarisi lagi.",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "Perlengkapan yang dipakai baru bisa diwarisi setelah mencapai level perlengkapan baru.",
+ "keepPercent 길이가 {0} 이 아닙니다": "panjang keepPercent bukan {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} tidak ada di shop.equipment",
+ "{0} gold 길이가 {1} 이 아닙니다": "panjang gold {0} bukan {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} perlengkapan awal tidak diwarisi",
+ "{0} 중복": "{0} duplikat",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Validasi data game gagal: enhance.inheritTiers {0}",
+ "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} berbeda tingkat atau slot",
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Ada baris yang meminta bahan tetapi coreItem, shardItem, atau sealItem tidak ada"
 }

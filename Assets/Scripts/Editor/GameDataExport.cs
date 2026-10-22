@@ -318,13 +318,8 @@ namespace DotRPG.EditorTools
             j.Arr("rows", PromoteRules.Rows(), (o, r) => o.Obj().Str("from", r.from.id).Str("to", r.to.id).Num("cores", r.cores).Num("gold", r.gold).End());
             j.Arr("raidCoreMid", PromoteRules.RaidCoreMid, (o, n) => o.Val(n));
             j.Arr("raidCoreFinal", PromoteRules.RaidCoreFinal, (o, n) => o.Val(n));
-            // [CH3] 계승: Lv.40 unique / legendary -> same piece at Lv.50 (Docs/ch3/PROGRESSION_AND_GEAR.md 4절).
-            j.Key("inherit").Obj().Str("coreItem", PromoteRules.CoreItem).Str("shardItem", RaidRewards.RaidMatXibak).Str("sealItem", RaidRewards.RaidMatKamatz)
-                .Num("fromTier", PromoteRules.InheritFromTier).Num("toTier", PromoteRules.InheritToTier);
-            j.Arr("rows", PromoteRules.InheritRows(), (o, r) => o.Obj().Str("from", r.from.id).Str("to", r.to.id).Num("cores", r.cores)
-                .Num("shards", r.shards).Num("seals", r.seals).Num("gold", r.gold).End());
             j.End();
-            j.End();
+            InheritJson(j);
             return j.End().ToString();
         }
 

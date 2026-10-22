@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+import { buildInheritTiers, inheritTiersSchema, type InheritTiers } from './inheritData';
 
 // 3단계가 쓰는 필드만 검증한다. 알 수 없는 필드는 무시(looseObject).
 // 필드 이름은 server/data/*.json 쪽을 따른다(Docs/server/phase3_mapping.md와 다른 곳은 보고 참고).
@@ -151,28 +152,10 @@ const enhanceSchema = z.looseObject({
       rows: z.array(z.looseObject({ from: z.string().min(1), to: z.string().min(1), cores: z.number().int().positive(), gold: nonNegInt })),
       raidCoreMid: z.array(nonNegInt).length(4),
       raidCoreFinal: z.array(nonNegInt).length(4),
-      /** 챕터 3 계승: Lv.40 유니크·레전더리를 같은 부위·등급의 Lv.50으로(강화 수치 유지). C# PromoteRules.InheritCost */
-      inherit: z
-        .looseObject({
-          coreItem: z.string().min(1),
-          shardItem: z.string().min(1),
-          sealItem: z.string().min(1),
-          fromTier: nonNegInt,
-          toTier: nonNegInt,
-          rows: z.array(
-            z.looseObject({
-              from: z.string().min(1),
-              to: z.string().min(1),
-              cores: nonNegInt,
-              shards: nonNegInt,
-              seals: nonNegInt,
-              gold: nonNegInt,
-            }),
-          ),
-        })
-        .optional(),
     })
     .optional(),
+  /** 장비 계승(다음 레벨대로, 강화 단계를 확률로 이어받는다). inheritData.ts */
+  inheritTiers: inheritTiersSchema.optional(),
 });
 
 export interface ItemInfo {
@@ -385,14 +368,6 @@ export type DungeonDef = z.infer<typeof dungeonsSchema>['dungeons'][number];
 export type DifficultyDef = z.infer<typeof dungeonsSchema>['difficulties'][number];
 export type { MonsterDef };
 
-export interface InheritRow {
-  to: string;
-  cores: number;
-  shards: number;
-  seals: number;
-  gold: number;
-}
-
 export const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary'] as const;
 
 export interface MapExtra {
@@ -445,13 +420,8 @@ export interface EconomyData {
       raidCoreMid: number[];
       raidCoreFinal: number[];
     } | null;
-    /** 챕터 3 계승표(없으면 null) */
-    inherit: {
-      coreItem: string;
-      shardItem: string;
-      sealItem: string;
-      rows: Map<string, InheritRow>;
-    } | null;
+    /** 장비 계승표(Lv10->20->30->40, 챕터 3의 40->50 포함). 없으면 null */
+    inheritTiers: InheritTiers | null;
   };
   /** 챕터 태그: "kind:id" -> 챕터 번호(3만 들어 있다). chapterGate가 읽는다 */
   chapterTags: Map<string, number>;
@@ -605,23 +575,6 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     }
     promote = { coreItem: enh.promote.coreItem, rows, raidCoreMid: enh.promote.raidCoreMid, raidCoreFinal: enh.promote.raidCoreFinal };
   }
-  let inherit: EconomyData['enhance']['inherit'] = null;
-  if (enh.promote?.inherit) {
-    const t = enh.promote.inherit;
-    for (const id of [t.coreItem, t.shardItem, t.sealItem]) needItem(id, 'enhance.promote.inherit');
-    const rows = new Map<string, InheritRow>();
-    for (const r of t.rows) {
-      const from = equipment.get(r.from);
-      const to = equipment.get(r.to);
-      if (!from || !to) throw new Error(`게임 데이터 검증 실패: enhance.promote.inherit ${r.from} -> ${r.to} 이 shop.equipment에 없습니다`);
-      if (from.rarity !== to.rarity || from.category !== to.category) {
-        throw new Error(`게임 데이터 검증 실패: enhance.promote.inherit ${r.from} -> ${r.to} 의 등급·부위가 다릅니다`);
-      }
-      if (rows.has(r.from)) throw new Error(`게임 데이터 검증 실패: enhance.promote.inherit ${r.from} 중복`);
-      rows.set(r.from, { to: r.to, cores: r.cores, shards: r.shards, seals: r.seals, gold: r.gold });
-    }
-    inherit = { coreItem: t.coreItem, shardItem: t.shardItem, sealItem: t.sealItem, rows };
-  }
 
   // 챕터 태그 색인: 장비의 chapter 필드, chapter3Items(재료 등), 그리고 퀘스트·맵·던전·몬스터 데이터의 chapter 필드(3단계부터)
   const chapterTags = new Map<string, number>();
@@ -741,7 +694,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       materials: { bone: enh.materials.bone, ore: enh.materials.ore, essence: enh.materials.essence },
       steps: stepLevels,
       promote,
-      inherit,
+      inheritTiers: buildInheritTiers(enh.inheritTiers, equipment, enh.maxEnhance, needItem),
     },
     chapterTags,
     skillSpecs,
