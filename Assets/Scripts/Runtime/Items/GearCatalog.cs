@@ -223,6 +223,13 @@ namespace DotRPG
             }
         }
 
+        /// <summary>
+        /// [CH3] Tiers 9 and 10 (Lv.45, Lv.50) share one generated icon per kind (Art/Gear/eqicon_band89_&lt;kind&gt;,
+        /// ART_LIST 6); the Lv.50 legendaries keep the legendary band of <see cref="OldIcon"/>.
+        /// </summary>
+        static string BandIcon(Kind k, int tier, ItemRarity r) =>
+            tier >= Chapter3Tier && r != ItemRarity.Legendary ? "Gear/eqicon_band89_" + KindId(k) : null;
+
         static string OldIcon(Kind k, int art) => k switch
         {
             Kind.Sword => $"eqicon_sword_{art}",
@@ -312,7 +319,7 @@ namespace DotRPG
             {
                 id = Id(KindId(k), level, r), name = L.T(name), category = CategoryOf(k), rarity = r, classOnly = ClassOf(k),
                 attack = atk, maxHealth = hp, block = block, speed = spd, xpBonus = xp, aoeBonus = aoe,
-                iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = OldIcon(k, art), description = Describe(k, level, r),
+                iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = BandIcon(k, t, r) ?? OldIcon(k, art), description = Describe(k, level, r),
                 // [2026-10-14] Before Lv.15 (tiers Lv.1 and Lv.10) epics drop more often: weight 5 instead of 3.
                 dropWeight = r <= ItemRarity.Rare ? 30 - 8 * (int)r : r == ItemRarity.Epic ? (t <= 1 ? 5 : 3) : 0,
                 reqLevel = level, levelTier = t, Tier = art, chapter = t >= Chapter3Tier ? 3 : 0,

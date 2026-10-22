@@ -34,10 +34,25 @@ namespace DotRPG.EditorTools
             ("wnt_pot", 0.9f, true), ("wnt_woodpile", 1.8f, false), ("wnt_barrel", 1.0f, true), ("wnt_crate", 0.95f, true),
             ("wnt_lamp", 2.4f, true), ("wnt_sign", 1.2f, true), ("wnt_hay", 1.1f, false), ("wnt_bed_0", 1.0f, false), ("wnt_bed_1", 1.0f, false),
             ("wnt_rock_0", 0.9f, false), ("wnt_rock_1", 0.7f, false), ("wnt_bush_0", 1.0f, false), ("wnt_bush_1", 0.9f, false), ("wnt_bush_2", 0.8f, false),
+            // [CH3] 사얍 buildings (Art/Town, story props; between the canyon house 3.2 and inn 5.4) and props, dry canyon props
+            // and the quest search spots (Chapter3Spots), Docs/ch3/ART_LIST.md 1-2.
+            ("Town/sayab_ixi_house", 4.4f, false), ("Town/sayab_noho_records", 4.0f, false), ("Town/sayab_spring_pavilion", 3.4f, false),
+            ("sayab_lantern_post", 2.4f, true), ("sayab_black_stones", 1.5f, false), ("sayab_herb_plot", 2.4f, false), ("sayab_wreck_decor", 1.9f, false),
+            ("dry_dead_tree_0", 2.4f, true), ("dry_dead_tree_1", 2.1f, true), ("dry_stone_0", 1.0f, true), ("dry_stone_1", 1.3f, true), ("dry_stone_2", 1.3f, false),
+            ("rift_deco_1", 0.9f, true), ("grey_tent", 2.4f, false), ("grey_flag", 2.0f, true),
+            ("c3_record_piece", 0.6f, false), ("c3_pebble", 0.45f, false), ("c3_guardian_wreck", 2.0f, false), ("c3_grey_camp", 2.4f, false), ("c3_herb_garden", 2.4f, false),
+        };
+
+        /// <summary>[CH3] Flat ground pieces centred on their spot: (sprite key, world width). Dry canyon cracks, the rift decal,
+        /// the field void rift (FieldRift: 1.2 m closing radius).</summary>
+        static readonly (string key, float width)[] Flats =
+        {
+            ("dry_crack_0", 1.7f), ("dry_crack_1", 1.7f), ("dry_crack_2", 1.7f), ("rift_deco_0", 1.1f),
+            ("field_rift_open", 2.8f), ("field_rift_closed", 2.8f),
         };
 
         static readonly System.Collections.Generic.HashSet<string> PoleProps =
-            new System.Collections.Generic.HashSet<string> { "story_lantern", "town_sign_0", "town_mailbox", "town_lamp", "wnt_mailbox", "wnt_lamp", "wnt_sign" };
+            new System.Collections.Generic.HashSet<string> { "story_lantern", "town_sign_0", "town_mailbox", "town_lamp", "wnt_mailbox", "wnt_lamp", "wnt_sign", "sayab_lantern_post", "grey_flag" };
 
         /// <summary>[UI] UI kit sprites and their 9-slice borders (left, bottom, right, top).</summary>
         static readonly (string key, Vector4 border)[] UiKit =
@@ -87,6 +102,19 @@ namespace DotRPG.EditorTools
                 importer.SaveAndReimport();
                 Debug.Log($"[GeneratedArt] {key}: ppu={importer.spritePixelsPerUnit:0.0} size={size} pivot={settings.spritePivot}");
             }
+            foreach (var (key, width) in Flats)
+            {
+                string path = "Assets/Resources/Art/" + key + ".png";
+                var importer = Prepare(path);
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                importer.spritePixelsPerUnit = texture.width / width;
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteAlignment = (int)SpriteAlignment.Center;
+                settings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(settings);
+                importer.SaveAndReimport();
+            }
             foreach (var key in Buildings)
             {
                 var def = VillageBuildingArt.Find(key);
@@ -121,7 +149,8 @@ namespace DotRPG.EditorTools
             {
                 string name = System.IO.Path.GetFileNameWithoutExtension(file);
                 bool iconFile = name.StartsWith("eqicon_") || name.StartsWith("maticon_") || name.StartsWith("icon_")
-                    || name.StartsWith("gem_") || name.StartsWith("menuicon_") || name == "ui_level_badge" || name == "ui_lock"; // [ART] skill / menu icons, level badge
+                    || name.StartsWith("gem_") || name.StartsWith("menuicon_") || name == "ui_level_badge" || name == "ui_lock" // [ART] skill / menu icons, level badge
+                    || name.StartsWith("node_") || name.StartsWith("spec_frame_"); // [CH3] world map nodes, specialization frames
                 bool wide = name == "ui_logo" || name.StartsWith("banner_");
                 if (!iconFile && !wide) continue;
                 var importer = Prepare(file.Replace('\\', '/'));

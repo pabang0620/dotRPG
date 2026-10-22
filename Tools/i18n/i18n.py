@@ -34,7 +34,7 @@ SERVER_DATA = os.path.join(SERVER, "data")
 
 HANGUL = re.compile(r"[가-힣]")
 DATA_FIELDS = {"text", "speaker", "title", "summary", "prompt"}
-DATA_FILES = ["StoryDialogues.json", "Quests.json", "Cutscenes.json", "Dialogues.json", "StoryWorld.json"]
+DATA_FILES = ["StoryDialogues.json", "Quests.json", "Cutscenes.json", "Dialogues.json", "StoryWorld.json", "chapter3.json"]
 WRAPPED = re.compile(r"\bL\.(T|F|N)\(\s*$")
 IGNORED_LINE = re.compile(r"Debug\.Log|\[Tooltip\(|\[Header\(")
 RAW_OK = "// i18n-ignore"  # kept raw on purpose (translated where shown): still a table key, not counted as unwrapped
@@ -145,6 +145,10 @@ def data_strings():
             continue
         def walk(o, key=None):
             if isinstance(o, dict):
+                # cutscene "choice": the answers are the "id" field, one key each
+                if o.get("op") == "choice" and isinstance(o.get("id"), str):
+                    for a in o["id"].split("|"):
+                        if HANGUL.search(a): yield a
                 for k, v in o.items(): yield from walk(v, k)
             elif isinstance(o, list):
                 for v in o: yield from walk(v, key)
@@ -195,6 +199,10 @@ def server_strings():
             continue
         def walk(o, key=None):
             if isinstance(o, dict):
+                # cutscene "choice": the answers are the "id" field, one key each
+                if o.get("op") == "choice" and isinstance(o.get("id"), str):
+                    for a in o["id"].split("|"):
+                        if HANGUL.search(a): yield a
                 for k, v in o.items(): yield from walk(v, k)
             elif isinstance(o, list):
                 for v in o: yield from walk(v, key)

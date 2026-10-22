@@ -176,7 +176,7 @@ namespace DotRPG
             var sb = new System.Text.StringBuilder(L.F("<b>{0}</b> 권장 레벨\n<color=#b8c4d8>내 캐릭터 Lv.{1} · 전투력 {2:N0}</color>", L.T(d.name), myLevel, myPower) + "\n\n");
             if (d.isRaid) sb.Append(Row(L.T("레이드"), DungeonDatabase.DifficultyFor(d, DungeonDifficulty.Normal), true));
             else
-                for (int i = 0; i < DungeonDatabase.DifficultyCount; i++)
+                for (int i = 0; i < DungeonDatabase.ShownDifficultyCount(d); i++) // [CH3] 군주 while chapter 3 is open
                 {
                     var diff = (DungeonDifficulty)i;
                     sb.Append(Row(L.T(PartyFinderRules.DifficultyName(diff)), DungeonDatabase.DifficultyFor(d, diff), diff == picked));
@@ -203,7 +203,7 @@ namespace DotRPG
             else
             {
                 var d = Dungeons[Mod(cDungeon, Dungeons.Count)];
-                Service.StartQueue(d.id, d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount));
+                Service.StartQueue(d.id, d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.ShownDifficultyCount(d)));
                 SetStatus(L.F("{0} 자동 매칭을 시작했습니다.", L.T(d.name)));
             }
             Refresh();
@@ -230,7 +230,7 @@ namespace DotRPG
         void Post()
         {
             var d = Dungeons[Mod(cDungeon, Dungeons.Count)];
-            var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
+            var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.ShownDifficultyCount(d));
             Service.Create(d.id, diff, cMembers, MyPower * cPowerPct / 100, PartyFinderRules.PresetMessages[Mod(cMsg, PartyFinderRules.PresetMessages.Length)]);
             SetStatus(L.T("모집 글을 등록했습니다. 목록 맨 위에 표시됩니다."));
             createTab = false;
@@ -306,7 +306,7 @@ namespace DotRPG
                 row.apply.image.sprite = Game.Art.Get(can ? "ui_btn" : "ui_btngray");
             }
             var d = ds[Mod(cDungeon, ds.Count)];
-            var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.DifficultyCount);
+            var diff = d.isRaid ? DungeonDifficulty.Normal : (DungeonDifficulty)Mod(cDiff, DungeonDatabase.ShownDifficultyCount(d));
             levelGuide.text = LevelGuide(d, diff);
             createValues[0].text = L.T(d.name);
             string modeName = d.isRaid ? L.T("레이드") : L.T(PartyFinderRules.DifficultyName(diff));

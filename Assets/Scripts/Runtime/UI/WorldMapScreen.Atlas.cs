@@ -37,6 +37,11 @@ namespace DotRPG
             ["sanctum_roots"] = new Vector2(0.30f, 0.89f),
             ["sanctum_court"] = new Vector2(0.215f, 0.73f),
             [MapRegistry.Undergate] = new Vector2(0.50f, 0.47f),
+            // [CH3] 메말라 가는 협곡 and 사얍, west along the chart's top edge (hidden until the chapter opens).
+            [MapRegistry.DryFloor] = new Vector2(0.335f, 0.075f),
+            [MapRegistry.Sayab] = new Vector2(0.215f, 0.065f),
+            [MapRegistry.DryStones] = new Vector2(0.11f, 0.075f),
+            [MapRegistry.DryRift] = new Vector2(0.045f, 0.16f),
         };
         static Dictionary<string, Vector2> UndergroundPositions() => new Dictionary<string, Vector2>
         {
@@ -132,11 +137,14 @@ namespace DotRPG
                 bool town = MapRegistry.IsTown(id), gateway = id == MapRegistry.Undergate;
                 bool field = !town && !underground;
                 Vector2 point = At(kv.Value);
-                var halo = UIFactory.Image(atlasContents, "Current_" + id, WorldAtlasArt.Marker(field ? "fieldhalo" : "halo"), UiTheme.AccentBlue);
-                UIFactory.Place(halo.rectTransform, TL, C, point, field ? new Vector2(68, 36) : Vector2.one * 46);
-                var dot = UIFactory.Image(atlasContents, "Node_" + id, WorldAtlasArt.Marker(gateway ? "gate" : town ? "town" : underground ? "cave" : "fieldbadge"), Color.white);
+                // [CH3] A painted node (Art/node_<map id>, 사얍 and the dry canyon) replaces the drawn marker and the stage badge.
+                var nodeArt = info.chapter >= 3 ? Game.Art.Optional("node_" + id) : null;
+                bool badge = field && nodeArt == null;
+                var halo = UIFactory.Image(atlasContents, "Current_" + id, WorldAtlasArt.Marker(badge ? "fieldhalo" : "halo"), UiTheme.AccentBlue);
+                UIFactory.Place(halo.rectTransform, TL, C, point, badge ? new Vector2(68, 36) : Vector2.one * (nodeArt != null ? 54 : 46));
+                var dot = UIFactory.Image(atlasContents, "Node_" + id, nodeArt ?? WorldAtlasArt.Marker(gateway ? "gate" : town ? "town" : underground ? "cave" : "fieldbadge"), Color.white);
                 dot.raycastTarget = true;
-                UIFactory.Place(dot.rectTransform, TL, C, point, field ? new Vector2(60, 28) : Vector2.one * 34);
+                UIFactory.Place(dot.rectTransform, TL, C, point, nodeArt != null ? Vector2.one * 44 : badge ? new Vector2(60, 28) : Vector2.one * 34);
                 var button = dot.gameObject.AddComponent<Button>(); button.targetGraphic = dot; button.colors = UiTheme.ButtonColors();
                 button.onClick.AddListener(() => { if (gateway) SelectWorld(WorldLayer.Underground); else SelectMap(id); });
                 var hover = dot.gameObject.AddComponent<PointerRelay>();
@@ -157,7 +165,7 @@ namespace DotRPG
                     UIFactory.Place(plate.rectTransform, TL, new Vector2(.5f, 1), point + offset + new Vector2(0, 2), new Vector2(width, 27));
                     label = AtlasLabel("Name_" + id, text, point + offset, new Vector2(width, 27), 17, town ? UiTheme.AccentLight : UiTheme.TextPrimary);
                 }
-                else
+                else if (badge)
                 {
                     var stage = AtlasLabel("Stage_" + id, FieldBadge(id), point, new Vector2(60, 28), 19, UiTheme.TextPrimary);
                     stage.alignment = TextAnchor.MiddleCenter;

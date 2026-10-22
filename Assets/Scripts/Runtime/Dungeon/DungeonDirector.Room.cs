@@ -52,6 +52,7 @@ namespace DotRPG
                     m.Place(party.SpotFor(i - 1), Facing.Up);
                 }
             party?.Regroup(RoomRegroupSeconds);
+            StoryCompanions.OnRoomLoaded(run.Dungeon.id, index, !NetHost && !Follower); // [CH3] 쿠크 in rooms 1·2 of the 시바크 raid
 
             if (!Follower) SpawnMonsters(room); // [PARTY NET] member PCs get the host's monsters as puppets
             if (!room.isBoss) door = DungeonDoor.Create(Game.World.DungeonDoorCells, Game.World.ObjectsRoot);
@@ -88,7 +89,7 @@ namespace DotRPG
                     var e = DungeonMonsters.Spawn(g.monsterId, p, Game.World.ObjectsRoot, run.HpMul, run.DamageMul, level);
                     if (e == null) continue;
                     run.Monsters++;
-                    if (g.isBoss) bosses.Add(e);
+                    if (g.isBoss) { bosses.Add(e); DungeonDatabase.ApplyLord(e, run.Dungeon, run.Difficulty); } // [CH3] 군주 pattern
                     var h = e.GetComponent<Health>();
                     if (h != null) h.Damaged += OnMonsterDamaged;
                 }

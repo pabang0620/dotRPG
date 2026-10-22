@@ -240,4 +240,16 @@
 | 봉인 축제 | Festival of the Seal | 옛 "등불 축제" |
 | 다섯 집 | the Five Houses | 요일 던전 설명 |
 | 대사제의 빛 | Light of the High Priest | 오르반 신도의 호칭 |
+| 사얍 마을 | Sayab Village | 3장 마족 온건파 마을(숨은 샘) |
+| 쿠크 | Kuk | 사얍 전사장, 그라흐의 옛 부하 |
+| 아카브 | Akab | 밤 상인 |
+| 노호 | Noho | 촌로, 기록 보관 |
+| 카나 | Kana | 치유사 |
+| 발체 | Balche | 사얍의 아이 |
+| 시바크 | Xibak | 공허 침식체(3장 중간 레이드) |
+| 카마츠 | Kamatz | 잿빛 손 지휘관(3장 최종 레이드) |
+| 잿빛 손 | the Grey Hand | 대사제 직속 비밀 부대 |
+| 메말라 가는 협곡 | the Withering Canyon | 3장 사냥터 지역 |
+| 공허 침식체 | Void Blight | 깨진 수호석에서 번진 것 |
+| 공허 정수 | Void Essence | 3-4 수집물 |
 

@@ -169,6 +169,9 @@ namespace DotRPG
                 seen.Add(dungeon.sure.material);
                 seen.Add(ConsumableDatabase.Gold);
             }
+            // [CH3] 군주: the extra sure material (straight to the bag).
+            if (diff != null && diff.id == DungeonDifficulty.Lord && dungeon.lordSure != null && seen.Add(dungeon.lordSure.material))
+                slots.Add((DungeonDatabase.ItemIcon(dungeon.lordSure.material), L.F("{0} (확정)", DungeonDatabase.ItemName(dungeon.lordSure.material)), true));
             foreach (var entry in dungeon.rewards)
             {
                 if (!seen.Add(entry.itemId)) continue;

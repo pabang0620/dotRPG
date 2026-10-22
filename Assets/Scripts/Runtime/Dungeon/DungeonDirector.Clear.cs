@@ -65,6 +65,12 @@ namespace DotRPG
                 }
                 run.Cards = auth.DealCards(run, Game.Player.Class);
                 if (run.Dungeon.sure != null) run.CardsTakeAll = true; // [REWARD] sure material + gold + luck cards, all taken
+                // [CH3] 군주: an extra sure 침식 결정 / 잿빛 인장 straight into the bag (not a card; server rollLordBonus).
+                if (DungeonDatabase.RollLordBonus(run.Dungeon, run.Difficulty, new System.Random()) is (string item, int n) && n > 0)
+                {
+                    Game.Session.Inventory.Add(item, n);
+                    LordBonusToast(item, n);
+                }
                 if (run.Dungeon.isRaid)
                 {
                     Progress.ClaimRaid(run.Dungeon, now, run.Difficulty);
@@ -115,6 +121,9 @@ namespace DotRPG
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(data, "reward_lock_reason")));
                 // [REWARD 2026-10-14] A dungeon clear (not a raid) takes all its cards: sure material, sure gold, luck cards.
                 if (!run.Dungeon.isRaid) run.CardsTakeAll = MiniJson.Str(data, "card_mode", "pick_one") == "take_all" && run.Cards != null;
+                // [CH3] 군주 bonus: already in the bag through the delta, only told here.
+                var lord = MiniJson.Obj(data, "lord_bonus");
+                if (lord != null && MiniJson.Int(lord, "count") > 0) LordBonusToast(MiniJson.Str(lord, "item_key", ""), MiniJson.Int(lord, "count"));
                 var raid = MiniJson.Obj(data, "raid");
                 if (raid != null && raid.TryGetValue("reward_locked", out var rl) && rl is bool locked && locked)
                     GameEvents.RaiseToast(RaidLockText(MiniJson.Str(raid, "lock_reason")));
@@ -197,6 +206,10 @@ namespace DotRPG
             }
             if (run != null) run.RaidCoreGain = cores;
         }
+
+        /// <summary>[CH3] Line for the 군주 sure bonus (offline roll or the server's lord_bonus).</summary>
+        static void LordBonusToast(string item, int count) =>
+            GameEvents.RaiseToast(L.F("<color=#ff4a6a>군주 확정</color> {0} +{1}", DungeonDatabase.ItemName(item), count));
 
         // =============================== Death / revive / failure ===============================
     }

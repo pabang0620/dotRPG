@@ -235,7 +235,7 @@
       "zone": "hollow_descent",
       "monsterLevel": 42,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 3,
+      "dungeonDifficulty": 4,
       "perHour": {
         "xp": 202900,
         "goldEq": 76858,
@@ -244,8 +244,8 @@
         "epicPlus": 6.26
       },
       "perDay": {
-        "dungeonXp": 90011,
-        "dungeonGoldEq": 12240,
+        "dungeonXp": 131666,
+        "dungeonGoldEq": 16560,
         "raidMidXp": 10092,
         "raidMidGoldEq": 4500
       },
@@ -260,7 +260,7 @@
       "zone": "hollow_roots",
       "monsterLevel": 47,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 3,
+      "dungeonDifficulty": 4,
       "perHour": {
         "xp": 246100,
         "goldEq": 79068,
@@ -269,8 +269,8 @@
         "epicPlus": 6.26
       },
       "perDay": {
-        "dungeonXp": 90011,
-        "dungeonGoldEq": 12240,
+        "dungeonXp": 131666,
+        "dungeonGoldEq": 16560,
         "raidMidXp": 10092,
         "raidMidGoldEq": 4500
       },
@@ -285,7 +285,7 @@
       "zone": "hollow_roots",
       "monsterLevel": 47,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 3,
+      "dungeonDifficulty": 4,
       "perHour": {
         "xp": 246100,
         "goldEq": 79068,
@@ -294,8 +294,8 @@
         "epicPlus": 6.26
       },
       "perDay": {
-        "dungeonXp": 90011,
-        "dungeonGoldEq": 12240,
+        "dungeonXp": 131666,
+        "dungeonGoldEq": 16560,
         "raidMidXp": 10092,
         "raidMidGoldEq": 4500
       },

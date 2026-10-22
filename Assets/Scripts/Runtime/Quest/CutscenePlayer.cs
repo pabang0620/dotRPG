@@ -123,6 +123,7 @@ namespace DotRPG
         {
             current = def;
             skipping = false;
+            relOrigin = Game.Player != null ? (Vector2)Game.Player.transform.position : Vector2.zero;
             Game.State.Set(GameState.Cutscene);
             Game.Player?.StopScripted();
             foreach (var cmd in def.cmds)
@@ -261,10 +262,35 @@ namespace DotRPG
                 case "leave":
                     StoryCompanions.Leave(c.actor);
                     break;
+                case "choice":
+                    if (skipping) break;
+                    yield return Choice(c);
+                    break;
                 default:
                     Debug.LogWarning($"[dotRPG] Cutscene '{current?.id}': unknown op '{c.op}'.");
                     break;
             }
+        }
+
+        /// <summary>
+        /// [CH3] A question with answers that all lead on (the answer is the hero's voice, not a branch). The picked answer
+        /// is then spoken by the hero.
+        /// </summary>
+        IEnumerator Choice(CutsceneCmd c)
+        {
+            var answers = (c.id ?? "").Split('|');
+            if (answers.Length == 0 || Game.UI == null) yield break;
+            string picked = null;
+            var options = new List<(string, Action)>();
+            foreach (var a in answers)
+            {
+                string label = L.T(a);
+                options.Add((label, () => picked = label));
+            }
+            Game.UI.Choose(c.text ?? "", options, () => picked = L.T(answers[answers.Length - 1]));
+            while (picked == null && !skipping) yield return null;
+            if (skipping || string.IsNullOrEmpty(picked)) yield break;
+            yield return Talk(new DialogueData { id = "", lines = new List<DialogueLine> { new DialogueLine { speaker = "{name}", text = picked } } });
         }
 
         IEnumerator Talk(DialogueData data)
@@ -329,7 +355,13 @@ namespace DotRPG
 
         public static Vector2 CellToWorld(Rect bounds, float col, float row) => new Vector2(bounds.xMin + col + 0.5f, bounds.yMax - row - 0.5f);
 
-        static Vector2 Cell(CutsceneCmd c) => c.col >= 0f && c.row >= 0f ? CellToWorld(c.col, c.row) : (Vector2)Game.Player.transform.position;
+        static Vector2 relOrigin;
+
+        static Vector2 Cell(CutsceneCmd c)
+        {
+            if (c.rel) return relOrigin + new Vector2(c.col, -c.row); // [CH3] offsets from where the hero stood
+            return c.col >= 0f && c.row >= 0f ? CellToWorld(c.col, c.row) : (Vector2)Game.Player.transform.position;
+        }
 
         Transform anchor;
 

@@ -83,11 +83,20 @@ namespace DotRPG
                 description = L.T("해골왕이 쓰고 있던 왕관의 파편. 해골왕 레이드 보상 카드로만 얻고, 레이드 상점에서 해골왕 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다.") },
             new ConsumableItem { id = RaidRewards.RaidMatGrah, name = L.T("수호석 파편"), iconKey = "maticon_ore", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = L.T("수호자 그라흐가 지키던 수호석의 파편. 그라흐 레이드 보상 카드로만 얻고, 레이드 상점에서 그라흐 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다.") },
-            // [CH3] Chapter 3 raid materials (Docs/ch3/RAIDS.md). Stand-in icons until ART_LIST 6절 adds their own.
-            new ConsumableItem { id = RaidRewards.RaidMatXibak, name = L.T("침식 결정"), iconKey = "maticon_ore", kind = ConsumableKind.Key, grade = ItemRarity.Unique,
+            // [CH3] Chapter 3 raid materials (Docs/ch3/RAIDS.md), with their own ART_LIST 6 icons.
+            new ConsumableItem { id = RaidRewards.RaidMatXibak, name = L.T("침식 결정"), iconKey = "maticon_raid_xibak", kind = ConsumableKind.Key, grade = ItemRarity.Unique,
                 description = L.T("공허 침식체 시바크의 몸에서 굳은 결정. 시바크 레이드 보상 카드로만 얻고, 레이드 상점의 시바크 무기 상자와 장비 계승에 쓴다.") },
-            new ConsumableItem { id = RaidRewards.RaidMatKamatz, name = L.T("잿빛 인장"), iconKey = "maticon_bone", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
+            new ConsumableItem { id = RaidRewards.RaidMatKamatz, name = L.T("잿빛 인장"), iconKey = "maticon_raid_kamatz", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = L.T("잿빛 손 지휘관 카마츠가 명령서에 찍던 인장. 카마츠 레이드 보상 카드로만 얻고, 레이드 상점의 카마츠 무기 상자와 장비 계승에 쓴다.") },
+            // [CH3] Chapter 3 quest pickups (World/FieldQuestDrops.cs), with ART_LIST 2's collect icons.
+            new ConsumableItem { id = FieldQuestDrops.VoidEssence, name = L.T("공허 정수"), iconKey = "maticon_void_essence", kind = ConsumableKind.Key,
+                description = L.T("공허 침식체가 흩어질 때 남는 검보랏빛 정수. 검은 수호석 잔해의 침식체에게서 얻는다. 익시가 찾는다.") },
+            new ConsumableItem { id = FieldQuestDrops.DryHide, name = L.T("마른 가죽"), iconKey = "maticon_dry_hide", kind = ConsumableKind.Key,
+                description = L.T("갈라진 협곡 바닥의 공허 들개에게서 벗긴 마른 가죽. 밤 상인 아카브가 돈 대신 받는다.") },
+            new ConsumableItem { id = FieldQuestDrops.AshHerb, name = L.T("재 속 약초"), iconKey = "maticon_ash_herb", kind = ConsumableKind.Key,
+                description = L.T("검은 수호석 잔해의 재 속에서도 자라는 약초. 사람도 마족도 같은 뿌리를 쓴다.") },
+            new ConsumableItem { id = FieldQuestDrops.DryFlower, name = L.T("마른 꽃"), iconKey = "maticon_dry_flower", kind = ConsumableKind.Key,
+                description = L.T("갈라진 협곡 바닥에 드물게 남은 꽃. 말라도 빛깔이 남아 있다.") },
             new ConsumableItem { id = DungeonSweep.TicketItem, name = L.T("던전 클리어권"), iconKey = "icon_sweep", kind = ConsumableKind.Sweep, grade = ItemRarity.Epic,
                 description = L.T("직접 B등급 이상으로 깬 요일 던전을 전투 없이 한 번 끝낸다. 입장 횟수 1회를 함께 쓰고, 보상은 기본 경험치와 카드 1장이다. (계정 공용)") },
             new ConsumableItem { id = DungeonSweep.EventTicketItem, name = L.T("이벤트 클리어권"), iconKey = "icon_sweep_event", kind = ConsumableKind.Sweep, grade = ItemRarity.Unique,

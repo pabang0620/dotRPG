@@ -12,7 +12,7 @@ namespace DotRPG
         static readonly Dictionary<string, Sprite[]> sheets = new Dictionary<string, Sprite[]>();
         static readonly string[] directions = { "down", "downside", "side", "upside", "up" };
         static readonly string[] frames = { "idle0", "idle1", "walk0", "walk1", "walk2", "walk3", "attack", "hurt" };
-        public static bool Supports(string id) => UnderworldMonsterArt.Supports(id) || id != null && (id == Rock || id == Yeti || id == Rock+"_guard" || id == Rock+"_thrower" || id == Yeti+"_guard" || id == Yeti+"_thrower" || id == Sanctum || id == Sanctum+"_guard" || id == Sanctum+"_thrower");
+        public static bool Supports(string id) => UnderworldMonsterArt.Supports(id) || Chapter3MonsterArt.Supports(id) || id != null && (id == Rock || id == Yeti || id == Rock+"_guard" || id == Rock+"_thrower" || id == Yeti+"_guard" || id == Yeti+"_thrower" || id == Sanctum || id == Sanctum+"_guard" || id == Sanctum+"_thrower");
         public static string Species(string id) => id != null && id.StartsWith(Rock) ? Rock : id != null && id.StartsWith(Yeti) ? Yeti : id != null && id.StartsWith(Sanctum) ? Sanctum : null;
         public static string LookFor(string species, MonsterKind kind) => species + (kind == MonsterKind.ShieldGuard ? "_guard" : kind == MonsterKind.Archer ? "_thrower" : "");
         [Serializable] sealed class Atlas { public float pixelsPerUnit; public Cell[] cells; }
@@ -35,6 +35,8 @@ namespace DotRPG
         public static Sprite Get(string id, string direction, string frame)
         {
             if(UnderworldMonsterArt.Supports(id))return UnderworldMonsterArt.Get(id,direction,frame);
+            // [CH3] Chapter 3 field monsters: their own atlas once generated, the stand-in until then.
+            if (Chapter3MonsterArt.Owns(id) && !Chapter3MonsterArt.HasAtlas(id)) return Chapter3MonsterArt.StandIn(id, direction, frame);
             if (!Supports(id)) return null;
             if (!sheets.TryGetValue(id, out var cells))
             {
@@ -64,7 +66,7 @@ namespace DotRPG
         static readonly Dictionary<string, Sprite> projectiles = new Dictionary<string, Sprite>();
         public static Sprite Projectile(MonsterDef def)
         {
-            if(def?.look?.id=="hollow_hexer")return UnderworldMonsterArt.Projectile();
+            if(def?.look?.id=="hollow_hexer"||def?.look?.id==MonsterDatabase.VoidCaller)return UnderworldMonsterArt.Projectile();
             string id = Species(def?.look?.id);
             if (!Supports(id)) return null;
             if (projectiles.TryGetValue(id, out var sprite)) return sprite;

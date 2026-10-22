@@ -16,7 +16,7 @@ namespace DotRPG
 
         RectTransform specPage;
         Text specHeader, specInfo;
-        sealed class SpecRow { public Image bg; public Text name; public Button a, b; public Text aText, bText, cost; public string skill; }
+        sealed class SpecRow { public Image bg, icon, frame; public Text name; public Button a, b; public Text aText, bText, cost; public string skill; }
         readonly List<SpecRow> specRows = new List<SpecRow>();
         string specHover;
 
@@ -29,7 +29,12 @@ namespace DotRPG
                 var row = new SpecRow();
                 float y = -34f - i * (SpecRowH + 2f);
                 row.bg = Panel(specPage, "SpecRow" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, y), new Vector2(800f, SpecRowH), UiTheme.Panel);
-                row.name = Label(row.bg.transform, "Name", "", 14, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(150f, SpecRowH), TextAnchor.MiddleLeft);
+                // [CH3 SPEC] Skill icon, framed crimson (A) or silver (B) once a side is chosen.
+                row.icon = UIFactory.Image(row.bg.transform, "Icon", null, Color.white);
+                UIFactory.Place(row.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(SpecRowH - 6f, SpecRowH - 6f));
+                row.frame = UIFactory.Image(row.bg.transform, "Frame", null, Color.white);
+                UIFactory.Place(row.frame.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(4f, 0f), new Vector2(SpecRowH - 2f, SpecRowH - 2f));
+                row.name = Label(row.bg.transform, "Name", "", 14, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(38f, 0f), new Vector2(120f, SpecRowH), TextAnchor.MiddleLeft);
                 var r = row;
                 row.a = Button(row.bg.transform, "A", "", "ui_btngray", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(162f, 0f), new Vector2(286f, SpecRowH - 3f), () => PickSpec(r, 'a'), 13);
                 row.b = Button(row.bg.transform, "B", "", "ui_btngray", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(454f, 0f), new Vector2(286f, SpecRowH - 3f), () => PickSpec(r, 'b'), 13);
@@ -64,6 +69,8 @@ namespace DotRPG
 
         static string SkillName(string id) => CareerCatalog.Get(id)?.name ?? SkillGems.Get(id)?.name ?? id;
 
+        static string SkillIcon(string id) => CareerCatalog.Get(id)?.Icon ?? SkillGems.Get(id)?.icon;
+
         void PickSpec(SpecRow row, char side)
         {
             var prog = Game.Session.Progression;
@@ -92,6 +99,11 @@ namespace DotRPG
                 row.skill = skills[i];
                 row.name.text = SkillName(row.skill);
                 char side = prog.SpecOf(row.skill);
+                string icon = SkillIcon(row.skill);
+                row.icon.sprite = icon != null ? Game.Art.Get(icon) : null;
+                row.icon.enabled = icon != null;
+                row.frame.sprite = SkillBarView.SpecFrame(side);
+                row.frame.enabled = row.frame.sprite != null;
                 var sa = SkillSpecs.Find(row.skill, 'a');
                 var sb = SkillSpecs.Find(row.skill, 'b');
                 row.aText.text = sa == null ? "-" : (side == 'a' ? "<b>A  " + sa.name + "</b>" : "A  " + sa.name);

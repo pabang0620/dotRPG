@@ -48,7 +48,7 @@ namespace DotRPG
         public Transform ObjectsRoot => objectsRoot;
         public MapInfo Map => map;
         public string MapId => map != null ? map.id : MapRegistry.Village;
-        bool Canyon => map != null && map.theme == MapTheme.Canyon;
+        bool Canyon => map != null && (map.theme == MapTheme.Canyon || map.theme == MapTheme.DryCanyon); // [CH3] dry fields keep canyon ground art
         bool Winter => map != null && map.theme == MapTheme.Winter;
         /// <summary>Village town / forest hunting ground: painted 32px ground and the town_* art set.</summary>
         bool Hd => map != null && map.HighRes;
@@ -302,6 +302,8 @@ namespace DotRPG
             ApplySurfaceComposition();
             BuildMinimap();
             AddDungeonVignette(); // [DGNTERRAIN]
+            DressDryCanyon(); // [CH3] 메말라 가는 협곡 grade, cracks, rifts (WorldBuilder.DryCanyon.cs)
+            Chapter3Spots.Spawn(this); // [CH3] quest search spots (조약돌, 수호석 잔해, 잿빛 손 야영지)
         }
     }
 }

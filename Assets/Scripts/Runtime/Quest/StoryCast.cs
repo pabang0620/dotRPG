@@ -26,6 +26,10 @@ namespace DotRPG
             public string dialogue = "";
             /// <summary>Shown only while this quest is active ("" = any time).</summary>
             public string activeQuest = "";
+            /// <summary>[CH3] Shown only once every one of these quests is completed.</summary>
+            public string[] requiresDone = new string[0];
+            /// <summary>[CH3] Hidden once any of these quests is completed.</summary>
+            public string[] hiddenAfterDone = new string[0];
         }
 
         /// <summary>A story object: a sprite that may be used (raises <see cref="GameEvents.Interacted"/> with <see cref="interactId"/>).</summary>
@@ -40,11 +44,20 @@ namespace DotRPG
             public string interactId = "", prompt = "살펴보기", dialogue = ""; // i18n-ignore JSON field default; translated after load
             public bool solid = true, glow, bob;
             public float scale = 1f;
+            /// <summary>[CH3] Drawn while <see cref="sprite"/> is not made yet (ART_LIST), e.g. a canyon building for 사얍's own.</summary>
+            public string fallback = "";
+            public string[] requiresDone = new string[0];
+            public string[] hiddenAfterDone = new string[0];
+            /// <summary>[CH3] A building's wall footprint in world units (0 = the small prop collider); it starts
+            /// <see cref="wallFront"/> above the feet so the front steps stay walkable and sorting uses the wall line.</summary>
+            public float wallWidth, wallDepth, wallFront;
         }
 
         static Color32 C(int r, int g, int b) => new Color32((byte)r, (byte)g, (byte)b, 255);
         static readonly Color32 SkinLight = C(250, 205, 160);
         static readonly Color32 SkinTan = C(222, 160, 110);
+        /// <summary>[CH3] The demon folk of 사얍: the same grey-violet as 그라흐 and the captive in chapter 2.</summary>
+        static readonly Color32 DemonSkin = C(150, 130, 170);
 
         static Dictionary<string, NpcDefinition> cast;
 
@@ -76,6 +89,18 @@ namespace DotRPG
                 Add(Def("winter_elder", "눈꽃 마을 촌장 세라", new CharacterLook("winter_elder", HairStyle.Bun, SkinLight, C(214, 214, 222), C(96, 120, 168), C(70, 76, 96), HatKind.None, C(210, 214, 224)))); // 눈꽃 마을 의뢰
                 Add(Def("winter_innkeeper", "여관 주인 보라", new CharacterLook("winter_innkeeper", HairStyle.Curly, SkinLight, C(140, 70, 50), C(196, 92, 84), C(110, 84, 70)))); // 눈꽃 마을 여관
                 Add(Def("knight", "기사단원", new CharacterLook("knight", HairStyle.Short, SkinTan, C(70, 50, 40), C(64, 96, 168), C(48, 58, 92)) { armor = ArmorStyle.Plate, armorColor = C(170, 176, 190) }));
+                // [CH3] 사얍 마을 (Docs/ch3/WORLD_AND_STORY.md 6). Generated frames (Art/char_<id>_*) replace these looks when drawn.
+                Add(Def("ixi", "익시", new CharacterLook("ixi", HairStyle.Long, DemonSkin, C(150, 30, 40), C(120, 34, 52), C(60, 30, 44)) { robe = true, robeColor = C(110, 28, 48) }));
+                Add(Def("kukum", "전사장 쿠크", new CharacterLook("kukum", HairStyle.Spiky, DemonSkin, C(40, 34, 48), C(64, 110, 92), C(52, 46, 56)) { armor = ArmorStyle.Leather, armorColor = C(88, 120, 84) }));
+                Add(Def("akab", "밤 상인 아카브", new CharacterLook("akab", HairStyle.Short, DemonSkin, C(30, 28, 40), C(52, 48, 92), C(40, 36, 60), HatKind.Bandana, C(70, 62, 120))));
+                Add(Def("noho", "촌로 노호", new CharacterLook("noho", HairStyle.Bald, DemonSkin, C(220, 220, 226), C(120, 104, 88), C(84, 72, 64)) { robe = true, robeColor = C(110, 96, 82) }));
+                Add(Def("kana", "치유사 카나", new CharacterLook("kana", HairStyle.Bun, DemonSkin, C(70, 120, 90), C(220, 214, 196), C(110, 140, 110))));
+                Add(Def("balche", "발체", new CharacterLook("balche", HairStyle.Spiky, DemonSkin, C(60, 40, 52), C(196, 140, 64), C(90, 70, 52)), NpcBehaviour.Wander));
+                Add(Def("ria_adult", "리아", new CharacterLook("ria_adult", HairStyle.Long, SkinLight, C(214, 132, 70), C(116, 168, 104), C(90, 120, 80))));
+                Add(Def("sayab_innkeeper", "사얍 여관 주인", new CharacterLook("sayab_inn", HairStyle.Curly, DemonSkin, C(90, 60, 70), C(160, 92, 70), C(96, 80, 70))));
+                // Cutscene actors that are also fighters: the same look ids as their combat art (char_boss_kamatz_*, the grey_knight atlas).
+                Add(Def("kamatz", "잿빛 손 지휘관 카마츠", new CharacterLook("boss_kamatz", HairStyle.Bald, SkinTan, C(40, 40, 44), C(90, 88, 96), C(60, 58, 64)) { armor = ArmorStyle.Plate, armorColor = C(120, 118, 126) }));
+                Add(Def("grey_knight", "잿빛 손 기사", new CharacterLook("grey_knight", HairStyle.Short, C(214, 168, 128), C(70, 66, 70), C(84, 82, 90), C(67, 66, 72)) { armor = ArmorStyle.Plate, armorColor = C(150, 150, 158) }));
                 // i18n-names-end
                 return cast;
             }
@@ -112,17 +137,32 @@ namespace DotRPG
 
         public static List<Prop> Props => World.props;
 
-        static bool Holds(string[] requires, string[] hiddenBy, string activeQuest)
+        static bool Holds(string[] requires, string[] hiddenBy, string activeQuest, string[] requiresDone = null, string[] hiddenAfterDone = null)
         {
             var j = Game.Session.Journal;
             foreach (var f in requires) if (!j.HasFlag(f)) return false;
             foreach (var f in hiddenBy) if (j.HasFlag(f)) return false;
             if (!string.IsNullOrEmpty(activeQuest) && j.Status(activeQuest) != QuestStatus.Active) return false;
+            if (requiresDone != null) foreach (var q in requiresDone) if (!j.IsCompleted(q)) return false;
+            if (hiddenAfterDone != null) foreach (var q in hiddenAfterDone) if (j.IsCompleted(q)) return false;
             return true;
         }
 
-        public static bool Visible(Placement p) => Holds(p.requires, p.hiddenBy, p.activeQuest);
-        public static bool Visible(Prop p) => Holds(p.requires, p.hiddenBy, p.activeQuest);
+        public static bool Visible(Placement p) => Holds(p.requires, p.hiddenBy, p.activeQuest, p.requiresDone, p.hiddenAfterDone);
+        public static bool Visible(Prop p) => Holds(p.requires, p.hiddenBy, p.activeQuest, p.requiresDone, p.hiddenAfterDone);
+
+        /// <summary>[CH3] 사얍's keepers in its shop / blacksmith / storage rooms (아카브 runs both counters, the innkeeper the storage).</summary>
+        public static NpcDefinition SayabKeeper(NpcService service, NpcDefinition generic)
+        {
+            var who = Find(service == NpcService.Storage ? "sayab_innkeeper" : "akab");
+            if (who == null || generic == null) return generic;
+            var d = who.Clone();
+            d.service = service;
+            d.greeting = service == NpcService.Blacksmith ? L.T("인간의 돈도 쇠는 녹이지. 강화든 계승이든 말해 봐.")
+                : service == NpcService.Shop ? L.T("밤에만 여는 가게다. 필요한 걸 골라.")
+                : L.T("맡길 물건이 있나. 잃어버리진 않아.");
+            return d;
+        }
 
         /// <summary>The prologue night: villagers have fled or hidden.</summary>
         public static bool VillagersHidden => Game.Session != null && Game.Session.Journal.HasFlag(StoryIds.FlagAttackNight);
@@ -169,15 +209,16 @@ namespace DotRPG
             visual.transform.SetParent(go.transform, false);
             visual.transform.localScale = Vector3.one * p.scale;
             sp.sr = visual.AddComponent<SpriteRenderer>();
-            sp.sr.sprite = Game.Art.Get(p.sprite);
+            sp.sr.sprite = string.IsNullOrEmpty(p.fallback) ? Game.Art.Get(p.sprite) : Game.Art.Optional(p.sprite) ?? Game.Art.Get(p.fallback); // [CH3] stand-in until drawn
             HdMaterial.Apply(sp.sr);
             if (p.solid)
             {
                 var col = go.AddComponent<BoxCollider2D>();
-                col.size = new Vector2(0.8f * p.scale, 0.4f);
-                col.offset = new Vector2(0f, 0.2f);
+                bool wall = p.wallWidth > 0f && p.wallDepth > 0f;
+                col.size = wall ? new Vector2(p.wallWidth, p.wallDepth) : new Vector2(0.8f * p.scale, 0.4f);
+                col.offset = wall ? new Vector2(0f, p.wallFront + p.wallDepth * 0.5f) : new Vector2(0f, 0.2f);
             }
-            go.AddComponent<YSort>().Configure(true);
+            go.AddComponent<YSort>().Configure(true, -Mathf.RoundToInt(p.wallFront * YSort.OrdersPerUnit));
             if (p.glow) WarmGlow.Attach(go.transform, new Vector2(0f, 1.2f * p.scale), 1.3f, 0.3f);
             sp.ConfigureShape(new Vector2(0f, 0.2f), 0.6f, new Vector2(0f, 1.6f * p.scale));
             return sp;
@@ -202,7 +243,7 @@ namespace DotRPG
     /// the betrayal) joins outside the towns - hunting grounds, dungeons, raids - and stands in town as an NPC who
     /// gives quests. A mercenary whose seat he takes comes back when he leaves.
     /// </summary>
-    public static class StoryCompanions
+    public static partial class StoryCompanions
     {
         public const string KaelFlag = "kael_companion";
         public const string KaelGoneFlag = "kael_betrayed";
@@ -224,6 +265,7 @@ namespace DotRPG
                 if (!string.IsNullOrEmpty(benched) && !Game.Session.PartyRoster.Contains(benched)) Game.Party.AddCompanion(benched);
                 benched = null;
             }
+            RefreshChapter3(); // [CH3] 쿠크 as a party choice, 사얍 방어전 (StoryCompanions.Chapter3.cs)
         }
 
         public static string MercIdFor(string actor) => "story_" + actor;

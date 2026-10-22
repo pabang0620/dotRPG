@@ -5,7 +5,7 @@ import { requestId } from '../economy/economyValidation';
 export const sweepRunBody = z.strictObject({
   request_id: requestId,
   dungeon_id: z.string().min(1).max(40),
-  difficulty: z.number().int().min(0).max(3),
+  difficulty: z.number().int().min(0).max(4),
 });
 export const sweepBuyBody = z.strictObject({
   request_id: requestId,

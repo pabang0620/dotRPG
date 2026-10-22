@@ -6,7 +6,7 @@ const dungeonId = z.string().min(1).max(40).regex(/^[a-z][a-z0-9_]*$/);
 export const createPartyBody = z.strictObject({
   request_id: requestId,
   dungeon_id: dungeonId,
-  difficulty: z.number().int().min(0).max(3),
+  difficulty: z.number().int().min(0).max(4),
   max_members: z.number().int().min(2).max(4),
   min_power: z.number().int().min(0).max(99999),
   message: z.string().max(30).optional(),
@@ -20,13 +20,13 @@ export const patchPartyBody = z
     max_members: z.number().int().min(2).max(4).optional(),
     /** 이미 만든 파티의 목적 던전·난이도 변경(함께 보낸다) */
     dungeon_id: dungeonId.optional(),
-    difficulty: z.number().int().min(0).max(3).optional(),
+    difficulty: z.number().int().min(0).max(4).optional(),
   })
   .refine((b) => Object.keys(b).length > 0, '하나 이상 필요합니다')
   .refine((b) => (b.dungeon_id === undefined) === (b.difficulty === undefined), 'dungeon_id와 difficulty는 함께 보냅니다');
 export const listQuery = z.object({
   dungeon_id: dungeonId.optional(),
-  difficulty: z.coerce.number().int().min(0).max(3).optional(),
+  difficulty: z.coerce.number().int().min(0).max(4).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });

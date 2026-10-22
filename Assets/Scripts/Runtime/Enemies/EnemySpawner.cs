@@ -140,6 +140,7 @@ namespace DotRPG
         {
             alive[index] = null;
             respawnAt[index] = Time.time + RespawnDelay;
+            CountFieldKill(); // [CH3] 잿빛 손 정찰대장 every 60 kills (EnemySpawner.Captain.cs)
         }
 
         void Update()
@@ -152,6 +153,7 @@ namespace DotRPG
             }
             if (Mode == SpawnerMode.Follower || !Game.IsWorldRunning) return;
             TickFieldBoss();
+            TickCaptain(); // [CH3]
             for (int i = 0; i < alive.Length; i++)
             {
                 if (alive[i] != null || respawnAt[i] <= 0f || Time.time < respawnAt[i]) continue;

@@ -110,7 +110,8 @@ namespace DotRPG
                 currentMusic = key;
                 return;
             }
-            var clip = GetClip(key);
+            // [CH3] A new region's own track may not be made yet: it plays its parent region's track meanwhile.
+            var clip = GetClip(key) ?? (key == "music_sayab" ? GetClip("music_canyon") : null);
             if (clip == null) return;
             currentMusic = key;
             var src = musicSources[other];

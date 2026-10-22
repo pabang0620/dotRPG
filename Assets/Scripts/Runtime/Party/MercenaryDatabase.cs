@@ -111,6 +111,25 @@ namespace DotRPG
                 skillPriority = new[] { 0, 1, 3, 4 },
                 supports = new[] { new[] { "sup_dmg", "sup_chain" }, new[] { "sup_dmg", "sup_aoe" }, null, null, new[] { "sup_dmg", "sup_aoe" } },
             },
+            // [CH3] 사얍 마을. Generated frames Art/char_kukum_* / char_kana_* (ART_LIST 3절); the colours are the fallback.
+            new MercenaryDef
+            {
+                id = "story_kukum", name = L.T("쿠크"), roleName = L.T("사얍 수비대장"), cls = CharacterClass.Warrior, role = MercRole.Tank,
+                description = L.T("그라흐의 옛 부하, 사얍 마을의 수비대장. 깃털 장식 창으로 앞에 서서 적을 붙든다."),
+                look = new CharacterLook("kukum", HairStyle.Long, C(150, 120, 170), C(40, 30, 50), C(120, 60, 50), C(60, 40, 40)) { armor = ArmorStyle.Plate, armorColor = C(110, 80, 70) },
+                color = C(220, 120, 90), hpScale = 1.5f, threat = MercenaryDatabase.TankThreat,
+                skillPriority = new[] { 2, 3, 0, 1 },
+                supports = new[] { new[] { "sup_dmg", "sup_leech" }, new[] { "sup_aoe", "sup_dmg" }, new[] { "sup_aoe", "sup_eff" }, null, null },
+            },
+            new MercenaryDef
+            {
+                id = "story_kana", name = L.T("카나"), roleName = L.T("사얍 치유사"), cls = CharacterClass.Mage, role = MercRole.Control,
+                description = L.T("사얍 마을의 치유사. 서리로 적을 묶어 수비대가 버틸 틈을 만든다."),
+                look = new CharacterLook("kana", HairStyle.Bun, C(150, 120, 170), C(200, 200, 220), C(60, 110, 90), C(40, 70, 60), HatKind.None) { robe = true },
+                color = C(120, 210, 170), hpScale = 0.95f, threat = 1f,
+                skillPriority = new[] { 2, 3, 1, 0 },
+                supports = new[] { new[] { "sup_eff", "sup_dmg" }, new[] { "sup_aoe", "sup_eff" }, new[] { "sup_aoe", "sup_eff" }, null, null },
+            },
         };
 
         /// <summary>Hireable mercenaries (the party window). Story companions are not listed.</summary>

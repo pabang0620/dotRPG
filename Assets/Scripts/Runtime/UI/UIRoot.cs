@@ -59,6 +59,8 @@ namespace DotRPG
         /// <summary>Opens the window of a town service NPC (general store, blacksmith, storage).</summary>
         public void OpenService(NpcDefinition npc)
         {
+            // [CH3] 사얍 keepers turn a human away until 3-4 믿음의 값 is done.
+            if (SayabTrust.Refuses()) { GameEvents.RaiseToast(L.T(npc.displayName) + ": " + SayabTrust.RefusalLine); Game.Audio.PlaySfx("cancel"); return; }
             switch (npc.service)
             {
                 case NpcService.Shop:

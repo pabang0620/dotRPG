@@ -11,7 +11,7 @@ namespace DotRPG
     {
         public static string Build(HuntingZone zone)
         {
-            int w=56,h=44;bool forest=zone.theme==MapTheme.Forest,snow=zone.theme==MapTheme.Winter;
+            int w=56,h=44;bool forest=zone.theme==MapTheme.Forest,snow=zone.theme==MapTheme.Winter,dry=zone.theme==MapTheme.DryCanyon;
             char wall=forest?'%':'W',floor=forest?'.':snow?'.':',';
             char[,] a;
             if(zone.id=="forest"){
@@ -38,6 +38,11 @@ namespace DotRPG
                             if(zone.variant==1&&dx*dx/196+dy*dy/100<1)c='~';
                             if(zone.variant==2&&((x<19&&y>15)||(x>37&&y<31)||(x>23&&x<32&&y>30)))c='W';
                             if(zone.variant==3&&(Mathf.Abs(y-(13+4*Mathf.Sin(x*.12f)))<2||Mathf.Abs(y-32)<2&&x<39))c='~';
+                        }else if(dry){
+                            // [CH3] 메말라 가는 협곡: no water left. 0 = a long dry crack, 1 = black stone mounds, 2 = the rift's split ridges.
+                            if(zone.variant==0&&Mathf.Abs(y-(30-.35f*x+3*Mathf.Sin(x*.3f)))<1.6f&&x>8&&x<48)c='W';
+                            if(zone.variant==1&&((x-16)*(x-16)+(y-30)*(y-30)<20||(x-40)*(x-40)+(y-13)*(y-13)<24||(x-36)*(x-36)+(y-32)*(y-32)<12))c='W';
+                            if(zone.variant==2&&(Mathf.Abs(x-(20+3*Mathf.Sin(y*.4f)))<1.4f&&y>9&&y<35||Mathf.Abs(x-(37-3*Mathf.Sin(y*.35f)))<1.4f&&y>9&&y<35))c='W';
                         }else{
                             if(zone.variant==0&&Mathf.Abs(y-(21+6*Mathf.Sin(x*.15f)))<3)c='~';
                             if(zone.variant==1&&((Mathf.Abs(dx)<15&&Mathf.Abs(dy)<11)&&(Mathf.Abs(dx)>10||Mathf.Abs(dy)>7)))c='W';
@@ -55,7 +60,13 @@ namespace DotRPG
             }}
             int mid=h/2,cx=w/2;
             var center=new Vector2Int(cx,mid);
-            if(zone.variant==0){
+            if(dry){
+                // [CH3] A west-east chain (canyon / 사얍 / the rift): one main road and an inner loop, like fields 2 and 3.
+                int bend=zone.variant==1?mid+11:mid-11;
+                Road(new Vector2Int(0,mid),new Vector2Int(12,mid));Road(new Vector2Int(12,mid),new Vector2Int(18,bend));
+                Road(new Vector2Int(18,bend),new Vector2Int(38,bend));Road(new Vector2Int(38,bend),new Vector2Int(45,mid));Road(new Vector2Int(45,mid),new Vector2Int(w-1,mid));
+                Road(new Vector2Int(12,mid),new Vector2Int(18,h-bend),1);Road(new Vector2Int(18,h-bend),new Vector2Int(38,h-bend),1);Road(new Vector2Int(38,h-bend),new Vector2Int(45,mid),1);
+            }else if(zone.variant==0){
                 Road(new Vector2Int(0,mid),new Vector2Int(cx-8,mid));Road(new Vector2Int(cx-8,mid),center);
                 Road(center,new Vector2Int(cx, h-1));Road(center,new Vector2Int(cx,0));
             }else if(zone.variant==3){
@@ -74,7 +85,7 @@ namespace DotRPG
                 for(int y=5;y<h-5;y+=3)for(int x=5;x<w-5;x+=3){
                     if(a[x,y]!=floor||lanes[x,y])continue;
                     bool nearLane=false;for(int yy=y-2;yy<=y+2;yy++)for(int xx=x-2;xx<=x+2;xx++)nearLane|=lanes[xx,yy];
-                    if(!nearLane&&rng.NextDouble()<.5)a[x,y]=forest?(zone.variant==1?'i':rng.Next(2)==0?'T':'q'):snow?(rng.Next(3)==0?'R':'y'):(rng.Next(3)==0?'T':'R');
+                    if(!nearLane&&rng.NextDouble()<.5)a[x,y]=forest?(zone.variant==1?'i':rng.Next(2)==0?'T':'q'):snow?(rng.Next(3)==0?'R':'y'):dry?'R':(rng.Next(3)==0?'T':'R');
                 }
                 // Twenty-four camp markers wherever a 3x3 footprint is clear, away from all exits.
                 var camps=new List<Vector2Int>();var candidates=new List<Vector2Int>();
@@ -88,7 +99,8 @@ namespace DotRPG
             }
             // Seal old edges, then open only the intended graph ports (three tiles wide).
             for(int x=0;x<w;x++){a[x,0]=wall;a[x,h-1]=wall;}for(int y=0;y<h;y++){a[0,y]=wall;a[w-1,y]=wall;}
-            if(zone.variant==0){for(int i=-1;i<=1;i++){a[0,mid+i]='<';a[cx+i,h-1]='[';a[cx+i,0]=']';}a[3,mid]='P';}
+            if(dry){for(int i=-1;i<=1;i++){a[0,mid+i]='<';if(zone.variant<2)a[w-1,mid+i]='>';}a[3,mid]='P';} // the rift is the end of the road
+            else if(zone.variant==0){for(int i=-1;i<=1;i++){a[0,mid+i]='<';a[cx+i,h-1]='[';a[cx+i,0]=']';}a[3,mid]='P';}
             else if(zone.variant==3){for(int i=-1;i<=1;i++){a[cx+i,h-1]='[';a[cx+i,0]=']';a[w-1,mid+i]='>';}a[cx,mid]='P';}
             else{for(int i=-1;i<=1;i++){a[0,mid+i]='<';a[w-1,mid+i]='>';}a[3,mid]='P';}
             var text=new StringBuilder();for(int y=h-1;y>=0;y--){for(int x=0;x<w;x++)text.Append(a[x,y]);text.Append('\n');}return text.ToString();

@@ -102,7 +102,7 @@ namespace DotRPG
         static DifficultyDef DifficultyFor(int level)
         {
             DifficultyDef best = null;
-            for (int i = 0; i < DungeonDatabase.DifficultyCount; i++)
+            for (int i = 0; i < (int)DungeonDifficulty.Lord; i++) // [CH3] 군주 is weekday-only (recommended separately)
             {
                 var d = DungeonDatabase.Difficulty((DungeonDifficulty)i);
                 if (d.recommendedLevel <= level) best = d;

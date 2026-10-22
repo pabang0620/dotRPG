@@ -9,7 +9,7 @@ import { tierOf } from '../src/domains/minidungeon/miniDungeonRules';
 import { getIncomeCaps } from '../src/gamedata/antiAbuseData';
 import { assertOpen, CHAPTER2_LEVEL_CAP, CHAPTER3_LEVEL_CAP, isChapter3, levelCap } from '../src/gamedata/chapterGate';
 import { bandFor, getDailyQuests } from '../src/gamedata/dailyQuests';
-import { rollEquipmentDrop } from '../src/domains/kills/killRules';
+import { rollEquipmentDrop, rollKillDrops, rollMapDrops } from '../src/domains/kills/killRules';
 import { getGameData } from '../src/gamedata/loader';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
@@ -190,5 +190,71 @@ describe('assertOpen', () => {
     const openApp = buildApp({ CHAPTER3_OPEN: 'true' });
     const open = await get(openApp, h, '/achievements');
     expect((open.body.data.achievements as { id: string }[]).map((a) => a.id)).toEqual(expect.arrayContaining(['level_50', 'spec_first', 'spec_all']));
+  });
+});
+
+// [CH3] 3단계 세계: 메말라 가는 협곡·사얍 맵, 공허·잿빛 손 몬스터, 정찰대장(필드 정예)
+describe('3장 세계 잠금·정예', () => {
+  const dryKill = { map_id: 'dry_floor', monster_id: 'void_hound' };
+
+  it('닫혀 있으면 3장 맵·몬스터 처치를 받지 않는다(422 CHAPTER_LOCKED)', async () => {
+    const app = buildApp();
+    const h = await newHero(app);
+    await seedLevel(h, CHAPTER2_LEVEL_CAP);
+    const res = await post(app, h, '/kills', dryKill);
+    expect(res.status).toBe(422);
+    expect(res.body.errors.code).toBe('CHAPTER_LOCKED');
+    // 기존 맵에 3장 몬스터 id를 붙여 와도 거부
+    const mixed = await post(app, h, '/kills', { map_id: 'forest', monster_id: 'void_hound' });
+    expect(mixed.status).toBe(422);
+    expect(isChapter3('map', 'sayab')).toBe(true);
+    expect(isChapter3('map', 'sayab_shop')).toBe(true);
+    expect(isChapter3('monster', 'grey_captain')).toBe(true);
+    expect(isChapter3('map', 'canyon')).toBe(false);
+  });
+
+  it('열리면 3장 사냥터 처치가 인정되고 Lv42 몬스터 경험치를 준다', async () => {
+    const app = buildApp({ CHAPTER3_OPEN: 'true' });
+    const h = await newHero(app);
+    await seedLevel(h, 41);
+    const res = await post(app, h, '/kills', dryKill);
+    expect(res.status).toBe(200);
+    expect(res.body.data.granted_xp).toBeGreaterThan(0);
+  });
+
+  it('정찰대장은 같은 맵 일반 처치 60마리마다 1마리만 인정한다', async () => {
+    const app = buildApp({ CHAPTER3_OPEN: 'true' });
+    const h = await newHero(app);
+    await seedLevel(h, 45);
+    const elite = { map_id: 'dry_stones', monster_id: 'grey_captain' };
+    const early = await post(app, h, '/kills', elite);
+    expect(early.status).toBe(422);
+    expect(early.body.errors.code).toBe('KILL_REJECTED');
+    const extra = getGameData().economy.mapExtra.get('dry_stones');
+    expect(extra?.fieldElite?.everyKills).toBe(60);
+    expect(getGameData().economy.monsters.get('grey_captain')?.sureGear).toBe(true);
+  });
+
+  it('정예는 장비 1개가 확정이다(일반 몬스터는 확률)', () => {
+    buildApp({ CHAPTER3_OPEN: 'true' });
+    const eco = getGameData().economy;
+    const captain = eco.monsters.get('grey_captain')!;
+    const knight = eco.monsters.get('grey_knight')!;
+    const rng = fakeRng({ unit: 0.99, int: () => 0 });
+    const gearOf = (rows: { itemKey: string }[]) => rows.filter((r) => r.itemKey.startsWith('eq_'));
+    expect(gearOf(rollKillDrops(eco, captain, 'warrior', 1, rng, 1, 49))).toHaveLength(1);
+    expect(gearOf(rollKillDrops(eco, knight, 'warrior', 1, rng, 1, 49))).toHaveLength(0);
+  });
+
+  it('사냥터 퀘스트 수집품: 그 맵·그 몬스터에서만, chance로 1개', () => {
+    buildApp({ CHAPTER3_OPEN: 'true' });
+    const eco = getGameData().economy;
+    const hit = fakeRng({ unit: 0 });
+    expect(rollMapDrops(eco, 'dry_floor', 'void_hound', hit).map((d) => d.itemKey)).toEqual(['qi_dry_hide', 'qi_dry_flower']);
+    expect(rollMapDrops(eco, 'dry_floor', 'void_sentry', hit).map((d) => d.itemKey)).toEqual(['qi_dry_flower']);
+    expect(rollMapDrops(eco, 'dry_stones', 'void_sentry', hit).map((d) => d.itemKey)).toEqual(['qi_void_essence', 'qi_ash_herb']);
+    expect(rollMapDrops(eco, 'forest', 'skeleton', hit)).toEqual([]);
+    expect(rollMapDrops(eco, 'dry_floor', 'void_hound', fakeRng({ unit: 0.99 }))).toEqual([]);
+    expect(isChapter3('item', 'qi_void_essence')).toBe(true);
   });
 });

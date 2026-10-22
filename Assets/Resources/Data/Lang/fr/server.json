@@ -78,5 +78,6 @@
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 의 등급·부위가 다릅니다": "Échec de la validation des données du jeu : enhance.promote.inherit {0} -> {1} diffèrent par le rang ou l'emplacement",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "Échec de la validation des données du jeu : enhance.promote.inherit {0} -> {1} est absent de shop.equipment",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "Échec de la validation des données du jeu : enhance.promote.inherit {0} est en double",
- "게임 데이터 검증 실패: skill_specs {0} 중복": "Échec de la validation des données du jeu : skill_specs {0} en double"
+ "게임 데이터 검증 실패: skill_specs {0} 중복": "Échec de la validation des données du jeu : skill_specs {0} en double",
+ "게임 데이터 검증 실패: {0} lordSure 수량 범위가 거꾸로입니다": "Échec de la validation des données du jeu : la plage de quantité de lordSure de {0} est inversée"
 }

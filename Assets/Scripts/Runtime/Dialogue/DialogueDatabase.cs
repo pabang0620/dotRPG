@@ -69,6 +69,18 @@ namespace DotRPG
             }
         }
 
+        /// <summary>[CH3] Adds conversations from another bundle (chapter3.json); later ones win on equal ids.</summary>
+        public void Add(IEnumerable<DialogueData> more)
+        {
+            if (more == null) return;
+            foreach (var d in more)
+            {
+                if (d == null || string.IsNullOrEmpty(d.id)) continue;
+                foreach (var line in d.lines) if (line != null) line.text = L.T(line.text);
+                byId[d.id] = d;
+            }
+        }
+
         public bool TryGet(string id, out DialogueData data) => byId.TryGetValue(id ?? "", out data);
 
         public DialogueData Get(string id)

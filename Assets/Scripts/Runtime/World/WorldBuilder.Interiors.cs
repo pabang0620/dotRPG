@@ -114,6 +114,7 @@ namespace DotRPG
                 }
             }
             var def = ServiceNpc(service)?.Clone();
+            if (map.exteriorMap == MapRegistry.Sayab) def = StoryCast.SayabKeeper(service, def); // [CH3] 아카브 / the inn keeper
             if (def != null)
             {
                 def.behaviour = NpcBehaviour.Idle; def.tool = NpcTool.None; def.initialFacing = Facing.Down;

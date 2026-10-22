@@ -1,5 +1,6 @@
 // 솔로(AI 동반) 요일 던전·레이드: 입장, 목록, 결과 검증, 카드 선택. 파티 판은 partyruns 도메인이 만든다.
 import { closeMembershipOf } from '../fieldsessions/fieldCore';
+import { chapter3Open } from '../../gamedata/chapterGate';
 import { getConfig } from '../../config/env';
 import { getPool, isUniqueViolation } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
@@ -12,7 +13,7 @@ import * as charRepo from '../characters/characterRepository';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as dungeonRepo from './dungeonRepository';
-import { isOpenToday } from './dungeonRules';
+import { isOpenToday, shownDifficulties } from './dungeonRules';
 import { checkEntry, lockAtEntry } from './entryRules';
 import { AnomalyError } from '../economy/economyService';
 import { attackCap } from '../kills/killRules';
@@ -69,7 +70,7 @@ export async function listDungeons(accountId: number, characterUuid: string) {
       .map((d) => ({
         id: d.id,
         open_today: isOpenToday(eco, d, now),
-        difficulties: eco.dungeons.difficulties.map((_x, i) => ({
+        difficulties: eco.dungeons.difficulties.slice(0, shownDifficulties(eco, d, chapter3Open())).map((_x, i) => ({
           difficulty: i,
           unlocked: true, // 2026-10-14: 요일·일반 던전은 모든 난이도를 연다(entryRules.checkEntry와 같은 규칙)
           cleared: best.has(`${d.id}:${i}`),

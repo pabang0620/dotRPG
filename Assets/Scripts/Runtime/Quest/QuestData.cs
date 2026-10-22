@@ -203,6 +203,20 @@ namespace DotRPG
 
         public QuestDef Get(string id) => id != null && byId.TryGetValue(id, out var q) ? q : null;
 
+        /// <summary>
+        /// [CH3] Adds a chapter and its quests from another bundle (chapter3.json), translated like the main file. Quests
+        /// already known keep their first definition (a second merge of the same bundle changes nothing).
+        /// </summary>
+        public void Add(ChapterDef chapter, IEnumerable<QuestDef> more)
+        {
+            var file = new QuestFile();
+            if (chapter != null && chapter.number > 0 && Chapter(chapter.number) == null) file.chapters.Add(chapter);
+            if (more != null) foreach (var q in more) if (q != null && !string.IsNullOrEmpty(q.id) && !byId.ContainsKey(q.id)) file.quests.Add(q);
+            Translate(file);
+            chapters.AddRange(file.chapters);
+            foreach (var q in file.quests) { quests.Add(q); byId[q.id] = q; }
+        }
+
         public ChapterDef Chapter(int number)
         {
             foreach (var c in chapters) if (c.number == number) return c;

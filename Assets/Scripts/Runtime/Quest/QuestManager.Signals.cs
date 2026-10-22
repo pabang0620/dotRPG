@@ -104,6 +104,7 @@ namespace DotRPG
 
         bool Unlocked(QuestDef q)
         {
+            if (q.chapter >= 3 && !Chapter3.Enabled) return false; // [CH3] closed on the server: no chapter 3 quest is offered
             foreach (var r in q.requires) if (!Journal.IsCompleted(r)) return false;
             foreach (var f in q.requiresFlags) if (!Journal.HasFlag(f)) return false;
             return Game.Session.Progression.Level >= q.minLevel;

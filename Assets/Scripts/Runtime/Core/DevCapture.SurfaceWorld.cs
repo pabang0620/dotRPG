@@ -27,7 +27,8 @@ namespace DotRPG
             Game.Player.Input = surfaceInput;
             Game.Player.Health.SetInvulnerable(3600f);
             dgnPassed = dgnFailed = 0;
-            var maps = MapRegistry.All.Where(m => m.worldLayer == WorldLayer.Surface && !m.instanced && !m.IsInterior).ToArray();
+            // [CH3] The surface art set covers the chapter 1-2 world; 사얍 and the dry canyon use the canyon look (no own export yet).
+            var maps = MapRegistry.All.Where(m => m.worldLayer == WorldLayer.Surface && !m.instanced && !m.IsInterior && m.chapter < 3).ToArray();
             DCheck("surface export has five towns and sixteen fields", maps.Length == 21 && maps.Count(m => MapRegistry.IsTown(m.id)) == 5);
             string only = SurfaceArg("-surfaceOnly");
             if (!string.IsNullOrEmpty(only))

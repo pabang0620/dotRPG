@@ -12,6 +12,8 @@ namespace DotRPG
         Adventure = 1,
         King = 2,
         Hero = 3,
+        /// <summary>[CH3] 군주: weekday dungeons only, chapter 3 open and Lv41+ (DungeonDatabase.Lord.cs).</summary>
+        Lord = 4,
     }
 
     /// <summary>Numbers of one difficulty (monster multipliers, rewards, revives).</summary>
@@ -151,6 +153,10 @@ namespace DotRPG
         /// <see cref="DungeonDatabase.LuckCards"/> luck cards from <see cref="rewards"/> (gear, more materials, jackpot); all are taken.
         /// </summary>
         public SureReward sure;
+        /// <summary>[CH3] 군주 only: an extra sure material put straight in the bag on a clear (not a card; the 4 cards stay).</summary>
+        public LordBonus lordSure;
+        /// <summary>[CH3] 군주 only: patterns the boss gains from phase 2 (DungeonDatabase.Lord.cs).</summary>
+        public List<BossPattern> lordPatterns;
 
         public int RoomCount => rooms.Length;
     }
@@ -159,7 +165,7 @@ namespace DotRPG
     /// Code table of every weekday dungeon and the raid (like <see cref="EquipmentDatabase"/>), plan §6.0-§6.2.
     /// Numbers designers tune are at the top.
     /// </summary>
-    public static class DungeonDatabase
+    public static partial class DungeonDatabase
     {
         /// <summary>Reward id of "one piece of gear" (rolled per class and difficulty).</summary>
         public const string GearReward = "gear";
@@ -203,6 +209,7 @@ namespace DotRPG
             new DifficultyDef { id = DungeonDifficulty.Adventure, name = L.T("모험"), recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.9f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
             new DifficultyDef { id = DungeonDifficulty.King, name = L.T("왕"), recommendedLevel = 20, recommendedPower = 4200, hpMul = 7.7f, /* [2026-10-16] was 4.8: measured 84~105 s with 3 AI, target 120~300 (Docs/BALANCE_MEASURE_2026-10-16.md) */ damageMul = 2.0f, /* [2026-10-14] was 1.25: healers/potions must matter */ rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
             new DifficultyDef { id = DungeonDifficulty.Hero, name = L.T("영웅"), recommendedLevel = 27, recommendedPower = 6000, hpMul = 12f, /* [2026-10-16] was 6.7: measured 82~134 s with 3 AI, target 120~300 */ damageMul = 2.6f, /* [2026-10-14] was 1.6 */ rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
+            LordNumbers, // [CH3] Docs/ch3/WORLD_AND_STORY.md 8절
         };
 
         /// <summary>The raid has one difficulty of its own.</summary>
@@ -287,7 +294,7 @@ namespace DotRPG
             return rooms;
         }
 
-        static readonly DungeonDef[] Dungeons =
+        static readonly DungeonDef[] Dungeons = WithLord(new[]
         {
             new DungeonDef
             {
@@ -398,7 +405,7 @@ namespace DotRPG
                 description = L.T("얼어붙은 동굴 깊은 곳, 망자들이 지키는 옛 무기고.\n해골 방패병은 정면 공격을 막아 낸다.\n옛 노래가 말하는 다섯 집 가운데 추위의 집이라고도 한다."),
                 specialty = L.T("장비"), featureMonster = L.T("해골 방패병 (정면 방어, 슈퍼아머)"), bossName = L.T("수문장 파칼"),
             },
-        };
+        });
 
         static readonly DayOfWeek[] EveryDay =
             { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday };

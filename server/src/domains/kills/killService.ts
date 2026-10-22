@@ -1,4 +1,5 @@
 import { getConfig } from '../../config/env';
+import { assertOpen } from '../../gamedata/chapterGate';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { getRng } from '../../utils/rng';
@@ -11,7 +12,7 @@ import * as econRepo from '../economy/economyRepository';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './killRepository';
 import { parseItemKey } from '../../utils/itemKey';
-import { aoeCapFor, attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops } from './killRules';
+import { aoeCapFor, attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops, rollMapDrops } from './killRules';
 import { hasSpreadSpec, type CareerState } from '../characters/careerRules';
 import { rejected, resolveFieldTarget, type KillTarget } from './killTarget';
 import { assertKillPresence } from '../antiabuse/killPresence';
@@ -39,6 +40,9 @@ export function reportKill(accountId: number, characterUuid: string, body: KillB
 }
 
 async function resolveTarget(ctx: EconCtx, body: KillBody): Promise<KillTarget> {
+  // [CH3] 닫힌 3장 맵·몬스터의 처치는 어떤 경로(던전·세션·필드)로 와도 받지 않는다
+  assertOpen('map', body.map_id);
+  assertOpen('monster', body.monster_id);
   if (body.run_id !== undefined && body.room_index !== undefined) {
     return resolveDungeonTarget(ctx, body.run_id, body.map_id, body.room_index, body.monster_id);
   }
@@ -166,7 +170,11 @@ async function processKill(ctx: EconCtx, body: KillBody) {
     const expiresAt = new Date(ctx.now.getTime() + pol.dropTtlSeconds * 1000);
     // 9단계: 캐리 중(경험치 배율 < 1)에는 처치당 기본 골드도 같은 배율로 줄인다(하드 격차는 1)
     const goldMul = getConfig().field.carryGoldScale && xpf !== null && (hardXp || xpf < 1) ? (hardXp ? 0 : xpf) : 1;
-    for (const spec of rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1, target.level, goldMul)) {
+    const rolled = [
+      ...rollKillDrops(eco, def, ctx.char.class, hits, getRng(), target.field?.dropMul ?? 1, target.level, goldMul),
+      ...rollMapDrops(eco, target.mapId, def.id, getRng(), target.field?.dropMul ?? 1), // [CH3] 사냥터 퀘스트 수집품
+    ];
+    for (const spec of rolled) {
       const row = await repo.insertDrop(ctx.client, ctx.char.id, killId, spec.itemKey, spec.count, expiresAt, ctx.now);
       drops.push({ id: row.uuid, item_key: row.item_key, count: row.count, expires_at: row.expires_at.toISOString() });
     }

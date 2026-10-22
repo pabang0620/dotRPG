@@ -40,6 +40,7 @@ namespace DotRPG
         readonly List<Slot> slots = new List<Slot>();
         readonly List<Card> cards = new List<Card>();
         Text partyTitle, hint;
+        Button kukButton; // [CH3] 쿠크 (story companion offered from 3-3 to 3-끝, StoryCompanions.Chapter3.cs)
         int selected;
         float lastMoveX;
 
@@ -52,6 +53,8 @@ namespace DotRPG
             Label(w.content, "MercTitle", L.T("<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>"), 22,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, -150f), new Vector2(1180f, 30f));
             foreach (var def in MercenaryDatabase.All) w.cards.Add(w.BuildCard(def, w.cards.Count));
+            w.kukButton = Button(w.content, "Kukum", "", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-4f, 0f), new Vector2(300f, 34f), () => w.ToggleKuk(), 18);
+            w.kukButton.gameObject.SetActive(false);
             // [UI] Key hint under the cards (top right it ran into the party title once the "자리가 N개라" warning showed).
             w.hint = Label(w.content, "Hint", "", 17, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-4f, 2f), new Vector2(1180f, 28f), TextAnchor.LowerRight);
             return w;
@@ -189,6 +192,26 @@ namespace DotRPG
                 c.button.image.color = full ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
             }
             hint.text = L.T("<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸웁니다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>");
+            bool kukIn = roster.Contains(StoryCompanions.KukId);
+            kukButton.gameObject.SetActive(kukIn || StoryCompanions.KukAvailable);
+            if (kukButton.gameObject.activeSelf)
+            {
+                bool kukFull = !kukIn && roster.Count >= PartyManager.CompanionLimit;
+                kukButton.GetComponentInChildren<Text>().text = kukIn ? L.T("쿠크 해제") : kukFull ? L.T("쿠크: 자리 없음") : L.T("쿠크와 함께 가기");
+                kukButton.image.sprite = Game.Art.Get(kukIn ? "ui_btngray" : "ui_btn");
+                kukButton.image.color = kukFull ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
+            }
+        }
+
+        void ToggleKuk()
+        {
+            if (Game.Dungeon != null && Game.Dungeon.InRun) { GameEvents.RaiseToast(L.T("던전 안에서는 파티를 바꿀 수 없습니다.")); Game.Audio.PlaySfx("cancel"); return; }
+            bool wasIn = Game.Session.PartyRoster.Contains(StoryCompanions.KukId);
+            bool ok = StoryCompanions.ToggleKuk();
+            if (ok) GameEvents.RaiseToast(wasIn ? L.T("쿠크가 파티에서 떠났습니다.") : L.T("쿠크가 파티에 합류했습니다."));
+            else if (!wasIn) GameEvents.RaiseToast(L.F("파티가 가득 찼습니다. (최대 {0}명)", PartyManager.MaxMembers));
+            Game.Audio.PlaySfx(ok ? "confirm" : "cancel");
+            Refresh();
         }
 
         static Sprite Portrait(MercenaryDef def, int level)

@@ -17,7 +17,7 @@ namespace DotRPG.EditorTools
             var j = Doc();
             j.Arr("maps", MapRegistry.All.Concat(MapRegistry.Interiors).Concat(MapRegistry.Rooms), (o, m) =>
             {
-                o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe)
+                o.Obj().Str("id", m.id).Bool("instanced", m.instanced).Bool("safe", m.safe).Num("chapter", MapRegistry.IsChapter3(m.id) ? 3 : 0)
                     .Str("worldLayer", m.worldLayer == WorldLayer.Underground ? "underground" : "surface").Num("depth", m.depth);
                 var census = Census(m);
                 // [SERVER 8] A field party can share this map's monsters (open map with a field spawner).
@@ -37,6 +37,14 @@ namespace DotRPG.EditorTools
                 if (fb != null)
                     o.Key("fieldBoss").Obj().Str("monsterId", fb.monsterId).Num("level", FieldBosses.LevelOf(fb)).Num("xp", FieldBosses.XpOf(fb))
                         .Num("intervalSeconds", FieldBosses.IntervalSeconds).End();
+                // [CH3] Quest pickups of this field (FieldQuestDrops): the server rolls them with each kill.
+                var questDrops = FieldQuestDrops.For(m.id);
+                if (questDrops.Length > 0)
+                    o.Arr("fieldDrops", questDrops, (x, d) => x.Obj().Str("itemId", d.item).Num("chance", d.chance).Arr("monsters", d.monsters, (y, id) => y.Val(id)).End());
+                // [CH3] 잿빛 손 정찰대장: one elite per 60 field kills on this map (EnemySpawner.Captain.cs).
+                if (zone != null && (zone.id == MapRegistry.DryStones || zone.id == MapRegistry.DryRift))
+                    o.Key("fieldElite").Obj().Str("monsterId", MonsterDatabase.GreyCaptain).Num("everyKills", EnemySpawner.CaptainEveryKills)
+                        .Num("level", zone.monsterLevel).Num("xp", zone.KillXp * 8).End();
                 o.Arr("scriptedSpawns", ScriptedSpawns(m.id), (x, sp) => x.Obj().Str("monsterId", sp.Item1).Num("total", sp.Item2).Str("quest", sp.Item3).End());
                 o.Arr("chests", census.chests, (x, c) => x.Val(c));
                 return o.End();
@@ -77,7 +85,7 @@ namespace DotRPG.EditorTools
                 c.spawnPoints = rows.Sum(row => row.Count(ch => ch == 'k'));
                 return c;
             }
-            bool canyon = map.theme == MapTheme.Canyon, winter = map.theme == MapTheme.Winter, hd = map.HighRes;
+            bool canyon = map.theme == MapTheme.Canyon || map.theme == MapTheme.DryCanyon, winter = map.theme == MapTheme.Winter, hd = map.HighRes;
             char filler = canyon ? ',' : '.';
             var cells = new char[c.width, c.height];
             for (int row = 0; row < c.height; row++)

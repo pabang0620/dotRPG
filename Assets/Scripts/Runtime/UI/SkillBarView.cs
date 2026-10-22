@@ -23,6 +23,9 @@ namespace DotRPG
 
         readonly Image[] frames = new Image[SkillGems.Slots];
         readonly Image[] icons = new Image[SkillGems.Slots];
+        // [CH3 SPEC] Crimson (A) / silver (B) frame over the icon of a specialized skill.
+        readonly Image[] specFrames = new Image[SkillGems.Slots];
+        readonly char[] specShown = new char[SkillGems.Slots];
         readonly Image[] cooldowns = new Image[SkillGems.Slots];
         readonly Image[] locks = new Image[SkillGems.Slots];
         readonly Text[] keys = new Text[SkillGems.Slots];
@@ -58,6 +61,9 @@ namespace DotRPG
 
                 v.icons[i] = UIFactory.Image(bg.transform, "Icon", null, Color.white);
                 UIFactory.Place(v.icons[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(s * 0.7f, s * 0.7f));
+                v.specFrames[i] = UIFactory.Image(bg.transform, "SpecFrame", null, Color.white);
+                UIFactory.Place(v.specFrames[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(s * 0.8f, s * 0.8f));
+                v.specFrames[i].enabled = false;
 
                 var cd = UIFactory.Image(bg.transform, "Cooldown", Game.Art.Get("ui_white"), new Color(0f, 0f, 0f, 0.6f));
                 cd.preserveAspect = false;
@@ -132,6 +138,19 @@ namespace DotRPG
             return v;
         }
 
+        /// <summary>[CH3 SPEC] The generated frame of a specialization side (Art/spec_frame_a / _b), null for none or while missing.</summary>
+        public static Sprite SpecFrame(char side) =>
+            side == 'a' ? Game.Art.Optional("spec_frame_a") : side == 'b' ? Game.Art.Optional("spec_frame_b") : null;
+
+        void ShowSpec(int i, char side)
+        {
+            if (specShown[i] == side) return;
+            specShown[i] = side;
+            var frame = SpecFrame(side);
+            specFrames[i].sprite = frame;
+            specFrames[i].enabled = frame != null;
+        }
+
         /// <summary>Rim + two dashes travelling clockwise (one lap per 1.2 s) while a toggle skill is on.</summary>
         void ShowToggle(int i, bool on)
         {
@@ -182,6 +201,7 @@ namespace DotRPG
                 keys[i].text = Game.Input.GetBindingLabel(SkillGems.ActionFor(i));
                 icons[i].enabled = shown != null;
                 if (shown != null) icons[i].sprite = Game.Art.Get(shown.icon);
+                ShowSpec(i, gem != null ? prog.SpecOf(gem.id) : '\0');
                 bool open = gem != null;
                 // [SKILL 8] An A/S/D key that is open but has nothing on it: an empty slot, not a lock.
                 bool empty = !open && i != SkillGems.UltimateSlot && prog.IsSlotOpen(i);

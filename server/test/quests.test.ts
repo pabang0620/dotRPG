@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { buildApp, resetDb, shutdown } from './helpers';
+import { mainQuestLevelGate } from '../src/domains/minidungeon/miniDungeonRules';
 import {
   anomalyKinds,
   countOf,
@@ -202,5 +203,43 @@ describe('POST /characters/:id/quests/:quest_id/claim', () => {
     );
     const ok = await claim(h, 'c1_fortress');
     expect(ok.status).toBe(200);
+  });
+});
+
+// [CH3] 3장 메인 사슬(chapter3.json 묶음 → quest_index): 태그·선행·따라잡기 게이트(Docs/ch3/WORLD_AND_STORY.md 2절)
+describe('챕터 3 퀘스트 사슬', () => {
+  const C3_MAIN = ['c3_depart', 'c3_caravan', 'c3_sayab', 'c3_trust', 'c3_record', 'c3_xibak', 'c3_defense',
+    'c3_stones', 'c3_oath', 'c3_trace', 'c3_kamatz', 'c3_end'];
+  const C3_SUB = ['c3s_kuk_drill', 'c3s_akab_supply', 'c3s_kana_herbs', 'c3s_noho_tales', 'c3s_balche_toy',
+    'c3s_hollow_b1', 'c3s_hollow_b2', 'c3s_grey_patrol', 'c3s_ria_letter', 'c3s_hollow_b4'];
+
+  it('메인 12·서브 10이 모두 있고 챕터 3 태그가 붙는다', () => {
+    const eco = getGameData().economy;
+    for (const id of [...C3_MAIN, ...C3_SUB]) {
+      expect(eco.quests.get(id)).toBeDefined();
+      expect(eco.chapterTags.get(`quest:${id}`)).toBe(3);
+    }
+    for (const id of C3_SUB) expect(eco.quests.get(id)!.kind).toBe('sub');
+  });
+
+  it('3-1은 c2_end 뒤, 나머지 메인은 직전 메인 뒤에 열린다. minLevel은 40, 41~50, 3-끝은 0', () => {
+    const eco = getGameData().economy;
+    expect(eco.quests.get('c3_depart')!.requires).toEqual(['c2_end']);
+    for (let i = 1; i < C3_MAIN.length; i++) expect(eco.quests.get(C3_MAIN[i]!)!.requires).toEqual([C3_MAIN[i - 1]!]);
+    const levels = C3_MAIN.map((id) => eco.quests.get(id)!.minLevel);
+    expect(levels).toEqual([40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 0]);
+    expect(eco.quests.get('c3_end')!.reward.setFlags).toContain('chapter3_done');
+  });
+
+  it('따라잡기 게이트: 3-k를 마치고 다음 단계 레벨보다 낮으면 그 레벨에서 막힌다(41~50 전 구간)', () => {
+    const eco = getGameData().economy;
+    const before = [...eco.quests.entries()].filter(([id, q]) => q.kind === 'main' && !id.startsWith('c3_')).map(([id]) => id);
+    const flags = new Set<string>(['chapter2_done']);
+    for (let k = 1; k <= 10; k++) {
+      const claimed = new Set<string>([...before, ...C3_MAIN.slice(0, k)]);
+      const next = eco.quests.get(C3_MAIN[k]!)!.minLevel;
+      expect(mainQuestLevelGate(eco.quests, claimed, flags, next - 1)).toBe(next);
+      expect(mainQuestLevelGate(eco.quests, claimed, flags, next)).toBeNull();
+    }
   });
 });

@@ -48,7 +48,14 @@ namespace DotRPG
             new[]{MapRegistry.Sanctum,"sanctum_hall","sanctum_archive","sanctum_roots","sanctum_court",MapRegistry.Village}
         };
         public static bool Portal(char c)=>c=='<'||c=='>'||c=='['||c==']'||c=='^'||c=='{'||c=='}';
+        /// <summary>[CH3] A road from an open map into a closed chapter 3 map does not exist yet (no portal, no atlas road, no hint).</summary>
+        public static bool Closed(string from, string to) => MapRegistry.IsChapter3(to) && !MapRegistry.IsChapter3(from) && !Chapter3.Enabled;
         public static string Target(MapInfo map, char c)
+        {
+            string target = RawTarget(map, c);
+            return target != null && Closed(map.id, target) ? null : target;
+        }
+        static string RawTarget(MapInfo map, char c)
         {
             if (map == null || map.instanced) return null;
             switch (c)
@@ -67,8 +74,8 @@ namespace DotRPG
         {
             var m=MapRegistry.Get(id);if(m==null)yield break;
             var seen = new HashSet<string>();
-            foreach(var s in new[]{m.previousMap,m.nextMap,m.northMap,m.southMap,m.hubMap,m.downMap,m.upMap})
-                if(!string.IsNullOrEmpty(s) && seen.Add(s))yield return s;
+            foreach(var s in new[]{m.previousMap,m.nextMap,m.northMap,m.southMap,m.hubMap,m.downMap,m.upMap,m.westMap})
+                if(!string.IsNullOrEmpty(s) && !Closed(m.id,s) && seen.Add(s))yield return s;
         }
         public static string Directions(MapInfo m)
         {
@@ -76,6 +83,7 @@ namespace DotRPG
             foreach(var p in new[]{('<',L.T("서쪽")),('>',L.T("동쪽")),('[',L.T("북쪽")),(']',L.T("남쪽")),('^',L.T("뿌리샘 길")),('{',L.T("아래층")),('}',L.T("지상으로"))}){
                 var id=Target(m,p.Item1);if(id!=null)parts.Add(p.Item2+": "+(MapRegistry.Get(id)?.displayName??id));
             }
+            if(!string.IsNullOrEmpty(m.westMap)&&!Closed(m.id,m.westMap))parts.Add(L.T("서쪽 길")+": "+(MapRegistry.Get(m.westMap)?.displayName??m.westMap));
             return string.Join(" / ",parts);
         }
         public static void Configure(List<MapInfo> maps)
@@ -109,6 +117,16 @@ namespace DotRPG
             var depths = Get("hollow_depths");
             depths.northMap = null;
             depths.southMap = fungal.id;
+
+            // [CH3] canyon town -(plaza passage west)-> 갈라진 협곡 바닥 -> 사얍 마을 -> 검은 수호석 잔해 -> 공허의 틈 (a dead end).
+            Get(MapRegistry.Canyon).westMap = MapRegistry.DryFloor;
+            var floor = Get(MapRegistry.DryFloor); floor.previousMap = MapRegistry.Sayab; floor.nextMap = MapRegistry.Canyon; // west to 사얍, east back to the canyon
+            var sayab = Get(MapRegistry.Sayab); sayab.previousMap = MapRegistry.DryFloor; sayab.nextMap = MapRegistry.DryStones; sayab.hubMap = null;
+            var stones = Get(MapRegistry.DryStones); stones.previousMap = MapRegistry.Sayab; stones.nextMap = MapRegistry.DryRift;
+            Get(MapRegistry.DryRift).previousMap = MapRegistry.DryStones;
+            floor.hint = L.T("메말라 가는 협곡 · 동쪽: 바위 협곡 마을 / 서쪽: 사얍 마을");
+            stones.hint = L.T("메말라 가는 협곡 · 사얍 마을 북쪽 / 다음: 공허의 틈");
+            Get(MapRegistry.DryRift).hint = L.T("메말라 가는 협곡 끝 · 공허 균열이 열린다: 3초 서 있으면 닫힌다");
         }
     }
 }

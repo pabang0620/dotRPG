@@ -141,7 +141,7 @@
 |---|---|---|
 | 이야기 | 끝남. `Resources/Data/chapter3.json`(메인 12·서브 10, 컷신 12, 대사 45, 한국어 259줄), 로더 `Chapter3Content.Merge`, 컷신 `choice`·`rel`, 서버 `quest_index` chapter 태그, `quests.test.ts` 3장 사슬·따라잡기 게이트 | 번역 11개 언어(259줄). 메인 골드 합은 표 기준 272,000(문서 본문 286,000과 다름, 표가 기준) |
 | 세계 | 사얍·메마른 협곡 맵, 몬스터 8종, 필드 공허 균열 등. 멈추기 직전 전체 컴파일 통과 | 이야기가 쓰는 id(소품 ria_garden·c3_record_1·2·c3_pebble·c3_guardian_wreck·c3_grey_camp, 균열 신호 c3_rift_closed, 수집 아이템 qi_void_essence·qi_dry_hide·qi_ash_herb·qi_dry_flower, 컷신 배우 8명) 연결 확인, 서버 테스트 |
-| 동료·방어전·군주 | 쿠크 동료(story_kukum), 방어전 플래그 c3_defense_won, 군주 난이도, 마이그레이션 `0050_lord_difficulty.sql` | 다시 컴파일·테스트. 설계상 0050은 boss_seasons.boss_level(5단계)이라 커밋 전에 번호를 정리한다(군주 0050 유지 시 boss_level을 0051로) |
+| 동료·방어전·군주 | 쿠크 동료(story_kukum), 방어전 플래그 c3_defense_won, 군주 난이도, 마이그레이션 `0050_lord_difficulty.sql` | 컴파일·테스트 통과(10-22 재개). 마이그레이션 번호는 군주 0050, 5단계 보스 시즌 레벨 0051로 정리됨 |
 | 그림 | NPC 8명 프레임(char_ixi·kukum·akab·noho·kana·balche·ria_adult·sayab_inn), 카마츠 일부 | 시바크, 카마츠 나머지, 몬스터 아틀라스 8종, 사얍 건물·소품, 협곡 타일·소품, 아이콘(재료·티어 9·10·특화 테두리), 레이드 배너, BGM |
 
 이어 하기: 작업 트리를 그대로 두고 Unity 컴파일·내보내기 → 서버 테스트 → 번역 → 커밋 순서. 남은 구현은 빈 대화 에이전트에 이 문서와 `ch3/` 경로를 주고 맡긴다(fork 금지, 모델은 난이도별, `.claude/rules/agents.md` "fork 사용 전 점검").

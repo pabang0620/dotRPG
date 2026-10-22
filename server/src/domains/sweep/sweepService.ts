@@ -2,6 +2,7 @@
 // 재화(골드·경험치·아이템·클리어권)가 바뀌는 경로는 모두 runEconomy(캐릭터 행 잠금, request_log 멱등성) 안에서
 // 계정 행을 잠근 뒤 바꾸고 원장을 남긴다. 금액·확률·보상량·횟수·시간은 요청에서 받지 않는다.
 import { randomUUID } from 'node:crypto';
+import { chapter3Open } from '../../gamedata/chapterGate';
 import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import type { DungeonDef } from '../../gamedata/economyData';
@@ -18,7 +19,7 @@ import { assertActionPresence } from '../antiabuse/killPresence';
 import * as charRepo from '../characters/characterRepository';
 import * as dungeonRepo from '../dungeons/dungeonRepository';
 import { pityLeft, readMisses } from '../dungeons/uniquePity';
-import { diffOf, isOpenToday, RANK_NAMES, UNIQUE_BONUS, type DiffNumbers } from '../dungeons/dungeonRules';
+import { diffOf, isOpenToday, LORD_DIFFICULTY, RANK_NAMES, shownDifficulties, UNIQUE_BONUS, type DiffNumbers } from '../dungeons/dungeonRules';
 import type { EconCtx } from '../economy/economyContext';
 import { AnomalyError, runEconomy, type EconResult, type StoredResult } from '../economy/economyService';
 import * as repo from './sweepRepository';
@@ -112,7 +113,7 @@ export async function sweepStatus(accountId: number, characterUuid: string) {
       .map((d) => ({
         id: d.id,
         open_today: isOpenToday(eco, d, now),
-        difficulties: eco.dungeons.difficulties.map((_x, i) => {
+        difficulties: eco.dungeons.difficulties.slice(0, shownDifficulties(eco, d, chapter3Open())).map((_x, i) => {
           const diff = diffOf(eco, d, i) as DiffNumbers;
           const e = eligibility(d, i, diff, c.level, best, sweep, now);
           return {
@@ -163,6 +164,10 @@ async function processSweep(ctx: EconCtx, body: SweepRunBody, all: boolean): Pro
   const d = eco.dungeons.byId.get(body.dungeon_id);
   if (!d) throw new AppError(422, '알 수 없는 던전입니다.', 'DUNGEON_UNKNOWN');
   if (d.isRaid || d.always) throw DENIED('SWEEP_NOT_ALLOWED', '소탕할 수 없는 던전입니다.', { dungeon_id: d.id });
+  // 챕터 3 군주(4)는 3장이 열린 서버에서만(직접 클리어 기록이 남아 있어도 닫히면 소탕 불가)
+  if (body.difficulty === LORD_DIFFICULTY && !chapter3Open()) {
+    throw new AppError(422, '아직 열리지 않은 콘텐츠입니다.', 'CHAPTER_LOCKED', { kind: 'dungeon', id: `${d.id}:${body.difficulty}` });
+  }
   const diff = diffOf(eco, d, body.difficulty);
   if (!diff) throw new AppError(422, '알 수 없는 난이도입니다.', 'DUNGEON_UNKNOWN');
   const best = await repo.bestRanks(ctx.client, ctx.char.id);

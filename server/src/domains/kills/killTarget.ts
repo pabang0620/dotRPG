@@ -91,6 +91,32 @@ export async function resolveFieldTarget(
       commit: async () => {},
     };
   }
+  // [CH3] 필드 정예: 같은 맵 일반 처치 everyKills마리마다 1마리(지난 1시간 기준). 그보다 많으면 공급 초과
+  const elite = extra.fieldElite;
+  if (elite && elite.monsterId === monsterId) {
+    const since = new Date(now.getTime() - 3600 * 1000);
+    let ordinary = 0;
+    for (const s of extra.fieldSpawns) ordinary += await countFieldKillsSince(client, characterId, mapId, s.monsterId, since);
+    const n = await countFieldKillsSince(client, characterId, mapId, monsterId, since);
+    const limit = Math.floor(ordinary / elite.everyKills);
+    if (n >= limit) throw rejected('kill_supply', opts.nonHost ? 1 : 2, { ...detailBase, count: n, limit, field_elite: true });
+    return {
+      context: 'field',
+      mapId,
+      level: elite.level,
+      xpOverride: elite.xp,
+      hpMul: 1,
+      burst,
+      powerWindowSeconds: FIELD_POWER_WINDOW_SECONDS,
+      run: null,
+      isRaid: false,
+      rewardLocked: false,
+      powerCap: null,
+      nonHost: opts.nonHost ?? false,
+      field: null,
+      commit: async () => {},
+    };
+  }
   const field = extra.fieldSpawns.find((s) => s.monsterId === monsterId);
   if (field) {
     // 리스폰 공급 상한(3.2.2): N개 스폰점, R초 리스폰이면 R초 안에 ceil(N * 여유)마리를 넘을 수 없다

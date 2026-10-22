@@ -18,7 +18,9 @@ namespace DotRPG
         /// face (actor, dir) · place (actor, col, row, dir) · emote (actor, text) · shake (t, power) ·
         /// sfx (id) · music (id) · flag (id) · unflag (id) · camera (actor or col/row, t) · cameraReset ·
         /// travel (id = map, col, row, dir) · heal · fire (col, row, count) · enemies (id = enemy, col, row, count) ·
-        /// letterbox (on: count = 1, off: 0) · title (text, t) · join / leave (actor = story companion).
+        /// letterbox (on: count = 1, off: 0) · title (text, t) · join / leave (actor = story companion) ·
+        /// choice (text = the question or "", id = answers separated by "|"; every answer goes on the same way, the picked
+        /// one is spoken by the hero).
         /// </summary>
         public string op = "";
         public string actor = "";
@@ -36,6 +38,11 @@ namespace DotRPG
         public string color = "";
         /// <summary>move: wait for arrival before the next command (default) or walk while the scene goes on.</summary>
         public bool noWait;
+        /// <summary>
+        /// [CH3] col / row are cell offsets from where the hero stood when the scene began (row grows downward), so a
+        /// scene can be written before its map exists or play anywhere on a field map.
+        /// </summary>
+        public bool rel;
     }
 
     [Serializable]
@@ -77,6 +84,18 @@ namespace DotRPG
         }
 
         public CutsceneDef Get(string id) => id != null && byId.TryGetValue(id, out var c) ? c : null;
+
+        /// <summary>[CH3] Adds scenes from another bundle (chapter3.json); later ones win on equal ids.</summary>
+        public void Add(IEnumerable<CutsceneDef> scenes)
+        {
+            if (scenes == null) return;
+            foreach (var c in scenes)
+            {
+                if (c == null || string.IsNullOrEmpty(c.id)) continue;
+                foreach (var cmd in c.cmds) if (cmd != null) cmd.text = L.T(cmd.text);
+                byId[c.id] = c;
+            }
+        }
         public IEnumerable<string> Ids => byId.Keys;
     }
 }

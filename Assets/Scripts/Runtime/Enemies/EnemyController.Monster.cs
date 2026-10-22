@@ -135,6 +135,7 @@ namespace DotRPG
             GroggyMax = groggyBase;
             Groggy = GroggyMax;
             behaviour = MonsterBehaviour.Attach(this, def);
+            Chapter3Monsters.Attach(this, def); // [CH3] burster fuse, priest ward, caller rift
             if (def.boss) BossSpawned?.Invoke(this);
         }
 

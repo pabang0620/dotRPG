@@ -142,6 +142,78 @@
    "col": 37,
    "row": 22,
    "facing": "left"
+  },
+  {
+   "npcId": "ixi",
+   "map": "sayab",
+   "col": 20,
+   "row": 9,
+   "facing": "down",
+   "requires": [],
+   "hiddenBy": []
+  },
+  {
+   "npcId": "kukum",
+   "map": "sayab",
+   "col": 17,
+   "row": 27,
+   "facing": "down",
+   "requires": [],
+   "hiddenBy": []
+  },
+  {
+   "npcId": "noho",
+   "map": "sayab",
+   "col": 27,
+   "row": 10,
+   "facing": "left",
+   "requires": [],
+   "hiddenBy": []
+  },
+  {
+   "npcId": "kana",
+   "map": "sayab",
+   "col": 26,
+   "row": 16,
+   "facing": "down",
+   "requires": [],
+   "hiddenBy": []
+  },
+  {
+   "npcId": "balche",
+   "map": "sayab",
+   "col": 24,
+   "row": 20,
+   "facing": "down",
+   "hiddenAfterDone": [
+    "c3_defense"
+   ],
+   "requires": [],
+   "hiddenBy": []
+  },
+  {
+   "npcId": "balche",
+   "map": "sayab",
+   "col": 24,
+   "row": 20,
+   "facing": "down",
+   "requiresDone": [
+    "c3_kamatz"
+   ],
+   "requires": [],
+   "hiddenBy": []
+  },
+  {
+   "npcId": "ria_adult",
+   "map": "sayab",
+   "col": 6,
+   "row": 25,
+   "facing": "right",
+   "requiresDone": [
+    "c3_trust"
+   ],
+   "requires": [],
+   "hiddenBy": []
   }
  ],
  "props": [
@@ -313,6 +385,132 @@
    ],
    "glow": true,
    "solid": false
+  },
+  {
+   "sprite": "Town/sayab_ixi_house",
+   "fallback": "town_hall",
+   "map": "sayab",
+   "col": 13,
+   "row": 6,
+   "scale": 1.0,
+   "wallWidth": 3.8,
+   "wallDepth": 1.4,
+   "wallFront": 0.4,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "Town/sayab_spring_pavilion",
+   "fallback": "town_well",
+   "map": "sayab",
+   "col": 14,
+   "row": 13,
+   "scale": 1.0,
+   "wallWidth": 2.6,
+   "wallDepth": 1.2,
+   "wallFront": 0.4,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "Town/sayab_noho_records",
+   "fallback": "town_store",
+   "map": "sayab",
+   "col": 27,
+   "row": 8,
+   "scale": 1.0,
+   "wallWidth": 3.4,
+   "wallDepth": 1.4,
+   "wallFront": 0.4,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "c3_herb_garden",
+   "fallback": "story_trough",
+   "map": "sayab",
+   "col": 4,
+   "row": 25,
+   "solid": false,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "ria_garden",
+   "dialogue": "",
+   "prompt": "약초밭 살펴보기"
+  },
+  {
+   "sprite": "sayab_lantern_post",
+   "map": "sayab",
+   "col": 10,
+   "row": 7,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "sayab_lantern_post",
+   "map": "sayab",
+   "col": 17,
+   "row": 28,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "sayab_lantern_post",
+   "map": "sayab",
+   "col": 22,
+   "row": 28,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "sayab_herb_plot",
+   "map": "sayab",
+   "col": 22,
+   "row": 17,
+   "solid": false,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "sayab_black_stones",
+   "map": "sayab",
+   "col": 7,
+   "row": 18,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
+  },
+  {
+   "sprite": "sayab_wreck_decor",
+   "map": "sayab",
+   "col": 32,
+   "row": 10,
+   "scale": 1.0,
+   "requires": [],
+   "hiddenBy": [],
+   "interactId": "",
+   "dialogue": ""
   }
  ]
 }

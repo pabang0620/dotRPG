@@ -72,6 +72,10 @@ namespace DotRPG
             new HuntingZone("hollow_roots", L.T("B2 · 뒤엉킨 뿌리굴"), MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 1, "hollow_scarab", "hollow_guard", "hollow_hexer"),
             new HuntingZone("hollow_fungal", L.T("B3 · 푸른 포자 동굴"), MapRegistry.Undergate, MapTheme.Underground, 45, 50, 47, 2, "hollow_hexer", "hollow_scarab", "hollow_guard"),
             new HuntingZone("hollow_depths", L.T("B4 · 반딧불 심연"), MapRegistry.Undergate, MapTheme.Underground, 50, 55, 53, 3, "hollow_guard", "hollow_hexer", "hollow_scarab"),
+            // [CH3] 메말라 가는 협곡 (Docs/ch3/WORLD_AND_STORY.md 7): closed with the chapter (MapRegistry.Chapter3Maps).
+            new HuntingZone(MapRegistry.DryFloor, L.T("갈라진 협곡 바닥"), MapRegistry.Sayab, MapTheme.DryCanyon, 41, 44, 42, 0, "void_hound", "void_sentry", "void_burster"),
+            new HuntingZone(MapRegistry.DryStones, L.T("검은 수호석 잔해"), MapRegistry.Sayab, MapTheme.DryCanyon, 44, 47, 46, 1, "void_sentry", "void_caller", "grey_ranger"),
+            new HuntingZone(MapRegistry.DryRift, L.T("공허의 틈"), MapRegistry.Sayab, MapTheme.DryCanyon, 47, 50, 49, 2, "void_caller", "grey_knight", "grey_priest"),
         };
         public static HuntingZone Get(string id) => Array.Find(All, z => z.id == id);
 
@@ -90,10 +94,10 @@ namespace DotRPG
         // Floor applies to TOTAL dungeon XP (kills + clear); rank/specialty rewards then add value.
         public static int DungeonClearFloor(DungeonDef dungeon, DifficultyDef diff)
         {
-            int tier = Mathf.Clamp((int)diff.id, 0, 3);
+            int tier = Mathf.Clamp((int)diff.id, 0, dungeon.referenceSeconds.Length - 1); // [CH3] weekday dungeons have a 5th (군주) time
             // [NORMAL 2026-10-14] 일반 던전 = hunting at the recommended level for the same time (user: "사냥하는거랑 비슷하게"),
             // the weekday dungeons keep their 1.8x bonus at the higher benchmark levels.
-            int benchmarkLevel = dungeon.isRaid || dungeon.always ? diff.recommendedLevel : new[] { 10, 18, 26, 36 }[tier];
+            int benchmarkLevel = dungeon.isRaid || dungeon.always ? diff.recommendedLevel : new[] { 10, 18, 26, 36, 45 }[tier];
             float seconds = dungeon.referenceSeconds[tier];
             int target = Mathf.CeilToInt(XpAt(benchmarkLevel) * KillsPerMinute * seconds / 60f * (dungeon.always ? 1f : DungeonEfficiency));
             int kills = 0;

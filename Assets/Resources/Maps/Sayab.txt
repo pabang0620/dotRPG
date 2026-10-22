@@ -1,0 +1,37 @@
+// [CH3] 사얍 마을 (Docs/ch3/WORLD_AND_STORY.md 6): the hidden spring of the demon moderates, west of the canyon.
+// Same symbols and art as the canyon town (Canyon.txt legend). One character = one 16px tile. Top row = north.
+// ,=flagstone W=cliff ~=the hidden spring T=tree R=rock B=bush f=flower H/G=house (3x3) I=inn (5x4) &=anvil P=player start
+// <=south road back to 갈라진 협곡 바닥  >=north gate to 검은 수호석 잔해. The three nearest houses become the shop,
+// blacksmith and storage (WorldBuilder.Interiors.cs); story characters stand by StoryWorld.json placements.
+WWWWWWWWWWWWWWWWWW>>>>WWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW,,,,,,WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWW,,,,,,,,WWWWWWWWWWWWWWWW
+WWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWW
+WWW,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,T,,WWW
+WWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWW
+WW,,,,G,,,,,,,,,,,,,,,,,,,,,,,,G,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,R,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,R,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,~~~~~~~~,,,,,,,,,,,,,,WW
+WW,,B,,,,,,,,,,,~~~~~~~~,,,,,,,,,,B,,,WW
+WW,,,,,,,,,,,,,,~~~~~~~~,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,~~~~~~,,,,,,,,,,,,,,,WW
+WW,,,,,I,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,&,,,,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,f,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,f,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,,,H,,,,,,,,,,,,,,,,,,,,,,,,,H,,,,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WW,,T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T,,WW
+WW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WW
+WWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWW
+WWW,,,,,,,,,,,,,,,,,,P,,,,,,,,,,,,,,,WWW
+WWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWW
+WWWWWW,,,,,,,,,,,,,,,,,,,,,,,,,,,,WWWWWW
+WWWWWWWWWWWWWWWW,,,,,,,,WWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWW,,,,,,WWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWWWW<<<<WWWWWWWWWWWWWWWWWW

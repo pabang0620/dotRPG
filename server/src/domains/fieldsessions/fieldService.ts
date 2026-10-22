@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { getConfig } from '../../config/env';
 import { getPool, isUniqueViolation } from '../../db/pool';
+import { assertOpen } from '../../gamedata/chapterGate';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
@@ -84,6 +85,7 @@ export function enterField(accountId: number, characterUuid: string, body: Enter
 }
 
 async function processEnter(ctx: PartyCtx, mapId: string) {
+  assertOpen('map', mapId); // [CH3] 닫힌 3장 맵에는 필드 세션을 열지 않는다
   const { client, char: me, now } = ctx;
   const none = (reason: string) => ({ status: 200, data: { session: null, host_key: null, reason } });
   const partyId = await partyRepo.findPartyIdOf(client, me.id);

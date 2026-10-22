@@ -193,6 +193,7 @@ namespace DotRPG
             if (door != null) door.Entered -= OnDoorEntered;
             Game.Party?.SetCompanionAutoRevive(true);
             Game.Party?.ResetCompanionFalls();
+            StoryCompanions.OnRunEnded(); // [CH3] a room guest goes home with the run
             HookLocal(null);
         }
 

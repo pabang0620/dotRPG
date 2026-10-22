@@ -1,0 +1,2642 @@
+{
+ "chapter": {
+  "number": 3,
+  "title": "적이라고 배웠던 사람들",
+  "summary": "서쪽 마족 땅, 메말라 가는 협곡. 적이라고 배웠던 이들이 리아를 지켜 왔다."
+ },
+ "quests": [
+  {
+   "id": "c3_depart",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-1",
+   "title": "서쪽으로",
+   "summary": "수호석이 깨진 뒤 협곡이 메말라 간다. 그 서쪽 끝에 마족이 산다. 리아의 행방을 아는 이들도.",
+   "requires": [
+    "c2_end"
+   ],
+   "requiresFlags": [],
+   "minLevel": 40,
+   "giver": "leona",
+   "offerDialogue": "c3_leona_west",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "레오나에게 서쪽 길을 묻는다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "leona",
+       "count": 1,
+       "text": "기사단장 레오나와 이야기하기",
+       "dialogue": "c3_leona_west_talk",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "메말라 가는 협곡으로 간다.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "dry_floor",
+       "count": 1,
+       "text": "갈라진 협곡 바닥에 도착하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 15000,
+    "gold": 15000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_caravan",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-2",
+   "title": "습격당한 행상",
+   "summary": "갈라진 바닥의 야영지에서 공허의 들개 떼에 둘러싸인 마족 행상을 만난다.",
+   "requires": [
+    "c3_depart"
+   ],
+   "requiresFlags": [],
+   "minLevel": 41,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "야영지로 다가간다.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "dry_floor",
+       "count": 1,
+       "text": "갈라진 협곡 바닥의 야영지",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "c3_caravan",
+     "setFlags": []
+    },
+    {
+     "text": "행상을 지키며 공허 침식체를 물리친다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "void_hound",
+       "count": 30,
+       "text": "공허 들개 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_floor"
+      },
+      {
+       "type": "kill",
+       "target": "void_burster",
+       "count": 10,
+       "text": "공허 폭발체 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_floor"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 17000,
+    "gold": 18000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_sayab",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-3",
+   "title": "사얍 마을",
+   "summary": "아카브가 안내한 협곡 끝. 마족 온건파가 숨어 사는 마을이 있다.",
+   "requires": [
+    "c3_caravan"
+   ],
+   "requiresFlags": [],
+   "minLevel": 42,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "협곡 끝으로 간다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_gate",
+       "count": 1,
+       "text": "협곡 끝의 수비대",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_floor"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "사얍 마을에 들어선다.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "sayab",
+       "count": 1,
+       "text": "사얍 마을에 도착하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "마을의 지도자를 만난다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_ixi",
+       "count": 1,
+       "text": "사얍 광장",
+       "dialogue": "",
+       "consume": false,
+       "map": "sayab"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 19000,
+    "gold": 20000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_trust",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-4",
+   "title": "믿음의 값",
+   "summary": "리아를 보고 싶으면 값을 치러라. 주인공이 깬 돌이 마을의 샘을 말리고 있다.",
+   "requires": [
+    "c3_sayab"
+   ],
+   "requiresFlags": [],
+   "minLevel": 43,
+   "giver": "ixi",
+   "offerDialogue": "c3_ixi_trust",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "샘을 말리는 침식체를 막고 공허 정수를 모은다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "void_sentry",
+       "count": 50,
+       "text": "공허 파수석 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_stones"
+      },
+      {
+       "type": "collect",
+       "target": "qi_void_essence",
+       "count": 10,
+       "text": "공허 정수 모으기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "익시가 알려 준 약초밭으로 간다.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "ria_garden",
+       "count": 1,
+       "text": "사얍 외곽의 약초밭",
+       "dialogue": "",
+       "consume": false,
+       "map": "sayab"
+      }
+     ],
+     "cutscene": "c3_ria",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 22000,
+    "gold": 22000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_record",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-5",
+   "title": "노호의 기록",
+   "summary": "사얍의 촌로 노호는 지워진 역사의 조각을 지하 뿌리 속에 숨겨 두었다.",
+   "requires": [
+    "c3_trust"
+   ],
+   "requiresFlags": [],
+   "minLevel": 44,
+   "giver": "noho",
+   "offerDialogue": "c3_noho_record",
+   "turnIn": "noho",
+   "turnInDialogue": "c3_noho_record_done",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "뒤엉킨 뿌리로 내려간다.",
+     "objectives": [
+      {
+       "type": "reach",
+       "target": "hollow_roots",
+       "count": 1,
+       "text": "지하 B2 뒤엉킨 뿌리에 도착하기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "첫 번째 기록 조각을 찾는다.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "c3_record_1",
+       "count": 1,
+       "text": "기록 조각 하나",
+       "dialogue": "",
+       "consume": false,
+       "map": "hollow_roots"
+      }
+     ],
+     "cutscene": "c3_record_1",
+     "setFlags": []
+    },
+    {
+     "text": "두 번째 기록 조각을 찾는다.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "c3_record_2",
+       "count": 1,
+       "text": "기록 조각 둘",
+       "dialogue": "",
+       "consume": false,
+       "map": "hollow_roots"
+      }
+     ],
+     "cutscene": "c3_record_2",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 25000,
+    "gold": 25000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_xibak",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-6",
+   "title": "공허 침식체",
+   "summary": "깨진 수호석 자리가 갈라지고, 그 틈에서 무언가가 솟는다.",
+   "requires": [
+    "c3_record"
+   ],
+   "requiresFlags": [],
+   "minLevel": 45,
+   "giver": "ixi",
+   "offerDialogue": "c3_ixi_xibak",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "검은 수호석 잔해로 간다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_xibak_rise",
+       "count": 1,
+       "text": "깨진 수호석 자리",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_stones"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "공허 침식체 시바크를 쓰러뜨린다.",
+     "objectives": [
+      {
+       "type": "raid",
+       "target": "raid_xibak",
+       "count": 1,
+       "text": "레이드: 공허 침식체 시바크 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 29000,
+    "gold": 30000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_defense",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-7",
+   "title": "사얍 방어전",
+   "summary": "외곽에 잿빛 인장이 찍혀 있다. 누군가 마을을 찾아냈다.",
+   "requires": [
+    "c3_xibak"
+   ],
+   "requiresFlags": [],
+   "minLevel": 46,
+   "giver": "kukum",
+   "offerDialogue": "c3_kuk_defense",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "외곽에 남은 흔적을 살핀다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_scouts",
+       "count": 1,
+       "text": "사얍 외곽",
+       "dialogue": "",
+       "consume": false,
+       "map": "sayab"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "수비대와 함께 마을을 지킨다.",
+     "objectives": [
+      {
+       "type": "flag",
+       "target": "c3_defense_won",
+       "count": 1,
+       "text": "사얍 방어전 승리",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_floor"
+      }
+     ],
+     "cutscene": "c3_kamatz_gate",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 26000,
+    "gold": 26000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_stones",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-8",
+   "title": "잔해의 길",
+   "summary": "깨진 수호석의 잔해가 공허의 틈 곳곳에 흩어져 있다. 그것들은 오직 한 사람의 손에만 반응한다.",
+   "requires": [
+    "c3_defense"
+   ],
+   "requiresFlags": [],
+   "minLevel": 47,
+   "giver": "akab",
+   "offerDialogue": "c3_akab_stones",
+   "turnIn": "akab",
+   "turnInDialogue": "c3_akab_stones_done",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "공허의 틈에서 수호석 잔해를 살피고 침식체를 막는다.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "c3_guardian_wreck",
+       "count": 3,
+       "text": "수호석 잔해 살피기",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_rift"
+      },
+      {
+       "type": "kill",
+       "target": "void_caller",
+       "count": 60,
+       "text": "공허의 부름꾼 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_rift"
+      },
+      {
+       "type": "interact",
+       "target": "c3_rift_closed",
+       "count": 3,
+       "text": "필드 공허 균열 닫기",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_rift"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 29000,
+    "gold": 28000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_oath",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-9",
+   "title": "익시의 맹세",
+   "summary": "노호의 집에서 익시가 처음으로 마족의 진실을 말한다.",
+   "requires": [
+    "c3_stones"
+   ],
+   "requiresFlags": [],
+   "minLevel": 48,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "노호의 집으로 간다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_oath",
+       "count": 1,
+       "text": "노호의 기록소",
+       "dialogue": "",
+       "consume": false,
+       "map": "sayab"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "지하 깊은 곳의 수호병을 물리친다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "hollow_guard",
+       "count": 80,
+       "text": "지하 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 32000,
+    "gold": 30000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_trace",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-10",
+   "title": "잿빛 손의 흔적",
+   "summary": "발체를 데려간 자들의 진영을 찾는다.",
+   "requires": [
+    "c3_oath"
+   ],
+   "requiresFlags": [],
+   "minLevel": 49,
+   "giver": "kukum",
+   "offerDialogue": "c3_kuk_trace",
+   "turnIn": "kukum",
+   "turnInDialogue": "c3_kuk_trace_done",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "공허의 틈에서 잿빛 손의 야영지를 찾는다.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "c3_grey_camp",
+       "count": 3,
+       "text": "잿빛 손 야영지 살피기",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_rift"
+      },
+      {
+       "type": "kill",
+       "target": "grey_knight",
+       "count": 50,
+       "text": "잿빛 손 기사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_rift"
+      },
+      {
+       "type": "kill",
+       "target": "grey_captain",
+       "count": 1,
+       "text": "잿빛 손 정찰대장 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 35000,
+    "gold": 32000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_kamatz",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-11",
+   "title": "지휘관 카마츠",
+   "summary": "일요일. 약속한 날이다. 발체를 되찾으러 간다.",
+   "requires": [
+    "c3_trace"
+   ],
+   "requiresFlags": [],
+   "minLevel": 50,
+   "giver": "ixi",
+   "offerDialogue": "c3_ixi_kamatz",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "잿빛 손 지휘관 카마츠를 쓰러뜨리고 발체를 구한다.",
+     "objectives": [
+      {
+       "type": "raid",
+       "target": "raid_kamatz",
+       "count": 1,
+       "text": "레이드: 지휘관 카마츠 클리어",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    },
+    {
+     "text": "사얍으로 돌아간다.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_kamatz_end",
+       "count": 1,
+       "text": "사얍으로 돌아가기",
+       "dialogue": "",
+       "consume": false,
+       "map": "sayab"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 44000,
+    "gold": 26000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3_end",
+   "chapter": 3,
+   "kind": "main",
+   "code": "3-끝",
+   "title": "적이라고 배웠던 사람들",
+   "summary": "사얍의 봉인 축제. 마족 아이들도 등불을 둘씩 띄운다.",
+   "requires": [
+    "c3_kamatz"
+   ],
+   "requiresFlags": [],
+   "minLevel": 0,
+   "giver": "",
+   "offerDialogue": "",
+   "turnIn": "",
+   "turnInDialogue": "",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "사얍의 축제.",
+     "objectives": [
+      {
+       "type": "cutscene",
+       "target": "c3_aftermath",
+       "count": 1,
+       "text": "사얍의 봉인 축제",
+       "dialogue": "",
+       "consume": false,
+       "map": "sayab"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 7000,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": [
+     "chapter3_done"
+    ]
+   }
+  },
+  {
+   "id": "c3s_kuk_drill",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "전사장의 시험",
+   "summary": "쿠크는 마족식 싸움을 가르쳐 주겠다고 한다. 갈라진 바닥의 들개로 시험한다.",
+   "requires": [
+    "c3_trust"
+   ],
+   "requiresFlags": [],
+   "minLevel": 43,
+   "giver": "kukum",
+   "offerDialogue": "c3s_kuk_drill_offer",
+   "turnIn": "kukum",
+   "turnInDialogue": "c3s_kuk_drill_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "쿠크는 마족식 싸움을 가르쳐 주겠다고 한다. 갈라진 바닥의 들개로 시험한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "void_hound",
+       "count": 40,
+       "text": "공허 들개 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_floor"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3700,
+    "gold": 3000,
+    "items": [
+     {
+      "id": "potion_hp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_akab_supply",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "밤 상인의 보급",
+   "summary": "아카브는 인간의 돈을 받지 않는다. 대신 마른 가죽을 원한다.",
+   "requires": [
+    "c3_trust"
+   ],
+   "requiresFlags": [],
+   "minLevel": 43,
+   "giver": "akab",
+   "offerDialogue": "c3s_akab_supply_offer",
+   "turnIn": "akab",
+   "turnInDialogue": "c3s_akab_supply_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "아카브는 인간의 돈을 받지 않는다. 대신 마른 가죽을 원한다.",
+     "objectives": [
+      {
+       "type": "collect",
+       "target": "qi_dry_hide",
+       "count": 12,
+       "text": "마른 가죽 모으기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4100,
+    "gold": 3000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_kana_herbs",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "치유사의 약초",
+   "summary": "카나는 검은 돌 잔해의 잿더미 속에서 자라는 약초가 필요하다.",
+   "requires": [
+    "c3_trust"
+   ],
+   "requiresFlags": [],
+   "minLevel": 43,
+   "giver": "kana",
+   "offerDialogue": "c3s_kana_herbs_offer",
+   "turnIn": "kana",
+   "turnInDialogue": "c3s_kana_herbs_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "카나는 검은 돌 잔해의 잿더미 속에서 자라는 약초가 필요하다.",
+     "objectives": [
+      {
+       "type": "collect",
+       "target": "qi_ash_herb",
+       "count": 8,
+       "text": "재 속 약초 모으기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 4100,
+    "gold": 3000,
+    "items": [
+     {
+      "id": "potion_mp",
+      "count": 10
+     }
+    ],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_noho_tales",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "옛 노래",
+   "summary": "노호는 사얍의 옛 노래를 들려줄 사람을 찾고 있다. 노래를 아는 이들에게 묻는다.",
+   "requires": [
+    "c3_record"
+   ],
+   "requiresFlags": [],
+   "minLevel": 44,
+   "giver": "noho",
+   "offerDialogue": "c3s_noho_tales_offer",
+   "turnIn": "noho",
+   "turnInDialogue": "c3s_noho_tales_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "노호는 사얍의 옛 노래를 들려줄 사람을 찾고 있다. 노래를 아는 이들에게 묻는다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "ixi",
+       "count": 1,
+       "text": "익시에게 옛 노래 묻기",
+       "dialogue": "c3s_noho_tales_ixi",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "kukum",
+       "count": 1,
+       "text": "쿠크에게 옛 노래 묻기",
+       "dialogue": "c3s_noho_tales_kuk",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "talk",
+       "target": "ria",
+       "count": 1,
+       "text": "리아에게 옛 노래 묻기",
+       "dialogue": "c3s_noho_tales_ria",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3000,
+    "gold": 2000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_balche_toy",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "발체의 보물",
+   "summary": "주인공을 피해 다니던 아이 발체가 처음으로 말을 건다. 잃어버린 조약돌을 찾아 달라고.",
+   "requires": [
+    "c3_record"
+   ],
+   "requiresFlags": [],
+   "minLevel": 45,
+   "giver": "balche",
+   "offerDialogue": "c3s_balche_toy_offer",
+   "turnIn": "balche",
+   "turnInDialogue": "c3s_balche_toy_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "주인공을 피해 다니던 아이 발체가 처음으로 말을 건다. 잃어버린 조약돌을 찾아 달라고.",
+     "objectives": [
+      {
+       "type": "interact",
+       "target": "c3_pebble",
+       "count": 1,
+       "text": "잃어버린 조약돌 찾기",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_floor"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 3000,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_hollow_b1",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "뿌리 아래 순찰",
+   "summary": "쿠크는 지하가 너무 조용하다고 한다. 뿌리 아래를 순찰한다.",
+   "requires": [
+    "c3_xibak"
+   ],
+   "requiresFlags": [],
+   "minLevel": 45,
+   "giver": "kukum",
+   "offerDialogue": "c3s_hollow_b1_offer",
+   "turnIn": "kukum",
+   "turnInDialogue": "c3s_hollow_b1_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "쿠크는 지하가 너무 조용하다고 한다. 뿌리 아래를 순찰한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "hollow_scarab",
+       "count": 60,
+       "text": "지하 갑충 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 6000,
+    "gold": 4000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_hollow_b2",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "뒤엉킨 뿌리",
+   "summary": "뿌리 사이에 숨은 주술사가 순찰대를 괴롭힌다.",
+   "requires": [
+    "c3s_hollow_b1"
+   ],
+   "requiresFlags": [],
+   "minLevel": 46,
+   "giver": "kukum",
+   "offerDialogue": "c3s_hollow_b2_offer",
+   "turnIn": "kukum",
+   "turnInDialogue": "c3s_hollow_b2_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "뿌리 사이에 숨은 주술사가 순찰대를 괴롭힌다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "hollow_hexer",
+       "count": 60,
+       "text": "지하 주술사 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 6700,
+    "gold": 4000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_grey_patrol",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "정찰대 추격",
+   "summary": "잿빛 손 정찰병이 밤마다 사얍 외곽을 맴돈다.",
+   "requires": [
+    "c3_defense"
+   ],
+   "requiresFlags": [],
+   "minLevel": 47,
+   "giver": "akab",
+   "offerDialogue": "c3s_grey_patrol_offer",
+   "turnIn": "akab",
+   "turnInDialogue": "c3s_grey_patrol_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "잿빛 손 정찰병이 밤마다 사얍 외곽을 맴돈다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "grey_ranger",
+       "count": 50,
+       "text": "잿빛 손 정찰병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "dry_stones"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 7500,
+    "gold": 5000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_ria_letter",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "리아의 편지",
+   "summary": "리아는 받을 사람이 없는 편지를 쓰려 한다. 노호에게 종이를 얻고, 마른 꽃을 모은다.",
+   "requires": [
+    "c3_trust"
+   ],
+   "requiresFlags": [],
+   "minLevel": 44,
+   "giver": "ria",
+   "offerDialogue": "c3s_ria_letter_offer",
+   "turnIn": "ria",
+   "turnInDialogue": "c3s_ria_letter_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "리아는 받을 사람이 없는 편지를 쓰려 한다. 노호에게 종이를 얻고, 마른 꽃을 모은다.",
+     "objectives": [
+      {
+       "type": "talk",
+       "target": "noho",
+       "count": 1,
+       "text": "노호에게 종이 얻기",
+       "dialogue": "c3s_ria_letter_noho",
+       "consume": false,
+       "map": ""
+      },
+      {
+       "type": "collect",
+       "target": "qi_dry_flower",
+       "count": 3,
+       "text": "마른 꽃 모으기",
+       "dialogue": "",
+       "consume": false,
+       "map": ""
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 10500,
+    "gold": 0,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  },
+  {
+   "id": "c3s_hollow_b4",
+   "chapter": 3,
+   "kind": "sub",
+   "code": "",
+   "title": "반딧불 심연",
+   "summary": "가장 깊은 곳의 불빛이 흔들린다고 노호가 걱정한다.",
+   "requires": [
+    "c3_oath"
+   ],
+   "requiresFlags": [],
+   "minLevel": 49,
+   "giver": "noho",
+   "offerDialogue": "c3s_hollow_b4_offer",
+   "turnIn": "noho",
+   "turnInDialogue": "c3s_hollow_b4_report",
+   "startCutscene": "",
+   "steps": [
+    {
+     "text": "가장 깊은 곳의 불빛이 흔들린다고 노호가 걱정한다.",
+     "objectives": [
+      {
+       "type": "kill",
+       "target": "hollow_guard",
+       "count": 60,
+       "text": "심연의 수호병 처치",
+       "dialogue": "",
+       "consume": false,
+       "map": "hollow_depths"
+      }
+     ],
+     "cutscene": "",
+     "setFlags": []
+    }
+   ],
+   "reward": {
+    "xp": 11400,
+    "gold": 6000,
+    "items": [],
+    "maxHealth": 0,
+    "setFlags": []
+   }
+  }
+ ],
+ "cutscenes": [
+  {
+   "id": "c3_caravan",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "music",
+     "id": "music_boss"
+    },
+    {
+     "op": "spawn",
+     "actor": "akab",
+     "col": 4,
+     "row": -1,
+     "dir": "left",
+     "rel": true
+    },
+    {
+     "op": "enemies",
+     "id": "void_hound",
+     "col": 7,
+     "row": -1,
+     "count": 4,
+     "rel": true
+    },
+    {
+     "op": "camera",
+     "actor": "akab",
+     "t": 0.8
+    },
+    {
+     "op": "emote",
+     "actor": "akab",
+     "text": "!"
+    },
+    {
+     "op": "line",
+     "speaker": "밤 상인 아카브",
+     "text": "이, 이리 오지 마! 저리 가!"
+    },
+    {
+     "op": "cameraReset"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "보랏빛 금이 간 들개들이 마족 행상을 둘러싸고 있다."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_gate",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "kukum",
+     "col": 0,
+     "row": -5,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "akab",
+     "col": -2,
+     "row": 1,
+     "dir": "up",
+     "rel": true
+    },
+    {
+     "op": "camera",
+     "actor": "kukum",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "멈춰라, 인간. 여기서 한 발짝이라도 더 오면 창이 대답한다."
+    },
+    {
+     "op": "line",
+     "speaker": "밤 상인 아카브",
+     "text": "쿠크, 이 인간이 나를 구했어. 침식체 한가운데서."
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "인간이 마족을 구할 이유가 없다."
+    },
+    {
+     "op": "emote",
+     "actor": "kukum",
+     "text": "..."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "쿠크의 눈이 손목에 감긴 낡은 빨간 머리끈에 멎는다."
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "...그 끈. 어디서 났지?"
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "소꿉친구가 줬어요. 너도 하나, 나도 하나라고."
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "......창을 내려라. 익시 님께 안내하지."
+    },
+    {
+     "op": "join",
+     "actor": "kukum"
+    },
+    {
+     "op": "cameraReset"
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_ixi",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "ixi",
+     "col": 0,
+     "row": -4,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "kukum",
+     "col": 2,
+     "row": -1,
+     "dir": "left",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "balche",
+     "col": -4,
+     "row": -2,
+     "dir": "right",
+     "rel": true
+    },
+    {
+     "op": "camera",
+     "actor": "ixi",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "용사의 피가 제 발로 왔군."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "리아를 찾으러 왔어요. 여기 있다고 들었어요."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "있다. 살아 있다. 그리고 지금은 너를 보고 싶어 하지 않을지도 모르지."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "리아를 보고 싶으면 값을 치러라. 그 전에는 이 마을의 누구도 너와 거래하지 않는다."
+    },
+    {
+     "op": "flag",
+     "id": "sayab_untrusted"
+    },
+    {
+     "op": "emote",
+     "actor": "balche",
+     "text": "!"
+    },
+    {
+     "op": "move",
+     "actor": "balche",
+     "col": -10,
+     "row": -2,
+     "speed": 5,
+     "rel": true
+    },
+    {
+     "op": "despawn",
+     "actor": "balche"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "광장의 상인들이 하나둘 등을 돌린다. 작은 아이 하나가 겁에 질려 골목으로 달아난다."
+    },
+    {
+     "op": "cameraReset"
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_ria",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "ria_adult",
+     "col": 0,
+     "row": -2,
+     "dir": "up",
+     "rel": true
+    },
+    {
+     "op": "wait",
+     "t": 1.2
+    },
+    {
+     "op": "face",
+     "actor": "ria_adult",
+     "dir": "down"
+    },
+    {
+     "op": "wait",
+     "t": 1.0
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "......"
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "브람 아저씨랑 한나 아줌마는?"
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......"
+    },
+    {
+     "op": "wait",
+     "t": 1.2
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "...그렇구나."
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "나, 계속 기다렸어. 등불 띄우는 날마다."
+    },
+    {
+     "op": "choice",
+     "text": "",
+     "id": "기억해|......"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "리아가 손목의 빨간 머리끈을 든다. 똑같은 끈이 주인공의 손목에도 감겨 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "너도 하나, 나도 하나. 똑같은 거야."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "처음으로, 주인공은 소리 내어 울었다."
+    },
+    {
+     "op": "unflag",
+     "id": "sayab_untrusted"
+    },
+    {
+     "op": "fadeOut",
+     "t": 1.0
+    },
+    {
+     "op": "fadeIn",
+     "t": 1.0
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "그날 저녁, 사얍의 상점들이 다시 문을 열었다."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_record_1",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "tint",
+     "color": "#2a1a3a88",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "\"둘이 돌을 들었다.\""
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0.6
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_record_2",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "tint",
+     "color": "#2a1a3a88",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "\"하나는 용사, 하나는 우리 왕.\""
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "세 번째 자리는 비어 있다. 지워진 글자 아래에 한 줄만 남았다. \"...북쪽 눈 속에.\""
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0.6
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_xibak_rise",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "shake",
+     "t": 1.5,
+     "power": 0.3
+    },
+    {
+     "op": "sfx",
+     "id": "rock_break"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "깨진 수호석 자리가 보랏빛으로 갈라진다. 그 틈에서 형체 없는 것이 솟아오른다."
+    },
+    {
+     "op": "spawn",
+     "actor": "ixi",
+     "col": -3,
+     "row": 1,
+     "dir": "up",
+     "rel": true
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "저게 네 손이 한 일이다."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "그리고 네 손만이 되돌릴 수 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "레이드 전 두 방은 내가 함께 간다. 그 앞은... 그라흐 님의 자리였다. 나는 거기 서지 않겠다."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_scouts",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "kukum",
+     "col": 2,
+     "row": -1,
+     "dir": "left",
+     "rel": true
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "외곽의 바위마다 잿빛 손바닥 인장이 찍혀 있다."
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "정찰대가 흘리고 간 편지다. 너희 글씨지?"
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "낯익은 필체다. 매일 아침 수련 일지를 고쳐 주던 그 글씨."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "\"네가 거기 있을 줄 알았다. 눈꽃 숲의 유적이 마지막이다.\""
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "......카엘."
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "오늘 밤 온다. 수비대를 세운다. 너도 서라."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_kamatz_gate",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "kamatz",
+     "col": 0,
+     "row": -6,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "grey_knight",
+     "col": -2,
+     "row": -7,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "ixi",
+     "col": 0,
+     "row": -2,
+     "dir": "up",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "balche",
+     "col": -3,
+     "row": -1,
+     "dir": "up",
+     "rel": true
+    },
+    {
+     "op": "camera",
+     "actor": "kamatz",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "카마츠",
+     "text": "잿빛 손이다. 성전기사단 집행관, 카마츠."
+    },
+    {
+     "op": "line",
+     "speaker": "카마츠",
+     "text": "그 아이를 내놓으면 마을은 건드리지 않겠다."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "이 마을은 그 아이를 지키려고 있다. 돌아가라."
+    },
+    {
+     "op": "line",
+     "speaker": "카마츠",
+     "text": "그렇다면 다른 것을 받아 가지."
+    },
+    {
+     "op": "move",
+     "actor": "grey_knight",
+     "col": -3,
+     "row": -1,
+     "speed": 5,
+     "rel": true
+    },
+    {
+     "op": "emote",
+     "actor": "balche",
+     "text": "!"
+    },
+    {
+     "op": "despawn",
+     "actor": "balche"
+    },
+    {
+     "op": "line",
+     "speaker": "발체",
+     "text": "놔! 놔줘!"
+    },
+    {
+     "op": "line",
+     "speaker": "카마츠",
+     "text": "일요일까지. 용사가 직접 오면 아이는 돌려주겠다. 오지 않으면, 아이는 대사제의 빛을 보게 될 것이다."
+    },
+    {
+     "op": "move",
+     "actor": "kamatz",
+     "col": 0,
+     "row": -12,
+     "speed": 2,
+     "rel": true
+    },
+    {
+     "op": "despawn",
+     "actor": "kamatz"
+    },
+    {
+     "op": "despawn",
+     "actor": "grey_knight"
+    },
+    {
+     "op": "cameraReset"
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "......일요일이다."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_oath",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "ixi",
+     "col": 0,
+     "row": -2,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "noho",
+     "col": 2,
+     "row": -2,
+     "dir": "left",
+     "rel": true
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "침식체는 공허가 보낸 손가락이다. 손이 오면 나라가 꺼진다."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "볼론은 너희가 배운 악이 아니다. 지하가 조용한 건 그가 버티기 때문이다."
+    },
+    {
+     "op": "line",
+     "speaker": "촌로 노호",
+     "text": "사백 년이다. 한 사람이 사백 년을 버텼다."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "우리는 맹세했다. 그가 버티는 동안, 이 땅을 지키겠다고."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "이제 너도 안다. 무엇을 할지는 네가 정해라."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_kamatz_end",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "spawn",
+     "actor": "kamatz",
+     "col": 0,
+     "row": -2,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "balche",
+     "col": -2,
+     "row": 1,
+     "dir": "up",
+     "rel": true
+    },
+    {
+     "op": "line",
+     "speaker": "카마츠",
+     "text": "카엘 경이 옳았다. 너는 멈추지 않는군."
+    },
+    {
+     "op": "line",
+     "speaker": "카마츠",
+     "text": "......눈꽃 숲으로 갔다. 그분도, 대사제도, 너를 기다린다."
+    },
+    {
+     "op": "despawn",
+     "actor": "kamatz"
+    },
+    {
+     "op": "move",
+     "actor": "balche",
+     "col": 0,
+     "row": 0,
+     "speed": 4,
+     "rel": true
+    },
+    {
+     "op": "line",
+     "speaker": "발체",
+     "text": "......늦었어."
+    },
+    {
+     "op": "line",
+     "speaker": "{name}",
+     "text": "응. 늦었어. 미안해."
+    },
+    {
+     "op": "tint",
+     "color": "#e8d9a055",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "대사제 오르반",
+     "text": "용사여. 잘 자라고 있구나."
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 0.8
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "멀리서 대사제의 목소리가 들린 것 같았다. 돌아보니 아무도 없었다."
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "id": "c3_aftermath",
+   "skippable": true,
+   "cmds": [
+    {
+     "op": "letterbox",
+     "count": 1
+    },
+    {
+     "op": "tint",
+     "color": "#141c3a99",
+     "t": 1.2
+    },
+    {
+     "op": "spawn",
+     "actor": "ixi",
+     "col": 0,
+     "row": -4,
+     "dir": "down",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "ria_adult",
+     "col": -2,
+     "row": -1,
+     "dir": "right",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "balche",
+     "col": 2,
+     "row": -1,
+     "dir": "left",
+     "rel": true
+    },
+    {
+     "op": "spawn",
+     "actor": "kukum",
+     "col": 4,
+     "row": -3,
+     "dir": "left",
+     "rel": true
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "사얍의 봉인 축제. 마족 아이들이 등불을 둘씩 띄운다."
+    },
+    {
+     "op": "line",
+     "speaker": "발체",
+     "text": "하나는 내 거, 하나는 네 거."
+    },
+    {
+     "op": "line",
+     "speaker": "익시",
+     "text": "인간이 이 축제에 선 건 사백 년 만이다."
+    },
+    {
+     "op": "line",
+     "speaker": "리아",
+     "text": "이거, 다시 가져가. 너도 하나, 나도 하나는... 아직 끝나지 않았으니까."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "리아가 머리끈 하나를 주인공의 손에 쥐여 준다."
+    },
+    {
+     "op": "leave",
+     "actor": "kukum"
+    },
+    {
+     "op": "line",
+     "speaker": "전사장 쿠크",
+     "text": "창이 필요하면 불러라. 사얍은 이제 네 편이다."
+    },
+    {
+     "op": "line",
+     "speaker": "",
+     "text": "주인공은 북쪽을 본다. 눈 덮인 숲 너머, 카엘이 기다리는 곳을."
+    },
+    {
+     "op": "title",
+     "text": "챕터 3 완료\n적이라고 배웠던 사람들",
+     "t": 3
+    },
+    {
+     "op": "tint",
+     "color": "#00000000",
+     "t": 1.0
+    },
+    {
+     "op": "letterbox",
+     "count": 0
+    }
+   ]
+  }
+ ],
+ "dialogues": [
+  {
+   "id": "c3_leona_west",
+   "lines": [
+    {
+     "speaker": "기사단장 레오나",
+     "text": "왔구나. 축제 소리가 아직도 귀에 남아 있을 텐데."
+    },
+    {
+     "speaker": "기사단장 레오나",
+     "text": "서쪽이다. 수호석이 깨진 뒤 협곡이 마르고 갈라졌고, 그 틈 너머에 마족이 산다. 네가 찾는 아이도."
+    }
+   ]
+  },
+  {
+   "id": "c3_leona_west_talk",
+   "lines": [
+    {
+     "speaker": "기사단장 레오나",
+     "text": "기사단은 너를 따라갈 수 없다. 대사제의 눈이 있으니까."
+    },
+    {
+     "speaker": "기사단장 레오나",
+     "text": "갈라진 바닥을 따라 서쪽 끝까지 가라. 거기서 무엇을 보든, 네 눈으로 보고 판단해라."
+    },
+    {
+     "speaker": "{name}",
+     "text": "고마워요, 단장님."
+    },
+    {
+     "speaker": "기사단장 레오나",
+     "text": "인사는 돌아와서 해라."
+    }
+   ]
+  },
+  {
+   "id": "c3_ixi_trust",
+   "lines": [
+    {
+     "speaker": "익시",
+     "text": "네가 깬 돌이 마을의 샘을 말리고 있다. 검은 돌 잔해에 침식체가 들끓는다."
+    },
+    {
+     "speaker": "익시",
+     "text": "그것들을 막고, 그것들이 남긴 공허 정수를 가져와라. 그게 값이다."
+    }
+   ]
+  },
+  {
+   "id": "c3_noho_record",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "너희 왕국은 이야기를 반만 기억하지."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "나머지 반은 뿌리 아래 묻어 두었다. 뒤엉킨 뿌리로 내려가 기록 조각을 찾아오너라."
+    }
+   ]
+  },
+  {
+   "id": "c3_noho_record_done",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "둘이 돌을 들었다. 하나는 용사, 하나는 우리 왕."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "세 번째 조각은 여기 없다. 북쪽 눈 속에 있지. 언젠가 네가 그걸 볼 날이 올 거다."
+    }
+   ]
+  },
+  {
+   "id": "c3_ixi_xibak",
+   "lines": [
+    {
+     "speaker": "익시",
+     "text": "수호석 자리에서 땅이 울린다. 샘이 마른 것과 같은 소리다."
+    },
+    {
+     "speaker": "익시",
+     "text": "가서 봐라. 네 손이 한 일이다."
+    }
+   ]
+  },
+  {
+   "id": "c3_kuk_defense",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "외곽에 낯선 인장이 찍혔다. 사냥꾼의 표시가 아니다."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "수비대를 모으겠다. 너도 서라. 이번엔 우리 둘이 같은 쪽이다."
+    }
+   ]
+  },
+  {
+   "id": "c3_akab_stones",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "공허의 틈에 흩어진 돌들 말이다. 내가 만지면 그냥 돌인데, 네가 만지면 빛난다더군."
+    },
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "가서 확인해 봐. 그리고 그 틈, 열려 있으면 닫고 와."
+    }
+   ]
+  },
+  {
+   "id": "c3_akab_stones_done",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "빛났다고? 역시 그 피로군."
+    },
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "돌은 거짓말을 안 해. 사람이 거짓말을 하지."
+    }
+   ]
+  },
+  {
+   "id": "c3_kuk_trace",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "발체를 데려간 놈들의 진영을 찾았다. 공허의 틈 너머다."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "야영지를 뒤지고, 그 정찰대장을 쓰러뜨려라. 일요일 전에 길을 열어야 한다."
+    }
+   ]
+  },
+  {
+   "id": "c3_kuk_trace_done",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "길이 열렸다. 이제 일요일만 남았다."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "그날은 나도 창을 들겠다. 그 아이는 우리 모두의 아이다."
+    }
+   ]
+  },
+  {
+   "id": "c3_ixi_kamatz",
+   "lines": [
+    {
+     "speaker": "익시",
+     "text": "오늘이 그날이다."
+    },
+    {
+     "speaker": "익시",
+     "text": "발체를 데려와라. 그리고 살아서 돌아와라. 둘 다 약속해라."
+    },
+    {
+     "speaker": "{name}",
+     "text": "약속할게요."
+    }
+   ]
+  },
+  {
+   "id": "c3s_kuk_drill_offer",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "마족은 등을 보이지 않는다. 앞으로 베라."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "갈라진 바닥의 들개 마흔. 창 하나로 밀어 내듯, 물러서지 말고."
+    }
+   ]
+  },
+  {
+   "id": "c3s_kuk_drill_report",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "등을 안 보였군. 합격이다."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "그라흐 님께 배운 대로다. 너한테 이걸 가르칠 줄은 몰랐지만."
+    }
+   ]
+  },
+  {
+   "id": "c3s_akab_supply_offer",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "인간 돈은 안 받는다. 가죽으로 가져와."
+    },
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "갈라진 바닥의 짐승들이 마른 가죽을 떨군다. 열둘이면 된다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_akab_supply_report",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "가죽은 거짓말을 안 하지."
+    },
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "좋다. 이제 너하고는 거래해도 되겠군."
+    }
+   ]
+  },
+  {
+   "id": "c3s_kana_herbs_offer",
+   "lines": [
+    {
+     "speaker": "치유사 카나",
+     "text": "같은 뿌리에서 난 풀이 사람도 마족도 살린다."
+    },
+    {
+     "speaker": "치유사 카나",
+     "text": "검은 돌 잔해의 잿더미 속에 그 풀이 자란다. 여덟 포기만."
+    }
+   ]
+  },
+  {
+   "id": "c3s_kana_herbs_report",
+   "lines": [
+    {
+     "speaker": "치유사 카나",
+     "text": "같은 뿌리. 잊지 마라."
+    },
+    {
+     "speaker": "치유사 카나",
+     "text": "너희 약초꾼들도 이걸 알았을 거다. 옛날엔."
+    }
+   ]
+  },
+  {
+   "id": "c3s_noho_tales_offer",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "노래는 기록보다 오래 산다. 들어 두어라."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "익시, 쿠크, 그리고 그 인간 아가씨에게 물어보아라. 다들 한 소절씩은 안다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_noho_tales_ixi",
+   "lines": [
+    {
+     "speaker": "익시",
+     "text": "\"두 손이 돌을 들고, 한 손은 빛, 한 손은 밤.\" 어머니가 불러 주던 노래다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_noho_tales_kuk",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "\"밤의 왕은 잠들지 않네, 아래에서 땅을 받치네.\" 그라흐 님이 싸움 전에 부르던 소절이다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_noho_tales_ria",
+   "lines": [
+    {
+     "speaker": "리아",
+     "text": "\"등불은 둘이 띄우는 것.\" 여기 와서 배운 노래야. 우리 마을 축제랑 똑같지?"
+    },
+    {
+     "speaker": "{name}",
+     "text": "......응. 똑같아."
+    }
+   ]
+  },
+  {
+   "id": "c3s_noho_tales_report",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "이제 네가 부를 차례다."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "인간과 마족이 같은 노래를 부른다. 왕국은 그걸 잊었지."
+    }
+   ]
+  },
+  {
+   "id": "c3s_balche_toy_offer",
+   "lines": [
+    {
+     "speaker": "발체",
+     "text": "...그거, 엄마가 준 거야. 네가 찾아 줄 거야?"
+    },
+    {
+     "speaker": "발체",
+     "text": "갈라진 바닥에서 떨어뜨렸어. 반짝이는 동그란 돌."
+    }
+   ]
+  },
+  {
+   "id": "c3s_balche_toy_report",
+   "lines": [
+    {
+     "speaker": "발체",
+     "text": "고마워. 아직 무섭긴 해."
+    },
+    {
+     "speaker": "발체",
+     "text": "...근데 너는 조금 덜 무서워."
+    }
+   ]
+  },
+  {
+   "id": "c3s_hollow_b1_offer",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "지하가 조용한 건 좋은 징조가 아니다."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "뿌리 아래 갑충 예순. 숫자가 줄면 소리가 돌아올 거다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_hollow_b1_report",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "조용하면 더 깊이 들어라."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "다음은 뒤엉킨 뿌리다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_hollow_b2_offer",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "주술사는 멀리서 친다. 먼저 쳐라."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "뒤엉킨 뿌리의 주술사 예순. 순찰대가 다치기 전에."
+    }
+   ]
+  },
+  {
+   "id": "c3s_hollow_b2_report",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "먼저 쳤군."
+    },
+    {
+     "speaker": "전사장 쿠크",
+     "text": "순찰대가 너를 '창 든 인간'이라고 부르기 시작했다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_grey_patrol_offer",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "그놈들은 밤에 와. 밤은 내 시간인데."
+    },
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "검은 돌 잔해 쪽 정찰병 쉰. 내 장사를 망치는 놈들이다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_grey_patrol_report",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "밤은 다시 내 것이다."
+    },
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "이번 거래는 내가 손해 보는 걸로 해 두지."
+    }
+   ]
+  },
+  {
+   "id": "c3s_ria_letter_offer",
+   "lines": [
+    {
+     "speaker": "리아",
+     "text": "편지를 쓰고 싶어. 받을 사람은 없지만."
+    },
+    {
+     "speaker": "리아",
+     "text": "노호 할아버지한테 종이를 얻어 줄래? 그리고 갈라진 바닥에 핀 마른 꽃도 세 송이만."
+    }
+   ]
+  },
+  {
+   "id": "c3s_ria_letter_noho",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "편지라. 받을 사람이 없는 편지가 가장 오래 남지."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "가져가거라. 좋은 종이다."
+    }
+   ]
+  },
+  {
+   "id": "c3s_ria_letter_report",
+   "lines": [
+    {
+     "speaker": "리아",
+     "text": "무덤에 가져가 줘. 언젠가."
+    },
+    {
+     "speaker": "리아",
+     "text": "아저씨랑 아줌마한테. ...우리 둘 다 잘 있다고."
+    }
+   ]
+  },
+  {
+   "id": "c3s_hollow_b4_offer",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "심연의 불빛은 그분의 숨이다."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "가장 깊은 곳의 수호병이 그 불빛을 흔든다. 예순을 물리쳐 다오."
+    }
+   ]
+  },
+  {
+   "id": "c3s_hollow_b4_report",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "불빛이 흔들리지 않았다면 다행이다."
+    },
+    {
+     "speaker": "촌로 노호",
+     "text": "그분은 아직 버티고 계신다."
+    }
+   ]
+  },
+  {
+   "id": "c3_ixi_idle",
+   "lines": [
+    {
+     "speaker": "익시",
+     "text": "핏빛 달이 뜨는 밤엔 다들 문을 닫는다. 나는 열어 둔다."
+    }
+   ]
+  },
+  {
+   "id": "c3_kuk_idle",
+   "lines": [
+    {
+     "speaker": "전사장 쿠크",
+     "text": "창은 앞을 찌르라고 있는 거다. 뒤를 지키는 건 동료의 몫이고."
+    }
+   ]
+  },
+  {
+   "id": "c3_akab_idle",
+   "lines": [
+    {
+     "speaker": "밤 상인 아카브",
+     "text": "밤에 오면 더 좋은 물건이 있지. 인간은 밤을 무서워하지만."
+    }
+   ]
+  },
+  {
+   "id": "c3_noho_idle",
+   "lines": [
+    {
+     "speaker": "촌로 노호",
+     "text": "늙으면 기억만 남는다. 다행히 나는 기억이 많다."
+    }
+   ]
+  },
+  {
+   "id": "c3_kana_idle",
+   "lines": [
+    {
+     "speaker": "치유사 카나",
+     "text": "상처는 사람이든 마족이든 같은 색으로 아문다."
+    }
+   ]
+  },
+  {
+   "id": "c3_balche_idle",
+   "lines": [
+    {
+     "speaker": "발체",
+     "text": "...이거 봐. 반짝이지?"
+    }
+   ]
+  },
+  {
+   "id": "c3_ria_idle",
+   "lines": [
+    {
+     "speaker": "리아",
+     "text": "이 밭, 내가 가꿨어. 아버지 밭만큼은 아니지만."
+    }
+   ]
+  },
+  {
+   "id": "c3_inn_idle",
+   "lines": [
+    {
+     "speaker": "여관 주인",
+     "text": "방은 있다. 인간에게 내준 건 처음이지만."
+    }
+   ]
+  },
+  {
+   "id": "c3_untrusted",
+   "lines": [
+    {
+     "speaker": "여관 주인",
+     "text": "인간에겐 팔 물건이 없다."
+    },
+    {
+     "speaker": "{name}",
+     "text": "......"
+    }
+   ]
+  }
+ ]
+}

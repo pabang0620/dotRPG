@@ -89,6 +89,13 @@ namespace DotRPG
                 lastProgressAt = Time.time;
                 return;
             }
+            // [CH3] An open field void rift (공허의 틈) hardens the monsters around it: close it first, like a seal circle.
+            if (FieldRift.SpotFor(p, out Vector2 rift))
+            {
+                WalkTo(p, rift, FieldRift.Radius * .5f);
+                lastProgressAt = Time.time;
+                return;
+            }
             // [MEASURE] -measureDodge: gimmick totems first, then 낙인 / 섬멸 / ground warnings like a person (QuestAutoPilot.Dodge.cs).
             bool focused = false;
             if (MeasureDodge)

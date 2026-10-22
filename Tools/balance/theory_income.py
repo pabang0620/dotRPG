@@ -153,7 +153,8 @@ def best_difficulty(band_min_level):
 
 def day_lumps(difficulty):
     """요일 던전 하루 dailyEntries판: 경험치 = 3 x max(던전별 clearXpFloor[난이도] x xpMul) x 최고 등급 보너스, 골드 = 3 x 카드 골드 최댓값 x rewardMul."""
-    plain = [d for d in DUNGEONS["dungeons"] if not d["isRaid"]]
+    # 군주(4)처럼 일부 던전에만 있는 난이도는 그 난이도가 있는 던전만 본다(상시 일반 던전은 칸이 4개)
+    plain = [d for d in DUNGEONS["dungeons"] if not d["isRaid"] and len(d["clearXpFloor"]) > difficulty]
     runs = DUNGEONS["dailyEntries"]
     xp = runs * max(d["clearXpFloor"][difficulty] * d["xpMul"] for d in plain) * TOP_RANK_XP_MUL
     card_gold = max((r["max"] for d in plain for r in d["rewards"] if r["itemId"] == "gold"), default=0)

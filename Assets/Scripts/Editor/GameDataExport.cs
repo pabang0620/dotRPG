@@ -101,7 +101,8 @@ namespace DotRPG.EditorTools
             var rows = new List<(string id, string kind, bool stackable)>();
             foreach (var e in EquipmentDatabase.All) rows.Add((e.id, "equipment", false));
             foreach (var m in EquipmentDatabase.AllMaterials) rows.Add((m.id, "material", true));
-            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah, RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz })
+            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah, RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz,
+                FieldQuestDrops.VoidEssence, FieldQuestDrops.DryHide, FieldQuestDrops.AshHerb, FieldQuestDrops.DryFlower })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
             // [CASH] Sealed box rewards (Docs/PLAN_CASH_BOX_PASS.md): account-bound, never on the auction.
@@ -145,7 +146,8 @@ namespace DotRPG.EditorTools
                 .Num("reqLevel", e.reqLevel).Num("levelTier", e.levelTier).Num("chapter", e.chapter)
                 .Num("sellPrice", ItemPrices.SellPrice(e.id)).End());
             // [CH3] Non-gear items that belong to chapter 3 (the server's assertOpen reads them with the gear's chapter field).
-            j.Arr("chapter3Items", new[] { RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz }, (o, id) => o.Val(id));
+            j.Arr("chapter3Items", new[] { RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz,
+                FieldQuestDrops.VoidEssence, FieldQuestDrops.DryHide, FieldQuestDrops.AshHerb, FieldQuestDrops.DryFlower }, (o, id) => o.Val(id));
             j.Arr("materials", EquipmentDatabase.AllMaterials, (o, m) => o.Obj()
                 .Str("id", m.id).Str("rarity", m.rarity.ToString()).Num("dropChance", m.dropChance).Num("minDrop", m.minDrop).Num("maxDrop", m.maxDrop)
                 .Num("sellPrice", ItemPrices.SellPrice(m.id)).End());
@@ -180,9 +182,13 @@ namespace DotRPG.EditorTools
         static string QuestIndex()
         {
             var db = new QuestDatabase(Resources.Load<TextAsset>(QuestDatabase.ResourcePath));
+            // [CH3] Chapter 3 quests live in the story bundle (chapter3.json); the server still needs their rules and tags.
+            var ch3 = Chapter3Content.FromResources();
+            if (ch3 != null) db.Add(ch3.chapter, ch3.quests);
+            var ch3Text = Resources.Load<TextAsset>(Chapter3Content.ResourcePath)?.text ?? "";
             var flags = new SortedSet<string>(StringComparer.Ordinal);
             // Every "setFlags" / "requiresFlags" list anywhere in Quests.json (steps, quest end, rewards).
-            var questText = Resources.Load<TextAsset>(QuestDatabase.ResourcePath).text;
+            var questText = Resources.Load<TextAsset>(QuestDatabase.ResourcePath).text + "\n" + ch3Text;
             foreach (System.Text.RegularExpressions.Match list in System.Text.RegularExpressions.Regex.Matches(questText, "\"(?:setFlags|requiresFlags)\"\\s*:\\s*\\[([^\\]]*)\\]"))
                 foreach (System.Text.RegularExpressions.Match f in System.Text.RegularExpressions.Regex.Matches(list.Groups[1].Value, "\"([^\"]+)\""))
                     flags.Add(f.Groups[1].Value);
@@ -190,16 +196,18 @@ namespace DotRPG.EditorTools
             flags.Add(QuestManager.WorkshopBuiltFlag);
             // Cutscene steps {"op": "flag", "id": "..."} (Cutscenes.json).
             var cut = Resources.Load<TextAsset>("Data/Cutscenes");
-            if (cut != null)
-                foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(cut.text, "\"op\"\\s*:\\s*\"flag\"\\s*,\\s*\"id\"\\s*:\\s*\"([^\"]+)\""))
-                    flags.Add(m.Groups[1].Value);
+            var cutText = (cut != null ? cut.text : "") + "\n" + ch3Text;
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(cutText, "\"op\"\\s*:\\s*\"flag\"\\s*,\\s*\"id\"\\s*:\\s*\"([^\"]+)\""))
+                flags.Add(m.Groups[1].Value);
+            // [CH3] Flags that quests wait on but no file sets (set by game systems, e.g. the Sayab defense win).
+            foreach (var q in db.All) foreach (var st in q.steps) foreach (var ob in st.objectives) if (ob.type == ObjectiveTypes.Flag) flags.Add(ob.target);
             flags.RemoveWhere(string.IsNullOrEmpty);
             var j = Doc();
             j.Arr("quests", db.All, (o, q) =>
             {
                 o.Obj().Str("id", q.id).Num("stepCount", q.steps.Count)
                     .Num("maxObjectives", q.steps.Count == 0 ? 0 : q.steps.Max(st => st.objectives.Count))
-                    .Str("kind", q.kind).Num("minLevel", q.minLevel);
+                    .Str("kind", q.kind).Num("minLevel", q.minLevel).Num("chapter", q.chapter);
                 o.Arr("requires", q.requires ?? new List<string>(), (x, v) => x.Val(v));
                 o.Arr("requiresFlags", q.requiresFlags ?? new List<string>(), (x, v) => x.Val(v));
                 var r = q.reward ?? new QuestRewardDef();
@@ -333,7 +341,8 @@ namespace DotRPG.EditorTools
                 o.Obj().Str("id", m.id).Str("name", m.name).Str("kind", m.kind.ToString()).Num("hp", m.hp).Num("damage", m.damage).Num("xp", m.xp)
                     .Bool("boss", m.boss).Bool("raid", m.raid).Bool("noLoot", m.noLoot).Num("goldMin", m.goldMin).Num("goldMax", m.goldMax)
                     .Num("goldPerHitMin", m.goldPerHitMin).Num("goldPerHitMax", m.goldPerHitMax)
-                    .Str("bossGear", m.bossGear).Num("bossGearPermille", m.bossGearPermille);
+                    .Str("bossGear", m.bossGear).Num("bossGearPermille", m.bossGearPermille)
+                    .Num("chapter", m.chapter).Bool("sureGear", m.sureGear); // [CH3] assertOpen tag, elite sure drop
                 // Same float maths as MonsterDatabase.SpawnDef, so the server never re-derives the rounding.
                 // [CH3] One cell per hero level up to the data ceiling (50); same values as the server's formula fallback.
                 o.Arr("xpByLevel", Enumerable.Range(1, DotRPG.Progression.MaxLevel), (x, lv) => x.Val(Mathf.RoundToInt(m.xp * (1f + MonsterDatabase.XpPerLevel * (lv - 1)))));
@@ -370,7 +379,7 @@ namespace DotRPG.EditorTools
             // [2026-10-14] The server holds a clear faster than 60% of these (any difficulty uses the largest value up to it).
             // Was 87 s (hold under 52 s): after the early-game damage cut and the doubled weapon enhancement a legit
             // two-player Normal clear took 30.5 s and was held. 20 s holds only clearly impossible runs (under 12 s).
-            j.Arr("minClearSeconds", new[] { 20, 0, 0, 0 }, (o, v) => o.Val(v));
+            j.Arr("minClearSeconds", new[] { 20, 0, 0, 0, 0 }, (o, v) => o.Val(v)); // [CH3] + 군주
             // [SERVER 4] Raids: no measured floor yet (the server falls back to 0.5 x referenceSeconds), key item, AI mercenaries.
             j.Key("raidMinClearSeconds").Obj().End();
             // [RAID] 영웅 레이드: multipliers on each raid's raidNumbers (server diffOf, difficulty 1).
@@ -389,7 +398,11 @@ namespace DotRPG.EditorTools
                         .Num("goldMin", d.sure.goldMin).Num("goldMax", d.sure.goldMax).End();
                 o.Arr("openDays", d.openDays ?? new DayOfWeek[0], (x, day) => x.Val(day.ToString()));
                 o.Arr("referenceSeconds", d.referenceSeconds ?? new float[0], (x, s) => x.Val(s));
-                o.Arr("clearXpFloor", Enumerable.Range(0, 4), (x, i) => x.Val(HuntingGrounds.DungeonClearFloor(d, DungeonDatabase.DifficultyFor(d, (DungeonDifficulty)i))));
+                // [CH3] one floor per reference time: the weekday dungeons have a 5th (군주), raids and 일반 던전 keep 4
+                o.Arr("clearXpFloor", Enumerable.Range(0, d.referenceSeconds != null ? Math.Min(d.referenceSeconds.Length, DungeonDatabase.DifficultyCount) : 4),
+                    (x, i) => x.Val(HuntingGrounds.DungeonClearFloor(d, DungeonDatabase.DifficultyFor(d, (DungeonDifficulty)i))));
+                if (d.lordSure != null) // [CH3] 군주 extra sure material (server rollLordBonus)
+                    o.Key("lordSure").Obj().Str("material", d.lordSure.material).Num("min", d.lordSure.min).Num("max", d.lordSure.max).End();
                 o.Arr("rewards", d.rewards ?? new RewardEntry[0], (x, r) => x.Obj().Str("itemId", r.itemId).Num("min", r.min).Num("max", r.max).Num("weight", r.weight).End());
                 o.Arr("rooms", d.rooms, (r, room) =>
                 {

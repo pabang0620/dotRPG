@@ -18,6 +18,9 @@ namespace DotRPG
         SanctumField,
         UnderTown,
         Underground,
+        /// <summary>[CH3] 메말라 가는 협곡: the canyon floor cracked and dried after the broken guardian stone; canyon ground
+        /// art, a dry violet grade, cracks and void rifts (WorldBuilder.DryCanyon.cs). Appended last so stored values keep their meaning.</summary>
+        DryCanyon,
     }
 
     /// <summary>One playable map. Portals '&gt;' lead to <see cref="nextMap"/>, '&lt;' to <see cref="previousMap"/>.</summary>
@@ -34,6 +37,8 @@ namespace DotRPG
         public string northMap, southMap;
         /// <summary>Central town route and stairs between world layers; independent of cardinal field exits.</summary>
         public string hubMap, downMap, upMap;
+        /// <summary>[CH3] Side road out of a town that has no free edge (the canyon town's plaza passage west to 메말라 가는 협곡).</summary>
+        public string westMap;
         public WorldLayer worldLayer = WorldLayer.Surface;
         /// <summary>0 on the surface, 1..3 in the persistent underground world.</summary>
         public int depth;
@@ -45,6 +50,8 @@ namespace DotRPG
         public bool instanced;
         public string exteriorMap;
         public NpcService interiorService;
+        /// <summary>[CH3] 3 for chapter 3 maps (exported; the server's assertOpen reads it), 0 otherwise.</summary>
+        public int chapter;
         public bool IsInterior => theme == MapTheme.Interior;
 
         /// <summary>Drawn with the 32px-per-tile art set.</summary>
@@ -60,7 +67,13 @@ namespace DotRPG
         public const string Winter = "winter";
         public const string Sanctum = "sunken_sanctum";
         public const string Undergate = "undergate";
+        /// <summary>[CH3] 사얍 마을: the hidden spring of the demon moderates, west of the canyon (Docs/ch3/WORLD_AND_STORY.md 6).</summary>
+        public const string Sayab = "sayab";
+        /// <summary>[CH3] 메말라 가는 협곡: 갈라진 협곡 바닥 / 검은 수호석 잔해 / 공허의 틈.</summary>
+        public const string DryFloor = "dry_floor", DryStones = "dry_stones", DryRift = "dry_rift";
 
+        /// <summary>[CH3] Chapter 3 maps (filled by BuildMaps, so declared before Maps: static fields initialise in text order).</summary>
+        public static readonly System.Collections.Generic.HashSet<string> Chapter3Maps = new System.Collections.Generic.HashSet<string>();
         static readonly MapInfo[] Maps = BuildMaps();
 
         static MapInfo[] BuildMaps()
@@ -78,6 +91,8 @@ namespace DotRPG
             Town(Village, L.T("코바 마을"), "Maps/Village", MapTheme.Town, "music_village");
             Town(Canyon, L.T("바위 협곡 마을"), "Maps/Canyon", MapTheme.Canyon, "music_canyon");
             Town(Winter, L.T("눈꽃 숲 마을"), "Maps/Winter", MapTheme.Winter, "music_winter");
+            // [CH3] 사얍 마을 (canyon town art) and its three dry-canyon fields; closed until the server opens chapter 3.
+            Town(Sayab, L.T("사얍 마을"), "Maps/Sayab", MapTheme.Canyon, "music_sayab");
             maps.Add(new MapInfo { id = Sanctum, displayName = L.T("침수된 고대 성소"), resource = "Maps/SunkenSanctum",
                 theme = MapTheme.SunkenSanctum, music = "music_canyon",
                 hint = L.T("지상 제4마을 · 북쪽 단상: 성소 사냥터 · 뿌리샘 길: 중앙 마을\n물·절벽은 통행 불가 · 남쪽 귀환 표식: 해빙된 성소 입구") });
@@ -91,6 +106,9 @@ namespace DotRPG
                         worldLayer = WorldLayer.Underground, depth = z.variant + 1,
                         music = MusicDgnCanyon, hint = L.F("지하세계 · 지역 등급 Lv.{0}~{1} · 몬스터 Lv.{2}\nLv.40 만렙 이후 도전 · 강화 장비·파티 권장\n처치 경험치 {3} · 재생성 {4:0}초 · 귀환: 뿌리샘 마을", z.minLevel, z.maxLevel, z.monsterLevel, z.KillXp, HuntingGrounds.RespawnSeconds) });
             WorldRoutes.Configure(maps);
+            foreach (var m in maps)
+                if (m.id == Sayab || HuntingGrounds.Get(m.id)?.village == Sayab) { m.chapter = 3; Chapter3Maps.Add(m.id); }
+            foreach (var service in new[] { NpcService.Shop, NpcService.Blacksmith, NpcService.Storage }) Chapter3Maps.Add(InteriorFor(Sayab, service)); // IndoorServices is not built yet
             return maps.ToArray();
         }
 
@@ -113,13 +131,12 @@ namespace DotRPG
         /// [CH3] Chapter 3 maps (Docs/ch3/WORLD_AND_STORY.md): closed until the server opens the chapter (Chapter3.Enabled).
         /// Filled in steps 1 and 3 (사얍 마을, 메말라 가는 협곡, mini_dungeon_40); travel, saves and the world map check it.
         /// </summary>
-        public static readonly System.Collections.Generic.HashSet<string> Chapter3Maps = new System.Collections.Generic.HashSet<string>();
         public static bool IsChapter3(string id) => id != null && Chapter3Maps.Contains(id);
 
         public static MapInfo Default => Maps[0];
 
         public static readonly NpcService[] IndoorServices = { NpcService.Shop, NpcService.Blacksmith, NpcService.Storage };
-        public static bool IsTown(string id) => id == Village || id == Canyon || id == Winter || id == Sanctum || id == Undergate;
+        public static bool IsTown(string id) => id == Village || id == Canyon || id == Winter || id == Sanctum || id == Undergate || id == Sayab;
         public static bool IsIndoorService(NpcService service) => service == NpcService.Shop || service == NpcService.Blacksmith || service == NpcService.Storage;
         public static string ServiceName(NpcService service) => service == NpcService.Shop ? L.T("잡화점") : service == NpcService.Blacksmith ? L.T("대장간 · 장비강화") : L.T("창고");
         public static string InteriorFor(string town, NpcService service) => IsTown(town) && IsIndoorService(service) ? town + "_" + service.ToString().ToLowerInvariant() : null;

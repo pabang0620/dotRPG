@@ -21,6 +21,7 @@ import {
   rankOf,
   rollCards,
   rollClearRewards,
+  rollLordBonus,
   rollRaidCards,
   rollRaidGold,
   roomKillCount,
@@ -302,6 +303,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
   let leveledUp = false;
   let cards: { item_key: string; count: number }[] | null = null;
   let raidGold = 0;
+  let lordBonus: { item_key: string; count: number } | null = null;
   if (!locked) {
     let xp = clearXp(eco, dungeon, diff, rank);
     // 9단계 A4: 권장 레벨보다 DUNGEON_UNDERLEVEL_GAP 이상 낮은 멤버는 클리어 경험치를 깎는다(카드·열쇠는 줄이지 않는다)
@@ -323,6 +325,9 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
       cards = rollClearRewards(eco, dungeon, diff, ctx.char.class, getRng()) ?? rollCards(eco, dungeon, diff, ctx.char.class, getRng());
       // 요일 던전 유니크 보너스(판당 22%, 7판 연속 실패 뒤 보장, 없는 부위 우선). 적용 대상이 아니면 그대로 돌려준다
       cards = (await applyUniqueBonus(ctx.client, ctx.char.id, eco, dungeon, diff, ctx.char.class, cards, getRng())).cards;
+      // 챕터 3 군주: 카드와 별개로 침식 결정·잿빛 인장을 바로 가방에(카드 4장 틀은 그대로)
+      lordBonus = rollLordBonus(dungeon, run.difficulty, getRng());
+      if (lordBonus) await ctx.addItem('bag', lordBonus.item_key, lordBonus.count, 'dungeon_card', run.uuid);
     }
     if (dungeon.isRaid) {
       if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0) {
@@ -368,6 +373,7 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
     leveled_up: leveledUp,
     card_count: cards ? cards.length : 0,
     card_mode: cards && (dungeon.isRaid || dungeon.sure) ? 'take_all' : 'pick_one',
+    ...(lordBonus ? { lord_bonus: lordBonus } : {}),
     delta: ctx.delta(),
   };
   // 9단계: 파티 던전(레이드 아님)의 기여 잠금은 data.reward_locked / reward_lock_reason 으로 알린다

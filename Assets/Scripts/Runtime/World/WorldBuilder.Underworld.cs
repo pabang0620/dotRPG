@@ -78,6 +78,7 @@ namespace DotRPG
             }
             CreateBoundaryWalls();PointsOfInterest.Add(PlayerSpawn);PointsOfInterest.Add(new Vector2(width*.5f,height*.5f));
             ApplySharpMaterial();ApplySurfaceComposition();BuildMinimap();
+            Chapter3Spots.Spawn(this); // [CH3] 3-5 노호의 기록 조각 in B2
         }
 
         static void FillUnderworldCollider(Tilemap tilemap,List<Vector3Int> positions)
@@ -100,6 +101,9 @@ namespace DotRPG
             // The old first village has no western edge exit; its returning route gets a signed plaza passage.
             if(MapId==MapRegistry.Village&&!string.IsNullOrEmpty(map.previousMap)&&!portalCells.ContainsKey(map.previousMap))
                 AddPlazaGate(map.previousMap,PlayerSpawn+new Vector2(-6,-2));
+            // [CH3] The canyon town's signed plaza passage west to 메말라 가는 협곡, only once the chapter is open.
+            if(!string.IsNullOrEmpty(map.westMap)&&!WorldRoutes.Closed(MapId,map.westMap))
+                AddPlazaGate(map.westMap,PlayerSpawn+new Vector2(-9,1));
         }
         void AddHubEdgeGate(string target)
         {

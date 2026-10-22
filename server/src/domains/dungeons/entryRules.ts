@@ -8,7 +8,8 @@ import { AppError } from '../../utils/AppError';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import { stackCount } from '../economy/economyRepository';
 import * as repo from './dungeonRepository';
-import { diffOf, isOpenToday, RAID_HEROIC, type DiffNumbers } from './dungeonRules';
+import { chapter3Open } from '../../gamedata/chapterGate';
+import { diffOf, isOpenToday, LORD_DIFFICULTY, LORD_MIN_LEVEL, RAID_HEROIC, type DiffNumbers } from './dungeonRules';
 
 /** 퀘스트 상태 Active(2) 이상 = 수락 이상 */
 const QUEST_ACTIVE = 2;
@@ -90,10 +91,14 @@ export async function checkEntry(
     }
   }
   // 요일·일반 던전은 앞 난이도 클리어 없이 모든 난이도를 연다(2026-10-14 사용자 결정). 레벨 조건은 아래에서 그대로 본다
+  // 챕터 3 군주(4)는 3장이 열린 서버의 요일 던전만, Lv41부터
+  if (!d.isRaid && difficulty === LORD_DIFFICULTY && !chapter3Open()) {
+    throw new AppError(422, '아직 열리지 않은 콘텐츠입니다.', 'CHAPTER_LOCKED', { kind: 'dungeon', id: `${d.id}:${difficulty}` });
+  }
   const diff = diffOf(eco, d, difficulty);
   if (!diff) throw new AppError(422, '알 수 없는 난이도입니다.', 'DUNGEON_UNKNOWN');
   // 레이드는 권장 레벨이 곧 입장 레벨이다(해골왕 20, 골렘 30, 최종 레이드 40). 요일던전만 여유를 준다
-  const need = d.isRaid ? diff.recommendedLevel : diff.recommendedLevel - slack;
+  const need = d.isRaid ? diff.recommendedLevel : Math.max(diff.recommendedLevel - slack, difficulty === LORD_DIFFICULTY ? LORD_MIN_LEVEL : 0);
   if (c.level < need) throw new AppError(422, '레벨이 부족합니다.', 'LEVEL_TOO_LOW', { need, have: c.level });
 
   const resetDay = new Date(resetBoundaries(now).dailyStartAt);

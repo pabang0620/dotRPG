@@ -131,13 +131,25 @@ export function rollKillDrops(eco: EconomyData, def: MonsterDef, cls: string, hi
     const n = rng.int(m.minDrop, m.maxDrop + 1);
     for (let i = 0; i < n; i++) out.push({ itemKey: m.id, count: 1 });
   }
-  const gear = chanceMul <= 0 ? null : rollEquipmentDrop(eco, cls, r.equipmentDropChance * chanceMul, rng, monsterLevel);
+  // [CH3] 정예는 장비 1개가 확정(공급 상한 배율이 0이면 정예도 없다)
+  const gear = chanceMul <= 0 ? null : rollEquipmentDrop(eco, cls, def.sureGear ? 1 : r.equipmentDropChance * chanceMul, rng, monsterLevel);
   if (gear) out.push({ itemKey: gear, count: 1 });
   // 필드 보스: 강화석 3~5, 마력 정수 1은 항상, 보스 장비는 천분율로
   if (def.bossGear) {
     out.push({ itemKey: 'mat_ore', count: rng.int(3, 6) });
     out.push({ itemKey: 'mat_essence', count: 1 });
     if (rng.int(0, 1000) < def.bossGearPermille) out.push({ itemKey: keyAt(def.bossGear, 0), count: 1 });
+  }
+  return out;
+}
+
+/** [CH3] 사냥터 퀘스트 수집품(maps.json fieldDrops): 그 맵에서 처치할 때마다 chance로 1개(monsters가 있으면 그 몬스터만) */
+export function rollMapDrops(eco: EconomyData, mapId: string, monsterId: string, rng: Rng, chanceMul = 1): DropSpec[] {
+  const out: DropSpec[] = [];
+  if (chanceMul <= 0) return out;
+  for (const d of eco.mapExtra.get(mapId)?.fieldDrops ?? []) {
+    if (d.monsters.length > 0 && !d.monsters.includes(monsterId)) continue;
+    if (rng.unit() < d.chance * chanceMul) out.push({ itemKey: d.itemId, count: 1 });
   }
   return out;
 }

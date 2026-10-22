@@ -25,6 +25,8 @@ const monsterDefSchema = z.looseObject({
   /** 필드 보스의 장비(천분율로 처치마다 굴린다) */
   bossGear: z.string().nullable().optional(),
   bossGearPermille: nonNegInt.default(0),
+  /** [CH3] 정예(잿빛 손 정찰대장): 장비 1개 확정 */
+  sureGear: z.boolean().default(false),
 });
 
 const monstersSchema = z.looseObject({
@@ -239,6 +241,14 @@ const mapExtraSchema = z.looseObject({
       fieldBoss: z
         .looseObject({ monsterId: z.string().min(1), level: z.number().int().min(1).max(60), xp: nonNegInt, intervalSeconds: z.number().int().positive() })
         .optional(),
+      // [CH3] 사냥터 퀘스트 수집품(qi_*): 처치마다 chance로 1개, monsters가 비어 있으면 그 맵 모든 몬스터
+      fieldDrops: z
+        .array(z.looseObject({ itemId: z.string().min(1), chance: z.number().min(0).max(1), monsters: z.array(z.string()).default([]) }))
+        .default([]),
+      // [CH3] 필드 정예(잿빛 손 정찰대장): 그 맵 일반 처치 everyKills마리마다 1마리
+      fieldElite: z
+        .looseObject({ monsterId: z.string().min(1), everyKills: z.number().int().positive(), level: z.number().int().min(1).max(60), xp: nonNegInt })
+        .optional(),
       scriptedSpawns: z
         .array(z.looseObject({ monsterId: z.string(), total: z.number().int().positive() }))
         .default([]),
@@ -281,7 +291,9 @@ const dungeonsSchema = z.looseObject({
         jackpotPerMille: nonNegInt.default(0),
       }),
     )
-    .length(4),
+    // 0 일반 1 모험 2 왕 3 영웅 + 4 군주(챕터 3, 2026-10-22). 옛 데이터(4개)도 받는다
+    .min(4)
+    .max(5),
   partyHpScale: z.array(z.number().positive()).min(1),
   aiHpWeight: z.number().min(0).max(1).default(1),
   raidAiHpWeight: z.number().min(0).max(1).default(1),
@@ -300,7 +312,7 @@ const dungeonsSchema = z.looseObject({
     thresholds: z.array(int).min(1),
     xpBonus: z.array(int).min(1),
   }),
-  minClearSeconds: z.array(z.number().min(0)).length(4),
+  minClearSeconds: z.array(z.number().min(0)).min(4).max(5),
   raidMinClearSeconds: z.record(z.string(), z.number().min(0)).default({}),
   /** 영웅 레이드(레이드 난이도 1): 그 레이드의 raidNumbers에 곱하는 배율. 없으면 영웅 레이드가 없다 */
   raidHeroic: z
@@ -333,7 +345,7 @@ const dungeonsSchema = z.looseObject({
         .optional(),
       raidReward: raidRewardSchema.optional(),
       clearXp: nonNegInt,
-      clearXpFloor: z.array(nonNegInt).length(4).default([0, 0, 0, 0]),
+      clearXpFloor: z.array(nonNegInt).min(4).max(5).default([0, 0, 0, 0]),
       xpMul: z.number().positive(),
       bossRoom: nonNegInt,
       openDays: z.array(z.string()),
@@ -349,7 +361,11 @@ const dungeonsSchema = z.looseObject({
           goldMax: z.number().int().positive(),
         })
         .optional(),
-      referenceSeconds: z.array(z.number().positive()).length(4),
+      // 챕터 3 군주 난이도(4)의 추가 확정 재료(카드가 아니라 클리어 때 바로 가방에). 요일 던전만
+      lordSure: z
+        .looseObject({ material: z.string().min(1), min: z.number().int().positive(), max: z.number().int().positive() })
+        .optional(),
+      referenceSeconds: z.array(z.number().positive()).min(4).max(5),
       rewards: z.array(
         z.looseObject({ itemId: z.string().min(1), min: z.number().int().positive(), max: z.number().int().positive(), weight: nonNegInt }),
       ),
@@ -385,6 +401,10 @@ export interface MapExtra {
   sharedField: boolean;
   /** 필드 보스(15분 창마다 캐릭터당 1회 인정) */
   fieldBoss: { monsterId: string; level: number; xp: number; intervalSeconds: number } | null;
+  /** [CH3] 필드 정예: 그 맵 일반 처치 everyKills마리마다 1마리 인정 */
+  fieldElite: { monsterId: string; everyKills: number; level: number; xp: number } | null;
+  /** [CH3] 사냥터 퀘스트 수집품 */
+  fieldDrops: { itemId: string; chance: number; monsters: string[] }[];
   scriptedSpawns: { monsterId: string; total: number }[];
   chests: Set<string>;
 }
@@ -548,6 +568,12 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
   for (const e of equipment.values()) needItem(e.id, 'shop.equipment');
   for (const s of shop.stock) needItem(s.id, 'shop.stock');
   for (const m of shop.materials) needItem(m.id, 'shop.materials');
+  // 챕터 3 군주 난이도 추가 확정 재료(요일 던전만)
+  for (const d of dng.dungeons) {
+    if (!d.lordSure) continue;
+    needItem(d.lordSure.material, `dungeons.${d.id}.lordSure`);
+    if (d.lordSure.max < d.lordSure.min) throw new Error(`게임 데이터 검증 실패: ${d.id} lordSure 수량 범위가 거꾸로입니다`);
+  }
   const sellPrices = new Map<string, number>();
   for (const m of shop.materials) sellPrices.set(m.id, m.sellPrice);
   for (const s of shop.sellPrices) sellPrices.set(s.id, s.sellPrice);
@@ -638,15 +664,18 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
   const mapExtra = new Map<string, MapExtra>();
   for (const m of maps.maps) {
     if (!mapIds.has(m.id)) continue;
-    for (const s of [...m.fieldSpawns, ...m.scriptedSpawns]) {
+    for (const s of [...m.fieldSpawns, ...m.scriptedSpawns, ...(m.fieldElite ? [m.fieldElite] : [])]) {
       if (!monsters.has(s.monsterId)) {
         throw new Error(`게임 데이터 검증 실패: 맵 ${m.id} 의 몬스터 ${s.monsterId} 이 monsters.json에 없습니다`);
       }
     }
+    for (const d of m.fieldDrops) needItem(d.itemId, `maps.${m.id}.fieldDrops`);
     mapExtra.set(m.id, {
       fieldSpawns: m.fieldSpawns,
       sharedField: m.sharedField ?? m.fieldSpawns.length > 0,
       fieldBoss: m.fieldBoss ?? null,
+      fieldElite: m.fieldElite ?? null,
+      fieldDrops: m.fieldDrops,
       scriptedSpawns: m.scriptedSpawns,
       chests: new Set(m.chests),
     });

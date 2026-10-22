@@ -71,7 +71,7 @@
 | 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개, 푸시는 `wonho`와 `main`에 같이 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
 | 표기 이름 | **볼론**(Bolon, 2026-10-21 사용자 결정, 마왕 이름). 타이틀 로고는 영문 "BOLON" 하나(`Art/ui_logo_bolon`, 모든 언어 공통), 화면·문서·정책·홈페이지만 바꾼다. Unity productName·세이브 경로·레포·서버 이름은 dotRPG 유지(세이브 유실 방지). 고유 이름·떡밥은 `STORY.md` 7절 |
-| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0049 커밋됨(0049 계승은 챕터 3, 시험 서버 미적용). 작업 트리에 미커밋 0050_lord_difficulty(군주 난이도)가 있는데 설계상 0050은 boss_seasons.boss_level이라 번호 정리 필요, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
+| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0049 커밋됨(0049 계승은 챕터 3, 시험 서버 미적용). 0050 군주 난이도는 3단계, 0051 보스 시즌 레벨은 5단계, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
 | 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0048까지 적용, 데이터 버전 c68af582b1c08308(2026-10-21 배포). `CHAPTER3_OPEN` 미설정(닫힘). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
 | 홈페이지 | 로컬 `C:\Users\admin\Desktop\games\sites\dotrpg-home`(저장소 pabang0620/dotrpg-home, 비공개). OpenAI Sites 프로젝트(Next/vinext + Cloudflare), 게임 소개·스크린샷·캐릭터·스킨 화면과 로그인·가입·캐릭터 화면. 계정·OAuth 실제 연결은 아직 꺼져 있다(미설정 API는 503). 그림은 `public/assets/`(로고·배경·캐릭터·스킨·게임 캡처), 생성 기록 `docs/GENERATED_ASSETS.md`, 연결 방법 `docs/DELIVERY.md` |

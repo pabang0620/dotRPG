@@ -103,6 +103,12 @@ namespace DotRPG
                 if (Game.Session.Progression.Level < need) return L.F("Lv.{0}부터 입장할 수 있는 레이드입니다.", need);
                 // A final raid without the seal keys is still entered, as a practice run (no reward): solo story can finish.
             }
+            // [CH3] 군주: chapter 3 server, weekday dungeons, Lv41+ (server: entryRules LORD_MIN_LEVEL).
+            if (difficulty == DungeonDifficulty.Lord)
+            {
+                if (!DungeonDatabase.LordOpen(dungeon)) return L.T("아직 열리지 않은 콘텐츠입니다.");
+                if (Game.Session.Progression.Level < DungeonDatabase.LordMinLevel) return L.F("Lv.{0}부터 입장할 수 있는 난이도입니다.", DungeonDatabase.LordMinLevel);
+            }
             if (DungeonDatabase.CountsEntry(dungeon) && Progress.EntriesLeft(now) <= 0) return L.T("오늘 입장 횟수를 모두 사용했습니다. (06:00 초기화)");
             if (Game.Party != null && Game.Party.Count > dungeon.maxParty) return L.F("최대 {0}명까지 입장할 수 있습니다.", dungeon.maxParty);
             return null;

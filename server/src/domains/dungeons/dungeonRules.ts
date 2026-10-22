@@ -398,6 +398,27 @@ export type DiffNumbers = Pick<
 /** 레이드 난이도: 0 = 레이드, 1 = 영웅 레이드(raidHeroic 배율). 그 밖은 없다 */
 export const RAID_HEROIC = 1;
 
+/** 챕터 3 요일 던전 "군주" 난이도 번호(DungeonDifficulty.Lord). 레이드·일반 던전에는 없다 */
+export const LORD_DIFFICULTY = 4;
+/** 군주 난이도 입장 최소 레벨(권장 45 - 여유와 별개로 3장 구간 시작) */
+export const LORD_MIN_LEVEL = 41;
+
+/** 이 던전에 군주 난이도가 있는가(요일 던전, 데이터에 군주 난이도가 있을 때). 열림 여부는 chapter3Open이 따로 본다 */
+export function hasLord(eco: EconomyData, d: DungeonDef): boolean {
+  return !d.isRaid && !d.always && eco.dungeons.difficulties.length > LORD_DIFFICULTY;
+}
+
+/** 목록·소탕 창에 보일 난이도 수: 군주는 3장이 열린 요일 던전만 */
+export function shownDifficulties(eco: EconomyData, d: DungeonDef, chapter3IsOpen: boolean): number {
+  return hasLord(eco, d) && chapter3IsOpen ? eco.dungeons.difficulties.length : Math.min(LORD_DIFFICULTY, eco.dungeons.difficulties.length);
+}
+
+/** 군주 클리어 추가 확정 재료(카드가 아니라 클리어 때 가방에 바로). 군주 판이 아니거나 데이터가 없으면 null */
+export function rollLordBonus(d: DungeonDef, difficulty: number, rng: Rng): Card | null {
+  if (difficulty !== LORD_DIFFICULTY || d.isRaid || !d.lordSure) return null;
+  return { item_key: d.lordSure.material, count: rng.int(d.lordSure.min, d.lordSure.max + 1) };
+}
+
 export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumbers | null {
   if (d.isRaid) {
     const base = d.raidNumbers;
@@ -407,6 +428,7 @@ export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumb
     if (index !== RAID_HEROIC || !h) return null;
     return { ...base, hpMul: base.hpMul * h.hpMul, rewardMul: base.rewardMul * h.rewardMul };
   }
+  if (index === LORD_DIFFICULTY && !hasLord(eco, d)) return null; // 군주는 요일 던전만
   return eco.dungeons.difficulties[index] ?? null;
 }
 

@@ -20,6 +20,7 @@ namespace DotRPG
             }
             foreach (var zone in HuntingGrounds.All)
             {
+                if (zone.theme == MapTheme.DryCanyon) continue; // [CH3] own monsters with their own art path (Chapter3MonsterArt)
                 Game.World.Load(zone.id);
                 Game.Player.Place(Game.World.PlayerSpawn, Facing.Right);
                 yield return Wait(.2f);

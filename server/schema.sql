@@ -595,7 +595,7 @@ CREATE TABLE dungeon_runs (
   uuid          UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   character_id  BIGINT NOT NULL REFERENCES characters(id),
   dungeon_id    TEXT NOT NULL,
-  difficulty    SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 3),
+  difficulty    SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
   party_size    SMALLINT NOT NULL DEFAULT 1 CHECK (party_size BETWEEN 1 AND 4),
   state         TEXT NOT NULL DEFAULT 'playing'
                 CHECK (state IN ('playing', 'cleared', 'failed', 'abandoned', 'held')),
@@ -670,7 +670,7 @@ CREATE TABLE parties (
   uuid                UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   leader_character_id BIGINT NOT NULL REFERENCES characters(id),
   dungeon_id          TEXT NOT NULL,
-  difficulty          SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 3),
+  difficulty          SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
   max_members         SMALLINT NOT NULL CHECK (max_members BETWEEN 2 AND 4),
   min_power           INT NOT NULL DEFAULT 0 CHECK (min_power >= 0),
   message             TEXT NOT NULL DEFAULT '' CHECK (char_length(message) <= 30),
@@ -749,7 +749,7 @@ CREATE TABLE party_runs (
   uuid               UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   party_id           BIGINT NOT NULL REFERENCES parties(id),
   dungeon_id         TEXT NOT NULL,
-  difficulty         SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 3),
+  difficulty         SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
   state              TEXT NOT NULL DEFAULT 'gathering' CHECK (state IN ('gathering', 'playing', 'ended', 'cancelled')),
   host_character_id  BIGINT NOT NULL REFERENCES characters(id),
   host_epoch         INT NOT NULL DEFAULT 1 CHECK (host_epoch >= 1),
@@ -2108,7 +2108,7 @@ CREATE TABLE dungeon_sweeps (
   uuid         UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   character_id BIGINT NOT NULL REFERENCES characters(id),
   dungeon_id   TEXT NOT NULL,
-  difficulty   SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 3),
+  difficulty   SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
   reset_day    TIMESTAMPTZ NOT NULL,
   lot_id       BIGINT NOT NULL REFERENCES sweep_ticket_lots(id),
   xp_granted   INT NOT NULL CHECK (xp_granted >= 0),
@@ -3327,3 +3327,5 @@ END $$;
 ALTER TABLE account_week_counters ADD CONSTRAINT account_week_counters_kind_check
   CHECK (kind IN ('sweep_buy', 'direct_clear', 'activity_claim', 'seal_exchange'));
 COMMENT ON COLUMN account_week_counters.kind IS 'sweep_buy, direct_clear, activity_claim + seal_exchange(아카브 교환 횟수, 주 2회)';
+
+-- 0050_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)

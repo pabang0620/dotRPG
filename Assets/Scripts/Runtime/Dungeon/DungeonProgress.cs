@@ -120,6 +120,7 @@ namespace DotRPG
             if (d == DungeonDifficulty.Normal) return true;
             // [RAID] 영웅 레이드 opens after the raid's first clear; raids have no other difficulty.
             if (dungeon.isRaid) return d == DungeonDatabase.RaidHeroic && IsCleared(dungeon.id, DungeonDifficulty.Normal);
+            if (d == DungeonDifficulty.Lord) return DungeonDatabase.LordOpen(dungeon); // [CH3] weekday dungeons, chapter 3 open
             return true; // [2026-10-14] weekday and normal dungeons: every difficulty open (the level requirement still applies)
         }
 

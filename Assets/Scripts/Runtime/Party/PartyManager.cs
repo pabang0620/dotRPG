@@ -277,6 +277,7 @@ namespace DotRPG
                 var m = members[i];
                 if (m == null) { members.RemoveAt(i); continue; }
                 if (netMembers.Contains(m)) continue; // [PARTY NET] placed by the run, not by the roster
+                if (guests.Contains(m.Data.MercenaryId)) continue; // [CH3] story guests stay until released (PartyManager.Guests.cs)
                 if (!roster.Contains(m.Data.MercenaryId)) Despawn(m);
             }
             if (!rosterHidden)
@@ -287,7 +288,8 @@ namespace DotRPG
                 bool inRun = companionsOut;
                 foreach (var id in roster)
                 {
-                    if (!inRun || (companionCap >= 0 && out_ >= companionCap)) { if (Find(id) is PlayerController extra) Despawn(extra); continue; }
+                    if (guests.Contains(id)) { out_++; continue; } // [CH3] a hired companion called as a story guest keeps its seat
+                    if (benched.Contains(id) || !inRun || (companionCap >= 0 && out_ >= companionCap)) { if (Find(id) is PlayerController extra) Despawn(extra); continue; }
                     if (Find(id) == null && MercenaryDatabase.Get(id) != null) Spawn(MercenaryDatabase.Get(id), members.Count - 1);
                     out_++;
                 }

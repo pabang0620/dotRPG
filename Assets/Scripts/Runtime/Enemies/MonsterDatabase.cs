@@ -135,6 +135,10 @@ namespace DotRPG
 
         // Rewards.
         public bool noLoot;
+        /// <summary>[CH3] 3 for chapter 3 monsters (exported; the server's assertOpen refuses their kills while the chapter is closed).</summary>
+        public int chapter;
+        /// <summary>[CH3] Elite (잿빛 손 정찰대장): one equipment drop is certain (server killRules, client DropLoot).</summary>
+        public bool sureGear;
         public int goldMin, goldMax;
         public int goldPerHitMin, goldPerHitMax;
         /// <summary>[FIELD BOSS] Its accessory (rolled by the server at <see cref="bossGearPermille"/>‰ per kill).</summary>
@@ -149,7 +153,7 @@ namespace DotRPG
     /// factory the dungeon uses. Numbers are level-1 values; <see cref="Spawn"/> applies the party /
     /// difficulty multipliers and the monster level.
     /// </summary>
-    public static class MonsterDatabase
+    public static partial class MonsterDatabase
     {
         // ---------- Level scaling (per level above 1) ----------
         public const float HpPerLevel = 0.12f;
@@ -421,6 +425,8 @@ namespace DotRPG
                 hp = 40, damage = 14, xp = 33, chaseSpeed = 2.2f, keepDistance = 5f,
                 skillInterval = 2.4f, projectileSpeed = 10f, detect = 7.5f, loseInterest = 11f,
             });
+
+            AddChapter3Monsters(); // [CH3] 메말라 가는 협곡 (MonsterDatabase.Chapter3.cs)
 
             // ----- Weekday bosses (§6.1) -----
             Add(Boss("boss_gold_foreman", L.T("황금 광부장 타킨"), Bone, hp: 900, dmg: 20, lines: 18, speed: 2.1f,

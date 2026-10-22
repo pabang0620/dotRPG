@@ -495,6 +495,8 @@ namespace DotRPG
                 }
             }
             if(ArmorBroken) info.amount=Mathf.RoundToInt(info.amount*1.2f);
+            info.amount=Chapter3Monsters.Incoming(this,info.amount); // [CH3] field rift hardening, 잿빛 손 사제 ward
+            if(info.amount<=0) return false;
             if (!health.TryDamage(info)) return false;
             careerActor?.OnLanded(this);
 
@@ -562,7 +564,12 @@ namespace DotRPG
                 int n = Authority.Current.DropCount(mat.minDrop, mat.maxDrop); // [ONLINE]
                 for (int i = 0; i < n; i++) Pickup.Create(mat.id, 1, Position + new Vector2(0f, 0.2f), parent);
             }
-            string id = Authority.Current.DropEquipment(Game.Player.Class, EquipmentDropChance, Level); // [ONLINE]
+            // [CH3] Quest pickups of the dry canyon fields (FieldQuestDrops).
+            foreach (var qd in FieldQuestDrops.For(Game.World != null ? Game.World.MapId : null))
+                if (Def != null && FieldQuestDrops.Applies(qd, Def.id) && Authority.Current.DropChance(qd.chance))
+                    Pickup.Create(qd.item, 1, Position + new Vector2(0f, 0.2f), parent);
+            // [CH3] An elite (잿빛 손 정찰대장) always drops one piece (the server rolls the same with chance 1).
+            string id = Authority.Current.DropEquipment(Game.Player.Class, Def != null && Def.sureGear ? 1f : EquipmentDropChance, Level); // [ONLINE]
             if (id == null) return;
             Pickup.Create(id, 1, Position + new Vector2(0f, 0.2f), parent);
             var item = EquipmentDatabase.Get(id);

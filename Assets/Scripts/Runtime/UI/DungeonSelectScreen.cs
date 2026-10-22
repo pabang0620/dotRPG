@@ -29,8 +29,8 @@ namespace DotRPG
         }
 
         readonly List<Row> rows = new List<Row>();
-        readonly Button[] diffButtons = new Button[4];
-        readonly Text[] diffLabels = new Text[4];
+        readonly Button[] diffButtons = new Button[5]; // [CH3] + 군주
+        readonly Text[] diffLabels = new Text[5];
         Button tabWeekday, tabNormal, tabRaid, tabMini, enterButton, partyButton, resetButton;
         Image banner;
         GameObject trailerBadge;
@@ -94,7 +94,7 @@ namespace DotRPG
             w.trailerBadge = badge.gameObject;
             w.info = Label(d, "Info", "", 17, tl, tl, new Vector2(24f, -106f), new Vector2(780f, 46f));
             w.diffTitle = Label(d, "DiffTitle", L.T("<b>난이도</b>"), 19, tl, tl, new Vector2(24f, -160f), new Vector2(780f, 26f));
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < w.diffButtons.Length; i++)
             {
                 int index = i;
                 diffButtonsInit(w, d, index);
@@ -307,7 +307,7 @@ namespace DotRPG
             for (int i = 0; i < diffButtons.Length; i++)
             {
                 var d = (DungeonDifficulty)i;
-                bool show = !def.isRaid || i <= (int)DungeonDatabase.RaidHeroic;
+                bool show = def.isRaid ? i <= (int)DungeonDatabase.RaidHeroic : i < DungeonDatabase.ShownDifficultyCount(def); // [CH3] 군주: chapter 3 open, weekday only
                 diffButtons[i].gameObject.SetActive(show);
                 if (!show) continue;
                 // Raid: two small buttons on the schedule line (the reward lines keep their place below).
@@ -520,7 +520,7 @@ namespace DotRPG
             }
             if (dx != 0 && Selected != null)
             {
-                int top = Selected.isRaid ? (int)DungeonDatabase.RaidHeroic : DungeonDatabase.DifficultyCount - 1;
+                int top = Selected.isRaid ? (int)DungeonDatabase.RaidHeroic : DungeonDatabase.ShownDifficultyCount(Selected) - 1;
                 var next = (DungeonDifficulty)Mathf.Clamp((int)difficulty + dx, 0, top);
                 if (next != difficulty) PickDifficulty(next);
             }

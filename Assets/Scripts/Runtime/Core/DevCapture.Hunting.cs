@@ -26,9 +26,11 @@ namespace DotRPG
             AudioListener.volume = 0; Game.Audio?.SetVolumes(0, 0);
             Game.Player.Health.SetInvulnerable(600f); Game.Player.Input = new ScriptedInput();
             var export = new List<object>(); var dungeonExport = new List<object>();
-            DCheck("five towns and twenty fields", MapRegistry.All.Count(m => MapRegistry.IsTown(m.id)) == 5 && HuntingGrounds.All.Length == 20);
+            // [CH3] 사얍 마을 and its three dry-canyon fields joined: six towns, twenty-three fields.
+            DCheck("six towns and twenty-three fields", MapRegistry.All.Count(m => MapRegistry.IsTown(m.id)) == 6 && HuntingGrounds.All.Length == 23);
             foreach (var village in new[] { MapRegistry.Village, MapRegistry.Canyon, MapRegistry.Winter, MapRegistry.Sanctum, MapRegistry.Undergate })
                 DCheck(village + " has four hunting grounds", HuntingGrounds.All.Count(z => z.village == village) == 4);
+            DCheck("sayab has three hunting grounds", HuntingGrounds.All.Count(z => z.village == MapRegistry.Sayab) == 3);
             foreach (var map in MapRegistry.All)
             {
                 Game.World.Load(map.id); Game.Player.Place(Game.World.PlayerSpawn, Facing.Right);

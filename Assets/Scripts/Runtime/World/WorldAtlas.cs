@@ -88,7 +88,7 @@ namespace DotRPG
             for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
             {
                 char ch = x < rows[y].Length ? rows[y][x] : '.';
-                string color = cave ? "77654b" : rootTown ? "526347" : sanctum ? "77745e" : snow ? "c3d4df" : info.theme == MapTheme.Canyon ? "968470" : "59764c";
+                string color = cave ? "77654b" : rootTown ? "526347" : sanctum ? "77745e" : snow ? "c3d4df" : info.theme == MapTheme.Canyon ? "968470" : info.theme == MapTheme.DryCanyon ? "7f6c78" : "59764c";
                 if (ch == '~' || ch == 'V') color = cave ? "31585e" : rootTown || sanctum ? "254d43" : "3c7892";
                 else if (ch == 'W') color = cave ? "292e30" : rootTown ? "34453c" : sanctum ? "343b32" : "626475";
                 else if (ch == ',' || ch == '=' || ch == 'd' || ch == 'L' || ch == 'P' || WorldRoutes.Portal(ch)) color = cave ? "917957" : rootTown ? "a49470" : sanctum ? "b2a17a" : snow ? "969eaa" : "bea57c";
