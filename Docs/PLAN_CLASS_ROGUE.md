@@ -369,8 +369,8 @@
 | 튜토리얼 1-5 "다시 일어서기" | 직업별 수련 대사에 도적판(이동기 그림자 질주, 급소 찌르기). 퀘스트 자동 진행(`QuestAutoPilot`)의 공격 거리: 도적은 근접(`AttackReach`), 닌자 전직 뒤 6m |
 | 전직 퀘스트 `career_path` | 전직 안내원 이츠나가 도적에게 어쌔신·닌자를 보여 준다(`SkillScreen.Career`의 직업별 두 전직 선택). 각성 시련 2종(2.3·2.4절), 스승 기사 돈·기사 모(협곡 기사, 이미 있는 인물과 초상화) |
 | 시련 대사 | 직업마다 6단계(기존 형식). 주제: 어쌔신 "누구의 등을 노리는가"(돈: 그림자는 지키는 사람 뒤에 선다), 닌자 "혼자이면서 여럿"(모: 분신은 도망이 아니라 동료가 올 때까지 버티는 법). 각성 문구 "T 슬롯에서 천영참/분신 난무 사용 가능" |
-| AI 동료 | 도적 동료 1명 추가: 미르(도적 · 근접 딜러, 여자). 스킬 우선순위 각성 → 급소 찌르기 → 연쇄 도약(3마리 이상) → 그림자 습격 → 백어택. HP 배수 1.0. 근거: 동료 4명이 직업 2개씩이라 새 직업도 고를 수 있어야 하고, 탱커·제어 자리는 기존 동료가 채워 딜러 1명으로 충분하다 |
-| 스킨 상점 | 출시 때 도적 스킨은 커먼 2종(2026-10-23 사용자 결정 "기본을 2번으로 하고 1 3은 커먼스킨"): 기본 외형은 시안 B(잿빛 은발), 커먼 `skin_r_navy` 남색 단발(시안 A)·`skin_r_wine` 와인 단발(시안 C). 전사 커먼과 같은 `Plain` 규칙(잔상·빛 조각 없음, 능력치 없음 `SKIN_DAMAGE.common` 0)이고 몸 40칸 + 공격 30칸 시트를 기본과 같은 규격으로 따로 그린다. 서버 `STAR_COSMETICS`에 `rarity: common, skin: rogue`로 넣는다(`CosmeticDef.skin` 유니온과 직업 필터 3곳에 `rogue`). 얻는 길은 꾸미기 상점 확정 교환(`exchangePriceOf` 커먼 스킨 가격)이다. 도적 레어·에픽·유니크 스킨이 없으므로 도적 스킨 뽑기는 열지 않는다: 서버는 도적 캐릭터의 스킨 뽑기를 422 `NO_SKIN_POOL`로 막고 확률 공시(`ratesDisclosure`)에 도적 뽑기 줄을 넣지 않으며, 커먼 합성(→ 레어)도 도적 커먼은 대상에서 뺀다(나올 레어가 없다). 꾸미기 상점 도적 탭은 확정 교환 2종만 보여 준다. 오라(직업 무관)는 그대로 판다. 레어 이상 도적 스킨과 도적 뽑기는 출시 뒤 따로 정한다. 별빛 교환 전용 스킨도 0 |
+| AI 동료 | 도적 동료 2명(전사·마법사와 같은 수, 2026-10-23 사용자 "갯수 맞춰야"): 미르(도적 · 근접 딜러, 여자, `merc_mir`, 스킬 우선순위 각성 → 급소 찌르기 → 연쇄 도약(3마리 이상) → 그림자 습격 → 백어택), 다온(도적 · 원거리 견제, 여자, `merc_daon`, 단검 투척 거리 유지형: 각성 → 연쇄 도약(무리) → 급소 찌르기 → 백어택 → 그림자 질주로 거리 벌리기, `MercRole.RangedDps`가 없으면 `CasterDps` 행동을 쓴다). HP 배수 1.0. 다른 직업처럼 동료 4명 → 6명 |
+| 스킨 상점 | 도적 스킨은 출시부터 다른 직업과 같은 구성이다(2026-10-23 사용자 "도적도 전설스킨이랑 드랍아이템이랑 다 해줘야해"): 커먼 10, 레어 10, 에픽 7 + 별빛 교환 전용 에픽 1, 유니크 5 = 33종(전사 33과 같다). 기본 외형은 시안 B(잿빛 은발), 시안 A·C는 커먼. 도적 스킨 뽑기를 연다(등급 확률 `BANNER_WEIGHT.skin` 그대로, 일반 스킨은 전부 내 직업 스킨), 확률 공시에 도적 줄, 합성·확정 교환·선택 게이지·원하는 에픽 스킨 교환도 전사·마법사와 같다. 아래 6.1절 목록. 서버 `STAR_COSMETICS`에 `skin: 'rogue'` 33줄, `CosmeticDef.skin` 유니온과 직업 필터에 `rogue`, `SkinCatalog`에 같은 33줄 |
 | 파티 역할 표시 | 파티 창·파티 찾기 직업 줄무늬에 도적 초록. 서버 프레즌스 `cls` 0·1에 2 추가 |
 | 랭킹 | 랭킹은 레벨·전투력·직업 번호를 보여 준다. 전직 이름 표에 5·6 추가. 서버 전투력(`powerEstimate`)은 도적 기본 공격력 10(전사와 같음) |
 | 업적 | "전직" 업적은 직업 번호 > 0이라 그대로 맞는다. 직업별 업적은 없어 추가하지 않는다 |
@@ -408,12 +408,24 @@
 | 전직 카드 | 2 | 2 | **2** | 1024x1536 |
 | 컷인 | 3(전사·파이터·수호자) | 3 | **3**(`cutin_rogue`·`cutin_assassin`·`cutin_ninja`) | 1024x1024 |
 | 전직 이펙트 그림 | `VfxImg` 6(f2 2, g 4) + `FxImg` 5(대검 2, 방패 2, 균열) | `VfxImg` 20 + `FxImg` 6 | **9** | 아래 |
-| AI 동료 | 브론·카이 80프레임 | 엘린·세라 80 | **40**(미르) | `char_merc_mir_*` |
-| 스킨 | 33종 | 32종 | **2**(커먼, 140칸) | 5절. 몸 40 + 공격 30 x 2 |
+| AI 동료 | 브론·카이 80프레임 | 엘린·세라 80 | **80**(미르·다온) | `char_merc_mir_*`, `char_merc_daon_*` |
+| 스킨 | 33종 | 32종 | **33**(새 의상 13종 910칸 + 다시 칠하기 20종) | 6.1절 |
 | 스킬 영상 썸네일 | 0 | 0 | 0 | 게임에 스킬 영상이 들어가 있지 않다(`Resources/Video`는 레이드 예고 4개뿐) |
 
 - 이펙트 10종: `r_dance_slash`(천인난무 베기 띠), `r_backstab`(백어택 심장 뜯기 폭발), `a_mark`(표식 1~5), `a_smoke`(연막), `a_venom`(독 방울), `n_kunai`(쿠나이, 투사체와 박힌 것 겸용), `n_shuriken`(최종 단계 표창, 회전 프레임), `n_fuma`(대형 수리검), `n_tag`(기폭 부적), `n_puff`(분신 연기). 그 밖은 기존을 색만 바꿔 쓴다: 질주 경로 베기·연쇄 도약 잔상은 `SkillFx` 검기·`CareerFx.Ghost`, 기폭 폭발은 `m2_fire_explosion`, 분신은 본체 프레임 반투명.
-- 합계: 70 + 8 + 4 + 41 + 5 + 19 + 2 + 3 + 10 + 40 + 140 = **342장(칸)**. 생성 경로는 기존 규칙(Flow 기본, 알파 필요 그림은 마젠타 배경 후 키잉, 몸 시트는 여성 전사 규격 검증 `FemaleWarriorValidation`과 같은 검사를 도적 폴더에 건다).
+- 합계: 70 + 8 + 4 + 41 + 5 + 19 + 2 + 3 + 10 + 80 + 910 = **1,152장(칸)**. 생성 경로는 기존 규칙(Flow 기본, 알파 필요 그림은 마젠타 배경 후 키잉, 몸 시트는 여성 전사 규격 검증 `FemaleWarriorValidation`과 같은 검사를 도적 폴더에 건다).
+
+### 6.1 도적 스킨 33종
+
+| 등급 | 만드는 법 | 목록(id, 이름) |
+|---|---|---|
+| 커먼 10 | 기본 몸을 다시 칠한다(`skin_recolor.py` 방식, 모양 그대로, 빛 조각 없음) | r_navy 남색 밀정복, r_wine 와인빛 밀정복, r_moss 숲길 정찰복, r_sand 사막 행상복, r_slate 회청 잠행복, r_rust 적갈 사냥꾼복, r_ivory 상아 견습복, r_plum 자두빛 두건복, r_teal 청록 밀수꾼복, r_coal 숯빛 야행복 |
+| 레어 10 | 다시 칠하기 + 빛 조각(`Tinted`) | r_crimson 진홍 그림자복, r_violet 보랏빛 야행복, r_gold 황금 도둑복, r_frost 서리 밀정복, r_rose 장미 가면복, r_jade 비취 독사복, r_ember 불씨 두건복, r_azure 하늘빛 바람복, r_onyx 흑요 암살복, r_lilac 라일락 무희복 |
+| 에픽 7 + 교환 1 | 새 의상 그림(Flow로 기준 아틀라스를 다시 그려 `process_skin.py`로 칸 정렬, 몸 40 + 공격 30), 빛 조각, 능력치 `SKIN_DAMAGE.epic` | r_sakura 벚꽃 쿠노이치, r_moonshade 달그림자 밀정, r_dunedancer 모래바람 칼춤꾼, r_corsair 바다의 칼잡이, r_raven 까마귀 깃 암살자, r_foxmask 여우 가면 무희, r_frosthunter 서리 사냥꾼, 교환 전용 r_starshade 별빛 그림자 |
+| 유니크 5 | 새 의상 그림 + 잔상(`afterimage`) | r_nightqueen 칠흑의 그림자 여왕, r_thunder 뇌신 닌자, r_crimsonmoon 진홍 달의 처형자, r_butterfly 비단 나비 무희, r_scorpion 황금 전갈 |
+
+- 그림 양: 다시 칠하기 20종은 생성 없이 코드, 새 의상 13종 x 70칸 = 910칸.
+- 장비 드롭·상점·레이드 상점·유니크 상자·별빛 교환·경매·계승은 4.3절대로 단검·판금·각반이 다른 직업 장비와 같은 경로에 들어간다(빠지는 표 없음). 레전더리 단검 4(Lv20·40 광역형·토벌형)와 3장 이후 단검 줄은 8절.
 
 ## 7. 구현 순서
 
@@ -425,10 +437,10 @@
 | 1 | 직업 골격 | `CharacterClass.cs`(enum `Rogue` 끝에 추가, `saveId "rogue"`, `basicHitScale`·거리·반경), `CharacterStatsCalc`(HP·MP·`CareerHp`), `CharacterData`(이동 속도 패시브), 직업 두 값 분기(런타임 40파일, `CharacterClass.Warrior`·`Mage` 152곳. 착수 때 `grep -rnE "CharacterClass\.(Mage|Warrior)"`로 목록을 다시 뽑는다. 주요 파일: `EquipmentDatabase`, `PartyClient`, `PartyFinderService`, `ServerPartyFinderService`, `OnlineSession`, `OnlineCharacterScreen`, `OnlineScreens`(카드 2장 배치 `i == 0 ? -150 : 150`), `PartyFramesView`, `PartyScreen`, `SkillScreen.Career`, `AwakeningCutIn`, `QuestAutoPilot.*`, `PlayerController.Mobility`, `SkillCaster`, `SkillRangePreview`, `CosmeticShopScreen`, `CharacterSelectScreen`, `PassiveTree`, `CompanionBrain`·`MercenaryDatabase.IsMage`, `Equipment`, `CharacterData`, `DungeonResultScreen.Raid`, `CareerCombat.Windup`(기본 직업이 전사가 아니면 마법진을 그린다. 도적 전직은 전사 쪽 자세로), 손에 든 무기 `EquipmentScreen.Input`·`SpriteLibrary.GetWarriorWeapon`·`SilverWarriorPresentation`, 몸 시트 `SilverWarriorArt`(정적 아틀라스 하나, `Supports`가 `player` id만 받는다. 폴더별 아틀라스로 바꾼다), 버프 줄 `BuffBarView`(맹독·은신·분신 줄, 기존 아이콘 재사용)) | 컴파일, 세이브 왕복(전사·마법사 기존 세이브가 그대로 읽힘) | 도적을 만들어 마을에서 걷고 기본 공격한다 |
 | 2 | 장비 | `GearCatalog.cs`(단검 종류·이름·`classes`), `EquipmentItem.cs`(`UsableBy`), `EquipmentDatabase.cs`(시작 무기·`WeaponSprite`·`RollDrop` 직업 가중), `MercenaryDatabase.GearFor`, `Editor/GameDataExport.cs` | 내보내기 단언(단검 44개, 판금 `classes` 2개) | 단검·판금 장착, 로브 장착 불가 |
 | 3 | 기본 스킬·이동기 | 새 `SkillCaster.Rogue.cs`(급소 찌르기·연쇄 도약·백어택·그림자 습격·천인난무), `SkillData.cs`(젬 5), `SkillCaster.cs`(`Cast` 스위치), `PlayerController.Mobility.cs`(그림자 질주), `PlayerCombat.cs`(쌍단검), `EnemyController`(등 뒤 판정 `IsBehind(from)`, 8방향 135도) | 이론 확인만(사용자 지침: 화면 검증은 요청 시) | 5스킬·이동기 수치가 2.2절과 같다 |
-| 4 | 그림 1차 | 몸 시트 70칸, 무기 8 + 4, 기본 스킬 아이콘 5, 장비 아이콘 41, `cutin_rogue` | `FemaleWarriorValidation`과 같은 규격 검사 | 342장 중 129장 |
+| 4 | 그림 1차 | 몸 시트 70칸, 무기 8 + 4, 기본 스킬 아이콘 5, 장비 아이콘 41, `cutin_rogue` | `FemaleWarriorValidation`과 같은 규격 검사 | 1,152장 중 129장 |
 | 5 | 전직 | `CareerData.cs`(enum 5·6, `Base`·`Name`·`Role`·`Branches`·`Color`, 19행, 추가 노드·연사기·MP 비율, `"venom"`을 `"frenzy"`와 같은 고정 쿨 묶음에), 새 `CareerCombat.Assassin.cs`·`CareerCombat.Ninja.cs`·`NinjaClone.cs`·`KunaiProjectile.cs`, `CareerNumbers.cs`(요약 15 + 패시브 4), `CareerTrials.cs`(2종), `SkinCatalog.CareerLook` + 새 `RoguePalette.cs`, `BossRushCatalog.CareerDamageMul`, `CareerFx.Main` | 이론 확인, `SkillRecommendCheck` | 두 전직의 19스킬이 2.3·2.4절 표와 같다 |
 | 6 | 서버 | `migrations/0050_rogue_class.sql`, `schema.sql`, `careerRules.ts`, `careerGrantService.ts`, 타입 14파일, `usableBy` 9곳, `inventoryService` 문구, `townPresence`, `ratesDisclosure`·`starshopService`(스킨 풀), `mailCampaignsValidation`, `data/*.json` 내보내기 | `npm test -- rogueClass careers careerGrant careerQuestCheck kills auction bossRush`, 타입 검사 | 테스트 통과, 데이터 버전 갱신 |
-| 7 | 연동·그림 2차 | 튜토리얼 1-5 대사, 전직 안내, 동료 미르, 파티 색, 랭킹 이름, 스킨 탭 숨김, `DevCapture.SkillClip`(`ScriptedLength` 3개), 11개 언어 146줄, `STORY.md`. 그림: 전직 아이콘 19, 카드 2, 컷인 2, 이펙트 10, 동료 40, 커먼 스킨 2종 140칸 | 번역 누락 검사(`Tools/i18n`) | 342장 완료, 번역 누락 0 |
+| 7 | 연동·그림 2차 | 튜토리얼 1-5 대사, 전직 안내, 동료 미르·다온, 파티 색, 랭킹 이름, 스킨 탭 숨김, `DevCapture.SkillClip`(`ScriptedLength` 3개), 11개 언어 146줄, `STORY.md`. 그림: 전직 아이콘 19, 카드 2, 컷인 2, 이펙트 10, 동료 80, 스킨 33종(6.1절) | 번역 누락 검사(`Tools/i18n`) | 1,152장 완료, 번역 누락 0 |
 | 8 | 측정·마감 | `theory_combat`·`theory_mana`·`theory_gold`·`theory_progress --measured` 재실행, 보스 방 3분 측정(어쌔신·닌자), 1~15 사냥 측정을 기존 측정 모드로 | 측정 기록을 `BALANCE_MEASURE` 문서에 | 3.2절 배율 뒤 70~100%, 골드 비율 0.88(드롭 가중 전과 같음), Lv40 46.0시간, 1~15 1마리 처치 시간이 전사의 90~110% |
 
 ### 7.1 출시 일정에 주는 작업량
@@ -439,7 +451,7 @@
 | 클라이언트 고치는 파일 | 직업 분기 40파일 + 카탈로그·데이터 10(`CharacterClass`, `SkillData`, `CareerData`, `CareerNumbers`, `CareerTrials`, `GearCatalog`, `EquipmentItem`, `EquipmentDatabase`, `SkinCatalog`, `BossRushCatalog`) + `GameDataExport` |
 | 서버 | 마이그레이션 1, 고치는 파일 25(규칙 2, 타입 14, 판정 3, 프레즌스·확률 공시 2, 직업 목록 4), 새 테스트 1, 고치는 테스트 6 |
 | 데이터 | 스킬 24(기본 5 + 전직 19), 장비 44, 문구 146줄 x 11개 언어 |
-| 그림 | 342장(칸) |
+| 그림 | 1,152장(칸) |
 | 도구·문서 | 이론 도구 3, 문서 4(`SKILLS.md`, `PLAN_CAREER_SKILLS.md`, `STORY.md`, `I18N_GLOSSARY.md`) |
 
 ## 8. 3장·4장에서 도적 자리 (ch3 브랜치 문서 기준)
