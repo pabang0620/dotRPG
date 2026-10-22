@@ -86,7 +86,7 @@
 2. `CHAPTER3_OPEN=1`로 바꾸면 재배포 없이 Lv40 캐릭터가 3-1을 받고, 41레벨에 첫 특화 포인트가 생기며, `GET /content/chapter3`이 응답한다.
 3. `theory_progress.py --measured --mini 20 --to 50`이 40→50을 22~27시간으로 낸다. `theory_gold.py --to 50 --mini 20`이 0.85~0.90을 낸다.
 4. 측정 모드가 새 사냥터 3·지하 4·레이드 2·요일 던전 군주·보스 방 Lv50을 재고, 레이드 일반 난이도는 측정 봇이 절반 이상 클리어하며 두 기믹을 봇 코드 추가 없이 수행한다.
-5. `theory_specs.py`에서 96개 특화의 축별 기대값 차이가 10% 안이고 보스 방 상한 비율 0.8 이상이 없다.
+5. `theory_specs.py`에서 96개 특화(도적 병합 뒤 144개)의 축별 기대값 차이가 10% 안이고 보스 방 상한 비율 0.8 이상이 없다.
 6. 서버 테스트가 전부 통과하고 새 테스트(skillSpecs·inherit·chapter3Lock·content·3장 레이드·군주·미니 40)가 있다.
 7. 새 그림 목록(`ch3/ART_LIST.md`)이 전부 들어가 있고 기존 그림 재색칠로 때운 것이 없다.
 
@@ -137,7 +137,8 @@
 | 5 라이브 콘텐츠 | 시작 안 함. 미니 던전 티어 40, 월드·길드보스 Lv50(0052 boss_level), 랭킹, 해금·할 일·성장 추천, 이츠나·익시 "특화 조정" 대화 | - |
 | 6 잠금·스포일러 | 시작 안 함. `chapter3.json` 빌드 제외 + 서버 `GET /content/chapter3`(로더 `Chapter3Content.Merge`는 준비됨), assertOpen 호출 지점 전수 | - |
 | 7 측정·시뮬·테스트 | 시작 안 함 | - |
-| 도적 특화 | 도적 특화 쌍 추가 필요: 지금 48쌍에 도적 기본 스킬 5 + 도적 전직 2종 스킬의 쌍을 더한다(설계는 `PLAN_CLASS_ROGUE.md`) | - |
+| 도적 특화 | 출시용 도적(`PLAN_CLASS_ROGUE.md` 7절 0~8단계)이 wonho에서 끝나 ch3로 병합된 뒤 4단계 레이드와 별개로 넣는다: 24쌍(기본 5 + 어쌔신 10 + 닌자 9, 축은 `PLAN_CLASS_ROGUE.md` 8.1절), 단검 티어 9·10 이름·아이콘, 계승 경로 단검 줄. 7단계 측정 전에 끝낸다 | - |
+| 마이그레이션 번호 | 도적 병합 때 wonho `0050_rogue_class`가 먼저 배포되므로 ch3 번호를 하나씩 민다: 0051_chapter3_seal_exchange, 0052_lord_difficulty, 5단계 보스 시즌 레벨 0053. ch3 번호는 어느 서버에도 적용 전이다 | - |
 | 병합 2026-10-22 | wonho 출시용 장비 계승(Lv10→20·20→30·30→40)을 합치고 40→50 계승을 같은 경로표·엔드포인트(`/characters/:uuid/inherit`)로 통일. 옛 `/promote/inherit`·`PromoteRules.InheritCost`·계승 버튼 제거, 마이그레이션 0049_gear_inherit → 0050_chapter3_seal_exchange → 0051_lord_difficulty → 0052(계획) | 이 병합 커밋 |
 
 3단계 결과 메모:
