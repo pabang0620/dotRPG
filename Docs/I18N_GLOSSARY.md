@@ -252,4 +252,22 @@
 | 메말라 가는 협곡 | the Withering Canyon | 3장 사냥터 지역 |
 | 공허 침식체 | Void Blight | 깨진 수호석에서 번진 것 |
 | 공허 정수 | Void Essence | 3-4 수집물 |
+| 닉테 설원 | the Nikte Snowfield | 4장 지역 |
+| 닉테 유적 | the Nikte Ruins | 4장 유적("눈꽃 숲의 유적") |
+| 칠람 | Chilam | 유적 기록지기(4장) |
+| 테우 | Tew | 서리 수호상(4장 중간 레이드) |
+| 서리 수호상 | Frost Warden | 테우의 호칭 |
+| 얼음 장막 고개 | Icecurtain Pass | 4장 사냥터 |
+| 묻힌 회랑 | the Buried Hall | 4장 사냥터 |
+| 유적의 심장 | Heart of the Ruins | 4장 사냥터 |
+| 얼어붙은 수련 회랑 | Frozen Training Hall | 미니 던전 티어 50 |
+| 서리 파편 | Frost Shard | 테우 레이드 재료 |
+| 서약의 파편 | Oath Shard | 카엘 레이드 재료 |
+| 진각성 | True Awakening | 4장 성장 축 |
+| 두 별의 일격 | Strike of Two Stars | 파이터 진각성기 |
+| 두 손의 성벽 | Wall of Two Hands | 수호자 진각성기 |
+| 주기의 유성 | Meteor of the Cycle | 메이지 진각성기 |
+| 두 등불의 행진 | March of Two Lanterns | 비숍 진각성기 |
+| 제왕 | Emperor | 요일 던전 난이도(4장) |
+| 공허의 계단 | the Void Stair | 5장 반복 던전 |
 
