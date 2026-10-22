@@ -220,6 +220,10 @@ namespace DotRPG
                 if (go != null) Add(list, L.F("<color=#8fe28f>새로 열림</color> · {0}", ContentUnlocks.NameOf(f)), L.T("해 보기"), go);
             }
 
+            // 2b. [CH3 step 5] Specialization points not spent yet (Lv.41+, chapter 3 open).
+            if (ContentUnlocks.IsOpen(ContentUnlocks.Feature.Specialization) && Game.Session.Progression.SpecPointsLeft > 0)
+                Add(list, L.F("<color=#ff6680>특화 포인트</color> · {0}점 남음", Game.Session.Progression.SpecPointsLeft), L.T("특화 탭 열기"), () => OpenWindowFrom(OpenSpecs()));
+
             // 3. Mail and rewards waiting.
             if (online)
             {
@@ -283,6 +287,13 @@ namespace DotRPG
             }
         }
 
+        /// <summary>[CH3] The skill window on its 특화 tab (opened by the caller).</summary>
+        static MenuScreen OpenSpecs()
+        {
+            Game.UI.Skills.SelectSpecsTab();
+            return Game.UI.Skills;
+        }
+
         /// <summary>The boss window on <paramref name="kind"/>'s tab (opened by the caller).</summary>
         static MenuScreen OpenBoss(string kind)
         {
@@ -315,6 +326,9 @@ namespace DotRPG
                 case ContentUnlocks.Feature.Trade: return (L.T("1:1 교환 (친구 창)"), () => OpenWindowFrom(SocialScreen.Instance));
                 case ContentUnlocks.Feature.Daily: return (L.T("일일·주간 의뢰"), () => OpenWindowFrom(DailyQuestScreen.Instance));
                 case ContentUnlocks.Feature.Guild: return (L.T("길드"), () => OpenWindowFrom(GuildScreen.Instance));
+                // [CH3 step 5] 3-1 starts with Leona (auto-progress walks there); specialization opens on the skill window's tab.
+                case ContentUnlocks.Feature.Chapter3: return (L.T("3장 사얍 마을"), () => { if (!QuestAutoPilot.Active) QuestAutoPilot.Toggle(); Game.Flow.CloseInventory(); });
+                case ContentUnlocks.Feature.Specialization: return (L.T("스킬 특화 (스킬 창)"), () => OpenWindowFrom(OpenSpecs()));
                 default: return (f.ToString(), null);
             }
         }

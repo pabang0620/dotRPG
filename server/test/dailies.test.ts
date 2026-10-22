@@ -7,6 +7,7 @@ import { setClockOverride } from '../src/utils/clock';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { expectLedgerConsistent, get, goldOf, newHero, post, seedClaims, seedLevel, type Hero } from './economyHelpers';
 import { CHAPTER2_LEVEL_CAP } from '../src/gamedata/chapterGate';
+import { bandFor, getDailyQuests } from '../src/gamedata/dailyQuests';
 
 // 2026-10-05 월요일 12:00 KST = 게임 날짜 2026-10-05
 const T0 = Date.parse('2026-10-05T03:00:00Z');
@@ -341,5 +342,19 @@ describe('주간 의뢰', () => {
   it('만렙 주간 보상은 weekly.maxLevelGold', async () => {
     const h = await unlockedHero(CHAPTER2_LEVEL_CAP);
     for (const s of (await list(h)).weekly.slots) expect(s.reward).toEqual({ xp: 0, gold: 10000 });
+  });
+});
+
+// 챕터 3 5단계(Docs/ch3/LIVE_CONTENT.md 4절): 일일 밴드 36~40 / 41~45 / 46~50, 주간 지바크(45 밴드)·카마츠(50 밴드)
+describe('챕터 3 의뢰 밴드', () => {
+  it('일일 밴드는 40에서 잘리고 41~45·46~50은 사얍 게시판, 골드 1,400·1,600', () => {
+    const { day, week } = getDailyQuests();
+    expect([40, 41, 45, 46, 50].map((l) => bandFor(day, l).id)).toEqual(['winter_peak', 'sayab_low', 'sayab_low', 'sayab_high', 'sayab_high']);
+    expect([bandFor(day, 41).gold, bandFor(day, 46).gold]).toEqual([1400, 1600]);
+    expect(bandFor(day, 41).giver).toBe('사얍 마을 게시판');
+    const raids = (lv: number) => bandFor(week, lv).templates.flatMap((t) => (t.type === 'raid' ? [t.target] : []));
+    expect(raids(45)).toContain('raid_xibak');
+    expect(raids(50)).toContain('raid_kamatz');
+    expect(raids(40)).not.toContain('raid_xibak');
   });
 });

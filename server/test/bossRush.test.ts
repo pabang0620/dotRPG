@@ -319,3 +319,41 @@ describe('weekly settlement', () => {
     expect(again.rows[0]?.title_achievement).toBeNull();
   });
 });
+
+// 챕터 3 5단계(Docs/ch3/LIVE_CONTENT.md 2절): 입장 Lv40 고정, 보스 레벨 = 시즌 생성 때의 levelCap, Lv50 시즌 월드보스 체력 x2.0
+describe('chapter 3 boss level (0053 boss_level)', () => {
+  afterEach(() => { buildApp(); });
+
+  test('closed: the week is a Lv40 boss with the base HP', async () => {
+    const h = await hero();
+    const r = await get(app, h, '/bosses');
+    expect(r.body.data.world).toMatchObject({ boss_level: 40, max_hp: 40_000_000 });
+    expect((await start(h)).body.data.level).toBe(40);
+  });
+
+  test('open: a new week is a Lv50 boss with x2.0 HP, and Lv40 heroes still take part', async () => {
+    buildApp({ CHAPTER3_OPEN: 'true' });
+    const lv40 = await hero(40);
+    const r = await get(app, lv40, '/bosses');
+    expect(r.body.data.world).toMatchObject({ boss_level: 50, max_hp: 80_000_000, hp_left: 80_000_000 });
+    const s = await start(lv40);
+    expect(s.status).toBe(201);
+    expect(s.body.data.level).toBe(50);
+    expect((await start(await hero(39))).body.errors.code).toBe('LEVEL_TOO_LOW');
+    const lv50 = await hero(50);
+    expect((await start(lv50)).status).toBe(201);
+    const row = await getPool().query('SELECT boss_level FROM boss_seasons WHERE kind = $1', ['world']);
+    expect(row.rows[0]?.boss_level).toBe(50);
+  });
+
+  test('the season keeps the level it was created with until the week ends', async () => {
+    const h = await hero();
+    expect((await get(app, h, '/bosses')).body.data.world.boss_level).toBe(40);
+    buildApp({ CHAPTER3_OPEN: 'true' });
+    const r = await get(app, h, '/bosses');
+    expect(r.body.data.world).toMatchObject({ boss_level: 40, max_hp: 40_000_000 });
+    expect((await start(h)).body.data.level).toBe(40);
+    advance(3 * 86_400); // 목요일 06:00 KST를 넘긴다
+    expect((await get(app, h, '/bosses')).body.data.world).toMatchObject({ boss_level: 50, max_hp: 80_000_000 });
+  });
+});

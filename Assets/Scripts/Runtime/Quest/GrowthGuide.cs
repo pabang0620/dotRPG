@@ -155,6 +155,26 @@ namespace DotRPG
                 }
             }
 
+            // 1b. [CH3 step 5] 군주 from Lv.45 (its recommended level) while chapter 3 is open: today's weekday dungeon on 군주.
+            if (Chapter3.Enabled && level >= LordGuideLevel && left > 0 && ContentUnlocks.IsOpen(ContentUnlocks.Feature.WeekdayDungeon))
+            {
+                DungeonDef lord = null;
+                foreach (var d in DungeonDatabase.Weekday)
+                    if (ResetClock.IsOpen(d, now) && DungeonDatabase.LordOpen(d)) { lord = d; break; }
+                if (lord != null)
+                {
+                    var def = lord; var lordDiff = DungeonDatabase.Difficulty(DungeonDifficulty.Lord);
+                    list.Add(new Entry
+                    {
+                        order = OrderWeekday,
+                        shortText = DungeonLabel(def, lordDiff),
+                        text = L.F("군주 던전 <color=#ff9f6b>{0}</color> · 오늘 남은 입장 {1}/{2}", DungeonLabel(def, lordDiff), left, DungeonDatabase.DailyEntries),
+                        button = L.T("던전 창 열기"),
+                        action = () => OpenDungeon(def.id, DungeonDifficulty.Lord),
+                    });
+                }
+            }
+
             // 2. The region's normal dungeon (every day, no entry count).
             if (diff != null && ContentUnlocks.IsOpen(ContentUnlocks.Feature.NormalDungeon))
             {
@@ -187,6 +207,22 @@ namespace DotRPG
                     // Before 자동 사냥 opens the line is a hint only (the player walks there).
                     button = ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? L.T("추천 사냥터로 자동 사냥") : null,
                     action = ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? () => { QuestAutoPilot.StartGrowth(); if (Game.Flow != null) Game.Flow.CloseInventory(); } : (Action)null,
+                });
+            }
+
+            // 3b. [CH3 step 5] Lv.41+: the other hunting ground of the level (메마른 협곡 dry_* or 지하 B1~B4), whichever the
+            // line above did not pick, so both chapter 3 routes show up by level (Docs/ch3/LIVE_CONTENT.md 5).
+            var other = Chapter3.Enabled && level >= Chapter3.ClosedCap + 1 && zone != null ? OtherChapter3Zone(level, zone) : null;
+            if (other != null)
+            {
+                var target = other;
+                list.Add(new Entry
+                {
+                    order = OrderHunt,
+                    shortText = L.F("{0} 사냥터", L.T(target.name)),
+                    text = L.F("사냥터 <color=#78d6ff>{0}</color> (Lv{1}~{2}) · 분당 경험치 약 {3:N0}", L.T(target.name), target.minLevel, target.maxLevel, XpPerMinute(target)),
+                    button = L.T("이동"),
+                    action = () => { if (Game.Flow != null && (Game.Dungeon == null || !Game.Dungeon.InRun)) { Game.Flow.CloseInventory(); Game.Flow.TravelTo(target.id); } },
                 });
             }
 
@@ -264,6 +300,26 @@ namespace DotRPG
             if (sb.Length > 0) sb.Append('\n');
             sb.Append(L.T("<color=#b8c4d8>자동 진행: 추천 사냥터에서 사냥 · 퀘스트 창에서 전체 보기</color>"));
             return sb.ToString();
+        }
+
+        /// <summary>[CH3] 군주 is recommended from its recommended level (45), though it opens at Lv.41.</summary>
+        public const int LordGuideLevel = 45;
+
+        /// <summary>
+        /// [CH3] The best zone of the other chapter 3 route than <paramref name="picked"/>: 메마른 협곡 (dry_*) when the
+        /// underground was picked and the other way round (null when that route has nothing at this level).
+        /// </summary>
+        static HuntingZone OtherChapter3Zone(int level, HuntingZone picked)
+        {
+            bool pickedDry = picked.theme == MapTheme.DryCanyon;
+            HuntingZone best = null;
+            foreach (var z in HuntingGrounds.All)
+            {
+                bool dry = z.theme == MapTheme.DryCanyon, under = z.theme == MapTheme.Underground;
+                if (!(pickedDry ? under : dry) || z.minLevel > level || z.maxLevel < level) continue;
+                if (best == null || z.minLevel > best.minLevel) best = z;
+            }
+            return best;
         }
 
         /// <summary>Opens the dungeon window on the dungeon's tab with this difficulty chosen.</summary>

@@ -128,10 +128,11 @@ describe('밴드 밖 레벨(Lv41+)', () => {
     expect(bandFor(getDailyQuests().day, 46).gold).toBe(1600);
   });
 
-  it('미니 던전 티어: Lv39는 30, 상한 레벨과 표에 없는 티어(40)는 입장 불가', () => {
+  it('미니 던전 티어: Lv39는 30, 닫힌 상한(40)에서는 없음, 열리면 Lv45는 티어 40(5단계), 만렙 50은 없음', () => {
     expect(tierOf(39, CHAPTER2_LEVEL_CAP)).toBe(30);
     expect(tierOf(CHAPTER2_LEVEL_CAP, CHAPTER2_LEVEL_CAP)).toBeNull();
-    expect(tierOf(45, CHAPTER3_LEVEL_CAP)).toBeNull();
+    expect(tierOf(45, CHAPTER3_LEVEL_CAP)).toBe(40);
+    expect(tierOf(CHAPTER3_LEVEL_CAP, CHAPTER3_LEVEL_CAP)).toBeNull();
   });
 });
 

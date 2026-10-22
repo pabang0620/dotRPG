@@ -14,6 +14,16 @@ namespace DotRPG
         const int SpecRows = 16;
         const float SpecRowH = 31f;
 
+        /// <summary>[CH3 step 5] Puts the window on the 특화 tab (the 전직 tab while chapter 3 is closed); the caller opens it.</summary>
+        public void SelectSpecsTab() => tab = Chapter3.Enabled ? TabId.Specs : TabId.Tree;
+
+        /// <summary>[CH3 step 5] Opens the skill window on the 특화 tab (이츠나·익시 "특화 조정", the 할 일 line).</summary>
+        public void ShowSpecs()
+        {
+            SelectSpecsTab();
+            Game.Flow.OpenWindow(this);
+        }
+
         RectTransform specPage;
         Text specHeader, specInfo;
         sealed class SpecRow { public Image bg, icon, frame; public Text name; public Button a, b; public Text aText, bText, cost; public string skill; }

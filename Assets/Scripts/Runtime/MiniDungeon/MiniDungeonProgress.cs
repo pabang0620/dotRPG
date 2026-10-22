@@ -54,7 +54,8 @@ namespace DotRPG
             }
         }
 
-        public float RemainingSeconds(DateTime now) { Refresh(now); return Mathf.Max(0f, MiniDungeonCatalog.DailySeconds - state.usedSeconds); }
+        /// <summary>Seconds left today for the hero's tier (tier 40: 10 minutes; the seconds used are shared by every tier).</summary>
+        public float RemainingSeconds(DateTime now) { Refresh(now); return Mathf.Max(0f, MiniDungeonCatalog.CurrentDailySeconds - state.usedSeconds); }
 
         /// <summary>Explicit consumption seam for deterministic budget checks.</summary>
         public void Consume(float seconds, DateTime now)

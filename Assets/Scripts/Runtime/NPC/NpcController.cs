@@ -160,8 +160,10 @@ namespace DotRPG
                 // 전직의 길: a character promoted before the quest existed counts as done.
                 if (Game.Session.Progression.IsPromoted && !Game.Quest.HasFlag(CareerFlag)) Game.Quest.SetFlag(CareerFlag);
                 // No quest talk waiting: straight to the 전직 tab of the skill window.
-                if (!Game.Quest.HasQuestTalk(def.npcId)) { Game.UI.Skills.ShowAwakening(); return; }
+                if (!Game.Quest.HasQuestTalk(def.npcId)) { if (!SpecTalk.Ask(def.npcId)) Game.UI.Skills.ShowAwakening(); return; } // [CH3] 특화 조정
             }
+            // [CH3 step 5] 익시 offers 특화 조정 after her own line when no quest talk waits (SpecTalk).
+            bool specAfter = def.npcId == SpecTalk.Ixi && !Game.Quest.HasQuestTalk(def.npcId) && SpecTalk.Offers(def.npcId);
             // A shop NPC with a quest conversation waiting (errand, report, offer) talks first; the shop opens on the next talk.
             if (def.service != NpcService.None && !Game.Quest.HasQuestTalk(def.npcId))
             {
@@ -186,6 +188,7 @@ namespace DotRPG
                 Game.Quest.OnDialogueFinished(dialogueId, def.npcId);
                 // After the 전직 안내원's offer, the choice opens right away.
                 if (def.npcId == "career_trainer" && !Game.Session.Progression.IsPromoted && Game.Session.Progression.Level >= 15) Game.UI.Skills.ShowAwakening();
+                else if (specAfter) SpecTalk.Ask(def.npcId);
             }, def.displayName);
         }
 

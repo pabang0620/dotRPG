@@ -20,6 +20,8 @@ namespace DotRPG
             public string kind, seasonId, bossId, name;
             public double maxHp, hpLeft;
             public int attemptsLeft, attemptsPerDay, myRank, guildRank;
+            /// <summary>[CH3] The week's boss level (boss_seasons.boss_level: the level cap when the season began).</summary>
+            public int bossLevel;
             /// <summary>World: my best single attempt. Guild: this week's guild score and my share of it (no HP, no stages).</summary>
             public long myBest, score, myContribution;
             public DateTime? defeatedAt, eligibleAt;
@@ -122,6 +124,7 @@ namespace DotRPG
             {
                 kind = kind, seasonId = MiniJson.Str(o, "season_id"), bossId = MiniJson.Str(o, "boss_id", BossRushCatalog.BossId),
                 name = MiniJson.Str(o, "name", ""), maxHp = MiniJson.Num(o, "max_hp"), hpLeft = MiniJson.Num(o, "hp_left"),
+                bossLevel = MiniJson.Int(o, "boss_level", BossRushCatalog.DefaultLevel),
                 attemptsLeft = MiniJson.Int(o, "attempts_left"),
                 attemptsPerDay = MiniJson.Int(o, "attempts_per_day", kind == Guild ? GuildAttemptsPerDay : WorldAttemptsPerDay),
                 myBest = (long)MiniJson.Num(o, "my_best"), score = (long)MiniJson.Num(o, "score"), myContribution = (long)MiniJson.Num(o, "my_contribution"),

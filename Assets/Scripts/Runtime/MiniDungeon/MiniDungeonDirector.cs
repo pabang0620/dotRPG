@@ -74,7 +74,7 @@ namespace DotRPG
         {
             reason = "";
             var d = MiniDungeonCatalog.Get(tier);
-            if (d == null) reason = L.T("존재하지 않는 미니던전입니다.");
+            if (d == null || !MiniDungeonCatalog.Visible(d)) reason = L.T("존재하지 않는 미니던전입니다.");
             else if (Active || Busy || Game.Flow != null && Game.Flow.IsTransitioning) reason = L.T("이미 입장 중이거나 미니던전을 이용하고 있습니다.");
             else if (Game.Player == null || !Game.Player.gameObject.activeInHierarchy || Game.Player.IsDead) reason = L.T("캐릭터로 접속한 뒤 입장하세요.");
             else if (ContentUnlocks.LockedReason(ContentUnlocks.Feature.MiniDungeon) is string locked) reason = locked; // [UNLOCK]
@@ -84,7 +84,8 @@ namespace DotRPG
             else if (PartyNet.Active || PartyRunSession.Active || FieldSession.Active || PartyClient.Instance?.InParty == true) reason = L.T("미니던전은 1인 콘텐츠입니다. 파티를 나간 뒤 입장하세요.");
             else if (TradeClient.Current != null || TradeClient.Busy) reason = L.T("교환을 마치거나 취소한 뒤 입장하세요.");
             else if (!Ready) reason = L.T("서버에서 오늘의 이용 시간을 확인하고 있습니다.");
-            else if (RemainingSeconds <= 0f) reason = L.T("오늘의 미니던전 30분을 모두 사용했습니다. 오전 6시에 초기화됩니다.");
+            else if (RemainingSeconds <= 0f) reason = tier == MiniDungeonCatalog.Chapter3Tier ? L.T("오늘의 미니던전 10분을 모두 사용했습니다. 오전 6시에 초기화됩니다.")
+                : L.T("오늘의 미니던전 30분을 모두 사용했습니다. 오전 6시에 초기화됩니다.");
             else if (Game.State.Current != GameState.Playing && Game.State.Current != GameState.Inventory && Game.State.Current != GameState.Paused) reason = L.T("대화나 연출을 마친 뒤 입장하세요.");
             return reason.Length == 0;
         }
@@ -144,7 +145,7 @@ namespace DotRPG
             yield return Game.UI.Fader.Fade(0f, .2f);
             Busy = false;
             QuestAutoPilot.StartMiniDungeonHunt();
-            GameEvents.RaiseToast(L.T("경험치 미니던전 · 자동 사냥 시작 · 하루 총 30분"));
+            GameEvents.RaiseToast(definition.Tier == MiniDungeonCatalog.Chapter3Tier ? L.T("경험치 미니던전 · 자동 사냥 시작 · 하루 10분") : L.T("경험치 미니던전 · 자동 사냥 시작 · 하루 총 30분"));
             Changed?.Invoke();
         }
 

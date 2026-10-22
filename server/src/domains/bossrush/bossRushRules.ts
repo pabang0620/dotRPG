@@ -33,6 +33,11 @@ export const EST_ATTEMPT_DAMAGE = 150_000;
  */
 export const WORLD_BOSS_HP_DEFAULT = 40_000_000;
 
+/** 챕터 3 보스 레벨(50) 시즌의 월드보스 체력 배율(Docs/ch3/LIVE_CONTENT.md 2절). 조정은 env WORLD_BOSS_HP로 한다 */
+export const LV50_WORLD_HP_MUL = 2.0;
+/** 시즌 생성 때 정하는 월드보스 체력: 보스 레벨 50 이상이면 x2.0 */
+export const worldSeasonHp = (baseHp: number, level: number): number => (level >= 50 ? Math.round(baseHp * LV50_WORLD_HP_MUL) : baseHp);
+
 // 길드보스(2026-10-20 사용자 결정): 죽이는 보스가 아니라 점수를 쌓는다. 길드원 도전마다 인정 피해가 그 주 길드 점수에 더해지고,
 // 길드 랭킹은 점수 합(같으면 먼저 도달한 길드). 30명 전원이 주 내내 하면 420회 x 1회 150,000 = 약 6,300만.
 

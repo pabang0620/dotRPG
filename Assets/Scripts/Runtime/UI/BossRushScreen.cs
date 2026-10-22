@@ -124,7 +124,7 @@ namespace DotRPG
             }
             var b = BossRushClient.Of(kind);
             string name = b != null && !string.IsNullOrEmpty(b.name) ? L.T(b.name) : L.T("심연의 거신 지파크");
-            bossName.text = name;
+            bossName.text = b != null && b.bossLevel > 0 ? $"Lv.{b.bossLevel} {name}" : name; // [CH3] the week's boss level
             if (guild && b != null)
             {
                 // Score, not HP: the bar shows my share of the guild's score this week.

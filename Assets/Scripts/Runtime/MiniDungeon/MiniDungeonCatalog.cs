@@ -15,7 +15,11 @@ namespace DotRPG
     /// <summary>Solo experience training rooms. Their allowance is shared, not three separate entry tickets.</summary>
     public static class MiniDungeonCatalog
     {
+        /// <summary>Longest daily allowance (tiers 10~30). The seconds used today are shared by every tier.</summary>
         public const int DailySeconds = 30 * 60;
+        /// <summary>[CH3] Tier 40 gets 10 minutes a day: catch-up is on almost every day there (Docs/ch3/LIVE_CONTENT.md 1).</summary>
+        public const int DailySecondsTier40 = 10 * 60;
+        public const int Chapter3Tier = 40;
         public const int SpawnCount = 6;
         public const float RespawnSeconds = 5f;
         public static readonly MiniDungeonDef[] All =
@@ -23,7 +27,26 @@ namespace DotRPG
             new MiniDungeonDef { Tier = 10, MinLevel = 10, MaxLevel = 19, Name = "이끼빛 수련의 숲", MapId = "mini_dungeon_10", MonsterId = "skel_warrior", Theme = MapTheme.Forest, Music = MapRegistry.MusicDgnForest }, // i18n-ignore
             new MiniDungeonDef { Tier = 20, MinLevel = 20, MaxLevel = 29, Name = "수정빛 수련의 석실", MapId = "mini_dungeon_20", MonsterId = "skel_warrior", Theme = MapTheme.Canyon, Music = MapRegistry.MusicDgnCanyon }, // i18n-ignore
             new MiniDungeonDef { Tier = 30, MinLevel = 30, MaxLevel = 39, Name = "서리빛 수련의 동굴", MapId = "mini_dungeon_30", MonsterId = "skel_warrior", Theme = MapTheme.Winter, Music = MapRegistry.MusicDgnWinter }, // i18n-ignore
+            // [CH3] Closed with the chapter (MapRegistry.Chapter3Maps); the level cap is 40 while closed, so Lv.40 has no tier.
+            new MiniDungeonDef { Tier = 40, MinLevel = 40, MaxLevel = 49, Name = "잿빛 수련의 협곡", MapId = "mini_dungeon_40", MonsterId = "void_hound", Theme = MapTheme.DryCanyon, Music = "music_sayab" }, // i18n-ignore
         };
+
+        /// <summary>Daily allowance of a tier in seconds (server miniDungeonRules.dailyLimitMs).</summary>
+        public static int DailySecondsFor(int tier) => tier == Chapter3Tier ? DailySecondsTier40 : DailySeconds;
+
+        /// <summary>The tier the hero's level enters (0 = none: below 10 or at the level cap).</summary>
+        public static int TierAt(int level)
+        {
+            if (level >= Progression.LevelCap) return 0;
+            foreach (var d in All) if (level >= d.MinLevel && level <= d.MaxLevel && Visible(d)) return d.Tier;
+            return 0;
+        }
+
+        /// <summary>Today's allowance for the current hero (the tier their level enters; 30 minutes when none).</summary>
+        public static int CurrentDailySeconds => DailySecondsFor(TierAt(Game.Session != null ? Game.Session.Progression.Level : 1));
+
+        /// <summary>[CH3] Tier 40 exists only while chapter 3 is open.</summary>
+        public static bool Visible(MiniDungeonDef d) => d != null && (d.Tier != Chapter3Tier || Chapter3.Enabled);
 
         public static MiniDungeonDef Get(int tier) => Array.Find(All, d => d.Tier == tier);
         public static MiniDungeonDef ForMap(string map) => Array.Find(All, d => d.MapId == map);
@@ -109,8 +132,9 @@ namespace DotRPG
         {
             var d = MiniDungeonCatalog.ForMap(id);
             return d == null ? null : new MapInfo { id = id, displayName = L.T(d.Name), resource = "", theme = d.Theme,
-                music = d.Music, instanced = true, safe = false,
-                hint = L.F("Lv.{0}~{1} 경험치 미니던전 · 하루 총 30분 · 자동 사냥", d.MinLevel, d.MaxLevel) };
+                music = d.Music, instanced = true, safe = false, chapter = d.Tier == MiniDungeonCatalog.Chapter3Tier ? 3 : 0,
+                hint = d.Tier == MiniDungeonCatalog.Chapter3Tier ? L.F("Lv.{0}~{1} 경험치 미니던전 · 하루 10분 · 자동 사냥", d.MinLevel, d.MaxLevel)
+                    : L.F("Lv.{0}~{1} 경험치 미니던전 · 하루 총 30분 · 자동 사냥", d.MinLevel, d.MaxLevel) };
         }
     }
 }

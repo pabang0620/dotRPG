@@ -307,7 +307,7 @@ namespace DotRPG
         void OnEnemyKilled(string enemyId) => Signal(ObjectiveTypes.Kill, enemyId, 1);
         void OnInteracted(string id) => Signal(ObjectiveTypes.Interact, id, 1);
         void OnInventoryChanged(string id, int count, int delta) => Refresh();
-        void OnLeveledUp(int level) => Refresh();
+        void OnLeveledUp(int level) { ContentUnlocks.OnLevel(level); Refresh(); } // [CH3] level rules announce first
 
         void OnMapEntered(string mapId)
         {

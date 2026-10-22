@@ -109,6 +109,7 @@ namespace DotRPG
             foreach (var m in maps)
                 if (m.id == Sayab || HuntingGrounds.Get(m.id)?.village == Sayab) { m.chapter = 3; Chapter3Maps.Add(m.id); }
             foreach (var service in new[] { NpcService.Shop, NpcService.Blacksmith, NpcService.Storage }) Chapter3Maps.Add(InteriorFor(Sayab, service)); // IndoorServices is not built yet
+            Chapter3Maps.Add("mini_dungeon_40"); // [CH3 step 5] mini dungeon tier 40 (MiniDungeonCatalog)
             return maps.ToArray();
         }
 

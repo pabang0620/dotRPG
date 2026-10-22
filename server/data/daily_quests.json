@@ -636,6 +636,14 @@
             "count": 1
           },
           {
+            "id": "w_sayab_xibak",
+            "type": "raid",
+            "title": "공허 침식체 토벌",
+            "text": "이번 주 지바크 레이드를 한 번 클리어하라.",
+            "target": "raid_xibak",
+            "count": 1
+          },
+          {
             "id": "w_sayab_daily",
             "type": "daily",
             "title": "사얍의 이웃",
@@ -673,6 +681,14 @@
             "title": "수호석의 기억",
             "text": "이번 주 그라흐 레이드를 한 번 클리어하라.",
             "target": "raid_grah",
+            "count": 1
+          },
+          {
+            "id": "w_sayab_kamatz",
+            "type": "raid",
+            "title": "잿빛 지휘관 토벌",
+            "text": "이번 주 카마츠 레이드를 한 번 클리어하라.",
+            "target": "raid_kamatz",
             "count": 1
           },
           {

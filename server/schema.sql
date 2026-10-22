@@ -3376,3 +3376,11 @@ ALTER TABLE account_week_counters ADD CONSTRAINT account_week_counters_kind_chec
 COMMENT ON COLUMN account_week_counters.kind IS 'sweep_buy, direct_clear, activity_claim + seal_exchange(아카브 교환 횟수, 주 2회)';
 
 -- 0052_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)
+
+-- 0053_boss_level: 월드·길드보스 시즌 보스 레벨(시즌 생성 때의 levelCap, 50이면 월드보스 체력 x2.0), 미니 던전 티어 40(Lv40~49) CHECK (2026-10-23)
+ALTER TABLE boss_seasons ADD COLUMN boss_level INT NOT NULL DEFAULT 40 CHECK (boss_level BETWEEN 1 AND 100);
+COMMENT ON COLUMN boss_seasons.boss_level IS '그 주 보스 레벨(시즌 생성 때 levelCap). 50이면 월드보스 체력 x2.0';
+ALTER TABLE mini_dungeon_runs DROP CONSTRAINT mini_dungeon_runs_tier_check;
+ALTER TABLE mini_dungeon_runs DROP CONSTRAINT mini_dungeon_runs_entry_level_check;
+ALTER TABLE mini_dungeon_runs ADD CONSTRAINT mini_dungeon_runs_tier_check CHECK (tier IN (10, 20, 30, 40));
+ALTER TABLE mini_dungeon_runs ADD CONSTRAINT mini_dungeon_runs_entry_level_check CHECK (entry_level BETWEEN 10 AND 49);

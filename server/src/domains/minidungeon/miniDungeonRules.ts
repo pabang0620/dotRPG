@@ -1,13 +1,22 @@
+/** 하루 이용 시간의 최댓값(티어 10·20·30). 하루 사용량(mini_dungeon_days.used_ms)은 모든 티어가 함께 쓴다 */
 export const DAILY_LIMIT_MS = 1_800_000;
+/** 챕터 3 티어 40은 하루 10분(Docs/ch3/LIVE_CONTENT.md 1절): 따라잡기가 거의 매일 켜지므로 시간을 짧게 둔다 */
+export const DAILY_LIMIT_MS_TIER40 = 600_000;
 export const KILL_INTERVAL_MS = 2_000;
 export const CREDIT_CAP_MS = 6 * KILL_INTERVAL_MS;
 // Match MiniDungeonDirector.SpawnAt: training monsters retain 45% of normal HP.
 export const MINI_HP_MUL = 0.45;
-export const MINI_TIERS = [10, 20, 30] as const;
+export const MINI_TIERS = [10, 20, 30, 40] as const;
 export type MiniTier = (typeof MINI_TIERS)[number];
+/** 챕터 3 티어(잿빛 수련의 협곡, Lv40~49). 3장이 닫혀 있으면 입장 불가 */
+export const CHAPTER3_TIER = 40;
 export const miniMapId = (tier: MiniTier): string => `mini_dungeon_${tier}`;
+/** 티어별 하루 상한(ms). 그날 이미 쓴 시간은 티어와 상관없이 함께 센다 */
+export const dailyLimitMs = (tier: number): number => (tier === CHAPTER3_TIER ? DAILY_LIMIT_MS_TIER40 : DAILY_LIMIT_MS);
+/** 티어별 수련 몬스터(클라 MiniDungeonCatalog.MonsterId와 같다) */
+export const miniMonsterId = (tier: number): string => (tier === CHAPTER3_TIER ? 'void_hound' : 'skel_warrior');
 export const isMiniMap = (id: string): boolean => MINI_TIERS.some((tier) => miniMapId(tier) === id);
-// 입장 티어: 10단위 내림. 상한 레벨(levelCap)에서는 입장 불가, 표(MINI_TIERS)에 없는 티어도 불가(티어 40은 챕터 3 1단계에서 추가)
+// 입장 티어: 10단위 내림. 상한 레벨(levelCap)에서는 입장 불가, 표(MINI_TIERS)에 없는 티어도 불가. 3장이 닫혀 있으면 상한이 40이라 티어 40은 나오지 않는다
 export const tierOf = (level: number, cap: number): MiniTier | null => {
   const t = Math.floor(level / 10) * 10;
   return level >= 10 && level < cap && (MINI_TIERS as readonly number[]).includes(t) ? (t as MiniTier) : null;

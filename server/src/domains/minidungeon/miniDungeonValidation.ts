@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { charParams, requestId } from '../economy/economyValidation';
 export const runParams = charParams.extend({ run_id: z.uuid() });
-export const enterBody = z.strictObject({ request_id: requestId, tier: z.union([z.literal(10), z.literal(20), z.literal(30)]) });
+export const enterBody = z.strictObject({ request_id: requestId, tier: z.union([z.literal(10), z.literal(20), z.literal(30), z.literal(40)]) });
 export const requestBody = z.strictObject({ request_id: requestId });
 export const killBody = requestBody.extend({ monster_ref: z.uuid() });
 export const leaveBody = requestBody.extend({ reason: z.enum(['left', 'death', 'disconnected']).default('left') });

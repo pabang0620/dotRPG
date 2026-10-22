@@ -360,3 +360,65 @@ describe('daily XP-only mini dungeon HTTP', () => {
     expect((await kill(h, run.id)).status).toBe(200);
   });
 });
+
+// 챕터 3 5단계(Docs/ch3/LIVE_CONTENT.md 1절): 티어 40 잿빛 수련의 협곡(Lv40~49), 하루 10분, 막대/8,000·따라잡기/800
+describe('chapter 3 mini dungeon tier 40', () => {
+  const openApp = () => buildApp({ PRESENCE_KILL_MODE: 'off', CHAPTER3_OPEN: 'true' });
+  afterEach(() => { buildApp({ PRESENCE_KILL_MODE: 'off' }); });
+
+  test('rules: tier 40 selects only below the open cap, XP per kill follows the Lv40+ bars', () => {
+    expect([[39, 30], [40, 40], [49, 40], [50, null]].map(([l]) => tierOf(l as number, 50))).toEqual([30, 40, 40, null]);
+    expect(tierOf(40, 40)).toBeNull();
+    const bars = getGameData().economy.progression.xpToNext;
+    expect(xpPerKill(bars, 40)).toBe(Math.ceil(bars[39]! / 8000));
+    expect(xpPerKill(bars, 40, true)).toBe(Math.ceil(bars[39]! / 800));
+  });
+
+  test('closed: tier 40 is locked and not listed, Lv40 stays without a mini dungeon', async () => {
+    const h = await hero(40);
+    const r = await enter(h, 40);
+    expect(r.status).toBe(422);
+    expect(r.body.errors.code).toBe('CHAPTER_LOCKED');
+    expect((await enter(h, 30)).body.errors.code).toBe('MINI_LEVEL_LOCKED');
+    expect((await get(app, h, '/mini-dungeon')).body.data.tiers.map((t: { tier: number }) => t.tier)).toEqual([10, 20, 30]);
+  });
+
+  test('open: Lv40 enters tier 40 with void hounds and a 10 minute day', async () => {
+    openApp();
+    const h = await hero(40);
+    const s = await get(app, h, '/mini-dungeon');
+    expect(s.body.data).toMatchObject({ daily_limit_seconds: 600, remaining_seconds: 600 });
+    expect(s.body.data.tiers.map((t: { tier: number }) => t.tier)).toEqual([10, 20, 30, 40]);
+    const r = await enter(h, 40);
+    expect(r.status).toBe(201);
+    expect(r.body.data.active_run).toMatchObject({ tier: 40, map_id: 'mini_dungeon_40', monster_id: 'void_hound', entry_level: 40 });
+    expect(Date.parse(r.body.data.active_run.ends_at) - Date.parse(r.body.data.active_run.started_at)).toBe(600_000);
+    advance(5);
+    const k = await kill(h, r.body.data.active_run.id);
+    expect(k.status).toBe(200);
+    expect(k.body.data).toMatchObject({ accepted: true, granted_gold: 36 });
+    expect(k.body.data.granted_xp).toBe(Math.ceil(getGameData().economy.progression.xpToNext[39]! / 8000));
+    advance(600);
+    const again = await enter(h, 40);
+    expect(again.status).toBe(422);
+    expect(again.body.errors.code).toBe('MINI_TIME_EXHAUSTED');
+  });
+
+  test('open: time used in a lower tier the same day counts against the 10 minutes', async () => {
+    openApp();
+    const h = await hero(39);
+    const first = await enter(h, 30);
+    advance(400);
+    await leave(h, first.body.data.active_run.id);
+    await seedLevel(h, 40);
+    const r = await enter(h, 40);
+    expect(r.status).toBe(201);
+    expect(r.body.data.remaining_seconds).toBe(200);
+  });
+
+  test('open: Lv49 enters tier 40, the Lv50 cap cannot', async () => {
+    openApp();
+    expect((await enter(await hero(49), 40)).status).toBe(201);
+    expect((await enter(await hero(50), 40)).body.errors.code).toBe('MINI_LEVEL_LOCKED');
+  });
+});

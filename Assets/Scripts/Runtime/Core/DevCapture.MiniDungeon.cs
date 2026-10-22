@@ -94,8 +94,9 @@ namespace DotRPG
 
         void MiniBudgetChecks(DateTime now)
         {
-            MiniCheck("three ten-level entry bands", MiniDungeonCatalog.All.Length == 3 &&
-                MiniDungeonCatalog.All.Select(d => d.Tier).SequenceEqual(new[] { 10, 20, 30 }) &&
+            // [CH3 step 5] Tier 40 (Lv.40~49, 10 minutes) exists in the data; it is entered only while chapter 3 is open.
+            MiniCheck("four ten-level entry bands", MiniDungeonCatalog.All.Length == 4 &&
+                MiniDungeonCatalog.All.Select(d => d.Tier).SequenceEqual(new[] { 10, 20, 30, 40 }) &&
                 MiniDungeonCatalog.All.All(d => d.MinLevel == d.Tier && d.MaxLevel == d.Tier + 9));
             var budget = new MiniDungeonProgress();
             MiniCheck("one shared 1800-second daily allowance", budget.RemainingSeconds(now) == 1800);
@@ -163,7 +164,7 @@ namespace DotRPG
                     Game.Session.Progression.SetFromServer(level, 0);
                     foreach (var d in MiniDungeonCatalog.All)
                         MiniCheck("Lv." + level + " tier " + d.Tier + " gate",
-                            director.CanEnter(d.Tier, out _) == (level >= d.MinLevel && level <= d.MaxLevel));
+                            director.CanEnter(d.Tier, out _) == (level >= d.MinLevel && level <= d.MaxLevel && level < Progression.LevelCap && MiniDungeonCatalog.Visible(d)));
                 }
                 Game.Session.Progression.SetFromServer(10, 0);
                 Game.UI.Hud.ClearToasts();

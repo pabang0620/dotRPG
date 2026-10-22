@@ -10,6 +10,8 @@ export interface Season {
   week_start: Date;
   week_end: Date;
   boss_id: string;
+  /** 그 주 보스 레벨(0053): 시즌을 만들 때의 levelCap() */
+  boss_level: number;
   max_hp: number;
   hp_left: number;
   defeated_at: Date | null;
@@ -19,11 +21,11 @@ type RawSeason = Omit<Season, 'id' | 'max_hp' | 'hp_left'> & { id: string; max_h
 const toSeason = (r: RawSeason): Season => ({ ...r, id: Number(r.id), max_hp: Number(r.max_hp), hp_left: Number(r.hp_left) });
 
 /** 그 주의 시즌(없으면 만든다). 동시에 만들어도 UNIQUE(kind, week_start)로 하나만 남는다 */
-export async function ensureSeason(db: Queryable, kind: BossKind, weekStart: Date, weekEnd: Date, bossId: string, hp: number): Promise<Season> {
+export async function ensureSeason(db: Queryable, kind: BossKind, weekStart: Date, weekEnd: Date, bossId: string, hp: number, bossLevel: number): Promise<Season> {
   await db.query(
-    `INSERT INTO boss_seasons (kind, week_start, week_end, boss_id, max_hp, hp_left)
-     VALUES ($1, $2, $3, $4, $5, $5) ON CONFLICT (kind, week_start) DO NOTHING`,
-    [kind, weekStart, weekEnd, bossId, hp],
+    `INSERT INTO boss_seasons (kind, week_start, week_end, boss_id, max_hp, hp_left, boss_level)
+     VALUES ($1, $2, $3, $4, $5, $5, $6) ON CONFLICT (kind, week_start) DO NOTHING`,
+    [kind, weekStart, weekEnd, bossId, hp, bossLevel],
   );
   const r = await db.query<RawSeason>('SELECT * FROM boss_seasons WHERE kind = $1 AND week_start = $2', [kind, weekStart]);
   return toSeason(r.rows[0] as RawSeason);

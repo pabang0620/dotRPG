@@ -17,18 +17,22 @@ import { rankOf, ranked } from '../rankings/rankingService';
 import * as repo from './bossRushRepository';
 import {
   ATTEMPTS_PER_DAY, ATTEMPT_SECONDS, BOSS_MIN_LEVEL, bossLevel, FINISH_GRACE_SECONDS, GUILD_BOSS_ID, ROOM_HP_MUL,
-  WORLD_BOSS_ID, attemptDamageCap, type BossKind,
+  WORLD_BOSS_ID, attemptDamageCap, worldSeasonHp, type BossKind,
 } from './bossRushRules';
 import type { FinishBody, StartBody } from './bossRushValidation';
 
 const WORLD_NAME = '심연의 거신 지파크';
 const GUILD_NAME = '심연의 거신 지파크'; // 길드보스도 같은 보스(GUILD_BOSS_ID): 창 라벨과 전투 중 이름을 하나로
 
-/** 이번 주 시즌(없으면 만든다) */
+/**
+ * 이번 주 시즌(없으면 만든다). 보스 레벨은 시즌을 만들 때의 levelCap()(3장 닫힘 40, 열림 50)이고 그 주 내내 그대로다.
+ * 보스 레벨 50 시즌의 월드보스 체력은 x2.0(LIVE_CONTENT.md 2절)
+ */
 export async function currentSeason(db: Queryable, kind: BossKind, now: Date): Promise<repo.Season> {
   const b = resetBoundaries(now);
-  const hp = kind === 'world' ? getConfig().policy.worldBossHp : 0; // 길드보스는 체력 없이 점수만 쌓는다
-  return repo.ensureSeason(db, kind, new Date(b.weeklyStartAt), new Date(b.nextWeeklyAt), kind === 'world' ? WORLD_BOSS_ID : GUILD_BOSS_ID, hp);
+  const level = bossLevel();
+  const hp = kind === 'world' ? worldSeasonHp(getConfig().policy.worldBossHp, level) : 0; // 길드보스는 체력 없이 점수만 쌓는다
+  return repo.ensureSeason(db, kind, new Date(b.weeklyStartAt), new Date(b.nextWeeklyAt), kind === 'world' ? WORLD_BOSS_ID : GUILD_BOSS_ID, hp, level);
 }
 
 async function attemptsLeft(db: Queryable, characterId: number, kind: BossKind, now: Date): Promise<number> {
@@ -46,7 +50,7 @@ async function snapshot(db: Queryable, characterId: number, now: Date) {
     const gs = await currentSeason(db, 'guild', now);
     const guildRows = (await ranked('guild_boss', gs.week_start)).rows;
     guild = {
-      season_id: gs.uuid, boss_id: gs.boss_id, name: GUILD_NAME,
+      season_id: gs.uuid, boss_id: gs.boss_id, boss_level: gs.boss_level, name: GUILD_NAME,
       score: await repo.guildScore(db, gs.id, m.guild_id), my_contribution: await repo.contributionOf(db, gs.id, characterId, m.guild_id),
       attempts_left: await attemptsLeft(db, characterId, 'guild', now), attempts_per_day: ATTEMPTS_PER_DAY.guild,
       eligible_at: new Date(m.joined_at.getTime() + GUILD_BOSS_JOIN_WAIT_MS).toISOString(),
@@ -55,7 +59,7 @@ async function snapshot(db: Queryable, characterId: number, now: Date) {
   }
   return {
     world: {
-      season_id: world.uuid, boss_id: world.boss_id, name: WORLD_NAME, max_hp: world.max_hp, hp_left: world.hp_left,
+      season_id: world.uuid, boss_id: world.boss_id, boss_level: world.boss_level, name: WORLD_NAME, max_hp: world.max_hp, hp_left: world.hp_left,
       defeated_at: world.defeated_at?.toISOString() ?? null,
       attempts_left: await attemptsLeft(db, characterId, 'world', now), attempts_per_day: ATTEMPTS_PER_DAY.world,
       my_best: await repo.bestOf(db, world.id, characterId), my_rank: rankOf(worldRows, characterId),
@@ -109,7 +113,7 @@ export function start(accountId: number, uuid: string, kind: BossKind, body: Sta
         partySize: 1, now: ctx.now, endsAt,
       });
       return { status: 201, data: {
-        attempt_id: a.uuid, boss_id: season.boss_id, level: bossLevel(), hp_mul: ROOM_HP_MUL, damage_mul: 1,
+        attempt_id: a.uuid, boss_id: season.boss_id, level: season.boss_level, hp_mul: ROOM_HP_MUL, damage_mul: 1,
         started_at: a.started_at.toISOString(), ends_at: a.ends_at.toISOString(),
       } };
     } });

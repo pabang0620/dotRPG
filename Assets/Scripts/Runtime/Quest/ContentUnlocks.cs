@@ -14,7 +14,7 @@ namespace DotRPG
     /// </summary>
     public static class ContentUnlocks
     {
-        public enum Feature { Enhance, Gem, AutoHunt, WeekdayDungeon, NormalDungeon, PartyFinder, Auction, Trade, Daily, SkillStyle, Raid, Promote, MiniDungeon, Guild }
+        public enum Feature { Enhance, Gem, AutoHunt, WeekdayDungeon, NormalDungeon, PartyFinder, Auction, Trade, Daily, SkillStyle, Raid, Promote, MiniDungeon, Guild, Chapter3, Specialization }
 
         sealed class Rule
         {
@@ -23,6 +23,10 @@ namespace DotRPG
             public bool onAccept;
             /// <summary>Quest that teaches the feature (accepted when it opens; null = a tip only).</summary>
             public string guide;
+            /// <summary>[CH3] Level that opens the feature when <see cref="quest"/> is null (0 = quest rule).</summary>
+            public int level;
+            /// <summary>[CH3] Only while chapter 3 is open (Chapter3.Enabled); closed it does not exist at all.</summary>
+            public bool chapter3;
         }
 
         static readonly Dictionary<Feature, Rule> Rules = new Dictionary<Feature, Rule>
@@ -41,7 +45,13 @@ namespace DotRPG
             [Feature.Guild] = new Rule { quest = "career_path", guide = null }, // [GUILD 2026-10-20] with the daily requests (1-15)
             [Feature.Raid] = new Rule { quest = "c1_fortress", onAccept = true, guide = "c1_fortress" }, // same quest as the skeleton king raid's unlockQuest (RaidLockReason)
             [Feature.Promote] = new Rule { quest = "c1_fortress", guide = null },
+            // [CH3 step 5] Docs/ch3/LIVE_CONTENT.md section 5: 3-1 opens from Leona after 2-end; specialization points from Lv.41.
+            [Feature.Chapter3] = new Rule { quest = "c2_end", guide = "c3_depart", chapter3 = true },
+            [Feature.Specialization] = new Rule { quest = null, level = SpecializationLevel, chapter3 = true },
         };
+
+        /// <summary>[CH3] First level that grants a specialization point (SKILL_SPECIALIZATION.md).</summary>
+        public const int SpecializationLevel = 41;
 
         /// <summary>A feature has just opened (raised once, when its main quest is finished or accepted).</summary>
         public static event Action<Feature> Opened;
@@ -68,8 +78,10 @@ namespace DotRPG
 
         public static bool IsOpen(Feature f)
         {
-            if (Game.Quest == null || Game.Session == null || Bypass) return true;
             var r = Rules[f];
+            if (r.chapter3 && !Chapter3.Enabled) return false; // closed chapter: not even in automated runs
+            if (Game.Quest == null || Game.Session == null || Bypass) return true;
+            if (r.quest == null) return Game.Session.Progression.Level >= r.level;
             var st = Game.Quest.StatusOf(r.quest);
             return st == QuestStatus.Completed || (r.onAccept && (st == QuestStatus.Active || st == QuestStatus.ReadyToTurnIn));
         }
@@ -79,6 +91,8 @@ namespace DotRPG
         {
             if (IsOpen(f)) return null;
             var r = Rules[f];
+            if (r.chapter3 && !Chapter3.Enabled) return L.T("아직 열리지 않은 콘텐츠입니다.");
+            if (r.quest == null) return L.F("Lv.{0}에 열려요", r.level);
             var q = Game.Quest.Database.Get(r.quest);
             string title = q != null ? L.T(q.title) : r.quest;
             string code = q != null ? q.code : "";
@@ -150,6 +164,8 @@ namespace DotRPG
             Feature.Raid => L.T("레이드"),
             Feature.MiniDungeon => L.T("미니던전"),
             Feature.Guild => L.T("길드"),
+            Feature.Chapter3 => L.T("3장 사얍 마을"),
+            Feature.Specialization => L.T("스킬 특화"),
             _ => L.T("승급"),
         };
 
@@ -169,6 +185,8 @@ namespace DotRPG
             Feature.Raid => L.T("해골왕 레이드가 열렸어요. 수·토·일에 열리고 혼자서도 보상을 받아요."),
             Feature.Guild => L.F("길드에 들어가거나 직접 만들어 함께 길드보스에 도전해요(길드 창: [{0}]). 길드 채팅은 /gu로 써요.", Game.Input != null ? Game.Input.GetBindingLabel(GameAction.Guild) : "B"),
             Feature.MiniDungeon => L.T("Lv.10부터 혼자 들어가는 경험치 수련장이에요(하루 30분). 다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 10배예요."),
+            Feature.Chapter3 => L.T("서쪽으로 가는 길이 열렸어요. 레오나를 찾아가세요."),
+            Feature.Specialization => L.T("특화 포인트를 받았어요. 스킬 창의 특화 탭에서 두 갈래 중 하나를 고르세요(마을에서 바꿀 수 있어요)."),
             _ => L.T("대장장이 창의 승급으로 장비 등급을 올려요. 레이드에서 얻는 고대의 핵과 골드가 들어요."),
         };
 
@@ -184,6 +202,14 @@ namespace DotRPG
         /// <summary>Drops queued announcements (a new session starts).</summary>
         public static void ClearPending() => pending.Clear();
 
+        /// <summary>[CH3] Level rules (specialization at Lv.41) announce on the level-up that opens them (QuestManager.OnLeveledUp).</summary>
+        public static void OnLevel(int level)
+        {
+            if (Bypass) return;
+            foreach (var kv in Rules)
+                if (kv.Value.quest == null && kv.Value.level == level && IsOpen(kv.Key) && !pending.Contains(kv.Key)) pending.Add(kv.Key);
+        }
+
         static void OnQuestCompleted(string questId) => Queue(questId, false);
         static void OnQuestAccepted(string questId) => Queue(questId, true);
 
@@ -191,7 +217,7 @@ namespace DotRPG
         {
             if (Bypass) return;
             foreach (var kv in Rules)
-                if (kv.Value.quest == questId && kv.Value.onAccept == accepted && !pending.Contains(kv.Key)) pending.Add(kv.Key);
+                if (kv.Value.quest == questId && kv.Value.onAccept == accepted && (!kv.Value.chapter3 || Chapter3.Enabled) && !pending.Contains(kv.Key)) pending.Add(kv.Key);
         }
 
         /// <summary>

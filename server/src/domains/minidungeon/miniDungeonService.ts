@@ -19,11 +19,10 @@ import { findPartyIdOf } from '../party/partyRepository';
 import * as questRepo from '../quests/questRepository';
 import * as tradeRepo from '../trade/tradeRepository';
 import * as repo from './miniDungeonRepository';
-import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_GOLD_PER_KILL, MINI_HP_MUL, MINI_TIERS, killCredit, mainQuestLevelGate, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
+import { CHAPTER3_TIER, KILL_INTERVAL_MS, MINI_GOLD_PER_KILL, MINI_HP_MUL, MINI_TIERS, dailyLimitMs, killCredit, mainQuestLevelGate, miniMapId, miniMonsterId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
 import type { EnterBody, KillBody, LeaveBody, RequestBody } from './miniDungeonValidation';
-import { levelCap } from '../../gamedata/chapterGate';
+import { chapter3Open, levelCap } from '../../gamedata/chapterGate';
 
-const MONSTER_ID = 'skel_warrior';
 const notFound = () => new AppError(404, '미니던전 기록을 찾을 수 없습니다.', 'MINI_RUN_NOT_FOUND');
 
 /** Always under the character lock. Settle old-day runs against their original budget. */
@@ -42,7 +41,7 @@ async function questGate(ctx: EconCtx): Promise<number | null> {
 }
 
 const runView = (run: repo.MiniRun) => ({
-  id: run.uuid, tier: run.tier, map_id: miniMapId(run.tier), monster_id: MONSTER_ID,
+  id: run.uuid, tier: run.tier, map_id: miniMapId(run.tier), monster_id: miniMonsterId(run.tier),
   entry_level: run.entry_level, monster_level: run.entry_level, xp_per_kill: run.xp_per_kill,
   catch_up_xp_per_kill: xpPerKill(getGameData().economy.progression.xpToNext, run.entry_level, true),
   started_at: run.started_at.toISOString(), ends_at: run.ends_at.toISOString(),
@@ -56,15 +55,19 @@ async function snapshot(ctx: EconCtx, endedRun?: repo.MiniRun) {
   if (run) await settle(ctx.client, run, ctx.now);
   const used = await repo.day(ctx.client, ctx.char.id, new Date(reset.dailyStartAt));
   const ended = endedRun && endedRun.state !== 'playing' ? endedRun : run && run.state !== 'playing' ? run : null;
+  // 하루 상한은 지금 들어갈 티어(진행 중이면 그 판의 티어) 기준. 티어 40은 10분, 나머지는 30분
+  const limit = dailyLimitMs(run?.state === 'playing' ? run.tier : tierOf(ctx.level, levelCap()) ?? 0);
+  const open = chapter3Open();
   return {
-    daily_limit_seconds: DAILY_LIMIT_MS / 1000,
+    daily_limit_seconds: limit / 1000,
     used_seconds: used / 1000,
-    remaining_seconds: Math.max(0, DAILY_LIMIT_MS - used) / 1000,
+    remaining_seconds: Math.max(0, limit - used) / 1000,
     server_time: ctx.now.toISOString(),
     reset: { daily_start_at: reset.dailyStartAt, next_daily_at: reset.nextDailyAt },
     // 따라잡기: 다음 메인 퀘스트가 이 레벨을 요구해 막혀 있으면 처치 경험치 10배
     catch_up: { level_gate: await questGate(ctx) },
-    tiers: MINI_TIERS.map((tier) => ({ tier, min_level: tier, max_level: tier + 9, map_id: miniMapId(tier), monster_id: MONSTER_ID })),
+    tiers: MINI_TIERS.filter((tier) => open || tier !== CHAPTER3_TIER)
+      .map((tier) => ({ tier, min_level: tier, max_level: tier + 9, map_id: miniMapId(tier), monster_id: miniMonsterId(tier), daily_limit_seconds: dailyLimitMs(tier) / 1000 })),
     active_run: run?.state === 'playing' ? runView(run) : null,
     completed_run: ended ? runView(ended) : null,
     delta: ctx.delta(),
@@ -99,8 +102,10 @@ async function assertSolo(ctx: EconCtx): Promise<void> {
 export function enter(accountId: number, uuid: string, body: EnterBody): Promise<StoredResult> {
   return runEconomy({ accountId, characterUuid: uuid, endpoint: 'POST /characters/:uuid/mini-dungeon/enter', requestId: body.request_id,
     payload: { tier: body.tier }, handler: async (ctx) => {
+      // 챕터 3 티어 40은 3장이 열려 있을 때만(LIVE_CONTENT.md 6절 호출 지점 minidungeon)
+      if (body.tier === CHAPTER3_TIER && !chapter3Open()) throw new AppError(422, '아직 열리지 않은 콘텐츠입니다.', 'CHAPTER_LOCKED', { kind: 'map', id: miniMapId(CHAPTER3_TIER) });
       const tier = tierOf(ctx.level, levelCap());
-      if (tier === null) throw new AppError(422, '미니던전은 10~39레벨 캐릭터가 이용할 수 있습니다.', 'MINI_LEVEL_LOCKED');
+      if (tier === null) throw new AppError(422, `미니던전은 10~${levelCap() - 1}레벨 캐릭터가 이용할 수 있습니다.`, 'MINI_LEVEL_LOCKED');
       if (body.tier !== tier) throw new AppError(422, '현재 레벨에 맞는 구간을 선택해 주세요.', 'MINI_TIER_MISMATCH', { tier });
       await assertSolo(ctx);
       await snapshot(ctx);
@@ -110,8 +115,8 @@ export function enter(accountId: number, uuid: string, body: EnterBody): Promise
       const reset = resetBoundaries(ctx.now);
       const resetDay = new Date(reset.dailyStartAt);
       const used = await repo.day(ctx.client, ctx.char.id, resetDay);
-      const left = DAILY_LIMIT_MS - used;
-      if (left <= 0) throw new AppError(422, '오늘의 미니던전 30분을 모두 이용했습니다.', 'MINI_TIME_EXHAUSTED');
+      const left = dailyLimitMs(tier) - used;
+      if (left <= 0) throw new AppError(422, `오늘의 미니던전 ${dailyLimitMs(tier) / 60_000}분을 모두 이용했습니다.`, 'MINI_TIME_EXHAUSTED');
       await repo.insert(ctx.client, { characterId: ctx.char.id, resetDay, tier, entryLevel: ctx.level,
         xp: xpPerKill(getGameData().economy.progression.xpToNext, ctx.level), now: ctx.now,
         endsAt: new Date(Math.min(ctx.now.getTime() + left, Date.parse(reset.nextDailyAt))) });
@@ -144,14 +149,15 @@ export function kill(accountId: number, uuid: string, runUuid: string, body: Kil
         return { status: 200, data: { ...await snapshot(ctx, run), accepted: false, granted_xp: 0, reason: 'MINI_LEVEL_CAP' } };
       }
       await assertSolo(ctx);
-      await assertKillPresence(ctx, { mapId: miniMapId(run.tier), dungeon: false, isFieldBoss: false, monsterId: MONSTER_ID });
+      await assertKillPresence(ctx, { mapId: miniMapId(run.tier), dungeon: false, isFieldBoss: false, monsterId: miniMonsterId(run.tier) });
       if (await repo.hasKill(ctx.client, run.id, body.monster_ref)) throw new AppError(409, '이미 보고한 몬스터입니다.', 'KILL_DUPLICATE');
       const credits = killCredit(run.kill_credits_ms, run.credits_at, ctx.now);
       if (credits < KILL_INTERVAL_MS) throw new AppError(429, '처치 보고가 너무 빠릅니다.', 'MINI_KILL_RATE_LIMITED', { retry_after_sec: Math.ceil((KILL_INTERVAL_MS - credits) / 1000) });
       const eco = getGameData().economy;
       const pol = getConfig().policy;
-      const def = eco.monsters.get(MONSTER_ID);
-      if (!def) throw new Error(`Mini dungeon monster ${MONSTER_ID} is missing`);
+      const monsterId = miniMonsterId(run.tier);
+      const def = eco.monsters.get(monsterId);
+      if (!def) throw new Error(`Mini dungeon monster ${monsterId} is missing`);
       const recent = await repo.killsSince(ctx.client, run.id, new Date(ctx.now.getTime() - 10_000));
       const hp = Math.max(20, roundHalfEven(effectiveHp(eco, def, run.entry_level, MINI_HP_MUL)));
       const cap = attackCap(eco, pol, ctx.level, await econRepo.listWornKeys(ctx.client, ctx.char.id));
