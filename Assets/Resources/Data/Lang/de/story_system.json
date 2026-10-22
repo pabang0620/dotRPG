@@ -1757,5 +1757,11 @@
  "용사 훈께서 마왕 볼론을 북쪽 땅에 봉인한 날을 기리는 봉인 축제다. 올해로 꼭 400년째지. 등불은 그분께 올리는 감사지.": "Das Siegelfest ehrt den Tag, an dem Held Hun den Dämonenkönig Bolon im Norden versiegelt hat. Dieses Jahr sind es genau 400 Jahre. Die Laternen sind unser Dank an ihn.",
  "전직 안내원 이츠나": "Klassenwechsel-Führer Itzna",
  "축제 날엔 네 몫 등불도 하나 남겨 둘게. 등불은 둘씩 띄우는 법이니까. 리아랑 띄운다며? 소문 다 났다.": "Am Festtag lege ich auch eine Laterne für dich zurück. Laternen lässt man immer paarweise schwimmen. Du lässt deine mit Ria schwimmen, oder? Das weiß schon jeder.",
- "볼론": "Bolon"
+ "볼론": "Bolon",
+ "detachCharacter가 먼저 빼고 인원을 맞춘다. 남은 행이 있으면 지운다": "detachCharacter entfernt es zuerst und passt die Mitgliederzahl an. Übrige Zeilen werden gelöscht",
+ "길드 단위 주간 점수. 개인정보 없음": "Wöchentliche Gildenpunkte. Keine personenbezogenen Daten",
+ "길드 자체. 길드장 캐릭터는 익명화 때 위임되거나 혼자면 해체된다. 해체된 길드 행은 이름만 남고 개인정보가 없다(길드장 참조는 캐릭터 껍데기)": "Die Gilde selbst. Der Gildenmeister-Charakter wird bei der Anonymisierung übergeben, oder die Gilde wird aufgelöst, wenn er allein ist. Eine aufgelöste Gildenzeile behält nur den Namen und keine personenbezogenen Daten (der Meisterverweis ist eine Charakterhülle)",
+ "랭킹 칭호·이름 색. 지나간 주 랭킹 화면은 boss_attempts로 다시 계산되며 이름은 자리표시가 된다": "Ranglistentitel und Namensfarben. Vergangene Wochenranglisten werden aus boss_attempts neu berechnet, Namen werden zu Platzhaltern",
+ "보스 도전 기록(피해량·시각). 랭킹·이상 탐지 근거라 파기 때까지 보관(개인정보처리방침 보스 도전 기록)": "Boss-Versuchsprotokolle (Schaden und Zeit). Bis zur Vernichtung aufbewahrt als Grundlage für Ranglisten und Anomalieerkennung (Datenschutzerklärung: Boss-Versuchsprotokolle)",
+ "주간 시즌. 개인정보 없음": "Wöchentliche Saison. Keine personenbezogenen Daten"
 }

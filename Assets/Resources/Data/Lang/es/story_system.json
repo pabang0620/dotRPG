@@ -1757,5 +1757,11 @@
  "용사 훈께서 마왕 볼론을 북쪽 땅에 봉인한 날을 기리는 봉인 축제다. 올해로 꼭 400년째지. 등불은 그분께 올리는 감사지.": "El Festival del Sello honra el día en que el Héroe Hun selló al Rey Demonio Bolon en las tierras del norte. Este año se cumplen exactamente 400 años. Los faroles son nuestro agradecimiento hacia él.",
  "전직 안내원 이츠나": "Guía de Ascenso Itzna",
  "축제 날엔 네 몫 등불도 하나 남겨 둘게. 등불은 둘씩 띄우는 법이니까. 리아랑 띄운다며? 소문 다 났다.": "El día del festival te guardaré un farol. Los faroles siempre se echan de dos en dos. ¿Echarás el tuyo con Ria, verdad? Todo el mundo ya lo sabe.",
- "볼론": "Bolon"
+ "볼론": "Bolon",
+ "detachCharacter가 먼저 빼고 인원을 맞춘다. 남은 행이 있으면 지운다": "detachCharacter lo retira primero y ajusta el número de miembros. Las filas restantes se eliminan",
+ "길드 단위 주간 점수. 개인정보 없음": "Puntuación semanal del gremio. Sin datos personales",
+ "길드 자체. 길드장 캐릭터는 익명화 때 위임되거나 혼자면 해체된다. 해체된 길드 행은 이름만 남고 개인정보가 없다(길드장 참조는 캐릭터 껍데기)": "El gremio en sí. El personaje líder se transfiere al anonimizar, o el gremio se disuelve si está solo. La fila de un gremio disuelto solo conserva el nombre y no tiene datos personales (la referencia al líder es un personaje vacío)",
+ "랭킹 칭호·이름 색. 지나간 주 랭킹 화면은 boss_attempts로 다시 계산되며 이름은 자리표시가 된다": "Títulos de clasificación y colores de nombre. Las clasificaciones semanales pasadas se recalculan desde boss_attempts y los nombres pasan a ser marcadores",
+ "보스 도전 기록(피해량·시각). 랭킹·이상 탐지 근거라 파기 때까지 보관(개인정보처리방침 보스 도전 기록)": "Registros de intentos contra jefes (daño y hora). Se conservan hasta la purga como base de clasificaciones y detección de anomalías (política de privacidad: registros de intentos contra jefes)",
+ "주간 시즌. 개인정보 없음": "Temporada semanal. Sin datos personales"
 }
