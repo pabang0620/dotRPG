@@ -33,5 +33,6 @@
  "길드 이름은 {0}~{1}자여야 합니다": "Los nombres de gremio deben tener entre {0} y {1} caracteres",
  "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Los nombres de gremio solo pueden usar sílabas coreanas, letras inglesas y números",
  "파티를 나간 뒤 도전하세요.": "Sal del grupo y vuelve a intentarlo.",
- "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Cede el liderazgo del gremio o disuélvelo antes de eliminar este personaje."
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Cede el liderazgo del gremio o disuélvelo antes de eliminar este personaje.",
+ "아직 열리지 않은 콘텐츠입니다.": "Este contenido aún no está disponible."
 }

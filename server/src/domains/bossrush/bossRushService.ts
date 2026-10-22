@@ -16,7 +16,7 @@ import * as partyRepo from '../party/partyRepository';
 import { rankOf, ranked } from '../rankings/rankingService';
 import * as repo from './bossRushRepository';
 import {
-  ATTEMPTS_PER_DAY, ATTEMPT_SECONDS, BOSS_LEVEL, FINISH_GRACE_SECONDS, GUILD_BOSS_ID, ROOM_HP_MUL,
+  ATTEMPTS_PER_DAY, ATTEMPT_SECONDS, BOSS_MIN_LEVEL, bossLevel, FINISH_GRACE_SECONDS, GUILD_BOSS_ID, ROOM_HP_MUL,
   WORLD_BOSS_ID, attemptDamageCap, type BossKind,
 } from './bossRushRules';
 import type { FinishBody, StartBody } from './bossRushValidation';
@@ -63,7 +63,7 @@ async function snapshot(db: Queryable, characterId: number, now: Date) {
     guild,
     week_ends_at: b.nextWeeklyAt,
     attempt_seconds: ATTEMPT_SECONDS,
-    min_level: getGameData().economy.progression.maxLevel,
+    min_level: BOSS_MIN_LEVEL,
   };
 }
 
@@ -80,8 +80,7 @@ const HIGH_DAMAGE_RATIO = 0.8;
 export function start(accountId: number, uuid: string, kind: BossKind, body: StartBody): Promise<StoredResult> {
   return runEconomy({ accountId, characterUuid: uuid, endpoint: `POST /characters/:uuid/bosses/${kind}/attempts`, requestId: body.request_id,
     payload: {}, handler: async (ctx) => {
-      const maxLevel = getGameData().economy.progression.maxLevel;
-      if (ctx.level < maxLevel) throw new AppError(422, `${maxLevel}레벨부터 도전할 수 있습니다.`, 'LEVEL_TOO_LOW', { need: maxLevel });
+      if (ctx.level < BOSS_MIN_LEVEL) throw new AppError(422, `${BOSS_MIN_LEVEL}레벨부터 도전할 수 있습니다.`, 'LEVEL_TOO_LOW', { need: BOSS_MIN_LEVEL });
       // 도전은 혼자(+AI 동료)만: 사람 파티(2명 이상)에 있으면 받지 않는다. 클라이언트도 막지만 서버가 최종이다
       const partyId = await partyRepo.findPartyIdOf(ctx.client, ctx.char.id);
       if (partyId !== null && (await partyRepo.activeMembers(ctx.client, partyId)).length >= 2) {
@@ -110,7 +109,7 @@ export function start(accountId: number, uuid: string, kind: BossKind, body: Sta
         partySize: 1, now: ctx.now, endsAt,
       });
       return { status: 201, data: {
-        attempt_id: a.uuid, boss_id: season.boss_id, level: BOSS_LEVEL, hp_mul: ROOM_HP_MUL, damage_mul: 1,
+        attempt_id: a.uuid, boss_id: season.boss_id, level: bossLevel(), hp_mul: ROOM_HP_MUL, damage_mul: 1,
         started_at: a.started_at.toISOString(), ends_at: a.ends_at.toISOString(),
       } };
     } });

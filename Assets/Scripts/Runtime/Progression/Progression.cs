@@ -10,8 +10,23 @@ namespace DotRPG
     /// </summary>
     public sealed partial class Progression
     {
-        /// <summary>[J10] 40 since chapter 2 (its raids are tuned for Lv 28-31).</summary>
+        /// <summary>[J10] 40 since chapter 2 (its raids are tuned for Lv 28-31). The data ceiling (curve length, saves).</summary>
         public const int MaxLevel = 40;
+
+        /// <summary>
+        /// [CH3] The level a hero can reach now: 40 while chapter 3 is closed, 50 once the server opens it (never above
+        /// <see cref="MaxLevel"/>, which grows to 50 with the chapter 3 curve). Gaining XP and "만렙" use this; loading a save or
+        /// the server's level clamps to <see cref="MaxLevel"/> so a closed gate never cuts levels already earned.
+        /// </summary>
+        public static int LevelCap
+        {
+            get
+            {
+                int cap = Chapter3.Enabled ? Chapter3.OpenCap : Chapter3.ClosedCap;
+                if (Chapter3.ServerLevelCap > 0) cap = Chapter3.ServerLevelCap;
+                return Math.Max(1, Math.Min(MaxLevel, cap));
+            }
+        }
 
         public int Level { get; private set; } = 1;
         public int Xp { get; private set; }
@@ -61,7 +76,7 @@ namespace DotRPG
         /// <summary>An XP amount as a share of a level's bar ("12.3%"), the way players read progress. Max level: "만렙".</summary>
         public static string XpPercent(long xp, int level)
         {
-            if (level >= MaxLevel) return L.T("만렙");
+            if (level >= LevelCap) return L.T("만렙");
             double pct = xp * 100.0 / Math.Max(1, XpToNext(level));
             return pct >= 10 ? $"{pct:0}%" : pct >= 1 ? $"{pct:0.#}%" : $"{pct:0.##}%";
         }
@@ -73,7 +88,7 @@ namespace DotRPG
         /// </summary>
         public const float QuestGoldScale = 0.5f;
         public static int QuestGold(int dataGold) => (int)Math.Round(dataGold * QuestGoldScale);
-        public int XpNeeded => Level >= MaxLevel ? 0 : XpToNext(Level);
+        public int XpNeeded => Level >= LevelCap ? 0 : XpToNext(Level);
 
         /// <summary>Passive points earned minus spent (the start node is free).</summary>
         public int PointsLeft => (Level - 1) - Math.Max(0, Allocated.Count - 1);
@@ -103,15 +118,16 @@ namespace DotRPG
 
         public void AddXp(int amount)
         {
-            if (Level >= MaxLevel || amount <= 0) return;
+            int cap = LevelCap;
+            if (Level >= cap || amount <= 0) return;
             Xp += amount;
-            while (Level < MaxLevel && Xp >= XpToNext(Level))
+            while (Level < cap && Xp >= XpToNext(Level))
             {
                 Xp -= XpToNext(Level);
                 Level++;
                 LeveledUp?.Invoke(Level);
             }
-            if (Level >= MaxLevel) Xp = 0;
+            if (Level >= cap) Xp = 0;
             Changed?.Invoke();
         }
 

@@ -50,6 +50,10 @@ namespace DotRPG
         public float cameraSmoothTime = 0.12f;
         public Color backgroundColor = new Color(0.16f, 0.30f, 0.18f);
 
+        [Header("Chapter 3")]
+        [Tooltip("[CH3] Offline only: open chapter 3 (level cap 50, its maps and quests). Online the server's /meta decides.")]
+        public bool chapter3Open = false;
+
         [Header("Save")]
         [Tooltip("Save automatically at quest milestones.")]
         public bool autosave = true;

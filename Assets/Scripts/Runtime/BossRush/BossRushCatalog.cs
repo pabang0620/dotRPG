@@ -19,7 +19,11 @@ namespace DotRPG
         /// 9-42 s while the other careers lasted the three minutes, so one career could not compete in a damage ranking.
         /// </summary>
         public const float BaseDamageMul = 1f;
-        public const int DefaultLevel = 40;
+        /// <summary>
+        /// [CH3] Boss level when the server sends none: the current level cap (40, 50 once chapter 3 opens). Entry stays at
+        /// Lv.40 for everyone (BossRushClient.EntryLevel); each hero's damage cap follows their own level and gear.
+        /// </summary>
+        public static int DefaultLevel => Progression.LevelCap;
 
         /// <summary>
         /// [BALANCE 2026-10-21] Career multiplier on the hero's own hits to the arena boss, so every career can compete in a

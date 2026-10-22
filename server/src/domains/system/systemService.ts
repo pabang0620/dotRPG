@@ -10,6 +10,7 @@ import { resetBoundaries } from '../../utils/resetBoundaries';
 import { CHARACTER_LIMIT } from '../auth/authService';
 import { NAME_MAX, NAME_MIN } from '../characters/characterValidation';
 import * as repo from './systemRepository';
+import { chapter3Open, levelCap } from '../../gamedata/chapterGate';
 
 const SCHEMA_CACHE_MS = 60_000;
 let schemaCache: { at: number; ok: boolean } | null = null;
@@ -80,5 +81,8 @@ export function getMeta(now = getNow()) {
     combat_transport_order: cfg.transport.order.join(','),
     // 11단계: 결제 UI 표시 여부(PAYMENTS_ENABLED, 기본 꺼짐). 값만 알려 주고 설정 상세는 싣지 않는다
     payments: { enabled: cfg.pay.enabled },
+    // 챕터 3 잠금(CHAPTER3_OPEN): 클라이언트는 이 값으로 같은 레벨 상한·3장 콘텐츠 숨김 규칙을 쓴다
+    chapter3_open: chapter3Open(),
+    level_cap: levelCap(),
   };
 }

@@ -73,6 +73,7 @@ namespace DotRPG
                 // [SERVER 7] Maintenance: no logins once the block time has come.
                 string blocked = MaintenanceBlock(MiniJson.Obj(meta.data, "maintenance"));
                 if (blocked != null) { done(new ApiResult { code = "MAINTENANCE", status = 503, message = blocked }); return; }
+                Chapter3.ReadMeta(meta.data); // [CH3] chapter3_open / level_cap
                 string serverData = MiniJson.Str(meta.data, "data_version");
                 if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
                 {
@@ -130,6 +131,7 @@ namespace DotRPG
                 uint appId = (uint)MiniJson.Num(info, "app_id");
                 if (info == null || string.IsNullOrEmpty(identity)) { done(new ApiResult { code = "STEAM_OFF", message = L.T("이 서버는 Steam 로그인을 받지 않습니다.") }); return; }
                 if (appId != 0 && appId != steam.AppId) { done(new ApiResult { code = "STEAM_APP_MISMATCH", message = L.T("이 게임 빌드는 이 서버에 접속할 수 없습니다. (Steam 앱 ID 불일치)") }); return; }
+                Chapter3.ReadMeta(meta.data); // [CH3] chapter3_open / level_cap
                 string serverData = MiniJson.Str(meta.data, "data_version");
                 if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
                 {

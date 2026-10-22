@@ -222,7 +222,7 @@
     {
       "id": "winter_peak",
       "minLevel": 36,
-      "maxLevel": 999,
+      "maxLevel": 40,
       "giver": "눈꽃 마을 의뢰 게시판",
       "gold": 1200,
       "templates": [
@@ -436,7 +436,7 @@
       {
         "id": "winter_peak",
         "minLevel": 36,
-        "maxLevel": 999,
+        "maxLevel": 40,
         "gold": 6000,
         "templates": [
           {

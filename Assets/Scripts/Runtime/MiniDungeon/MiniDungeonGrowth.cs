@@ -12,7 +12,7 @@ namespace DotRPG
         static GrowthGuide.Entry EntryFor(int level)
         {
             var mini = Game.MiniDungeon;
-            if (mini == null || mini.Active || level >= Progression.MaxLevel || !ContentUnlocks.IsOpen(ContentUnlocks.Feature.MiniDungeon)) return null;
+            if (mini == null || mini.Active || level >= Progression.LevelCap || !ContentUnlocks.IsOpen(ContentUnlocks.Feature.MiniDungeon)) return null;
             MiniDungeonDef tier = null;
             foreach (var d in MiniDungeonCatalog.All)
                 if (level >= d.MinLevel && level <= d.MaxLevel) tier = d;

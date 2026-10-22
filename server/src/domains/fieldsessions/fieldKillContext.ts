@@ -7,6 +7,7 @@ import { fieldRefExists } from '../kills/killRepository';
 import { rejected, resolveFieldTarget, type KillTarget } from '../kills/killTarget';
 import * as repo from './fieldRepository';
 import { carryReferenceLevel, isHardGap, partySizeXpBonus, xpFactor } from './xpFactor';
+import { levelCap } from '../../gamedata/chapterGate';
 
 const invalid = () => new AppError(409, '필드 세션이 유효하지 않습니다.', 'FIELD_SESSION_INVALID');
 
@@ -55,7 +56,7 @@ export async function resolveSessionTarget(
   const gameData = getGameData();
   // Only the underground world's impossible-to-reach post-cap levels are normalized for carry rules.
   // Combat HP, actual level, drop tier and kill power checks continue to use base.level.
-  const carryLevel = carryReferenceLevel(base.level, gameData.maps.get(base.mapId)?.worldLayer, gameData.economy.progression.maxLevel);
+  const carryLevel = carryReferenceLevel(base.level, gameData.maps.get(base.mapId)?.worldLayer, levelCap(gameData.economy.progression.maxLevel));
   let factor: number | null = null;
   let dropMul = 1;
   let hardXp = false;

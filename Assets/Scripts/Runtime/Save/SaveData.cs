@@ -42,7 +42,7 @@ namespace DotRPG
     [Serializable]
     public class SaveData
     {
-        public const int CurrentVersion = 7;
+        public const int CurrentVersion = 8; // [CH3] v8: chapter 3 (levels above 40, specializations); builds before v8 refuse it
         public CareerSave career;
         public MiniDungeonSave miniDungeon;
 

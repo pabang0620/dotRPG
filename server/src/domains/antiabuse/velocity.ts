@@ -34,7 +34,7 @@ export interface Bucket {
   auctionOut: number;
 }
 
-/** 레벨이 속한 대역(표 밖이면 가장 가까운 대역) */
+/** 레벨이 속한 대역(표 밖이면 가장 가까운 대역). 챕터 3에서 Lv41+ 대역이 생기기 전까지 Lv41+는 마지막 대역(34~40)을 써서 상한이 없어지지 않는다 */
 export function bandOf(caps: IncomeCaps, level: number): IncomeBand {
   const sorted = [...caps.bands].sort((a, b) => a.minLevel - b.minLevel);
   const hit = sorted.find((b) => level >= b.minLevel && level <= b.maxLevel);

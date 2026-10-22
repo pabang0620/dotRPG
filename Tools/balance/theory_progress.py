@@ -18,11 +18,12 @@ dotRPG 진행 시뮬레이션 (게임을 돌리지 않는 이론 계산).
 - 미니 던전(--mini): 하루 30분, 메인 1-11(c1s_depths) 완료 후 Lv10~39. 처치당 입장 레벨 막대 / 8000, 다음 메인 퀘스트가
   레벨 때문에 막혔으면 / 800(따라잡기 x10). 막힘은 처치마다 다시 판정한다(서버 miniDungeonRules.ts와 같은 규칙)
 
-사용: python3 Tools/balance/theory_progress.py [--measured] [--mini [분당 처치, 기본 20]] [--pace Lv16+ 배율]
+사용: python3 Tools/balance/theory_progress.py [--measured] [--mini [분당 처치, 기본 20]] [--pace Lv16+ 배율] [--max-level 40]
 """
 import json
 import math
 import os
+import sys
 
 DATA = os.path.join(os.path.dirname(__file__), "..", "..", "server", "data")
 
@@ -33,6 +34,9 @@ def load(name):
 
 
 PROG = load("progression.json")["xpToNext"]
+# 만렙(챕터 3: --max-level 50). 기본 40. progression.json 이 그만큼 칸을 가져야 한다(xpToNext 길이 >= MAX_LEVEL-1)
+MAX_LEVEL = int(sys.argv[sys.argv.index("--max-level") + 1]) if "--max-level" in sys.argv else 40
+assert len(PROG) >= MAX_LEVEL - 1, f"progression.json xpToNext {len(PROG)}칸, --max-level {MAX_LEVEL}에 모자람"
 MON = {m["id"]: m for m in load("monsters.json")["monsters"]}
 MON["skeleton"] = load("monsters.json")["fieldSkeleton"]
 ZONES = []
@@ -101,7 +105,7 @@ def measured_kpm(path=None):
             continue
         bands.setdefault(min(8, (r["level"] - 1) // 5), []).append(r["kills_per_min"])
     med = {k: sorted(v)[len(v) // 2] for k, v in bands.items()}
-    return {lv: 15.0 if lv <= 15 else med.get(min(8, (lv - 1) // 5), 15.0) for lv in range(1, 41)}
+    return {lv: 15.0 if lv <= 15 else med.get(min(8, (lv - 1) // 5), 15.0) for lv in range(1, MAX_LEVEL + 1)}
 
 
 def zone_xp_per_min(zone, level, eff):
@@ -199,7 +203,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
     def gain(amount):
         nonlocal level, xp
         xp += amount
-        while level < 40 and xp >= PROG[level - 1]:
+        while level < MAX_LEVEL and xp >= PROG[level - 1]:
             xp -= PROG[level - 1]
             level += 1
             reached[level] = total_min / 60
@@ -295,14 +299,14 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 events.append((total_min / 60, day, level, q["id"], q["reward"]["xp"], q["kind"]))
                 progress = True
 
-    while day < 400 and not ("c2_end" in claimed and level >= 40):
+    while day < 400 and not ("c2_end" in claimed and level >= MAX_LEVEL):
         weekday = DAYS[day % 7]
         budget = day_budget
         day_start = start = total_min
         try_quests()
         raids()
         # 일일·주간 의뢰: 처치 목표는 지금 사냥터 사냥과 겹치므로 수락·보고 시간만 더하고, 보상은 레벨 막대 x xpShare
-        if DAILY["unlockQuest"] in claimed and level < 40 and level >= min(b["minLevel"] for b in DAILY["bands"]):
+        if DAILY["unlockQuest"] in claimed and level < MAX_LEVEL and level >= min(b["minLevel"] for b in DAILY["bands"]):
             for _ in range(DAILY["perDay"]):
                 total_min += 2
                 stats["daily_xp"] += DAILY["xpShare"] * PROG[level - 1]
@@ -319,11 +323,11 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     gain(DAILY["weekly"]["xpShare"] * PROG[level - 1])
                 try_quests()
         # 미니 던전 하루 30분 (입장 1분 포함). 처치마다 막힘을 다시 본다
-        if MINI_KPM > 0 and MINI_UNLOCK in claimed and 10 <= level < 40:
+        if MINI_KPM > 0 and MINI_UNLOCK in claimed and 10 <= level < MAX_LEVEL:
             entry, stuck_today = level, False
             total_min += 1
             for _ in range(int(MINI_KPM * MINI_MINUTES)):
-                if level >= 40:
+                if level >= MAX_LEVEL:
                     break
                 stuck = main_level_gate(level, claimed) > 0
                 amount = math.ceil(PROG[entry - 1] / (MINI_STUCK if stuck else MINI_BASE))
@@ -345,7 +349,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
             total_min += run[1] / 60
             dungeon_clears += 1
             stats["dungeon_runs"].append((run[2], run[3]))
-            if level < 40:
+            if level < MAX_LEVEL:
                 stats["dungeon_xp"] += run[0]
                 stats["dungeon_min"] += run[1] / 60
             gain(run[0])
@@ -361,12 +365,12 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
             gain(zone[1] * step * 0.8)
             stats["kills"][zone[3]] = stats["kills"].get(zone[3], 0) + zone[2] * step * 0.8
             stats["kills_t"].append((total_min / 60, zone[3], zone[2] * step * 0.8))
-            if level < 40:
+            if level < MAX_LEVEL:
                 stats["hunt_xp"] += zone[1] * step * 0.8
                 stats["hunt_min"] += step
             try_quests()
             raids()
-            if level >= 40 and "c2_end" in claimed:
+            if level >= MAX_LEVEL and "c2_end" in claimed:
                 break
         day += 1
     return reached, events, claimed, day, stats
@@ -378,7 +382,7 @@ def report(eff, hours, friend, quests=True):
     print(f"\n## {tag}")
     print("| 레벨 | 플레이 시간 |")
     print("|---|---|")
-    for lv in (5, 10, 15, 20, 22, 25, 30, 35, 40):
+    for lv in (5, 10, 15, 20, 22, 25, 30, 35, 40) + tuple(range(45, MAX_LEVEL + 1, 5)):
         if lv in reached:
             h = reached[lv]
             print(f"| {lv} | {h:.1f}시간 |")
@@ -408,13 +412,13 @@ if __name__ == "__main__":
     if "--mini" in sys.argv:
         i = sys.argv.index("--mini")
         MINI_KPM = float(sys.argv[i + 1]) if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--") else 20
-    total = sum(PROG[:39])
+    total = sum(PROG[:MAX_LEVEL - 1])
     quest_xp = sum(q["reward"]["xp"] for q in QUESTS)
-    print(f"Lv1->40 필요 XP {total:,}, 퀘스트 XP 합 {quest_xp:,} ({quest_xp / total:.0%})")
+    print(f"Lv1->{MAX_LEVEL} 필요 XP {total:,}, 퀘스트 XP 합 {quest_xp:,} ({quest_xp / total:.0%})")
     print("\n## 레벨별 최적 사냥터 (EFF 0.35, 이동 4초)")
     print("| 레벨 | 사냥터(몬스터Lv) | 공격력 | 분당 처치 | XP/시간 | 다음 레벨까지 사냥만 |")
     print("|---|---|---|---|---|---|")
-    for lv in (1, 5, 10, 15, 20, 25, 30, 35, 39):
+    for lv in (1, 5, 10, 15, 20, 25, 30, 35, MAX_LEVEL - 1):
         z = best_zone(lv, 0.35)
         print(f"| {lv} | {z[0]}({z[3]}) | {player_attack(lv):.0f} | {z[2]:.1f} | {z[1] * 60:,.0f} | {PROG[lv - 1] / (z[1] * 0.8):.0f}분 |")
     if "--measured" in sys.argv:
@@ -442,7 +446,7 @@ if __name__ == "__main__":
             if q["id"] in done or q["kind"] != "sub" or any(r not in done for r in q["requires"]) or q["minLevel"] > lv:
                 continue
             done.add(q["id"]); xp += q["reward"]["xp"]; chain.append((q["id"], q["minLevel"], q["reward"]["xp"]))
-            while lv < 40 and xp >= PROG[lv - 1]:
+            while lv < MAX_LEVEL and xp >= PROG[lv - 1]:
                 xp -= PROG[lv - 1]; lv += 1
             changed = True
     print("\n## 연쇄 해금 (c2_trial 직후, 처치 목표 무시)")

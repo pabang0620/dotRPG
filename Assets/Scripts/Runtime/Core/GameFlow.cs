@@ -249,6 +249,8 @@ namespace DotRPG
         {
             Game.Dialogue.Abort();
             var session = Game.Session;
+            // [CH3] A save left on a chapter 3 map wakes in the village while the chapter is closed (the server closed it again).
+            if (MapRegistry.IsChapter3(session.MapId) && !Chapter3.Enabled) { session.MapId = MapRegistry.Village; session.StartPosition = null; }
             Game.World.Load(session.MapId);
             var player = Game.Player;
             player.gameObject.SetActive(true);
@@ -277,6 +279,8 @@ namespace DotRPG
             if (Game.MiniDungeon?.Active == true) { Game.MiniDungeon.Leave(); return; }
             if (Game.BossRush?.Active == true) { Game.BossRush.Leave(); return; }
             if (transitioning || !Game.IsPlaying || !MapRegistry.Exists(mapId) || mapId == Game.World.MapId) return;
+            // [CH3] Portals, the world map, the return scroll and the 할 일 shortcuts all come here: a closed chapter 3 map stays shut.
+            if (MapRegistry.IsChapter3(mapId) && !Chapter3.Enabled) { GameEvents.RaiseToast(L.T("아직 열리지 않은 지역입니다.")); Game.Audio.PlaySfx("cancel"); return; }
             string from = Game.World.MapId;
             StartCoroutine(Transition(() =>
             {

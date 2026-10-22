@@ -147,6 +147,8 @@ namespace DotRPG
             if (data.version < 6) data.career = null;
             // v7: the mini-dungeon allowance starts unused on existing characters.
             if (data.version < 7) data.miniDungeon = null;
+            // v8 ([CH3]): nothing to convert. The chapter 3 fields (specializations, Lv41+) are added in later steps and must
+            // read as empty when missing; the bump exists so a pre-v8 build refuses a save it would cut back to Lv40.
             data.version = SaveData.CurrentVersion;
             return data;
         }

@@ -33,5 +33,6 @@
  "길드 이름은 {0}~{1}자여야 합니다": "Os nomes de guilda devem ter de {0} a {1} caracteres",
  "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Nomes de guilda só podem usar sílabas coreanas, letras inglesas e números",
  "파티를 나간 뒤 도전하세요.": "Saia do grupo e depois desafie.",
- "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfira a liderança da guilda ou desfaça a guilda antes de excluir este personagem."
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfira a liderança da guilda ou desfaça a guilda antes de excluir este personagem.",
+ "아직 열리지 않은 콘텐츠입니다.": "Este conteúdo ainda não está disponível."
 }

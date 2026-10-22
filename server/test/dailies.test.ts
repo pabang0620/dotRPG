@@ -6,6 +6,7 @@ import { getGameData } from '../src/gamedata/loader';
 import { setClockOverride } from '../src/utils/clock';
 import { buildApp, resetDb, shutdown } from './helpers';
 import { expectLedgerConsistent, get, goldOf, newHero, post, seedClaims, seedLevel, type Hero } from './economyHelpers';
+import { CHAPTER2_LEVEL_CAP } from '../src/gamedata/chapterGate';
 
 // 2026-10-05 월요일 12:00 KST = 게임 날짜 2026-10-05
 const T0 = Date.parse('2026-10-05T03:00:00Z');
@@ -236,7 +237,7 @@ describe('일일 의뢰', () => {
   });
 
   it('만렙(Lv40)은 경험치 대신 maxLevelGold', async () => {
-    const h = await unlockedHero(40);
+    const h = await unlockedHero(CHAPTER2_LEVEL_CAP);
     const v = await list(h);
     expect(v.giver).toBe('눈꽃 마을 의뢰 게시판');
     const s = v.slots.find((x) => x.day === '2026-10-05' && x.type === 'kill')!;
@@ -338,7 +339,7 @@ describe('주간 의뢰', () => {
   });
 
   it('만렙 주간 보상은 weekly.maxLevelGold', async () => {
-    const h = await unlockedHero(40);
+    const h = await unlockedHero(CHAPTER2_LEVEL_CAP);
     for (const s of (await list(h)).weekly.slots) expect(s.reward).toEqual({ xp: 0, gold: 10000 });
   });
 });

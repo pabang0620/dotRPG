@@ -84,6 +84,8 @@ namespace DotRPG
             builtWorld = selectedWorld; atlasBuilt = true; atlasDots.Clear();
             bool underground = selectedWorld == WorldLayer.Underground;
             var positions = underground ? UndergroundPositions() : SurfacePositions();
+            // [CH3] Closed chapter 3 regions are not drawn (no node, no road) until the server opens the chapter.
+            if (!Chapter3.Enabled) foreach (var id in new List<string>(positions.Keys)) if (MapRegistry.IsChapter3(id)) positions.Remove(id);
             Vector2 At(Vector2 p) => new Vector2(p.x * 740, -p.y * 416);
             if (underground)
             {
@@ -289,7 +291,7 @@ namespace DotRPG
                 bool current = entry.id == here; var zone = HuntingGrounds.Get(entry.id);
                 entry.halo.enabled = current || entry.id == selectedMap;
                 entry.halo.color = current ? UiTheme.AccentBlue : UiTheme.AccentWarm;
-                int entryLevel=zone==null?0:WorldLayers.IsUnderground(entry.id)?Mathf.Min(Progression.MaxLevel,zone.minLevel):zone.minLevel;
+                int entryLevel=zone==null?0:WorldLayers.IsUnderground(entry.id)?Mathf.Min(Progression.LevelCap,zone.minLevel):zone.minLevel;
                 entry.dot.color = level >= entryLevel ? Color.white : new Color32(223, 152, 145, 255);
                 if (entry.label != null) entry.label.color = current ? UiTheme.AccentBlue : MapRegistry.IsTown(entry.id) ? UiTheme.AccentLight : UiTheme.TextPrimary;
             }

@@ -162,5 +162,6 @@
  "그 직위에는 할 수 없는 일입니다.": "That rank cannot do this.",
  "길드장을 위임하거나 길드를 해체한 뒤 할 수 있어요.": "Transfer leadership or disband the guild first.",
  "부길드장은 3명까지입니다.": "Up to 3 vice masters.",
- "보스 방에서는 직업 간 피해가 비슷해지도록 보정됩니다.": "In the boss arena, damage is adjusted so classes deal similar amounts."
+ "보스 방에서는 직업 간 피해가 비슷해지도록 보정됩니다.": "In the boss arena, damage is adjusted so classes deal similar amounts.",
+ "아직 열리지 않은 지역입니다.": "This area is not open yet."
 }

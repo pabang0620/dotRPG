@@ -63,6 +63,7 @@ namespace DotRPG
                 if (!meta.ok) { done(meta); return; }
                 string blocked = MaintenanceBlock(MiniJson.Obj(meta.data, "maintenance"));
                 if (blocked != null) { done(new ApiResult { code = "MAINTENANCE", status = 503, message = blocked }); return; }
+                Chapter3.ReadMeta(meta.data); // [CH3] chapter3_open / level_cap
                 string serverData = MiniJson.Str(meta.data, "data_version");
                 if (!string.IsNullOrEmpty(serverData) && serverData != ApiClient.DataVersion)
                 {

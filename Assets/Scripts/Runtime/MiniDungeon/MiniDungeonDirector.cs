@@ -78,7 +78,7 @@ namespace DotRPG
             else if (Active || Busy || Game.Flow != null && Game.Flow.IsTransitioning) reason = L.T("이미 입장 중이거나 미니던전을 이용하고 있습니다.");
             else if (Game.Player == null || !Game.Player.gameObject.activeInHierarchy || Game.Player.IsDead) reason = L.T("캐릭터로 접속한 뒤 입장하세요.");
             else if (ContentUnlocks.LockedReason(ContentUnlocks.Feature.MiniDungeon) is string locked) reason = locked; // [UNLOCK]
-            else if (Game.Session.Progression.Level >= Progression.MaxLevel) reason = L.T("만렙 캐릭터는 경험치 미니던전에 입장할 수 없습니다.");
+            else if (Game.Session.Progression.Level >= Progression.LevelCap) reason = L.T("만렙 캐릭터는 경험치 미니던전에 입장할 수 없습니다.");
             else if (Game.Session.Progression.Level < d.MinLevel || Game.Session.Progression.Level > d.MaxLevel) reason = L.F("이 구간은 Lv.{0}~{1} 캐릭터만 입장할 수 있습니다.", d.MinLevel, d.MaxLevel);
             else if (Game.Dungeon != null && Game.Dungeon.InRun || Game.World?.Map.instanced == true) reason = L.T("현재 던전에서 나간 뒤 입장하세요.");
             else if (PartyNet.Active || PartyRunSession.Active || FieldSession.Active || PartyClient.Instance?.InParty == true) reason = L.T("미니던전은 1인 콘텐츠입니다. 파티를 나간 뒤 입장하세요.");
@@ -156,7 +156,7 @@ namespace DotRPG
             if (!OnlineSession.Playing) Game.Session.MiniDungeonProgress.Refresh(Now);
             if (RemainingSeconds <= 0f || !OnlineSession.Playing && !Game.Session.MiniDungeonProgress.Active)
             { Leave("expired"); return; }
-            if (Game.Session.Progression.Level >= Progression.MaxLevel) { Leave("max_level"); return; }
+            if (Game.Session.Progression.Level >= Progression.LevelCap) { Leave("max_level"); return; }
             if (OnlineSession.Playing) TickOnline();
             for (int i = 0; i < enemies.Count; i++)
                 if (enemies[i] == null && Time.time >= respawnAt[i]) SpawnAt(i);
@@ -209,7 +209,7 @@ namespace DotRPG
                 Kills++;
                 var progress = Game.Session.Progression;
                 int room = -progress.Xp;
-                for (int level = progress.Level; level < Progression.MaxLevel; level++) room += Progression.XpToNext(level);
+                for (int level = progress.Level; level < Progression.LevelCap; level++) room += Progression.XpToNext(level);
                 // Catch-up is judged again on every kill: it stops the moment the waiting main quest's level is reached.
                 int each = MiniDungeonCatalog.CatchUpGate(progress.Level) > 0 ? CatchUpXpPerKill : XpPerKill;
                 int before = Mathf.Clamp(room, 0, each);

@@ -109,6 +109,13 @@ namespace DotRPG
 
         public static bool Exists(string id) => Get(id) != null;
 
+        /// <summary>
+        /// [CH3] Chapter 3 maps (Docs/ch3/WORLD_AND_STORY.md): closed until the server opens the chapter (Chapter3.Enabled).
+        /// Filled in steps 1 and 3 (사얍 마을, 메말라 가는 협곡, mini_dungeon_40); travel, saves and the world map check it.
+        /// </summary>
+        public static readonly System.Collections.Generic.HashSet<string> Chapter3Maps = new System.Collections.Generic.HashSet<string>();
+        public static bool IsChapter3(string id) => id != null && Chapter3Maps.Contains(id);
+
         public static MapInfo Default => Maps[0];
 
         public static readonly NpcService[] IndoorServices = { NpcService.Shop, NpcService.Blacksmith, NpcService.Storage };

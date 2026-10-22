@@ -87,6 +87,9 @@ const envSchema = z.object({
   RAID_PRACTICE_PAYS_KILLS: boolStr.default(false),
   // 월드보스 주간 공유 체력(bossRushRules.WORLD_BOSS_HP_DEFAULT 근거). 새 주의 시즌을 만들 때만 읽는다
   WORLD_BOSS_HP: posInt(40_000_000),
+  // 챕터 3(만렙 40 -> 50) 개방 플래그(Docs/PLAN_CHAPTER3_2026-10-21.md). 꺼져 있으면 레벨 상한 40, 3장 콘텐츠는 422 CHAPTER_LOCKED.
+  // 출시 빌드에 3장 데이터를 싣고 이 값만 바꿔 재배포 없이 연다
+  CHAPTER3_OPEN: boolStr.default(false),
   // Steam 인증(값이 틀리면 기동하지 않는다)
   STEAM_AUTH_MODE: z.enum(['off', 'mock', 'web_api']).default('off'),
   STEAM_APP_ID: z.coerce.number().int().positive().optional(),
@@ -479,6 +482,7 @@ export interface AppConfig {
     raidRewardMinHumans: number;
     raidPracticePaysKills: boolean;
     worldBossHp: number;
+    chapter3Open: boolean;
   };
 }
 
@@ -796,6 +800,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       raidRewardMinHumans: e.RAID_REWARD_MIN_HUMANS,
       raidPracticePaysKills: e.RAID_PRACTICE_PAYS_KILLS,
       worldBossHp: e.WORLD_BOSS_HP,
+      chapter3Open: e.CHAPTER3_OPEN,
     },
   };
 }

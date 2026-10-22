@@ -20,6 +20,7 @@ Lv1~40 동안 무자본으로 버는 골드와 비교한다. 수입이 필요 �
 사용: python3 Tools/balance/theory_gold.py            현재 데이터로 수지표
       python3 Tools/balance/theory_gold.py --mini [분당 처치]   미니 던전을 매일 30분 하는 경로(기본 20마리)
       python3 Tools/balance/theory_gold.py --search   강화 골드 배율 후보를 훑어 목표 비율에 맞는 값을 찾는다
+      --max-level N 을 붙이면 만렙 N 기준(theory_progress.MAX_LEVEL, 챕터 3은 50)
 """
 import json
 import os
@@ -185,7 +186,7 @@ def daily_gold(level):
     for b in DAILY["bands"]:
         if b["minLevel"] <= level <= b["maxLevel"]:
             return b["gold"]
-    return DAILY.get("maxLevelGold", 0) if level >= 40 else 0
+    return DAILY.get("maxLevelGold", 0) if level >= tp.MAX_LEVEL else 0
 
 
 def weekly_gold(level):
@@ -206,7 +207,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
     tp.TRAVEL, tp.FIXED_KPM = 4.0, 15
     tp.MEASURED_KPM = tp.measured_kpm()
     reached, events, claimed, days, st = tp.simulate(0.35, HOURS_PER_DAY, True, True)
-    hours = reached[40]
+    hours = reached[tp.MAX_LEVEL]
     potion_price = BUY["potion_hp"] if potion_price is None else potion_price
 
     def level_at(h):
@@ -229,7 +230,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
         lv = level_at(day * HOURS_PER_DAY)
         if lv >= 5:
             dng += 3 * dungeon_gold(lv)
-        if lv >= 15 and lv < 40:
+        if lv >= 15 and lv < tp.MAX_LEVEL:
             dly += 3 * daily_gold(lv)
             if day % 7 == 0:
                 wk += 3 * weekly_gold(lv)
@@ -282,7 +283,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
         print("재료 필요/드롭: " + ", ".join(f"{m} {need[m.replace('mat_', '')]:,.0f}/{drops[m]:,.0f}" for m in MAT))
         # 체크포인트: 그 레벨에 도달할 때까지의 누적 수입(처치·던전·의뢰·레이드·판매)과 그 레벨까지의 한 벌 지출
         print("\n| 체크포인트 | 도달 시간 | 누적 수입 | 누적 지출 | 비율 |\n|---|---|---|---|---|")
-        for ck in (10, 15, 20, 30, 40):
+        for ck in (10, 15, 20, 30, 40) + tuple(range(45, tp.MAX_LEVEL + 1, 5)):
             h = reached[ck]
             frac = h / hours
             # 그 시각까지의 처치 수(사냥 + 퀘스트 처치, 시뮬레이션 시각 기준)

@@ -91,12 +91,12 @@ namespace DotRPG
             }
             int level = Game.Session?.Progression.Level ?? 1;
             status.text = s.Active ? L.T("수련 중에는 메뉴를 열어도 자동사냥과 이용 시간이 계속 진행됩니다.")
-                : level >= Progression.MaxLevel ? L.T("최고 레벨을 달성했습니다. 성장용 미니던전은 Lv.10~39에서 이용할 수 있습니다.")
+                : level >= Progression.LevelCap ? L.T("최고 레벨을 달성했습니다. 성장용 미니던전은 Lv.10~39에서 이용할 수 있습니다.")
                 : director.CatchingUp ? L.F("내 레벨 Lv.{0} · <color=#ffe066>따라잡기 x{1}</color> · 처치당 {2:N0} EXP\n다음 메인 퀘스트가 Lv.{3}을 요구하는 동안만 적용되고, 그 레벨이 되면 평소({4:N0} EXP)로 돌아갑니다.",
                     level, MiniDungeonCatalog.CatchUpMultiplier, MiniDungeonCatalog.XpPerKill(level, true), director.CatchUpGate, MiniDungeonCatalog.XpPerKill(level))
                 : L.F("내 레벨 Lv.{0} · 처치당 {1:N0} EXP\n다음 메인 퀘스트가 레벨 때문에 막혔을 때 오면 경험치가 {2}배(따라잡기)입니다.", level, MiniDungeonCatalog.XpPerKill(level), MiniDungeonCatalog.CatchUpMultiplier);
             int tier = level / 10 * 10;
-            if (!s.Active && level >= 10 && level < Progression.MaxLevel && !director.CanEnter(tier, out string blocked))
+            if (!s.Active && level >= 10 && level < Progression.LevelCap && !director.CanEnter(tier, out string blocked))
                 status.text = L.T(blocked);
             recap.text = s.Kills > 0 ? L.F("이번 수련  <color=#ffe066>{0:N0} EXP</color> · {1}마리 처치", s.EarnedXp, s.Kills)
                 : L.T("입장하면 자동사냥이 시작됩니다. 장비와 스킬에 따라 실제 획득 경험치가 달라집니다.");

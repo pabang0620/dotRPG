@@ -20,6 +20,7 @@ import { findOwnedAlive } from '../characters/characterRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './dailyRepository';
 import type { SlotBody } from './dailyValidation';
+import { levelCap } from '../../gamedata/chapterGate';
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -94,7 +95,7 @@ export function pickSlots(board: Board, characterId: number, day: string, level:
 
 export function rewardFor(board: Board, band: DailyBand, level: number): { xp: number; gold: number } {
   const p = getGameData().economy.progression;
-  if (level >= p.maxLevel) return { xp: 0, gold: board.maxLevelGold };
+  if (level >= levelCap(p.maxLevel)) return { xp: 0, gold: board.maxLevelGold };
   return { xp: Math.round(board.xpShare * (p.xpToNext[level - 1] as number)), gold: band.gold };
 }
 

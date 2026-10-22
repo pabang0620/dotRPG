@@ -7,8 +7,11 @@ export const MINI_TIERS = [10, 20, 30] as const;
 export type MiniTier = (typeof MINI_TIERS)[number];
 export const miniMapId = (tier: MiniTier): string => `mini_dungeon_${tier}`;
 export const isMiniMap = (id: string): boolean => MINI_TIERS.some((tier) => miniMapId(tier) === id);
-export const tierOf = (level: number, maxLevel: number): MiniTier | null =>
-  level >= 10 && level < maxLevel && level < 40 ? (Math.floor(level / 10) * 10) as MiniTier : null;
+// 입장 티어: 10단위 내림. 상한 레벨(levelCap)에서는 입장 불가, 표(MINI_TIERS)에 없는 티어도 불가(티어 40은 챕터 3 1단계에서 추가)
+export const tierOf = (level: number, cap: number): MiniTier | null => {
+  const t = Math.floor(level / 10) * 10;
+  return level >= 10 && level < cap && (MINI_TIERS as readonly number[]).includes(t) ? (t as MiniTier) : null;
+};
 // 2026-10-18 따라잡기: 평소에는 처치 8,000마리 = 입장 레벨 막대 한 칸(Lv20 기준 사냥의 약 0.5배), 다음 메인 퀘스트가 레벨 때문에
 // 막혔을 때만 800마리 = 한 칸(x10, Lv20 기준 사냥의 약 5배). 일반 사냥·던전·파티와 다른 점은 "막힌 레벨을 메우는 곳"이라는 것이다.
 // 매일 30분을 상한 속도로 해도 Lv40이 42시간 아래로 내려가지 않는다(Tools/balance/theory_progress.py --measured --mini)

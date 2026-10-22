@@ -21,6 +21,7 @@ import * as tradeRepo from '../trade/tradeRepository';
 import * as repo from './miniDungeonRepository';
 import { DAILY_LIMIT_MS, KILL_INTERVAL_MS, MINI_GOLD_PER_KILL, MINI_HP_MUL, MINI_TIERS, killCredit, mainQuestLevelGate, miniMapId, tierOf, timeCharge, xpPerKill } from './miniDungeonRules';
 import type { EnterBody, KillBody, LeaveBody, RequestBody } from './miniDungeonValidation';
+import { levelCap } from '../../gamedata/chapterGate';
 
 const MONSTER_ID = 'skel_warrior';
 const notFound = () => new AppError(404, '미니던전 기록을 찾을 수 없습니다.', 'MINI_RUN_NOT_FOUND');
@@ -98,7 +99,7 @@ async function assertSolo(ctx: EconCtx): Promise<void> {
 export function enter(accountId: number, uuid: string, body: EnterBody): Promise<StoredResult> {
   return runEconomy({ accountId, characterUuid: uuid, endpoint: 'POST /characters/:uuid/mini-dungeon/enter', requestId: body.request_id,
     payload: { tier: body.tier }, handler: async (ctx) => {
-      const tier = tierOf(ctx.level, getGameData().economy.progression.maxLevel);
+      const tier = tierOf(ctx.level, levelCap());
       if (tier === null) throw new AppError(422, '미니던전은 10~39레벨 캐릭터가 이용할 수 있습니다.', 'MINI_LEVEL_LOCKED');
       if (body.tier !== tier) throw new AppError(422, '현재 레벨에 맞는 구간을 선택해 주세요.', 'MINI_TIER_MISMATCH', { tier });
       await assertSolo(ctx);
@@ -138,7 +139,7 @@ export function kill(accountId: number, uuid: string, runUuid: string, body: Kil
     requestId: body.request_id, payload: { run_id: runUuid, monster_ref: body.monster_ref }, handler: async (ctx) => {
       const run = await ownedRun(ctx, runUuid);
       if (run.state !== 'playing') return { status: 200, data: { ...await snapshot(ctx, run), accepted: false, granted_xp: 0, reason: 'MINI_RUN_ENDED' } };
-      if (ctx.level >= getGameData().economy.progression.maxLevel) {
+      if (ctx.level >= levelCap()) {
         await repo.close(ctx.client, run, 'level_cap', ctx.now);
         return { status: 200, data: { ...await snapshot(ctx, run), accepted: false, granted_xp: 0, reason: 'MINI_LEVEL_CAP' } };
       }
@@ -160,14 +161,14 @@ export function kill(accountId: number, uuid: string, runUuid: string, body: Kil
       // Only count XP actually usable before the level cap, matching the local mini result counter.
       // General combat/quest grantXp semantics remain unchanged.
       const p = eco.progression;
-      const xpToCap = p.xpToNext.slice(ctx.level - 1, p.maxLevel - 1).reduce((sum, xp) => sum + xp, 0) - ctx.xp;
+      const xpToCap = p.xpToNext.slice(ctx.level - 1, levelCap(p.maxLevel) - 1).reduce((sum, xp) => sum + xp, 0) - ctx.xp;
       const stuck = await questGate(ctx) !== null;
       const each = stuck ? xpPerKill(p.xpToNext, run.entry_level, true) : run.xp_per_kill;
       const reward = await ctx.grantXp(Math.min(each, Math.max(0, xpToCap)), 'mini_dungeon', `${run.uuid}:${body.monster_ref}`);
       await repo.recordKill(ctx.client, run, body.monster_ref, ctx.requestId, reward.granted, credits - KILL_INTERVAL_MS, ctx.now);
       // 처치 골드: 사냥터의 골드 더미처럼 원장 사유 drop_claim, 드롭·재료는 없다(2026-10-21)
       await ctx.changeGold(MINI_GOLD_PER_KILL, 'drop_claim', `mini:${run.uuid}:${body.monster_ref}`);
-      if (ctx.level >= eco.progression.maxLevel) await repo.close(ctx.client, run, 'level_cap', ctx.now);
+      if (ctx.level >= levelCap(eco.progression.maxLevel)) await repo.close(ctx.client, run, 'level_cap', ctx.now);
       // No normal kill_log, kill_stats, drops, items, quest progress or dungeon clear record.
       return { status: 200, data: { ...await snapshot(ctx, run), accepted: true, granted_xp: reward.granted, granted_gold: MINI_GOLD_PER_KILL, catch_up_applied: stuck, leveled_up: reward.leveledUp } };
     } });

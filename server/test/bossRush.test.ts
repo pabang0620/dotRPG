@@ -12,6 +12,7 @@ import { auth, buildApp, openDungeonToday, resetDb, shutdown } from './helpers';
 import { formParty } from './partyHelpers';
 import { unequipExpiredRankTitles } from '../src/domains/bossrush/bossRushSettle';
 import { anomalyKinds, get, newHero, post, seedGold, seedLevel, type Hero } from './economyHelpers';
+import { CHAPTER2_LEVEL_CAP } from '../src/gamedata/chapterGate';
 
 const app = buildApp();
 // 화요일 KST 12:00 (주는 목요일 06:00 KST에 바뀐다)
@@ -21,7 +22,7 @@ const advance = (seconds: number) => { now = new Date(now.getTime() + seconds * 
 beforeEach(async () => { await resetDb(); clearRankingCache(); now = new Date(START); setClockOverride(() => now); });
 afterAll(async () => { setClockOverride(null); await shutdown(); });
 
-async function hero(level = 40): Promise<Hero> {
+async function hero(level = CHAPTER2_LEVEL_CAP): Promise<Hero> {
   const h = await newHero(app);
   await seedLevel(h, level);
   return h;
@@ -65,7 +66,7 @@ describe('world boss attempts', () => {
   test('one open attempt, single finish, idempotent replay', async () => {
     const h = await hero();
     const s = await start(h);
-    expect(s.body.data).toMatchObject({ boss_id: 'boss_abyss_titan', level: 40, damage_mul: 1 });
+    expect(s.body.data).toMatchObject({ boss_id: 'boss_abyss_titan', level: CHAPTER2_LEVEL_CAP, damage_mul: 1 });
     const again = await start(h);
     expect(again.status).toBe(409);
     expect(again.body.errors).toMatchObject({ code: 'BOSS_ATTEMPT_OPEN', attempt_id: s.body.data.attempt_id });

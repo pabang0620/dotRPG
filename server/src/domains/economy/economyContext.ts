@@ -10,6 +10,7 @@ import { parseItemKey } from '../../utils/itemKey';
 import { IncomeNote } from '../antiabuse/incomeMeter';
 import * as repo from './economyRepository';
 import { strongerBind, type Bind, type Consumed, type LockedChar, type StackLocation } from './economyRepository';
+import { levelCap } from '../../gamedata/chapterGate';
 
 export interface Delta {
   gold?: number;
@@ -170,17 +171,18 @@ export class EconCtx {
     this.income.gold(delta, reason);
   }
 
-  /** Progression.AddXp: 만렙이거나 0 이하면 아무 일도 없다. 레벨업을 반복하고 만렙에 닿으면 xp=0 */
+  /** Progression.AddXp: 레벨 상한(levelCap: 챕터 3이 닫혀 있으면 40)이거나 0 이하면 아무 일도 없다. 레벨업을 반복하고 상한에 닿으면 xp=0 */
   async grantXp(amount: number, reason: string, ref: string): Promise<{ granted: number; leveledUp: boolean }> {
     const p = getGameData().economy.progression;
-    if (amount <= 0 || this.level >= p.maxLevel) return { granted: 0, leveledUp: false };
+    const cap = levelCap(p.maxLevel);
+    if (amount <= 0 || this.level >= cap) return { granted: 0, leveledUp: false };
     let level = this.level;
     let xp = this.xp + amount;
-    while (level < p.maxLevel && xp >= (p.xpToNext[level - 1] as number)) {
+    while (level < cap && xp >= (p.xpToNext[level - 1] as number)) {
       xp -= p.xpToNext[level - 1] as number;
       level++;
     }
-    if (level >= p.maxLevel) xp = 0;
+    if (level >= cap) xp = 0;
     await repo.updateLevelXp(this.client, this.char.id, level, xp);
     await repo.insertXpLedger(this.client, this.char.id, amount, level, xp, reason, ref, this.requestId);
     const leveledUp = level > this.level;

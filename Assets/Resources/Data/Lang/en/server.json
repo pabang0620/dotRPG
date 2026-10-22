@@ -33,5 +33,6 @@
  "길드 이름은 {0}~{1}자여야 합니다": "Guild names must be {0}-{1} characters long",
  "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Guild names can only use Korean syllables, English letters and numbers",
  "파티를 나간 뒤 도전하세요.": "Leave your party, then try again.",
- "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfer guild leadership or disband the guild before deleting this character."
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfer guild leadership or disband the guild before deleting this character.",
+ "아직 열리지 않은 콘텐츠입니다.": "This content is not open yet."
 }

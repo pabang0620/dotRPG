@@ -33,5 +33,6 @@
  "길드 이름은 {0}~{1}자여야 합니다": "Tên bang hội phải dài {0}~{1} ký tự",
  "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Tên bang hội chỉ được dùng âm tiết Hàn Quốc, chữ cái tiếng Anh và chữ số",
  "파티를 나간 뒤 도전하세요.": "Hãy rời nhóm rồi hãy thử thách.",
- "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Hãy chuyển giao chức bang chủ hoặc giải tán bang hội trước khi xóa nhân vật này."
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Hãy chuyển giao chức bang chủ hoặc giải tán bang hội trước khi xóa nhân vật này.",
+ "아직 열리지 않은 콘텐츠입니다.": "Nội dung này chưa được mở."
 }

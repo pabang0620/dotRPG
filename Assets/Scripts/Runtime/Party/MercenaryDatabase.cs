@@ -158,7 +158,7 @@ namespace DotRPG
         /// <summary>Syncs a companion to the local player's level: level, supports and the gear of that band.</summary>
         public static void ApplyLevel(CharacterData data, MercenaryDef def, int level)
         {
-            level = Mathf.Clamp(level, 1, Progression.MaxLevel);
+            level = Mathf.Clamp(level, 1, Progression.LevelCap);
             var prog = data.Progression;
             if (prog.Level != level || prog.Allocated.Count == 0)
             {

@@ -15,6 +15,7 @@ import { setRng } from '../src/utils/rng';
 import { auth, buildApp, createChar, randomName, resetDb, shutdown } from './helpers';
 import { expectLedgerConsistent, fakeRng, get, newHero, post, seedItem, seedLevel, type Hero } from './economyHelpers';
 import { listIron, mk, buyoutReq, listReq, cancelReq } from './auctionHelpers';
+import { CHAPTER2_LEVEL_CAP } from '../src/gamedata/chapterGate';
 
 let app: Express = buildApp();
 beforeEach(async () => {
@@ -94,8 +95,8 @@ describe('시간별 집계(income_hourly)', () => {
     const row = (await getPool().query('SELECT ore, essence, item_value, gold_acq FROM income_hourly WHERE character_id = $1', [h.dbId])).rows[0];
     expect(row.ore).toBe(1);
     expect(row.essence).toBe(1);
-    // 뼈 1 x 5 + 광석 20 + 정수 80 + 장비 판매가
-    expect(Number(row.item_value)).toBeGreaterThanOrEqual(105);
+    // 뼈 1 x 4 + 광석 14 + 정수 56 + 장비 판매가(2026-10-21 재료 판매가 x0.7)
+    expect(Number(row.item_value)).toBeGreaterThanOrEqual(74);
     expect(Number(row.gold_acq)).toBeGreaterThan(0);
   });
 
@@ -147,7 +148,7 @@ describe('상한 식 (12.2) 순수 함수', () => {
     expect(cap.xp).toBe((16_200 + 55_200) * PARTY_XP_CAP_MUL + 2 * 43_477 + 2 * 10_092);
     // 활동 시간 0이면 덩어리만 허용된다(HTTP 봇)
     expect(capsFor(caps(), '24h', [bucket({ activeSeconds: 0 })], 18).xp).toBe(2 * 43_477 + 2 * 10_092);
-    expect(capsFor(caps(), '7d', [], 40).goldEq).toBe(8 * 12_240 + 3 * 4_500 + 2 * 18_000);
+    expect(capsFor(caps(), '7d', [], CHAPTER2_LEVEL_CAP).goldEq).toBe(8 * 12_240 + 3 * 4_500 + 2 * 18_000);
   });
 
   it('절대 하한: 광석 150은 임계를 넘어도 무시, 250은 위반. 경매 순유입은 비율 + 하한', () => {

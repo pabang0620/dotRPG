@@ -160,7 +160,7 @@ namespace DotRPG
                     if (pendingKills.Count > 0 && pendingKills.Peek() == pending) pendingKills.Dequeue();
                     ApplyOnlineStatus(r.data);
                     nextKill = Time.unscaledTime + .08f; // capped server credit pool permits genuine AoE bursts
-                    if (MiniJson.Obj(r.data, "active_run") == null && !Busy) Leave(Game.Session.Progression.Level >= Progression.MaxLevel ? "max_level" : "expired");
+                    if (MiniJson.Obj(r.data, "active_run") == null && !Busy) Leave(Game.Session.Progression.Level >= Progression.LevelCap ? "max_level" : "expired");
                     Changed?.Invoke();
                 });
         }

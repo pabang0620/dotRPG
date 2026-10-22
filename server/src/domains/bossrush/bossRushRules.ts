@@ -1,4 +1,5 @@
 // 월드보스·길드보스 순수 규칙(DB 없음). 설계: Docs/PLAN_GUILD_WORLDBOSS_2026-10-20.md 2~3절.
+import { levelCap } from '../../gamedata/chapterGate';
 export type BossKind = 'world' | 'guild';
 
 /** 한 번 도전 시간(초). 클라이언트 타이머와 같다 */
@@ -11,8 +12,10 @@ export const ATTEMPTS_PER_DAY: Record<BossKind, number> = { world: 3, guild: 2 }
 export const WORLD_BOSS_ID = 'boss_abyss_titan';
 /** 길드보스도 같은 보스를 같은 세기로 쓴다(점수 경쟁이라 죽이지 않는다). 클라이언트에 정의가 하나뿐이다 */
 export const GUILD_BOSS_ID = 'boss_abyss_titan';
-/** 전투 방의 보스 레벨. 만렙과 같다 */
-export const BOSS_LEVEL = 40;
+/** 도전 최소 레벨. 챕터 3이 열려도 40 고정(열리는 순간 Lv40 전원이 밀려나지 않게, Docs/ch3/LIVE_CONTENT.md) */
+export const BOSS_MIN_LEVEL = 40;
+/** 방 안 보스 레벨 = 지금 레벨 상한(levelCap). 3장이 닫혀 있으면 40, 열리면 50 */
+export const bossLevel = (): number => levelCap();
 /** 방 안 보스 체력 배율: 클라이언트 기본 배율(BossRushCatalog, 그라흐 레이드 약 10판 분량)에 곱한다. 실제 승부는 서버 공유 체력 */
 export const ROOM_HP_MUL = 1;
 
