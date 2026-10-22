@@ -60,7 +60,7 @@ namespace DotRPG
 
         IEnumerator MarkOfFate(BossPattern p)
         {
-            if (Sealed || RuinActive || FateActive) yield break;
+            if (Sealed || RuinActive || FateActive || RiftsOpen || BrandActive) yield break; // [CH3] rifts / brand hand out RaidDoom spots too
             var members = MonsterHits.All();
             if (members.Count == 0) yield break;
             float time = FateTime * (Heroic ? .85f : 1f);
@@ -92,7 +92,9 @@ namespace DotRPG
         /// </summary>
         void Update()
         {
-            if (E == null || E.Puppet || E.IsDead || !Game.IsWorldRunning || E.CanAct) return;
+            if (E == null || E.Puppet || E.IsDead || !Game.IsWorldRunning) return;
+            Chapter3Tick(); // [CH3] 공허 균열 / 잿빛 낙인 clocks run whatever the boss is doing (BossBrain.Shouts.cs)
+            if (E.CanAct) return;
             // Only the resolution (the channel look stays off while the boss is reeling).
             bool ruinDue = RuinActive && (Time.time >= ruinUntil || !ruinTotems.Exists(t => t != null && !t.IsDead));
             bool fateDue = FateActive && Time.time >= fateUntil;
@@ -180,6 +182,7 @@ namespace DotRPG
 
         void EndDoom()
         {
+            EndChapter3Gimmicks();
             if (RuinActive) EndRuin();
             if (FateActive) { fateUntil = -1f; RaidDoom.End(); }
         }

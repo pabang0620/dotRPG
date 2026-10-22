@@ -23,6 +23,7 @@ namespace DotRPG.EditorTools
             j.Arr("products", RaidShop.Products, (o, p) =>
             {
                 o.Obj().Str("id", p.id).Str("raidId", p.raidId).Str("materialItem", p.materialItem).Num("price", p.price).Str("category", p.category.ToString());
+                if (p.tierLevel > 0) o.Num("tierLevel", p.tierLevel); // [CH3] a box of another level than its raid (지바크 legendary: Lv.50)
                 o.Key("rarityWeights").Obj();
                 foreach (var w in p.rarityWeights) o.Num(w.rarity.ToString(), w.weight);
                 o.End();

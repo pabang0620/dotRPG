@@ -24,7 +24,8 @@ namespace DotRPG
         public static List<string> Validate()
         {
             errors = new List<string>();
-            var all = new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
+            var all = new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah),
+                DungeonDatabase.Get(DungeonDatabase.RaidXibak), DungeonDatabase.Get(DungeonDatabase.RaidKamatz) }; // [CH3] raids checked whatever the lock
             foreach (var d in all)
                 for (int r = 0; r < d.RoomCount; r++)
                 {

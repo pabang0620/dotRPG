@@ -242,8 +242,8 @@ namespace DotRPG
             if (Game.Session == null) return;
             var now = ResetClock.Now;
             var progress = Game.Session.Dungeons;
-            if (rows.Count == 0 || builtTab != tab) BuildRows();
             var list = Listed;
+            if (rows.Count == 0 || builtTab != tab || rows.Count != list.Count) BuildRows(); // [CH3] the raid list grows when chapter 3 opens
             if (selected < 0 || selected >= list.Count)
             {
                 selected = 0;

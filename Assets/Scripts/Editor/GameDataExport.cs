@@ -382,7 +382,7 @@ namespace DotRPG.EditorTools
                 .Num("damageMul", DungeonDatabase.RaidHeroicDamageMul).Num("rewardMul", DungeonDatabase.RaidHeroicRewardMul).End();
             j.Str("keyItem", DungeonDatabase.SealKey);
             j.Key("mercenary").Obj().Num("damageScale", MercenaryDatabase.DamageScale).Num("maxCompanions", PartyManager.MaxCompanions).End();
-            j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal).Concat(DungeonDatabase.Raids), (o, d) =>
+            j.Arr("dungeons", DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal).Concat(DungeonDatabase.AllRaids), (o, d) =>
             {
                 o.Obj().Str("id", d.id).Str("name", d.name).Bool("isRaid", d.isRaid).Str("raidTier", d.raidTier.ToString())
                     .Num("chapter", d.chapter).Str("unlockQuest", d.unlockQuest).Num("keyCost", d.keyCost).Num("clearXp", d.clearXp).Num("xpMul", d.xpMul)

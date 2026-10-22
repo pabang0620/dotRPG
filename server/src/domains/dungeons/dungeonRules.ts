@@ -202,9 +202,14 @@ export function rollRaidGear(eco: EconomyData, d: DungeonDef, cls: string, rng: 
     roll -= x.w;
   }
   // 전설 무기는 단계마다 두 갈래(광역형·토벌형): 등급이 정해진 뒤 같은 확률로 하나를 고른다(C# FindRaidGear와 같다)
-  const found = eco.shop.equipmentList.filter(
-    (e) => !e.bossOnly && e.levelTier === tier && e.category === category && e.rarity === rarity && (e.classOnly === null || e.classOnly === cls),
-  );
+  // 그 단계에 그 등급이 없으면(챕터 3 Lv.45에는 레전더리가 없다) 한 등급씩 내려 에픽까지 찾는다(C# FindRaidGear와 같다)
+  const order = ['Epic', 'Unique', 'Legendary'];
+  let found: typeof eco.shop.equipmentList = [];
+  for (let r = order.indexOf(rarity); r >= 0 && found.length === 0; r--) {
+    found = eco.shop.equipmentList.filter(
+      (e) => !e.bossOnly && e.levelTier === tier && e.category === category && e.rarity === order[r] && (e.classOnly === null || e.classOnly === cls),
+    );
+  }
   if (found.length === 0) throw new Error(`레이드 장비를 찾을 수 없습니다: ${d.id} ${cls} ${category} ${rarity}`);
   const pick = found.length > 1 ? (found[rng.int(0, found.length)] as (typeof found)[number]) : (found[0] as (typeof found)[number]);
   return keyAt(pick.id, 0);

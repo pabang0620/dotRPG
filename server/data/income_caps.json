@@ -271,8 +271,8 @@
       "perDay": {
         "dungeonXp": 131666,
         "dungeonGoldEq": 16560,
-        "raidMidXp": 10092,
-        "raidMidGoldEq": 4500
+        "raidMidXp": 46338,
+        "raidMidGoldEq": 15000
       },
       "perWeek": {
         "raidFinalXp": 41850,
@@ -296,12 +296,12 @@
       "perDay": {
         "dungeonXp": 131666,
         "dungeonGoldEq": 16560,
-        "raidMidXp": 10092,
-        "raidMidGoldEq": 4500
+        "raidMidXp": 46338,
+        "raidMidGoldEq": 15000
       },
       "perWeek": {
-        "raidFinalXp": 41850,
-        "raidFinalGoldEq": 18000
+        "raidFinalXp": 64434,
+        "raidFinalGoldEq": 24000
       }
     }
   ],

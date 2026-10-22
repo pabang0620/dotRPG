@@ -299,6 +299,8 @@ namespace DotRPG
             QuestAutoPilot.MeasureAware = MeasureArg("-measureAware", "") == "1"; // knows the raid (bursts 망자의 심판)
             QuestAutoPilot.MeasureDodge = MeasureArg("-measureDodge", "1") != "0"; // answers 낙인 / 섬멸 / ground warnings (QuestAutoPilot.Dodge.cs)
             QuestAutoPilot.MeasureDodges = QuestAutoPilot.MeasureCoverMoves = 0;
+            RaidRift.ResetCounters(); // [CH3] 공허 균열 / 잿빛 낙인 counters for this row
+            GreyBrand.ResetCounters();
             row["play"] = QuestAutoPilot.MeasureAware ? "aware" : "skilled";
             row["dodge"] = QuestAutoPilot.MeasureDodge;
             // Ground hits on the hero (warnings that resolved with the hero inside) and 섬멸 blasts sat out in cover or not.
@@ -377,6 +379,17 @@ namespace DotRPG
             row["damage_taken"] = Mathf.RoundToInt(tally.damage);
             row["hero_hp"] = Game.Player != null ? Game.Player.Health.Max : 0;
             row["groggies"] = groggies;
+            if (def.chapter >= 3)
+            {
+                // [CH3] Gimmicks played without bot code (RaidDoom spots): rifts opened / closed / heals that landed, brands wiped / halved / landed.
+                row["rift_opened"] = RaidRift.Opened;
+                row["rift_closed"] = RaidRift.Closed;
+                row["rift_heals"] = RaidRift.Heals;
+                row["brand_started"] = GreyBrand.Started;
+                row["brand_cleared"] = GreyBrand.Cleared;
+                row["brand_halved"] = GreyBrand.Halved;
+                row["brand_missed"] = GreyBrand.Missed;
+            }
             row["judgment_broken"] = judgBroken;
             row["judgment_landed"] = judgLanded;
             row["judgment_left"] = judgLanded > 0 ? R1(100f * judgLeft / judgLanded) : 0f;
@@ -444,7 +457,10 @@ namespace DotRPG
             // -measureCareers fighter,bishop: only these careers (each career runs alone and with three AI, so the rows compare).
             var careerFilter = MeasureArg("-measureCareers", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var careers = MeasureCareers.Where(c => careerFilter.Length == 0 || careerFilter.Contains(c.ToString().ToLowerInvariant())).ToArray();
-            foreach (var def in DungeonDatabase.Raids.Where(r => onlyRaid == "" || r.id == onlyRaid)) // the open raids (해골왕, 그라흐); 바르가스·바위 심장 are not open yet
+            // [CH3] -measureRaid raid_xibak|raid_kamatz opens chapter 3 for the run (offline flag), the others measure the open raids.
+            bool wasOpen = Game.Config != null && Game.Config.chapter3Open;
+            if (Game.Config != null && DungeonDatabase.AllRaids.Any(r => r.id == onlyRaid && r.chapter >= 3)) Game.Config.chapter3Open = true;
+            foreach (var def in DungeonDatabase.Raids.Where(r => onlyRaid == "" || r.id == onlyRaid)) // the open raids (해골왕, 그라흐, and 지바크·카마츠 with chapter 3); 바르가스·바위 심장 are not open yet
                 foreach (var diff in new[] { DungeonDifficulty.Normal, DungeonDatabase.RaidHeroic })
                     foreach (var career in careers)
                     foreach (int companions in new[] { 0, 3 })
@@ -466,6 +482,7 @@ namespace DotRPG
                         rows.Add(row);
                         clock = clock.AddDays(7);
                     }
+            if (Game.Config != null) Game.Config.chapter3Open = wasOpen;
             ResetClock.NowOverride = null;
         }
     }

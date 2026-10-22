@@ -194,6 +194,8 @@ namespace DotRPG
         public const string Raid = "raid_skeleton_king";
         public const string RaidBargas = "raid_bargas";
         public const string RaidGolem = "raid_golem", RaidGrah = "raid_grah";
+        /// <summary>[CH3] Chapter 3 raids (Docs/ch3/RAIDS.md): 공허 침식체 지바크 (mid) and 잿빛 손 지휘관 카마츠 (final).</summary>
+        public const string RaidXibak = "raid_xibak", RaidKamatz = "raid_kamatz";
         /// <summary>[RAID] Item that opens final raids.</summary>
         public const string SealKey = "key_seal";
         /// <summary>[RAID] Gear promotion material (승급): only raid rewards give it (PromoteRules).</summary>
@@ -562,11 +564,44 @@ namespace DotRPG
             specialty = L.T("확정 골드 · 레전더리 장비"), featureMonster = L.T("석실 정예 기사, 사령술사"), bossName = L.T("수호자 그라흐"),
         };
 
+        /// <summary>[CH3] Chapter 3 mid raid: 공허 침식체 지바크 at the broken guardian stone (Wed / Sat / Sun, Docs/ch3/RAIDS.md 1).</summary>
+        static readonly DungeonDef XibakDef = new DungeonDef
+        {
+            id = RaidXibak, name = L.T("공허 침식체 지바크"), theme = MapTheme.DryCanyon, themeName = L.T("깨진 수호석 자리"), isRaid = true,
+            raidTier = RaidTier.Mid, chapter = 3, unlockQuest = "c3_xibak", keyMin = 20, keyMax = 50,
+            raidNumbers = RaidNumbers(45, 13000, 5.2f, 1.8f, 40, ItemRarity.Epic, 8),
+            openDays = new[] { DayOfWeek.Wednesday, DayOfWeek.Saturday, DayOfWeek.Sunday },
+            rooms = Chain(
+                Room(MapRegistry.DgnXibak1, new SpawnGroup(1, "void_sentry", 5, 2), new SpawnGroup(2, "void_caller", 3, 2)),
+                Room(MapRegistry.DgnXibak2, new SpawnGroup(1, "void_hound", 6, 2), new SpawnGroup(2, "grey_ranger", 3, 2)),
+                Boss(MapRegistry.DgnXibakBoss, "boss_xibak", "void_hound", 0)),
+            bossRoom = 2, referenceSeconds = new[] { 330f, 495f, 330f, 330f }, clearXp = 1200,
+            rewards = new RewardEntry[0], raidReward = RaidRewards.Xibak, // [RAID] sure gold + 4 cards, see RaidRewards
+            description = L.T("깨진 수호석 자리에서 자라난 공허의 덩어리 지바크.\n열리는 균열을 메우며 침식체를 쓰러뜨리자."),
+            specialty = L.T("확정 골드 · 침식 결정 · 봉인 열쇠 조각"), featureMonster = L.T("공허 파수석, 공허 들개, 잿빛 손 정찰병"), bossName = L.T("공허 침식체 지바크"),
+        };
+
+        /// <summary>[CH3] Chapter 3 final raid: 잿빛 손 지휘관 카마츠, the rescue of 발체 (Sunday, Docs/ch3/RAIDS.md 2).</summary>
+        static readonly DungeonDef KamatzDef = new DungeonDef
+        {
+            id = RaidKamatz, name = L.T("잿빛 손 지휘관 카마츠"), theme = MapTheme.DryCanyon, themeName = L.T("잿빛 손 진영"), isRaid = true,
+            raidTier = RaidTier.Final, chapter = 3, unlockQuest = "c3_kamatz", keyCost = 60,
+            raidNumbers = RaidNumbers(50, 15500, 5.0f, 1.9f, 45, ItemRarity.Epic, 0),
+            openDays = new[] { DayOfWeek.Sunday },
+            rooms = Chain(
+                Room(MapRegistry.DgnKamatz1, new SpawnGroup(1, "grey_knight", 5, 2), new SpawnGroup(2, "grey_priest", 2, 2), new SpawnGroup(2, "grey_ranger", 2, 2)),
+                Boss(MapRegistry.DgnKamatzBoss, "boss_kamatz", "grey_knight", 0)),
+            bossRoom = 1, referenceSeconds = new[] { 360f, 540f, 360f, 360f }, clearXp = 2000,
+            rewards = new RewardEntry[0], raidReward = RaidRewards.Kamatz, // [RAID] sure gold + 4 cards, see RaidRewards
+            description = L.T("공허의 틈 끝, 잿빛 손 진영의 지휘관 카마츠.\n사제부터 쓰러뜨리고 지휘관을 꺾어 발체를 구하자."),
+            specialty = L.T("확정 골드 · 잿빛 인장 · 레전더리 장비"), featureMonster = L.T("잿빛 손 기사, 사제, 정찰병"), bossName = L.T("잿빛 손 지휘관 카마츠"),
+        };
+
         /// <summary>
-        /// Raids that are open now: the level-20 mid raid (해골왕) and the level-40 final raid (그라흐). 흑철의 바르가스 and
-        /// 바위 심장 are kept for a later release (<see cref="Upcoming"/>); their story beats are fought in the field.
+        /// Raids that are open now: the level-20 mid raid (해골왕) and the level-40 final raid (그라흐), then chapter 3's
+        /// 지바크 (Lv45) and 카마츠 (Lv50). 흑철의 바르가스 and 바위 심장 are kept for a later release (<see cref="Upcoming"/>).
         /// </summary>
-        static readonly DungeonDef[] RaidDefs = { RaidDef, GrahDef };
+        static readonly DungeonDef[] RaidDefs = { RaidDef, GrahDef, XibakDef, KamatzDef };
 
         /// <summary>[RAID] Designed but not open yet (not listed, not exported to the server).</summary>
         public static readonly IReadOnlyList<DungeonDef> Upcoming = new[] { BargasDef, GolemDef };
@@ -580,8 +615,13 @@ namespace DotRPG
         /// <summary>Weekday and normal dungeons (everything that is not a raid).</summary>
         public static IEnumerable<DungeonDef> NonRaid => Dungeons.Concat(NormalDefs);
 
-        /// <summary>[RAID] Story raids in chapter order (mid, final).</summary>
-        public static IReadOnlyList<DungeonDef> Raids => RaidDefs;
+        /// <summary>[RAID] Story raids in chapter order (mid, final) that this session can see: chapter 3's only while it is open.</summary>
+        public static IReadOnlyList<DungeonDef> Raids => Chapter3.Enabled ? RaidDefs : ClosedRaids;
+
+        static readonly DungeonDef[] ClosedRaids = RaidDefs.Where(r => r.chapter < 3).ToArray();
+
+        /// <summary>[CH3] Every story raid whatever the chapter lock (data export, measure runs).</summary>
+        public static IReadOnlyList<DungeonDef> AllRaids => RaidDefs;
 
         public static DungeonDef SkeletonKing => RaidDef;
 

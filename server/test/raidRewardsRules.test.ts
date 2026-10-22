@@ -84,7 +84,7 @@ describe('2. 장비 카드', () => {
 });
 
 describe('3. 10만 장 표본', () => {
-  it.each(['raid_skeleton_king', 'raid_grah'])('%s: 카드 종류 비율은 표 가중치 +-0.8%p, 장비 등급 비율은 +-1%p', (id) => {
+  it.each(['raid_skeleton_king', 'raid_grah', 'raid_kamatz'])('%s: 카드 종류 비율은 표 가중치 +-0.8%p, 장비 등급 비율은 +-1%p', (id) => {
     const d = raid(id);
     const rr = d.raidReward as NonNullable<DungeonDef['raidReward']>;
     const total = rr.cards.reduce((a, c) => a + c.weight, 0);
@@ -137,8 +137,8 @@ describe('4. rollRaidGold', () => {
 describe('5. 데이터 정합(가격 목표)', () => {
   it('카드 가중치 합 100, 전용 재료 기대값으로 계산한 상자 도달 주 수가 목표 안', () => {
     const shop = getGameData().raidShop as NonNullable<ReturnType<typeof getGameData>['raidShop']>;
-    const perWeek: Record<string, number> = { raid_skeleton_king: 3, raid_grah: 1 };
-    const expected: Record<string, number> = { raid_skeleton_king: 10.6, raid_grah: 10.24 };
+    const perWeek: Record<string, number> = { raid_skeleton_king: 3, raid_grah: 1, raid_xibak: 3, raid_kamatz: 1 };
+    const expected: Record<string, number> = { raid_skeleton_king: 10.6, raid_grah: 10.24, raid_xibak: 10.24, raid_kamatz: 10.24 };
     for (const d of raids()) {
       const rr = d.raidReward as NonNullable<DungeonDef['raidReward']>;
       expect(rr.cards.reduce((a, c) => a + c.weight, 0)).toBe(100);
@@ -164,7 +164,7 @@ describe('5. 데이터 정합(가격 목표)', () => {
 describe('6. raid_shop.json 정합', () => {
   it('재료는 캐릭터 귀속·판매가 0, 직업마다 (단계, 부위, 등급) 장비가 하나, data_version에 포함', () => {
     const shop = getGameData().raidShop as NonNullable<ReturnType<typeof getGameData>['raidShop']>;
-    expect(shop.products.size).toBe(4);
+    expect(shop.products.size).toBe(8); // [CH3] 지바크·카마츠 상자 4개
     for (const p of shop.products.values()) {
       expect(eco().items.get(p.materialItem)?.bind).toBe('character');
       expect(eco().shop.sellPrices.get(p.materialItem) ?? 0).toBe(0);
@@ -182,6 +182,9 @@ describe('6. raid_shop.json 정합', () => {
     // 레전더리 상자는 전사 검, 마법사 지팡이(광역형·토벌형 두 갈래)
     expect(shop.products.get('king_legend_weapon')?.results.warrior?.Legendary).toEqual(['eq_sword_20_l', 'eq_sword_20_lb']);
     expect(shop.products.get('grah_legend_weapon')?.results.mage?.Legendary).toEqual(['eq_staff_40_l', 'eq_staff_40_lb']);
+    // [CH3] 지바크 레전더리 상자는 레이드(Lv45)가 아니라 Lv50 레전더리(데이터 tierLevel)
+    expect(shop.products.get('xibak_legend_weapon')?.results.warrior?.Legendary).toEqual(['eq_sword_50_l', 'eq_sword_50_lb']);
+    expect(shop.products.get('xibak_epic_weapon')?.tier).toBe(8);
     const ver = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'data_version.json'), 'utf8')) as { files: Record<string, string> };
     expect(Object.keys(ver.files)).toContain('raid_shop.json');
   });
@@ -194,7 +197,10 @@ describe('7. income_caps', () => {
     };
     const mid = Math.max(...caps.bands.map((b) => b.perDay.raidMidGoldEq));
     const fin = Math.max(...caps.bands.map((b) => b.perWeek.raidFinalGoldEq));
-    expect(mid).toBeGreaterThanOrEqual((raid('raid_skeleton_king').raidReward as { goldMax: number }).goldMax);
-    expect(fin).toBeGreaterThanOrEqual((raid('raid_grah').raidReward as { goldMax: number }).goldMax);
+    // [CH3] 중간·최종 레이드 전부(지바크 15,000, 카마츠 24,000)
+    for (const d of raids()) {
+      const goldMax = (d.raidReward as { goldMax: number }).goldMax;
+      expect(d.raidTier === 'Final' ? fin : mid).toBeGreaterThanOrEqual(goldMax);
+    }
   });
 });

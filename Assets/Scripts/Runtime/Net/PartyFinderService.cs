@@ -97,7 +97,7 @@ namespace DotRPG
         public MockPartyFinderService(int seed = 11)
         {
             var rng = new Random(seed);
-            var dungeons = new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
+            var dungeons = new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal).Concat(DungeonDatabase.Raids)); // [CH3] 지바크·카마츠 once chapter 3 is open
             for (int i = 0; i < 9; i++)
             {
                 var d = dungeons[rng.Next(dungeons.Count)];

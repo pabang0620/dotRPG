@@ -29,6 +29,8 @@ namespace DotRPG
             // [BISHOP] A weakened monster (in the sanctum) hits 30% softer.
             if (info.attacker != null && info.attacker.TryGetComponent<EnemyController>(out var weak) && weak.Weakened)
                 info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * .7f));
+            // [CH3] Standing on an open 공허 균열 (지바크): +30% from every hit while closing it.
+            if (!info.lethal) info.amount = RaidRift.Taken(this, info.amount);
             // Armour / rings: a chance to shrug the hit off completely.
             if (!info.unblockable && !health.IsInvulnerable && Random.Range(0, 100) < Data.Stats.Block) // [MONSTER] unblockable skips the roll
             {

@@ -8,7 +8,7 @@ import { AppError } from '../../utils/AppError';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import { stackCount } from '../economy/economyRepository';
 import * as repo from './dungeonRepository';
-import { chapter3Open } from '../../gamedata/chapterGate';
+import { assertOpen, chapter3Open } from '../../gamedata/chapterGate';
 import { diffOf, isOpenToday, LORD_DIFFICULTY, LORD_MIN_LEVEL, RAID_HEROIC, type DiffNumbers } from './dungeonRules';
 
 /** 퀘스트 상태 Active(2) 이상 = 수락 이상 */
@@ -83,6 +83,7 @@ export async function checkEntry(
   const slack = getConfig().policy.partyMinLevelSlack;
   const d = eco.dungeons.byId.get(dungeonId);
   if (!d) throw new AppError(422, '알 수 없는 던전입니다.', 'DUNGEON_UNKNOWN');
+  assertOpen('dungeon', d.id); // 챕터 3 레이드(지바크·카마츠)는 3장이 열릴 때까지 422 CHAPTER_LOCKED
   if (!isOpenToday(eco, d, now)) throw new AppError(422, '오늘은 열리지 않는 던전입니다.', 'DUNGEON_CLOSED_TODAY');
   if (d.isRaid) {
     if (!(await raidUnlocked(db, c.id, d))) throw new AppError(422, '아직 열리지 않은 레이드입니다.', 'RAID_LOCKED');

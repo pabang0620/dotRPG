@@ -196,7 +196,7 @@ namespace DotRPG
         BossPattern HpThresholdPattern()
         {
             // Not during the seal: the gimmick would end at once and its mark would be spent (it fires once the seal is over).
-            if (E.Health == null || E.Health.Max <= 0 || Sealed || RuinActive || FateActive) return null;
+            if (E.Health == null || E.Health.Max <= 0 || Sealed || RuinActive || FateActive || RiftsOpen || BrandActive) return null; // [CH3] rifts / brand share RaidDoom
             float hp = (float)E.Health.Current / E.Health.Max;
             foreach (var p in Def.patterns)
             {
@@ -220,6 +220,7 @@ namespace DotRPG
         {
             CurrentPattern = p;
             readyAt[p] = Time.time + p.cooldown * Mul;
+            ShoutPattern(p.kind); // [CH3] 지바크 / 카마츠 lines (BossBrain.Shouts.cs); other bosses have none
             switch (p.kind)
             {
                 case PatternKind.Slash3: yield return Slash3(p); break;

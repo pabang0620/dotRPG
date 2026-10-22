@@ -198,7 +198,7 @@ namespace DotRPG
             foreach (var s in spots) MonsterFx.SummonCircle(s, 1.3f);
             Game.Audio.PlaySfx("magic");
             yield return Hold(1.0f, CharacterAnim.Attack, true);
-            string minion = Def.raid ? (E.Rng.Next(3) == 0 ? "skel_knight" : "skel_warrior") : Def.minionId;
+            string minion = Def.raid && Def.chapter < 3 ? (E.Rng.Next(3) == 0 ? "skel_knight" : "skel_warrior") : Def.minionId; // [CH3] 지바크 summons void hounds
             foreach (var s in spots)
             {
                 var m = MonsterDatabase.SpawnMinion(minion, s, E.transform.parent, E);

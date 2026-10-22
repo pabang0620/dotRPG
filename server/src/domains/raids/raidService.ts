@@ -9,6 +9,7 @@ import * as charRepo from '../characters/characterRepository';
 import { isOpenToday } from '../dungeons/dungeonRules';
 import { RAID_HEROIC } from '../dungeons/dungeonRules';
 import { heroicUnlocked, raidClaimed, raidPeriod, raidUnlocked } from '../dungeons/entryRules';
+import { chapter3Open, isChapter3 } from '../../gamedata/chapterGate';
 import { stackCount } from '../economy/economyRepository';
 
 export async function listRaids(accountId: number, characterUuid: string) {
@@ -22,6 +23,7 @@ export async function listRaids(accountId: number, characterUuid: string) {
   const raids = [];
   for (const d of eco.dungeons.byId.values()) {
     if (!d.isRaid) continue;
+    if (isChapter3('dungeon', d.id) && !chapter3Open()) continue; // 닫힌 3장 레이드는 목록에도 없다
     const period = raidPeriod(d, now);
     const open = isOpenToday(eco, d, now);
     const claimed = await raidClaimed(db, c.id, d, now);

@@ -91,6 +91,7 @@ namespace DotRPG
             // [UNLOCK] Weekday / normal dungeons and raids open with the main quest line.
             var feature = dungeon.isRaid ? ContentUnlocks.Feature.Raid : dungeon.always ? ContentUnlocks.Feature.NormalDungeon : ContentUnlocks.Feature.WeekdayDungeon;
             if (!ContentUnlocks.IsOpen(feature)) return ContentUnlocks.LockedReason(feature);
+            if (dungeon.chapter >= 3 && !Chapter3.Enabled) return L.T("아직 열리지 않은 콘텐츠입니다."); // [CH3] 지바크·카마츠 open with the chapter
             if (!ResetClock.IsOpen(dungeon, now)) return L.F("오늘({0})은 열리지 않는 던전입니다.", DungeonDatabase.DayName(ResetClock.GameDay(now)));
             if (!Progress.IsUnlocked(dungeon, difficulty))
                 return dungeon.isRaid ? L.F("{0} 레이드를 먼저 한 번 클리어해야 합니다.", L.T(dungeon.name)) : L.F("{0} 난이도를 먼저 클리어해야 합니다.", L.T(DungeonDatabase.Difficulty(difficulty - 1).name));

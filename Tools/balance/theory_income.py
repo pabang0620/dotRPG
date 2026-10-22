@@ -162,21 +162,26 @@ def day_lumps(difficulty):
     return xp, gold
 
 
-def raid_lumps(tier):
-    for d in DUNGEONS["dungeons"]:
-        if d["isRaid"] and d["raidTier"] == tier:
-            xp = d["clearXpFloor"][0] * TOP_RANK_XP_MUL
-            # 13단계: 레이드 골드는 카드가 아니라 클리어 확정 골드(raidReward.goldMax, 난이도 배율 없음)
-            gold = d["raidReward"]["goldMax"]
-            return d["raidNumbers"]["recommendedLevel"], xp, gold
+def raid_lumps(tier, band_max_level=None):
+    """그 대역 최고 레벨로 들어갈 수 있는 그 등급 레이드 중 권장 레벨이 가장 높은 것(챕터 3: Lv45 지바크, Lv50 카마츠).
+    대역 상한이 없으면 처음 나오는 레이드(Lv40까지는 해골왕·그라흐 그대로)."""
+    raids = [d for d in DUNGEONS["dungeons"] if d["isRaid"] and d["raidTier"] == tier]
+    if band_max_level is not None:
+        fit = [d for d in raids if d["raidNumbers"]["recommendedLevel"] <= band_max_level]
+        raids = [max(fit, key=lambda d: d["raidNumbers"]["recommendedLevel"])] if fit else raids[:1]
+    for d in raids:
+        xp = d["clearXpFloor"][0] * TOP_RANK_XP_MUL
+        # 13단계: 레이드 골드는 카드가 아니라 클리어 확정 골드(raidReward.goldMax, 난이도 배율 없음)
+        gold = d["raidReward"]["goldMax"]
+        return d["raidNumbers"]["recommendedLevel"], xp, gold
     return None
 
 
 def build():
-    mid = raid_lumps("Mid")
-    fin = raid_lumps("Final")
     bands = []
     for lo, hi in BAND_RANGES:
+        mid = raid_lumps("Mid", hi)
+        fin = raid_lumps("Final", hi)
         r = hour_rates(hi)
         diff = best_difficulty(lo)
         d_xp, d_gold = day_lumps(diff)

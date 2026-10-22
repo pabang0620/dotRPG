@@ -91,7 +91,7 @@ namespace DotRPG
         Text levelGuide;
         readonly Text[] createValues = new Text[5];
 
-        static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
+        static List<DungeonDef> Dungeons => new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal).Concat(DungeonDatabase.Raids)); // [CH3] 지바크·카마츠 once chapter 3 is open
 
         public static PartyFinderScreen Create(Transform canvas)
         {

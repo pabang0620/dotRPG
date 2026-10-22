@@ -7,7 +7,7 @@ namespace DotRPG
 {
     /// <summary>
     /// [RAID] 레이드 상점 (Docs/server/phase13_raid_rewards.md §7.5): a button on the 레이드 tab (the 소탕 button's place) opens a panel
-    /// over the detail with the four weapon boxes of 해골왕 and 수호자 그라흐. A box is paid with that raid's own material and
+    /// over the detail with the weapon boxes of 해골왕 and 수호자 그라흐 (and, chapter 3 open, 지바크 and 카마츠 on a second page). A box is paid with that raid's own material and
     /// opened on purchase: the class's weapon comes straight into the bag, shown as one flipping card.
     /// Online the server decides (OnlineEconomy.BuyRaidShop); offline the same table is rolled here.
     /// </summary>
@@ -18,6 +18,8 @@ namespace DotRPG
         sealed class RsCell
         {
             public RaidShopProduct product;
+            public GameObject root;
+            public int page;
             public Image box, gear;
             public Text name, cost, result, gearName;
             public Button buy;
@@ -34,6 +36,11 @@ namespace DotRPG
         List<OnlineEconomy.RaidShopOffer> rsOffers;
         bool rsBusy, rsPopupDone;
         readonly System.Random rsRng = new System.Random();
+        /// <summary>[CH3] Products are shown four at a time (two raids): page 0 = 해골왕·그라흐, page 1 = 지바크·카마츠 (chapter 3 open).</summary>
+        int rsPage;
+        Button rsPageButton;
+        const int RsPerPage = 4;
+        int RsPages => Chapter3.Enabled ? (RaidShop.Products.Length + RsPerPage - 1) / RsPerPage : 1;
 
         bool RaidShopOpen => raidShopPanel != null && raidShopPanel.gameObject.activeSelf;
         bool RsPopupOpen => rsPopup != null && rsPopup.gameObject.activeSelf;
@@ -51,6 +58,7 @@ namespace DotRPG
             Label(t, "Head", L.T("<b>레이드 상점</b>"), 26, tl, tl, new Vector2(24f, -14f), new Vector2(400f, 38f));
             Label(t, "Sub", L.T("<color=#b8c4d8>레이드 재료로 무기 상자를 삽니다. 산 즉시 열려 내 직업 무기가 가방에 들어옵니다.</color>"), 16, tl, tl, new Vector2(24f, -52f), new Vector2(700f, 26f));
             Button(t, "Close", L.T("닫기"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(110f, 40f), CloseRaidShop, 18);
+            rsPageButton = Button(t, "Page", L.T("다른 레이드"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-136f, -14f), new Vector2(150f, 40f), NextRaidShopPage, 18);
 
             for (int col = 0; col < 2; col++)
             {
@@ -62,11 +70,12 @@ namespace DotRPG
             for (int i = 0; i < RaidShop.Products.Length; i++)
             {
                 var product = RaidShop.Products[i];
-                int col = i / 2, row = i % 2;
-                var cell = new RsCell { product = product };
+                int col = (i / 2) % 2, row = i % 2;
+                var cell = new RsCell { product = product, page = i / RsPerPage };
                 float x0 = RsColX + col * RsColStep, y0 = -134f - row * (RsCellH + 8f);
                 var bg = Panel(t, "Cell" + i, tl, tl, new Vector2(x0, y0), new Vector2(RsColW, RsCellH), new Color32(14, 20, 32, 255));
                 var ct = bg.transform;
+                cell.root = bg.gameObject;
                 cell.box = UIFactory.SharpIcon(ct, "Box", Color.white);
                 cell.box.sprite = Game.Art.Get(product.IsLegendary ? "icon_box_enh_gold" : "icon_box_sealed");
                 UIFactory.Place(cell.box.rectTransform, tl, tl, new Vector2(14f, -14f), new Vector2(56f, 56f));
@@ -105,6 +114,7 @@ namespace DotRPG
         {
             if (!raidTab) return;
             rsBusy = false;
+            rsPage = RsPages - 1; // the newest raids first
             rsPopup.gameObject.SetActive(false);
             raidShopPanel.gameObject.SetActive(true);
             raidShopPanel.SetAsLastSibling();
@@ -195,17 +205,21 @@ namespace DotRPG
             if (raidShopPanel == null || !RaidShopOpen) return;
             var bag = Game.Session.Inventory;
             var cls = RaidClass();
-            string[] raids = { DungeonDatabase.Raid, DungeonDatabase.RaidGrah };
+            rsPage = Mathf.Clamp(rsPage, 0, RsPages - 1);
+            rsPageButton.gameObject.SetActive(RsPages > 1);
             for (int col = 0; col < 2; col++)
             {
-                var raid = DungeonDatabase.Get(raids[col]);
-                string material = RaidShop.Products[col * 2].materialItem;
-                int lv = GearCatalog.TierLevels[RaidShop.Products[col * 2].Tier];
+                int first = Mathf.Min(rsPage * RsPerPage + col * 2, RaidShop.Products.Length - 1);
+                var raid = DungeonDatabase.Get(RaidShop.Products[first].raidId);
+                string material = RaidShop.Products[first].materialItem;
+                int lv = GearCatalog.TierLevels[RaidShop.Products[first].Tier];
                 rsColIcon[col].sprite = Game.Art.Get(DungeonDatabase.ItemIcon(material));
                 rsColHead[col].text = $"<b>{L.T(raid.name)} (Lv.{lv})</b>\n<color=#b8c4d8>{L.T(DungeonDatabase.ItemName(material))}</color> " + L.F("<color=#ffe066>보유 {0:N0}</color>", bag.Count(material));
             }
             foreach (var cell in rsCells)
             {
+                cell.root.SetActive(cell.page == rsPage);
+                if (cell.page != rsPage) continue;
                 var p = cell.product;
                 var offer = OfferOf(p.id);
                 int price = offer != null && offer.price > 0 ? offer.price : p.price;
@@ -220,6 +234,15 @@ namespace DotRPG
                 cell.gearName.text = key != null ? EquipmentDatabase.RichName(key) : "";
                 if (key != null) cell.gear.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(key));
             }
+        }
+
+        /// <summary>[CH3] Switches between the chapter 1·2 raids and the chapter 3 raids.</summary>
+        void NextRaidShopPage()
+        {
+            if (RsPages <= 1 || rsBusy || RsPopupOpen) return;
+            rsPage = (rsPage + 1) % RsPages;
+            Game.Audio.PlaySfx("select");
+            RefreshRaidShop();
         }
 
         // ---------------- buying ----------------

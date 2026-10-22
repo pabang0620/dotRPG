@@ -38,6 +38,7 @@ namespace DotRPG
                 if (crowded) continue;
                 used.Add(p);
                 int kind = rng.Next(10);
+                if (map.instanced && kind >= 6) continue; // [CH3] raid rooms: ground cracks only, nothing standing in the fight
                 if (kind < 6) Decal(p, DryPiece("dry_crack", rng.Next(10) < 7 ? variant : rng.Next(3), Crack), -19500);
                 else if (kind < 8) Upright(p, DryPiece("dry_stone", rng.Next(3), Shard), "DryStone", .5f);
                 else if (kind < 9 || variant == 0) Upright(p, DryPiece("dry_dead_tree", rng.Next(2), DeadTree), "DryTree", .35f);

@@ -148,7 +148,7 @@ namespace DotRPG
             Client.InviteByName(name, (ok, msg) => { if (ok) inviteField.text = ""; Done(ok, msg, L.F("{0}님에게 파티 초대를 보냈습니다.", name)); });
         }
 
-        static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal)) { DungeonDatabase.SkeletonKing, DungeonDatabase.Get(DungeonDatabase.RaidGrah) };
+        static List<DungeonDef> Targets => new List<DungeonDef>(DungeonDatabase.Weekday.Concat(DungeonDatabase.Normal).Concat(DungeonDatabase.Raids)); // [CH3] 지바크·카마츠 once chapter 3 is open
 
         // [PARTY] Leader's destination picker: every dungeon / raid as a button, and the difficulty below (not raids).
         RectTransform picker;

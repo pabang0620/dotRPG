@@ -17,6 +17,8 @@ const productSchema = z.looseObject({
   price: z.number().int().positive(),
   category: z.enum(['Weapon', 'Top', 'Bottom', 'Necklace', 'Ring']),
   rarityWeights: z.partialRecord(z.enum(RARITIES), z.number().int().nonnegative()),
+  /** 레이드 권장 레벨과 다른 단계의 상자(챕터 3 지바크 레전더리 상자는 Lv.50). 없으면 레이드 권장 레벨 */
+  tierLevel: z.number().int().positive().optional(),
 });
 const fileSchema = z.looseObject({
   schema: z.literal(1),
@@ -32,7 +34,7 @@ export interface RaidShopProduct {
   materialName: string;
   price: number;
   category: string;
-  /** 레이드 권장 레벨(20, 40): 서버가 raidNumbers.recommendedLevel로 계산한다 */
+  /** 상자 장비 레벨: 데이터 tierLevel, 없으면 레이드 권장 레벨(raidNumbers.recommendedLevel) */
   tierLevel: number;
   tier: number;
   rarityWeights: { rarity: ShopRarity; weight: number }[];
@@ -64,7 +66,8 @@ export function loadRaidShop(dir: string, eco: EconomyData): RaidShopData | null
     if (!mat) return fail(`재료 ${p.materialItem} 이 items.json에 없습니다`);
     const weights = RARITIES.flatMap((r) => ((p.rarityWeights[r] ?? 0) > 0 ? [{ rarity: r, weight: p.rarityWeights[r] as number }] : []));
     if (weights.length === 0) fail('등급 가중치가 없습니다');
-    const tier = tierOfLevel(raid.raidNumbers.recommendedLevel);
+    const tierLevel = p.tierLevel ?? raid.raidNumbers.recommendedLevel;
+    const tier = tierOfLevel(tierLevel);
     const results: RaidShopProduct['results'] = {};
     for (const cls of SHOP_CLASSES) {
       results[cls] = {};
@@ -84,7 +87,7 @@ export function loadRaidShop(dir: string, eco: EconomyData): RaidShopData | null
       materialName: mat.name,
       price: p.price,
       category: p.category,
-      tierLevel: raid.raidNumbers.recommendedLevel,
+      tierLevel,
       tier,
       rarityWeights: weights,
       results,

@@ -15,6 +15,13 @@ namespace DotRPG
         public const string DgnBargas1 = "dgn_bargas_1", DgnBargas2 = "dgn_bargas_2", DgnBargasBoss = "dgn_bargas_boss";
         public const string DgnGolem1 = "dgn_golem_1", DgnGolem2 = "dgn_golem_2", DgnGolemBoss = "dgn_golem_boss";
         public const string DgnGrah1 = "dgn_grah_1", DgnGrahBoss = "dgn_grah_boss";
+        // [CH3] 지바크 at the broken guardian stone and 카마츠's camp: existing layouts in the dry canyon theme (Docs/ch3/RAIDS.md).
+        public const string DgnXibak1 = "dgn_xibak_1", DgnXibak2 = "dgn_xibak_2", DgnXibakBoss = "dgn_xibak_boss";
+        public const string DgnKamatz1 = "dgn_kamatz_1", DgnKamatzBoss = "dgn_kamatz_boss";
+
+        /// <summary>[CH3] The chapter 3 raid rooms (closed with the chapter, MapRegistry.IsChapter3).</summary>
+        static bool IsChapter3Room(string id) =>
+            id == DgnXibak1 || id == DgnXibak2 || id == DgnXibakBoss || id == DgnKamatz1 || id == DgnKamatzBoss;
 
         // [BGM] Room music by dungeon theme (Docs/BGM_PROMPTS.md); boss rooms share one track, the raid boss has its own.
         public const string MusicDgnCanyon = "music_dgn_canyon", MusicDgnForest = "music_dgn_forest", MusicDgnWinter = "music_dgn_winter";
@@ -52,6 +59,11 @@ namespace DotRPG
             Room(DgnGolemBoss, L.T("외곽 석실 · 바위 심장"), "CanyonBoss", MapTheme.Canyon, MusicRaid),
             Room(DgnGrah1, L.T("수호석 석실 · 회랑"), "Raid1", MapTheme.Canyon, MusicDgnCanyon),
             Room(DgnGrahBoss, L.T("수호석 석실 · 수호석"), "RaidBoss", MapTheme.Canyon, MusicRaidEnrage),
+            Room(DgnXibak1, L.T("깨진 수호석 자리 · 파수석 길"), "Canyon2", MapTheme.DryCanyon, MusicDgnCanyon),
+            Room(DgnXibak2, L.T("깨진 수호석 자리 · 들개 굴"), "Canyon3", MapTheme.DryCanyon, MusicDgnCanyon),
+            Room(DgnXibakBoss, L.T("깨진 수호석 자리 · 침식의 중심"), "CanyonBoss", MapTheme.DryCanyon, MusicRaid),
+            Room(DgnKamatz1, L.T("잿빛 손 진영 · 야영지"), "Raid1", MapTheme.DryCanyon, MusicDgnCanyon),
+            Room(DgnKamatzBoss, L.T("잿빛 손 진영 · 지휘관의 우리"), "RaidBoss", MapTheme.DryCanyon, MusicRaidEnrage),
         };
 
         /// <summary>Every dungeon room map (tests, preloading).</summary>

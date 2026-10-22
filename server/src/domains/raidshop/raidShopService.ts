@@ -8,6 +8,7 @@ import { AppError } from '../../utils/AppError';
 import { keyAt } from '../../utils/itemKey';
 import { getRng, type Rng } from '../../utils/rng';
 import { assertNoHold } from '../antiabuse/holds';
+import { assertOpen, chapter3Open, isChapter3 } from '../../gamedata/chapterGate';
 import * as charRepo from '../characters/characterRepository';
 import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
@@ -48,6 +49,7 @@ export async function listShop(accountId: number, characterUuid: string) {
   if (!c) throw new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
   const products = [];
   for (const p of shop.products.values()) {
+    if (isChapter3('dungeon', p.raidId) && !chapter3Open()) continue; // 닫힌 3장 레이드 상자는 목록에 없다
     const have = await econRepo.stackCount(getPool(), c.id, 'bag', p.materialItem);
     const total = p.rarityWeights.reduce((a, w) => a + w.weight, 0);
     products.push({
@@ -88,6 +90,7 @@ async function processBuy(ctx: EconCtx, body: BuyBody) {
   const shop = shopData();
   const p = shop.products.get(body.product_id);
   if (!p) throw new AppError(422, '알 수 없는 상품입니다.', 'UNKNOWN_PRODUCT');
+  assertOpen('dungeon', p.raidId); // 챕터 3 레이드 상자는 3장이 열릴 때까지 살 수 없다
 
   const have = await ctx.stackCount('bag', p.materialItem);
   if (have < p.price) throw new AppError(422, '재료가 모자랍니다.', 'NOT_ENOUGH_MATERIAL', { need: p.price, have });
