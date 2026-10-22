@@ -143,9 +143,9 @@ describe('0044 캐시 아이템 가치', () => {
 
   it('6. 교환소 전용 외형은 뽑기·합성 풀에 없다', () => {
     const only = STAR_COSMETICS.filter((c) => c.exchangeOnly).map((c) => c.id);
-    expect(only.length).toBe(4);
+    expect(only.length).toBe(5); // 2026-10-23 도적 별빛 그림자 추가
     for (const r of ['common', 'rare', 'epic', 'unique'] as Rarity[]) {
-      for (const cls of ['warrior', 'mage']) {
+      for (const cls of ['warrior', 'mage', 'rogue']) {
         for (const b of ['aura', 'skin'] as const) for (const c of poolOf(b, r, cls)) expect(only).not.toContain(c.id);
       }
     }

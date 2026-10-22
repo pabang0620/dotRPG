@@ -2,6 +2,7 @@
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 import type { Category } from './auctionRules';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface ListingRow {
   id: number;
@@ -14,7 +15,7 @@ export interface ListingRow {
   count: number;
   category: Category;
   rarity: number | null;
-  classOnly: 'warrior' | 'mage' | null;
+  classOnly: CharacterClassId | null;
   buyoutPrice: number;
   startBid: number | null;
   currentBid: number | null;
@@ -42,7 +43,7 @@ interface RawListing {
   count: number;
   category: Category;
   rarity: number | null;
-  class_only: 'warrior' | 'mage' | null;
+  class_only: CharacterClassId | null;
   buyout_price: string;
   start_bid: string | null;
   current_bid: string | null;

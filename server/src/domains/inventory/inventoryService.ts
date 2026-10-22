@@ -12,6 +12,7 @@ import type { Consumed } from '../economy/economyRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './inventoryRepository';
 import type { EquipBody, StorageBody, UnequipBody, UseBody } from './inventoryValidation';
+import { usableBy } from '../../utils/characterClass';
 
 // EquipSlot: Weapon 0, Necklace 1, Ring1 2, Ring2 3, Top 4, Bottom 5
 const SLOT_OF: Record<string, number> = { Weapon: 0, Necklace: 1, Top: 4, Bottom: 5 };
@@ -135,7 +136,7 @@ async function processEquip(ctx: EconCtx, body: EquipBody) {
   const p = parseItemKey(body.item_key);
   const item = p ? eco.shop.equipment.get(p.base) : undefined;
   if (!item) throw new AppError(422, '장비가 아닙니다.', 'NOT_EQUIPMENT');
-  if (item.classOnly !== null && item.classOnly !== ctx.char.class) {
+  if (!usableBy(item, ctx.char.class)) {
     throw new AppError(422, '이 직업은 쓸 수 없는 장비입니다.', 'CLASS_MISMATCH');
   }
   // 착용 레벨(장비 단계 레벨). 가지고 있거나 거래하는 데는 레벨이 필요 없다
@@ -167,7 +168,7 @@ export function unequip(accountId: number, characterUuid: string, body: UnequipB
       if (key === null) throw new AppError(422, '비어 있는 슬롯입니다.', 'SLOT_EMPTY');
       // C# FixSlots는 전사가 아니면 빈 무기 칸에 시작 무기를 채운다: 서버에서는 무기 해제를 막아 두 쪽을 같게 둔다
       if (body.slot === 0 && ctx.char.class !== 'warrior') {
-        throw new AppError(422, '마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.', 'WEAPON_REQUIRED');
+        throw new AppError(422, '이 직업은 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.', 'WEAPON_REQUIRED');
       }
       const bind = await ctx.wornRemove(body.slot, key, 'unequip', key);
       await ctx.addItem('bag', key, 1, 'unequip', key, bind);

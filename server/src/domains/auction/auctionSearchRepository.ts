@@ -1,6 +1,7 @@
 // 경매 조회 SQL(검색, 내 등록, 내 입찰, 시세). 값은 전부 $n 파라미터이고 정렬·열 이름만 고정 문자열이다.
 import type { Queryable } from '../../db/pool';
 import { LISTING_COLS, toListing, type ListingRow } from './auctionRepository';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 const L_COLS = LISTING_COLS.split(',').map((c) => `l.${c.trim()}`).join(', ');
 
@@ -19,13 +20,13 @@ function withSeller(r: Parameters<typeof toListing>[0] & RawWithSeller): Listing
 export interface OwnedChar {
   id: number;
   accountId: number;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   name: string;
 }
 
 export async function ownedChar(db: Queryable, accountId: number, uuid: string): Promise<OwnedChar | null> {
-  const r = await db.query<{ id: string; account_id: string; class: 'warrior' | 'mage'; level: number; name: string }>(
+  const r = await db.query<{ id: string; account_id: string; class: CharacterClassId; level: number; name: string }>(
     'SELECT id, account_id, class, level, name FROM characters WHERE uuid = $1 AND account_id = $2 AND deleted_at IS NULL',
     [uuid, accountId],
   );
@@ -36,7 +37,6 @@ export async function ownedChar(db: Queryable, accountId: number, uuid: string):
 export interface SearchParams {
   now: Date;
   myAccountId: number;
-  myClass: 'warrior' | 'mage';
   bases: string[] | null;
   category: string;
   rarities: number[] | null;
@@ -44,7 +44,8 @@ export interface SearchParams {
   enhMax: number;
   priceMin: number | null;
   priceMax: number | null;
-  classMine: boolean;
+  /** "내 직업" 조건: 직업 제한이 없거나 이 기본 id 목록 안(usableBy로 서비스가 만든다). null = 조건 없음 */
+  classBases: string[] | null;
   sort: 'price_asc' | 'price_desc' | 'unit_price_asc' | 'time_left' | 'enhance_desc' | 'newest';
   limit: number;
   offset: number;
@@ -73,7 +74,7 @@ export async function searchListings(db: Queryable, p: SearchParams): Promise<{ 
   add('l.enhance <= ?', p.enhMax);
   if (p.priceMin !== null) add('l.buyout_price >= ?', p.priceMin);
   if (p.priceMax !== null) add('l.buyout_price <= ?', p.priceMax);
-  if (p.classMine) add('(l.class_only IS NULL OR l.class_only = ?)', p.myClass);
+  if (p.classBases !== null) add('(l.class_only IS NULL OR l.item_base = ANY(?::text[]))', p.classBases);
   const w = where.join(' AND ');
   const total = await db.query<{ n: string }>(`SELECT count(*) AS n FROM auction_listings l WHERE ${w}`, args);
   args.push(p.limit, p.offset);

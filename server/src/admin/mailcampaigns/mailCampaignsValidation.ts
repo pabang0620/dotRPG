@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ITEM_KEY_RE } from '../../utils/itemKey';
+import { CHARACTER_CLASSES } from '../../utils/characterClass';
 
 // 줄바꿈은 허용하고 그 밖의 제어문자는 거절한다
 const NO_CTRL_BODY = /^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*$/;
@@ -14,7 +15,7 @@ export const targetSchema = z
     max_account_level: z.number().int().min(1).max(999).optional(),
     min_level: z.number().int().min(1).max(999).optional(),
     max_level: z.number().int().min(1).max(999).optional(),
-    classes: z.array(z.enum(['warrior', 'mage'])).min(1).max(2).optional(),
+    classes: z.array(z.enum(CHARACTER_CLASSES)).min(1).max(3).optional(),
     account_created_from: dt.optional(),
     account_created_to: dt.optional(),
     last_login_before: dt.optional(),

@@ -47,6 +47,7 @@ import { codexHealth, codexOf, noteGachaGear } from './cashValueService';
 import { readCrystals } from './crystalWallet';
 import * as wallets from './starWallet';
 import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
+import { usableBy } from '../../utils/characterClass';
 
 const RARITIES: Rarity[] = ['unique', 'epic', 'rare', 'common'];
 type GearBanner = Exclude<Banner, CosmeticBanner>;
@@ -85,7 +86,7 @@ export function gearTable(banner: GearBanner, cls: string, tier = 0) {
   const cats = GEAR_BANNERS[banner].categories;
   const items = getGameData().economy.shop.equipmentList.filter(
     (e) =>
-      !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity !== 'Common' && cats.includes(e.category) && (e.classOnly === null || e.classOnly === cls),
+      !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity !== 'Common' && cats.includes(e.category) && usableBy(e, cls),
   );
   const present = GEAR_RARITY_PERMILLE.filter(([r]) => items.some((e) => e.rarity === r));
   if (present.length === 0) return [];

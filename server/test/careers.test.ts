@@ -4,17 +4,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { careerIds, MAIN_HUNTERS, validateCareer, validCareerActive, type CareerState } from '../src/domains/characters/careerRules';
 import { getPool } from '../src/db/pool';
+import { baseClassOfCareer } from '../src/utils/characterClass';
 import { auth, buildApp, createChar, emptyState, randomName, registerAccount, resetDb, shutdown, ver } from './helpers';
 const blank = (career=0):CareerState => ({schema:1,career,nodes:[],training:[],refunded:0,questStage:0,awakened:false});
 const character=(level=15,cls='warrior')=>({level,class:cls});
 const check=(s:CareerState,c=character(),prev:CareerState|null=null)=>validateCareer(s,prev,c,[],()=>false);
 describe('career invariants',()=>{
  test('base level1 saves',()=>expect(()=>check(blank(),character(1))).not.toThrow());
- test.each([1,2,3,4])('career %i minimum and ancestry',c=>{
-  expect(()=>check(blank(c),character(14,c<=2?'warrior':'mage'))).toThrow();
-  expect(()=>check(blank(c),character(15,c<=2?'warrior':'mage'))).not.toThrow();
-  expect(()=>check(blank(c),character(40,c<=2?'mage':'warrior'))).toThrow();
+ // 2026-10-23 도적: 5 어쌔신·6 닌자. 기본 직업은 {1,2 전사 / 3,4 마법사 / 5,6 도적}
+ test.each([1,2,3,4,5,6])('career %i minimum and ancestry',c=>{
+  const own=baseClassOfCareer(c) as string;
+  expect(()=>check(blank(c),character(14,own))).toThrow();
+  expect(()=>check(blank(c),character(15,own))).not.toThrow();
+  for(const other of ['warrior','mage','rogue'].filter(x=>x!==own))expect(()=>check(blank(c),character(40,other))).toThrow();
  });
+ test('career 7 is out of range',()=>expect(()=>check(blank(7),character(40,'rogue'))).toThrow());
  test('promotion cannot change or revert',()=>{expect(()=>check(blank(2),character(),blank(1))).toThrow();expect(()=>check(blank(),character(),blank(1))).toThrow();});
  test('career actives fit on Q W E R and A S D (slots 0-3, 5-7) but never on T or past the 8 keys',()=>{const s=blank(1);s.nodes=[{id:'f_cross',rank:1}];for(const slot of [0,3,5,7])expect(validCareerActive('f_cross',s,slot)).toBe(true);for(const slot of [4,8,-1])expect(validCareerActive('f_cross',s,slot)).toBe(false);});
  test('awakening requires own completed quest',()=>{const s=blank(1);s.awakened=true;expect(()=>check(s)).toThrow();s.questStage=5;expect(()=>check(s)).not.toThrow();expect(validCareerActive('f_awake',s,4)).toBe(true);expect(validCareerActive('b_awake',s,4)).toBe(false);expect(validCareerActive('f_awake',s,0)).toBe(false);});
@@ -33,13 +37,15 @@ describe('career invariants',()=>{
   expect(()=>validateCareer({...s,refunded:2},s,character(),[],()=>false)).toThrow();
  });
  // 2026-10-11: the fighter and the mage have a 10th node outside the 2x4 tree (f_stance / m_barrier, index 9)
- test('each career has eight nodes and a distinct awakening',()=>{careerIds.slice(1).forEach((ids,k)=>expect(ids.length).toBe(k===0||k===2?10:9));expect(new Set(careerIds.flat()).size).toBe(38);expect(careerIds[1]?.[9]).toBe('f_stance');expect(careerIds[3]?.[9]).toBe('m_barrier');for(const id of MAIN_HUNTERS)expect(careerIds.flat()).toContain(id);});
+ test('each career has eight nodes and a distinct awakening',()=>{careerIds.slice(1).forEach((ids,k)=>expect(ids.length).toBe(k===0||k===2||k===4?10:9));expect(new Set(careerIds.flat()).size).toBe(57);expect(careerIds[1]?.[9]).toBe('f_stance');expect(careerIds[3]?.[9]).toBe('m_barrier');expect(careerIds[5]?.[9]).toBe('a_stealth');for(const id of MAIN_HUNTERS)expect(careerIds.flat()).toContain(id);});
  test('server rules match the compiled client catalog',()=>{
   const catalog=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/careers.json'),'utf8')) as {skills:{id:string;career:number;index:number;level:number}[]};
-  expect(catalog.skills.length).toBe(38);
+  // 도적(5·6) 행은 클라이언트 내보내기가 채운다. 아직 없으면 1~4만 맞춰 본다
+  const hasRogue=catalog.skills.some(s=>s.career>=5);
+  expect(catalog.skills.length).toBe(hasRogue?57:38);
   // 2026-10-13 re-export: the ids per career match the server order (f_stance / m_barrier at index 9), and the levels follow
   // the client rule (awakening 15, main hunters and tier 2 at 18; index 9 has its own level per career).
-  for(let c=1;c<=4;c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual(careerIds[c]??[]);
+  for(let c=1;c<=(hasRogue?6:4);c++)expect(catalog.skills.filter(s=>s.career===c).sort((a,b)=>a.index-b.index).map(s=>s.id)).toEqual(careerIds[c]??[]);
   for(const s of catalog.skills)if(s.index!==9)expect(s.level).toBe(s.index===8?15:(MAIN_HUNTERS as readonly string[]).includes(s.id)||s.index%4===2?18:s.index%4<2?15:22);
  });
  test('renewal catalog exposes role mechanics while retaining saved node identities',()=>{
@@ -54,7 +60,9 @@ describe('career invariants',()=>{
   expect(skill('b_bloom')).toMatchObject({duration:6,hits:6});
   expect(skill('b_awake')).toMatchObject({duration:12,hits:12});
   const active=skills.filter((s:{kind:number})=>s.kind!==0);
-  expect(new Set(active.map((s:{delivery:string})=>s.delivery)).size).toBe(30);
+  // 도적(5·6) 행이 내보내지면 어쌔신·닌자 액티브 15종이 더해진다(2026-10-23)
+  const rogueRows=skills.some((s:{career:number})=>s.career>=5);
+  expect(new Set(active.map((s:{delivery:string})=>s.delivery)).size).toBe(rogueRows?45:30);
   expect(skill('f_cross')).toMatchObject({name:'십자참',delivery:'cross',mp:6,cooldown:2,hits:2});
   expect(skill('f_cross').range).toBeCloseTo(2.3,5);
   expect(skill('f_flurry')).toMatchObject({name:'검귀 해방',delivery:'frenzy',mp:13,cooldown:62,duration:120});

@@ -3,11 +3,12 @@ import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
 import type { ChatSession } from './chatSession';
 import { registry } from './realtimeNotifier';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface DisplayCharacter {
   id: string;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
 }
 export interface FriendWhere {
@@ -28,7 +29,7 @@ export async function displayCharacters(accountIds: number[]): Promise<Map<numbe
   const out = new Map<number, DisplayCharacter>();
   if (accountIds.length === 0) return out;
   const online = accountIds.map((a) => registry.ofAccount(a)?.characterId).filter((x): x is number => x !== undefined);
-  const r = await getPool().query<{ account_id: string; uuid: string; name: string; class: 'warrior' | 'mage'; level: number }>(
+  const r = await getPool().query<{ account_id: string; uuid: string; name: string; class: CharacterClassId; level: number }>(
     `SELECT DISTINCT ON (a.id) a.id AS account_id, c.uuid, c.name, c.class, c.level
        FROM accounts a JOIN characters c ON c.account_id = a.id AND c.deleted_at IS NULL
       WHERE a.id = ANY($1::bigint[])

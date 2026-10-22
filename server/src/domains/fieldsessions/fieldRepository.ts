@@ -1,6 +1,7 @@
 // 필드 세션 SQL: field_sessions, field_session_members. 쓰기는 Service가 세션 행 잠금 아래에서만 부른다.
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export type FieldMemberState = 'joined' | 'playing' | 'disconnected' | 'left';
 export type FieldLeftReason = 'left' | 'map_move' | 'party_left' | 'kicked' | 'party_closed' | 'rejoin_timeout' | 'stale' | 'dungeon_start' | 'replaced';
@@ -46,7 +47,7 @@ export interface FMemberRow {
   account_id: number;
   character_uuid: string;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   seat: number;
   state: FieldMemberState;

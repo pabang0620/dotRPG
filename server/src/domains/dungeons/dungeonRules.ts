@@ -5,6 +5,7 @@ import { RARITY_ORDER } from '../../gamedata/economyData';
 import { f32, keyAt, roundHalfEven } from '../../utils/itemKey';
 import { gameWeekday } from '../../utils/resetBoundaries';
 import type { Rng } from '../../utils/rng';
+import { usableBy } from '../../utils/characterClass';
 
 export interface RankScore {
   time: number;
@@ -85,7 +86,7 @@ const rarityIdx = (r: string): number => RARITY_ORDER.indexOf(r as (typeof RARIT
 export function rollGear(eco: EconomyData, cls: string, minRarity: string, rng: Rng, tier = 0): string {
   // 던전 카드 장비는 그 난이도 권장 레벨의 단계 장비만(레전더리는 레이드 별도 굴림)
   const usable = eco.shop.equipmentList.filter(
-    (e) => !e.bossOnly && e.levelTier === tier && e.rarity !== 'Legendary' && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.bossOnly && e.levelTier === tier && e.rarity !== 'Legendary' && usableBy(e, cls),
   );
   const min = rarityIdx(minRarity);
   if (rng.int(0, 2) === 0) {
@@ -203,7 +204,7 @@ export function rollRaidGear(eco: EconomyData, d: DungeonDef, cls: string, rng: 
   }
   // 전설 무기는 단계마다 두 갈래(광역형·토벌형): 등급이 정해진 뒤 같은 확률로 하나를 고른다(C# FindRaidGear와 같다)
   const found = eco.shop.equipmentList.filter(
-    (e) => !e.bossOnly && e.levelTier === tier && e.category === category && e.rarity === rarity && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.bossOnly && e.levelTier === tier && e.category === category && e.rarity === rarity && usableBy(e, cls),
   );
   if (found.length === 0) throw new Error(`레이드 장비를 찾을 수 없습니다: ${d.id} ${cls} ${category} ${rarity}`);
   const pick = found.length > 1 ? (found[rng.int(0, found.length)] as (typeof found)[number]) : (found[0] as (typeof found)[number]);
@@ -278,7 +279,7 @@ export function rollUniqueBonus(
   if (!hit) return { key: null, misses: misses + 1 };
   const tier = tierOfLevel(diff.recommendedLevel);
   const pool = eco.shop.equipmentList.filter(
-    (e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && usableBy(e, cls),
   );
   if (pool.length === 0) return { key: null, misses: misses + 1 };
   const categories = [...new Set(pool.map((e) => e.category))].sort();
@@ -329,7 +330,7 @@ export function rareChances(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, 
   const gearCard = table.filter((e) => e.itemId === 'gear').reduce((a, e) => a + e.weight, 0) / Math.max(1, total);
   // rollGear: 절반은 드롭표 시도(최대 gearDropTries번, 최소 등급 이상이면 그 장비), 나머지와 실패분은 가중 풀
   const usable = eco.shop.equipmentList.filter(
-    (e) => !e.bossOnly && e.levelTier === tier && e.rarity !== 'Legendary' && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.bossOnly && e.levelTier === tier && e.rarity !== 'Legendary' && usableBy(e, cls),
   );
   const min = rarityIdx(diff.minGearRarity);
   const dropPool = usable.filter((e) => e.dropWeight > 0);
@@ -350,7 +351,7 @@ export function rareChances(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, 
   const uniqueOfGear = 0.5 * fromDrop + (0.5 + 0.5 * (1 - dropHitAll)) * fromPool;
   // 대박: 같은 단계 유니크 풀이 있을 때만 카드가 바뀐다(레전더리는 레이드에서만)
   const jackpotPool = eco.shop.equipmentList.some(
-    (e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && (e.classOnly === null || e.classOnly === cls),
+    (e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && usableBy(e, cls),
   );
   const pj = jackpotPool ? (diff.jackpotPerMille ?? 0) / 1000 : 0;
   const n = d.sure ? LUCK_CARDS : 1;
@@ -361,7 +362,7 @@ export function rareChances(eco: EconomyData, d: DungeonDef, diff: DiffNumbers, 
 export function rollJackpot(eco: EconomyData, cls: string, rng: Rng, tier = 0): string | null {
   // 대박 카드: 같은 단계의 유니크(레전더리는 레이드에서만)
   const pool = eco.shop.equipmentList
-    .filter((e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && (e.classOnly === null || e.classOnly === cls))
+    .filter((e) => !e.starter && !e.bossOnly && e.levelTier === tier && e.rarity === 'Unique' && usableBy(e, cls))
     .map((e) => ({ id: e.id, w: rarityIdx(e.rarity) >= rarityIdx('Legendary') ? 1 : 3 }));
   const total = pool.reduce((a, p) => a + p.w, 0);
   if (total === 0) return null;

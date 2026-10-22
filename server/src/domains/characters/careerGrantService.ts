@@ -13,6 +13,7 @@ import { activeSessionIdOf } from '../fieldsessions/fieldRepository';
 import type { CareerState } from './careerRules';
 import * as repo from './careerGrantRepository';
 import type { AdvanceBody, PromoteBody, TrialFinishBody, TrialStartBody } from './careerGrantValidation';
+import { baseClassOfCareer } from '../../utils/characterClass';
 
 const NOT_IN_TOWN = () => new AppError(409, '마을에서만 할 수 있습니다.', 'NOT_IN_TOWN');
 const NOT_PROMOTED = () => new AppError(409, '아직 전직하지 않았습니다.', 'NOT_PROMOTED');
@@ -31,7 +32,7 @@ async function assertInTown(ctx: EconCtx, trialStartedAt?: Date): Promise<void> 
   if (trialStartedAt && (mine as NonNullable<typeof mine>).map_since.getTime() > trialStartedAt.getTime()) throw NOT_IN_TOWN();
 }
 
-const baseClassOf = (career: number): 'warrior' | 'mage' => (career <= 2 ? 'warrior' : 'mage');
+const baseClassOf = baseClassOfCareer;
 
 /** C1 POST /characters/{uuid}/career/promote */
 export function promote(accountId: number, characterUuid: string, body: PromoteBody): Promise<StoredResult> {

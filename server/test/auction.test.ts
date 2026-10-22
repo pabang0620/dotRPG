@@ -380,6 +380,24 @@ describe('조회 API', () => {
     expect((await get(app, viewer, '/auction/search?evil=1')).status).toBe(400);
   });
 
+  it('도적(0050): 단검은 class_only rogue로 등록되고, "내 직업" 검색은 usableBy(단검·판금 보임, 검·로브 안 보임)', async () => {
+    const seller = await mk(app);
+    const rogue = await mk(app, 100_000, 'rogue');
+    const warrior = await mk(app);
+    const dagger = await listIron(app, seller, { key: 'eq_dagger_10_u' });
+    await listIron(app, seller, { key: 'eq_plate_10_u' });
+    await listIron(app, seller, { key: 'eq_sword_10_u' });
+    await listIron(app, seller, { key: 'eq_robe_10_u' });
+    await listIron(app, seller, { key: 'eq_ring_10_u' });
+    expect((await listingRow(dagger)).class_only).toBe('rogue');
+    const keysOf = (r: { body: { data: { listings: { item_key: string }[] } } }) => r.body.data.listings.map((l) => l.item_key).sort();
+    const mine = await get(app, rogue, '/auction/search?class=mine');
+    expect(keysOf(mine)).toEqual(['eq_dagger_10_u', 'eq_plate_10_u', 'eq_ring_10_u']);
+    const w = await get(app, warrior, '/auction/search?class=mine');
+    expect(keysOf(w)).toEqual(['eq_plate_10_u', 'eq_ring_10_u', 'eq_sword_10_u']);
+    expect((await get(app, rogue, '/auction/search')).body.meta.total).toBe(5);
+  });
+
   it('내 등록·입찰·요약: 정확한 마감 시각은 내 등록에만', async () => {
     const seller = await mk(app);
     const bidder = await mk(app);

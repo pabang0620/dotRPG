@@ -10,10 +10,10 @@ export interface Hero {
   s: Session;
   id: string; // 캐릭터 uuid
   dbId: number;
-  cls: 'warrior' | 'mage';
+  cls: 'warrior' | 'mage' | 'rogue';
 }
 
-export async function newHero(app: Express, cls: 'warrior' | 'mage' = 'warrior'): Promise<Hero> {
+export async function newHero(app: Express, cls: 'warrior' | 'mage' | 'rogue' = 'warrior'): Promise<Hero> {
   const s = await registerAccount(app);
   const res = await createChar(app, s, randomName(), cls);
   if (res.status !== 201) throw new Error(`createChar failed ${res.status}`);

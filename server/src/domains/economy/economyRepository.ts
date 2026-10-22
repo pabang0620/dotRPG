@@ -1,12 +1,13 @@
 // 3단계 공통 SQL. 재화 변경은 호출하는 Service가 characters 행 잠금(lockCharacter) 아래에서만 부른다.
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface LockedChar {
   id: number;
   uuid: string;
   accountId: number;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   xp: number;
   gold: number;
@@ -19,7 +20,7 @@ interface RawLocked {
   id: string;
   uuid: string;
   account_id: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   xp: number;
   gold: string;

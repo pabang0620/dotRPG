@@ -1,6 +1,7 @@
 // 친구 요청·관계 SQL(계정 단위). 쓰기는 Service가 계정 행 잠금 아래에서 부른다.
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface FriendshipRow {
   id: number;
@@ -138,7 +139,7 @@ export interface RequestView {
   created_at: Date;
   char_uuid: string;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
 }
 

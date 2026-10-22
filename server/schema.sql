@@ -3307,3 +3307,14 @@ BEGIN
 END $$;
 ALTER TABLE boss_attempts ADD CONSTRAINT boss_attempts_guild_kind_chk CHECK (kind = 'guild' OR guild_id IS NULL);
 COMMENT ON COLUMN boss_attempts.guild_id IS '길드보스 도전의 길드. 시작 뒤 길드를 떠났으면 끝 보고 때 NULL(점수·기여에 안 들어감, 참가 보상은 남음)';
+
+-- 0050_rogue_class: 세 번째 기본 직업 도적(rogue), 전직 5 어쌔신·6 닌자 (2026-10-23)
+ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_class_check;
+ALTER TABLE characters ADD CONSTRAINT characters_class_check CHECK (class IN ('warrior', 'mage', 'rogue'));
+COMMENT ON COLUMN characters.class IS 'CharacterClass: warrior | mage | rogue';
+ALTER TABLE auction_listings DROP CONSTRAINT IF EXISTS auction_listings_class_only_check;
+ALTER TABLE auction_listings ADD CONSTRAINT auction_listings_class_only_check CHECK (class_only IN ('warrior', 'mage', 'rogue'));
+ALTER TABLE character_career DROP CONSTRAINT IF EXISTS character_career_career_check;
+ALTER TABLE character_career ADD CONSTRAINT character_career_career_check CHECK (career BETWEEN 1 AND 6);
+ALTER TABLE character_career_trials DROP CONSTRAINT IF EXISTS character_career_trials_career_check;
+ALTER TABLE character_career_trials ADD CONSTRAINT character_career_trials_career_check CHECK (career BETWEEN 1 AND 6);

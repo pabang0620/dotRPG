@@ -8,7 +8,7 @@ import { roundHalfAway } from '../../utils/itemKey';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import { accountCreatedAt, countActiveOfSeller } from './auctionRepository';
 import { limitsOf, referenceOf, type Reference } from './auctionPricing';
-import { baseIdsMatching, factsOf, feePctOf } from './auctionRules';
+import { baseIdsMatching, classRestrictedBasesFor, factsOf, feePctOf } from './auctionRules';
 import * as search from './auctionSearchRepository';
 import { settleDueOfCharacter } from './auctionTicker';
 import { myViewOf, viewOf } from './auctionView';
@@ -36,7 +36,6 @@ export async function searchAuction(accountId: number, characterUuid: string, q:
   const r = await search.searchListings(getPool(), {
     now,
     myAccountId: c.accountId,
-    myClass: c.class,
     bases,
     category: q.category,
     rarities: q.rarity ?? null,
@@ -44,7 +43,7 @@ export async function searchAuction(accountId: number, characterUuid: string, q:
     enhMax: q.enh_max ?? maxEnhance,
     priceMin: q.price_min ?? null,
     priceMax: q.price_max ?? null,
-    classMine: q.class === 'mine',
+    classBases: q.class === 'mine' ? classRestrictedBasesFor(c.class) : null,
     sort: q.sort,
     limit: q.limit,
     offset: (q.page - 1) * q.limit,

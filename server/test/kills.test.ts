@@ -4,6 +4,8 @@ import { getPool } from '../src/db/pool';
 import { getGameData } from '../src/gamedata/loader';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
+import { usableBy } from '../src/utils/characterClass';
+import { dropWeightFor } from '../src/domains/kills/killRules';
 import { auth, buildApp, resetDb, shutdown } from './helpers';
 import {
   anomalyKinds,
@@ -233,6 +235,18 @@ describe('POST /characters/:id/kills', () => {
     // 골드, 뼈 1개, 강화석 1개, 마력 정수 1개, 장비 1개(2026-10-11부터 직업 제한 없음: 그 단계 가중 목록의 첫 장비)
     const tier0 = getGameData().economy.shop.equipmentList.find((e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === 0);
     expect(keys).toEqual(['gold', 'mat_bone', 'mat_ore', 'mat_essence', tier0?.id]);
+  });
+
+  it('드롭 후보 직업 가중(2026-10-23 도적): 못 쓰는 장비는 x0.75라 단계마다 직업별 쓸 장비 무게 비율이 5/8', () => {
+    const eco = getGameData().economy;
+    for (const tier of [...new Set(eco.shop.equipmentList.map((e) => e.levelTier))]) {
+      const pool = eco.shop.equipmentList.filter((e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === tier);
+      for (const cls of ['warrior', 'mage', 'rogue']) {
+        const own = pool.filter((e) => usableBy(e, cls)).reduce((a, e) => a + dropWeightFor(e, cls), 0);
+        const all = pool.reduce((a, e) => a + dropWeightFor(e, cls), 0);
+        expect(own / all).toBeCloseTo(5 / 8, 6);
+      }
+    }
   });
 
   it('미수령 드롭이 상한이면 경험치만 인정하고 드롭 굴림은 건너뛴다', async () => {

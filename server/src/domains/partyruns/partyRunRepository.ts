@@ -3,6 +3,7 @@ import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 import { RUN_COLS, toPartyRun, type PartyRunRow } from '../party/partyTx';
 import { notifyPartyChanged, notifyRunChanged } from '../chat/partyNotify';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export type MemberState = 'invited' | 'joined' | 'playing' | 'disconnected' | 'done' | 'left' | 'no_show' | 'dropped';
 export const ACTIVE_STATES: MemberState[] = ['invited', 'joined', 'playing', 'disconnected'];
@@ -12,7 +13,7 @@ export interface RunMemberRow {
   account_id: number;
   character_uuid: string;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   slot: number;
   state: MemberState;

@@ -38,7 +38,7 @@ export const HOUR = 3_600_000;
 export const MIN = 60_000;
 
 /** 영웅을 만들고 골드를 정확히 gold로 맞춘다(시작 골드는 100) */
-export async function mk(app: Express, gold = 100_000, cls: 'warrior' | 'mage' = 'warrior'): Promise<Hero> {
+export async function mk(app: Express, gold = 100_000, cls: 'warrior' | 'mage' | 'rogue' = 'warrior'): Promise<Hero> {
   const h = await newHero(app, cls);
   const diff = gold - (await goldNow(h));
   if (diff > 0) await seedGold(h, diff);
