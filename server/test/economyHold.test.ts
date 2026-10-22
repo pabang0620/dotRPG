@@ -94,8 +94,8 @@ describe('시간별 집계(income_hourly)', () => {
     const row = (await getPool().query('SELECT ore, essence, item_value, gold_acq FROM income_hourly WHERE character_id = $1', [h.dbId])).rows[0];
     expect(row.ore).toBe(1);
     expect(row.essence).toBe(1);
-    // 뼈 1 x 5 + 광석 20 + 정수 80 + 장비 판매가
-    expect(Number(row.item_value)).toBeGreaterThanOrEqual(105);
+    // 뼈 1 x 4 + 광석 14 + 정수 56 + 장비 판매가(2026-10-21 재료 판매가 x0.7)
+    expect(Number(row.item_value)).toBeGreaterThanOrEqual(74);
     expect(Number(row.gold_acq)).toBeGreaterThan(0);
   });
 
