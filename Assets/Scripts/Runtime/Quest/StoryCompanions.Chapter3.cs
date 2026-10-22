@@ -6,7 +6,7 @@ namespace DotRPG
     /// [CH3] Chapter 3 story companions (Docs/ch3/WORLD_AND_STORY.md 2·4절).
     /// 쿠크 is offered, never forced into the saved party: from 3-3 (c3_sayab) to 3-끝 (c3_end) he can be picked in the
     /// AI 동료 window like a mercenary (the 2026-10-14 rule: story companions do not join by themselves). Two scenes do
-    /// put him beside the hero for a while as a guest (PartyManager.Guests): the first two rooms of the 시바크 raid while
+    /// put him beside the hero for a while as a guest (PartyManager.Guests): the first two rooms of the 지바크 raid while
     /// 3-6 is open (<see cref="ForcedSlot"/>), and the 사얍 방어전 with 카나 (<see cref="StoryDefense"/>).
     /// </summary>
     public static partial class StoryCompanions
@@ -32,7 +32,7 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// The story guest a dungeon room asks for (null: none): 쿠크 in rooms 1·2 of the 시바크 raid until 3-6 is done.
+        /// The story guest a dungeon room asks for (null: none): 쿠크 in rooms 1·2 of the 지바크 raid until 3-6 is done.
         /// He stays out of the boss room (그라흐's old soldier does not stand before what grew from the broken stone).
         /// </summary>
         public static string ForcedSlot(string dungeonId, int room)

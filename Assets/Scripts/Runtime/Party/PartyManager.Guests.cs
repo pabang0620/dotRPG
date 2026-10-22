@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// [CH3] Story guests: a story character fighting beside the party for a while (쿠크 in the first two rooms of the
-    /// 시바크 raid, 쿠크 and 카나 in the 사얍 방어전). Not saved and not part of the roster. When the party is full and
+    /// 지바크 raid, 쿠크 and 카나 in the 사얍 방어전). Not saved and not part of the roster. When the party is full and
     /// <c>benchIfFull</c> is asked, the last hired AI sits out until the guest leaves; people are never pushed out.
     /// </summary>
     public sealed partial class PartyManager

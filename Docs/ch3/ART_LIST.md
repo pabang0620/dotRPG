@@ -33,7 +33,7 @@
 | char_balche | 발체(아이) | 작은 체격 |
 | char_ria_adult | 성장한 리아 | 빨간 머리끈. 참조 `char_ria` |
 | char_sayab_inn | 사얍 여관 주인 | |
-| char_boss_xibak | 공허 침식체 시바크 | 보스 규격, artScale 1.5. 참조 `char_boss_abyss_titan` |
+| char_boss_xibak | 공허 침식체 지바크 | 보스 규격, artScale 1.5. 참조 `char_boss_abyss_titan` |
 | char_boss_kamatz | 잿빛 손 지휘관 카마츠 | 사람형 중무장, 잿빛 망토. 참조 `char_kael`·`char_bargas` |
 | 몬스터 아틀라스 void | void_hound·void_sentry·void_caller·void_burster | `RegionalMonsterArt` 규격 5방향 x 8프레임 x 4종. 폭발체는 예고 발광 프레임 1장 추가 |
 | 몬스터 아틀라스 grey | grey_ranger·grey_knight·grey_priest·grey_captain | 같은 규격 x 4종(정예는 기사와 같은 몸에 망토·투구 장식) |

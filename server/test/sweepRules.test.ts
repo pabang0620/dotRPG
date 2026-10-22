@@ -160,7 +160,11 @@ describe('A3 직접 플레이 rollCards 불변', () => {
     for (const d of eco.dungeons.byId.values()) {
       // 13단계: 레이드는 rollRaidCards(카드 4장 모두 받기)로 갈라져 옛 루프와 비교하지 않는다(raidRewards.test.ts)
       if (d.isRaid) continue;
-      const diffs = d.isRaid ? [d.raidNumbers as DiffNumbers] : eco.dungeons.difficulties.map((_x, i) => diffOf(eco, d, i) as DiffNumbers);
+      // 챕터 3 군주(4)는 요일 던전에만 있어 그 밖의 던전은 diffOf가 null이다. 실제 입장·소탕은 null이면 DUNGEON_UNKNOWN으로 거부하고
+      // rollCards까지 오지 않으므로 여기서도 없는 난이도는 건너뛴다
+      const diffs = d.isRaid
+        ? [d.raidNumbers as DiffNumbers]
+        : eco.dungeons.difficulties.map((_x, i) => diffOf(eco, d, i)).filter((x): x is DiffNumbers => x !== null);
       for (const diff of diffs) {
         for (const cls of ['warrior', 'mage']) {
           for (let seed = 1; seed <= 150; seed++) {

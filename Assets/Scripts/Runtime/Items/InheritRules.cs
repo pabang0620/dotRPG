@@ -104,7 +104,7 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// [CH3] Extra materials of an inheritance into <paramref name="toLevel"/>: 고대의 핵, 침식 결정 (시바크) and 잿빛 인장
+        /// [CH3] Extra materials of an inheritance into <paramref name="toLevel"/>: 고대의 핵, 침식 결정 (지바크) and 잿빛 인장
         /// (카마츠) for Lv.50 unique / legendary pieces, so a Lv.40 holder still runs both chapter 3 raids. Null when the grade
         /// does not inherit into that band; (0, 0, 0) on the launch steps.
         /// </summary>

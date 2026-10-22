@@ -85,7 +85,7 @@ namespace DotRPG
                 description = L.T("수호자 그라흐가 지키던 수호석의 파편. 그라흐 레이드 보상 카드로만 얻고, 레이드 상점에서 그라흐 무기 상자로 바꾼다.\n레이드 상점에서 무기 상자로 바꿉니다.") },
             // [CH3] Chapter 3 raid materials (Docs/ch3/RAIDS.md), with their own ART_LIST 6 icons.
             new ConsumableItem { id = RaidRewards.RaidMatXibak, name = L.T("침식 결정"), iconKey = "maticon_raid_xibak", kind = ConsumableKind.Key, grade = ItemRarity.Unique,
-                description = L.T("공허 침식체 시바크의 몸에서 굳은 결정. 시바크 레이드 보상 카드로만 얻고, 레이드 상점의 시바크 무기 상자와 장비 계승에 쓴다.") },
+                description = L.T("공허 침식체 지바크의 몸에서 굳은 결정. 지바크 레이드 보상 카드로만 얻고, 레이드 상점의 지바크 무기 상자와 장비 계승에 쓴다.") },
             new ConsumableItem { id = RaidRewards.RaidMatKamatz, name = L.T("잿빛 인장"), iconKey = "maticon_raid_kamatz", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = L.T("잿빛 손 지휘관 카마츠가 명령서에 찍던 인장. 카마츠 레이드 보상 카드로만 얻고, 레이드 상점의 카마츠 무기 상자와 장비 계승에 쓴다.") },
             // [CH3] Chapter 3 quest pickups (World/FieldQuestDrops.cs), with ART_LIST 2's collect icons.

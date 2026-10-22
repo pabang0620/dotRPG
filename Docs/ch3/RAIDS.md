@@ -2,18 +2,18 @@
 
 틀은 기존 그대로다(`STORY.md` 6절, `research/CH3_CURRENT_SYSTEMS_2026-10-21.md` 5절): 중간 레이드 수·토·일 + 봉인 열쇠 조각(keyMin 20, keyMax 50), 최종 레이드 일요일 keyCost 60, 카드 4장, 재료 상점, 심화 레이드(x2.4 체력, x1.6 피해, 보상 x1.5), 혼자 + AI 동료도 보상.
 
-## 1. 중간 레이드: 공허 침식체 시바크
+## 1. 중간 레이드: 공허 침식체 지바크
 
 | 항목 | 값 | 근거 |
 |---|---|---|
 | id | `raid_xibak` | |
-| 이름 | 공허 침식체 시바크 (Void Blight Xibak) | xib = 두려움 |
+| 이름 | 공허 침식체 지바크 (Void Blight Xibak) | xib = 두려움 |
 | 무대 | 깨진 수호석 자리(`DgnXibak1`, `DgnXibak2`, `DgnXibakBoss`, 테마 DryCanyon) | |
 | raidTier / chapter | Mid / 3 | |
 | unlockQuest | c3_xibak | |
 | openDays | 수·토·일 | |
 | RaidNumbers | recommendedLevel 45, power 13,000, hpMul 5.2, damageMul 1.8, monsterLevel 40, minGear Epic, ticketWeight 8 | 그라흐(40, 10,400, 4.6, 1.7, 35)에서 레벨 5 증가분. monsterLevel은 권장 레벨보다 5 낮게(기존 규칙). power는 군주 던전과 같은 13,000 |
-| rooms | 1: void_sentry 5 + void_caller 3 / 2: void_hound 6 + grey_ranger 3 / 보스: 시바크 + 졸개 void_hound. 1·2번 방은 AI 슬롯 하나가 쿠크로 강제 편성(`WORLD_AND_STORY.md` 4절) | |
+| rooms | 1: void_sentry 5 + void_caller 3 / 2: void_hound 6 + grey_ranger 3 / 보스: 지바크 + 졸개 void_hound. 1·2번 방은 AI 슬롯 하나가 쿠크로 강제 편성(`WORLD_AND_STORY.md` 4절) | |
 | referenceSeconds | { 330, 495, 330, 330 } | 바위 심장과 같음 |
 | clearXp | 1,200 | |
 | 보스 | `boss_xibak`: hp 7,600, dmg 58, lines 70, speed 2.2, size 2.6, artScale 1.5, raid = true, phases { 0.7, 0.4, 0.15 }, maxMinions 4, groggyMax 760 | 그라흐 6,400/51에 x1.19/x1.14 |
@@ -53,12 +53,12 @@
 
 | id | 이름 | 재료 | 가격 | 내용 |
 |---|---|---|---|---|
-| xibak_epic_weapon | 시바크 에픽+ 무기 상자 | mat_raid_xibak | 25 | 티어 9 무기, 에픽 88 / 유니크 12 |
-| xibak_legend_weapon | 시바크 레전더리 무기 상자 | mat_raid_xibak | 70 | 티어 10 레전더리 무기 |
+| xibak_epic_weapon | 지바크 에픽+ 무기 상자 | mat_raid_xibak | 25 | 티어 9 무기, 에픽 88 / 유니크 12 |
+| xibak_legend_weapon | 지바크 레전더리 무기 상자 | mat_raid_xibak | 70 | 티어 10 레전더리 무기 |
 | kamatz_epic_weapon | 카마츠 에픽+ 무기 상자 | mat_raid_kamatz | 20 | 티어 10 무기, 에픽 88 / 유니크 12 |
 | kamatz_legend_weapon | 카마츠 레전더리 무기 상자 | mat_raid_kamatz | 60 | 티어 10 레전더리 무기 |
 
-- 재료 기대값은 그라흐와 같은 카드 표라 판당 2.56개. 시바크 주 3회 + 심화 주 1회 = 주 약 20개 → 레전더리 상자 3.5주. 카마츠 주 1회 + 심화 = 주 약 10개 → 6주. 군주 던전 확정 보상(침식 결정 주 6~9, 잿빛 인장 주 4)이 더해진다.
+- 재료 기대값은 그라흐와 같은 카드 표라 판당 2.56개. 지바크 주 3회 + 심화 주 1회 = 주 약 20개 → 레전더리 상자 3.5주. 카마츠 주 1회 + 심화 = 주 약 10개 → 6주. 군주 던전 확정 보상(침식 결정 주 6~9, 잿빛 인장 주 4)이 더해진다.
 - 재료는 계승(`PROGRESSION_AND_GEAR.md` 4절)과 아카브 교환(5절)에도 쓰인다. `RaidRewards.IsRaidMaterial`에 두 재료 추가.
 
 ## 4. 공통

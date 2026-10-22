@@ -252,7 +252,9 @@ describe('H6 연결 조회, H7 의심 거래, H8 상한 표, H9 속도', () => {
     expect(caps.status).toBe(200);
     expect(caps.body.data).toMatchObject({ mode: 'log_only', mult: 3, floors: { xp: 10_000, gold_eq: 50_000, ore: 200, essence: 60, unique_plus: 3 } });
     expect(caps.body.data.caps.schema).toBe(1);
-    expect(caps.body.data.caps.bands).toHaveLength(9);
+    // 챕터 3: 41~44, 45~47, 48~50 밴드가 더해져 12개, 마지막 밴드는 만렙 50까지
+    expect(caps.body.data.caps.bands).toHaveLength(12);
+    expect(caps.body.data.caps.bands[11]).toMatchObject({ minLevel: 48, maxLevel: 50 });
     const h = await newHero(pub);
     const v = await adminGet(adm, viewer, `/admin/characters/${h.id}/velocity`);
     expect(v.status).toBe(200);

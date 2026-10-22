@@ -6,7 +6,7 @@ namespace DotRPG
     /// <summary>
     /// [CH3] Field void rift of 공허의 틈 (Docs/ch3/WORLD_AND_STORY.md 7): every 90 s one opens on a spawn point. While open,
     /// monsters within 6 m take 30% less damage. A party member standing in it for 3 s closes it. It teaches the raid's
-    /// rift rule before 시바크. Auto hunting and the measure bot find it like a seal circle (<see cref="SpotFor"/>).
+    /// rift rule before 지바크. Auto hunting and the measure bot find it like a seal circle (<see cref="SpotFor"/>).
     /// Runs on the PC that simulates the field (solo or the field host), like the monsters it hardens.
     /// </summary>
     public sealed class FieldRift : MonoBehaviour

@@ -385,13 +385,13 @@
      "setFlags": []
     },
     {
-     "text": "공허 침식체 시바크를 쓰러뜨린다.",
+     "text": "공허 침식체 지바크를 쓰러뜨린다.",
      "objectives": [
       {
        "type": "raid",
        "target": "raid_xibak",
        "count": 1,
-       "text": "레이드: 공허 침식체 시바크 클리어",
+       "text": "레이드: 공허 침식체 지바크 클리어",
        "dialogue": "",
        "consume": false,
        "map": ""

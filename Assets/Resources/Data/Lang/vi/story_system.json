@@ -1757,5 +1757,11 @@
  "용사 훈께서 마왕 볼론을 북쪽 땅에 봉인한 날을 기리는 봉인 축제다. 올해로 꼭 400년째지. 등불은 그분께 올리는 감사지.": "Lễ Hội Phong Ấn tưởng nhớ ngày Dũng Sĩ Hun phong ấn Ma Vương Bolon ở vùng đất phía bắc. Năm nay tròn 400 năm. Đèn lồng là lời tạ ơn dâng lên ngài.",
  "전직 안내원 이츠나": "Hướng Dẫn Chuyển Chức Itzna",
  "축제 날엔 네 몫 등불도 하나 남겨 둘게. 등불은 둘씩 띄우는 법이니까. 리아랑 띄운다며? 소문 다 났다.": "Ngày lễ ta để dành cho cháu một chiếc đèn. Đèn lồng bao giờ cũng thả theo cặp. Thả chung với Ria phải không? Tin đồn lan khắp rồi.",
- "볼론": "Bolon"
+ "볼론": "Bolon",
+ "detachCharacter가 먼저 빼고 인원을 맞춘다. 남은 행이 있으면 지운다": "detachCharacter rút ra trước và chỉnh lại số thành viên. Các dòng còn lại sẽ bị xóa",
+ "길드 단위 주간 점수. 개인정보 없음": "Điểm tuần của bang hội. Không có dữ liệu cá nhân",
+ "길드 자체. 길드장 캐릭터는 익명화 때 위임되거나 혼자면 해체된다. 해체된 길드 행은 이름만 남고 개인정보가 없다(길드장 참조는 캐릭터 껍데기)": "Bản thân bang hội. Nhân vật bang chủ được chuyển giao khi ẩn danh hóa, hoặc bang hội giải tán nếu chỉ còn một mình. Dòng bang hội đã giải tán chỉ giữ tên, không có dữ liệu cá nhân (tham chiếu bang chủ là vỏ nhân vật)",
+ "랭킹 칭호·이름 색. 지나간 주 랭킹 화면은 boss_attempts로 다시 계산되며 이름은 자리표시가 된다": "Danh hiệu xếp hạng và màu tên. Màn hình xếp hạng các tuần trước được tính lại từ boss_attempts và tên thành ký hiệu giữ chỗ",
+ "보스 도전 기록(피해량·시각). 랭킹·이상 탐지 근거라 파기 때까지 보관(개인정보처리방침 보스 도전 기록)": "Bản ghi lượt khiêu chiến trùm (sát thương và thời điểm). Giữ đến khi hủy làm căn cứ xếp hạng và phát hiện bất thường (chính sách quyền riêng tư: bản ghi khiêu chiến trùm)",
+ "주간 시즌. 개인정보 없음": "Mùa theo tuần. Không có dữ liệu cá nhân"
 }

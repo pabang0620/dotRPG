@@ -52,7 +52,7 @@ namespace DotRPG
                     m.Place(party.SpotFor(i - 1), Facing.Up);
                 }
             party?.Regroup(RoomRegroupSeconds);
-            StoryCompanions.OnRoomLoaded(run.Dungeon.id, index, !NetHost && !Follower); // [CH3] 쿠크 in rooms 1·2 of the 시바크 raid
+            StoryCompanions.OnRoomLoaded(run.Dungeon.id, index, !NetHost && !Follower); // [CH3] 쿠크 in rooms 1·2 of the 지바크 raid
 
             if (!Follower) SpawnMonsters(room); // [PARTY NET] member PCs get the host's monsters as puppets
             if (!room.isBoss) door = DungeonDoor.Create(Game.World.DungeonDoorCells, Game.World.ObjectsRoot);
