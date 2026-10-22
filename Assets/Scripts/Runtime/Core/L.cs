@@ -99,6 +99,14 @@ namespace DotRPG
             }
         }
 
+        /// <summary>[CH3] Adds a table that is not in the build (the chapter 3 bundle's translation from the server).</summary>
+        public static void AddEntries(Dictionary<string, object> entries)
+        {
+            if (Ko || entries == null) return;
+            foreach (var kv in entries)
+                if (kv.Value is string s && s.Length > 0) table[kv.Key] = s;
+        }
+
         /// <summary>Text built before GameBootstrap (static tables, early hooks) still gets the saved language.</summary>
         static void Ensure()
         {

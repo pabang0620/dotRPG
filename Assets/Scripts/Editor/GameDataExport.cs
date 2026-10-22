@@ -69,6 +69,7 @@ namespace DotRPG.EditorTools
                 ["sweep.json"] = SweepJson(), // [SWEEP] clear ticket rules (phase10 10)
                 ["raid_shop.json"] = RaidShopJson(), // [RAID] raid shop products (phase13 5.4)
                 ["skill_specs.json"] = SkillSpecsJson(), // [CH3 SPEC] specializations (Docs/ch3/SKILL_SPECIALIZATION.md 4)
+                ["chapter3.json"] = Chapter3BundleJson(), // [CH3] story bundle served by GET /content/chapter3 (not in the build)
             };
 
             using (var sha = SHA256.Create())
@@ -203,6 +204,28 @@ namespace DotRPG.EditorTools
             return j.End().ToString();
         }
 
+        /// <summary>
+        /// [CH3] chapter3.json for the server: { schema, bundle, lang: { code: table } }. The bundle and its translations
+        /// stay out of the client build (Docs/ch3/LIVE_CONTENT.md 7); the server hands them out once chapter 3 is open.
+        /// </summary>
+        static string Chapter3BundleJson()
+        {
+            string bundle = Chapter3Content.LocalText();
+            if (string.IsNullOrEmpty(bundle) || Chapter3Content.Parse(bundle) == null)
+                throw new InvalidOperationException("[GameDataExport] Assets/" + Chapter3Content.LocalFolder + "/" + Chapter3Content.FileName + " is missing or broken");
+            var sb = new StringBuilder("{\"schema\":1,\"bundle\":").Append(bundle.Trim()).Append(",\"lang\":{");
+            bool first = true;
+            foreach (var l in L.Languages.Select(x => x.code).Where(c => c != L.Korean).OrderBy(c => c, StringComparer.Ordinal))
+            {
+                string table = Chapter3Content.LocalText(l);
+                if (string.IsNullOrEmpty(table)) continue;
+                if (!first) sb.Append(',');
+                first = false;
+                sb.Append('"').Append(l).Append("\":").Append(table.Trim());
+            }
+            return sb.Append("}}").ToString();
+        }
+
         static string SkillGemsJson()
         {
             var j = Doc().Num("slots", SkillGems.Slots).Num("supportsPerSlot", SkillGems.SupportsPerSlot);
@@ -218,9 +241,9 @@ namespace DotRPG.EditorTools
         {
             var db = new QuestDatabase(Resources.Load<TextAsset>(QuestDatabase.ResourcePath));
             // [CH3] Chapter 3 quests live in the story bundle (chapter3.json); the server still needs their rules and tags.
-            var ch3 = Chapter3Content.FromResources();
+            var ch3 = Chapter3Content.FromLocal();
             if (ch3 != null) db.Add(ch3.chapter, ch3.quests);
-            var ch3Text = Resources.Load<TextAsset>(Chapter3Content.ResourcePath)?.text ?? "";
+            var ch3Text = Chapter3Content.LocalText() ?? "";
             var flags = new SortedSet<string>(StringComparer.Ordinal);
             // Every "setFlags" / "requiresFlags" list anywhere in Quests.json (steps, quest end, rewards).
             var questText = Resources.Load<TextAsset>(QuestDatabase.ResourcePath).text + "\n" + ch3Text;

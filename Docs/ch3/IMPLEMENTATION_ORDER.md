@@ -94,7 +94,7 @@
 |---|---|
 | 서버 | `assertOpen` 호출 지점 11곳 전부(`LIVE_CONTENT.md` 6절), `GET /content/chapter3`(열림에만 응답, 11개 언어 포함), README 3절·10절 |
 | 클라이언트 | 닫힘에서 특화 탭·군주 탭·사얍 노드·3장 퀘스트·레이드 없음, `MapRegistry.IsChapter3` 경로 차단, `chapter3.json` 런타임 병합(로그인 뒤 캐시), 출시 빌드 제외 목록에 `chapter3.json` |
-| 테스트 | `chapter3Lock.test.ts` 전체, `content.test.ts`(닫힘 404·열림 응답), DevCapture `-dotrpgChapter3Lock`(닫힘·열림 두 번) |
+| 테스트 | `chapter3Lock.test.ts` 전체, `content.test.ts`(닫힘 422·열림 응답), DevCapture `-dotrpgChapter3Lock`(닫힘·열림 두 번) |
 | 완료 기준 | 마스터 6절 완료 기준 1·2. 매 빌드 항목으로 등록 |
 
 ## 7단계: 측정·시뮬·테스트

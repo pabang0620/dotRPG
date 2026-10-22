@@ -63,7 +63,7 @@ namespace DotRPG
             Game.BossRush = BossRushDirector.Create(gameplayRoot); // [BOSS] 월드보스 / 길드보스
             MiniDungeonGrowth.Register(); // [GROWTH] mini dungeons in 성장 추천 / 할 일
             Game.Cutscenes = CutscenePlayer.Create(transform, new CutsceneDatabase(Resources.Load<TextAsset>(CutsceneDatabase.ResourcePath))); // [STORY]
-            Chapter3Content.MergeFromResources(); // [CH3] chapter 3 story bundle (stage 6 moves it to the server)
+            Chapter3Content.MergeLocal(); // [CH3] editor only: the build has no chapter 3 story, online it comes from GET /content/chapter3
             Game.Quest.Bind();
 
             Game.UI = UIRoot.Create(transform);

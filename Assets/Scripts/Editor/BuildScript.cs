@@ -174,4 +174,18 @@ namespace DotRPG.EditorTools
                 uri.Host != "api.example.com" && uri.Host != "example.com" && address != ApiClient.MobileTestServer;
         }
     }
+    /// <summary>
+    /// [CH3] Spoiler rule (Docs/ch3/LIVE_CONTENT.md 7): no build may carry the chapter 3 story bundle. It lives in
+    /// Assets/Chapter3Bundle, outside Resources; a copy back under Resources (any language) fails the build.
+    /// </summary>
+    public sealed class Chapter3BundleBuildGuard : UnityEditor.Build.IPreprocessBuildWithReport
+    {
+        public int callbackOrder => 0;
+
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            foreach (var path in Directory.GetFiles(Path.Combine(Application.dataPath, "Resources"), Chapter3Content.FileName, SearchOption.AllDirectories))
+                throw new UnityEditor.Build.BuildFailedException("[dotRPG] chapter 3 story must not ship in the build: " + path);
+        }
+    }
 }

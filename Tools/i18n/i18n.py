@@ -23,6 +23,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SCRIPTS = os.path.join(ROOT, "Assets", "Scripts")
 DATA = os.path.join(ROOT, "Assets", "Resources", "Data")
 LANG_ROOT = os.path.join(DATA, "Lang")
+# [CH3] chapter 3 story bundle and its tables live outside Resources (not in the build; the server hands them out)
+CH3 = os.path.join(ROOT, "Assets", "Chapter3Bundle")
 GLOSSARY = os.path.join(ROOT, "Docs", "I18N_GLOSSARY.md")
 SERVER = os.path.join(ROOT, "server")
 SERVER_SRC = os.path.join(SERVER, "src")
@@ -140,7 +142,7 @@ def cs_literals():
 
 def data_strings():
     for f in DATA_FILES:
-        p = os.path.join(DATA, f)
+        p = os.path.join(CH3 if f == "chapter3.json" else DATA, f)
         if not os.path.exists(p):
             continue
         def walk(o, key=None):
@@ -217,11 +219,12 @@ def languages():
 
 
 def load_table(lang):
-    table, folder = {}, os.path.join(LANG_ROOT, lang)
-    if os.path.isdir(folder):
-        for f in sorted(os.listdir(folder)):
-            if f.endswith(".json"):
-                table.update(json.load(open(os.path.join(folder, f), encoding="utf-8")))
+    table = {}
+    for folder in (os.path.join(LANG_ROOT, lang), os.path.join(CH3, "Lang", lang)):
+        if os.path.isdir(folder):
+            for f in sorted(os.listdir(folder)):
+                if f.endswith(".json"):
+                    table.update(json.load(open(os.path.join(folder, f), encoding="utf-8")))
     return table
 
 

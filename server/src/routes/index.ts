@@ -3,6 +3,7 @@ import { createAuthRouter } from '../domains/auth/authRoutes';
 import { createAuctionRouter } from '../domains/auction/auctionRoutes';
 import { createBlocksRouter } from '../domains/blocks/blocksRoutes';
 import { createAchievementRouter } from '../domains/achievements/achievementRoutes';
+import { createContentRouter } from '../domains/content/contentRoutes';
 import { createCharacterRouter } from '../domains/characters/characterRoutes';
 import { createDropRouter } from '../domains/drops/dropRoutes';
 import { createDungeonRouter } from '../domains/dungeons/dungeonRoutes';
@@ -114,5 +115,7 @@ export function createRouter(): Router {
   r.use(createDailyRouter());
   // 15단계: 클라이언트 예외 보고(계정 단위, 버전 검사 없음)
   r.use(createClientErrorRouter());
+  // 챕터 3 이야기 묶음(3장이 열린 서버만 응답, 스포일러 보호)
+  r.use(createContentRouter());
   return r;
 }

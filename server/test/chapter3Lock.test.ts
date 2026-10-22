@@ -5,6 +5,7 @@ import path from 'node:path';
 import request from 'supertest';
 import { getPool } from '../src/db/pool';
 import { bandOf } from '../src/domains/antiabuse/velocity';
+import { validateCareer, type CareerState } from '../src/domains/characters/careerRules';
 import { tierOf } from '../src/domains/minidungeon/miniDungeonRules';
 import { getIncomeCaps } from '../src/gamedata/antiAbuseData';
 import { assertOpen, CHAPTER2_LEVEL_CAP, CHAPTER3_LEVEL_CAP, isChapter3, levelCap } from '../src/gamedata/chapterGate';
@@ -257,5 +258,61 @@ describe('3장 세계 잠금·정예', () => {
     expect(rollMapDrops(eco, 'forest', 'skeleton', hit)).toEqual([]);
     expect(rollMapDrops(eco, 'dry_floor', 'void_hound', fakeRng({ unit: 0.99 }))).toEqual([]);
     expect(isChapter3('item', 'qi_void_essence')).toBe(true);
+  });
+});
+
+// [CH3] 6단계 잠금 전수(Docs/ch3/IMPLEMENTATION_ORDER.md 6단계): 닫힘이면 3장 진입점이 전부 거부되고, 열리면 다음 검사로 넘어간다
+describe('6단계: 닫힘은 전부 거부, 열림은 통과', () => {
+  const locked = (res: { status: number; body: { errors?: { code?: string } } }): void => {
+    expect(res.status).toBe(422);
+    expect(res.body.errors?.code).toBe('CHAPTER_LOCKED');
+  };
+  const notLocked = (res: { body: { errors?: { code?: string } } }): void => {
+    expect(res.body.errors?.code).not.toBe('CHAPTER_LOCKED');
+  };
+  const specState = (): CareerState => ({
+    schema: 1, career: 0, nodes: [], training: [], refunded: 0, questStage: 0, awakened: false, specs: [{ skill: 'crush', side: 'a' }],
+  } as CareerState);
+  const checkSpec = (): void => validateCareer(specState(), null, { level: 45, class: 'warrior' }, [], () => false);
+
+  async function probe(open: boolean) {
+    const app = buildApp(open ? { CHAPTER3_OPEN: 'true' } : {});
+    const h = await newHero(app);
+    await seedLevel(h, CHAPTER2_LEVEL_CAP);
+    return {
+      quest: await post(app, h, '/quests/c3_depart/claim', {}),
+      raid: await post(app, h, '/dungeon-runs', { dungeon_id: 'raid_xibak', difficulty: 0 }),
+      field: await post(app, h, '/field-sessions/enter', { map_id: 'dry_floor' }),
+      kill: await post(app, h, '/kills', { map_id: 'dry_floor', monster_id: 'void_hound' }),
+      mini: await post(app, h, '/mini-dungeon/enter', { tier: 40 }),
+      boss: await get(app, h, '/bosses'),
+      h,
+    };
+  }
+
+  it('닫힘(CHAPTER3_OPEN 0): Lv40 유지, 3장 퀘스트·레이드·사냥터·미니 40·특화 거부, 보스 Lv40', async () => {
+    const r = await probe(false);
+    locked(r.quest);
+    locked(r.raid);
+    locked(r.field);
+    locked(r.kill);
+    locked(r.mini);
+    expect(() => checkSpec()).toThrow(expect.objectContaining({ code: 'CHAPTER_LOCKED' }));
+    expect(r.boss.status).toBe(200);
+    expect(r.boss.body.data.world.boss_level).toBe(CHAPTER2_LEVEL_CAP);
+    expect(await levelXp(r.h.dbId)).toEqual({ level: CHAPTER2_LEVEL_CAP, xp: 0 });
+    expect(isChapter3('quest', 'c3_depart')).toBe(true);
+  });
+
+  it('열림(CHAPTER3_OPEN 1): 같은 요청이 잠금 없이 다음 검사로 넘어가고 보스는 Lv50', async () => {
+    const r = await probe(true);
+    notLocked(r.quest);
+    expect(r.quest.body.errors.code).toBe('QUEST_PREREQ'); // c2_end를 끝내지 않았다
+    notLocked(r.raid);
+    expect(r.field.status).toBe(200);
+    expect(r.kill.status).toBe(200);
+    expect(r.mini.status).toBeLessThan(300);
+    expect(() => checkSpec()).not.toThrow(expect.objectContaining({ code: 'CHAPTER_LOCKED' }));
+    expect(r.boss.body.data.world.boss_level).toBe(CHAPTER3_LEVEL_CAP);
   });
 });

@@ -52,7 +52,7 @@
 |---|---|
 | 서버 env | `CHAPTER3_OPEN: z.enum(['0','1']).default('0')`. `levelCap()` = 열리면 `progression.maxLevel`(50), 닫히면 40 |
 | 데이터 태그 | `economyData` 로드 때 3장 항목에 `chapter: 3` 태그를 단다: 퀘스트(c3_*), 맵(dry_floor·dry_stones·dry_rift·sayab·mini_dungeon_40·DgnXibak*·DgnKamatz*), 던전(raid_xibak·raid_kamatz, 군주 난이도), 몬스터(void_*·grey_*·boss_xibak·boss_kamatz), 아이템(티어 9·10 장비, mat_raid_xibak·mat_raid_kamatz, 3장 수집품), 상점(xibak_*·kamatz_* 상자, 아카브 교환), 특화(전부) |
-| 공통 검사 | `server/src/gamedata/chapterGate.ts`의 `assertOpen(kind, id)`: 태그가 3이고 플래그가 0이면 422 `CHAPTER_LOCKED`. 호출 지점: kills(처치 보고의 map_id·monster_id), fieldsessions(세션 생성 map_id), partyruns(start의 dungeon id·difficulty), dungeons(dungeonResult의 id·difficulty), quests(수락·보상 청구), shop(구매·판매 item_key), auction(등록 item_key), promote(계승), careerRules(specs), minidungeon(티어 40 입장), bossrush(보스 레벨 50 시즌 생성). grantXp는 `levelCap()`으로 멈춘다 |
+| 공통 검사 | `server/src/gamedata/chapterGate.ts`의 `assertOpen(kind, id)`: 태그가 3이고 플래그가 0이면 422 `CHAPTER_LOCKED`. 호출 지점: kills(처치 보고의 map_id·monster_id), fieldsessions(세션 생성 map_id), partyruns(start의 dungeon id·difficulty), dungeons(dungeonResult의 id·difficulty), quests(보상 청구. 수락은 서버 경로가 없다), shop(구매·판매 item_key), auction(등록 item_key), promote(계승), careerRules(specs), minidungeon(티어 40 입장), bossrush(보스 레벨 50 시즌 생성). grantXp는 `levelCap()`으로 멈춘다 |
 | /meta | `chapter3_open`, `level_cap` 필드. 클라이언트 `OnlineSession`이 로그인 때 읽어 `Chapter3.Enabled`·`Progression.LevelCap`에 넣는다 |
 | 클라이언트(오프라인) | `Chapter3.Enabled`의 빌드 기본값은 `Resources/Data/GameConfig`의 `chapter3Open`(출시 빌드 false). 오프라인 플레이는 이 값으로 같은 규칙 |
 | 클라이언트(닫힘 경로) | 월드맵 노드 숨김 외에 귀환 주문서 목적지, 파티 따라가기(`PartyNet` 호스트 맵 추종), 성장 추천·할 일의 이동 버튼에서도 3장 맵으로 가지 않는다(`MapRegistry.IsChapter3(mapId)`) |
@@ -63,7 +63,8 @@
 ## 7. 스포일러 보호
 
 - 3장 퀘스트·대사·컷신 텍스트 묶음 `chapter3.json`(Quests·StoryDialogues·Cutscenes의 c3_* 항목)은 출시 빌드에 싣지 않는다. 코드·맵·몬스터·보스·아이템·특화·상점은 빌드에 싣는다(이름·수치만 노출되고 이야기는 노출되지 않는다).
-- 서버 `GET /content/chapter3`이 `CHAPTER3_OPEN=1`일 때만 묶음을 응답한다(닫힘 404). 클라이언트는 로그인 뒤 `/meta`가 열림이면 한 번 받아 캐시하고, 퀘스트 DB·대사·컷신에 런타임 병합한다. 오프라인은 빌드에 묶음이 없으므로 3장을 열 수 없다(오프라인은 1~2장까지).
+- 원본은 `Assets/Chapter3Bundle/`(`chapter3.json`, `Lang/<code>/chapter3.json`)로 Resources 밖에 둔다. 내보내기가 `server/data/chapter3.json`(묶음 + `lang`)을 써서 데이터 버전에 넣는다.
+- 서버 `GET /content/chapter3`이 `CHAPTER3_OPEN=1`일 때만 묶음을 응답한다(로그인 필요, 닫힘 422 `CHAPTER_LOCKED`, ETag는 데이터 버전). 클라이언트는 로그인 뒤 `/meta`가 열림이면 한 번 받아 캐시하고, 퀘스트 DB·대사·컷신에 런타임 병합한다. 오프라인은 빌드에 묶음이 없으므로 3장을 열 수 없다(오프라인은 1~2장까지).
 - 11개 언어 번역은 묶음 안에 같이 들어간다(`lang` 키).
 
 ## 8. 기존 유저 보호

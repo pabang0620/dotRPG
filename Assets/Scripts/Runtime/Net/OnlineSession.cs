@@ -172,7 +172,7 @@ namespace DotRPG
             PolicyClient.EnsureConsent(r =>
             {
                 if (!r.ok) { done(r); return; }
-                if (Current == this) LoadCharacters(done);
+                if (Current == this) Chapter3Content.Download(Api, () => LoadCharacters(done)); // [CH3] story bundle once chapter 3 is open
                 else done(new ApiResult { ok = false, code = "CONSENT_DECLINED", message = L.T("약관에 동의해야 온라인 플레이를 할 수 있습니다.") });
             });
         }

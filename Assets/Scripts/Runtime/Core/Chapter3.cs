@@ -18,6 +18,9 @@ namespace DotRPG
         /// <summary>True when chapter 3 is open for this session: the server's word online, the GameConfig flag offline.</summary>
         public static bool Enabled => OnlineSession.Playing ? serverOpen : Game.Config != null && Game.Config.chapter3Open;
 
+        /// <summary>What the last /meta said, before a character is in play (the login reads it to fetch the story bundle).</summary>
+        public static bool ServerOpen => serverOpen;
+
         /// <summary>The server's level cap (0 = not sent: derived from <see cref="Enabled"/>).</summary>
         public static int ServerLevelCap => OnlineSession.Playing ? serverCap : 0;
 

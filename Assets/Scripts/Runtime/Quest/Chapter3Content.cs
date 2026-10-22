@@ -6,14 +6,18 @@ namespace DotRPG
 {
     /// <summary>
     /// [CH3] The chapter 3 story bundle: quests, cutscenes and dialogue of chapter 3 kept out of Quests.json,
-    /// Cutscenes.json and StoryDialogues.json (Docs/ch3/LIVE_CONTENT.md, spoiler rule). The bundle is one JSON document
+    /// Cutscenes.json and StoryDialogues.json (Docs/ch3/LIVE_CONTENT.md 7, spoiler rule). The bundle is one JSON document
     /// { chapter, quests, cutscenes, dialogues } with the same field shapes as those files.
-    /// Development reads it from Resources (<see cref="MergeFromResources"/>); stage 6 hands the server's
-    /// GET /content/chapter3 text to <see cref="Merge"/>, the same entry point.
+    /// The bundle is not in the build: it lives in Assets/Chapter3Bundle (outside Resources, BuildScript refuses a build
+    /// that still has it in Resources). Online, the server's GET /content/chapter3 hands it over once chapter 3 is open
+    /// (<see cref="Download"/>); the editor reads the local copy (<see cref="MergeLocal"/>). A release build offline has
+    /// no bundle, so chapter 3 stays closed offline (chapters 1 and 2 only).
     /// </summary>
     public static class Chapter3Content
     {
-        public const string ResourcePath = "Data/chapter3";
+        /// <summary>Folder of the bundle and its translations (Lang/&lt;code&gt;/chapter3.json), relative to Assets.</summary>
+        public const string LocalFolder = "Chapter3Bundle";
+        public const string FileName = "chapter3.json";
 
         [Serializable]
         public class Bundle
@@ -27,6 +31,9 @@ namespace DotRPG
         /// <summary>True once a bundle went into the quest, cutscene and dialogue databases.</summary>
         public static bool Merged { get; private set; }
 
+        /// <summary>Data version of the bundle the server sent (null = none downloaded this run).</summary>
+        public static string DownloadedVersion { get; private set; }
+
         /// <summary>Reads a bundle (null when the text is empty or not a bundle). Used by the merge and the data export.</summary>
         public static Bundle Parse(string json)
         {
@@ -39,18 +46,33 @@ namespace DotRPG
             }
         }
 
-        /// <summary>The bundle shipped in Resources (development and the data export), or null.</summary>
-        public static Bundle FromResources()
+        /// <summary>Path of a local bundle file (lang null = the Korean bundle). Only meaningful in the editor.</summary>
+        public static string LocalPath(string lang = null) =>
+            lang == null
+                ? System.IO.Path.Combine(Application.dataPath, LocalFolder, FileName)
+                : System.IO.Path.Combine(Application.dataPath, LocalFolder, "Lang", lang, FileName);
+
+        /// <summary>Text of a local bundle file, or null (always null outside the editor: the build has no bundle).</summary>
+        public static string LocalText(string lang = null)
         {
-            var text = Resources.Load<TextAsset>(ResourcePath);
-            return text != null ? Parse(text.text) : null;
+#if UNITY_EDITOR
+            var path = LocalPath(lang);
+            return System.IO.File.Exists(path) ? System.IO.File.ReadAllText(path) : null;
+#else
+            return null;
+#endif
         }
 
-        /// <summary>Development path: merge the bundle from Resources when it is there.</summary>
-        public static bool MergeFromResources()
+        /// <summary>The local bundle (editor and data export), or null.</summary>
+        public static Bundle FromLocal() => Parse(LocalText());
+
+        /// <summary>Editor path: merge the local bundle and its translation for the current language. False in a build.</summary>
+        public static bool MergeLocal()
         {
-            var text = Resources.Load<TextAsset>(ResourcePath);
-            return text != null && Merge(text.text);
+            var text = LocalText();
+            if (text == null) return false;
+            if (!L.Ko && MiniJson.Parse(LocalText(L.Lang) ?? "") is Dictionary<string, object> table) L.AddEntries(table);
+            return Merge(text);
         }
 
         /// <summary>Puts a bundle's quests, scenes and lines into the running databases. Safe to call twice.</summary>
@@ -63,6 +85,26 @@ namespace DotRPG
             Game.Dialogues?.Add(b.dialogues);
             Merged = true;
             return true;
+        }
+
+        /// <summary>
+        /// Online path (after login): when the server says chapter 3 is open, fetch GET /content/chapter3 once per data
+        /// version and merge it (translation first, the quest merge translates as it adds). Never blocks the login: a failed
+        /// download is logged and retried at the next login, and chapter 3 quests simply do not show meanwhile.
+        /// </summary>
+        public static void Download(ApiClient api, Action done)
+        {
+            if (!Chapter3.ServerOpen || api == null || DownloadedVersion == ApiClient.DataVersion) { done?.Invoke(); return; }
+            api.Get("/content/chapter3", r =>
+            {
+                if (r.ok)
+                {
+                    if (!L.Ko && MiniJson.Obj(MiniJson.Obj(r.data, "lang"), L.Lang) is Dictionary<string, object> table) L.AddEntries(table);
+                    if (Merge(MiniJson.Str(r.data, "bundle"))) DownloadedVersion = MiniJson.Str(r.data, "data_version", ApiClient.DataVersion);
+                }
+                else Debug.LogWarning("[dotRPG] chapter3 content download failed: " + r.code);
+                done?.Invoke();
+            });
         }
     }
 }

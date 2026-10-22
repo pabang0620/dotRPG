@@ -1,3 +1,4 @@
+import { assertOpen } from '../../gamedata/chapterGate';
 import { getGameData } from '../../gamedata/loader';
 import type { EconomyData, QuestRule } from '../../gamedata/economyData';
 import { isUniqueViolation } from '../../db/pool';
@@ -72,6 +73,7 @@ async function processClaim(ctx: EconCtx, questId: string) {
   const eco = getGameData().economy;
   const rule = eco.quests.get(questId);
   if (!rule) throw new AppError(422, '알 수 없는 퀘스트입니다.', 'QUEST_UNKNOWN');
+  assertOpen('quest', questId); // 챕터 3 퀘스트는 3장이 열릴 때까지 보상을 받지 못한다
 
   const claimed = await repo.allClaimed(ctx.client, ctx.char.id);
   if (claimed.has(questId)) throw new AppError(409, '이미 보상을 받은 퀘스트입니다.', 'QUEST_ALREADY_CLAIMED');
