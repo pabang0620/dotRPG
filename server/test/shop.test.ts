@@ -68,8 +68,8 @@ describe('POST /characters/:id/shop/sell', () => {
     await seedItem(h, 'mat_bone', 10);
     const a = await post(app, h, '/shop/sell', { item_key: 'mat_bone', count: 4 });
     expect(a.status).toBe(200);
-    expect(a.body.data).toMatchObject({ unit_price: 5, total: 20 });
-    expect(await goldOf(h)).toBe(120);
+    expect(a.body.data).toMatchObject({ unit_price: 4, total: 16 }); // 2026-10-21 재료 판매가 x0.7(뼈 5 -> 4)
+    expect(await goldOf(h)).toBe(116);
     expect(await countOf(h, 'mat_bone')).toBe(6);
 
     // 고급검 기본가(데이터) x (1 + 0.25 x 2), .5는 올림. 강화 골드 상한(기본가 + 소비의 절반)과 작은 쪽
@@ -110,7 +110,7 @@ describe('POST /characters/:id/shop/sell', () => {
     const b = await post(app, h, '/shop/sell', { item_key: 'mat_ore', count: 1 }, rid);
     expect(b.headers['idempotent-replay']).toBe('true');
     expect(b.body).toEqual(a.body);
-    expect(await goldOf(h)).toBe(120);
+    expect(await goldOf(h)).toBe(114); // 강화석 판매가 14(2026-10-21)
 
     const h2 = await newHero(app);
     await seedItem(h2, 'mat_ore', 1);
@@ -119,7 +119,7 @@ describe('POST /characters/:id/shop/sell', () => {
       post(app, h2, '/shop/sell', { item_key: 'mat_ore', count: 1 }),
     ]);
     expect([c.status, d.status].sort()).toEqual([200, 422]);
-    expect(await goldOf(h2)).toBe(120);
+    expect(await goldOf(h2)).toBe(114);
     await expectLedgerConsistent(h2);
   });
 });

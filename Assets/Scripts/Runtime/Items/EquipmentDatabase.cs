@@ -6,7 +6,9 @@ namespace DotRPG
     /// <summary>
     /// All equipment and materials, the monster loot tables and the enhancement growth. Gear is stored
     /// as instance keys: the base id at +0 and "{baseId}+{level}" for +1..+20 ("eq_sword_iron+12"), so
-    /// every piece carries its own +level and identical keys stack. Base ids never contain '+'.
+    /// every piece carries its own +level and identical keys stack. Base ids never contain '+'. A piece that was inherited
+    /// k times (<see cref="InheritRules"/>) adds "^k" after the level, which is then always written: "eq_sword_20_r+0^1",
+    /// "eq_sword_30_r+12^2". Anything that splits a key at '+' still finds the base id.
     /// Attempt rules (chances, costs, failures) live in <see cref="EnhanceRules"/>.
     /// </summary>
     public static class EquipmentDatabase
@@ -14,6 +16,8 @@ namespace DotRPG
         public const int MaxEnhance = 20;
         /// <summary>Separates the base id from the +level in an instance key.</summary>
         public const char KeySeparator = '+';
+        /// <summary>Separates the +level from the inheritance count ("+12^2").</summary>
+        public const char InheritSeparator = '^';
 
         /// <summary>
         /// Starter weapons, the level-tier table (GearCatalog, Docs/PLAN_GEAR_RENEWAL.md) and the field boss accessories.
@@ -50,9 +54,11 @@ namespace DotRPG
         {
             public EquipmentItem item;
             public int level;
+            /// <summary>How often the piece was inherited (0 = never, no "^k" in the key).</summary>
+            public int inherit;
         }
 
-        /// <summary>Every valid key (21 per item), so lookups never parse or allocate.</summary>
+        /// <summary>Every valid key (21 per item, more with inheritance counts), so lookups never parse or allocate.</summary>
         static readonly Dictionary<string, KeyInfo> ByKey = BuildIndex();
 
         static Dictionary<string, KeyInfo> BuildIndex()
@@ -69,6 +75,10 @@ namespace DotRPG
                     item.keys[level] = key;
                     map[key] = new KeyInfo { item = item, level = level };
                 }
+                if (!InheritRules.CanCarryCount(item)) continue;
+                for (int k = 1; k <= InheritRules.MaxCount; k++)
+                    for (int level = 0; level <= MaxEnhance; level++)
+                        map[$"{item.id}{KeySeparator}{level}{InheritSeparator}{k}"] = new KeyInfo { item = item, level = level, inherit = k };
             }
             return map;
         }
@@ -127,15 +137,30 @@ namespace DotRPG
         /// <summary>+level of a key ("eq_sword_iron+12" → 12); 0 for bare ids and anything that is not gear.</summary>
         public static int LevelOfKey(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.level : 0;
 
-        /// <summary>Key of an item at a level (clamped to 0..<see cref="MaxEnhance"/>; +0 = the bare id). Also accepts a key.</summary>
+        /// <summary>
+        /// Key of an item at a level (clamped to 0..<see cref="MaxEnhance"/>; +0 = the bare id). Also accepts a key, whose
+        /// inheritance count is kept (enhancing or promoting an inherited piece keeps its count).
+        /// </summary>
         public static string KeyFor(string baseId, int level)
         {
             if (string.IsNullOrEmpty(baseId)) return baseId;
             level = Mathf.Clamp(level, 0, MaxEnhance);
-            if (ByKey.TryGetValue(baseId, out var info)) return info.item.keys[level];
+            if (ByKey.TryGetValue(baseId, out var info)) return info.inherit > 0 ? KeyFor(info.item.id, level, info.inherit) : info.item.keys[level];
             string root = BaseId(baseId);
             return level > 0 ? $"{root}{KeySeparator}{level}" : root;
         }
+
+        /// <summary>Key of an item at a level with an inheritance count ("id+N^k"; k = 0 is the plain key).</summary>
+        public static string KeyFor(string baseId, int level, int inherit)
+        {
+            level = Mathf.Clamp(level, 0, MaxEnhance);
+            string root = BaseId(baseId);
+            if (inherit <= 0) return KeyFor(root, level);
+            return $"{root}{KeySeparator}{level}{InheritSeparator}{inherit}";
+        }
+
+        /// <summary>How often the piece behind a key was inherited ("eq_sword_30_r+12^2" -> 2); 0 for plain keys and non-gear.</summary>
+        public static int InheritOfKey(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.inherit : 0;
 
         /// <summary>
         /// Repairs odd spellings of a gear key from old or hand-edited saves: "eq_sword_iron+0" → "eq_sword_iron",
@@ -169,7 +194,9 @@ namespace DotRPG
             if (item == null) return key;
             int level = LevelOfKey(key);
             string name = $"<color={RarityColor(item.rarity)}>{item.name}</color>";
-            return level > 0 ? $"{name} {LevelTag(level)}" : name;
+            if (level > 0) name = $"{name} {LevelTag(level)}";
+            int k = InheritOfKey(key);
+            return k > 0 ? name + " <color=#9fb4d8>" + L.F("(계승 {0}회)", k) + "</color>" : name;
         }
 
         /// <summary>Stats of a key at its own +level (default for null / non-gear).</summary>
@@ -186,7 +213,9 @@ namespace DotRPG
             var ib = Get(b);
             if (ia == null || ib == null) return (ia == null).CompareTo(ib == null);
             int byItem = ia.Order.CompareTo(ib.Order);
-            return byItem != 0 ? byItem : LevelOfKey(b).CompareTo(LevelOfKey(a));
+            if (byItem != 0) return byItem;
+            int byLevel = LevelOfKey(b).CompareTo(LevelOfKey(a));
+            return byLevel != 0 ? byLevel : InheritOfKey(a).CompareTo(InheritOfKey(b));
         }
 
         /// <summary>The gear keys held in an inventory, in bag order (a new list, safe to change the inventory while using it).</summary>

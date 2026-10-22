@@ -67,7 +67,7 @@ export function factsOf(itemKey: string): ItemFacts | null {
       classOnly,
     };
   }
-  if (p.level !== 0) return null;
+  if (p.level !== 0 || p.inherit !== 0) return null;
   return {
     base: p.base,
     enhance: 0,

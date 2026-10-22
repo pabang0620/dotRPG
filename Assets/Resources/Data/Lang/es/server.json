@@ -33,5 +33,15 @@
  "길드 이름은 {0}~{1}자여야 합니다": "Los nombres de gremio deben tener entre {0} y {1} caracteres",
  "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Los nombres de gremio solo pueden usar sílabas coreanas, letras inglesas y números",
  "파티를 나간 뒤 도전하세요.": "Sal del grupo y vuelve a intentarlo.",
- "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Cede el liderazgo del gremio o disuélvelo antes de eliminar este personaje."
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Cede el liderazgo del gremio o disuélvelo antes de eliminar este personaje.",
+ "계승을 준비 중입니다.": "La herencia aún no está disponible.",
+ "계승할 수 없는 장비입니다.": "Este equipo no se puede heredar.",
+ "더 이상 계승할 수 없는 장비입니다.": "Este equipo ya no se puede heredar más.",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "El equipo puesto solo se puede heredar al alcanzar el nivel del nuevo equipo.",
+ "keepPercent 길이가 {0} 이 아닙니다": "keepPercent no tiene longitud {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} no está en shop.equipment",
+ "{0} gold 길이가 {1} 이 아닙니다": "{0} gold no tiene longitud {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} el equipo inicial no se hereda",
+ "{0} 중복": "{0} duplicado",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Falló la validación de datos del juego: enhance.inheritTiers {0}"
 }

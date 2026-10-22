@@ -283,6 +283,13 @@ namespace DotRPG
             Post("/promote", Body(("target", target)), r => done?.Invoke(r.ok ? r.data : null));
         }
 
+        /// <summary>[INHERIT] Gear inheritance to the next level band, rolled on the server. done(data with old_key / new_key / kept, or null).</summary>
+        public static void Inherit(int? wornSlot, string bagKey, Action<Dictionary<string, object>> done)
+        {
+            var target = wornSlot.HasValue ? Body(("worn_slot", wornSlot.Value)) : Body(("bag_key", bagKey));
+            Post("/inherit", Body(("target", target)), r => done?.Invoke(r.ok ? r.data : null));
+        }
+
         // ---------------- solo dungeons ----------------
 
         /// <summary>Solo run (optionally with AI companions, phase 4). done(run object or null).</summary>

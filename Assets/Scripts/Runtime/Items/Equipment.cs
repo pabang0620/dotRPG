@@ -346,7 +346,7 @@ namespace DotRPG
             {
                 result.kind = EnhanceOutcome.Success;
                 result.newLevel = level + 1;
-                result.newKey = item.KeyAt(level + 1);
+                result.newKey = EquipmentDatabase.KeyFor(key, level + 1); // keeps an inheritance count
                 pity.Remove(key);
             }
             else
@@ -360,14 +360,14 @@ namespace DotRPG
                     case EnhanceFailure.Drop3:
                         result.kind = EnhanceOutcome.Drop3;
                         result.newLevel = cost.DroppedLevel;
-                        result.newKey = item.KeyAt(result.newLevel);
+                        result.newKey = EquipmentDatabase.KeyFor(key, result.newLevel);
                         break;
                     default:
                         // Same rule as cost.usesTicket: starter gear never uses a ticket.
                         bool saved = cost.usesTicket && bag.Remove(ConsumableDatabase.ProtectTicket, 1);
                         result.kind = saved ? EnhanceOutcome.Protected : EnhanceOutcome.Destroyed;
                         result.newLevel = 0;
-                        result.newKey = saved ? item.id : null;
+                        result.newKey = saved ? EquipmentDatabase.KeyFor(key, 0) : null;
                         break;
                 }
             }
@@ -376,6 +376,35 @@ namespace DotRPG
             if (result.kind == EnhanceOutcome.Destroyed && target.slot == EquipSlot.Weapon) FixSlots(cls);
             Changed?.Invoke();
             return result;
+        }
+
+        /// <summary>
+        /// Offline inheritance (InheritRules; online the server rolls the same table): pays the gold, moves the piece to the
+        /// next band keeping or losing levels by <paramref name="roll"/> (0..99), counts the inheritance in the key and carries
+        /// the key's pity over. A worn piece needs the wearer at the new piece's level. Raises <see cref="Changed"/>.
+        /// </summary>
+        public InheritResult TryInherit(EnhanceTarget target, int roll)
+        {
+            string key = KeyAt(target);
+            var r = InheritRules.Preview(key);
+            r.roll = roll;
+            if (r.kind != InheritOutcome.Ready) return r;
+            if (target.slot.HasValue && WearerLevel < r.to.reqLevel) { r.kind = InheritOutcome.LevelTooLow; return r; }
+            if (bag.Count(ConsumableDatabase.Gold) < r.gold) { r.kind = InheritOutcome.NotEnough; return r; }
+            if (r.gold > 0) bag.Remove(ConsumableDatabase.Gold, r.gold);
+            r.kept = InheritRules.Keeps(roll, r.oldLevel);
+            r.newLevel = r.kept ? r.keptLevel : r.failLevel;
+            r.newKey = EquipmentDatabase.KeyFor(r.to.id, r.newLevel, r.newCount);
+            r.kind = InheritOutcome.Done;
+            Replace(target, key, r.newKey);
+            // Pity follows the piece (kept on the old key while other copies of it remain), same as the server.
+            if (pity.TryGetValue(key, out int p))
+            {
+                pity[r.newKey] = Math.Max(p, PityOf(r.newKey));
+                if (bag.Count(key) == 0 && Array.IndexOf(slots, key) < 0) pity.Remove(key);
+            }
+            Changed?.Invoke();
+            return r;
         }
 
         /// <summary>Swaps the target's unit for another key (null = the unit is gone).</summary>

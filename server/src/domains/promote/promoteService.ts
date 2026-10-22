@@ -50,7 +50,7 @@ async function processPromote(ctx: EconCtx, body: PromoteBody) {
   const logId = randomUUID();
   if (row.gold > 0) await ctx.changeGold(-row.gold, 'promote_cost', logId);
   await ctx.removeItem('bag', table.coreItem, row.cores, 'promote_cost', logId);
-  const newKey = keyAt(row.to, parsed.level);
+  const newKey = keyAt(row.to, parsed.level, parsed.inherit); // 계승 횟수는 승급해도 그대로
   let promotedBind: string | null = null;
   if (wornSlot !== null) {
     const w = await ctx.client.query<{ bind: string }>(

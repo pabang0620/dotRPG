@@ -308,6 +308,7 @@ namespace DotRPG.EditorTools
             j.Arr("raidCoreMid", PromoteRules.RaidCoreMid, (o, n) => o.Val(n));
             j.Arr("raidCoreFinal", PromoteRules.RaidCoreFinal, (o, n) => o.Val(n));
             j.End();
+            InheritJson(j);
             return j.End().ToString();
         }
 

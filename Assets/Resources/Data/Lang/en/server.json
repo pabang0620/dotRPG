@@ -33,5 +33,15 @@
  "길드 이름은 {0}~{1}자여야 합니다": "Guild names must be {0}-{1} characters long",
  "길드 이름은 한글 완성형, 영문, 숫자만 쓸 수 있습니다": "Guild names can only use Korean syllables, English letters and numbers",
  "파티를 나간 뒤 도전하세요.": "Leave your party, then try again.",
- "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfer guild leadership or disband the guild before deleting this character."
+ "길드장을 위임하거나 길드를 해체한 뒤 삭제할 수 있어요.": "Transfer guild leadership or disband the guild before deleting this character.",
+ "계승을 준비 중입니다.": "Inheritance isn't available yet.",
+ "계승할 수 없는 장비입니다.": "This gear can't be inherited.",
+ "더 이상 계승할 수 없는 장비입니다.": "This gear can't be inherited any further.",
+ "착용 중인 장비는 새 장비의 레벨이 되어야 계승할 수 있습니다.": "Equipped gear can only be inherited once you reach the new gear's level.",
+ "keepPercent 길이가 {0} 이 아닙니다": "keepPercent length is not {0}",
+ "{0} -> {1} 이 shop.equipment에 없습니다": "{0} -> {1} is not in shop.equipment",
+ "{0} gold 길이가 {1} 이 아닙니다": "{0} gold length is not {1}",
+ "{0} 시작 장비는 계승하지 않습니다": "{0} starter gear is not inherited",
+ "{0} 중복": "{0} duplicate",
+ "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Game data validation failed: enhance.inheritTiers {0}"
 }

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+import { buildInheritTiers, inheritTiersSchema, type InheritTiers } from './inheritData';
 
 // 3단계가 쓰는 필드만 검증한다. 알 수 없는 필드는 무시(looseObject).
 // 필드 이름은 server/data/*.json 쪽을 따른다(Docs/server/phase3_mapping.md와 다른 곳은 보고 참고).
@@ -147,6 +148,8 @@ const enhanceSchema = z.looseObject({
       raidCoreFinal: z.array(nonNegInt).length(4),
     })
     .optional(),
+  /** 장비 계승(다음 레벨대로, 강화 단계를 확률로 이어받는다). inheritData.ts */
+  inheritTiers: inheritTiersSchema.optional(),
 });
 
 export interface ItemInfo {
@@ -393,6 +396,7 @@ export interface EconomyData {
       raidCoreMid: number[];
       raidCoreFinal: number[];
     } | null;
+    inheritTiers: InheritTiers | null;
   };
   items: Map<string, ItemInfo>;
   quests: Map<string, QuestRule>;
@@ -610,6 +614,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       materials: { bone: enh.materials.bone, ore: enh.materials.ore, essence: enh.materials.essence },
       steps: stepLevels,
       promote,
+      inheritTiers: buildInheritTiers(enh.inheritTiers, equipment, enh.maxEnhance),
     },
     items: itemMap,
     quests: questMap,
