@@ -3344,7 +3344,18 @@ ALTER TABLE auction_listings ADD CONSTRAINT auction_listings_item_key_check
   CHECK (item_key ~ '^[a-z][a-z0-9_]{0,39}(\+[1-9][0-9]?|\+(0|[1-9][0-9]?)\^[1-9])?$' AND item_key <> 'gold');
 COMMENT ON COLUMN auction_listings.item_key IS '아이템 키: id, id+강화, 계승한 장비는 id+강화^계승횟수';
 
--- 0050_chapter3_seal_exchange: 챕터 3 아카브 교환 골드 사유 seal_exchange, 주간 카운터 seal_exchange (2026-10-22)
+-- 0050_rogue_class: 세 번째 기본 직업 도적(rogue), 전직 5 어쌔신·6 닌자 (2026-10-23)
+ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_class_check;
+ALTER TABLE characters ADD CONSTRAINT characters_class_check CHECK (class IN ('warrior', 'mage', 'rogue'));
+COMMENT ON COLUMN characters.class IS 'CharacterClass: warrior | mage | rogue';
+ALTER TABLE auction_listings DROP CONSTRAINT IF EXISTS auction_listings_class_only_check;
+ALTER TABLE auction_listings ADD CONSTRAINT auction_listings_class_only_check CHECK (class_only IN ('warrior', 'mage', 'rogue'));
+ALTER TABLE character_career DROP CONSTRAINT IF EXISTS character_career_career_check;
+ALTER TABLE character_career ADD CONSTRAINT character_career_career_check CHECK (career BETWEEN 1 AND 6);
+ALTER TABLE character_career_trials DROP CONSTRAINT IF EXISTS character_career_trials_career_check;
+ALTER TABLE character_career_trials ADD CONSTRAINT character_career_trials_career_check CHECK (career BETWEEN 1 AND 6);
+
+-- 0051_chapter3_seal_exchange: 챕터 3 아카브 교환 골드 사유 seal_exchange, 주간 카운터 seal_exchange (2026-10-22)
 ALTER TABLE gold_ledger DROP CONSTRAINT IF EXISTS gold_ledger_reason_check;
 ALTER TABLE gold_ledger ADD CONSTRAINT gold_ledger_reason_check
   CHECK (reason IN ('starter', 'drop_claim', 'quest_reward', 'shop_buy', 'shop_sell', 'enhance_cost', 'dungeon_card',
@@ -3364,4 +3375,4 @@ ALTER TABLE account_week_counters ADD CONSTRAINT account_week_counters_kind_chec
   CHECK (kind IN ('sweep_buy', 'direct_clear', 'activity_claim', 'seal_exchange'));
 COMMENT ON COLUMN account_week_counters.kind IS 'sweep_buy, direct_clear, activity_claim + seal_exchange(아카브 교환 횟수, 주 2회)';
 
--- 0051_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)
+-- 0052_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)

@@ -8,6 +8,7 @@ import { nameplateOf } from '../rankings/nameplate';
 import type { ChatSession, ServerProfile, TownLook } from './chatSession';
 import { registry } from './realtimeNotifier';
 import type { Frame, TownPosFrame } from './wsProtocol';
+import { CHARACTER_CLASSES, type CharacterClassId } from '../../utils/characterClass';
 
 /** 한 사람의 위치 프레임을 받는 최소 간격(ms). 클라이언트는 약 5회/초 이하로 보낸다 */
 const MIN_GAP_MS = 150;
@@ -72,7 +73,8 @@ export async function loadProfile(s: ChatSession): Promise<void> {
   const row = r.rows[0];
   if (!row) return;
   const profile: ServerProfile = {
-    cls: row.class === 'mage' ? 1 : 0,
+    // 0 전사, 1 마법사, 2 도적(C# CharacterClass 순서)
+    cls: Math.max(0, CHARACTER_CLASSES.indexOf(row.class as CharacterClassId)),
     level: row.level,
     career: row.career ?? 0,
     weapon: row.weapon ? (parseItemKey(row.weapon)?.base ?? '') : '',

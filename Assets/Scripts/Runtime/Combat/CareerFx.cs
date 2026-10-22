@@ -15,7 +15,12 @@ namespace DotRPG
         public static readonly Color HolyWarm = new Color(1f, 0.72f, 0.3f, 0.85f);
         public static readonly Color Life = new Color(0.6f, 1f, 0.6f, 0.9f);
 
-        public static Color Main(Career c) => c == Career.Fighter ? Steel : c == Career.Guardian ? Teal : c == Career.Arcanist ? Violet : Holy;
+        /// <summary>[ROGUE] Assassin magenta #e05ac8, ninja orange #ff8c32 (Docs/PLAN_CLASS_ROGUE.md 1.6).</summary>
+        public static readonly Color Magenta = new Color(0.88f, 0.35f, 0.78f, 0.95f);
+        public static readonly Color Orange = new Color(1f, 0.55f, 0.2f, 0.95f);
+
+        public static Color Main(Career c) => c == Career.Fighter ? Steel : c == Career.Guardian ? Teal : c == Career.Arcanist ? Violet
+            : c == Career.Assassin ? Magenta : c == Career.Ninja ? Orange : Holy;
         /// <summary>[CH3 SPEC] Main colour of a career cast: the specialization's crimson / silver when one is chosen, else
         /// the career colour. Career cast functions pass this where they passed <see cref="Main"/>.</summary>
         public static Color SkillColor(Career c, SkillNumbers n) => SkillSpecs.Tint(n, Main(c));
@@ -51,8 +56,10 @@ namespace DotRPG
         public static void Hit(Vector2 at, Vector2 dir, Career career, int weight)
         {
             float k = weight == 2 ? 1.5f : weight == 1 ? 1.15f : 0.85f;
-            string clip = career == Career.Fighter ? "f_x" : career == Career.Guardian ? "g_clang" : career == Career.Arcanist ? "m_hit" : "b_cross";
-            Clip(clip, at, career == Career.Fighter ? dir : Vector2.zero, k, 30f, VfxLayer.Top, career == Career.Fighter);
+            // [ROGUE] Both rogue careers cut like the fighter (the blade mark along the blow), in their own colour.
+            bool blade = career == Career.Fighter || career == Career.Assassin || career == Career.Ninja;
+            string clip = blade ? "f_x" : career == Career.Guardian ? "g_clang" : career == Career.Arcanist ? "m_hit" : "b_cross";
+            Clip(clip, at, blade ? dir : Vector2.zero, k, 30f, VfxLayer.Top, blade, career == Career.Assassin || career == Career.Ninja ? Main(career) : (Color?)null);
             if (weight == 2) SkillVisuals.Flash(at, new Color(1f, 1f, 1f, 0.55f), 1.4f, 0.1f);
         }
 

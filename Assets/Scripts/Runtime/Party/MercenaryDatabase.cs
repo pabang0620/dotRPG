@@ -38,7 +38,7 @@ namespace DotRPG
     }
 
     /// <summary>
-    /// The four mercenaries (D1/D2): level always equals the local player's, gear is fixed per level band,
+    /// The six mercenaries (D1/D2, two per class): level always equals the local player's, gear is fixed per level band,
     /// and their damage is <see cref="DamageScale"/> of a same-level player so the player stays the main
     /// damage dealer. Skills open with the same slot levels as a player's.
     /// </summary>
@@ -97,7 +97,36 @@ namespace DotRPG
                 skillPriority = new[] { 4, 0, 1 },
                 supports = new[] { new[] { "sup_dmg", "sup_chain" }, new[] { "sup_dmg", "sup_aoe" }, null, null, new[] { "sup_dmg", "sup_aoe" } },
             },
+            // [ROGUE 2026-10-23] Rogue companions (Docs/PLAN_CLASS_ROGUE.md 5). Slots: 0 stab, 1 leap, 2 backstab, 3 raid, 4 dance.
+            new MercenaryDef
+            {
+                id = "merc_mir", name = L.T("미르"), roleName = L.T("도적 · 근접 딜러"), cls = CharacterClass.Rogue, role = MercRole.MeleeDps,
+                description = L.T("두 자루 단검으로 급소를 노리는 도적. 연쇄 도약으로 무리를 타고 넘고\n그림자 습격으로 적의 등 뒤에 선다."),
+                look = new CharacterLook("merc_mir", HairStyle.Short, C(250, 205, 160), C(60, 50, 60), C(60, 120, 90), C(40, 52, 48)),
+                color = C(80, 200, 120), hpScale = 1f, threat = 1f,
+                skillPriority = new[] { 4, 0, 1, 3, 2 },
+                supports = new[] { new[] { "sup_dmg", "sup_chain" }, new[] { "sup_dmg", "sup_aoe" }, new[] { "sup_dmg", "sup_leech" }, new[] { "sup_dmg", "sup_eff" }, new[] { "sup_dmg", "sup_aoe" } },
+            },
+            new MercenaryDef
+            {
+                id = "merc_daon", name = L.T("다온"), roleName = L.T("도적 · 원거리 견제"), cls = CharacterClass.Rogue, role = MercRole.CasterDps,
+                description = L.T("거리를 두고 틈을 노리는 도적. 빈틈이 보이면 파고들어 찌르고\n그림자 질주로 다시 물러난다."),
+                look = new CharacterLook("merc_daon", HairStyle.Long, C(250, 205, 160), C(30, 30, 40), C(50, 150, 160), C(30, 50, 60)),
+                color = C(70, 210, 190), hpScale = 1f, threat = 1f,
+                skillPriority = new[] { 4, 1, 0, 2 },
+                supports = new[] { new[] { "sup_dmg", "sup_eff" }, new[] { "sup_dmg", "sup_aoe" }, new[] { "sup_dmg", "sup_eff" }, null, new[] { "sup_dmg", "sup_aoe" } },
+            },
         };
+
+        /// <summary>
+        /// [ROGUE] The look a companion is drawn with: its own generated frames (Art/char_&lt;id&gt;_*) when they are in,
+        /// else a rogue companion falls back to the rogue base body until its drawing arrives.
+        /// </summary>
+        public static CharacterLook LookOf(MercenaryDef def)
+        {
+            if (def == null || def.cls != CharacterClass.Rogue) return def?.look;
+            return Resources.Load<Sprite>($"{SpriteLibrary.OverrideFolder}char_{def.look.id}_down_idle0") != null ? def.look : CharacterLook.Rogue;
+        }
 
         /// <summary>[STORY] Story companions: join and leave through the story (StoryCompanions), never hired.</summary>
         static readonly List<MercenaryDef> StoryDefs = new List<MercenaryDef>
@@ -150,7 +179,7 @@ namespace DotRPG
             var data = CharacterData.CreateCompanion(def.id, def.name, def.cls, Mathf.RoundToInt(baseHp * def.hpScale));
             data.DamageScale = DamageScale;
             data.ThreatMultiplier = def.threat;
-            data.Look = def.look;
+            data.Look = LookOf(def);
             ApplyLevel(data, def, level);
             return data;
         }
@@ -166,7 +195,7 @@ namespace DotRPG
             var armour = def.role == MercRole.Tank && grade < ItemRarity.Unique ? grade + 1 : grade;
             return new[]
             {
-                GearCatalog.Id(mage ? "staff" : "sword", lv, grade),
+                GearCatalog.Id(mage ? "staff" : def.cls == CharacterClass.Rogue ? "dagger" : "sword", lv, grade), // [ROGUE] dagger + plate + greaves
                 GearCatalog.Id(mage ? "robe" : "plate", lv, tier == 0 && armour > ItemRarity.Rare ? ItemRarity.Rare : armour),
                 GearCatalog.Id(mage ? "skirt" : "greaves", lv, grade),
                 GearCatalog.Id("neck", lv, ItemRarity.Rare),

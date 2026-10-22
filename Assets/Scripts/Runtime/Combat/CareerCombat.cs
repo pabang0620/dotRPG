@@ -142,10 +142,11 @@ namespace DotRPG
             lastElement = "";
             aura?.Clear();
             ResetSpecWarrior(); // [CH3 SPEC]
+            RogueReset(); // [ROGUE] marks, venom, stealth, kunai, clones
         }
 
         /// <summary>Curses slow; only the 강철의 보루 stance itself slows the guardian.</summary>
-        public float MoveScale => (Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : 1f) * SpecMoveBonus; // [CH3 SPEC] 전장의 함성 B haste
+        public float MoveScale => (Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : Stealthed ? StealthSpeed : 1f) * SpecMoveBonus; // [CH3 SPEC] 전장의 함성 B haste, [ROGUE] 은신 +30%
 
         /// <summary>Damage the owner takes, after guard, 강철의 심장 and shields. Also arms 수호의 반향 and 응보의 방진.</summary>
         public int Absorb(int damage)
@@ -180,6 +181,7 @@ namespace DotRPG
             if (counterEnd > 0 && Time.time >= counterEnd) { counterEnd = 0; StartCoroutine(CounterBlast(.7f)); }
             if (OathRadius > 0 && Time.time >= oathEnd) OathRadius = 0;
             StanceTick();
+            RogueTick();
         }
 
         /// <summary>Outgoing damage of the owner on <paramref name="enemy"/> (all hits, basic attacks included).</summary>
@@ -192,6 +194,7 @@ namespace DotRPG
             if (broken.TryGetValue(enemy, out var until) && Time.time < until) mult *= 1.15f;
             if (Time.time < retalEnd) mult *= RetalMul(); // [CH3 SPEC] A/B rules in CareerCombat.SpecWarrior
             mult *= EdgeMul(enemy) * SpecTakenMul(enemy);
+            if (CareerCatalog.Base(Mine) == CharacterClass.Rogue && Prog.IsPromoted) mult *= RogueDamageMul(enemy, Mathf.RoundToInt(amount * mult)); // [ROGUE]
             return Mathf.Max(1, Mathf.RoundToInt(amount * mult));
         }
 
@@ -211,6 +214,7 @@ namespace DotRPG
                 }
             }
             CareerTrials.Record(owner, "hit", 1);
+            if (CareerCatalog.Base(Mine) == CharacterClass.Rogue && Prog.IsPromoted) RogueLanded(enemy); // [ROGUE]
         }
 
 
@@ -238,6 +242,8 @@ namespace DotRPG
                 case Career.Guardian: yield return Guardian(run); break;
                 case Career.Arcanist: yield return Arcanist(run); break;
                 case Career.Bishop: yield return Bishop(run); break;
+                case Career.Assassin: yield return Assassin(run); break;
+                case Career.Ninja: yield return Ninja(run); break;
             }
         }
 
@@ -267,7 +273,7 @@ namespace DotRPG
         {
             var color = CareerFx.Main(s.career);
             owner.GetComponent<CharacterAnimator>()?.SetCareerFacing(FacingExtensions.FromVector(dir, owner.Facing));
-            if (CareerCatalog.Base(s.career) == CharacterClass.Warrior)
+            if (CareerCatalog.Base(s.career) != CharacterClass.Mage) // [ROGUE] rogue careers take the warrior's stance, not the circle
             {
                 owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(s.cast + .12f, s.effect == "execute" || s.effect == "swordrain" || s.effect == "xslash" || s.effect == "aegis" ? 2 : 0, 0, WarriorAttackMotion.Contact);
                 if (s.cast >= .15f) SkillVisuals.Flash(owner.Center + dir * .3f, color, 1f, s.cast);
@@ -277,7 +283,7 @@ namespace DotRPG
                 SkillVisuals.CastCircle(owner.Position, color);
                 SkillVisuals.StaffFlash(owner.Center + dir * .35f, color);
             }
-            Sound(s.career == Career.Fighter ? "c_dash" : s.career == Career.Guardian ? "swing" : s.career == Career.Arcanist ? "c_arcane" : "magic", .55f);
+            Sound(s.career == Career.Fighter || s.career == Career.Assassin ? "c_dash" : s.career == Career.Guardian || s.career == Career.Ninja ? "swing" : s.career == Career.Arcanist ? "c_arcane" : "magic", .55f);
         }
 
         void Awaken(CareerSkill s)

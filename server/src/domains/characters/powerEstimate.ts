@@ -16,6 +16,7 @@ export function computePower(
   const eco = getGameData().economy;
   const p = eco.player.power;
   const equip = eco.shop.equipment;
+  // 기본 공격력: 마법사는 구슬 피해, 전사·도적은 attackDamage(10, 도적은 전사와 같다)
   let attack = cls === 'mage' ? eco.player.mageBoltDamage : eco.player.attackDamage;
   let health = eco.player.maxHealth + bonusMaxHealth + (level - 1) * p.hpPerLevel;
   let block = 0;

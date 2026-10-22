@@ -6,10 +6,12 @@
 //   - 한 단계 아래(에픽)는 1%로 "뽑는 맛"을 맡는다. 일반·희귀는 중복 방지와 별조각 환급으로 손해감을 줄인다.
 //   - 스킨 뽑기는 모든 등급이 내 직업 스킨이다(일반·희귀 스킨은 기본 몸체 색 바꾸기, 2026-10-14).
 //   - 10+1의 보너스 1회: 오라·스킨 뽑기는 희귀 이상, 장비 뽑기는 일반 1회와 같은 확률.
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'unique';
 
-export const RATES_VERSION = '2026-10-14.3'; // .3: 컬렉션 세트 9종 추가, 교환소 전용 외형은 뽑기에서 제외(0044)
+export const RATES_VERSION = '2026-10-23.2'; // .2: 챕터 3 병합(장비 뽑기 표는 1~40 단계만). .1: 도적 스킨 33종(뽑기 32 + 교환소 전용 1)과 도적 장비 뽑기 표
+// 이전: 2026-10-14.3 컬렉션 세트 9종 추가, 교환소 전용 외형은 뽑기에서 제외(0044)
 
 /** 확률 단위: 십만분율(0.001% 단위) */
 export const RATE_SCALE = 100_000;
@@ -118,6 +120,8 @@ export const COLLECTIONS: readonly CollectionDef[] = [
   { id: 'col_witch', name: '마녀의 옷장', members: ['skin_m_sky', 'skin_m_cherry', 'skin_m_mint', 'skin_m_amber', 'skin_m_ocean'], attack: 0, health: 2 },
   { id: 'col_valor', name: '용맹의 갑주', members: ['skin_w_valkyrie', 'skin_w_snowblade', 'skin_w_dragonscale', 'skin_w_roseknight'], attack: 1, health: 0 },
   { id: 'col_arcana', name: '비전의 로브', members: ['skin_m_moonshrine', 'skin_m_storm', 'skin_m_sakura', 'skin_m_frostprincess'], attack: 1, health: 0 },
+  { id: 'col_shade', name: '밀정의 옷장', members: ['skin_r_crimson', 'skin_r_violet', 'skin_r_frost', 'skin_r_jade', 'skin_r_azure'], attack: 0, health: 2 },
+  { id: 'col_blades', name: '칼춤의 의상', members: ['skin_r_sakura', 'skin_r_moonshade', 'skin_r_raven', 'skin_r_foxmask'], attack: 1, health: 0 },
 ];
 export const COLLECTION_BY_ID = new Map(COLLECTIONS.map((c) => [c.id, c] as const));
 export const COLLECTION_ATTACK_MAX = COLLECTIONS.reduce((a, c) => a + c.attack, 0);
@@ -164,6 +168,7 @@ export const EXCHANGE_GOODS: readonly ExchangeGood[] = [
   { id: 'ex_aura_nova', name: '신성 폭발 오라(교환소 전용)', price: 600, weekly: 0, kind: 'cosmetic', itemId: 'aura_nova' },
   { id: 'ex_skin_starwarden', name: '별빛 수호 기사(교환소 전용)', price: 900, weekly: 0, kind: 'cosmetic', itemId: 'skin_w_starwarden' },
   { id: 'ex_skin_starsage', name: '별의 현자(교환소 전용)', price: 900, weekly: 0, kind: 'cosmetic', itemId: 'skin_m_starsage' },
+  { id: 'ex_skin_starshade', name: '별빛 그림자(교환소 전용)', price: 900, weekly: 0, kind: 'cosmetic', itemId: 'skin_r_starshade' },
 ];
 export const EXCHANGE_GOOD_BY_ID = new Map(EXCHANGE_GOODS.map((g) => [g.id, g] as const));
 
@@ -182,7 +187,7 @@ export interface CosmeticDef {
   name: string;
   rarity: Rarity;
   /** 코스튬 스킨(직업별 전신 외형) */
-  skin?: 'warrior' | 'mage';
+  skin?: CharacterClassId;
   /** 별빛 교환소에서만 얻는 외형(뽑기·합성·확정 교환에 나오지 않는다, 0044) */
   exchangeOnly?: boolean;
 }
@@ -291,11 +296,45 @@ export const STAR_COSMETICS: readonly CosmeticDef[] = [
   { id: 'skin_m_celestial', name: '천공의 대마녀', rarity: 'unique', skin: 'mage' },
   { id: 'skin_m_flameempress', name: '화염 여제', rarity: 'unique', skin: 'mage' },
   { id: 'skin_m_dream', name: '몽환의 마녀', rarity: 'unique', skin: 'mage' },
+  // 2026-10-23 도적 스킨 33종(Docs/PLAN_CLASS_ROGUE.md 6.1절): 일반 10, 희귀 10, 에픽 7, 유니크 5 + 교환소 전용 에픽 1(아래)
+  { id: 'skin_r_navy', name: '남색 밀정복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_wine', name: '와인빛 밀정복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_moss', name: '숲길 정찰복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_sand', name: '사막 행상복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_slate', name: '회청 잠행복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_rust', name: '적갈 사냥꾼복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_ivory', name: '상아 견습복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_plum', name: '자두빛 두건복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_teal', name: '청록 밀수꾼복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_coal', name: '숯빛 야행복', rarity: 'common', skin: 'rogue' },
+  { id: 'skin_r_crimson', name: '진홍 그림자복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_violet', name: '보랏빛 야행복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_gold', name: '황금 도둑복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_frost', name: '서리 밀정복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_rose', name: '장미 가면복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_jade', name: '비취 독사복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_ember', name: '불씨 두건복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_azure', name: '하늘빛 바람복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_onyx', name: '흑요 암살복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_lilac', name: '라일락 무희복', rarity: 'rare', skin: 'rogue' },
+  { id: 'skin_r_sakura', name: '벚꽃 쿠노이치', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_moonshade', name: '달그림자 밀정', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_dunedancer', name: '모래바람 칼춤꾼', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_corsair', name: '바다의 칼잡이', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_raven', name: '까마귀 깃 암살자', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_foxmask', name: '여우 가면 무희', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_frosthunter', name: '서리 사냥꾼', rarity: 'epic', skin: 'rogue' },
+  { id: 'skin_r_nightqueen', name: '칠흑의 그림자 여왕', rarity: 'unique', skin: 'rogue' },
+  { id: 'skin_r_thunder', name: '뇌신 닌자', rarity: 'unique', skin: 'rogue' },
+  { id: 'skin_r_crimsonmoon', name: '진홍 달의 처형자', rarity: 'unique', skin: 'rogue' },
+  { id: 'skin_r_butterfly', name: '비단 나비 무희', rarity: 'unique', skin: 'rogue' },
+  { id: 'skin_r_scorpion', name: '황금 전갈', rarity: 'unique', skin: 'rogue' },
   // 0044 별빛 교환소 전용(시즌 1): 별의 결정으로만 얻는다
   { id: 'aura_crystal', name: '결정빛 오라', rarity: 'epic', exchangeOnly: true },
   { id: 'aura_nova', name: '신성 폭발 오라', rarity: 'epic', exchangeOnly: true },
   { id: 'skin_w_starwarden', name: '별빛 수호 기사', rarity: 'epic', skin: 'warrior', exchangeOnly: true },
   { id: 'skin_m_starsage', name: '별의 현자', rarity: 'epic', skin: 'mage', exchangeOnly: true },
+  { id: 'skin_r_starshade', name: '별빛 그림자', rarity: 'epic', skin: 'rogue', exchangeOnly: true },
 ];
 
 export const STAR_COSMETIC_BY_ID = new Map(STAR_COSMETICS.map((c) => [c.id, c] as const));

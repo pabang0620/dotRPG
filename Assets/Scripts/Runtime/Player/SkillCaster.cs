@@ -78,6 +78,16 @@ namespace DotRPG
             castEnd = 0f;
         }
 
+        /// <summary>[PARTY NET] A second press of a slot was used as its follow-up (쿠나이 순간이동 / 분신 자리 바꾸기).</summary>
+        public static event System.Action<PlayerController, int> FollowedUp;
+
+        /// <summary>[PARTY NET] A puppet replays the follow-up of the skill on <paramref name="slot"/> (looks only).</summary>
+        public void NetFollowUp(int slot)
+        {
+            var gem = slot >= 0 && slot < SkillGems.Slots ? Prog.Active(slot) : null;
+            if (gem != null && !owner.IsDead) CareerCombat.For(owner).TryFollowUp(gem.id);
+        }
+
         public void TryCast(int slot)
         {
             if (slot<0 || slot>=SkillGems.Slots || owner.IsDead || owner.IsDashing) return;
@@ -92,6 +102,9 @@ namespace DotRPG
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
+            // [NINJA] 쿠나이 순간이동 / 분신술: pressing the key again while the kunai or the clones are out is the follow-up
+            // (move to the kunai / swap with a clone): no MP, no cooldown, also mid-cast.
+            if (CareerCombat.For(owner).TryFollowUp(gem.id)) { FollowedUp?.Invoke(owner, slot); return; }
             if (Time.time < ReadyAt(slot) || IsCasting) return;
             var careerSkill = CareerCatalog.Get(gem.id);
             // [FIGHTER] 검기 태세 is a toggle: pressing it while on turns it off for free.
@@ -104,6 +117,12 @@ namespace DotRPG
             }
             if (careerSkill != null && !CareerCombat.For(owner).CanCast(careerSkill)) return; // e.g. all three shields still out
             var n = Numbers(slot);
+            // [ROGUE] 그림자 습격 needs a monster within its range; without one it is not cast (no MP, no cooldown).
+            if (gem.id == "raid" && RaidTarget(n) == null)
+            {
+                if (owner.IsLocal) { GameEvents.RaiseToast(L.T("가까이에 노릴 적이 없습니다.")); Game.Audio.PlaySfx("cancel"); }
+                return;
+            }
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
                 if (!owner.IsLocal) return;
@@ -184,6 +203,12 @@ namespace DotRPG
                     case "nova": Nova(n); break;
                     case "frostorb": StartCoroutine(FrostOrb(n)); break;
                     case "meteor": yield return StartCoroutine(Meteor(n, i == 0)); break;
+                    // [ROGUE] SkillCaster.Rogue
+                    case "stab": Stab(n); break;
+                    case "leap": yield return StartCoroutine(Leap(n)); break;
+                    case "backstab": Backstab(n); break;
+                    case "raid": Raid(n); break;
+                    case "dance": yield return StartCoroutine(Dance(n, i == 0)); break;
                 }
                 if (i < n.repeats) yield return new WaitForSeconds(0.28f);
             }

@@ -212,7 +212,7 @@ namespace DotRPG
             {
                 ["request_id"] = requestId,
                 ["name"] = name,
-                ["class"] = cls == CharacterClass.Mage ? "mage" : "warrior",
+                ["class"] = CharacterClassInfo.Get(cls).saveId,
             };
             Api.Post("/characters", body, r =>
             {

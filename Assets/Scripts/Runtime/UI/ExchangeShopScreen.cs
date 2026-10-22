@@ -303,7 +303,7 @@ namespace DotRPG
                 if (!on) continue;
                 var c = picking.choices[at];
                 var p = CosmeticCatalog.Find(c.id);
-                string kind = string.IsNullOrEmpty(c.skin) ? L.T("오라") : L.F("{0} 스킨", (c.skin == "mage" ? L.T("마법사") : L.T("전사")));
+                string kind = string.IsNullOrEmpty(c.skin) ? L.T("오라") : L.F("{0} 스킨", (c.skin == "mage" ? L.T("마법사") : c.skin == "rogue" ? L.T("도적") : L.T("전사")));
                 pickRows[i].label.text = $"<color={Hex(c.rarity)}>{L.T(p?.Name ?? c.name)}</color>  <size=15><color=#b8c4d8>{kind}</color></size>"
                     + (p != null && p.DamagePercent > 0 ? L.F("  <size=15>공격력 +{0}%</size>", p.DamagePercent) : "");
             }

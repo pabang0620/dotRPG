@@ -3,6 +3,7 @@ import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
 import { notifyPartyChanged } from '../chat/partyNotify';
 import { closeMembershipOf, closeSessionsOfParty } from '../fieldsessions/fieldCore';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface PartyRow {
   id: number;
@@ -37,7 +38,7 @@ export interface MemberRow {
   account_id: number;
   character_uuid: string;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   ready: boolean;
   joined_at: Date;
@@ -235,7 +236,7 @@ export interface PostRow {
   leader_character_id: number;
   members: number;
   leader_name: string;
-  leader_class: 'warrior' | 'mage';
+  leader_class: CharacterClassId;
   leader_level: number;
   applied: boolean;
 }
@@ -363,7 +364,7 @@ export interface PendingApplicantRow {
   power_estimate: number;
   char_uuid: string;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
 }
 export async function pendingForParty(db: Queryable, partyId: number, now: Date): Promise<PendingApplicantRow[]> {

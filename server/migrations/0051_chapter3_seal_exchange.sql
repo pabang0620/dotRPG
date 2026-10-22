@@ -1,4 +1,4 @@
--- 0050_chapter3_seal_exchange: 챕터 3 아카브 교환(2026-10-22, Docs/ch3/IMPLEMENTATION_ORDER.md). 선행: 0049_gear_inherit.
+-- 0051_chapter3_seal_exchange: 챕터 3 아카브 교환(2026-10-22, Docs/ch3/IMPLEMENTATION_ORDER.md). 선행: 0050_rogue_class(0049_gear_inherit).
 --   골드 사유 seal_exchange(침식 결정 -> 잿빛 인장)와 계정 주간 카운터 seal_exchange(주 2회).
 --   장비 계승 사유 inherit(40 -> 50 포함, 재료도 item_ledger inherit)는 0049_gear_inherit가 이미 넣었다. ch3 브랜치의 옛 0049_chapter3_inherit를 옮긴 것이다.
 -- ============ UP ============

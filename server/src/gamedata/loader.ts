@@ -9,6 +9,7 @@ import { getConfig } from '../config/env';
 import { loadSweepData, type SweepData } from './sweepData';
 import { loadRaidShop, type RaidShopData } from './raidShop';
 import { MINI_TIERS, miniMapId } from '../domains/minidungeon/miniDungeonRules';
+import { CHARACTER_CLASSES } from '../utils/characterClass';
 
 // 알 수 없는 필드는 무시(looseObject)해서 데이터에 필드가 늘어도 기동이 깨지지 않는다.
 const schemaVer = z.literal(1);
@@ -46,7 +47,7 @@ const starterSchema = z.looseObject({
   startMap: z.string().min(1),
   gold: z.number().int().min(0),
   items: z.array(z.looseObject({ itemKey: z.string().min(1), count: z.number().int().positive() })),
-  gear: z.looseObject({ warrior: gearSchema.optional(), mage: gearSchema.optional() }),
+  gear: z.looseObject({ warrior: gearSchema.optional(), mage: gearSchema.optional(), rogue: gearSchema.optional() }),
 });
 
 const itemsSchema = z.looseObject({
@@ -215,7 +216,8 @@ export function loadGameData(dir: string): GameData {
     }
     seenStarter.add(it.itemKey);
   }
-  for (const [cls, g] of [['warrior', starter.gear.warrior], ['mage', starter.gear.mage]] as const) {
+  for (const cls of CHARACTER_CLASSES) {
+    const g = starter.gear[cls];
     if (g && !itemIds.has(g.itemKey)) {
       throw new Error(`게임 데이터 검증 실패: starter gear(${cls}) ${g.itemKey} 이 items.json에 없습니다`);
     }
@@ -256,7 +258,7 @@ export function loadGameData(dir: string): GameData {
       startMap: starter.startMap,
       gold: starter.gold,
       items: starter.items.map((i) => ({ itemKey: i.itemKey, count: i.count })),
-      gear: { warrior: starter.gear.warrior, mage: starter.gear.mage },
+      gear: { warrior: starter.gear.warrior, mage: starter.gear.mage, rogue: starter.gear.rogue },
     },
     itemIds,
     passive: { start: passive.start, nodes },

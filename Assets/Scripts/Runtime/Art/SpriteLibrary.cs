@@ -88,6 +88,29 @@ namespace DotRPG
             return result;
         }
 
+        /// <summary>[ROGUE] Grip of the held dagger art (Art/PlayerWeapons/wpn_dagger_*): handle centre, pixels from the bottom.</summary>
+        public const float DaggerGripY = 12.5f;
+
+        /// <summary>[ROGUE] Dagger for the equipped tier, pivoted at the grip (one picture for both hands).</summary>
+        /// <param name="kunai">[NINJA] A ninja holds kunai of the same art tier (wpn_kunai_0~2, the star wpn_kunai_3) at the dagger's size.</param>
+        public Sprite GetRogueWeapon(string itemId, bool kunai = false)
+        {
+            var item = EquipmentDatabase.Get(itemId);
+            if (item == null || item.category != EquipCategory.Weapon || !item.UsableBy(CharacterClass.Rogue)) return null;
+            string key = (kunai ? "ninja_held_" : "rogue_held_") + itemId;
+            if (cache.TryGetValue(key, out var ready)) return ready;
+            string dagger = EquipmentDatabase.WeaponSprite(itemId, CharacterClass.Rogue);
+            var original = kunai ? Resources.Load<Sprite>(PlayerWeaponArt.ResourceFolder + dagger.Replace("wpn_dagger_", "wpn_kunai_")) : null;
+            float ppu = 0f;
+            if (original != null) ppu = Resources.Load<Sprite>(PlayerWeaponArt.ResourceFolder + dagger)?.pixelsPerUnit ?? original.pixelsPerUnit; // same size as the dagger
+            else original = Resources.Load<Sprite>(PlayerWeaponArt.ResourceFolder + dagger);
+            if (original == null) return null;
+            if (ppu <= 0f) ppu = original.pixelsPerUnit;
+            var result = Sprite.Create(original.texture, original.rect, new Vector2(.5f, DaggerGripY / original.rect.height), ppu, 0, SpriteMeshType.FullRect);
+            result.name = key; cache[key] = result;
+            return result;
+        }
+
         Sprite ToSprite(string key, PixelCanvas canvas)
         {
             // High-resolution art (density 2) is drawn through the sharp-scaling material, which needs

@@ -80,7 +80,10 @@ describe('C1 전직', () => {
     expect(r.body.errors).toMatchObject({ code: 'LEVEL_TOO_LOW', need: 15, have: 14 });
     const h = await warrior();
     expect((await promote(app, h, 3)).body.errors.code).toBe('CAREER_BASE_MISMATCH');
-    expect((await promote(app, h, 5)).status).toBe(400);
+    // 2026-10-23 도적: 5 어쌔신·6 닌자는 도적 전직이라 전사에게는 CAREER_BASE_MISMATCH, 7부터 범위 밖
+    expect((await promote(app, h, 5)).body.errors.code).toBe('CAREER_BASE_MISMATCH');
+    expect((await promote(app, h, 6)).body.errors.code).toBe('CAREER_BASE_MISMATCH');
+    expect((await promote(app, h, 7)).status).toBe(400);
     expect((await post(app, h, '/career/promote', { career: 1, cost: 0 })).status).toBe(400);
     expect(await grant(h)).toBeUndefined();
   });

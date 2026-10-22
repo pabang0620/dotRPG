@@ -16,7 +16,7 @@
 
 | 항목 | 값 |
 |---|---|
-| 입장 레벨 | 40 고정(`BossRushCatalog.MinLevel`, 서버 `min_level`). Lv40~49도 계속 참가한다. 보스 레벨만 `levelCap()`(열리면 50)을 따르고 시즌 행에 `boss_level`을 기록한다(마이그레이션 0051) |
+| 입장 레벨 | 40 고정(`BossRushCatalog.MinLevel`, 서버 `min_level`). Lv40~49도 계속 참가한다. 보스 레벨만 `levelCap()`(열리면 50)을 따르고 시즌 행에 `boss_level`을 기록한다(마이그레이션 0053) |
 | 보스 | 같은 `boss_abyss_titan`(심연의 거신 지파크). 방 안 체력 x46·피해 x1.0·직업 배율(가디언 1.4, 아르카니스트 1.3, 비숍 2.2) 그대로 |
 | 피해 상한 | 참가자 각자의 `killRules.attackCap(자기 레벨, 자기 착용 장비)` x 180초 x `DAMAGE_SLACK` 0.6(`PROGRESSION_AND_GEAR.md` 7절의 재계산으로 0.6 유지) |
 | 월드보스 체력 | 시즌 생성 때 `WORLD_BOSS_HP`(기본 40,000,000)를 쓰고, 보스 레벨 50 시즌은 x2.0(80,000,000)으로 둔다. 조정은 env `WORLD_BOSS_HP`로 한다 |

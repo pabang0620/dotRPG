@@ -15,10 +15,10 @@ namespace DotRPG.EditorTools
         public static void Run()
         {
             var issues = new List<string>();
-            foreach (var c in new[] { Career.Fighter, Career.Guardian, Career.Arcanist, Career.Bishop })
+            foreach (var c in new[] { Career.Fighter, Career.Guardian, Career.Arcanist, Career.Bishop, Career.Assassin, Career.Ninja })
                 for (int level = 15; level <= Progression.MaxLevel; level++)
                     issues.AddRange(SkillRecommend.Check(c, level));
-            if (issues.Count == 0) Debug.Log("[dotRPG] Recommended skill build: OK (4 careers, Lv15-40)");
+            if (issues.Count == 0) Debug.Log("[dotRPG] Recommended skill build: OK (6 careers, Lv15-40)");
             else foreach (var i in issues) Debug.LogError("[dotRPG] Recommended skill build: " + i);
             if (Application.isBatchMode) EditorApplication.Exit(issues.Count == 0 ? 0 : 1);
         }

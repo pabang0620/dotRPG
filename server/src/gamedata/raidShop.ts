@@ -5,10 +5,11 @@ import path from 'node:path';
 import { z } from 'zod';
 import { tierOfLevel } from '../utils/gearTier';
 import type { EconomyData } from './economyData';
+import { CHARACTER_CLASSES, usableBy } from '../utils/characterClass';
 
 const RARITIES = ['Epic', 'Unique', 'Legendary'] as const;
 export type ShopRarity = (typeof RARITIES)[number];
-export const SHOP_CLASSES = ['warrior', 'mage'] as const;
+export const SHOP_CLASSES = CHARACTER_CLASSES;
 
 const productSchema = z.looseObject({
   id: z.string().min(1).regex(/^[a-z][a-z0-9_]*$/),
@@ -73,7 +74,7 @@ export function loadRaidShop(dir: string, eco: EconomyData): RaidShopData | null
       results[cls] = {};
       for (const w of weights) {
         const found = eco.shop.equipmentList.filter(
-          (e) => !e.bossOnly && e.levelTier === tier && e.category === p.category && e.rarity === w.rarity && (e.classOnly === null || e.classOnly === cls),
+          (e) => !e.bossOnly && e.levelTier === tier && e.category === p.category && e.rarity === w.rarity && usableBy(e, cls),
         );
         if (found.length === 0) fail(`직업 ${cls} ${w.rarity} ${p.category} 장비가 없습니다`);
         (results[cls] as Record<string, string[]>)[w.rarity] = found.map((e) => e.id);

@@ -6,7 +6,8 @@ namespace DotRPG
     /// <summary>
     /// The equipment table (Docs/PLAN_GEAR_RENEWAL.md): 8 level tiers (Lv.1, 10, 15 ... 40, the tier level is the equip
     /// level) x grades (Lv.1: common to rare, the rest common to unique, legendary at Lv.20 and Lv.40) x 8 kinds
-    /// (warrior sword / plate / greaves, mage staff / robe / skirt, shared necklace / ring). Names follow each tier's
+    /// (warrior sword / plate / greaves, mage staff / robe / skirt, shared necklace / ring; [ROGUE] rogue dagger, appended,
+    /// with plate and greaves shared by warrior and rogue). Names follow each tier's
     /// region theme; stats are the tier's rare baseline x a grade multiplier. Ids: eq_{kind}_{level}_{grade}.
     /// </summary>
     public static class GearCatalog
@@ -33,14 +34,15 @@ namespace DotRPG
         /// <summary>Walking speed % of leg armour (and rings) by grade.</summary>
         static int SpeedOf(ItemRarity r) => r switch { ItemRarity.Rare => 2, ItemRarity.Epic => 4, ItemRarity.Unique => 8, ItemRarity.Legendary => 12, _ => 0 };
 
-        enum Kind { Sword, Staff, Plate, Greaves, Robe, Skirt, Neck, Ring }
+        enum Kind { Sword, Staff, Plate, Greaves, Robe, Skirt, Neck, Ring, Dagger }
 
-        static readonly Kind[] Kinds = { Kind.Sword, Kind.Plate, Kind.Greaves, Kind.Staff, Kind.Robe, Kind.Skirt, Kind.Neck, Kind.Ring };
+        // [ROGUE] Dagger last, so every existing item keeps its place in the table (bag order).
+        static readonly Kind[] Kinds = { Kind.Sword, Kind.Plate, Kind.Greaves, Kind.Staff, Kind.Robe, Kind.Skirt, Kind.Neck, Kind.Ring, Kind.Dagger };
 
         static string KindId(Kind k) => k switch
         {
             Kind.Sword => "sword", Kind.Staff => "staff", Kind.Plate => "plate", Kind.Greaves => "greaves",
-            Kind.Robe => "robe", Kind.Skirt => "skirt", Kind.Neck => "neck", _ => "ring",
+            Kind.Robe => "robe", Kind.Skirt => "skirt", Kind.Neck => "neck", Kind.Dagger => "dagger", _ => "ring",
         };
 
         // i18n-names-begin (translated once in Build: name = L.T(name))
@@ -123,6 +125,20 @@ namespace DotRPG
             new[] { "균열 치마", "잔해 수 치마", "메마른 땅의 치마", "공허 가르는 치마", "검은 돌의 치마" }, // [CH3] Lv.45 마른 협곡·검은 돌
             new[] { "샘물 치마", "핏빛 달 치마", "사얍 수호 치마", "봉인의 치마", "볼론의 치마" }, // [CH3] Lv.50 사얍·봉인
         };
+        // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 4.1: the tiers' region themes, "쌍단검·비수" so no name repeats a sword's.
+        static readonly string[][] DaggerNames =
+        {
+            new[] { "무딘 단검", "견습 도적의 단검", "마을 파수꾼 쌍단검", "파수대장의 쌍단검" },
+            new[] { "녹슨 쌍단검", "뼈손잡이 단검", "해골 숲 사냥 단검", "망령 가르는 단검", "묘지기의 처형 단검" },
+            new[] { "적석 쌍단검", "붉은 돌 쌍단검", "고개지기 쌍단검", "협곡 파쇄 단검", "붉은 거인의 송곳니 단검" },
+            new[] { "기사단 연습 단검", "강철 쌍단검", "기사단 밀정 단검", "해골왕 토벌 단검", "밀정단장의 쌍단검" },
+            new[] { "서리솔 쌍단검", "서리솔 찌르개", "설원 사냥꾼의 쌍단검", "서리 수호 단검", "얼어붙은 숲의 왕단검" },
+            new[] { "얼음날 단검", "빙결 쌍단검", "호숫가 밀정 단검", "빙하 절단 단검", "얼음 여제의 비수" },
+            new[] { "눈보라 쌍단검", "은빛 쌍단검", "봉우리 파수 단검", "눈보라 가르는 비수", "설산 군주의 쌍비수" },
+            new[] { "별철 쌍단검", "성광 쌍단검", "성좌 밀정 단검", "유성 비수", "북극성의 쌍비수" },
+            new[] { "균열 쌍단검", "잔해 쌍단검", "메마른 땅의 비수", "공허 가르는 비수", "검은 돌의 쌍비수" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 쌍단검", "핏빛 달 쌍단검", "사얍 수호 단검", "봉인의 비수", "볼론의 쌍비수" }, // [CH3] Lv.50 사얍·봉인
+        };
         static readonly string[][] NeckNames =
         {
             new[] { "끈 목걸이", "조개 목걸이", "마을 수호 부적", "축제의 수호 목걸이" },
@@ -159,13 +175,15 @@ namespace DotRPG
             Kind.Robe => new[] { "별빛 마도 법의", "창세의 별 법의", "두 왕의 법의" },
             Kind.Skirt => new[] { "별빛 마도 치마", "창세의 별 치마", "두 왕의 치마" },
             Kind.Neck => new[] { "용의 눈 목걸이", "창세의 별 목걸이", "두 왕의 목걸이" },
+            Kind.Dagger => new[] { "용골 쌍비수", "창세의 별 쌍비수", "두 왕의 쌍비수" },
             _ => new[] { "용의 심장 반지", "창세의 별 반지", "두 왕의 반지" },
         };
         // i18n-names-end
 
         // i18n-names-begin
         /// <summary>[LEGEND] Names of the 토벌형 (boss hunter) legendary weapons: [Lv.20, Lv.40, Lv.50].</summary>
-        static string[] HunterNames(Kind k) => k == Kind.Sword ? new[] { "용아 처형검", "종말의 별가름검", "공허 처형검" } : new[] { "유성 낙인 지팡이", "종말의 심판봉", "아홉 번째 별의 홀" };
+        static string[] HunterNames(Kind k) => k == Kind.Sword ? new[] { "용아 처형검", "종말의 별가름검", "공허 처형검" }
+            : k == Kind.Dagger ? new[] { "용아 처형 비수", "종말의 별가름 비수", "공허 처형 비수" } : new[] { "유성 낙인 지팡이", "종말의 심판봉", "아홉 번째 별의 홀" };
         // i18n-names-end
 
         /// <summary>
@@ -181,6 +199,8 @@ namespace DotRPG
             string kind = sweep ? L.T("광역형") : L.T("토벌형");
             string flavor = k == Kind.Sword
                 ? (sweep ? L.T("한 번 휘두르면 무리가 통째로 쓸려 나간다.") : L.T("단 하나의 목을 노리는 칼날. 거대한 적일수록 깊이 박힌다."))
+                : k == Kind.Dagger
+                ? (sweep ? L.T("칼날이 바람처럼 무리 사이를 지나간다.") : L.T("단 한 번, 가장 큰 적의 급소를 노린다."))
                 : (sweep ? L.T("별빛이 넓게 퍼져 무리를 한꺼번에 태운다.") : L.T("떨어지는 별 하나를 한 점에 모은다. 우두머리를 무너뜨리는 지팡이."));
             item.flavor = $"<color=#ffb347>{kind}</color> · {flavor}";
             item.description = item.description + "\n" + item.flavor;
@@ -189,12 +209,12 @@ namespace DotRPG
         static string[][] NamesOf(Kind k) => k switch
         {
             Kind.Sword => SwordNames, Kind.Staff => StaffNames, Kind.Plate => PlateNames, Kind.Greaves => GreavesNames,
-            Kind.Robe => RobeNames, Kind.Skirt => SkirtNames, Kind.Neck => NeckNames, _ => RingNames,
+            Kind.Robe => RobeNames, Kind.Skirt => SkirtNames, Kind.Neck => NeckNames, Kind.Dagger => DaggerNames, _ => RingNames,
         };
 
         static EquipCategory CategoryOf(Kind k) => k switch
         {
-            Kind.Sword or Kind.Staff => EquipCategory.Weapon,
+            Kind.Sword or Kind.Staff or Kind.Dagger => EquipCategory.Weapon,
             Kind.Plate or Kind.Robe => EquipCategory.Top,
             Kind.Greaves or Kind.Skirt => EquipCategory.Bottom,
             Kind.Neck => EquipCategory.Necklace,
@@ -205,8 +225,14 @@ namespace DotRPG
         {
             Kind.Sword or Kind.Plate or Kind.Greaves => CharacterClass.Warrior,
             Kind.Staff or Kind.Robe or Kind.Skirt => CharacterClass.Mage,
+            Kind.Dagger => CharacterClass.Rogue,
             _ => null,
         };
+
+        static readonly CharacterClass[] WarriorRogue = { CharacterClass.Warrior, CharacterClass.Rogue };
+
+        /// <summary>[ROGUE] Who may wear a kind (null = ClassOf alone). Plate and greaves: warrior and rogue (4.2).</summary>
+        static CharacterClass[] ClassesOf(Kind k) => k == Kind.Plate || k == Kind.Greaves ? WarriorRogue : null;
 
         /// <summary>
         /// Stand-in art until each item's own icon exists (Art/Gear/eqicon_{id}): the old icon set by tier band. Weapons
@@ -228,12 +254,13 @@ namespace DotRPG
         /// ART_LIST 6); the Lv.50 legendaries keep the legendary band of <see cref="OldIcon"/>.
         /// </summary>
         static string BandIcon(Kind k, int tier, ItemRarity r) =>
-            tier >= Chapter3Tier && r != ItemRarity.Legendary ? "Gear/eqicon_band89_" + KindId(k) : null;
+            tier >= Chapter3Tier && r != ItemRarity.Legendary && k != Kind.Dagger ? "Gear/eqicon_band89_" + KindId(k) : null; // [ROGUE] no dagger band art yet: old dagger icon
 
         static string OldIcon(Kind k, int art) => k switch
         {
             Kind.Sword => $"eqicon_sword_{art}",
             Kind.Staff => $"eqicon_staff_{art}",
+            Kind.Dagger => $"eqicon_dagger_{art}",
             Kind.Plate or Kind.Robe => $"eqicon_top_{art}",
             Kind.Greaves or Kind.Skirt => $"eqicon_bot_{art}",
             Kind.Neck => $"eqicon_neck_{art}",
@@ -273,7 +300,7 @@ namespace DotRPG
                         var legend = Make(k, t, ItemRarity.Legendary, LegendNames(k)[which]);
                         list.Add(legend);
                         // [LEGEND 2026-10-14] Weapons come in two archetypes (Docs/PLAN_GEAR_RENEWAL.md "전설 무기 두 갈래").
-                        if (k == Kind.Sword || k == Kind.Staff)
+                        if (k == Kind.Sword || k == Kind.Staff || k == Kind.Dagger)
                         {
                             Archetype(legend, sweep: true, k);
                             var hunter = Make(k, t, ItemRarity.Legendary, HunterNames(k)[which]);
@@ -297,6 +324,7 @@ namespace DotRPG
             {
                 case Kind.Sword:
                 case Kind.Staff:
+                case Kind.Dagger:
                     atk = Mathf.RoundToInt(w * m);
                     if (r == ItemRarity.Unique) aoe = 5; else if (r == ItemRarity.Legendary) aoe = 12;
                     break;
@@ -317,7 +345,7 @@ namespace DotRPG
             int art = ArtTier(k, t, r);
             return new EquipmentItem
             {
-                id = Id(KindId(k), level, r), name = L.T(name), category = CategoryOf(k), rarity = r, classOnly = ClassOf(k),
+                id = Id(KindId(k), level, r), name = L.T(name), category = CategoryOf(k), rarity = r, classOnly = ClassOf(k), classes = ClassesOf(k),
                 attack = atk, maxHealth = hp, block = block, speed = spd, xpBonus = xp, aoeBonus = aoe,
                 iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = BandIcon(k, t, r) ?? OldIcon(k, art), description = Describe(k, level, r),
                 // [2026-10-14] Before Lv.15 (tiers Lv.1 and Lv.10) epics drop more often: weight 5 instead of 3.
@@ -328,7 +356,8 @@ namespace DotRPG
 
         static string Describe(Kind k, int level, ItemRarity r)
         {
-            string who = ClassOf(k) == CharacterClass.Warrior ? L.T("전사 전용") : ClassOf(k) == CharacterClass.Mage ? L.T("마법사 전용") : L.T("모든 직업");
+            string who = ClassesOf(k) != null ? L.T("전사·도적 전용") : ClassOf(k) == CharacterClass.Warrior ? L.T("전사 전용") : ClassOf(k) == CharacterClass.Mage ? L.T("마법사 전용")
+                : ClassOf(k) == CharacterClass.Rogue ? L.T("도적 전용") : L.T("모든 직업");
             return L.F("Lv.{0} 장비 · {1}", level, who);
         }
 

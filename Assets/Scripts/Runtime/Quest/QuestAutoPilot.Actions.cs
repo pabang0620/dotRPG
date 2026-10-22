@@ -135,6 +135,10 @@ namespace DotRPG
 
         /// <summary>Mages shoot from range instead of walking into sword reach (they took every hit standing next to the pack).</summary>
         const float MageReach = 4.5f;
+        /// <summary>[ROGUE] Ninja basic attack throws kunai (6 m); the base rogue and the assassin stab up close (AttackReach).</summary>
+        const float NinjaReach = 6f;
+        static float BasicReach(PlayerController p) =>
+            p.Class == CharacterClass.Mage ? MageReach : p.Data.Progression.Career == Career.Ninja ? NinjaReach : AttackReach;
 
         void Fight(PlayerController p, Vector2 pos, Vector2 center, float dist)
         {
@@ -150,7 +154,7 @@ namespace DotRPG
             input.next.aim = (center - p.Center).normalized;
             input.next.faceAim = true;
             int spam = SpamSlot(p);
-            float reach = p.Class == CharacterClass.Mage ? MageReach : AttackReach;
+            float reach = BasicReach(p);
             if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * 0.85f, 6f));
             if (dist > reach) { WalkTo(p, pos, reach * 0.8f); return; }
             lastProgressAt = Time.time;

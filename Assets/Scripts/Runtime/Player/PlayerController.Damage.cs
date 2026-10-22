@@ -50,9 +50,12 @@ namespace DotRPG
 
             Vector2 away = Position - info.sourcePosition;
             if (away.sqrMagnitude < 0.0001f) away = -Facing.ToVector();
-            knockbackVelocity = away.normalized * Mathf.Max(info.knockback, stats.knockbackSpeed);
-            knockbackUntil = Time.time + stats.knockbackDuration;
-            combat.Cancel();
+            if (!Steady) // [ROGUE] 연쇄 도약 takes the damage but not the knockback
+            {
+                knockbackVelocity = away.normalized * Mathf.Max(info.knockback, stats.knockbackSpeed);
+                knockbackUntil = Time.time + stats.knockbackDuration;
+                combat.Cancel();
+            }
 
             flash.Flash(0.1f);
             flash.Blink(stats.invulnerableTime);

@@ -132,6 +132,9 @@ namespace DotRPG
             robe = true,
         };
 
+        /// <summary>[ROGUE] Selectable rogue: drawn from the Resources/Rogue sheets (SilverWarriorArt), colours only for fallbacks.</summary>
+        public static CharacterLook Rogue => new CharacterLook("rogue", HairStyle.Short, SkinLight, C(40, 44, 70), C(36, 44, 78), C(92, 62, 40));
+
         public static CharacterLook Skeleton => new CharacterLook
         {
             id = "skeleton",

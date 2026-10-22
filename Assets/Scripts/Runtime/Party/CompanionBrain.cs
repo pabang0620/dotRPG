@@ -253,6 +253,10 @@ namespace DotRPG
                 var info = CharacterClassInfo.Get(CharacterClass.Mage);
                 if (dist <= info.boltRange * 0.95f) cmd.attack = true;
             }
+            else if (Def.cls == CharacterClass.Rogue && Def.role == MercRole.CasterDps && RogueSkirmish(self, dist, to, ref cmd))
+            {
+                // [ROGUE] Ranged harasser (daon): holds off at mid range, darts in when a strike is ready, dashes away when caught.
+            }
             else
             {
                 // Warriors walk up to sword reach; the tank stands between the monster and the leader.
@@ -276,6 +280,42 @@ namespace DotRPG
                 cmd.attack = false;
                 nextSkillAt = Time.time + SkillGap;
             }
+        }
+
+        /// <summary>[ROGUE] Rogue harasser keeps between these distances while no strike is ready.</summary>
+        public const float RogueHoldMin = 2.2f, RogueHoldMax = 4f;
+
+        /// <summary>
+        /// [ROGUE] Hit and run for the ranged rogue companion (no MercRole.RangedDps: it uses CasterDps). Returns false to
+        /// fall back to plain melee (a strike skill is ready, or the target is already in reach).
+        /// </summary>
+        bool RogueSkirmish(PlayerController self, float dist, Vector2 to, ref ActorCommand cmd)
+        {
+            Vector2 me = self.Position, tp = Target.Position;
+            bool strikeReady = StrikeReady(self, 0) || StrikeReady(self, 2);
+            if (strikeReady) return false;
+            // Caught up close by a monster that is hitting me: shadow dash away (MP free, own cooldown).
+            if (dist < 1.3f && TargetsMe(self) && self.MobilityCooldownRemaining <= 0f)
+            {
+                cmd.move = Away(me, tp);
+                cmd.mobility = true;
+                return true;
+            }
+            if (dist <= MeleeRange + 0.25f) return false;
+            if (dist < RogueHoldMin) cmd.move = Away(me, tp);
+            else if (dist > RogueHoldMax) cmd.move = GridPath.Steer(me, tp);
+            else
+            {
+                if (Time.time > strafeFlipAt) { strafeSign = -strafeSign; strafeFlipAt = Time.time + Random.Range(1.2f, 2.2f); }
+                cmd.move = new Vector2(-to.y, to.x).normalized * 0.25f * strafeSign;
+            }
+            return true;
+        }
+
+        bool StrikeReady(PlayerController self, int slot)
+        {
+            if (self.Skills == null || !self.Skills.IsReady(slot) || !self.Data.Progression.IsSlotOpen(slot)) return false;
+            return self.Mana >= self.Skills.Numbers(slot).manaCost;
         }
 
         static Vector2 Away(Vector2 me, Vector2 from)
@@ -310,6 +350,10 @@ namespace DotRPG
                 // [SKILL v2] single-target main attacks: on the current target whenever it is in reach.
                 case "crush":
                 case "lance":
+                // [ROGUE] single-target strikes: 급소 찌르기, 백어택, 그림자 습격 (6 m search).
+                case "stab":
+                case "backstab":
+                case "raid":
                     return dist <= n.range * 0.95f;
                 // [SKILL v2] legacy defence skills (still in old saves' gem tables).
                 case "guard":
@@ -324,6 +368,9 @@ namespace DotRPG
                 case "cry":
                     // Shout when monsters are close, or when one is on somebody else (take its aggro).
                     return CountNear(c, n.radius * 0.9f) >= 1 && (CountNear(c, n.radius) >= 2 || !TargetsMe(self));
+                case "leap":
+                    // [ROGUE] 연쇄 도약 rides a group of three or more around the companion.
+                    return CountNear(c, n.radius * 0.9f) >= 3;
                 case "whirl":
                     // v2: the area skill pays off from three monsters (Tools/balance/theory_skills.py).
                     return CountNear(c, n.radius * 0.9f) >= 3;

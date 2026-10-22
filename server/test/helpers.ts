@@ -221,7 +221,7 @@ export async function createChar(
   app: Express,
   s: Session,
   name: string,
-  cls: 'warrior' | 'mage' = 'warrior',
+  cls: 'warrior' | 'mage' | 'rogue' = 'warrior',
   requestId: string = randomUUID(),
 ) {
   return request(app)

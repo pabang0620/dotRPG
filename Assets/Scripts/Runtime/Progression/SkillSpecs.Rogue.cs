@@ -1,0 +1,57 @@
+namespace DotRPG
+{
+    /// <summary>
+    /// [ROGUE SPEC] Number overrides of the rogue line (rogue base, 어쌔신, 닌자), Docs/ch3/SKILL_SPECIALIZATION.md 3.6.
+    /// Same split as the warrior line: base skills give absolute gem numbers, career skills keep their built numbers and
+    /// the cast functions (CareerCombat.SpecRogue) apply the damage ratios. The user's skills (연쇄 도약, 백어택, 천인난무,
+    /// 쿠나이 순간이동, 분신술) keep their own numbers when no side is chosen; a side is an option on top.
+    /// </summary>
+    public static partial class SkillSpecs
+    {
+        // ---------- Rogue base (gem units = the design's raw numbers) ----------
+        static SpecParams StabA() => new SpecParams { damageMult = 3.6f, extra = "stab_heart" };
+        static SpecParams StabB() => new SpecParams { damageMult = 1.2f, targets = 4, spreadDeg = 90f, extra = "stab_fan" };
+        static SpecParams LeapA() => new SpecParams { damageMult = 3.4f, cooldown = 6f, extra = "leap_heavy" };
+        static SpecParams LeapB() => new SpecParams { damageMult = 1.2f, extra = "leap_trail" };
+        static SpecParams BackstabA() => new SpecParams { duration = 1.6f, targets = 1, extra = "back_heart" };
+        static SpecParams BackstabB() => new SpecParams { duration = .55f, targets = 3, extra = "back_spin" };
+        static SpecParams RaidA() => new SpecParams { damageMult = 4.0f, extra = "raid_open" };
+        static SpecParams RaidB() => new SpecParams { damageMult = 2.4f, extra = "raid_return" };
+        static SpecParams DanceA() => new SpecParams { damageMult = 8.8f, hits = 3, extra = "dance_three" };
+        static SpecParams DanceB() => new SpecParams { damageMult = 1.1f, hits = 12, cooldown = 12f, extra = "dance_quick" };
+
+        // ---------- 어쌔신 (ratios in CareerCombat.SpecRogue) ----------
+        static SpecParams ATwinA() => new SpecParams { targets = 1, extra = "twin_deep" };
+        static SpecParams ATwinB() => new SpecParams { targets = 3, radius = 1.6f, extra = "twin_sweep" };
+        static SpecParams ARendA() => new SpecParams { targets = 1, extra = "rend_point" };
+        static SpecParams ARendB() => new SpecParams { targets = 5, range = Own("a_rend", s => s.range) * 1.2f, extra = "rend_whirl" };
+        static SpecParams AVeilA() => new SpecParams { extra = "veil_through" };
+        static SpecParams AVeilB() => new SpecParams { extra = "veil_double" };
+        static SpecParams AVenomA() => new SpecParams { duration = 90f, extra = "venom_boss" };
+        static SpecParams AVenomB() => new SpecParams { targets = 2, extra = "venom_spread" };
+        static SpecParams ARuptureA() => new SpecParams { cooldown = Own("a_rupture", s => s.cooldown) * 2f, extra = "rupture_big" };
+        static SpecParams ARuptureB() => new SpecParams { duration = 4f, extra = "rupture_bleed" };
+        static SpecParams AAssassinateA() => new SpecParams { extra = "assassin_exec" };
+        static SpecParams AAssassinateB() => new SpecParams { extra = "assassin_blink" };
+        static SpecParams AAwakeA() => new SpecParams { hits = 6, duration = 1f, extra = "shadows_one" };
+        static SpecParams AAwakeB() => new SpecParams { duration = 6f, extra = "shadows_veil" };
+        static SpecParams AStealthA() => new SpecParams { duration = 4f, extra = "stealth_deep" };
+        static SpecParams AStealthB() => new SpecParams { extra = "stealth_three" };
+
+        // ---------- 닌자 ----------
+        static SpecParams NKunaiA() => new SpecParams { extra = "port_pierce" };
+        static SpecParams NKunaiB() => new SpecParams { duration = 6f, extra = "port_anchor" };
+        static SpecParams NCloneA() => new SpecParams { targets = 1, extra = "clone_one" };
+        static SpecParams NCloneB() => new SpecParams { targets = 3, extra = "clone_three" };
+        static SpecParams NRecallA() => new SpecParams { targets = 1, extra = "recall_target" };
+        static SpecParams NRecallB() => new SpecParams { radius = 1.2f, extra = "recall_wide" };
+        static SpecParams NVolleyA() => new SpecParams { projectiles = 3, extra = "volley_line" };
+        static SpecParams NVolleyB() => new SpecParams { projectiles = 3, spreadDeg = 15f, pierce = 9, extra = "volley_fan" };
+        static SpecParams NFumaA() => new SpecParams { cooldown = Own("n_fuma", s => s.cooldown) * 2f, radius = Own("n_fuma", s => s.radius) * 1.3f, hits = 3, extra = "fuma_big" };
+        static SpecParams NFumaB() => new SpecParams { hits = 12, duration = 2f, extra = "fuma_hover" };
+        static SpecParams NBombA() => new SpecParams { projectiles = 1, radius = Own("n_bomb", s => s.radius) * 1.3f, duration = 3f, extra = "bomb_one" };
+        static SpecParams NBombB() => new SpecParams { projectiles = 8, duration = 1f, extra = "bomb_field" };
+        static SpecParams NAwakeA() => new SpecParams { hits = 6, duration = 1f, extra = "storm_volley" };
+        static SpecParams NAwakeB() => new SpecParams { hits = 36, duration = 9f, extra = "storm_long" };
+    }
+}

@@ -3,6 +3,7 @@ import { getGameData } from '../../gamedata/loader';
 import type { AuctionData } from '../../gamedata/auctionData';
 import { RARITY_ORDER } from '../../gamedata/economyData';
 import { parseItemKey } from '../../utils/itemKey';
+import { isCharacterClass, usableBy, type CharacterClassId } from '../../utils/characterClass';
 
 export type Category = 'weapon' | 'armor' | 'accessory' | 'material' | 'consumable';
 
@@ -42,7 +43,7 @@ export interface ItemFacts {
   isEquipment: boolean;
   category: Category;
   rarity: number | null;
-  classOnly: 'warrior' | 'mage' | null;
+  classOnly: CharacterClassId | null;
 }
 
 /** 키에서 서버가 분류·등급·직업 제한을 정한다. 모르는 키(또는 비장비의 강화 표기)는 null */
@@ -57,7 +58,8 @@ export function factsOf(itemKey: string): ItemFacts | null {
     if (p.level > eco.enhance.maxEnhance) return null;
     const category: Category =
       equip.category === 'Weapon' ? 'weapon' : equip.category === 'Ring' || equip.category === 'Necklace' ? 'accessory' : 'armor';
-    const classOnly = equip.classOnly === 'warrior' || equip.classOnly === 'mage' ? equip.classOnly : null;
+    // class_only 열은 옛 내보내기 호환 첫 값만 둔다. 실제 착용 판정은 usableBy(검색은 classRestrictedBasesFor)
+    const classOnly = isCharacterClass(equip.classOnly) ? equip.classOnly : null;
     return {
       base: p.base,
       enhance: p.level,
@@ -96,6 +98,13 @@ function chosung(s: string): string {
 const JAMO_ONLY = /^[ㄱ-ㅎ]+$/;
 
 /** 이름 부분 일치(자음만 입력하면 초성 검색)로 맞는 기본 id 목록 */
+/** 직업 제한이 있는 장비 중 이 직업이 쓸 수 있는 기본 id(경매 검색 "내 직업" 조건) */
+export function classRestrictedBasesFor(cls: string): string[] {
+  const out: string[] = [];
+  for (const [id, e] of getGameData().economy.shop.equipment) if (e.classOnly !== null && usableBy(e, cls)) out.push(id);
+  return out;
+}
+
 export function baseIdsMatching(q: string): string[] {
   const needle = q.trim().toLowerCase();
   if (!needle) return [];

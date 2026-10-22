@@ -229,6 +229,20 @@ namespace DotRPG
         }
 
         /// <summary>
+        /// [ROGUE] The host copy of a member made a skill move (kunai teleport, clone swap, 연쇄 도약, 그림자 습격/질주):
+        /// bank the distance like a launch, so the member's reports of the far spot are not cut back.
+        /// </summary>
+        void OnSkillMoved(PlayerController m, float distance)
+        {
+            if (!host || m == null) return;
+            int slot = SlotOf(m);
+            if (slot < 0 || slot == mySlot) return;
+            float now = Time.unscaledTime;
+            float left = launchBank.TryGetValue(slot, out var bank) && bank.until > now ? bank.left : 0f;
+            launchBank[slot] = (left + distance + .5f, now + 2.5f);
+        }
+
+        /// <summary>
         /// [ANTI-ABUSE] A member's reported position may move at most 1.5 x its top speed per second (phase9 19.6). A
         /// small banked allowance covers dashes and blinks; a teleport beyond it is cut to the allowed distance.
         /// </summary>

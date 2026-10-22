@@ -167,7 +167,7 @@ namespace DotRPG
 
         public bool IsSlotOpen(int slot) => slot >= 0 && slot < SkillGems.Slots && Level >= SlotLevel(slot);
 
-        public bool IsUnlocked(SkillGem gem) => gem != null && gem.id != "blades" && gem.id != "meteor" && gem.UsableBy(cls) && Level >= gem.unlockLevel && (CareerCatalog.Get(gem.id) == null || CareerUnlocked(CareerCatalog.Get(gem.id)));
+        public bool IsUnlocked(SkillGem gem) => gem != null && gem.id != "blades" && gem.id != "meteor" && gem.id != "dance" && gem.UsableBy(cls) && Level >= gem.unlockLevel && (CareerCatalog.Get(gem.id) == null || CareerUnlocked(CareerCatalog.Get(gem.id)));
 
         /// <summary>The slot's skill, or null while the slot is still locked.</summary>
         public SkillGem Active(int slot)

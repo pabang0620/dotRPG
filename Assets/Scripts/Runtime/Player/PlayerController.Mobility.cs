@@ -7,6 +7,9 @@ namespace DotRPG
     {
         public const float DashDistance = 2.8f, DashDuration = .18f, DashCooldown = 1.4f;
         public const float BlinkDistance = 3.5f, BlinkCooldown = 1.5f;
+        /// <summary>[ROGUE] 그림자 질주: the dash at 120% distance and the same speed (3.36 m in 0.216 s), cooldown of a damaging
+        /// mobility (dash + 0.2 s, like 섬광보 on Shift). Its hits are SkillCaster.ShadowDash.</summary>
+        public const float ShadowDashDistance = DashDistance * 1.2f, ShadowDashCooldown = DashCooldown + .2f;
         const float MobilitySkin = .03f;
         readonly List<RaycastHit2D> mobilityHits = new List<RaycastHit2D>(16);
         float mobilityReadyAt, dashRemaining, nextDashDust;
@@ -15,7 +18,7 @@ namespace DotRPG
 
         public bool IsDashing => dashRemaining > 0f;
         public float MobilityCooldownRemaining => Mathf.Max(0f, mobilityReadyAt - Time.time);
-        public string MobilityName => Class == CharacterClass.Mage ? L.T("텔레포트") : skills != null && skills.RushOnMobility ? L.T("섬광보") : L.T("대시");
+        public string MobilityName => Class == CharacterClass.Mage ? L.T("텔레포트") : Class == CharacterClass.Rogue ? L.T("그림자 질주") : skills != null && skills.RushOnMobility ? L.T("섬광보") : L.T("대시");
 
         /// <summary>One key-down, current movement or last facing, without MP cost or invulnerability.</summary>
         public bool TryMobility(Vector2 movement)
@@ -35,8 +38,8 @@ namespace DotRPG
                 mobilityReadyAt = Time.time + rushCooldown;
                 return true;
             }
-            bool blink = Class == CharacterClass.Mage;
-            float distance = MobilityClearance(direction, blink ? BlinkDistance : DashDistance);
+            bool blink = Class == CharacterClass.Mage, shadow = Class == CharacterClass.Rogue;
+            float distance = MobilityClearance(direction, blink ? BlinkDistance : shadow ? ShadowDashDistance : DashDistance);
             if (distance < .08f) return false;
 
             combat.Cancel();
@@ -44,7 +47,7 @@ namespace DotRPG
             AimDirection = direction;
             desiredVelocity = Vector2.zero;
             body.SetVelocity(Vector2.zero);
-            mobilityReadyAt = Time.time + (blink ? BlinkCooldown : DashCooldown);
+            mobilityReadyAt = Time.time + (blink ? BlinkCooldown : shadow ? ShadowDashCooldown : DashCooldown);
             if (blink)
             {
                 BlinkEffect(Position);
@@ -63,7 +66,71 @@ namespace DotRPG
                 animator.Play(CharacterAnim.Walk, Facing);
                 animator.SpeedMultiplier = 1.8f;
                 Fx.Dust(Position);
+                if (shadow) skills.ShadowDash(direction); // [ROGUE] the path is cut 0.6 s later
             }
+            return true;
+        }
+
+        /// <summary>[ROGUE] 연쇄 도약: no knockback (damage still lands) until this time.</summary>
+        float steadyUntil;
+        public bool Steady => Time.time < steadyUntil;
+        public void HoldSteady(float seconds) => steadyUntil = Mathf.Max(steadyUntil, Time.time + seconds);
+
+        /// <summary>
+        /// [ROGUE] 연쇄 도약 / 그림자 습격: jump straight to <paramref name="destination"/>, stopping before walls (monsters and
+        /// players do not block), facing <paramref name="faceTo"/>. No mobility cooldown. Returns false when it cannot move.
+        /// </summary>
+        /// <summary>
+        /// [ROGUE PARTY NET] The host copy of a member made a skill move (쿠나이 순간이동, 분신 자리 바꾸기, 연쇄 도약, 그림자 습격,
+        /// 그림자 질주): the host banks that distance so the member's next position reports are not cut by the move limit.
+        /// </summary>
+        public static event System.Action<PlayerController, float> NetSkillMoved;
+
+        internal void ReportSkillMove(float distance)
+        {
+            if (NetDriven && !NetPuppet && distance > .05f) NetSkillMoved?.Invoke(this, distance);
+        }
+
+        public bool SkillLeapTo(Vector2 destination, Vector2 faceTo)
+        {
+            if (IsDead) return false;
+            Vector2 delta = destination - Position;
+            float dist = delta.magnitude;
+            if (dist > .02f)
+            {
+                Vector2 dir = delta / dist;
+                float clear = MobilityClearance(dir, dist);
+                if (clear < .02f) return false;
+                CancelMobility();
+                desiredVelocity = Vector2.zero;
+                body.SetVelocity(Vector2.zero);
+                Vector2 to = Position + dir * clear;
+                body.position = to;
+                transform.position = to;
+                Physics2D.SyncTransforms();
+                ReportSkillMove(clear);
+            }
+            Vector2 look = faceTo - Position;
+            if (look.sqrMagnitude > .0001f) { Facing = FacingExtensions.FromVector(look, Facing); AimDirection = look.normalized; }
+            return true;
+        }
+
+        /// <summary>
+        /// [NINJA] 쿠나이 순간이동 / 분신술 swap: put the body straight on <paramref name="destination"/> (the caller has checked
+        /// the spot is free; walls between do not matter), like the teleport. No mobility cooldown.
+        /// </summary>
+        public bool SkillTeleportTo(Vector2 destination, Vector2 faceTo)
+        {
+            if (IsDead) return false;
+            ReportSkillMove(Vector2.Distance(Position, destination));
+            CancelMobility();
+            desiredVelocity = Vector2.zero;
+            body.SetVelocity(Vector2.zero);
+            body.position = destination;
+            transform.position = destination;
+            Physics2D.SyncTransforms();
+            Vector2 look = faceTo - Position;
+            if (look.sqrMagnitude > .0001f) { Facing = FacingExtensions.FromVector(look, Facing); AimDirection = look.normalized; }
             return true;
         }
 

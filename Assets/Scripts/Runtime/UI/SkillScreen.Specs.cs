@@ -60,7 +60,7 @@ namespace DotRPG
         static List<string> SpecSkills(Progression prog)
         {
             var list = new List<string>();
-            foreach (var id in prog.Class == CharacterClass.Warrior ? SkillSpecs.WarriorBase : SkillSpecs.MageBase) list.Add(id);
+            foreach (var id in SkillSpecs.BaseOf(prog.Class)) list.Add(id);
             if (prog.IsPromoted)
                 foreach (var c in CareerCatalog.For(prog.Career))
                     if (prog.SpecAllowed(c.id)) list.Add(c.id);

@@ -72,7 +72,7 @@
 | 작업 브랜치 | `wonho` (출시용, 사용자 작업 브랜치). 푸시는 `wonho`와 `main`에 같이. 챕터 3(Lv40→50)은 `ch3` 브랜치에서만(2026-10-22 분리, 백업 태그 `backup/pre-ch3-split-20261022`). `jaein`은 다른 작업자 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
 | 표기 이름 | **볼론**(Bolon, 2026-10-21 사용자 결정, 마왕 이름). 타이틀 로고는 영문 "BOLON" 하나(`Art/ui_logo_bolon`, 모든 언어 공통), 화면·문서·정책·홈페이지만 바꾼다. Unity productName·세이브 경로·레포·서버 이름은 dotRPG 유지(세이브 유실 방지). 고유 이름·떡밥은 `STORY.md` 7절 |
-| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0051 커밋됨(시험 서버는 0048까지). 0049_gear_inherit는 출시용 장비 계승(40→50도 같은 사유), 0050_chapter3_seal_exchange·0051_lord_difficulty는 챕터 3, 0052 보스 시즌 레벨은 5단계 계획, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
+| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0052 커밋됨(시험 서버는 0048까지). 0049_gear_inherit는 출시용 장비 계승(40→50도 같은 사유), 0050_rogue_class는 도적, 0051_chapter3_seal_exchange·0052_lord_difficulty는 챕터 3, 0053 보스 시즌 레벨은 5단계 계획, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
 | 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0048까지 적용, 데이터 버전 c68af582b1c08308(2026-10-21 배포). `CHAPTER3_OPEN` 미설정(닫힘). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
 | 홈페이지 | 로컬 `C:\Users\admin\Desktop\games\sites\dotrpg-home`(저장소 pabang0620/dotrpg-home, 비공개). OpenAI Sites 프로젝트(Next/vinext + Cloudflare), 게임 소개·스크린샷·캐릭터·스킨 화면과 로그인·가입·캐릭터 화면. 계정·OAuth 실제 연결은 아직 꺼져 있다(미설정 API는 503). 그림은 `public/assets/`(로고·배경·캐릭터·스킨·게임 캡처), 생성 기록 `docs/GENERATED_ASSETS.md`, 연결 방법 `docs/DELIVERY.md` |

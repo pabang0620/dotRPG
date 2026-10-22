@@ -41,6 +41,8 @@ namespace DotRPG
         readonly List<Card> cards = new List<Card>();
         Text partyTitle, hint;
         Button kukButton; // [CH3] 쿠크 (story companion offered from 3-3 to 3-끝, StoryCompanions.Chapter3.cs)
+        /// <summary>[ROGUE] Six companions no longer fit one row: the cards slide sideways inside this masked strip.</summary>
+        RectTransform cardsView, cardsRoot;
         int selected;
         float lastMoveX;
 
@@ -52,6 +54,11 @@ namespace DotRPG
             for (int i = 0; i < PartyManager.MaxMembers; i++) w.slots.Add(w.BuildSlot(i));
             Label(w.content, "MercTitle", L.T("<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>"), 22,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, -150f), new Vector2(1180f, 30f));
+            w.cardsView = UIFactory.Rect(w.content, "MercCards");
+            w.cardsView.anchorMin = new Vector2(0f, 1f); w.cardsView.anchorMax = new Vector2(1f, 1f); w.cardsView.pivot = new Vector2(0f, 1f);
+            w.cardsView.anchoredPosition = new Vector2(0f, -182f); w.cardsView.sizeDelta = new Vector2(0f, CardH + 8f);
+            w.cardsView.gameObject.AddComponent<RectMask2D>();
+            w.cardsRoot = UIFactory.Place(UIFactory.Rect(w.cardsView, "Cards"), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(MercenaryDatabase.All.Count * Step, CardH + 8f));
             foreach (var def in MercenaryDatabase.All) w.cards.Add(w.BuildCard(def, w.cards.Count));
             w.kukButton = Button(w.content, "Kukum", "", "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-4f, 0f), new Vector2(300f, 34f), () => w.ToggleKuk(), 18);
             w.kukButton.gameObject.SetActive(false);
@@ -75,7 +82,7 @@ namespace DotRPG
         Card BuildCard(MercenaryDef def, int i)
         {
             var c = new Card { def = def };
-            c.bg = Panel(content, "Merc_" + def.id, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(i * Step, -186f), new Vector2(CardW, CardH), new Color32(24, 36, 54, 235));
+            c.bg = Panel(cardsRoot, "Merc_" + def.id, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(i * Step + 4f, -4f), new Vector2(CardW, CardH), new Color32(24, 36, 54, 235));
             c.bg.raycastTarget = true;
             int index = i;
             var pick = c.bg.gameObject.AddComponent<Button>();
@@ -151,7 +158,7 @@ namespace DotRPG
                 {
                     var me = Game.Player;
                     var cls = CharacterClassInfo.Get(session.PlayerClass);
-                    s.stripe.color = session.PlayerClass == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
+                    s.stripe.color = CharacterClassInfo.ColorOf(session.PlayerClass);
                     s.portrait.enabled = true;
                     s.portrait.sprite = Game.Art.GetCharacter(CharacterPreviewCard.LookFor(session.PlayerClass), "down", "idle0");
                     int hp = me != null && me.Health != null ? me.Health.Max : CharacterStats.MaxHp;
@@ -191,6 +198,7 @@ namespace DotRPG
                 c.button.image.sprite = Game.Art.Get(inParty ? "ui_btngray" : "ui_btn");
                 c.button.image.color = full ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
             }
+            KeepSelectedInView();
             hint.text = L.T("<color=#ffd34a>AI 동료는 요일던전·레이드에서만 함께 싸웁니다</color>   <color=#b8c4d8>←/→ 선택  Enter 편성·해제  ESC 닫기</color>");
             bool kukIn = roster.Contains(StoryCompanions.KukId);
             kukButton.gameObject.SetActive(kukIn || StoryCompanions.KukAvailable);
@@ -214,10 +222,24 @@ namespace DotRPG
             Refresh();
         }
 
+        /// <summary>Slides the card strip so the selected card is fully inside the window.</summary>
+        void KeepSelectedInView()
+        {
+            if (cardsView == null || cardsRoot == null || cards.Count == 0) return;
+            float view = cardsView.rect.width;
+            float total = cards.Count * Step + 8f;
+            float offset = -cardsRoot.anchoredPosition.x;
+            float left = selected * Step, right = left + CardW + 8f;
+            if (left < offset) offset = left;
+            else if (right > offset + view) offset = right - view;
+            offset = Mathf.Clamp(offset, 0f, Mathf.Max(0f, total - view));
+            cardsRoot.anchoredPosition = new Vector2(-offset, 0f);
+        }
+
         static Sprite Portrait(MercenaryDef def, int level)
         {
             var gear = MercenaryDatabase.GearFor(def, level);
-            return Game.Art.GetCharacter(CharacterLook.WithGear(def.look, gear[1], gear[2]), "down", "idle0");
+            return Game.Art.GetCharacter(CharacterLook.WithGear(MercenaryDatabase.LookOf(def), gear[1], gear[2]), "down", "idle0");
         }
 
         static string SkillLine(MercenaryDef def, CharacterData data)

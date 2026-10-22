@@ -4,16 +4,16 @@ using UnityEngine.UI;
 namespace DotRPG
 {
     /// <summary>
-    /// Shown after "새 게임": pick the warrior or the mage. Two animated preview cards follow the
+    /// Shown after "새 게임": pick the warrior, the mage or the rogue. Animated preview cards follow the
     /// menu selection (keyboard / gamepad / mouse); confirming starts the game with that class.
     /// </summary>
     public class CharacterSelectScreen : MenuScreen
     {
-        static readonly CharacterClass[] Classes = { CharacterClass.Warrior, CharacterClass.Mage };
+        static readonly CharacterClass[] Classes = CharacterClassInfo.All;
 
-        readonly Image[] previews = new Image[2];
-        readonly Image[] cards = new Image[2];
-        readonly Text[] names = new Text[2];
+        readonly Image[] previews = new Image[Classes.Length];
+        readonly Image[] cards = new Image[Classes.Length];
+        readonly Text[] names = new Text[Classes.Length];
         Text description;
         InputField nameField; // [STORY] the hero's name ({name} in every conversation)
         int shownIndex = -1;
@@ -28,11 +28,14 @@ namespace DotRPG
             var body = screen.panel.Find("Body").GetComponent<Text>();
             body.text = "";
 
+            // [ROGUE] Two cards keep their old 280 px at +-170; three cards are 230 px wide, 245 px apart.
+            bool two = Classes.Length == 2;
+            float cardWidth = two ? 280f : 230f, spacing = two ? 340f : 245f;
             for (int i = 0; i < Classes.Length; i++)
             {
                 var info = CharacterClassInfo.Get(Classes[i]);
                 var card = UIFactory.Place(UIFactory.Rect(screen.panel, "Card_" + info.saveId), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                    new Vector2(i == 0 ? -170f : 170f, -92f), new Vector2(280f, 200f));
+                    new Vector2((i - (Classes.Length - 1) * .5f) * spacing, -92f), new Vector2(cardWidth, 200f));
                 var bg = UIFactory.Panel(card, "Bg", true);
                 UIFactory.Stretch(bg.rectTransform);
                 bg.raycastTarget = true;
@@ -46,7 +49,7 @@ namespace DotRPG
                 screen.previews[i] = preview;
 
                 var name = UIFactory.Text(card, "Name", info.displayName, 28, UIColors.Cream, TextAnchor.MiddleCenter, true);
-                UIFactory.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(260f, 38f));
+                UIFactory.Place(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(cardWidth - 20f, 38f));
                 screen.names[i] = name;
             }
 
@@ -58,7 +61,8 @@ namespace DotRPG
             foreach (var cls in Classes)
             {
                 var info = CharacterClassInfo.Get(cls);
-                screen.menu.AddButton(L.F("{0}로 시작", L.T(info.displayName)), () => Game.Flow.NewGame(info.id, screen.nameField.text));
+                string label = info.id == CharacterClass.Rogue ? L.F("{0}으로 시작", L.T(info.displayName)) : L.F("{0}로 시작", L.T(info.displayName));
+                screen.menu.AddButton(label, () => Game.Flow.NewGame(info.id, screen.nameField.text));
             }
             screen.menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();

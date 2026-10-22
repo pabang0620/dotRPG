@@ -87,6 +87,15 @@ namespace DotRPG
             Active("nova", L.T("서리 폭발"), CharacterClass.Mage, 2, L.T("주변에 냉기를 터뜨려 다가온 적을 2.8초 동안 얼린다.")).With(g => { g.damageMult = 0.5f; g.cooldown = 10f; g.radius = 4.1f; g.freeze = 2.8f; g.manaCost = 12; }),
             Active("firefield", L.T("화염 장판"), CharacterClass.Mage, 3, L.T("적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.")).With(g => { g.damageMult = 0.4f; g.cooldown = 6f; g.range = 7.5f; g.radius = 3.2f; g.hits = 6; g.manaCost = 10; }),
             Active("meteor", L.T("메테오"), CharacterClass.Mage, 4, L.T("거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.")).With(g => { g.damageMult = 2.8f; g.cooldown = 24f; g.radius = 2.8f; g.range = 7f; g.hits = 8; g.manaCost = 32; }),
+            // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 2.2 (leap, backstab and dance are the user's numbers). Not shaped by S().
+            // stab 2.9 single target; leap 1.7 per monster, up to 5 (SkillCaster.LeapMaxTargets) within 5 m of the cast; backstab 0.975 from behind
+            // (150% of a 0.65 stab) with a 0.8 s stun, 0.39 from the front (SkillCaster.BackstabFrontShare); raid 2.6 behind the
+            // nearest monster in 6 m; dance 12 x 2.2 inside 3.5 m (range), each cut 1.2 m (radius).
+            Active("stab", L.T("급소 찌르기"), CharacterClass.Rogue, 0, L.T("눈앞의 적 하나를 깊이 찌른다. 충격파가 없는 대신 파쇄 일격보다 세다.")).With(g => { g.damageMult = 2.9f; g.cooldown = 1.6f; g.range = 1.8f; g.radius = 0.5f; g.manaCost = 4; }),
+            Active("leap", L.T("연쇄 도약"), CharacterClass.Rogue, 1, L.T("사정거리 안의 몬스터를 타고 타고 벤다. 다 때리면 시전 위치로 돌아온다.")).With(g => { g.damageMult = 1.7f; g.cooldown = 3f; g.range = 5f; g.radius = 5f; g.manaCost = 8; }),
+            Active("backstab", L.T("백어택"), CharacterClass.Rogue, 2, L.T("등 뒤에서 쓰면 심장을 뜯어 0.8초 경직시킨다. 등 뒤가 아니면 얕게 찌른다.")).With(g => { g.damageMult = 0.975f; g.cooldown = 4f; g.range = 1.6f; g.radius = 0.5f; g.stun = 0.8f; g.manaCost = 6; }),
+            Active("raid", L.T("그림자 습격"), CharacterClass.Rogue, 3, L.T("가장 가까운 적의 등 뒤로 순간이동해 벤다. 도착 뒤 1초 동안 그 적에게 쓰는 백어택은 등 뒤 판정이 된다.")).With(g => { g.damageMult = 2.6f; g.cooldown = 4.5f; g.range = 6f; g.radius = 0.5f; g.manaCost = 9; }),
+            Active("dance", L.T("천인난무"), CharacterClass.Rogue, 4, L.T("주변의 적을 12번 마구 난도질한다.")).With(g => { g.damageMult = 2.2f; g.cooldown = 24f; g.range = 3.5f; g.radius = 1.2f; g.hits = 12; g.manaCost = 30; }),
 
             new SkillGem { id = "sup_dmg", tip = L.T("보스·강적을 잡는 주력기(1번 스킬)에. MP 여유가 있을 때 가장 무난하다."), name = L.T("추가 피해"), icon = "gem_sup_dmg", kind = GemKind.Support, unlockLevel = 3, moreDamage = 35, manaMult = 1.3f,
                 description = L.T("연결된 스킬의 피해 35% 증폭. MP 소모 30% 증가.") },
@@ -190,8 +199,8 @@ namespace DotRPG
         {
             get
             {
-                bool warrior = data.Class == CharacterClass.Warrior;
-                float flat = data.BaseMaxHp + (warrior ? WarriorHpBonus : 0) + (Level - 1) * (HpPerLevel + (warrior ? WarriorHpPerLevel : 0)) + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
+                bool warrior = data.Class == CharacterClass.Warrior, rogue = data.Class == CharacterClass.Rogue;
+                float flat = data.BaseMaxHp + (warrior ? WarriorHpBonus : rogue ? RogueHpBonus : 0) + (Level - 1) * (HpPerLevel + (warrior ? WarriorHpPerLevel : rogue ? RogueHpPerLevel : 0)) + Sum(PassiveStat.FlatHp) + Eq.MaxHealthBonus;
                 float inc = Sum(PassiveStat.IncHp) + (Has(Keystone.GlassCannon) ? -25 : 0) + (Has(Keystone.BloodMagic) ? 30 : 0) + data.CollectionHealth + data.CodexHealth;
                 return Mathf.Max(1, Mathf.RoundToInt(flat * (1f + inc / 100f) * CareerHp(Prog.Career)));
             }
@@ -213,7 +222,9 @@ namespace DotRPG
         /// level), mages carry the big mana pool; the career then leans further (guardian +30% HP, bishop +25% MP...).
         /// </summary>
         public const int WarriorHpBonus = 50, WarriorHpPerLevel = 6, WarriorMpBonus = 40, WarriorMpPerLevel = 2, MageMpBonus = 40, MageMpPerLevel = 3; // [BALANCE 2026-10-12] warrior MP 10 + 4/Lv -> 40 + 6/Lv: room for the cooldown skills
-        public static float CareerHp(Career c) => c == Career.Guardian ? 1.3f : c == Career.Fighter ? 1.1f : c == Career.Bishop ? 1.05f : 1f;
+        /// <summary>[ROGUE] HP halfway between warrior and mage (+25, +3 per level); MP is the warrior's pool (Docs/PLAN_CLASS_ROGUE.md 1.4).</summary>
+        public const int RogueHpBonus = 25, RogueHpPerLevel = 3;
+        public static float CareerHp(Career c) => c == Career.Guardian ? 1.3f : c == Career.Fighter ? 1.1f : c == Career.Bishop ? 1.05f : c == Career.Assassin ? 1.15f : 1f; // [ROGUE] assassin 1.15, ninja 1.0 (PLAN_CLASS_ROGUE 3.1)
         public static float CareerMp(Career c) => c == Career.Bishop ? 1.25f : c == Career.Arcanist ? 1.2f : 1f;
 
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>
@@ -242,7 +253,7 @@ namespace DotRPG
         public float LevelDamageMul => 1f + LevelDamagePerLevel * (Mathf.Clamp(Level, 1, LevelDamageCap) - 1);
 
         public int Block => Mathf.Clamp(Eq.BlockChance + Sum(PassiveStat.Block) + (Has(Keystone.Unwavering) ? 15 : 0), 0, 75);
-        public int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0);
+        public int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0) + (data.Class == CharacterClass.Rogue ? CharacterData.RogueSpeedPassive : 0);
         public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
         public int AttackSpeed => Sum(PassiveStat.AttackSpeed) + CareerCombat.SpeedFor(data);
         public float CooldownMultiplier => 1f / (1f + AttackSpeed / 100f);

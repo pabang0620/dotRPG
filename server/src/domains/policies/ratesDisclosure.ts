@@ -88,6 +88,7 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
     { id: 'aura', ko: '오라 뽑기', en: 'Aura Draw' },
     { id: 'skin', ko: '스킨 뽑기 (전사)', en: 'Skin Draw (Warrior)', cls: 'warrior' },
     { id: 'skin', ko: '스킨 뽑기 (마법사)', en: 'Skin Draw (Mage)', cls: 'mage' },
+    { id: 'skin', ko: '스킨 뽑기 (도적)', en: 'Skin Draw (Rogue)', cls: 'rogue' },
   ];
   for (const b of banners) {
     out.push(`### ${ko ? b.ko : b.en}`);

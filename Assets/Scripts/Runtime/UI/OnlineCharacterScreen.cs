@@ -170,7 +170,7 @@ namespace DotRPG
                 {
                     var ch = session.Characters[i];
                     var card = CharacterPreviewCard.Create(grid, "Card_" + i, pos, new Vector2(CardW, CardH), 104f, 20);
-                    string sub = (ch.cls == CharacterClass.Mage ? L.T("마법사") : L.T("전사")) + $" Lv.{ch.level}";
+                    string sub = CharacterClassInfo.NameOf(ch.cls) + $" Lv.{ch.level}";
                     if (ch.renameRequired) sub = "<color=#ff9f7a>" + L.T("(이름 변경 필요)") + "</color>"; // [0038] one line: the card is narrow
                     card.Set(ch.cls, ch.name, sub);
                     card.OnClick(() => OnCard(k));

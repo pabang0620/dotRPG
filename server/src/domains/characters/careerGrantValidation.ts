@@ -5,8 +5,8 @@ export { charParams };
 
 const requestId = z.uuid();
 
-/** career: 1 Fighter, 2 Guardian, 3 Arcanist, 4 Bishop (C# Career 열거). 받지 않는 값: 비용, 시각, 단계 값 */
-export const promoteBody = z.strictObject({ request_id: requestId, career: z.number().int().min(1).max(4) });
+/** career: 1 Fighter, 2 Guardian, 3 Arcanist, 4 Bishop, 5 Assassin, 6 Ninja (C# Career 열거). 받지 않는 값: 비용, 시각, 단계 값 */
+export const promoteBody = z.strictObject({ request_id: requestId, career: z.number().int().min(1).max(6) });
 export const trialStartBody = z.strictObject({ request_id: requestId });
 /** 클라이언트는 "무슨 일이 일어났나"만 말한다. 서버는 성공 주장을 최소 시간·마을 체류로 검증한다 */
 export const trialFinishBody = z.strictObject({ request_id: requestId, result: z.enum(['success', 'fail']) });

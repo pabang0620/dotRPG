@@ -41,7 +41,7 @@ namespace DotRPG
         /// <summary>Base skills of the class always; career skills once promoted (the awakening once awakened).</summary>
         public bool SpecAllowed(string skill)
         {
-            if (System.Array.IndexOf(cls == CharacterClass.Warrior ? SkillSpecs.WarriorBase : SkillSpecs.MageBase, skill) >= 0) return true;
+            if (System.Array.IndexOf(SkillSpecs.BaseOf(cls), skill) >= 0) return true;
             var c = CareerCatalog.Get(skill);
             if (c == null || !IsPromoted || c.career != Career) return false;
             return c.kind != CareerSkillKind.Awakening || Awakened;

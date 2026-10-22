@@ -23,12 +23,13 @@ import {
 } from './starshopDefs';
 import { gearTable } from './starshopService';
 import { CHAPTER2_TIER_COUNT } from '../../utils/gearTier';
+import { CHARACTER_CLASSES } from '../../utils/characterClass';
 
 type GearBanner = keyof typeof GEAR_BANNERS;
 
 /** 그 버전의 확률·가격·천장·게이지·중복 규칙 전체(서버가 starshopDefs와 게임 데이터에서 만든다) */
 export function buildRatesContent(): Record<string, unknown> {
-  const classes = ['warrior', 'mage'];
+  const classes = CHARACTER_CLASSES;
   const gear: Record<string, unknown> = {};
   for (const b of Object.keys(GEAR_BANNERS) as GearBanner[]) {
     for (const cls of classes) {

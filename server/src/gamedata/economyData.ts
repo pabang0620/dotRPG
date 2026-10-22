@@ -86,6 +86,8 @@ const equipmentSchema = z.looseObject({
   category: z.enum(['Weapon', 'Necklace', 'Ring', 'Top', 'Bottom']),
   rarity: z.enum(['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary']),
   classOnly: z.string().nullable(),
+  /** 착용 직업 목록(null·없음 = 모두). 판금·각반은 전사·도적이 같이 입는다(usableBy가 판정) */
+  classes: z.array(z.string()).nullable().optional(),
   attack: z.number(),
   starter: z.boolean(),
   dropWeight: nonNegInt,

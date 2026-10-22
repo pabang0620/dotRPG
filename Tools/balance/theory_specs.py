@@ -1,12 +1,14 @@
 """챕터 3 특화 기대값 점검 (Docs/ch3/SKILL_SPECIALIZATION.md 1절 기대값 원칙, 7절 검증 도구).
 
-server/data/skill_specs.json(Unity 내보내기)의 96개 특화를 축별 기준 상황으로 비교한다.
+server/data/skill_specs.json(Unity 내보내기)의 144개 특화(전사·마법사 96 + 도적 48)를 축별 기준 상황으로 비교한다.
 - 집중·확산: A 보스 1체 한 번 시전 = B 묶음 3체 한 번 시전 합
 - 폭발·지속: 보스 1체 60초 총 피해
 - 공격·기동: B 피해 = A의 60%(나머지는 방어·기동으로 돌려받음, 측정 봇 피격 수로 검증)
 - 회복·제어·버프: A 1명(1체) = B 3명(3체) 합
 A·B 차이가 10%를 넘는 줄에 표시한다. 그리고 특화별 "보스 방 상한 대비 비율"을 낸다
 (attemptDamageCap = 화력 상한 x 180초 x DAMAGE_SLACK, 티어 10 클리어 장비 기준). 0.8(HIGH_DAMAGE_RATIO)에 닿는 줄을 표시한다.
+보스 방 비율은 상한 쪽 추정이다: 실측 전사 피크 비율 0.37(티어 8, PROGRESSION_AND_GEAR.md 7절. 상한도 attackCap에 비례하므로
+티어 10에서도 같다) x 직업 배율 뒤 화력(파이터 = 1, PLAN_CLASS_ROGUE.md 3.2절) x 특화 이득(집중·폭발·공격 A는 최대 1.5배, 그 밖 1.0).
 
 EV 표는 스킬 구현 포크가 수치를 채운다: EV[skill] = (A 기준값, B 기준값). 비어 있으면 "미입력"으로 나온다.
 보스 방 비율은 BOSS_DPS[spec_id](3분 평균 초당 피해, 측정 또는 계산)가 있을 때만 낸다.
@@ -57,9 +59,36 @@ EV = {
     # 회복·제어·버프: A 1명(1체) = B 3명(3체) 합
     "cry": (2.4, 0.8 * 3), "f_flurry": (35, 12 * 3), "g_guard": (2.0 * 100, 20 * 3 + 50 * 3), "g_oath": (45 + 25, (15 + 10) * 3),
     "g_taunt": (8, 2.7 * 3), "g_counter": (400, 25 * 5 * 3), "g_awake": (40 * 12, 20 * 8 * 3),
+    # 도적 계열(도적 기본·어쌔신·닌자, 2026-10-23). 집중·확산: A 1체 / B 3체 합
+    "stab": (3.6, 1.2 * 3), "a_twin": (1.3 * 4, 0.43 * 4 * 3), "a_rend": (1.1 * 2, 0.37 * 2 * 3),
+    "n_volley": (0.64 * 3, 0.64 * 3), "n_recall": (6 * 1.0, 6 * 0.33 * 3),                  # 회수: 쿠나이 6개 기준
+    # 폭발·지속: 보스 1체 60초 총량(쿨: 연쇄 도약 6 / 3, 급소 파열 14 / 7, 풍마 13 / 6.5, 각성 60)
+    "leap": (10 * 3.4, 20 * (1.2 + 0.25 * 2)), "dance": (2.5 * 3 * 8.8, 5 * 12 * 1.1),
+    "a_rupture": (60 / 14 * 6.94, 60 / 7 * 3.47), "a_awake": (6 * 1.6 + 9.6, 18 * 0.6 + 2.4 + 6 * 1.0),
+    "n_fuma": (60 / 13 * 3 * 3.08, 60 / 6.5 * 12 * 0.385), "n_awake": (6 * 1.2 + 8.8, 36 * 0.4 + 1.6),
+    # 공격·기동: B = A x 0.6
+    "raid": (4.0, 2.4), "a_veil": (4.0, 2.4), "a_assassinate": (3.6, 2.16), "n_kunai": (3.2, 1.92),
+    # 회복·제어·버프: A 1명(1체) = B 3명(3체) 합
+    "backstab": (1.6, 0.55 * 3), "a_venom": (36, 12 * 3), "a_stealth": (90, 30 * 3), "n_clone": (50, 17 * 3), "n_bomb": (3.0, 1.0 * 3),
 }
-# 특화 id -> 보스 방 3분 평균 초당 피해(측정 또는 계산)
+# 특화 id -> 보스 방 3분 평균 초당 피해(측정 또는 계산). 있으면 아래 추정 대신 쓴다
 BOSS_DPS = {}
+
+# 보스 방 비율 추정(위 설명). 직업 배율 뒤 화력: PLAN_CLASS_ROGUE.md 3.2절(닌자는 원거리 집중 상시 0.92)
+PEAK_RATIO = 0.37
+CLASS_REL = {"warrior": 1.0, "mage": 0.83, "rogue": 0.99,
+             "f": 1.0, "g": 0.77, "m": 0.83, "b": 0.70, "a": 0.99, "n": 0.92}
+BASE_CLASS = {"crush": "warrior", "whirl": "warrior", "cry": "warrior", "charge": "warrior", "blades": "warrior",
+              "lance": "mage", "frostorb": "mage", "nova": "mage", "firefield": "mage", "meteor": "mage",
+              "stab": "rogue", "leap": "rogue", "backstab": "rogue", "raid": "rogue", "dance": "rogue"}
+SPEC_GAIN = 1.5
+
+
+def boss_ratio(spec):
+    skill = spec["skill"]
+    line = BASE_CLASS.get(skill) or skill.split("_")[0]
+    gain = SPEC_GAIN if spec["side"] == "a" and spec["axis"] in ("focus", "burst", "attack") else 1.0
+    return PEAK_RATIO * CLASS_REL[line] * gain
 
 
 def load_specs():
@@ -95,14 +124,27 @@ def main():
             verdict, va, vb = ("통과" if ok else "차이 10% 초과"), f"{ev[0]:.2f}", f"{ev[1]:.2f}"
             bad += 0 if ok else 1
         print(f"{skill:<12}{axes:<20}{a['name']:<14}{b['name']:<14}{va:>8}{vb:>8}  {verdict}")
+    count = sum(len(v) for v in pairs.values())
     if DPS_CAP_T10 and BOSS_DPS:
         cap = DPS_CAP_T10 * ATTEMPT_SECONDS * DAMAGE_SLACK
         print(f"\n보스 방 상한(티어 10): {cap:,.0f}")
         for sid, dps in sorted(BOSS_DPS.items()):
             r = dps * ATTEMPT_SECONDS / cap
             print(f"  {sid:<16}{r:6.2f}{'  상한 근접' if r >= HIGH_DAMAGE_RATIO else ''}")
-    else:
-        print("\n보스 방 상한 비율: DPS_CAP_T10·BOSS_DPS 미입력")
+    worst = {}
+    near = 0
+    for skill, sides in pairs.items():
+        for spec in sides.values():
+            r = boss_ratio(spec)
+            line = BASE_CLASS.get(skill) or skill.split("_")[0]
+            if r > worst.get(line, (0, ""))[0]:
+                worst[line] = (r, f"{skill}_{spec['side']}")
+            if r >= HIGH_DAMAGE_RATIO:
+                near += 1
+                print(f"  상한 근접: {skill}_{spec['side']} {r:.2f}")
+    print(f"\n보스 방 상한 비율 추정(특화 {count}개, {HIGH_DAMAGE_RATIO} 이상 {near}개). 계열별 최대:")
+    print("  " + ", ".join(f"{k} {v[0]:.2f}({v[1]})" for k, v in worst.items()))
+    bad += near
     if strict and bad:
         sys.exit(1)
 

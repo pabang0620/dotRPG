@@ -1,6 +1,7 @@
 // 처치 판정의 순수 규칙(DB 없음): 경험치, 실효 HP, 화력 상한, 드롭 굴림.
 // C# 원본: MonsterDatabase.SpawnDef, EnemyController.DropLoot/MonsterLoot, GoldRunnerBehaviour.OnHit, EquipmentDatabase.RollDrop
-import type { EconomyData, MonsterDef } from '../../gamedata/economyData';
+import type { EconomyData, EquipmentDef, MonsterDef } from '../../gamedata/economyData';
+import { usableBy } from '../../utils/characterClass';
 import { keyAt, parseItemKey, roundHalfEven } from '../../utils/itemKey';
 import { COLLECTION_ATTACK_MAX, COSMETIC_DAMAGE_MAX } from '../starshop/starshopDefs';
 import type { Rng } from '../../utils/rng';
@@ -88,18 +89,24 @@ export function rollEquipmentDrop(eco: EconomyData, cls: string, chance: number,
   if (rng.unit() > chance) return null;
   // 레벨 상한(3장 잠금)을 넘는 단계는 떨어지지 않는다
   const tier = dropTierOfLevel(monsterLevel, levelCap(eco.progression.maxLevel));
-  const pool = eco.shop.equipmentList.filter(
-    // 2026-10-11: 다른 직업 장비도 떨어진다(마법사로 사냥해도 검·갑옷이 나온다). cls는 호출 호환용으로 남긴다
-    (e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === tier,
-  );
-  const total = pool.reduce((a, e) => a + e.dropWeight, 0);
+  // 2026-10-11: 다른 직업 장비도 떨어진다. 2026-10-23 도적(PLAN_CLASS_ROGUE 4.3절): 이 직업이 못 쓰는 장비는 무게 x0.75
+  // (C# EquipmentDatabase.DropWeightFor). 정수 난수를 쓰려고 쓰는 장비 x4, 못 쓰는 장비 x3으로 같은 비율을 만든다
+  const pool = eco.shop.equipmentList
+    .filter((e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === tier)
+    .map((e) => ({ id: e.id, w: dropWeightFor(e, cls) }));
+  const total = pool.reduce((a, e) => a + e.w, 0);
   if (total <= 0) return null;
   let roll = rng.int(0, total);
   for (const e of pool) {
-    if (roll < e.dropWeight) return keyAt(e.id, 0);
-    roll -= e.dropWeight;
+    if (roll < e.w) return keyAt(e.id, 0);
+    roll -= e.w;
   }
   return null;
+}
+
+/** 드롭 무게 4배 단위: 쓸 수 있는 장비 dropWeight x 4, 못 쓰는 장비 dropWeight x 3(= x0.75) */
+export function dropWeightFor(e: EquipmentDef, cls: string): number {
+  return usableBy(e, cls) ? e.dropWeight * 4 : e.dropWeight * 3;
 }
 
 /** 처치 한 번의 드롭 전체(3.1.2). hits는 이미 서버가 자른 값 */

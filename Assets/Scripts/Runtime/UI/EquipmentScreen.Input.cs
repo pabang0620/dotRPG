@@ -46,9 +46,10 @@ namespace DotRPG
         /// <summary>Draws the equipped weapon in the preview character's hand, at the same pixel scale.</summary>
         void PlaceWeaponPreview()
         {
-            if (Class == CharacterClass.Warrior)
+            if (Class == CharacterClass.Warrior || Class == CharacterClass.Rogue)
             {
-                SilverWarriorPresentation.Preview(character, weaponPreview, Game.Session.Equipment[EquipSlot.Weapon], Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1", CharacterPreviewCard.LookFor(Class).skinSheet);
+                var look = CharacterPreviewCard.LookFor(Class);
+                SilverWarriorPresentation.Preview(character, weaponPreview, Game.Session.Equipment[EquipSlot.Weapon], Mathf.FloorToInt(animTimer * 1.8f) % 2 == 0 ? "idle0" : "idle1", look.skinSheet, look.id);
                 return;
             }
             var body = character.sprite;

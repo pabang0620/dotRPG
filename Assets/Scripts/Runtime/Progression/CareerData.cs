@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    public enum Career { None, Fighter, Guardian, Arcanist, Bishop }
+    public enum Career { None, Fighter, Guardian, Arcanist, Bishop, Assassin, Ninja }
     public enum CareerSkillKind { Passive, Active, Awakening }
     [Serializable] public sealed class CareerRank { public string id; public int rank; }
     /// <summary>[STYLE] One saved build (Docs/PLAN_SKILL_STYLES.md): career nodes, skill keys + supports (5 x 3), passive tree.</summary>
@@ -48,13 +48,15 @@ namespace DotRPG
         public const int ExtraIndex = 9;
         /// <summary>[BALANCE] Each career's spammable main hunting skill opens at the same level (Lv18): the hunt speeds up
         /// sharply from there, so no career gets it much earlier or later. Server: careerRules.ts MAIN_HUNTERS.</summary>
-        public static readonly string[] MainHunters = { "f_break", "g_wall", "m_storm", "b_light" };
+        public static readonly string[] MainHunters = { "f_break", "g_wall", "m_storm", "b_light", "a_rend", "n_volley" };
         public const int MainHunterLevel = 18;
         /// <summary>[BALANCE 2026-10-12] Share of max MP each cast of a main hunting skill costs (before supports):
         /// spam at full speed drains 9% of max MP a second against 5% regen. Speeds: 파쇄 검기 0.38 s, 회귀의 방패
         /// ~3.5/s (4 shields, 1.15 s round trip), 연쇄전격 0.48 s, 심판의 광창 0.16 s. Tools/balance/theory_mana.py.</summary>
         public static float MainHunterMpShare(string id) =>
-            id == "f_break" ? .0263f : id == "g_wall" ? .0199f : id == "m_storm" ? .0333f : id == "b_light" ? .0146f : 0f;
+            id == "f_break" ? .0263f : id == "g_wall" ? .0199f : id == "m_storm" ? .0333f : id == "b_light" ? .0146f
+            // [ROGUE] 연환 베기 / 연발 쿠나이: one cast every 0.33 s (0.1 cast + 0.15 recovery + 0.08) -> 0.09 / 1.3 / 3.03 = 2.28%.
+            : id == "a_rend" || id == "n_volley" ? .0228f : 0f;
         public SkillGem Gem => new SkillGem { id = id, name = name, description = description, icon = Icon,
             kind = GemKind.Active, classOnly = CareerCatalog.Base(career), unlockLevel = level,
             slot = kind == CareerSkillKind.Awakening ? 4 : -1, damageMult = power, cooldown = cooldown,
@@ -62,11 +64,16 @@ namespace DotRPG
     }
     public static class CareerCatalog
     {
-        public static CharacterClass Base(Career c) => c == Career.Fighter || c == Career.Guardian ? CharacterClass.Warrior : CharacterClass.Mage;
-        public static string Name(Career c) => c == Career.Fighter ? L.T("파이터") : c == Career.Guardian ? L.T("수호자") : c == Career.Arcanist ? L.T("메이지") : c == Career.Bishop ? L.T("비숍") : L.T("기본 직업");
-        public static string Role(Career c) => c == Career.Fighter ? L.T("검기·기동·연계 / 검술 딜러") : c == Career.Guardian ? L.T("도발·방벽 / 보호 탱커") : c == Career.Arcanist ? L.T("원소 연계·광역 / 마법 딜러") : L.T("회복·정화·축복 / 지원 힐러");
-        public static string[] Branches(Career c) => c == Career.Fighter ? new[] { L.T("검기의 흐름"), L.T("검의 현현") } : c == Career.Guardian ? new[] { L.T("철벽과 보호"), L.T("도발과 반격") } : c == Career.Arcanist ? new[] { L.T("원소의 공명"), L.T("마력 운용") } : new[] { L.T("회복과 유지"), L.T("축복과 보호") };
-        public static Color Color(Career c) => c == Career.Fighter ? new Color32(103, 179, 255, 255) : c == Career.Guardian ? new Color32(73, 205, 211, 255) : c == Career.Arcanist ? new Color32(174, 128, 250, 255) : new Color32(244, 215, 132, 255);
+        public static CharacterClass Base(Career c) => c == Career.Fighter || c == Career.Guardian ? CharacterClass.Warrior
+            : c == Career.Assassin || c == Career.Ninja ? CharacterClass.Rogue : CharacterClass.Mage;
+        /// <summary>[ROGUE] The two careers of a base class (first / second), for the career choice page.</summary>
+        public static (Career a, Career b) Pair(CharacterClass cls) => cls == CharacterClass.Warrior ? (Career.Fighter, Career.Guardian)
+            : cls == CharacterClass.Rogue ? (Career.Assassin, Career.Ninja) : (Career.Arcanist, Career.Bishop);
+        public static string Name(Career c) => c == Career.Fighter ? L.T("파이터") : c == Career.Guardian ? L.T("수호자") : c == Career.Arcanist ? L.T("메이지") : c == Career.Bishop ? L.T("비숍") : c == Career.Assassin ? L.T("어쌔신") : c == Career.Ninja ? L.T("닌자") : L.T("기본 직업");
+        public static string Role(Career c) => c == Career.Fighter ? L.T("검기·기동·연계 / 검술 딜러") : c == Career.Guardian ? L.T("도발·방벽 / 보호 탱커") : c == Career.Arcanist ? L.T("원소 연계·광역 / 마법 딜러") : c == Career.Assassin ? L.T("급소·은신 / 근접 단일 폭딜") : c == Career.Ninja ? L.T("투척·분신 / 원거리·중거리 견제 딜러") : L.T("회복·정화·축복 / 지원 힐러");
+        public static string[] Branches(Career c) => c == Career.Fighter ? new[] { L.T("검기의 흐름"), L.T("검의 현현") } : c == Career.Guardian ? new[] { L.T("철벽과 보호"), L.T("도발과 반격") } : c == Career.Arcanist ? new[] { L.T("원소의 공명"), L.T("마력 운용") } : c == Career.Assassin ? new[] { L.T("급소와 독"), L.T("그림자 암살") } : c == Career.Ninja ? new[] { L.T("쿠나이와 분신"), L.T("견제와 함정") } : new[] { L.T("회복과 유지"), L.T("축복과 보호") };
+        public static Color Color(Career c) => c == Career.Fighter ? new Color32(103, 179, 255, 255) : c == Career.Guardian ? new Color32(73, 205, 211, 255) : c == Career.Arcanist ? new Color32(174, 128, 250, 255)
+            : c == Career.Assassin ? new Color32(224, 90, 200, 255) : c == Career.Ninja ? new Color32(255, 140, 50, 255) : new Color32(244, 215, 132, 255);
         /// <summary>
         /// [BALANCE 2026-10-06] Skills are used more often and reach wider: actives cost 0.65x mana, recharge in 0.7x
         /// the time and cover 1.5x the radius; damage per cast 0.85x (about 1.2x damage per second), heals 0.8x,
@@ -75,7 +82,7 @@ namespace DotRPG
         /// 0 and 4) are untouched. "반경 Nm" in a description follows the new radius.
         /// </summary>
         static readonly string[] HealEffects = { "heal", "bloom", "cleanse" };
-        static readonly string[] BuffEffects = { "guard", "oath", "bless", "counter", "frenzy", "barrier" };
+        static readonly string[] BuffEffects = { "guard", "oath", "bless", "counter", "frenzy", "barrier", "venom", "stealth", "clone" };
         /// <summary>Lasting buffs and shields: twice as long, cast less often (pressing them again and again is a chore).
         /// [BALANCE 2026-10-11] Their base durations are 30 s (60 s in play) with a cooldown under that, so one press a minute keeps them up.</summary>
         static readonly string[] LongBuffs = { "guard", "oath", "bless", "counter", "barrier" };
@@ -124,10 +131,10 @@ namespace DotRPG
                 // The awakening is the big moment: it comes back more slowly but lasts longer and lands more often.
                 bool longBuff = System.Array.IndexOf(LongBuffs, effect) >= 0;
                 // A signature skill keeps its own numbers: 0 = spammable (no cooldown), "frenzy" = the fighter's burst window.
-                bool signature = cd <= 0f || effect == "frenzy";
+                bool signature = cd <= 0f || effect == "frenzy" || effect == "venom"; // [ROGUE] 맹독 도포 = 검귀 해방's fixed group
                 if (!signature) cd = Mathf.Max(0.5f, Mathf.Round(cd * (awaken ? 1.25f : longBuff ? 1.6f : 0.7f) * 2f) / 2f);
                 // [BALANCE 2026-10-11] Every lasting buff: 2 minutes, back in 62 s (one press keeps it up with room to spare).
-                if (longBuff || effect == "frenzy") cd = BuffCooldown;
+                if (longBuff || effect == "frenzy" || effect == "venom") cd = BuffCooldown;
                 if (longBuff)
                 {
                     float was = duration;
@@ -161,7 +168,7 @@ namespace DotRPG
         public static readonly CareerSkill[] All = Build();
         static CareerSkill[] Build()
         {
-            var f=Career.Fighter; var g=Career.Guardian; var m=Career.Arcanist; var b=Career.Bishop;
+            var f=Career.Fighter; var g=Career.Guardian; var m=Career.Arcanist; var b=Career.Bishop; var a=Career.Assassin; var n=Career.Ninja;
             return new[] {
                 // Stable save keys and slot order (server careerRules.ts); designs: Docs/PLAN_CAREER_SKILLS.md.
                 // i18n-names-begin (name and description translate in S)
@@ -203,6 +210,26 @@ namespace DotRPG
                 S(b,6,"b_wing","신의 가호","반경 5m 아군과 자신 1초 무적.","sanctuary",0f,20,25,0,5,0f,1),
                 S(b,7,"b_bless","축복의 연결","반경 5m 아군에게 축복을 이어 공격 피해 +18%, 60초.","bless",18,28,20,0,5,.3f,60),
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 12m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%와 모든 상태 이상 면역, 성역 안의 적은 약화(주는 피해 -30%).","dawn",4.5f,60,70,0,12,.7f,8,8,"비숍의 회복과 보호를 한 번에"),
+                // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 2.3 (어쌔신) and 2.4 (닌자): raw values here, S() makes the "실제" column.
+                S(a,0,"a_vital","급소 간파","같은 적을 직접 맞힐 때마다 표식 1개(최대 5, 4초). 표식 하나마다 그 적이 내게 받는 피해 +4%.","vital",4,0,0,0,0,0,4),
+                S(a,1,"a_twin","쌍인참","눈앞의 적 하나를 양손 단검으로 4번 찌른다(0.17초 간격).","twin",1.0f,10,3,1.6f,0,.08f,0,4),
+                S(a,2,"a_veil","연막 도약","뒤로 4m 물러나며 서 있던 자리에 연막(반경 2.5m)을 터뜨린다. 연막 안 적은 피해를 받고 2초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,2),
+                S(a,3,"a_venom","맹독 도포","120초 동안 모든 직접 공격이 준 피해의 20%만큼 독을 남긴다(3초에 나눠, 방어 무시).","venom",20,20,62,0,0,.1f,120),
+                S(a,4,"a_ambush","기습","등 뒤에서 하는 직접 공격 피해 +15%.","ambush",15,0,0,0,0,0),
+                S(a,5,"a_rend","연환 베기","재사용 대기시간 없이 전방 2m 120도를 두 번 벤다(0.17초 간격).","rend",.8f,18,0,2,.9f,.1f,0,2),
+                S(a,6,"a_rupture","급소 파열","앞의 적에게 박힌 표식을 모두 터뜨린다. 표식 하나마다 피해가 더해진다.","rupture",1.2f,22,10,2,0,.2f),
+                S(a,7,"a_assassinate","암살","단검을 깊이 박는다. 등 뒤면 피해 1.5배, 표식 5개면 1.8배(표식 소모). 둘 다면 곱한다.","assassinate",1.85f,26,12,1.8f,0,.2f),
+                S(a,8,"a_awake","천영참","그림자 여섯이 반경 5.4m 적 사이를 오가며 3초 동안 벤 뒤, 맞은 적마다 표식을 터뜨린다(480%).","shadows",.8f,60,48,0,5.4f,0,2,12),
+                S(a,9,"a_stealth","은신","6초 동안 투명해져 일반 몬스터가 추적을 멈춘다(보스는 그대로). 이동 속도 +30%. 은신 중 첫 공격은 피해 +50%이고 항상 등 뒤 판정, 공격하면 풀린다.","stealth",50,20,20,0,0,.1f,6),
+                S(n,0,"n_throw","투척술","기본 공격이 쿠나이 투척으로 바뀐다(0.3초, 6m, 첫 적에게 꽂힘). 빗나간 쿠나이와 꽂힌 쿠나이는 그 자리에 4초 남는다.","throw",0,0,0,0,0,0,4),
+                S(n,1,"n_kunai","쿠나이 순간이동","쿠나이를 10m 일직선으로 던져 지나간 적을 벤다. 한 번 더 누르면 쿠나이 위치로 이동한다(날아가는 중에도, 멈춘 뒤 3초까지). 벽에 박히면 근처 걸을 수 있는 자리로.","kunaiport",1.6f,14,8,10,.4f,.08f,3),
+                S(n,2,"n_clone","분신술","분신 둘이 8초 동안 쿠나이 투척을 따라 한다(분신마다 본체 피해의 25%). 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.","clone",25,20,24,0,0,.1f,8),
+                S(n,3,"n_recall","회수","8m 안에 남은 쿠나이를 모두(최대 12개) 손으로 끌어당긴다. 돌아오는 길의 적을 쿠나이마다 벤다. 회수한 쿠나이마다 MP 1% 회복.","recall",.6f,16,8,8,0,.15f),
+                S(n,4,"n_far","원거리 집중","6m 이상 떨어진 적에게 직접 공격 피해 +12%.","far",12,0,0,0,0,0),
+                S(n,5,"n_volley","연발 쿠나이","재사용 대기시간 없이 쿠나이 두 개를 0.17초 간격으로 8m 직선에 던진다. 첫 적에게 꽂힌다.","volley",.75f,18,0,8,.35f,.1f,0,2),
+                S(n,6,"n_fuma","풍마 수리검","큰 수리검이 7m를 갔다가 돌아온다. 오가며 관통하고, 같은 적에게 0.17초마다 최대 6번.","fuma",.55f,22,9,7,.7f,.2f,0,6),
+                S(n,7,"n_bomb","기폭 쿠나이","목표 지점 둘레에 부적 붙은 쿠나이 5개를 박는다. 적이 가까이 오거나 2초가 지나면 하나씩 터진다(반경 1.2m, 1초 속박, 보스 0.3초).","bomb",1.4f,26,12,7,1.2f,.25f,0,5),
+                S(n,8,"n_awake","분신 난무","분신 여섯이 반경 6.2m를 둘러싸고 3초 동안 쿠나이를 던진다. 마지막에 꽂힌 쿠나이가 한꺼번에 터진다(맞은 적마다 280%).","cloneburst",.55f,60,48,0,6.2f,0,2,16),
             };
             // i18n-names-end
         }

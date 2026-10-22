@@ -1,6 +1,7 @@
 // 파티 초대 SQL. 쓰기는 Service가 캐릭터 잠금(partyTx) 아래에서 부른다.
 import type { PoolClient } from 'pg';
 import type { Queryable } from '../../db/pool';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface InviteRow {
   id: number;
@@ -110,7 +111,7 @@ export interface IncomingView {
   expires_at: Date;
   inviter_uuid: string;
   inviter_name: string;
-  inviter_class: 'warrior' | 'mage';
+  inviter_class: CharacterClassId;
   inviter_level: number;
   dungeon_id: string;
   difficulty: number;

@@ -83,6 +83,8 @@ namespace DotRPG
             Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
+            SkillCaster.FollowedUp += net.OnFollowedUp; // [NINJA]
+            PlayerController.NetSkillMoved += net.OnSkillMoved; // [ROGUE]
             RaidMechanics.RoarStarted += net.OnRaidRoar;
             RaidMechanics.MemberStunned += net.OnRaidStun;
             RaidSeal.LineStarted += net.OnSealLine;
@@ -177,6 +179,8 @@ namespace DotRPG
             Game.State?.RefreshTimeScale();
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
+            SkillCaster.FollowedUp -= net.OnFollowedUp;
+            PlayerController.NetSkillMoved -= net.OnSkillMoved;
             RaidMechanics.RoarStarted -= net.OnRaidRoar;
             RaidMechanics.MemberStunned -= net.OnRaidStun;
             RaidSeal.LineStarted -= net.OnSealLine;

@@ -36,6 +36,8 @@ namespace DotRPG
             list.Add(Boss(W("eq_ring_root", L.T("뿌리 사수의 반지"), EquipCategory.Ring, ItemRarity.Unique, null, atk: 9, icon: "eqicon_fboss_0", desc: L.T("검은 뿌리 숲의 수호자가 끼던 반지. 사냥이 손에 붙는다.")), 10, xp: 5));
             list.Add(Boss(W("eq_neck_rockheart", L.T("바위 심장 목걸이"), EquipCategory.Necklace, ItemRarity.Unique, null, atk: 6, hp: 50, block: 5, icon: "eqicon_fboss_1", desc: L.T("능선의 골렘 심장에서 떼어 낸 돌. 기술이 더 넓게 퍼진다.")), 20, aoe: 10));
             list.Add(Boss(W("eq_ring_frostlich", L.T("서리 리치의 반지"), EquipCategory.Ring, ItemRarity.Unique, null, atk: 16, icon: "eqicon_fboss_2", desc: L.T("눈보라 봉우리 리치의 반지. 냉기가 마력을 넓히고 깨달음을 준다.")), 35, xp: 6, aoe: 5));
+            // [ROGUE] Starter dagger after everything else (gear table and field boss pieces), so existing items keep their bag order.
+            list.Add(W("eq_dagger_wood", L.T("나무 단검"), EquipCategory.Weapon, ItemRarity.Common, CharacterClass.Rogue, atk: 0, icon: "eqicon_dagger_0", desc: L.T("연습용 나무 단검 한 쌍. 처음 받은 장비."), starter: true));
             return list;
         }
 
@@ -238,7 +240,7 @@ namespace DotRPG
         /// <summary>Sprite of the weapon held in the hand: "wpn_sword_2" for the bone greatsword, etc.</summary>
         public static string WeaponSprite(string weaponKey, CharacterClass cls)
         {
-            string kind = cls == CharacterClass.Mage ? "staff" : "sword";
+            string kind = cls == CharacterClass.Mage ? "staff" : cls == CharacterClass.Rogue ? "dagger" : "sword";
             int tier = Mathf.Max(0, TierOf(weaponKey));
             return $"wpn_{kind}_{tier}";
         }
@@ -249,7 +251,7 @@ namespace DotRPG
             return null;
         }
 
-        public static string StarterWeapon(CharacterClass cls) => cls == CharacterClass.Mage ? "eq_staff_oak" : "eq_sword_wood";
+        public static string StarterWeapon(CharacterClass cls) => cls == CharacterClass.Mage ? "eq_staff_oak" : cls == CharacterClass.Rogue ? "eq_dagger_wood" : "eq_sword_wood";
 
         public static bool Fits(EquipCategory category, EquipSlot slot)
         {
@@ -407,18 +409,28 @@ namespace DotRPG
         {
             if (Random.value > chance) return null;
             int tier = GearCatalog.TierOfLevel(level); // only the tier at or below the monster's level
-            int total = 0;
+            float total = 0f;
             foreach (var item in Items)
-                if (item.dropWeight > 0 && item.levelTier == tier) total += item.dropWeight; // [2026-10-11] other classes' gear drops too
-            if (total <= 0) return null;
-            int roll = Random.Range(0, total);
+                if (item.dropWeight > 0 && item.levelTier == tier) total += DropWeightFor(item, cls); // [2026-10-11] other classes' gear drops too
+            if (total <= 0f) return null;
+            float roll = Random.Range(0f, total);
+            string last = null;
             foreach (var item in Items)
             {
                 if (item.dropWeight <= 0 || item.levelTier != tier) continue;
-                if (roll < item.dropWeight) return item.id;
-                roll -= item.dropWeight;
+                float w = DropWeightFor(item, cls);
+                if (roll < w) return item.id;
+                roll -= w;
+                last = item.id;
             }
-            return null;
+            return last; // float rounding at the very end of the table
         }
+
+        /// <summary>
+        /// [ROGUE] Gear the class cannot wear weighs x0.75 in the drop roll (Docs/PLAN_CLASS_ROGUE.md 4.3): with the dagger as a
+        /// ninth kind, each class's own share stays 5 of 8 (4 other kinds x 0.75 = 3 against its 5), as before the rogue.
+        /// </summary>
+        public const float OtherClassDropWeight = 0.75f;
+        static float DropWeightFor(EquipmentItem item, CharacterClass cls) => item.UsableBy(cls) ? item.dropWeight : item.dropWeight * OtherClassDropWeight;
     }
 }

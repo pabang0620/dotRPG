@@ -1,6 +1,6 @@
 namespace DotRPG.EditorTools
 {
-    /// <summary>[CH3 SPEC] skill_specs.json (Docs/ch3/SKILL_SPECIALIZATION.md 4): points rule and the 96 specializations, all chapter 3.</summary>
+    /// <summary>[CH3 SPEC] skill_specs.json (Docs/ch3/SKILL_SPECIALIZATION.md 4): points rule and the 144 specializations (rogue 48 included), all chapter 3.</summary>
     public static partial class GameDataExport
     {
         static string SkillSpecsJson()

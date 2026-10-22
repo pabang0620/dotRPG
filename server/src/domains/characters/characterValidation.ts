@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { careerSchema } from './careerRules';
+import { CHARACTER_CLASSES } from '../../utils/characterClass';
 
 export const NAME_MIN = 2;
 export const NAME_MAX = 8;
@@ -30,7 +31,7 @@ export const characterName = z
 export const createCharacterBody = z.strictObject({
   request_id: z.uuid(),
   name: characterName,
-  class: z.enum(['warrior', 'mage']),
+  class: z.enum(CHARACTER_CLASSES),
 });
 
 /** 0038: 운영자 이름 변경 요청을 받은 캐릭터의 새 이름 */

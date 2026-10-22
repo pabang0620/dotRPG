@@ -15,9 +15,11 @@ afterAll(async () => { await shutdown(); });
 describe('specializations, chapter 3 open', () => {
   beforeAll(() => { buildApp({ CHAPTER3_OPEN: 'true' }); });
 
-  test('the exported data has 96 specs, each skill a and b', () => {
+  test('the exported data has 144 specs (96 + rogue 48), each skill a and b', () => {
     const defs = getGameData().economy.skillSpecs;
-    expect(defs.size).toBe(96);
+    expect(defs.size).toBe(144);
+    expect(defs.get('stab:b')).toMatchObject({ axis: 'spread', cost: 2 });
+    expect(defs.get('a_vital:a')).toMatchObject({ axis: 'passive', cost: 1 });
     expect(defs.get('lance:a')).toMatchObject({ axis: 'focus', cost: 2 });
     expect(defs.get('lance:b')).toMatchObject({ axis: 'spread', cost: 2 });
     expect(defs.get('f_rhythm:a')).toMatchObject({ axis: 'passive', cost: 1 });
@@ -33,6 +35,17 @@ describe('specializations, chapter 3 open', () => {
     expect(() => check(state(0, [{ skill: 'crush', side: 'a' }]), 42)).not.toThrow();
     expect(() => check(state(0, [{ skill: 'crush', side: 'a' }]), 41)).toThrow(); // 2 points at Lv41 (1)
     expect(() => check(state(0, [{ skill: 'lance', side: 'a' }]), 45)).toThrow(); // mage skill on a warrior
+  });
+
+  test('rogue: own base skills and 어쌔신·닌자 skills, not another class', () => {
+    expect(() => check(state(0, [{ skill: 'stab', side: 'b' }, { skill: 'dance', side: 'a' }]), 44, 'rogue')).not.toThrow();
+    expect(() => check(state(0, [{ skill: 'crush', side: 'a' }]), 45, 'rogue')).toThrow(); // warrior skill on a rogue
+    expect(() => check(state(0, [{ skill: 'stab', side: 'a' }]), 45)).toThrow(); // rogue skill on a warrior
+    expect(() => check(state(5, [{ skill: 'a_rend', side: 'b' }, { skill: 'a_vital', side: 'a' }]), 43, 'rogue')).not.toThrow();
+    expect(() => check(state(6, [{ skill: 'n_kunai', side: 'a' }, { skill: 'n_far', side: 'b' }]), 43, 'rogue')).not.toThrow();
+    expect(() => check(state(5, [{ skill: 'n_kunai', side: 'a' }]), 50, 'rogue')).toThrow(); // ninja skill on an assassin
+    expect(hasSpreadSpec(state(6, [{ skill: 'n_volley', side: 'b' }]))).toBe(true);
+    expect(hasSpreadSpec(state(6, [{ skill: 'n_volley', side: 'a' }]))).toBe(false);
   });
 
   test('unpromoted heroes cannot specialize career skills', () => {

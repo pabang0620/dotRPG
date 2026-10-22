@@ -32,7 +32,10 @@ namespace DotRPG.EditorTools
                 "\"1\":{\"minSeconds\":4,\"requiredNodes\":[]}," +
                 "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
                 "\"3\":{\"minSeconds\":4,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
-                "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}}";
+                "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}," +
+                // [ROGUE] 어쌔신: 5 back hits in a row + 암살 on 5 marks; 닌자: 3 moves to the kunai with clones out (5.5 s apart) + 4 roots.
+                "\"5\":{\"minSeconds\":4,\"requiredNodes\":[\"a_veil\",\"a_assassinate\"]}," +
+                "\"6\":{\"minSeconds\":11,\"requiredNodes\":[\"n_clone\",\"n_bomb\"]}}";
             return json.Substring(0, json.Length - 1) + trials + "}";
         }
 
@@ -41,6 +44,7 @@ namespace DotRPG.EditorTools
         [MenuItem("dotRPG/Export Server Data")]
         public static void Export()
         {
+            CheckRogueGear();
             Directory.CreateDirectory(OutDir);
             // Phase 1-2 files follow Docs/server/phase1_2_mapping.md §4 exactly; the rest are for phase 3.
             var files = new SortedDictionary<string, string>(StringComparer.Ordinal)
@@ -127,7 +131,7 @@ namespace DotRPG.EditorTools
             j.Num("gold", ConsumableDatabase.StarterPack.Where(s => s.id == ConsumableDatabase.Gold).Sum(s => s.count));
             j.Arr("items", ConsumableDatabase.StarterPack.Where(s => s.id != ConsumableDatabase.Gold), (o, s) => o.Obj().Str("itemKey", s.id).Num("count", s.count).End());
             j.Key("gear").Obj();
-            foreach (var cls in new[] { CharacterClass.Warrior, CharacterClass.Mage })
+            foreach (var cls in CharacterClassInfo.All) // [ROGUE] gear.rogue = eq_dagger_wood
                 j.Key(cls.ToString().ToLowerInvariant()).Obj().Str("itemKey", EquipmentDatabase.StarterWeapon(cls)).Num("slot", (int)EquipSlot.Weapon).End();
             return j.End().End().ToString();
         }
@@ -137,9 +141,9 @@ namespace DotRPG.EditorTools
         {
             var j = Doc().Num("enhancedSellBonusPerLevel", 0.25).Num("enhancedSellGoldRatio", ItemPrices.EnhancedSellGoldRatio).Str("sellRounding", "awayFromZero"); // ItemPrices.SellPrice
             j.Arr("stock", ItemPrices.ShopStock, (o, id) => o.Obj().Str("id", id).Num("buyPrice", ItemPrices.BuyPrice(id)).End());
-            j.Arr("equipment", EquipmentDatabase.All, (o, e) => o.Obj()
+            j.Arr("equipment", EquipmentDatabase.All, (o, e) => ClassesJson(o.Obj()
                 .Str("id", e.id).Str("category", e.category.ToString()).Str("rarity", e.rarity.ToString())
-                .Str("classOnly", e.classOnly.HasValue ? e.classOnly.Value.ToString().ToLowerInvariant() : null)
+                .Str("classOnly", e.classOnly.HasValue ? e.classOnly.Value.ToString().ToLowerInvariant() : null), e)
                 .Num("attack", e.attack).Num("maxHealth", e.maxHealth).Num("block", e.block).Num("speed", e.speed)
                 .Bool("starter", e.starter).Num("dropWeight", e.dropWeight).Num("tier", e.Tier)
                 .Bool("bossOnly", e.bossOnly).Num("xpBonus", e.xpBonus).Num("aoeBonus", e.aoeBonus)
@@ -154,6 +158,37 @@ namespace DotRPG.EditorTools
             j.Arr("sellPrices", new[] { ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket },
                 (o, id) => o.Obj().Str("id", id).Num("sellPrice", ItemPrices.SellPrice(id)).End());
             return j.End().ToString();
+        }
+
+        /// <summary>[ROGUE] "classes": every class that may wear the piece (only on shared gear: plate and greaves).</summary>
+        static J ClassesJson(J o, EquipmentItem e)
+        {
+            if (e.classes == null) return o;
+            return o.Arr("classes", e.classes, (x, c) => x.Val(CharacterClassInfo.Get(c).saveId));
+        }
+
+        /// <summary>
+        /// [ROGUE] Export checks (Docs/PLAN_CLASS_ROGUE.md 7 step 2): 56 daggers like the 56 swords (49 + 3 legendary + 3 hunter
+        /// + starter; [CH3] tiers 9 and 10 add 10 + the Lv.50 pair), every plate and greaves piece worn by warrior and rogue, daggers rogue-only. Throws so a batch export fails.
+        /// </summary>
+        static void CheckRogueGear()
+        {
+            var all = EquipmentDatabase.All;
+            int daggers = all.Count(e => e.id.StartsWith("eq_dagger_", StringComparison.Ordinal));
+            int swords = all.Count(e => e.id.StartsWith("eq_sword_", StringComparison.Ordinal));
+            if (daggers != 56 || swords != 56) throw new InvalidOperationException($"[GameDataExport] daggers {daggers}, swords {swords} (want 56 each)");
+            foreach (var e in all)
+            {
+                bool shared = e.id.StartsWith("eq_plate_", StringComparison.Ordinal) || e.id.StartsWith("eq_greaves_", StringComparison.Ordinal);
+                if (shared && (e.classes == null || e.classes.Length != 2 || !e.UsableBy(CharacterClass.Warrior) || !e.UsableBy(CharacterClass.Rogue) || e.UsableBy(CharacterClass.Mage)))
+                    throw new InvalidOperationException("[GameDataExport] shared armour must be warrior + rogue: " + e.id);
+                if (e.id.StartsWith("eq_dagger_", StringComparison.Ordinal) && (!e.UsableBy(CharacterClass.Rogue) || e.UsableBy(CharacterClass.Warrior) || e.UsableBy(CharacterClass.Mage)))
+                    throw new InvalidOperationException("[GameDataExport] daggers are rogue-only: " + e.id);
+                bool robe = e.id.StartsWith("eq_robe_", StringComparison.Ordinal) || e.id.StartsWith("eq_skirt_", StringComparison.Ordinal);
+                if (robe && e.UsableBy(CharacterClass.Rogue)) throw new InvalidOperationException("[GameDataExport] robes are not for the rogue: " + e.id);
+            }
+            if (EquipmentDatabase.StarterWeapon(CharacterClass.Rogue) != "eq_dagger_wood") throw new InvalidOperationException("[GameDataExport] rogue starter weapon");
+            Debug.Log($"[GameDataExport] rogue gear ok: {daggers} daggers, plate/greaves shared");
         }
 
         static string PassiveTreeJson()

@@ -42,6 +42,9 @@ namespace DotRPG
         public static IReadOnlyList<SkillSpec> All => all;
         public static readonly string[] WarriorBase = { "crush", "whirl", "cry", "charge", "blades" };
         public static readonly string[] MageBase = { "lance", "frostorb", "nova", "firefield", "meteor" };
+        /// <summary>[ROGUE SPEC] The rogue's five base skills (Shadow Dash is the mobility key, not a gem: no specialization).</summary>
+        public static readonly string[] RogueBase = { "stab", "leap", "backstab", "raid", "dance" };
+        public static string[] BaseOf(CharacterClass cls) => cls == CharacterClass.Warrior ? WarriorBase : cls == CharacterClass.Rogue ? RogueBase : MageBase;
 
         public static SkillSpec Find(string skill, char side)
         {

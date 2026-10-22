@@ -1,13 +1,14 @@
 import type { PoolClient } from 'pg';
 import type { CareerState } from './careerRules';
 import { getPool, query, type Queryable } from '../../db/pool';
+import type { CharacterClassId } from '../../utils/characterClass';
 
 export interface CharacterRow {
   id: number;
   uuid: string;
   account_id: number;
   name: string;
-  class: 'warrior' | 'mage';
+  class: CharacterClassId;
   level: number;
   xp: number;
   gold: number;

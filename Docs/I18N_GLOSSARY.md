@@ -95,7 +95,14 @@
 | 수호자 | Guardian |
 | 메이지 | Arcanist |
 | 비숍 | Bishop |
+| 도적 | Rogue |
+| 어쌔신 | Assassin |
+| 닌자 | Ninja |
 | 기본 직업 | Base Class |
+| 쿠나이 | Kunai |
+| 분신 | Clone |
+| 표식 | Mark |
+| 표창 | Shuriken |
 
 ## 각성기
 | 한국어 | English |
@@ -192,6 +199,8 @@
 | 엘린 | Elin |
 | 브론 | Bron |
 | 카이 | Kai |
+| 미르 | Mir |
+| 다온 | Daon |
 | 촌장 | Chief |
 | 대장장이 | Blacksmith |
 | 잡화상인 | General Merchant |

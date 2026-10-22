@@ -75,6 +75,19 @@ namespace DotRPG
             desiredVelocity = Vector2.zero;
         }
 
+        /// <summary>
+        /// [ROGUE] True when <paramref name="from"/> is behind this monster: the angle between the way it faces (8 directions)
+        /// and the way to <paramref name="from"/> is 112.5 degrees or more, i.e. the three back eighths (a 135 degree fan).
+        /// </summary>
+        public bool IsBehind(Vector2 from)
+        {
+            Vector2 to = from - Position;
+            if (to.sqrMagnitude < 0.0001f) return false;
+            return Vector2.Angle(facing.ToVector(), to) >= BehindAngle;
+        }
+
+        public const float BehindAngle = 112.5f;
+
         /// <summary>[FIGHTER] Stagger (경직): stops anything, bosses included, for the full time (no crowd-control reduction).</summary>
         public void Stagger(float seconds)
         {
@@ -198,6 +211,8 @@ namespace DotRPG
             {
                 // [PARTY] Threat-based pick among the alive party members (just the local player without companions).
                 var p = Game.Party != null ? Game.Party.SelectTarget(this) : Game.Player;
+                // [ROGUE] 은신: ordinary monsters lose a hidden assassin (bosses still see her).
+                if (p != null && !IsBoss && CareerCombat.HiddenFromMonsters(p)) return null;
                 return p != null && !p.IsDead && Game.IsWorldRunning ? p : null;
             }
         }
