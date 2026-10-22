@@ -21,7 +21,9 @@ namespace DotRPG
 
         // ================= v2 single-target and defence skills =================
 
-        /// <summary>[SKILL v2] 파쇄 일격: one heavy blow on the monster in front (the nearest, leaning towards the aim).</summary>
+        /// <summary>[SKILL v2] 파쇄 일격: one heavy blow on the monster in front (the nearest, leaning towards the aim).
+        /// [CH3 SPEC] A 일점 파쇄: the single blow at 4.0. B 파쇄 연파: 0.67 on the target, then two shock waves (1.6x radius)
+        /// on up to n.targets monsters, so each one of a pack takes two hits.</summary>
         void Crush(SkillNumbers n)
         {
             Vector2 c = owner.Center, aim = castAim;
@@ -41,12 +43,13 @@ namespace DotRPG
             // [VFX] A downward cut on the target, the shock spreading on the ground under it.
             Vector2 ground = target != null ? target.Position : at + Vector2.down * 0.3f;
             CareerFx.Clip("f_vslash", ground, aim, 0.8f, 30f, VfxLayer.Top, false);
-            CareerFx.Clip("impact", ground, Vector2.zero, n.radius / 1.4f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
+            CareerFx.Clip("impact", ground, Vector2.zero, n.radius / 1.4f, 26f, VfxLayer.Ground, false, SpecTint(n, CareerFx.Steel));
             if (target != null)
             {
                 Hit(target, n, c, 9f);
                 CareerFx.Hit(target.Center, aim, Career.Fighter, 2);
             }
+            if (n.spec == 'b') StartCoroutine(CrushWaves(n, target, ground));
             Shake(0.1f, 0.16f);
         }
 
@@ -103,7 +106,9 @@ namespace DotRPG
 
         // ================= Warrior =================
 
-        /// <summary>돌진 베기: dash along the aim, cutting and shoving every monster met on the way.</summary>
+        /// <summary>돌진 베기: dash along the aim, cutting and shoving every monster met on the way.
+        /// [CH3 SPEC] A 관통 돌진: twice as far, the first monster takes 4.0, the rest 1.0. B 무적 돌진: invulnerable while
+        /// dashing (2.4) and the monsters at the end are shoved away.</summary>
         IEnumerator Charge(SkillNumbers n)
         {
             Vector2 dir = castAim;
@@ -113,60 +118,77 @@ namespace DotRPG
             Shake(0.08f, 0.12f);
             float speed = PlayerController.DashDistance / PlayerController.DashDuration;
             float end = Time.time + dist / speed + 0.05f;
+            if (n.spec == 'b') CareerCombat.For(owner).AddInvulnerable(dist / speed + 0.15f);
             var hit = new HashSet<EnemyController>();
             // [VFX] A cut line along the dash and afterimages of the body.
-            CareerFx.Clip("f_line", owner.Center, dir, 1f, 26f).Squash(Mathf.Max(.25f, Mathf.Max(dist, 1.5f) / 6f), 1f);
+            CareerFx.Clip("f_line", owner.Center, dir, 1f, 26f, VfxLayer.Top, true, n.spec != '\0' ? (Color?)SpecTint(n, Color.white) : null).Squash(Mathf.Max(.25f, Mathf.Max(dist, 1.5f) / 6f), 1f);
             float ghost = 0f;
+            var ghostColor = n.spec != '\0' ? SpecTint(n, Color.white) : new Color(1f, 0.85f, 0.45f, 0.6f);
+            ghostColor.a = 0.6f;
             do
             {
                 ghost -= Time.deltaTime;
-                if (ghost <= 0f) { ghost = 0.04f; CareerFx.Ghost(owner, new Color(1f, 0.85f, 0.45f, 0.6f)); }
+                if (ghost <= 0f) { ghost = 0.04f; CareerFx.Ghost(owner, ghostColor); }
                 foreach (var e in EnemiesInRadius(owner.Center + dir * 0.3f, n.radius))
                 {
                     if (!hit.Add(e)) continue;
-                    Hit(e, n, owner.Center - dir, 10f);
+                    if (n.spec == 'a' && hit.Count == 1)
+                    {
+                        var first = n;
+                        first.damage = n.damage * 4; // 4.0 on the first monster met (n.damage is the 1.0 of the rest)
+                        Hit(e, first, owner.Center - dir, 12f);
+                    }
+                    else Hit(e, n, owner.Center - dir, 10f);
                     CareerFx.Hit(e.Center, dir, Career.Fighter, 1);
                 }
                 yield return null;
             } while (Time.time < end);
-            CareerFx.Clip("impact", owner.Position + dir * 0.5f, Vector2.zero, n.radius / 1.5f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
+            CareerFx.Clip("impact", owner.Position + dir * 0.5f, Vector2.zero, n.radius / 1.5f, 26f, VfxLayer.Ground, false, SpecTint(n, CareerFx.Steel));
+            if (n.spec == 'b')
+                foreach (var e in EnemiesInRadius(owner.Center, n.radius * 1.5f))
+                {
+                    Vector2 away = (e.Center - owner.Center).sqrMagnitude > .0001f ? (e.Center - owner.Center).normalized : dir;
+                    e.PullTowards(e.Position + away * 2.5f, 9f, 0.25f);
+                }
             Shake(hit.Count > 0 ? 0.15f : 0.06f, 0.18f);
         }
 
-        /// <summary>회전 베기: spin once, cutting everything around the player.</summary>
+        /// <summary>회전 베기: spin once, cutting everything around the player.
+        /// [CH3 SPEC] A 회전 흡인: a 0.9 s channel of three spins that pull the pack in (rooted). B 이동 회전: two spins that
+        /// follow the walking player, 25% less damage taken for 1 s.</summary>
         void Whirl(SkillNumbers n)
         {
-            Vector2 c = owner.Center;
-            Game.Audio.PlaySfx("swing");
-            // [VFX] Four crescents around the body make one full turn of the blade.
-            for (int k = 0; k < 4; k++)
-            {
-                float a = k * 90f * Mathf.Deg2Rad;
-                CareerFx.Clip("f_arc", c, new Vector2(Mathf.Cos(a), Mathf.Sin(a)), n.radius / 1.35f, 40f).FlipY(k % 2 == 1);
-            }
-            foreach (var e in EnemiesInRadius(c, n.radius))
-            {
-                Hit(e, n, c, 7f);
-                CareerFx.Hit(e.Center, (e.Center - c).normalized, Career.Fighter, 0);
-            }
-            Shake(0.06f, 0.12f);
+            if (n.spec == 'a' || n.spec == 'b') { StartCoroutine(WhirlSpins(n)); return; }
+            Spin(n, owner.Center, null);
         }
 
-        /// <summary>전쟁 함성: stun everything nearby and raise all damage for a while.</summary>
+        /// <summary>전쟁 함성: stun everything nearby and raise all damage for a while.
+        /// [CH3 SPEC] A 위압의 함성: 2.5 m, 2.4 s stun and 10% more damage taken for 4 s. B 전장의 함성: 6 m, 0.8 s stun
+        /// and allies in reach walk 15% faster for 4 s.</summary>
         void WarCry(SkillNumbers n)
         {
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("rock_break");
             SkillVisuals.WarCry(c, owner.Position, n.radius);
             var aim = castAim;
-            CareerFx.Clip("g_roar", c, aim, n.radius / 3f, 22f, VfxLayer.Top, true);
-            CareerFx.Clip("g_roar", c, -aim, n.radius / 3.4f, 22f, VfxLayer.Top, true);
+            Color? tint = n.spec != '\0' ? (Color?)SpecTint(n, Color.white) : null;
+            CareerFx.Clip("g_roar", c, aim, n.radius / 3f, 22f, VfxLayer.Top, true, tint);
+            CareerFx.Clip("g_roar", c, -aim, n.radius / 3.4f, 22f, VfxLayer.Top, true, tint);
             Shake(0.12f, 0.25f);
+            float stun = float.IsNaN(n.duration) ? n.stun : n.duration;
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
                 Hit(e, n, c, 8f);
-                e.Stun(n.stun);
+                e.Stun(stun);
                 StunStars.Attach(e);
+                if (n.spec == 'a') CareerCombat.For(owner).MarkFromCaster(e, 10, 4f);
+            }
+            if (n.spec == 'b')
+            {
+                CareerCombat.For(owner).AddHaste(15, 4f);
+                if (Game.Party != null)
+                    foreach (var p in Game.Party.Members)
+                        if (p != null && !p.IsDead && Vector2.Distance(p.Center, c) <= n.radius) CareerCombat.For(p).AddHaste(15, 4f);
             }
             // The shout pulls every monster around onto the caster (its old damage buff is the warrior's passive now).
             ThreatTable.WarCry(owner, c, n.radius);
@@ -187,7 +209,8 @@ namespace DotRPG
             foreach (var e in EnemiesInRadius(c, n.radius)) Hit(e, n, c, 3f);
         }
 
-        /// <summary>천검 강림 (awakening): giant swords rain down on the monsters around the player.</summary>
+        /// <summary>천검 강림 (awakening): giant swords rain down on the monsters around the player.
+        /// [CH3 SPEC] A 단검 강림: one sword (28.8, 0.8 m) that staggers for 2 s. B 검의 비: 12 swords of 1.2 on 3.2 m, every 12 s.</summary>
         IEnumerator Blades(SkillNumbers n, bool cutIn)
         {
             if (cutIn)
@@ -204,9 +227,14 @@ namespace DotRPG
                 {
                     SkillVisuals.SwordImpact(p, n.radius);
                     CareerFx.Clip("f_shatter", p + Vector2.up * 0.3f, Vector2.zero, 1.1f, 22f);
+                    if (n.spec != '\0') CareerFx.Clip("impact", p, Vector2.zero, n.radius / 1.4f, 26f, VfxLayer.Ground, false, SpecTint(n, CareerFx.Steel));
                     Game.Audio.PlaySfx("rock_break", 0.6f);
-                    foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius)) Hit(e, n, p, 5f);
-                    Shake(0.07f, 0.1f);
+                    foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius))
+                    {
+                        Hit(e, n, p, 5f);
+                        if (n.spec == 'a' && !e.IsDead) e.Stagger(2f);
+                    }
+                    Shake(n.spec == 'a' ? 0.18f : 0.07f, n.spec == 'a' ? 0.22f : 0.1f);
                 }));
                 yield return new WaitForSeconds(0.1f);
             }
@@ -222,18 +250,23 @@ namespace DotRPG
             Vector2 c = owner.Center;
             Game.Audio.PlaySfx("magic");
             SkillVisuals.Nova(c, owner.Position, n.radius);
+            // [CH3 SPEC] 절대 영도 / 서리 파도: the freeze time comes from the spec (5.0 s / 1.6 s), the blooms take its colour.
+            float freeze = float.IsNaN(n.duration) ? n.freeze : n.duration;
             // [VFX] Ice blooms open in a ring around the caster.
             for (int k = 0; k < 6; k++)
             {
                 float a = k * 60f * Mathf.Deg2Rad;
-                CareerFx.Clip("m_icebloom", owner.Position + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.7f) * n.radius * 0.6f, Vector2.zero, 0.9f, 22f, VfxLayer.AtFeet, false);
+                CareerFx.Clip("m_icebloom", owner.Position + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.7f) * n.radius * 0.6f, Vector2.zero, 0.9f, 22f, VfxLayer.AtFeet, false, MageTint(n));
             }
             Shake(0.08f, 0.15f);
             foreach (var e in EnemiesInRadius(c, n.radius))
             {
                 Hit(e, n, c, 2f);
-                e.Freeze(n.freeze);
+                e.Freeze(freeze);
                 if (!e.IsDead && e.IsFrozen) IceEncase.Attach(e);
+                if (e.IsDead) continue;
+                if (n.HasExtra("nova_wave")) e.Slow(0.4f, freeze + 3f); // B: 40% slower for 3 s after the thaw
+                else if (n.HasExtra("nova_shatter")) StartCoroutine(NovaShatter(e, n, freeze)); // A: the ice bursts when it breaks
             }
             // [SKILL 2026-10-14] Follow-up: the frost bursts once more (Lv12 skills of every class).
             StartCoroutine(After(FollowUpDelay, () => FollowUp(owner.Center, n, "magic", SkillVisuals.FrostBlue)));
@@ -298,15 +331,18 @@ namespace DotRPG
             }
             orb.Kill();
             SkillVisuals.FrostOrbBurst(pos, pos + Vector2.down * 0.4f, n.radius);
-            for (int k = -1; k <= 1; k++) CareerFx.Clip("m_icebloom", pos + new Vector2(k * 0.55f, -0.4f - 0.1f * Mathf.Abs(k)), Vector2.zero, 1.15f, 22f, VfxLayer.AtFeet, false);
+            for (int k = -1; k <= 1; k++) CareerFx.Clip("m_icebloom", pos + new Vector2(k * 0.55f, -0.4f - 0.1f * Mathf.Abs(k)), Vector2.zero, 1.15f, 22f, VfxLayer.AtFeet, false, MageTint(n));
             Game.Audio.PlaySfx("rock_break");
             Shake(0.09f, 0.14f);
+            // [CH3 SPEC] 빙뢰 응집 (A) adds a short freeze to its small, heavy burst; 빙뢰 파편 (B) throws six shards that slow.
+            float orbFreeze = n.HasExtra("frost_dense") ? Mathf.Max(n.freeze, 0.5f) : n.freeze;
             foreach (var e in EnemiesInRadius(pos, n.radius))
             {
                 Hit(e, n, pos, 3f);
-                e.Freeze(n.freeze);
+                e.Freeze(orbFreeze);
                 if (!e.IsDead && e.IsFrozen) IceEncase.Attach(e);
             }
+            if (n.HasExtra("frost_shards")) FrostShards(pos, n);
         }
 
         /// <summary>메테오 (awakening): burning rocks crash down across the area around the player.</summary>
@@ -321,17 +357,47 @@ namespace DotRPG
             Game.Audio.PlaySfx("magic");
             Shake(0.06f, 0.12f);
             int ticks = Mathf.Max(1, n.hits);
+            // [CH3 SPEC] 화염 기둥 (A): a narrow pillar that slows whoever stands in it by half. 들불 (B): a wide field that
+            // spreads after the monsters walking through it, up to three more patches; a monster burns once per tick however
+            // many patches it stands in.
+            bool pillar = n.HasExtra("fire_pillar"), wildfire = n.HasExtra("wildfire");
+            Color flame = n.spec != '\0' ? SkillSpecs.Tint(n, SkillVisuals.FireOrange) : SkillVisuals.FireOrange;
+            var patches = new List<(Vector2 at, float r)> { (at, n.radius) };
             for (int i = 0; i < ticks; i++)
             {
-                for (int k = 0; k < 4; k++)
+                foreach (var patch in patches)
                 {
-                    Vector2 p = at + Random.insideUnitCircle * n.radius * 0.85f;
-                    SkillVisuals.Flash(p + Vector2.up * 0.15f, new Color(1f, 0.5f, 0.12f, 0.55f), 0.9f, 0.4f);
-                    SkillVisuals.Sparks(p, SkillVisuals.FireOrange, 3, 1.4f, 0.4f);
+                    for (int k = 0; k < 4; k++)
+                    {
+                        Vector2 p = patch.at + Random.insideUnitCircle * patch.r * 0.85f;
+                        SkillVisuals.Flash(p + Vector2.up * 0.15f, new Color(flame.r, flame.g * 0.5f + 0.25f, flame.b * 0.5f, 0.55f), 0.9f, 0.4f);
+                        SkillVisuals.Sparks(p, flame, 3, 1.4f, 0.4f);
+                    }
+                    // [VFX] Small bursts of flame rise from the patch every tick.
+                    CareerFx.Clip("m_explode", patch.at + Random.insideUnitCircle * patch.r * 0.6f + Vector2.up * 0.15f, Vector2.zero, 0.55f, 26f, VfxLayer.Top, false, MageTint(n));
                 }
-                // [VFX] Small bursts of flame rise from the patch every tick.
-                CareerFx.Clip("m_explode", at + Random.insideUnitCircle * n.radius * 0.6f + Vector2.up * 0.15f, Vector2.zero, 0.55f, 26f, VfxLayer.Top, false);
-                foreach (var e in EnemiesInRadius(at, n.radius)) Hit(e, n, at, 1.5f);
+                var burned = new HashSet<EnemyController>();
+                foreach (var patch in patches)
+                    foreach (var e in EnemiesInRadius(patch.at, patch.r))
+                    {
+                        if (!burned.Add(e)) continue;
+                        Hit(e, n, patch.at, 1.5f);
+                        if (pillar && !e.IsDead) e.Slow(0.5f, 3f / ticks + 0.1f);
+                    }
+                if (wildfire && patches.Count < 4 && i < ticks - 1)
+                {
+                    // The fire follows a burning monster that walked furthest from the patches already lit.
+                    EnemyController walker = null;
+                    float far = 0f;
+                    foreach (var e in burned)
+                    {
+                        if (e == null || e.IsDead) continue;
+                        float d = float.MaxValue;
+                        foreach (var patch in patches) d = Mathf.Min(d, Vector2.Distance(e.Position, patch.at));
+                        if (d > far) { far = d; walker = e; }
+                    }
+                    if (walker != null && far > n.radius * 0.35f) patches.Add((walker.Position, n.radius * 0.5f));
+                }
                 yield return new WaitForSeconds(3f / ticks);
             }
         }
@@ -343,6 +409,15 @@ namespace DotRPG
                 Awaken(L.T("메테오"), SkillVisuals.FireOrange);
                 yield return new WaitForSeconds(0.35f);
             }
+            // [CH3 SPEC] 대운석 (A): one rock after a 1.5 s warning, then a burning crack. 유성 시간차 (B): the rocks land 0.4 s
+            // apart and slow what they hit by 30% for 3 s.
+            if (n.HasExtra("meteor_one"))
+            {
+                yield return BigMeteor(n);
+                SkillVisuals.UltFinish(owner.Center, SkillSpecs.Tint(n, SkillVisuals.FireOrange), n.range);
+                yield break;
+            }
+            bool timed = n.HasExtra("meteor_timed");
             const float fall = 0.38f;
             for (int i = 0; i < n.hits; i++)
             {
@@ -351,12 +426,16 @@ namespace DotRPG
                 StartCoroutine(After(fall, () =>
                 {
                     SkillVisuals.MeteorImpact(p, n.radius);
-                    CareerFx.Clip("m_explode", p + Vector2.up * 0.3f, Vector2.zero, n.radius / 1.2f, 22f, VfxLayer.Top, false);
+                    CareerFx.Clip("m_explode", p + Vector2.up * 0.3f, Vector2.zero, n.radius / 1.2f, 22f, VfxLayer.Top, false, MageTint(n));
                     Game.Audio.PlaySfx("rock_break");
-                    foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius)) Hit(e, n, p, 9f);
+                    foreach (var e in EnemiesInRadius(p + Vector2.up * 0.3f, n.radius))
+                    {
+                        Hit(e, n, p, 9f);
+                        if (timed && !e.IsDead) e.Slow(0.3f, 3f);
+                    }
                     Shake(0.14f, 0.18f);
                 }));
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(timed ? 0.4f : 0.2f);
             }
             yield return new WaitForSeconds(fall + 0.1f);
             SkillVisuals.UltFinish(owner.Center, SkillVisuals.FireOrange, n.range);

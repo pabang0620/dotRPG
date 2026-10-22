@@ -71,7 +71,7 @@ namespace DotRPG
             lastSecond = second; lastKills = run.Kills; lastXp = run.EarnedXp;
             time.text = MiniDungeonScreen.TimeText(run.RemainingSeconds);
             time.color = second <= 60 ? new Color32(255, 165, 128, 255) : UiTheme.AccentLight;
-            counters.text = $"<color=#ffe066>{run.EarnedXp:N0} EXP</color>  <color=#f0d080>{run.EarnedGold:N0} {L.T("골드")}</color>\n" + L.F("{0}마리 처치", run.Kills);
+            counters.text = $"<color=#ffe066>{run.EarnedXp:N0} EXP</color>  <color=#f0d080>{run.EarnedGold:N0} {L.T("골드")}</color>\n" + L.F("{0}마리 처치", run.Kills); // i18n-ignore numbers only; 골드 / 마리 처치 are wrapped
             bar.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(run.RemainingSeconds / MiniDungeonCatalog.DailySeconds), 1);
         }
     }

@@ -311,7 +311,13 @@ namespace DotRPG
             if(career!=null) {
                 n.careerPotency=rankScale*more;
                 n.repeats=0; n.leechPct=0; n.bossPct=0;
-                if(Prog.Rank("m_flow")>0) n.manaCost=Mathf.Max(1,Mathf.RoundToInt(n.manaCost*(1-(10+3*(Prog.Rank("m_flow")-1))/100f)));
+                if(Prog.Rank("m_flow")>0) {
+                    // [CH3 SPEC] 심층 순환 (A): -25% on career spells with a cooldown. 연속 순환 (B): -15% on no-cooldown spells
+                    // (and 3% MP back every tenth cast, CareerCombat.Arcanist).
+                    char flow=Prog.SpecOf("m_flow");
+                    float cut=flow=='a'?(career.cooldown>0?.25f:0f):flow=='b'?(career.cooldown<=0&&career.kind!=CareerSkillKind.Passive?.15f:0f):(10+3*(Prog.Rank("m_flow")-1))/100f;
+                    n.manaCost=Mathf.Max(1,Mathf.RoundToInt(n.manaCost*(1-cut)));
+                }
             }
             SkillSpecs.Stamp(ref n, spec);
             return n;

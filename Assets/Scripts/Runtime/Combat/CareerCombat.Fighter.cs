@@ -27,9 +27,13 @@ namespace DotRPG
             }
         }
 
-        /// <summary>십자참: two crossing cuts in a 120° fan; the second one shoves.</summary>
+        /// <summary>십자참: two crossing cuts in a 120° fan; the second one shoves.
+        /// [CH3 SPEC] A 일자참: one straight cut (3.5 x 1, x2) that staggers 0.5 s. B 사방참: four cuts all around, each
+        /// monster cut once at 1.1/1.7.</summary>
         IEnumerator CrossCut(Run c)
         {
+            if (c.n.spec == 'a') { yield return CrossLine(c); yield break; }
+            if (c.n.spec == 'b') { yield return CrossFour(c); yield break; }
             for (int i = 0; i < 2; i++)
             {
                 if (!Live(c)) yield break;
@@ -62,13 +66,14 @@ namespace DotRPG
                 Vector2 at = Vector2.Lerp(start, end, Mathf.Clamp01((t + Time.deltaTime) / seconds));
                 if (t >= nextGhost) { nextGhost = t + seconds / 4f; CareerFx.Ghost(owner, new Color(.45f, .7f, 1f, .75f), .3f); }
                 foreach (var e in Corridor(previous, at, c.n.radius))
-                    if (hit.Add(e)) Strike(c, e, c.n.damage, e.Center - c.dir, 7f, 1, "c_slash");
+                    if (hit.Add(e)) Strike(c, e, RushDamage(c, hit.Count), e.Center - c.dir, 7f, 1, "c_slash");
                 previous = at;
                 yield return null;
             }
             if (!Live(c)) yield break;
+            if (c.n.spec == 'b' && c.authority) AddGuard(40, 1.5f); // [CH3 SPEC] 섬광 잔보: 40% less damage for 1.5 s on arrival
             // A straight blade of light along the path, then every monster passed shows its cut at once.
-            CareerFx.Clip("f_line", start, c.dir, 1f, 26f).Squash(Mathf.Max(.2f, distance / 6f), 1f);
+            CareerFx.Clip("f_line", start, c.dir, 1f, 26f, VfxLayer.Top, true, c.n.spec != '\0' ? (Color?)Tint(c, Color.white) : null).Squash(Mathf.Max(.2f, distance / 6f), 1f);
             yield return new WaitForSeconds(.12f);
             foreach (var e in hit) if (e != null && !e.IsDead) CareerFx.Clip("f_cut", e.Center, c.dir, 1.3f, 26f);
         }
@@ -87,8 +92,14 @@ namespace DotRPG
             SkillFx.Spawn("fx_glow", owner.Position + Vector2.up * .3f, new Color(1f, .3f, .15f, .7f), .7f, SkillFx.TopOrder).Additive()
                 .Move(Vector2.up * 1.6f, 3f).Scale(new Vector2(.7f, .9f), new Vector2(1.5f, 3.2f)).Fade(FxFade.Late);
             SkillVisuals.Sparks(owner.Center, new Color(1f, .55f, .25f, 1f), 14, 5f, .35f);
-            frenzy = Mathf.RoundToInt(c.s.power * c.Scale);
-            frenzyEnd = Time.time + c.s.duration;
+            // [CH3 SPEC] A 귀검 집중: +35% on bosses only for 90 s. B 귀검 난무: +12% on everything for the full time,
+            // each kill adds 2 s (CareerCombat.SpecWarrior.SpecLanded).
+            frenzyBossOnly = c.n.spec == 'a';
+            frenzyExtend = c.n.spec == 'b';
+            float pct = c.n.spec == 'a' ? 35f : c.n.spec == 'b' ? 12f : c.s.power;
+            frenzy = Mathf.RoundToInt(pct * c.Scale);
+            frenzyEnd = Time.time + (c.n.spec == 'a' ? 90f : c.s.duration);
+            if (c.n.spec != '\0') SkillVisuals.Flash(owner.Center, Tint(c, Color.white), 1.8f, .25f);
         }
 
         /// <summary>난무: four quick cuts in front, then a big rising finisher.</summary>
@@ -120,6 +131,24 @@ namespace DotRPG
         /// <summary>파쇄 검기: a piercing crescent; monsters it cuts take 15% more of my damage for a while.</summary>
         IEnumerator BreakWave(Run c)
         {
+            // [CH3 SPEC] B 파쇄 쌍검기: two crescents at ±12°, half damage each, both piercing and marking.
+            if (c.n.spec == 'b')
+            {
+                var half = c;
+                var n = c.n;
+                n.damage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .5f));
+                half = new Run { s = c.s, n = n, dir = CareerFx.Tilt(c.dir, 12f), map = c.map, version = c.version, authority = c.authority };
+                StartCoroutine(BreakWaveOne(half, false));
+                var other = new Run { s = c.s, n = n, dir = CareerFx.Tilt(c.dir, -12f), map = c.map, version = c.version, authority = c.authority };
+                yield return BreakWaveOne(other, false);
+                yield break;
+            }
+            yield return BreakWaveOne(c, c.n.spec == 'a');
+        }
+
+        /// <summary>One 파쇄 검기 crescent. <paramref name="stopAtFirst"/>: A 파쇄 일섬기, the first monster takes it all (x2).</summary>
+        IEnumerator BreakWaveOne(Run c, bool stopAtFirst)
+        {
             const float speed = 14f;
             Pose(.2f, 1);
             Sound("c_slash");
@@ -128,7 +157,7 @@ namespace DotRPG
             // [VFX] The generated heavy crescent (f2_break_crescent, square frame) about as tall as the old one; else f_wave.
             bool drawn = VfxLibrary.Has("f2_break_crescent");
             float genSize = c.n.radius * 2.6f;
-            var blade = CareerFx.Gen("f2_break_crescent", "f_wave", at, c.dir, genSize, size, 16f, VfxLayer.Top, true, null, 10f, true);
+            var blade = CareerFx.Gen("f2_break_crescent", "f_wave", at, c.dir, genSize, size, 16f, VfxLayer.Top, true, c.n.spec != '\0' ? (Color?)Tint(c, Color.white) : null, 10f, true);
             var hit = new HashSet<EnemyController>();
             float travelled = 0f, nextTrail = 0f;
             while (travelled < c.n.range)
@@ -143,12 +172,18 @@ namespace DotRPG
                     if (drawn) CareerFx.Gen("f2_break_crescent", null, next - c.dir * .2f, c.dir, genSize * .92f, 0f, 16f, VfxLayer.Top, true, new Color(1f, 1f, 1f, .4f), .2f)?.FadeOut(.2f);
                     else CareerFx.Clip("f_wave", next - c.dir * .2f, c.dir, size * .92f, 16f, VfxLayer.Top, true, new Color(.6f, .8f, 1f, .45f), true, .2f).FadeOut(.2f);
                 }
+                bool stop = false;
                 foreach (var e in Corridor(at, next, c.n.radius))
-                    if (hit.Add(e) && Strike(c, e, c.n.damage, e.Center - c.dir, 6f, 1, "c_slash") && c.authority)
+                {
+                    if (!hit.Add(e)) continue;
+                    if (Strike(c, e, stopAtFirst ? c.n.damage * 2 : c.n.damage, e.Center - c.dir, 6f, stopAtFirst ? 2 : 1, "c_slash") && c.authority)
                     {
                         broken[e] = Time.time + c.s.duration;
                         CareerFx.Clip("f_shatter", e.Center, Vector2.zero, 1.2f, 20f);
                     }
+                    if (stopAtFirst) { stop = true; break; }
+                }
+                if (stop) { at = next; break; }
                 at = next;
                 travelled += step;
                 yield return null;
@@ -160,26 +195,34 @@ namespace DotRPG
         /// <summary>일섬: a thin line is drawn first; a beat later everything on it is cut at once.</summary>
         IEnumerator Iaido(Run c)
         {
+            if (c.n.spec == 'b') { yield return IaidoThree(c); yield break; }
+            bool one = c.n.spec == 'a';
+            if (one && c.authority) AddInvulnerable(.3f); // [CH3 SPEC] 일섬 극: 0.3 s invulnerable in the longer draw
             Vector2 from = owner.Center + c.dir * .3f, to = from + c.dir * c.n.range;
             float stretch = c.n.range / 6f;
             // A hairline flickers first (frame 0 of the clip held), then the blade of light splits the line.
             CareerFx.Clip("f_line", from, c.dir, 1f, 5.5f, VfxLayer.Top, true, new Color(1f, 1f, 1f, .7f), false, .18f).Squash(stretch, .6f);
             Sound("c_slash", .5f);
-            yield return new WaitForSeconds(.18f);
+            yield return new WaitForSeconds(one ? .5f : .18f);
             if (!Live(c)) yield break;
             Pose(.2f, 2);
-            CareerFx.Clip("f_line", from, c.dir, 1f, 22f).Squash(stretch, 1.2f);
+            CareerFx.Clip("f_line", from, c.dir, 1f, 22f, VfxLayer.Top, true, c.n.spec != '\0' ? (Color?)Tint(c, Color.white) : null).Squash(stretch, 1.2f);
             if (owner.IsLocal) SkillVisuals.Flash(owner.Center + c.dir * c.n.range * .5f, new Color(.85f, .95f, 1f, .45f), c.n.range * 1.4f, .1f);
             Sound("c_heavy", .9f);
             int k = 0;
             foreach (var e in Corridor(from, to, c.n.radius))
-                if (Strike(c, e, c.n.damage, from, 8f, 2, "c_slash"))
+            {
+                if (Strike(c, e, one ? c.n.damage * 2 : c.n.damage, from, 8f, 2, "c_slash"))
                     CareerFx.Clip("f_cut", e.Center, CareerFx.Tilt(c.dir, (k++ % 3 - 1) * 25f), 1.5f, 26f);
+                if (one) break; // 8.8 on the first monster only
+            }
         }
 
         /// <summary>단죄: leap onto the monster in front and bring the sword down; low-HP targets take 1.6×.</summary>
         IEnumerator Execute(Run c)
         {
+            // [CH3 SPEC] B 단죄 도약: 0.4 s invulnerable in the leap; a kill makes it ready again (SpecLanded).
+            if (c.n.spec == 'b' && c.authority) AddInvulnerable(.4f);
             var target = Target(c.dir, c.n.range, out Vector2 point);
             Vector2 toTarget = point - owner.Center;
             Vector2 dir = toTarget.sqrMagnitude > .01f ? toTarget.normalized : c.dir;
@@ -220,10 +263,13 @@ namespace DotRPG
             CareerFx.Clip("impact", ground, Vector2.zero, c.n.radius / 1.7f, 26f, VfxLayer.Ground, false, CareerFx.Steel);
             SkillFx.Crack(ground, c.n.radius, 1.4f);
             Sound("c_heavy");
+            // [CH3 SPEC] A 참수: 7.0 (of 5.2), the low-HP bonus from 50%. B 단죄 도약: 4.2.
+            float scale = c.n.spec == 'a' ? 7f / 5.2f : c.n.spec == 'b' ? 4.2f / 5.2f : 1f, lowAt = c.n.spec == 'a' ? .5f : .35f;
+            if (c.n.spec != '\0') CareerFx.Clip("impact", ground, Vector2.zero, c.n.radius / 1.7f, 26f, VfxLayer.Ground, false, Tint(c, CareerFx.Steel));
             foreach (var e in Enemies(at, c.n.radius))
             {
-                bool low = e.Health.Current < e.Health.Max * .35f;
-                Strike(c, e, Mathf.RoundToInt(c.n.damage * (low ? 1.6f : 1f)), at, 11f, 2, "c_heavy");
+                bool low = e.Health.Current < e.Health.Max * lowAt;
+                Strike(c, e, Mathf.RoundToInt(c.n.damage * scale * (low ? 1.6f : 1f)), at, 11f, 2, "c_heavy");
                 if (low) CareerFx.Clip("f_x", e.Center, dir, 2.2f, 26f);
             }
         }
@@ -264,10 +310,12 @@ namespace DotRPG
         /// </summary>
         IEnumerator XSlash(Run c)
         {
-            const float Cut = .55f, Gap = .2f, Draw = 1.3f, Shake = 1.4f, Tear = .3f, Mul = 10f, Width = .22f; // the line stays readable on screen (0.1 vanished)
+            const float Cut = .55f, Gap = .2f, Draw = 1.3f, Shake = 1.4f, Tear = .3f, Width = .22f; // the line stays readable on screen (0.1 vanished)
+            // [CH3 SPEC] A 천검 일점: 2200% on a 0.4x area, 4 s stagger. B 천검 만상: 700% on 1.4x, then 150% a second for 10 s.
+            float Mul = c.n.spec == 'a' ? 22f : c.n.spec == 'b' ? 7f : 10f;
             const float Total = Draw + Shake + Tear; // 3 s
             Vector2 at = owner.Center;
-            var blue = new Color(.45f, .8f, 1f, 1f);
+            var blue = Tint(c, new Color(.45f, .8f, 1f, 1f));
             Pose(Total + .2f, 2);
             if (c.authority)
                 foreach (var e in Enemies(at, c.n.radius)) { e.Stagger(Total); StunStars.Attach(e); }
@@ -326,7 +374,11 @@ namespace DotRPG
             SkillVisuals.Flash(at, new Color(.75f, .92f, 1f, .7f), arm * 1.2f, .15f);
             foreach (var e in Enemies(at, c.n.radius))
                 if (Strike(c, e, Mathf.RoundToInt(c.n.damage * Mul), at, 10f, 2, "c_heavy"))
+                {
                     CareerFx.Clip("f_cut", e.Center, Vector2.right, 1.5f, 26f);
+                    if (c.n.spec == 'a' && c.authority && !e.IsDead) e.Stagger(4f);
+                }
+            if (c.n.spec == 'b') StartCoroutine(SwordStorm(c, at, float.IsNaN(c.n.duration) ? 10f : c.n.duration));
         }
 
         /// <summary>One 천검귀일 cut: the stroke, a flash where the blade bites in, the swing sound and a light shake.</summary>

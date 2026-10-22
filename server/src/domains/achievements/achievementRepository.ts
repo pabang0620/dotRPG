@@ -5,7 +5,7 @@ import type { AchievementStat } from './achievementDefs';
 /** 업적 판정에 쓰는 값들. 모두 서버 기록에서 계산한다 */
 export async function statsOf(db: Queryable, characterId: number): Promise<Record<AchievementStat, number>> {
   const raids = [...getGameData().economy.dungeons.byId.values()].filter((d) => d.isRaid).map((d) => d.id);
-  const r = await db.query<Record<string, string | null>>(
+  const r = await db.query<Record<string, unknown>>(
     `SELECT
        (SELECT coalesce(max(CASE WHEN position('+' in to_key) > 0 THEN split_part(to_key, '+', 2)::int ELSE 0 END), 0)
           FROM enhance_log WHERE character_id = $1 AND outcome = 'success' AND to_key IS NOT NULL) AS enhance_best,
@@ -15,7 +15,7 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
        (SELECT count(*) FROM kill_log WHERE character_id = $1) AS kills,
        (SELECT count(*) FROM kill_log WHERE character_id = $1 AND monster_id LIKE 'boss\\_%') AS boss_kills,
        (SELECT CASE WHEN coalesce((career->>'career')::int, 0) > 0 THEN 1 ELSE 0 END FROM character_state WHERE character_id = $1) AS promoted,
-       (SELECT CASE WHEN jsonb_typeof(career->'specs') = 'array' THEN jsonb_array_length(career->'specs') ELSE 0 END
+       (SELECT CASE WHEN jsonb_typeof(career->'specs') = 'array' THEN career->'specs' ELSE '[]'::jsonb END
           FROM character_state WHERE character_id = $1) AS specs,
        (SELECT count(*) FROM gacha_pulls WHERE account_id = (SELECT account_id FROM characters WHERE id = $1)) AS gacha_pulls,
        (SELECT count(*) FROM gacha_pulls WHERE account_id = (SELECT account_id FROM characters WHERE id = $1) AND rarity IN ('unique', 'legendary')) AS gacha_top,
@@ -40,7 +40,7 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
     kills: n('kills'),
     boss_kills: n('boss_kills'),
     promoted: n('promoted'),
-    specs: n('specs'),
+    specs: specPoints(row.specs),
     gacha_pulls: n('gacha_pulls'),
     gacha_top: n('gacha_top'),
     cosmetics: n('cosmetics'),
@@ -53,6 +53,18 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
     quests: n('quests'),
     gold: n('gold'),
   };
+}
+
+/** 고른 특화에 쓴 포인트 합(액티브 2·패시브 1, skill_specs.json cost). 특화 수가 아니라 포인트라 "10개를 모두 쓴다"가 맞는다 */
+function specPoints(raw: unknown): number {
+  if (!Array.isArray(raw)) return 0;
+  const specs = getGameData().economy.skillSpecs;
+  let sum = 0;
+  for (const c of raw as { skill?: unknown; side?: unknown }[]) {
+    if (typeof c?.skill !== 'string' || typeof c?.side !== 'string') continue;
+    sum += specs.get(`${c.skill}:${c.side}`)?.cost ?? 0;
+  }
+  return sum;
 }
 
 export async function achievedOf(db: Queryable, characterId: number): Promise<Map<string, Date>> {

@@ -53,8 +53,12 @@ namespace DotRPG
                 if (owner.IsLocal) GameEvents.RaiseToast(L.T("MP가 부족해 검기 태세가 풀렸습니다."));
                 return;
             }
+            // [CH3 SPEC] A 응축 태세: one crescent, 1.6 (3.3 on the third swing) of 1.1. B 수호 태세: one crescent of 1.0 whose
+            // hits build a shield (1% a hit, up to 10%; CareerCombat.SpecWarrior.SpecLanded).
+            if (n.spec == 'a') n.damage = Mathf.Max(1, Mathf.RoundToInt(n.damage * (comboStage >= 2 ? 3.3f : 1.6f) / 1.1f));
+            else if (n.spec == 'b') n.damage = Mathf.Max(1, Mathf.RoundToInt(n.damage * 1.0f / 1.1f));
             var run = new Run { s = stanceSkill, n = n, dir = dir, map = Game.Session.MapId, version = castVersion, authority = !PartyNet.IsMember };
-            int count = comboStage >= 2 ? 3 : 1;
+            int count = n.spec != '\0' ? 1 : comboStage >= 2 ? 3 : 1;
             for (int i = 0; i < count; i++)
             {
                 float tilt = count == 1 ? 0f : (i - 1) * 18f;
@@ -72,7 +76,7 @@ namespace DotRPG
             // [VFX] A thin quick azure slash (f2_stance_wave), so it doesn't read as 파쇄 검기; else the tinted f_wave.
             bool drawn = VfxLibrary.Has("f2_stance_wave");
             var blade = CareerFx.Gen("f2_stance_wave", "f_wave", at, dir, drawn ? c.n.radius * 2.1f : size, size, 16f, VfxLayer.Top, true,
-                drawn ? Color.white : new Color(.7f, .88f, 1f, .9f), 10f, true);
+                c.n.spec != '\0' ? Tint(c, Color.white) : drawn ? Color.white : new Color(.7f, .88f, 1f, .9f), 10f, true);
             var hit = new HashSet<EnemyController>();
             float travelled = 0f;
             while (travelled < c.n.range)

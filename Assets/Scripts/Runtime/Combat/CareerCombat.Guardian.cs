@@ -9,7 +9,8 @@ namespace DotRPG
     {
         const float WallShield = .18f;
         /// <summary>회귀의 방패 has no cooldown: three shields fly at once, one more per node rank above 1 (up to 5).</summary>
-        public int MaxShieldsOut => Mathf.Clamp(2 + Mathf.Max(1, Prog.Rank("g_wall")), 3, 5);
+        /// [CH3 SPEC] A 거대 방패: one shield at a time. B 방패 산개: two more (5~7).
+        public int MaxShieldsOut => Prog.SpecOf("g_wall") == 'a' ? 1 : Mathf.Clamp(2 + Mathf.Max(1, Prog.Rank("g_wall")), 3, 5) + (Prog.SpecOf("g_wall") == 'b' ? 2 : 0);
         /// <summary>When each thrown shield is back (a time list, so a stopped coroutine can never leave one counted forever).</summary>
         readonly List<float> shieldBack = new List<float>();
         int ShieldsOut { get { shieldBack.RemoveAll(t => t <= Time.time); return shieldBack.Count; } }
@@ -75,11 +76,21 @@ namespace DotRPG
             Feel(1, Vector2.down);
             foreach (var e in Enemies(owner.Center, c.n.radius)) Strike(c, e, c.n.damage, owner.Center, 10f, 1, "c_shield");
             // [GUARDIAN] A clear one-second invulnerability, then the damage reduction (the old slow is gone).
-            if (c.authority) { AddInvulnerable(1f); AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); }
+            // [CH3 SPEC] A 불굴의 보루: 2 s invulnerable and a 15 s shield wall. B 수호의 벽: a wall twice as wide, the 20%
+            // guard shared with allies within 4 m, and half of every blow it softens answered (SpecOnHurt).
+            if (c.authority) { AddInvulnerable(c.n.spec == 'a' ? 2f : 1f); AddGuard(Mathf.RoundToInt(30 * c.Scale), c.s.duration); }
+            if (c.n.spec == 'b' && c.authority)
+            {
+                wallReflectEnd = Time.time + c.s.duration;
+                foreach (var p in Allies(owner.Center, 4f)) if (p != owner) For(p).AddGuard(Mathf.RoundToInt(20 * c.Scale), c.s.duration);
+            }
             // [RAID] The 거대 방패 stays planted in front toward the aim for 7 s; the ground behind it is cover from 섬멸.
             // Every PC plants it (the host's copy decides the damage, a member's copy is the picture).
             Vector2 face = c.dir.sqrMagnitude > .0001f ? c.dir.normalized : Vector2.down;
-            SafeCover.AddWall(feet + face * .9f, face);
+            if (c.n.spec == 'a') SafeCover.AddWall(feet + face * .9f, face, SafeCover.WallHalfWidth, 15f);
+            else if (c.n.spec == 'b') SafeCover.AddWall(feet + face * .9f, face, SafeCover.WallHalfWidth * 2f);
+            else SafeCover.AddWall(feet + face * .9f, face);
+            if (c.n.spec != '\0') GuardRing(feet, c.n.radius, Tint(c, GTeal), .5f, .1f);
             if (owner.IsLocal) SkillVisuals.Flash(owner.Center, new Color(.6f, 1f, .95f, .8f), 1.8f, .25f);
         }
 
@@ -91,7 +102,11 @@ namespace DotRPG
             const float leg = .55f;
             Vector2 start = owner.Center, far = start + c.dir * c.n.range;
             // [VFX] A clearly drawn shield spinning in flight (the clip when the art is missing), a teal trail, a gold clang per hit.
-            SkillFx shieldArt = CareerFx.ShieldArt ? SkillFx.Spawn(CareerFx.ShieldSprite, start, Color.white, leg * 2f + .2f, SkillFx.TopOrder + 3).Scale(1.15f, 1.15f).Spin(-900f).Fade(FxFade.None) : null;
+            // [CH3 SPEC] A 거대 방패: one big shield at 3.5x that plants 2 s of cover where it turns. B 방패 산개: 0.75x and it
+            // bounces once onto a monster near its far point before coming back.
+            float big = c.n.spec == 'a' ? 1.7f : 1.15f;
+            int wallDamage = c.n.spec == 'a' ? c.n.damage * 7 / 2 : c.n.spec == 'b' ? Mathf.Max(1, c.n.damage * 3 / 4) : c.n.damage;
+            SkillFx shieldArt = CareerFx.ShieldArt ? SkillFx.Spawn(CareerFx.ShieldSprite, start, c.n.spec != '\0' ? Tint(c, Color.white) : Color.white, leg * 2f + .2f, SkillFx.TopOrder + 3).Scale(big, big).Spin(-900f).Fade(FxFade.None) : null;
             var fx = shieldArt == null ? CareerFx.Clip("g_spin", start, Vector2.zero, 1.1f, 28f, VfxLayer.Top, false, null, false, 10f, true) : null;
             var shielded = new HashSet<PlayerController> { owner };
             GiveShield(c, owner, WallShield, c.s.duration);
@@ -117,7 +132,7 @@ namespace DotRPG
                         if (hit.Contains(e) || pass == 1 && outbound.TryGetValue(e, out float when) && Time.time - when < CutGap) continue;
                         hit.Add(e);
                         if (pass == 0) outbound[e] = Time.time;
-                        if (Strike(c, e, c.n.damage, previous, 6f, 1, "c_shield"))
+                        if (Strike(c, e, wallDamage, previous, 6f, 1, "c_shield"))
                         {
                             Stun(c, e, .3f);
                             CareerFx.Clip("g_clang", e.Center, Vector2.zero, .8f, 30f, VfxLayer.Top, false, GGold);
@@ -126,6 +141,26 @@ namespace DotRPG
                     foreach (var p in Allies(at, .9f)) if (shielded.Add(p)) GiveShield(c, p, WallShield, c.s.duration);
                     previous = at;
                     yield return null;
+                }
+                if (pass == 0 && c.n.spec == 'a') SafeCover.AddWall(far, c.dir, SafeCover.WallHalfWidth, 2f);
+                if (pass == 0 && c.n.spec == 'b')
+                {
+                    EnemyController bounce = null;
+                    foreach (var e in Enemies(far, 3f)) if (!hit.Contains(e)) { bounce = e; break; }
+                    if (bounce != null)
+                    {
+                        Vector2 from = far;
+                        for (float t = 0; t < .22f; t += Time.deltaTime)
+                        {
+                            if (!Live(c)) { fx?.Stop(); if (shieldArt != null) shieldArt.Kill(); yield break; }
+                            Vector2 at = Vector2.Lerp(from, bounce.Center, Mathf.Clamp01((t + Time.deltaTime) / .22f));
+                            fx?.Place(at);
+                            if (shieldArt != null) shieldArt.transform.position = at;
+                            yield return null;
+                        }
+                        if (Strike(c, bounce, wallDamage, from, 6f, 1, "c_shield")) CareerFx.Clip("g_clang", bounce.Center, Vector2.zero, .8f, 30f, VfxLayer.Top, false, SkillSpecs.ColorB);
+                        far = bounce.Center;
+                    }
                 }
             }
             fx?.Stop();
@@ -141,7 +176,7 @@ namespace DotRPG
             oathEnd = Time.time + c.s.duration;
             // [VFX] The ward rises once to its exact radius (gold edge, teal hexes) and follows for 2 s; the buff row keeps
             // the minute (a ring on the ground for the whole minute was clutter).
-            CareerFx.Clip("g_ward", owner.Position, Vector2.zero, c.n.radius / 1.69f, 14f, VfxLayer.Ground, false, new Color(1f, 1f, 1f, .9f), false, Mathf.Min(2f, c.s.duration), true)
+            CareerFx.Clip("g_ward", owner.Position, Vector2.zero, c.n.radius / 1.69f, 14f, VfxLayer.Ground, false, c.n.spec != '\0' ? Tint(c, Color.white) : new Color(1f, 1f, 1f, .9f), false, Mathf.Min(2f, c.s.duration), true)
                 .Follow(owner.transform, Vector2.zero).Squash(1f, .7f).FadeOut(.5f);
             GuardRing(owner.Position, c.n.radius, GGold, .6f);
             CareerFx.Pillar(owner.Position, .9f, GTeal, .45f);
@@ -150,10 +185,14 @@ namespace DotRPG
             float end = Time.time + c.s.duration;
             while (Time.time < end && Live(c))
             {
+                // [CH3 SPEC] A 맹세의 심장: 2 m, -45%, a 25% shield. B 맹세의 들판: 6.5 m, -15%, a 10% shield and 2% MP a second.
+                int ward = c.n.spec == 'a' ? 45 : c.n.spec == 'b' ? 15 : 30;
+                float oathShield = c.n.spec == 'a' ? .25f : c.n.spec == 'b' ? .10f : c.s.power;
                 foreach (var p in Allies(owner.Center, c.n.radius))
                 {
-                    if (c.authority) { For(p).AddGuard(30, .35f); For(p).Cleanse(); }
-                    if (shielded.Add(p)) GiveShield(c, p, c.s.power, end - Time.time);
+                    if (c.authority) { For(p).AddGuard(ward, .35f); For(p).Cleanse(); }
+                    if (c.authority && c.n.spec == 'b') p.Data.Mana = Mathf.Min(p.Data.Stats.MaxMp, p.Data.Mana + p.Data.Stats.MaxMp * .005f);
+                    if (shielded.Add(p)) GiveShield(c, p, oathShield, end - Time.time);
                 }
                 yield return new WaitForSeconds(.25f);
             }
@@ -175,6 +214,22 @@ namespace DotRPG
             Sound("c_heavy", .8f);
             Sound("c_shield", .5f);
             Feel(1, Vector2.down);
+            // [CH3 SPEC] A 표적 호령: only the strongest monster, taunted 8 s (bosses 2.4 s) and taking 8% more damage.
+            if (c.n.spec == 'a')
+            {
+                EnemyController strongest = null;
+                foreach (var e in Enemies(at, c.n.radius)) if (strongest == null || e.Health.Max > strongest.Health.Max) strongest = e;
+                if (strongest != null)
+                {
+                    Strike(c, strongest, c.n.damage, at, 3f, 1, "c_shield");
+                    if (c.authority && !strongest.IsDead)
+                    {
+                        ThreatTable.For(strongest).Force(owner, strongest.IsBoss ? 2.4f : (float.IsNaN(c.n.duration) ? 8f : c.n.duration));
+                        MarkTaken(strongest, 8, 8f);
+                    }
+                }
+                yield break;
+            }
             var reached = new HashSet<EnemyController>();
             const float spread = .3f;
             for (float t = 0; t < spread; t += Time.deltaTime)
@@ -182,15 +237,39 @@ namespace DotRPG
                 if (!Live(c)) yield break;
                 float r = c.n.radius * Mathf.Clamp01((t + Time.deltaTime) / spread);
                 foreach (var e in Enemies(at, r))
-                    if (reached.Add(e)) { Strike(c, e, c.n.damage, at, 3f, 0, "c_shield"); Taunt(c, e, c.s.duration); }
+                    if (reached.Add(e)) { Strike(c, e, c.n.damage, at, 3f, 0, "c_shield"); Taunt(c, e, c.n.spec == 'b' && !float.IsNaN(c.n.duration) ? c.n.duration : c.s.duration); }
                 yield return null;
+            }
+            if (c.n.spec == 'b') StartCoroutine(TauntCrash(c, reached));
+        }
+
+        /// <summary>[CH3 SPEC] 광역 호령: taunted monsters crowding onto the guardian bump into each other (30%).</summary>
+        IEnumerator TauntCrash(Run c, HashSet<EnemyController> taunted)
+        {
+            int bump = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * .3f / .4f)); // 0.3 where the taunt blow itself is 0.4
+            for (float t = 0f; t < 3f; t += .5f)
+            {
+                yield return new WaitForSeconds(.5f);
+                if (!Live(c) || !c.authority) yield break;
+                var list = new List<EnemyController>();
+                foreach (var e in taunted) if (e != null && !e.IsDead) list.Add(e);
+                var bumped = new HashSet<EnemyController>();
+                for (int i = 0; i < list.Count; i++)
+                    for (int j = i + 1; j < list.Count; j++)
+                        if (Vector2.Distance(list[i].Center, list[j].Center) < .9f)
+                        {
+                            if (bumped.Add(list[i])) SecondaryHit(list[i], bump);
+                            if (bumped.Add(list[j])) SecondaryHit(list[j], bump);
+                        }
             }
         }
 
         /// <summary>방패 강타: a step in and a shield blow that stuns and throws monsters back.</summary>
         IEnumerator ShieldBash(Run c)
         {
-            float distance = Dash(c.dir, .8f);
+            // [CH3 SPEC] B 방패 돌진: a 2 m charge behind the raised shield (80% less damage), 1.1x.
+            float distance = Dash(c.dir, c.n.spec == 'b' ? 2f : .8f);
+            if (c.n.spec == 'b' && c.authority) AddGuard(80, DashSeconds(distance) + .3f);
             CareerFx.Ghost(owner, new Color(GTeal.r, GTeal.g, GTeal.b, .7f), .25f);
             yield return new WaitForSeconds(DashSeconds(distance));
             if (!Live(c)) yield break;
@@ -216,8 +295,14 @@ namespace DotRPG
             }
             Sound("c_shield");
             Sound("c_heavy", .5f);
+            // [CH3 SPEC] A 파쇄 강타: the first monster alone, 5.5 (of 3.0), stunned 2 s (bosses cut by their own rule).
+            int bashDamage = c.n.spec == 'a' ? Mathf.RoundToInt(c.n.damage * 5.5f / 3f) : c.n.spec == 'b' ? Mathf.RoundToInt(c.n.damage * 1.1f) : c.n.damage;
+            if (c.n.spec != '\0') CareerFx.Slash(at, c.dir, c.n.range, Tint(c, GGold), 0f, false, .2f);
             foreach (var e in Fan(at, c.dir, c.n.range, 110f))
-                if (Strike(c, e, c.n.damage, at, 12f, 2, "c_shield")) { Stun(c, e, c.s.duration); Taunt(c, e, 3f); }
+            {
+                if (Strike(c, e, bashDamage, at, 12f, 2, "c_shield")) { Stun(c, e, c.n.spec == 'a' ? 2f : c.s.duration); Taunt(c, e, 3f); }
+                if (c.n.spec == 'a') break;
+            }
         }
 
         /// <summary>응보의 방진: hold the shield; the first blow taken (or the end of the stance) releases a counter blast.</summary>
@@ -230,7 +315,9 @@ namespace DotRPG
             Sound("c_shield", .6f);
             counterDamage = c.n.damage;
             counterEnd = Time.time + c.s.duration;
-            counterCharges = CounterBlocks;
+            // [CH3 SPEC] A 일격 응보: one block, one 400% answer to the front. B 연쇄 응보: five blocks, 25% on 1.5x the radius.
+            counterSpec = c.n.spec;
+            counterCharges = c.n.spec == 'a' ? 1 : c.n.spec == 'b' ? 5 : CounterBlocks;
             if (c.authority) AddGuard(40, c.s.duration);
         }
 
@@ -240,6 +327,18 @@ namespace DotRPG
             var c = new Run { s = s, dir = Aim(), map = Game.Session.MapId, version = castVersion, authority = !PartyNet.IsMember };
             Vector2 at = owner.Center;
             Pose(.25f, 2);
+            float blastRadius = counterSpec == 'b' ? s.radius * 1.5f : s.radius;
+            if (counterSpec == 'a')
+            {
+                // One heavy blow on the monster in front.
+                var front = Target(c.dir, s.radius, out _);
+                CareerFx.Clip("g_clang", at + c.dir * .6f, Vector2.zero, 2f, 30f, VfxLayer.Top, false, SkillSpecs.ColorA);
+                Sound("c_heavy");
+                Feel(2, c.dir);
+                if (front != null) Strike(c, front, Mathf.RoundToInt(counterDamage * power), at, 14f, 2, "c_shield");
+                CareerTrials.Record(owner, "counter", 1);
+                yield break;
+            }
             // [VFX] The blocked blow bursts back in gold: a burst and a slam out to the blast's exact radius, a big clang.
             CareerFx.Burst(at, s.radius * .5f, GGold, 14);
             CareerFx.Slam(owner.Position, s.radius * .8f, GGold, false);
@@ -249,7 +348,7 @@ namespace DotRPG
             Sound("c_heavy");
             Sound("c_shield", .6f);
             Feel(2, Vector2.down);
-            foreach (var e in Enemies(at, s.radius)) Strike(c, e, Mathf.RoundToInt(counterDamage * power), at, 12f, 2, "c_shield");
+            foreach (var e in Enemies(at, blastRadius)) Strike(c, e, Mathf.RoundToInt(counterDamage * power), at, 12f, 2, "c_shield");
             CareerTrials.Record(owner, "counter", 1);
             yield break;
         }
@@ -306,6 +405,8 @@ namespace DotRPG
                 Taunt(c, e, 4f);
             }
             foreach (var p in Allies(at, r + 1f)) GiveShield(c, p, .25f, c.s.duration);
+            // [CH3 SPEC] B 천쇄 광역: allies inside take 30% less damage for 8 s.
+            if (c.n.spec == 'b' && c.authority) foreach (var p in Allies(at, r)) For(p).AddGuard(30, 8f);
             var wall = ShieldWallFx.Spawn(feet, r * .95f, 12);
             wall.Tint = GGold;
             // 3) Once the shields have landed they close in slowly, brightening; the monsters are drawn toward the middle.
@@ -349,7 +450,10 @@ namespace DotRPG
             {
                 Strike(c, e, c.n.damage, feet, 12f, 2, "c_shield");
                 // [ARMOR] 방어 붕괴: 8 s without armour and 20% more damage taken, for the whole party to cash in.
-                if (c.authority) e.BreakArmor(BreakTime); // shows the split shield over its head (ArmorBreakMark)
+                if (c.authority) e.BreakArmor(c.n.spec != '\0' && !float.IsNaN(c.n.duration) ? c.n.duration : BreakTime); // shows the split shield over its head (ArmorBreakMark)
+                // [CH3 SPEC] A 천쇄 일점: the break goes to about -40% (another 17% from me for 12 s). B: 3 s more held in place.
+                if (c.n.spec == 'a') MarkTaken(e, 17, 12f);
+                if (c.n.spec == 'b' && c.authority) e.Root(3f);
             }
         }
     }

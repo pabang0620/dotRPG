@@ -77,5 +77,6 @@
  "침식 결정이나 골드가 모자랍니다.": "侵食結晶またはゴールドが足りません。",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 의 등급·부위가 다릅니다": "ゲームデータの検証に失敗: enhance.promote.inherit {0} -> {1} のグレードまたは部位が異なります",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "ゲームデータの検証に失敗: enhance.promote.inherit {0} -> {1} が shop.equipment にありません",
- "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "ゲームデータの検証に失敗: enhance.promote.inherit {0} が重複しています"
+ "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "ゲームデータの検証に失敗: enhance.promote.inherit {0} が重複しています",
+ "게임 데이터 검증 실패: skill_specs {0} 중복": "ゲームデータの検証に失敗: skill_specs {0} が重複"
 }

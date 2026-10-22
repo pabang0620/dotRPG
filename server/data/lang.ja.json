@@ -214,6 +214,7 @@
  "게임 데이터 검증 실패: enhance.steps {0} 이 shop.equipment에 없습니다": "ゲームデータの検証に失敗: enhance.steps {0} が shop.equipment にありません",
  "게임 데이터 검증 실패: progression.xpToNext 가 maxLevel-1 개보다 적습니다": "ゲームデータの検証に失敗: progression.xpToNext が maxLevel-1 個より少ないです",
  "게임 데이터 검증 실패: ranking.xpBonus 는 thresholds 보다 1개 많아야 합니다": "ゲームデータの検証に失敗: ranking.xpBonus は thresholds より1個多くなければなりません",
+ "게임 데이터 검증 실패: skill_specs {0} 중복": "ゲームデータの検証に失敗: skill_specs {0} が重複",
  "게임 데이터 검증 실패: slotLevels 길이가 slots와 다릅니다": "ゲームデータの検証に失敗: slotLevels の長さが slots と異なります",
  "게임 데이터 검증 실패: startMap {0} 이 유효한 비-던전 맵이 아닙니다": "ゲームデータの検証に失敗: startMap {0} は有効な非ダンジョンマップではありません",
  "게임 데이터 검증 실패: starter gear({0}) {1} 이 items.json에 없습니다": "ゲームデータの検証に失敗: starter gear({0}) {1} が items.json にありません",

@@ -20,7 +20,7 @@ export type AchievementStat =
   | 'cosmetics' // 가진 외형 수(계정)
   | 'skins' // 가진 코스튬 스킨 수(계정)
   | 'stars_spent' // 뽑기·교환에 쓴 별조각(계정)
-  | 'specs'; // 챕터 3 특화에 쓴 포인트(character_state.career.specs 배열 길이, 2단계에서 채운다)
+  | 'specs'; // 챕터 3 특화에 쓴 포인트 합(character_state.career.specs의 각 특화 cost 합, 액티브 2·패시브 1)
 
 /** 업적 창의 탭 */
 export type AchievementCategory = 'growth' | 'combat' | 'dungeon' | 'enhance' | 'wealth' | 'cash';

@@ -141,10 +141,11 @@ namespace DotRPG
             broken.Clear();
             lastElement = "";
             aura?.Clear();
+            ResetSpecWarrior(); // [CH3 SPEC]
         }
 
         /// <summary>Curses slow; only the 강철의 보루 stance itself slows the guardian.</summary>
-        public float MoveScale => Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : 1f;
+        public float MoveScale => (Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : 1f) * SpecMoveBonus; // [CH3 SPEC] 전장의 함성 B haste
 
         /// <summary>Damage the owner takes, after guard, 강철의 심장 and shields. Also arms 수호의 반향 and 응보의 방진.</summary>
         public int Absorb(int damage)
@@ -158,13 +159,14 @@ namespace DotRPG
                 counterCharges--;
                 if (counterCharges == 0) counterEnd = 0;
                 AddInvulnerable(.5f);
-                StartCoroutine(CounterBlast(counterCharges == CounterBlocks - 1 ? 1f : .6f));
+                StartCoroutine(CounterBlast(CounterPower())); // [CH3 SPEC] A one heavy answer, B five light ones
                 ShowBlocked();
                 return 0;
             }
-            int steel = Prog.Rank("g_steel");
-            int reduction = (Time.time < guardEnd ? guard : 0) + (steel > 0 ? 4 + steel * 2 : 0);
+            int reduction = (Time.time < guardEnd ? guard : 0) + SteelReduction(); // [CH3 SPEC] 철벽 A near bosses
+            int before = damage;
             damage = Mathf.RoundToInt(damage * (1 - Mathf.Min(65, reduction) / 100f));
+            SpecOnHurt(before - damage); // [CH3 SPEC] 강철 파동 B, 수호의 벽 B
             int used = Mathf.Min(Shield, damage);
             shield -= used;
             damage -= used;
@@ -185,18 +187,18 @@ namespace DotRPG
         {
             if (secondaryDamage) return amount;
             float mult = Time.time < blessEnd ? 1 + bless / 100f : 1;
-            if (Time.time < frenzyEnd) mult *= 1 + frenzy / 100f;
+            if (Time.time < frenzyEnd && (!frenzyBossOnly || enemy.IsBoss)) mult *= 1 + frenzy / 100f; // [CH3 SPEC] 귀검 집중 A: bosses only
             if (Time.time < sanctumEnd) mult *= 1.5f;
             if (broken.TryGetValue(enemy, out var until) && Time.time < until) mult *= 1.15f;
-            if (Time.time < retalEnd) { mult *= 1 + (20 + 5 * (Prog.Rank("g_retal") - 1)) / 100f; retalEnd = 0; }
-            int edge = Prog.Rank("f_edge");
-            if (edge > 0 && enemy.Health.Current >= enemy.Health.Max * .8f) mult *= 1 + (15 + 5 * (edge - 1)) / 100f;
+            if (Time.time < retalEnd) mult *= RetalMul(); // [CH3 SPEC] A/B rules in CareerCombat.SpecWarrior
+            mult *= EdgeMul(enemy) * SpecTakenMul(enemy);
             return Mathf.Max(1, Mathf.RoundToInt(amount * mult));
         }
 
         public void OnLanded(EnemyController enemy)
         {
             if (secondaryDamage) return;
+            SpecLanded(enemy); // [CH3 SPEC]
             if (Prog.Rank("f_rhythm") > 0 && string.IsNullOrEmpty(currentSkill))
             {
                 int before = ComboStacks;
@@ -211,15 +213,6 @@ namespace DotRPG
             CareerTrials.Record(owner, "hit", 1);
         }
 
-        /// <summary>검기 연성: three charges make the next Fighter skill stronger, and are spent by it.</summary>
-        float SpendRhythm()
-        {
-            int rank = Prog.Rank("f_rhythm");
-            if (rank <= 0 || ComboStacks < 3) return 1f;
-            stacks = 0;
-            rhythmEnd = 0;
-            return 1.2f + .05f * (rank - 1);
-        }
 
         // ---------- Cast ----------
 
@@ -237,7 +230,7 @@ namespace DotRPG
             if (s.cast > 0) yield return new WaitForSeconds(s.cast);
             if (version != castVersion || !Valid(map) || !Prog.CareerUnlocked(s)) yield break;
             if (s.kind == CareerSkillKind.Awakening) Awaken(s);
-            if (s.career == Career.Fighter) n.damage = Mathf.RoundToInt(n.damage * SpendRhythm());
+            if (s.career == Career.Fighter) n.damage = Mathf.RoundToInt(n.damage * SpendRhythm(s.id));
             var run = new Run { s = s, n = n, dir = dir, map = map, version = version, authority = authority };
             switch (s.career)
             {
@@ -344,6 +337,7 @@ namespace DotRPG
                 finally { currentSkill = previous; }
             }
             if (!landed) return false;
+            RhythmShards(e, damage); // [CH3 SPEC] 검기 파급 B
             CareerFx.Hit(e.Center, dir, c.s.career, weight);
             if (weight == 2) e.HeavyHit(dir); // [FEEL] big skill hits read instantly
             ImpactSound(sound, weight == 2 ? 1f : .8f);
@@ -392,7 +386,11 @@ namespace DotRPG
             if (c.authority)
             {
                 int rank = Prog.Rank("b_mercy");
-                if (rank > 0) value = Mathf.RoundToInt(value * (1 + (10 + 5 * (rank - 1)) / 100f));
+                // [CH3 SPEC] 집중 치유 (A): +20% on the cast's first heal only. 넓은 숨 (B): +6% (and the wider reach in Bishop()).
+                char mercy = rank > 0 ? Prog.SpecOf("b_mercy") : '\0';
+                if (mercy == 'a') value = Mathf.RoundToInt(value * MercyFirst(c));
+                else if (mercy == 'b') value = Mathf.RoundToInt(value * 1.06f);
+                else if (rank > 0) value = Mathf.RoundToInt(value * (1 + (10 + 5 * (rank - 1)) / 100f));
                 if (For(p).Cursed) value = Mathf.RoundToInt(value * .35f);
                 int actual = p.Health.Heal(value);
                 if (actual > 0) CareerTrials.Record(owner, "heal", actual);
@@ -407,8 +405,13 @@ namespace DotRPG
             if (c.authority)
             {
                 int rank = Prog.Rank("b_grace");
-                float bonus = rank > 0 ? 1 + (12 + 4 * (rank - 1)) / 100f : 1;
-                For(p).AddShield(Mathf.RoundToInt(p.Health.Max * fraction * c.Scale * bonus), duration, c.s.career);
+                // [CH3 SPEC] 단단한 그릇 (A): +25% on the bishop's own shields only. 나눔의 그릇 (B): +8%, and a shield that
+                // breaks early passes 20% of itself to the allies within 3 m.
+                char grace = rank > 0 ? Prog.SpecOf("b_grace") : '\0';
+                float bonus = grace == 'a' ? (p == owner ? 1.25f : 1f) : grace == 'b' ? 1.08f : rank > 0 ? 1 + (12 + 4 * (rank - 1)) / 100f : 1;
+                int amount = Mathf.RoundToInt(p.Health.Max * fraction * c.Scale * bonus);
+                For(p).AddShield(amount, duration, c.s.career);
+                if (grace == 'b') StartCoroutine(GraceShare(p, amount, duration));
             }
             CareerFx.Bless(p.Center, CareerFx.Main(c.s.career), false); // [UX] no little shield picture: the shield shows on the HP bar
         }

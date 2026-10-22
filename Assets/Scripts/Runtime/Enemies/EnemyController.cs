@@ -389,7 +389,7 @@ namespace DotRPG
                 desiredVelocity = Vector2.zero;
                 return;
             }
-            desiredVelocity = delta.normalized * speed;
+            desiredVelocity = delta.normalized * speed * SlowMul; // [CH3 SPEC] EnemyController.Slow.cs
             facing = FacingExtensions.FromVector(delta, facing);
         }
 

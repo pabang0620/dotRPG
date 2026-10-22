@@ -77,5 +77,6 @@
  "침식 결정이나 골드가 모자랍니다.": "侵蚀碎晶或金币不足。",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 의 등급·부위가 다릅니다": "游戏数据验证失败：enhance.promote.inherit {0} -> {1} 的品级或部位不同",
  "게임 데이터 검증 실패: enhance.promote.inherit {0} -> {1} 이 shop.equipment에 없습니다": "游戏数据验证失败：enhance.promote.inherit {0} -> {1} 不在 shop.equipment 中",
- "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "游戏数据验证失败：enhance.promote.inherit {0} 重复"
+ "게임 데이터 검증 실패: enhance.promote.inherit {0} 중복": "游戏数据验证失败：enhance.promote.inherit {0} 重复",
+ "게임 데이터 검증 실패: skill_specs {0} 중복": "游戏数据验证失败：skill_specs {0} 重复"
 }

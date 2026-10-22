@@ -214,6 +214,7 @@
  "게임 데이터 검증 실패: enhance.steps {0} 이 shop.equipment에 없습니다": "Validasi data game gagal: enhance.steps {0} tidak ada di shop.equipment",
  "게임 데이터 검증 실패: progression.xpToNext 가 maxLevel-1 개보다 적습니다": "Validasi data game gagal: progression.xpToNext punya kurang dari maxLevel-1 entri",
  "게임 데이터 검증 실패: ranking.xpBonus 는 thresholds 보다 1개 많아야 합니다": "Validasi data game gagal: ranking.xpBonus harus punya satu entri lebih banyak dari thresholds",
+ "게임 데이터 검증 실패: skill_specs {0} 중복": "Validasi data game gagal: skill_specs {0} duplikat",
  "게임 데이터 검증 실패: slotLevels 길이가 slots와 다릅니다": "Validasi data game gagal: panjang slotLevels berbeda dari slots",
  "게임 데이터 검증 실패: startMap {0} 이 유효한 비-던전 맵이 아닙니다": "Validasi data game gagal: startMap {0} bukan peta non-dungeon yang valid",
  "게임 데이터 검증 실패: starter gear({0}) {1} 이 items.json에 없습니다": "Validasi data game gagal: perlengkapan awal ({0}) {1} tidak ada di items.json",

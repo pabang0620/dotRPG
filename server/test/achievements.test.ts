@@ -178,3 +178,18 @@ describe('POST /characters/:id/title', () => {
     expect((await request(app).post(`/characters/${h.id}/title`).set(ver()).send({ achievement_id: null })).status).toBe(401);
   });
 });
+
+describe('특화 업적 집계(spec_first·spec_all)', () => {
+  it('특화 수가 아니라 쓴 포인트 합을 센다(액티브 2점, 패시브 1점)', async () => {
+    const h = await newHero(app);
+    await list(h); // character_state가 없으면 만들어지지 않으므로 직접 넣는다
+    const specs = [{ skill: 'whirl', side: 'b' }, { skill: 'crush', side: 'a' }, { skill: 'f_edge', side: 'a' }, { skill: 'nope', side: 'a' }];
+    await getPool().query(
+      `INSERT INTO character_state (character_id, map_id, career) VALUES ($1, 'village', jsonb_build_object('specs', $2::jsonb))
+       ON CONFLICT (character_id) DO UPDATE SET career = coalesce(character_state.career, '{}'::jsonb) || jsonb_build_object('specs', $2::jsonb)`,
+      [h.dbId, JSON.stringify(specs)],
+    );
+    const { statsOf } = await import('../src/domains/achievements/achievementRepository');
+    expect((await statsOf(getPool(), h.dbId)).specs).toBe(2 + 2 + 1);
+  });
+});

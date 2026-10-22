@@ -214,6 +214,7 @@
  "게임 데이터 검증 실패: enhance.steps {0} 이 shop.equipment에 없습니다": "Falha na validação dos dados do jogo: enhance.steps {0} não está em shop.equipment",
  "게임 데이터 검증 실패: progression.xpToNext 가 maxLevel-1 개보다 적습니다": "Falha na validação dos dados do jogo: progression.xpToNext tem menos que maxLevel-1 entradas",
  "게임 데이터 검증 실패: ranking.xpBonus 는 thresholds 보다 1개 많아야 합니다": "Falha na validação dos dados do jogo: ranking.xpBonus deve ter uma entrada a mais que thresholds",
+ "게임 데이터 검증 실패: skill_specs {0} 중복": "Falha na validação dos dados do jogo: skill_specs {0} duplicado",
  "게임 데이터 검증 실패: slotLevels 길이가 slots와 다릅니다": "Falha na validação dos dados do jogo: o tamanho de slotLevels difere de slots",
  "게임 데이터 검증 실패: startMap {0} 이 유효한 비-던전 맵이 아닙니다": "Falha na validação dos dados do jogo: startMap {0} não é um mapa válido que não seja de masmorra",
  "게임 데이터 검증 실패: starter gear({0}) {1} 이 items.json에 없습니다": "Falha na validação dos dados do jogo: starter gear ({0}) {1} não está em items.json",
