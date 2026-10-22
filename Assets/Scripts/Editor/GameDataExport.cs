@@ -100,7 +100,7 @@ namespace DotRPG.EditorTools
             var rows = new List<(string id, string kind, bool stackable)>();
             foreach (var e in EquipmentDatabase.All) rows.Add((e.id, "equipment", false));
             foreach (var m in EquipmentDatabase.AllMaterials) rows.Add((m.id, "material", true));
-            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah })
+            foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah, RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz })
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
             // [CASH] Sealed box rewards (Docs/PLAN_CASH_BOX_PASS.md): account-bound, never on the auction.
@@ -141,8 +141,10 @@ namespace DotRPG.EditorTools
                 .Num("attack", e.attack).Num("maxHealth", e.maxHealth).Num("block", e.block).Num("speed", e.speed)
                 .Bool("starter", e.starter).Num("dropWeight", e.dropWeight).Num("tier", e.Tier)
                 .Bool("bossOnly", e.bossOnly).Num("xpBonus", e.xpBonus).Num("aoeBonus", e.aoeBonus)
-                .Num("reqLevel", e.reqLevel).Num("levelTier", e.levelTier)
+                .Num("reqLevel", e.reqLevel).Num("levelTier", e.levelTier).Num("chapter", e.chapter)
                 .Num("sellPrice", ItemPrices.SellPrice(e.id)).End());
+            // [CH3] Non-gear items that belong to chapter 3 (the server's assertOpen reads them with the gear's chapter field).
+            j.Arr("chapter3Items", new[] { RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz }, (o, id) => o.Val(id));
             j.Arr("materials", EquipmentDatabase.AllMaterials, (o, m) => o.Obj()
                 .Str("id", m.id).Str("rarity", m.rarity.ToString()).Num("dropChance", m.dropChance).Num("minDrop", m.minDrop).Num("maxDrop", m.maxDrop)
                 .Num("sellPrice", ItemPrices.SellPrice(m.id)).End());
@@ -307,6 +309,12 @@ namespace DotRPG.EditorTools
             j.Arr("rows", PromoteRules.Rows(), (o, r) => o.Obj().Str("from", r.from.id).Str("to", r.to.id).Num("cores", r.cores).Num("gold", r.gold).End());
             j.Arr("raidCoreMid", PromoteRules.RaidCoreMid, (o, n) => o.Val(n));
             j.Arr("raidCoreFinal", PromoteRules.RaidCoreFinal, (o, n) => o.Val(n));
+            // [CH3] 계승: Lv.40 unique / legendary -> same piece at Lv.50 (Docs/ch3/PROGRESSION_AND_GEAR.md 4절).
+            j.Key("inherit").Obj().Str("coreItem", PromoteRules.CoreItem).Str("shardItem", RaidRewards.RaidMatXibak).Str("sealItem", RaidRewards.RaidMatKamatz)
+                .Num("fromTier", PromoteRules.InheritFromTier).Num("toTier", PromoteRules.InheritToTier);
+            j.Arr("rows", PromoteRules.InheritRows(), (o, r) => o.Obj().Str("from", r.from.id).Str("to", r.to.id).Num("cores", r.cores)
+                .Num("shards", r.shards).Num("seals", r.seals).Num("gold", r.gold).End());
+            j.End();
             j.End();
             return j.End().ToString();
         }
@@ -326,7 +334,8 @@ namespace DotRPG.EditorTools
                     .Num("goldPerHitMin", m.goldPerHitMin).Num("goldPerHitMax", m.goldPerHitMax)
                     .Str("bossGear", m.bossGear).Num("bossGearPermille", m.bossGearPermille);
                 // Same float maths as MonsterDatabase.SpawnDef, so the server never re-derives the rounding.
-                o.Arr("xpByLevel", Enumerable.Range(1, 30), (x, lv) => x.Val(Mathf.RoundToInt(m.xp * (1f + MonsterDatabase.XpPerLevel * (lv - 1)))));
+                // [CH3] One cell per hero level up to the data ceiling (50); same values as the server's formula fallback.
+                o.Arr("xpByLevel", Enumerable.Range(1, DotRPG.Progression.MaxLevel), (x, lv) => x.Val(Mathf.RoundToInt(m.xp * (1f + MonsterDatabase.XpPerLevel * (lv - 1)))));
                 return o.End();
             });
             // The field skeleton is an EnemyStats asset, not a MonsterDatabase entry (quest kill target "skeleton").
@@ -400,6 +409,12 @@ namespace DotRPG.EditorTools
 
         static string Progression()
         {
+            // [CH3] The curve runs to Lv.50 with the same formula: Lv1-40 bars must not move (Docs/ch3/PROGRESSION_AND_GEAR.md 1절).
+            if (DotRPG.Progression.MaxLevel != 50) throw new InvalidOperationException("progression: MaxLevel must be 50 (chapter 3 curve)");
+            var expected = new Dictionary<int, int> { [39] = 532224, [40] = 558518, [41] = 585446, [45] = 699494, [49] = 823680 };
+            foreach (var kv in expected)
+                if (DotRPG.Progression.XpToNext(kv.Key) != kv.Value)
+                    throw new InvalidOperationException($"progression: XpToNext({kv.Key}) = {DotRPG.Progression.XpToNext(kv.Key)}, expected {kv.Value}");
             var j = Doc().Num("maxLevel", DotRPG.Progression.MaxLevel);
             j.Arr("xpToNext", Enumerable.Range(1, DotRPG.Progression.MaxLevel), (o, lv) => o.Val(DotRPG.Progression.XpToNext(lv)));
             return j.End().ToString();

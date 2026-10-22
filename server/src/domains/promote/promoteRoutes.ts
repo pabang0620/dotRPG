@@ -14,5 +14,12 @@ export function createPromoteRouter(): Router {
     validate({ params: charParams, body: promoteBody }),
     controller.promote,
   );
+  // 챕터 3 계승(같은 몸체: 착용 슬롯 또는 가방 키)
+  r.post(
+    '/characters/:uuid/promote/inherit',
+    rateLimit({ name: 'inherit', limit: (c) => c.rate.enhancePerSec, windowMs: 1000, key: charKey }),
+    validate({ params: charParams, body: promoteBody }),
+    controller.inherit,
+  );
   return r;
 }

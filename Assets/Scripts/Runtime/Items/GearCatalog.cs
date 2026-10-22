@@ -11,11 +11,11 @@ namespace DotRPG
     /// </summary>
     public static class GearCatalog
     {
-        public static readonly int[] TierLevels = { 1, 10, 15, 20, 25, 30, 35, 40 };
+        public static readonly int[] TierLevels = { 1, 10, 15, 20, 25, 30, 35, 40, 45, 50 }; // [CH3] 45, 50 (Docs/ch3/PROGRESSION_AND_GEAR.md 2절)
         /// <summary>Rare-grade baselines per tier: weapon attack and body-armour HP.</summary>
-        static readonly int[] WeaponBase = { 6, 10, 14, 18, 23, 28, 34, 40 };
-        static readonly int[] HealthBase = { 20, 40, 55, 70, 90, 110, 135, 160 };
-        static readonly int[] BlockBase = { 3, 4, 5, 6, 7, 8, 9, 10 };
+        static readonly int[] WeaponBase = { 6, 10, 14, 18, 23, 28, 34, 40, 47, 55 };
+        static readonly int[] HealthBase = { 20, 40, 55, 70, 90, 110, 135, 160, 190, 225 };
+        static readonly int[] BlockBase = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
         static readonly string[] GradeIds = { "c", "u", "r", "e", "un", "l" };
         static float GradeMul(ItemRarity r) => r switch
@@ -55,6 +55,8 @@ namespace DotRPG
             new[] { "얼음날 검", "빙결 장검", "호숫가 기사검", "빙하 절단검", "얼음 여제의 칼날" },
             new[] { "눈보라 단검", "은빛 장검", "봉우리 파수검", "눈보라 가르는 검", "설산 군주의 대검" },
             new[] { "별철 장검", "성광 장검", "성좌 기사검", "유성 대검", "북극성의 맹세" },
+            new[] { "균열 장검", "잔해 파쇄검", "메마른 땅의 대검", "공허 가르는 검", "검은 돌의 왕검" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 장검", "핏빛 달 장검", "사얍 수호검", "봉인의 쐐기", "볼론의 맹세" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] StaffNames =
         {
@@ -66,6 +68,8 @@ namespace DotRPG
             new[] { "얼음 막대", "빙결 지팡이", "호수 현자의 지팡이", "빙하 결정 지팡이", "얼음 여제의 홀" },
             new[] { "눈보라 지팡이", "은빛 지팡이", "봉우리 예언자의 지팡이", "눈보라 부르는 지팡이", "설산 마녀의 홀" },
             new[] { "별철 지팡이", "성광 지팡이", "성좌 마도사의 지팡이", "유성 지팡이", "북극성의 홀" },
+            new[] { "균열 지팡이", "잔해 마석 지팡이", "메마른 땅의 지팡이", "공허 가르는 지팡이", "검은 돌의 홀" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 지팡이", "핏빛 달 지팡이", "사얍 수호 지팡이", "봉인의 열쇠 지팡이", "볼론의 홀" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] PlateNames =
         {
@@ -77,6 +81,8 @@ namespace DotRPG
             new[] { "얼음 비늘 조끼", "빙결 흉갑", "호숫가 기사 갑옷", "빙하 판금 갑옷", "얼음 여제의 갑주" },
             new[] { "눈보라 가죽 갑옷", "은빛 흉갑", "봉우리 파수 갑옷", "눈보라 가르는 갑주", "설산 군주의 갑옷" },
             new[] { "별철 흉갑", "성광 흉갑", "성좌 기사 갑옷", "유성 판금 갑옷", "북극성의 갑주" },
+            new[] { "균열 가죽 갑옷", "잔해 흉갑", "메마른 땅의 판금 갑옷", "공허 막는 갑주", "검은 돌의 왕갑" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 흉갑", "핏빛 달 흉갑", "사얍 수호 갑옷", "봉인의 판금 갑옷", "볼론의 갑주" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] GreavesNames =
         {
@@ -88,6 +94,8 @@ namespace DotRPG
             new[] { "얼음 비늘 각반", "빙결 각반", "호숫가 기사 각반", "빙하 판금 각반", "얼음 여제의 각반" },
             new[] { "눈보라 가죽 각반", "은빛 각반", "봉우리 파수 각반", "눈보라 가르는 각반", "설산 군주의 각반" },
             new[] { "별철 각반", "성광 각반", "성좌 기사 각반", "유성 판금 각반", "북극성의 각반" },
+            new[] { "균열 가죽 각반", "잔해 각반", "메마른 땅의 판금 각반", "공허 막는 각반", "검은 돌의 왕 각반" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 각반", "핏빛 달 각반", "사얍 수호 각반", "봉인의 판금 각반", "볼론의 각반" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] RobeNames =
         {
@@ -99,6 +107,8 @@ namespace DotRPG
             new[] { "얼음실 로브", "빙결 로브", "호수 현자의 로브", "빙하 결정 로브", "얼음 여제의 법의" },
             new[] { "눈보라 로브", "은빛 로브", "봉우리 예언자의 로브", "눈보라 부르는 로브", "설산 마녀의 법의" },
             new[] { "별실 로브", "성광 로브", "성좌 마도사의 로브", "유성 로브", "북극성의 법의" },
+            new[] { "균열 로브", "잔해 수 로브", "메마른 땅의 로브", "공허 가르는 로브", "검은 돌의 법의" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 로브", "핏빛 달 로브", "사얍 수호 로브", "봉인의 로브", "볼론의 법의" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] SkirtNames =
         {
@@ -110,6 +120,8 @@ namespace DotRPG
             new[] { "얼음실 치마", "빙결 치마", "호수 현자의 치마", "빙하 결정 치마", "얼음 여제의 치마" },
             new[] { "눈보라 치마", "은빛 치마", "봉우리 예언자의 치마", "눈보라 부르는 치마", "설산 마녀의 치마" },
             new[] { "별실 치마", "성광 치마", "성좌 마도사의 치마", "유성 치마", "북극성의 치마" },
+            new[] { "균열 치마", "잔해 수 치마", "메마른 땅의 치마", "공허 가르는 치마", "검은 돌의 치마" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 치마", "핏빛 달 치마", "사얍 수호 치마", "봉인의 치마", "볼론의 치마" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] NeckNames =
         {
@@ -121,6 +133,8 @@ namespace DotRPG
             new[] { "얼음 구슬 목걸이", "빙결 목걸이", "호수 현자의 부적", "빙하 결정 목걸이", "얼음 여제의 목걸이" },
             new[] { "눈송이 목걸이", "은빛 목걸이", "봉우리 파수 부적", "눈보라 결정 목걸이", "설산 군주의 목걸이" },
             new[] { "별철 목걸이", "성광 목걸이", "성좌 부적", "유성 목걸이", "북극성의 목걸이" },
+            new[] { "균열 구슬 목걸이", "잔해 목걸이", "메마른 땅의 부적", "공허 결정 목걸이", "검은 돌의 목걸이" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 목걸이", "핏빛 달 목걸이", "사얍 수호 부적", "봉인의 목걸이", "볼론의 목걸이" }, // [CH3] Lv.50 사얍·봉인
         };
         static readonly string[][] RingNames =
         {
@@ -132,24 +146,26 @@ namespace DotRPG
             new[] { "얼음 반지", "빙결 반지", "호수 현자의 반지", "빙하 결정 반지", "얼음 여제의 반지" },
             new[] { "눈송이 반지", "은빛 반지", "봉우리 파수 반지", "눈보라 결정 반지", "설산 군주의 반지" },
             new[] { "별철 반지", "성광 반지", "성좌 반지", "유성 반지", "북극성의 반지" },
+            new[] { "균열 반지", "잔해 반지", "메마른 땅의 반지", "공허 결정 반지", "검은 돌의 반지" }, // [CH3] Lv.45 마른 협곡·검은 돌
+            new[] { "샘물 반지", "핏빛 달 반지", "사얍 수호 반지", "봉인의 반지", "볼론의 반지" }, // [CH3] Lv.50 사얍·봉인
         };
-        /// <summary>Legendary names: [Lv.20, Lv.40].</summary>
+        /// <summary>Legendary names: [Lv.20, Lv.40, Lv.50]. [CH3] Lv.50 = 두 왕(용사 훈과 볼론), Docs/STORY.md 7절.</summary>
         static string[] LegendNames(Kind k) => k switch
         {
-            Kind.Sword => new[] { "용골 대검", "창세의 별검" },
-            Kind.Staff => new[] { "별의 지팡이", "창세의 별 지팡이" },
-            Kind.Plate => new[] { "용골 판금 갑옷", "창세의 별 갑주" },
-            Kind.Greaves => new[] { "용골 각반", "창세의 별 각반" },
-            Kind.Robe => new[] { "별빛 마도 법의", "창세의 별 법의" },
-            Kind.Skirt => new[] { "별빛 마도 치마", "창세의 별 치마" },
-            Kind.Neck => new[] { "용의 눈 목걸이", "창세의 별 목걸이" },
-            _ => new[] { "용의 심장 반지", "창세의 별 반지" },
+            Kind.Sword => new[] { "용골 대검", "창세의 별검", "두 왕의 대검" },
+            Kind.Staff => new[] { "별의 지팡이", "창세의 별 지팡이", "두 왕의 지팡이" },
+            Kind.Plate => new[] { "용골 판금 갑옷", "창세의 별 갑주", "두 왕의 갑주" },
+            Kind.Greaves => new[] { "용골 각반", "창세의 별 각반", "두 왕의 각반" },
+            Kind.Robe => new[] { "별빛 마도 법의", "창세의 별 법의", "두 왕의 법의" },
+            Kind.Skirt => new[] { "별빛 마도 치마", "창세의 별 치마", "두 왕의 치마" },
+            Kind.Neck => new[] { "용의 눈 목걸이", "창세의 별 목걸이", "두 왕의 목걸이" },
+            _ => new[] { "용의 심장 반지", "창세의 별 반지", "두 왕의 반지" },
         };
         // i18n-names-end
 
         // i18n-names-begin
-        /// <summary>[LEGEND] Names of the 토벌형 (boss hunter) legendary weapons: [Lv.20, Lv.40].</summary>
-        static string[] HunterNames(Kind k) => k == Kind.Sword ? new[] { "용아 처형검", "종말의 별가름검" } : new[] { "유성 낙인 지팡이", "종말의 심판봉" };
+        /// <summary>[LEGEND] Names of the 토벌형 (boss hunter) legendary weapons: [Lv.20, Lv.40, Lv.50].</summary>
+        static string[] HunterNames(Kind k) => k == Kind.Sword ? new[] { "용아 처형검", "종말의 별가름검", "공허 처형검" } : new[] { "유성 낙인 지팡이", "종말의 심판봉", "아홉 번째 별의 홀" };
         // i18n-names-end
 
         /// <summary>
@@ -217,13 +233,20 @@ namespace DotRPG
             _ => $"eqicon_ring_{art}",
         };
 
-        /// <summary>The highest tier at or below a level (0 = Lv.1 ... 7 = Lv.40), same as the server's tierOfLevel.</summary>
+        /// <summary>
+        /// The highest tier at or below a level (0 = Lv.1 ... 7 = Lv.40, 8 = Lv.45, 9 = Lv.50), same as the server's tierOfLevel.
+        /// [CH3] Never above <see cref="Progression.LevelCap"/>: while chapter 3 is closed the Lv45+ monsters below ground
+        /// (B1~B4, Lv40~55) still drop Lv.40 gear, so Lv1-40 drops are unchanged.
+        /// </summary>
         public static int TierOfLevel(int level)
         {
-            int t = 0;
-            for (int i = 0; i < TierLevels.Length; i++) if (TierLevels[i] <= level) t = i;
+            int t = 0, cap = Progression.LevelCap;
+            for (int i = 0; i < TierLevels.Length; i++) if (TierLevels[i] <= level && TierLevels[i] <= cap) t = i;
             return t;
         }
+
+        /// <summary>[CH3] Tier index of the chapter 3 gear (Lv.45 and up): exported with chapter 3 for the server's gate.</summary>
+        public const int Chapter3Tier = 8;
 
         public static string Id(string kind, int level, ItemRarity r) => $"eq_{kind}_{level}_{GradeIds[(int)r]}";
 
@@ -237,9 +260,9 @@ namespace DotRPG
                 {
                     int grades = t == 0 ? 4 : 5; // [2026-10-14] Lv.1 has an epic too (before: common, uncommon, rare only)
                     for (int g = 0; g < grades; g++) list.Add(Make(k, t, (ItemRarity)g, names[t][g]));
-                    if (TierLevels[t] == 20 || TierLevels[t] == 40)
+                    if (TierLevels[t] == 20 || TierLevels[t] == 40 || TierLevels[t] == 50) // [CH3] Lv.50 legendary, not Lv.45
                     {
-                        int which = TierLevels[t] == 20 ? 0 : 1;
+                        int which = TierLevels[t] == 20 ? 0 : TierLevels[t] == 40 ? 1 : 2;
                         var legend = Make(k, t, ItemRarity.Legendary, LegendNames(k)[which]);
                         list.Add(legend);
                         // [LEGEND 2026-10-14] Weapons come in two archetypes (Docs/PLAN_GEAR_RENEWAL.md "전설 무기 두 갈래").
@@ -292,7 +315,7 @@ namespace DotRPG
                 iconKey = "gear:" + Id(KindId(k), level, r), fallbackIcon = OldIcon(k, art), description = Describe(k, level, r),
                 // [2026-10-14] Before Lv.15 (tiers Lv.1 and Lv.10) epics drop more often: weight 5 instead of 3.
                 dropWeight = r <= ItemRarity.Rare ? 30 - 8 * (int)r : r == ItemRarity.Epic ? (t <= 1 ? 5 : 3) : 0,
-                reqLevel = level, levelTier = t, Tier = art,
+                reqLevel = level, levelTier = t, Tier = art, chapter = t >= Chapter3Tier ? 3 : 0,
             };
         }
 

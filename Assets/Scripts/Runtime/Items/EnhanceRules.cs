@@ -114,7 +114,7 @@ namespace DotRPG
         /// a player who never enters the mini dungeon hunts 25,000 monsters by Lv40 and had 123% of the kit; with the mini
         /// dungeon paying kill gold and material sell prices at 70% both paths land at 81~88% (BALANCE_MEASURE 7).
         /// </summary>
-        static readonly int[] GoldByTier = { 100, 180, 320, 880, 1600, 2530, 3720, 7560 };
+        static readonly int[] GoldByTier = { 100, 180, 320, 880, 1600, 2530, 3720, 7560, 8690, 10000 }; // [CH3] tiers 9-10 (Lv45, Lv50): x1.15 steps, Docs/ch3/PROGRESSION_AND_GEAR.md 3절
 
         static int Clamp(int level) => Math.Max(0, Math.Min(EquipmentDatabase.MaxEnhance - 1, level));
 

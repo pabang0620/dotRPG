@@ -13,3 +13,12 @@ export async function promote(_req: Request, res: Response, next: NextFunction):
     next(err);
   }
 }
+
+export async function inherit(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<PromoteBody, { uuid: string }>(res);
+    sendStored(res, await service.inherit(getAccount(res.locals).id, params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}

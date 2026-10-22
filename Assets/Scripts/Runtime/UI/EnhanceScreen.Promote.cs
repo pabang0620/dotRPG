@@ -9,18 +9,27 @@ namespace DotRPG
     /// </summary>
     public partial class EnhanceScreen
     {
-        Button promoteButton;
+        Button promoteButton, inheritButton;
         Text promoteLabel;
 
         void BuildPromote(Transform right)
         {
             promoteButton = Button(right, "Promote", L.T("승급"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-16f, 12f), new Vector2(140f, 64f), OnPromotePressed, 22);
             promoteLabel = promoteButton.GetComponentInChildren<Text>();
+            // [CH3] 계승 sits left of 승급 and only shows for a Lv.40 unique / legendary once chapter 3 is open.
+            inheritButton = Button(right, "Inherit", L.T("계승"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-166f, 12f), new Vector2(140f, 64f), OnInheritPressed, 22);
+            inheritButton.gameObject.SetActive(false);
         }
 
         void RefreshPromote(string key)
         {
             if (promoteButton == null) return;
+            if (inheritButton != null)
+            {
+                bool canInherit = Chapter3.Enabled && PromoteRules.InheritTargetOf(EquipmentDatabase.Get(key)) != null;
+                inheritButton.gameObject.SetActive(canInherit);
+                inheritButton.interactable = !busy;
+            }
             var next = PromoteRules.NextOf(EquipmentDatabase.Get(key));
             promoteButton.gameObject.SetActive(next != null);
             if (next == null) return;

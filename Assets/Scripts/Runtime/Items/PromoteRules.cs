@@ -55,6 +55,54 @@ namespace DotRPG
             return best;
         }
 
+        // ---------------- [CH3] 계승 (Docs/ch3/PROGRESSION_AND_GEAR.md 4절) ----------------
+
+        /// <summary>Lv.40 tier (index 7): the only tier that inherits.</summary>
+        public const int InheritFromTier = 7;
+        /// <summary>Lv.50 tier (index 9): where an inherited piece lands. Lv.45 is neither source nor result.</summary>
+        public const int InheritToTier = 9;
+
+        /// <summary>
+        /// Cost to carry a Lv.40 unique / legendary into the same piece at Lv.50 (+level, protection history and worn slot
+        /// kept): 고대의 핵, 침식 결정 (시바크), 잿빛 인장 (카마츠) and gold. Common to epic do not inherit (Lv.50 monsters drop
+        /// them). The materials make a holder still run both chapter 3 raids; the gold absorbs the Lv.40 savings (5절).
+        /// </summary>
+        public static (int cores, int shards, int seals, int gold)? InheritCost(ItemRarity rarity) => rarity switch
+        {
+            ItemRarity.Unique => (3, 5, 10, 150000),
+            ItemRarity.Legendary => (6, 10, 20, 400000),
+            _ => null,
+        };
+
+        /// <summary>
+        /// The Lv.50 piece a Lv.40 one inherits into: same category, class and grade (the 토벌형 "b" legendary keeps its
+        /// archetype). Null when the piece cannot inherit.
+        /// </summary>
+        public static EquipmentItem InheritTargetOf(EquipmentItem item)
+        {
+            if (item == null || item.starter || item.bossOnly || item.levelTier != InheritFromTier || InheritCost(item.rarity) == null) return null;
+            bool hunter = item.id.EndsWith("b");
+            foreach (var other in EquipmentDatabase.All)
+            {
+                if (other.starter || other.bossOnly || other.levelTier != InheritToTier || other.category != item.category
+                    || other.classOnly != item.classOnly || other.rarity != item.rarity || other.id.EndsWith("b") != hunter) continue;
+                return other;
+            }
+            return null;
+        }
+
+        /// <summary>Every inheritance row (exported for the server's promote/inherit).</summary>
+        public static IEnumerable<(EquipmentItem from, EquipmentItem to, int cores, int shards, int seals, int gold)> InheritRows()
+        {
+            foreach (var item in EquipmentDatabase.All)
+            {
+                var to = InheritTargetOf(item);
+                if (to == null) continue;
+                var c = InheritCost(item.rarity).Value;
+                yield return (item, to, c.cores, c.shards, c.seals, c.gold);
+            }
+        }
+
         /// <summary>Every promotion row (exported for the server).</summary>
         public static IEnumerable<(EquipmentItem from, EquipmentItem to, int cores, int gold)> Rows()
         {

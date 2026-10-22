@@ -3,6 +3,7 @@
 import { getConfig } from '../config/env';
 import { AppError } from '../utils/AppError';
 import { getGameData } from './loader';
+import { parseItemKey } from '../utils/itemKey';
 
 /** 챕터 2까지의 만렙. 3장이 닫혀 있으면 데이터 maxLevel이 더 커도 여기서 멈춘다 */
 export const CHAPTER2_LEVEL_CAP = 40;
@@ -22,23 +23,14 @@ export function levelCap(dataMaxLevel: number = getGameData().economy.progressio
 /** 3장 태그가 달릴 수 있는 콘텐츠 종류(태그는 1단계부터 데이터에 chapter: 3 으로 채운다) */
 export type ChapterKind = 'quest' | 'map' | 'dungeon' | 'monster' | 'item' | 'shop' | 'spec';
 
-type Tagged = { chapter?: number } | undefined;
-
-/** 그 콘텐츠의 챕터 번호. 데이터에 chapter 필드가 없으면 0(기존 콘텐츠, 항상 열림) */
+/**
+ * 그 콘텐츠의 챕터 번호. 데이터에 chapter 필드가 없으면 0(기존 콘텐츠, 항상 열림).
+ * 색인은 economyData가 로드 때 만든다(economy.chapterTags, "kind:id"). 아이템은 강화 키("id+N")도 받는다
+ */
 function chapterOf(kind: ChapterKind, id: string): number {
-  const d = getGameData() as unknown as Record<string, unknown>;
-  const eco = (d.economy ?? {}) as Record<string, unknown>;
-  const pick = (m: unknown): Tagged => (m instanceof Map ? (m.get(id) as Tagged) : undefined);
-  const source: Record<ChapterKind, unknown> = {
-    quest: eco.quests,
-    map: d.maps,
-    dungeon: eco.dungeons,
-    monster: eco.monsters,
-    item: eco.items,
-    shop: eco.shop,
-    spec: eco.specs,
-  };
-  return pick(source[kind])?.chapter ?? 0;
+  const tags = getGameData().economy.chapterTags;
+  const base = kind === 'item' ? (parseItemKey(id)?.base ?? id) : id;
+  return tags.get(`${kind}:${base}`) ?? 0;
 }
 
 export function isChapter3(kind: ChapterKind, id: string): boolean {

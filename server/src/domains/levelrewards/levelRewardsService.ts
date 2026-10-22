@@ -1,4 +1,5 @@
 // 레벨 달성 보상. 현재 캐릭터 -> 계정 순으로 잠근 한 트랜잭션에서 검사 -> 무료 별조각 지급 -> 계정당 1회 기록.
+import { levelCap } from '../../gamedata/chapterGate';
 import { getPool, isUniqueViolation, withTransaction, type Queryable } from '../../db/pool';
 import { getGrowthPass, getLevelRewards } from '../../gamedata/levelRewards';
 import { AppError } from '../../utils/AppError';
@@ -35,7 +36,8 @@ export interface RewardsView {
 /** 패스 보상 줄: 패스를 가졌고 현재 캐릭터가 단계에 닿았고 계정에서 아직 안 받았으면 claimable */
 export async function passTiers(db: Queryable, accountId: number, characterLevel: number, owned: boolean): Promise<PassTierView[]> {
   const claimed = new Set(await repo.claimedPassLevels(db, accountId));
-  return getGrowthPass().tiers.map((t) => ({ level: t.level, rewards: t.rewards, claimed: claimed.has(t.level), claimable: owned && !claimed.has(t.level) && characterLevel >= t.level }));
+  // 레벨 상한(3장 잠금)을 넘는 단계(45·50)는 열릴 때까지 보여 주지 않는다
+  return getGrowthPass().tiers.filter((t) => t.level <= levelCap()).map((t) => ({ level: t.level, rewards: t.rewards, claimed: claimed.has(t.level), claimable: owned && !claimed.has(t.level) && characterLevel >= t.level }));
 }
 
 export async function view(db: Queryable, accountId: number, characterUuid: string): Promise<RewardsView> {
@@ -48,7 +50,7 @@ export async function view(db: Queryable, accountId: number, characterUuid: stri
     character_id: character.uuid,
     character_level: characterLevel,
     max_level: characterLevel,
-    tiers: getLevelRewards().map((t) => ({ level: t.level, stars: t.stars, claimed: claimed.has(t.level), claimable: !claimed.has(t.level) && characterLevel >= t.level })),
+    tiers: getLevelRewards().filter((t) => t.level <= levelCap()).map((t) => ({ level: t.level, stars: t.stars, claimed: claimed.has(t.level), claimable: !claimed.has(t.level) && characterLevel >= t.level })),
     pass_owned: owned,
     pass_price: getGrowthPass().price,
     pass_tiers: await passTiers(db, accountId, characterLevel, owned),

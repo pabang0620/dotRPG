@@ -1,4 +1,5 @@
 // 경매 쓰기 요청: 등록, 취소, 즉시 구매, 입찰. 락 순서는 요청자 캐릭터 행 -> auction_listings 한 행(phase6_api.md 8.1).
+import { assertOpen } from '../../gamedata/chapterGate';
 import { randomUUID } from 'node:crypto';
 import { getConfig } from '../../config/env';
 import { REQUEST_LOG_UNIQUE, findRequest, hashRequest, saveRequest } from '../../db/idempotency';
@@ -65,6 +66,7 @@ async function processList(ctx: EconCtx, body: ListBody): Promise<EconResult> {
   // 2. 아이템(5.2절)
   const facts = factsOf(body.item_key);
   if (!facts) throw new AppError(404, '알 수 없는 아이템입니다.', 'ITEM_UNKNOWN');
+  assertOpen('item', body.item_key); // 챕터 3 아이템은 3장이 열릴 때까지 경매에 올리지 못한다
   const item = eco.items.get(facts.base);
   if (!item || item.kind === 'currency') throw new AppError(404, '알 수 없는 아이템입니다.', 'ITEM_UNKNOWN');
   if (item.bind !== 'none') {

@@ -1,4 +1,5 @@
 import { getGameData } from '../../gamedata/loader';
+import { assertOpen } from '../../gamedata/chapterGate';
 import { assertNoHold } from '../antiabuse/holds';
 import { AppError } from '../../utils/AppError';
 import { runEconomy, type StoredResult } from '../economy/economyService';
@@ -18,6 +19,8 @@ export function buy(accountId: number, characterUuid: string, body: BuyBody): Pr
     requestId,
     payload,
     handler: async (ctx) => {
+      // 챕터 3 물건은 3장이 열릴 때까지 팔지 않는다
+      assertOpen('item', body.item_id);
       const unit = getGameData().economy.shop.stock.get(body.item_id);
       if (unit === undefined) throw new AppError(422, '판매하지 않는 물건입니다.', 'NOT_FOR_SALE');
       // 커먼 장비는 착용 레벨이 된 단계만 판다

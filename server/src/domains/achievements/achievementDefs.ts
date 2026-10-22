@@ -19,7 +19,8 @@ export type AchievementStat =
   | 'gacha_top' // 뽑기에서 유니크·레전더리를 얻은 횟수(계정)
   | 'cosmetics' // 가진 외형 수(계정)
   | 'skins' // 가진 코스튬 스킨 수(계정)
-  | 'stars_spent'; // 뽑기·교환에 쓴 별조각(계정)
+  | 'stars_spent' // 뽑기·교환에 쓴 별조각(계정)
+  | 'specs'; // 챕터 3 특화에 쓴 포인트(character_state.career.specs 배열 길이, 2단계에서 채운다)
 
 /** 업적 창의 탭 */
 export type AchievementCategory = 'growth' | 'combat' | 'dungeon' | 'enhance' | 'wealth' | 'cash';
@@ -32,6 +33,8 @@ export interface AchievementDef {
   stat: AchievementStat;
   goal: number;
   category: AchievementCategory;
+  /** 3이면 챕터 3 업적: 3장이 열릴 때까지 목록·판정에서 뺀다(스포일러·달성 불가 방지) */
+  chapter?: number;
 }
 
 const a = (category: AchievementCategory, id: string, title: string, description: string, stat: AchievementStat, goal: number): AchievementDef =>
@@ -42,7 +45,10 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   a('growth', 'level_10', '첫걸음', '레벨 10을 달성한다', 'level', 10),
   a('growth', 'level_20', '숙련 모험가', '레벨 20을 달성한다', 'level', 20),
   a('growth', 'level_30', '베테랑', '레벨 30을 달성한다', 'level', 30),
-  a('growth', 'level_40', '정점에 선 자', '최고 레벨 40을 달성한다', 'level', 40),
+  a('growth', 'level_40', '정점에 선 자', '레벨 40을 달성한다', 'level', 40),
+  { ...a('growth', 'level_50', '봉인 너머의 자', '레벨 50을 달성한다', 'level', 50), chapter: 3 },
+  { ...a('growth', 'spec_first', '첫 특화', '특화 포인트를 처음 쓴다', 'specs', 1), chapter: 3 },
+  { ...a('growth', 'spec_all', '특화의 길', '특화 포인트 10개를 모두 쓴다', 'specs', 10), chapter: 3 },
   a('growth', 'promoted', '새로운 길', '전직한다', 'promoted', 1),
   a('growth', 'quests_10', '해결사', '퀘스트 10개를 완료한다', 'quests', 10),
   a('growth', 'quests_20', '믿음직한 손', '퀘스트 20개를 완료한다', 'quests', 20),

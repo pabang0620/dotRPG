@@ -31,6 +31,8 @@ namespace DotRPG
     public static class RaidRewards
     {
         public const string RaidMatKing = "mat_raid_king", RaidMatGrah = "mat_raid_grah";
+        /// <summary>[CH3] 침식 결정 (시바크) and 잿빛 인장 (카마츠): chapter 3 raid materials, also paid for 계승 (PromoteRules.InheritCost).</summary>
+        public const string RaidMatXibak = "mat_raid_xibak", RaidMatKamatz = "mat_raid_kamatz";
 
         static readonly EquipCategory[] GearCategories =
             { EquipCategory.Weapon, EquipCategory.Top, EquipCategory.Bottom, EquipCategory.Necklace, EquipCategory.Ring };
@@ -71,7 +73,7 @@ namespace DotRPG
         };
 
         /// <summary>True for the two raid-only materials.</summary>
-        public static bool IsRaidMaterial(string id) => id == RaidMatKing || id == RaidMatGrah;
+        public static bool IsRaidMaterial(string id) => id == RaidMatKing || id == RaidMatGrah || id == RaidMatXibak || id == RaidMatKamatz;
     }
 
     /// <summary>One product of the raid shop: a weapon box paid with a raid's own material (opened on purchase).</summary>

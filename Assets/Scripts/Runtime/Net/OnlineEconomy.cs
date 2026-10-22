@@ -283,6 +283,16 @@ namespace DotRPG
             Post("/promote", Body(("target", target)), r => done?.Invoke(r.ok ? r.data : null));
         }
 
+        /// <summary>
+        /// [CH3] 계승: a Lv.40 unique / legendary becomes the same piece at Lv.50, +level kept (server: promote domain, gated by
+        /// chapter 3). Same target shape as <see cref="Promote"/>. done(data with old_key / new_key, or null on failure).
+        /// </summary>
+        public static void Inherit(int? wornSlot, string bagKey, Action<Dictionary<string, object>> done)
+        {
+            var target = wornSlot.HasValue ? Body(("worn_slot", wornSlot.Value)) : Body(("bag_key", bagKey));
+            Post("/promote/inherit", Body(("target", target)), r => done?.Invoke(r.ok ? r.data : null));
+        }
+
         // ---------------- solo dungeons ----------------
 
         /// <summary>Solo run (optionally with AI companions, phase 4). done(run object or null).</summary>

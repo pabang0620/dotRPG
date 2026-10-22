@@ -1,4 +1,5 @@
 // 강화: C# Equipment.TryEnhance / EnhanceRules와 같은 규칙을 서버가 굴린다.
+import { assertOpen } from '../../gamedata/chapterGate';
 import { randomUUID } from 'node:crypto';
 import { assertNoHold } from '../antiabuse/holds';
 import { getGameData } from '../../gamedata/loader';
@@ -42,6 +43,7 @@ async function processEnhance(ctx: EconCtx, body: EnhanceBody) {
   const key = wornSlot !== null ? await ctx.wornKey(wornSlot) : (body.target as { bag_key: string }).bag_key;
   if (!key) throw invalidTarget();
   if (wornSlot === null && (await ctx.stackCount('bag', key)) < 1) throw invalidTarget();
+  assertOpen('item', key); // 챕터 3 장비는 3장이 열릴 때까지 강화하지 못한다
   const parsed = parseItemKey(key);
   const levels = parsed ? en.steps.get(parsed.base) : undefined;
   const item = parsed ? eco.shop.equipment.get(parsed.base) : undefined;
@@ -203,6 +205,7 @@ async function processTicket(ctx: EconCtx, body: TicketBody) {
     throw new AppError(422, '강화권이 아닙니다.', 'NOT_A_TICKET');
   }
   const target = ticket.power;
+  assertOpen('item', body.gear_key);
   const parsed = parseItemKey(body.gear_key);
   if (!parsed || !en.steps.has(parsed.base) || !eco.shop.equipment.has(parsed.base) || target > en.maxEnhance) throw invalidTarget();
 

@@ -15,6 +15,8 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
        (SELECT count(*) FROM kill_log WHERE character_id = $1) AS kills,
        (SELECT count(*) FROM kill_log WHERE character_id = $1 AND monster_id LIKE 'boss\\_%') AS boss_kills,
        (SELECT CASE WHEN coalesce((career->>'career')::int, 0) > 0 THEN 1 ELSE 0 END FROM character_state WHERE character_id = $1) AS promoted,
+       (SELECT CASE WHEN jsonb_typeof(career->'specs') = 'array' THEN jsonb_array_length(career->'specs') ELSE 0 END
+          FROM character_state WHERE character_id = $1) AS specs,
        (SELECT count(*) FROM gacha_pulls WHERE account_id = (SELECT account_id FROM characters WHERE id = $1)) AS gacha_pulls,
        (SELECT count(*) FROM gacha_pulls WHERE account_id = (SELECT account_id FROM characters WHERE id = $1) AND rarity IN ('unique', 'legendary')) AS gacha_top,
        (SELECT count(*) FROM account_cosmetics WHERE account_id = (SELECT account_id FROM characters WHERE id = $1)) AS cosmetics,
@@ -38,6 +40,7 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
     kills: n('kills'),
     boss_kills: n('boss_kills'),
     promoted: n('promoted'),
+    specs: n('specs'),
     gacha_pulls: n('gacha_pulls'),
     gacha_top: n('gacha_top'),
     cosmetics: n('cosmetics'),

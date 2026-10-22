@@ -4,7 +4,9 @@
     { "level": 15, "stars": 300 },
     { "level": 20, "stars": 600 },
     { "level": 30, "stars": 1000 },
-    { "level": 40, "stars": 3000 }
+    { "level": 40, "stars": 3000 },
+    { "level": 45, "stars": 2000 },
+    { "level": 50, "stars": 5000 }
   ],
   "pass": {
     "price": 9000,
@@ -16,7 +18,9 @@
       { "level": 25, "rewards": [{ "item_key": "box_sealed", "count": 10 }] },
       { "level": 30, "rewards": [{ "item_key": "box_enh12_50", "count": 1 }] },
       { "level": 35, "rewards": [{ "item_key": "box_sealed", "count": 10 }, { "item_key": "ticket_protect", "count": 5 }] },
-      { "level": 40, "rewards": [{ "item_key": "ticket_enh12", "count": 1 }, { "item_key": "box_sealed", "count": 20 }] }
+      { "level": 40, "rewards": [{ "item_key": "ticket_enh12", "count": 1 }, { "item_key": "box_sealed", "count": 20 }] },
+      { "level": 45, "rewards": [{ "item_key": "ticket_protect", "count": 10 }, { "item_key": "box_sealed", "count": 10 }] },
+      { "level": 50, "rewards": [{ "item_key": "ticket_enh12", "count": 2 }, { "item_key": "box_sealed", "count": 20 }] }
     ]
   }
 }

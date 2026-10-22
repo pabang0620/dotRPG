@@ -28,7 +28,8 @@ describe('GET /characters/:id/achievements', () => {
     expect(r.body.success).toBe(true);
     expect(r.body.data.title).toBeNull();
     expect(r.body.data.newly).toEqual([]);
-    expect(r.body.data.achievements).toHaveLength(ACHIEVEMENTS.length);
+    // 챕터 3 업적은 3장이 닫혀 있으면 목록에 없다
+    expect(r.body.data.achievements).toHaveLength(ACHIEVEMENTS.filter((a) => (a.chapter ?? 0) < 3).length);
     for (const a of r.body.data.achievements) {
       expect(a.progress).toBeLessThanOrEqual(a.goal);
       expect(a.achieved_at).toBeNull();

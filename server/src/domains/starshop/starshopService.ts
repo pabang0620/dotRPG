@@ -1,7 +1,7 @@
 import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { assertNoHold } from '../antiabuse/holds';
-import { TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
+import { CHAPTER2_TIER_COUNT, TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
 import { getGameData } from '../../gamedata/loader';
 import { keyAt } from '../../utils/itemKey';
 import { AppError } from '../../utils/AppError';
@@ -172,12 +172,12 @@ export async function summary(accountId: number, characterUuid: string) {
     skin_rates: auraTable('skin', ch.class),
     // 장비 뽑기는 레벨 단계를 골라 뽑는다: 모든 단계를 고를 수 있다(2026-10-14, 내 레벨 위 단계도). 기본 선택은 my_tier
     my_tier: tierOfLevel(ch.level),
-    tier_levels: TIER_LEVELS,
+    tier_levels: TIER_LEVELS.slice(0, CHAPTER2_TIER_COUNT), // 3장 단계(45·50)는 3장 별빛 상점 단계에서 연다
     banners: (Object.keys(GEAR_BANNERS) as GearBanner[]).map((b) => ({
       id: b,
       name: GEAR_BANNERS[b].name,
       rates: gearTable(b, ch.class, tierOfLevel(ch.level)).map(({ permille: _p, ...t }) => t),
-      tiers: Array.from({ length: TIER_LEVELS.length }, (_, t) => ({
+      tiers: Array.from({ length: CHAPTER2_TIER_COUNT }, (_, t) => ({
         tier: t,
         level: TIER_LEVELS[t],
         rates: gearTable(b, ch.class, t).map(({ permille: _p, ...x }) => x),

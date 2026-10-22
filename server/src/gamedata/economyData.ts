@@ -90,9 +90,11 @@ const equipmentSchema = z.looseObject({
   sellPrice: nonNegInt,
   /** 필드 보스 전용 장비: 일반 드롭·던전 카드·캐시샵에 넣지 않는다 */
   bossOnly: z.boolean().default(false),
-  /** 착용 레벨과 레벨 단계 번호(0 = Lv.1 ... 7 = Lv.40) */
+  /** 착용 레벨과 레벨 단계 번호(0 = Lv.1 ... 7 = Lv.40, 8 = Lv.45, 9 = Lv.50: 챕터 3) */
   reqLevel: z.number().int().min(1).max(99).default(1),
-  levelTier: z.number().int().min(0).max(7).default(0),
+  levelTier: z.number().int().min(0).max(9).default(0),
+  /** 챕터 번호(3 = 챕터 3, 없거나 0 = 기존). chapterGate가 잠금에 쓴다 */
+  chapter: nonNegInt.default(0),
   /** 성장 옵션(%): 몬스터 경험치, 스킬 범위(클라이언트 전투) */
   xpBonus: nonNegInt.default(0),
   aoeBonus: nonNegInt.default(0),
@@ -104,6 +106,8 @@ const shopSchema = z.looseObject({
   enhancedSellGoldRatio: z.number().min(0),
   stock: z.array(z.looseObject({ id: z.string().min(1), buyPrice: z.number().int().positive() })),
   equipment: z.array(equipmentSchema),
+  /** 챕터 3 전용 아이템 id(장비 말고 재료 등). chapterGate가 잠금에 쓴다 */
+  chapter3Items: z.array(z.string().min(1)).default([]),
   materials: z.array(
     z.looseObject({
       id: z.string().min(1),
@@ -145,6 +149,26 @@ const enhanceSchema = z.looseObject({
       rows: z.array(z.looseObject({ from: z.string().min(1), to: z.string().min(1), cores: z.number().int().positive(), gold: nonNegInt })),
       raidCoreMid: z.array(nonNegInt).length(4),
       raidCoreFinal: z.array(nonNegInt).length(4),
+      /** 챕터 3 계승: Lv.40 유니크·레전더리를 같은 부위·등급의 Lv.50으로(강화 수치 유지). C# PromoteRules.InheritCost */
+      inherit: z
+        .looseObject({
+          coreItem: z.string().min(1),
+          shardItem: z.string().min(1),
+          sealItem: z.string().min(1),
+          fromTier: nonNegInt,
+          toTier: nonNegInt,
+          rows: z.array(
+            z.looseObject({
+              from: z.string().min(1),
+              to: z.string().min(1),
+              cores: nonNegInt,
+              shards: nonNegInt,
+              seals: nonNegInt,
+              gold: nonNegInt,
+            }),
+          ),
+        })
+        .optional(),
     })
     .optional(),
 });
@@ -345,6 +369,14 @@ export type DungeonDef = z.infer<typeof dungeonsSchema>['dungeons'][number];
 export type DifficultyDef = z.infer<typeof dungeonsSchema>['difficulties'][number];
 export type { MonsterDef };
 
+export interface InheritRow {
+  to: string;
+  cores: number;
+  shards: number;
+  seals: number;
+  gold: number;
+}
+
 export const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary'] as const;
 
 export interface MapExtra {
@@ -393,7 +425,16 @@ export interface EconomyData {
       raidCoreMid: number[];
       raidCoreFinal: number[];
     } | null;
+    /** 챕터 3 계승표(없으면 null) */
+    inherit: {
+      coreItem: string;
+      shardItem: string;
+      sealItem: string;
+      rows: Map<string, InheritRow>;
+    } | null;
   };
+  /** 챕터 태그: "kind:id" -> 챕터 번호(3만 들어 있다). chapterGate가 읽는다 */
+  chapterTags: Map<string, number>;
   items: Map<string, ItemInfo>;
   quests: Map<string, QuestRule>;
   mapExtra: Map<string, MapExtra>;
@@ -519,6 +560,38 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
     }
     promote = { coreItem: enh.promote.coreItem, rows, raidCoreMid: enh.promote.raidCoreMid, raidCoreFinal: enh.promote.raidCoreFinal };
   }
+  let inherit: EconomyData['enhance']['inherit'] = null;
+  if (enh.promote?.inherit) {
+    const t = enh.promote.inherit;
+    for (const id of [t.coreItem, t.shardItem, t.sealItem]) needItem(id, 'enhance.promote.inherit');
+    const rows = new Map<string, InheritRow>();
+    for (const r of t.rows) {
+      const from = equipment.get(r.from);
+      const to = equipment.get(r.to);
+      if (!from || !to) throw new Error(`게임 데이터 검증 실패: enhance.promote.inherit ${r.from} -> ${r.to} 이 shop.equipment에 없습니다`);
+      if (from.rarity !== to.rarity || from.category !== to.category) {
+        throw new Error(`게임 데이터 검증 실패: enhance.promote.inherit ${r.from} -> ${r.to} 의 등급·부위가 다릅니다`);
+      }
+      if (rows.has(r.from)) throw new Error(`게임 데이터 검증 실패: enhance.promote.inherit ${r.from} 중복`);
+      rows.set(r.from, { to: r.to, cores: r.cores, shards: r.shards, seals: r.seals, gold: r.gold });
+    }
+    inherit = { coreItem: t.coreItem, shardItem: t.shardItem, sealItem: t.sealItem, rows };
+  }
+
+  // 챕터 태그 색인: 장비의 chapter 필드, chapter3Items(재료 등), 그리고 퀘스트·맵·던전·몬스터 데이터의 chapter 필드(3단계부터)
+  const chapterTags = new Map<string, number>();
+  const tag = (kind: string, id: string, chapter: unknown): void => {
+    if (typeof chapter === 'number' && chapter >= 3) chapterTags.set(`${kind}:${id}`, chapter);
+  };
+  for (const e of shop.equipment) tag('item', e.id, e.chapter);
+  for (const id of shop.chapter3Items) {
+    needItem(id, 'shop.chapter3Items');
+    tag('item', id, 3);
+  }
+  for (const q of quests.quests) tag('quest', q.id, (q as { chapter?: unknown }).chapter);
+  for (const m of maps.maps) tag('map', m.id, (m as { chapter?: unknown }).chapter);
+  for (const d of dng.dungeons) tag('dungeon', d.id, (d as { chapter?: unknown }).chapter);
+  for (const m of mon.monsters) tag('monster', m.id, (m as { chapter?: unknown }).chapter);
   for (const id of [enh.materials.bone, enh.materials.ore, enh.materials.essence]) needItem(id, 'enhance.materials');
 
   for (const u of config.usableItems) needItem(u.id, 'gameconfig.usableItems');
@@ -610,7 +683,9 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       materials: { bone: enh.materials.bone, ore: enh.materials.ore, essence: enh.materials.essence },
       steps: stepLevels,
       promote,
+      inherit,
     },
+    chapterTags,
     items: itemMap,
     quests: questMap,
     mapExtra,

@@ -3,6 +3,7 @@ import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import * as charRepo from '../characters/characterRepository';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from './achievementDefs';
+import { chapter3Open } from '../../gamedata/chapterGate';
 import * as repo from './achievementRepository';
 import { activeTitles } from '../bossrush/bossRushRepository';
 import { RANK_TITLE_NAMES, isRankTitle } from '../bossrush/bossRushRules';
@@ -31,7 +32,9 @@ export async function listAchievements(accountId: number, characterUuid: string)
   const stats = await repo.statsOf(db, c.id);
   const done = await repo.achievedOf(db, c.id);
   const newly: string[] = [];
-  for (const a of ACHIEVEMENTS) if (!done.has(a.id) && stats[a.stat] >= a.goal) newly.push(a.id);
+  // 챕터 3 업적은 3장이 열릴 때까지 목록·판정에서 뺀다
+  const visible = ACHIEVEMENTS.filter((a) => (a.chapter ?? 0) < 3 || chapter3Open());
+  for (const a of visible) if (!done.has(a.id) && stats[a.stat] >= a.goal) newly.push(a.id);
   const now = getNow();
   if (newly.length > 0) {
     await repo.insertAchieved(db, c.id, newly, now);
@@ -49,7 +52,7 @@ export async function listAchievements(accountId: number, characterUuid: string)
     // 지금 장착할 수 있는 랭킹 칭호(이름 색은 장착과 무관하게 유효 기간 동안 적용된다)
     rank_titles: ranks.map((t) => ({ id: t.title_id, title: titleName(t.title_id), name_color: t.name_color, expires_at: t.expires_at.toISOString() })),
     newly,
-    achievements: ACHIEVEMENTS.map((a) => ({
+    achievements: visible.map((a) => ({
       id: a.id,
       title: a.title,
       description: a.description,

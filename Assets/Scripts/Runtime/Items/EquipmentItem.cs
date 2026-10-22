@@ -94,6 +94,8 @@ namespace DotRPG
         public string fallbackIcon;
         /// <summary>Index of the level tier in GearCatalog.TierLevels (0 = Lv.1 ... 7 = Lv.40).</summary>
         public int levelTier;
+        /// <summary>[CH3] Chapter the item belongs to (3 = chapter 3 content, closed until the server opens it; 0 = always open).</summary>
+        public int chapter;
 
         /// <summary>Visual tier: the number at the end of the icon key (0 = weakest look), -1 = no icon.</summary>
         public int Tier { get; internal set; } = -1;

@@ -10,8 +10,12 @@ namespace DotRPG
     /// </summary>
     public sealed partial class Progression
     {
-        /// <summary>[J10] 40 since chapter 2 (its raids are tuned for Lv 28-31). The data ceiling (curve length, saves).</summary>
-        public const int MaxLevel = 40;
+        /// <summary>
+        /// [J10] 40 since chapter 2. [CH3 2026-10-22] 50: the data ceiling (curve length, saves, exported progression). The same
+        /// formula continues past 40 (Docs/ch3/PROGRESSION_AND_GEAR.md 1절), so Lv1-40 bars are unchanged; while chapter 3 is
+        /// closed <see cref="LevelCap"/> keeps play at 40.
+        /// </summary>
+        public const int MaxLevel = 50;
 
         /// <summary>
         /// [CH3] The level a hero can reach now: 40 while chapter 3 is closed, 50 once the server opens it (never above

@@ -274,6 +274,118 @@
           "count": 1
         }
       ]
+    },
+    {
+      "id": "sayab_low",
+      "minLevel": 41,
+      "maxLevel": 45,
+      "giver": "사얍 마을 게시판",
+      "gold": 1400,
+      "templates": [
+        {
+          "id": "d_sayab_guards",
+          "type": "kill",
+          "title": "샘을 막는 파수꾼",
+          "text": "갈라진 땅 아래에서 올라온 파수꾼이 사얍의 샘 쪽으로 다가온다.",
+          "map": "hollow_descent",
+          "monster": "hollow_guard",
+          "label": "심연의 방패 파수꾼",
+          "count": 50
+        },
+        {
+          "id": "d_sayab_hexers",
+          "type": "kill",
+          "title": "주술사의 속삭임",
+          "text": "지하 입구의 주술사가 우물물을 검게 물들인다. 정리해 달라.",
+          "map": "hollow_descent",
+          "monster": "hollow_hexer",
+          "label": "공허의 주술사",
+          "count": 50
+        },
+        {
+          "id": "d_sayab_scarabs",
+          "type": "kill",
+          "title": "굴 파는 벌레",
+          "text": "흑갑 굴파괴충이 마을 밑으로 굴을 뚫고 있다.",
+          "map": "hollow_descent",
+          "monster": "hollow_scarab",
+          "label": "흑갑 굴파괴충",
+          "count": 60
+        },
+        {
+          "id": "d_sayab_roots",
+          "type": "kill",
+          "title": "뿌리 사이의 그림자",
+          "text": "뿌리굴의 파수꾼이 늘었다는 소식이다.",
+          "map": "hollow_roots",
+          "monster": "hollow_guard",
+          "label": "심연의 방패 파수꾼",
+          "count": 50
+        },
+        {
+          "id": "d_sayab_dungeon",
+          "type": "dungeon",
+          "title": "다섯 집의 시험",
+          "text": "요일 던전을 한 번 클리어하고 사얍 게시판에 알려라.",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "sayab_high",
+      "minLevel": 46,
+      "maxLevel": 50,
+      "giver": "사얍 마을 게시판",
+      "gold": 1600,
+      "templates": [
+        {
+          "id": "d_sayab_fungal",
+          "type": "kill",
+          "title": "포자 굴의 주술사",
+          "text": "버섯 굴의 주술사가 포자를 퍼뜨린다. 사얍의 아이들이 기침을 한다.",
+          "map": "hollow_fungal",
+          "monster": "hollow_hexer",
+          "label": "공허의 주술사",
+          "count": 60
+        },
+        {
+          "id": "d_sayab_fungal_scarabs",
+          "type": "kill",
+          "title": "포자 속 벌레",
+          "text": "버섯 굴의 굴파괴충을 몰아내 달라.",
+          "map": "hollow_fungal",
+          "monster": "hollow_scarab",
+          "label": "흑갑 굴파괴충",
+          "count": 70
+        },
+        {
+          "id": "d_sayab_depths",
+          "type": "kill",
+          "title": "가장 깊은 곳",
+          "text": "심층의 파수꾼이 위로 올라오고 있다.",
+          "map": "hollow_depths",
+          "monster": "hollow_guard",
+          "label": "심연의 방패 파수꾼",
+          "count": 50
+        },
+        {
+          "id": "d_sayab_depths_hexers",
+          "type": "kill",
+          "title": "심층의 주술",
+          "text": "심층 주술사의 노래가 땅 위까지 들린다.",
+          "map": "hollow_depths",
+          "monster": "hollow_hexer",
+          "label": "공허의 주술사",
+          "count": 50
+        },
+        {
+          "id": "d_sayab_dungeon_high",
+          "type": "dungeon",
+          "title": "다섯 집의 시험",
+          "text": "요일 던전을 한 번 클리어하고 사얍 게시판에 알려라.",
+          "count": 1
+        }
+      ]
     }
   ],
   "weekly": {
@@ -487,6 +599,86 @@
             "id": "w_peak_daily",
             "type": "daily",
             "title": "설원의 수호자",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "id": "sayab_low",
+        "minLevel": 41,
+        "maxLevel": 45,
+        "gold": 7000,
+        "templates": [
+          {
+            "id": "w_sayab_hunt",
+            "type": "kill",
+            "title": "샘 지키기 주간",
+            "text": "이번 주 안에 지하 입구의 파수꾼을 몰아내 달라.",
+            "map": "hollow_descent",
+            "monster": "hollow_guard",
+            "label": "심연의 방패 파수꾼",
+            "count": 250
+          },
+          {
+            "id": "w_sayab_dungeon",
+            "type": "dungeon",
+            "title": "다섯 집의 주간 시험",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_sayab_raid",
+            "type": "raid",
+            "title": "수호석의 기억",
+            "text": "이번 주 그라흐 레이드를 한 번 클리어하라.",
+            "target": "raid_grah",
+            "count": 1
+          },
+          {
+            "id": "w_sayab_daily",
+            "type": "daily",
+            "title": "사얍의 이웃",
+            "text": "이번 주 일일 의뢰를 열 번 완료하라.",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "id": "sayab_high",
+        "minLevel": 46,
+        "maxLevel": 50,
+        "gold": 8000,
+        "templates": [
+          {
+            "id": "w_sayab_depths",
+            "type": "kill",
+            "title": "심층 토벌 주간",
+            "text": "이번 주 안에 심층의 파수꾼을 대거 정리해 달라.",
+            "map": "hollow_depths",
+            "monster": "hollow_guard",
+            "label": "심연의 방패 파수꾼",
+            "count": 250
+          },
+          {
+            "id": "w_sayab_dungeon_high",
+            "type": "dungeon",
+            "title": "다섯 집의 주간 시험",
+            "text": "이번 주 요일 던전을 다섯 번 클리어하라.",
+            "count": 5
+          },
+          {
+            "id": "w_sayab_raid_high",
+            "type": "raid",
+            "title": "수호석의 기억",
+            "text": "이번 주 그라흐 레이드를 한 번 클리어하라.",
+            "target": "raid_grah",
+            "count": 1
+          },
+          {
+            "id": "w_sayab_daily_high",
+            "type": "daily",
+            "title": "사얍의 이웃",
             "text": "이번 주 일일 의뢰를 열 번 완료하라.",
             "count": 10
           }

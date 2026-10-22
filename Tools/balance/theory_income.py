@@ -31,8 +31,9 @@ OUT = os.path.join(DATA, "income_caps.json")
 KILLS_PER_MIN = 30
 BOSSES_PER_HOUR = 4          # 15분 창당 1회
 PARTY_MIN_LEVEL_SLACK = 5
-TIER_LEVELS = [1, 10, 15, 20, 25, 30, 35, 40]
-BAND_RANGES = [(1, 4), (5, 8), (9, 12), (13, 16), (17, 20), (21, 24), (25, 28), (29, 33), (34, 40)]
+TIER_LEVELS = [1, 10, 15, 20, 25, 30, 35, 40, 45, 50]  # 45·50: 챕터 3 (2026-10-22)
+# 41~44, 45~47, 48~50: 챕터 3 밴드(Docs/ch3/PROGRESSION_AND_GEAR.md 6절). 3장이 닫혀 있으면 레벨이 40에서 멈춰 쓰이지 않는다
+BAND_RANGES = [(1, 4), (5, 8), (9, 12), (13, 16), (17, 20), (21, 24), (25, 28), (29, 33), (34, 40), (41, 44), (45, 47), (48, 50)]
 TOP_RANK_XP_MUL = 1.5        # 최고 등급(S) 경험치 보너스 +50% (dungeons.json ranking.xpBonus[0])
 UNIQUE_PLUS_PER_DAY = 4      # 던전 카드 대박 + 레이드 레전더리(필드 일반 드롭에는 유니크 이상이 없다)
 
@@ -217,6 +218,8 @@ DOC_DAY = {  # 대역 -> (던전 XP/일, 던전 골드/일, 중간 레이드 XP/
 def compare(data):
     print("대역  | 항목        | 스크립트    | 문서        | 차이")
     for i, b in enumerate(data["bands"], start=1):
+        if i not in DOC_HOURLY:  # 챕터 3 밴드는 문서 손계산 표가 없다
+            continue
         h = DOC_HOURLY[i]
         rows = [("xp/h", b["perHour"]["xp"], h[0]), ("goldEq/h", b["perHour"]["goldEq"], h[1]), ("ore/h", b["perHour"]["ore"], h[2]), ("essence/h", b["perHour"]["essence"], h[3])]
         d = DOC_DAY[i]

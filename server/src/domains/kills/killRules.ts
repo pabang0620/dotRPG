@@ -4,7 +4,8 @@ import type { EconomyData, MonsterDef } from '../../gamedata/economyData';
 import { keyAt, parseItemKey, roundHalfEven } from '../../utils/itemKey';
 import { COLLECTION_ATTACK_MAX, COSMETIC_DAMAGE_MAX } from '../starshop/starshopDefs';
 import type { Rng } from '../../utils/rng';
-import { tierOfLevel } from '../../utils/gearTier';
+import { levelCap } from '../../gamedata/chapterGate';
+import { dropTierOfLevel } from '../../utils/gearTier';
 
 /** 몬스터 경험치: xpByLevel 표가 있으면 표, 없으면 round(xp * (1 + xpPerLevel * (레벨 - 1))) (.5는 짝수 쪽) */
 export function monsterXp(eco: EconomyData, def: MonsterDef, level: number): number {
@@ -78,7 +79,8 @@ export function splitGoldPiles(eco: EconomyData, total: number): number[] {
  */
 export function rollEquipmentDrop(eco: EconomyData, cls: string, chance: number, rng: Rng, monsterLevel = 1): string | null {
   if (rng.unit() > chance) return null;
-  const tier = tierOfLevel(monsterLevel);
+  // 레벨 상한(3장 잠금)을 넘는 단계는 떨어지지 않는다
+  const tier = dropTierOfLevel(monsterLevel, levelCap(eco.progression.maxLevel));
   const pool = eco.shop.equipmentList.filter(
     // 2026-10-11: 다른 직업 장비도 떨어진다(마법사로 사냥해도 검·갑옷이 나온다). cls는 호출 호환용으로 남긴다
     (e) => e.dropWeight > 0 && !e.bossOnly && e.levelTier === tier,

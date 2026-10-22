@@ -22,7 +22,7 @@ import {
   TEN_PRICE,
 } from './starshopDefs';
 import { gearTable } from './starshopService';
-import { TIER_LEVELS } from '../../utils/gearTier';
+import { CHAPTER2_TIER_COUNT } from '../../utils/gearTier';
 
 type GearBanner = keyof typeof GEAR_BANNERS;
 
@@ -32,7 +32,7 @@ export function buildRatesContent(): Record<string, unknown> {
   const gear: Record<string, unknown> = {};
   for (const b of Object.keys(GEAR_BANNERS) as GearBanner[]) {
     for (const cls of classes) {
-      for (let tier = 0; tier < TIER_LEVELS.length; tier++) {
+      for (let tier = 0; tier < CHAPTER2_TIER_COUNT; tier++) {
         gear[`${b}.${cls}.${tier}`] = gearTable(b, cls, tier).map((t) => ({ rarity: t.rarity, permille: t.permille, items: t.items.map((i) => i.id) }));
       }
     }
