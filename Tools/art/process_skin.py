@@ -9,6 +9,13 @@ hand points (katana grip) and the walk/attack timing stay valid.
 Usage:
   python3 process_skin.py warrior <generated.jpg> <skin id>  -> Assets/Resources/SilverWarrior/Skins/<id>/body.png, attack.png
   python3 process_skin.py mage <generated.jpg> <skin id>     -> Assets/Resources/Art/char_<id>_<dir>_<frame>.png
+  python3 process_skin.py rogue <body.jpg> <skin id> <attack.jpg> -> Assets/Resources/Rogue/Skins/<id>/body.png, attack.png
+  python3 process_skin.py daon <body.jpg> <skin id>          -> Assets/Resources/Art/char_<skin id>_<dir>_<frame>.png (rogue body sheet as the base, e.g. merc_daon)
+  python3 process_skin.py rogue-ref <body ref out.png> <attack ref out.png>   (compact references to give Flow)
+Rogue references (rogue-ref): every 64-px cell of Resources/Rogue/body.png and attack.png is cropped to the figure area
+(ROGUE_CROP), scaled 4x (nearest) and laid out with a gutter on a flat magenta 4:3 canvas, so the figures come back larger
+than in a full-cell layout. The repaint may turn the background into another flat colour (pink outfits), so the rogue
+and daon modes key with key_border (magenta key when the border is magenta, border colour otherwise).
 """
 import os, sys
 import numpy as np
@@ -30,19 +37,27 @@ def palette_of(rgba, colors=56):
     return sample.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
 
 
-def cell_from(gen, ref_size, x, y, palette):
-    """The generated cell at reference grid position (x, y) reduced to a hard-edged 64x64 pixel cell."""
+def cell_from(gen, ref_size, x, y, palette, w=CELL, h=CELL, off=(0, 0)):
+    """The generated region (w x h reference units at x, y) reduced to a hard-edged 64x64 pixel cell.
+    A region smaller than the cell (the compact rogue references) is pasted at off inside the 64x64 cell."""
     sx = gen.shape[1] / ref_size[0]
     sy = gen.shape[0] / ref_size[1]
     x0, y0 = round(x * sx), round(y * sy)
-    x1, y1 = round((x + CELL) * sx), round((y + CELL) * sy)
-    # Sample the centre of each source pixel block (the repaint keeps the 4x pixel grid), not an average:
+    x1, y1 = round((x + w) * sx), round((y + h) * sy)
+    # Sample the centre of each source pixel block (the repaint keeps the pixel grid), not an average:
     # averaging smears the 1-px outline and the eyes into the fill colours.
     piece = Image.fromarray(gen[y0:y1, x0:x1], "RGBA")
-    sharp = np.asarray(piece.resize((CELL, CELL), Image.NEAREST)).copy()
-    soft = np.asarray(piece.resize((CELL, CELL), Image.BOX))
-    sharp[..., 3] = soft[..., 3]
-    a = sharp
+    sharp_p = np.asarray(piece.resize((w, h), Image.NEAREST)).copy()
+    soft_p = np.asarray(piece.resize((w, h), Image.BOX))
+    sharp_p[..., 3] = soft_p[..., 3]
+    if CROP_TRIM:
+        t = CROP_TRIM
+        sharp_p[:t, :, 3] = 0
+        sharp_p[-t:, :, 3] = 0
+        sharp_p[:, :t, 3] = 0
+        sharp_p[:, -t:, 3] = 0
+    a = np.zeros((CELL, CELL, 4), np.uint8)
+    a[off[1]:off[1] + h, off[0]:off[0] + w] = sharp_p
     alpha = np.where(a[..., 3] >= 120, 255, 0).astype(np.uint8)
     q = np.asarray(Image.fromarray(a[..., :3], "RGB").quantize(palette=palette, dither=Image.Dither.NONE).convert("RGB"))
     out = np.dstack([q, alpha]).astype(np.uint8)
@@ -64,6 +79,10 @@ def outline(cell):
     return out
 
 
+KEEP_FRAC = 0.04
+CROP_TRIM = 0   # edge rows/columns of the cropped region to clear (stray background bars touching the crop edge)
+
+
 def keep_main(cell):
     """Drop stray specks (JPEG noise, a neighbour's sliver): keep the components of real size."""
     from scipy import ndimage
@@ -74,7 +93,7 @@ def keep_main(cell):
     sizes = ndimage.sum(solid, lab, range(1, n + 1))
     big = max(sizes)
     for i, s in enumerate(sizes, 1):
-        if s < max(6, big * 0.04):
+        if s < max(6, big * KEEP_FRAC):
             cell[lab == i] = 0
     return cell
 
@@ -111,6 +130,124 @@ def sheet(gen, ref_size, origin, original, cols, rows, palette):
     return out
 
 
+S_REF = 4
+ROGUE_CROP = {"body": (14, 8, 50, 58), "attack": (10, 8, 54, 58)}   # per-cell crop of the 64x64 cell in the compact reference
+ROGUE_COLS = {"body": 8, "attack": 6}
+ROGUE_GUTTER = 8
+ROGUE_CANVAS = (387, 290)   # 4:3, grid units
+
+
+def rogue_geometry(kind):
+    x0, y0, x1, y1 = ROGUE_CROP[kind]
+    cw, ch, cols = x1 - x0, y1 - y0, ROGUE_COLS[kind]
+    pw, ph = cw + ROGUE_GUTTER, ch + ROGUE_GUTTER
+    gw, gh = cols * pw - ROGUE_GUTTER, 5 * ph - ROGUE_GUTTER
+    ox, oy = (ROGUE_CANVAS[0] - gw) / 2, (ROGUE_CANVAS[1] - gh) / 2
+    return cw, ch, pw, ph, ox, oy, cols
+
+
+def rogue_ref(kind, out):
+    """Compact reference: every 64-px cell cropped to the figure area, 4x nearest, on magenta."""
+    sheet_img = Image.open(os.path.join(ROOT, "Assets", "Resources", "Rogue", kind + ".png")).convert("RGBA")
+    cw, ch, pw, ph, ox, oy, cols = rogue_geometry(kind)
+    x0, y0, _, _ = ROGUE_CROP[kind]
+    can = Image.new("RGB", (ROGUE_CANVAS[0] * S_REF, ROGUE_CANVAS[1] * S_REF), (255, 0, 255))
+    for r in range(5):
+        for c in range(cols):
+            cell = sheet_img.crop((c * CELL + x0, r * CELL + y0, c * CELL + x0 + cw, r * CELL + y0 + ch))
+            cell = cell.resize((cw * S_REF, ch * S_REF), Image.NEAREST)
+            can.paste(cell, (round((ox + c * pw) * S_REF), round((oy + r * ph) * S_REF)), cell)
+    can.save(out)
+
+
+def key_border(path, kind="body"):
+    """Keys the repaint. Magenta backgrounds use the shared magenta key; if the repaint turned the background into
+    another flat colour (pink outfits), the colour in the gutters between the cells is the background and is un-mixed
+    from the edges (the canvas margins stay magenta, so the image border is not used)."""
+    im = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
+    h, w, _ = im.shape
+    cw, ch, pw, ph, ox, oy, cols = rogue_geometry(kind)
+    sx, sy = w / ROGUE_CANVAS[0], h / ROGUE_CANVAS[1]
+    strips = []
+    for c in range(cols - 1):
+        gx = round((ox + c * pw + cw + ROGUE_GUTTER / 2) * sx)
+        strips.append(im[round(oy * sy):round((oy + 5 * ph - ROGUE_GUTTER) * sy), max(0, gx - 2):gx + 3].reshape(-1, 3))
+    for r in range(4):
+        gy = round((oy + r * ph + ch + ROGUE_GUTTER / 2) * sy)
+        strips.append(im[max(0, gy - 2):gy + 3, round(ox * sx):round((ox + cols * pw - ROGUE_GUTTER) * sx)].reshape(-1, 3))
+    samples = np.concatenate(strips)
+    # The gutters hold the background, which a repaint may leave as magenta, turn into one flat colour (pink outfits)
+    # or smear into a few patches (icy outfits): every colour that fills a real share of the gutters is background.
+    q = Image.fromarray(samples.astype(np.uint8).reshape(-1, 1, 3), "RGB").quantize(colors=12, method=Image.Quantize.MEDIANCUT)
+    cnt = np.bincount(np.asarray(q).ravel(), minlength=12)
+    pal = np.asarray(q.getpalette()[:36], np.float32).reshape(12, 3)
+    bgs = [pal[i] for i in range(12) if cnt[i] > 0.015 * cnt.sum()]
+    if all(b[0] > 200 and b[2] > 200 and b[1] < 90 for b in bgs):
+        return key(path, soft=1.4)
+    bgs.append(np.array([255.0, 0.0, 255.0], np.float32))   # the canvas margins stay magenta
+    from scipy import ndimage
+    dist = np.min([np.sqrt(((im - b) ** 2).sum(axis=2)) for b in bgs], axis=0)
+    # Background = the large regions close to the background colour (a figure colour that happens to match, like silver
+    # hair against a grey background, is a small region enclosed by the outline and stays).
+    lab, n = ndimage.label(dist < 24.0)
+    sizes = ndimage.sum(np.ones_like(dist), lab, range(1, n + 1))
+    bgmask = np.isin(lab, [i + 1 for i, v in enumerate(sizes) if v >= 250])
+    box = np.zeros((h, w), bool)
+    box[h - 125:h - 65, w - 130:w - 70] = True
+    pale = (im.min(axis=2) > 150) & (im.max(axis=2) - im.min(axis=2) < 70)
+    bgmask |= box & pale
+    a = np.where(bgmask, 0.0, 1.0)
+    out = np.dstack([im, a * 255.0])
+    out[a < 0.5] = 0
+    return out.astype(np.uint8)
+
+
+def rogue_sheet(gen, kind, original, palette):
+    cw, ch, pw, ph, ox, oy, cols = rogue_geometry(kind)
+    x0, y0, _, _ = ROGUE_CROP[kind]
+    out = np.zeros((5 * CELL, cols * CELL, 4), np.uint8)
+    for r in range(5):
+        for c in range(cols):
+            orig = original[r * CELL:(r + 1) * CELL, c * CELL:(c + 1) * CELL]
+            new = cell_from(gen, ROGUE_CANVAS, ox + c * pw, oy + r * ph, palette, cw, ch, (x0, y0))
+            out[r * CELL:(r + 1) * CELL, c * CELL:(c + 1) * CELL] = align(new, orig)
+    return out
+
+
+def rogue(body_src, skin, attack_src):
+    gb, ga = key_border(body_src, "body"), key_border(attack_src, "attack")
+    pal = palette_of(gb)
+    base = os.path.join(ROOT, "Assets", "Resources", "Rogue")
+    dst = os.path.join(base, "Skins", skin)
+    os.makedirs(dst, exist_ok=True)
+    body = np.asarray(Image.open(os.path.join(base, "body.png")).convert("RGBA"))
+    attack = np.asarray(Image.open(os.path.join(base, "attack.png")).convert("RGBA"))
+    Image.fromarray(rogue_sheet(gb, "body", body, pal), "RGBA").save(os.path.join(dst, "body.png"))
+    Image.fromarray(rogue_sheet(ga, "attack", attack, pal), "RGBA").save(os.path.join(dst, "attack.png"))
+    print("wrote", dst)
+
+
+def daon(src, skin):
+    global KEEP_FRAC, CROP_TRIM
+    gen = key_border(src)
+    # No pink in this costume: leftover magenta fringe pixels from the canvas margins are background, and so are
+    # small detached bars (stray background patch edges).
+    r, g, b = gen[..., 0].astype(int), gen[..., 1].astype(int), gen[..., 2].astype(int)
+    gen[(np.minimum(r, b) - g > 45) & (r > 100) & (b > 100)] = 0
+    KEEP_FRAC = 0.15
+    CROP_TRIM = 2
+    pal = palette_of(gen)
+    base = np.asarray(Image.open(os.path.join(ROOT, "Assets", "Resources", "Rogue", "body.png")).convert("RGBA"))
+    sheet_px = rogue_sheet(gen, "body", base, pal)
+    # The last cell (up, hurt) is where Flow's sparkle watermark sits and the shipped rogue sheet has a broken figure there too:
+    # use the up idle1 figure.
+    sheet_px[4 * CELL:5 * CELL, 7 * CELL:8 * CELL] = sheet_px[4 * CELL:5 * CELL, 1 * CELL:2 * CELL]
+    for r, d in enumerate(DIRS):
+        for c, f in enumerate(FRAMES):
+            Image.fromarray(sheet_px[r * CELL:(r + 1) * CELL, c * CELL:(c + 1) * CELL], "RGBA").save(os.path.join(ART, f"char_{skin}_{d}_{f}.png"))
+    print("wrote", skin, len(DIRS) * len(FRAMES), "frames")
+
+
 def warrior(src, skin):
     gen = key(src, soft=1.4)
     pal = palette_of(gen)
@@ -138,4 +275,12 @@ def mage(src, skin):
 
 if __name__ == "__main__":
     kind, src, skin = sys.argv[1:4]
-    (warrior if kind == "warrior" else mage)(src, skin)
+    if kind == "rogue-ref":
+        rogue_ref("body", src)
+        rogue_ref("attack", skin)
+    elif kind == "rogue":
+        rogue(src, skin, sys.argv[4])
+    elif kind == "daon":
+        daon(src, skin)
+    else:
+        (warrior if kind == "warrior" else mage)(src, skin)
