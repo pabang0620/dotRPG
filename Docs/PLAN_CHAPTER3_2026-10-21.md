@@ -137,6 +137,7 @@
 | 5 라이브 콘텐츠 | 시작 안 함. 미니 던전 티어 40, 월드·길드보스 Lv50(0052 boss_level), 랭킹, 해금·할 일·성장 추천, 이츠나·익시 "특화 조정" 대화 | - |
 | 6 잠금·스포일러 | 시작 안 함. `chapter3.json` 빌드 제외 + 서버 `GET /content/chapter3`(로더 `Chapter3Content.Merge`는 준비됨), assertOpen 호출 지점 전수 | - |
 | 7 측정·시뮬·테스트 | 시작 안 함 | - |
+| 도적 특화 | 도적 특화 쌍 추가 필요: 지금 48쌍에 도적 기본 스킬 5 + 도적 전직 2종 스킬의 쌍을 더한다(설계는 `PLAN_CLASS_ROGUE.md`) | - |
 | 병합 2026-10-22 | wonho 출시용 장비 계승(Lv10→20·20→30·30→40)을 합치고 40→50 계승을 같은 경로표·엔드포인트(`/characters/:uuid/inherit`)로 통일. 옛 `/promote/inherit`·`PromoteRules.InheritCost`·계승 버튼 제거, 마이그레이션 0049_gear_inherit → 0050_chapter3_seal_exchange → 0051_lord_difficulty → 0052(계획) | 이 병합 커밋 |
 
 3단계 결과 메모:
